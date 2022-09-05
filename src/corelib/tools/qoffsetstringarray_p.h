@@ -128,7 +128,7 @@ template <typename StringExtractor, typename... T>
 constexpr auto makeOffsetStringArray(StringExtractor extractString, const T &... entries)
 {
     constexpr size_t Count = sizeof...(T);
-    constexpr qsizetype StringLength = (sizeof(extractString(T{})) + ...);
+    constexpr size_t StringLength = (sizeof(extractString(T{})) + ...);
     using MinifiedOffsetType = decltype(QtPrivate::minifyValue<StringLength>());
 
     size_t offset = 0;
