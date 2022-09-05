@@ -394,3 +394,147 @@ function(_qt_internal_show_skip_runtime_deploy_message qt_build_type_string)
         "this target platform (${__QT_DEPLOY_SYSTEM_NAME}, ${qt_build_type_string})."
     )
 endfunction()
+
+# This function is currently in Technical Preview.
+# Its signature and behavior might change.
+function(qt6_deploy_translations)
+    set(no_value_options VERBOSE)
+    set(single_value_options
+        LCONVERT
+    )
+    set(multi_value_options
+        CATALOGS
+        LOCALES
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+
+    set(verbose OFF)
+    if(arg_VERBOSE OR __QT_DEPLOY_VERBOSE)
+        set(verbose ON)
+    endif()
+
+    if(arg_CATALOGS)
+        set(catalogs ${arg_CATALOGS})
+    else()
+        set(catalogs qt qtbase)
+
+        # Find the translations that belong to the Qt modules that are used by the project.
+        # "Used by the project" means just all modules that are pulled in via find_package for now.
+        set(modules ${__QT_DEPLOY_ALL_MODULES_FOUND_VIA_FIND_PACKAGE})
+
+        set(module_catalog_mapping
+            "Bluetooth|Nfc" qtconnectivity
+            "Help" qt_help
+            "Multimedia(Widgets|QuickPrivate)?" qtmultimedia
+            "Qml|Quick" qtdeclarative
+            "SerialPort" qtserialport
+            "WebEngine" qtwebengine
+            "WebSockets" qtwebsockets
+        )
+        list(LENGTH module_catalog_mapping max_i)
+        math(EXPR max_i "${max_i} - 1")
+        foreach(module IN LISTS modules)
+            foreach(i RANGE 0 ${max_i} 2)
+                list(GET module_catalog_mapping ${i} module_rex)
+                if(NOT module MATCHES "^${module_rex}")
+                    continue()
+                endif()
+                math(EXPR k "${i} + 1")
+                list(GET module_catalog_mapping ${k} catalog)
+                list(APPEND catalogs ${catalog})
+            endforeach()
+        endforeach()
+    endif()
+
+    get_filename_component(qt_translations_dir "${__QT_DEPLOY_QT_INSTALL_TRANSLATIONS}" ABSOLUTE
+        BASE_DIR "${__QT_DEPLOY_QT_INSTALL_PREFIX}"
+    )
+    set(locales ${arg_LOCALES})
+    if(NOT locales)
+        file(GLOB locales RELATIVE "${qt_translations_dir}" "${qt_translations_dir}/*.qm")
+        list(TRANSFORM locales REPLACE "\\.qm$" "")
+        list(TRANSFORM locales REPLACE "^qt_help" "qt-help")
+        list(TRANSFORM locales REPLACE "^[^_]+" "")
+        list(TRANSFORM locales REPLACE "^_" "")
+        list(REMOVE_DUPLICATES locales)
+    endif()
+
+    # Ensure existence of the output directory.
+    set(output_dir "${QT_DEPLOY_PREFIX}/${QT_DEPLOY_TRANSLATIONS_DIR}")
+    if(NOT EXISTS "${output_dir}")
+        file(MAKE_DIRECTORY "${output_dir}")
+    endif()
+
+    # Locate lconvert.
+    if(arg_LCONVERT)
+        set(lconvert "${arg_LCONVERT}")
+    else()
+        set(lconvert "${__QT_DEPLOY_QT_INSTALL_PREFIX}/${__QT_DEPLOY_QT_INSTALL_BINS}/lconvert")
+        if(CMAKE_HOST_WIN32)
+            string(APPEND lconvert ".exe")
+        endif()
+        if(NOT EXISTS ${lconvert})
+            message(STATUS "lconvert was not found. Skipping deployment of translations.")
+            return()
+        endif()
+    endif()
+
+    # Find the .qm files for the selected locales
+    if(verbose)
+        message(STATUS "Looking for translations in ${qt_translations_dir}")
+    endif()
+    foreach(locale IN LISTS locales)
+        set(qm_files "")
+        foreach(catalog IN LISTS catalogs)
+            set(qm_file "${catalog}_${locale}.qm")
+            if(EXISTS "${qt_translations_dir}/${qm_file}")
+                list(APPEND qm_files ${qm_file})
+            endif()
+        endforeach()
+
+        if(NOT qm_files)
+            message(WARNING "No translations found for requested locale '${locale}'.")
+            continue()
+        endif()
+
+        if(verbose)
+            foreach(qm_file IN LISTS qm_files)
+                message(STATUS "found translation file: ${qm_file}")
+            endforeach()
+        endif()
+
+        # Merge the .qm files into one qt_${locale}.qm file.
+        set(output_file_name "qt_${locale}.qm")
+        set(output_file_path "${output_dir}/${output_file_name}")
+        message(STATUS "Creating: ${output_file_path}")
+        set(extra_options)
+        if(verbose)
+            list(APPEND extra_options COMMAND_ECHO STDOUT)
+        endif()
+        execute_process(
+            COMMAND ${lconvert} -if qm -o ${output_file_path} ${qm_files}
+            WORKING_DIRECTORY ${qt_translations_dir}
+            RESULT_VARIABLE process_result
+            ${extra_options}
+        )
+        if(NOT process_result EQUAL "0")
+            if(process_result MATCHES "^[0-9]+$")
+                message(WARNING "lconvert failed with exit code ${process_result}.")
+            else()
+                message(WARNING "lconvert failed: ${process_result}.")
+            endif()
+        endif()
+    endforeach()
+endfunction()
+
+if(NOT __QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_deploy_translations)
+        if(__QT_DEFAULT_MAJOR_VERSION EQUAL 6)
+            qt6_deploy_translations(${ARGV})
+        else()
+            message(FATAL_ERROR "qt_deploy_translations() is only available in Qt 6.")
+        endif()
+    endfunction()
+endif()
