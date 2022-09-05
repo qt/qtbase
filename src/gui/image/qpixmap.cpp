@@ -620,7 +620,9 @@ void QPixmap::setDevicePixelRatio(qreal scaleFactor)
     This value should be used when using the pixmap size in user interface
     size calculations.
 
-    The return value is equivalent to pixmap.size() / pixmap.devicePixelRatio(),
+    The return value is equivalent to pixmap.size() / pixmap.devicePixelRatio().
+
+    \since 6.2
 */
 QSizeF QPixmap::deviceIndependentSize() const
 {
