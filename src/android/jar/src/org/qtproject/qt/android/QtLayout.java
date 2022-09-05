@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.graphics.Insets;
 
 public class QtLayout extends ViewGroup
 {
@@ -57,13 +58,19 @@ public class QtLayout extends ViewGroup
     @Override
     protected void onSizeChanged (int w, int h, int oldw, int oldh)
     {
-        WindowInsets insets = getRootWindowInsets();
+        Activity activity = (Activity)getContext();
+        if (activity == null)
+            return;
+
+        Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
+                ? activity.getWindowManager().getDefaultDisplay()
+                : activity.getDisplay();
 
         DisplayMetrics realMetrics = new DisplayMetrics();
-        Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
-                ? ((Activity)getContext()).getWindowManager().getDefaultDisplay()
-                : ((Activity)getContext()).getDisplay();
         display.getRealMetrics(realMetrics);
+
+        DisplayMetrics appMetrics = new DisplayMetrics();
+        display.getMetrics(appMetrics);
 
         if ((realMetrics.widthPixels > realMetrics.heightPixels) != (w > h)) {
             // This is an intermediate state during display rotation.
@@ -76,34 +83,36 @@ public class QtLayout extends ViewGroup
             return;
         }
 
-        boolean isFullScreenView = h == realMetrics.heightPixels;
-        // The code uses insets for fullscreen mode only. However in practice
-        // the insets can be reported incorrectly. Both on Android 6 and Android 11
-        // a non-zero bottom inset is reported even when the
-        // WindowManager.LayoutParams.FLAG_FULLSCREEN flag is set.
-        // To avoid that, add an extra check for the fullscreen mode.
-        // The insets-related logic is not removed for the case when
-        // isFullScreenView == true, but hasFlagFullscreen == false, although
-        // I can't get such case in my tests.
-        final int windowFlags = ((Activity)getContext()).getWindow().getAttributes().flags;
-        final boolean hasFlagFullscreen =
-                (windowFlags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
-        int insetLeft =
-                (isFullScreenView && !hasFlagFullscreen) ? insets.getSystemWindowInsetLeft() : 0;
-        int insetTop =
-                (isFullScreenView && !hasFlagFullscreen) ? insets.getSystemWindowInsetTop() : 0;
-        int insetRight =
-                (isFullScreenView && !hasFlagFullscreen) ? insets.getSystemWindowInsetRight() : 0;
-        int insetBottom =
-                (isFullScreenView && !hasFlagFullscreen) ? insets.getSystemWindowInsetBottom() : 0;
+        WindowInsets rootInsets = getRootWindowInsets();
 
-        int usableAreaWidth = w - insetLeft - insetRight;
-        int usableAreaHeight = h - insetTop - insetBottom;
+        int insetLeft = 0;
+        int insetTop = 0;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Insets insets = rootInsets.getInsets(WindowInsets.Type.systemBars());
+            insetLeft = insets.left;
+            insetTop = insets.top;
+        } else {
+            insetLeft = rootInsets.getSystemWindowInsetLeft();
+            insetTop = rootInsets.getSystemWindowInsetTop();
+        }
+
+        int appWidthPixels = appMetrics.widthPixels;
+        int appHeightPixels = appMetrics.heightPixels;
+
+        final int flag =
+            activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN;
+
+        if (flag == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
+            // immersive mode uses the whole screen
+            appWidthPixels = realMetrics.widthPixels;
+            appHeightPixels = realMetrics.heightPixels;
+        }
 
         QtNative.setApplicationDisplayMetrics(
                 realMetrics.widthPixels, realMetrics.heightPixels, insetLeft, insetTop,
-                usableAreaWidth, usableAreaHeight, realMetrics.xdpi, realMetrics.ydpi,
-                realMetrics.scaledDensity, realMetrics.density, display.getRefreshRate());
+                appWidthPixels, appHeightPixels, appMetrics.xdpi, appMetrics.ydpi,
+                appMetrics.scaledDensity, appMetrics.density, display.getRefreshRate());
 
         int newRotation = display.getRotation();
         if (m_ownDisplayRotation != m_activityDisplayRotation
