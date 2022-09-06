@@ -788,7 +788,7 @@ void QDockWidgetPrivate::initDrag(const QPoint &pos, bool nca)
     state = new QDockWidgetPrivate::DragState;
     state->pressPos = pos;
     state->globalPressPos = q->mapToGlobal(pos);
-    state->widgetInitialPos = q->isFloating() ? q->pos() : q->mapToGlobal(q->pos());
+    state->widgetInitialPos = q->isFloating() ? q->pos() : q->mapToGlobal(QPoint(0, 0));
     state->dragging = false;
     state->widgetItem = nullptr;
     state->ownWidgetItem = false;
