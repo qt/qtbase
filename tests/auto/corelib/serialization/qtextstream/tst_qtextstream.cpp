@@ -12,6 +12,7 @@
 #include <QDebug>
 #include <QElapsedTimer>
 #include <QFile>
+#include <QTemporaryFile>
 #include <QStringConverter>
 #include <QTcpSocket>
 #include <QTemporaryDir>
@@ -201,6 +202,9 @@ private slots:
     void setEncoding();
 
     void textModeOnEmptyRead();
+
+    void autodetectUnicode_data();
+    void autodetectUnicode();
 
 private:
     void generateLineData(bool for_QString);
@@ -3041,6 +3045,57 @@ void tst_QTextStream::textModeOnEmptyRead()
     QVERIFY(file.isTextModeEnabled());
     QString emptyLine = stream.readLine(); // Text mode flag cleared here
     QVERIFY(file.isTextModeEnabled());
+}
+
+void tst_QTextStream::autodetectUnicode_data()
+{
+    QTest::addColumn<QStringConverter::Encoding>("encoding");
+    QTest::newRow("Utf8") << QStringConverter::Utf8;
+    QTest::newRow("Utf16BE") << QStringConverter::Utf16BE;
+    QTest::newRow("Utf16LE") << QStringConverter::Utf16LE;
+    QTest::newRow("Utf32BE") << QStringConverter::Utf32BE;
+    QTest::newRow("Utf32LE") << QStringConverter::Utf32LE;
+}
+
+void tst_QTextStream::autodetectUnicode()
+{
+    QFETCH(QStringConverter::Encoding, encoding);
+
+    QTemporaryFile file;
+    QVERIFY(file.open());
+
+    QString original("HelloWorld👋");
+
+    {
+        QTextStream out(&file);
+        out.setGenerateByteOrderMark(true);
+        out.setEncoding(encoding);
+        out << original;
+    }
+    file.seek(0);
+    {
+        QTextStream in(&file);
+        QString actual;
+        in >> actual;
+        QCOMPARE(actual, original);
+        QCOMPARE(in.encoding(), encoding);
+    }
+    file.seek(0);
+    // Again, but change order of calls to QTextStream...
+    {
+        QTextStream out(&file);
+        out.setEncoding(encoding);
+        out.setGenerateByteOrderMark(true);
+        out << original;
+    }
+    file.seek(0);
+    {
+        QTextStream in(&file);
+        QString actual;
+        in >> actual;
+        QCOMPARE(actual, original);
+        QCOMPARE(in.encoding(), encoding);
+    }
 }
 
 
