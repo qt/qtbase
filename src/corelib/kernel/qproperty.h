@@ -18,7 +18,7 @@
 #if defined(__cpp_lib_source_location)
 #define QT_SOURCE_LOCATION_NAMESPACE std
 #define QT_PROPERTY_COLLECT_BINDING_LOCATION
-#define QT_PROPERTY_DEFAULT_BINDING_LOCATION QPropertyBindingSourceLocation(std::source_location::current())
+#define QT_PROPERTY_DEFAULT_BINDING_LOCATION QPropertyBindingSourceLocation::fromStdSourceLocation(std::source_location::current())
 #endif
 #endif
 
@@ -85,6 +85,12 @@ struct Q_CORE_EXPORT QPropertyBindingSourceLocation
         functionName = cppLocation.function_name();
         line = cppLocation.line();
         column = cppLocation.column();
+    }
+    QT_POST_CXX17_API_IN_EXPORTED_CLASS
+    static consteval QPropertyBindingSourceLocation
+    fromStdSourceLocation(const std::source_location &cppLocation)
+    {
+        return cppLocation;
     }
 #endif
 #ifdef __cpp_lib_experimental_source_location
