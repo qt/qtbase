@@ -553,6 +553,7 @@ function(qt6_add_executable target)
 
     _qt_internal_create_executable("${target}" ${arg_UNPARSED_ARGUMENTS})
     target_link_libraries("${target}" PRIVATE Qt6::Core)
+    set_property(TARGET ${target} PROPERTY _qt_expects_finalization TRUE)
 
     if(arg_MANUAL_FINALIZATION)
         # Caller says they will call qt6_finalize_target() themselves later
@@ -704,6 +705,7 @@ function(qt6_finalize_target target)
         message(FATAL_ERROR "No target '${target}' found in current scope.")
     endif()
 
+    _qt_internal_expose_deferred_files_to_ide(${target})
     get_target_property(target_type ${target} TYPE)
     get_target_property(is_android_executable "${target}" _qt_is_android_executable)
 
@@ -1616,10 +1618,17 @@ function(__qt_propagate_generated_resource target resource_name generated_source
     endif()
 endfunction()
 
-# Creates fake targets and adds resource files to IDE's tree
-# FIXME: We shouldn't need to create a separate target for this, the files
-#        should be added to the actual target instead.
+# Make file visible in IDEs.
+# Targets that are finalized add the file as HEADER_FILE_ONLY in the finalizer.
+# Targets that are not finalized add the file under a ${target}_other_files target.
 function(_qt_internal_expose_source_file_to_ide target file)
+    get_target_property(target_expects_finalization ${target} _qt_expects_finalization)
+    if(target_expects_finalization AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
+        set_property(TARGET ${target} APPEND PROPERTY _qt_deferred_files ${file})
+        return()
+    endif()
+
+    # Fallback for targets that are not finalized: Create fake target under which the file is added.
     set(ide_target ${target}_other_files)
     if(NOT TARGET ${ide_target})
         add_custom_target(${ide_target} SOURCES "${file}")
@@ -1647,6 +1656,41 @@ function(_qt_internal_expose_source_file_to_ide target file)
         endif()
         add_dependencies(${ide_target} ${target_dependency})
     endif()
+endfunction()
+
+# Called by the target finalizer.
+# Adds the files that were added to _qt_deferred_files to SOURCES.
+# Sets HEADER_FILES_ONLY if they did not exist yet in SOURCES.
+function(_qt_internal_expose_deferred_files_to_ide target)
+    get_target_property(new_sources ${target} _qt_deferred_files)
+    if(NOT new_sources)
+        return()
+    endif()
+    set(new_sources_real "")
+    foreach(f IN LISTS new_sources)
+        get_filename_component(realf "${f}" REALPATH)
+        list(APPEND new_sources_real ${realf})
+    endforeach()
+
+    get_target_property(target_source_dir ${target} SOURCE_DIR)
+    get_target_property(existing_sources ${target} SOURCES)
+    if(existing_sources)
+        set(existing_sources_real "")
+        foreach(f IN LISTS existing_sources)
+            get_filename_component(realf "${f}" REALPATH BASE_DIR ${target_source_dir})
+            list(APPEND existing_sources_real ${realf})
+        endforeach()
+        list(REMOVE_ITEM new_sources_real ${existing_sources_real})
+    endif()
+    if("${new_sources_real}" STREQUAL "")
+        return()
+    endif()
+    target_sources(${target} PRIVATE ${new_sources_real})
+    set(scope_args)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+        set(scope_args TARGET_DIRECTORY "${target}")
+    endif()
+    set_source_files_properties(${new_sources_real} ${scope_args} PROPERTIES HEADER_FILE_ONLY ON)
 endfunction()
 
 #
@@ -2071,6 +2115,7 @@ function(qt6_add_library target)
     cmake_parse_arguments(PARSE_ARGV 1 arg "MANUAL_FINALIZATION" "" "")
 
     _qt_internal_add_library("${target}" ${arg_UNPARSED_ARGUMENTS})
+    set_property(TARGET ${target} PROPERTY _qt_expects_finalization TRUE)
 
     if(arg_MANUAL_FINALIZATION)
         # Caller says they will call qt6_finalize_target() themselves later
