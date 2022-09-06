@@ -829,13 +829,8 @@ bool QWasmCompositor::processKeyboard(int eventType, const EmscriptenKeyboardEve
 
     const QFlags<Qt::KeyboardModifier> modifiers = KeyboardModifier::getForEvent(*emKeyEvent);
 
-    // Clipboard path: cut/copy/paste are handled by clipboard event or direct clipboard access.
-    if (translatedEvent.type == QEvent::KeyPress && modifiers.testFlag(Qt::ControlModifier)
-        && (translatedEvent.key == Qt::Key_X || translatedEvent.key == Qt::Key_V
-            || translatedEvent.key == Qt::Key_C)) {
-        QWasmIntegration::get()->getWasmClipboard()->isPaste = translatedEvent.key == Qt::Key_V;
-        return false; // continue on to event
-    }
+    if (QWasmIntegration::get()->getWasmClipboard()->processKeyboard(translatedEvent, modifiers))
+        return false;
 
     if (translatedEvent.text.isEmpty())
         translatedEvent.text = QString(emKeyEvent->key);
