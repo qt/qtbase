@@ -2671,6 +2671,7 @@ function(qt6_generate_deploy_app_script)
     # package). We would add an EXECUTABLE keyword for that, which would be
     # mutually exclusive with the TARGET keyword.
     set(no_value_options
+        NO_TRANSLATIONS
         NO_UNSUPPORTED_PLATFORM_ERROR
     )
     set(single_value_options
@@ -2702,6 +2703,11 @@ function(qt6_generate_deploy_app_script)
         FILENAME_VARIABLE file_name
     )
 
+    set(common_deploy_args "")
+    if(arg_NO_TRANSLATIONS)
+        string(APPEND common_deploy_args "    NO_TRANSLATIONS\n")
+    endif()
+
     if(APPLE AND NOT IOS AND QT6_IS_SHARED_LIBS_BUILD)
         # TODO: Handle non-bundle applications if possible.
         get_target_property(is_bundle ${arg_TARGET} MACOSX_BUNDLE)
@@ -2715,7 +2721,7 @@ function(qt6_generate_deploy_app_script)
             CONTENT "
 qt6_deploy_runtime_dependencies(
     EXECUTABLE $<TARGET_FILE_NAME:${arg_TARGET}>.app
-)
+${common_deploy_args})
 ")
 
     elseif(WIN32 AND QT6_IS_SHARED_LIBS_BUILD)
@@ -2724,7 +2730,7 @@ qt6_deploy_runtime_dependencies(
 qt6_deploy_runtime_dependencies(
     EXECUTABLE $<TARGET_FILE:${arg_TARGET}>
     GENERATE_QT_CONF
-)
+${common_deploy_args})
 ")
 
     elseif(UNIX AND NOT APPLE AND NOT ANDROID AND QT6_IS_SHARED_LIBS_BUILD)
@@ -2733,7 +2739,7 @@ qt6_deploy_runtime_dependencies(
 qt6_deploy_runtime_dependencies(
     EXECUTABLE $<TARGET_FILE:${arg_TARGET}>
     GENERATE_QT_CONF
-)
+${common_deploy_args})
 ")
 
     elseif(NOT arg_NO_UNSUPPORTED_PLATFORM_ERROR AND NOT QT_INTERNAL_NO_UNSUPPORTED_PLATFORM_ERROR)

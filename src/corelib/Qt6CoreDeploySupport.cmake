@@ -113,6 +113,7 @@ endfunction()
 
 function(_qt_internal_generic_deployqt)
     set(no_value_options
+        NO_TRANSLATIONS
         VERBOSE
     )
     set(single_value_options
@@ -205,6 +206,11 @@ function(_qt_internal_generic_deployqt)
         string(PREPEND destination "${QT_DEPLOY_PREFIX}/${arg_PLUGINS_DIR}/")
         file(INSTALL ${file_path} DESTINATION ${destination})
     endforeach()
+
+    # Deploy translations.
+    if(NOT arg_NO_TRANSLATIONS)
+        qt6_deploy_translations()
+    endif()
 endfunction()
 
 # This function is currently in Technical Preview.
@@ -220,6 +226,7 @@ function(qt6_deploy_runtime_dependencies)
         VERBOSE
         NO_OVERWRITE
         NO_APP_STORE_COMPLIANCE   # TODO: Might want a better name
+        NO_TRANSLATIONS
     )
     set(single_value_options
         EXECUTABLE
@@ -318,6 +325,9 @@ function(qt6_deploy_runtime_dependencies)
         if(NOT arg_NO_OVERWRITE)
             list(APPEND tool_options --force)
         endif()
+        if(arg_NO_TRANSLATIONS)
+            list(APPEND tool_options --no-translations)
+        endif()
     elseif(__QT_DEPLOY_SYSTEM_NAME STREQUAL Darwin)
         set(extra_binaries_option "-executable=")
         if(NOT arg_NO_APP_STORE_COMPLIANCE)
@@ -342,6 +352,10 @@ function(qt6_deploy_runtime_dependencies)
             endif()
             list(APPEND tool_options ADDITIONAL_${file_type} ${arg_ADDITIONAL_${file_type}})
         endforeach()
+
+        if(arg_NO_TRANSLATIONS)
+            list(APPEND tool_options NO_TRANSLATIONS)
+        endif()
 
         _qt_internal_generic_deployqt(
             EXECUTABLE "${arg_EXECUTABLE}"

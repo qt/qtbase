@@ -38,6 +38,7 @@ qt_deploy_runtime_dependencies(
     [VERBOSE]
     [NO_OVERWRITE]
     [NO_APP_STORE_COMPLIANCE]
+    [NO_TRANSLATIONS]
 )
 \endcode
 
@@ -112,6 +113,11 @@ affects macOS and Windows deployments.
 By default, if \c{executable} is a macOS app bundle, only Qt plugins and Qt
 libraries that comply with Apple's app store requirements are deployed. The
 \c{NO_APP_STORE_COMPLIANCE} option can be given to disable that constraint.
+
+On platforms other than macOS, Qt translations are automatically deployed. To
+inhibit this behavior, specify \c{NO_TRANSLATIONS}. Use
+\l{qt6_deploy_translations}{qt_deploy_translations} to deploy translations in a
+customized way.
 
 \sa {qt6_generate_deploy_app_script}{qt_generate_deploy_app_script()},
     qt_deploy_qt_conf(), qt_deploy_qml_imports()
