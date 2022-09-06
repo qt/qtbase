@@ -12,6 +12,8 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
+#include "qwasmeventtranslator.h"
+
 QT_BEGIN_NAMESPACE
 
 class QWasmClipboard : public QObject, public QPlatformClipboard
@@ -27,6 +29,8 @@ public:
     bool ownsMode(QClipboard::Mode mode) const override;
 
     static void qWasmClipboardPaste(QMimeData *mData);
+    bool processKeyboard(const QWasmEventTranslator::TranslatedEvent &event,
+                         const QFlags<Qt::KeyboardModifier> &modifiers);
     void initClipboardPermissions();
     void installEventHandlers(const emscripten::val &canvas);
     bool hasClipboardApi;
