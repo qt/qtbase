@@ -532,6 +532,15 @@ quint16 qChecksum(QByteArrayView data, Qt::ChecksumType standard)
     The default value is -1, which specifies zlib's default
     compression.
 
+//![compress-limit-note]
+    \note The maximum size of data that this function can consume is limited by
+    what the platform's \c{unsigned long} can represent (a Zlib limitation).
+    That means that data > 4GiB can be compressed and decompressed on a 64-bit
+    Unix system, but not on a 64-bit Windows system. Portable code should
+    therefore avoid using qCompress()/qUncompress() to compress more than 4GiB
+    of input.
+//![compress-limit-note]
+
     \sa qUncompress(const QByteArray &data)
 */
 
@@ -541,6 +550,8 @@ quint16 qChecksum(QByteArrayView data, Qt::ChecksumType standard)
 
     Compresses the first \a nbytes of \a data at compression level
     \a compressionLevel and returns the compressed data in a new byte array.
+
+    \include qbytearray.cpp compress-limit-note
 */
 
 #ifndef QT_NO_COMPRESS
@@ -605,6 +616,15 @@ QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
     contain the expected length (in bytes) of the uncompressed data,
     expressed as an unsigned, big-endian, 32-bit integer.
 
+//![uncompress-limit-note]
+    \note The maximum size of data that this function can produce is limited by
+    what the platform's \c{unsigned long} can represent (a Zlib limitation).
+    That means that data > 4GiB can be compressed and decompressed on a 64-bit
+    Unix system, but not on a 64-bit Windows system. Portable code should
+    therefore avoid using qCompress()/qUncompress() to compress more than 4GiB
+    of input.
+//![uncompress-limit-note]
+
     \sa qCompress()
 */
 
@@ -621,6 +641,8 @@ static QByteArray invalidCompressedData()
 
     Uncompresses the first \a nbytes of \a data and returns a new byte
     array with the uncompressed data.
+
+    \include qbytearray.cpp uncompress-limit-note
 */
 QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 {
