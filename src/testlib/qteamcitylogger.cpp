@@ -257,14 +257,8 @@ void QTeamCityLogger::tcEscapedString(QTestCharBuffer *buf, const char *str) con
 
 void QTeamCityLogger::escapedTestFuncName(QTestCharBuffer *buf) const
 {
-    QTestCharBuffer fn, tag;
-    const char *raw = QTestResult::currentTestFunction();
-    tcEscapedString(&fn, raw ? raw : "UnknownTestFunc");
-    raw = QTestResult::currentDataTag();
-    if (raw)
-        tcEscapedString(&tag, raw);
-
-    QTest::qt_asprintf(buf, "%s(%s)", fn.constData(), tag.constData());
+    constexpr int TestTag = QTestPrivate::TestFunction | QTestPrivate::TestDataTag;
+    QTestPrivate::generateTestIdentifier(buf, TestTag);
 }
 
 void QTeamCityLogger::addPendingMessage(const char *type, const char *msg,
