@@ -1426,8 +1426,9 @@ void tst_QFile::setPermissions()
 #ifdef Q_OS_QNX
     QSKIP("This test doesn't pass on QNX and no one has cared to investigate.");
 #endif
-    if ( QFile::exists( "createme.txt" ) )
-        QFile::remove( "createme.txt" );
+    auto remove = []() { QFile::remove("createme.txt"); };
+    auto guard = qScopeGuard(remove);
+    remove();
     QVERIFY( !QFile::exists( "createme.txt" ) );
 
     QFile f("createme.txt");
