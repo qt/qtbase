@@ -183,16 +183,12 @@ QMargins QWasmWindow::frameMargins() const
 void QWasmWindow::raise()
 {
     m_compositor->raise(this);
-    if (window()->isVisible())
-        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), geometry().size()));
     invalidate();
 }
 
 void QWasmWindow::lower()
 {
     m_compositor->lower(this);
-    if (window()->isVisible())
-        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), geometry().size()));
     invalidate();
 }
 
