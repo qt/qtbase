@@ -659,7 +659,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     size_t expectedSize = size_t((data[0] << 24) | (data[1] << 16) |
                                  (data[2] <<  8) | (data[3]      ));
     size_t len = qMax(expectedSize, 1ul);
-    constexpr size_t MaxDecompressedSize = size_t(MaxByteArraySize);
+    constexpr size_t MaxZLibSize = (std::numeric_limits<uLong>::max)();
+    constexpr size_t MaxDecompressedSize = (std::min)(size_t(MaxByteArraySize), MaxZLibSize);
     if (len > MaxDecompressedSize)
         return invalidCompressedData();
 
