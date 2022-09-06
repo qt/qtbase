@@ -609,7 +609,7 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     size_t expectedSize = size_t((data[0] << 24) | (data[1] << 16) |
                                  (data[2] <<  8) | (data[3]      ));
     size_t len = qMax(expectedSize, 1ul);
-    const size_t maxPossibleSize = MaxAllocSize - sizeof(QByteArray::Data);
+    constexpr size_t maxPossibleSize = MaxAllocSize - sizeof(QByteArray::Data);
     if (Q_UNLIKELY(len >= maxPossibleSize)) {
         // QByteArray does not support that huge size anyway.
         return invalidCompressedData();
@@ -638,6 +638,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
             return QByteArray();
 
         case Z_BUF_ERROR:
+            static_assert(maxPossibleSize <= (std::numeric_limits<decltype(len)>::max)() / 2,
+                          "oops, next line may overflow");
             len *= 2;
             if (Q_UNLIKELY(len >= maxPossibleSize)) {
                 // QByteArray does not support that huge size anyway.
