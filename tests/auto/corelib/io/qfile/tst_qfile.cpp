@@ -172,6 +172,7 @@ private slots:
     void permissionsNtfs_data();
     void permissionsNtfs();
 #endif
+    void setPermissions_data();
     void setPermissions();
     void copy();
     void copyAfterFail();
@@ -1421,11 +1422,20 @@ void tst_QFile::permissionsNtfs()
 }
 #endif
 
+void tst_QFile::setPermissions_data()
+{
+    QTest::addColumn<bool>("opened");
+    QTest::newRow("closed") << false;       // chmod()
+    QTest::newRow("opened") << true;        // fchmod()
+}
+
 void tst_QFile::setPermissions()
 {
 #ifdef Q_OS_QNX
     QSKIP("This test doesn't pass on QNX and no one has cared to investigate.");
 #endif
+    QFETCH(bool, opened);
+
     auto remove = []() { QFile::remove("createme.txt"); };
     auto guard = qScopeGuard(remove);
     remove();
@@ -1434,7 +1444,8 @@ void tst_QFile::setPermissions()
     QFile f("createme.txt");
     QVERIFY2(f.open(QIODevice::WriteOnly | QIODevice::Truncate), msgOpenFailed(f).constData());
     f.putChar('a');
-    f.close();
+    if (!opened)
+        f.close();
 
     QFile::Permissions perms(QFile::WriteUser | QFile::ReadUser);
     QVERIFY(f.setPermissions(QFile::ReadUser));
