@@ -2941,7 +2941,7 @@ void QTextStream::setEncoding(QStringConverter::Encoding encoding)
 
     d->encoding = encoding;
     d->toUtf16 = QStringDecoder(d->encoding);
-    bool generateBOM = d->hasWrittenData && d->generateBOM;
+    bool generateBOM = !d->hasWrittenData && d->generateBOM;
     d->fromUtf16 = QStringEncoder(d->encoding,
                                   generateBOM ? QStringEncoder::Flag::WriteBom : QStringEncoder::Flag::Default);
 
