@@ -284,6 +284,21 @@ void QWasmClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
     isPaste = false;
 }
 
+bool QWasmClipboard::processKeyboard(const QWasmEventTranslator::TranslatedEvent &event,
+                                     const QFlags<Qt::KeyboardModifier> &modifiers)
+{
+    // Clipboard path: cut/copy/paste are handled by clipboard event or direct clipboard
+    // access.
+    if (hasClipboardApi)
+        return false;
+    if (event.type != QEvent::KeyPress || !modifiers.testFlag(Qt::ControlModifier)
+        || (event.key != Qt::Key_C && event.key != Qt::Key_V && event.key != Qt::Key_X)) {
+        return false;
+    }
+    isPaste = event.key == Qt::Key_V;
+    return true;
+}
+
 bool QWasmClipboard::supportsMode(QClipboard::Mode mode) const
 {
     return mode == QClipboard::Clipboard;
