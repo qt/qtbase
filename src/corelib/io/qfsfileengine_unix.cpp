@@ -489,6 +489,10 @@ bool QFSFileEngine::setPermissions(uint perms)
     Q_D(QFSFileEngine);
     QSystemError error;
     bool ok;
+
+    // clear cached state (if any)
+    d->metaData.clearFlags(QFileSystemMetaData::Permissions);
+
     if (d->fd != -1)
         ok = QFileSystemEngine::setPermissions(d->fd, QFile::Permissions(perms), error);
     else
