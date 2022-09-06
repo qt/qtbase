@@ -629,9 +629,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
             qWarning("qUncompress: Input data is corrupted");
         return QByteArray();
     }
-    size_t expectedSize = size_t((data[0] << 24) | (data[1] << 16) |
-                                 (data[2] <<  8) | (data[3]      ));
-    size_t len = qMax(expectedSize, 1ul);
+    const auto expectedSize = qFromBigEndian<quint32>(data);
+    uLong len = qMax(expectedSize, 1u);
     constexpr size_t MaxZLibSize = (std::numeric_limits<uLong>::max)();
     constexpr size_t MaxDecompressedSize = (std::min)(size_t(MaxByteArraySize), MaxZLibSize);
     if (len > MaxDecompressedSize)
@@ -643,7 +642,7 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 
     forever {
         const auto alloc = len;
-        int res = ::uncompress((uchar*)d.data(), reinterpret_cast<uLongf*>(&len),
+        int res = ::uncompress(reinterpret_cast<uchar *>(d.data()), &len,
                                data+4, nbytes-4);
 
         switch (res) {
@@ -660,13 +659,11 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
             return QByteArray();
 
         case Z_BUF_ERROR:
-            static_assert(MaxDecompressedSize <= (std::numeric_limits<decltype(len)>::max)() / 2,
-                          "oops, next line may overflow");
-            len *= 2;
-            if (len > MaxDecompressedSize)
+            if (len == MaxDecompressedSize) // can't grow further
                 return invalidCompressedData();
-
-            d->reallocate(d->allocatedCapacity() * 2, QArrayData::Grow);
+            if (qMulOverflow<2>(len, &len))
+                len = MaxDecompressedSize;
+            d->reallocate(qsizetype(len), QArrayData::Grow); // cannot overflow!
             if (d.data() == nullptr) // reallocation failed
                 return invalidCompressedData();
 
