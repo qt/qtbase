@@ -641,13 +641,6 @@ function(qt_internal_add_module target)
         )
         include(${configureFile})
         qt_feature_module_end("${target}")
-
-        set_property(TARGET "${target}" APPEND PROPERTY
-            PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/${module_config_header}"
-        )
-        set_property(TARGET "${target}" APPEND PROPERTY
-            PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/${module_config_private_header}"
-        )
     endif()
 
     if(NOT arg_HEADER_MODULE)
@@ -1132,13 +1125,10 @@ function(qt_internal_generate_cpp_global_exports target module_define_infix)
             endif()
         endif()
     else()
-        set_property(TARGET ${target} APPEND PROPERTY PUBLIC_HEADER "${generated_header_path}")
         qt_install(FILES "${generated_header_path}"
             DESTINATION "${module_install_interface_include_dir}")
 
         if(arg_GENERATE_PRIVATE_CPP_EXPORTS)
-            set_property(TARGET ${target} APPEND PROPERTY PRIVATE_HEADER
-                "${generated_private_header_path}")
             qt_install(FILES "${generated_private_header_path}"
                 DESTINATION "${module_install_interface_private_include_dir}")
         endif()
