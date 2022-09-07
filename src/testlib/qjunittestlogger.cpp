@@ -179,7 +179,7 @@ void QJUnitTestLogger::leaveTestFunction()
 void QJUnitTestLogger::leaveTestCase()
 {
     currentTestCase->addAttribute(QTest::AI_Time,
-        toSecondsFormat(elapsedTestCaseSeconds()).constData());
+        toSecondsFormat(elapsedTestCaseSeconds() * 1000).constData());
 
     if (!systemOutputElement->childElements().empty())
         currentTestCase->addChild(systemOutputElement);
