@@ -172,7 +172,11 @@ if(QT_FEATURE_batch_test_support AND WASM)
     list(APPEND wasm_support_libexec_files
          ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/batchedtestrunner.js)
     list(APPEND wasm_support_libexec_files
+         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/emrunadapter.js)
+    list(APPEND wasm_support_libexec_files
          ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qwasmjsruntime.js)
+    list(APPEND wasm_support_libexec_files
+         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qwasmtestmain.js)
     list(APPEND wasm_support_libexec_files
          ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/util.js)
 

@@ -145,8 +145,7 @@ export class CompiledModule {
                 params.arguments = parameters?.args;
                 let data = '';
                 params.print = (out) => {
-                    if (parameters?.printStdout === true)
-                        console.log(out);
+                    parameters?.onStdout?.(out);
                     data += `${out}\n`;
                 };
                 params.printErr = () => { };

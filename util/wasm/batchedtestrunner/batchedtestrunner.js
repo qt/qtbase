@@ -3,12 +3,9 @@
 
 import {
     AbortedError,
-    ModuleLoader,
-    ResourceFetcher,
-    ResourceLocator,
 } from './qwasmjsruntime.js';
 
-import { parseQuery, EventSource } from './util.js';
+import { EventSource } from './util.js';
 
 class ProgramError extends Error {
     constructor(exitCode) {
@@ -16,26 +13,34 @@ class ProgramError extends Error {
     }
 }
 
-class RunnerStatus {
+export class RunnerStatus {
     static Running = 'Running';
-    static Completed = 'Completed';
+    static Passed = 'Passed';
     static Error = 'Error';
+    static TestCrashed = 'TestCrashed';
+    static TestsFailed = 'TestsFailed';
 }
 
-class TestStatus {
+export class TestStatus {
     static Pending = 'Pending';
     static Running = 'Running';
     static Completed = 'Completed';
     static Error = 'Error';
+    static Failed = 'Failed';
     static Crashed = 'Crashed';
 }
 
-// Represents the public API of the runner.
-class WebApi {
+export class BatchedTestRunner {
+    static #TestBatchModuleName = 'test_batch';
+
+    #loader;
+
     #results = new Map();
     #status = RunnerStatus.Running;
+    #numberOfFailed = 0;
     #statusChangedEventPrivate;
     #testStatusChangedEventPrivate;
+    #testOutputChangedEventPrivate;
     #errorDetails;
 
     onStatusChanged =
@@ -43,25 +48,95 @@ class WebApi {
     onTestStatusChanged =
         new EventSource((privateInterface) =>
             this.#testStatusChangedEventPrivate = privateInterface);
+    onTestOutputChanged =
+        new EventSource(
+            (privateInterface) => this.#testOutputChangedEventPrivate = privateInterface);
 
-    // The callback receives the private interface of this object, meant not to be used by the
-    // end user on the web side.
-    constructor(receivePrivateInterface) {
-        receivePrivateInterface({
-            registerTest: testName => this.#registerTest(testName),
-            setTestStatus: (testName, status) => this.#setTestStatus(testName, status),
-            setTestResultData: (testName, testStatus, exitCode, textOutput) =>
-                this.#setTestResultData(testName, testStatus, exitCode, textOutput),
-            setTestRunnerStatus: status => this.#setTestRunnerStatus(status),
-            setTestRunnerError: details => this.#setTestRunnerError(details),
-        });
+    constructor(loader) {
+        this.#loader = loader;
     }
 
     get results() { return this.#results; }
+
     get status() { return this.#status; }
+
+    get numberOfFailed() {
+        if (this.#status !== RunnerStatus.TestsFailed)
+            throw new Error(`numberOfFailed called with status=${this.#status}`);
+        return this.#numberOfFailed;
+    }
+
     get errorDetails() { return this.#errorDetails; }
 
-    #registerTest(testName) { this.#results.set(testName, { status: TestStatus.Pending }); }
+    async run(targetIsBatch, testName, testOutputFormat) {
+        try {
+            await this.#doRun(targetIsBatch, testName, testOutputFormat);
+        } catch (e) {
+            this.#setTestRunnerError(e.message);
+            return;
+        }
+
+        const status = (() => {
+            const hasAnyCrashedTest =
+                !![...window.qtTestRunner.results.values()].find(
+                    result => result.status === TestStatus.Crashed);
+            if (hasAnyCrashedTest)
+                return { code: RunnerStatus.TestCrashed };
+            const numberOfFailed = [...window.qtTestRunner.results.values()].reduce(
+                (previous, current) => previous + current.exitCode, 0);
+            return {
+                code: (numberOfFailed ? RunnerStatus.TestsFailed : RunnerStatus.Passed),
+                numberOfFailed
+            };
+        })();
+
+        this.#setTestRunnerStatus(status.code, status.numberOfFailed);
+    }
+
+    async #doRun(targetIsBatch, testName, testOutputFormat) {
+        const module = await this.#loader.loadEmscriptenModule(
+            targetIsBatch ? BatchedTestRunner.#TestBatchModuleName : testName,
+            () => { }
+        );
+
+        const testsToExecute = (testName || !targetIsBatch)
+            ? [testName] : await this.#getTestClassNames(module);
+        testsToExecute.forEach(testClassName => this.#registerTest(testClassName));
+
+        for (const testClassName of testsToExecute) {
+            let result = {};
+            this.#setTestStatus(testClassName, TestStatus.Running);
+
+            try {
+                const LogToStdoutSpecialFilename = '-';
+                result = await module.exec({
+                    args: [...(targetIsBatch ? [testClassName] : []),
+                           '-o', `${LogToStdoutSpecialFilename},${testOutputFormat}`],
+                    onStdout: (output) => {
+                        this.#addTestOutput(testClassName, output);
+                    }
+                });
+
+                if (result.exitCode < 0)
+                    throw new ProgramError(result.exitCode);
+                result.status = result.exitCode > 0 ? TestStatus.Failed : TestStatus.Completed;
+                // Yield to other tasks on the main thread.
+                await new Promise(resolve => window.setTimeout(resolve, 0));
+            } catch (e) {
+                result.status = e instanceof ProgramError ? TestStatus.Error : TestStatus.Crashed;
+                result.stdout = e instanceof AbortedError ? e.stdout : result.stdout;
+            }
+            this.#setTestResultData(testClassName, result.status, result.exitCode);
+        }
+    }
+
+    async #getTestClassNames(module) {
+        return (await module.exec()).stdout.trim().split(' ');
+    }
+
+    #registerTest(testName) {
+        this.#results.set(testName, { status: TestStatus.Pending, output: [] });
+    }
 
     #setTestStatus(testName, status) {
         const testData = this.#results.get(testName);
@@ -71,109 +146,32 @@ class WebApi {
         this.#testStatusChangedEventPrivate.fireEvent(testName, status);
     }
 
-    #setTestResultData(testName, testStatus, exitCode, textOutput) {
+    #setTestResultData(testName, testStatus, exitCode) {
         const testData = this.#results.get(testName);
         const statusChanged = testStatus !== testData.status;
         testData.status = testStatus;
         testData.exitCode = exitCode;
-        testData.textOutput = textOutput;
         if (statusChanged)
             this.#testStatusChangedEventPrivate.fireEvent(testName, testStatus);
     }
 
-    #setTestRunnerStatus(status) {
+    #setTestRunnerStatus(status, numberOfFailed) {
         if (status === this.#status)
             return;
         this.#status = status;
+        this.#numberOfFailed = numberOfFailed;
         this.#statusChangedEventPrivate.fireEvent(status);
     }
 
     #setTestRunnerError(details) {
         this.#status = RunnerStatus.Error;
         this.#errorDetails = details;
-        this.#statusChangedEventPrivate.fireEvent(RunnerStatus.Error);
+        this.#statusChangedEventPrivate.fireEvent(this.#status);
+    }
+
+    #addTestOutput(testName, output) {
+        const testData = this.#results.get(testName);
+        testData.output.push(output);
+        this.#testOutputChangedEventPrivate.fireEvent(testName, testData.output);
     }
 }
-
-class BatchedTestRunner {
-    static #TestBatchModuleName = 'test_batch';
-
-    #loader;
-    #privateWebApi;
-
-    constructor(loader, privateWebApi) {
-        this.#loader = loader;
-        this.#privateWebApi = privateWebApi;
-    }
-
-    async #doRun(testName, testOutputFormat) {
-        const module = await this.#loader.loadEmscriptenModule(
-            BatchedTestRunner.#TestBatchModuleName,
-            () => { }
-        );
-
-        const testsToExecute = testName ? [testName] : await this.#getTestClassNames(module);
-        testsToExecute.forEach(testClassName => this.#privateWebApi.registerTest(testClassName));
-        for (const testClassName of testsToExecute) {
-            let result = {};
-            this.#privateWebApi.setTestStatus(testClassName, TestStatus.Running);
-
-            try {
-                const LogToStdoutSpecialFilename = '-';
-                result = await module.exec({
-                    args: [testClassName, '-o', `${LogToStdoutSpecialFilename},${testOutputFormat}`],
-                });
-
-                if (result.exitCode < 0)
-                    throw new ProgramError(result.exitCode);
-                result.status = TestStatus.Completed;
-            } catch (e) {
-                result.status = e instanceof ProgramError ? TestStatus.Error : TestStatus.Crashed;
-                result.stdout = e instanceof AbortedError ? e.stdout : result.stdout;
-            }
-            this.#privateWebApi.setTestResultData(
-                testClassName, result.status, result.exitCode, result.stdout);
-            }
-        }
-
-    async run(testName, testOutputFormat) {
-
-        await this.#doRun(testName, testOutputFormat);
-            this.#privateWebApi.setTestRunnerStatus(RunnerStatus.Completed);
-
-    }
-
-    async #getTestClassNames(module) {
-        return (await module.exec()).stdout.trim().split(' ');
-    }
-}
-
-(() => {
-    let privateWebApi;
-    window.qtTestRunner = new WebApi(privateApi => privateWebApi = privateApi);
-
-    const parsed = parseQuery(location.search);
-    const testName = parsed.get('qtestname');
-    try {
-        if (typeof testName !== 'undefined' && (typeof testName !== 'string' || testName === ''))
-            throw new Error('The testName parameter is incorrect');
-
-        const testOutputFormat = (() => {
-            const format = parsed.get('qtestoutputformat') ?? 'txt';
-            console.log(format);
-            if (-1 === ['txt', 'xml', 'lightxml', 'junitxml', 'tap'].indexOf(format))
-                throw new Error(`Bad file format: ${format}`);
-            return format;
-        })();
-
-        const resourceLocator = new ResourceLocator('');
-        const testRunner = new BatchedTestRunner(
-            new ModuleLoader(new ResourceFetcher(resourceLocator), resourceLocator),
-            privateWebApi
-        );
-
-        testRunner.run(testName, testOutputFormat);
-    } catch (e) {
-        privateWebApi.setTestRunnerError(e.message);
-    }
-})();

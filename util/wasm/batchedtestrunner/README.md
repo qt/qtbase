@@ -5,8 +5,24 @@ prints out a list of test classes inside its module. Then, when run with the fir
 equal to the name of one of the test classes, the test program will execute all tests within
 that single class.
 
-The scripts in the page will load the wasm file called 'test_batch.wasm' with its corresponding
-js script 'test_batch.js'.
+The following query parameters are recognized by the webpage:
+
+qtestname=testname - the test case to run. When batched test module is used, the test is assumed to
+    be a part of the batch. If a standalone test module is used, this is assumed to be the name of
+    the wasm module.
+
+quseemrun - if specified, the test communicates with the emrun instance via the protocol expected
+    by emrun.
+
+qtestoutputformat=txt|xml|lightxml|junitxml|tap - specifies the output format for the test case.
+
+qbatchedtest - if specified, the script will load the test_batch.wasm module and either run all
+    testcases in it or a specific test case, depending on the existence of the qtestname parameter.
+    Otherwise, the test is assumed to be a standalone binary whose name is determined by the
+    qtestname parameter.
+
+The scripts in the page will load the wasm file as specified by a combination of qbatchedtest and
+qtestname.
 
 Public interface for querying the test execution status is accessible via the global object
 'qtTestRunner':
@@ -15,8 +31,8 @@ qtTestRunner.status - this contains the status of the test runner itself, of the
 RunnerStatus.
 
 qtTestRunner.results - a map of test class name to test result. The result contains a test status
-(status, of the enumeration TestStatus), and in case of a terminal status, also the test's exit code
-(exitCode) and xml text output (textOutput), if available.
+(status, of the enumeration TestStatus), text output chunks (output), and in case of a terminal
+status, also the test's exit code (exitCode)
 
 qtTestRunner.onStatusChanged - an event for changes in state of the runner itself. The possible
 values are those of the enumeration RunnerStatus.
@@ -39,3 +55,6 @@ Query for test execution state:
     - qtTestRunner.status === (...)
     - qtTestRunner.results['tst_mytest'].status === (...)
     - qtTestRunner.results['tst_mytest'].textOutput
+
+When queseemrun is specified, the built-in emrun support module will POST the test output to the
+emrun instance and will report ^exit^ with a suitable exit code to it when testing is finished.
