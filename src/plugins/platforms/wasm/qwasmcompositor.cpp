@@ -578,12 +578,10 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
     if (event.pointerType != PointerType::Mouse)
         return false;
 
-    const QPoint targetPointInScreenCoords = screen()->geometry().topLeft() + event.point;
-
-    QWindow *const targetWindow = ([this, &targetPointInScreenCoords]() -> QWindow * {
+    QWindow *const targetWindow = ([this, &event]() -> QWindow * {
         auto *targetWindow = m_mouseCaptureWindow != nullptr ? m_mouseCaptureWindow.get()
                 : m_windowManipulation.operation() == WindowManipulation::Operation::None
-                ? screen()->compositor()->windowAt(targetPointInScreenCoords, 5)
+                ? screen()->compositor()->windowAt(event.point, 5)
                 : nullptr;
 
         return targetWindow ? targetWindow : m_lastMouseTargetWindow.get();
@@ -591,13 +589,13 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
     if (targetWindow)
         m_lastMouseTargetWindow = targetWindow;
 
-    const QPoint pointInTargetWindowCoords = targetWindow->mapFromGlobal(targetPointInScreenCoords);
-    const bool pointerIsWithinTargetWindowBounds = targetWindow->geometry().contains(targetPointInScreenCoords);
+    const QPoint pointInTargetWindowCoords = targetWindow->mapFromGlobal(event.point);
+    const bool pointerIsWithinTargetWindowBounds = targetWindow->geometry().contains(event.point);
     const bool isTargetWindowBlocked = QGuiApplicationPrivate::instance()->isWindowBlocked(targetWindow);
 
     if (m_mouseInCanvas && m_windowUnderMouse != targetWindow && pointerIsWithinTargetWindowBounds) {
         // delayed mouse enter
-        enterWindow(targetWindow, pointInTargetWindowCoords, targetPointInScreenCoords);
+        enterWindow(targetWindow, pointInTargetWindowCoords, event.point);
         m_windowUnderMouse = targetWindow;
     }
 
@@ -615,7 +613,8 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
 
         m_windowManipulation.onPointerDown(event, targetWindow);
 
-        wasmTargetWindow->injectMousePressed(pointInTargetWindowCoords, targetPointInScreenCoords, event.mouseButton, event.modifiers);
+        wasmTargetWindow->injectMousePressed(pointInTargetWindowCoords, event.point,
+                                             event.mouseButton, event.modifiers);
         break;
     }
     case EventType::PointerUp:
@@ -625,23 +624,24 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
         if (m_pressedWindow) {
             // Always deliver the released event to the same window that was pressed
             asWasmWindow(m_pressedWindow)
-                    ->injectMouseReleased(pointInTargetWindowCoords, targetPointInScreenCoords,
-                                          event.mouseButton, event.modifiers);
+                    ->injectMouseReleased(pointInTargetWindowCoords, event.point, event.mouseButton,
+                                          event.modifiers);
             if (event.mouseButton == Qt::MouseButton::LeftButton)
                 m_pressedWindow = nullptr;
         } else {
-            wasmTargetWindow->injectMouseReleased(pointInTargetWindowCoords, targetPointInScreenCoords, event.mouseButton, event.modifiers);
+            wasmTargetWindow->injectMouseReleased(pointInTargetWindowCoords, event.point,
+                                                  event.mouseButton, event.modifiers);
         }
         break;
     }
     case EventType::PointerMove:
     {
         if (wasmTargetWindow && event.mouseButtons.testFlag(Qt::NoButton)) {
-            const bool isOnResizeRegion = wasmTargetWindow->isPointOnResizeRegion(targetPointInScreenCoords);
+            const bool isOnResizeRegion = wasmTargetWindow->isPointOnResizeRegion(event.point);
 
             if (isTargetWindowResizable && isOnResizeRegion && !isTargetWindowBlocked) {
                 const QCursor resizingCursor = QWasmEventTranslator::cursorForEdges(
-                        wasmTargetWindow->resizeEdgesAtPoint(targetPointInScreenCoords));
+                        wasmTargetWindow->resizeEdgesAtPoint(event.point));
 
                 if (resizingCursor != targetWindow->cursor()) {
                     m_isResizeCursorDisplayed = true;
@@ -682,12 +682,11 @@ bool QWasmCompositor::deliverEventToTarget(const PointerEvent &event, QWindow *e
 {
     Q_ASSERT(!m_mouseCaptureWindow || m_mouseCaptureWindow.get() == eventTarget);
 
-    const QPoint pointInScreenCoords = screen()->geometry().topLeft() + event.point;
     const QPoint targetPointClippedToScreen(
             std::max(screen()->geometry().left(),
-                     std::min(screen()->geometry().right(), pointInScreenCoords.x())),
+                     std::min(screen()->geometry().right(), event.point.x())),
             std::max(screen()->geometry().top(),
-                     std::min(screen()->geometry().bottom(), pointInScreenCoords.y())));
+                     std::min(screen()->geometry().bottom(), event.point.y())));
 
     bool deliveringToPreviouslyClickedWindow = false;
 
@@ -755,18 +754,14 @@ void QWasmCompositor::WindowManipulation::onPointerDown(
     if (isTargetWindowBlocked)
         return;
 
-    const auto pointInScreenCoords = m_screen->geometry().topLeft() + event.point;
-
     std::unique_ptr<std::variant<ResizeState, MoveState>> operationSpecific;
-    if (asWasmWindow(windowAtPoint)->isPointOnTitle(pointInScreenCoords)) {
-        operationSpecific = std::make_unique<std::variant<ResizeState, MoveState>>(MoveState {
-            .m_lastPointInScreenCoords = pointInScreenCoords
-        });
-    } else if (asWasmWindow(windowAtPoint)->isPointOnResizeRegion(pointInScreenCoords)) {
+    if (asWasmWindow(windowAtPoint)->isPointOnTitle(event.point)) {
+        operationSpecific = std::make_unique<std::variant<ResizeState, MoveState>>(
+                MoveState{ .m_lastPointInScreenCoords = event.point });
+    } else if (asWasmWindow(windowAtPoint)->isPointOnResizeRegion(event.point)) {
         operationSpecific = std::make_unique<std::variant<ResizeState, MoveState>>(ResizeState{
-                .m_resizeEdges =
-                        asWasmWindow(windowAtPoint)->resizeEdgesAtPoint(pointInScreenCoords),
-                .m_originInScreenCoords = pointInScreenCoords,
+                .m_resizeEdges = asWasmWindow(windowAtPoint)->resizeEdgesAtPoint(event.point),
+                .m_originInScreenCoords = event.point,
                 .m_initialWindowBounds = windowAtPoint->geometry(),
                 .m_minShrink =
                         QPoint(windowAtPoint->minimumWidth() - windowAtPoint->geometry().width(),
@@ -796,8 +791,7 @@ void QWasmCompositor::WindowManipulation::onPointerMove(
 
     switch (operation()) {
         case Operation::Move: {
-            const QPoint targetPointClippedToScreen =
-                    m_screen->translateAndClipGlobalPoint(event.point);
+            const QPoint targetPointClippedToScreen = m_screen->clipPoint(event.point);
             const QPoint difference = targetPointClippedToScreen -
                 std::get<MoveState>(m_state->operationSpecific).m_lastPointInScreenCoords;
 

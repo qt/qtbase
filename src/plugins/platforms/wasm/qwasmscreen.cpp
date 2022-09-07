@@ -263,13 +263,11 @@ QWindow *QWasmScreen::topLevelAt(const QPoint &p) const
     return m_compositor->windowAt(p);
 }
 
-QPoint QWasmScreen::translateAndClipGlobalPoint(const QPoint &p) const
+QPoint QWasmScreen::clipPoint(const QPoint &p) const
 {
     return QPoint(
-            std::max(screen()->geometry().left(),
-                     std::min(screen()->geometry().right(), screen()->geometry().left() + p.x())),
-            std::max(screen()->geometry().top(),
-                     std::min(screen()->geometry().bottom(), screen()->geometry().top() + p.y())));
+            std::max(screen()->geometry().left(), std::min(screen()->geometry().right(), p.x())),
+            std::max(screen()->geometry().top(), std::min(screen()->geometry().bottom(), p.y())));
 }
 
 void QWasmScreen::invalidateSize()
