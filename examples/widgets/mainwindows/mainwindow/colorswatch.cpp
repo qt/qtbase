@@ -446,7 +446,7 @@ void ColorSwatch::tabInto(QAction *action)
 void ColorSwatch::contextMenuEvent(QContextMenuEvent *event)
 {
     event->accept();
-    menu->exec(event->globalPos());
+    menu->popup(event->globalPos());
 }
 #endif // QT_NO_CONTEXTMENU
 
