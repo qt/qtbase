@@ -89,6 +89,11 @@ void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
     updatePrimaryOrientation(); // derived from the geometry
 }
 
+void QScreenPrivate::updateHighDpi()
+{
+    geometry = platformScreen->deviceIndependentGeometry();
+    availableGeometry = QHighDpi::fromNative(platformScreen->availableGeometry(), QHighDpiScaling::factor(platformScreen), geometry.topLeft());
+}
 
 /*!
     Destroys the screen.
