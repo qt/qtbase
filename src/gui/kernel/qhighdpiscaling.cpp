@@ -541,15 +541,17 @@ void QHighDpiScaling::setGlobalFactor(qreal factor)
     if (!QGuiApplication::allWindows().isEmpty())
         qWarning("QHighDpiScaling::setFactor: Should only be called when no windows exist.");
 
+    const auto screens = QGuiApplication::screens();
+
+    std::vector<QScreenPrivate::UpdateEmitter> updateEmitters;
+    for (QScreen *screen : screens)
+        updateEmitters.emplace_back(screen);
+
     m_globalScalingActive = !qFuzzyCompare(factor, qreal(1));
     m_factor = m_globalScalingActive ? factor : qreal(1);
     m_active = m_globalScalingActive || m_screenFactorSet || m_platformPluginDpiScalingActive ;
-    const auto screens = QGuiApplication::screens();
     for (QScreen *screen : screens)
         screen->d_func()->updateGeometry();
-
-    // FIXME: The geometry has been updated based on the new scale factor,
-    // but we don't emit any geometry change signals for the screens.
 }
 
 static const char scaleFactorProperty[] = "_q_scaleFactor";
@@ -565,6 +567,8 @@ void QHighDpiScaling::setScreenFactor(QScreen *screen, qreal factor)
         m_screenFactorSet = true;
         m_active = true;
     }
+
+    QScreenPrivate::UpdateEmitter updateEmitter(screen);
 
     // Prefer associating the factor with screen name over the object
     // since the screen object may be deleted on screen disconnects.

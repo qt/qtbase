@@ -10,6 +10,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QStringView>
+#include <QSignalSpy>
 
 Q_LOGGING_CATEGORY(lcTests, "qt.gui.tests")
 
@@ -55,6 +56,8 @@ private slots:
     void mouseVelocity_data();
     void setCursor();
     void setCursor_data();
+    void setGlobalFactorEmits();
+    void setScreenFactorEmits();
 };
 
 /// Offscreen platform plugin test setup
@@ -808,6 +811,35 @@ void tst_QHighDpi::setCursor()
         QPoint center = screen->geometry().center();
         QCursor::setPos(center.x(), center.y());
         QCOMPARE(QCursor::pos(), center);
+    }
+}
+
+void tst_QHighDpi::setGlobalFactorEmits()
+{
+    QList<qreal> dpiValues { 96, 96, 96 };
+    std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
+
+    std::vector<std::unique_ptr<QSignalSpy>> spies;
+    for (QScreen *screen : app->screens())
+        spies.push_back(std::make_unique<QSignalSpy>(screen, &QScreen::geometryChanged));
+
+    QHighDpiScaling::setGlobalFactor(2);
+
+    for (const auto &spy : spies)
+        QCOMPARE(spy->count(), 1);
+
+    QHighDpiScaling::setGlobalFactor(1);
+}
+
+void tst_QHighDpi::setScreenFactorEmits()
+{
+    QList<qreal> dpiValues { 96, 96, 96 };
+    std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
+
+    for (QScreen *screen : app->screens()) {
+        QSignalSpy spy(screen, &QScreen::geometryChanged);
+        QHighDpiScaling::setScreenFactor(screen, 2);
+        QCOMPARE(spy.count(), 1);
     }
 }
 
