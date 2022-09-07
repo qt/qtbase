@@ -3087,7 +3087,6 @@ void QGuiApplicationPrivate::processScreenGeometryChange(QWindowSystemInterfaceP
 
     if (geometryChanged) {
         emit s->physicalSizeChanged(s->physicalSize());
-        emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
 
         if (s->primaryOrientation() != primaryOrientation)
             emit s->primaryOrientationChanged(s->primaryOrientation());
