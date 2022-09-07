@@ -12,7 +12,7 @@ function(_qt_internal_wasm_add_target_helpers target)
         endif()
 
         get_target_property(output_name ${target} OUTPUT_NAME)
-        if(NOT "${output_name}" STREQUAL "")
+        if(output_name)
             set(_target_output_name "${output_name}")
         else()
             set(_target_output_name "${target}")
@@ -20,32 +20,20 @@ function(_qt_internal_wasm_add_target_helpers target)
 
         set(APPNAME ${_target_output_name})
 
-        _qt_internal_test_batch_target_name(test_batch_target_name)
         get_target_property(target_output_directory ${target} RUNTIME_OUTPUT_DIRECTORY)
 
-        if(QT_BUILD_TESTS_BATCHED AND target STREQUAL test_batch_target_name)
-            configure_file("${WASM_BUILD_DIR}/libexec/batchedtestrunner.html"
-                           "${target_output_directory}/batchedtestrunner.html" COPYONLY)
-            configure_file("${WASM_BUILD_DIR}/libexec/batchedtestrunner.js"
-                           "${target_output_directory}/batchedtestrunner.js" COPYONLY)
-            configure_file("${WASM_BUILD_DIR}/libexec/qwasmjsruntime.js"
-                           "${target_output_directory}/qwasmjsruntime.js" COPYONLY)
-            configure_file("${WASM_BUILD_DIR}/libexec/util.js"
-                           "${target_output_directory}/util.js" COPYONLY)
+        if(target_output_directory)
+            set(_target_directory "${target_output_directory}")
         else()
-            if(NOT "${target_output_directory}" STREQUAL "")
-                set(_target_directory "${target_output_directory}")
-            else()
-                set(_target_directory "${CMAKE_CURRENT_BINARY_DIR}")
-            endif()
-
-            configure_file("${WASM_BUILD_DIR}/plugins/platforms/wasm_shell.html"
-                "${_target_directory}/${_target_output_name}.html")
-            configure_file("${WASM_BUILD_DIR}/plugins/platforms/qtloader.js"
-                ${_target_directory}/qtloader.js COPYONLY)
-            configure_file("${WASM_BUILD_DIR}/plugins/platforms/qtlogo.svg"
-                ${_target_directory}/qtlogo.svg COPYONLY)
+            set(_target_directory "${CMAKE_CURRENT_BINARY_DIR}")
         endif()
+
+        configure_file("${WASM_BUILD_DIR}/plugins/platforms/wasm_shell.html"
+            "${_target_directory}/${_target_output_name}.html")
+        configure_file("${WASM_BUILD_DIR}/plugins/platforms/qtloader.js"
+            ${_target_directory}/qtloader.js COPYONLY)
+        configure_file("${WASM_BUILD_DIR}/plugins/platforms/qtlogo.svg"
+            ${_target_directory}/qtlogo.svg COPYONLY)
 
         if(QT_FEATURE_thread)
             set(POOL_SIZE 4)
