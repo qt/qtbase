@@ -171,6 +171,13 @@
    QSslConfiguration::setHandshakeMustInterruptOnError()
 */
 
+/*!
+    \fn void QSslServer::startedEncryptionHandshake(QSslSocket *socket)
+
+    This signal is emitted when the client, connected to \a socket,
+    initiates the TLS handshake.
+*/
+
 #include "qsslserver.h"
 #include "qsslserver_p.h"
 
