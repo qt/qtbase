@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 Intel Corporation
+** Copyright (C) 2021 Intel Corporation
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -106,6 +106,8 @@ private slots:
     // validation & errors
     void checkedIntegers_data();
     void checkedIntegers();
+    void validationValid_data() { arrays_data(); }
+    void validationValid();
     void validation_data();
     void validation();
     void strictValidation_data();
@@ -256,7 +258,7 @@ CborError parseOneChunk(CborValue *it, QString *parsed)
         if (text)
             *parsed = '"' + QString::fromUtf8(text, len) + '"';
     } else {
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
     }
     return err;
 }
@@ -894,22 +896,44 @@ static void chunkedStringTest(const QByteArray &data, const QString &concatenate
         err = cbor_value_calculate_string_length(&copy, &n);
         QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
 
-        QByteArray buffer(n, Qt::Uninitialized);
+        size_t nn = n;
+        QByteArray buffer(n + 1, Qt::Uninitialized);
+        QByteArray buffer2(n + 1, Qt::Uninitialized);
+        buffer[int(n)] = 0xff;
+        buffer2[int(n)] = 0xff;
         QString formatted;
         if (cbor_value_is_byte_string(&copy)) {
-            err = cbor_value_copy_byte_string(&copy, (uint8_t *)buffer.data(), &n, nullptr);
+            err = cbor_value_copy_byte_string(&copy, (uint8_t *)buffer.data(), &nn, nullptr);
             QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
-            QCOMPARE(int(n), buffer.size());
+            QCOMPARE(nn, n);
 
-            formatted = QString::fromLatin1("h'" + buffer.toHex() + '\'');
+            formatted = QString::fromLatin1("h'" + QByteArray::fromRawData(buffer.data(), n).toHex() + '\'');
+
+            // repeat by allowing the null termination
+            nn = n + 1;
+            err = cbor_value_copy_byte_string(&copy, (uint8_t *)buffer2.data(), &nn, nullptr);
         } else {
             err = cbor_value_copy_text_string(&copy, buffer.data(), &n, nullptr);
             QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
-            QCOMPARE(int(n), buffer.size());
+            QCOMPARE(nn, n);
 
             formatted = '"' + QString::fromUtf8(buffer.data(), n) + '"';
+
+            // repeat by allowing the null termination
+            nn = n + 1;
+            err = cbor_value_copy_text_string(&copy, buffer2.data(), &nn, nullptr);
         }
+        QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
         QCOMPARE(formatted, concatenated);
+
+        // verify terminators
+        QCOMPARE(buffer.at(n), char(0xff));
+        QCOMPARE(buffer2.at(n), '\0');
+        QCOMPARE(nn, n);
+
+        buffer.truncate(n);
+        buffer2.truncate(n);
+        QCOMPARE(buffer2, buffer);
     }
 
     // confirm that the extra string we appended is still here
@@ -1315,6 +1339,21 @@ void tst_Parser::checkedIntegers()
     }
 }
 
+void tst_Parser::validationValid()
+{
+    // verify that all valid data validate properly
+    QFETCH(QByteArray, data);
+
+    QString decoded;
+    ParserWrapper w;
+    CborError err = w.init(data);
+    QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
+
+    QCOMPARE(cbor_value_validate_basic(&w.first), CborNoError);
+    QCOMPARE(cbor_value_validate(&w.first, CborValidateBasic), CborNoError);
+    QCOMPARE(cbor_value_validate(&w.first, CborValidateCompleteData), CborNoError);
+}
+
 void tst_Parser::validation_data()
 {
     addValidationColumns();
@@ -1339,6 +1378,24 @@ void tst_Parser::validation()
     if (!QByteArray(QTest::currentDataTag()).contains("utf8")) {
         QCOMPARE(err2, expectedError);
         QCOMPARE(err3, expectedError);
+    }
+
+    // see if we've got a map
+    if (QByteArray(QTest::currentDataTag()).startsWith("map")) {
+        w.init(data, uint32_t(flags));      // reinit
+        QVERIFY(cbor_value_is_array(&w.first));
+
+        CborValue map;
+        CborError err = cbor_value_enter_container(&w.first, &map);
+        if (err == CborNoError) {
+            QVERIFY(cbor_value_is_map(&map));
+            CborValue element;
+            err = cbor_value_map_find_value(&map, "foobar", &element);
+            if (err == CborNoError)
+                QVERIFY(!cbor_value_is_valid(&element));
+        }
+
+        QCOMPARE(err, expectedError);
     }
 }
 

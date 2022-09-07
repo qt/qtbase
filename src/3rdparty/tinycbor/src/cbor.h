@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Intel Corporation
+** Copyright (C) 2021 Intel Corporation
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,10 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+
+#ifdef CBOR_EXTERNAL_CFG
+#include "cbor_cfg.h"
+#endif
 
 #include "tinycbor-version.h"
 
@@ -263,10 +267,10 @@ CBOR_INLINE_API CborError cbor_encode_float(CborEncoder *encoder, float value)
 CBOR_INLINE_API CborError cbor_encode_double(CborEncoder *encoder, double value)
 { return cbor_encode_floating_point(encoder, CborDoubleType, &value); }
 
-CBOR_API CborError cbor_encoder_create_array(CborEncoder *encoder, CborEncoder *arrayEncoder, size_t length);
-CBOR_API CborError cbor_encoder_create_map(CborEncoder *encoder, CborEncoder *mapEncoder, size_t length);
-CBOR_API CborError cbor_encoder_close_container(CborEncoder *encoder, const CborEncoder *containerEncoder);
-CBOR_API CborError cbor_encoder_close_container_checked(CborEncoder *encoder, const CborEncoder *containerEncoder);
+CBOR_API CborError cbor_encoder_create_array(CborEncoder *parentEncoder, CborEncoder *arrayEncoder, size_t length);
+CBOR_API CborError cbor_encoder_create_map(CborEncoder *parentEncoder, CborEncoder *mapEncoder, size_t length);
+CBOR_API CborError cbor_encoder_close_container(CborEncoder *parentEncoder, const CborEncoder *containerEncoder);
+CBOR_API CborError cbor_encoder_close_container_checked(CborEncoder *parentEncoder, const CborEncoder *containerEncoder);
 
 CBOR_INLINE_API uint8_t *_cbor_encoder_get_buffer_pointer(const CborEncoder *encoder)
 {

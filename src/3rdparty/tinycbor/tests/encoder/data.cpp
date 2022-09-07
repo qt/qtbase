@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Intel Corporation
+** Copyright (C) 2021 Intel Corporation
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,29 @@
 
 #include <QtTest>
 
-static float myNaNf()
+struct NegativeInteger { quint64 abs; };
+Q_DECLARE_METATYPE(NegativeInteger)
+
+struct SimpleType { uint8_t type; };
+Q_DECLARE_METATYPE(SimpleType)
+
+struct Float16Standin { uint16_t val; };
+Q_DECLARE_METATYPE(Float16Standin)
+
+struct Tag { CborTag tag; QVariant tagged; };
+Q_DECLARE_METATYPE(Tag)
+
+typedef QVector<QPair<QVariant, QVariant>> Map;
+Q_DECLARE_METATYPE(Map)
+
+struct IndeterminateLengthArray : QVariantList { using QVariantList::QVariantList; };
+struct IndeterminateLengthMap : Map { using Map::Map; };
+Q_DECLARE_METATYPE(IndeterminateLengthArray)
+Q_DECLARE_METATYPE(IndeterminateLengthMap)
+
+namespace {
+
+float myNaNf()
 {
     uint32_t v = 0x7fc00000;
     float f;
@@ -33,7 +55,7 @@ static float myNaNf()
     return f;
 }
 
-static float myInff()
+float myInff()
 {
     uint32_t v = 0x7f800000;
     float f;
@@ -42,7 +64,7 @@ static float myInff()
     return f;
 }
 
-static float myNInff()
+float myNInff()
 {
     uint32_t v = 0xff800000;
     float f;
@@ -51,7 +73,7 @@ static float myNInff()
     return f;
 }
 
-static double myNaN()
+double myNaN()
 {
     uint64_t v = UINT64_C(0x7ff8000000000000);
     double f;
@@ -60,7 +82,7 @@ static double myNaN()
     return f;
 }
 
-static double myInf()
+double myInf()
 {
     uint64_t v = UINT64_C(0x7ff0000000000000);
     double f;
@@ -69,7 +91,7 @@ static double myInf()
     return f;
 }
 
-static double myNInf()
+double myNInf()
 {
     uint64_t v = UINT64_C(0xfff0000000000000);
     double f;
@@ -83,35 +105,16 @@ template <size_t N> QByteArray raw(const char (&data)[N])
     return QByteArray::fromRawData(data, N - 1);
 }
 
-struct NegativeInteger { quint64 abs; };
-Q_DECLARE_METATYPE(NegativeInteger)
-
-struct SimpleType { uint8_t type; };
-Q_DECLARE_METATYPE(SimpleType)
-
-struct Float16Standin { uint16_t val; };
-Q_DECLARE_METATYPE(Float16Standin)
-
-struct Tag { CborTag tag; QVariant tagged; };
-Q_DECLARE_METATYPE(Tag)
-
 template <typename... Args>
 QVariant make_list(const Args &... args)
 {
     return QVariantList{args...};
 }
 
-typedef QVector<QPair<QVariant, QVariant>> Map;
-Q_DECLARE_METATYPE(Map)
 QVariant make_map(const std::initializer_list<QPair<QVariant, QVariant>> &list)
 {
     return QVariant::fromValue(Map(list));
 }
-
-struct IndeterminateLengthArray : QVariantList { using QVariantList::QVariantList; };
-struct IndeterminateLengthMap : Map { using Map::Map; };
-Q_DECLARE_METATYPE(IndeterminateLengthArray)
-Q_DECLARE_METATYPE(IndeterminateLengthMap)
 
 QVariant make_ilarray(const std::initializer_list<QVariant> &list)
 {
@@ -239,9 +242,9 @@ void addFixedData()
     QTest::newRow("0.f16") << raw("\xf9\0\0") << QVariant::fromValue(qfloat16(0));
     QTest::newRow("-1.f16") << raw("\xf9\xbc\0") << QVariant::fromValue(qfloat16(-1));
     QTest::newRow("1.5f16") << raw("\xf9\x3e\0") << QVariant::fromValue(qfloat16(1.5));
-    QTest::newRow("nan_f16") << raw("\xf9\x7e\0") << QVariant::fromValue<qfloat16>(myNaNf());
-    QTest::newRow("-inf_f16") << raw("\xf9\xfc\0") << QVariant::fromValue<qfloat16>(myNInff());
-    QTest::newRow("+inf_f16") << raw("\xf9\x7c\0") << QVariant::fromValue<qfloat16>(myInff());
+    QTest::newRow("nan_f16") << raw("\xf9\x7e\0") << QVariant::fromValue<qfloat16>(qfloat16(myNaNf()));
+    QTest::newRow("-inf_f16") << raw("\xf9\xfc\0") << QVariant::fromValue<qfloat16>(qfloat16(myNInff()));
+    QTest::newRow("+inf_f16") << raw("\xf9\x7c\0") << QVariant::fromValue<qfloat16>(qfloat16(myInff()));
 #endif
 
     QTest::newRow("0.f") << raw("\xfa\0\0\0\0") << QVariant::fromValue(0.f);
@@ -343,4 +346,4 @@ void addArraysAndMaps()
     QTest::newRow("array-1(map)") << raw("\x81\xc1\xa0") << make_list(QVariant::fromValue(Tag{1, make_map({})}));
     QTest::newRow("map-1(2):3(4)") << raw("\xa1\xc1\2\xc3\4") << make_map({{QVariant::fromValue(Tag{1, 2}), QVariant::fromValue(Tag{3, 4})}});
 }
-
+} // namespace
