@@ -602,6 +602,7 @@ QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
 */
 
 #ifndef QT_NO_COMPRESS
+Q_DECL_COLD_FUNCTION
 static QByteArray invalidCompressedData()
 {
     qWarning("qUncompress: Input data is corrupted");
@@ -632,13 +633,13 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
                                  (data[2] <<  8) | (data[3]      ));
     size_t len = qMax(expectedSize, 1ul);
     constexpr size_t maxPossibleSize = MaxAllocSize - sizeof(QByteArray::Data);
-    if (Q_UNLIKELY(len >= maxPossibleSize)) {
+    if (len >= maxPossibleSize) {
         // QByteArray does not support that huge size anyway.
         return invalidCompressedData();
     }
 
     QByteArray::DataPointer d(QByteArray::Data::allocate(len));
-    if (Q_UNLIKELY(d.data() == nullptr))
+    if (d.data() == nullptr) // allocation failed
         return invalidCompressedData();
 
     forever {
@@ -663,13 +664,13 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
             static_assert(maxPossibleSize <= (std::numeric_limits<decltype(len)>::max)() / 2,
                           "oops, next line may overflow");
             len *= 2;
-            if (Q_UNLIKELY(len >= maxPossibleSize)) {
+            if (len >= maxPossibleSize) {
                 // QByteArray does not support that huge size anyway.
                 return invalidCompressedData();
             } else {
                 // grow the block
                 d->reallocate(d->allocatedCapacity()*2, QArrayData::Grow);
-                if (Q_UNLIKELY(d.data() == nullptr))
+                if (d.data() == nullptr) // reallocation failed
                     return invalidCompressedData();
             }
             continue;
