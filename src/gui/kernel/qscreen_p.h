@@ -40,7 +40,6 @@ class QScreenPrivate : public QObjectPrivate, public QScreenData
 {
     Q_DECLARE_PUBLIC(QScreen)
 public:
-    void setPlatformScreen(QPlatformScreen *screen);
     void updateGeometry();
     void updatePrimaryOrientation();
 

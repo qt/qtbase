@@ -37,29 +37,23 @@ QT_BEGIN_NAMESPACE
     \inmodule QtGui
 */
 
-QScreen::QScreen(QPlatformScreen *screen)
+QScreen::QScreen(QPlatformScreen *platformScreen)
     : QObject(*new QScreenPrivate(), nullptr)
 {
     Q_D(QScreen);
-    d->setPlatformScreen(screen);
-}
 
-void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
-{
-    Q_Q(QScreen);
-    platformScreen = screen;
-    platformScreen->d_func()->screen = q;
-    orientation = platformScreen->orientation();
+    d->platformScreen = platformScreen;
+    platformScreen->d_func()->screen = this;
 
-    logicalDpi = QPlatformScreen::overrideDpi(platformScreen->logicalDpi());
-
-    refreshRate = platformScreen->refreshRate();
+    d->orientation = platformScreen->orientation();
+    d->logicalDpi = QPlatformScreen::overrideDpi(platformScreen->logicalDpi());
+    d->refreshRate = platformScreen->refreshRate();
     // safeguard ourselves against buggy platform behavior...
-    if (refreshRate < 1.0)
-        refreshRate = 60.0;
+    if (d->refreshRate < 1.0)
+        d->refreshRate = 60.0;
 
-    updateGeometry();
-    updatePrimaryOrientation(); // derived from the geometry
+    d->updateGeometry();
+    d->updatePrimaryOrientation(); // derived from the geometry
 }
 
 void QScreenPrivate::updateGeometry()
