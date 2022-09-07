@@ -134,20 +134,25 @@ QWasmScreen *QWasmWindow::platformScreen() const
 
 void QWasmWindow::setGeometry(const QRect &rect)
 {
-    QRect r = rect;
-    if (m_needsCompositor) {
-        int yMin = window()->geometry().top() - window()->frameGeometry().top();
+    const QRect clientAreaRect = ([this, &rect]() {
+        if (!m_needsCompositor)
+            return rect;
 
-        if (r.y() < yMin)
-            r.moveTop(yMin);
-    }
+        const int captionHeight = window()->geometry().top() - window()->frameGeometry().top();
+        const auto screenGeometry = screen()->geometry();
+
+        QRect result(rect);
+        result.moveTop(std::max(std::min(rect.y(), screenGeometry.bottom()),
+                                screenGeometry.y() + captionHeight));
+        return result;
+    })();
     bool shouldInvalidate = true;
     if (!m_windowState.testFlag(Qt::WindowFullScreen)
         && !m_windowState.testFlag(Qt::WindowMaximized)) {
-        shouldInvalidate = m_normalGeometry.size() != r.size();
-        m_normalGeometry = r;
+        shouldInvalidate = m_normalGeometry.size() != clientAreaRect.size();
+        m_normalGeometry = clientAreaRect;
     }
-    QWindowSystemInterface::handleGeometryChange(window(), r);
+    QWindowSystemInterface::handleGeometryChange(window(), clientAreaRect);
     if (shouldInvalidate)
         invalidate();
     else
