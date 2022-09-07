@@ -5,6 +5,7 @@
 
 #include <QRect>
 #include <QList>
+#include <QMap>
 #include <QDebug>
 
 #include <qmath.h>
