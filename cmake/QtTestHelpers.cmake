@@ -507,6 +507,7 @@ function(qt_internal_add_test name)
         )
         set(setting_up_batched_test FALSE)
     endif()
+    set_target_properties(${name} PROPERTIES _qt_is_test_executable TRUE)
 
     foreach(path IN LISTS arg_QML_IMPORTPATH)
         list(APPEND extra_test_args "-import" "${path}")

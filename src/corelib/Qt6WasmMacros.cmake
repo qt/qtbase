@@ -23,10 +23,10 @@ function(_qt_internal_wasm_add_target_helpers target)
 
         set(APPNAME ${_target_output_name})
 
-        _qt_internal_test_batch_target_name(test_batch_target_name)
         get_target_property(target_output_directory ${target} RUNTIME_OUTPUT_DIRECTORY)
 
-        if(QT_BUILD_TESTS_BATCHED AND target STREQUAL test_batch_target_name)
+        get_target_property(is_test ${target} _qt_is_test_executable)
+        if(is_test)
             configure_file("${WASM_BUILD_DIR}/libexec/batchedtestrunner.html"
                            "${target_output_directory}/batchedtestrunner.html" COPYONLY)
             configure_file("${WASM_BUILD_DIR}/libexec/batchedtestrunner.js"
