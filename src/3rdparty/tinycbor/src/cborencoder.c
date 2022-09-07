@@ -31,6 +31,7 @@
 #ifndef __STDC_LIMIT_MACROS
 #  define __STDC_LIMIT_MACROS 1
 #endif
+#define __STDC_WANT_IEC_60559_TYPES_EXT__
 
 #include "cbor.h"
 #include "cborinternal_p.h"
@@ -101,7 +102,7 @@
  * complete the encoding. At the end, you can obtain that count by calling
  * cbor_encoder_get_extra_bytes_needed().
  *
- * \section1 Finalizing the encoding
+ * \section Finalizing the encoding
  *
  * Once all items have been appended and the containers have all been properly
  * closed, the user-supplied buffer will contain the CBOR stream and may be
@@ -212,6 +213,7 @@ void cbor_encoder_init_writer(CborEncoder *encoder, CborEncoderWriteFunction wri
 {
 #ifdef CBOR_ENCODER_WRITE_FUNCTION
     (void) writer;
+    encoder->data.writer = CBOR_NULLPTR;
 #else
     encoder->data.writer = writer;
 #endif
@@ -544,7 +546,7 @@ CborError cbor_encoder_create_array(CborEncoder *parentEncoder, CborEncoder *arr
  * when creating the map, the constant \ref CborIndefiniteLength may be passed as
  * length instead, and an indefinite length map is created.
  *
- * \b{Implementation limitation:} TinyCBOR cannot encode more than SIZE_MAX/2
+ * <b>Implementation limitation:</b> TinyCBOR cannot encode more than SIZE_MAX/2
  * key-value pairs in the stream. If the length \a length is larger than this
  * value (and is not \ref CborIndefiniteLength), this function returns error
  * CborErrorDataTooLarge.

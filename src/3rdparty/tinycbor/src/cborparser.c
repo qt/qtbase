@@ -31,6 +31,7 @@
 #ifndef __STDC_LIMIT_MACROS
 #  define __STDC_LIMIT_MACROS 1
 #endif
+#define __STDC_WANT_IEC_60559_TYPES_EXT__
 
 #include "cbor.h"
 #include "cborinternal_p.h"
@@ -93,7 +94,7 @@
  *
  * The code above does not execute a range-check either: it is possible that
  * the value decoded from the CBOR stream encodes a number larger than what can
- * be represented in a variable of type \c{int}. If detecting that case is
+ * be represented in a variable of type \c int. If detecting that case is
  * important, the code should call cbor_value_get_int_checked() instead.
  *
  * <h3 class="groupheader">Memory and parsing constraints</h3>
@@ -133,12 +134,10 @@
  *
  * \if privatedocs
  * Implementation details: the CborValue contains these fields:
- * \list
- *   \li ptr: pointer to the actual data
- *   \li flags: flags from the decoder
- *   \li extra: partially decoded integer value (0, 1 or 2 bytes)
- *   \li remaining: remaining items in this collection after this item or UINT32_MAX if length is unknown
- * \endlist
+ *   - ptr: pointer to the actual data
+ *   - flags: flags from the decoder
+ *   - extra: partially decoded integer value (0, 1 or 2 bytes)
+ *   - remaining: remaining items in this collection after this item or UINT32_MAX if length is unknown
  * \endif
  */
 
@@ -232,7 +231,7 @@ static CborError preparse_value(CborValue *it)
         case SinglePrecisionFloat:
         case DoublePrecisionFloat:
             it->flags |= CborIteratorFlag_IntegerValueTooLarge;
-            Q_FALLTHROUGH();
+            CBOR_FALLTHROUGH;
         case TrueValue:
         case NullValue:
         case UndefinedValue:
@@ -428,12 +427,10 @@ CborError cbor_value_reparse(CborValue *it)
  * will appear during parsing.
  *
  * A basic validation checks for:
- * \list
- *   \li absence of undefined additional information bytes;
- *   \li well-formedness of all numbers, lengths, and simple values;
- *   \li string contents match reported sizes;
- *   \li arrays and maps contain the number of elements they are reported to have;
- * \endlist
+ *   - absence of undefined additional information bytes;
+ *   - well-formedness of all numbers, lengths, and simple values;
+ *   - string contents match reported sizes;
+ *   - arrays and maps contain the number of elements they are reported to have;
  *
  * For further checks, see cbor_value_validate().
  *
@@ -744,7 +741,7 @@ CborError cbor_value_leave_container(CborValue *it, const CborValue *recursed)
  * \ref cbor_value_is_integer is recommended.
  *
  * Note that this function does not do range-checking: integral values that do
- * not fit in a variable of type \c{int} are silently truncated to fit. Use
+ * not fit in a variable of type \c int are silently truncated to fit. Use
  * cbor_value_get_int_checked() if that is not acceptable.
  *
  * \sa cbor_value_get_type(), cbor_value_is_valid(), cbor_value_is_integer()
@@ -759,7 +756,7 @@ CborError cbor_value_leave_container(CborValue *it, const CborValue *recursed)
  * \ref cbor_value_is_integer is recommended.
  *
  * Note that this function does not do range-checking: integral values that do
- * not fit in a variable of type \c{int64_t} are silently truncated to fit. Use
+ * not fit in a variable of type \c int64_t are silently truncated to fit. Use
  * cbor_value_get_int64_checked() that is not acceptable.
  *
  * \sa cbor_value_get_type(), cbor_value_is_valid(), cbor_value_is_integer()
@@ -790,7 +787,7 @@ CborError cbor_value_leave_container(CborValue *it, const CborValue *recursed)
  * If the integer is unsigned (that is, if cbor_value_is_unsigned_integer()
  * returns true), then \a result will contain the actual value. If the integer
  * is negative, then \a result will contain the absolute value of that integer,
- * minus one. That is, \c {actual = -result - 1}. On architectures using two's
+ * minus one. That is, <tt>actual = -result - 1</tt>. On architectures using two's
  * complement for representation of negative integers, it is equivalent to say
  * that \a result will contain the bitwise negation of the actual value.
  *
@@ -1211,7 +1208,7 @@ static CborError iterate_string_chunks(const CborValue *value, char *buffer, siz
             return CborErrorDataTooLarge;
 
         if (*result && *buflen >= newTotal)
-            *result = !!func(buffer + total, (const uint8_t *)ptr, chunkLen);
+            *result = !!func(buffer == NULL ? buffer : buffer + total, (const uint8_t *)ptr, chunkLen);
         else
             *result = false;
 
@@ -1221,7 +1218,7 @@ static CborError iterate_string_chunks(const CborValue *value, char *buffer, siz
     /* is there enough room for the ending NUL byte? */
     if (*result && *buflen > total) {
         uint8_t nul[] = { 0 };
-        *result = !!func(buffer + total, nul, 1);
+        *result = !!func(buffer == NULL ? buffer : buffer + total, nul, 1);
     }
     *buflen = total;
     return _cbor_value_finish_string_iteration(next);
@@ -1243,10 +1240,10 @@ static CborError iterate_string_chunks(const CborValue *value, char *buffer, siz
  * of the string in order to preallocate a buffer, use
  * cbor_value_calculate_string_length().
  *
- * On success, this function sets the number of bytes copied to \c{*buflen}. If
+ * On success, this function sets the number of bytes copied to \c *buflen. If
  * the buffer is large enough, this function will insert a null byte after the
  * last copied byte, to facilitate manipulation of text strings. That byte is
- * not included in the returned value of \c{*buflen}. If there was no space for
+ * not included in the returned value of \c *buflen. If there was no space for
  * the terminating null, no error is returned, so callers must check the value
  * of *buflen after the call, before relying on the '\0'; if it has not been
  * changed by the call, there is no '\0'-termination on the buffer's contents.
@@ -1280,10 +1277,10 @@ static CborError iterate_string_chunks(const CborValue *value, char *buffer, siz
  * of the string in order to preallocate a buffer, use
  * cbor_value_calculate_string_length().
  *
- * On success, this function sets the number of bytes copied to \c{*buflen}. If
+ * On success, this function sets the number of bytes copied to \c *buflen. If
  * the buffer is large enough, this function will insert a null byte after the
  * last copied byte, to facilitate manipulation of null-terminated strings.
- * That byte is not included in the returned value of \c{*buflen}.
+ * That byte is not included in the returned value of \c *buflen.
  *
  * The \a next pointer, if not null, will be updated to point to the next item
  * after this string. If \a value points to the last item, then \a next will be
@@ -1520,7 +1517,7 @@ error:
  * cbor_value_is_half_float is recommended.
  *
  * Note: since the C language does not have a standard type for half-precision
- * floating point, this function takes a \c{void *} as a parameter for the
+ * floating point, this function takes a <tt>void *</tt> as a parameter for the
  * storage area, which must be at least 16 bits wide.
  *
  * \sa cbor_value_get_type(), cbor_value_is_valid(), cbor_value_is_half_float(), cbor_value_get_half_float_as_float(), cbor_value_get_float()
