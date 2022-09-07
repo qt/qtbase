@@ -25,11 +25,19 @@
 #ifndef CBORINTERNAL_P_H
 #define CBORINTERNAL_P_H
 
+/* Dependent source files (*.c) must define __STDC_WANT_IEC_60559_TYPES_EXT__
+ * before <float.h> is (transitively) first included.
+ */
+#if !defined(__STDC_WANT_IEC_60559_TYPES_EXT__)
+#  error __STDC_WANT_IEC_60559_TYPES_EXT__ not defined
+#endif
+
 #include "compilersupport_p.h"
 
 #ifndef CBOR_NO_FLOATING_POINT
 #  include <float.h>
 #  include <math.h>
+#  include <string.h>
 #else
 #  ifndef CBOR_NO_HALF_FLOAT_TYPE
 #    define CBOR_NO_HALF_FLOAT_TYPE     1
@@ -37,7 +45,26 @@
 #endif
 
 #ifndef CBOR_NO_HALF_FLOAT_TYPE
-#  if defined(__F16C__) || defined(__AVX2__)
+/* Check for FLT16_MANT_DIG using integer comparison. Clang headers incorrectly
+ * define this macro unconditionally when __STDC_WANT_IEC_60559_TYPES_EXT__
+ * is defined (regardless of actual support for _Float16).
+ */
+#  if FLT16_MANT_DIG > 0 || __FLT16_MANT_DIG__ > 0
+static inline unsigned short encode_half(float x)
+{
+    unsigned short h;
+    _Float16 f = (_Float16)x;
+    memcpy(&h, &f, 2);
+    return h;
+}
+
+static inline float decode_half(unsigned short x)
+{
+    _Float16 f;
+    memcpy(&f, &x, 2);
+    return (float)f;
+}
+#  elif defined(__F16C__) || defined(__AVX2__)
 #    include <immintrin.h>
 static inline unsigned short encode_half(float val)
 {
