@@ -632,11 +632,9 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     size_t expectedSize = size_t((data[0] << 24) | (data[1] << 16) |
                                  (data[2] <<  8) | (data[3]      ));
     size_t len = qMax(expectedSize, 1ul);
-    constexpr size_t maxPossibleSize = MaxAllocSize - sizeof(QByteArray::Data);
-    if (len >= maxPossibleSize) {
-        // QByteArray does not support that huge size anyway.
+    constexpr size_t MaxDecompressedSize = size_t(MaxByteArraySize);
+    if (len > MaxDecompressedSize)
         return invalidCompressedData();
-    }
 
     Q_ASSERT(len <= size_t((std::numeric_limits<qsizetype>::max)()));
     QByteArray::DataPointer d(QByteArray::Data::allocate(qsizetype(len)));
@@ -662,18 +660,16 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
             return QByteArray();
 
         case Z_BUF_ERROR:
-            static_assert(maxPossibleSize <= (std::numeric_limits<decltype(len)>::max)() / 2,
+            static_assert(MaxDecompressedSize <= (std::numeric_limits<decltype(len)>::max)() / 2,
                           "oops, next line may overflow");
             len *= 2;
-            if (len >= maxPossibleSize) {
-                // QByteArray does not support that huge size anyway.
+            if (len > MaxDecompressedSize)
                 return invalidCompressedData();
-            } else {
-                // grow the block
-                d->reallocate(d->allocatedCapacity()*2, QArrayData::Grow);
-                if (d.data() == nullptr) // reallocation failed
-                    return invalidCompressedData();
-            }
+
+            d->reallocate(d->allocatedCapacity() * 2, QArrayData::Grow);
+            if (d.data() == nullptr) // reallocation failed
+                return invalidCompressedData();
+
             continue;
 
         case Z_DATA_ERROR:
