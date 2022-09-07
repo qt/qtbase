@@ -91,8 +91,10 @@ void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
 
 void QScreenPrivate::updateHighDpi()
 {
-    geometry = platformScreen->deviceIndependentGeometry();
-    availableGeometry = QHighDpi::fromNative(platformScreen->availableGeometry(), QHighDpiScaling::factor(platformScreen), geometry.topLeft());
+    qreal scaleFactor = QHighDpiScaling::factor(platformScreen);
+    QRect nativeGeometry = platformScreen->geometry();
+    geometry = QRect(nativeGeometry.topLeft(), QHighDpi::fromNative(nativeGeometry.size(), scaleFactor));
+    availableGeometry = QHighDpi::fromNative(platformScreen->availableGeometry(), scaleFactor, geometry.topLeft());
 }
 
 /*!

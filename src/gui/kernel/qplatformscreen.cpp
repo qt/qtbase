@@ -435,13 +435,6 @@ QRect QPlatformScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation
     return rect;
 }
 
-QRect QPlatformScreen::deviceIndependentGeometry() const
-{
-    qreal scaleFactor = QHighDpiScaling::factor(this);
-    QRect nativeGeometry = geometry();
-    return QRect(nativeGeometry.topLeft(), QHighDpi::fromNative(nativeGeometry.size(), scaleFactor));
-}
-
 /*!
   Returns a hint about this screen's subpixel layout structure.
 

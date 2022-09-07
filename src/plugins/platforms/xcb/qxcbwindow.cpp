@@ -97,9 +97,11 @@ QXcbScreen *QXcbWindow::parentScreen()
     return parent() ? static_cast<QXcbWindow*>(parent())->parentScreen() : xcbScreen();
 }
 
-//QPlatformWindow::screenForGeometry version that uses deviceIndependentGeometry
 QXcbScreen *QXcbWindow::initialScreen() const
 {
+    // Resolve initial screen via QWindowPrivate::screenForGeometry(),
+    // which works in platform independent coordinates, as opposed to
+    // QPlatformWindow::screenForGeometry() that uses native coordinates.
     QWindowPrivate *windowPrivate = qt_window_private(window());
     QScreen *screen = windowPrivate->screenForGeometry(window()->geometry());
     return static_cast<QXcbScreen*>(screen->handle());
