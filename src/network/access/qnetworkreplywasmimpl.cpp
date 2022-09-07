@@ -223,6 +223,9 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
             request.attribute(QNetworkRequest::CacheSaveControlAttribute, false).toBool()) {
         attr.attributes -= EMSCRIPTEN_FETCH_PERSIST_FILE;
     }
+    if (request.attribute(QNetworkRequest::UseCredentialsAttribute, true).toBool()) {
+        attr.withCredentials = true;
+    }
 
     attr.onsuccess = QNetworkReplyWasmImplPrivate::downloadSucceeded;
     attr.onerror = QNetworkReplyWasmImplPrivate::downloadFailed;

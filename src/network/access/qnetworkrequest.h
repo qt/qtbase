@@ -63,6 +63,7 @@ public:
         AutoDeleteReplyOnFinishAttribute,
         ConnectionCacheExpiryTimeoutSecondsAttribute,
         Http2CleartextAllowedAttribute,
+        UseCredentialsAttribute,
 
         User = 1000,
         UserMax = 32767

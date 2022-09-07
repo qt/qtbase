@@ -305,6 +305,13 @@ QT_IMPL_METATYPE_EXTERN_TAGGED(QNetworkRequest::RedirectPolicy, QNetworkRequest_
         This attribute is ignored if the Http2AllowedAttribute is not set.
         (This value was introduced in 6.3.)
 
+    \value UseCredentialsAttribute
+        Requests only, type: QMetaType::Bool (default: false)
+        Indicates if the underlying XMLHttpRequest cross-site Access-Control
+        requests should be made using credentials. Has no effect on
+        same-origin requests. This only affects the WebAssembly platform.
+        (This value was introduced in 6.5.)
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default
