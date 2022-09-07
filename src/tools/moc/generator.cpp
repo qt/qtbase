@@ -1588,6 +1588,7 @@ QT_WARNING_DISABLE_CLANG("-Wunused-function")
 QT_WARNING_DISABLE_CLANG("-Wundefined-internal")
 QT_WARNING_DISABLE_MSVC(4334) // '<<': result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
 
+#define CBOR_NO_HALF_FLOAT_TYPE         1
 #define CBOR_ENCODER_WRITER_CONTROL     1
 #define CBOR_ENCODER_WRITE_FUNCTION     CborDevice::callback
 
