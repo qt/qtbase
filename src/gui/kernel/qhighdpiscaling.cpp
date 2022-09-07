@@ -545,7 +545,10 @@ void QHighDpiScaling::setGlobalFactor(qreal factor)
     m_active = m_globalScalingActive || m_screenFactorSet || m_platformPluginDpiScalingActive ;
     const auto screens = QGuiApplication::screens();
     for (QScreen *screen : screens)
-         screen->d_func()->updateGeometry();
+        screen->d_func()->updateGeometry();
+
+    // FIXME: The geometry has been updated based on the new scale factor,
+    // but we don't emit any geometry change signals for the screens.
 }
 
 static const char scaleFactorProperty[] = "_q_scaleFactor";

@@ -24,17 +24,8 @@
 
 QT_BEGIN_NAMESPACE
 
-class QScreenPrivate : public QObjectPrivate
+struct QScreenData
 {
-    Q_DECLARE_PUBLIC(QScreen)
-public:
-    void setPlatformScreen(QPlatformScreen *screen);
-    void updateGeometry();
-
-    void updatePrimaryOrientation();
-    void updateGeometriesWithSignals();
-    void emitGeometryChangeSignals(bool geometryChanged, bool availableGeometryChanged);
-
     QPlatformScreen *platformScreen = nullptr;
 
     Qt::ScreenOrientation orientation = Qt::PrimaryOrientation;
@@ -43,6 +34,26 @@ public:
     QRect availableGeometry;
     QDpi logicalDpi = {96, 96};
     qreal refreshRate = 60;
+};
+
+class QScreenPrivate : public QObjectPrivate, public QScreenData
+{
+    Q_DECLARE_PUBLIC(QScreen)
+public:
+    void setPlatformScreen(QPlatformScreen *screen);
+    void updateGeometry();
+    void updatePrimaryOrientation();
+
+    class UpdateEmitter
+    {
+    public:
+        explicit UpdateEmitter(QScreen *screen);
+        ~UpdateEmitter();
+        UpdateEmitter(UpdateEmitter&&) noexcept = default;
+    private:
+        Q_DISABLE_COPY(UpdateEmitter)
+        QScreenData initialState;
+    };
 };
 
 QT_END_NAMESPACE

@@ -44,33 +44,6 @@ QScreen::QScreen(QPlatformScreen *screen)
     d->setPlatformScreen(screen);
 }
 
-void QScreenPrivate::updateGeometriesWithSignals()
-{
-    const QRect oldGeometry = geometry;
-    const QRect oldAvailableGeometry = availableGeometry;
-    updateGeometry();
-    emitGeometryChangeSignals(oldGeometry != geometry, oldAvailableGeometry != availableGeometry);
-}
-
-void QScreenPrivate::emitGeometryChangeSignals(bool geometryChanged, bool availableGeometryChanged)
-{
-    Q_Q(QScreen);
-    if (geometryChanged)
-        emit q->geometryChanged(geometry);
-
-    if (availableGeometryChanged)
-        emit q->availableGeometryChanged(availableGeometry);
-
-    if (geometryChanged || availableGeometryChanged) {
-        const auto siblings = q->virtualSiblings();
-        for (QScreen* sibling : siblings)
-            emit sibling->virtualGeometryChanged(sibling->virtualGeometry());
-    }
-
-    if (geometryChanged)
-        emit q->physicalDotsPerInchChanged(q->physicalDotsPerInch());
-}
-
 void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
 {
     Q_Q(QScreen);
@@ -816,6 +789,60 @@ Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QScreen *screen)
     return debug;
 }
 #endif // !QT_NO_DEBUG_STREAM
+
+QScreenPrivate::UpdateEmitter::UpdateEmitter(QScreen *screen)
+{
+    initialState.platformScreen = screen->handle();
+
+    // Use public APIs to read out current state, rather
+    // than accessing the QScreenPrivate members, so that
+    // we detect any changes to the high-DPI scale factors
+    // that may be applied in the getters.
+
+    initialState.logicalDpi = QDpi{
+        screen->logicalDotsPerInchX(),
+        screen->logicalDotsPerInchY()
+    };
+    initialState.geometry = screen->geometry();
+    initialState.availableGeometry = screen->availableGeometry();
+    initialState.primaryOrientation = screen->primaryOrientation();
+}
+
+QScreenPrivate::UpdateEmitter::~UpdateEmitter()
+{
+    QScreen *screen = initialState.platformScreen->screen();
+
+    const auto logicalDotsPerInch = QDpi{
+        screen->logicalDotsPerInchX(),
+        screen->logicalDotsPerInchY()
+    };
+    if (logicalDotsPerInch != initialState.logicalDpi)
+        emit screen->logicalDotsPerInchChanged(screen->logicalDotsPerInch());
+
+    const auto geometry = screen->geometry();
+    const auto geometryChanged = geometry != initialState.geometry;
+    if (geometryChanged)
+        emit screen->geometryChanged(geometry);
+
+    const auto availableGeometry = screen->availableGeometry();
+    const auto availableGeometryChanged = availableGeometry != initialState.availableGeometry;
+    if (availableGeometryChanged)
+        emit screen->availableGeometryChanged(availableGeometry);
+
+    if (geometryChanged || availableGeometryChanged) {
+        const auto siblings = screen->virtualSiblings();
+        for (QScreen* sibling : siblings)
+            emit sibling->virtualGeometryChanged(sibling->virtualGeometry());
+    }
+
+    if (geometryChanged) {
+        emit screen->physicalDotsPerInchChanged(screen->physicalDotsPerInch());
+
+        const auto primaryOrientation = screen->primaryOrientation();
+        if (primaryOrientation != initialState.primaryOrientation)
+            emit screen->primaryOrientationChanged(primaryOrientation);
+    }
+}
 
 QT_END_NAMESPACE
 

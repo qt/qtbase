@@ -3065,25 +3065,16 @@ void QGuiApplicationPrivate::processScreenGeometryChange(QWindowSystemInterfaceP
     if (!e->screen)
         return;
 
-    QScreen *s = e->screen.data();
+    {
+        QScreen *s = e->screen.data();
+        QScreenPrivate::UpdateEmitter updateEmitter(s);
 
-    bool geometryChanged = e->geometry != s->d_func()->geometry;
-    s->d_func()->geometry = e->geometry;
+        // Note: The incoming geometries have already been scaled by QHighDpi
+        // in the QWSI layer, so we don't need to call updateGeometry() here.
+        s->d_func()->geometry = e->geometry;
+        s->d_func()->availableGeometry = e->availableGeometry;
 
-    bool availableGeometryChanged = e->availableGeometry != s->d_func()->availableGeometry;
-    s->d_func()->availableGeometry = e->availableGeometry;
-
-    const Qt::ScreenOrientation primaryOrientation = s->primaryOrientation();
-    if (geometryChanged)
         s->d_func()->updatePrimaryOrientation();
-
-    s->d_func()->emitGeometryChangeSignals(geometryChanged, availableGeometryChanged);
-
-    if (geometryChanged) {
-        emit s->physicalSizeChanged(s->physicalSize());
-
-        if (s->primaryOrientation() != primaryOrientation)
-            emit s->primaryOrientationChanged(s->primaryOrientation());
     }
 
     resetCachedDevicePixelRatio();
@@ -3100,11 +3091,12 @@ void QGuiApplicationPrivate::processScreenLogicalDotsPerInchChange(QWindowSystem
     if (!e->screen)
         return;
 
-    QScreen *s = e->screen.data();
-    s->d_func()->logicalDpi = QDpi(e->dpiX, e->dpiY);
-
-    emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
-    s->d_func()->updateGeometriesWithSignals();
+    {
+        QScreen *s = e->screen.data();
+        QScreenPrivate::UpdateEmitter updateEmitter(s);
+        s->d_func()->logicalDpi = QDpi(e->dpiX, e->dpiY);
+        s->d_func()->updateGeometry();
+    }
 
     resetCachedDevicePixelRatio();
 }
