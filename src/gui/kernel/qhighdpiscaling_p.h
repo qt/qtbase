@@ -114,6 +114,10 @@ private:
     static QVector<ScreenFactor> m_screenFactors;
     static DpiAdjustmentPolicy m_dpiAdjustmentPolicy;
     static QHash<QString, qreal> m_namedScreenScaleFactors;
+
+#ifndef QT_NO_DEBUG_STREAM
+    friend Q_GUI_EXPORT QDebug operator<<(QDebug, const ScreenFactor &);
+#endif
 };
 
 namespace QHighDpi {
