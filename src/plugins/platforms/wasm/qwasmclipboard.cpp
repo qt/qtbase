@@ -149,21 +149,11 @@ QWasmClipboard::QWasmClipboard() :
     m_isListener(false)
 {
     val clipboard = val::global("navigator")["clipboard"];
-    val permissions = val::global("navigator")["permissions"];
-    val hasInstallTrigger = val::global("window")["InstallTrigger"];
 
-    hasPermissionsApi = !permissions.isUndefined();
-    hasClipboardApi = (!clipboard.isUndefined() && !clipboard["readText"].isUndefined());
-    bool isFirefox = !hasInstallTrigger.isUndefined();
-    isSafari = !emscripten::val::global("window")["safari"].isUndefined();
+    const bool hasPermissionsApi = !val::global("navigator")["permissions"].isUndefined();
+    hasClipboardApi = !clipboard.isUndefined() && !clipboard["readText"].isUndefined();
 
-    // firefox has clipboard API if user sets these config tweaks:
-    // dom.events.asyncClipboard.clipboardItem  true
-    // dom.events.asyncClipboard.read   true
-    // dom.events.testing.asyncClipboard
-    // and permissions API, but does not currently support
-    // the clipboardRead and clipboardWrite permissions
-    if (hasClipboardApi && hasPermissionsApi && !isFirefox)
+    if (hasClipboardApi && hasPermissionsApi)
         initClipboardPermissions();
 }
 
@@ -214,17 +204,18 @@ void QWasmClipboard::qWasmClipboardPaste(QMimeData *mData)
 
 void QWasmClipboard::initClipboardPermissions()
 {
-    if (!hasClipboardApi)
-        return;
-
     val permissions = val::global("navigator")["permissions"];
-    val readPermissionsMap = val::object();
-    readPermissionsMap.set("name", val("clipboard-read"));
-    permissions.call<val>("query", readPermissionsMap);
 
-    val writePermissionsMap = val::object();
-    writePermissionsMap.set("name", val("clipboard-write"));
-    permissions.call<val>("query", writePermissionsMap);
+    qstdweb::Promise::make(permissions, "query", { .catchFunc = [](emscripten::val) {} }, ([]() {
+                               val readPermissionsMap = val::object();
+                               readPermissionsMap.set("name", val("clipboard-read"));
+                               return readPermissionsMap;
+                           })());
+    qstdweb::Promise::make(permissions, "query", { .catchFunc = [](emscripten::val) {} }, ([]() {
+                               val readPermissionsMap = val::object();
+                               readPermissionsMap.set("name", val("clipboard-write"));
+                               return readPermissionsMap;
+                           })());
 }
 
 void QWasmClipboard::installEventHandlers(const emscripten::val &canvas)

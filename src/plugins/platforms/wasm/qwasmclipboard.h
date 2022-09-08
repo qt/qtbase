@@ -30,12 +30,10 @@ public:
     void initClipboardPermissions();
     void installEventHandlers(const emscripten::val &canvas);
     bool hasClipboardApi;
-    bool hasPermissionsApi;
     void writeToClipboardApi();
     void writeToClipboard(const QMimeData *data);
     bool isPaste;
     bool m_isListener;
-    bool isSafari;
 };
 
 QT_END_NAMESPACE
