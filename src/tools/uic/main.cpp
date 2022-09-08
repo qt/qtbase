@@ -89,6 +89,11 @@ int runUic(int argc, char *argv[])
     fromImportsOption.setDescription(QStringLiteral("Python: generate imports relative to '.'"));
     parser.addOption(fromImportsOption);
 
+    // FIXME Qt 7: Flip the default?
+    QCommandLineOption rcPrefixOption(QStringLiteral("rc-prefix"));
+    rcPrefixOption.setDescription(QStringLiteral("Python: Generate \"rc_file\" instead of \"file_rc\" import"));
+    parser.addOption(rcPrefixOption);
+
     // FIXME Qt 7: Remove?
     QCommandLineOption useStarImportsOption(QStringLiteral("star-imports"));
     useStarImportsOption.setDescription(QStringLiteral("Python: Use * imports"));
@@ -116,6 +121,9 @@ int runUic(int argc, char *argv[])
         else if (value == "string"_L1)
             driver.option().forceStringConnectionSyntax = 1;
     }
+
+    if (parser.isSet(rcPrefixOption))
+        driver.option().rcPrefix = 1;
 
     Language language = Language::Cpp;
     if (parser.isSet(generatorOption)) {

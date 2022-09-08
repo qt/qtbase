@@ -56,14 +56,17 @@ static WriteImports::ClassesPerModule defaultClasses()
 
 // Change the name of a qrc file "dir/foo.qrc" file to the Python
 // module name "foo_rc" according to project conventions.
-static QString pythonResource(QString resource)
+static QString pythonResource(QString resource, bool prefix)
 {
     const qsizetype lastSlash = resource.lastIndexOf(u'/');
     if (lastSlash != -1)
         resource.remove(0, lastSlash + 1);
     if (resource.endsWith(".qrc"_L1)) {
         resource.chop(4);
-        resource.append("_rc"_L1);
+        if (prefix)
+            resource.prepend("rc_"_L1);
+        else
+            resource.append("_rc"_L1);
     }
     return resource;
 }
@@ -140,7 +143,8 @@ void WriteImports::acceptUI(DomUI *node)
         const auto includes = resources->elementInclude();
         for (auto include : includes) {
             if (include->hasAttributeLocation())
-                writeImport(pythonResource(include->attributeLocation()));
+                writeImport(pythonResource(include->attributeLocation(),
+                            uic()->option().rcPrefix));
         }
         output << '\n';
     }
