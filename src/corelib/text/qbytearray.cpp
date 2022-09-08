@@ -712,7 +712,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     if (len > MaxDecompressedSize)
         return tooMuchData(ZLibOp::Decompression);
 
-    QByteArray::DataPointer d(QByteArray::Data::allocate(len));
+    Q_ASSERT(len <= size_t((std::numeric_limits<qsizetype>::max)()));
+    QByteArray::DataPointer d(QByteArray::Data::allocate(qsizetype(len)));
     if (d.data() == nullptr) // allocation failed
         return tooMuchData(ZLibOp::Decompression);
 
