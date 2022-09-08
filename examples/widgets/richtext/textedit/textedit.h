@@ -31,10 +31,11 @@ public slots:
 protected:
     void closeEvent(QCloseEvent *e) override;
 
+private:
+    enum class SaveContinuation { None, Close, Clear };
+
 private slots:
     void fileOpen();
-    bool fileSave();
-    bool fileSaveAs();
     void filePrint();
     void filePrintPreview();
     void filePrintPdf();
@@ -62,7 +63,7 @@ private:
     void setupFileActions();
     void setupEditActions();
     void setupTextActions();
-    bool maybeSave();
+    void maybeSave(SaveContinuation saveContinuation);
     void setCurrentFileName(const QString &fileName);
     void modifyIndentation(int amount);
 
@@ -70,6 +71,10 @@ private:
     void fontChanged(const QFont &f);
     void colorChanged(const QColor &c);
     void alignmentChanged(Qt::Alignment a);
+
+    void fileSave(SaveContinuation continuation);
+    void fileSaveAs(SaveContinuation continuation);
+    void fileSaveComplete(SaveContinuation continuation);
 
     QAction *actionSave;
     QAction *actionTextBold;
@@ -98,6 +103,8 @@ private:
 
     QString fileName;
     QTextEdit *textEdit;
+
+    bool closeAccepted = false;
 };
 
 #endif // TEXTEDIT_H

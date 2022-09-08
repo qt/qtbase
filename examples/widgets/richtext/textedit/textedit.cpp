@@ -21,6 +21,7 @@
 #include <QTextCursor>
 #include <QTextDocumentWriter>
 #include <QTextList>
+#include <QTimer>
 #include <QtDebug>
 #include <QCloseEvent>
 #include <QMessageBox>
@@ -119,10 +120,13 @@ TextEdit::TextEdit(QWidget *parent)
 //! [closeevent]
 void TextEdit::closeEvent(QCloseEvent *e)
 {
-    if (maybeSave())
+    if (closeAccepted) {
         e->accept();
-    else
-        e->ignore();
+        return;
+    }
+
+    e->ignore();
+    maybeSave(SaveContinuation::Close);
 }
 //! [closeevent]
 
@@ -145,12 +149,13 @@ void TextEdit::setupFileActions()
     menu->addSeparator();
 
     const QIcon saveIcon = QIcon::fromTheme("document-save", QIcon(rsrcPath + "/filesave.png"));
-    actionSave = menu->addAction(saveIcon, tr("&Save"), this, &TextEdit::fileSave);
+    actionSave = menu->addAction(saveIcon, tr("&Save"), this,
+                                 [this]() { fileSave(SaveContinuation::None); });
     actionSave->setShortcut(QKeySequence::Save);
     actionSave->setEnabled(false);
     tb->addAction(actionSave);
 
-    a = menu->addAction(tr("Save &As..."), this, &TextEdit::fileSaveAs);
+    a = menu->addAction(tr("Save &As..."), this, [this]() { fileSaveAs(SaveContinuation::None); });
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();
 
@@ -398,21 +403,31 @@ bool TextEdit::load(const QString &f)
     return true;
 }
 
-bool TextEdit::maybeSave()
+void TextEdit::maybeSave(SaveContinuation continuation)
 {
-    if (!textEdit->document()->isModified())
-        return true;
+    if (!textEdit->document()->isModified()) {
+        // Execute continuation as soon as control has returned to the event loop so  that existing
+        // dialogs do not get in the way of closing the window.
+        QTimer::singleShot(0, [this, continuation]() { fileSaveComplete(continuation); });
+        return;
+    }
 
-    const QMessageBox::StandardButton ret =
-        QMessageBox::warning(this, QCoreApplication::applicationName(),
-                             tr("The document has been modified.\n"
-                                "Do you want to save your changes?"),
-                             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-    if (ret == QMessageBox::Save)
-        return fileSave();
-    if (ret == QMessageBox::Cancel)
-        return false;
-    return true;
+    QMessageBox *msgBox =
+            new QMessageBox(QMessageBox::Icon::Warning, QCoreApplication::applicationName(),
+                            tr("The document has been modified.\n"
+                               "Do you want to save your changes?"),
+                            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel, this);
+
+    connect(msgBox, &QMessageBox::finished, [=](int result) {
+        if (result == QMessageBox::Save) {
+            fileSave(continuation);
+            return;
+        }
+        fileSaveComplete(result == QMessageBox::Discard ? continuation : SaveContinuation::None);
+    });
+
+    msgBox->setAttribute(Qt::WA_DeleteOnClose);
+    msgBox->open();
 }
 
 void TextEdit::setCurrentFileName(const QString &fileName)
@@ -432,18 +447,15 @@ void TextEdit::setCurrentFileName(const QString &fileName)
 
 void TextEdit::fileNew()
 {
-    if (maybeSave()) {
-        textEdit->clear();
-        setCurrentFileName({});
-    }
+    maybeSave(SaveContinuation::Clear);
 }
 
 void TextEdit::fileOpen()
 {
-    QFileDialog fileDialog(this, tr("Open File..."));
-    fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
-    fileDialog.setFileMode(QFileDialog::ExistingFile);
-    fileDialog.setMimeTypeFilters({
+    QFileDialog *fileDialog = new QFileDialog(this, tr("Open File..."));
+    fileDialog->setAcceptMode(QFileDialog::AcceptOpen);
+    fileDialog->setFileMode(QFileDialog::ExistingFile);
+    fileDialog->setMimeTypeFilters({
 #if QT_CONFIG(texthtmlparser)
                                    "text/html",
 #endif
@@ -452,19 +464,20 @@ void TextEdit::fileOpen()
                                    "text/markdown",
 #endif
                                    "text/plain"});
-    if (fileDialog.exec() != QDialog::Accepted)
-        return;
-    const QString fn = fileDialog.selectedFiles().constFirst();
-    if (load(fn))
-        statusBar()->showMessage(tr("Opened \"%1\"").arg(QDir::toNativeSeparators(fn)));
-    else
-        statusBar()->showMessage(tr("Could not open \"%1\"").arg(QDir::toNativeSeparators(fn)));
+
+    connect(fileDialog, &QFileDialog::fileSelected, [=](const QString &file) {
+        statusBar()->showMessage(
+                load(file) ? tr(R"(Opened "%1")").arg(QDir::toNativeSeparators(file))
+                           : tr(R"(Could not open "%1")").arg(QDir::toNativeSeparators(file)));
+    });
+    fileDialog->setAttribute(Qt::WA_DeleteOnClose);
+    fileDialog->open();
 }
 
-bool TextEdit::fileSave()
+void TextEdit::fileSave(SaveContinuation continuation)
 {
     if (fileName.isEmpty() || fileName.startsWith(u":/"))
-        return fileSaveAs();
+        return fileSaveAs(continuation);
 
     QTextDocumentWriter writer(fileName);
     bool success = writer.write(textEdit->document());
@@ -475,13 +488,13 @@ bool TextEdit::fileSave()
         statusBar()->showMessage(tr("Could not write to file \"%1\"")
                                  .arg(QDir::toNativeSeparators(fileName)));
     }
-    return success;
+    fileSaveComplete(success ? continuation : SaveContinuation::None);
 }
 
-bool TextEdit::fileSaveAs()
+void TextEdit::fileSaveAs(SaveContinuation continuation)
 {
-    QFileDialog fileDialog(this, tr("Save as..."));
-    fileDialog.setAcceptMode(QFileDialog::AcceptSave);
+    QFileDialog *fileDialog = new QFileDialog(this, tr("Save as..."));
+    fileDialog->setAcceptMode(QFileDialog::AcceptSave);
     QStringList mimeTypes{"text/plain",
 #if QT_CONFIG(textodfwriter)
                           "application/vnd.oasis.opendocument.text",
@@ -490,58 +503,82 @@ bool TextEdit::fileSaveAs()
                            "text/markdown",
 #endif
                            "text/html"};
-    fileDialog.setMimeTypeFilters(mimeTypes);
+    fileDialog->setMimeTypeFilters(mimeTypes);
 #if QT_CONFIG(textodfwriter)
-    fileDialog.setDefaultSuffix("odt");
+    fileDialog->setDefaultSuffix("odt");
 #endif
-    if (fileDialog.exec() != QDialog::Accepted)
-        return false;
-    const QString fn = fileDialog.selectedFiles().constFirst();
-    setCurrentFileName(fn);
-    return fileSave();
+    connect(fileDialog, &QFileDialog::finished, [this, continuation, fileDialog](int result) {
+        if (result != QDialog::Accepted)
+            return;
+        setCurrentFileName(fileDialog->selectedFiles().constFirst());
+        fileSave(continuation);
+    });
+    fileDialog->setAttribute(Qt::WA_DeleteOnClose);
+    fileDialog->open();
+}
+
+void TextEdit::fileSaveComplete(SaveContinuation continuation)
+{
+    switch (continuation) {
+    case SaveContinuation::Clear:
+        textEdit->clear();
+        setCurrentFileName({});
+        return;
+    case SaveContinuation::Close:
+        closeAccepted = true;
+        close();
+        return;
+    case SaveContinuation::None:
+        // NOOP as promised
+        return;
+    }
 }
 
 void TextEdit::filePrint()
 {
 #if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printdialog)
-    QPrinter printer(QPrinter::HighResolution);
-    QPrintDialog dlg(&printer, this);
+    auto printer = std::make_shared<QPrinter>(QPrinter::HighResolution);
+    QPrintDialog *dlg = new QPrintDialog(printer.get(), this);
     if (textEdit->textCursor().hasSelection())
-        dlg.setOption(QAbstractPrintDialog::PrintSelection);
-    dlg.setWindowTitle(tr("Print Document"));
-    if (dlg.exec() == QDialog::Accepted)
-        textEdit->print(&printer);
+        dlg->setOption(QAbstractPrintDialog::PrintSelection);
+    dlg->setWindowTitle(tr("Print Document"));
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    connect(dlg, qOverload<QPrinter *>(&QPrintDialog::accepted),
+            [this](QPrinter *printer) { textEdit->print(printer); });
+    connect(dlg, &QPrintDialog::finished, [printer]() mutable { printer.reset(); });
+    dlg->open();
 #endif
 }
 
 void TextEdit::filePrintPreview()
 {
 #if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printpreviewdialog)
-    QPrinter printer(QPrinter::HighResolution);
-    QPrintPreviewDialog preview(&printer, this);
-    connect(&preview, &QPrintPreviewDialog::paintRequested, textEdit, &QTextEdit::print);
-    preview.exec();
+    auto printer = std::make_shared<QPrinter>(QPrinter::HighResolution);
+    QPrintPreviewDialog *preview = new QPrintPreviewDialog(printer.get(), this);
+    preview->setAttribute(Qt::WA_DeleteOnClose);
+    connect(preview, &QPrintPreviewDialog::paintRequested, textEdit, &QTextEdit::print);
+    connect(preview, &QPrintPreviewDialog::finished, [printer]() mutable { printer.reset(); });
+    preview->open();
 #endif
 }
 
 void TextEdit::filePrintPdf()
 {
 #if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printer)
-//! [0]
-    QFileDialog fileDialog(this, tr("Export PDF"));
-    fileDialog.setAcceptMode(QFileDialog::AcceptSave);
-    fileDialog.setMimeTypeFilters(QStringList("application/pdf"));
-    fileDialog.setDefaultSuffix("pdf");
-    if (fileDialog.exec() != QDialog::Accepted)
-        return;
-    QString pdfFileName = fileDialog.selectedFiles().constFirst();
-    QPrinter printer(QPrinter::HighResolution);
-    printer.setOutputFormat(QPrinter::PdfFormat);
-    printer.setOutputFileName(pdfFileName);
-    textEdit->document()->print(&printer);
-    statusBar()->showMessage(tr("Exported \"%1\"")
-                             .arg(QDir::toNativeSeparators(pdfFileName)));
-//! [0]
+    QFileDialog *fileDialog = new QFileDialog(this, tr("Export PDF"));
+    fileDialog->setAcceptMode(QFileDialog::AcceptSave);
+    fileDialog->setMimeTypeFilters(QStringList("application/pdf"));
+    fileDialog->setDefaultSuffix("pdf");
+    fileDialog->setAttribute(Qt::WA_DeleteOnClose);
+    connect(fileDialog, &QFileDialog::fileSelected, [this](const QString &file) {
+        QPrinter printer(QPrinter::HighResolution);
+        printer.setOutputFormat(QPrinter::PdfFormat);
+        printer.setOutputFileName(file);
+        textEdit->document()->print(&printer);
+        statusBar()->showMessage(tr("Exported \"%1\"").arg(QDir::toNativeSeparators(file)));
+    });
+
+    fileDialog->open();
 #endif
 }
 
@@ -669,24 +706,34 @@ void TextEdit::textStyle(int styleIndex)
 
 void TextEdit::textColor()
 {
-    QColor col = QColorDialog::getColor(textEdit->textColor(), this);
-    if (!col.isValid())
-        return;
-    QTextCharFormat fmt;
-    fmt.setForeground(col);
-    mergeFormatOnWordOrSelection(fmt);
-    colorChanged(col);
+    QColorDialog *dlg = new QColorDialog(this);
+    dlg->setCurrentColor(textEdit->textColor());
+    connect(dlg, &QColorDialog::colorSelected, [this](const QColor &color) {
+        if (!color.isValid())
+            return;
+        QTextCharFormat fmt;
+        fmt.setForeground(color);
+        mergeFormatOnWordOrSelection(fmt);
+        colorChanged(color);
+    });
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->open();
 }
 
 void TextEdit::underlineColor()
 {
-    QColor col = QColorDialog::getColor(Qt::black, this);
-    if (!col.isValid())
-        return;
-    QTextCharFormat fmt;
-    fmt.setUnderlineColor(col);
-    mergeFormatOnWordOrSelection(fmt);
-    colorChanged(col);
+    QColorDialog *dlg = new QColorDialog(this);
+    dlg->setCurrentColor(textEdit->textColor());
+    connect(dlg, &QColorDialog::colorSelected, [this](const QColor &color) {
+        if (!color.isValid())
+            return;
+        QTextCharFormat fmt;
+        fmt.setUnderlineColor(color);
+        mergeFormatOnWordOrSelection(fmt);
+        colorChanged(color);
+    });
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->open();
 }
 
 void TextEdit::textAlign(QAction *a)
@@ -809,9 +856,13 @@ void TextEdit::clipboardDataChanged()
 
 void TextEdit::about()
 {
-    QMessageBox::about(this, tr("About"), tr("This example demonstrates Qt's "
-        "rich text editing facilities in action, providing an example "
-        "document for you to experiment with."));
+    QMessageBox *msgBox =
+            new QMessageBox(QMessageBox::Icon::Information, tr("About"),
+                            tr("This example demonstrates Qt's rich text editing facilities in "
+                               "action, providing an example document for you to experiment with."),
+                            QMessageBox::NoButton, this);
+    msgBox->setAttribute(Qt::WA_DeleteOnClose);
+    msgBox->open();
 }
 
 void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
