@@ -957,6 +957,10 @@ function(_qt_internal_configure_android_multiabi_target target)
         list(APPEND extra_cmake_args "-DANDROID_NDK_ROOT=${ANDROID_NDK}")
     endif()
 
+    if(DEFINED QT_NO_PACKAGE_VERSION_CHECK)
+        list(APPEND extra_cmake_args "-DQT_NO_PACKAGE_VERSION_CHECK=${QT_NO_PACKAGE_VERSION_CHECK}")
+    endif()
+
     if(CMAKE_MAKE_PROGRAM)
         list(APPEND extra_cmake_args "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}")
     endif()
