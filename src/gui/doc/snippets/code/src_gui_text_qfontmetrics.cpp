@@ -9,7 +9,7 @@ void wrapper0() {
 //! [0]
 QFont font("times", 24);
 QFontMetrics fm(font);
-int pixelsWide = fm.horizontalAdvance("What's the width of this text?");
+int pixelsWide = fm.horizontalAdvance("What's the advance width of this text?");
 int pixelsHigh = fm.height();
 //! [0]
 
@@ -22,7 +22,7 @@ void wrapper1() {
 //! [1]
 QFont font("times", 24);
 QFontMetricsF fm(font);
-qreal pixelsWide = fm.horizontalAdvance("What's the width of this text?");
+qreal pixelsWide = fm.horizontalAdvance("What's the advance width of this text?");
 qreal pixelsHigh = fm.height();
 //! [1]
 
