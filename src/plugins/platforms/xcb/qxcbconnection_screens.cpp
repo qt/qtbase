@@ -511,7 +511,6 @@ void QXcbConnection::initializeScreensFromMonitor(xcb_screen_iterator_t *it, int
             screen = findScreenForMonitorInfo(old, monitor_info);
             if (!screen) {
                 screen = createScreen_monitor(virtualDesktop, monitor_info, monitors_r->timestamp);
-                QHighDpiScaling::updateHighDpiScaling();
             } else {
                 updateScreen_monitor(screen, monitor_info, monitors_r->timestamp);
                 old.removeAll(screen);
