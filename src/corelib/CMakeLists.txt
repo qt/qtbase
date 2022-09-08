@@ -476,10 +476,13 @@ endif()
 
 qt_internal_extend_target(Core
     CONDITION ( TEST_architecture_arch STREQUAL i386 ) OR
-        ( TEST_architecture_arch STREQUAL x86_64 )
+        ( TEST_architecture_arch STREQUAL x86_64 ) OR
+        ( CMAKE_OSX_ARCHITECTURES MATCHES "x86_64" ) OR
+        ( CMAKE_OSX_ARCHITECTURES MATCHES "i386" ) OR
     SOURCES
         global/qsimd_x86_p.h
 )
+
 qt_internal_extend_target(Core CONDITION ANDROID
     SOURCES
         kernel/qsharedmemory_android.cpp

@@ -213,7 +213,7 @@ asm(
 #   include <immintrin.h>
 # endif
 
-#  include "qsimd_x86_p.h"
+#  include <QtCore/private/qsimd_x86_p.h>
 
 // x86-64 sub-architecture version 3
 //
