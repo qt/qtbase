@@ -82,7 +82,7 @@ Window::Window(QWidget *parent)
     m_scene.addItem(m_item);
     m_ui.graphicsView->setScene(&m_scene);
 
-    m_anim = new Animation(m_item, "pos");
+    m_anim = new Animation(m_item, "pos", this);
     m_anim->setEasingCurve(QEasingCurve::OutBounce);
     m_ui.easingCurvePicker->setCurrentRow(int(QEasingCurve::OutBounce));
 
