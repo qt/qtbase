@@ -312,6 +312,8 @@ template <typename T, T V2> bool qMulOverflow(T v1, std::integral_constant<T, V2
 
 template <auto V2, typename T> bool qMulOverflow(T v1, T *r)
 {
+    if constexpr (V2 == 2)
+        return qAddOverflow(v1, v1, r);
     return qMulOverflow(v1, std::integral_constant<T, V2>{}, r);
 }
 
