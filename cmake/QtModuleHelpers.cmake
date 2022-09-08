@@ -641,6 +641,12 @@ function(qt_internal_add_module target)
         )
         include(${configureFile})
         qt_feature_module_end("${target}")
+
+        qt_internal_extend_target("${target}"
+            SOURCES
+                "${CMAKE_CURRENT_BINARY_DIR}/${module_config_header}"
+                "${CMAKE_CURRENT_BINARY_DIR}/${module_config_private_header}"
+        )
     endif()
 
     if(NOT arg_HEADER_MODULE)
