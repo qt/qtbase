@@ -41,6 +41,7 @@ public:
             d.cancelAndFinish(); // cancel and finalize the state
             d.runContinuation();
         }
+        d.cleanContinuation();
     }
 
     // Core QPromise APIs

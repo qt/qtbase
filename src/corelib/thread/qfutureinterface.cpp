@@ -105,6 +105,13 @@ void QFutureInterfaceBase::cancel(QFutureInterfaceBase::CancelMode mode)
         break;
     }
 
+    // Cancel the continuations chain
+    QFutureInterfaceBasePrivate *next = d->continuationData;
+    while (next) {
+        next->continuationState = QFutureInterfaceBasePrivate::Canceled;
+        next = next->continuationData;
+    }
+
     d->waitCondition.wakeAll();
     d->pausedWaitCondition.wakeAll();
 
@@ -816,45 +823,55 @@ void QFutureInterfaceBase::setContinuation(std::function<void(const QFutureInter
 {
     QMutexLocker lock(&d->continuationMutex);
 
-    if (continuationFutureData)
-        continuationFutureData->parentData = d;
-
     // If the state is ready, run continuation immediately,
     // otherwise save it for later.
     if (isFinished()) {
         lock.unlock();
         func(*this);
-    } else {
-        d->continuation = std::move(func);
+        lock.relock();
     }
+    // Unless the continuation has been cleaned earlier, we have to
+    // store the move-only continuation, to guarantee that the associated
+    // future's data stays alive.
+    if (d->continuationState != QFutureInterfaceBasePrivate::Cleaned) {
+        d->continuation = std::move(func);
+        d->continuationData = continuationFutureData;
+    }
+}
+
+void QFutureInterfaceBase::cleanContinuation()
+{
+    if (!d)
+        return;
+
+    QMutexLocker lock(&d->continuationMutex);
+    d->continuation = nullptr;
+    d->continuationState = QFutureInterfaceBasePrivate::Cleaned;
 }
 
 void QFutureInterfaceBase::runContinuation() const
 {
     QMutexLocker lock(&d->continuationMutex);
     if (d->continuation) {
-        auto fn = std::exchange(d->continuation, nullptr);
+        // Save the continuation in a local function, to avoid calling
+        // a null std::function below, in case cleanContinuation() is
+        // called from some other thread right after unlock() below.
+        auto fn = std::move(d->continuation);
         lock.unlock();
         fn(*this);
+
+        lock.relock();
+        // Unless the continuation has been cleaned earlier, we have to
+        // store the move-only continuation, to guarantee that the associated
+        // future's data stays alive.
+        if (d->continuationState != QFutureInterfaceBasePrivate::Cleaned)
+            d->continuation = std::move(fn);
     }
 }
 
 bool QFutureInterfaceBase::isChainCanceled() const
 {
-    if (isCanceled())
-        return true;
-
-    auto parent = d->parentData;
-    while (parent) {
-        // If the future is in Canceled state because it had an exception, we want to
-        // continue checking the chain of parents for cancellation, otherwise if the exception
-        // is handled inside the chain, it won't be interrupted even though cancellation has
-        // been requested.
-        if ((parent->state.loadRelaxed() & Canceled) && !parent->hasException)
-            return true;
-        parent = parent->parentData;
-    }
-    return false;
+    return isCanceled() || d->continuationState == QFutureInterfaceBasePrivate::Canceled;
 }
 
 void QFutureInterfaceBase::setLaunchAsync(bool value)
