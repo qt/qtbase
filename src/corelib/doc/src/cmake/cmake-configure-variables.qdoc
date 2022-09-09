@@ -237,7 +237,6 @@ Set \c QT_NO_COLLECT_BUILD_TREE_APK_DEPS to \c TRUE to disable this behavior.
 \summary {Location of the host Qt installation when cross-compiling.}
 
 \cmakevariablesince 6.0
-\preliminarycmakevariable
 
 When cross-compiling, this must be set to the install location of Qt for the host
 platform. It is used to locate tools to be run on the host (\l{moc}, \l{rcc},
