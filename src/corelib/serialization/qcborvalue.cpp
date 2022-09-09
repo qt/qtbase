@@ -44,6 +44,7 @@ Q_DECL_UNUSED static constexpr quint64 MaximumPreallocatedElementCount =
     \class QCborValue
     \inmodule QtCore
     \ingroup cbor
+    \ingroup qtserialization
     \reentrant
     \since 5.12
 

@@ -229,6 +229,8 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
 
   \ingroup xml-tools
 
+  \ingroup qtserialization
+
   QXmlStreamReader provides a simple streaming API to parse well-formed
   XML. It is an alternative to first loading the complete XML into a
   DOM tree (see \l QDomDocument). QXmlStreamReader reads data either
@@ -2735,6 +2737,7 @@ QStringView QXmlStreamReader::documentEncoding() const
   simple streaming API.
 
   \ingroup xml-tools
+  \ingroup qtserialization
 
   QXmlStreamWriter is the counterpart to QXmlStreamReader for writing
   XML. Like its related class, it operates on a QIODevice specified

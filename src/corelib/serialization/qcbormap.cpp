@@ -12,6 +12,7 @@ using namespace QtCbor;
     \class QCborMap
     \inmodule QtCore
     \ingroup cbor
+    \ingroup qtserialization
     \reentrant
     \since 5.12
 

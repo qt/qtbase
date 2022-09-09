@@ -45,6 +45,7 @@ Q_DECLARE_TYPEINFO(CborEncoder, Q_PRIMITIVE_TYPE);
    \class QCborStreamWriter
    \inmodule QtCore
    \ingroup cbor
+   \ingroup qtserialization
    \reentrant
    \since 5.12
 

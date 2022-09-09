@@ -13,6 +13,7 @@ using namespace QtCbor;
     \class QCborArray
     \inmodule QtCore
     \ingroup cbor
+    \ingroup qtserialization
     \reentrant
     \since 5.12
 
