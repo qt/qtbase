@@ -176,6 +176,39 @@ void ThreadEngineBase::startSingleThreaded()
     finish();
 }
 
+void ThreadEngineBase::startBlocking()
+{
+    start();
+    barrier.acquire();
+    startThreads();
+
+    bool throttled = false;
+#ifndef QT_NO_EXCEPTIONS
+    try {
+#endif
+        while (threadFunction() == ThrottleThread) {
+            if (threadThrottleExit()) {
+                throttled = true;
+                break;
+            }
+        }
+#ifndef QT_NO_EXCEPTIONS
+    } catch (QException &e) {
+        handleException(e);
+    } catch (...) {
+        handleException(QUnhandledException());
+    }
+#endif
+
+    if (throttled == false) {
+        barrier.release();
+    }
+
+    barrier.wait();
+    finish();
+    exceptionStore.throwPossibleException();
+}
+
 void ThreadEngineBase::startThread()
 {
     startThreadInternal();
