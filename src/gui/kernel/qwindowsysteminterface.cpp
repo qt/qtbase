@@ -738,9 +738,9 @@ QT_DEFINE_QPA_EVENT_HANDLER(bool, handleTouchCancelEvent, QWindow *window, ulong
 
     The screen should be deleted by calling QWindowSystemInterface::handleScreenRemoved().
 */
-void QWindowSystemInterface::handleScreenAdded(QPlatformScreen *ps, bool isPrimary)
+void QWindowSystemInterface::handleScreenAdded(QPlatformScreen *platformScreen, bool isPrimary)
 {
-    QScreen *screen = new QScreen(ps);
+    QScreen *screen = new QScreen(platformScreen);
 
     if (isPrimary)
         QGuiApplicationPrivate::screen_list.prepend(screen);
@@ -767,9 +767,45 @@ void QWindowSystemInterface::handleScreenAdded(QPlatformScreen *ps, bool isPrima
 */
 void QWindowSystemInterface::handleScreenRemoved(QPlatformScreen *platformScreen)
 {
-    // Important to keep this order since the QSceen doesn't own the platform screen.
-    // The QScreen destructor will take care changing the primary screen, so no need here.
-    delete platformScreen->screen();
+    QScreen *screen = platformScreen->screen();
+
+    // Remove screen
+    const bool wasPrimary = QGuiApplication::primaryScreen() == screen;
+    QGuiApplicationPrivate::screen_list.removeOne(screen);
+    QGuiApplicationPrivate::resetCachedDevicePixelRatio();
+
+    if (qGuiApp) {
+        QScreen *newPrimaryScreen = QGuiApplication::primaryScreen();
+        if (wasPrimary && newPrimaryScreen)
+            emit qGuiApp->primaryScreenChanged(newPrimaryScreen);
+
+        // Allow clients to manage windows that are affected by the screen going
+        // away, before we fall back to moving them to the primary screen.
+        emit qApp->screenRemoved(screen);
+
+        if (!QGuiApplication::closingDown()) {
+            bool movingFromVirtualSibling = newPrimaryScreen
+                && newPrimaryScreen->handle()->virtualSiblings().contains(platformScreen);
+
+            // Move any leftover windows to the primary screen
+            const auto allWindows = QGuiApplication::allWindows();
+            for (QWindow *window : allWindows) {
+                if (!window->isTopLevel() || window->screen() != screen)
+                    continue;
+
+                const bool wasVisible = window->isVisible();
+                window->setScreen(newPrimaryScreen);
+
+                // Re-show window if moved from a virtual sibling screen. Otherwise
+                // leave it up to the application developer to show the window.
+                if (movingFromVirtualSibling)
+                    window->setVisible(wasVisible);
+            }
+        }
+    }
+
+    // Important to keep this order since the QSceen doesn't own the platform screen
+    delete screen;
     delete platformScreen;
 }
 
