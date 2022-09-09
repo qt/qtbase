@@ -362,7 +362,6 @@ an application, along with its runtime dependencies:
 \summary {Prevents subsequent calls to qt_standard_project_setup() from making any changes.}
 
 \cmakevariablesince 6.3
-\preliminarycmakevariable
 
 The \l{qt6_standard_project_setup}{qt_standard_project_setup()} command is
 typically called in the top level \c{CMakeLists.txt} file of a project. In some
