@@ -1133,8 +1133,71 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
         }
         break;
     }
+    case QAccessible::TableModelChanged: {
+        QAccessibleInterface *interface = event->accessibleInterface();
+        if (!interface || !interface->isValid()) {
+            qCWarning(lcAccessibilityAtspi) << "TableModelChanged event from invalid accessible.";
+            return;
+        }
+
+        const QString path = pathForInterface(interface);
+        QAccessibleTableModelChangeEvent *tableModelEvent = static_cast<QAccessibleTableModelChangeEvent*>(event);
+        switch (tableModelEvent->modelChangeType()) {
+        case QAccessibleTableModelChangeEvent::ColumnsInserted: {
+            if (sendObject || sendObject_column_inserted) {
+                const int firstColumn = tableModelEvent->firstColumn();
+                const int insertedColumnCount = tableModelEvent->lastColumn() - firstColumn + 1;
+                QVariantList args = packDBusSignalArguments(QString(), firstColumn, insertedColumnCount, QVariant::fromValue(QDBusVariant(QVariant(QString()))));
+                sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1, "ColumnInserted"_L1, args);
+            }
+            break;
+        }
+        case QAccessibleTableModelChangeEvent::ColumnsRemoved: {
+            if (sendObject || sendObject_column_deleted) {
+                const int firstColumn = tableModelEvent->firstColumn();
+                const int removedColumnCount = tableModelEvent->lastColumn() - firstColumn + 1;
+                QVariantList args = packDBusSignalArguments(QString(), firstColumn, removedColumnCount, QVariant::fromValue(QDBusVariant(QVariant(QString()))));
+                sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1, "ColumnDeleted"_L1, args);
+            }
+            break;
+        }
+        case QAccessibleTableModelChangeEvent::RowsInserted: {
+            if (sendObject || sendObject_row_inserted) {
+                const int firstRow = tableModelEvent->firstRow();
+                const int insertedRowCount = tableModelEvent->lastRow() - firstRow + 1;
+                QVariantList args = packDBusSignalArguments(QString(), firstRow, insertedRowCount, QVariant::fromValue(QDBusVariant(QVariant(QString()))));
+                sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1, "RowInserted"_L1, args);
+            }
+            break;
+        }
+        case QAccessibleTableModelChangeEvent::RowsRemoved: {
+            if (sendObject || sendObject_row_deleted) {
+                const int firstRow = tableModelEvent->firstRow();
+                const int removedRowCount = tableModelEvent->lastRow() - firstRow + 1;
+                QVariantList args = packDBusSignalArguments(QString(), firstRow, removedRowCount, QVariant::fromValue(QDBusVariant(QVariant(QString()))));
+                sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1, "RowDeleted"_L1, args);
+            }
+            break;
+        }
+        case QAccessibleTableModelChangeEvent::ModelChangeType::ModelReset: {
+            if (sendObject || sendObject_model_changed) {
+                QVariantList args = packDBusSignalArguments(QString(), 0, 0, QVariant::fromValue(QDBusVariant(QVariant(QString()))));
+                sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1, "ModelChanged"_L1, args);
+            }
+            break;
+        }
+        case QAccessibleTableModelChangeEvent::DataChanged: {
+            if (sendObject || sendObject_visible_data_changed) {
+                QVariantList args = packDBusSignalArguments(QString(), 0, 0, QVariant::fromValue(QDBusVariant(QVariant(QString()))));
+                sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1, "VisibleDataChanged"_L1, args);
+            }
+            break;
+        }
+        }
+        break;
+    }
+
         // For now we ignore these events
-    case QAccessible::TableModelChanged:
     case QAccessible::ParentChanged:
     case QAccessible::DialogStart:
     case QAccessible::DialogEnd:
