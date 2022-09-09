@@ -1135,9 +1135,6 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     }
         // For now we ignore these events
     case QAccessible::TableModelChanged:
-        // For tables, setting manages_descendants should
-        // indicate to the client that it cannot cache these
-        // interfaces.
     case QAccessible::ParentChanged:
     case QAccessible::DialogStart:
     case QAccessible::DialogEnd:
@@ -1440,6 +1437,9 @@ bool AtSpiAdaptor::accessibleInterface(QAccessibleInterface *interface, const QS
     } else if (function == "GetState"_L1) {
         quint64 spiState = spiStatesFromQState(interface->state());
         if (interface->tableInterface()) {
+            // For tables, setting manages_descendants should
+            // indicate to the client that it cannot cache these
+            // interfaces.
             setSpiStateBit(&spiState, ATSPI_STATE_MANAGES_DESCENDANTS);
         }
         QAccessible::Role role = interface->role();
