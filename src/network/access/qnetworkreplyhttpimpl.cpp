@@ -1071,9 +1071,6 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
 
     // cache this, we need it later and it's invalidated when dealing with compressed data
     auto dataSize = d.size();
-    // Grab this to compare later (only relevant for compressed data) in case none of the data
-    // will be propagated to the user
-    const qint64 previousBytesDownloaded = bytesDownloaded;
 
     if (cacheEnabled && isCachingAllowed() && !cacheSaveDevice)
         initCacheSaveDevice();
@@ -1157,11 +1154,12 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
 
     // This can occur when downloading compressed data as some of the data may be the content
     // encoding's header. Don't emit anything for this.
-    if (previousBytesDownloaded == bytesDownloaded) {
+    if (lastReadyReadEmittedSize == bytesDownloaded) {
         if (readBufferMaxSize)
             emit q->readBufferFreed(dataSize);
         return;
     }
+    lastReadyReadEmittedSize = bytesDownloaded;
 
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
 

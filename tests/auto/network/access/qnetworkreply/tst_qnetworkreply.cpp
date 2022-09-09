@@ -531,6 +531,7 @@ private Q_SLOTS:
     void downloadProgressWithContentEncoding();
     void contentEncodingError_data();
     void contentEncodingError();
+    void compressedReadyRead();
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
@@ -9898,6 +9899,54 @@ void tst_QNetworkReply::contentEncodingError()
 
     QTRY_VERIFY2_WITH_TIMEOUT(reply->isFinished(), qPrintable(reply->errorString()), 15000);
     QTEST(reply->error(), "expectedError");
+}
+
+// When this test is failing it will appear flaky because it relies on the
+// timing of delivery from one socket to another in the OS.
+// + we have to send all the data at once, so the readyRead emissions are
+// compressed into a single emission, so we cannot artificially time it with
+// waits and sleeps.
+void tst_QNetworkReply::compressedReadyRead()
+{
+    // There were historically an issue where a mix of signal compression and
+    // data decompression made it so we accidentally didn't emit the final
+    // readyRead signal before emitting finished(). Test this here to make sure
+    // it happens:
+    const QByteArray gzipPayload =
+            QByteArray::fromBase64("H4sIAAAAAAAAA8tIzcnJVyjPL8pJAQCFEUoNCwAAAA==");
+    const QByteArray expected = "hello world";
+
+    QString header("HTTP/1.0 200 OK\r\nContent-Encoding: gzip\r\nContent-Length: %1\r\n\r\n");
+    header = header.arg(gzipPayload.size());
+    MiniHttpServer server(header.toLatin1()); // only send header automatically
+    server.doClose = false; // don't close and delete client socket right away
+
+    QNetworkRequest request(
+            QUrl(QLatin1String("http://localhost:%1").arg(QString::number(server.serverPort()))));
+    QNetworkReplyPtr reply(manager.get(request));
+
+    QObject::connect(reply.get(), &QNetworkReply::metaDataChanged, reply.get(),
+                     [&server, &gzipPayload]() {
+                         // Client received headers, now send data:
+                         // We do this awkward write,flush,write dance to try to
+                         // make sure the data does not all arrive at the same
+                         // time. By design we send the final "=" byte by itself
+                         qsizetype boundary = gzipPayload.size() - 1;
+                         server.client->write(gzipPayload.sliced(0, boundary));
+                         server.client->flush();
+                         // Let the server take care of deleting the client once
+                         // the rest of the data is written:
+                         server.doClose = true;
+                         server.client->write(gzipPayload.sliced(boundary));
+                     });
+
+    QByteArray received;
+    QObject::connect(reply.get(), &QNetworkReply::readyRead, reply.get(),
+                     [reply = reply.get(), &received]() {
+                         received += reply->readAll();
+                     });
+    QTRY_VERIFY(reply->isFinished());
+    QCOMPARE(received, expected);
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!

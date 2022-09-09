@@ -236,6 +236,10 @@ public:
 
     qint64 bytesDownloaded;
     qint64 bytesBuffered;
+    // We use this to keep track of whether or not we need to emit readyRead
+    // when we deal with signal compression (delaying emission) + decompressing
+    // data (potentially receiving bytes that don't end up in the final output):
+    qint64 lastReadyReadEmittedSize = 0;
 
     QTimer *transferTimeout;
 
