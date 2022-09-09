@@ -82,8 +82,8 @@ QOffscreenIntegration::QOffscreenIntegration(const QStringList& paramList)
 
 QOffscreenIntegration::~QOffscreenIntegration()
 {
-    for (auto screen : std::as_const(m_screens))
-        QWindowSystemInterface::handleScreenRemoved(screen);
+    while (!m_screens.isEmpty())
+        QWindowSystemInterface::handleScreenRemoved(m_screens.takeLast());
 }
 
 /*
