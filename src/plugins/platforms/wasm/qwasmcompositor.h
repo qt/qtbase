@@ -57,6 +57,7 @@ public:
     };
 
     void setEnabled(bool enabled);
+    void startResize(Qt::Edges edges);
 
     void addWindow(QWasmWindow *window);
     void removeWindow(QWasmWindow *window);
@@ -108,6 +109,7 @@ private:
         void onPointerDown(const PointerEvent& event, QWindow* windowAtPoint);
         void onPointerMove(const PointerEvent& event);
         void onPointerUp(const PointerEvent& event);
+        void startResize(Qt::Edges edges);
 
         Operation operation() const;
 
@@ -128,11 +130,18 @@ private:
             QPointer<QWindow> window;
             std::variant<ResizeState, MoveState> operationSpecific;
         };
+        struct SystemDragInitData
+        {
+            QPoint lastMouseMovePoint;
+            int lastMousePointerId = -1;
+        };
 
         void resizeWindow(const QPoint& amount);
+        ResizeState makeResizeState(Qt::Edges edges, const QPoint &startPoint, QWindow *window);
 
         QWasmScreen *m_screen;
 
+        SystemDragInitData m_systemDragInitData;
         std::unique_ptr<OperationState> m_state;
     };
 

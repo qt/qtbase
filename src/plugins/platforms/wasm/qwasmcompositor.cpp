@@ -168,6 +168,11 @@ void QWasmCompositor::setEnabled(bool enabled)
     m_isEnabled = enabled;
 }
 
+void QWasmCompositor::startResize(Qt::Edges edges)
+{
+    m_windowManipulation.startResize(edges);
+}
+
 void QWasmCompositor::addWindow(QWasmWindow *window)
 {
     m_windowVisibility.insert(window, false);
@@ -788,6 +793,11 @@ void QWasmCompositor::WindowManipulation::onPointerDown(
 void QWasmCompositor::WindowManipulation::onPointerMove(
     const PointerEvent& event)
 {
+    m_systemDragInitData = {
+        .lastMouseMovePoint = m_screen->clipPoint(event.point),
+        .lastMousePointerId = event.pointerId,
+    };
+
     if (operation() == Operation::None || event.pointerId != m_state->pointerId)
         return;
 
@@ -820,6 +830,34 @@ void QWasmCompositor::WindowManipulation::onPointerUp(const PointerEvent& event)
         return;
 
     m_state.reset();
+}
+
+void QWasmCompositor::WindowManipulation::startResize(Qt::Edges edges)
+{
+    Q_ASSERT_X(operation() == Operation::None, Q_FUNC_INFO,
+               "Resize must not start anew when one is in progress");
+
+    auto *window = m_screen->compositor()->windowAt(m_systemDragInitData.lastMouseMovePoint);
+    if (Q_UNLIKELY(!window))
+        return;
+
+    m_state.reset(new OperationState{
+        .pointerId = m_systemDragInitData.lastMousePointerId,
+        .window = window,
+        .operationSpecific =
+            ResizeState{
+                .m_resizeEdges = edges,
+                .m_originInScreenCoords = m_systemDragInitData.lastMouseMovePoint,
+                .m_initialWindowBounds = window->geometry(),
+                .m_minShrink =
+                    QPoint(window->minimumWidth() - window->geometry().width(),
+                        window->minimumHeight() - window->geometry().height()),
+                .m_maxGrow =
+                    QPoint(window->maximumWidth() - window->geometry().width(),
+                        window->maximumHeight() - window->geometry().height()),
+            },
+    });
+    m_screen->canvas().call<void>("setPointerCapture", m_systemDragInitData.lastMousePointerId);
 }
 
 bool QWasmCompositor::processKeyboard(int eventType, const EmscriptenKeyboardEvent *emKeyEvent)

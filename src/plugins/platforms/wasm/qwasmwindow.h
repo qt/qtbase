@@ -56,6 +56,7 @@ public:
                             Qt::MouseButton button, Qt::KeyboardModifiers mods);
     void injectMouseReleased(const QPoint &local, const QPoint &global,
                             Qt::MouseButton button, Qt::KeyboardModifiers mods);
+    bool startSystemResize(Qt::Edges edges) final;
 
     bool isPointOnTitle(QPoint point) const;
     bool isPointOnResizeRegion(QPoint point) const;

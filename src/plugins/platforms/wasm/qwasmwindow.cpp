@@ -212,6 +212,13 @@ void QWasmWindow::propagateSizeHints()
     }
 }
 
+bool QWasmWindow::startSystemResize(Qt::Edges edges)
+{
+    m_compositor->startResize(edges);
+
+    return true;
+}
+
 void QWasmWindow::injectMousePressed(const QPoint &local, const QPoint &global,
                                       Qt::MouseButton button, Qt::KeyboardModifiers mods)
 {
