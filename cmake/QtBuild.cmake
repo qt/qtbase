@@ -263,23 +263,6 @@ function(qt_setup_tool_path_command)
 endfunction()
 qt_setup_tool_path_command()
 
-function(qt_internal_generate_tool_command_wrapper)
-    get_property(is_called GLOBAL PROPERTY _qt_internal_generate_tool_command_wrapper_called)
-    if(NOT CMAKE_HOST_WIN32 OR is_called)
-        return()
-    endif()
-    set(bindir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
-    file(TO_NATIVE_PATH "${bindir}" bindir)
-    set(tool_command_wrapper_path "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt_setup_tool_path.bat")
-    file(WRITE "${tool_command_wrapper_path}" "@echo off
-set PATH=${bindir};%PATH%
-%*")
-    set(QT_TOOL_COMMAND_WRAPPER_PATH "${tool_command_wrapper_path}"
-        CACHE INTERNAL "Path to the wrapper of the tool commands")
-    set_property(GLOBAL PROPERTY _qt_internal_generate_tool_command_wrapper_called TRUE)
-endfunction()
-qt_internal_generate_tool_command_wrapper()
-
 # Platform define path, etc.
 if(WIN32)
     set(QT_DEFAULT_PLATFORM_DEFINITIONS WIN32 _ENABLE_EXTENDED_ALIGNED_STORAGE)
@@ -560,6 +543,7 @@ include(QtPublicTargetHelpers)
 include(QtPublicWalkLibsHelpers)
 include(QtPublicFindPackageHelpers)
 include(QtPublicDependencyHelpers)
+include(QtPublicToolHelpers)
 
 # TODO: This block provides support for old variables. It should be removed once
 #       we remove all references to these variables in other Qt module repos.
@@ -597,6 +581,11 @@ if(COMMAND _qt_internal_get_add_plugin_keywords)
     unset(__qt_internal_add_plugin_single_args)
     unset(__qt_internal_add_plugin_multi_args)
 endif()
+
+# Create tool script wrapper if necessary.
+# TODO: Remove once all direct usages of QT_TOOL_COMMAND_WRAPPER_PATH are replaced with function
+# calls.
+_qt_internal_generate_tool_command_wrapper()
 
 # This sets up the poor man's scope finalizer mechanism.
 # For newer CMake versions, we use cmake_language(DEFER CALL) instead.
