@@ -53,6 +53,7 @@ static QJsonValue::Type convertFromCborType(QCborValue::Type type) noexcept
     \inmodule QtCore
     \ingroup json
     \ingroup shared
+    \ingroup qtserialization
     \reentrant
     \since 5.0
 

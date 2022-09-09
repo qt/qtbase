@@ -1,0 +1,138 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qtserialization.html
+    \title Qt Serialization
+    \brief Serializations provided by Qt API
+
+    The purpose of serialization is to save the state of an object to be able to
+    recreate it when needed. It allows you to perform actions like:
+
+    \list
+        \li Sending the object to a remote application by using a web service
+        \li Passing the object as a JSON or XML string
+        \li Saving and restoring user information or sharing it across applications
+    \endlist
+
+    The Qt API provides support for serialization for several use cases:
+
+    \list
+    \li \l JSON support in Qt provides an easy to use C++ API to parse, modify
+           and save JSON data. \l {CBOR} {CBOR Support in Qt} is a compact form
+           of binary data encoding that is a superset of JSON.
+    \li \l QDataStream provides serialization of binary data to a QIODevice
+    \li \l {Qt XML C++ Classes} provide C++ implementations of the \l XML Streaming
+           and DOM standards for XML
+    \li \l CBOR is Qt's implementation for the CBOR serialization format.
+    \li \l QSettings provides a way of serializing and storing platform independent
+           application settings.
+    \endlist
+
+    \section1 Advantages of JSON and CBOR
+
+    When you use \l JSON information is stored in a QJsonObject and a QJsonDocument
+    takes care to stream values into a QByteArray.
+
+    For example
+    \code
+        QJsonObject jobject;
+        jobject["SensorID"] = m_id;
+        jobject["AmbientTemperature"] = m_ambientTemperature;
+        jobject["ObjectTemperature"] = m_objectTemperature;
+        jobject["AccelerometerX"] = m_accelerometerX;
+        jobject["AccelerometerY"] = m_accelerometerY;
+        jobject["AccelerometerZ"] = m_accelerometerZ;
+        jobject["Altitude"] = m_altitude;
+        jobject["Light"] = m_light;
+        jobject["Humidity"] = m_humidity;
+        QJsonDocument doc( jobject );
+
+        return doc.toJson();
+    \endcode
+
+    JSON has several advantages:
+
+    \list
+    \li Textual JSON is declarative, which makes it readable to humans
+    \li The information is structured
+    \li Exchanging generic information is easy
+    \li JSON allows extending messages with additional values
+    \li Many solutions exist to receive and parse JSON in cloud-based solutions
+    \endlist
+
+    \l CBOR is the Concise Binary Object Representation, a very compact form of
+    binary data encoding that is a superset of JSON. It was created by the IETF
+    Constrained RESTful Environments (CoRE) WG, which has been used in many new
+    RFCs. CBOR shares many of the advantages of JSON, but sacrifices human
+    readability for compactness.
+
+    \section1 Advantages of QDataStream Classes
+
+    \l QDataStream is a viable option when the whole flow of data is determined
+    and not about to change. In addition, both the reader and the writer of the
+    data must be written in Qt.
+
+    Adding support for this to a class requires two additional operators.
+    For example, for a class named SensorInformation:
+
+    \code
+    QDataStream &operator<<(QDataStream &, const SensorInformation &);
+    QDataStream &operator>>(QDataStream &, SensorInformation &);
+    \endcode
+
+    The implementation for the serialization is shown below:
+
+    \code
+    QDataStream &operator<<(QDataStream &out, const SensorInformation &item)
+    {
+        QDataStream::FloatingPointPrecision prev = out.floatingPointPrecision();
+        out.setFloatingPointPrecision(QDataStream::DoublePrecision);
+        out << item.m_id
+            << item.m_ambientTemperature
+            << item.m_objectTemperature
+            << item.m_accelerometerX
+            << item.m_accelerometerY
+            << item.m_accelerometerZ
+            << item.m_altitude
+            << item.m_light
+            << item.m_humidity;
+        out.setFloatingPointPrecision(prev);
+        return out;
+    }
+    \endcode
+
+    Deserialization works similarly, but using the \c {>>} operator.
+    For example, \c {out >> item.m_id}, and so on.
+
+    Usually, using QDataStream is faster than using textual JSON.
+
+    \section1 Advantages of Qt XML C++ Classes
+
+    Qt provides the QDomDocument class that represents the XML document and
+    two classes for reading and writing the XML through a simple streaming API:
+    QXmlStreamReader and QXmlStreamWriter.
+
+    QDomDocument class represents the entire XML document. It is the root of the
+    document tree and provides primary access to the document's data.
+
+    A stream reader reports an XML document as a stream of tokens. This differs
+    from SAX as SAX applications provide handlers to receive XML events from the
+    parser, whereas the QXmlStreamReader drives the loop, pulling tokens from the
+    reader when they are needed. This pulling approach makes it possible to build
+    recursive descent parsers, allowing XML parsing code to be split into
+    different methods or classes.
+
+    QXmlStreamReader a parser for well-formed XML 1.0, excluding external parsed
+    entities. Hence, data provided to the stream reader adheres to the
+    W3C's criteria for well-formed XML, or an error will be raised. Functions
+    such as \c atEnd(), \c error(), and \c hasError() can be used to test  for
+    such errors and obtain a description of them.
+
+    The QXmlStreamWriter is a streaming API that takes care of prefixing namespaces,
+    when the namespaceUri is specified when writing elements or attributes.
+
+    \section1 Classes that provide serialization
+
+    \annotatedlist qtserialization
+*/

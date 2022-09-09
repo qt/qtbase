@@ -14,6 +14,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 
     \ingroup io
     \ingroup string-processing
+    \ingroup qtserialization
     \reentrant
 
     QTextStream can operate on a QIODevice, a QByteArray or a

@@ -17,6 +17,7 @@ QT_IMPL_METATYPE_EXTERN(QCborTag)
 /*!
    \headerfile <QtCborCommon>
    \inmodule QtCore
+   \ingroup qtserialization
    \brief The <QtCborCommon> header contains definitions common to both the
    streaming classes (QCborStreamReader and QCborStreamWriter) and to
    QCborValue.

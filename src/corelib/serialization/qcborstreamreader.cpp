@@ -60,6 +60,7 @@ static_assert(int(QCborStreamReader::Invalid) == CborInvalidType);
    \class QCborStreamReader
    \inmodule QtCore
    \ingroup cbor
+   \ingroup qtserialization
    \reentrant
    \since 5.12
 
