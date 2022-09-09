@@ -578,10 +578,7 @@ QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
         switch (res) {
         case Z_OK:
             bazip.resize(len + 4);
-            bazip[0] = (nbytes & 0xff000000) >> 24;
-            bazip[1] = (nbytes & 0x00ff0000) >> 16;
-            bazip[2] = (nbytes & 0x0000ff00) >> 8;
-            bazip[3] = (nbytes & 0x000000ff);
+            qToBigEndian(quint32(nbytes), bazip.data()); // 4 octets, historically
             break;
         case Z_MEM_ERROR:
             qWarning("qCompress: Z_MEM_ERROR: Not enough memory");
