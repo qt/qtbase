@@ -1242,8 +1242,7 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const Frame &frame,
 
         replyPrivate->totalProgress += length;
 
-        const QByteArray wrapped(data, length);
-        replyPrivate->responseData.append(wrapped);
+        replyPrivate->responseData.append(QByteArray(data, length));
 
         if (replyPrivate->shouldEmitSignals()) {
             if (connectionType == Qt::DirectConnection) {
