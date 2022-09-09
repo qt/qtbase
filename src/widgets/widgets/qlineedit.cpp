@@ -1802,6 +1802,22 @@ void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
 */
 QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property) const
 {
+#ifdef Q_OS_ANDROID
+    // QTBUG-61652
+    if (property == Qt::ImEnterKeyType) {
+        QWidget *next = nextInFocusChain();
+        while (next && next != this && next->focusPolicy() == Qt::NoFocus)
+            next = next->nextInFocusChain();
+        if (next) {
+            const auto nextYPos = next->mapToGlobal(QPoint(0, 0)).y();
+            const auto currentYPos = mapToGlobal(QPoint(0, 0)).y();
+            if (currentYPos < nextYPos)
+                // Set EnterKey to KeyNext type only if the next widget
+                // in the focus chain is below current QLineEdit
+                return Qt::EnterKeyNext;
+        }
+    }
+#endif
     return inputMethodQuery(property, QVariant());
 }
 

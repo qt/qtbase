@@ -267,6 +267,8 @@ private slots:
     void inputMethodQueryImHints_data();
     void inputMethodQueryImHints();
 
+    void inputMethodQueryEnterKeyType();
+
     void inputMethodUpdate();
 
     void undoRedoAndEchoModes_data();
@@ -4407,6 +4409,33 @@ void tst_QLineEdit::inputMethodQueryImHints()
 
     QVariant value = testWidget->inputMethodQuery(Qt::ImHints);
     QCOMPARE(static_cast<Qt::InputMethodHints>(value.toInt()), hints);
+}
+
+void tst_QLineEdit::inputMethodQueryEnterKeyType()
+{
+    QWidget mw;
+    QVBoxLayout layout(&mw);
+    QLineEdit le1(&mw);
+    layout.addWidget(&le1);
+    mw.show();
+    QVariant enterType = le1.inputMethodQuery(Qt::ImEnterKeyType);
+    QCOMPARE(enterType.value<Qt::EnterKeyType>(), Qt::EnterKeyDefault);
+
+    mw.hide();
+    QLineEdit le2(&mw);
+    layout.addWidget(&le2);
+    mw.show();
+
+    enterType = le1.inputMethodQuery(Qt::ImEnterKeyType);
+#ifdef Q_OS_ANDROID
+    // QTBUG-61652
+    // EnterKey is changed to EnterKeyNext if the focus can be moved to widget below
+    QCOMPARE(enterType.value<Qt::EnterKeyType>(), Qt::EnterKeyNext);
+#else
+    QCOMPARE(enterType.value<Qt::EnterKeyType>(), Qt::EnterKeyDefault);
+#endif
+    enterType = le2.inputMethodQuery(Qt::ImEnterKeyType);
+    QCOMPARE(enterType.value<Qt::EnterKeyType>(), Qt::EnterKeyDefault);
 }
 
 void tst_QLineEdit::inputMethodUpdate()
