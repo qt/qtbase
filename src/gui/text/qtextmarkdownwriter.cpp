@@ -567,13 +567,13 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             }
             if (wrap && col + markers.length() * 2 + fragmentText.length() > ColumnLimit) {
                 int i = 0;
-                int fragLen = fragmentText.length();
+                const int fragLen = fragmentText.length();
                 bool breakingLine = false;
                 while (i < fragLen) {
                     if (col >= ColumnLimit) {
                         m_stream << Newline << wrapIndentString;
                         col = m_wrappedLineIndent;
-                        while (fragmentText[i].isSpace())
+                        while (i < fragLen && fragmentText[i].isSpace())
                             ++i;
                     }
                     int j = i + ColumnLimit - col;
