@@ -29,6 +29,7 @@ qt_internal_add_test(tst_qnetworkreply
     TESTDATA ${test_data}
     QT_TEST_SERVER_LIST "vsftpd" "apache2" "ftp-proxy" "danted" "squid" # special case
 )
+add_dependencies(tst_qnetworkreply echo)
 
 # Resources:
 set(qnetworkreply_resource_files
