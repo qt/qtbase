@@ -173,24 +173,6 @@ QCalendar::QCalendar(QLatin1StringView name)
 
 #include "qcollator.h" // inline function compare(ptr, n, ptr, n) (for MSVC)
 
-#if QT_CONFIG(future)
-
-#include "qfutureinterface.h"
-#include "private/qfutureinterface_p.h"
-
-void QFutureInterfaceBase::cleanContinuation()
-{
-    if (!d)
-        return;
-
-    // This was called when the associated QPromise was being destroyed,
-    // but isn't used anymore.
-    QMutexLocker lock(&d->continuationMutex);
-    d->continuation = nullptr;
-}
-
-#endif // QT_CONFIG(future)
-
 #include "qhashfunctions.h"
 
 size_t qHash(const QByteArray &key, size_t seed) noexcept

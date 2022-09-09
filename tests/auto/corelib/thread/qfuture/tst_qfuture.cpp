@@ -2240,6 +2240,26 @@ void tst_QFuture::then()
         QVERIFY(threadId1 != QThread::currentThreadId());
         QVERIFY(threadId2 != QThread::currentThreadId());
     }
+
+    // QTBUG-106083 & QTBUG-105182
+    {
+        QThread thread;
+        thread.start();
+
+        QObject context;
+        context.moveToThread(&thread);
+
+        auto future = QtConcurrent::run([] {
+            return 42;
+        }).then([] (int result) {
+            return result + 1;
+        }).then(&context, [] (int result) {
+            return result + 1;
+        });
+        QCOMPARE(future.result(), 44);
+        thread.quit();
+        thread.wait();
+    }
 }
 
 template<class Type, class Callable>
@@ -3116,6 +3136,57 @@ void tst_QFuture::cancelContinuations()
         QCOMPARE(checkpoint, 3);
     }
 #endif // QT_NO_EXCEPTIONS
+
+    // Check notifications from QFutureWatcher
+    {
+        QPromise<void> p;
+        auto f = p.future();
+
+        auto f1 = f.then([] {});
+        auto f2 = f1.then([] {});
+
+        QFutureWatcher<void> watcher1, watcher2;
+        int state = 0;
+        QObject::connect(&watcher1, &QFutureWatcher<void>::started, [&] {
+            QCOMPARE(state, 0);
+            ++state;
+        });
+        QObject::connect(&watcher1, &QFutureWatcher<void>::canceled, [&] {
+            QCOMPARE(state, 1);
+            ++state;
+        });
+        QObject::connect(&watcher1, &QFutureWatcher<void>::finished, [&] {
+            QCOMPARE(state, 2);
+            ++state;
+        });
+        QObject::connect(&watcher2, &QFutureWatcher<void>::started, [&] {
+            QCOMPARE(state, 3);
+            ++state;
+        });
+        QObject::connect(&watcher2, &QFutureWatcher<void>::canceled, [&] {
+            QCOMPARE(state, 4);
+            ++state;
+        });
+        QObject::connect(&watcher2, &QFutureWatcher<int>::finished, [&] {
+            QCOMPARE(state, 5);
+            ++state;
+        });
+
+        watcher1.setFuture(f1);
+        watcher2.setFuture(f2);
+
+        p.start();
+        f.cancel();
+        p.finish();
+
+        qApp->processEvents();
+
+        QCOMPARE(state, 6);
+        QVERIFY(watcher1.isFinished());
+        QVERIFY(watcher1.isCanceled());
+        QVERIFY(watcher2.isFinished());
+        QVERIFY(watcher2.isCanceled());
+    }
 }
 
 void tst_QFuture::continuationsWithContext()

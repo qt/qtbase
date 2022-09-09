@@ -183,9 +183,7 @@ protected:
     void setContinuation(std::function<void(const QFutureInterfaceBase &)> func);
     void setContinuation(std::function<void(const QFutureInterfaceBase &)> func,
                          QFutureInterfaceBasePrivate *continuationFutureData);
-#if QT_CORE_REMOVED_SINCE(6, 4)
     void cleanContinuation();
-#endif
     void runContinuation() const;
 
     void setLaunchAsync(bool value);
