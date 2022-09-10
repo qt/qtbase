@@ -316,12 +316,45 @@ QCryptographicHash::QCryptographicHash(Algorithm method)
 }
 
 /*!
+    \fn QCryptographicHash::QCryptographicHash(QCryptographicHash &&other)
+
+    Move-constructs a new QCryptographicHash from \a other.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+
+    \since 6.5
+*/
+
+/*!
   Destroys the object.
 */
 QCryptographicHash::~QCryptographicHash()
 {
     delete d;
 }
+
+/*!
+    \fn QCryptographicHash &QCryptographicHash::operator=(QCryptographicHash &&other)
+
+    Move-assigns \a other to this QCryptographicHash instance.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+
+    \since 6.5
+*/
+
+/*!
+    \fn void QCryptographicHash::swap(QCryptographicHash &other)
+
+    Swaps cryptographic hash \a other with this cryptographic hash. This
+    operation is very fast and never fails.
+
+    \since 6.5
+*/
 
 /*!
   Resets the object.
