@@ -71,6 +71,7 @@ public:
     void swap(QCryptographicHash &other) noexcept { qt_ptr_swap(d, other.d); }
 
     void reset() noexcept;
+    [[nodiscard]] Algorithm algorithm() const noexcept;
 
 #if QT_DEPRECATED_SINCE(6, 4)
     QT_DEPRECATED_VERSION_X_6_4("Use the QByteArrayView overload instead")

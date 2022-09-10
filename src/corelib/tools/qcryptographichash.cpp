@@ -364,6 +364,16 @@ void QCryptographicHash::reset() noexcept
     d->reset();
 }
 
+/*!
+    Returns the algorithm used to generate the cryptographic hash.
+
+    \since 6.5
+*/
+QCryptographicHash::Algorithm QCryptographicHash::algorithm() const noexcept
+{
+    return d->method;
+}
+
 void QCryptographicHashPrivate::reset() noexcept
 {
     switch (method) {

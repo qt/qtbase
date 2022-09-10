@@ -51,6 +51,8 @@ void tst_QCryptographicHash::repeated_result()
     QCryptographicHash::Algorithm _algo = QCryptographicHash::Algorithm(algo);
     QCryptographicHash hash(_algo);
 
+    QCOMPARE_EQ(hash.algorithm(), _algo);
+
     QFETCH(QByteArray, first);
     hash.addData(first);
 
