@@ -48,7 +48,7 @@ QWasmInputContext::QWasmInputContext()
     m_inputElement = document.call<emscripten::val>("createElement", std::string("input"));
     m_inputElement.set("type", "text");
     m_inputElement.set("style", "position:absolute;left:-1000px;top:-1000px"); // offscreen
-    m_inputElement.set("contentaediable","true");
+    m_inputElement.set("contenteditable","true");
 
     if (platform() == Platform::Android) {
         emscripten::val body = document["body"];
