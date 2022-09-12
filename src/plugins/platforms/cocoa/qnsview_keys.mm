@@ -250,10 +250,9 @@ bool KeyEvent::sendWindowSystemEvent(QWindow *window) const
     case QEvent::KeyPress:
     case QEvent::KeyRelease: {
         static const int count = 1;
-        static const bool tryShortcutOverride = false;
         QWindowSystemInterface::handleExtendedKeyEvent(window, timestamp,
             type, key, modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers,
-            text, isRepeat, count, tryShortcutOverride);
+            text, isRepeat, count);
         // FIXME: Make handleExtendedKeyEvent synchronous
         return QWindowSystemInterface::flushWindowSystemEvents();
     }
