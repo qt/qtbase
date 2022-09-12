@@ -36,6 +36,7 @@ private slots:
     void lowering();
     void removing();
     void removingTheRoot();
+    void clearing();
 
 private:
     void onTopWindowChanged()
@@ -239,6 +240,32 @@ void tst_QWasmWindowStack::removingTheRoot()
     expectedWindowOrder = { &m_window3, &m_window2, &m_window1 };
     QVERIFY(std::equal(expectedWindowOrder.begin(), expectedWindowOrder.end(),
                        getWindowsFrontToBack(&stack).begin()));
+}
+
+void tst_QWasmWindowStack::clearing()
+{
+    QWasmWasmWindowStack stack(m_mockCallback);
+
+    stack.pushWindow(&m_root);
+    stack.pushWindow(&m_window1);
+    // Window order: 1 R
+
+    clearCallbackCounter();
+
+    QCOMPARE(&m_window1, stack.topWindow());
+
+    m_onTopLevelChangedAction = [this, &stack]() { QVERIFY(stack.topWindow() == &m_root); };
+    stack.removeWindow(&m_window1);
+    // Window order: R
+    verifyTopWindowChangedCalled();
+    QCOMPARE(&m_root, stack.topWindow());
+
+    m_onTopLevelChangedAction = [&stack]() { QVERIFY(stack.topWindow() == nullptr); };
+    stack.removeWindow(&m_root);
+    // Window order: <empty>
+    verifyTopWindowChangedCalled();
+    QCOMPARE(nullptr, stack.topWindow());
+    QCOMPARE(0u, stack.size());
 }
 
 QTEST_MAIN(tst_QWasmWindowStack)

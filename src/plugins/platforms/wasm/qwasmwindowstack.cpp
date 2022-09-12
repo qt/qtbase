@@ -111,7 +111,7 @@ QWasmWindow *QWasmWasmWindowStack::rootWindow() const
 
 QWasmWindow *QWasmWasmWindowStack::topWindow() const
 {
-    return m_windowStack.last();
+    return m_windowStack.empty() ? nullptr : m_windowStack.last();
 }
 
 QWasmWasmWindowStack::StorageType::iterator QWasmWasmWindowStack::regularWindowsBegin()
