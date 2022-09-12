@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qtimer.h"
+#include "qtimer_p.h"
+
 #include "qabstracteventdispatcher.h"
 #include "qcoreapplication.h"
 #include "qobject_p.h"
@@ -11,23 +13,6 @@
 #include "qproperty_p.h"
 
 QT_BEGIN_NAMESPACE
-
-static constexpr int INV_TIMER = -1;                // invalid timer id
-
-class QTimerPrivate : public QObjectPrivate
-{
-    Q_DECLARE_PUBLIC(QTimer)
-public:
-    void setInterval(int msec) { q_func()->setInterval(msec); }
-    bool isActiveActualCalculation() const { return id >= 0; }
-
-    int id = INV_TIMER;
-    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QTimerPrivate, int, inter, &QTimerPrivate::setInterval, 0)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimerPrivate, bool, single, false)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimerPrivate, Qt::TimerType, type, Qt::CoarseTimer)
-    Q_OBJECT_COMPUTED_PROPERTY(QTimerPrivate, bool, isActiveData,
-                               &QTimerPrivate::isActiveActualCalculation)
-};
 
 /*!
     \class QTimer
@@ -139,7 +124,7 @@ QTimer::QTimer(QObject *parent)
 
 QTimer::~QTimer()
 {
-    if (d_func()->id != INV_TIMER)                        // stop running timer
+    if (d_func()->id != QTimerPrivate::INV_TIMER) // stop running timer
         stop();
 }
 
@@ -200,7 +185,7 @@ int QTimer::timerId() const
 void QTimer::start()
 {
     Q_D(QTimer);
-    if (d->id != INV_TIMER)                        // stop running timer
+    if (d->id != QTimerPrivate::INV_TIMER) // stop running timer
         stop();
     d->id = QObject::startTimer(d->inter, d->type);
     d->isActiveData.notify();
@@ -239,9 +224,9 @@ void QTimer::start(int msec)
 void QTimer::stop()
 {
     Q_D(QTimer);
-    if (d->id != INV_TIMER) {
+    if (d->id != QTimerPrivate::INV_TIMER) {
         QObject::killTimer(d->id);
-        d->id = INV_TIMER;
+        d->id = QTimerPrivate::INV_TIMER;
         d->isActiveData.notify();
     }
 }
@@ -721,7 +706,7 @@ void QTimer::setInterval(int msec)
     Q_D(QTimer);
     const bool intervalChanged = msec != d->inter;
     d->inter.setValue(msec);
-    if (d->id != INV_TIMER) {                        // create new timer
+    if (d->id != QTimerPrivate::INV_TIMER) { // create new timer
         QObject::killTimer(d->id);                        // restart timer
         d->id = QObject::startTimer(msec, d->type);
         // No need to call markDirty() for d->isActiveData here,
@@ -755,7 +740,7 @@ QBindable<int> QTimer::bindableInterval()
 int QTimer::remainingTime() const
 {
     Q_D(const QTimer);
-    if (d->id != INV_TIMER) {
+    if (d->id != QTimerPrivate::INV_TIMER) {
         return QAbstractEventDispatcher::instance()->remainingTime(d->id);
     }
 
