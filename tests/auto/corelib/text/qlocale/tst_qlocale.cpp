@@ -23,11 +23,7 @@
 
 #include <float.h>
 #include <math.h>
-
-#if defined(Q_OS_LINUX) && !defined(__UCLIBC__)
-#  include <fenv.h>
-#  define QT_USE_FENV
-#endif
+#include <fenv.h>
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
 #    include <stdlib.h>
@@ -1487,25 +1483,12 @@ void tst_QLocale::infNaN()
 
 void tst_QLocale::fpExceptions()
 {
+#if defined(FE_ALL_EXCEPT) && FE_ALL_EXCEPT != 0
     // Check that double-to-string conversion doesn't throw floating point
     // exceptions when they are enabled.
-#ifdef Q_OS_WIN
-#  ifndef _MCW_EM
-#    define _MCW_EM 0x0008001F
-#  endif
-#  ifndef _EM_INEXACT
-#    define _EM_INEXACT 0x00000001
-#  endif
-    _clearfp();
-    unsigned int oldbits = _controlfp(0 | _EM_INEXACT, _MCW_EM);
-#endif
-
-#ifdef QT_USE_FENV
     fenv_t envp;
     fegetenv(&envp);
     feclearexcept(FE_ALL_EXCEPT);
-    feenableexcept(FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW | FE_INVALID);
-#endif
 
     QString::number(1000.1245);
     QString::number(1.1);
@@ -1513,12 +1496,7 @@ void tst_QLocale::fpExceptions()
 
     QVERIFY(true);
 
-#ifdef Q_OS_WIN
-    _clearfp();
-    _controlfp(oldbits, _MCW_EM);
-#endif
-
-#ifdef QT_USE_FENV
+    QCOMPARE(fetestexcept(FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW | FE_INVALID), 0);
     fesetenv(&envp);
 #endif
 }
