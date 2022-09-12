@@ -216,10 +216,6 @@ protected:
     mutable QSettings::Status status;
 };
 
-#ifdef Q_OS_WASM
-class QWasmSettingsPrivate;
-#endif
-
 class QConfFileSettingsPrivate : public QSettingsPrivate
 {
 public:
@@ -266,7 +262,7 @@ private:
     Qt::CaseSensitivity caseSensitivity;
     qsizetype nextPosition;
 #ifdef Q_OS_WASM
-    friend class QWasmSettingsPrivate;
+    friend class QWasmIDBSettingsPrivate;
 #endif
 };
 

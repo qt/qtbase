@@ -54,6 +54,12 @@ public:
         Registry64Format,
 #endif
 
+#if defined(Q_OS_WASM)
+    // FIXME: add public API in next minor release.
+    // WebLocalStorageFormat (IniFormat + 1)
+    // WebIDBSFormat (IniFormat + 2)
+#endif
+
         InvalidFormat = 16,
         CustomFormat1,
         CustomFormat2,
