@@ -120,7 +120,7 @@ public class QtServiceDelegate
                                         "Droid Sans Mono;Droid Sans;Droid Sans Fallback");
         QtNative.setEnvironmentVariable("QT_ANDROID_FONTS_SERIF", "Droid Serif");
         QtNative.setEnvironmentVariable("HOME", m_service.getFilesDir().getAbsolutePath());
-        QtNative.setEnvironmentVariable("TMPDIR", m_service.getFilesDir().getAbsolutePath());
+        QtNative.setEnvironmentVariable("TMPDIR", m_service.getCacheDir().getAbsolutePath());
 
         if (Build.VERSION.SDK_INT < 14)
             QtNative.setEnvironmentVariable("QT_ANDROID_FONTS", "Droid Sans;Droid Sans Fallback");

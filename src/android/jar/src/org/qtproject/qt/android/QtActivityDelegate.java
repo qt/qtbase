@@ -721,7 +721,7 @@ public class QtActivityDelegate
                                         "Droid Sans Mono;Droid Sans;Droid Sans Fallback");
         QtNative.setEnvironmentVariable("QT_ANDROID_FONTS_SERIF", "Droid Serif");
         QtNative.setEnvironmentVariable("HOME", m_activity.getFilesDir().getAbsolutePath());
-        QtNative.setEnvironmentVariable("TMPDIR", m_activity.getFilesDir().getAbsolutePath());
+        QtNative.setEnvironmentVariable("TMPDIR", m_activity.getCacheDir().getAbsolutePath());
         QtNative.setEnvironmentVariable("QT_ANDROID_FONTS",
                                         "Roboto;Droid Sans;Droid Sans Fallback");
         QtNative.setEnvironmentVariable("QT_ANDROID_APP_ICON_SIZE",
