@@ -9725,7 +9725,7 @@ void tst_QNetworkReply::contentEncodingBigPayload_data()
     QTest::addRow("gzip-4GB") << QByteArray("gzip") << (":/4G.gz") << fourGiB;
 
 #if QT_CONFIG(brotli)
-    QTest::addRow("brotli-4GB") << QByteArray("br") << (testDataDir + "./4G.br") << fourGiB;
+    QTest::addRow("brotli-4GB") << QByteArray("br") << (testDataDir + "/4G.br") << fourGiB;
 #endif
 #if defined(QT_BUILD_INTERNAL) && QT_CONFIG(zstd)
     QTest::addRow("zstd-4GB") << QByteArray("zstd") << (":/4G.zst") << fourGiB;
