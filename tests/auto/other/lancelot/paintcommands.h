@@ -187,6 +187,7 @@ private:
     void command_drawEllipse(QRegularExpressionMatch re);
     void command_drawImage(QRegularExpressionMatch re);
     void command_drawLine(QRegularExpressionMatch re);
+    void command_drawLines(QRegularExpressionMatch re);
     void command_drawPath(QRegularExpressionMatch re);
     void command_drawPie(QRegularExpressionMatch re);
     void command_drawPixmap(QRegularExpressionMatch re);

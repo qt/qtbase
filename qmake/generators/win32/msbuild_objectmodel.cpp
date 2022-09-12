@@ -144,6 +144,7 @@ const char _IntermediateDirectory[]             = "IntermediateDirectory";
 const char _KeyContainer[]                      = "KeyContainer";
 const char _KeyFile[]                           = "KeyFile";
 const char _LanguageStandard[]                  = "LanguageStandard";
+const char _LanguageStandard_C[]                = "LanguageStandard_C";
 const char _LargeAddressAware[]                 = "LargeAddressAware";
 const char _LinkDLL[]                           = "LinkDLL";
 const char _LinkErrorReporting[]                = "LinkErrorReporting";
@@ -1483,6 +1484,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCCLCompilerTool &tool)
             << attrTagT(_MinimalRebuild, tool.MinimalRebuild)
             << attrTagT(_MultiProcessorCompilation, tool.MultiProcessorCompilation)
             << attrTagS(_LanguageStandard, tool.LanguageStandard)
+            << attrTagS(_LanguageStandard_C, tool.LanguageStandard_C)
             << attrTagS(_ObjectFileName, tool.ObjectFile)
             << attrTagT(_OmitDefaultLibName, tool.OmitDefaultLibName)
             << attrTagT(_OmitFramePointers, tool.OmitFramePointers)

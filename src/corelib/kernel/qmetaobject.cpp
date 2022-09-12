@@ -166,6 +166,13 @@ static inline const QByteArray stringData(const QMetaObject *mo, int index)
     return data;
 }
 
+static inline QLatin1String stringDataView(const QMetaObject *mo, int index)
+{
+    const QByteArrayData &d = mo->d.stringdata[index];
+    const char *string = reinterpret_cast<const char *>(d.data());
+    return QLatin1String(string, d.size);
+}
+
 static inline const char *rawStringData(const QMetaObject *mo, int index)
 {
     return stringData(mo, index).data();
@@ -2819,6 +2826,28 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
     return value;
 }
 
+namespace
+{
+template <typename String, typename Container, typename Separator>
+void join_reversed(String &s, const Container &c, Separator sep)
+{
+    if (c.empty())
+        return;
+    qsizetype len = qsizetype(c.size()) - 1; // N - 1 separators
+    for (auto &e : c)
+        len += qsizetype(e.size()); // N parts
+    s.reserve(len);
+    bool first = true;
+    for (auto rit = c.rbegin(), rend = c.rend(); rit != rend; ++rit) {
+        const auto &e = *rit;
+        if (!first)
+            s.append(sep);
+        first = false;
+        s.append(e.data(), e.size());
+    }
+}
+} // unnamed namespace
+
 /*!
     Returns a byte array of '|'-separated keys that represents the
     given \a value.
@@ -2833,17 +2862,17 @@ QByteArray QMetaEnum::valueToKeys(int value) const
     const int offset = priv(mobj->d.data)->revision >= 8 ? 3 : 2;
     int count = mobj->d.data[handle + offset];
     int data = mobj->d.data[handle + offset + 1];
+    QVarLengthArray<QLatin1String, sizeof(int) * CHAR_BIT> parts;
     int v = value;
     // reverse iterate to ensure values like Qt::Dialog=0x2|Qt::Window are processed first.
     for (int i = count - 1; i >= 0; --i) {
         int k = mobj->d.data[data + 2*i + 1];
         if ((k != 0 && (v & k) == k ) ||  (k == value))  {
             v = v & ~k;
-            if (!keys.isEmpty())
-                keys.prepend('|');
-            keys.prepend(stringData(mobj, mobj->d.data[data + 2*i]));
+            parts.push_back(stringDataView(mobj, mobj->d.data[data + 2 * i]));
         }
     }
+    join_reversed(keys, parts, '|');
     return keys;
 }
 

@@ -24,7 +24,7 @@ all_translations = $$TRANSLATIONS $$EXTRA_TRANSLATIONS
 for (translation, all_translations) {
     # mirrors $$LRELEASE_DIR/${QMAKE_FILE_IN_BASE}.qm above
     translation = $$basename(translation)
-    QM_FILES += $$OUT_PWD/$$LRELEASE_DIR/$$replace(translation, \\..*$, .qm)
+    QM_FILES += $$OUT_PWD/$$LRELEASE_DIR/$$replace(translation, \\.[^.]+$, .qm)
 }
 embed_translations {
     qmake_qm_files.files = $$QM_FILES

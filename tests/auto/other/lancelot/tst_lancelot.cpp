@@ -30,6 +30,9 @@
 #include <qbaselinetest.h>
 #include <QDir>
 #include <QPainter>
+#include <QPdfWriter>
+#include <QTemporaryFile>
+#include <QProcess>
 
 #ifndef QT_NO_OPENGL
 #include <QOpenGLFramebufferObjectFormat>
@@ -53,7 +56,8 @@ public:
 private:
     enum GraphicsEngine {
         Raster = 0,
-        OpenGL = 1
+        OpenGL = 1,
+        Pdf = 2
     };
 
     void setupTestSuite(const QStringList& blacklist = QStringList());
@@ -87,6 +91,9 @@ private slots:
     void testRasterGrayscale8();
     void testRasterRGBA64PM_data();
     void testRasterRGBA64PM();
+
+    void testPdf_data();
+    void testPdf();
 
 #ifndef QT_NO_OPENGL
     void testOpenGL_data();
@@ -239,6 +246,21 @@ void tst_Lancelot::testRasterRGBA64PM()
 }
 
 
+void tst_Lancelot::testPdf_data()
+{
+#ifdef Q_OS_MACOS
+    setupTestSuite();
+#else
+    QSKIP("Pdf testing only implemented for macOS");
+#endif
+}
+
+void tst_Lancelot::testPdf()
+{
+    runTestSuite(Pdf, QImage::Format_RGB32);
+}
+
+
 #ifndef QT_NO_OPENGL
 bool tst_Lancelot::checkSystemGLSupport()
 {
@@ -370,6 +392,28 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format, co
         paint(&pdv, engine, format, script, QFileInfo(filePath).absoluteFilePath());
         rendered = fbo.toImage().convertToFormat(format);
 #endif
+    } else if (engine == Pdf) {
+        QString tempStem(QDir::tempPath() + QLatin1String("/lancelot_XXXXXX_") + qpsFile.chopped(4));
+
+        QTemporaryFile pdfFile(tempStem + QLatin1String(".pdf"));
+        pdfFile.open();
+        QPdfWriter writer(&pdfFile);
+        writer.setPdfVersion(QPdfWriter::PdfVersion_1_6);
+        writer.setResolution(150);
+        paint(&writer, engine, format, script, QFileInfo(filePath).absoluteFilePath());
+        pdfFile.close();
+
+        // Convert pdf to something we can read into a QImage, using macOS' sips utility
+        QTemporaryFile pngFile(tempStem + QLatin1String(".png"));
+        pngFile.open(); // Just create the file name
+        pngFile.close();
+        QProcess proc;
+        const char *rawArgs = "-s format png --cropOffset 20 20 -c 800 800 -o";
+        QStringList argList = QString::fromLatin1(rawArgs).split(QLatin1Char(' '));
+        proc.start(QLatin1String("sips"), argList << pngFile.fileName() << pdfFile.fileName());
+        proc.waitForFinished(2 * 60 * 1000); // May need some time
+
+        rendered = QImage(pngFile.fileName());
     }
 
     QBASELINE_TEST(rendered);
@@ -383,6 +427,9 @@ void tst_Lancelot::paint(QPaintDevice *device, GraphicsEngine engine, QImage::Fo
     switch (engine) {
     case OpenGL:
         pcmd.setType(OpenGLBufferType); // version/profile is communicated through the context's format()
+        break;
+    case Pdf:
+        pcmd.setType(PdfType);
         break;
     case Raster:  // fallthrough
     default:

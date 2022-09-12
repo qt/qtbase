@@ -856,14 +856,14 @@ void QPdfEngine::drawRects (const QRectF *rects, int rectCount)
     if (!d->hasPen && !d->hasBrush)
         return;
 
-    if (d->simplePen || !d->hasPen) {
-        // draw strokes natively in this case for better output
-        if(!d->simplePen && !d->stroker.matrix.isIdentity())
+    if ((d->simplePen && !d->needsTransform) || !d->hasPen) {
+        // draw natively in this case for better output
+        if (!d->hasPen && d->needsTransform) // i.e. this is just a fillrect
             *d->currentPage << "q\n" << QPdf::generateMatrix(d->stroker.matrix);
         for (int i = 0; i < rectCount; ++i)
             *d->currentPage << rects[i].x() << rects[i].y() << rects[i].width() << rects[i].height() << "re\n";
         *d->currentPage << (d->hasPen ? (d->hasBrush ? "B\n" : "S\n") : "f\n");
-        if(!d->simplePen && !d->stroker.matrix.isIdentity())
+        if (!d->hasPen && d->needsTransform)
             *d->currentPage << "Q\n";
     } else {
         QPainterPath p;
@@ -920,7 +920,8 @@ void QPdfEngine::drawPath (const QPainterPath &p)
 
     if (d->simplePen) {
         // draw strokes natively in this case for better output
-        *d->currentPage << QPdf::generatePath(p, QTransform(), d->hasBrush ? QPdf::FillAndStrokePath : QPdf::StrokePath);
+        *d->currentPage << QPdf::generatePath(p, d->needsTransform ? d->stroker.matrix : QTransform(),
+                                              d->hasBrush ? QPdf::FillAndStrokePath : QPdf::StrokePath);
     } else {
         if (d->hasBrush)
             *d->currentPage << QPdf::generatePath(p, d->stroker.matrix, QPdf::FillPath);
@@ -967,7 +968,7 @@ void QPdfEngine::drawPixmap (const QRectF &rectangle, const QPixmap &pixmap, con
 
     *d->currentPage
         << QPdf::generateMatrix(QTransform(rectangle.width() / sr.width(), 0, 0, rectangle.height() / sr.height(),
-                                           rectangle.x(), rectangle.y()) * (d->simplePen ? QTransform() : d->stroker.matrix));
+                                           rectangle.x(), rectangle.y()) * (!d->needsTransform ? QTransform() : d->stroker.matrix));
     if (bitmap) {
         // set current pen as d->brush
         d->brush = d->pen.brush();
@@ -1007,7 +1008,7 @@ void QPdfEngine::drawImage(const QRectF &rectangle, const QImage &image, const Q
 
     *d->currentPage
         << QPdf::generateMatrix(QTransform(rectangle.width() / sr.width(), 0, 0, rectangle.height() / sr.height(),
-                                           rectangle.x(), rectangle.y()) * (d->simplePen ? QTransform() : d->stroker.matrix));
+                                           rectangle.x(), rectangle.y()) * (!d->needsTransform ? QTransform() : d->stroker.matrix));
     setBrush();
     d->currentPage->streamImage(im.width(), im.height(), object);
     *d->currentPage << "Q\n";
@@ -1056,7 +1057,7 @@ void QPdfEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     }
 
     *d->currentPage << "q\n";
-    if(!d->simplePen)
+    if (d->needsTransform)
         *d->currentPage << QPdf::generateMatrix(d->stroker.matrix);
 
     bool hp = d->hasPen;
@@ -1135,12 +1136,12 @@ void QPdfEngine::updateState(const QPaintEngineState &state)
             d->pen = state.pen();
         }
         d->hasPen = d->pen.style() != Qt::NoPen;
+        bool oldCosmetic = d->stroker.cosmeticPen;
         d->stroker.setPen(d->pen, state.renderHints());
         QBrush penBrush = d->pen.brush();
-        bool cosmeticPen = qt_pen_is_cosmetic(d->pen, state.renderHints());
         bool oldSimple = d->simplePen;
-        d->simplePen = (d->hasPen && !cosmeticPen && (penBrush.style() == Qt::SolidPattern) && penBrush.isOpaque() && d->opacity == 1.0);
-        if (oldSimple != d->simplePen)
+        d->simplePen = (d->hasPen && (penBrush.style() == Qt::SolidPattern) && penBrush.isOpaque() && d->opacity == 1.0);
+        if (oldSimple != d->simplePen || oldCosmetic != d->stroker.cosmeticPen)
             flags |= DirtyTransform;
     } else if (flags & DirtyHints) {
         d->stroker.setPen(d->pen, state.renderHints());
@@ -1224,8 +1225,13 @@ void QPdfEngine::setupGraphicsState(QPaintEngine::DirtyFlags flags)
 
     if (flags & DirtyTransform) {
         *d->currentPage << "q\n";
-        if (d->simplePen && !d->stroker.matrix.isIdentity())
-            *d->currentPage << QPdf::generateMatrix(d->stroker.matrix);
+        d->needsTransform = false;
+        if (!d->stroker.matrix.isIdentity()) {
+            if (d->simplePen && !d->stroker.cosmeticPen)
+                *d->currentPage << QPdf::generateMatrix(d->stroker.matrix);
+            else
+                d->needsTransform = true; // I.e. page-wide xf not set, local xf needed
+        }
     }
     if (flags & DirtyBrush)
         setBrush();
@@ -1480,7 +1486,7 @@ int QPdfEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
 
 QPdfEnginePrivate::QPdfEnginePrivate()
     : clipEnabled(false), allClipped(false), hasPen(true), hasBrush(false), simplePen(false),
-      pdfVersion(QPdfEngine::Version_1_4),
+      needsTransform(false), pdfVersion(QPdfEngine::Version_1_4),
       outDevice(nullptr), ownsDevice(false),
       embedFonts(true),
       grayscale(false),
@@ -1539,6 +1545,7 @@ bool QPdfEngine::begin(QPaintDevice *pdev)
     d->graphicsState = 0;
     d->patternColorSpace = 0;
     d->simplePen = false;
+    d->needsTransform = false;
 
     d->pages.clear();
     d->imageCache.clear();

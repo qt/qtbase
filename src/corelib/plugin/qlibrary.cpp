@@ -414,6 +414,11 @@ inline void QLibraryStore::cleanup()
                 // see https://bugzilla.novell.com/show_bug.cgi?id=622977
                 // and http://sourceware.org/bugzilla/show_bug.cgi?id=11941
                 lib->unload(QLibraryPrivate::NoUnloadSys);
+#elif defined(Q_OS_DARWIN)
+                // We cannot fully unload libraries, as we don't know if there are
+                // lingering references (in system threads e.g.) to Objective-C classes
+                // defined in the library.
+                lib->unload(QLibraryPrivate::NoUnloadSys);
 #else
                 lib->unload();
 #endif

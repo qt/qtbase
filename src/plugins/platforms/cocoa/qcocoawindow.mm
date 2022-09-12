@@ -367,12 +367,18 @@ void QCocoaWindow::setVisible(bool visible)
             if (window()->windowState() != Qt::WindowMinimized) {
                 if (parentCocoaWindow && (window()->modality() == Qt::WindowModal || window()->type() == Qt::Sheet)) {
                     // Show the window as a sheet
-                    [parentCocoaWindow->nativeWindow() beginSheet:m_view.window completionHandler:nil];
+                    NSWindow *nativeParentWindow = parentCocoaWindow->nativeWindow();
+                    if (!nativeParentWindow.attachedSheet)
+                        [nativeParentWindow beginSheet:m_view.window completionHandler:nil];
+                    else
+                        [nativeParentWindow beginCriticalSheet:m_view.window completionHandler:nil];
                 } else if (window()->modality() == Qt::ApplicationModal) {
                     // Show the window as application modal
                     eventDispatcher()->beginModalSession(window());
                 } else if (m_view.window.canBecomeKeyWindow) {
-                    bool shouldBecomeKeyNow = !NSApp.modalWindow || m_view.window.worksWhenModal;
+                    bool shouldBecomeKeyNow = !NSApp.modalWindow
+                                              || m_view.window.worksWhenModal
+                                              || !NSApp.modalWindow.visible;
 
                     // Panels with becomesKeyOnlyIfNeeded set should not activate until a view
                     // with needsPanelToBecomeKey, for example a line edit, is clicked.
@@ -524,10 +530,8 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     if (frameless) {
         // Frameless windows do not display the traffic lights buttons for
         // e.g. minimize, however StyleMaskMiniaturizable is required to allow
-        // programatic minimize. However, for framless tool windows (e.g. dock windows)
-        // we don't want that, as it breaks translucency.
-        if (type != Qt::Tool)
-            styleMask |= NSWindowStyleMaskMiniaturizable;
+        // programmatic minimize.
+        styleMask |= NSWindowStyleMaskMiniaturizable;
     } else if (flags & Qt::CustomizeWindowHint) {
         if (flags & Qt::WindowTitleHint)
             styleMask |= NSWindowStyleMaskTitled;
@@ -550,9 +554,11 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     if (m_drawContentBorderGradient)
         styleMask |= NSWindowStyleMaskTexturedBackground;
 
-    // Don't wipe fullscreen state
+    // Don't wipe existing states
     if (m_view.window.styleMask & NSWindowStyleMaskFullScreen)
         styleMask |= NSWindowStyleMaskFullScreen;
+    if (m_view.window.styleMask & NSWindowStyleMaskFullSizeContentView)
+        styleMask |= NSWindowStyleMaskFullSizeContentView;
 
     return styleMask;
 }
@@ -1731,6 +1737,20 @@ void QCocoaWindow::setWindowCursor(NSCursor *cursor)
     view.cursor = cursor;
 
     [m_view.window invalidateCursorRectsForView:m_view];
+
+    // There's a bug in AppKit where calling invalidateCursorRectsForView when
+    // there's an override cursor active (for example when hovering over the
+    // window frame), will not result in a cursorUpdate: callback. To work around
+    // this we synthesize a cursor update event and call the callback ourselves,
+    // if we detect that the mouse is currently over the view.
+    auto locationInWindow = m_view.window.mouseLocationOutsideOfEventStream;
+    auto locationInSuperview = [m_view.superview convertPoint:locationInWindow fromView:nil];
+    if ([m_view hitTest:locationInSuperview] == m_view) {
+        [m_view cursorUpdate:[NSEvent enterExitEventWithType:NSEventTypeCursorUpdate
+            location:locationInWindow modifierFlags:0 timestamp:0
+            windowNumber:m_view.window.windowNumber context:nil
+            eventNumber:0 trackingNumber:0 userData:0]];
+    }
 }
 
 void QCocoaWindow::registerTouch(bool enable)

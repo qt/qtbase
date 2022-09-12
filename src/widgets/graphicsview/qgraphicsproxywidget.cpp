@@ -832,6 +832,10 @@ bool QGraphicsProxyWidget::event(QEvent *event)
         return QGraphicsWidget::event(event);
 
     switch (event->type()) {
+    case QEvent::WindowActivate:
+    case QEvent::WindowDeactivate:
+        QCoreApplication::sendEvent(d->widget, event);
+        break;
     case QEvent::StyleChange:
         // Propagate style changes to the embedded widget.
         if (!d->styleChangeMode) {

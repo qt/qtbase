@@ -155,7 +155,8 @@ c++11|c++14|c++1z|c++2a {
     unset(cxxstd)
 }
 
-c99|c11 {
+c99|c11|c17|c18 {
+    c17|c18:   cstd = C17
     c11:       cstd = C11
     else:      cstd = C99
 

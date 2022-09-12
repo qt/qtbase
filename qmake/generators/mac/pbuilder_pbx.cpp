@@ -2061,4 +2061,10 @@ ProjectBuilderMakefileGenerator::writeSettings(const QString &var, const ProStri
     return ret;
 }
 
+bool
+ProjectBuilderMakefileGenerator::inhibitMakeDirOutPath(const ProKey &path) const
+{
+    return path == "OBJECTS_DIR";
+}
+
 QT_END_NAMESPACE

@@ -2157,7 +2157,7 @@ static QImage convertWithPalette(const QImage &src, QImage::Format format,
     QImage dest(src.size(), format);
     dest.setColorTable(clut);
 
-    QImageData::get(dest)->text = QImageData::get(src)->text;
+    copyMetadata(QImageData::get(dest), QImageData::get(src));
 
     int h = src.height();
     int w = src.width();

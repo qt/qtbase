@@ -2477,6 +2477,10 @@ void tst_QLocale::dateFormat()
 
     const QLocale ir("ga_IE");
     QCOMPARE(ir.dateFormat(QLocale::ShortFormat), QLatin1String("dd/MM/yyyy"));
+
+    const auto sys = QLocale::system(); // QTBUG-92018, ru_RU on MS
+    const QDate date(2021, 3, 17);
+    QCOMPARE(sys.toString(date, sys.dateFormat(QLocale::LongFormat)), sys.toString(date));
 }
 
 void tst_QLocale::timeFormat()
@@ -2535,18 +2539,21 @@ void tst_QLocale::monthName()
     // 'de' locale doesn't have narrow month name
     QCOMPARE(de.monthName(12, QLocale::NarrowFormat), QLatin1String("D"));
 
-    QLocale ru("ru_RU");
+    const QLocale ru("ru_RU");
     QCOMPARE(ru.monthName(1, QLocale::LongFormat),
              QString::fromUtf8("\321\217\320\275\320\262\320\260\321\200\321\217"));
     QCOMPARE(ru.monthName(1, QLocale::ShortFormat),
              QString::fromUtf8("\321\217\320\275\320\262\56"));
     QCOMPARE(ru.monthName(1, QLocale::NarrowFormat), QString::fromUtf8("\320\257"));
+    const auto sys = QLocale::system();
+    if (sys.language() == QLocale::Russian) // QTBUG-92018
+        QVERIFY(sys.monthName(3) != sys.standaloneMonthName(3));
 
-    QLocale ir("ga_IE");
+    const QLocale ir("ga_IE");
     QCOMPARE(ir.monthName(1, QLocale::ShortFormat), QLatin1String("Ean"));
     QCOMPARE(ir.monthName(12, QLocale::ShortFormat), QLatin1String("Noll"));
 
-    QLocale cz("cs_CZ");
+    const QLocale cz("cs_CZ");
     QCOMPARE(cz.monthName(1, QLocale::ShortFormat), QLatin1String("led"));
     QCOMPARE(cz.monthName(12, QLocale::ShortFormat), QLatin1String("pro"));
 }

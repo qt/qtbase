@@ -56,6 +56,8 @@
 #include <MoltenVK/mvk_vulkan.h>
 #endif
 
+#include <QHash>
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_DEBUG_STREAM

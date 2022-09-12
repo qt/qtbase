@@ -9,3 +9,6 @@ ubuntu
 windows-10 msvc-2015
 windows-7sp1
 
+# QTBUG-96345
+[simpleConnectToIMAP]
+ubuntu

@@ -178,6 +178,8 @@ DEFINEFUNC(const SSL_METHOD *, TLS_server_method, DUMMYARG, DUMMYARG, return nul
 DEFINEFUNC(void, X509_up_ref, X509 *a, a, return, DUMMYARG)
 DEFINEFUNC(ASN1_TIME *, X509_getm_notBefore, X509 *a, a, return nullptr, return)
 DEFINEFUNC(ASN1_TIME *, X509_getm_notAfter, X509 *a, a, return nullptr, return)
+DEFINEFUNC2(void, ASN1_item_free, ASN1_VALUE *val, val, const ASN1_ITEM *it, it, return, return)
+DEFINEFUNC(void, X509V3_conf_free, CONF_VALUE *val, val, return, return)
 DEFINEFUNC(long, X509_get_version, X509 *a, a, return -1, return)
 DEFINEFUNC(EVP_PKEY *, X509_get_pubkey, X509 *a, a, return nullptr, return)
 DEFINEFUNC2(void, X509_STORE_set_verify_cb, X509_STORE *a, a, X509_STORE_CTX_verify_cb verify_cb, verify_cb, return, DUMMYARG)
@@ -234,6 +236,7 @@ DEFINEFUNC6(int, OCSP_basic_sign, OCSP_BASICRESP *br, br, X509 *signer, signer, 
             const EVP_MD *dg, dg, STACK_OF(X509) *cs, cs, unsigned long flags, flags, return 0, return)
 #endif // ocsp
 
+DEFINEFUNC(void, AUTHORITY_INFO_ACCESS_free, AUTHORITY_INFO_ACCESS *p, p, return, return)
 DEFINEFUNC2(void, BIO_set_data, BIO *a, a, void *ptr, ptr, return, DUMMYARG)
 DEFINEFUNC(void *, BIO_get_data, BIO *a, a, return nullptr, return)
 DEFINEFUNC2(void, BIO_set_init, BIO *a, a, int init, init, return, DUMMYARG)
@@ -791,6 +794,11 @@ static LoadedOpenSsl loadOpenSsl()
     const QStringList cryptoList = findAllLibCrypto();
 
     for (const QString &crypto : cryptoList) {
+#ifdef Q_OS_DARWIN
+        // Clients should not load the unversioned libcrypto dylib as it does not have a stable ABI
+        if (crypto.endsWith("libcrypto.dylib"))
+            continue;
+#endif
         libcrypto->setFileNameAndVersion(crypto, -1);
         if (libcrypto->load()) {
             QFileInfo fi(crypto);
@@ -848,6 +856,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(OPENSSL_init_crypto)
     RESOLVEFUNC(ASN1_STRING_get0_data)
     RESOLVEFUNC(EVP_CIPHER_CTX_reset)
+    RESOLVEFUNC(AUTHORITY_INFO_ACCESS_free)
     RESOLVEFUNC(EVP_PKEY_up_ref)
     RESOLVEFUNC(EVP_PKEY_CTX_new)
     RESOLVEFUNC(EVP_PKEY_param_check)
@@ -884,6 +893,8 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(X509_STORE_CTX_get0_chain)
     RESOLVEFUNC(X509_getm_notBefore)
     RESOLVEFUNC(X509_getm_notAfter)
+    RESOLVEFUNC(ASN1_item_free)
+    RESOLVEFUNC(X509V3_conf_free)
     RESOLVEFUNC(X509_get_version)
     RESOLVEFUNC(X509_get_pubkey)
     RESOLVEFUNC(X509_STORE_set_verify_cb)
@@ -893,12 +904,24 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(OpenSSL_version_num)
     RESOLVEFUNC(OpenSSL_version)
 
-    if (!_q_OpenSSL_version) {
+    if (!_q_OpenSSL_version || !_q_OpenSSL_version_num) {
         // Apparently, we were built with OpenSSL 1.1 enabled but are now using
         // a wrong library.
         qCWarning(lcSsl, "Incompatible version of OpenSSL");
         return false;
     }
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000
+    if (q_OpenSSL_version_num() < 0x30000000) {
+        qCWarning(lcSsl, "Incompatible version of OpenSSL (built with OpenSSL >= 3.x, runtime version is < 3.x)");
+        return false;
+    }
+#else
+    if (q_OpenSSL_version_num() >= 0x30000000) {
+        qCWarning(lcSsl, "Incompatible version of OpenSSL (built with OpenSSL 1.x, runtime version is >= 3.x)");
+        return false;
+    }
+#endif // OPENSSL_VERSION_NUMBER
 
     RESOLVEFUNC(SSL_SESSION_get_ticket_lifetime_hint)
     RESOLVEFUNC(DH_bits)

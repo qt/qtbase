@@ -229,7 +229,7 @@ bool QPlatformWindow::isActive() const
 */
 bool QPlatformWindow::isAncestorOf(const QPlatformWindow *child) const
 {
-    for (const QPlatformWindow *parent = child->parent(); parent; parent = child->parent()) {
+    for (const QPlatformWindow *parent = child->parent(); parent; parent = parent->parent()) {
         if (parent == this)
             return true;
     }

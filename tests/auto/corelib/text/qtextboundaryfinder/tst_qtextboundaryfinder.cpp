@@ -51,6 +51,9 @@ private slots:
     void lineBoundariesDefault();
 #endif
 
+    void graphemeBoundaries_manual_data();
+    void graphemeBoundaries_manual();
+
     void wordBoundaries_manual_data();
     void wordBoundaries_manual();
     void sentenceBoundaries_manual_data();
@@ -285,6 +288,104 @@ void tst_QTextBoundaryFinder::lineBoundariesDefault()
     doTestData(testString, expectedBreakPositions, QTextBoundaryFinder::Line);
 }
 #endif // QT_BUILD_INTERNAL
+
+void tst_QTextBoundaryFinder::graphemeBoundaries_manual_data()
+{
+    QTest::addColumn<QString>("testString");
+    QTest::addColumn<QList<int>>("expectedBreakPositions");
+
+    {
+        // QTBUG-94951
+        QChar s[] = { QChar(0x2764), // U+2764 HEAVY BLACK HEART
+                      QChar(0xFE0F), // U+FE0F VARIATION SELECTOR-16
+                      QChar(0xD83D), QChar(0xDCF2), // U+1F4F2 MOBILE PHONE WITH RIGHTWARDS ARROW AT LEFT
+                      QChar(0xD83D), QChar(0xDCE9), // U+1F4E9 ENVELOPE WITH DOWNWARDS ARROW ABOVE
+                    };
+        QString testString(s, sizeof(s)/sizeof(s[0]));
+
+        QList<int> expectedBreakPositions{0, 2, 4, 6};
+        QTest::newRow("+EXTPICxEXT+EXTPIC+EXTPIC+") << testString << expectedBreakPositions;
+    }
+
+    {
+        QChar s[] = { QChar(0x2764), // U+2764 HEAVY BLACK HEART
+                      QChar(0xFE0F), // U+FE0F VARIATION SELECTOR-16
+                      QChar(0x2764), // U+2764 HEAVY BLACK HEART
+                      QChar(0xFE0F), // U+FE0F VARIATION SELECTOR-16
+                    };
+        QString testString(s, sizeof(s)/sizeof(s[0]));
+
+        QList<int> expectedBreakPositions{0, 2, 4};
+        QTest::newRow("+EXTPICxEXT+EXTPICxEXT+") << testString << expectedBreakPositions;
+    }
+
+    {
+        QChar s[] = { QChar(0x2764), // U+2764 HEAVY BLACK HEART
+                      QChar(0xFE0F), // U+FE0F VARIATION SELECTOR-16
+                      QChar(0xFE0F), // U+FE0F VARIATION SELECTOR-16
+                      QChar(0xFE0F), // U+FE0F VARIATION SELECTOR-16
+                      QChar(0x2764), // U+2764 HEAVY BLACK HEART
+                      QChar(0xFE0F), // U+FE0F VARIATION SELECTOR-16
+                      QChar(0xFE0F), // U+FE0F VARIATION SELECTOR-16
+                    };
+        QString testString(s, sizeof(s)/sizeof(s[0]));
+
+        QList<int> expectedBreakPositions{0, 4, 7};
+        QTest::newRow("+EXTPICxEXTxEXTxEXT+EXTPICxEXTxEXT+") << testString << expectedBreakPositions;
+    }
+
+    {
+        QChar s[] = { QChar(0x2764), // U+2764 HEAVY BLACK HEART
+                      QChar(0xFE0F), // U+FE0F VARIATION SELECTOR-16
+                      QChar(0xFE0F), // U+FE0F VARIATION SELECTOR-16
+                      QChar(0x200D), // U+200D ZERO WIDTH JOINER
+                      QChar(0xD83D), QChar(0xDCF2), // U+1F4F2 MOBILE PHONE WITH RIGHTWARDS ARROW AT LEFT
+                      QChar(0xFE0F), // U+FE0F VARIATION SELECTOR-16
+                    };
+        QString testString(s, sizeof(s)/sizeof(s[0]));
+
+        QList<int> expectedBreakPositions{0, 7};
+        QTest::newRow("+EXTPICxEXTxEXTxZWJxEXTPICxEXTxEXT+") << testString << expectedBreakPositions;
+    }
+
+    {
+        QChar s[] = { QChar(0x2764), // U+2764 HEAVY BLACK HEART
+                      QChar(0xFE0F), // U+FE0F VARIATION SELECTOR-16
+                      QChar(0xFE0F), // U+FE0F VARIATION SELECTOR-16
+                      QChar(0x200D), // U+200D ZERO WIDTH JOINER
+                      QChar(0x0041), // U+0041 LATIN CAPITAL LETTER A
+                      QChar(0xD83D), QChar(0xDCF2), // U+1F4F2 MOBILE PHONE WITH RIGHTWARDS ARROW AT LEFT
+                    };
+        QString testString(s, sizeof(s)/sizeof(s[0]));
+
+        QList<int> expectedBreakPositions{0, 4, 5, 7};
+        QTest::newRow("+EXTPICxEXTxEXTxZWJ+Any+EXTPIC+") << testString << expectedBreakPositions;
+    }
+
+    {
+        QChar s[] = { QChar(0x2764), // U+2764 HEAVY BLACK HEART
+                      QChar(0xFE0F), // U+FE0F VARIATION SELECTOR-16
+                      QChar(0xD83C), QChar(0xDDEA), // U+1F1EA REGIONAL INDICATOR SYMBOL LETTER E
+                      QChar(0xD83C), QChar(0xDDFA), // U+1F1FA REGIONAL INDICATOR SYMBOL LETTER U
+                      QChar(0xD83C), QChar(0xDDEA), // U+1F1EA REGIONAL INDICATOR SYMBOL LETTER E
+                      QChar(0xD83C), QChar(0xDDFA), // U+1F1FA REGIONAL INDICATOR SYMBOL LETTER U
+                      QChar(0xD83C), QChar(0xDDEA), // U+1F1EA REGIONAL INDICATOR SYMBOL LETTER E
+                      QChar(0x0041), // U+0041 LATIN CAPITAL LETTER A
+                    };
+        QString testString(s, sizeof(s)/sizeof(s[0]));
+
+        QList<int> expectedBreakPositions{0, 2, 6, 10, 12, 13};
+        QTest::newRow("+EXTPICxEXT+RIxRI+RIxRI+RI+ANY+") << testString << expectedBreakPositions;
+    }
+}
+
+void tst_QTextBoundaryFinder::graphemeBoundaries_manual()
+{
+    QFETCH(QString, testString);
+    QFETCH(QList<int>, expectedBreakPositions);
+
+    doTestData(testString, expectedBreakPositions, QTextBoundaryFinder::Grapheme);
+}
 
 void tst_QTextBoundaryFinder::wordBoundaries_manual_data()
 {

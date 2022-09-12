@@ -213,15 +213,22 @@ static unsigned int q_ssl_psk_restore_client(SSL *ssl,
     Q_ASSERT(d);
     Q_ASSERT(d->mode == QSslSocket::SslClientMode);
 #endif
+    unsigned retVal = 0;
+
+    // Let developers opt-in to having the normal PSK callback get called for TLS 1.3
+    // PSK (which works differently in a few ways, and is called at the start of every connection).
+    // When they do opt-in we just call the old callback from here.
+    if (qEnvironmentVariableIsSet("QT_USE_TLS_1_3_PSK"))
+        retVal = q_ssl_psk_client_callback(ssl, hint, identity, max_identity_len, psk, max_psk_len);
+
     q_SSL_set_psk_client_callback(ssl, &q_ssl_psk_client_callback);
 
-    return 0;
+    return retVal;
 }
 
 static int q_ssl_psk_use_session_callback(SSL *ssl, const EVP_MD *md, const unsigned char **id,
                                           size_t *idlen, SSL_SESSION **sess)
 {
-    Q_UNUSED(ssl);
     Q_UNUSED(md);
     Q_UNUSED(id);
     Q_UNUSED(idlen);

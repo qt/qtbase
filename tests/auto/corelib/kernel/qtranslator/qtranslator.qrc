@@ -1,6 +1,8 @@
 <RCC>
     <qresource prefix="/tst_qtranslator">
+        <file>dependencies_la.qm</file>
         <file>hellotr_la.qm</file>
         <file>hellotr_empty.qm</file>
+        <file>msgfmt_from_po.qm</file>
     </qresource>
 </RCC>

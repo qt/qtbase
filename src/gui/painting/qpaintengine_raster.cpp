@@ -3314,6 +3314,11 @@ void QRasterPaintEnginePrivate::rasterizeLine_dashed(QLineF line,
 
     qreal length = line.length();
     Q_ASSERT(length > 0);
+    if (length / (patternLength * width) > QDashStroker::repetitionLimit()) {
+        rasterizer->rasterizeLine(line.p1(), line.p2(), width / length, squareCap);
+        return;
+    }
+
     while (length > 0) {
         const bool rasterize = *inDash;
         qreal dash = (pattern.at(*dashIndex) - *dashOffset) * width;

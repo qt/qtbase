@@ -1179,32 +1179,41 @@ void QDashStroker::processCurrentSubpath()
 
         bool done = pos >= estop;
 
-        if (clipping) {
-            // Check if the entire line can be clipped away.
-            if (!lineIntersectsRect(prev, e, clip_tl, clip_br)) {
-                // Cut away full dash sequences.
-                elen -= qFloor(elen * invSumLength) * sumLength;
-                // Update dash offset.
-                while (!done) {
-                    qreal dpos = pos + dashes[idash] - doffset - estart;
+        // Check if the entire line should be clipped away or simplified
+        bool clipIt = clipping && !lineIntersectsRect(prev, e, clip_tl, clip_br);
+        bool skipDashing = elen * invSumLength > repetitionLimit();
+        if (skipDashing || clipIt) {
+            // Cut away full dash sequences.
+            elen -= std::floor(elen * invSumLength) * sumLength;
+            // Update dash offset.
+            while (!done) {
+                qreal dpos = pos + dashes[idash] - doffset - estart;
 
-                    Q_ASSERT(dpos >= 0);
+                Q_ASSERT(dpos >= 0);
 
-                    if (dpos > elen) { // dash extends this line
-                        doffset = dashes[idash] - (dpos - elen); // subtract the part already used
-                        pos = estop; // move pos to next path element
-                        done = true;
-                    } else { // Dash is on this line
-                        pos = dpos + estart;
-                        done = pos >= estop;
-                        if (++idash >= dashCount)
-                            idash = 0;
-                        doffset = 0; // full segment so no offset on next.
-                    }
+                if (dpos > elen) { // dash extends this line
+                    doffset = dashes[idash] - (dpos - elen); // subtract the part already used
+                    pos = estop; // move pos to next path element
+                    done = true;
+                } else { // Dash is on this line
+                    pos = dpos + estart;
+                    done = pos >= estop;
+                    if (++idash >= dashCount)
+                        idash = 0;
+                    doffset = 0; // full segment so no offset on next.
                 }
-                hasMoveTo = false;
-                move_to_pos = e;
             }
+            if (clipIt) {
+                hasMoveTo = false;
+            } else {
+                // skip costly dashing, just draw solid line
+                if (!hasMoveTo) {
+                    emitMoveTo(move_to_pos.x, move_to_pos.y);
+                    hasMoveTo = true;
+                }
+                emitLineTo(e.x, e.y);
+            }
+            move_to_pos = e;
         }
 
         // Dash away...

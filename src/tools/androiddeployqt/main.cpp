@@ -174,7 +174,7 @@ struct Options
     QString versionName;
     QString versionCode;
     QByteArray minSdkVersion{"21"};
-    QByteArray targetSdkVersion{"29"};
+    QByteArray targetSdkVersion{"30"};
 
     // lib c++ path
     QString stdCppPath;
@@ -2592,7 +2592,7 @@ bool jarSignerSignPackage(const Options &options)
     auto signPackage = [&](const QString &file) {
         fprintf(stdout, "Signing file %s\n", qPrintable(file));
         fflush(stdout);
-        auto command = jarSignerTool + QLatin1String(" %1 %2")
+        QString command = jarSignerTool + QLatin1String(" %1 %2")
                 .arg(file)
                 .arg(shellQuote(options.keyStoreAlias));
 
@@ -2694,28 +2694,52 @@ bool signPackage(const Options &options)
         }
     }
 
-    zipAlignTool = QLatin1String("%1%2 -f 4 %3 %4")
+    auto zipalignRunner = [](const QString &zipAlignCommandLine) {
+        FILE *zipAlignCommand = openProcess(zipAlignCommandLine);
+        if (zipAlignCommand == 0) {
+            fprintf(stderr, "Couldn't run zipalign.\n");
+            return false;
+        }
+
+        char buffer[512];
+        while (fgets(buffer, sizeof(buffer), zipAlignCommand) != 0)
+            fprintf(stdout, "%s", buffer);
+
+        return pclose(zipAlignCommand) == 0;
+    };
+
+    const QString verifyZipAlignCommandLine = QLatin1String("%1%2 -c 4 %3")
             .arg(shellQuote(zipAlignTool),
                  options.verbose ? QLatin1String(" -v") : QLatin1String(),
-                 packagePath(options, UnsignedAPK),
-                 packagePath(options, SignedAPK));
+                 packagePath(options, UnsignedAPK));
 
-    FILE *zipAlignCommand = openProcess(zipAlignTool);
-    if (zipAlignCommand == 0) {
-        fprintf(stderr, "Couldn't run zipalign.\n");
-        return false;
-    }
+    if (zipalignRunner(verifyZipAlignCommandLine)) {
+        if (options.verbose)
+            fprintf(stdout, "APK already aligned, copying it for signing.\n");
 
-    char buffer[512];
-    while (fgets(buffer, sizeof(buffer), zipAlignCommand) != 0)
-        fprintf(stdout, "%s", buffer);
+        if (QFile::exists(packagePath(options, SignedAPK)))
+            QFile::remove(packagePath(options, SignedAPK));
 
-    int errorCode = pclose(zipAlignCommand);
-    if (errorCode != 0) {
-        fprintf(stderr, "zipalign command failed.\n");
-        if (!options.verbose)
-            fprintf(stderr, "  -- Run with --verbose for more information.\n");
-        return false;
+        if (!QFile::copy(packagePath(options, UnsignedAPK), packagePath(options, SignedAPK))) {
+            fprintf(stderr, "Could not copy unsigned APK.\n");
+            return false;
+        }
+    } else {
+        if (options.verbose)
+            fprintf(stdout, "APK not aligned, aligning it for signing.\n");
+
+        const QString zipAlignCommandLine = QLatin1String("%1%2 -f 4 %3 %4")
+                .arg(shellQuote(zipAlignTool),
+                     options.verbose ? QLatin1String(" -v") : QLatin1String(),
+                     packagePath(options, UnsignedAPK),
+                     packagePath(options, SignedAPK));
+
+        if (!zipalignRunner(zipAlignCommandLine)) {
+            fprintf(stderr, "zipalign command failed.\n");
+            if (!options.verbose)
+                fprintf(stderr, "  -- Run with --verbose for more information.\n");
+            return false;
+        }
     }
 
     QString apkSignerCommandLine = QLatin1String("%1 sign --ks %2")
@@ -2747,7 +2771,7 @@ bool signPackage(const Options &options)
         while (fgets(buffer, sizeof(buffer), apkSignerCommand) != 0)
             fprintf(stdout, "%s", buffer);
 
-        errorCode = pclose(apkSignerCommand);
+        int errorCode = pclose(apkSignerCommand);
         if (errorCode != 0) {
             fprintf(stderr, "apksigner command failed.\n");
             if (!options.verbose)

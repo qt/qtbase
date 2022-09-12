@@ -173,6 +173,9 @@ MakefileGenerator::initOutPaths()
         if (noIO() || (project->first("TEMPLATE") == "subdirs"))
             continue;
 
+        if (inhibitMakeDirOutPath(dkey))
+            continue;
+
         QString path = project->first(dkey).toQString(); //not to be changed any further
         path = fileFixify(path, FileFixifyBackwards);
         debug_msg(3, "Fixed output_dir %s (%s) into %s", dirs[x],
@@ -215,6 +218,18 @@ MakefileGenerator::initOutPaths()
             v.remove("DESTDIR");
     }
 }
+
+/*
+ * For the given directory path, return true if MakefileGenerator::initOutPaths() should inhibit the
+ * creation of the directory. Overload this in subclasses.
+ */
+bool
+MakefileGenerator::inhibitMakeDirOutPath(const ProKey &path) const
+{
+    Q_UNUSED(path);
+    return false;
+}
+
 
 QMakeProject
 *MakefileGenerator::projectFile() const

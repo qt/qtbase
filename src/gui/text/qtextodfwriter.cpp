@@ -455,7 +455,7 @@ void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextF
             name.prepend(QLatin1String("qrc"));
         QUrl url = QUrl(name);
         const QVariant variant = m_document->resource(QTextDocument::ImageResource, url);
-        if (variant.userType() == QMetaType::QImage) {
+        if (variant.userType() == QMetaType::QPixmap || variant.userType() == QMetaType::QImage) {
             image = qvariant_cast<QImage>(variant);
         } else if (variant.userType() == QMetaType::QByteArray) {
             data = variant.toByteArray();
@@ -476,7 +476,7 @@ void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextF
             QBuffer imageBytes;
 
             int imgQuality = imageFormat.quality();
-            if (imgQuality >= 100 || imgQuality < 0 || image.hasAlphaChannel()) {
+            if (imgQuality >= 100 || imgQuality <= 0 || image.hasAlphaChannel()) {
                 QImageWriter imageWriter(&imageBytes, "png");
                 imageWriter.write(image);
 

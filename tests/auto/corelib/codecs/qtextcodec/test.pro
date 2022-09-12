@@ -1,5 +1,5 @@
 CONFIG += testcase
-QT = core testlib
+QT = core-private testlib
 SOURCES = tst_qtextcodec.cpp
 
 TARGET = tst_qtextcodec

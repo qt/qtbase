@@ -300,7 +300,9 @@ void *QThreadPrivate::start(void *arg)
                 thr->d_func()->setPriority(QThread::Priority(thr->d_func()->priority & ~ThreadPriorityResetFlag));
             }
 
-            data->threadId.storeRelaxed(to_HANDLE(pthread_self()));
+            // threadId is set in QThread::start()
+            Q_ASSERT(pthread_equal(from_HANDLE<pthread_t>(data->threadId.loadRelaxed()),
+                                   pthread_self()));
             set_thread_data(data);
 
             data->ref();
@@ -384,6 +386,8 @@ void QThreadPrivate::finish(void *arg)
         d->interruptionRequested = false;
 
         d->isInFinish = false;
+        d->data->threadId.storeRelaxed(nullptr);
+
         d->thread_done.wakeAll();
     }
 #ifndef QT_NO_EXCEPTIONS
@@ -755,6 +759,8 @@ bool QThread::wait(QDeadlineTimer deadline)
         if (!d->thread_done.wait(locker.mutex(), deadline))
             return false;
     }
+    Q_ASSERT(d->data->threadId.loadRelaxed() == nullptr);
+
     return true;
 }
 

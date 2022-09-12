@@ -461,6 +461,11 @@ void QPMCache::clear()
     for (int i = 0; i < keys.size(); ++i)
         keys.at(i).d->isValid = false;
     QCache<QPixmapCache::Key, QPixmapCacheEntry>::clear();
+    // Nothing left to flush; stop the timer
+    if (theid) {
+        killTimer(theid);
+        theid = 0;
+    }
 }
 
 QPixmapCache::KeyData* QPMCache::getKeyData(QPixmapCache::Key *key)

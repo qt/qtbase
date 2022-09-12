@@ -196,7 +196,20 @@ void QScrollAreaPrivate::updateScrollBars()
     if (resizable) {
         if ((widget->layout() ? widget->layout()->hasHeightForWidth() : widget->sizePolicy().hasHeightForWidth())) {
             QSize p_hfw = p.expandedTo(min).boundedTo(max);
-            int h = widget->heightForWidth( p_hfw.width() );
+            int h = widget->heightForWidth(p_hfw.width());
+            // If the height we calculated requires a vertical scrollbar,
+            // then we need to constrain the width and calculate the height again,
+            // otherwise we end up flipping the scrollbar on and off all the time.
+            if (vbarpolicy == Qt::ScrollBarAsNeeded) {
+                int vbarWidth = vbar->sizeHint().width();
+                QSize m_hfw = m.expandedTo(min).boundedTo(max);
+                while (h > m.height() && vbarWidth) {
+                    --vbarWidth;
+                    --m_hfw.rwidth();
+                    h = widget->heightForWidth(m_hfw.width());
+                }
+                max = QSize(m_hfw.width(), qMax(m_hfw.height(), h));
+            }
             min = QSize(p_hfw.width(), qMax(p_hfw.height(), h));
         }
     }

@@ -1,0 +1,55 @@
+drawRect 0 0 800 800
+
+setRenderHint Antialiasing true
+image_load dome_argb32.png img
+
+save
+setBrush springgreen SolidPattern
+
+begin_block primitives
+
+setPen black 2 DashLine
+pen_setCosmetic true
+drawLine 10 60 60 10
+drawRect 80 10.0 30 50
+drawText 130 50 "Foo"
+drawImage img 160 10 50 50
+
+pen_setCosmetic false
+drawLine 10 160 60 110
+drawRect 80 110.0 30 50
+drawText 130 150 "Foo"
+drawImage img 160 110 50 50
+
+setPen NoPen
+drawLine 10 260 60 210
+drawRect 80 210.0 30 50
+drawText 130 250 "Foo"
+drawImage img 160 210 50 50
+
+end_block primitives
+
+
+translate  250 0
+rotate 10
+scale 2.5 1
+repeat_block primitives
+
+resetMatrix
+# Force non-simple pen in Pdf
+setOpacity 0.5
+translate 0 400
+repeat_block primitives
+
+translate 250 0
+rotate 10
+scale 2.5 1
+repeat_block primitives
+
+restore
+setPen blue 4 DotLine
+setBrush olive SolidPattern
+pen_setCosmetic true
+translate 50 720
+scale 2 2
+drawRect 0 0 30 30

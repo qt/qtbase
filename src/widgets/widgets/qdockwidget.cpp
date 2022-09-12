@@ -975,7 +975,7 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
                 > QApplication::startDragDistance()) {
 
 #ifdef Q_OS_MACOS
-            if (windowHandle()) {
+            if (windowHandle() && !q->isFloating()) {
                 // When using native widgets on mac, we have not yet been successful in
                 // starting a drag on an NSView that belongs to one window (QMainWindow),
                 // but continue the drag on another (QDockWidget). This is what happens if

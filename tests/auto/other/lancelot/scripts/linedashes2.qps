@@ -111,8 +111,9 @@ translate 0 780
 repeat_block vertical
 
 resetMatrix
-translate 40 400
-setPen 0xffff0000 5 dashdotline flatcap
+translate 20 380
+setPen 0xffff00ff 5 dashdotline flatcap
+begin_block offset
 pen_setDashPattern [1 1 4 1 1 4]
 pen_setDashOffset -4
 drawLine 0 0 300 0
@@ -146,9 +147,50 @@ drawLine 0 0 300 0
 translate 0 8
 pen_setDashOffset 16
 drawLine 0 0 300 0
+end_block offset
+
+resetMatrix
+translate 420 380
+setPen 0xffff00ff 5 dashdotline roundcap
+repeat_block offset
 
 resetMatrix
 setPen black 3 dashdotline
 pen_setCosmetic true
 translate 0 -150
 drawLine 500 160 500 410
+
+resetMatrix
+translate 300 480
+setPen blue 0
+
+begin_block clip_lines
+pen_setDashPattern [ 20 4 5 4 1 4 ]
+pen_setDashOffset 26.0
+drawLines [0 0 1000000 10 1000000 10 -1000000 20 -1000000 20 0 30]
+end_block clip_lines
+
+translate 0 45
+setPen blue 5
+repeat_block clip_lines
+
+translate 0 45
+setPen blue 5 SolidLine RoundCap
+repeat_block clip_lines
+
+translate 0 45
+setPen green 0
+
+begin_block clip_poly
+pen_setDashPattern [ 20 4 5 4 1 4 ]
+pen_setDashOffset 26.0
+drawPolyline [0 0 1000000 10 -1000000 20 0 30]
+end_block clip_poly
+
+translate 0 45
+setPen green 5
+repeat_block clip_poly
+
+translate 0 45
+setPen green 5 SolidLine RoundCap
+repeat_block clip_poly

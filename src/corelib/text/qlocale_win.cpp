@@ -115,6 +115,7 @@ struct QSystemLocalePrivate
     QVariant timeFormat(QLocale::FormatType);
     QVariant dateTimeFormat(QLocale::FormatType);
     QVariant dayName(int, QLocale::FormatType);
+    QVariant standaloneMonthName(int, QLocale::FormatType);
     QVariant monthName(int, QLocale::FormatType);
     QVariant toString(QDate, QLocale::FormatType);
     QVariant toString(QTime, QLocale::FormatType);
@@ -411,7 +412,7 @@ QVariant QSystemLocalePrivate::dayName(int day, QLocale::FormatType type)
     return getLocaleInfo<QVariant>(short_day_map[day]);
 }
 
-QVariant QSystemLocalePrivate::monthName(int month, QLocale::FormatType type)
+QVariant QSystemLocalePrivate::standaloneMonthName(int month, QLocale::FormatType type)
 {
     static const LCTYPE short_month_map[]
         = { LOCALE_SABBREVMONTHNAME1, LOCALE_SABBREVMONTHNAME2, LOCALE_SABBREVMONTHNAME3,
@@ -432,6 +433,30 @@ QVariant QSystemLocalePrivate::monthName(int month, QLocale::FormatType type)
     LCTYPE lctype = (type == QLocale::ShortFormat || type == QLocale::NarrowFormat)
             ? short_month_map[month] : long_month_map[month];
     return getLocaleInfo<QVariant>(lctype);
+}
+
+QVariant QSystemLocalePrivate::monthName(int month, QLocale::FormatType type)
+{
+    SYSTEMTIME st = {};
+    st.wYear = 2001;
+    st.wMonth = month;
+    st.wDay = 10;
+
+    const DWORD flags{}; // Must be clear when passing a format string.
+    // MS's docs for the LOCALE_SMONTHNAME* say to include the day in a format.
+    // Educated guess: this works for the LOCALE_SABBREVMONTHNAME*, too, in so
+    // far as the abbreviated plain name might differ from abbreviated
+    // standalone one.
+    const wchar_t *const format = type == QLocale::LongFormat ? L"ddMMMM" : L"ddMMM";
+    wchar_t buf[255];
+    if (getDateFormat(flags, &st, format, buf, 255) > 2) {
+        // Elide the two digits of day number
+        QString text = QString::fromWCharArray(buf + 2);
+        if (substitution() == SAlways)
+            text = substituteDigits(text);
+        return text;
+    }
+    return {};
 }
 
 QVariant QSystemLocalePrivate::toString(QDate date, QLocale::FormatType type)
@@ -818,11 +843,13 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     case DayNameShort:
         return d->dayName(in.toInt(), QLocale::ShortFormat);
     case MonthNameLong:
-    case StandaloneMonthNameLong:
         return d->monthName(in.toInt(), QLocale::LongFormat);
+    case StandaloneMonthNameLong:
+        return d->standaloneMonthName(in.toInt(), QLocale::LongFormat);
     case MonthNameShort:
-    case StandaloneMonthNameShort:
         return d->monthName(in.toInt(), QLocale::ShortFormat);
+    case StandaloneMonthNameShort:
+        return d->standaloneMonthName(in.toInt(), QLocale::ShortFormat);
     case DateToStringShort:
         return d->toString(in.toDate(), QLocale::ShortFormat);
     case DateToStringLong:

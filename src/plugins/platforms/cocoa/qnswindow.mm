@@ -321,8 +321,18 @@ OSStatus CGSClearWindowTags(const CGSConnectionID, const CGSWindowID, int *, int
 
 - (NSColor *)backgroundColor
 {
-    return self.styleMask == NSWindowStyleMaskBorderless ?
-        [NSColor clearColor] : [super backgroundColor];
+    // FIXME: Plumb to a WA_NoSystemBackground-like window flag,
+    // or a QWindow::backgroundColor() property. In the meantime
+    // we assume that if you have translucent content, without a
+    // frame then you intend to do all background drawing yourself.
+    const QWindow *window = m_platformWindow ? m_platformWindow->window() : nullptr;
+    if (!self.opaque && window && window->flags().testFlag(Qt::FramelessWindowHint))
+        return [NSColor clearColor];
+
+    // This still allows you to have translucent content with a frame,
+    // where the system background (or color set via NSWindow) will
+    // shine through.
+    return [super backgroundColor];
 }
 
 - (void)sendEvent:(NSEvent*)theEvent
@@ -347,18 +357,29 @@ OSStatus CGSClearWindowTags(const CGSConnectionID, const CGSWindowID, int *, int
         return;
     }
 
+    const bool mouseEventInFrameStrut = [theEvent, self]{
+        if (isMouseEvent(theEvent)) {
+            const NSPoint loc = theEvent.locationInWindow;
+            const NSRect windowFrame = [self convertRectFromScreen:self.frame];
+            const NSRect contentFrame = self.contentView.frame;
+            if (NSMouseInRect(loc, windowFrame, NO) && !NSMouseInRect(loc, contentFrame, NO))
+                return true;
+        }
+        return false;
+    }();
+    // Any mouse-press in the frame of the window, including the title bar buttons, should
+    // close open popups. Presses within the window's content are handled to do that in the
+    // NSView::mouseDown implementation.
+    if (theEvent.type == NSEventTypeLeftMouseDown && mouseEventInFrameStrut)
+        [qnsview_cast(m_platformWindow->view()) closePopups:theEvent];
+
     [super sendEvent:theEvent];
 
     if (!m_platformWindow)
         return; // Platform window went away while processing event
 
-    if (m_platformWindow->frameStrutEventsEnabled() && isMouseEvent(theEvent)) {
-        NSPoint loc = [theEvent locationInWindow];
-        NSRect windowFrame = [self convertRectFromScreen:self.frame];
-        NSRect contentFrame = self.contentView.frame;
-        if (NSMouseInRect(loc, windowFrame, NO) && !NSMouseInRect(loc, contentFrame, NO))
-            [qnsview_cast(m_platformWindow->view()) handleFrameStrutMouseEvent:theEvent];
-    }
+    if (m_platformWindow->frameStrutEventsEnabled() && mouseEventInFrameStrut)
+        [qnsview_cast(m_platformWindow->view()) handleFrameStrutMouseEvent:theEvent];
 }
 
 - (void)closeAndRelease

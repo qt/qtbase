@@ -565,6 +565,32 @@ QIcuCodec::~QIcuCodec()
 {
 }
 
+/*!
+    \internal
+
+    Custom callback for the ICU from Unicode conversion. It's invoked when the
+    conversion from Unicode detects illegal or unrecognized character.
+
+    Assumes that context contains a pointer to QTextCodec::ConverterState
+    structure. Updates its invalid characters count and calls a default
+    callback, that replaces the invalid characters properly.
+*/
+static void customFromUnicodeSubstitutionCallback(const void *context,
+                                                  UConverterFromUnicodeArgs *fromUArgs,
+                                                  const UChar *codeUnits,
+                                                  int32_t length,
+                                                  UChar32 codePoint,
+                                                  UConverterCallbackReason reason,
+                                                  UErrorCode *err)
+{
+    auto *state = reinterpret_cast<QTextCodec::ConverterState *>(const_cast<void *>(context));
+    if (state)
+        state->invalidChars++;
+    // Call the default callback that replaces all illegal or unrecognized
+    // sequences with the substitute string
+    UCNV_FROM_U_CALLBACK_SUBSTITUTE(nullptr, fromUArgs, codeUnits, length, codePoint, reason, err);
+}
+
 UConverter *QIcuCodec::getConverter(QTextCodec::ConverterState *state) const
 {
     UConverter *conv = nullptr;
@@ -577,8 +603,18 @@ UConverter *QIcuCodec::getConverter(QTextCodec::ConverterState *state) const
             state->d = ucnv_open(m_name, &error);
             ucnv_setSubstChars(static_cast<UConverter *>(state->d),
                                state->flags & QTextCodec::ConvertInvalidToNull ? "\0" : "?", 1, &error);
-            if (U_FAILURE(error))
+            if (!U_FAILURE(error)) {
+                error = U_ZERO_ERROR;
+                ucnv_setFromUCallBack(static_cast<UConverter *>(state->d),
+                                      customFromUnicodeSubstitutionCallback, state, nullptr,
+                                      nullptr, &error);
+                if (U_FAILURE(error)) {
+                    qDebug("getConverter(state) failed to install custom callback. "
+                           "canEncode() may report incorrect results.");
+                }
+            } else {
                 qDebug("getConverter(state) ucnv_open failed %s %s", m_name, u_errorName(error));
+            }
         }
         conv = static_cast<UConverter *>(state->d);
     }

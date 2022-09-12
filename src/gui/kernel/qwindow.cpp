@@ -614,6 +614,13 @@ QWindow::SurfaceType QWindow::surfaceType() const
     By default, the window is not visible, you must call setVisible(true), or
     show() or similar to make it visible.
 
+    \note Hiding a window does not remove the window from the windowing system,
+    it only hides it. On windowing systems that give full screen applications a
+    dedicated desktop (such as macOS), hiding a full screen window will not remove
+    that desktop, but leave it blank. Another window from the same application
+    might be shown full screen, and will fill that desktop. Use QWindow::close to
+    completely remove a window from the windowing system.
+
     \sa show()
 */
 void QWindow::setVisible(bool visible)
@@ -1224,10 +1231,12 @@ bool QWindow::isExposed() const
 */
 
 /*!
-    Returns \c true if the window should appear active from a style perspective.
+    Returns \c true if the window is active.
 
     This is the case for the window that has input focus as well as windows
     that are in the same parent / transient parent chain as the focus window.
+
+    Typically active windows should appear active from a style perspective.
 
     To get the window that currently has focus, use QGuiApplication::focusWindow().
 */
@@ -2200,6 +2209,9 @@ void QWindow::showMaximized()
 
     Equivalent to calling setWindowStates(Qt::WindowFullScreen) and then
     setVisible(true).
+
+    See the \l{QWidget::showFullScreen()} documentation for platform-specific
+    considerations and limitations.
 
     \sa setWindowStates(), setVisible()
 */

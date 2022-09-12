@@ -1385,11 +1385,11 @@ void QGuiApplicationPrivate::addQtOptions(QList<QCommandLineOption> *options)
                          QGuiApplication::tr("ID of the X11 Visual to use."), QStringLiteral("id")));
          // Not using the "QStringList names" solution for those aliases, because it makes the first column too wide
          options->append(QCommandLineOption(QStringLiteral("geometry"),
-                         QGuiApplication::tr("Alias for --windowgeometry."), QStringLiteral("geometry")));
+                         QGuiApplication::tr("Alias for --qwindowgeometry."), QStringLiteral("geometry")));
          options->append(QCommandLineOption(QStringLiteral("icon"),
-                         QGuiApplication::tr("Alias for --windowicon."), QStringLiteral("icon")));
+                         QGuiApplication::tr("Alias for --qwindowicon."), QStringLiteral("icon")));
          options->append(QCommandLineOption(QStringLiteral("title"),
-                         QGuiApplication::tr("Alias for --windowtitle."), QStringLiteral("title")));
+                         QGuiApplication::tr("Alias for --qwindowtitle."), QStringLiteral("title")));
     }
 }
 #endif // QT_CONFIG(commandlineparser)

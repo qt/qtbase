@@ -5,3 +5,7 @@ ubuntu-16.04
 
 [mouseMoveWithPopup]
 winrt
+
+# QTBUG-96270
+[tst_paintEventOnSecondShow]
+opensuse
