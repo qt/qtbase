@@ -2225,15 +2225,9 @@ bool QApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blockingWin
                         *blockingWindow = m;
                         return true;
                     }
-                    QWindow *p = m->parent();
-                    if (!p)
-                        p = m->transientParent();
-                    m = p;
+                    m = m->parent(QWindow::IncludeTransients);
                 } while (m);
-                QWindow *p = w->parent();
-                if (!p)
-                    p = w->transientParent();
-                w = p;
+                w = w->parent(QWindow::IncludeTransients);
             } while (w);
             break;
         }
