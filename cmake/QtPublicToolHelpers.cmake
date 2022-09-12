@@ -66,6 +66,11 @@ endfunction()
 # Arguments:
 #    APPEND Selects the 'append' mode for the out_variable argument.
 #    SET Selects the 'set' mode for the out_variable argument.
+#
+# FIXME: Replace all usages of _qt_internal_wrap_tool_command
+# with _qt_internal_get_wrap_tool_script_path and remove the former.
+# The former always adds the COMMAND keyword, which does not allow the caller to wrap the
+# commands in a generator expression. See _qt_internal_target_enable_qmllint for an example.
 function(_qt_internal_wrap_tool_command out_variable action)
     set(append FALSE)
     if(action STREQUAL "APPEND")
@@ -85,4 +90,12 @@ function(_qt_internal_wrap_tool_command out_variable action)
         set(${out_variable} ${cmd})
     endif()
     set(${out_variable} "${${out_variable}}" PARENT_SCOPE)
+endfunction()
+
+# Gets the path to tool wrapper shell script.
+function(_qt_internal_get_tool_wrapper_script_path out_variable)
+    # Ensure the script wrapper exists.
+    _qt_internal_generate_tool_command_wrapper()
+
+    set(${out_variable} "${QT_TOOL_COMMAND_WRAPPER_PATH}" PARENT_SCOPE)
 endfunction()

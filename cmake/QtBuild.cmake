@@ -258,7 +258,7 @@ function(qt_setup_tool_path_command)
     list(APPEND command COMMAND)
     list(APPEND command set PATH=${bindir}$<SEMICOLON>%PATH%)
     set(QT_TOOL_PATH_SETUP_COMMAND "${command}" CACHE INTERNAL "internal command prefix for tool invocations" FORCE)
-    # QT_TOOL_PATH_SETUP_COMMAND is deprecated. Please use _qt_internal_wrap_tool_command
+    # QT_TOOL_PATH_SETUP_COMMAND is deprecated. Please use _qt_internal_get_wrap_tool_script_path
     # instead.
 endfunction()
 qt_setup_tool_path_command()
