@@ -556,7 +556,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                         reader.raiseError(errorString);
                 }
             } else {
-                reader.raiseError(QString("unexpected tag: %1"_L1).arg(reader.name().toString()));
+                reader.raiseError("unexpected tag: %1"_L1.arg(reader.name().toString()));
             }
             break;
 
