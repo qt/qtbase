@@ -230,6 +230,7 @@ function(qt_internal_add_module target)
     set_source_files_properties("${module_config_header}" "${module_config_private_header}"
         PROPERTIES
             GENERATED TRUE
+            SKIP_AUTOGEN TRUE
     )
 
     # Module define needs to take into account the config module name.
