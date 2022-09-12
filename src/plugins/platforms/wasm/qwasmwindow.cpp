@@ -243,6 +243,10 @@ bool QWasmWindow::isPointOnTitle(QPoint point) const
 
 bool QWasmWindow::isPointOnResizeRegion(QPoint point) const
 {
+    // Certain windows, like undocked dock widgets, are both popups and dialogs. Those should be
+    // resizable.
+    if (windowIsPopupType(window()->flags()))
+        return false;
     return (window()->maximumSize().isEmpty() || window()->minimumSize() != window()->maximumSize())
             && resizeRegion().contains(point);
 }
