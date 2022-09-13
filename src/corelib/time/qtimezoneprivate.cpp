@@ -685,19 +685,19 @@ QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windows
 QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windowsId,
                                                        QLocale::Territory territory)
 {
+    QList<QByteArray> list;
     const quint16 windowsIdKey = toWindowsIdKey(windowsId);
     const qint16 land = static_cast<quint16>(territory);
     for (const QZoneData &data : zoneDataTable) {
         // Return the region matches in preference order
         if (data.windowsIdKey == windowsIdKey && data.territory == land) {
-            QList<QByteArray> list;
             for (auto l1 : data.ids())
                 list << QByteArray(l1.data(), l1.size());
-            return list;
+            break;
         }
     }
 
-    return QList<QByteArray>();
+    return list;
 }
 
 // Define template for derived classes to reimplement so QSharedDataPointer clone() works correctly
