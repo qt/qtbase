@@ -188,7 +188,10 @@ public:
     static void showModalWindow(QWindow *window);
     static void hideModalWindow(QWindow *window);
     static void updateBlockedStatus(QWindow *window);
-    virtual bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = nullptr) const;
+
+    virtual Qt::WindowModality defaultModality() const;
+    virtual bool windowNeverBlocked(QWindow *window) const;
+    bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = nullptr) const;
     virtual bool popupActive() { return false; }
     virtual bool closeAllPopups() { return false; }
 

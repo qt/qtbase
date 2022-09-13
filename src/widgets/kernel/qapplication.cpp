@@ -2170,74 +2170,16 @@ bool QApplicationPrivate::isBlockedByModal(QWidget *widget)
     return window && self->isWindowBlocked(window);
 }
 
-bool QApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blockingWindow) const
+Qt::WindowModality QApplicationPrivate::defaultModality() const
 {
-    QWindow *unused = nullptr;
-    if (Q_UNLIKELY(!window)) {
-        qWarning().nospace() << "window == 0 passed.";
-        return false;
-    }
-    if (!blockingWindow)
-        blockingWindow = &unused;
+    return Qt::ApplicationModal;
+}
 
-    if (modalWindowList.isEmpty()) {
-        *blockingWindow = nullptr;
-        return false;
-    }
+bool QApplicationPrivate::windowNeverBlocked(QWindow *window) const
+{
     QWidget *popupWidget = QApplication::activePopupWidget();
     QWindow *popupWindow = popupWidget ? popupWidget->windowHandle() : nullptr;
-    if (popupWindow == window || (!popupWindow && QWindowPrivate::get(window)->isPopup())) {
-        *blockingWindow = nullptr;
-        return false;
-    }
-
-    for (int i = 0; i < modalWindowList.count(); ++i) {
-        QWindow *modalWindow = modalWindowList.at(i);
-
-        // A window is not blocked by another modal window if the two are
-        // the same, or if the window is a child of the modal window.
-        if (window == modalWindow || modalWindow->isAncestorOf(window, QWindow::IncludeTransients)) {
-            *blockingWindow = nullptr;
-            return false;
-        }
-
-        Qt::WindowModality windowModality = modalWindow->modality();
-        if (windowModality == Qt::NonModal) {
-            // If modality type hasn't been set on the modalWindow's widget, as
-            // when waiting for a native dialog, use ApplicationModal.
-            windowModality = Qt::ApplicationModal;
-        }
-
-        switch (windowModality) {
-        case Qt::ApplicationModal:
-            if (modalWindow != window) {
-                *blockingWindow = modalWindow;
-                return true;
-            }
-            break;
-        case Qt::WindowModal:
-        {
-            QWindow *w = window;
-            do {
-                QWindow *m = modalWindow;
-                do {
-                    if (m == w) {
-                        *blockingWindow = m;
-                        return true;
-                    }
-                    m = m->parent(QWindow::IncludeTransients);
-                } while (m);
-                w = w->parent(QWindow::IncludeTransients);
-            } while (w);
-            break;
-        }
-        default:
-            Q_ASSERT_X(false, "QApplication", "internal error, a modal window cannot be modeless");
-            break;
-        }
-    }
-    *blockingWindow = nullptr;
-    return false;
+    return popupWindow == window || (!popupWindow && QWindowPrivate::get(window)->isPopup());
 }
 
 /*!\internal

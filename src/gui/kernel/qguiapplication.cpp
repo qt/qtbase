@@ -852,6 +852,17 @@ void QGuiApplicationPrivate::hideModalWindow(QWindow *window)
     }
 }
 
+Qt::WindowModality QGuiApplicationPrivate::defaultModality() const
+{
+    return Qt::NonModal;
+}
+
+bool QGuiApplicationPrivate::windowNeverBlocked(QWindow *window) const
+{
+    Q_UNUSED(window);
+    return false;
+}
+
 /*
     Returns \c true if \a window is blocked by a modal window. If \a
     blockingWindow is non-zero, *blockingWindow will be set to the blocking
@@ -859,49 +870,40 @@ void QGuiApplicationPrivate::hideModalWindow(QWindow *window)
 */
 bool QGuiApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blockingWindow) const
 {
+    Q_ASSERT_X(window, Q_FUNC_INFO, "The window must not be null");
+
     QWindow *unused = nullptr;
     if (!blockingWindow)
         blockingWindow = &unused;
+    *blockingWindow = nullptr;
 
-    if (modalWindowList.isEmpty()) {
-        *blockingWindow = nullptr;
+    if (modalWindowList.isEmpty() || windowNeverBlocked(window))
         return false;
-    }
 
     for (int i = 0; i < modalWindowList.count(); ++i) {
         QWindow *modalWindow = modalWindowList.at(i);
 
         // A window is not blocked by another modal window if the two are
         // the same, or if the window is a child of the modal window.
-        if (window == modalWindow || modalWindow->isAncestorOf(window, QWindow::IncludeTransients)) {
-            *blockingWindow = nullptr;
+        if (window == modalWindow || modalWindow->isAncestorOf(window, QWindow::IncludeTransients))
             return false;
-        }
 
-        Qt::WindowModality windowModality = modalWindow->modality();
-        switch (windowModality) {
+        switch (modalWindow->modality() == Qt::NonModal ? defaultModality()
+                                                        : modalWindow->modality()) {
         case Qt::ApplicationModal:
-        {
-            if (modalWindow != window) {
-                *blockingWindow = modalWindow;
-                return true;
-            }
-            break;
-        }
-        case Qt::WindowModal:
-        {
-            QWindow *w = window;
+            *blockingWindow = modalWindow;
+            return true;
+        case Qt::WindowModal: {
+            // Find the nearest ancestor of window which is also an ancestor of modal window to
+            // determine if the modal window blocks the window.
+            auto *current = window;
             do {
-                QWindow *m = modalWindow;
-                do {
-                    if (m == w) {
-                        *blockingWindow = m;
-                        return true;
-                    }
-                    m = m->parent(QWindow::IncludeTransients);
-                } while (m);
-                w = w->parent(QWindow::IncludeTransients);
-            } while (w);
+                if (current->isAncestorOf(modalWindow, QWindow::IncludeTransients)) {
+                    *blockingWindow = current;
+                    return true;
+                }
+                current = current->parent(QWindow::IncludeTransients);
+            } while (current);
             break;
         }
         default:
@@ -909,7 +911,6 @@ bool QGuiApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blocking
             break;
         }
     }
-    *blockingWindow = nullptr;
     return false;
 }
 

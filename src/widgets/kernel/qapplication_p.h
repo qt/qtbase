@@ -84,7 +84,8 @@ public:
 #endif
 
     //modality
-    bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = nullptr) const override;
+    Qt::WindowModality defaultModality() const override;
+    bool windowNeverBlocked(QWindow *window) const override;
     static bool isBlockedByModal(QWidget *widget);
     static bool modalState();
     static bool tryModalHelper(QWidget *widget, QWidget **rettop = nullptr);
