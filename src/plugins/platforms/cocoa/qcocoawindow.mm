@@ -1078,28 +1078,14 @@ void QCocoaWindow::setMask(const QRegion &region)
     }
 }
 
-bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
+bool QCocoaWindow::setKeyboardGrabEnabled(bool)
 {
-    qCDebug(lcQpaWindow) << "QCocoaWindow::setKeyboardGrabEnabled" << window() << grab;
-    if (!isContentView())
-        return false;
-
-    if (grab && ![m_view.window isKeyWindow])
-        [m_view.window makeKeyWindow];
-
-    return true;
+    return false; // FIXME (QTBUG-106597)
 }
 
-bool QCocoaWindow::setMouseGrabEnabled(bool grab)
+bool QCocoaWindow::setMouseGrabEnabled(bool)
 {
-    qCDebug(lcQpaWindow) << "QCocoaWindow::setMouseGrabEnabled" << window() << grab;
-    if (!isContentView())
-        return false;
-
-    if (grab && ![m_view.window isKeyWindow])
-        [m_view.window makeKeyWindow];
-
-    return true;
+    return false; // FIXME (QTBUG-106597)
 }
 
 WId QCocoaWindow::winId() const
