@@ -420,7 +420,7 @@ enumdata.py (keeping the old name as an alias):
         MS-Win have their own eccentric names for time-zones.  CLDR
         helpfully provides a translation to more orthodox names.
 
-        Singe argument, lookup, is a mapping from known MS-Win names
+        Single argument, lookup, is a mapping from known MS-Win names
         for locales to a unique integer index (starting at 1).
 
         The XML structure we read has the form:
