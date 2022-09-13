@@ -512,6 +512,8 @@ private Q_SLOTS:
     void contentEncodingError_data();
     void contentEncodingError();
     void compressedReadyRead();
+    void notFoundWithCompression_data();
+    void notFoundWithCompression();
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
@@ -9927,6 +9929,31 @@ void tst_QNetworkReply::compressedReadyRead()
                      });
     QTRY_VERIFY(reply->isFinished());
     QCOMPARE(received, expected);
+}
+
+void tst_QNetworkReply::notFoundWithCompression_data()
+{
+    contentEncoding_data();
+}
+
+void tst_QNetworkReply::notFoundWithCompression()
+{
+    QFETCH(QByteArray, encoding);
+    QFETCH(QByteArray, body);
+    QString header("HTTP/1.0 404 OK\r\nContent-Encoding: %1\r\nContent-Length: %2\r\n\r\n");
+    header = header.arg(encoding, QString::number(body.size()));
+
+    MiniHttpServer server(header.toLatin1() + body);
+
+    QNetworkRequest request(
+            QUrl(QLatin1String("http://localhost:%1").arg(QString::number(server.serverPort()))));
+    QNetworkReplyPtr reply(manager.get(request));
+
+    QTRY_VERIFY2_WITH_TIMEOUT(reply->isFinished(), qPrintable(reply->errorString()), 15000);
+    QCOMPARE(reply->error(), QNetworkReply::ContentNotFoundError);
+
+    QFETCH(QByteArray, expected);
+    QCOMPARE(reply->readAll(), expected);
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
