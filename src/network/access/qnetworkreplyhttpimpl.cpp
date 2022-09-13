@@ -326,6 +326,7 @@ qint64 QNetworkReplyHttpImpl::readData(char* data, qint64 maxlen)
             d->error(QNetworkReplyImpl::NetworkError::UnknownContentError,
                      QCoreApplication::translate("QHttp", "Decompression failed: %1")
                              .arg(d->decompressHelper.errorString()));
+            d->decompressHelper.clear();
             return -1;
         }
         if (d->cacheSaveDevice) {
@@ -1050,6 +1051,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
             error(QNetworkReplyImpl::NetworkError::UnknownContentError,
                   QCoreApplication::translate("QHttp", "Decompression failed: %1")
                           .arg(decompressHelper.errorString()));
+            decompressHelper.clear();
             return;
         }
 
@@ -1069,6 +1071,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
                     error(QNetworkReplyImpl::NetworkError::UnknownContentError,
                           QCoreApplication::translate("QHttp",
                                                       "Data downloaded is too large to store"));
+                    decompressHelper.clear();
                     return;
                 }
                 d.resize(nextSize);
@@ -1077,6 +1080,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
                     error(QNetworkReplyImpl::NetworkError::UnknownContentError,
                           QCoreApplication::translate("QHttp", "Decompression failed: %1")
                                   .arg(decompressHelper.errorString()));
+                    decompressHelper.clear();
                     return;
                 }
             }
@@ -2114,9 +2118,6 @@ void QNetworkReplyHttpImplPrivate::error(QNetworkReplyImpl::NetworkError code, c
         qWarning("QNetworkReplyImplPrivate::error: Internal problem, this method must only be called once.");
         return;
     }
-
-    if (decompressHelper.isValid())
-        decompressHelper.clear(); // Just get rid of any data that might be stored
 
     errorCode = code;
     q->setErrorString(errorMessage);
