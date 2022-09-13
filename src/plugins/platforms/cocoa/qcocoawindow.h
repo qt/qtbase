@@ -189,7 +189,7 @@ protected:
     void recreateWindowIfNeeded();
     QCocoaNSWindow *createNSWindow(bool shouldBePanel);
 
-    Qt::WindowState windowState() const;
+    Qt::WindowStates windowState() const;
     void applyWindowState(Qt::WindowStates newState);
     void toggleMaximized();
     void toggleFullScreen();
