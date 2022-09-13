@@ -43,15 +43,6 @@ const FlagData fileModeComboData[] =
     {"Directory", QFileDialog::Directory}
 };
 
-static inline QPushButton *addButton(const QString &description, QGridLayout *layout,
-                                     int &row, int column, QObject *receiver, const char *slotFunc)
-{
-    QPushButton *button = new QPushButton(description);
-    QObject::connect(button, SIGNAL(clicked()), receiver, slotFunc);
-    layout->addWidget(button, row++, column);
-    return button;
-}
-
 // A line edit for editing the label fields of the dialog, keeping track of whether it has
 // been modified by the user to avoid applying Qt's default texts to native dialogs.
 
@@ -152,9 +143,12 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     int row = 0;
     int column = 0;
     addButton(tr("Exec modal"), buttonLayout, row, column, this, SLOT(execModal()));
-    addButton(tr("Show modal"), buttonLayout, row, column, this, SLOT(showModal()));
-    m_deleteModalDialogButton =
-        addButton(tr("Delete modal"), buttonLayout, row, column, this, SLOT(deleteModalDialog()));
+    addButton(tr("Show application modal"), buttonLayout, row, column,
+              [this]() { showModal(Qt::ApplicationModal); });
+    addButton(tr("Show window modal"), buttonLayout, row, column,
+              [this]() { showModal(Qt::WindowModal); });
+    m_deleteModalDialogButton = addButton(tr("Delete modal"), buttonLayout, row, column, this,
+                                          SLOT(deleteModalDialog()));
     addButton(tr("Show non-modal"), buttonLayout, row, column, this, SLOT(showNonModal()));
     m_deleteNonModalDialogButton =
         addButton(tr("Delete non-modal"), buttonLayout, row, column, this, SLOT(deleteNonModalDialog()));
@@ -193,7 +187,7 @@ void FileDialogPanel::execModal()
     dialog.exec();
 }
 
-void FileDialogPanel::showModal()
+void FileDialogPanel::showModal(Qt::WindowModality modality)
 {
     if (m_modalDialog.isNull()) {
         static int  n = 0;
@@ -205,6 +199,7 @@ void FileDialogPanel::showModal()
                                       .arg(QLatin1String(QT_VERSION_STR)));
         enableDeleteModalDialogButton();
     }
+    m_modalDialog->setWindowModality(modality);
     applySettings(m_modalDialog);
     m_modalDialog->show();
 }

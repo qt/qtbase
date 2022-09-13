@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include "colordialogpanel.h"
+#include "utils.h"
 
 #include <QGroupBox>
 #include <QCheckBox>
@@ -42,15 +43,6 @@ static inline QStringList svgColorNames()
         << "seashell" << "sienna" << "silver" << "skyblue" << "slateblue" << "slategray" << "slategrey"
         << "snow" << "springgreen" << "steelblue" << "tan" << "teal" << "thistle" << "tomato"
         << "turquoise" << "violet" << "wheat" << "white" << "whitesmoke" << "yellow" << "yellowgreen";
-}
-
-static inline QPushButton *addButton(const QString &description, QVBoxLayout *layout,
-                                     QObject *receiver, const char *slotFunc)
-{
-    QPushButton *button = new QPushButton(description);
-    QObject::connect(button, SIGNAL(clicked()), receiver, slotFunc);
-    layout->addWidget(button);
-    return button;
 }
 
 class ColorProxyModel : public QSortFilterProxyModel
@@ -103,7 +95,9 @@ ColorDialogPanel::ColorDialogPanel(QWidget *parent)
     QGroupBox *buttonsGroupBox = new QGroupBox(tr("Show"));
     QVBoxLayout *buttonsLayout = new QVBoxLayout(buttonsGroupBox);
     addButton(tr("Exec modal"), buttonsLayout, this, SLOT(execModal()));
-    addButton(tr("Show modal"), buttonsLayout, this, SLOT(showModal()));
+    addButton(tr("Show application modal"), buttonsLayout,
+              [this]() { showModal(Qt::ApplicationModal); });
+    addButton(tr("Show window modal"), buttonsLayout, [this]() { showModal(Qt::WindowModal); });
     m_deleteModalDialogButton =
         addButton(tr("Delete modal"), buttonsLayout, this, SLOT(deleteModalDialog()));
     addButton(tr("Show non-modal"), buttonsLayout, this, SLOT(showNonModal()));
@@ -137,7 +131,7 @@ void ColorDialogPanel::execModal()
     dialog.exec();
 }
 
-void ColorDialogPanel::showModal()
+void ColorDialogPanel::showModal(Qt::WindowModality modality)
 {
     if (m_modalDialog.isNull()) {
         static int  n = 0;
@@ -151,6 +145,7 @@ void ColorDialogPanel::showModal()
                                       .arg(QLatin1String(QT_VERSION_STR)));
         enableDeleteModalDialogButton();
     }
+    m_modalDialog->setWindowModality(modality);
     applySettings(m_modalDialog);
     m_modalDialog->show();
 }

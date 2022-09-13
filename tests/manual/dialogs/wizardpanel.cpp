@@ -271,8 +271,14 @@ WizardPanel::WizardPanel(QWidget *parent)
     gridLayout->addWidget(m_styleControl, 0, 1);
     QGroupBox *buttonGroupBox = new QGroupBox(this);
     QVBoxLayout *vLayout = new QVBoxLayout(buttonGroupBox);
-    QPushButton *button = new QPushButton(tr("Show modal"), this);
-    connect(button, SIGNAL(clicked()), this, SLOT(showModal()));
+    QPushButton *button = new QPushButton(tr("Exec modal"), this);
+    connect(button, SIGNAL(clicked()), this, SLOT(execModal()));
+    vLayout->addWidget(button);
+    button = new QPushButton(tr("Show application modal"), this);
+    connect(button, &QPushButton::clicked, [this]() { showModal(Qt::ApplicationModal); });
+    vLayout->addWidget(button);
+    button = new QPushButton(tr("Show window modal"), this);
+    connect(button, &QPushButton::clicked, [this]() { showModal(Qt::WindowModal); });
     vLayout->addWidget(button);
     button = new QPushButton(tr("Show non-modal"), this);
     connect(button, SIGNAL(clicked()), this, SLOT(showNonModal()));
@@ -285,11 +291,21 @@ WizardPanel::WizardPanel(QWidget *parent)
     gridLayout->addWidget(buttonGroupBox, 1, 1);
 }
 
-void WizardPanel::showModal()
+void WizardPanel::execModal()
 {
     Wizard wizard(this);
     applyParameters(&wizard);
     wizard.exec();
+}
+
+void WizardPanel::showModal(Qt::WindowModality modality)
+{
+    Wizard *wizard = new Wizard(this);
+    applyParameters(wizard);
+    wizard->setModal(true);
+    wizard->setAttribute(Qt::WA_DeleteOnClose);
+    wizard->setWindowModality(modality);
+    wizard->show();
 }
 
 void WizardPanel::showNonModal()

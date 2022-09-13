@@ -22,7 +22,7 @@ public:
 
 public slots:
     void execModal();
-    void showModal();
+    void showModal(Qt::WindowModality modality);
     void showNonModal();
     void deleteNonModalDialog();
     void deleteModalDialog();

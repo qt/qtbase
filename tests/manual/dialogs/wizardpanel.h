@@ -19,7 +19,8 @@ public:
     explicit WizardPanel(QWidget *parent = nullptr);
 
 public slots:
-    void showModal();
+    void execModal();
+    void showModal(Qt::WindowModality modality);
     void showNonModal();
     void showEmbedded();
 

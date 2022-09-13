@@ -10,7 +10,12 @@
 #include <QPair>
 #include <QList>
 
+#include <functional>
+
 QT_FORWARD_DECLARE_CLASS(QCheckBox)
+QT_FORWARD_DECLARE_CLASS(QGridLayout)
+QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
 
 // Associate enum/flag value with a description.
 struct FlagData
@@ -50,5 +55,16 @@ private:
 
     QList<CheckBoxFlagPair> m_checkBoxes;
 };
+
+QPushButton *addButton(const QString &description, QGridLayout *layout, int &row, int column,
+                       QObject *receiver, const char *slotFunc);
+
+QPushButton *addButton(const QString &description, QGridLayout *layout, int &row, int column,
+                       std::function<void()> fn);
+
+QPushButton *addButton(const QString &description, QVBoxLayout *layout, QObject *receiver,
+                       const char *slotFunc);
+
+QPushButton *addButton(const QString &description, QVBoxLayout *layout, std::function<void()> fn);
 
 #endif // UTILS_H

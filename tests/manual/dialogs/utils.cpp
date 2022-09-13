@@ -4,6 +4,8 @@
 #include "utils.h"
 
 #include <QCheckBox>
+#include <QGridLayout>
+#include <QPushButton>
 #include <QVBoxLayout>
 
 QComboBox *createCombo(QWidget *parent, const FlagData *d, size_t size)
@@ -65,4 +67,39 @@ int OptionsControl::intValue() const
             result |= cf.second;
     }
     return result;
+}
+
+QPushButton *addButton(const QString &description, QGridLayout *layout, int &row, int column,
+                       QObject *receiver, const char *slotFunc)
+{
+    QPushButton *button = new QPushButton(description);
+    QObject::connect(button, SIGNAL(clicked()), receiver, slotFunc);
+    layout->addWidget(button, row++, column);
+    return button;
+}
+
+QPushButton *addButton(const QString &description, QGridLayout *layout, int &row, int column,
+                       std::function<void()> fn)
+{
+    QPushButton *button = new QPushButton(description);
+    QObject::connect(button, &QPushButton::clicked, fn);
+    layout->addWidget(button, row++, column);
+    return button;
+}
+
+QPushButton *addButton(const QString &description, QVBoxLayout *layout, QObject *receiver,
+                       const char *slotFunc)
+{
+    QPushButton *button = new QPushButton(description);
+    QObject::connect(button, SIGNAL(clicked()), receiver, slotFunc);
+    layout->addWidget(button);
+    return button;
+}
+
+QPushButton *addButton(const QString &description, QVBoxLayout *layout, std::function<void()> fn)
+{
+    QPushButton *button = new QPushButton(description);
+    QObject::connect(button, &QPushButton::clicked, fn);
+    layout->addWidget(button);
+    return button;
 }

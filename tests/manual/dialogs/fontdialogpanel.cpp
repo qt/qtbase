@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include "fontdialogpanel.h"
+#include "utils.h"
 
 #include <QGroupBox>
 #include <QCheckBox>
@@ -13,15 +14,6 @@
 #include <QDoubleSpinBox>
 #include <QTimer>
 #include <QDebug>
-
-static inline QPushButton *addButton(const QString &description, QVBoxLayout *layout,
-                                     QObject *receiver, const char *slotFunc)
-{
-    QPushButton *button = new QPushButton(description);
-    QObject::connect(button, SIGNAL(clicked()), receiver, slotFunc);
-    layout->addWidget(button);
-    return button;
-}
 
 FontDialogPanel::FontDialogPanel(QWidget *parent)
     : QWidget(parent)
@@ -55,7 +47,9 @@ FontDialogPanel::FontDialogPanel(QWidget *parent)
     QGroupBox *buttonsGroupBox = new QGroupBox(tr("Show"));
     QVBoxLayout *buttonsLayout = new QVBoxLayout(buttonsGroupBox);
     addButton(tr("Exec modal"), buttonsLayout, this, SLOT(execModal()));
-    addButton(tr("Show modal"), buttonsLayout, this, SLOT(showModal()));
+    addButton(tr("Show application modal"), buttonsLayout,
+              [this]() { showModal(Qt::ApplicationModal); });
+    addButton(tr("Show window modal"), buttonsLayout, [this]() { showModal(Qt::WindowModal); });
     m_deleteModalDialogButton =
         addButton(tr("Delete modal"), buttonsLayout, this, SLOT(deleteModalDialog()));
     addButton(tr("Show non-modal"), buttonsLayout, this, SLOT(showNonModal()));
@@ -87,7 +81,7 @@ void FontDialogPanel::execModal()
     dialog.exec();
 }
 
-void FontDialogPanel::showModal()
+void FontDialogPanel::showModal(Qt::WindowModality modality)
 {
     if (m_modalDialog.isNull()) {
         static int  n = 0;
@@ -99,6 +93,7 @@ void FontDialogPanel::showModal()
                                       .arg(QLatin1String(QT_VERSION_STR)));
         enableDeleteModalDialogButton();
     }
+    m_modalDialog->setWindowModality(modality);
     applySettings(m_modalDialog);
     m_modalDialog->show();
 }
