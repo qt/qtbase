@@ -251,11 +251,12 @@ def run_full_test(test_basename, testargs: List[str], output_dir: str,
     # and text to stdout.
     if not no_extra_args:
         filename_base = unique_filename(test_basename)
-        results_files.append(
-            os.path.join(output_dir, f"{filename_base}.xml"))
-        output_testargs.extend(["-o", results_files[0] + ",xml"])
-        output_testargs.extend(["-o", f"{filename_base}.junit.xml,junitxml"])
-        output_testargs.extend(["-o", "-,txt"])
+        xml_output_file = os.path.join(output_dir, f"{filename_base}.xml")
+        results_files.append(xml_output_file)
+        output_testargs.extend([
+            "-o", xml_output_file + ",xml",
+            "-o", os.path.join(output_dir, f"{filename_base}.junit.xml") + ",junitxml",
+            "-o", "-,txt"])
 
     proc = run_test(testargs + specific_extra_args + output_testargs,
                     timeout=timeout)
