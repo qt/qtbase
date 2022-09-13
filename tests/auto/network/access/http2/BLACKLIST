@@ -1,0 +1,5 @@
+# See qtbase/src/testlib/qtestblacklist.cpp for format
+[authenticationRequired]
+ci ubuntu-20.04 # QTBUG-106599
+[redirect]
+ci ubuntu-20.04 # QTBUG-106599
