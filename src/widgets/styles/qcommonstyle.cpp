@@ -5371,8 +5371,48 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_SpinBox_SelectOnStep:
         ret = true;
         break;
-    default:
-        ret = 0;
+    case SH_EtchDisabledText:
+    case SH_DitherDisabledText:
+    case SH_ScrollBar_MiddleClickAbsolutePosition:
+    case SH_ScrollBar_ScrollWhenPointerLeavesControl:
+    case SH_Slider_SnapToValue:
+    case SH_Slider_SloppyKeyEvents:
+    case SH_ProgressDialog_CenterCancelButton:
+    case SH_PrintDialog_RightAlignButtons:
+    case SH_MainWindow_SpaceBelowMenuBar:
+    case SH_FontDialog_SelectAssociatedText:
+    case SH_Menu_AllowActiveAndDisabled:
+    case SH_Menu_SpaceActivatesItem:
+    case SH_ScrollView_FrameOnlyAroundContents:
+    case SH_MenuBar_AltKeyNavigation:
+    case SH_ComboBox_ListMouseTracking:
+    case SH_Menu_MouseTracking:
+    case SH_MenuBar_MouseTracking:
+    case SH_ItemView_ChangeHighlightOnFocus:
+    case SH_Widget_ShareActivation:
+    case SH_Workspace_FillSpaceOnMaximize:
+    case SH_ComboBox_Popup:
+    case SH_TitleBar_NoBorder:
+    case SH_Slider_StopMouseOverSlider:
+    case SH_RichText_FullWidthSelection:
+    case SH_Menu_Scrollable:
+    case SH_TabBar_PreferNoArrows:
+    case SH_ScrollBar_LeftClickAbsolutePosition:
+    case SH_SpinBox_AnimateButton:
+    case SH_DrawMenuBarSeparator:
+    case SH_WindowFrame_Mask:
+    case SH_ToolTip_Mask:
+    case SH_Menu_Mask:
+    case SH_Menu_FlashTriggeredItem:
+    case SH_Menu_FadeOutOnHide:
+    case SH_ItemView_PaintAlternatingRowColorsForEmptyArea:
+    case SH_ComboBox_UseNativePopup:
+    case SH_Table_AlwaysDrawLeftTopGridLines:
+        ret = false;
+        break;
+    case SH_CustomBase:
+        // Added to get compiler errors when a style hint is missing
+        ret = false;
         break;
     }
 
