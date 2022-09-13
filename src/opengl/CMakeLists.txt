@@ -28,6 +28,7 @@ qt_internal_add_module(OpenGL
         qopengltextureglyphcache.cpp qopengltextureglyphcache_p.h
         qopengltexturehelper.cpp qopengltexturehelper_p.h
         qopengltextureuploader.cpp qopengltextureuploader_p.h
+        qopengltimerquery.h
         qopenglversionfunctions.cpp qopenglversionfunctions.h qopenglversionfunctions_p.h
         qopenglversionfunctionsfactory.cpp qopenglversionfunctionsfactory.h
         qopenglversionprofile.cpp qopenglversionprofile.h
@@ -86,7 +87,7 @@ qt_internal_extend_target(OpenGL CONDITION NOT QT_FEATURE_opengles2
         qopenglfunctions_4_5_compatibility.cpp qopenglfunctions_4_5_compatibility.h
         qopenglfunctions_4_5_core.cpp qopenglfunctions_4_5_core.h
         qopenglqueryhelper_p.h
-        qopengltimerquery.cpp qopengltimerquery.h
+        qopengltimerquery.cpp
 )
 
 qt_internal_extend_target(OpenGL CONDITION QT_FEATURE_vulkan
