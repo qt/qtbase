@@ -8,6 +8,7 @@
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qbitmap.h>
 #include <QtCore/qdatetime.h>
+#include <QtCore/qmetatype.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtGui/qguiapplication.h>
@@ -57,9 +58,12 @@ QMacPasteboard::Promise::Promise(int itemId, QMacInternalPasteboardMime *c, QStr
     // Request the data from the application immediately for eager requests.
     if (dataRequestType == QMacPasteboard::EagerRequest) {
         variantData = md->variantData(m);
+        isPixmap = variantData.metaType().id() == QMetaType::QPixmap;
         mimeData = nullptr;
     } else {
         mimeData = md;
+        if (md->hasImage())
+            isPixmap = md->imageData().metaType().id() == QMetaType::QPixmap;
     }
 }
 
@@ -170,8 +174,14 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
     // to request the data from the application.
     QVariant promiseData;
     if (promise.dataRequestType == LazyRequest) {
-        if (!qpaste->resolvingBeforeDestruction && !promise.mimeData.isNull())
+        if (!qpaste->resolvingBeforeDestruction && !promise.mimeData.isNull()) {
+            if (promise.isPixmap && !QGuiApplication::instance()) {
+                qCWarning(lcQpaClipboard,
+                          "Cannot keep promise, data contains QPixmap and requires livining QGuiApplication");
+                return cantGetFlavorErr;
+            }
             promiseData = promise.mimeData->variantData(promise.mime);
+        }
     } else {
         promiseData = promise.variantData;
     }

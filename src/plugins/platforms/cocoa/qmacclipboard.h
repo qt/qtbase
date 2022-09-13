@@ -30,6 +30,12 @@ private:
         QPointer<QMacMimeData> mimeData;
         QVariant variantData;
         DataRequestType dataRequestType;
+        // QMimeData can be set from QVariant, holding
+        // QPixmap. When converting, this triggers
+        // QPixmap's ctor which in turn requires QGuiApplication
+        // to exist and thus will abort the application
+        // abnormally if not.
+        bool isPixmap = false;
     };
     QList<Promise> promises;
 
