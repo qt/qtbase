@@ -27,6 +27,11 @@
 #include <QtNetwork/qabstractsocket.h>
 #include <QtNetwork/private/qsslsocket_p.h>
 
+#warning SecureTransport was deprecated in macOS 10.15 and iOS 13, \
+and is no longer supported. We should be using Network.framework instead. \
+See QTBUG-85231 for more information.
+QT_WARNING_DISABLE_DEPRECATED
+
 #include <Security/Security.h>
 #include <Security/SecureTransport.h>
 
