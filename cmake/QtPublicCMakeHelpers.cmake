@@ -60,3 +60,17 @@ function(__qt_internal_collect_additional_prefix_paths out_var prefixes_var)
 
     set("${out_var}" "${additional_packages_prefix_paths}" PARENT_SCOPE)
 endfunction()
+
+# Take a list of prefix paths ending with "/lib/cmake", and return a list of absolute paths with
+# "/lib/cmake" removed.
+function(__qt_internal_prefix_paths_to_roots out_var prefix_paths)
+    set(result "")
+    foreach(path IN LISTS prefix_paths)
+        if(path MATCHES "/lib/cmake$")
+            string(APPEND path "/../..")
+        endif()
+        get_filename_component(path "${path}" ABSOLUTE)
+        list(APPEND result "${path}")
+    endforeach()
+    set("${out_var}" "${result}" PARENT_SCOPE)
+endfunction()
