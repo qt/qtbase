@@ -240,19 +240,14 @@ void tst_QTimer::remainingTimeDuringActivation()
 
 namespace {
 
-#if __has_include(<chrono>)
     template <typename T>
     std::chrono::milliseconds to_ms(T t)
     { return std::chrono::duration_cast<std::chrono::milliseconds>(t); }
-#endif
 
 } // unnamed namespace
 
 void tst_QTimer::basic_chrono()
 {
-#if !__has_include(<chrono>)
-    QSKIP("This test requires C++11 <chrono> support");
-#else
     // duplicates zeroTimer, singleShotTimeout, interval and remainingTime
     using namespace std::chrono;
     QTimer timer;
@@ -293,7 +288,6 @@ void tst_QTimer::basic_chrono()
     QCOMPARE(timeoutSpy.count(), 1);
     QTest::qWait(500);
     QCOMPARE(timeoutSpy.count(), 1);
-#endif
 }
 
 void tst_QTimer::livelock_data()
@@ -890,9 +884,6 @@ void tst_QTimer::singleShotToFunctors()
 
 void tst_QTimer::singleShot_chrono()
 {
-#if !__has_include(<chrono>)
-    QSKIP("This test requires C++11 <chrono> support");
-#else
     // duplicates singleShotStaticFunctionZeroTimeout and singleShotToFunctors
     using namespace std::chrono;
     {
@@ -929,7 +920,6 @@ void tst_QTimer::singleShot_chrono()
     QTRY_COMPARE(count, 3);
 
     _e.reset();
-#endif
 }
 
 class DontBlockEvents : public QObject

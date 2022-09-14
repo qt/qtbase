@@ -9,10 +9,8 @@
 #include <QtCore/qtsan_impl.h>
 #include <new>
 
-#if __has_include(<chrono>)
-#  include <chrono>
-#  include <limits>
-#endif
+#include <chrono>
+#include <limits>
 
 class tst_QMutex;
 
@@ -31,7 +29,6 @@ class QMutex;
 class QRecursiveMutex;
 class QMutexPrivate;
 
-#if __has_include(<chrono>)
 namespace QtPrivate
 {
     template<class Rep, class Period>
@@ -57,7 +54,6 @@ namespace QtPrivate
         return ms < maxInt ? int(ms) : maxInt;
     }
 }
-#endif
 
 class Q_CORE_EXPORT QBasicMutex
 {
