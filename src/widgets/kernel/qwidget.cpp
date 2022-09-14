@@ -8339,6 +8339,7 @@ void QWidgetPrivate::showChildren(bool spontaneous)
 
 void QWidgetPrivate::hideChildren(bool spontaneous)
 {
+    Q_Q(QWidget);
     QList<QObject*> childList = children;
     for (int i = 0; i < childList.size(); ++i) {
         QWidget *widget = qobject_cast<QWidget*>(childList.at(i));
@@ -8369,6 +8370,14 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
             QAccessible::updateAccessibility(&event);
         }
 #endif
+    }
+
+    // If the window of this widget is not closed, then the leave event
+    // will eventually handle the widget under mouse use case.
+    // Otherwise, we need to explicitly handle it here.
+    if (QWidget* widgetWindow = q->window();
+        widgetWindow && widgetWindow->data->is_closing) {
+        q->setAttribute(Qt::WA_UnderMouse, false);
     }
 }
 
