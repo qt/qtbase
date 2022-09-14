@@ -382,15 +382,19 @@ function(qt_internal_is_in_test_batch out name)
     endif()
 endfunction()
 
-function(qt_internal_get_batched_test_argument out testname)
+function(qt_internal_get_batched_test_arguments out testname)
     if(WASM)
         # Add a query string to the runner document, so that the script therein
         # knows which test to run in response to launching the testcase by ctest.
-        set(${out} "--batched_test=${testname}" PARENT_SCOPE)
+        list(APPEND args "qbatchedtest")
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            list(APPEND args "qvisualoutput")
+        endif()
     else()
         # Simply add the test name in case of standard executables.
-        set(${out} "${testname}" PARENT_SCOPE)
+        list(APPEND args "${testname}")
     endif()
+    set(${out} ${args} PARENT_SCOPE)
 endfunction()
 
 # This function creates a CMake test target with the specified name for use with CTest.
@@ -543,19 +547,18 @@ function(qt_internal_add_test name)
         # version specialized for running batches has to be supplied.
         if(setting_up_batched_test)
             get_target_property(batch_output_dir ${name} RUNTIME_OUTPUT_DIRECTORY)
-            set(test_executable "${batch_output_dir}/batchedtestrunner.html")
+            set(test_executable "${batch_output_dir}/${name}.html")
         else()
             set(test_executable "${name}.html")
         endif()
 
-        if(QT6_INSTALL_PREFIX)
-            set(QT_WASM_TESTRUNNER "${QT6_INSTALL_PREFIX}/${INSTALL_LIBEXECDIR}/qt-wasmtestrunner.py")
-        elseif(QT_BUILD_DIR)
-            set(QT_WASM_TESTRUNNER "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-wasmtestrunner.py")
-        endif()
+        list(APPEND extra_test_args "quseemrun")
+        list(APPEND extra_test_args "qtestname=${testname}")
+        list(APPEND extra_test_args "--silence_timeout=60")
+
         # This tells cmake to run the tests with this script, since wasm files can't be
         # executed directly
-        set_property(TARGET "${name}" PROPERTY CROSSCOMPILING_EMULATOR "${QT_WASM_TESTRUNNER}")
+        set_property(TARGET "${name}" PROPERTY CROSSCOMPILING_EMULATOR "emrun")
     else()
         if(arg_QMLTEST AND NOT arg_SOURCES)
             set(test_working_dir "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -573,8 +576,8 @@ function(qt_internal_add_test name)
     endif()
 
     if(setting_up_batched_test)
-        qt_internal_get_batched_test_argument(batched_test_argument ${testname})
-        list(APPEND extra_test_args ${batched_test_argument})
+        qt_internal_get_batched_test_arguments(batched_test_args ${testname})
+        list(PREPEND extra_test_args ${batched_test_args})
     endif()
 
     qt_internal_collect_command_environment(test_env_path test_env_plugin_path)
