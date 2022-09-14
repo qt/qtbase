@@ -4,6 +4,7 @@
 #include "qwinregistry_p.h"
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qendian.h>
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 
