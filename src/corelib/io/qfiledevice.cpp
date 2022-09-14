@@ -89,9 +89,9 @@ void QFileDevicePrivate::setError(QFileDevice::FileError err, int errNum)
     \value ReadGroup The file is readable by the group.
     \value WriteGroup The file is writable by the group.
     \value ExeGroup The file is executable by the group.
-    \value ReadOther The file is readable by anyone.
-    \value WriteOther The file is writable by anyone.
-    \value ExeOther The file is executable by anyone.
+    \value ReadOther The file is readable by others.
+    \value WriteOther The file is writable by others.
+    \value ExeOther The file is executable by others.
 
     \warning Because of differences in the platforms supported by Qt,
     the semantics of ReadUser, WriteUser and ExeUser are
