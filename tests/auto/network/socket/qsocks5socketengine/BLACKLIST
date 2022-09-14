@@ -1,8 +1,7 @@
 [udpTest]
 *
 [passwordAuth]
-ubuntu-18.04
-ubuntu-20.04
+ubuntu
 # QTBUG-101274
 qnx ci
 # QTBUG-74162
