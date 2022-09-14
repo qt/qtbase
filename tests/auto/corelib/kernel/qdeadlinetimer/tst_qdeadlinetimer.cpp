@@ -33,9 +33,7 @@
 #include <QTest>
 #include <QTimer>
 
-#if __has_include(<chrono>)
-#  include <chrono>
-#endif
+#include <chrono>
 
 static const int minResolution = 400; // the minimum resolution for the tests
 
@@ -520,9 +518,6 @@ void tst_QDeadlineTimer::expire()
 
 void tst_QDeadlineTimer::stdchrono()
 {
-#if !__has_include(<chrono>)
-    QSKIP("std::chrono not found on this system");
-#else
     using namespace std::chrono;
     QFETCH_GLOBAL(Qt::TimerType, timerType);
 
@@ -722,7 +717,6 @@ void tst_QDeadlineTimer::stdchrono()
     QVERIFY(deadline.deadline<steady_clock>() <= (steady_clock::now() + seconds(1) + milliseconds(minResolution)));
     QVERIFY(deadline.deadline<system_clock>() > (system_clock::now() + seconds(1) - milliseconds(minResolution)));
     QVERIFY(deadline.deadline<system_clock>() <= (system_clock::now() + seconds(1) + milliseconds(minResolution)));
-#endif
 }
 
 QTEST_MAIN(tst_QDeadlineTimer)
