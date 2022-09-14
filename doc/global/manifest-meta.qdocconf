@@ -71,7 +71,24 @@ manifestmeta.android.names          =   "Qt3D/Qt 3D: Basic Shapes C++ Example" \
                                         "QtQML/Extending QML - Signal Support Example" \
                                         "QtQML/Qt Quick Examples - XMLHttpRequest" \
                                         "QtQml/Qt Quick Examples - XMLHttpRequest" \
-                                        "QtQuick/*" \
+                                        "QtQuick/C++ Extensions*" \
+                                        "QtQuick/Models and Views*" \
+                                        "QtQuick/QQuickRenderControl OpenGL Example" \
+                                        "QtQuick/QQuickWidget - QQuickView Comparison Example" \
+                                        "QtQuick/QML*" \
+                                        "QtQuick/Qt Quick*" \
+                                        "QtQuick/Scene Graph - Custom Geometry" \
+                                        "QtQuick/Scene Graph - Custom Material" \
+                                        "QtQuick/Scene Graph - Graph" \
+                                        "QtQuick/Scene Graph - OpenGL Under QML" \
+                                        "QtQuick/Scene Graph - Painted Item" \
+                                        "QtQuick/Scene Graph - Rendering FBOs" \
+                                        "QtQuick/Scene Graph - Two Texture Providers" \
+                                        "QtQuick/Scene Graph - Vulkan Under QML" \
+                                        "QtQuick/Scene Graph - Vulkan Texture Import" \
+                                        "QtQuick/Threaded ListModel Example" \
+                                        "QtQuick/TabWidget Example" \
+                                        "QtQuick/UI Components*" \
                                         "QtQuickControls/*" \
                                         "QtQuickControls1/Qt Quick Controls 1 - Calendar Example" \
                                         "QtQuickControls1/Qt Quick Controls 1 - Gallery" \
@@ -216,6 +233,8 @@ manifestmeta.ios.names              =  "QtCore/Contiguous Cache Example" \
                                        "QtQuick/Qt Quick Examples - MouseArea" \
                                        "QtQuick/Qt Quick Examples - Positioners" \
                                        "QtQuick/Qt Quick Examples - Right to Left" \
+                                       "QtQuick/Scene Graph - Metal Texture Import" \
+                                       "QtQuick/Scene Graph - Metal Under QML" \
                                        "QtQuick/Scene Graph - OpenGL Under QML" \
                                        "QtQuick/Qt Quick Examples - Shader Effects" \
                                        "QtQuick/Qt Quick Examples - Text" \
