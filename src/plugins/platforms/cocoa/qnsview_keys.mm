@@ -16,6 +16,10 @@
     // We will send a key event unless the input method handles it
     QBoolBlocker sendKeyEventGuard(m_sendKeyEvent, true);
 
+    // Assume we should send key events with text, unless told
+    // otherwise by doCommandBySelector.
+    m_sendKeyEventWithoutText = false;
+
     if (keyEvent.type == QEvent::KeyPress) {
 
         if (m_composingText.isEmpty()) {
@@ -76,6 +80,8 @@
     bool accepted = true;
     if (m_sendKeyEvent && m_composingText.isEmpty()) {
         KeyEvent keyEvent(nsevent);
+        if (m_sendKeyEventWithoutText)
+            keyEvent.text = {};
         qCDebug(lcQpaKeys) << "Sending as" << keyEvent;
         accepted = keyEvent.sendWindowSystemEvent(window);
     }
@@ -229,11 +235,7 @@ KeyEvent::KeyEvent(NSEvent *nsevent)
             key = QAppleKeyMapper::fromCocoaKey(character);
         }
 
-        // Ignore text for the U+F700-U+F8FF range. This is used by Cocoa when
-        // delivering function keys (e.g. arrow keys, backspace, F1-F35, etc.)
-        if (!(modifiers & (Qt::ControlModifier | Qt::MetaModifier))
-            && (character.unicode() < 0xf700 || character.unicode() > 0xf8ff))
-            text = QString::fromNSString(characters);
+        text = QString::fromNSString(characters);
 
         isRepeat = nsevent.ARepeat;
     }
