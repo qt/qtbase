@@ -1719,7 +1719,7 @@ void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
     view.resize(200, 150);
     view.move(availableGeometry.topLeft() + QPoint(50, 50));
     view.show();
-    QApplication::setActiveWindow(&view);
+    view.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     // delete item in focus chain with no focus and verify chain
@@ -1748,13 +1748,8 @@ void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
     w->setParentItem(parent);
     //We don't crash perfect
     QVERIFY(w);
-    const QPoint center(view.viewport()->width() / 2, view.viewport()->height() / 2);
-    QTest::mouseMove(view.viewport(), center);
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, {}, center);
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-23699", Continue);
-#endif
-    QTRY_COMPARE(qApp->activeWindow(), static_cast<QWidget *>(&view));
+    view.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_COMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(w));
 }
 
