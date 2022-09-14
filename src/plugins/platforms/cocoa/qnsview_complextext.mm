@@ -367,8 +367,18 @@
     // pass the originating key event up the responder chain if applicable.
 
     qCDebug(lcQpaKeys) << "Trying to perform command" << selector;
-    if (![self tryToPerform:selector with:self])
+    if (![self tryToPerform:selector with:self]) {
         m_sendKeyEvent = true;
+
+        // The text input system determined that the key event was not
+        // meant for text insertion, and instead asked us to treat it
+        // as a (possibly noop) command. This typically happens for key
+        // events with either ⌘ or ⌃, function keys such as F1-F35,
+        // arrow keys, etc. We reflect that when sending the key event
+        // later on, by removing the text from the event, so that the
+        // event does not result in text insertion on the client side.
+        m_sendKeyEventWithoutText = true;
+    }
 }
 
 // ------------- Various text properties -------------
