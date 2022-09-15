@@ -1,22 +1,19 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# qt_configure_file(OUTPUT output-file <INPUT input-file | CONTENT content>)
-# input-file is relative to ${CMAKE_CURRENT_SOURCE_DIR}
-# output-file is relative to ${CMAKE_CURRENT_BINARY_DIR}
-#
-# This function is similar to file(GENERATE OUTPUT) except it writes the content
-# to the file at configure time, rather than at generate time. Once CMake 3.18 is released, it can
-# use file(CONFIGURE) in its implementation. Until then, it  uses configure_file() with a generic
-# input file as source, when used with the CONTENT signature.
-function(qt_configure_file)
-    qt_parse_all_arguments(arg "qt_configure_file" "" "OUTPUT;INPUT;CONTENT" "" ${ARGN})
-
+# The common implementation of qt_configure_file functionality.
+macro(qt_configure_file_impl)
     if(NOT arg_OUTPUT)
         message(FATAL_ERROR "No output file provided to qt_configure_file.")
     endif()
 
-    if(arg_CONTENT)
+    # We use this check for the cases when the specified CONTENT is empty. The value of arg_CONTENT
+    # is undefined, but we still want to create a file with empty content.
+    if(NOT "CONTENT" IN_LIST arg_KEYWORDS_MISSING_VALUES)
+        if(arg_INPUT)
+            message(WARNING "Both CONTENT and INPUT are specified. CONTENT will be used to generate"
+                " output")
+        endif()
         set(template_name "QtFileConfigure.txt.in")
         # When building qtbase, use the source template file.
         # Otherwise use the installed file (basically wherever Qt6 package is found).
@@ -34,6 +31,28 @@ function(qt_configure_file)
     endif()
 
     configure_file("${input_file}" "${arg_OUTPUT}" @ONLY)
+endmacro()
+
+# qt_configure_file(OUTPUT output-file <INPUT input-file | CONTENT content>)
+# input-file is relative to ${CMAKE_CURRENT_SOURCE_DIR}
+# output-file is relative to ${CMAKE_CURRENT_BINARY_DIR}
+#
+# This function is similar to file(GENERATE OUTPUT) except it writes the content
+# to the file at configure time, rather than at generate time. Once CMake 3.18 is released, it can
+# use file(CONFIGURE) in its implementation. Until then, it  uses configure_file() with a generic
+# input file as source, when used with the CONTENT signature.
+function(qt_configure_file)
+    qt_parse_all_arguments(arg "qt_configure_file" "" "OUTPUT;INPUT;CONTENT" "" ${ARGN})
+    qt_configure_file_impl()
+endfunction()
+
+# The fixed version of qt_configure_file that uses the cmake_parse_arguments variant with PARSE_ARGV
+# to handle arguments with semicolons correctly.
+# TODO: This implementation should replace the previous one, but first need to fix all places where
+# the previous imlementation is used.
+function(qt_configure_file_v2)
+    cmake_parse_arguments(PARSE_ARGV 0 arg "" "OUTPUT;INPUT;CONTENT" "")
+    qt_configure_file_impl()
 endfunction()
 
 # A version of cmake_parse_arguments that makes sure all arguments are processed and errors out
