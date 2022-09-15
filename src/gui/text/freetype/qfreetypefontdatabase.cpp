@@ -34,14 +34,14 @@ void QFreeTypeFontDatabase::populateFontDatabase()
         return;
     }
 
-    QStringList nameFilters;
-    nameFilters << "*.ttf"_L1
-                << "*.ttc"_L1
-                << "*.pfa"_L1
-                << "*.pfb"_L1
-                << "*.otf"_L1;
+    static const QString nameFilters[] = {
+        u"*.ttf"_s,
+        u"*.pfa"_s,
+        u"*.pfb"_s,
+        u"*.otf"_s,
+    };
 
-    const auto fis = dir.entryInfoList(nameFilters, QDir::Files);
+    const auto fis = dir.entryInfoList(QStringList::fromReadOnlyData(nameFilters), QDir::Files);
     for (const QFileInfo &fi : fis) {
         const QByteArray file = QFile::encodeName(fi.absoluteFilePath());
         QFreeTypeFontDatabase::addTTFile(QByteArray(), file);
