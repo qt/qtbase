@@ -355,7 +355,8 @@ function(qt_internal_add_configure_time_executable target)
         CMAKE_FLAGS
     )
     set(option_args WIN32 MACOSX_BUNDLE NO_INSTALL)
-    cmake_parse_arguments(arg "${option_args}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "${option_args}" "${one_value_args}" "${multi_value_args}")
 
     set(target_binary_dir "${CMAKE_CURRENT_BINARY_DIR}/configure_time_bins")
     if(arg_CONFIG)

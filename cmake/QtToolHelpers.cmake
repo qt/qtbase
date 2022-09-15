@@ -614,7 +614,8 @@ function(qt_internal_add_configure_time_tool target_name)
     set(one_value_args INSTALL_DIRECTORY TOOLS_TARGET)
     set(multi_value_args)
     set(option_args NO_INSTALL)
-    cmake_parse_arguments(arg "${option_args}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "${option_args}" "${one_value_args}" "${multi_value_args}")
 
     qt_internal_find_tool(will_build_tools ${target_name} "${arg_TOOLS_TARGET}")
     if(NOT will_build_tools)
