@@ -2353,7 +2353,7 @@ bool AtSpiAdaptor::editableTextInterface(QAccessibleInterface *interface, const 
         else
             replaceTextFallback(interface, 0, -1, newContents);
         connection.send(message.createReply(true));
-    } else if (function == ""_L1) {
+    } else if (function.isEmpty()) {
         connection.send(message.createReply());
     } else {
         qCDebug(lcAccessibilityAtspi) << "WARNING: AtSpiAdaptor::editableTextInterface does not implement " << function << message.path();
