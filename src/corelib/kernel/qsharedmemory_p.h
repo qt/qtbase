@@ -37,10 +37,7 @@ QT_END_NAMESPACE
 #else
 
 #include "qsystemsemaphore.h"
-
-#ifndef QT_NO_QOBJECT
-# include "private/qobject_p.h"
-#endif
+#include "private/qobject_p.h"
 
 #if !defined(Q_OS_WIN) && !defined(Q_OS_ANDROID) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_RTEMS)
 #  include <sys/sem.h>
@@ -80,14 +77,9 @@ private:
 };
 #endif // QT_CONFIG(systemsemaphore)
 
-class Q_AUTOTEST_EXPORT QSharedMemoryPrivate
-#ifndef QT_NO_QOBJECT
-        : public QObjectPrivate
-#endif
+class Q_AUTOTEST_EXPORT QSharedMemoryPrivate : public QObjectPrivate
 {
-#ifndef QT_NO_QOBJECT
     Q_DECLARE_PUBLIC(QSharedMemory)
-#endif
 
 public:
     QSharedMemoryPrivate();

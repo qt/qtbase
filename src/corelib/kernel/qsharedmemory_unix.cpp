@@ -29,9 +29,6 @@
 QT_BEGIN_NAMESPACE
 
 QSharedMemoryPrivate::QSharedMemoryPrivate() :
-#ifndef QT_NO_QOBJECT
-    QObjectPrivate(),
-#endif
     memory(nullptr), size(0), error(QSharedMemory::NoError),
 #if QT_CONFIG(systemsemaphore)
       systemSemaphore(QString()), lockedByMe(false),
