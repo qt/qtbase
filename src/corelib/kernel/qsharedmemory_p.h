@@ -82,17 +82,15 @@ class Q_AUTOTEST_EXPORT QSharedMemoryPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QSharedMemory)
 
 public:
-    QSharedMemoryPrivate();
-
-    void *memory;
-    qsizetype size;
+    void *memory = nullptr;
+    qsizetype size = 0;
     QString key;
     QString nativeKey;
-    QSharedMemory::SharedMemoryError error;
+    QSharedMemory::SharedMemoryError error = QSharedMemory::NoError;
     QString errorString;
 #if QT_CONFIG(systemsemaphore)
-    QSystemSemaphore systemSemaphore;
-    bool lockedByMe;
+    QSystemSemaphore systemSemaphore{QString()};
+    bool lockedByMe = false;
 #endif
 
     static int createUnixKeyFile(const QString &fileName);
@@ -126,11 +124,11 @@ public:
 
 private:
 #ifdef Q_OS_WIN
-    Qt::HANDLE hand;
+    Qt::HANDLE hand = nullptr;
 #elif defined(QT_POSIX_IPC)
-    int hand;
+    int hand = -1;
 #else
-    key_t unix_key;
+    key_t unix_key = 0;
 #endif
 };
 

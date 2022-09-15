@@ -28,19 +28,6 @@
 #if QT_CONFIG(sharedmemory)
 QT_BEGIN_NAMESPACE
 
-QSharedMemoryPrivate::QSharedMemoryPrivate() :
-    memory(nullptr), size(0), error(QSharedMemory::NoError),
-#if QT_CONFIG(systemsemaphore)
-      systemSemaphore(QString()), lockedByMe(false),
-#endif
-#ifndef QT_POSIX_IPC
-      unix_key(0)
-#else
-      hand(-1)
-#endif
-{
-}
-
 void QSharedMemoryPrivate::setErrorString(QLatin1StringView function)
 {
     // EINVAL is handled in functions so they can give better error strings

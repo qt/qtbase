@@ -13,11 +13,6 @@ using namespace Qt::StringLiterals;
 
 #if QT_CONFIG(systemsemaphore)
 
-QSystemSemaphorePrivate::QSystemSemaphorePrivate() :
-        semaphore(0), error(QSystemSemaphore::NoError)
-{
-}
-
 void QSystemSemaphorePrivate::setErrorString(const QString &function)
 {
     BOOL windowsError = GetLastError();

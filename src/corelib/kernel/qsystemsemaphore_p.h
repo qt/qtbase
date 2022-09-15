@@ -32,7 +32,6 @@ class QSystemSemaphorePrivate
 {
 
 public:
-    QSystemSemaphorePrivate();
 
     QString makeKeyFileName()
     {
@@ -61,18 +60,18 @@ public:
     QString fileName;
     int initialValue;
 #ifdef Q_OS_WIN
-    Qt::HANDLE semaphore;
+    Qt::HANDLE semaphore = nullptr;
 #elif defined(QT_POSIX_IPC)
-    sem_t *semaphore;
-    bool createdSemaphore;
+    sem_t *semaphore = SEM_FAILED;
+    bool createdSemaphore = false;
 #else
-    key_t unix_key;
-    int semaphore;
-    bool createdFile;
-    bool createdSemaphore;
+    key_t unix_key = -1;
+    int semaphore = -1;
+    bool createdFile = false;
+    bool createdSemaphore = false;
 #endif
     QString errorString;
-    QSystemSemaphore::SystemSemaphoreError error;
+    QSystemSemaphore::SystemSemaphoreError error = QSystemSemaphore::NoError;
 };
 
 QT_END_NAMESPACE

@@ -21,16 +21,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QSystemSemaphorePrivate::QSystemSemaphorePrivate() :
-#ifndef QT_POSIX_IPC
-    unix_key(-1), semaphore(-1), createdFile(false),
-#else
-    semaphore(SEM_FAILED),
-#endif // QT_POSIX_IPC
-    createdSemaphore(false), error(QSystemSemaphore::NoError)
-{
-}
-
 void QSystemSemaphorePrivate::setErrorString(const QString &function)
 {
     // EINVAL is handled in functions so they can give better error strings

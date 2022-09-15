@@ -8,15 +8,6 @@
 #if QT_CONFIG(sharedmemory)
 QT_BEGIN_NAMESPACE
 
-QSharedMemoryPrivate::QSharedMemoryPrivate()
-    : QObjectPrivate(), memory(0), size(0), error(QSharedMemory::NoError),
-#if QT_CONFIG(systemsemaphore)
-      systemSemaphore(QString()), lockedByMe(false),
-#endif
-      unix_key(0)
-{
-}
-
 void QSharedMemoryPrivate::setErrorString(QLatin1StringView function)
 {
     Q_UNUSED(function);
