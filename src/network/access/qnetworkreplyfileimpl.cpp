@@ -89,9 +89,10 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QNetworkAccessManager *manager, con
         // we handle only local files
         QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Request for opening non-local file %1").arg(url.toString());
         setError(QNetworkReply::ProtocolInvalidOperationError, msg);
+        setFinished(true); // We're finished, will emit finished() after ctor is done.
         QMetaObject::invokeMethod(this, "errorOccurred", Qt::QueuedConnection,
             Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ProtocolInvalidOperationError));
-        fileOpenFinished(false);
+        QMetaObject::invokeMethod(this, [this](){ fileOpenFinished(false); }, Qt::QueuedConnection);
         return;
     }
 #endif

@@ -280,6 +280,7 @@ private Q_SLOTS:
     void ioGetFromFileSpecial();
     void ioGetFromFile_data();
     void ioGetFromFile();
+    void ioGetFromFileUrl();
     void ioGetFromFtp_data();
     void ioGetFromFtp();
     void ioGetFromFtpWithReuse();
@@ -3313,6 +3314,18 @@ void tst_QNetworkReply::ioGetFromFile()
     QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), file.size());
     QCOMPARE(qint64(reader.data.size()), file.size());
     QCOMPARE(reader.data, data);
+}
+
+void tst_QNetworkReply::ioGetFromFileUrl()
+{
+    // This immediately fails on non-windows platforms:
+    QNetworkRequest request(QUrl("file://unc-server/some/path"));
+    QNetworkReplyPtr reply(manager.get(request));
+    QSignalSpy finishedSpy(reply.get(), &QNetworkReply::finished);
+    // QTBUG-105618: This would, on non-Windows platforms, never happen because the signal
+    // was emitted before the constructor finished, leaving no chance at all to connect to the
+    // signal
+    QVERIFY(finishedSpy.wait());
 }
 
 void tst_QNetworkReply::ioGetFromFtp_data()
