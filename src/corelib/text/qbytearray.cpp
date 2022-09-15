@@ -560,16 +560,53 @@ quint16 qChecksum(QByteArrayView data, Qt::ChecksumType standard)
 #ifndef QT_NO_COMPRESS
 using CompressSizeHint_t = quint32; // 32-bit BE, historically
 
+enum class ZLibOp : bool { Compression, Decompression };
+
+Q_DECL_COLD_FUNCTION
+static const char *zlibOpAsString(ZLibOp op)
+{
+    switch (op) {
+    case ZLibOp::Compression: return "qCompress";
+    case ZLibOp::Decompression: return "qUncompress";
+    }
+    Q_UNREACHABLE();
+    return nullptr;
+}
+
+Q_DECL_COLD_FUNCTION
+static QByteArray zlibError(ZLibOp op, const char *what)
+{
+    qWarning("%s: %s", zlibOpAsString(op), what);
+    return QByteArray();
+}
+
+Q_DECL_COLD_FUNCTION
+static QByteArray dataIsNull(ZLibOp op)
+{
+    return zlibError(op, "Data is null");
+}
+
+Q_DECL_COLD_FUNCTION
+static QByteArray tooMuchData(ZLibOp op)
+{
+    return zlibError(op, "Not enough memory");
+}
+
+Q_DECL_COLD_FUNCTION
+static QByteArray invalidCompressedData()
+{
+    return zlibError(ZLibOp::Decompression, "Input data is corrupted");
+}
+
 QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
 {
     constexpr qsizetype HeaderSize = sizeof(CompressSizeHint_t);
     if (nbytes == 0) {
         return QByteArray(HeaderSize, '\0');
     }
-    if (!data) {
-        qWarning("qCompress: Data is null");
-        return QByteArray();
-    }
+    if (!data)
+        return dataIsNull(ZLibOp::Compression);
+
     if (compressionLevel < -1 || compressionLevel > 9)
         compressionLevel = -1;
 
@@ -634,13 +671,6 @@ QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
 */
 
 #ifndef QT_NO_COMPRESS
-Q_DECL_COLD_FUNCTION
-static QByteArray invalidCompressedData()
-{
-    qWarning("qUncompress: Input data is corrupted");
-    return QByteArray();
-}
-
 /*! \relates QByteArray
 
     \overload
@@ -652,10 +682,8 @@ static QByteArray invalidCompressedData()
 */
 QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 {
-    if (!data) {
-        qWarning("qUncompress: Data is null");
-        return QByteArray();
-    }
+    if (!data)
+        return dataIsNull(ZLibOp::Decompression);
 
     constexpr qsizetype HeaderSize = sizeof(CompressSizeHint_t);
     if (nbytes < HeaderSize)
@@ -671,11 +699,11 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     constexpr size_t MaxZLibSize = (std::numeric_limits<uLong>::max)();
     constexpr size_t MaxDecompressedSize = (std::min)(size_t(MaxByteArraySize), MaxZLibSize);
     if (len > MaxDecompressedSize)
-        return invalidCompressedData();
+        return tooMuchData(ZLibOp::Decompression);
 
     QByteArray::DataPointer d(QByteArray::Data::allocate(len));
     if (d.data() == nullptr) // allocation failed
-        return invalidCompressedData();
+        return tooMuchData(ZLibOp::Decompression);
 
     forever {
         const auto alloc = len;
@@ -692,23 +720,21 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
         }
 
         case Z_MEM_ERROR:
-            qWarning("qUncompress: Z_MEM_ERROR: Not enough memory");
-            return QByteArray();
+            return tooMuchData(ZLibOp::Decompression);
 
         case Z_BUF_ERROR:
             if (len == MaxDecompressedSize) // can't grow further
-                return invalidCompressedData();
+                return tooMuchData(ZLibOp::Decompression);
             if (qMulOverflow<2>(len, &len))
                 len = MaxDecompressedSize;
             d->reallocate(qsizetype(len), QArrayData::Grow); // cannot overflow!
             if (d.data() == nullptr) // reallocation failed
-                return invalidCompressedData();
+                return tooMuchData(ZLibOp::Decompression);
 
             continue;
 
         case Z_DATA_ERROR:
-            qWarning("qUncompress: Z_DATA_ERROR: Input data is corrupted");
-            return QByteArray();
+            return invalidCompressedData();
         }
     }
 }
