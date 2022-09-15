@@ -346,7 +346,8 @@ function(_qt_internal_set_placeholder_apple_bundle_version target)
         if(NOT CMAKE_XCODE_ATTRIBUTE_MARKETING_VERSION
             AND NOT QT_NO_SET_XCODE_ATTRIBUTE_MARKETING_VERSION
             AND NOT CMAKE_XCODE_ATTRIBUTE_CURRENT_PROJECT_VERSION
-            AND NOT QT_NO_SET_XCODE_ATTRIBUTE_CURRENT_PROJECT_VERSION)
+            AND NOT QT_NO_SET_XCODE_ATTRIBUTE_CURRENT_PROJECT_VERSION
+            AND CMAKE_GENERATOR STREQUAL "Xcode")
             get_target_property(marketing_version "${target}"
                 XCODE_ATTRIBUTE_MARKETING_VERSION)
             get_target_property(current_project_version "${target}"
@@ -499,9 +500,15 @@ function(_qt_internal_set_xcode_bundle_name target)
 
     get_target_property(existing_bundle_name "${target}" MACOSX_BUNDLE_BUNDLE_NAME)
     if(NOT MACOSX_BUNDLE_BUNDLE_NAME AND NOT existing_bundle_name)
-        set_target_properties("${target}"
-                              PROPERTIES
-                              MACOSX_BUNDLE_BUNDLE_NAME "\${PRODUCT_NAME}")
+        if(CMAKE_GENERATOR STREQUAL Xcode)
+            set_target_properties("${target}"
+                                  PROPERTIES
+                                  MACOSX_BUNDLE_BUNDLE_NAME "\${PRODUCT_NAME}")
+        else()
+            set_target_properties("${target}"
+                                  PROPERTIES
+                                  MACOSX_BUNDLE_BUNDLE_NAME "${target}")
+        endif()
     endif()
 endfunction()
 
@@ -590,12 +597,18 @@ endfunction()
 
 function(_qt_internal_finalize_apple_app target)
     # Shared between macOS and iOS apps
-    _qt_internal_set_xcode_development_team_id("${target}")
-    _qt_internal_set_xcode_bundle_identifier("${target}")
-    _qt_internal_set_xcode_code_sign_style("${target}")
+
+    # Only set the various properties if targeting the Xcode generator, otherwise the various
+    # Xcode tokens are embedded as-is instead of being dynamically evaluated.
+    # This affects things like the version number or application name as reported by Qt API.
+    if(CMAKE_GENERATOR STREQUAL "Xcode")
+        _qt_internal_set_xcode_development_team_id("${target}")
+        _qt_internal_set_xcode_bundle_identifier("${target}")
+        _qt_internal_set_xcode_code_sign_style("${target}")
+        _qt_internal_set_xcode_bundle_display_name("${target}")
+        _qt_internal_set_xcode_install_path("${target}")
+    endif()
     _qt_internal_set_xcode_bundle_name("${target}")
-    _qt_internal_set_xcode_bundle_display_name("${target}")
-    _qt_internal_set_xcode_install_path("${target}")
     _qt_internal_set_placeholder_apple_bundle_version("${target}")
 endfunction()
 
