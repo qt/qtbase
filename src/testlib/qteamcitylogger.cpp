@@ -9,6 +9,7 @@
 #include <QtCore/qbytearray.h>
 
 #include <cctype>
+#include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
