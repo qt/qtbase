@@ -613,7 +613,7 @@ void tst_QShader::loadV7()
     QVERIFY(tesc.isValid());
     QCOMPARE(QShaderPrivate::get(&tesc)->qsbVersion, 7);
     QCOMPARE(tesc.availableShaders().count(), 5);
-    QCOMPARE(tesc.description().tessellationOutputVertexCount(), 3);
+    QCOMPARE(tesc.description().tessellationOutputVertexCount(), 3u);
 
     QCOMPARE(tesc.description().inputBuiltinVariables().count(), 2);
     QCOMPARE(tesc.description().outputBuiltinVariables().count(), 3);
