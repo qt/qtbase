@@ -1496,7 +1496,7 @@ qint64 QDate::daysTo(QDate d) const
 
 /*!
     \fn QDate::currentDate()
-    Returns the current date, as reported by the system clock.
+    Returns the system clock's current date.
 
     \sa QTime::currentTime(), QDateTime::currentDateTime()
 */
@@ -3269,8 +3269,10 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
     within the string.
 
     QDateTime::currentDateTime() returns a QDateTime that expresses the current
-    time with respect to local time. QDateTime::currentDateTimeUtc() returns a
-    QDateTime that expresses the current time with respect to UTC.
+    date and time with respect to a specific time representation, such as local
+    time (its default). QDateTime::currentDateTimeUtc() returns a QDateTime that
+    expresses the current date and time with respect to UTC; it is equivalent to
+    \c {QDateTime::currentDateTime(QTimeZone::UTC)}.
 
     The date() and time() functions provide access to the date and
     time parts of the datetime. The same information is provided in
@@ -4688,21 +4690,38 @@ bool QDateTime::precedes(const QDateTime &other) const
 */
 
 /*!
-    \fn QDateTime QDateTime::currentDateTime()
-    Returns the current datetime, as reported by the system clock, in
-    the local time zone.
+    \since 6.5
+    \fn QDateTime QDateTime::currentDateTime(const QTimeZone &zone)
+
+    Returns the system clock's current datetime, using the time representation
+    described by \a zone. If \a zone is omitted, local time is used.
 
     \sa currentDateTimeUtc(), QDate::currentDate(), QTime::currentTime(), toTimeSpec()
 */
 
 /*!
+    \overload
+    \since 0.90
+*/
+QDateTime QDateTime::currentDateTime()
+{
+    return currentDateTime(QTimeZone::LocalTime);
+}
+
+/*!
     \fn QDateTime QDateTime::currentDateTimeUtc()
     \since 4.7
-    Returns the current datetime, as reported by the system clock, in
-    UTC.
+    Returns the system clock's current datetime, expressed in terms of UTC.
+
+    Equivalent to \c{currentDateTime(QTimeZone::UTC)}.
 
     \sa currentDateTime(), QDate::currentDate(), QTime::currentTime(), toTimeSpec()
 */
+
+QDateTime QDateTime::currentDateTimeUtc()
+{
+    return currentDateTime(QTimeZone::UTC);
+}
 
 /*!
     \fn qint64 QDateTime::currentMSecsSinceEpoch()
@@ -4828,22 +4847,21 @@ QTime QTime::currentTime()
     return ct;
 }
 
-QDateTime QDateTime::currentDateTime()
+QDateTime QDateTime::currentDateTime(const QTimeZone &zone)
 {
+    // We can get local time or "system" time (which is UTC); otherwise, we must
+    // convert, which is most efficiently done from UTC.
+    const Qt::TimeSpec spec = zone.timeSpec();
     SYSTEMTIME st = {};
-    GetLocalTime(&st);
+    // GetSystemTime()'s page links to its partner page for GetLocalTime().
+    // https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemtime
+    (spec == Qt::LocalTime ? GetLocalTime : GetSystemTime)(&st);
     QDate d(st.wYear, st.wMonth, st.wDay);
     QTime t(msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds));
-    return QDateTime(d, t);
-}
-
-QDateTime QDateTime::currentDateTimeUtc()
-{
-    SYSTEMTIME st = {};
-    GetSystemTime(&st);
-    QDate d(st.wYear, st.wMonth, st.wDay);
-    QTime t(msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds));
-    return QDateTime(d, t, QTimeZone::UTC);
+    if (spec == Qt::LocalTime)
+        return QDateTime(d, t);
+    QDateTime utc(d, t, QTimeZone::UTC);
+    return spec == Qt::UTC ? utc : utc.toTimeZone(zone);
 }
 
 qint64 QDateTime::currentMSecsSinceEpoch() noexcept
@@ -4877,14 +4895,9 @@ QTime QTime::currentTime()
     return QDateTime::currentDateTime().time();
 }
 
-QDateTime QDateTime::currentDateTime()
+QDateTime QDateTime::currentDateTime(const QTimeZone &zone)
 {
-    return fromMSecsSinceEpoch(currentMSecsSinceEpoch(), QTimeZone::LocalTime);
-}
-
-QDateTime QDateTime::currentDateTimeUtc()
-{
-    return fromMSecsSinceEpoch(currentMSecsSinceEpoch(), QTimeZone::UTC);
+    return fromMSecsSinceEpoch(currentMSecsSinceEpoch(), zone);
 }
 
 qint64 QDateTime::currentMSecsSinceEpoch() noexcept

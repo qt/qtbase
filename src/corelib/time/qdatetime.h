@@ -370,6 +370,7 @@ public:
     qint64 secsTo(const QDateTime &) const;
     qint64 msecsTo(const QDateTime &) const;
 
+    static QDateTime currentDateTime(const QTimeZone &zone);
     static QDateTime currentDateTime();
     static QDateTime currentDateTimeUtc();
 #if QT_CONFIG(datestring)
