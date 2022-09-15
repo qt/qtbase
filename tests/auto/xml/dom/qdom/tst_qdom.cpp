@@ -1588,7 +1588,7 @@ void tst_QDom::nonBMPCharacters()
             [invalidDataPolicy] { QDomImplementation::setInvalidDataPolicy(invalidDataPolicy); });
     QDomImplementation::setInvalidDataPolicy(QDomImplementation::DropInvalidChars);
 
-    const QString input = u"<text>Supplementary Plane: 𝄞 😂 🀄 🀶 🃪 🃋</text>"_qs;
+    const QString input = u"<text>Supplementary Plane: 𝄞 😂 🀄 🀶 🃪 🃋</text>"_s;
 
     QDomDocument doc;
     QVERIFY(doc.setContent(input, QDomDocument::ParseOption::Default));
