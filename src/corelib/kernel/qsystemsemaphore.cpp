@@ -326,3 +326,5 @@ QString QSystemSemaphore::errorString() const
 #endif // QT_CONFIG(systemsemaphore)
 
 QT_END_NAMESPACE
+
+#include "moc_qsystemsemaphore.cpp"

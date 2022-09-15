@@ -17,6 +17,7 @@ class QSystemSemaphorePrivate;
 
 class Q_CORE_EXPORT QSystemSemaphore
 {
+    Q_GADGET
     Q_DECLARE_TR_FUNCTIONS(QSystemSemaphore)
 public:
     enum AccessMode
@@ -24,6 +25,7 @@ public:
         Open,
         Create
     };
+    Q_ENUM(AccessMode)
 
     enum SystemSemaphoreError
     {
