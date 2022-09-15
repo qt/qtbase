@@ -46,6 +46,12 @@ namespace Qt {
         transparent
     };
 
+    enum class Appearance {
+        Unknown = 0x0000,
+        Light   = 0x0001,
+        Dark    = 0x0002
+    };
+
     enum MouseButton {
         NoButton         = 0x00000000,
         LeftButton       = 0x00000001,
@@ -1745,6 +1751,7 @@ namespace Qt {
     Q_ENUM_NS(DayOfWeek)
     Q_ENUM_NS(CursorShape)
     Q_ENUM_NS(GlobalColor)
+    Q_ENUM_NS(Appearance)
     Q_ENUM_NS(AspectRatioMode)
     Q_ENUM_NS(TransformationMode)
     Q_FLAG_NS(ImageConversionFlags)

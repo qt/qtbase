@@ -789,6 +789,17 @@
 */
 
 /*!
+    \enum Qt::Appearance
+
+    Represents the appearance of an application's theme,
+    defined by QGuiApplication::palette().
+
+    \value Unknown The appearance is unknown.
+    \value Light The background colors are lighter than the text color, i.e. the theme is light.
+    \value Dark The background colors are darker than the text color, i.e. the theme is dark.
+*/
+
+/*!
     \enum Qt::ImageConversionFlag
 
     The options marked "(default)" are set if no other values from
