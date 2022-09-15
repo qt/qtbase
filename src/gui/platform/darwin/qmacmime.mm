@@ -235,13 +235,13 @@ public:
 
 QString QMacPasteboardMimeTypeName::convertorName()
 {
-    return "Qt-Mime-Type"_L1;
+    return u"Qt-Mime-Type"_s;
 }
 
 QString QMacPasteboardMimeTypeName::flavorFor(const QString &mime)
 {
     if (mime == "application/x-qt-mime-type-name"_L1)
-        return "com.trolltech.qt.MimeTypeName"_L1;
+        return u"com.trolltech.qt.MimeTypeName"_s;
     return QString();
 }
 

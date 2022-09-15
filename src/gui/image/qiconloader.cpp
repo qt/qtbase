@@ -772,7 +772,7 @@ QPixmap QIconLoaderEngine::pixmap(const QSize &size, QIcon::Mode mode,
 
 QString QIconLoaderEngine::key() const
 {
-    return "QIconLoaderEngine"_L1;
+    return u"QIconLoaderEngine"_s;
 }
 
 QString QIconLoaderEngine::iconName()

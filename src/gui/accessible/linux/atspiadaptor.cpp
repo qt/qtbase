@@ -1551,7 +1551,7 @@ QStringList AtSpiAdaptor::accessibleInterfaces(QAccessibleInterface *interface) 
 {
     QStringList ifaces;
     qCDebug(lcAccessibilityAtspiCreation) << "AtSpiAdaptor::accessibleInterfaces create: " << interface->object();
-    ifaces << ATSPI_DBUS_INTERFACE_ACCESSIBLE ""_L1;
+    ifaces << u"" ATSPI_DBUS_INTERFACE_ACCESSIBLE ""_s;
 
     if (    (!interface->rect().isEmpty()) ||
             (interface->object() && interface->object()->isWidgetType()) ||
@@ -1561,30 +1561,30 @@ QStringList AtSpiAdaptor::accessibleInterfaces(QAccessibleInterface *interface) 
             (interface->role() == QAccessible::Row) ||
             (interface->object() && interface->object()->inherits("QSGItem"))
             ) {
-        ifaces << ATSPI_DBUS_INTERFACE_COMPONENT ""_L1;
+        ifaces << u"" ATSPI_DBUS_INTERFACE_COMPONENT ""_s;
     } else {
         qCDebug(lcAccessibilityAtspiCreation) << " IS NOT a component";
     }
     if (interface->role() == QAccessible::Application)
-        ifaces << ATSPI_DBUS_INTERFACE_APPLICATION ""_L1;
+        ifaces << u"" ATSPI_DBUS_INTERFACE_APPLICATION ""_s;
 
     if (interface->actionInterface() || interface->valueInterface())
-        ifaces << ATSPI_DBUS_INTERFACE_ACTION ""_L1;
+        ifaces << u"" ATSPI_DBUS_INTERFACE_ACTION ""_s;
 
     if (interface->textInterface())
-        ifaces << ATSPI_DBUS_INTERFACE_TEXT ""_L1;
+        ifaces << u"" ATSPI_DBUS_INTERFACE_TEXT ""_s;
 
     if (interface->editableTextInterface())
-        ifaces << ATSPI_DBUS_INTERFACE_EDITABLE_TEXT ""_L1;
+        ifaces << u"" ATSPI_DBUS_INTERFACE_EDITABLE_TEXT ""_s;
 
     if (interface->valueInterface())
-        ifaces << ATSPI_DBUS_INTERFACE_VALUE ""_L1;
+        ifaces << u"" ATSPI_DBUS_INTERFACE_VALUE ""_s;
 
     if (interface->tableInterface())
-        ifaces << ATSPI_DBUS_INTERFACE_TABLE ""_L1;
+        ifaces <<  u"" ATSPI_DBUS_INTERFACE_TABLE ""_s;
 
     if (interface->tableCellInterface())
-        ifaces << ATSPI_DBUS_INTERFACE_TABLE_CELL ""_L1;
+        ifaces <<  u"" ATSPI_DBUS_INTERFACE_TABLE_CELL ""_s;
 
     return ifaces;
 }
@@ -1631,9 +1631,9 @@ QString AtSpiAdaptor::pathForObject(QObject *object) const
 QString AtSpiAdaptor::pathForInterface(QAccessibleInterface *interface) const
 {
     if (!interface || !interface->isValid())
-        return ATSPI_DBUS_PATH_NULL ""_L1;
+        return u"" ATSPI_DBUS_PATH_NULL ""_s;
     if (interface->role() == QAccessible::Application)
-        return QSPI_OBJECT_PATH_ROOT ""_L1;
+        return u"" QSPI_OBJECT_PATH_ROOT ""_s;
 
     QAccessible::Id id = QAccessible::uniqueId(interface);
     Q_ASSERT((int)id < 0);

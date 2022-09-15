@@ -1074,20 +1074,20 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
                 *gmodifs << QModifKeyName(Qt::META, QChar(kControlUnicode));
             *gmodifs << QModifKeyName(Qt::SHIFT, QChar(kShiftUnicode));
 #endif
-            *gmodifs << QModifKeyName(Qt::CTRL, "ctrl+"_L1)
-                     << QModifKeyName(Qt::SHIFT, "shift+"_L1)
-                     << QModifKeyName(Qt::ALT, "alt+"_L1)
-                     << QModifKeyName(Qt::META, "meta+"_L1)
-                     << QModifKeyName(Qt::KeypadModifier, "num+"_L1);
+            *gmodifs << QModifKeyName(Qt::CTRL, u"ctrl+"_s)
+                     << QModifKeyName(Qt::SHIFT, u"shift+"_s)
+                     << QModifKeyName(Qt::ALT, u"alt+"_s)
+                     << QModifKeyName(Qt::META, u"meta+"_s)
+                     << QModifKeyName(Qt::KeypadModifier, u"num+"_s);
         }
     } else {
         gmodifs = globalPortableModifs();
         if (gmodifs->isEmpty()) {
-            *gmodifs << QModifKeyName(Qt::CTRL, "ctrl+"_L1)
-                     << QModifKeyName(Qt::SHIFT, "shift+"_L1)
-                     << QModifKeyName(Qt::ALT, "alt+"_L1)
-                     << QModifKeyName(Qt::META, "meta+"_L1)
-                     << QModifKeyName(Qt::KeypadModifier, "num+"_L1);
+            *gmodifs << QModifKeyName(Qt::CTRL, u"ctrl+"_s)
+                     << QModifKeyName(Qt::SHIFT, u"shift+"_s)
+                     << QModifKeyName(Qt::ALT, u"alt+"_s)
+                     << QModifKeyName(Qt::META, u"meta+"_s)
+                     << QModifKeyName(Qt::KeypadModifier, u"num+"_s);
         }
     }
 

@@ -1828,13 +1828,13 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
         QStringList stateStrings;
         QAccessible::State st = iface->state();
         if (st.focusable)
-            stateStrings << "focusable"_L1;
+            stateStrings << u"focusable"_s;
         if (st.focused)
-            stateStrings << "focused"_L1;
+            stateStrings << u"focused"_s;
         if (st.selected)
-            stateStrings << "selected"_L1;
+            stateStrings << u"selected"_s;
         if (st.invisible)
-            stateStrings << "invisible"_L1;
+            stateStrings << u"invisible"_s;
 
         if (!stateStrings.isEmpty())
             d << stateStrings.join(u'|');

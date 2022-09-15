@@ -145,7 +145,7 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
 
     const int style = format().style();
     QString numberPrefix;
-    QString numberSuffix = "."_L1;
+    QString numberSuffix = u"."_s;
 
     if (format().hasProperty(QTextFormat::ListNumberPrefix))
         numberPrefix = format().numberPrefix();
@@ -214,7 +214,7 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
                     result = QString::fromLatin1(romanNumeral);
                 }
                 else {
-                    result = "?"_L1;
+                    result = u"?"_s;
                 }
 
             }
