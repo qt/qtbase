@@ -41,11 +41,13 @@ QStringList QWasmFontDatabase::fallbacksForFamily(const QString &family, QFont::
     QStringList fallbacks
         = QFreeTypeFontDatabase::fallbacksForFamily(family, style, styleHint, script);
 
-    // Add the vera.ttf font (loaded in populateFontDatabase above) as a falback font
+    // Add the vera.ttf and DejaVuSans.ttf fonts (loaded in populateFontDatabase above) as falback fonts
     // to all other fonts (except itself).
-    const QString veraFontFamily = QStringLiteral("Bitstream Vera Sans");
-    if (family != veraFontFamily)
-        fallbacks.append(veraFontFamily);
+    static const QString wasmFallbackFonts[] = { "Bitstream Vera Sans", "DejaVu Sans" };
+    for (auto wasmFallbackFont : wasmFallbackFonts) {
+        if (family != wasmFallbackFont && !fallbacks.contains(wasmFallbackFont))
+            fallbacks.append(wasmFallbackFont);
+    }
 
     return fallbacks;
 }
