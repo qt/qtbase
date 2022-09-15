@@ -1,0 +1,6 @@
+You will need the Mimer SQL development headers and libraries installed before
+compiling this plugin. qsql_mimer.h contains an include to mimerapi.h that is
+needed for the driver to compile.
+
+See the Qt SQL documentation for more information on compiling Qt SQL driver
+plugins.

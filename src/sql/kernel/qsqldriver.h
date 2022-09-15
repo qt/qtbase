@@ -50,7 +50,8 @@ public:
         Sybase,
         SQLite,
         Interbase,
-        DB2
+        DB2,
+        MimerSQL
     };
 
     explicit QSqlDriver(QObject *parent = nullptr);

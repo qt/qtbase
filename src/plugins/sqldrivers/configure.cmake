@@ -20,6 +20,7 @@ qt_find_package(Oracle PROVIDED_TARGETS Oracle::OCI MODULE_NAME sqldrivers QMAKE
 qt_find_package(ODBC PROVIDED_TARGETS ODBC::ODBC MODULE_NAME sqldrivers QMAKE_LIB odbc)
 qt_find_package(SQLite3 PROVIDED_TARGETS SQLite::SQLite3 MODULE_NAME sqldrivers QMAKE_LIB sqlite3)
 qt_find_package(Interbase PROVIDED_TARGETS Interbase::Interbase MODULE_NAME sqldrivers QMAKE_LIB ibase) # special case
+qt_find_package(Mimer PROVIDED_TARGETS MimerSQL::MimerSQL MODULE_NAME sqldrivers QMAKE_LIB mimer)
 if(NOT WIN32 AND QT_FEATURE_system_zlib)
     qt_add_qmake_lib_dependency(sqlite3 zlib)
 endif()
@@ -64,6 +65,11 @@ qt_feature("system-sqlite" PRIVATE
     AUTODETECT OFF
     CONDITION QT_FEATURE_sql_sqlite AND SQLite3_FOUND
 )
+qt_feature("sql-mimer" PRIVATE
+    LABEL "Mimer"
+    CONDITION Mimer_FOUND
+)
+
 qt_configure_add_summary_section(NAME "Qt Sql Drivers")
 qt_configure_add_summary_entry(ARGS "sql-db2")
 qt_configure_add_summary_entry(ARGS "sql-ibase")
@@ -73,6 +79,7 @@ qt_configure_add_summary_entry(ARGS "sql-odbc")
 qt_configure_add_summary_entry(ARGS "sql-psql")
 qt_configure_add_summary_entry(ARGS "sql-sqlite")
 qt_configure_add_summary_entry(ARGS "system-sqlite")
+qt_configure_add_summary_entry(ARGS "sql-mimer")
 qt_configure_end_summary_section() # end of "Qt Sql Drivers" section
 qt_configure_add_report_entry(
     TYPE WARNING

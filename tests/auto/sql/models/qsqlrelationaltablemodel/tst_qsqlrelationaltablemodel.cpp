@@ -784,7 +784,7 @@ void tst_QSqlRelationalTableModel::sort()
     QStringList stringsInDatabaseOrder;
     // PostgreSQL puts the null ones (from the table with the original value) first in descending order
     // which translate to empty strings in the related table
-    if (dbType == QSqlDriver::PostgreSQL)
+    if (dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::MimerSQL)
         stringsInDatabaseOrder << "" << "" << "mister" << "mister" << "herr" << "herr";
     else
         stringsInDatabaseOrder << "mister" << "mister" << "herr" << "herr" << "" << "";
@@ -797,7 +797,7 @@ void tst_QSqlRelationalTableModel::sort()
     // PostgreSQL puts the null ones (from the table with the original value) first in descending order
     // which translate to empty strings in the related table
     stringsInDatabaseOrder.clear();
-    if (dbType == QSqlDriver::PostgreSQL)
+    if (dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::MimerSQL)
         stringsInDatabaseOrder << "herr" << "mister" << "mister" << "mister" << "mister" << "";
     else if (dbType != QSqlDriver::Sybase)
         stringsInDatabaseOrder << "" << "herr" << "mister" << "mister" << "mister" << "mister";
@@ -1520,7 +1520,14 @@ void tst_QSqlRelationalTableModel::relationOnFirstColumn()
     QVERIFY_SQL(q, exec("INSERT INTO " + testTable1 + " (id1, val1) VALUES(3, 30);"));
 
     //prepare test2 table
-    QVERIFY_SQL(q, exec("CREATE TABLE " + testTable2 + " (id INTEGER PRIMARY KEY, name TEXT);"));
+    if (tst_Databases::getDatabaseType(db) == QSqlDriver::MimerSQL) {
+        QVERIFY_SQL(q,
+                    exec("CREATE TABLE " + testTable2
+                         + " (id INTEGER PRIMARY KEY, name NVARCHAR(100));"));
+    } else {
+        QVERIFY_SQL(q,
+                    exec("CREATE TABLE " + testTable2 + " (id INTEGER PRIMARY KEY, name TEXT);"));
+    }
     QVERIFY_SQL(q, exec("DELETE FROM " + testTable2 + QLatin1Char(';')));
     QVERIFY_SQL(q, exec("INSERT INTO " + testTable2 + " (id, name) VALUES (10, 'Hervanta');"));
     QVERIFY_SQL(q, exec("INSERT INTO " + testTable2 + " (id, name) VALUES (20, 'Keskusta');"));

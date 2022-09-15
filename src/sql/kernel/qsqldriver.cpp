@@ -215,6 +215,7 @@ bool QSqlDriver::isOpenError() const
     \value SQLite
     \value Interbase
     \value DB2
+    \value MimerSQL
 */
 
 /*!

@@ -30,6 +30,7 @@
             ODBC-compliant databases
     \row \li \l{#QPSQL}{QPSQL} \li PostgreSQL (versions 7.3 and above)
     \row \li \l{#QSQLITE}{QSQLITE} \li SQLite version 3
+    \row \li \l{#QMIMER}{QMIMER} \li Mimer SQL (version 11 and above)
     \endtable
 
     SQLite is the in-process database system with the best test coverage
@@ -790,6 +791,47 @@
     ship your own database plugin with your own SQLite library as illustrated above.
     Some versions of SQLite can be forced to write a specific file format by setting
     the \c{SQLITE_DEFAULT_FILE_FORMAT} define when building SQLite.
+
+    \target QMIMER
+    \section2 QMIMER for Mimer SQL version 11 and higher
+
+    The Qt Mimer SQL plugin makes it possible to work with the Mimer SQL RDBMS.
+    Mimer SQL provides small footprint, scalable and robust relational database
+    solutions that conform to international ISO SQL standards. Mimer SQL is available
+    on Windows, Linux, \macos, and OpenVMS as well as several embedded platforms like QNX, Android,
+    and embedded Linux.
+
+    Mimer SQL fully support Unicode. To work with Unicode data the column types National Character (NCHAR),
+    National Character Varying (NVARCHAR), or National Character Large Object (NCLOB) must be used.
+    For more information about Mimer SQL and unicode, see \l{https://developer.mimer.com/features/multilingual-support}
+
+    \section3 QMIMER Stored Procedure Support
+
+    Mimer SQL have stored procedures according to the SQL standard (PSM) and
+    the plugin fully support IN, OUT, INOUT parameters as well as resultset procedures.
+
+    Example stored procedure with INOUT and OUT parameters:
+
+    \snippet code/doc_src_sql-driver.qdoc 44
+
+    Source code to access the INOUT and OUT values:
+
+    \snippet code/doc_src_sql-driver.cpp 40
+
+    \section3 How to Build the QMIMER Plugin on Unix and \macos
+
+    You need the Mimer SQL header files and shared libraries. Get them by installing
+    any of the Mimer SQL variants found at \l{https://developer.mimer.com}.
+
+
+    \snippet code/doc_src_sql-driver.qdoc 31
+
+    \section3 How to Build the QMIMER Plugin on Windows
+
+    You need the Mimer SQL header files and shared libraries. Get them by installing
+    any of the Mimer SQL variants found at \l{https://developer.mimer.com}.
+
+    \snippet code/doc_src_sql-driver.qdoc 32
 
     \target QIBASE
     \section2 QIBASE for Borland InterBase

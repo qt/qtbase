@@ -580,6 +580,7 @@ QStringList QSqlDatabase::connectionNames()
     \row \li QODBC    \li ODBC Driver (includes Microsoft SQL Server)
     \row \li QPSQL    \li PostgreSQL Driver
     \row \li QSQLITE  \li SQLite version 3 or above
+    \row \li QMIMER  \li Mimer SQL 11 or above
     \endtable
 
     Additional third party drivers, including your own custom
@@ -1204,6 +1205,11 @@ bool QSqlDatabase::isDriverAvailable(const QString& name)
     \li QSQLiteDriver
     \li sqlite *connection
     \li \c qsql_sqlite.cpp
+    \row
+    \li QMIMER
+    \li QMimerSQLDriver
+    \li MimerSession *connection
+    \li \c qsql_mimer.cpp
     \row
     \li QIBASE
     \li QIBaseDriver

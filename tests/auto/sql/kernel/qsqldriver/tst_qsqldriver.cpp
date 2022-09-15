@@ -64,7 +64,7 @@ void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
         doubleField = "more_data double";
     else if (dbType == QSqlDriver::Oracle)
         doubleField = "more_data number(8,7)";
-    else if (dbType == QSqlDriver::PostgreSQL)
+    else if (dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::MimerSQL)
         doubleField = "more_data double precision";
     else if (dbType == QSqlDriver::Interbase)
         doubleField = "more_data numeric(8,7)";
@@ -155,8 +155,9 @@ void tst_QSqlDriver::record()
 
     //check that we can't get records using incorrect tablename casing that's been quoted
     rec = db.driver()->record(db.driver()->escapeIdentifier(tablename,QSqlDriver::TableName));
-    if (dbType == QSqlDriver::MySqlServer || dbType == QSqlDriver::SQLite || dbType == QSqlDriver::Sybase
-      || dbType == QSqlDriver::MSSqlServer || tst_Databases::isMSAccess(db))
+    if (dbType == QSqlDriver::MySqlServer || dbType == QSqlDriver::SQLite
+        || dbType == QSqlDriver::Sybase || dbType == QSqlDriver::MSSqlServer
+        || tst_Databases::isMSAccess(db) || dbType == QSqlDriver::MimerSQL)
         QCOMPARE(rec.count(), 5); //mysql, sqlite and tds will match
     else
         QCOMPARE(rec.count(), 0);
@@ -205,8 +206,9 @@ void tst_QSqlDriver::primaryIndex()
         tablename = tablename.toUpper();
 
     index = db.driver()->primaryIndex(db.driver()->escapeIdentifier(tablename, QSqlDriver::TableName));
-    if (dbType == QSqlDriver::MySqlServer || dbType == QSqlDriver::SQLite || dbType == QSqlDriver::Sybase
-      || dbType == QSqlDriver::MSSqlServer || tst_Databases::isMSAccess(db))
+    if (dbType == QSqlDriver::MySqlServer || dbType == QSqlDriver::SQLite
+        || dbType == QSqlDriver::Sybase || dbType == QSqlDriver::MSSqlServer
+        || tst_Databases::isMSAccess(db) || dbType == QSqlDriver::MimerSQL)
         QCOMPARE(index.count(), 1); //mysql will always find the table name regardless of casing
     else
         QCOMPARE(index.count(), 0);

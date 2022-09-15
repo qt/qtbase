@@ -173,6 +173,23 @@ cmake --build .
 cmake --install .
 //! [30]
 
+//! [31]
+mkdir build-sqldrivers
+cd build-sqldrivers
+
+qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DMimer_INCLUDE_DIR="/usr/include" -DMimer_LIBRARIES="/usr/lib/libmimer.so"
+cmake --build .
+cmake --install .
+//! [31]
+
+//! [32]
+mkdir build-sqldrivers
+cd build-sqldrivers
+
+qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DMimer_INCLUDE_DIR="C:\Program Files\Mimer SQL Experience 11.0\dev\include" -DMimer_LIBRARIES="C:\Program Files\Mimer SQL Experience 11.0\dev\lib\amd64\mimapi64.lib|C:\Program Files\Mimer SQL Experience 11.0\dev\lib\x86\mimapi32.lib"
+cmake --build .
+cmake --install .
+//! [32]
 
 //! [35]
 QSqlDatabase: QPSQL driver not loaded
@@ -205,6 +222,7 @@ Configure summary:
 Qt Sql Drivers:
   DB2 (IBM) .............................. no
   InterBase .............................. no
+  Mimer SQL .............................. yes
   MySql .................................. yes
   OCI (Oracle) ........................... no
   ODBC ................................... yes
@@ -225,6 +243,7 @@ Configure summary:
 Qt Sql Drivers:
   DB2 (IBM) .............................. no
   InterBase .............................. no
+  Mimer SQL .............................. yes
   MySql .................................. yes
   OCI (Oracle) ........................... no
   ODBC ................................... yes
@@ -242,6 +261,7 @@ Configure summary:
 Qt Sql Drivers:
   DB2 (IBM) .............................. no
   InterBase .............................. no
+  Mimer SQL .............................. yes
   MySql .................................. yes
   OCI (Oracle) ........................... no
   ODBC ................................... yes
@@ -250,3 +270,11 @@ Qt Sql Drivers:
     Using system provided SQLite ......... no
 ...
 //! [43]
+
+//! [44]
+create procedure inout_proc (INOUT param1 INT, OUT param2 INT)
+BEGIN
+    set param1 = param1 * 2;
+    set param2 = param1 * param1;
+END
+//! [44]

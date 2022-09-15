@@ -269,7 +269,7 @@
     \row
         \li NUMBER(p,s)
         \li NUMERIC(p,s) DECIMAL(p,s)a
-        \li By default mapping to QString
+        \li Mapped to QString
     \row
         \li NVARCHAR2(n)
         \li Character string (NATIONAL CHARACTER VARYING(n) NATIONAL
@@ -477,5 +477,91 @@
         \li BLOB
         \li The value is a BLOB of data, stored exactly as it was input.
         \li Mapped to QByteArray
+  \endtable
+
+  \section2 Mimer SQL Data Types
+
+  \table 90%
+    \header
+        \li Mimer SQL type
+        \li SQL type description
+        \li Recommended input (C++ or Qt data type)
+    \row
+        \li SMALLINT
+        \li 16-bit signed integer
+        \li typedef qint16
+    \row
+        \li INTEGER
+        \li 32-bit signed integer
+        \li typedef qint32
+    \row
+        \li BIGINT
+        \li 64-bit signed integer
+        \li typedef qint64
+    \row
+        \li REAL
+        \li 32-bit Single-precision floating point
+        \li typedef qreal
+    \row
+        \li DOUBLE PRECISION
+        \li 64-bit Double-precision floating point
+        \li Mapped to QString for high precision doubles, otherwise qreal
+    \row
+        \li FLOAT
+        \li 64-bit Double-precision floating point
+        \li typedef qreal
+    \row
+        \li CHAR
+        \li Fixed-length, null-terminated character string
+        \li Mapped to QString
+    \row
+        \li VARCHAR
+        \li Null-terminated varying length string
+        \li Mapped to QString
+    \row
+        \li NCHAR
+        \li Fixed-length, null-terminated Unicode character string
+        \li Mapped to QString
+    \row
+        \li NVARCHAR
+        \li Null-terminated varying length Unicode string
+        \li Mapped to QString
+    \row
+        \li BLOB
+        \li Not null-terminated varying binary string with 4-byte string
+        length indicator
+        \li Mapped to QByteArray
+    \row
+        \li CLOB
+        \li Character large string object
+        \li Mapped to QString
+    \row
+        \li NCLOB
+        \li National Character large string object
+        \li Mapped to QString
+    \row
+        \li DATE
+        \li Null-terminated character string of the following format:
+        yyyy-mm-dd
+        \li Mapped to QDate
+    \row
+        \li TIME
+        \li Null-terminated character string of the following format: hh.mm.ss
+        \li Mapped to QTime
+    \row
+        \li TIMESTAMP
+        \li Null-terminated character string of the following format: yyyy-mm-dd-hh.mm.ss.nnnnnn
+        \li Mapped to QDateTime
+    \row
+        \li BUILTIN.UUID
+        \li Universally unique identifier
+        \li Mapped to QUuid
+    \row
+        \li BOOLEAN
+        \li Boolean
+        \li bool
+    \row
+        \li DECIMAL(p,s)
+        \li By default mapping to QString
   \endtable
 */

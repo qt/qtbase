@@ -332,7 +332,7 @@ public:
                 foreach(const QString &table2, dbtables.filter(table, Qt::CaseInsensitive)) {
                     if(table2.compare(table.section('.', -1, -1), Qt::CaseInsensitive) == 0) {
                         table=db.driver()->escapeIdentifier(table2, QSqlDriver::TableName);
-                        if (dbType == QSqlDriver::PostgreSQL)
+                        if (dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::MimerSQL)
                             wasDropped = q.exec( "drop table " + table + " cascade");
                         else
                             wasDropped = q.exec( "drop table " + table);
@@ -426,7 +426,7 @@ public:
             return QLatin1String("timestamptz");
         if (dbType == QSqlDriver::Oracle && getOraVersion(db) >= 9)
             return QLatin1String("timestamp(0)");
-        if (dbType == QSqlDriver::Interbase)
+        if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::MimerSQL)
             return QLatin1String("timestamp");
         return QLatin1String("datetime");
     }

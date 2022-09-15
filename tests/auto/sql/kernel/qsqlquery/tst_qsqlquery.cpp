@@ -486,6 +486,7 @@ void tst_QSqlQuery::char1SelectUnicode()
     const QString char1SelectUnicode(qTableName("char1SU", __FILE__, db));
 
     switch (dbType) {
+    case QSqlDriver::MimerSQL:
     case QSqlDriver::MSSqlServer:
         createQuery = QLatin1String("create table %1(id nchar(1))");
         break;
@@ -1113,8 +1114,9 @@ void tst_QSqlQuery::record()
     QCOMPARE(q.record().fieldName(0).toLower(), u"id");
     QCOMPARE(q.value(0).toInt(), 2);
 
-    if (tst_Databases::getDatabaseType(db) == QSqlDriver::Oracle)
-        QSKIP("Getting the tablename is not supported in Oracle");
+    if (tst_Databases::getDatabaseType(db) == QSqlDriver::Oracle
+        || tst_Databases::getDatabaseType(db) == QSqlDriver::MimerSQL)
+        QSKIP("Getting the tablename is not supported in Oracle and Mimer SQL");
 
     const auto lowerQTest = qtest.toLower();
     for (int i = 0; i < 3; ++i)
@@ -1786,17 +1788,19 @@ void tst_QSqlQuery::writeNull()
     const QString tableName = qTableName("qtest_writenull", __FILE__, db);
 
     // The test data table is already used, so use a local hash to exercise the various
-    // cases from the QSqlResultPrivate::isVariantNull helper. Only PostgreSQL supports
-    // QUuid.
+    // cases from the QSqlResultPrivate::isVariantNull helper. Only PostgreSQL and Mimer SQL
+    // supports QUuid.
     QMultiHash<QString, QVariant> nullableTypes = {
-        {"varchar(20)", u"not null"_s},
-        {"varchar(20)", "not null"_ba},
-        {tst_Databases::dateTimeTypeName(db), QDateTime::currentDateTime()},
-        {tst_Databases::dateTypeName(db), QDate::currentDate()},
-        {tst_Databases::timeTypeName(db), QTime::currentTime()},
+        { "varchar(20)", u"not null"_s },
+        { "varchar(20)", "not null"_ba },
+        { tst_Databases::dateTimeTypeName(db), QDateTime::currentDateTime() },
+        { tst_Databases::dateTypeName(db), QDate::currentDate() },
+        { tst_Databases::timeTypeName(db), QTime::currentTime() },
     };
     if (dbType == QSqlDriver::PostgreSQL)
         nullableTypes["uuid"] = QUuid::createUuid();
+    if (dbType == QSqlDriver::MimerSQL)
+        nullableTypes["builtin.uuid"] = QUuid::createUuid();
 
     // Helper to count rows with null values in the data column.
     // Since QSqlDriver::QuerySize might not be supported, we have to count anyway
@@ -2191,6 +2195,7 @@ void tst_QSqlQuery::prepare_bind_exec()
         switch (dbType) {
         case QSqlDriver::MSSqlServer:
         case QSqlDriver::Sybase:
+        case QSqlDriver::MimerSQL:
             createQuery = QLatin1String("create table %1 (id int primary key, "
                                         "name nvarchar(200) null, name2 nvarchar(200) null)");
             break;
@@ -2675,8 +2680,9 @@ void tst_QSqlQuery::batchExec()
     }
 
     // Only test the prepared stored procedure approach where the driver has support
-    // for batch operations as this will not work without it
-    if (db.driver()->hasFeature(QSqlDriver::BatchOperations)) {
+    // for batch operations as this will not work without it.
+    // Currently Mimer SQL cannot use output parameters with procedures in batch operations.
+    if (dbType != QSqlDriver::MimerSQL && db.driver()->hasFeature(QSqlDriver::BatchOperations)) {
         const QString procName = qTableName("qtest_batch_proc", __FILE__, db);
         QVERIFY_SQL(q, exec(QLatin1String(
                                 "create or replace procedure %1 (x in timestamp, y out timestamp) "
@@ -3533,6 +3539,13 @@ void tst_QSqlQuery::timeStampParsing()
         // Since there is no auto-increment feature in Interbase we allow it to be null
         creator = QLatin1String("CREATE TABLE %1(id integer, datefield timestamp);");
         break;
+    case QSqlDriver::MimerSQL:
+        creator = QLatin1String("CREATE UNIQUE SEQUENCE timeStampParsing_seq");
+        QVERIFY_SQL(q, exec(creator));
+        creator = QLatin1String("CREATE TABLE %1(id integer NOT NULL default next value "
+                                "for timeStampParsing_seq, "
+                                "datefield timestamp, primary key(id));");
+        break;
     default:
         creator = QLatin1String("CREATE TABLE %1("
                                 "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "
@@ -3540,8 +3553,15 @@ void tst_QSqlQuery::timeStampParsing()
         break;
     }
     QVERIFY_SQL(q, exec(creator.arg(tableName)));
-    QVERIFY_SQL(q, exec(QLatin1String("INSERT INTO %1 (datefield) VALUES (current_timestamp);")
-                        .arg(tableName)));
+    QLatin1String currentTimestamp;
+    if (tst_Databases::getDatabaseType(db) == QSqlDriver::MimerSQL)
+        currentTimestamp = QLatin1String("localtimestamp");
+    else
+        currentTimestamp = QLatin1String("current_timestamp");
+    QVERIFY_SQL(q,
+                exec(QLatin1String("INSERT INTO %1 (datefield) VALUES (%2);")
+                             .arg(tableName)
+                             .arg(currentTimestamp)));
     QVERIFY_SQL(q, exec(QLatin1String("SELECT * FROM ") + tableName));
     while (q.next())
         QVERIFY(q.value(1).toDateTime().isValid());
@@ -4485,7 +4505,8 @@ void tst_QSqlQuery::aggregateFunctionTypes()
     int countType = intType;
     // QPSQL uses LongLong for manipulation of integers
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::Interbase) {
+    if (dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::Interbase
+        || dbType == QSqlDriver::MimerSQL) {
         sumType = countType = QMetaType::LongLong;
     } else if (dbType == QSqlDriver::Oracle) {
         intType = sumType = countType = QMetaType::Double;

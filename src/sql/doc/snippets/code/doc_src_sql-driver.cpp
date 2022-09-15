@@ -79,3 +79,16 @@ while (query1.next()) {
 }
 //! [37]
 }
+
+void callOutProc()
+{
+//! [40]
+    QSqlDatabase db;
+    QSqlQuery query;
+    int i1 = 10, i2 = 0;
+    query.prepare("call qtestproc(?, ?)");
+    query.bindValue(0, i1, QSql::InOut);
+    query.bindValue(1, i2, QSql::Out);
+    query.exec();
+//! [40]
+}

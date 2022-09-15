@@ -64,6 +64,10 @@ if(QT_FEATURE_sql_ibase)
     add_subdirectory(ibase)
 endif()
 
+if(QT_FEATURE_sql_mimer)
+    add_subdirectory(mimer)
+endif()
+
 if(NOT CMAKE_PROJECT_NAME STREQUAL "QtBase" AND NOT CMAKE_PROJECT_NAME STREQUAL "Qt")
     qt_print_feature_summary()
 endif()

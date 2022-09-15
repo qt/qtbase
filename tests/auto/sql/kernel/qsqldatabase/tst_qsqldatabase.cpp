@@ -1146,9 +1146,8 @@ void tst_QSqlDatabase::bigIntField()
 
     if (dbType == QSqlDriver::MySqlServer) {
         QVERIFY_SQL(q, exec("create table " + qtest_bigint + " (id int, t_s64bit bigint, t_u64bit bigint unsigned)"));
-    } else if (dbType == QSqlDriver::PostgreSQL
-                || dbType == QSqlDriver::DB2
-                || dbType == QSqlDriver::MSSqlServer) {
+    } else if (dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::DB2
+               || dbType == QSqlDriver::MSSqlServer || dbType == QSqlDriver::MimerSQL) {
         QVERIFY_SQL(q, exec("create table " + qtest_bigint + "(id int, t_s64bit bigint, t_u64bit bigint)"));
     } else if (dbType == QSqlDriver::Oracle) {
         QVERIFY_SQL(q, exec("create table " + qtest_bigint + " (id int, t_s64bit int, t_u64bit int)"));
