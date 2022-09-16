@@ -297,6 +297,7 @@ function(qt_internal_add_test_to_batch batch_name name)
         set_property(TARGET ${target} PROPERTY _qt_has_gui ${arg_GUI})
         set_property(TARGET ${target} PROPERTY _qt_has_lowdpi ${arg_LOWDPI})
         set_property(TARGET ${target} PROPERTY _qt_version ${version_arg})
+        set_property(TARGET ${target} PROPERTY _qt_is_test_executable TRUE)
     else()
         # Check whether the args match with the batch. Some differences between
         # flags cannot be reconciled - one should not combine these tests into
@@ -506,8 +507,8 @@ function(qt_internal_add_test name)
             LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Gui
         )
         set(setting_up_batched_test FALSE)
+        set_target_properties(${name} PROPERTIES _qt_is_test_executable TRUE)
     endif()
-    set_target_properties(${name} PROPERTIES _qt_is_test_executable TRUE)
 
     foreach(path IN LISTS arg_QML_IMPORTPATH)
         list(APPEND extra_test_args "-import" "${path}")
