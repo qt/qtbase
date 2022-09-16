@@ -243,11 +243,12 @@ QString QClipboard::text(QString &subtype, Mode mode) const
         if (formats.contains("text/plain"_L1))
             subtype = "plain"_L1;
         else {
-            for (int i = 0; i < formats.size(); ++i)
-                if (formats.at(i).startsWith("text/"_L1)) {
-                    subtype = formats.at(i).mid(5);
+            for (const auto &format : formats) {
+                if (format.startsWith("text/"_L1)) {
+                    subtype = format.sliced(5);
                     break;
                 }
+            }
             if (subtype.isEmpty())
                 return QString();
         }
