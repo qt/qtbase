@@ -75,7 +75,7 @@ void QWindowsUiaProviderCache::insert(QAccessible::Id id, QWindowsUiaBaseProvide
         m_providerTable[id] = provider;
         m_inverseTable[provider] = id;
         // Connects the destroyed signal to our slot, to remove deleted objects from the cache.
-        QObject::connect(provider, &QObject::destroyed, this, &QWindowsUiaProviderCache::objectDestroyed);
+        QObject::connect(provider, &QObject::destroyed, this, &QWindowsUiaProviderCache::objectDestroyed, Qt::DirectConnection);
     }
 }
 
