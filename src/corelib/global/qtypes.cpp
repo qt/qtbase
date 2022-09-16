@@ -15,6 +15,31 @@
 QT_BEGIN_NAMESPACE
 
 /*!
+    \headerfile <QtTypes>
+    \inmodule QtCore
+    \title Qt Type Declarations
+
+    \brief The <QtTypes> header file includes Qt fundamental type declarations.
+
+    The header file declares several type definitions that guarantee a
+    specified bit-size on all platforms supported by Qt for various
+    basic types, for example \l qint8 which is a signed char
+    guaranteed to be 8-bit on all platforms supported by Qt. The
+    header file also declares the \l qlonglong type definition for
+    \c {long long int}.
+
+    Several convenience type definitions are declared: \l qreal for \c
+    double or \c float, \l uchar for \c {unsigned char}, \l uint for
+    \c {unsigned int}, \l ulong for \c {unsigned long} and \l ushort
+    for \c {unsigned short}.
+
+    The header also provides series of macros that make it possible to print
+    some Qt type aliases (qsizetype, qintptr, etc.) via a formatted output
+    facility such as printf() or qDebug() without raising formatting warnings
+    and without the need of a type cast.
+*/
+
+/*!
     \typedef qreal
     \relates <QtTypes>
 
