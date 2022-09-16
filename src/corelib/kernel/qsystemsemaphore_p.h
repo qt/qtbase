@@ -62,7 +62,6 @@ public:
     int initialValue;
 #ifdef Q_OS_WIN
     Qt::HANDLE semaphore;
-    Qt::HANDLE semaphoreLock;
 #elif defined(QT_POSIX_IPC)
     sem_t *semaphore;
     bool createdSemaphore;
