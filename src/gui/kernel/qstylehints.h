@@ -49,6 +49,7 @@ class Q_GUI_EXPORT QStyleHints : public QObject
     Q_PROPERTY(int mouseDoubleClickDistance READ mouseDoubleClickDistance STORED false CONSTANT
                FINAL)
     Q_PROPERTY(int touchDoubleTapDistance READ touchDoubleTapDistance STORED false CONSTANT FINAL)
+    Q_PROPERTY(Qt::Appearance appearance READ appearance NOTIFY appearanceChanged FINAL)
 
 public:
     void setMouseDoubleClickInterval(int mouseDoubleClickInterval);
@@ -85,6 +86,7 @@ public:
     void setWheelScrollLines(int scrollLines);
     void setMouseQuickSelectionThreshold(int threshold);
     int mouseQuickSelectionThreshold() const;
+    Qt::Appearance appearance() const;
 
 Q_SIGNALS:
     void cursorFlashTimeChanged(int cursorFlashTime);
@@ -98,6 +100,7 @@ Q_SIGNALS:
     void showShortcutsInContextMenusChanged(bool);
     void wheelScrollLinesChanged(int scrollLines);
     void mouseQuickSelectionThresholdChanged(int threshold);
+    void appearanceChanged(Qt::Appearance appearance);
 
 private:
     friend class QGuiApplication;

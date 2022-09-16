@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include <qstylehints.h>
+#include "qstylehints_p.h"
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformtheme.h>
 #include <private/qguiapplication_p.h>
@@ -42,25 +43,6 @@ static inline QVariant themeableHint(QPlatformTheme::ThemeHint th)
     }
     return QPlatformTheme::defaultThemeHint(th);
 }
-
-class QStyleHintsPrivate : public QObjectPrivate
-{
-    Q_DECLARE_PUBLIC(QStyleHints)
-public:
-    int m_mouseDoubleClickInterval = -1;
-    int m_mousePressAndHoldInterval = -1;
-    int m_startDragDistance = -1;
-    int m_startDragTime = -1;
-    int m_keyboardInputInterval = -1;
-    int m_cursorFlashTime = -1;
-    int m_tabFocusBehavior = -1;
-    int m_uiEffects = -1;
-    int m_showShortcutsInContextMenus = -1;
-    int m_wheelScrollLines = -1;
-    int m_mouseQuickSelectionThreshold = -1;
-    int m_mouseDoubleClickDistance = -1;
-    int m_touchDoubleTapDistance = -1;
-};
 
 /*!
     \class QStyleHints
@@ -137,6 +119,17 @@ int QStyleHints::touchDoubleTapDistance() const
     return d->m_touchDoubleTapDistance >= 0 ?
                 d->m_touchDoubleTapDistance :
                 themeableHint(QPlatformTheme::TouchDoubleTapDistance).toInt();
+}
+
+/*!
+    \property QStyleHints::appearance
+    \brief the appearance of the platform theme
+    \sa Qt::Appearance
+    \since 6.5
+*/
+Qt::Appearance QStyleHints::appearance() const
+{
+    return d_func()->appearance();
 }
 
 /*!
@@ -581,6 +574,26 @@ int QStyleHints::mouseQuickSelectionThreshold() const
     if (d->m_mouseQuickSelectionThreshold >= 0)
         return d->m_mouseQuickSelectionThreshold;
     return themeableHint(QPlatformTheme::MouseQuickSelectionThreshold, QPlatformIntegration::MouseQuickSelectionThreshold).toInt();
+}
+
+/*!
+   \internal
+   QStyleHintsPrivate::setAppearance - set a new appearance.
+   Set \a appearance as the new appearance of the QStyleHints.
+   The appearanceChanged signal will be emitted if present and new appearance differ.
+ */
+void QStyleHintsPrivate::setAppearance(Qt::Appearance appearance)
+{
+    if (m_appearance != appearance) {
+        m_appearance = appearance;
+        emit q_func()->appearanceChanged(appearance);
+    }
+}
+
+QStyleHintsPrivate *QStyleHintsPrivate::get(QStyleHints *q)
+{
+    Q_ASSERT(q);
+    return q->d_func();
 }
 
 QT_END_NAMESPACE

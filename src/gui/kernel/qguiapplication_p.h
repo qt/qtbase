@@ -313,6 +313,8 @@ private:
 
     friend class QDragManager;
 
+    static Qt::Appearance appearance();
+
     static QGuiApplicationPrivate *self;
     static int m_fakeMouseSourcePointId;
 #ifdef Q_OS_WIN

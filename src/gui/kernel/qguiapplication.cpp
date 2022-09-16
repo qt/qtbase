@@ -41,6 +41,7 @@
 
 #include <QtGui/qgenericpluginfactory.h>
 #include <QtGui/qstylehints.h>
+#include <QtGui/private/qstylehints_p.h>
 #include <QtGui/qinputmethod.h>
 #include <QtGui/qpixmapcache.h>
 #include <qpa/qplatforminputcontext.h>
@@ -2553,6 +2554,21 @@ void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::
     const QWindowList windows = tce->window ? QWindowList{tce->window} : window_list;
     for (auto *window : windows)
         QGuiApplication::sendSpontaneousEvent(window, &themeChangeEvent);
+
+    QStyleHintsPrivate::get(QGuiApplication::styleHints())->setAppearance(appearance());
+}
+
+/*!
+   \internal
+   \brief QGuiApplicationPrivate::appearance
+   \return the platform theme's appearance
+   or Qt::Appearance::Unknown if a platform theme cannot be established
+   Qt::Appearance.
+ */
+Qt::Appearance QGuiApplicationPrivate::appearance()
+{
+    return platformTheme() ? platformTheme()->appearance()
+                           : Qt::Appearance::Unknown;
 }
 
 void QGuiApplicationPrivate::handleThemeChanged()
