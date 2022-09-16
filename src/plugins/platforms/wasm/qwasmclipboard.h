@@ -19,6 +19,12 @@ QT_BEGIN_NAMESPACE
 class QWasmClipboard : public QObject, public QPlatformClipboard
 {
 public:
+    enum class ProcessKeyboardResult {
+        Ignored,
+        NativeClipboardEventNeeded,
+        NativeClipboardEventAndCopiedDataNeeded,
+    };
+
     QWasmClipboard();
     virtual ~QWasmClipboard();
 
@@ -29,8 +35,8 @@ public:
     bool ownsMode(QClipboard::Mode mode) const override;
 
     static void qWasmClipboardPaste(QMimeData *mData);
-    bool processKeyboard(const QWasmEventTranslator::TranslatedEvent &event,
-                         const QFlags<Qt::KeyboardModifier> &modifiers);
+    ProcessKeyboardResult processKeyboard(const QWasmEventTranslator::TranslatedEvent &event,
+                                          const QFlags<Qt::KeyboardModifier> &modifiers);
     void initClipboardPermissions();
     void installEventHandlers(const emscripten::val &canvas);
     bool hasClipboardApi;
