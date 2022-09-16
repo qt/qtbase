@@ -1,4 +1,4 @@
-// Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qgenericunixthemes_p.h"
@@ -122,6 +122,7 @@ public:
     enum class SettingType {
         KdeGlobalTheme,
         KdeApplicationStyle,
+        GtkTheme,
         Unknown
     };
     Q_ENUM(SettingType)
@@ -161,8 +162,8 @@ QGenericUnixThemeDBusListener::QGenericUnixThemeDBusListener(const QString &serv
             // DBus not running
             qCWarning(lcQpaThemeDBus) << "Session DBus not running.";
         }
-        qCWarning(lcQpaThemeDBus) << "Application will not react to KDE setting changes.\n"
-                             << "Check your DBus installation.";
+        qCWarning(lcQpaThemeDBus) << "Application will not react to setting changes.\n"
+                                  << "Check your DBus installation.";
     }
 #undef LOG
 }
@@ -176,6 +177,9 @@ QGenericUnixThemeDBusListener::SettingType QGenericUnixThemeDBusListener::toSett
     if (location == QLatin1StringView("org.kde.kdeglobals.General")
           && key == QLatin1StringView("ColorScheme"))
         return SettingType::KdeGlobalTheme;
+    if (location == QLatin1StringView("org.gnome.desktop.interface")
+          && key == QLatin1StringView("gtk-theme"))
+        return SettingType::GtkTheme;
     return SettingType::Unknown;
 }
 
@@ -352,6 +356,8 @@ public:
     int startDragDist = 10;
     int startDragTime = 500;
     int cursorBlinkRate = 1000;
+    Qt::Appearance m_appearance = Qt::Appearance::Unknown;
+    void updateAppearance(const QString &themeName);
 
 #ifndef QT_NO_DBUS
 private:
@@ -371,6 +377,8 @@ void QKdeThemePrivate::settingChangedHandler(QGenericUnixThemeDBusListener::Sett
     case QGenericUnixThemeDBusListener::SettingType::KdeApplicationStyle:
         qCDebug(lcQpaThemeDBus) << "KDE application style changed to:" << value;
         break;
+    case QGenericUnixThemeDBusListener::SettingType::GtkTheme:
+        return; // KDE can change GTK2 / GTK3 themes. Ignored here, handled in GnomeTheme
     case QGenericUnixThemeDBusListener::SettingType::Unknown:
         Q_UNREACHABLE();
     }
@@ -380,10 +388,10 @@ void QKdeThemePrivate::settingChangedHandler(QGenericUnixThemeDBusListener::Sett
 
 bool QKdeThemePrivate::initDbus()
 {
-    constexpr QLatin1StringView service("");
-    constexpr QLatin1StringView path("/org/freedesktop/portal/desktop");
-    constexpr QLatin1StringView interface("org.freedesktop.portal.Settings");
-    constexpr QLatin1StringView signal("SettingChanged");
+    static constexpr QLatin1StringView service("");
+    static constexpr QLatin1StringView path("/org/freedesktop/portal/desktop");
+    static constexpr QLatin1StringView interface("org.freedesktop.portal.Settings");
+    static constexpr QLatin1StringView signal("SettingChanged");
 
     dbus.reset(new QGenericUnixThemeDBusListener(service, path, interface, signal));
     Q_ASSERT(dbus);
@@ -433,6 +441,14 @@ void QKdeThemePrivate::refresh()
         if (style != styleNames.front())
             styleNames.push_front(style);
     }
+
+    const QVariant colorScheme = readKdeSetting(QStringLiteral("ColorScheme"), kdeDirs,
+                                                   kdeVersion, kdeSettings);
+
+    if (colorScheme.isValid())
+        updateAppearance(colorScheme.toString());
+    else
+        m_appearance = Qt::Appearance::Unknown;
 
     const QVariant singleClickValue = readKdeSetting(QStringLiteral("KDE/SingleClick"), kdeDirs, kdeVersion, kdeSettings);
     if (singleClickValue.isValid())
@@ -711,6 +727,48 @@ QIcon QKdeTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions
 #endif
 }
 
+Qt::Appearance QKdeTheme::appearance() const
+{
+    return d_func()->m_appearance;
+}
+
+/*!
+   \internal
+   \brief QKdeTheme::setAppearance - guess and set appearance for unix themes.
+   KDE themes do not have an appearance property.
+   The key words "dark" or "light" should be part of the theme name.
+   This is, however, not a mandatory convention.
+
+   If \param themeName contains a key word, the respective appearance is set.
+   If it doesn't, the appearance is heuristically determined by comparing text and base color
+   of the system palette.
+ */
+void QKdeThemePrivate::updateAppearance(const QString &themeName)
+{
+    if (themeName.contains(QLatin1StringView("light"), Qt::CaseInsensitive)) {
+        m_appearance = Qt::Appearance::Light;
+        return;
+    }
+    if (themeName.contains(QLatin1StringView("dark"), Qt::CaseInsensitive)) {
+        m_appearance = Qt::Appearance::Dark;
+        return;
+    }
+
+    if (systemPalette) {
+        if (systemPalette->text().color().lightness() < systemPalette->base().color().lightness()) {
+            m_appearance = Qt::Appearance::Light;
+            return;
+        }
+        if (systemPalette->text().color().lightness() > systemPalette->base().color().lightness()) {
+            m_appearance = Qt::Appearance::Dark;
+            return;
+        }
+    }
+
+    m_appearance = Qt::Appearance::Unknown;
+}
+
+
 const QPalette *QKdeTheme::palette(Palette type) const
 {
     Q_D(const QKdeTheme);
@@ -811,8 +869,8 @@ const char *QGnomeTheme::name = "gnome";
 class QGnomeThemePrivate : public QPlatformThemePrivate
 {
 public:
-    QGnomeThemePrivate() : systemFont(nullptr), fixedFont(nullptr) {}
-    ~QGnomeThemePrivate() { delete systemFont; delete fixedFont; }
+    QGnomeThemePrivate();
+    ~QGnomeThemePrivate();
 
     void configureFonts(const QString &gtkFontName) const
     {
@@ -827,9 +885,67 @@ public:
         qCDebug(lcQpaFonts) << "default fonts: system" << systemFont << "fixed" << fixedFont;
     }
 
-    mutable QFont *systemFont;
-    mutable QFont *fixedFont;
+    mutable QFont *systemFont = nullptr;
+    mutable QFont *fixedFont = nullptr;
+
+#ifndef QT_NO_DBUS
+    Qt::Appearance m_appearance = Qt::Appearance::Unknown;
+private:
+    std::unique_ptr<QGenericUnixThemeDBusListener> dbus;
+    bool initDbus();
+    void updateAppearance(const QString &themeName);
+#endif // QT_NO_DBUS
 };
+
+QGnomeThemePrivate::QGnomeThemePrivate()
+{
+#ifndef QT_NO_DBUS
+    initDbus();
+#endif // QT_NO_DBUS
+}
+QGnomeThemePrivate::~QGnomeThemePrivate()
+{
+    if (systemFont)
+        delete systemFont;
+    if (fixedFont)
+        delete fixedFont;
+}
+
+#ifndef QT_NO_DBUS
+bool QGnomeThemePrivate::initDbus()
+{
+    static constexpr QLatin1StringView service("");
+    static constexpr QLatin1StringView path("/org/freedesktop/portal/desktop");
+    static constexpr QLatin1StringView interface("org.freedesktop.portal.Settings");
+    static constexpr QLatin1StringView signal("SettingChanged");
+    dbus.reset(new QGenericUnixThemeDBusListener(service, path, interface, signal));
+    Q_ASSERT(dbus);
+
+    // Wrap slot in a lambda to avoid inheriting QGnomeThemePrivate from QObject
+    auto wrapper = [this](QGenericUnixThemeDBusListener::SettingType type, const QString &value) {
+        if (type == QGenericUnixThemeDBusListener::SettingType::GtkTheme)
+            updateAppearance(value);
+    };
+
+    return QObject::connect(dbus.get(), &QGenericUnixThemeDBusListener::settingChanged, wrapper);
+
+}
+
+void QGnomeThemePrivate::updateAppearance(const QString &themeName)
+{
+    const auto oldAppearance = m_appearance;
+    if (themeName.contains(QLatin1StringView("light"), Qt::CaseInsensitive)) {
+        m_appearance = Qt::Appearance::Light;
+    } else if (themeName.contains(QLatin1StringView("dark"), Qt::CaseInsensitive)) {
+        m_appearance = Qt::Appearance::Dark;
+    } else {
+        m_appearance = Qt::Appearance::Unknown;
+    }
+
+    if (oldAppearance != m_appearance)
+        QWindowSystemInterface::handleThemeChange();
+}
+#endif // QT_NO_DBUS
 
 QGnomeTheme::QGnomeTheme()
     : QPlatformTheme(new QGnomeThemePrivate())
@@ -910,6 +1026,12 @@ QPlatformMenuBar *QGnomeTheme::createPlatformMenuBar() const
         return new QDBusMenuBar();
     return nullptr;
 }
+
+Qt::Appearance QGnomeTheme::appearance() const
+{
+    return d_func()->m_appearance;
+}
+
 #endif
 
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
