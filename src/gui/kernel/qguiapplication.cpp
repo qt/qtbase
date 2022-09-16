@@ -1209,7 +1209,7 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
                                               "Reinstalling the application may fix this problem.\n");
 
         if (!availablePlugins.isEmpty())
-            fatalMessage += QStringLiteral("\nAvailable platform plugins are: %1.\n").arg(availablePlugins.join(", "_L1));
+            fatalMessage += "\nAvailable platform plugins are: %1.\n"_L1.arg(availablePlugins.join(", "_L1));
 
 #if defined(Q_OS_WIN)
         // Windows: Display message box unless it is a console application
