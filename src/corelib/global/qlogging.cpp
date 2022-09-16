@@ -129,6 +129,36 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+/*!
+    \headerfile <QtLogging>
+    \inmodule QtCore
+    \title Qt Logging Types
+
+    \brief The <QtLogging> header file defines Qt logging types, functions
+    and macros.
+
+    The <QtLogging> header file contains several types, functions and
+    macros for logging.
+
+    The QtMsgType enum  identifies the various messages that can be generated
+    and sent to a Qt message handler; QtMessageHandler is a type definition for
+    a pointer to a function with the signature
+    \c {void myMessageHandler(QtMsgType, const QMessageLogContext &, const char *)}.
+    qInstallMessageHandler() function can be used to install the given
+    QtMessageHandler. QMessageLogContext class contains the line, file, and
+    function the message was logged at. This information is created by the
+    QMessageLogger class.
+
+    <QtLogging> also contains functions that generate messages from the
+    given string argument: qDebug(), qInfo(), qWarning(), qCritical(),
+    and qFatal(). These functions call the message handler
+    with the given message.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp 4
+*/
+
 #if !defined(Q_CC_MSVC)
 Q_NORETURN
 #endif
