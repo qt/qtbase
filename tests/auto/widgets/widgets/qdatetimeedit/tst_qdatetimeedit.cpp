@@ -406,8 +406,8 @@ void tst_QDateTimeEdit::initTestCase()
         qWarning("Running under locale %s/%s -- this test may generate failures due to language differences",
                  qPrintable(QLocale::languageToString(system.language())),
                  qPrintable(QLocale::territoryToString(system.territory())));
-    testWidget = new EditorDateEdit(0);
-    testFocusWidget = new QWidget(0);
+    testWidget = new EditorDateEdit(nullptr);
+    testFocusWidget = new QWidget(nullptr);
     testFocusWidget->resize(200, 100);
     testFocusWidget->show();
 }
