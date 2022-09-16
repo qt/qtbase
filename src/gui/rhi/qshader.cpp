@@ -597,9 +597,10 @@ size_t qHash(const QShader &s, size_t seed) noexcept
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, s.stage());
-    seed = qHashRange(s.d->shaders.keyValueBegin(),
-                      s.d->shaders.keyValueEnd(),
-                      seed);
+    if (!s.d->shaders.isEmpty()) {
+        seed = hash(seed, s.d->shaders.firstKey());
+        seed = hash(seed, s.d->shaders.first());
+    }
     return seed;
 }
 
