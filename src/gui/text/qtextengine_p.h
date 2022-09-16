@@ -385,6 +385,7 @@ public:
         uint layoutState : 2;
         uint memory_on_stack : 1;
         uint haveCharAttributes : 1;
+        uint previousLineManuallyWrapped : 1;
         QString string;
         bool reallocate(int totalGlyphs);
     };
