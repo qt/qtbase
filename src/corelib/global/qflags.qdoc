@@ -1,0 +1,459 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \class QFlag
+    \inmodule QtCore
+    \brief The QFlag class is a helper data type for QFlags.
+
+    It is equivalent to a plain \c int, except with respect to
+    function overloading and type conversions. You should never need
+    to use this class in your applications.
+
+    \sa QFlags
+*/
+
+/*!
+    \fn QFlag::QFlag(int value)
+
+    Constructs a QFlag object that stores the \a value.
+*/
+
+/*!
+    \fn QFlag::QFlag(uint value)
+    \since 5.3
+
+    Constructs a QFlag object that stores the \a value.
+*/
+
+/*!
+    \fn QFlag::QFlag(short value)
+    \since 5.3
+
+    Constructs a QFlag object that stores the \a value.
+*/
+
+/*!
+    \fn QFlag::QFlag(ushort value)
+    \since 5.3
+
+    Constructs a QFlag object that stores the \a value.
+*/
+
+/*!
+    \fn QFlag::operator int() const
+
+    Returns the value stored by the QFlag object.
+*/
+
+/*!
+    \fn QFlag::operator uint() const
+    \since 5.3
+
+    Returns the value stored by the QFlag object.
+*/
+
+/*!
+    \class QFlags
+    \inmodule QtCore
+    \brief The QFlags class provides a type-safe way of storing
+    OR-combinations of enum values.
+
+
+    \ingroup tools
+
+    The QFlags<Enum> class is a template class, where Enum is an enum
+    type. QFlags is used throughout Qt for storing combinations of
+    enum values.
+
+    The traditional C++ approach for storing OR-combinations of enum
+    values is to use an \c int or \c uint variable. The inconvenience
+    with this approach is that there's no type checking at all; any
+    enum value can be OR'd with any other enum value and passed on to
+    a function that takes an \c int or \c uint.
+
+    Qt uses QFlags to provide type safety. For example, the
+    Qt::Alignment type is simply a typedef for
+    QFlags<Qt::AlignmentFlag>. QLabel::setAlignment() takes a
+    Qt::Alignment parameter, which means that any combination of
+    Qt::AlignmentFlag values, or \c{{ }}, is legal:
+
+    \snippet code/src_corelib_global_qglobal.cpp 0
+
+    If you try to pass a value from another enum or just a plain
+    integer other than 0, the compiler will report an error. If you
+    need to cast integer values to flags in a untyped fashion, you can
+    use the explicit QFlags constructor as cast operator.
+
+    If you want to use QFlags for your own enum types, use
+    the Q_DECLARE_FLAGS() and Q_DECLARE_OPERATORS_FOR_FLAGS().
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp 1
+
+    You can then use the \c MyClass::Options type to store
+    combinations of \c MyClass::Option values.
+
+    \section1 Flags and the Meta-Object System
+
+    The Q_DECLARE_FLAGS() macro does not expose the flags to the meta-object
+    system, so they cannot be used by Qt Script or edited in Qt Designer.
+    To make the flags available for these purposes, the Q_FLAG() macro must
+    be used:
+
+    \snippet code/src_corelib_global_qglobal.cpp meta-object flags
+
+    \section1 Naming Convention
+
+    A sensible naming convention for enum types and associated QFlags
+    types is to give a singular name to the enum type (e.g., \c
+    Option) and a plural name to the QFlags type (e.g., \c Options).
+    When a singular name is desired for the QFlags type (e.g., \c
+    Alignment), you can use \c Flag as the suffix for the enum type
+    (e.g., \c AlignmentFlag).
+
+    \sa QFlag
+*/
+
+/*!
+    \typedef QFlags::Int
+    \since 5.0
+
+    Typedef for the integer type used for storage as well as for
+    implicit conversion. Either \c int or \c{unsigned int}, depending
+    on whether the enum's underlying type is signed or unsigned.
+*/
+
+/*!
+    \typedef QFlags::enum_type
+
+    Typedef for the Enum template type.
+*/
+
+/*!
+    \fn template<typename Enum> QFlags<Enum>::QFlags(const QFlags &other)
+
+    Constructs a copy of \a other.
+*/
+
+/*!
+    \fn template <typename Enum> QFlags<Enum>::QFlags(Enum flags)
+
+    Constructs a QFlags object storing the \a flags.
+*/
+
+/*!
+    \fn template <typename Enum> QFlags<Enum>::QFlags()
+    \since 5.15
+
+    Constructs a QFlags object with no flags set.
+*/
+
+/*!
+    \fn template <typename Enum> QFlags<Enum>::QFlags(QFlag flag)
+
+    Constructs a QFlags object initialized with the integer \a flag.
+
+    The QFlag type is a helper type. By using it here instead of \c
+    int, we effectively ensure that arbitrary enum values cannot be
+    cast to a QFlags, whereas untyped enum values (i.e., \c int
+    values) can.
+*/
+
+/*!
+    \fn template <typename Enum> QFlags<Enum>::QFlags(std::initializer_list<Enum> flags)
+    \since 5.4
+
+    Constructs a QFlags object initialized with all \a flags
+    combined using the bitwise OR operator.
+
+    \sa operator|=(), operator|()
+*/
+
+/*!
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator=(const QFlags &other)
+
+    Assigns \e other to this object and returns a reference to this
+    object.
+*/
+
+/*!
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator&=(int mask)
+
+    Performs a bitwise AND operation with \a mask and stores the
+    result in this QFlags object. Returns a reference to this object.
+
+    \sa operator&(), operator|=(), operator^=()
+*/
+
+/*!
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator&=(uint mask)
+
+    \overload
+*/
+
+/*!
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator&=(Enum mask)
+
+    \overload
+*/
+
+/*!
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator&=(QFlags mask)
+    \since 6.2
+
+    \overload
+*/
+
+/*!
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator|=(QFlags other)
+
+    Performs a bitwise OR operation with \a other and stores the
+    result in this QFlags object. Returns a reference to this object.
+
+    \sa operator|(), operator&=(), operator^=()
+*/
+
+/*!
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator|=(Enum other)
+
+    \overload
+*/
+
+/*!
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator^=(QFlags other)
+
+    Performs a bitwise XOR operation with \a other and stores the
+    result in this QFlags object. Returns a reference to this object.
+
+    \sa operator^(), operator&=(), operator|=()
+*/
+
+/*!
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator^=(Enum other)
+
+    \overload
+*/
+
+/*!
+    \fn template <typename Enum> QFlags<Enum>::operator Int() const
+
+    Returns the value stored in the QFlags object as an integer.
+
+    \sa Int
+*/
+
+/*!
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator|(QFlags other) const
+
+    Returns a QFlags object containing the result of the bitwise OR
+    operation on this object and \a other.
+
+    \sa operator|=(), operator^(), operator&(), operator~()
+*/
+
+/*!
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator|(Enum other) const
+
+    \overload
+*/
+
+/*!
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator^(QFlags other) const
+
+    Returns a QFlags object containing the result of the bitwise XOR
+    operation on this object and \a other.
+
+    \sa operator^=(), operator&(), operator|(), operator~()
+*/
+
+/*!
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator^(Enum other) const
+
+    \overload
+*/
+
+/*!
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator&(int mask) const
+
+    Returns a QFlags object containing the result of the bitwise AND
+    operation on this object and \a mask.
+
+    \sa operator&=(), operator|(), operator^(), operator~()
+*/
+
+/*!
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator&(uint mask) const
+
+    \overload
+*/
+
+/*!
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator&(Enum mask) const
+
+    \overload
+*/
+
+/*!
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator&(QFlags mask) const
+    \since 6.2
+
+    \overload
+*/
+
+/*!
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator~() const
+
+    Returns a QFlags object that contains the bitwise negation of
+    this object.
+
+    \sa operator&(), operator|(), operator^()
+*/
+
+/*!
+    \fn template <typename Enum> bool QFlags<Enum>::operator!() const
+
+    Returns \c true if no flag is set (i.e., if the value stored by the
+    QFlags object is 0); otherwise returns \c false.
+*/
+
+/*!
+    \fn template <typename Enum> bool QFlags<Enum>::testFlag(Enum flag) const
+    \since 4.2
+
+    Returns \c true if the flag \a flag is set, otherwise \c false.
+
+    \note if \a flag contains multiple bits set to 1 (for instance, if
+    it's an enumerator equal to the bitwise-OR of other enumerators)
+    then this function will return \c true if and only if all the bits
+    are set in this flags object. On the other hand, if \a flag contains
+    no bits set to 1 (that is, its value as a integer is 0), then this
+    function will return \c true if and only if this flags object also
+    has no bits set to 1.
+
+    \sa testAnyFlag()
+*/
+
+/*!
+    \fn template <typename Enum> bool QFlags<Enum>::testFlags(QFlags flags) const noexcept
+    \since 6.2
+
+    Returns \c true if this flags object matches the given \a flags.
+
+    If \a flags has any flags set, this flags object matches precisely
+    if all flags set in \a flags are also set in this flags object.
+    Otherwise, when \a flags has no flags set, this flags object only
+    matches if it also has no flags set.
+
+    \sa testAnyFlags()
+*/
+
+/*!
+    \fn template <typename Enum> bool QFlags<Enum>::testAnyFlag(Enum flag) const noexcept
+    \since 6.2
+
+    Returns \c true if \b any flag set in \a flag is also set in this
+    flags object, otherwise \c false. If \a flag has no flags set, the
+    return will always be \c false.
+
+    \sa testFlag()
+*/
+
+/*!
+    \fn template <typename Enum> bool QFlags<Enum>::testAnyFlags(QFlags flags) const noexcept
+    \since 6.2
+
+    Returns \c true if \b any flag set in \a flags is also set in this
+    flags object, otherwise \c false. If \a flags has no flags set, the
+    return will always be \c false.
+
+    \sa testFlags()
+*/
+
+/*!
+    \fn template <typename Enum> QFlags QFlags<Enum>::setFlag(Enum flag, bool on)
+    \since 5.7
+
+    Sets the flag \a flag if \a on is \c true or unsets it if
+    \a on is \c false. Returns a reference to this object.
+*/
+
+/*!
+    \fn template <typename Enum> QFlags<Enum> QFlags<Enum>::fromInt(Int i) noexcept
+    \since 6.2
+
+    Constructs a QFlags object representing the integer value \a i.
+*/
+
+/*!
+    \fn template <typename Enum> Int QFlags<Enum>::toInt() const noexcept
+    \since 6.2
+
+    Returns the value stored in the QFlags object as an integer. Note
+    that the returned integer may be signed or unsigned, depending on
+    whether the enum's underlying type is signed or unsigned.
+
+    \sa Int
+*/
+
+/*!
+    \fn template <typename Enum> size_t qHash(QFlags<Enum> flags, size_t seed = 0) noexcept
+    \since 6.2
+    \relates QFlags
+
+    Calculates the hash for the flags \a flags, using \a seed
+    to seed the calculation.
+*/
+
+/*!
+    \fn template <typename Enum> bool operator==(QFlags<Enum> lhs, QFlags<Enum> rhs)
+    \fn template <typename Enum> bool operator==(QFlags<Enum> lhs, Enum rhs)
+    \fn template <typename Enum> bool operator==(Enum lhs, QFlags<Enum> rhs)
+    \since 6.2
+    \relates QFlags
+
+    Compares \a lhs and \a rhs for equality; the two arguments are
+    considered equal if they represent exactly the same value
+    (bitmask).
+*/
+
+/*!
+    \fn template <typename Enum> bool operator!=(QFlags<Enum> lhs, QFlags<Enum> rhs)
+    \fn template <typename Enum> bool operator!=(QFlags<Enum> lhs, Enum rhs)
+    \fn template <typename Enum> bool operator!=(Enum lhs, QFlags<Enum> rhs)
+    \since 6.2
+    \relates QFlags
+
+    Compares \a lhs and \a rhs for inequality; the two arguments are
+    considered different if they don't represent exactly the same value
+    (bitmask).
+*/
+
+/*!
+    \macro Q_DECLARE_FLAGS(Flags, Enum)
+    \relates QFlags
+
+    The Q_DECLARE_FLAGS() macro expands to
+
+    \snippet code/src_corelib_global_qglobal.cpp 2
+
+    \a Enum is the name of an existing enum type, whereas \a Flags is
+    the name of the QFlags<\e{Enum}> typedef.
+
+    See the QFlags documentation for details.
+
+    \sa Q_DECLARE_OPERATORS_FOR_FLAGS()
+*/
+
+/*!
+    \macro Q_DECLARE_OPERATORS_FOR_FLAGS(Flags)
+    \relates QFlags
+
+    The Q_DECLARE_OPERATORS_FOR_FLAGS() macro declares global \c
+    operator|() functions for \a Flags, which is of type QFlags<T>.
+
+    See the QFlags documentation for details.
+
+    \sa Q_DECLARE_FLAGS()
+*/
