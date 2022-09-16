@@ -183,19 +183,21 @@ void QWasmClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
     isPaste = false;
 }
 
-bool QWasmClipboard::processKeyboard(const QWasmEventTranslator::TranslatedEvent &event,
-                                     const QFlags<Qt::KeyboardModifier> &modifiers)
+QWasmClipboard::ProcessKeyboardResult
+QWasmClipboard::processKeyboard(const QWasmEventTranslator::TranslatedEvent &event,
+                                const QFlags<Qt::KeyboardModifier> &modifiers)
 {
-    // Clipboard path: cut/copy/paste are handled by clipboard event or direct clipboard
-    // access.
-    if (hasClipboardApi)
-        return false;
-    if (event.type != QEvent::KeyPress || !modifiers.testFlag(Qt::ControlModifier)
-        || (event.key != Qt::Key_C && event.key != Qt::Key_V && event.key != Qt::Key_X)) {
-        return false;
-    }
+    if (event.type != QEvent::KeyPress || !modifiers.testFlag(Qt::ControlModifier))
+        return ProcessKeyboardResult::Ignored;
+
+    if (event.key != Qt::Key_C && event.key != Qt::Key_V && event.key != Qt::Key_X)
+        return ProcessKeyboardResult::Ignored;
+
     isPaste = event.key == Qt::Key_V;
-    return true;
+
+    return hasClipboardApi && !isPaste
+            ? ProcessKeyboardResult::NativeClipboardEventAndCopiedDataNeeded
+            : ProcessKeyboardResult::NativeClipboardEventNeeded;
 }
 
 bool QWasmClipboard::supportsMode(QClipboard::Mode mode) const

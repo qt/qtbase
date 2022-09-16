@@ -823,21 +823,30 @@ void QWasmCompositor::WindowManipulation::onPointerUp(const PointerEvent& event)
 
 bool QWasmCompositor::processKeyboard(int eventType, const EmscriptenKeyboardEvent *emKeyEvent)
 {
+    constexpr bool ProceedToNativeEvent = false;
     Q_ASSERT(eventType == EMSCRIPTEN_EVENT_KEYDOWN || eventType == EMSCRIPTEN_EVENT_KEYUP);
 
     auto translatedEvent = m_eventTranslator->translateKeyEvent(eventType, emKeyEvent);
 
     const QFlags<Qt::KeyboardModifier> modifiers = KeyboardModifier::getForEvent(*emKeyEvent);
 
-    if (QWasmIntegration::get()->getWasmClipboard()->processKeyboard(translatedEvent, modifiers))
-        return false;
+    const auto clipboardResult = QWasmIntegration::get()->getWasmClipboard()->processKeyboard(
+            translatedEvent, modifiers);
+
+    using ProcessKeyboardResult = QWasmClipboard::ProcessKeyboardResult;
+    if (clipboardResult == ProcessKeyboardResult::NativeClipboardEventNeeded)
+        return ProceedToNativeEvent;
 
     if (translatedEvent.text.isEmpty())
         translatedEvent.text = QString(emKeyEvent->key);
     if (translatedEvent.text.size() > 1)
         translatedEvent.text.clear();
-    return QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
-            0, translatedEvent.type, translatedEvent.key, modifiers, translatedEvent.text);
+    const auto result =
+            QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
+                    0, translatedEvent.type, translatedEvent.key, modifiers, translatedEvent.text);
+    return clipboardResult == ProcessKeyboardResult::NativeClipboardEventAndCopiedDataNeeded
+            ? ProceedToNativeEvent
+            : result;
 }
 
 bool QWasmCompositor::processWheel(int eventType, const EmscriptenWheelEvent *wheelEvent)
