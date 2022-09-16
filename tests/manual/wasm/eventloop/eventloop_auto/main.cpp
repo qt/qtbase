@@ -7,16 +7,13 @@
 #include <QtCore/QObject>
 #include <QtCore/QThread>
 #include <QtCore/QTimer>
+#include <QtCore/private/qstdweb_p.h>
 
 #include <qtwasmtestlib.h>
 
 #include "emscripten.h"
 
 const int timerTimeout = 10;
-
-EM_JS(bool, have_asyncify, (), {
-    return typeof Asyncify != "undefined";
-});
 
 class WasmEventDispatcherTest: public QObject
 {
@@ -242,7 +239,7 @@ void WasmEventDispatcherTest::timerSecondaryThread()
 // Post an event to the main thread and asyncify wait for it
 void WasmEventDispatcherTest::postEventAsyncify()
 {
-    if (!have_asyncify()) {
+    if (!qstdweb::haveAsyncify()) {
         QtWasmTest::completeTestFunction(QtWasmTest::TestResult::Skip, "requires asyncify");
         return;
     }
@@ -259,7 +256,7 @@ void WasmEventDispatcherTest::postEventAsyncify()
 // Create a timer on the main thread and asyncify wait for it
 void WasmEventDispatcherTest::timerAsyncify()
 {
-    if (!have_asyncify()) {
+    if (!qstdweb::haveAsyncify()) {
         QtWasmTest::completeTestFunction(QtWasmTest::TestResult::Skip, "requires asyncify");
         return;
     }
@@ -276,7 +273,7 @@ void WasmEventDispatcherTest::timerAsyncify()
 // Asyncify wait in a loop
 void WasmEventDispatcherTest::postEventAsyncifyLoop()
 {
-    if (!have_asyncify()) {
+    if (!qstdweb::haveAsyncify()) {
         QtWasmTest::completeTestFunction(QtWasmTest::TestResult::Skip, "requires asyncify");
         return;
     }
@@ -296,7 +293,7 @@ void WasmEventDispatcherTest::postEventAsyncifyLoop()
 // Asyncify wait for QThread::wait() / pthread_join()
 void WasmEventDispatcherTest::threadAsyncifyWait()
 {
-    if (!have_asyncify())
+    if (!qstdweb::haveAsyncify())
         QtWasmTest::completeTestFunction(QtWasmTest::TestResult::Skip, "requires asyncify");
 
     const int threadCount = 15;

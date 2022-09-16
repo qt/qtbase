@@ -7,6 +7,7 @@ qt_internal_add_manual_test(eventloop_auto
         ../../qtwasmtestlib/qtwasmtestlib.cpp
     LIBRARIES
         Qt::Core
+        Qt::CorePrivate
 )
 
 add_custom_command(
@@ -28,6 +29,7 @@ qt_internal_add_manual_test(eventloop_auto_asyncify
         ../../qtwasmtestlib/qtwasmtestlib.cpp
     LIBRARIES
         Qt::Core
+        Qt::CorePrivate
 )
 
 target_link_options(eventloop_auto_asyncify PRIVATE -sASYNCIFY -Os)

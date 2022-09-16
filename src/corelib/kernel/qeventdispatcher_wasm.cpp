@@ -7,6 +7,7 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qsocketnotifier.h>
+#include <QtCore/private/qstdweb_p.h>
 
 #include "emscripten.h"
 #include <emscripten/html5.h>
@@ -34,9 +35,10 @@ static bool g_is_asyncify_suspended = false;
 
 #if defined(QT_STATIC)
 
-EM_JS(bool, qt_have_asyncify_js, (), {
-    return typeof Asyncify != "undefined";
-});
+static bool useAsyncify()
+{
+    return qstdweb::haveAsyncify();
+}
 
 EM_JS(void, qt_asyncify_suspend_js, (), {
     let sleepFn = (wakeUp) => {
@@ -60,7 +62,7 @@ EM_JS(void, qt_asyncify_resume_js, (), {
 
 // EM_JS is not supported for side modules; disable asyncify
 
-bool qt_have_asyncify_js()
+static bool useAsyncify()
 {
     return false;
 }
@@ -76,15 +78,6 @@ void qt_asyncify_resume_js()
 }
 
 #endif // defined(QT_STATIC)
-
-// Returns true if asyncify is available.
-bool qt_have_asyncify()
-{
-    static bool have_asyncify = []{
-        return qt_have_asyncify_js();
-    }();
-    return have_asyncify;
-}
 
 // Suspends the main thread until qt_asyncify_resume() is called. Returns
 // false immediately if Qt has already suspended the main thread (recursive
@@ -391,7 +384,7 @@ void QEventDispatcherWasm::handleApplicationExec()
 
 void QEventDispatcherWasm::handleDialogExec()
 {
-    if (!qt_have_asyncify()) {
+    if (!useAsyncify()) {
         qWarning() << "Warning: exec() is not supported on Qt for WebAssembly in this configuration. Please build"
                    << "with asyncify support, or use an asynchronous API like QDialog::open()";
         emscripten_sleep(1); // This call never returns
@@ -420,7 +413,7 @@ bool QEventDispatcherWasm::wait(int timeout)
 #endif
     Q_ASSERT(emscripten_is_main_runtime_thread());
     Q_ASSERT(isMainThreadEventDispatcher());
-    if (qt_have_asyncify()) {
+    if (useAsyncify()) {
         if (timeout > 0)
             qWarning() << "QEventDispatcherWasm asyncify wait with timeout is not supported; timeout will be ignored"; // FIXME
 

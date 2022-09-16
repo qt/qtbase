@@ -189,6 +189,8 @@ namespace qstdweb {
         static emscripten::val savedWindow = emscripten::val::global("window");
         return savedWindow;
     }
+
+    bool haveAsyncify();
 }
 
 QT_END_NAMESPACE

@@ -667,6 +667,12 @@ namespace Promise {
     }
 }
 
+bool haveAsyncify()
+{
+    static bool HaveAsyncify = !emscripten::val::global("Asyncify").isUndefined();
+    return HaveAsyncify;
+}
+
 } // namespace qstdweb
 
 QT_END_NAMESPACE
