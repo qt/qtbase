@@ -2354,6 +2354,10 @@ void tst_QStyleSheetStyle::placeholderColor()
     phColor = le2.palette().placeholderText().color();
     QCOMPARE(phColor.rgb(), red.rgb());
     QVERIFY(phColor.alpha() < red.alpha());
+
+    const char *phSpec = "#aabbccdd";
+    le1.setStyleSheet(QString("QLineEdit { placeholder-text-color: %1; }").arg(phSpec));
+    QCOMPARE(le1.palette().placeholderText().color(), QColor(phSpec));
 }
 
 void tst_QStyleSheetStyle::enumPropertySelector_data()

@@ -1543,9 +1543,9 @@ void tst_QCssParser::gradient()
     QList<QCss::StyleRule> rules = testSelector.styleRulesForNode(n);
     QList<QCss::Declaration> decls = rules.at(0).declarations;
     QCss::ValueExtractor ve(decls);
-    QBrush fg, sfg;
+    QBrush fg, sfg, pfg;
     QBrush sbg, abg;
-    QVERIFY(ve.extractPalette(&fg, &sfg, &sbg, &abg));
+    QVERIFY(ve.extractPalette(&fg, &sfg, &sbg, &abg, &pfg));
     if (type == "linear") {
         QCOMPARE(sbg.style(), Qt::LinearGradientPattern);
         const QLinearGradient *lg = static_cast<const QLinearGradient *>(sbg.gradient());

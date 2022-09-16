@@ -732,6 +732,9 @@
            subcontrol. By default, the arrow is placed in the center of the
            contents rectangle of the drop-down subcontrol.
 
+           The color of the placeholder text can be set using the
+           \l{#placeholder-text-color-prop}{placeholder-text-color} property.
+
            See \l{Qt Style Sheets Examples#Customizing QComboBox}{Customizing QComboBox}
            for an example.
 
@@ -841,12 +844,15 @@
 
     \row
         \li QLineEdit \target qlineedit-widget
-        \li Support the \l{box model}.
+        \li Supports the \l{box model}.
 
            The color and background of the selected item is styled using
            \l{#selection-color-prop}{selection-color} and
            \l{#selection-background-color-prop}{selection-background-color}
            respectively.
+
+           The color of the placeholder text can be set using the
+           \l{#placeholder-text-color-prop}{placeholder-text-color} property.
 
            The password character can be styled using the
            \l{#lineedit-password-character-prop}{lineedit-password-character}
@@ -1201,6 +1207,9 @@
            \l{#selection-color-prop}{selection-color} and
            \l{#selection-background-color-prop}{selection-background-color}
            respectively.
+
+           The color of the placeholder text can be set using the
+           \l{#placeholder-text-color-prop}{placeholder-text-color} property.
 
            See \l{qabstractscrollarea-widget}{QAbsractScrollArea} to
            style scrollable backgrounds.
@@ -2297,6 +2306,21 @@
         \li \c bool
         \li Whether the QTreeView paints alternating row colors for the empty
            area (i.e the area where there are no items)
+
+    \row
+        \li \b{\c placeholder-text-color*} \target placeholder-text-color-prop
+        \li \l{#Brush}{Brush} \br
+        \li The color used for the placeholder text of text editing widgets.
+
+           If this property is not set, the default value is whatever
+           is set for the palette's \l{QPalette::}{PlaceholderText}
+           role.
+
+           Example:
+
+           \snippet code/doc_src_stylesheet.qdoc 163
+
+           Available since 6.5.
 
     \row
         \li \b{\c position} \target position-prop

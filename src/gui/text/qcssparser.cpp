@@ -128,6 +128,7 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "padding-top", PaddingTop },
     { "page-break-after", PageBreakAfter },
     { "page-break-before", PageBreakBefore },
+    { "placeholder-text-color", QtPlaceHolderTextColor },
     { "position", Position },
     { "right", Right },
     { "selection-background-color", QtSelectionBackground },
@@ -1340,7 +1341,7 @@ bool ValueExtractor::extractFont(QFont *font, int *fontSizeAdjustment)
     return hit;
 }
 
-bool ValueExtractor::extractPalette(QBrush *fg, QBrush *sfg, QBrush *sbg, QBrush *abg)
+bool ValueExtractor::extractPalette(QBrush *fg, QBrush *sfg, QBrush *sbg, QBrush *abg, QBrush *pfg)
 {
     bool hit = false;
     for (int i = 0; i < declarations.count(); ++i) {
@@ -1350,6 +1351,7 @@ bool ValueExtractor::extractPalette(QBrush *fg, QBrush *sfg, QBrush *sbg, QBrush
         case QtSelectionForeground: *sfg = decl.brushValue(pal); break;
         case QtSelectionBackground: *sbg = decl.brushValue(pal); break;
         case QtAlternateBackground: *abg = decl.brushValue(pal); break;
+        case QtPlaceHolderTextColor: *pfg = decl.brushValue(pal); break;
         default: continue;
         }
         hit = true;

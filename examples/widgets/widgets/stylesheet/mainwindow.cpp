@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui.setupUi(this);
 
     ui.nameLabel->setProperty("class", "mandatory QLabel");
+    ui.nameCombo->lineEdit()->setPlaceholderText(tr("Last, First"));
 
     styleSheetEditor = new StyleSheetEditor(this);
 

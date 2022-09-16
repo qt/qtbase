@@ -437,14 +437,15 @@ struct QStyleSheetBoxData : public QSharedData
 struct QStyleSheetPaletteData : public QSharedData
 {
     QStyleSheetPaletteData(const QBrush &fg, const QBrush &sfg, const QBrush &sbg,
-                           const QBrush &abg)
+                           const QBrush &abg, const QBrush &pfg)
         : foreground(fg), selectionForeground(sfg), selectionBackground(sbg),
-          alternateBackground(abg) { }
+          alternateBackground(abg), placeholderForeground(pfg) { }
 
     QBrush foreground;
     QBrush selectionForeground;
     QBrush selectionBackground;
     QBrush alternateBackground;
+    QBrush placeholderForeground;
 };
 
 struct QStyleSheetGeometryData : public QSharedData
@@ -956,10 +957,10 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
         bg = new QStyleSheetBackgroundData(brush, pixmap, repeat, alignment, origin, attachment, clip);
     }
 
-    QBrush sfg, fg;
+    QBrush sfg, fg, pfg;
     QBrush sbg, abg;
-    if (v.extractPalette(&fg, &sfg, &sbg, &abg))
-        pal = new QStyleSheetPaletteData(fg, sfg, sbg, abg);
+    if (v.extractPalette(&fg, &sfg, &sbg, &abg, &pfg))
+        pal = new QStyleSheetPaletteData(fg, sfg, sbg, abg, pfg);
 
     QIcon imgIcon;
     alignment = Qt::AlignCenter;
@@ -1486,6 +1487,8 @@ void QRenderRule::configurePalette(QPalette *p, QPalette::ColorGroup cg, const Q
         p->setBrush(cg, QPalette::HighlightedText, pal->selectionForeground);
     if (pal->alternateBackground.style() != Qt::NoBrush)
         p->setBrush(cg, QPalette::AlternateBase, pal->alternateBackground);
+    if (pal->placeholderForeground.style() != Qt::NoBrush)
+        p->setBrush(cg, QPalette::PlaceholderText, pal->placeholderForeground);
 }
 
 bool QRenderRule::hasModification() const

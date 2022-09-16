@@ -59,6 +59,11 @@ QComboBox, QLineEdit, QSpinBox, QTextEdit, QListView {
     selection-background-color: #C19A6B;
 }
 
+/* Make placeholder text a matching semi-transparent color */
+QComboBox, QLineEdit {
+    placeholder-text-color: #80C19A6B;
+}
+
 QListView {
     show-decoration-selected: 1;
 }

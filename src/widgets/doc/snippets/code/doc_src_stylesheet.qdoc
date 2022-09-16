@@ -1849,3 +1849,6 @@ QTableView::indicator:unchecked {
 * { widget-animation-duration: 100 }
 //! [162]
 
+//! [163]
+QLineEdit { placeholder-text-color: #800000ff } /* semi-transparent blue */
+//! [163]
