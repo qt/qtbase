@@ -209,7 +209,7 @@ QT_BEGIN_NAMESPACE
     Constructs a new, empty (and thus invalid) QShader instance.
  */
 QShader::QShader()
-    : d(new QShaderPrivate)
+    : d(nullptr)
 {
 }
 
@@ -218,7 +218,10 @@ QShader::QShader()
  */
 void QShader::detach()
 {
-    qAtomicDetach(d);
+    if (d)
+        qAtomicDetach(d);
+    else
+        d = new QShaderPrivate;
 }
 
 /*!
@@ -227,7 +230,8 @@ void QShader::detach()
 QShader::QShader(const QShader &other)
     : d(other.d)
 {
-    d->ref.ref();
+    if (d)
+        d->ref.ref();
 }
 
 /*!
@@ -235,7 +239,12 @@ QShader::QShader(const QShader &other)
  */
 QShader &QShader::operator=(const QShader &other)
 {
-    qAtomicAssign(d, other.d);
+    if (d) {
+        qAtomicAssign(d, other.d);
+    } else if (other.d) {
+        other.d->ref.ref();
+        d = other.d;
+    }
     return *this;
 }
 
@@ -244,7 +253,7 @@ QShader &QShader::operator=(const QShader &other)
  */
 QShader::~QShader()
 {
-    if (!d->ref.deref())
+    if (d && !d->ref.deref())
         delete d;
 }
 
@@ -253,7 +262,7 @@ QShader::~QShader()
  */
 bool QShader::isValid() const
 {
-    return !d->shaders.isEmpty();
+    return d ? !d->shaders.isEmpty() : false;
 }
 
 /*!
@@ -261,7 +270,7 @@ bool QShader::isValid() const
  */
 QShader::Stage QShader::stage() const
 {
-    return d->stage;
+    return d ? d->stage : QShader::VertexStage;
 }
 
 /*!
@@ -269,7 +278,7 @@ QShader::Stage QShader::stage() const
  */
 void QShader::setStage(Stage stage)
 {
-    if (stage != d->stage) {
+    if (!d || stage != d->stage) {
         detach();
         d->stage = stage;
     }
@@ -280,7 +289,7 @@ void QShader::setStage(Stage stage)
  */
 QShaderDescription QShader::description() const
 {
-    return d->desc;
+    return d ? d->desc : QShaderDescription();
 }
 
 /*!
@@ -297,7 +306,7 @@ void QShader::setDescription(const QShaderDescription &desc)
  */
 QList<QShaderKey> QShader::availableShaders() const
 {
-    return d->shaders.keys().toVector();
+    return d ? d->shaders.keys().toVector() : QList<QShaderKey>();
 }
 
 /*!
@@ -305,7 +314,7 @@ QList<QShaderKey> QShader::availableShaders() const
  */
 QShaderCode QShader::shader(const QShaderKey &key) const
 {
-    return d->shaders.value(key);
+    return d ? d->shaders.value(key) : QShaderCode();
 }
 
 /*!
@@ -313,7 +322,7 @@ QShaderCode QShader::shader(const QShaderKey &key) const
  */
 void QShader::setShader(const QShaderKey &key, const QShaderCode &shader)
 {
-    if (d->shaders.value(key) == shader)
+    if (d && d->shaders.value(key) == shader)
         return;
 
     detach();
@@ -326,6 +335,9 @@ void QShader::setShader(const QShaderKey &key, const QShaderCode &shader)
  */
 void QShader::removeShader(const QShaderKey &key)
 {
+    if (!d)
+        return;
+
     auto it = d->shaders.find(key);
     if (it == d->shaders.end())
         return;
@@ -350,6 +362,9 @@ static void writeShaderKey(QDataStream *ds, const QShaderKey &k)
  */
 QByteArray QShader::serialized() const
 {
+    static QShaderPrivate sd;
+    QShaderPrivate *dd = d ? d : &sd;
+
     QBuffer buf;
     QDataStream ds(&buf);
     ds.setVersion(QDataStream::Qt_5_10);
@@ -357,18 +372,18 @@ QByteArray QShader::serialized() const
         return QByteArray();
 
     ds << QShaderPrivate::QSB_VERSION;
-    ds << int(d->stage);
-    d->desc.serialize(&ds);
-    ds << int(d->shaders.count());
-    for (auto it = d->shaders.cbegin(), itEnd = d->shaders.cend(); it != itEnd; ++it) {
+    ds << int(dd->stage);
+    dd->desc.serialize(&ds);
+    ds << int(dd->shaders.count());
+    for (auto it = dd->shaders.cbegin(), itEnd = dd->shaders.cend(); it != itEnd; ++it) {
         const QShaderKey &k(it.key());
         writeShaderKey(&ds, k);
-        const QShaderCode &shader(d->shaders.value(k));
+        const QShaderCode &shader(dd->shaders.value(k));
         ds << shader.shader();
         ds << shader.entryPoint();
     }
-    ds << int(d->bindings.count());
-    for (auto it = d->bindings.cbegin(), itEnd = d->bindings.cend(); it != itEnd; ++it) {
+    ds << int(dd->bindings.count());
+    for (auto it = dd->bindings.cbegin(), itEnd = dd->bindings.cend(); it != itEnd; ++it) {
         const QShaderKey &k(it.key());
         writeShaderKey(&ds, k);
         const NativeResourceBindingMap &map(it.value());
@@ -379,8 +394,8 @@ QByteArray QShader::serialized() const
             ds << mapIt.value().second;
         }
     }
-    ds << int(d->combinedImageMap.count());
-    for (auto it = d->combinedImageMap.cbegin(), itEnd = d->combinedImageMap.cend(); it != itEnd; ++it) {
+    ds << int(dd->combinedImageMap.count());
+    for (auto it = dd->combinedImageMap.cbegin(), itEnd = dd->combinedImageMap.cend(); it != itEnd; ++it) {
         const QShaderKey &k(it.key());
         writeShaderKey(&ds, k);
         const SeparateToCombinedImageSamplerMappingList &list(it.value());
@@ -391,8 +406,8 @@ QByteArray QShader::serialized() const
             ds << listIt->samplerBinding;
         }
     }
-    ds << int(d->nativeShaderInfoMap.count());
-    for (auto it = d->nativeShaderInfoMap.cbegin(), itEnd = d->nativeShaderInfoMap.cend(); it != itEnd; ++it) {
+    ds << int(dd->nativeShaderInfoMap.count());
+    for (auto it = dd->nativeShaderInfoMap.cbegin(), itEnd = dd->nativeShaderInfoMap.cend(); it != itEnd; ++it) {
         const QShaderKey &k(it.key());
         writeShaderKey(&ds, k);
         ds << it->flags;
@@ -438,6 +453,7 @@ QShader QShader::fromSerialized(const QByteArray &data)
         return QShader();
 
     QShader bs;
+    bs.detach(); // to get d created
     QShaderPrivate *d = QShaderPrivate::get(&bs);
     Q_ASSERT(d->ref.loadRelaxed() == 1); // must be detached
     int intVal;
@@ -573,6 +589,9 @@ QShaderKey::QShaderKey(QShader::Source s,
  */
 bool operator==(const QShader &lhs, const QShader &rhs) noexcept
 {
+    if (!lhs.d || !rhs.d)
+        return lhs.d == rhs.d;
+
     return lhs.d->stage == rhs.d->stage
             && lhs.d->shaders == rhs.d->shaders
             && lhs.d->bindings == rhs.d->bindings;
@@ -595,11 +614,13 @@ bool operator==(const QShader &lhs, const QShader &rhs) noexcept
  */
 size_t qHash(const QShader &s, size_t seed) noexcept
 {
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, s.stage());
-    if (!s.d->shaders.isEmpty()) {
-        seed = hash(seed, s.d->shaders.firstKey());
-        seed = hash(seed, s.d->shaders.first());
+    if (s.d) {
+        QtPrivate::QHashCombine hash;
+        seed = hash(seed, s.stage());
+        if (!s.d->shaders.isEmpty()) {
+            seed = hash(seed, s.d->shaders.firstKey());
+            seed = hash(seed, s.d->shaders.first());
+        }
     }
     return seed;
 }
@@ -741,11 +762,15 @@ QDebug operator<<(QDebug dbg, const QShader &bs)
     const QShaderPrivate *d = bs.d;
     QDebugStateSaver saver(dbg);
 
-    dbg.nospace() << "QShader("
-                  << "stage=" << d->stage
-                  << " shaders=" << d->shaders.keys()
-                  << " desc.isValid=" << d->desc.isValid()
-                  << ')';
+    if (d) {
+        dbg.nospace() << "QShader("
+                      << "stage=" << d->stage
+                      << " shaders=" << d->shaders.keys()
+                      << " desc.isValid=" << d->desc.isValid()
+                      << ')';
+    } else {
+        dbg.nospace() << "QShader()";
+    }
 
     return dbg;
 }
@@ -809,6 +834,9 @@ QDebug operator<<(QDebug dbg, const QShaderVersion &v)
  */
 QShader::NativeResourceBindingMap QShader::nativeResourceBindingMap(const QShaderKey &key) const
 {
+    if (!d)
+        return {};
+
     auto it = d->bindings.constFind(key);
     if (it == d->bindings.cend())
         return {};
@@ -832,6 +860,9 @@ void QShader::setResourceBindingMap(const QShaderKey &key, const NativeResourceB
  */
 void QShader::removeResourceBindingMap(const QShaderKey &key)
 {
+    if (!d)
+        return;
+
     auto it = d->bindings.find(key);
     if (it == d->bindings.end())
         return;
@@ -866,6 +897,9 @@ void QShader::removeResourceBindingMap(const QShaderKey &key)
  */
 QShader::SeparateToCombinedImageSamplerMappingList QShader::separateToCombinedImageSamplerMappingList(const QShaderKey &key) const
 {
+    if (!d)
+        return {};
+
     auto it = d->combinedImageMap.constFind(key);
     if (it == d->combinedImageMap.cend())
         return {};
@@ -890,6 +924,9 @@ void QShader::setSeparateToCombinedImageSamplerMappingList(const QShaderKey &key
  */
 void QShader::removeSeparateToCombinedImageSamplerMappingList(const QShaderKey &key)
 {
+    if (!d)
+        return;
+
     auto it = d->combinedImageMap.find(key);
     if (it == d->combinedImageMap.end())
         return;
@@ -925,6 +962,9 @@ void QShader::removeSeparateToCombinedImageSamplerMappingList(const QShaderKey &
  */
 QShader::NativeShaderInfo QShader::nativeShaderInfo(const QShaderKey &key) const
 {
+    if (!d)
+        return {};
+
     auto it = d->nativeShaderInfoMap.constFind(key);
     if (it == d->nativeShaderInfoMap.cend())
         return {};
@@ -948,6 +988,9 @@ void QShader::setNativeShaderInfo(const QShaderKey &key, const NativeShaderInfo 
  */
 void QShader::removeNativeShaderInfo(const QShaderKey &key)
 {
+    if (!d)
+        return;
+
     auto it = d->nativeShaderInfoMap.find(key);
     if (it == d->nativeShaderInfoMap.end())
         return;
