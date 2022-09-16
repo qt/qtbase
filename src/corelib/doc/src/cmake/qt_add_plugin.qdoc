@@ -21,6 +21,7 @@ qt_add_plugin(target
               [SHARED | STATIC]
               [CLASS_NAME class_name]
               [OUTPUT_TARGETS variable_name]
+              [MANUAL_FINALIZATION]
               sources...
 )
 \endcode
@@ -66,5 +67,18 @@ the plugin and intends to make it available for other projects to link to, the
 project should also install these internal targets. The names of these targets
 can be obtained by providing the \c OUTPUT_TARGETS option, followed by the name
 of a variable in which to return the target list.
+
+\section2 Finalization
+
+After a target is created, further processing or \e{finalization} steps may be
+needed. The finalization processing is implemented by the
+\l{qt6_finalize_target}{qt_finalize_target()} command.
+
+For details and the meaning of the \c{MANUAL_FINALIZATION} option, refer to the
+\l{qt_add_library finalization}{finalization documentation} for
+\c{qt_add_library}.
+
+\sa {qt6_finalize_target}{qt_finalize_target()},
+    {qt6_add_executable}{qt_add_executable()}
 
 */

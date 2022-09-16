@@ -51,6 +51,7 @@ library created. The \c{qt_add_library()} command does not consider
 Any \c{sources} provided will be passed through to the internal call to
 \c{add_library()}.
 
+\target qt_add_library finalization
 \section2 Finalization
 
 After a target is created, further processing or \e{finalization} steps may be

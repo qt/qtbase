@@ -1984,6 +1984,7 @@ endmacro()
 
 function(qt6_add_plugin target)
     _qt_internal_get_add_plugin_keywords(opt_args single_args multi_args)
+    list(APPEND opt_args MANUAL_FINALIZATION)
 
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
 
@@ -2030,6 +2031,7 @@ function(qt6_add_plugin target)
     endif()
 
     _qt_internal_add_library(${target} ${type_to_create} ${arg_UNPARSED_ARGUMENTS})
+    set_property(TARGET ${target} PROPERTY _qt_expects_finalization TRUE)
 
     get_target_property(target_type "${target}" TYPE)
     if (target_type STREQUAL "STATIC_LIBRARY")
@@ -2106,6 +2108,23 @@ function(qt6_add_plugin target)
             _qt_internal_assign_to_internal_targets_folder(qt_internal_plugins)
         endif()
         add_dependencies(qt_internal_plugins ${target})
+    endif()
+
+    if(arg_MANUAL_FINALIZATION)
+        # Caller says they will call qt6_finalize_target() themselves later
+        return()
+    endif()
+
+    # Defer the finalization if we can. When the caller's project requires
+    # CMake 3.19 or later, this makes the calls to this function concise while
+    # still allowing target property modification before finalization.
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+        # Need to wrap in an EVAL CODE or else ${target} won't be evaluated
+        # due to special behavior of cmake_language() argument handling
+        cmake_language(EVAL CODE "cmake_language(DEFER CALL qt6_finalize_target ${target})")
+    else()
+        set_target_properties("${target}" PROPERTIES _qt_is_immediately_finalized TRUE)
+        qt6_finalize_target("${target}")
     endif()
 endfunction()
 
