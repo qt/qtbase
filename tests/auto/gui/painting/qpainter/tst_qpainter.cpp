@@ -5506,6 +5506,7 @@ void tst_QPainter::hdrColors()
     QCOMPARE(img.pixelColor(4, 4), color);
 
     QImage img2(10, 10, QImage::Format_RGBX32FPx4);
+    img2.fill(Qt::black); // fill to avoid random FP values like Inf which can break SourceOver composition
     {
         QPainter p(&img2);
         p.drawImage(0, 0, img);
