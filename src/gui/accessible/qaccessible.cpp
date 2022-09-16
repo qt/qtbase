@@ -218,7 +218,7 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \value ObjectHide                       An object is hidden; for example, with QWidget::hide().
                                             Any children the object that is hidden has do not send
                                             this event. It is not sent when an object is hidden as
-                                            it is being obcured by others.
+                                            it is being obscured by others.
     \value ObjectReorder                    A layout or item view  has added, removed, or moved an
                                             object (Qt does not use this event).
     \value ObjectShow                       An object is displayed; for example, with
