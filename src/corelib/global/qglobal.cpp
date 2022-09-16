@@ -229,74 +229,6 @@ using namespace Qt::StringLiterals;
     \sa quint64, Q_INT64_C()
 */
 
-/*! \fn template <typename T> T qAbs(const T &t)
-    \relates <QtNumeric>
-
-    Compares \a t to the 0 of type T and returns the absolute
-    value. Thus if T is \e {double}, then \a t is compared to
-    \e{(double) 0}.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp 10
-*/
-
-/*! \fn int qRound(double d)
-    \relates <QtNumeric>
-
-    Rounds \a d to the nearest integer.
-
-    Rounds half away from zero (e.g. 0.5 -> 1, -0.5 -> -1).
-
-    \note This function does not guarantee correctness for high precisions.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp 11A
-*/
-
-/*! \fn int qRound(float d)
-    \relates <QtNumeric>
-
-    Rounds \a d to the nearest integer.
-
-    Rounds half away from zero (e.g. 0.5f -> 1, -0.5f -> -1).
-
-    \note This function does not guarantee correctness for high precisions.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp 11B
-*/
-
-/*! \fn qint64 qRound64(double d)
-    \relates <QtNumeric>
-
-    Rounds \a d to the nearest 64-bit integer.
-
-    Rounds half away from zero (e.g. 0.5 -> 1, -0.5 -> -1).
-
-    \note This function does not guarantee correctness for high precisions.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp 12A
-*/
-
-/*! \fn qint64 qRound64(float d)
-    \relates <QtNumeric>
-
-    Rounds \a d to the nearest 64-bit integer.
-
-    Rounds half away from zero (e.g. 0.5f -> 1, -0.5f -> -1).
-
-    \note This function does not guarantee correctness for high precisions.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp 12B
-*/
-
 /*!
     \macro QT_VERSION_STR
     \relates <QtGlobal>
@@ -2647,57 +2579,6 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     moc files. It expands to nothing.
 
     \sa QT_NAMESPACE
-*/
-
-/*!
- \fn bool qFuzzyCompare(double p1, double p2)
- \relates <QtNumeric>
- \since 4.4
- \threadsafe
-
- Compares the floating point value \a p1 and \a p2 and
- returns \c true if they are considered equal, otherwise \c false.
-
- Note that comparing values where either \a p1 or \a p2 is 0.0 will not work,
- nor does comparing values where one of the values is NaN or infinity.
- If one of the values is always 0.0, use qFuzzyIsNull instead. If one of the
- values is likely to be 0.0, one solution is to add 1.0 to both values.
-
- \snippet code/src_corelib_global_qglobal.cpp 46
-
- The two numbers are compared in a relative way, where the
- exactness is stronger the smaller the numbers are.
-*/
-
-/*!
- \fn bool qFuzzyCompare(float p1, float p2)
- \relates <QtNumeric>
- \since 4.4
- \threadsafe
-
- Compares the floating point value \a p1 and \a p2 and
- returns \c true if they are considered equal, otherwise \c false.
-
- The two numbers are compared in a relative way, where the
- exactness is stronger the smaller the numbers are.
-*/
-
-/*!
- \fn bool qFuzzyIsNull(double d)
- \relates <QtNumeric>
- \since 4.4
- \threadsafe
-
- Returns true if the absolute value of \a d is within 0.000000000001 of 0.0.
-*/
-
-/*!
- \fn bool qFuzzyIsNull(float f)
- \relates <QtNumeric>
- \since 4.4
- \threadsafe
-
- Returns true if the absolute value of \a f is within 0.00001f of 0.0.
 */
 
 /*!
