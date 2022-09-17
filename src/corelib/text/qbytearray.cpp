@@ -506,15 +506,6 @@ quint16 qChecksum(QByteArrayView data, Qt::ChecksumType standard)
     The default value is -1, which specifies zlib's default
     compression.
 
-//![compress-limit-note]
-    \note The maximum size of data that this function can consume is limited by
-    what the platform's \c{unsigned long} can represent (a Zlib limitation).
-    That means that data > 4GiB can be compressed and decompressed on a 64-bit
-    Unix system, but not on a 64-bit Windows system. Portable code should
-    therefore avoid using qCompress()/qUncompress() to compress more than 4GiB
-    of input.
-//![compress-limit-note]
-
     \sa qUncompress(const QByteArray &data)
 */
 
@@ -526,8 +517,6 @@ quint16 qChecksum(QByteArrayView data, Qt::ChecksumType standard)
 
     Compresses the first \a nbytes of \a data at compression level
     \a compressionLevel and returns the compressed data in a new byte array.
-
-    \include qbytearray.cpp compress-limit-note
 */
 
 #ifndef QT_NO_COMPRESS
@@ -687,30 +676,40 @@ QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
     if (compressionLevel < -1 || compressionLevel > 9)
         compressionLevel = -1;
 
-    ulong len = nbytes + nbytes / 100 + 13;
-    QByteArray bazip;
-    int res;
-    do {
-        bazip.resize(len + HeaderSize);
-        res = ::compress2(reinterpret_cast<uchar *>(bazip.data()) + HeaderSize, &len,
-                          data, nbytes,
-                          compressionLevel);
-
-        switch (res) {
-        case Z_OK:
-            bazip.resize(len + HeaderSize);
-            qToBigEndian(qt_saturate<CompressSizeHint_t>(nbytes), bazip.data());
-            break;
-        case Z_MEM_ERROR:
-            return tooMuchData(ZLibOp::Compression);
-
-        case Z_BUF_ERROR:
-            len *= 2;
-            break;
+    QArrayDataPointer out = [&] {
+        constexpr qsizetype SingleAllocLimit = 256 * 1024; // the maximum size for which we use
+                                                           // zlib's compressBound() to guarantee
+                                                           // the output buffer size is sufficient
+                                                           // to hold result
+        qsizetype capacity = HeaderSize;
+        if (nbytes < SingleAllocLimit) {
+            // use maximum size
+            capacity += compressBound(uLong(nbytes)); // cannot overflow (both times)!
+            return QArrayDataPointer{QTypedArrayData<char>::allocate(capacity)};
         }
-    } while (res == Z_BUF_ERROR);
 
-    return bazip;
+        // for larger buffers, assume it compresses optimally, and
+        // grow geometrically from there:
+        constexpr qsizetype MaxCompressionFactor = 1024; // max theoretical factor is 1032
+                                                         // cf. http://www.zlib.org/zlib_tech.html,
+                                                         // but use a nearby power-of-two (faster)
+        capacity += std::max(qsizetype(compressBound(uLong(SingleAllocLimit))),
+                             nbytes / MaxCompressionFactor);
+        return QArrayDataPointer{QTypedArrayData<char>::allocate(capacity, QArrayData::Grow)};
+    }();
+
+    if (out.data() == nullptr) // allocation failed
+      return tooMuchData(ZLibOp::Compression);
+
+    qToBigEndian(qt_saturate<CompressSizeHint_t>(nbytes), out.data());
+    out.size = HeaderSize;
+
+    return xxflate(ZLibOp::Compression, std::move(out), {data, nbytes},
+                   [=] (z_stream *zs) { return deflateInit(zs, compressionLevel); },
+                   [] (z_stream *zs, size_t inputLeft) {
+                       return deflate(zs, inputLeft ? Z_NO_FLUSH : Z_FINISH);
+                   },
+                   [] (z_stream *zs) { deflateEnd(zs); });
 }
 #endif
 
