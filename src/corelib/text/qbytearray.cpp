@@ -517,7 +517,9 @@ quint16 qChecksum(QByteArrayView data, Qt::ChecksumType standard)
     \sa qUncompress(const QByteArray &data)
 */
 
-/*! \relates QByteArray
+/*!
+    \fn QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
+    \relates QByteArray
 
     \overload
 
@@ -528,10 +530,13 @@ quint16 qChecksum(QByteArrayView data, Qt::ChecksumType standard)
 */
 
 #ifndef QT_NO_COMPRESS
+using CompressSizeHint_t = quint32; // 32-bit BE, historically
+
 QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
 {
+    constexpr qsizetype HeaderSize = sizeof(CompressSizeHint_t);
     if (nbytes == 0) {
-        return QByteArray(4, '\0');
+        return QByteArray(HeaderSize, '\0');
     }
     if (!data) {
         qWarning("qCompress: Data is null");
@@ -544,13 +549,15 @@ QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
     QByteArray bazip;
     int res;
     do {
-        bazip.resize(len + 4);
-        res = ::compress2((uchar*)bazip.data()+4, &len, data, nbytes, compressionLevel);
+        bazip.resize(len + HeaderSize);
+        res = ::compress2(reinterpret_cast<uchar *>(bazip.data()) + HeaderSize, &len,
+                          data, nbytes,
+                          compressionLevel);
 
         switch (res) {
         case Z_OK:
-            bazip.resize(len + 4);
-            qToBigEndian(quint32(nbytes), bazip.data()); // 4 octets, historically
+            bazip.resize(len + HeaderSize);
+            qToBigEndian(CompressSizeHint_t(nbytes), bazip.data());
             break;
         case Z_MEM_ERROR:
             qWarning("qCompress: Z_MEM_ERROR: Not enough memory");
@@ -621,12 +628,17 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
         qWarning("qUncompress: Data is null");
         return QByteArray();
     }
-    if (nbytes <= 4) {
-        if (nbytes < 4 || (data[0]!=0 || data[1]!=0 || data[2]!=0 || data[3]!=0))
-            qWarning("qUncompress: Input data is corrupted");
+
+    constexpr qsizetype HeaderSize = sizeof(CompressSizeHint_t);
+    if (nbytes < HeaderSize)
+        return invalidCompressedData();
+
+    const auto expectedSize = qFromBigEndian<CompressSizeHint_t>(data);
+    if (nbytes == HeaderSize) {
+        if (expectedSize != 0)
+            return invalidCompressedData();
         return QByteArray();
     }
-    const auto expectedSize = qFromBigEndian<quint32>(data);
     uLong len = qMax(expectedSize, 1u);
     constexpr size_t MaxZLibSize = (std::numeric_limits<uLong>::max)();
     constexpr size_t MaxDecompressedSize = (std::min)(size_t(MaxByteArraySize), MaxZLibSize);
@@ -641,7 +653,7 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     forever {
         const auto alloc = len;
         int res = ::uncompress(reinterpret_cast<uchar *>(d.data()), &len,
-                               data+4, nbytes-4);
+                               data + HeaderSize, nbytes - HeaderSize);
 
         switch (res) {
         case Z_OK: {
