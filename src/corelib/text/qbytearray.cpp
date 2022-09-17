@@ -22,6 +22,7 @@
 #ifndef QT_NO_COMPRESS
 #include <zconf.h>
 #include <zlib.h>
+#include <qxpfunctional.h>
 #endif
 #include <ctype.h>
 #include <limits.h>
@@ -576,6 +577,101 @@ static QByteArray invalidCompressedData()
     return zlibError(ZLibOp::Decompression, "Input data is corrupted");
 }
 
+Q_DECL_COLD_FUNCTION
+static QByteArray unexpectedZlibError(ZLibOp op, int err, const char *msg)
+{
+    qWarning("%s unexpected zlib error: %s (%d)",
+             zlibOpAsString(op),
+             msg ? msg : "",
+             err);
+    return QByteArray();
+}
+
+static QByteArray xxflate(ZLibOp op, QArrayDataPointer<char> out, QByteArrayView input,
+                          qxp::function_ref<int(z_stream *) const> init,
+                          qxp::function_ref<int(z_stream *, size_t) const> processChunk,
+                          qxp::function_ref<void(z_stream *) const> deinit)
+{
+    if (out.data() == nullptr) // allocation failed
+        return tooMuchData(op);
+    qsizetype capacity = out.allocatedCapacity();
+
+    const auto initalSize = out.size;
+
+    z_stream zs = {};
+    zs.next_in = reinterpret_cast<uchar *>(const_cast<char *>(input.data())); // 1980s C API...
+    if (const int err = init(&zs); err != Z_OK)
+        return unexpectedZlibError(op, err, zs.msg);
+    const auto sg = qScopeGuard([&] { deinit(&zs); });
+
+    using ZlibChunkSize_t = decltype(zs.avail_in);
+    static_assert(!std::is_signed_v<ZlibChunkSize_t>);
+    static_assert(std::is_same_v<ZlibChunkSize_t, decltype(zs.avail_out)>);
+    constexpr auto MaxChunkSize = std::numeric_limits<ZlibChunkSize_t>::max();
+    [[maybe_unused]]
+    constexpr auto MaxStatisticsSize = std::numeric_limits<decltype(zs.total_out)>::max();
+
+    size_t inputLeft = size_t(input.size());
+
+    int res;
+    do {
+        Q_ASSERT(out.freeSpaceAtBegin() == 0); // ensure prepend optimization stays out of the way
+        Q_ASSERT(capacity == out.allocatedCapacity());
+
+        if (zs.avail_out == 0) {
+            Q_ASSERT(size_t(out.size) - initalSize > MaxStatisticsSize || // total_out overflow
+                     size_t(out.size) - initalSize == zs.total_out);
+            Q_ASSERT(out.size <= capacity);
+
+            qsizetype avail_out = capacity - out.size;
+            if (avail_out == 0) {
+                out->reallocateAndGrow(QArrayData::GrowsAtEnd, 1); // grow to next natural capacity
+                if (out.data() == nullptr) // reallocation failed
+                    return tooMuchData(op);
+                capacity = out.allocatedCapacity();
+                avail_out = capacity - out.size;
+            }
+            zs.next_out = reinterpret_cast<uchar *>(out.data()) + out.size;
+            zs.avail_out = avail_out > MaxChunkSize ? MaxChunkSize : ZlibChunkSize_t(avail_out);
+            out.size += zs.avail_out;
+
+            Q_ASSERT(zs.avail_out > 0);
+        }
+
+        if (zs.avail_in == 0) {
+            // zs.next_in is kept up-to-date by processChunk(), so nothing to do
+            zs.avail_in = inputLeft > MaxChunkSize ? MaxChunkSize : ZlibChunkSize_t(inputLeft);
+            inputLeft -= zs.avail_in;
+        }
+
+        res = processChunk(&zs, inputLeft);
+    } while (res == Z_OK);
+
+    switch (res) {
+    case Z_STREAM_END:
+        out.size -= zs.avail_out;
+        Q_ASSERT(size_t(out.size) - initalSize > MaxStatisticsSize || // total_out overflow
+                 size_t(out.size) - initalSize == zs.total_out);
+        Q_ASSERT(out.size <= out.allocatedCapacity());
+        out.data()[out.size] = '\0';
+        return QByteArray(std::move(out));
+
+    case Z_MEM_ERROR:
+        return tooMuchData(op);
+
+    case Z_BUF_ERROR:
+        Q_UNREACHABLE(); // cannot happen - we supply a buffer that can hold the result,
+                         // or else error out early
+
+    case Z_DATA_ERROR:   // can only happen on decompression
+        Q_ASSERT(op == ZLibOp::Decompression);
+        return invalidCompressedData();
+
+    default:
+        return unexpectedZlibError(op, res, zs.msg);
+    }
+}
+
 QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
 {
     constexpr qsizetype HeaderSize = sizeof(CompressSizeHint_t);
@@ -636,16 +732,16 @@ QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
     data that was compressed using zlib, you first need to prepend a four
     byte header to the byte array containing the data. The header must
     contain the expected length (in bytes) of the uncompressed data,
-    expressed as an unsigned, big-endian, 32-bit integer.
+    expressed as an unsigned, big-endian, 32-bit integer. This number is
+    just a hint for the initial size of the output buffer size,
+    though. If the indicated size is too small to hold the result, the
+    output buffer size will still be increased until either the output
+    fits or the system runs out of memory. So, despite the 32-bit
+    header, this function, on 64-bit platforms, can produce more than
+    4GiB of output.
 
-//![uncompress-limit-note]
-    \note The maximum size of data that this function can produce is limited by
-    what the platform's \c{unsigned long} can represent (a Zlib limitation).
-    That means that data > 4GiB can be compressed and decompressed on a 64-bit
-    Unix system, but not on a 64-bit Windows system. Portable code should
-    therefore avoid using qCompress()/qUncompress() to compress more than 4GiB
-    of input.
-//![uncompress-limit-note]
+    \note In Qt versions prior to Qt 6.5, more than 2GiB of data
+    worked unreliably; in Qt versions prior to Qt 6.0, not at all.
 
     \sa qCompress()
 */
@@ -657,8 +753,6 @@ QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
 
     Uncompresses the first \a nbytes of \a data and returns a new byte
     array with the uncompressed data.
-
-    \include qbytearray.cpp uncompress-limit-note
 */
 QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 {
@@ -678,49 +772,23 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
             return invalidCompressedData();
         return QByteArray();
     }
-    uLong len = qMax(expectedSize, 1u);
-    constexpr size_t MaxZLibSize = (std::numeric_limits<uLong>::max)();
-    constexpr size_t MaxDecompressedSize = (std::min)(size_t(MaxByteArraySize), MaxZLibSize);
-    if (len > MaxDecompressedSize)
-        return tooMuchData(ZLibOp::Decompression);
 
-    Q_ASSERT(len <= size_t((std::numeric_limits<qsizetype>::max)()));
-    QByteArray::DataPointer d(QByteArray::Data::allocate(qsizetype(len)));
-    if (d.data() == nullptr) // allocation failed
-        return tooMuchData(ZLibOp::Decompression);
-
-    forever {
-        const auto alloc = len;
-        int res = ::uncompress(reinterpret_cast<uchar *>(d.data()), &len,
-                               data + HeaderSize, nbytes - HeaderSize);
-
-        switch (res) {
-        case Z_OK: {
-            Q_ASSERT(len <= alloc);
-            Q_UNUSED(alloc);
-            d.data()[len] = '\0';
-            d.size = len;
-            return QByteArray(d);
-        }
-
-        case Z_MEM_ERROR:
+    constexpr auto MaxDecompressedSize = size_t(MaxByteArraySize);
+    if constexpr (MaxDecompressedSize < std::numeric_limits<CompressSizeHint_t>::max()) {
+        if (expectedSize > MaxDecompressedSize)
             return tooMuchData(ZLibOp::Decompression);
-
-        case Z_BUF_ERROR:
-            if (len == MaxDecompressedSize) // can't grow further
-                return tooMuchData(ZLibOp::Decompression);
-            if (qMulOverflow<2>(len, &len))
-                len = MaxDecompressedSize;
-            d->reallocate(qsizetype(len), QArrayData::Grow); // cannot overflow!
-            if (d.data() == nullptr) // reallocation failed
-                return tooMuchData(ZLibOp::Decompression);
-
-            continue;
-
-        case Z_DATA_ERROR:
-            return invalidCompressedData();
-        }
     }
+
+    // expectedSize may be truncated, so always use at least nbytes
+    // (larger by at most 1%, according to zlib docs)
+    qsizetype capacity = std::max(qsizetype(expectedSize), // cannot overflow!
+                                  nbytes);
+
+    QArrayDataPointer d(QTypedArrayData<char>::allocate(capacity, QArrayData::KeepSize));
+    return xxflate(ZLibOp::Decompression, std::move(d), {data + HeaderSize, nbytes - HeaderSize},
+                   [] (z_stream *zs) { return inflateInit(zs); },
+                   [] (z_stream *zs, size_t) { return inflate(zs, Z_NO_FLUSH); },
+                   [] (z_stream *zs) { inflateEnd(zs); });
 }
 #endif
 
