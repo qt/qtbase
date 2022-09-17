@@ -226,7 +226,6 @@ qt_internal_add_module(Core
         text/qutf8stringview.h
         text/qvsnprintf.cpp
         thread/qatomic.h
-        thread/qatomic_bootstrap.h
         thread/qatomic_cxx11.h
         thread/qbasicatomic.h
         thread/qgenericatomic.h

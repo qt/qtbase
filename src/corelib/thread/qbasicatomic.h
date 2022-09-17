@@ -7,19 +7,7 @@
 #ifndef QBASICATOMIC_H
 #define QBASICATOMIC_H
 
-#if defined(QT_BOOTSTRAPPED)
-#  include <QtCore/qatomic_bootstrap.h>
-
-// If C++11 atomics are supported, use them!
-// Note that constexpr support is sometimes disabled in QNX or INTEGRITY builds,
-// but their libraries have <atomic>.
-#elif defined(Q_COMPILER_ATOMICS)
-#  include <QtCore/qatomic_cxx11.h>
-
-// No fallback
-#else
-#  error "Qt requires C++11 support"
-#endif
+#include <QtCore/qatomic_cxx11.h>
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_MSVC(4522)
