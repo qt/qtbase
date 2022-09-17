@@ -360,6 +360,19 @@ void tst_QByteArray::qUncompress4GiBPlus()
         QCOMPARE(c.size(), 4 * GiB + 1);
         QCOMPARE(std::string_view{c}.find_first_not_of('X'),
                  std::string_view::npos);
+
+        // re-compress once
+        // (produces 18MiB, we shouldn't use much more than that in allocated capacity)
+        c = ::qCompress(c);
+        QVERIFY(!c.isNull());
+
+        // and un-compress again, to make sure compression worked (we
+        // can't compare with compressed_3x, because zlib may change):
+        c = ::qUncompress(c);
+
+        QCOMPARE(c.size(), 4 * GiB + 1);
+        QCOMPARE(std::string_view{c}.find_first_not_of('X'),
+                 std::string_view::npos);
     }
 }
 
