@@ -1127,7 +1127,12 @@ template <typename T>
 struct QMetaTypeId2<const T&> : QMetaTypeId2<T> {};
 
 template <typename T>
-struct QMetaTypeId2<T&> { enum {Defined = false }; };
+struct QMetaTypeId2<T&>
+{
+    using NameAsArrayType = void;
+    enum { Defined = false, IsBuiltIn = false };
+    static inline constexpr int qt_metatype_id() { return 0; }
+};
 
 namespace QtPrivate {
     template <typename T, bool Defined = QMetaTypeId2<T>::Defined>
