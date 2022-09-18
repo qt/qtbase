@@ -178,6 +178,15 @@ inline void copyConstruct(const QtPrivate::QMetaTypeInterface *iface, void *wher
         memcpy(where, copy, iface->size);
 }
 
+inline void moveConstruct(const QtPrivate::QMetaTypeInterface *iface, void *where, void *copy)
+{
+    Q_ASSERT(isMoveConstructible(iface));
+    if (iface->moveCtr)
+        iface->moveCtr(iface, where, copy);
+    else
+        memcpy(where, copy, iface->size);
+}
+
 inline void construct(const QtPrivate::QMetaTypeInterface *iface, void *where, const void *copy)
 {
     if (copy)

@@ -5573,6 +5573,16 @@ void tst_QVariant::mutableView()
     QCOMPARE(extracted.text, nullptr);
 }
 
+struct MoveTester
+{
+    bool wasMoved = false;
+    MoveTester() = default;
+    MoveTester(const MoveTester &) {}; // non-trivial on purpose
+    MoveTester(MoveTester &&other) { other.wasMoved = true; }
+    MoveTester& operator=(const MoveTester &) = default;
+    MoveTester& operator=(MoveTester &&other) {other.wasMoved = true; return *this;}
+};
+
 void tst_QVariant::moveOperations()
 {
     {
@@ -5594,6 +5604,19 @@ void tst_QVariant::moveOperations()
     v = QVariant::fromValue(list);
     v2 = std::move(v);
     QVERIFY(v2.value<std::list<int>>() == list);
+
+    {
+        MoveTester tester;
+        QVariant::fromValue(tester);
+        QVERIFY(!tester.wasMoved);
+        QVariant::fromValue(std::move(tester));
+        QVERIFY(tester.wasMoved);
+    }
+    {
+        const MoveTester tester;
+        QVariant::fromValue(std::move(tester));
+        QVERIFY(!tester.wasMoved); // we don't want to move from const variables
+    }
 }
 
 class NoMetaObject : public QObject {};

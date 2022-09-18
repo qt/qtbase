@@ -71,6 +71,9 @@ class Q_CORE_EXPORT QVariant
         >,
     bool>;
 
+    template <typename T>
+    using if_rvalue = std::enable_if_t<!std::is_reference_v<T>, bool>;
+
     struct CborValueStandIn { qint64 n; void *c; int t; };
 public:
     struct PrivateShared
@@ -516,6 +519,39 @@ public:
         return t;
     }
 
+    template<typename T, if_rvalue<T> = true>
+#ifndef Q_QDOC
+        /* needs is_copy_constructible for variants semantics, is_move_constructible so that moveConstruct works
+          (but copy_constructible implies move_constructble, so don't bother checking)
+        */
+    static inline auto fromValue(T &&value)
+        noexcept(std::is_nothrow_copy_constructible_v<T> && Private::CanUseInternalSpace<T>)
+        -> std::enable_if_t<std::conjunction_v<std::is_copy_constructible<T>,
+                                               std::is_destructible<T>>, QVariant>
+#else
+    static inline QVariant fromValue(T &&value)
+#endif
+    {
+        // handle special cases
+        using Type = std::remove_cv_t<T>;
+        if constexpr (std::is_null_pointer_v<Type>)
+            return QVariant(QMetaType::fromType<std::nullptr_t>());
+        else if constexpr (std::is_same_v<Type, QVariant>)
+            return std::forward<T>(value);
+        else if constexpr (std::is_same_v<Type, std::monostate>)
+            return QVariant();
+        QMetaType mt = QMetaType::fromType<Type>();
+        mt.registerType(); // we want the type stored in QVariant to always be registered
+        // T is a forwarding reference, so if T satifies the enable-ifery,
+        // we get this overload even if T is an lvalue reference and thus must check here
+        // Moreover, we only try to move if the type is actually moveable and not if T is const
+        // as in const int i; QVariant::fromValue(std::move(i));
+        if constexpr (std::conjunction_v<std::is_move_constructible<Type>, std::negation<std::is_const<T>>>)
+            return moveConstruct(QMetaType::fromType<Type>(), std::addressof(value));
+        else
+            return copyConstruct(mt, std::addressof(value));
+    }
+
     template<typename T>
 #ifndef Q_QDOC
     static inline auto fromValue(const T &value)
@@ -593,6 +629,9 @@ private:
     Q_MK_GET(&&)
     Q_MK_GET(const &&)
 #undef Q_MK_GET
+
+    static QVariant moveConstruct(QMetaType type, void *data);
+    static QVariant copyConstruct(QMetaType type, const void *data);
 
     template<typename T>
     friend inline T qvariant_cast(const QVariant &);

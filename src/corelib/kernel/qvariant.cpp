@@ -47,6 +47,8 @@
 #include "qline.h"
 #endif
 
+#include <memory>
+
 #include <cmath>
 #include <float.h>
 #include <cstring>
@@ -231,9 +233,38 @@ static bool isValidMetaTypeForVariant(const QtPrivate::QMetaTypeInterface *iface
     return true;
 }
 
+enum CustomConstructMoveOptions {
+    UseCopy,  // custom construct uses the copy ctor unconditionally
+    // future option: TryMove: uses move ctor if available, else copy ctor
+    ForceMove, // custom construct use the move ctor (which must exist)
+};
+
+enum CustomConstructNullabilityOption {
+    MaybeNull, // copy might be null, might be non-null
+    NonNull, // copy is guarantueed to be non-null
+    // future option: AlwaysNull?
+};
+
+
+template <typename F> static QVariant::PrivateShared *
+customConstructShared(size_t size, size_t align, F &&construct)
+{
+    struct Deleter {
+        void operator()(QVariant::PrivateShared *p) const
+        { QVariant::PrivateShared::free(p); }
+    };
+
+    // this is exception-safe
+    std::unique_ptr<QVariant::PrivateShared, Deleter> ptr;
+    ptr.reset(QVariant::PrivateShared::create(size, align));
+    construct(ptr->data());
+    return ptr.release();
+}
+
 // the type of d has already been set, but other field are not set
+template <CustomConstructMoveOptions moveOption = UseCopy, CustomConstructNullabilityOption nullability = MaybeNull>
 static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant::Private *d,
-                            const void *copy)
+                            std::conditional_t<moveOption == ForceMove, void *, const void *> copy)
 {
     using namespace QtMetaTypePrivate;
     Q_ASSERT(iface);
@@ -242,6 +273,10 @@ static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant
     Q_ASSERT(isCopyConstructible(iface));
     Q_ASSERT(isDestructible(iface));
     Q_ASSERT(copy || isDefaultConstructible(iface));
+    if constexpr (moveOption == ForceMove)
+        Q_ASSERT(isMoveConstructible(iface));
+    if constexpr (nullability == NonNull)
+        Q_ASSUME(copy != nullptr);
 
     // need to check for nullptr_t here, as this can get called by fromValue(nullptr). fromValue() uses
     // std::addressof(value) which in this case returns the address of the nullptr object.
@@ -251,11 +286,17 @@ static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant
     if (QVariant::Private::canUseInternalSpace(iface)) {
         d->is_shared = false;
         if (!copy && !iface->defaultCtr)
-            return;     // default constructor and it's OK to build in 0-filled storage, which we've already done
-        construct(iface, d->data.data, copy);
+            return;     // trivial default constructor and it's OK to build in 0-filled storage, which we've already done
+        if constexpr (moveOption == ForceMove && nullability == NonNull)
+            moveConstruct(iface, d->data.data, copy);
+        else
+            construct(iface, d->data.data, copy);
     } else {
         d->data.shared = customConstructShared(iface->size, iface->alignment, [=](void *where) {
-            construct(iface, where, copy);
+            if constexpr (moveOption == ForceMove && nullability == NonNull)
+                moveConstruct(iface, where, copy);
+            else
+                construct(iface, where, copy);
         });
         d->is_shared = true;
     }
@@ -1064,7 +1105,8 @@ void QVariant::detach()
 
     Q_ASSERT(isValidMetaTypeForVariant(d.typeInterface(), constData()));
     Private dd(d.typeInterface());
-    customConstruct(d.typeInterface(), &dd, constData());
+    // null variant is never shared; anything else is NonNull
+    customConstruct<UseCopy, NonNull>(d.typeInterface(), &dd, constData());
     if (!d.data.shared->ref.deref())
         customClear(&d);
     d.data.shared = dd.data.shared;
@@ -2524,6 +2566,22 @@ QDebug QVariant::qdebugHelper(QDebug dbg) const
     return dbg;
 }
 
+QVariant QVariant::moveConstruct(QMetaType type, void *data)
+{
+    QVariant var;
+    var.d = QVariant::Private(type.d_ptr);
+    customConstruct<ForceMove, NonNull>(type.d_ptr, &var.d, data);
+    return var;
+}
+
+QVariant QVariant::copyConstruct(QMetaType type, const void *data)
+{
+    QVariant var;
+    var.d = QVariant::Private(type.d_ptr);
+    customConstruct<UseCopy, NonNull>(type.d_ptr, &var.d, data);
+    return var;
+}
+
 #if QT_DEPRECATED_SINCE(6, 0)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
@@ -2642,6 +2700,12 @@ QT_WARNING_POP
     \snippet code/src_corelib_kernel_qvariant.cpp 7
 
     \sa setValue(), value()
+*/
+
+/*! \fn template<typename T> static QVariant QVariant::fromValue(T &&value)
+
+    \since 6.6
+    \overload
 */
 
 /*! \fn template<typename... Types> QVariant QVariant::fromStdVariant(const std::variant<Types...> &value)
