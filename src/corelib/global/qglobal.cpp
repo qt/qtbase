@@ -203,32 +203,6 @@ using namespace Qt::StringLiterals;
     no arguments and returns void.
 */
 
-/*! \macro qint64 Q_INT64_C(literal)
-    \relates <QtGlobal>
-
-    Wraps the signed 64-bit integer \a literal in a
-    platform-independent way.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp 8
-
-    \sa qint64, Q_UINT64_C()
-*/
-
-/*! \macro quint64 Q_UINT64_C(literal)
-    \relates <QtGlobal>
-
-    Wraps the unsigned 64-bit integer \a literal in a
-    platform-independent way.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp 9
-
-    \sa quint64, Q_INT64_C()
-*/
-
 /*!
     \macro QT_VERSION_STR
     \relates <QtGlobal>

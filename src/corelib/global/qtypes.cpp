@@ -317,6 +317,32 @@ QT_BEGIN_NAMESPACE
     See qsizetype.
 */
 
+/*! \macro qint64 Q_INT64_C(literal)
+    \relates <QtTypes>
+
+    Wraps the signed 64-bit integer \a literal in a
+    platform-independent way.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp 8
+
+    \sa qint64, Q_UINT64_C()
+*/
+
+/*! \macro quint64 Q_UINT64_C(literal)
+    \relates <QtTypes>
+
+    Wraps the unsigned 64-bit integer \a literal in a
+    platform-independent way.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp 9
+
+    \sa quint64, Q_INT64_C()
+*/
+
 // Statically check assumptions about the environment we're running
 // in. The idea here is to error or warn if otherwise implicit Qt
 // assumptions are not fulfilled on new hardware or compilers
