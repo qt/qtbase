@@ -203,6 +203,7 @@ function(qt_internal_android_test_arguments target out_test_runner out_test_argu
         "--skip-install-root"
         "--make" "${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${target}_make_apk"
         "--apk" "${apk_dir}/${target}.apk"
+        "--timeout" "-1"
         "--verbose"
         PARENT_SCOPE
     )

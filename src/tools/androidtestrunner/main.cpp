@@ -397,7 +397,8 @@ static bool waitToFinish()
     // Wait to finish
     while (isRunning()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(250));
-        if ((clock::now() - start) > g_options.timeout)
+        if (g_options.timeout >= std::chrono::seconds::zero()
+                && (clock::now() - start) > g_options.timeout)
             return false;
     }
     return true;
