@@ -2611,7 +2611,14 @@ constexpr const QMetaObject *QMetaType::metaObject() const
 
 template<typename... T>
 constexpr const QtPrivate::QMetaTypeInterface *const qt_metaTypeArray[] = {
-    QtPrivate::qMetaTypeInterfaceForType<T>()...
+    /*
+       Unique in qTryMetaTypeInterfaceForType does not have to be unique here
+       as we require _all_ types here to be actually complete.
+       We just want to have the additional type processing that exist in
+       QtPrivate::qTryMetaTypeInterfaceForType as opposed to the normal
+       QtPrivate::qMetaTypeInterfaceForType used in QMetaType::fromType
+    */
+    QtPrivate::qTryMetaTypeInterfaceForType<void, QtPrivate::TypeAndForceComplete<T, std::true_type>>()...
 };
 
 constexpr const char *QMetaType::name() const
