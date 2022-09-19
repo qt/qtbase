@@ -29,6 +29,7 @@ HintControl::HintControl(QWidget *parent)
     , windowStaysOnBottomCheckBox(new QCheckBox(tr("Window stays on bottom")))
     , customizeWindowHintCheckBox(new QCheckBox(tr("Customize window")))
     , transparentForInputCheckBox(new QCheckBox(tr("Transparent for input")))
+    , noDropShadowCheckBox(new QCheckBox(tr("No drop shadow")))
 {
     connect(msWindowsFixedSizeDialogCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(x11BypassWindowManagerCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
@@ -45,6 +46,7 @@ HintControl::HintControl(QWidget *parent)
     connect(windowStaysOnBottomCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(customizeWindowHintCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(transparentForInputCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
+    connect(noDropShadowCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     QGridLayout *layout = new QGridLayout(this);
     layout->setSpacing(0);
     layout->setContentsMargins(ControlLayoutMargin, ControlLayoutMargin,
@@ -64,6 +66,7 @@ HintControl::HintControl(QWidget *parent)
     layout->addWidget(windowStaysOnBottomCheckBox, 7, 1);
     layout->addWidget(customizeWindowHintCheckBox, 5, 0);
     layout->addWidget(transparentForInputCheckBox, 6, 0);
+    layout->addWidget(noDropShadowCheckBox, 7, 0);
 }
 
 Qt::WindowFlags HintControl::hints() const
@@ -99,6 +102,8 @@ Qt::WindowFlags HintControl::hints() const
         flags |= Qt::CustomizeWindowHint;
     if (transparentForInputCheckBox->isChecked())
         flags |= Qt::WindowTransparentForInput;
+    if (noDropShadowCheckBox->isChecked())
+        flags |= Qt::NoDropShadowWindowHint;
     return flags;
 }
 
@@ -119,6 +124,7 @@ void HintControl::setHints(Qt::WindowFlags flags)
     windowStaysOnBottomCheckBox->setChecked(flags & Qt::WindowStaysOnBottomHint);
     customizeWindowHintCheckBox->setChecked(flags & Qt::CustomizeWindowHint);
     transparentForInputCheckBox->setChecked(flags & Qt::WindowTransparentForInput);
+    noDropShadowCheckBox->setChecked(flags & Qt::NoDropShadowWindowHint);
 }
 
 void HintControl::slotCheckBoxChanged()

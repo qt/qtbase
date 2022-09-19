@@ -46,6 +46,7 @@ private:
     QCheckBox *windowStaysOnBottomCheckBox;
     QCheckBox *customizeWindowHintCheckBox;
     QCheckBox *transparentForInputCheckBox;
+    QCheckBox *noDropShadowCheckBox;
 };
 
 // Control for the Qt::WindowState enum, optional with a "visible" QCheckbox
