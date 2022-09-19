@@ -731,9 +731,10 @@ void QCocoaWindow::applyWindowState(Qt::WindowStates requestedState)
     switch (currentState) {
     case Qt::WindowMinimized:
         [nsWindow deminiaturize:sender];
-        Q_ASSERT_X(windowState() != Qt::WindowMinimized, "QCocoaWindow",
-            "[NSWindow deminiaturize:] is synchronous");
-        break;
+        // Deminiaturizing is not synchronous, so we need to wait for the
+        // NSWindowDidMiniaturizeNotification before continuing to apply
+        // the new state.
+        return;
     case Qt::WindowFullScreen: {
         toggleFullScreen();
         // Exiting fullscreen is not synchronous, so we need to wait for the
@@ -904,7 +905,15 @@ void QCocoaWindow::windowDidDeminiaturize()
     if (!isContentView())
         return;
 
+    Qt::WindowState requestedState = window()->windowState();
+
     handleWindowStateChanged();
+
+    if (requestedState != windowState() && requestedState != Qt::WindowMinimized) {
+        // We were only going out of minimized as an intermediate step before
+        // progressing into the final step, so re-sync the desired state.
+       applyWindowState(requestedState);
+    }
 }
 
 void QCocoaWindow::handleWindowStateChanged(HandleFlags flags)
