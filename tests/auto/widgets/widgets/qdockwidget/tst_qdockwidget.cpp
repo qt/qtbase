@@ -1250,21 +1250,33 @@ void tst_QDockWidget::unplugAndResize(QMainWindow* mainWindow, QDockWidget* dw, 
         return;
     }
 
+    // Remember size for comparison with unplugged object
+#ifdef Q_OS_LINUX
+    const int pluggedWidth = dw->width();
+    const int pluggedHeight = dw->height();
+#endif
+
     // unplug and resize a dock Widget
     qCDebug(lcTestDockWidget) << "*** unplug and resize" << dw->objectName();
     QPoint pos1 = dw->mapToGlobal(dw->rect().center());
     pos1.rx() += mx;
     pos1.ry() += my;
     moveDockWidget(dw, pos1, dw->mapToGlobal(dw->rect().center()));
-    //QTest::mousePress(dw, Qt::LeftButton, Qt::KeyboardModifiers(), dw->mapFromGlobal(pos1));
     QTRY_VERIFY(dw->isFloating());
+
+    // Unplugged object's size may differ max. by 2x frame size
+#ifdef Q_OS_LINUX
+    const int xMargin = 2 * dw->frameSize().width();
+    const int yMargin = 2 * dw->frameSize().height();
+    QVERIFY(dw->height() - pluggedHeight <= xMargin);
+    QVERIFY(dw->width() - pluggedWidth <= yMargin);
+#endif
 
     qCDebug(lcTestDockWidget) << "Resizing" << dw->objectName() << "to" << size;
     dw->setFixedSize(size);
     QTest::qWait(waitingTime);
     qCDebug(lcTestDockWidget) << "Move" << dw->objectName() << "to its home" << dw->mapFromGlobal(home);
     dw->move(home);
-    //moveDockWidget(dw, home);
 }
 
 bool tst_QDockWidget::checkFloatingTabs(QMainWindow* mainWindow, QPointer<QDockWidgetGroupWindow> &ftabs, const QList<QDockWidget*> &dwList) const
