@@ -1051,6 +1051,10 @@ function(_qt_internal_configure_android_multiabi_target target)
         list(APPEND extra_cmake_args "-DQT_NO_PACKAGE_VERSION_CHECK=${QT_NO_PACKAGE_VERSION_CHECK}")
     endif()
 
+    if(DEFINED QT_HOST_PATH_CMAKE_DIR)
+        list(APPEND extra_cmake_args "-DQT_HOST_PATH_CMAKE_DIR=${QT_HOST_PATH_CMAKE_DIR}")
+    endif()
+
     if(CMAKE_MAKE_PROGRAM)
         list(APPEND extra_cmake_args "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}")
     endif()
