@@ -827,57 +827,6 @@ using namespace Qt::StringLiterals;
 */
 
 /*!
-    \macro QT_DISABLE_DEPRECATED_BEFORE
-    \relates <QtGlobal>
-    \deprecated [6.5] Use QT_DISABLE_DEPRECATED_UP_TO instead
-
-    \sa QT_DISABLE_DEPRECATED_UP_TO
-*/
-
-/*!
-    \macro QT_DISABLE_DEPRECATED_UP_TO
-    \relates <QtGlobal>
-
-    This macro can be defined in the project file to disable functions
-    deprecated in a specified version of Qt or any earlier version. The default
-    version number is 5.0, meaning that functions deprecated in or before
-    Qt 5.0 will not be included.
-
-    For instance, when preparing to upgrade to Qt 6.3, after eliminating all
-    deprecation warnings, you can set \c{QT_DISABLE_DEPRECATED_UP_TO=0x060300}
-    to exclude from your builds the Qt APIs you no longer use. In your own
-    project's build configuration, this will ensure that anyone adding new calls
-    to the deprecated APIs will know about it right away. If you also build Qt
-    for yourself, including this define in your build configuration for Qt will
-    make your binaries smaller by leaving out even the implementation of the
-    deprecated APIs.
-
-    \sa QT_DEPRECATED_WARNINGS, QT_DISABLE_DEPRECATED_BEFORE
-*/
-
-/*!
-  \macro QT_DEPRECATED_WARNINGS
-  \relates <QtGlobal>
-
-  Since Qt 5.13, this macro has no effect. In Qt 5.12 and before, if this macro
-  is defined, the compiler will generate warnings if any API declared as
-  deprecated by Qt is used.
-
-  \sa QT_DISABLE_DEPRECATED_BEFORE, QT_NO_DEPRECATED_WARNINGS
-*/
-
-/*!
-  \macro QT_NO_DEPRECATED_WARNINGS
-  \relates <QtGlobal>
-  \since 5.13
-
-  This macro can be used to suppress deprecation warnings that would otherwise
-  be generated when using deprecated APIs.
-
-  \sa QT_DISABLE_DEPRECATED_BEFORE
-*/
-
-/*!
     \macro void Q_FALLTHROUGH()
     \relates <QtGlobal>
     \since 5.8

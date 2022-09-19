@@ -7,6 +7,11 @@
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qtversionchecks.h>
 
+#if 0
+#pragma qt_class(QtDeprecationMarkers)
+#pragma qt_sync_stop_processing
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #if defined(QT_NO_DEPRECATED)
