@@ -559,6 +559,12 @@ static QByteArray dataIsNull(ZLibOp op)
 }
 
 Q_DECL_COLD_FUNCTION
+static QByteArray lengthIsNegative(ZLibOp op)
+{
+    return zlibError(op, "Input length is negative");
+}
+
+Q_DECL_COLD_FUNCTION
 static QByteArray tooMuchData(ZLibOp op)
 {
     return zlibError(op, "Not enough memory");
@@ -578,6 +584,9 @@ QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
     }
     if (!data)
         return dataIsNull(ZLibOp::Compression);
+
+    if (nbytes < 0)
+        return lengthIsNegative(ZLibOp::Compression);
 
     if (compressionLevel < -1 || compressionLevel > 9)
         compressionLevel = -1;
@@ -656,6 +665,9 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 {
     if (!data)
         return dataIsNull(ZLibOp::Decompression);
+
+    if (nbytes < 0)
+        return lengthIsNegative(ZLibOp::Decompression);
 
     constexpr qsizetype HeaderSize = sizeof(CompressSizeHint_t);
     if (nbytes < HeaderSize)
