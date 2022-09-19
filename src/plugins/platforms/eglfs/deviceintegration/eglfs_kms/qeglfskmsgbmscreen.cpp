@@ -56,6 +56,8 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
 
+QMutex QEglFSKmsGbmScreen::m_nonThreadedFlipMutex;
+
 static inline uint32_t drmFormatToGbmFormat(uint32_t drmFormat)
 {
     Q_ASSERT(DRM_FORMAT_XRGB8888 == GBM_FORMAT_XRGB8888);
@@ -263,6 +265,18 @@ void QEglFSKmsGbmScreen::ensureModeSet(uint32_t fb)
     }
 }
 
+void QEglFSKmsGbmScreen::nonThreadedPageFlipHandler(int fd,
+                                                    unsigned int sequence,
+                                                    unsigned int tv_sec,
+                                                    unsigned int tv_usec,
+                                                    void *user_data)
+{
+    Q_UNUSED(fd);
+    QEglFSKmsGbmScreen *screen = static_cast<QEglFSKmsGbmScreen *>(user_data);
+    screen->flipFinished();
+    screen->pageFlipped(sequence, tv_sec, tv_usec);
+}
+
 void QEglFSKmsGbmScreen::waitForFlip()
 {
     if (m_headless || m_cloneSource)
@@ -272,12 +286,24 @@ void QEglFSKmsGbmScreen::waitForFlip()
     if (!m_gbm_bo_next)
         return;
 
-    m_flipMutex.lock();
-    device()->eventReader()->startWaitFlip(this, &m_flipMutex, &m_flipCond);
-    m_flipCond.wait(&m_flipMutex);
-    m_flipMutex.unlock();
-
-    flipFinished();
+    QEglFSKmsGbmDevice *dev = static_cast<QEglFSKmsGbmDevice *>(device());
+    if (dev->usesEventReader()) {
+        m_flipMutex.lock();
+        dev->eventReader()->startWaitFlip(this, &m_flipMutex, &m_flipCond);
+        m_flipCond.wait(&m_flipMutex);
+        m_flipMutex.unlock();
+        flipFinished();
+    } else {
+        QMutexLocker lock(&m_nonThreadedFlipMutex);
+        while (m_gbm_bo_next) {
+            drmEventContext drmEvent;
+            memset(&drmEvent, 0, sizeof(drmEvent));
+            drmEvent.version = 2;
+            drmEvent.vblank_handler = nullptr;
+            drmEvent.page_flip_handler = nonThreadedPageFlipHandler;
+            drmHandleEvent(device()->fd(), &drmEvent);
+        }
+    }
 
 #if QT_CONFIG(drm_atomic)
     device()->threadLocalAtomicReset();
