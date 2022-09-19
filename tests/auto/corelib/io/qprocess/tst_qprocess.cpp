@@ -355,9 +355,7 @@ void tst_QProcess::readFromProcess()
 {
     QProcess *process = qobject_cast<QProcess *>(sender());
     QVERIFY(process);
-    int lines = 0;
     while (process->canReadLine()) {
-        ++lines;
         process->readLine();
     }
 }
