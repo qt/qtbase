@@ -2202,10 +2202,16 @@
            you call QWidget::activateWindow() manually).
 
     \value FramelessWindowHint  Produces a borderless window.
-           The user cannot move or resize a borderless window via the window
-           system. On X11, the result of the flag is dependent on the window manager and its
+
+           On X11, the result of the flag is dependent on the window manager and its
            ability to understand Motif and/or NETWM hints. Most existing
            modern window managers can handle this.
+
+           \note If the window manager relies on the frame to interactively manipulate
+           the window, the user can no longer move or resize the window via the window
+           system, but this side effect should not be relied on. To produce a fixed
+           size window that can not be resized, please set QWindow::setMinimumSize()
+           and QWindow::setMaximumSize() to the same size.
 
     \value NoDropShadowWindowHint  Disables window drop shadow on supporting platforms.
 
