@@ -208,7 +208,7 @@ static Qt::WindowStates windowState(const QObject *o)
         return states;
     }
     if (o->isWindowType())
-        return static_cast<const QWindow *>(o)->windowState();
+        return static_cast<const QWindow *>(o)->windowStates();
     return Qt::WindowNoState;
 }
 
