@@ -1319,9 +1319,9 @@ QStringList qt_make_filter_list(const QString &filter)
     if (filter.isEmpty())
         return QStringList();
 
-    QString sep(";;"_L1);
+    auto sep = ";;"_L1;
     if (!filter.contains(sep) && filter.contains(u'\n'))
-        sep = u'\n';
+        sep = "\n"_L1;
 
     return filter.split(sep);
 }

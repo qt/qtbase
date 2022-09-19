@@ -1331,11 +1331,11 @@ static QString object_name_for_button(QWizard::WizardButton which)
 {
     switch (which) {
     case QWizard::CommitButton:
-        return "qt_wizard_commit"_L1;
+        return u"qt_wizard_commit"_s;
     case QWizard::FinishButton:
-        return "qt_wizard_finish"_L1;
+        return u"qt_wizard_finish"_s;
     case QWizard::CancelButton:
-        return "qt_wizard_cancel"_L1;
+        return u"qt_wizard_cancel"_s;
     case QWizard::BackButton:
     case QWizard::NextButton:
     case QWizard::HelpButton:
