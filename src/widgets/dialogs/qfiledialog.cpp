@@ -2781,37 +2781,37 @@ void QFileDialog::accept()
 void QFileDialogPrivate::saveSettings()
 {
     Q_Q(QFileDialog);
-    QSettings settings(QSettings::UserScope, "QtProject"_L1);
-    settings.beginGroup("FileDialog"_L1);
+    QSettings settings(QSettings::UserScope, u"QtProject"_s);
+    settings.beginGroup("FileDialog");
 
     if (usingWidgets()) {
-        settings.setValue("sidebarWidth"_L1, qFileDialogUi->splitter->sizes().constFirst());
-        settings.setValue("shortcuts"_L1, QUrl::toStringList(qFileDialogUi->sidebar->urls()));
-        settings.setValue("treeViewHeader"_L1, qFileDialogUi->treeView->header()->saveState());
+        settings.setValue("sidebarWidth", qFileDialogUi->splitter->sizes().constFirst());
+        settings.setValue("shortcuts", QUrl::toStringList(qFileDialogUi->sidebar->urls()));
+        settings.setValue("treeViewHeader", qFileDialogUi->treeView->header()->saveState());
     }
     QStringList historyUrls;
     const QStringList history = q->history();
     historyUrls.reserve(history.size());
     for (const QString &path : history)
         historyUrls << QUrl::fromLocalFile(path).toString();
-    settings.setValue("history"_L1, historyUrls);
-    settings.setValue("lastVisited"_L1, lastVisitedDir()->toString());
+    settings.setValue("history", historyUrls);
+    settings.setValue("lastVisited", lastVisitedDir()->toString());
     const QMetaEnum &viewModeMeta = q->metaObject()->enumerator(q->metaObject()->indexOfEnumerator("ViewMode"));
-    settings.setValue("viewMode"_L1, QLatin1StringView(viewModeMeta.key(q->viewMode())));
-    settings.setValue("qtVersion"_L1, QT_VERSION_STR ""_L1);
+    settings.setValue("viewMode", QLatin1StringView(viewModeMeta.key(q->viewMode())));
+    settings.setValue("qtVersion", QT_VERSION_STR ""_L1);
 }
 
 bool QFileDialogPrivate::restoreFromSettings()
 {
     Q_Q(QFileDialog);
-    QSettings settings(QSettings::UserScope, "QtProject"_L1);
+    QSettings settings(QSettings::UserScope, u"QtProject"_s);
     if (!settings.childGroups().contains("FileDialog"_L1))
         return false;
-    settings.beginGroup("FileDialog"_L1);
+    settings.beginGroup("FileDialog");
 
-    q->setDirectoryUrl(lastVisitedDir()->isEmpty() ? settings.value("lastVisited"_L1).toUrl() : *lastVisitedDir());
+    q->setDirectoryUrl(lastVisitedDir()->isEmpty() ? settings.value("lastVisited").toUrl() : *lastVisitedDir());
 
-    QByteArray viewModeStr = settings.value("viewMode"_L1).toString().toLatin1();
+    QByteArray viewModeStr = settings.value("viewMode").toString().toLatin1();
     const QMetaEnum &viewModeMeta = q->metaObject()->enumerator(q->metaObject()->indexOfEnumerator("ViewMode"));
     bool ok = false;
     int viewMode = viewModeMeta.keyToValue(viewModeStr.constData(), &ok);
@@ -2819,21 +2819,21 @@ bool QFileDialogPrivate::restoreFromSettings()
         viewMode = QFileDialog::List;
     q->setViewMode(static_cast<QFileDialog::ViewMode>(viewMode));
 
-    sidebarUrls = QUrl::fromStringList(settings.value("shortcuts"_L1).toStringList());
-    headerData = settings.value("treeViewHeader"_L1).toByteArray();
+    sidebarUrls = QUrl::fromStringList(settings.value("shortcuts").toStringList());
+    headerData = settings.value("treeViewHeader").toByteArray();
 
     if (!usingWidgets())
         return true;
 
     QStringList history;
-    const auto urlStrings = settings.value("history"_L1).toStringList();
+    const auto urlStrings = settings.value("history").toStringList();
     for (const QString &urlStr : urlStrings) {
         QUrl url(urlStr);
         if (url.isLocalFile())
             history << url.toLocalFile();
     }
 
-    return restoreWidgetState(history, settings.value("sidebarWidth"_L1, -1).toInt());
+    return restoreWidgetState(history, settings.value("sidebarWidth", -1).toInt());
 }
 #endif // settings
 
@@ -2915,8 +2915,8 @@ void QFileDialogPrivate::init(const QFileDialogArgs &args)
     // Try to restore from the FileDialog settings group; if it fails, fall back
     // to the pre-5.5 QByteArray serialized settings.
     if (!restoreFromSettings()) {
-        const QSettings settings(QSettings::UserScope, "QtProject"_L1);
-        q->restoreState(settings.value("Qt/filedialog"_L1).toByteArray());
+        const QSettings settings(QSettings::UserScope, u"QtProject"_s);
+        q->restoreState(settings.value("Qt/filedialog").toByteArray());
     }
 #endif
 
@@ -3079,8 +3079,8 @@ void QFileDialogPrivate::createWidgets()
     // Try to restore from the FileDialog settings group; if it fails, fall back
     // to the pre-5.5 QByteArray serialized settings.
     if (!restoreFromSettings()) {
-        const QSettings settings(QSettings::UserScope, "QtProject"_L1);
-        q->restoreState(settings.value("Qt/filedialog"_L1).toByteArray());
+        const QSettings settings(QSettings::UserScope, u"QtProject"_s);
+        q->restoreState(settings.value("Qt/filedialog").toByteArray());
     }
 #endif
 
