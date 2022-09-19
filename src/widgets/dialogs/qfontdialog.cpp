@@ -1017,9 +1017,7 @@ bool QFontDialogPrivate::canBeNativeDialog() const
         return false;
     }
 
-    QLatin1StringView staticName(QFontDialog::staticMetaObject.className());
-    QLatin1StringView dynamicName(q->metaObject()->className());
-    return (staticName == dynamicName);
+    return strcmp(QFontDialog::staticMetaObject.className(), q->metaObject()->className()) == 0;
 }
 
 QT_END_NAMESPACE

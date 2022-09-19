@@ -1887,9 +1887,7 @@ bool QColorDialogPrivate::canBeNativeDialog() const
         return false;
     }
 
-    QLatin1StringView staticName(QColorDialog::staticMetaObject.className());
-    QLatin1StringView dynamicName(q->metaObject()->className());
-    return (staticName == dynamicName);
+    return strcmp(QColorDialog::staticMetaObject.className(), q->metaObject()->className()) == 0;
 }
 
 static const Qt::WindowFlags DefaultWindowFlags =

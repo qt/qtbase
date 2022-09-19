@@ -690,9 +690,7 @@ bool QFileDialogPrivate::canBeNativeDialog() const
         return false;
     }
 
-    QLatin1StringView staticName(QFileDialog::staticMetaObject.className());
-    QLatin1StringView dynamicName(q->metaObject()->className());
-    return (staticName == dynamicName);
+    return strcmp(QFileDialog::staticMetaObject.className(), q->metaObject()->className()) == 0;
 }
 
 bool QFileDialogPrivate::usingWidgets() const
