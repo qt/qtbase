@@ -745,6 +745,75 @@ function(qt_internal_create_tracepoints name tracepoints_file)
     endif()
 endfunction()
 
+function(qt_internal_generate_tracepoints name provider)
+    cmake_parse_arguments(arg "" "" "SOURCES" ${ARGN} )
+    set(provider_name ${provider})
+    string(PREPEND provider_name "qt")
+    set(tracepoint_filename "${provider_name}.tracepoints")
+    set(tracepoints_path "${CMAKE_CURRENT_BINARY_DIR}/${tracepoint_filename}")
+    set(header_filename "${provider_name}_tracepoints_p.h")
+    set(header_path "${CMAKE_CURRENT_BINARY_DIR}/${header_filename}")
+
+    if(QT_FEATURE_lttng OR QT_FEATURE_etw)
+
+        set(absolute_file_paths "")
+        foreach(file IN LISTS arg_SOURCES)
+            get_filename_component(absolute_file ${file} ABSOLUTE)
+            list(APPEND absolute_file_paths ${absolute_file})
+        endforeach()
+
+        if(NOT "${QT_HOST_PATH}" STREQUAL "")
+            qt_path_join(tracepointgen
+                "${QT_HOST_PATH}"
+                "${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_LIBEXECDIR}"
+                "tracepointgen")
+        else()
+            set(tracepointgen "${QT_CMAKE_EXPORT_NAMESPACE}::tracepointgen")
+        endif()
+
+        add_custom_command(OUTPUT "${tracepoints_path}"
+            COMMAND ${tracepointgen} ${provider_name} "${tracepoints_path}" ${absolute_file_paths}
+            DEPENDS ${absolute_file_paths}
+            VERBATIM)
+        add_custom_target(${name}_${provider_name}_tracepoints_file DEPENDS "${tracepoints_path}")
+        add_dependencies(${name} ${name}_${provider_name}_tracepoints_file)
+
+            set(source_path "${CMAKE_CURRENT_BINARY_DIR}/${provider_name}_tracepoints.cpp")
+            qt_configure_file(OUTPUT "${source_path}"
+                CONTENT "#define TRACEPOINT_CREATE_PROBES
+    #define TRACEPOINT_DEFINE
+    #include \"${header_filename}\"")
+        target_sources(${name} PRIVATE "${source_path}")
+        target_compile_definitions(${name} PRIVATE Q_TRACEPOINT)
+
+        if(QT_FEATURE_lttng)
+            set(tracegen_arg "lttng")
+            target_link_libraries(${name} PRIVATE LTTng::UST)
+        elseif(QT_FEATURE_etw)
+            set(tracegen_arg "etw")
+        endif()
+
+        if(NOT "${QT_HOST_PATH}" STREQUAL "")
+            qt_path_join(tracegen
+                "${QT_HOST_PATH}"
+                "${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_LIBEXECDIR}"
+                "tracegen")
+        else()
+            set(tracegen "${QT_CMAKE_EXPORT_NAMESPACE}::tracegen")
+        endif()
+
+        get_filename_component(tracepoints_filepath "${tracepoints_path}" ABSOLUTE)
+        add_custom_command(OUTPUT "${header_path}"
+            COMMAND ${tracegen} ${tracegen_arg} "${tracepoints_filepath}" "${header_path}"
+            DEPENDS "${tracepoints_path}"
+            VERBATIM)
+        add_custom_target(${name}_${provider_name}_tracepoints_header DEPENDS "${header_path}")
+        add_dependencies(${name} ${name}_${provider_name}_tracepoints_header)
+    else()
+        qt_configure_file(OUTPUT "${header_path}" CONTENT "#include <private/qtrace_p.h>\n")
+    endif()
+endfunction()
+
 function(qt_internal_set_compile_pdb_names target)
     if(MSVC)
         get_target_property(target_type ${target} TYPE)

@@ -38,6 +38,9 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+Q_TRACE_PARAM_REPLACE(Qt::AspectRatioMode, int);
+Q_TRACE_PARAM_REPLACE(Qt::TransformationMode, int);
+
 // MSVC 19.28 does show spurious warning "C4723: potential divide by 0" for code that divides
 // by height() in release builds. Anyhow, all the code paths in this file are only executed
 // for valid QPixmap's, where height() cannot be 0. Therefore disable the warning.
@@ -1032,7 +1035,7 @@ bool QPixmap::convertFromImage(const QImage &image, Qt::ImageConversionFlags fla
     Transformations}
 
 */
-QPixmap QPixmap::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::TransformationMode mode) const
+QPixmap Q_TRACE_INSTRUMENT(qtgui) QPixmap::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::TransformationMode mode) const
 {
     if (isNull()) {
         qWarning("QPixmap::scaled: Pixmap is a null pixmap");
@@ -1070,7 +1073,7 @@ QPixmap QPixmap::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::Tran
     \sa isNull(), {QPixmap#Pixmap Transformations}{Pixmap
     Transformations}
 */
-QPixmap QPixmap::scaledToWidth(int w, Qt::TransformationMode mode) const
+QPixmap Q_TRACE_INSTRUMENT(qtgui) QPixmap::scaledToWidth(int w, Qt::TransformationMode mode) const
 {
     if (isNull()) {
         qWarning("QPixmap::scaleWidth: Pixmap is a null pixmap");
@@ -1100,7 +1103,7 @@ QPixmap QPixmap::scaledToWidth(int w, Qt::TransformationMode mode) const
     \sa isNull(), {QPixmap#Pixmap Transformations}{Pixmap
     Transformations}
 */
-QPixmap QPixmap::scaledToHeight(int h, Qt::TransformationMode mode) const
+QPixmap Q_TRACE_INSTRUMENT(qtgui) QPixmap::scaledToHeight(int h, Qt::TransformationMode mode) const
 {
     if (isNull()) {
         qWarning("QPixmap::scaleHeight: Pixmap is a null pixmap");

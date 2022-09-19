@@ -48,6 +48,11 @@ Q_AUTOTEST_EXPORT void qt_setQtEnableTestFont(bool value)
 }
 #endif
 
+Q_TRACE_POINT(qtgui, QFontDatabase_loadEngine, const QString &families, int pointSize);
+Q_TRACE_POINT(qtgui, QFontDatabasePrivate_addAppFont, const QString &fileName);
+Q_TRACE_POINT(qtgui, QFontDatabase_addApplicationFont, const QString &fileName);
+Q_TRACE_POINT(qtgui, QFontDatabase_load, const QString &family, int pointSize);
+
 static int getFontWeight(const QString &weightString)
 {
     QString s = weightString.toLower();
@@ -780,7 +785,7 @@ QFontEngine *QFontDatabasePrivate::loadEngine(int script, const QFontDef &reques
     QFontEngine *engine = loadSingleEngine(script, request, family, foundry, style, size);
 
     if (engine && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol) {
-        Q_TRACE(QFontDatabase_loadEngine, request.families, request.pointSize);
+        Q_TRACE(QFontDatabase_loadEngine, request.families.join(QLatin1Char(';')), request.pointSize);
 
         QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         QFontEngineMulti *pfMultiEngine = pfdb->fontEngineMulti(engine, QChar::Script(script));
@@ -2522,7 +2527,7 @@ void QFontDatabasePrivate::load(const QFontPrivate *d, int script)
 
     QFontEngine *fe = nullptr;
 
-    Q_TRACE(QFontDatabase_load, req.families, req.pointSize);
+    Q_TRACE(QFontDatabase_load, req.families.join(QLatin1Char(';')), req.pointSize);
 
     req.fallBackFamilies = fallBackFamilies;
     if (!req.fallBackFamilies.isEmpty())

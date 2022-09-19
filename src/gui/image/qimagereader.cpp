@@ -138,6 +138,9 @@ QT_BEGIN_NAMESPACE
 using namespace QImageReaderWriterHelpers;
 using namespace Qt::StringLiterals;
 
+Q_TRACE_POINT(qtgui, QImageReader_read_before_reading, QImageReader *reader, const QString &filename);
+Q_TRACE_POINT(qtgui, QImageReader_read_after_reading, QImageReader *reader, bool result);
+
 static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
                                                 const QByteArray &format,
                                                 bool autoDetectImageFormat,
