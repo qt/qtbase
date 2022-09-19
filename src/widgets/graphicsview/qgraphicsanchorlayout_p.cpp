@@ -575,7 +575,9 @@ QSimplexConstraint *GraphPath::constraint(const GraphPath &path) const
 #ifdef QT_DEBUG
 QString GraphPath::toString() const
 {
-    QString string("Path: "_L1);
+    QString string;
+    string += "Path: "_L1;
+
     for (AnchorData *edge : positives)
         string += QString::fromLatin1(" (+++) %1").arg(edge->toString());
 
