@@ -56,6 +56,8 @@
 #include "fwdclass2.h"
 #include "fwdclass3.h"
 
+#include "qmlmacro.h"
+
 #ifdef Q_MOC_RUN
 // check that moc can parse these constructs, they are being used in Windows winsock2.h header
 #define STRING_HASH_HASH(x) ("foo" ## x ## "bar")
