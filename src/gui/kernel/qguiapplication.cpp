@@ -1529,7 +1529,7 @@ void QGuiApplicationPrivate::eventDispatcherReady()
     platform_integration->initialize();
 }
 
-void QGuiApplicationPrivate::init()
+void Q_TRACE_INSTRUMENT(qtgui) QGuiApplicationPrivate::init()
 {
     Q_TRACE_SCOPE(QGuiApplicationPrivate_init);
 
@@ -2016,8 +2016,9 @@ bool QGuiApplicationPrivate::processNativeEvent(QWindow *window, const QByteArra
     return window->nativeEvent(eventType, message, result);
 }
 
-void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e)
+void Q_TRACE_INSTRUMENT(qtgui) QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e)
 {
+    Q_TRACE_PARAM_REPLACE(QWindowSystemInterfacePrivate::WindowSystemEvent *, int);
     Q_TRACE_SCOPE(QGuiApplicationPrivate_processWindowSystemEvent, e->type);
 
     switch(e->type) {

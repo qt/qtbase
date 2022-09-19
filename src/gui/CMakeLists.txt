@@ -973,8 +973,11 @@ qt_internal_extend_target(Gui CONDITION (QT_FEATURE_eglfs OR QT_FEATURE_xcb)
         util/qedidvendortable_p.h
 )
 
-
-qt_internal_create_tracepoints(Gui qtgui.tracepoints)
+qt_internal_generate_tracepoints(Gui gui
+    SOURCES
+        image/qimage.cpp image/qimagereader.cpp image/qpixmap.cpp kernel/qguiapplication.cpp
+        text/qfontdatabase.cpp
+)
 qt_internal_add_docs(Gui
     doc/qtgui.qdocconf
 )
