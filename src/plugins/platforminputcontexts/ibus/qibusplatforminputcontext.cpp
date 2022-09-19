@@ -468,7 +468,7 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
     if (!filtered) {
 #ifndef QT_NO_CONTEXTMENU
         if (type == QEvent::KeyPress && qtcode == Qt::Key_Menu
-            && window != NULL) {
+            && window != nullptr) {
             const QPoint globalPos = window->screen()->handle()->cursor()->pos();
             const QPoint pos = window->mapFromGlobal(globalPos);
             QWindowSystemInterfacePrivate::ContextMenuEvent contextMenuEvent(window, false, pos,
@@ -581,10 +581,10 @@ static bool shouldConnectIbusPortal()
 }
 
 QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
-    : connection(0),
-      bus(0),
-      portalBus(0),
-      context(0),
+    : connection(nullptr),
+      bus(nullptr),
+      portalBus(nullptr),
+      context(nullptr),
       usePortal(shouldConnectIbusPortal()),
       valid(false),
       busConnected(false),
@@ -721,7 +721,7 @@ QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
     QFile file(getSocketPath());
 
     if (!file.open(QFile::ReadOnly))
-        return 0;
+        return nullptr;
 
     QByteArray address;
     int pid = -1;
@@ -740,7 +740,7 @@ QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
     if (debug)
         qDebug() << "IBUS_ADDRESS=" << address << "PID=" << pid;
     if (address.isEmpty() || pid < 0 || kill(pid, 0) != 0)
-        return 0;
+        return nullptr;
 
     return new QDBusConnection(QDBusConnection::connectToBus(QString::fromLatin1(address), "QIBusProxy"_L1));
 }

@@ -20,7 +20,7 @@ QObject *QLibInputPlugin::create(const QString &key, const QString &specificatio
     if (!key.compare(QLatin1String("libinput"), Qt::CaseInsensitive))
         return new QLibInputHandler(key, specification);
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

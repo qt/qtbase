@@ -161,7 +161,7 @@ class PropertiesDBusInterface : public QDBusAbstractInterface
 {
 public:
     PropertiesDBusInterface(const QString &service, const QString &path, const QString &interface,
-                            const QDBusConnection &connection, QObject *parent = 0)
+                            const QDBusConnection &connection, QObject *parent = nullptr)
         : QDBusAbstractInterface(service, path, interface.toLatin1().data(), connection, parent)
     {
     }

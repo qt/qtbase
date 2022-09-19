@@ -22,7 +22,7 @@ QObject* QTsLibPlugin::create(const QString &key,
         || !key.compare(QLatin1String("TslibRaw"), Qt::CaseInsensitive))
         return new QTsLibMouseHandler(key, specification);
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

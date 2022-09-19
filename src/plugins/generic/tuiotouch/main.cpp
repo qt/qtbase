@@ -30,7 +30,7 @@ QObject* QTuioTouchPlugin::create(const QString &key,
     if (!key.compare(QLatin1String("TuioTouch"), Qt::CaseInsensitive))
         return new QTuioHandler(spec);
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

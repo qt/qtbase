@@ -11,7 +11,7 @@ QT_BEGIN_NAMESPACE
 QMinimalEglBackingStore::QMinimalEglBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
     , m_context(new QOpenGLContext)
-    , m_device(0)
+    , m_device(nullptr)
 {
     m_context->setFormat(window->requestedFormat());
     m_context->setScreen(window->screen());

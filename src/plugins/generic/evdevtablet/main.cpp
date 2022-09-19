@@ -27,7 +27,7 @@ QObject* QEvdevTabletPlugin::create(const QString &key,
     if (!key.compare(QLatin1String("EvdevTablet"), Qt::CaseInsensitive))
         return new QEvdevTabletManager(key, spec);
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

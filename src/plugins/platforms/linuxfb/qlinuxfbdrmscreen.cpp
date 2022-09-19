@@ -243,7 +243,7 @@ bool QLinuxFbDevice::createFramebuffer(QLinuxFbDevice::Output *output, int buffe
         qErrnoWarning(errno, "Failed to map dumb buffer");
         return false;
     }
-    fb.p = mmap(0, fb.size, PROT_READ | PROT_WRITE, MAP_SHARED, fd(), mreq.offset);
+    fb.p = mmap(nullptr, fb.size, PROT_READ | PROT_WRITE, MAP_SHARED, fd(), mreq.offset);
     if (fb.p == MAP_FAILED) {
         qErrnoWarning(errno, "Failed to mmap dumb buffer");
         return false;

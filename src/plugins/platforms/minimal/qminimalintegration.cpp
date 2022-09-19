@@ -58,7 +58,7 @@ static inline unsigned parseOptions(const QStringList &paramList)
 }
 
 QMinimalIntegration::QMinimalIntegration(const QStringList &parameters)
-    : m_fontDatabase(0)
+    : m_fontDatabase(nullptr)
     , m_options(parseOptions(parameters))
 {
     if (qEnvironmentVariableIsSet(debugBackingStoreEnvironmentVariable)

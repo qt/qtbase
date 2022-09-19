@@ -22,7 +22,7 @@ QPlatformIntegration* QLinuxFbIntegrationPlugin::create(const QString& system, c
     if (!system.compare("linuxfb"_L1, Qt::CaseInsensitive))
         return new QLinuxFbIntegration(paramList);
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

@@ -30,7 +30,8 @@ QIBusPlatformInputContext *QIbusPlatformInputContextPlugin::create(const QString
         qDBusRegisterMetaType<QIBusText>();
         return new QIBusPlatformInputContext;
     }
-    return 0;
+
+    return nullptr;
 }
 
 QT_END_NAMESPACE

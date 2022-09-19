@@ -189,7 +189,7 @@ QPixmap QOffscreenBackingStore::grabWindow(WId window, const QRect &rect) const
 
 QOffscreenBackingStore *QOffscreenBackingStore::backingStoreForWinId(WId id)
 {
-    return m_backingStoreForWinIdHash.value(id, 0);
+    return m_backingStoreForWinIdHash.value(id, nullptr);
 }
 
 void QOffscreenBackingStore::clearHash()

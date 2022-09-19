@@ -22,7 +22,7 @@ QPlatformIntegration* QMinimalEglIntegrationPlugin::create(const QString& system
     if (!system.compare("minimalegl"_L1, Qt::CaseInsensitive))
         return new QMinimalEglIntegration;
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

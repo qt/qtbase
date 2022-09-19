@@ -27,7 +27,8 @@ QObject* QEvdevKeyboardPlugin::create(const QString &key,
 {
     if (!key.compare(QLatin1String("EvdevKeyboard"), Qt::CaseInsensitive))
         return new QEvdevKeyboardManager(key, specification);
-    return 0;
+
+    return nullptr;
 }
 
 QT_END_NAMESPACE

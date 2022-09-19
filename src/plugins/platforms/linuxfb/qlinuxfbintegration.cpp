@@ -42,7 +42,7 @@ QLinuxFbIntegration::QLinuxFbIntegration(const QStringList &paramList)
     : m_primaryScreen(nullptr),
       m_fontDb(new QGenericUnixFontDatabase),
       m_services(new QGenericUnixServices),
-      m_kbdMgr(0)
+      m_kbdMgr(nullptr)
 {
 #if QT_CONFIG(kms)
     if (qEnvironmentVariableIntValue("QT_QPA_FB_DRM") != 0)
@@ -147,7 +147,7 @@ QPlatformNativeInterface *QLinuxFbIntegration::nativeInterface() const
 QFunctionPointer QLinuxFbIntegration::platformFunction(const QByteArray &function) const
 {
     Q_UNUSED(function);
-    return 0;
+    return nullptr;
 }
 
 #if QT_CONFIG(evdev)

@@ -21,7 +21,7 @@ QPlatformIntegration *QVkKhrDisplayIntegrationPlugin::create(const QString &syst
     if (!system.compare("vkkhrdisplay"_L1, Qt::CaseInsensitive))
         return new QVkKhrDisplayIntegration(paramList);
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

@@ -141,12 +141,12 @@ void QXcbConnection::removeWindowEventListener(xcb_window_t id)
 
 QXcbWindowEventListener *QXcbConnection::windowEventListenerFromId(xcb_window_t id)
 {
-    return m_mapper.value(id, 0);
+    return m_mapper.value(id, nullptr);
 }
 
 QXcbWindow *QXcbConnection::platformWindowFromId(xcb_window_t id)
 {
-    QXcbWindowEventListener *listener = m_mapper.value(id, 0);
+    QXcbWindowEventListener *listener = m_mapper.value(id, nullptr);
     if (listener)
         return listener->toWindow();
     return nullptr;

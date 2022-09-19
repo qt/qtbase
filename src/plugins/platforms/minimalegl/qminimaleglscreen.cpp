@@ -41,8 +41,8 @@ public:
 QMinimalEglScreen::QMinimalEglScreen(EGLNativeDisplayType display)
     : m_depth(32)
     , m_format(QImage::Format_Invalid)
-    , m_platformContext(0)
-    , m_surface(0)
+    , m_platformContext(nullptr)
+    , m_surface(nullptr)
 {
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglScreen %p\n", this);
@@ -123,7 +123,7 @@ void QMinimalEglScreen::createAndSetPlatformContext()
     q_printEglConfig(m_dpy, config);
 #endif
 
-    m_surface = eglCreateWindowSurface(m_dpy, config, eglWindow, NULL);
+    m_surface = eglCreateWindowSurface(m_dpy, config, eglWindow, nullptr);
     if (Q_UNLIKELY(m_surface == EGL_NO_SURFACE)) {
         qWarning("Could not create the egl surface: error = 0x%x\n", eglGetError());
         eglTerminate(m_dpy);
@@ -132,7 +132,7 @@ void QMinimalEglScreen::createAndSetPlatformContext()
     //    qWarning("Created surface %dx%d\n", w, h);
 
 #ifndef QT_NO_OPENGL
-    QEGLPlatformContext *platformContext = new QMinimalEglContext(platformFormat, 0, m_dpy);
+    QEGLPlatformContext *platformContext = new QMinimalEglContext(platformFormat, nullptr, m_dpy);
     m_platformContext = platformContext;
 #endif
     EGLint w,h;                    // screen size detection

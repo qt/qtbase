@@ -27,7 +27,8 @@ QObject* QEvdevMousePlugin::create(const QString &key,
 {
     if (!key.compare(QLatin1String("EvdevMouse"), Qt::CaseInsensitive))
         return new QEvdevMouseManager(key, specification);
-    return 0;
+
+    return nullptr;
 }
 
 QT_END_NAMESPACE

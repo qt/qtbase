@@ -158,7 +158,7 @@ void QSQLiteResultPrivate::finalize()
         return;
 
     sqlite3_finalize(stmt);
-    stmt = 0;
+    stmt = nullptr;
 }
 
 void QSQLiteResultPrivate::initColumns(bool emptyResultset)
@@ -765,7 +765,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
 
         if (d->access) {
             sqlite3_close(d->access);
-            d->access = 0;
+            d->access = nullptr;
         }
 
         return false;
@@ -788,7 +788,7 @@ void QSQLiteDriver::close()
 
         if (res != SQLITE_OK)
             setLastError(qMakeError(d->access, tr("Error closing database"), QSqlError::ConnectionError, res));
-        d->access = 0;
+        d->access = nullptr;
         setOpen(false);
         setOpenError(false);
     }

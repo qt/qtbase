@@ -165,7 +165,7 @@ void QOffscreenWindow::setWindowState(Qt::WindowStates state)
 
 QOffscreenWindow *QOffscreenWindow::windowForWinId(WId id)
 {
-    return m_windowForWinIdHash.value(id, 0);
+    return m_windowForWinIdHash.value(id, nullptr);
 }
 
 Q_CONSTINIT QHash<WId, QOffscreenWindow *> QOffscreenWindow::m_windowForWinIdHash;

@@ -213,7 +213,7 @@ static QImage::Format determineFormat(const fb_var_screeninfo &info, int depth)
 
 static int openTtyDevice(const QString &device)
 {
-    const char *const devs[] = { "/dev/tty0", "/dev/tty", "/dev/console", 0 };
+    const char *const devs[] = { "/dev/tty0", "/dev/tty", "/dev/console", nullptr };
 
     int fd = -1;
     if (device.isEmpty()) {
@@ -253,9 +253,9 @@ static void blankScreen(int fd, bool on)
 }
 
 QLinuxFbScreen::QLinuxFbScreen(const QStringList &args)
-    : mArgs(args), mFbFd(-1), mTtyFd(-1), mBlitter(0)
+    : mArgs(args), mFbFd(-1), mTtyFd(-1), mBlitter(nullptr)
 {
-    mMmap.data = 0;
+    mMmap.data = nullptr;
 }
 
 QLinuxFbScreen::~QLinuxFbScreen()
@@ -344,7 +344,7 @@ bool QLinuxFbScreen::initialize()
 
     // mmap the framebuffer
     mMmap.size = finfo.smem_len;
-    uchar *data = (unsigned char *)mmap(0, mMmap.size, PROT_READ | PROT_WRITE, MAP_SHARED, mFbFd, 0);
+    uchar *data = (unsigned char *)mmap(nullptr, mMmap.size, PROT_READ | PROT_WRITE, MAP_SHARED, mFbFd, 0);
     if ((long)data == -1) {
         qErrnoWarning(errno, "Failed to mmap framebuffer");
         return false;
