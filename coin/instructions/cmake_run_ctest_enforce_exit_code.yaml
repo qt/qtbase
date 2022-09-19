@@ -11,6 +11,11 @@ instructions:
   - type: EnvironmentVariable
     variableName: TESTRUNNER
     variableValue: "{{.Env.LIBEXEC_INSTALL_DIR}}qt-testrunner.py --"
+    # Running wasm tests with the coin testrunner is not yet implemented
+    disable_if:
+      condition: property
+      property: target.osVersion
+      in_values: [WebAssembly]
   - type: AppendToEnvironmentVariable
     variableName: TESTRUNNER
     variableValue: " {{.SourceDir}}/coin_qnx_qemu_runner.sh"
