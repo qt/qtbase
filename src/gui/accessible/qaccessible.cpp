@@ -2588,7 +2588,7 @@ QAccessibleTableInterface::~QAccessibleTableInterface()
 /*!
     \fn virtual QList<int> QAccessibleTableInterface::selectedRows() const
 
-    Returns the list of currently selected columns.
+    Returns the list of currently selected rows.
 */
 
 /*!
