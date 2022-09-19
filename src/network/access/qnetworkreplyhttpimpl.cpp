@@ -1329,6 +1329,11 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
     q->setAttribute(QNetworkRequest::HttpPipeliningWasUsedAttribute, pu);
     q->setAttribute(QNetworkRequest::Http2WasUsedAttribute, h2Used);
 
+    // A user having manually defined which encodings they accept is, for
+    // somwehat unknown (presumed legacy compatibility) reasons treated as
+    // disabling our decompression:
+    const bool autoDecompress = request.rawHeader("accept-encoding").isEmpty();
+    const bool shouldDecompress = isCompressed && autoDecompress;
     // reconstruct the HTTP header
     QList<QPair<QByteArray, QByteArray> > headerMap = hm;
     QList<QPair<QByteArray, QByteArray> >::ConstIterator it = headerMap.constBegin(),
@@ -1342,7 +1347,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
         if (it->first.toLower() == "location")
             value.clear();
 
-        if (isCompressed && !decompressHelper.isValid()
+        if (shouldDecompress && !decompressHelper.isValid()
             && it->first.compare("content-encoding", Qt::CaseInsensitive) == 0) {
 
             if (!synchronous) // with synchronous all the data is expected to be handled at once
