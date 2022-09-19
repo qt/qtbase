@@ -203,18 +203,6 @@ using namespace Qt::StringLiterals;
     no arguments and returns void.
 */
 
-/*!
-    \macro QT_VERSION_STR
-    \relates <QtGlobal>
-
-    This macro expands to a string that specifies Qt's version number (for
-    example, "6.1.2"). This is the version with which the application is
-    compiled. This may be a different version than the version the application
-    will find itself using at \e runtime.
-
-    \sa qVersion(), QT_VERSION
-*/
-
 /*****************************************************************************
   System detection routines
  *****************************************************************************/

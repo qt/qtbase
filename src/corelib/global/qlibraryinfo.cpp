@@ -660,6 +660,18 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 */
 
 /*!
+    \macro QT_VERSION_STR
+    \relates <QLibraryInfo>
+
+    This macro expands to a string that specifies Qt's version number (for
+    example, "6.1.2"). This is the version with which the application is
+    compiled. This may be a different version than the version the application
+    will find itself using at \e runtime.
+
+    \sa qVersion(), QT_VERSION
+*/
+
+/*!
     \relates <QLibraryInfo>
 
     Returns the version number of Qt at runtime as a string (for example,
