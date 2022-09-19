@@ -398,7 +398,7 @@ QString QAccessibleMdiSubWindow::text(QAccessible::Text textType) const
 {
     if (textType == QAccessible::Name) {
         QString title = mdiSubWindow()->windowTitle();
-        title.replace("[*]"_L1, ""_L1);
+        title.remove("[*]"_L1);
         return title;
     }
     return QAccessibleWidget::text(textType);
