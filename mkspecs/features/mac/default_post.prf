@@ -147,7 +147,7 @@ macx-xcode {
     QMAKE_XCODE_ARCHS += $$QMAKE_APPLE_DEVICE_ARCHS
     QMAKE_MAC_XCODE_SETTINGS += arch_device
 
-    simulator {
+    ios:simulator {
         arch_simulator.name = "ARCHS[sdk=$${simulator.sdk}*]"
         arch_simulator.value = $$QMAKE_APPLE_SIMULATOR_ARCHS
         QMAKE_XCODE_ARCHS += $$QMAKE_APPLE_SIMULATOR_ARCHS
@@ -160,7 +160,7 @@ macx-xcode {
     QMAKE_MAC_XCODE_SETTINGS += only_active_arch
 } else {
     device|!simulator: VALID_DEVICE_ARCHS = $$QMAKE_APPLE_DEVICE_ARCHS
-    simulator: VALID_SIMULATOR_ARCHS = $$QMAKE_APPLE_SIMULATOR_ARCHS
+    ios:simulator: VALID_SIMULATOR_ARCHS = $$QMAKE_APPLE_SIMULATOR_ARCHS
     VALID_ARCHS = $$VALID_DEVICE_ARCHS $$VALID_SIMULATOR_ARCHS
 
     single_arch: VALID_ARCHS = $$first(VALID_ARCHS)
@@ -199,7 +199,7 @@ macx-xcode {
     # and makes it easier for people to override EXPORT_VALID_ARCHS to limit
     # individual rules to a different set of architecture(s) from the overall
     # build (such as machtest in QtCore).
-    simulator:device {
+    ios:simulator:device {
         QMAKE_XARCH_CFLAGS =
         QMAKE_XARCH_LFLAGS =
         QMAKE_EXTRA_VARIABLES += QMAKE_XARCH_CFLAGS QMAKE_XARCH_LFLAGS
@@ -237,7 +237,7 @@ macx-xcode {
         QMAKE_CXXFLAGS += $(EXPORT_QMAKE_XARCH_CFLAGS)
         QMAKE_LFLAGS += $(EXPORT_QMAKE_XARCH_LFLAGS)
     } else {
-        simulator {
+        ios:simulator {
             version_identifier = $$simulator.deployment_identifier
             platform_identifier = $$simulator.sdk
             sysroot_path  = $$xcodeSDKInfo(Path, $$simulator.sdk)
