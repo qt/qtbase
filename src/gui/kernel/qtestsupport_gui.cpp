@@ -62,7 +62,7 @@ namespace QTest {
 QTouchEventSequence::~QTouchEventSequence()
 {
     if (commitWhenDestroyed)
-        commit();
+        QTouchEventSequence::commit();
 }
 QTouchEventSequence& QTouchEventSequence::press(int touchId, const QPoint &pt, QWindow *window)
 {
