@@ -42,7 +42,6 @@ public:
     bool hasClipboardApi;
     void writeToClipboardApi();
     void writeToClipboard(const QMimeData *data);
-    bool isPaste;
     bool m_isListener;
 };
 

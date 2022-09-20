@@ -145,7 +145,6 @@ EMSCRIPTEN_BINDINGS(qtClipboardModule) {
 }
 
 QWasmClipboard::QWasmClipboard() :
-    isPaste(false),
     m_isListener(false)
 {
     val clipboard = val::global("navigator")["clipboard"];
@@ -171,16 +170,13 @@ QMimeData *QWasmClipboard::mimeData(QClipboard::Mode mode)
 
 void QWasmClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
 {
-    QPlatformClipboard::setMimeData(mimeData, mode);
     // handle setText/ setData programmatically
-    if (!isPaste) {
-        if (hasClipboardApi) {
-            writeToClipboardApi();
-        } else if (!m_isListener) {
-            writeToClipboard(mimeData);
-        }
+    QPlatformClipboard::setMimeData(mimeData, mode);
+    if (hasClipboardApi) {
+        writeToClipboardApi();
+    } else if (!m_isListener) {
+        writeToClipboard(mimeData);
     }
-    isPaste = false;
 }
 
 QWasmClipboard::ProcessKeyboardResult
@@ -193,7 +189,7 @@ QWasmClipboard::processKeyboard(const QWasmEventTranslator::TranslatedEvent &eve
     if (event.key != Qt::Key_C && event.key != Qt::Key_V && event.key != Qt::Key_X)
         return ProcessKeyboardResult::Ignored;
 
-    isPaste = event.key == Qt::Key_V;
+    const bool isPaste = event.key == Qt::Key_V;
 
     return hasClipboardApi && !isPaste
             ? ProcessKeyboardResult::NativeClipboardEventAndCopiedDataNeeded
@@ -213,7 +209,9 @@ bool QWasmClipboard::ownsMode(QClipboard::Mode mode) const
 
 void QWasmClipboard::qWasmClipboardPaste(QMimeData *mData)
 {
-    QWasmIntegration::get()->clipboard()->setMimeData(mData, QClipboard::Clipboard);
+    // Persist clipboard data so that the app can read it when handling the CTRL+V
+    QWasmIntegration::get()->clipboard()->
+        QPlatformClipboard::setMimeData(mData, QClipboard::Clipboard);
 
     QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
                 0, QEvent::KeyPress, Qt::Key_V, Qt::ControlModifier, "V");
