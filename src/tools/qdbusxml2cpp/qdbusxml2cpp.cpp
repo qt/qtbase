@@ -299,7 +299,7 @@ static QStringList makeArgNames(const QDBusIntrospection::Arguments &inputArgs,
         const QDBusIntrospection::Argument &arg = inputArgs.at(i);
         QString name = arg.name;
         if (name.isEmpty())
-            name = QString( "in%1"_L1 ).arg(i);
+            name = u"in%1"_s.arg(i);
         else
             name.replace(u'-', u'_');
         while (retval.contains(name))
@@ -310,7 +310,7 @@ static QStringList makeArgNames(const QDBusIntrospection::Arguments &inputArgs,
         const QDBusIntrospection::Argument &arg = outputArgs.at(i);
         QString name = arg.name;
         if (name.isEmpty())
-            name = QString( "out%1"_L1 ).arg(i);
+            name = u"out%1"_s.arg(i);
         else
             name.replace(u'-', u'_');
         while (retval.contains(name))
@@ -481,7 +481,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
         if (pos != -1)
             includeGuard = includeGuard.mid(pos + 1);
     } else {
-        includeGuard = "QDBUSXML2CPP_PROXY"_L1;
+        includeGuard = u"QDBUSXML2CPP_PROXY"_s;
     }
     includeGuard = "%1"_L1.arg(includeGuard);
     hs << "#ifndef " << includeGuard << Qt::endl
@@ -798,7 +798,7 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
         if (pos != -1)
             includeGuard = includeGuard.mid(pos + 1);
     } else {
-        includeGuard = "QDBUSXML2CPP_ADAPTOR"_L1;
+        includeGuard = u"QDBUSXML2CPP_ADAPTOR"_s;
     }
     includeGuard = "%1"_L1.arg(includeGuard);
     hs << "#ifndef " << includeGuard << Qt::endl
@@ -845,7 +845,7 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
 
     QString parent = parentClassName;
     if (parentClassName.isEmpty())
-        parent = "QObject"_L1;
+        parent = u"QObject"_s;
 
     for (const QDBusIntrospection::Interface *interface : interfaces) {
         QString className = classNameForInterface(interface->name, Adaptor);
@@ -1173,8 +1173,7 @@ int main(int argc, char **argv)
 
     QStringList args = app.arguments();
     args.removeFirst();
-    commandLine = PROGRAMNAME " "_L1;
-    commandLine += args.join(u' ');
+    commandLine = PROGRAMNAME " "_L1 + args.join(u' ');
 
     if (!proxyFile.isEmpty() || adaptorFile.isEmpty())
         writeProxy(proxyFile, interfaces);
