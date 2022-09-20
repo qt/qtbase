@@ -268,7 +268,7 @@ static QByteArray qtTypeName(const QString &where, const QString &signature,
 
 static QString nonConstRefArg(const QByteArray &arg)
 {
-    return QLatin1StringView(arg + " &");
+    return QLatin1StringView(arg) + " &"_L1;
 }
 
 static QString templateArg(const QByteArray &arg)
@@ -276,13 +276,13 @@ static QString templateArg(const QByteArray &arg)
     if (!arg.endsWith('>'))
         return QLatin1StringView(arg);
 
-    return QLatin1StringView(arg + ' ');
+    return QLatin1StringView(arg) + " "_L1;
 }
 
 static QString constRefArg(const QByteArray &arg)
 {
     if (!arg.startsWith('Q'))
-        return QLatin1StringView(arg + ' ');
+        return QLatin1StringView(arg) + " "_L1;
     else
         return "const %1 &"_L1.arg(QLatin1StringView(arg));
 }
