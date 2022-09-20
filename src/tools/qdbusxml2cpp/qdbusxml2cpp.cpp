@@ -284,7 +284,7 @@ static QString constRefArg(const QByteArray &arg)
     if (!arg.startsWith('Q'))
         return QLatin1StringView(arg + ' ');
     else
-        return QString("const %1 &"_L1).arg(QLatin1StringView(arg));
+        return "const %1 &"_L1.arg(QLatin1StringView(arg));
 }
 
 static QStringList makeArgNames(const QDBusIntrospection::Arguments &inputArgs,
