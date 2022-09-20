@@ -63,6 +63,14 @@ private slots:
     void qDebugQStringView() const;
     void qDebugQUtf8StringView() const;
     void qDebugQLatin1String() const;
+    void qDebugStdString() const;
+    void qDebugStdStringView() const;
+    void qDebugStdWString() const;
+    void qDebugStdWStringView() const;
+    void qDebugStdU16String() const;
+    void qDebugStdU16StringView() const;
+    void qDebugStdU32String() const;
+    void qDebugStdU32StringView() const;
     void qDebugQByteArray() const;
     void qDebugQByteArrayView() const;
     void qDebugQFlags() const;
@@ -646,6 +654,254 @@ void tst_QDebug::qDebugQLatin1String() const
 
     qDebug() << string;
     QCOMPARE(s_msg, QString("\"\\nSm\\u00F8rg\\u00E5sbord\\\\\""));
+}
+
+void tst_QDebug::qDebugStdString() const
+{
+    QString file, function;
+    int line = 0;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << std::string("foo") << std::string("") << std::string("barbaz", 3);
+        d.nospace().noquote() << std::string("baz");
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("\"foo\" \"\" \"bar\" baz"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+
+    /* simpler tests from now on */
+    std::string string("\"Hello\"");
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\\"Hello\\\"\""));
+
+    qDebug().noquote().nospace() << string;
+    QCOMPARE(s_msg, QString::fromStdString(string));
+
+    qDebug().noquote().nospace() << qSetFieldWidth(8) << string;
+    QCOMPARE(s_msg, " " + QString::fromStdString(string));
+}
+
+void tst_QDebug::qDebugStdStringView() const
+{
+    QString file, function;
+    int line = 0;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << std::string_view("foo") << std::string_view("") << std::string_view("barbaz", 3);
+        d.nospace().noquote() << std::string_view("baz");
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("\"foo\" \"\" \"bar\" baz"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+
+    /* simpler tests from now on */
+    std::string_view string("\"Hello\"");
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\\"Hello\\\"\""));
+
+    qDebug().noquote().nospace() << string;
+    QCOMPARE(s_msg, QString::fromStdString(std::string(string)));
+
+    qDebug().noquote().nospace() << qSetFieldWidth(8) << string;
+    QCOMPARE(s_msg, " " + QString::fromStdString(std::string(string)));
+}
+
+void tst_QDebug::qDebugStdWString() const
+{
+    QString file, function;
+    int line = 0;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << std::wstring(L"foo") << std::wstring(L"") << std::wstring(L"barbaz", 3);
+        d.nospace().noquote() << std::wstring(L"baz");
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("\"foo\" \"\" \"bar\" baz"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+
+    /* simpler tests from now on */
+    std::wstring string(L"\"Hello\"");
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\\"Hello\\\"\""));
+
+    qDebug().noquote().nospace() << string;
+    QCOMPARE(s_msg, QString::fromStdWString(string));
+
+    qDebug().noquote().nospace() << qSetFieldWidth(8) << string;
+    QCOMPARE(s_msg, " " + QString::fromStdWString(string));
+}
+
+void tst_QDebug::qDebugStdWStringView() const
+{
+    QString file, function;
+    int line = 0;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << std::wstring_view(L"foo") << std::wstring_view(L"") << std::wstring_view(L"barbaz", 3);
+        d.nospace().noquote() << std::wstring_view(L"baz");
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("\"foo\" \"\" \"bar\" baz"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+
+    /* simpler tests from now on */
+    std::wstring_view string(L"\"Hello\"");
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\\"Hello\\\"\""));
+
+    qDebug().noquote().nospace() << string;
+    QCOMPARE(s_msg, QString::fromStdWString(std::wstring(string)));
+
+    qDebug().noquote().nospace() << qSetFieldWidth(8) << string;
+    QCOMPARE(s_msg, " " + QString::fromStdWString(std::wstring(string)));
+}
+
+void tst_QDebug::qDebugStdU16String() const
+{
+    QString file, function;
+    int line = 0;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << std::u16string(u"foo") << std::u16string(u"") << std::u16string(u"barbaz", 3);
+        d.nospace().noquote() << std::u16string(u"baz");
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("\"foo\" \"\" \"bar\" baz"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+
+    /* simpler tests from now on */
+    std::u16string string(u"\"Hello\"");
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\\"Hello\\\"\""));
+
+    qDebug().noquote().nospace() << string;
+    QCOMPARE(s_msg, QString::fromStdU16String(string));
+
+    qDebug().noquote().nospace() << qSetFieldWidth(8) << string;
+    QCOMPARE(s_msg, " " + QString::fromStdU16String(string));
+}
+
+void tst_QDebug::qDebugStdU16StringView() const
+{
+    QString file, function;
+    int line = 0;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << std::u16string_view(u"foo") << std::u16string_view(u"") << std::u16string_view(u"barbaz", 3);
+        d.nospace().noquote() << std::u16string_view(u"baz");
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("\"foo\" \"\" \"bar\" baz"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+
+    /* simpler tests from now on */
+    std::u16string_view string(u"\"Hello\"");
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\\"Hello\\\"\""));
+
+    qDebug().noquote().nospace() << string;
+    QCOMPARE(s_msg, QString::fromStdU16String(std::u16string(string)));
+
+    qDebug().noquote().nospace() << qSetFieldWidth(8) << string;
+    QCOMPARE(s_msg, " " + QString::fromStdU16String(std::u16string(string)));
+}
+
+void tst_QDebug::qDebugStdU32String() const
+{
+    QString file, function;
+    int line = 0;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << std::u32string(U"foo") << std::u32string(U"") << std::u32string(U"barbaz", 3);
+        d.nospace().noquote() << std::u32string(U"baz");
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("\"foo\" \"\" \"bar\" baz"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+
+    /* simpler tests from now on */
+    std::u32string string(U"\"Hello\"");
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\\"Hello\\\"\""));
+
+    qDebug().noquote().nospace() << string;
+    QCOMPARE(s_msg, QString::fromStdU32String(string));
+
+    qDebug().noquote().nospace() << qSetFieldWidth(8) << string;
+    QCOMPARE(s_msg, " " + QString::fromStdU32String(string));
+}
+
+void tst_QDebug::qDebugStdU32StringView() const
+{
+    QString file, function;
+    int line = 0;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << std::u32string_view(U"foo") << std::u32string_view(U"") << std::u32string_view(U"barbaz", 3);
+        d.nospace().noquote() << std::u32string_view(U"baz");
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("\"foo\" \"\" \"bar\" baz"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+
+    /* simpler tests from now on */
+    std::u32string_view string(U"\"Hello\"");
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\\"Hello\\\"\""));
+
+    qDebug().noquote().nospace() << string;
+    QCOMPARE(s_msg, QString::fromStdU32String(std::u32string(string)));
+
+    qDebug().noquote().nospace() << qSetFieldWidth(8) << string;
+    QCOMPARE(s_msg, " " + QString::fromStdU32String(std::u32string(string)));
 }
 
 void tst_QDebug::qDebugQByteArray() const

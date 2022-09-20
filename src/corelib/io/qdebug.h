@@ -16,10 +16,12 @@
 #include <QtCore/qsharedpointer.h>
 
 // all these have already been included by various headers above, but don't rely on indirect includes:
-#include <vector>
 #include <list>
 #include <map>
+#include <string>
+#include <string_view>
 #include <utility>
+#include <vector>
 
 #if !defined(QT_LEAN_HEADERS) || QT_LEAN_HEADERS < 1
 #  include <QtCore/qlist.h>
@@ -125,6 +127,30 @@ public:
 
     inline QDebug &operator<<(QTextStreamManipulator m)
     { stream->ts << m; return *this; }
+
+    inline QDebug &operator<<(const std::string &s)
+    { return *this << QUtf8StringView(s); }
+
+    inline QDebug &operator<<(std::string_view s)
+    { return *this << QUtf8StringView(s); }
+
+    inline QDebug &operator<<(const std::wstring &s)
+    { return *this << QString::fromStdWString(s); }
+
+    inline QDebug &operator<<(std::wstring_view s)
+    { return *this << QString::fromWCharArray(s.data(), s.size()); }
+
+    inline QDebug &operator<<(const std::u16string &s)
+    { return *this << QStringView(s); }
+
+    inline QDebug &operator<<(std::u16string_view s)
+    { return *this << QStringView(s); }
+
+    inline QDebug &operator<<(const std::u32string &s)
+    { return *this << QString::fromUcs4(s.data(), s.size()); }
+
+    inline QDebug &operator<<(std::u32string_view s)
+    { return *this << QString::fromUcs4(s.data(), s.size()); }
 
     template <typename T>
     static QString toString(T &&object)

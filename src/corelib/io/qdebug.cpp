@@ -764,6 +764,79 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
+    \since 6.5
+    \fn QDebug &QDebug::operator<<(const std::string &s)
+
+    Converts \a s to a QUtf8StringView,
+    writes the result to the stream and returns
+    a reference to the stream.
+*/
+
+/*!
+    \since 6.5
+    \fn QDebug &QDebug::operator<<(std::string_view s)
+
+    Converts \a s to a QUtf8StringView,
+    writes the result to the stream and returns
+    a reference to the stream.
+*/
+
+
+/*!
+    \since 6.5
+    \fn QDebug &QDebug::operator<<(const std::wstring &s)
+
+    Converts \a s to a QString via QString::fromStdWString(),
+    writes the result to the stream and returns
+    a reference to the stream.
+*/
+
+/*!
+    \since 6.5
+    \fn QDebug &QDebug::operator<<(std::wstring_view s)
+
+    Converts \a s to a QString via QString::fromWCharArray(),
+    writes the result to the stream and returns
+    a reference to the stream.
+*/
+
+/*!
+    \since 6.5
+    \fn QDebug &QDebug::operator<<(const std::u16string &s)
+
+    Converts \a s to a QStringView,
+    writes the result to the stream and returns
+    a reference to the stream.
+*/
+
+/*!
+    \since 6.5
+    \fn QDebug &QDebug::operator<<(std::u16string_view s)
+
+    Converts \a s to a QStringView,
+    writes the result to the stream and returns
+    a reference to the stream.
+*/
+
+/*!
+    \since 6.5
+    \fn QDebug &QDebug::operator<<(const std::u32string &s)
+
+    Converts \a s to a QString via QString::fromUcs4(),
+    writes the result to the stream and returns
+    a reference to the stream.
+*/
+
+/*!
+    \since 6.5
+    \fn QDebug &QDebug::operator<<(std::u32string_view s)
+
+    Converts \a s to a QString via QString::fromUcs4(),
+    writes the result to the stream and returns
+    a reference to the stream.
+*/
+
+/*!
     \fn template <class T> QString QDebug::toString(T &&object)
     \since 6.0
 
