@@ -131,7 +131,8 @@ public:
     }
 
 
-    void run() {
+    void run() override
+    {
         struct ScopedCleanup
         {
             /* This is in order to ensure that the window is hidden when returning from run(),
