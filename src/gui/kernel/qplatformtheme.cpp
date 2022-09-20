@@ -346,7 +346,7 @@ Q_GUI_EXPORT QPalette qt_fusionPalette()
 {
     auto theme = QGuiApplicationPrivate::platformTheme();
     const bool darkAppearance = theme
-                              ? theme->appearance() == QPlatformTheme::Appearance::Dark
+                              ? theme->appearance() == Qt::Appearance::Dark
                               : false;
     const QColor windowText = darkAppearance ? QColor(240, 240, 240) : Qt::black;
     const QColor backGround = darkAppearance ? QColor(50, 50, 50) : QColor(239, 239, 239);
@@ -426,9 +426,9 @@ QPlatformDialogHelper *QPlatformTheme::createPlatformDialogHelper(DialogType typ
     return nullptr;
 }
 
-QPlatformTheme::Appearance QPlatformTheme::appearance() const
+Qt::Appearance QPlatformTheme::appearance() const
 {
-    return Appearance::Unknown;
+    return Qt::Appearance::Unknown;
 }
 
 const QPalette *QPlatformTheme::palette(Palette type) const

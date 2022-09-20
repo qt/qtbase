@@ -358,7 +358,7 @@ void QAndroidPlatformTheme::showPlatformMenuBar()
     QtAndroidMenu::openOptionsMenu();
 }
 
-QPlatformTheme::Appearance QAndroidPlatformTheme::appearance() const
+Qt::Appearance QAndroidPlatformTheme::appearance() const
 {
     return QAndroidPlatformIntegration::appearance();
 }

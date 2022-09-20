@@ -40,7 +40,7 @@ public:
 
     /*! \internal
 
-        Converts the given Freedesktop color scheme setting \a colorschemePref to a QPlatformTheme::Appearance value.
+        Converts the given Freedesktop color scheme setting \a colorschemePref to a Qt::Appearance value.
         Specification: https://github.com/flatpak/xdg-desktop-portal/blob/d7a304a00697d7d608821253cd013f3b97ac0fb6/data/org.freedesktop.impl.portal.Settings.xml#L33-L45
 
         Unfortunately the enum numerical values are not defined identically, so we have to convert them.
@@ -53,18 +53,18 @@ public:
         1: Prefer dark appearance           | 2: Dark
         2: Prefer light appearance          | 1: Light
     */
-    static QPlatformTheme::Appearance appearanceFromXdgPref(const XdgColorschemePref colorschemePref)
+    static Qt::Appearance appearanceFromXdgPref(const XdgColorschemePref colorschemePref)
     {
         switch (colorschemePref) {
-            case PreferDark: return QPlatformTheme::Appearance::Dark;
-            case PreferLight: return QPlatformTheme::Appearance::Light;
-            default: return QPlatformTheme::Appearance::Unknown;
+            case PreferDark: return Qt::Appearance::Dark;
+            case PreferLight: return Qt::Appearance::Light;
+            default: return Qt::Appearance::Unknown;
         }
     }
 
     QPlatformTheme *baseTheme = nullptr;
     uint fileChooserPortalVersion = 0;
-    QPlatformTheme::Appearance appearance = QPlatformTheme::Appearance::Unknown;
+    Qt::Appearance appearance = Qt::Appearance::Unknown;
 };
 
 QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
@@ -205,7 +205,7 @@ QVariant QXdgDesktopPortalTheme::themeHint(ThemeHint hint) const
     return d->baseTheme->themeHint(hint);
 }
 
-QPlatformTheme::Appearance QXdgDesktopPortalTheme::appearance() const
+Qt::Appearance QXdgDesktopPortalTheme::appearance() const
 {
     Q_D(const QXdgDesktopPortalTheme);
     return d->appearance;

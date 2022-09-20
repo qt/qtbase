@@ -149,7 +149,7 @@ QString QGtk3Theme::gtkFontName() const
     return QGnomeTheme::gtkFontName();
 }
 
-QPlatformTheme::Appearance QGtk3Theme::appearance() const
+Qt::Appearance QGtk3Theme::appearance() const
 {
     /*
         https://docs.gtk.org/gtk3/running.html
@@ -167,7 +167,7 @@ QPlatformTheme::Appearance QGtk3Theme::appearance() const
     QString themeName = qEnvironmentVariable("GTK_THEME");
     const QRegularExpression darkRegex(QStringLiteral("[:-]dark"), QRegularExpression::CaseInsensitiveOption);
     if (!themeName.isEmpty())
-        return darkRegex.match(themeName).hasMatch() ? Appearance::Dark : Appearance::Light;
+        return darkRegex.match(themeName).hasMatch() ? Qt::Appearance::Dark : Qt::Appearance::Light;
 
     /*
         https://docs.gtk.org/gtk3/property.Settings.gtk-application-prefer-dark-theme.html
@@ -178,16 +178,16 @@ QPlatformTheme::Appearance QGtk3Theme::appearance() const
     */
     const auto preferDark = gtkSetting<bool>("gtk-application-prefer-dark-theme");
     if (preferDark)
-        return Appearance::Dark;
+        return Qt::Appearance::Dark;
 
     /*
         https://docs.gtk.org/gtk3/property.Settings.gtk-theme-name.html
     */
     themeName = gtkSetting("gtk-theme-name");
     if (!themeName.isEmpty())
-        return darkRegex.match(themeName).hasMatch() ? Appearance::Dark : Appearance::Light;
+        return darkRegex.match(themeName).hasMatch() ? Qt::Appearance::Dark : Qt::Appearance::Light;
 
-    return Appearance::Unknown;
+    return Qt::Appearance::Unknown;
 }
 
 bool QGtk3Theme::usePlatformNativeDialog(DialogType type) const

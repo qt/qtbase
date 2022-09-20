@@ -98,12 +98,6 @@ public:
         MessageDialog
     };
 
-    enum class Appearance {
-        Unknown = 0x0000,
-        Light = 0x0001,
-        Dark = 0x0002
-    };
-
     enum Palette {
         SystemPalette,
         ToolTipPalette,
@@ -286,7 +280,7 @@ public:
     virtual QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const;
 #endif
 
-    virtual Appearance appearance() const;
+    virtual Qt::Appearance appearance() const;
 
     virtual const QPalette *palette(Palette type = SystemPalette) const;
 

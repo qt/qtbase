@@ -758,7 +758,7 @@ static void handleRefreshRateChanged(JNIEnv */*env*/, jclass /*cls*/, jfloat ref
 static void handleUiDarkModeChanged(JNIEnv */*env*/, jobject /*thiz*/, jint newUiMode)
 {
     QAndroidPlatformIntegration::setAppearance(
-        (newUiMode == 1 ) ? QPlatformTheme::Appearance::Dark : QPlatformTheme::Appearance::Light);
+        (newUiMode == 1 ) ? Qt::Appearance::Dark : Qt::Appearance::Light);
 }
 
 static void onActivityResult(JNIEnv */*env*/, jclass /*cls*/,

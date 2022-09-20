@@ -459,9 +459,9 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
     return QPlatformTheme::themeHint(hint);
 }
 
-QPlatformTheme::Appearance QCocoaTheme::appearance() const
+Qt::Appearance QCocoaTheme::appearance() const
 {
-    return qt_mac_applicationIsInDarkMode() ? Appearance::Dark : Appearance::Light;
+    return qt_mac_applicationIsInDarkMode() ? Qt::Appearance::Dark : Qt::Appearance::Light;
 }
 
 QString QCocoaTheme::standardButtonText(int button) const

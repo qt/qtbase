@@ -132,15 +132,15 @@ QVariant QIOSTheme::themeHint(ThemeHint hint) const
     }
 }
 
-QPlatformTheme::Appearance QIOSTheme::appearance() const
+Qt::Appearance QIOSTheme::appearance() const
 {
     if (UIWindow *window = qt_apple_sharedApplication().windows.lastObject) {
         return window.rootViewController.traitCollection.userInterfaceStyle
                 == UIUserInterfaceStyleDark
-                ? QPlatformTheme::Appearance::Dark
-                : QPlatformTheme::Appearance::Light;
+                ? Qt::Appearance::Dark
+                : Qt::Appearance::Light;
     }
-    return QPlatformTheme::Appearance::Unknown;
+    return Qt::Appearance::Unknown;
 }
 
 const QFont *QIOSTheme::font(Font type) const
