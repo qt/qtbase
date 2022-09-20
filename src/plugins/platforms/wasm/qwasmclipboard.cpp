@@ -45,12 +45,10 @@ static void commonCopyEvent(val event)
     }
 
     event.call<void>("preventDefault");
-    QWasmIntegration::get()->getWasmClipboard()->m_isListener = false;
 }
 
 static void qClipboardCutTo(val event)
 {
-    QWasmIntegration::get()->getWasmClipboard()->m_isListener = true;
     if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi) {
         // Send synthetic Ctrl+X to make the app cut data to Qt's clipboard
          QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
@@ -62,8 +60,6 @@ static void qClipboardCutTo(val event)
 
 static void qClipboardCopyTo(val event)
 {
-    QWasmIntegration::get()->getWasmClipboard()->m_isListener = true;
-
     if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi) {
         // Send synthetic Ctrl+C to make the app copy data to Qt's clipboard
             QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
@@ -74,7 +70,6 @@ static void qClipboardCopyTo(val event)
 
 static void qClipboardPasteTo(val dataTransfer)
 {
-    QWasmIntegration::get()->getWasmClipboard()->m_isListener = true;
     val clipboardData = dataTransfer["clipboardData"];
     val types = clipboardData["types"];
     int typesCount = types["length"].as<int>();
@@ -135,7 +130,6 @@ static void qClipboardPasteTo(val dataTransfer)
         }
     }
     QWasmClipboard::qWasmClipboardPaste(mMimeData);
-    QWasmIntegration::get()->getWasmClipboard()->m_isListener = false;
 }
 
 EMSCRIPTEN_BINDINGS(qtClipboardModule) {
@@ -144,8 +138,7 @@ EMSCRIPTEN_BINDINGS(qtClipboardModule) {
     function("qtClipboardPasteTo", &qClipboardPasteTo);
 }
 
-QWasmClipboard::QWasmClipboard() :
-    m_isListener(false)
+QWasmClipboard::QWasmClipboard()
 {
     val clipboard = val::global("navigator")["clipboard"];
 
@@ -172,11 +165,10 @@ void QWasmClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
 {
     // handle setText/ setData programmatically
     QPlatformClipboard::setMimeData(mimeData, mode);
-    if (hasClipboardApi) {
+    if (hasClipboardApi)
         writeToClipboardApi();
-    } else if (!m_isListener) {
+    else
         writeToClipboard(mimeData);
-    }
 }
 
 QWasmClipboard::ProcessKeyboardResult

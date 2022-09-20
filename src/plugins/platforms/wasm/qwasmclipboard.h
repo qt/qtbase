@@ -42,7 +42,6 @@ public:
     bool hasClipboardApi;
     void writeToClipboardApi();
     void writeToClipboard(const QMimeData *data);
-    bool m_isListener;
 };
 
 QT_END_NAMESPACE
