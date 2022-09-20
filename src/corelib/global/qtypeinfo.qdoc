@@ -1,0 +1,55 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \macro Q_DECLARE_TYPEINFO(Type, Flags)
+    \relates <QTypeInfo>
+
+    You can use this macro to specify information about a custom type
+    \a Type. With accurate type information, Qt's \l{Container Classes}
+    {generic containers} can choose appropriate storage methods and
+    algorithms.
+
+    \a Flags can be one of the following:
+
+    \list
+    \li \c Q_PRIMITIVE_TYPE specifies that \a Type can be created by
+        zero-initializing its storage, requires no operation to be properly
+        destroyed, and for which memcpy()ing creates a valid independent
+        copy of the object.
+    \li \c Q_RELOCATABLE_TYPE specifies that \a Type has a constructor
+       and/or a destructor but can be moved in memory using \c
+       memcpy().
+    \li \c Q_MOVABLE_TYPE is the same as \c Q_RELOCATABLE_TYPE. Prefer to use
+        \c Q_RELOCATABLE_TYPE in new code. Note: despite the name, this
+        has nothing to do with move constructors or C++ move semantics.
+    \li \c Q_COMPLEX_TYPE (the default) specifies that \a Type has
+       constructors and/or a destructor and that it may not be moved
+       in memory.
+    \endlist
+
+    Example of a "primitive" type:
+
+    \snippet code/src_corelib_global_qglobal.cpp 38
+
+    An example of a non-POD "primitive" type is QUuid: Even though
+    QUuid has constructors (and therefore isn't POD), every bit
+    pattern still represents a valid object, and memcpy() can be used
+    to create a valid independent copy of a QUuid object.
+
+    Example of a relocatable type:
+
+    \snippet code/src_corelib_global_qglobal.cpp 39
+
+    Qt will try to detect the class of a type using
+    \l {https://en.cppreference.com/w/cpp/types/is_trivial} {std::is_trivial_v<T>}
+    to identify primitive
+    types and it will require both
+    \l {https://en.cppreference.com/w/cpp/types/is_trivially_copyable} {std::is_trivially_copyable_v<T>}
+    and
+    \l {https://en.cppreference.com/w/cpp/types/is_destructible} {std::is_trivially_destructible_v<T>}
+    to identify relocatable types.
+    Use this macro to tune the behavior.
+    For instance many types would be candidates for Q_RELOCATABLE_TYPE despite
+    not being trivially-copyable.
+*/
