@@ -631,7 +631,7 @@ QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
         switch (res) {
         case Z_OK:
             bazip.resize(len + HeaderSize);
-            qToBigEndian(CompressSizeHint_t(nbytes), bazip.data());
+            qToBigEndian(qt_saturate<CompressSizeHint_t>(nbytes), bazip.data());
             break;
         case Z_MEM_ERROR:
             return tooMuchData(ZLibOp::Compression);
