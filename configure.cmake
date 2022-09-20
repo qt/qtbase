@@ -366,7 +366,7 @@ int main(void)
 
 # intelcet
 qt_config_compile_test(intelcet
-    LABEL "Support for Intel Control-flow Enforcement Technology"
+    LABEL "Support for Intel Control-flow Enforcement Technology (CET)"
     CODE
 "int main(void)
 {
@@ -987,7 +987,7 @@ qt_feature("relocatable" PRIVATE
     CONDITION QT_FEATURE_dlopen OR WIN32 OR NOT QT_FEATURE_shared
 )
 qt_feature("intelcet" PRIVATE
-    LABEL "Using Control-flow Enforcement Technology (CET)"
+    LABEL "Using Intel CET"
     CONDITION ( INPUT_intelcet STREQUAL yes ) OR TEST_intelcet
 )
 qt_configure_add_summary_build_type_and_config()
