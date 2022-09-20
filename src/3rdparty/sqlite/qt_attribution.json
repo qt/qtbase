@@ -9,5 +9,6 @@
     "Version": "3.39.2",
     "DownloadLocation": "https://www.sqlite.org/2022/sqlite-amalgamation-3390200.zip",
     "License": "Public Domain",
+    "LicenseId": "CC0-1.0",
     "Copyright": "The authors disclaim copyright to the source code. However, a license can be obtained if needed."
 }

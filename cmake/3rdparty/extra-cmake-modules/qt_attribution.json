@@ -9,7 +9,7 @@
     "Version": "5.84.0",
 
     "License": "BSD-3-Clause",
-    "LicenseId": "BSD 3-Clause License",
+    "LicenseId": "BSD-3-Clause",
     "LicenseFile": "COPYING-CMAKE-SCRIPTS",
     "Copyright": "Copyright © 2011-2018 The KDE community"
 }

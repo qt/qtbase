@@ -9,7 +9,7 @@
     "Version": "5.13.4",
 
     "License": "BSD-3-Clause",
-    "LicenseId": "BSD 3-Clause License",
+    "LicenseId": "BSD-3-Clause",
     "LicenseFile": "COPYING-CMAKE-SCRIPTS",
     "Copyright": "Copyright 2014 Alex Merry <alex.merry@kde.org>
 Copyright 2014 Martin Gräßlin <mgraesslin@kde.org>,

@@ -9,7 +9,7 @@
 
         "Description": "An ICC color profile for PDF/A-1b compatible PDF files.",
         "Homepage": "http://www.color.org/",
-        "LicenseId": "ICC License",
+        "LicenseId": "LicenseRef-ICC-License",
         "License": "International Color Consortium License",
         "LicenseFile": "LICENSE.txt",
         "Copyright": "Copyright International Color Consortium, 2015"

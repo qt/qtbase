@@ -7,6 +7,7 @@
     "Description": "Implements the Secure Hash Algorithms SHA 1",
     "Homepage": "http://www.dominik-reichl.de/projects/csha1/",
     "License": "Public Domain",
+    "LicenseId": "CC0-1.0",
     "Copyright": "Copyright (C) Dominik Reichl <dominik.reichl@t-online.de>
 Copyright (C) 2016 The Qt Company Ltd"
 }
