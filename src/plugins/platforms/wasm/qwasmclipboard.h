@@ -34,14 +34,17 @@ public:
     bool supportsMode(QClipboard::Mode mode) const override;
     bool ownsMode(QClipboard::Mode mode) const override;
 
-    static void qWasmClipboardPaste(QMimeData *mData);
     ProcessKeyboardResult processKeyboard(const QWasmEventTranslator::TranslatedEvent &event,
                                           const QFlags<Qt::KeyboardModifier> &modifiers);
-    void initClipboardPermissions();
     void installEventHandlers(const emscripten::val &canvas);
-    bool hasClipboardApi;
+    bool hasClipboardApi();
+
+private:
+    void initClipboardPermissions();
     void writeToClipboardApi();
-    void writeToClipboard(const QMimeData *data);
+    void writeToClipboard();
+
+    bool m_hasClipboardApi = false;
 };
 
 QT_END_NAMESPACE

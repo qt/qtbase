@@ -49,7 +49,7 @@ static void commonCopyEvent(val event)
 
 static void qClipboardCutTo(val event)
 {
-    if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi) {
+    if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi()) {
         // Send synthetic Ctrl+X to make the app cut data to Qt's clipboard
          QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
                      0, QEvent::KeyPress, Qt::Key_C, Qt::ControlModifier, "X");
@@ -60,12 +60,22 @@ static void qClipboardCutTo(val event)
 
 static void qClipboardCopyTo(val event)
 {
-    if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi) {
+    if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi()) {
         // Send synthetic Ctrl+C to make the app copy data to Qt's clipboard
             QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
                         0, QEvent::KeyPress, Qt::Key_C, Qt::ControlModifier, "C");
     }
     commonCopyEvent(event);
+}
+
+static void qWasmClipboardPaste(QMimeData *mData)
+{
+    // Persist clipboard data so that the app can read it when handling the CTRL+V
+    QWasmIntegration::get()->clipboard()->
+        QPlatformClipboard::setMimeData(mData, QClipboard::Clipboard);
+
+    QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
+                0, QEvent::KeyPress, Qt::Key_V, Qt::ControlModifier, "V");
 }
 
 static void qClipboardPasteTo(val dataTransfer)
@@ -123,13 +133,13 @@ static void qClipboardPasteTo(val dataTransfer)
                         } else {
                             mMimeData->setData(mimeFormat,fileContent.data());
                         }
-                        QWasmClipboard::qWasmClipboardPaste(mMimeData);
+                        qWasmClipboardPaste(mMimeData);
                     }
                 });
             } // next item
         }
     }
-    QWasmClipboard::qWasmClipboardPaste(mMimeData);
+    qWasmClipboardPaste(mMimeData);
 }
 
 EMSCRIPTEN_BINDINGS(qtClipboardModule) {
@@ -143,9 +153,9 @@ QWasmClipboard::QWasmClipboard()
     val clipboard = val::global("navigator")["clipboard"];
 
     const bool hasPermissionsApi = !val::global("navigator")["permissions"].isUndefined();
-    hasClipboardApi = !clipboard.isUndefined() && !clipboard["readText"].isUndefined();
+    m_hasClipboardApi = !clipboard.isUndefined() && !clipboard["readText"].isUndefined();
 
-    if (hasClipboardApi && hasPermissionsApi)
+    if (m_hasClipboardApi && hasPermissionsApi)
         initClipboardPermissions();
 }
 
@@ -165,10 +175,10 @@ void QWasmClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
 {
     // handle setText/ setData programmatically
     QPlatformClipboard::setMimeData(mimeData, mode);
-    if (hasClipboardApi)
+    if (m_hasClipboardApi)
         writeToClipboardApi();
     else
-        writeToClipboard(mimeData);
+        writeToClipboard();
 }
 
 QWasmClipboard::ProcessKeyboardResult
@@ -183,7 +193,7 @@ QWasmClipboard::processKeyboard(const QWasmEventTranslator::TranslatedEvent &eve
 
     const bool isPaste = event.key == Qt::Key_V;
 
-    return hasClipboardApi && !isPaste
+    return m_hasClipboardApi && !isPaste
             ? ProcessKeyboardResult::NativeClipboardEventAndCopiedDataNeeded
             : ProcessKeyboardResult::NativeClipboardEventNeeded;
 }
@@ -197,16 +207,6 @@ bool QWasmClipboard::ownsMode(QClipboard::Mode mode) const
 {
     Q_UNUSED(mode);
     return false;
-}
-
-void QWasmClipboard::qWasmClipboardPaste(QMimeData *mData)
-{
-    // Persist clipboard data so that the app can read it when handling the CTRL+V
-    QWasmIntegration::get()->clipboard()->
-        QPlatformClipboard::setMimeData(mData, QClipboard::Clipboard);
-
-    QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
-                0, QEvent::KeyPress, Qt::Key_V, Qt::ControlModifier, "V");
 }
 
 void QWasmClipboard::initClipboardPermissions()
@@ -243,16 +243,20 @@ void QWasmClipboard::installEventHandlers(const emscripten::val &canvas)
                         val::module_property("qtClipboardPasteTo"), true);
 }
 
+bool QWasmClipboard::hasClipboardApi()
+{
+    return m_hasClipboardApi;
+}
+
 void QWasmClipboard::writeToClipboardApi()
 {
-    if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi)
-        return;
+    Q_ASSERT(!m_hasClipboardApi);
 
     // copy event
     // browser event handler detected ctrl c if clipboard API
     // or Qt call from keyboard event handler
 
-    QMimeData *_mimes = QWasmIntegration::get()->getWasmClipboard()->mimeData(QClipboard::Clipboard);
+    QMimeData *_mimes = mimeData(QClipboard::Clipboard);
     if (!_mimes)
         return;
 
@@ -340,9 +344,8 @@ void QWasmClipboard::writeToClipboardApi()
         clipboardWriteArray);
 }
 
-void QWasmClipboard::writeToClipboard(const QMimeData *data)
+void QWasmClipboard::writeToClipboard()
 {
-    Q_UNUSED(data)
     // this works for firefox, chrome by generating
     // copy event, but not safari
     // execCommand has been deemed deprecated in the docs, but browsers do not seem
