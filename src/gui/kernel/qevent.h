@@ -238,7 +238,7 @@ class Q_GUI_EXPORT QHoverEvent : public QSinglePointEvent
 {
     Q_DECL_EVENT_COMMON(QHoverEvent)
 public:
-    QHoverEvent(Type type, const QPointF &pos, const QPointF &globalPos, const QPointF &oldPos,
+    QHoverEvent(Type type, const QPointF &scenePos, const QPointF &globalPos, const QPointF &oldPos,
                 Qt::KeyboardModifiers modifiers = Qt::NoModifier,
                 const QPointingDevice *device = QPointingDevice::primaryPointingDevice());
 #if QT_DEPRECATED_SINCE(6, 3)

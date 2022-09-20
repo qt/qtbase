@@ -1025,15 +1025,15 @@ Qt::MouseEventFlags QMouseEvent::flags() const
     The \a type parameter must be QEvent::HoverEnter,
     QEvent::HoverLeave, or QEvent::HoverMove.
 
-    The \a pos is the current mouse cursor's position relative to the
-    receiving widget, \a oldPos is its previous such position, and
+    The \a scenePos is the current mouse cursor's position relative to the
+    receiving window or scene, \a oldPos is its previous such position, and
     \a globalPos is the mouse position in absolute coordinates.
     \a modifiers hold the state of all keyboard modifiers at the time
     of the event.
 */
-QHoverEvent::QHoverEvent(Type type, const QPointF &pos, const QPointF &globalPos, const QPointF &oldPos,
+QHoverEvent::QHoverEvent(Type type, const QPointF &scenePos, const QPointF &globalPos, const QPointF &oldPos,
                          Qt::KeyboardModifiers modifiers, const QPointingDevice *device)
-    : QSinglePointEvent(type, device, pos, pos, globalPos, Qt::NoButton, Qt::NoButton, modifiers), m_oldPos(oldPos)
+    : QSinglePointEvent(type, device, scenePos, scenePos, globalPos, Qt::NoButton, Qt::NoButton, modifiers), m_oldPos(oldPos)
 {
 }
 
