@@ -128,6 +128,12 @@ char16_t valueTypeToUtf16<char>(char t)
     return char16_t{uchar(t)};
 }
 
+template <typename T>
+static inline bool foldAndCompare(const T a, const T b)
+{
+    return foldCase(a) == b;
+}
+
 /*!
     \internal
 
@@ -153,10 +159,9 @@ static inline qsizetype qFindChar(QStringView str, QChar ch, qsizetype from, Qt:
                 return n - s;
         } else {
             c = foldCase(c);
-            --n;
-            while (++n != e)
-                if (foldCase(*n) == c)
-                    return n - s;
+            auto it = std::find_if(n, e, [c](const auto &ch) { return foldAndCompare(ch, c); });
+            if (it != e)
+                return std::distance(s, it);
         }
     }
     return -1;
@@ -509,12 +514,7 @@ const char16_t *QtPrivate::qustrchr(QStringView str, char16_t c) noexcept
     }
 #endif // aarch64
 
-    --n;
-    while (++n != e)
-        if (*n == c)
-            return n;
-
-    return n;
+    return std::find(n, e, c);
 }
 
 #ifdef __SSE2__
@@ -2562,11 +2562,10 @@ QString::QString(qsizetype size, QChar ch)
         d = DataPointer(Data::allocate(size), size);
         Q_CHECK_PTR(d.data());
         d.data()[size] = '\0';
-        char16_t *i = d.data() + size;
         char16_t *b = d.data();
+        char16_t *e = d.data() + size;
         const char16_t value = ch.unicode();
-        while (i != b)
-           *--i = value;
+        std::fill(b, e, value);
     }
 }
 
@@ -3728,18 +3727,16 @@ QString& QString::replace(QChar before, QChar after, Qt::CaseSensitivity cs)
             char16_t *const e = i + d.size;
             i += idx;
             *i = a;
+            ++i;
             if (cs == Qt::CaseSensitive) {
-                const char16_t b = before.unicode();
-                while (++i != e) {
-                    if (*i == b)
-                        *i = a;
-                }
+                const char16_t toReplace = before.unicode();
+                std::replace(i, e, toReplace, a);
             } else {
-                const char16_t b = foldCase(before.unicode());
-                while (++i != e) {
-                    if (foldCase(*i) == b)
-                        *i = a;
-                }
+                const char16_t toReplace = foldCase(before.unicode());
+                auto match = [toReplace](const char16_t c) {
+                    return foldAndCompare(c, toReplace);
+                };
+                std::replace_if(i, e, match, a);
             }
         }
     }
@@ -6002,8 +5999,7 @@ QString& QString::fill(QChar ch, qsizetype size)
     if (d.size) {
         QChar *i = (QChar*)d.data() + d.size;
         QChar *b = (QChar*)d.data();
-        while (i != b)
-           *--i = ch;
+        std::fill(b, i, ch);
     }
     return *this;
 }
@@ -7924,8 +7920,7 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
     } else if (int(version) <= NormalizationCorrectionsVersionMax) {
         const QString &s = *data;
         QChar *d = nullptr;
-        for (int i = 0; i < NumNormalizationCorrections; ++i) {
-            const NormalizationCorrection &n = uc_normalization_corrections[i];
+        for (const NormalizationCorrection &n : uc_normalization_corrections) {
             if (n.version > version) {
                 qsizetype pos = from;
                 if (QChar::requiresSurrogates(n.ucs4)) {
@@ -8149,16 +8144,14 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
             // (If negative, relevant loops are no-ops: no need to check.)
 
             if (field_width > 0) { // left padded
-                for (qsizetype i = 0; i < pad_chars; ++i)
-                    *rc++ = fillChar;
+                rc = std::fill_n(rc, pad_chars, fillChar);
             }
 
             memcpy(rc, use.data(), use.length() * sizeof(QChar));
             rc += use.length();
 
             if (field_width < 0) { // right padded
-                for (qsizetype i = 0; i < pad_chars; ++i)
-                    *rc++ = fillChar;
+                rc = std::fill_n(rc, pad_chars, fillChar);
             }
 
             if (++repl_cnt == d.occurrences) {
@@ -8708,7 +8701,7 @@ static ArgIndexToPlaceholderMap makeArgIndexToPlaceholderMap(const ParseResult &
 {
     ArgIndexToPlaceholderMap result;
 
-    for (Part part : parts) {
+    for (const Part &part : parts) {
         if (part.number >= 0)
             result.push_back(part.number);
     }
@@ -8774,7 +8767,7 @@ static QString argToQStringImpl(StringView pattern, size_t numArgs, const QtPriv
     QString result(totalSize, Qt::Uninitialized);
     auto out = const_cast<QChar*>(result.constData());
 
-    for (Part part : parts) {
+    for (const Part &part : parts) {
         switch (part.tag) {
         case QtPrivate::ArgBase::L1:
             if (part.size) {
@@ -10479,22 +10472,14 @@ qsizetype QtPrivate::count(QStringView haystack, QStringView needle, Qt::CaseSen
     return num;
 }
 
-qsizetype QtPrivate::count(QStringView haystack, QChar ch, Qt::CaseSensitivity cs) noexcept
+qsizetype QtPrivate::count(QStringView haystack, QChar needle, Qt::CaseSensitivity cs) noexcept
 {
-    qsizetype num = 0;
-    if (cs == Qt::CaseSensitive) {
-        for (QChar c : haystack) {
-            if (c == ch)
-                ++num;
-        }
-    } else {
-        ch = foldCase(ch);
-        for (QChar c : haystack) {
-            if (foldCase(c) == ch)
-                ++num;
-        }
-    }
-    return num;
+    if (cs == Qt::CaseSensitive)
+        return std::count(haystack.cbegin(), haystack.cend(), needle);
+
+    needle = foldCase(needle);
+    return std::count_if(haystack.cbegin(), haystack.cend(),
+                         [needle](const QChar c) { return foldAndCompare(c, needle); });
 }
 
 qsizetype QtPrivate::count(QLatin1StringView haystack, QLatin1StringView needle, Qt::CaseSensitivity cs)
@@ -10559,22 +10544,16 @@ qsizetype QtPrivate::count(QLatin1StringView haystack, QChar needle, Qt::CaseSen
     if (needle.unicode() > 0xff)
         return 0;
 
-    qsizetype num = 0;
+    const char needleL1 = needle.toLatin1();
     if (cs == Qt::CaseSensitive) {
-        const char needleL1 = needle.toLatin1();
-        for (char c : haystack) {
-            if (c == needleL1)
-                ++num;
-        }
+        return std::count(haystack.cbegin(), haystack.cend(), needleL1);
     } else {
         auto toLower = [](char ch) { return latin1Lower[uchar(ch)]; };
-        const uchar ch = toLower(needle.toLatin1());
-        for (char c : haystack) {
-            if (toLower(c) == ch)
-                ++num;
-        }
+        const uchar ch = toLower(needleL1);
+        return std::count_if(haystack.cbegin(), haystack.cend(), [&toLower, ch](const char c) {
+            return toLower(c) == ch;
+        });
     }
-    return num;
 }
 
 /*!
