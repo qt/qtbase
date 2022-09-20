@@ -92,7 +92,30 @@ void tst_QStringMatcher::setCaseSensitivity_data()
 
     QTest::newRow("overshot") << QString("foo") << QString("baFooz foo bar") << 14 << -1 << (int) Qt::CaseSensitive;
     QTest::newRow("sensitive") << QString("foo") << QString("baFooz foo bar") << 1 << 7 << (int) Qt::CaseSensitive;
-    QTest::newRow("insensitive") << QString("foo") << QString("baFooz foo bar") << 1 << 2 << (int) Qt::CaseInsensitive;
+    QTest::newRow("insensitive-1")
+            << QString("foo") << QString("baFooz foo bar") << 0 << 2 << (int)Qt::CaseInsensitive;
+    QTest::newRow("insensitive-2")
+            << QString("foo") << QString("baFooz foo bar") << 1 << 2 << (int)Qt::CaseInsensitive;
+    QTest::newRow("insensitive-3")
+            << QString("foo") << QString("baFooz foo bar") << 4 << 7 << (int)Qt::CaseInsensitive;
+    QTest::newRow("insensitive-4")
+            << QString("foogabooga") << QString("baFooGaBooga foogabooga bar") << 1 << 2
+            << (int)Qt::CaseInsensitive;
+    QTest::newRow("insensitive-5")
+            << QString("foogabooga") << QString("baFooGaBooga foogabooga bar") << 3 << 13
+            << (int)Qt::CaseInsensitive;
+    QTest::newRow("insensitive-6") << QString("foogabooga") << QString("GaBoogaFoogaBooga bar") << 0
+                                   << 7 << (int)Qt::CaseInsensitive;
+    QTest::newRow("insensitive-7") << QString("foogabooga") << QString("FoGaBoogaFoogaBooga") << 9
+                                   << 9 << (int)Qt::CaseInsensitive;
+    QTest::newRow("insensitive-8") << QString("foogaBooga") << QString("zzzzaazzffoogaBooga") << 0
+                                   << 9 << (int)Qt::CaseInsensitive;
+    QString stringOf32("abcdefghijklmnopqrstuvwxyz123456");
+    Q_ASSERT(stringOf32.size() == 32);
+    QString stringOf128 = stringOf32 + stringOf32 + stringOf32 + stringOf32;
+    QString needle = stringOf128 + stringOf128 + "CAse";
+    QString haystack = stringOf128 + stringOf128 + "caSE";
+    QTest::newRow("insensitive-9") << needle << haystack << 0 << 0 << (int)Qt::CaseInsensitive;
 }
 
 void tst_QStringMatcher::setCaseSensitivity()

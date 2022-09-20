@@ -6,10 +6,13 @@
 
 QT_BEGIN_NAMESPACE
 
+static constexpr qsizetype FoldBufferCapacity = 256;
+
 static void bm_init_skiptable(QStringView needle, uchar *skiptable, Qt::CaseSensitivity cs)
 {
     const char16_t *uc = needle.utf16();
-    const qsizetype len = needle.size();
+    const qsizetype len =
+            cs == Qt::CaseSensitive ? needle.size() : qMin(needle.size(), FoldBufferCapacity);
     qsizetype l = qMin(len, qsizetype(255));
     memset(skiptable, l, 256 * sizeof(uchar));
     uc += len - l;
@@ -37,11 +40,12 @@ static inline qsizetype bm_find(QStringView haystack, qsizetype index, QStringVi
 
     if (pl == 0)
         return index > l ? -1 : index;
-    const qsizetype pl_minus_one = pl - 1;
 
-    const char16_t *current = uc + index + pl_minus_one;
-    const char16_t *end = uc + l;
     if (cs == Qt::CaseSensitive) {
+        const qsizetype pl_minus_one = pl - 1;
+        const char16_t *current = uc + index + pl_minus_one;
+        const char16_t *end = uc + l;
+
         while (current < end) {
             qsizetype skip = skiptable[*current & 0xff];
             if (!skip) {
@@ -66,21 +70,38 @@ static inline qsizetype bm_find(QStringView haystack, qsizetype index, QStringVi
             current += skip;
         }
     } else {
+        char16_t foldBuffer[FoldBufferCapacity];
+        const qsizetype foldBufferLength = qMin(FoldBufferCapacity, pl);
+        const char16_t *start = puc;
+        for (qsizetype i = 0; i < foldBufferLength; ++i)
+            foldBuffer[i] = foldCase(&puc[i], start);
+        QStringView restNeedle = needle.sliced(foldBufferLength);
+        const qsizetype foldBufferEnd = foldBufferLength - 1;
+        const char16_t *current = uc + index + foldBufferEnd;
+        const char16_t *end = uc + l;
+
         while (current < end) {
             qsizetype skip = skiptable[foldCase(current, uc) & 0xff];
             if (!skip) {
                 // possible match
-                while (skip < pl) {
-                    if (foldCase(current - skip, uc) != foldCase(puc + pl_minus_one - skip, puc))
+                while (skip < foldBufferLength) {
+                    if (foldCase(current - skip, uc) != foldBuffer[foldBufferEnd - skip])
                         break;
                     ++skip;
                 }
-                if (skip > pl_minus_one) // we have a match
-                    return (current - uc) - pl_minus_one;
+                if (skip > foldBufferEnd) { // Matching foldBuffer
+                    qsizetype candidatePos = (current - uc) - foldBufferEnd;
+                    QStringView restHaystack =
+                            haystack.sliced(qMin(haystack.size(), candidatePos + foldBufferLength));
+                    if (restNeedle.size() == 0
+                        || restHaystack.startsWith(
+                                restNeedle, Qt::CaseInsensitive)) // Check the rest of the string
+                        return candidatePos;
+                }
                 // in case we don't have a match we are a bit inefficient as we only skip by one
                 // when we have the non matching char in the string.
-                if (skiptable[foldCase(current - skip, uc) & 0xff] == pl)
-                    skip = pl - skip;
+                if (skiptable[foldCase(current - skip, uc) & 0xff] == foldBufferLength)
+                    skip = foldBufferLength - skip;
                 else
                     skip = 1;
             }
