@@ -483,7 +483,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
     } else {
         includeGuard = u"QDBUSXML2CPP_PROXY"_s;
     }
-    includeGuard = "%1"_L1.arg(includeGuard);
+
     hs << "#ifndef " << includeGuard << Qt::endl
        << "#define " << includeGuard << Qt::endl
        << Qt::endl;
@@ -800,7 +800,7 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
     } else {
         includeGuard = u"QDBUSXML2CPP_ADAPTOR"_s;
     }
-    includeGuard = "%1"_L1.arg(includeGuard);
+
     hs << "#ifndef " << includeGuard << Qt::endl
        << "#define " << includeGuard << Qt::endl
        << Qt::endl;
