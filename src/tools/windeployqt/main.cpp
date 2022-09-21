@@ -270,7 +270,7 @@ static inline QString findBinary(const QString &directory, Platform platform)
 
 static QString msgFileDoesNotExist(const QString & file)
 {
-    return u'"' + QDir::toNativeSeparators(file) + QStringLiteral("\" does not exist.");
+    return u'"' + QDir::toNativeSeparators(file) + "\" does not exist."_L1;
 }
 
 enum CommandLineParseFlag {
@@ -285,10 +285,10 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     using OptionPtrVector = QList<CommandLineOptionPtr>;
 
     parser->setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
-    parser->setApplicationDescription(QStringLiteral("Qt Deploy Tool ") + QT_VERSION_STR ""_L1
-        + "\n\nThe simplest way to use windeployqt is to add the bin directory of your Qt\n"
+    parser->setApplicationDescription(u"Qt Deploy Tool " QT_VERSION_STR
+        "\n\nThe simplest way to use windeployqt is to add the bin directory of your Qt\n"
         "installation (e.g. <QT_DIR\\bin>) to the PATH variable and then run:\n  windeployqt <path-to-app-binary>\n\n"
-        "If your application uses Qt Quick, run:\n  windeployqt --qmldir <path-to-app-qml-files> <path-to-app-binary>"_L1);
+        "If your application uses Qt Quick, run:\n  windeployqt --qmldir <path-to-app-qml-files> <path-to-app-binary>"_s);
     const QCommandLineOption helpOption = parser->addHelpOption();
     parser->addVersionOption();
 
@@ -891,7 +891,7 @@ QStringList findQtPlugins(quint64 *usedQtModules, quint64 disabledQtModules,
         return QStringList();
     QDir pluginsDir(qtPluginsDirName);
     QStringList result;
-    const QFileInfoList &pluginDirs = pluginsDir.entryInfoList(QStringList("*"_L1), QDir::Dirs | QDir::NoDotAndDotDot);
+    const QFileInfoList &pluginDirs = pluginsDir.entryInfoList(QStringList(u"*"_s), QDir::Dirs | QDir::NoDotAndDotDot);
     for (const QFileInfo &subDirFi : pluginDirs) {
         const QString subDirName = subDirFi.fileName();
         const quint64 module = qtModuleForPlugin(subDirName);
@@ -921,7 +921,7 @@ QStringList findQtPlugins(quint64 *usedQtModules, quint64 disabledQtModules,
                     break;
                 }
             } else {
-                filter  = "*"_L1;
+                filter = u"*"_s;
             }
             const QStringList plugins = findSharedLibraries(subDir, platform, debugMatchMode, filter);
             for (const QString &plugin : plugins) {
@@ -968,7 +968,7 @@ static QStringList translationNameFilters(quint64 modules, const QString &prefix
     for (const auto &qtModule : qtModuleEntries) {
         if ((qtModule.module & modules) && qtModule.translation) {
             const QString name = QLatin1StringView(qtModule.translation) +
-                                 u'_' +  prefix + QStringLiteral(".qm");
+                                 u'_' +  prefix + ".qm"_L1;
             if (!result.contains(name))
                 result.push_back(name);
         }
@@ -1138,11 +1138,11 @@ static QStringList compilerRunTimeLibs(Platform platform, bool isDebug, unsigned
             const QStringList countryCodes = vcRedistDir.entryList(QStringList(QStringLiteral("[0-9]*")), QDir::Dirs);
             if (!countryCodes.isEmpty()) // Pre MSVC2017
                 releaseRedistDir += u'/' + countryCodes.constFirst();
-            QFileInfo fi(releaseRedistDir + u'/' + QStringLiteral("vc_redist.")
-                         + machineArchString + QStringLiteral(".exe"));
+            QFileInfo fi(releaseRedistDir + "/vc_redist."_L1
+                         + machineArchString + ".exe"_L1);
             if (!fi.isFile()) { // Pre MSVC2017/15.5
-                fi.setFile(releaseRedistDir + u'/' + QStringLiteral("vcredist_")
-                           + machineArchString + QStringLiteral(".exe"));
+                fi.setFile(releaseRedistDir + "/vcredist_"_L1
+                           + machineArchString + ".exe"_L1);
             }
             if (fi.isFile())
                 redistFiles.append(fi.absoluteFilePath());
