@@ -68,22 +68,37 @@ QByteArray QNetworkReplyWasmImpl::methodName() const
 
 void QNetworkReplyWasmImpl::close()
 {
+    Q_D(QNetworkReplyWasmImpl);
+
+    if (d->state != QNetworkReplyPrivate::Aborted &&
+        d->state != QNetworkReplyPrivate::Finished &&
+        d->state != QNetworkReplyPrivate::Idle) {
+            d->state = QNetworkReplyPrivate::Finished;
+            d->setCanceled();
+    }
+
     QNetworkReply::close();
-    setFinished(true);
-    emit finished();
 }
 
 void QNetworkReplyWasmImpl::abort()
 {
     Q_D(QNetworkReplyWasmImpl);
+
     if (d->state == QNetworkReplyPrivate::Finished || d->state == QNetworkReplyPrivate::Aborted)
         return;
 
     d->state = QNetworkReplyPrivate::Aborted;
-    d->m_fetch->userData = nullptr;
+    d->setCanceled();
+}
 
-    d->emitReplyError(QNetworkReply::OperationCanceledError, QStringLiteral("Operation canceled"));
-    close();
+void QNetworkReplyWasmImplPrivate::setCanceled()
+{
+    Q_Q(QNetworkReplyWasmImpl);
+    m_fetch->userData = nullptr;
+
+    emitReplyError(QNetworkReply::OperationCanceledError, QStringLiteral("Operation canceled"));
+    q->setFinished(true);
+    emit q->finished();
 }
 
 qint64 QNetworkReplyWasmImpl::bytesAvailable() const
@@ -236,6 +251,7 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
     attr.destinationPath = destinationPath.constData();
 
     m_fetch = emscripten_fetch(&attr, request.url().toString().toUtf8());
+    state = Working;
 }
 
 void QNetworkReplyWasmImplPrivate::emitReplyError(QNetworkReply::NetworkError errorCode, const QString &errorString)
