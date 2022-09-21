@@ -210,6 +210,7 @@ constexpr inline void operator-(Flags::enum_type f1, int f2) noexcept = delete;
 #if __cplusplus > 201702L // assume compilers don't warn if in C++17 mode
   // in C++20 mode, provide user-defined operators to override the deprecated operations:
 # define Q_DECLARE_MIXED_ENUM_OPERATOR(op, Ret, LHS, RHS) \
+    [[maybe_unused]] \
     constexpr inline Ret operator op (LHS lhs, RHS rhs) noexcept \
     { return static_cast<Ret>(qToUnderlying(lhs) op qToUnderlying(rhs)); } \
     /* end */
