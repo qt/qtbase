@@ -179,26 +179,35 @@ typedef QFlags<Enum> Flags;
 
 // These are opt-in, for backwards compatibility
 #define QT_DECLARE_TYPESAFE_OPERATORS_FOR_FLAGS_ENUM(Flags) \
+[[maybe_unused]] \
 constexpr inline Flags operator~(Flags::enum_type e) noexcept \
 { return ~Flags(e); } \
+[[maybe_unused]] \
 constexpr inline void operator|(Flags::enum_type f1, int f2) noexcept = delete;
 #else
 #define QT_DECLARE_TYPESAFE_OPERATORS_FOR_FLAGS_ENUM(Flags) \
+[[maybe_unused]] \
 constexpr inline QIncompatibleFlag operator|(Flags::enum_type f1, int f2) noexcept \
 { return QIncompatibleFlag(int(f1) | f2); }
 #endif
 
 #define Q_DECLARE_OPERATORS_FOR_FLAGS(Flags) \
+[[maybe_unused]] \
 constexpr inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, Flags::enum_type f2) noexcept \
 { return QFlags<Flags::enum_type>(f1) | f2; } \
+[[maybe_unused]] \
 constexpr inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, QFlags<Flags::enum_type> f2) noexcept \
 { return f2 | f1; } \
+[[maybe_unused]] \
 constexpr inline QFlags<Flags::enum_type> operator&(Flags::enum_type f1, Flags::enum_type f2) noexcept \
 { return QFlags<Flags::enum_type>(f1) & f2; } \
+[[maybe_unused]] \
 constexpr inline QFlags<Flags::enum_type> operator&(Flags::enum_type f1, QFlags<Flags::enum_type> f2) noexcept \
 { return f2 & f1; } \
+[[maybe_unused]] \
 constexpr inline QFlags<Flags::enum_type> operator^(Flags::enum_type f1, Flags::enum_type f2) noexcept \
 { return QFlags<Flags::enum_type>(f1) ^ f2; } \
+[[maybe_unused]] \
 constexpr inline QFlags<Flags::enum_type> operator^(Flags::enum_type f1, QFlags<Flags::enum_type> f2) noexcept \
 { return f2 ^ f1; } \
 constexpr inline void operator+(Flags::enum_type f1, Flags::enum_type f2) noexcept = delete; \
