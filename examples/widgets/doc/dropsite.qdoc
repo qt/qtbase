@@ -25,8 +25,8 @@
 
     \snippet draganddrop/dropsite/droparea.h DropArea header part1
 
-    In addition, \c DropArea also contains a private instance of QLabel and
-    reimplementations of four \l{QWidget} event handlers:
+    In addition, \c DropArea contains reimplementations of four \l{QWidget}
+    event handlers:
 
     \list 1
         \li \l{QWidget::dragEnterEvent()}{dragEnterEvent()}

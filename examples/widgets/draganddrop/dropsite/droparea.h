@@ -31,9 +31,6 @@ protected:
     void dragMoveEvent(QDragMoveEvent *event) override;
     void dragLeaveEvent(QDragLeaveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
-
-private:
-    QLabel *label;
 };
 //! [DropArea header part2]
 

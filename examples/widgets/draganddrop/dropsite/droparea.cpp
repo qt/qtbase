@@ -6,6 +6,8 @@
 #include <QDragEnterEvent>
 #include <QMimeData>
 
+using namespace Qt::StringLiterals;
+
 //! [DropArea constructor]
 DropArea::DropArea(QWidget *parent)
     : QLabel(parent)
@@ -46,8 +48,8 @@ void DropArea::dropEvent(QDropEvent *event)
 //! [dropEvent() function part2]
     if (mimeData->hasImage()) {
         setPixmap(qvariant_cast<QPixmap>(mimeData->imageData()));
-    } else if (mimeData->hasFormat(QLatin1String("text/markdown"))) {
-        setText(QString::fromUtf8(mimeData->data(QLatin1String("text/markdown"))));
+    } else if (mimeData->hasFormat(u"text/markdown"_s)) {
+        setText(QString::fromUtf8(mimeData->data(u"text/markdown"_s)));
         setTextFormat(Qt::MarkdownText);
     } else if (mimeData->hasHtml()) {
         setText(mimeData->html());
@@ -58,8 +60,8 @@ void DropArea::dropEvent(QDropEvent *event)
     } else if (mimeData->hasUrls()) {
         QList<QUrl> urlList = mimeData->urls();
         QString text;
-        for (int i = 0; i < urlList.size() && i < 32; ++i)
-            text += urlList.at(i).path() + QLatin1Char('\n');
+        for (qsizetype i = 0, count = qMin(urlList.size(), qsizetype(32)); i < count; ++i)
+            text += urlList.at(i).path() + u'\n';
         setText(text);
     } else {
         setText(tr("Cannot display data"));
