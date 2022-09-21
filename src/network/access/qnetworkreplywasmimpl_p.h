@@ -112,6 +112,7 @@ public:
 
     emscripten_fetch_t *m_fetch;
     void setReplyFinished();
+    void setCanceled();
 
     Q_DECLARE_PUBLIC(QNetworkReplyWasmImpl)
 };
