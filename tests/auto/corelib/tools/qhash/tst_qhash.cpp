@@ -1629,9 +1629,9 @@ void tst_QHash::rehash_isnt_quadratic()
 {
     // this test should be incredibly slow if rehash() is quadratic
     for (int j = 0; j < 5; ++j) {
-        QMultiHash<int, int> testHash;
+        QHash<int, int> testHash;
         for (int i = 0; i < 500000; ++i)
-            testHash.insert(1, 1);
+            testHash.insert(i, 1);
     }
 }
 
