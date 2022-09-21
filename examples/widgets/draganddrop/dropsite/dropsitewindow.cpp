@@ -1,10 +1,22 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QtWidgets>
+#include <QPushButton>
+#include <QDialogButtonBox>
+#include <QHeaderView>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QVBoxLayout>
+
+#include <QClipboard>
+#include <QGuiApplication>
+
+#include <QMimeData>
 
 #include "droparea.h"
 #include "dropsitewindow.h"
+
+using namespace Qt::StringLiterals;
 
 //! [constructor part1]
 DropSiteWindow::DropSiteWindow()
@@ -23,13 +35,10 @@ DropSiteWindow::DropSiteWindow()
 //! [constructor part2]
 
 //! [constructor part3]
-    QStringList labels;
-    labels << tr("Format") << tr("Content");
-
     formatsTable = new QTableWidget;
     formatsTable->setColumnCount(2);
     formatsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    formatsTable->setHorizontalHeaderLabels(labels);
+    formatsTable->setHorizontalHeaderLabels({tr("Format"),  tr("Content")});
     formatsTable->horizontalHeader()->setStretchLastSection(true);
 //! [constructor part3]
 
@@ -60,7 +69,7 @@ DropSiteWindow::DropSiteWindow()
     mainLayout->addWidget(buttonBox);
 
     setWindowTitle(tr("Drop Site"));
-    setMinimumSize(350, 500);
+    resize(700, 500);
 }
 //! [constructor part5]
 
@@ -83,20 +92,21 @@ void DropSiteWindow::updateFormatsTable(const QMimeData *mimeData)
 
 //! [updateFormatsTable() part3]
         QString text;
-        if (format == QLatin1String("text/plain")) {
+        if (format == u"text/plain") {
             text = mimeData->text().simplified();
-        } else if (format == QLatin1String("text/markdown")) {
-            text = QString::fromUtf8(mimeData->data(QLatin1String("text/markdown")));
-        } else if (format == QLatin1String("text/html")) {
+        } else if (format == u"text/markdown") {
+            text = QString::fromUtf8(mimeData->data(u"text/markdown"_s));
+        } else if (format == u"text/html") {
             text = mimeData->html().simplified();
-        } else if (format == QLatin1String("text/uri-list")) {
+        } else if (format == u"text/uri-list") {
             QList<QUrl> urlList = mimeData->urls();
-            for (int i = 0; i < urlList.size() && i < 32; ++i)
-                text.append(urlList.at(i).toString() + QLatin1Char(' '));
+            for (qsizetype i = 0, count = qMin(urlList.size(), qsizetype(32)); i < count; ++i)
+                text.append(urlList.at(i).toString() + u' ');
         } else {
             QByteArray data = mimeData->data(format);
-            for (int i = 0; i < data.size() && i < 32; ++i)
-                text.append(QStringLiteral("%1 ").arg(uchar(data[i]), 2, 16, QLatin1Char('0')).toUpper());
+            if (data.size() > 32)
+                data.truncate(32);
+            text = QString::fromLatin1(data.toHex(' ')).toUpper();
         }
 //! [updateFormatsTable() part3]
 
