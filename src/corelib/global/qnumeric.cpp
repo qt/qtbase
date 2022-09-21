@@ -351,6 +351,9 @@ Q_CORE_EXPORT quint64 qFloatDistance(double a, double b)
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 11A
+
+    \note If the value \a d is outside the range of \c int,
+    the behavior is undefined.
 */
 
 /*! \fn int qRound(float d)
@@ -365,6 +368,9 @@ Q_CORE_EXPORT quint64 qFloatDistance(double a, double b)
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 11B
+
+    \note If the value \a d is outside the range of \c int,
+    the behavior is undefined.
 */
 
 /*! \fn qint64 qRound64(double d)
@@ -379,6 +385,9 @@ Q_CORE_EXPORT quint64 qFloatDistance(double a, double b)
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 12A
+
+    \note If the value \a d is outside the range of \c qint64,
+    the behavior is undefined.
 */
 
 /*! \fn qint64 qRound64(float d)
@@ -393,6 +402,9 @@ Q_CORE_EXPORT quint64 qFloatDistance(double a, double b)
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 12B
+
+    \note If the value \a d is outside the range of \c qint64,
+    the behavior is undefined.
 */
 
 /*!
