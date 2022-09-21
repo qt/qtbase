@@ -1465,7 +1465,11 @@ void QRenderRule::configurePalette(QPalette *p, QPalette::ColorGroup cg, const Q
         p->setBrush(cg, w->foregroundRole(), pal->foreground);
         p->setBrush(cg, QPalette::WindowText, pal->foreground);
         p->setBrush(cg, QPalette::Text, pal->foreground);
-        p->setBrush(cg, QPalette::PlaceholderText, pal->foreground);
+        QColor phColor(pal->foreground.color());
+        phColor.setAlpha((phColor.alpha() + 1) / 2);
+        QBrush placeholder = pal->foreground;
+        placeholder.setColor(phColor);
+        p->setBrush(cg, QPalette::PlaceholderText, placeholder);
     }
     if (pal->selectionBackground.style() != Qt::NoBrush)
         p->setBrush(cg, QPalette::Highlight, pal->selectionBackground);
