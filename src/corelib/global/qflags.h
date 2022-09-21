@@ -184,12 +184,16 @@ typedef QFlags<Enum> Flags;
 #endif
 
 #define Q_DECLARE_OPERATORS_FOR_FLAGS(Flags) \
+[[maybe_unused]] \
 constexpr inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, Flags::enum_type f2) noexcept \
 { return QFlags<Flags::enum_type>(f1) | f2; } \
+[[maybe_unused]] \
 constexpr inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, QFlags<Flags::enum_type> f2) noexcept \
 { return f2 | f1; } \
+[[maybe_unused]] \
 constexpr inline QFlags<Flags::enum_type> operator&(Flags::enum_type f1, Flags::enum_type f2) noexcept \
 { return QFlags<Flags::enum_type>(f1) & f2; } \
+[[maybe_unused]] \
 constexpr inline QFlags<Flags::enum_type> operator&(Flags::enum_type f1, QFlags<Flags::enum_type> f2) noexcept \
 { return f2 & f1; } \
 constexpr inline void operator+(Flags::enum_type f1, Flags::enum_type f2) noexcept = delete; \
