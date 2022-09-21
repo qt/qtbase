@@ -381,7 +381,7 @@ QTimeZone::QTimeZone(QTimeZonePrivate &dd)
     Copy constructor, copy \a other to this.
 */
 
-QTimeZone::QTimeZone(const QTimeZone &other)
+QTimeZone::QTimeZone(const QTimeZone &other) noexcept
     : d(other.d)
 {
 }

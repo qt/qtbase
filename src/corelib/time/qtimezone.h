@@ -61,7 +61,7 @@ public:
     QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name,
               const QString &abbreviation, QLocale::Territory territory = QLocale::AnyTerritory,
               const QString &comment = QString());
-    QTimeZone(const QTimeZone &other);
+    QTimeZone(const QTimeZone &other) noexcept;
     QTimeZone(QTimeZone &&other) noexcept;
     ~QTimeZone();
 
