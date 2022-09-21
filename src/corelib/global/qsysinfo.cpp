@@ -232,10 +232,8 @@ static QString unquote(const char *begin, const char *end)
     // All strings should be in UTF-8 format, and non-printable
     // characters should not be used. It is not supported to
     // concatenate multiple individually quoted strings.
-    if (*begin == '"') {
-        Q_ASSERT(end[-1] == '"');
+    if (*begin == '"')
         return QString::fromUtf8(begin + 1, end - begin - 2);
-    }
     return QString::fromUtf8(begin, end - begin);
 }
 static QByteArray getEtcFileContent(const char *filename)
