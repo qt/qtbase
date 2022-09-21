@@ -58,112 +58,50 @@ using namespace Qt::StringLiterals;
     \title Global Qt Declarations
     \ingroup funclists
 
-    \brief The <QtGlobal> header file includes the fundamental global
-    declarations. It is included by most other Qt header files.
+    \brief The <QtGlobal> header file includes an assortment of other headers.
 
-    The global declarations include \l{types}, \l{functions} and
-    \l{macros}.
+    Up to Qt 6.5, most Qt header files included <QtGlobal>. Before Qt 6.5,
+    <QtGlobal> defined an assortment of global declarations. Most of these
+    have moved, at Qt 6.5, to separate headers, so that source code can
+    include only what it needs, rather than the whole assortment. For now,
+    <QtGlobal> includes those other headers (see next section), but future
+    releases of Qt may remove some of these headers from <QtGlobal> or
+    condition their inclusion on a version check. Likewise, in future
+    releases, some Qt headers that currently include <QtGlobal> may stop
+    doing so. The hope is that this will improve compilation times by
+    avoiding global declarations when they are not used.
 
-    The type definitions are partly convenience definitions for basic
-    types (some of which guarantee certain bit-sizes on all platforms
-    supported by Qt), partly types related to Qt message handling. The
-    functions are related to generating messages, Qt version handling
-    and comparing and adjusting object values. And finally, some of
-    the declared macros enable programmers to add compiler or platform
-    specific code to their applications, while others are convenience
-    macros for larger operations.
+    \section1 List of Headers Extracted from <QtGlobal>
 
-    \section1 Types
-
-    The header file declares several type definitions that guarantee a
-    specified bit-size on all platforms supported by Qt for various
-    basic types, for example \l qint8 which is a signed char
-    guaranteed to be 8-bit on all platforms supported by Qt. The
-    header file also declares the \l qlonglong type definition for \c
-    {long long int } (\c __int64 on Windows).
-
-    Several convenience type definitions are declared: \l qreal for \c
-    double or \c float, \l uchar for \c unsigned char, \l uint for \c unsigned
-    int, \l ulong for \c unsigned long and \l ushort for \c unsigned
-    short.
-
-    Finally, the QtMsgType definition identifies the various messages
-    that can be generated and sent to a Qt message handler;
-    QtMessageHandler is a type definition for a pointer to a function with
-    the signature
-    \c {void myMessageHandler(QtMsgType, const QMessageLogContext &, const char *)}.
-    QMessageLogContext class contains the line, file, and function the
-    message was logged at. This information is created by the QMessageLogger
-    class.
-
-    \section1 Functions
-
-    The <QtGlobal> header file contains several functions comparing
-    and adjusting an object's value. These functions take a template
-    type as argument: You can retrieve the absolute value of an object
-    using the qAbs() function, and you can bound a given object's
-    value by given minimum and maximum values using the qBound()
-    function. You can retrieve the minimum and maximum of two given
-    objects using qMin() and qMax() respectively. All these functions
-    return a corresponding template type; the template types can be
-    replaced by any other type.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp 3
-
-    <QtGlobal> also contains functions that generate messages from the
-    given string argument: qDebug(), qInfo(), qWarning(), qCritical(),
-    and qFatal(). These functions call the message handler
-    with the given message.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp 4
-
-    The remaining functions are qRound() and qRound64(), which both
-    accept a \c double or \c float value as their argument returning
-    the value rounded up to the nearest integer and 64-bit integer
-    respectively, the qInstallMessageHandler() function which installs
-    the given QtMessageHandler, and the qVersion() function which
-    returns the version number of Qt at runtime as a string.
-
-    \section1 Macros
-
-    The <QtGlobal> header file provides a range of macros (Q_CC_*)
-    that are defined if the application is compiled using the
-    specified platforms. For example, the Q_CC_SUN macro is defined if
-    the application is compiled using Forte Developer, or Sun Studio
-    C++.  The header file also declares a range of macros (Q_OS_*)
-    that are defined for the specified platforms. For example,
-    Q_OS_UNIX which is defined for the Unix-based systems.
-
-    The purpose of these macros is to enable programmers to add
-    compiler or platform specific code to their application.
-
-    The remaining macros are convenience macros for larger operations:
-    The QT_TR_NOOP(), QT_TRANSLATE_NOOP(), and QT_TRANSLATE_NOOP3()
-    macros provide the possibility of marking strings for delayed
-    translation. QT_TR_N_NOOP(), QT_TRANSLATE_N_NOOP(), and
-    QT_TRANSLATE_N_NOOP3() are numerator dependent variants of these.
-    The Q_ASSERT() and Q_ASSERT_X() enables warning messages of various
-    level of refinement. The Q_FOREACH() and foreach() macros
-    implement Qt's foreach loop.
-
-    The Q_INT64_C() and Q_UINT64_C() macros wrap signed and unsigned
-    64-bit integer literals in a platform-independent way. The
-    Q_CHECK_PTR() macro prints a warning containing the source code's
-    file name and line number, saying that the program ran out of
-    memory, if the pointer is \nullptr. The qPrintable() and qUtf8Printable()
-    macros represent an easy way of printing text.
-
-    The QT_POINTER_SIZE macro expands to the size of a pointer in bytes.
-
-    The macros QT_VERSION and QT_VERSION_STR expand to a numeric value or a
-    string, respectively. These identify the version of Qt that the application
-    is compiled with.
-
-    \sa <QtAlgorithms>, QSysInfo
+    \table
+    \header \li Header                      \li Summary
+    \row    \li <QFlags>                    \li Type-safe way of combining enum values
+    \row    \li \l <QForeach>               \li Qt's implementation of foreach and forever loops
+    \row    \li \l <QFunctionPointer>       \li Typedef for a pointer-to-function type
+    \row    \li <QGlobalStatic>             \li Thread-safe initialization of global static objects
+    \row    \li \l <QOverload>              \li Helpers for resolving member function overloads
+    \row    \li <QSysInfo>                  \li A helper class to get system information
+    \row    \li \l <QTypeInfo>              \li Helpers to get type information
+    \row    \li \l <QtAssert>               \li Q_ASSERT and other runtime checks
+    \row    \li \l <QtClassHelperMacros>    \li Qt class helper macros
+    \row    \li \l <QtCompilerDetection>    \li Compiler-specific macro definitions
+    \row    \li \l <QtDeprecationMarkers>   \li Deprecation helper macros
+    \row    \li \l <QtEnvironmentVariables> \li Helpers for working with environment variables
+    \row    \li <QtExceptionHandling>       \li Helpers for exception handling
+    \row    \li \l <QtLogging>              \li Qt logging helpers
+    \row    \li <QtMalloc>                  \li Memory allocation helpers
+    \row    \li \l <QtMinMax>               \li Helpers for comparing values
+    \row    \li \l <QtNumeric>              \li Various numeric functions
+    \row    \li \l <QtPreprocessorSupport>  \li Helper preprocessor macros
+    \row    \li \l <QtProcessorDetection>   \li Architecture-specific macro definitions
+    \row    \li \l <QtResource>             \li Helpers for initializing and cleaning resources
+    \row    \li \l <QtSwap>                 \li Implementation of qSwap()
+    \row    \li \l <QtSystemDetection>      \li Platform-specific macro definitions
+    \row    \li \l <QtTranslation>          \li Qt translation helpers
+    \row    \li \l <QtTypeTraits>           \li Qt type traits
+    \row    \li \l <QtTypes>                \li Qt fundamental type declarations
+    \row    \li \l <QtVersionChecks>        \li Qt Version related checks
+    \endtable
 */
 
 /*
