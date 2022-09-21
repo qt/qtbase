@@ -899,7 +899,7 @@ bool QGuiApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blocking
             auto *current = window;
             do {
                 if (current->isAncestorOf(modalWindow, QWindow::IncludeTransients)) {
-                    *blockingWindow = current;
+                    *blockingWindow = modalWindow;
                     return true;
                 }
                 current = current->parent(QWindow::IncludeTransients);
