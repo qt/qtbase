@@ -3,7 +3,7 @@
 
 /*!
     \macro QT_TR_NOOP(sourceText)
-    \relates <QTranslation>
+    \relates <QtTranslation>
 
     Marks the UTF-8 encoded string literal \a sourceText for delayed
     translation in the current context (class).
@@ -23,7 +23,7 @@
 
 /*!
     \macro QT_TRANSLATE_NOOP(context, sourceText)
-    \relates <QTranslation>
+    \relates <QtTranslation>
 
     Marks the UTF-8 encoded string literal \a sourceText for delayed
     translation in the given \a context. The \a context is typically
@@ -41,7 +41,7 @@
 
 /*!
     \macro QT_TRANSLATE_NOOP3(context, sourceText, disambiguation)
-    \relates <QTranslation>
+    \relates <QtTranslation>
     \since 4.4
 
     Marks the UTF-8 encoded string literal \a sourceText for delayed
@@ -63,7 +63,7 @@
 
 /*!
     \macro QT_TR_N_NOOP(sourceText)
-    \relates <QTranslation>
+    \relates <QtTranslation>
     \since 5.12
 
     Marks the UTF-8 encoded string literal \a sourceText for numerator
@@ -83,7 +83,7 @@
 
 /*!
     \macro QT_TRANSLATE_N_NOOP(context, sourceText)
-    \relates <QTranslation>
+    \relates <QtTranslation>
     \since 5.12
 
     Marks the UTF-8 encoded string literal \a sourceText for numerator
@@ -104,7 +104,7 @@
 
 /*!
     \macro QT_TRANSLATE_N_NOOP3(context, sourceText, comment)
-    \relates <QTranslation>
+    \relates <QtTranslation>
     \since 5.12
 
     Marks the UTF-8 encoded string literal \a sourceText for numerator
@@ -128,7 +128,7 @@
 
 /*!
     \fn QString qtTrId(const char *id, int n = -1)
-    \relates <QTranslation>
+    \relates <QtTranslation>
     \reentrant
     \since 4.6
 
@@ -168,7 +168,7 @@
 
 /*!
     \macro QT_TRID_NOOP(id)
-    \relates <QTranslation>
+    \relates <QtTranslation>
     \since 4.6
 
     \brief The QT_TRID_NOOP macro marks an id for dynamic translation.
@@ -187,7 +187,7 @@
 
 /*!
     \macro QT_TRID_N_NOOP(id)
-    \relates <QTranslation>
+    \relates <QtTranslation>
     \since 6.3
 
     \brief The QT_TRID_N_NOOP macro marks an id for numerator

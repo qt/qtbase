@@ -1,13 +1,13 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QTRANSLATION_H
-#define QTRANSLATION_H
+#ifndef QTTRANSLATION_H
+#define QTTRANSLATION_H
 
 #include <QtCore/qglobal.h>
 
 #if 0
-#pragma qt_class(QTranslation)
+#pragma qt_class(QtTranslation)
 #pragma qt_sync_stop_processing
 #endif
 
@@ -38,4 +38,4 @@ QT_END_NAMESPACE
 
 #endif // QT_NO_TRANSLATION
 
-#endif /* QTRANSLATION_H */
+#endif /* QTTRANSLATION_H */

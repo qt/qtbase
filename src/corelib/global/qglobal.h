@@ -100,8 +100,8 @@ QT_END_NAMESPACE
 #include <QtCore/qswap.h>
 #include <QtCore/qtdeprecationmarkers.h>
 #include <QtCore/qtenvironmentvariables.h>
-#include <QtCore/qtranslation.h>
 #include <QtCore/qtresource.h>
+#include <QtCore/qttranslation.h>
 #include <QtCore/qtypetraits.h>
 #include <QtCore/qversiontagging.h>
 
