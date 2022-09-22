@@ -227,7 +227,7 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
     \value DontConfirmOverwrite Don't ask for confirmation if an
     existing file is selected.  By default confirmation is requested.
 
-    Note: This opption is not supported on macOS when using the
+    Note: This option is not supported on macOS when using the
     native file dialog.
 
     \value DontUseNativeDialog Don't use the native file dialog. By
