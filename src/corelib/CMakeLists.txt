@@ -55,7 +55,6 @@ qt_internal_add_module(Core
         global/qcontainerinfo.h
         global/qdarwinhelpers.h
         global/qendian.cpp global/qendian.h global/qendian_p.h
-        global/qenvironmentvariables.cpp global/qenvironmentvariables.h
         global/qexceptionhandling.cpp global/qexceptionhandling.h
         global/qflags.h
         global/qfloat16.cpp global/qfloat16.h
@@ -80,6 +79,7 @@ qt_internal_add_module(Core
         global/qtclasshelpermacros.h
         global/qtconfigmacros.h
         global/qtdeprecationmarkers.h
+        global/qtenvironmentvariables.cpp global/qtenvironmentvariables.h
         global/qtrace_p.h
         global/qtranslation.h
         global/qtresource.h

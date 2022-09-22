@@ -295,7 +295,7 @@ QString QDir::operator[](int i) const
 }
 #endif
 
-#include "qenvironmentvariables.h"
+#include "qtenvironmentvariables.h"
 
 bool qputenv(const char *varName, const QByteArray &value)
 {

@@ -1,7 +1,7 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qenvironmentvariables.h"
+#include "qtenvironmentvariables.h"
 
 #include <qplatformdefs.h>
 #include <QtCore/qbytearray.h>
@@ -18,7 +18,7 @@ QT_BEGIN_NAMESPACE
 Q_CONSTINIT static QBasicMutex environmentMutex;
 
 /*!
-    \relates <QEnvironmentVariables>
+    \relates <QtEnvironmentVariables>
     \threadsafe
 
     Returns the value of the environment variable with name \a varName as a
@@ -63,7 +63,7 @@ QByteArray qgetenv(const char *varName)
     \fn QString qEnvironmentVariable(const char *varName, const QString &defaultValue)
     \fn QString qEnvironmentVariable(const char *varName)
 
-    \relates <QEnvironmentVariables>
+    \relates <QtEnvironmentVariables>
     \since 5.10
 
     These functions return the value of the environment variable, \a varName, as a
@@ -143,7 +143,7 @@ QString qEnvironmentVariable(const char *varName)
 }
 
 /*!
-    \relates <QEnvironmentVariables>
+    \relates <QtEnvironmentVariables>
     \since 5.1
 
     Returns whether the environment variable \a varName is empty.
@@ -171,7 +171,7 @@ bool qEnvironmentVariableIsEmpty(const char *varName) noexcept
 }
 
 /*!
-    \relates <QEnvironmentVariables>
+    \relates <QtEnvironmentVariables>
     \since 5.5
 
     Returns the numerical value of the environment variable \a varName.
@@ -219,7 +219,7 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) noexcept
 }
 
 /*!
-    \relates <QEnvironmentVariables>
+    \relates <QtEnvironmentVariables>
     \since 5.1
 
     Returns whether the environment variable \a varName is set.
@@ -244,7 +244,7 @@ bool qEnvironmentVariableIsSet(const char *varName) noexcept
 
 /*!
     \fn bool qputenv(const char *varName, QByteArrayView value)
-    \relates <QEnvironmentVariables>
+    \relates <QtEnvironmentVariables>
 
     This function sets the \a value of the environment variable named
     \a varName. It will create the variable if it does not exist. It
@@ -294,7 +294,7 @@ bool qputenv(const char *varName, QByteArrayView raw)
 }
 
 /*!
-    \relates <QEnvironmentVariables>
+    \relates <QtEnvironmentVariables>
 
     This function deletes the variable \a varName from the environment.
 

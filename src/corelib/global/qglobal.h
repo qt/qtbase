@@ -90,7 +90,6 @@ QT_END_NAMESPACE
 #include <QtCore/qatomic.h>
 #include <QtCore/qconstructormacros.h>
 #include <QtCore/qdarwinhelpers.h>
-#include <QtCore/qenvironmentvariables.h>
 #include <QtCore/qexceptionhandling.h>
 #include <QtCore/qforeach.h>
 #include <QtCore/qglobalstatic.h>
@@ -100,6 +99,7 @@ QT_END_NAMESPACE
 #include <QtCore/qoverload.h>
 #include <QtCore/qswap.h>
 #include <QtCore/qtdeprecationmarkers.h>
+#include <QtCore/qtenvironmentvariables.h>
 #include <QtCore/qtranslation.h>
 #include <QtCore/qtresource.h>
 #include <QtCore/qtypetraits.h>

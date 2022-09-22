@@ -19,7 +19,6 @@ qt_internal_extend_target(Bootstrap
     SOURCES
         ../../corelib/global/qassert.cpp
         ../../corelib/global/qendian.cpp
-        ../../corelib/global/qenvironmentvariables.cpp
         ../../corelib/global/qfloat16.cpp
         ../../corelib/global/qglobal.cpp
         ../../corelib/global/qlogging.cpp
@@ -27,6 +26,7 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/global/qnumeric.cpp
         ../../corelib/global/qoperatingsystemversion.cpp
         ../../corelib/global/qrandom.cpp
+        ../../corelib/global/qtenvironmentvariables.cpp
         ../../corelib/io/qabstractfileengine.cpp
         ../../corelib/io/qbuffer.cpp
         ../../corelib/io/qdebug.cpp

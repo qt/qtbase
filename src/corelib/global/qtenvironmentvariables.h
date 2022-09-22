@@ -1,14 +1,14 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QENVIRONMENTVARIABLES_H
-#define QENVIRONMENTVARIABLES_H
+#ifndef QTENVIRONMENTVARIABLES_H
+#define QTENVIRONMENTVARIABLES_H
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qtdeprecationmarkers.h>
 
 #if 0
-#pragma qt_class(QEnvironmentVariables)
+#pragma qt_class(QtEnvironmentVariables)
 #pragma qt_sync_stop_processing
 #endif
 
@@ -33,4 +33,4 @@ Q_CORE_EXPORT int  qEnvironmentVariableIntValue(const char *varName, bool *ok=nu
 
 QT_END_NAMESPACE
 
-#endif /* QENVIRONMENTVARIABLES_H */
+#endif /* QTENVIRONMENTVARIABLES_H */
