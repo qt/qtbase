@@ -76,7 +76,7 @@ ret
 // Approximately 6 instruction slots used
 #endif
 
-const BYTE g_testVertexShader[] =
+inline constexpr BYTE g_testVertexShader[] =
 {
      68,  88,  66,  67,  75, 198,
      18, 149, 172, 244, 247, 123,
