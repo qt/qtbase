@@ -14,12 +14,16 @@ ChatMainWindow::ChatMainWindow()
     setupUi(this);
     sendButton->setEnabled(false);
 
-    connect(messageLineEdit, SIGNAL(textChanged(QString)),
-            this, SLOT(textChangedSlot(QString)));
-    connect(sendButton, SIGNAL(clicked(bool)), this, SLOT(sendClickedSlot()));
-    connect(actionChangeNickname, SIGNAL(triggered(bool)), this, SLOT(changeNickname()));
-    connect(actionAboutQt, SIGNAL(triggered(bool)), this, SLOT(aboutQt()));
-    connect(qApp, SIGNAL(lastWindowClosed()), this, SLOT(exiting()));
+    connect(messageLineEdit, &QLineEdit::textChanged,
+            this, &ChatMainWindow::textChangedSlot);
+    connect(sendButton, &QPushButton::clicked,
+            this, &ChatMainWindow::sendClickedSlot);
+    connect(actionChangeNickname, &QAction::triggered,
+            this, &ChatMainWindow::changeNickname);
+    connect(actionAboutQt, &QAction::triggered,
+            this, &ChatMainWindow::aboutQt);
+    connect(qApp, &QApplication::lastWindowClosed,
+            this, &ChatMainWindow::exiting);
 
     // add our D-Bus interface and connect to D-Bus
     new ChatAdaptor(this);
@@ -29,7 +33,8 @@ ChatMainWindow::ChatMainWindow()
     iface = new org::example::chat(QString(), QString(), QDBusConnection::sessionBus(), this);
     //connect(iface, SIGNAL(message(QString,QString)), this, SLOT(messageSlot(QString,QString)));
     QDBusConnection::sessionBus().connect(QString(), QString(), "org.example.chat", "message", this, SLOT(messageSlot(QString,QString)));
-    connect(iface, SIGNAL(action(QString,QString)), this, SLOT(actionSlot(QString,QString)));
+    connect(iface, &org::example::chat::action,
+            this, &ChatMainWindow::actionSlot);
 
     NicknameDialog dialog;
     dialog.cancelButton->setVisible(false);
