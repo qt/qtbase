@@ -15,9 +15,6 @@
 #include <shlobj.h>
 #include <shlwapi.h>
 
-struct IBindCtx;
-struct _SHSTOCKICONINFO;
-
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcQpaWindows)
