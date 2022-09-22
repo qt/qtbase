@@ -357,8 +357,8 @@ public:
 
         // Widget types
         QSizePolicy = 0x2000,
-        LastCoreType = Char32,
-        LastGuiType = QColorSpace,
+
+        // Start-point for client-code types:
         User = 65536
     };
 #endif

@@ -414,8 +414,6 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
 
     \value User  Base value for user types
     \value UnknownType This is an invalid type id. It is returned from QMetaType for types that are not registered
-    \omitvalue LastCoreType
-    \omitvalue LastGuiType
 
     Additional types can be registered using qRegisterMetaType() or by calling
     registerType().
