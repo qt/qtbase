@@ -393,6 +393,7 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
     \value QStringList QStringList
     \value QVariantMap QVariantMap
     \value QVariantHash QVariantHash
+    \value QVariantPair QVariantPair
     \value QIcon QIcon
     \value QPen QPen
     \value QLineF QLineF
