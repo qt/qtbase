@@ -83,10 +83,10 @@ qt_internal_add_module(Core
         global/qtrace_p.h
         global/qtresource.h
         global/qttranslation.h
+        global/qttypetraits.h
         global/qtversionchecks.h
         global/qtypeinfo.h
         global/qtypes.cpp global/qtypes.h
-        global/qtypetraits.h
         global/qvolatile_p.h
         global/q20algorithm.h
         global/q20functional.h

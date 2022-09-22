@@ -3,7 +3,7 @@
 
 /*!
     \fn template <typename Enum> std::underlying_type_t<Enum> qToUnderlying(Enum e)
-    \relates <QTypeTraits>
+    \relates <QtTypeTraits>
     \since 6.2
 
     Converts the enumerator \a e to the equivalent value expressed in its

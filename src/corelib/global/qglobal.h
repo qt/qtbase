@@ -102,7 +102,7 @@ QT_END_NAMESPACE
 #include <QtCore/qtenvironmentvariables.h>
 #include <QtCore/qtresource.h>
 #include <QtCore/qttranslation.h>
-#include <QtCore/qtypetraits.h>
+#include <QtCore/qttypetraits.h>
 #include <QtCore/qversiontagging.h>
 
 #endif /* __cplusplus */
