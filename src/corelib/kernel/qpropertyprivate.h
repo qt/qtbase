@@ -194,8 +194,7 @@ struct BindingFunctionVTable
                     return true;
                 } else {
                     // Our code will never instantiate this
-                    Q_UNREACHABLE();
-                    return false;
+                    Q_UNREACHABLE_RETURN(false);
                 }
             },
             /*destroy*/[](void *f){ static_cast<Callable *>(f)->~Callable(); },

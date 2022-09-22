@@ -599,8 +599,7 @@ static const char *macroNameForOp(QTest::ComparisonOperation op)
     case ComparisonOperation::GreaterThanOrEqual:
         return "QCOMPARE_GE";
     }
-    Q_UNREACHABLE();
-    return "";
+    Q_UNREACHABLE_RETURN("");
 }
 
 static const char *failureMessageForOp(QTest::ComparisonOperation op)
@@ -622,8 +621,7 @@ static const char *failureMessageForOp(QTest::ComparisonOperation op)
     case ComparisonOperation::GreaterThanOrEqual:
         return "Left value is expected to be greater than or equal to right value, but is not";
     }
-    Q_UNREACHABLE();
-    return "";
+    Q_UNREACHABLE_RETURN("");
 }
 
 bool QTestResult::reportResult(bool success, qxp::function_ref<const char *()> lhs,

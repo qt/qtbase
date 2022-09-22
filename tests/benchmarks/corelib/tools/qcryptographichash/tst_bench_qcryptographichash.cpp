@@ -80,8 +80,7 @@ const char *algoname(int i)
     case QCryptographicHash::Blake2s_256:
         return "blake2s_256-";
     }
-    Q_UNREACHABLE();
-    return nullptr;
+    Q_UNREACHABLE_RETURN(nullptr);
 }
 
 tst_QCryptographicHash::tst_QCryptographicHash()

@@ -50,8 +50,7 @@ constexpr int half_point = 1 << 15;
 template <QPixelLayout::BPP bpp> static
 inline uint QT_FASTCALL fetch1Pixel(const uchar *, int)
 {
-    Q_UNREACHABLE();
-    return 0;
+    Q_UNREACHABLE_RETURN(0);
 }
 
 template <>
@@ -4917,8 +4916,7 @@ void qBlendTexture(int count, const QSpan *spans, void *userData)
     ProcessSpans proc;
     switch (data->rasterBuffer->format) {
     case QImage::Format_Invalid:
-        Q_UNREACHABLE();
-        return;
+        Q_UNREACHABLE_RETURN();
     case QImage::Format_ARGB32_Premultiplied:
         proc = processTextureSpansARGB32PM[blendType];
         break;

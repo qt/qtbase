@@ -346,8 +346,7 @@ quint32 FieldLookupTable::indexOfChunk(const Chunk *chunk) const
             return quint32(i);
     }
 
-    Q_UNREACHABLE();
-    return 0;
+    Q_UNREACHABLE_RETURN(0);
 }
 
 quint32 FieldLookupTable::keyToIndex(const SearchEntry &key) const

@@ -3495,8 +3495,7 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &err
     case QUrlPrivate::NoError:
         Q_ASSERT_X(false, "QUrl::errorString",
                    "Impossible: QUrl::errorString should have treated this condition");
-        Q_UNREACHABLE();
-        return QString();
+        Q_UNREACHABLE_RETURN(QString());
 
     case QUrlPrivate::InvalidSchemeError: {
         auto msg = "Invalid scheme (character '%1' not permitted)"_L1;
@@ -3554,8 +3553,7 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &err
     }
 
     Q_ASSERT_X(false, "QUrl::errorString", "Cannot happen, unknown error");
-    Q_UNREACHABLE();
-    return QString();
+    Q_UNREACHABLE_RETURN(QString());
 }
 
 static inline void appendComponentIfPresent(QString &msg, bool present, const char *componentName,

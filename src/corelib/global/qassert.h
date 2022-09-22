@@ -70,6 +70,14 @@ inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
         Q_UNREACHABLE_IMPL();\
     } while (false)
 
+#ifndef Q_UNREACHABLE_RETURN
+#  ifdef Q_COMPILER_COMPLAINS_ABOUT_RETURN_AFTER_UNREACHABLE
+#    define Q_UNREACHABLE_RETURN(...) Q_UNREACHABLE()
+#  else
+#    define Q_UNREACHABLE_RETURN(...) do { Q_UNREACHABLE(); return __VA_ARGS__; } while (0)
+#  endif
+#endif
+
 #define Q_ASSUME(Expr) \
     [] (bool valueOfExpression) {\
         Q_ASSERT_X(valueOfExpression, "Q_ASSUME()", "Assumption in Q_ASSUME(\"" #Expr "\") was not correct");\

@@ -1033,8 +1033,7 @@ static inline uint qUnpremultiplyRgb30(uint rgb30)
     case 3:
         return rgb30;
     }
-    Q_UNREACHABLE();
-    return 0;
+    Q_UNREACHABLE_RETURN(0);
 }
 
 template<bool rgbswap>

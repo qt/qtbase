@@ -541,8 +541,7 @@ static const char *zlibOpAsString(ZLibOp op)
     case ZLibOp::Compression: return "qCompress";
     case ZLibOp::Decompression: return "qUncompress";
     }
-    Q_UNREACHABLE();
-    return nullptr;
+    Q_UNREACHABLE_RETURN(nullptr);
 }
 
 Q_DECL_COLD_FUNCTION
@@ -2908,8 +2907,7 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const
     case QContainerImplHelper::Subset:
         return QByteArray(d.data() + p, l);
     }
-    Q_UNREACHABLE();
-    return QByteArray();
+    Q_UNREACHABLE_RETURN(QByteArray());
 }
 
 /*!

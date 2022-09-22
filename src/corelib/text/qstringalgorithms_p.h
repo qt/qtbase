@@ -47,8 +47,7 @@ template <typename StringType> struct QStringAlgorithms
     static inline StringType trimmed_helper_inplace(const NakedStringType &, const Char *, const Char *)
     {
         // can't happen
-        Q_UNREACHABLE();
-        return StringType();
+        Q_UNREACHABLE_RETURN(StringType());
     }
 
     static inline void trimmed_helper_positions(const Char *&begin, const Char *&end)

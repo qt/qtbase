@@ -124,8 +124,7 @@ class QFreeList
                 return i;
             x -= size;
         }
-        Q_UNREACHABLE();
-        return -1;
+        Q_UNREACHABLE_RETURN(-1);
     }
 
     // allocate a block of the given \a size, initialized starting with the given \a offset

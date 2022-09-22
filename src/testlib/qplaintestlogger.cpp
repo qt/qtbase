@@ -62,8 +62,7 @@ namespace QTest {
         case QAbstractTestLogger::BlacklistedXFail:
             return "BXFAIL ";
         }
-        Q_UNREACHABLE();
-        return nullptr;
+        Q_UNREACHABLE_RETURN(nullptr);
     }
 
     static const char *benchmarkResult2String()
@@ -89,8 +88,7 @@ namespace QTest {
         case QAbstractTestLogger::Warn:
             return "WARNING";
         }
-        Q_UNREACHABLE();
-        return nullptr;
+        Q_UNREACHABLE_RETURN(nullptr);
     }
 
     template <typename T>

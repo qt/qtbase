@@ -2841,8 +2841,7 @@ static inline bool usesSameOffset(const QDateTimeData &a, const QDateTimeData &b
         Q_ASSERT(!a.isShort() && !b.isShort());
         return a->m_offsetFromUtc == b->m_offsetFromUtc;
     }
-    Q_UNREACHABLE();
-    return false;
+    Q_UNREACHABLE_RETURN(false);
 }
 
 // Refresh the LocalTime or TimeZone validity and offset
@@ -3805,8 +3804,7 @@ qint64 QDateTime::toMSecsSinceEpoch() const
 #endif
         return 0;
     }
-    Q_UNREACHABLE();
-    return 0;
+    Q_UNREACHABLE_RETURN(0);
 }
 
 /*!

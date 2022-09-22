@@ -2261,8 +2261,7 @@ static bool integralEquals(uint promotedType, const QVariant::Private *d1, const
     if (promotedType == QMetaType::ULongLong)
         return qulonglong(l1) == qulonglong(l2);
 
-    Q_UNREACHABLE();
-    return 0;
+    Q_UNREACHABLE_RETURN(0);
 }
 
 namespace {
@@ -2306,8 +2305,7 @@ static std::optional<int> integralCompare(uint promotedType, const QVariant::Pri
     if (promotedType == QMetaType::ULongLong)
         return spaceShip<qulonglong>(l1, l2);
 
-    Q_UNREACHABLE();
-    return 0;
+    Q_UNREACHABLE_RETURN(0);
 }
 
 static std::optional<int> numericCompare(const QVariant::Private *d1, const QVariant::Private *d2)

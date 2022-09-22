@@ -5025,8 +5025,7 @@ QString QString::mid(qsizetype position, qsizetype n) const
     case QContainerImplHelper::Subset:
         return QString(constData() + p, l);
     }
-    Q_UNREACHABLE();
-    return QString();
+    Q_UNREACHABLE_RETURN(QString());
 }
 
 /*!

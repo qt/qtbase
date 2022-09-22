@@ -125,8 +125,7 @@ void QLinuxFbDevice::close()
 
 void *QLinuxFbDevice::nativeDisplay() const
 {
-    Q_UNREACHABLE();
-    return nullptr;
+    Q_UNREACHABLE_RETURN(nullptr);
 }
 
 QPlatformScreen *QLinuxFbDevice::createScreen(const QKmsOutput &output)

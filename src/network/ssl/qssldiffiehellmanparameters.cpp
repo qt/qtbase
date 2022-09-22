@@ -241,8 +241,7 @@ QString QSslDiffieHellmanParameters::errorString() const noexcept
         return QCoreApplication::translate("QSslDiffieHellmanParameter", "The given Diffie-Hellman parameters are deemed unsafe");
     }
 
-    Q_UNREACHABLE();
-    return QString();
+    Q_UNREACHABLE_RETURN(QString());
 }
 
 /*!

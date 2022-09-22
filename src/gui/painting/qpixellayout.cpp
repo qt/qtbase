@@ -212,8 +212,7 @@ inline void QT_FASTCALL storePixel<QPixelLayout::BPP24>(uchar *dest, int index, 
 template <QPixelLayout::BPP bpp> static
 inline uint QT_FASTCALL fetchPixel(const uchar *, int)
 {
-    Q_UNREACHABLE();
-    return 0;
+    Q_UNREACHABLE_RETURN(0);
 }
 
 template <>

@@ -1232,8 +1232,7 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::NonFillPolygonMode:
         return !caps.gles;
     default:
-        Q_UNREACHABLE();
-        return false;
+        Q_UNREACHABLE_RETURN(false);
     }
 }
 
@@ -1271,8 +1270,7 @@ int QRhiGles2::resourceLimit(QRhi::ResourceLimit limit) const
     case QRhi::MaxVertexOutputs:
         return caps.maxVertexOutputs;
     default:
-        Q_UNREACHABLE();
-        return 0;
+        Q_UNREACHABLE_RETURN(0);
     }
 }
 
@@ -2356,8 +2354,7 @@ static inline GLenum toGlTopology(QRhiGraphicsPipeline::Topology t)
     case QRhiGraphicsPipeline::Patches:
         return GL_PATCHES;
     default:
-        Q_UNREACHABLE();
-        return GL_TRIANGLES;
+        Q_UNREACHABLE_RETURN(GL_TRIANGLES);
     }
 }
 
@@ -2369,8 +2366,7 @@ static inline GLenum toGlCullMode(QRhiGraphicsPipeline::CullMode c)
     case QRhiGraphicsPipeline::Back:
         return GL_BACK;
     default:
-        Q_UNREACHABLE();
-        return GL_BACK;
+        Q_UNREACHABLE_RETURN(GL_BACK);
     }
 }
 
@@ -2382,8 +2378,7 @@ static inline GLenum toGlFrontFace(QRhiGraphicsPipeline::FrontFace f)
     case QRhiGraphicsPipeline::CW:
         return GL_CW;
     default:
-        Q_UNREACHABLE();
-        return GL_CCW;
+        Q_UNREACHABLE_RETURN(GL_CCW);
     }
 }
 
@@ -2427,8 +2422,7 @@ static inline GLenum toGlBlendFactor(QRhiGraphicsPipeline::BlendFactor f)
         qWarning("Unsupported blend factor %d", f);
         return GL_ZERO;
     default:
-        Q_UNREACHABLE();
-        return GL_ZERO;
+        Q_UNREACHABLE_RETURN(GL_ZERO);
     }
 }
 
@@ -2446,8 +2440,7 @@ static inline GLenum toGlBlendOp(QRhiGraphicsPipeline::BlendOp op)
     case QRhiGraphicsPipeline::Max:
         return GL_MAX;
     default:
-        Q_UNREACHABLE();
-        return GL_FUNC_ADD;
+        Q_UNREACHABLE_RETURN(GL_FUNC_ADD);
     }
 }
 
@@ -2471,8 +2464,7 @@ static inline GLenum toGlCompareOp(QRhiGraphicsPipeline::CompareOp op)
     case QRhiGraphicsPipeline::Always:
         return GL_ALWAYS;
     default:
-        Q_UNREACHABLE();
-        return GL_ALWAYS;
+        Q_UNREACHABLE_RETURN(GL_ALWAYS);
     }
 }
 
@@ -2496,8 +2488,7 @@ static inline GLenum toGlStencilOp(QRhiGraphicsPipeline::StencilOp op)
     case QRhiGraphicsPipeline::DecrementAndWrap:
         return GL_DECR_WRAP;
     default:
-        Q_UNREACHABLE();
-        return GL_KEEP;
+        Q_UNREACHABLE_RETURN(GL_KEEP);
     }
 }
 
@@ -2509,8 +2500,7 @@ static inline GLenum toGlPolygonMode(QRhiGraphicsPipeline::PolygonMode mode)
     case QRhiGraphicsPipeline::PolygonMode::Line:
         return GL_LINE;
     default:
-        Q_UNREACHABLE();
-        return GL_FILL;
+        Q_UNREACHABLE_RETURN(GL_FILL);
     }
 }
 
@@ -2528,8 +2518,7 @@ static inline GLenum toGlMinFilter(QRhiSampler::Filter f, QRhiSampler::Filter m)
         else
             return m == QRhiSampler::Nearest ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR;
     default:
-        Q_UNREACHABLE();
-        return GL_LINEAR;
+        Q_UNREACHABLE_RETURN(GL_LINEAR);
     }
 }
 
@@ -2541,8 +2530,7 @@ static inline GLenum toGlMagFilter(QRhiSampler::Filter f)
     case QRhiSampler::Linear:
         return GL_LINEAR;
     default:
-        Q_UNREACHABLE();
-        return GL_LINEAR;
+        Q_UNREACHABLE_RETURN(GL_LINEAR);
     }
 }
 
@@ -2556,8 +2544,7 @@ static inline GLenum toGlWrapMode(QRhiSampler::AddressMode m)
     case QRhiSampler::Mirror:
         return GL_MIRRORED_REPEAT;
     default:
-        Q_UNREACHABLE();
-        return GL_CLAMP_TO_EDGE;
+        Q_UNREACHABLE_RETURN(GL_CLAMP_TO_EDGE);
     }
 }
 
@@ -2581,8 +2568,7 @@ static inline GLenum toGlTextureCompareFunc(QRhiSampler::CompareOp op)
     case QRhiSampler::Always:
         return GL_ALWAYS;
     default:
-        Q_UNREACHABLE();
-        return GL_NEVER;
+        Q_UNREACHABLE_RETURN(GL_NEVER);
     }
 }
 
@@ -4275,8 +4261,7 @@ static inline GLenum toGlShaderType(QRhiShaderStage::Type type)
     case QRhiShaderStage::Compute:
         return GL_COMPUTE_SHADER;
     default:
-        Q_UNREACHABLE();
-        return GL_VERTEX_SHADER;
+        Q_UNREACHABLE_RETURN(GL_VERTEX_SHADER);
     }
 }
 
@@ -4558,8 +4543,7 @@ static inline QShader::Stage toShaderStage(QRhiShaderStage::Type type)
     case QRhiShaderStage::Compute:
         return QShader::ComputeStage;
     default:
-        Q_UNREACHABLE();
-        return QShader::VertexStage;
+        Q_UNREACHABLE_RETURN(QShader::VertexStage);
     }
 }
 
@@ -5526,8 +5510,7 @@ bool QGles2GraphicsPipeline::create()
         default:
             break;
         }
-        Q_UNREACHABLE();
-        return VtxIdx;
+        Q_UNREACHABLE_RETURN(VtxIdx);
     };
     QShaderDescription desc[LastIdx];
     QShader::SeparateToCombinedImageSamplerMappingList samplerMappingList[LastIdx];

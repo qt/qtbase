@@ -29,14 +29,12 @@ QT_WARNING_POP
 // but never defined
 [[maybe_unused]] static CborError cbor_encoder_close_container_checked(CborEncoder*, const CborEncoder*)
 {
-    Q_UNREACHABLE();
-    return CborErrorInternalError;
+    Q_UNREACHABLE_RETURN(CborErrorInternalError);
 }
 
 [[maybe_unused]] static CborError cbor_encode_float_as_half_float(CborEncoder *, float)
 {
-    Q_UNREACHABLE();
-    return CborErrorInternalError;
+    Q_UNREACHABLE_RETURN(CborErrorInternalError);
 }
 
 Q_DECLARE_TYPEINFO(CborEncoder, Q_PRIMITIVE_TYPE);

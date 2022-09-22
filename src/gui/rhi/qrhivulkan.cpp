@@ -1016,8 +1016,7 @@ static inline VkFormat toVkTextureFormat(QRhiTexture::Format format, QRhiTexture
         return srgb ? VK_FORMAT_ASTC_12x12_SRGB_BLOCK : VK_FORMAT_ASTC_12x12_UNORM_BLOCK;
 
     default:
-        Q_UNREACHABLE();
-        return VK_FORMAT_R8G8B8A8_UNORM;
+        Q_UNREACHABLE_RETURN(VK_FORMAT_R8G8B8A8_UNORM);
     }
 }
 
@@ -3813,8 +3812,7 @@ VkSampleCountFlagBits QRhiVulkan::effectiveSampleCount(int sampleCount)
             return qvk_sampleCount.mask;
     }
 
-    Q_UNREACHABLE();
-    return VK_SAMPLE_COUNT_1_BIT;
+    Q_UNREACHABLE_RETURN(VK_SAMPLE_COUNT_1_BIT);
 }
 
 void QRhiVulkan::enqueueTransitionPassResources(QVkCommandBuffer *cbD)
@@ -4336,8 +4334,7 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::NonFillPolygonMode:
         return caps.nonFillPolygonMode;
     default:
-        Q_UNREACHABLE();
-        return false;
+        Q_UNREACHABLE_RETURN(false);
     }
 }
 
@@ -4375,8 +4372,7 @@ int QRhiVulkan::resourceLimit(QRhi::ResourceLimit limit) const
     case QRhi::MaxVertexOutputs:
         return physDevProperties.limits.maxVertexOutputComponents / 4;
     default:
-        Q_UNREACHABLE();
-        return 0;
+        Q_UNREACHABLE_RETURN(0);
     }
 }
 
@@ -5258,8 +5254,7 @@ static inline VkFilter toVkFilter(QRhiSampler::Filter f)
     case QRhiSampler::Linear:
         return VK_FILTER_LINEAR;
     default:
-        Q_UNREACHABLE();
-        return VK_FILTER_NEAREST;
+        Q_UNREACHABLE_RETURN(VK_FILTER_NEAREST);
     }
 }
 
@@ -5273,8 +5268,7 @@ static inline VkSamplerMipmapMode toVkMipmapMode(QRhiSampler::Filter f)
     case QRhiSampler::Linear:
         return VK_SAMPLER_MIPMAP_MODE_LINEAR;
     default:
-        Q_UNREACHABLE();
-        return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        Q_UNREACHABLE_RETURN(VK_SAMPLER_MIPMAP_MODE_NEAREST);
     }
 }
 
@@ -5288,8 +5282,7 @@ static inline VkSamplerAddressMode toVkAddressMode(QRhiSampler::AddressMode m)
     case QRhiSampler::Mirror:
         return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
     default:
-        Q_UNREACHABLE();
-        return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        Q_UNREACHABLE_RETURN(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     }
 }
 
@@ -5309,8 +5302,7 @@ static inline VkShaderStageFlagBits toVkShaderStage(QRhiShaderStage::Type type)
     case QRhiShaderStage::Geometry:
         return VK_SHADER_STAGE_GEOMETRY_BIT;
     default:
-        Q_UNREACHABLE();
-        return VK_SHADER_STAGE_VERTEX_BIT;
+        Q_UNREACHABLE_RETURN(VK_SHADER_STAGE_VERTEX_BIT);
     }
 }
 
@@ -5348,8 +5340,7 @@ static inline VkFormat toVkAttributeFormat(QRhiVertexInputAttribute::Format form
     case QRhiVertexInputAttribute::SInt:
         return VK_FORMAT_R32_SINT;
     default:
-        Q_UNREACHABLE();
-        return VK_FORMAT_R32G32B32A32_SFLOAT;
+        Q_UNREACHABLE_RETURN(VK_FORMAT_R32G32B32A32_SFLOAT);
     }
 }
 
@@ -5371,8 +5362,7 @@ static inline VkPrimitiveTopology toVkTopology(QRhiGraphicsPipeline::Topology t)
     case QRhiGraphicsPipeline::Patches:
         return VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
     default:
-        Q_UNREACHABLE();
-        return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        Q_UNREACHABLE_RETURN(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     }
 }
 
@@ -5386,8 +5376,7 @@ static inline VkCullModeFlags toVkCullMode(QRhiGraphicsPipeline::CullMode c)
     case QRhiGraphicsPipeline::Back:
         return VK_CULL_MODE_BACK_BIT;
     default:
-        Q_UNREACHABLE();
-        return VK_CULL_MODE_NONE;
+        Q_UNREACHABLE_RETURN(VK_CULL_MODE_NONE);
     }
 }
 
@@ -5399,8 +5388,7 @@ static inline VkFrontFace toVkFrontFace(QRhiGraphicsPipeline::FrontFace f)
     case QRhiGraphicsPipeline::CW:
         return VK_FRONT_FACE_CLOCKWISE;
     default:
-        Q_UNREACHABLE();
-        return VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        Q_UNREACHABLE_RETURN(VK_FRONT_FACE_COUNTER_CLOCKWISE);
     }
 }
 
@@ -5460,8 +5448,7 @@ static inline VkBlendFactor toVkBlendFactor(QRhiGraphicsPipeline::BlendFactor f)
     case QRhiGraphicsPipeline::OneMinusSrc1Alpha:
         return VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA;
     default:
-        Q_UNREACHABLE();
-        return VK_BLEND_FACTOR_ZERO;
+        Q_UNREACHABLE_RETURN(VK_BLEND_FACTOR_ZERO);
     }
 }
 
@@ -5479,8 +5466,7 @@ static inline VkBlendOp toVkBlendOp(QRhiGraphicsPipeline::BlendOp op)
     case QRhiGraphicsPipeline::Max:
         return VK_BLEND_OP_MAX;
     default:
-        Q_UNREACHABLE();
-        return VK_BLEND_OP_ADD;
+        Q_UNREACHABLE_RETURN(VK_BLEND_OP_ADD);
     }
 }
 
@@ -5504,8 +5490,7 @@ static inline VkCompareOp toVkCompareOp(QRhiGraphicsPipeline::CompareOp op)
     case QRhiGraphicsPipeline::Always:
         return VK_COMPARE_OP_ALWAYS;
     default:
-        Q_UNREACHABLE();
-        return VK_COMPARE_OP_ALWAYS;
+        Q_UNREACHABLE_RETURN(VK_COMPARE_OP_ALWAYS);
     }
 }
 
@@ -5529,8 +5514,7 @@ static inline VkStencilOp toVkStencilOp(QRhiGraphicsPipeline::StencilOp op)
     case QRhiGraphicsPipeline::DecrementAndWrap:
         return VK_STENCIL_OP_DECREMENT_AND_WRAP;
     default:
-        Q_UNREACHABLE();
-        return VK_STENCIL_OP_KEEP;
+        Q_UNREACHABLE_RETURN(VK_STENCIL_OP_KEEP);
     }
 }
 
@@ -5542,8 +5526,7 @@ static inline VkPolygonMode toVkPolygonMode(QRhiGraphicsPipeline::PolygonMode mo
     case QRhiGraphicsPipeline::Line:
         return VK_POLYGON_MODE_LINE;
     default:
-        Q_UNREACHABLE();
-        return VK_POLYGON_MODE_FILL;
+        Q_UNREACHABLE_RETURN(VK_POLYGON_MODE_FILL);
     }
 }
 
@@ -5582,8 +5565,7 @@ static inline VkDescriptorType toVkDescriptorType(const QRhiShaderResourceBindin
         return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 
     default:
-        Q_UNREACHABLE();
-        return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        Q_UNREACHABLE_RETURN(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     }
 }
 
@@ -5625,8 +5607,7 @@ static inline VkCompareOp toVkTextureCompareOp(QRhiSampler::CompareOp op)
     case QRhiSampler::Always:
         return VK_COMPARE_OP_ALWAYS;
     default:
-        Q_UNREACHABLE();
-        return VK_COMPARE_OP_NEVER;
+        Q_UNREACHABLE_RETURN(VK_COMPARE_OP_NEVER);
     }
 }
 

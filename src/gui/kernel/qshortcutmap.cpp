@@ -313,8 +313,7 @@ bool QShortcutMap::tryShortcut(QKeyEvent *e)
         return identicalMatches > 0;
     }
     }
-    Q_UNREACHABLE();
-    return false;
+    Q_UNREACHABLE_RETURN(false);
 }
 
 /*! \internal

@@ -430,8 +430,7 @@ void tst_QtEndian::endianBitfieldUnions()
             testBitfieldUnion<qint32_le_bitfield_union, qint32_le_bitfield_member>();
             return;
         }
-        Q_UNREACHABLE();
-        return;
+        Q_UNREACHABLE_RETURN();
     case QSysInfo::BigEndian:
         switch (signedness) {
         case Unsigned:
@@ -441,8 +440,7 @@ void tst_QtEndian::endianBitfieldUnions()
             testBitfieldUnion<qint32_be_bitfield_union, qint32_be_bitfield_member>();
             return;
         }
-        Q_UNREACHABLE();
-        return;
+        Q_UNREACHABLE_RETURN();
     }
 }
 

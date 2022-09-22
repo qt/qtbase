@@ -195,7 +195,25 @@ void qBadAlloc()
 
     In debug builds the condition is enforced by an assert to facilitate debugging.
 
-    \sa Q_ASSERT(), Q_ASSUME(), qFatal()
+    \note Use the macro Q_UNREACHABLE_RETURN() to insert return statements for
+    compilers that need them, without causing warnings for compilers that
+    complain about its presence.
+
+    \sa Q_ASSERT(), Q_ASSUME(), qFatal(), Q_UNREACHABLE_RETURN()
 */
 
+/*!
+    \macro void Q_UNREACHABLE_RETURN(...)
+    \relates <QtAssert>
+    \since 6.5
+
+    This is equivalent to
+    \code
+    Q_UNREACHABLE();
+    return __VA_ARGS__;
+    \endcode
+    except it omits the return on compilers that would warn about it.
+
+    \sa Q_UNREACHABLE()
+*/
 QT_END_NAMESPACE

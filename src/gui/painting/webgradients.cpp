@@ -346,8 +346,7 @@ static QList<QGradientStop> qt_preset_gradient_stops(QGradient::Preset preset)
     case QGradient::NumPresets:
         Q_UNREACHABLE();
     }
-    Q_UNREACHABLE();
-    return {};
+    Q_UNREACHABLE_RETURN({});
 }
 
 static constexpr QGradient::QGradientData qt_preset_gradient_data[] = {

@@ -431,8 +431,7 @@ static bool isSizedTextureFormat(QOpenGLTexture::TextureFormat internalFormat)
         return false;
     }
 
-    Q_UNREACHABLE();
-    return false;
+    Q_UNREACHABLE_RETURN(false);
 }
 
 static bool isTextureTargetMultisample(QOpenGLTexture::Target target)
@@ -456,8 +455,7 @@ static bool isTextureTargetMultisample(QOpenGLTexture::Target target)
         return false;
     }
 
-    Q_UNREACHABLE();
-    return false;
+    Q_UNREACHABLE_RETURN(false);
 }
 
 bool QOpenGLTexturePrivate::isUsingImmutableStorage() const
@@ -756,8 +754,7 @@ static QOpenGLTexture::PixelFormat pixelFormatCompatibleWithInternalFormat(QOpen
         return QOpenGLTexture::LuminanceAlpha;
     }
 
-    Q_UNREACHABLE();
-    return QOpenGLTexture::NoSourceFormat;
+    Q_UNREACHABLE_RETURN(QOpenGLTexture::NoSourceFormat);
 }
 
 static QOpenGLTexture::PixelType pixelTypeCompatibleWithInternalFormat(QOpenGLTexture::TextureFormat internalFormat)
@@ -936,8 +933,7 @@ static QOpenGLTexture::PixelType pixelTypeCompatibleWithInternalFormat(QOpenGLTe
         return QOpenGLTexture::UInt8;
     }
 
-    Q_UNREACHABLE();
-    return QOpenGLTexture::NoPixelType;
+    Q_UNREACHABLE_RETURN(QOpenGLTexture::NoPixelType);
 }
 
 static bool isCompressedFormat(QOpenGLTexture::TextureFormat internalFormat)
@@ -1080,8 +1076,7 @@ static bool isCompressedFormat(QOpenGLTexture::TextureFormat internalFormat)
         return false;
     }
 
-    Q_UNREACHABLE();
-    return false;
+    Q_UNREACHABLE_RETURN(false);
 }
 
 void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat pixelFormat, QOpenGLTexture::PixelType pixelType)

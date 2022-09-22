@@ -1382,8 +1382,7 @@ QByteArray TlsKey::pemHeader() const
     else if (algorithm() == QSsl::Dh)
         return QByteArrayLiteral("-----BEGIN PRIVATE KEY-----");
 
-    Q_UNREACHABLE();
-    return {};
+    Q_UNREACHABLE_RETURN({});
 }
 
 /*!
@@ -1404,8 +1403,7 @@ QByteArray TlsKey::pemFooter() const
     else if (algorithm() == QSsl::Dh)
         return QByteArrayLiteral("-----END PRIVATE KEY-----");
 
-    Q_UNREACHABLE();
-    return {};
+    Q_UNREACHABLE_RETURN({});
 }
 
 /*!

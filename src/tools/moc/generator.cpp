@@ -1554,8 +1554,7 @@ static CborError jsonValueToCbor(CborEncoder *parent, const QJsonValue &v)
         return cbor_encode_double(parent, d);
     }
     }
-    Q_UNREACHABLE();
-    return CborUnknownError;
+    Q_UNREACHABLE_RETURN(CborUnknownError);
 }
 
 void Generator::generatePluginMetaData()

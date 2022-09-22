@@ -1097,8 +1097,7 @@ size_t qHash(const QJsonValue &value, size_t seed)
     case QJsonValue::Undefined:
         return seed;
     }
-    Q_UNREACHABLE();
-    return 0;
+    Q_UNREACHABLE_RETURN(0);
 }
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)

@@ -1395,8 +1395,7 @@ void QTextEngine::shapeText(int item) const
     }
 
     if (Q_UNLIKELY(!ensureSpace(itemLength))) {
-        Q_UNREACHABLE(); // ### report OOM error somehow
-        return;
+        Q_UNREACHABLE_RETURN(); // ### report OOM error somehow
     }
 
     QFontEngine *fontEngine = this->fontEngine(si, &si.ascent, &si.descent, &si.leading);

@@ -1435,8 +1435,7 @@ QRhiVertexInputAttribute::Format QRhiImplementation::shaderDescVariableFormatToV
         return QRhiVertexInputAttribute::UInt;
 
     default:
-        Q_UNREACHABLE();
-        return QRhiVertexInputAttribute::Float;
+        Q_UNREACHABLE_RETURN(QRhiVertexInputAttribute::Float);
     }
 }
 
@@ -1478,8 +1477,7 @@ quint32 QRhiImplementation::byteSizePerVertexForVertexInputFormat(QRhiVertexInpu
         return sizeof(qint32);
 
     default:
-        Q_UNREACHABLE();
-        return 1;
+        Q_UNREACHABLE_RETURN(1);
     }
 }
 
@@ -4120,8 +4118,7 @@ bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
         }
         break;
     default:
-        Q_UNREACHABLE();
-        return false;
+        Q_UNREACHABLE_RETURN(false);
     }
 
     return true;
@@ -5100,8 +5097,7 @@ static const char *resourceTypeStr(QRhiResource *res)
         return "CommandBuffer";
     }
 
-    Q_UNREACHABLE();
-    return "";
+    Q_UNREACHABLE_RETURN("");
 }
 
 QRhiImplementation::~QRhiImplementation()
@@ -5629,8 +5625,7 @@ const char *QRhi::backendName(Implementation impl)
         return "Metal";
     }
 
-    Q_UNREACHABLE();
-    return "Unknown";
+    Q_UNREACHABLE_RETURN("Unknown");
 }
 
 /*!
@@ -5691,8 +5686,7 @@ static inline const char *deviceTypeStr(QRhiDriverInfo::DeviceType type)
         return "Cpu";
     }
 
-    Q_UNREACHABLE();
-    return nullptr;
+    Q_UNREACHABLE_RETURN(nullptr);
 }
 QDebug operator<<(QDebug dbg, const QRhiDriverInfo &info)
 {
@@ -7768,8 +7762,7 @@ QRhiPassResourceTracker::BufferStage QRhiPassResourceTracker::toPassTrackerBuffe
     if (stages.testFlag(QRhiShaderResourceBinding::GeometryStage))
         return QRhiPassResourceTracker::BufGeometryStage;
 
-    Q_UNREACHABLE();
-    return QRhiPassResourceTracker::BufVertexStage;
+    Q_UNREACHABLE_RETURN(QRhiPassResourceTracker::BufVertexStage);
 }
 
 QRhiPassResourceTracker::TextureStage QRhiPassResourceTracker::toPassTrackerTextureStage(QRhiShaderResourceBinding::StageFlags stages)
@@ -7788,8 +7781,7 @@ QRhiPassResourceTracker::TextureStage QRhiPassResourceTracker::toPassTrackerText
     if (stages.testFlag(QRhiShaderResourceBinding::GeometryStage))
         return QRhiPassResourceTracker::TexGeometryStage;
 
-    Q_UNREACHABLE();
-    return QRhiPassResourceTracker::TexVertexStage;
+    Q_UNREACHABLE_RETURN(QRhiPassResourceTracker::TexVertexStage);
 }
 
 QT_END_NAMESPACE

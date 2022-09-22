@@ -107,6 +107,7 @@ private:
     StateResult result = { 0, OverriddenByEnvironment };
 #ifdef QT_BOOTSTRAPPED
     Q_UNUSED(which);
+    // NOLINTNEXTLINE(qt-use-unreachable-return): triggers on QT_BOOTSTRAPPED, breaking #else case
     Q_UNREACHABLE();
 #else
     // can't use qEnvironmentVariableIntValue (reentrancy)

@@ -94,8 +94,7 @@ bool isMeteredFromNMMetered(QNetworkManagerInterface::NMMetered metered)
     case QNetworkManagerInterface::NM_METERED_UNKNOWN:
         return false;
     }
-    Q_UNREACHABLE();
-    return false;
+    Q_UNREACHABLE_RETURN(false);
 }
 } // unnamed namespace
 

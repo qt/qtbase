@@ -24,7 +24,7 @@ namespace QtDummyFutex {
     constexpr inline bool futexAvailable() { return false; }
     template <typename Atomic>
     inline bool futexWait(Atomic &, typename Atomic::Type, int = 0)
-    { Q_UNREACHABLE(); return false; }
+    { Q_UNREACHABLE_RETURN(false); }
     template <typename Atomic> inline void futexWakeOne(Atomic &)
     { Q_UNREACHABLE(); }
     template <typename Atomic> inline void futexWakeAll(Atomic &)

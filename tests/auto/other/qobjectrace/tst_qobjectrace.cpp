@@ -309,8 +309,7 @@ public slots:
             break;
         }
 
-        Q_UNREACHABLE();
-        return false;
+        Q_UNREACHABLE_RETURN(false);
     }
 
 private:

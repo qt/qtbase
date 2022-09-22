@@ -129,8 +129,7 @@ static const char *changed_signal(int which)
     case 6: return SIGNAL(valueChanged(int));
     };
     static_assert(7 == NFallbackDefaultProperties);
-    Q_UNREACHABLE();
-    return nullptr;
+    Q_UNREACHABLE_RETURN(nullptr);
 }
 
 class QWizardDefaultProperty
@@ -1350,8 +1349,7 @@ static QString object_name_for_button(QWizard::WizardButton which)
     //case QWizard::NButtons:
         ;
     }
-    Q_UNREACHABLE();
-    return QString();
+    Q_UNREACHABLE_RETURN(QString());
 }
 
 bool QWizardPrivate::ensureButton(QWizard::WizardButton which) const

@@ -1414,8 +1414,7 @@ static QImage qt_gl_read_framebuffer(const QSize &size, GLenum internal_format, 
         return qt_gl_read_framebuffer_rgba8(size, include_alpha, ctx).mirrored(false, flip);
     }
 
-    Q_UNREACHABLE();
-    return QImage();
+    Q_UNREACHABLE_RETURN(QImage());
 }
 
 Q_OPENGL_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)

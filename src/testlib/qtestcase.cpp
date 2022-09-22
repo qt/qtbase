@@ -1230,8 +1230,7 @@ class WatchDog : public QThread
             waitCondition.wait(m, expectationChanged);
             return true;
         }
-        Q_UNREACHABLE();
-        return false;
+        Q_UNREACHABLE_RETURN(false);
     }
 
 public:

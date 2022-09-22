@@ -1903,8 +1903,7 @@ void QProcess::setProcessState(ProcessState state)
 */
 auto QProcess::setupChildProcess() -> Use_setChildProcessModifier_Instead
 {
-    Q_UNREACHABLE();
-    return {};
+    Q_UNREACHABLE_RETURN({});
 }
 #endif
 

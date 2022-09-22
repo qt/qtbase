@@ -3723,8 +3723,7 @@ static Qt::SortOrder flipOrder(Qt::SortOrder order)
     case Qt::DescendingOrder:
         return Qt::AscendingOrder;
     };
-    Q_UNREACHABLE();
-    return Qt::AscendingOrder;
+    Q_UNREACHABLE_RETURN(Qt::AscendingOrder);
 };
 
 void QHeaderViewPrivate::flipSortIndicator(int section)

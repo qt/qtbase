@@ -180,7 +180,7 @@
     This is useful since a missing break statement is often a bug, and some
     compilers can be configured to emit warnings when one is not found.
 
-    \sa Q_UNREACHABLE()
+    \sa Q_UNREACHABLE(), Q_UNREACHABLE_RETURN()
 */
 
 /*!

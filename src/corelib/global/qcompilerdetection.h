@@ -49,6 +49,7 @@
 
 #if defined(__COVERITY__)
 #  define Q_CC_COVERITY
+#  define Q_COMPILER_COMPLAINS_ABOUT_RETURN_AFTER_UNREACHABLE
 #endif
 
 /* Symantec C++ is now Digital Mars */

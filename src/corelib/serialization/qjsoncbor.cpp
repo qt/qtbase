@@ -576,8 +576,7 @@ QVariant QCborValue::toVariant() const
     if (isSimpleType())
         return QVariant::fromValue(toSimpleType());
 
-    Q_UNREACHABLE();
-    return QVariant();
+    Q_UNREACHABLE_RETURN(QVariant());
 }
 
 /*!

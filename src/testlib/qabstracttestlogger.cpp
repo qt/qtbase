@@ -351,8 +351,7 @@ void QAbstractTestLogger::addMessage(QtMsgType type, const QMessageLogContext &c
         case QtWarningMsg: return QAbstractTestLogger::QWarning;
         case QtFatalMsg: return QAbstractTestLogger::QFatal;
         }
-        Q_UNREACHABLE();
-        return QAbstractTestLogger::QFatal;
+        Q_UNREACHABLE_RETURN(QAbstractTestLogger::QFatal);
     }();
 
     QString formattedMessage = qFormatLogMessage(type, context, message);

@@ -667,6 +667,19 @@ bool readConfiguration(const QFile &file)
    }
 //! [qunreachable-switch]
 
+//! [qunreachable-return]
+   switch (shape) {
+       case Rectangle:
+           return rectangle();
+       case Triangle:
+           return triangle();
+       case Circle:
+           return circle();
+       case NumShapes:
+           Q_UNREACHABLE_RETURN(nullptr);
+   }
+//! [qunreachable-return]
+
 //! [qt-version-check]
 #include <QtGlobal>
 

@@ -1441,8 +1441,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
             // Don't care about date or spec, so pick a safe spec:
             return StateNode(QDateTime(date, time, Qt::UTC), state, padding, conflicts);
         default:
-            Q_UNREACHABLE();
-            return StateNode();
+            Q_UNREACHABLE_RETURN(StateNode());
         }
     }
 
@@ -2253,8 +2252,7 @@ QString QDateTimeParser::getAmPmText(AmPm ap, Case cs) const
     case LowerCase: return raw.toLower();
     case NativeCase: return raw;
     }
-    Q_UNREACHABLE();
-    return raw;
+    Q_UNREACHABLE_RETURN(raw);
 }
 
 /*

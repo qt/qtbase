@@ -89,8 +89,7 @@ static inline QString jobHoldToString(const QCUPSSupport::JobHoldUntil jobHold, 
     case QCUPSSupport::NoHold:
         return QString();
     }
-    Q_UNREACHABLE();
-    return QString();
+    Q_UNREACHABLE_RETURN(QString());
 }
 
 QCUPSSupport::JobHoldUntilWithTime QCUPSSupport::parseJobHoldUntil(const QString &jobHoldUntil)
@@ -176,8 +175,7 @@ static inline QString bannerPageToString(const QCUPSSupport::BannerPage bannerPa
     case QCUPSSupport::Secret:       return QStringLiteral("secret");
     case QCUPSSupport::TopSecret:    return QStringLiteral("topsecret");
     }
-    Q_UNREACHABLE();
-    return QString();
+    Q_UNREACHABLE_RETURN(QString());
 }
 
 static inline QCUPSSupport::BannerPage stringToBannerPage(const QString &bannerPage)

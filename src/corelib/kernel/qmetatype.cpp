@@ -2006,8 +2006,7 @@ static bool convertToEnum(QMetaType fromType, const void *from, QMetaType toType
         *static_cast<qint64 *>(to) = value;
         return true;
     default:
-        Q_UNREACHABLE();
-        return false;
+        Q_UNREACHABLE_RETURN(false);
     }
 }
 
