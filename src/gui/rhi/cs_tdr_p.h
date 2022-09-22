@@ -70,7 +70,7 @@ ret
 // Approximately 5 instruction slots used
 #endif
 
-const BYTE g_killDeviceByTimingOut[] =
+inline constexpr BYTE g_killDeviceByTimingOut[] =
 {
      68,  88,  66,  67, 217,  62,
     220,  38, 136,  51,  86, 245,
