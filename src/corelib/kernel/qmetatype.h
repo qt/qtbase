@@ -344,7 +344,7 @@ public:
         QByteArrayList = 49, QObjectStar = 39, SChar = 40,
         Void = 43,
         Nullptr = 51,
-        QVariantMap = 8, QVariantList = 9, QVariantHash = 28,
+        QVariantMap = 8, QVariantList = 9, QVariantHash = 28, QVariantPair = 58,
         QCborSimpleType = 52, QCborValue = 53, QCborArray = 54, QCborMap = 55,
         Char16 = 56, Char32 = 57,
 
