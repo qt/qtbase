@@ -478,9 +478,13 @@ void QVulkanInstance::setLayers(const QByteArrayList &layers)
 /*!
     Specifies the list of additional instance \a extensions to enable. It is
     safe to specify unsupported extensions as well because these get ignored
-    when not supported at run time. The surface-related extensions required by
-    Qt will always be added automatically, no need to include them in this
-    list.
+    when not supported at run time.
+
+    \note The surface-related extensions required by Qt (for example, \c
+    VK_KHR_win32_surface) will always be added automatically, no need to
+    include them in this list.
+
+    \note \c VK_KHR_portability_enumeration is added automatically.
 
     \note This function can only be called before create() and has no effect if
     called afterwards.
@@ -538,6 +542,10 @@ void QVulkanInstance::setApiVersion(const QVersionNumber &vulkanVersion)
 
     The Vulkan instance and library is available as long as this
     QVulkanInstance exists, or until destroy() is called.
+
+    The VkInstance is always created with the flag
+    \l{https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkInstanceCreateFlagBits.html}{VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR}
+    set. This means that Vulkan Portability physical devices get enumerated as well.
  */
 bool QVulkanInstance::create()
 {

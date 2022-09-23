@@ -220,10 +220,10 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
                                                  apiVersion.microVersion());
         }
 
+        m_enabledExtensions.append("VK_KHR_surface");
+        m_enabledExtensions.append("VK_KHR_portability_enumeration");
         if (!flags.testFlag(QVulkanInstance::NoDebugOutputRedirect))
             m_enabledExtensions.append("VK_EXT_debug_report");
-
-        m_enabledExtensions.append("VK_KHR_surface");
 
         for (const QByteArray &ext : extraExts)
             m_enabledExtensions.append(ext);
@@ -263,6 +263,7 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
         memset(&instInfo, 0, sizeof(instInfo));
         instInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         instInfo.pApplicationInfo = &appInfo;
+        instInfo.flags = 0x00000001; // VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
 
         QList<const char *> layerNameVec;
         for (const QByteArray &ba : qAsConst(m_enabledLayers))
