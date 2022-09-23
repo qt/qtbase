@@ -1013,16 +1013,21 @@ static QDate actualDate(QDateTimeParser::Sections known, const QCalendar &calend
     }
 
     QDate first(year, month, 1, calendar);
-    int last = known & QDateTimeParser::YearSection && known & QDateTimeParser::MonthSection
-        ? first.daysInMonth(calendar) : 0;
+    int last = known & QDateTimeParser::MonthSection
+        ? (known & QDateTimeParser::YearSection
+           ? calendar.daysInMonth(month, year) : calendar.daysInMonth(month))
+        : 0;
+    // We can only fix DOW if we know year as well as month (hence last):
+    const bool fixDayOfWeek = last && known & QDateTimeParser::YearSection
+            && known & QDateTimeParser::DayOfWeekSectionMask;
     // If we also know day-of-week, tweak last to the last in the month that matches it:
-    if (last && known & QDateTimeParser::DayOfWeekSectionMask) {
-        int diff = (dayofweek - calendar.dayOfWeek(first) - last) % 7;
+    if (fixDayOfWeek) {
+        const int diff = (dayofweek - calendar.dayOfWeek(first) - last) % 7;
         Q_ASSERT(diff <= 0); // C++11 specifies (-ve) % (+ve) to be <= 0.
         last += diff;
     }
     if (day < 1) {
-        if (known & QDateTimeParser::DayOfWeekSectionMask && last) {
+        if (fixDayOfWeek) {
             day = 1 + dayofweek - calendar.dayOfWeek(first);
             if (day < 1)
                 day += 7;
@@ -1030,7 +1035,7 @@ static QDate actualDate(QDateTimeParser::Sections known, const QCalendar &calend
             day = 1;
         }
         known &= ~QDateTimeParser::DaySection;
-    } else if (day > 31) {
+    } else if (day > calendar.maximumDaysInMonth()) {
         day = last;
         known &= ~QDateTimeParser::DaySection;
     } else if (last && day > last && (known & QDateTimeParser::DaySection) == 0) {
