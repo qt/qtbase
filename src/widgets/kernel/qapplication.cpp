@@ -2079,8 +2079,9 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
                 QCoreApplication::sendEvent(w, &enterEvent);
                 if (w->testAttribute(Qt::WA_Hover) &&
                         (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
-                    QHoverEvent he(QEvent::HoverEnter, localPos, QPointF(-1, -1), globalPos,
+                    QHoverEvent he(QEvent::HoverEnter, windowPos, QPointF(-1, -1), globalPos,
                                    QGuiApplication::keyboardModifiers());
+                    QMutableEventPoint::setPosition(he.point(0), localPos);
                     qApp->d_func()->notify_helper(w, &he);
                 }
             }
@@ -2823,7 +2824,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 while (w) {
                     if (w->testAttribute(Qt::WA_Hover) &&
                         (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
-                        QHoverEvent he(QEvent::HoverMove, relpos, mouse->globalPosition(), relpos - diff, mouse->modifiers());
+                        QHoverEvent he(QEvent::HoverMove, mouse->scenePosition(), mouse->globalPosition(), relpos - diff, mouse->modifiers());
+                        QMutableEventPoint::setPosition(he.point(0), relpos);
                         d->notify_helper(w, &he);
                     }
                     if (w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))

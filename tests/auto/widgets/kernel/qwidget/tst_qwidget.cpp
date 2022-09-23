@@ -345,6 +345,7 @@ private slots:
     void enterLeaveOnWindowShowHide_data();
     void enterLeaveOnWindowShowHide();
     void taskQTBUG_4055_sendSyntheticEnterLeave();
+    void hoverPosition();
     void underMouse();
     void taskQTBUG_27643_enterEvents();
 #endif
@@ -10390,6 +10391,106 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
     QTRY_COMPARE(child.numEnterEvents, 1);
     QCOMPARE(child.numMouseMoveEvents, 0);
  }
+
+void tst_QWidget::hoverPosition()
+{
+    if (m_platform == QStringLiteral("wayland"))
+        QSKIP("Wayland: Clients can't set cursor position on wayland.");
+
+    class HoverWidget : public QWidget
+    {
+    public:
+        HoverWidget(QWidget *parent = nullptr) : QWidget(parent) {
+            setMouseTracking(true);
+            setAttribute(Qt::WA_Hover);
+        }
+        bool event(QEvent *ev) override {
+            switch (ev->type()) {
+            case QEvent::HoverMove:
+                // The docs say that WA_Hover will cause a paint event on enter and leave, but not on move.
+                update();
+                Q_FALLTHROUGH();
+            case QEvent::HoverEnter:
+            case QEvent::HoverLeave: {
+                qCDebug(lcTests) << ev;
+                lastHoverType = ev->type();
+                ++hoverEventCount;
+                QHoverEvent *hov = static_cast<QHoverEvent *>(ev);
+                mousePos = hov->position().toPoint();
+                mouseScenePos = hov->scenePosition().toPoint();
+                if (ev->type() == QEvent::HoverEnter)
+                    mouseEnterScenePos = hov->scenePosition().toPoint();
+                break;
+            }
+            default:
+                break;
+            }
+            return QWidget::event(ev);
+        }
+        void paintEvent(QPaintEvent *) override {
+            ++paintEventCount;
+            QPainter painter(this);
+            if (mousePos.x() > 0)
+                painter.setPen(Qt::red);
+            painter.drawRect(0, 0, width(), height());
+            painter.setPen(Qt::darkGreen);
+            painter.drawLine(mousePos - QPoint(crossHalfWidth, 0), mousePos + QPoint(crossHalfWidth, 0));
+            painter.drawLine(mousePos - QPoint(0, crossHalfWidth), mousePos + QPoint(0, crossHalfWidth));
+        }
+
+        QEvent::Type lastHoverType = QEvent::None;
+        int hoverEventCount = 0;
+        int paintEventCount = 0;
+        QPoint mousePos;
+        QPoint mouseScenePos;
+        QPoint mouseEnterScenePos;
+
+    private:
+        const int crossHalfWidth = 5;
+    };
+
+    QCursor::setPos(m_safeCursorPos);
+    if (!QTest::qWaitFor([this]{ return QCursor::pos() == m_safeCursorPos; }))
+        QSKIP("Can't move cursor");
+
+    QWidget root;
+    root.resize(300, 300);
+    HoverWidget h(&root);
+    h.setGeometry(100, 100, 100, 100);
+    root.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&root));
+
+    const QPoint middle(50, 50);
+    QPoint curpos = h.mapToGlobal(middle);
+    QCursor::setPos(curpos);
+    if (!QTest::qWaitFor([curpos]{ return QCursor::pos() == curpos; }))
+          QSKIP("Can't move cursor");
+    QTRY_COMPARE_GE(h.hoverEventCount, 1); // HoverEnter and then probably HoverMove, so usually 2
+    QTRY_COMPARE_GE(h.paintEventCount, 2);
+    const int enterHoverEventCount = h.hoverEventCount;
+    qCDebug(lcTests) << "hover enter events:" << enterHoverEventCount << "last was" << h.lastHoverType
+                     << "; paint events:" << h.paintEventCount;
+    QCOMPARE(h.mousePos, middle);
+    QCOMPARE(h.mouseEnterScenePos, h.mapToParent(middle));
+    QCOMPARE(h.mouseScenePos, h.mapToParent(middle));
+    QCOMPARE(h.lastHoverType, enterHoverEventCount == 1 ? QEvent::HoverEnter : QEvent::HoverMove);
+
+    curpos += {10, 10};
+    QCursor::setPos(curpos);
+    if (!QTest::qWaitFor([curpos]{ return QCursor::pos() == curpos; }))
+          QSKIP("Can't move cursor");
+    QTRY_COMPARE(h.hoverEventCount, enterHoverEventCount + 1);
+    QCOMPARE(h.lastHoverType, QEvent::HoverMove);
+    QTRY_COMPARE_GE(h.paintEventCount, 3);
+
+    curpos += {50, 50}; // in the outer widget, but leaving the inner widget
+    QCursor::setPos(curpos);
+    if (!QTest::qWaitFor([curpos]{ return QCursor::pos() == curpos; }))
+          QSKIP("Can't move cursor");
+    QTRY_COMPARE(h.lastHoverType, QEvent::HoverLeave);
+    QCOMPARE_GE(h.hoverEventCount, enterHoverEventCount + 2);
+    QTRY_COMPARE_GE(h.paintEventCount, 4);
+}
 #endif
 
 void tst_QWidget::windowFlags()
