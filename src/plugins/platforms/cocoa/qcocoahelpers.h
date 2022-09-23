@@ -313,7 +313,7 @@ QSendSuperHelper<Args...> qt_objcDynamicSuperHelper(id receiver, SEL selector, A
 
 // -------------------------------------------------------------------------
 
-struct InputMethodQueryResult : public QHash<Qt::InputMethodQuery, QVariant>
+struct InputMethodQueryResult : public QHash<int, QVariant>
 {
     operator bool() { return !isEmpty(); }
 };
