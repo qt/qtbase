@@ -2626,8 +2626,21 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, bool group)
 #endif // QT_CONFIG(tabwidget)
         {
             // Dock widget is unplugged from the main window
-            // => geometry is not supposed to change
-            dw->d_func()->unplug(QRect());
+            // => geometry needs to be adjusted by separator size
+            switch (dockWidgetArea(dw)) {
+            case Qt::LeftDockWidgetArea:
+            case Qt::RightDockWidgetArea:
+                r.adjust(0, 0, 0, -sep);
+                break;
+            case Qt::TopDockWidgetArea:
+            case Qt::BottomDockWidgetArea:
+                r.adjust(0, 0, -sep, 0);
+                break;
+            case Qt::NoDockWidgetArea:
+            case Qt::DockWidgetArea_Mask:
+                break;
+            }
+            dw->d_func()->unplug(r);
         }
     }
 #endif // QT_CONFIG(dockwidget)

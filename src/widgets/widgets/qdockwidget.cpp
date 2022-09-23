@@ -1044,12 +1044,18 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
             pos = event->globalPosition().toPoint() - state->pressPos - windowMarginOffset;
         }
 
+        // If the newly floating dock widget has got a native title bar,
+        // offset the position by the native title bar's height or width
+        const int dx = q->geometry().x() - q->x();
+        const int dy = q->geometry().y() - q->y();
+        pos.rx() += dx;
+        pos.ry() += dy;
+
         QDockWidgetGroupWindow *floatingTab = qobject_cast<QDockWidgetGroupWindow*>(parent);
         if (floatingTab && !q->isFloating())
             floatingTab->move(pos);
         else
             q->move(pos);
-
         if (state && !state->ctrlDrag)
             mwlayout->hover(state->widgetItem, event->globalPosition().toPoint());
 
