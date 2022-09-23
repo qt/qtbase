@@ -30,6 +30,30 @@ struct ConvertFunctor
     }
 };
 
+template<typename T>
+struct OptionalWrapper
+{
+    std::optional<T> operator()(const T& t) const
+    {
+        if (!CustomConvertibleType::s_ok)
+            return std::nullopt;
+
+        return t;
+    }
+};
+
+template<typename From>
+struct ConvertFunctorWithOptional
+{
+    std::optional<CustomConvertibleType> operator()(const From& f) const
+    {
+        if (!CustomConvertibleType::s_ok)
+            return std::nullopt;
+
+        return CustomConvertibleType(QVariant::fromValue(f));
+    }
+};
+
 template<typename From, typename To>
 bool hasRegisteredConverterFunction()
 {
@@ -81,6 +105,7 @@ void customTypeNotYetConvertible()
     testCustomTypeNotYetConvertible<QLineF, CustomConvertibleType>();
     testCustomTypeNotYetConvertible<QChar, CustomConvertibleType>();
     testCustomTypeNotYetConvertible<CustomConvertibleType, CustomConvertibleType2>();
+    testCustomTypeNotYetConvertible<CustomConvertibleType, std::optional<CustomConvertibleType>>();
 }
 
 void registerCustomTypeConversions()
@@ -99,20 +124,22 @@ void registerCustomTypeConversions()
     QVERIFY((QMetaType::registerConverter<CustomConvertibleType, QLine>(&CustomConvertibleType::convert<QLine>)));
     QVERIFY((QMetaType::registerConverter<CustomConvertibleType, QLineF>(&CustomConvertibleType::convertOk<QLineF>)));
     QVERIFY((QMetaType::registerConverter<CustomConvertibleType, QChar>(&CustomConvertibleType::convert<QChar>)));
-    QVERIFY((QMetaType::registerConverter<QString, CustomConvertibleType>(ConvertFunctor<QString>())));
+    QVERIFY((QMetaType::registerConverter<QString, CustomConvertibleType>(ConvertFunctorWithOptional<QString>())));
     QVERIFY((QMetaType::registerConverter<bool, CustomConvertibleType>(ConvertFunctor<bool>())));
-    QVERIFY((QMetaType::registerConverter<int, CustomConvertibleType>(ConvertFunctor<int>())));
+    QVERIFY((QMetaType::registerConverter<int, CustomConvertibleType>(ConvertFunctorWithOptional<int>())));
     QVERIFY((QMetaType::registerConverter<double, CustomConvertibleType>(ConvertFunctor<double>())));
-    QVERIFY((QMetaType::registerConverter<float, CustomConvertibleType>(ConvertFunctor<float>())));
+    QVERIFY((QMetaType::registerConverter<float, CustomConvertibleType>(ConvertFunctorWithOptional<float>())));
     QVERIFY((QMetaType::registerConverter<QRect, CustomConvertibleType>(ConvertFunctor<QRect>())));
-    QVERIFY((QMetaType::registerConverter<QRectF, CustomConvertibleType>(ConvertFunctor<QRectF>())));
+    QVERIFY((QMetaType::registerConverter<QRectF, CustomConvertibleType>(ConvertFunctorWithOptional<QRectF>())));
     QVERIFY((QMetaType::registerConverter<QPoint, CustomConvertibleType>(ConvertFunctor<QPoint>())));
-    QVERIFY((QMetaType::registerConverter<QPointF, CustomConvertibleType>(ConvertFunctor<QPointF>())));
+    QVERIFY((QMetaType::registerConverter<QPointF, CustomConvertibleType>(ConvertFunctorWithOptional<QPointF>())));
     QVERIFY((QMetaType::registerConverter<QSize, CustomConvertibleType>(ConvertFunctor<QSize>())));
-    QVERIFY((QMetaType::registerConverter<QSizeF, CustomConvertibleType>(ConvertFunctor<QSizeF>())));
+    QVERIFY((QMetaType::registerConverter<QSizeF, CustomConvertibleType>(ConvertFunctorWithOptional<QSizeF>())));
     QVERIFY((QMetaType::registerConverter<QLine, CustomConvertibleType>(ConvertFunctor<QLine>())));
-    QVERIFY((QMetaType::registerConverter<QLineF, CustomConvertibleType>(ConvertFunctor<QLineF>())));
+    QVERIFY((QMetaType::registerConverter<QLineF, CustomConvertibleType>(ConvertFunctorWithOptional<QLineF>())));
     QVERIFY((QMetaType::registerConverter<QChar, CustomConvertibleType>(ConvertFunctor<QChar>())));
+    QVERIFY((QMetaType::registerConverter<CustomConvertibleType, std::optional<CustomConvertibleType>>(OptionalWrapper<CustomConvertibleType>())));
+
     QVERIFY((QMetaType::registerConverter<CustomConvertibleType, CustomConvertibleType2>()));
     QTest::ignoreMessage(QtWarningMsg, "Type conversion already registered from type CustomConvertibleType to type CustomConvertibleType2");
     QVERIFY((!QMetaType::registerConverter<CustomConvertibleType, CustomConvertibleType2>()));
@@ -171,7 +198,7 @@ void tst_QMetaType::convertCustomType()
     QCOMPARE(v.toString(), ok ? testQString : QString());
     QCOMPARE(v.value<QString>(), ok ? testQString : QString());
     QVERIFY(CustomConvertibleType::s_value.canConvert<CustomConvertibleType>());
-    QCOMPARE((CustomConvertibleType::s_value.value<CustomConvertibleType>().m_foo.toString()), testQString);
+    QCOMPARE((CustomConvertibleType::s_value.value<CustomConvertibleType>().m_foo.toString()), ok ? testQString : QString());
 
     QFETCH(bool, testBool);
     CustomConvertibleType::s_value = testBool;
@@ -183,7 +210,7 @@ void tst_QMetaType::convertCustomType()
     CustomConvertibleType::s_value = testInt;
     QCOMPARE(v.toInt(), ok ? testInt : 0);
     QCOMPARE(v.value<int>(), ok ? testInt : 0);
-    QCOMPARE((CustomConvertibleType::s_value.value<CustomConvertibleType>().m_foo.toInt()), testInt);
+    QCOMPARE((CustomConvertibleType::s_value.value<CustomConvertibleType>().m_foo.toInt()), ok ? testInt : 0);
 
     QFETCH(double, testDouble);
     CustomConvertibleType::s_value = testDouble;
@@ -195,7 +222,7 @@ void tst_QMetaType::convertCustomType()
     CustomConvertibleType::s_value = testFloat;
     QCOMPARE(v.toFloat(), ok ? testFloat : 0.0);
     QCOMPARE(v.value<float>(), ok ? testFloat : 0.0);
-    QCOMPARE((CustomConvertibleType::s_value.value<CustomConvertibleType>().m_foo.toFloat()), testFloat);
+    QCOMPARE((CustomConvertibleType::s_value.value<CustomConvertibleType>().m_foo.toFloat()), ok ? testFloat : 0);
 
     QFETCH(QRect, testQRect);
     CustomConvertibleType::s_value = testQRect;
@@ -207,7 +234,7 @@ void tst_QMetaType::convertCustomType()
     CustomConvertibleType::s_value = testQRectF;
     QCOMPARE(v.toRectF(), ok ? testQRectF : QRectF());
     QCOMPARE(v.value<QRectF>(), ok ? testQRectF : QRectF());
-    QCOMPARE((CustomConvertibleType::s_value.value<CustomConvertibleType>().m_foo.toRectF()), testQRectF);
+    QCOMPARE((CustomConvertibleType::s_value.value<CustomConvertibleType>().m_foo.toRectF()), ok ? testQRectF : QRectF());
 
     QFETCH(QPoint, testQPoint);
     CustomConvertibleType::s_value = testQPoint;
@@ -219,7 +246,7 @@ void tst_QMetaType::convertCustomType()
     CustomConvertibleType::s_value = testQPointF;
     QCOMPARE(v.toPointF(), ok ? testQPointF : QPointF());
     QCOMPARE(v.value<QPointF>(), ok ? testQPointF : QPointF());
-    QCOMPARE((CustomConvertibleType::s_value.value<CustomConvertibleType>().m_foo.toPointF()), testQPointF);
+    QCOMPARE((CustomConvertibleType::s_value.value<CustomConvertibleType>().m_foo.toPointF()), ok ? testQPointF : QPointF());
 
     QFETCH(QSize, testQSize);
     CustomConvertibleType::s_value = testQSize;
@@ -231,7 +258,7 @@ void tst_QMetaType::convertCustomType()
     CustomConvertibleType::s_value = testQSizeF;
     QCOMPARE(v.toSizeF(), ok ? testQSizeF : QSizeF());
     QCOMPARE(v.value<QSizeF>(), ok ? testQSizeF : QSizeF());
-    QCOMPARE((CustomConvertibleType::s_value.value<CustomConvertibleType>().m_foo.toSizeF()), testQSizeF);
+    QCOMPARE((CustomConvertibleType::s_value.value<CustomConvertibleType>().m_foo.toSizeF()), ok ? testQSizeF : QSizeF());
 
     QFETCH(QLine, testQLine);
     CustomConvertibleType::s_value = testQLine;
@@ -243,7 +270,7 @@ void tst_QMetaType::convertCustomType()
     CustomConvertibleType::s_value = testQLineF;
     QCOMPARE(v.toLineF(), ok ? testQLineF : QLineF());
     QCOMPARE(v.value<QLineF>(), ok ? testQLineF : QLineF());
-    QCOMPARE((CustomConvertibleType::s_value.value<CustomConvertibleType>().m_foo.toLineF()), testQLineF);
+    QCOMPARE((CustomConvertibleType::s_value.value<CustomConvertibleType>().m_foo.toLineF()), ok ? testQLineF : QLineF());
 
     QFETCH(QChar, testQChar);
     CustomConvertibleType::s_value = testQChar;
@@ -254,6 +281,18 @@ void tst_QMetaType::convertCustomType()
     v = QVariant::fromValue(testCustom);
     QVERIFY(v.canConvert(QMetaType(::qMetaTypeId<CustomConvertibleType2>())));
     QCOMPARE(v.value<CustomConvertibleType2>().m_foo, testCustom.m_foo);
+
+    // Check that converters that actually convert to std::optional<T> are not
+    // taken to indicate success or failure of the conversion. In these cases,
+    // the conversion must always succeed, even if the converter has returned a
+    // nullopt.
+    v = QVariant::fromValue(testCustom);
+    QVERIFY(v.canConvert(QMetaType::fromType<std::optional<CustomConvertibleType>>()));
+    QVERIFY(v.convert(QMetaType::fromType<std::optional<CustomConvertibleType>>()));
+    QCOMPARE(v.value<std::optional<CustomConvertibleType>>().has_value(), ok);
+    if (ok) {
+        QCOMPARE(v.value<std::optional<CustomConvertibleType>>().value().m_foo, testCustom.m_foo);
+    }
 
     QFETCH(DerivedGadgetType, testDerived);
     v = QVariant::fromValue(testDerived);

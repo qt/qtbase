@@ -1,6 +1,7 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+#include <QJsonObject>
 #include <QMetaType>
 #include <QString>
 
@@ -49,6 +50,13 @@ int main() {
   //! [unaryfunc]
   QMetaType::registerConverter<CustomStringType, QString>([](const CustomStringType &str) {
       return QString::fromUtf8(str.data());
+  });
+  QMetaType::registerConverter<QJsonValue, QPointF>(
+            [](const QJsonValue &value) -> std::optional<QPointF> {
+      const auto object = value.toObject();
+      if (!object.contains("x") || !object.contains("y"))
+          return std::nullopt;  // The conversion fails if the required properties are missing
+      return QPointF{object["x"].toDouble(), object["y"].toDouble()};
   });
   //! [unaryfunc]
 }

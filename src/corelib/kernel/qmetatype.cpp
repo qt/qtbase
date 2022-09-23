@@ -1721,7 +1721,8 @@ Q_GLOBAL_STATIC(QMetaTypeMutableViewRegistry, customTypesMutableViewRegistry)
     to type To in the meta type system. Returns \c true if the registration succeeded, otherwise false.
 
     \a function must take an instance of type \c From and return an instance of \c To. It can be a function
-    pointer, a lambda or a functor object.
+    pointer, a lambda or a functor object. Since Qt 6.5, the \a function can also return an instance of
+    \c std::optional<To> to be able to indicate failed conversions.
     \snippet qmetatype/registerConverters.cpp unaryfunc
 */
 

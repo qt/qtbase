@@ -24,6 +24,8 @@
 #include <list>
 #include <map>
 #include <functional>
+#include <optional>
+#include <type_traits>
 
 #ifdef Bool
 #error qmetatype.h must be included before any header file that defines Bool
@@ -600,7 +602,15 @@ public:
         auto converter = [function = std::move(function)](const void *from, void *to) -> bool {
             const From *f = static_cast<const From *>(from);
             To *t = static_cast<To *>(to);
-            *t = function(*f);
+            auto &&r = function(*f);
+            if constexpr (std::is_same_v<std::remove_cv_t<std::remove_reference_t<decltype(r)>>,
+                                         std::optional<To>>) {
+                if (!r)
+                    return false;
+                *t = *std::forward<decltype(r)>(r);
+            } else {
+                *t = std::forward<decltype(r)>(r);
+            }
             return true;
         };
         return registerConverterImpl<From, To>(std::move(converter), fromType, toType);
