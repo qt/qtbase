@@ -152,6 +152,9 @@ public:
     static const QOperatingSystemVersion AndroidPie;
     static const QOperatingSystemVersion Android10;
     static const QOperatingSystemVersion Android11;
+    static const QOperatingSystemVersion Android12;
+    static const QOperatingSystemVersion Android12L;
+    static const QOperatingSystemVersion Android13;
 #else
     static constexpr QOperatingSystemVersionBase Windows7 { QOperatingSystemVersionBase::Windows, 6, 1 };
     static constexpr QOperatingSystemVersionBase Windows8 { QOperatingSystemVersionBase::Windows, 6, 2 };
@@ -186,6 +189,9 @@ public:
     static constexpr QOperatingSystemVersionBase AndroidPie { QOperatingSystemVersionBase::Android, 9, 0 };
     static constexpr QOperatingSystemVersionBase Android10 { QOperatingSystemVersionBase::Android, 10, 0 };
     static constexpr QOperatingSystemVersionBase Android11 { QOperatingSystemVersionBase::Android, 11, 0 };
+    static constexpr QOperatingSystemVersionBase Android12 { QOperatingSystemVersionBase::Android, 12, 0 };
+    static constexpr QOperatingSystemVersionBase Android12L { QOperatingSystemVersionBase::Android, 12, 0 };
+    static constexpr QOperatingSystemVersionBase Android13 { QOperatingSystemVersionBase::Android, 13, 0 };
 #endif // New (static constexpr) entries go here, only cherry-pick as far back as 6.3 (QTBUG-97808):
 
     static constexpr QOperatingSystemVersionBase Windows10_1809 { QOperatingSystemVersionBase::Windows, 10, 0, 17763 }; // RS5

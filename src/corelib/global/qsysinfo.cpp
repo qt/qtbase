@@ -16,6 +16,7 @@
 #endif
 
 #ifdef Q_OS_ANDROID
+#include <QtCore/private/qjnihelpers_p.h>
 #include <qjniobject.h>
 #endif
 
@@ -408,65 +409,65 @@ static bool findUnixOsVersion(QUnixOSVersion &v)
 #ifdef Q_OS_ANDROID
 static const char *osVer_helper(QOperatingSystemVersion)
 {
-/* Data:
-
-
-
-Cupcake
-Donut
-Eclair
-Eclair
-Eclair
-Froyo
-Gingerbread
-Gingerbread
-Honeycomb
-Honeycomb
-Honeycomb
-Ice Cream Sandwich
-Ice Cream Sandwich
-Jelly Bean
-Jelly Bean
-Jelly Bean
-KitKat
-KitKat
-Lollipop
-Lollipop
-Marshmallow
-Nougat
-Nougat
-Oreo
-*/
-    static const char versions_string[] =
-        "\0"
-        "Cupcake\0"
-        "Donut\0"
-        "Eclair\0"
-        "Froyo\0"
-        "Gingerbread\0"
-        "Honeycomb\0"
-        "Ice Cream Sandwich\0"
-        "Jelly Bean\0"
-        "KitKat\0"
-        "Lollipop\0"
-        "Marshmallow\0"
-        "Nougat\0"
-        "Oreo\0"
-        "\0";
-
-    static const int versions_indices[] = {
-           0,    0,    0,    1,    9,   15,   15,   15,
-          22,   28,   28,   40,   40,   40,   50,   50,
-          69,   69,   69,   80,   80,   87,   87,   96,
-         108,  108,  115,   -1
-    };
-
-    static const int versions_count = (sizeof versions_indices) / (sizeof versions_indices[0]);
-
     // https://source.android.com/source/build-numbers.html
     // https://developer.android.com/guide/topics/manifest/uses-sdk-element.html#ApiLevels
-    const int sdk_int = QJniObject::getStaticField<jint>("android/os/Build$VERSION", "SDK_INT");
-    return &versions_string[versions_indices[qBound(0, sdk_int, versions_count - 1)]];
+    const int sdk_int = QtAndroidPrivate::androidSdkVersion();
+    switch (sdk_int) {
+    case 3:
+        return "Cupcake";
+    case 4:
+        return "Donut";
+    case 5:
+    case 6:
+    case 7:
+        return "Eclair";
+    case 8:
+        return "Froyo";
+    case 9:
+    case 10:
+        return "Gingerbread";
+    case 11:
+    case 12:
+    case 13:
+        return "Honeycomb";
+    case 14:
+    case 15:
+        return "Ice Cream Sandwich";
+    case 16:
+    case 17:
+    case 18:
+        return "Jelly Bean";
+    case 19:
+    case 20:
+        return "KitKat";
+    case 21:
+    case 22:
+        return "Lollipop";
+    case 23:
+        return "Marshmallow";
+    case 24:
+    case 25:
+        return "Nougat";
+    case 26:
+    case 27:
+        return "Oreo";
+    case 28:
+        return "Pie";
+    case 29:
+        return "10";
+    case 30:
+        return "11";
+    case 31:
+        return "12";
+    case 32:
+        return "12L";
+    case 33:
+        return "13";
+    default:
+        break;
+    }
+
+    return "";
 }
 #endif
 

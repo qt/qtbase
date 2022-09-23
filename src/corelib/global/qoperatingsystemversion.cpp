@@ -15,6 +15,7 @@
 #include <qdebug.h>
 
 #ifdef Q_OS_ANDROID
+#include <QtCore/private/qjnihelpers_p.h>
 #include <QJniObject>
 #endif
 
@@ -179,11 +180,13 @@ QOperatingSystemVersionBase QOperatingSystemVersionBase::current_impl()
         { 9, 0 }, // API level 28
         { 10, 0 }, // API level 29
         { 11, 0 }, // API level 30
+        { 12, 0 }, // API level 31
+        { 12, 0 }, // API level 32
+        { 13, 0 }, // API level 33
     };
 
     // This will give us at least the first 2 version components
-    const size_t versionIdx = size_t(QJniObject::getStaticField<jint>(
-        "android/os/Build$VERSION", "SDK_INT")) - 1;
+    const size_t versionIdx = QtAndroidPrivate::androidSdkVersion() - 1;
     if (versionIdx < sizeof(versions) / sizeof(versions[0])) {
         version.m_major = versions[versionIdx].major;
         version.m_minor = versions[versionIdx].minor;
@@ -656,6 +659,32 @@ const QOperatingSystemVersion QOperatingSystemVersion::Android10 =
  */
 const QOperatingSystemVersion QOperatingSystemVersion::Android11 =
     QOperatingSystemVersion(QOperatingSystemVersion::Android, 11, 0);
+
+/*!
+    \variable QOperatingSystemVersion::Android12
+    \brief a version corresponding to Android 12 (version 12.0, API level 31).
+    \since 6.5
+ */
+const QOperatingSystemVersion QOperatingSystemVersion::Android12 =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 12, 0);
+
+/*!
+    \variable QOperatingSystemVersion::Android12L
+    \brief a version corresponding to Android 12L (version 12.0, API level 32).
+    \since 6.5
+ */
+const QOperatingSystemVersion QOperatingSystemVersion::Android12L =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 12, 0);
+
+/*!
+    \variable QOperatingSystemVersion::Android13
+    \brief a version corresponding to Android 13 (version 13.0, API level 33).
+    \since 6.5
+ */
+const QOperatingSystemVersion QOperatingSystemVersion::Android13 =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 13, 0);
+
+
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QOperatingSystemVersion &ov)
