@@ -31,7 +31,7 @@ void showOpenViaHTMLPolyfill(const QStringList &accept, FileSelectMode fileSelec
     emscripten::val input = document.call<emscripten::val>("createElement", std::string("input"));
     input.set("type", "file");
     input.set("style", "display:none");
-    // input.set("accept", emscripten::val(accept));
+    input.set("accept", LocalFileApi::makeFileInputAccept(accept));
     Q_UNUSED(accept);
     input.set("multiple", emscripten::val(fileSelectMode == FileSelectMode::MultipleFiles));
 
