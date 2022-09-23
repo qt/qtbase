@@ -150,7 +150,6 @@ private slots:
     void softHyphens_data();
     void softHyphens();
     void min_maximumWidth();
-    void min_maximumWidthWithLineSeparator();
 
 private:
     QFont testFont;
@@ -2706,33 +2705,6 @@ void tst_QTextLayout::min_maximumWidth()
             QCOMPARE(layout.maximumWidth(), maxWidth);
             width -= stepSize;
         }
-    }
-}
-
-void tst_QTextLayout::min_maximumWidthWithLineSeparator()
-{
-    QTextLayout referenceLayout("text", testFont);
-
-    QString multilineText("text\ntext\ntext");
-    multilineText.replace('\n', QChar::LineSeparator);
-    QTextLayout layout(multilineText, testFont);
-
-    for (int wrapMode = QTextOption::NoWrap; wrapMode <= QTextOption::WrapAtWordBoundaryOrAnywhere; ++wrapMode) {
-        QTextOption opt;
-        opt.setWrapMode((QTextOption::WrapMode)wrapMode);
-
-        referenceLayout.setTextOption(opt);
-        referenceLayout.beginLayout();
-        while (referenceLayout.createLine().isValid()) { }
-        referenceLayout.endLayout();
-
-        layout.setTextOption(opt);
-        layout.beginLayout();
-        while (layout.createLine().isValid()) { }
-        layout.endLayout();
-
-        QCOMPARE(layout.minimumWidth(), referenceLayout.minimumWidth());
-        QCOMPARE(layout.maximumWidth(), referenceLayout.maximumWidth());
     }
 }
 
