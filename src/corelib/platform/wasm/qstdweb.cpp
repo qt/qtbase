@@ -295,7 +295,9 @@ void WebPromiseManager::adoptPromise(emscripten::val target, PromiseCallbacks ca
         registerPromise(std::move(allocation), std::move(callbacks));
     });
 }
-}  // namespace
+
+EM_JS(bool, jsHaveAsyncify, (), { return typeof Asyncify !== "undefined"; });
+} // namespace
 
 ArrayBuffer::ArrayBuffer(uint32_t size)
 {
@@ -669,7 +671,7 @@ namespace Promise {
 
 bool haveAsyncify()
 {
-    static bool HaveAsyncify = !emscripten::val::global("Asyncify").isUndefined();
+    static bool HaveAsyncify = jsHaveAsyncify();
     return HaveAsyncify;
 }
 
