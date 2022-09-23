@@ -160,7 +160,7 @@ static QUIView *focusView()
         return;
 
     // Enable hide-keyboard gesture
-    self.enabled = YES;
+    self.enabled = m_context->isInputPanelVisible();
 
     m_context->scrollToCursor();
 }
@@ -402,7 +402,7 @@ void QIOSInputContext::updateKeyboardState(NSNotification *notification)
         // The isInputPanelVisible() property is based on whether or not the virtual keyboard
         // is visible on screen, and does not follow the logic of the iOS WillShow and WillHide
         // notifications which are not emitted for undocked keyboards, and are buggy when dealing
-        // with input-accesosory-views. The reason for using frameEnd here (the future state),
+        // with input-accessory-views. The reason for using frameEnd here (the future state),
         // instead of the current state reflected in frameBegin, is that QInputMethod::isVisible()
         // is documented to reflect the future state in the case of animated transitions.
         m_keyboardState.keyboardVisible = CGRectIntersectsRect(frameEnd, [UIScreen mainScreen].bounds);
