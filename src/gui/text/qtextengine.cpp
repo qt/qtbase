@@ -2603,7 +2603,6 @@ QTextEngine::LayoutData::LayoutData()
     hasBidi = false;
     layoutState = LayoutEmpty;
     haveCharAttributes = false;
-    previousLineManuallyWrapped = false;
     logClustersPtr = nullptr;
     available_glyphs = 0;
 }
@@ -2638,7 +2637,6 @@ QTextEngine::LayoutData::LayoutData(const QString &str, void **stack_memory, int
     hasBidi = false;
     layoutState = LayoutEmpty;
     haveCharAttributes = false;
-    previousLineManuallyWrapped = false;
 }
 
 QTextEngine::LayoutData::~LayoutData()
@@ -2724,7 +2722,6 @@ void QTextEngine::freeMemory()
         layoutData->hasBidi = false;
         layoutData->layoutState = LayoutEmpty;
         layoutData->haveCharAttributes = false;
-        layoutData->previousLineManuallyWrapped = false;
         layoutData->items.clear();
     }
     if (specialData)
