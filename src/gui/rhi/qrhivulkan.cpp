@@ -552,30 +552,46 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         QList<const char *> requestedDevExts;
         requestedDevExts.append("VK_KHR_swapchain");
 
+        const bool hasPhysDevProp2 = inst->extensions().contains(QByteArrayLiteral("VK_KHR_get_physical_device_properties2"));
+
+        if (devExts.contains(QByteArrayLiteral("VK_KHR_portability_subset"))) {
+            if (hasPhysDevProp2) {
+                requestedDevExts.append("VK_KHR_portability_subset");
+            } else {
+                qWarning("VK_KHR_portability_subset should be enabled on the device "
+                         "but the instance does not have VK_KHR_get_physical_device_properties2 enabled. "
+                         "Expect problems.");
+            }
+        }
+
         caps.vertexAttribDivisor = false;
         if (devExts.contains(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME)) {
-            if (inst->extensions().contains(QByteArrayLiteral("VK_KHR_get_physical_device_properties2"))) {
+            if (hasPhysDevProp2) {
                 requestedDevExts.append(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME);
                 caps.vertexAttribDivisor = true;
             }
         }
 
         for (const QByteArray &ext : requestedDeviceExtensions) {
-            if (!ext.isEmpty()) {
-                if (devExts.contains(ext))
+            if (!ext.isEmpty() && !requestedDevExts.contains(ext)) {
+                if (devExts.contains(ext)) {
                     requestedDevExts.append(ext.constData());
-                else
-                    qWarning("Device extension %s is not supported", ext.constData());
+                } else {
+                    qWarning("Device extension %s requested in QRhiVulkanInitParams is not supported",
+                             ext.constData());
+                }
             }
         }
 
         QByteArrayList envExtList = qgetenv("QT_VULKAN_DEVICE_EXTENSIONS").split(';');
         for (const QByteArray &ext : envExtList) {
             if (!ext.isEmpty() && !requestedDevExts.contains(ext)) {
-                if (devExts.contains(ext))
+                if (devExts.contains(ext)) {
                     requestedDevExts.append(ext.constData());
-                else
-                    qWarning("Device extension %s is not supported", ext.constData());
+                } else {
+                    qWarning("Device extension %s requested in QT_VULKAN_DEVICE_EXTENSIONS is not supported",
+                             ext.constData());
+                }
             }
         }
 
