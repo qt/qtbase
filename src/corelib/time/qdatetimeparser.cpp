@@ -973,11 +973,7 @@ static int weekDayWithinMonth(QCalendar calendar, int year, int month, int day, 
     const int maxDay = calendar.daysInMonth(month, year); // 0 if no such month
     day = maxDay > 1 ? qBound(1, day, maxDay) : qMax(1, day);
     day += dayOfWeekDiff(weekDay, calendar.dayOfWeek(QDate(year, month, day, calendar)));
-    if (day <= 0)
-        return day + 7;
-    if (maxDay > 0 && day > maxDay)
-        return day - 7;
-    return day;
+    return day <= 0 ? day + 7 : maxDay > 0 && day > maxDay ? day - 7 : day;
 }
 
 /*!
@@ -995,7 +991,7 @@ static QDate actualDate(QDateTimeParser::Sections known, const QCalendar &calend
     if (actual.isValid() && year % 100 == year2digits && calendar.dayOfWeek(actual) == dayofweek)
         return actual; // The obvious candidate is fine :-)
 
-    if (dayofweek < 1 || dayofweek > 7) // Invalid: ignore
+    if (dayofweek < 1 || dayofweek > 7) // Intercallary (or invalid): ignore
         known &= ~QDateTimeParser::DayOfWeekSectionMask;
 
     // Assuming year > 0 ...
