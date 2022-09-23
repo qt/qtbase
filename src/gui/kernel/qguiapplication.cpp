@@ -51,7 +51,9 @@
 #include <qpa/qwindowsysteminterface_p.h>
 #include "private/qwindow_p.h"
 #include "private/qcursor_p.h"
-#include "private/qopenglcontext_p.h"
+#if QT_CONFIG(opengl)
+#  include "private/qopenglcontext_p.h"
+#endif
 #include "private/qinputdevicemanager_p.h"
 #include "private/qinputmethod_p.h"
 #include "private/qpointingdevice_p.h"

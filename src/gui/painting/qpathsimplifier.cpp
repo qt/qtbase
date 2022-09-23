@@ -8,7 +8,9 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qalgorithms.h>
 
-#include <private/qopengl_p.h>
+#if QT_CONFIG(opengl)
+#  include <private/qopengl_p.h>
+#endif
 #include <private/qrbtree_p.h>
 
 QT_BEGIN_NAMESPACE

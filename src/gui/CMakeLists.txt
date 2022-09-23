@@ -101,6 +101,7 @@ qt_internal_add_module(Gui
         kernel/qkeymapper.cpp kernel/qkeymapper_p.h
         kernel/qoffscreensurface.cpp kernel/qoffscreensurface.h kernel/qoffscreensurface_p.h
         kernel/qoffscreensurface_platform.h
+        kernel/qopenglcontext.h
         kernel/qpaintdevicewindow.cpp kernel/qpaintdevicewindow.h kernel/qpaintdevicewindow_p.h
         kernel/qpalette.cpp kernel/qpalette.h
         kernel/qpixelformat.cpp kernel/qpixelformat.h
@@ -118,6 +119,7 @@ qt_internal_add_module(Gui
         kernel/qplatformmenu.cpp kernel/qplatformmenu.h kernel/qplatformmenu_p.h
         kernel/qplatformnativeinterface.cpp kernel/qplatformnativeinterface.h
         kernel/qplatformoffscreensurface.cpp kernel/qplatformoffscreensurface.h
+        kernel/qplatformopenglcontext.h
         kernel/qplatformscreen.cpp kernel/qplatformscreen.h kernel/qplatformscreen_p.h
         kernel/qplatformservices.cpp kernel/qplatformservices.h
         kernel/qplatformsessionmanager.cpp kernel/qplatformsessionmanager.h
@@ -147,6 +149,10 @@ qt_internal_add_module(Gui
         math3d/qvector3d.h
         math3d/qvector4d.h
         math3d/qvectornd.cpp math3d/qvectornd.h
+        opengl/qopengl.h
+        opengl/qopenglext.h
+        opengl/qopenglfunctions.h
+        opengl/qopenglextrafunctions.h
         painting/qbackingstore.cpp painting/qbackingstore.h
         painting/qbackingstoredefaultcompositor.cpp painting/qbackingstoredefaultcompositor_p.h
         painting/qbackingstorerhisupport.cpp painting/qbackingstorerhisupport_p.h
@@ -351,14 +357,12 @@ endif()
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_opengl
     SOURCES
-        kernel/qopenglcontext.cpp kernel/qopenglcontext.h kernel/qopenglcontext_p.h
+        kernel/qopenglcontext.cpp kernel/qopenglcontext_p.h
         kernel/qopenglcontext_platform.h
-        kernel/qplatformopenglcontext.cpp kernel/qplatformopenglcontext.h
-        opengl/qopengl.cpp opengl/qopengl.h opengl/qopengl_p.h
-        opengl/qopenglext.h
+        kernel/qplatformopenglcontext.cpp
+        opengl/qopengl.cpp opengl/qopengl_p.h
         opengl/qopenglextensions_p.h
-        opengl/qopenglextrafunctions.h
-        opengl/qopenglfunctions.cpp opengl/qopenglfunctions.h
+        opengl/qopenglfunctions.cpp
         opengl/qopenglprogrambinarycache.cpp opengl/qopenglprogrambinarycache_p.h
         rhi/qrhigles2.cpp rhi/qrhigles2_p.h
         rhi/qrhigles2_p_p.h

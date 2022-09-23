@@ -3,7 +3,9 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 
-#include <QtGui/private/qopenglcontext_p.h>
+#if QT_CONFIG(opengl)
+#  include <QtGui/private/qopenglcontext_p.h>
+#endif
 #include <QtGui/private/qguiapplication_p.h>
 
 #include <qpa/qplatformopenglcontext.h>
