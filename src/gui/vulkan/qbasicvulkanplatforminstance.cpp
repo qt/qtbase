@@ -217,7 +217,8 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
         }
 
         m_enabledExtensions.append("VK_KHR_surface");
-        m_enabledExtensions.append("VK_KHR_portability_enumeration");
+        if (!flags.testFlag(QVulkanInstance::NoPortabilityDrivers))
+            m_enabledExtensions.append("VK_KHR_portability_enumeration");
         if (!flags.testFlag(QVulkanInstance::NoDebugOutputRedirect))
             m_enabledExtensions.append("VK_EXT_debug_utils");
 
@@ -258,7 +259,8 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
         VkInstanceCreateInfo instInfo = {};
         instInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         instInfo.pApplicationInfo = &appInfo;
-        instInfo.flags = 0x00000001; // VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
+        if (!flags.testFlag(QVulkanInstance::NoPortabilityDrivers))
+            instInfo.flags |= 0x00000001; // VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
 
         QList<const char *> layerNameVec;
         for (const QByteArray &ba : qAsConst(m_enabledLayers))

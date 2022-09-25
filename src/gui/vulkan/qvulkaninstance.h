@@ -135,7 +135,8 @@ public:
     ~QVulkanInstance();
 
     enum Flag {
-        NoDebugOutputRedirect = 0x01
+        NoDebugOutputRedirect = 0x01,
+        NoPortabilityDrivers = 0x02
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 

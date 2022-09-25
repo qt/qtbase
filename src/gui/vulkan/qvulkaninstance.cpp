@@ -206,6 +206,7 @@ QT_BEGIN_NAMESPACE
     the behavior of create().
 
     \value NoDebugOutputRedirect Disables Vulkan debug output (\c{VK_EXT_debug_utils}) redirection to qDebug.
+    \value NoPortabilityDrivers Disables enumerating physical devices marked as Vulkan Portability.
 */
 
 bool QVulkanInstancePrivate::ensureVulkan()
@@ -484,7 +485,8 @@ void QVulkanInstance::setLayers(const QByteArrayList &layers)
     VK_KHR_win32_surface) will always be added automatically, no need to
     include them in this list.
 
-    \note \c VK_KHR_portability_enumeration is added automatically.
+    \note \c VK_KHR_portability_enumeration is added automatically unless the
+    NoPortabilityDrivers flag is set. This value was introduced in Qt 6.5.
 
     \note This function can only be called before create() and has no effect if
     called afterwards.
@@ -543,9 +545,10 @@ void QVulkanInstance::setApiVersion(const QVersionNumber &vulkanVersion)
     The Vulkan instance and library is available as long as this
     QVulkanInstance exists, or until destroy() is called.
 
-    The VkInstance is always created with the flag
+    By default the VkInstance is created with the flag
     \l{https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkInstanceCreateFlagBits.html}{VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR}
-    set. This means that Vulkan Portability physical devices get enumerated as well.
+    set. This means that Vulkan Portability physical devices get enumerated as
+    well. If this is not desired, set the NoPortabilityDrivers flag.
  */
 bool QVulkanInstance::create()
 {
