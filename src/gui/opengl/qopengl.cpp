@@ -195,20 +195,13 @@ struct OsTypeTerm
     static QString hostOs();
     static QVersionNumber hostKernelVersion() { return QVersionNumber::fromString(QSysInfo::kernelVersion()); }
     static QString hostOsRelease() {
-        QString ver;
 #ifdef Q_OS_WIN
-        const auto osver = QOperatingSystemVersion::current();
-#define Q_WINVER(major, minor) (major << 8 | minor)
-        switch (Q_WINVER(osver.majorVersion(), osver.minorVersion())) {
-        case Q_WINVER(10, 0):
-            ver = QStringLiteral("10");
-            break;
-        default:
-            break;
-        }
-#undef Q_WINVER
+        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11)
+            return u"11"_s;
+        return u"10"_s;
+#else
+        return {};
 #endif
-        return ver;
     }
 
     bool isNull() const { return type.isEmpty(); }
