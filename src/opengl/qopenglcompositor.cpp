@@ -310,14 +310,28 @@ void QOpenGLCompositor::ensureCorrectZOrder()
                       return true;
                   }
 
-                  // Case #3: One of the window is a Tool, that goes to front, as done in other QPAs
+                  // Case #3: Modality gets higher Z
+                  if (w1->modality() != Qt::NonModal && w2->modality() == Qt::NonModal)
+                      return false;
+
+                  if (w2->modality() != Qt::NonModal && w1->modality() == Qt::NonModal)
+                      return true;
+
                   const bool isTool1 = (w1->flags() & Qt::Tool) == Qt::Tool;
                   const bool isTool2 = (w2->flags() & Qt::Tool) == Qt::Tool;
-                  if (isTool1 != isTool2) {
-                      return !isTool1;
-                  }
+                  const bool isPurePopup1 = !isTool1 && (w1->flags() & Qt::Popup) == Qt::Popup;
+                  const bool isPurePopup2 = !isTool2 && (w2->flags() & Qt::Popup) == Qt::Popup;
 
-                  // Case #4: Just preserve original sorting:
+                  // Case #4: By pure-popup we mean menus and tooltips. Qt::Tool implies Qt::Popup
+                  // and we don't want to catch QDockWidget and other tool windows just yet
+                  if (isPurePopup1 != isPurePopup2)
+                      return !isPurePopup1;
+
+                  // Case #5: One of the window is a Tool, that goes to front, as done in other QPAs
+                  if (isTool1 != isTool2)
+                      return !isTool1;
+
+                  // Case #6: Just preserve original sorting:
                   return originalOrder.indexOf(cw1) < originalOrder.indexOf(cw2);
               });
 }
