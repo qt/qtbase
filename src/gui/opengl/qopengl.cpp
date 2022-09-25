@@ -200,15 +200,6 @@ struct OsTypeTerm
         const auto osver = QOperatingSystemVersion::current();
 #define Q_WINVER(major, minor) (major << 8 | minor)
         switch (Q_WINVER(osver.majorVersion(), osver.minorVersion())) {
-        case Q_WINVER(6, 1):
-            ver = QStringLiteral("7");
-            break;
-        case Q_WINVER(6, 2):
-            ver = QStringLiteral("8");
-            break;
-        case Q_WINVER(6, 3):
-            ver = QStringLiteral("8.1");
-            break;
         case Q_WINVER(10, 0):
             ver = QStringLiteral("10");
             break;
