@@ -51,7 +51,7 @@ public:
     }
 
     QExplicitlySharedDataPointerV2(QExplicitlySharedDataPointerV2 &&other) noexcept
-        : d(qExchange(other.d, nullptr))
+        : d(std::exchange(other.d, nullptr))
     {
     }
 

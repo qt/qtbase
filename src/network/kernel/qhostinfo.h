@@ -26,7 +26,7 @@ public:
 
     explicit QHostInfo(int lookupId = -1);
     QHostInfo(const QHostInfo &d);
-    QHostInfo(QHostInfo &&other) noexcept : d_ptr(qExchange(other.d_ptr, nullptr)) {}
+    QHostInfo(QHostInfo &&other) noexcept : d_ptr(std::exchange(other.d_ptr, nullptr)) {}
     QHostInfo &operator=(const QHostInfo &d);
     QHostInfo &operator=(QHostInfo &&other) noexcept { swap(other); return *this; }
     ~QHostInfo();

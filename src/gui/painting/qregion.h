@@ -34,7 +34,7 @@ public:
     QRegion(const QPolygon &pa, Qt::FillRule fillRule = Qt::OddEvenFill);
     QRegion(const QRegion &region);
     QRegion(QRegion &&other) noexcept
-        : d(qExchange(other.d, const_cast<QRegionData*>(&shared_empty))) {}
+        : d(std::exchange(other.d, const_cast<QRegionData*>(&shared_empty))) {}
     QRegion(const QBitmap &bitmap);
     ~QRegion();
     QRegion &operator=(const QRegion &);

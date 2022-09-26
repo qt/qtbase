@@ -32,7 +32,7 @@ public:
     ~QPalette();
     QPalette &operator=(const QPalette &palette);
     QPalette(QPalette &&other) noexcept
-        : d(qExchange(other.d, nullptr)), currentGroup(other.currentGroup)
+        : d(std::exchange(other.d, nullptr)), currentGroup(other.currentGroup)
     {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPalette)
 

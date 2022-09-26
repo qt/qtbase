@@ -600,7 +600,7 @@ public:
     operator RestrictedBool() const { return d_ptr && isConnected_helper() ? &Connection::d_ptr : nullptr; }
 #endif
 
-    Connection(Connection &&other) noexcept : d_ptr(qExchange(other.d_ptr, nullptr)) {}
+    Connection(Connection &&other) noexcept : d_ptr(std::exchange(other.d_ptr, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(Connection)
     void swap(Connection &other) noexcept { qt_ptr_swap(d_ptr, other.d_ptr); }
 };

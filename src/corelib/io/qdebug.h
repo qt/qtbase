@@ -72,7 +72,7 @@ public:
     explicit QDebug(QString *string) : stream(new Stream(string)) {}
     explicit QDebug(QtMsgType t) : stream(new Stream(t)) {}
     QDebug(const QDebug &o) : stream(o.stream) { ++stream->ref; }
-    QDebug(QDebug &&other) noexcept : stream{qExchange(other.stream, nullptr)} {}
+    QDebug(QDebug &&other) noexcept : stream{std::exchange(other.stream, nullptr)} {}
     inline QDebug &operator=(const QDebug &other);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QDebug)
     ~QDebug();

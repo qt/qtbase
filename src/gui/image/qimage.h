@@ -96,7 +96,7 @@ public:
 
     QImage(const QImage &);
     QImage(QImage &&other) noexcept
-        : QPaintDevice(), d(qExchange(other.d, nullptr))
+        : QPaintDevice(), d(std::exchange(other.d, nullptr))
     {}
     ~QImage();
 

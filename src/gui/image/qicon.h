@@ -26,7 +26,7 @@ public:
     QIcon(const QPixmap &pixmap);
     QIcon(const QIcon &other);
     QIcon(QIcon &&other) noexcept
-        : d(qExchange(other.d, nullptr))
+        : d(std::exchange(other.d, nullptr))
     {}
     explicit QIcon(const QString &fileName); // file or resource name
     explicit QIcon(QIconEngine *engine);

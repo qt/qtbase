@@ -281,7 +281,7 @@ void QNetworkReplyImplPrivate::handleNotifications()
     if (notificationHandlingPaused)
         return;
 
-     for (InternalNotifications notification : qExchange(pendingNotifications, {})) {
+     for (InternalNotifications notification : std::exchange(pendingNotifications, {})) {
         if (state != Working)
             return;
         switch (notification) {

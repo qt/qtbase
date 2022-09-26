@@ -51,7 +51,7 @@ public:
     QCursor(const QCursor &cursor);
     ~QCursor();
     QCursor &operator=(const QCursor &cursor);
-    QCursor(QCursor &&other) noexcept : d(qExchange(other.d, nullptr)) {}
+    QCursor(QCursor &&other) noexcept : d(std::exchange(other.d, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QCursor)
 
     void swap(QCursor &other) noexcept { qt_ptr_swap(d, other.d); }

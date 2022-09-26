@@ -66,7 +66,7 @@ public:
         if (ptr != d) {
             if (ptr)
                 ptr->ref.ref();
-            T *old = qExchange(d, ptr);
+            T *old = std::exchange(d, ptr);
             if (old && !old->ref.deref())
                 delete old;
         }
@@ -82,7 +82,7 @@ public:
         reset(o);
         return *this;
     }
-    QSharedDataPointer(QSharedDataPointer &&o) noexcept : d(qExchange(o.d, nullptr)) {}
+    QSharedDataPointer(QSharedDataPointer &&o) noexcept : d(std::exchange(o.d, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QSharedDataPointer)
 
     operator bool () const noexcept { return d != nullptr; }
@@ -135,7 +135,7 @@ public:
     T *data() const noexcept { return d; }
     T *get() const noexcept { return d; }
     const T *constData() const noexcept { return d; }
-    T *take() noexcept { return qExchange(d, nullptr); }
+    T *take() noexcept { return std::exchange(d, nullptr); }
 
     void detach() { if (d && d->ref.loadRelaxed() != 1) detach_helper(); }
 
@@ -163,7 +163,7 @@ public:
         if (ptr != d) {
             if (ptr)
                 ptr->ref.ref();
-            T *old = qExchange(d, ptr);
+            T *old = std::exchange(d, ptr);
             if (old && !old->ref.deref())
                 delete old;
         }
@@ -179,7 +179,7 @@ public:
         reset(o);
         return *this;
     }
-    QExplicitlySharedDataPointer(QExplicitlySharedDataPointer &&o) noexcept : d(qExchange(o.d, nullptr)) {}
+    QExplicitlySharedDataPointer(QExplicitlySharedDataPointer &&o) noexcept : d(std::exchange(o.d, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QExplicitlySharedDataPointer)
 
     operator bool () const noexcept { return d != nullptr; }

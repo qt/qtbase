@@ -28,7 +28,7 @@ public:
 
     QScopeGuard(QScopeGuard &&other) noexcept
         : m_func(std::move(other.m_func))
-        , m_invoke(qExchange(other.m_invoke, false))
+        , m_invoke(std::exchange(other.m_invoke, false))
     {
     }
 

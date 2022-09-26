@@ -22,7 +22,7 @@ public:
     inline ~QBasicTimer() { if (id) stop(); }
 
     QBasicTimer(QBasicTimer &&other) noexcept
-        : id{qExchange(other.id, 0)}
+        : id{std::exchange(other.id, 0)}
     {}
 
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QBasicTimer)

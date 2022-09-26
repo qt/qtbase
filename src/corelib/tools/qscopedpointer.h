@@ -120,7 +120,7 @@ public:
     {
         if (d == other)
             return;
-        T *oldD = qExchange(d, other);
+        T *oldD = std::exchange(d, other);
         Cleanup::cleanup(oldD);
     }
 
@@ -128,7 +128,7 @@ public:
     QT_DEPRECATED_VERSION_X_6_1("Use std::unique_ptr instead, and call release().")
     T *take() noexcept
     {
-        T *oldD = qExchange(d, nullptr);
+        T *oldD = std::exchange(d, nullptr);
         return oldD;
     }
 #endif

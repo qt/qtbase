@@ -172,7 +172,7 @@ struct MultiNode
 
     MultiNode(MultiNode &&other)
         : key(other.key),
-          value(qExchange(other.value, nullptr))
+          value(std::exchange(other.value, nullptr))
     {
     }
 
@@ -203,7 +203,7 @@ struct MultiNode
     void insertMulti(Args &&... args)
     {
         Chain *e = new Chain{ T(std::forward<Args>(args)...), nullptr };
-        e->next = qExchange(value, e);
+        e->next = std::exchange(value, e);
     }
     template<typename ...Args>
     void emplaceValue(Args &&... args)
@@ -1412,8 +1412,8 @@ public:
         return *this;
     }
     QMultiHash(QMultiHash &&other) noexcept
-        : d(qExchange(other.d, nullptr)),
-          m_size(qExchange(other.m_size, 0))
+        : d(std::exchange(other.d, nullptr)),
+          m_size(std::exchange(other.m_size, 0))
     {
     }
     QMultiHash &operator=(QMultiHash &&other) noexcept(std::is_nothrow_destructible<Node>::value)

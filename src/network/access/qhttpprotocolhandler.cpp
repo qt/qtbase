@@ -298,7 +298,7 @@ bool QHttpProtocolHandler::sendRequest()
             sendRequest(); //recurse
         } else {
             // no data to send: just send the HTTP headers
-            m_socket->write(qExchange(m_header, {}));
+            m_socket->write(std::exchange(m_header, {}));
             QMetaObject::invokeMethod(m_reply, "requestSent", Qt::QueuedConnection);
             m_channel->state = QHttpNetworkConnectionChannel::WaitingState; // now wait for response
             sendRequest(); //recurse
@@ -314,7 +314,7 @@ bool QHttpProtocolHandler::sendRequest()
             // the upload device might have no data to send, but we still have to send the headers,
             // do it now.
             if (!m_header.isEmpty())
-                m_socket->write(qExchange(m_header, {}));
+                m_socket->write(std::exchange(m_header, {}));
             if (uploadByteDevice)
                 emit m_reply->dataSendProgress(m_channel->written, m_channel->bytesTotal);
             m_channel->state = QHttpNetworkConnectionChannel::WaitingState; // now wait for response
@@ -371,7 +371,7 @@ bool QHttpProtocolHandler::sendRequest()
                     // assemble header and data and send them together
                     const qint64 headerSize = m_header.size();
                     m_header.append(readPointer, currentReadSize);
-                    currentWriteSize = m_socket->write(qExchange(m_header, {}));
+                    currentWriteSize = m_socket->write(std::exchange(m_header, {}));
                     if (currentWriteSize != -1)
                         currentWriteSize -= headerSize;
                     QMetaObject::invokeMethod(m_reply, "requestSent", Qt::QueuedConnection);

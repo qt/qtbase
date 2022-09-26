@@ -141,7 +141,7 @@ public:
 
     QCborValue(const QCborValue &other) noexcept;
     QCborValue(QCborValue &&other) noexcept
-        : n(other.n), container(qExchange(other.container, nullptr)), t(qExchange(other.t, Undefined))
+        : n(other.n), container(std::exchange(other.container, nullptr)), t(std::exchange(other.t, Undefined))
     {
     }
     QCborValue &operator=(const QCborValue &other) noexcept;

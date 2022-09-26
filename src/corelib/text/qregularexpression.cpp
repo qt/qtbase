@@ -2671,7 +2671,7 @@ QRegularExpressionMatch QRegularExpressionMatchIterator::next()
     }
 
     d.detach();
-    return qExchange(d->next, d->next.d.constData()->nextMatch());
+    return std::exchange(d->next, d->next.d.constData()->nextMatch());
 }
 
 /*!

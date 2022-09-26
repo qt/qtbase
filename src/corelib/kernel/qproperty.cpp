@@ -25,7 +25,7 @@ void QPropertyBindingPrivatePtr::reset(QtPrivate::RefCounted *ptr) noexcept
     if (ptr != d) {
         if (ptr)
             ptr->ref++;
-        auto *old = qExchange(d, ptr);
+        auto *old = std::exchange(d, ptr);
         if (old && (--old->ref == 0))
             QPropertyBindingPrivate::destroyAndFreeMemory(static_cast<QPropertyBindingPrivate *>(d));
     }

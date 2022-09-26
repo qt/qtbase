@@ -82,7 +82,7 @@ public:
 
     QSemaphore *cancel() noexcept
     {
-        return qExchange(m_sem, nullptr);
+        return std::exchange(m_sem, nullptr);
     }
 
 private:

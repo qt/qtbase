@@ -35,7 +35,7 @@ public:
 
     QPen &operator=(const QPen &pen) noexcept;
     QPen(QPen &&other) noexcept
-        : d(qExchange(other.d, nullptr)) {}
+        : d(std::exchange(other.d, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPen)
     void swap(QPen &other) noexcept { qt_ptr_swap(d, other.d); }
 

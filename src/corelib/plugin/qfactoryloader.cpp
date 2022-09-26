@@ -319,7 +319,7 @@ void QFactoryLoader::setExtraSearchPath(const QString &path)
         return;             // nothing to do
 
     QMutexLocker locker(&qt_factoryloader_global->mutex);
-    QString oldPath = qExchange(d->extraSearchPath, path);
+    QString oldPath = std::exchange(d->extraSearchPath, path);
     if (oldPath.isEmpty()) {
         // easy case, just update this directory
         d->updateSinglePath(d->extraSearchPath);
