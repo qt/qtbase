@@ -98,7 +98,8 @@ function(qt_generate_qmake_and_qtpaths_wrapper_for_target)
         "${host_prefix}")
     file(RELATIVE_PATH ext_prefix_relative_to_conf_file "${ext_prefix}/${INSTALL_BINDIR}"
         "${ext_prefix}")
-    file(RELATIVE_PATH ext_prefix_relative_to_host_prefix "${host_prefix}" "${ext_prefix}")
+    file(RELATIVE_PATH ext_datadir_relative_to_host_prefix "${host_prefix}"
+        "${ext_prefix}/${INSTALL_MKSPECSDIR}/..")
 
     set(content "")
 
@@ -130,7 +131,7 @@ Prefix=${prefix}
         "[Paths]
 Prefix=${ext_prefix_relative_to_conf_file}
 HostPrefix=${host_prefix_relative_to_conf_file}
-HostData=${ext_prefix_relative_to_host_prefix}
+HostData=${ext_datadir_relative_to_host_prefix}
 Sysroot=${sysroot}
 SysrootifyPrefix=${sysrootify_prefix}
 TargetSpec=${QT_QMAKE_TARGET_MKSPEC}
