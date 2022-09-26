@@ -730,7 +730,7 @@ else()
     unset(__qt_uc_config)
 endif()
 qt_feature("ltcg"
-    LABEL "Using Link Time Optimization (LTO/LTCG)"
+    LABEL "Using Link Time Optimization (LTCG)"
     AUTODETECT ON
     CONDITION __qt_ltcg_detected
 )
