@@ -32,7 +32,9 @@ private Q_SLOTS:
     void isValid();
     void date();
     void time();
+#if QT_DEPRECATED_SINCE(6, 9)
     void timeSpec();
+#endif
     void toSecsSinceEpoch_data();
     void toSecsSinceEpoch();
     void daylightSavingsTimeChange_data();
@@ -44,8 +46,10 @@ private Q_SLOTS:
     void setTime();
     void setTimeZone_data();
     void setTimeZone();
+#if QT_DEPRECATED_SINCE(6, 9)
     void setTimeSpec_data();
     void setTimeSpec();
+#endif
     void setSecsSinceEpoch();
     void setMSecsSinceEpoch_data();
     void setMSecsSinceEpoch();
@@ -74,6 +78,7 @@ private Q_SLOTS:
     void addSecs();
     void addMSecs_data();
     void addMSecs();
+#if QT_DEPRECATED_SINCE(6, 9)
     void toTimeSpec_data();
     void toTimeSpec();
     void toLocalTime_data() { toTimeSpec_data(); }
@@ -81,6 +86,7 @@ private Q_SLOTS:
     void toUTC_data() { toTimeSpec_data(); }
     void toUTC();
     void toUTC_extra();
+#endif
     void daysTo();
     void secsTo_data();
     void secsTo();
@@ -105,8 +111,10 @@ private Q_SLOTS:
 #endif
 
     void offsetFromUtc();
+#if QT_DEPRECATED_SINCE(6, 9)
     void setOffsetFromUtc();
     void toOffsetFromUtc();
+#endif
 
     void zoneAtTime_data();
     void zoneAtTime();
@@ -428,6 +436,9 @@ void tst_QDateTime::time()
     QCOMPARE(dt4.time(), QTime(0, 45, 57));
 }
 
+#if QT_DEPRECATED_SINCE(6, 9)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void tst_QDateTime::timeSpec()
 {
     QDateTime dt1(QDate(2004, 1, 24), QTime(23, 45, 57));
@@ -450,6 +461,8 @@ void tst_QDateTime::timeSpec()
     QDateTime dt4 = QDateTime::currentDateTime();
     QCOMPARE(dt4.timeSpec(), Qt::LocalTime);
 }
+QT_WARNING_POP
+#endif
 
 void tst_QDateTime::setDate()
 {
@@ -577,6 +590,7 @@ void tst_QDateTime::setTimeZone()
     QCOMPARE(dateTime.timeRepresentation(), zone);
 }
 
+#if QT_DEPRECATED_SINCE(6, 9)
 void tst_QDateTime::setTimeSpec_data()
 {
     QTest::addColumn<QDateTime>("dateTime");
@@ -590,6 +604,8 @@ void tst_QDateTime::setTimeSpec_data()
         << QDateTime(QDate(2004, 3, 25), QTime(0, 45, 57), UTC) << Qt::OffsetFromUTC;
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void tst_QDateTime::setTimeSpec()
 {
     QFETCH(QDateTime, dateTime);
@@ -607,6 +623,8 @@ void tst_QDateTime::setTimeSpec()
     else
         QCOMPARE(dateTime.timeSpec(), newTimeSpec);
 }
+QT_WARNING_POP
+#endif
 
 void tst_QDateTime::setSecsSinceEpoch()
 {
@@ -1597,6 +1615,7 @@ void tst_QDateTime::addMSecs()
     verify(dt.addDuration(std::chrono::milliseconds(nsecs * 1000)));
 }
 
+#if QT_DEPRECATED_SINCE(6, 9)
 void tst_QDateTime::toTimeSpec_data()
 {
     if (!zoneIsCET)
@@ -1665,6 +1684,8 @@ void tst_QDateTime::toTimeSpec_data()
         << QDateTime(QDate(4000, 6, 30), localDaylightTime.addMSecs(1));
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void tst_QDateTime::toTimeSpec()
 {
     QFETCH(QDateTime, fromUtc);
@@ -1752,6 +1773,8 @@ void tst_QDateTime::toUTC_extra()
     QString t = dt.toUTC().toString("zzz");
     QCOMPARE(s, t);
 }
+QT_WARNING_POP
+#endif // 6.9 deprecation
 
 void tst_QDateTime::daysTo()
 {
@@ -3232,6 +3255,9 @@ void tst_QDateTime::offsetFromUtc()
 #endif
 }
 
+#if QT_DEPRECATED_SINCE(6, 9)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void tst_QDateTime::setOffsetFromUtc()
 {
     /* Basic tests. */
@@ -3327,6 +3353,8 @@ void tst_QDateTime::toOffsetFromUtc()
     QCOMPARE(dt2.date(), QDate(2013, 1, 1));
     QCOMPARE(dt2.time(), QTime(0, 0));
 }
+QT_WARNING_POP
+#endif // 6.9 deprecation
 
 void tst_QDateTime::zoneAtTime_data()
 {

@@ -103,8 +103,13 @@ public:
     int daysInMonth(QCalendar cal) const;
     int daysInYear(QCalendar cal) const;
 
+#if QT_DEPRECATED_SINCE(6, 9)
+    QT_DEPRECATED_VERSION_X_6_9("Pass QTimeZone instead")
     QDateTime startOfDay(Qt::TimeSpec spec, int offsetSeconds = 0) const;
+    QT_DEPRECATED_VERSION_X_6_9("Pass QTimeZone instead")
     QDateTime endOfDay(Qt::TimeSpec spec, int offsetSeconds = 0) const;
+#endif
+
     QDateTime startOfDay(const QTimeZone &zone) const;
     QDateTime endOfDay(const QTimeZone &zone) const;
     QDateTime startOfDay() const;
@@ -307,7 +312,10 @@ class Q_CORE_EXPORT QDateTime
 
 public:
     QDateTime() noexcept;
+#if QT_DEPRECATED_SINCE(6, 9)
+    QT_DEPRECATED_VERSION_X_6_9("Pass QTimeZone instead")
     QDateTime(QDate date, QTime time, Qt::TimeSpec spec, int offsetSeconds = 0);
+#endif
     QDateTime(QDate date, QTime time, const QTimeZone &timeZone);
     QDateTime(QDate date, QTime time);
     QDateTime(const QDateTime &other) noexcept;
@@ -338,8 +346,12 @@ public:
 
     void setDate(QDate date);
     void setTime(QTime time);
+#if QT_DEPRECATED_SINCE(6, 9)
+    QT_DEPRECATED_VERSION_X_6_9("Use setTimeZone() instead")
     void setTimeSpec(Qt::TimeSpec spec);
+    QT_DEPRECATED_VERSION_X_6_9("Use setTimeZone() instead")
     void setOffsetFromUtc(int offsetSeconds);
+#endif
     void setTimeZone(const QTimeZone &toZone);
     void setMSecsSinceEpoch(qint64 msecs);
     void setSecsSinceEpoch(qint64 secs);
@@ -360,7 +372,10 @@ public:
         return addMSecs(msecs.count());
     }
 
+#if QT_DEPRECATED_SINCE(6, 9)
+    QT_DEPRECATED_VERSION_X_6_9("Use toTimeZone instead")
     QDateTime toTimeSpec(Qt::TimeSpec spec) const;
+#endif
     QDateTime toLocalTime() const;
     QDateTime toUTC() const;
     QDateTime toOffsetFromUtc(int offsetSeconds) const;
@@ -387,8 +402,12 @@ public:
     { return fromString(string, qToStringViewIgnoringNull(format), cal); }
 #endif
 
+#if QT_DEPRECATED_SINCE(6, 9)
+    QT_DEPRECATED_VERSION_X_6_9("Pass QTimeZone instead of time-spec, offset")
     static QDateTime fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int offsetFromUtc = 0);
+    QT_DEPRECATED_VERSION_X_6_9("Pass QTimeZone instead of time-spec, offset")
     static QDateTime fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec, int offsetFromUtc = 0);
+#endif
 
     static QDateTime fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone);
     static QDateTime fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone);

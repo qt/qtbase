@@ -755,6 +755,8 @@ int QDate::weekNumber(int *yearNumber) const
     return (thursday.dayOfYear() + 6) / 7;
 }
 
+#if QT_DEPRECATED_SINCE(6, 9)
+// Only called by deprecated methods (so bootstrap builds warn unused without this #if).
 static QTimeZone asTimeZone(Qt::TimeSpec spec, int offset, const char *warner)
 {
     if (warner) {
@@ -783,6 +785,7 @@ static QTimeZone asTimeZone(Qt::TimeSpec spec, int offset, const char *warner)
         ? QTimeZone::fromSecondsAheadOfUtc(offset)
         : QTimeZone(QTimeZone::LocalTime);
 }
+#endif // Helper for 6.9 deprecation
 
 static bool inDateTimeRange(qint64 jd, bool start)
 {
@@ -893,9 +896,11 @@ QDateTime QDate::startOfDay() const
     return startOfDay(QTimeZone::LocalTime);
 }
 
+#if QT_DEPRECATED_SINCE(6, 9)
 /*!
     \overload
     \since 5.14
+    \deprecated [6.9] Use \c{startOfDay(const QTimeZone &)} instead.
 
     Returns the start-moment of the day.
 
@@ -926,6 +931,7 @@ QDateTime QDate::startOfDay(Qt::TimeSpec spec, int offsetSeconds) const
     // If spec was Qt::TimeZone, zone's is Qt::LocalTime.
     return zone.timeSpec() == spec ? startOfDay(zone) :  QDateTime();
 }
+#endif // 6.9 deprecation
 
 static QDateTime toLatest(QDate day, const QTimeZone &zone)
 {
@@ -1022,9 +1028,11 @@ QDateTime QDate::endOfDay() const
     return endOfDay(QTimeZone::LocalTime);
 }
 
+#if QT_DEPRECATED_SINCE(6, 9)
 /*!
     \overload
     \since 5.14
+    \deprecated [6.9] Use \c{endOfDay(const QTimeZone &) instead.
 
     Returns the end-moment of the day.
 
@@ -1055,6 +1063,7 @@ QDateTime QDate::endOfDay(Qt::TimeSpec spec, int offsetSeconds) const
     // If spec was Qt::TimeZone, zone's is Qt::LocalTime.
     return endOfDay(zone);
 }
+#endif // 6.9 deprecation
 
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
 
@@ -3410,7 +3419,10 @@ QDateTime::QDateTime() noexcept
     static_assert(sizeof(ShortData) >= sizeof(void*), "oops, Data::swap() is broken!");
 }
 
+#if QT_DEPRECATED_SINCE(6, 9)
 /*!
+    \deprecated [6.9] Use \c{QDateTime(date, time)} or \c{QDateTime(date, time, QTimeZone::fromSecondsAheadOfUtc(offsetSeconds))}.
+
     Constructs a datetime with the given \a date and \a time, using the time
     representation implied by \a spec and \a offsetSeconds seconds.
 
@@ -3432,6 +3444,7 @@ QDateTime::QDateTime(QDate date, QTime time, Qt::TimeSpec spec, int offsetSecond
     : d(QDateTimePrivate::create(date, time, asTimeZone(spec, offsetSeconds, "QDateTime")))
 {
 }
+#endif // 6.9 deprecation
 
 /*!
     \since 5.2
@@ -3772,7 +3785,10 @@ void QDateTime::setTime(QTime time)
     checkValidDateTime(d);
 }
 
+#if QT_DEPRECATED_SINCE(6, 9)
 /*!
+    \deprecated [6.9] Use setTimeZone() instead
+
     Sets the time specification used in this datetime to \a spec.
     The datetime may refer to a different point in time.
 
@@ -3795,6 +3811,7 @@ void QDateTime::setTimeSpec(Qt::TimeSpec spec)
 
 /*!
     \since 5.2
+    \deprecated [6.9] Use setTimeZone(QTimeZone::fromSecondsAheadOfUtc(offsetSeconds)) instead
 
     Sets the timeSpec() to Qt::OffsetFromUTC and the offset to \a offsetSeconds.
     The datetime may refer to a different point in time.
@@ -3812,6 +3829,7 @@ void QDateTime::setOffsetFromUtc(int offsetSeconds)
 {
     reviseTimeZone(d, QTimeZone::fromSecondsAheadOfUtc(offsetSeconds));
 }
+#endif // 6.9 deprecations
 
 /*!
     \since 5.2
@@ -4480,7 +4498,10 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
     \sa addMSecs
 */
 
+#if QT_DEPRECATED_SINCE(6, 9)
 /*!
+    \deprecated [6.9] Use \l toTimeZone() instead.
+
     Returns a copy of this datetime converted to the given time \a spec.
 
     The result represents the same moment in time as, and is equal to, this datetime.
@@ -4501,6 +4522,7 @@ QDateTime QDateTime::toTimeSpec(Qt::TimeSpec spec) const
 {
     return toTimeZone(asTimeZone(spec, 0, "toTimeSpec"));
 }
+#endif // 6.9 deprecation
 
 /*!
     \since 5.2
@@ -4919,8 +4941,11 @@ qint64 QDateTime::currentSecsSinceEpoch() noexcept
 #error "What system is this?"
 #endif
 
+#if QT_DEPRECATED_SINCE(6, 9)
 /*!
+    \since 5.2
     \overload
+    \deprecated [6.9] Pass a \l QTimeZone instead, or omit \a spec and \a offsetSeconds.
 
     Returns a datetime representing a moment the given number \a msecs of
     milliseconds after the start, in UTC, of the year 1970, described as
@@ -4949,6 +4974,7 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int of
 /*!
     \since 5.8
     \overload
+    \deprecated [6.9] Pass a \l QTimeZone instead, or omit \a spec and \a offsetSeconds.
 
     Returns a datetime representing a moment the given number \a secs of seconds
     after the start, in UTC, of the year 1970, described as specified by \a spec
@@ -4973,6 +4999,7 @@ QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec, int offs
     return fromSecsSinceEpoch(secs,
                               asTimeZone(spec, offsetSeconds, "QDateTime::fromSecsSinceEpoch"));
 }
+#endif // 6.9 deprecations
 
 /*!
     \since 5.2
