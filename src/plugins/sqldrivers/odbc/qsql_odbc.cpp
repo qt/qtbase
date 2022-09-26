@@ -404,7 +404,7 @@ static QMetaType qDecodeODBCType(SQLSMALLINT sqltype, bool isSigned = true)
     return QMetaType(type);
 }
 
-static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool unicode = false)
+static QVariant qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool unicode)
 {
     QString fieldVal;
     SQLRETURN r = SQL_ERROR;
@@ -438,8 +438,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
                             &lengthIndicator);
             if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
                 if (lengthIndicator == SQL_NULL_DATA) {
-                    fieldVal.clear();
-                    break;
+                    return {};
                 }
                 // starting with ODBC Native Client 2012, SQL_NO_TOTAL is returned
                 // instead of the length (which sometimes was wrong in older versions)
@@ -465,8 +464,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
                 break;
             } else {
                 qWarning() << "qGetStringData: Error while fetching data (" << qWarnODBCHandle(SQL_HANDLE_STMT, hStmt) << ')';
-                fieldVal.clear();
-                break;
+                return {};
             }
         }
     } else {
@@ -488,8 +486,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
                             &lengthIndicator);
             if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
                 if (lengthIndicator == SQL_NULL_DATA || lengthIndicator == SQL_NO_TOTAL) {
-                    fieldVal.clear();
-                    break;
+                  return {};
                 }
                 // if SQL_SUCCESS_WITH_INFO is returned, indicating that
                 // more data can be fetched, the length indicator does NOT
@@ -509,8 +506,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
                 break;
             } else {
                 qWarning() << "qGetStringData: Error while fetching data (" << qWarnODBCHandle(SQL_HANDLE_STMT, hStmt) << ')';
-                fieldVal.clear();
-                break;
+                return {};
             }
         }
     }
@@ -654,7 +650,7 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, int i, QString *errorMess
 // by SQLColumns. The hStmt has to point to a valid position.
 static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, const QODBCDriverPrivate* p)
 {
-    QString fname = qGetStringData(hStmt, 3, -1, p->unicode);
+    QString fname = qGetStringData(hStmt, 3, -1, p->unicode).toString();
     int type = qGetIntData(hStmt, 4).toInt(); // column type
     QSqlField f(fname, qDecodeODBCType(type, p));
     QVariant var = qGetIntData(hStmt, 6);
@@ -1295,7 +1291,7 @@ QVariant QODBCResult::data(int field)
             }
             break;
         default:
-            d->fieldCache[i] = QVariant(qGetStringData(d->hStmt, i, info.length(), false));
+            d->fieldCache[i] = qGetStringData(d->hStmt, i, info.length(), false);
             break;
         }
         d->fieldCacheIdx = field + 1;
@@ -2426,8 +2422,7 @@ QStringList QODBCDriver::tables(QSql::TableType type) const
     }
 
     while (r == SQL_SUCCESS) {
-        QString fieldVal = qGetStringData(hStmt, 2, -1, d->unicode);
-        tl.append(fieldVal);
+        tl.append(qGetStringData(hStmt, 2, -1, d->unicode).toString());
 
         if (d->hasSQLFetchScroll)
             r = SQLFetchScroll(hStmt,
@@ -2524,11 +2519,11 @@ QSqlIndex QODBCDriver::primaryIndex(const QString& tablename) const
     // Store all fields in a StringList because some drivers can't detail fields in this FETCH loop
     while (r == SQL_SUCCESS) {
         if (usingSpecialColumns) {
-            cName = qGetStringData(hStmt, 1, -1, d->unicode); // column name
+            cName = qGetStringData(hStmt, 1, -1, d->unicode).toString(); // column name
             idxName = QString::number(fakeId++); // invent a fake index name
         } else {
-            cName = qGetStringData(hStmt, 3, -1, d->unicode); // column name
-            idxName = qGetStringData(hStmt, 5, -1, d->unicode); // pk index name
+            cName = qGetStringData(hStmt, 3, -1, d->unicode).toString(); // column name
+            idxName = qGetStringData(hStmt, 5, -1, d->unicode).toString(); // pk index name
         }
         index.append(rec.field(cName));
         index.setName(idxName);
