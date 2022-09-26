@@ -8,6 +8,7 @@
 #include "qwasmclipboard.h"
 #include "qwasmevent.h"
 
+#include <QtOpenGL/qopenglpixeltransferoptions.h>
 #include <QtOpenGL/qopengltexture.h>
 
 #include <QtGui/private/qwindow_p.h>
@@ -23,6 +24,8 @@
 #include <QtGui/qguiapplication.h>
 
 #include <emscripten/bind.h>
+
+#include <GL/gl.h>
 
 namespace {
 QWasmWindow *asWasmWindow(QWindow *window)
