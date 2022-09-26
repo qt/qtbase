@@ -618,6 +618,12 @@ void Moc::parse()
                     QByteArray nsName = lexem();
                     QByteArrayList nested;
                     while (test(SCOPE)) {
+                        /* treat (C++20's) namespace A::inline B {} as A::B
+                           this is mostly to not break compilation when encountering such
+                           a construct in a header; the interaction of Qt's meta-macros with
+                           inline namespaces is still rather poor.
+                        */
+                        test(INLINE);
                         next(IDENTIFIER);
                         nested.append(nsName);
                         nsName = lexem();
