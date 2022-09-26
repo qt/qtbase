@@ -6,6 +6,7 @@
 
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qtversionchecks.h>
+#include <QtCore/qcompilerdetection.h> // for Q_DECL_DEPRECATED
 
 #if 0
 #pragma qt_class(QtDeprecationMarkers)
