@@ -2295,7 +2295,7 @@ bool readDependencies(Options *options)
         }
     }
 
-    if ((!options->rootPaths.empty() || options->qrcFiles.isEmpty()) &&
+    if ((!options->rootPaths.empty() || !options->qrcFiles.isEmpty()) &&
         !scanImports(options, &usedDependencies))
         return false;
 
