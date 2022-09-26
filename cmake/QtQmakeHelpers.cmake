@@ -128,6 +128,9 @@ Prefix=${prefix}
         "[Paths]
 Prefix=${ext_prefix_relative_to_conf_file}
 HostPrefix=${host_prefix_relative_to_conf_file}
+HostBinaries=${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}
+HostLibraries=${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_LIBDIR}
+HostLibraryExecutables=${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_LIBEXECDIR}
 HostData=${ext_datadir_relative_to_host_prefix}
 Sysroot=${sysroot}
 SysrootifyPrefix=${sysrootify_prefix}
