@@ -124,6 +124,7 @@ private slots:
     void tooManyDirectionalCharctersCrash_qtbug77819();
     void softHyphens_data();
     void softHyphens();
+    void min_maximumWidth_data();
     void min_maximumWidth();
 
 private:
@@ -2647,10 +2648,21 @@ void tst_QTextLayout::softHyphens()
     }
 }
 
+void tst_QTextLayout::min_maximumWidth_data()
+{
+    QTest::addColumn<QString>("text");
+
+    QTest::newRow("long string") << QStringLiteral("lmong_long_crazy_87235982735_23857239682376923876923876-fuwhfhfw-names-AAAA-deeaois2019-03-03.and.more");
+    QTest::newRow("QTBUG-106947") << QStringLiteral("text                                text");
+    QTest::newRow("spaces") << QStringLiteral("                text                text                ");
+}
+
 void tst_QTextLayout::min_maximumWidth()
 {
-    QString longString("lmong_long_crazy_87235982735_23857239682376923876923876-fuwhfhfw-names-AAAA-deeaois2019-03-03.and.more");
-    QTextLayout layout(longString, testFont);
+    QFETCH(QString, text);
+
+    QTextLayout layout(text, testFont);
+    layout.setCacheEnabled(true);
 
     for (int wrapMode = QTextOption::NoWrap; wrapMode <= QTextOption::WrapAtWordBoundaryOrAnywhere; ++wrapMode) {
         QTextOption opt;

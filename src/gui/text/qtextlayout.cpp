@@ -1976,7 +1976,6 @@ void QTextLine::layout_helper(int maxGlyphs)
             }
 
             if (!lbh.manualWrap && lbh.spaceData.textWidth > line.width) {
-                lbh.spaceData.textWidth = line.width; // ignore spaces that fall out of the line.
                 goto found;
             }
         } else {
@@ -2162,11 +2161,8 @@ found:
         eng->maxWidth = qMax(eng->maxWidth, line.textWidth);
     } else {
         eng->minWidth = qMax(eng->minWidth, lbh.minw);
-        eng->maxWidth += line.textWidth;
+        eng->maxWidth += line.textWidth + lbh.spaceData.textWidth;
     }
-
-    if (line.textWidth > 0 && item < eng->layoutData->items.size())
-        eng->maxWidth += lbh.spaceData.textWidth;
 
     line.textWidth += trailingSpace;
     if (lbh.spaceData.length) {
