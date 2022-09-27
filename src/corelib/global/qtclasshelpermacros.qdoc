@@ -3,7 +3,7 @@
 
 /*!
     \macro Q_DISABLE_COPY(Class)
-    \relates QtClassHelperMacros
+    \relates <QtClassHelperMacros>
 
     Disables the use of copy constructors and assignment operators
     for the given \a Class.
@@ -48,7 +48,7 @@
 
 /*!
     \macro Q_DISABLE_COPY_MOVE(Class)
-    \relates QtClassHelperMacros
+    \relates <QtClassHelperMacros>
 
     A convenience macro that disables the use of copy constructors, assignment
     operators, move constructors and move assignment operators for the given
