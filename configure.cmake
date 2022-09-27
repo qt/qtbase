@@ -1062,7 +1062,7 @@ qt_feature("openssl-runtime"
     ENABLE INPUT_openssl STREQUAL 'yes' OR INPUT_openssl STREQUAL 'runtime'
     DISABLE INPUT_openssl STREQUAL 'no' OR INPUT_openssl STREQUAL 'linked' OR INPUT_ssl STREQUAL 'no'
 )
-qt_feature("openssl-linked" PRIVATE
+qt_feature("openssl-linked" PUBLIC
     LABEL "  Qt directly linked to OpenSSL"
     AUTODETECT OFF
     CONDITION TEST_opensslv11 OR TEST_opensslv30
