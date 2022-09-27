@@ -390,7 +390,7 @@ qint64 QTimerInfoList::timerRemainingTime(int timerId)
     repairTimersIfNeeded();
     timespec tm = {0, 0};
 
-    for (const auto *t : *this) {
+    for (const auto *t : qAsConst(*this)) {
         if (t->id == timerId) {
             if (currentTime < t->timeout) {
                 // time to wait
