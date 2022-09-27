@@ -1318,7 +1318,7 @@ bool QODBCResult::isNull(int field)
     Q_D(const QODBCResult);
     if (field < 0 || field >= d->fieldCache.size())
         return true;
-    if (field <= d->fieldCacheIdx) {
+    if (field >= d->fieldCacheIdx) {
         // since there is no good way to find out whether the value is NULL
         // without fetching the field we'll fetch it here.
         // (data() also sets the NULL flag)
