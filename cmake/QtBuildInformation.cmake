@@ -101,6 +101,10 @@ from the build directory \n")
     endif()
 
     set(QT_INTERNAL_BUILD_INSTRUCTIONS_SHOWN "TRUE" CACHE STRING "" FORCE)
+
+    if(QT_SUPERBUILD)
+        qt_internal_save_previously_found_packages()
+    endif()
 endfunction()
 
 function(qt_configure_print_summary_helper summary_reports force_show)

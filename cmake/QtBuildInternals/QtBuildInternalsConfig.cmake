@@ -527,6 +527,10 @@ macro(qt_build_repo_end)
             "List of the synced modules. Prevents running syncqt.cpp after the first configuring.")
     endif()
 
+    if(NOT QT_SUPERBUILD)
+        qt_internal_save_previously_found_packages()
+    endif()
+
     list(POP_BACK CMAKE_MESSAGE_CONTEXT)
 endmacro()
 

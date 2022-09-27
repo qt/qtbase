@@ -34,6 +34,17 @@ macro(qt_find_package)
     # qt_find_package(PNG PROVIDED_TARGET PNG::PNG) still needs to succeed and register the provided
     # targets. To enable the debugging behavior, set QT_DEBUG_QT_FIND_PACKAGE to 1.
     set(_qt_find_package_skip_find_package FALSE)
+
+    # Skip looking for packages that were not found on initial configuration, because they likely
+    # won't be found again, and only waste configuration time.
+    # Speeds up reconfiguration configuration for certain platforms and repos.
+    # Due to this behavior being different from what general CMake projects expect, it is only
+    # done for -developer-builds.
+    if(QT_INTERNAL_PREVIOUSLY_FOUND_PACKAGES AND
+            NOT "${ARGV0}" IN_LIST QT_INTERNAL_PREVIOUSLY_FOUND_PACKAGES)
+        set(_qt_find_package_skip_find_package TRUE)
+    endif()
+
     if(QT_DEBUG_QT_FIND_PACKAGE AND ${ARGV0}_FOUND AND arg_PROVIDED_TARGETS)
         set(_qt_find_package_skip_find_package TRUE)
         foreach(qt_find_package_target_name ${arg_PROVIDED_TARGETS})
@@ -141,6 +152,11 @@ macro(qt_find_package)
         endif()
     endif()
 
+    if(${ARGV0}_FOUND)
+        # Record that the package was found, so that future reconfigurations can be sped up.
+        set_property(GLOBAL APPEND PROPERTY _qt_previously_found_packages "${ARGV0}")
+    endif()
+
     if(${ARGV0}_FOUND AND arg_PROVIDED_TARGETS AND NOT _qt_find_package_skip_find_package)
         # If package was found, associate each target with its package name. This will be used
         # later when creating Config files for Qt libraries, to generate correct find_dependency()
@@ -199,6 +215,36 @@ macro(qt_find_package)
         endif()
     endif()
 endmacro()
+
+# Save found packages in the cache. They will be read on next reconfiguration to skip looking
+# for packages that were not previously found.
+# Only applies to -developer-builds by default.
+# Can also be opted in or opted out via QT_INTERNAL_SAVE_PREVIOUSLY_FOUND_PACKAGES.
+# Opting out will need two reconfigurations to take effect.
+function(qt_internal_save_previously_found_packages)
+    if(DEFINED QT_INTERNAL_SAVE_PREVIOUSLY_FOUND_PACKAGES)
+        set(should_save "${QT_INTERNAL_SAVE_PREVIOUSLY_FOUND_PACKAGES}")
+    else()
+        if(FEATURE_developer_build OR QT_FEATURE_developer_build)
+            set(should_save ON)
+        else()
+            set(should_save OFF)
+        endif()
+    endif()
+
+    if(NOT should_save)
+        # When the value is flipped to OFF, remove any previously saved packages.
+        unset(QT_INTERNAL_PREVIOUSLY_FOUND_PACKAGES CACHE)
+        return()
+    endif()
+
+    get_property(_qt_previously_found_packages GLOBAL PROPERTY _qt_previously_found_packages)
+    if(_qt_previously_found_packages)
+        list(REMOVE_DUPLICATES _qt_previously_found_packages)
+        set(QT_INTERNAL_PREVIOUSLY_FOUND_PACKAGES "${_qt_previously_found_packages}" CACHE INTERNAL
+            "List of CMake packages found during configuration using qt_find_package.")
+    endif()
+endfunction()
 
 # Return qmake library name for the given target, e.g. return "vulkan" for "Vulkan::Vulkan".
 function(qt_internal_map_target_to_qmake_lib target out_var)
