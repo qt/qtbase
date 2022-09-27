@@ -50,7 +50,10 @@ public:
 
 Q_DECLARE_TYPEINFO(QFileSystemModelNodePathKey, Q_RELOCATABLE_TYPE);
 
-inline size_t qHash(const QFileSystemModelNodePathKey &key) { return qHash(key.toCaseFolded()); }
+inline size_t qHash(const QFileSystemModelNodePathKey &key, size_t seed = 0)
+{
+    return qHash(key.toCaseFolded(), seed);
+}
 #else // Q_OS_WIN
 typedef QString QFileSystemModelNodePathKey;
 #endif
