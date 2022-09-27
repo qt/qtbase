@@ -961,6 +961,13 @@ qt_feature("cborstreamwriter" PUBLIC
     LABEL "CBOR stream writing"
     PURPOSE "Provides support for writing the CBOR binary format."
 )
+qt_feature("poll-exit-on-error" PUBLIC
+    LABEL "Poll exit on error"
+    AUTODETECT OFF
+    CONDITION UNIX
+    PURPOSE "Exit on error instead of just printing the error code and continue."
+)
+qt_feature_definition("poll-exit-on-error" "QT_POLL_EXIT_ON_ERROR")
 qt_configure_add_summary_section(NAME "Qt Core")
 qt_configure_add_summary_entry(ARGS "backtrace")
 qt_configure_add_summary_entry(ARGS "doubleconversion")
@@ -970,6 +977,7 @@ qt_configure_add_summary_entry(ARGS "icu")
 qt_configure_add_summary_entry(ARGS "system-libb2")
 qt_configure_add_summary_entry(ARGS "mimetype-database")
 qt_configure_add_summary_entry(ARGS "cpp-winrt")
+qt_configure_add_summary_entry(ARGS "poll-exit-on-error")
 qt_configure_add_summary_entry(
     TYPE "firstAvailableFeature"
     ARGS "etw lttng"
