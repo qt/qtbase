@@ -3,7 +3,7 @@
 
 /*!
     \macro void Q_INIT_RESOURCE(name)
-    \relates QtResource
+    \relates <QtResource>
 
     Initializes the resources specified by the \c .qrc file with the
     specified base \a name. Normally, when resources are built as part
@@ -33,7 +33,7 @@
 /*!
     \since 4.1
     \macro void Q_CLEANUP_RESOURCE(name)
-    \relates QtResource
+    \relates <QtResource>
 
     Unloads the resources specified by the \c .qrc file with the base
     name \a name.
