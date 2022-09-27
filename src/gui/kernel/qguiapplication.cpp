@@ -1469,6 +1469,8 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     Q_UNUSED(platformExplicitlySelected);
 
     init_platform(QLatin1StringView(platformName), platformPluginPath, platformThemeName, argc, argv);
+    if (const QPlatformTheme *theme = platformTheme())
+        QStyleHintsPrivate::get(QGuiApplication::styleHints())->setAppearance(theme->appearance());
 
     if (!icon.isEmpty())
         forcedWindowIcon = QDir::isAbsolutePath(icon) ? QIcon(icon) : QIcon::fromTheme(icon);
