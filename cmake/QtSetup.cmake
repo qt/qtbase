@@ -273,7 +273,13 @@ option(QT_BUILD_EXAMPLES_AS_EXTERNAL "Should examples be built as ExternalProjec
 unset(_qt_build_examples_as_external)
 
 option(QT_BUILD_MANUAL_TESTS "Build Qt manual tests" OFF)
-option(QT_BUILD_MINIMAL_STATIC_TESTS "Build minimal subset of tests for static Qt builds" OFF)
+
+if(WASM)
+    option(QT_BUILD_MINIMAL_STATIC_TESTS "Build minimal subset of tests for static Qt builds" ON)
+else()
+    option(QT_BUILD_MINIMAL_STATIC_TESTS "Build minimal subset of tests for static Qt builds" OFF)
+endif()
+
 option(QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS
     "Build minimal subset of tests for Android multi-ABI Qt builds" OFF)
 
