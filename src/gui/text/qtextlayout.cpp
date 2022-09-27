@@ -1865,6 +1865,7 @@ void QTextLine::layout_helper(int maxGlyphs)
     lbh.logClusters = eng->layoutData->logClustersPtr;
     lbh.previousGlyph = 0;
 
+    bool manuallyWrapped = false;
     bool hasInlineObject = false;
     QFixed maxInlineObjectHeight = 0;
 
@@ -1940,6 +1941,7 @@ void QTextLine::layout_helper(int maxGlyphs)
                 lbh.calculateRightBearingForPreviousGlyph();
             }
             line += lbh.tmpData;
+            manuallyWrapped = true;
             goto found;
         } else if (current.analysis.flags == QScriptAnalysis::Object) {
             lbh.whiteSpaceOrObject = true;
@@ -1974,11 +1976,10 @@ void QTextLine::layout_helper(int maxGlyphs)
                 addNextCluster(lbh.currentPosition, end, lbh.spaceData, lbh.glyphCount,
                                current, lbh.logClusters, lbh.glyphs);
             }
-
-            if (!lbh.manualWrap && lbh.spaceData.textWidth > line.width) {
-                goto found;
-            }
         } else {
+            if (!lbh.manualWrap && lbh.spaceData.textWidth > line.width)
+                goto found;
+
             lbh.whiteSpaceOrObject = false;
             bool sb_or_ws = false;
             lbh.saveCurrentGlyph();
@@ -2161,7 +2162,12 @@ found:
         eng->maxWidth = qMax(eng->maxWidth, line.textWidth);
     } else {
         eng->minWidth = qMax(eng->minWidth, lbh.minw);
-        eng->maxWidth += line.textWidth + lbh.spaceData.textWidth;
+        eng->layoutData->currentMaxWidth += line.textWidth;
+        if (!manuallyWrapped)
+            eng->layoutData->currentMaxWidth += lbh.spaceData.textWidth;
+        eng->maxWidth = qMax(eng->maxWidth, eng->layoutData->currentMaxWidth);
+        if (manuallyWrapped)
+            eng->layoutData->currentMaxWidth = 0;
     }
 
     line.textWidth += trailingSpace;

@@ -385,6 +385,7 @@ public:
         uint layoutState : 2;
         uint memory_on_stack : 1;
         uint haveCharAttributes : 1;
+        QFixed currentMaxWidth;
         QString string;
         bool reallocate(int totalGlyphs);
     };

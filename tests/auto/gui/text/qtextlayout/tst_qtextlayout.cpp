@@ -2655,17 +2655,28 @@ void tst_QTextLayout::min_maximumWidth_data()
     QTest::newRow("long string") << QStringLiteral("lmong_long_crazy_87235982735_23857239682376923876923876-fuwhfhfw-names-AAAA-deeaois2019-03-03.and.more");
     QTest::newRow("QTBUG-106947") << QStringLiteral("text                                text");
     QTest::newRow("spaces") << QStringLiteral("                text                text                ");
+    QTest::newRow("QTBUG-104986") << QStringLiteral("text\ntext\ntext");
+    QTest::newRow("spaces + line breaks") << QStringLiteral("       \n         text\n                \ntext       \n         ");
 }
 
 void tst_QTextLayout::min_maximumWidth()
 {
     QFETCH(QString, text);
+    text.replace('\n', QChar::LineSeparator);
 
     QTextLayout layout(text, testFont);
     layout.setCacheEnabled(true);
 
+    QTextOption opt;
+    opt.setWrapMode(QTextOption::NoWrap);
+    layout.setTextOption(opt);
+    layout.beginLayout();
+    while (layout.createLine().isValid()) { }
+    layout.endLayout();
+
+    const qreal nonWrappedMaxWidth = layout.maximumWidth();
+
     for (int wrapMode = QTextOption::NoWrap; wrapMode <= QTextOption::WrapAtWordBoundaryOrAnywhere; ++wrapMode) {
-        QTextOption opt;
         opt.setWrapMode((QTextOption::WrapMode)wrapMode);
         layout.setTextOption(opt);
         layout.beginLayout();
@@ -2673,6 +2684,9 @@ void tst_QTextLayout::min_maximumWidth()
         layout.endLayout();
         const qreal minWidth = layout.minimumWidth();
         const qreal maxWidth = layout.maximumWidth();
+
+        QCOMPARE_LE(minWidth, maxWidth);
+        QCOMPARE_LE(maxWidth, nonWrappedMaxWidth); // maxWidth for wrapped text shouldn't exceed maxWidth for the text without wrapping.
 
         // Try the layout from slightly wider than the widest (maxWidth)
         // and narrow it down to slighly narrower than minWidth
