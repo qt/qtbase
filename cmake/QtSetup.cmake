@@ -258,7 +258,12 @@ option(QT_BUILD_EXAMPLES_AS_EXTERNAL "Should examples be built as ExternalProjec
 unset(_qt_build_examples_as_external)
 
 option(QT_BUILD_MANUAL_TESTS "Build Qt manual tests" OFF)
-option(QT_BUILD_MINIMAL_STATIC_TESTS "Build minimal subset of tests for static Qt builds" OFF)
+
+if(WASM)
+    option(QT_BUILD_MINIMAL_STATIC_TESTS "Build minimal subset of tests for static Qt builds" ON)
+else()
+    option(QT_BUILD_MINIMAL_STATIC_TESTS "Build minimal subset of tests for static Qt builds" OFF)
+endif()
 
 ## Path used to find host tools, either when cross-compiling or just when using the tools from
 ## a different host build.
