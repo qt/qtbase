@@ -26,7 +26,7 @@
     object is equivalent to the second;
 
     \li \c QPartialOrdering::Greater represents that the first object
-    is equivalent to the second;
+    is greater than the second;
 
     \li \c QPartialOrdering::Unordered represents that the first object
     is \e{not ordered} with respect to the second.
