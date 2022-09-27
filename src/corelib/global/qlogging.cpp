@@ -1302,7 +1302,7 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
     // use dladdr() instead of backtrace_symbols()
     QString cachedLibrary;
     const char *cachedFname = nullptr;
-    auto decodeFrame = [&](const void *addr) -> DecodedFrame {
+    auto decodeFrame = [&](void *addr) -> DecodedFrame {
         Dl_info info;
         if (!dladdr(addr, &info))
             return {};
