@@ -156,6 +156,11 @@ int qt_poll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout_ts)
         if (fds[i].fd < 0)
             continue;
 
+        if (fds[i].fd > FD_SETSIZE) {
+            errno = EINVAL;
+            return -1;
+        }
+
         if (fds[i].events & QT_POLL_EVENTS_MASK)
             continue;
 
