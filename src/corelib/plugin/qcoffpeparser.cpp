@@ -40,7 +40,7 @@ static const WORD ExpectedMachine =
 #if 0
         // nothing, just so everything is #elf
 #elif defined(Q_PROCESSOR_ARM_32)
-            IMAGE_FILE_MACHINE_ARM
+            IMAGE_FILE_MACHINE_ARMNT
 #elif defined(Q_PROCESSOR_ARM_64)
             IMAGE_FILE_MACHINE_ARM64
 #elif defined(Q_PROCESSOR_IA64)
