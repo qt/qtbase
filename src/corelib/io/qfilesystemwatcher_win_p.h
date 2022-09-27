@@ -140,7 +140,10 @@ public:
 
 Q_DECLARE_TYPEINFO(QFileSystemWatcherPathKey, Q_RELOCATABLE_TYPE);
 
-inline size_t qHash(const QFileSystemWatcherPathKey &key) { return qHash(key.toCaseFolded()); }
+inline size_t qHash(const QFileSystemWatcherPathKey &key, size_t seed = 0)
+{
+    return qHash(key.toCaseFolded(), seed);
+}
 
 class QWindowsFileSystemWatcherEngineThread : public QThread
 {
