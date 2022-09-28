@@ -393,7 +393,7 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
     case UseRtlExtensions:
         return QVariant(false);
     case SetFocusOnTouchRelease:
-        return QVariant(false);
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::SetFocusOnTouchRelease);
     case MousePressAndHoldInterval:
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::MousePressAndHoldInterval);
     case TabFocusBehavior:

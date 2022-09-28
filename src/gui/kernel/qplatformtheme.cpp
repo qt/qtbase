@@ -143,6 +143,10 @@ QT_BEGIN_NAMESPACE
 
     \value ButtonPressKeys (QList<Qt::Key>) A list of keys that can be used to press buttons via keyboard input.
 
+    \value SetFocusOnTouchRelease (bool) Whether focus objects (line edits etc) should receive
+           input focus after a touch/mouse release.
+           This enum value has been added in Qt 6.5.
+
     \sa themeHint(), QStyle::pixelMetric()
 */
 
@@ -507,6 +511,8 @@ QVariant QPlatformTheme::themeHint(ThemeHint hint) const
         return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::UiEffects);
     case QPlatformTheme::ShowShortcutsInContextMenus:
         return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ShowShortcutsInContextMenus);
+    case QPlatformTheme::SetFocusOnTouchRelease:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::SetFocusOnTouchRelease);
     default:
         return QPlatformTheme::defaultThemeHint(hint);
     }
@@ -605,6 +611,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return false;
     case ButtonPressKeys:
         return QVariant::fromValue(QList<Qt::Key>({ Qt::Key_Space, Qt::Key_Select }));
+    case SetFocusOnTouchRelease:
+        return false;
     }
     return QVariant();
 }

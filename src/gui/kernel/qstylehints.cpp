@@ -445,7 +445,7 @@ bool QStyleHints::useRtlExtensions() const
 */
 bool QStyleHints::setFocusOnTouchRelease() const
 {
-    return hint(QPlatformIntegration::SetFocusOnTouchRelease).toBool();
+    return themeableHint(QPlatformTheme::SetFocusOnTouchRelease, QPlatformIntegration::SetFocusOnTouchRelease).toBool();
 }
 
 /*!

@@ -87,7 +87,8 @@ public:
         InteractiveResizeAcrossScreens,
         ShowDirectoriesFirst,
         PreselectFirstFileInDirectory,
-        ButtonPressKeys
+        ButtonPressKeys,
+        SetFocusOnTouchRelease
     };
     Q_ENUM(ThemeHint)
 
