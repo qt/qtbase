@@ -19,6 +19,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cstring>
 #include <sstream>
 #include <filesystem>
 #include <unordered_map>
