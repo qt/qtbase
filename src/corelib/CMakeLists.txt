@@ -170,6 +170,7 @@ qt_internal_add_module(Core
         kernel/qtranslator.cpp kernel/qtranslator.h kernel/qtranslator_p.h
         kernel/qvariant.cpp kernel/qvariant.h
         kernel/qvariantmap.h kernel/qvarianthash.h kernel/qvariantlist.h
+        kernel/qwineventnotifier.h
         plugin/qfactoryinterface.cpp plugin/qfactoryinterface.h
         plugin/qfactoryloader.cpp plugin/qfactoryloader_p.h
         plugin/qplugin.h plugin/qplugin_p.h
@@ -549,7 +550,7 @@ qt_internal_extend_target(Core CONDITION WIN32
         kernel/qfunctions_win.cpp kernel/qfunctions_win_p.h kernel/qfunctions_winrt_p.h
         kernel/qsharedmemory_win.cpp
         kernel/qsystemsemaphore_win.cpp
-        kernel/qwineventnotifier.cpp kernel/qwineventnotifier.h kernel/qwineventnotifier_p.h
+        kernel/qwineventnotifier.cpp kernel/qwineventnotifier_p.h
         kernel/qwinregistry.cpp kernel/qwinregistry_p.h
         plugin/qsystemlibrary.cpp plugin/qsystemlibrary_p.h
         thread/qthread_win.cpp
