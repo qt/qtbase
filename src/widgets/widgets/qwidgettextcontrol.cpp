@@ -3477,7 +3477,7 @@ void QTextEditMimeData::setup() const
         that->setData("application/vnd.oasis.opendocument.text"_L1, buffer.data());
     }
 #endif
-    that->setText(fragment.toRawText());
+    that->setText(fragment.toPlainText());
     fragment = QTextDocumentFragment();
 }
 
