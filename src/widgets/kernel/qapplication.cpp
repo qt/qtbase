@@ -50,10 +50,10 @@
 #endif
 #if QT_CONFIG(accessibility)
 #include <QtGui/qaccessible_base.h>
+#include "private/qaccessiblewidgetfactory_p.h"
 #endif
 
 #include "private/qkeymapper_p.h"
-#include "private/qaccessiblewidgetfactory_p.h"
 
 #include <qthread.h>
 #include <private/qthread_p.h>

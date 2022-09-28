@@ -59,6 +59,8 @@ qt_internal_add_module(Gui
         Qt::Network # special case:
     QMAKE_MODULE_CONFIG "${qmake_module_config}" # special case
     SOURCES
+        accessible/qaccessible.h
+        accessible/qplatformaccessibility.h
         image/qabstractfileiconengine.cpp image/qabstractfileiconengine_p.h
         image/qabstractfileiconprovider.cpp image/qabstractfileiconprovider.h image/qabstractfileiconprovider_p.h
         image/qbitmap.cpp image/qbitmap.h
@@ -490,13 +492,13 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_egl
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_accessibility
     SOURCES
-        accessible/qaccessible.cpp accessible/qaccessible.h accessible/qaccessible_base.h
+        accessible/qaccessible.cpp accessible/qaccessible_base.h
         accessible/qaccessiblebridge.cpp accessible/qaccessiblebridge.h
         accessible/qaccessiblebridgeutils.cpp accessible/qaccessiblebridgeutils_p.h
         accessible/qaccessiblecache.cpp accessible/qaccessiblecache_p.h
         accessible/qaccessibleobject.cpp accessible/qaccessibleobject.h
         accessible/qaccessibleplugin.cpp accessible/qaccessibleplugin.h
-        accessible/qplatformaccessibility.cpp accessible/qplatformaccessibility.h
+        accessible/qplatformaccessibility.cpp
 )
 
 qt_internal_extend_target(Gui CONDITION APPLE AND QT_FEATURE_accessibility
