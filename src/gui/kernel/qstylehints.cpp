@@ -278,14 +278,27 @@ int QStyleHints::keyboardInputInterval() const
            themeableHint(QPlatformTheme::KeyboardInputInterval, QPlatformIntegration::KeyboardInputInterval).toInt();
 }
 
+#if QT_DEPRECATED_SINCE(6, 5)
 /*!
     \property QStyleHints::keyboardAutoRepeatRate
     \brief the rate, in events per second,  in which additional repeated key
     presses will automatically be generated if a key is being held down.
+    \deprecated Use keyboardAutoRepeatRateF() instead
 */
 int QStyleHints::keyboardAutoRepeatRate() const
 {
     return themeableHint(QPlatformTheme::KeyboardAutoRepeatRate, QPlatformIntegration::KeyboardAutoRepeatRate).toInt();
+}
+#endif
+
+/*!
+    \property QStyleHints::keyboardAutoRepeatRateF
+    \brief the rate, in events per second, in which additional repeated key
+    presses will automatically be generated if a key is being held down.
+*/
+qreal QStyleHints::keyboardAutoRepeatRateF() const
+{
+    return themeableHint(QPlatformTheme::KeyboardAutoRepeatRate, QPlatformIntegration::KeyboardAutoRepeatRate).toReal();
 }
 
 /*!

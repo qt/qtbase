@@ -20,6 +20,7 @@ class Q_GUI_EXPORT QStyleHints : public QObject
     Q_PROPERTY(int cursorFlashTime READ cursorFlashTime NOTIFY cursorFlashTimeChanged FINAL)
     Q_PROPERTY(qreal fontSmoothingGamma READ fontSmoothingGamma STORED false CONSTANT FINAL)
     Q_PROPERTY(int keyboardAutoRepeatRate READ keyboardAutoRepeatRate STORED false CONSTANT FINAL)
+    Q_PROPERTY(int keyboardAutoRepeatRateF READ keyboardAutoRepeatRateF STORED false CONSTANT FINAL)
     Q_PROPERTY(int keyboardInputInterval READ keyboardInputInterval
                NOTIFY keyboardInputIntervalChanged FINAL)
     Q_PROPERTY(int mouseDoubleClickInterval READ mouseDoubleClickInterval
@@ -65,7 +66,11 @@ public:
     int startDragVelocity() const;
     void setKeyboardInputInterval(int keyboardInputInterval);
     int keyboardInputInterval() const;
+#if QT_DEPRECATED_SINCE(6, 5)
+    QT_DEPRECATED_VERSION_X_6_5("Use keyboardAutoRepeatRateF() instead")
     int keyboardAutoRepeatRate() const;
+#endif
+    qreal keyboardAutoRepeatRateF() const;
     void setCursorFlashTime(int cursorFlashTime);
     int cursorFlashTime() const;
     bool showIsFullScreen() const;

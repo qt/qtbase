@@ -1236,7 +1236,7 @@ void QAbstractSpinBox::timerEvent(QTimerEvent *event)
         killTimer(d->spinClickThresholdTimerId);
         d->spinClickThresholdTimerId = -1;
         d->effectiveSpinRepeatRate = d->buttonState & Keyboard
-                                     ? QGuiApplication::styleHints()->keyboardAutoRepeatRate()
+                                     ? QGuiApplication::styleHints()->keyboardAutoRepeatRateF()
                                      : d->spinClickTimerInterval;
         d->spinClickTimerId = startTimer(d->effectiveSpinRepeatRate);
         doStep = true;

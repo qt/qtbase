@@ -102,7 +102,7 @@ public:
     int spinClickTimerInterval = 100;
     int spinClickThresholdTimerId = -1;
     int spinClickThresholdTimerInterval = -1;
-    int effectiveSpinRepeatRate = 1;
+    qreal effectiveSpinRepeatRate = 1;
     int acceleration = 0;
     int wheelDeltaRemainder = 0;
 
