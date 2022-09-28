@@ -455,7 +455,7 @@ public:
     std::chrono::sys_time<std::chrono::milliseconds> toStdSysMilliseconds() const
     {
         const std::chrono::milliseconds duration(toMSecsSinceEpoch());
-        return std::chrono::sys_time(duration);
+        return std::chrono::sys_time<std::chrono::milliseconds>(duration);
     }
 
     QT_POST_CXX17_API_IN_EXPORTED_CLASS
