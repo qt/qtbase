@@ -332,6 +332,7 @@ set(deploy_args
     # Need to explicitly specify a writable install prefix.
     BUILD_OPTIONS
         -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/test_widgets_app_deployment_installed
+    NO_RUN_ENVIRONMENT_PLUGIN_PATH
 )
 
 # For now, the test should only pass on Windows and macOS shared and static builds and fail on

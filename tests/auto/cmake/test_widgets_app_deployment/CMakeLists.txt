@@ -5,6 +5,8 @@ cmake_minimum_required(VERSION 3.16)
 project(deployment_api)
 enable_testing()
 
+set(CMAKE_INSTALL_LIBDIR lib)  ### temporary hack to make the test pass - remove in next commit!
+
 find_package(Qt6 COMPONENTS REQUIRED Widgets Test)
 
 qt6_standard_project_setup()
