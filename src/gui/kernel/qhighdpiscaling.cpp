@@ -750,7 +750,20 @@ QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QWindow *w
     return scaleAndOrigin(targetScreen, position);
 }
 
-#else
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QHighDpiScaling::ScreenFactor &factor)
+{
+    const QDebugStateSaver saver(debug);
+    debug.nospace();
+    if (!factor.name.isEmpty())
+        debug << factor.name << "=";
+    debug << factor.factor;
+    return debug;
+}
+#endif
+
+#else // QT_NO_HIGHDPISCALING
+
 QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QPlatformScreen *, QPoint *)
 {
     return { qreal(1), QPoint() };
@@ -765,19 +778,8 @@ QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QWindow *,
 {
     return { qreal(1), QPoint() };
 }
-#endif //QT_NO_HIGHDPISCALING
 
-#ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug debug, const QHighDpiScaling::ScreenFactor &factor)
-{
-    const QDebugStateSaver saver(debug);
-    debug.nospace();
-    if (!factor.name.isEmpty())
-        debug << factor.name << "=";
-    debug << factor.factor;
-    return debug;
-}
-#endif
+#endif // QT_NO_HIGHDPISCALING
 
 QT_END_NAMESPACE
 
