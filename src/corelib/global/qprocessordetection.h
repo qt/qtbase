@@ -4,6 +4,7 @@
 
 
 #if 0
+#pragma qt_class(QtProcessorDetection)
 #pragma qt_sync_skip_header_check
 #pragma qt_sync_stop_processing
 #endif
