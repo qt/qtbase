@@ -2452,6 +2452,31 @@ function(_qt_internal_setup_deploy_support)
 
     _qt_internal_add_deploy_support("${CMAKE_CURRENT_LIST_DIR}/Qt6CoreDeploySupport.cmake")
 
+    # Check whether we will have to adjust the RPATH of plugins.
+    if("${QT_DEPLOY_FORCE_ADJUST_RPATHS}" STREQUAL "")
+        set(must_adjust_plugins_rpath "")
+        if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows"
+                AND NOT CMAKE_INSTALL_LIBDIR STREQUAL QT6_INSTALL_LIBS)
+            set(must_adjust_plugins_rpath ON)
+        endif()
+    else()
+        set(must_adjust_plugins_rpath "${QT_DEPLOY_FORCE_ADJUST_RPATHS}")
+    endif()
+
+    # Find the patchelf executable if necessary.
+    if(must_adjust_plugins_rpath)
+        if(CMAKE_VERSION VERSION_LESS "3.21")
+            set(QT_DEPLOY_USE_PATCHELF ON)
+        endif()
+        if(QT_DEPLOY_USE_PATCHELF)
+            find_program(QT_DEPLOY_PATCHELF_EXECUTABLE patchelf)
+            if(NOT QT_DEPLOY_PATCHELF_EXECUTABLE)
+                message(FATAL_ERROR "The patchelf executable could not be located. "
+                    "Please install patchelf or upgrade CMake to 3.21 or newer.")
+            endif()
+        endif()
+    endif()
+
     file(GENERATE OUTPUT "${QT_DEPLOY_SUPPORT}" CONTENT
 "cmake_minimum_required(VERSION 3.16...3.21)
 
@@ -2496,6 +2521,9 @@ set(__QT_DEPLOY_QT_INSTALL_BINS \"${QT6_INSTALL_BINS}\")
 set(__QT_DEPLOY_QT_INSTALL_PLUGINS \"${QT6_INSTALL_PLUGINS}\")
 set(__QT_DEPLOY_QT_INSTALL_TRANSLATIONS \"${QT6_INSTALL_TRANSLATIONS}\")
 set(__QT_DEPLOY_PLUGINS \"\")
+set(__QT_DEPLOY_MUST_ADJUST_PLUGINS_RPATH \"${must_adjust_plugins_rpath}\")
+set(__QT_DEPLOY_USE_PATCHELF \"${QT_DEPLOY_USE_PATCHELF}\")
+set(__QT_DEPLOY_PATCHELF_EXECUTABLE \"${QT_DEPLOY_PATCHELF_EXECUTABLE}\")
 
 # Define the CMake commands to be made available during deployment.
 set(__qt_deploy_support_files

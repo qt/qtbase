@@ -111,6 +111,50 @@ function(_qt_internal_re_escape out_var str)
     set(${out_var} ${regex} PARENT_SCOPE)
 endfunction()
 
+function(_qt_internal_set_rpath)
+    if(NOT CMAKE_HOST_UNIX OR CMAKE_HOST_APPLE)
+        message(WARNING "_qt_internal_set_rpath is not implemented on this platform.")
+        return()
+    endif()
+
+    set(no_value_options "")
+    set(single_value_options FILE NEW_RPATH)
+    set(multi_value_options "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+    if(__QT_DEPLOY_USE_PATCHELF)
+        message(STATUS "Setting runtime path of '${arg_FILE}' to '${arg_NEW_RPATH}'.")
+        execute_process(
+            COMMAND ${__QT_DEPLOY_PATCHELF_EXECUTABLE} --set-rpath "${arg_NEW_RPATH}" "${arg_FILE}"
+            RESULT_VARIABLE process_result
+        )
+        if(NOT process_result EQUAL "0")
+            if(process_result MATCHES "^[0-9]+$")
+                message(FATAL_ERROR "patchelf failed with exit code ${process_result}.")
+            else()
+                message(FATAL_ERROR "patchelf failed: ${process_result}.")
+            endif()
+        endif()
+    else()
+        # Warning: file(RPATH_SET) is CMake-internal API.
+        file(RPATH_SET
+            FILE "${arg_FILE}"
+            NEW_RPATH "${arg_NEW_RPATH}"
+        )
+    endif()
+endfunction()
+
+# Store the platform-dependent $ORIGIN marker in out_var.
+function(_qt_internal_get_rpath_origin out_var)
+    if(__QT_DEPLOY_SYSTEM_NAME STREQUAL "Darwin")
+        set(rpath_origin "@loader_path")
+    else()
+        set(rpath_origin "$ORIGIN")
+    endif()
+    set(${out_var} ${rpath_origin} PARENT_SCOPE)
+endfunction()
+
 function(_qt_internal_generic_deployqt)
     set(no_value_options
         NO_TRANSLATIONS
@@ -196,6 +240,11 @@ function(_qt_internal_generic_deployqt)
         FOLLOW_SYMLINK_CHAIN
     )
 
+    # Determine the runtime path origin marker if necessary.
+    if(__QT_DEPLOY_MUST_ADJUST_PLUGINS_RPATH)
+        _qt_internal_get_rpath_origin(rpath_origin)
+    endif()
+
     # Deploy the Qt plugins.
     foreach(file_path IN LISTS __QT_DEPLOY_PLUGINS)
         file(RELATIVE_PATH destination
@@ -205,6 +254,16 @@ function(_qt_internal_generic_deployqt)
         get_filename_component(destination "${destination}" DIRECTORY)
         string(PREPEND destination "${QT_DEPLOY_PREFIX}/${arg_PLUGINS_DIR}/")
         file(INSTALL ${file_path} DESTINATION ${destination})
+
+        if(__QT_DEPLOY_MUST_ADJUST_PLUGINS_RPATH)
+            get_filename_component(file_name ${file_path} NAME)
+            file(RELATIVE_PATH rel_lib_dir "${destination}"
+                "${QT_DEPLOY_PREFIX}/${QT_DEPLOY_LIB_DIR}")
+            _qt_internal_set_rpath(
+                FILE "${destination}/${file_name}"
+                NEW_RPATH "${rpath_origin}/${rel_lib_dir}"
+            )
+        endif()
     endforeach()
 
     # Deploy translations.

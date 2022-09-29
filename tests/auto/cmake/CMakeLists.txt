@@ -46,6 +46,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(cmake_usage_tests)
+include(GNUInstallDirs)
 
 # Building the CMake tests as part of a Qt prefix build + in-tree tests, currently doesn't work.
 # Each CMake test will fail with a message like
@@ -335,12 +336,16 @@ set(deploy_args
     NO_RUN_ENVIRONMENT_PLUGIN_PATH
 )
 
-# For now, the test should only pass on Windows and macOS shared and static builds and fail on
-# other platforms, because there is no support for runtime dependency deployment
-# on those platforms.
+set(is_desktop_linux FALSE)
+if(UNIX AND NOT APPLE AND NOT ANDROID AND NOT CMAKE_CROSSCOMPILING)
+    set(is_desktop_linux TRUE)
+endif()
+
+# For now, the test should only pass on Windows, macOS and desktop Linux shared and static builds
+# and fail on other platforms, because there is no support for runtime dependency deployment on
+# those platforms.
 # With static builds the runtime dependencies are just skipped, but the test should still pass.
-if(WIN32 OR (APPLE AND NOT IOS)
-        OR (UNIX AND NOT APPLE AND NOT ANDROID AND NOT CMAKE_CROSSCOMPILING))
+if(WIN32 OR (APPLE AND NOT IOS) OR is_desktop_linux)
     _qt_internal_test_expect_pass(${deploy_args})
 else()
     _qt_internal_test_expect_fail(${deploy_args})
