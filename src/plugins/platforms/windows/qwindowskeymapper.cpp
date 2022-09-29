@@ -1403,7 +1403,7 @@ QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
             // Shift+9 over Alt + Shift + 9) resulting in more missing modifiers.
             if (it == result.end())
                 result << matchedKey;
-            else if (missingMods > (*it & Qt::KeyboardModifierMask))
+            else if (missingMods > Qt::KeyboardModifiers(*it & Qt::KeyboardModifierMask))
                 *it = matchedKey;
         }
     }
