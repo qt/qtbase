@@ -7,6 +7,7 @@
 #endif
 
 #if 0
+#pragma qt_class(QtSystemDetection)
 #pragma qt_sync_skip_header_check
 #pragma qt_sync_stop_processing
 #endif

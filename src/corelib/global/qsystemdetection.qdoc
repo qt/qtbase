@@ -1,0 +1,202 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \headerfile <QtSystemDetection>
+    \inmodule QtCore
+    \title Platform-specific Macro Definitions
+    \ingroup funclists
+
+    \brief The <QtSystemDetection> header file includes various
+    platfrom-specific macros.
+
+    The <QtSystemDetection> header file declares a range of macros (Q_OS_*)
+    that are defined for the specified platforms. For example, Q_OS_UNIX which
+    is defined for Unix-based systems.
+
+    The purpose of these macros is to enable programmers to add
+    platform-specific code to their application.
+*/
+
+/*!
+    \macro Q_OS_DARWIN
+    \relates <QtSystemDetection>
+
+    Defined on Darwin-based operating systems such as \macos, iOS, watchOS, and tvOS.
+*/
+
+/*!
+    \macro Q_OS_MAC
+    \relates <QtSystemDetection>
+
+    Deprecated synonym for \c Q_OS_DARWIN. Do not use.
+*/
+
+/*!
+    \macro Q_OS_OSX
+    \relates <QtSystemDetection>
+
+    Deprecated synonym for \c Q_OS_MACOS. Do not use.
+*/
+
+/*!
+    \macro Q_OS_MACOS
+    \relates <QtSystemDetection>
+
+    Defined on \macos.
+*/
+
+/*!
+    \macro Q_OS_IOS
+    \relates <QtSystemDetection>
+
+    Defined on iOS.
+*/
+
+/*!
+    \macro Q_OS_WATCHOS
+    \relates <QtSystemDetection>
+
+    Defined on watchOS.
+*/
+
+/*!
+    \macro Q_OS_TVOS
+    \relates <QtSystemDetection>
+
+    Defined on tvOS.
+*/
+
+/*!
+    \macro Q_OS_WIN
+    \relates <QtSystemDetection>
+
+    Defined on all supported versions of Windows. That is, if
+    \l Q_OS_WIN32 or \l Q_OS_WIN64 is defined.
+*/
+
+/*!
+    \macro Q_OS_WINDOWS
+    \relates <QtSystemDetection>
+
+    This is a synonym for Q_OS_WIN.
+*/
+
+/*!
+    \macro Q_OS_WIN32
+    \relates <QtSystemDetection>
+
+    Defined on 32-bit and 64-bit versions of Windows.
+*/
+
+/*!
+    \macro Q_OS_WIN64
+    \relates <QtSystemDetection>
+
+    Defined on 64-bit versions of Windows.
+*/
+
+/*!
+    \macro Q_OS_CYGWIN
+    \relates <QtSystemDetection>
+
+    Defined on Cygwin.
+*/
+
+/*!
+    \macro Q_OS_SOLARIS
+    \relates <QtSystemDetection>
+
+    Defined on Sun Solaris.
+*/
+
+/*!
+    \macro Q_OS_HPUX
+    \relates <QtSystemDetection>
+
+    Defined on HP-UX.
+*/
+
+/*!
+    \macro Q_OS_LINUX
+    \relates <QtSystemDetection>
+
+    Defined on Linux.
+*/
+
+/*!
+    \macro Q_OS_ANDROID
+    \relates <QtSystemDetection>
+
+    Defined on Android.
+*/
+
+/*!
+    \macro Q_OS_FREEBSD
+    \relates <QtSystemDetection>
+
+    Defined on FreeBSD.
+*/
+
+/*!
+    \macro Q_OS_NETBSD
+    \relates <QtSystemDetection>
+
+    Defined on NetBSD.
+*/
+
+/*!
+    \macro Q_OS_OPENBSD
+    \relates <QtSystemDetection>
+
+    Defined on OpenBSD.
+*/
+
+/*!
+    \macro Q_OS_AIX
+    \relates <QtSystemDetection>
+
+    Defined on AIX.
+*/
+
+/*!
+    \macro Q_OS_HURD
+    \relates <QtSystemDetection>
+
+    Defined on GNU Hurd.
+*/
+
+/*!
+    \macro Q_OS_QNX
+    \relates <QtSystemDetection>
+
+    Defined on QNX Neutrino.
+*/
+
+/*!
+    \macro Q_OS_LYNX
+    \relates <QtSystemDetection>
+
+    Defined on LynxOS.
+*/
+
+/*!
+    \macro Q_OS_BSD4
+    \relates <QtSystemDetection>
+
+    Defined on any BSD 4.4 system.
+*/
+
+/*!
+    \macro Q_OS_UNIX
+    \relates <QtSystemDetection>
+
+    Defined on any UNIX BSD/SYSV system.
+*/
+
+/*!
+    \macro Q_OS_WASM
+    \relates <QtSystemDetection>
+
+    Defined on Web Assembly.
+*/
