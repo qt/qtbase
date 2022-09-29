@@ -178,156 +178,6 @@ using namespace Qt::StringLiterals;
  *****************************************************************************/
 
 /*!
-    \macro Q_CC_SYM
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using Digital Mars C/C++
-    (used to be Symantec C++).
-*/
-
-/*!
-    \macro Q_CC_MSVC
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using Microsoft Visual
-    C/C++, Intel C++ for Windows.
-*/
-
-/*!
-    \macro Q_CC_CLANG
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using Clang.
-*/
-
-/*!
-    \macro Q_CC_BOR
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using Borland/Turbo C++.
-*/
-
-/*!
-    \macro Q_CC_WAT
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using Watcom C++.
-*/
-
-/*!
-    \macro Q_CC_GNU
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using GNU C++.
-*/
-
-/*!
-    \macro Q_CC_COMEAU
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using Comeau C++.
-*/
-
-/*!
-    \macro Q_CC_EDG
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using Edison Design Group
-    C++.
-*/
-
-/*!
-    \macro Q_CC_OC
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using CenterLine C++.
-*/
-
-/*!
-    \macro Q_CC_SUN
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using Forte Developer, or
-    Sun Studio C++.
-*/
-
-/*!
-    \macro Q_CC_MIPS
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using MIPSpro C++.
-*/
-
-/*!
-    \macro Q_CC_DEC
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using DEC C++.
-*/
-
-/*!
-    \macro Q_CC_HPACC
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using HP aC++.
-*/
-
-/*!
-    \macro Q_CC_USLC
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using SCO OUDK and UDK.
-*/
-
-/*!
-    \macro Q_CC_CDS
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using Reliant C++.
-*/
-
-/*!
-    \macro Q_CC_KAI
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using KAI C++.
-*/
-
-/*!
-    \macro Q_CC_INTEL
-    \relates <QtGlobal>
-    \obsolete
-
-    This macro used to be defined if the application was compiled with the old
-    Intel C++ compiler for Linux, macOS or Windows. The new oneAPI C++ compiler
-    is just a build of Clang and therefore does not define this macro.
-
-    \sa Q_CC_CLANG
-*/
-
-/*!
-    \macro Q_CC_HIGHC
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using MetaWare High C/C++.
-*/
-
-/*!
-    \macro Q_CC_PGI
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using Portland Group C++.
-*/
-
-/*!
-    \macro Q_CC_GHS
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using Green Hills
-    Optimizing C++ Compilers.
-*/
-
-/*!
     \macro Q_PROCESSOR_ALPHA
     \relates <QtGlobal>
 
@@ -643,39 +493,6 @@ using namespace Qt::StringLiterals;
     \sa QSysInfo::buildCpuArchitecture()
 */
 
-/*!
-    \macro void Q_FALLTHROUGH()
-    \relates <QtGlobal>
-    \since 5.8
-
-    Can be used in switch statements at the end of case block to tell the compiler
-    and other developers that that the lack of a break statement is intentional.
-
-    This is useful since a missing break statement is often a bug, and some
-    compilers can be configured to emit warnings when one is not found.
-
-    \sa Q_UNREACHABLE()
-*/
-
-/*!
-    \macro const char* Q_FUNC_INFO()
-    \relates <QtGlobal>
-
-    Expands to a string that describe the function the macro resides in. How this string looks
-    more specifically is compiler dependent. With GNU GCC it is typically the function signature,
-    while with other compilers it might be the line and column number.
-
-    Q_FUNC_INFO can be conveniently used with qDebug(). For example, this function:
-
-    \snippet code/src_corelib_global_qglobal.cpp 22
-
-    when instantiated with the integer type, will with the GCC compiler produce:
-
-    \tt{const TInputType& myMin(const TInputType&, const TInputType&) [with TInputType = int] was called with value1: 3 value2: 4}
-
-    If this macro is used outside a function, the behavior is undefined.
-*/
-
 /*
     Dijkstra's bisection algorithm to find the square root of an integer.
     Deliberately not exported as part of the Qt API, but used in both
@@ -831,67 +648,6 @@ void qAbort()
     This is perfectly safe, as the for-loop keeps the result of qExchange() alive for as
     long as the loop runs, saving the declaration of a temporary variable. Be aware, though,
     that qExchange() returns a non-const object, so Qt containers may detach.
-*/
-
-/*!
-    \macro Q_LIKELY(expr)
-    \relates <QtGlobal>
-    \since 4.8
-
-    \brief Hints to the compiler that the enclosed condition, \a expr, is
-    likely to evaluate to \c true.
-
-    Use of this macro can help the compiler to optimize the code.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp qlikely
-
-    \sa Q_UNLIKELY(), Q_ASSUME()
-*/
-
-/*!
-    \macro Q_UNLIKELY(expr)
-    \relates <QtGlobal>
-    \since 4.8
-
-    \brief Hints to the compiler that the enclosed condition, \a expr, is
-    likely to evaluate to \c false.
-
-    Use of this macro can help the compiler to optimize the code.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp qunlikely
-
-    \sa Q_LIKELY()
-*/
-
-/*!
-    \macro Q_CONSTINIT
-    \relates <QtGlobal>
-    \since 6.4
-
-    \brief Enforces constant initialization when supported by the compiler.
-
-    If the compiler supports the C++20 \c{constinit} keyword, Clang's
-    \c{[[clang::require_constant_initialization]]} or GCC's \c{__constinit},
-    then this macro expands to the first one of these that is available,
-    otherwise it expands to nothing.
-
-    Variables marked as \c{constinit} cause a compile-error if their
-    initialization would have to be performed at runtime.
-
-    For constants, you can use \c{constexpr} since C++11, but \c{constexpr}
-    makes variables \c{const}, too, whereas \c{constinit} ensures constant
-    initialization, but doesn't make the variable \c{const}:
-
-    \table
-    \header \li Keyword       \li Added \li immutable \li constant-initialized
-    \row    \li \c{const}     \li C++98 \li yes       \li not required
-    \row    \li \c{constexpr} \li C++11 \li yes       \li required
-    \row    \li \c{constinit} \li C++20 \li no        \li required
-    \endtable
 */
 
 /*!
@@ -1141,48 +897,6 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 */
 
 /*!
-    \macro Q_DECL_EXPORT
-    \relates <QtGlobal>
-
-    This macro marks a symbol for shared library export (see
-     \l{sharedlibrary.html}{Creating Shared Libraries}).
-
-    \sa Q_DECL_IMPORT
-*/
-
-/*!
-    \macro Q_DECL_IMPORT
-    \relates <QtGlobal>
-
-    This macro declares a symbol to be an import from a shared library (see
-    \l{sharedlibrary.html}{Creating Shared Libraries}).
-
-    \sa Q_DECL_EXPORT
-*/
-
-/*!
-    \macro Q_DECL_CONSTEXPR
-    \relates <QtGlobal>
-    \deprecated [6.4] Use the \c constexpr keyword instead.
-
-    This macro can be used to declare variable that should be constructed at compile-time,
-    or an inline function that can be computed at compile-time.
-
-    \sa Q_DECL_RELAXED_CONSTEXPR
-*/
-
-/*!
-    \macro Q_DECL_RELAXED_CONSTEXPR
-    \relates <QtGlobal>
-    \deprecated [6.4] Use the \c constexpr keyword instead.
-
-    This macro can be used to declare an inline function that can be computed
-    at compile-time according to the relaxed rules from C++14.
-
-    \sa Q_DECL_CONSTEXPR
-*/
-
-/*!
     \macro qMove(x)
     \relates <QtGlobal>
     \deprecated
@@ -1192,19 +906,6 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     It expands to "std::move".
 
     qMove takes an rvalue reference to its parameter \a x, and converts it to an xvalue.
-*/
-
-/*!
-    \macro Q_DECL_NOTHROW
-    \relates <QtGlobal>
-    \since 5.0
-    \deprecated [6.4] Use the \c noexcept keyword instead.
-
-    This macro marks a function as never throwing, under no
-    circumstances. If the function does nevertheless throw, the
-    behaviour is undefined.
-
-    \sa Q_DECL_NOEXCEPT, Q_DECL_NOEXCEPT_EXPR()
 */
 
 /*!
@@ -1235,78 +936,6 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     outside Q_DECL_NOTHROW functions.
 
     \sa Q_DECL_NOEXCEPT, Q_DECL_NOTHROW, qTerminate()
-*/
-
-/*!
-    \macro Q_DECL_NOEXCEPT
-    \relates <QtGlobal>
-    \since 5.0
-    \deprecated [6.4] Use the \c noexcept keyword instead.
-
-    This macro marks a function as never throwing. If the function
-    does nevertheless throw, the behaviour is defined:
-    std::terminate() is called.
-
-
-    \sa Q_DECL_NOTHROW, Q_DECL_NOEXCEPT_EXPR()
-*/
-
-/*!
-    \macro Q_DECL_NOEXCEPT_EXPR(x)
-    \relates <QtGlobal>
-    \since 5.0
-    \deprecated [6.4] Use the \c noexcept keyword instead.
-
-    This macro marks a function as non-throwing if \a x is \c true. If
-    the function does nevertheless throw, the behaviour is defined:
-    std::terminate() is called.
-
-
-    \sa Q_DECL_NOTHROW, Q_DECL_NOEXCEPT
-*/
-
-/*!
-    \macro Q_DECL_OVERRIDE
-    \since 5.0
-    \deprecated
-    \relates <QtGlobal>
-
-    This macro can be used to declare an overriding virtual
-    function. Use of this markup will allow the compiler to generate
-    an error if the overriding virtual function does not in fact
-    override anything.
-
-    It expands to "override".
-
-    The macro goes at the end of the function, usually after the
-    \c{const}, if any:
-    \snippet code/src_corelib_global_qglobal.cpp qdecloverride
-
-    \sa Q_DECL_FINAL
-*/
-
-/*!
-    \macro Q_DECL_FINAL
-    \since 5.0
-    \deprecated
-    \relates <QtGlobal>
-
-    This macro can be used to declare an overriding virtual or a class
-    as "final", with Java semantics. Further-derived classes can then
-    no longer override this virtual function, or inherit from this
-    class, respectively.
-
-    It expands to "final".
-
-    The macro goes at the end of the function, usually after the
-    \c{const}, if any:
-    \snippet code/src_corelib_global_qglobal.cpp qdeclfinal-1
-
-    For classes, it goes in front of the \c{:} in the class
-    definition, if any:
-    \snippet code/src_corelib_global_qglobal.cpp qdeclfinal-2
-
-    \sa Q_DECL_OVERRIDE
 */
 
 namespace QtPrivate {
