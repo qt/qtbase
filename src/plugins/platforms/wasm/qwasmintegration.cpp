@@ -212,7 +212,7 @@ QPlatformOpenGLContext *QWasmIntegration::createPlatformOpenGLContext(QOpenGLCon
 
 void QWasmIntegration::initialize()
 {
-    if (touchPoints < 1) // only touchscreen need inputcontexts
+    if (qgetenv("QT_IM_MODULE").isEmpty() && touchPoints < 1)
         return;
 
     QString icStr = QPlatformInputContextFactory::requested();
