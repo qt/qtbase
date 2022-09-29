@@ -39,6 +39,12 @@ qt_deploy_runtime_dependencies(
     [NO_OVERWRITE]
     [NO_APP_STORE_COMPLIANCE]
     [NO_TRANSLATIONS]
+    [PRE_INCLUDE_REGEXES regexes...]
+    [PRE_EXCLUDE_REGEXES regexes...]
+    [POST_INCLUDE_REGEXES regexes...]
+    [POST_EXCLUDE_REGEXES regexes...]
+    [POST_INCLUDE_FILES files...]
+    [POST_EXCLUDE_FILES files...]
 )
 \endcode
 
@@ -118,6 +124,20 @@ On platforms other than macOS, Qt translations are automatically deployed. To
 inhibit this behavior, specify \c{NO_TRANSLATIONS}. Use
 \l{qt6_deploy_translations}{qt_deploy_translations} to deploy translations in a
 customized way.
+
+On Linux, deploying runtime dependencies is based on CMake's
+\c{file(GET_RUNTIME_DEPENDENCIES)} command. The options \c{PRE_INCLUDE_REGEXES},
+\c{PRE_EXCLUDE_REGEXES}, \c{POST_INCLUDE_REGEXES}, \c{POST_EXCLUDE_REGEXES},
+\c{POST_INCLUDE_FILES}, and \c{POST_EXCLUDE_FILES} are only meaningful in this
+context and are forwarded unaltered to \c{file(GET_RUNTIME_DEPENDENCIES)}. See
+the documentation of that command for details.
+
+On Linux, runtime dependencies that are located in system library directories
+are not deployed by default. If \c{POST_EXCLUDE_REGEXES} is specified, this
+automatic exclusion is not performed.
+
+The default value of \c{POST_EXCLUDE_REGEXES} is constructed from the value of
+\l{QT_DEPLOY_IGNORED_LIB_DIRS}.
 
 \sa {qt6_generate_deploy_app_script}{qt_generate_deploy_app_script()},
     qt_deploy_qt_conf(), qt_deploy_qml_imports()

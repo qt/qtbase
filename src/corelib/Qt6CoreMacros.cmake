@@ -2452,6 +2452,24 @@ function(_qt_internal_setup_deploy_support)
 
     _qt_internal_add_deploy_support("${CMAKE_CURRENT_LIST_DIR}/Qt6CoreDeploySupport.cmake")
 
+    set(deploy_ignored_lib_dirs "")
+    if(__QT_DEPLOY_TOOL STREQUAL "GRD" AND NOT "${QT6_INSTALL_PREFIX}" STREQUAL "")
+        # Set up the directories we want to ignore when running file(GET_RUNTIME_DEPENDENCIES).
+        # If the Qt prefix is the root of one of those directories, don't ignore that directory.
+        # For example, if Qt's installation prefix is /usr, then we don't want to ignore /usr/lib.
+        foreach(link_dir IN LISTS CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES)
+            file(RELATIVE_PATH relative_dir "${QT6_INSTALL_PREFIX}" "${link_dir}")
+            if(relative_dir STREQUAL "")
+                # The Qt prefix is exactly ${link_dir}.
+                continue()
+            endif()
+            if(IS_ABSOLUTE "${relative_dir}" OR relative_dir MATCHES "^\\.\\./")
+                # The Qt prefix is outside of ${link_dir}.
+                list(APPEND deploy_ignored_lib_dirs "${link_dir}")
+            endif()
+        endforeach()
+    endif()
+
     # Check whether we will have to adjust the RPATH of plugins.
     if("${QT_DEPLOY_FORCE_ADJUST_RPATHS}" STREQUAL "")
         set(must_adjust_plugins_rpath "")
@@ -2502,6 +2520,9 @@ if(NOT QT_DEPLOY_PREFIX)
 endif()
 if(QT_DEPLOY_PREFIX STREQUAL \"\")
     set(QT_DEPLOY_PREFIX .)
+endif()
+if(NOT QT_DEPLOY_IGNORED_LIB_DIRS)
+    set(QT_DEPLOY_IGNORED_LIB_DIRS \"${deploy_ignored_lib_dirs}\")
 endif()
 
 # These are internal implementation details. They may be removed at any time.

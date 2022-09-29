@@ -161,15 +161,21 @@ function(_qt_internal_generic_deployqt)
         VERBOSE
     )
     set(single_value_options
-        EXECUTABLE
         LIB_DIR
         PLUGINS_DIR
     )
-    set(multi_value_options
-        ADDITIONAL_EXECUTABLES
-        ADDITIONAL_LIBRARIES
-        ADDITIONAL_MODULES
+    set(file_GRD_options
+        EXECUTABLES
+        LIBRARIES
+        MODULES
+        PRE_INCLUDE_REGEXES
+        PRE_EXCLUDE_REGEXES
+        POST_INCLUDE_REGEXES
+        POST_EXCLUDE_REGEXES
+        POST_INCLUDE_FILES
+        POST_EXCLUDE_FILES
     )
+    set(multi_value_options ${file_GRD_options})
     cmake_parse_arguments(PARSE_ARGV 0 arg
         "${no_value_options}" "${single_value_options}" "${multi_value_options}"
     )
@@ -179,7 +185,7 @@ function(_qt_internal_generic_deployqt)
     endif()
 
     # Make input file paths absolute
-    foreach(var IN ITEMS EXECUTABLE ADDITIONAL_EXECUTABLES ADDITIONAL_LIBRARIES ADDITIONAL_MODULES)
+    foreach(var IN ITEMS EXECUTABLES LIBRARIES MODULES)
         string(PREPEND var arg_)
         set(abspaths "")
         foreach(path IN LISTS ${var})
@@ -190,32 +196,31 @@ function(_qt_internal_generic_deployqt)
     endforeach()
 
     # We need to get the runtime dependencies of plugins too.
-    list(APPEND arg_ADDITIONAL_MODULES ${__QT_DEPLOY_PLUGINS})
+    list(APPEND arg_MODULES ${__QT_DEPLOY_PLUGINS})
 
-    set(file_args "")
-    if(arg_EXECUTABLE OR arg_ADDITIONAL_EXECUTABLES)
-        list(APPEND file_args EXECUTABLES ${arg_EXECUTABLE} ${arg_ADDITIONAL_EXECUTABLES})
-    endif()
-    if(arg_ADDITIONAL_LIBRARIES)
-        list(APPEND file_args LIBRARIES ${arg_ADDITIONAL_LIBRARIES})
-    endif()
-    if(arg_ADDITIONAL_MODULES)
-        list(APPEND file_args MODULES ${arg_ADDITIONAL_MODULES})
-    endif()
-
-    # Compile a list of regular expressions that represent the Qt installation prefixes.
-    set(prefix_regexes)
-    foreach(path IN LISTS __QT_DEPLOY_QT_INSTALL_PREFIX
-            __QT_DEPLOY_QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
-        _qt_internal_re_escape(path_rex "${path}")
-        list(APPEND prefix_regexes "^${path_rex}")
+    # Forward the arguments that are exactly the same for file(GET_RUNTIME_DEPENDENCIES).
+    set(file_GRD_args "")
+    foreach(var IN LISTS file_GRD_options)
+        if(NOT "${arg_${var}}" STREQUAL "")
+            list(APPEND file_GRD_args ${var} ${arg_${var}})
+        endif()
     endforeach()
 
-    # Get the runtime dependencies recursively, restricted to Qt's installation prefix.
+    # Compile a list of regular expressions that represent ignored library directories.
+    if("${arg_POST_EXCLUDE_REGEXES}" STREQUAL "")
+        set(regexes "")
+        foreach(path IN LISTS QT_DEPLOY_IGNORED_LIB_DIRS)
+            _qt_internal_re_escape(path_rex "${path}")
+            list(APPEND regexes "^${path_rex}")
+        endforeach()
+        if(regexes)
+            list(APPEND file_GRD_args POST_EXCLUDE_REGEXES ${regexes})
+        endif()
+    endif()
+
+    # Get the runtime dependencies recursively.
     file(GET_RUNTIME_DEPENDENCIES
-        ${file_args}
-        POST_INCLUDE_REGEXES ${prefix_regexes}
-        POST_EXCLUDE_REGEXES ".*"
+        ${file_GRD_args}
         RESOLVED_DEPENDENCIES_VAR resolved
         UNRESOLVED_DEPENDENCIES_VAR unresolved
         CONFLICTING_DEPENDENCIES_PREFIX conflicting
@@ -294,6 +299,16 @@ function(qt6_deploy_runtime_dependencies)
         PLUGINS_DIR
         QML_DIR
     )
+    set(file_GRD_options
+        # The following include/exclude options are only used if the "generic deploy tool" is
+        # used. The options are what file(GET_RUNTIME_DEPENDENCIES) supports.
+        PRE_INCLUDE_REGEXES
+        PRE_EXCLUDE_REGEXES
+        POST_INCLUDE_REGEXES
+        POST_EXCLUDE_REGEXES
+        POST_INCLUDE_FILES
+        POST_EXCLUDE_FILES
+    )
     set(multi_value_options
         # These ADDITIONAL_... options are based on what file(GET_RUNTIME_DEPENDENCIES)
         # supports. We differentiate between the types of binaries so that we keep
@@ -303,6 +318,7 @@ function(qt6_deploy_runtime_dependencies)
         ADDITIONAL_EXECUTABLES
         ADDITIONAL_LIBRARIES
         ADDITIONAL_MODULES
+        ${file_GRD_options}
     )
     cmake_parse_arguments(PARSE_ARGV 0 arg
         "${no_value_options}" "${single_value_options}" "${multi_value_options}"
@@ -404,12 +420,23 @@ function(qt6_deploy_runtime_dependencies)
     if(__QT_DEPLOY_TOOL STREQUAL "GRD")
         message(STATUS "Running generic Qt deploy tool on ${arg_EXECUTABLE}")
 
-        # Forward the ADDITIONAL_* arguments.
-        foreach(file_type EXECUTABLES LIBRARIES MODULES)
+        # Construct the EXECUTABLES, LIBRARIES and MODULES arguments.
+        list(APPEND tool_options EXECUTABLES ${arg_EXECUTABLE})
+        if(NOT "${arg_ADDITIONAL_EXECUTABLES}" STREQUAL "")
+            list(APPEND tool_options ${arg_ADDITIONAL_EXECUTABLES})
+        endif()
+        foreach(file_type LIBRARIES MODULES)
             if("${arg_ADDITIONAL_${file_type}}" STREQUAL "")
                 continue()
             endif()
-            list(APPEND tool_options ADDITIONAL_${file_type} ${arg_ADDITIONAL_${file_type}})
+            list(APPEND tool_options ${file_type} ${arg_ADDITIONAL_${file_type}})
+        endforeach()
+
+        # Forward the arguments that are exactly the same for file(GET_RUNTIME_DEPENDENCIES).
+        foreach(var IN LISTS file_GRD_options)
+            if(NOT "${arg_${var}}" STREQUAL "")
+                list(APPEND tool_options ${var} ${arg_${var}})
+            endif()
         endforeach()
 
         if(arg_NO_TRANSLATIONS)
