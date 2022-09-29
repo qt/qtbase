@@ -211,9 +211,9 @@ asm(
 //
 // macOS's fat binaries support the "x86_64h" sub-architecture and the GNU libc
 // ELF loader also supports a "haswell/" subdir (e.g., /usr/lib/haswell).
-#  define ARCH_HASWELL_MACROS       (__AVX2__ + __BMI__ + __BMI2__ + __F16C__ + __FMA__ + __LZCNT__)
+#  define ARCH_HASWELL_MACROS       (__AVX2__ + __BMI__ + __BMI2__ + __FMA__ + __LZCNT__)
 #  if ARCH_HASWELL_MACROS != 0
-#    if ARCH_HASWELL_MACROS != 6
+#    if ARCH_HASWELL_MACROS != 5
 #      error "Please enable all x86-64-v3 extensions; you probably want to use -march=haswell or -march=x86-64-v3 instead of -mavx2"
 #    endif
 static_assert(ARCH_HASWELL_MACROS, "Undeclared identifiers indicate which features are missing.");
