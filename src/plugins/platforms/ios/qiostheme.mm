@@ -135,7 +135,7 @@ QVariant QIOSTheme::themeHint(ThemeHint hint) const
 Qt::Appearance QIOSTheme::appearance() const
 {
     if (UIWindow *window = qt_apple_sharedApplication().windows.lastObject) {
-        return window.rootViewController.traitCollection.userInterfaceStyle
+        return window.traitCollection.userInterfaceStyle
                 == UIUserInterfaceStyleDark
                 ? Qt::Appearance::Dark
                 : Qt::Appearance::Light;
