@@ -19,7 +19,7 @@
 #endif
 
 #if QT_CONFIG(publicsuffix_qt)
-#   include "qurltlds_p.h"
+#   include "psl_data.cpp"
 #endif
 
 // Defined in src/3rdparty/libpsl/src/lookup_string_in_fixed_set.c

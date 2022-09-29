@@ -1,14 +1,14 @@
-The file qurltlds_p.h is generated from the Public Suffix
+The file psl_data.cpp is generated from the Public Suffix
 List (see [1] and [2]), by the program residing at
-qtbase/src/3rdparty/libpsl/src/psl-make-dafsa in the Qt source tree.
+src/psl-make-dafsa.
 
 To regenerate the file, run the following command from qtbase tree:
 
-    src/3rdparty/libpsl/src/psl-make-dafsa public_suffix_list.dat src/network/kernel/qurltlds_p.h
+    src/3rdparty/libpsl/src/psl-make-dafsa public_suffix_list.dat src/3rdparty/libpsl/psl_data.cpp
     src/3rdparty/libpsl/src/psl-make-dafsa --output-format=binary public_suffix_list.dat \
         tests/auto/network/access/qnetworkcookiejar/testdata/publicsuffix/public_suffix_list.dafsa
 
-Those arrays in qurltlds_p.h are derived from the Public
+Those arrays in psl_data.cpp are derived from the Public
 Suffix List ([2]), which was originally provided by
 Jo Hermans <jo.hermans@gmail.com>.
 

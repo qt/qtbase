@@ -163,8 +163,9 @@ qt_internal_extend_target(Network CONDITION NOT QT_FEATURE_system_zlib AND NOT n
 qt_internal_extend_target(Network CONDITION QT_FEATURE_topleveldomain
     SOURCES
         kernel/qtldurl.cpp kernel/qtldurl_p.h
-        kernel/qurltlds_p.h
         ../3rdparty/libpsl/src/lookup_string_in_fixed_set.c
+    INCLUDE_DIRECTORIES
+        ../3rdparty/libpsl
 )
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup
