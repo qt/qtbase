@@ -10,7 +10,9 @@
 #include <qpa/qplatformintegration.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtGui/private/qwindowsfontdatabase_p.h>
+#ifndef QT_NO_OPENGL
 #include <QtGui/private/qopenglcontext_p.h>
+#endif
 #include <qpa/qplatformopenglcontext.h>
 
 QT_BEGIN_NAMESPACE

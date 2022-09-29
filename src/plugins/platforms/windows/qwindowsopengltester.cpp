@@ -15,6 +15,7 @@
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qhash.h>
 #include <private/qsystemlibrary_p.h>
+#include <QtGui/qtgui-config.h>
 
 #ifndef QT_NO_OPENGL
 #include <private/qopengl_p.h>
