@@ -8,7 +8,8 @@ defines                  += offlinedocs
 #uncomment if navigation bar is not wanted
 #HTML.nonavigationbar      = "true"
 
-HTML.stylesheets = template/style/offline.css
+HTML.stylesheets = template/style/offline.css \
+                   template/style/offline-dark.css
 HTML.extraimages += template/images/ico_out.png \
                     template/images/ico_note.png \
                     template/images/ico_note_attention.png \
@@ -22,6 +23,7 @@ sourcedirs += includes
 
 #specify which files in the output directory should be packed into the qch file.
 qhp.extraFiles +=   style/offline.css \
+                    style/offline-dark.css \
                     images/ico_out.png \
                     images/ico_note.png \
                     images/ico_note_attention.png \

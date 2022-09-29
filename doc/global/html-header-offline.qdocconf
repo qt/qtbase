@@ -1,10 +1,12 @@
 #Default HTML header for QDoc builds.
 
 #specify the CSS file used by this template
-HTML.stylesheets = template/style/offline.css
+HTML.stylesheets = template/style/offline.css \
+                   template/style/offline-dark.css
 
 #for including files into the qch file
-qhp.extraFiles += style/offline.css
+qhp.extraFiles += style/offline.css \
+                  style/offline-dark.css
 
 HTML.headerstyles = \
     "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/offline.css\" />\n"
