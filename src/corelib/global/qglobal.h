@@ -54,24 +54,6 @@ QT_BEGIN_NAMESPACE
 #  define Q_UNIMPLEMENTED() qWarning("Unimplemented code.")
 #endif
 
-
-// this adds const to non-const objects (like std::as_const)
-template <typename T>
-constexpr typename std::add_const<T>::type &qAsConst(T &t) noexcept { return t; }
-// prevent rvalue arguments:
-template <typename T>
-void qAsConst(const T &&) = delete;
-
-// like std::exchange
-template <typename T, typename U = T>
-constexpr T qExchange(T &t, U &&newValue)
-noexcept(std::conjunction_v<std::is_nothrow_move_constructible<T>, std::is_nothrow_assignable<T &, U>>)
-{
-    T old = std::move(t);
-    t = std::forward<U>(newValue);
-    return old;
-}
-
 QT_END_NAMESPACE
 
 // We need to keep QTypeInfo, QSysInfo, QFlags, qDebug & family in qglobal.h for compatibility with Qt 4.

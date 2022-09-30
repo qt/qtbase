@@ -7,6 +7,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qtdeprecationmarkers.h>
+#include <QtCore/qttypetraits.h>
 
 QT_BEGIN_NAMESPACE
 
