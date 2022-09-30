@@ -837,8 +837,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_regularexpression
 qt_internal_extend_target(Core CONDITION QT_FEATURE_openssl_linked AND QT_FEATURE_opensslv30
     LIBRARIES
         WrapOpenSSL::WrapOpenSSL
-    PRIVATE_MODULE_INTERFACE
-        WrapOpenSSL::WrapOpenSSL
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_hijricalendar
