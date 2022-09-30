@@ -47,7 +47,7 @@ Q_GLOBAL_STATIC(QThreadStorage<GenerationalCollator>, defaultCollator)
     \ingroup shared
 
     QCollator is initialized with a QLocale. It can then be used to compare and
-    sort strings in using the ordering appropriate to the locale.
+    sort strings by using the ordering appropriate for that locale.
 
     A QCollator object can be used together with template-based sorting
     algorithms, such as std::sort(), to sort a list with QString entries.
