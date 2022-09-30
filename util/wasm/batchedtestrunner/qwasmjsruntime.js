@@ -166,7 +166,7 @@ export class CompiledModule {
         const instanceParams = {};
         instanceParams.instantiateWasm = async (imports, onDone) => {
             try {
-                onDone(await WebAssembly.instantiate(this.#wasm, imports));
+                onDone(await WebAssembly.instantiate(this.#wasm, imports), this.#wasm);
             } catch (e) {
                 params?.onInstantiationError?.(e);
             }
