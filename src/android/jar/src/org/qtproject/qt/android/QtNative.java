@@ -1052,15 +1052,7 @@ public class QtNative
 
     public static boolean hasClipboardText()
     {
-        try {
-            if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
-                ClipDescription primaryClipDescription = m_clipboardManager.getPrimaryClipDescription();
-                return primaryClipDescription.hasMimeType("text/*");
-            }
-        } catch (Exception e) {
-            Log.e(QtTAG, "Failed to get clipboard data", e);
-        }
-        return false;
+       return hasClipboardMimeType("text/plain");
     }
 
     private static String getClipboardText()
@@ -1106,17 +1098,25 @@ public class QtNative
         }
     }
 
-    public static boolean hasClipboardHtml()
+    private static boolean hasClipboardMimeType(String mimeType)
     {
-        try {
-            if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
-                ClipDescription primaryClipDescription = m_clipboardManager.getPrimaryClipDescription();
-                return primaryClipDescription.hasMimeType("text/html");
-            }
-        } catch (Exception e) {
-            Log.e(QtTAG, "Failed to get clipboard data", e);
+        if (m_clipboardManager == null)
+            return false;
+
+        ClipData clip = m_clipboardManager.getPrimaryClip();
+        ClipDescription description = clip.getDescription();
+
+        for (int i = 0; i < description.getMimeTypeCount(); ++i) {
+            String itemMimeType = description.getMimeType(i);
+            if (itemMimeType.equals(mimeType))
+                return true;
         }
         return false;
+    }
+
+    public static boolean hasClipboardHtml()
+    {
+       return hasClipboardMimeType("text/html");
     }
 
     private static String getClipboardHtml()
@@ -1145,15 +1145,7 @@ public class QtNative
 
     public static boolean hasClipboardUri()
     {
-        try {
-            if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
-                ClipDescription primaryClipDescription = m_clipboardManager.getPrimaryClipDescription();
-                return primaryClipDescription.hasMimeType("text/uri-list");
-            }
-        } catch (Exception e) {
-            Log.e(QtTAG, "Failed to get clipboard data", e);
-        }
-        return false;
+       return hasClipboardMimeType("text/uri-list");
     }
 
     private static String[] getClipboardUris()
