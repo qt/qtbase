@@ -136,15 +136,4 @@ public class QtService extends Service
     {
         return super.onUnbind(intent);
     }
-    //---------------------------------------------------------------------------
-
-    public boolean loadApplication(Service service, ClassLoader classLoader, Bundle loaderParams)
-    {
-        return QtNative.serviceDelegate().loadApplication(service, classLoader, loaderParams);
-    }
-
-    public boolean startApplication()
-    {
-       return QtNative.serviceDelegate().startApplication();
-    }
 }
