@@ -220,14 +220,15 @@ asm(
 // The Intel Core 4th generation was codenamed "Haswell" and introduced AVX2,
 // BMI1, BMI2, FMA, LZCNT, MOVBE, which makes it a good divider for a
 // sub-target for us. The first AMD processor with AVX2 support (Zen) has the
-// same features. This feature set was chosen as the version 3 of the x86-64
-// ISA (x86-64-v3) and is supported by GCC and Clang.
+// same features, but had already introduced BMI1 in the previous generation.
+// This feature set was chosen as the version 3 of the x86-64 ISA (x86-64-v3)
+// and is supported by GCC and Clang.
 //
 // macOS's fat binaries support the "x86_64h" sub-architecture and the GNU libc
 // ELF loader also supports a "haswell/" subdir (e.g., /usr/lib/haswell).
-#  define ARCH_HASWELL_MACROS       (__AVX2__ + __BMI__ + __BMI2__ + __FMA__ + __LZCNT__)
+#  define ARCH_HASWELL_MACROS       (__AVX2__ + __BMI2__ + __FMA__ + __LZCNT__)
 #  if ARCH_HASWELL_MACROS != 0
-#    if ARCH_HASWELL_MACROS != 5
+#    if ARCH_HASWELL_MACROS != 4
 #      error "Please enable all x86-64-v3 extensions; you probably want to use -march=haswell or -march=x86-64-v3 instead of -mavx2"
 #    endif
 static_assert(ARCH_HASWELL_MACROS, "Undeclared identifiers indicate which features are missing.");
