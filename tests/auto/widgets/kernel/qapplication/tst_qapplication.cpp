@@ -1577,6 +1577,9 @@ void tst_QApplication::activateDeactivateEvent()
     int argc = 0;
     QApplication app(argc, nullptr);
 
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     Window w1;
     Window w2;
 
