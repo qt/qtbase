@@ -249,9 +249,16 @@ KeyEvent::KeyEvent(NSEvent *nsevent)
     default: break; // Must be manually set
     }
 
-    if (nsevent.type == NSEventTypeKeyDown || nsevent.type == NSEventTypeKeyUp) {
+    switch (nsevent.type) {
+    case NSEventTypeKeyDown:
+    case NSEventTypeKeyUp:
+    case NSEventTypeFlagsChanged:
         nativeVirtualKey = nsevent.keyCode;
+    default:
+        break;
+    }
 
+    if (nsevent.type == NSEventTypeKeyDown || nsevent.type == NSEventTypeKeyUp) {
         NSString *charactersIgnoringModifiers = nsevent.charactersIgnoringModifiers;
         NSString *characters = nsevent.characters;
 
