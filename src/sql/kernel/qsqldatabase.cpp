@@ -1132,11 +1132,18 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
     \li MYSQL_OPT_CONNECT_TIMEOUT
     \li MYSQL_OPT_READ_TIMEOUT
     \li MYSQL_OPT_WRITE_TIMEOUT
-    \li SSL_KEY
-    \li SSL_CERT
-    \li SSL_CA
-    \li SSL_CAPATH
-    \li SSL_CIPHER
+    \li MYSQL_OPT_SSL_KEY
+    \li MYSQL_OPT_SSL_CERT
+    \li MYSQL_OPT_SSL_CA
+    \li MYSQL_OPT_SSL_CAPATH
+    \li MYSQL_OPT_SSL_CIPHER
+    \li MYSQL_OPT_SSL_CRL
+    \li MYSQL_OPT_SSL_CRLPATH
+    \li SSL_KEY (deprecated, use MYSQL_OPT_SSL_KEY)
+    \li SSL_CERT (deprecated, use MYSQL_OPT_SSL_CERT)
+    \li SSL_CA (deprecated, use MYSQL_OPT_SSL_CA)
+    \li SSL_CAPATH (deprecated, use MYSQL_OPT_SSL_CAPATH)
+    \li SSL_CIPHER (deprecated, use MYSQL_OPT_SSL_CIPHER)
     \endlist
 
     \li

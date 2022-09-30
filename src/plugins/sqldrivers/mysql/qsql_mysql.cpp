@@ -1122,7 +1122,7 @@ bool QMYSQLDriver::hasFeature(DriverFeature f) const
     return false;
 }
 
-static void setOptionFlag(uint &optionFlags, const QString &opt)
+static void setOptionFlag(uint &optionFlags, QStringView opt)
 {
     if (opt == "CLIENT_COMPRESS"_L1)
         optionFlags |= CLIENT_COMPRESS;
@@ -1137,21 +1137,83 @@ static void setOptionFlag(uint &optionFlags, const QString &opt)
     else if (opt == "CLIENT_ODBC"_L1)
         optionFlags |= CLIENT_ODBC;
     else if (opt == "CLIENT_SSL"_L1)
-        qWarning("QMYSQLDriver: SSL_KEY, SSL_CERT and SSL_CA should be used instead of CLIENT_SSL.");
+        qWarning("QMYSQLDriver: MYSQL_OPT_SSL_KEY, MYSQL_OPT_SSL_CERT and MYSQL_OPT_SSL_CA should be used instead of CLIENT_SSL.");
     else
         qWarning("QMYSQLDriver::open: Unknown connect option '%s'", opt.toLocal8Bit().constData());
 }
 
-bool QMYSQLDriver::open(const QString& db,
-                         const QString& user,
-                         const QString& password,
-                         const QString& host,
-                         int port,
-                         const QString& connOpts)
+static bool setOptionString(MYSQL *mysql, mysql_option option, QStringView v)
+{
+    return mysql_options(mysql, option, v.toUtf8().constData()) == 0;
+}
+
+static bool setOptionInt(MYSQL *mysql, mysql_option option, QStringView v)
+{
+    bool bOk;
+    const auto val = v.toInt(&bOk);
+    return bOk ? mysql_options(mysql, option, &val) == 0 : false;
+}
+
+static bool setOptionBool(MYSQL *mysql, mysql_option option, QStringView v)
+{
+    bool val = (v.isEmpty() || v == "TRUE"_L1 || v == "1"_L1);
+    return mysql_options(mysql, option, &val) == 0;
+}
+
+bool QMYSQLDriver::open(const QString &db,
+                        const QString &user,
+                        const QString &password,
+                        const QString &host,
+                        int port,
+                        const QString &connOpts)
 {
     Q_D(QMYSQLDriver);
     if (isOpen())
         close();
+
+    if (!(d->mysql = mysql_init(nullptr))) {
+        setLastError(qMakeError(tr("Unable to allocate a MYSQL object"),
+                     QSqlError::ConnectionError, d));
+        setOpenError(true);
+        return false;
+    }
+
+    typedef bool (*SetOptionFunc)(MYSQL*, mysql_option, QStringView);
+    struct mysqloptions {
+        QLatin1StringView key;
+        mysql_option option;
+        SetOptionFunc func;
+    };
+    const mysqloptions options[] = {
+        {"SSL_KEY"_L1,                   MYSQL_OPT_SSL_KEY,         setOptionString},
+        {"SSL_CERT"_L1,                  MYSQL_OPT_SSL_CERT,        setOptionString},
+        {"SSL_CA"_L1,                    MYSQL_OPT_SSL_CA,          setOptionString},
+        {"SSL_CAPATH"_L1,                MYSQL_OPT_SSL_CAPATH,      setOptionString},
+        {"SSL_CIPHER"_L1,                MYSQL_OPT_SSL_CIPHER,      setOptionString},
+        {"MYSQL_OPT_SSL_KEY"_L1,         MYSQL_OPT_SSL_KEY,         setOptionString},
+        {"MYSQL_OPT_SSL_CERT"_L1,        MYSQL_OPT_SSL_CERT,        setOptionString},
+        {"MYSQL_OPT_SSL_CA"_L1,          MYSQL_OPT_SSL_CA,          setOptionString},
+        {"MYSQL_OPT_SSL_CAPATH"_L1,      MYSQL_OPT_SSL_CAPATH,      setOptionString},
+        {"MYSQL_OPT_SSL_CIPHER"_L1,      MYSQL_OPT_SSL_CIPHER,      setOptionString},
+        {"MYSQL_OPT_SSL_CRL"_L1,         MYSQL_OPT_SSL_CRL,         setOptionString},
+        {"MYSQL_OPT_SSL_CRLPATH"_L1,     MYSQL_OPT_SSL_CRLPATH,     setOptionString},
+        {"MYSQL_OPT_CONNECT_TIMEOUT"_L1, MYSQL_OPT_CONNECT_TIMEOUT, setOptionInt},
+        {"MYSQL_OPT_READ_TIMEOUT"_L1,    MYSQL_OPT_READ_TIMEOUT,    setOptionInt},
+        {"MYSQL_OPT_WRITE_TIMEOUT"_L1,   MYSQL_OPT_WRITE_TIMEOUT,   setOptionInt},
+        {"MYSQL_OPT_RECONNECT"_L1,       MYSQL_OPT_RECONNECT,       setOptionBool},
+    };
+    auto trySetOption = [&](const QStringView &key, const QStringView &value) -> bool {
+      for (const mysqloptions &opt : options) {
+          if (key == opt.key) {
+              if (!opt.func(d->mysql, opt.option, value)) {
+                  qWarning("QMYSQLDriver::open: Could not set connect option value '%s' to '%s'",
+                           key.toLocal8Bit().constData(), value.toLocal8Bit().constData());
+              }
+              return true;
+          }
+      }
+      return false;
+    };
 
     /* This is a hack to get MySQL's stored procedure support working.
        Since a stored procedure _may_ return multiple result sets,
@@ -1159,61 +1221,28 @@ bool QMYSQLDriver::open(const QString& db,
        stored procedure call will fail.
     */
     unsigned int optionFlags = CLIENT_MULTI_STATEMENTS;
-    const QStringList opts(connOpts.split(u';', Qt::SkipEmptyParts));
+    const QList<QStringView> opts(QStringView(connOpts).split(u';', Qt::SkipEmptyParts));
     QString unixSocket;
-    QString sslCert;
-    QString sslCA;
-    QString sslKey;
-    QString sslCAPath;
-    QString sslCipher;
-    my_bool reconnect=false;
-    uint connectTimeout = 0;
-    uint readTimeout = 0;
-    uint writeTimeout = 0;
 
     // extract the real options from the string
-    for (int i = 0; i < opts.count(); ++i) {
-        QString tmp(opts.at(i).simplified());
+    for (const auto &option : opts) {
+        const QStringView sv = QStringView(option).trimmed();
         qsizetype idx;
-        if ((idx = tmp.indexOf(u'=')) != -1) {
-            QString val = tmp.mid(idx + 1).simplified();
-            QString opt = tmp.left(idx).simplified();
-            if (opt == "UNIX_SOCKET"_L1)
-                unixSocket = val;
-            else if (opt == "MYSQL_OPT_RECONNECT"_L1) {
-                if (val == "TRUE"_L1 || val == "1"_L1 || val.isEmpty())
-                    reconnect = true;
-            } else if (opt == "MYSQL_OPT_CONNECT_TIMEOUT"_L1)
-                connectTimeout = val.toInt();
-            else if (opt == "MYSQL_OPT_READ_TIMEOUT"_L1)
-                readTimeout = val.toInt();
-            else if (opt == "MYSQL_OPT_WRITE_TIMEOUT"_L1)
-                writeTimeout = val.toInt();
-            else if (opt == "SSL_KEY"_L1)
-                sslKey = val;
-            else if (opt == "SSL_CERT"_L1)
-                sslCert = val;
-            else if (opt == "SSL_CA"_L1)
-                sslCA = val;
-            else if (opt == "SSL_CAPATH"_L1)
-                sslCAPath = val;
-            else if (opt == "SSL_CIPHER"_L1)
-                sslCipher = val;
+        if ((idx = sv.indexOf(u'=')) != -1) {
+            const QStringView key = sv.left(idx).trimmed();
+            const QStringView val = sv.mid(idx + 1).trimmed();
+            if (trySetOption(key, val))
+                continue;
+            else if (key  == "UNIX_SOCKET"_L1)
+                unixSocket = val.toString();
             else if (val == "TRUE"_L1 || val == "1"_L1)
-                setOptionFlag(optionFlags, tmp.left(idx).simplified());
+                setOptionFlag(optionFlags, key);
             else
                 qWarning("QMYSQLDriver::open: Illegal connect option value '%s'",
-                         tmp.toLocal8Bit().constData());
+                         sv.toLocal8Bit().constData());
         } else {
-            setOptionFlag(optionFlags, tmp);
+            setOptionFlag(optionFlags, sv);
         }
-    }
-
-    if (!(d->mysql = mysql_init(nullptr))) {
-        setLastError(qMakeError(tr("Unable to allocate a MYSQL object"),
-                     QSqlError::ConnectionError, d));
-        setOpenError(true);
-        return false;
     }
 
     // try utf8 with non BMP first, utf8 (BMP only) if that fails
@@ -1233,23 +1262,6 @@ bool QMYSQLDriver::open(const QString& db,
         const char *csname;
     } *cs = nullptr;
 #endif
-
-    if (!sslKey.isNull() || !sslCert.isNull() || !sslCA.isNull() ||
-        !sslCAPath.isNull() || !sslCipher.isNull()) {
-       mysql_ssl_set(d->mysql,
-                     sslKey.isNull() ? nullptr : sslKey.toUtf8().constData(),
-                     sslCert.isNull() ? nullptr : sslCert.toUtf8().constData(),
-                     sslCA.isNull() ? nullptr : sslCA.toUtf8().constData(),
-                     sslCAPath.isNull() ? nullptr : sslCAPath.toUtf8().constData(),
-                     sslCipher.isNull() ? nullptr : sslCipher.toUtf8().constData());
-    }
-
-    if (connectTimeout != 0)
-        mysql_options(d->mysql, MYSQL_OPT_CONNECT_TIMEOUT, &connectTimeout);
-    if (readTimeout != 0)
-        mysql_options(d->mysql, MYSQL_OPT_READ_TIMEOUT, &readTimeout);
-    if (writeTimeout != 0)
-        mysql_options(d->mysql, MYSQL_OPT_WRITE_TIMEOUT, &writeTimeout);
 
     MYSQL *mysql = mysql_real_connect(d->mysql,
                                       host.isNull() ? nullptr : host.toUtf8().constData(),
@@ -1290,9 +1302,6 @@ bool QMYSQLDriver::open(const QString& db,
         setOpenError(true);
         return false;
     }
-
-    if (reconnect)
-        mysql_options(d->mysql, MYSQL_OPT_RECONNECT, &reconnect);
 
     d->preparedQuerysEnabled = checkPreparedQueries(d->mysql);
 
