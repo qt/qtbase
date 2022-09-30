@@ -223,8 +223,10 @@ static_assert(ARCH_HASWELL_MACROS, "Undeclared identifiers indicate which featur
 
 // x86-64 sub-architecture version 4
 //
-// Similar to the above, x86-64-v4 marches the AVX512 variant of the Intel Core
-// 6th generation (codename "Skylake").
+// Similar to the above, x86-64-v4 matches the AVX512 variant of the Intel Core
+// 6th generation (codename "Skylake"). AMD Zen4 is the their first processor
+// with AVX512 support and it includes all of these too.
+//
 #  define ARCH_SKX_MACROS           (__AVX512F__ + __AVX512BW__ + __AVX512CD__ + __AVX512DQ__ + __AVX512VL__)
 #  if ARCH_SKX_MACROS != 0
 #    if ARCH_SKX_MACROS != 5
