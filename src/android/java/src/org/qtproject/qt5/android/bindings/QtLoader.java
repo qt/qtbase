@@ -37,6 +37,7 @@
 package org.qtproject.qt5.android.bindings;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -226,7 +227,9 @@ public abstract class QtLoader {
                 // fatal error, show the error and quit
                 AlertDialog errorDialog = new AlertDialog.Builder(m_context).create();
                 errorDialog.setMessage(loaderParams.getString(ERROR_MESSAGE_KEY));
-                errorDialog.setButton(m_context.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+                errorDialog.setButton(Dialog.BUTTON_POSITIVE,
+                                      m_context.getResources().getString(android.R.string.ok),
+                                      new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         finish();
@@ -281,7 +284,9 @@ public abstract class QtLoader {
             else
                 errorDialog.setMessage("Fatal error, your application can't be started.");
 
-            errorDialog.setButton(m_context.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+            errorDialog.setButton(Dialog.BUTTON_POSITIVE,
+                                  m_context.getResources().getString(android.R.string.ok),
+                                  new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     finish();
@@ -347,7 +352,9 @@ public abstract class QtLoader {
         else
             errorDialog.setMessage("Can't find Ministro service.\nThe application can't start.");
 
-        errorDialog.setButton(m_context.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+        errorDialog.setButton(Dialog.BUTTON_POSITIVE,
+                              m_context.getResources().getString(android.R.string.ok),
+                              new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 finish();
