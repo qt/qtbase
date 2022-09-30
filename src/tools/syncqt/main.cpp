@@ -348,6 +348,9 @@ private:
             }
         }
 
+        if (m_printHelpOnly)
+            return true;
+
         if (!qpaHeadersFilter.empty())
             m_qpaHeadersRegex = std::regex(qpaHeadersFilter);
 
