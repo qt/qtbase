@@ -6,7 +6,6 @@ package org.qtproject.qt.android.bindings;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -301,21 +300,6 @@ public class QtActivity extends Activity
     //---------------------------------------------------------------------------
 
     @Override
-    protected Dialog onCreateDialog(int id)
-    {
-        QtLoader.InvokeResult res = QtLoader.invokeDelegate(id);
-        if (res.invoked)
-            return (Dialog)res.methodReturns;
-        else
-            return super.onCreateDialog(id);
-    }
-    public Dialog super_onCreateDialog(int id)
-    {
-        return super.onCreateDialog(id);
-    }
-    //---------------------------------------------------------------------------
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
         QtLoader.InvokeResult res = QtLoader.invokeDelegate(menu);
@@ -359,21 +343,7 @@ public class QtActivity extends Activity
     {
         return super.onCreatePanelView(featureId);
     }
-    //---------------------------------------------------------------------------
 
-    @Override
-    public boolean onCreateThumbnail(Bitmap outBitmap, Canvas canvas)
-    {
-        QtApplication.InvokeResult res = QtApplication.invokeDelegate(outBitmap, canvas);
-        if (res.invoked)
-            return (Boolean)res.methodReturns;
-        else
-            return super.onCreateThumbnail(outBitmap, canvas);
-    }
-    public boolean super_onCreateThumbnail(Bitmap outBitmap, Canvas canvas)
-    {
-        return super.onCreateThumbnail(outBitmap, canvas);
-    }
     //---------------------------------------------------------------------------
 
     @Override
@@ -554,18 +524,6 @@ public class QtActivity extends Activity
     {
         super.onPostResume();
         QtLoader.invokeDelegate();
-    }
-    //---------------------------------------------------------------------------
-
-    @Override
-    protected void onPrepareDialog(int id, Dialog dialog)
-    {
-        if (!QtLoader.invokeDelegate(id, dialog).invoked)
-            super.onPrepareDialog(id, dialog);
-    }
-    public void super_onPrepareDialog(int id, Dialog dialog)
-    {
-        super.onPrepareDialog(id, dialog);
     }
     //---------------------------------------------------------------------------
 
@@ -827,35 +785,6 @@ public class QtActivity extends Activity
     //---------------------------------------------------------------------------
 //@ANDROID-5
 
-//////////////// Activity API 8 /////////////
-//@ANDROID-8
-@Override
-    protected Dialog onCreateDialog(int id, Bundle args)
-    {
-        QtLoader.InvokeResult res = QtLoader.invokeDelegate(id, args);
-        if (res.invoked)
-            return (Dialog)res.methodReturns;
-        else
-            return super.onCreateDialog(id, args);
-    }
-    public Dialog super_onCreateDialog(int id, Bundle args)
-    {
-        return super.onCreateDialog(id, args);
-    }
-    //---------------------------------------------------------------------------
-
-    @Override
-    protected void onPrepareDialog(int id, Dialog dialog, Bundle args)
-    {
-        if (!QtLoader.invokeDelegate(id, dialog, args).invoked)
-            super.onPrepareDialog(id, dialog, args);
-    }
-    public void super_onPrepareDialog(int id, Dialog dialog, Bundle args)
-    {
-        super.onPrepareDialog(id, dialog, args);
-    }
-    //---------------------------------------------------------------------------
-//@ANDROID-8
     //////////////// Activity API 11 /////////////
 
 //@ANDROID-11
@@ -894,18 +823,6 @@ public class QtActivity extends Activity
     public void super_onActionModeStarted(ActionMode mode)
     {
         super.onActionModeStarted(mode);
-    }
-    //---------------------------------------------------------------------------
-
-    @Override
-    public void onAttachFragment(Fragment fragment)
-    {
-        if (!QtLoader.invokeDelegate(fragment).invoked)
-            super.onAttachFragment(fragment);
-    }
-    public void super_onAttachFragment(Fragment fragment)
-    {
-        super.onAttachFragment(fragment);
     }
     //---------------------------------------------------------------------------
 
