@@ -227,16 +227,6 @@ void qAbort()
 // localtime() -- but not localtime_r(), which we use when threaded
 // strftime() -- not used (except in tests)
 
-/*!
-    \macro Q_UNUSED(name)
-    \relates <QtGlobal>
-
-    Indicates to the compiler that the parameter with the specified
-    \a name is not used in the body of a function. This can be used to
-    suppress compiler warnings while allowing functions to be defined
-    with meaningful parameter names in their signatures.
-*/
-
 struct QInternal_CallBackTable
 {
     QList<QList<qInternalCallback>> callbacks;

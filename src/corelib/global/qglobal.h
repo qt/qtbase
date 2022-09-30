@@ -25,10 +25,7 @@
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qtcoreexports.h>
 
-/* These two macros makes it possible to turn the builtin line expander into a
- * string literal. */
-#define QT_STRINGIFY2(x) #x
-#define QT_STRINGIFY(x) QT_STRINGIFY2(x)
+#include <QtCore/qtpreprocessorsupport.h>
 
 inline void qt_noop(void) {}
 
@@ -40,21 +37,9 @@ inline void qt_noop(void) {}
 #include <QtCore/qtypes.h>
 #include <QtCore/qtclasshelpermacros.h>
 
-/*
-   Avoid "unused parameter" warnings
-*/
-#define Q_UNUSED(x) (void)x;
 
 #ifndef __ASSEMBLER__
-QT_BEGIN_NAMESPACE
-
 #if defined(__cplusplus)
-
-#if !defined(Q_UNIMPLEMENTED)
-#  define Q_UNIMPLEMENTED() qWarning("Unimplemented code.")
-#endif
-
-QT_END_NAMESPACE
 
 // We need to keep QTypeInfo, QSysInfo, QFlags, qDebug & family in qglobal.h for compatibility with Qt 4.
 // Be careful when changing the order of these files.
