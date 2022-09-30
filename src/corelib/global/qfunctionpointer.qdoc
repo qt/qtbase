@@ -1,0 +1,9 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*! \typedef QFunctionPointer
+    \relates <QFunctionPointer>
+
+    This is a typedef for \c{void (*)()}, a pointer to a function that takes
+    no arguments and returns void.
+*/

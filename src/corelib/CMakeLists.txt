@@ -59,6 +59,7 @@ qt_internal_add_module(Core
         global/qflags.h
         global/qfloat16.cpp global/qfloat16.h
         global/qforeach.h
+        global/qfunctionpointer.h
         global/qglobal.cpp global/qglobal.h global/qglobal_p.h
         global/qglobalstatic.h
         global/qhooks.cpp global/qhooks_p.h

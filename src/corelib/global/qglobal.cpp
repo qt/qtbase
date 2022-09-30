@@ -166,13 +166,6 @@ using namespace Qt::StringLiterals;
     \sa <QtAlgorithms>, QSysInfo
 */
 
-/*! \typedef QFunctionPointer
-    \relates <QFunctionPointer>
-
-    This is a typedef for \c{void (*)()}, a pointer to a function that takes
-    no arguments and returns void.
-*/
-
 /*
     Dijkstra's bisection algorithm to find the square root of an integer.
     Deliberately not exported as part of the Qt API, but used in both

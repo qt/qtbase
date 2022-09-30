@@ -50,11 +50,6 @@ QT_BEGIN_NAMESPACE
 
 #if defined(__cplusplus)
 
-#if 0
-#pragma qt_class(QFunctionPointer)
-#endif
-typedef void (*QFunctionPointer)();
-
 #if !defined(Q_UNIMPLEMENTED)
 #  define Q_UNIMPLEMENTED() qWarning("Unimplemented code.")
 #endif
@@ -92,6 +87,7 @@ QT_END_NAMESPACE
 #include <QtCore/qdarwinhelpers.h>
 #include <QtCore/qexceptionhandling.h>
 #include <QtCore/qforeach.h>
+#include <QtCore/qfunctionpointer.h>
 #include <QtCore/qglobalstatic.h>
 #include <QtCore/qmalloc.h>
 #include <QtCore/qminmax.h>
