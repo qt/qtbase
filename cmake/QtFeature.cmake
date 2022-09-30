@@ -921,6 +921,7 @@ function(qt_config_compile_test name)
                 # fail instead of cmake abort later via CMAKE_REQUIRED_LIBRARIES.
                 string(FIND "${library}" "::" cmake_target_namespace_separator)
                 if(NOT cmake_target_namespace_separator EQUAL -1)
+                    message(STATUS "Performing Test ${arg_LABEL} - Failed because ${library} not found")
                     set(HAVE_${name} FALSE)
                     break()
                 endif()
