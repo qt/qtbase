@@ -110,13 +110,8 @@ void tst_QSslCertificate::initTestCase()
         testDataDir = QCoreApplication::applicationDirPath();
     if (!testDataDir.endsWith(QLatin1String("/")))
         testDataDir += QLatin1String("/");
-#if QT_CONFIG(opensslv11)
-    // In the presence of 'openssl' backend, QSslSocket will
-    // select 'openssl' as the default one.
+
     isNonOpenSslTls = QSslSocket::activeBackend() != QStringLiteral("openssl");
-#else
-    isNonOpenSslTls = true;
-#endif // QT_CONFIG(ssl)
 
     QDir dir(testDataDir + "certificates");
     QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
