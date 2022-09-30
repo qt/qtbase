@@ -189,8 +189,21 @@ inline void QDirPrivate::resolveAbsoluteEntry() const
 /* For sorting */
 struct QDirSortItem
 {
+    QDirSortItem() = default;
+    QDirSortItem(const QFileInfo &fi, QDir::SortFlags sort)
+        : item(fi)
+    {
+        // A dir e.g. "dirA.bar" doesn't have actually have an extension/suffix, when
+        // sorting by type such "suffix" should be ignored but that would complicate
+        // the code and uses can change the behavior by setting DirsFirst/DirsLast
+        if (sort.testAnyFlag(QDir::Type)) {
+            const bool ic = sort.testAnyFlag(QDir::IgnoreCase);
+            suffix_cache = ic ? item.suffix().toLower() : item.suffix();
+        }
+    }
+
     mutable QString filename_cache;
-    mutable QString suffix_cache;
+    QString suffix_cache;
     QFileInfo item;
 };
 
@@ -227,17 +240,7 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
       case QDir::Size:
           r = f2->item.size() - f1->item.size();
         break;
-      case QDir::Type:
-      {
-        bool ic = qt_cmp_si_sort_flags.testAnyFlag(QDir::IgnoreCase);
-
-        if (f1->suffix_cache.isNull())
-            f1->suffix_cache = ic ? f1->item.suffix().toLower()
-                               : f1->item.suffix();
-        if (f2->suffix_cache.isNull())
-            f2->suffix_cache = ic ? f2->item.suffix().toLower()
-                               : f2->item.suffix();
-
+      case QDir::Type: {
         r = qt_cmp_si_sort_flags & QDir::LocaleAware
             ? f1->suffix_cache.localeAwareCompare(f2->suffix_cache)
             : f1->suffix_cache.compare(f2->suffix_cache);
@@ -270,30 +273,34 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
 inline void QDirPrivate::sortFileList(QDir::SortFlags sort, const QFileInfoList &l,
                                       QStringList *names, QFileInfoList *infos)
 {
-    // names and infos are always empty lists or 0 here
-    qsizetype n = l.size();
-    if (n > 0) {
-        if (n == 1 || (sort & QDir::SortByMask) == QDir::Unsorted) {
+    Q_ASSERT(names || infos);
+    Q_ASSERT(!infos || infos->isEmpty());
+    Q_ASSERT(!names || names->isEmpty());
+
+    const qsizetype n = l.size();
+    if (n == 0)
+        return;
+
+    if (n == 1 || (sort & QDir::SortByMask) == QDir::Unsorted) {
+        if (infos)
+            *infos = l;
+
+        if (names) {
+            for (const QFileInfo &fi : l)
+                names->append(fi.fileName());
+        }
+    } else {
+        QScopedArrayPointer<QDirSortItem> si(new QDirSortItem[n]);
+        for (qsizetype i = 0; i < n; ++i)
+            si[i] = QDirSortItem{l.at(i), sort};
+
+        std::sort(si.data(), si.data() + n, QDirSortItemComparator(sort));
+        // put them back in the list(s)
+        for (qsizetype i = 0; i < n; ++i) {
             if (infos)
-                *infos = l;
-            if (names) {
-                for (const QFileInfo &fi : l)
-                    names->append(fi.fileName());
-            }
-        } else {
-            QScopedArrayPointer<QDirSortItem> si(new QDirSortItem[n]);
-            for (qsizetype i = 0; i < n; ++i)
-                si[i].item = l.at(i);
-            std::sort(si.data(), si.data() + n, QDirSortItemComparator(sort));
-            // put them back in the list(s)
-            if (infos) {
-                for (qsizetype i = 0; i < n; ++i)
-                    infos->append(si[i].item);
-            }
-            if (names) {
-                for (qsizetype i = 0; i < n; ++i)
-                    names->append(si[i].item.fileName());
-            }
+                infos->append(si[i].item);
+            if (names)
+                names->append(si[i].item.fileName());
         }
     }
 }
