@@ -75,6 +75,9 @@ if (str == QString("auto") || str == QString("extern")
 }
 //! [4]
 
+//! [4bis]
+str.append("Hello ").append("World");
+//! [4bis]
 
 //! [5]
 if (str == QLatin1String("auto")
