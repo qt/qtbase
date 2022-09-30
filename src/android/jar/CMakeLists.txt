@@ -1,4 +1,4 @@
-# Copyright (C) 2022 The Qt Company Ltd.
+# Copyright (C) 2023 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
 set(java_sources
@@ -9,6 +9,9 @@ set(java_sources
     src/org/qtproject/qt/android/EditPopupMenu.java
     src/org/qtproject/qt/android/ExtractStyle.java
     src/org/qtproject/qt/android/QtActivityDelegate.java
+    src/org/qtproject/qt/android/QtLoader.java
+    src/org/qtproject/qt/android/QtActivityLoader.java
+    src/org/qtproject/qt/android/QtServiceLoader.java
     src/org/qtproject/qt/android/QtEditText.java
     src/org/qtproject/qt/android/QtInputConnection.java
     src/org/qtproject/qt/android/QtLayout.java

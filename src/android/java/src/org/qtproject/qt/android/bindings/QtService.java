@@ -1,4 +1,4 @@
-// Copyright (C) 2022 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // Copyright (c) 2016, BogDan Vatra <bogdan@kde.org>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
@@ -12,10 +12,12 @@ import android.os.Bundle;
 import android.os.IBinder;
 
 import org.qtproject.qt.android.QtNative;
+import org.qtproject.qt.android.QtServiceLoader;
+import org.qtproject.qt.android.QtLoader;
 
 public class QtService extends Service
 {
-    QtServiceLoader m_loader = new QtServiceLoader(this);
+    QtServiceLoader m_loader = new QtServiceLoader(this, QtService.class);
 
 
     /////////////////////////// forward all notifications ////////////////////////////
@@ -47,14 +49,14 @@ public class QtService extends Service
     public void onDestroy()
     {
         super.onDestroy();
-        QtApplication.invokeDelegate();
+        QtLoader.invokeDelegate();
     }
     //---------------------------------------------------------------------------
 
     @Override
     public IBinder onBind(Intent intent)
     {
-        QtApplication.InvokeResult res = QtApplication.invokeDelegate(intent);
+        QtLoader.InvokeResult res = QtLoader.invokeDelegate(intent);
         if (res.invoked)
             return (IBinder)res.methodReturns;
         else
@@ -65,7 +67,7 @@ public class QtService extends Service
     @Override
     public void onConfigurationChanged(Configuration newConfig)
     {
-        if (!QtApplication.invokeDelegate(newConfig).invoked)
+        if (!QtLoader.invokeDelegate(newConfig).invoked)
             super.onConfigurationChanged(newConfig);
     }
     public void super_onConfigurationChanged(Configuration newConfig)
@@ -77,7 +79,7 @@ public class QtService extends Service
     @Override
     public void onLowMemory()
     {
-        if (!QtApplication.invokeDelegate().invoked)
+        if (!QtLoader.invokeDelegate().invoked)
             super.onLowMemory();
     }
     //---------------------------------------------------------------------------
@@ -85,7 +87,7 @@ public class QtService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        QtApplication.InvokeResult res = QtApplication.invokeDelegate(intent, flags, startId);
+        QtLoader.InvokeResult res = QtLoader.invokeDelegate(intent, flags, startId);
         if (res.invoked)
             return (Integer) res.methodReturns;
         else
@@ -100,7 +102,7 @@ public class QtService extends Service
     @Override
     public void onTaskRemoved(Intent rootIntent)
     {
-        if (!QtApplication.invokeDelegate(rootIntent).invoked)
+        if (!QtLoader.invokeDelegate(rootIntent).invoked)
             super.onTaskRemoved(rootIntent);
     }
     public void super_onTaskRemoved(Intent rootIntent)
@@ -112,7 +114,7 @@ public class QtService extends Service
     @Override
     public void onTrimMemory(int level)
     {
-        if (!QtApplication.invokeDelegate(level).invoked)
+        if (!QtLoader.invokeDelegate(level).invoked)
             super.onTrimMemory(level);
     }
     public void super_onTrimMemory(int level)
@@ -124,7 +126,7 @@ public class QtService extends Service
     @Override
     public boolean onUnbind(Intent intent)
     {
-        QtApplication.InvokeResult res = QtApplication.invokeDelegate(intent);
+        QtLoader.InvokeResult res = QtLoader.invokeDelegate(intent);
         if (res.invoked)
             return (Boolean) res.methodReturns;
         else

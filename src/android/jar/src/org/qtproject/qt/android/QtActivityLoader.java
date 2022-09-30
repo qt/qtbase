@@ -1,30 +1,24 @@
-// Copyright (C) 2022 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // Copyright (c) 2016, BogDan Vatra <bogdan@kde.org>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-package org.qtproject.qt.android.bindings;
+package org.qtproject.qt.android;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
-
-import org.qtproject.qt.android.QtNative;
 
 import java.lang.reflect.Field;
 
 public class QtActivityLoader extends QtLoader {
-    QtActivity m_activity;
+    Activity m_activity;
 
-    QtActivityLoader(QtActivity activity)
+    public QtActivityLoader(Activity activity, Class<?> clazz)
     {
-        super(activity, QtActivity.class);
+        super(activity, clazz);
         m_activity = activity;
     }
 
@@ -60,7 +54,8 @@ public class QtActivityLoader extends QtLoader {
 
     public void onCreate(Bundle savedInstanceState) {
         try {
-            m_contextInfo = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(), PackageManager.GET_META_DATA);
+            m_contextInfo = m_activity.getPackageManager().getActivityInfo(
+                    m_activity.getComponentName(), PackageManager.GET_META_DATA);
             int theme = ((ActivityInfo)m_contextInfo).getThemeResource();
             for (Field f : Class.forName("android.R$style").getDeclaredFields()) {
                 if (f.getInt(null) == theme) {
@@ -76,7 +71,8 @@ public class QtActivityLoader extends QtLoader {
         }
 
         try {
-            m_activity.setTheme(Class.forName("android.R$style").getDeclaredField(QT_ANDROID_DEFAULT_THEME).getInt(null));
+            m_activity.setTheme(Class.forName("android.R$style").getDeclaredField(
+                    QT_ANDROID_DEFAULT_THEME).getInt(null));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -93,8 +89,8 @@ public class QtActivityLoader extends QtLoader {
             }
 
             // there can only be a valid delegate object if the QtNative was started.
-            if (QtApplication.m_delegateObject != null && QtApplication.onCreate != null)
-                QtApplication.invokeDelegateMethod(QtApplication.onCreate, savedInstanceState);
+            if (m_delegateObject != null && onCreate != null)
+                invokeDelegateMethod(onCreate, savedInstanceState);
 
             return;
         }

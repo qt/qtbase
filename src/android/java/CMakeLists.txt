@@ -1,4 +1,4 @@
-# Copyright (C) 2022 The Qt Company Ltd.
+# Copyright (C) 2023 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
 # Android Java Resource files
@@ -10,11 +10,8 @@ set(resource_directories
 
 set(java_bindings
     "${CMAKE_CURRENT_SOURCE_DIR}/src/org/qtproject/qt/android/bindings/QtActivity.java"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/org/qtproject/qt/android/bindings/QtActivityLoader.java"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/org/qtproject/qt/android/bindings/QtService.java"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/org/qtproject/qt/android/bindings/QtServiceLoader.java"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/org/qtproject/qt/android/bindings/QtApplication.java"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/org/qtproject/qt/android/bindings/QtLoader.java"
 )
 
 set(strings_resouces
@@ -56,4 +53,14 @@ if(NOT QT_WILL_INSTALL)
     qt_internal_copy_at_build_time(TARGET Qt${QtBase_VERSION_MAJOR}AndroidBindings
         DIRECTORIES ${resource_directories}
         DESTINATION ${destination})
+endif()
+
+# To avoid Java build errors after the loader classes have been moved to the internal Jar package,
+# make this step to remove them from the build folder. This mainly useful for existing builds,
+# as clean builds wouldn't have to deal with this case.
+if ("${PROJECT_VERSION}" GREATER_EQUAL "6.7")
+    set(loader_bindings "QtLoader.java" "QtActivityLoader.java" "QtServiceLoader.java")
+    foreach(binding IN LISTS loader_bindings)
+        file(REMOVE "${destination}/src/org/qtproject/qt/android/bindings/${binding}")
+    endforeach()
 endif()
