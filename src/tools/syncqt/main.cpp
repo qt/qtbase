@@ -1208,7 +1208,7 @@ public:
         if (!(skipChecks & WeMeantItChecks) && !hasWeMeantIt) {
             faults |= WeMeantItChecks;
             std::cerr << m_commandLineArgs->moduleName() << ": WARNING: " << m_currentFilename
-                      << " does not have the \"We mean it.\" warning\n"
+                      << " does not have the \"We mean it.\" warning"
                       << std::endl;
         }
 
