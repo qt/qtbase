@@ -179,6 +179,8 @@ public:
 
     bool showOnly() const { return m_showOnly; }
 
+    bool warningsAreErrors() const { return m_warningsAreErrors; }
+
     void printHelp() const
     {
         std::cout << "Usage: syncqt -sourceDir <dir> -binaryDir <dir> -module <module name>"
@@ -234,6 +236,7 @@ public:
                      "  -minimal                        Do not create CaMeL case headers for the\n"
                      "                                  public C++ symbols.\n"
                      "  -showonly                       Show actions, but not perform them.\n"
+                     "  -warningsAreErrors              Treat all warnings as errors.\n"
                      "  -help                           Print this help.\n";
     }
 
@@ -286,6 +289,7 @@ private:
             { "-internal", { &m_isInternal, true } }, { "-all", { &m_scanAllMode, true } },
             { "-copy", { &m_copy, true } },           { "-minimal", { &m_minimal, true } },
             { "-showonly", { &m_showOnly, true } },   { "-showOnly", { &m_showOnly, true } },
+            { "-warningsAreErrors", { &m_warningsAreErrors, true } }
         };
 
         std::string *currentValue = nullptr;
@@ -431,6 +435,7 @@ private:
     bool m_debug = false;
     bool m_minimal = false;
     bool m_showOnly = false;
+    bool m_warningsAreErrors = false;
     std::regex m_qpaHeadersRegex;
     std::regex m_privateHeadersRegex;
     std::regex m_publicNamespaceRegex;
@@ -505,6 +510,8 @@ class SyncScanner
     enum FileType { PublicHeader = 0, PrivateHeader = 1, QpaHeader = 2, ExportHeader = 4 };
     unsigned int m_currentFileType = PublicHeader;
 
+    int m_criticalChecks = CriticalChecks;
+
 public:
     SyncScanner(CommandLineOptions *commandLineArgs)
         : m_commandLineArgs(commandLineArgs), m_masterHeaderContents(MasterHeaderIncludeComparator)
@@ -519,6 +526,7 @@ public:
 
     ErrorCodes sync()
     {
+        m_criticalChecks = m_commandLineArgs->warningsAreErrors() ? AllChecks : CriticalChecks;
         m_versionScriptGeneratorState =
                 m_commandLineArgs->versionScriptFile().empty() ? Stopped : Active;
         auto error = NoError;
@@ -1123,10 +1131,10 @@ public:
                                       << " includes private header " << includedHeader << std::endl;
                         }
                         for (const auto &module : m_commandLineArgs->knownModules()) {
-                            faults |= IncludeChecks;
                             std::string suggestedHeader = "Qt" + module + '/' + includedHeader;
                             if (std::filesystem::exists(m_commandLineArgs->includeDir() + "/../"
                                                         + suggestedHeader)) {
+                                faults |= IncludeChecks;
                                 std::cerr << m_commandLineArgs->moduleName()
                                           << ": WARNING: " << m_currentFilename << " includes "
                                           << includedHeader << " when it should include "
@@ -1211,7 +1219,7 @@ public:
             m_headerCheckExceptions.push_back(m_currentFileString);
 
         // Exit with an error if any of critical checks are present.
-        return !(faults & CriticalChecks);
+        return !(faults & m_criticalChecks);
     }
 
     // The function checks if line contains the symbol that needs to have a CaMeL-style alias.

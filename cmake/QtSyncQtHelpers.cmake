@@ -319,6 +319,10 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
         list(APPEND common_syncqt_arguments -debug)
     endif()
 
+    set(build_time_syncqt_arguments "")
+    if(WARNINGS_ARE_ERRORS)
+        list(APPEND build_time_syncqt_arguments -warningsAreErrors)
+    endif()
 
     if(is_framework)
         list(REMOVE_ITEM module_headers "${CMAKE_CURRENT_BINARY_DIR}/${target}_fake_header.h")
@@ -344,6 +348,7 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
         COMMAND
             ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
             ${common_syncqt_arguments}
+            ${build_time_syncqt_arguments}
             -headers "@${module_headers_rsp}"
             -generatedHeaders "@${module_headers_generated_rsp}"
             -stagingDir "${syncqt_staging_dir}"
@@ -428,7 +433,10 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
         )
         if(NOT syncqt_result EQUAL 0)
             message(FATAL_ERROR
-                "Unable to execute syncqt.cpp for module ${target}: ${syncqt_output}")
+                "syncqt.cpp failed for module ${module}:\n${syncqt_output}")
+        endif()
+        if(syncqt_output)
+            message("${syncqt_output}")
         endif()
         set_property(GLOBAL APPEND PROPERTY _qt_synced_modules ${module})
     endif()
