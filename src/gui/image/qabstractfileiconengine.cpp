@@ -61,7 +61,7 @@ QSize QAbstractFileIconEngine::actualSize(const QSize &size, QIcon::Mode mode,
                                           QIcon::State state)
 {
     const QList<QSize> &sizes = availableSizes(mode, state);
-    const int numberSizes = sizes.length();
+    const int numberSizes = sizes.size();
     if (numberSizes == 0)
         return QSize();
 

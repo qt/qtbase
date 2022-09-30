@@ -192,7 +192,7 @@ static QPixmapIconEngineEntry *bestSizeScaleMatch(const QSize &size, qreal scale
 QPixmapIconEngineEntry *QPixmapIconEngine::tryMatch(const QSize &size, qreal scale, QIcon::Mode mode, QIcon::State state)
 {
     QPixmapIconEngineEntry *pe = nullptr;
-    for (int i = 0; i < pixmaps.count(); ++i)
+    for (int i = 0; i < pixmaps.size(); ++i)
         if (pixmaps.at(i).mode == mode && pixmaps.at(i).state == state) {
             if (pe)
                 pe = bestSizeScaleMatch(size, scale, &pixmaps[i], pe);
@@ -269,7 +269,7 @@ QPixmap QPixmapIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIc
         pm = pe->pixmap;
 
     if (pm.isNull()) {
-        int idx = pixmaps.count();
+        int idx = pixmaps.size();
         while (--idx >= 0) {
             if (pe == &pixmaps.at(idx)) {
                 pixmaps.remove(idx);

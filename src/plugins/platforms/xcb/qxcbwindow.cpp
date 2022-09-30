@@ -168,7 +168,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         tp.value = (uchar*)qcs.data();
         tp.encoding = XA_STRING;
         tp.format = 8;
-        tp.nitems = qcs.length();
+        tp.nitems = qcs.size();
         free_prop = false;
     }
     return &tp;
@@ -1081,7 +1081,7 @@ void QXcbWindow::setNetWmStateOnUnmappedWindow()
     } else {
         xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
                             atom(QXcbAtom::_NET_WM_STATE), XCB_ATOM_ATOM, 32,
-                            atoms.count(), atoms.constData());
+                            atoms.size(), atoms.constData());
     }
     xcb_flush(xcb_connection());
 }
@@ -1265,7 +1265,7 @@ void QXcbWindow::setWindowIconText(const QString &title)
                         atom(QXcbAtom::_NET_WM_ICON_NAME),
                         atom(QXcbAtom::UTF8_STRING),
                         8,
-                        ba.length(),
+                        ba.size(),
                         ba.constData());
 }
 
@@ -1577,7 +1577,7 @@ void QXcbWindow::setWmWindowType(WindowTypes types, Qt::WindowFlags flags)
     } else {
         xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
                             atom(QXcbAtom::_NET_WM_WINDOW_TYPE), XCB_ATOM_ATOM, 32,
-                            atoms.count(), atoms.constData());
+                            atoms.size(), atoms.constData());
     }
     xcb_flush(xcb_connection());
 }
@@ -2549,7 +2549,7 @@ void QXcbWindow::setWindowTitle(const QXcbConnection *conn, xcb_window_t window,
                         conn->atom(QXcbAtom::_NET_WM_NAME),
                         conn->atom(QXcbAtom::UTF8_STRING),
                         8,
-                        ba.length(),
+                        ba.size(),
                         ba.constData());
 
 #if QT_CONFIG(xcb_xlib)

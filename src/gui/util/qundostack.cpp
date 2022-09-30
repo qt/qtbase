@@ -286,7 +286,7 @@ void QUndoCommand::setText(const QString &text)
 
 int QUndoCommand::childCount() const
 {
-    return d->child_list.count();
+    return d->child_list.size();
 }
 
 /*!
@@ -299,7 +299,7 @@ int QUndoCommand::childCount() const
 
 const QUndoCommand *QUndoCommand::child(int index) const
 {
-    if (index < 0 || index >= d->child_list.count())
+    if (index < 0 || index >= d->child_list.size())
         return nullptr;
     return d->child_list.at(index);
 }
@@ -444,10 +444,10 @@ void QUndoStackPrivate::setIndex(int idx, bool clean)
 
 bool QUndoStackPrivate::checkUndoLimit()
 {
-    if (undo_limit <= 0 || !macro_stack.isEmpty() || undo_limit >= command_list.count())
+    if (undo_limit <= 0 || !macro_stack.isEmpty() || undo_limit >= command_list.size())
         return false;
 
-    int del_count = command_list.count() - undo_limit;
+    int del_count = command_list.size() - undo_limit;
 
     for (int i = 0; i < del_count; ++i)
         delete command_list.takeFirst();
@@ -1142,7 +1142,7 @@ void QUndoStack::beginMacro(const QString &text)
     }
     d->macro_stack.append(cmd);
 
-    if (d->macro_stack.count() == 1) {
+    if (d->macro_stack.size() == 1) {
         emit canUndoChanged(false);
         emit undoTextChanged(QString());
         emit canRedoChanged(false);
@@ -1191,7 +1191,7 @@ const QUndoCommand *QUndoStack::command(int index) const
 {
     Q_D(const QUndoStack);
 
-    if (index < 0 || index >= d->command_list.count())
+    if (index < 0 || index >= d->command_list.size())
         return nullptr;
     return d->command_list.at(index);
 }

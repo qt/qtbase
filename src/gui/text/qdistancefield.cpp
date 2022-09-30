@@ -530,14 +530,14 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
                                  || (to.y() < offs << 8) || (to.y() >= (imgHeight - offs) << 8));
         }
 
-        isConvex.resize(normals.count());
-        for (int next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++) {
+        isConvex.resize(normals.size());
+        for (int next = 0, prev = normals.size() - 1; next < normals.size(); prev = next++) {
             isConvex[prev] = normals.at(prev).x() * normals.at(next).y()
                            - normals.at(prev).y() * normals.at(next).x() < 0;
         }
 
         // Draw quads.
-        for (int next = 0, prev = normals.count() - 1; next < normals.count(); prev = next++) {
+        for (int next = 0, prev = normals.size() - 1; next < normals.size(); prev = next++) {
             QPoint n = normals.at(next);
             QPoint intPrev = vertices.at(prev);
             QPoint extPrev = vertices.at(prev);

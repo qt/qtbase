@@ -73,7 +73,7 @@ void tst_QRegularExpressionValidator::validate()
 
     QTEST(result, "state");
     if (result == QValidator::Invalid)
-        QCOMPARE(pos, value.length());
+        QCOMPARE(pos, value.size());
     else
         QCOMPARE(pos, -1); // ensure pos is not modified if validate returned Acceptable or Intermediate
 

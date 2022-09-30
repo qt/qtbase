@@ -266,7 +266,7 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
         for (const QByteArray &ba : qAsConst(m_enabledLayers))
             layerNameVec.append(ba.constData());
         if (!layerNameVec.isEmpty()) {
-            instInfo.enabledLayerCount = layerNameVec.count();
+            instInfo.enabledLayerCount = layerNameVec.size();
             instInfo.ppEnabledLayerNames = layerNameVec.constData();
         }
 
@@ -274,7 +274,7 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
         for (const QByteArray &ba : qAsConst(m_enabledExtensions))
             extNameVec.append(ba.constData());
         if (!extNameVec.isEmpty()) {
-            instInfo.enabledExtensionCount = extNameVec.count();
+            instInfo.enabledExtensionCount = extNameVec.size();
             instInfo.ppEnabledExtensionNames = extNameVec.constData();
         }
 

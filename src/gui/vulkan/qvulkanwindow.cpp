@@ -335,7 +335,7 @@ void QVulkanWindow::setPhysicalDeviceIndex(int idx)
         qWarning("QVulkanWindow: Attempted to set physical device when already initialized");
         return;
     }
-    const int count = availablePhysicalDevices().count();
+    const int count = availablePhysicalDevices().size();
     if (idx < 0 || idx >= count) {
         qWarning("QVulkanWindow: Invalid physical device index %d (total physical devices: %d)", idx, count);
         return;
@@ -581,7 +581,7 @@ void QVulkanWindowPrivate::init()
         return;
     }
 
-    if (physDevIndex < 0 || physDevIndex >= physDevs.count()) {
+    if (physDevIndex < 0 || physDevIndex >= physDevs.size()) {
         qWarning("QVulkanWindow: Invalid physical device index; defaulting to 0");
         physDevIndex = 0;
     }
@@ -600,7 +600,7 @@ void QVulkanWindowPrivate::init()
     f->vkGetPhysicalDeviceQueueFamilyProperties(physDev, &queueCount, queueFamilyProps.data());
     gfxQueueFamilyIdx = uint32_t(-1);
     presQueueFamilyIdx = uint32_t(-1);
-    for (int i = 0; i < queueFamilyProps.count(); ++i) {
+    for (int i = 0; i < queueFamilyProps.size(); ++i) {
         const bool supportsPresent = inst->supportsPresent(physDev, i, q);
         qCDebug(lcGuiVk, "queue family %d: flags=0x%x count=%d supportsPresent=%d", i,
                 queueFamilyProps[i].queueFlags, queueFamilyProps[i].queueCount, supportsPresent);
@@ -613,7 +613,7 @@ void QVulkanWindowPrivate::init()
         presQueueFamilyIdx = gfxQueueFamilyIdx;
     } else {
         qCDebug(lcGuiVk, "No queue with graphics+present; trying separate queues");
-        for (int i = 0; i < queueFamilyProps.count(); ++i) {
+        for (int i = 0; i < queueFamilyProps.size(); ++i) {
             if (gfxQueueFamilyIdx == uint32_t(-1) && (queueFamilyProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT))
                 gfxQueueFamilyIdx = i;
             if (presQueueFamilyIdx == uint32_t(-1) && inst->supportsPresent(physDev, i, q))
@@ -699,7 +699,7 @@ void QVulkanWindowPrivate::init()
     devInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     devInfo.queueCreateInfoCount = queueInfo.size();
     devInfo.pQueueCreateInfos = queueInfo.constData();
-    devInfo.enabledExtensionCount = devExts.count();
+    devInfo.enabledExtensionCount = devExts.size();
     devInfo.ppEnabledExtensionNames = devExts.constData();
 
     VkPhysicalDeviceFeatures features;
@@ -2273,7 +2273,7 @@ void QVulkanWindowPrivate::finishBlockingReadback()
 VkPhysicalDevice QVulkanWindow::physicalDevice() const
 {
     Q_D(const QVulkanWindow);
-    if (d->physDevIndex < d->physDevs.count())
+    if (d->physDevIndex < d->physDevs.size())
         return d->physDevs[d->physDevIndex];
     qWarning("QVulkanWindow: Physical device not available");
     return VK_NULL_HANDLE;
@@ -2289,7 +2289,7 @@ VkPhysicalDevice QVulkanWindow::physicalDevice() const
 const VkPhysicalDeviceProperties *QVulkanWindow::physicalDeviceProperties() const
 {
     Q_D(const QVulkanWindow);
-    if (d->physDevIndex < d->physDevProps.count())
+    if (d->physDevIndex < d->physDevProps.size())
         return &d->physDevProps[d->physDevIndex];
     qWarning("QVulkanWindow: Physical device properties not available");
     return nullptr;

@@ -55,7 +55,7 @@ public:
 
     void climbTree(const QRect &rect, callback *function, QBspTreeData data);
 
-    inline int leafCount() const { return leaves.count(); }
+    inline int leafCount() const { return leaves.size(); }
     inline QList<int> &leaf(int i) { return leaves[i]; }
     inline void insertLeaf(const QRect &r, int i) { climbTree(r, &insert, i, 0); }
     inline void removeLeaf(const QRect &r, int i) { climbTree(r, &remove, i, 0); }

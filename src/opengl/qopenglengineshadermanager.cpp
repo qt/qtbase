@@ -431,7 +431,7 @@ QOpenGLEngineShaderProg *QOpenGLEngineSharedShaders::findProgramInCache(const QO
             newProg->program->setUniformValue(location, QT_MASK_TEXTURE_UNIT);
         }
 
-        if (cachedPrograms.count() > 30) {
+        if (cachedPrograms.size() > 30) {
             // The cache is full, so delete the last 5 programs in the list.
             // These programs will be least used, as a program us bumped to
             // the top of the list when it's used.

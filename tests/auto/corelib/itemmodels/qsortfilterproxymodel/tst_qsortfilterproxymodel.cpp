@@ -2386,8 +2386,8 @@ void tst_QSortFilterProxyModel::sortFilterRole()
 
     const QList<int> orderedItems({2, 1});
 
-    model.insertRows(0, sourceItems.count());
-    for (int i = 0; i < sourceItems.count(); ++i) {
+    model.insertRows(0, sourceItems.size());
+    for (int i = 0; i < sourceItems.size(); ++i) {
         QModelIndex index = model.index(i, 0, QModelIndex());
         model.setData(index, sourceItems.at(i).first, Qt::DisplayRole);
         model.setData(index, sourceItems.at(i).second, Qt::UserRole);
@@ -2417,7 +2417,7 @@ void tst_QSortFilterProxyModel::sortFilterRole()
     proxy.setFilterRole(Qt::DisplayRole);
     setupFilter(&proxy, QLatin1String("a|c"));
 
-    QCOMPARE(proxy.rowCount(), orderedItems.count());
+    QCOMPARE(proxy.rowCount(), orderedItems.size());
     for (int i = 0; i < proxy.rowCount(); ++i) {
         QModelIndex index = proxy.index(i, 0, QModelIndex());
         QCOMPARE(proxy.data(index, Qt::DisplayRole), sourceItems.at(orderedItems.at(i)).first);
@@ -2805,7 +2805,7 @@ void tst_QSortFilterProxyModel::sortColumnTracking2()
     model.insertColumn(0,items);
     QCOMPARE(proxyModel.sortColumn(), 0);
     QCOMPARE(proxyModel.data(proxyModel.index(0,0)).toString(),QString::fromLatin1("aa"));
-    const int zzIndex = items.count() - 3; // 2 invalid at end.
+    const int zzIndex = items.size() - 3; // 2 invalid at end.
     QCOMPARE(proxyModel.data(proxyModel.index(zzIndex,0)).toString(),QString::fromLatin1("zz"));
 }
 
@@ -3227,7 +3227,7 @@ void tst_QSortFilterProxyModel::removeRowsRecursive()
 
     QList<QStandardItem*> itemRow = pItem1->takeRow(0);
 
-    QCOMPARE(itemRow.count(), 1);
+    QCOMPARE(itemRow.size(), 1);
     QCOMPARE(itemRow.first(), pItem11);
 
     for (const auto &pidx : qAsConst(sourceIndexes))

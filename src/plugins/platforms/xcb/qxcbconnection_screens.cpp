@@ -219,7 +219,7 @@ QXcbScreen *QXcbConnection::createScreen(QXcbVirtualDesktop *virtualDesktop,
 void QXcbConnection::destroyScreen(QXcbScreen *screen)
 {
     QXcbVirtualDesktop *virtualDesktop = screen->virtualDesktop();
-    if (virtualDesktop->screens().count() == 1) {
+    if (virtualDesktop->screens().size() == 1) {
         // If there are no other screens on the same virtual desktop,
         // then transform the physical screen into a fake screen.
         const QString nameWas = screen->name();

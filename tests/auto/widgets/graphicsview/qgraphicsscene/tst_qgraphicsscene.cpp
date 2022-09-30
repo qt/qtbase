@@ -3664,8 +3664,8 @@ void tst_QGraphicsScene::insertionOrder()
 
     {
         QList<QGraphicsItem*> itemList = scene.items();
-        QCOMPARE(itemList.count(), numItems);
-        for (int i = 0; i < itemList.count(); ++i) {
+        QCOMPARE(itemList.size(), numItems);
+        for (int i = 0; i < itemList.size(); ++i) {
             QCOMPARE(numItems-1-i, itemList.at(i)->data(0).toInt());
         }
     }
@@ -3678,8 +3678,8 @@ void tst_QGraphicsScene::insertionOrder()
 
     {
         QList<QGraphicsItem*> itemList = scene.items();
-        QCOMPARE(itemList.count(), numItems);
-        for (int i = 0; i < itemList.count(); ++i) {
+        QCOMPARE(itemList.size(), numItems);
+        for (int i = 0; i < itemList.size(); ++i) {
             QCOMPARE(numItems-1-i, itemList.at(i)->data(0).toInt());
         }
     }
@@ -4027,7 +4027,7 @@ void tst_QGraphicsScene::polishItems2()
     // added 10 new children. These should be polished in the next
     // event loop iteration.
     const QList<QGraphicsItem *> children = item->childItems();
-    QCOMPARE(children.count(), 10);
+    QCOMPARE(children.size(), 10);
     for (QGraphicsItem *child : children)
         QVERIFY(!static_cast<PolishItem *>(child)->polished);
 
@@ -4606,13 +4606,13 @@ void tst_QGraphicsScene::zeroScale()
     rect1->setScale(0.00000001);
 
     QApplication::processEvents();
-    QTRY_COMPARE(cl.changes.count(), 1);
+    QTRY_COMPARE(cl.changes.size(), 1);
     QGraphicsRectItem *rect2 = new QGraphicsRectItem(-0.0000001, -0.0000001, 0.0000001, 0.0000001);
     rect2->setScale(0.00000001);
     scene.addItem(rect2);
     rect1->setPos(20,20);
     QApplication::processEvents();
-    QTRY_COMPARE(cl.changes.count(), 2);
+    QTRY_COMPARE(cl.changes.size(), 2);
 }
 
 void tst_QGraphicsScene::focusItemChangedSignal()
@@ -4867,11 +4867,11 @@ void tst_QGraphicsScene::clearSelection()
 
     QCOMPARE(spy.count(), 2);
 
-    QCOMPARE(scene.selectedItems().count(), 2);
+    QCOMPARE(scene.selectedItems().size(), 2);
     scene.clearSelection();
     QVERIFY(!regularRect->isSelected());
     QVERIFY(selectedRect->isSelected());
-    QCOMPARE(scene.selectedItems().count(), 1);
+    QCOMPARE(scene.selectedItems().size(), 1);
     QCOMPARE(spy.count(), 3);
 
     delete regularRect;

@@ -736,7 +736,7 @@ public:
                 if (d) {
                     QByteArray x = d->readAll();
                     if (x != longString && x != longString2) {
-                        qDebug() << x.length() << QString(x);
+                        qDebug() << x.size() << QString(x);
                         gotMetaData = cache.metaData(url);
                         qDebug() << (gotMetaData.url().toString())
                          << gotMetaData.lastModified()

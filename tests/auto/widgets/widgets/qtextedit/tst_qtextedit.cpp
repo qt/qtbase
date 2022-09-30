@@ -519,9 +519,9 @@ void tst_QTextEdit::clearShouldClearExtraSelections()
     sel.cursor = ed->textCursor();
     sel.format.setProperty(QTextFormat::FullWidthSelection, true);
     ed->setExtraSelections(QList<QTextEdit::ExtraSelection>() << sel);
-    QCOMPARE(ed->extraSelections().count(), 1);
+    QCOMPARE(ed->extraSelections().size(), 1);
     ed->clear();
-    QCOMPARE(ed->extraSelections().count(), 0);
+    QCOMPARE(ed->extraSelections().size(), 0);
 }
 
 void tst_QTextEdit::paragSeparatorOnPlaintextAppend()
@@ -754,7 +754,7 @@ void tst_QTextEdit::cursorPositionChanged()
     CursorPositionChangedRecorder spy2(ed);
     QVERIFY(ed->textCursor().position() > 0);
     ed->setPlainText("Hello World");
-    QCOMPARE(spy2.cursorPositions.count(), 1);
+    QCOMPARE(spy2.cursorPositions.size(), 1);
     QCOMPARE(spy2.cursorPositions.at(0), 0);
     QCOMPARE(ed->textCursor().position(), 0);
 }
@@ -1041,7 +1041,7 @@ void tst_QTextEdit::noPropertiesOnDefaultTextEditCharFormat()
     // on a text edit. Font properties instead should be taken from the
     // widget's font (in sync with defaultFont property in document) and the
     // foreground color should be taken from the palette.
-    QCOMPARE(ed->currentCharFormat().properties().count(), 0);
+    QCOMPARE(ed->currentCharFormat().properties().size(), 0);
 }
 
 void tst_QTextEdit::setPlainTextShouldUseCurrentCharFormat()
@@ -1379,7 +1379,7 @@ void tst_QTextEdit::copyAvailable()
     //Compare spied signals
     QEXPECT_FAIL("Case7 T,A,A, <- + shift, <- + shift, <- + shift, ctrl + x, undo() | signals: true, false, true",
         "Wrong undo selection behaviour. Should be fixed in some future release. (See task: 132482)", Abort);
-    QCOMPARE(spyCopyAvailabe.count(), copyAvailable.count());
+    QCOMPARE(spyCopyAvailabe.count(), copyAvailable.size());
     for (int i=0;i<spyCopyAvailabe.count(); i++) {
         QVariant variantSpyCopyAvailable = spyCopyAvailabe.at(i).at(0);
         QVERIFY2(variantSpyCopyAvailable.toBool() == copyAvailable.at(i), QString("Spied singnal: %1").arg(i).toLatin1());
@@ -1694,7 +1694,7 @@ void tst_QTextEdit::ensureVisibleWithRtl()
     ed->setLayoutDirection(Qt::RightToLeft);
     ed->setLineWrapMode(QTextEdit::NoWrap);
     QString txt(500, QChar(QLatin1Char('a')));
-    QCOMPARE(txt.length(), 500);
+    QCOMPARE(txt.size(), 500);
     ed->setPlainText(txt);
     ed->resize(100, 100);
     ed->show();
@@ -1745,7 +1745,7 @@ void tst_QTextEdit::extraSelections()
     ed->setExtraSelections(QList<QTextEdit::ExtraSelection>() << sel);
 
     QList<QTextEdit::ExtraSelection> selections = ed->extraSelections();
-    QCOMPARE(selections.count(), 1);
+    QCOMPARE(selections.size(), 1);
     QCOMPARE(selections.at(0).cursor.position(), endPos);
     QCOMPARE(selections.at(0).cursor.anchor(), wordPos);
 }
@@ -2588,7 +2588,7 @@ void tst_QTextEdit::inputMethodQuery()
     QGuiApplication::sendEvent(ed, &event);
     int anchor = event.value(Qt::ImAnchorPosition).toInt();
     int position = event.value(Qt::ImCursorPosition).toInt();
-    QCOMPARE(qAbs(position - anchor), text.length());
+    QCOMPARE(qAbs(position - anchor), text.size());
     QCOMPARE(event.value(Qt::ImEnabled).toBool(), true);
 
     ed->setEnabled(false);

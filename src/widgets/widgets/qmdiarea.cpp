@@ -750,7 +750,7 @@ void QMdiAreaPrivate::_q_currentTabChanged(int index)
 
     // If the previous active sub-window was hidden, disable the tab.
     if (indexToLastActiveTab >= 0 && indexToLastActiveTab < tabBar->count()
-        && indexToLastActiveTab < childWindows.count()) {
+        && indexToLastActiveTab < childWindows.size()) {
         QMdiSubWindow *lastActive = childWindows.at(indexToLastActiveTab);
         if (lastActive && lastActive->isHidden())
             tabBar->setTabEnabled(indexToLastActiveTab, false);
@@ -824,7 +824,7 @@ void QMdiAreaPrivate::appendChild(QMdiSubWindow *child)
     if (tabBar) {
         tabBar->addTab(child->windowIcon(), tabTextFor(child));
         updateTabBarGeometry();
-        if (childWindows.count() == 1 && !(options & QMdiArea::DontMaximizeSubWindowOnActivation))
+        if (childWindows.size() == 1 && !(options & QMdiArea::DontMaximizeSubWindowOnActivation))
             showActiveWindowMaximized = true;
     }
 #endif
@@ -919,7 +919,7 @@ void QMdiAreaPrivate::rearrange(Rearranger *rearranger)
 
     QRect domain = viewport->rect();
     if (rearranger->type() == Rearranger::RegularTiler && !widgets.isEmpty())
-        domain = resizeToMinimumTileSize(minSubWindowSize, widgets.count());
+        domain = resizeToMinimumTileSize(minSubWindowSize, widgets.size());
 
     rearranger->rearrange(widgets, domain);
 
@@ -1296,7 +1296,7 @@ bool QMdiAreaPrivate::scrollBarsEnabled() const
 */
 bool QMdiAreaPrivate::lastWindowAboutToBeDestroyed() const
 {
-    if (childWindows.count() != 1)
+    if (childWindows.size() != 1)
         return false;
 
     QMdiSubWindow *last = childWindows.at(0);
@@ -1372,7 +1372,7 @@ QMdiAreaPrivate::subWindowList(QMdiArea::WindowOrder order, bool reversed) const
         }
     } else { // ActivationHistoryOrder
         Q_ASSERT(indicesToActivatedChildren.size() == childWindows.size());
-        for (int i = indicesToActivatedChildren.count() - 1; i >= 0; --i) {
+        for (int i = indicesToActivatedChildren.size() - 1; i >= 0; --i) {
             QMdiSubWindow *child = childWindows.at(indicesToActivatedChildren.at(i));
             if (!child)
                 continue;
@@ -1761,7 +1761,7 @@ QMdiSubWindow *QMdiArea::currentSubWindow() const
     if (d->isActivated && !window()->isMinimized())
         return nullptr;
 
-    Q_ASSERT(d->indicesToActivatedChildren.count() > 0);
+    Q_ASSERT(d->indicesToActivatedChildren.size() > 0);
     int index = d->indicesToActivatedChildren.at(0);
     Q_ASSERT(index >= 0 && index < d->childWindows.size());
     QMdiSubWindow *current = d->childWindows.at(index);

@@ -156,8 +156,8 @@ QtTestModel::QtTestModel(const QList<QList<QString> > tbl, QObject *parent)
     : QAbstractItemModel(parent), wrongIndex(false)
 {
     table = tbl;
-    rCount = tbl.count();
-    cCount = tbl.at(0).count();
+    rCount = tbl.size();
+    cCount = tbl.at(0).size();
 }
 
 QModelIndex QtTestModel::index(int row, int column, const QModelIndex &parent) const
@@ -191,7 +191,7 @@ bool QtTestModel::insertRows(int row, int count, const QModelIndex &parent)
     QAbstractItemModel::beginInsertRows(parent, row, row + count - 1);
     int cc = columnCount(parent);
     table.insert(row, count, QList<QString>(cc));
-    rCount = table.count();
+    rCount = table.size();
     QAbstractItemModel::endInsertRows();
     return true;
 }
@@ -202,7 +202,7 @@ bool QtTestModel::insertColumns(int column, int count, const QModelIndex &parent
     int rc = rowCount(parent);
     for (int i = 0; i < rc; ++i)
         table[i].insert(column, 1, "");
-    cCount = table.at(0).count();
+    cCount = table.at(0).size();
     QAbstractItemModel::endInsertColumns();
     return true;
 }
@@ -218,7 +218,7 @@ bool QtTestModel::removeRows( int row, int count, const QModelIndex & parent)
 
     for (int r = row+count-1; r >= row; --r)
         table.remove(r);
-    rCount = table.count();
+    rCount = table.size();
 
     QAbstractItemModel::endRemoveRows();
     return true;
@@ -232,7 +232,7 @@ bool QtTestModel::removeColumns(int column, int count, const QModelIndex & paren
         for (int r = 0; r < rCount; ++r)
             table[r].remove(c);
 
-    cCount = table.at(0).count();
+    cCount = table.at(0).size();
 
     QAbstractItemModel::endRemoveColumns();
     return true;
@@ -260,7 +260,7 @@ bool QtTestModel::moveRows(const QModelIndex &sourceParent, int src, int cnt,
         }
     }
 
-    rCount = table.count();
+    rCount = table.size();
 
     QAbstractItemModel::endMoveRows();
     return true;
@@ -290,7 +290,7 @@ bool QtTestModel::moveColumns(const QModelIndex &sourceParent, int src, int cnt,
         }
     }
 
-    cCount = table.at(0).count();
+    cCount = table.at(0).size();
 
     QAbstractItemModel::endMoveColumns();
     return true;

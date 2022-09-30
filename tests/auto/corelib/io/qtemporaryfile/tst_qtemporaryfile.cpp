@@ -230,11 +230,11 @@ void tst_QTemporaryFile::fileTemplate()
     QVERIFY2(file.open(), qPrintable(file.errorString()));
 
     QString fileName = QFileInfo(file).fileName();
-    if (prefix.length())
-        QCOMPARE(fileName.left(prefix.length()), prefix);
+    if (prefix.size())
+        QCOMPARE(fileName.left(prefix.size()), prefix);
 
-    if (suffix.length())
-        QCOMPARE(fileName.right(suffix.length()), suffix);
+    if (suffix.size())
+        QCOMPARE(fileName.right(suffix.size()), suffix);
 }
 
 

@@ -372,13 +372,13 @@ public:
 void tst_QUuid::threadUniqueness()
 {
     QList<UuidThread *> threads(qMax(2, QThread::idealThreadCount()));
-    for (int i = 0; i < threads.count(); ++i)
+    for (int i = 0; i < threads.size(); ++i)
         threads[i] = new UuidThread;
-    for (int i = 0; i < threads.count(); ++i)
+    for (int i = 0; i < threads.size(); ++i)
         threads[i]->start();
-    for (int i = 0; i < threads.count(); ++i)
+    for (int i = 0; i < threads.size(); ++i)
         QVERIFY(threads[i]->wait(1000));
-    for (int i = 1; i < threads.count(); ++i)
+    for (int i = 1; i < threads.size(); ++i)
         QVERIFY(threads[0]->uuid != threads[i]->uuid);
     qDeleteAll(threads);
 }

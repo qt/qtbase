@@ -960,10 +960,10 @@ static void QBitArrayData(QBitArray *b, int index)
     case 18: filler = "1111111111111111111111111111111111111111111111111111111111111111"; break;
     }
 
-    b->resize(filler.length());
+    b->resize(filler.size());
     b->fill(0); // reset all bits to zero
 
-    for (int i = 0; i < filler.length(); ++i) {
+    for (int i = 0; i < filler.size(); ++i) {
         if (filler.at(i) == '1')
             b->setBit(i, true);
     }

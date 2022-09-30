@@ -26,7 +26,7 @@ public slots:
         signature = msg.signature();
         path = msg.path();
         value.clear();
-        if (msg.arguments().count())
+        if (msg.arguments().size())
             value = msg.arguments().at(0);
     }
 

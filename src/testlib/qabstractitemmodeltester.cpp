@@ -867,7 +867,7 @@ void QAbstractItemModelTesterPrivate::layoutChanged()
     MODELTESTER_COMPARE(changeInFlight, ChangeInFlight::LayoutChanged);
     changeInFlight = ChangeInFlight::None;
 
-    for (int i = 0; i < changing.count(); ++i) {
+    for (int i = 0; i < changing.size(); ++i) {
         QPersistentModelIndex p = changing[i];
         MODELTESTER_COMPARE(model->index(p.row(), p.column(), p.parent()), QModelIndex(p));
     }

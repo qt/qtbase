@@ -200,9 +200,9 @@ void QThreadPoolPrivate::enqueueTask(QRunnable *runnable, int priority)
 
 int QThreadPoolPrivate::activeThreadCount() const
 {
-    return (allThreads.count()
-            - expiredThreads.count()
-            - waitingThreads.count()
+    return (allThreads.size()
+            - expiredThreads.size()
+            - waitingThreads.size()
             + reservedThreads);
 }
 

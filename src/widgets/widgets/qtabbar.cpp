@@ -404,7 +404,7 @@ int QTabBarPrivate::indexAtPos(const QPoint &p) const
     Q_Q(const QTabBar);
     if (q->tabRect(currentIndex).contains(p))
         return currentIndex;
-    for (int i = 0; i < tabList.count(); ++i)
+    for (int i = 0; i < tabList.size(); ++i)
         if (tabList.at(i)->enabled && q->tabRect(i).contains(p))
             return i;
     return -1;
@@ -422,7 +422,7 @@ void QTabBarPrivate::layoutTabs()
     int hiddenTabs = 0;
 
     Qt::Alignment tabAlignment = Qt::Alignment(q->style()->styleHint(QStyle::SH_TabBar_Alignment, nullptr, q));
-    QList<QLayoutStruct> tabChain(tabList.count() + 2);
+    QList<QLayoutStruct> tabChain(tabList.size() + 2);
 
     // We put an empty item at the front and back and set its expansive attribute
     // depending on tabAlignment and expanding.
@@ -445,7 +445,7 @@ void QTabBarPrivate::layoutTabs()
         int minx = 0;
         int x = 0;
         int maxHeight = 0;
-        for (int i = 0; i < tabList.count(); ++i) {
+        for (int i = 0; i < tabList.size(); ++i) {
             const auto tab = tabList.at(i);
             if (!tab->visible) {
                 ++hiddenTabs;
@@ -476,7 +476,7 @@ void QTabBarPrivate::layoutTabs()
         int miny = 0;
         int y = 0;
         int maxWidth = 0;
-        for (int i = 0; i < tabList.count(); ++i) {
+        for (int i = 0; i < tabList.size(); ++i) {
             auto tab = tabList.at(i);
             if (!tab->visible) {
                 ++hiddenTabs;
@@ -511,14 +511,14 @@ void QTabBarPrivate::layoutTabs()
                                         && (tabAlignment != Qt::AlignRight)
                                         && (tabAlignment != Qt::AlignJustify);
     tabChain[tabChainIndex].empty = true;
-    Q_ASSERT(tabChainIndex == tabChain.count() - 1 - hiddenTabs); // add an assert just to make sure.
+    Q_ASSERT(tabChainIndex == tabChain.size() - 1 - hiddenTabs); // add an assert just to make sure.
 
     // Do the calculation
-    qGeomCalc(tabChain, 0, tabChain.count(), 0, qMax(available, last), 0);
+    qGeomCalc(tabChain, 0, tabChain.size(), 0, qMax(available, last), 0);
 
     // Use the results
     hiddenTabs = 0;
-    for (int i = 0; i < tabList.count(); ++i) {
+    for (int i = 0; i < tabList.size(); ++i) {
         auto tab = tabList.at(i);
         if (!tab->visible) {
             tab->rect = QRect();
@@ -532,7 +532,7 @@ void QTabBarPrivate::layoutTabs()
             tab->rect.setRect(0, lstruct.pos, maxExtent, lstruct.size);
     }
 
-    if (useScrollButtons && tabList.count() && last > available) {
+    if (useScrollButtons && tabList.size() && last > available) {
         const QRect scrollRect = normalizedScrollRect(0);
         scrollOffset = -scrollRect.left();
 
@@ -768,7 +768,7 @@ void QTabBarPrivate::_q_closeTab()
     QObject *object = q->sender();
     int tabToClose = -1;
     QTabBar::ButtonPosition closeSide = (QTabBar::ButtonPosition)q->style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, q);
-    for (int i = 0; i < tabList.count(); ++i) {
+    for (int i = 0; i < tabList.size(); ++i) {
         if (closeSide == QTabBar::LeftSide) {
             if (tabList.at(i)->leftWidget == object) {
                 tabToClose = i;
@@ -795,7 +795,7 @@ void QTabBarPrivate::_q_scrollTabs()
     int i = -1;
 
     if (sender == leftB) {
-        for (i = tabList.count() - 1; i >= 0; --i) {
+        for (i = tabList.size() - 1; i >= 0; --i) {
             int start = horizontal ? tabList.at(i)->rect.left() : tabList.at(i)->rect.top();
             if (start < scrollRect.left()) {
                 makeVisible(i);
@@ -803,7 +803,7 @@ void QTabBarPrivate::_q_scrollTabs()
             }
         }
     } else if (sender == rightB) {
-        for (i = 0; i < tabList.count(); ++i) {
+        for (i = 0; i < tabList.size(); ++i) {
             const auto tabRect = tabList.at(i)->rect;
             int start = horizontal ? tabRect.left() : tabRect.top();
             int end = horizontal ? tabRect.right() : tabRect.bottom();
@@ -950,7 +950,7 @@ int QTabBar::insertTab(int index, const QIcon& icon, const QString &text)
 {
     Q_D(QTabBar);
     if (!d->validIndex(index)) {
-        index = d->tabList.count();
+        index = d->tabList.size();
         d->tabList.append(new QTabBarPrivate::Tab(icon, text));
     } else {
         d->tabList.insert(index, new QTabBarPrivate::Tab(icon, text));
@@ -960,7 +960,7 @@ int QTabBar::insertTab(int index, const QIcon& icon, const QString &text)
 #endif
     d->firstVisible = qMax(qMin(index, d->firstVisible), 0);
     d->refresh();
-    if (d->tabList.count() == 1)
+    if (d->tabList.size() == 1)
         setCurrentIndex(index);
     else if (index <= d->currentIndex)
         ++d->currentIndex;
@@ -1469,7 +1469,7 @@ void QTabBar::setIconSize(const QSize &size)
 int QTabBar::count() const
 {
     Q_D(const QTabBar);
-    return d->tabList.count();
+    return d->tabList.size();
 }
 
 
@@ -1512,7 +1512,7 @@ QSize QTabBar::minimumSizeHint() const
 // Compute the most-elided possible text, for minimumSizeHint
 static QString computeElidedText(Qt::TextElideMode mode, const QString &text)
 {
-    if (text.length() <= 3)
+    if (text.size() <= 3)
         return text;
 
     static const auto Ellipses = "..."_L1;
@@ -1721,7 +1721,7 @@ bool QTabBar::event(QEvent *event)
 
     case QEvent::Shortcut: {
         QShortcutEvent *se = static_cast<QShortcutEvent *>(event);
-        for (int i = 0; i < d->tabList.count(); ++i) {
+        for (int i = 0; i < d->tabList.size(); ++i) {
             const QTabBarPrivate::Tab *tab = d->tabList.at(i);
             if (tab->shortcutId == se->shortcutId()) {
                 setCurrentIndex(i);
@@ -1804,7 +1804,7 @@ void QTabBar::paintEvent(QPaintEvent *)
         selected = d->pressedIndex;
     const QRect scrollRect = d->normalizedScrollRect();
 
-    for (int i = 0; i < d->tabList.count(); ++i)
+    for (int i = 0; i < d->tabList.size(); ++i)
          optTabBase.tabBarRect |= tabRect(i);
 
     optTabBase.selectedTabRect = tabRect(selected);
@@ -1826,7 +1826,7 @@ void QTabBar::paintEvent(QPaintEvent *)
             p.setClipRegion(QRegion(rect()) - buttonRegion);
     }
 
-    for (int i = 0; i < d->tabList.count(); ++i) {
+    for (int i = 0; i < d->tabList.size(); ++i) {
         const auto tab = d->tabList.at(i);
         if (!tab->visible)
             continue;
@@ -1916,7 +1916,7 @@ void QTabBarPrivate::calculateFirstLastVisible(int index, bool visible, bool rem
     } else {
         if (remove || (index == firstVisible)) {
             firstVisible = -1;
-            for (int i = 0; i < tabList.count(); ++i) {
+            for (int i = 0; i < tabList.size(); ++i) {
                 if (tabList.at(i)->visible) {
                     firstVisible = i;
                     break;
@@ -1925,7 +1925,7 @@ void QTabBarPrivate::calculateFirstLastVisible(int index, bool visible, bool rem
         }
         if (remove || (index == lastVisible)) {
             lastVisible = -1;
-            for (int i = tabList.count() - 1; i >= 0; --i) {
+            for (int i = tabList.size() - 1; i >= 0; --i) {
                 if (tabList.at(i)->visible) {
                     lastVisible = i;
                     break;
@@ -1943,7 +1943,7 @@ void QTabBarPrivate::calculateFirstLastVisible(int index, bool visible, bool rem
 int QTabBarPrivate::selectNewCurrentIndexFrom(int fromIndex)
 {
     int newindex = -1;
-    for (int i = fromIndex; i < tabList.count(); ++i) {
+    for (int i = fromIndex; i < tabList.size(); ++i) {
         if (at(i)->visible && at(i)->enabled) {
           newindex = i;
           break;
@@ -2557,7 +2557,7 @@ void QTabBar::setTabsClosable(bool closable)
         }
     } else {
         bool newButtons = false;
-        for (int i = 0; i < d->tabList.count(); ++i) {
+        for (int i = 0; i < d->tabList.size(); ++i) {
             if (tabButton(i, closeSide))
                 continue;
             newButtons = true;
@@ -2766,7 +2766,7 @@ void QTabBar::setChangeCurrentOnDrag(bool change)
 void QTabBar::setTabButton(int index, ButtonPosition position, QWidget *widget)
 {
     Q_D(QTabBar);
-    if (index < 0 || index >= d->tabList.count())
+    if (index < 0 || index >= d->tabList.size())
         return;
     if (widget) {
         widget->setParent(this);

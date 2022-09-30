@@ -91,12 +91,12 @@ void tst_QByteArrayMatcher::interface()
     QCOMPARE(matcher5.indexIn(haystack), 42);
     QCOMPARE(matcher6.indexIn(haystack), 42);
 
-    QCOMPARE(matcher1.indexIn(haystack.constData(), haystack.length()), 42);
+    QCOMPARE(matcher1.indexIn(haystack.constData(), haystack.size()), 42);
 
     QCOMPARE(matcher1.indexIn(haystack, 43), 84);
-    QCOMPARE(matcher1.indexIn(haystack.constData(), haystack.length(), 43), 84);
+    QCOMPARE(matcher1.indexIn(haystack.constData(), haystack.size(), 43), 84);
     QCOMPARE(matcher1.indexIn(haystack, 85), -1);
-    QCOMPARE(matcher1.indexIn(haystack.constData(), haystack.length(), 85), -1);
+    QCOMPARE(matcher1.indexIn(haystack.constData(), haystack.size(), 85), -1);
 
     QByteArrayMatcher matcher7(QByteArray("123"));
     QCOMPARE(matcher7.indexIn(haystack), 6);

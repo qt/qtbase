@@ -92,7 +92,7 @@ public:
         inline bool isDir() const {
             if (info)
                 return info->isDir();
-            if (children.count() > 0)
+            if (children.size() > 0)
                 return true;
             return false;
         }
@@ -209,7 +209,7 @@ public:
     inline int translateVisibleLocation(QFileSystemNode *parent, int row) const {
         if (sortOrder != Qt::AscendingOrder) {
             if (parent->dirtyChildrenIndex == -1)
-                return parent->visibleChildren.count() - row - 1;
+                return parent->visibleChildren.size() - row - 1;
 
             if (row < parent->dirtyChildrenIndex)
                 return parent->dirtyChildrenIndex - row - 1;

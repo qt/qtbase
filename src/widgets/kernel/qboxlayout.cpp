@@ -233,7 +233,7 @@ void QBoxLayoutPrivate::setupGeom()
 
     hasHfw = false;
 
-    int n = list.count();
+    int n = list.size();
     geomArray.clear();
     QList<QLayoutStruct> a(n);
 
@@ -365,7 +365,7 @@ void QBoxLayoutPrivate::setupGeom()
 void QBoxLayoutPrivate::calcHfw(int w)
 {
     QList<QLayoutStruct> &a = geomArray;
-    int n = a.count();
+    int n = a.size();
     int h = 0;
     int mh = 0;
 
@@ -411,9 +411,9 @@ QLayoutItem* QBoxLayoutPrivate::replaceAt(int index, QLayoutItem *item)
 int QBoxLayoutPrivate::validateIndex(int index) const
 {
     if (index < 0)
-        return list.count(); // append
+        return list.size(); // append
 
-    Q_ASSERT_X(index >= 0 && index <= list.count(), "QBoxLayout::insert", "index out of range");
+    Q_ASSERT_X(index >= 0 && index <= list.size(), "QBoxLayout::insert", "index out of range");
     return index;
 }
 
@@ -680,7 +680,7 @@ void QBoxLayout::invalidate()
 int QBoxLayout::count() const
 {
     Q_D(const QBoxLayout);
-    return d->list.count();
+    return d->list.size();
 }
 
 /*!
@@ -689,7 +689,7 @@ int QBoxLayout::count() const
 QLayoutItem *QBoxLayout::itemAt(int index) const
 {
     Q_D(const QBoxLayout);
-    return index >= 0 && index < d->list.count() ? d->list.at(index)->item : nullptr;
+    return index >= 0 && index < d->list.size() ? d->list.at(index)->item : nullptr;
 }
 
 /*!
@@ -698,7 +698,7 @@ QLayoutItem *QBoxLayout::itemAt(int index) const
 QLayoutItem *QBoxLayout::takeAt(int index)
 {
     Q_D(QBoxLayout);
-    if (index < 0 || index >= d->list.count())
+    if (index < 0 || index >= d->list.size())
         return nullptr;
     QBoxLayoutItem *b = d->list.takeAt(index);
     QLayoutItem *item = b->item;
@@ -749,7 +749,7 @@ void QBoxLayout::setGeometry(const QRect &r)
         QList<QLayoutStruct> a = d->geomArray;
         int pos = horz(d->dir) ? s.x() : s.y();
         int space = horz(d->dir) ? s.width() : s.height();
-        int n = a.count();
+        int n = a.size();
         if (d->hasHfw && !horz(d->dir)) {
             for (int i = 0; i < n; i++) {
                 QBoxLayoutItem *box = d->list.at(i);

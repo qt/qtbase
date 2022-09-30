@@ -439,7 +439,7 @@ static void parseFontName(const QString &name, QString &foundry, QString &family
     // capitalize the family/foundry names
     bool space = true;
     QChar *s = family.data();
-    int len = family.length();
+    int len = family.size();
     while(len--) {
         if (space) *s = s->toUpper();
         space = s->isSpace();
@@ -448,7 +448,7 @@ static void parseFontName(const QString &name, QString &foundry, QString &family
 
     space = true;
     s = foundry.data();
-    len = foundry.length();
+    len = foundry.size();
     while(len--) {
         if (space) *s = s->toUpper();
         space = s->isSpace();
@@ -1330,7 +1330,7 @@ QFontDatabasePrivate *QFontDatabasePrivate::ensureFontDatabase()
         auto *platformFontDatabase = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         platformFontDatabase->populateFontDatabase();
 
-        for (int i = 0; i < d->applicationFonts.count(); i++) {
+        for (int i = 0; i < d->applicationFonts.size(); i++) {
             auto *font = &d->applicationFonts[i];
             if (!font->isNull() && !font->isPopulated())
                 platformFontDatabase->addApplicationFont(font->data, font->fileName, font);
@@ -2159,12 +2159,12 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
     Q_TRACE(QFontDatabasePrivate_addAppFont, fileName);
 
     int i;
-    for (i = 0; i < applicationFonts.count(); ++i)
+    for (i = 0; i < applicationFonts.size(); ++i)
         if (applicationFonts.at(i).isNull())
             break;
-    if (i >= applicationFonts.count()) {
+    if (i >= applicationFonts.size()) {
         applicationFonts.append(ApplicationFont());
-        i = applicationFonts.count() - 1;
+        i = applicationFonts.size() - 1;
     }
 
     if (font.fileName.isEmpty() && !fontData.isEmpty())
@@ -2188,7 +2188,7 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
 
 bool QFontDatabasePrivate::isApplicationFont(const QString &fileName)
 {
-    for (int i = 0; i < applicationFonts.count(); ++i)
+    for (int i = 0; i < applicationFonts.size(); ++i)
         if (applicationFonts.at(i).fileName == fileName)
             return true;
     return false;
@@ -2320,7 +2320,7 @@ bool QFontDatabase::removeApplicationFont(int handle)
     QMutexLocker locker(fontDatabaseMutex());
 
     auto *db = QFontDatabasePrivate::instance();
-    if (handle < 0 || handle >= db->applicationFonts.count())
+    if (handle < 0 || handle >= db->applicationFonts.size())
         return false;
 
     db->applicationFonts[handle] = QFontDatabasePrivate::ApplicationFont();

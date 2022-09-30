@@ -2307,7 +2307,7 @@ void tst_QGraphicsProxyWidget::popup_basic()
     box->setGeometry(0, 0, 320, 40);
     box->addItems(QStringList() << "monday" << "tuesday" << "wednesday"
                   << "thursday" << "saturday" << "sunday");
-    QCOMPARE(proxy->childItems().count(), 0);
+    QCOMPARE(proxy->childItems().size(), 0);
     proxy->setWidget(boxGuard.release());
     proxy->show();
     scene.addItem(proxy);
@@ -2324,7 +2324,7 @@ void tst_QGraphicsProxyWidget::popup_basic()
 
     QTRY_COMPARE(box->pos(), QPoint());
 
-    QCOMPARE(proxy->childItems().count(), 1);
+    QCOMPARE(proxy->childItems().size(), 1);
     QGraphicsProxyWidget *child = (QGraphicsProxyWidget*)(proxy->childItems())[0];
     QVERIFY(child->isWidget());
     QVERIFY(child->widget());
@@ -3853,7 +3853,7 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
         QHash<int, QList<TouchRecord>> records;
         QWidget *mousePressReceiver = nullptr;
 
-        int count(int id = 0) const { return records.value(id).count(); }
+        int count(int id = 0) const { return records.value(id).size(); }
         TouchRecord at(int i, int id = 0) const { return records.value(id).at(i); }
         void clear()
         {

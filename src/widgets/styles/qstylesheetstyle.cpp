@@ -715,7 +715,7 @@ static const int numKnownStyleHints = sizeof(knownStyleHints)/sizeof(knownStyleH
 static QList<QVariant> subControlLayout(const QString& layout)
 {
     QList<QVariant> buttons;
-    for (int i = 0; i < layout.length(); i++) {
+    for (int i = 0; i < layout.size(); i++) {
         int button = layout[i].toLatin1();
         switch (button) {
         case 'm':
@@ -981,7 +981,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
         palette = QToolTip::palette();
 #endif
 
-    for (int i = 0; i < declarations.count(); i++) {
+    for (int i = 0; i < declarations.size(); i++) {
         const Declaration& decl = declarations.at(i);
         if (decl.d->propertyId == BorderImage) {
             QString uri;
@@ -1057,7 +1057,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
                     } else if (hintName.endsWith("icon"_L1)) {
                         hintValue = decl.iconValue();
                     } else if (hintName == "button-layout"_L1
-                                && decl.d->values.count() != 0 && decl.d->values.at(0).type == Value::String) {
+                                && decl.d->values.size() != 0 && decl.d->values.at(0).type == Value::String) {
                         hintValue = subControlLayout(decl.d->values.at(0).variant.toString());
                     } else {
                         int integer;
@@ -1604,7 +1604,7 @@ public:
 #endif
         do {
             const ushort *uc = (const ushort *)nodeName.constData();
-            const ushort *e = uc + nodeName.length();
+            const ushort *e = uc + nodeName.size();
             const uchar *c = (const uchar *)metaObject->className();
             while (*c && uc != e && (*uc == *c || (*c == ':' && *uc == '-'))) {
                 ++uc;
@@ -1701,8 +1701,8 @@ QList<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const
         objectSs.append(ss);
     }
 
-    for (int i = 0; i < objectSs.count(); i++)
-        objectSs[i].depth = objectSs.count() - i + 2;
+    for (int i = 0; i < objectSs.size(); i++)
+        objectSs[i].depth = objectSs.size() - i + 2;
 
     styleSelector.styleSheets += objectSs;
 
@@ -1719,7 +1719,7 @@ static QList<Declaration> declarations(const QList<StyleRule> &styleRules, const
                                        quint64 pseudoClass = PseudoClass_Unspecified)
 {
     QList<Declaration> decls;
-    for (int i = 0; i < styleRules.count(); i++) {
+    for (int i = 0; i < styleRules.size(); i++) {
         const Selector& selector = styleRules.at(i).selectors.at(0);
         // Rules with pseudo elements don't cascade. This is an intentional
         // diversion for CSS
@@ -1849,7 +1849,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, int element, quint6
 
     quint64 stateMask = 0;
     const QList<StyleRule> rules = styleRules(obj);
-    for (int i = 0; i < rules.count(); i++) {
+    for (int i = 0; i < rules.size(); i++) {
         const Selector& selector = rules.at(i).selectors.at(0);
         quint64 negated = 0;
         stateMask |= selector.pseudoClass(&negated);
@@ -2171,7 +2171,7 @@ bool QStyleSheetStyle::hasStyleRule(const QObject *obj, int part) const
     }
 
     auto pseudoElement = QLatin1StringView(knownPseudoElements[part].name);
-    for (int i = 0; i < rules.count(); i++) {
+    for (int i = 0; i < rules.size(); i++) {
         const Selector& selector = rules.at(i).selectors.at(0);
         if (pseudoElement.compare(selector.pseudoElement(), Qt::CaseInsensitive) == 0) {
             cache[part] = true;
@@ -2642,7 +2642,7 @@ void QStyleSheetStyle::setProperties(QWidget *w)
     {
         // scan decls for final occurrence of each "qproperty"
         QDuplicateTracker<QString> propertySet(decls.size());
-        for (int i = decls.count() - 1; i >= 0; --i) {
+        for (int i = decls.size() - 1; i >= 0; --i) {
             const QString property = decls.at(i).d->property;
             if (!property.startsWith("qproperty-"_L1, Qt::CaseInsensitive))
                 continue;
@@ -2651,7 +2651,7 @@ void QStyleSheetStyle::setProperties(QWidget *w)
         }
     }
 
-    for (int i = finals.count() - 1; i >= 0; --i) {
+    for (int i = finals.size() - 1; i >= 0; --i) {
         const Declaration &decl = decls.at(finals[i]);
         QStringView property = decl.d->property;
         property = property.mid(10); // strip "qproperty-"
@@ -2903,7 +2903,7 @@ void QStyleSheetStyle::polish(QWidget *w)
 
     //set the WA_Hover attribute if one of the selector depends of the hover state
     QList<StyleRule> rules = styleRules(w);
-    for (int i = 0; i < rules.count(); i++) {
+    for (int i = 0; i < rules.size(); i++) {
         const Selector& selector = rules.at(i).selectors.at(0);
         quint64 negated = 0;
         quint64 cssClass = selector.pseudoClass(&negated);
@@ -3491,7 +3491,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
 
             QStyleOptionComplex optCopy(*opt);
             optCopy.subControls = { };
-            for (int i = 0; i < layout.count(); i++) {
+            for (int i = 0; i < layout.size(); i++) {
                 int layoutButton = layout[i].toInt();
                 if (layoutButton < PseudoElement_MdiCloseButton
                     || layoutButton > PseudoElement_MdiNormalButton)
@@ -5464,7 +5464,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                 layout = subControlLayout("mNX"_L1);
 
             int width = 0, height = 0;
-            for (int i = 0; i < layout.count(); i++) {
+            for (int i = 0; i < layout.size(); i++) {
                 int layoutButton = layout[i].toInt();
                 if (layoutButton < PseudoElement_MdiCloseButton
                     || layoutButton > PseudoElement_MdiNormalButton)
@@ -6031,7 +6031,7 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
 
             int x = 0, width = 0;
             QRenderRule subRule;
-            for (int i = 0; i < layout.count(); i++) {
+            for (int i = 0; i < layout.size(); i++) {
                 int layoutButton = layout[i].toInt();
                 if (layoutButton < PseudoElement_MdiCloseButton
                     || layoutButton > PseudoElement_MdiNormalButton)

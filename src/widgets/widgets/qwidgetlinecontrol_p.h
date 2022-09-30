@@ -115,7 +115,7 @@ public:
     bool isModified() const { return m_modifiedState != m_undoState; }
     void setModified(bool modified) { m_modifiedState = modified ? -1 : m_undoState; }
 
-    bool allSelected() const { return !m_text.isEmpty() && m_selstart == 0 && m_selend == (int)m_text.length(); }
+    bool allSelected() const { return !m_text.isEmpty() && m_selstart == 0 && m_selend == (int)m_text.size(); }
     bool hasSelectedText() const { return !m_text.isEmpty() && m_selend > m_selstart; }
 
     int width() const { return qRound(m_textLayout.lineAt(0).width()) + 1; }
@@ -150,7 +150,7 @@ public:
     }
 
     int start() const { return 0; }
-    int end() const { return m_text.length(); }
+    int end() const { return m_text.size(); }
 
 #ifndef QT_NO_CLIPBOARD
     void copy(QClipboard::Mode mode = QClipboard::Clipboard) const;
@@ -186,7 +186,7 @@ public:
     void cursorWordBackward(bool mark) { moveCursor(m_textLayout.previousCursorPosition(m_cursor, QTextLayout::SkipWords), mark); }
 
     void home(bool mark) { moveCursor(0, mark); }
-    void end(bool mark) { moveCursor(m_text.length(), mark); }
+    void end(bool mark) { moveCursor(m_text.size(), mark); }
 
     int xToPos(int x, QTextLine::CursorPosition = QTextLine::CursorBetweenCharacters) const;
     QRect rectForPos(int pos) const;
@@ -231,7 +231,7 @@ public:
     void backspace();
     void del();
     void deselect() { internalDeselect(); finishChange(); }
-    void selectAll() { m_selstart = m_selend = m_cursor = 0; moveCursor(m_text.length(), true); }
+    void selectAll() { m_selstart = m_selend = m_cursor = 0; moveCursor(m_text.size(), true); }
 
     void insert(const QString &);
     void clear();
@@ -277,7 +277,7 @@ public:
 #endif
 
     int cursorPosition() const { return m_cursor; }
-    void setCursorPosition(int pos) { if (pos <= m_text.length()) moveCursor(qMax(0, pos)); }
+    void setCursorPosition(int pos) { if (pos <= m_text.size()) moveCursor(qMax(0, pos)); }
 
     bool hasAcceptableInput() const { return hasAcceptableInput(m_text); }
     bool fixup();

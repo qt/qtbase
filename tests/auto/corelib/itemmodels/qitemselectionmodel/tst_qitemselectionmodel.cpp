@@ -1525,7 +1525,7 @@ void tst_QItemSelectionModel::resetModel()
     selectionModel->select(QItemSelection(model.index(0, 0), model.index(5, 5)), QItemSelectionModel::Select);
 
     QCOMPARE(spy.count(), 2);
-    QCOMPARE(spy.at(1).count(), 2);
+    QCOMPARE(spy.at(1).size(), 2);
     // make sure we don't get an "old selection"
     QCOMPARE(spy.at(1).at(1).userType(), qMetaTypeId<QItemSelection>());
     QVERIFY(qvariant_cast<QItemSelection>(spy.at(1).at(1)).isEmpty());
@@ -1721,7 +1721,7 @@ void tst_QItemSelectionModel::modelLayoutChanged()
     QFETCH(int, sortColumn);
     QFETCH(IntPairPairList, expectedSelectedRanges);
 
-    MyStandardItemModel model(items.at(0).count(), items.count());
+    MyStandardItemModel model(items.at(0).size(), items.count());
     // initialize model data
     for (int i = 0; i < model.rowCount(); ++i) {
         for (int j = 0; j < model.columnCount(); ++j) {
@@ -2266,7 +2266,7 @@ void tst_QItemSelectionModel::layoutChangedWithAllSelected1()
     selection.select(QItemSelection(indexList.first(), indexList.last()), QItemSelectionModel::Select);
 
     //let's check the selection hasn't changed
-    QCOMPARE(selection.selectedIndexes().count(), indexList.count());
+    QCOMPARE(selection.selectedIndexes().count(), indexList.size());
     for (const auto &index : indexList)
         QVERIFY(selection.isSelected(index));
 
@@ -2274,7 +2274,7 @@ void tst_QItemSelectionModel::layoutChangedWithAllSelected1()
     QCOMPARE(proxy.rowCount(), 3);
 
     //let's check the selection hasn't changed
-    QCOMPARE(selection.selectedIndexes().count(), indexList.count());
+    QCOMPARE(selection.selectedIndexes().count(), indexList.size());
     for (const auto &index : indexList)
         QVERIFY(selection.isSelected(index));
 }
@@ -2323,7 +2323,7 @@ void tst_QItemSelectionModel::layoutChangedWithAllSelected2()
     QCOMPARE(proxy.rowCount(), int(cNumRows));
 
     //let's check the selection hasn't changed
-    QCOMPARE(selection.selectedIndexes().count(), indexList.count());
+    QCOMPARE(selection.selectedIndexes().count(), indexList.size());
     for (const auto &index : indexList)
         QVERIFY(selection.isSelected(index));
 }

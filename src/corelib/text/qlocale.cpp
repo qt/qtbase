@@ -3745,11 +3745,11 @@ QString QLocaleData::decimalForm(QString &&digits, int decpt, int precision,
             digits.append(zero);
         break;
     case PMChopTrailingZeros:
-        Q_ASSERT(digits.length() / digitWidth <= qMax(decpt, 1) || !digits.endsWith(zero));
+        Q_ASSERT(digits.size() / digitWidth <= qMax(decpt, 1) || !digits.endsWith(zero));
         break;
     }
 
-    if (mustMarkDecimal || decpt < digits.length() / digitWidth)
+    if (mustMarkDecimal || decpt < digits.size() / digitWidth)
         digits.insert(decpt * digitWidth, decimalPoint());
 
     if (groupDigits) {
@@ -3787,11 +3787,11 @@ QString QLocaleData::exponentForm(QString &&digits, int decpt, int precision,
             digits.append(zero);
         break;
     case PMChopTrailingZeros:
-        Q_ASSERT(digits.length() / digitWidth <= 1 || !digits.endsWith(zero));
+        Q_ASSERT(digits.size() / digitWidth <= 1 || !digits.endsWith(zero));
         break;
     }
 
-    if (mustMarkDecimal || digits.length() > digitWidth)
+    if (mustMarkDecimal || digits.size() > digitWidth)
         digits.insert(digitWidth, decimalPoint());
 
     digits.append(exponentSeparator());
@@ -3840,7 +3840,7 @@ QString QLocaleData::applyIntegerFormatting(QString &&numStr, bool negative, int
 {
     const QString zero = base == 10 ? zeroDigit() : QStringLiteral("0");
     const auto digitWidth = zero.size();
-    const auto digitCount = numStr.length() / digitWidth;
+    const auto digitCount = numStr.size() / digitWidth;
 
     const auto basePrefix = [&] () -> QStringView {
         if (flags & ShowBase) {

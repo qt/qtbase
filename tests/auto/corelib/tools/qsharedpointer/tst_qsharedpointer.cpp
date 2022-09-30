@@ -2058,11 +2058,11 @@ void tst_QSharedPointer::threadStressTest()
         base.clear();
 
         // start threads
-        for (int i = 0; i < allThreads.count(); ++i)
+        for (int i = 0; i < allThreads.size(); ++i)
             if (allThreads[i]) allThreads[i]->start();
 
         // wait for them to finish
-        for (int i = 0; i < allThreads.count(); ++i)
+        for (int i = 0; i < allThreads.size(); ++i)
             if (allThreads[i]) allThreads[i]->wait();
         qDeleteAll(allThreads);
 

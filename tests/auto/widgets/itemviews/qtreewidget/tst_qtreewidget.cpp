@@ -281,8 +281,8 @@ void tst_QTreeWidget::addTopLevelItem()
     while (!tops.isEmpty()) {
         TreeItem *ti = tops.takeFirst();
         delete ti;
-        QCOMPARE(tree.topLevelItemCount(), tops.count());
-        for (int i = 0; i < tops.count(); ++i)
+        QCOMPARE(tree.topLevelItemCount(), tops.size());
+        for (int i = 0; i < tops.size(); ++i)
             QCOMPARE(tree.topLevelItem(i), tops.at(i));
     }
 
@@ -821,7 +821,7 @@ void tst_QTreeWidget::selectedItems()
 
     // check selectedItems
     const auto sel = testWidget->selectedItems();
-    QCOMPARE(sel.count(), expectedItems.count());
+    QCOMPARE(sel.size(), expectedItems.count());
     for (const auto &itemPath : expectedItems) {
         QTreeWidgetItem *item = nullptr;
         for (int index : itemPath) {
@@ -857,7 +857,7 @@ void tst_QTreeWidget::selectedItems()
         }
         item->setSelected(false);
     }
-    QCOMPARE(testWidget->selectedItems().count(), 0);
+    QCOMPARE(testWidget->selectedItems().size(), 0);
 }
 
 void tst_QTreeWidget::itemAssignment()
@@ -1090,9 +1090,9 @@ void tst_QTreeWidget::findItems()
 
     QList<QTreeWidgetItem*> result = testWidget->findItems(pattern,
                                                            Qt::MatchExactly|Qt::MatchRecursive);
-    QCOMPARE(result.count(), resultCount);
+    QCOMPARE(result.size(), resultCount);
 
-    for (int k = 0; k < result.count() && k < resultText.count(); ++k)
+    for (int k = 0; k < result.size() && k < resultText.count(); ++k)
         QCOMPARE(result.at(k)->text(column), resultText.at(k));
 }
 
@@ -1110,7 +1110,7 @@ void tst_QTreeWidget::findItemsInColumn()
 
     // Recursively search column one for 400.
     QList<QTreeWidgetItem*> items = testWidget->findItems("400", Qt::MatchExactly|Qt::MatchRecursive, 1);
-    QCOMPARE(items.count(), 1);
+    QCOMPARE(items.size(), 1);
 }
 
 void tst_QTreeWidget::sortItems_data()
@@ -1661,7 +1661,7 @@ void tst_QTreeWidget::addChild()
         QList<QTreeWidgetItem*> taken = item->takeChildren();
         QCOMPARE(taken, children);
         QCOMPARE(item->childCount(), 0);
-        for (int i = 0; i < taken.count(); ++i) {
+        for (int i = 0; i < taken.size(); ++i) {
             QCOMPARE(taken.at(i)->parent(), nullptr);
             QCOMPARE(taken.at(i)->treeWidget(), nullptr);
             item->addChild(taken.at(i)); // re-add
@@ -1671,8 +1671,8 @@ void tst_QTreeWidget::addChild()
         while (!children.isEmpty()) {
             QTreeWidgetItem *ti = children.takeFirst();
             delete ti;
-            QCOMPARE(item->childCount(), children.count());
-            for (int i = 0; i < children.count(); ++i)
+            QCOMPARE(item->childCount(), children.size());
+            for (int i = 0; i < children.size(); ++i)
                 QCOMPARE(item->child(i), children.at(i));
         }
 
@@ -1960,11 +1960,11 @@ void tst_QTreeWidget::itemData()
         QCOMPARE(widget.currentRoles, QList<int> { Qt::UserRole + i });
     }
     QMap<int, QVariant> flags = widget.model()->itemData(widget.model()->index(0, 0));
-    QCOMPARE(flags.count(), 6);
+    QCOMPARE(flags.size(), 6);
     for (int i = 0; i < 4; ++i)
         QCOMPARE(flags[Qt::UserRole + i].toString(), QString::number(i + 1));
     flags = widget.model()->itemData(widget.model()->index(0, 1));
-    QCOMPARE(flags.count(), 0);
+    QCOMPARE(flags.size(), 0);
 
     item.setBackground(0, QBrush(Qt::red));
     item.setForeground(0, QBrush(Qt::green));
@@ -2714,7 +2714,7 @@ void tst_QTreeWidget::sortedIndexOfChild()
     tw.sortItems(0, sortOrder);
     tw.expandAll();
 
-    QCOMPARE(itms.count(), expectedIndexes.count());
+    QCOMPARE(itms.size(), expectedIndexes.count());
     for (int j = 0; j < expectedIndexes.count(); ++j)
         QCOMPARE(top->indexOfChild(itms.at(j)), expectedIndexes.at(j));
 }
@@ -2971,7 +2971,7 @@ protected:
             auto newItem = new QTreeWidgetItem({QString::number(i++)});
             m_list.append(newItem);
             insertTopLevelItem(0, newItem);
-            while (m_list.count() > 10)
+            while (m_list.size() > 10)
                 delete m_list.takeFirst();
         }
         QTreeWidget::timerEvent(event);

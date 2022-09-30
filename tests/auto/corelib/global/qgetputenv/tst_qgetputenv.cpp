@@ -191,7 +191,7 @@ void tst_QGetPutEnv::intValue()
     bool actualOk = !ok;
 
     // Self-test: confirm that it was like the docs said it should be
-    if (value.length() < maxlen) {
+    if (value.size() < maxlen) {
         QCOMPARE(value.toInt(&actualOk, 0), expected);
         QCOMPARE(actualOk, ok);
     }

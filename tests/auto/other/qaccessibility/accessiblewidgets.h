@@ -116,7 +116,7 @@ public:
     int cursorPosition() const override { return textWidget()->cursorPosition; }
     void setCursorPosition(int position) override { textWidget()->cursorPosition = position; }
     QString text(int startOffset, int endOffset) const override { return textWidget()->text.mid(startOffset, endOffset); }
-    int characterCount() const override { return textWidget()->text.length(); }
+    int characterCount() const override { return textWidget()->text.size(); }
     QRect characterRect(int) const override { return QRect(); }
     int offsetAtPoint(const QPoint &) const override { return 0; }
     void scrollToSubstring(int, int) override {}

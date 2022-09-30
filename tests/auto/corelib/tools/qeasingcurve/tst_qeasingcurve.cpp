@@ -583,9 +583,9 @@ static inline void setupBezierSpline(QEasingCurve *easingCurve, const QString &s
         points.append(point);
     }
 
-    QVERIFY(points.count() % 3 == 0);
+    QVERIFY(points.size() % 3 == 0);
 
-    for (int i = 0; i < points.count() / 3; i++) {
+    for (int i = 0; i < points.size() / 3; i++) {
         QPointF c1 = points.at(i * 3);
         QPointF c2 = points.at(i * 3 + 1);
         QPointF p1 = points.at(i * 3 + 2);

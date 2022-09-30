@@ -124,7 +124,7 @@ void tst_qmake::initTestCase()
     QString testDataPath = QFINDTESTDATA(subProgram);
     if (!testDataPath.endsWith(subProgram))
         QFAIL("Cannot find test data directory.");
-    testDataPath.chop(subProgram.length() - testDataSubDir.length());
+    testDataPath.chop(subProgram.size() - testDataSubDir.size());
 
     QString userWorkDir = qgetenv("TST_QMAKE_BUILD_DIR");
     if (userWorkDir.isEmpty()) {

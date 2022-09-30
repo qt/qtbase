@@ -556,11 +556,11 @@ void QXcbScreen::updateColorSpaceAndEdid()
                                                    m_edid.greenChromaticity, m_edid.blueChromaticity,
                                                    QColorSpace::TransferFunction::Gamma, m_edid.gamma);
                     } else {
-                        if (m_edid.tables.length() == 1) {
+                        if (m_edid.tables.size() == 1) {
                             m_colorSpace = QColorSpace(m_edid.whiteChromaticity, m_edid.redChromaticity,
                                                        m_edid.greenChromaticity, m_edid.blueChromaticity,
                                                        m_edid.tables[0]);
-                        } else if (m_edid.tables.length() == 3) {
+                        } else if (m_edid.tables.size() == 3) {
                             m_colorSpace = QColorSpace(m_edid.whiteChromaticity, m_edid.redChromaticity,
                                                        m_edid.greenChromaticity, m_edid.blueChromaticity,
                                                        m_edid.tables[0], m_edid.tables[1], m_edid.tables[2]);
@@ -821,7 +821,7 @@ void QXcbScreen::sendStartupMessage(const QByteArray &message) const
     ev.sequence = 0;
     ev.window = rootWindow;
     int sent = 0;
-    int length = message.length() + 1; // include NUL byte
+    int length = message.size() + 1; // include NUL byte
     const char *data = message.constData();
     do {
         if (sent == 20)
@@ -839,7 +839,7 @@ void QXcbScreen::sendStartupMessage(const QByteArray &message) const
 QRect QXcbScreen::availableGeometry() const
 {
     static bool enforceNetWorkarea = !qEnvironmentVariableIsEmpty("QT_RELY_ON_NET_WORKAREA_ATOM");
-    bool isMultiHeadSystem = virtualSiblings().length() > 1;
+    bool isMultiHeadSystem = virtualSiblings().size() > 1;
     bool useScreenGeometry = isMultiHeadSystem && !enforceNetWorkarea;
     return useScreenGeometry ? m_geometry : m_availableGeometry;
 }

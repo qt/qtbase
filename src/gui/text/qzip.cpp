@@ -589,19 +589,19 @@ void QZipReaderPrivate::scanFiles()
 
         int l = readUShort(header.h.file_name_length);
         header.file_name = device->read(l);
-        if (header.file_name.length() != l) {
+        if (header.file_name.size() != l) {
             qWarning("QZip: Failed to read filename from zip index, index may be incomplete");
             break;
         }
         l = readUShort(header.h.extra_field_length);
         header.extra_field = device->read(l);
-        if (header.extra_field.length() != l) {
+        if (header.extra_field.size() != l) {
             qWarning("QZip: Failed to read extra field in zip file, skipping file, index may be incomplete");
             break;
         }
         l = readUShort(header.h.file_comment_length);
         header.file_comment = device->read(l);
-        if (header.file_comment.length() != l) {
+        if (header.file_comment.size() != l) {
             qWarning("QZip: Failed to read read file comment, index may be incomplete");
             break;
         }
@@ -630,7 +630,7 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
     // don't compress small files
     QZipWriter::CompressionPolicy compression = compressionPolicy;
     if (compressionPolicy == QZipWriter::AutoCompress) {
-        if (contents.length() < 64)
+        if (contents.size() < 64)
             compression = QZipWriter::NeverCompress;
         else
             compression = QZipWriter::AlwaysCompress;
@@ -641,19 +641,19 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
     writeUInt(header.h.signature, 0x02014b50);
 
     writeUShort(header.h.version_needed, ZIP_VERSION);
-    writeUInt(header.h.uncompressed_size, contents.length());
+    writeUInt(header.h.uncompressed_size, contents.size());
     writeMSDosDate(header.h.last_mod_file, QDateTime::currentDateTime());
     QByteArray data = contents;
     if (compression == QZipWriter::AlwaysCompress) {
         writeUShort(header.h.compression_method, CompressionMethodDeflated);
 
-       ulong len = contents.length();
+       ulong len = contents.size();
         // shamelessly copied form zlib
         len += (len >> 12) + (len >> 14) + 11;
         int res;
         do {
             data.resize(len);
-            res = deflate((uchar*)data.data(), &len, (const uchar*)contents.constData(), contents.length());
+            res = deflate((uchar*)data.data(), &len, (const uchar*)contents.constData(), contents.size());
 
             switch (res) {
             case Z_OK:
@@ -670,9 +670,9 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
         } while (res == Z_BUF_ERROR);
     }
 // TODO add a check if data.length() > contents.length().  Then try to store the original and revert the compression method to be uncompressed
-    writeUInt(header.h.compressed_size, data.length());
+    writeUInt(header.h.compressed_size, data.size());
     uint crc_32 = ::crc32(0, nullptr, 0);
-    crc_32 = ::crc32(crc_32, (const uchar *)contents.constData(), contents.length());
+    crc_32 = ::crc32(crc_32, (const uchar *)contents.constData(), contents.size());
     writeUInt(header.h.crc_32, crc_32);
 
     // if bit 11 is set, the filename and comment fields must be encoded using UTF-8
@@ -689,7 +689,7 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
         qWarning("QZip: File comment is too long, chopping it to 65535 bytes");
         header.file_comment.truncate(0xffff - header.file_name.size()); // ### don't break the utf-8 sequence, if any
     }
-    writeUShort(header.h.file_name_length, header.file_name.length());
+    writeUShort(header.h.file_name_length, header.file_name.size());
     //h.extra_field_length[2];
 
     writeUShort(header.h.version_made, HostUnix << 8);
@@ -878,7 +878,7 @@ QList<QZipReader::FileInfo> QZipReader::fileInfoList() const
 int QZipReader::count() const
 {
     d->scanFiles();
-    return d->fileHeaders.count();
+    return d->fileHeaders.size();
 }
 
 /*!
@@ -891,7 +891,7 @@ int QZipReader::count() const
 QZipReader::FileInfo QZipReader::entryInfoAt(int index) const
 {
     d->scanFiles();
-    if (index >= 0 && index < d->fileHeaders.count())
+    if (index >= 0 && index < d->fileHeaders.size())
         return d->fillFileInfo(index);
     return QZipReader::FileInfo();
 }
@@ -1340,7 +1340,7 @@ void QZipWriter::close()
     writeUShort(eod.num_dir_entries, d->fileHeaders.size());
     writeUInt(eod.directory_size, dir_size);
     writeUInt(eod.dir_start_offset, d->start_of_directory);
-    writeUShort(eod.comment_length, d->comment.length());
+    writeUShort(eod.comment_length, d->comment.size());
 
     d->device->write((const char *)&eod, sizeof(EndOfDirectory));
     d->device->write(d->comment);

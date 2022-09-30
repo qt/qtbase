@@ -2872,7 +2872,7 @@ public:
         }
         void kill()
         {
-            for (int i = children.count() -1; i >= 0; --i) {
+            for (int i = children.size() -1; i >= 0; --i) {
                 children.at(i)->kill();
                 if (parent == nullptr) {
                     deadChildren.append(children.at(i));
@@ -2945,7 +2945,7 @@ public:
             if (parentNode->isDead)
                 qFatal("%s: parentNode is dead!", Q_FUNC_INFO);
         }
-        return parentNode->children.count();
+        return parentNode->children.size();
     }
     int columnCount(const QModelIndex &parent = QModelIndex()) const override
     {
@@ -5119,7 +5119,7 @@ void tst_QTreeView::fetchUntilScreenFull()
 
             TreeItem* parentItem = parent.isValid() ? static_cast<TreeItem*>(parent.internalPointer())
                 : m_root;
-            return parentItem->children.count();
+            return parentItem->children.size();
         }
 
         int columnCount(const QModelIndex&) const override { return 2; }

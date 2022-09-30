@@ -82,7 +82,7 @@ void tst_QFutureSynchronizer::futures()
         synchronizer.addFuture(future);
     }
 
-    QCOMPARE(futures.count(), synchronizer.futures().count());
+    QCOMPARE(futures.size(), synchronizer.futures().size());
 }
 
 void tst_QFutureSynchronizer::setFuture()

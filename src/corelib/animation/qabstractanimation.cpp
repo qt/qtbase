@@ -283,7 +283,7 @@ void QUnifiedTimer::updateAnimationTimers()
         QScopedValueRollback<bool> guard(insideTick, true);
         if (profilerCallback)
             profilerCallback(delta);
-        for (currentAnimationIdx = 0; currentAnimationIdx < animationTimers.count(); ++currentAnimationIdx) {
+        for (currentAnimationIdx = 0; currentAnimationIdx < animationTimers.size(); ++currentAnimationIdx) {
             QAbstractAnimationTimer *animation = animationTimers.at(currentAnimationIdx);
             animation->updateAnimationsTime(delta);
         }
@@ -294,7 +294,7 @@ void QUnifiedTimer::updateAnimationTimers()
 int QUnifiedTimer::runningAnimationCount()
 {
     int count = 0;
-    for (int i = 0; i < animationTimers.count(); ++i)
+    for (int i = 0; i < animationTimers.size(); ++i)
         count += animationTimers.at(i)->runningAnimationCount();
     return count;
 }
@@ -309,7 +309,7 @@ void QUnifiedTimer::localRestart()
     if (insideRestart)
         return;
 
-    if (!pausedAnimationTimers.isEmpty() && (animationTimers.count() + animationTimersToStart.count() == pausedAnimationTimers.count())) {
+    if (!pausedAnimationTimers.isEmpty() && (animationTimers.size() + animationTimersToStart.size() == pausedAnimationTimers.size())) {
         driver->stop();
         int closestTimeToFinish = closestPausedAnimationTimerTimeToFinish();
         // use a precise timer if the pause will be short
@@ -327,7 +327,7 @@ void QUnifiedTimer::restart()
 {
     {
         QScopedValueRollback<bool> guard(insideRestart, true);
-        for (int i = 0; i < animationTimers.count(); ++i)
+        for (int i = 0; i < animationTimers.size(); ++i)
             animationTimers.at(i)->restartAnimationTimer();
     }
 
@@ -568,7 +568,7 @@ void QAnimationTimer::updateAnimationsTime(qint64 delta)
     //when the CPU load is high
     if (delta) {
         QScopedValueRollback<bool> guard(insideTick, true);
-        for (currentAnimationIdx = 0; currentAnimationIdx < animations.count(); ++currentAnimationIdx) {
+        for (currentAnimationIdx = 0; currentAnimationIdx < animations.size(); ++currentAnimationIdx) {
             QAbstractAnimation *animation = animations.at(currentAnimationIdx);
             int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
                           + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);

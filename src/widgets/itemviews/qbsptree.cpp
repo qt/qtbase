@@ -40,9 +40,9 @@ void QBspTree::climbTree(const QRect &rect, callback *function, QBspTreeData dat
 
 void QBspTree::climbTree(const QRect &area, callback *function, QBspTreeData data, int index)
 {
-    if (index >= nodes.count()) { // the index points to a leaf
+    if (index >= nodes.size()) { // the index points to a leaf
         Q_ASSERT(!nodes.isEmpty());
-        function(leaf(index - nodes.count()), area, visited, data);
+        function(leaf(index - nodes.size()), area, visited, data);
         return;
     }
 

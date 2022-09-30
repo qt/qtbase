@@ -68,7 +68,7 @@ QPlatformTextureList::~QPlatformTextureList()
 int QPlatformTextureList::count() const
 {
     Q_D(const QPlatformTextureList);
-    return d->textures.count();
+    return d->textures.size();
 }
 
 QRhiTexture *QPlatformTextureList::texture(int index) const

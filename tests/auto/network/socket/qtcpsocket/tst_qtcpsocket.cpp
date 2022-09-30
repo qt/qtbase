@@ -347,8 +347,8 @@ void tst_QTcpSocket::init()
         QFETCH_GLOBAL(int, proxyType);
         QList<QHostAddress> socks5Addresses = QHostInfo::fromName(QtNetworkSettings::socksProxyServerName()).addresses();
         QList<QHostAddress> httpProxyAddresses = QHostInfo::fromName(QtNetworkSettings::httpProxyServerName()).addresses();
-        QVERIFY2(socks5Addresses.count() > 0, "failed to get ip address for SOCKS5 proxy server");
-        QVERIFY2(httpProxyAddresses.count() > 0, "failed to get ip address for HTTP proxy server");
+        QVERIFY2(socks5Addresses.size() > 0, "failed to get ip address for SOCKS5 proxy server");
+        QVERIFY2(httpProxyAddresses.size() > 0, "failed to get ip address for HTTP proxy server");
         QString socks5Address = socks5Addresses.first().toString();
         QString httpProxyAddress = httpProxyAddresses.first().toString();
         QNetworkProxy proxy;
@@ -1823,7 +1823,7 @@ void tst_QTcpSocket::atEnd()
     QVERIFY2(greeting.startsWith("220 (vsFTPd 3."), qPrintable(greeting));
 #else
     // Test server must use some vsFTPd 2.x.x version
-    QVERIFY2(greeting.length() == sizeof("220 (vsFTPd 2.x.x)")-1, qPrintable(greeting));
+    QVERIFY2(greeting.size() == sizeof("220 (vsFTPd 2.x.x)")-1, qPrintable(greeting));
     QVERIFY2(greeting.startsWith("220 (vsFTPd 2."), qPrintable(greeting));
 #endif
     QVERIFY2(greeting.endsWith(QLatin1Char(')')), qPrintable(greeting));

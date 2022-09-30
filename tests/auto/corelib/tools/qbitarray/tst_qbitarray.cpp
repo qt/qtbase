@@ -13,10 +13,10 @@
 static QBitArray QStringToQBitArray(const QString &str)
 {
     QBitArray ba;
-    ba.resize(str.length());
+    ba.resize(str.size());
     int i;
     QChar tru('1');
-    for (i = 0; i < str.length(); i++)
+    for (i = 0; i < str.size(); i++)
     {
         if (str.at(i) == tru)
         {

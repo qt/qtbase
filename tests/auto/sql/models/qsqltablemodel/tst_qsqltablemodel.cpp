@@ -603,7 +603,7 @@ void tst_QSqlTableModel::setRecord()
             // dataChanged() emitted by setData() for each *changed* column
             if ((QSqlTableModel::EditStrategy)submitpolicy == QSqlTableModel::OnManualSubmit) {
                 QCOMPARE(spy.count(), 2);
-                QCOMPARE(spy.at(0).count(), 2);
+                QCOMPARE(spy.at(0).size(), 2);
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(0)), model.index(i, 1));
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(1)), model.index(i, 1));
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(1).at(0)), model.index(i, 2));
@@ -617,7 +617,7 @@ void tst_QSqlTableModel::setRecord()
                     QCOMPARE(spy.count(), 3);
                 else
                     QCOMPARE(spy.count(), 2);
-                QCOMPARE(spy.at(0).count(), 2);
+                QCOMPARE(spy.at(0).size(), 2);
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(0)), model.index(i, 1));
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(1)), model.index(i, 1));
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(1).at(0)), model.index(i, 2));

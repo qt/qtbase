@@ -906,15 +906,15 @@ void tst_QStandardItemModel::findItems()
     model.item(1)->appendRow(new QStandardItem(QLatin1String("foo")));
     QList<QStandardItem*> matches;
     matches = model.findItems(QLatin1String("foo"), Qt::MatchExactly|Qt::MatchRecursive, 0);
-    QCOMPARE(matches.count(), 2);
+    QCOMPARE(matches.size(), 2);
     matches = model.findItems(QLatin1String("foo"), Qt::MatchExactly, 0);
-    QCOMPARE(matches.count(), 1);
+    QCOMPARE(matches.size(), 1);
     matches = model.findItems(QLatin1String("food"), Qt::MatchExactly|Qt::MatchRecursive, 0);
-    QCOMPARE(matches.count(), 0);
+    QCOMPARE(matches.size(), 0);
     matches = model.findItems(QLatin1String("foo"), Qt::MatchExactly|Qt::MatchRecursive, -1);
-    QCOMPARE(matches.count(), 0);
+    QCOMPARE(matches.size(), 0);
     matches = model.findItems(QLatin1String("foo"), Qt::MatchExactly|Qt::MatchRecursive, 1);
-    QCOMPARE(matches.count(), 0);
+    QCOMPARE(matches.size(), 0);
 }
 
 void tst_QStandardItemModel::getSetHeaderItem()
@@ -1580,14 +1580,14 @@ void tst_QStandardItemModel::removeRowsAndColumns()
     VERIFY_MODEL
 
     QList<QStandardItem *> row_taken = model.takeRow(6);
-    QCOMPARE(row_taken.count(), col_list.count());
+    QCOMPARE(row_taken.size(), col_list.count());
     for (int c = 0; c < col_list.count(); c++)
         QCOMPARE(row_taken[c]->text() , row_list[6] + QLatin1Char('x') + col_list[c]);
     row_list.remove(6);
     VERIFY_MODEL
 
     QList<QStandardItem *> col_taken = model.takeColumn(10);
-    QCOMPARE(col_taken.count(), row_list.count());
+    QCOMPARE(col_taken.size(), row_list.count());
     for (int r = 0; r < row_list.count(); r++)
         QCOMPARE(col_taken[r]->text() , row_list[r] + QLatin1Char('x') + col_list[10]);
     col_list.remove(10);

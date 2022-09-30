@@ -877,7 +877,7 @@ QByteArray QUtf16::convertFromUnicode(QStringView in, QStringConverter::State *s
 
     QByteArray d(length, Qt::Uninitialized);
     char *end = convertFromUnicode(d.data(), in, state, endian);
-    Q_ASSERT(end - d.constData() == d.length());
+    Q_ASSERT(end - d.constData() == d.size());
     Q_UNUSED(end);
     return d;
 }
@@ -1491,15 +1491,15 @@ static char *toLatin1(char *out, QStringView in, QStringConverter::State *state)
 static QChar *fromLocal8Bit(QChar *out, QByteArrayView in, QStringConverter::State *state)
 {
     QString s = QLocal8Bit::convertToUnicode(in, state);
-    memcpy(out, s.constData(), s.length()*sizeof(QChar));
-    return out + s.length();
+    memcpy(out, s.constData(), s.size()*sizeof(QChar));
+    return out + s.size();
 }
 
 static char *toLocal8Bit(char *out, QStringView in, QStringConverter::State *state)
 {
     QByteArray s = QLocal8Bit::convertFromUnicode(in, state);
-    memcpy(out, s.constData(), s.length());
-    return out + s.length();
+    memcpy(out, s.constData(), s.size());
+    return out + s.size();
 }
 
 

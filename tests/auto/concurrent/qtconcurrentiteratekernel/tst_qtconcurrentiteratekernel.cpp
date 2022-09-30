@@ -221,7 +221,7 @@ void tst_QtConcurrentIterateKernel::throttling()
     QCOMPARE(iterations.loadRelaxed(), totalIterations);
 
 
-    QCOMPARE(threads.count(), 1);
+    QCOMPARE(threads.size(), 1);
 }
 
 class MultipleResultsFor : public IterateKernel<TestIterator, int>
@@ -239,7 +239,7 @@ public:
 void tst_QtConcurrentIterateKernel::multipleResults()
 {
     QFuture<int> f = startThreadEngine(new MultipleResultsFor(0, 10)).startAsynchronously();
-    QCOMPARE(f.results().count() , 10);
+    QCOMPARE(f.results().size() , 10);
     QCOMPARE(f.resultAt(0), 0);
     QCOMPARE(f.resultAt(5), 5);
     QCOMPARE(f.resultAt(9), 9);

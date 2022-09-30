@@ -79,7 +79,7 @@ QString tst_QTextOdfWriter::getContentFromXml()
     if (index > 0) {
         index = stringContent.indexOf('>', index);
         if (index > 0)
-            ret = stringContent.mid(index+1, stringContent.length() - index - 10);
+            ret = stringContent.mid(index+1, stringContent.size() - index - 10);
     }
     return ret;
 }
@@ -279,7 +279,7 @@ file.open(QIODevice::WriteOnly);
 file.write(buffer->data());
 file.close();
 */
-    QVERIFY(buffer->data().length() > 80);
+    QVERIFY(buffer->data().size() > 80);
     QCOMPARE(buffer->data()[0], 'P'); // its a zip :)
     QCOMPARE(buffer->data()[1], 'K');
     QString mimetype(buffer->data().mid(38, 39));

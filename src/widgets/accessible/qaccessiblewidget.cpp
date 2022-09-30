@@ -87,7 +87,7 @@ static qsizetype qt_accAmpIndex(const QString &text)
     qsizetype fa = 0;
     while ((fa = text.indexOf(u'&', fa)) != -1) {
         ++fa;
-        if (fa < text.length()) {
+        if (fa < text.size()) {
             // ignore "&&"
             if (text.at(fa) == u'&') {
 

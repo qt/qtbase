@@ -2716,9 +2716,9 @@ public:
         if (idxPar.isValid()) {
             TstMoveItem *parentItem = static_cast<TstMoveItem *>(idxPar.internalPointer());
             Q_ASSERT(parentItem);
-            cnt = parentItem->childItems.count();
+            cnt = parentItem->childItems.size();
         } else {
-            cnt = rootItem->childItems.count();
+            cnt = rootItem->childItems.size();
         }
         return cnt;
     }
@@ -2735,9 +2735,9 @@ public:
         if (parent.isValid()) {
             TstMoveItem *parentItem = static_cast<TstMoveItem *>(parent.internalPointer());
             Q_ASSERT(parentItem);
-            ret = parentItem->childItems.count() > 0;
+            ret = parentItem->childItems.size() > 0;
         } else {
-            ret = rootItem->childItems.count() > 0;
+            ret = rootItem->childItems.size() > 0;
         }
         return ret;
     }
@@ -2759,8 +2759,8 @@ public:
         TstMoveItem *itmDestParent = itemAt(destinationParent);
 
         if (itmSrcParent && sourceRow >= 0
-            && sourceRow + count <= itmSrcParent->childItems.count()
-            && itmDestParent && destinationChild <= itmDestParent->childItems.count()) {
+            && sourceRow + count <= itmSrcParent->childItems.size()
+            && itmDestParent && destinationChild <= itmDestParent->childItems.size()) {
             beginMoveRows(sourceParent, sourceRow, sourceRow + count - 1,
                           destinationParent, destinationChild);
             QList<TstMoveItem *> itemsToMove;
@@ -2768,7 +2768,7 @@ public:
                 TstMoveItem *itm = itmSrcParent->childItems.at(sourceRow+i);
                 itemsToMove.append(itm);
             }
-            for (int i = itemsToMove.count() -1; i >= 0; --i) {
+            for (int i = itemsToMove.size() -1; i >= 0; --i) {
                 TstMoveItem *itm = itemsToMove.at(i);
                 itm->parentItem->childItems.removeAll(itm);
                 itm->parentItem = itmDestParent;

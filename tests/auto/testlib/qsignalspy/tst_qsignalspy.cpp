@@ -87,7 +87,7 @@ void tst_QSignalSpy::spyWithoutArgs()
     QCOMPARE(spy.count(), 2);
 
     QList<QVariant> args = spy.takeFirst();
-    QCOMPARE(args.count(), 0);
+    QCOMPARE(args.size(), 0);
 }
 
 void tst_QSignalSpy::spyWithBasicArgs()
@@ -99,7 +99,7 @@ void tst_QSignalSpy::spyWithBasicArgs()
     QCOMPARE(spy.count(), 1);
 
     QList<QVariant> args = spy.takeFirst();
-    QCOMPARE(args.count(), 2);
+    QCOMPARE(args.size(), 2);
     QCOMPARE(args.at(0).toInt(), 1);
     QCOMPARE(args.at(1).toInt(), 2);
 
@@ -107,7 +107,7 @@ void tst_QSignalSpy::spyWithBasicArgs()
 
     emit obj.sigLong(1l, 2l);
     args = spyl.takeFirst();
-    QCOMPARE(args.count(), 2);
+    QCOMPARE(args.size(), 2);
     QCOMPARE(qvariant_cast<long>(args.at(0)), 1l);
     QCOMPARE(qvariant_cast<long>(args.at(1)), 2l);
 }
@@ -127,7 +127,7 @@ void tst_QSignalSpy::spyWithPointers()
     QCOMPARE(spy.count(), 1);
 
     QList<QVariant> args = spy.takeFirst();
-    QCOMPARE(args.count(), 2);
+    QCOMPARE(args.size(), 2);
     QCOMPARE(*static_cast<int * const *>(args.at(0).constData()), &i1);
     QCOMPARE(*static_cast<int * const *>(args.at(1).constData()), &i2);
 }
@@ -156,14 +156,14 @@ void tst_QSignalSpy::spyWithBasicQtClasses()
     QSignalSpy spy(&obj, SIGNAL(sig(QString)));
     emit obj.sig(QString("bubu"));
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.at(0).count(), 1);
+    QCOMPARE(spy.at(0).size(), 1);
     QCOMPARE(spy.at(0).at(0).toString(), QString("bubu"));
 
     QSignalSpy spy2(&obj, SIGNAL(sig5(QVariant)));
     QVariant val(45);
     emit obj.sig5(val);
     QCOMPARE(spy2.count(), 1);
-    QCOMPARE(spy2.at(0).count(), 1);
+    QCOMPARE(spy2.at(0).size(), 1);
     QCOMPARE(spy2.at(0).at(0), val);
     QCOMPARE(qvariant_cast<QVariant>(spy2.at(0).at(0)), val);
 }
@@ -177,7 +177,7 @@ void tst_QSignalSpy::spyWithQtClasses()
     QDateTime dt = QDateTime::currentDateTime();
     emit obj.sig2(dt);
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.at(0).count(), 1);
+    QCOMPARE(spy.at(0).size(), 1);
     QCOMPARE(spy.at(0).at(0).typeName(), "QDateTime");
     QCOMPARE(*static_cast<const QDateTime *>(spy.at(0).at(0).constData()), dt);
     QCOMPARE(spy.at(0).at(0).toDateTime(), dt);
@@ -279,7 +279,7 @@ void tst_QSignalSpy::spyFunctionPointerWithoutArgs()
     QCOMPARE(spy.count(), 2);
 
     QList<QVariant> args = spy.takeFirst();
-    QCOMPARE(args.count(), 0);
+    QCOMPARE(args.size(), 0);
 }
 
 void tst_QSignalSpy::spyFunctionPointerWithBasicArgs()
@@ -291,7 +291,7 @@ void tst_QSignalSpy::spyFunctionPointerWithBasicArgs()
     QCOMPARE(spy.count(), 1);
 
     QList<QVariant> args = spy.takeFirst();
-    QCOMPARE(args.count(), 2);
+    QCOMPARE(args.size(), 2);
     QCOMPARE(args.at(0).toInt(), 1);
     QCOMPARE(args.at(1).toInt(), 2);
 
@@ -299,7 +299,7 @@ void tst_QSignalSpy::spyFunctionPointerWithBasicArgs()
 
     emit obj.sigLong(1l, 2l);
     args = spyl.takeFirst();
-    QCOMPARE(args.count(), 2);
+    QCOMPARE(args.size(), 2);
     QCOMPARE(qvariant_cast<long>(args.at(0)), 1l);
     QCOMPARE(qvariant_cast<long>(args.at(1)), 2l);
 }
@@ -319,7 +319,7 @@ void tst_QSignalSpy::spyFunctionPointerWithPointers()
     QCOMPARE(spy.count(), 1);
 
     QList<QVariant> args = spy.takeFirst();
-    QCOMPARE(args.count(), 2);
+    QCOMPARE(args.size(), 2);
     QCOMPARE(*static_cast<int * const *>(args.at(0).constData()), &i1);
     QCOMPARE(*static_cast<int * const *>(args.at(1).constData()), &i2);
 }
@@ -331,14 +331,14 @@ void tst_QSignalSpy::spyFunctionPointerWithBasicQtClasses()
     QSignalSpy spy(&obj, &QtTestObject2::sig);
     emit obj.sig(QString("bubu"));
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.at(0).count(), 1);
+    QCOMPARE(spy.at(0).size(), 1);
     QCOMPARE(spy.at(0).at(0).toString(), QString("bubu"));
 
     QSignalSpy spy2(&obj, &QtTestObject2::sig5);
     QVariant val(45);
     emit obj.sig5(val);
     QCOMPARE(spy2.count(), 1);
-    QCOMPARE(spy2.at(0).count(), 1);
+    QCOMPARE(spy2.at(0).size(), 1);
     QCOMPARE(spy2.at(0).at(0), val);
     QCOMPARE(qvariant_cast<QVariant>(spy2.at(0).at(0)), val);
 }
@@ -351,7 +351,7 @@ void tst_QSignalSpy::spyFunctionPointerWithQtClasses()
     QDateTime dt = QDateTime::currentDateTime();
     emit obj.sig2(dt);
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.at(0).count(), 1);
+    QCOMPARE(spy.at(0).size(), 1);
     QCOMPARE(spy.at(0).at(0).typeName(), "QDateTime");
     QCOMPARE(*static_cast<const QDateTime *>(spy.at(0).at(0).constData()), dt);
     QCOMPARE(spy.at(0).at(0).toDateTime(), dt);
@@ -374,7 +374,7 @@ void tst_QSignalSpy::spyFunctionPointerWithCustomClass()
         QSignalSpy spy(&obj, &QtTestObject2::sig6);
         emit obj.sig6({});
         QCOMPARE(spy.count(), 1);
-        QCOMPARE(spy.at(0).count(), 1);
+        QCOMPARE(spy.at(0).size(), 1);
         QCOMPARE(spy.at(0).at(0).typeName(), "CustomType");
     }
 

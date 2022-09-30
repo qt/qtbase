@@ -524,14 +524,14 @@ bool ProjectBuilderMakefileGenerator::replaceLibrarySuffix(const QString &lib_fi
                     warn_msg(WarnLogic, "Failed to find expected suffix '%s' for library '%s'.",
                              qPrintable(librarySuffix), qPrintable(library));
                 } else {
-                    library.replace(pos, librarySuffix.length(), suffixSetting);
+                    library.replace(pos, librarySuffix.size(), suffixSetting);
                     if (name.endsWith(librarySuffix))
-                        name.chop(librarySuffix.length());
+                        name.chop(librarySuffix.size());
                 }
             } else {
                 int pos = library.lastIndexOf(name);
                 if (pos != -1)
-                    library.insert(pos + name.length(), suffixSetting);
+                    library.insert(pos + name.size(), suffixSetting);
             }
         }
     }
@@ -955,7 +955,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     const int slsh = library.lastIndexOf(Option::dir_sep);
                     if(name.isEmpty()) {
                         if(slsh != -1)
-                            name = library.right(library.length() - slsh - 1);
+                            name = library.right(library.size() - slsh - 1);
                     }
                     if(slsh != -1) {
                         const QString path = QFileInfo(library.left(slsh)).absoluteFilePath();
@@ -1970,7 +1970,7 @@ ProjectBuilderMakefileGenerator::pbxbuild()
 static QString quotedStringLiteral(const QString &value)
 {
     QString result;
-    const int len = value.length();
+    const int len = value.size();
     result.reserve(int(len * 1.1) + 2);
 
     result += QLatin1Char('"');

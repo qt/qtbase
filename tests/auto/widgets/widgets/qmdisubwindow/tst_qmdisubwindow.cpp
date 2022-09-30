@@ -1032,7 +1032,7 @@ void tst_QMdiSubWindow::setSystemMenu()
     subWindow->setSystemMenu(systemMenu);
     QCOMPARE(subWindow->systemMenu(), qobject_cast<QMenu *>(systemMenu));
     QCOMPARE(subWindow->systemMenu()->parentWidget(), static_cast<QWidget *>(subWindow));
-    QCOMPARE(subWindow->systemMenu()->actions().count(), 1);
+    QCOMPARE(subWindow->systemMenu()->actions().size(), 1);
 
     // Show the new system menu
     QVERIFY(!QApplication::activePopupWidget());
@@ -1256,7 +1256,7 @@ void tst_QMdiSubWindow::changeFocusWithTab()
     mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     mdiArea.addSubWindow(widget);
     mdiArea.show();
-    QCOMPARE(mdiArea.subWindowList().count(), 1);
+    QCOMPARE(mdiArea.subWindowList().size(), 1);
 
     QApplicationPrivate::setActiveWindow(&mdiArea);
     QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(firstLineEdit));
@@ -1338,7 +1338,7 @@ void tst_QMdiSubWindow::closeEvent()
 
     QVERIFY(window->close());
     QCOMPARE(closeSpy.count(), 3);
-    QCOMPARE(mdiArea.subWindowList().count(), 0);
+    QCOMPARE(mdiArea.subWindowList().size(), 0);
 }
 
 // There exists more tests in QMdiArea which covers window title support

@@ -290,7 +290,7 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         for (int y = 0; directories[y]; y++) {
             QString dirTemp = project->first(directories[y]).toQString();
             if (dirTemp.endsWith("\\"))
-                dirTemp.truncate(dirTemp.length()-1);
+                dirTemp.truncate(dirTemp.size()-1);
             if(!dirTemp.isEmpty())
                 source_directories.insert(dirTemp);
         }

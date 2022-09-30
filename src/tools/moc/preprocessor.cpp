@@ -980,7 +980,7 @@ static void mergeStringLiterals(Symbols *_symbols)
                 for (Symbols::iterator j = mergeSymbol + 1; j != i; ++j)
                     mergeSymbolLexem.append(j->lex.constData() + j->from + 1, j->len - 2); // append j->unquotedLexem()
                 mergeSymbolLexem.append('"');
-                mergeSymbol->len = mergeSymbol->lex.length();
+                mergeSymbol->len = mergeSymbol->lex.size();
                 mergeSymbol->from = 0;
                 i = symbols.erase(mergeSymbol + 1, i);
             }
@@ -1284,7 +1284,7 @@ void Preprocessor::parseDefineArguments(Macro *m)
                 if (!test(PP_RPAREN))
                     error("missing ')' in macro argument list");
                 break;
-            } else if (!is_identifier(l.constData(), l.length())) {
+            } else if (!is_identifier(l.constData(), l.size())) {
                 error("Unexpected character in macro argument list.");
             }
         }

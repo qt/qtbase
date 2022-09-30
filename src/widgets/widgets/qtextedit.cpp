@@ -1371,7 +1371,7 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
         const QString text = e->text();
         if (cursor.atBlockStart()
             && (d->autoFormatting & AutoBulletList)
-            && (text.length() == 1)
+            && (text.size() == 1)
             && (text.at(0) == u'-' || text.at(0) == u'*')
             && (!cursor.currentList())) {
 

@@ -1147,7 +1147,7 @@ void QOpenGLDebugLoggerPrivate::controlDebugMessages(QOpenGLDebugMessage::Source
     QVarLengthArray<GLenum, 8> glTypes;
     QVarLengthArray<GLenum, 8> glSeverities;
 
-    if (ids.count() > 0) {
+    if (ids.size() > 0) {
         Q_ASSERT(severities == QOpenGLDebugMessage::AnySeverity);
 
         // The GL_KHR_debug extension says:
@@ -1188,7 +1188,7 @@ void QOpenGLDebugLoggerPrivate::controlDebugMessages(QOpenGLDebugMessage::Source
     CONVERT_TO_GL_DEBUG_MESSAGE_CONTROL_PARAMETERS(Severity, severities, glSeverities)
 #undef CONVERT_TO_GL_DEBUG_MESSAGE_CONTROL_PARAMETERS
 
-    const GLsizei idCount = ids.count();
+    const GLsizei idCount = ids.size();
     // The GL_KHR_debug extension says that if idCount is 0, idPtr must be ignored.
     // Unfortunately, some bugged drivers do NOT ignore it, so pass NULL in case.
     const GLuint * const idPtr = idCount ? ids.constData() : nullptr;
@@ -1504,9 +1504,9 @@ void QOpenGLDebugLogger::logMessage(const QOpenGLDebugMessage &debugMessage)
     QByteArray rawMessage = debugMessage.message().toUtf8();
     rawMessage.append('\0');
 
-    if (rawMessage.length() > d->maxMessageLength) {
+    if (rawMessage.size() > d->maxMessageLength) {
         qWarning("QOpenGLDebugLogger::logMessage(): message too long, truncating it\n"
-                 "    (%d bytes long, but the GL accepts up to %d bytes)", int(rawMessage.length()), d->maxMessageLength);
+                 "    (%d bytes long, but the GL accepts up to %d bytes)", int(rawMessage.size()), d->maxMessageLength);
         rawMessage.resize(d->maxMessageLength - 1);
         rawMessage.append('\0');
     }
@@ -1556,9 +1556,9 @@ void QOpenGLDebugLogger::pushGroup(const QString &name, GLuint id, QOpenGLDebugM
 
     QByteArray rawName = name.toUtf8();
     rawName.append('\0');
-    if (rawName.length() > d->maxMessageLength) {
+    if (rawName.size() > d->maxMessageLength) {
         qWarning("QOpenGLDebugLogger::pushGroup(): group name too long, truncating it\n"
-                 "    (%d bytes long, but the GL accepts up to %d bytes)", int(rawName.length()), d->maxMessageLength);
+                 "    (%d bytes long, but the GL accepts up to %d bytes)", int(rawName.size()), d->maxMessageLength);
         rawName.resize(d->maxMessageLength - 1);
         rawName.append('\0');
     }

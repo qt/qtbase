@@ -652,7 +652,7 @@ void QFileDialogPrivate::retranslateStrings()
     if (proxyModel)
         abstractModel = proxyModel;
 #endif
-    int total = qMin(abstractModel->columnCount(QModelIndex()), actions.count() + 1);
+    int total = qMin(abstractModel->columnCount(QModelIndex()), actions.size() + 1);
     for (int i = 1; i < total; ++i) {
         actions.at(i - 1)->setText(QFileDialog::tr("Show ") + abstractModel->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString());
     }
@@ -2678,7 +2678,7 @@ void QFileDialog::accept()
         if (urls.isEmpty())
             return;
         d->_q_emitUrlsSelected(urls);
-        if (urls.count() == 1)
+        if (urls.size() == 1)
             d->_q_emitUrlSelected(urls.first());
         QDialog::accept();
         return;
@@ -2728,7 +2728,7 @@ void QFileDialog::accept()
 
         if (!info.exists()) {
             int maxNameLength = d->maxNameLength(info.path());
-            if (maxNameLength >= 0 && info.fileName().length() > maxNameLength)
+            if (maxNameLength >= 0 && info.fileName().size() > maxNameLength)
                 return;
         }
 
@@ -2849,8 +2849,8 @@ bool QFileDialogPrivate::restoreWidgetState(QStringList &history, int splitterPo
         if (!qFileDialogUi->splitter->restoreState(splitterState))
             return false;
         QList<int> list = qFileDialogUi->splitter->sizes();
-        if (list.count() >= 2 && (list.at(0) == 0 || list.at(1) == 0)) {
-            for (int i = 0; i < list.count(); ++i)
+        if (list.size() >= 2 && (list.at(0) == 0 || list.at(1) == 0)) {
+            for (int i = 0; i < list.size(); ++i)
                 list[i] = qFileDialogUi->splitter->widget(i)->sizeHint().width();
             qFileDialogUi->splitter->setSizes(list);
         }
@@ -2873,7 +2873,7 @@ bool QFileDialogPrivate::restoreWidgetState(QStringList &history, int splitterPo
     if (proxyModel)
         abstractModel = proxyModel;
 #endif
-    int total = qMin(abstractModel->columnCount(QModelIndex()), actions.count() + 1);
+    int total = qMin(abstractModel->columnCount(QModelIndex()), actions.size() + 1);
     for (int i = 1; i < total; ++i)
         actions.at(i - 1)->setChecked(!headerView->isSectionHidden(i));
 
@@ -3329,7 +3329,7 @@ void QFileDialogPrivate::_q_pathChanged(const QString &newPath)
     if (currentHistoryLocation < 0 || currentHistory.value(currentHistoryLocation).path != newNativePath) {
         if (currentHistoryLocation >= 0)
             saveHistorySelection();
-        while (currentHistoryLocation >= 0 && currentHistoryLocation + 1 < currentHistory.count()) {
+        while (currentHistoryLocation >= 0 && currentHistoryLocation + 1 < currentHistory.size()) {
             currentHistory.removeLast();
         }
         currentHistory.append({newNativePath, PersistentModelIndexList()});
@@ -3661,7 +3661,7 @@ void QFileDialogPrivate::_q_updateOkButton()
                 fileDir = info.canonicalFilePath();
             } else {
                 fileDir = fn.mid(0, fn.lastIndexOf(u'/'));
-                fileName = fn.mid(fileDir.length() + 1);
+                fileName = fn.mid(fileDir.size() + 1);
             }
             if (lineEditText.contains(".."_L1)) {
                 fileDir = info.canonicalFilePath();
@@ -3679,7 +3679,7 @@ void QFileDialogPrivate::_q_updateOkButton()
             }
             if (!idx.isValid()) {
                 int maxLength = maxNameLength(fileDir);
-                enableButton = maxLength < 0 || fileName.length() <= maxLength;
+                enableButton = maxLength < 0 || fileName.size() <= maxLength;
             }
             break;
         }
@@ -3808,8 +3808,8 @@ void QFileDialogPrivate::_q_useNameFilter(int index)
         QString fileName = lineEdit()->text();
         const QString fileNameExtension = QFileInfo(fileName).suffix();
         if (!fileNameExtension.isEmpty() && !newNameFilterExtension.isEmpty()) {
-            const int fileNameExtensionLength = fileNameExtension.length();
-            fileName.replace(fileName.length() - fileNameExtensionLength,
+            const int fileNameExtensionLength = fileNameExtension.size();
+            fileName.replace(fileName.size() - fileNameExtensionLength,
                              fileNameExtensionLength, newNameFilterExtension);
             qFileDialogUi->listView->clearSelection();
             lineEdit()->setText(fileName);
@@ -4011,7 +4011,7 @@ void QFileDialogComboBox::showPopup()
         if (!urls.contains(path))
             urls.prepend(path);
     }
-    if (urls.count() > 0) {
+    if (urls.size() > 0) {
         model()->insertRow(model()->rowCount());
         idx = model()->index(model()->rowCount()-1, 0);
         // ### TODO maybe add a horizontal line before this
@@ -4157,12 +4157,12 @@ QString QFSCompleter::pathFromIndex(const QModelIndex &index) const
     if (!currentLocation.isEmpty() && path.startsWith(currentLocation)) {
 #if defined(Q_OS_UNIX)
         if (currentLocation == QDir::separator())
-            return path.mid(currentLocation.length());
+            return path.mid(currentLocation.size());
 #endif
         if (currentLocation.endsWith(u'/'))
-            return path.mid(currentLocation.length());
+            return path.mid(currentLocation.size());
         else
-            return path.mid(currentLocation.length()+1);
+            return path.mid(currentLocation.size()+1);
     }
     return index.data(QFileSystemModel::FilePathRole).toString();
 }

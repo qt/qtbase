@@ -1053,7 +1053,7 @@ void QOpenGLFramebufferObject::addColorAttachment(const QSize &size, GLenum inte
 
     QOpenGLFramebufferObjectPrivate::ColorAttachment color(size, effectiveInternalFormat(internalFormat));
     d->colorAttachments.append(color);
-    const int idx = d->colorAttachments.count() - 1;
+    const int idx = d->colorAttachments.size() - 1;
 
     if (d->requestedSamples == 0) {
         d->initTexture(idx);
@@ -1134,7 +1134,7 @@ bool QOpenGLFramebufferObject::bind()
 
     if (d->format.samples() == 0) {
         // Create new textures to replace the ones stolen via takeTexture().
-        for (int i = 0; i < d->colorAttachments.count(); ++i) {
+        for (int i = 0; i < d->colorAttachments.size(); ++i) {
             if (!d->colorAttachments.at(i).guard)
                 d->initTexture(i);
         }
@@ -1214,7 +1214,7 @@ QList<GLuint> QOpenGLFramebufferObject::textures() const
     QList<GLuint> ids;
     if (d->format.samples() != 0)
         return ids;
-    ids.reserve(d->colorAttachments.count());
+    ids.reserve(d->colorAttachments.size());
     for (const auto &color : d->colorAttachments)
         ids.append(color.guard ? color.guard->id() : 0);
     return ids;
@@ -1266,7 +1266,7 @@ GLuint QOpenGLFramebufferObject::takeTexture(int colorAttachmentIndex)
 {
     Q_D(QOpenGLFramebufferObject);
     GLuint id = 0;
-    if (isValid() && d->format.samples() == 0 && d->colorAttachments.count() > colorAttachmentIndex) {
+    if (isValid() && d->format.samples() == 0 && d->colorAttachments.size() > colorAttachmentIndex) {
         QOpenGLContext *current = QOpenGLContext::currentContext();
         if (current && current->shareGroup() == d->fbo_guard->group() && isBound())
             release();
@@ -1491,7 +1491,7 @@ QImage QOpenGLFramebufferObject::toImage(bool flipped, int colorAttachmentIndex)
         return QImage();
     }
 
-    if (d->colorAttachments.count() <= colorAttachmentIndex) {
+    if (d->colorAttachments.size() <= colorAttachmentIndex) {
         qWarning("QOpenGLFramebufferObject::toImage() called for missing color attachment");
         return QImage();
     }

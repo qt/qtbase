@@ -629,7 +629,7 @@ void tst_QProcess::exitStatus()
     QFETCH(QStringList, processList);
     QFETCH(QList<QProcess::ExitStatus>, exitStatus);
 
-    QCOMPARE(exitStatus.count(), processList.count());
+    QCOMPARE(exitStatus.size(), processList.count());
     for (int i = 0; i < processList.count(); ++i) {
         process.start(processList.at(i));
         QVERIFY(process.waitForStarted(5000));

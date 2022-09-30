@@ -153,7 +153,7 @@ inline QString cleanLogLine(const QString &qstring)
     buf.remove("../");
     buf.remove("qlog/");
     QString ret;
-    for (int i = 0; i < buf.length(); i++) {
+    for (int i = 0; i < buf.size(); i++) {
         if (buf[i] >= '!' && buf[i] <= 'z')
             ret += buf[i];
     }

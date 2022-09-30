@@ -115,9 +115,9 @@ void InsertCommand::redo()
 
 void InsertCommand::undo()
 {
-    QCOMPARE(m_str->mid(m_idx, m_text.length()), m_text);
+    QCOMPARE(m_str->mid(m_idx, m_text.size()), m_text);
 
-    m_str->remove(m_idx, m_text.length());
+    m_str->remove(m_idx, m_text.size());
 }
 
 RemoveCommand::RemoveCommand(QString *str, int idx, int len, QUndoCommand *parent)
@@ -134,9 +134,9 @@ RemoveCommand::RemoveCommand(QString *str, int idx, int len, QUndoCommand *paren
 
 void RemoveCommand::redo()
 {
-    QCOMPARE(m_str->mid(m_idx, m_text.length()), m_text);
+    QCOMPARE(m_str->mid(m_idx, m_text.size()), m_text);
 
-    m_str->remove(m_idx, m_text.length());
+    m_str->remove(m_idx, m_text.size());
 }
 
 void RemoveCommand::undo()
@@ -172,9 +172,9 @@ void AppendCommand::redo()
 
 void AppendCommand::undo()
 {
-    QCOMPARE(m_str->mid(m_str->length() - m_text.length()), m_text);
+    QCOMPARE(m_str->mid(m_str->length() - m_text.size()), m_text);
 
-    m_str->truncate(m_str->length() - m_text.length());
+    m_str->truncate(m_str->length() - m_text.size());
 }
 
 int AppendCommand::id() const

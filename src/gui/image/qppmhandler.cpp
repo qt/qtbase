@@ -322,7 +322,7 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
     switch (image.depth()) {
         case 1: {
             str.insert(1, '4');
-            if (out->write(str, str.length()) != str.length())
+            if (out->write(str, str.size()) != str.size())
                 return false;
             w = (w+7)/8;
             for (uint y=0; y<h; y++) {
@@ -336,7 +336,7 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
         case 8: {
             str.insert(1, gray ? '5' : '6');
             str.append("255\n");
-            if (out->write(str, str.length()) != str.length())
+            if (out->write(str, str.size()) != str.size())
                 return false;
             qsizetype bpl = qsizetype(w) * (gray ? 1 : 3);
             uchar *buf = new uchar[bpl];
@@ -389,7 +389,7 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
         case 32: {
             str.insert(1, '6');
             str.append("255\n");
-            if (out->write(str, str.length()) != str.length())
+            if (out->write(str, str.size()) != str.size())
                 return false;
             qsizetype bpl = qsizetype(w) * 3;
             uchar *buf = new uchar[bpl];

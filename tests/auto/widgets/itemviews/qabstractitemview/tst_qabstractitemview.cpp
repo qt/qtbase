@@ -694,7 +694,7 @@ void tst_QAbstractItemView::persistentEditorFocus()
 
     //these are spinboxes because we put numbers inside
     const QList<QSpinBox*> list = view.viewport()->findChildren<QSpinBox*>();
-    QCOMPARE(list.count(), 2); //these should be the 2 editors
+    QCOMPARE(list.size(), 2); //these should be the 2 editors
 
     view.setCurrentIndex(model.index(0, 0));
     QCOMPARE(view.currentIndex(), model.index(0, 0));
@@ -1378,17 +1378,17 @@ void tst_QAbstractItemView::task257481_emptyEditor()
 
     treeView.edit(model.index(0, 0));
     QList<QLineEdit *> lineEditors = treeView.viewport()->findChildren<QLineEdit *>();
-    QCOMPARE(lineEditors.count(), 1);
+    QCOMPARE(lineEditors.size(), 1);
     QVERIFY(!lineEditors.constFirst()->size().isEmpty());
 
     treeView.edit(model.index(1, 0));
     lineEditors = treeView.viewport()->findChildren<QLineEdit *>();
-    QCOMPARE(lineEditors.count(), 1);
+    QCOMPARE(lineEditors.size(), 1);
     QVERIFY(!lineEditors.constFirst()->size().isEmpty());
 
     treeView.edit(model.index(2, 0));
     lineEditors = treeView.viewport()->findChildren<QLineEdit *>();
-    QCOMPARE(lineEditors.count(), 1);
+    QCOMPARE(lineEditors.size(), 1);
     QVERIFY(!lineEditors.constFirst()->size().isEmpty());
 }
 
@@ -1578,21 +1578,21 @@ void tst_QAbstractItemView::QTBUG6407_extendedSelection()
     QVERIFY(view.viewport()->rect().contains(p));
     QTest::mouseClick(view.viewport(), Qt::LeftButton, {}, p);
     QCOMPARE(view.currentIndex(), index49);
-    QCOMPARE(view.selectedItems().count(), 1);
+    QCOMPARE(view.selectedItems().size(), 1);
 
     QModelIndex index47 = view.model()->index(47,0);
     p = view.visualRect(index47).center();
     QVERIFY(view.viewport()->rect().contains(p));
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ShiftModifier, p);
     QCOMPARE(view.currentIndex(), index47);
-    QCOMPARE(view.selectedItems().count(), 3); //49, 48, 47;
+    QCOMPARE(view.selectedItems().size(), 3); //49, 48, 47;
 
     QModelIndex index44 = view.model()->index(44,0);
     p = view.visualRect(index44).center();
     QVERIFY(view.viewport()->rect().contains(p));
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ShiftModifier, p);
     QCOMPARE(view.currentIndex(), index44);
-    QCOMPARE(view.selectedItems().count(), 6); //49 .. 44;
+    QCOMPARE(view.selectedItems().size(), 6); //49 .. 44;
 
 }
 
@@ -1617,7 +1617,7 @@ void tst_QAbstractItemView::QTBUG6753_selectOnSelection()
     QTest::mouseMove(table.viewport(), itemRect.center());
     QTest::mouseClick(table.viewport(), Qt::LeftButton, Qt::NoModifier, itemRect.center());
 
-    QCOMPARE(table.selectedItems().count(), 1);
+    QCOMPARE(table.selectedItems().size(), 1);
     QCOMPARE(table.selectedItems().first(), table.item(item.row(), item.column()));
 }
 

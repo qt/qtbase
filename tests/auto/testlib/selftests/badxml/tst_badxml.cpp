@@ -180,16 +180,16 @@ int main(int argc, char** argv)
 
     if (badstring == -1) {
         tst_BadXml test;
-        return QTest::qExec(&test, args.count(), const_cast<char**>(args.data()));
+        return QTest::qExec(&test, args.size(), const_cast<char**>(args.data()));
     }
 
     QList<QByteArray> badstrings = tst_BadXml::badStrings();
-    if (badstring >= badstrings.count())
+    if (badstring >= badstrings.size())
         qFatal("`-badstring %d' is out of range", badstring);
 
     tst_BadXmlSub test;
     test.className = badstrings[badstring].constData();
-    return QTest::qExec(&test, args.count(), const_cast<char**>(args.data()));
+    return QTest::qExec(&test, args.size(), const_cast<char**>(args.data()));
 }
 
 #include "tst_badxml.moc"

@@ -52,7 +52,7 @@ QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
         if (interface.startsWith("QDBus"_L1)) {
             interface.prepend("org.qtproject.QtDBus."_L1);
         } else if (interface.startsWith(u'Q') &&
-                   interface.length() >= 2 && interface.at(1).isUpper()) {
+                   interface.size() >= 2 && interface.at(1).isUpper()) {
             // assume it's Qt
             interface.prepend("org.qtproject.Qt."_L1);
         } else if (!QCoreApplication::instance()||
@@ -128,7 +128,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<QMet
 
         if (type.endsWith('&')) {
             QByteArray basictype = type;
-            basictype.truncate(type.length() - 1);
+            basictype.truncate(type.size() - 1);
 
             QMetaType id = QMetaType::fromName(basictype);
             if (!id.isValid()) {

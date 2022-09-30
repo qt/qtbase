@@ -5683,7 +5683,7 @@ void tst_QGraphicsItem::itemClipsChildrenToShape5()
     }
 
     const QList<QGraphicsItem *> children = parent->childItems();
-    const int childrenCount = children.count();
+    const int childrenCount = children.size();
 
     for (int i = 0; i < 5; ++i) {
         QString clipString;

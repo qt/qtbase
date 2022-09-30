@@ -349,7 +349,7 @@ void QKeySequenceEdit::keyPressEvent(QKeyEvent *e)
 
     if (e->modifiers() & Qt::ShiftModifier) {
         QList<int> possibleKeys = QKeyMapper::possibleKeys(e);
-        int pkTotal = possibleKeys.count();
+        int pkTotal = possibleKeys.size();
         if (!pkTotal)
             return;
         bool found = false;

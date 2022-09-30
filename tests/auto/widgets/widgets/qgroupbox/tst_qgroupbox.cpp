@@ -600,7 +600,7 @@ void tst_QGroupBox::buttonPressKeys()
     const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
                                          ->themeHint(QPlatformTheme::ButtonPressKeys)
                                          .value<QList<Qt::Key>>();
-    for (int i = 0; i < buttonPressKeys.length(); ++i) {
+    for (int i = 0; i < buttonPressKeys.size(); ++i) {
         QTest::keyClick(&groupBox, buttonPressKeys[i]);
         QCOMPARE(clickedSpy.length(), i + 1);
     }

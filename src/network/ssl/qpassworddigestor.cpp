@@ -126,7 +126,7 @@ Q_NETWORK_EXPORT QByteArray deriveKeyPbkdf2(QCryptographicHash::Algorithm algori
     quint32 currentIteration = 1;
     QMessageAuthenticationCode hmac(algorithm, data);
     QByteArray index(4, Qt::Uninitialized);
-    while (quint64(key.length()) < dkLen) {
+    while (quint64(key.size()) < dkLen) {
         hmac.addData(salt);
 
         qToBigEndian(currentIteration, index.data());

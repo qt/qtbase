@@ -115,7 +115,7 @@ QSize QEglFSX11Integration::screenSize() const
 {
     if (m_screenSize.isEmpty()) {
         QList<QByteArray> env = qgetenv("EGLFS_X11_SIZE").split('x');
-        if (env.length() == 2) {
+        if (env.size() == 2) {
             m_screenSize = QSize(env.at(0).toInt(), env.at(1).toInt());
         } else {
             XWindowAttributes a;

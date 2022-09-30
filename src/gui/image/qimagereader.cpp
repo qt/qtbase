@@ -1281,7 +1281,7 @@ bool QImageReader::read(QImage *image)
     static bool disableNxImageLoading = !qEnvironmentVariableIsEmpty("QT_HIGHDPI_DISABLE_2X_IMAGE_LOADING");
     if (!disableNxImageLoading) {
         const QByteArray suffix = QFileInfo(filename).baseName().right(3).toLatin1();
-        if (suffix.length() == 3 && suffix[0] == '@' && suffix[1] >= '2' && suffix[1] <= '9' && suffix[2] == 'x')
+        if (suffix.size() == 3 && suffix[0] == '@' && suffix[1] >= '2' && suffix[1] <= '9' && suffix[2] == 'x')
             image->setDevicePixelRatio(suffix[1] - '0');
     }
     if (autoTransform())

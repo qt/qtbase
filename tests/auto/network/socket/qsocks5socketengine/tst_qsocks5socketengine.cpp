@@ -915,13 +915,13 @@ void tst_QSocks5SocketEngine::fragmentation_data()
     responses << authMethodBasic << authSuccess.left(1) << authSuccess.mid(1) << connectResponseIPv4;
     QTest::newRow("auth-response") << responses;
 
-    for (int i = 1; i < connectResponseIPv4.length() - 1; i++) {
+    for (int i = 1; i < connectResponseIPv4.size() - 1; i++) {
         responses.clear();
         responses << authMethodNone << connectResponseIPv4.left(i) << connectResponseIPv4.mid(i);
         QTest::newRow(qPrintable(QString("connect-response-ipv4-") + QString::number(i))) << responses;
     }
 
-    for (int i = 1; i < connectResponseIPv6.length() - 1; i++) {
+    for (int i = 1; i < connectResponseIPv6.size() - 1; i++) {
         responses.clear();
         responses << authMethodNone << connectResponseIPv6.left(i) << connectResponseIPv6.mid(i);
         QTest::newRow(qPrintable(QString("connect-response-ipv6-") + QString::number(i))) << responses;
@@ -964,13 +964,13 @@ void tst_QSocks5SocketEngine::incomplete_data()
     responses << authMethodBasic << authSuccess.left(1);
     QTest::newRow("auth-response") << responses;
 
-    for (int i = 1; i < connectResponseIPv4.length() - 1; i++) {
+    for (int i = 1; i < connectResponseIPv4.size() - 1; i++) {
         responses.clear();
         responses << authMethodNone << connectResponseIPv4.left(i);
         QTest::newRow(qPrintable(QString("connect-response-ipv4-") + QString::number(i))) << responses;
     }
 
-    for (int i = 1; i < connectResponseIPv6.length() - 1; i++) {
+    for (int i = 1; i < connectResponseIPv6.size() - 1; i++) {
         responses.clear();
         responses << authMethodNone << connectResponseIPv6.left(i);
         QTest::newRow(qPrintable(QString("connect-response-ipv6-") + QString::number(i))) << responses;

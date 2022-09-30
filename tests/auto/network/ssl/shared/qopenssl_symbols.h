@@ -405,7 +405,7 @@ struct LibGreaterThan
     {
         const auto lhsparts = lhs.split(QLatin1Char('.'));
         const auto rhsparts = rhs.split(QLatin1Char('.'));
-        Q_ASSERT(lhsparts.count() > 1 && rhsparts.count() > 1);
+        Q_ASSERT(lhsparts.size() > 1 && rhsparts.size() > 1);
 
         // note: checking rhs < lhs, the same as lhs > rhs
         return std::lexicographical_compare(rhsparts.begin() + 1, rhsparts.end(),

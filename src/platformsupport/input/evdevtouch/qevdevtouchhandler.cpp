@@ -565,7 +565,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         // Until that use a temporary key.
         int key = m_currentData.trackingId;
         if (key == -1)
-            key = m_contacts.count();
+            key = m_contacts.size();
 
         m_contacts.insert(key, m_currentData);
         m_currentData = Contact();
@@ -774,7 +774,7 @@ void QEvdevTouchScreenData::reportPoints()
 
     // Map the coordinates based on the normalized position. QPA expects 'area'
     // to be in screen coordinates.
-    const int pointCount = m_touchPoints.count();
+    const int pointCount = m_touchPoints.size();
     for (int i = 0; i < pointCount; ++i) {
         QWindowSystemInterface::TouchPoint &tp(m_touchPoints[i]);
 

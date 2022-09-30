@@ -1069,7 +1069,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml) {
 
 QBenchmarkResult qMedian(const QList<QBenchmarkResult> &container)
 {
-    const int count = container.count();
+    const int count = container.size();
     if (count == 0)
         return QBenchmarkResult();
 
@@ -2680,7 +2680,7 @@ QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
           QFileInfo fileInfo = it.nextFileInfo();
 
           if (!fileInfo.isDir()) {
-              const QString destination = dataPath + u'/' + QStringView{fileInfo.filePath()}.mid(resourcePath.length());
+              const QString destination = dataPath + u'/' + QStringView{fileInfo.filePath()}.mid(resourcePath.size());
               QFileInfo destinationFileInfo(destination);
               QDir().mkpath(destinationFileInfo.path());
               if (!QFile::copy(fileInfo.filePath(), destination)) {

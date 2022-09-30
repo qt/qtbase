@@ -289,14 +289,14 @@ void tst_QTextLayout::simpleBoundingRect()
 
     QString hello("hello world");
 
-    const int width = hello.length() * testFont.pixelSize();
+    const int width = hello.size() * testFont.pixelSize();
 
     QTextLayout layout(hello, testFont);
     layout.beginLayout();
 
     QTextLine line = layout.createLine();
     line.setLineWidth(width);
-    QCOMPARE(line.textLength(), hello.length());
+    QCOMPARE(line.textLength(), hello.size());
     QCOMPARE(layout.boundingRect(), QRectF(0, 0, width, QFontMetrics(testFont).height()));
 }
 
@@ -331,18 +331,18 @@ void tst_QTextLayout::threeLineBoundingRect()
     QString thirdWord("world");
     QString text(firstWord + wordBoundary1 + secondWord + wordBoundary2 + thirdWord);
 
-    int firstLineWidth = firstWord.length() * testFont.pixelSize();
-    int secondLineWidth = secondWord.length() * testFont.pixelSize();
-    int thirdLineWidth = thirdWord.length() * testFont.pixelSize();
+    int firstLineWidth = firstWord.size() * testFont.pixelSize();
+    int secondLineWidth = secondWord.size() * testFont.pixelSize();
+    int thirdLineWidth = thirdWord.size() * testFont.pixelSize();
     // Trailing spaces do not count to line width:
     if (!wordBoundary1.isSpace())
         firstLineWidth += testFont.pixelSize();
     if (!wordBoundary2.isSpace())
         secondLineWidth += testFont.pixelSize();
     // But trailing spaces do count to line length:
-    const int firstLineLength = firstWord.length() + 1;
-    const int secondLineLength = secondWord.length() + 1;
-    const int thirdLineLength = thirdWord.length();
+    const int firstLineLength = firstWord.size() + 1;
+    const int secondLineLength = secondWord.size() + 1;
+    const int thirdLineLength = thirdWord.size();
 
     const int longestLine = qMax(firstLineWidth, qMax(secondLineWidth, thirdLineWidth));
 
@@ -386,7 +386,7 @@ void tst_QTextLayout::boundingRectWithLongLineAndNoWrap()
 {
     QString longString("thisisaverylongstringthatcannotbewrappedatallitjustgoesonandonlikeonebigword");
 
-    const int width = longString.length() * testFont.pixelSize() / 20; // very small widthx
+    const int width = longString.size() * testFont.pixelSize() / 20; // very small widthx
 
     QTextLayout layout(longString, testFont);
     layout.beginLayout();
@@ -1139,7 +1139,7 @@ void tst_QTextLayout::xToCursorAtEndOfLine()
     QString text = "FirstLine SecondLine";
     text.replace('\n', QChar::LineSeparator);
 
-    const qreal firstLineWidth = QString("FirstLine").length() * testFont.pixelSize();
+    const qreal firstLineWidth = QString("FirstLine").size() * testFont.pixelSize();
 
     QTextLayout layout(text, testFont);
     layout.setCacheEnabled(true);
@@ -1282,7 +1282,7 @@ void tst_QTextLayout::integerOverflow()
 
     QVERIFY(line.isValid());
     line.setLineWidth(INT_MAX);
-    QCOMPARE(line.textLength(), txt.length());
+    QCOMPARE(line.textLength(), txt.size());
 
     QVERIFY(!layout.createLine().isValid());
 
@@ -2039,7 +2039,7 @@ void tst_QTextLayout::columnWrapWithTabs()
         textLayout.beginLayout();
         QTextLine line = textLayout.createLine();
         line.setNumColumns(30);
-        QCOMPARE(line.textLength(), text.length());
+        QCOMPARE(line.textLength(), text.size());
         textLayout.endLayout();
     }
 
@@ -2050,7 +2050,7 @@ void tst_QTextLayout::columnWrapWithTabs()
         textLayout.beginLayout();
         QTextLine line = textLayout.createLine();
         line.setNumColumns(30);
-        QVERIFY(line.textLength() < text.length());
+        QVERIFY(line.textLength() < text.size());
         textLayout.endLayout();
     }
 
@@ -2454,7 +2454,7 @@ void tst_QTextLayout::nbspWithFormat()
     layout.setText(s1 + s2 + nbsp + s3);
 
     QTextLayout::FormatRange formatRange;
-    formatRange.start = s1.length() + s2.length();
+    formatRange.start = s1.size() + s2.size();
     formatRange.length = 1;
     formatRange.format.setFontUnderline(true);
 
@@ -2471,9 +2471,9 @@ void tst_QTextLayout::nbspWithFormat()
 
     QCOMPARE(layout.lineCount(), 2);
     QCOMPARE(layout.lineAt(0).textStart(), 0);
-    QCOMPARE(layout.lineAt(0).textLength(), s1.length());
-    QCOMPARE(layout.lineAt(1).textStart(), s1.length());
-    QCOMPARE(layout.lineAt(1).textLength(), s2.length() + 1 + s3.length());
+    QCOMPARE(layout.lineAt(0).textLength(), s1.size());
+    QCOMPARE(layout.lineAt(1).textStart(), s1.size());
+    QCOMPARE(layout.lineAt(1).textLength(), s2.size() + 1 + s3.size());
 }
 
 void tst_QTextLayout::koreanWordWrap()

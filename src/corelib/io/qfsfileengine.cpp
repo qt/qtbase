@@ -468,7 +468,7 @@ void QFSFileEnginePrivate::unmapAll()
 {
     if (!maps.isEmpty()) {
         const QList<uchar*> keys = maps.keys(); // Make a copy since unmap() modifies the map.
-        for (int i = 0; i < keys.count(); ++i)
+        for (int i = 0; i < keys.size(); ++i)
             unmap(keys.at(i));
     }
 }

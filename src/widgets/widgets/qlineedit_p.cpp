@@ -279,7 +279,7 @@ bool QLineEditPrivate::sendMouseEventToInputContext( QMouseEvent *e )
     if ( control->composeMode() ) {
         int tmp_cursor = xToPos(e->position().toPoint().x());
         int mousePos = tmp_cursor - control->cursor();
-        if ( mousePos < 0 || mousePos > control->preeditAreaText().length() )
+        if ( mousePos < 0 || mousePos > control->preeditAreaText().size() )
             mousePos = -1;
 
         if (mousePos >= 0) {

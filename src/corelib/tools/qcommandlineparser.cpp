@@ -691,7 +691,7 @@ bool QCommandLineParserPrivate::parse(const QStringList &args)
         if (forcePositional) {
             positionalArgumentList.append(argument);
         } else if (argument.startsWith(doubleDashString)) {
-            if (argument.length() > 2) {
+            if (argument.size() > 2) {
                 QString optionName = argument.mid(2).section(assignChar, 0, 0);
                 if (registerFoundOption(optionName)) {
                     if (!parseOptionValue(optionName, argument, &argumentIterator, args.end()))
@@ -1042,7 +1042,7 @@ static QString wrapText(const QString &names, int optionNameMaxWidth, const QStr
     int lastBreakable = -1;
     const int max = 79 - (indentation.size() + optionNameMaxWidth + 1);
     int x = 0;
-    const int len = description.length();
+    const int len = description.size();
 
     for (int i = 0; i < len; ++i) {
         ++x;
@@ -1116,7 +1116,7 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
         const QStringList optionNames = option.names();
         QString optionNamesString;
         for (const QString &optionName : optionNames) {
-            const int numDashes = optionName.length() == 1 ? 1 : 2;
+            const int numDashes = optionName.size() == 1 ? 1 : 2;
             optionNamesString += QLatin1StringView("--", numDashes) + optionName + ", "_L1;
         }
         if (!optionNames.isEmpty())
@@ -1125,7 +1125,7 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
         if (!valueName.isEmpty())
             optionNamesString += " <"_L1 + valueName + u'>';
         optionNameList.append(optionNamesString);
-        longestOptionNameString = qMax(longestOptionNameString, optionNamesString.length());
+        longestOptionNameString = qMax(longestOptionNameString, optionNamesString.size());
     }
     ++longestOptionNameString;
     const int optionNameMaxWidth = qMin(50, longestOptionNameString);

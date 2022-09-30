@@ -1031,14 +1031,14 @@ void QMessageBoxPrivate::detectEscapeButton()
 
     // If there is only one button, make it the escape button
     const QList<QAbstractButton *> buttons = buttonBox->buttons();
-    if (buttons.count() == 1) {
+    if (buttons.size() == 1) {
         detectedEscapeButton = buttons.first();
         return;
     }
 
     // If there are two buttons and one of them is the "Show Details..."
     // button, then make the other one the escape button
-    if (buttons.count() == 2 && detailsButton) {
+    if (buttons.size() == 2 && detailsButton) {
         auto idx = buttons.indexOf(detailsButton);
         if (idx != -1) {
             detectedEscapeButton = buttons.at(1 - idx);

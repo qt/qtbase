@@ -479,8 +479,8 @@ void Win32MakefileGenerator::writeCleanParts(QTextStream &t)
                 const int commandlineLimit = 2047; // NT limit, expanded
                 for (ProStringList::ConstIterator it = list.begin(); it != list.end(); ++it) {
                     file = ' ' + escapeFilePath(Option::fixPathToTargetOS((*it).toQString()));
-                    if(del_statement.length() + files.length() +
-                       qMax(fixEnvVariables(file).length(), file.length()) > commandlineLimit) {
+                    if(del_statement.size() + files.size() +
+                       qMax(fixEnvVariables(file).size(), file.size()) > commandlineLimit) {
                         t << "\n\t" << del_statement << files;
                         files.clear();
                     }
@@ -508,8 +508,8 @@ void Win32MakefileGenerator::writeCleanParts(QTextStream &t)
                 const int commandlineLimit = 2047; // NT limit, expanded
                 for (ProStringList::ConstIterator it = list.begin(); it != list.end(); ++it) {
                     file = " " + escapeFilePath(Option::fixPathToTargetOS((*it).toQString()));
-                    if(del_statement.length() + files.length() +
-                       qMax(fixEnvVariables(file).length(), file.length()) > commandlineLimit) {
+                    if(del_statement.size() + files.size() +
+                       qMax(fixEnvVariables(file).size(), file.size()) > commandlineLimit) {
                         t << "\n\t" << del_statement << files;
                         files.clear();
                     }
@@ -749,7 +749,7 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
             QString dst_prl = Option::fixPathToTargetOS(project->first("QMAKE_INTERNAL_PRL_FILE").toQString());
             int slsh = dst_prl.lastIndexOf(Option::dir_sep);
             if(slsh != -1)
-                dst_prl = dst_prl.right(dst_prl.length() - slsh - 1);
+                dst_prl = dst_prl.right(dst_prl.size() - slsh - 1);
             dst_prl = filePrefixRoot(root, targetdir + dst_prl);
             if (!ret.isEmpty())
                 ret += "\n\t";

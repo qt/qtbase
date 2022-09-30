@@ -116,7 +116,7 @@ static inline bool isParentPath(const QString &path, const QString &reference)
 {
     if ((path.isEmpty() && reference == "/"_L1) || path.startsWith(reference)) {
         //The cookie-path and the request-path are identical.
-        if (path.length() == reference.length())
+        if (path.size() == reference.size())
             return true;
         //The cookie-path is a prefix of the request-path, and the last
         //character of the cookie-path is %x2F ("/").
@@ -125,7 +125,7 @@ static inline bool isParentPath(const QString &path, const QString &reference)
         //The cookie-path is a prefix of the request-path, and the first
         //character of the request-path that is not included in the cookie-
         //path is a %x2F ("/") character.
-        if (path.at(reference.length()) == u'/')
+        if (path.at(reference.size()) == u'/')
             return true;
     }
     return false;
@@ -229,7 +229,7 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
         // insert this cookie into result, sorted by path
         QList<QNetworkCookie>::Iterator insertIt = result.begin();
         while (insertIt != result.end()) {
-            if (insertIt->path().length() < it->path().length()) {
+            if (insertIt->path().size() < it->path().size()) {
                 // insert here
                 insertIt = result.insert(insertIt, *it);
                 break;

@@ -293,7 +293,7 @@ private:
     }
 
     int writeCompressed(const char *src, int len);
-    inline int writeCompressed(const QByteArray &data) { return writeCompressed(data.constData(), data.length()); }
+    inline int writeCompressed(const QByteArray &data) { return writeCompressed(data.constData(), data.size()); }
     int writeCompressed(QIODevice *dev);
 
     struct AttachmentInfo

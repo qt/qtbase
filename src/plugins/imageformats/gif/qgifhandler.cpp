@@ -1146,9 +1146,9 @@ QVariant QGifHandler::option(ImageOption option) const
         }
         // before the first frame is read, or we have an empty data stream
         if (frameNumber == -1)
-            return (imageSizes.count() > 0) ? QVariant(imageSizes.at(0)) : QVariant();
+            return (imageSizes.size() > 0) ? QVariant(imageSizes.at(0)) : QVariant();
         // after the last frame has been read, the next size is undefined
-        if (frameNumber >= imageSizes.count() - 1)
+        if (frameNumber >= imageSizes.size() - 1)
             return QVariant();
         // and the last case: the size of the next frame
         return imageSizes.at(frameNumber + 1);
@@ -1175,7 +1175,7 @@ int QGifHandler::imageCount() const
         QGIFFormat::scan(device(), &imageSizes, &loopCnt);
         scanIsCached = true;
     }
-    return imageSizes.count();
+    return imageSizes.size();
 }
 
 int QGifHandler::loopCount() const

@@ -726,7 +726,7 @@ void QFutureInterfaceBasePrivate::sendCallOut(const QFutureCallOutEvent &callOut
     if (outputConnections.isEmpty())
         return;
 
-    for (int i = 0; i < outputConnections.count(); ++i)
+    for (int i = 0; i < outputConnections.size(); ++i)
         outputConnections.at(i)->postCallOutEvent(callOutEvent);
 }
 
@@ -736,7 +736,7 @@ void QFutureInterfaceBasePrivate::sendCallOuts(const QFutureCallOutEvent &callOu
     if (outputConnections.isEmpty())
         return;
 
-    for (int i = 0; i < outputConnections.count(); ++i) {
+    for (int i = 0; i < outputConnections.size(); ++i) {
         QFutureCallOutInterface *interface = outputConnections.at(i);
         interface->postCallOutEvent(callOutEvent1);
         interface->postCallOutEvent(callOutEvent2);

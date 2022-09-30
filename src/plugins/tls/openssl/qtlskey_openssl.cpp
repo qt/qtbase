@@ -101,19 +101,19 @@ QByteArray TlsKeyOpenSSL::derFromPem(const QByteArray &pem, QMap<QByteArray, QBy
     QByteArray der(pem);
 
     int headerIndex = der.indexOf(header);
-    int footerIndex = der.indexOf(footer, headerIndex + header.length());
+    int footerIndex = der.indexOf(footer, headerIndex + header.size());
     if (type() != QSsl::PublicKey) {
         if (headerIndex == -1 || footerIndex == -1) {
             header = pkcs8Header(true);
             footer = pkcs8Footer(true);
             headerIndex = der.indexOf(header);
-            footerIndex = der.indexOf(footer, headerIndex + header.length());
+            footerIndex = der.indexOf(footer, headerIndex + header.size());
         }
         if (headerIndex == -1 || footerIndex == -1) {
             header = pkcs8Header(false);
             footer = pkcs8Footer(false);
             headerIndex = der.indexOf(header);
-            footerIndex = der.indexOf(footer, headerIndex + header.length());
+            footerIndex = der.indexOf(footer, headerIndex + header.size());
         }
     }
     if (headerIndex == -1 || footerIndex == -1)
@@ -124,7 +124,7 @@ QByteArray TlsKeyOpenSSL::derFromPem(const QByteArray &pem, QMap<QByteArray, QBy
     if (der.contains("Proc-Type:")) {
         // taken from QHttpNetworkReplyPrivate::parseHeader
         int i = 0;
-        while (i < der.length()) {
+        while (i < der.size()) {
             int j = der.indexOf(':', i); // field-name
             if (j == -1)
                 break;
@@ -143,7 +143,7 @@ QByteArray TlsKeyOpenSSL::derFromPem(const QByteArray &pem, QMap<QByteArray, QBy
                 int length = i -(hasCR ? 1: 0) - j;
                 value += der.mid(j, length).trimmed();
                 j = ++i;
-            } while (i < der.length() && (der.at(i) == ' ' || der.at(i) == '\t'));
+            } while (i < der.size() && (der.at(i) == ' ' || der.at(i) == '\t'));
             if (i == -1)
                 break; // something is wrong
 

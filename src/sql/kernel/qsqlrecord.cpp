@@ -18,7 +18,7 @@ public:
     QSqlRecordPrivate();
     QSqlRecordPrivate(const QSqlRecordPrivate &other);
 
-    inline bool contains(int index) { return index >= 0 && index < fields.count(); }
+    inline bool contains(int index) { return index >= 0 && index < fields.size(); }
     QString createField(int index, const QString &prefix) const;
 
     QList<QSqlField> fields;
@@ -337,7 +337,7 @@ bool QSqlRecord::contains(const QString& name) const
 void QSqlRecord::clearValues()
 {
     detach();
-    int count = d->fields.count();
+    int count = d->fields.size();
     for (int i = 0; i < count; ++i)
         d->fields[i].clear();
 }
@@ -451,7 +451,7 @@ bool QSqlRecord::isGenerated(int index) const
 
 int QSqlRecord::count() const
 {
-    return d->fields.count();
+    return d->fields.size();
 }
 
 /*!

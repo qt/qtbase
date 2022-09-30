@@ -269,7 +269,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
                     result = QDir::homePath() + value.mid(5);
                 else
                     result = value.toString();
-                if (result.length() > 1 && result.endsWith(u'/'))
+                if (result.size() > 1 && result.endsWith(u'/'))
                     result.chop(1);
             }
         }

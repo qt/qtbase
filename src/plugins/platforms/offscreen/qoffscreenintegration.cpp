@@ -145,7 +145,7 @@ std::optional<QJsonObject> QOffscreenIntegration::resolveConfigFileConfiguration
         QString configPrefix("configfile="_L1);
         if (param.startsWith(configPrefix)) {
             hasConfigFile = true;
-            configFilePath = param.mid(configPrefix.length());
+            configFilePath = param.mid(configPrefix.size());
         }
     }
     if (!hasConfigFile)

@@ -515,7 +515,7 @@ QString QUrlQuery::query(QUrl::ComponentFormattingOptions encoding) const
     {
         int size = 0;
         for ( ; it != end; ++it)
-            size += it->first.length() + 1 + it->second.length() + 1;
+            size += it->first.size() + 1 + it->second.size() + 1;
         result.reserve(size + size / 4);
     }
 

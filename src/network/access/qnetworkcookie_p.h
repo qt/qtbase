@@ -49,7 +49,7 @@ static int nextNonWhitespace(const QByteArray &text, int from)
     //  LWS = [CRLF] 1*( SP | HT )
     // We ignore the fact that CRLF must come as a pair at this point
     // It's an invalid HTTP header if that happens.
-    while (from < text.length()) {
+    while (from < text.size()) {
         if (isLWS(text.at(from)))
             ++from;
         else
@@ -57,7 +57,7 @@ static int nextNonWhitespace(const QByteArray &text, int from)
     }
 
     // reached the end
-    return text.length();
+    return text.size();
 }
 
 QT_END_NAMESPACE

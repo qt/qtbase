@@ -1703,26 +1703,26 @@ void tst_QHash::qmultihash_specific()
     }
 
     QVERIFY(hash1.contains(9, 99));
-    QCOMPARE(hash1.count(), 45);
+    QCOMPARE(hash1.size(), 45);
     hash1.remove(9, 99);
     QVERIFY(!hash1.contains(9, 99));
-    QCOMPARE(hash1.count(), 44);
+    QCOMPARE(hash1.size(), 44);
 
     hash1.remove(9, 99);
     QVERIFY(!hash1.contains(9, 99));
-    QCOMPARE(hash1.count(), 44);
+    QCOMPARE(hash1.size(), 44);
 
     hash1.remove(1, 99);
-    QCOMPARE(hash1.count(), 44);
+    QCOMPARE(hash1.size(), 44);
 
     hash1.insert(1, 99);
     hash1.insert(1, 99);
 
-    QCOMPARE(hash1.count(), 46);
+    QCOMPARE(hash1.size(), 46);
     hash1.remove(1, 99);
-    QCOMPARE(hash1.count(), 44);
+    QCOMPARE(hash1.size(), 44);
     hash1.remove(1, 99);
-    QCOMPARE(hash1.count(), 44);
+    QCOMPARE(hash1.size(), 44);
 
     {
     QMultiHash<int, int>::const_iterator i = hash1.constFind(1, 11);
@@ -1768,10 +1768,10 @@ void tst_QHash::qmultihash_specific()
     }
 
     QCOMPARE(hash1.count(9), 8);
-    QCOMPARE(hash1.count(), 44);
+    QCOMPARE(hash1.size(), 44);
     hash1.remove(9);
     QCOMPARE(hash1.count(9), 0);
-    QCOMPARE(hash1.count(), 36);
+    QCOMPARE(hash1.size(), 36);
 
     {
     QMultiHash<int, int> map1;
@@ -1787,7 +1787,7 @@ void tst_QHash::qmultihash_specific()
     map2.insert(42, 1);
     map2.insert(10, 2);
     map2.insert(48, 3);
-    QCOMPARE(map1.count(), map2.count());
+    QCOMPARE(map1.size(), map2.size());
     QVERIFY(map1.remove(42,5));
     QVERIFY(map1 != map2);
     QVERIFY(map2.remove(42,5));
@@ -1796,7 +1796,7 @@ void tst_QHash::qmultihash_specific()
     QHash<int, int> hash;
     hash.insert(-1, -1);
     map2.unite(hash);
-    QCOMPARE(map2.count(), 6);
+    QCOMPARE(map2.size(), 6);
     QCOMPARE(map2[-1], -1);
     }
 }
@@ -2183,7 +2183,7 @@ void tst_QHash::twoArguments_qHash()
 void tst_QHash::initializerList()
 {
     QHash<int, QString> hash = {{1, "bar"}, {1, "hello"}, {2, "initializer_list"}};
-    QCOMPARE(hash.count(), 2);
+    QCOMPARE(hash.size(), 2);
     QCOMPARE(hash[1], QString("hello"));
     QCOMPARE(hash[2], QString("initializer_list"));
 
@@ -2193,9 +2193,9 @@ void tst_QHash::initializerList()
     // QCOMPARE(stdh[1], QString("bar"));
 
     QMultiHash<QString, int> multiHash{{"il", 1}, {"il", 2}, {"il", 3}};
-    QCOMPARE(multiHash.count(), 3);
+    QCOMPARE(multiHash.size(), 3);
     QList<int> values = multiHash.values("il");
-    QCOMPARE(values.count(), 3);
+    QCOMPARE(values.size(), 3);
 
     QHash<int, int> emptyHash{};
     QVERIFY(emptyHash.isEmpty());
@@ -2367,7 +2367,7 @@ void tst_QHash::insert_hash()
 
         hash.insert(hash2);
 
-        QCOMPARE(hash.count(), 5);
+        QCOMPARE(hash.size(), 5);
         for (int i = 0; i < 5; ++i)
             QCOMPARE(hash[i], i);
     }
@@ -2379,7 +2379,7 @@ void tst_QHash::insert_hash()
 
         hash.insert(hash2);
 
-        QCOMPARE(hash.count(), 1);
+        QCOMPARE(hash.size(), 1);
         QCOMPARE(hash[0], 5);
     }
     {
@@ -2389,7 +2389,7 @@ void tst_QHash::insert_hash()
 
         hash.insert(hash2);
 
-        QCOMPARE(hash.count(), 1);
+        QCOMPARE(hash.size(), 1);
         QCOMPARE(hash[0], 5);
         QCOMPARE(hash, hash2);
     }
@@ -2402,7 +2402,7 @@ void tst_QHash::insert_hash()
         // insert into ourself, nothing should happen
         hash.insert(hash);
 
-        QCOMPARE(hash.count(), 3);
+        QCOMPARE(hash.size(), 3);
         QCOMPARE(hash[0], 7);
         QCOMPARE(hash[2], 5);
         QCOMPARE(hash[7], 55);
@@ -2576,13 +2576,13 @@ void tst_QHash::countInEmptyHash()
 {
     {
         QHash<int, int> hash;
-        QCOMPARE(hash.count(), 0);
+        QCOMPARE(hash.size(), 0);
         QCOMPARE(hash.count(42), 0);
     }
 
     {
         QMultiHash<int, int> hash;
-        QCOMPARE(hash.count(), 0);
+        QCOMPARE(hash.size(), 0);
         QCOMPARE(hash.count(42), 0);
         QCOMPARE(hash.count(42, 1), 0);
     }

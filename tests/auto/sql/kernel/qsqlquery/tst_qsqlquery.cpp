@@ -3594,9 +3594,9 @@ void tst_QSqlQuery::task_250026()
     QVERIFY_SQL(q, exec());
     QVERIFY_SQL(q, exec("select * from " + tableName));
     QVERIFY_SQL(q, next());
-    QCOMPARE(q.value(0).toString().length(), data258.length());
+    QCOMPARE(q.value(0).toString().size(), data258.size());
     QVERIFY_SQL(q, next());
-    QCOMPARE(q.value(0).toString().length(), data1026.length());
+    QCOMPARE(q.value(0).toString().size(), data1026.size());
 }
 
 void tst_QSqlQuery::crashQueryOnCloseDatabase()

@@ -291,7 +291,7 @@ void tst_QAbstractProxyModel::itemData()
     QFETCH(QModelIndex, index);
     QFETCH(int, count);
     SubQAbstractProxyModel model;
-    QCOMPARE(model.itemData(index).count(), count);
+    QCOMPARE(model.itemData(index).size(), count);
 }
 
 void tst_QAbstractProxyModel::mapFromSource_data()

@@ -645,7 +645,7 @@ void tst_QXmlStream::reportFailures() const
 
 void tst_QXmlStream::reportFailures_data()
 {
-    const int len = m_handler.failures.count();
+    const int len = m_handler.failures.size();
 
     QTest::addColumn<bool>("isError");
     QTest::addColumn<QString>("description");
@@ -682,7 +682,7 @@ void tst_QXmlStream::checkBaseline_data() const
     QTest::addColumn<QString>("expected");
     QTest::addColumn<QString>("output");
 
-    const int len = m_handler.missedBaselines.count();
+    const int len = m_handler.missedBaselines.size();
 
     for(int i = 0; i < len; ++i)
     {

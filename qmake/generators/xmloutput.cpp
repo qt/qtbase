@@ -240,9 +240,9 @@ void XmlOutput::closeTag()
 {
     switch(currentState) {
         case Bare:
-            if (tagStack.count())
+            if (tagStack.size())
                 //warn_msg(WarnLogic, "<Root>: Cannot close tag in Bare state, %d tags on stack", tagStack.count());
-                qDebug("<Root>: Cannot close tag in Bare state, %d tags on stack", int(tagStack.count()));
+                qDebug("<Root>: Cannot close tag in Bare state, %d tags on stack", int(tagStack.size()));
             else
                 //warn_msg(WarnLogic, "<Root>: Cannot close tag, no tags on stack");
                 qDebug("<Root>: Cannot close tag, no tags on stack");
@@ -271,7 +271,7 @@ void XmlOutput::closeTo(const QString &tag)
         qDebug("<%s>: Cannot close to tag <%s>, not on stack", tagStack.last().toLatin1().constData(), tag.toLatin1().constData());
         return;
     }
-    int left = tagStack.count();
+    int left = tagStack.size();
     while (left-- && cont) {
         cont = tagStack.last().compare(tag) != 0;
         closeTag();
@@ -280,7 +280,7 @@ void XmlOutput::closeTo(const QString &tag)
 
 void XmlOutput::closeAll()
 {
-    if (!tagStack.count())
+    if (!tagStack.size())
         return;
     closeTo(QString());
 }
@@ -315,7 +315,7 @@ void XmlOutput::addAttribute(const QString &attribute, const QString &value)
         case Tag:
             //warn_msg(WarnLogic, "<%s>: Cannot add attribute since tags not open", tagStack.last().toLatin1().constData());
             qDebug("<%s>: Cannot add attribute (%s) since tag's not open",
-                   (tagStack.count() ? tagStack.last().toLatin1().constData() : "Root"),
+                   (tagStack.size() ? tagStack.last().toLatin1().constData() : "Root"),
                    attribute.toLatin1().constData());
             return;
         case Attribute:
@@ -333,7 +333,7 @@ void XmlOutput::addAttributeTag(const QString &attribute, const QString &value)
         case Tag:
             //warn_msg(WarnLogic, "<%s>: Cannot add attribute since tags not open", tagStack.last().toLatin1().constData());
             qDebug("<%s>: Cannot add attribute (%s) since tag's not open",
-                   (tagStack.count() ? tagStack.last().toLatin1().constData() : "Root"),
+                   (tagStack.size() ? tagStack.last().toLatin1().constData() : "Root"),
                    attribute.toLatin1().constData());
             return;
         case Attribute:

@@ -382,7 +382,7 @@ void QAbstractEventDispatcher::installNativeEventFilter(QAbstractNativeEventFilt
 void QAbstractEventDispatcher::removeNativeEventFilter(QAbstractNativeEventFilter *filter)
 {
     Q_D(QAbstractEventDispatcher);
-    for (int i = 0; i < d->eventFilters.count(); ++i) {
+    for (int i = 0; i < d->eventFilters.size(); ++i) {
         if (d->eventFilters.at(i) == filter) {
             d->eventFilters[i] = nullptr;
             break;

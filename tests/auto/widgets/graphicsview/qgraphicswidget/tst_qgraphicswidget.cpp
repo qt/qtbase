@@ -1125,7 +1125,7 @@ void tst_QGraphicsWidget::layout()
     widget.setLayout(layout);
 
     QTRY_COMPARE(widget.layout(), static_cast<QGraphicsLayout*>(layout));
-    for (int i = 0; i < children.count(); ++i) {
+    for (int i = 0; i < children.size(); ++i) {
         SubQGraphicsWidget *item = children[i];
         QCOMPARE(item->parentWidget(), (QGraphicsWidget *)&widget);
         QVERIFY(item->geometry() != QRectF(0, 0, -1, -1));
@@ -1163,7 +1163,7 @@ void tst_QGraphicsWidget::layoutDirection()
     QCOMPARE(widget.testAttribute(Qt::WA_SetLayoutDirection), true);
     view->show();
     QVERIFY(QTest::qWaitForWindowExposed(view.data()));
-    for (int i = 0; i < children.count(); ++i) {
+    for (int i = 0; i < children.size(); ++i) {
         QTRY_COMPARE(children[i]->layoutDirection(), layoutDirection);
         QTRY_COMPARE(children[i]->testAttribute(Qt::WA_SetLayoutDirection), false);
         view->update();
@@ -1401,7 +1401,7 @@ void tst_QGraphicsWidget::setTabOrder()
         QVERIFY(view.viewport()->hasFocus());
 
         int currentItem = 0;
-        while (currentItem < children.count() - 1) {
+        while (currentItem < children.size() - 1) {
             QTest::keyPress(view.viewport(), Qt::Key_Tab);
             ++currentItem;
             QVERIFY(children[currentItem % children.size()]->hasFocus());
@@ -1550,7 +1550,7 @@ void tst_QGraphicsWidget::unsetLayoutDirection()
     widget.setLayoutDirection(layoutDirection);
     widget.unsetLayoutDirection();
     QCOMPARE(widget.testAttribute(Qt::WA_SetLayoutDirection), false);
-    for (int i = 0; i < children.count(); ++i) {
+    for (int i = 0; i < children.size(); ++i) {
         QCOMPARE(children[i]->layoutDirection(), Qt::LeftToRight);
     }
 }
@@ -1909,7 +1909,7 @@ void tst_QGraphicsWidget::setSizes()
     QSizeF max = QSizeF(50, 50);
 
     int i;
-    for (i = 0; i < inputInstructions.count(); ++i) {
+    for (i = 0; i < inputInstructions.size(); ++i) {
         Inst input = inputInstructions.at(i);
 
         // defaults
@@ -1963,7 +1963,7 @@ void tst_QGraphicsWidget::setSizes()
     widget->setPreferredSize(pref);
     widget->setMaximumSize(max);
 
-    for (i = 0; i < compareInstructions.count(); ++i) {
+    for (i = 0; i < compareInstructions.size(); ++i) {
         Inst input = compareInstructions.at(i);
         switch (input.first) {
             case MinimumSize:

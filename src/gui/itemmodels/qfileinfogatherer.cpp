@@ -143,7 +143,7 @@ void QFileInfoGatherer::fetchExtendedInformation(const QString &path, const QStr
 void QFileInfoGatherer::updateFile(const QString &filePath)
 {
     QString dir = filePath.mid(0, filePath.lastIndexOf(u'/'));
-    QString fileName = filePath.mid(dir.length() + 1);
+    QString fileName = filePath.mid(dir.size() + 1);
     fetchExtendedInformation(dir, QStringList(fileName));
 }
 
@@ -394,7 +394,7 @@ void QFileInfoGatherer::fetch(const QFileInfo &fileInfo, QElapsedTimer &base, bo
     updatedFiles.append(QPair<QString, QFileInfo>(fileInfo.fileName(), fileInfo));
     QElapsedTimer current;
     current.start();
-    if ((firstTime && updatedFiles.count() > 100) || base.msecsTo(current) > 1000) {
+    if ((firstTime && updatedFiles.size() > 100) || base.msecsTo(current) > 1000) {
         emit updates(path, updatedFiles);
         updatedFiles.clear();
         base = current;

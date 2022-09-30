@@ -529,13 +529,13 @@ public:
             m_staticTexts.append(staticText);
 
             QFontMetrics fm(p->font());
-            m_size = QSize(fm.horizontalAdvance(m_text, m_text.length()), fm.height());
+            m_size = QSize(fm.horizontalAdvance(m_text, m_text.size()), fm.height());
 
             break;
         }
         case PainterQPointMode: {
             QFontMetrics fm(p->font());
-            m_size = QSize(fm.horizontalAdvance(m_text, m_text.length()), fm.height());
+            m_size = QSize(fm.horizontalAdvance(m_text, m_text.size()), fm.height());
             break;
         }
 
@@ -576,7 +576,7 @@ public:
 
     QString name() const override
     {
-        int letters = m_text.length();
+        int letters = m_text.size();
         int lines = m_text.count('\n');
         if (lines == 0)
             lines = 1;

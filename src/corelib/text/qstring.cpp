@@ -3444,7 +3444,7 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
 */
 QString &QString::replace(qsizetype pos, qsizetype len, const QString &after)
 {
-    return replace(pos, len, after.constData(), after.length());
+    return replace(pos, len, after.constData(), after.size());
 }
 
 /*!
@@ -4164,7 +4164,7 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
 */
 qsizetype QString::indexOf(const QString &str, qsizetype from, Qt::CaseSensitivity cs) const
 {
-    return QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.length()), cs);
+    return QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.size()), cs);
 }
 
 /*!
@@ -4418,7 +4418,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
     // 1. build the backreferences list, holding where the backreferences
     // are in the replacement string
     QList<QStringCapture> backReferences;
-    const qsizetype al = after.length();
+    const qsizetype al = after.size();
     const QChar *ac = after.unicode();
 
     for (qsizetype i = 0; i < al - 1; i++) {
@@ -6422,7 +6422,7 @@ int QLatin1StringView::compare_helper(const QChar *data1, qsizetype length1, QLa
 */
 int QString::localeAwareCompare(const QString &other) const
 {
-    return localeAwareCompare_helper(constData(), length(), other.constData(), other.length());
+    return localeAwareCompare_helper(constData(), length(), other.constData(), other.size());
 }
 
 /*!
@@ -7078,27 +7078,27 @@ QString QString::vasprintf(const char *cformat, va_list ap)
                 switch (length_mod) {
                     case lm_hh: {
                         signed char *n = va_arg(ap, signed char*);
-                        *n = result.length();
+                        *n = result.size();
                         break;
                     }
                     case lm_h: {
                         short int *n = va_arg(ap, short int*);
-                        *n = result.length();
+                        *n = result.size();
                             break;
                     }
                     case lm_l: {
                         long int *n = va_arg(ap, long int*);
-                        *n = result.length();
+                        *n = result.size();
                         break;
                     }
                     case lm_ll: {
                         qint64 *n = va_arg(ap, qint64*);
-                        *n = result.length();
+                        *n = result.size();
                         break;
                     }
                     default: {
                         int *n = va_arg(ap, int*);
-                        *n = result.length();
+                        *n = result.size();
                         break;
                     }
                 }
@@ -7928,7 +7928,7 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
                     char16_t ucs4Low = QChar::lowSurrogate(n.ucs4);
                     char16_t oldHigh = QChar::highSurrogate(n.old_mapping);
                     char16_t oldLow = QChar::lowSurrogate(n.old_mapping);
-                    while (pos < s.length() - 1) {
+                    while (pos < s.size() - 1) {
                         if (s.at(pos).unicode() == ucs4High && s.at(pos + 1).unicode() == ucs4Low) {
                             if (!d)
                                 d = data->data();
@@ -7938,7 +7938,7 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
                         ++pos;
                     }
                 } else {
-                    while (pos < s.length()) {
+                    while (pos < s.size()) {
                         if (s.at(pos).unicode() == n.ucs4) {
                             if (!d)
                                 d = data->data();
@@ -8381,7 +8381,7 @@ QString QString::arg(qlonglong a, int fieldWidth, int base, QChar fillChar) cons
     if (d.occurrences > d.locale_occurrences) {
         arg = QLocaleData::c()->longLongToString(a, -1, base, fieldWidth, flags);
         Q_ASSERT(fillChar != u'0' || !qIsFinite(a)
-                 || fieldWidth <= arg.length());
+                 || fieldWidth <= arg.size());
     }
 
     QString localeArg;
@@ -8391,7 +8391,7 @@ QString QString::arg(qlonglong a, int fieldWidth, int base, QChar fillChar) cons
             flags |= QLocaleData::GroupDigits;
         localeArg = locale.d->m_data->longLongToString(a, -1, base, fieldWidth, flags);
         Q_ASSERT(fillChar != u'0' || !qIsFinite(a)
-                 || fieldWidth <= localeArg.length());
+                 || fieldWidth <= localeArg.size());
     }
 
     return replaceArgEscapes(*this, d, fieldWidth, arg, localeArg, fillChar);
@@ -8429,7 +8429,7 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, QChar fillChar) con
     if (d.occurrences > d.locale_occurrences) {
         arg = QLocaleData::c()->unsLongLongToString(a, -1, base, fieldWidth, flags);
         Q_ASSERT(fillChar != u'0' || !qIsFinite(a)
-                 || fieldWidth <= arg.length());
+                 || fieldWidth <= arg.size());
     }
 
     QString localeArg;
@@ -8439,7 +8439,7 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, QChar fillChar) con
             flags |= QLocaleData::GroupDigits;
         localeArg = locale.d->m_data->unsLongLongToString(a, -1, base, fieldWidth, flags);
         Q_ASSERT(fillChar != u'0' || !qIsFinite(a)
-                 || fieldWidth <= localeArg.length());
+                 || fieldWidth <= localeArg.size());
     }
 
     return replaceArgEscapes(*this, d, fieldWidth, arg, localeArg, fillChar);
@@ -8551,7 +8551,7 @@ QString QString::arg(double a, int fieldWidth, char format, int precision, QChar
         arg = QLocaleData::c()->doubleToString(a, precision, form, fieldWidth,
                                                flags | QLocaleData::ZeroPadExponent);
         Q_ASSERT(fillChar != u'0' || !qIsFinite(a)
-                 || fieldWidth <= arg.length());
+                 || fieldWidth <= arg.size());
     }
 
     QString localeArg;
@@ -8567,7 +8567,7 @@ QString QString::arg(double a, int fieldWidth, char format, int precision, QChar
             flags |= QLocaleData::AddTrailingZeroes;
         localeArg = locale.d->m_data->doubleToString(a, precision, form, fieldWidth, flags);
         Q_ASSERT(fillChar != u'0' || !qIsFinite(a)
-                 || fieldWidth <= localeArg.length());
+                 || fieldWidth <= localeArg.size());
     }
 
     return replaceArgEscapes(*this, d, fieldWidth, arg, localeArg, fillChar);
@@ -10320,10 +10320,10 @@ QDataStream &operator<<(QDataStream &out, const QString &str)
         if (!str.isNull() || out.version() < 3) {
             if ((out.byteOrder() == QDataStream::BigEndian) == (QSysInfo::ByteOrder == QSysInfo::BigEndian)) {
                 out.writeBytes(reinterpret_cast<const char *>(str.unicode()),
-                               static_cast<uint>(sizeof(QChar) * str.length()));
+                               static_cast<uint>(sizeof(QChar) * str.size()));
             } else {
-                QVarLengthArray<char16_t> buffer(str.length());
-                qbswap<sizeof(char16_t)>(str.constData(), str.length(), buffer.data());
+                QVarLengthArray<char16_t> buffer(str.size());
+                qbswap<sizeof(char16_t)>(str.constData(), str.size(), buffer.data());
                 out.writeBytes(reinterpret_cast<const char *>(buffer.data()),
                                static_cast<uint>(sizeof(char16_t) * buffer.size()));
             }

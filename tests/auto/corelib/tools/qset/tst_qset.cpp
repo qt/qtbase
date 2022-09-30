@@ -8,7 +8,7 @@
 int toNumber(const QString &str)
 {
     int res = 0;
-    for (int i = 0; i < str.length(); ++i)
+    for (int i = 0; i < str.size(); ++i)
         res = (res * 10) + str[i].digitValue();
     return res;
 }
@@ -139,44 +139,44 @@ void tst_QSet::size()
     QSet<int> set;
     QVERIFY(set.size() == 0);
     QVERIFY(set.isEmpty());
-    QVERIFY(set.count() == set.size());
+    QVERIFY(set.size() == set.size());
     QVERIFY(set.isEmpty() == set.empty());
     QVERIFY(!set.isDetached());
 
     set.insert(1);
     QVERIFY(set.size() == 1);
     QVERIFY(!set.isEmpty());
-    QVERIFY(set.count() == set.size());
+    QVERIFY(set.size() == set.size());
     QVERIFY(set.isEmpty() == set.empty());
 
     set.insert(1);
     QVERIFY(set.size() == 1);
     QVERIFY(!set.isEmpty());
-    QVERIFY(set.count() == set.size());
+    QVERIFY(set.size() == set.size());
     QVERIFY(set.isEmpty() == set.empty());
 
     set.insert(2);
     QVERIFY(set.size() == 2);
     QVERIFY(!set.isEmpty());
-    QVERIFY(set.count() == set.size());
+    QVERIFY(set.size() == set.size());
     QVERIFY(set.isEmpty() == set.empty());
 
     set.remove(1);
     QVERIFY(set.size() == 1);
     QVERIFY(!set.isEmpty());
-    QVERIFY(set.count() == set.size());
+    QVERIFY(set.size() == set.size());
     QVERIFY(set.isEmpty() == set.empty());
 
     set.remove(1);
     QVERIFY(set.size() == 1);
     QVERIFY(!set.isEmpty());
-    QVERIFY(set.count() == set.size());
+    QVERIFY(set.size() == set.size());
     QVERIFY(set.isEmpty() == set.empty());
 
     set.remove(2);
     QVERIFY(set.size() == 0);
     QVERIFY(set.isEmpty());
-    QVERIFY(set.count() == set.size());
+    QVERIFY(set.size() == set.size());
     QVERIFY(set.isEmpty() == set.empty());
 }
 
@@ -1011,7 +1011,7 @@ void tst_QSet::makeSureTheComfortFunctionsCompile()
 void tst_QSet::initializerList()
 {
     QSet<int> set = {1, 1, 2, 3, 4, 5};
-    QCOMPARE(set.count(), 5);
+    QCOMPARE(set.size(), 5);
     QVERIFY(set.contains(1));
     QVERIFY(set.contains(2));
     QVERIFY(set.contains(3));
@@ -1020,7 +1020,7 @@ void tst_QSet::initializerList()
 
     // check _which_ of the equal elements gets inserted (in the QHash/QMap case, it's the last):
     const QSet<IdentityTracker> set2 = {{1, 0}, {1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}};
-    QCOMPARE(set2.count(), 5);
+    QCOMPARE(set2.size(), 5);
     const int dummy = -1;
     const IdentityTracker searchKey = {1, dummy};
     QCOMPARE(set2.find(searchKey)->id, 0);

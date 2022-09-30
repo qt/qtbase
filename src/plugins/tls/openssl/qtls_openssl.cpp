@@ -1726,11 +1726,11 @@ unsigned TlsCryptographOpenSSL::pskClientTlsCallback(const char *hint, char *ide
         return 0;
 
     // Copy data back into OpenSSL
-    const int identityLength = qMin(authenticator.identity().length(), authenticator.maximumIdentityLength());
+    const int identityLength = qMin(authenticator.identity().size(), authenticator.maximumIdentityLength());
     std::memcpy(identity, authenticator.identity().constData(), identityLength);
     identity[identityLength] = 0;
 
-    const int pskLength = qMin(authenticator.preSharedKey().length(), authenticator.maximumPreSharedKeyLength());
+    const int pskLength = qMin(authenticator.preSharedKey().size(), authenticator.maximumPreSharedKeyLength());
     std::memcpy(psk, authenticator.preSharedKey().constData(), pskLength);
     return pskLength;
 }
@@ -1752,7 +1752,7 @@ unsigned TlsCryptographOpenSSL::pskServerTlsCallback(const char *identity, unsig
         return 0;
 
     // Copy data back into OpenSSL
-    const int pskLength = qMin(authenticator.preSharedKey().length(), authenticator.maximumPreSharedKeyLength());
+    const int pskLength = qMin(authenticator.preSharedKey().size(), authenticator.maximumPreSharedKeyLength());
     std::memcpy(psk, authenticator.preSharedKey().constData(), pskLength);
     return pskLength;
 }

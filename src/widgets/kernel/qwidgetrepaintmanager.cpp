@@ -808,7 +808,7 @@ void QWidgetRepaintManager::paintAndFlush()
         // texture content changes. Check if we have such widgets in the special
         // dirty list.
         QVarLengthArray<QWidget *, 16> paintPending;
-        const int numPaintPending = dirtyRenderToTextureWidgets.count();
+        const int numPaintPending = dirtyRenderToTextureWidgets.size();
         paintPending.reserve(numPaintPending);
         for (int i = 0; i < numPaintPending; ++i) {
             QWidget *w = dirtyRenderToTextureWidgets.at(i);
@@ -850,7 +850,7 @@ void QWidgetRepaintManager::paintAndFlush()
             }
         }
     }
-    for (int i = 0; i < dirtyRenderToTextureWidgets.count(); ++i)
+    for (int i = 0; i < dirtyRenderToTextureWidgets.size(); ++i)
         resetWidget(dirtyRenderToTextureWidgets.at(i));
     dirtyRenderToTextureWidgets.clear();
 
@@ -1133,7 +1133,7 @@ QRegion QWidgetRepaintManager::staticContents(QWidget *parent, const QRect &with
         return region;
 
     const bool clipToRect = !withinClipRect.isEmpty();
-    const int count = staticWidgets.count();
+    const int count = staticWidgets.size();
     for (int i = 0; i < count; ++i) {
         QWidget *w = staticWidgets.at(i);
         QWidgetPrivate *wd = w->d_func();

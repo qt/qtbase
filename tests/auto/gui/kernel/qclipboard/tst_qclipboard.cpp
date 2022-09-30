@@ -170,7 +170,7 @@ void tst_QClipboard::testSignals()
     QCOMPARE(searchChangedSpy.count(), 0);
     QCOMPARE(selectionChangedSpy.count(), 0);
     QCOMPARE(changedSpy.count(), 1);
-    QCOMPARE(changedSpy.at(0).count(), 1);
+    QCOMPARE(changedSpy.at(0).size(), 1);
     QCOMPARE(qvariant_cast<QClipboard::Mode>(changedSpy.at(0).at(0)), QClipboard::Clipboard);
 
     changedSpy.clear();
@@ -180,7 +180,7 @@ void tst_QClipboard::testSignals()
         clipboard->setText(text, QClipboard::Selection);
         QCOMPARE(selectionChangedSpy.count(), 1);
         QCOMPARE(changedSpy.count(), 1);
-        QCOMPARE(changedSpy.at(0).count(), 1);
+        QCOMPARE(changedSpy.at(0).size(), 1);
         QCOMPARE(qvariant_cast<QClipboard::Mode>(changedSpy.at(0).at(0)), QClipboard::Selection);
     } else {
         QCOMPARE(selectionChangedSpy.count(), 0);
@@ -195,7 +195,7 @@ void tst_QClipboard::testSignals()
         clipboard->setText(text, QClipboard::FindBuffer);
         QCOMPARE(searchChangedSpy.count(), 1);
         QCOMPARE(changedSpy.count(), 1);
-        QCOMPARE(changedSpy.at(0).count(), 1);
+        QCOMPARE(changedSpy.at(0).size(), 1);
         QCOMPARE(qvariant_cast<QClipboard::Mode>(changedSpy.at(0).at(0)), QClipboard::FindBuffer);
     } else {
         QCOMPARE(searchChangedSpy.count(), 0);

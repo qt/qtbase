@@ -38,12 +38,12 @@ public:
     void waitForFinished()
     {
         if (m_cancelOnWait) {
-            for (int i = 0; i < m_futures.count(); ++i) {
+            for (int i = 0; i < m_futures.size(); ++i) {
                  m_futures[i].cancel();
             }
         }
 
-        for (int i = 0; i < m_futures.count(); ++i) {
+        for (int i = 0; i < m_futures.size(); ++i) {
              m_futures[i].waitForFinished();
          }
     }

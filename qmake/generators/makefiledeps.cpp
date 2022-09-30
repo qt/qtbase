@@ -164,7 +164,7 @@ void QMakeSourceFileInfo::setDependencyPaths(const QList<QMakeLocalFileName> &l)
 {
     // Ensure that depdirs does not contain the same paths several times, to minimize the stats
     QList<QMakeLocalFileName> ll;
-    for (int i = 0; i < l.count(); ++i) {
+    for (int i = 0; i < l.size(); ++i) {
         if (!ll.contains(l.at(i)))
             ll.append(l.at(i));
     }

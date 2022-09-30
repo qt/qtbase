@@ -166,7 +166,7 @@ QStackedLayout::~QStackedLayout()
 int QStackedLayout::addWidget(QWidget *widget)
 {
     Q_D(QStackedLayout);
-    return insertWidget(d->list.count(), widget);
+    return insertWidget(d->list.size(), widget);
 }
 
 /*!
@@ -187,9 +187,9 @@ int QStackedLayout::insertWidget(int index, QWidget *widget)
 {
     Q_D(QStackedLayout);
     addChildWidget(widget);
-    index = qMin(index, d->list.count());
+    index = qMin(index, d->list.size());
     if (index < 0)
-        index = d->list.count();
+        index = d->list.size();
     QWidgetItem *wi = QLayoutPrivate::createWidgetItem(this, widget);
     d->list.insert(index, wi);
     invalidate();
@@ -234,8 +234,8 @@ QLayoutItem *QStackedLayout::takeAt(int index)
     QLayoutItem *item = d->list.takeAt(index);
     if (index == d->index) {
         d->index = -1;
-        if ( d->list.count() > 0 ) {
-            int newIndex = (index == d->list.count()) ? index-1 : index;
+        if ( d->list.size() > 0 ) {
+            int newIndex = (index == d->list.size()) ? index-1 : index;
             setCurrentIndex(newIndex);
         } else {
             emit currentChanged(-1);
@@ -403,7 +403,7 @@ QSize QStackedLayout::sizeHint() const
 {
     Q_D(const QStackedLayout);
     QSize s(0, 0);
-    int n = d->list.count();
+    int n = d->list.size();
 
     for (int i = 0; i < n; ++i)
         if (QWidget *widget = d->list.at(i)->widget()) {
@@ -424,7 +424,7 @@ QSize QStackedLayout::minimumSize() const
 {
     Q_D(const QStackedLayout);
     QSize s(0, 0);
-    int n = d->list.count();
+    int n = d->list.size();
 
     for (int i = 0; i < n; ++i)
         if (QWidget *widget = d->list.at(i)->widget())
@@ -444,7 +444,7 @@ void QStackedLayout::setGeometry(const QRect &rect)
             widget->setGeometry(rect);
         break;
     case StackAll:
-        if (const int n = d->list.count())
+        if (const int n = d->list.size())
             for (int i = 0; i < n; ++i)
                 if (QWidget *widget = d->list.at(i)->widget())
                     widget->setGeometry(rect);
@@ -531,7 +531,7 @@ void QStackedLayout::setStackingMode(StackingMode stackingMode)
         return;
     d->stackingMode = stackingMode;
 
-    const int n = d->list.count();
+    const int n = d->list.size();
     if (n == 0)
         return;
 

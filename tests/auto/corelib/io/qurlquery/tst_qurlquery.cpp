@@ -220,7 +220,7 @@ void tst_QUrlQuery::addRemove()
         QCOMPARE(query.allQueryItemValues("a"), QStringList() << "b");
 
         QList<QPair<QString, QString> > allItems = query.queryItems();
-        QCOMPARE(allItems.count(), 1);
+        QCOMPARE(allItems.size(), 1);
         QCOMPARE(allItems.at(0).first, QString("a"));
         QCOMPARE(allItems.at(0).second, QString("b"));
     }
@@ -238,7 +238,7 @@ void tst_QUrlQuery::addRemove()
         QCOMPARE(query.allQueryItemValues("c"), QStringList() << "d");
 
         QList<QPair<QString, QString> > allItems = query.queryItems();
-        QCOMPARE(allItems.count(), 2);
+        QCOMPARE(allItems.size(), 2);
         QVERIFY(allItems.contains(qItem("a", "b")));
         QVERIFY(allItems.contains(qItem("c", "d")));
 
@@ -261,7 +261,7 @@ void tst_QUrlQuery::addRemove()
         QCOMPARE(query.allQueryItemValues("a"), QStringList() << "b");
 
         QList<QPair<QString, QString> > allItems = query.queryItems();
-        QCOMPARE(allItems.count(), 1);
+        QCOMPARE(allItems.size(), 1);
         QCOMPARE(allItems.at(0).first, QString("a"));
         QCOMPARE(allItems.at(0).second, QString("b"));
 
@@ -285,7 +285,7 @@ void tst_QUrlQuery::addRemove()
         QCOMPARE(query.allQueryItemValues("e"), QStringList() << emptyButNotNull);
 
         QList<QPair<QString, QString> > allItems = query.queryItems();
-        QCOMPARE(allItems.count(), 2);
+        QCOMPARE(allItems.size(), 2);
         QVERIFY(allItems.contains(qItem("a", "b")));
         QVERIFY(allItems.contains(qItem("e", emptyButNotNull)));
 

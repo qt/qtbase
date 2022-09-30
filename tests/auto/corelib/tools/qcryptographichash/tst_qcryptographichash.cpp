@@ -402,7 +402,7 @@ void tst_QCryptographicHash::hashLength()
     QFETCH(const QCryptographicHash::Algorithm, algorithm);
 
     QByteArray output = QCryptographicHash::hash("test", algorithm);
-    QCOMPARE(QCryptographicHash::hashLength(algorithm), output.length());
+    QCOMPARE(QCryptographicHash::hashLength(algorithm), output.size());
 }
 
 void tst_QCryptographicHash::move()

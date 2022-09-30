@@ -2683,7 +2683,7 @@ QString escapeWeirdChars(const QString &s)
     QString result;
     bool escapeNextDigit = false;
 
-    for (int i = 0; i < s.length(); ++i) {
+    for (int i = 0; i < s.size(); ++i) {
         QChar c = s.at(i);
         if (c.unicode() < ' ' || c.unicode() > '~'
             || (escapeNextDigit && c.unicode() >= '0' && c.unicode() <= 'f')) {

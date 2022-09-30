@@ -54,7 +54,7 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
     while (true) {
         // skip spaces
         pos = nextNonWhitespace(header, pos);
-        if (pos == header.length())
+        if (pos == header.size())
             return result;      // end of parsing
 
         // pos points to a non-whitespace
@@ -68,7 +68,7 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
         // of the header, whichever comes first
         int end = comma;
         if (end == -1)
-            end = header.length();
+            end = header.size();
         if (equal != -1 && end > equal)
             end = equal;        // equal sign comes before comma/end
         QByteArray key = QByteArray(header.constData() + pos, end - pos).trimmed().toLower();
@@ -78,26 +78,26 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
             // case: token "=" (token | quoted-string)
             // skip spaces
             pos = nextNonWhitespace(header, pos);
-            if (pos == header.length())
+            if (pos == header.size())
                 // huh? Broken header
                 return result;
 
             QByteArray value;
-            value.reserve(header.length() - pos);
+            value.reserve(header.size() - pos);
             if (header.at(pos) == '"') {
                 // case: quoted-string
                 // quoted-string  = ( <"> *(qdtext | quoted-pair ) <"> )
                 // qdtext         = <any TEXT except <">>
                 // quoted-pair    = "\" CHAR
                 ++pos;
-                while (pos < header.length()) {
+                while (pos < header.size()) {
                     char c = header.at(pos);
                     if (c == '"') {
                         // end of quoted text
                         break;
                     } else if (c == '\\') {
                         ++pos;
-                        if (pos >= header.length())
+                        if (pos >= header.size())
                             // broken header
                             return result;
                         c = header.at(pos);
@@ -108,7 +108,7 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
                 }
             } else {
                 // case: token
-                while (pos < header.length()) {
+                while (pos < header.size()) {
                     char c = header.at(pos);
                     if (isSeparator(c))
                         break;
@@ -1717,7 +1717,7 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
         // Don't store Warning 1xx headers
         if (header == "warning") {
             QByteArray v = q->rawHeader(header);
-            if (v.length() == 3
+            if (v.size() == 3
                 && v[0] == '1'
                 && v[1] >= '0' && v[1] <= '9'
                 && v[2] >= '0' && v[2] <= '9')

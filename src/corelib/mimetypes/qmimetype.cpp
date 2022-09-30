@@ -413,7 +413,7 @@ QStringList QMimeType::suffixes() const
     for (const QString &pattern : qAsConst(d->globPatterns)) {
         // Not a simple suffix if it looks like: README or *. or *.* or *.JP*G or *.JP?
         if (pattern.startsWith("*."_L1) &&
-            pattern.length() > 2 &&
+            pattern.size() > 2 &&
             pattern.indexOf(u'*', 2) < 0 && pattern.indexOf(u'?', 2) < 0) {
             const QString suffix = pattern.mid(2);
             result.append(suffix);

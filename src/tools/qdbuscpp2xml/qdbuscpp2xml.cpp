@@ -110,13 +110,13 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
         qWarning() << qPrintable(errorMsg);
         return QString();           // invalid form
     }
-    if (isSignal && inputCount + 1 != types.count())
+    if (isSignal && inputCount + 1 != types.size())
         return QString();           // signal with output arguments?
     if (isSignal && types.at(inputCount) == QDBusMetaTypeId::message())
         return QString();           // signal with QDBusMessage argument?
 
     bool isScriptable = mm.isScriptable;
-    for (qsizetype j = 1; j < types.count(); ++j) {
+    for (qsizetype j = 1; j < types.size(); ++j) {
         // input parameter for a slot or output for a signal
         if (types.at(j) == QDBusMetaTypeId::message()) {
             isScriptable = true;
@@ -253,7 +253,7 @@ QString qDBusInterfaceFromClassDef(const ClassDef *mo)
     if (interface.startsWith("QDBus"_L1)) {
         interface.prepend("org.qtproject.QtDBus."_L1);
     } else if (interface.startsWith(u'Q') &&
-                interface.length() >= 2 && interface.at(1).isUpper()) {
+                interface.size() >= 2 && interface.at(1).isUpper()) {
         // assume it's Qt
         interface.prepend("local.org.qtproject.Qt."_L1);
     } else {

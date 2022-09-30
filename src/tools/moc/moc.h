@@ -276,8 +276,8 @@ inline QByteArray noRef(const QByteArray &type)
 {
     if (type.endsWith('&')) {
         if (type.endsWith("&&"))
-            return type.left(type.length()-2);
-        return type.left(type.length()-1);
+            return type.left(type.size()-2);
+        return type.left(type.size()-1);
     }
     return type;
 }

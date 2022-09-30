@@ -652,7 +652,7 @@ void tst_QLineEdit::setInputMask()
         testWidget->insert(input);
     } else {
         psKeyClick(testWidget, Qt::Key_Home);
-        for (int i=0; i<input.length(); i++)
+        for (int i=0; i<input.size(); i++)
             QTest::keyClick(testWidget, input.at(i).toLatin1());
     }
 
@@ -1664,7 +1664,7 @@ void tst_QLineEdit::displayText_data()
         QString input;
         QString pass;
         input = "Hello World";
-        pass.resize(input.length());
+        pass.resize(input.size());
         pass.fill(passChar);
         QTest::newRow(QString(s + " text0").toLatin1()) << input << pass << m << bool(use_setText);
         QTest::newRow(QString(s + " text1").toLatin1()) << QString("") <<
@@ -1672,14 +1672,14 @@ void tst_QLineEdit::displayText_data()
                       m << bool(use_setText);
         QTest::newRow(QString(s + " text2").toLatin1()) << QString("A") << QString(passChar) << m << bool(use_setText);
         input = QString("ryyryryryryryryryryryryryryryryryryryryryryryryryryryrryryryryryryryryryryryryryryryryryryryryryryryryryryryryryryryryryrryryryryryryryryryryryryry");
-        pass.resize(input.length());
+        pass.resize(input.size());
         pass.fill(passChar);
         QTest::newRow(QString(s + " text3").toLatin1()) << input << pass << m << bool(use_setText);
         input = QString("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890`~!@#$%^&*()_-+={[}]|\\:;'?/>.<,\"");
-        pass.fill(passChar, input.length());
+        pass.fill(passChar, input.size());
         QTest::newRow(QString(s + " text4").toLatin1()) << input << pass << m << bool(use_setText);
         input = QString("Hello") + QChar(0xa0) + "World";
-        pass.resize(input.length());
+        pass.resize(input.size());
         pass.fill(passChar);
         QTest::newRow(QString(s + " text with nbsp").toLatin1()) << input << pass << m << bool(use_setText);
     }
@@ -2292,7 +2292,7 @@ void tst_QLineEdit::deleteSelectedText()
 
 #ifndef QT_NO_CONTEXTMENU
     QMenu *menu = edit.createStandardContextMenu();
-    for (int i = 0; i < menu->actions().count(); ++i) {
+    for (int i = 0; i < menu->actions().size(); ++i) {
         QAction *current = menu->actions().at(i);
         if (current->text() == QLineEdit::tr("Delete")) {
             current->trigger(); //this will delete the whole text selected
@@ -2425,7 +2425,7 @@ class QIntFixValidator : public QIntValidator {
 public:
     QIntFixValidator(int min, int max, QObject *parent) : QIntValidator(min, max, parent) {}
     void fixup (QString &input) const override {
-        for (int i=0; i<input.length(); ++i)
+        for (int i=0; i<input.size(); ++i)
             if (!input.at(i).isNumber()) {
                 input[(int)i] = QChar('0');
             }
@@ -2991,7 +2991,7 @@ void tst_QLineEdit::setSelection_data()
     QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString("Abc ") << true;
 
-    start = -1; length = 0; pos = text.length();
+    start = -1; length = 0; pos = text.size();
     QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString() << false;
 
@@ -3011,7 +3011,7 @@ void tst_QLineEdit::setSelection_data()
     QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString("A") << true;
 
-    start = -1; length = -1; pos = text.length();
+    start = -1; length = -1; pos = text.size();
     QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString() << false;
 }
@@ -4965,10 +4965,10 @@ void tst_QLineEdit::QTBUG_60319_setInputMaskCheckImSurroundingText()
     QLineEdit *testWidget = ensureTestWidget();
     QString mask("+000(000)-000-00-00");
     testWidget->setInputMask(mask);
-    testWidget->setCursorPosition(mask.length());
+    testWidget->setCursorPosition(mask.size());
     QString surroundingText = testWidget->inputMethodQuery(Qt::ImSurroundingText).toString();
     int cursorPosition = testWidget->inputMethodQuery(Qt::ImCursorPosition).toInt();
-    QCOMPARE(surroundingText.length(), cursorPosition);
+    QCOMPARE(surroundingText.size(), cursorPosition);
 }
 
 void tst_QLineEdit::testQuickSelectionWithMouse()

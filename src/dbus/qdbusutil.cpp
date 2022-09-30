@@ -59,7 +59,7 @@ static bool variantToString(const QVariant &arg, QString &out)
     } else if (argType == QMetaType::QByteArray) {
         out += u'{';
         QByteArray list = arg.toByteArray();
-        for (int i = 0; i < list.length(); ++i) {
+        for (int i = 0; i < list.size(); ++i) {
             out += QString::number(list.at(i));
             out += ", "_L1;
         }
@@ -335,11 +335,11 @@ namespace QDBusUtil
     */
     bool isValidInterfaceName(const QString& ifaceName)
     {
-        if (ifaceName.isEmpty() || ifaceName.length() > DBUS_MAXIMUM_NAME_LENGTH)
+        if (ifaceName.isEmpty() || ifaceName.size() > DBUS_MAXIMUM_NAME_LENGTH)
             return false;
 
         const auto parts = QStringView{ifaceName}.split(u'.');
-        if (parts.count() < 2)
+        if (parts.size() < 2)
             return false;           // at least two parts
 
         for (auto part : parts)
@@ -363,7 +363,7 @@ namespace QDBusUtil
             return false;
 
         const auto parts = connName.mid(1).split(u'.');
-        if (parts.count() < 1)
+        if (parts.size() < 1)
             return false;
 
         for (QStringView part : parts) {
@@ -402,14 +402,14 @@ namespace QDBusUtil
     */
     bool isValidBusName(const QString &busName)
     {
-        if (busName.isEmpty() || busName.length() > DBUS_MAXIMUM_NAME_LENGTH)
+        if (busName.isEmpty() || busName.size() > DBUS_MAXIMUM_NAME_LENGTH)
             return false;
 
         if (busName.startsWith(u':'))
             return isValidUniqueConnectionName(busName);
 
         const auto parts = QStringView{busName}.split(u'.');
-        if (parts.count() < 1)
+        if (parts.size() < 1)
             return false;
 
         for (QStringView part : parts) {

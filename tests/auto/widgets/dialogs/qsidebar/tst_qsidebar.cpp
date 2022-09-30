@@ -38,9 +38,9 @@ void tst_QSidebar::setUrls()
     QCOMPARE(model->rowCount(), 0);
     qsidebar.setUrls(urls);
     QCOMPARE(qsidebar.urls(), urls);
-    QCOMPARE(model->rowCount(), urls.count());
+    QCOMPARE(model->rowCount(), urls.size());
     qsidebar.setUrls(urls);
-    QCOMPARE(model->rowCount(), urls.count());
+    QCOMPARE(model->rowCount(), urls.size());
 }
 
 void tst_QSidebar::selectUrls()

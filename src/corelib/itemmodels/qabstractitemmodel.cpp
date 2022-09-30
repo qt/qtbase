@@ -840,13 +840,13 @@ void QAbstractItemModelPrivate::removePersistentIndexData(QPersistentModelIndexD
         Q_UNUSED(removed);
     }
     // make sure our optimization still works
-    for (int i = persistent.moved.count() - 1; i >= 0; --i) {
+    for (int i = persistent.moved.size() - 1; i >= 0; --i) {
         int idx = persistent.moved.at(i).indexOf(data);
         if (idx >= 0)
             persistent.moved[i].remove(idx);
     }
     // update the references to invalidated persistent indexes
-    for (int i = persistent.invalidated.count() - 1; i >= 0; --i) {
+    for (int i = persistent.invalidated.size() - 1; i >= 0; --i) {
         int idx = persistent.invalidated.at(i).indexOf(data);
         if (idx >= 0)
             persistent.invalidated[i].remove(idx);
@@ -2775,15 +2775,15 @@ bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &pare
 
     // Compute the number of continuous rows upon insertion and modify the rows to match
     QList<int> rowsToInsert(bottom + 1);
-    for (int i = 0; i < rows.count(); ++i)
+    for (int i = 0; i < rows.size(); ++i)
         rowsToInsert[rows.at(i)] = 1;
-    for (int i = 0; i < rowsToInsert.count(); ++i) {
+    for (int i = 0; i < rowsToInsert.size(); ++i) {
         if (rowsToInsert.at(i) == 1){
             rowsToInsert[i] = dragRowCount;
             ++dragRowCount;
         }
     }
-    for (int i = 0; i < rows.count(); ++i)
+    for (int i = 0; i < rows.size(); ++i)
         rows[i] = top + rowsToInsert.at(rows.at(i));
 
     QBitArray isWrittenTo(dragRowCount * dragColumnCount);
@@ -3473,7 +3473,7 @@ QModelIndexList QAbstractItemModel::persistentIndexList() const
 {
     Q_D(const QAbstractItemModel);
     QModelIndexList result;
-    result.reserve(d->persistent.indexes.count());
+    result.reserve(d->persistent.indexes.size());
     for (auto *data : qAsConst(d->persistent.indexes))
         result.append(data->index);
     return result;

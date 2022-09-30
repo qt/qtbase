@@ -878,7 +878,7 @@ static QItemSelection mergeRowLengths(const QList<QPair<QPersistentModelIndex, u
 
     QItemSelection result;
     int i = 0;
-    while (i < rowLengths.count()) {
+    while (i < rowLengths.size()) {
         const QPersistentModelIndex &tl = rowLengths.at(i).first;
         if (!tl.isValid()) {
             ++i;
@@ -886,7 +886,7 @@ static QItemSelection mergeRowLengths(const QList<QPair<QPersistentModelIndex, u
         }
         QPersistentModelIndex br = tl;
         const uint length = rowLengths.at(i).second;
-        while (++i < rowLengths.count()) {
+        while (++i < rowLengths.size()) {
             const QPersistentModelIndex &next = rowLengths.at(i).first;
             if (!next.isValid())
                 continue;
@@ -916,7 +916,7 @@ static QItemSelection mergeIndexes(const QList<QPersistentModelIndex> &indexes)
     QItemSelection colSpans;
     // merge columns
     int i = 0;
-    while (i < indexes.count()) {
+    while (i < indexes.size()) {
         const QPersistentModelIndex &tl = indexes.at(i);
         if (!tl.isValid()) {
             ++i;
@@ -926,7 +926,7 @@ static QItemSelection mergeIndexes(const QList<QPersistentModelIndex> &indexes)
         QModelIndex brParent = br.parent();
         int brRow = br.row();
         int brColumn = br.column();
-        while (++i < indexes.count()) {
+        while (++i < indexes.size()) {
             const QPersistentModelIndex &next = indexes.at(i);
             if (!next.isValid())
                 continue;

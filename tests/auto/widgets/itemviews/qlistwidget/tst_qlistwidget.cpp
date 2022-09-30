@@ -539,7 +539,7 @@ void tst_QListWidget::editItem()
     // There doesn't seem to be a way to detect if the item has already been edited...
     if (!existsAlready && flags & Qt::ItemIsEditable && flags & Qt::ItemIsEnabled) {
         QList<QObject *> children = testWidget->viewport()->children();
-        QVERIFY(children.count() > childCount);
+        QVERIFY(children.size() > childCount);
         bool found = false;
         for (int i = 0; i < children.size(); ++i) {
             if (children.at(i)->inherits("QExpandingLineEdit"))
@@ -556,12 +556,12 @@ void tst_QListWidget::findItems()
     // This really just tests that the items that are returned are converted from index's to items correctly.
 
     // Boundary checking
-    QCOMPARE(testWidget->findItems("GirlsCanWearJeansAndCutTheirHairShort", Qt::MatchExactly).count(), 0);
+    QCOMPARE(testWidget->findItems("GirlsCanWearJeansAndCutTheirHairShort", Qt::MatchExactly).size(), 0);
 
     populate();
 
     for (int i = 0; i < testWidget->count(); ++i)
-        QCOMPARE(testWidget->findItems(testWidget->item(i)->text(), Qt::MatchExactly).count(), 1);
+        QCOMPARE(testWidget->findItems(testWidget->item(i)->text(), Qt::MatchExactly).size(), 1);
 }
 
 
@@ -827,7 +827,7 @@ void tst_QListWidget::selectedItems()
         QListWidgetItem *item = testWidget->item(i);
         item->setSelected(true);
         QVERIFY(item->isSelected());
-        QCOMPARE(testWidget->selectedItems().count(), 1);
+        QCOMPARE(testWidget->selectedItems().size(), 1);
     }
     //let's clear the selection
     testWidget->clearSelection();
@@ -845,7 +845,7 @@ void tst_QListWidget::selectedItems()
 
     // check that the correct number of items and the expected items are there
     QList<QListWidgetItem *> selectedItems = testWidget->selectedItems();
-    QCOMPARE(selectedItems.count(), expectedRows.count());
+    QCOMPARE(selectedItems.size(), expectedRows.count());
     for (int row : expectedRows)
         QVERIFY(selectedItems.contains(testWidget->item(row)));
 
@@ -1386,7 +1386,7 @@ void tst_QListWidget::insertItemsWithSorting()
         for (int i = 0; i < w.count(); ++i)
             QCOMPARE(w.item(i)->text(), expectedItems.at(i));
 
-        for (int k = 0; k < persistent.count(); ++k)
+        for (int k = 0; k < persistent.size(); ++k)
             QCOMPARE(persistent.at(k).row(), expectedRows.at(k));
     }
 }
@@ -1482,7 +1482,7 @@ void tst_QListWidget::itemData()
         QCOMPARE(widget.currentRoles, QList<int> { Qt::UserRole + i });
     }
     QMap<int, QVariant> flags = widget.model()->itemData(widget.model()->index(0, 0));
-    QCOMPARE(flags.count(), 6);
+    QCOMPARE(flags.size(), 6);
     for (int i = 0; i < 4; ++i)
         QCOMPARE(flags[Qt::UserRole + i].toString(), QString::number(i + 1));
 
@@ -1528,13 +1528,13 @@ void tst_QListWidget::changeDataWithSorting()
     item->setText(newValue);
     for (int i = 0; i < expectedItems.count(); ++i) {
         QCOMPARE(w.item(i)->text(), expectedItems.at(i));
-        for (int j = 0; j < persistent.count(); ++j) {
+        for (int j = 0; j < persistent.size(); ++j) {
             if (persistent.at(j).row() == i) // the same toplevel row
                 QCOMPARE(persistent.at(j).internalPointer(), static_cast<void *>(w.item(i)));
         }
     }
 
-    for (int k = 0; k < persistent.count(); ++k)
+    for (int k = 0; k < persistent.size(); ++k)
         QCOMPARE(persistent.at(k).row(), expectedRows.at(k));
 
     QCOMPARE(dataChangedSpy.count(), 1);

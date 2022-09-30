@@ -1754,26 +1754,26 @@ void tst_QTextCursor::update_data()
     QTest::newRow("removeInsideSelection")
         << text
         << /*position*/ 0
-        << /*anchor*/ int(text.length())
+        << /*anchor*/ int(text.size())
         // delete 'big'
         << 6
         << 6 + charsToDelete
         << QString() // don't insert anything, just remove
         << /*expectedPosition*/ 0
-        << /*expectedAnchor*/ int(text.length() - charsToDelete)
+        << /*expectedAnchor*/ int(text.size() - charsToDelete)
         ;
 
     text = "Hello big world";
     charsToDelete = 3;
     QTest::newRow("removeInsideSelectionWithSwappedAnchorAndPosition")
         << text
-        << /*position*/ int(text.length())
+        << /*position*/ int(text.size())
         << /*anchor*/ 0
         // delete 'big'
         << 6
         << 6 + charsToDelete
         << QString() // don't insert anything, just remove
-        << /*expectedPosition*/ int(text.length() - charsToDelete)
+        << /*expectedPosition*/ int(text.size() - charsToDelete)
         << /*expectedAnchor*/ 0
         ;
 
@@ -1784,13 +1784,13 @@ void tst_QTextCursor::update_data()
     QTest::newRow("replaceInsideSelection")
         << text
         << /*position*/ 0
-        << /*anchor*/ int(text.length())
+        << /*anchor*/ int(text.size())
         // delete 'big' ...
         << 6
         << 6 + charsToDelete
         << textToInsert // ... and replace 'big' with 'small'
         << /*expectedPosition*/ 0
-        << /*expectedAnchor*/ int(text.length() - charsToDelete + textToInsert.length())
+        << /*expectedAnchor*/ int(text.size() - charsToDelete + textToInsert.size())
         ;
 
     text = "Hello big world";
@@ -1798,13 +1798,13 @@ void tst_QTextCursor::update_data()
     textToInsert = "small";
     QTest::newRow("replaceInsideSelectionWithSwappedAnchorAndPosition")
         << text
-        << /*position*/ int(text.length())
+        << /*position*/ int(text.size())
         << /*anchor*/ 0
         // delete 'big' ...
         << 6
         << 6 + charsToDelete
         << textToInsert // ... and replace 'big' with 'small'
-        << /*expectedPosition*/ int(text.length() - charsToDelete + textToInsert.length())
+        << /*expectedPosition*/ int(text.size() - charsToDelete + textToInsert.size())
         << /*expectedAnchor*/ 0
         ;
 
@@ -1813,14 +1813,14 @@ void tst_QTextCursor::update_data()
     charsToDelete = 3;
     QTest::newRow("removeBeforeSelection")
         << text
-        << /*position*/ int(text.length() - 5)
-        << /*anchor*/ int(text.length())
+        << /*position*/ int(text.size() - 5)
+        << /*anchor*/ int(text.size())
         // delete 'big'
         << 6
         << 6 + charsToDelete
         << QString() // don't insert anything, just remove
-        << /*expectedPosition*/ int(text.length() - 5 - charsToDelete)
-        << /*expectedAnchor*/ int(text.length() - charsToDelete)
+        << /*expectedPosition*/ int(text.size() - 5 - charsToDelete)
+        << /*expectedAnchor*/ int(text.size() - charsToDelete)
         ;
 
     text = "Hello big world";

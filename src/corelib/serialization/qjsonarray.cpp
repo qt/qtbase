@@ -330,7 +330,7 @@ void QJsonArray::append(const QJsonValue &value)
  */
 void QJsonArray::removeAt(qsizetype i)
 {
-    if (!a || i < 0 || i >= a->elements.length())
+    if (!a || i < 0 || i >= a->elements.size())
         return;
     detach();
     a->removeAt(i);
@@ -366,7 +366,7 @@ void QJsonArray::removeAt(qsizetype i)
  */
 QJsonValue QJsonArray::takeAt(qsizetype i)
 {
-    if (!a || i < 0 || i >= a->elements.length())
+    if (!a || i < 0 || i >= a->elements.size())
         return QJsonValue(QJsonValue::Undefined);
 
     detach();
@@ -385,11 +385,11 @@ QJsonValue QJsonArray::takeAt(qsizetype i)
 void QJsonArray::insert(qsizetype i, const QJsonValue &value)
 {
     if (a)
-        detach(a->elements.length() + 1);
+        detach(a->elements.size() + 1);
     else
         a = new QCborContainerPrivate;
 
-    Q_ASSERT (i >= 0 && i <= a->elements.length());
+    Q_ASSERT (i >= 0 && i <= a->elements.size());
     a->insertAt(i, value.type() == QJsonValue::Undefined ? QCborValue(nullptr)
                                                          : QCborValue::fromJsonValue(value));
 }
@@ -420,7 +420,7 @@ void QJsonArray::insert(qsizetype i, const QJsonValue &value)
  */
 void QJsonArray::replace(qsizetype i, const QJsonValue &value)
 {
-    Q_ASSERT (a && i >= 0 && i < a->elements.length());
+    Q_ASSERT (a && i >= 0 && i < a->elements.size());
     detach();
     a->replaceAt(i, QCborValue::fromJsonValue(value));
 }
@@ -454,7 +454,7 @@ bool QJsonArray::contains(const QJsonValue &value) const
  */
 QJsonValueRef QJsonArray::operator [](qsizetype i)
 {
-    Q_ASSERT(a && i >= 0 && i < a->elements.length());
+    Q_ASSERT(a && i >= 0 && i < a->elements.size());
     return QJsonValueRef(this, i);
 }
 
@@ -477,13 +477,13 @@ bool QJsonArray::operator==(const QJsonArray &other) const
         return true;
 
     if (!a)
-        return !other.a->elements.length();
+        return !other.a->elements.size();
     if (!other.a)
-        return !a->elements.length();
-    if (a->elements.length() != other.a->elements.length())
+        return !a->elements.size();
+    if (a->elements.size() != other.a->elements.size())
         return false;
 
-    for (qsizetype i = 0; i < a->elements.length(); ++i) {
+    for (qsizetype i = 0; i < a->elements.size(); ++i) {
         if (a->valueAt(i) != other.a->valueAt(i))
             return false;
     }

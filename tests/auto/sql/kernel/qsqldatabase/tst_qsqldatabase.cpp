@@ -210,7 +210,7 @@ struct FieldDef {
         rt.replace(QRegularExpression("\\s"), QString("_"));
         int i = rt.indexOf(QLatin1Char('('));
         if (i == -1)
-            i = rt.length();
+            i = rt.size();
         if (i > 20)
             i = 20;
         return "t_" + rt.left(i);
@@ -1904,13 +1904,13 @@ void tst_QSqlDatabase::odbc_testqGetString()
     QVERIFY_SQL(q, exec("SELECT id, vcvalue FROM " + testqGetString + " ORDER BY id"));
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toInt(), 1);
-    QCOMPARE(q.value(1).toString().length(), 65536);
+    QCOMPARE(q.value(1).toString().size(), 65536);
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toInt(), 2);
-    QCOMPARE(q.value(1).toString().length(), 65537);
+    QCOMPARE(q.value(1).toString().size(), 65537);
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toInt(), 3);
-    QCOMPARE(q.value(1).toString().length(), 65538);
+    QCOMPARE(q.value(1).toString().size(), 65538);
 }
 
 

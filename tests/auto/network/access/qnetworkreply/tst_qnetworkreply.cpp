@@ -733,7 +733,7 @@ public slots:
                     || receivedData.startsWith("CUSTOM_WITH_PAYLOAD");
             if (hasContent && contentLength == 0)
                 parseContentLength();
-            contentRead = receivedData.length() - endOfHeader;
+            contentRead = receivedData.size() - endOfHeader;
             if (hasContent && contentRead < contentLength)
                 return;
 
@@ -1995,7 +1995,7 @@ void tst_QNetworkReply::headFromHttp_data()
 
     QString httpServer = QtNetworkSettings::httpServerName();
     //testing proxies, mainly for the 407 response from http proxy
-    for (int i = 0; i < proxies.count(); ++i) {
+    for (int i = 0; i < proxies.size(); ++i) {
         QTest::newRow("rfc" + proxies.at(i).tag)
             << rfcsize
             << QUrl("http://" + httpServer + "/qtest/rfc3252.txt")
@@ -4813,7 +4813,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocket_data()
     QTest::addColumn<int>("authenticationRequiredCount");
     QTest::addColumn<int>("proxyAuthenticationRequiredCount");
 
-    for (int i = 0; i < proxies.count(); ++i)
+    for (int i = 0; i < proxies.size(); ++i)
         for (int auth = 0; auth < 2; ++auth) {
             QUrl url;
             if (auth)
@@ -5990,7 +5990,7 @@ void tst_QNetworkReply::httpProxyCommands()
     // especially since it won't succeed in the HTTPS case
     // so just check that the command was correct
 
-    QString receivedHeader = proxyServer.receivedData.left(expectedCommand.length());
+    QString receivedHeader = proxyServer.receivedData.left(expectedCommand.size());
     QCOMPARE(receivedHeader, expectedCommand);
 
     //QTBUG-17223 - make sure the user agent from the request is sent to proxy server even for CONNECT
@@ -6074,7 +6074,7 @@ void tst_QNetworkReply::httpProxyCommandsSynchronous()
     // especially since it won't succeed in the HTTPS case
     // so just check that the command was correct
 
-    QString receivedHeader = proxyServer->receivedData.left(expectedCommand.length());
+    QString receivedHeader = proxyServer->receivedData.left(expectedCommand.size());
     QCOMPARE(receivedHeader, expectedCommand);
 }
 
@@ -7157,7 +7157,7 @@ void tst_QNetworkReply::authenticationCacheAfterCancel_data()
     QTest::addColumn<QNetworkProxy>("proxy");
     QTest::addColumn<bool>("proxyAuth");
     QTest::addColumn<QUrl>("url");
-    for (int i = 0; i < proxies.count(); ++i) {
+    for (int i = 0; i < proxies.size(); ++i) {
         QTest::newRow("http" + proxies.at(i).tag)
             << proxies.at(i).proxy
             << proxies.at(i).requiresAuthentication
@@ -8130,7 +8130,7 @@ void tst_QNetworkReply::dontInsertPartialContentIntoTheCache()
 
     QVERIFY(server.totalConnections > 0);
     QCOMPARE(reply->readAll().constData(), "load");
-    QCOMPARE(memoryCache->m_insertedUrls.count(), 0);
+    QCOMPARE(memoryCache->m_insertedUrls.size(), 0);
 }
 
 void tst_QNetworkReply::httpUserAgent()
@@ -8333,7 +8333,7 @@ void tst_QNetworkReply::emitErrorForAllReplies() // QTBUG-36890
     QList<QNetworkReply *> replies;
     QList<QSignalSpy *> errorSpies;
     QList<QSignalSpy *> finishedSpies;
-    for (int a = 0; a < urls.count(); ++a) {
+    for (int a = 0; a < urls.size(); ++a) {
         QNetworkRequest request(urls.at(a));
         QNetworkReply *reply = manager.get(request);
         replies.append(reply);
@@ -8345,7 +8345,7 @@ void tst_QNetworkReply::emitErrorForAllReplies() // QTBUG-36890
     }
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
-    for (int a = 0; a < urls.count(); ++a) {
+    for (int a = 0; a < urls.size(); ++a) {
         QVERIFY(replies.at(a)->isFinished());
         QCOMPARE(errorSpies.at(a)->count(), 1);
         errorSpies.at(a)->deleteLater();
@@ -8399,7 +8399,7 @@ public:
         return ret;
     }
     virtual bool atEnd() const override { return buffer.atEnd(); }
-    virtual qint64 size() const override { return data.length(); }
+    virtual qint64 size() const override { return data.size(); }
     qint64 bytesAvailable() const override
     {
         return buffer.bytesAvailable() + QIODevice::bytesAvailable();
@@ -8422,7 +8422,7 @@ void tst_QNetworkReply::putWithRateLimiting()
     QFile reference(testDataDir + "/rfc3252.txt");
     reference.open(QIODevice::ReadOnly);
     QByteArray data = reference.readAll();
-    QVERIFY(data.length() > 0);
+    QVERIFY(data.size() > 0);
 
     QUrl url = QUrl::fromUserInput("http://" + QtNetworkSettings::httpServerName()+ "/qtest/cgi-bin/echo.cgi?");
 
@@ -8437,7 +8437,7 @@ void tst_QNetworkReply::putWithRateLimiting()
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
 
     QByteArray uploadedData = reply->readAll();
-    QCOMPARE(uploadedData.length(), data.length());
+    QCOMPARE(uploadedData.size(), data.size());
     QCOMPARE(uploadedData, data);
 }
 
@@ -8807,7 +8807,7 @@ void tst_QNetworkReply::ioHttpCookiesDuringRedirect()
     const QString cookieHeader = QStringLiteral("Set-Cookie: hello=world; Path=/;\r\n");
     QString redirect = tempRedirectReplyStr();
     // Insert 'cookieHeader' before the final \r\n
-    redirect.insert(redirect.length() - 2, cookieHeader);
+    redirect.insert(redirect.size() - 2, cookieHeader);
 
     QUrl url("http://localhost/");
     url.setPort(target.serverPort());
@@ -9234,7 +9234,7 @@ public slots:
             //qDebug() << m_receivedData.left(m_receivedData.indexOf("\r\n\r\n"));
             m_receivedData = m_receivedData.mid(m_receivedData.indexOf("\r\n\r\n")+4); // check only actual data
         }
-        if (m_receivedData.length() > 0 && !m_expectedData.startsWith(m_receivedData)) {
+        if (m_receivedData.size() > 0 && !m_expectedData.startsWith(m_receivedData)) {
             // We had received some data but it is corrupt!
             qDebug() << "CORRUPT" << m_receivedData.size();
 

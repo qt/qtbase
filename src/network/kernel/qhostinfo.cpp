@@ -934,7 +934,7 @@ void QHostInfoLookupManager::rescheduleWithMutexHeld()
 
     if (!finishedLookups.isEmpty()) {
         // remove ID from aborted if it is in there
-        for (int i = 0; i < finishedLookups.length(); i++) {
+        for (int i = 0; i < finishedLookups.size(); i++) {
            abortedLookups.removeAll(finishedLookups.at(i)->id);
         }
 
@@ -1002,7 +1002,7 @@ void QHostInfoLookupManager::abortLookup(int id)
 
 #if QT_CONFIG(thread)
     // is postponed? delete and return
-    for (int i = 0; i < postponedLookups.length(); i++) {
+    for (int i = 0; i < postponedLookups.size(); i++) {
         if (postponedLookups.at(i)->id == id) {
             delete postponedLookups.takeAt(i);
             return;
@@ -1011,7 +1011,7 @@ void QHostInfoLookupManager::abortLookup(int id)
 #endif
 
     // is scheduled? delete and return
-    for (int i = 0; i < scheduledLookups.length(); i++) {
+    for (int i = 0; i < scheduledLookups.size(); i++) {
         if (scheduledLookups.at(i)->id == id) {
             delete scheduledLookups.takeAt(i);
             return;

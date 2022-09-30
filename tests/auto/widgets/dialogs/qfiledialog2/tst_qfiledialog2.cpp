@@ -1028,10 +1028,10 @@ public :
     void removeSelection() {
         QList<QModelIndex> idxs = selectionModel()->selectedIndexes();
         QList<QPersistentModelIndex> indexes;
-        for (int i = 0; i < idxs.count(); i++)
+        for (int i = 0; i < idxs.size(); i++)
             indexes.append(idxs.at(i));
 
-        for (int i = 0; i < indexes.count(); ++i)
+        for (int i = 0; i < indexes.size(); ++i)
             if (!indexes.at(i).data(Qt::UserRole + 1).toUrl().path().isEmpty())
                 model()->removeRow(indexes.at(i).row());
     }
@@ -1149,7 +1149,7 @@ void tst_QFileDialog2::task257579_sideBarWithNonCleanUrls()
     QFileDialog fd;
     fd.setSidebarUrls(QList<QUrl>() << QUrl::fromLocalFile(url));
     QSidebar *sidebar = fd.findChild<QSidebar*>("sidebar");
-    QCOMPARE(sidebar->urls().count(), 1);
+    QCOMPARE(sidebar->urls().size(), 1);
     QVERIFY(sidebar->urls().first().toLocalFile() != url);
     QCOMPARE(sidebar->urls().first().toLocalFile(), QDir::cleanPath(url));
 

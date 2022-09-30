@@ -328,7 +328,7 @@ void tst_QItemDelegate::editorKeyPress()
     view.edit(index);
 
     QList<QLineEdit*> lineEditors = view.viewport()->findChildren<QLineEdit *>();
-    QCOMPARE(lineEditors.count(), 1);
+    QCOMPARE(lineEditors.size(), 1);
 
     QLineEdit *editor = lineEditors.at(0);
     QCOMPARE(editor->selectedText(), initial);
@@ -356,7 +356,7 @@ void tst_QItemDelegate::doubleEditorNegativeInput()
     view.edit(index);
 
     QList<QDoubleSpinBox*> editors = view.viewport()->findChildren<QDoubleSpinBox *>();
-    QCOMPARE(editors.count(), 1);
+    QCOMPARE(editors.size(), 1);
 
     QDoubleSpinBox *editor = editors.at(0);
     QCOMPARE(editor->value(), double(10));
@@ -1315,7 +1315,7 @@ void tst_QItemDelegate::enterKey()
     view.edit(index);
 
     QList<QWidget*> lineEditors = view.viewport()->findChildren<QWidget *>(QString::fromLatin1("TheEditor"));
-    QCOMPARE(lineEditors.count(), 1);
+    QCOMPARE(lineEditors.size(), 1);
 
     QPointer<QWidget> editor = lineEditors.at(0);
     QCOMPARE(editor->hasFocus(), true);
@@ -1349,7 +1349,7 @@ void tst_QItemDelegate::task257859_finalizeEdit()
     view.edit(index);
 
     QList<QLineEdit *> lineEditors = view.viewport()->findChildren<QLineEdit *>();
-    QCOMPARE(lineEditors.count(), 1);
+    QCOMPARE(lineEditors.size(), 1);
 
     QPointer<QWidget> editor = lineEditors.at(0);
     QCOMPARE(editor->hasFocus(), true);
@@ -1480,7 +1480,7 @@ void tst_QItemDelegate::testLineEditValidation()
     const auto findEditors = [&]() {
         return view.findChildren<QLineEdit *>(QStringLiteral("TheEditor"));
     };
-    QCOMPARE(findEditors().count(), 1);
+    QCOMPARE(findEditors().size(), 1);
     editor = findEditors().at(0);
     editor->clear();
 
@@ -1500,7 +1500,7 @@ void tst_QItemDelegate::testLineEditValidation()
     view.setCurrentIndex(index);
     view.edit(index);
 
-    QTRY_COMPARE(findEditors().count(), 1);
+    QTRY_COMPARE(findEditors().size(), 1);
     editor = findEditors().at(0);
     editor->clear();
 
@@ -1522,13 +1522,13 @@ void tst_QItemDelegate::testLineEditValidation()
 
     // reset the view to forcibly close the editor
     view.reset();
-    QTRY_COMPARE(findEditors().count(), 0);
+    QTRY_COMPARE(findEditors().size(), 0);
 
     // set a valid text again
     view.setCurrentIndex(index);
     view.edit(index);
 
-    QTRY_COMPARE(findEditors().count(), 1);
+    QTRY_COMPARE(findEditors().size(), 1);
     editor = findEditors().at(0);
     editor->clear();
 

@@ -419,7 +419,7 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
                 if (cache->isValid()) {
                     const QList<QIconDirInfo> subDirsCopy = subDirs;
                     subDirs.clear();
-                    subDirs.reserve(result.count());
+                    subDirs.reserve(result.size());
                     for (const char *s : result) {
                         QString path = QString::fromUtf8(s);
                         auto it = std::find_if(subDirsCopy.cbegin(), subDirsCopy.cend(),

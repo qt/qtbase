@@ -1046,7 +1046,7 @@ void tst_QGraphicsView::rotated_rubberBand()
     sendMousePress(view.viewport(), QPoint(midWidth - 2, 0), Qt::LeftButton);
     sendMouseMove(view.viewport(), QPoint(midWidth + 2, view.viewport()->height()),
                   Qt::LeftButton, Qt::LeftButton);
-    QCOMPARE(scene.selectedItems().count(), dim);
+    QCOMPARE(scene.selectedItems().size(), dim);
     foreach (const QGraphicsItem *item, scene.items()) {
         QCOMPARE(item->isSelected(), item->data(0).toBool());
     }

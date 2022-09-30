@@ -723,7 +723,7 @@ void tst_QGraphicsLinearLayout::orientation()
     // important to resize to preferredsize when orientation is switched
     widget->resize(widget->effectiveSizeHint(Qt::PreferredSize));
     qApp->processEvents();
-    for (i = 0; i < positions.count(); ++i) {
+    for (i = 0; i < positions.size(); ++i) {
         QGraphicsWidget *item = static_cast<QGraphicsWidget*>(layout.itemAt(i));
         if (initialOrientation == Qt::Horizontal)
             QCOMPARE(item->pos().y(), positions.at(i));

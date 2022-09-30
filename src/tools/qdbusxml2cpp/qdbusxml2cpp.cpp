@@ -424,14 +424,14 @@ static QString stringify(const QString &data)
 {
     QString retval;
     qsizetype i;
-    for (i = 0; i < data.length(); ++i) {
+    for (i = 0; i < data.size(); ++i) {
         retval += u'\"';
-        for ( ; i < data.length() && data[i] != u'\n' && data[i] != u'\r'; ++i)
+        for ( ; i < data.size() && data[i] != u'\n' && data[i] != u'\r'; ++i)
             if (data[i] == u'\"')
                 retval += "\\\""_L1;
             else
                 retval += data[i];
-        if (i+1 < data.length() && data[i] == u'\r' && data[i+1] == u'\n')
+        if (i+1 < data.size() && data[i] == u'\r' && data[i+1] == u'\n')
             i++;
         retval += "\\n\"\n"_L1;
     }

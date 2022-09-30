@@ -1382,10 +1382,10 @@ bool QScrollerPrivate::prepareScrolling(const QPointF &position)
         // - check if the content position was moved
         if (contentDelta != QPointF(0, 0)) {
             // need to correct all segments
-            for (int i = 0; i < xSegments.count(); i++)
+            for (int i = 0; i < xSegments.size(); i++)
                 xSegments[i].startPos -= contentDelta.x();
 
-            for (int i = 0; i < ySegments.count(); i++)
+            for (int i = 0; i < ySegments.size(); i++)
                 ySegments[i].startPos -= contentDelta.y();
         }
 

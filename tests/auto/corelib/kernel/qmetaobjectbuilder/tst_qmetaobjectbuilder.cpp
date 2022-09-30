@@ -1499,7 +1499,7 @@ void tst_QMetaObjectBuilder::usage_signal()
     QSignalSpy propChangedSpy(testObject.data(), &TestObject::intPropChanged);
     testObject->emitIntPropChanged();
     QCOMPARE(propChangedSpy.count(), 1);
-    QCOMPARE(propChangedSpy.at(0).count(), 1);
+    QCOMPARE(propChangedSpy.at(0).size(), 1);
     QCOMPARE(propChangedSpy.at(0).at(0).toInt(), testObject->intProp());
 }
 

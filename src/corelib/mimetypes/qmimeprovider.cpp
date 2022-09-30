@@ -219,9 +219,9 @@ void QMimeBinaryProvider::addFileNameMatches(const QString &fileName, QMimeGlobM
         const int reverseSuffixTreeOffset = m_cacheFile->getUint32(PosReverseSuffixTreeOffset);
         const int numRoots = m_cacheFile->getUint32(reverseSuffixTreeOffset);
         const int firstRootOffset = m_cacheFile->getUint32(reverseSuffixTreeOffset + 4);
-        matchSuffixTree(result, m_cacheFile, numRoots, firstRootOffset, lowerFileName, lowerFileName.length() - 1, false);
+        matchSuffixTree(result, m_cacheFile, numRoots, firstRootOffset, lowerFileName, lowerFileName.size() - 1, false);
         if (result.m_matchingMimeTypes.isEmpty())
-            matchSuffixTree(result, m_cacheFile, numRoots, firstRootOffset, fileName, fileName.length() - 1, true);
+            matchSuffixTree(result, m_cacheFile, numRoots, firstRootOffset, fileName, fileName.size() - 1, true);
     }
     // Check complex globs (e.g. "callgrind.out[0-9]*" or "README*")
     if (result.m_matchingMimeTypes.isEmpty())
@@ -448,7 +448,7 @@ void QMimeBinaryProvider::addAllMimeTypes(QList<QMimeType> &result)
 {
     loadMimeTypeList();
     if (result.isEmpty()) {
-        result.reserve(m_mimetypeNames.count());
+        result.reserve(m_mimetypeNames.size());
         for (const QString &name : qAsConst(m_mimetypeNames))
             result.append(mimeTypeForNameUnchecked(name));
     } else {

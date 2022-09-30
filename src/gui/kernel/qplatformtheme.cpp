@@ -784,7 +784,7 @@ QString QPlatformTheme::removeMnemonics(const QString &original)
     QString returnText(original.size(), u'\0');
     int finalDest = 0;
     int currPos = 0;
-    int l = original.length();
+    int l = original.size();
     while (l) {
         if (original.at(currPos) == u'&') {
             ++currPos;

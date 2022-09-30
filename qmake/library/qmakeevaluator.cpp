@@ -859,13 +859,13 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProVariable(
         }
         QChar sep = val.at(1);
         auto func = val.split(sep, Qt::KeepEmptyParts);
-        if (func.count() < 3 || func.count() > 4) {
+        if (func.size() < 3 || func.size() > 4) {
             evalError(fL1S("The s/// function expects 3 or 4 arguments."));
             return ReturnTrue;
         }
 
         bool global = false, quote = false, case_sense = false;
-        if (func.count() == 4) {
+        if (func.size() == 4) {
             global = func[3].indexOf(QLatin1Char('g')) != -1;
             case_sense = func[3].indexOf(QLatin1Char('i')) == -1;
             quote = func[3].indexOf(QLatin1Char('q')) != -1;
@@ -1570,7 +1570,7 @@ ProString QMakeEvaluator::propertyValue(const ProKey &name) const
 
 ProFile *QMakeEvaluator::currentProFile() const
 {
-    if (m_profileStack.count() > 0)
+    if (m_profileStack.size() > 0)
         return m_profileStack.top();
     return nullptr;
 }
@@ -1693,12 +1693,12 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateFunction(
         m_locationStack.push(m_current);
 
         ProStringList args;
-        for (int i = 0; i < argumentsList.count(); ++i) {
+        for (int i = 0; i < argumentsList.size(); ++i) {
             args += argumentsList[i];
             m_valuemapStack.top()[ProKey(QString::number(i+1))] = argumentsList[i];
         }
         m_valuemapStack.top()[statics.strARGS] = args;
-        m_valuemapStack.top()[statics.strARGC] = ProStringList(ProString(QString::number(argumentsList.count())));
+        m_valuemapStack.top()[statics.strARGC] = ProStringList(ProString(QString::number(argumentsList.size())));
         vr = visitProBlock(func.pro(), func.tokPtr());
         if (vr == ReturnReturn)
             vr = ReturnTrue;

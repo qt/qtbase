@@ -242,9 +242,9 @@ QGLXContext::QGLXContext(Display *display, QXcbScreen *screen, const QSurfaceFor
             // Robustness must match that of the shared context.
             if (share && share->format().testOption(QSurfaceFormat::ResetNotification))
                 m_format.setOption(QSurfaceFormat::ResetNotification);
-            Q_ASSERT(glVersions.count() > 0);
+            Q_ASSERT(glVersions.size() > 0);
 
-            for (int i = 0; !m_context && i < glVersions.count(); i++) {
+            for (int i = 0; !m_context && i < glVersions.size(); i++) {
                 const int version = glVersions[i];
                 if (version > requestedVersion)
                     continue;

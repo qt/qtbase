@@ -2304,7 +2304,7 @@ void VCFilter::modifyPCHstage(QString str)
 
 VCFilterFile VCFilter::findFile(const QString &filePath, bool *found) const
 {
-    for (int i = 0; i < Files.count(); ++i) {
+    for (int i = 0; i < Files.size(); ++i) {
         const VCFilterFile &f = Files.at(i);
         if (f.file == filePath) {
             *found = true;
@@ -2330,7 +2330,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         hasBuiltIn = Project->hasBuiltinCompiler(objectMappedFile);
 
         // Remove the fake file suffix we've added initially to generate correct command lines.
-        inFile.chop(Project->customBuildToolFilterFileSuffix.length());
+        inFile.chop(Project->customBuildToolFilterFileSuffix.size());
 
 //        qDebug("*** Extra compiler file has object mapped file '%s' => '%s'", qPrintable(inFile), qPrintable(objectMappedFile.join(' ')));
     }
@@ -2595,7 +2595,7 @@ void VCProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
 
 void VCProjectWriter::write(XmlOutput &xml, VCProject &tool)
 {
-    if (tool.SingleProjects.count() == 0) {
+    if (tool.SingleProjects.size() == 0) {
         warn_msg(WarnLogic, "Generator: .NET: no single project in merge project, no output");
         return;
     }
@@ -2615,7 +2615,7 @@ void VCProjectWriter::write(XmlOutput &xml, VCProject &tool)
             << closetag(_Platforms)
             << tag(_Configurations);
     // Output each configuration
-    for (int i = 0; i < tool.SingleProjects.count(); ++i)
+    for (int i = 0; i < tool.SingleProjects.size(); ++i)
         write(xml, tool.SingleProjects.at(i).Configuration);
     xml     << closetag(_Configurations)
             << tag(q_Files);
@@ -2930,7 +2930,7 @@ void VCProjectWriter::write(XmlOutput &xml, const VCConfiguration &tool)
 
 void VCProjectWriter::write(XmlOutput &xml, VCFilter &tool)
 {
-    if(!tool.Files.count())
+    if(!tool.Files.size())
         return;
 
     if (!tool.Name.isEmpty()) {
@@ -2940,7 +2940,7 @@ void VCProjectWriter::write(XmlOutput &xml, VCFilter &tool)
                 << attrS(_UniqueIdentifier, tool.Guid)
                 << attrT(_ParseFiles, tool.ParseFiles);
     }
-    for (int i = 0; i < tool.Files.count(); ++i) {
+    for (int i = 0; i < tool.Files.size(); ++i) {
         const VCFilterFile &info = tool.Files.at(i);
         xml << tag(q_File)
                 << attrS(_RelativePath, Option::fixPathToTargetOS(info.file))
@@ -2964,11 +2964,11 @@ void VCProjectWriter::outputFilter(VCProject &project, XmlOutput &xml, const QSt
     QString name, extfilter, guid;
     triState parse = unset;
 
-    for (int i = 0; i < project.SingleProjects.count(); ++i) {
+    for (int i = 0; i < project.SingleProjects.size(); ++i) {
         const VCFilter filter = project.SingleProjects.at(i).filterByName(filtername);
 
         // Merge all files in this filter to root tree
-        for (int x = 0; x < filter.Files.count(); ++x)
+        for (int x = 0; x < filter.Files.size(); ++x)
             root->addElement(filter.Files.at(x));
 
         // Save filter setting from first filter. Next filters
@@ -3003,7 +3003,7 @@ void VCProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, cons
 {
     xml << tag(q_File)
             << attrS(_RelativePath, Option::fixPathToTargetOS(info.file));
-    for (int i = 0; i < project.SingleProjects.count(); ++i) {
+    for (int i = 0; i < project.SingleProjects.size(); ++i) {
         VCFilter filter = project.SingleProjects.at(i).filterByName(filtername);
         if (filter.Config) // only if the filter is not empty
             outputFileConfig(filter, xml, info.file);

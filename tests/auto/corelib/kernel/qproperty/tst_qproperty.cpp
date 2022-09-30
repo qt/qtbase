@@ -391,7 +391,7 @@ void tst_QProperty::changeHandler()
     }
     testProperty = 3;
 
-    QCOMPARE(recordedValues.count(), 2);
+    QCOMPARE(recordedValues.size(), 2);
     QCOMPARE(recordedValues.at(0), 1);
     QCOMPARE(recordedValues.at(1), 2);
 }
@@ -434,7 +434,7 @@ void tst_QProperty::subscribe()
     }
     testProperty = 3;
 
-    QCOMPARE(recordedValues.count(), 3);
+    QCOMPARE(recordedValues.size(), 3);
     QCOMPARE(recordedValues.at(0), 42);
     QCOMPARE(recordedValues.at(1), 1);
     QCOMPARE(recordedValues.at(2), 2);
@@ -869,7 +869,7 @@ void tst_QProperty::notifiedProperty()
     check();
 
     instance.property.setValue(42);
-    QCOMPARE(instance.recordedValues.count(), 1);
+    QCOMPARE(instance.recordedValues.size(), 1);
     QCOMPARE(instance.recordedValues.at(0), 42);
     instance.recordedValues.clear();
     check();
@@ -899,7 +899,7 @@ void tst_QProperty::notifiedProperty()
     subscribedCount = 0;
 
     QCOMPARE(instance.property.value(), 100);
-    QCOMPARE(instance.recordedValues.count(), 1);
+    QCOMPARE(instance.recordedValues.size(), 1);
     QCOMPARE(instance.recordedValues.at(0), 100);
     instance.recordedValues.clear();
     check();
@@ -907,7 +907,7 @@ void tst_QProperty::notifiedProperty()
 
     injectedValue = 200;
     QCOMPARE(instance.property.value(), 200);
-    QCOMPARE(instance.recordedValues.count(), 1);
+    QCOMPARE(instance.recordedValues.size(), 1);
     QCOMPARE(instance.recordedValues.at(0), 200);
     instance.recordedValues.clear();
     check();
@@ -916,7 +916,7 @@ void tst_QProperty::notifiedProperty()
 
     injectedValue = 400;
     QCOMPARE(instance.property.value(), 400);
-    QCOMPARE(instance.recordedValues.count(), 1);
+    QCOMPARE(instance.recordedValues.size(), 1);
     QCOMPARE(instance.recordedValues.at(0), 400);
     instance.recordedValues.clear();
     check();
@@ -1997,7 +1997,7 @@ void tst_QProperty::notify()
     testProperty = 4;
     QCOMPARE(value, 3);
 
-    QCOMPARE(recordedValues.count(), 2);
+    QCOMPARE(recordedValues.size(), 2);
     QCOMPARE(recordedValues.at(0), 1);
     QCOMPARE(recordedValues.at(1), 2);
 }

@@ -1513,7 +1513,7 @@ QRegion QTransform::map(const QRegion &r) const
                 if (!nr.isEmpty())
                     rects.append(nr);
             }
-            res.setRects(rects.constData(), rects.count());
+            res.setRects(rects.constData(), rects.size());
         }
         return res;
     }

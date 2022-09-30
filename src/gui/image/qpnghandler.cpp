@@ -798,7 +798,7 @@ static void set_text(const QImage &image, png_structp png_ptr, png_infop info_pt
     int i = 0;
     while (it != text.constEnd()) {
         text_ptr[i].key = qstrdup(QStringView{it.key()}.left(79).toLatin1().constData());
-        bool noCompress = (it.value().length() < 40);
+        bool noCompress = (it.value().size() < 40);
 
 #ifdef PNG_iTXt_SUPPORTED
         bool needsItxt = false;
@@ -942,7 +942,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, int compression_in, const 
                      iccProfileName.constData(), PNG_COMPRESSION_TYPE_BASE,
                      (png_const_bytep)iccProfile.constData(),
              #endif
-                     iccProfile.length());
+                     iccProfile.size());
     } else
 #endif
     if (gamma != 0.0) {

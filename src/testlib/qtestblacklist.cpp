@@ -259,7 +259,7 @@ void parseBlackList()
         if (line.isEmpty())
             continue;
         if (line.startsWith('[')) {
-            function = line.mid(1, line.length() - 2);
+            function = line.mid(1, line.size() - 2);
             continue;
         }
         bool condition = checkCondition(line);

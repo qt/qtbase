@@ -149,7 +149,7 @@ static QString int2string(int num, int base, int ndigits, bool *oflow)
             break;
     }
     if (negative) {
-        for (int i=0; i<(int)s.length(); i++) {
+        for (int i=0; i<(int)s.size(); i++) {
             if (s[i] != u' ') {
                 if (i != 0) {
                     s[i-1] = u'-';
@@ -161,7 +161,7 @@ static QString int2string(int num, int base, int ndigits, bool *oflow)
         }
     }
     if (oflow)
-        *oflow = (int)s.length() > ndigits;
+        *oflow = (int)s.size() > ndigits;
     return s;
 }
 
@@ -186,10 +186,10 @@ static QString double2string(double num, int base, int ndigits, bool *oflow)
                 s[i] = u' ';
                 s[i+1] = u'e';
             }
-        } while (nd-- && (int)s.length() > ndigits);
+        } while (nd-- && (int)s.size() > ndigits);
     }
     if (oflow)
-        *oflow = (int)s.length() > ndigits;
+        *oflow = (int)s.size() > ndigits;
     return s;
 }
 
@@ -679,7 +679,7 @@ void QLCDNumberPrivate::internalSetString(const QString& s)
     Q_Q(QLCDNumber);
     QString buffer(ndigits, QChar());
     int i;
-    int len = s.length();
+    int len = s.size();
     QBitArray newPoints(ndigits);
 
     if (!smallPoint) {

@@ -583,7 +583,7 @@ void QVncClientCursor::addClient(QVncClient *client)
 uint QVncClientCursor::removeClient(QVncClient *client)
 {
     clients.removeOne(client);
-    return clients.count();
+    return clients.size();
 }
 #endif // QT_CONFIG(cursor)
 

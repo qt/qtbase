@@ -121,7 +121,7 @@ void QEglFSScreen::handleCursorMove(const QPoint &pos)
         return;
 
     // First window is always fullscreen.
-    if (windows.count() == 1) {
+    if (windows.size() == 1) {
         QWindow *window = windows[0]->sourceWindow();
         if (platformIntegration->pointerWindow() != window) {
             platformIntegration->setPointerWindow(window);
@@ -131,7 +131,7 @@ void QEglFSScreen::handleCursorMove(const QPoint &pos)
     }
 
     QWindow *enter = nullptr, *leave = nullptr;
-    for (int i = windows.count() - 1; i >= 0; --i) {
+    for (int i = windows.size() - 1; i >= 0; --i) {
         QWindow *window = windows[i]->sourceWindow();
         const QRect geom = window->geometry();
         if (geom.contains(pos)) {

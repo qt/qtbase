@@ -228,7 +228,7 @@ void tst_QByteArray::qChecksum()
     QFETCH(Qt::ChecksumType, standard);
     QFETCH(uint, checksum);
 
-    QCOMPARE(data.length(), int(len));
+    QCOMPARE(data.size(), int(len));
     if (standard == Qt::ChecksumIso3309) {
         QCOMPARE(::qChecksum(QByteArrayView(data.constData(), len)), static_cast<quint16>(checksum));
     }
@@ -498,7 +498,7 @@ void tst_QByteArray::split()
     QFETCH(int, size);
 
     QList<QByteArray> list = sample.split(' ');
-    QCOMPARE(list.count(), size);
+    QCOMPARE(list.size(), size);
 }
 
 void tst_QByteArray::swap()
@@ -2212,7 +2212,7 @@ void tst_QByteArray::literals()
 {
     QByteArray str(QByteArrayLiteral("abcd"));
 
-    QVERIFY(str.length() == 4);
+    QVERIFY(str.size() == 4);
     QCOMPARE(str.capacity(), 0);
     QVERIFY(str == "abcd");
     QVERIFY(!str.data_ptr()->isMutable());
@@ -2224,11 +2224,11 @@ void tst_QByteArray::literals()
 
     // detach on non const access
     QVERIFY(str.data() != s);
-    QVERIFY(str.capacity() >= str.length());
+    QVERIFY(str.capacity() >= str.size());
 
     QVERIFY(str2.constData() == s);
     QVERIFY(str2.data() != s);
-    QVERIFY(str2.capacity() >= str2.length());
+    QVERIFY(str2.capacity() >= str2.size());
 }
 
 void tst_QByteArray::userDefinedLiterals()
@@ -2237,7 +2237,7 @@ void tst_QByteArray::userDefinedLiterals()
         using namespace Qt::StringLiterals;
         QByteArray str = "abcd"_ba;
 
-        QVERIFY(str.length() == 4);
+        QVERIFY(str.size() == 4);
         QCOMPARE(str.capacity(), 0);
         QVERIFY(str == "abcd");
         QVERIFY(!str.data_ptr()->isMutable());
@@ -2249,18 +2249,18 @@ void tst_QByteArray::userDefinedLiterals()
 
         // detach on non const access
         QVERIFY(str.data() != s);
-        QVERIFY(str.capacity() >= str.length());
+        QVERIFY(str.capacity() >= str.size());
 
         QVERIFY(str2.constData() == s);
         QVERIFY(str2.data() != s);
-        QVERIFY(str2.capacity() >= str2.length());
+        QVERIFY(str2.capacity() >= str2.size());
     }
 
 #if QT_DEPRECATED_SINCE(6, 8)
     {
         QT_IGNORE_DEPRECATIONS(QByteArray str = "abcd"_qba;)
 
-        QVERIFY(str.length() == 4);
+        QVERIFY(str.size() == 4);
         QCOMPARE(str.capacity(), 0);
         QVERIFY(str == "abcd");
         QVERIFY(!str.data_ptr()->isMutable());
@@ -2272,11 +2272,11 @@ void tst_QByteArray::userDefinedLiterals()
 
         // detach on non const access
         QVERIFY(str.data() != s);
-        QVERIFY(str.capacity() >= str.length());
+        QVERIFY(str.capacity() >= str.size());
 
         QVERIFY(str2.constData() == s);
         QVERIFY(str2.data() != s);
-        QVERIFY(str2.capacity() >= str2.length());
+        QVERIFY(str2.capacity() >= str2.size());
     }
 #endif // QT_DEPRECATED_SINCE(6, 8)
 }
@@ -2407,7 +2407,7 @@ void tst_QByteArray::stdString()
     std::string stdstr( "QByteArray" );
 
     const QByteArray stlqt = QByteArray::fromStdString(stdstr);
-    QCOMPARE(stlqt.length(), int(stdstr.length()));
+    QCOMPARE(stlqt.size(), int(stdstr.length()));
     QCOMPARE(stlqt.data(), stdstr.c_str());
     QCOMPARE(stlqt.toStdString(), stdstr);
 
@@ -2584,12 +2584,12 @@ void tst_QByteArray::length()
     QFETCH(QByteArray, src);
     QFETCH(qsizetype, res);
 
-    QCOMPARE(src.length(), res);
+    QCOMPARE(src.size(), res);
     QCOMPARE(src.size(), res);
 #if QT_DEPRECATED_SINCE(6, 4)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
-    QCOMPARE(src.count(), res);
+    QCOMPARE(src.size(), res);
 QT_WARNING_POP
 #endif
 }

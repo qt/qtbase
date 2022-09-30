@@ -245,7 +245,7 @@ void tst_QLocalSocket::server_basic()
     QVERIFY(!timedOut);
     QCOMPARE(server.listen(QString()), false);
 
-    QCOMPARE(server.hits.count(), 0);
+    QCOMPARE(server.hits.size(), 0);
     QCOMPARE(spyNewConnection.count(), 0);
 }
 
@@ -321,7 +321,7 @@ void tst_QLocalSocket::listen()
     QCOMPARE(server.isListening(), canListen);
     QCOMPARE(server.hasPendingConnections(), false);
     QCOMPARE(server.nextPendingConnection(), (QLocalSocket*)0);
-    QCOMPARE(server.hits.count(), 0);
+    QCOMPARE(server.hits.size(), 0);
     QCOMPARE(spyNewConnection.count(), 0);
     if (canListen) {
         QVERIFY(server.errorString().isEmpty());
@@ -451,7 +451,7 @@ void tst_QLocalSocket::listenAndConnect()
             QCOMPARE(server.serverName(), name);
             QVERIFY(server.fullServerName().contains(name));
             QVERIFY(server.nextPendingConnection() != (QLocalSocket*)0);
-            QTRY_COMPARE(server.hits.count(), i + 1);
+            QTRY_COMPARE(server.hits.size(), i + 1);
             QCOMPARE(spyNewConnection.count(), i + 1);
             QVERIFY(server.errorString().isEmpty());
             QCOMPARE(server.serverError(), QAbstractSocket::UnknownSocketError);
@@ -460,7 +460,7 @@ void tst_QLocalSocket::listenAndConnect()
             QVERIFY(server.fullServerName().isEmpty());
             QCOMPARE(server.nextPendingConnection(), (QLocalSocket*)0);
             QCOMPARE(spyNewConnection.count(), 0);
-            QCOMPARE(server.hits.count(), 0);
+            QCOMPARE(server.hits.size(), 0);
             QVERIFY(!server.errorString().isEmpty());
             QCOMPARE(server.serverError(), QAbstractSocket::HostNotFoundError);
         }
@@ -469,7 +469,7 @@ void tst_QLocalSocket::listenAndConnect()
 
     server.close();
 
-    QCOMPARE(server.hits.count(), (canListen ? connections : 0));
+    QCOMPARE(server.hits.size(), (canListen ? connections : 0));
     QCOMPARE(spyNewConnection.count(), (canListen ? connections : 0));
 }
 
@@ -705,7 +705,7 @@ void tst_QLocalSocket::sendData()
 
     server.close();
 
-    QCOMPARE(server.hits.count(), (canListen ? 1 : 0));
+    QCOMPARE(server.hits.size(), (canListen ? 1 : 0));
     QCOMPARE(spy.count(), (canListen ? 1 : 0));
 }
 
@@ -1068,7 +1068,7 @@ void tst_QLocalSocket::hitMaximumConnections()
    bool timedOut = true;
    QVERIFY(server.waitForNewConnection(3000, &timedOut));
    QVERIFY(!timedOut);
-   QVERIFY(server.hits.count() > 0);
+   QVERIFY(server.hits.size() > 0);
    qDeleteAll(sockets.begin(), sockets.end());
 }
 
@@ -1140,7 +1140,7 @@ public:
             --done;
             delete serverSocket;
         }
-        QCOMPARE(server.hits.count(), clients);
+        QCOMPARE(server.hits.size(), clients);
     }
 };
 

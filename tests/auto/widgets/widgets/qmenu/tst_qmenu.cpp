@@ -259,11 +259,11 @@ void tst_QMenu::onStatusMessageChanged(const QString &s)
 
 void tst_QMenu::addActionsAndClear()
 {
-    QCOMPARE(menus[0]->actions().count(), 0);
+    QCOMPARE(menus[0]->actions().size(), 0);
     createActions();
-    QCOMPARE(menus[0]->actions().count(), 8);
+    QCOMPARE(menus[0]->actions().size(), 8);
     menus[0]->clear();
-    QCOMPARE(menus[0]->actions().count(), 0);
+    QCOMPARE(menus[0]->actions().size(), 0);
 }
 
 static void testFunction0() {}
@@ -1840,12 +1840,12 @@ void tst_QMenu::menuSize_Scrolling()
     private:
         void showEvent(QShowEvent *e) override
         {
-            QVERIFY(actions().length() == m_numItems);
+            QVERIFY(actions().size() == m_numItems);
 
             int hmargin = style()->pixelMetric(QStyle::PM_MenuHMargin, nullptr, this);
             int fw = style()->pixelMetric(QStyle::PM_MenuPanelWidth, nullptr, this);
             const QMargins cm = contentsMargins();
-            QRect lastItem = actionGeometry(actions().at(actions().length() - 1));
+            QRect lastItem = actionGeometry(actions().at(actions().size() - 1));
             QSize s = size();
             if (!QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive)
                 || !QGuiApplication::platformName().compare(QLatin1String("offscreen"), Qt::CaseInsensitive)) {
@@ -1911,7 +1911,7 @@ void tst_QMenu::menuSize_Scrolling()
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
 
     QList<QAction *> actions = menu.actions();
-    QCOMPARE(actions.length(), numItems);
+    QCOMPARE(actions.size(), numItems);
 
     MenuMetrics mm(&menu);
     QTest::keyClick(&menu, Qt::Key_Home);

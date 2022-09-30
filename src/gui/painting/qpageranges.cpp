@@ -14,7 +14,7 @@ QT_IMPL_METATYPE_EXTERN(QPageRanges)
 
 void QPageRangesPrivate::mergeIntervals()
 {
-    const int count = intervals.count();
+    const int count = intervals.size();
 
     if (count <= 1)
         return;

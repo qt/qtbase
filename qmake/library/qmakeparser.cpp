@@ -732,7 +732,7 @@ void QMakeParser::read(ProFile *pro, QStringView in, int line, SubGrammar gramma
                         if (!m_blockstack.top().braceLevel) {
                             parseError(fL1S("Excess closing brace."));
                         } else if (!--m_blockstack.top().braceLevel
-                                   && m_blockstack.count() != 1) {
+                                   && m_blockstack.size() != 1) {
                             leaveScope(tokPtr);
                             m_state = StNew;
                             m_canElse = false;
@@ -1246,7 +1246,7 @@ bool QMakeParser::resolveVariable(ushort *xprPtr, int tlen, int needSep, ushort 
         // The string is typically longer than the variable reference, so we need
         // to ensure that there is enough space in the output buffer - as unlikely
         // as an overflow is to actually happen in practice.
-        int need = (in.length() - (cur - (const ushort *)in.constData()) + 2) * 5 + out.length();
+        int need = (in.length() - (cur - (const ushort *)in.constData()) + 2) * 5 + out.size();
         int tused = *tokPtr - (ushort *)tokBuff->constData();
         int xused;
         int total;
@@ -1277,9 +1277,9 @@ bool QMakeParser::resolveVariable(ushort *xprPtr, int tlen, int needSep, ushort 
     }
     xprPtr -= 2; // Was set up for variable reference
     xprPtr[-2] = TokLiteral | needSep;
-    xprPtr[-1] = out.length();
-    memcpy(xprPtr, out.constData(), out.length() * 2);
-    *ptr = xprPtr + out.length();
+    xprPtr[-1] = out.size();
+    memcpy(xprPtr, out.constData(), out.size() * 2);
+    *ptr = xprPtr + out.size();
     return true;
 }
 
@@ -1539,7 +1539,7 @@ QString QMakeParser::formatProBlock(const QString &block)
     QString outStr;
     outStr += fL1S("\n            << TS(");
     int offset = 0;
-    getBlock(reinterpret_cast<const ushort *>(block.constData()), block.length(),
+    getBlock(reinterpret_cast<const ushort *>(block.constData()), block.size(),
              offset, &outStr, 0);
     outStr += QLatin1Char(')');
     return outStr;

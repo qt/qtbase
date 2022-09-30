@@ -686,7 +686,7 @@ void tst_QAbstractButton::buttonPressKeys()
     const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
                                          ->themeHint(QPlatformTheme::ButtonPressKeys)
                                          .value<QList<Qt::Key>>();
-    for (uint i = 0; i < buttonPressKeys.length(); ++i) {
+    for (uint i = 0; i < buttonPressKeys.size(); ++i) {
         QTest::keyClick(testWidget, buttonPressKeys[i]);
         QCOMPARE(click_count, i + 1);
     }

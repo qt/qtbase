@@ -2125,7 +2125,7 @@ bool QFont::fromString(const QString &descrip)
 {
     const auto sr = QStringView(descrip).trimmed();
     const auto l = sr.split(u',');
-    const int count = l.count();
+    const int count = l.size();
     if (!count || (count > 2 && count < 9) || count == 9 || count > 17 ||
         l.first().isEmpty()) {
         qWarning("QFont::fromString: Invalid description '%s'",

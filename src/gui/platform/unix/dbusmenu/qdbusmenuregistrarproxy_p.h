@@ -63,7 +63,7 @@ public Q_SLOTS: // METHODS
     {
         QDBusMessage reply = call(QDBus::Block, QStringLiteral("GetMenuForWindow"), windowId);
         QList<QVariant> arguments = reply.arguments();
-        if (reply.type() == QDBusMessage::ReplyMessage && arguments.count() == 2)
+        if (reply.type() == QDBusMessage::ReplyMessage && arguments.size() == 2)
             menuObjectPath = qdbus_cast<QDBusObjectPath>(arguments.at(1));
         return reply;
     }

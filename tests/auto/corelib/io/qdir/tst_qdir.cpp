@@ -1734,7 +1734,7 @@ void tst_QDir::homePath()
     QVERIFY(QDir::isAbsolutePath(strHome));
 
 #ifdef Q_OS_UNIX
-    if (strHome.length() > 1)      // root dir = "/"
+    if (strHome.size() > 1)      // root dir = "/"
         QVERIFY(!strHome.endsWith('/'));
 
     QByteArray envHome = qgetenv("HOME");
@@ -1764,7 +1764,7 @@ void tst_QDir::tempPath()
     QVERIFY(QDir::isAbsolutePath(path));
 
 #ifdef Q_OS_UNIX
-    if (path.length() > 1)      // root dir = "/"
+    if (path.size() > 1)      // root dir = "/"
         QVERIFY(!path.endsWith('/'));
 #elif defined(Q_OS_WIN)
     if (path.length() > 3)      // root dir = "c:/"; "//" is not really valid...

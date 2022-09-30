@@ -1968,7 +1968,7 @@ void QGraphicsWidget::addAction(QAction *action)
 */
 void QGraphicsWidget::addActions(const QList<QAction *> &actions)
 {
-    for (int i = 0; i < actions.count(); ++i)
+    for (int i = 0; i < actions.size(); ++i)
         insertAction(nullptr, actions.at(i));
 }
 
@@ -2025,7 +2025,7 @@ void QGraphicsWidget::insertAction(QAction *before, QAction *action)
 */
 void QGraphicsWidget::insertActions(QAction *before, const QList<QAction *> &actions)
 {
-    for (int i = 0; i < actions.count(); ++i)
+    for (int i = 0; i < actions.size(); ++i)
         insertAction(before, actions.at(i));
 }
 

@@ -85,7 +85,7 @@ void tst_QHash::initTestCase()
     QByteArray id("AAAAAAA");
 
     if (dict.isEmpty()) {
-        for (int i = id.length() - 1; i > 0;) {
+        for (int i = id.size() - 1; i > 0;) {
             dict.append(id);
             char c = id.at(i);
             id[i] = ++c;

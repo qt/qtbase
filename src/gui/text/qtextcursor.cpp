@@ -1423,18 +1423,18 @@ void QTextCursor::insertText(const QString &text, const QTextCharFormat &_format
         QTextBlockFormat blockFmt = blockFormat();
 
 
-        int textStart = d->priv->text.length();
+        int textStart = d->priv->text.size();
         int blockStart = 0;
         d->priv->text += text;
-        int textEnd = d->priv->text.length();
+        int textEnd = d->priv->text.size();
 
-        for (int i = 0; i < text.length(); ++i) {
+        for (int i = 0; i < text.size(); ++i) {
             QChar ch = text.at(i);
 
             const int blockEnd = i;
 
             if (ch == u'\r'
-                && (i + 1) < text.length()
+                && (i + 1) < text.size()
                 && text.at(i + 1) == u'\n') {
                 ++i;
                 ch = text.at(i);

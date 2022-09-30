@@ -356,7 +356,7 @@ QVariant QSettingsPrivate::stringListToVariantList(const QStringList &l)
         const QString &str = outStringList.at(i);
 
         if (str.startsWith(u'@')) {
-            if (str.length() < 2 || str.at(1) != u'@') {
+            if (str.size() < 2 || str.at(1) != u'@') {
                 QVariantList variantList;
                 variantList.reserve(l.count());
                 for (const auto &s : l)
@@ -509,7 +509,7 @@ QVariant QSettingsPrivate::stringToVariant(const QString &s)
 
 void QSettingsPrivate::iniEscapedKey(const QString &key, QByteArray &result)
 {
-    result.reserve(result.length() + key.length() * 3 / 2);
+    result.reserve(result.size() + key.size() * 3 / 2);
     for (qsizetype i = 0; i < key.size(); ++i) {
         uint ch = key.at(i).unicode();
 
@@ -538,7 +538,7 @@ bool QSettingsPrivate::iniUnescapedKey(QByteArrayView key, QString &result)
 {
     const QString decoded = QString::fromUtf8(key);
     const qsizetype size = decoded.size();
-    result.reserve(result.length() + size);
+    result.reserve(result.size() + size);
     qsizetype i = 0;
     bool lowercaseOnly = true;
     while (i < size) {
@@ -731,7 +731,7 @@ StSkipSpaces:
     // fallthrough
 
 StNormal:
-    qsizetype chopLimit = stringResult.length();
+    qsizetype chopLimit = stringResult.size();
     while (i < str.size()) {
         switch (str.at(i)) {
         case '\\':
@@ -769,7 +769,7 @@ StNormal:
             } else {
                 // the character is skipped
             }
-            chopLimit = stringResult.length();
+            chopLimit = stringResult.size();
             break;
         case '"':
             ++i;
@@ -856,7 +856,7 @@ end:
 
 QStringList QSettingsPrivate::splitArgs(const QString &s, qsizetype idx)
 {
-    qsizetype l = s.length();
+    qsizetype l = s.size();
     Q_ASSERT(l > 0);
     Q_ASSERT(s.at(idx) == u'(');
     Q_ASSERT(s.at(l - 1) == u')');

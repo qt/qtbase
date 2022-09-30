@@ -83,9 +83,9 @@ public slots:
         int idx = client->property("dataTransmitionIdx").toInt();
         if (receivedData.contains("\r\n\r\n") ||
             receivedData.contains("\n\n")) {
-            if (idx < dataToTransmit.length())
+            if (idx < dataToTransmit.size())
                 client->write(dataToTransmit.at(idx++));
-            if (idx == dataToTransmit.length()) {
+            if (idx == dataToTransmit.size()) {
                 client->disconnectFromHost();
                 disconnect(client, 0, this, 0);
                 client = 0;

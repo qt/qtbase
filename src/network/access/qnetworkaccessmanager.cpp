@@ -1631,7 +1631,7 @@ QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkReq
     // add Content-Type header if not there already
     if (!request.header(QNetworkRequest::ContentTypeHeader).isValid()) {
         QByteArray contentType;
-        contentType.reserve(34 + multiPart->d_func()->boundary.length());
+        contentType.reserve(34 + multiPart->d_func()->boundary.size());
         contentType += "multipart/";
         switch (multiPart->d_func()->contentType) {
         case QHttpMultiPart::RelatedType:

@@ -670,7 +670,7 @@ public:
 
 private slots:
     void valueChanged(qreal value) {
-        for (int i = 0; i < fromGeoms.count(); ++i) {
+        for (int i = 0; i < fromGeoms.size(); ++i) {
             QGraphicsLayoutItem *li = itemAt(i);
             QRectF from = fromGeoms.at(i);
             QRectF to = toGeoms.at(i);
@@ -825,7 +825,7 @@ CustomLayout(QGraphicsLayoutItem *parent)
 
 int count() const override
 {
-    return items.count();
+    return items.size();
 }
 
 QGraphicsLayoutItem* itemAt(int index) const override
@@ -841,12 +841,12 @@ void removeAt(int index) override
 
 void addItem(QGraphicsLayoutItem *item)
 {
-    insertItem(items.count(), item);
+    insertItem(items.size(), item);
 }
 
 void insertItem(int index, QGraphicsLayoutItem *item)
 {
-    index = qBound(0, index, items.count());
+    index = qBound(0, index, items.size());
 
     item->setParentLayoutItem(this);
 
@@ -854,7 +854,7 @@ void insertItem(int index, QGraphicsLayoutItem *item)
     updateParentWidget(widget);
 
 
-    if (index == items.count()) {
+    if (index == items.size()) {
         items.append(item);
     } else {
         items.insert(index, item);
@@ -922,7 +922,7 @@ void tst_QGraphicsLayout::ownership()
 
         destructedSet.clear();
         window->setLayout(0);
-        QCOMPARE(destructedSet.count(), 0);
+        QCOMPARE(destructedSet.size(), 0);
         delete window;
     }
 

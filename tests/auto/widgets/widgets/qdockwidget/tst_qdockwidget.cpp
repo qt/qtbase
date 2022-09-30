@@ -1278,14 +1278,14 @@ bool tst_QDockWidget::checkFloatingTabs(QMainWindow* mainWindow, QPointer<QDockW
 
     // both dock widgets must be direct children of the main window
     const QList<QDockWidget*> children = ftabs->findChildren<QDockWidget*>(QString(), Qt::FindDirectChildrenOnly);
-    if (dwList.count() > 0)
+    if (dwList.size() > 0)
     {
-        if (dwList.count() != children.count()) {
-            qCDebug(lcTestDockWidget) << "Expected DockWidgetGroupWindow children:" << dwList.count()
-                                      << "Children found:" << children.count();
+        if (dwList.size() != children.size()) {
+            qCDebug(lcTestDockWidget) << "Expected DockWidgetGroupWindow children:" << dwList.size()
+                                      << "Children found:" << children.size();
 
             qCDebug(lcTestDockWidget) << "Expected:" << dwList;
-            qCDebug(lcTestDockWidget) << "Found in" << ftabs << ":" << children.count();
+            qCDebug(lcTestDockWidget) << "Found in" << ftabs << ":" << children.size();
             return false;
         }
 
@@ -1580,7 +1580,7 @@ void tst_QDockWidget::dockPermissions()
     // both dock widgets must be direct children of the main window
     {
         const QList<QDockWidget*> children = mainWindow->findChildren<QDockWidget*>(QString(), Qt::FindDirectChildrenOnly);
-        QTRY_VERIFY(children.count() == 2);
+        QTRY_VERIFY(children.size() == 2);
         for (const QDockWidget* child : children)
             QTRY_VERIFY(child == d1 || child == d2);
     }

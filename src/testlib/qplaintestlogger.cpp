@@ -120,10 +120,10 @@ namespace QTest {
 
         QString beforeDecimalPoint = QString::number(qint64(number), 'f', 0);
         QString afterDecimalPoint = QString::number(number, 'f', 20);
-        afterDecimalPoint.remove(0, beforeDecimalPoint.length() + 1);
+        afterDecimalPoint.remove(0, beforeDecimalPoint.size() + 1);
 
-        int beforeUse = qMin(beforeDecimalPoint.length(), significantDigits);
-        int beforeRemove = beforeDecimalPoint.length() - beforeUse;
+        int beforeUse = qMin(beforeDecimalPoint.size(), significantDigits);
+        int beforeRemove = beforeDecimalPoint.size() - beforeUse;
 
         // Replace insignificant digits before the decimal point with zeros.
         beforeDecimalPoint.chop(beforeRemove);
@@ -138,21 +138,21 @@ namespace QTest {
             ++afterUse;
 
             int i = 0;
-            while (i < afterDecimalPoint.length() && afterDecimalPoint.at(i) == u'0')
+            while (i < afterDecimalPoint.size() && afterDecimalPoint.at(i) == u'0')
                 ++i;
 
             afterUse += i;
         }
 
-        int afterRemove = afterDecimalPoint.length() - afterUse;
+        int afterRemove = afterDecimalPoint.size() - afterUse;
         afterDecimalPoint.chop(afterRemove);
 
         QChar separator = u',';
         QChar decimalPoint = u'.';
 
         // insert thousands separators
-        int length = beforeDecimalPoint.length();
-        for (int i = beforeDecimalPoint.length() -1; i >= 1; --i) {
+        int length = beforeDecimalPoint.size();
+        for (int i = beforeDecimalPoint.size() -1; i >= 1; --i) {
             if ((length - i) % 3 == 0)
                 beforeDecimalPoint.insert(i, separator);
         }
@@ -172,7 +172,7 @@ namespace QTest {
     int formatResult(char * buffer, int bufferSize, T number, int significantDigits)
     {
         QString result = formatResult(number, significantDigits);
-        int size = result.length();
+        int size = result.size();
         qstrncpy(buffer, std::move(result).toLatin1().constData(), bufferSize);
         return size;
     }

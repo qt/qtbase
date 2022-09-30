@@ -279,7 +279,7 @@ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **
                  qPrintable(errorMsg));
         return;
     }
-    if (inputCount + 1 != types.count() ||
+    if (inputCount + 1 != types.size() ||
         types.at(inputCount) == QDBusMetaTypeId::message()) {
         // invalid signal signature
         qWarning("QDBusAbstractAdaptor: Cannot relay signal %s::%s",
@@ -288,7 +288,7 @@ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **
     }
 
     QVariantList args;
-    const int numTypes = types.count();
+    const int numTypes = types.size();
     args.reserve(numTypes - 1);
     for (int i = 1; i < numTypes; ++i)
         args << QVariant(QMetaType(types.at(i)), argv[i]);

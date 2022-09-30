@@ -138,7 +138,7 @@ bool QDBusPendingCallPrivate::setReplyCallback(QObject *target, const char *memb
 
     // success
     // construct the expected signature
-    int count = metaTypes.count() - 1;
+    int count = metaTypes.size() - 1;
     if (count == 1 && metaTypes.at(1) == QDBusMetaTypeId::message()) {
         // wildcard slot, can receive anything, so don't set the signature
         return true;

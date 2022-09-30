@@ -2175,7 +2175,7 @@ bool QGraphicsItem::isBlockedByModalPanel(QGraphicsItem **blockingPanel) const
     if (!scene_d->popupWidgets.isEmpty() && scene_d->popupWidgets.first() == this)
         return false;
 
-    for (int i = 0; i < scene_d->modalPanels.count(); ++i) {
+    for (int i = 0; i < scene_d->modalPanels.size(); ++i) {
         QGraphicsItem *modalPanel = scene_d->modalPanels.at(i);
         if (modalPanel->panelModality() == QGraphicsItem::SceneModal) {
             // Scene modal panels block all non-descendents.
@@ -7665,13 +7665,13 @@ void QGraphicsItemPrivate::children_append(QDeclarativeListProperty<QGraphicsObj
 int QGraphicsItemPrivate::children_count(QDeclarativeListProperty<QGraphicsObject> *list)
 {
     QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(list->object));
-    return d->children.count();
+    return d->children.size();
 }
 
 QGraphicsObject *QGraphicsItemPrivate::children_at(QDeclarativeListProperty<QGraphicsObject> *list, int index)
 {
     QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(list->object));
-    if (index >= 0 && index < d->children.count())
+    if (index >= 0 && index < d->children.size())
         return d->children.at(index)->toGraphicsObject();
     else
         return nullptr;
@@ -7680,7 +7680,7 @@ QGraphicsObject *QGraphicsItemPrivate::children_at(QDeclarativeListProperty<QGra
 void QGraphicsItemPrivate::children_clear(QDeclarativeListProperty<QGraphicsObject> *list)
 {
     QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(list->object));
-    int childCount = d->children.count();
+    int childCount = d->children.size();
     if (d->sendParentChangeNotification) {
         for (int index = 0; index < childCount; index++)
             d->children.at(0)->setParentItem(nullptr);
@@ -10749,7 +10749,7 @@ void QGraphicsSimpleTextItem::paint(QPainter *painter, const QStyleOptionGraphic
     } else {
         QTextLayout::FormatRange range;
         range.start = 0;
-        range.length = layout.text().length();
+        range.length = layout.text().size();
         range.format.setTextOutline(d->pen);
         layout.setFormats(QList<QTextLayout::FormatRange>(1, range));
     }

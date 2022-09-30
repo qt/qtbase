@@ -757,9 +757,9 @@ void tst_QDBusMarshall::sendBasic()
              qPrintable(reply.errorName() + ": " + reply.errorMessage()));
     //qDebug() << reply;
 
-    QCOMPARE(reply.arguments().count(), msg.arguments().count());
+    QCOMPARE(reply.arguments().size(), msg.arguments().size());
     QTEST(reply.signature(), "sig");
-    for (int i = 0; i < reply.arguments().count(); ++i) {
+    for (int i = 0; i < reply.arguments().size(); ++i) {
         QVERIFY(compare(reply.arguments().at(i), msg.arguments().at(i)));
         //printf("\n! %s\n* %s\n", qPrintable(qDBusArgumentToString(reply.arguments().at(i))), qPrintable(stringResult));
         QCOMPARE(QDBusUtil::argumentToString(reply.arguments().at(i)), stringResult);
@@ -781,9 +781,9 @@ void tst_QDBusMarshall::sendVariant()
     QDBusMessage reply = con.call(msg);
  //   qDebug() << reply;
 
-    QCOMPARE(reply.arguments().count(), msg.arguments().count());
+    QCOMPARE(reply.arguments().size(), msg.arguments().size());
     QCOMPARE(reply.signature(), QString("v"));
-    for (int i = 0; i < reply.arguments().count(); ++i)
+    for (int i = 0; i < reply.arguments().size(); ++i)
         QVERIFY(compare(reply.arguments().at(i), msg.arguments().at(i)));
 }
 
@@ -1205,7 +1205,7 @@ void tst_QDBusMarshall::receiveUnknownType()
         QTestEventLoop::instance().enterLoop(1);
         QVERIFY(!QTestEventLoop::instance().timeout());
         QCOMPARE(spy.list.size(), 1);
-        QCOMPARE(spy.list.at(0).arguments().count(), 1);
+        QCOMPARE(spy.list.at(0).arguments().size(), 1);
         QFETCH(int, receivedTypeId);
         //qDebug() << spy.list.at(0).arguments().at(0).typeName();
         QCOMPARE(spy.list.at(0).arguments().at(0).userType(), receivedTypeId);

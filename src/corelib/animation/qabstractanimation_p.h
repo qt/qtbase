@@ -247,7 +247,7 @@ public:
     void updateAnimationsTime(qint64 delta) override;
 
     //useful for profiling/debugging
-    int runningAnimationCount() override { return animations.count(); }
+    int runningAnimationCount() override { return animations.size(); }
 
 private Q_SLOTS:
     void startAnimations();

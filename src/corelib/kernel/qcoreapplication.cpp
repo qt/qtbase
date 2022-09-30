@@ -2153,7 +2153,7 @@ static void replacePercentN(QString *result, int n)
                 fmt = fmt.arg(n);
                 ++len;
                 result->replace(percentPos, len, fmt);
-                len = fmt.length();
+                len = fmt.size();
             }
         }
     }

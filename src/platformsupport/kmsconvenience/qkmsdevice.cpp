@@ -437,7 +437,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         }
     }
     qCDebug(qLcKmsDebug, "Output %s can use %d planes: %s",
-            connectorName.constData(), int(output.available_planes.count()), qPrintable(planeListStr));
+            connectorName.constData(), int(output.available_planes.size()), qPrintable(planeListStr));
 
     // This is for the EGLDevice/EGLStream backend. On some of those devices one
     // may want to target a pre-configured plane. It is probably useless for
@@ -719,7 +719,7 @@ void QKmsDevice::createScreens()
             siblings.append(s);
             virtualPositions.append(virtualPos);
             if (orderedScreen.vinfo.isPrimary)
-                primarySiblingIdx = siblings.count() - 1;
+                primarySiblingIdx = siblings.size() - 1;
         } else {
             registerScreen(s, orderedScreen.vinfo.isPrimary, virtualPos, QList<QPlatformScreen *>() << s);
         }
@@ -727,7 +727,7 @@ void QKmsDevice::createScreens()
 
     if (!m_screenConfig->separateScreens()) {
         // enable the virtual desktop
-        for (int i = 0; i < siblings.count(); ++i)
+        for (int i = 0; i < siblings.size(); ++i)
             registerScreen(siblings[i], i == primarySiblingIdx, virtualPositions[i], siblings);
     }
 }

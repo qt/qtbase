@@ -654,7 +654,7 @@ QModelIndex QAccessibleTree::indexFromLogical(int row, int column) const
         return QModelIndex();
 
     const QTreeView *treeView = qobject_cast<const QTreeView*>(view());
-    if (Q_UNLIKELY(row < 0 || column < 0 || treeView->d_func()->viewItems.count() <= row)) {
+    if (Q_UNLIKELY(row < 0 || column < 0 || treeView->d_func()->viewItems.size() <= row)) {
         qWarning() << "QAccessibleTree::indexFromLogical: invalid index: " << row << column << " for " << treeView;
         return QModelIndex();
     }
@@ -707,7 +707,7 @@ int QAccessibleTree::childCount() const
         return 0;
 
     int hHeader = horizontalHeader() ? 1 : 0;
-    return (treeView->d_func()->viewItems.count() + hHeader)* view()->model()->columnCount();
+    return (treeView->d_func()->viewItems.size() + hHeader)* view()->model()->columnCount();
 }
 
 QAccessibleInterface *QAccessibleTree::child(int logicalIndex) const
@@ -743,7 +743,7 @@ int QAccessibleTree::rowCount() const
 {
     const QTreeView *treeView = qobject_cast<const QTreeView*>(view());
     Q_ASSERT(treeView);
-    return treeView->d_func()->viewItems.count();
+    return treeView->d_func()->viewItems.size();
 }
 
 int QAccessibleTree::indexOfChild(const QAccessibleInterface *iface) const

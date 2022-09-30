@@ -401,9 +401,9 @@ void QAlphaPaintEnginePrivate::addAlphaRect(const QRectF &rect)
 bool QAlphaPaintEnginePrivate::canSeeTroughBackground(bool somethingInRectHasAlpha, const QRectF &rect) const
 {
     if (somethingInRectHasAlpha) {
-        if (m_dirtyRects.count() != m_numberOfCachedRects) {
-            m_cachedDirtyRgn.setRects(m_dirtyRects.constData(), m_dirtyRects.count());
-            m_numberOfCachedRects = m_dirtyRects.count();
+        if (m_dirtyRects.size() != m_numberOfCachedRects) {
+            m_cachedDirtyRgn.setRects(m_dirtyRects.constData(), m_dirtyRects.size());
+            m_numberOfCachedRects = m_dirtyRects.size();
         }
         return m_cachedDirtyRgn.intersects(rect.toAlignedRect());
     }

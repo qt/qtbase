@@ -142,14 +142,14 @@ bool VcprojGenerator::writeProjectMakefile()
     // Generate project file
     if(project->first("TEMPLATE") == "vcapp" ||
        project->first("TEMPLATE") == "vclib") {
-        if (!mergedProjects.count()) {
+        if (!mergedProjects.size()) {
             warn_msg(WarnLogic, "Generator: MSVC.NET: no single configuration created, cannot output project!");
             return false;
         }
 
         debug_msg(1, "Generator: MSVC.NET: Writing project file");
         VCProject mergedProject;
-        for (int i = 0; i < mergedProjects.count(); ++i) {
+        for (int i = 0; i < mergedProjects.size(); ++i) {
             VCProjectSingleConfig *singleProject = &(mergedProjects.at(i)->vcProject);
             mergedProject.SingleProjects += *singleProject;
             for (int j = 0; j < singleProject->ExtraCompilersFiles.count(); ++j) {
@@ -159,7 +159,7 @@ bool VcprojGenerator::writeProjectMakefile()
             }
         }
 
-        if(mergedProjects.count() > 1 &&
+        if(mergedProjects.size() > 1 &&
            mergedProjects.at(0)->vcProject.Name ==
            mergedProjects.at(1)->vcProject.Name)
             mergedProjects.at(0)->writePrlFile();
@@ -418,7 +418,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                     newDep->uuid = tmp_proj.isEmpty("QMAKE_UUID") ? getProjectUUID(Option::fixPathToLocalOS(vcprojDir + QDir::separator() + vcproj)).toString().toUpper(): tmp_proj.first("QMAKE_UUID").toQString();
                     // We want to store it as the .lib name.
                     if (newDep->target.endsWith(".dll"))
-                        newDep->target = newDep->target.left(newDep->target.length()-3) + "lib";
+                        newDep->target = newDep->target.left(newDep->target.size()-3) + "lib";
                     projGuids.insert(newDep->projectName, newDep->target);
 
                     if (tmpList.size()) {
@@ -1213,7 +1213,7 @@ void VcprojGenerator::initDeploymentTool()
                 continue;
             // We want to deploy .dlls not .libs
             if (dllName.endsWith(QLatin1String(".lib")))
-                dllName.replace(dllName.length() - 3, 3, QLatin1String("dll"));
+                dllName.replace(dllName.size() - 3, 3, QLatin1String("dll"));
             // Use only the file name and check in Qt's install path and LIBPATHs to check for existence
             dllName.remove(0, dllName.lastIndexOf(QLatin1Char('/')) + 1);
             QFileInfo info;

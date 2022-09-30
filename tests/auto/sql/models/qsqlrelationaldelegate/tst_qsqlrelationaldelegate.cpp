@@ -146,7 +146,7 @@ void tst_QSqlRelationalDelegate::comboBoxEditor()
     tv.setCurrentIndex(index);
     tv.edit(index);
     QList<QComboBox*> comboBoxes = tv.viewport()->findChildren<QComboBox *>();
-    QCOMPARE(comboBoxes.count(), 1);
+    QCOMPARE(comboBoxes.size(), 1);
 
     QComboBox *editor = comboBoxes.at(0);
     QCOMPARE(editor->currentText(), "herr");

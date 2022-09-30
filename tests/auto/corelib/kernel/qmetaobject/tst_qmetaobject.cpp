@@ -1932,13 +1932,13 @@ void tst_QMetaObject::invokeTypedefTypes()
     CustomString arg("hello");
     QVERIFY(QMetaObject::invokeMethod(&obj, "sig_custom", Q_ARG(CustomString, arg)));
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.at(0).count(), 1);
+    QCOMPARE(spy.at(0).size(), 1);
     QCOMPARE(spy.at(0).at(0), QVariant(arg));
 
     spy.clear();
     QVERIFY(QMetaObject::invokeMethod(&obj, "sig_custom", arg));
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.at(0).count(), 1);
+    QCOMPARE(spy.at(0).size(), 1);
     QCOMPARE(spy.at(0).at(0), QVariant(arg));
 }
 

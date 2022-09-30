@@ -152,7 +152,7 @@ inline void QDBusMarshaller::append(const QByteArray &arg)
     DBusMessageIter subiterator;
     q_dbus_message_iter_open_container(&iterator, DBUS_TYPE_ARRAY, DBUS_TYPE_BYTE_AS_STRING,
                                      &subiterator);
-    q_dbus_message_iter_append_fixed_array(&subiterator, DBUS_TYPE_BYTE, &cdata, arg.length());
+    q_dbus_message_iter_append_fixed_array(&subiterator, DBUS_TYPE_BYTE, &cdata, arg.size());
     q_dbus_message_iter_close_container(&iterator, &subiterator);
 }
 

@@ -389,7 +389,7 @@ void tst_QFiledialog::directory()
 
     // Check my way
     QList<QListView*> list = fd.findChildren<QListView*>("listView");
-    QVERIFY(list.count() > 0);
+    QVERIFY(list.size() > 0);
 #ifdef Q_OS_WIN
     QCOMPARE(list.at(0)->rootIndex().data().toString().toLower(), temp.dirName().toLower());
 #else
@@ -663,7 +663,7 @@ void tst_QFiledialog::filters()
 
     // effects
     QList<QComboBox*> views = fd.findChildren<QComboBox*>("fileTypeCombo");
-    QCOMPARE(views.count(), 1);
+    QCOMPARE(views.size(), 1);
     QCOMPARE(views.at(0)->isVisible(), false);
 
     QStringList filters;
@@ -985,13 +985,13 @@ void tst_QFiledialog::viewMode()
 
     // find widgets
     QList<QTreeView*> treeView = fd.findChildren<QTreeView*>("treeView");
-    QCOMPARE(treeView.count(), 1);
+    QCOMPARE(treeView.size(), 1);
     QList<QListView*> listView = fd.findChildren<QListView*>("listView");
-    QCOMPARE(listView.count(), 1);
+    QCOMPARE(listView.size(), 1);
     QList<QToolButton*> listButton = fd.findChildren<QToolButton*>("listModeButton");
-    QCOMPARE(listButton.count(), 1);
+    QCOMPARE(listButton.size(), 1);
     QList<QToolButton*> treeButton = fd.findChildren<QToolButton*>("detailModeButton");
-    QCOMPARE(treeButton.count(), 1);
+    QCOMPARE(treeButton.size(), 1);
 
     // default value
     QCOMPARE(fd.viewMode(), QFileDialog::List);
@@ -1130,7 +1130,7 @@ void tst_QFiledialog::focus()
     QCursor::setPos(fd.geometry().center());
 
     QList<QWidget*> treeView = fd.findChildren<QWidget*>("fileNameEdit");
-    QCOMPARE(treeView.count(), 1);
+    QCOMPARE(treeView.size(), 1);
     QVERIFY(treeView.at(0));
     QTRY_COMPARE(treeView.at(0)->hasFocus(), true);
     QCOMPARE(treeView.at(0)->hasFocus(), true);

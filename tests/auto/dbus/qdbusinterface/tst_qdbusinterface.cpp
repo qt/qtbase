@@ -475,7 +475,7 @@ void tst_QDBusInterface::callMethod()
     QCOMPARE(dv.variant().toString(), QString("foo"));
 
     // verify reply
-    QCOMPARE(reply.arguments().count(), 1);
+    QCOMPARE(reply.arguments().size(), 1);
     v = reply.arguments().at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -494,7 +494,7 @@ void tst_QDBusInterface::callMethod()
     QCOMPARE(dv.variant().toString(), QString("bar"));
 
     // verify reply
-    QCOMPARE(reply.arguments().count(), 1);
+    QCOMPARE(reply.arguments().size(), 1);
     v = reply.arguments().at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -710,7 +710,7 @@ void tst_QDBusInterface::callMethodPeer()
     QCOMPARE(dv.variant().toString(), QString("foo"));
 
     // verify reply
-    QCOMPARE(reply.arguments().count(), 1);
+    QCOMPARE(reply.arguments().size(), 1);
     v = reply.arguments().at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -730,7 +730,7 @@ void tst_QDBusInterface::callMethodPeer()
     QCOMPARE(dv.variant().toString(), QString("bar"));
 
     // verify reply
-    QCOMPARE(reply.arguments().count(), 1);
+    QCOMPARE(reply.arguments().size(), 1);
     v = reply.arguments().at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);

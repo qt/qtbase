@@ -40,13 +40,13 @@ ProString::ProString(const ProString &other, OmitPreHashing) :
 }
 
 ProString::ProString(const QString &str, DoPreHashing) :
-    m_string(str), m_offset(0), m_length(str.length()), m_file(0)
+    m_string(str), m_offset(0), m_length(str.size()), m_file(0)
 {
     updatedHash();
 }
 
 ProString::ProString(const QString &str) :
-    m_string(str), m_offset(0), m_length(str.length()), m_file(0), m_hash(0x80000000)
+    m_string(str), m_offset(0), m_length(str.size()), m_file(0), m_hash(0x80000000)
 {
 }
 
@@ -84,7 +84,7 @@ ProString::ProString(const QString &str, int offset, int length) :
 
 void ProString::setValue(const QString &str)
 {
-    m_string = str, m_offset = 0, m_length = str.length(), m_hash = 0x80000000;
+    m_string = str, m_offset = 0, m_length = str.size(), m_hash = 0x80000000;
 }
 
 size_t ProString::updatedHash() const
@@ -121,7 +121,7 @@ ProKey::ProKey(const QString &str, int off, int len, uint hash) :
 
 void ProKey::setValue(const QString &str)
 {
-    m_string = str, m_offset = 0, m_length = str.length();
+    m_string = str, m_offset = 0, m_length = str.size();
     updatedHash();
 }
 
@@ -144,7 +144,7 @@ ProString &ProString::prepend(const ProString &other)
         } else {
             m_string = other.toQStringView() + toQStringView();
             m_offset = 0;
-            m_length = m_string.length();
+            m_length = m_string.size();
             if (!m_file)
                 m_file = other.m_file;
             m_hash = 0x80000000;
@@ -156,10 +156,10 @@ ProString &ProString::prepend(const ProString &other)
 ProString &ProString::append(const QLatin1String other)
 {
     if (other.size()) {
-        if (m_length != m_string.length()) {
+        if (m_length != m_string.size()) {
             m_string = toQStringView() + other;
             m_offset = 0;
-            m_length = m_string.length();
+            m_length = m_string.size();
         } else {
             Q_ASSERT(m_offset == 0);
             m_string.append(other);
@@ -172,10 +172,10 @@ ProString &ProString::append(const QLatin1String other)
 
 ProString &ProString::append(QChar other)
 {
-    if (m_length != m_string.length()) {
+    if (m_length != m_string.size()) {
         m_string = toQStringView() + other;
         m_offset = 0;
-        m_length = m_string.length();
+        m_length = m_string.size();
     } else {
         Q_ASSERT(m_offset == 0);
         m_string.append(other);
@@ -192,14 +192,14 @@ ProString &ProString::append(const ProString &other, bool *pending)
         if (!m_length) {
             *this = other;
         } else {
-            if (m_length != m_string.length())
+            if (m_length != m_string.size())
                 m_string = toQString();
             if (pending && !*pending) {
                 m_string += QLatin1Char(' ') + other.toQStringView();
             } else {
                 m_string += other.toQStringView();
             }
-            m_length = m_string.length();
+            m_length = m_string.size();
             m_offset = 0;
             if (other.m_file)
                 m_file = other.m_file;
@@ -242,7 +242,7 @@ ProString &ProString::append(const ProStringList &other, bool *pending, bool ski
                 const ProString &str = other.at(i);
                 m_string += str.toQStringView();
             }
-            m_length = m_string.length();
+            m_length = m_string.size();
             if (other.last().m_file)
                 m_file = other.last().m_file;
             m_hash = 0x80000000;

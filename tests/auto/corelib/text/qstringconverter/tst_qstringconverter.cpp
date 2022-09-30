@@ -2115,7 +2115,7 @@ void tst_QStringConverter::utfHeaders()
         QVERIFY(decode.isValid());
 
         QString result = decode(encoded);
-        QCOMPARE(result.length(), unicode.length());
+        QCOMPARE(result.size(), unicode.size());
         QCOMPARE(result, unicode);
     }
 
@@ -2126,7 +2126,7 @@ void tst_QStringConverter::utfHeaders()
         QString result;
         for (char c : encoded)
             result += decode(QByteArrayView(&c, 1));
-        QCOMPARE(result.length(), unicode.length());
+        QCOMPARE(result.size(), unicode.size());
         QCOMPARE(result, unicode);
     }
 

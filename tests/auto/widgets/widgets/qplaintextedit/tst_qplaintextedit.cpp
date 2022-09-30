@@ -417,7 +417,7 @@ void tst_QPlainTextEdit::cursorPositionChanged()
     CursorPositionChangedRecorder spy2(ed);
     QVERIFY(ed->textCursor().position() > 0);
     ed->setPlainText("Hello World");
-    QCOMPARE(spy2.cursorPositions.count(), 1);
+    QCOMPARE(spy2.cursorPositions.size(), 1);
     QCOMPARE(spy2.cursorPositions.at(0), 0);
     QCOMPARE(ed->textCursor().position(), 0);
 }
@@ -705,7 +705,7 @@ void tst_QPlainTextEdit::noPropertiesOnDefaultTextEditCharFormat()
     // on a text edit. Font properties instead should be taken from the
     // widget's font (in sync with defaultFont property in document) and the
     // foreground color should be taken from the palette.
-    QCOMPARE(ed->textCursor().charFormat().properties().count(), 0);
+    QCOMPARE(ed->textCursor().charFormat().properties().size(), 0);
 }
 
 void tst_QPlainTextEdit::setPlainTextShouldEmitTextChangedOnce()
@@ -1026,7 +1026,7 @@ void tst_QPlainTextEdit::copyAvailable()
     //Compare spied signals
     QEXPECT_FAIL("Case7 T,A,A, <- + shift, <- + shift, <- + shift, ctrl + x, undo() | signals: true, false, true",
         "Wrong undo selection behaviour. Should be fixed in some future release. (See task: 132482)", Abort);
-    QCOMPARE(spyCopyAvailabe.count(), copyAvailable.count());
+    QCOMPARE(spyCopyAvailabe.count(), copyAvailable.size());
     for (int i=0;i<spyCopyAvailabe.count(); i++) {
         QVariant variantSpyCopyAvailable = spyCopyAvailabe.at(i).at(0);
         QVERIFY2(variantSpyCopyAvailable.toBool() == copyAvailable.at(i), QString("Spied singnal: %1").arg(i).toLatin1());
@@ -1278,7 +1278,7 @@ void tst_QPlainTextEdit::ensureVisibleWithRtl()
     ed->setLayoutDirection(Qt::RightToLeft);
     ed->setLineWrapMode(QPlainTextEdit::NoWrap);
     QString txt(500, QChar(QLatin1Char('a')));
-    QCOMPARE(txt.length(), 500);
+    QCOMPARE(txt.size(), 500);
     ed->setPlainText(txt);
     ed->resize(100, 100);
     ed->show();
@@ -1331,7 +1331,7 @@ void tst_QPlainTextEdit::extraSelections()
     ed->setExtraSelections(QList<QTextEdit::ExtraSelection>() << sel);
 
     QList<QTextEdit::ExtraSelection> selections = ed->extraSelections();
-    QCOMPARE(selections.count(), 1);
+    QCOMPARE(selections.size(), 1);
     QCOMPARE(selections.at(0).cursor.position(), endPos);
     QCOMPARE(selections.at(0).cursor.anchor(), wordPos);
 }
@@ -1699,7 +1699,7 @@ void tst_QPlainTextEdit::contextMenu()
     QVERIFY(!ed->findChild<QAction *>(QStringLiteral("link-copy")));
 
     QTextCursor cursor = ed->textCursor();
-    cursor.setPosition(ed->toPlainText().length() - 2);
+    cursor.setPosition(ed->toPlainText().size() - 2);
     ed->setTextCursor(cursor);
 
     menu = ed->createStandardContextMenu(ed->cursorRect().center());
@@ -1782,7 +1782,7 @@ void tst_QPlainTextEdit::updateCursorPositionAfterEdit()
     QTest::keyClick(&plaintextEdit, Qt::Key_Up);
 
     // The curser should move back to the end of the copied text
-    QCOMPARE(plaintextEdit.textCursor().position(), initialPosition + txt.length());
+    QCOMPARE(plaintextEdit.textCursor().position(), initialPosition + txt.size());
 }
 #endif
 

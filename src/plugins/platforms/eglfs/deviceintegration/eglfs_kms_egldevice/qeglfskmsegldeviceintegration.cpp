@@ -168,7 +168,7 @@ void QEglFSKmsEglDeviceWindow::resetSurface()
     QByteArray reqLayerIndex = qgetenv("QT_QPA_EGLFS_LAYER_INDEX");
     if (!reqLayerIndex.isEmpty()) {
         int idx = reqLayerIndex.toInt();
-        if (idx >= 0 && idx < layers.count()) {
+        if (idx >= 0 && idx < layers.size()) {
             qCDebug(qLcEglfsKmsDebug, "EGLOutput layer index override = %d", idx);
             layer = layers[idx];
         }

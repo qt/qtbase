@@ -687,7 +687,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
             outstr = QLatin1Char(' ');
         }
         QString numstr = QString::number(num, obase);
-        int space = width - outstr.length() - numstr.length();
+        int space = width - outstr.size() - numstr.size();
         if (space <= 0) {
             outstr += numstr;
         } else if (leftalign) {
@@ -936,7 +936,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
         for (int i = 0; i < args.size(); ++i) {
             QString str = args.at(i).toQString();
             QChar *i_data = str.data();
-            int i_len = str.length();
+            int i_len = str.size();
             for (int x = 0; x < i_len; ++x) {
                 if (*(i_data+x) == QLatin1Char('\\') && x < i_len-1) {
                     if (*(i_data+x+1) == QLatin1Char('\\')) {
@@ -988,7 +988,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
                 rstr = rstr.toUpper();
             } else {
                 rstr = rstr.toLower();
-                if (func_t == E_TITLE && rstr.length() > 0)
+                if (func_t == E_TITLE && rstr.size() > 0)
                     rstr[0] = rstr.at(0).toTitleCase();
             }
             ret << u1.extract(rstr);
@@ -1569,7 +1569,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         const ProStringList &configs = values(statics.strCONFIG);
 
         for (int i = configs.size() - 1; i >= 0; i--) {
-            for (int mut = 0; mut < mutuals.count(); mut++) {
+            for (int mut = 0; mut < mutuals.size(); mut++) {
                 if (configs[i].toQStringView() == mutuals[mut].trimmed())
                     return returnBool(configs[i] == args[0]);
             }
@@ -1605,7 +1605,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                                                                  Qt::SkipEmptyParts);
             for (int i = l.size() - 1; i >= 0; i--) {
                 const ProString &val = l[i];
-                for (int mut = 0; mut < mutuals.count(); mut++) {
+                for (int mut = 0; mut < mutuals.size(); mut++) {
                     if (val.toQStringView() == mutuals[mut].trimmed()) {
                         if (val == qry)
                             return ReturnTrue;

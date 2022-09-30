@@ -133,7 +133,7 @@ void QShortcutPrivate::redoGrab(QShortcutMap &map)
     sc_ids.clear();
     if (sc_sequences.isEmpty())
         return;
-    sc_ids.reserve(sc_sequences.count());
+    sc_ids.reserve(sc_sequences.size());
     for (const auto &keySequence : qAsConst(sc_sequences)) {
         if (keySequence.isEmpty())
             continue;

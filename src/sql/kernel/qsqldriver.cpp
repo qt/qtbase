@@ -516,7 +516,7 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
             s.clear();
         } else {
             vals.chop(2); // remove trailing comma
-            s[s.length() - 2] = u')';
+            s[s.size() - 2] = u')';
             s.append("VALUES ("_L1).append(vals).append(u')');
         }
         break; }
@@ -598,7 +598,7 @@ QString QSqlDriver::formatValue(const QSqlField &field, bool trimStrings) const
         {
             QString result = field.value().toString();
             if (trimStrings) {
-                int end = result.length();
+                int end = result.size();
                 while (end && result.at(end-1).isSpace()) /* skip white space from end */
                     end--;
                 result.truncate(end);

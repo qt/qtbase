@@ -1124,7 +1124,7 @@ QList<QDockWidget*> QMainWindow::tabifiedDockWidgets(QDockWidget *dockwidget) co
     QList<QDockWidget*> ret;
     const QDockAreaLayoutInfo *info = d_func()->layout->layoutState.dockAreaLayout.info(dockwidget);
     if (info && info->tabbed && info->tabBar) {
-        for(int i = 0; i < info->item_list.count(); ++i) {
+        for(int i = 0; i < info->item_list.size(); ++i) {
             const QDockAreaLayoutItem &item = info->item_list.at(i);
             if (item.widgetItem) {
                 if (QDockWidget *dock = qobject_cast<QDockWidget*>(item.widgetItem->widget())) {

@@ -120,7 +120,7 @@ QWindow *QFbScreen::topLevelAt(const QPoint & p) const
 
 int QFbScreen::windowCount() const
 {
-    return mWindowStack.count();
+    return mWindowStack.size();
 }
 
 void QFbScreen::setDirty(const QRect &rect)
@@ -210,7 +210,7 @@ QRegion QFbScreen::doRedraw()
 
 QFbWindow *QFbScreen::windowForId(WId wid) const
 {
-    for (int i = 0; i < mWindowStack.count(); ++i) {
+    for (int i = 0; i < mWindowStack.size(); ++i) {
         if (mWindowStack[i]->winId() == wid)
             return mWindowStack[i];
     }

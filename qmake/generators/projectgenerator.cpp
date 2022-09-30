@@ -87,7 +87,7 @@ ProjectGenerator::init()
                 int s = regex.lastIndexOf(Option::dir_sep);
                 if(s != -1) {
                     dir = regex.left(s+1);
-                    regex = regex.right(regex.length() - (s+1));
+                    regex = regex.right(regex.size() - (s+1));
                 }
                 const QDir d(dir);
                 if (Option::recursive) {
@@ -155,7 +155,7 @@ ProjectGenerator::init()
                 int s = regx.lastIndexOf(Option::dir_sep);
                 if(s != -1) {
                     dir = regx.left(s+1);
-                    regx = regx.right(regx.length() - (s+1));
+                    regx = regx.right(regx.size() - (s+1));
                 }
                 QStringList files = QDir(dir).entryList(QDir::nameFiltersFromString(regx),
                                                         QDir::Dirs | QDir::NoDotAndDotDot);
@@ -231,7 +231,7 @@ ProjectGenerator::init()
                     }
                     if(!h_ext.isEmpty()) {
                         for(int cppit = 0; cppit < Option::cpp_ext.size(); ++cppit) {
-                            QString src(dep.left(dep.length() - h_ext.length()) +
+                            QString src(dep.left(dep.size() - h_ext.size()) +
                                         Option::cpp_ext.at(cppit));
                             if(exists(src)) {
                                 ProStringList &srcl = v["SOURCES"];
@@ -358,7 +358,7 @@ ProjectGenerator::addFile(QString file)
     int s = file.lastIndexOf(Option::dir_sep);
     if(s != -1)
         dir = file.left(s+1);
-    if(file.mid(dir.length(), Option::h_moc_mod.length()) == Option::h_moc_mod)
+    if(file.mid(dir.size(), Option::h_moc_mod.size()) == Option::h_moc_mod)
         return false;
 
     ProKey where;
@@ -428,9 +428,9 @@ ProjectGenerator::getWritableVar(const char *vk, bool)
     else
         ret = v + " += ";
     QString join = vals.join(' ');
-    if(ret.length() + join.length() > 80) {
+    if(ret.size() + join.size() > 80) {
         QString spaces;
-        for(int i = 0; i < ret.length(); i++)
+        for(int i = 0; i < ret.size(); i++)
             spaces += " ";
         join = vals.join(" \\\n" + spaces);
     }

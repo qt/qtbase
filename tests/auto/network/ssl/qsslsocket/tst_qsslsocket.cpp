@@ -1019,7 +1019,7 @@ void tst_QSslSocket::ciphers()
     QString ciphersAsString;
     const auto &supported = sslConfig.supportedCiphers();
     for (const auto &cipher : supported) {
-        if (cipher.isNull() || !cipher.name().length())
+        if (cipher.isNull() || !cipher.name().size())
             continue;
         if (ciphers.size() > 0)
             ciphersAsString += QStringLiteral(":");
@@ -1233,7 +1233,7 @@ void tst_QSslSocket::peerCertificateChain()
     QSslSocketPtr socket = newSocket();
     this->socket = socket.data();
     QList<QSslCertificate> caCertificates = QSslCertificate::fromPath(httpServerCertChainPath());
-    QCOMPARE(caCertificates.count(), 1);
+    QCOMPARE(caCertificates.size(), 1);
     auto config = socket->sslConfiguration();
     config.addCaCertificates(caCertificates);
     socket->setSslConfiguration(config);
@@ -1250,7 +1250,7 @@ void tst_QSslSocket::peerCertificateChain()
         QSKIP("Skipping flaky test - See QTBUG-29941");
 
     QList<QSslCertificate> certChain = socket->peerCertificateChain();
-    QVERIFY(certChain.count() > 0);
+    QVERIFY(certChain.size() > 0);
     QCOMPARE(certChain.first(), socket->peerCertificate());
 
     socket->disconnectFromHost();
@@ -3076,7 +3076,7 @@ void tst_QSslSocket::blacklistedCertificates()
     connect(receiver, SIGNAL(encrypted()), SLOT(exitLoop()));
     enterLoop(1);
     QList<QSslError> sslErrors = receiver->sslHandshakeErrors();
-    QVERIFY(sslErrors.count() > 0);
+    QVERIFY(sslErrors.size() > 0);
     // there are more errors (self signed cert and hostname mismatch), but we only care about the blacklist error
     QCOMPARE(sslErrors.at(0).error(), QSslError::CertificateBlacklisted);
 }
@@ -3369,17 +3369,17 @@ void tst_QSslSocket::qtbug18498_peek2()
     bigblock.fill('#', QIODEVICE_BUFFERSIZE + 1024);
     QVERIFY(client->write(QByteArray("head")));
     QVERIFY(client->write(bigblock));
-    QTRY_COMPARE(server->bytesAvailable(), bigblock.length() + 4);
+    QTRY_COMPARE(server->bytesAvailable(), bigblock.size() + 4);
     QCOMPARE(server->read(4), QByteArray("head"));
-    QCOMPARE(server->peek(bigblock.length()), bigblock);
-    b.reserve(bigblock.length());
-    b.resize(server->peek(b.data(), bigblock.length()));
+    QCOMPARE(server->peek(bigblock.size()), bigblock);
+    b.reserve(bigblock.size());
+    b.resize(server->peek(b.data(), bigblock.size()));
     QCOMPARE(b, bigblock);
 
     //check oversized peek
-    QCOMPARE(server->peek(bigblock.length() * 3), bigblock);
-    b.reserve(bigblock.length() * 3);
-    b.resize(server->peek(b.data(), bigblock.length() * 3));
+    QCOMPARE(server->peek(bigblock.size() * 3), bigblock);
+    b.reserve(bigblock.size() * 3);
+    b.resize(server->peek(b.data(), bigblock.size() * 3));
     QCOMPARE(b, bigblock);
 
     QCOMPARE(server->readAll(), bigblock);
@@ -3715,7 +3715,7 @@ void tst_QSslSocket::verifyClientCertificate()
     } else {
         QCOMPARE(server.socket->peerCertificate(), clientCerts.first());
         if (isTestingSchannel) {
-            if (clientCerts.count() == 1 && server.socket->peerCertificateChain().count() == 2) {
+            if (clientCerts.size() == 1 && server.socket->peerCertificateChain().size() == 2) {
                 QEXPECT_FAIL("",
                              "Schannel includes the entire chain, not just the leaf and intermediates",
                              Continue);
@@ -4075,14 +4075,14 @@ void tst_QSslSocket::simplePskConnect()
 
     case PskConnectWrongCredentials:
         // provide totally wrong credentials
-        provider.setIdentity(PSK_CLIENT_IDENTITY.left(PSK_CLIENT_IDENTITY.length() - 1));
-        provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY.left(PSK_CLIENT_PRESHAREDKEY.length() - 1));
+        provider.setIdentity(PSK_CLIENT_IDENTITY.left(PSK_CLIENT_IDENTITY.size() - 1));
+        provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY.left(PSK_CLIENT_PRESHAREDKEY.size() - 1));
         connect(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), &provider, SLOT(providePsk(QSslPreSharedKeyAuthenticator*)));
         break;
 
     case PskConnectWrongIdentity:
         // right PSK, wrong identity
-        provider.setIdentity(PSK_CLIENT_IDENTITY.left(PSK_CLIENT_IDENTITY.length() - 1));
+        provider.setIdentity(PSK_CLIENT_IDENTITY.left(PSK_CLIENT_IDENTITY.size() - 1));
         provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY);
         connect(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), &provider, SLOT(providePsk(QSslPreSharedKeyAuthenticator*)));
         break;
@@ -4090,7 +4090,7 @@ void tst_QSslSocket::simplePskConnect()
     case PskConnectWrongPreSharedKey:
         // right identity, wrong PSK
         provider.setIdentity(PSK_CLIENT_IDENTITY);
-        provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY.left(PSK_CLIENT_PRESHAREDKEY.length() - 1));
+        provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY.left(PSK_CLIENT_PRESHAREDKEY.size() - 1));
         connect(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), &provider, SLOT(providePsk(QSslPreSharedKeyAuthenticator*)));
         break;
 

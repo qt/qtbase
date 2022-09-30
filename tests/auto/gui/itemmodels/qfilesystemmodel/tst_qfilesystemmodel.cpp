@@ -862,7 +862,7 @@ void tst_QFileSystemModel::sort()
     expectedOrder << tempFile2.fileName() << tempFile.fileName() << dirPath + QChar('/') + ".." << dirPath + QChar('/') + ".";
 
     if (fileDialogMode) {
-        QTRY_COMPARE(myModel->rowCount(parent), expectedOrder.count());
+        QTRY_COMPARE(myModel->rowCount(parent), expectedOrder.size());
         // File dialog Mode means sub trees are not sorted, only the current root.
         // There's no way we can check that the sub tree is "not sorted"; just check if it
         // has the same contents of the expected list

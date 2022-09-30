@@ -136,7 +136,7 @@ bool isSpecialChar(ushort c, const uchar (&iqm)[16])
 inline static
 bool hasSpecialChars(const QString &arg, const uchar (&iqm)[16])
 {
-    for (int x = arg.length() - 1; x >= 0; --x) {
+    for (int x = arg.size() - 1; x >= 0; --x) {
         if (isSpecialChar(arg.unicode()[x].unicode(), iqm))
             return true;
     }
@@ -151,7 +151,7 @@ QString IoUtils::shellQuoteUnix(const QString &arg)
         0x00, 0x00, 0x00, 0x38, 0x01, 0x00, 0x00, 0x78
     }; // 0-32 \'"$`<>|;&(){}*?#!~[]
 
-    if (!arg.length())
+    if (!arg.size())
         return QString::fromLatin1("''");
 
     QString ret(arg);
@@ -179,7 +179,7 @@ QString IoUtils::shellQuoteWin(const QString &arg)
         0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x10
     }; // &()<>^|
 
-    if (!arg.length())
+    if (!arg.size())
         return QString::fromLatin1("\"\"");
 
     QString ret(arg);
@@ -195,7 +195,7 @@ QString IoUtils::shellQuoteWin(const QString &arg)
         // to the called process verbatim. In the unquoted state, the circumflex escapes
         // meta chars (including itself and quotes), and is removed from the command.
         bool quoted = true;
-        for (int i = 0; i < ret.length(); i++) {
+        for (int i = 0; i < ret.size(); i++) {
             QChar c = ret.unicode()[i];
             if (c.unicode() == '"')
                 quoted = !quoted;

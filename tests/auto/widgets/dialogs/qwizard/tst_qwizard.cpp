@@ -1695,7 +1695,7 @@ public:
 
     void createTestRows()
     {
-        for (int i = 0; i < combinations.count(); ++i) {
+        for (int i = 0; i < combinations.size(); ++i) {
             QTest::newRow((name.toLatin1() + ", row " + QByteArray::number(i)).constData())
                 << (i == 0) << (type == Equality) << combinations.at(i);
             ++nRows_;
@@ -2131,19 +2131,19 @@ void tst_QWizard::showCurrentPageOnly()
 
     wizard.show();
 
-    QCOMPARE(pages.shown().count(), 1);
+    QCOMPARE(pages.shown().size(), 1);
     QCOMPARE(pages.shown().first(), pages.all().first());
 
     const int steps = 2;
     for (int i = 0; i < steps; ++i)
         wizard.next();
 
-    QCOMPARE(pages.shown().count(), 1);
+    QCOMPARE(pages.shown().size(), 1);
     QCOMPARE(pages.shown().first(), pages.all().at(steps));
 
     wizard.restart();
 
-    QCOMPARE(pages.shown().count(), 1);
+    QCOMPARE(pages.shown().size(), 1);
     QCOMPARE(pages.shown().first(), pages.all().first());
 }
 

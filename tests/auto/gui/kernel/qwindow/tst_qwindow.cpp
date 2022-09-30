@@ -993,7 +993,7 @@ public:
         }
         touchEventType = event->type();
         QList<QTouchEvent::TouchPoint> points = event->points();
-        for (int i = 0; i < points.count(); ++i) {
+        for (int i = 0; i < points.size(); ++i) {
             const auto &point = points.at(i);
             switch (point.state()) {
             case QEventPoint::State::Pressed:

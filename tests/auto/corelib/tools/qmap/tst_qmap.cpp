@@ -318,8 +318,8 @@ void tst_QMap::count()
     {
         QMultiMap<int, MyClass> map;
         QMultiMap<int, MyClass> map2(map);
-        QCOMPARE(map.count(), 0);
-        QCOMPARE(map2.count(), 0);
+        QCOMPARE(map.size(), 0);
+        QCOMPARE(map2.size(), 0);
         QCOMPARE(MyClass::count, 0);
         QCOMPARE(map.count(1), 0);
         QCOMPARE(map.size(), 0);
@@ -329,26 +329,26 @@ void tst_QMap::count()
 
         // detach
         map2.insert(0, MyClass("value0"));
-        QCOMPARE(map.count(), 0);
         QCOMPARE(map.size(), 0);
-        QCOMPARE(map2.count(), 1);
+        QCOMPARE(map.size(), 0);
+        QCOMPARE(map2.size(), 1);
         QCOMPARE(map2.size(), 1);
         QVERIFY(!map.isDetached());
         QCOMPARE(MyClass::count, 1);
 
         map2.insert(1, MyClass("value1"));
         map2.insert(2, MyClass("value2"));
-        QCOMPARE(map2.count(), 3);
+        QCOMPARE(map2.size(), 3);
         QCOMPARE(MyClass::count, 3);
 
         map2.insert(0, MyClass("value0_1"));
         map2.insert(0, MyClass("value0_2"));
-        QCOMPARE(map2.count(), 5);
+        QCOMPARE(map2.size(), 5);
         QCOMPARE(map2.count(0), 3);
         QCOMPARE(MyClass::count, 5);
 
         map2.clear();
-        QCOMPARE(map2.count(), 0);
+        QCOMPARE(map2.size(), 0);
         QCOMPARE(MyClass::count, 0);
 
     }
@@ -1589,26 +1589,26 @@ void tst_QMap::qmultimap_specific()
     }
 
     QVERIFY(map1.contains(9, 99));
-    QCOMPARE(map1.count(), 45);
+    QCOMPARE(map1.size(), 45);
     map1.remove(9, 99);
     QVERIFY(!map1.contains(9, 99));
-    QCOMPARE(map1.count(), 44);
+    QCOMPARE(map1.size(), 44);
 
     map1.remove(9, 99);
     QVERIFY(!map1.contains(9, 99));
-    QCOMPARE(map1.count(), 44);
+    QCOMPARE(map1.size(), 44);
 
     map1.remove(1, 99);
-    QCOMPARE(map1.count(), 44);
+    QCOMPARE(map1.size(), 44);
 
     map1.insert(1, 99);
     map1.insert(1, 99);
 
-    QCOMPARE(map1.count(), 46);
+    QCOMPARE(map1.size(), 46);
     map1.remove(1, 99);
-    QCOMPARE(map1.count(), 44);
+    QCOMPARE(map1.size(), 44);
     map1.remove(1, 99);
-    QCOMPARE(map1.count(), 44);
+    QCOMPARE(map1.size(), 44);
 
     {
     QMultiMap<int, int>::const_iterator i = map1.constFind(1, 11);
@@ -1667,7 +1667,7 @@ void tst_QMap::qmultimap_specific()
     map2.insert(42, 1);
     map2.insert(10, 2);
     map2.insert(48, 3);
-    QCOMPARE(map1.count(), map2.count());
+    QCOMPARE(map1.size(), map2.size());
     QVERIFY(map1.remove(42,5));
     QVERIFY(map2.remove(42,5));
     QVERIFY(map1 == map2);
@@ -1814,7 +1814,7 @@ void tst_QMap::insert()
     map.insert("cs/key1", 1);
     map.insert("cs/key2", 2);
     map.insert("cs/key1", 3);
-    QCOMPARE(map.count(), 2);
+    QCOMPARE(map.size(), 2);
 
     QMap<int, int> intMap;
     for (int i = 0; i < 1000; ++i) {
@@ -1893,7 +1893,7 @@ void testDetachWhenInsert()
         QCOMPARE(source, referenceSource);
         QCOMPARE(dest, referenceDestination);
 
-        QCOMPARE(destCopy.count(), 1); // unchanged
+        QCOMPARE(destCopy.size(), 1); // unchanged
     }
 
     // copy insertion of shared map
@@ -1917,7 +1917,7 @@ void testDetachWhenInsert()
         QCOMPARE(sourceCopy, referenceSource);
 
         QCOMPARE(dest, referenceDestination);
-        QCOMPARE(destCopy.count(), 1); // unchanged
+        QCOMPARE(destCopy.size(), 1); // unchanged
     }
 
     // move insertion of non-shared map
@@ -1937,7 +1937,7 @@ void testDetachWhenInsert()
             dest.unite(source); // QMultiMap
 
         QCOMPARE(dest, referenceDestination);
-        QCOMPARE(destCopy.count(), 1); // unchanged
+        QCOMPARE(destCopy.size(), 1); // unchanged
     }
 
     // move insertion of shared map
@@ -1960,7 +1960,7 @@ void testDetachWhenInsert()
         QCOMPARE(sourceCopy, referenceSource);
 
         QCOMPARE(dest, referenceDestination);
-        QCOMPARE(destCopy.count(), 1); // unchanged
+        QCOMPARE(destCopy.size(), 1); // unchanged
     }
 };
 
@@ -1991,7 +1991,7 @@ void tst_QMap::insertMap()
 
         map.insert(map2);
 
-        QCOMPARE(map.count(), 5);
+        QCOMPARE(map.size(), 5);
         for (int i = 0; i < 5; ++i)
             QCOMPARE(map[i], i);
     }
@@ -2006,7 +2006,7 @@ void tst_QMap::insertMap()
 
         map.insert(map2);
 
-        QCOMPARE(map.count(), 17);
+        QCOMPARE(map.size(), 17);
         for (int i = 0; i < 10; ++i) {
             // i * 3 == i except for i = 4, 8
             QCOMPARE(map[i * 3], (i && i % 4 == 0) ? i - (i / 4) : i);
@@ -2028,7 +2028,7 @@ void tst_QMap::insertMap()
         QMap<int, int> map2;
 
         map.insert(map2);
-        QCOMPARE(map.count(), 1);
+        QCOMPARE(map.size(), 1);
         QCOMPARE(map[1], 1);
     }
     {
@@ -2037,7 +2037,7 @@ void tst_QMap::insertMap()
         map2.insert(1, 1);
 
         map.insert(map2);
-        QCOMPARE(map.count(), 1);
+        QCOMPARE(map.size(), 1);
         QCOMPARE(map[1], 1);
 
         QMap<int, int> map3;
@@ -2053,7 +2053,7 @@ void tst_QMap::insertMap()
         // Test inserting into self, nothing should happen
         map.insert(map);
 
-        QCOMPARE(map.count(), 3);
+        QCOMPARE(map.size(), 3);
         for (int i = 0; i < 3; ++i)
             QCOMPARE(map[i], i);
     }
@@ -2071,7 +2071,7 @@ void tst_QMap::insertMap()
 
         map.insert(map2);
 
-        QCOMPARE(map.count(), 1);
+        QCOMPARE(map.size(), 1);
     }
 
     testDetachWhenInsert<QMap>();
@@ -2133,7 +2133,7 @@ void tst_QMap::checkMostLeftNode()
 void tst_QMap::initializerList()
 {
     QMap<int, QString> map = {{1, "bar"}, {1, "hello"}, {2, "initializer_list"}};
-    QCOMPARE(map.count(), 2);
+    QCOMPARE(map.size(), 2);
     QCOMPARE(map[1], QString("hello"));
     QCOMPARE(map[2], QString("initializer_list"));
 
@@ -2143,9 +2143,9 @@ void tst_QMap::initializerList()
     // QCOMPARE(stdm[1], QString("bar"));
 
     QMultiMap<QString, int> multiMap{{"il", 1}, {"il", 2}, {"il", 3}};
-    QCOMPARE(multiMap.count(), 3);
+    QCOMPARE(multiMap.size(), 3);
     QList<int> values = multiMap.values("il");
-    QCOMPARE(values.count(), 3);
+    QCOMPARE(values.size(), 3);
 
     QMap<int, int> emptyMap{};
     QVERIFY(emptyMap.isEmpty());

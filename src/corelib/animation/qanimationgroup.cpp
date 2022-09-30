@@ -138,7 +138,7 @@ int QAnimationGroup::indexOfAnimation(QAbstractAnimation *animation) const
 void QAnimationGroup::addAnimation(QAbstractAnimation *animation)
 {
     Q_D(QAnimationGroup);
-    insertAnimation(d->animations.count(), animation);
+    insertAnimation(d->animations.size(), animation);
 }
 
 /*!
@@ -261,7 +261,7 @@ void QAnimationGroupPrivate::clear(bool onDestruction)
     const QList<QAbstractAnimation *> animationsCopy = animations; // taking a copy
     animations.clear();
     // Clearing backwards so the indices doesn't change while we remove animations.
-    for (int i = animationsCopy.count() - 1; i >= 0; --i) {
+    for (int i = animationsCopy.size() - 1; i >= 0; --i) {
         QAbstractAnimation *animation = animationsCopy.at(i);
         animation->setParent(nullptr);
         QAbstractAnimationPrivate::get(animation)->group = nullptr;

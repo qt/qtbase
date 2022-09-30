@@ -3133,7 +3133,7 @@ void QWidget::addAction(QAction *action)
 */
 void QWidget::addActions(const QList<QAction *> &actions)
 {
-    for(int i = 0; i < actions.count(); i++)
+    for(int i = 0; i < actions.size(); i++)
         insertAction(nullptr, actions.at(i));
 }
 
@@ -3182,7 +3182,7 @@ void QWidget::insertAction(QAction *before, QAction *action)
 */
 void QWidget::insertActions(QAction *before, const QList<QAction*> &actions)
 {
-    for(int i = 0; i < actions.count(); ++i)
+    for(int i = 0; i < actions.size(); ++i)
         insertAction(before, actions.at(i));
 }
 
@@ -9013,7 +9013,7 @@ bool QWidget::event(QEvent *event)
             break;
 #if QT_CONFIG(menu)
         case Qt::ActionsContextMenu:
-            if (d->actions.count()) {
+            if (d->actions.size()) {
                 QMenu::exec(d->actions, static_cast<QContextMenuEvent *>(event)->globalPos(),
                             nullptr, this);
                 break;
@@ -9243,7 +9243,7 @@ bool QWidget::event(QEvent *event)
         break;
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
-        if (propName.length() == 13 && !qstrncmp(propName, "_q_customDpi", 12)) {
+        if (propName.size() == 13 && !qstrncmp(propName, "_q_customDpi", 12)) {
             uint value = property(propName.constData()).toUInt();
             if (!d->extra)
                 d->createExtra();

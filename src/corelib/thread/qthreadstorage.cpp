@@ -51,7 +51,7 @@ QThreadStorageData::QThreadStorageData(void (*func)(void *))
          no where to store it, and no way to actually call it.
          */
         QThreadData *data = QThreadData::current();
-        id = data->tls.count();
+        id = data->tls.size();
         DEBUG_MSG("QThreadStorageData: Allocated id %d, destructor %p cannot be stored", id, func);
         return;
     }

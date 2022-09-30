@@ -215,7 +215,7 @@ void tst_QFontDialog::testNonStandardFontSize()
     QList<int> standardSizesList = QFontDatabase::standardSizes();
     int nonStandardFontSize;
     if (!standardSizesList.isEmpty()) {
-        nonStandardFontSize = standardSizesList.at(standardSizesList.count()-1); // get the maximum standard size.
+        nonStandardFontSize = standardSizesList.at(standardSizesList.size()-1); // get the maximum standard size.
         nonStandardFontSize += 1; // the increment of 1 to mock a non-standard font size.
     } else {
         QSKIP("QFontDatabase::standardSizes() is empty.");

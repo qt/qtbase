@@ -1956,7 +1956,7 @@ void tst_QtConcurrentMap::incrementalResults()
 
     QCOMPARE(future.isFinished(), true);
     QCOMPARE(future.resultCount(), count);
-    QCOMPARE(future.results().count(), count);
+    QCOMPARE(future.results().size(), count);
 }
 
 /*

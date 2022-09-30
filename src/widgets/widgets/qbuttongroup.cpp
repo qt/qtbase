@@ -14,7 +14,7 @@ void QButtonGroupPrivate::detectCheckedButton()
     checkedButton = nullptr;
     if (exclusive)
         return;
-    for (int i = 0; i < buttonList.count(); i++) {
+    for (int i = 0; i < buttonList.size(); i++) {
         if (buttonList.at(i) != previous && buttonList.at(i)->isChecked()) {
             checkedButton = buttonList.at(i);
             return;
@@ -82,7 +82,7 @@ QButtonGroup::QButtonGroup(QObject *parent)
 QButtonGroup::~QButtonGroup()
 {
     Q_D(QButtonGroup);
-    for (int i = 0; i < d->buttonList.count(); ++i)
+    for (int i = 0; i < d->buttonList.size(); ++i)
         d->buttonList.at(i)->d_func()->group = nullptr;
 }
 

@@ -148,7 +148,7 @@ void tst_QFileSystemWatcher::basicTest()
 
     // waiting max 5 seconds for notification for file modification to trigger
     QTRY_COMPARE(changedSpy.count(), 1);
-    QCOMPARE(changedSpy.at(0).count(), 1);
+    QCOMPARE(changedSpy.at(0).size(), 1);
 
     QString fileName = changedSpy.at(0).at(0).toString();
     QCOMPARE(fileName, testFile.fileName());
@@ -192,7 +192,7 @@ void tst_QFileSystemWatcher::basicTest()
 
     // waiting max 5 seconds for notification for file permission modification to trigger
     QTRY_COMPARE(changedSpy.count(), 1);
-    QCOMPARE(changedSpy.at(0).count(), 1);
+    QCOMPARE(changedSpy.at(0).size(), 1);
 
     fileName = changedSpy.at(0).at(0).toString();
     QCOMPARE(fileName, testFile.fileName());
@@ -221,7 +221,7 @@ void tst_QFileSystemWatcher::basicTest()
     // > 0 && < 3 because some platforms may emit two changes
     // XXX: which platforms? (QTBUG-23370)
     QTRY_VERIFY(changedSpy.count() > 0 && changedSpy.count() < 3);
-    QCOMPARE(changedSpy.at(0).count(), 1);
+    QCOMPARE(changedSpy.at(0).size(), 1);
 
     fileName = changedSpy.at(0).at(0).toString();
     QCOMPARE(fileName, testFile.fileName());
@@ -324,7 +324,7 @@ void tst_QFileSystemWatcher::watchDirectory()
     QTRY_COMPARE(changedSpy.count(), testDirs.size() * 2);
     for (int i = 0; i < changedSpy.count(); i++) {
         const auto &signal = changedSpy.at(i);
-        QCOMPARE(signal.count(), 1);
+        QCOMPARE(signal.size(), 1);
 
         auto it = signalCounter.find(signal.at(0).toString());
         QVERIFY(it != signalCounter.end());

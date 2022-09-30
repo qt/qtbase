@@ -485,7 +485,7 @@ static char **QString2cstrings(const QString &args)
     static QByteArrayList cache;
 
     const auto &list = QStringView{ args }.split(' ');
-    auto argarray = new char*[list.count() + 1];
+    auto argarray = new char*[list.size() + 1];
 
     int i = 0;
     for (; i < list.size(); ++i ) {
@@ -1152,7 +1152,7 @@ void SendPostedEventsTester::doTest()
     eventLoop.exec();
     QVERIFY(p != nullptr);
 
-    QCOMPARE(eventSpy.count(), 2);
+    QCOMPARE(eventSpy.size(), 2);
     QCOMPARE(eventSpy.at(0), int(QEvent::MetaCall));
     QCOMPARE(eventSpy.at(1), int(QEvent::User));
     eventSpy.clear();
@@ -1657,7 +1657,7 @@ void tst_QApplication::focusChanged()
     parent1.show();
     QApplicationPrivate::setActiveWindow(&parent1); // needs this on twm (focus follows mouse)
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.at(0).count(), 2);
+    QCOMPARE(spy.at(0).size(), 2);
     old = qvariant_cast<QWidget*>(spy.at(0).at(0));
     now = qvariant_cast<QWidget*>(spy.at(0).at(1));
     QCOMPARE(now, &le1);

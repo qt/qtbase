@@ -299,13 +299,13 @@ void tst_QToolBar::addAction()
     {
         QAction action(0);
 
-        QCOMPARE(tb.actions().count(), 0);
+        QCOMPARE(tb.actions().size(), 0);
         tb.addAction(&action);
-        QCOMPARE(tb.actions().count(), 1);
+        QCOMPARE(tb.actions().size(), 1);
         QCOMPARE(tb.actions()[0], &action);
 
         tb.clear();
-        QCOMPARE(tb.actions().count(), 0);
+        QCOMPARE(tb.actions().size(), 0);
     }
 
     {
@@ -328,14 +328,14 @@ void tst_QToolBar::addAction()
         QCOMPARE(icon, action4->icon());
         QCOMPARE(text, action4->text());
 
-        QCOMPARE(tb.actions().count(), 4);
+        QCOMPARE(tb.actions().size(), 4);
         QCOMPARE(tb.actions()[0], action1);
         QCOMPARE(tb.actions()[1], action2);
         QCOMPARE(tb.actions()[2], action3);
         QCOMPARE(tb.actions()[3], action4);
 
         tb.clear();
-        QCOMPARE(tb.actions().count(), 0);
+        QCOMPARE(tb.actions().size(), 0);
     }
 }
 
@@ -364,19 +364,19 @@ void tst_QToolBar::insertAction()
     QAction action3(0);
     QAction action4(0);
 
-    QCOMPARE(tb.actions().count(), 0);
+    QCOMPARE(tb.actions().size(), 0);
     tb.insertAction(0, &action1);
     tb.insertAction(&action1, &action2);
     tb.insertAction(&action2, &action3);
     tb.insertAction(&action3, &action4);
-    QCOMPARE(tb.actions().count(), 4);
+    QCOMPARE(tb.actions().size(), 4);
     QCOMPARE(tb.actions()[0], &action4);
     QCOMPARE(tb.actions()[1], &action3);
     QCOMPARE(tb.actions()[2], &action2);
     QCOMPARE(tb.actions()[3], &action1);
 
     tb.clear();
-    QCOMPARE(tb.actions().count(), 0);
+    QCOMPARE(tb.actions().size(), 0);
 }
 
 void tst_QToolBar::addSeparator()
@@ -390,13 +390,13 @@ void tst_QToolBar::addSeparator()
     QAction *sep = tb.addSeparator();
     tb.addAction(&action2);
 
-    QCOMPARE(tb.actions().count(), 3);
+    QCOMPARE(tb.actions().size(), 3);
     QCOMPARE(tb.actions()[0], &action1);
     QCOMPARE(tb.actions()[1], sep);
     QCOMPARE(tb.actions()[2], &action2);
 
     tb.clear();
-    QCOMPARE(tb.actions().count(), 0);
+    QCOMPARE(tb.actions().size(), 0);
 }
 
 void tst_QToolBar::insertSeparator()
@@ -410,13 +410,13 @@ void tst_QToolBar::insertSeparator()
     tb.addAction(&action2);
     QAction *sep = tb.insertSeparator(&action2);
 
-    QCOMPARE(tb.actions().count(), 3);
+    QCOMPARE(tb.actions().size(), 3);
     QCOMPARE(tb.actions()[0], &action1);
     QCOMPARE(tb.actions()[1], sep);
     QCOMPARE(tb.actions()[2], &action2);
 
     tb.clear();
-    QCOMPARE(tb.actions().count(), 0);
+    QCOMPARE(tb.actions().size(), 0);
 }
 
 void tst_QToolBar::addWidget()
@@ -431,7 +431,7 @@ void tst_QToolBar::addWidget()
     QAction *widget = tb.addWidget(&w);
     tb.addAction(&action2);
 
-    QCOMPARE(tb.actions().count(), 3);
+    QCOMPARE(tb.actions().size(), 3);
     QCOMPARE(tb.actions()[0], &action1);
     QCOMPARE(tb.actions()[1], widget);
     QCOMPARE(tb.actions()[2], &action2);
@@ -439,18 +439,18 @@ void tst_QToolBar::addWidget()
     // it should be possible to reuse the action returned by
     // addWidget() to place the widget somewhere else in the toolbar
     tb.removeAction(widget);
-    QCOMPARE(tb.actions().count(), 2);
+    QCOMPARE(tb.actions().size(), 2);
     QCOMPARE(tb.actions()[0], &action1);
     QCOMPARE(tb.actions()[1], &action2);
 
     tb.addAction(widget);
-    QCOMPARE(tb.actions().count(), 3);
+    QCOMPARE(tb.actions().size(), 3);
     QCOMPARE(tb.actions()[0], &action1);
     QCOMPARE(tb.actions()[1], &action2);
     QCOMPARE(tb.actions()[2], widget);
 
     tb.clear();
-    QCOMPARE(tb.actions().count(), 0);
+    QCOMPARE(tb.actions().size(), 0);
 }
 
 void tst_QToolBar::insertWidget()
@@ -465,7 +465,7 @@ void tst_QToolBar::insertWidget()
     tb.addAction(&action2);
     QAction *widget = tb.insertWidget(&action2, &w);
 
-    QCOMPARE(tb.actions().count(), 3);
+    QCOMPARE(tb.actions().size(), 3);
     QCOMPARE(tb.actions()[0], &action1);
     QCOMPARE(tb.actions()[1], widget);
     QCOMPARE(tb.actions()[2], &action2);
@@ -473,18 +473,18 @@ void tst_QToolBar::insertWidget()
     // it should be possible to reuse the action returned by
     // addWidget() to place the widget somewhere else in the toolbar
     tb.removeAction(widget);
-    QCOMPARE(tb.actions().count(), 2);
+    QCOMPARE(tb.actions().size(), 2);
     QCOMPARE(tb.actions()[0], &action1);
     QCOMPARE(tb.actions()[1], &action2);
 
     tb.insertAction(&action1, widget);
-    QCOMPARE(tb.actions().count(), 3);
+    QCOMPARE(tb.actions().size(), 3);
     QCOMPARE(tb.actions()[0], widget);
     QCOMPARE(tb.actions()[1], &action1);
     QCOMPARE(tb.actions()[2], &action2);
 
     tb.clear();
-    QCOMPARE(tb.actions().count(), 0);
+    QCOMPARE(tb.actions().size(), 0);
 
     {
         QToolBar tb;

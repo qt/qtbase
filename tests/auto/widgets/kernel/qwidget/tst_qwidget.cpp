@@ -3231,7 +3231,7 @@ void tst_QWidget::reparent()
 void tst_QWidget::setScreen()
 {
     const auto screens = QApplication::screens();
-    if (screens.count() < 2)
+    if (screens.size() < 2)
         QSKIP("This test tests nothing on a machine with a single screen.");
 
     QScreen *screen0 = screens.at(0);
@@ -3625,7 +3625,7 @@ void tst_QWidget::raise()
 
     QObjectList list1{child1, child2, child3, child4};
     QCOMPARE(parentPtr->children(), list1);
-    QCOMPARE(allChildren.count(), list1.count());
+    QCOMPARE(allChildren.size(), list1.count());
 
     for (UpdateWidget *child : qAsConst(allChildren)) {
         int expectedPaintEvents = child == child4 ? 1 : 0;
@@ -3724,7 +3724,7 @@ void tst_QWidget::lower()
 
     QObjectList list1{child1, child2, child3, child4};
     QCOMPARE(parent->children(), list1);
-    QCOMPARE(allChildren.count(), list1.count());
+    QCOMPARE(allChildren.size(), list1.count());
 
     for (UpdateWidget *child : qAsConst(allChildren)) {
         int expectedPaintEvents = child == child4 ? 1 : 0;
@@ -4742,7 +4742,7 @@ protected:
     }
 public:
     QList<WId> m_winIdList;
-    int winIdChangeEventCount() const { return m_winIdList.count(); }
+    int winIdChangeEventCount() const { return m_winIdList.size(); }
 };
 
 class CreateDestroyWidget : public WinIdChangeWidget

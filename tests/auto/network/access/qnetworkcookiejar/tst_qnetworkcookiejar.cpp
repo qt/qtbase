@@ -546,9 +546,9 @@ void tst_QNetworkCookieJar::rfc6265()
     QList<QNetworkCookie> cookiesToSend = jar.cookiesForUrl(sentUrl);
 
     //compare cookies only using name/value, as the metadata isn't sent over the network
-    QCOMPARE(cookiesToSend.count(), sent.count());
+    QCOMPARE(cookiesToSend.size(), sent.size());
     bool ok = true;
-    for (int i = 0; i < cookiesToSend.count(); i++) {
+    for (int i = 0; i < cookiesToSend.size(); i++) {
         if (cookiesToSend.at(i).name() != sent.at(i).name()) {
             ok = false;
             break;

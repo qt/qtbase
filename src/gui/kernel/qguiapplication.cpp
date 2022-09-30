@@ -1297,7 +1297,7 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
 
 static void init_plugins(const QList<QByteArray> &pluginList)
 {
-    for (int i = 0; i < pluginList.count(); ++i) {
+    for (int i = 0; i < pluginList.size(); ++i) {
         QByteArray pluginSpec = pluginList.at(i);
         int colonPos = pluginSpec.indexOf(':');
         QObject *plugin;
@@ -1675,7 +1675,7 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     is_app_closing = true;
     is_app_running = false;
 
-    for (int i = 0; i < generic_plugin_list.count(); ++i)
+    for (int i = 0; i < generic_plugin_list.size(); ++i)
         delete generic_plugin_list.at(i);
     generic_plugin_list.clear();
 

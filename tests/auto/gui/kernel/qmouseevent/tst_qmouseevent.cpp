@@ -263,14 +263,14 @@ void tst_QMouseEvent::grabbers()
     auto firstEPD = devPriv->pointById(0);
     QCOMPARE(firstEPD->eventPoint.pressTimestamp(), testMouseWidget->pressTimestamp);
     QCOMPARE(firstEPD->exclusiveGrabber, grabExclusive ? testMouseWidget : nullptr);
-    QCOMPARE(firstEPD->passiveGrabbers.count(), grabPassive ? 1 : 0);
+    QCOMPARE(firstEPD->passiveGrabbers.size(), grabPassive ? 1 : 0);
     if (grabPassive)
         QCOMPARE(firstEPD->passiveGrabbers.first(), testMouseWidget);
 
     // Ensure that grabbers are forgotten after release delivery
     QTest::mouseRelease(testMouseWidget, Qt::LeftButton, Qt::KeyboardModifiers(), {10, 10});
     QTRY_COMPARE(firstEPD->exclusiveGrabber, nullptr);
-    QCOMPARE(firstEPD->passiveGrabbers.count(), 0);
+    QCOMPARE(firstEPD->passiveGrabbers.size(), 0);
 }
 
 void tst_QMouseEvent::velocity()

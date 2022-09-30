@@ -584,7 +584,7 @@ void tst_Gestures::conflictingGestures()
 
     QCOMPARE(child->gestureOverrideEventsReceived, 1);
     QVERIFY(child->gestureEventsReceived > TotalGestureEventsCount);
-    QCOMPARE(child->events.all.count(), TotalGestureEventsCount + ContinuousGestureEventsCount);
+    QCOMPARE(child->events.all.size(), TotalGestureEventsCount + ContinuousGestureEventsCount);
     QCOMPARE(parent.gestureOverrideEventsReceived, 0);
     QCOMPARE(parent.gestureEventsReceived, 0);
 
@@ -1409,13 +1409,13 @@ void tst_Gestures::ungrabGesture() // a method on QWidget
     // sending an event will cause the QGesture objects to be instantiated for the widgets
     sendCustomGesture(&event, b);
 
-    QCOMPARE(a->gestures.count(), 1);
+    QCOMPARE(a->gestures.size(), 1);
     QPointer<QGesture> customGestureA;
     customGestureA = *(a->gestures.begin());
     QVERIFY(!customGestureA.isNull());
     QCOMPARE(customGestureA->gestureType(), CustomGesture::GestureType);
 
-    QCOMPARE(b->gestures.count(), 1);
+    QCOMPARE(b->gestures.size(), 1);
     QPointer<QGesture> customGestureB;
     customGestureB = *(b->gestures.begin());
     QVERIFY(!customGestureB.isNull());
@@ -1426,7 +1426,7 @@ void tst_Gestures::ungrabGesture() // a method on QWidget
     // sending an event will cause the QGesture objects to be instantiated for the widget
     sendCustomGesture(&event, a);
 
-    QCOMPARE(a->gestures.count(), 1);
+    QCOMPARE(a->gestures.size(), 1);
     customGestureA = *(a->gestures.begin());
     QVERIFY(!customGestureA.isNull());
     QCOMPARE(customGestureA->gestureType(), CustomGesture::GestureType);
@@ -1471,7 +1471,7 @@ void tst_Gestures::autoCancelGestures()
         {
             if (event->type() == QEvent::Gesture) {
                 QGestureEvent *ge = static_cast<QGestureEvent*>(event);
-                if (ge->gestures().count() != 1)
+                if (ge->gestures().size() != 1)
                     ++badGestureEvents;   // event should contain exactly one gesture
                 ge->gestures().first()->setGestureCancelPolicy(QGesture::CancelAllInContext);
             }
@@ -1504,15 +1504,15 @@ void tst_Gestures::autoCancelGestures()
     CustomEvent event;
     event.serial = CustomGesture::SerialStartedThreshold;
     QApplication::sendEvent(child, &event);
-    QCOMPARE(child->events.all.count(), 2);
-    QCOMPARE(child->events.started.count(), 1);
-    QCOMPARE(child->events.canceled.count(), 1);
-    QCOMPARE(parent.events.all.count(), 1);
+    QCOMPARE(child->events.all.size(), 2);
+    QCOMPARE(child->events.started.size(), 1);
+    QCOMPARE(child->events.canceled.size(), 1);
+    QCOMPARE(parent.events.all.size(), 1);
 
     // clean up, make the parent gesture finish
     event.serial = CustomGesture::SerialFinishedThreshold;
     QApplication::sendEvent(child, &event);
-    QCOMPARE(parent.events.all.count(), 2);
+    QCOMPARE(parent.events.all.size(), 2);
     QCOMPARE(parent.badGestureEvents, 0);
 }
 
@@ -1526,7 +1526,7 @@ void tst_Gestures::autoCancelGestures2()
         {
             if (event->type() == QEvent::Gesture) {
                 QGestureEvent *ge = static_cast<QGestureEvent*>(event);
-                if (ge->gestures().count() != 1)
+                if (ge->gestures().size() != 1)
                     ++badGestureEvents;   // event should contain exactly one gesture
                 ge->gestures().first()->setGestureCancelPolicy(QGesture::CancelAllInContext);
             }
@@ -1561,15 +1561,15 @@ void tst_Gestures::autoCancelGestures2()
     event.hasHotSpot = true;
     event.hotSpot = mapToGlobal(QPointF(5, 5), child, &view);
     scene.sendEvent(child, &event);
-    QCOMPARE(parent->events.all.count(), 1);
-    QCOMPARE(child->events.started.count(), 1);
-    QCOMPARE(child->events.canceled.count(), 1);
-    QCOMPARE(child->events.all.count(), 2);
+    QCOMPARE(parent->events.all.size(), 1);
+    QCOMPARE(child->events.started.size(), 1);
+    QCOMPARE(child->events.canceled.size(), 1);
+    QCOMPARE(child->events.all.size(), 2);
 
     // clean up, make the parent gesture finish
     event.serial = CustomGesture::SerialFinishedThreshold;
     scene.sendEvent(child, &event);
-    QCOMPARE(parent->events.all.count(), 2);
+    QCOMPARE(parent->events.all.size(), 2);
     QCOMPARE(parent->badGestureEvents, 0);
 }
 

@@ -1252,12 +1252,12 @@ unsigned QDtlsPrivateOpenSSL::pskClientCallback(const char *hint, char *identity
         return 0;
 
     // Copy data back into OpenSSL
-    const int identityLength = qMin(pskAuthenticator.identity().length(),
+    const int identityLength = qMin(pskAuthenticator.identity().size(),
                                     pskAuthenticator.maximumIdentityLength());
     std::memcpy(identity, pskAuthenticator.identity().constData(), identityLength);
     identity[identityLength] = 0;
 
-    const int pskLength = qMin(pskAuthenticator.preSharedKey().length(),
+    const int pskLength = qMin(pskAuthenticator.preSharedKey().size(),
                                pskAuthenticator.maximumPreSharedKeyLength());
     std::memcpy(psk, pskAuthenticator.preSharedKey().constData(), pskLength);
 
@@ -1283,7 +1283,7 @@ unsigned QDtlsPrivateOpenSSL::pskServerCallback(const char *identity, unsigned c
         return 0;
 
     // Copy data back into OpenSSL
-    const int pskLength = qMin(pskAuthenticator.preSharedKey().length(),
+    const int pskLength = qMin(pskAuthenticator.preSharedKey().size(),
                                pskAuthenticator.maximumPreSharedKeyLength());
 
     std::memcpy(psk, pskAuthenticator.preSharedKey().constData(), pskLength);

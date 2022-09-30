@@ -361,7 +361,7 @@ void QSplitterPrivate::init()
 void QSplitterPrivate::recalc(bool update)
 {
     Q_Q(QSplitter);
-    int n = list.count();
+    int n = list.size();
     /*
       Splitter handles before the first visible widget or right
       before a hidden widget must be hidden.
@@ -451,7 +451,7 @@ void QSplitterPrivate::doResize()
 {
     Q_Q(QSplitter);
     QRect r = q->contentsRect();
-    int n = list.count();
+    int n = list.size();
     QList<QLayoutStruct> a(n * 2);
     int i;
 
@@ -565,7 +565,7 @@ int QSplitterPrivate::findWidgetJustBeforeOrJustAfter(int index, int delta, int 
             return index;
         }
         index += delta;
-    } while (index >= 0 && index < list.count());
+    } while (index >= 0 && index < list.size());
 
     return -1;
 }
@@ -577,7 +577,7 @@ int QSplitterPrivate::findWidgetJustBeforeOrJustAfter(int index, int delta, int 
 void QSplitterPrivate::getRange(int index, int *farMin, int *min, int *max, int *farMax) const
 {
     Q_Q(const QSplitter);
-    int n = list.count();
+    int n = list.size();
     if (index <= 0 || index >= n)
         return;
 
@@ -757,7 +757,7 @@ void QSplitterPrivate::setGeo(QSplitterLayoutStruct *sls, int p, int s, bool all
 void QSplitterPrivate::doMove(bool backwards, int hPos, int index, int delta, bool mayCollapse,
                               int *positions, int *widths)
 {
-    if (index < 0 || index >= list.count())
+    if (index < 0 || index >= list.size())
         return;
 
 #ifdef QSPLITTER_DEBUG
@@ -827,7 +827,7 @@ QSplitterLayoutStruct *QSplitterPrivate::insertWidget(int index, QWidget *w)
     Q_Q(QSplitter);
     QSplitterLayoutStruct *sls = nullptr;
     int i;
-    int last = list.count();
+    int last = list.size();
     for (i = 0; i < list.size(); ++i) {
         QSplitterLayoutStruct *s = list.at(i);
         if (s->widget == w) {
@@ -1079,7 +1079,7 @@ void QSplitter::resizeEvent(QResizeEvent *)
 void QSplitter::addWidget(QWidget *widget)
 {
     Q_D(QSplitter);
-    insertWidget(d->list.count(), widget);
+    insertWidget(d->list.size(), widget);
 }
 
 /*!
@@ -1129,7 +1129,7 @@ QWidget *QSplitter::replaceWidget(int index, QWidget *widget)
         return nullptr;
     }
 
-    if (index < 0 || index >= d->list.count()) {
+    if (index < 0 || index >= d->list.size()) {
         qWarning("QSplitter::replaceWidget: Index %d out of range", index);
         return nullptr;
     }
@@ -1242,7 +1242,7 @@ QWidget *QSplitter::widget(int index) const
 int QSplitter::count() const
 {
     Q_D(const QSplitter);
-    return d->list.count();
+    return d->list.size();
 }
 
 /*!
@@ -1271,7 +1271,7 @@ void QSplitter::childEvent(QChildEvent *c)
         }
         QWidget *w = static_cast<QWidget*>(c->child());
         if (!d->blockChildAdd && !w->isWindow() && !d->findWidget(w))
-            d->insertWidget_helper(d->list.count(), w, false);
+            d->insertWidget_helper(d->list.size(), w, false);
     } else if (c->polished()) {
         if (!c->child()->isWidgetType())
             return;
@@ -1398,15 +1398,15 @@ void QSplitter::moveSplitter(int pos, int index)
     qDebug() << "QSplitter::moveSplitter" << debugp << index << "adjusted" << pos << "oldP" << oldP;
 #endif
 
-    QVarLengthArray<int, 32> poss(d->list.count());
-    QVarLengthArray<int, 32> ws(d->list.count());
+    QVarLengthArray<int, 32> poss(d->list.size());
+    QVarLengthArray<int, 32> ws(d->list.size());
     bool upLeft;
 
     d->doMove(false, pos, index, +1, (d->collapsible(s) && (pos > max)), poss.data(), ws.data());
     d->doMove(true, pos, index - 1, +1, (d->collapsible(index - 1) && (pos < min)), poss.data(), ws.data());
     upLeft = (pos < oldP);
 
-    int wid, delta, count = d->list.count();
+    int wid, delta, count = d->list.size();
     if (upLeft) {
         wid = 0;
         delta = 1;
@@ -1751,7 +1751,7 @@ bool QSplitter::restoreState(const QByteArray &state)
 void QSplitter::setStretchFactor(int index, int stretch)
 {
     Q_D(QSplitter);
-    if (index <= -1 || index >= d->list.count())
+    if (index <= -1 || index >= d->list.size())
         return;
 
     QWidget *widget = d->list.at(index)->widget;

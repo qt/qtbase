@@ -1459,7 +1459,7 @@ void tst_QAbstractSlider::keyPressed()
     slider->setOrientation(Qt::Horizontal);
     slider->setInvertedAppearance(invertedAppearance);
     slider->setInvertedControls(invertedControls);
-    for (int i=0;i<keySequence.count();i++) {
+    for (int i=0;i<keySequence.size();i++) {
         QTest::keyClick(slider, keySequence.at(i));
     }
     QCOMPARE(slider->sliderPosition(), expectedSliderPosition);

@@ -553,11 +553,11 @@ void tst_QNetworkCookie::parseSingleCookie()
     QList<QNetworkCookie> result = QNetworkCookie::parseCookies(cookieString.toUtf8());
 
     //QEXPECT_FAIL("network2", "QDateTime parsing problem: the date is beyond year 8000", Abort);
-    QCOMPARE(result.count(), 1);
+    QCOMPARE(result.size(), 1);
     QCOMPARE(result.at(0), expectedCookie);
 
     result = QNetworkCookie::parseCookies(result.at(0).toRawForm());
-    QCOMPARE(result.count(), 1);
+    QCOMPARE(result.size(), 1);
 
     // Drop any millisecond information, if there's any
     QDateTime dt = expectedCookie.expirationDate();

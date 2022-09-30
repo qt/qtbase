@@ -1164,7 +1164,7 @@ static QVariant parseCookieHeader(const QByteArray &raw)
     const QList<QByteArray> cookieList = raw.split(';');
     for (const QByteArray &cookie : cookieList) {
         QList<QNetworkCookie> parsed = QNetworkCookie::parseCookies(cookie.trimmed());
-        if (parsed.count() != 1)
+        if (parsed.size() != 1)
             return QVariant();  // invalid Cookie: header
 
         result += parsed;

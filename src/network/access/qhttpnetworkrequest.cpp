@@ -114,7 +114,7 @@ QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request
 {
     QList<QPair<QByteArray, QByteArray> > fields = request.header();
     QByteArray ba;
-    ba.reserve(40 + fields.length()*25); // very rough lower bound estimation
+    ba.reserve(40 + fields.size()*25); // very rough lower bound estimation
 
     ba += request.methodName();
     ba += ' ';

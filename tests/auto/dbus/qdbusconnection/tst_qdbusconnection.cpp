@@ -114,7 +114,7 @@ void tst_QDBusConnection::sendSignalToName()
 
     QVERIFY(con.send(msg));
 
-    QTRY_COMPARE(spy.args.count(), 1);
+    QTRY_COMPARE(spy.args.size(), 1);
     QCOMPARE(spy.args.at(0).toString(), QString("ping"));
 }
 
@@ -139,7 +139,7 @@ void tst_QDBusConnection::sendSignalToOtherName()
 
     QTest::qWait(1000);
 
-    QCOMPARE(spy.args.count(), 0);
+    QCOMPARE(spy.args.size(), 0);
 }
 
 void tst_QDBusConnection::send()
@@ -153,7 +153,7 @@ void tst_QDBusConnection::send()
 
     QDBusMessage reply = con.call(msg);
 
-    QCOMPARE(reply.arguments().count(), 1);
+    QCOMPARE(reply.arguments().size(), 1);
     QCOMPARE(reply.arguments().at(0).typeName(), "QStringList");
     QVERIFY(reply.arguments().at(0).toStringList().contains(con.baseService()));
 }
@@ -172,7 +172,7 @@ void tst_QDBusConnection::sendWithGui()
 
     QDBusMessage reply = con.call(msg, QDBus::BlockWithGui);
 
-    QCOMPARE(reply.arguments().count(), 1);
+    QCOMPARE(reply.arguments().size(), 1);
     QCOMPARE(reply.arguments().at(0).typeName(), "QStringList");
     QVERIFY(reply.arguments().at(0).toStringList().contains(con.baseService()));
 }
@@ -191,7 +191,7 @@ void tst_QDBusConnection::sendAsync()
             "/org/freedesktop/DBus", "org.freedesktop.DBus", "ListNames");
     QVERIFY(con.callWithCallback(msg, &spy, SLOT(asyncReply(QDBusMessage))));
 
-    QTRY_COMPARE(spy.args.count(), 1);
+    QTRY_COMPARE(spy.args.size(), 1);
     QCOMPARE(spy.args.value(0).typeName(), "QStringList");
     QVERIFY(spy.args.at(0).toStringList().contains(con.baseService()));
 }
@@ -214,7 +214,7 @@ void tst_QDBusConnection::connect()
 
     QVERIFY(con.send(msg));
 
-    QTRY_COMPARE(spy.args.count(), 1);
+    QTRY_COMPARE(spy.args.size(), 1);
     QCOMPARE(spy.args.at(0).toString(), QString("ping"));
 }
 
@@ -1026,7 +1026,7 @@ void tst_QDBusConnection::multipleInterfacesInQObject()
                                                       "local.BaseObject", "anotherMethod");
     QDBusMessage reply = con.call(msg, QDBus::Block);
     QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
-    QCOMPARE(reply.arguments().count(), 0);
+    QCOMPARE(reply.arguments().size(), 0);
     QVERIFY_HOOKCALLED();
 }
 

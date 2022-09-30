@@ -3935,7 +3935,7 @@ void tst_QRhi::srbLayoutCompatibility()
         QVERIFY(srb2->isLayoutCompatible(srb1.data()));
 
         QCOMPARE(srb1->serializedLayoutDescription(), srb2->serializedLayoutDescription());
-        QVERIFY(srb1->serializedLayoutDescription().count() == 0);
+        QVERIFY(srb1->serializedLayoutDescription().size() == 0);
     }
 
     // different count (not compatible)
@@ -3953,8 +3953,8 @@ void tst_QRhi::srbLayoutCompatibility()
         QVERIFY(!srb2->isLayoutCompatible(srb1.data()));
 
         QVERIFY(srb1->serializedLayoutDescription() != srb2->serializedLayoutDescription());
-        QVERIFY(srb1->serializedLayoutDescription().count() == 0);
-        QVERIFY(srb2->serializedLayoutDescription().count() == 1 * QRhiShaderResourceBinding::LAYOUT_DESC_ENTRIES_PER_BINDING);
+        QVERIFY(srb1->serializedLayoutDescription().size() == 0);
+        QVERIFY(srb2->serializedLayoutDescription().size() == 1 * QRhiShaderResourceBinding::LAYOUT_DESC_ENTRIES_PER_BINDING);
     }
 
     // full match (compatible)
@@ -3979,7 +3979,7 @@ void tst_QRhi::srbLayoutCompatibility()
         QVERIFY(!srb1->serializedLayoutDescription().isEmpty());
         QVERIFY(!srb2->serializedLayoutDescription().isEmpty());
         QCOMPARE(srb1->serializedLayoutDescription(), srb2->serializedLayoutDescription());
-        QVERIFY(srb1->serializedLayoutDescription().count() == 2 * QRhiShaderResourceBinding::LAYOUT_DESC_ENTRIES_PER_BINDING);
+        QVERIFY(srb1->serializedLayoutDescription().size() == 2 * QRhiShaderResourceBinding::LAYOUT_DESC_ENTRIES_PER_BINDING);
 
         // see what we would get if a binding list got serialized "manually", without pulling it out from the srb after building
         // (the results should be identical)

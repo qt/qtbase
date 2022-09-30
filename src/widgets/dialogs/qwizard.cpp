@@ -181,7 +181,7 @@ QWizardField::QWizardField(QWizardPage *page, const QString &spec, QObject *obje
 void QWizardField::resolve(const QList<QWizardDefaultProperty> &defaultPropertyTable)
 {
     if (property.isEmpty())
-        findProperty(defaultPropertyTable.constData(), defaultPropertyTable.count());
+        findProperty(defaultPropertyTable.constData(), defaultPropertyTable.size());
     initialValue = object->property(property);
 }
 
@@ -695,7 +695,7 @@ void QWizardPrivate::reset()
     if (current != -1) {
         q->currentPage()->hide();
         cleanupPagesNotInHistory();
-        for (int i = history.count() - 1; i >= 0; --i)
+        for (int i = history.size() - 1; i >= 0; --i)
             q->cleanupPage(history.at(i));
         history.clear();
         for (QWizardPage *page : qAsConst(pageMap))
@@ -732,7 +732,7 @@ void QWizardPrivate::addField(const QWizardField &field)
         return;
     }
 
-    fieldIndexMap.insert(myField.name, fields.count());
+    fieldIndexMap.insert(myField.name, fields.size());
     fields += myField;
     if (myField.mandatory && !myField.changedSignal.isEmpty())
         QObject::connect(myField.object, myField.changedSignal,
@@ -1425,10 +1425,10 @@ void QWizardPrivate::updateButtonTexts()
 void QWizardPrivate::updateButtonLayout()
 {
     if (buttonsHaveCustomLayout) {
-        QVarLengthArray<QWizard::WizardButton, QWizard::NButtons> array(buttonsCustomLayout.count());
-        for (int i = 0; i < buttonsCustomLayout.count(); ++i)
+        QVarLengthArray<QWizard::WizardButton, QWizard::NButtons> array(buttonsCustomLayout.size());
+        for (int i = 0; i < buttonsCustomLayout.size(); ++i)
             array[i] = buttonsCustomLayout.at(i);
-        setButtonLayout(array.constData(), array.count());
+        setButtonLayout(array.constData(), array.size());
     } else {
         // Positions:
         //     Help Stretch Custom1 Custom2 Custom3 Cancel Back Next Commit Finish Cancel Help
@@ -1645,15 +1645,15 @@ void QWizardPrivate::_q_updateButtonStates()
     const QWizardPage *page = q->currentPage();
     bool complete = page && page->isComplete();
 
-    btn.back->setEnabled(history.count() > 1
-                         && !q->page(history.at(history.count() - 2))->isCommitPage()
+    btn.back->setEnabled(history.size() > 1
+                         && !q->page(history.at(history.size() - 2))->isCommitPage()
                          && (!canFinish || !(opts & QWizard::DisabledBackButtonOnLastPage)));
     btn.next->setEnabled(canContinue && complete);
     btn.commit->setEnabled(canContinue && complete);
     btn.finish->setEnabled(canFinish && complete);
 
     const bool backButtonVisible = buttonLayoutContains(QWizard::BackButton)
-        && (history.count() > 1 || !(opts & QWizard::NoBackButtonOnStartPage))
+        && (history.size() > 1 || !(opts & QWizard::NoBackButtonOnStartPage))
         && (canContinue || !(opts & QWizard::NoBackButtonOnLastPage));
     bool commitPage = page && page->isCommitPage();
     btn.back->setVisible(backButtonVisible);
@@ -2228,7 +2228,7 @@ void QWizard::setPage(int theid, QWizardPage *page)
     page->setParent(d->pageFrame);
 
     QList<QWizardField> &pendingFields = page->d_func()->pendingFields;
-    for (int i = 0; i < pendingFields.count(); ++i)
+    for (int i = 0; i < pendingFields.size(); ++i)
         d->addField(pendingFields.at(i));
     pendingFields.clear();
 
@@ -2296,7 +2296,7 @@ void QWizard::removePage(int id)
         removedPage = d->pageMap.take(id);
         d->history.removeOne(id);
         d->_q_updateButtonStates();
-    } else if (d->history.count() == 1) {
+    } else if (d->history.size() == 1) {
         // Case 3: removing the current page which is the first (and only) one in the history
         d->reset();
         removedPage = d->pageMap.take(id);
@@ -2319,7 +2319,7 @@ void QWizard::removePage(int id)
 
         d->pageVBoxLayout->removeWidget(removedPage);
 
-        for (int i = d->fields.count() - 1; i >= 0; --i) {
+        for (int i = d->fields.size() - 1; i >= 0; --i) {
             if (d->fields.at(i).page == removedPage) {
                 removedPage->d_func()->pendingFields += d->fields.at(i);
                 d->removeFieldAt(i);
@@ -2706,7 +2706,7 @@ void QWizard::setButtonLayout(const QList<WizardButton> &layout)
 {
     Q_D(QWizard);
 
-    for (int i = 0; i < layout.count(); ++i) {
+    for (int i = 0; i < layout.size(); ++i) {
         WizardButton button1 = layout.at(i);
 
         if (button1 == NoButton || button1 == Stretch)
@@ -2891,7 +2891,7 @@ void QWizard::setDefaultProperty(const char *className, const char *property,
                                  const char *changedSignal)
 {
     Q_D(QWizard);
-    for (int i = d->defaultPropertyTable.count() - 1; i >= 0; --i) {
+    for (int i = d->defaultPropertyTable.size() - 1; i >= 0; --i) {
         if (qstrcmp(d->defaultPropertyTable.at(i).className, className) == 0) {
             d->defaultPropertyTable.remove(i);
             break;
@@ -3071,7 +3071,7 @@ QSize QWizard::sizeHint() const
 void QWizard::back()
 {
     Q_D(QWizard);
-    int n = d->history.count() - 2;
+    int n = d->history.size() - 2;
     if (n < 0)
         return;
     d->switchToPage(d->history.at(n), QWizardPrivate::Backward);
@@ -3670,7 +3670,7 @@ bool QWizardPage::isComplete() const
         return true;
 
     const QList<QWizardField> &wizardFields = d->wizard->d_func()->fields;
-    for (int i = wizardFields.count() - 1; i >= 0; --i) {
+    for (int i = wizardFields.size() - 1; i >= 0; --i) {
         const QWizardField &field = wizardFields.at(i);
         if (field.page == this && field.mandatory) {
             QVariant value = field.object->property(field.property);

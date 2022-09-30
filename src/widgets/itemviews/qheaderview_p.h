@@ -125,7 +125,7 @@ public:
         else sectionSelected.fill(false);
     }
 
-    inline int sectionCount() const {return sectionItems.count();}
+    inline int sectionCount() const {return sectionItems.size();}
 
     inline bool reverse() const {
         return orientation == Qt::Horizontal && q_func()->isRightToLeft();
@@ -166,8 +166,8 @@ public:
     }
 
     inline void initializeIndexMapping() const {
-        if (visualIndices.count() != sectionCount()
-            || logicalIndices.count() != sectionCount()) {
+        if (visualIndices.size() != sectionCount()
+            || logicalIndices.size() != sectionCount()) {
             visualIndices.resize(sectionCount());
             logicalIndices.resize(sectionCount());
             for (int s = 0; s < sectionCount(); ++s) {
@@ -178,7 +178,7 @@ public:
     }
 
     inline void clearCascadingSections() {
-        firstCascadingSection = sectionItems.count();
+        firstCascadingSection = sectionItems.size();
         lastCascadingSection = 0;
         cascadingSectionSize.clear();
     }

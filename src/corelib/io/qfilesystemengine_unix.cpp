@@ -591,7 +591,7 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, 
     Q_CHECK_FILE_NAME(link, link);
 
     QByteArray s = qt_readlink(link.nativeFilePath().constData());
-    if (s.length() > 0) {
+    if (s.size() > 0) {
         QString ret;
         if (!data.hasFlags(QFileSystemMetaData::DirectoryType))
             fillMetaData(link, data, QFileSystemMetaData::DirectoryType);
@@ -713,13 +713,13 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
         QFileSystemEntry cur(currentPath());
         result = cur.nativeFilePath();
     }
-    if (!orig.isEmpty() && !(orig.length() == 1 && orig[0] == '.')) {
+    if (!orig.isEmpty() && !(orig.size() == 1 && orig[0] == '.')) {
         if (!result.isEmpty() && !result.endsWith('/'))
             result.append('/');
         result.append(orig);
     }
 
-    if (result.length() == 1 && result[0] == '/')
+    if (result.size() == 1 && result[0] == '/')
         return QFileSystemEntry(result, QFileSystemEntry::FromNativePath());
     const bool isDir = result.endsWith('/');
 
@@ -1152,7 +1152,7 @@ bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool remo
 
     if (removeEmptyParents) {
         QString dirName = QDir::cleanPath(entry.filePath());
-        for (int oldslash = 0, slash=dirName.length(); slash > 0; oldslash = slash) {
+        for (int oldslash = 0, slash=dirName.size(); slash > 0; oldslash = slash) {
             const QByteArray chunk = QFile::encodeName(dirName.left(slash));
             QT_STATBUF st;
             if (QT_STAT(chunk.constData(), &st) != -1) {

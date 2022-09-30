@@ -177,7 +177,7 @@ Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
     // Do not try to decode strings longer than allowable for a domain label.
     // Non-ASCII strings are not allowed here anyway, so there is no need
     // to account for surrogates.
-    if (pc.length() > MaxDomainLabelLength)
+    if (pc.size() > MaxDomainLabelLength)
         return QString();
 
     // strip any ACE prefix
@@ -709,7 +709,7 @@ bool DomainValidityChecker::checkLabel(const QString &label, QUrl::AceProcessing
     if (label != label.normalized(QString::NormalizationForm_C))
         return false;
 
-    if (label.length() >= 4) {
+    if (label.size() >= 4) {
         // This assumes that the first two characters are in BMP, but that's ok
         // because non-BMP characters are unlikely to be used for specifying
         // future extensions.

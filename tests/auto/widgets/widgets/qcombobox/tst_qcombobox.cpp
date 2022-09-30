@@ -3586,7 +3586,7 @@ void tst_QComboBox::buttonPressKeys()
     const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
                                          ->themeHint(QPlatformTheme::ButtonPressKeys)
                                          .value<QList<Qt::Key>>();
-    for (int i = 0; i < buttonPressKeys.length(); ++i) {
+    for (int i = 0; i < buttonPressKeys.size(); ++i) {
         QTest::keyClick(&comboBox, buttonPressKeys[i]);
         // On some platforms, a window will not be immediately visible,
         // but take some event-loop iterations to complete.

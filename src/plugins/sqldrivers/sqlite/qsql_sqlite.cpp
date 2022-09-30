@@ -223,7 +223,7 @@ bool QSQLiteResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int i
         // already fetched
         Q_ASSERT(!initialFetch);
         skipRow = false;
-        for(int i=0;i<firstRow.count();i++)
+        for(int i=0;i<firstRow.size();i++)
             values[i]=firstRow[i];
         return skippedStatus;
     }
@@ -382,10 +382,10 @@ bool QSQLiteResult::execBatch(bool arrayBind)
     Q_D(QSqlResult);
     QScopedValueRollback<QList<QVariant>> valuesScope(d->values);
     QList<QVariant> values = d->values;
-    if (values.count() == 0)
+    if (values.size() == 0)
         return false;
 
-    for (int i = 0; i < values.at(0).toList().count(); ++i) {
+    for (int i = 0; i < values.at(0).toList().size(); ++i) {
         d->values.clear();
         QScopedValueRollback<QHash<QString, QList<int>>> indexesScope(d->indexes);
         auto it = d->indexes.constBegin();
@@ -419,16 +419,16 @@ bool QSQLiteResult::exec()
     }
 
     int paramCount = sqlite3_bind_parameter_count(d->stmt);
-    bool paramCountIsValid = paramCount == values.count();
+    bool paramCountIsValid = paramCount == values.size();
 
 #if (SQLITE_VERSION_NUMBER >= 3003011)
     // In the case of the reuse of a named placeholder
     // We need to check explicitly that paramCount is greater than or equal to 1, as sqlite
     // can end up in a case where for virtual tables it returns 0 even though it
     // has parameters
-    if (paramCount >= 1 && paramCount < values.count()) {
+    if (paramCount >= 1 && paramCount < values.size()) {
         const auto countIndexes = [](int counter, const QList<int> &indexList) {
-                                      return counter + indexList.length();
+                                      return counter + indexList.size();
                                   };
 
         const int bindParamCount = std::accumulate(d->indexes.cbegin(),
@@ -436,7 +436,7 @@ bool QSQLiteResult::exec()
                                                    0,
                                                    countIndexes);
 
-        paramCountIsValid = bindParamCount == values.count();
+        paramCountIsValid = bindParamCount == values.size();
         // When using named placeholders, it will reuse the index for duplicated
         // placeholders. So we need to ensure the QList has only one instance of
         // each value as SQLite will do the rest for us.

@@ -262,17 +262,17 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
         const int listLevel = block.textList()->format().indent();
         if (m_listStack.isEmpty() || m_listStack.top() != block.textList()) {
             // not the same list we were in.
-            while (m_listStack.count() >= listLevel && !m_listStack.isEmpty() && m_listStack.top() != block.textList() ) { // we need to close tags
+            while (m_listStack.size() >= listLevel && !m_listStack.isEmpty() && m_listStack.top() != block.textList() ) { // we need to close tags
                 m_listStack.pop();
                 writer.writeEndElement(); // list
-                if (m_listStack.count())
+                if (m_listStack.size())
                     writer.writeEndElement(); // list-item
             }
-            while (m_listStack.count() < listLevel) {
-                if (m_listStack.count())
+            while (m_listStack.size() < listLevel) {
+                if (m_listStack.size())
                     writer.writeStartElement(textNS, QString::fromLatin1("list-item"));
                 writer.writeStartElement(textNS, QString::fromLatin1("list"));
-                if (m_listStack.count() == listLevel - 1) {
+                if (m_listStack.size() == listLevel - 1) {
                     m_listStack.push(block.textList());
                     writer.writeAttribute(textNS, QString::fromLatin1("style-name"), QString::fromLatin1("L%1")
                             .arg(block.textList()->formatIndex()));
@@ -288,7 +288,7 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
         while (! m_listStack.isEmpty()) {
             m_listStack.pop();
             writer.writeEndElement(); // list
-            if (m_listStack.count())
+            if (m_listStack.size())
                 writer.writeEndElement(); // list-item
         }
     }
@@ -315,7 +315,7 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
         writer.writeStartElement(textNS, QString::fromLatin1("span"));
 
         QString fragmentText = frag.fragment().text();
-        if (fragmentText.length() == 1 && fragmentText[0] == u'\xFFFC') { // its an inline character.
+        if (fragmentText.size() == 1 && fragmentText[0] == u'\xFFFC') { // its an inline character.
             writeInlineCharacter(writer, frag.fragment());
             writer.writeEndElement(); // span
             continue;
@@ -326,8 +326,8 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
         bool escapeNextSpace = true;
         int precedingSpaces = 0;
         int exportedIndex = 0;
-        for (int i=0; i <= fragmentText.length(); ++i) {
-            QChar character = (i == fragmentText.length() ? QChar() : fragmentText.at(i));
+        for (int i=0; i <= fragmentText.size(); ++i) {
+            QChar character = (i == fragmentText.size() ? QChar() : fragmentText.at(i));
             bool isSpace = character.unicode() == ' ';
 
             // find more than one space. -> <text:s text:c="2" />
@@ -343,7 +343,7 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
                 exportedIndex = i;
             }
 
-            if (i < fragmentText.length()) {
+            if (i < fragmentText.size()) {
                 if (character.unicode() == 0x2028) { // soft-return
                     //if (exportedIndex < i)
                     writer.writeCharacters(fragmentText.mid(exportedIndex, i - exportedIndex));

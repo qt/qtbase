@@ -1949,7 +1949,7 @@ void tst_QDom::germanUmlautToFile() const
     QString name(QLatin1String("german"));
     name += QChar(0xFC);
     name += QLatin1String("umlaut");
-    QCOMPARE(name.length(), 13);
+    QCOMPARE(name.size(), 13);
 
     QDomDocument d("test");
     d.appendChild(d.createElement(name));
@@ -1968,7 +1968,7 @@ void tst_QDom::germanUmlautToFile() const
 
     const QByteArray in(inFile.readAll());
     /* Check that it was wwritten out correctly. */
-    QCOMPARE(in.length(), 34);
+    QCOMPARE(in.size(), 34);
     QCOMPARE(in, baseline.toUtf8());
     inFile.close();
 
