@@ -275,7 +275,7 @@ template <auto V2, typename T> bool mul_overflow(T v1, T *r)
     returns H. Otherwise, returns \c{To(x)}.
 */
 template <typename To, typename From>
-static auto qt_saturate(From x)
+static constexpr auto qt_saturate(From x)
 {
     static_assert(std::is_integral_v<To>);
     static_assert(std::is_integral_v<From>);
@@ -285,6 +285,7 @@ static auto qt_saturate(From x)
     constexpr auto Hi = (std::numeric_limits<To>::max)();
 
     if constexpr (std::is_signed_v<From> == std::is_signed_v<To>) {
+        // same signedness, we can accept regular integer conversion rules
         return x < Lo  ? Lo :
                x > Hi  ? Hi :
                /*else*/  To(x);
@@ -293,7 +294,11 @@ static auto qt_saturate(From x)
             if (x < From{0})
                 return To{0};
         }
-        return x > Hi ? Hi : To(x);
+
+        // from here on, x >= 0
+        using FromU = std::make_unsigned_t<From>;
+        using ToU = std::make_unsigned_t<To>;
+        return FromU(x) > ToU(Hi) ? Hi : To(x); // assumes Hi >= 0
     }
 }
 

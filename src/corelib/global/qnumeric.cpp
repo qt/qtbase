@@ -349,4 +349,35 @@ Q_CORE_EXPORT quint64 qFloatDistance(double a, double b)
     This can be faster than calling the version with only variable arguments.
 */
 
+template <typename T> static constexpr T max = std::numeric_limits<T>::max();
+template <typename T> static constexpr T min = std::numeric_limits<T>::min();
+
+static_assert(qt_saturate<short>(max<unsigned>) == max<short>);
+static_assert(qt_saturate<int>(max<unsigned>) == max<int>);
+static_assert(qt_saturate<qint64>(max<unsigned>) == qint64(max<unsigned>));
+
+static_assert(qt_saturate<short>(max<int>) == max<short>);
+static_assert(qt_saturate<unsigned>(max<int>) == unsigned(max<int>));
+static_assert(qt_saturate<qint64>(max<int>) == qint64(max<int>));
+
+static_assert(qt_saturate<short>(max<qint64>) == max<short>);
+static_assert(qt_saturate<int>(max<qint64>) == max<int>);
+static_assert(qt_saturate<unsigned>(max<qint64>) == max<unsigned>);
+static_assert(qt_saturate<quint64>(max<qint64>) == quint64(max<qint64>));
+
+static_assert(qt_saturate<short>(max<quint64>) == max<short>);
+static_assert(qt_saturate<int>(max<quint64>) == max<int>);
+static_assert(qt_saturate<unsigned>(max<quint64>) == max<unsigned>);
+static_assert(qt_saturate<qint64>(max<quint64>) == max<qint64>);
+
+static_assert(qt_saturate<short>(min<int>) == min<short>);
+static_assert(qt_saturate<qint64>(min<int>) == qint64(min<int>));
+static_assert(qt_saturate<unsigned>(min<int>) == 0);
+static_assert(qt_saturate<quint64>(min<int>) == 0);
+
+static_assert(qt_saturate<short>(min<qint64>) == min<short>);
+static_assert(qt_saturate<int>(min<qint64>) == min<int>);
+static_assert(qt_saturate<unsigned>(min<qint64>) == 0);
+static_assert(qt_saturate<quint64>(min<qint64>) == 0);
+
 QT_END_NAMESPACE
