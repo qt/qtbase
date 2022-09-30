@@ -319,7 +319,7 @@ void tst_QMdiArea::subWindowActivated()
         widget->show();
         qApp->processEvents();
         QVERIFY( activeWindow == workspace->activeSubWindow() );
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
     }
 
@@ -348,7 +348,7 @@ void tst_QMdiArea::subWindowActivated()
         workspace->activeSubWindow()->close();
         qApp->processEvents();
         QCOMPARE(activeWindow, workspace->activeSubWindow());
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
     }
 
@@ -362,14 +362,14 @@ void tst_QMdiArea::subWindowActivated()
         widget->setAttribute(Qt::WA_DeleteOnClose);
         QMdiSubWindow *window = workspace->addSubWindow(widget);
         widget->show();
-        QCOMPARE(spy.count(), 0);
+        QCOMPARE(spy.size(), 0);
         workspace->show();
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
         QVERIFY( activeWindow == window );
         window->close();
         qApp->processEvents();
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
         QVERIFY( activeWindow == 0 );
     }
@@ -381,15 +381,15 @@ void tst_QMdiArea::subWindowActivated()
         QMdiSubWindow *window = workspace->addSubWindow(widget);
         widget->showMaximized();
         qApp->sendPostedEvents();
-        QCOMPARE(spy.count(), 0);
+        QCOMPARE(spy.size(), 0);
         spy.clear();
         workspace->show();
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
         QVERIFY( activeWindow == window );
         window->close();
         qApp->processEvents();
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
         QVERIFY( activeWindow == 0 );
     }
@@ -399,13 +399,13 @@ void tst_QMdiArea::subWindowActivated()
         widget->setAttribute(Qt::WA_DeleteOnClose);
         QMdiSubWindow *window = workspace->addSubWindow(widget);
         widget->showMinimized();
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
         QVERIFY( activeWindow == window );
         QCOMPARE(workspace->activeSubWindow(), window);
         window->close();
         qApp->processEvents();
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
         QVERIFY(!workspace->activeSubWindow());
         QVERIFY(!activeWindow);
@@ -433,12 +433,12 @@ void tst_QMdiArea::subWindowActivated2()
     QSignalSpy spy(&mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)));
     for (int i = 0; i < 5; ++i)
         mdiArea.addSubWindow(new QWidget);
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     mdiArea.show();
     mdiArea.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&mdiArea));
 
-    QTRY_COMPARE(spy.count(), 5);
+    QTRY_COMPARE(spy.size(), 5);
     QCOMPARE(mdiArea.activeSubWindow(), mdiArea.subWindowList().back());
     spy.clear();
 
@@ -447,13 +447,13 @@ void tst_QMdiArea::subWindowActivated2()
     QMdiSubWindow *staysOnTopWindow = mdiArea.subWindowList().at(3);
     staysOnTopWindow->setWindowFlags(Qt::WindowStaysOnTopHint);
     mdiArea.setActiveSubWindow(staysOnTopWindow);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(mdiArea.activeSubWindow(), staysOnTopWindow);
     spy.clear();
 
     QMdiSubWindow *activeSubWindow = mdiArea.subWindowList().at(2);
     mdiArea.setActiveSubWindow(activeSubWindow);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(mdiArea.activeSubWindow(), activeSubWindow);
     spy.clear();
 
@@ -461,7 +461,7 @@ void tst_QMdiArea::subWindowActivated2()
     // is unchanged after hide/show.
     mdiArea.hide();
     QTest::qWait(100);
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
     QVERIFY(!mdiArea.activeSubWindow());
     QCOMPARE(mdiArea.currentSubWindow(), activeSubWindow);
     spy.clear();
@@ -489,7 +489,7 @@ void tst_QMdiArea::subWindowActivated2()
 #endif
     if (!QGuiApplication::platformName().compare(QLatin1String("xcb"), Qt::CaseInsensitive))
         QSKIP("QTBUG-25298: Unstable on some X11 window managers");
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
     QVERIFY(!mdiArea.activeSubWindow());
     QCOMPARE(mdiArea.currentSubWindow(), activeSubWindow);
     spy.clear();
@@ -499,7 +499,7 @@ void tst_QMdiArea::subWindowActivated2()
     mdiArea.showNormal();
     mdiArea.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&mdiArea));
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
     QCOMPARE(mdiArea.activeSubWindow(), activeSubWindow);
     spy.clear();
 }
@@ -915,7 +915,7 @@ void tst_QMdiArea::setActiveSubWindow()
         QVERIFY(windows[i]->isHidden());
         workspace.setActiveSubWindow(windows[i]);
     }
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     QVERIFY(!activeWindow);
     spy.clear();
 
@@ -925,7 +925,7 @@ void tst_QMdiArea::setActiveSubWindow()
         QVERIFY(!windows[i]->isHidden());
         workspace.setActiveSubWindow(windows[i]);
         qApp->processEvents();
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         QCOMPARE(activeWindow, windows[i]);
         spy.clear();
     }
@@ -933,7 +933,7 @@ void tst_QMdiArea::setActiveSubWindow()
     // Deactivate active window
     QCOMPARE(workspace.activeSubWindow(), windows[windowCount - 1]);
     workspace.setActiveSubWindow(0);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QVERIFY(!activeWindow);
     QVERIFY(!workspace.activeSubWindow());
 
@@ -1297,7 +1297,7 @@ void tst_QMdiArea::closeWindows()
     workspace.closeAllSubWindows();
     qApp->processEvents();
     QCOMPARE(workspace.subWindowList().size(), 0);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QVERIFY(!activeWindow);
 }
 
@@ -1323,7 +1323,7 @@ void tst_QMdiArea::activateNextAndPreviousWindow()
         workspace.activateNextSubWindow();
         qApp->processEvents();
         QCOMPARE(workspace.activeSubWindow(), windows[i]);
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
     }
     QVERIFY(activeWindow);
@@ -1335,7 +1335,7 @@ void tst_QMdiArea::activateNextAndPreviousWindow()
         workspace.activatePreviousSubWindow();
         qApp->processEvents();
         QCOMPARE(workspace.activeSubWindow(), windows[i]);
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
         if (i % 2 == 0)
             windows[i]->hide(); // 10, 8, 6, 4, 2, 0
@@ -1347,7 +1347,7 @@ void tst_QMdiArea::activateNextAndPreviousWindow()
     // activateNextSubWindow with every 2nd window hidden
     for (int i = 0; i < windowCount / 2; ++i) {
         workspace.activateNextSubWindow(); // 1, 3, 5, 7, 9
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
     }
     QCOMPARE(workspace.activeSubWindow(), windows[windowCount - 1]);
@@ -1355,7 +1355,7 @@ void tst_QMdiArea::activateNextAndPreviousWindow()
     // activatePreviousSubWindow with every 2nd window hidden
     for (int i = 0; i < windowCount / 2; ++i) {
         workspace.activatePreviousSubWindow(); // 7, 5, 3, 1, 9
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
     }
     QCOMPARE(workspace.activeSubWindow(), windows[windowCount - 1]);
@@ -2267,7 +2267,7 @@ void tst_QMdiArea::tabBetweenSubWindows()
     QCOMPARE(qApp->focusWidget(), focusWidget);
 
     QSignalSpy spy(&mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)));
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     // Walk through the entire list of sub windows.
 #ifdef Q_OS_MAC
@@ -2275,7 +2275,7 @@ void tst_QMdiArea::tabBetweenSubWindows()
 #endif
     QVERIFY(tabBetweenSubWindowsIn(&mdiArea));
     QCOMPARE(mdiArea.activeSubWindow(), subWindows.back());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     mdiArea.setActiveSubWindow(subWindows.front());
     QCOMPARE(mdiArea.activeSubWindow(), subWindows.front());
@@ -2284,12 +2284,12 @@ void tst_QMdiArea::tabBetweenSubWindows()
     // Walk through the entire list of sub windows in the opposite direction (Ctrl-Shift-Tab).
     QVERIFY(tabBetweenSubWindowsIn(&mdiArea, -1, true));
     QCOMPARE(mdiArea.activeSubWindow(), subWindows.front());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     // Ctrl-Tab-Tab-Tab
     QVERIFY(tabBetweenSubWindowsIn(&mdiArea, 3));
     QCOMPARE(mdiArea.activeSubWindow(), subWindows.at(3));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     mdiArea.setActiveSubWindow(subWindows.at(1));
     QCOMPARE(mdiArea.activeSubWindow(), subWindows.at(1));
@@ -2298,7 +2298,7 @@ void tst_QMdiArea::tabBetweenSubWindows()
     // Quick switch (Ctrl-Tab once) -> switch back to the previously active sub-window.
     QVERIFY(tabBetweenSubWindowsIn(&mdiArea, 1));
     QCOMPARE(mdiArea.activeSubWindow(), subWindows.at(3));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 void tst_QMdiArea::setViewMode()

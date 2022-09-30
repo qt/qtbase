@@ -248,7 +248,7 @@ void tst_QTcpServer::clientServerLoop()
     QVERIFY(server.waitForNewConnection(5000));
     QVERIFY(server.hasPendingConnections());
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     QTcpSocket *serverSocket = server.nextPendingConnection();
     QVERIFY(serverSocket != 0);
@@ -409,9 +409,9 @@ void tst_QTcpServer::maxPendingConnections()
     // two connections have been made. The second compare makes sure no
     // more are accepted. Creating connections happens multithreaded so
     // qWait must be used for that.
-    QTRY_COMPARE(spy.count(), 2);
+    QTRY_COMPARE(spy.size(), 2);
     QTest::qWait(100);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 
     QVERIFY(server.hasPendingConnections());
     QVERIFY(server.nextPendingConnection());
@@ -1016,12 +1016,12 @@ void tst_QTcpServer::eagainBlockingAccept()
     QTcpSocket s;
     s.connectToHost(QHostAddress::LocalHost, 7896);
     QSignalSpy spy(&server, SIGNAL(newConnection()));
-    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 500);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.size(), 1, 500);
     s.close();
 
     // To test try again, should connect just fine.
     s.connectToHost(QHostAddress::LocalHost, 7896);
-    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 500);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.size(), 2, 500);
     s.close();
     server.close();
 }
@@ -1057,13 +1057,13 @@ void tst_QTcpServer::pauseAccepting()
     QTcpSocket sockets[NumSockets];
     sockets[0].connectToHost(address, server.serverPort());
     QVERIFY(spy.wait());
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     server.pauseAccepting();
     for (int i = 1; i < NumSockets; ++i)
         sockets[i].connectToHost(address, server.serverPort());
     QVERIFY(!spy.wait(400));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     server.resumeAccepting();
     if (setProxy) {
@@ -1071,7 +1071,7 @@ void tst_QTcpServer::pauseAccepting()
                      Abort);
     }
     QVERIFY(spy.wait());
-    QCOMPARE(spy.count(), 6);
+    QCOMPARE(spy.size(), 6);
 }
 
 
@@ -1135,11 +1135,11 @@ void tst_QTcpServer::pendingConnectionAvailable()
     QCOMPARE(socket.state(), QTcpSocket::ConnectedState);
 
     int expectedPendingConnections = useDerivedServer ? 0 : 1;
-    QCOMPARE(pendingConnectionSpy.count(), expectedPendingConnections);
+    QCOMPARE(pendingConnectionSpy.size(), expectedPendingConnections);
 
     if (useDerivedServer)
         static_cast<DerivedServer *>(server)->emitNextSocket();
-    QCOMPARE(pendingConnectionSpy.count(), 1);
+    QCOMPARE(pendingConnectionSpy.size(), 1);
 }
 
 QTEST_MAIN(tst_QTcpServer)

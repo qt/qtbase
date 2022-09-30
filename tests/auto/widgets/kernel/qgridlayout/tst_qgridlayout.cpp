@@ -1030,7 +1030,7 @@ void tst_QGridLayout::styleDependentSpacingsAndMargins()
     widget.adjustSize();
     QApplication::processEvents();
 
-    for (int pi = 0; pi < expectedpositions.count(); ++pi) {
+    for (int pi = 0; pi < expectedpositions.size(); ++pi) {
         QCOMPARE(sizehinters.at(pi)->pos(), expectedpositions.at(pi));
     }
 }
@@ -1420,7 +1420,7 @@ void tst_QGridLayout::layoutSpacing()
 
     QLayout *layout = widget->layout();
     QVERIFY(layout);
-    for (int pi = 0; pi < expectedpositions.count(); ++pi) {
+    for (int pi = 0; pi < expectedpositions.size(); ++pi) {
         QLayoutItem *item = layout->itemAt(pi);
         //qDebug()  << item->widget()->pos();
         QCOMPARE(item->widget()->pos(), expectedpositions.at(pi));

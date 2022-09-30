@@ -950,9 +950,9 @@ void tst_QGraphicsWidget::geometry()
     widget.setPos(pos);
     widget.resize(size);
     if (!size.isNull() && !pos.isNull())
-        QCOMPARE(spy.count(), 2);
+        QCOMPARE(spy.size(), 2);
     if (!size.isNull() && pos.isNull())
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
     QCOMPARE(widget.geometry(), QRectF(pos, size));
 }
 
@@ -963,10 +963,10 @@ void tst_QGraphicsWidget::geometryChanged()
     QCOMPARE(w.geometry(), QRectF(0, 0, 200, 200));
     QSignalSpy spy(&w, SIGNAL(geometryChanged()));
     w.setGeometry(0, 0, 100, 100);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(w.geometry(), QRectF(0, 0, 100, 100));
     w.setPos(10, 10);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
     QCOMPARE(w.geometry(), QRectF(10, 10, 100, 100));
 
 }
@@ -978,10 +978,10 @@ void tst_QGraphicsWidget::width()
     QSignalSpy spy(&w, SIGNAL(widthChanged()));
     w.setProperty("width", qreal(50));
     QCOMPARE(w.property("width").toReal(), qreal(50));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     //calling old school setGeometry should work too
     w.setGeometry(0, 0, 200, 200);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 }
 
 void tst_QGraphicsWidget::height()
@@ -991,10 +991,10 @@ void tst_QGraphicsWidget::height()
     QSignalSpy spy(&w, SIGNAL(heightChanged()));
     w.setProperty("height", qreal(50));
     QCOMPARE(w.property("height").toReal(), qreal(50));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     //calling old school setGeometry should work too
     w.setGeometry(0, 0, 200, 200);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 }
 
 void tst_QGraphicsWidget::getContentsMargins_data()
@@ -1145,7 +1145,7 @@ void tst_QGraphicsWidget::layout()
         QCOMPARE(item->parentWidget(), (QGraphicsWidget *)&widget);
         QVERIFY(item->geometry() != QRectF(0, 0, -1, -1));
     }
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     // don't crash
     widget.setLayout(0);
 }
@@ -2731,11 +2731,11 @@ void tst_QGraphicsWidget::task250119_shortcutContext()
 
     w_signal.setFocus();
     QTest::keyPress(&view, Qt::Key_B);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     w_signal.clearFocus();
     QTest::keyPress(&view, Qt::Key_B);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     scene.removeItem(&w_signal);
 }

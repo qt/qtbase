@@ -394,12 +394,12 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
 
     QFileSystemModelPrivate::QFileSystemNode *parent = node(index);
 
-    for (int i = 0; i < pathElements.count(); ++i) {
+    for (int i = 0; i < pathElements.size(); ++i) {
         QString element = pathElements.at(i);
         if (i != 0)
             elementPath.append(separator);
         elementPath.append(element);
-        if (i == pathElements.count() - 1)
+        if (i == pathElements.size() - 1)
             elementPath.append(trailingSeparator);
 #ifdef Q_OS_WIN
         // On Windows, "filename    " and "filename" are equivalent and
@@ -1106,7 +1106,7 @@ void QFileSystemModel::sort(int column, Qt::SortOrder order)
     emit layoutAboutToBeChanged();
     QModelIndexList oldList = persistentIndexList();
     QList<QPair<QFileSystemModelPrivate::QFileSystemNode *, int>> oldNodes;
-    const int nodeCount = oldList.count();
+    const int nodeCount = oldList.size();
     oldNodes.reserve(nodeCount);
     for (int i = 0; i < nodeCount; ++i) {
         const QModelIndex &oldNode = oldList.at(i);
@@ -1752,7 +1752,7 @@ void QFileSystemModelPrivate::_q_directoryChanged(const QString &directory, cons
         if ((iterator == newFiles.end()) || (i.value()->fileName < *iterator))
             toRemove.append(i.value()->fileName);
     }
-    for (int i = 0 ; i < toRemove.count() ; ++i )
+    for (int i = 0 ; i < toRemove.size() ; ++i )
         removeNode(parentNode, toRemove[i]);
 }
 
@@ -1844,7 +1844,7 @@ void QFileSystemModelPrivate::addVisibleFiles(QFileSystemNode *parentNode, const
     QModelIndex parent = index(parentNode);
     bool indexHidden = isHiddenByFilter(parentNode, parent);
     if (!indexHidden) {
-        q->beginInsertRows(parent, parentNode->visibleChildren.size() , parentNode->visibleChildren.size() + newFiles.count() - 1);
+        q->beginInsertRows(parent, parentNode->visibleChildren.size() , parentNode->visibleChildren.size() + newFiles.size() - 1);
     }
 
     if (parentNode->dirtyChildrenIndex == -1)
@@ -1974,11 +1974,11 @@ void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path,
         max = QString();*/
     }
 
-    if (newFiles.count() > 0) {
+    if (newFiles.size() > 0) {
         addVisibleFiles(parentNode, newFiles);
     }
 
-    if (newFiles.count() > 0 || (sortColumn != 0 && rowsToUpdate.size() > 0)) {
+    if (newFiles.size() > 0 || (sortColumn != 0 && rowsToUpdate.size() > 0)) {
         forceSort = true;
         delayedSort();
     }

@@ -20,7 +20,7 @@ static void init(QTextBoundaryFinder::BoundaryType type, QStringView str, QCharA
     case QTextBoundaryFinder::Line: options |= QUnicodeTools::LineBreaks; break;
     default: break;
     }
-    QUnicodeTools::initCharAttributes(str, scriptItems.data(), scriptItems.count(), attributes, options);
+    QUnicodeTools::initCharAttributes(str, scriptItems.data(), scriptItems.size(), attributes, options);
 }
 
 /*!

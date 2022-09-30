@@ -125,10 +125,10 @@ void tst_QSql::open()
         QVERIFY(dbs.open());
         if (count == -1)
             // first iteration: see how many dbs are open
-            count = (int) dbs.dbNames.count();
+            count = (int) dbs.dbNames.size();
         else
             // next iterations: make sure all are opened again
-            QCOMPARE(count, (int)dbs.dbNames.count());
+            QCOMPARE(count, (int)dbs.dbNames.size());
         dbs.close();
     }
 }

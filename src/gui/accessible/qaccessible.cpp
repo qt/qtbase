@@ -670,7 +670,7 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         const QString cn = QLatin1StringView(mo->className());
 
         // Check if the class has a InterfaceFactory installed.
-        for (int i = qAccessibleFactories()->count(); i > 0; --i) {
+        for (int i = qAccessibleFactories()->size(); i > 0; --i) {
             InterfaceFactory factory = qAccessibleFactories()->at(i - 1);
             if (QAccessibleInterface *iface = factory(cn, object)) {
                 QAccessibleCache::instance()->insert(object, iface);
@@ -787,7 +787,7 @@ bool QAccessible::isActive()
 */
 void QAccessible::setActive(bool active)
 {
-    for (int i = 0; i < qAccessibleActivationObservers()->count() ;++i)
+    for (int i = 0; i < qAccessibleActivationObservers()->size() ;++i)
         qAccessibleActivationObservers()->at(i)->accessibilityActiveChanged(active);
 }
 

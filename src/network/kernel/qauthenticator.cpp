@@ -657,7 +657,7 @@ QAuthenticatorPrivate::parseDigestAuthenticationChallenge(QByteArrayView challen
     QHash<QByteArray, QByteArray> options;
     // parse the challenge
     const char *d = challenge.data();
-    const char *end = d + challenge.length();
+    const char *end = d + challenge.size();
     while (d < end) {
         while (d < end && (*d == ' ' || *d == '\n' || *d == '\r'))
             ++d;
@@ -1759,7 +1759,7 @@ static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, QByteArrayView cha
 
     if (!challenge.isEmpty()) {
         inBuf.value = const_cast<char*>(challenge.data());
-        inBuf.length = challenge.length();
+        inBuf.length = challenge.size();
     }
 
     majStat = gss_init_sec_context(&minStat,

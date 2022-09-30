@@ -333,7 +333,7 @@ static std::deque<CustomType> s_customTypes;
 static void parseCmdLine(QStringList &arguments)
 {
     flags = 0;
-    for (qsizetype i = 0; i < arguments.count(); ++i) {
+    for (qsizetype i = 0; i < arguments.size(); ++i) {
         const QString arg = arguments.at(i);
 
         if (arg == "--help"_L1)
@@ -373,7 +373,7 @@ static void parseCmdLine(QStringList &arguments)
             break;
 
         case 't':
-            if (arguments.count() < i + 2) {
+            if (arguments.size() < i + 2) {
                 printf("-t expects a type=dbustype argument\n");
                 exit(1);
             } else {
@@ -394,7 +394,7 @@ static void parseCmdLine(QStringList &arguments)
             break;
 
         case 'o':
-            if (arguments.count() < i + 2 || arguments.at(i + 1).startsWith(u'-')) {
+            if (arguments.size() < i + 2 || arguments.at(i + 1).startsWith(u'-')) {
                 printf("-o expects a filename\n");
                 exit(1);
             }

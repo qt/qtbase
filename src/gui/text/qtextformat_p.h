@@ -55,7 +55,7 @@ public:
     inline QTextImageFormat imageFormat(int index) const
     { return format(index).toImageFormat(); }
 
-    inline int numFormats() const { return formats.count(); }
+    inline int numFormats() const { return formats.size(); }
 
     typedef QList<QTextFormat> FormatVector;
 

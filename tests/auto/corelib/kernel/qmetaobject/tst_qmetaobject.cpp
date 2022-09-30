@@ -1928,16 +1928,16 @@ void tst_QMetaObject::invokeTypedefTypes()
     QSignalSpy spy(&obj, &QtTestCustomObject::sig_custom);
     QVERIFY(spy.isValid());
 
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     CustomString arg("hello");
     QVERIFY(QMetaObject::invokeMethod(&obj, "sig_custom", Q_ARG(CustomString, arg)));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).size(), 1);
     QCOMPARE(spy.at(0).at(0), QVariant(arg));
 
     spy.clear();
     QVERIFY(QMetaObject::invokeMethod(&obj, "sig_custom", arg));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).size(), 1);
     QCOMPARE(spy.at(0).at(0), QVariant(arg));
 }

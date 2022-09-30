@@ -805,8 +805,8 @@ void tst_QFileDialog2::task235069_hideOnEscape()
     child->setFocus();
     QTest::keyClick(child, Qt::Key_Escape);
     QCOMPARE(fd.isVisible(), false);
-    QCOMPARE(spyFinished.count(), 1); // QTBUG-7690
-    QCOMPARE(spyRejected.count(), 1); // reject(), don't hide()
+    QCOMPARE(spyFinished.size(), 1); // QTBUG-7690
+    QCOMPARE(spyRejected.size(), 1); // reject(), don't hide()
 }
 
 #ifdef QT_BUILD_INTERNAL
@@ -1133,7 +1133,7 @@ void tst_QFileDialog2::task254490_selectFileMultipleTimes()
     QCOMPARE(lineEdit->text(),QLatin1String("new_file.txt"));
     QListView *list = fd.findChild<QListView*>("listView");
     QVERIFY(list);
-    QCOMPARE(list->selectionModel()->selectedRows(0).count(), 0);
+    QCOMPARE(list->selectionModel()->selectedRows(0).size(), 0);
 
     t->deleteLater();
 }

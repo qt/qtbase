@@ -2213,7 +2213,7 @@ void tst_QSqlQuery::prepare_bind_exec()
             q.bindValue(":id", i);
             QVERIFY_SQL(q, exec());
             const QVariantList m = q.boundValues();
-            QCOMPARE(m.count(), qsizetype(2));
+            QCOMPARE(m.size(), qsizetype(2));
             QCOMPARE(m.at(0).toInt(), i);
             QCOMPARE(m.at(1).toString(), values[i]);
         }

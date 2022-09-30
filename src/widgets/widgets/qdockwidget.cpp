@@ -1577,7 +1577,7 @@ bool QDockWidget::event(QEvent *event)
         bool onTop = false;
         if (win != nullptr) {
             const QObjectList &siblings = win->children();
-            onTop = siblings.count() > 0 && siblings.last() == (QObject*)this;
+            onTop = siblings.size() > 0 && siblings.last() == (QObject*)this;
         }
 #if QT_CONFIG(tabbar)
         if (!isFloating() && layout != nullptr && onTop)

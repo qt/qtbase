@@ -977,7 +977,7 @@ void WriteInitialization::writePropertyList(const QString &varName,
     if (value.isEmpty())
         return;
     const QStringList list = value.split(u',');
-    const int count =  list.count();
+    const int count =  list.size();
     for (int i = 0; i < count; i++) {
         if (list.at(i) != defaultValue) {
             m_output << m_indent << varName << language::derefPointer << setFunction
@@ -2329,7 +2329,7 @@ void WriteInitialization::initializeTreeWidget(DomWidget *w)
     QString tempName = disableSorting(w, varName);
 
     const auto items = initializeTreeWidgetItems(w->elementItem());
-    for (int i = 0; i < items.count(); i++) {
+    for (int i = 0; i < items.size(); i++) {
         Item *itm = items[i];
         itm->writeSetupUi(varName);
         QString parentPath;

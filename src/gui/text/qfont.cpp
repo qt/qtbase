@@ -179,7 +179,7 @@ static QStringList splitIntoFamilies(const QString &family)
         auto str = list.at(i).trimmed();
         if ((str.startsWith(u'"') && str.endsWith(u'"'))
             || (str.startsWith(u'\'') && str.endsWith(u'\''))) {
-            str = str.mid(1, str.length() - 2);
+            str = str.mid(1, str.size() - 2);
         }
         familyList << str.toString();
     }

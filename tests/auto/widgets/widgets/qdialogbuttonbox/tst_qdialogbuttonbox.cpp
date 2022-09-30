@@ -425,8 +425,8 @@ void tst_QDialogButtonBox::testSignalEmissionAfterDelete_QTBUG_45835()
         button->click();
 
         QCOMPARE(buttonBox.buttons().size(), 0);
-        QCOMPARE(buttonClickedSpy.count(), 1);
-        QCOMPARE(buttonBoxAcceptedSpy.count(), 1);
+        QCOMPARE(buttonClickedSpy.size(), 1);
+        QCOMPARE(buttonBoxAcceptedSpy.size(), 1);
     }
 
     {
@@ -448,8 +448,8 @@ void tst_QDialogButtonBox::testSignalEmissionAfterDelete_QTBUG_45835()
         button->click();
 
         QVERIFY(buttonBox.isNull());
-        QCOMPARE(buttonClickedSpy.count(), 1);
-        QCOMPARE(buttonBoxAcceptedSpy.count(), 0);
+        QCOMPARE(buttonClickedSpy.size(), 1);
+        QCOMPARE(buttonBoxAcceptedSpy.size(), 0);
     }
 }
 
@@ -594,13 +594,13 @@ void tst_QDialogButtonBox::testSignals()
     if (clickMe)
         clickMe->click();
 
-    QTRY_COMPARE(clicked2.count(), clicked2Count);
-    if (clicked2.count() > 0)
+    QTRY_COMPARE(clicked2.size(), clicked2Count);
+    if (clicked2.size() > 0)
         QCOMPARE(qvariant_cast<QAbstractButton *>(clicked2.at(0).at(0)), clickMe);
 
-    QTEST(int(accept.count()), "acceptCount");
-    QTEST(int(reject.count()), "rejectCount");
-    QTEST(int(helpRequested.count()), "helpRequestedCount");
+    QTEST(int(accept.size()), "acceptCount");
+    QTEST(int(reject.size()), "rejectCount");
+    QTEST(int(helpRequested.size()), "helpRequestedCount");
 }
 
 void tst_QDialogButtonBox::testSignalOrder()
@@ -756,7 +756,7 @@ void tst_QDialogButtonBox::testRemove()
 
     button->click();
     QTest::qWait(100);
-    QCOMPARE(clicked.count(), 0);
+    QCOMPARE(clicked.size(), 0);
     delete button;
 }
 
@@ -818,7 +818,7 @@ void tst_QDialogButtonBox::task191642_default()
     QVERIFY(QTest::qWaitForWindowActive(&dlg));
     QVERIFY(def->isDefault());
     QTest::keyPress( &dlg, Qt::Key_Enter );
-    QCOMPARE(clicked.count(), 1);
+    QCOMPARE(clicked.size(), 1);
 }
 
 void tst_QDialogButtonBox::testDeletedStandardButton()

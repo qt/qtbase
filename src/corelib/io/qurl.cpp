@@ -918,7 +918,7 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
     }
     // check if we need to remove trailing slashes
     if (options & QUrl::StripTrailingSlash) {
-        while (thePathView.length() > 1 && thePathView.endsWith(u'/'))
+        while (thePathView.size() > 1 && thePathView.endsWith(u'/'))
             thePathView.chop(1);
     }
 

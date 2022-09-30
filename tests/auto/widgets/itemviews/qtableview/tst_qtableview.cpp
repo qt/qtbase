@@ -503,7 +503,7 @@ void tst_QTableView::emptyModel()
     QSignalSpy spy(&model, &QtTestTableModel::invalidIndexEncountered);
     view.setModel(&model);
     view.show();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QTableView::removeRows_data()
@@ -528,10 +528,10 @@ void tst_QTableView::removeRows()
     view.show();
 
     model.removeLastRow();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     model.removeAllRows();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QTableView::removeColumns_data()
@@ -556,10 +556,10 @@ void tst_QTableView::removeColumns()
     view.show();
 
     model.removeLastColumn();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     model.removeAllColumns();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QTableView::keyboardNavigation_data()
@@ -1597,7 +1597,7 @@ void tst_QTableView::selection()
 
     view.setSelection(QRect(x, y, width, height), command);
 
-    QCOMPARE(view.selectedIndexes().count(), selectedCount);
+    QCOMPARE(view.selectedIndexes().size(), selectedCount);
 }
 
 void tst_QTableView::selectRow_data()
@@ -1710,12 +1710,12 @@ void tst_QTableView::selectRow()
     view.setSelectionMode(mode);
     view.setSelectionBehavior(behavior);
 
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 0);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), 0);
 
     view.selectRow(row);
 
     //test we have 10 items selected
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), selectedItems);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), selectedItems);
     //test that all 10 items are in the same row
     for (int i = 0; selectedItems > 0 && i < rowCount; ++i)
         QCOMPARE(view.selectionModel()->selectedIndexes().at(i).row(), row);
@@ -1831,11 +1831,11 @@ void tst_QTableView::selectColumn()
     view.setSelectionMode(mode);
     view.setSelectionBehavior(behavior);
 
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 0);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), 0);
 
     view.selectColumn(column);
 
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), selectedItems);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), selectedItems);
     for (int i = 0; selectedItems > 0 && i < columnCount; ++i)
         QCOMPARE(view.selectionModel()->selectedIndexes().at(i).column(), column);
 }
@@ -1980,22 +1980,22 @@ void tst_QTableView::selectall()
 
     // try slot first
     view.clearSelection();
-    QCOMPARE(view.selectedIndexes().count(), 0);
+    QCOMPARE(view.selectedIndexes().size(), 0);
     view.selectAll();
-    QCOMPARE(view.selectedIndexes().count(), selectedCount);
+    QCOMPARE(view.selectedIndexes().size(), selectedCount);
 
     // try by key sequence
     view.clearSelection();
-    QCOMPARE(view.selectedIndexes().count(), 0);
+    QCOMPARE(view.selectedIndexes().size(), 0);
     QTest__keySequence(&view, QKeySequence(QKeySequence::SelectAll));
-    QCOMPARE(view.selectedIndexes().count(), selectedCount);
+    QCOMPARE(view.selectedIndexes().size(), selectedCount);
 
     // check again with no selection mode
     view.clearSelection();
     view.setSelectionMode(QAbstractItemView::NoSelection);
-    QCOMPARE(view.selectedIndexes().count(), 0);
+    QCOMPARE(view.selectedIndexes().size(), 0);
     QTest__keySequence(&view, QKeySequence(QKeySequence::SelectAll));
-    QCOMPARE(view.selectedIndexes().count(), 0);
+    QCOMPARE(view.selectedIndexes().size(), 0);
 }
 
 #endif // QT_CONFIG(shortcut)
@@ -2188,7 +2188,7 @@ void tst_QTableView::resizeRowsToContents()
     QSignalSpy resizedSpy(view.verticalHeader(), &QHeaderView::sectionResized);
     view.resizeRowsToContents();
 
-    QCOMPARE(resizedSpy.count(), model.rowCount());
+    QCOMPARE(resizedSpy.size(), model.rowCount());
     for (int r = 0; r < model.rowCount(); ++r)
         QCOMPARE(view.rowHeight(r), rowHeight);
 }
@@ -2234,7 +2234,7 @@ void tst_QTableView::resizeColumnsToContents()
     QSignalSpy resizedSpy(view.horizontalHeader(), &QHeaderView::sectionResized);
     view.resizeColumnsToContents();
 
-    QCOMPARE(resizedSpy.count(), model.columnCount());
+    QCOMPARE(resizedSpy.size(), model.columnCount());
     for (int c = 0; c < model.columnCount(); ++c)
         QCOMPARE(view.columnWidth(c), columnWidth);
 }
@@ -2348,7 +2348,7 @@ void tst_QTableView::rowAt()
     for (int r = 0; r < rowCount; ++r)
         view.setRowHeight(r, rowHeight);
 
-    for (int i = 0; i < hiddenRows.count(); ++i)
+    for (int i = 0; i < hiddenRows.size(); ++i)
         view.hideRow(hiddenRows.at(i));
 
     QCOMPARE(view.rowAt(coordinate), row);
@@ -2511,7 +2511,7 @@ void tst_QTableView::columnAt()
     for (int c = 0; c < columnCount; ++c)
         view.setColumnWidth(c, columnWidth);
 
-    for (int i = 0; i < hiddenColumns.count(); ++i)
+    for (int i = 0; i < hiddenColumns.size(); ++i)
         view.hideColumn(hiddenColumns.at(i));
 
     QCOMPARE(view.columnAt(coordinate), column);

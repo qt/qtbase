@@ -46,9 +46,9 @@ static QString rowSpyToText(const QSignalSpy &spy)
     if (!spy.isValid())
         return QStringLiteral("THE SIGNALSPY IS INVALID!");
     QString str;
-    for (int i = 0; i < spy.count(); ++i) {
+    for (int i = 0; i < spy.size(); ++i) {
         str += spy.at(i).at(1).toString() + QLatin1Char(',') + spy.at(i).at(2).toString();
-        if (i + 1 < spy.count())
+        if (i + 1 < spy.size())
             str += QLatin1Char(';');
     }
     return str;
@@ -149,8 +149,8 @@ void tst_QConcatenateTablesProxyModel::shouldAggregateThenRemoveTwoEmptyModelsCo
     // Then the proxy should still be empty (and no signals emitted)
     QCOMPARE(pm.rowCount(), 0);
     QCOMPARE(pm.columnCount(), 0);
-    QCOMPARE(rowATBISpy.count(), 0);
-    QCOMPARE(rowInsertedSpy.count(), 0);
+    QCOMPARE(rowATBISpy.size(), 0);
+    QCOMPARE(rowInsertedSpy.size(), 0);
 
     // When removing the empty models
     pm.removeSourceModel(&i1);
@@ -159,8 +159,8 @@ void tst_QConcatenateTablesProxyModel::shouldAggregateThenRemoveTwoEmptyModelsCo
     // Then the proxy should still be empty (and no signals emitted)
     QCOMPARE(pm.rowCount(), 0);
     QCOMPARE(pm.columnCount(), 0);
-    QCOMPARE(rowATBRSpy.count(), 0);
-    QCOMPARE(rowRemovedSpy.count(), 0);
+    QCOMPARE(rowATBRSpy.size(), 0);
+    QCOMPARE(rowRemovedSpy.size(), 0);
 }
 
 void tst_QConcatenateTablesProxyModel::shouldAggregateTwoEmptyModelsWhichThenGetFilled()
@@ -205,14 +205,14 @@ void tst_QConcatenateTablesProxyModel::shouldHandleDataChanged()
     mod.item(0, 0)->setData("a", Qt::EditRole);
 
     // Then the change should be notified to the proxy
-    QCOMPARE(dataChangedSpy.count(), 1);
+    QCOMPARE(dataChangedSpy.size(), 1);
     QCOMPARE(dataChangedSpy.at(0).at(0).toModelIndex(), pm.index(0, 0));
     QCOMPARE(extractRowTexts(&pm, 0), QStringLiteral("aBC"));
 
     // Same test with the other model
     mod2.item(0, 2)->setData("f", Qt::EditRole);
 
-    QCOMPARE(dataChangedSpy.count(), 2);
+    QCOMPARE(dataChangedSpy.size(), 2);
     QCOMPARE(dataChangedSpy.at(1).at(0).toModelIndex(), pm.index(1, 2));
     QCOMPARE(extractRowTexts(&pm, 1), QStringLiteral("DEf"));
 }
@@ -230,14 +230,14 @@ void tst_QConcatenateTablesProxyModel::shouldHandleSetData()
     pm.setData(pm.index(0, 0), "a");
 
     // Then the change should be notified to the proxy
-    QCOMPARE(dataChangedSpy.count(), 1);
+    QCOMPARE(dataChangedSpy.size(), 1);
     QCOMPARE(dataChangedSpy.at(0).at(0).toModelIndex(), pm.index(0, 0));
     QCOMPARE(extractRowTexts(&pm, 0), QStringLiteral("aBC"));
 
     // Same test with the other model
     pm.setData(pm.index(1, 2), "f");
 
-    QCOMPARE(dataChangedSpy.count(), 2);
+    QCOMPARE(dataChangedSpy.size(), 2);
     QCOMPARE(dataChangedSpy.at(1).at(0).toModelIndex(), pm.index(1, 2));
     QCOMPARE(extractRowTexts(&pm, 1), QStringLiteral("DEf"));
 }
@@ -256,7 +256,7 @@ void tst_QConcatenateTablesProxyModel::shouldHandleSetItemData()
                                                         std::make_pair<int, QVariant>(Qt::UserRole, 88) });
 
     // Then the change should be notified to the proxy
-    QCOMPARE(dataChangedSpy.count(), 1);
+    QCOMPARE(dataChangedSpy.size(), 1);
     QCOMPARE(dataChangedSpy.at(0).at(0).toModelIndex(), pm.index(0, 0));
     QCOMPARE(extractRowTexts(&pm, 0), QStringLiteral("XBC"));
     QCOMPARE(pm.index(0, 0).data(Qt::UserRole).toInt(), 88);
@@ -265,7 +265,7 @@ void tst_QConcatenateTablesProxyModel::shouldHandleSetItemData()
     pm.setItemData(pm.index(1, 2), QMap<int, QVariant>{ std::make_pair<int, QVariant>(Qt::DisplayRole, QStringLiteral("Y")),
                                                         std::make_pair<int, QVariant>(Qt::UserRole, 89) });
 
-    QCOMPARE(dataChangedSpy.count(), 2);
+    QCOMPARE(dataChangedSpy.size(), 2);
     QCOMPARE(dataChangedSpy.at(1).at(0).toModelIndex(), pm.index(1, 2));
     QCOMPARE(extractRowTexts(&pm, 1), QStringLiteral("DEY"));
     QCOMPARE(pm.index(1, 2).data(Qt::UserRole).toInt(), 89);
@@ -302,10 +302,10 @@ void tst_QConcatenateTablesProxyModel::shouldHandleRowInsertionAndRemoval()
     mod2.removeRow(0);
 
     // Then the proxy should notify its users and show changes
-    QCOMPARE(rowATBRSpy.count(), 1);
+    QCOMPARE(rowATBRSpy.size(), 1);
     QCOMPARE(rowATBRSpy.at(0).at(1).toInt(), 1);
     QCOMPARE(rowATBRSpy.at(0).at(2).toInt(), 1);
-    QCOMPARE(rowRemovedSpy.count(), 1);
+    QCOMPARE(rowRemovedSpy.size(), 1);
     QCOMPARE(rowRemovedSpy.at(0).at(1).toInt(), 1);
     QCOMPARE(rowRemovedSpy.at(0).at(2).toInt(), 1);
     QCOMPARE(pm.rowCount(), 2);
@@ -318,10 +318,10 @@ void tst_QConcatenateTablesProxyModel::shouldHandleRowInsertionAndRemoval()
     mod2.removeRow(0);
 
     // Then the proxy should notify its users and show changes
-    QCOMPARE(rowATBRSpy.count(), 1);
+    QCOMPARE(rowATBRSpy.size(), 1);
     QCOMPARE(rowATBRSpy.at(0).at(1).toInt(), 1);
     QCOMPARE(rowATBRSpy.at(0).at(2).toInt(), 1);
-    QCOMPARE(rowRemovedSpy.count(), 1);
+    QCOMPARE(rowRemovedSpy.size(), 1);
     QCOMPARE(rowRemovedSpy.at(0).at(1).toInt(), 1);
     QCOMPARE(rowRemovedSpy.at(0).at(2).toInt(), 1);
     QCOMPARE(pm.rowCount(), 1);
@@ -357,10 +357,10 @@ void tst_QConcatenateTablesProxyModel::shouldAggregateAnotherModelThenRemoveMode
     pm.removeSourceModel(&mod3);
 
     // Then the proxy should notify its users about the row removed
-    QCOMPARE(rowATBRSpy.count(), 1);
+    QCOMPARE(rowATBRSpy.size(), 1);
     QCOMPARE(rowATBRSpy.at(0).at(1).toInt(), 2);
     QCOMPARE(rowATBRSpy.at(0).at(2).toInt(), 3);
-    QCOMPARE(rowRemovedSpy.count(), 1);
+    QCOMPARE(rowRemovedSpy.size(), 1);
     QCOMPARE(rowRemovedSpy.at(0).at(1).toInt(), 2);
     QCOMPARE(rowRemovedSpy.at(0).at(2).toInt(), 3);
     QCOMPARE(pm.rowCount(), 2);
@@ -371,10 +371,10 @@ void tst_QConcatenateTablesProxyModel::shouldAggregateAnotherModelThenRemoveMode
     rowATBRSpy.clear();
     rowRemovedSpy.clear();
     pm.removeSourceModel(&mod2);
-    QCOMPARE(rowATBRSpy.count(), 1);
+    QCOMPARE(rowATBRSpy.size(), 1);
     QCOMPARE(rowATBRSpy.at(0).at(1).toInt(), 1);
     QCOMPARE(rowATBRSpy.at(0).at(2).toInt(), 1);
-    QCOMPARE(rowRemovedSpy.count(), 1);
+    QCOMPARE(rowRemovedSpy.size(), 1);
     QCOMPARE(rowRemovedSpy.at(0).at(1).toInt(), 1);
     QCOMPARE(rowRemovedSpy.at(0).at(2).toInt(), 1);
     QCOMPARE(pm.rowCount(), 1);
@@ -384,10 +384,10 @@ void tst_QConcatenateTablesProxyModel::shouldAggregateAnotherModelThenRemoveMode
     rowATBRSpy.clear();
     rowRemovedSpy.clear();
     pm.removeSourceModel(&mod);
-    QCOMPARE(rowATBRSpy.count(), 1);
+    QCOMPARE(rowATBRSpy.size(), 1);
     QCOMPARE(rowATBRSpy.at(0).at(1).toInt(), 0);
     QCOMPARE(rowATBRSpy.at(0).at(2).toInt(), 0);
-    QCOMPARE(rowRemovedSpy.count(), 1);
+    QCOMPARE(rowRemovedSpy.size(), 1);
     QCOMPARE(rowRemovedSpy.at(0).at(1).toInt(), 0);
     QCOMPARE(rowRemovedSpy.at(0).at(2).toInt(), 0);
     QCOMPARE(pm.rowCount(), 0);
@@ -423,11 +423,11 @@ void tst_QConcatenateTablesProxyModel::shouldUseSmallestColumnCount()
     // Test setData in an ignored column (QTBUG-91253)
     QSignalSpy dataChangedSpy(&pm, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
     mod.setData(mod.index(0, 1), "b");
-    QCOMPARE(dataChangedSpy.count(), 0);
+    QCOMPARE(dataChangedSpy.size(), 0);
 
     // Test dataChanged across all columns, some visible, some ignored
     mod.dataChanged(mod.index(0, 0), mod.index(0, 2));
-    QCOMPARE(dataChangedSpy.count(), 1);
+    QCOMPARE(dataChangedSpy.size(), 1);
     QCOMPARE(dataChangedSpy.at(0).at(0).toModelIndex(), pm.index(0, 0));
     QCOMPARE(dataChangedSpy.at(0).at(1).toModelIndex(), pm.index(0, 0));
 }
@@ -517,8 +517,8 @@ void tst_QConcatenateTablesProxyModel::shouldPropagateLayoutChanged()
     QItemSelectionModel selection(&pm);
     selection.select(pm.index(1, 0), QItemSelectionModel::Select | QItemSelectionModel::Rows);
     const QModelIndexList lst = selection.selectedIndexes();
-    QCOMPARE(lst.count(), 3);
-    for (int col = 0; col < lst.count(); ++col) {
+    QCOMPARE(lst.size(), 3);
+    for (int col = 0; col < lst.size(); ++col) {
         QCOMPARE(lst.at(col).row(), 1);
         QCOMPARE(lst.at(col).column(), col);
     }
@@ -533,13 +533,13 @@ void tst_QConcatenateTablesProxyModel::shouldPropagateLayoutChanged()
     QCOMPARE(extractRowTexts(&pm, 0), QStringLiteral("ABC"));
     QCOMPARE(extractRowTexts(&pm, 1), QStringLiteral("456"));
     QCOMPARE(extractRowTexts(&pm, 2), QStringLiteral("123"));
-    QCOMPARE(layoutATBCSpy.count(), 1);
-    QCOMPARE(layoutChangedSpy.count(), 1);
+    QCOMPARE(layoutATBCSpy.size(), 1);
+    QCOMPARE(layoutChangedSpy.size(), 1);
 
     // And the selection should be updated accordingly (it became row 2)
     const QModelIndexList lstAfter = selection.selectedIndexes();
-    QCOMPARE(lstAfter.count(), 3);
-    for (int col = 0; col < lstAfter.count(); ++col) {
+    QCOMPARE(lstAfter.size(), 3);
+    for (int col = 0; col < lstAfter.size(); ++col) {
         QCOMPARE(lstAfter.at(col).row(), 2);
         QCOMPARE(lstAfter.at(col).column(), col);
     }
@@ -574,14 +574,14 @@ void tst_QConcatenateTablesProxyModel::shouldReactToModelReset()
     // Then the proxy should emit the reset signals, and show the new data
     QCOMPARE(extractRowTexts(&pm, 0), QStringLiteral("ABC"));
     QCOMPARE(extractRowTexts(&pm, 1), QStringLiteral("DEF"));
-    QCOMPARE(rowATBRSpy.count(), 0);
-    QCOMPARE(rowRemovedSpy.count(), 0);
-    QCOMPARE(rowATBISpy.count(), 0);
-    QCOMPARE(rowInsertedSpy.count(), 0);
-    QCOMPARE(colATBRSpy.count(), 0);
-    QCOMPARE(colRemovedSpy.count(), 0);
-    QCOMPARE(modelATBResetSpy.count(), 1);
-    QCOMPARE(modelResetSpy.count(), 1);
+    QCOMPARE(rowATBRSpy.size(), 0);
+    QCOMPARE(rowRemovedSpy.size(), 0);
+    QCOMPARE(rowATBISpy.size(), 0);
+    QCOMPARE(rowInsertedSpy.size(), 0);
+    QCOMPARE(colATBRSpy.size(), 0);
+    QCOMPARE(colRemovedSpy.size(), 0);
+    QCOMPARE(modelATBResetSpy.size(), 1);
+    QCOMPARE(modelResetSpy.size(), 1);
 }
 
 void tst_QConcatenateTablesProxyModel::shouldUpdateColumnsOnModelReset()
@@ -616,14 +616,14 @@ void tst_QConcatenateTablesProxyModel::shouldUpdateColumnsOnModelReset()
     qsfpm.setSourceModel(&mod2Columns);
 
     // Then the proxy should reset, and show the new data
-    QCOMPARE(modelATBResetSpy.count(), 1);
-    QCOMPARE(modelResetSpy.count(), 1);
-    QCOMPARE(rowATBRSpy.count(), 0);
-    QCOMPARE(rowRemovedSpy.count(), 0);
-    QCOMPARE(rowATBISpy.count(), 0);
-    QCOMPARE(rowInsertedSpy.count(), 0);
-    QCOMPARE(colATBRSpy.count(), 0);
-    QCOMPARE(colRemovedSpy.count(), 0);
+    QCOMPARE(modelATBResetSpy.size(), 1);
+    QCOMPARE(modelResetSpy.size(), 1);
+    QCOMPARE(rowATBRSpy.size(), 0);
+    QCOMPARE(rowRemovedSpy.size(), 0);
+    QCOMPARE(rowATBISpy.size(), 0);
+    QCOMPARE(rowInsertedSpy.size(), 0);
+    QCOMPARE(colATBRSpy.size(), 0);
+    QCOMPARE(colRemovedSpy.size(), 0);
 
     QCOMPARE(pm.rowCount(), 2);
     QCOMPARE(extractRowTexts(&pm, 0), QStringLiteral("WX"));

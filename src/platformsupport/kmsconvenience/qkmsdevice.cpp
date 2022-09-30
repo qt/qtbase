@@ -200,7 +200,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     if (userConnectorConfig.contains(QStringLiteral("virtualPos"))) {
         const QByteArray vpos = userConnectorConfig.value(QStringLiteral("virtualPos")).toByteArray();
         const QByteArrayList vposComp = vpos.split(',');
-        if (vposComp.count() == 2)
+        if (vposComp.size() == 2)
             vinfo->virtualPos = QPoint(vposComp[0].trimmed().toInt(), vposComp[1].trimmed().toInt());
     }
     if (userConnectorConfig.value(QStringLiteral("primary")).toBool())
@@ -478,7 +478,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         const QStringList crtcPlanePairs = val.split(u':');
         for (const QString &crtcPlanePair : crtcPlanePairs) {
             const QStringList values = crtcPlanePair.split(u',');
-            if (values.count() == 2 && uint(values[0].toInt()) == output.crtc_id) {
+            if (values.size() == 2 && uint(values[0].toInt()) == output.crtc_id) {
                 uint planeId = values[1].toInt();
                 for (QKmsPlane &kmsplane : m_planes) {
                     if (kmsplane.id == planeId) {

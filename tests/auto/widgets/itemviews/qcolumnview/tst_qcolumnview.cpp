@@ -497,11 +497,11 @@ void tst_QColumnView::selectAll()
 
     view.setModel(&m_fakeDirModel);
     view.selectAll();
-    QVERIFY(view.selectionModel()->selectedIndexes().count() >= 0);
+    QVERIFY(view.selectionModel()->selectedIndexes().size() >= 0);
 
     view.setCurrentIndex(m_fakeDirHomeIndex);
     view.selectAll();
-    QVERIFY(view.selectionModel()->selectedIndexes().count() > 0);
+    QVERIFY(view.selectionModel()->selectedIndexes().size() > 0);
 
     QModelIndex file;
     for (int i = 0; i < m_fakeDirModel.rowCount(m_fakeDirHomeIndex); ++i) {
@@ -512,10 +512,10 @@ void tst_QColumnView::selectAll()
     }
     view.setCurrentIndex(file);
     view.selectAll();
-    QVERIFY(view.selectionModel()->selectedIndexes().count() > 0);
+    QVERIFY(view.selectionModel()->selectedIndexes().size() > 0);
 
     view.setCurrentIndex(QModelIndex());
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 0);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), 0);
 }
 
 void tst_QColumnView::clicked()
@@ -536,7 +536,7 @@ void tst_QColumnView::clicked()
 
     QPoint localPoint = view.visualRect(m_fakeDirHomeIndex).center();
     QTest::mouseClick(view.viewport(), Qt::LeftButton, {}, localPoint);
-    QCOMPARE(clickedSpy.count(), 1);
+    QCOMPARE(clickedSpy.size(), 1);
     QCoreApplication::processEvents();
 
     if (sizeof(qreal) != sizeof(double))
@@ -631,7 +631,7 @@ void tst_QColumnView::moveGrip_basic()
     view.setMinimumWidth(200);
     grip->moveGrip(-800);
     QCOMPARE(view.width(), 200);
-    QCOMPARE(spy.count(), 5);
+    QCOMPARE(spy.size(), 5);
 }
 
 void tst_QColumnView::moveGrip_data()
@@ -687,7 +687,7 @@ void tst_QColumnView::doubleClick()
     QCOMPARE(view.width(), 200);
     QTest::mouseDClick(grip, Qt::LeftButton);
     QCOMPARE(view.width(), view.sizeHint().width());
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 void tst_QColumnView::gripMoved()
@@ -711,7 +711,7 @@ void tst_QColumnView::gripMoved()
     QCoreApplication::processEvents();
     QTest::mouseRelease(grip, Qt::LeftButton);
 
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
     QCOMPARE(view.width(), oldWidth + 65);
 }
 

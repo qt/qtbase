@@ -334,7 +334,7 @@ void QMakeParser::read(ProFile *pro, QStringView in, int line, SubGrammar gramma
     xprStack.reserve(10);
 
     const ushort *cur = (const ushort *)in.data();
-    const ushort *inend = cur + in.length();
+    const ushort *inend = cur + in.size();
     m_canElse = false;
   freshLine:
     m_state = StNew;
@@ -1246,7 +1246,7 @@ bool QMakeParser::resolveVariable(ushort *xprPtr, int tlen, int needSep, ushort 
         // The string is typically longer than the variable reference, so we need
         // to ensure that there is enough space in the output buffer - as unlikely
         // as an overflow is to actually happen in practice.
-        int need = (in.length() - (cur - (const ushort *)in.constData()) + 2) * 5 + out.size();
+        int need = (in.size() - (cur - (const ushort *)in.constData()) + 2) * 5 + out.size();
         int tused = *tokPtr - (ushort *)tokBuff->constData();
         int xused;
         int total;

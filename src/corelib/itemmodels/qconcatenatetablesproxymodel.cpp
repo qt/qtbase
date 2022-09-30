@@ -315,7 +315,7 @@ QMimeData *QConcatenateTablesProxyModel::mimeData(const QModelIndexList &indexes
     Q_ASSERT(checkIndex(firstIndex, CheckIndexOption::IndexIsValid));
     const auto result = d->sourceModelForRow(firstIndex.row());
     QModelIndexList sourceIndexes;
-    sourceIndexes.reserve(indexes.count());
+    sourceIndexes.reserve(indexes.size());
     for (const QModelIndex &index : indexes) {
         const QModelIndex sourceIndex = mapToSource(index);
         Q_ASSERT(sourceIndex.model() == result.sourceModel); // see documentation above

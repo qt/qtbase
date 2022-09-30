@@ -137,7 +137,7 @@ void tst_QDBusLocalCalls::makeCalls()
     QCOMPARE(int(replyMsg.type()), int(QDBusMessage::ReplyMessage));
 
     QVariantList replyArgs = replyMsg.arguments();
-    QCOMPARE(replyArgs.count(), 1);
+    QCOMPARE(replyArgs.size(), 1);
     QCOMPARE(replyArgs.at(0), value);
 }
 
@@ -152,7 +152,7 @@ void tst_QDBusLocalCalls::makeCallsVariant()
     QCOMPARE(int(replyMsg.type()), int(QDBusMessage::ReplyMessage));
 
     QVariantList replyArgs = replyMsg.arguments();
-    QCOMPARE(replyArgs.count(), 1);
+    QCOMPARE(replyArgs.size(), 1);
 
     const QVariant &reply = replyArgs.at(0);
     QCOMPARE(reply.userType(), qMetaTypeId<QDBusVariant>());
@@ -169,7 +169,7 @@ void tst_QDBusLocalCalls::makeCallsTwoRets()
     QCOMPARE(int(replyMsg.type()), int(QDBusMessage::ReplyMessage));
 
     QVariantList replyArgs = replyMsg.arguments();
-    QCOMPARE(replyArgs.count(), 2);
+    QCOMPARE(replyArgs.size(), 2);
     QCOMPARE(replyArgs.at(0).toString(), QString::fromLatin1("One"));
     QCOMPARE(replyArgs.at(1).toString(), QString::fromLatin1("Two"));
 }
@@ -189,7 +189,7 @@ void tst_QDBusLocalCalls::makeCallsComplex()
     QCOMPARE(int(replyMsg.type()), int(QDBusMessage::ReplyMessage));
 
     QVariantList replyArgs = replyMsg.arguments();
-    QCOMPARE(replyArgs.count(), 1);
+    QCOMPARE(replyArgs.size(), 1);
     const QVariant &reply = replyArgs.at(0);
     QCOMPARE(reply.userType(), qMetaTypeId<QDBusArgument>());
     QCOMPARE(qdbus_cast<QList<int> >(reply), value);

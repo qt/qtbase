@@ -555,7 +555,7 @@ static bool isScript(QStringView tag)
     static const QString allScripts =
         QString::fromLatin1(reinterpret_cast<const char *>(script_code_list),
                             sizeof(script_code_list) - 1);
-    return tag.length() == 4 && allScripts.indexOf(tag) % 4 == 0;
+    return tag.size() == 4 && allScripts.indexOf(tag) % 4 == 0;
 }
 
 bool qt_splitLocaleName(QStringView name, QStringView *lang, QStringView *script, QStringView *land)
@@ -4014,7 +4014,7 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
                                 int decDigits, QLocale::NumberOptions number_options) const
 {
     buff->clear();
-    buff->reserve(str.length());
+    buff->reserve(str.size());
 
     enum { Whole, Fractional, Exponent } state = Whole;
     const bool scientific = numMode == DoubleScientificMode;
@@ -4110,7 +4110,7 @@ double QLocaleData::stringToDouble(QStringView str, bool *ok,
     }
     int processed = 0;
     bool nonNullOk = false;
-    double d = qt_asciiToDouble(buff.constData(), buff.length() - 1, nonNullOk, processed);
+    double d = qt_asciiToDouble(buff.constData(), buff.size() - 1, nonNullOk, processed);
     if (ok != nullptr)
         *ok = nonNullOk;
     return d;

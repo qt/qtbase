@@ -503,7 +503,7 @@ void tst_QCommandLineParser::testSingleDashWordOptionModes()
     QVERIFY(parser.addOption(forceShort));
     QVERIFY(parser.parse(commandLine));
     QCOMPARE(parser.optionNames(), expectedOptionNames);
-    for (int i = 0; i < expectedOptionValues.count(); ++i)
+    for (int i = 0; i < expectedOptionValues.size(); ++i)
         QCOMPARE(parser.value(parser.optionNames().at(i)), expectedOptionValues.at(i));
     QCOMPARE(parser.unknownOptionNames(), QStringList());
 }
@@ -762,7 +762,7 @@ void tst_QCommandLineParser::testVeryLongOptionNames()
     output.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
 #endif
     const QStringList lines = output.split('\n');
-    const int last = lines.count() - 1;
+    const int last = lines.size() - 1;
     // Let's not compare everything, just the final parts.
     QCOMPARE(lines.at(last - 7), "                                                     cdefghijklmnopqrstuvwxyz");
     QCOMPARE(lines.at(last - 6), "  --looooooooooooong-option, --looooong-opt-alias <l Short description");

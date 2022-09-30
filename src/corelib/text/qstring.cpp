@@ -2718,9 +2718,9 @@ void QString::resize(qsizetype size)
 
 void QString::resize(qsizetype newSize, QChar fillChar)
 {
-    const qsizetype oldSize = length();
+    const qsizetype oldSize = size();
     resize(newSize);
-    const qsizetype difference = length() - oldSize;
+    const qsizetype difference = size() - oldSize;
     if (difference > 0)
         std::fill_n(d.data() + oldSize, difference, fillChar.unicode());
 }
@@ -4188,7 +4188,7 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
 */
 qsizetype QString::indexOf(const QString &str, qsizetype from, Qt::CaseSensitivity cs) const
 {
-    return QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.size()), cs);
+    return QtPrivate::findString(QStringView(unicode(), size()), from, QStringView(str.unicode(), str.size()), cs);
 }
 
 /*!
@@ -4242,7 +4242,7 @@ qsizetype QString::indexOf(QLatin1StringView str, qsizetype from, Qt::CaseSensit
 */
 qsizetype QString::indexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) const
 {
-    return qFindChar(QStringView(unicode(), length()), ch, from, cs);
+    return qFindChar(QStringView(unicode(), size()), ch, from, cs);
 }
 
 /*!
@@ -4506,7 +4506,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
         }
 
         // add the last part of the after string
-        len = afterView.length() - lastEnd;
+        len = afterView.size() - lastEnd;
         if (len > 0) {
             chunks << afterView.mid(lastEnd, len);
             newLength += len;
@@ -4516,9 +4516,9 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
     }
 
     // 3. trailing string after the last match
-    if (copyView.length() > lastEnd) {
+    if (copyView.size() > lastEnd) {
         chunks << copyView.mid(lastEnd);
-        newLength += copyView.length() - lastEnd;
+        newLength += copyView.size() - lastEnd;
     }
 
     // 4. assemble the chunks together
@@ -4526,7 +4526,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
     qsizetype i = 0;
     QChar *uc = data();
     for (const QStringView &chunk : std::as_const(chunks)) {
-        qsizetype len = chunk.length();
+        qsizetype len = chunk.size();
         memcpy(uc + i, chunk.constData(), len * sizeof(QChar));
         i += len;
     }
@@ -4889,7 +4889,7 @@ static QString extractSections(const QList<qt_section_chunk> &sections, qsizetyp
         qsizetype skip = 0;
         for (qsizetype k = 0; k < sectionsSize; ++k) {
             const qt_section_chunk &section = sections.at(k);
-            if (section.length == section.string.length())
+            if (section.length == section.string.size())
                 skip++;
         }
         if (start < 0)
@@ -4905,7 +4905,7 @@ static QString extractSections(const QList<qt_section_chunk> &sections, qsizetyp
     qsizetype first_i = start, last_i = end;
     for (qsizetype i = 0; x <= end && i < sectionsSize; ++i) {
         const qt_section_chunk &section = sections.at(i);
-        const bool empty = (section.length == section.string.length());
+        const bool empty = (section.length == section.string.size());
         if (x >= start) {
             if (x == start)
                 first_i = i;
@@ -4964,7 +4964,7 @@ QString QString::section(const QRegularExpression &re, qsizetype start, qsizetyp
         sep.setPatternOptions(sep.patternOptions() | QRegularExpression::CaseInsensitiveOption);
 
     QList<qt_section_chunk> sections;
-    qsizetype n = length(), m = 0, last_m = 0, last_len = 0;
+    qsizetype n = size(), m = 0, last_m = 0, last_len = 0;
     QRegularExpressionMatchIterator iterator = sep.globalMatch(*this);
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
@@ -5321,7 +5321,7 @@ static QByteArray qt_convert_to_latin1(QStringView string)
     if (Q_UNLIKELY(string.isNull()))
         return QByteArray();
 
-    QByteArray ba(string.length(), Qt::Uninitialized);
+    QByteArray ba(string.size(), Qt::Uninitialized);
 
     // since we own the only copy, we're going to const_cast the constData;
     // that avoids an unnecessary call to detach() and expansion code that will never get used
@@ -5490,7 +5490,7 @@ QList<uint> QString::toUcs4() const
 
 static QList<uint> qt_convert_to_ucs4(QStringView string)
 {
-    QList<uint> v(string.length());
+    QList<uint> v(string.size());
     uint *a = const_cast<uint*>(v.constData());
     QStringIterator it(string);
     while (it.hasNext())
@@ -6445,7 +6445,7 @@ int QLatin1StringView::compare_helper(const QChar *data1, qsizetype length1, QLa
 */
 int QString::localeAwareCompare(const QString &other) const
 {
-    return localeAwareCompare_helper(constData(), length(), other.constData(), other.size());
+    return localeAwareCompare_helper(constData(), size(), other.constData(), other.size());
 }
 
 /*!
@@ -6561,7 +6561,7 @@ const ushort *QString::utf16() const
 QString QString::leftJustified(qsizetype width, QChar fill, bool truncate) const
 {
     QString result;
-    qsizetype len = length();
+    qsizetype len = size();
     qsizetype padlen = width - len;
     if (padlen > 0) {
         result.resize(len+padlen);
@@ -6600,7 +6600,7 @@ QString QString::leftJustified(qsizetype width, QChar fill, bool truncate) const
 QString QString::rightJustified(qsizetype width, QChar fill, bool truncate) const
 {
     QString result;
-    qsizetype len = length();
+    qsizetype len = size();
     qsizetype padlen = width - len;
     if (padlen > 0) {
         result.resize(len+padlen);
@@ -7933,7 +7933,7 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
         // check if it's fully ASCII first, because then we have no work
         auto start = reinterpret_cast<const char16_t *>(data->constData());
         const char16_t *p = start + from;
-        if (isAscii_helper(p, p + data->length() - from))
+        if (isAscii_helper(p, p + data->size() - from))
             return;
         if (p > start + from)
             from = p - start - 1;        // need one before the non-ASCII to perform NFC
@@ -8119,9 +8119,9 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
     // Negative field-width for right-padding, positive for left-padding:
     const qsizetype abs_field_width = qAbs(field_width);
     const qsizetype result_len =
-            s.length() - d.escape_len
-            + (d.occurrences - d.locale_occurrences) * qMax(abs_field_width, arg.length())
-            + d.locale_occurrences * qMax(abs_field_width, larg.length());
+            s.size() - d.escape_len
+            + (d.occurrences - d.locale_occurrences) * qMax(abs_field_width, arg.size())
+            + d.locale_occurrences * qMax(abs_field_width, larg.size());
 
     QString result(result_len, Qt::Uninitialized);
     QChar *rc = const_cast<QChar *>(result.unicode());
@@ -8164,15 +8164,15 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
             rc += escape_start - text_start;
 
             const QStringView use = localize ? larg : arg;
-            const qsizetype pad_chars = abs_field_width - use.length();
+            const qsizetype pad_chars = abs_field_width - use.size();
             // (If negative, relevant loops are no-ops: no need to check.)
 
             if (field_width > 0) { // left padded
                 rc = std::fill_n(rc, pad_chars, fillChar);
             }
 
-            memcpy(rc, use.data(), use.length() * sizeof(QChar));
-            rc += use.length();
+            memcpy(rc, use.data(), use.size() * sizeof(QChar));
+            rc += use.size();
 
             if (field_width < 0) { // right padded
                 rc = std::fill_n(rc, pad_chars, fillChar);
@@ -10956,7 +10956,7 @@ qsizetype QtPrivate::count(QStringView haystack, const QRegularExpression &re)
     }
     qsizetype count = 0;
     qsizetype index = -1;
-    qsizetype len = haystack.length();
+    qsizetype len = haystack.size();
     while (index <= len - 1) {
         QRegularExpressionMatch match = re.matchView(haystack, index + 1);
         if (!match.hasMatch())
@@ -10983,7 +10983,7 @@ qsizetype QtPrivate::count(QStringView haystack, const QRegularExpression &re)
 QString QString::toHtmlEscaped() const
 {
     QString rich;
-    const qsizetype len = length();
+    const qsizetype len = size();
     rich.reserve(qsizetype(len * 1.1));
     for (QChar ch : *this) {
         if (ch == u'<')

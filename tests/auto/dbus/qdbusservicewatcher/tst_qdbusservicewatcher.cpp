@@ -99,12 +99,12 @@ void tst_QDBusServiceWatcher::watchForCreation()
     QTestEventLoop::instance().enterLoop(1);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(spyR.count(), 1);
+    QCOMPARE(spyR.size(), 1);
     QCOMPARE(spyR.at(0).at(0).toString(), registeredName);
 
-    QCOMPARE(spyU.count(), 0);
+    QCOMPARE(spyU.size(), 0);
 
-    QCOMPARE(spyO.count(), 1);
+    QCOMPARE(spyO.size(), 1);
     QCOMPARE(spyO.at(0).at(0).toString(), registeredName);
     QVERIFY(spyO.at(0).at(1).toString().isEmpty());
     QCOMPARE(spyO.at(0).at(2).toString(), con.baseService());
@@ -122,12 +122,12 @@ void tst_QDBusServiceWatcher::watchForCreation()
     QTestEventLoop::instance().enterLoop(1);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(spyR.count(), 1);
+    QCOMPARE(spyR.size(), 1);
     QCOMPARE(spyR.at(0).at(0).toString(), registeredName);
 
-    QCOMPARE(spyU.count(), 0);
+    QCOMPARE(spyU.size(), 0);
 
-    QCOMPARE(spyO.count(), 1);
+    QCOMPARE(spyO.size(), 1);
     QCOMPARE(spyO.at(0).at(0).toString(), registeredName);
     QVERIFY(spyO.at(0).at(1).toString().isEmpty());
     QCOMPARE(spyO.at(0).at(2).toString(), con.baseService());
@@ -163,12 +163,12 @@ void tst_QDBusServiceWatcher::watchForDisappearance()
     QTestEventLoop::instance().enterLoop(1);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(spyR.count(), 0);
+    QCOMPARE(spyR.size(), 0);
 
-    QCOMPARE(spyU.count(), 1);
+    QCOMPARE(spyU.size(), 1);
     QCOMPARE(spyU.at(0).at(0).toString(), registeredName);
 
-    QCOMPARE(spyO.count(), 1);
+    QCOMPARE(spyO.size(), 1);
     QCOMPARE(spyO.at(0).at(0).toString(), registeredName);
     QCOMPARE(spyO.at(0).at(1).toString(), con.baseService());
     QVERIFY(spyO.at(0).at(2).toString().isEmpty());
@@ -197,12 +197,12 @@ void tst_QDBusServiceWatcher::watchForDisappearanceUniqueConnection()
     QTestEventLoop::instance().enterLoop(1);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(spyR.count(), 0);
+    QCOMPARE(spyR.size(), 0);
 
-    QCOMPARE(spyU.count(), 1);
+    QCOMPARE(spyU.size(), 1);
     QCOMPARE(spyU.at(0).at(0).toString(), watchedName);
 
-    QCOMPARE(spyO.count(), 1);
+    QCOMPARE(spyO.size(), 1);
     QCOMPARE(spyO.at(0).at(0).toString(), watchedName);
     QCOMPARE(spyO.at(0).at(1).toString(), watchedName);
     QVERIFY(spyO.at(0).at(2).toString().isEmpty());
@@ -234,12 +234,12 @@ void tst_QDBusServiceWatcher::watchForOwnerChange()
     QTestEventLoop::instance().enterLoop(1);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(spyR.count(), 1);
+    QCOMPARE(spyR.size(), 1);
     QCOMPARE(spyR.at(0).at(0).toString(), registeredName);
 
-    QCOMPARE(spyU.count(), 0);
+    QCOMPARE(spyU.size(), 0);
 
-    QCOMPARE(spyO.count(), 1);
+    QCOMPARE(spyO.size(), 1);
     QCOMPARE(spyO.at(0).at(0).toString(), registeredName);
     QVERIFY(spyO.at(0).at(1).toString().isEmpty());
     QCOMPARE(spyO.at(0).at(2).toString(), con.baseService());
@@ -257,13 +257,13 @@ void tst_QDBusServiceWatcher::watchForOwnerChange()
     QTestEventLoop::instance().enterLoop(1);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(spyR.count(), 1);
+    QCOMPARE(spyR.size(), 1);
     QCOMPARE(spyR.at(0).at(0).toString(), registeredName);
 
-    QCOMPARE(spyU.count(), 1);
+    QCOMPARE(spyU.size(), 1);
     QCOMPARE(spyU.at(0).at(0).toString(), registeredName);
 
-    QCOMPARE(spyO.count(), 2);
+    QCOMPARE(spyO.size(), 2);
     QCOMPARE(spyO.at(0).at(0).toString(), registeredName);
     QCOMPARE(spyO.at(0).at(1).toString(), con.baseService());
     QVERIFY(spyO.at(0).at(2).toString().isEmpty());
@@ -298,12 +298,12 @@ void tst_QDBusServiceWatcher::modeChange()
     QTestEventLoop::instance().enterLoop(1);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(spyR.count(), 1);
+    QCOMPARE(spyR.size(), 1);
     QCOMPARE(spyR.at(0).at(0).toString(), registeredName);
 
-    QCOMPARE(spyU.count(), 0);
+    QCOMPARE(spyU.size(), 0);
 
-    QCOMPARE(spyO.count(), 1);
+    QCOMPARE(spyO.size(), 1);
     QCOMPARE(spyO.at(0).at(0).toString(), registeredName);
     QVERIFY(spyO.at(0).at(1).toString().isEmpty());
     QCOMPARE(spyO.at(0).at(2).toString(), con.baseService());
@@ -321,12 +321,12 @@ void tst_QDBusServiceWatcher::modeChange()
     QTestEventLoop::instance().enterLoop(1);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(spyR.count(), 0);
+    QCOMPARE(spyR.size(), 0);
 
-    QCOMPARE(spyU.count(), 1);
+    QCOMPARE(spyU.size(), 1);
     QCOMPARE(spyU.at(0).at(0).toString(), registeredName);
 
-    QCOMPARE(spyO.count(), 1);
+    QCOMPARE(spyO.size(), 1);
     QCOMPARE(spyO.at(0).at(0).toString(), registeredName);
     QCOMPARE(spyO.at(0).at(1).toString(), con.baseService());
     QVERIFY(spyO.at(0).at(2).toString().isEmpty());
@@ -377,9 +377,9 @@ void tst_QDBusServiceWatcher::setConnection()
     QTestEventLoop::instance().enterLoop(1);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(spyR.count(), 1);
+    QCOMPARE(spyR.size(), 1);
     QCOMPARE(spyR.at(0).at(0).toString(), serviceName);
-    QCOMPARE(spyU.count(), 0);
+    QCOMPARE(spyU.size(), 0);
 
     // is the system bus available?
     if (!QDBusConnection::systemBus().isConnected())
@@ -400,9 +400,9 @@ void tst_QDBusServiceWatcher::setConnection()
     QTestEventLoop::instance().enterLoop(1);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(spyR.count(), 0);
+    QCOMPARE(spyR.size(), 0);
 
-    QCOMPARE(spyU.count(), 1);
+    QCOMPARE(spyU.size(), 1);
     QCOMPARE(spyU.at(0).at(0).toString(), watchedName);
 }
 

@@ -91,7 +91,7 @@ void QListModel::insert(int row, QListWidgetItem *item)
 
 void QListModel::insert(int row, const QStringList &labels)
 {
-    const int count = labels.count();
+    const int count = labels.size();
     if (count <= 0)
         return;
     QListWidget *view = qobject_cast<QListWidget*>(QObject::parent());
@@ -376,7 +376,7 @@ void QListModel::ensureSorted(int column, Qt::SortOrder order, int start, int en
                 else if (oldRow > otherRow && newRow <= otherRow)
                     ++sorting[j].second;
             }
-            for (int k = 0; k < newPersistentIndexes.count(); ++k) {
+            for (int k = 0; k < newPersistentIndexes.size(); ++k) {
                 QModelIndex pi = newPersistentIndexes.at(k);
                 int oldPersistentRow = pi.row();
                 int newPersistentRow = oldPersistentRow;
@@ -444,7 +444,7 @@ QMimeData *QListModel::internalMimeData()  const
 QMimeData *QListModel::mimeData(const QModelIndexList &indexes) const
 {
     QList<QListWidgetItem*> itemlist;
-    const int indexesCount = indexes.count();
+    const int indexesCount = indexes.size();
     itemlist.reserve(indexesCount);
     for (int i = 0; i < indexesCount; ++i)
         itemlist << at(indexes.at(i).row());
@@ -1760,7 +1760,7 @@ QList<QListWidgetItem*> QListWidget::selectedItems() const
     Q_D(const QListWidget);
     QModelIndexList indexes = selectionModel()->selectedIndexes();
     QList<QListWidgetItem*> items;
-    const int numIndexes = indexes.count();
+    const int numIndexes = indexes.size();
     items.reserve(numIndexes);
     for (int i = 0; i < numIndexes; ++i)
         items.append(d->listModel()->at(indexes.at(i).row()));

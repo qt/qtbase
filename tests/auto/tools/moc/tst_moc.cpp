@@ -954,12 +954,12 @@ void tst_Moc::supportConstSignals()
     QSignalSpy spy1(this, SIGNAL(constSignal1()));
     QVERIFY(spy1.isEmpty());
     emit constSignal1();
-    QCOMPARE(spy1.count(), 1);
+    QCOMPARE(spy1.size(), 1);
 
     QSignalSpy spy2(this, SIGNAL(constSignal2(int)));
     QVERIFY(spy2.isEmpty());
     emit constSignal2(42);
-    QCOMPARE(spy2.count(), 1);
+    QCOMPARE(spy2.size(), 1);
     QCOMPARE(spy2.at(0).at(0).toInt(), 42);
 }
 
@@ -2513,7 +2513,7 @@ void tst_Moc::memberProperties()
 
     if (!signal.isEmpty())
     {
-        QCOMPARE(notifySpy.count(), 1);
+        QCOMPARE(notifySpy.size(), 1);
         if (prop.notifySignal().parameterNames().size() > 0) {
             QList<QVariant> arguments = notifySpy.takeFirst();
             QCOMPARE(arguments.size(), 1);
@@ -2523,7 +2523,7 @@ void tst_Moc::memberProperties()
         notifySpy.clear();
         // a second write with the same value should not cause the signal to be emitted again
         QCOMPARE(prop.write(pObj, writeValue), expectedWriteResult);
-        QCOMPARE(notifySpy.count(), 0);
+        QCOMPARE(notifySpy.size(), 0);
     }
 }
 
@@ -4205,7 +4205,7 @@ void tst_Moc::qpropertyMembers()
 
     instance.publicProperty.setValue(100);
     QCOMPARE(prop.read(&instance).toInt(), 100);
-    QCOMPARE(publicPropertySpy.count(), 1);
+    QCOMPARE(publicPropertySpy.size(), 1);
 
     QCOMPARE(prop.metaType(), QMetaType(QMetaType::Int));
 

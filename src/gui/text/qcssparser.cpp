@@ -697,7 +697,7 @@ static ColorData parseColorValue(QCss::Value v)
         return ColorData();
 
     QStringList lst = v.variant.toStringList();
-    if (lst.count() != 2)
+    if (lst.size() != 2)
         return ColorData();
 
     const QString &identifier = lst.at(0);
@@ -794,7 +794,7 @@ static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
         return BrushData();
 
     QStringList lst = v.variant.toStringList();
-    if (lst.count() != 2)
+    if (lst.size() != 2)
         return BrushData();
 
     QStringList gradFuncs;
@@ -1617,7 +1617,7 @@ QRect Declaration::rectValue() const
     if (v.type != Value::Function)
         return QRect();
     const QStringList func = v.variant.toStringList();
-    if (func.count() != 2 || func.at(0).compare("rect"_L1) != 0)
+    if (func.size() != 2 || func.at(0).compare("rect"_L1) != 0)
         return QRect();
     const auto args = QStringView{func[1]}.split(u' ', Qt::SkipEmptyParts);
     if (args.size() != 4)
@@ -1863,7 +1863,7 @@ int Selector::specificity() const
             val += 1;
 
         val += (sel.pseudos.size() + sel.attributeSelectors.size()) * 0x10;
-        val += sel.ids.count() * 0x100;
+        val += sel.ids.size() * 0x100;
     }
     return val;
 }
@@ -2128,7 +2128,7 @@ QList<StyleRule> StyleSelector::styleRulesForNode(NodePtr node)
 
         if (!styleSheet.idIndex.isEmpty()) {
             QStringList ids = nodeIds(node);
-            for (int i = 0; i < ids.count(); i++) {
+            for (int i = 0; i < ids.size(); i++) {
                 const QString &key = ids.at(i);
                 QMultiHash<QString, StyleRule>::const_iterator it = styleSheet.idIndex.constFind(key);
                 while (it != styleSheet.idIndex.constEnd() && it.key() == key) {
@@ -2139,7 +2139,7 @@ QList<StyleRule> StyleSelector::styleRulesForNode(NodePtr node)
         }
         if (!styleSheet.nameIndex.isEmpty()) {
             QStringList names = nodeNames(node);
-            for (int i = 0; i < names.count(); i++) {
+            for (int i = 0; i < names.size(); i++) {
                 QString name = names.at(i);
                 if (nameCaseSensitivity == Qt::CaseInsensitive)
                     name = std::move(name).toLower();

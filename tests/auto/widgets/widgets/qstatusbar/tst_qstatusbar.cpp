@@ -272,18 +272,18 @@ void tst_QStatusBar::messageChangedSignal()
     testWidget->showMessage("Ready", 0);
     QCOMPARE(testWidget->currentMessage(), QString("Ready"));
     QCOMPARE(testWidget->currentMessage(), currentMessage);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.takeFirst().at(0).toString(), currentMessage);
     testWidget->clearMessage();
     QCOMPARE(testWidget->currentMessage(), QString());
     QCOMPARE(testWidget->currentMessage(), currentMessage);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.takeFirst().at(0).toString(), currentMessage);
     testWidget->showMessage("Ready", 0);
     testWidget->showMessage("Ready", 0);
     QCOMPARE(testWidget->currentMessage(), QString("Ready"));
     QCOMPARE(testWidget->currentMessage(), currentMessage);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.takeFirst().at(0).toString(), currentMessage);
 }
 

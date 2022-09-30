@@ -292,7 +292,7 @@ void tst_Http2::singleRequest()
 
 #if QT_CONFIG(ssl)
     if (connectionType == H2Type::h2Alpn || connectionType == H2Type::h2Direct)
-        QCOMPARE(encSpy.count(), 1);
+        QCOMPARE(encSpy.size(), 1);
 #endif // QT_CONFIG(ssl)
 }
 
@@ -780,7 +780,7 @@ void tst_Http2::maxFrameSize()
 
     // Normally, with a 16kb limit, our server would split such
     // a response into 3 'DATA' frames (16kb + 16kb + 0|END_STREAM).
-    QCOMPARE(frameCounter.count(), 1);
+    QCOMPARE(frameCounter.size(), 1);
 
     QVERIFY(nRequests == 0);
     QVERIFY(prefaceOK);

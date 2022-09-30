@@ -787,7 +787,7 @@ void QCoreApplicationPrivate::init()
             // have been removed. Once the original list is exhausted we know all the remaining
             // items have been added.
             QStringList newPaths(q->libraryPaths());
-            for (qsizetype i = manualPaths->length(), j = appPaths->length(); i > 0 || j > 0; qt_noop()) {
+            for (qsizetype i = manualPaths->size(), j = appPaths->size(); i > 0 || j > 0; qt_noop()) {
                 if (--j < 0) {
                     newPaths.prepend((*manualPaths)[--i]);
                 } else if (--i < 0) {
@@ -2144,12 +2144,12 @@ static void replacePercentN(QString *result, int n)
         qsizetype len = 0;
         while ((percentPos = result->indexOf(u'%', percentPos + len)) != -1) {
             len = 1;
-            if (percentPos + len == result->length())
+            if (percentPos + len == result->size())
                 break;
             QString fmt;
             if (result->at(percentPos + len) == u'L') {
                 ++len;
-                if (percentPos + len == result->length())
+                if (percentPos + len == result->size())
                     break;
                 fmt = "%L1"_L1;
             } else {

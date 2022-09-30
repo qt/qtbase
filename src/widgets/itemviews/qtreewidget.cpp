@@ -627,7 +627,7 @@ void QTreeModel::ensureSorted(int column, Qt::SortOrder order,
                 else if (oldRow > otherRow && newRow <= otherRow)
                     ++sorting[j].second;
             }
-            for (int k = 0; k < newPersistentIndexes.count(); ++k) {
+            for (int k = 0; k < newPersistentIndexes.size(); ++k) {
                 QModelIndex pi = newPersistentIndexes.at(k);
                 if (pi.parent() != parent)
                     continue;
@@ -827,7 +827,7 @@ void QTreeModel::sortItems(QList<QTreeWidgetItem*> *items, int column, Qt::SortO
         return;
 
     // store the original order of indexes
-    QList<QPair<QTreeWidgetItem *, int>> sorting(items->count());
+    QList<QPair<QTreeWidgetItem *, int>> sorting(items->size());
     for (int i = 0; i < sorting.size(); ++i) {
         sorting[i].first = items->at(i);
         sorting[i].second = i;
@@ -1396,7 +1396,7 @@ QTreeWidgetItem::QTreeWidgetItem(int type) : rtti(type), d(new QTreeWidgetItemPr
 QTreeWidgetItem::QTreeWidgetItem(const QStringList &strings, int type)
     : rtti(type), d(new QTreeWidgetItemPrivate(this))
 {
-    for (int i = 0; i < strings.count(); ++i)
+    for (int i = 0; i < strings.size(); ++i)
         setText(i, strings.at(i));
 }
 
@@ -1432,7 +1432,7 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *treeview, int type)
 QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *treeview, const QStringList &strings, int type)
     : rtti(type), d(new QTreeWidgetItemPrivate(this))
 {
-    for (int i = 0; i < strings.count(); ++i)
+    for (int i = 0; i < strings.size(); ++i)
         setText(i, strings.at(i));
     // do not set this->view here otherwise insertChild() will fail
     if (QTreeModel *model = treeModel(treeview)) {
@@ -1481,7 +1481,7 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, int type)
 QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, const QStringList &strings, int type)
     : rtti(type), d(new QTreeWidgetItemPrivate(this))
 {
-    for (int i = 0; i < strings.count(); ++i)
+    for (int i = 0; i < strings.size(); ++i)
         setText(i, strings.at(i));
     if (parent)
         parent->addChild(this);
@@ -1755,8 +1755,8 @@ void QTreeWidgetItem::setData(int column, int role, const QVariant &value)
             else
                 values.resize(column + 1);
         }
-        if (d->display.count() <= column) {
-            for (int i = d->display.count() - 1; i < column - 1; ++i)
+        if (d->display.size() <= column) {
+            for (int i = d->display.size() - 1; i < column - 1; ++i)
                 d->display.append(QVariant());
             d->display.append(value);
         } else if (d->display[column] != value) {
@@ -1823,7 +1823,7 @@ QVariant QTreeWidgetItem::data(int column, int role) const
     switch (role) {
     case Qt::EditRole:
     case Qt::DisplayRole:
-        if (column >= 0 && column < d->display.count())
+        if (column >= 0 && column < d->display.size())
             return d->display.at(column);
         break;
     case Qt::CheckStateRole:
@@ -2375,13 +2375,13 @@ void QTreeWidgetPrivate::_q_selectionChanged(const QItemSelection &selected, con
     QModelIndexList indices = selected.indexes();
     int i;
     QTreeModel *m = treeModel();
-    for (i = 0; i < indices.count(); ++i) {
+    for (i = 0; i < indices.size(); ++i) {
         QTreeWidgetItem *item = m->item(indices.at(i));
         item->d->selected = true;
     }
 
     indices = deselected.indexes();
-    for (i = 0; i < indices.count(); ++i) {
+    for (i = 0; i < indices.size(); ++i) {
         QTreeWidgetItem *item = m->item(indices.at(i));
         item->d->selected = false;
     }
@@ -2806,10 +2806,10 @@ void QTreeWidget::setHeaderItem(QTreeWidgetItem *item)
 void QTreeWidget::setHeaderLabels(const QStringList &labels)
 {
     Q_D(QTreeWidget);
-    if (columnCount() < labels.count())
-        setColumnCount(labels.count());
+    if (columnCount() < labels.size())
+        setColumnCount(labels.size());
     QTreeWidgetItem *item = d->treeModel()->headerItem;
-    for (int i = 0; i < labels.count(); ++i)
+    for (int i = 0; i < labels.size(); ++i)
         item->setText(i, labels.at(i));
 }
 
@@ -3052,8 +3052,8 @@ QList<QTreeWidgetItem*> QTreeWidget::selectedItems() const
     Q_D(const QTreeWidget);
     const QModelIndexList indexes = selectionModel()->selectedIndexes();
     QList<QTreeWidgetItem*> items;
-    items.reserve(indexes.count());
-    QDuplicateTracker<QTreeWidgetItem *> seen(indexes.count());
+    items.reserve(indexes.size());
+    QDuplicateTracker<QTreeWidgetItem *> seen(indexes.size());
     for (const auto &index : indexes) {
         QTreeWidgetItem *item = d->item(index);
         if (item->isHidden() || seen.hasSeen(item))

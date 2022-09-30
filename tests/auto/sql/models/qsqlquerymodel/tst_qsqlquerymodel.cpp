@@ -202,7 +202,7 @@ void tst_QSqlQueryModel::removeColumn()
 
     QCOMPARE(model.columnCount(), 3);
     QVERIFY(model.removeColumn(0));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QVERIFY(*(QModelIndex *)spy.at(0).at(0).constData() == QModelIndex());
     QCOMPARE(spy.at(0).at(1).toInt(), 0);
     QCOMPARE(spy.at(0).at(2).toInt(), 0);
@@ -232,7 +232,7 @@ void tst_QSqlQueryModel::removeColumn()
 
     QVERIFY(model.removeColumn(2));
 
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
     QVERIFY(*(QModelIndex *)spy.at(1).at(0).constData() == QModelIndex());
     QCOMPARE(spy.at(1).at(1).toInt(), 2);
     QCOMPARE(spy.at(1).at(2).toInt(), 2);
@@ -245,7 +245,7 @@ void tst_QSqlQueryModel::removeColumn()
 
     QVERIFY(model.removeColumn(1));
 
-    QCOMPARE(spy.count(), 3);
+    QCOMPARE(spy.size(), 3);
     QVERIFY(*(QModelIndex *)spy.at(2).at(0).constData() == QModelIndex());
     QCOMPARE(spy.at(2).at(1).toInt(), 1);
     QCOMPARE(spy.at(2).at(2).toInt(), 1);
@@ -259,7 +259,7 @@ void tst_QSqlQueryModel::removeColumn()
 
     QVERIFY(model.removeColumn(0));
 
-    QCOMPARE(spy.count(), 4);
+    QCOMPARE(spy.size(), 4);
     QVERIFY(*(QModelIndex *)spy.at(3).at(0).constData() == QModelIndex());
     QCOMPARE(spy.at(3).at(1).toInt(), 0);
     QCOMPARE(spy.at(3).at(2).toInt(), 0);
@@ -301,7 +301,7 @@ void tst_QSqlQueryModel::insertColumn()
 
     QVERIFY(model.insertColumn(1));
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QVERIFY(*(QModelIndex *)spy.at(0).at(0).constData() == QModelIndex());
     QCOMPARE(spy.at(0).at(1).toInt(), 1);
     QCOMPARE(spy.at(0).at(2).toInt(), 1);
@@ -330,7 +330,7 @@ void tst_QSqlQueryModel::insertColumn()
 
     QVERIFY(model.insertColumn(0));
 
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
     QVERIFY(*(QModelIndex *)spy.at(1).at(0).constData() == QModelIndex());
     QCOMPARE(spy.at(1).at(1).toInt(), 0);
     QCOMPARE(spy.at(1).at(2).toInt(), 0);
@@ -345,7 +345,7 @@ void tst_QSqlQueryModel::insertColumn()
     QVERIFY(!model.insertColumn(6));
     QVERIFY(model.insertColumn(5));
 
-    QCOMPARE(spy.count(), 3);
+    QCOMPARE(spy.size(), 3);
     QVERIFY(*(QModelIndex *)spy.at(2).at(0).constData() == QModelIndex());
     QCOMPARE(spy.at(2).at(1).toInt(), 5);
     QCOMPARE(spy.at(2).at(2).toInt(), 5);
@@ -424,7 +424,7 @@ void tst_QSqlQueryModel::setHeaderData()
     QSignalSpy spy(&model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)));
     QVERIFY(model.setHeaderData(2, Qt::Horizontal, "bar"));
     QCOMPARE(model.headerData(2, Qt::Horizontal).toString(), QString("bar"));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(qvariant_cast<Qt::Orientation>(spy.value(0).value(0)), Qt::Horizontal);
     QCOMPARE(spy.value(0).value(1).toInt(), 2);
     QCOMPARE(spy.value(0).value(2).toInt(), 2);
@@ -452,8 +452,8 @@ void tst_QSqlQueryModel::fetchMore()
     model.setQuery(QSqlQuery("select * from " + qTableName("many", __FILE__, db), db));
     int rowCount = model.rowCount();
 
-    QCOMPARE(modelAboutToBeResetSpy.count(), 1);
-    QCOMPARE(modelResetSpy.count(), 1);
+    QCOMPARE(modelAboutToBeResetSpy.size(), 1);
+    QCOMPARE(modelResetSpy.size(), 1);
 
     // If the driver doesn't return the query size fetchMore() causes the
     // model to grow and new signals are emitted
@@ -499,11 +499,11 @@ void tst_QSqlQueryModel::withSortFilterProxyModel()
     QCOMPARE(proxy.rowCount(), 511);
 
     // setQuery() resets the model accompanied by begin and end signals
-    QCOMPARE(modelAboutToBeResetSpy.count(), 1);
-    QCOMPARE(modelResetSpy.count(), 1);
+    QCOMPARE(modelAboutToBeResetSpy.size(), 1);
+    QCOMPARE(modelResetSpy.size(), 1);
 
     // The call to scrollToBottom() forces the model to fetch additional rows.
-    QCOMPARE(modelRowsInsertedSpy.count(), 1);
+    QCOMPARE(modelRowsInsertedSpy.size(), 1);
     QCOMPARE(modelRowsInsertedSpy.value(0).value(1).toInt(), 256);
     QCOMPARE(modelRowsInsertedSpy.value(0).value(2).toInt(), 510);
 }
@@ -523,14 +523,14 @@ void tst_QSqlQueryModel::setQuerySignalEmission()
 
     // First select, the model was empty and no rows had to be removed, but model resets anyway.
     model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test", __FILE__, db), db));
-    QCOMPARE(modelAboutToBeResetSpy.count(), 1);
-    QCOMPARE(modelResetSpy.count(), 1);
+    QCOMPARE(modelAboutToBeResetSpy.size(), 1);
+    QCOMPARE(modelResetSpy.size(), 1);
 
     // Second select, the model wasn't empty and two rows had to be removed!
     // setQuery() resets the model accompanied by begin and end signals
     model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test", __FILE__, db), db));
-    QCOMPARE(modelAboutToBeResetSpy.count(), 2);
-    QCOMPARE(modelResetSpy.count(), 2);
+    QCOMPARE(modelAboutToBeResetSpy.size(), 2);
+    QCOMPARE(modelResetSpy.size(), 2);
 }
 
 // For task 170783: When the query's result set is empty no rows should be inserted,
@@ -549,8 +549,8 @@ void tst_QSqlQueryModel::setQueryWithNoRowsInResultSet()
     QSqlQuery query(db);
     QVERIFY_SQL(query, exec("SELECT * FROM " + qTableName("test", __FILE__, db) + " where 0 = 1"));
     model.setQuery(std::move(query));
-    QCOMPARE(modelRowsAboutToBeInsertedSpy.count(), 0);
-    QCOMPARE(modelRowsInsertedSpy.count(), 0);
+    QCOMPARE(modelRowsAboutToBeInsertedSpy.size(), 0);
+    QCOMPARE(modelRowsInsertedSpy.size(), 0);
 }
 
 class NestedResetsTest: public QSqlQueryModel

@@ -719,7 +719,7 @@ void tst_QListView::clicked()
             continue;
         QSignalSpy spy(&view, &QListView::clicked);
         QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, p);
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
     }
 }
 
@@ -1148,7 +1148,7 @@ void tst_QListView::selection()
     v.setSelection(selectionRect, QItemSelectionModel::ClearAndSelect);
 
     const QModelIndexList selected = v.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), expectedItems.count());
+    QCOMPARE(selected.size(), expectedItems.size());
     for (const auto &idx : selected)
         QVERIFY(expectedItems.contains(idx.row()));
 }
@@ -1558,7 +1558,7 @@ void tst_QListView::task203585_selectAll()
     QVERIFY(view.selectionModel()->selectedIndexes().isEmpty());
     view.setRowHidden(0, false);
     view.selectAll();
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), 1);
 }
 
 void tst_QListView::task228566_infiniteRelayout()
@@ -1643,7 +1643,7 @@ void tst_QListView::task196118_visualRegionForSelection()
 
     view.selectionModel()->select(top1.index(), QItemSelectionModel::Select);
 
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), 1);
     QVERIFY(view.getVisualRegionForSelection().isEmpty());
 }
 
@@ -1741,7 +1741,7 @@ void tst_QListView::shiftSelectionWithNonUniformItemSizes()
         QTRY_COMPARE(view.currentIndex(), model.index(1, 0));
 
         QModelIndexList selected = view.selectionModel()->selectedIndexes();
-        QCOMPARE(selected.count(), 3);
+        QCOMPARE(selected.size(), 3);
         QVERIFY(!selected.contains(model.index(0, 0)));
     }
     {   // Second test: QListView::TopToBottom flow
@@ -1768,7 +1768,7 @@ void tst_QListView::shiftSelectionWithNonUniformItemSizes()
         QTRY_COMPARE(view.currentIndex(), model.index(1, 0));
 
         QModelIndexList selected = view.selectionModel()->selectedIndexes();
-        QCOMPARE(selected.count(), 3);
+        QCOMPARE(selected.size(), 3);
         QVERIFY(!selected.contains(model.index(0, 0)));
     }
 }
@@ -1830,7 +1830,7 @@ void tst_QListView::clickOnViewportClearsSelection()
 
     view.selectAll();
     QModelIndex index = model.index(0);
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), 1);
     QVERIFY(view.selectionModel()->isSelected(index));
 
     //we try to click outside of the index
@@ -1838,7 +1838,7 @@ void tst_QListView::clickOnViewportClearsSelection()
 
     QTest::mousePress(view.viewport(), Qt::LeftButton, {}, point);
     //at this point, the selection shouldn't have changed
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), 1);
     QVERIFY(view.selectionModel()->isSelected(index));
 
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, {}, point);
@@ -1947,7 +1947,7 @@ void tst_QListView::taskQTBUG_435_deselectOnViewportClick()
     view.setModel(&model);
     view.setSelectionMode(QAbstractItemView::ExtendedSelection);
     view.selectAll();
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), model.rowCount());
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), model.rowCount());
 
 
     const QRect itemRect = view.visualRect(model.index(model.rowCount() - 1));
@@ -1957,7 +1957,7 @@ void tst_QListView::taskQTBUG_435_deselectOnViewportClick()
     QVERIFY(!view.selectionModel()->hasSelection());
 
     view.selectAll();
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), model.rowCount());
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), model.rowCount());
 
     //and now the right button
     QTest::mouseClick(view.viewport(), Qt::RightButton, {}, p);
@@ -3170,7 +3170,7 @@ void tst_QListView::scrollOnRemove()
     model.removeRow(25);
 
     // if nothing is selected now, then the view should not have scrolled
-    if (!view.selectionModel()->selectedIndexes().count())
+    if (!view.selectionModel()->selectedIndexes().size())
         QTRY_COMPARE(view.verticalScrollBar()->value(), item25Position);
 }
 

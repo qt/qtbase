@@ -1264,7 +1264,7 @@ void tst_QMenu::click_while_dismissing_submenu()
     //the submenu must have been hidden for the bug to be triggered
     QVERIFY(!sub.isVisible());
     QTest::mouseRelease(menuWindow, Qt::LeftButton, {}, menu.rect().center() - QPoint(0, 2), 300);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 #endif
 
@@ -1991,11 +1991,11 @@ void tst_QMenu::QTBUG_61039_menu_shortcuts()
 
     QSignalSpy actionKamenSpy(actionKamen, &QAction::triggered);
     QTest::keyClick(&widget, Qt::Key_K);
-    QTRY_COMPARE(actionKamenSpy.count(), 1);
+    QTRY_COMPARE(actionKamenSpy.size(), 1);
 
     QSignalSpy actionJoeSpy(actionJoe, &QAction::triggered);
     QTest::keyClick(&widget, Qt::Key_J, Qt::ControlModifier);
-    QTRY_COMPARE(actionJoeSpy.count(), 1);
+    QTRY_COMPARE(actionJoeSpy.size(), 1);
 }
 
 void tst_QMenu::screenOrientationChangedCloseMenu()

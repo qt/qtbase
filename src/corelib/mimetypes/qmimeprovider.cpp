@@ -700,7 +700,7 @@ void QMimeXMLProvider::ensureLoaded()
     const QString packageDir = m_directory + QStringLiteral("/packages");
     QDir dir(packageDir);
     const QStringList files = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
-    allFiles.reserve(files.count());
+    allFiles.reserve(files.size());
     for (const QString &xmlFile : files)
         allFiles.append(packageDir + u'/' + xmlFile);
 

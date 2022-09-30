@@ -388,7 +388,7 @@ QByteArray QShader::serialized() const
         const QShaderKey &k(it.key());
         writeShaderKey(&ds, k);
         const NativeResourceBindingMap &map(it.value());
-        ds << int(map.count());
+        ds << int(map.size());
         for (auto mapIt = map.cbegin(), mapItEnd = map.cend(); mapIt != mapItEnd; ++mapIt) {
             ds << mapIt.key();
             ds << mapIt.value().first;
@@ -400,7 +400,7 @@ QByteArray QShader::serialized() const
         const QShaderKey &k(it.key());
         writeShaderKey(&ds, k);
         const SeparateToCombinedImageSamplerMappingList &list(it.value());
-        ds << int(list.count());
+        ds << int(list.size());
         for (auto listIt = list.cbegin(), listItEnd = list.cend(); listIt != listItEnd; ++listIt) {
             ds << listIt->combinedSamplerName;
             ds << listIt->textureBinding;

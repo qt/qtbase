@@ -334,7 +334,7 @@ void tst_QUdpSocket::unconnectedServerAndClientTest()
 
     QSignalSpy stateChangedSpy(&serverSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)));
     QVERIFY2(serverSocket.bind(), serverSocket.errorString().toLatin1().constData());
-    QCOMPARE(stateChangedSpy.count(), 1);
+    QCOMPARE(stateChangedSpy.size(), 1);
 
     const char *message[] = {"Yo mista", "Yo", "Wassap"};
 
@@ -875,17 +875,17 @@ void tst_QUdpSocket::writeDatagram()
 #if defined (Q_OS_HPUX)
             QSKIP("HP-UX 11.11 on hai (PA-RISC 64) truncates too long datagrams.");
 #endif
-            QCOMPARE(bytesspy.count(), 0);
-            QCOMPARE(errorspy.count(), 1);
+            QCOMPARE(bytesspy.size(), 0);
+            QCOMPARE(errorspy.size(), 1);
             QCOMPARE(*static_cast<const int *>(errorspy.at(0).at(0).constData()),
                     int(QUdpSocket::DatagramTooLargeError));
             QCOMPARE(client.error(), QUdpSocket::DatagramTooLargeError);
             break;
         }
-        QCOMPARE(bytesspy.count(), 1);
+        QCOMPARE(bytesspy.size(), 1);
         QCOMPARE(*static_cast<const qint64 *>(bytesspy.at(0).at(0).constData()),
                 qint64(i * 1024));
-        QCOMPARE(errorspy.count(), 0);
+        QCOMPARE(errorspy.size(), 0);
         if (!server.waitForReadyRead(5000))
             QSKIP(QString("UDP packet lost at size %1, unable to complete the test.").arg(i * 1024).toLatin1().data());
         QCOMPARE(server.pendingDatagramSize(), qint64(i * 1024));
@@ -998,7 +998,7 @@ void tst_QUdpSocket::writeDatagramToNonExistingPeer()
         QVERIFY(sUdp.bind());
     QCOMPARE(sUdp.writeDatagram("", 1, peerAddress, peerPort), qint64(1));
     QTestEventLoop::instance().enterLoop(1);
-    QCOMPARE(sReadyReadSpy.count(), 0);
+    QCOMPARE(sReadyReadSpy.size(), 0);
 }
 
 void tst_QUdpSocket::writeToNonExistingPeer_data()
@@ -1041,8 +1041,8 @@ void tst_QUdpSocket::writeToNonExistingPeer()
     // the third one will succeed...
     QCOMPARE(sConnected.write("", 1), qint64(1));
     QTestEventLoop::instance().enterLoop(1);
-    QCOMPARE(sConnectedReadyReadSpy.count(), 0);
-    QCOMPARE(sConnectedErrorSpy.count(), 1);
+    QCOMPARE(sConnectedReadyReadSpy.size(), 0);
+    QCOMPARE(sConnectedErrorSpy.size(), 1);
     QCOMPARE(int(sConnected.error()), int(QUdpSocket::ConnectionRefusedError));
 
     // we should now get a read error
@@ -1647,7 +1647,7 @@ void tst_QUdpSocket::linkLocalIPv6()
         QSignalSpy spy(s, SIGNAL(readyRead()));
 
         QVERIFY(s->writeDatagram(testData, s->localAddress(), neutral.localPort()));
-        QTRY_VERIFY(neutralReadSpy.count() > 0); //note may need to accept a firewall prompt
+        QTRY_VERIFY(neutralReadSpy.size() > 0); //note may need to accept a firewall prompt
 
         QNetworkDatagram dgram = neutral.receiveDatagram(testData.size() * 2);
         QVERIFY(dgram.isValid());
@@ -1659,7 +1659,7 @@ void tst_QUdpSocket::linkLocalIPv6()
         QCOMPARE(dgram.data(), testData);
 
         QVERIFY(neutral.writeDatagram(dgram.makeReply(testData)));
-        QTRY_VERIFY(spy.count() > 0); //note may need to accept a firewall prompt
+        QTRY_VERIFY(spy.size() > 0); //note may need to accept a firewall prompt
 
         dgram = s->receiveDatagram(testData.size() * 2);
         QCOMPARE(dgram.data(), testData);
@@ -1786,7 +1786,7 @@ void tst_QUdpSocket::readyRead()
     QTest::qWait(100);
 
     // make sure only one signal was emitted
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QVERIFY(receiver.hasPendingDatagrams());
 #ifdef RELIABLE_BYTES_AVAILABLE
     QCOMPARE(receiver.bytesAvailable(), qint64(2));
@@ -1798,7 +1798,7 @@ void tst_QUdpSocket::readyRead()
 
     // no new signal should be emitted because we haven't read the first datagram yet
     QTest::qWait(100);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QVERIFY(receiver.hasPendingDatagrams());
     QVERIFY(receiver.bytesAvailable() >= 1);    // most likely is 1, but it could be 1 + 2 in the future
     QCOMPARE(receiver.pendingDatagramSize(), qint64(2));
@@ -1810,7 +1810,7 @@ void tst_QUdpSocket::readyRead()
     // write a new datagram and ensure the signal is emitted now
     sender.writeDatagram("abc", makeNonAny(receiver.localAddress()), port);
     QTest::qWait(100);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
     QVERIFY(receiver.hasPendingDatagrams());
 #ifdef RELIABLE_BYTES_AVAILABLE
     QCOMPARE(receiver.bytesAvailable(), qint64(3));
@@ -1890,7 +1890,7 @@ void tst_QUdpSocket::asyncReadDatagram()
     QTestEventLoop::instance().enterLoop(1);
 
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 
     delete m_asyncSender;
     delete m_asyncReceiver;

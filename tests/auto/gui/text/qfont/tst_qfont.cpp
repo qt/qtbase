@@ -357,15 +357,15 @@ void tst_QFont::insertAndRemoveSubstitutions()
 
     // inserting Foo
     QFont::insertSubstitution("BogusFontFamily", "Foo");
-    QCOMPARE(QFont::substitutes("BogusFontFamily").count(), 1);
-    QCOMPARE(QFont::substitutes("bogusfontfamily").count(), 1);
+    QCOMPARE(QFont::substitutes("BogusFontFamily").size(), 1);
+    QCOMPARE(QFont::substitutes("bogusfontfamily").size(), 1);
 
     // inserting Bar and Baz
     QStringList moreFonts;
     moreFonts << "Bar" << "Baz";
     QFont::insertSubstitutions("BogusFontFamily", moreFonts);
-    QCOMPARE(QFont::substitutes("BogusFontFamily").count(), 3);
-    QCOMPARE(QFont::substitutes("bogusfontfamily").count(), 3);
+    QCOMPARE(QFont::substitutes("BogusFontFamily").size(), 3);
+    QCOMPARE(QFont::substitutes("bogusfontfamily").size(), 3);
 
     QFont::removeSubstitutions("BogusFontFamily");
     // make sure it is empty again

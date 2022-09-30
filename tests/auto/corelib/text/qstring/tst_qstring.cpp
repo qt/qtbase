@@ -5003,7 +5003,7 @@ void tst_QString::fromLatin1Roundtrip()
         }
 
     // fromLatin1
-    QCOMPARE(QString::fromLatin1(latin1, latin1.length()).size(), unicode.size());
+    QCOMPARE(QString::fromLatin1(latin1, latin1.size()).size(), unicode.size());
     QCOMPARE(QString::fromLatin1(latin1, latin1.size()), unicode);
 
     // and back:
@@ -5066,7 +5066,7 @@ void tst_QString::toLatin1Roundtrip()
     QCOMPARE(unicodesrc.toLatin1(), latin1);
 
     // and back:
-    QCOMPARE(QString::fromLatin1(latin1, latin1.length()).size(), unicodedst.size());
+    QCOMPARE(QString::fromLatin1(latin1, latin1.size()).size(), unicodedst.size());
     QCOMPARE(QString::fromLatin1(latin1, latin1.size()), unicodedst);
 
     // try the rvalue version of toLatin1()
@@ -6617,7 +6617,7 @@ void tst_QString::arg_fillChar()
     QFETCH(QString, fillChars);
     QFETCH(QString, expected);
     QCOMPARE(replaceValues.size(), fillChars.size());
-    QCOMPARE(replaceValues.size(), widths.count());
+    QCOMPARE(replaceValues.size(), widths.size());
 
     QString actual = pattern;
     for (int i=0; i<replaceValues.size(); ++i) {

@@ -478,7 +478,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
             for (const VkExtensionProperties &p : std::as_const(extProps))
                 devExts.append({ p.extensionName, p.specVersion });
         }
-        qCDebug(QRHI_LOG_INFO, "%d device extensions available", int(devExts.count()));
+        qCDebug(QRHI_LOG_INFO, "%d device extensions available", int(devExts.size()));
 
         QList<const char *> requestedDevExts;
         requestedDevExts.append("VK_KHR_swapchain");
@@ -1759,7 +1759,7 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
     // when profiling is enabled, pick a free query (pair) from the pool
     int timestampQueryIdx = -1;
     if (hasGpuFrameTimeCallback() && swapChainD->bufferCount > 1) { // no timestamps if not having at least 2 frames in flight
-        for (int i = 0; i < timestampQueryPoolMap.count(); ++i) {
+        for (int i = 0; i < timestampQueryPoolMap.size(); ++i) {
             if (!timestampQueryPoolMap.testBit(i)) {
                 timestampQueryPoolMap.setBit(i);
                 timestampQueryIdx = i * 2;
@@ -3245,9 +3245,9 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             cmd.args.copyBufferToImage.src = utexD->stagingBuffers[currentFrameSlot];
             cmd.args.copyBufferToImage.dst = utexD->image;
             cmd.args.copyBufferToImage.dstLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-            cmd.args.copyBufferToImage.count = copyInfos.count();
+            cmd.args.copyBufferToImage.count = copyInfos.size();
             cmd.args.copyBufferToImage.bufferImageCopyIndex = cbD->pools.bufferImageCopy.size();
-            cbD->pools.bufferImageCopy.append(copyInfos.constData(), copyInfos.count());
+            cbD->pools.bufferImageCopy.append(copyInfos.constData(), copyInfos.size());
 
             // no reuse of staging, this is intentional
             QRhiVulkan::DeferredReleaseEntry e;

@@ -4278,7 +4278,7 @@ protected:
 void QGradientCache::generateGradientColorTable(const QGradient& gradient, QRgba64 *colorTable, int size, int opacity) const
 {
     const QGradientStops stops = gradient.stops();
-    int stopCount = stops.count();
+    int stopCount = stops.size();
     Q_ASSERT(stopCount > 0);
 
     bool colorInterpolation = (gradient.interpolationMode() == QGradient::ColorInterpolation);

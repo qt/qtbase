@@ -1129,7 +1129,7 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
         // except for a single '+' at the end of the string.
 
         // Only '+' can have length 1.
-        if (sub.length() == 1) {
+        if (sub.size() == 1) {
             // Make sure we only encounter a single '+' at the end of the accel
             if (accel.lastIndexOf(u'+') != accel.size()-1)
                 return Qt::Key_unknown;
@@ -1157,7 +1157,7 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
         accelRef = accelRef.mid(p + 1);
 
     int fnum = 0;
-    if (accelRef.length() == 1) {
+    if (accelRef.size() == 1) {
 #if defined(Q_OS_MACOS)
         int qtKey = qtkeyForMacSymbol(accelRef.at(0));
         if (qtKey != -1) {
@@ -1554,7 +1554,7 @@ QList<QKeySequence> QKeySequence::listFromString(const QString &str, SequenceFor
     QList<QKeySequence> result;
 
     const QStringList strings = str.split("; "_L1);
-    result.reserve(strings.count());
+    result.reserve(strings.size());
     for (const QString &string : strings) {
         result << fromString(string, format);
     }

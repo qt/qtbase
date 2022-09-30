@@ -276,7 +276,7 @@ void tst_QShader::mslResourceMapping()
     resMap = s.nativeResourceBindingMap(QShaderKey(QShader::MslShader, QShaderVersion(12)));
     QVERIFY(!resMap.isEmpty());
 
-    QCOMPARE(resMap.count(), 2);
+    QCOMPARE(resMap.size(), 2);
     QCOMPARE(resMap.value(0).first, 0); // mapped to native buffer index 0
     QCOMPARE(resMap.value(1), qMakePair(0, 0)); // mapped to native texture index 0 and sampler index 0
 }
@@ -575,10 +575,10 @@ void tst_QShader::loadV6WithSeparateImagesAndSamplers()
 
     QShader::NativeResourceBindingMap resMap =
             s.nativeResourceBindingMap(QShaderKey(QShader::HlslShader, QShaderVersion(50)));
-    QVERIFY(resMap.count() == 4);
+    QVERIFY(resMap.size() == 4);
     QVERIFY(s.separateToCombinedImageSamplerMappingList(QShaderKey(QShader::HlslShader, QShaderVersion(50))).isEmpty());
     resMap = s.nativeResourceBindingMap(QShaderKey(QShader::MslShader, QShaderVersion(12)));
-    QVERIFY(resMap.count() == 4);
+    QVERIFY(resMap.size() == 4);
     QVERIFY(s.separateToCombinedImageSamplerMappingList(QShaderKey(QShader::MslShader, QShaderVersion(12))).isEmpty());
 
     for (auto key : {
@@ -587,7 +587,7 @@ void tst_QShader::loadV6WithSeparateImagesAndSamplers()
          QShaderKey(QShader::GlslShader, QShaderVersion(150)) })
     {
          auto list = s.separateToCombinedImageSamplerMappingList(key);
-         QCOMPARE(list.count(), 2);
+         QCOMPARE(list.size(), 2);
     }
 }
 
@@ -665,7 +665,7 @@ void tst_QShader::loadV7()
     QCOMPARE(tese.description().inputBuiltinVariables()[2].type, QShaderDescription::TessLevelInnerBuiltin);
     QCOMPARE(tese.description().inputBuiltinVariables()[3].type, QShaderDescription::TessCoordBuiltin);
 
-    QCOMPARE(tese.nativeResourceBindingMap(QShaderKey(QShader::MslShader, QShaderVersion(12))).count(), 1);
+    QCOMPARE(tese.nativeResourceBindingMap(QShaderKey(QShader::MslShader, QShaderVersion(12))).size(), 1);
     QCOMPARE(tese.nativeResourceBindingMap(QShaderKey(QShader::MslShader, QShaderVersion(12))).value(0), qMakePair(0, -1));
 
     QShader frag = getShader(QLatin1String(":/data/metal_enabled_tessellation_v7.frag.qsb"));

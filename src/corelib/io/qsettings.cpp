@@ -343,7 +343,7 @@ void QSettingsPrivate::requestUpdate()
 QStringList QSettingsPrivate::variantListToStringList(const QVariantList &l)
 {
     QStringList result;
-    result.reserve(l.count());
+    result.reserve(l.size());
     for (auto v : l)
         result.append(variantToString(v));
     return result;
@@ -358,7 +358,7 @@ QVariant QSettingsPrivate::stringListToVariantList(const QStringList &l)
         if (str.startsWith(u'@')) {
             if (str.size() < 2 || str.at(1) != u'@') {
                 QVariantList variantList;
-                variantList.reserve(l.count());
+                variantList.reserve(l.size());
                 for (const auto &s : l)
                     variantList.append(stringToVariant(s));
                 return variantList;
@@ -1511,7 +1511,7 @@ bool QConfFileSettingsPrivate::readIniLine(QByteArrayView data, qsizetype &dataP
                                            qsizetype &lineStart, qsizetype &lineLen,
                                            qsizetype &equalsPos)
 {
-    qsizetype dataLen = data.length();
+    qsizetype dataLen = data.size();
     bool inQuotes = false;
 
     equalsPos = -1;
@@ -1638,7 +1638,7 @@ bool QConfFileSettingsPrivate::readIniFile(QByteArrayView data,
         ++position;
     }
 
-    Q_ASSERT(lineStart == data.length());
+    Q_ASSERT(lineStart == data.size());
     FLUSH_CURRENT_SECTION();
 
     return ok;

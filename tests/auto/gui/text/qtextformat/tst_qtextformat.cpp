@@ -648,15 +648,15 @@ void tst_QTextFormat::clearCollection()
     charFormat2.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     int formatIndex2 = collection.indexForFormat(charFormat2);
     QCOMPARE(formatIndex2, 1);
-    QCOMPARE(collection.formats.count(), 2);
+    QCOMPARE(collection.formats.size(), 2);
     QCOMPARE(collection.hashes.size(), 2);
     QCOMPARE(collection.defaultFont(), f);
 
     collection.clear();
-    QCOMPARE(collection.formats.count(), 0);
+    QCOMPARE(collection.formats.size(), 0);
     QCOMPARE(collection.hashes.size(), 0);
     QCOMPARE(collection.indexForFormat(charFormat2), 0);
-    QCOMPARE(collection.formats.count(), 1);
+    QCOMPARE(collection.formats.size(), 1);
     QCOMPARE(collection.hashes.size(), 1);
     QCOMPARE(collection.defaultFont(), f); // kept, QTextDocument::clear or setPlainText should not reset the font set by setDefaultFont
 }

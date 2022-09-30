@@ -97,11 +97,11 @@ public:
     bool wait(int timeout = 5000)
     {
         Q_ASSERT(!m_waiting);
-        const qsizetype origCount = count();
+        const qsizetype origCount = size();
         m_waiting = true;
         m_loop.enterLoopMSecs(timeout);
         m_waiting = false;
-        return count() > origCount;
+        return size() > origCount;
     }
 
     int qt_metacall(QMetaObject::Call call, int methodId, void **a) override

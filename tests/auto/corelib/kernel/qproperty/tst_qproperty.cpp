@@ -1155,12 +1155,12 @@ void tst_QProperty::qobjectBindableManualNotify()
     object.fooData.setValueBypassingBindings(42);
     // there is no change.
     QCOMPARE(fooChangeCount, 0);
-    QCOMPARE(fooChangedSpy.count(), 0);
+    QCOMPARE(fooChangedSpy.size(), 0);
     // Once we notify manually
     object.fooData.notify();
     // observers are notified and the signal arrives.
     QCOMPARE(fooChangeCount, 1);
-    QCOMPARE(fooChangedSpy.count(), 1);
+    QCOMPARE(fooChangedSpy.size(), 1);
 
     // If we set a binding
     int i = 1;
@@ -1169,16 +1169,16 @@ void tst_QProperty::qobjectBindableManualNotify()
     QCOMPARE(object.foo(), 1);
     // and the change and signal count are incremented.
     QCOMPARE(fooChangeCount, 2);
-    QCOMPARE(fooChangedSpy.count(), 2);
+    QCOMPARE(fooChangedSpy.size(), 2);
     // Changing a non-property won't trigger any notification.
     i = 2;
     QCOMPARE(fooChangeCount, 2);
-    QCOMPARE(fooChangedSpy.count(), 2);
+    QCOMPARE(fooChangedSpy.size(), 2);
     // Manually triggering the notification
     object.fooData.notify();
     // increments the change count
     QCOMPARE(fooChangeCount, 3);
-    QCOMPARE(fooChangedSpy.count(), 3);
+    QCOMPARE(fooChangedSpy.size(), 3);
     // but doesn't actually cause a binding reevaluation.
     QCOMPARE(object.foo(), 1);
 }
@@ -1561,7 +1561,7 @@ void tst_QProperty::compatPropertySignals()
     tester.setProp2(10);
 
     QCOMPARE(prop2Observer.value(), 10);
-    QCOMPARE(prop2Spy.count(), 1);
+    QCOMPARE(prop2Spy.size(), 1);
     QList<QVariant> arguments = prop2Spy.takeFirst();
     QCOMPARE(arguments.size(), 1);
     QCOMPARE(arguments.at(0).metaType().id(), QMetaType::Int);
@@ -1577,7 +1577,7 @@ void tst_QProperty::compatPropertySignals()
     tester.setProp3(5);
 
     QCOMPARE(prop3Observer.value(), 5);
-    QCOMPARE(prop3Spy.count(), 1);
+    QCOMPARE(prop3Spy.size(), 1);
 
     // Compat property with signal, default value, and custom setter. Signal has parameter.
     QProperty<int> prop4Observer;
@@ -1589,7 +1589,7 @@ void tst_QProperty::compatPropertySignals()
     tester.setProp4(10);
 
     QCOMPARE(prop4Observer.value(), 10);
-    QCOMPARE(prop4Spy.count(), 1);
+    QCOMPARE(prop4Spy.size(), 1);
     arguments = prop4Spy.takeFirst();
     QCOMPARE(arguments.size(), 1);
     QCOMPARE(arguments.at(0).metaType().id(), QMetaType::Int);
@@ -1598,7 +1598,7 @@ void tst_QProperty::compatPropertySignals()
     tester.setProp4(42);
 
     QCOMPARE(prop4Observer.value(), 42);
-    QCOMPARE(prop4Spy.count(), 1);
+    QCOMPARE(prop4Spy.size(), 1);
     arguments = prop4Spy.takeFirst();
     QCOMPARE(arguments.size(), 1);
     QCOMPARE(arguments.at(0).metaType().id(), QMetaType::Int);
@@ -1607,7 +1607,7 @@ void tst_QProperty::compatPropertySignals()
     tester.setProp4(0);
 
     QCOMPARE(prop4Observer.value(), 42);
-    QCOMPARE(prop4Spy.count(), 1);
+    QCOMPARE(prop4Spy.size(), 1);
     arguments = prop4Spy.takeFirst();
     QCOMPARE(arguments.size(), 1);
     QCOMPARE(arguments.at(0).metaType().id(), QMetaType::Int);

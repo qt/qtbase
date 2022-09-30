@@ -2208,7 +2208,7 @@ void tst_QGraphicsItem::setTransform()
     scene.update(scene.sceneRect());
     QCoreApplication::processEvents();
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     item.setTransform(QTransform().rotate(qreal(12.34)));
     QRectF rotatedRect = scene.sceneRect();
@@ -2216,14 +2216,14 @@ void tst_QGraphicsItem::setTransform()
     scene.update(scene.sceneRect());
     QCoreApplication::processEvents();
 
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 
     item.setTransform(QTransform());
 
     scene.update(scene.sceneRect());
     QCoreApplication::processEvents();
 
-    QCOMPARE(spy.count(), 3);
+    QCOMPARE(spy.size(), 3);
     QList<QRectF> rlist = qvariant_cast<QList<QRectF> >(spy.last().at(0));
 
     QCOMPARE(rlist.size(), 2);
@@ -8228,7 +8228,7 @@ void tst_QGraphicsItem::sorting()
         QVERIFY(QTest::qWaitForWindowActive(&view));
     }
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QTRY_VERIFY(_paintedItems.count() > 0);
+    QTRY_VERIFY(_paintedItems.size() > 0);
 
     _paintedItems.clear();
 
@@ -11704,7 +11704,7 @@ public:
         QLatin1String wiseWords("AZ BUKI VEDI");
         QString sentence(wiseWords);
         QStringList words = sentence.split(QLatin1Char(' '), Qt::SkipEmptyParts);
-        for (int i = 0; i < words.count(); ++i) {
+        for (int i = 0; i < words.size(); ++i) {
             QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(this);
             QLabel *label = new QLabel(words.at(i));
             proxy->setWidget(label);

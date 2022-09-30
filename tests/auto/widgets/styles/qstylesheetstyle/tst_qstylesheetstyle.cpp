@@ -1709,7 +1709,7 @@ void tst_QStyleSheetStyle::toolTip()
                                  normalToolTip };
 
     QWidgetList topLevels;
-    for (int i = 0; i < widgets.count() ; ++i) {
+    for (int i = 0; i < widgets.size() ; ++i) {
         QWidget *wid = widgets.at(i);
         QColor col = colors.at(i);
 

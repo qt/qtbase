@@ -87,7 +87,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
     for(int pb_subdir = 0; pb_subdir < pb_subdirs.size(); ++pb_subdir) {
         ProjectBuilderSubDirs *pb = pb_subdirs[pb_subdir];
         const ProStringList &subdirs = pb->project->values("SUBDIRS");
-        for(int subdir = 0; subdir < subdirs.count(); subdir++) {
+        for(int subdir = 0; subdir < subdirs.size(); subdir++) {
             ProString tmpk = subdirs[subdir];
             const ProKey fkey(tmpk + ".file");
             if (!pb->project->isEmpty(fkey)) {
@@ -329,7 +329,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
     t << "\t\t\tprojectReferences = (\n";
     {
         const ProStringList &qmake_subdirs = project->values("QMAKE_PBX_SUBDIRS");
-        for(int i = 0; i < qmake_subdirs.count(); i++) {
+        for(int i = 0; i < qmake_subdirs.size(); i++) {
             const ProString &subdir = qmake_subdirs[i];
             t << "\t\t\t\t{\n"
               << "\t\t\t\t\t" << writeSettings("ProductGroup", keyFor(subdir + "_PRODUCTGROUP")) << ";\n"
@@ -658,7 +658,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 
         const QStringList &files = fileFixify(sources.at(source).files(project),
                                               FileFixifyFromOutdir | FileFixifyAbsolute);
-        for(int f = 0; f < files.count(); ++f) {
+        for(int f = 0; f < files.size(); ++f) {
             QString file = files[f];
             if(!sources.at(source).compilerName().isNull() &&
                !verifyExtraCompiler(sources.at(source).compilerName(), file))
@@ -873,7 +873,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                                              "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", nullptr };
         for (int i = 0; libs[i]; i++) {
             tmp = project->values(libs[i]);
-            for(int x = 0; x < tmp.count();) {
+            for(int x = 0; x < tmp.size();) {
                 bool libSuffixReplaced = false;
                 bool remove = false;
                 QString library, name;
@@ -912,7 +912,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     if(opt.size() > 2) {
                         r = opt.mid(2).toQString();
                     } else {
-                        if(x == tmp.count()-1)
+                        if(x == tmp.size()-1)
                             break;
                         r = tmp[++x].toQString();
                     }
@@ -921,12 +921,12 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                         frameworkdirs.append(r);
                     }
                 } else if(opt == "-framework") {
-                    if(x == tmp.count()-1)
+                    if(x == tmp.size()-1)
                         break;
                     const ProString &framework = tmp[x+1];
                     ProStringList fdirs = frameworkdirs;
                     fdirs << "/System/Library/Frameworks/" << "/Library/Frameworks/";
-                    for(int fdir = 0; fdir < fdirs.count(); fdir++) {
+                    for(int fdir = 0; fdir < fdirs.size(); fdir++) {
                         if(exists(fdirs[fdir] + QDir::separator() + framework + ".framework")) {
                             remove = true;
                             library = fdirs[fdir] + Option::dir_sep + framework + ".framework";
@@ -1008,12 +1008,12 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             mkt << "SUBLIBS= ";
             // ### This is missing the parametrization found in unixmake2.cpp
             tmp = project->values("SUBLIBS");
-            for(int i = 0; i < tmp.count(); i++)
+            for(int i = 0; i < tmp.size(); i++)
                 t << escapeFilePath("tmp/lib" + tmp[i] + ".a") << ' ';
             t << Qt::endl << Qt::endl;
             mkt << "sublibs: $(SUBLIBS)\n\n";
             tmp = project->values("SUBLIBS");
-            for(int i = 0; i < tmp.count(); i++)
+            for(int i = 0; i < tmp.size(); i++)
                 t << escapeFilePath("tmp/lib" + tmp[i] + ".a") + ":\n\t"
                   << var(ProKey("MAKELIB" + tmp[i])) << Qt::endl << Qt::endl;
             mkt.flush();
@@ -1148,7 +1148,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 
         //all bundle data
         const ProStringList &bundle_data = project->values("QMAKE_BUNDLE_DATA");
-        for(int i = 0; i < bundle_data.count(); i++) {
+        for(int i = 0; i < bundle_data.size(); i++) {
             ProStringList bundle_files;
             ProString path = project->first(ProKey(bundle_data[i] + ".path"));
             const bool isEmbeddedFramework = ((!osx && path == QLatin1String("Frameworks"))
@@ -1158,7 +1158,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 
             //all files
             const ProStringList &files = project->values(ProKey(bundle_data[i] + ".files"));
-            for(int file = 0; file < files.count(); file++) {
+            for(int file = 0; file < files.size(); file++) {
                 QString fn = fileFixify(files[file].toQString(), FileFixifyAbsolute);
                 QString name = fn.split(Option::dir_sep).back();
                 QString file_ref_key = keyFor("QMAKE_PBX_BUNDLE_DATA_FILE_REF." + bundle_data[i] + "-" + fn);
@@ -1684,7 +1684,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     t << "\t\t\t\t" << writeSettings("CODE_SIGN_IDENTITY", project->first("QMAKE_XCODE_CODE_SIGN_IDENTITY")) << ";\n";
 
                 tmp = project->values("QMAKE_PBX_VARS");
-                for (int i = 0; i < tmp.count(); i++) {
+                for (int i = 0; i < tmp.size(); i++) {
                     QString var = tmp[i].toQString(), val = QString::fromLocal8Bit(qgetenv(var.toLatin1().constData()));
                     if (val.isEmpty() && var == "TB")
                         val = "/usr/bin/";
@@ -1888,7 +1888,7 @@ ProStringList
 ProjectBuilderMakefileGenerator::fixListForOutput(const ProStringList &l)
 {
     ProStringList ret;
-    for(int i = 0; i < l.count(); i++)
+    for(int i = 0; i < l.size(); i++)
         ret += fixForOutput(l[i].toQString());
     return ret;
 }

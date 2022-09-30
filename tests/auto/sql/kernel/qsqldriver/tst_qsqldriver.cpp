@@ -125,10 +125,10 @@ void tst_QSqlDriver::record()
         QCOMPARE(rec.field(1).length(), 20);
 
     if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
-        for(int i = 0; i < fields.count(); ++i)
+        for(int i = 0; i < fields.size(); ++i)
             fields[i] = fields[i].toUpper();
 
-    for (int i = 0; i < fields.count(); ++i)
+    for (int i = 0; i < fields.size(); ++i)
         QCOMPARE(rec.fieldName(i), fields[i]);
 
     if (driverSupportsDefaultValues(dbType))
@@ -145,7 +145,7 @@ void tst_QSqlDriver::record()
         QCOMPARE(rec.count(), 5);
     }
 
-    for (int i = 0; i < fields.count(); ++i)
+    for (int i = 0; i < fields.size(); ++i)
         QCOMPARE(rec.fieldName(i), fields[i]);
 
     if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)

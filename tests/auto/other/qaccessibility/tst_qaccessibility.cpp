@@ -298,9 +298,9 @@ void tst_QAccessibility::cleanup()
 {
     const EventList list = QTestAccessibility::events();
     if (!list.isEmpty()) {
-        qWarning("%zd accessibility event(s) were not handled in testfunction '%s':", size_t(list.count()),
+        qWarning("%zd accessibility event(s) were not handled in testfunction '%s':", size_t(list.size()),
                  QString(QTest::currentTestFunction()).toLatin1().constData());
-        for (int i = 0; i < list.count(); ++i)
+        for (int i = 0; i < list.size(); ++i)
             qWarning(" %d: Object: %p Event: '%s' Child: %d", i + 1, list.at(i)->object(),
                      qAccessibleEventString(list.at(i)->type()), list.at(i)->child());
     }
@@ -4176,7 +4176,7 @@ void tst_QAccessibility::focusChild()
 
         spy.clear();
         tableView->setCurrentCell(2, 1);
-        QTRY_COMPARE(spy.count(), 1);
+        QTRY_COMPARE(spy.size(), 1);
 
         QAccessibleInterface *child = iface->focusChild();
         QVERIFY(child);
@@ -4184,7 +4184,7 @@ void tst_QAccessibility::focusChild()
 
         spy.clear();
         tableView->setCurrentCell(1, 2);
-        QTRY_COMPARE(spy.count(), 1);
+        QTRY_COMPARE(spy.size(), 1);
 
         child = iface->focusChild();
         QVERIFY(child);
@@ -4236,7 +4236,7 @@ void tst_QAccessibility::focusChild()
 
         spy.clear();
         treeView->setCurrentItem(item2);
-        QTRY_COMPARE(spy.count(), 1);
+        QTRY_COMPARE(spy.size(), 1);
 
         QAccessibleInterface *child = iface->focusChild();
         QVERIFY(child);
@@ -4244,7 +4244,7 @@ void tst_QAccessibility::focusChild()
 
         spy.clear();
         treeView->setCurrentItem(item3);
-        QTRY_COMPARE(spy.count(), 1);
+        QTRY_COMPARE(spy.size(), 1);
 
         child = iface->focusChild();
         QVERIFY(child);

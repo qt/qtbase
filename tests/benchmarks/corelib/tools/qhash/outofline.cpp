@@ -7,7 +7,7 @@ QT_BEGIN_NAMESPACE
 
 size_t qHash(const Qt4String &str)
 {
-    qsizetype n = str.length();
+    qsizetype n = str.size();
     const QChar *p = str.unicode();
     uint h = 0;
 

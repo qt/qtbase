@@ -3453,7 +3453,7 @@ void QHeaderView::initStyleOption(QStyleOptionFrame *option) const
 bool QHeaderViewPrivate::isSectionSelected(int section) const
 {
     int i = section * 2;
-    if (i < 0 || i >= sectionSelected.count())
+    if (i < 0 || i >= sectionSelected.size())
         return false;
     if (sectionSelected.testBit(i)) // if the value was cached
         return sectionSelected.testBit(i + 1);

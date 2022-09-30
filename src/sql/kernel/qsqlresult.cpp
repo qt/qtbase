@@ -630,7 +630,7 @@ bool QSqlResult::exec()
         int i;
         QVariant val;
         QString holder;
-        for (i = d->holders.count() - 1; i >= 0; --i) {
+        for (i = d->holders.size() - 1; i >= 0; --i) {
             holder = d->holders.at(i).holderName;
             val = d->values.value(d->indexes.value(holder).value(0,-1));
             QSqlField f(""_L1, val.metaType());

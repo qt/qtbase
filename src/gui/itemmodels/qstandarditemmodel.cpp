@@ -2529,9 +2529,9 @@ QStandardItem *QStandardItemModel::verticalHeaderItem(int row) const
 void QStandardItemModel::setHorizontalHeaderLabels(const QStringList &labels)
 {
     Q_D(QStandardItemModel);
-    if (columnCount() < labels.count())
-        setColumnCount(labels.count());
-    for (int i = 0; i < labels.count(); ++i) {
+    if (columnCount() < labels.size())
+        setColumnCount(labels.size());
+    for (int i = 0; i < labels.size(); ++i) {
         QStandardItem *item = horizontalHeaderItem(i);
         if (!item) {
             item = d->createItem();
@@ -2552,9 +2552,9 @@ void QStandardItemModel::setHorizontalHeaderLabels(const QStringList &labels)
 void QStandardItemModel::setVerticalHeaderLabels(const QStringList &labels)
 {
     Q_D(QStandardItemModel);
-    if (rowCount() < labels.count())
-        setRowCount(labels.count());
-    for (int i = 0; i < labels.count(); ++i) {
+    if (rowCount() < labels.size())
+        setRowCount(labels.size());
+    for (int i = 0; i < labels.size(); ++i) {
         QStandardItem *item = verticalHeaderItem(i);
         if (!item) {
             item = d->createItem();
@@ -3112,9 +3112,9 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
 
     QSet<QStandardItem*> itemsSet;
     QStack<QStandardItem*> stack;
-    itemsSet.reserve(indexes.count());
-    stack.reserve(indexes.count());
-    for (int i = 0; i < indexes.count(); ++i) {
+    itemsSet.reserve(indexes.size());
+    stack.reserve(indexes.size());
+    for (int i = 0; i < indexes.size(); ++i) {
         if (QStandardItem *item = itemFromIndex(indexes.at(i))) {
             itemsSet << item;
             stack.push(item);

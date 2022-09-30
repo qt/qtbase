@@ -65,7 +65,7 @@ InsertCommand::InsertCommand(QString *str, int idx, const QString &text,
                             QUndoCommand *parent)
     : QUndoCommand(parent)
 {
-    QVERIFY(str->length() >= idx);
+    QVERIFY(str->size() >= idx);
 
     setText("insert");
 
@@ -76,7 +76,7 @@ InsertCommand::InsertCommand(QString *str, int idx, const QString &text,
 
 void InsertCommand::redo()
 {
-    QVERIFY(m_str->length() >= m_idx);
+    QVERIFY(m_str->size() >= m_idx);
 
     m_str->insert(m_idx, m_text);
 }
@@ -91,7 +91,7 @@ void InsertCommand::undo()
 RemoveCommand::RemoveCommand(QString *str, int idx, int len, QUndoCommand *parent)
     : QUndoCommand(parent)
 {
-    QVERIFY(str->length() >= idx + len);
+    QVERIFY(str->size() >= idx + len);
 
     setText("remove");
 
@@ -109,7 +109,7 @@ void RemoveCommand::redo()
 
 void RemoveCommand::undo()
 {
-    QVERIFY(m_str->length() >= m_idx);
+    QVERIFY(m_str->size() >= m_idx);
 
     m_str->insert(m_idx, m_text);
 }
@@ -131,9 +131,9 @@ void AppendCommand::redo()
 
 void AppendCommand::undo()
 {
-    QCOMPARE(m_str->mid(m_str->length() - m_text.size()), m_text);
+    QCOMPARE(m_str->mid(m_str->size() - m_text.size()), m_text);
 
-    m_str->truncate(m_str->length() - m_text.size());
+    m_str->truncate(m_str->size() - m_text.size());
 }
 
 int AppendCommand::id() const

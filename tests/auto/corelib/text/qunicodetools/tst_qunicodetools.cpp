@@ -47,7 +47,7 @@ static void verifyCharClassPattern(QString str, qulonglong pattern,
     QCharAttributes cleared;
     memset(&cleared, 0, sizeof(QCharAttributes));
     QList<QCharAttributes> attributes(str.size() + 1, cleared);
-    QUnicodeTools::initCharAttributes(str, scriptItems.data(), scriptItems.count(),
+    QUnicodeTools::initCharAttributes(str, scriptItems.data(), scriptItems.size(),
                                       attributes.data(), type);
 
     qulonglong bit = 1ull << str.size();

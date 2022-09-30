@@ -420,7 +420,7 @@ int QColumnView::verticalOffset() const
 */
 QRegion QColumnView::visualRegionForSelection(const QItemSelection &selection) const
 {
-    int ranges = selection.count();
+    int ranges = selection.size();
 
     if (ranges == 0)
         return QRect();
@@ -984,9 +984,9 @@ void QColumnView::selectAll()
     QModelIndexList indexList = selectionModel()->selectedIndexes();
     QModelIndex parent = rootIndex();
     QItemSelection selection;
-    if (indexList.count() >= 1)
+    if (indexList.size() >= 1)
         parent = indexList.at(0).parent();
-    if (indexList.count() == 1) {
+    if (indexList.size() == 1) {
         parent = indexList.at(0);
         if (!model()->hasChildren(parent))
             parent = parent.parent();

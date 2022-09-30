@@ -209,11 +209,11 @@ void tst_QAction::setToolTip()
     QFETCH(QStringList, values);
     QFETCH(QStringList, expectedToolTips);
 
-    QCOMPARE(properties.count(), values.count());
-    QCOMPARE(properties.count(), expectedToolTips.count());
+    QCOMPARE(properties.size(), values.size());
+    QCOMPARE(properties.size(), expectedToolTips.size());
 
     QAction action(nullptr);
-    for (int i = 0; i < properties.count(); ++i) {
+    for (int i = 0; i < properties.size(); ++i) {
         const auto property = properties.at(i);
         const auto value = values.at(i);
         const auto expectedToolTip = expectedToolTips.at(i);
@@ -272,19 +272,19 @@ void tst_QAction::task229128TriggeredSignalWithoutActiongroup()
     // test without a group
     const QScopedPointer<QAction> actionWithoutGroup(new QAction("Test", nullptr));
     QSignalSpy spyWithoutGroup(actionWithoutGroup.data(), QOverload<bool>::of(&QAction::triggered));
-    QCOMPARE(spyWithoutGroup.count(), 0);
+    QCOMPARE(spyWithoutGroup.size(), 0);
     actionWithoutGroup->trigger();
     // signal should be emitted
-    QCOMPARE(spyWithoutGroup.count(), 1);
+    QCOMPARE(spyWithoutGroup.size(), 1);
 
     // it is now a checkable checked action
     actionWithoutGroup->setCheckable(true);
     actionWithoutGroup->setChecked(true);
     spyWithoutGroup.clear();
-    QCOMPARE(spyWithoutGroup.count(), 0);
+    QCOMPARE(spyWithoutGroup.size(), 0);
     actionWithoutGroup->trigger();
     // signal should be emitted
-    QCOMPARE(spyWithoutGroup.count(), 1);
+    QCOMPARE(spyWithoutGroup.size(), 1);
 }
 
 void tst_QAction::setData() // QTBUG-62006
@@ -292,14 +292,14 @@ void tst_QAction::setData() // QTBUG-62006
     QAction act(nullptr);
     QSignalSpy spy(&act, &QAction::changed);
     QCOMPARE(act.data(), QVariant());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     act.setData(QVariant());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     act.setData(-1);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     act.setData(-1);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 void tst_QAction::setEnabledSetVisible()
@@ -308,22 +308,22 @@ void tst_QAction::setEnabledSetVisible()
     QSignalSpy spy(&action, &QAction::enabledChanged);
     QVERIFY(action.isEnabled());
     QVERIFY(action.isVisible());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     action.setVisible(false);
     QVERIFY(!action.isEnabled());
     QVERIFY(!action.isVisible());
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     action.setEnabled(false);
     QVERIFY(!action.isEnabled());
     QVERIFY(!action.isVisible());
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     action.setVisible(true);
     QVERIFY(!action.isEnabled());
     QVERIFY(action.isVisible());
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     action.resetEnabled();
     QVERIFY(action.isEnabled());
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 }
 
 void tst_QAction::setCheckabledSetChecked()
@@ -334,37 +334,37 @@ void tst_QAction::setCheckabledSetChecked()
     QSignalSpy checkableSpy(&action, &QAction::checkableChanged);
     QVERIFY(!action.isCheckable());
     QVERIFY(!action.isChecked());
-    QCOMPARE(changedSpy.count(), 0);
-    QCOMPARE(checkedSpy.count(), 0);
-    QCOMPARE(checkableSpy.count(), 0);
+    QCOMPARE(changedSpy.size(), 0);
+    QCOMPARE(checkedSpy.size(), 0);
+    QCOMPARE(checkableSpy.size(), 0);
 
     action.setCheckable(true);
     QVERIFY(action.isCheckable());
     QVERIFY(!action.isChecked());
-    QCOMPARE(changedSpy.count(), 1);
-    QCOMPARE(checkedSpy.count(), 0);
-    QCOMPARE(checkableSpy.count(), 1);
+    QCOMPARE(changedSpy.size(), 1);
+    QCOMPARE(checkedSpy.size(), 0);
+    QCOMPARE(checkableSpy.size(), 1);
 
     action.setChecked(true);
     QVERIFY(action.isCheckable());
     QVERIFY(action.isChecked());
-    QCOMPARE(changedSpy.count(), 2);
-    QCOMPARE(checkedSpy.count(), 1);
-    QCOMPARE(checkableSpy.count(), 1);
+    QCOMPARE(changedSpy.size(), 2);
+    QCOMPARE(checkedSpy.size(), 1);
+    QCOMPARE(checkableSpy.size(), 1);
 
     action.setCheckable(false);
     QVERIFY(!action.isCheckable());
     QVERIFY(!action.isChecked());
-    QCOMPARE(changedSpy.count(), 3);
-    QCOMPARE(checkedSpy.count(), 2);
-    QCOMPARE(checkableSpy.count(), 2);
+    QCOMPARE(changedSpy.size(), 3);
+    QCOMPARE(checkedSpy.size(), 2);
+    QCOMPARE(checkableSpy.size(), 2);
 
     action.setCheckable(true);
     QVERIFY(action.isCheckable());
     QVERIFY(action.isChecked());
-    QCOMPARE(changedSpy.count(), 4);
-    QCOMPARE(checkedSpy.count(), 3);
-    QCOMPARE(checkableSpy.count(), 3);
+    QCOMPARE(changedSpy.size(), 4);
+    QCOMPARE(checkedSpy.size(), 3);
+    QCOMPARE(checkableSpy.size(), 3);
 }
 
 QTEST_MAIN(tst_QAction)

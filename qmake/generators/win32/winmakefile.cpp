@@ -174,9 +174,9 @@ bool Win32MakefileGenerator::processPrlFileBase(QString &origFile, QStringView o
 {
     if (MakefileGenerator::processPrlFileBase(origFile, origName, fixedBase, slashOff))
         return true;
-    for (int off = fixedBase.length(); off > slashOff; off--) {
+    for (int off = fixedBase.size(); off > slashOff; off--) {
         if (!fixedBase.at(off - 1).isDigit()) {
-            if (off != fixedBase.length()) {
+            if (off != fixedBase.size()) {
                 return MakefileGenerator::processPrlFileBase(
                             origFile, origName, fixedBase.left(off), slashOff);
             }
@@ -686,7 +686,7 @@ void Win32MakefileGenerator::writeRcFilePart(QTextStream &t)
 
         const ProStringList rcIncPaths = project->values("RC_INCLUDEPATH");
         QString incPathStr;
-        for (int i = 0; i < rcIncPaths.count(); ++i) {
+        for (int i = 0; i < rcIncPaths.size(); ++i) {
             const ProString &path = rcIncPaths.at(i);
             if (path.isEmpty())
                 continue;

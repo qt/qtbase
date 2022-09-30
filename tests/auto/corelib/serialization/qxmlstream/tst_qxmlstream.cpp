@@ -711,7 +711,7 @@ void tst_QXmlStream::reportSuccess_data() const
 {
     QTest::addColumn<bool>("isError");
 
-    const int len = m_handler.successes.count();
+    const int len = m_handler.successes.size();
 
     for (int i = 0; i < len; ++i) {
         const QByteArray testName = QByteArray::number(i) + ". " + m_handler.successes.at(i).toLatin1();

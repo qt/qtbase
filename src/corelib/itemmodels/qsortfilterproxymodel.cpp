@@ -1243,7 +1243,7 @@ void QSortFilterProxyModelPrivate::update_persistent_indexes(
 {
     Q_Q(QSortFilterProxyModel);
     QModelIndexList from, to;
-    const int numSourceIndexes = source_indexes.count();
+    const int numSourceIndexes = source_indexes.size();
     from.reserve(numSourceIndexes);
     to.reserve(numSourceIndexes);
     for (const auto &indexPair : source_indexes) {
@@ -2313,7 +2313,7 @@ QMimeData *QSortFilterProxyModel::mimeData(const QModelIndexList &indexes) const
 {
     Q_D(const QSortFilterProxyModel);
     QModelIndexList source_indexes;
-    source_indexes.reserve(indexes.count());
+    source_indexes.reserve(indexes.size());
     for (const QModelIndex &idx : indexes)
         source_indexes << mapToSource(idx);
     return d->model->mimeData(source_indexes);

@@ -317,7 +317,7 @@ void QFontComboBoxPrivate::_q_updateModel()
         }
         result += list.at(i);
         if (list.at(i) == fi.family() || list.at(i).startsWith(fi.family() + " ["_L1))
-            offset = result.count() - 1;
+            offset = result.size() - 1;
     }
     list = result;
 

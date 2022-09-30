@@ -326,7 +326,7 @@ int QCompletionModel::rowCount(const QModelIndex &parent) const
 
     if (showAll) {
         // Show all items below current parent, even if we have no valid matches
-        if (engine->curParts.count() != 1  && !engine->matchCount()
+        if (engine->curParts.size() != 1  && !engine->matchCount()
             && !engine->curParent.isValid())
             return 0;
         return d->model->rowCount(engine->curParent);
@@ -411,7 +411,7 @@ void QCompletionEngine::filter(const QStringList& parts)
         return;
 
     QModelIndex parent;
-    for (int i = 0; i < curParts.count() - 1; i++) {
+    for (int i = 0; i < curParts.size() - 1; i++) {
         QString part = curParts.at(i);
         int emi = filter(part, parent, -1).exactMatchIndex;
         if (emi == -1)
@@ -432,7 +432,7 @@ void QCompletionEngine::filter(const QStringList& parts)
 QMatchData QCompletionEngine::filterHistory()
 {
     QAbstractItemModel *source = c->proxy->sourceModel();
-    if (curParts.count() <= 1 || c->proxy->showAll || !source)
+    if (curParts.size() <= 1 || c->proxy->showAll || !source)
         return QMatchData();
 
 #if QT_CONFIG(filesystemmodel)
@@ -516,7 +516,7 @@ void QCompletionEngine::saveInCache(QString part, const QModelIndex& parent, con
         QMap<QModelIndex, CacheItem>::iterator it1 = cache.begin();
         while (it1 != cache.end()) {
             CacheItem& ci = it1.value();
-            int sz = ci.count()/2;
+            int sz = ci.size()/2;
             QMap<QString, QMatchData>::iterator it2 = ci.begin();
             int i = 0;
             while (it2 != ci.end() && i < sz) {
@@ -524,7 +524,7 @@ void QCompletionEngine::saveInCache(QString part, const QModelIndex& parent, con
                 it2 = ci.erase(it2);
                 i++;
             }
-            if (ci.count() == 0) {
+            if (ci.size() == 0) {
               it1 = cache.erase(it1);
             } else {
               ++it1;
@@ -1811,7 +1811,7 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
     } while (idx.isValid());
 
 #if !defined(Q_OS_WIN)
-    if (list.count() == 1) // only the separator or some other text
+    if (list.size() == 1) // only the separator or some other text
         return list[0];
     list[0].clear() ; // the join below will provide the separator
 #endif

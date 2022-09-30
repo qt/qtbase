@@ -55,11 +55,11 @@ QThreadStorageData::QThreadStorageData(void (*func)(void *))
         DEBUG_MSG("QThreadStorageData: Allocated id %d, destructor %p cannot be stored", id, func);
         return;
     }
-    for (id = 0; id < destr->count(); id++) {
+    for (id = 0; id < destr->size(); id++) {
         if (destr->at(id) == nullptr)
             break;
     }
-    if (id == destr->count()) {
+    if (id == destr->size()) {
         destr->append(func);
     } else {
         (*destr)[id] = func;

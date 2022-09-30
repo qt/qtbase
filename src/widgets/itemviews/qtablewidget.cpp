@@ -809,7 +809,7 @@ QMimeData *QTableModel::internalMimeData()  const
 QMimeData *QTableModel::mimeData(const QModelIndexList &indexes) const
 {
     QList<QTableWidgetItem*> items;
-    const int indexesCount = indexes.count();
+    const int indexesCount = indexes.size();
     items.reserve(indexesCount);
     for (int i = 0; i < indexesCount; ++i)
         items << item(indexes.at(i));
@@ -2087,7 +2087,7 @@ void QTableWidget::setVerticalHeaderLabels(const QStringList &labels)
     Q_D(QTableWidget);
     QTableModel *model = d->tableModel();
     QTableWidgetItem *item = nullptr;
-    for (int i = 0; i < model->rowCount() && i < labels.count(); ++i) {
+    for (int i = 0; i < model->rowCount() && i < labels.size(); ++i) {
         item = model->verticalHeaderItem(i);
         if (!item) {
             item = model->createItem();
@@ -2105,7 +2105,7 @@ void QTableWidget::setHorizontalHeaderLabels(const QStringList &labels)
     Q_D(QTableWidget);
     QTableModel *model = d->tableModel();
     QTableWidgetItem *item = nullptr;
-    for (int i = 0; i < model->columnCount() && i < labels.count(); ++i) {
+    for (int i = 0; i < model->columnCount() && i < labels.size(); ++i) {
         item = model->horizontalHeaderItem(i);
         if (!item) {
             item = model->createItem();
@@ -2697,7 +2697,7 @@ void QTableWidget::dropEvent(QDropEvent *event) {
             }
 
             QList<QTableWidgetItem *> taken;
-            const int indexesCount = indexes.count();
+            const int indexesCount = indexes.size();
             taken.reserve(indexesCount);
             for (const auto &index : indexes)
                 taken.append(takeItem(index.row(), index.column()));

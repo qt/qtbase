@@ -122,7 +122,7 @@ void tst_QSharedMemory::cleanup()
     jail.clear();
 
     keys.append(EXISTING_SHARE);
-    for (int i = 0; i < keys.count(); ++i) {
+    for (int i = 0; i < keys.size(); ++i) {
         QSharedMemory sm(keys.at(i));
         if (!sm.create(1024)) {
             //if (sm.error() != QSharedMemory::KeyError)

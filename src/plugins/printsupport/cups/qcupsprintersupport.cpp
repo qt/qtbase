@@ -57,7 +57,7 @@ static const char *getPasswordCB(const char */*prompt*/, http_t *http, const cha
 
     QString resourceString = QString::fromLocal8Bit(resource);
     if (resourceString.startsWith(QStringLiteral("/printers/")))
-        resourceString = resourceString.mid(QStringLiteral("/printers/").length());
+        resourceString = resourceString.mid(QStringLiteral("/printers/").size());
 
     QLabel *label = new QLabel();
     if (hostname == QStringLiteral("localhost")) {

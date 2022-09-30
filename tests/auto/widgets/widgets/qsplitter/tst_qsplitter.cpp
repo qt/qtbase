@@ -1063,7 +1063,7 @@ void tst_QSplitter::taskQTBUG_102249_moveNonPressed()
                    Qt::NoButton, Qt::MouseButtons(Qt::LeftButton),
                    Qt::NoModifier);
     qApp->sendEvent(s.handle(0), &me);
-    QCOMPARE(spyMove.count(), 0);
+    QCOMPARE(spyMove.size(), 0);
 }
 
 void tst_QSplitter::setLayout()

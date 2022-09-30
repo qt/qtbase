@@ -123,7 +123,7 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
     QDate date;
 
     const auto isShortName = [](QStringView name) {
-        return (name.length() == 3 && name[0].isUpper()
+        return (name.size() == 3 && name[0].isUpper()
                 && name[1].isLower() && name[2].isLower());
     };
 

@@ -1904,9 +1904,9 @@ void QTextEngine::itemize() const
     {
         QUnicodeTools::ScriptItemArray scriptItems;
         QUnicodeTools::initScripts(layoutData->string, &scriptItems);
-        for (int i = 0; i < scriptItems.length(); ++i) {
+        for (int i = 0; i < scriptItems.size(); ++i) {
             const auto &item = scriptItems.at(i);
-            int end = i < scriptItems.length() - 1 ? scriptItems.at(i + 1).position : length;
+            int end = i < scriptItems.size() - 1 ? scriptItems.at(i + 1).position : length;
             for (int j = item.position; j < end; ++j)
                 analysis[j].script = item.script;
         }
@@ -3171,7 +3171,7 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
                 if (tabSpec.type == QTextOption::RightTab || tabSpec.type == QTextOption::CenterTab) {
                     // find next tab to calculate the width required.
                     tab = QFixed::fromReal(tabSpec.position);
-                    for (int i=item + 1; i < layoutData->items.count(); i++) {
+                    for (int i=item + 1; i < layoutData->items.size(); i++) {
                         const QScriptItem &item = layoutData->items[i];
                         if (item.analysis.flags == QScriptAnalysis::TabOrObject) { // found it.
                             tabSectionEnd = item.position;
@@ -3186,7 +3186,7 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
                 if (tabSectionEnd > si.position) {
                     QFixed length;
                     // Calculate the length of text between this tab and the tabSectionEnd
-                    for (int i=item; i < layoutData->items.count(); i++) {
+                    for (int i=item; i < layoutData->items.size(); i++) {
                         const QScriptItem &item = layoutData->items.at(i);
                         if (item.position > tabSectionEnd || item.position <= si.position)
                             continue;
@@ -3258,7 +3258,7 @@ void QTextEngine::resolveFormats() const
 
     QTextFormatCollection *collection = formatCollection();
 
-    QList<QTextCharFormat> resolvedFormats(layoutData->items.count());
+    QList<QTextCharFormat> resolvedFormats(layoutData->items.size());
 
     QVarLengthArray<int, 64> formatsSortedByStart;
     formatsSortedByStart.reserve(specialData->formats.size());
@@ -3276,7 +3276,7 @@ void QTextEngine::resolveFormats() const
     const int *startIt = formatsSortedByStart.constBegin();
     const int *endIt = formatsSortedByEnd.constBegin();
 
-    for (int i = 0; i < layoutData->items.count(); ++i) {
+    for (int i = 0; i < layoutData->items.size(); ++i) {
         const QScriptItem *si = &layoutData->items.at(i);
         int end = si->position + length(si);
 

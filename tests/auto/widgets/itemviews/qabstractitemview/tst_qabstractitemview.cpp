@@ -425,12 +425,12 @@ void tst_QAbstractItemView::basic_tests(QAbstractItemView *view)
     QVERIFY(spy.isValid());
     view->setIconSize(QSize(32, 32));
     QCOMPARE(view->iconSize(), QSize(32, 32));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).value<QSize>(), QSize(32, 32));
     // Should this happen?
     view->setIconSize(QSize(-1, -1));
     QCOMPARE(view->iconSize(), QSize(-1, -1));
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 
     QCOMPARE(view->currentIndex(), QModelIndex());
     QCOMPARE(view->rootIndex(), QModelIndex());
@@ -664,9 +664,9 @@ void tst_QAbstractItemView::selectAll()
     GeometriesTestView view;
     view.setModel(&model);
 
-    QCOMPARE(view.selectedIndexes().count(), 0);
+    QCOMPARE(view.selectedIndexes().size(), 0);
     view.selectAll();
-    QCOMPARE(view.selectedIndexes().count(), 4 * 4);
+    QCOMPARE(view.selectedIndexes().size(), 4 * 4);
 }
 
 void tst_QAbstractItemView::ctrlA()
@@ -675,9 +675,9 @@ void tst_QAbstractItemView::ctrlA()
     GeometriesTestView view;
     view.setModel(&model);
 
-    QCOMPARE(view.selectedIndexes().count(), 0);
+    QCOMPARE(view.selectedIndexes().size(), 0);
     QTest::keyClick(&view, Qt::Key_A, Qt::ControlModifier);
-    QCOMPARE(view.selectedIndexes().count(), 4 * 4);
+    QCOMPARE(view.selectedIndexes().size(), 4 * 4);
 }
 
 void tst_QAbstractItemView::persistentEditorFocus()
@@ -1355,7 +1355,7 @@ void tst_QAbstractItemView::task200665_itemEntered()
     QSignalSpy spy(&view, &QAbstractItemView::entered);
     view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());
 
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
 }
 
 void tst_QAbstractItemView::task257481_emptyEditor()
@@ -1422,7 +1422,7 @@ void tst_QAbstractItemView::shiftArrowSelectionAfterScrolling()
 
     QCOMPARE(view.currentIndex(), index1);
     QModelIndexList selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 2);
+    QCOMPARE(selected.size(), 2);
     QVERIFY(selected.contains(index0));
     QVERIFY(selected.contains(index1));
 }
@@ -1476,7 +1476,7 @@ void tst_QAbstractItemView::shiftSelectionAfterRubberbandSelection()
 
     // Verify that the selection worked OK
     QModelIndexList selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 2);
+    QCOMPARE(selected.size(), 2);
     QVERIFY(selected.contains(index1));
     QVERIFY(selected.contains(index2));
 
@@ -1499,7 +1499,7 @@ void tst_QAbstractItemView::shiftSelectionAfterRubberbandSelection()
 
     // Verify that the selection worked OK
     selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 2);
+    QCOMPARE(selected.size(), 2);
     QVERIFY(selected.contains(index1));
     QVERIFY(selected.contains(index2));
 }
@@ -1528,7 +1528,7 @@ void tst_QAbstractItemView::ctrlRubberbandSelection()
     // Select item 1
     view.setCurrentIndex(index1);
     QModelIndexList selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 1);
+    QCOMPARE(selected.size(), 1);
     QVERIFY(selected.contains(index1));
 
     // Now press control and draw a rubberband around items 1 and 2.
@@ -1545,7 +1545,7 @@ void tst_QAbstractItemView::ctrlRubberbandSelection()
 
     // Verify that item 2 is selected now
     selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 1);
+    QCOMPARE(selected.size(), 1);
     QVERIFY(selected.contains(index2));
 }
 
@@ -1654,12 +1654,12 @@ void tst_QAbstractItemView::testClickedSignal()
     QSignalSpy clickedSpy(&view, &QTableWidget::clicked);
 
     QTest::mouseClick(view.viewport(), Qt::LeftButton, {}, p);
-    QCOMPARE(clickedSpy.count(), 1);
+    QCOMPARE(clickedSpy.size(), 1);
 
     QTest::mouseClick(view.viewport(), Qt::RightButton, {}, p);
     // We expect that right-clicks do not cause the clicked() signal to
     // be emitted.
-    QCOMPARE(clickedSpy.count(), 1);
+    QCOMPARE(clickedSpy.size(), 1);
 
 }
 
@@ -1723,28 +1723,28 @@ void tst_QAbstractItemView::deselectInSingleSelection()
     QPoint clickpos = rect22.center();
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, clickpos);
     QCOMPARE(view.currentIndex(), index22);
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), 1);
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, clickpos);
     QCOMPARE(view.currentIndex(), index22);
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 0);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), 0);
 
     // second click with modifier however does select
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, clickpos);
     QCOMPARE(view.currentIndex(), index22);
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), 1);
 
     // keyboard
     QTest::keyClick(&view, Qt::Key_Space, Qt::NoModifier);
     QCOMPARE(view.currentIndex(), index22);
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), 1);
     QTest::keyClick(&view, Qt::Key_Space, Qt::ControlModifier);
     QCOMPARE(view.currentIndex(), index22);
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 0);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), 0);
 
     // second keypress with modifier however does select
     QTest::keyClick(&view, Qt::Key_Space, Qt::ControlModifier);
     QCOMPARE(view.currentIndex(), index22);
-    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+    QCOMPARE(view.selectionModel()->selectedIndexes().size(), 1);
 }
 
 void tst_QAbstractItemView::testNoActivateOnDisabledItem()
@@ -1772,7 +1772,7 @@ void tst_QAbstractItemView::testNoActivateOnDisabledItem()
     QPoint clickPos = treeView.visualRect(itemIndex).center();
     QTest::mouseClick(treeView.viewport(), Qt::LeftButton, {}, clickPos);
 
-    QCOMPARE(activatedSpy.count(), 0);
+    QCOMPARE(activatedSpy.size(), 0);
 }
 
 void tst_QAbstractItemView::testFocusPolicy_data()
@@ -1866,7 +1866,7 @@ void tst_QAbstractItemView::QTBUG31411_noSelection()
     QVERIFY(editor2);
     QTest::keyClick(editor2, Qt::Key_Escape, Qt::NoModifier);
 
-    QCOMPARE(selectionChangeSpy.count(), 0);
+    QCOMPARE(selectionChangeSpy.size(), 0);
 }
 
 void tst_QAbstractItemView::QTBUG39324_settingSameInstanceOfIndexWidget()
@@ -1908,7 +1908,7 @@ void tst_QAbstractItemView::shiftSelectionAfterChangingModelContents()
     // Click "C"
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, view.visualRect(indexC).center());
     QModelIndexList selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 1);
+    QCOMPARE(selected.size(), 1);
     QVERIFY(selected.contains(indexC));
 
     // Insert new item "B1"
@@ -1918,14 +1918,14 @@ void tst_QAbstractItemView::shiftSelectionAfterChangingModelContents()
     // Shift-click "D" -> we expect that "C" and "D" are selected
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ShiftModifier, view.visualRect(indexD).center());
     selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 2);
+    QCOMPARE(selected.size(), 2);
     QVERIFY(selected.contains(indexC));
     QVERIFY(selected.contains(indexD));
 
     // Click "D"
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, view.visualRect(indexD).center());
     selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 1);
+    QCOMPARE(selected.size(), 1);
     QVERIFY(selected.contains(indexD));
 
     // Remove items "B" and "C"
@@ -1937,7 +1937,7 @@ void tst_QAbstractItemView::shiftSelectionAfterChangingModelContents()
     // Shift-click "F" -> we expect that "D", "E", and "F" are selected
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ShiftModifier, view.visualRect(indexF).center());
     selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 3);
+    QCOMPARE(selected.size(), 3);
     QVERIFY(selected.contains(indexD));
     QVERIFY(selected.contains(indexE));
     QVERIFY(selected.contains(indexF));
@@ -1946,7 +1946,7 @@ void tst_QAbstractItemView::shiftSelectionAfterChangingModelContents()
     while (view.currentIndex() != indexA)
         QTest::keyClick(&view, Qt::Key_Up);
     selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 1);
+    QCOMPARE(selected.size(), 1);
     QVERIFY(selected.contains(indexA));
 
     // Change the sort order
@@ -1955,7 +1955,7 @@ void tst_QAbstractItemView::shiftSelectionAfterChangingModelContents()
     // Shift-click "F" -> All items should be selected
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ShiftModifier, view.visualRect(indexF).center());
     selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), model.rowCount());
+    QCOMPARE(selected.size(), model.rowCount());
 
     // Restore the old sort order
     proxyModel.sort(0, Qt::AscendingOrder);
@@ -1963,7 +1963,7 @@ void tst_QAbstractItemView::shiftSelectionAfterChangingModelContents()
     // Click "D"
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, view.visualRect(indexD).center());
     selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 1);
+    QCOMPARE(selected.size(), 1);
     QVERIFY(selected.contains(indexD));
 
     // Insert new item "B2"
@@ -1973,7 +1973,7 @@ void tst_QAbstractItemView::shiftSelectionAfterChangingModelContents()
     // Press Shift+Down -> "D" and "E" should be selected.
     QTest::keyClick(&view, Qt::Key_Down, Qt::ShiftModifier);
     selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 2);
+    QCOMPARE(selected.size(), 2);
     QVERIFY(selected.contains(indexD));
     QVERIFY(selected.contains(indexE));
 
@@ -1982,7 +1982,7 @@ void tst_QAbstractItemView::shiftSelectionAfterChangingModelContents()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, view.visualRect(indexA).center());
     view.setCurrentIndex(indexD);
     selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 1);
+    QCOMPARE(selected.size(), 1);
     QVERIFY(selected.contains(indexD));
 
     // Insert new item "B3"
@@ -1992,7 +1992,7 @@ void tst_QAbstractItemView::shiftSelectionAfterChangingModelContents()
     // Press Shift+Down -> "D" and "E" should be selected.
     QTest::keyClick(&view, Qt::Key_Down, Qt::ShiftModifier);
     selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 2);
+    QCOMPARE(selected.size(), 2);
     QVERIFY(selected.contains(indexD));
     QVERIFY(selected.contains(indexE));
 }
@@ -2270,14 +2270,14 @@ void tst_QAbstractItemView::testClickToSelect()
 
     // Click the center of the visualRect of item "A"
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, centerA);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.back().front().value<QRect>(), QRect(centerA, QSize(1, 1)));
 
     // Click a point slightly away from the center
     const QPoint nearCenterA = centerA + QPoint(1, 1);
     QVERIFY(visualRectA.contains(nearCenterA));
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, nearCenterA);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
     QCOMPARE(spy.back().front().value<QRect>(), QRect(nearCenterA, QSize(1, 1)));
 }
 
@@ -2635,7 +2635,7 @@ void tst_QAbstractItemView::dragSelectAfterNewPress()
 
     // Verify that the selection worked OK
     QModelIndexList selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 3);
+    QCOMPARE(selected.size(), 3);
     for (int i = 0; i < 2; ++i)
         QVERIFY(selected.contains(model.index(i, 0)));
 
@@ -2652,7 +2652,7 @@ void tst_QAbstractItemView::dragSelectAfterNewPress()
 
     // Verify that the selection worked OK
     selected = view.selectionModel()->selectedIndexes();
-    QCOMPARE(selected.count(), 6);
+    QCOMPARE(selected.size(), 6);
     for (int i = 0; i < 5; ++i)
         QVERIFY(selected.contains(model.index(i, 0)));
 }
@@ -3328,7 +3328,7 @@ void tst_QAbstractItemView::selectionAutoScrolling()
         QTRY_COMPARE(scrollBar->value(), 0);
     else
         QTRY_COMPARE(scrollBar->value(), scrollBar->maximum());
-    QVERIFY(listview.selectionModel()->selectedIndexes().count() > 0);
+    QVERIFY(listview.selectionModel()->selectedIndexes().size() > 0);
 
     QTest::mouseRelease(listview.viewport(), Qt::LeftButton, Qt::NoModifier, dragPoint);
 }

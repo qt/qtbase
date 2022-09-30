@@ -77,8 +77,8 @@ void tst_QRegularExpressionValidator::validate()
     else
         QCOMPARE(pos, -1); // ensure pos is not modified if validate returned Acceptable or Intermediate
 
-    QCOMPARE(spy.count(), signalCount);
-    QCOMPARE(changedSpy.count(), signalCount);
+    QCOMPARE(spy.size(), signalCount);
+    QCOMPARE(changedSpy.size(), signalCount);
 }
 
 QTEST_GUILESS_MAIN(tst_QRegularExpressionValidator)

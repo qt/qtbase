@@ -159,14 +159,14 @@ void tst_QCssParser::scanner()
         lines.append(line);
     }
 
-    if (lines.count() != symbols.size()) {
+    if (lines.size() != symbols.size()) {
         debug(symbols);
-        QCOMPARE(lines.count(), symbols.size());
+        QCOMPARE(lines.size(), symbols.size());
     }
 
-    for (int i = 0; i < lines.count(); ++i) {
+    for (int i = 0; i < lines.size(); ++i) {
         QStringList l = lines.at(i).split(QChar::fromLatin1('|'));
-        QCOMPARE(l.count(), 2);
+        QCOMPARE(l.size(), 2);
         const QString expectedToken = l.at(0);
         const QString expectedLexem = l.at(1);
         QString actualToken = QString::fromLatin1(tokenName(symbols.at(i).token));
@@ -371,7 +371,7 @@ void tst_QCssParser::import()
     QVERIFY(parser.testImport());
     QVERIFY(parser.parseImport(&rule));
     QCOMPARE(rule.href, QString("www.kde.org"));
-    QCOMPARE(rule.media.count(), 2);
+    QCOMPARE(rule.media.size(), 2);
     QCOMPARE(rule.media.at(0), QString("print"));
     QCOMPARE(rule.media.at(1), QString("screen"));
 }
@@ -382,7 +382,7 @@ void tst_QCssParser::media()
     QVERIFY(parser.testMedia());
     QCss::MediaRule rule;
     QVERIFY(parser.parseMedia(&rule));
-    QCOMPARE(rule.media.count(), 2);
+    QCOMPARE(rule.media.size(), 2);
     QCOMPARE(rule.media.at(0), QString("print"));
     QCOMPARE(rule.media.at(1), QString("screen"));
     QVERIFY(rule.styleRules.isEmpty());

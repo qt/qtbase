@@ -132,7 +132,7 @@ class QTestEventList: public QList<QTestEvent *>
 public:
     inline QTestEventList() {}
     inline QTestEventList(const QTestEventList &other): QList<QTestEvent *>()
-    { for (int i = 0; i < other.count(); ++i) append(other.at(i)->clone()); }
+    { for (int i = 0; i < other.size(); ++i) append(other.at(i)->clone()); }
     inline ~QTestEventList()
     { clear(); }
     inline void clear()
@@ -182,7 +182,7 @@ public:
 #ifdef QT_WIDGETS_LIB
     inline void simulate(QWidget *w)
     {
-        for (int i = 0; i < count(); ++i)
+        for (int i = 0; i < size(); ++i)
             at(i)->simulate(w);
     }
 #endif

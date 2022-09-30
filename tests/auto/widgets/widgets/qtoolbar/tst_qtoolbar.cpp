@@ -139,12 +139,12 @@ void tst_QToolBar::allowedAreas()
     QVERIFY(!tb.isAreaAllowed(Qt::RightToolBarArea));
     QVERIFY(!tb.isAreaAllowed(Qt::TopToolBarArea));
     QVERIFY(!tb.isAreaAllowed(Qt::BottomToolBarArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::ToolBarAreas *>(spy.at(0).value(0).constData()),
             tb.allowedAreas());
     spy.clear();
     tb.setAllowedAreas(tb.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     tb.setAllowedAreas(Qt::RightToolBarArea);
     QCOMPARE((int)tb.allowedAreas(), (int)Qt::RightToolBarArea);
@@ -152,12 +152,12 @@ void tst_QToolBar::allowedAreas()
     QVERIFY(tb.isAreaAllowed(Qt::RightToolBarArea));
     QVERIFY(!tb.isAreaAllowed(Qt::TopToolBarArea));
     QVERIFY(!tb.isAreaAllowed(Qt::BottomToolBarArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::ToolBarAreas *>(spy.at(0).value(0).constData()),
             tb.allowedAreas());
     spy.clear();
     tb.setAllowedAreas(tb.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     tb.setAllowedAreas(Qt::TopToolBarArea);
     QCOMPARE((int)tb.allowedAreas(), (int)Qt::TopToolBarArea);
@@ -165,12 +165,12 @@ void tst_QToolBar::allowedAreas()
     QVERIFY(!tb.isAreaAllowed(Qt::RightToolBarArea));
     QVERIFY(tb.isAreaAllowed(Qt::TopToolBarArea));
     QVERIFY(!tb.isAreaAllowed(Qt::BottomToolBarArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::ToolBarAreas *>(spy.at(0).value(0).constData()),
             tb.allowedAreas());
     spy.clear();
     tb.setAllowedAreas(tb.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     tb.setAllowedAreas(Qt::BottomToolBarArea);
     QCOMPARE((int)tb.allowedAreas(), (int)Qt::BottomToolBarArea);
@@ -178,12 +178,12 @@ void tst_QToolBar::allowedAreas()
     QVERIFY(!tb.isAreaAllowed(Qt::RightToolBarArea));
     QVERIFY(!tb.isAreaAllowed(Qt::TopToolBarArea));
     QVERIFY(tb.isAreaAllowed(Qt::BottomToolBarArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::ToolBarAreas *>(spy.at(0).value(0).constData()),
             tb.allowedAreas());
     spy.clear();
     tb.setAllowedAreas(tb.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     // multiple dock window areas
     tb.setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
@@ -192,12 +192,12 @@ void tst_QToolBar::allowedAreas()
     QVERIFY(!tb.isAreaAllowed(Qt::RightToolBarArea));
     QVERIFY(tb.isAreaAllowed(Qt::TopToolBarArea));
     QVERIFY(tb.isAreaAllowed(Qt::BottomToolBarArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::ToolBarAreas *>(spy.at(0).value(0).constData()),
             tb.allowedAreas());
     spy.clear();
     tb.setAllowedAreas(tb.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     tb.setAllowedAreas(Qt::LeftToolBarArea | Qt::RightToolBarArea);
     QCOMPARE(tb.allowedAreas(), Qt::LeftToolBarArea | Qt::RightToolBarArea);
@@ -205,12 +205,12 @@ void tst_QToolBar::allowedAreas()
     QVERIFY(tb.isAreaAllowed(Qt::RightToolBarArea));
     QVERIFY(!tb.isAreaAllowed(Qt::TopToolBarArea));
     QVERIFY(!tb.isAreaAllowed(Qt::BottomToolBarArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::ToolBarAreas *>(spy.at(0).value(0).constData()),
             tb.allowedAreas());
     spy.clear();
     tb.setAllowedAreas(tb.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     tb.setAllowedAreas(Qt::TopToolBarArea | Qt::LeftToolBarArea);
     QCOMPARE(tb.allowedAreas(), Qt::TopToolBarArea | Qt::LeftToolBarArea);
@@ -218,12 +218,12 @@ void tst_QToolBar::allowedAreas()
     QVERIFY(!tb.isAreaAllowed(Qt::RightToolBarArea));
     QVERIFY(tb.isAreaAllowed(Qt::TopToolBarArea));
     QVERIFY(!tb.isAreaAllowed(Qt::BottomToolBarArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::ToolBarAreas *>(spy.at(0).value(0).constData()),
             tb.allowedAreas());
     spy.clear();
     tb.setAllowedAreas(tb.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     tb.setAllowedAreas(Qt::BottomToolBarArea | Qt::RightToolBarArea);
     QCOMPARE(tb.allowedAreas(), Qt::BottomToolBarArea | Qt::RightToolBarArea);
@@ -231,12 +231,12 @@ void tst_QToolBar::allowedAreas()
     QVERIFY(tb.isAreaAllowed(Qt::RightToolBarArea));
     QVERIFY(!tb.isAreaAllowed(Qt::TopToolBarArea));
     QVERIFY(tb.isAreaAllowed(Qt::BottomToolBarArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::ToolBarAreas *>(spy.at(0).value(0).constData()),
             tb.allowedAreas());
     spy.clear();
     tb.setAllowedAreas(tb.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QToolBar::orientation()
@@ -248,48 +248,48 @@ void tst_QToolBar::orientation()
 
     tb.setOrientation(Qt::Vertical);
     QCOMPARE(tb.orientation(), Qt::Vertical);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::Orientation *>(spy.at(0).value(0).constData()),
             tb.orientation());
     spy.clear();
     tb.setOrientation(tb.orientation());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     tb.setOrientation(Qt::Horizontal);
     QCOMPARE(tb.orientation(), Qt::Horizontal);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::Orientation *>(spy.at(0).value(0).constData()),
             tb.orientation());
     spy.clear();
     tb.setOrientation(tb.orientation());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     tb.setOrientation(Qt::Vertical);
     QCOMPARE(tb.orientation(), Qt::Vertical);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::Orientation *>(spy.at(0).value(0).constData()),
             tb.orientation());
     spy.clear();
     tb.setOrientation(tb.orientation());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     tb.setOrientation(Qt::Horizontal);
     QCOMPARE(tb.orientation(), Qt::Horizontal);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::Orientation *>(spy.at(0).value(0).constData()),
             tb.orientation());
     spy.clear();
     tb.setOrientation(tb.orientation());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     tb.setOrientation(Qt::Vertical);
     QCOMPARE(tb.orientation(), Qt::Vertical);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::Orientation *>(spy.at(0).value(0).constData()),
             tb.orientation());
     spy.clear();
     tb.setOrientation(tb.orientation());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QToolBar::addAction()
@@ -626,43 +626,43 @@ void tst_QToolBar::iconSize()
         QCOMPARE(tb.iconSize(), defaultIconSize);
         tb.setIconSize(defaultIconSize);
         QCOMPARE(tb.iconSize(), defaultIconSize);
-        QCOMPARE(spy.count(), 0);
+        QCOMPARE(spy.size(), 0);
 
         spy.clear();
         tb.setIconSize(largeIconSize);
         QCOMPARE(tb.iconSize(), largeIconSize);
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         QCOMPARE(spy.first().first().toSize(), largeIconSize);
 
         // no-op
         spy.clear();
         tb.setIconSize(largeIconSize);
         QCOMPARE(tb.iconSize(), largeIconSize);
-        QCOMPARE(spy.count(), 0);
+        QCOMPARE(spy.size(), 0);
 
         spy.clear();
         tb.setIconSize(defaultIconSize);
         QCOMPARE(tb.iconSize(), defaultIconSize);
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         QCOMPARE(spy.first().first().toSize(), defaultIconSize);
 
         // no-op
         spy.clear();
         tb.setIconSize(defaultIconSize);
         QCOMPARE(tb.iconSize(), defaultIconSize);
-        QCOMPARE(spy.count(), 0);
+        QCOMPARE(spy.size(), 0);
 
         spy.clear();
         tb.setIconSize(smallIconSize);
         QCOMPARE(tb.iconSize(), smallIconSize);
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         QCOMPARE(spy.first().first().toSize(), smallIconSize);
 
         // no-op
         spy.clear();
         tb.setIconSize(smallIconSize);
         QCOMPARE(tb.iconSize(), smallIconSize);
-        QCOMPARE(spy.count(), 0);
+        QCOMPARE(spy.size(), 0);
 
         // setting the icon size to an invalid QSize will reset the
         // iconSize property to the default
@@ -690,28 +690,28 @@ void tst_QToolBar::iconSize()
         // explicitly set it to the default
         tb.setIconSize(defaultIconSize);
         QCOMPARE(tb.iconSize(), defaultIconSize);
-        QCOMPARE(tbSpy.count(), 0);
+        QCOMPARE(tbSpy.size(), 0);
 
         mw.addToolBar(&tb);
 
         // tb icon size should not change since it has been explicitly set
         QCOMPARE(tb.iconSize(), defaultIconSize);
-        QCOMPARE(tbSpy.count(), 0);
+        QCOMPARE(tbSpy.size(), 0);
 
         mw.setIconSize(largeIconSize);
 
         QCOMPARE(tb.iconSize(), defaultIconSize);
-        QCOMPARE(tbSpy.count(), 0);
+        QCOMPARE(tbSpy.size(), 0);
 
         mw.setIconSize(defaultIconSize);
 
         QCOMPARE(tb.iconSize(), defaultIconSize);
-        QCOMPARE(tbSpy.count(), 0);
+        QCOMPARE(tbSpy.size(), 0);
 
         mw.setIconSize(smallIconSize);
 
         QCOMPARE(tb.iconSize(), defaultIconSize);
-        QCOMPARE(tbSpy.count(), 0);
+        QCOMPARE(tbSpy.size(), 0);
 
         // resetting to the default should cause the toolbar to take
         // on the mainwindow's icon size
@@ -734,51 +734,51 @@ void tst_QToolBar::toolButtonStyle()
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonIconOnly);
         tb.setToolButtonStyle(Qt::ToolButtonIconOnly);
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonIconOnly);
-        QCOMPARE(spy.count(), 0);
+        QCOMPARE(spy.size(), 0);
 
         tb.setToolButtonStyle(Qt::ToolButtonTextOnly);
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonTextOnly);
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
 
         // no-op
         tb.setToolButtonStyle(Qt::ToolButtonTextOnly);
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonTextOnly);
-        QCOMPARE(spy.count(), 0);
+        QCOMPARE(spy.size(), 0);
 
         tb.setToolButtonStyle(Qt::ToolButtonIconOnly);
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonIconOnly);
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
 
         // no-op
         tb.setToolButtonStyle(Qt::ToolButtonIconOnly);
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonIconOnly);
-        QCOMPARE(spy.count(), 0);
+        QCOMPARE(spy.size(), 0);
 
         tb.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonTextBesideIcon);
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
 
         // no-op
         tb.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonTextBesideIcon);
-        QCOMPARE(spy.count(), 0);
+        QCOMPARE(spy.size(), 0);
 
         tb.setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonTextUnderIcon);
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         spy.clear();
 
         // no-op
         tb.setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonTextUnderIcon);
-        QCOMPARE(spy.count(), 0);
+        QCOMPARE(spy.size(), 0);
 
         tb.setToolButtonStyle(Qt::ToolButtonFollowStyle);
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonFollowStyle);
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
     }
 
     {
@@ -792,28 +792,28 @@ void tst_QToolBar::toolButtonStyle()
         // explicitly set the tb to the default
         tb.setToolButtonStyle(Qt::ToolButtonIconOnly);
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonIconOnly);
-        QCOMPARE(tbSpy.count(), 0);
+        QCOMPARE(tbSpy.size(), 0);
 
         mw.addToolBar(&tb);
 
         // tb icon size should not change since it has been explicitly set
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonIconOnly);
-        QCOMPARE(tbSpy.count(), 0);
+        QCOMPARE(tbSpy.size(), 0);
 
         mw.setToolButtonStyle(Qt::ToolButtonIconOnly);
 
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonIconOnly);
-        QCOMPARE(tbSpy.count(), 0);
+        QCOMPARE(tbSpy.size(), 0);
 
         mw.setToolButtonStyle(Qt::ToolButtonTextOnly);
 
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonIconOnly);
-        QCOMPARE(tbSpy.count(), 0);
+        QCOMPARE(tbSpy.size(), 0);
 
         mw.setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 
         QCOMPARE(tb.toolButtonStyle(), Qt::ToolButtonIconOnly);
-        QCOMPARE(tbSpy.count(), 0);
+        QCOMPARE(tbSpy.size(), 0);
 
         // note: there is no way to clear the explicitly set tool
         // button style... once you explicitly set it, the toolbar
@@ -927,25 +927,25 @@ void tst_QToolBar::visibilityChanged()
     mw.addToolBar(&tb);
     mw.show();
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toBool(), true);
     spy.clear();
 
     tb.hide();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toBool(), false);
     spy.clear();
 
     tb.hide();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     tb.show();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toBool(), true);
     spy.clear();
 
     tb.show();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QToolBar::actionOwnership()
@@ -1027,7 +1027,7 @@ void tst_QToolBar::accel()
 
     QTest::keyClick(&mw, Qt::Key_T, Qt::AltModifier);
 
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
 #ifdef Q_OS_MAC
     qt_set_sequence_auto_mnemonic(false);
 #endif

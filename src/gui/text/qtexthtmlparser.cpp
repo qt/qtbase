@@ -771,7 +771,7 @@ QString QTextHtmlParser::parseEntity(QStringView entity)
     if (!resolved.isNull())
         return QString(resolved);
 
-    if (entity.length() > 1 && entity.at(0) == u'#') {
+    if (entity.size() > 1 && entity.at(0) == u'#') {
         entity = entity.mid(1); // removing leading #
 
         int base = 10;
@@ -1029,7 +1029,7 @@ void QTextHtmlParserNode::initializeProperties(const QTextHtmlParserNode *parent
     // set element specific attributes
     switch (id) {
         case Html_a:
-            for (int i = 0; i < attributes.count(); i += 2) {
+            for (int i = 0; i < attributes.size(); i += 2) {
                 const QString key = attributes.at(i);
                 if (key.compare("href"_L1, Qt::CaseInsensitive) == 0
                     && !attributes.at(i + 1).isEmpty()) {
@@ -1575,12 +1575,12 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
     QString linkHref;
     QString linkType;
 
-    if (attributes.count() % 2 == 1)
+    if (attributes.size() % 2 == 1)
         return;
 
     QTextHtmlParserNode *node = nodes.last();
 
-    for (int i = 0; i < attributes.count(); i += 2) {
+    for (int i = 0; i < attributes.size(); i += 2) {
         QString key = attributes.at(i);
         QString value = attributes.at(i + 1);
 
@@ -1942,7 +1942,7 @@ QList<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &n
     case Html_u: {
         bool needsUnderline = (node.id == Html_u) ? true : false;
         if (node.id == Html_a) {
-            for (int i = 0; i < node.attributes.count(); i += 2) {
+            for (int i = 0; i < node.attributes.size(); i += 2) {
                 const QString key = node.attributes.at(i);
                 if (key.compare("href"_L1, Qt::CaseInsensitive) == 0
                     && !node.attributes.at(i + 1).isEmpty()) {

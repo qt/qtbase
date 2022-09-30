@@ -39,7 +39,7 @@ using namespace QMakeInternal;
 bool MakefileGenerator::canExecute(const QStringList &cmdline, int *a) const
 {
     int argv0 = -1;
-    for(int i = 0; i < cmdline.count(); ++i) {
+    for(int i = 0; i < cmdline.size(); ++i) {
         if(!cmdline.at(i).contains('=')) {
             argv0 = i;
             break;
@@ -238,7 +238,7 @@ MakefileGenerator::findFilesInVPATH(ProStringList l, uchar flags, const QString 
 {
     ProStringList vpath;
     const ProValueMap &v = project->variables();
-    for(int val_it = 0; val_it < l.count(); ) {
+    for(int val_it = 0; val_it < l.size(); ) {
         bool remove_file = false;
         ProString &val = l[val_it];
         if(!val.isEmpty()) {
@@ -304,7 +304,7 @@ MakefileGenerator::findFilesInVPATH(ProStringList l, uchar flags, const QString 
                     } else {
                         l.removeAt(val_it);
                         QString a;
-                        for(int i = (int)files.count()-1; i >= 0; i--) {
+                        for(int i = (int)files.size()-1; i >= 0; i--) {
                             a = real_dir + files[i];
                             if(!(flags & VPATH_NoFixify))
                                 a = fileFixify(a);
@@ -468,12 +468,12 @@ MakefileGenerator::init()
                     continue;
                 }
                 const ProStringList &tinn = v[innkey], &toutn = v[outnkey];
-                if (tinn.length() != 1) {
+                if (tinn.size() != 1) {
                     warn_msg(WarnLogic, "Substitute '%s.input' does not have exactly one value",
                              sub.toLatin1().constData());
                     continue;
                 }
-                if (toutn.length() != 1) {
+                if (toutn.size() != 1) {
                     warn_msg(WarnLogic, "Substitute '%s.output' does not have exactly one value",
                              sub.toLatin1().constData());
                     continue;
@@ -639,7 +639,7 @@ MakefileGenerator::init()
                 paths << compilers.at(x).variable_in;
         }
         paths << "INCLUDEPATH" << "QMAKE_INTERNAL_INCLUDED_FILES" << "PRECOMPILED_HEADER";
-        for(int y = 0; y < paths.count(); y++) {
+        for(int y = 0; y < paths.size(); y++) {
             ProStringList &l = v[paths[y].toKey()];
             for (ProStringList::Iterator it = l.begin(); it != l.end(); ++it) {
                 if((*it).isEmpty())
@@ -827,7 +827,7 @@ MakefileGenerator::init()
                             warn_msg(WarnLogic, "Dependency for [%s]: Not found %s", (*file_it).toLatin1().constData(),
                                      dep.toLatin1().constData());
                         } else {
-                            for(int i = 0; i < files.count(); i++)
+                            for(int i = 0; i < files.size(); i++)
                                 out_deps.append(dir + files[i]);
                         }
                     }
@@ -1316,7 +1316,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                     inst << cmd;
                     uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst_dir + filestr, FileFixifyAbsolute, false))));
                 }
-                for(int x = 0; x < files.count(); x++) {
+                for(int x = 0; x < files.size(); x++) {
                     QString file = files[x];
                     uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst_dir + file, FileFixifyAbsolute, false))));
                     QFileInfo fi(fileInfo(dirstr + file));
@@ -1883,7 +1883,7 @@ void MakefileGenerator::callExtraCompilerDependCommand(const ProString &extraCom
             return;
         QDir outDir(Option::output_dir);
         QStringList dep_cmd_deps = splitDeps(indeps, dep_lines);
-        for (int i = 0; i < dep_cmd_deps.count(); ++i) {
+        for (int i = 0; i < dep_cmd_deps.size(); ++i) {
             QString &file = dep_cmd_deps[i];
             const QString absFile = outDir.absoluteFilePath(file);
             if (absFile == file) {
@@ -2850,7 +2850,7 @@ MakefileGenerator::fixLibFlags(const ProKey &var)
     const ProStringList &in = project->values(var);
     ProStringList ret;
 
-    ret.reserve(in.length());
+    ret.reserve(in.size());
     for (const ProString &v : in)
         ret << fixLibFlag(v);
     return ret;
@@ -3538,7 +3538,7 @@ MakefileGenerator::LinkerResponseFileInfo MakefileGenerator::maybeCreateLinkerRe
         // When using QMAKE_LINK_OBJECT_MAX, the number of object files (regardless of their path
         // length) decides whether to use a response file.  This is far from being a useful
         // heuristic but let's keep this behavior for backwards compatibility.
-        if (linkerInputs.count() < threshold)
+        if (linkerInputs.size() < threshold)
             return {};
     } else {
         // When using QMAKE_REPONSEFILE_THRESHOLD, try to determine the command line length of the

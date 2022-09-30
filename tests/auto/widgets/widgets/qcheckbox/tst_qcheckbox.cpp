@@ -208,10 +208,10 @@ void tst_QCheckBox::stateChanged()
     QCoreApplication::processEvents();
     QCOMPARE(cur_state, 1);
 
-    QCOMPARE(stateChangedSpy.count(), 3);
+    QCOMPARE(stateChangedSpy.size(), 3);
     testWidget.setCheckState(Qt::PartiallyChecked);
     QCoreApplication::processEvents();
-    QCOMPARE(stateChangedSpy.count(), 3);
+    QCOMPARE(stateChangedSpy.size(), 3);
 }
 
 void tst_QCheckBox::isToggleButton()

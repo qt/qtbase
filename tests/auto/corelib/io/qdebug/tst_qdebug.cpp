@@ -1102,7 +1102,7 @@ void tst_QDebug::threadSafety() const
     s_sema.release(numThreads);
     sync.waitForFinished();
     QMutexLocker lock(&s_mutex);
-    QCOMPARE(s_messages.count(), numThreads);
+    QCOMPARE(s_messages.size(), numThreads);
     for (int i = 0; i < numThreads; ++i) {
         QCOMPARE(s_messages.at(i), QStringLiteral("doDebug"));
     }

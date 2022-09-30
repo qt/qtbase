@@ -420,7 +420,7 @@ QAccessibleInterface *QAccessibleAbstractScrollArea::child(int index) const
 
 int QAccessibleAbstractScrollArea::childCount() const
 {
-    return accessibleChildren().count();
+    return accessibleChildren().size();
 }
 
 int QAccessibleAbstractScrollArea::indexOfChild(const QAccessibleInterface *child) const

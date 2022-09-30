@@ -493,7 +493,7 @@ void tst_QSyntaxHighlighter::noContentsChangedDuringHighlight()
     QSignalSpy contentsChangedSpy(doc, SIGNAL(contentsChanged()));
     cursor.insertText("Hello World");
 
-    QCOMPARE(contentsChangedSpy.count(), 1);
+    QCOMPARE(contentsChangedSpy.size(), 1);
     QVERIFY(hl->highlighted);
     QVERIFY(lout->documentChangedCalled);
 }

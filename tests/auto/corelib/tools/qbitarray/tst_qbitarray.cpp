@@ -143,6 +143,7 @@ void tst_QBitArray::countBits()
     }
 
     QCOMPARE(bits.size(), numBits);
+    // NOLINTNEXTLINE(qt-port-to-std-compatible-api): We want to test count() and size()
     QCOMPARE(bits.count(), numBits);
     QCOMPARE(bits.count(true), onBits);
     QCOMPARE(bits.count(false), numBits - onBits);
@@ -493,7 +494,7 @@ void tst_QBitArray::datastream()
             bits.setBit(i);
     }
 
-    QCOMPARE(bits.count(), numBits);
+    QCOMPARE(bits.size(), numBits);
     QCOMPARE(bits.count(true), onBits);
     QCOMPARE(bits.count(false), numBits - onBits);
 
@@ -508,7 +509,7 @@ void tst_QBitArray::datastream()
     QBitArray array1, array2, array3;
     stream2 >> array1 >> array2 >> array3;
 
-    QCOMPARE(array1.count(), numBits);
+    QCOMPARE(array1.size(), numBits);
     QCOMPARE(array1.count(true), onBits);
     QCOMPARE(array1.count(false), numBits - onBits);
 

@@ -1323,7 +1323,7 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
             int neighborItem = itm;
             if (neighborItem > 0 && si->position == realCursorPosition)
                 --neighborItem;
-            else if (neighborItem < d->layoutData->items.count() - 1 && si->position + si->num_glyphs == realCursorPosition)
+            else if (neighborItem < d->layoutData->items.size() - 1 && si->position + si->num_glyphs == realCursorPosition)
                 ++neighborItem;
             const bool onBoundary = neighborItem != itm
                                  && si->analysis.bidiLevel != d->layoutData->items[neighborItem].analysis.bidiLevel;
@@ -2215,7 +2215,7 @@ int QTextLine::textStart() const
 int QTextLine::textLength() const
 {
     if (eng->option.flags() & QTextOption::ShowLineAndParagraphSeparators
-        && eng->block.isValid() && index == eng->lines.count()-1) {
+        && eng->block.isValid() && index == eng->lines.size()-1) {
         return eng->lines.at(index).length - 1;
     }
     return eng->lines.at(index).length + eng->lines.at(index).trailingSpaces;
@@ -2900,7 +2900,7 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
         int neighborItem = itm;
         if (neighborItem > 0 && scriptItem->position == pos)
             --neighborItem;
-        else if (neighborItem < eng->layoutData->items.count() - 1 && scriptItem->position + scriptItem->num_glyphs == pos)
+        else if (neighborItem < eng->layoutData->items.size() - 1 && scriptItem->position + scriptItem->num_glyphs == pos)
             ++neighborItem;
         const bool onBoundary = neighborItem != itm && scriptItem->analysis.bidiLevel != eng->layoutData->items[neighborItem].analysis.bidiLevel;
         // If we are, prioritise the neighbor item that has the same direction as the engine
@@ -3217,7 +3217,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
     // character between lines is a space and we want
     // to position the cursor to the left of that
     // character.
-    if (index < eng->lines.count() - 1)
+    if (index < eng->lines.size() - 1)
         pos = qMin(eng->previousLogicalPosition(pos), pos);
 
     return pos;

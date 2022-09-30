@@ -89,7 +89,7 @@ QMakeGlobals::ArgumentReturn QMakeGlobals::addCommandLineArguments(
         QMakeCmdLineParserState &state, QStringList &args, int *pos)
 {
     enum { ArgNone, ArgConfig, ArgSpec, ArgXSpec, ArgTmpl, ArgTmplPfx, ArgCache, ArgQtConf } argState = ArgNone;
-    for (; *pos < args.count(); (*pos)++) {
+    for (; *pos < args.size(); (*pos)++) {
         QString arg = args.at(*pos);
         switch (argState) {
         case ArgConfig:
@@ -243,7 +243,7 @@ QStringList QMakeGlobals::splitPathList(const QString &val) const
     if (!val.isEmpty()) {
         QString cwd(QDir::currentPath());
         const QStringList vals = val.split(dirlist_sep, Qt::SkipEmptyParts);
-        ret.reserve(vals.length());
+        ret.reserve(vals.size());
         for (const QString &it : vals)
             ret << IoUtils::resolvePath(cwd, it);
     }

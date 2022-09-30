@@ -109,7 +109,7 @@ void tst_QAnimationGroup::emptyGroup()
     QCOMPARE(group.state(), QAnimationGroup::Stopped);
     group.start();
 
-    QCOMPARE(groupStateChangedSpy.count(), 2);
+    QCOMPARE(groupStateChangedSpy.size(), 2);
 
     QCOMPARE(qvariant_cast<QAbstractAnimation::State>(groupStateChangedSpy.at(0).first()),
              QAnimationGroup::Running);
@@ -121,7 +121,7 @@ void tst_QAnimationGroup::emptyGroup()
     QTest::ignoreMessage(QtWarningMsg, "QAbstractAnimation::pause: Cannot pause a stopped animation");
     group.pause();
 
-    QCOMPARE(groupStateChangedSpy.count(), 2);
+    QCOMPARE(groupStateChangedSpy.size(), 2);
     QCOMPARE(group.state(), QAnimationGroup::Stopped);
 
     group.start();
@@ -135,7 +135,7 @@ void tst_QAnimationGroup::emptyGroup()
 
     group.stop();
 
-    QCOMPARE(groupStateChangedSpy.count(), 4);
+    QCOMPARE(groupStateChangedSpy.size(), 4);
     QCOMPARE(group.state(), QAnimationGroup::Stopped);
 }
 

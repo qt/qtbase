@@ -1539,7 +1539,7 @@ bool VCLinkerTool::parseOption(const char* option)
         {
             QStringList both = QString(option+6).split(",");
             HeapReserveSize = both[0].toLongLong();
-            if(both.count() == 2)
+            if(both.size() == 2)
                 HeapCommitSize = both[1].toLongLong();
         }
         break;
@@ -1728,7 +1728,7 @@ bool VCLinkerTool::parseOption(const char* option)
         {
             QStringList both = QString(option+7).split(",");
             StackReserveSize = both[0].toLongLong();
-            if(both.count() == 2)
+            if(both.size() == 2)
                 StackCommitSize = both[1].toLongLong();
         }
         break;
@@ -2231,13 +2231,13 @@ void VCFilter::addFile(const VCFilterFile& fileInfo)
 
 void VCFilter::addFiles(const QStringList& fileList)
 {
-    for (int i = 0; i < fileList.count(); ++i)
+    for (int i = 0; i < fileList.size(); ++i)
         addFile(fileList.at(i));
 }
 
 void VCFilter::addFiles(const ProStringList& fileList)
 {
-    for (int i = 0; i < fileList.count(); ++i)
+    for (int i = 0; i < fileList.size(); ++i)
         addFile(fileList.at(i).toQString());
 }
 
@@ -2342,7 +2342,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
     CustomBuildTool.ToolPath.clear();
     CustomBuildTool.ToolName = QLatin1String(_VCCustomBuildTool);
 
-    for (int x = 0; x < extraCompilers.count(); ++x) {
+    for (int x = 0; x < extraCompilers.size(); ++x) {
         const QString &extraCompilerName = extraCompilers.at(x);
 
         if (!Project->verifyExtraCompiler(extraCompilerName, inFile) && !hasBuiltIn)
@@ -2387,7 +2387,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
                                                     configs.contains("dep_existing_only"),
                                                     true  /* checkCommandAvailability */);
         }
-        for (int i = 0; i < deps.count(); ++i)
+        for (int i = 0; i < deps.size(); ++i)
             deps[i] = Option::fixPathToTargetOS(
                         Project->replaceExtraCompilerVariables(
                                 deps.at(i), inFile, out, MakefileGenerator::NoShell),
@@ -2396,9 +2396,9 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         if (combined) {
             // Add dependencies for each file
             const ProStringList &tmp_in = Project->project->values(ProKey(extraCompilerName + ".input"));
-            for (int a = 0; a < tmp_in.count(); ++a) {
+            for (int a = 0; a < tmp_in.size(); ++a) {
                 const ProStringList &files = Project->project->values(tmp_in.at(a).toKey());
-                for (int b = 0; b < files.count(); ++b) {
+                for (int b = 0; b < files.size(); ++b) {
                     QString file = files.at(b).toQString();
                     deps += Project->findDependencies(file);
                     inputs += Option::fixPathToTargetOS(file, false);
@@ -2432,7 +2432,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         }
 
         // Fixify paths
-        for (int i = 0; i < deps.count(); ++i)
+        for (int i = 0; i < deps.size(); ++i)
             deps[i] = Option::fixPathToTargetOS(deps[i], false);
 
 
@@ -2450,7 +2450,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         deps += CustomBuildTool.AdditionalDependencies;
         // Make sure that all deps are only once
         QStringList uniqDeps;
-        for (int c = 0; c < deps.count(); ++c) {
+        for (int c = 0; c < deps.size(); ++c) {
             QString aDep = deps.at(c);
             if (!aDep.isEmpty())
                 uniqDeps << aDep;
@@ -2496,7 +2496,7 @@ const VCFilter &VCProjectSingleConfig::filterByName(const QString &name) const
 
 const VCFilter &VCProjectSingleConfig::filterForExtraCompiler(const QString &compilerName) const
 {
-    for (int i = 0; i < ExtraCompilersFiles.count(); ++i)
+    for (int i = 0; i < ExtraCompilersFiles.size(); ++i)
         if (ExtraCompilersFiles.at(i).Name == compilerName)
             return ExtraCompilersFiles.at(i);
 
@@ -2576,7 +2576,7 @@ void VCProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
     outputFilter(tempProj, xml, "Distribution Files");
 
     QSet<QString> extraCompilersInProject;
-    for (int i = 0; i < tool.ExtraCompilersFiles.count(); ++i) {
+    for (int i = 0; i < tool.ExtraCompilersFiles.size(); ++i) {
         const QString &compilerName = tool.ExtraCompilersFiles.at(i).Name;
         if (!extraCompilersInProject.contains(compilerName)) {
             extraCompilersInProject += compilerName;
@@ -2584,7 +2584,7 @@ void VCProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
         }
     }
 
-    for (int x = 0; x < tempProj.ExtraCompilers.count(); ++x) {
+    for (int x = 0; x < tempProj.ExtraCompilers.size(); ++x) {
         outputFilter(tempProj, xml, tempProj.ExtraCompilers.at(x));
     }
     outputFilter(tempProj, xml, "Root Files");
@@ -2628,7 +2628,7 @@ void VCProjectWriter::write(XmlOutput &xml, VCProject &tool)
     outputFilter(tool, xml, "Resource Files");
     outputFilter(tool, xml, "Deployment Files");
     outputFilter(tool, xml, "Distribution Files");
-    for (int x = 0; x < tool.ExtraCompilers.count(); ++x) {
+    for (int x = 0; x < tool.ExtraCompilers.size(); ++x) {
         outputFilter(tool, xml, tool.ExtraCompilers.at(x));
     }
     outputFilter(tool, xml, "Root Files");

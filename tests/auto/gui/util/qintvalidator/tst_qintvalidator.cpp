@@ -211,45 +211,45 @@ void tst_QIntValidator::notifySignals()
     QSignalSpy changedSpy(&iv, SIGNAL(changed()));
 
     iv.setTop(9);
-    QCOMPARE(topSpy.count(), 1);
-    QCOMPARE(changedSpy.count(), 1);
+    QCOMPARE(topSpy.size(), 1);
+    QCOMPARE(changedSpy.size(), 1);
     QCOMPARE(iv.top(), 9);
     iv.setBottom(1);
-    QCOMPARE(bottomSpy.count(), 1);
-    QCOMPARE(changedSpy.count(), 2);
+    QCOMPARE(bottomSpy.size(), 1);
+    QCOMPARE(changedSpy.size(), 2);
     QCOMPARE(iv.bottom(), 1);
 
     iv.setRange(1, 8);
-    QCOMPARE(topSpy.count(), 2);
-    QCOMPARE(bottomSpy.count(), 1);
-    QCOMPARE(changedSpy.count(), 3);
+    QCOMPARE(topSpy.size(), 2);
+    QCOMPARE(bottomSpy.size(), 1);
+    QCOMPARE(changedSpy.size(), 3);
     QCOMPARE(iv.top(), 8);
     QCOMPARE(iv.bottom(), 1);
 
     iv.setRange(2, 8);
-    QCOMPARE(topSpy.count(), 2);
-    QCOMPARE(bottomSpy.count(), 2);
-    QCOMPARE(changedSpy.count(), 4);
+    QCOMPARE(topSpy.size(), 2);
+    QCOMPARE(bottomSpy.size(), 2);
+    QCOMPARE(changedSpy.size(), 4);
     QCOMPARE(iv.top(), 8);
     QCOMPARE(iv.bottom(), 2);
 
     iv.setRange(3, 7);
-    QCOMPARE(topSpy.count(), 3);
-    QCOMPARE(bottomSpy.count(), 3);
-    QCOMPARE(changedSpy.count(), 5);
+    QCOMPARE(topSpy.size(), 3);
+    QCOMPARE(bottomSpy.size(), 3);
+    QCOMPARE(changedSpy.size(), 5);
     QCOMPARE(iv.top(), 7);
     QCOMPARE(iv.bottom(), 3);
 
     iv.setRange(3, 7);
-    QCOMPARE(topSpy.count(), 3);
-    QCOMPARE(bottomSpy.count(), 3);
-    QCOMPARE(changedSpy.count(), 5);
+    QCOMPARE(topSpy.size(), 3);
+    QCOMPARE(bottomSpy.size(), 3);
+    QCOMPARE(changedSpy.size(), 5);
 
     iv.setLocale(QLocale("C"));
-    QCOMPARE(changedSpy.count(), 5);
+    QCOMPARE(changedSpy.size(), 5);
 
     iv.setLocale(QLocale("en"));
-    QCOMPARE(changedSpy.count(), 6);
+    QCOMPARE(changedSpy.size(), 6);
 }
 
 void tst_QIntValidator::fixup()

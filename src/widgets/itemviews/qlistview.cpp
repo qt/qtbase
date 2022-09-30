@@ -2885,7 +2885,7 @@ bool QIconModeViewBase::filterStartDrag(Qt::DropActions supportedActions)
     // plus adding viewitems to the draggedItems list.
     // We need these items to draw the drag items
     QModelIndexList indexes = dd->selectionModel->selectedIndexes();
-    if (indexes.count() > 0 ) {
+    if (indexes.size() > 0 ) {
         if (viewport()->acceptDrops()) {
             QModelIndexList::ConstIterator it = indexes.constBegin();
             for (; it != indexes.constEnd(); ++it)
@@ -3140,7 +3140,7 @@ void QIconModeViewBase::doDynamicLayout(const QListViewLayoutInfo &info)
         segPosition = topLeft.x();
     }
 
-    if (moved.count() != items.size())
+    if (moved.size() != items.size())
         moved.resize(items.size());
 
     QRect rect(QPoint(), topLeft);
@@ -3335,7 +3335,7 @@ void QIconModeViewBase::moveItem(int index, const QPoint &dest)
     contentsSize = (QRect(QPoint(0, 0), contentsSize)|QRect(dest, rect.size())).size();
 
     // mark the item as moved
-    if (moved.count() != items.size())
+    if (moved.size() != items.size())
         moved.resize(items.size());
     moved.setBit(index, true);
 }

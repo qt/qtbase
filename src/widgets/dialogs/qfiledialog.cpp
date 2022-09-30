@@ -673,7 +673,7 @@ void QFileDialogPrivate::emitFilesSelected(const QStringList &files)
 {
     Q_Q(QFileDialog);
     emit q->filesSelected(files);
-    if (files.count() == 1)
+    if (files.size() == 1)
         emit q->fileSelected(files.first());
 }
 
@@ -1352,7 +1352,7 @@ QStringList qt_strip_filters(const QStringList &filters)
 #if QT_CONFIG(regularexpression)
     QStringList strippedFilters;
     static const QRegularExpression r(QString::fromLatin1(QPlatformFileDialogHelper::filterRegExp));
-    const int numFilters = filters.count();
+    const int numFilters = filters.size();
     strippedFilters.reserve(numFilters);
     for (int i = 0; i < numFilters; ++i) {
         QString filterName;
@@ -1391,7 +1391,7 @@ void QFileDialog::setNameFilters(const QStringList &filters)
 {
     Q_D(QFileDialog);
     QStringList cleanedFilters;
-    const int numFilters = filters.count();
+    const int numFilters = filters.size();
     cleanedFilters.reserve(numFilters);
     for (int i = 0; i < numFilters; ++i) {
         cleanedFilters << filters[i].simplified();
@@ -3544,7 +3544,7 @@ void QFileDialogPrivate::_q_deleteCurrent()
         return;
 
     QModelIndexList list = qFileDialogUi->listView->selectionModel()->selectedRows();
-    for (int i = list.count() - 1; i >= 0; --i) {
+    for (int i = list.size() - 1; i >= 0; --i) {
         QPersistentModelIndex index = list.at(i);
         if (index == qFileDialogUi->listView->rootIndex())
             continue;
@@ -3600,7 +3600,7 @@ void QFileDialogPrivate::_q_autoCompleteFileName(const QString &text)
     }
 
     const QStringList multipleFiles = typedFiles();
-    if (multipleFiles.count() > 0) {
+    if (multipleFiles.size() > 0) {
         QModelIndexList oldFiles = qFileDialogUi->listView->selectionModel()->selectedRows();
         QList<QModelIndex> newFiles;
         for (const auto &file : multipleFiles) {
@@ -3808,7 +3808,7 @@ void QFileDialogPrivate::_q_useNameFilter(int index)
     QStringList newNameFilters = QPlatformFileDialogHelper::cleanFilterList(nameFilter);
     if (q_func()->acceptMode() == QFileDialog::AcceptSave) {
         QString newNameFilterExtension;
-        if (newNameFilters.count() > 0)
+        if (newNameFilters.size() > 0)
             newNameFilterExtension = QFileInfo(newNameFilters.at(0)).suffix();
 
         QString fileName = lineEdit()->text();
@@ -3843,8 +3843,8 @@ void QFileDialogPrivate::_q_selectionChanged()
             continue;
         allFiles.append(index.data().toString());
     }
-    if (allFiles.count() > 1)
-        for (qsizetype i = 0; i < allFiles.count(); ++i) {
+    if (allFiles.size() > 1)
+        for (qsizetype i = 0; i < allFiles.size(); ++i) {
             allFiles.replace(i, QString(u'"' + allFiles.at(i) + u'"'));
     }
 
@@ -4012,7 +4012,7 @@ void QFileDialogComboBox::showPopup()
 
     // append history
     QList<QUrl> urls;
-    for (int i = 0; i < m_history.count(); ++i) {
+    for (int i = 0; i < m_history.size(); ++i) {
         QUrl path = QUrl::fromLocalFile(m_history.at(i));
         if (!urls.contains(path))
             urls.prepend(path);
@@ -4220,7 +4220,7 @@ QStringList QFSCompleter::splitPath(const QString &path) const
 #else
     bool startsFromRoot = pathCopy[0] == sep;
 #endif
-    if (parts.count() == 1 || (parts.count() > 1 && !startsFromRoot)) {
+    if (parts.size() == 1 || (parts.size() > 1 && !startsFromRoot)) {
         const QFileSystemModel *dirModel;
         if (proxyModel)
             dirModel = qobject_cast<const QFileSystemModel *>(proxyModel->sourceModel());
@@ -4233,7 +4233,7 @@ QStringList QFSCompleter::splitPath(const QString &path) const
 #endif
         if (currentLocation.contains(sep) && path != currentLocation) {
             QStringList currentLocationList = splitPath(currentLocation);
-            while (!currentLocationList.isEmpty() && parts.count() > 0 && parts.at(0) == ".."_L1) {
+            while (!currentLocationList.isEmpty() && parts.size() > 0 && parts.at(0) == ".."_L1) {
                 parts.removeFirst();
                 currentLocationList.removeLast();
             }

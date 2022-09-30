@@ -299,14 +299,14 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
     if (match & QAccessible::Controlled) {
         QObjectList allReceivers;
         QObject *connectionObject = object();
-        for (int sig = 0; sig < d->primarySignals.count(); ++sig) {
+        for (int sig = 0; sig < d->primarySignals.size(); ++sig) {
             const QObjectList receivers = connectionObject->d_func()->receiverList(d->primarySignals.at(sig).toLatin1());
             allReceivers += receivers;
         }
 
         allReceivers.removeAll(object());  //### The object might connect to itself internally
 
-        for (int i = 0; i < allReceivers.count(); ++i) {
+        for (int i = 0; i < allReceivers.size(); ++i) {
             const QAccessible::Relation rel = QAccessible::Controlled;
             QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(allReceivers.at(i));
             if (iface)

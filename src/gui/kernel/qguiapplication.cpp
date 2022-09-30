@@ -883,7 +883,7 @@ bool QGuiApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blocking
     if (modalWindowList.isEmpty() || windowNeverBlocked(window))
         return false;
 
-    for (int i = 0; i < modalWindowList.count(); ++i) {
+    for (int i = 0; i < modalWindowList.size(); ++i) {
         QWindow *modalWindow = modalWindowList.at(i);
 
         // A window is not blocked by another modal window if the two are

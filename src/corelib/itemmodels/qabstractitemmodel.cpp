@@ -2120,7 +2120,7 @@ QStringList QAbstractItemModel::mimeTypes() const
 */
 QMimeData *QAbstractItemModel::mimeData(const QModelIndexList &indexes) const
 {
-    if (indexes.count() <= 0)
+    if (indexes.size() <= 0)
         return nullptr;
     QStringList types = mimeTypes();
     if (types.isEmpty())
@@ -2159,7 +2159,7 @@ bool QAbstractItemModel::canDropMimeData(const QMimeData *data, Qt::DropAction a
         return false;
 
     const QStringList modelTypes = mimeTypes();
-    for (int i = 0; i < modelTypes.count(); ++i) {
+    for (int i = 0; i < modelTypes.size(); ++i) {
         if (data->hasFormat(modelTypes.at(i)))
             return true;
     }
@@ -2516,7 +2516,7 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
 
     // iterates twice if wrapping
     for (int i = 0; (wrap && i < 2) || (!wrap && i < 1); ++i) {
-        for (int r = from; (r < to) && (allHits || result.count() < hits); ++r) {
+        for (int r = from; (r < to) && (allHits || result.size() < hits); ++r) {
             QModelIndex idx = index(r, column, p);
             if (!idx.isValid())
                  continue;
@@ -2582,7 +2582,7 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
                 if (hasChildren(parent)) { // search the hierarchy
                     result += match(index(0, column, parent), role,
                                     (text.isEmpty() ? value : text),
-                                    (allHits ? -1 : hits - result.count()), flags);
+                                    (allHits ? -1 : hits - result.size()), flags);
                 }
             }
         }
@@ -3446,8 +3446,8 @@ void QAbstractItemModel::changePersistentIndexList(const QModelIndexList &from,
     if (d->persistent.indexes.isEmpty())
         return;
     QList<QPersistentModelIndexData *> toBeReinserted;
-    toBeReinserted.reserve(to.count());
-    for (int i = 0; i < from.count(); ++i) {
+    toBeReinserted.reserve(to.size());
+    for (int i = 0; i < from.size(); ++i) {
         if (from.at(i) == to.at(i))
             continue;
         const auto it = d->persistent.indexes.constFind(from.at(i));

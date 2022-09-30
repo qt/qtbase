@@ -302,7 +302,7 @@ void QWidgetRepaintManager::removeDirtyWidget(QWidget *w)
     needsFlushWidgets.removeAll(w);
 
     QWidgetPrivate *wd = w->d_func();
-    const int n = wd->children.count();
+    const int n = wd->children.size();
     for (int i = 0; i < n; ++i) {
         if (QWidget *child = qobject_cast<QWidget*>(wd->children.at(i)))
             removeDirtyWidget(child);

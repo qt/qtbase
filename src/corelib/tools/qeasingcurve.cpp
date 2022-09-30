@@ -1274,7 +1274,7 @@ void QEasingCurve::addCubicBezierSegment(const QPointF & c1, const QPointF & c2,
 
 QList<QPointF> static inline tcbToBezier(const TCBPoints &tcbPoints)
 {
-    const int count = tcbPoints.count();
+    const int count = tcbPoints.size();
     QList<QPointF> bezierPoints;
     bezierPoints.reserve(3 * (count - 1));
 

@@ -779,7 +779,7 @@ void QSQLiteDriver::close()
         for (QSQLiteResult *result : std::as_const(d->results))
             result->d_func()->finalize();
 
-        if (d->access && (d->notificationid.count() > 0)) {
+        if (d->access && (d->notificationid.size() > 0)) {
             d->notificationid.clear();
             sqlite3_update_hook(d->access, nullptr, nullptr);
         }
@@ -990,7 +990,7 @@ bool QSQLiteDriver::subscribeToNotification(const QString &name)
 
     //sqlite supports only one notification callback, so only the first is registered
     d->notificationid << name;
-    if (d->notificationid.count() == 1)
+    if (d->notificationid.size() == 1)
         sqlite3_update_hook(d->access, &handle_sqlite_callback, reinterpret_cast<void *> (this));
 
     return true;

@@ -1811,12 +1811,12 @@ QRect AtSpiAdaptor::getExtents(QAccessibleInterface *interface, uint coordType)
 bool AtSpiAdaptor::actionInterface(QAccessibleInterface *interface, const QString &function, const QDBusMessage &message, const QDBusConnection &connection)
 {
     if (function == "GetNActions"_L1) {
-        int count = QAccessibleBridgeUtils::effectiveActionNames(interface).count();
+        int count = QAccessibleBridgeUtils::effectiveActionNames(interface).size();
         sendReply(connection, message, QVariant::fromValue(QDBusVariant(QVariant::fromValue(count))));
     } else if (function == "DoAction"_L1) {
         int index = message.arguments().at(0).toInt();
         const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(interface);
-        if (index < 0 || index >= actionNames.count())
+        if (index < 0 || index >= actionNames.size())
             return false;
         const QString actionName = actionNames.at(index);
         bool success = QAccessibleBridgeUtils::performEffectiveAction(interface, actionName);
@@ -1826,13 +1826,13 @@ bool AtSpiAdaptor::actionInterface(QAccessibleInterface *interface, const QStrin
     } else if (function == "GetName"_L1) {
         int index = message.arguments().at(0).toInt();
         const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(interface);
-        if (index < 0 || index >= actionNames.count())
+        if (index < 0 || index >= actionNames.size())
             return false;
         sendReply(connection, message, actionNames.at(index));
     } else if (function == "GetDescription"_L1) {
         int index = message.arguments().at(0).toInt();
         const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(interface);
-        if (index < 0 || index >= actionNames.count())
+        if (index < 0 || index >= actionNames.size())
             return false;
         QString description;
         if (QAccessibleActionInterface *actionIface = interface->actionInterface())
@@ -1843,7 +1843,7 @@ bool AtSpiAdaptor::actionInterface(QAccessibleInterface *interface, const QStrin
     } else if (function == "GetKeyBinding"_L1) {
         int index = message.arguments().at(0).toInt();
         const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(interface);
-        if (index < 0 || index >= actionNames.count())
+        if (index < 0 || index >= actionNames.size())
             return false;
         QStringList keyBindings;
         if (QAccessibleActionInterface *actionIface = interface->actionInterface())
@@ -1853,7 +1853,7 @@ bool AtSpiAdaptor::actionInterface(QAccessibleInterface *interface, const QStrin
             if (!acc.isEmpty())
                 keyBindings.append(acc);
         }
-        if (keyBindings.length() > 0)
+        if (keyBindings.size() > 0)
             sendReply(connection, message, keyBindings.join(u';'));
         else
             sendReply(connection, message, QString());

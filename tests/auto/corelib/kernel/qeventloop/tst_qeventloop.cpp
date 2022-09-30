@@ -174,8 +174,8 @@ void tst_QEventLoop::processEvents()
     // process posted events, QEventLoop::processEvents() should return
     // true
     QVERIFY(eventLoop.processEvents());
-    QCOMPARE(aboutToBlockSpy.count(), 0);
-    QCOMPARE(awakeSpy.count(), 1);
+    QCOMPARE(aboutToBlockSpy.size(), 0);
+    QCOMPARE(awakeSpy.size(), 1);
 
     // allow any session manager to complete its handshake, so that
     // there are no pending events left. This tests that we are able
@@ -196,8 +196,8 @@ void tst_QEventLoop::processEvents()
     // processEvents is entered. There is no guarantee that that the
     // processEvents call actually blocked, since the OS may introduce
     // native events at any time.
-    QVERIFY(awakeSpy.count() > 0);
-    QVERIFY(awakeSpy.count() >= aboutToBlockSpy.count());
+    QVERIFY(awakeSpy.size() > 0);
+    QVERIFY(awakeSpy.size() >= aboutToBlockSpy.size());
 
     killTimer(timerId);
 }
@@ -240,7 +240,7 @@ void tst_QEventLoop::exec()
         QVERIFY(spy.isValid());
         thread.cond.wakeOne();
         thread.cond.wait(&thread.mutex);
-        QVERIFY(spy.count() > 0);
+        QVERIFY(spy.size() > 0);
         int v = thread.result1;
         QCOMPARE(v, 0);
 
@@ -249,7 +249,7 @@ void tst_QEventLoop::exec()
         thread.cond.wakeOne();
         thread.mutex.unlock();
         thread.wait();
-        QCOMPARE(spy.count(), 0);
+        QCOMPARE(spy.size(), 0);
         v = thread.result2;
         QCOMPARE(v, -1);
     }
@@ -307,7 +307,7 @@ void tst_QEventLoop::wakeUp()
     QTimer::singleShot(1000, &eventLoop, SLOT(quit()));
     (void) eventLoop.exec();
 
-    QVERIFY(spy.count() > 0);
+    QVERIFY(spy.size() > 0);
 
     thread.quit();
     (void) eventLoop.exec();

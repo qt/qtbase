@@ -673,33 +673,33 @@ void tst_QItemDelegate::testEventFilter()
     //For each test we send a key event and check if signals were emitted.
     event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Tab, Qt::NoModifier);
     QVERIFY(delegate.eventFilter(&widget, event));
-    QCOMPARE(closeEditorSpy.count(), 1);
-    QCOMPARE(commitDataSpy.count(), 1);
+    QCOMPARE(closeEditorSpy.size(), 1);
+    QCOMPARE(commitDataSpy.size(), 1);
     delete event;
 
     event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Backtab, Qt::NoModifier);
     QVERIFY(delegate.eventFilter(&widget, event));
-    QCOMPARE(closeEditorSpy.count(), 2);
-    QCOMPARE(commitDataSpy.count(), 2);
+    QCOMPARE(closeEditorSpy.size(), 2);
+    QCOMPARE(commitDataSpy.size(), 2);
     delete event;
 
     event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Escape, Qt::NoModifier);
     QVERIFY(delegate.eventFilter(&widget, event));
-    QCOMPARE(closeEditorSpy.count(), 3);
-    QCOMPARE(commitDataSpy.count(), 2);
+    QCOMPARE(closeEditorSpy.size(), 3);
+    QCOMPARE(commitDataSpy.size(), 2);
     delete event;
 
     event = new QKeyEvent(QEvent::KeyPress, Qt::Key_A, Qt::NoModifier);
     QVERIFY(!delegate.eventFilter(&widget, event));
-    QCOMPARE(closeEditorSpy.count(), 3);
-    QCOMPARE(commitDataSpy.count(), 2);
+    QCOMPARE(closeEditorSpy.size(), 3);
+    QCOMPARE(commitDataSpy.size(), 2);
     delete event;
 
     //Subtest focusEvent
     event = new QFocusEvent(QEvent::FocusOut);
     QVERIFY(!delegate.eventFilter(&widget, event));
-    QCOMPARE(closeEditorSpy.count(), 4);
-    QCOMPARE(commitDataSpy.count(), 3);
+    QCOMPARE(closeEditorSpy.size(), 4);
+    QCOMPARE(commitDataSpy.size(), 3);
     delete event;
 }
 

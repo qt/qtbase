@@ -250,7 +250,7 @@ void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
     if(project->isActiveConfig("staticlib") && project->first("TEMPLATE") == "lib") {
         t << "\n\t-$(DEL_FILE) $(DESTDIR_TARGET) 2>" << var("QMAKE_SHELL_NULL_DEVICE");
         const ProString &objmax = project->first("QMAKE_LINK_OBJECT_MAX");
-        if (objmax.isEmpty() || project->values("OBJECTS").count() < objmax.toInt()) {
+        if (objmax.isEmpty() || project->values("OBJECTS").size() < objmax.toInt()) {
             t << "\n\t$(LIB) $(DESTDIR_TARGET) " << objectsLinkLine << " " ;
         } else {
             t << "\n\t" << objectsLinkLine << " " ;
@@ -273,7 +273,7 @@ void MingwMakefileGenerator::writeRcFilePart(QTextStream &t)
     ProStringList rcIncPaths = project->values("RC_INCLUDEPATH");
     rcIncPaths.prepend(fileInfo(rc_file).path());
     QString incPathStr;
-    for (int i = 0; i < rcIncPaths.count(); ++i) {
+    for (int i = 0; i < rcIncPaths.size(); ++i) {
         const ProString &path = rcIncPaths.at(i);
         if (path.isEmpty())
             continue;

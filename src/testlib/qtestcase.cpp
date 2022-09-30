@@ -655,7 +655,7 @@ static void qPrintDataTags(FILE *stream)
 
             // Print all tag combinations:
             if (gTable->dataCount() == 0) {
-                if (localTags.count() == 0) {
+                if (localTags.size() == 0) {
                     // No tags at all, so just print the test function:
                     fprintf(stream, "%s %s\n", currTestMetaObj->className(), slot);
                 } else {
@@ -667,7 +667,7 @@ static void qPrintDataTags(FILE *stream)
                 }
             } else {
                 for (int j = 0; j < gTable->dataCount(); ++j) {
-                    if (localTags.count() == 0) {
+                    if (localTags.size() == 0) {
                         // Only global tags, so print the current one:
                         fprintf(
                             stream, "%s %s __global__ %s\n",
@@ -2431,7 +2431,7 @@ QTest::TestEntryFunction QTest::qGetTestCaseEntryFunction(const QString& name)
 */
 int QTest::qExec(QObject *testObject, const QStringList &arguments)
 {
-    const int argc = arguments.count();
+    const int argc = arguments.size();
     QVarLengthArray<char *> argv(argc);
 
     QList<QByteArray> args;

@@ -984,8 +984,8 @@ void tst_QStandardItem::sortChildren()
         QCOMPARE(two->child(1)->text(), QLatin1String("e"));
         QCOMPARE(two->child(2)->text(), QLatin1String("f"));
 
-        QCOMPARE(layoutAboutToBeChangedSpy.count(), (x == 0) ? 0 : 3);
-        QCOMPARE(layoutChangedSpy.count(), (x == 0) ? 0 : 3);
+        QCOMPARE(layoutAboutToBeChangedSpy.size(), (x == 0) ? 0 : 3);
+        QCOMPARE(layoutChangedSpy.size(), (x == 0) ? 0 : 3);
 
         if (x == 0)
             delete item;
@@ -1027,7 +1027,7 @@ void tst_QStandardItem::subclassing()
 
     QSignalSpy itemChangedSpy(&model, &QStandardItemModel::itemChanged);
     item->emitDataChanged();
-    QCOMPARE(itemChangedSpy.count(), 1);
+    QCOMPARE(itemChangedSpy.size(), 1);
     QCOMPARE(itemChangedSpy.at(0).size(), 1);
     QCOMPARE(qvariant_cast<QStandardItem*>(itemChangedSpy.at(0).at(0)), item);
 

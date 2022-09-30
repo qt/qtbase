@@ -96,7 +96,7 @@ void tst_QRawFont::initTestCase()
     if (testFont.isEmpty() || testFontBoldItalic.isEmpty())
         QFAIL("qrawfont unittest font files not found!");
 
-    if (QFontDatabase::families().count() == 0)
+    if (QFontDatabase::families().size() == 0)
         QSKIP("No fonts available!!!");
 }
 

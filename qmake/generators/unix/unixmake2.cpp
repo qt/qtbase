@@ -852,7 +852,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         //copy other data
         if(!project->isEmpty("QMAKE_BUNDLE_DATA")) {
             const ProStringList &bundle_data = project->values("QMAKE_BUNDLE_DATA");
-            for(int i = 0; i < bundle_data.count(); i++) {
+            for(int i = 0; i < bundle_data.size(); i++) {
                 const ProStringList &files = project->values(ProKey(bundle_data[i] + ".files"));
                 QString path = bundle_dir;
                 const ProKey pkey(bundle_data[i] + ".path");
@@ -872,7 +872,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 }
                 path += project->first(pkey).toQString();
                 path = Option::fixPathToTargetOS(path);
-                for(int file = 0; file < files.count(); file++) {
+                for(int file = 0; file < files.size(); file++) {
                     QString fn = files.at(file).toQString();
                     QString src = fileFixify(fn, FileFixifyAbsolute);
                     if (!QFile::exists(src))
@@ -1560,9 +1560,9 @@ bool UnixMakefileGenerator::writeObjectsPart(QTextStream &t, bool do_incremental
             if (!increment)
                 t << "\\\n\t\t" << (*objit);
         }
-        if (incrs_out.count() == objs.count()) { //we just switched places, no real incrementals to be done!
+        if (incrs_out.size() == objs.size()) { //we just switched places, no real incrementals to be done!
             t << escapeFilePaths(incrs_out).join(QString(" \\\n\t\t")) << Qt::endl;
-        } else if (!incrs_out.count()) {
+        } else if (!incrs_out.size()) {
             t << Qt::endl;
         } else {
             src_incremental = true;

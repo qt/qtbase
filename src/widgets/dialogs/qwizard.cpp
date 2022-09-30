@@ -2267,11 +2267,11 @@ void QWizard::removePage(int id)
     QWizardPage *removedPage = nullptr;
 
     // update startItem accordingly
-    if (d->pageMap.count() > 0) { // only if we have any pages
+    if (d->pageMap.size() > 0) { // only if we have any pages
         if (d->start == id) {
             const int firstId = d->pageMap.constBegin().key();
             if (firstId == id) {
-                if (d->pageMap.count() > 1)
+                if (d->pageMap.size() > 1)
                     d->start = (++d->pageMap.constBegin()).key(); // secondId
                 else
                     d->start = -1; // removing the last page
@@ -2395,7 +2395,7 @@ void QWizard::setStartId(int theid)
     Q_D(QWizard);
     int newStart = theid;
     if (theid == -1)
-        newStart = d->pageMap.count() ? d->pageMap.constBegin().key() : -1;
+        newStart = d->pageMap.size() ? d->pageMap.constBegin().key() : -1;
 
     if (d->start == newStart) {
         d->startSetByUser = theid != -1;

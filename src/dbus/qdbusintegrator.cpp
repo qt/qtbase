@@ -327,7 +327,7 @@ static QByteArray buildMatchRule(const QString &service,
     // add the argument string-matching now
     if (!argMatch.args.isEmpty()) {
         const QString keyValue = "arg%1='%2',"_L1;
-        for (int i = 0; i < argMatch.args.count(); ++i)
+        for (int i = 0; i < argMatch.args.size(); ++i)
             if (!argMatch.args.at(i).isNull())
                 result += keyValue.arg(i).arg(argMatch.args.at(i));
     }
@@ -945,7 +945,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
         outputArgs.reserve(numMetaTypes - i + 1);
         QVariant arg{QMetaType(metaTypes[0])};
         outputArgs.append( arg );
-        params[0] = const_cast<void*>(outputArgs.at( outputArgs.count() - 1 ).constData());
+        params[0] = const_cast<void*>(outputArgs.at( outputArgs.size() - 1 ).constData());
     } else {
         outputArgs.reserve(numMetaTypes - i);
     }
@@ -953,7 +953,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
     for ( ; i < numMetaTypes; ++i) {
         QVariant arg{QMetaType(metaTypes[i])};
         outputArgs.append( arg );
-        params.append(const_cast<void*>(outputArgs.at( outputArgs.count() - 1 ).constData()));
+        params.append(const_cast<void*>(outputArgs.at( outputArgs.size() - 1 ).constData()));
     }
 
     // make call:

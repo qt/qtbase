@@ -1271,7 +1271,7 @@ qsizetype QDir::count(QT6_IMPL_NEW_OVERLOAD) const
 {
     Q_D(const QDir);
     d->initFileLists(*this);
-    return d->files.count();
+    return d->files.size();
 }
 
 /*!

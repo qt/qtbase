@@ -154,21 +154,21 @@ int QAccessibleTable::selectedCellCount() const
 {
     if (!view()->selectionModel())
         return 0;
-    return view()->selectionModel()->selectedIndexes().count();
+    return view()->selectionModel()->selectedIndexes().size();
 }
 
 int QAccessibleTable::selectedColumnCount() const
 {
     if (!view()->selectionModel())
         return 0;
-    return view()->selectionModel()->selectedColumns().count();
+    return view()->selectionModel()->selectedColumns().size();
 }
 
 int QAccessibleTable::selectedRowCount() const
 {
     if (!view()->selectionModel())
         return 0;
-    return view()->selectionModel()->selectedRows().count();
+    return view()->selectionModel()->selectedRows().size();
 }
 
 QString QAccessibleTable::rowDescription(int row) const
@@ -1024,7 +1024,7 @@ void QAccessibleTableCell::unselectCell()
     //one cell is selected it cannot be unselected by the user
     if ((selectionMode != QAbstractItemView::MultiSelection)
         && (selectionMode != QAbstractItemView::ExtendedSelection)
-        && (view->selectionModel()->selectedIndexes().count() <= 1))
+        && (view->selectionModel()->selectedIndexes().size() <= 1))
         return;
 
     view->selectionModel()->select(m_index, QItemSelectionModel::Deselect);

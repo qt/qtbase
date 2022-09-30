@@ -130,7 +130,7 @@ void tst_QProcessEnvironment::toStringList()
     e.insert("FOO", "bar");
     QStringList result = e.toStringList();
     QVERIFY(!result.isEmpty());
-    QCOMPARE(result.length(), 1);
+    QCOMPARE(result.size(), 1);
     QCOMPARE(result.at(0), QString("FOO=bar"));
 
     e.clear();
@@ -142,7 +142,7 @@ void tst_QProcessEnvironment::toStringList()
     e.insert("A", "bc");
     e.insert("HELLO", "World");
     result = e.toStringList();
-    QCOMPARE(result.length(), 4);
+    QCOMPARE(result.size(), 4);
 
     // order is not specified, so use contains()
     QVERIFY(result.contains("FOO=bar"));
@@ -159,7 +159,7 @@ void tst_QProcessEnvironment::keys()
 
     e.insert("FOO", "bar");
     QStringList result = e.keys();
-    QCOMPARE(result.length(), 1);
+    QCOMPARE(result.size(), 1);
     QCOMPARE(result.at(0), QString("FOO"));
 
     e.clear();
@@ -171,7 +171,7 @@ void tst_QProcessEnvironment::keys()
     e.insert("A", "bc");
     e.insert("HELLO", "World");
     result = e.keys();
-    QCOMPARE(result.length(), 4);
+    QCOMPARE(result.size(), 4);
 
     // order is not specified, so use contains()
     QVERIFY(result.contains("FOO"));
@@ -194,7 +194,7 @@ void tst_QProcessEnvironment::insertEnv()
 
     e.insert(e2);
     QStringList keys = e.keys();
-    QCOMPARE(keys.length(), 5);
+    QCOMPARE(keys.size(), 5);
 
     QCOMPARE(e.value("FOO"), QString("bar"));
     QCOMPARE(e.value("A"), QString("bc"));
@@ -244,7 +244,7 @@ void tst_QProcessEnvironment::caseSensitivity()
     QCOMPARE(e.value("foo"), QString("bar"));
 
     QStringList list = e.toStringList();
-    QCOMPARE(list.length(), 2);
+    QCOMPARE(list.size(), 2);
     QVERIFY(list.contains("foo=bar"));
     QVERIFY(list.contains("FOO=baz"));
 #endif

@@ -78,7 +78,7 @@ public:
     {
         QString ret;
         QTextStream out(&ret);
-        for (int a = 0; a < _configitemEntryOrder.count(); a++) {
+        for (int a = 0; a < _configitemEntryOrder.size(); a++) {
             out << _configitemEntryOrder[a]
                    << " = "
                    << _values.value(_configitemEntryOrder[a]) << Qt::endl;
@@ -903,7 +903,7 @@ private slots:
         buf = QStringLiteral("Digia.Berlin.Office.com.debug: Berlin  \"from Thread 2\"  :false");
         compareagainst.append(cleanLogLine(buf));
 
-        for (int i = 0; i < threadtest.count(); i++) {
+        for (int i = 0; i < threadtest.size(); i++) {
             if (!compareagainst.contains(cleanLogLine(threadtest[i]))){
                 fprintf(stdout, "%s\r\n", threadtest[i].toLatin1().constData());
                 QVERIFY2(false, "Multithread log is not complete!");

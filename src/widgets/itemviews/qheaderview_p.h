@@ -120,7 +120,7 @@ public:
     inline void prepareSectionSelected() {
         if (!selectionModel || !selectionModel->hasSelection())
             sectionSelected.clear();
-        else if (sectionSelected.count() != sectionCount() * 2)
+        else if (sectionSelected.size() != sectionCount() * 2)
             sectionSelected.fill(false, sectionCount() * 2);
         else sectionSelected.fill(false);
     }
@@ -332,7 +332,7 @@ public:
 
     void setHiddenSectionsFromBitVector(const QBitArray &sectionHidden) {
         SectionItem *sectionData = sectionItems.data();
-        for (int i = 0; i < sectionHidden.count(); ++i)
+        for (int i = 0; i < sectionHidden.size(); ++i)
             sectionData[i].isHidden = sectionHidden.at(i);
     }
 

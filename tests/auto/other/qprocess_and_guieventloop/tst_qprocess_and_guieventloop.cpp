@@ -35,20 +35,20 @@ void tst_QProcess_and_GuiEventLoop::waitForAndEventLoop()
     qApp->processEvents(QEventLoop::AllEvents, 100);
 
     // we mustn't have read anything in the event loop
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     // ensure the process hasn't died
     QVERIFY(!process.waitForFinished(250));
 
     // we mustn't have read anything during waitForFinished either
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     // release the child for the second write
     process.write("\n");
     QVERIFY(process.waitForFinished(5000));
     QCOMPARE(int(process.exitStatus()), int(QProcess::NormalExit));
     QCOMPARE(process.exitCode(), 0);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(process.readAll().trimmed(), msg);
 #endif
 }

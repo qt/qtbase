@@ -2061,7 +2061,7 @@ static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationFo
     enum { NFQC_YES = 0, NFQC_NO = 1, NFQC_MAYBE = 3 };
 
     const ushort *string = reinterpret_cast<const ushort *>(str->constData());
-    qsizetype length = str->length();
+    qsizetype length = str->size();
 
     // this avoids one out of bounds check in the loop
     while (length > from && QChar::isHighSurrogate(string[length - 1]))
@@ -2104,8 +2104,8 @@ static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationFo
             *lastStable = pos;
     }
 
-    if (length != str->length()) // low surrogate parts at the end of text
-        *lastStable = str->length() - 1;
+    if (length != str->size()) // low surrogate parts at the end of text
+        *lastStable = str->size() - 1;
 
     return true;
 }

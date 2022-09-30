@@ -41,7 +41,7 @@ struct Args
 static Args parseArguments(const QStringList &args)
 {
     Args result;
-    if (args.count() < 2) {
+    if (args.size() < 2) {
         result.exitCode = 128;
         result.errorMessage = "Usage: testDetached [--out-channel={stdout|stderr}] filename.txt\n";
         return result;

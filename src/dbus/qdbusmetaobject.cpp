@@ -221,7 +221,7 @@ void QDBusMetaObjectGenerator::parseMethods()
         bool ok = true;
 
         // build the input argument list
-        for (qsizetype i = 0; i < m.inputArgs.count(); ++i) {
+        for (qsizetype i = 0; i < m.inputArgs.size(); ++i) {
             const QDBusIntrospection::Argument &arg = m.inputArgs.at(i);
 
             Type type = findType(arg.type.toLatin1(), m.annotations, "In", i);
@@ -240,7 +240,7 @@ void QDBusMetaObjectGenerator::parseMethods()
         if (!ok) continue;
 
         // build the output argument list:
-        for (qsizetype i = 0; i < m.outputArgs.count(); ++i) {
+        for (qsizetype i = 0; i < m.outputArgs.size(); ++i) {
             const QDBusIntrospection::Argument &arg = m.outputArgs.at(i);
 
             Type type = findType(arg.type.toLatin1(), m.annotations, "Out", i);
@@ -297,7 +297,7 @@ void QDBusMetaObjectGenerator::parseSignals()
         bool ok = true;
 
         // build the output argument list
-        for (qsizetype i = 0; i < s.outputArgs.count(); ++i) {
+        for (qsizetype i = 0; i < s.outputArgs.size(); ++i) {
             const QDBusIntrospection::Argument &arg = s.outputArgs.at(i);
 
             Type type = findType(arg.type.toLatin1(), s.annotations, "Out", i);

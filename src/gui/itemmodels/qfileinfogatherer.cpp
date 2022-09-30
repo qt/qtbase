@@ -344,13 +344,13 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
         if (files.isEmpty()) {
             infoList = QDir::drives();
         } else {
-            infoList.reserve(files.count());
+            infoList.reserve(files.size());
             for (const auto &file : files)
                 infoList << QFileInfo(file);
         }
         QList<QPair<QString, QFileInfo>> updatedFiles;
-        updatedFiles.reserve(infoList.count());
-        for (int i = infoList.count() - 1; i >= 0; --i) {
+        updatedFiles.reserve(infoList.size());
+        for (int i = infoList.size() - 1; i >= 0; --i) {
             QFileInfo driveInfo = infoList.at(i);
             driveInfo.stat();
             QString driveName = translateDriveName(driveInfo);

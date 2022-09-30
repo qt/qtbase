@@ -73,12 +73,12 @@ BuildsMetaMakefileGenerator::init()
 
     const ProStringList &builds = project->values("BUILDS");
     bool use_single_build = builds.isEmpty();
-    if(builds.count() > 1 && Option::output.fileName() == "-") {
+    if(builds.size() > 1 && Option::output.fileName() == "-") {
         use_single_build = true;
         warn_msg(WarnLogic, "Cannot direct to stdout when using multiple BUILDS.");
     }
     if(!use_single_build) {
-        for(int i = 0; i < builds.count(); i++) {
+        for(int i = 0; i < builds.size(); i++) {
             ProString build = builds[i];
             MakefileGenerator *makefile = processBuild(build);
             if(!makefile)
@@ -91,7 +91,7 @@ BuildsMetaMakefileGenerator::init()
             } else {
                 Build *b = new Build;
                 b->name = name;
-                if(builds.count() != 1)
+                if(builds.size() != 1)
                     b->build = build.toQString();
                 b->makefile = makefile;
                 makefiles += b;

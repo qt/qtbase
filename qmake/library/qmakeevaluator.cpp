@@ -256,7 +256,7 @@ ProStringList QMakeEvaluator::split_value_list(QStringView vals, int source)
         source = currentFileId();
 
     const QChar *vals_data = vals.data();
-    const int vals_len = vals.length();
+    const int vals_len = vals.size();
     char16_t quote = 0;
     bool hadWord = false;
     for (int x = 0; x < vals_len; x++) {
@@ -801,7 +801,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProLoop(
         } else {
             ProString val;
             do {
-                if (index >= list.count())
+                if (index >= list.size())
                     goto do_break;
                 val = list.at(index++);
             } while (val.isEmpty()); // stupid, but qmake is like that
@@ -853,7 +853,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProVariable(
         if (expandVariableReferences(tokPtr, sizeHint, &varVal, true) == ReturnError)
             return ReturnError;
         QStringView val = varVal.at(0).toQStringView();
-        if (val.length() < 4 || val.at(0) != QLatin1Char('s')) {
+        if (val.size() < 4 || val.at(0) != QLatin1Char('s')) {
             evalError(fL1S("The ~= operator can handle only the s/// function."));
             return ReturnTrue;
         }
@@ -1545,7 +1545,7 @@ void QMakeEvaluator::updateFeaturePaths()
         feature_roots << (fb + features_concat);
     }
 
-    for (int i = 0; i < feature_roots.count(); ++i)
+    for (int i = 0; i < feature_roots.size(); ++i)
         if (!feature_roots.at(i).endsWith(QLatin1Char('/')))
             feature_roots[i].append(QLatin1Char('/'));
 

@@ -181,7 +181,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
     int rotationAngle = 0;
     bool invertx = false;
     bool inverty = false;
-    for (int i = 0; i < args.count(); ++i) {
+    for (int i = 0; i < args.size(); ++i) {
         if (args.at(i).startsWith("rotate"_L1)) {
             QString rotateArg = args.at(i).section(u'=', 1, 1);
             bool ok;

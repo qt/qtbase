@@ -500,9 +500,9 @@ QString QCommandLineParser::errorText() const
 {
     if (!d->errorText.isEmpty())
         return d->errorText;
-    if (d->unknownOptionNames.count() == 1)
+    if (d->unknownOptionNames.size() == 1)
         return tr("Unknown option '%1'.").arg(d->unknownOptionNames.first());
-    if (d->unknownOptionNames.count() > 1)
+    if (d->unknownOptionNames.size() > 1)
         return tr("Unknown options: %1.").arg(d->unknownOptionNames.join(QStringLiteral(", ")));
     return QString();
 }

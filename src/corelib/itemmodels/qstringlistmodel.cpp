@@ -86,7 +86,7 @@ int QStringListModel::rowCount(const QModelIndex &parent) const
     if (parent.isValid())
         return 0;
 
-    return lst.count();
+    return lst.size();
 }
 
 /*!
@@ -94,7 +94,7 @@ int QStringListModel::rowCount(const QModelIndex &parent) const
 */
 QModelIndex QStringListModel::sibling(int row, int column, const QModelIndex &idx) const
 {
-    if (!idx.isValid() || column != 0 || row >= lst.count() || row < 0)
+    if (!idx.isValid() || column != 0 || row >= lst.size() || row < 0)
         return QModelIndex();
 
     return createIndex(row, 0);
@@ -310,7 +310,7 @@ void QStringListModel::sort(int, Qt::SortOrder order)
     emit layoutAboutToBeChanged(QList<QPersistentModelIndex>(), VerticalSortHint);
 
     QList<QPair<QString, int>> list;
-    const int lstCount = lst.count();
+    const int lstCount = lst.size();
     list.reserve(lstCount);
     for (int i = 0; i < lstCount; ++i)
         list.append(QPair<QString, int>(lst.at(i), i));
@@ -329,7 +329,7 @@ void QStringListModel::sort(int, Qt::SortOrder order)
 
     QModelIndexList oldList = persistentIndexList();
     QModelIndexList newList;
-    const int numOldIndexes = oldList.count();
+    const int numOldIndexes = oldList.size();
     newList.reserve(numOldIndexes);
     for (int i = 0; i < numOldIndexes; ++i)
         newList.append(index(forwarding.at(oldList.at(i).row()), 0));

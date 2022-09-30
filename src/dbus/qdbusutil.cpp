@@ -306,7 +306,7 @@ namespace QDBusUtil
             return false;       // can't be valid if it's empty
 
         const QChar *c = part.data();
-        for (int i = 0; i < part.length(); ++i)
+        for (int i = 0; i < part.size(); ++i)
             if (!isValidCharacterNoDash(c[i]))
                 return false;
 
@@ -358,7 +358,7 @@ namespace QDBusUtil
     */
     bool isValidUniqueConnectionName(QStringView connName)
     {
-        if (connName.isEmpty() || connName.length() > DBUS_MAXIMUM_NAME_LENGTH ||
+        if (connName.isEmpty() || connName.size() > DBUS_MAXIMUM_NAME_LENGTH ||
             !connName.startsWith(u':'))
             return false;
 
@@ -371,7 +371,7 @@ namespace QDBusUtil
                  return false;
 
             const QChar* c = part.data();
-            for (int j = 0; j < part.length(); ++j)
+            for (int j = 0; j < part.size(); ++j)
                 if (!isValidCharacter(c[j]))
                     return false;
         }
@@ -419,7 +419,7 @@ namespace QDBusUtil
             const QChar *c = part.data();
             if (isValidNumber(c[0]))
                 return false;
-            for (int j = 0; j < part.length(); ++j)
+            for (int j = 0; j < part.size(); ++j)
                 if (!isValidCharacter(c[j]))
                     return false;
         }
@@ -435,13 +435,13 @@ namespace QDBusUtil
     */
     bool isValidMemberName(QStringView memberName)
     {
-        if (memberName.isEmpty() || memberName.length() > DBUS_MAXIMUM_NAME_LENGTH)
+        if (memberName.isEmpty() || memberName.size() > DBUS_MAXIMUM_NAME_LENGTH)
             return false;
 
         const QChar* c = memberName.data();
         if (isValidNumber(c[0]))
             return false;
-        for (int j = 0; j < memberName.length(); ++j)
+        for (int j = 0; j < memberName.size(); ++j)
             if (!isValidCharacterNoDash(c[j]))
                 return false;
         return true;

@@ -39,7 +39,7 @@ QTuioHandler::QTuioHandler(const QString &specification)
     bool invertx = false;
     bool inverty = false;
 
-    for (int i = 0; i < args.count(); ++i) {
+    for (int i = 0; i < args.size(); ++i) {
         if (args.at(i).startsWith("udp=")) {
             QString portString = args.at(i).section('=', 1, 1);
             portNumber = portString.toInt();
@@ -326,7 +326,7 @@ void QTuioHandler::process2DCurFseq(const QOscMessage &message)
     Q_UNUSED(message); // TODO: do we need to do anything with the frame id?
 
     QWindow *win = QGuiApplication::focusWindow();
-    if (!win && QGuiApplication::topLevelWindows().length() > 0 && forceDelivery)
+    if (!win && QGuiApplication::topLevelWindows().size() > 0 && forceDelivery)
           win = QGuiApplication::topLevelWindows().at(0);
 
     if (!win)
@@ -499,7 +499,7 @@ void QTuioHandler::process2DObjFseq(const QOscMessage &message)
     Q_UNUSED(message); // TODO: do we need to do anything with the frame id?
 
     QWindow *win = QGuiApplication::focusWindow();
-    if (!win && QGuiApplication::topLevelWindows().length() > 0 && forceDelivery)
+    if (!win && QGuiApplication::topLevelWindows().size() > 0 && forceDelivery)
           win = QGuiApplication::topLevelWindows().at(0);
 
     if (!win)

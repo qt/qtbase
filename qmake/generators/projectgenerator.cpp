@@ -54,7 +54,7 @@ ProjectGenerator::init()
             dirs.prepend(qmake_getpwd());
         }
 
-        for(int i = 0; i < dirs.count(); ++i) {
+        for(int i = 0; i < dirs.size(); ++i) {
             QString dir, regex, pd = dirs.at(i);
             bool add_depend = false;
             if(exists(pd)) {
@@ -66,7 +66,7 @@ ProjectGenerator::init()
                         dir += Option::dir_sep;
                     if (Option::recursive) {
                         QStringList files = QDir(dir).entryList(QDir::Files);
-                        for (int i = 0; i < files.count(); i++)
+                        for (int i = 0; i < files.size(); i++)
                             dirs.append(dir + files[i] + QDir::separator() + builtin_regex);
                     }
                     regex = builtin_regex;
@@ -92,11 +92,11 @@ ProjectGenerator::init()
                 const QDir d(dir);
                 if (Option::recursive) {
                     QStringList entries = d.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-                    for (int i = 0; i < entries.count(); i++)
+                    for (int i = 0; i < entries.size(); i++)
                         dirs.append(dir + entries[i] + QDir::separator() + regex);
                 }
                 QStringList files = d.entryList(QDir::nameFiltersFromString(regex));
-                for(int i = 0; i < (int)files.count(); i++) {
+                for(int i = 0; i < (int)files.size(); i++) {
                     QString file = d.absoluteFilePath(files[i]);
                     if (addFile(file)) {
                         add_depend = true;
@@ -116,7 +116,7 @@ ProjectGenerator::init()
         if(Option::projfile::do_pwd)
             knownDirs.prepend(".");
         const QString out_file = fileFixify(Option::output.fileName());
-        for(int i = 0; i < knownDirs.count(); ++i) {
+        for(int i = 0; i < knownDirs.size(); ++i) {
             QString pd = knownDirs.at(i);
             if(exists(pd)) {
                 QString newdir = pd;
@@ -129,7 +129,7 @@ ProjectGenerator::init()
                         subdirs.append(newdir);
                     } else {
                         QStringList profiles = QDir(newdir).entryList(QStringList("*" + Option::pro_ext), QDir::Files);
-                        for(int i = 0; i < (int)profiles.count(); i++) {
+                        for(int i = 0; i < (int)profiles.size(); i++) {
                             QString nd = newdir;
                             if(nd == ".")
                                 nd = "";
@@ -143,7 +143,7 @@ ProjectGenerator::init()
                     }
                     if (Option::recursive) {
                         QStringList dirs = QDir(newdir).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-                        for(int i = 0; i < (int)dirs.count(); i++) {
+                        for(int i = 0; i < (int)dirs.size(); i++) {
                             QString nd = fileFixify(newdir + QDir::separator() + dirs[i]);
                             if (!knownDirs.contains(nd, Qt::CaseInsensitive))
                                 knownDirs.append(nd);
@@ -160,7 +160,7 @@ ProjectGenerator::init()
                 QStringList files = QDir(dir).entryList(QDir::nameFiltersFromString(regx),
                                                         QDir::Dirs | QDir::NoDotAndDotDot);
                 ProStringList &subdirs = v["SUBDIRS"];
-                for(int i = 0; i < (int)files.count(); i++) {
+                for(int i = 0; i < (int)files.size(); i++) {
                     QString newdir(dir + files[i]);
                     QFileInfo fi(fileInfo(newdir));
                     {
@@ -170,7 +170,7 @@ ProjectGenerator::init()
                            subdirs.append(newdir);
                         } else {
                             QStringList profiles = QDir(newdir).entryList(QStringList("*" + Option::pro_ext), QDir::Files);
-                            for(int i = 0; i < (int)profiles.count(); i++) {
+                            for(int i = 0; i < (int)profiles.size(); i++) {
                                 QString nd = newdir + QDir::separator() + files[i];
                                 fileFixify(nd);
                                 if(files[i] != "." && files[i] != ".." && !subdirs.contains(nd, Qt::CaseInsensitive)) {

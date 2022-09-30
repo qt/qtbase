@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
 
     QStringList arguments = app.arguments();
-    if (app.arguments().count() != 2) {
+    if (app.arguments().size() != 2) {
         qWarning("Please call the helper with the function to call as argument");
         return EXIT_FAILURE;
     }

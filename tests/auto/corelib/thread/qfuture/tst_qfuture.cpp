@@ -3555,7 +3555,7 @@ void tst_QFuture::resultsReadyAt()
 
     QCOMPARE(reported, nExpectedResults);
     QCOMPARE(nExpectedResults, iface.future().resultCount());
-    QCOMPARE(readyCounter.count(), 3);
+    QCOMPARE(readyCounter.size(), 3);
     QCOMPARE(taken, 0b1111);
 }
 
@@ -3925,7 +3925,7 @@ void tst_QFuture::rejectResultOverwrite()
     // in QFutureInterface:
     eventProcessor.enterLoopMSecs(2000);
     QVERIFY(!eventProcessor.timeout());
-    QCOMPARE(resultCounter.count(), 1);
+    QCOMPARE(resultCounter.size(), 1);
     f.resume();
 
     // overwrite with lvalue
@@ -3964,7 +3964,7 @@ void tst_QFuture::rejectResultOverwrite()
     });
     eventProcessor.enterLoopMSecs(2000);
     QVERIFY(!eventProcessor.timeout());
-    QCOMPARE(resultCounter.count(), 1);
+    QCOMPARE(resultCounter.size(), 1);
     f.resume();
     QCOMPARE(f.results(), initResults);
 }
@@ -4003,7 +4003,7 @@ void tst_QFuture::rejectPendingResultOverwrite()
         // in QFutureInterface:
         eventProcessor.enterLoopMSecs(2000);
         QVERIFY(!eventProcessor.timeout());
-        QCOMPARE(resultCounter.count(), 1);
+        QCOMPARE(resultCounter.size(), 1);
         f.resume();
     }
 
@@ -4047,7 +4047,7 @@ void tst_QFuture::rejectPendingResultOverwrite()
         });
         eventProcessor.enterLoopMSecs(2000);
         QVERIFY(!eventProcessor.timeout());
-        QCOMPARE(resultCounter.count(), 1);
+        QCOMPARE(resultCounter.size(), 1);
         f.resume();
     }
 

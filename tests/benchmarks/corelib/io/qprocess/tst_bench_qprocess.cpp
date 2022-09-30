@@ -43,9 +43,9 @@ void tst_QProcess::echoTest_performance()
     while (stopWatch.elapsed() < 2000) {
         process.write(array);
         while (process.bytesToWrite() > 0) {
-            int readCount = readyReadSpy.count();
+            int readCount = readyReadSpy.size();
             QVERIFY(process.waitForBytesWritten(5000));
-            if (readyReadSpy.count() == readCount)
+            if (readyReadSpy.size() == readCount)
                 QVERIFY(process.waitForReadyRead(5000));
         }
 

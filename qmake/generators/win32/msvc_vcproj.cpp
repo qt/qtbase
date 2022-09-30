@@ -152,7 +152,7 @@ bool VcprojGenerator::writeProjectMakefile()
         for (int i = 0; i < mergedProjects.size(); ++i) {
             VCProjectSingleConfig *singleProject = &(mergedProjects.at(i)->vcProject);
             mergedProject.SingleProjects += *singleProject;
-            for (int j = 0; j < singleProject->ExtraCompilersFiles.count(); ++j) {
+            for (int j = 0; j < singleProject->ExtraCompilersFiles.size(); ++j) {
                 const QString &compilerName = singleProject->ExtraCompilersFiles.at(j).Name;
                 if (!mergedProject.ExtraCompilers.contains(compilerName))
                     mergedProject.ExtraCompilers += compilerName;
@@ -634,10 +634,10 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
 bool VcprojGenerator::hasBuiltinCompiler(const QString &file)
 {
     // Source files
-    for (int i = 0; i < Option::cpp_ext.count(); ++i)
+    for (int i = 0; i < Option::cpp_ext.size(); ++i)
         if (file.endsWith(Option::cpp_ext.at(i)))
             return true;
-    for (int i = 0; i < Option::c_ext.count(); ++i)
+    for (int i = 0; i < Option::c_ext.size(); ++i)
         if (file.endsWith(Option::c_ext.at(i)))
             return true;
     if (file.endsWith(".rc")
@@ -767,8 +767,8 @@ void VcprojGenerator::init()
         if (autogenPrecompSource) {
             precompSource = precompH
                     + (pchIsCFile
-                       ? (Option::c_ext.count() ? Option::c_ext.at(0) : QLatin1String(".c"))
-                       : (Option::cpp_ext.count() ? Option::cpp_ext.at(0) : QLatin1String(".cpp")));
+                       ? (Option::c_ext.size() ? Option::c_ext.at(0) : QLatin1String(".c"))
+                       : (Option::cpp_ext.size() ? Option::cpp_ext.at(0) : QLatin1String(".cpp")));
             project->values("GENERATED_SOURCES") += precompSource;
         } else if (!precompSource.isEmpty()) {
             project->values("SOURCES") += precompSource;
@@ -1553,7 +1553,7 @@ void VcprojGenerator::initExtraCompilerOutputs()
             } else if (!inputVars.isEmpty()) {
                 // One output file per input
                 const ProStringList &tmp_in = project->values(inputVars.first().toKey());
-                for (int i = 0; i < tmp_in.count(); ++i) {
+                for (int i = 0; i < tmp_in.size(); ++i) {
                     const QString &filename = tmp_in.at(i).toQString();
                     if (extraCompilerSources.contains(filename) && !otherFiltersContain(filename))
                         extraCompile.addFile(Option::fixPathToTargetOS(
@@ -1568,7 +1568,7 @@ void VcprojGenerator::initExtraCompilerOutputs()
             for (const ProString &inputVar : inputVars) {
                 if (!otherFilters.contains(inputVar)) {
                     const ProStringList &tmp_in = project->values(inputVar.toKey());
-                    for (int i = 0; i < tmp_in.count(); ++i) {
+                    for (int i = 0; i < tmp_in.size(); ++i) {
                         const QString &filename = tmp_in.at(i).toQString();
                         if (extraCompilerSources.contains(filename) && !otherFiltersContain(filename))
                             extraCompile.addFile(Option::fixPathToTargetOS(

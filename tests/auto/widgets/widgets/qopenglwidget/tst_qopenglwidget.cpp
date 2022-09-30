@@ -70,7 +70,7 @@ void tst_QOpenGLWidget::create()
     QSignalSpy frameSwappedSpy(w.data(), SIGNAL(frameSwapped()));
     w->show();
     QVERIFY(QTest::qWaitForWindowExposed(w.data()));
-    QVERIFY(frameSwappedSpy.count() > 0);
+    QVERIFY(frameSwappedSpy.size() > 0);
 
     QVERIFY(w->isValid());
     QVERIFY(w->context());
@@ -165,7 +165,7 @@ void tst_QOpenGLWidget::createNonTopLevel()
     w.resize(400, 400);
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
-    QVERIFY(frameSwappedSpy.count() > 0);
+    QVERIFY(frameSwappedSpy.size() > 0);
 
     QVERIFY(glw->m_resizeCalled);
     glw->m_resizeCalled = false;
@@ -326,7 +326,7 @@ void tst_QOpenGLWidget::reparentTopLevel()
     {
         QSignalSpy frameSwappedSpy(glw1, &QOpenGLWidget::frameSwapped);
         tabWidget.setCurrentIndex(tabWidget.addTab(glw1, "OpenGL widget 1"));
-        QTRY_VERIFY(frameSwappedSpy.count() > 0);
+        QTRY_VERIFY(frameSwappedSpy.size() > 0);
     }
 
     PainterWidget *glw2 = new PainterWidget;
@@ -334,7 +334,7 @@ void tst_QOpenGLWidget::reparentTopLevel()
     {
         QSignalSpy frameSwappedSpy(glw2, &QOpenGLWidget::frameSwapped);
         tabWidget.setCurrentIndex(tabWidget.addTab(glw2, "OpenGL widget 2"));
-        QTRY_VERIFY(frameSwappedSpy.count() > 0);
+        QTRY_VERIFY(frameSwappedSpy.size() > 0);
     }
 
     QImage image = glw2->grabFramebuffer();
@@ -344,7 +344,7 @@ void tst_QOpenGLWidget::reparentTopLevel()
     {
         QSignalSpy frameSwappedSpy(glw1, &QOpenGLWidget::frameSwapped);
         delete glw2;
-        QTRY_VERIFY(frameSwappedSpy.count() > 0);
+        QTRY_VERIFY(frameSwappedSpy.size() > 0);
     }
 
     image = glw1->grabFramebuffer();
@@ -356,7 +356,7 @@ void tst_QOpenGLWidget::reparentTopLevel()
         glw1->setParent(nullptr);
         glw1->show();
         QVERIFY(QTest::qWaitForWindowExposed(glw1));
-        QTRY_VERIFY(frameSwappedSpy.count() > 0);
+        QTRY_VERIFY(frameSwappedSpy.size() > 0);
     }
 
     image = glw1->grabFramebuffer();
@@ -366,7 +366,7 @@ void tst_QOpenGLWidget::reparentTopLevel()
     {
         QSignalSpy frameSwappedSpy(glw1, &QOpenGLWidget::frameSwapped);
         tabWidget.setCurrentIndex(tabWidget.addTab(glw1, "Re-added OpenGL widget 1"));
-        QTRY_VERIFY(frameSwappedSpy.count() > 0);
+        QTRY_VERIFY(frameSwappedSpy.size() > 0);
     }
 
     image = glw1->grabFramebuffer();

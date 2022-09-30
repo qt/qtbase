@@ -108,7 +108,7 @@ static void sm_setProperty(const QString &name, const QString &value)
 
 static void sm_setProperty(const QString &name, const QStringList &value)
 {
-    SmPropValue *prop = new SmPropValue[value.count()];
+    SmPropValue *prop = new SmPropValue[value.size()];
     int count = 0;
     QList<QByteArray> vl;
     vl.reserve(value.size());

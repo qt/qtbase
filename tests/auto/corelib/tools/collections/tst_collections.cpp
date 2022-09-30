@@ -2693,7 +2693,7 @@ void tst_Collections::vector_stl()
     QFETCH(QStringList, elements);
 
     QList<QString> vector;
-    for (int i = 0; i < elements.count(); ++i)
+    for (int i = 0; i < elements.size(); ++i)
         vector << elements.at(i);
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -2728,7 +2728,7 @@ void tst_Collections::list_stl()
     QFETCH(QStringList, elements);
 
     QList<QString> list;
-    for (int i = 0; i < elements.count(); ++i)
+    for (int i = 0; i < elements.size(); ++i)
         list << elements.at(i);
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -3407,9 +3407,9 @@ void tst_Collections::foreach_2()
         varl5 << str;
         varl6 << str;
     }
-    QCOMPARE(varl4.size(), strlist.count());
-    QCOMPARE(varl5.size(), strlist.count());
-    QCOMPARE(varl6.size(), strlist.count());
+    QCOMPARE(varl4.size(), strlist.size());
+    QCOMPARE(varl5.size(), strlist.size());
+    QCOMPARE(varl6.size(), strlist.size());
 }
 
 struct IntOrString

@@ -37,7 +37,7 @@ void tst_QKeySequenceEdit::testSetters()
     edit.clear();
     QCOMPARE(edit.keySequence(), QKeySequence());
 
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 }
 
 void tst_QKeySequenceEdit::testKeys_data()
@@ -99,9 +99,9 @@ void tst_QKeySequenceEdit::testKeys()
     QTest::keyPress(&edit, key, modifiers);
     QTest::keyRelease(&edit, key, modifiers);
 
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     QCOMPARE(edit.keySequence(), keySequence);
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
 }
 
 void tst_QKeySequenceEdit::testLineEditContents()
@@ -146,21 +146,21 @@ void tst_QKeySequenceEdit::testFinishingKeyCombinations()
     QKeySequenceEdit edit;
 
     QSignalSpy spy(&edit, SIGNAL(editingFinished()));
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     edit.setFinishingKeyCombinations({QKeyCombination(modifiers, key)});
     QTest::keyPress(&edit, key, modifiers);
     QTest::keyRelease(&edit, key, modifiers);
 
     QCOMPARE(edit.keySequence(), QKeySequence());
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
 
     edit.setFinishingKeyCombinations({});
     QTest::keyPress(&edit, key, modifiers);
     QTest::keyRelease(&edit, key, modifiers);
 
     QCOMPARE(edit.keySequence(), keySequence);
-    QTRY_COMPARE(spy.count(), 2);
+    QTRY_COMPARE(spy.size(), 2);
 }
 
 QTEST_MAIN(tst_QKeySequenceEdit)

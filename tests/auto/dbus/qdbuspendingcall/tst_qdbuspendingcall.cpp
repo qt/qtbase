@@ -157,7 +157,7 @@ void tst_QDBusPendingCall::waitForFinished()
     QCOMPARE(reply.signature(), QString("as"));
 
     const QVariantList args = ac.reply().arguments();
-    QCOMPARE(args.count(), 1);
+    QCOMPARE(args.size(), 1);
 
     const QVariant &arg = args.at(0);
     QCOMPARE(arg.userType(), QMetaType::QStringList);

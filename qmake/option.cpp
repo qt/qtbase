@@ -96,7 +96,7 @@ static QString detectProjectFile(const QString &path, QString *singleProFileCand
         ret = candidate;
     } else { //last try..
         QStringList profiles = dir.entryList(QStringList("*" + Option::pro_ext));
-        if(profiles.count() == 1)
+        if(profiles.size() == 1)
             ret = dir.filePath(profiles.at(0));
     }
     return ret;
@@ -174,7 +174,7 @@ Option::parseCommandLine(QStringList &args, QMakeCmdLineParserState &state)
 {
     enum { ArgNone, ArgOutput } argState = ArgNone;
     int x = 0;
-    while (x < args.count()) {
+    while (x < args.size()) {
         switch (argState) {
         case ArgOutput:
             Option::output.setFileName(args.at(x--));
@@ -390,7 +390,7 @@ Option::init(int argc, char **argv)
             } else if (opt == "-qtconf") {
                 // Skip "-qtconf <file>" and proceed.
                 ++idx;
-                if (idx + 1 < args.length())
+                if (idx + 1 < args.size())
                     ++idx;
                 continue;
             } else {

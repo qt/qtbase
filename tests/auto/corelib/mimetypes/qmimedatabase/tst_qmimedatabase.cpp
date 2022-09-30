@@ -328,7 +328,7 @@ void tst_QMimeDatabase::inheritance()
 
     const QMimeType directory = db.mimeTypeForName(QString::fromLatin1("inode/directory"));
     QVERIFY(directory.isValid());
-    QCOMPARE(directory.parentMimeTypes().count(), 0);
+    QCOMPARE(directory.parentMimeTypes().size(), 0);
     QVERIFY(!directory.inherits(QLatin1String("application/octet-stream")));
 
     // Check that text/x-patch knows that it inherits from text/plain (it says so explicitly)
@@ -349,7 +349,7 @@ void tst_QMimeDatabase::inheritance()
     const QStringList shellParents = shellscript.parentMimeTypes();
     QVERIFY(shellParents.contains(QLatin1String("text/plain")));
     QVERIFY(shellParents.contains(QLatin1String("application/x-executable")));
-    QCOMPARE(shellParents.count(), 2); // only the above two
+    QCOMPARE(shellParents.size(), 2); // only the above two
     const QStringList allShellAncestors = shellscript.allAncestors();
     QVERIFY(allShellAncestors.contains(QLatin1String("text/plain")));
     QVERIFY(allShellAncestors.contains(QLatin1String("application/x-executable")));

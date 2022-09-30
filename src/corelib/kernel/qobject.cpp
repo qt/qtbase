@@ -2155,7 +2155,7 @@ void QObjectPrivate::deleteChildren()
     // delete children objects
     // don't use qDeleteAll as the destructor of the child might
     // delete siblings
-    for (int i = 0; i < children.count(); ++i) {
+    for (int i = 0; i < children.size(); ++i) {
         currentChildBeingDeleted = children.at(i);
         children[i] = nullptr;
         delete currentChildBeingDeleted;
@@ -3684,7 +3684,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
 
         // ...we check each object in our list, ...
         bool foundIt = false;
-        for (int j = 0; j < list.count(); ++j) {
+        for (int j = 0; j < list.size(); ++j) {
             const QObject *co = list.at(j);
             const QByteArray coName = co->objectName().toLatin1();
 

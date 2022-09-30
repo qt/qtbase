@@ -1037,7 +1037,7 @@ void QTreeView::keyboardSearch(const QString &search)
             if (searchFrom.parent() == start.parent())
                 searchFrom = start;
             QModelIndexList match = d->model->match(searchFrom, Qt::DisplayRole, searchString);
-            if (match.count()) {
+            if (match.size()) {
                 int hitIndex = d->viewIndex(match.at(0));
                 if (hitIndex >= 0 && hitIndex < startIndex)
                     bestAbove = bestAbove == -1 ? hitIndex : qMin(hitIndex, bestAbove);
@@ -1556,11 +1556,11 @@ void QTreeViewPrivate::calcLogicalIndices(
         }
     }
 
-    itemPositions->resize(logicalIndices->count());
-    for (int currentLogicalSection = 0; currentLogicalSection < logicalIndices->count(); ++currentLogicalSection) {
+    itemPositions->resize(logicalIndices->size());
+    for (int currentLogicalSection = 0; currentLogicalSection < logicalIndices->size(); ++currentLogicalSection) {
         const int headerSection = logicalIndices->at(currentLogicalSection);
         // determine the viewItemPosition depending on the position of column 0
-        int nextLogicalSection = currentLogicalSection + 1 >= logicalIndices->count()
+        int nextLogicalSection = currentLogicalSection + 1 >= logicalIndices->size()
                                  ? logicalIndexAfterRight
                                  : logicalIndices->at(currentLogicalSection + 1);
         int prevLogicalSection = currentLogicalSection - 1 < 0
@@ -2409,7 +2409,7 @@ QModelIndexList QTreeView::selectedIndexes() const
     QModelIndexList modelSelected;
     if (selectionModel())
         modelSelected = selectionModel()->selectedIndexes();
-    for (int i = 0; i < modelSelected.count(); ++i) {
+    for (int i = 0; i < modelSelected.size(); ++i) {
         // check that neither the parents nor the index is hidden before we add
         QModelIndex index = modelSelected.at(i);
         while (index.isValid() && !isIndexHidden(index))

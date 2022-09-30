@@ -3988,7 +3988,7 @@ int QTextFormatCollection::createObjectIndex(const QTextFormat &f)
 
 QTextFormat QTextFormatCollection::format(int idx) const
 {
-    if (idx < 0 || idx >= formats.count())
+    if (idx < 0 || idx >= formats.size())
         return QTextFormat();
 
     return formats.at(idx);
@@ -3997,7 +3997,7 @@ QTextFormat QTextFormatCollection::format(int idx) const
 void QTextFormatCollection::setDefaultFont(const QFont &f)
 {
     defaultFnt = f;
-    for (int i = 0; i < formats.count(); ++i)
+    for (int i = 0; i < formats.size(); ++i)
         if (formats.at(i).d)
             formats[i].d->resolveFont(defaultFnt);
 }

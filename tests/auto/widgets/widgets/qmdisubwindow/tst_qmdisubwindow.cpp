@@ -530,9 +530,9 @@ void tst_QMdiSubWindow::emittingOfSignals()
 
     int count = 0;
     if (signal == SIGNAL(aboutToActivate())) {
-        count += spy.count();
+        count += spy.size();
     } else {
-        for (int i = 0; i < spy.count(); ++i) {
+        for (int i = 0; i < spy.size(); ++i) {
             Qt::WindowStates oldState = qvariant_cast<Qt::WindowStates>(spy.at(i).at(0));
             Qt::WindowStates newState = qvariant_cast<Qt::WindowStates>(spy.at(i).at(1));
             if (watchedState != Qt::WindowNoState) {
@@ -555,7 +555,7 @@ void tst_QMdiSubWindow::emittingOfSignals()
 
     spy.clear();
     triggerSignal(window, &workspace, signal);
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     delete window;
     window = nullptr;
@@ -2103,7 +2103,7 @@ void tst_QMdiSubWindow::styleChange()
 
     // subWindowActivated should NOT be activated by a style change,
     // even if internally QMdiSubWindow un-minimizes subwindows temporarily.
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QMdiSubWindow::testFullScreenState()
