@@ -5,6 +5,7 @@
 package org.qtproject.qt.android.bindings;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
@@ -146,7 +147,8 @@ public abstract class QtLoader {
                 // fatal error, show the error and quit
                 AlertDialog errorDialog = new AlertDialog.Builder(m_context).create();
                 errorDialog.setMessage(loaderParams.getString(ERROR_MESSAGE_KEY));
-                errorDialog.setButton(resources.getString(android.R.string.ok),
+                errorDialog.setButton(Dialog.BUTTON_POSITIVE,
+                        resources.getString(android.R.string.ok),
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -197,7 +199,8 @@ public abstract class QtLoader {
             int id = resources.getIdentifier("fatal_error_msg", "string",
                     packageName);
             errorDialog.setMessage(resources.getString(id));
-            errorDialog.setButton(resources.getString(android.R.string.ok),
+            errorDialog.setButton(Dialog.BUTTON_POSITIVE,
+                    resources.getString(android.R.string.ok),
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
