@@ -27,7 +27,7 @@
 
 #include <QtCore/qtpreprocessorsupport.h>
 
-inline void qt_noop(void) {}
+#include <QtCore/qtnoop.h>
 
 #include <QtCore/qsystemdetection.h>
 #include <QtCore/qprocessordetection.h>
