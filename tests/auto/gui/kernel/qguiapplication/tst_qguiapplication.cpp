@@ -1038,8 +1038,6 @@ void tst_QGuiApplication::genericPluginsAndWindowSystemEvents()
     QVERIFY(QGuiApplication::primaryScreen());
     QCOMPARE(QGuiApplication::primaryScreen()->orientation(), testOrientationToSend);
 
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QEXPECT_FAIL("", "Wayland: This fails. See QTBUG-100891.", Abort);
     QCOMPARE(testReceiver.customEvents, 0);
     QCoreApplication::sendPostedEvents(&testReceiver);
     QCOMPARE(testReceiver.customEvents, 1);
