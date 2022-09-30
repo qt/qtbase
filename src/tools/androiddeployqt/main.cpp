@@ -2579,6 +2579,24 @@ void checkAndWarnGradleLongPaths(const QString &outputDirectory)
 }
 #endif
 
+bool gradleSetsLegacyPackagingProperty(const QString &path)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+
+    const auto lines = file.readAll().split('\n');
+    for (const auto &line : lines) {
+        if (line.contains("useLegacyPackaging")) {
+            const auto trimmed = line.trimmed();
+            if (!trimmed.startsWith("//") && !trimmed.startsWith('*') && !trimmed.startsWith("/*"))
+                return true;
+        }
+    }
+
+    return false;
+}
+
 bool buildAndroidProject(const Options &options)
 {
     GradleProperties localProperties;
@@ -2587,9 +2605,13 @@ bool buildAndroidProject(const Options &options)
     if (!mergeGradleProperties(localPropertiesPath, localProperties))
         return false;
 
-    QString gradlePropertiesPath = options.outputDirectory + "gradle.properties"_L1;
+    const QString gradlePropertiesPath = options.outputDirectory + "gradle.properties"_L1;
     GradleProperties gradleProperties = readGradleProperties(gradlePropertiesPath);
-    gradleProperties["android.bundle.enableUncompressedNativeLibs"] = "false";
+
+    const QString gradleBuildFilePath = options.outputDirectory + "build.gradle"_L1;
+    if (!gradleSetsLegacyPackagingProperty(gradleBuildFilePath))
+        gradleProperties["android.bundle.enableUncompressedNativeLibs"] = "false";
+
     gradleProperties["buildDir"] = "build";
     gradleProperties["qtAndroidDir"] = (options.qtInstallDirectory + "/src/android/java"_L1).toUtf8();
     // The following property "qt5AndroidDir" is only for compatibility.
