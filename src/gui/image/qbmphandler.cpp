@@ -135,13 +135,39 @@ static QDataStream &operator<<(QDataStream &s, const BMP_INFOHDR &bi)
     return s;
 }
 
-static int calc_shift(uint mask)
+static uint calc_shift(uint mask)
 {
-    int result = 0;
-    while (mask && !(mask & 1)) {
+    uint result = 0;
+    while ((mask >= 0x100) || (!(mask & 1) && mask)) {
         result++;
         mask >>= 1;
     }
+    return result;
+}
+
+static uint calc_scale(uint low_mask)
+{
+    uint result = 8;
+    while (low_mask && result) {
+        result--;
+        low_mask >>= 1;
+    }
+    return result;
+}
+
+static inline uint apply_scale(uint value, uint scale)
+{
+    if (!(scale & 0x07)) // return immediately if scale == 8 or 0
+        return value;
+
+    uint filled = 8 - scale;
+    uint result = value << scale;
+
+    do {
+        result |= result >> filled;
+        filled <<= 1;
+    } while (filled < 8);
+
     return result;
 }
 
@@ -207,14 +233,14 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 datapos,
     uint green_mask = 0;
     uint blue_mask = 0;
     uint alpha_mask = 0;
-    int red_shift = 0;
-    int green_shift = 0;
-    int blue_shift = 0;
-    int alpha_shift = 0;
-    int red_scale = 0;
-    int green_scale = 0;
-    int blue_scale = 0;
-    int alpha_scale = 0;
+    uint red_shift = 0;
+    uint green_shift = 0;
+    uint blue_shift = 0;
+    uint alpha_shift = 0;
+    uint red_scale = 0;
+    uint green_scale = 0;
+    uint blue_scale = 0;
+    uint alpha_scale = 0;
     bool bitfields = comp == BMP_BITFIELDS || comp == BMP_ALPHABITFIELDS;
 
     if (!d->isSequential())
@@ -289,19 +315,19 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 datapos,
         red_shift = calc_shift(red_mask);
         if (((red_mask >> red_shift) + 1) == 0)
             return false;
-        red_scale = 256 / ((red_mask >> red_shift) + 1);
+        red_scale = calc_scale(red_mask >> red_shift);
         green_shift = calc_shift(green_mask);
         if (((green_mask >> green_shift) + 1) == 0)
             return false;
-        green_scale = 256 / ((green_mask >> green_shift) + 1);
+        green_scale = calc_scale(green_mask >> green_shift);
         blue_shift = calc_shift(blue_mask);
         if (((blue_mask >> blue_shift) + 1) == 0)
             return false;
-        blue_scale = 256 / ((blue_mask >> blue_shift) + 1);
+        blue_scale = calc_scale(blue_mask >> blue_shift);
         alpha_shift = calc_shift(alpha_mask);
         if (((alpha_mask >> alpha_shift) + 1) == 0)
             return false;
-        alpha_scale = 256 / ((alpha_mask >> alpha_shift) + 1);
+        alpha_scale = calc_scale(alpha_mask >> alpha_shift);
     } else if (comp == BMP_RGB && (nbits == 24 || nbits == 32)) {
         blue_mask = 0x000000ff;
         green_mask = 0x0000ff00;
@@ -309,23 +335,21 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 datapos,
         blue_shift = 0;
         green_shift = 8;
         red_shift = 16;
-        blue_scale = green_scale = red_scale = 1;
+        blue_scale = green_scale = red_scale = 0;
         if (transp) {
             alpha_shift = calc_shift(alpha_mask);
             if (((alpha_mask >> alpha_shift) + 1) == 0)
                 return false;
-            alpha_scale = 256 / ((alpha_mask >> alpha_shift) + 1);
+            alpha_scale = calc_scale(alpha_mask >> alpha_shift);
         }
     } else if (comp == BMP_RGB && nbits == 16) {
         blue_mask = 0x001f;
         green_mask = 0x03e0;
         red_mask = 0x7c00;
         blue_shift = 0;
-        green_shift = 2;
-        red_shift = 7;
-        red_scale = 1;
-        green_scale = 1;
-        blue_scale = 8;
+        green_shift = 5;
+        red_shift = 10;
+        blue_scale = green_scale = red_scale = 3;
     }
 
     image.setDotsPerMeterX(bi.biXPelsPerMeter);
@@ -533,10 +557,10 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 datapos,
                     c |= *(uchar*)(b+2)<<16;
                 if (nbits > 24)
                     c |= *(uchar*)(b+3)<<24;
-                *p++ = qRgba(((c & red_mask) >> red_shift) * red_scale,
-                                        ((c & green_mask) >> green_shift) * green_scale,
-                                        ((c & blue_mask) >> blue_shift) * blue_scale,
-                                        transp ? ((c & alpha_mask) >> alpha_shift) * alpha_scale : 0xff);
+                *p++ = qRgba(apply_scale((c & red_mask) >> red_shift, red_scale),
+                             apply_scale((c & green_mask) >> green_shift, green_scale),
+                             apply_scale((c & blue_mask) >> blue_shift, blue_scale),
+                             transp ? apply_scale((c & alpha_mask) >> alpha_shift, alpha_scale) : 0xff);
                 b += nbits/8;
             }
         }
