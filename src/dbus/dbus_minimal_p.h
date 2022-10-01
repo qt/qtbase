@@ -1,5 +1,7 @@
+// Copyright (C) 2002, 2003  CodeFactory AB
+// Copyright (C) 2002, 2003, 2004, 2005 Red Hat, Inc.
 // Copyright (C) 2016 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// SPDX-License-Identifier: AFL-2.1 OR GPL-2.0-or-later
 
 #ifndef DBUS_MINIMAL_P_H
 #define DBUS_MINIMAL_P_H
