@@ -793,6 +793,12 @@ void tst_QDir::entryListWithTestFiles_data()
     QTest::newRow("QDir::AllEntries") << (m_dataPath + "/entrylist/") << QStringList("*")
                               << int(QDir::AllEntries) << int(QDir::Name)
                               << filterLinks(QString(".,..,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(','));
+    // Tests an assert in QDirSortItemComparator, when QDir::LocaleAware is set
+    // a QCollator is used
+    QTest::newRow("QDir::AllEntries")
+        << (m_dataPath + "/entrylist/") << QStringList("*")
+        << int(QDir::AllEntries) << int(QDir::Name | QDir::LocaleAware)
+        << filterLinks(QString(".,..,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(','));
     QTest::newRow("QDir::Files") << (m_dataPath + "/entrylist/") << QStringList("*")
                                  << int(QDir::Files) << int(QDir::Name)
                                  << filterLinks(QString("file,linktofile.lnk,writable").split(','));

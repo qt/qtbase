@@ -22,6 +22,7 @@
 #include <qstringbuilder.h>
 
 #ifndef QT_BOOTSTRAPPED
+#  include <qcollator.h>
 #  include "qreadwritelock.h"
 #  include "qmutex.h"
 #endif
@@ -199,10 +200,8 @@ struct QDirSortItem
         // A dir e.g. "dirA.bar" doesn't have actually have an extension/suffix, when
         // sorting by type such "suffix" should be ignored but that would complicate
         // the code and uses can change the behavior by setting DirsFirst/DirsLast
-        if (sort.testAnyFlag(QDir::Type)) {
-            const bool ic = sort.testAnyFlag(QDir::IgnoreCase);
-            suffix_cache = ic ? item.suffix().toLower() : item.suffix();
-        }
+        if (sort.testAnyFlag(QDir::Type))
+            suffix_cache = item.suffix();
     }
 
     mutable QString filename_cache;
@@ -210,13 +209,39 @@ struct QDirSortItem
     QFileInfo item;
 };
 
-
 class QDirSortItemComparator
 {
     QDir::SortFlags qt_cmp_si_sort_flags;
+
+#ifndef QT_BOOTSTRAPPED
+    QCollator *collator = nullptr;
+#endif
 public:
-    QDirSortItemComparator(QDir::SortFlags flags) : qt_cmp_si_sort_flags(flags) {}
+#ifndef QT_BOOTSTRAPPED
+    QDirSortItemComparator(QDir::SortFlags flags, QCollator *coll = nullptr)
+        : qt_cmp_si_sort_flags(flags), collator(coll)
+    {
+        Q_ASSERT(!qt_cmp_si_sort_flags.testAnyFlag(QDir::LocaleAware) || collator);
+
+        if (collator && qt_cmp_si_sort_flags.testAnyFlag(QDir::IgnoreCase))
+            collator->setCaseSensitivity(Qt::CaseInsensitive);
+    }
+#else
+    QDirSortItemComparator(QDir::SortFlags flags)
+        : qt_cmp_si_sort_flags(flags)
+    {
+    }
+#endif
     bool operator()(const QDirSortItem &, const QDirSortItem &) const;
+
+    int compareStrings(const QString &a, const QString &b, Qt::CaseSensitivity cs) const
+    {
+#ifndef QT_BOOTSTRAPPED
+        if (collator)
+            return collator->compare(a, b);
+#endif
+        return a.compare(b, cs);
+    }
 };
 
 bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortItem &n2) const
@@ -228,6 +253,9 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
         return f1->item.isDir();
     if ((qt_cmp_si_sort_flags & QDir::DirsLast) && (f1->item.isDir() != f2->item.isDir()))
         return !f1->item.isDir();
+
+    const bool ic = qt_cmp_si_sort_flags.testAnyFlag(QDir::IgnoreCase);
+    const auto qtcase = ic ? Qt::CaseInsensitive : Qt::CaseSensitive;
 
     qint64 r = 0;
     int sortBy = ((qt_cmp_si_sort_flags & QDir::SortByMask)
@@ -243,11 +271,8 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
       case QDir::Size:
           r = f2->item.size() - f1->item.size();
         break;
-      case QDir::Type: {
-        r = qt_cmp_si_sort_flags & QDir::LocaleAware
-            ? f1->suffix_cache.localeAwareCompare(f2->suffix_cache)
-            : f1->suffix_cache.compare(f2->suffix_cache);
-      }
+    case QDir::Type:
+        r = compareStrings(f1->suffix_cache, f2->suffix_cache, qtcase);
         break;
       default:
         ;
@@ -255,18 +280,13 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
 
     if (r == 0 && sortBy != QDir::Unsorted) {
         // Still not sorted - sort by name
-        bool ic = qt_cmp_si_sort_flags.testAnyFlag(QDir::IgnoreCase);
 
         if (f1->filename_cache.isNull())
-            f1->filename_cache = ic ? f1->item.fileName().toLower()
-                                    : f1->item.fileName();
+            f1->filename_cache = f1->item.fileName();
         if (f2->filename_cache.isNull())
-            f2->filename_cache = ic ? f2->item.fileName().toLower()
-                                    : f2->item.fileName();
+            f2->filename_cache = f2->item.fileName();
 
-        r = qt_cmp_si_sort_flags & QDir::LocaleAware
-            ? f1->filename_cache.localeAwareCompare(f2->filename_cache)
-            : f1->filename_cache.compare(f2->filename_cache);
+        r = compareStrings(f1->filename_cache, f2->filename_cache, qtcase);
     }
     if (qt_cmp_si_sort_flags & QDir::Reversed)
         return r > 0;
@@ -297,7 +317,17 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, const QFileInfoList 
         for (qsizetype i = 0; i < n; ++i)
             si[i] = QDirSortItem{l.at(i), sort};
 
+#ifndef QT_BOOTSTRAPPED
+    if (sort.testAnyFlag(QDir::LocaleAware)) {
+            QCollator coll;
+            std::sort(si.data(), si.data() + n, QDirSortItemComparator(sort, &coll));
+        } else {
+            std::sort(si.data(), si.data() + n, QDirSortItemComparator(sort));
+        }
+#else
         std::sort(si.data(), si.data() + n, QDirSortItemComparator(sort));
+#endif // QT_BOOTSTRAPPED
+
         // put them back in the list(s)
         for (qsizetype i = 0; i < n; ++i) {
             if (infos)
