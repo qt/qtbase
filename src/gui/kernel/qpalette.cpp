@@ -71,14 +71,25 @@ class QPalettePrivate
 public:
     class Data : public QSharedData {
     public:
-        Data() : ser_no(qt_palette_count++) { }
+        // Every instance of Data has to have a unique serial number, even
+        // if it gets created by copying another - we wouldn't create a copy
+        // in the first place if the serial number should be the same!
+        Data(const Data &other)
+            : QSharedData(other)
+        {
+            for (int grp = 0; grp < int(QPalette::NColorGroups); grp++) {
+                for (int role = 0; role < int(QPalette::NColorRoles); role++)
+                    br[grp][role] = other.br[grp][role];
+            }
+        }
+        Data() = default;
 
         QBrush br[QPalette::NColorGroups][QPalette::NColorRoles];
-        const int ser_no;
+        const int ser_no = qt_palette_count++;
     };
 
     QPalettePrivate(const QExplicitlySharedDataPointer<Data> &data)
-        : ref(1), detach_no(0), data(data)
+        : ref(1), data(data)
     { }
     QPalettePrivate()
         : QPalettePrivate(QExplicitlySharedDataPointer<Data>(new Data))
@@ -86,7 +97,8 @@ public:
 
     QAtomicInt ref;
     QPalette::ResolveMask resolveMask = {0};
-    int detach_no;
+    static inline int qt_palette_private_count = 0;
+    const int detach_no = ++qt_palette_private_count;
     QExplicitlySharedDataPointer<Data> data;
 };
 
@@ -889,7 +901,6 @@ void QPalette::detach()
             delete d;
         d = x;
     }
-    ++d->detach_no;
 }
 
 /*!
