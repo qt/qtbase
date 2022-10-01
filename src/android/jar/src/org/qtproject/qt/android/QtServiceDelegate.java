@@ -50,19 +50,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Objects;
 
+import static org.qtproject.qt.android.QtConstants.*;
+
 public class QtServiceDelegate
 {
-    private static final String NATIVE_LIBRARIES_KEY = "native.libraries";
-    private static final String BUNDLED_LIBRARIES_KEY = "bundled.libraries";
-    private static final String MAIN_LIBRARY_KEY = "main.library";
-    private static final String ENVIRONMENT_VARIABLES_KEY = "environment.variables";
-    private static final String APPLICATION_PARAMETERS_KEY = "application.parameters";
-    private static final String STATIC_INIT_CLASSES_KEY = "static.init.classes";
-    private static final String APP_DISPLAY_METRIC_SCREEN_DESKTOP_KEY = "display.screen.desktop";
-    private static final String APP_DISPLAY_METRIC_SCREEN_XDPI_KEY = "display.screen.dpi.x";
-    private static final String APP_DISPLAY_METRIC_SCREEN_YDPI_KEY = "display.screen.dpi.y";
-    private static final String APP_DISPLAY_METRIC_SCREEN_DENSITY_KEY = "display.screen.density";
-
     private String m_mainLib = null;
     private Service m_service = null;
     private static String m_applicationParameters = null;

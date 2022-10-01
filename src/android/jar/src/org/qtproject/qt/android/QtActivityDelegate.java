@@ -66,6 +66,7 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import org.qtproject.qt.android.accessibility.QtAccessibilityDelegate;
+import static org.qtproject.qt.android.QtConstants.*;
 
 public class QtActivityDelegate
 {
@@ -80,13 +81,6 @@ public class QtActivityDelegate
     private Method m_super_onActivityResult = null;
     private Method m_super_dispatchGenericMotionEvent = null;
     private Method m_super_onWindowFocusChanged = null;
-
-    private static final String NATIVE_LIBRARIES_KEY = "native.libraries";
-    private static final String BUNDLED_LIBRARIES_KEY = "bundled.libraries";
-    private static final String MAIN_LIBRARY_KEY = "main.library";
-    private static final String ENVIRONMENT_VARIABLES_KEY = "environment.variables";
-    private static final String APPLICATION_PARAMETERS_KEY = "application.parameters";
-    private static final String STATIC_INIT_CLASSES_KEY = "static.init.classes";
 
     // Keep in sync with QtAndroid::SystemUiVisibility in androidjnimain.h
     public static final int SYSTEM_UI_VISIBILITY_NORMAL = 0;
@@ -221,13 +215,6 @@ public class QtActivityDelegate
     private final int EnterKeySearch = 5;
     private final int EnterKeyNext = 6;
     private final int EnterKeyPrevious = 7;
-
-    // application state
-    public static final int ApplicationSuspended = 0x0;
-    public static final int ApplicationHidden = 0x1;
-    public static final int ApplicationInactive = 0x2;
-    public static final int ApplicationActive = 0x4;
-
 
     public boolean setKeyboardVisibility(boolean visibility, long timeStamp)
     {
@@ -1037,12 +1024,12 @@ public class QtActivityDelegate
     public void onPause()
     {
         if (Build.VERSION.SDK_INT < 24 || !m_activity.isInMultiWindowMode())
-            QtNative.setApplicationState(ApplicationInactive);
+            QtNative.setApplicationState(ApplicationState.ApplicationInactive);
     }
 
     public void onResume()
     {
-        QtNative.setApplicationState(ApplicationActive);
+        QtNative.setApplicationState(ApplicationState.ApplicationActive);
         if (m_started) {
             QtNative.updateWindow();
             updateFullScreen(); // Suspending the app clears the immersive mode, so we need to set it again.
@@ -1068,7 +1055,7 @@ public class QtActivityDelegate
 
     public void onStop()
     {
-        QtNative.setApplicationState(ApplicationSuspended);
+        QtNative.setApplicationState(ApplicationState.ApplicationSuspended);
     }
 
     public Object onRetainNonConfigurationInstance()

@@ -338,7 +338,7 @@ public class QtNative
     {
         synchronized (m_mainActivityMutex) {
             switch (state) {
-                case QtActivityDelegate.ApplicationActive:
+                case QtConstants.ApplicationState.ApplicationActive:
                     m_activityPaused = false;
                     Iterator<Runnable> itr = m_lostActions.iterator();
                     while (itr.hasNext())

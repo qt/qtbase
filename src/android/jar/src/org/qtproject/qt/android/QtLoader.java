@@ -27,22 +27,11 @@ import java.util.List;
 
 import dalvik.system.DexClassLoader;
 
+import static org.qtproject.qt.android.QtConstants.*;
+
 public abstract class QtLoader {
 
     static String QtTAG = "Qt";
-    public static final String ERROR_CODE_KEY = "error.code";
-    public static final String ERROR_MESSAGE_KEY = "error.message";
-    public static final String DEX_PATH_KEY = "dex.path";
-    public static final String LIB_PATH_KEY = "lib.path";
-    public static final String LOADER_CLASS_NAME_KEY = "loader.class.name";
-    public static final String NATIVE_LIBRARIES_KEY = "native.libraries";
-    public static final String ENVIRONMENT_VARIABLES_KEY = "environment.variables";
-    public static final String APPLICATION_PARAMETERS_KEY = "application.parameters";
-    public static final String BUNDLED_LIBRARIES_KEY = "bundled.libraries";
-    public static final String MAIN_LIBRARY_KEY = "main.library";
-    public static final String STATIC_INIT_CLASSES_KEY = "static.init.classes";
-    public static final String EXTRACT_STYLE_KEY = "extract.android.style";
-    private static final String EXTRACT_STYLE_MINIMAL_KEY = "extract.android.style.option";
 
     // These parameters matter in case of deploying application as system (embedded into firmware)
     public static final String SYSTEM_LIB_PATH = "/system/lib/";

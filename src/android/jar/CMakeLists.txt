@@ -24,6 +24,7 @@ set(java_sources
     src/org/qtproject/qt/android/extras//QtAndroidBinder.java
     src/org/qtproject/qt/android/extras/QtAndroidServiceConnection.java
     src/org/qtproject/qt/android/extras/QtNative.java
+    src/org/qtproject/qt/android/QtConstants.java
 )
 
 qt_internal_add_jar(Qt${QtBase_VERSION_MAJOR}Android
