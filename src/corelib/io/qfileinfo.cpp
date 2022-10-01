@@ -249,12 +249,14 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     info objects, just append one to the file name given to the constructors
     or setFile().
 
-    The file's dates are returned by birthTime(), lastModified(), lastRead() and
-    fileTime(). Information about the file's access permissions is
-    obtained with isReadable(), isWritable() and isExecutable(). The
-    file's ownership is available from owner(), ownerId(), group() and
-    groupId(). You can examine a file's permissions and ownership in a
-    single statement using the permission() function.
+    Date and time related information are returned by birthTime(), fileTime(),
+    lastModified(), lastRead(), and metadataChangeTime().
+    Information about
+    access permissions can be obtained with isReadable(), isWritable(), and
+    isExecutable(). Ownership information can be obtained with
+    owner(), ownerId(), group(), and groupId(). You can also examine
+    permissions and ownership in a single statement using the permission()
+    function.
 
     \target NTFS permissions
     \note On NTFS file systems, ownership and permissions checking is
@@ -287,6 +289,12 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     every time you request information from it call setCaching(false).
     If you want to make sure that all information is read from the
     file system, use stat().
+
+    \l{birthTime()}, \l{fileTime()}, \l{lastModified()}, \l{lastRead()},
+    and \l{metadataChangeTime()} return times in \e{local time} by default.
+    Since native file system API typically uses UTC, this requires a conversion.
+    If you don't actually need the local time, you can avoid this by requesting
+    the time in QTimeZone::UTC directly.
 
     \sa QDir, QFile
 */
@@ -1429,8 +1437,26 @@ qint64 QFileInfo::size() const
 
 /*!
     \fn QDateTime QFileInfo::birthTime() const
+
+    Returns the date and time when the file was created (born), in local time.
+
+    If the file birth time is not available, this function returns an invalid QDateTime.
+
+    If the file is a symlink, the time of the target file is returned (not the symlink).
+
+    This function overloads QFileInfo::birthTime(const QTimeZone &tz), and
+    returns the same as \c{birthTime(QTimeZone::LocalTime)}.
+
     \since 5.10
-    Returns the date and time when the file was created / born.
+    \sa lastModified(), lastRead(), metadataChangeTime(), fileTime()
+*/
+
+/*!
+    \fn QDateTime QFileInfo::birthTime(const QTimeZone &tz) const
+
+    Returns the date and time when the file was created (born).
+
+    \include qfileinfo.cpp file-times-in-time-zone
 
     If the file birth time is not available, this function returns an invalid
     QDateTime.
@@ -1438,60 +1464,150 @@ qint64 QFileInfo::size() const
     If the file is a symlink, the time of the target file is returned
     (not the symlink).
 
-    \sa lastModified(), lastRead(), metadataChangeTime()
+    \since 6.6
+    \sa lastModified(const QTimeZone &), lastRead(const QTimeZone &), metadataChangeTime(const QTimeZone &), fileTime(QFile::FileTime, const QTimeZone &)
 */
 
 /*!
     \fn QDateTime QFileInfo::metadataChangeTime() const
-    \since 5.10
-    Returns the date and time when the file metadata was changed. A metadata
-    change occurs when the file is created, but it also occurs whenever the
-    user writes or sets inode information (for example, changing the file
-    permissions).
+
+    Returns the date and time when the file's metadata was last changed,
+    in local time.
+
+    A metadata change occurs when the file is first created, but it also
+    occurs whenever the user writes or sets inode information (for example,
+    changing the file permissions).
 
     If the file is a symlink, the time of the target file is returned
     (not the symlink).
 
-    \sa lastModified(), lastRead()
+    This function overloads QFileInfo::metadataChangeTime(const QTimeZone &tz),
+    and returns the same as \c{metadataChangeTime(QTimeZone::LocalTime)}.
+
+    \since 5.10
+    \sa birthTime(), lastModified(), lastRead(), fileTime()
+*/
+
+/*!
+    \fn QDateTime QFileInfo::metadataChangeTime(const QTimeZone &tz) const
+
+    Returns the date and time when the file's metadata was last changed.
+    A metadata change occurs when the file is first created, but it also
+    occurs whenever the user writes or sets inode information (for example,
+    changing the file permissions).
+
+    \include qfileinfo.cpp file-times-in-time-zone
+
+    If the file is a symlink, the time of the target file is returned
+    (not the symlink).
+
+    \since 6.6
+    \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &), lastRead(const QTimeZone &), metadataChangeTime(const QTimeZone &), fileTime(QFile::FileTime time, const QTimeZone &)
 */
 
 /*!
     \fn QDateTime QFileInfo::lastModified() const
 
-    Returns the date and local time when the file was last modified.
+    Returns the date and time when the file was last modified.
 
     If the file is a symlink, the time of the target file is returned
     (not the symlink).
+
+    This function overloads \l{QFileInfo::lastModified(const QTimeZone &)},
+    and returns the same as \c{lastModified(QTimeZone::LocalTime)}.
 
     \sa birthTime(), lastRead(), metadataChangeTime(), fileTime()
 */
 
 /*!
-    \fn QDateTime QFileInfo::lastRead() const
+    \fn QDateTime QFileInfo::lastModified(const QTimeZone &tz) const
 
-    Returns the date and local time when the file was last read (accessed).
+    Returns the date and time when the file was last modified.
 
-    On platforms where this information is not available, returns the
-    same as lastModified().
+    \include qfileinfo.cpp file-times-in-time-zone
 
     If the file is a symlink, the time of the target file is returned
     (not the symlink).
+
+    \since 6.6
+    \sa birthTime(const QTimeZone &), lastRead(const QTimeZone &), metadataChangeTime(const QTimeZone &), fileTime(QFile::FileTime, const QTimeZone &)
+*/
+
+/*!
+    \fn QDateTime QFileInfo::lastRead() const
+
+    Returns the date and time when the file was last read (accessed).
+
+    On platforms where this information is not available, returns the same
+    time as lastModified().
+
+    If the file is a symlink, the time of the target file is returned
+    (not the symlink).
+
+    This function overloads \l{QFileInfo::lastRead(const QTimeZone &)},
+    and returns the same as \c{lastRead(QTimeZone::LocalTime)}.
 
     \sa birthTime(), lastModified(), metadataChangeTime(), fileTime()
 */
 
 /*!
-    \since 5.10
+    \fn QDateTime QFileInfo::lastRead(const QTimeZone &tz) const
 
-    Returns the file time specified by \a time. If the time cannot be
-    determined, an invalid date time is returned.
+    Returns the date and time when the file was last read (accessed).
+
+    \include qfileinfo.cpp file-times-in-time-zone
+
+    On platforms where this information is not available, returns the same
+    time as lastModified().
 
     If the file is a symlink, the time of the target file is returned
     (not the symlink).
 
-    \sa QFile::FileTime, QDateTime::isValid()
+    \since 6.6
+    \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &), metadataChangeTime(const QTimeZone &), fileTime(QFile::FileTime, const QTimeZone &)
 */
-QDateTime QFileInfo::fileTime(QFile::FileTime time) const
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
+/*!
+    Returns the file time specified by \a time.
+
+    If the time cannot be determined, an invalid date time is returned.
+
+    If the file is a symlink, the time of the target file is returned
+    (not the symlink).
+
+    This function overloads
+    \l{QFileInfo::fileTime(QFile::FileTime, const QTimeZone &)},
+    and returns the same as \c{fileTime(time, QTimeZone::LocalTime)}.
+
+    \since 5.10
+    \sa birthTime(), lastModified(), lastRead(), metadataChangeTime()
+*/
+QDateTime QFileInfo::fileTime(QFile::FileTime time) const {
+    return fileTime(time, QTimeZone::LocalTime);
+}
+#endif
+
+/*!
+    Returns the file time specified by \a time.
+
+//! [file-times-in-time-zone]
+    The returned time is in the time zone specified by \a tz. For example,
+    you can use QTimeZone::LocalTime or QTimeZone::UTC to get the time in
+    the Local time zone or UTC, respectively. Since native file system API
+    typically uses UTC, using QTimeZone::UTC is often faster, as it does not
+    require any conversions.
+//! [file-times-in-time-zone]
+
+    If the time cannot be determined, an invalid date time is returned.
+
+    If the file is a symlink, the time of the target file is returned
+    (not the symlink).
+
+    \since 6.6
+    \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &), lastRead(const QTimeZone &), metadataChangeTime(const QTimeZone &), QDateTime::isValid()
+*/
+QDateTime QFileInfo::fileTime(QFile::FileTime time, const QTimeZone &tz) const
 {
     static_assert(int(QFile::FileAccessTime) == int(QAbstractFileEngine::AccessTime));
     static_assert(int(QFile::FileBirthTime) == int(QAbstractFileEngine::BirthTime));
@@ -1516,10 +1632,10 @@ QDateTime QFileInfo::fileTime(QFile::FileTime time) const
         break;
     }
 
-    return d->checkAttribute<QDateTime>(
-                flag,
-                [=]() { return d->metaData.fileTime(fetime).toLocalTime(); },
-                [=]() { return d->getFileTime(fetime).toLocalTime(); });
+    auto fsLambda = [d, fetime]() { return d->metaData.fileTime(fetime); };
+    auto engineLambda = [d, fetime]() { return d->getFileTime(fetime); };
+    const QDateTime dt = d->checkAttribute<QDateTime>(flag, fsLambda, engineLambda);
+    return dt.toTimeZone(tz);
 }
 
 /*!
