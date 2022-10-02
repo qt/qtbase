@@ -341,12 +341,7 @@ inline void QLibraryStore::cleanup()
             if (lib->libraryUnloadCount.loadRelaxed() > 0) {
                 Q_ASSERT(lib->pHnd.loadRelaxed());
                 lib->libraryUnloadCount.storeRelaxed(1);
-#ifdef __GLIBC__
-                // glibc has a bug in unloading from global destructors
-                // see https://bugzilla.novell.com/show_bug.cgi?id=622977
-                // and http://sourceware.org/bugzilla/show_bug.cgi?id=11941
-                lib->unload(QLibraryPrivate::NoUnloadSys);
-#elif defined(Q_OS_DARWIN)
+#if defined(Q_OS_DARWIN)
                 // We cannot fully unload libraries, as we don't know if there are
                 // lingering references (in system threads e.g.) to Objective-C classes
                 // defined in the library.
