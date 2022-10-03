@@ -804,6 +804,9 @@ void tst_QGraphicsProxyWidget::focusProxy_QTBUG_51856()
         }
     };
 
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
@@ -3276,6 +3279,9 @@ public:
 
 void tst_QGraphicsProxyWidget::inputMethod()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     QGraphicsScene scene;
 
     // check that the proxy is initialized with the correct input method sensitivity
