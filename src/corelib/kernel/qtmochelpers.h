@@ -17,6 +17,8 @@
 
 #include <QtCore/qglobal.h>
 
+#include <algorithm>
+
 #if 0
 #pragma qt_no_master_include
 #endif
