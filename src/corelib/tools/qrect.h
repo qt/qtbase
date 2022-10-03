@@ -16,6 +16,11 @@
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
 struct CGRect;
 #endif
+#if defined(Q_OS_WASM) || defined(Q_QDOC)
+namespace emscripten {
+class val;
+}
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -584,6 +589,11 @@ public:
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     [[nodiscard]] static QRectF fromCGRect(CGRect rect) noexcept;
     [[nodiscard]] CGRect toCGRect() const noexcept;
+#endif
+
+#if defined(Q_OS_WASM) || defined(Q_QDOC)
+    [[nodiscard]] static QRectF fromDOMRect(emscripten::val domRect);
+    [[nodiscard]] emscripten::val toDOMRect() const;
 #endif
 
 private:

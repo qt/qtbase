@@ -574,6 +574,10 @@ qt_internal_extend_target(Core CONDITION WIN32
         userenv
 )
 
+qt_internal_extend_target(Core CONDITION WASM
+    SOURCES
+        kernel/qcore_wasm.cpp)
+
 qt_internal_extend_target(Core CONDITION APPLE
     SOURCES
         global/qoperatingsystemversion_darwin.mm
