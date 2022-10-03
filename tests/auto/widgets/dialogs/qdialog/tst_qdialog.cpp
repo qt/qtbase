@@ -286,6 +286,10 @@ void tst_QDialog::showAsTool()
 {
     if (QStringList{"xcb", "offscreen"}.contains(QGuiApplication::platformName()))
         QSKIP("activeWindow() is not respected by all Xcb window managers and the offscreen plugin");
+
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     DummyDialog testWidget;
     testWidget.resize(200, 200);
     testWidget.setWindowTitle(QTest::currentTestFunction());
