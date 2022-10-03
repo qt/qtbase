@@ -1126,7 +1126,8 @@ public:
                                                        .filename()
                                                        .generic_string())) {
                             faults |= PrivateHeaderChecks;
-                            std::cerr << "ERROR: " << m_currentFilename
+                            std::cerr << "ERROR: " << m_currentFileString
+                                      << ":" << m_currentFileLineNumber
                                       << " includes private header " << includedHeader << std::endl;
                         }
                         for (const auto &module : m_commandLineArgs->knownModules()) {
@@ -1134,8 +1135,10 @@ public:
                             if (std::filesystem::exists(m_commandLineArgs->includeDir() + "/../"
                                                         + suggestedHeader)) {
                                 faults |= IncludeChecks;
-                                std::cerr << "WARNING: " << m_currentFilename << " includes "
-                                          << includedHeader << " when it should include "
+                                std::cerr << "WARNING: " << m_currentFileString
+                                          << ":" << m_currentFileLineNumber
+                                          << " includes " << includedHeader
+                                          << " when it should include "
                                           << suggestedHeader << std::endl;
                             }
                         }
@@ -1190,21 +1193,21 @@ public:
             if (hasQtBeginNamespace) {
                 if (qtBeginNamespace != qtEndNamespace) {
                     faults |= NamespaceChecks;
-                    std::cerr << "WARNING: " << m_currentFilename
+                    std::cerr << "WARNING: " << m_currentFileString
                               << " the begin namespace macro QT_BEGIN_NAMESPACE" << qtBeginNamespace
                               << " doesn't match the end namespace macro QT_END_NAMESPACE"
                               << qtEndNamespace << std::endl;
                 }
             } else {
                 faults |= NamespaceChecks;
-                std::cerr << "WARNING: " << m_currentFilename
+                std::cerr << "WARNING: " << m_currentFileString
                           << " does not include QT_BEGIN_NAMESPACE" << std::endl;
             }
         }
 
         if (!(skipChecks & WeMeantItChecks) && !hasWeMeantIt) {
             faults |= WeMeantItChecks;
-            std::cerr << "WARNING: " << m_currentFilename
+            std::cerr << "WARNING: " << m_currentFileString
                       << " does not have the \"We mean it.\" warning"
                       << std::endl;
         }
