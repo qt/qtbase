@@ -4,6 +4,9 @@
 #ifndef QTCONFIGMACROS_H
 #define QTCONFIGMACROS_H
 
+#if 0
+#  pragma qt_sync_stop_processing
+#endif
 #ifdef QT_BOOTSTRAPPED
 // qconfig-bootstrapped.h is not supposed to be a part of the synced header files. So we find it by
 // the include path specified for Bootstrap library in the source tree instead of the build tree as
@@ -153,9 +156,5 @@ namespace QT_NAMESPACE {}
 #ifndef QT_END_MOC_NAMESPACE
 # define QT_END_MOC_NAMESPACE
 #endif
-
-/* silence syncqt warning */
-QT_BEGIN_NAMESPACE
-QT_END_NAMESPACE
 
 #endif /* QTCONFIGMACROS_H */
