@@ -1651,8 +1651,6 @@ void tst_QOpenGL::bufferMapRange()
     buf.unmap();
 
     p = (char *) buf.mapRange(0, sizeof(data), QOpenGLBuffer::RangeRead);
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QEXPECT_FAIL("", "This fails on Wayland, see QTBUG-100918.", Abort);
     QVERIFY(!strcmp(p, "sOMe data"));
     buf.unmap();
 
