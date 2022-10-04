@@ -64,23 +64,30 @@ contains(TEMPLATE, ".*app"):!build_pass {
 
     tool_extension = ""
     contains(QMAKE_HOST.os, Windows): tool_extension = ".exe"
-    FILE_CONTENT += "   \"qml-importscanner-binary\": $$emitString($$[QT_HOST_LIBEXECS]/qmlimportscanner$${tool_extension}),"
     FILE_CONTENT += "   \"rcc-binary\": $$emitString($$[QT_HOST_LIBEXECS]/rcc$${tool_extension}),"
 
-    qml_import_paths = $$(QML2_IMPORT_PATH)
-    qml_import_paths = $$split(qml_import_paths, $$DIRLIST_SEPARATOR)
-    qml_import_paths += $$QML_IMPORT_PATH
-    !isEmpty(qml_import_paths) {
-        FILE_CONTENT += "   \"qml-import-paths\": $$emitString($$join(qml_import_paths, ",")),"
+    contains(QT_MODULES, qml) {
+        FILE_CONTENT += "   \"qml-importscanner-binary\": $$emitString($$[QT_HOST_LIBEXECS]/qmlimportscanner$${tool_extension}),"
+
+        qml_import_paths = $$(QML2_IMPORT_PATH)
+        qml_import_paths = $$split(qml_import_paths, $$DIRLIST_SEPARATOR)
+        qml_import_paths += $$QML_IMPORT_PATH
+        !isEmpty(qml_import_paths) {
+            FILE_CONTENT += "   \"qml-import-paths\": $$emitString($$join(qml_import_paths, ",")),"
+        }
+        unset(qml_import_paths)
+
+
+        isEmpty(QML_ROOT_PATH): \
+            QML_ROOT_PATH = $$_PRO_FILE_PWD_
+        FILE_CONTENT += "   \"qml-root-path\": $$emitString($$QML_ROOT_PATH),"
+    } else {
+        FILE_CONTENT += "   \"qml-skip-import-scanning\": true,"
     }
-    unset(qml_import_paths)
 
     !isEmpty(ANDROID_APPLICATION_ARGUMENTS): \
         FILE_CONTENT += "   \"android-application-arguments\": $$emitString($$ANDROID_APPLICATION_ARGUMENTS),"
 
-    isEmpty(QML_ROOT_PATH): \
-        QML_ROOT_PATH = $$_PRO_FILE_PWD_
-    FILE_CONTENT += "   \"qml-root-path\": $$emitString($$QML_ROOT_PATH),"
     FILE_CONTENT += "   \"stdcpp-path\": $$emitString($$ANDROID_STDCPP_PATH),"
     !isEmpty(RESOURCES)|!isEmpty(QMLCACHE_RESOURCE_FILES) {
         # Make sure that qmake generated qrc files are accounted for

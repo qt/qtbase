@@ -218,6 +218,7 @@ struct Options
 
     // Override qml import scanner path
     QString qmlImportScannerBinaryPath;
+    bool qmlSkipImportScanning = false;
 };
 
 static const QHash<QByteArray, QByteArray> elfArchitectures = {
@@ -1030,6 +1031,12 @@ bool readInputFile(Options *options)
         const QJsonValue extraLibs = jsonObject.value("android-extra-libs"_L1);
         if (!extraLibs.isUndefined())
             options->extraLibs = extraLibs.toString().split(u',', Qt::SkipEmptyParts);
+    }
+
+    {
+        const QJsonValue qmlSkipImportScanning = jsonObject.value("qml-skip-import-scanning"_L1);
+        if (!qmlSkipImportScanning.isUndefined())
+            options->qmlSkipImportScanning = qmlSkipImportScanning.toBool();
     }
 
     {
@@ -2298,11 +2305,10 @@ bool readDependencies(Options *options)
         }
     }
 
-    if ((!options->rootPaths.empty() || !options->qrcFiles.isEmpty()) &&
-        !scanImports(options, &usedDependencies))
-        return false;
-
-    return true;
+    if (options->qmlSkipImportScanning
+        || (options->rootPaths.empty() && options->qrcFiles.isEmpty()))
+        return true;
+    return scanImports(options, &usedDependencies);
 }
 
 bool containsApplicationBinary(Options *options)

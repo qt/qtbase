@@ -254,6 +254,9 @@ function(qt6_android_generate_deployment_settings target)
 
     if(COMMAND _qt_internal_generate_android_qml_deployment_settings)
         _qt_internal_generate_android_qml_deployment_settings(file_contents ${target})
+    else()
+        string(APPEND file_contents
+            "   \"qml-skip-import-scanning\": true,\n")
     endif()
 
     # Override rcc binary path
