@@ -57,10 +57,11 @@ macro.QtMajorVersion.match  = "^(\\d+)\\."
 macro.QtMinorVersion.match  = "\\d+\\.(\\d+)"
 
 # Embed YouTube content by video ID - Example: \youtube dQw4w9WgXcQ
-# Also requires a <ID>.jpg thumbnail for offline docs. In .qdocconf, add:
+# Also requires a <ID>.jpg thumbnail for offline docs. By default, qdoc doesn't copy the thumbnail
+# along with the offline docs, you must specify it manually. In .qdocconf, to do it for all formats
+# at once, add:
 #
-# HTML.extraimages           += images/dQw4w9WgXcQ.jpg
-# qhp.ProjectName.extraFiles += images/dQw4w9WgXcQ.jpg
+# {HTML.extraimages,qhp.QtDoc.extraFiles, DocBook.extraimages} += images/dQw4w9WgXcQ.jpg
 #
 macro.youtube.HTML = "<div class=\"video\">\n" \
                      "<a href=\"https://www.youtube.com/watch/?v=\1\">\n"\
