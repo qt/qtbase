@@ -12,11 +12,11 @@
     "Homepage": "https://www.unicode.org/ucd/",
     "Version": "Don't use the Unicode standard version;
  UCD has its own 'Revision' numbers, see the 'UAX #44, UCD' page (https://www.unicode.org/reports/tr44/)",
-    "Version": "28",
+    "Version": "30",
     "License": "Unicode License Agreement - Data Files and Software (2016)",
     "LicenseId": "Unicode-DFS-2016",
     "LicenseFile": "UNICODE_LICENSE.txt",
-    "Copyright": "Copyright (C) 1991-2021 Unicode, Inc."
+    "Copyright": "Copyright (C) 1991-2022 Unicode, Inc."
 },
 {
     "Id": "unicode-cldr",

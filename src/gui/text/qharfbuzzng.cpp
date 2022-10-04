@@ -222,6 +222,14 @@ static const hb_script_t _qtscript_to_hbscript[] = {
     HB_SCRIPT_TOTO,
     HB_SCRIPT_VITHKUQI,
 #endif
+    // Unicode 15.0 additions (not present in harfbuzz-ng 5.1.0 and earlier)
+#if !HB_VERSION_ATLEAST(5, 2, 0)
+    hb_script_t(HB_TAG('K','a','w','i')), // Script_Kawi
+    hb_script_t(HB_TAG('N','a','g','m')), // Script_NagMundari
+#else
+    HB_SCRIPT_KAWI,
+    HB_SCRIPT_NAG_MUNDARI,
+#endif
 };
 static_assert(QChar::ScriptCount == sizeof(_qtscript_to_hbscript) / sizeof(_qtscript_to_hbscript[0]));
 

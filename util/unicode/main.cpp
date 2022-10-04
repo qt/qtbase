@@ -50,6 +50,7 @@ static void initAgeMap()
         { QChar::Unicode_12_1,   "12.1" }, // UCD Revision 24
         { QChar::Unicode_13_0,   "13.0" }, // UCD Revision 26
         { QChar::Unicode_14_0,   "14.0" }, // UCD Revision 28
+        { QChar::Unicode_15_0,   "15.0" }, // UCD Revision 30
         { QChar::Unicode_Unassigned, 0 }
     };
     AgeMap *d = ageMap;
@@ -808,6 +809,10 @@ static void initScriptMap()
         { QChar::Script_Tangsa,                 "Tangsa"},
         { QChar::Script_Toto,                   "Toto"},
         { QChar::Script_Vithkuqi,               "Vithkuqi"},
+
+        // 15.0
+        { QChar::Script_Kawi,                   "Kawi"},
+        { QChar::Script_NagMundari,             "NagMundari"},
 
         // unhandled
         { QChar::Script_Unknown,                0 }

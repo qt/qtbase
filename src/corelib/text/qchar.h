@@ -334,6 +334,10 @@ public:
         Script_Toto,
         Script_Vithkuqi,
 
+        // Unicode 15.0 additions
+        Script_Kawi,
+        Script_NagMundari,
+
         ScriptCount
     };
 
@@ -425,7 +429,8 @@ public:
         Unicode_12_0,
         Unicode_12_1,
         Unicode_13_0,
-        Unicode_14_0
+        Unicode_14_0,
+        Unicode_15_0,
     };
 
     inline Category category() const noexcept { return QChar::category(ucs); }

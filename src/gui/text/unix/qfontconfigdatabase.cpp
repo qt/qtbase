@@ -246,6 +246,8 @@ static const char specialLanguages[][6] = {
     "", // Tangsa
     "", // Toto
     "", // Vithkuqi
+    "", // Kawi
+    "", // NagMundari
 };
 static_assert(sizeof specialLanguages / sizeof *specialLanguages == QChar::ScriptCount);
 

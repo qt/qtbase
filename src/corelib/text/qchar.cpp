@@ -164,6 +164,7 @@ QT_BEGIN_NAMESPACE
     \value [since 5.15] Unicode_12_1 Version 12.1
     \value [since 5.15] Unicode_13_0 Version 13.0
     \value [since 6.3] Unicode_14_0 Version 14.0
+    \value [since 6.5] Unicode_15_0 Version 15.0
     \value Unicode_Unassigned  The value is not assigned to any character
                                in version 8.0 of Unicode.
 
@@ -323,6 +324,7 @@ QT_BEGIN_NAMESPACE
     \value Script_Kaithi
     \value Script_Kannada
     \value Script_Katakana
+    \value [since 6.5] Script_Kawi
     \value Script_KayahLi
     \value Script_Kharoshthi
     \value [since 5.15] Script_KhitanSmallScript
@@ -357,6 +359,7 @@ QT_BEGIN_NAMESPACE
     \value [since 5.6] Script_Multani
     \value Script_Myanmar
     \value [since 5.5] Script_Nabataean
+    \value [since 6.3] Script_NagMundari
     \value [since 5.15] Script_Nandinagari
     \value [since 5.11] Script_Newa
     \value Script_NewTaiLue
