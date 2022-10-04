@@ -1342,6 +1342,8 @@ void tst_QDockWidget::xcbMessageHandler(QtMsgType type, const QMessageLogContext
 // test floating tabs and item_tree consistency
 void tst_QDockWidget::floatingTabs()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Test skipped on Wayland.");
 #ifdef Q_OS_WIN
     QSKIP("Test skipped on Windows platforms");
 #endif // Q_OS_WIN
