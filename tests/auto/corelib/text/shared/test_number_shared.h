@@ -12,6 +12,7 @@ struct NumberDoubleTestData
     int p;
     QLatin1String expected;
     QLatin1String optTitle = {}; // optional
+    // Tests with same (f, p, expected) should use optTitle to avoid duplicate data tags.
 };
 
 template<typename Fun>
@@ -23,7 +24,7 @@ inline void add_number_double_shared_data(Fun addTestRowFunction)
         { 0.0, 'f', 0, QLatin1String("0") },
         { 0.0, 'e', 0, QLatin1String("0e+00") },
         { 0.0, 'e', 1, QLatin1String("0.0e+00") },
-        { 0.0001, 'f', 0, QLatin1String("0") },
+        { 0.0001, 'f', 0, QLatin1String("0"), QLatin1String("0(.0001)") },
         { 0.1234, 'f', 5, QLatin1String("0.12340") },
         { -0.1234, 'f', 5, QLatin1String("-0.12340") },
         { 0.0000000314, 'f', 12, QLatin1String("0.000000031400") },
