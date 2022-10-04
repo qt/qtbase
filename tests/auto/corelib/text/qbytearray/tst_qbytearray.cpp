@@ -1609,7 +1609,7 @@ void tst_QByteArray::toFromHex_data()
         << QByteArray("af")
         << QByteArray("xaf");
 
-    QTest::newRow("no-leading-zero")
+    QTest::newRow("no-leading-zero-long")
         << QByteArray("\xd\xde\xad\xc0\xde")
         << '\0'
         << QByteArray("0ddeadc0de")
