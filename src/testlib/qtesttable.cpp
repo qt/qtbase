@@ -37,6 +37,7 @@ public:
 
     void addColumn(int elemType, const char *elemName) { elementList.push_back(Element(elemName, elemType)); }
     void addRow(QTestData *data) { dataList.push_back(data); }
+    bool hasRow(const char *name) const;
 
     static QTestTable *currentTestTable;
     static QTestTable *gTable;
@@ -49,6 +50,8 @@ void QTestTable::addColumn(int type, const char *name)
 {
     QTEST_ASSERT(type);
     QTEST_ASSERT(name);
+    if (indexOf(name) != -1)
+        qWarning() << "Duplicate data column" << name << "- please rename.";
 
     d->addColumn(type, name);
 }
@@ -70,6 +73,9 @@ bool QTestTable::isEmpty() const
 
 QTestData *QTestTable::newData(const char *tag)
 {
+    if (d->hasRow(tag))
+        qWarning() << "Duplicate data tag" << tag << "- please rename.";
+
     QTestData *dt = new QTestData(tag, this);
     d->addRow(dt);
     return dt;
@@ -110,9 +116,18 @@ public:
     bool operator()(const QTestTablePrivate::Element &e) const
         { return !strcmp(e.name, m_needle); }
 
+    bool operator()(const QTestData *e) const
+        { return !strcmp(e->dataTag(), m_needle); }
+
 private:
     const char *m_needle;
 };
+
+bool QTestTablePrivate::hasRow(const char *rowName) const
+{
+    QTEST_ASSERT(rowName);
+    return std::find_if(dataList.begin(), dataList.end(), NamePredicate(rowName)) != dataList.end();
+}
 
 int QTestTable::indexOf(const char *elementName) const
 {
