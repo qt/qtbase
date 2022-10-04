@@ -17,7 +17,8 @@
 
 #include <QtCore/qglobal.h>
 
-#include <algorithm>
+#include <algorithm> // std::min
+#include <limits>
 
 #if 0
 #pragma qt_no_master_include
