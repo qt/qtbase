@@ -2661,16 +2661,16 @@ void tst_QTextStream::manipulators_data()
     QTest::newRow("leftadjust")
         << 10 << int(QTextStream::AlignLeft) << 0 << 10 << 5.0 << 5 << QString("five")
         << QByteArray("5         5         five      ");
-    QTest::newRow("showpos")
+    QTest::newRow("showpos-wide")
         << 10 << int(QTextStream::AlignRight) << int(QTextStream::ForceSign) << 10 << 5.0 << 5 <<
         QString("five") << QByteArray("        +5        +5      five");
-    QTest::newRow("showpos2")
+    QTest::newRow("showpos-pi")
         << 10 << int(QTextStream::AlignRight) << int(QTextStream::ForceSign) << 5 << 3.14 << -5 <<
         QString("five") << QByteArray("+3.14   -5 five");
-    QTest::newRow("hex")
+    QTest::newRow("hex-lower")
         << 16 << int(QTextStream::AlignRight) << int(QTextStream::ShowBase) << 5 << 3.14 << -5 <<
         QString("five") << QByteArray(" 3.14 -0x5 five");
-    QTest::newRow("hex")
+    QTest::newRow("hex-upper")
         << 16 << int(QTextStream::AlignRight)
         << int(QTextStream::ShowBase | QTextStream::UppercaseBase)
         << 5 << 3.14 << -5 << QString("five") << QByteArray(" 3.14 -0X5 five");
