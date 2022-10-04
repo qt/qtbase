@@ -144,6 +144,12 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
 
     \endlist
 
+  Qt for iOS comes with support for POSIX shared memory out of the box.
+  With Qt for \macos an additional configure flag must be added when
+  building Qt to enable the feature. To enable the feature pass
+  \c {-feature-ipc_posix}  Note that the pre-built Qt libraries for
+  \macos available through the Qt installer do not include this feature.
+
   \endlist
 
   Remember to lock the shared memory with lock() before reading from
