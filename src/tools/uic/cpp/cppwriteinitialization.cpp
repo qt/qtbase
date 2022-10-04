@@ -1350,11 +1350,12 @@ void WriteInitialization::writeProperties(const QString &varName,
                 Buddy buddy = { varName, p->elementCstring() };
                 m_buddies.append(std::move(buddy));
             } else {
+                const bool useQByteArray = !stdset && language::language() == Language::Cpp;
                 QTextStream str(&propertyValue);
-                if (!stdset)
+                if (useQByteArray)
                     str << "QByteArray(";
                 str << language::charliteral(p->elementCstring(), m_dindent);
-                if (!stdset)
+                if (useQByteArray)
                     str << ')';
             }
             break;
