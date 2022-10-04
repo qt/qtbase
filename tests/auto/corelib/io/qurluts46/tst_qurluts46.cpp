@@ -30,6 +30,35 @@ private:
 
 const QSet<QByteArray> tst_QUrlUts46::fatalErrors = { "A3", "A4_2", "P1", "X4_2" };
 
+/**
+ * Replace \uXXXX escapes in test case fields.
+ */
+static QString unescapeField(const QString &field)
+{
+    static const QRegularExpression re(R"(\\u([[:xdigit:]]{4}))");
+
+    QString result;
+    qsizetype lastIdx = 0;
+
+    for (const auto &match : re.globalMatch(field)) {
+        // Add stuff before the match
+        result.append(field.mid(lastIdx, match.capturedStart() - lastIdx));
+        bool ok = false;
+        auto c = match.captured(1).toUInt(&ok, 16);
+        if (!ok) {
+            qFatal("Failed to parse a Unicode escape: %s", qPrintable(match.captured(1)));
+        }
+
+        result.append(QChar(c));
+        lastIdx = match.capturedEnd();
+    }
+
+    // Append the unescaped end
+    result.append(field.mid(lastIdx));
+
+    return result;
+}
+
 void tst_QUrlUts46::idnaTestV2_data()
 {
     QTest::addColumn<QString>("source");
@@ -69,7 +98,7 @@ void tst_QUrlUts46::idnaTestV2_data()
         Q_ASSERT(fields.size() == 7);
 
         for (auto &field : fields)
-            field = field.trimmed();
+            field = unescapeField(field.trimmed()).toUtf8();
 
         const QString &source = fields[0];
         QString toUnicode = fields[1].isEmpty() ? source : fields[1];
