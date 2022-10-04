@@ -2752,10 +2752,11 @@ void QTabBar::setChangeCurrentOnDrag(bool change)
 
 /*!
     Sets \a widget on the tab \a index.  The widget is placed
-    on the left or right hand side depending upon the \a position.
+    on the left or right hand side depending on the \a position.
     \since 4.5
 
-    Any previously set widget in \a position is hidden.
+    Any previously set widget in \a position is hidden. Setting \a widget
+    to \nullptr will hide the current widget at \a position.
 
     The tab bar will take ownership of the widget and so all widgets set here
     will be deleted by the tab bar when it is destroyed unless you separately
