@@ -3084,6 +3084,9 @@ void tst_QAbstractItemView::mouseSelection()
 */
 void tst_QAbstractItemView::scrollerSmoothScroll()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     QListWidget view;
     view.setAutoScroll(true);
     view.setVerticalScrollMode(QListView::ScrollPerPixel);
@@ -3153,6 +3156,9 @@ void tst_QAbstractItemView::inputMethodOpensEditor_data()
 
 void tst_QAbstractItemView::inputMethodOpensEditor()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     QTableWidget tableWidget(50, 50);
     tableWidget.setEditTriggers(QAbstractItemView::AnyKeyPressed);
     for (int r = 0; r < 50; ++r) {
