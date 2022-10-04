@@ -575,7 +575,7 @@ void tst_QQuaternion::multiply_data()
         for (float x = -1.0f; x <= 1.0f; x += 0.5f)
             for (float y = -1.0f; y <= 1.0f; y += 0.5f)
                 for (float z = -1.0f; z <= 1.0f; z += 0.5f) {
-                    QTest::newRow("exhaustive")
+                    QTest::addRow("exhaustive: (%.1f, %.1f, %.1f), %.1f", x, y, z, w)
                         << x << y << z << w
                         << z << w << y << x;
                 }
@@ -962,28 +962,6 @@ void tst_QQuaternion::rotationTo()
     QVERIFY(myFuzzyCompare(vec2, from));
 }
 
-static QByteArray testnameForAxis(const QVector3D &axis)
-{
-    QByteArray testname;
-    if (axis == QVector3D()) {
-        testname = "null";
-    } else {
-        if (axis.x()) {
-            testname += axis.x() < 0 ? '-' : '+';
-            testname += 'X';
-        }
-        if (axis.y()) {
-            testname += axis.y() < 0 ? '-' : '+';
-            testname += 'Y';
-        }
-        if (axis.z()) {
-            testname += axis.z() < 0 ? '-' : '+';
-            testname += 'Z';
-        }
-    }
-    return testname;
-}
-
 // Test quaternion convertion to and from orthonormal axes.
 void tst_QQuaternion::fromDirection_data()
 {
@@ -1006,7 +984,10 @@ void tst_QQuaternion::fromDirection_data()
         QVector3D xAxis, yAxis, zAxis;
         q.getAxes(&xAxis, &yAxis, &zAxis);
 
-        QTest::newRow("dir: " + testnameForAxis(zAxis) + ", up: " + testnameForAxis(yAxis))
+        QTest::addRow("ortho dirs: (%.1f,%.1f,%.1f), (%.1f,%.1f,%.1f), (%.1f,%.1f,%.1f)",
+                      xAxis.x(), xAxis.y(), xAxis.z(),
+                      yAxis.x(), yAxis.y(), yAxis.z(),
+                      zAxis.x(), zAxis.y(), zAxis.z())
             << zAxis * 10.0f << yAxis * 10.0f;
     }
 
@@ -1025,7 +1006,10 @@ void tst_QQuaternion::fromDirection_data()
         QVector3D xAxis, yAxis, zAxis;
         q.getAxes(&xAxis, &yAxis, &zAxis);
 
-        QTest::newRow("dir: " + testnameForAxis(zAxis) + ", up: null")
+        QTest::addRow("bad dirs: (%.1f,%.1f,%.1f), (%.1f,%.1f,%.1f), (%.1f,%.1f,%.1f)",
+                      xAxis.x(), xAxis.y(), xAxis.z(),
+                      yAxis.x(), yAxis.y(), yAxis.z(),
+                      zAxis.x(), zAxis.y(), zAxis.z())
             << zAxis * 10.0f << QVector3D();
     }
 }
