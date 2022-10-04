@@ -3548,6 +3548,9 @@ void tst_QGraphicsView::embeddedViewsWithFocus()
         void focusOutEvent(QFocusEvent *) override { --focusCount; }
     };
 
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     QGraphicsScene innerScene;
     FocusWidget *innerWidget = new FocusWidget;
     innerScene.addWidget(innerWidget);
