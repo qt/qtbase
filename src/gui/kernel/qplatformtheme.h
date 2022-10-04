@@ -98,6 +98,7 @@ public:
         FontDialog,
         MessageDialog
     };
+    Q_ENUM(DialogType);
 
     enum Palette {
         SystemPalette,
@@ -120,6 +121,7 @@ public:
         TextLineEditPalette,
         NPalettes
     };
+    Q_ENUM(Palette)
 
     enum Font {
         SystemFont,
@@ -238,6 +240,7 @@ public:
         // do not add any values below/greater than this
         CustomBase = 0xf0000000
     };
+    Q_ENUM(StandardPixmap)
 
     enum KeyboardSchemes
     {
@@ -248,6 +251,7 @@ public:
         GnomeKeyboardScheme,
         CdeKeyboardScheme
     };
+    Q_ENUM(KeyboardSchemes)
 
     enum UiEffect
     {
@@ -260,6 +264,7 @@ public:
         AnimateToolBoxUiEffect = 0x40,
         HoverEffect = 0x80
     };
+    Q_ENUM(UiEffect)
 
     enum IconOption {
         DontUseCustomDirectoryIcons = 0x01
