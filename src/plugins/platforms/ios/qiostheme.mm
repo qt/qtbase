@@ -134,13 +134,17 @@ QVariant QIOSTheme::themeHint(ThemeHint hint) const
 
 Qt::Appearance QIOSTheme::appearance() const
 {
+    UIUserInterfaceStyle appearance = UIUserInterfaceStyleUnspecified;
+    // Set the appearance based on the UIWindow
+    // Fallback to the UIScreen if no window is created yet
     if (UIWindow *window = qt_apple_sharedApplication().windows.lastObject) {
-        return window.traitCollection.userInterfaceStyle
-                == UIUserInterfaceStyleDark
-                ? Qt::Appearance::Dark
-                : Qt::Appearance::Light;
+        appearance = window.traitCollection.userInterfaceStyle;
+    } else {
+        appearance = UIScreen.mainScreen.traitCollection.userInterfaceStyle;
     }
-    return Qt::Appearance::Unknown;
+    return appearance == UIUserInterfaceStyleDark
+                       ? Qt::Appearance::Dark
+                       : Qt::Appearance::Light;
 }
 
 const QFont *QIOSTheme::font(Font type) const

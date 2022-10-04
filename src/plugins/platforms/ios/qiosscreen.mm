@@ -15,6 +15,7 @@
 
 #include <QtGui/qpointingdevice.h>
 #include <QtGui/private/qwindow_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <private/qcoregraphics_p.h>
 #include <qpa/qwindowsysteminterface.h>
 
@@ -177,8 +178,16 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 {
     [super traitCollectionDidChange:previousTraitCollection];
 
+    Qt::Appearance appearance = self.traitCollection.userInterfaceStyle
+                              == UIUserInterfaceStyleDark
+                              ? Qt::Appearance::Dark
+                              : Qt::Appearance::Light;
+
     if (self.screen == UIScreen.mainScreen) {
-        if (previousTraitCollection.userInterfaceStyle != self.traitCollection.userInterfaceStyle) {
+        // Check if the current userInterfaceStyle reports a different appearance than
+        // the platformTheme's appearance. We might have set that one based on the UIScreen
+        if (previousTraitCollection.userInterfaceStyle != self.traitCollection.userInterfaceStyle
+            || QGuiApplicationPrivate::platformTheme()->appearance() != appearance) {
             QIOSTheme::initializeSystemPalette();
             QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>();
         }
