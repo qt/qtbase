@@ -555,6 +555,8 @@ function(qt_internal_add_test name)
         list(APPEND extra_test_args "quseemrun")
         list(APPEND extra_test_args "qtestname=${testname}")
         list(APPEND extra_test_args "--silence_timeout=60")
+        # TODO: Add functionality to specify browser
+        list(APPEND extra_test_args "--browser=chrome")
 
         # This tells cmake to run the tests with this script, since wasm files can't be
         # executed directly
