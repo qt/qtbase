@@ -443,7 +443,10 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c,
 
 int QOpenGLTextureGlyphCache::glyphPadding() const
 {
-    return 1;
+    if (m_format == QFontEngine::Format_Mono)
+        return 8;
+    else
+        return 1;
 }
 
 int QOpenGLTextureGlyphCache::maxTextureWidth() const
