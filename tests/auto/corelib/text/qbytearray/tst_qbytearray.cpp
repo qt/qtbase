@@ -105,8 +105,8 @@ private slots:
     void reserveExtended_data();
     void reserveExtended();
     void resize();
-    void movablity_data();
-    void movablity();
+    void movability_data();
+    void movability();
     void literals();
     void userDefinedLiterals();
     void toUpperLower_data();
@@ -2127,7 +2127,7 @@ void tst_QByteArray::resize()
     QCOMPARE(ba, "aaaaabbbbb");
 }
 
-void tst_QByteArray::movablity_data()
+void tst_QByteArray::movability_data()
 {
     prependExtended_data();
 
@@ -2139,7 +2139,7 @@ void tst_QByteArray::movablity_data()
     QTest::newRow("sss") << QByteArray(3, 's');
 }
 
-void tst_QByteArray::movablity()
+void tst_QByteArray::movability()
 {
     QFETCH(QByteArray, array);
 
