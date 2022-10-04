@@ -2129,7 +2129,7 @@ void tst_QByteArray::resize()
 
 void tst_QByteArray::movablity_data()
 {
-    QTest::addColumn<QByteArray>("array");
+    prependExtended_data();
 
     QTest::newRow("0x00000000") << QByteArray("\x00\x00\x00\x00", 4);
     QTest::newRow("0x000000ff") << QByteArray("\x00\x00\x00\xff", 4);
@@ -2137,8 +2137,6 @@ void tst_QByteArray::movablity_data()
     QTest::newRow("empty") << QByteArray("");
     QTest::newRow("null") << QByteArray();
     QTest::newRow("sss") << QByteArray(3, 's');
-
-    prependExtended_data();
 }
 
 void tst_QByteArray::movablity()
