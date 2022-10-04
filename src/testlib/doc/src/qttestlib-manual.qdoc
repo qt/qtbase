@@ -731,6 +731,10 @@
     the type of the column whose value it supplies. If any assertion fails,
     the test is aborted.
 
+    The names of rows and columns, in a given test function's data table, should
+    be unique: if two rows share a name, or two columns share a name, a warning
+    will (since Qt 6.5) be produced.
+
     \section1 Rewriting the Test Function
 
     Our test function can now be rewritten:
