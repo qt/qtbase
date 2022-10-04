@@ -146,7 +146,15 @@ private slots:
     void QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems();
     void QT_BUG_12056_tabFocusFirstUnsetWhenRemovingItems();
     void QTBUG_45867_send_itemChildAddedChange_to_parent();
+
+private:
+    static bool hasWindowActivation();
 };
+
+bool tst_QGraphicsWidget::hasWindowActivation()
+{
+    return (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation));
+}
 
 // Subclass that exposes the protected functions.
 class SubQGraphicsWidget : public QGraphicsWidget {
@@ -1051,7 +1059,10 @@ void tst_QGraphicsWidget::initStyleOption()
     QGraphicsView view(&scene);
     view.resize(300, 300);
     view.show();
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    if (hasWindowActivation())
+        QVERIFY(QTest::qWaitForWindowActive(&view));
+    else
+        QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     view.setAlignment(Qt::AlignTop | Qt::AlignLeft);
     SubQGraphicsWidget *widget = new SubQGraphicsWidget;
@@ -1065,10 +1076,12 @@ void tst_QGraphicsWidget::initStyleOption()
     QFETCH(bool, enabled);
     widget->setEnabled(enabled);
     QFETCH(bool, focus);
-    if (focus) {
-        widget->setFlag(QGraphicsItem::ItemIsFocusable, true);
-        widget->setFocus();
-        QVERIFY(widget->hasFocus());
+    if (hasWindowActivation()) {
+        if (focus) {
+            widget->setFlag(QGraphicsItem::ItemIsFocusable, true);
+            widget->setFocus();
+            QVERIFY(widget->hasFocus());
+        }
     }
     QFETCH(bool, underMouse);
     if (underMouse) {
@@ -1087,8 +1100,10 @@ void tst_QGraphicsWidget::initStyleOption()
 
     bool isEnabled = option.state & QStyle::State_Enabled;
     QCOMPARE(isEnabled, enabled);
-    bool hasFocus = option.state & QStyle::State_HasFocus;
-    QCOMPARE(hasFocus, focus);
+    if (hasWindowActivation()) {
+        bool hasFocus = option.state & QStyle::State_HasFocus;
+        QCOMPARE(hasFocus, focus);
+    }
     bool isUnderMouse = option.state & QStyle::State_MouseOver;
     QCOMPARE(isUnderMouse, underMouse);
     // if (layoutDirection != Qt::LeftToRight)
@@ -1715,6 +1730,9 @@ void tst_QGraphicsWidget::verifyFocusChain()
 
 void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
 {
+    if (!hasWindowActivation())
+        QSKIP("Window activation is not supported");
+
     const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     QGraphicsScene scene;
     QGraphicsView view(&scene);
