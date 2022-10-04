@@ -68,6 +68,7 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/text/qbytearray.cpp
         ../../corelib/text/qbytearraylist.cpp
         ../../corelib/text/qbytearraymatcher.cpp
+        ../../corelib/text/qlatin1stringmatcher.cpp
         ../../corelib/text/qlocale.cpp
         ../../corelib/text/qlocale_tools.cpp
         ../../corelib/text/qregularexpression.cpp
