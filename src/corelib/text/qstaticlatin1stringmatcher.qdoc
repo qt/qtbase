@@ -1,0 +1,86 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+
+/*! \class QStaticLatin1StringMatcher
+    \inmodule QtCore
+    \brief The QStaticLatin1StringMatcher class is a compile-time version
+    of QLatin1StringMatcher.
+
+    \since 6.7
+    \ingroup tools
+    \ingroup string-processing
+
+    This class is useful when your code needs to search efficiently
+    in Latin-1 strings for a substring that's known at compile-time.
+    This is common, for example, in parsers. Using a matcher
+    object's IndexIn() is faster than using the indexOf() method of
+    the string you are searching in, especially when the string to
+    be found will be searched for repeatedly or within a large
+    Latin-1 string that may contain many matches to prefixes of the
+    substring to be found.
+
+    Unlike QLatin1StringMatcher, this class calculates the internal
+    representation at \e{compile-time}, so it can even benefit if you
+    are doing one-off Latin-1 string matches.
+
+    Create the QStaticLatin1StringMatcher by calling
+    qMakeStaticCaseSensitiveLatin1StringMatcher() or
+    qMakeStaticCaseInsensitiveLatin1StringMatcher() passing the Latin-1
+    string to search for as a C string literal. Store the return value of
+    that function in a \c{static constexpr auto} variable, so you don't
+    need to pass the \c{N} template parameter explicitly.
+
+    Then call indexIn() on the QLatin1StringView in which you want to search,
+    just like with QLatin1StringMatcher.
+
+    Since this class is designed to do all the up-front calculations at
+    compile-time, it does not offer setPattern() or setCaseSensitivity()
+    methods.
+
+    Integrity is currently not supported.
+
+    \sa QLatin1StringMatcher, QStaticByteArrayMatcher, QByteArrayMatcher
+*/
+
+/*!
+    \fn template<Qt::CaseSensitivity CS, size_t N> constexpr qsizetype QStaticLatin1StringMatcher<CS, N>::indexIn(QLatin1StringView haystack, qsizetype from) const
+
+    Searches the QLatin1StringView \a haystack, from byte position \a from
+    (default 0, i.e. from the first byte), for QLatin1StringView pattern()
+    that was set in the constructor. Using the case sensitivity that was also
+    set in the constructor.
+
+    Returns the position where the pattern() matched in \a haystack, or -1 if no match was found.
+*/
+
+/*!
+    \fn template<size_t N> constexpr auto qMakeStaticCaseSensitiveLatin1StringMatcher(const char
+   (&patternToMatch)[N])
+
+    \since 6.7
+    \relates QStaticLatin1StringMatcher
+
+    Return a QStaticLatin1StringMatcher with the correct \c{N} determined
+    automatically from the \a patternToMatch passed, and with case sensitivity.
+
+    To take full advantage of this function, assign the result to a
+    \c{static constexpr auto} variable:
+
+    \snippet code/src_corelib_text_qstaticlatin1stringmatcher.cpp 0
+*/
+
+/*!
+    \fn template<size_t N> constexpr auto qMakeStaticCaseInsensitiveLatin1StringMatcher(const char
+   (&patternToMatch)[N])
+
+    \since 6.7
+    \relates QStaticLatin1StringMatcher
+
+    Return a QStaticLatin1StringMatcher with the correct \c{N} determined
+    automatically from the \a patternToMatch passed, and without case sensitivity.
+
+    To take full advantage of this function, assign the result to a
+    \c{static constexpr auto} variable:
+
+    \snippet code/src_corelib_text_qstaticlatin1stringmatcher.cpp 1
+*/

@@ -222,6 +222,7 @@ qt_internal_add_module(Core
         text/qlocale.cpp text/qlocale.h text/qlocale_p.h
         text/qlocale_data_p.h
         text/qlocale_tools.cpp text/qlocale_tools_p.h
+        text/qstaticlatin1stringmatcher.h
         text/qstring.cpp text/qstring.h
         text/qstringalgorithms.h text/qstringalgorithms_p.h
         text/qstringbuilder.cpp text/qstringbuilder.h
