@@ -96,59 +96,58 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
 
   \list
 
-  \li Windows: QSharedMemory does not "own" the shared memory segment.
-  When all threads or processes that have an instance of QSharedMemory
-  attached to a particular shared memory segment have either destroyed
-  their instance of QSharedMemory or exited, the Windows kernel
-  releases the shared memory segment automatically.
+    \li Windows: QSharedMemory does not "own" the shared memory segment.
+    When all threads or processes that have an instance of QSharedMemory
+    attached to a particular shared memory segment have either destroyed
+    their instance of QSharedMemory or exited, the Windows kernel
+    releases the shared memory segment automatically.
 
-  \li Unix: QSharedMemory "owns" the shared memory segment. When the
-  last thread or process that has an instance of QSharedMemory
-  attached to a particular shared memory segment detaches from the
-  segment by destroying its instance of QSharedMemory, the Unix kernel
-  release the shared memory segment. But if that last thread or
-  process crashes without running the QSharedMemory destructor, the
-  shared memory segment survives the crash.
+    \li Unix: QSharedMemory "owns" the shared memory segment. When the
+    last thread or process that has an instance of QSharedMemory
+    attached to a particular shared memory segment detaches from the
+    segment by destroying its instance of QSharedMemory, the Unix kernel
+    release the shared memory segment. But if that last thread or
+    process crashes without running the QSharedMemory destructor, the
+    shared memory segment survives the crash.
 
-  \li HP-UX: Only one attach to a shared memory segment is allowed per
-  process. This means that QSharedMemory should not be used across
-  multiple threads in the same process in HP-UX.
+    \li HP-UX: Only one attach to a shared memory segment is allowed per
+    process. This means that QSharedMemory should not be used across
+    multiple threads in the same process in HP-UX.
 
-  \li Apple platforms: Sandboxed applications (including apps
-  shipped through the Apple App Store) require the use of POSIX
-  shared memory (instead of System V shared memory), which adds
-  a number of limitations, including:
+    \li Apple platforms: Sandboxed applications (including apps
+    shipped through the Apple App Store) require the use of POSIX
+    shared memory (instead of System V shared memory), which adds
+    a number of limitations, including:
 
     \list
 
-    \li The key must be in the form \c {<application group identifier>/<custom identifier>},
-    as documented \l {https://developer.apple.com/library/archive/documentation/Security/Conceptual/AppSandboxDesignGuide/AppSandboxInDepth/AppSandboxInDepth.html#//apple_ref/doc/uid/TP40011183-CH3-SW24}
-    {here} and \l {https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_application-groups}
-    {here}.
+      \li The key must be in the form \c {<application group identifier>/<custom identifier>},
+      as documented \l {https://developer.apple.com/library/archive/documentation/Security/Conceptual/AppSandboxDesignGuide/AppSandboxInDepth/AppSandboxInDepth.html#//apple_ref/doc/uid/TP40011183-CH3-SW24}
+      {here} and \l {https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_application-groups}
+      {here}.
 
-    \li The key length is limited to 30 characters.
+      \li The key length is limited to 30 characters.
 
-    \li On process exit, the named shared memory entries are not
-    cleaned up, so restarting the application and re-creating the
-    shared memory under the same name will fail. To work around this,
-    fall back to attaching to the existing shared memory entry:
+      \li On process exit, the named shared memory entries are not
+      cleaned up, so restarting the application and re-creating the
+      shared memory under the same name will fail. To work around this,
+      fall back to attaching to the existing shared memory entry:
 
-    \code
+      \code
 
-        QSharedMemory shm("DEVTEAMID.app-group/shared");
-        if (!shm.create(42) && shm.error() == QSharedMemory::AlreadyExists)
-            shm.attach();
+          QSharedMemory shm("DEVTEAMID.app-group/shared");
+          if (!shm.create(42) && shm.error() == QSharedMemory::AlreadyExists)
+              shm.attach();
 
-    \endcode
-
+      \endcode
 
     \endlist
 
-  Qt for iOS comes with support for POSIX shared memory out of the box.
-  With Qt for \macos an additional configure flag must be added when
-  building Qt to enable the feature. To enable the feature pass
-  \c {-feature-ipc_posix}  Note that the pre-built Qt libraries for
-  \macos available through the Qt installer do not include this feature.
+    Qt for iOS comes with support for POSIX shared memory out of the box.
+    With Qt for \macos an additional configure flag must be added when
+    building Qt to enable the feature. To enable the feature pass
+    \c {-feature-ipc_posix}  Note that the pre-built Qt libraries for
+    \macos available through the Qt installer do not include this feature.
 
   \endlist
 
