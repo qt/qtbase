@@ -98,10 +98,16 @@
 /*!
     \fn bool QWaitCondition::wait(QMutex *lockedMutex, unsigned long time)
     \overload
+
+    Releases the \a lockedMutex and waits on the wait condition for \a time
+    milliseconds.
 */
 /*!
     \fn bool QWaitCondition::wait(QReadWriteLock *lockedReadWriteLock, unsigned long time)
     \overload
+
+    Releases the \a lockedReadWriteLock and waits on the wait condition for \a
+    time milliseconds.
 */
 
 /*!
