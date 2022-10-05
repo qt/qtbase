@@ -23,6 +23,8 @@
 
 #ifdef QT_BOOTSTRAPPED
 
+#include <stdlib.h> // for __GLIBC_PREREQ
+
 #ifndef QT_NO_EXCEPTIONS
 #define QT_NO_EXCEPTIONS
 #endif
