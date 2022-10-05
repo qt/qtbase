@@ -1,10 +1,10 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
+#include <QtCore/qglobal.h>
+
 #ifndef @header_base_name_upper@_H
 #define @header_base_name_upper@_H
-
-#include <QtCore/qglobal.h>
 
 #if defined(QT_SHARED) || !defined(QT_STATIC)
 #  if defined(QT_BUILD_@module_define_infix@_LIB)

@@ -4,7 +4,8 @@
 #ifndef QTENVIRONMENTVARIABLES_H
 #define QTENVIRONMENTVARIABLES_H
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qtconfigmacros.h>
+#include <QtCore/qtcoreexports.h>
 #include <QtCore/qtdeprecationmarkers.h>
 
 #if 0
@@ -16,6 +17,7 @@ QT_BEGIN_NAMESPACE
 
 class QByteArray;
 class QByteArrayView;
+class QString;
 
 Q_CORE_EXPORT QByteArray qgetenv(const char *varName);
 // need it as two functions because QString is only forward-declared here

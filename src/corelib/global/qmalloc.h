@@ -4,7 +4,11 @@
 #ifndef QMALLOC_H
 #define QMALLOC_H
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qcompilerdetection.h>
+#include <QtCore/qtconfigmacros.h>
+#include <QtCore/qtcoreexports.h>
+
+#include <cstddef> // size_t
 
 #if 0
 #pragma qt_class(QtMalloc)

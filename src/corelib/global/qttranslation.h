@@ -4,7 +4,8 @@
 #ifndef QTTRANSLATION_H
 #define QTTRANSLATION_H
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qtconfigmacros.h> // QT_NO_TRANSLATION should be defined here as well
+#include <QtCore/qtcoreexports.h>
 
 #if 0
 #pragma qt_class(QtTranslation)
@@ -12,6 +13,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+class QString;
 
 #define QT_TR_NOOP(x) x
 #define QT_TR_NOOP_UTF8(x) x
