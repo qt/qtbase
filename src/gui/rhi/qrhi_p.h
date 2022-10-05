@@ -30,6 +30,7 @@
 QT_BEGIN_NAMESPACE
 
 class QWindow;
+class QRhi;
 class QRhiImplementation;
 class QRhiBuffer;
 class QRhiRenderBuffer;
@@ -683,6 +684,8 @@ public:
     void setName(const QByteArray &name);
 
     quint64 globalResourceId() const;
+
+    QRhi *rhi() const;
 
 protected:
     QRhiResource(QRhiImplementation *rhi);

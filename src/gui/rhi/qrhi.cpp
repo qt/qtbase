@@ -2212,6 +2212,14 @@ quint64 QRhiResource::globalResourceId() const
 }
 
 /*!
+    \return the QRhi that created this resource.
+ */
+QRhi *QRhiResource::rhi() const
+{
+    return m_rhi->q;
+}
+
+/*!
     \class QRhiBuffer
     \internal
     \inmodule QtGui
