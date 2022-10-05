@@ -304,6 +304,9 @@ void tst_QAlgorithms::popCount_impl()
     QCOMPARE(qPopulationCount(value), expected);
 }
 
+// Number of test-cases per offset into each size (arbitrary):
+static constexpr int casesPerOffset = 3;
+
 void tst_QAlgorithms::countTrailing_data_impl(size_t sizeof_T_Int)
 {
     using namespace QTest;
@@ -312,10 +315,10 @@ void tst_QAlgorithms::countTrailing_data_impl(size_t sizeof_T_Int)
 
     int nibs = sizeof_T_Int*2;
 
-    newRow(("0x"+QByteArray::number(0,16).rightJustified(nibs,'0')).constData()) << Q_UINT64_C(0) << uint(sizeof_T_Int*8);
+    addRow("0x%0*llx", nibs, Q_UINT64_C(0)) << Q_UINT64_C(0) << uint(sizeof_T_Int*8);
     for (uint i = 0; i < sizeof_T_Int*8; ++i) {
         const quint64 input = Q_UINT64_C(1) << i;
-        newRow(("0x"+QByteArray::number(input,16).rightJustified(nibs,'0')).constData()) << input << i;
+        addRow("0x%0*llx", nibs, input) << input << i;
     }
 
     quint64 type_mask;
@@ -326,12 +329,12 @@ void tst_QAlgorithms::countTrailing_data_impl(size_t sizeof_T_Int)
 
     // and some random ones:
     for (uint i = 0; i < sizeof_T_Int*8; ++i) {
-        for (uint j = 0; j < sizeof_T_Int*3; ++j) {  // 3 is arbitrary
+        const quint64 b = Q_UINT64_C(1) << i;
+        const quint64 mask = ((~(b - 1)) ^ b) & type_mask;
+        for (uint j = 0; j < sizeof_T_Int * casesPerOffset; ++j) {
             const quint64 r = QRandomGenerator::global()->generate64();
-            const quint64 b = Q_UINT64_C(1) << i;
-            const quint64 mask = ((~(b-1)) ^ b) & type_mask;
             const quint64 input = (r&mask) | b;
-            newRow(("0x"+QByteArray::number(input,16).rightJustified(nibs,'0')).constData()) << input << i;
+            addRow("0x%0*llx", nibs, input) << input << i;
         }
     }
 }
@@ -355,20 +358,20 @@ void tst_QAlgorithms::countLeading_data_impl(size_t sizeof_T_Int)
 
     int nibs = sizeof_T_Int*2;
 
-    newRow(("0x"+QByteArray::number(0,16).rightJustified(nibs,'0')).constData()) << Q_UINT64_C(0) << uint(sizeof_T_Int*8);
+    addRow("0x%0*llx", nibs, Q_UINT64_C(0)) << Q_UINT64_C(0) << uint(sizeof_T_Int*8);
     for (uint i = 0; i < sizeof_T_Int*8; ++i) {
         const quint64 input = Q_UINT64_C(1) << i;
-        newRow(("0x"+QByteArray::number(input,16).rightJustified(nibs,'0')).constData()) << input << uint(sizeof_T_Int*8-i-1);
+        addRow("0x%0*llx", nibs, input) << input << uint(sizeof_T_Int*8-i-1);
     }
 
     // and some random ones:
     for (uint i = 0; i < sizeof_T_Int*8; ++i) {
-        for (uint j = 0; j < sizeof_T_Int*3; ++j) {  // 3 is arbitrary
+        const quint64 b = Q_UINT64_C(1) << i;
+        const quint64 mask = b - 1;
+        for (uint j = 0; j < sizeof_T_Int * casesPerOffset; ++j) {
             const quint64 r = QRandomGenerator::global()->generate64();
-            const quint64 b = Q_UINT64_C(1) << i;
-            const quint64 mask = b-1;
             const quint64 input = (r&mask) | b;
-            newRow(("0x"+QByteArray::number(input,16).rightJustified(nibs,'0')).constData()) << input << uint(sizeof_T_Int*8-i-1);
+            addRow("0x%0*llx", nibs, input) << input << uint(sizeof_T_Int*8-i-1);
         }
     }
 }
