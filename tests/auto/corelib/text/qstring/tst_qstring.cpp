@@ -6600,7 +6600,7 @@ void tst_QString::compare_data()
     QString lower;
     lower += QChar(QChar::highSurrogate(0x10428));
     lower += QChar(QChar::lowSurrogate(0x10428));
-    QTest::newRow("data8") << upper << lower << -1 << 0;
+    QTest::newRow("data9") << upper << lower << -1 << 0;
 
     // embedded nulls
     QByteArray onenull("", 1);
