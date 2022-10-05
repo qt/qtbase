@@ -676,7 +676,6 @@ void tst_QAtomicInt::fetchAndAdd_data()
     QTest::newRow("7272+2181") << 7272 << 2181;
 
     QTest::newRow("0+-1") << 0 << -1;
-    QTest::newRow("1+0") << 1 << 0;
     QTest::newRow("1+-2") << 1 << -2;
     QTest::newRow("2+-1") << 2 << -1;
     QTest::newRow("10+-21") << 10 << -21;
@@ -692,7 +691,6 @@ void tst_QAtomicInt::fetchAndAdd_data()
     QTest::newRow("5451+-4362") << 5451 << -4362;
     QTest::newRow("7272+-2181") << 7272 << -2181;
 
-    QTest::newRow("0+1") << 0 << 1;
     QTest::newRow("-1+0") << -1 << 0;
     QTest::newRow("-1+2") << -1 << 2;
     QTest::newRow("-2+1") << -2 << 1;
