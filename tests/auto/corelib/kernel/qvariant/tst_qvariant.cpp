@@ -526,9 +526,6 @@ void tst_QVariant::canConvert_data()
     var = QVariant((uint)1);
     QTest::newRow("UInt")
         << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
-    var = QVariant((int)1);
-    QTest::newRow("Int")
-        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << Y << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
     var = QVariant((qulonglong)1);
     QTest::newRow("ULongLong")
         << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
