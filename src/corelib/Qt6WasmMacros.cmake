@@ -28,7 +28,7 @@ function(_qt_internal_wasm_add_target_helpers target)
         get_target_property(is_test ${target} _qt_is_test_executable)
         if(is_test)
             configure_file("${WASM_BUILD_DIR}/libexec/batchedtestrunner.html"
-                           "${target_output_directory}/batchedtestrunner.html" COPYONLY)
+                           "${target_output_directory}/${_target_output_name}.html" COPYONLY)
             configure_file("${WASM_BUILD_DIR}/libexec/qtestoutputreporter.css"
                            "${target_output_directory}/qtestoutputreporter.css" COPYONLY)
             configure_file("${WASM_BUILD_DIR}/libexec/batchedtestrunner.js"
