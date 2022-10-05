@@ -3274,13 +3274,15 @@ void tst_QFile::mapResource_data()
 
     QString validFile = ":/tst_qfileinfo/resources/file1.ext1";
     QString invalidFile = ":/tst_qfileinfo/resources/filefoo.ext1";
+    const char modes[] = "invalid";
 
     for (int i = 0; i < 2; ++i) {
         QString file = (i == 0) ? validFile : invalidFile;
-        QTest::newRow("0, 0") << 0 << 0 << QFile::UnspecifiedError << file;
-        QTest::newRow("0, BIG") << 0 << 4096 << QFile::UnspecifiedError << file;
-        QTest::newRow("-1, 0") << -1 << 0 << QFile::UnspecifiedError << file;
-        QTest::newRow("0, -1") << 0 << -1 << QFile::UnspecifiedError << file;
+        const char *mode = i == 0 ? modes + 2 : modes;
+        QTest::addRow("0, 0 (%s)", mode) << 0 << 0 << QFile::UnspecifiedError << file;
+        QTest::addRow("0, BIG (%s)", mode) << 0 << 4096 << QFile::UnspecifiedError << file;
+        QTest::addRow("-1, 0 (%s)", mode) << -1 << 0 << QFile::UnspecifiedError << file;
+        QTest::addRow("0, -1 (%s)", mode) << 0 << -1 << QFile::UnspecifiedError << file;
     }
 
     QTest::newRow("0, 1") << 0 << 1 << QFile::NoError << validFile;
