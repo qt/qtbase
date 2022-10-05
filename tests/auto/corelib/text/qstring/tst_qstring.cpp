@@ -5412,7 +5412,7 @@ void tst_QString::number_base_data()
     QTest::newRow("base 17, negative") << -12346LL << 17 << QString("-28c4");
     QTest::newRow("base 36, negative") << -2181789482LL << 36 << QString("-102zbje");
 
-    QTest::newRow("base  2, negative") << -1LL << 2 << QString("-1");
+    QTest::newRow("base  2, minus 1") << -1LL << 2 << QString("-1");
 
     QTest::newRow("largeint, base 10, positive")
             << 123456789012LL << 10 << QString("123456789012");
