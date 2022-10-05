@@ -2449,14 +2449,13 @@ void tst_QRegularExpression::wildcard_data()
     QTest::addColumn<qsizetype>("foundIndex");
 
     auto addRow = [](const char *pattern, const char *string, qsizetype foundIndex) {
-        QTest::newRow(pattern) << pattern << string << foundIndex;
+        QTest::addRow("%s@%s", pattern, string) << pattern << string << foundIndex;
     };
 
     addRow("*.html", "test.html", 0);
     addRow("*.html", "test.htm", -1);
     addRow("*bar*", "foobarbaz", 0);
     addRow("*", "Qt Rocks!", 0);
-    addRow("*.html", "test.html", 0);
     addRow("*.h", "test.cpp", -1);
     addRow("*.???l", "test.html", 0);
     addRow("*?", "test.html", 0);
