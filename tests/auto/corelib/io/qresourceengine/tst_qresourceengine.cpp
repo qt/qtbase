@@ -284,7 +284,7 @@ void tst_QResourceEngine::checkStructure_data()
 
 
         info = QFileInfo(QFINDTESTDATA("testqrc/test/test/test2.txt"));
-        QTest::addRow("%s test1 text", qPrintable(root))        << QString(root + "test/test/test2.txt")
+        QTest::addRow("%s test2 text", qPrintable(root))        << QString(root + "test/test/test2.txt")
                                                   << QByteArray("def\n")
                                                   << QStringList()
                                                   << QStringList()
