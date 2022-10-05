@@ -28,7 +28,7 @@ function(qt_internal_add_docs)
     set(target ${ARGV0})
     set(doc_project ${ARGV1})
 
-    # If a target is not built (which can happen for tools when crosscompiling, we shouldn't try
+    # If a target is not built (which can happen for tools when crosscompiling), we shouldn't try
     # to generate docs.
     if(NOT TARGET "${target}")
         return()
