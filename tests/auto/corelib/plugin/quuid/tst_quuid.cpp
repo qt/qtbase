@@ -135,7 +135,7 @@ void tst_QUuid::fromString_data()
     ROW(uuidA,   "{fc69b59e-cc34-4436-a43c-ee95d128b8c56"); // too long (not an error!)
     ROW(invalid, "{fc69b59e-cc34-4436-a43c-ee95d128b8c"  ); // premature end (within length limits)
     ROW(invalid, " fc69b59e-cc34-4436-a43c-ee95d128b8c5}"); // leading space
-    ROW(uuidA,   "{fc69b59e-cc34-4436-a43c-ee95d128b8c5 "); // trailing space (not an error!)
+    ROW(uuidB,   "{1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b "); // trailing space (not an error!)
     ROW(invalid, "{gc69b59e-cc34-4436-a43c-ee95d128b8c5}"); // non-hex digit in 1st group
     ROW(invalid, "{fc69b59e-cp34-4436-a43c-ee95d128b8c5}"); // non-hex digit in 2nd group
     ROW(invalid, "{fc69b59e-cc34-44r6-a43c-ee95d128b8c5}"); // non-hex digit in 3rd group
