@@ -128,10 +128,8 @@ struct ElfMachineCheck
 #elif defined(Q_PROCESSOR_SH)
             EM_SH
 #elif defined(Q_PROCESSOR_SPARC_V9)
-#  warning "Please confirm that this is correct for Linux and Solaris"
             EM_SPARCV9
 #elif defined(Q_PROCESSOR_SPARC_64)
-#  warning "Please confirm that this is correct for Linux and Solaris"
             EM_SPARCV9
 #elif defined(Q_PROCESSOR_SPARC)
             EM_SPARC

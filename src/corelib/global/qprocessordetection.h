@@ -291,7 +291,7 @@
 */
 #elif defined(__sparc__)
 #  define Q_PROCESSOR_SPARC
-#  if defined(__sparc_v9__)
+#  if defined(__sparc_v9__) || defined(__sparcv9)
 #    define Q_PROCESSOR_SPARC_V9
 #  endif
 #  if defined(__sparc64__)
