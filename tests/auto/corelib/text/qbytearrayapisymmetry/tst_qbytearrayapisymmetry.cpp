@@ -1062,7 +1062,7 @@ void tst_QByteArrayApiSymmetry::toInt_data() const
     QTest::newRow("base 0-1") << QByteArray("0x10") << 0 << 16 << true;
     QTest::newRow("base 0-2") << QByteArray("10") << 0 << 10 << true;
     QTest::newRow("base 0-3") << QByteArray("010") << 0 << 8 << true;
-    QTest::newRow("empty") << QByteArray() << 0 << 0 << false;
+    QTest::newRow("base 0 empty") << QByteArray() << 0 << 0 << false;
 
     QTest::newRow("leading space") << QByteArray(" 100") << 10 << 100 << true;
     QTest::newRow("trailing space") << QByteArray("100 ") << 10 << 100 << true;
