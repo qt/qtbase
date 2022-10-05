@@ -172,9 +172,9 @@ void tst_QSystemSemaphore::processes_data()
 {
     QTest::addColumn<int>("processes");
     for (int i = 0; i < 5; ++i) {
-        QTest::newRow("1 process") << 1;
-        QTest::newRow("3 process") << 3;
-        QTest::newRow("10 process") << 10;
+        QTest::addRow("1 process (%d)", i) << 1;
+        QTest::addRow("3 process (%d)", i) << 3;
+        QTest::addRow("10 process (%d)", i) << 10;
     }
 }
 
