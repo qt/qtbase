@@ -3,11 +3,6 @@
 ubuntu-16.04
 [restoreVersion1Geometry]
 ubuntu-16.04
-[focusProxyAndInputMethods]
-rhel-7.6
-centos
-opensuse-leap
-ubuntu
 [raise]
 opensuse-leap
 # QTBUG-68175
