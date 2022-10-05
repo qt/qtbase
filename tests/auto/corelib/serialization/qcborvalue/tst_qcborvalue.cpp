@@ -1897,7 +1897,6 @@ static void addCommonCborData()
 
     QTest::newRow("simple0") << QCborValue(QCborValue::SimpleType) << raw("\xe0") << noxfrm;
     QTest::newRow("simple1") << QCborValue(QCborSimpleType(1)) << raw("\xe1") << noxfrm;
-    QTest::newRow("simple255") << QCborValue(QCborSimpleType(255)) << raw("\xf8\xff") << noxfrm;
     QTest::newRow("Undefined") << QCborValue() << raw("\xf7") << noxfrm;
     QTest::newRow("Null") << QCborValue(nullptr) << raw("\xf6") << noxfrm;
     QTest::newRow("True") << QCborValue(true) << raw("\xf5") << noxfrm;
