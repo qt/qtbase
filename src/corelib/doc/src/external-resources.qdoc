@@ -83,6 +83,36 @@
 */
 
 /*!
+    \externalpage https://developer.android.com/training/data-storage/shared/documents-files
+    \title Android: Access documents and other files from shared storage
+*/
+
+/*!
+    \externalpage https://developer.android.com/reference/androidx/documentfile/provider/DocumentFile#getParentFile()
+    \title Android: DocumentFile.getParentFile()
+*/
+
+/*!
+    \externalpage https://developer.android.com/guide/topics/providers/content-provider-basics#ContentURIs
+    \title Android: Content URIs
+*/
+
+/*!
+    \externalpage https://developer.android.com/training/data-storage#scoped-storage
+    \title Android: Scoped storage
+*/
+
+/*!
+    \externalpage https://developer.android.com/training/data-storage/use-cases
+    \title Android: storage best practices
+*/
+
+/*!
+    \externalpage https://developer.android.com/reference/android/provider/MediaStore
+    \title Android: MediaStore
+*/
+
+/*!
     \externalpage https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html
     \title GNUInstallDirs
 */
