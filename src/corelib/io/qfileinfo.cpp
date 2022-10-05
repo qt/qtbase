@@ -317,6 +317,10 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     off a QFileInfo's caching and force it to access the file system
     every time you request information from it call setCaching(false).
 
+    \section1 Platform Specific Issues
+
+    \include android-content-uri-limitations.qdocinc
+
     \sa QDir, QFile
 */
 
