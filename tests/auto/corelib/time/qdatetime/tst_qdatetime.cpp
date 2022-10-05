@@ -2609,10 +2609,6 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
     QTest::newRow("RFC 2822 with day +0000") << QString::fromLatin1("Thu, 01 Jan 1970 00:12:34 +0000")
         << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
-    QTest::newRow("RFC 2822 +0000") << QString::fromLatin1("01 Jan 1970 00:12:34 +0000")
-        << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
-    QTest::newRow("RFC 2822 with day +0000") << QString::fromLatin1("Thu, 01 Jan 1970 00:12:34 +0000")
-        << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
     QTest::newRow("RFC 2822 missing space before +0100")
         << QString::fromLatin1("Thu, 01 Jan 1970 00:12:34+0100") << Qt::RFC2822Date << QDateTime();
     // No timezone assume UTC
@@ -2672,8 +2668,6 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::RFC2822Date << QDateTime(QDate(1987, 2, 13), QTime(12, 24, 51), Qt::UTC);
     QTest::newRow("RFC 850 and 1036 -0100") << QString::fromLatin1("Fri Feb 13 13:24:51 1987 -0100")
         << Qt::RFC2822Date << QDateTime(QDate(1987, 2, 13), QTime(14, 24, 51), Qt::UTC);
-    QTest::newRow("RFC 850 and 1036 +0000") << QString::fromLatin1("Thu Jan 01 00:12:34 1970 +0000")
-        << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
     QTest::newRow("RFC 850 and 1036 +0000") << QString::fromLatin1("Thu Jan 01 00:12:34 1970 +0000")
         << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
     // No timezone assume UTC
@@ -2813,9 +2807,6 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("offset-from-utc:3-digit-with-colon")
         << QString("2008-10-13 -4:30 11.50") << QString("yyyy-MM-dd t hh.mm")
         << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, -16200);
-    QTest::newRow("offset-from-utc:merged-with-time")
-        << QString("2008-10-13 UTC+010011.50") << QString("yyyy-MM-dd thh.mm")
-        << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, 3600);
     QTest::newRow("offset-from-utc:with-colon-merged-with-time")
         << QString("2008-10-13 UTC+01:0011.50") << QString("yyyy-MM-dd thh.mm")
         << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, 3600);
