@@ -2943,9 +2943,9 @@ void tst_QStringApiSymmetry::indexOf_data(bool rhsHasVariableLength)
             << minus1Pos << minus1Pos;
 
 #define ROW(h, n, st, cs, cis) \
-    QTest::addRow("haystack: %s, needle: %s", #h, #n) << h << QLatin1String(#h) \
-                                       << n << QLatin1String(#n) \
-                                       << qsizetype(st) << qsizetype(cs) << qsizetype(cis)
+    QTest::addRow("haystack: %s, needle: %s, start: %d", #h, #n, st) \
+        << h << QLatin1String(#h) << n << QLatin1String(#n) \
+        << qsizetype(st) << qsizetype(cs) << qsizetype(cis)
 
     ROW(abc, a, 0,  0,  0);
     ROW(abc, A, 0, -1,  0);
@@ -3114,14 +3114,18 @@ void tst_QStringApiSymmetry::lastIndexOf_data(bool rhsHasVariableLength)
                                      << a << QLatin1String("a") << minus1Pos << minus1Pos << minus1Pos;
 
     if (rhsHasVariableLength) {
-        QTest::addRow("haystack: a, needle: null")  << a << QLatin1String("a")
-                                     << null << QLatin1String() << qsizetype(1) << qsizetype(1) << qsizetype(1);
-        QTest::addRow("haystack: a, needle: empty")  << a << QLatin1String("a")
-                                     << empty << QLatin1String("") << qsizetype(1) << qsizetype(1) << qsizetype(1);
-        QTest::addRow("haystack: a, needle: null")  << a << QLatin1String("a")
-                                     << null << QLatin1String() << qsizetype(2) << minus1Pos << minus1Pos;
-        QTest::addRow("haystack: a, needle: empty")  << a << QLatin1String("a")
-                                     << empty << QLatin1String("") << qsizetype(2) << minus1Pos << minus1Pos;
+        QTest::addRow("haystack: a, needle: null, start 1")
+            << a << QLatin1String("a")
+            << null << QLatin1String() << qsizetype(1) << qsizetype(1) << qsizetype(1);
+        QTest::addRow("haystack: a, needle: empty, start 1")
+            << a << QLatin1String("a")
+            << empty << QLatin1String("") << qsizetype(1) << qsizetype(1) << qsizetype(1);
+        QTest::addRow("haystack: a, needle: null, start 2")
+            << a << QLatin1String("a")
+            << null << QLatin1String() << qsizetype(2) << minus1Pos << minus1Pos;
+        QTest::addRow("haystack: a, needle: empty, start 2")
+            << a << QLatin1String("a")
+            << empty << QLatin1String("") << qsizetype(2) << minus1Pos << minus1Pos;
     }
 
 #define ROW(h, n, st, cs, cis) \
