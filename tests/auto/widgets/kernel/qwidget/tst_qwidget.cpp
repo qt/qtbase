@@ -387,7 +387,6 @@ private slots:
     void openModal_taskQTBUG_5804();
 
     void focusProxy();
-    void focusProxyAndInputMethods();
 #ifdef QT_BUILD_INTERNAL
     void scrollWithoutBackingStore();
 #endif
@@ -10681,34 +10680,6 @@ void tst_QWidget::focusProxy()
     QVERIFY(!container2->hasFocus());
     QVERIFY(!container2->edit->hasFocus());
     QCOMPARE(container2->focusOutCount, 1);
-}
-
-void tst_QWidget::focusProxyAndInputMethods()
-{
-    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
-        QSKIP("Window activation is not supported.");
-    QScopedPointer<QWidget> toplevel(new QWidget(nullptr, Qt::X11BypassWindowManagerHint));
-    toplevel->setWindowTitle(QLatin1String(QTest::currentTestFunction()));
-    toplevel->resize(200, 200);
-    toplevel->setAttribute(Qt::WA_InputMethodEnabled, true);
-
-    QWidget *child = new QWidget(toplevel.data());
-    child->setFocusProxy(toplevel.data());
-    child->setAttribute(Qt::WA_InputMethodEnabled, true);
-
-    toplevel->setFocusPolicy(Qt::WheelFocus);
-    child->setFocusPolicy(Qt::WheelFocus);
-
-    QVERIFY(!child->hasFocus());
-    QVERIFY(!toplevel->hasFocus());
-
-    toplevel->show();
-    QVERIFY(QTest::qWaitForWindowExposed(toplevel.data()));
-    QApplication::setActiveWindow(toplevel.data());
-    QVERIFY(QTest::qWaitForWindowActive(toplevel.data()));
-    QVERIFY(toplevel->hasFocus());
-    QVERIFY(child->hasFocus());
-    QCOMPARE(qApp->focusObject(), toplevel.data());
 }
 
 #ifdef QT_BUILD_INTERNAL
