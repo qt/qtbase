@@ -2019,7 +2019,6 @@ void tst_QStringApiSymmetry::mid_data()
     ROW(abc, 0, -1, abc, abc);
     ROW(abc, 0, 5, abc, abc);
     ROW(abc, -1, 1, abc, null);
-    ROW(abc, -1, 2, abc, a);
     ROW(abc, -1, 4, abc, abc);
     ROW(abc, 1, -1, bc, bc);
     ROW(abc, 1, 1, bc, b);
