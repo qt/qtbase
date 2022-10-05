@@ -253,19 +253,22 @@ void tst_QAlgorithms::popCount_data_impl(size_t sizeof_T_Int)
     }
 
     // and some random ones:
-    if (sizeof_T_Int >= 8)
+    if (sizeof_T_Int >= 8) {
         for (size_t i = 0; i < 1000; ++i) {
             const quint64 input = QRandomGenerator::global()->generate64();
             QTest::addRow("0x%016llx", input) << input << bitsSetInInt64(input);
         }
-        else if (sizeof_T_Int >= 2)
-            for (size_t i = 0; i < 1000 ; ++i) {
-                const quint32 input = QRandomGenerator::global()->generate();
-                if (sizeof_T_Int >= 4)
-                    QTest::addRow("0x%08x", input) << quint64(input) << bitsSetInInt(input);
-                else
-                    QTest::addRow("0x%04x", quint16(input & 0xFFFF)) << quint64(input & 0xFFFF) << bitsSetInShort(input & 0xFFFF);
+    } else if (sizeof_T_Int >= 2) {
+        for (size_t i = 0; i < 1000 ; ++i) {
+            const quint32 input = QRandomGenerator::global()->generate();
+            if (sizeof_T_Int >= 4) {
+                QTest::addRow("0x%08x", input) << quint64(input) << bitsSetInInt(input);
+            } else {
+                QTest::addRow("0x%04x", quint16(input & 0xFFFF))
+                    << quint64(input & 0xFFFF) << bitsSetInShort(input & 0xFFFF);
             }
+        }
+    }
 }
 
 template <typename T_Int>
