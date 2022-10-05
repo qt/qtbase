@@ -500,12 +500,11 @@ void tst_QUrlQuery::reconstructQuery_data()
     baselist << qItem("a", "b") << qItem("c", "d");
     QTest::newRow("2-ab-cd") << "a=b&c=d" << baselist;
 
-    // the same entry multiply defined
+    // The same entry multiply defined
     QTest::newRow("2-a-a") << "a&a" << (QueryItems() << qItem("a", QString()) << qItem("a", QString()));
     QTest::newRow("2-ab-ab") << "a=b&a=b" << (QueryItems() << qItem("a", "b") << qItem("a", "b"));
     QTest::newRow("2-ab-ac") << "a=b&a=c" << (QueryItems() << qItem("a", "b") << qItem("a", "c"));
     QTest::newRow("2-ac-ab") << "a=c&a=b" << (QueryItems() << qItem("a", "c") << qItem("a", "b"));
-    QTest::newRow("2-ab-cd") << "a=b&c=d" << (QueryItems() << qItem("a", "b") << qItem("c", "d"));
     QTest::newRow("2-cd-ab") << "c=d&a=b" << (QueryItems() << qItem("c", "d") << qItem("a", "b"));
 
     QueryItems list2 = baselist + qItem("somekey", QString());
