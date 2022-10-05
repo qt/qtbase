@@ -152,8 +152,8 @@ void tst_QPlugin::scanInvalidPlugin_data()
                                    << " Unexpected metadata contents";
 
     ++cprefix[MagicLen + 0];
-    QTest::newRow("cbor-major-too-new") << (cprefix + cborValid) << false
-                                        << " Invalid metadata version";
+    QTest::newRow("cbor-major-too-new-invalid")
+        << (cprefix + cborValid) << false << " Invalid metadata version";
 }
 
 static const char invalidPluginSignature[] = "qplugin testfile";
