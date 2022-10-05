@@ -21,31 +21,13 @@ namespace QtPrivate {
 
 template <typename T>
 class QForeachContainer {
-    Q_DISABLE_COPY(QForeachContainer)
+    Q_DISABLE_COPY_MOVE(QForeachContainer)
 public:
     QForeachContainer(const T &t) : c(t), i(qAsConst(c).begin()), e(qAsConst(c).end()) {}
     QForeachContainer(T &&t) : c(std::move(t)), i(qAsConst(c).begin()), e(qAsConst(c).end())  {}
 
-    QForeachContainer(QForeachContainer &&other)
-        : c(std::move(other.c)),
-          i(qAsConst(c).begin()),
-          e(qAsConst(c).end()),
-          control(std::move(other.control))
-    {
-    }
-
-    QForeachContainer &operator=(QForeachContainer &&other)
-    {
-        c = std::move(other.c);
-        i = qAsConst(c).begin();
-        e = qAsConst(c).end();
-        control = std::move(other.control);
-        return *this;
-    }
-
     T c;
     typename T::const_iterator i, e;
-    int control = 1;
 };
 
 // Containers that have a detach function are considered shared, and are OK in a foreach loop
