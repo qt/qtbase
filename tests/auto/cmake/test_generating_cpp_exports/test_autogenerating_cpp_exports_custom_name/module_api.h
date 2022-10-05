@@ -4,6 +4,11 @@
 #ifndef MODULE_API_H
 #define MODULE_API_H
 
+#if 0
+#pragma qt_sync_skip_header_check
+#pragma qt_sync_stop_processing
+#endif
+
 #include <QtTestAutogeneratingCppExportsCustomName/customname_exports.h>
 
 struct Q_TESTAUTOGENERATINGCPPEXPORTSCUSTOMNAME_EXPORT TestApi

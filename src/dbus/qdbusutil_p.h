@@ -27,7 +27,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#define Q_DBUS_NO_EXPORT        // force findclasslist.pl looking into this namespace
+#define Q_DBUS_NO_EXPORT        // force syncqt looking into this namespace
 namespace Q_DBUS_NO_EXPORT QDBusUtil
 {
     Q_DBUS_EXPORT bool isValidInterfaceName(const QString &ifaceName);

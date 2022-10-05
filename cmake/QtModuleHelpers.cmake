@@ -394,39 +394,12 @@ function(qt_internal_add_module target)
             _qt_module_has_headers ON
         )
 
-        # Need to call qt_ensure_sync_qt to install syncqt.pl script.
-        qt_ensure_sync_qt()
-        # Repo uses old perl script to sync files.
-        if(NOT QT_USE_SYNCQT_CPP)
-            # Use QT_BUILD_DIR for the syncqt call.
-            # So we either write the generated files into the qtbase non-prefix build root, or the
-            # module specific build root.
-            set(syncqt_full_command "${HOST_PERL}" -w "${QT_SYNCQT}"
-                                 -quiet
-                                 -check-includes
-                                 -module "${module_include_name}"
-                                 -version "${PROJECT_VERSION}"
-                                 -outdir "${QT_BUILD_DIR}"
-                                 -builddir "${PROJECT_BINARY_DIR}"
-                                 "${PROJECT_SOURCE_DIR}")
-            message(STATUS "Running syncqt for module: '${module_include_name}' ")
-            execute_process(COMMAND ${syncqt_full_command} RESULT_VARIABLE syncqt_ret)
-            if(NOT syncqt_ret EQUAL 0)
-                message(FATAL_ERROR "Failed to run syncqt, return code: ${syncqt_ret}")
-            endif()
-
-            ### FIXME: Can we replace headers.pri?
-            qt_read_headers_pri("${module_build_interface_include_dir}" "module_headers")
-            set_property(TARGET ${target} APPEND PROPERTY
-                _qt_module_timestamp_dependencies "${module_headers_generated}")
-        else()
-            set(sync_source_directory "${CMAKE_CURRENT_SOURCE_DIR}")
-            if(arg_HEADER_SYNC_SOURCE_DIRECTORY)
-                set(sync_source_directory "${arg_HEADER_SYNC_SOURCE_DIRECTORY}")
-            endif()
-            set_target_properties(${target} PROPERTIES
-                _qt_sync_source_directory "${sync_source_directory}")
+        set(sync_source_directory "${CMAKE_CURRENT_SOURCE_DIR}")
+        if(arg_HEADER_SYNC_SOURCE_DIRECTORY)
+            set(sync_source_directory "${arg_HEADER_SYNC_SOURCE_DIRECTORY}")
         endif()
+        set_target_properties(${target} PROPERTIES
+            _qt_sync_source_directory "${sync_source_directory}")
         # We should not generate export headers if module is defined as pure STATIC.
         # Static libraries don't need to export their symbols, and corner cases when sources are
         # also used in shared libraries, should be handled manually.
@@ -476,18 +449,6 @@ function(qt_internal_add_module target)
             qt_install(DIRECTORY "${arg_EXTERNAL_HEADERS_DIR}/"
                 DESTINATION "${module_install_interface_include_dir}"
             )
-        else()
-            if(NOT QT_USE_SYNCQT_CPP)
-                if(arg_EXTERNAL_HEADERS)
-                    set(module_headers_public "${arg_EXTERNAL_HEADERS}")
-                endif()
-                qt_internal_install_module_headers(${target}
-                    PUBLIC
-                        ${module_headers_public}
-                        "${module_depends_header}"
-                        "${module_header}"
-                )
-            endif()
         endif()
     endif()
 
@@ -681,31 +642,6 @@ function(qt_internal_add_module target)
         )
     endif()
 
-    if(NOT arg_HEADER_MODULE AND NOT QT_USE_SYNCQT_CPP)
-        if(DEFINED module_headers_private)
-            qt_internal_add_linker_version_script("${target}" PRIVATE_HEADERS ${module_headers_private} ${module_headers_qpa})
-        else()
-            qt_internal_add_linker_version_script("${target}")
-        endif()
-    endif()
-
-    # Handle injections. Aka create forwarding headers for certain headers that have been
-    # automatically generated in the build dir (for example qconfig.h, qtcore-config.h,
-    # qvulkanfunctions.h, etc)
-    # module_headers_injections come from the qt_read_headers_pri() call.
-    # extra_library_injections come from the qt_feature_module_end() call.
-    set(final_injections "")
-    if(module_headers_injections)
-        string(APPEND final_injections "${module_headers_injections} ")
-    endif()
-    if(extra_library_injections)
-        string(APPEND final_injections "${extra_library_injections} ")
-    endif()
-
-    if(final_injections AND NOT QT_USE_SYNCQT_CPP)
-        qt_install_injections(${target} "${QT_BUILD_DIR}" "${QT_INSTALL_DIR}" ${final_injections})
-    endif()
-
     # Handle creation of cmake files for consumers of find_package().
     set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}")
     qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
@@ -884,12 +820,6 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
         endif()
     endif()
 
-    if(NOT QT_USE_SYNCQT_CPP)
-        qt_internal_add_headersclean_target(
-            ${target}
-            "${module_headers_clean}")
-    endif()
-
     if(arg_INTERNAL_MODULE)
         target_include_directories("${target}" INTERFACE ${interface_includes})
     elseif(NOT ${arg_NO_PRIVATE_MODULE})
@@ -925,22 +855,15 @@ function(qt_finalize_module target)
     # qt_finalize_framework_headers_copy, because the last uses the QT_COPIED_FRAMEWORK_HEADERS
     # property which supposed to be updated inside every qt_internal_install_module_headers
     # call.
-    if(QT_USE_SYNCQT_CPP)
-        qt_internal_add_headersclean_target(${target} "${module_headers_public}")
-        qt_internal_target_sync_headers(${target} "${module_headers_all}"
-            "${module_headers_generated}")
-        get_target_property(module_depends_header ${target} _qt_module_depends_header)
-        qt_internal_install_module_headers(${target}
-            PUBLIC ${module_headers_public} "${module_depends_header}"
-            PRIVATE ${module_headers_private}
-            QPA ${module_headers_qpa}
-        )
-    else()
-        qt_internal_install_module_headers(${target}
-            PRIVATE ${module_headers_private}
-            QPA ${module_headers_qpa}
-        )
-    endif()
+    qt_internal_add_headersclean_target(${target} "${module_headers_public}")
+    qt_internal_target_sync_headers(${target} "${module_headers_all}"
+        "${module_headers_generated}")
+    get_target_property(module_depends_header ${target} _qt_module_depends_header)
+    qt_internal_install_module_headers(${target}
+        PUBLIC ${module_headers_public} "${module_depends_header}"
+        PRIVATE ${module_headers_private}
+        QPA ${module_headers_qpa}
+    )
 
     qt_finalize_framework_headers_copy(${target})
     qt_generate_prl_file(${target} "${INSTALL_LIBDIR}")
@@ -1140,12 +1063,6 @@ function(qt_internal_generate_cpp_global_exports target module_define_infix)
     set(${out_public_header} "${generated_header_path}" PARENT_SCOPE)
     target_sources(${target} PRIVATE "${generated_header_path}")
     set_source_files_properties("${generated_header_path}" PROPERTIES GENERATED TRUE)
-    if(NOT QT_USE_SYNCQT_CPP)
-        qt_internal_install_module_headers(${target}
-            PUBLIC
-                "${generated_header_path}"
-        )
-    endif()
 
     if(arg_GENERATE_PRIVATE_CPP_EXPORTS)
         set(generated_private_header_path

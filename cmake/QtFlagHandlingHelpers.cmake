@@ -4,8 +4,6 @@
 # This function generates LD version script for the target and uses it in the target linker line.
 # Function has two modes dependending on the specified arguments.
 # Arguments:
-#    PRIVATE_HEADERS specifies the list of header files that are used to generate
-#       Qt_<version>_PRIVATE_API section. Requires perl.
 #    PRIVATE_CONTENT_FILE specifies the pre-cooked content of Qt_<version>_PRIVATE_API section.
 #       Requires the content file available at build time.
 function(qt_internal_add_linker_version_script target)
@@ -57,31 +55,19 @@ function(qt_internal_add_linker_version_script target)
 
         file(GENERATE OUTPUT "${infile}" CONTENT "${contents}")
 
-        if(arg_PRIVATE_HEADERS)
-            qt_ensure_perl()
-            set(generator_command "${HOST_PERL}"
-                "${QT_MKSPECS_DIR}/features/data/unix/findclasslist.pl"
-                "<" "${infile}" ">" "${outfile}"
-            )
-            set(generator_dependencies
-                "${infile}"
-                "${QT_MKSPECS_DIR}/features/data/unix/findclasslist.pl"
-            )
-        else()
-            if(NOT arg_PRIVATE_CONTENT_FILE)
-                set(arg_PRIVATE_CONTENT_FILE "")
-            endif()
-            set(generator_command ${CMAKE_COMMAND}
-                "-DIN_FILE=${infile}"
-                "-DPRIVATE_CONTENT_FILE=${arg_PRIVATE_CONTENT_FILE}"
-                "-DOUT_FILE=${outfile}"
-                -P "${QT_CMAKE_DIR}/QtGenerateVersionScript.cmake"
-            )
-            set(generator_dependencies
-                "${arg_PRIVATE_CONTENT_FILE}"
-                "${QT_CMAKE_DIR}/QtGenerateVersionScript.cmake"
-            )
+        if(NOT arg_PRIVATE_CONTENT_FILE)
+            set(arg_PRIVATE_CONTENT_FILE "")
         endif()
+        set(generator_command ${CMAKE_COMMAND}
+            "-DIN_FILE=${infile}"
+            "-DPRIVATE_CONTENT_FILE=${arg_PRIVATE_CONTENT_FILE}"
+            "-DOUT_FILE=${outfile}"
+            -P "${QT_CMAKE_DIR}/QtGenerateVersionScript.cmake"
+        )
+        set(generator_dependencies
+            "${arg_PRIVATE_CONTENT_FILE}"
+            "${QT_CMAKE_DIR}/QtGenerateVersionScript.cmake"
+        )
 
         add_custom_command(
             OUTPUT "${outfile}"

@@ -662,22 +662,6 @@ function(qt_feature_module_end)
         )
     endif()
 
-    # Extra header injections which have to have forwarding headers created by
-    # qt_install_injections.
-    # Skip creating forwarding headers if qt_feature_module_begin was called with NO_MODULE, aka
-    # there is no include/<module_name> so there's no place to put the forwarding headers.
-    if(__QtFeature_library)
-        set(injections "")
-        qt_compute_injection_forwarding_header("${__QtFeature_library}"
-                                                 SOURCE "${__QtFeature_public_file}"
-                                                 OUT_VAR injections)
-        qt_compute_injection_forwarding_header("${__QtFeature_library}"
-                                                SOURCE "${__QtFeature_private_file}" PRIVATE
-                                                OUT_VAR injections)
-
-        set(${arg_OUT_VAR_PREFIX}extra_library_injections ${injections} PARENT_SCOPE)
-    endif()
-
     if (NOT ("${target}" STREQUAL "NO_MODULE") AND NOT arg_ONLY_EVALUATE_FEATURES)
         get_target_property(targetType "${target}" TYPE)
         if("${targetType}" STREQUAL "INTERFACE_LIBRARY")

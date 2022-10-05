@@ -140,12 +140,10 @@ function(qt_internal_add_docs)
     )
 
     add_dependencies(prepare_docs_${target} qattributionsscanner_${target})
-    if(QT_USE_SYNCQT_CPP)
-        if(NOT TARGET sync_all_public_headers)
-            add_custom_target(sync_all_public_headers)
-        endif()
-        add_dependencies(prepare_docs_${target} sync_all_public_headers)
+    if(NOT TARGET sync_all_public_headers)
+        add_custom_target(sync_all_public_headers)
     endif()
+    add_dependencies(prepare_docs_${target} sync_all_public_headers)
 
     # generate docs target
     set(generate_qdoc_args

@@ -198,19 +198,6 @@ function(qt_internal_warn_about_buggy_cmake_versions)
     # Fixed in 3.21.2.
     list(APPEND unsuitable_versions "3.21.1")
 
-    # qt_ensure_perl fails to find perl in host PATH via find_program
-    # due to Android Platform module setting CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH to OFF
-    # Fixed in 3.20.6, 3.21.3. not a problem in CMake versions earlier than 3.20.0
-    # https://gitlab.kitware.com/cmake/cmake/-/issues/22634
-    # https://gitlab.kitware.com/cmake/cmake/-/merge_requests/5357
-    # https://gitlab.kitware.com/cmake/cmake/-/merge_requests/6528
-    if(ANDROID AND CMAKE_HOST_WIN32)
-        list(APPEND unsuitable_versions
-            "3.20.0" "3.20.1" "3.20.2" "3.20.3" "3.20.4" "3.20.5"
-            "3.21.0" "3.21.1" "3.21.2"
-        )
-    endif()
-
     foreach(unsuitable_version ${unsuitable_versions})
         if(CMAKE_VERSION VERSION_EQUAL unsuitable_version)
             message(WARNING

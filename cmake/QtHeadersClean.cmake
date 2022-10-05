@@ -212,10 +212,8 @@ function(qt_internal_add_headersclean_target module_target module_headers)
     qt_internal_module_info(module ${module_target})
 
     unset(header_check_exceptions)
-    if(QT_USE_SYNCQT_CPP)
-        set(header_check_exceptions
-            "${CMAKE_CURRENT_BINARY_DIR}/${module}_header_check_exceptions")
-    endif()
+    set(header_check_exceptions
+        "${CMAKE_CURRENT_BINARY_DIR}/${module}_header_check_exceptions")
     set(headers_check_parameters
         "${CMAKE_CURRENT_BINARY_DIR}/${module_target}HeadersCheckParameters${config_suffix}.cmake")
     string(JOIN "\n" headers_check_parameters_content
@@ -229,10 +227,7 @@ function(qt_internal_add_headersclean_target module_target module_headers)
     file(GENERATE OUTPUT "${headers_check_parameters}"
         CONTENT "${headers_check_parameters_content}")
 
-    set(sync_headers_dep "")
-    if(QT_USE_SYNCQT_CPP)
-        set(sync_headers_dep "sync_headers")
-    endif()
+    set(sync_headers_dep "sync_headers")
 
     foreach(header ${hclean_headers})
         # We need realpath here to make sure path starts with drive letter
