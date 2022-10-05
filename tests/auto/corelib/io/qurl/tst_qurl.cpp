@@ -3169,8 +3169,10 @@ void tst_QUrl::fromUserInput_data()
     QTest::newRow("misc-1") << "user:pass@domain.com" << authUrl;
 
     // FTP with double slashes in path
-    QTest::newRow("ftp-double-slash-1") << "ftp.example.com//path" << QUrl("ftp://ftp.example.com/%2Fpath");
-    QTest::newRow("ftp-double-slash-1") << "ftp://ftp.example.com//path" << QUrl("ftp://ftp.example.com/%2Fpath");
+    QTest::newRow("ftp-double-slash-no-scheme")
+        << "ftp.example.com//path" << QUrl("ftp://ftp.example.com/%2Fpath");
+    QTest::newRow("ftp-double-slash-scheme")
+        << "ftp://ftp.example.com//path" << QUrl("ftp://ftp.example.com/%2Fpath");
 }
 
 void tst_QUrl::fromUserInput()
