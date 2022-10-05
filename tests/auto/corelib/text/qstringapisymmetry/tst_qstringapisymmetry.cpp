@@ -2466,18 +2466,20 @@ void tst_QStringApiSymmetry::trimmed_data()
     QTest::addColumn<QString>("unicode");
     QTest::addColumn<QAnyStringView>("result");
 
-    const auto latin1Whitespace = QLatin1String(" \r\n\t\f\v");
+    const auto latin1Whitespace = QLatin1StringView(" \r\n\t\f\v");
 
     QTest::addRow("null") << QString() << QAnyStringView();
 
     auto add = [latin1Whitespace](const QString &str) {
-        // run through all substrings of latin1Whitespace
-        for (int len = 0; len < latin1Whitespace.size(); ++len) {
-            for (int pos = 0; pos < latin1Whitespace.size() - len; ++pos) {
-                const QString unicode = latin1Whitespace.mid(pos, len) + str + latin1Whitespace.mid(pos, len);
-                const QScopedArrayPointer<const char> escaped(QTest::toString(unicode));
-                QTest::addRow("%s", escaped.data()) << unicode << QAnyStringView(str);
-            }
+        auto row = [&](QLatin1StringView spaces) {
+            const QString unicode = spaces + str + spaces;
+            const QScopedArrayPointer<const char> escaped(QTest::toString(unicode));
+            QTest::addRow("%s", escaped.data()) << unicode << QAnyStringView(str);
+        };
+        row({}); // The len = 0 case of the following.
+        for (qsizetype len = 1; len < latin1Whitespace.size(); ++len) {
+            for (qsizetype pos = 0; pos < latin1Whitespace.size() - len; ++pos)
+                row (latin1Whitespace.mid(pos, len));
         }
     };
 
