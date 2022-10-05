@@ -284,7 +284,7 @@ void tst_QTime::secsTo_data()
     QTest::newRow("disregard msec (1s)") << QTime(12, 30, 1, 500) << QTime(12, 30, 2, 400) << 1;
     QTest::newRow("disregard msec (0s)") << QTime(12, 30, 1, 500) << QTime(12, 30, 1, 900) << 0;
     QTest::newRow("disregard msec (-1s)") << QTime(12, 30, 2, 400) << QTime(12, 30, 1, 500) << -1;
-    QTest::newRow("disregard msec (0s)") << QTime(12, 30, 1, 900) << QTime(12, 30, 1, 500) << 0;
+    QTest::newRow("disregard msec (-0s)") << QTime(12, 30, 1, 900) << QTime(12, 30, 1, 500) << 0;
 }
 
 void tst_QTime::secsTo()
@@ -693,7 +693,7 @@ void tst_QTime::fromStringDateFormat_data()
         << Qt::RFC2822Date << invalidTime();
     // The common date text used by the "invalid character" tests, just to be
     // sure *it's* not what's invalid:
-    QTest::newRow("RFC 850 and 1036 invalid character at end")
+    QTest::newRow("RFC 850 and 1036 no invalid character")
         << QString::fromLatin1("Sun Jan 01 08:00:00 2012 +0100")
         << Qt::RFC2822Date << QTime(8, 0, 0);
 
