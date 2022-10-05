@@ -302,6 +302,10 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     If you don't actually need the local time, you can avoid this by requesting
     the time in QTimeZone::UTC directly.
 
+    \section1 Platform Specific Issues
+
+    \include android-content-uri-limitations.qdocinc
+
     \sa QDir, QFile
 */
 
