@@ -322,6 +322,10 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     If you want to make sure that all information is read from the
     file system, use stat().
 
+    \section1 Platform Specific Issues
+
+    \include android-content-uri-limitations.qdocinc
+
     \sa QDir, QFile
 */
 
