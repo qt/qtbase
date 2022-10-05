@@ -133,31 +133,7 @@ function(qt6_android_generate_deployment_settings target)
         endif()
     endif()
 
-    set(abi_records "")
-    get_target_property(qt_android_abis ${target} _qt_android_abis)
-    if(NOT qt_android_abis)
-        set(qt_android_abis "")
-    endif()
-    foreach(abi IN LISTS qt_android_abis)
-        _qt_internal_get_android_abi_path(qt_abi_path ${abi})
-        file(TO_CMAKE_PATH "${qt_abi_path}" qt_android_install_dir_native)
-        list(APPEND abi_records "\"${abi}\": \"${qt_android_install_dir_native}\"")
-    endforeach()
-
-    # Required to build unit tests in developer build
-    if(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX)
-        set(qt_android_install_dir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
-    else()
-        set(qt_android_install_dir "${QT6_INSTALL_PREFIX}")
-    endif()
-    file(TO_CMAKE_PATH "${qt_android_install_dir}" qt_android_install_dir_native)
-    list(APPEND abi_records "\"${CMAKE_ANDROID_ARCH_ABI}\": \"${qt_android_install_dir_native}\"")
-
-    list(JOIN abi_records "," qt_android_install_dir_records)
-    set(qt_android_install_dir_records "{${qt_android_install_dir_records}}")
-
-    string(APPEND file_contents
-        "   \"qt\": ${qt_android_install_dir_records},\n")
+    _qt_internal_collect_qt_for_android_paths(file_contents)
 
     # Android SDK path
     file(TO_CMAKE_PATH "${ANDROID_SDK_ROOT}" android_sdk_root_native)
@@ -197,6 +173,10 @@ function(qt6_android_generate_deployment_settings target)
     string(APPEND file_contents
         "   \"ndk-host\": \"${ANDROID_NDK_HOST_SYSTEM_NAME}\",\n")
 
+    get_target_property(qt_android_abis ${target} _qt_android_abis)
+    if(NOT qt_android_abis)
+        set(qt_android_abis "")
+    endif()
     set(architecture_record_list "")
     foreach(abi IN LISTS qt_android_abis CMAKE_ANDROID_ARCH_ABI)
         if(abi STREQUAL "x86")
@@ -967,8 +947,15 @@ endif()
 #   |__  android_armv7
 #   |__  android_x86
 #   |__  android_x86_64
-function(_qt_internal_get_android_abi_path out_path abi)
-    if(DEFINED QT_PATH_ANDROID_ABI_${abi})
+function(_qt_internal_get_android_abi_prefix_path out_path abi)
+    if(CMAKE_ANDROID_ARCH_ABI STREQUAL abi)
+        # Required to build unit tests in developer build
+        if(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX)
+            set(${out_path} "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
+        else()
+            set(${out_path} "${QT6_INSTALL_PREFIX}")
+        endif()
+    elseif(DEFINED QT_PATH_ANDROID_ABI_${abi})
         get_filename_component(${out_path} "${QT_PATH_ANDROID_ABI_${abi}}" ABSOLUTE)
     else()
         # Map the ABI value to the Qt for Android folder.
@@ -988,9 +975,85 @@ function(_qt_internal_get_android_abi_path out_path abi)
     set(${out_path} "${${out_path}}" PARENT_SCOPE)
 endfunction()
 
-# The function collects list of existing Qt for Android using _qt_internal_get_android_abi_path
-# and pre-defined set of known Android ABIs. The result is written to QT_DEFAULT_ANDROID_ABIS
-# cache variable.
+function(_qt_internal_get_android_abi_cmake_dir_path out_path abi)
+    if(DEFINED QT_ANDROID_PATH_CMAKE_DIR_${abi})
+        set(cmake_dir "${QT_ANDROID_PATH_CMAKE_DIR_${abi}}")
+    else()
+        _qt_internal_get_android_abi_prefix_path(prefix_path ${abi})
+        if(QT_BUILDING_QT AND NOT QT_BUILD_STANDALONE_TESTS)
+            set(cmake_dir "${QT_CONFIG_BUILD_DIR}")
+        else()
+            set(cmake_dir "${prefix_path}/${QT6_INSTALL_LIBS}/cmake")
+        endif()
+    endif()
+
+    set(${out_path} "${cmake_dir}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_get_android_abi_toolchain_path out_path abi)
+    set(toolchain_path "${QT_CMAKE_EXPORT_NAMESPACE}/qt.toolchain.cmake")
+    _qt_internal_get_android_abi_cmake_dir_path(cmake_dir ${abi})
+    get_filename_component(toolchain_path
+        "${cmake_dir}/${toolchain_path}" ABSOLUTE)
+    set(${out_path} "${toolchain_path}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_get_android_abi_subdir_path out_path subdir abi)
+    set(install_paths_path "${QT_CMAKE_EXPORT_NAMESPACE}Core/QtInstallPaths.cmake")
+    _qt_internal_get_android_abi_cmake_dir_path(cmake_dir ${abi})
+    include("${cmake_dir}/${install_paths_path}")
+    set(${out_path} "${${subdir}}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_collect_qt_for_android_paths out_var)
+    get_target_property(qt_android_abis ${target} _qt_android_abis)
+    if(NOT qt_android_abis)
+        set(qt_android_abis "")
+    endif()
+
+    set(custom_qt_paths data libexecs libs plugins qml)
+    foreach(type IN ITEMS prefix ${custom_qt_paths})
+        set(${type}_records "")
+    endforeach()
+
+    foreach(abi IN LISTS qt_android_abis CMAKE_ANDROID_ARCH_ABI)
+        _qt_internal_get_android_abi_prefix_path(qt_abi_prefix_path ${abi})
+        file(TO_CMAKE_PATH "${qt_abi_prefix_path}" qt_abi_prefix_path)
+        get_filename_component(qt_abi_prefix_path "${qt_abi_prefix_path}" ABSOLUTE)
+        list(APPEND prefix_records "      \"${abi}\": \"${qt_abi_prefix_path}\"")
+        foreach(type IN ITEMS ${custom_qt_paths})
+            string(TOUPPER "${type}" upper_case_type)
+            _qt_internal_get_android_abi_subdir_path(qt_abi_path
+                QT6_INSTALL_${upper_case_type} ${abi})
+            list(APPEND ${type}_records
+                "      \"${abi}\": \"${qt_abi_path}\"")
+        endforeach()
+    endforeach()
+
+    foreach(type IN ITEMS prefix ${custom_qt_paths})
+        list(JOIN ${type}_records ",\n" ${type}_records_string)
+        set(${type}_records_string "{\n${${type}_records_string}\n   }")
+    endforeach()
+
+    string(APPEND ${out_var}
+        "   \"qt\": ${prefix_records_string},\n")
+    string(APPEND ${out_var}
+        "   \"qtDataDirectory\": ${data_records_string},\n")
+    string(APPEND ${out_var}
+        "   \"qtLibExecsDirectory\": ${libexecs_records_string},\n")
+    string(APPEND ${out_var}
+        "   \"qtLibsDirectory\": ${libs_records_string},\n")
+    string(APPEND ${out_var}
+        "   \"qtPluginsDirectory\": ${plugins_records_string},\n")
+    string(APPEND ${out_var}
+        "   \"qtQmlDirectory\": ${qml_records_string},\n")
+
+    set(${out_var} "${${out_var}}" PARENT_SCOPE)
+endfunction()
+
+# The function collects list of existing Qt for Android using
+# _qt_internal_get_android_abi_prefix_path and pre-defined set of known Android ABIs. The result is
+# written to QT_DEFAULT_ANDROID_ABIS cache variable.
 # Note that QT_DEFAULT_ANDROID_ABIS is not intended to be set outside the function and will be
 # rewritten.
 function(_qt_internal_collect_default_android_abis)
@@ -998,9 +1061,9 @@ function(_qt_internal_collect_default_android_abis)
 
     set(default_abis)
     foreach(abi IN LISTS known_android_abis)
-        _qt_internal_get_android_abi_path(qt_abi_path ${abi})
+        _qt_internal_get_android_abi_toolchain_path(qt_abi_toolchain_path ${abi})
         # It's expected that Qt for Android contains ABI specific toolchain file.
-        if(EXISTS "${qt_abi_path}/lib/cmake/${QT_CMAKE_EXPORT_NAMESPACE}/qt.toolchain.cmake"
+        if(EXISTS "${qt_abi_toolchain_path}"
             OR CMAKE_ANDROID_ARCH_ABI STREQUAL abi)
             list(APPEND default_abis ${abi})
         endif()
@@ -1138,9 +1201,7 @@ function(_qt_internal_configure_android_multiabi_target target)
             PROPERTY _qt_internal_abi_external_projects)
         if(NOT abi_external_projects
             OR NOT "qt_internal_android_${abi}" IN_LIST abi_external_projects)
-            _qt_internal_get_android_abi_path(qt_abi_path ${abi})
-            set(qt_abi_toolchain_path
-                "${qt_abi_path}/lib/cmake/${QT_CMAKE_EXPORT_NAMESPACE}/qt.toolchain.cmake")
+            _qt_internal_get_android_abi_toolchain_path(qt_abi_toolchain_path ${abi})
             ExternalProject_Add("qt_internal_android_${abi}"
                 SOURCE_DIR "${CMAKE_SOURCE_DIR}"
                 BINARY_DIR "${android_abi_build_dir}"
@@ -1211,7 +1272,9 @@ function(_qt_internal_configure_android_multiabi_target target)
         message(FATAL_ERROR "Cannot find toolchain files for the manually specified Android"
             " ABIs: ${missing_qt_abi_toolchains_string}"
             "\nNote that you also may manually specify the path to the required Qt for"
-            " Android ABI using QT_PATH_ANDROID_ABI_<abi> CMake variable.\n")
+            " Android ABI using QT_PATH_ANDROID_ABI_<abi> CMake variable with the value"
+            " of the installation prefix, and QT_ANDROID_PATH_CMAKE_DIR_<abi> with"
+            " the location of the cmake directory for that ABI.\n")
     endif()
 
     list(JOIN android_abis ", " android_abis_string)

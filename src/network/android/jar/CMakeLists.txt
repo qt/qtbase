@@ -13,8 +13,10 @@ qt_internal_add_jar(Qt${QtBase_VERSION_MAJOR}AndroidNetwork # special case
     OUTPUT_DIR "${QT_BUILD_DIR}/jar"
 )
 
+qt_path_join(destination ${INSTALL_DATADIR} "jar")
+
 install_jar(Qt${QtBase_VERSION_MAJOR}AndroidNetwork # special case
-    DESTINATION jar
+    DESTINATION ${destination}
     COMPONENT Devel
 )
 
