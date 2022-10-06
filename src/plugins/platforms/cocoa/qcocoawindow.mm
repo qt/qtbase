@@ -526,8 +526,10 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     // working (for example minimizing frameless windows, or resizing
     // windows that don't have zoom or fullscreen titlebar buttons).
     styleMask |= NSWindowStyleMaskClosable
-               | NSWindowStyleMaskResizable
                | NSWindowStyleMaskMiniaturizable;
+
+    if (type != Qt::Popup) // We only care about popups exactly.
+        styleMask |= NSWindowStyleMaskResizable;
 
     if (type == Qt::Tool)
         styleMask |= NSWindowStyleMaskUtilityWindow;
