@@ -213,7 +213,7 @@ void DtlsServer::decryptDatagram(QDtls *connection, const QByteArray &clientMess
 //! [14]
 void DtlsServer::shutdown()
 {
-    for (const auto &connection : qExchange(knownClients, {}))
+    for (const auto &connection : std::exchange(knownClients, {}))
         connection->shutdown(&serverSocket);
 
     serverSocket.close();

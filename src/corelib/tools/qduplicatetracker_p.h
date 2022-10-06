@@ -56,13 +56,13 @@ class QDuplicateTracker {
         auto insert(const T &e) {
             auto it = QSet<T>::insert(e);
             const auto n = this->size();
-            return std::pair{it, qExchange(setSize, n) != n};
+            return std::pair{it, std::exchange(setSize, n) != n};
         }
 
         auto insert(T &&e) {
             auto it = QSet<T>::insert(std::move(e));
             const auto n = this->size();
-            return std::pair{it, qExchange(setSize, n) != n};
+            return std::pair{it, std::exchange(setSize, n) != n};
         }
     };
     Set set{Prealloc};

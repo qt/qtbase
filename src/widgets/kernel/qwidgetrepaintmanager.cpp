@@ -988,7 +988,7 @@ void QWidgetRepaintManager::flush()
     if (!hasNeedsFlushWidgets)
         return;
 
-    for (QWidget *w : qExchange(needsFlushWidgets, {})) {
+    for (QWidget *w : std::exchange(needsFlushWidgets, {})) {
         QWidgetPrivate *wd = w->d_func();
         Q_ASSERT(wd->needsFlush);
         QPlatformTextureList *widgetTexturesForNative = wd->textureChildSeen ? widgetTexturesFor(tlw, w) : nullptr;

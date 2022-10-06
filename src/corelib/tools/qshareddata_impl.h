@@ -92,7 +92,7 @@ public:
 
     constexpr T *take() noexcept
     {
-        return qExchange(d, nullptr);
+        return std::exchange(d, nullptr);
     }
 
     bool isShared() const noexcept

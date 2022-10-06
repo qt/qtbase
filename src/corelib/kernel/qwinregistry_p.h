@@ -34,7 +34,7 @@ public:
     ~QWinRegistryKey();
 
     QWinRegistryKey(QWinRegistryKey &&other) noexcept
-        : m_key(qExchange(other.m_key, nullptr)) {}
+        : m_key(std::exchange(other.m_key, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QWinRegistryKey)
     void swap(QWinRegistryKey &other) noexcept { qSwap(m_key, other.m_key); }
 

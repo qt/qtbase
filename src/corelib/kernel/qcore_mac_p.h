@@ -92,7 +92,7 @@ public:
     QAppleRefCounted(QAppleRefCounted &&other)
             noexcept(std::is_nothrow_move_assignable<T>::value &&
                      std::is_nothrow_move_constructible<T>::value)
-        : value(qExchange(other.value, T())) {}
+        : value(std::exchange(other.value, T())) {}
     QAppleRefCounted(const QAppleRefCounted &other) : value(other.value) { if (value) RetainFunction(value); }
     ~QAppleRefCounted() { if (value) ReleaseFunction(value); }
     operator T() const { return value; }
@@ -258,7 +258,7 @@ public:
     Q_DISABLE_COPY(QAppleLogActivity)
 
     QAppleLogActivity(QAppleLogActivity &&other)
-        : activity(qExchange(other.activity, nullptr)), state(other.state)
+        : activity(std::exchange(other.activity, nullptr)), state(other.state)
     {
     }
 
@@ -333,7 +333,7 @@ public:
 
     QMacNotificationObserver(const QMacNotificationObserver &other) = delete;
     QMacNotificationObserver(QMacNotificationObserver &&other)
-        : observer(qExchange(other.observer, nullptr))
+        : observer(std::exchange(other.observer, nullptr))
     {
     }
 

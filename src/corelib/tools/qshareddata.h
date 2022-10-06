@@ -49,7 +49,7 @@ public:
     const T *data() const noexcept { return d; }
     const T *get() const noexcept { return d; }
     const T *constData() const noexcept { return d; }
-    T *take() noexcept { return qExchange(d, nullptr); }
+    T *take() noexcept { return std::exchange(d, nullptr); }
 
     QSharedDataPointer() noexcept : d(nullptr) { }
     ~QSharedDataPointer() { if (d && !d->ref.deref()) delete d; }

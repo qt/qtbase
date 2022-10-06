@@ -5513,7 +5513,7 @@ public:
     }
 
     QObjectCastChecker(QObjectCastChecker &&other) noexcept
-        : m_target(qExchange(other.m_target, nullptr))
+        : m_target(std::exchange(other.m_target, nullptr))
     {}
 
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QObjectCastChecker)
