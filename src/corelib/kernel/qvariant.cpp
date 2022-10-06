@@ -1403,8 +1403,13 @@ QString QVariant::toString() const
 }
 
 /*!
-    Returns the variant as a QMap<QString, QVariant> if the variant
-    has type() \l QMetaType::QVariantMap; otherwise returns an empty map.
+    Returns the variant as a QVariantMap if the variant has type() \l
+    QMetaType::QVariantMap. If it doesn't, QVariant will attempt to
+    convert the type to a map and then return it. This will succeed for
+    any type that has registered a converter to QVariantMap or which was
+    declared as a associative container using
+    \l{Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE}. If none of those
+    conditions are true, this function will return an empty map.
 
     \sa canConvert(), convert()
 */
@@ -1954,9 +1959,13 @@ qreal QVariant::toReal(bool *ok) const
 }
 
 /*!
-    Returns the variant as a QVariantList if the variant has userType()
-    \l QMetaType::QVariantList or \l QMetaType::QStringList; otherwise returns
-    an empty list.
+    Returns the variant as a QVariantList if the variant has userType() \l
+    QMetaType::QVariantList. If it doesn't, QVariant will attempt to convert
+    the type to a list and then return it. This will succeed for any type that
+    has registered a converter to QVariantList or which was declared as a
+    sequential container using \l{Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE}. If
+    none of those conditions are true, this function will return an empty
+    list.
 
     \sa canConvert(), convert()
 */
