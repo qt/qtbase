@@ -143,6 +143,15 @@
 // #  define Q_BYTE_ORDER Q_LITTLE_ENDIAN
 
 /*
+    PA-RISC family, no revisions or variants
+
+    PA-RISC is big-endian.
+*/
+#elif defined(__hppa__)
+#  define Q_PROCESSOR_HPPA
+#  define Q_BYTE_ORDER Q_BIG_ENDIAN
+
+/*
     X86 family, known variants: 32- and 64-bit
 
     X86 is little-endian.

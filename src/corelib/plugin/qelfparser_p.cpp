@@ -113,6 +113,8 @@ struct ElfMachineCheck
             EM_AARCH64
 #elif defined(Q_PROCESSOR_BLACKFIN)
             EM_BLACKFIN
+#elif defined(Q_PROCESSOR_HPPA)
+            EM_PARISC
 #elif defined(Q_PROCESSOR_IA64)
             EM_IA_64
 #elif defined(Q_PROCESSOR_MIPS)
@@ -378,6 +380,7 @@ Q_DECL_UNUSED Q_DECL_COLD_FUNCTION static QDebug &operator<<(QDebug &d, ElfHeade
 #endif
     case EM_IA_64:      d << ", IA-64"; break;
     case EM_MIPS:       d << ", MIPS"; break;
+    case EM_PARISC:     d << ", HPPA"; break;
     case EM_PPC:        d << ", PowerPC"; break;
     case EM_PPC64:      d << ", PowerPC 64-bit"; break;
 #ifdef EM_RISCV

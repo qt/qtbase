@@ -87,6 +87,15 @@
 */
 
 /*!
+    \macro Q_PROCESSOR_HPPA
+    \relates <QtProcessorDetection>
+
+    Defined if the application is compiled for PA-RISC processors.
+
+    \sa QSysInfo::buildCpuArchitecture()
+*/
+
+/*!
     \macro Q_PROCESSOR_IA64
     \relates <QtProcessorDetection>
 
