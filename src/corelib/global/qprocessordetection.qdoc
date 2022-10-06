@@ -106,6 +106,15 @@
 */
 
 /*!
+    \macro Q_PROCESSOR_M68K
+    \relates <QtProcessorDetection>
+
+    Defined if the application is compiled for Motorola 68000 processors.
+
+    \sa QSysInfo::buildCpuArchitecture()
+*/
+
+/*!
     \macro Q_PROCESSOR_MIPS
     \relates <QtProcessorDetection>
 

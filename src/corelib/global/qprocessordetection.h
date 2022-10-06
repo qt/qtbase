@@ -200,6 +200,15 @@
 // Q_BYTE_ORDER not defined, use endianness auto-detection
 
 /*
+    Motorola 68000 family, no revisions or variants
+
+    M68K is big-endian.
+*/
+#elif defined(__m68k__)
+#  define Q_PROCESSOR_M68K
+#  define Q_BYTE_ORDER Q_BIG_ENDIAN
+
+/*
     MIPS family, known revisions: I, II, III, IV, 32, 64
 
     MIPS is bi-endian, use endianness auto-detection implemented below.
