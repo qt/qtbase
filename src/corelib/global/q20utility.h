@@ -118,6 +118,21 @@ constexpr bool in_range(T t) noexcept
 #endif // __cpp_lib_integer_comparison_functions
 } // namespace q20
 
+// like C++20 std::exchange (ie. constexpr, not yet noexcept)
+namespace q20 {
+#ifdef __cpp_lib_constexpr_algorithms
+using std::exchange;
+#else
+template <typename T, typename U = T>
+constexpr T exchange(T& obj, U&& newValue)
+{
+    T old = std::move(obj);
+    obj = std::forward<U>(newValue);
+    return old;
+}
+#endif
+}
+
 QT_END_NAMESPACE
 
 #endif /* Q20UTILITY_H */
