@@ -219,16 +219,8 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
 
     switch (sortBy) {
       case QDir::Time: {
-        QDateTime firstModified = f1->item.lastModified();
-        QDateTime secondModified = f2->item.lastModified();
-
-        // QDateTime by default will do all sorts of conversions on these to
-        // find timezones, which is incredibly expensive. As we aren't
-        // presenting these to the user, we don't care (at all) about the
-        // local timezone, so force them to UTC to avoid that conversion.
-        firstModified.setTimeZone(QTimeZone::UTC);
-        secondModified.setTimeZone(QTimeZone::UTC);
-
+        const QDateTime firstModified = f1->item.lastModified(QTimeZone::UTC);
+        const QDateTime secondModified = f2->item.lastModified(QTimeZone::UTC);
         r = firstModified.msecsTo(secondModified);
         break;
       }
