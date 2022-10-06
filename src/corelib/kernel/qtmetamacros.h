@@ -127,7 +127,7 @@ private: \
     Q_OBJECT_NO_ATTRIBUTES_WARNING \
     Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **); \
     QT_WARNING_POP \
-    struct QPrivateSignal {}; \
+    struct QPrivateSignal { explicit QPrivateSignal() = default; }; \
     QT_ANNOTATE_CLASS(qt_qobject, "")
 
 /* qmake ignore Q_OBJECT */
