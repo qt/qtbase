@@ -3212,6 +3212,8 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
             return;
         }
         break;
+    case Qt::Key_Enter:
+    case Qt::Key_Return:
     case Qt::Key_Escape:
         if (!d->lineEdit)
             e->ignore();
