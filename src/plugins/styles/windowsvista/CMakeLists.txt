@@ -14,8 +14,9 @@ qt_internal_add_plugin(QWindowsVistaStylePlugin
         main.cpp
         qwindowsvistastyle.cpp qwindowsvistastyle_p.h
         qwindowsvistastyle_p_p.h
-        qwindowsxpstyle.cpp qwindowsxpstyle_p.h
-        qwindowsxpstyle_p_p.h
+        qwindowsvistaanimation.cpp qwindowsvistaanimation_p.h
+        qwindowsthemedata.cpp qwindowsthemedata_p.h
+
     LIBRARIES
         gdi32
         user32

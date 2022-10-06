@@ -16,12 +16,12 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include "qwindowsxpstyle_p.h"
+#include <QtWidgets/private/qwindowsstyle_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QWindowsVistaStylePrivate;
-class QWindowsVistaStyle : public QWindowsXPStyle
+class QWindowsVistaStyle : public QWindowsStyle
 {
     Q_OBJECT
 public:

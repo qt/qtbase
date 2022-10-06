@@ -17,14 +17,16 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qwindowsvistastyle_p.h"
-#include "qwindowsxpstyle_p_p.h"
-#include <private/qstyleanimation_p.h>
+#include "qwindowsthemedata_p.h"
 #include <private/qpaintengine_raster_p.h>
 #include <qpaintengine.h>
 #include <qwidget.h>
 #include <qapplication.h>
 #include <qpixmapcache.h>
 #include <qstyleoption.h>
+#include <QtWidgets/private/qwindowsstyle_p_p.h>
+#include <qmap.h>
+
 #if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
 #endif
@@ -73,93 +75,102 @@
 #if QT_CONFIG(commandlinkbutton)
 #include <qcommandlinkbutton.h>
 #endif
+#include <qlabel.h>
+#include <qheaderview.h>
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(SCHEMA_VERIFY_VSSYM32)
-#define TMT_ANIMATIONDURATION       5006
-#define TMT_TRANSITIONDURATIONS     6000
-#define EP_EDITBORDER_NOSCROLL      6
-#define EP_EDITBORDER_HVSCROLL      9
-#define EP_BACKGROUND               3
-#define EBS_NORMAL                  1
-#define EBS_HOT                     2
-#define EBS_DISABLED                3
-#define EBS_READONLY                5
-#define PBS_DEFAULTED_ANIMATING     6
-#define MBI_NORMAL                  1
-#define MBI_HOT                     2
-#define MBI_PUSHED                  3
-#define MBI_DISABLED                4
-#define MB_ACTIVE                   1
-#define MB_INACTIVE                 2
-#define PP_FILL                     5
-#define PP_FILLVERT                 6
-#define PP_MOVEOVERLAY              8
-#define PP_MOVEOVERLAYVERT          10
-#define MENU_BARBACKGROUND          7
-#define MENU_BARITEM                8
-#define MENU_POPUPCHECK             11
-#define MENU_POPUPCHECKBACKGROUND   12
-#define MENU_POPUPGUTTER            13
-#define MENU_POPUPITEM              14
-#define MENU_POPUPBORDERS           10
-#define MENU_POPUPSEPARATOR         15
-#define MC_CHECKMARKNORMAL          1
-#define MC_CHECKMARKDISABLED        2
-#define MC_BULLETNORMAL             3
-#define MC_BULLETDISABLED           4
-#define ABS_UPHOVER                 17
-#define ABS_DOWNHOVER               18
-#define ABS_LEFTHOVER               19
-#define ABS_RIGHTHOVER              20
-#define CP_DROPDOWNBUTTONRIGHT      6
-#define CP_DROPDOWNBUTTONLEFT       7
-#define SCRBS_HOVER                 5
-#define TVP_HOTGLYPH                4
-#define SPI_GETCLIENTAREAANIMATION  0x1042
-#define TDLG_PRIMARYPANEL           1
-#define TDLG_SECONDARYPANEL         8
-#endif
-
-class QWindowsVistaAnimation : public QBlendStyleAnimation
-{
-    Q_OBJECT
-public:
-    QWindowsVistaAnimation(Type type, QObject *target) : QBlendStyleAnimation(type, target) { }
-
-    bool isUpdateNeeded() const override;
-    void paint(QPainter *painter, const QStyleOption *option);
-};
-
-
-// Handles state transition animations
-class QWindowsVistaTransition : public QWindowsVistaAnimation
-{
-    Q_OBJECT
-public:
-    QWindowsVistaTransition(QObject *target) : QWindowsVistaAnimation(Transition, target) {}
-};
-
-
-// Handles pulse animations (default buttons)
-class QWindowsVistaPulse: public QWindowsVistaAnimation
-{
-    Q_OBJECT
-public:
-    QWindowsVistaPulse(QObject *target) : QWindowsVistaAnimation(Pulse, target) {}
-};
-
-
-class QWindowsVistaStylePrivate :  public QWindowsXPStylePrivate
+class QWindowsVistaStylePrivate : public QWindowsStylePrivate
 {
     Q_DECLARE_PUBLIC(QWindowsVistaStyle)
 
 public:
+    enum Theme {
+        ButtonTheme,
+        ComboboxTheme,
+        EditTheme,
+        HeaderTheme,
+        ListViewTheme,
+        MenuTheme,
+        ProgressTheme,
+        RebarTheme,
+        ScrollBarTheme,
+        SpinTheme,
+        TabTheme,
+        TaskDialogTheme,
+        ToolBarTheme,
+        ToolTipTheme,
+        TrackBarTheme,
+        WindowTheme,
+        StatusTheme,
+        VistaTreeViewTheme, // arrow shape treeview indicators (Vista) obtained from "explorer" theme.
+        NThemes
+    };
+
+    QWindowsVistaStylePrivate()
+    { init(); }
+
+    ~QWindowsVistaStylePrivate()
+    { cleanup(); }
+
+    static HTHEME createTheme(int theme, HWND hwnd);
+    static QString themeName(int theme);
+    static inline bool hasTheme(int theme) { return theme >= 0 && theme < NThemes && m_themes[theme]; }
+    static bool isItemViewDelegateLineEdit(const QWidget *widget);
+    static int pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *option = nullptr, const QWidget *widget = nullptr);
     static int fixedPixelMetric(QStyle::PixelMetric pm);
-    static inline bool useVista();
+    static bool isLineEditBaseColorSet(const QStyleOption *option, const QWidget *widget);
+    static QRect scrollBarGripperBounds(QStyle::State flags, const QWidget *widget, QWindowsThemeData *theme);
+    static HWND winId(const QWidget *widget);
+    static bool useVista(bool update = false);
+    static QBackingStore *backingStoreForWidget(const QWidget *widget);
+    static HDC hdcForWidgetBackingStore(const QWidget *widget);
+
+    void init(bool force = false);
+    void cleanup(bool force = false);
+    void cleanupHandleMap();
+
+    HBITMAP buffer(int w = 0, int h = 0);
+    HDC bufferHDC()
+    { return bufferDC; }
+
+    bool isTransparent(QWindowsThemeData &QWindowsThemeData);
+    QRegion region(QWindowsThemeData &QWindowsThemeData);
+
+    bool drawBackground(QWindowsThemeData &QWindowsThemeData, qreal correctionFactor = 1);
+    bool drawBackgroundThruNativeBuffer(QWindowsThemeData &QWindowsThemeData, qreal aditionalDevicePixelRatio, qreal correctionFactor);
+    bool drawBackgroundDirectly(HDC dc, QWindowsThemeData &QWindowsThemeData, qreal aditionalDevicePixelRatio);
+
+    bool hasAlphaChannel(const QRect &rect);
+    bool fixAlphaChannel(const QRect &rect);
+    bool swapAlphaChannel(const QRect &rect, bool allPixels = false);
+
+    QRgb groupBoxTextColor = 0;
+    QRgb groupBoxTextColorDisabled = 0;
+    QRgb sliderTickColor = 0;
+    bool hasInitColors = false;
+    QIcon dockFloat, dockClose;
+
     QTime animationTime() const;
     bool transitionsEnabled() const;
+
+private:
+    static bool initVistaTreeViewTheming();
+    static void cleanupVistaTreeViewTheming();
+
+    static QBasicAtomicInt ref;
+    static bool useVistaTheme;
+
+    QHash<ThemeMapKey, ThemeMapData> alphaCache;
+    HDC bufferDC = nullptr;
+    HBITMAP bufferBitmap = nullptr;
+    HBITMAP nullBitmap = nullptr;
+    uchar *bufferPixels = nullptr;
+    int bufferW = 0;
+    int bufferH = 0;
+
+    static HWND m_vistaTreeViewHelper;
+    static HTHEME m_themes[NThemes];
 };
 
 QT_END_NAMESPACE
