@@ -1260,7 +1260,16 @@
     on a \a widget.  The position of the release is defined by \a pos;
     the default position is the center of the widget. If \a delay is
     specified, the test will wait for the specified amount of
-    milliseconds before releasing the button.
+    milliseconds before releasing the button; otherwise, it will wait for a
+    default amount of time (1 ms), which can be overridden via
+    \l {Testing Options}{command-line arguments}.
+
+    \note If you wish to test a double-click by sending events individually,
+    specify a short delay, greater than the default, on both mouse release events.
+    The total of the delays for the press, release, press and release must be
+    less than QStyleHints::mouseDoubleClickInterval(). But if you don't need
+    to check state between events, it's better to use QTest::mouseDClick().
+    \snippet code/src_qtestlib_qtestcase_snippet.cpp 35
 
     \sa QTest::mousePress(), QTest::mouseClick()
 */
@@ -1273,7 +1282,16 @@
     on a \a window.  The position of the release is defined by \a pos;
     the default position is the center of the window. If \a delay is
     specified, the test will wait for the specified amount of
-    milliseconds before releasing the button.
+    milliseconds before releasing the button; otherwise, it will wait for a
+    default amount of time (1 ms), which can be overridden via
+    \l {Testing Options}{command-line arguments}.
+
+    \note If you wish to test a double-click by sending events individually,
+    specify a short delay, greater than the default, on both mouse release events.
+    The total of the delays for the press, release, press and release must be
+    less than QStyleHints::mouseDoubleClickInterval(). But if you don't need
+    to check state between events, it's better to use QTest::mouseDClick().
+    \snippet code/src_qtestlib_qtestcase_snippet.cpp 35
 
     \sa QTest::mousePress(), QTest::mouseClick()
 */

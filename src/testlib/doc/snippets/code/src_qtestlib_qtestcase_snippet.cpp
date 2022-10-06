@@ -119,3 +119,16 @@ char *toString(const MyType &t)
     return repr;
 }
 //! [34]
+
+//! [35]
+QSignalSpy doubleClickSpy(target, &TargetClass::doubleClicked);
+const QPoint p(1, 2);
+QTest::mousePress(&myWindow, Qt::LeftButton, Qt::NoModifier, p);
+QVERIFY(target.isPressed());
+QTest::mouseRelease(&myWindow, Qt::LeftButton, Qt::NoModifier, p, 10);
+QCOMPARE(target.isPressed(), false);
+QTest::mousePress(&myWindow, Qt::LeftButton, Qt::NoModifier, p, 10);
+QCOMPARE(target.pressCount(), 2);
+QTest::mouseRelease(&myWindow, Qt::LeftButton, Qt::NoModifier, p, 10);
+QCOMPARE(doubleClickSpy.count(), 1);
+//! [35]

@@ -56,6 +56,10 @@
     </Incident>
     <Duration msecs="0"/>
   </TestFunction>
+  <TestFunction name="doubleClick">
+    <Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+  </TestFunction>
   <TestFunction name="cleanupTestCase">
     <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>

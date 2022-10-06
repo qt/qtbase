@@ -26,6 +26,8 @@
 ##teamcity[testStarted name='deterministicEvents(first-run-false)' flowId='tst_Mouse']
 ##teamcity[testIgnored name='deterministicEvents(first-run-false)' message='Not implemented! |[Loc: qtbase/tests/auto/testlib/selftests/mouse/tst_mouse.cpp(0)|]' flowId='tst_Mouse']
 ##teamcity[testFinished name='deterministicEvents(first-run-false)' flowId='tst_Mouse']
+##teamcity[testStarted name='doubleClick()' flowId='tst_Mouse']
+##teamcity[testFinished name='doubleClick()' flowId='tst_Mouse']
 ##teamcity[testStarted name='cleanupTestCase()' flowId='tst_Mouse']
 ##teamcity[testFinished name='cleanupTestCase()' flowId='tst_Mouse']
 ##teamcity[testSuiteFinished name='tst_Mouse' flowId='tst_Mouse']

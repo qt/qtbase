@@ -57,6 +57,12 @@ namespace QTest
         event. We expect all event-handling code to rely on the event
         timestamps, not the system clock; therefore tests can be run faster
         than real-time.
+
+        If \a delay is not given, a default minimum mouse delay is used, and
+        unintended double-click events are prevented by incrementing the
+        timestamp by 500ms after each mouse release. Therefore, to test
+        double-clicks, it's necessary to give a realistic \a delay value (for
+        example, 10ms).
     */
     static void mouseEvent(MouseAction action, QWindow *window, Qt::MouseButton button,
                            Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
@@ -71,9 +77,8 @@ namespace QTest
                      pos.x(), pos.y(), windowSize.width(), windowSize.height());
         }
 
-        if (delay == -1 || delay < defaultMouseDelay())
-            delay = defaultMouseDelay();
-        lastMouseTimestamp += qMax(1, delay);
+        int actualDelay = (delay == -1 || delay < defaultMouseDelay()) ? defaultMouseDelay() : delay;
+        lastMouseTimestamp += qMax(1, actualDelay);
 
         if (pos.isNull())
             pos = QPoint(window->width() / 2, window->height() / 2);
@@ -108,7 +113,8 @@ namespace QTest
             qtestMouseButtons.setFlag(button, false);
             qt_handleMouseEvent(w, pos, global, qtestMouseButtons, button, QEvent::MouseButtonRelease,
                                 stateKey, lastMouseTimestamp);
-            lastMouseTimestamp += mouseDoubleClickInterval; // avoid double clicks being generated
+            if (delay == -1)
+                lastMouseTimestamp += mouseDoubleClickInterval; // avoid double clicks being generated
             break;
         case MouseMove:
             qt_handleMouseEvent(w, pos, global, qtestMouseButtons, Qt::NoButton, QEvent::MouseMove,

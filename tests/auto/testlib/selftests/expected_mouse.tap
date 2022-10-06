@@ -12,8 +12,9 @@ ok 9 - stateHandlingPart1(dummy-2)
 ok 10 - stateHandlingPart2() # SKIP Not implemented beyond this point!
 ok 11 - deterministicEvents(first-run-true) # SKIP Not implemented!
 ok 12 - deterministicEvents(first-run-false) # SKIP Not implemented!
-ok 13 - cleanupTestCase()
-1..13
-# tests 13
-# pass 10
+ok 13 - doubleClick()
+ok 14 - cleanupTestCase()
+1..14
+# tests 14
+# pass 11
 # fail 0
