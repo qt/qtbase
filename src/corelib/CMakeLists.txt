@@ -94,7 +94,6 @@ qt_internal_add_module(Core
         global/q20algorithm.h
         global/q20functional.h
         global/q23functional.h
-        global/qxpfunctional.h
         global/q20iterator.h
         global/qxpfunctional.h
         io/qabstractfileengine.cpp io/qabstractfileengine_p.h
