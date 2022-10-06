@@ -75,7 +75,7 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
     QStringList themeNames;
     themeNames += QGuiApplicationPrivate::platform_integration->themeNames();
     // 1) Look for a theme plugin.
-    for (const QString &themeName : qAsConst(themeNames)) {
+    for (const QString &themeName : std::as_const(themeNames)) {
         d->baseTheme = QPlatformThemeFactory::create(themeName, nullptr);
         if (d->baseTheme)
             break;
@@ -84,7 +84,7 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
     // 2) If no theme plugin was found ask the platform integration to
     // create a theme
     if (!d->baseTheme) {
-        for (const QString &themeName : qAsConst(themeNames)) {
+        for (const QString &themeName : std::as_const(themeNames)) {
             d->baseTheme = QGuiApplicationPrivate::platform_integration->createPlatformTheme(themeName);
             if (d->baseTheme)
                 break;

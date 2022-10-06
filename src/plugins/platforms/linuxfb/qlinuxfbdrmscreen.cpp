@@ -408,7 +408,7 @@ QRegion QLinuxFbDrmScreen::doRedraw()
     // Image has alpha but no need for blending at this stage.
     // Do not waste time with the default SourceOver.
     pntr.setCompositionMode(QPainter::CompositionMode_Source);
-    for (const QRect &rect : qAsConst(output->dirty[output->backFb]))
+    for (const QRect &rect : std::as_const(output->dirty[output->backFb]))
         pntr.drawImage(rect, mScreenImage, rect);
     pntr.end();
 

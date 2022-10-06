@@ -545,13 +545,13 @@ public:
 #if QT_CONFIG(cborstreamwriter)
     using QCborValueConstRef::toCbor;
     QByteArray toCbor(QCborValue::EncodingOptions opt = QCborValue::NoTransformation)
-    { return qAsConst(*this).toCbor(opt); }
+    { return std::as_const(*this).toCbor(opt); }
     void toCbor(QCborStreamWriter &writer, QCborValue::EncodingOptions opt = QCborValue::NoTransformation);
 #endif
 
     using QCborValueConstRef::toDiagnosticNotation;
     QString toDiagnosticNotation(QCborValue::DiagnosticNotationOptions opt = QCborValue::Compact)
-    { return qAsConst(*this).toDiagnosticNotation(opt); }
+    { return std::as_const(*this).toDiagnosticNotation(opt); }
 
 private:
     static QCborValue concrete(QCborValueRef that) noexcept;

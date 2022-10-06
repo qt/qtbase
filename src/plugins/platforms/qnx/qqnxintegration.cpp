@@ -571,7 +571,7 @@ QList<screen_display_t *> QQnxIntegration::sortDisplays(screen_display_t *availa
 
     // Go through all the requested displays IDs
     QList<screen_display_t *> orderedDisplays;
-    for (const QJsonValue &value : qAsConst(requestedDisplays)) {
+    for (const QJsonValue &value : std::as_const(requestedDisplays)) {
         int requestedValue = value.toInt();
 
         // Move all displays with matching ID from the intermediate list

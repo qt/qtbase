@@ -155,7 +155,7 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
             }
         }
 
-        qCDebug(lcQpaScreen) << "updateScreens: primary output is" << qAsConst(m_screens).first()->name();
+        qCDebug(lcQpaScreen) << "updateScreens: primary output is" << std::as_const(m_screens).first()->name();
     }
 }
 
@@ -184,7 +184,7 @@ void QXcbConnection::updateScreen(QXcbScreen *screen, const xcb_randr_output_cha
             // If the screen became primary, reshuffle the order in QGuiApplicationPrivate
             const int idx = m_screens.indexOf(screen);
             if (idx > 0) {
-                qAsConst(m_screens).first()->setPrimary(false);
+                std::as_const(m_screens).first()->setPrimary(false);
                 m_screens.swapItemsAt(0, idx);
             }
             screen->virtualDesktop()->setPrimaryScreen(screen);
@@ -204,7 +204,7 @@ QXcbScreen *QXcbConnection::createScreen(QXcbVirtualDesktop *virtualDesktop,
 
     if (screen->isPrimary()) {
         if (!m_screens.isEmpty())
-            qAsConst(m_screens).first()->setPrimary(false);
+            std::as_const(m_screens).first()->setPrimary(false);
 
         m_screens.prepend(screen);
     } else {
@@ -253,7 +253,7 @@ void QXcbConnection::updateScreen_monitor(QXcbScreen *screen, xcb_randr_monitor_
     if (screen->isPrimary()) {
         const int idx = m_screens.indexOf(screen);
         if (idx > 0) {
-            qAsConst(m_screens).first()->setPrimary(false);
+            std::as_const(m_screens).first()->setPrimary(false);
             m_screens.swapItemsAt(0, idx);
         }
         screen->virtualDesktop()->setPrimaryScreen(screen);
@@ -268,7 +268,7 @@ QXcbScreen *QXcbConnection::createScreen_monitor(QXcbVirtualDesktop *virtualDesk
 
     if (screen->isPrimary()) {
         if (!m_screens.isEmpty())
-            qAsConst(m_screens).first()->setPrimary(false);
+            std::as_const(m_screens).first()->setPrimary(false);
 
         m_screens.prepend(screen);
     } else {
@@ -326,7 +326,7 @@ void QXcbConnection::initializeScreens(bool initialized)
         ++xcbScreenNumber;
     }
 
-    for (QXcbVirtualDesktop *virtualDesktop : qAsConst(m_virtualDesktops))
+    for (QXcbVirtualDesktop *virtualDesktop : std::as_const(m_virtualDesktops))
         virtualDesktop->subscribeToXFixesSelectionNotify();
 
     if (m_virtualDesktops.isEmpty()) {
@@ -334,7 +334,7 @@ void QXcbConnection::initializeScreens(bool initialized)
     } else {
         // Ensure the primary screen is first on the list
         if (primaryScreen) {
-            if (qAsConst(m_screens).first() != primaryScreen) {
+            if (std::as_const(m_screens).first() != primaryScreen) {
                 m_screens.removeOne(primaryScreen);
                 m_screens.prepend(primaryScreen);
             }
@@ -342,14 +342,14 @@ void QXcbConnection::initializeScreens(bool initialized)
 
         // Push the screens to QGuiApplication
         if (!initialized) {
-            for (QXcbScreen *screen : qAsConst(m_screens)) {
+            for (QXcbScreen *screen : std::as_const(m_screens)) {
                 qCDebug(lcQpaScreen) << "adding" << screen << "(Primary:" << screen->isPrimary() << ")";
                 QWindowSystemInterface::handleScreenAdded(screen, screen->isPrimary());
             }
         }
 
         if (!m_screens.isEmpty())
-            qCDebug(lcQpaScreen) << "initializeScreens: primary output is" << qAsConst(m_screens).first()->name();
+            qCDebug(lcQpaScreen) << "initializeScreens: primary output is" << std::as_const(m_screens).first()->name();
     }
 }
 

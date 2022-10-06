@@ -854,7 +854,7 @@ void tst_QStringView::overloadResolution()
     {
         std::u16string string;
         QStringViewOverloadResolution::test(string);
-        QStringViewOverloadResolution::test(qAsConst(string));
+        QStringViewOverloadResolution::test(std::as_const(string));
         QStringViewOverloadResolution::test(std::move(string));
     }
 }

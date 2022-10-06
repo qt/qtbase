@@ -296,7 +296,7 @@ void QPrintPreviewWidgetPrivate::init()
 void QPrintPreviewWidgetPrivate::populateScene()
 {
     // remove old pages
-    for (auto *page : qAsConst(pages))
+    for (auto *page : std::as_const(pages))
         scene->removeItem(page);
     qDeleteAll(pages);
     pages.clear();
@@ -305,7 +305,7 @@ void QPrintPreviewWidgetPrivate::populateScene()
     QRect pageRect = printer->pageLayout().paintRectPixels(printer->resolution());
 
     int page = 1;
-    for (auto *picture : qAsConst(pictures)) {
+    for (auto *picture : std::as_const(pictures)) {
         PageItem* item = new PageItem(page++, picture, paperSize, pageRect);
         scene->addItem(item);
         pages.append(item);

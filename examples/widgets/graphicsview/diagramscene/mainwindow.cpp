@@ -87,7 +87,7 @@ void MainWindow::buttonGroupClicked(QAbstractButton *button)
 void MainWindow::deleteItem()
 {
     QList<QGraphicsItem *> selectedItems = scene->selectedItems();
-    for (QGraphicsItem *item : qAsConst(selectedItems)) {
+    for (QGraphicsItem *item : std::as_const(selectedItems)) {
         if (item->type() == Arrow::Type) {
             scene->removeItem(item);
             Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
@@ -98,7 +98,7 @@ void MainWindow::deleteItem()
     }
 
     selectedItems = scene->selectedItems();
-    for (QGraphicsItem *item : qAsConst(selectedItems)) {
+    for (QGraphicsItem *item : std::as_const(selectedItems)) {
          if (item->type() == DiagramItem::Type)
              qgraphicsitem_cast<DiagramItem *>(item)->removeArrows();
          scene->removeItem(item);

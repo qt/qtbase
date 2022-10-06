@@ -1230,7 +1230,7 @@ void QOpenGLShaderProgram::removeAllShaders()
 {
     Q_D(QOpenGLShaderProgram);
     d->removingShaders = true;
-    for (QOpenGLShader *shader : qAsConst(d->shaders)) {
+    for (QOpenGLShader *shader : std::as_const(d->shaders)) {
         if (d->programGuard && d->programGuard->id()
             && shader && shader->d_func()->shaderGuard)
         {
@@ -3727,7 +3727,7 @@ bool QOpenGLShaderProgramPrivate::isCacheDisabled() const
 bool QOpenGLShaderProgramPrivate::compileCacheable()
 {
     Q_Q(QOpenGLShaderProgram);
-    for (const QOpenGLProgramBinaryCache::ShaderDesc &shader : qAsConst(binaryProgram.shaders)) {
+    for (const QOpenGLProgramBinaryCache::ShaderDesc &shader : std::as_const(binaryProgram.shaders)) {
         auto s = std::make_unique<QOpenGLShader>(qt_shaderStageToType(shader.stage), q);
         if (!s->compileSourceCode(shader.source)) {
             log = s->log();

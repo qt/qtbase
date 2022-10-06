@@ -33,7 +33,7 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
     m_spec = std::move(parsed.spec);
 
     // add all keyboards for devices specified in the argument list
-    for (const QString &device : qAsConst(parsed.devices))
+    for (const QString &device : std::as_const(parsed.devices))
         addKeyboard(device);
 
     if (parsed.devices.isEmpty()) {

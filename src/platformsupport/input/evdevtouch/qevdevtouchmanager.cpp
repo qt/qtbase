@@ -33,7 +33,7 @@ QEvdevTouchManager::QEvdevTouchManager(const QString &key, const QString &specif
     auto parsed = QEvdevUtil::parseSpecification(spec);
     m_spec = std::move(parsed.spec);
 
-    for (const QString &device : qAsConst(parsed.devices))
+    for (const QString &device : std::as_const(parsed.devices))
         addDevice(device);
 
     // when no devices specified, use device discovery to scan and monitor

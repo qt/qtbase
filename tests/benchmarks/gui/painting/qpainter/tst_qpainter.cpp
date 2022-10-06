@@ -670,7 +670,7 @@ void tst_QPainter::drawPixmapImage_data_helper(bool pixmaps)
     for (; *targetFormats != QImage::Format_Invalid; ++targetFormats) {
         const QImage::Format *sourceFormats = pixmaps ? pixmapFormats : sourceImageFormats;
         for (; *sourceFormats != QImage::Format_Invalid; ++sourceFormats) {
-            for (const QSize &s : qAsConst(sizes)) {
+            for (const QSize &s : std::as_const(sizes)) {
                 for (int type=0; type<=3; ++type) {
                     QString name = QString::fromLatin1("%1 on %2, (%3x%4), %5")
                                    .arg(formatNames[*sourceFormats])

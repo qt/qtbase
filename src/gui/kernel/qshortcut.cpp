@@ -127,14 +127,14 @@ void QShortcutPrivate::redoGrab(QShortcutMap &map)
         return;
     }
 
-    for (int id : qAsConst(sc_ids))
+    for (int id : std::as_const(sc_ids))
         map.removeShortcut(id, q);
 
     sc_ids.clear();
     if (sc_sequences.isEmpty())
         return;
     sc_ids.reserve(sc_sequences.size());
-    for (const auto &keySequence : qAsConst(sc_sequences)) {
+    for (const auto &keySequence : std::as_const(sc_sequences)) {
         if (keySequence.isEmpty())
             continue;
         int id = map.addShortcut(q, keySequence, sc_context, contextMatcher());
@@ -337,7 +337,7 @@ QShortcut::~QShortcut()
 {
     Q_D(QShortcut);
     if (qApp) {
-         for (int id : qAsConst(d->sc_ids))
+         for (int id : std::as_const(d->sc_ids))
              QGuiApplicationPrivate::instance()->shortcutMap.removeShortcut(id, this);
     }
 }

@@ -713,7 +713,7 @@ QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
 
 void QAbstractItemModelPrivate::invalidatePersistentIndexes()
 {
-    for (QPersistentModelIndexData *data : qAsConst(persistent.indexes))
+    for (QPersistentModelIndexData *data : std::as_const(persistent.indexes))
         data->index = QModelIndex();
     persistent.indexes.clear();
 }
@@ -861,7 +861,7 @@ void QAbstractItemModelPrivate::rowsAboutToBeInserted(const QModelIndex &parent,
     Q_UNUSED(last);
     QList<QPersistentModelIndexData *> persistent_moved;
     if (first < q->rowCount(parent)) {
-        for (auto *data : qAsConst(persistent.indexes)) {
+        for (auto *data : std::as_const(persistent.indexes)) {
             const QModelIndex &index = data->index;
             if (index.row() >= first && index.isValid() && index.parent() == parent) {
                 persistent_moved.append(data);
@@ -897,7 +897,7 @@ void QAbstractItemModelPrivate::itemsAboutToBeMoved(const QModelIndex &srcParent
     const bool sameParent = (srcParent == destinationParent);
     const bool movingUp = (srcFirst > destinationChild);
 
-    for (auto *data : qAsConst(persistent.indexes)) {
+    for (auto *data : std::as_const(persistent.indexes)) {
         const QModelIndex &index = data->index;
         const QModelIndex &parent = index.parent();
         const bool isSourceIndex = (parent == srcParent);
@@ -995,7 +995,7 @@ void QAbstractItemModelPrivate::rowsAboutToBeRemoved(const QModelIndex &parent,
     QList<QPersistentModelIndexData *> persistent_invalidated;
     // find the persistent indexes that are affected by the change, either by being in the removed subtree
     // or by being on the same level and below the removed rows
-    for (auto *data : qAsConst(persistent.indexes)) {
+    for (auto *data : std::as_const(persistent.indexes)) {
         bool level_changed = false;
         QModelIndex current = data->index;
         while (current.isValid()) {
@@ -1047,7 +1047,7 @@ void QAbstractItemModelPrivate::columnsAboutToBeInserted(const QModelIndex &pare
     Q_UNUSED(last);
     QList<QPersistentModelIndexData *> persistent_moved;
     if (first < q->columnCount(parent)) {
-        for (auto *data : qAsConst(persistent.indexes)) {
+        for (auto *data : std::as_const(persistent.indexes)) {
             const QModelIndex &index = data->index;
             if (index.column() >= first && index.isValid() && index.parent() == parent)
                 persistent_moved.append(data);
@@ -1080,7 +1080,7 @@ void QAbstractItemModelPrivate::columnsAboutToBeRemoved(const QModelIndex &paren
     QList<QPersistentModelIndexData *> persistent_invalidated;
     // find the persistent indexes that are affected by the change, either by being in the removed subtree
     // or by being on the same level and to the right of the removed columns
-    for (auto *data : qAsConst(persistent.indexes)) {
+    for (auto *data : std::as_const(persistent.indexes)) {
         bool level_changed = false;
         QModelIndex current = data->index;
         while (current.isValid()) {
@@ -3460,7 +3460,7 @@ void QAbstractItemModel::changePersistentIndexList(const QModelIndexList &from,
         }
     }
 
-    for (auto *data : qAsConst(toBeReinserted))
+    for (auto *data : std::as_const(toBeReinserted))
         d->persistent.insertMultiAtEnd(data->index, data);
 }
 
@@ -3474,7 +3474,7 @@ QModelIndexList QAbstractItemModel::persistentIndexList() const
     Q_D(const QAbstractItemModel);
     QModelIndexList result;
     result.reserve(d->persistent.indexes.size());
-    for (auto *data : qAsConst(d->persistent.indexes))
+    for (auto *data : std::as_const(d->persistent.indexes))
         result.append(data->index);
     return result;
 }

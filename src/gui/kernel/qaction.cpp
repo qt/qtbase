@@ -81,26 +81,26 @@ void QActionPrivate::sendDataChanged()
 void QActionPrivate::redoGrab(QShortcutMap &map)
 {
     Q_Q(QAction);
-    for (int id : qAsConst(shortcutIds)) {
+    for (int id : std::as_const(shortcutIds)) {
         if (id)
             map.removeShortcut(id, q);
     }
 
     shortcutIds.clear();
-    for (const QKeySequence &shortcut : qAsConst(shortcuts)) {
+    for (const QKeySequence &shortcut : std::as_const(shortcuts)) {
         if (!shortcut.isEmpty())
             shortcutIds.append(map.addShortcut(q, shortcut, shortcutContext, contextMatcher()));
         else
             shortcutIds.append(0);
     }
     if (!enabled) {
-        for (int id : qAsConst(shortcutIds)) {
+        for (int id : std::as_const(shortcutIds)) {
             if (id)
                 map.setShortcutEnabled(false, id, q);
         }
     }
     if (!autorepeat) {
-        for (int id : qAsConst(shortcutIds)) {
+        for (int id : std::as_const(shortcutIds)) {
             if (id)
                 map.setShortcutAutoRepeat(false, id, q);
         }
@@ -110,7 +110,7 @@ void QActionPrivate::redoGrab(QShortcutMap &map)
 void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
 {
     Q_Q(QAction);
-    for (int id : qAsConst(shortcutIds)) {
+    for (int id : std::as_const(shortcutIds)) {
         if (id)
             map.setShortcutEnabled(enable, id, q);
     }
@@ -458,7 +458,7 @@ QAction::~QAction()
         d->group->removeAction(this);
 #if QT_CONFIG(shortcut)
     if (qApp) {
-        for (int id : qAsConst(d->shortcutIds)) {
+        for (int id : std::as_const(d->shortcutIds)) {
             if (id)
                 QGuiApplicationPrivate::instance()->shortcutMap.removeShortcut(id, this);
         }
@@ -1024,7 +1024,7 @@ bool QAction::event(QEvent *e)
 {
     Q_D(QAction);
     if (e->type() == QEvent::ActionChanged) {
-        for (auto object : qAsConst(d->associatedObjects))
+        for (auto object : std::as_const(d->associatedObjects))
             QCoreApplication::sendEvent(object, e);
     }
 

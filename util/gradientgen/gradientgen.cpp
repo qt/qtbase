@@ -133,7 +133,7 @@ static void printGradientStops(Printer &p, const QJsonArray &presets)
         result.reserve(result.size() + gradientStops.size() * (presetStopString.size() + 20));
         result += "return Q_ARRAY_LITERAL(QGradientStop, ";
 
-        for (const GradientStop &stop : qAsConst(gradientStops)) {
+        for (const GradientStop &stop : std::as_const(gradientStops)) {
             // gradientgen.js does not output the alpha channel, so hardcode full alpha here
             Q_ASSERT(qAlpha(stop.color) == 0);
 

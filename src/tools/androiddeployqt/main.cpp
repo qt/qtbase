@@ -1589,12 +1589,12 @@ bool updateAndroidManifest(Options &options)
     replacements[QStringLiteral("package=\"org.qtproject.example\"")] = "package=\"%1\""_L1.arg(options.packageName);
 
     QString permissions;
-    for (const QString &permission : qAsConst(options.permissions))
+    for (const QString &permission : std::as_const(options.permissions))
         permissions += "    <uses-permission android:name=\"%1\" />\n"_L1.arg(permission);
     replacements[QStringLiteral("<!-- %%INSERT_PERMISSIONS -->")] = permissions.trimmed();
 
     QString features;
-    for (const QString &feature : qAsConst(options.features))
+    for (const QString &feature : std::as_const(options.features))
         features += "    <uses-feature android:name=\"%1\" android:required=\"false\" />\n"_L1.arg(feature);
     if (options.usesOpenGL)
         features += "    <uses-feature android:glEsVersion=\"0x00020000\" android:required=\"true\" />"_L1;
@@ -1915,7 +1915,7 @@ bool readDependenciesFromElf(Options *options,
         dependenciesToCheck.append(dependency);
     }
 
-    for (const QString &dependency : qAsConst(dependenciesToCheck)) {
+    for (const QString &dependency : std::as_const(dependenciesToCheck)) {
         QString qtBaseName = dependency.mid(sizeof("lib/lib") - 1);
         qtBaseName = qtBaseName.left(qtBaseName.size() - (sizeof(".so") - 1));
         if (!readAndroidDependencyXml(options, qtBaseName, usedDependencies, remainingDependencies)) {
@@ -1960,7 +1960,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
             importPaths += shellQuote(prefix + "/qml"_L1);
 
     // These are provided by both CMake and qmake.
-    for (const QString &qmlImportPath : qAsConst(options->qmlImportPaths)) {
+    for (const QString &qmlImportPath : std::as_const(options->qmlImportPaths)) {
         if (QFile::exists(qmlImportPath)) {
             importPaths += shellQuote(qmlImportPath);
         } else {
@@ -2075,7 +2075,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
             }
 
             QString importPathOfThisImport;
-            for (const QString &importPath : qAsConst(importPaths)) {
+            for (const QString &importPath : std::as_const(importPaths)) {
 #if defined(Q_OS_WIN32)
                 Qt::CaseSensitivity caseSensitivity = Qt::CaseInsensitive;
 #else
@@ -2399,7 +2399,7 @@ bool copyQtFiles(Options *options)
 
     // Copy other Qt dependencies
     auto assetsDestinationDirectory = "assets/android_rcc_bundle/"_L1;
-    for (const QtDependency &qtDependency : qAsConst(options->qtDependencies[options->currentArchitecture])) {
+    for (const QtDependency &qtDependency : std::as_const(options->qtDependencies[options->currentArchitecture])) {
         QString sourceFileName = qtDependency.absolutePath;
         QString destinationFileName;
         bool isSharedLibrary = qtDependency.relativePath.endsWith(".so"_L1);

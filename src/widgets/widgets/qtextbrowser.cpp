@@ -154,7 +154,7 @@ QString QTextBrowserPrivate::findFile(const QUrl &name) const
     if (QFileInfo(fileName).isAbsolute())
         return fileName;
 
-    for (QString path : qAsConst(searchPaths)) {
+    for (QString path : std::as_const(searchPaths)) {
         if (!path.endsWith(u'/'))
             path.append(u'/');
         path.append(fileName);

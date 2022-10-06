@@ -1979,7 +1979,7 @@ void QTextEngine::itemize() const
                         ? formatCollection()->charFormat(format).fontCapitalization()
                         : formatCollection()->defaultFont().capitalization();
                 if (s) {
-                    for (const auto &range : qAsConst(s->formats)) {
+                    for (const auto &range : std::as_const(s->formats)) {
                         if (range.start + range.length <= prevPosition || range.start >= position)
                             continue;
                         if (range.format.hasProperty(QTextFormat::FontCapitalization)) {
@@ -3165,7 +3165,7 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
                 }
             }
         }
-        for (const QTextOption::Tab &tabSpec : qAsConst(tabArray)) {
+        for (const QTextOption::Tab &tabSpec : std::as_const(tabArray)) {
             QFixed tab = QFixed::fromReal(tabSpec.position) * dpiScale;
             if (tab > x) {  // this is the tab we need.
                 int tabSectionEnd = layoutData->string.size();

@@ -14,7 +14,7 @@ QT_BEGIN_NAMESPACE
 ProStringList UnixMakefileGenerator::libdirToFlags(const ProKey &key)
 {
     ProStringList results;
-    for (const auto &libdir : qAsConst(project->values(key))) {
+    for (const auto &libdir : std::as_const(project->values(key))) {
         if (!project->isEmpty("QMAKE_LFLAGS_RPATH") && project->isActiveConfig("rpath_libdirs"))
             project->values("QMAKE_LFLAGS") += var("QMAKE_LFLAGS_RPATH") + libdir;
         results.append("-L" + escapeFilePath(libdir));
@@ -299,7 +299,7 @@ QStringList
             ProStringList pchArchs = project->values("QMAKE_PCH_ARCHS");
             if (pchArchs.isEmpty())
                 pchArchs << ProString(); // normal single-arch PCH
-            for (const ProString &arch : qAsConst(pchArchs)) {
+            for (const ProString &arch : std::as_const(pchArchs)) {
                 auto pfx = header_prefix;
                 if (!arch.isEmpty())
                     pfx.replace(QLatin1String("${QMAKE_PCH_ARCH}"), arch.toQString());
@@ -337,7 +337,7 @@ QStringList
                     ProStringList pchArchs = project->values("QMAKE_PCH_ARCHS");
                     if (pchArchs.isEmpty())
                         pchArchs << ProString(); // normal single-arch PCH
-                    for (const ProString &arch : qAsConst(pchArchs)) {
+                    for (const ProString &arch : std::as_const(pchArchs)) {
                         QString precompiledHeader = header_prefix + language + header_suffix;
                         if (!arch.isEmpty()) {
                             precompiledHeader.replace(QLatin1String("${QMAKE_PCH_ARCH}"),
@@ -392,7 +392,7 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                     libdirs.insert(libidx++, f);
                 } else if(opt.startsWith("-l")) {
                     QString lib = opt.mid(2);
-                    for (const QMakeLocalFileName &libdir : qAsConst(libdirs)) {
+                    for (const QMakeLocalFileName &libdir : std::as_const(libdirs)) {
                         QString libBase = libdir.local() + '/'
                                 + project->first("QMAKE_PREFIX_SHLIB") + lib;
                         if (linkPrl && processPrlFile(libBase, true))
@@ -418,7 +418,7 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                             frameworkName.truncate(suffixPosition);
                             opt.remove(suffixMarker); // Apply suffix by removing marker
                         }
-                        for (const QMakeLocalFileName &dir : qAsConst(frameworkdirs)) {
+                        for (const QMakeLocalFileName &dir : std::as_const(frameworkdirs)) {
                             auto processPrlIfFound = [&](QString directory) {
                                 QString suffixedPrl = directory + opt;
                                 if (processPrlFile(suffixedPrl, true))

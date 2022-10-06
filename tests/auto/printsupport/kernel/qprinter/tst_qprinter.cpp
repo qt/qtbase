@@ -1702,7 +1702,7 @@ void tst_QPrinter::reusePageMetrics()
     QPrinter defaultP;
     QPrinterInfo info(defaultP);
     QString otherPrinterName;
-    for (QPrinterInfo i : qAsConst(availablePrinters)) {
+    for (QPrinterInfo i : std::as_const(availablePrinters)) {
         if (i.printerName() != defaultP.printerName()) {
             otherPrinterName = i.printerName();
             break;
@@ -1712,9 +1712,9 @@ void tst_QPrinter::reusePageMetrics()
     QList<QPageSize> defaultPageSizes = info.supportedPageSizes();
     QList<QPageSize> otherPageSizes = QPrinterInfo(otherP).supportedPageSizes();
     QPageSize unavailableSizeToSet;
-    for (QPageSize s : qAsConst(defaultPageSizes)) {
+    for (QPageSize s : std::as_const(defaultPageSizes)) {
         bool found = false;
-        for (QPageSize os : qAsConst(otherPageSizes)) {
+        for (QPageSize os : std::as_const(otherPageSizes)) {
             if (os.isEquivalentTo(s)) {
                 found = true;
                 break;

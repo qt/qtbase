@@ -2329,7 +2329,7 @@ int QListModeViewBase::verticalScrollToValue(int index, QListView::ScrollHint hi
         } else {
             int scrollBarValue = verticalScrollBar()->value();
             int numHidden = 0;
-            for (const auto &idx : qAsConst(dd->hiddenRows))
+            for (const auto &idx : std::as_const(dd->hiddenRows))
                 if (idx.row() <= scrollBarValue)
                     ++numHidden;
             value = qBound(0, scrollValueMap.at(verticalScrollBar()->value()) - numHidden, flowPositions.size() - 1);
@@ -3445,7 +3445,7 @@ int QListView::visualIndex(const QModelIndex &index) const
     d->executePostedLayout();
     QListViewItem itm = d->indexToListViewItem(index);
     int visualIndex = d->commonListView->itemIndex(itm);
-    for (const auto &idx : qAsConst(d->hiddenRows)) {
+    for (const auto &idx : std::as_const(d->hiddenRows)) {
         if (idx.row() <= index.row())
             --visualIndex;
     }

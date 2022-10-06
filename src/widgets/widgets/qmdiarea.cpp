@@ -434,8 +434,8 @@ QList<QRect> MinOverlapPlacer::getCandidatePlacements(const QSize &size, const Q
     ylist.erase(std::unique(ylist.begin(), ylist.end()), ylist.end());
 
     result.reserve(ylist.size() * xlist.size());
-    for (int y : qAsConst(ylist))
-        for (int x : qAsConst(xlist))
+    for (int y : std::as_const(ylist))
+        for (int x : std::as_const(xlist))
             result << QRect(QPoint(x, y), size);
     return result;
 }

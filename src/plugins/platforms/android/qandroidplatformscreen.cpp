@@ -312,7 +312,7 @@ void QAndroidPlatformScreen::setAvailableGeometry(const QRect &rect)
 
 void QAndroidPlatformScreen::applicationStateChanged(Qt::ApplicationState state)
 {
-    for (QAndroidPlatformWindow *w : qAsConst(m_windowStack))
+    for (QAndroidPlatformWindow *w : std::as_const(m_windowStack))
         w->applicationStateChanged(state);
 
     if (state <=  Qt::ApplicationHidden) {
@@ -353,7 +353,7 @@ void QAndroidPlatformScreen::doRedraw(QImage* screenGrabImage)
     // windows that have renderToTexture children (i.e. they need the OpenGL path) then
     // we do not need an overlay surface.
     bool hasVisibleRasterWindows = false;
-    for (QAndroidPlatformWindow *window : qAsConst(m_windowStack)) {
+    for (QAndroidPlatformWindow *window : std::as_const(m_windowStack)) {
         if (window->window()->isVisible() && window->isRaster() && !qt_window_private(window->window())->compositing) {
             hasVisibleRasterWindows = true;
             break;
@@ -408,7 +408,7 @@ void QAndroidPlatformScreen::doRedraw(QImage* screenGrabImage)
     compositePainter.setCompositionMode(QPainter::CompositionMode_Source);
 
     QRegion visibleRegion(m_dirtyRect);
-    for (QAndroidPlatformWindow *window : qAsConst(m_windowStack)) {
+    for (QAndroidPlatformWindow *window : std::as_const(m_windowStack)) {
         if (!window->window()->isVisible()
                 || qt_window_private(window->window())->compositing
                 || !window->isRaster())

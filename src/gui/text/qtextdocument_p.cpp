@@ -202,7 +202,7 @@ void QTextDocumentPrivate::clear()
 {
     Q_Q(QTextDocument);
 
-    for (QTextCursorPrivate *curs : qAsConst(cursors)) {
+    for (QTextCursorPrivate *curs : std::as_const(cursors)) {
         curs->setPosition(0);
         curs->currentCharFormat = -1;
         curs->anchor = 0;
@@ -255,7 +255,7 @@ void QTextDocumentPrivate::clear()
 
 QTextDocumentPrivate::~QTextDocumentPrivate()
 {
-    for (QTextCursorPrivate *curs : qAsConst(cursors))
+    for (QTextCursorPrivate *curs : std::as_const(cursors))
         curs->priv = nullptr;
     cursors.clear();
     undoState = 0;
@@ -646,7 +646,7 @@ void QTextDocumentPrivate::remove(int pos, int length, QTextUndoCommand::Operati
     blockCursorAdjustment = true;
     move(pos, -1, length, op);
     blockCursorAdjustment = false;
-    for (QTextCursorPrivate *curs : qAsConst(cursors)) {
+    for (QTextCursorPrivate *curs : std::as_const(cursors)) {
         if (curs->adjustPosition(pos, -length, op) == QTextCursorPrivate::CursorMoved) {
             curs->changed = true;
         }
@@ -1204,13 +1204,13 @@ void QTextDocumentPrivate::finishEdit()
     }
 
     QList<QTextCursor> changedCursors;
-    for (QTextCursorPrivate *curs : qAsConst(cursors)) {
+    for (QTextCursorPrivate *curs : std::as_const(cursors)) {
         if (curs->changed) {
             curs->changed = false;
             changedCursors.append(QTextCursor(curs));
         }
     }
-    for (const QTextCursor &cursor : qAsConst(changedCursors))
+    for (const QTextCursor &cursor : std::as_const(changedCursors))
         emit q->cursorPositionChanged(cursor);
 
     contentsChanged();
@@ -1256,7 +1256,7 @@ void QTextDocumentPrivate::adjustDocumentChangesAndCursors(int from, int addedOr
     if (blockCursorAdjustment)  {
         ; // postpone, will be called again from QTextDocumentPrivate::remove()
     } else {
-        for (QTextCursorPrivate *curs : qAsConst(cursors)) {
+        for (QTextCursorPrivate *curs : std::as_const(cursors)) {
             if (curs->adjustPosition(from, addedOrRemoved, op) == QTextCursorPrivate::CursorMoved) {
                 curs->changed = true;
             }
@@ -1703,7 +1703,7 @@ bool QTextDocumentPrivate::ensureMaximumBlockCount()
 void QTextDocumentPrivate::aboutToRemoveCell(int from, int to)
 {
     Q_ASSERT(from <= to);
-    for (QTextCursorPrivate *curs : qAsConst(cursors))
+    for (QTextCursorPrivate *curs : std::as_const(cursors))
         curs->aboutToRemoveCell(from, to);
 }
 

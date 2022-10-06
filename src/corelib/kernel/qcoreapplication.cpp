@@ -302,7 +302,7 @@ void Q_CORE_EXPORT qt_call_post_routines()
 
         if (list.isEmpty())
             break;
-        for (QtCleanUpFunction f : qAsConst(list))
+        for (QtCleanUpFunction f : std::as_const(list))
             f();
     }
 }

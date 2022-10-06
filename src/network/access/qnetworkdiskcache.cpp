@@ -510,7 +510,7 @@ qint64 QNetworkDiskCache::expire()
         QFile file(name);
 
         if (name.contains(PREPARED_SLASH)) {
-            for (QCacheItem *item : qAsConst(d->inserting)) {
+            for (QCacheItem *item : std::as_const(d->inserting)) {
                 if (item && item->file && item->file->fileName() == name) {
                     delete item->file;
                     item->file = nullptr;

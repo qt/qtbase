@@ -633,7 +633,7 @@ void tst_QStyle::testStyleOptionInit()
     QStringList keys = QStyleFactory::keys();
     keys.prepend(QString()); // QCommonStyle marker
 
-    for (const QString &key : qAsConst(keys)) {
+    for (const QString &key : std::as_const(keys)) {
         QStyle* style = key.isEmpty() ? new QCommonStyle : QStyleFactory::create(key);
         TestStyleOptionInitProxy testStyle;
         testStyle.setBaseStyle(style);

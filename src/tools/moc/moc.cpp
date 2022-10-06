@@ -968,7 +968,7 @@ void Moc::parse()
             classHash.insert(def.qualified, def.qualified);
         }
     }
-    for (const auto &n : qAsConst(namespaceList)) {
+    for (const auto &n : std::as_const(namespaceList)) {
         if (!n.hasQNamespace)
             continue;
         ClassDef def;
@@ -1143,7 +1143,7 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
 
         QJsonArray classesJsonFormatted;
 
-        for (const ClassDef &cdef: qAsConst(classList))
+        for (const ClassDef &cdef: std::as_const(classList))
             classesJsonFormatted.append(cdef.toJson());
 
         if (!classesJsonFormatted.isEmpty())
@@ -1923,7 +1923,7 @@ QJsonObject ClassDef::toJson() const
     cls["qualifiedClassName"_L1] = QString::fromUtf8(qualified.constData());
 
     QJsonArray classInfos;
-    for (const auto &info: qAsConst(classInfoList)) {
+    for (const auto &info: std::as_const(classInfoList)) {
         QJsonObject infoJson;
         infoJson["name"_L1] = QString::fromUtf8(info.name);
         infoJson["value"_L1] = QString::fromUtf8(info.value);
@@ -1950,7 +1950,7 @@ QJsonObject ClassDef::toJson() const
 
     QJsonArray props;
 
-    for (const PropertyDef &propDef: qAsConst(propertyList))
+    for (const PropertyDef &propDef: std::as_const(propertyList))
         props.append(propDef.toJson());
 
     if (!props.isEmpty())
@@ -1965,7 +1965,7 @@ QJsonObject ClassDef::toJson() const
 
     QJsonArray superClasses;
 
-    for (const auto &super: qAsConst(superclassList)) {
+    for (const auto &super: std::as_const(superclassList)) {
         const auto name = super.first;
         const auto access = super.second;
         QJsonObject superCls;
@@ -1978,7 +1978,7 @@ QJsonObject ClassDef::toJson() const
         cls["superClasses"_L1] = superClasses;
 
     QJsonArray enums;
-    for (const EnumDef &enumDef: qAsConst(enumList))
+    for (const EnumDef &enumDef: std::as_const(enumList))
         enums.append(enumDef.toJson(*this));
     if (!enums.isEmpty())
         cls["enums"_L1] = enums;

@@ -805,7 +805,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 QString icon = fileFixify(var("ICON"));
                 t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
                   << "@sed ";
-                for (const ProString &arg : qAsConst(commonSedArgs))
+                for (const ProString &arg : std::as_const(commonSedArgs))
                     t << arg;
                 const QString iconName = icon.section(Option::dir_sep, -1);
                 t << "-e \"s,@ICON@," << iconName << ",g\" "
@@ -837,7 +837,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     symlinks[bundle_dir + "Resources"] = "Versions/Current/Resources";
                 t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
                   << "@sed ";
-                for (const ProString &arg : qAsConst(commonSedArgs))
+                for (const ProString &arg : std::as_const(commonSedArgs))
                     t << arg;
                 t << "-e \"s,@LIBRARY@," << lib_bundle_name << ",g\" "
                   << "-e \"s,\\$${EXECUTABLE_NAME}," << lib_bundle_name << ",g\" "
@@ -977,7 +977,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             ProStringList pchArchs = project->values("QMAKE_PCH_ARCHS");
             if (pchArchs.isEmpty())
                 pchArchs << ProString(); // normal single-arch PCH
-            for (const ProString &arch : qAsConst(pchArchs)) {
+            for (const ProString &arch : std::as_const(pchArchs)) {
                 ProString pchOutput;
                 if (!project->isEmpty("PRECOMPILED_DIR"))
                     pchOutput = project->first("PRECOMPILED_DIR");
@@ -1008,7 +1008,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 ProStringList pchArchs = project->values("QMAKE_PCH_ARCHS");
                 if (pchArchs.isEmpty())
                     pchArchs << ProString(); // normal single-arch PCH
-                for (const ProString &arch : qAsConst(pchArchs)) {
+                for (const ProString &arch : std::as_const(pchArchs)) {
                     QString file = precomph_out_dir + header_prefix + language + header_suffix;
                     if (!arch.isEmpty())
                         file.replace(QStringLiteral("${QMAKE_PCH_ARCH}"), arch.toQString());
@@ -1106,7 +1106,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             }
             pchFlags.replace(QLatin1String("${QMAKE_PCH_INPUT}"), escapeFilePath(pchInput))
                     .replace(QLatin1String("${QMAKE_PCH_OUTPUT_BASE}"), escapeFilePath(pchBaseName.toQString()));
-            for (const ProString &arch : qAsConst(pchArchs)) {
+            for (const ProString &arch : std::as_const(pchArchs)) {
                 auto pchArchOutput = pchOutput.toQString();
                 if (!arch.isEmpty())
                     pchArchOutput.replace(QStringLiteral("${QMAKE_PCH_ARCH}"), arch.toQString());

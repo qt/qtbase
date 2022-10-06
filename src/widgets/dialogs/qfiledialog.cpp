@@ -3602,11 +3602,11 @@ void QFileDialogPrivate::_q_autoCompleteFileName(const QString &text)
             if (oldFiles.removeAll(idx) == 0)
                 newFiles.append(idx);
         }
-        for (const auto &newFile : qAsConst(newFiles))
+        for (const auto &newFile : std::as_const(newFiles))
             select(newFile);
         if (lineEdit()->hasFocus()) {
             auto *sm = qFileDialogUi->listView->selectionModel();
-            for (const auto &oldFile : qAsConst(oldFiles))
+            for (const auto &oldFile : std::as_const(oldFiles))
                 sm->select(oldFile, QItemSelectionModel::Toggle | QItemSelectionModel::Rows);
         }
     }

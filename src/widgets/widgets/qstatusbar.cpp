@@ -570,7 +570,7 @@ void QStatusBar::hideOrShow()
     Q_D(QStatusBar);
     bool haveMessage = !d->tempItem.isEmpty();
 
-    for (const auto &item : qAsConst(d->items)) {
+    for (const auto &item : std::as_const(d->items)) {
         if (item.isPermanent())
             break;
         if (haveMessage && item.widget->isVisible()) {
@@ -622,7 +622,7 @@ void QStatusBar::paintEvent(QPaintEvent *event)
     opt.initFrom(this);
     style()->drawPrimitive(QStyle::PE_PanelStatusBar, &opt, &p, this);
 
-    for (const auto &item : qAsConst(d->items)) {
+    for (const auto &item : std::as_const(d->items)) {
         if (item.widget->isVisible() && (!haveMessage || item.isPermanent())) {
             QRect ir = item.widget->geometry().adjusted(-2, -1, 2, 1);
             if (event->rect().intersects(ir)) {
@@ -661,7 +661,7 @@ bool QStatusBar::event(QEvent *e)
         // Calculate new strut height and call reformat() if it has changed
         int maxH = fontMetrics().height();
 
-        for (const auto &item : qAsConst(d->items)) {
+        for (const auto &item : std::as_const(d->items)) {
             const int itemH = qMin(qSmartMinSize(item.widget).height(), item.widget->maximumHeight());
             maxH = qMax(maxH, itemH);
         }

@@ -213,7 +213,7 @@ void QCFSocketNotifier::unregisterSocketNotifier(QSocketNotifier *notifier)
 void QCFSocketNotifier::removeSocketNotifiers()
 {
     // Remove CFSockets from the runloop.
-    for (MacSocketInfo *socketInfo : qAsConst(macSockets)) {
+    for (MacSocketInfo *socketInfo : std::as_const(macSockets)) {
         unregisterSocketInfo(socketInfo);
         delete socketInfo;
     }

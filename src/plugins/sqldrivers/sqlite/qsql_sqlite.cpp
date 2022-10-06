@@ -776,7 +776,7 @@ void QSQLiteDriver::close()
 {
     Q_D(QSQLiteDriver);
     if (isOpen()) {
-        for (QSQLiteResult *result : qAsConst(d->results))
+        for (QSQLiteResult *result : std::as_const(d->results))
             result->d_func()->finalize();
 
         if (d->access && (d->notificationid.count() > 0)) {

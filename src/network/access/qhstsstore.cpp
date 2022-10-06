@@ -80,7 +80,7 @@ void QHstsStore::synchronize()
 
     if (observedPolicies.size()) {
         beginHstsGroups();
-        for (const QHstsPolicy &policy : qAsConst(observedPolicies)) {
+        for (const QHstsPolicy &policy : std::as_const(observedPolicies)) {
             const QString key(host_name_to_settings_key(policy.host()));
             // If we fail to write a new, updated policy, we also remove the old one.
             if (policy.isExpired() || !serializePolicy(key, policy))

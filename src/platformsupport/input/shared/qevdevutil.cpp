@@ -15,7 +15,7 @@ ParsedSpecification parseSpecification(const QString &specification)
 
     result.args = QStringView{specification}.split(u':');
 
-    for (const auto &arg : qAsConst(result.args)) {
+    for (const auto &arg : std::as_const(result.args)) {
         if (arg.startsWith("/dev/"_L1)) {
             // if device is specified try to use it
             result.devices.append(arg.toString());

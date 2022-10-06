@@ -3113,7 +3113,7 @@ void QDockAreaLayout::resizeDocks(const QList<QDockWidget *> &docks,
             if (!info->tabbed && info->o == o) {
                 info->item_list[path.constLast()].size = size;
                 int totalSize = 0;
-                for (const QDockAreaLayoutItem &item : qAsConst(info->item_list)) {
+                for (const QDockAreaLayoutItem &item : std::as_const(info->item_list)) {
                     if (!item.skip()) {
                         if (totalSize != 0)
                             totalSize += sep;

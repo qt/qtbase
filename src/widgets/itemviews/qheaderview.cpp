@@ -4159,7 +4159,7 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     }
 
     int sectionItemsLengthTotal = 0;
-    for (const SectionItem &section : qAsConst(newSectionItems))
+    for (const SectionItem &section : std::as_const(newSectionItems))
         sectionItemsLengthTotal += section.size;
     if (sectionItemsLengthTotal != lengthIn)
         return false;

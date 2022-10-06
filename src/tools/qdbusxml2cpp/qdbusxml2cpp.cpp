@@ -498,13 +498,13 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
     hs << "#include <QtDBus/QDBusPendingReply>" << Qt::endl;
 #endif
 
-    for (const QString &include : qAsConst(includes)) {
+    for (const QString &include : std::as_const(includes)) {
         hs << "#include \"" << include << "\"" << Qt::endl;
         if (headerName.isEmpty())
             cs << "#include \"" << include << "\"" << Qt::endl;
     }
 
-    for (const QString &include : qAsConst(globalIncludes)) {
+    for (const QString &include : std::as_const(globalIncludes)) {
         hs << "#include <" << include << ">" << Qt::endl;
         if (headerName.isEmpty())
             cs << "#include <" << include << ">" << Qt::endl;
@@ -817,13 +817,13 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
     hs << "#include <QtDBus/QDBusObjectPath>" << Qt::endl;
 #endif
 
-    for (const QString &include : qAsConst(includes)) {
+    for (const QString &include : std::as_const(includes)) {
         hs << "#include \"" << include << "\"" << Qt::endl;
         if (headerName.isEmpty())
             cs << "#include \"" << include << "\"" << Qt::endl;
     }
 
-    for (const QString &include : qAsConst(globalIncludes)) {
+    for (const QString &include : std::as_const(globalIncludes)) {
         hs << "#include <" << include << ">" << Qt::endl;
         if (headerName.isEmpty())
             cs << "#include <" << include << ">" << Qt::endl;

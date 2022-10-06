@@ -1261,7 +1261,7 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(const QHostInfo &info)
             networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
         } else if (connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2
                    || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
-            for (const HttpMessagePair &h2Pair : qAsConst(channels[0].h2RequestsToSend)) {
+            for (const HttpMessagePair &h2Pair : std::as_const(channels[0].h2RequestsToSend)) {
                 // emit error for all replies
                 QHttpNetworkReply *currentReply = h2Pair.second;
                 Q_ASSERT(currentReply);

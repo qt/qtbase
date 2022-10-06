@@ -1944,7 +1944,7 @@ void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path,
     std::sort(rowsToUpdate.begin(), rowsToUpdate.end());
     QString min;
     QString max;
-    for (const QString &value : qAsConst(rowsToUpdate)) {
+    for (const QString &value : std::as_const(rowsToUpdate)) {
         //##TODO is there a way to bundle signals with QString as the content of the list?
         /*if (min.isEmpty()) {
             min = value;

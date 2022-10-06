@@ -1031,7 +1031,7 @@ MakefileGenerator::writeProjectMakefile()
 
         //install
         t << "install: ";
-        for (SubTarget *s : qAsConst(targets))
+        for (SubTarget *s : std::as_const(targets))
             t << s->target << '-';
         t << "install " << Qt::endl;
 
@@ -1961,7 +1961,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             if (raw_clean.isEmpty())
                 raw_clean << tmp_out;
             QString tmp_clean;
-            for (const QString &rc : qAsConst(raw_clean))
+            for (const QString &rc : std::as_const(raw_clean))
                 tmp_clean += ' ' + escapeFilePath(Option::fixPathToTargetOS(rc));
             QString tmp_clean_cmds = project->values(ProKey(*it + ".clean_commands")).join(' ');
             if(!tmp_inputs.isEmpty())
@@ -1986,7 +1986,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                     for (ProStringList::ConstIterator input = tmp_inputs.cbegin(); input != tmp_inputs.cend(); ++input) {
                         QString tinp = (*input).toQString();
                         QString out = replaceExtraCompilerVariables(tmp_out, tinp, QString(), NoShell);
-                        for (const QString &rc : qAsConst(raw_clean)) {
+                        for (const QString &rc : std::as_const(raw_clean)) {
                             dels << ' ' + escapeFilePath(fileFixify(
                                     replaceExtraCompilerVariables(rc, tinp, out, NoShell),
                                     FileFixifyFromOutdir));
@@ -1997,7 +1997,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                     } else {
                         QString files;
                         const int commandlineLimit = 2047; // NT limit, expanded
-                        for (const QString &file : qAsConst(dels)) {
+                        for (const QString &file : std::as_const(dels)) {
                             if(del_statement.size() + files.size() +
                                qMax(fixEnvVariables(file).size(), file.size()) > commandlineLimit) {
                                 cleans.append(files);
@@ -2263,11 +2263,11 @@ QString MakefileGenerator::buildArgs(bool withExtra)
 {
     QString ret;
 
-    for (const QString &arg : qAsConst(Option::globals->qmake_args))
+    for (const QString &arg : std::as_const(Option::globals->qmake_args))
         ret += " " + shellQuote(arg);
     if (withExtra && !Option::globals->qmake_extra_args.isEmpty()) {
         ret += " --";
-        for (const QString &arg : qAsConst(Option::globals->qmake_extra_args))
+        for (const QString &arg : std::as_const(Option::globals->qmake_extra_args))
             ret += " " + shellQuote(arg);
     }
     return ret;

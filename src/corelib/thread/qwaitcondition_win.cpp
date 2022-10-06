@@ -178,7 +178,7 @@ void QWaitCondition::wakeOne()
 {
     // wake up the first waiting thread in the queue
     QMutexLocker locker(&d->mtx);
-    for (QWaitConditionEvent *current : qAsConst(d->queue)) {
+    for (QWaitConditionEvent *current : std::as_const(d->queue)) {
         if (current->wokenUp)
             continue;
         SetEvent(current->event);
@@ -191,7 +191,7 @@ void QWaitCondition::wakeAll()
 {
     // wake up the all threads in the queue
     QMutexLocker locker(&d->mtx);
-    for (QWaitConditionEvent *current : qAsConst(d->queue)) {
+    for (QWaitConditionEvent *current : std::as_const(d->queue)) {
         SetEvent(current->event);
         current->wokenUp = true;
     }

@@ -710,7 +710,7 @@ QList<QSslError> X509CertificateOpenSSL::verify(const QList<QSslCertificate> &ca
 
     // Translate errors from the error list into QSslErrors.
     errors.reserve(errors.size() + lastErrors.size());
-    for (const auto &error : qAsConst(lastErrors))
+    for (const auto &error : std::as_const(lastErrors))
         errors << openSSLErrorToQSslError(error.code, certificateChain.value(error.depth));
 
     return errors;

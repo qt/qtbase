@@ -4463,7 +4463,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
 
         lastEnd = 0;
         // add the after string, with replacements for the backreferences
-        for (const QStringCapture &backReference : qAsConst(backReferences)) {
+        for (const QStringCapture &backReference : std::as_const(backReferences)) {
             // part of "after" before the backreference
             len = backReference.pos - lastEnd;
             if (len > 0) {
@@ -4501,7 +4501,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
     resize(newLength);
     qsizetype i = 0;
     QChar *uc = data();
-    for (const QStringView &chunk : qAsConst(chunks)) {
+    for (const QStringView &chunk : std::as_const(chunks)) {
         qsizetype len = chunk.length();
         memcpy(uc + i, chunk.constData(), len * sizeof(QChar));
         i += len;

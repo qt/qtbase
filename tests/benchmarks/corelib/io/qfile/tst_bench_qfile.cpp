@@ -508,13 +508,13 @@ void tst_qfile::readSmallFiles()
             }
 
             QBENCHMARK {
-                for (QFile *const file : qAsConst(fileList)) {
+                for (QFile *const file : std::as_const(fileList)) {
                     while (!file->atEnd())
                        file->read(buffer, blockSize);
                 }
             }
 
-            for (QFile *const file : qAsConst(fileList)) {
+            for (QFile *const file : std::as_const(fileList)) {
                 file->close();
                 delete file;
             }
@@ -530,11 +530,11 @@ void tst_qfile::readSmallFiles()
             }
 
             QBENCHMARK {
-                for (QFSFileEngine *const fse : qAsConst(fileList))
+                for (QFSFileEngine *const fse : std::as_const(fileList))
                     while (fse->read(buffer, blockSize)) {}
             }
 
-            for (QFSFileEngine *const fse : qAsConst(fileList)) {
+            for (QFSFileEngine *const fse : std::as_const(fileList)) {
                 fse->close();
                 delete fse;
             }
@@ -547,14 +547,14 @@ void tst_qfile::readSmallFiles()
                 fileList.append(::fopen(QFile::encodeName(tempDir.filePath(file)).constData(), "rb"));
 
             QBENCHMARK {
-                for (FILE *const cfile : qAsConst(fileList)) {
+                for (FILE *const cfile : std::as_const(fileList)) {
                     while (!feof(cfile))
                         [[maybe_unused]] auto f = ::fread(buffer, blockSize, 1, cfile);
                     ::fseek(cfile, 0, SEEK_SET);
                 }
             }
 
-            for (FILE *const cfile : qAsConst(fileList))
+            for (FILE *const cfile : std::as_const(fileList))
                 ::fclose(cfile);
         }
         break;

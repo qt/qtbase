@@ -205,7 +205,7 @@ bool QVsp2BlendingDevice::blend(int outputDmabufFd)
 
     if (queueingFailed) {
         qWarning() << "Vsp2: Trying to clean up queued buffers";
-        for (auto &input : qAsConst(m_inputs)) {
+        for (auto &input : std::as_const(m_inputs)) {
             if (input.enabled) {
                 if (!input.rpfInput->clearBuffers())
                     qWarning() << "Vsp2: Failed to remove buffers after an aborted blend";
@@ -248,7 +248,7 @@ int QVsp2BlendingDevice::numInputs() const
 bool QVsp2BlendingDevice::hasContinuousLayers() const
 {
     bool seenDisabled = false;
-    for (auto &input : qAsConst(m_inputs)) {
+    for (auto &input : std::as_const(m_inputs)) {
         if (seenDisabled && input.enabled)
             return false;
         seenDisabled |= !input.enabled;

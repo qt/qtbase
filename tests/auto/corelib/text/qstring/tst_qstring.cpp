@@ -67,11 +67,11 @@ public:
 
     template <typename MemFun>
     void apply0(QString &s, MemFun mf) const
-    { for (QChar ch : qAsConst(this->pinned)) (s.*mf)(ch); }
+    { for (QChar ch : std::as_const(this->pinned)) (s.*mf)(ch); }
 
     template <typename MemFun, typename A1>
     void apply1(QString &s, MemFun mf, A1 a1) const
-    { for (QChar ch : qAsConst(this->pinned)) (s.*mf)(a1, ch); }
+    { for (QChar ch : std::as_const(this->pinned)) (s.*mf)(a1, ch); }
 };
 
 template <>

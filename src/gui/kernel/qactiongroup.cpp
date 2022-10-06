@@ -277,7 +277,7 @@ void QActionGroup::setEnabled(bool b)
 {
     Q_D(QActionGroup);
     d->enabled = b;
-    for (auto action : qAsConst(d->actions)) {
+    for (auto action : std::as_const(d->actions)) {
         action->d_func()->setEnabled(b, true);
     }
 }
@@ -311,7 +311,7 @@ void QActionGroup::setVisible(bool b)
 {
     Q_D(QActionGroup);
     d->visible = b;
-    for (auto action : qAsConst(d->actions)) {
+    for (auto action : std::as_const(d->actions)) {
         if (!action->d_func()->forceInvisible)
             action->d_func()->setVisible(b);
     }

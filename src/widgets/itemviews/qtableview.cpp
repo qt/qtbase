@@ -907,7 +907,7 @@ void QTableViewPrivate::drawAndClipSpans(const QRegion &area, QPainter *painter,
         }
     }
 
-    for (QSpanCollection::Span *span : qAsConst(visibleSpans)) {
+    for (QSpanCollection::Span *span : std::as_const(visibleSpans)) {
         int row = span->top();
         int col = span->left();
         QModelIndex index = model->index(row, col, root);

@@ -1081,16 +1081,16 @@ QConfFileSettingsPrivate::QConfFileSettingsPrivate(QSettings::Format format,
         QStringList paths;
         if (!application.isEmpty()) {
             paths.reserve(dirs.size() * 2);
-            for (const auto &dir : qAsConst(dirs))
+            for (const auto &dir : std::as_const(dirs))
                 paths.append(dir + u'/' + appFile);
         } else {
             paths.reserve(dirs.size());
         }
-        for (const auto &dir : qAsConst(dirs))
+        for (const auto &dir : std::as_const(dirs))
             paths.append(dir + u'/' + orgFile);
 
         // Note: No check for existence of files is done intentionally.
-        for (const auto &path : qAsConst(paths))
+        for (const auto &path : std::as_const(paths))
             confFiles.append(QConfFile::fromName(path, false));
     } else
 #endif // Q_XDG_PLATFORM && !QT_NO_STANDARDPATHS
@@ -1123,7 +1123,7 @@ QConfFileSettingsPrivate::~QConfFileSettingsPrivate()
     ConfFileHash *usedHash = usedHashFunc();
     ConfFileCache *unusedCache = unusedCacheFunc();
 
-    for (auto conf_file : qAsConst(confFiles)) {
+    for (auto conf_file : std::as_const(confFiles)) {
         if (!conf_file->ref.deref()) {
             if (conf_file->size == 0) {
                 delete conf_file;
@@ -1197,7 +1197,7 @@ std::optional<QVariant> QConfFileSettingsPrivate::get(const QString &key) const
     ParsedSettingsMap::const_iterator j;
     bool found = false;
 
-    for (auto confFile : qAsConst(confFiles)) {
+    for (auto confFile : std::as_const(confFiles)) {
         const auto locker = qt_scoped_lock(confFile->mutex);
 
         if (!confFile->addedKeys.isEmpty()) {
@@ -1226,7 +1226,7 @@ QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec 
     QSettingsKey thePrefix(prefix, caseSensitivity);
     qsizetype startPos = prefix.size();
 
-    for (auto confFile : qAsConst(confFiles)) {
+    for (auto confFile : std::as_const(confFiles)) {
         const auto locker = qt_scoped_lock(confFile->mutex);
 
         if (thePrefix.isEmpty())
@@ -1277,7 +1277,7 @@ void QConfFileSettingsPrivate::sync()
     // people probably won't be checking the status a whole lot, so in case of
     // error we just try to go on and make the best of it
 
-    for (auto confFile : qAsConst(confFiles)) {
+    for (auto confFile : std::as_const(confFiles)) {
         const auto locker = qt_scoped_lock(confFile->mutex);
         syncConfFile(confFile);
     }

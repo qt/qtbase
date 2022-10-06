@@ -1075,7 +1075,7 @@ bool TlsCryptographSecureTransport::verifyPeerTrust()
         QTlsBackend::storePeerCertificate(d, peerCertificateChain.at(0));
 
     // Check the whole chain for blacklisting (including root, as we check for subjectInfo and issuer):
-    for (const QSslCertificate &cert : qAsConst(peerCertificateChain)) {
+    for (const QSslCertificate &cert : std::as_const(peerCertificateChain)) {
         if (QSslCertificatePrivate::isBlacklisted(cert) && !canIgnoreVerify) {
             const QSslError error(QSslError::CertificateBlacklisted, cert);
             errors << error;

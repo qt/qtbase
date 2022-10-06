@@ -793,7 +793,7 @@ bool QCommandLineParser::isSet(const QString &name) const
     if (d->optionNames.contains(name))
         return true;
     const QStringList aliases = d->aliases(name);
-    for (const QString &optionName : qAsConst(d->optionNames)) {
+    for (const QString &optionName : std::as_const(d->optionNames)) {
         if (aliases.contains(optionName))
             return true;
     }
@@ -1110,7 +1110,7 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
     QStringList optionNameList;
     optionNameList.reserve(options.size());
     int longestOptionNameString = 0;
-    for (const QCommandLineOption &option : qAsConst(options)) {
+    for (const QCommandLineOption &option : std::as_const(options)) {
         if (option.flags() & QCommandLineOption::HiddenFromHelp)
             continue;
         const QStringList optionNames = option.names();
@@ -1130,7 +1130,7 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
     ++longestOptionNameString;
     const int optionNameMaxWidth = qMin(50, longestOptionNameString);
     auto optionNameIterator = optionNameList.cbegin();
-    for (const QCommandLineOption &option : qAsConst(options)) {
+    for (const QCommandLineOption &option : std::as_const(options)) {
         if (option.flags() & QCommandLineOption::HiddenFromHelp)
             continue;
         text += wrapText(*optionNameIterator, optionNameMaxWidth, option.description());

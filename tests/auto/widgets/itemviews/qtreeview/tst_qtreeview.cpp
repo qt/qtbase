@@ -2926,7 +2926,7 @@ public:
         root->kill();
 
         QModelIndexList newList;
-        for (auto path : qAsConst(oldListPath)) {
+        for (auto path : std::as_const(oldListPath)) {
             QModelIndex idx;
             while (!path.isEmpty())
                 idx = index(path.pop(), 0, idx);

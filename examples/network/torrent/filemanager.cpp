@@ -30,7 +30,7 @@ FileManager::~FileManager()
     cond.wakeOne();
     wait();
 
-    for (QFile *file : qAsConst(files)) {
+    for (QFile *file : std::as_const(files)) {
         file->close();
         delete file;
     }
@@ -391,7 +391,7 @@ void FileManager::verifyFileContents()
     }
 
     // Verify all pending pieces
-    for (int index : qAsConst(newPendingVerificationRequests))
+    for (int index : std::as_const(newPendingVerificationRequests))
         emit pieceVerified(index, verifySinglePiece(index));
 }
 

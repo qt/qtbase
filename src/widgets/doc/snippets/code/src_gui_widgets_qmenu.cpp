@@ -34,7 +34,7 @@ exec(e->globalPos());
 //! [6]
 QMenu menu;
 QAction *at = actions[0]; // Assumes actions is not empty
-for (QAction *a : qAsConst(actions))
+for (QAction *a : std::as_const(actions))
     menu.addAction(a);
 menu.exec(pos, at);
 //! [6]

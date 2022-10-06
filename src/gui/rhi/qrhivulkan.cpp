@@ -544,7 +544,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         if (devExtCount) {
             QList<VkExtensionProperties> extProps(devExtCount);
             f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, extProps.data());
-            for (const VkExtensionProperties &p : qAsConst(extProps))
+            for (const VkExtensionProperties &p : std::as_const(extProps))
                 devExts.append({ p.extensionName, p.specVersion });
         }
         qCDebug(QRHI_LOG_INFO, "%d device extensions available", int(devExts.count()));
@@ -2071,7 +2071,7 @@ QRhi::FrameOpResult QRhiVulkan::endAndSubmitPrimaryCommandBuffer(VkCommandBuffer
 
 void QRhiVulkan::waitCommandCompletion(int frameSlot)
 {
-    for (QVkSwapChain *sc : qAsConst(swapchains)) {
+    for (QVkSwapChain *sc : std::as_const(swapchains)) {
         const int frameResIndex = sc->bufferCount > 1 ? frameSlot : 0;
         QVkSwapChain::FrameResources &frame(sc->frameRes[frameResIndex]);
         if (frame.cmdFenceWaitable) {
@@ -3267,7 +3267,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             VkDeviceSize stagingSize = 0;
             for (int layer = 0, maxLayer = u.subresDesc.size(); layer < maxLayer; ++layer) {
                 for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.subresDesc[layer][level]))
+                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : std::as_const(u.subresDesc[layer][level]))
                         stagingSize += subresUploadByteSize(subresDesc);
                 }
             }
@@ -3305,7 +3305,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                     const QList<QRhiTextureSubresourceUploadDescription> &srd(u.subresDesc[layer][level]);
                     if (srd.isEmpty())
                         continue;
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(srd)) {
+                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : std::as_const(srd)) {
                         prepareUploadSubres(utexD, layer, level,
                                             subresDesc, &curOfs, mp, &copyInfos);
                     }
@@ -3608,7 +3608,7 @@ void QRhiVulkan::executeBufferHostWritesForSlot(QVkBuffer *bufD, int slot)
     }
     quint32 changeBegin = UINT32_MAX;
     quint32 changeEnd = 0;
-    for (const QVkBuffer::DynamicUpdate &u : qAsConst(bufD->pendingDynamicUpdates[slot])) {
+    for (const QVkBuffer::DynamicUpdate &u : std::as_const(bufD->pendingDynamicUpdates[slot])) {
         memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), u.data.size());
         if (u.offset < changeBegin)
             changeBegin = u.offset;
@@ -4782,7 +4782,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
             // because dynOfs has to be ordered based on the binding numbers,
             // and neither srb nor dynamicOffsets has any such ordering
             // requirement.
-            for (const QRhiShaderResourceBinding &binding : qAsConst(srbD->sortedBindings)) {
+            for (const QRhiShaderResourceBinding &binding : std::as_const(srbD->sortedBindings)) {
                 const QRhiShaderResourceBinding::Data *b = binding.data();
                 if (b->type == QRhiShaderResourceBinding::UniformBuffer && b->u.ubuf.hasDynamicOffset) {
                     uint32_t offset = 0;
@@ -6764,7 +6764,7 @@ bool QVkShaderResourceBindings::create()
 
     hasSlottedResource = false;
     hasDynamicOffset = false;
-    for (const QRhiShaderResourceBinding &binding : qAsConst(sortedBindings)) {
+    for (const QRhiShaderResourceBinding &binding : std::as_const(sortedBindings)) {
         const QRhiShaderResourceBinding::Data *b = binding.data();
         if (b->type == QRhiShaderResourceBinding::UniformBuffer && b->u.ubuf.buf) {
             if (QRHI_RES(QVkBuffer, b->u.ubuf.buf)->type() == QRhiBuffer::Dynamic)
@@ -6775,7 +6775,7 @@ bool QVkShaderResourceBindings::create()
     }
 
     QVarLengthArray<VkDescriptorSetLayoutBinding, 4> vkbindings;
-    for (const QRhiShaderResourceBinding &binding : qAsConst(sortedBindings)) {
+    for (const QRhiShaderResourceBinding &binding : std::as_const(sortedBindings)) {
         const QRhiShaderResourceBinding::Data *b = binding.data();
         VkDescriptorSetLayoutBinding vkbinding = {};
         vkbinding.binding = uint32_t(b->binding);
@@ -7074,7 +7074,7 @@ bool QVkGraphicsPipeline::create()
     VkPipelineColorBlendStateCreateInfo blendInfo = {};
     blendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     QVarLengthArray<VkPipelineColorBlendAttachmentState, 4> vktargetBlends;
-    for (const QRhiGraphicsPipeline::TargetBlend &b : qAsConst(m_targetBlends)) {
+    for (const QRhiGraphicsPipeline::TargetBlend &b : std::as_const(m_targetBlends)) {
         VkPipelineColorBlendAttachmentState blend = {};
         blend.blendEnable = b.enable;
         blend.srcColorBlendFactor = toVkBlendFactor(b.srcColor);

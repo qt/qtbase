@@ -565,7 +565,7 @@ static void findAllTextureWidgetsRecursively(QWidget *tlw, QWidget *widget)
         if (!tl->isEmpty())
             QWidgetPrivate::get(tlw)->topData()->widgetTextures.push_back(std::move(tl));
         // Native child widgets, if there was any, get their own separate QPlatformTextureList.
-        for (QWidget *ncw : qAsConst(nativeChildren)) {
+        for (QWidget *ncw : std::as_const(nativeChildren)) {
             if (QWidgetPrivate::get(ncw)->textureChildSeen)
                 findAllTextureWidgetsRecursively(tlw, ncw);
         }

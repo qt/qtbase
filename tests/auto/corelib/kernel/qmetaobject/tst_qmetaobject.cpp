@@ -863,7 +863,7 @@ void tst_QMetaObject::invokeMetaMemberNoMacros()
     QVERIFY(QMetaObject::invokeMethod(&obj, "sl1", t1));
     QCOMPARE(obj.slotResult, QString("sl1:1"));
 
-    QVERIFY(QMetaObject::invokeMethod(&obj, "sl2", qAsConst(t1), t2));
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl2", std::as_const(t1), t2));
     QCOMPARE(obj.slotResult, QString("sl2:12"));
 
     QVERIFY(QMetaObject::invokeMethod(&obj, "sl3", t1, t2, t3));

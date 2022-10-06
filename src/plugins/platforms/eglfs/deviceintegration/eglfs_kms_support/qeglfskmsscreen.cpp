@@ -185,7 +185,7 @@ QList<QPlatformScreen::Mode> QEglFSKmsScreen::modes() const
     QList<QPlatformScreen::Mode> list;
     list.reserve(m_output.modes.size());
 
-    for (const drmModeModeInfo &info : qAsConst(m_output.modes))
+    for (const drmModeModeInfo &info : std::as_const(m_output.modes))
         list.append({QSize(info.hdisplay, info.vdisplay),
                      qreal(info.vrefresh > 0 ? info.vrefresh : 60)});
 

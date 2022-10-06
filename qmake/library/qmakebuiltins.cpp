@@ -546,7 +546,7 @@ void QMakeEvaluator::populateDeps(
             if (depends.isEmpty()) {
                 rootSet.insert(first(ProKey(prefix + item + priosfx)).toInt(), item);
             } else {
-                for (const ProString &dep : qAsConst(depends)) {
+                for (const ProString &dep : std::as_const(depends)) {
                     dset.insert(dep.toKey());
                     dependees[dep.toKey()] << item;
                 }
@@ -703,7 +703,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
     }
     case E_NUM_ADD: {
         qlonglong sum = 0;
-        for (const ProString &arg : qAsConst(args)) {
+        for (const ProString &arg : std::as_const(args)) {
             if (arg.contains(QLatin1Char('.'))) {
                 evalError(fL1S("num_add(): floats are currently not supported."));
                 goto allfail;
@@ -1103,7 +1103,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
             rootSet.erase(it);
             if ((func_t == E_RESOLVE_DEPENDS) || orgList.contains(item))
                 ret.prepend(item);
-            for (const ProString &dep : qAsConst(dependees[item.toKey()])) {
+            for (const ProString &dep : std::as_const(dependees[item.toKey()])) {
                 QSet<ProKey> &dset = dependencies[dep.toKey()];
                 dset.remove(item.toKey());
                 if (dset.isEmpty())
@@ -1114,11 +1114,11 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
     }
     case E_ENUMERATE_VARS: {
         QSet<ProString> keys;
-        for (const ProValueMap &vmap : qAsConst(m_valuemapStack))
+        for (const ProValueMap &vmap : std::as_const(m_valuemapStack))
             for (ProValueMap::ConstIterator it = vmap.constBegin(); it != vmap.constEnd(); ++it)
                 keys.insert(it.key());
         ret.reserve(keys.size());
-        for (const ProString &key : qAsConst(keys))
+        for (const ProString &key : std::as_const(keys))
             ret << key;
         break; }
     case E_SHADOWED: {

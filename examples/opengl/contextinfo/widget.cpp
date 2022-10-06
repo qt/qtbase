@@ -345,7 +345,7 @@ void Widget::renderWindowReady()
     QList<QByteArray> extensionList = context->extensions().values();
     std::sort(extensionList.begin(), extensionList.end());
     m_extensions->append(tr("Found %1 extensions:").arg(extensionList.count()));
-    for (const QByteArray &ext : qAsConst(extensionList))
+    for (const QByteArray &ext : std::as_const(extensionList))
         m_extensions->append(QString::fromLatin1(ext));
 
     m_output->moveCursor(QTextCursor::Start);

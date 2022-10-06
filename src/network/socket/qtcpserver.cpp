@@ -133,7 +133,7 @@ QNetworkProxy QTcpServerPrivate::resolveProxy(const QHostAddress &address, quint
     }
 
     // return the first that we can use
-    for (const QNetworkProxy &p : qAsConst(proxies)) {
+    for (const QNetworkProxy &p : std::as_const(proxies)) {
         if (socketType == QAbstractSocket::TcpSocket &&
             (p.capabilities() & QNetworkProxy::ListeningCapability) != 0)
             return p;

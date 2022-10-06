@@ -318,7 +318,7 @@ void Generator::generateCode()
 //
 // Build stringdata arrays
 //
-    for (const QByteArray &s : qAsConst(strings)) {
+    for (const QByteArray &s : std::as_const(strings)) {
         fputc(',', out);
         printStringWithIndentation(out, s);
     }
@@ -667,7 +667,7 @@ void Generator::generateCode()
         fprintf(out, "//     a) You are using a NOTIFY signal that does not exist. Fix it.\n");
         fprintf(out, "//     b) You are using a NOTIFY signal that does exist (in a parent class) but has a non-empty parameter list. This is a moc limitation.\n");
         fprintf(out, "[[maybe_unused]] static void checkNotifySignalValidity_%s(%s *t) {\n", qualifiedClassNameIdentifier.constData(), cdef->qualified.constData());
-        for (const QByteArray &nonClassSignal : qAsConst(cdef->nonClassSignalList))
+        for (const QByteArray &nonClassSignal : std::as_const(cdef->nonClassSignalList))
             fprintf(out, "    t->%s();\n", nonClassSignal.constData());
         fprintf(out, "}\n");
     }

@@ -461,7 +461,7 @@ void QGraphicsProxyWidgetPrivate::embedSubWindow(QWidget *subWin)
 */
 void QGraphicsProxyWidgetPrivate::unembedSubWindow(QWidget *subWin)
 {
-    for (QGraphicsItem *child : qAsConst(children)) {
+    for (QGraphicsItem *child : std::as_const(children)) {
         if (child->isWidget()) {
             if (QGraphicsProxyWidget *proxy = qobject_cast<QGraphicsProxyWidget *>(static_cast<QGraphicsWidget *>(child))) {
                 if (proxy->widget() == subWin) {

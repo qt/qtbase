@@ -3626,7 +3626,7 @@ void tst_QWidget::raise()
     QCOMPARE(parentPtr->children(), list1);
     QCOMPARE(allChildren.size(), list1.count());
 
-    for (UpdateWidget *child : qAsConst(allChildren)) {
+    for (UpdateWidget *child : std::as_const(allChildren)) {
         int expectedPaintEvents = child == child4 ? 1 : 0;
         if (expectedPaintEvents == 0) {
             QCOMPARE(child->numPaintEvents, 0);
@@ -3642,7 +3642,7 @@ void tst_QWidget::raise()
         child2->raise();
     QTest::qWait(50);
 
-    for (UpdateWidget *child : qAsConst(allChildren)) {
+    for (UpdateWidget *child : std::as_const(allChildren)) {
         int expectedPaintEvents = child == child2 ? 1 : 0;
         int expectedZOrderChangeEvents = child == child2 ? 1 : 0;
         QTRY_COMPARE(child->numPaintEvents, expectedPaintEvents);
@@ -3672,7 +3672,7 @@ void tst_QWidget::raise()
     onTop->reset();
 
     // Reset all the children.
-    for (UpdateWidget *child : qAsConst(allChildren))
+    for (UpdateWidget *child : std::as_const(allChildren))
         child->reset();
 
     for (int i = 0; i < 5; ++i)
@@ -3685,7 +3685,7 @@ void tst_QWidget::raise()
     QObjectList list3{child1, child4, child2, child3};
     QCOMPARE(parent->children(), list3);
 
-    for (UpdateWidget *child : qAsConst(allChildren)) {
+    for (UpdateWidget *child : std::as_const(allChildren)) {
         int expectedPaintEvents = 0;
         int expectedZOrderChangeEvents = child == child3 ? 1 : 0;
         QTRY_COMPARE(child->numPaintEvents, expectedPaintEvents);
@@ -3725,7 +3725,7 @@ void tst_QWidget::lower()
     QCOMPARE(parent->children(), list1);
     QCOMPARE(allChildren.size(), list1.count());
 
-    for (UpdateWidget *child : qAsConst(allChildren)) {
+    for (UpdateWidget *child : std::as_const(allChildren)) {
         int expectedPaintEvents = child == child4 ? 1 : 0;
         if (expectedPaintEvents == 0) {
             QCOMPARE(child->numPaintEvents, 0);
@@ -3742,7 +3742,7 @@ void tst_QWidget::lower()
 
     QTest::qWait(100);
 
-    for (UpdateWidget *child : qAsConst(allChildren)) {
+    for (UpdateWidget *child : std::as_const(allChildren)) {
         int expectedPaintEvents = child == child3 ? 1 : 0;
         int expectedZOrderChangeEvents = child == child4 ? 1 : 0;
         QTRY_COMPARE(child->numZOrderChangeEvents, expectedZOrderChangeEvents);
@@ -3788,7 +3788,7 @@ void tst_QWidget::stackUnder()
     QObjectList list1{child1, child2, child3, child4};
     QCOMPARE(parent->children(), list1);
 
-    for (UpdateWidget *child : qAsConst(allChildren)) {
+    for (UpdateWidget *child : std::as_const(allChildren)) {
         int expectedPaintEvents = child == child4 ? 1 : 0;
 #if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
         if (expectedPaintEvents == 1 && child->numPaintEvents == 2)
@@ -3806,7 +3806,7 @@ void tst_QWidget::stackUnder()
     QObjectList list2{child1, child4, child2, child3};
     QCOMPARE(parent->children(), list2);
 
-    for (UpdateWidget *child : qAsConst(allChildren)) {
+    for (UpdateWidget *child : std::as_const(allChildren)) {
         int expectedPaintEvents = child == child3 ? 1 : 0;
         int expectedZOrderChangeEvents = child == child4 ? 1 : 0;
         QTRY_COMPARE(child->numPaintEvents, expectedPaintEvents);
@@ -3821,7 +3821,7 @@ void tst_QWidget::stackUnder()
     QObjectList list3{child4, child2, child1, child3};
     QCOMPARE(parent->children(), list3);
 
-    for (UpdateWidget *child : qAsConst(allChildren)) {
+    for (UpdateWidget *child : std::as_const(allChildren)) {
         int expectedZOrderChangeEvents = child == child1 ? 1 : 0;
         if (child == child3) {
 #ifndef Q_OS_MACOS
@@ -5587,7 +5587,7 @@ void tst_QWidget::setWindowGeometry_data()
     const Qt::WindowFlags windowFlags[] = {Qt::WindowFlags(), Qt::FramelessWindowHint};
 
     const bool skipEmptyRects = (m_platform == QStringLiteral("windows"));
-    for (Rects l : qAsConst(rects)) {
+    for (Rects l : std::as_const(rects)) {
         if (skipEmptyRects)
             l.removeIf([] (const QRect &r) { return r.isEmpty(); });
         const QRect &rect = l.constFirst();
@@ -5624,7 +5624,7 @@ void tst_QWidget::setWindowGeometry()
         QCOMPARE(widget.geometry(), rect);
 
         // setGeometry() without showing
-        for (const QRect &r : qAsConst(rects)) {
+        for (const QRect &r : std::as_const(rects)) {
             widget.setGeometry(r);
             QTest::qWait(100);
             QCOMPARE(widget.geometry(), r);
@@ -5650,7 +5650,7 @@ void tst_QWidget::setWindowGeometry()
         QTRY_COMPARE(widget.geometry(), rect);
 
         // setGeometry() while shown
-        for (const QRect &r : qAsConst(rects)) {
+        for (const QRect &r : std::as_const(rects)) {
             widget.setGeometry(r);
             QTest::qWait(10);
             QTRY_COMPARE(widget.geometry(), r);
@@ -5665,7 +5665,7 @@ void tst_QWidget::setWindowGeometry()
         QTRY_COMPARE(widget.geometry(), rect);
 
         // setGeometry() after hide()
-        for (const QRect &r : qAsConst(rects)) {
+        for (const QRect &r : std::as_const(rects)) {
             widget.setGeometry(r);
             QTest::qWait(10);
             QTRY_COMPARE(widget.geometry(), r);
@@ -5701,7 +5701,7 @@ void tst_QWidget::setWindowGeometry()
         QTRY_COMPARE(widget.geometry(), rect);
 
         // setGeometry() while shown
-        for (const QRect &r : qAsConst(rects)) {
+        for (const QRect &r : std::as_const(rects)) {
             widget.setGeometry(r);
             QTest::qWait(10);
             QTRY_COMPARE(widget.geometry(), r);
@@ -5716,7 +5716,7 @@ void tst_QWidget::setWindowGeometry()
         QTRY_COMPARE(widget.geometry(), rect);
 
         // setGeometry() after hide()
-        for (const QRect &r : qAsConst(rects)) {
+        for (const QRect &r : std::as_const(rects)) {
             widget.setGeometry(r);
             QTest::qWait(10);
             QTRY_COMPARE(widget.geometry(), r);
@@ -5795,7 +5795,7 @@ void tst_QWidget::windowMoveResize()
         QTRY_COMPARE(widget.size(), rect.size());
 
         // move() without showing
-        for (const QRect &r : qAsConst(rects)) {
+        for (const QRect &r : std::as_const(rects)) {
             widget.move(r.topLeft());
             widget.resize(r.size());
             QApplication::processEvents();
@@ -5825,7 +5825,7 @@ void tst_QWidget::windowMoveResize()
             QTRY_COMPARE(widget.size(), rect.size());
 
         // move() while shown
-        for (const QRect &r : qAsConst(rects)) {
+        for (const QRect &r : std::as_const(rects)) {
             // XCB: First resize after show of zero-sized gets wrong win_gravity.
             const bool expectMoveFail = !windowFlags
                 && ((widget.width() == 0 || widget.height() == 0) && r.width() != 0 && r.height() != 0)
@@ -5854,7 +5854,7 @@ void tst_QWidget::windowMoveResize()
         QTRY_COMPARE(widget.size(), rect.size());
 
         // move() after hide()
-        for (const QRect &r : qAsConst(rects)) {
+        for (const QRect &r : std::as_const(rects)) {
             widget.move(r.topLeft());
             widget.resize(r.size());
             QApplication::processEvents();
@@ -5905,7 +5905,7 @@ void tst_QWidget::windowMoveResize()
         QTRY_COMPARE(widget.size(), rect.size());
 
         // move() while shown
-        for (const QRect &r : qAsConst(rects)) {
+        for (const QRect &r : std::as_const(rects)) {
             widget.move(r.topLeft());
             widget.resize(r.size());
             QApplication::processEvents();
@@ -5925,7 +5925,7 @@ void tst_QWidget::windowMoveResize()
         QTRY_COMPARE(widget.size(), rect.size());
 
         // move() after hide()
-        for (const QRect &r : qAsConst(rects)) {
+        for (const QRect &r : std::as_const(rects)) {
             widget.move(r.topLeft());
             widget.resize(r.size());
             QApplication::processEvents();
@@ -6825,13 +6825,13 @@ void tst_QWidget::testWindowIconChangeEventPropagation()
     // Create spy lists.
     QList <EventSpyPtr> applicationEventSpies;
     QList <EventSpyPtr> widgetEventSpies;
-    for (QWidget *widget : qAsConst(widgets)) {
+    for (QWidget *widget : std::as_const(widgets)) {
         applicationEventSpies.append(EventSpyPtr::create(widget, QEvent::ApplicationWindowIconChange));
         widgetEventSpies.append(EventSpyPtr::create(widget, QEvent::WindowIconChange));
     }
     QList <WindowEventSpyPtr> appWindowEventSpies;
     QList <WindowEventSpyPtr> windowEventSpies;
-    for (QWindow *window : qAsConst(windows)) {
+    for (QWindow *window : std::as_const(windows)) {
         appWindowEventSpies.append(WindowEventSpyPtr::create(window, QEvent::ApplicationWindowIconChange));
         windowEventSpies.append(WindowEventSpyPtr::create(window, QEvent::WindowIconChange));
     }

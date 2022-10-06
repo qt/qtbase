@@ -268,7 +268,7 @@ void HoverPoints::paintPoints()
     p.setPen(m_pointPen);
     p.setBrush(m_pointBrush);
 
-    for (const auto &point : qAsConst(m_points)) {
+    for (const auto &point : std::as_const(m_points)) {
         QRectF bounds = pointBoundingRect(point);
         if (m_shape == CircleShape)
             p.drawEllipse(bounds);

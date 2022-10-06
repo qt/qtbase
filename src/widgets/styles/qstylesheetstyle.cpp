@@ -2808,7 +2808,7 @@ static void updateObjects(const QList<const QObject *>& objects)
             QCoreApplication::sendEvent(widget, &event);
             QList<const QObject *> children;
             children.reserve(widget->children().size() + 1);
-            for (auto child: qAsConst(widget->children()))
+            for (auto child: std::as_const(widget->children()))
                 children.append(child);
             updateObjects(children);
         }
@@ -2993,7 +2993,7 @@ void QStyleSheetStyle::repolish(QWidget *w)
 {
     QList<const QObject *> children;
     children.reserve(w->children().size() + 1);
-    for (auto child: qAsConst(w->children()))
+    for (auto child: std::as_const(w->children()))
         children.append(child);
     children.append(w);
     styleSheetCaches->styleSheetCache.remove(w);

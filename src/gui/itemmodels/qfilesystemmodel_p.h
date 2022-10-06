@@ -146,7 +146,7 @@ public:
         void updateIcon(QAbstractFileIconProvider *iconProvider, const QString &path) {
             if (info)
                 info->icon = iconProvider->icon(QFileInfo(path));
-            for (QFileSystemNode *child : qAsConst(children)) {
+            for (QFileSystemNode *child : std::as_const(children)) {
                 //On windows the root (My computer) has no path so we don't want to add a / for nothing (e.g. /C:/)
                 if (!path.isEmpty()) {
                     if (path.endsWith(u'/'))
@@ -161,7 +161,7 @@ public:
         void retranslateStrings(QAbstractFileIconProvider *iconProvider, const QString &path) {
             if (info)
                 info->displayType = iconProvider->type(QFileInfo(path));
-            for (QFileSystemNode *child : qAsConst(children)) {
+            for (QFileSystemNode *child : std::as_const(children)) {
                 //On windows the root (My computer) has no path so we don't want to add a / for nothing (e.g. /C:/)
                 if (!path.isEmpty()) {
                     if (path.endsWith(u'/'))

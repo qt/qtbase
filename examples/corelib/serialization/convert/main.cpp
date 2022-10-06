@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 
     QStringList inputFormats;
     QStringList outputFormats;
-    for (Converter *conv : qAsConst(*availableConverters)) {
+    for (Converter *conv : std::as_const(*availableConverters)) {
         auto direction = conv->directions();
         QString name = conv->name();
         if (direction & Converter::In)
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 
     if (parser.isSet(formatOptionsOption)) {
         QString format = parser.value(formatOptionsOption);
-        for (Converter *conv : qAsConst(*availableConverters)) {
+        for (Converter *conv : std::as_const(*availableConverters)) {
             if (conv->name() == format) {
                 const char *help = conv->optionsHelp();
                 if (help)
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
     Converter *inconv = nullptr;
     QString format = parser.value(inputFormatOption);
     if (format != "auto") {
-        for (Converter *conv : qAsConst(*availableConverters)) {
+        for (Converter *conv : std::as_const(*availableConverters)) {
             if (conv->name() == format) {
                 inconv = conv;
                 break;
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
     Converter *outconv = nullptr;
     format = parser.value(outputFormatOption);
     if (format != "auto") {
-        for (Converter *conv : qAsConst(*availableConverters)) {
+        for (Converter *conv : std::as_const(*availableConverters)) {
             if (conv->name() == format) {
                 outconv = conv;
                 break;
@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
 
     if (!inconv) {
         // probe the input to find a file format
-        for (Converter *conv : qAsConst(*availableConverters)) {
+        for (Converter *conv : std::as_const(*availableConverters)) {
             if (conv->directions() & Converter::In && conv->probeFile(&input)) {
                 inconv = conv;
                 break;
@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
 
     if (!outconv) {
         // probe the output to find a file format
-        for (Converter *conv : qAsConst(*availableConverters)) {
+        for (Converter *conv : std::as_const(*availableConverters)) {
             if (conv->directions() & Converter::Out && conv->probeFile(&output)) {
                 outconv = conv;
                 break;

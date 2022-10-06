@@ -14,7 +14,7 @@ QFontEngineMultiFontConfig::QFontEngineMultiFontConfig(QFontEngine *fe, int scri
 
 QFontEngineMultiFontConfig::~QFontEngineMultiFontConfig()
 {
-    for (FcPattern *pattern : qAsConst(cachedMatchPatterns)) {
+    for (FcPattern *pattern : std::as_const(cachedMatchPatterns)) {
         if (pattern)
             FcPatternDestroy(pattern);
     }

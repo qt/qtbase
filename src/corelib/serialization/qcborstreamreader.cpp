@@ -970,7 +970,7 @@ QCborStreamReader::Type QCborStreamReader::parentContainerType() const
 {
     if (d->containerStack.isEmpty())
         return Invalid;
-    return Type(cbor_value_get_type(&qAsConst(d->containerStack).top()));
+    return Type(cbor_value_get_type(&std::as_const(d->containerStack).top()));
 }
 
 /*!

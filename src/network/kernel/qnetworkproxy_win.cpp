@@ -295,9 +295,9 @@ public:
     }
 
     void clear() {
-        for (HANDLE event : qAsConst(m_watchEvents))
+        for (HANDLE event : std::as_const(m_watchEvents))
             CloseHandle(event);
-        for (HKEY key : qAsConst(m_registryHandles))
+        for (HKEY key : std::as_const(m_registryHandles))
             RegCloseKey(key);
 
         m_watchEvents.clear();

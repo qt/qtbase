@@ -4333,7 +4333,7 @@ void testSequentialIteration()
         int numSeen = 0;
         auto varList = listVariant.value<QVariantList>();
         auto varIter = varList.begin();
-        for (const QVariant &v : qAsConst(listIter)) {
+        for (const QVariant &v : std::as_const(listIter)) {
             QVERIFY(ContainerAPI<Container>::compare(v, *varIter));
             ++varIter;
             ++numSeen;

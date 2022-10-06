@@ -24,7 +24,7 @@ void Client::sendMessage(const QString &message)
     if (message.isEmpty())
         return;
 
-    for (Connection *connection : qAsConst(peers))
+    for (Connection *connection : std::as_const(peers))
         connection->sendMessage(message);
 }
 

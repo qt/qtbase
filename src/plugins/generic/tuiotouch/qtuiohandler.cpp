@@ -136,7 +136,7 @@ void QTuioHandler::processPackets()
             messages.push_back(msg);
         }
 
-        for (const QOscMessage &message : qAsConst(messages)) {
+        for (const QOscMessage &message : std::as_const(messages)) {
             if (message.addressPattern() == "/tuio/2Dcur") {
                 QList<QVariant> arguments = message.arguments();
                 if (arguments.size() == 0) {
@@ -335,12 +335,12 @@ void QTuioHandler::process2DCurFseq(const QOscMessage &message)
     QList<QWindowSystemInterface::TouchPoint> tpl;
     tpl.reserve(m_activeCursors.size() + m_deadCursors.size());
 
-    for (const QTuioCursor &tc : qAsConst(m_activeCursors)) {
+    for (const QTuioCursor &tc : std::as_const(m_activeCursors)) {
         QWindowSystemInterface::TouchPoint tp = cursorToTouchPoint(tc, win);
         tpl.append(tp);
     }
 
-    for (const QTuioCursor &tc : qAsConst(m_deadCursors)) {
+    for (const QTuioCursor &tc : std::as_const(m_deadCursors)) {
         QWindowSystemInterface::TouchPoint tp = cursorToTouchPoint(tc, win);
         tp.state = QEventPoint::State::Released;
         tpl.append(tp);
@@ -508,12 +508,12 @@ void QTuioHandler::process2DObjFseq(const QOscMessage &message)
     QList<QWindowSystemInterface::TouchPoint> tpl;
     tpl.reserve(m_activeTokens.size() + m_deadTokens.size());
 
-    for (const QTuioToken & t : qAsConst(m_activeTokens)) {
+    for (const QTuioToken & t : std::as_const(m_activeTokens)) {
         QWindowSystemInterface::TouchPoint tp = tokenToTouchPoint(t, win);
         tpl.append(tp);
     }
 
-    for (const QTuioToken & t : qAsConst(m_deadTokens)) {
+    for (const QTuioToken & t : std::as_const(m_deadTokens)) {
         QWindowSystemInterface::TouchPoint tp = tokenToTouchPoint(t, win);
         tp.state = QEventPoint::State::Released;
         tp.velocity = QVector2D();

@@ -88,7 +88,7 @@ bool TreeItem::insertColumns(int position, int columns)
     for (int column = 0; column < columns; ++column)
         itemData.insert(position, QVariant());
 
-    for (TreeItem *child : qAsConst(childItems))
+    for (TreeItem *child : std::as_const(childItems))
         child->insertColumns(position, columns);
 
     return true;
@@ -123,7 +123,7 @@ bool TreeItem::removeColumns(int position, int columns)
     for (int column = 0; column < columns; ++column)
         itemData.remove(position);
 
-    for (TreeItem *child : qAsConst(childItems))
+    for (TreeItem *child : std::as_const(childItems))
         child->removeColumns(position, columns);
 
     return true;

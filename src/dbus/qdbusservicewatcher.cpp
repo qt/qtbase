@@ -62,7 +62,7 @@ void QDBusServiceWatcherPrivate::setConnection(const QStringList &services,
 {
     if (connection.isConnected()) {
         // remove older rules
-        for (const QString &s : qAsConst(watchedServicesData.value()))
+        for (const QString &s : std::as_const(watchedServicesData.value()))
             removeService(s);
     }
 
@@ -72,7 +72,7 @@ void QDBusServiceWatcherPrivate::setConnection(const QStringList &services,
 
     if (connection.isConnected()) {
         // add new rules
-        for (const QString &s : qAsConst(watchedServicesData.value()))
+        for (const QString &s : std::as_const(watchedServicesData.value()))
             addService(s);
     }
 }

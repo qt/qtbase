@@ -1433,7 +1433,7 @@ int main(int argc, char **argv)
     demoList << new DemoContainer<GraphicsViewCaching>("graphicsview", "Test QGraphicsView caching");
     demoList << new DemoContainer<MetricsTest>("metrics", "Show screen metrics");
 
-    for (DemoContainerBase *demo : qAsConst(demoList))
+    for (DemoContainerBase *demo : std::as_const(demoList))
         parser.addOption(demo->option());
 
     parser.process(app);

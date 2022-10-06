@@ -3214,15 +3214,15 @@ void tst_QSortFilterProxyModel::removeRowsRecursive()
 
     QList<QPersistentModelIndex> sourceIndexes;
     QList<QPersistentModelIndex> proxyIndexes;
-    for (const auto item : qAsConst(items)) {
+    for (const auto item : std::as_const(items)) {
         QModelIndex idx = item->index();
         sourceIndexes << idx;
         proxyIndexes << proxy.mapFromSource(idx);
     }
 
-    for (const auto &pidx : qAsConst(sourceIndexes))
+    for (const auto &pidx : std::as_const(sourceIndexes))
         QVERIFY(pidx.isValid());
-    for (const auto &pidx : qAsConst(proxyIndexes))
+    for (const auto &pidx : std::as_const(proxyIndexes))
         QVERIFY(pidx.isValid());
 
     QList<QStandardItem*> itemRow = pItem1->takeRow(0);
@@ -3230,9 +3230,9 @@ void tst_QSortFilterProxyModel::removeRowsRecursive()
     QCOMPARE(itemRow.size(), 1);
     QCOMPARE(itemRow.first(), pItem11);
 
-    for (const auto &pidx : qAsConst(sourceIndexes))
+    for (const auto &pidx : std::as_const(sourceIndexes))
         QVERIFY(!pidx.isValid());
-    for (const auto &pidx : qAsConst(proxyIndexes))
+    for (const auto &pidx : std::as_const(proxyIndexes))
         QVERIFY(!pidx.isValid());
 
     delete pItem11;

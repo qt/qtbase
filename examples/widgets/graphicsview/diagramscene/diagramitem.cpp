@@ -105,7 +105,7 @@ void DiagramItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 QVariant DiagramItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     if (change == QGraphicsItem::ItemPositionChange) {
-        for (Arrow *arrow : qAsConst(arrows))
+        for (Arrow *arrow : std::as_const(arrows))
             arrow->updatePosition();
     }
 

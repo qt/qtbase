@@ -317,9 +317,9 @@ QWindowsFileSystemWatcherEngine::QWindowsFileSystemWatcherEngine(QObject *parent
 
 QWindowsFileSystemWatcherEngine::~QWindowsFileSystemWatcherEngine()
 {
-    for (auto *thread : qAsConst(threads))
+    for (auto *thread : std::as_const(threads))
         thread->stop();
-    for (auto *thread : qAsConst(threads))
+    for (auto *thread : std::as_const(threads))
         thread->wait();
     qDeleteAll(threads);
 }
@@ -433,7 +433,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
 
             // now look for a thread to insert
             bool found = false;
-            for (QWindowsFileSystemWatcherEngineThread *thread : qAsConst(threads)) {
+            for (QWindowsFileSystemWatcherEngineThread *thread : std::as_const(threads)) {
                 const auto locker = qt_scoped_lock(thread->mutex);
                 if (thread->handles.count() < MAXIMUM_WAIT_OBJECTS) {
                     DEBUG() << "Added handle" << handle.handle << "for" << absolutePath << "to watch" << fileInfo.absoluteFilePath()
@@ -586,7 +586,7 @@ QWindowsFileSystemWatcherEngineThread::~QWindowsFileSystemWatcherEngineThread()
     CloseHandle(handles.at(0));
     handles[0] = INVALID_HANDLE_VALUE;
 
-    for (HANDLE h : qAsConst(handles)) {
+    for (HANDLE h : std::as_const(handles)) {
         if (h == INVALID_HANDLE_VALUE)
             continue;
         FindCloseChangeNotification(h);

@@ -74,7 +74,7 @@ bool DragDropListModel::dropMimeData(const QMimeData *data,
 
 //! [6]
     insertRows(beginRow, rows, QModelIndex());
-    for (const QString &text : qAsConst(newItems)) {
+    for (const QString &text : std::as_const(newItems)) {
         QModelIndex idx = index(beginRow, 0, QModelIndex());
         setData(idx, text);
         beginRow++;

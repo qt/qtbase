@@ -2319,7 +2319,7 @@ int QTest::qRun()
         bool seenBad = false;
         TestMethods::MetaMethods commandLineMethods;
         commandLineMethods.reserve(static_cast<size_t>(QTest::testFunctions.size()));
-        for (const QString &tf : qAsConst(QTest::testFunctions)) {
+        for (const QString &tf : std::as_const(QTest::testFunctions)) {
             const QByteArray tfB = tf.toLatin1();
             const QByteArray signature = tfB + QByteArrayLiteral("()");
             QMetaMethod m = TestMethods::findMethod(currentTestObject, signature.constData());

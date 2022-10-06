@@ -716,7 +716,7 @@ void tst_QWindow::stateChange()
     //  explicitly use non-fullscreen show. show() can be fullscreen on some platforms
     window.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
-    for (Qt::WindowState state : qAsConst(stateSequence)) {
+    for (Qt::WindowState state : std::as_const(stateSequence)) {
         window.setWindowState(state);
         QCoreApplication::processEvents();
     }

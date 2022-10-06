@@ -450,7 +450,7 @@ bool QSortFilterProxyModelPrivate::recursiveChildAcceptsRow(int source_row, cons
 void QSortFilterProxyModelPrivate::remove_from_mapping(const QModelIndex &source_parent)
 {
     if (Mapping *m = source_index_mapping.take(source_parent)) {
-        for (const QModelIndex &mappedIdx : qAsConst(m->mapped_children))
+        for (const QModelIndex &mappedIdx : std::as_const(m->mapped_children))
             remove_from_mapping(mappedIdx);
         delete m;
     }
@@ -1175,7 +1175,7 @@ void QSortFilterProxyModelPrivate::updateChildrenMapping(const QModelIndex &sour
     }
 
     // reinsert moved, mapped indexes
-    for (auto &pair : qAsConst(moved_source_index_mappings)) {
+    for (auto &pair : std::as_const(moved_source_index_mappings)) {
         pair.second->source_parent = pair.first;
         source_index_mapping.insert(pair.first, pair.second);
     }
@@ -1224,7 +1224,7 @@ QModelIndexPairList QSortFilterProxyModelPrivate::store_persistent_indexes() con
     Q_Q(const QSortFilterProxyModel);
     QModelIndexPairList source_indexes;
     source_indexes.reserve(persistent.indexes.size());
-    for (const QPersistentModelIndexData *data : qAsConst(persistent.indexes)) {
+    for (const QPersistentModelIndexData *data : std::as_const(persistent.indexes)) {
         const QModelIndex &proxy_index = data->index;
         QModelIndex source_index = q->mapToSource(proxy_index);
         source_indexes.append(qMakePair(proxy_index, QPersistentModelIndex(source_index)));

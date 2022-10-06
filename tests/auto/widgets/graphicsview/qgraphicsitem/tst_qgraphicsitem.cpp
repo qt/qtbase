@@ -3603,7 +3603,7 @@ void tst_QGraphicsItem::group()
 
     view.fitInView(scene.itemsBoundingRect());
 
-    for (QGraphicsItem *item : qAsConst(newItems)) {
+    for (QGraphicsItem *item : std::as_const(newItems)) {
         group->addToGroup(item);
         QCOMPARE(item->group(), group);
     }

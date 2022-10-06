@@ -524,7 +524,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
 
     // Some devices send touches for each finger in a different message/frame, instead of consolidating
     // them in the same frame as we were expecting. We account for missing unreleased touches here.
-    for (auto tp : qAsConst(m_lastTouchPoints)) {
+    for (auto tp : std::as_const(m_lastTouchPoints)) {
         if (!inputIds.contains(tp.id)) {
             tp.state = QEventPoint::State::Stationary;
             allStates |= tp.state;

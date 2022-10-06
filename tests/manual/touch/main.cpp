@@ -382,7 +382,7 @@ void TouchTestWidget::paintEvent(QPaintEvent *)
     const QRectF geom = QRectF(QPointF(0, 0), QSizeF(size()));
     painter.fillRect(geom, Qt::white);
     painter.drawRect(QRectF(geom.topLeft(), geom.bottomRight() - QPointF(1, 1)));
-    for (const Point &point : qAsConst(m_points)) {
+    for (const Point &point : std::as_const(m_points)) {
         if (geom.contains(point.pos)) {
             if (point.type == MouseRelease)
                 drawEllipse(point.pos, point.horizontalDiameter, point.verticalDiameter, point.color(), painter);
@@ -390,7 +390,7 @@ void TouchTestWidget::paintEvent(QPaintEvent *)
                 fillEllipse(point.pos, point.horizontalDiameter, point.verticalDiameter, point.color(), painter);
         }
     }
-    for (const GesturePtr &gp : qAsConst(m_gestures))
+    for (const GesturePtr &gp : std::as_const(m_gestures))
         gp->draw(geom, painter);
 }
 

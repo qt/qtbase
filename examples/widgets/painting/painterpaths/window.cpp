@@ -156,7 +156,7 @@ Window::Window()
     connect(penColorComboBox, &QComboBox::activated,
             this, &Window::penColorChanged);
 
-    for (RenderArea *area : qAsConst(renderAreas)) {
+    for (RenderArea *area : std::as_const(renderAreas)) {
         connect(penWidthSpinBox, &QSpinBox::valueChanged,
                 area, &RenderArea::setPenWidth);
         connect(rotationAngleSpinBox, &QSpinBox::valueChanged,
@@ -167,7 +167,7 @@ Window::Window()
     QGridLayout *topLayout = new QGridLayout;
 
     int i = 0;
-    for (RenderArea *area : qAsConst(renderAreas)) {
+    for (RenderArea *area : std::as_const(renderAreas)) {
         topLayout->addWidget(area, i / 3, i % 3);
         ++i;
     }
@@ -204,7 +204,7 @@ void Window::fillRuleChanged()
 {
     Qt::FillRule rule = (Qt::FillRule)currentItemData(fillRuleComboBox).toInt();
 
-    for (RenderArea *area : qAsConst(renderAreas))
+    for (RenderArea *area : std::as_const(renderAreas))
         area->setFillRule(rule);
 }
 //! [19]
@@ -215,7 +215,7 @@ void Window::fillGradientChanged()
     QColor color1 = qvariant_cast<QColor>(currentItemData(fillColor1ComboBox));
     QColor color2 = qvariant_cast<QColor>(currentItemData(fillColor2ComboBox));
 
-    for (RenderArea *area : qAsConst(renderAreas))
+    for (RenderArea *area : std::as_const(renderAreas))
         area->setFillGradient(color1, color2);
 }
 //! [20]
@@ -225,7 +225,7 @@ void Window::penColorChanged()
 {
     QColor color = qvariant_cast<QColor>(currentItemData(penColorComboBox));
 
-    for (RenderArea *area : qAsConst(renderAreas))
+    for (RenderArea *area : std::as_const(renderAreas))
         area->setPenColor(color);
 }
 //! [21]

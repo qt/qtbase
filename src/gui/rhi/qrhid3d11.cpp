@@ -1678,7 +1678,7 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             QD3D11Texture *texD = QRHI_RES(QD3D11Texture, u.dst);
             for (int layer = 0, maxLayer = u.subresDesc.count(); layer < maxLayer; ++layer) {
                 for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.subresDesc[layer][level]))
+                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : std::as_const(u.subresDesc[layer][level]))
                         enqueueSubresUpload(texD, cbD, layer, level, subresDesc);
                 }
             }
@@ -4289,7 +4289,7 @@ bool QD3D11GraphicsPipeline::create()
     }
 
     QByteArray vsByteCode;
-    for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
+    for (const QRhiShaderStage &shaderStage : std::as_const(m_shaderStages)) {
         auto cacheIt = rhiD->m_shaderCache.constFind(shaderStage);
         if (cacheIt != rhiD->m_shaderCache.constEnd()) {
             switch (shaderStage.type()) {

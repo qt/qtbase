@@ -713,7 +713,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 #ifndef QT_NO_CLIPBOARD
         m_clipboard->handleXFixesSelectionRequest(notify_event);
 #endif
-        for (QXcbVirtualDesktop *virtualDesktop : qAsConst(m_virtualDesktops))
+        for (QXcbVirtualDesktop *virtualDesktop : std::as_const(m_virtualDesktops))
             virtualDesktop->handleXFixesSelectionNotify(notify_event);
     } else if (isXRandrType(response_type, XCB_RANDR_NOTIFY)) {
         if (!isAtLeastXRandR15())

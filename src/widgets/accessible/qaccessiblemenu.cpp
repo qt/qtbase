@@ -85,7 +85,7 @@ QAccessibleInterface *QAccessibleMenu::parent() const
         const QList<QObject *> associatedObjects = menuAction->associatedObjects();
         parentCandidates.reserve(associatedObjects.size() + 1);
         parentCandidates << menu()->parentWidget() << associatedObjects;
-        for (QObject *object : qAsConst(parentCandidates)) {
+        for (QObject *object : std::as_const(parentCandidates)) {
             if (qobject_cast<QMenu*>(object)
 #if QT_CONFIG(menubar)
                 || qobject_cast<QMenuBar*>(object)

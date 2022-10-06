@@ -2480,7 +2480,7 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Qt::Orientation orientation)
 
             // Check if this constraint have some overlap with current
             // trunk variables...
-            for (QSimplexVariable *ad : qAsConst(trunkVariables)) {
+            for (QSimplexVariable *ad : std::as_const(trunkVariables)) {
                 if (c->variables.contains(ad)) {
                     match = true;
                     break;
@@ -2529,7 +2529,7 @@ void QGraphicsAnchorLayoutPrivate::identifyFloatItems(const QSet<AnchorData *> &
         identifyNonFloatItems_helper(ad, &nonFloating);
 
     QSet<QGraphicsLayoutItem *> floatItems;
-    for (QGraphicsLayoutItem *item : qAsConst(items)) {
+    for (QGraphicsLayoutItem *item : std::as_const(items)) {
         if (!nonFloating.contains(item))
             floatItems.insert(item);
     }
@@ -2588,7 +2588,7 @@ void QGraphicsAnchorLayoutPrivate::setItemsGeometries(const QRectF &geom)
     top += geom.top();
     right = geom.right() - right;
 
-    for (QGraphicsLayoutItem *item : qAsConst(items)) {
+    for (QGraphicsLayoutItem *item : std::as_const(items)) {
         QRectF newGeom;
         QSizeF itemPreferredSize = item->effectiveSizeHint(Qt::PreferredSize);
         if (m_floatItems[Qt::Horizontal].contains(item)) {

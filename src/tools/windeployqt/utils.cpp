@@ -373,7 +373,7 @@ bool runProcess(const QString &binary, const QStringList &args,
         char **argv  = new char *[args.size() + 2]; // Create argv.
         char **ap = argv;
         *ap++ = encodeFileName(binary);
-        for (const QString &a : qAsConst(args))
+        for (const QString &a : std::as_const(args))
             *ap++ = encodeFileName(a);
         *ap = 0;
 
@@ -868,7 +868,7 @@ QString findD3dCompiler(Platform platform, const QString &qtBinDir, unsigned wor
         candidateVersions.append(prefix + QString::number(i) + suffix);
     // Check the bin directory of the Qt SDK (in case it is shadowed by the
     // Windows system directory in PATH).
-    for (const QString &candidate : qAsConst(candidateVersions)) {
+    for (const QString &candidate : std::as_const(candidateVersions)) {
         const QFileInfo fi(qtBinDir + u'/' + candidate);
         if (fi.isFile())
             return fi.absoluteFilePath();
@@ -877,7 +877,7 @@ QString findD3dCompiler(Platform platform, const QString &qtBinDir, unsigned wor
     if (platform.testFlag(IntelBased)) {
         QString errorMessage;
         unsigned detectedWordSize;
-        for (const QString &candidate : qAsConst(candidateVersions)) {
+        for (const QString &candidate : std::as_const(candidateVersions)) {
             const QString dll = findInPath(candidate);
             if (!dll.isEmpty()
                 && readPeExecutable(dll, &errorMessage, 0, &detectedWordSize, 0)

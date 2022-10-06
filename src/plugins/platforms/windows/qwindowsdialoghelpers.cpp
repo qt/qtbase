@@ -1355,7 +1355,7 @@ Q_GLOBAL_STATIC(QStringList, temporaryItemCopies)
 
 static void cleanupTemporaryItemCopies()
 {
-    for (const QString &file : qAsConst(*temporaryItemCopies()))
+    for (const QString &file : std::as_const(*temporaryItemCopies()))
         QFile::remove(file);
 }
 

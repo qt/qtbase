@@ -191,7 +191,7 @@ void MingwMakefileGenerator::writeIncPart(QTextStream &t)
             return;
         }
     }
-    for (const ProString &incit: qAsConst(incs)) {
+    for (const ProString &incit: std::as_const(incs)) {
         QString inc = incit.toQString();
         inc.replace(QRegularExpression("\\\\$"), "");
         inc.replace('\\', '/');

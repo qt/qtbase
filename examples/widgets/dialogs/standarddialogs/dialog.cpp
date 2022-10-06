@@ -52,7 +52,7 @@ void DialogOptionsWidget::addSpacer()
 int DialogOptionsWidget::value() const
 {
     int result = 0;
-    for (const CheckBoxEntry &checkboxEntry : qAsConst(checkBoxEntries)) {
+    for (const CheckBoxEntry &checkboxEntry : std::as_const(checkBoxEntries)) {
         if (checkboxEntry.first->isChecked())
             result |= checkboxEntry.second;
     }

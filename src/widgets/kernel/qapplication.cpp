@@ -1185,7 +1185,7 @@ void QApplicationPrivate::handlePaletteChanged(const char *className)
     }
 
 #if QT_CONFIG(graphicsview)
-    for (auto scene : qAsConst(scene_list))
+    for (auto scene : std::as_const(scene_list))
         QCoreApplication::sendEvent(scene, &event);
 #endif
 
@@ -2083,7 +2083,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
         const QPointF globalPos = qIsInf(globalPosF.x())
             ? QPointF(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX)
             : globalPosF;
-        const QPointF windowPos = qAsConst(enterList).back()->window()->mapFromGlobal(globalPos);
+        const QPointF windowPos = std::as_const(enterList).back()->window()->mapFromGlobal(globalPos);
         for (auto it = enterList.crbegin(), end = enterList.crend(); it != end; ++it) {
             auto *w = *it;
             if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, nullptr)) {
@@ -3177,7 +3177,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     break;
                 w = w->parentWidget();
             }
-            for (QGesture *g : qAsConst(allGestures))
+            for (QGesture *g : std::as_const(allGestures))
                 gestureEvent->setAccepted(g, false);
             gestureEvent->m_accept = false; // to make sure we check individual gestures
             break;

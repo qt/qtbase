@@ -764,7 +764,7 @@ QEventDispatcherWin32::registeredTimers(QObject *object) const
 
     Q_D(const QEventDispatcherWin32);
     QList<TimerInfo> list;
-    for (WinTimerInfo *t : qAsConst(d->timerDict)) {
+    for (WinTimerInfo *t : std::as_const(d->timerDict)) {
         Q_ASSERT(t);
         if (t->obj == object)
             list << TimerInfo(t->timerId, t->interval, t->timerType);
@@ -832,7 +832,7 @@ void QEventDispatcherWin32::closingDown()
     Q_ASSERT(d->active_fd.isEmpty());
 
     // clean up any timers
-    for (WinTimerInfo *t : qAsConst(d->timerDict))
+    for (WinTimerInfo *t : std::as_const(d->timerDict))
         d->unregisterTimer(t);
     d->timerDict.clear();
 

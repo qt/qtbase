@@ -349,7 +349,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
         collectedSubdirs.append(qMakePair(tmpdir.toQString(), proj->values(ProKey(tmp_proj_subdirs.at(x) + ".depends"))));
         projLookup.insert(tmp_proj_subdirs.at(x).toQString(), tmpdir.toQString());
     }
-    for (const auto &subdir : qAsConst(collectedSubdirs)) {
+    for (const auto &subdir : std::as_const(collectedSubdirs)) {
         QString profile = subdir.first;
         QFileInfo fi(fileInfo(Option::normalizePath(profile)));
         if (fi.exists()) {

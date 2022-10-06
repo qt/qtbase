@@ -81,7 +81,7 @@ void tst_LanceBench::initTestCase()
     }
 
     std::sort(qpsFiles.begin(), qpsFiles.end());
-    for (const QString& fileName : qAsConst(qpsFiles)) {
+    for (const QString& fileName : std::as_const(qpsFiles)) {
         QFile file(scriptsDir + fileName);
         file.open(QFile::ReadOnly);
         QByteArray cont = file.readAll();
@@ -237,7 +237,7 @@ void tst_LanceBench::testCoreOpenGL()
 void tst_LanceBench::setupTestSuite(const QStringList& blacklist)
 {
     QTest::addColumn<QString>("qpsFile");
-    for (const QString &fileName : qAsConst(qpsFiles)) {
+    for (const QString &fileName : std::as_const(qpsFiles)) {
         if (blacklist.contains(fileName))
             continue;
         QTest::newRow(fileName.toLatin1()) << fileName;

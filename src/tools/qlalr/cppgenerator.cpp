@@ -413,7 +413,7 @@ void CppGenerator::generateDecl (QTextStream &out)
       << "public:" << Qt::endl
       << "    enum VariousConstants {" << Qt::endl;
 
-  for (const Name &t : qAsConst(grammar.terminals))
+  for (const Name &t : std::as_const(grammar.terminals))
     {
       QString name = *t;
       int value = std::distance (grammar.names.begin (), t);

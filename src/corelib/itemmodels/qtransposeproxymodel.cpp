@@ -32,7 +32,7 @@ void QTransposeProxyModelPrivate::onLayoutChanged(const QList<QPersistentModelIn
     Q_ASSERT(layoutChangeProxyIndexes.size() == layoutChangePersistentIndexes.size());
     QModelIndexList toList;
     toList.reserve(layoutChangePersistentIndexes.size());
-    for (const QPersistentModelIndex &persistIdx : qAsConst(layoutChangePersistentIndexes))
+    for (const QPersistentModelIndex &persistIdx : std::as_const(layoutChangePersistentIndexes))
         toList << q->mapFromSource(persistIdx);
     q->changePersistentIndexList(layoutChangeProxyIndexes, toList);
     layoutChangeProxyIndexes.clear();
@@ -172,7 +172,7 @@ void QTransposeProxyModel::setSourceModel(QAbstractItemModel* newSourceModel)
         return;
     beginResetModel();
     if (d->model) {
-        for (const QMetaObject::Connection& discIter : qAsConst(d->sourceConnections))
+        for (const QMetaObject::Connection& discIter : std::as_const(d->sourceConnections))
             disconnect(discIter);
     }
     d->sourceConnections.clear();

@@ -71,7 +71,7 @@ public:
     template <typename T>
     T *pointer()
     {
-        const T *p = qAsConst(*this).pointer<T>();
+        const T *p = std::as_const(*this).pointer<T>();
         return const_cast<T *>(p);
     }
 

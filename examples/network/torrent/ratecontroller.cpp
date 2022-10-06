@@ -33,7 +33,7 @@ void RateController::removeSocket(PeerWireClient *socket)
 void RateController::setDownloadLimit(int bytesPerSecond)
 {
     downLimit = bytesPerSecond;
-    for (PeerWireClient *socket : qAsConst(sockets))
+    for (PeerWireClient *socket : std::as_const(sockets))
         socket->setReadBufferSize(downLimit * 4);
 }
 
@@ -63,7 +63,7 @@ void RateController::transfer()
     }
 
     QSet<PeerWireClient *> pendingSockets;
-    for (PeerWireClient *client : qAsConst(sockets)) {
+    for (PeerWireClient *client : std::as_const(sockets)) {
         if (client->canTransferMore())
             pendingSockets << client;
     }

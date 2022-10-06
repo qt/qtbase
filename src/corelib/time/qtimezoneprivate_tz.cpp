@@ -826,7 +826,7 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::findEntry(const QByteArray &ianaId)
     // Offsets are stored as total offset, want to know separate UTC and DST offsets
     // so find the first non-dst transition to use as base UTC Offset
     int utcOffset = ret.m_preZoneRule.stdOffset;
-    for (const QTzTransition &tran : qAsConst(tranList)) {
+    for (const QTzTransition &tran : std::as_const(tranList)) {
         if (!typeList.at(tran.tz_typeind).tz_isdst) {
             utcOffset = typeList.at(tran.tz_typeind).tz_gmtoff;
             break;

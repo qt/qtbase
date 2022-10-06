@@ -27,7 +27,7 @@ ProFileCache::ProFileCache()
 
 ProFileCache::~ProFileCache()
 {
-    for (const Entry &ent : qAsConst(parsed_files))
+    for (const Entry &ent : std::as_const(parsed_files))
         if (ent.pro)
             ent.pro->deref();
     QMakeVfs::deref();

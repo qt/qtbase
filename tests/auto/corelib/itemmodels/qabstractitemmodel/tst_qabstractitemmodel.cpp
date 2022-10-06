@@ -1847,7 +1847,7 @@ void ListenerObject::slotAboutToBeReset()
 
 void ListenerObject::slotReset()
 {
-    for (const auto &idx : qAsConst(m_persistentIndexes)) {
+    for (const auto &idx : std::as_const(m_persistentIndexes)) {
         QVERIFY(!idx.isValid());
     }
 }

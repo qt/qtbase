@@ -109,7 +109,7 @@ void DownloadManager::execute()
         return;
     }
 
-    for (const QString &arg : qAsConst(args)) {
+    for (const QString &arg : std::as_const(args)) {
         QUrl url = QUrl::fromEncoded(arg.toLocal8Bit());
         doDownload(url);
     }

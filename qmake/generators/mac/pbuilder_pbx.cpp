@@ -429,17 +429,17 @@ ProjectBuilderSources::files(QMakeProject *project) const
 
 static QString xcodeFiletypeForFilename(const QString &filename)
 {
-    for (const QString &ext : qAsConst(Option::cpp_ext)) {
+    for (const QString &ext : std::as_const(Option::cpp_ext)) {
         if (filename.endsWith(ext))
             return QStringLiteral("sourcecode.cpp.cpp");
     }
 
-    for (const QString &ext : qAsConst(Option::c_ext)) {
+    for (const QString &ext : std::as_const(Option::c_ext)) {
         if (filename.endsWith(ext))
             return QStringLiteral("sourcecode.c.c");
     }
 
-    for (const QString &ext : qAsConst(Option::h_ext)) {
+    for (const QString &ext : std::as_const(Option::h_ext)) {
         if (filename.endsWith(ext))
             return "sourcecode.c.h";
     }
@@ -1181,13 +1181,13 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 
             if (copyBundleResources && ((!osx && path.isEmpty())
                                         || (osx && path == QLatin1String("Contents/Resources")))) {
-                for (const ProString &s : qAsConst(bundle_files))
+                for (const ProString &s : std::as_const(bundle_files))
                     bundle_resources_files << s;
             } else if (copyBundleResources && isEmbeddedFramework) {
-                for (const ProString &s : qAsConst(bundle_files))
+                for (const ProString &s : std::as_const(bundle_files))
                     embedded_frameworks << s;
             } else if (copyBundleResources && isEmbeddedPlugin) {
-                for (const ProString &s : qAsConst(bundle_files)) {
+                for (const ProString &s : std::as_const(bundle_files)) {
                     ProString subpath = (path == pluginsPrefix) ? ProString() : path.mid(pluginsPrefix.size() + 1);
                     embedded_plugins[subpath] << s;
                 }

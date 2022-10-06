@@ -83,7 +83,7 @@ void encodeVariant(QCborStreamWriter &writer, const QVariant &v)
             } else {
                 writer.startArray(list.length());
             }
-            for (const QVariant &v2 : qAsConst(list))
+            for (const QVariant &v2 : std::as_const(list))
                 encodeVariant(writer, v2);
             QVERIFY(writer.endArray());
             return;
@@ -96,7 +96,7 @@ void encodeVariant(QCborStreamWriter &writer, const QVariant &v)
             } else {
                 writer.startMap(map.length());
             }
-            for (auto pair : qAsConst(map)) {
+            for (auto pair : std::as_const(map)) {
                 encodeVariant(writer, pair.first);
                 encodeVariant(writer, pair.second);
             }

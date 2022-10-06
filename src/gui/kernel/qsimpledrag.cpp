@@ -309,7 +309,7 @@ static inline QPoint fromNativeGlobalPixels(const QPoint &point)
 #ifndef QT_NO_HIGHDPISCALING
     QPoint res = point;
     if (QHighDpiScaling::isActive()) {
-        for (const QScreen *s : qAsConst(QGuiApplicationPrivate::screen_list)) {
+        for (const QScreen *s : std::as_const(QGuiApplicationPrivate::screen_list)) {
             if (s->handle()->geometry().contains(point)) {
                 res = QHighDpi::fromNativePixels(point, s);
                 break;

@@ -944,7 +944,7 @@ QCborContainerPrivate *QCborContainerPrivate::clone(QCborContainerPrivate *d, qs
         d = u.take();
         d->ref.storeRelaxed(0);
 
-        for (auto &e : qAsConst(d->elements)) {
+        for (auto &e : std::as_const(d->elements)) {
             if (e.flags & Element::IsContainer)
                 e.container->ref.ref();
         }

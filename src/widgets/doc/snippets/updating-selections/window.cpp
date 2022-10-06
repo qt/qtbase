@@ -42,7 +42,7 @@ void MainWindow::updateSelection(const QItemSelection &selected,
 {
     QModelIndexList items = selected.indexes();
 
-    for (const QModelIndex &index : qAsConst(items)) {
+    for (const QModelIndex &index : std::as_const(items)) {
         QString text = QString("(%1,%2)").arg(index.row()).arg(index.column());
         model->setData(index, text);
 //! [0] //! [1]
@@ -52,7 +52,7 @@ void MainWindow::updateSelection(const QItemSelection &selected,
 //! [2]
     items = deselected.indexes();
 
-    for (const QModelIndex &index : qAsConst(items)) {
+    for (const QModelIndex &index : std::as_const(items)) {
         model->setData(index, QString());
 }
 //! [2]

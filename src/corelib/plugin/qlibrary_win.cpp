@@ -59,7 +59,7 @@ bool QLibraryPrivate::load_sys()
 
     locker.unlock();
     Handle hnd = nullptr;
-    for (const QString &attempt : qAsConst(attempts)) {
+    for (const QString &attempt : std::as_const(attempts)) {
         hnd = LoadLibrary(reinterpret_cast<const wchar_t*>(QDir::toNativeSeparators(attempt).utf16()));
 
         // If we have a handle or the last error is something other than "unable

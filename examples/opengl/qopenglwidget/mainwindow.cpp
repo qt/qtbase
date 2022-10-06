@@ -133,7 +133,7 @@ void MainWindow::timerUsageChanged(bool enabled)
         m_timer->start();
     } else {
         m_timer->stop();
-        for (QOpenGLWidget *w : qAsConst(m_glWidgets))
+        for (QOpenGLWidget *w : std::as_const(m_glWidgets))
             w->update();
     }
 }

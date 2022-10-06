@@ -21,7 +21,7 @@ QT_BEGIN_NAMESPACE
 
 QOpenGLContextVersionData::~QOpenGLContextVersionData()
 {
-    for (auto *f : qAsConst(externalFunctions)) {
+    for (auto *f : std::as_const(externalFunctions)) {
         auto *fp = QAbstractOpenGLFunctionsPrivate::get(f);
         fp->owningContext = nullptr;
         fp->initialized = false;

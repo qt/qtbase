@@ -123,7 +123,7 @@ void dumpAllWidgets(FormatWindowOptions options, const QWidget *root)
         topLevels.append(const_cast<QWidget *>(root));
     else
         topLevels = QApplication::topLevelWidgets();
-    for (QWidget *tw : qAsConst(topLevels))
+    for (QWidget *tw : std::as_const(topLevels))
         dumpWidgetRecursion(str, tw, options);
     for (const QString &line : d.split(QLatin1Char('\n')))
         qDebug().noquote() << line;

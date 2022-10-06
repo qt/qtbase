@@ -244,7 +244,7 @@ Q_INLINE_TEMPLATE QSet<T> &QSet<T>::intersect(const QSet<T> &other)
         copy2 = *this;
         *this = copy1;
     }
-    for (const auto &e : qAsConst(copy1)) {
+    for (const auto &e : std::as_const(copy1)) {
         if (!copy2.contains(e))
             remove(e);
     }

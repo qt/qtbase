@@ -260,7 +260,7 @@ void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
         bool italic = item->data(0, Qt::UserRole + 1).toBool();
 
         // Calculate the maximum width and total height of the text.
-        for (int size : qAsConst(sampleSizes)) {
+        for (int size : std::as_const(sampleSizes)) {
             QFont font(family, size, weight, italic);
             font.setStyleName(style);
             font = QFont(font, painter->device());
@@ -294,7 +294,7 @@ void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
         bool italic = item->data(0, Qt::UserRole + 1).toBool();
 
         // Draw each line of text.
-        for (int size : qAsConst(sampleSizes)) {
+        for (int size : std::as_const(sampleSizes)) {
             QFont font(family, size, weight, italic);
             font.setStyleName(style);
             font = QFont(font, painter->device());
