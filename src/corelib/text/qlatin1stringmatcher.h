@@ -98,6 +98,18 @@ struct QCaseInsensitiveLatin1Hash
         return std::size_t(latin1Lower[uchar(c)]);
     }
 
+    static int difference(char lhs, char rhs)
+    {
+        return int(latin1Lower[uchar(lhs)]) - int(latin1Lower[uchar(rhs)]);
+    }
+
+    static auto matcher(char ch)
+    {
+        return [sought = latin1Lower[uchar(ch)]](char other) {
+            return latin1Lower[uchar(other)] == sought;
+        };
+    }
+
 private:
     static constexpr uchar latin1Lower[256] = {
         0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f,
