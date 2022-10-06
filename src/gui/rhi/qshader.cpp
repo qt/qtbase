@@ -160,6 +160,7 @@ QT_BEGIN_NAMESPACE
     \value MslShader Metal Shading Language
     \value DxilShader Direct3D bytecode (HLSL compiled by \c dxc)
     \value MetalLibShader Pre-compiled Metal bytecode
+    \value WgslShader WGSL
  */
 
 /*!

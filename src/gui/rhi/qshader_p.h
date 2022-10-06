@@ -98,7 +98,8 @@ public:
         DxbcShader, // fxc
         MslShader,
         DxilShader, // dxc
-        MetalLibShader // xcrun metal + xcrun metallib
+        MetalLibShader, // xcrun metal + xcrun metallib
+        WgslShader
     };
 
     enum Variant {
