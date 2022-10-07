@@ -162,7 +162,6 @@ static void addNakedDictEntry()
 void tst_QDBusType::isValidFixedType_data()
 {
     addColumns();
-    addFixedTypes();
     addBasicTypes(Invalid);
     addVariant(Invalid);
     addInvalidSingleLetterTypes();
