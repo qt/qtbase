@@ -1984,19 +1984,31 @@ void tst_QImageReader::preserveTexts_data()
     for (int c = 0xa0; c <= 0xff; c++)
         latin1set.append(QLatin1Char(c));
 
-    QStringList fileNames;
-    fileNames << QLatin1String(":/images/kollada.png")
-              << QLatin1String(":/images/txts.jpg");
-    foreach (const QString &fileName, fileNames) {
-        QTest::newRow("Simple") << fileName << "simpletext";
-        QTest::newRow("Whitespace") << fileName << " A text  with whitespace ";
-        QTest::newRow("Newline") << fileName << "A text\nwith newlines\n";
-        QTest::newRow("Double newlines") << fileName << "A text\n\nwith double newlines\n\n";
-        QTest::newRow("Long") << fileName << QString("A rather long text, at least after many repetitions. ").repeated(100);
-        QTest::newRow("All Latin1 chars") << fileName << latin1set;
+    const QList<QLatin1StringView> fileNames{
+        QLatin1StringView(":/images/kollada.png"),
+        QLatin1StringView(":/images/txts.jpg")
+        // Common prefix of length 9 before file names: ":/images/", skipped below by + 9.
+    };
+    for (const auto &fileName : fileNames) {
+        QTest::addRow("Simple %s", fileName.data() + 9)
+            << QString(fileName) << "simpletext";
+        QTest::addRow("Whitespace %s", fileName.data() + 9)
+            << QString(fileName) << " A text  with whitespace ";
+        QTest::addRow("Newline %s", fileName.data() + 9)
+            << QString(fileName) << "A text\nwith newlines\n";
+        QTest::addRow("Double newlines %s", fileName.data() + 9)
+            << QString(fileName) << "A text\n\nwith double newlines\n\n";
+        QTest::addRow("Long %s", fileName.data() + 9)
+            << QString(fileName)
+            << QString("A rather long text, at least after many repetitions. ").repeated(100);
+        QTest::addRow("All Latin1 chars %s", fileName.data() + 9)
+            << QString(fileName) << latin1set;
 #if 0
         // Depends on iTXt support in libpng
-        QTest::newRow("Multibyte string") << fileName << QString::fromUtf8("\341\233\222\341\233\226\341\232\251\341\232\271\341\232\242\341\233\232\341\232\240");
+        QTest::addRow("Multibyte string %s", fileName.data() + 9)
+            << QString(fileName)
+            << QString::fromUtf8("\341\233\222\341\233\226\341\232\251\341\232"
+                                 "\271\341\232\242\341\233\232\341\232\240");
 #endif
     }
 }
