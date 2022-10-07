@@ -893,17 +893,17 @@ void tst_QPainterPath::testArcMoveTo_data()
         QRectF(100, 100, 100, -100),
         QRectF(100, 100, -100, -100),
     };
+    constexpr qreal tinyAngle = 1e-10;
 
-    for (uint domain = 0; domain < sizeof rects / sizeof *rects; ++domain) {
-        const QByteArray dB = QByteArray::number(domain);
-        for (int i=-360; i<=360; ++i) {
-            QTest::newRow(("test " + dB + ' ' + QByteArray::number(i)).constData())
-                << rects[domain] << (qreal) i;
-        }
+    int index = 0;
+    for (const auto &rect : rects) {
+        for (int i = -360; i <= 360; ++i)
+            QTest::addRow("test %d %d", index, i) << rect << qreal(i);
 
         // test low angles
-        QTest::newRow("low angles 1") << rects[domain] << (qreal) 1e-10;
-        QTest::newRow("low angles 2") << rects[domain] << (qreal)-1e-10;
+        QTest::addRow("low +angle %d", index) << rect << tinyAngle;
+        QTest::addRow("low -angle %d", index) << rect << -tinyAngle;
+        ++index;
     }
 }
 
