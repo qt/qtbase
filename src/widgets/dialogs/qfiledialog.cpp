@@ -2304,13 +2304,8 @@ void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::funct
             openFileImpl.reset();
         };
 
-        auto qtFilterStringToWebAcceptString = [](const QString &qtString) {
-            // The Qt and Web name filter string formats are similar, but
-            // not identical.
-            return qtString.toStdString(); // ### TODO
-        };
-
-        QWasmLocalFileAccess::openFile(qtFilterStringToWebAcceptString(nameFilter), fileDialogClosed, acceptFile, fileContentReady);
+        QWasmLocalFileAccess::openFile(nameFilter.toStdString(), fileDialogClosed,
+                                       acceptFile, fileContentReady);
     };
 
     (*openFileImpl)();

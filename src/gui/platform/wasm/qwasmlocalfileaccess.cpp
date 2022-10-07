@@ -8,7 +8,11 @@
 #include <emscripten/html5.h>
 #include <emscripten/val.h>
 
+#include <QtCore/qregularexpression.h>
+
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::Literals::StringLiterals;
 
 namespace QWasmLocalFileAccess {
 
@@ -44,6 +48,66 @@ void readFiles(const qstdweb::FileList &fileList,
     (*readFile)(0);
 }
 
+std::string acceptListFromQtFormat(const std::string &qtAcceptList)
+{
+    // copy of qt_make_filter_list() from qfiledialog.cpp
+    auto make_filter_list = [](const QString &filter) -> QStringList
+    {
+        if (filter.isEmpty())
+            return QStringList();
+
+        QString sep(";;"_L1);
+        if (!filter.contains(sep) && filter.contains(u'\n'))
+            sep = u'\n';
+
+        return filter.split(sep);
+    };
+
+    const QStringList fileFilter = make_filter_list(QString::fromStdString(qtAcceptList));
+    QStringList transformed;
+    for (const auto &element : fileFilter) {
+        // Accepts either a string in format:
+        // GROUP3
+        // or in this format:
+        // GROUP1 (GROUP2)
+        // Group 1 is treated as the description, whereas group 2 or 3 are treated as the filter
+        // list.
+        static QRegularExpression regex(
+                QString(QStringLiteral("(?:([^(]*)\\(([^()]+)\\)[^)]*)|([^()]+)")));
+        static QRegularExpression wordCharacterRegex(QString(QStringLiteral("\\w")));
+        const auto match = regex.match(element);
+
+        if (!match.hasMatch())
+            continue;
+
+        constexpr size_t FilterListFromParensIndex = 2;
+        constexpr size_t PlainFilterListIndex = 3;
+        QString filterList = match.captured(match.hasCaptured(FilterListFromParensIndex)
+                                                    ? FilterListFromParensIndex
+                                                    : PlainFilterListIndex);
+        for (auto singleExtension : filterList.split(QStringLiteral(" "), Qt::SkipEmptyParts)) {
+            // Checks for a filter that matches everything:
+            // Any number of asterisks or any number of asterisks with a '.' between them.
+            // The web filter does not support wildcards.
+            static QRegularExpression qtAcceptAllRegex(QRegularExpression::anchoredPattern(
+                    QString(QStringLiteral("[*]+|[*]+\\.[*]+"))));
+            if (qtAcceptAllRegex.match(singleExtension).hasMatch())
+                continue;
+
+            // Checks for correctness. The web filter only allows filename extensions and does not
+            // filter the actual filenames, therefore we check whether the filter provided only
+            // filters for the extension.
+            static QRegularExpression qtFilenameMatcherRegex(QRegularExpression::anchoredPattern(
+                    QString(QStringLiteral("(\\*?)(\\.[^*]+)"))));
+
+            auto extensionMatch = qtFilenameMatcherRegex.match(singleExtension);
+            if (extensionMatch.hasMatch())
+                transformed.append(extensionMatch.captured(2));
+        }
+    }
+    return transformed.join(QStringLiteral(",")).toStdString();
+}
+
 typedef std::function<void (const qstdweb::FileList &fileList)> OpenFileDialogCallback;
 void openFileDialog(const std::string &accept, FileSelectMode fileSelectMode,
                     const OpenFileDialogCallback &filesSelected)
@@ -55,7 +119,7 @@ void openFileDialog(const std::string &accept, FileSelectMode fileSelectMode,
     emscripten::val input = document.call<emscripten::val>("createElement", std::string("input"));
     input.set("type", "file");
     input.set("style", "display:none");
-    input.set("accept", emscripten::val(accept));
+    input.set("accept", acceptListFromQtFormat(accept));
     input.set("multiple", emscripten::val(fileSelectMode == MultipleFiles));
 
     // Note: there is no event in case the user cancels the file dialog.
