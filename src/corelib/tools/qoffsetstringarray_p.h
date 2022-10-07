@@ -20,6 +20,7 @@
 
 #include <QByteArrayView>
 
+#include <QtCore/q20algorithm.h>
 #include <array>
 #include <limits>
 #include <string_view>
@@ -100,7 +101,7 @@ constexpr auto makeStaticString(Extractor extract, const T &... entries)
     const char *strings[] = { extract(entries).operator const char *()... };
     size_t lengths[] = { sizeof(extract(T{}))... };
     for (size_t i = 0; i < std::size(strings); ++i) {
-        copyData(strings[i], lengths[i], result.begin() + offset);
+        q20::copy_n(strings[i], lengths[i], result.begin() + offset);
         offset += lengths[i];
     }
     return result;
@@ -110,7 +111,7 @@ template <size_t N> struct StaticString
 {
     char value[N] = {};
     constexpr StaticString() = default;
-    constexpr StaticString(const char (&s)[N])  { copyData(s, N, value); }
+    constexpr StaticString(const char (&s)[N])  { q20::copy_n(s, N, value); }
     constexpr operator const char *() const     { return value; }
 };
 
