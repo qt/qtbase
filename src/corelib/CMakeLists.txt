@@ -28,6 +28,10 @@ if(WASM)
     set(corelib_extra_cmake_files
         "${CMAKE_CURRENT_SOURCE_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}WasmMacros.cmake")
 endif()
+
+qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} "${INSTALL_CMAKE_NAMESPACE}Core")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/QtInstallPaths.cmake.in"
+    "${config_build_dir}/QtInstallPaths.cmake" @ONLY)
 # special case end
 
 #####################################################################
@@ -320,6 +324,7 @@ qt_internal_add_module(Core
     "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CTestMacros.cmake"
     "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreConfigureFileTemplate.in"
     "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreDeploySupport.cmake"
+    "${config_build_dir}/QtInstallPaths.cmake"
     ${corelib_extra_cmake_files}
     # special case end
 )
