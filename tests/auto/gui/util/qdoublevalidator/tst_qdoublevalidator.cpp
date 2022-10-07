@@ -642,7 +642,7 @@ void tst_QDoubleValidator::setRangeOverloads_data()
     QTest::newRow("scientific, 1 digits after point")
             << QDoubleValidator::ScientificNotation << -1 << -100.0 << 100.0 << 0
             << QString("1.2e1") << ACC << INV;
-    QTest::newRow("scientific, 3 digits after point, not in range")
+    QTest::newRow("scientific, 3 digits after point, demand fewer")
             << QDoubleValidator::ScientificNotation << 3 << -100.0 << 100.0 << 1
             << QString("10.234e-1") << ACC << INV;
     QTest::newRow("scientific, 3 digits after point, not in range")
