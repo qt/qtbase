@@ -3811,8 +3811,9 @@ bool qunsetenv(const char *varName)
     Replaces the value of \a obj with \a newValue and returns the old value of \a obj.
 
     This is Qt's implementation of std::exchange(). It differs from std::exchange()
-    only in that it is \c constexpr already in C++14, and available on all supported
-    compilers.
+    only in that it is \c constexpr already before C++20.
+
+    We strongly advise to use std::exchange() when you don't need the C++20 variant.
 
     Here is how to use qExchange() to implement move constructors:
     \code
