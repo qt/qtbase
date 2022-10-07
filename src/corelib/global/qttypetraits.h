@@ -5,6 +5,7 @@
 #define QTTYPETRAITS_H
 
 #include <QtCore/qtconfigmacros.h>
+#include <QtCore/qtdeprecationmarkers.h>
 
 #include <type_traits>
 #include <utility>
@@ -24,14 +25,17 @@ constexpr std::underlying_type_t<Enum> qToUnderlying(Enum e) noexcept
 }
 
 #ifndef QT_NO_AS_CONST
+#if QT_DEPRECATED_SINCE(6, 6)
 
 // this adds const to non-const objects (like std::as_const)
 template <typename T>
+QT_DEPRECATED_VERSION_X_6_6("Use std::as_const() instead.")
 constexpr typename std::add_const<T>::type &qAsConst(T &t) noexcept { return t; }
 // prevent rvalue arguments:
 template <typename T>
 void qAsConst(const T &&) = delete;
 
+#endif // QT_DEPRECATED_SINCE(6, 6)
 #endif // QT_NO_AS_CONST
 
 #ifndef QT_NO_QEXCHANGE
