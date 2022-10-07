@@ -166,7 +166,7 @@ struct QPropertyObserverPointer
     {
         Q_ASSERT(ptr->next.tag() == QPropertyObserver::ObserverNotifiesBinding);
         return ptr->binding;
-    };
+    }
 
 private:
     void unlink_common()
