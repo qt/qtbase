@@ -27,13 +27,14 @@
 QT_BEGIN_NAMESPACE
 
 namespace q20 {
-// like std::is_sorted{,_until}, std::copy (ie. constexpr)
+// like std::<algorithm> (ie. not ranged, but constexpr)
 #ifdef __cpp_lib_constexpr_algorithms
 using std::copy;
 using std::copy_if;
 using std::copy_n;
 using std::is_sorted_until;
 using std::is_sorted;
+using std::transform;
 #else
 template <typename InputIterator, typename OutputIterator>
 constexpr OutputIterator
@@ -88,11 +89,27 @@ is_sorted_until(ForwardIterator first, ForwardIterator last, BinaryPredicate p =
     }
     return first;
 }
+
 template <typename ForwardIterator, typename BinaryPredicate = std::less<>>
 constexpr bool is_sorted(ForwardIterator first, ForwardIterator last, BinaryPredicate p = {})
 {
     return q20::is_sorted_until(first, last, p) == last;
 }
+
+template <typename InputIterator, typename OutputIterator, typename UnaryFunction>
+constexpr OutputIterator
+transform(InputIterator first, InputIterator last, OutputIterator dest, UnaryFunction op)
+{
+    while (first != last) {
+        *dest = op(*first);
+        ++first;
+        ++dest;
+    }
+    return dest;
+}
+
+// binary transform missing on purpose (no users)
+
 #endif
 }
 

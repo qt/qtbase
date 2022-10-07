@@ -70,16 +70,6 @@ private:
 };
 
 namespace QtPrivate {
-// std::copy is not constexpr in C++17
-template <typename II, typename OO>
-static constexpr OO copyData(II input, qsizetype n, OO output)
-{
-    using E = decltype(+*output);
-    for (qsizetype i = 0; i < n; ++i)
-        output[i] = E(input[i]);
-    return output + n;
-}
-
 template <size_t Highest> constexpr auto minifyValue()
 {
     if constexpr (Highest <= (std::numeric_limits<quint8>::max)()) {
@@ -137,7 +127,9 @@ constexpr auto qOffsetStringArray(StringExtractor extractString, const T &... en
 
     // prepend zero
     std::array<MinifiedOffsetType, Count + 1> minifiedOffsetList = {};
-    QtPrivate::copyData(fullOffsetList.begin(), Count, minifiedOffsetList.begin() + 1);
+    q20::transform(fullOffsetList.begin(), fullOffsetList.end(),
+                   minifiedOffsetList.begin() + 1,
+                   [] (auto e) { return MinifiedOffsetType(e); });
 
     std::array staticString = QtPrivate::makeStaticString<StringLength>(extractString, entries...);
     return QOffsetStringArray(staticString, minifiedOffsetList);
