@@ -928,6 +928,14 @@ qt_feature("arm_crypto" PRIVATE
 )
 qt_feature_definition("arm_crypto" "QT_COMPILER_SUPPORTS_AES" VALUE "1")
 qt_feature_config("arm_crypto" QMAKE_PRIVATE_CONFIG)
+
+qt_feature("wasm_simd128" PRIVATE
+    LABEL "WebAssembly SIMD128"
+    AUTODETECT OFF
+)
+qt_feature_definition("wasm_simd128" "QT_COMPILER_SUPPORTS_WASM_SIMD128" VALUE "1")
+qt_feature_config("wasm_simd128" QMAKE_PRIVATE_CONFIG)
+
 qt_feature("posix_fallocate" PRIVATE
     LABEL "POSIX fallocate()"
     CONDITION TEST_posix_fallocate
@@ -1155,6 +1163,10 @@ qt_configure_add_summary_entry(ARGS "relocatable")
 qt_configure_add_summary_entry(ARGS "precompile_header")
 qt_configure_add_summary_entry(ARGS "ltcg")
 qt_configure_add_summary_entry(ARGS "intelcet")
+qt_configure_add_summary_entry(
+    ARGS "wasm_simd128"
+    CONDITION ( TEST_architecture_arch STREQUAL wasm )
+)
 qt_configure_add_summary_section(NAME "Target compiler supports")
 qt_configure_add_summary_entry(
     TYPE "featureList"

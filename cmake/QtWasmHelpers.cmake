@@ -22,6 +22,9 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     "SHELL:-s EXPORT_NAME=createQtAppInstance")
 
     #simd
+    if (QT_FEATURE_wasm_simd128)
+        target_compile_options("${wasmTarget}" INTERFACE -msimd128)
+    endif()
     if (QT_FEATURE_sse2)
         target_compile_options("${wasmTarget}" INTERFACE -O2 -msimd128 -msse -msse2)
     endif()
