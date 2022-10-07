@@ -158,10 +158,10 @@ vector.lastIndexOf("X");        // returns -1
 
 
 //! [14]
-QVector<double> vect;
+QVector<QString> vect;
 vect << "red" << "green" << "blue" << "black";
 
-QList<double> list = vect.toList();
+QList<QString> list = vect.toList();
 // list: ["red", "green", "blue", "black"]
 //! [14]
 
