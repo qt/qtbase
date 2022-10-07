@@ -52,14 +52,17 @@ Q_DECLARE_JNI_CLASS(QtTextToSpeech, "org/qtproject/qt/android/speech/QtTextToSpe
 static_assert(QtJniTypes::className<QtJniTypes::QtTextToSpeech>() == "org/qtproject/qt/android/speech/QtTextToSpeech");
 
 static_assert(QtJniTypes::fieldSignature<jint>() == "I");
+static_assert(QtJniTypes::fieldSignature<jint[]>() == "[I");
 static_assert(QtJniTypes::fieldSignature<jint>() != "X");
 static_assert(QtJniTypes::fieldSignature<jint>() != "Ljava/lang/Object;");
 static_assert(QtJniTypes::fieldSignature<jlong>() == "J");
 static_assert(QtJniTypes::fieldSignature<jstring>() == "Ljava/lang/String;");
 static_assert(QtJniTypes::fieldSignature<jobject>() == "Ljava/lang/Object;");
+static_assert(QtJniTypes::fieldSignature<jobject[]>() == "[Ljava/lang/Object;");
 static_assert(QtJniTypes::fieldSignature<jobjectArray>() == "[Ljava/lang/Object;");
 static_assert(QtJniTypes::fieldSignature<QJniObject>() == "Ljava/lang/Object;");
 static_assert(QtJniTypes::fieldSignature<QtJavaWrapper>() == "Lorg/qtproject/qt/android/QtJavaWrapper;");
+static_assert(QtJniTypes::fieldSignature<QtJavaWrapper[]>() == "[Lorg/qtproject/qt/android/QtJavaWrapper;");
 static_assert(QtJniTypes::fieldSignature<QtCustomJniObject>() == "Lorg/qtproject/qt/android/QtCustomJniObject;");
 
 static_assert(QtJniTypes::methodSignature<void>() == "()V");
@@ -81,6 +84,12 @@ static_assert(!QtJniTypes::isObjectType<void>());
 static_assert(QtJniTypes::isObjectType<jobject>());
 static_assert(QtJniTypes::isObjectType<jobjectArray>());
 static_assert(QtJniTypes::isObjectType<QtCustomJniObject>());
+
+static_assert(!QtJniTypes::isArrayType<jint>());
+static_assert(QtJniTypes::isArrayType<jint[]>());
+static_assert(QtJniTypes::isArrayType<jobject[]>());
+static_assert(QtJniTypes::isArrayType<jobjectArray>());
+static_assert(QtJniTypes::isArrayType<QtJavaWrapper[]>());
 
 static_assert(QtJniTypes::String("ABCDE").startsWith("ABC"));
 static_assert(QtJniTypes::String("ABCDE").startsWith("A"));

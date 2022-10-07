@@ -148,70 +148,76 @@ static void staticAssertTypeMismatch()
 template<typename T>
 constexpr auto typeSignature()
 {
-    if constexpr(std::is_same<T, jobject>::value)
+    if constexpr(std::is_array_v<T>) {
+        using UnderlyingType = typename std::remove_extent<T>::type;
+        static_assert(!std::is_array_v<UnderlyingType>,
+                    "typeSignature() does not handle multi-dimensional arrays");
+        return String("[") + typeSignature<UnderlyingType>();
+    } else if constexpr(std::is_same_v<T, jobject>) {
         return String("Ljava/lang/Object;");
-    else if constexpr(std::is_same<T, jclass>::value)
+    } else if constexpr(std::is_same_v<T, jclass>) {
         return String("Ljava/lang/Class;");
-    else if constexpr(std::is_same<T, jstring>::value)
+    } else if constexpr(std::is_same_v<T, jstring>) {
         return String("Ljava/lang/String;");
-    else if constexpr(std::is_same<T, jobjectArray>::value)
+    } else if constexpr(std::is_same_v<T, jobjectArray>) {
         return String("[Ljava/lang/Object;");
-    else if constexpr(std::is_same<T, jthrowable>::value)
+    } else if constexpr(std::is_same_v<T, jthrowable>) {
         return String("Ljava/lang/Throwable;");
-    else if constexpr(std::is_same<T, jbooleanArray>::value)
+    } else if constexpr(std::is_same_v<T, jbooleanArray>) {
         return String("[Z");
-    else if constexpr(std::is_same<T, jbyteArray>::value)
+    } else if constexpr(std::is_same_v<T, jbyteArray>) {
         return String("[B");
-    else if constexpr(std::is_same<T, jshortArray>::value)
+    } else if constexpr(std::is_same_v<T, jshortArray>) {
         return String("[S");
-    else if constexpr(std::is_same<T, jintArray>::value)
+    } else if constexpr(std::is_same_v<T, jintArray>) {
         return String("[I");
-    else if constexpr(std::is_same<T, jlongArray>::value)
+    } else if constexpr(std::is_same_v<T, jlongArray>) {
         return String("[J");
-    else if constexpr(std::is_same<T, jfloatArray>::value)
+    } else if constexpr(std::is_same_v<T, jfloatArray>) {
         return String("[F");
-    else if constexpr(std::is_same<T, jdoubleArray>::value)
+    } else if constexpr(std::is_same_v<T, jdoubleArray>) {
         return String("[D");
-    else if constexpr(std::is_same<T, jcharArray>::value)
+    } else if constexpr(std::is_same_v<T, jcharArray>) {
         return String("[C");
-    else if constexpr(std::is_same<T, jboolean>::value)
+    } else if constexpr(std::is_same_v<T, jboolean>) {
         return String("Z");
-    else if constexpr(std::is_same<T, bool>::value)
+    } else if constexpr(std::is_same_v<T, bool>) {
         return String("Z");
-    else if constexpr(std::is_same<T, jbyte>::value)
+    } else if constexpr(std::is_same_v<T, jbyte>) {
         return String("B");
-    else if constexpr(std::is_same<T, jchar>::value)
+    } else if constexpr(std::is_same_v<T, jchar>) {
         return String("C");
-    else if constexpr(std::is_same<T, char>::value)
+    } else if constexpr(std::is_same_v<T, char>) {
         return String("C");
-    else if constexpr(std::is_same<T, jshort>::value)
+    } else if constexpr(std::is_same_v<T, jshort>) {
         return String("S");
-    else if constexpr(std::is_same<T, short>::value)
+    } else if constexpr(std::is_same_v<T, short>) {
         return String("S");
-    else if constexpr(std::is_same<T, jint>::value)
+    } else if constexpr(std::is_same_v<T, jint>) {
         return String("I");
-    else if constexpr(std::is_same<T, int>::value)
+    } else if constexpr(std::is_same_v<T, int>) {
         return String("I");
-    else if constexpr(std::is_same<T, uint>::value)
+    } else if constexpr(std::is_same_v<T, uint>) {
         return String("I");
-    else if constexpr(std::is_same<T, jlong>::value)
+    } else if constexpr(std::is_same_v<T, jlong>) {
         return String("J");
-    else if constexpr(std::is_same<T, long>::value)
+    } else if constexpr(std::is_same_v<T, long>) {
         return String("J");
-    else if constexpr(std::is_same<T, jfloat>::value)
+    } else if constexpr(std::is_same_v<T, jfloat>) {
         return String("F");
-    else if constexpr(std::is_same<T, float>::value)
+    } else if constexpr(std::is_same_v<T, float>) {
         return String("F");
-    else if constexpr(std::is_same<T, jdouble>::value)
+    } else if constexpr(std::is_same_v<T, jdouble>) {
         return String("D");
-    else if constexpr(std::is_same<T, double>::value)
+    } else if constexpr(std::is_same_v<T, double>) {
         return String("D");
-    else if constexpr(std::is_same<T, void>::value)
+    } else if constexpr(std::is_same_v<T, void>) {
         return String("V");
-    else if constexpr(IsStringType<T>::value)
+    } else if constexpr(IsStringType<T>::value) {
         static_assert(!IsStringType<T>::value, "Don't use a literal type, call data!");
-    else
+    } else {
         staticAssertTypeMismatch();
+    }
 }
 
 template<bool flag = false>
@@ -245,6 +251,13 @@ static constexpr bool isObjectType()
         return (signature.startsWith('L') || signature.startsWith('['))
              && signature.endsWith(';');
     }
+}
+
+template<typename T>
+static constexpr bool isArrayType()
+{
+    constexpr auto signature = typeSignature<T>();
+    return signature.startsWith('[');
 }
 
 template<typename T>
