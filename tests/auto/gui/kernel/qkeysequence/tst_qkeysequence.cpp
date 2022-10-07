@@ -558,10 +558,6 @@ void tst_QKeySequence::parseString_data()
     //QTest::newRow("Ctrl") << "Ctrl" << QKeySequence(Qt::CTRL);
     //QTest::newRow("Shift") << "Shift" << QKeySequence(Qt::SHIFT);
 
-    // Only Keys
-    QTest::newRow("a") << "a" << QKeySequence(Qt::Key_A);
-    QTest::newRow("A") << "A" << QKeySequence(Qt::Key_A);
-
     // Incomplete
     QTest::newRow("Meta+Shift+") << "Meta+Shift+" << QKeySequence(Qt::Key_unknown);
 }
