@@ -385,11 +385,11 @@ void tst_QPainterPath::contains_QRectF_data()
     QTest::newRow("inside 2 rects (winding)") << path << QRectF(51, 51, 48, 48) << true;
 
     path.addEllipse(0, 0, 150, 150);
-    QTest::newRow("topRight 2 rects") << path << QRectF(100, 25, 24, 24) << true;
-    QTest::newRow("bottomLeft 2 rects") << path << QRectF(25, 100, 24, 24) << true;
+    QTest::newRow("topRight rects+circle") << path << QRectF(100, 25, 24, 24) << true;
+    QTest::newRow("bottomLeft rects+circle") << path << QRectF(25, 100, 24, 24) << true;
 
     path.setFillRule(Qt::OddEvenFill);
-    QTest::newRow("inside 2 rects") << path << QRectF(50, 50, 49, 49) << false;
+    QTest::newRow("inside rects+circle") << path << QRectF(50, 50, 49, 49) << false;
 }
 
 void tst_QPainterPath::contains_QRectF()
