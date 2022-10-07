@@ -237,8 +237,11 @@ inline QDBusMarshaller *QDBusMarshaller::beginMap(QMetaType kid, QMetaType vid)
         return this;
     }
     if (ksignature[1] != 0 || !QDBusUtil::isValidBasicType(*ksignature)) {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wformat-overflow")
         qWarning("QDBusMarshaller: type '%s' (%d) cannot be used as the key type in a D-BUS map.",
                  kid.name(), kid.id());
+QT_WARNING_POP
         error("Type %1 passed in arguments cannot be used as a key in a map"_L1
               .arg(QLatin1StringView(kid.name())));
         return this;
