@@ -9,6 +9,8 @@
 #include <QtCore/qpointer.h>
 #include <QtCore/qjsonobject.h>
 
+#include <QtCore/q20algorithm.h>
+
 QT_BEGIN_NAMESPACE
 
 // Used up to Qt 6.2
@@ -38,10 +40,8 @@ struct QPluginMetaData
     template <size_t OSize, typename OO, size_t ISize, typename II>
     static constexpr void copy(OO (&out)[OSize], II (&in)[ISize])
     {
-        // std::copy is not constexpr until C++20
         static_assert(OSize <= ISize, "Output would not be fully initialized");
-        for (size_t i = 0; i < OSize; ++i)
-            out[i] = in[i];
+        q20::copy_n(in, OSize, out);
     }
 
     static constexpr quint8 archRequirements()
