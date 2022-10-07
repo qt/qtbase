@@ -392,7 +392,7 @@ void tst_QFont::serialize_data()
     QTest::newRow("defaultConstructed") << font << QDataStream::Qt_1_0;
 
     font.setLetterSpacing(QFont::AbsoluteSpacing, 105);
-    QTest::newRow("letterSpacing") << font << QDataStream::Qt_4_5;
+    QTest::newRow("letterSpacing=105") << font << QDataStream::Qt_4_5;
 
     font = basicFont;
     font.setWordSpacing(50.0);
@@ -436,7 +436,7 @@ void tst_QFont::serialize_data()
     font = basicFont;
     font.setLetterSpacing(QFont::AbsoluteSpacing, 10);
     // Fails for 4.4 because letterSpacing wasn't read until 4.5.
-    QTest::newRow("letterSpacing") << font << QDataStream::Qt_4_5;
+    QTest::newRow("letterSpacing=10") << font << QDataStream::Qt_4_5;
 
     font = basicFont;
     font.setKerning(false);
