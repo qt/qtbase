@@ -4315,8 +4315,6 @@ void tst_QRect::containsPointF_data()
     QTest::addColumn<QPointF>("point");
     QTest::addColumn<bool>("contains");
 
-    QTest::newRow("test 27") << QRectF() << QPointF() << false;
-
     QTest::newRow("test 01") << QRectF(0, 0, 10, 10) << QPointF( 0,  0) << true;
     QTest::newRow("test 02") << QRectF(0, 0, 10, 10) << QPointF( 0, 10) << true;
     QTest::newRow("test 03") << QRectF(0, 0, 10, 10) << QPointF(10,  0) << true;
