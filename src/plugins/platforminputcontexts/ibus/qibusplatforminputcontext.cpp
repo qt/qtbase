@@ -289,7 +289,7 @@ void QIBusPlatformInputContext::setFocusObject(QObject *object)
     // It would seem natural here to call FocusOut() on the input method if we
     // transition from an IME accepted focus object to one that does not accept it.
     // Mysteriously however that is not sufficient to fix bug QTBUG-63066.
-    if (!inputMethodAccepted())
+    if (object && !inputMethodAccepted())
         return;
 
     if (debug)
