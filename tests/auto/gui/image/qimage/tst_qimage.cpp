@@ -2639,20 +2639,20 @@ void tst_QImage::mirrored_data()
     QTest::newRow("Format_Mono, horizontal+vertical") << QImage::Format_Mono << true << true << 16 << 16;
     QTest::newRow("Format_MonoLSB, horizontal+vertical") << QImage::Format_MonoLSB << true << true << 16 << 16;
 
-    QTest::newRow("Format_RGB32, vertical") << QImage::Format_RGB32 << true << false << 8 << 16;
-    QTest::newRow("Format_ARGB32, vertical") << QImage::Format_ARGB32 << true << false << 16 << 8;
+    QTest::newRow("Format_RGB32, vertical, narrow") << QImage::Format_RGB32 << true << false << 8 << 16;
+    QTest::newRow("Format_ARGB32, vertical, short") << QImage::Format_ARGB32 << true << false << 16 << 8;
     QTest::newRow("Format_Mono, vertical, non-aligned") << QImage::Format_Mono << true << false << 19 << 25;
     QTest::newRow("Format_MonoLSB, vertical, non-aligned") << QImage::Format_MonoLSB << true << false << 19 << 25;
 
     // Non-aligned horizontal 1-bit needs special handling so test this.
     QTest::newRow("Format_Mono, horizontal, non-aligned") << QImage::Format_Mono << false << true << 13 << 17;
-    QTest::newRow("Format_Mono, horizontal, non-aligned") << QImage::Format_Mono << false << true << 19 << 25;
-    QTest::newRow("Format_Mono, horizontal+vertical, non-aligned") << QImage::Format_Mono << true << true << 25 << 47;
+    QTest::newRow("Format_Mono, horizontal, non-aligned, big") << QImage::Format_Mono << false << true << 19 << 25;
+    QTest::newRow("Format_Mono, horizontal+vertical, non-aligned, big") << QImage::Format_Mono << true << true << 25 << 47;
     QTest::newRow("Format_Mono, horizontal+vertical, non-aligned") << QImage::Format_Mono << true << true << 21 << 16;
 
     QTest::newRow("Format_MonoLSB, horizontal, non-aligned") << QImage::Format_MonoLSB << false << true << 13 << 17;
-    QTest::newRow("Format_MonoLSB, horizontal, non-aligned") << QImage::Format_MonoLSB << false << true << 19 << 25;
-    QTest::newRow("Format_MonoLSB, horizontal+vertical, non-aligned") << QImage::Format_MonoLSB << true << true << 25 << 47;
+    QTest::newRow("Format_MonoLSB, horizontal, non-aligned, big") << QImage::Format_MonoLSB << false << true << 19 << 25;
+    QTest::newRow("Format_MonoLSB, horizontal+vertical, non-aligned, big") << QImage::Format_MonoLSB << true << true << 25 << 47;
     QTest::newRow("Format_MonoLSB, horizontal+vertical, non-aligned") << QImage::Format_MonoLSB << true << true << 21 << 16;
 }
 
