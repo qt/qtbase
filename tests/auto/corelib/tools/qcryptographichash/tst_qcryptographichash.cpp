@@ -393,7 +393,7 @@ void tst_QCryptographicHash::hashLength_data()
     auto metaEnum = QMetaEnum::fromType<QCryptographicHash::Algorithm>();
     for (int i = 0, value = metaEnum.value(i); value != -1; value = metaEnum.value(++i)) {
         auto algorithm = QCryptographicHash::Algorithm(value);
-        QTest::addRow("%s", metaEnum.valueToKey(value)) << algorithm;
+        QTest::addRow("%s", metaEnum.key(i)) << algorithm;
     }
 }
 
