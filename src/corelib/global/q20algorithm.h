@@ -32,6 +32,8 @@ namespace q20 {
 using std::copy;
 using std::copy_if;
 using std::copy_n;
+using std::fill;
+using std::fill_n;
 using std::is_sorted_until;
 using std::is_sorted;
 using std::transform;
@@ -73,6 +75,28 @@ copy_n(InputIterator first, Size n, OutputIterator dest)
         --n;
     }
     return dest;
+}
+
+template <typename ForwardIterator, typename Value>
+constexpr void
+fill(ForwardIterator first, ForwardIterator last, const Value &value)
+{
+    while (first != last) {
+        *first = value;
+        ++first;
+    }
+}
+
+template <typename OutputIterator, typename Size, typename Value>
+constexpr OutputIterator
+fill_n(OutputIterator first, Size n, const Value &value)
+{
+    while (n > Size{0}) {
+        *first = value;
+        ++first;
+        --n;
+    }
+    return first;
 }
 
 template <typename ForwardIterator, typename BinaryPredicate = std::less<>>

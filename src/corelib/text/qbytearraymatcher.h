@@ -6,6 +6,8 @@
 
 #include <QtCore/qbytearray.h>
 
+#include <QtCore/q20algorithm.h>
+#include <iterator>
 #include <limits>
 
 QT_BEGIN_NAMESPACE
@@ -83,31 +85,8 @@ private:
     {
         const auto uchar_max = (std::numeric_limits<uchar>::max)();
         uchar max = n > uchar_max ? uchar_max : uchar(n);
-        Skiptable table = {
-            // this verbose initialization code aims to avoid some opaque error messages
-            // even on powerful compilers such as GCC 5.3. Even though for GCC a loop
-            // format can be found that v5.3 groks, it's probably better to go with this
-            // for the time being:
-            {
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-                max, max, max, max, max, max, max, max,   max, max, max, max, max, max, max, max,
-            }
-        };
+        Skiptable table = {};
+        q20::fill(std::begin(table.data), std::end(table.data), max);
         pattern += n - max;
         while (max--)
             table.data[uchar(*pattern++)] = max;
