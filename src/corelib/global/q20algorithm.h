@@ -27,11 +27,53 @@
 QT_BEGIN_NAMESPACE
 
 namespace q20 {
-// like std::is_sorted{,_until} (ie. constexpr)
+// like std::is_sorted{,_until}, std::copy (ie. constexpr)
 #ifdef __cpp_lib_constexpr_algorithms
+using std::copy;
+using std::copy_if;
+using std::copy_n;
 using std::is_sorted_until;
 using std::is_sorted;
 #else
+template <typename InputIterator, typename OutputIterator>
+constexpr OutputIterator
+copy(InputIterator first, InputIterator last, OutputIterator dest)
+{
+    while (first != last) {
+        *dest = *first;
+        ++first;
+        ++dest;
+    }
+    return dest;
+}
+
+template <typename InputIterator, typename OutputIterator, typename UnaryPredicate>
+constexpr OutputIterator
+copy_if(InputIterator first, InputIterator last, OutputIterator dest, UnaryPredicate pred)
+{
+    while (first != last) {
+        if (pred(*first)) {
+            *dest = *first;
+            ++dest;
+        }
+        ++first;
+    }
+    return dest;
+}
+
+template <typename InputIterator, typename Size, typename OutputIterator>
+constexpr OutputIterator
+copy_n(InputIterator first, Size n, OutputIterator dest)
+{
+    while (n > Size{0}) {
+        *dest = *first;
+        ++first;
+        ++dest;
+        --n;
+    }
+    return dest;
+}
+
 template <typename ForwardIterator, typename BinaryPredicate = std::less<>>
 constexpr ForwardIterator
 is_sorted_until(ForwardIterator first, ForwardIterator last, BinaryPredicate p = {})
