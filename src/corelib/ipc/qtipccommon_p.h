@@ -27,6 +27,13 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtIpcCommon {
+enum class IpcType {
+    SharedMemory,
+    SystemSemaphore
+};
+
+Q_AUTOTEST_EXPORT QString legacyPlatformSafeKey(const QString &key, IpcType ipcType);
+
 #ifdef Q_OS_UNIX
 // Convenience function to create the file if needed
 inline int createUnixKeyFile(const QByteArray &fileName)

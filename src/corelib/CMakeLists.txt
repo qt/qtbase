@@ -110,6 +110,7 @@ qt_internal_add_module(Core
         global/qxptype_traits.h
         ipc/qsharedmemory.cpp ipc/qsharedmemory.h ipc/qsharedmemory_p.h
         ipc/qsystemsemaphore.cpp ipc/qsystemsemaphore.h ipc/qsystemsemaphore_p.h
+        ipc/qtipccommon.cpp ipc/qtipccommon_p.h
         io/qabstractfileengine.cpp io/qabstractfileengine_p.h
         io/qbuffer.cpp io/qbuffer.h
         io/qdataurl.cpp io/qdataurl_p.h

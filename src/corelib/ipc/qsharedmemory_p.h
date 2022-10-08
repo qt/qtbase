@@ -19,22 +19,7 @@
 
 #include <QtCore/qstring.h>
 
-#if !QT_CONFIG(sharedmemory)
-#    if QT_CONFIG(systemsemaphore)
-
-QT_BEGIN_NAMESPACE
-
-namespace QSharedMemoryPrivate
-{
-    QString makePlatformSafeKey(const QString &key,
-            const QString &prefix = QStringLiteral("qipc_sharedmemory_"));
-}
-
-QT_END_NAMESPACE
-
-#    endif
-#else
-
+#if QT_CONFIG(sharedmemory)
 #include "qsystemsemaphore.h"
 #include "private/qobject_p.h"
 
@@ -92,8 +77,6 @@ public:
     bool lockedByMe = false;
 #endif
 
-    static QString makePlatformSafeKey(const QString &key,
-            const QString &prefix = QStringLiteral("qipc_sharedmemory_"));
 #ifdef Q_OS_WIN
     Qt::HANDLE handle();
 #elif defined(QT_POSIX_IPC)

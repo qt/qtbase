@@ -21,7 +21,6 @@
 
 #include "qcoreapplication.h"
 #include "qtipccommon_p.h"
-#include "qsharedmemory_p.h"
 
 #include <sys/types.h>
 #ifdef QT_POSIX_IPC
@@ -37,7 +36,7 @@ public:
 
     QString makeKeyFileName()
     {
-        return QSharedMemoryPrivate::makePlatformSafeKey(key, QLatin1StringView("qipc_systemsem_"));
+        return QtIpcCommon::legacyPlatformSafeKey(key, QtIpcCommon::IpcType::SystemSemaphore);
     }
 
     inline void setError(QSystemSemaphore::SystemSemaphoreError e, const QString &message)

@@ -135,7 +135,7 @@ void tst_QSharedMemory::cleanup()
 }
 
 #ifndef Q_OS_WIN
-#include <private/qsharedmemory_p.h>
+#include <private/qtipccommon_p.h>
 #include <sys/types.h>
 #ifndef QT_POSIX_IPC
 #include <sys/ipc.h>
@@ -157,7 +157,7 @@ int tst_QSharedMemory::remove(const QString &key)
     if (key.isEmpty())
         return -1;
 
-    QString fileName = QSharedMemoryPrivate::makePlatformSafeKey(key);
+    QString fileName = QtIpcCommon::legacyPlatformSafeKey(key, QtIpcCommon::IpcType::SharedMemory);
 
 #ifndef QT_POSIX_IPC
     // ftok requires that an actual file exists somewhere
