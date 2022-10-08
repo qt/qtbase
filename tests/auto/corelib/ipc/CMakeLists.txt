@@ -1,0 +1,11 @@
+# Copyright (C) 2022 Intel Corporation.
+# SPDX-License-Identifier: BSD-3-Clause
+
+if(NOT ANDROID AND NOT UIKIT)
+    if(QT_FEATURE_private_tests)
+        add_subdirectory(qsharedmemory)
+    endif()
+    if(QT_FEATURE_systemsemaphore)
+        add_subdirectory(qsystemsemaphore)
+    endif()
+endif()

@@ -108,6 +108,8 @@ qt_internal_add_module(Core
         global/q23functional.h
         global/qxpfunctional.h
         global/qxptype_traits.h
+        ipc/qsharedmemory.cpp ipc/qsharedmemory.h ipc/qsharedmemory_p.h
+        ipc/qsystemsemaphore.cpp ipc/qsystemsemaphore.h ipc/qsystemsemaphore_p.h
         io/qabstractfileengine.cpp io/qabstractfileengine_p.h
         io/qbuffer.cpp io/qbuffer.h
         io/qdataurl.cpp io/qdataurl_p.h
@@ -174,11 +176,9 @@ qt_internal_add_module(Core
         kernel/qproperty.cpp kernel/qproperty.h kernel/qproperty_p.h
         kernel/qpropertyprivate.h
         kernel/qsequentialiterable.cpp kernel/qsequentialiterable.h
-        kernel/qsharedmemory.cpp kernel/qsharedmemory.h kernel/qsharedmemory_p.h
         kernel/qsignalmapper.cpp kernel/qsignalmapper.h
         kernel/qsocketnotifier.cpp kernel/qsocketnotifier.h
         kernel/qsystemerror.cpp kernel/qsystemerror_p.h
-        kernel/qsystemsemaphore.cpp kernel/qsystemsemaphore.h kernel/qsystemsemaphore_p.h
         kernel/qtestsupport_core.cpp kernel/qtestsupport_core.h
         kernel/qtimer.cpp kernel/qtimer.h kernel/qtimer_p.h
         kernel/qtranslator.cpp kernel/qtranslator.h kernel/qtranslator_p.h
@@ -508,8 +508,8 @@ qt_internal_extend_target(Core
 
 qt_internal_extend_target(Core CONDITION ANDROID
     SOURCES
-        kernel/qsharedmemory_android.cpp
-        kernel/qsystemsemaphore_android.cpp
+        ipc/qsharedmemory_android.cpp
+        ipc/qsystemsemaphore_android.cpp
     DEFINES
         LIBS_SUFFIX="_${ANDROID_ABI}.so" # special case
 )
@@ -565,8 +565,8 @@ qt_internal_extend_target(Core CONDITION WIN32
         kernel/qelapsedtimer_win.cpp
         kernel/qeventdispatcher_win.cpp kernel/qeventdispatcher_win_p.h
         kernel/qfunctions_win.cpp kernel/qfunctions_win_p.h kernel/qfunctions_winrt_p.h
-        kernel/qsharedmemory_win.cpp
-        kernel/qsystemsemaphore_win.cpp
+        ipc/qsharedmemory_win.cpp
+        ipc/qsystemsemaphore_win.cpp
         kernel/qwineventnotifier.cpp kernel/qwineventnotifier.h kernel/qwineventnotifier_p.h
         kernel/qwinregistry.cpp kernel/qwinregistry_p.h
         plugin/qsystemlibrary.cpp plugin/qsystemlibrary_p.h
@@ -1139,12 +1139,12 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_clock_gettime AND UNIX
 
 qt_internal_extend_target(Core CONDITION UNIX AND NOT ANDROID
     SOURCES
-        kernel/qsharedmemory_posix.cpp
-        kernel/qsharedmemory_systemv.cpp
-        kernel/qsharedmemory_unix.cpp
-        kernel/qsystemsemaphore_posix.cpp
-        kernel/qsystemsemaphore_systemv.cpp
-        kernel/qsystemsemaphore_unix.cpp
+        ipc/qsharedmemory_posix.cpp
+        ipc/qsharedmemory_systemv.cpp
+        ipc/qsharedmemory_unix.cpp
+        ipc/qsystemsemaphore_posix.cpp
+        ipc/qsystemsemaphore_systemv.cpp
+        ipc/qsystemsemaphore_unix.cpp
 )
 
 qt_internal_extend_target(Core CONDITION VXWORKS

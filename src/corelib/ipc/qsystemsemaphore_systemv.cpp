@@ -19,7 +19,7 @@
 #include <errno.h>
 
 #if defined(Q_OS_DARWIN)
-#include "qcore_mac_p.h"
+#include "private/qcore_mac_p.h"
 #endif
 
 #include "private/qcore_unix_p.h"
