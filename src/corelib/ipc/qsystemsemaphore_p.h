@@ -20,7 +20,9 @@
 #if QT_CONFIG(systemsemaphore)
 
 #include "qcoreapplication.h"
+#include "qtipccommon_p.h"
 #include "qsharedmemory_p.h"
+
 #include <sys/types.h>
 #ifdef QT_POSIX_IPC
 #   include <semaphore.h>

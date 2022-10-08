@@ -20,19 +20,6 @@ key_t QSharedMemoryPrivate::handle()
     return 0;
 }
 
-#endif // QT_CONFIG(sharedmemory)
-
-#if QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
-int QSharedMemoryPrivate::createUnixKeyFile(const QString &fileName)
-{
-    Q_UNUSED(fileName);
-    Q_UNIMPLEMENTED();
-    return 0;
-}
-#endif // QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
-
-#if QT_CONFIG(sharedmemory)
-
 bool QSharedMemoryPrivate::cleanHandle()
 {
     Q_UNIMPLEMENTED();

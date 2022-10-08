@@ -1,11 +1,11 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qplatformdefs.h"
-
 #include "qsharedmemory.h"
 #include "qsharedmemory_p.h"
-#include "qsystemsemaphore.h"
+
+#include "qtipccommon_p.h"
+
 #include <qdir.h>
 #include <qdebug.h>
 
@@ -28,6 +28,7 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace QtIpcCommon;
 
 /*!
     \internal
@@ -63,35 +64,6 @@ key_t QSharedMemoryPrivate::handle()
     return unix_key;
 }
 
-#endif // QT_CONFIG(sharedmemory)
-
-#if QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
-/*!
-    \internal
-    Creates the unix file if needed.
-    returns \c true if the unix file was created.
-
-    -1 error
-     0 already existed
-     1 created
-  */
-int QT_PREPEND_NAMESPACE(QSharedMemoryPrivate)::createUnixKeyFile(const QString &fileName)
-{
-    int fd = qt_safe_open(QFile::encodeName(fileName).constData(),
-            O_EXCL | O_CREAT | O_RDWR, 0640);
-    if (-1 == fd) {
-        if (errno == EEXIST)
-            return 0;
-        return -1;
-    } else {
-        close(fd);
-    }
-    return 1;
-}
-#endif // QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
-
-#if QT_CONFIG(sharedmemory)
-
 bool QSharedMemoryPrivate::cleanHandle()
 {
     unix_key = 0;
@@ -102,7 +74,8 @@ bool QSharedMemoryPrivate::create(qsizetype size)
 {
     // build file if needed
     bool createdFile = false;
-    int built = createUnixKeyFile(nativeKey);
+    QByteArray nativeKeyFile = QFile::encodeName(nativeKey);
+    int built = createUnixKeyFile(nativeKeyFile);
     if (built == -1) {
         errorString = QSharedMemory::tr("%1: unable to make key").arg("QSharedMemory::handle:"_L1);
         error = QSharedMemory::KeyError;
@@ -115,7 +88,7 @@ bool QSharedMemoryPrivate::create(qsizetype size)
     // get handle
     if (!handle()) {
         if (createdFile)
-            QFile::remove(nativeKey);
+            unlink(nativeKeyFile);
         return false;
     }
 
@@ -131,7 +104,7 @@ bool QSharedMemoryPrivate::create(qsizetype size)
             setErrorString(function);
         }
         if (createdFile && error != QSharedMemory::AlreadyExists)
-            QFile::remove(nativeKey);
+            unlink(nativeKeyFile);
         return false;
     }
 
@@ -212,7 +185,7 @@ bool QSharedMemoryPrivate::detach()
         }
 
         // remove file
-        if (!QFile::remove(nativeKey))
+        if (!unlink(QFile::encodeName(nativeKey)))
             return false;
     }
     return true;

@@ -26,7 +26,6 @@ QT_BEGIN_NAMESPACE
 
 namespace QSharedMemoryPrivate
 {
-    int createUnixKeyFile(const QString &fileName);
     QString makePlatformSafeKey(const QString &key,
             const QString &prefix = QStringLiteral("qipc_sharedmemory_"));
 }
@@ -93,7 +92,6 @@ public:
     bool lockedByMe = false;
 #endif
 
-    static int createUnixKeyFile(const QString &fileName);
     static QString makePlatformSafeKey(const QString &key,
             const QString &prefix = QStringLiteral("qipc_sharedmemory_"));
 #ifdef Q_OS_WIN
