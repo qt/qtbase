@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 if(NOT ANDROID AND NOT UIKIT)
-    if(QT_FEATURE_private_tests)
+    if(QT_FEATURE_sharedmemory AND QT_FEATURE_private_tests)
         add_subdirectory(qsharedmemory)
     endif()
     if(QT_FEATURE_systemsemaphore)
