@@ -165,26 +165,25 @@ if(QT_FEATURE_private_tests)
     add_subdirectory(doc/snippets/code)
 endif()
 
-if(QT_FEATURE_batch_test_support AND WASM)
-    set(wasm_support_libexec_files)
-    list(APPEND wasm_support_libexec_files
-         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/batchedtestrunner.html)
-    list(APPEND wasm_support_libexec_files
-         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/batchedtestrunner.js)
-    list(APPEND wasm_support_libexec_files
-         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/emrunadapter.js)
-    list(APPEND wasm_support_libexec_files
-         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qwasmjsruntime.js)
-    list(APPEND wasm_support_libexec_files
-         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qwasmtestmain.js)
-    list(APPEND wasm_support_libexec_files
-         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qtestoutputreporter.js)
-    list(APPEND wasm_support_libexec_files
-         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qtestoutputreporter.css)
-    list(APPEND wasm_support_libexec_files
-         ${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/util.js)
+if(WASM)
+    set(testrunner_files
+        "${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/batchedtestrunner.html"
+        "${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/batchedtestrunner.js"
+        "${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/emrunadapter.js"
+        "${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qwasmjsruntime.js"
+        "${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qwasmtestmain.js"
+        "${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/util.js")
 
-    qt_path_join(libexec_dir ${QT_INSTALL_DIR} ${INSTALL_LIBEXECDIR})
-    qt_copy_or_install(FILES ${wasm_support_libexec_files}
-                       DESTINATION "${libexec_dir}")
+    qt_path_join(install_dir_libexec "${QT_INSTALL_DIR}" "${INSTALL_LIBEXECDIR}")
+    qt_copy_or_install(FILES ${testrunner_files}
+            DESTINATION "${install_dir_libexec}")
+
+    # In a prefix build, the above copy_or_install won't put the files
+    # in the build dir, but they are required there for tests at configure time
+    if(QT_WILL_INSTALL)
+        qt_path_join(build_dir_libexec "${QT_BUILD_DIR}" "${INSTALL_LIBEXECDIR}")
+        foreach(testrunner_file ${testrunner_files})
+            file(COPY "${testrunner_file}" DESTINATION "${build_dir_libexec}")
+        endforeach()
+    endif()
 endif()
