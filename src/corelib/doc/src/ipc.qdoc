@@ -1,0 +1,488 @@
+// Copyright (C) 2022 Intel Corporation.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page ipc.html
+    \title Inter-Process Communication
+    \ingroup groups
+    \ingroup frameworks-technologies
+    \keyword ipc
+
+    \brief An overview of Qt's inter-process communication functionality
+
+    Qt supports many ways of communicating with other processes running in the
+    same system or in different systems. There are basically three types of
+    inter-process communication mechanisms:
+
+    \list 1
+       \li Synchronization primitives
+       \li Exchanging of arbitrary byte-level data
+       \li Passing structured messages
+    \endlist
+
+    \section1 Synchronization primitives
+
+    Qt only provides one class for explicit inter-process synchronization:
+    \l{QSystemSemaphore}. A QSystemSemaphore is like a \l{QSemaphore} that is
+    accessible by multiple processes in the same system. It is globally
+    identified by a "key", which in Qt is represented by the \l{QNativeIpcKey}
+    class. Additionally, depending on the OS, Qt may support multiple different
+    backends for sharing memory; see the \l{Native IPC Keys} documentation for
+    more information and limitations.
+
+    It is possible to use regular thread-synchronization primitives such as
+    mutexes, wait conditions, and read-write locks, located in memory that is
+    shared between processes. Qt does not provide any class to support this,
+    but applications can use low-level operations on certain operating systems.
+
+    Other Qt classes may be used to provide higher-level locking, like
+    \l{QLockFile}, or by acquiring a unique, system-wide resource. Such
+    techniques include \l{QTcpServer}{TCP} or \l{QUdpSocket}{UDP} ports or
+    well-known names in \l{QDBusConnection::registerService}{D-Bus}.
+
+    \section1 Byte-level data sharing
+
+    Using byte-level data, applications can implement any communication
+    protocol they may choose. Sharing of byte data can be stream-oriented
+    (serialized) or can allow random access (a similar condition to
+    QFileDevice::isSequential()).
+
+    For serial communication, Qt provides a number of different classes and
+    even full modules:
+    \list
+      \li Pipes and FIFOs: \l QFile
+      \li Child processes: \l QProcess
+      \li Sockets: \l QTcpSocket, \l QUdpSocket (in \l{Qt Network})
+      \li HTTP(S): \l QNetworkAccessManager (in \l{Qt Network}) and
+                   \l QHttpServer (in \l{Qt HTTP Server})
+      \li CoAP(S): \l QCoapClient (in \l{Qt CoAP})
+    \endlist
+
+    For random-access data sharing within the same system, Qt provides
+    \l{QSharedMemory}. See the \l{Shared Memory} documentation for detailed
+    information.
+
+    \section1 Structured message passing
+
+    Qt also provides a number of techniques to exchange structured messages
+    with other processes. Applications can build on top of the byte-level
+    solutions above, such as by using \l QJsonDocument or \l QXmlStreamReader /
+    \l QXmlStreamWriter over HTTP to perform JSONRPC or XMLRPC, respectively,
+    or \l QCborValue with QtCoAP.
+
+    Dedicated Qt modules for structured messages and remote procedure-calling
+    include:
+    \list
+      \li \l{Qt D-Bus}
+      \li \l{Qt Remote Objects}
+      \li \l{Qt WebSockets}
+    \endlist
+*/
+
+/*!
+    \page shared-memory.html
+    \title Shared Memory
+    \keyword ipc
+    \keyword shared memory
+
+    \brief Overview of the techniques for sharing memory between processes
+
+    Qt provides two techniques to share memory with other processes in the same
+    system: \l{QSharedMemory} and memory-mapped files using \l{QFile}. Memory
+    that is shared with other processes is often referred to as a "segment",
+    and although it may have been implemented as specific segments on
+    processors with segmented memory models in the past, this is not the case
+    in any modern operating system. Shared memory segments are simply regions
+    of memory that the operating system will ensure are available to all
+    processes participating.
+
+    \note The address at which the segment is located in memory will almost
+    always be different for each process that is participating in the sharing.
+    Therefore, applications must take care to share only position-independent
+    data, such as primitive C++ types or arrays of such types.
+
+    \section1 Sharing memory using QSharedMemory
+
+    QSharedMemory provides a simple API to create a shared memory segment of a
+    given size or attach to one that was created by another process.
+    Additionally, it provides a pair of methods to \l{QSharedMemory::}{lock}
+    and \l{QSharedMemory::}{unlock} the whole segment, using an internal
+    \l{QSystemSemaphore}.
+
+    Shared memory segments and system semaphores are globally identified in the
+    system through a "key", which in Qt is represented by the \l{QNativeIpcKey}
+    class. Additionally, depending on the OS, Qt may support multiple different
+    backends for sharing memory; see the \l{Native IPC Keys} documentation for
+    more information and limitations.
+
+    QSharedMemory is designed to share memory only within the same privilege
+    level (that is, not with untrusted other processes, such as those started
+    by other users). For backends that support it, QSharedMemory will create
+    segments such that only processes with the same privilege level can attach.
+
+    \section1 Sharing memory via memory-mapped files
+
+    Most files can be mapped to memory using QFile::map() and, if the
+    \l{QFileDevice::MapPrivateOption}{MapPrivateOption} option is not specified,
+    any writes to the mapped segment will be observed by all other processes
+    that have mapped the same file. Exceptions to files that can be mapped to
+    memory include remote files found in network shares or those located in
+    certain filesystems. Even if the operating system does allow mapping remote
+    files to memory, I/O operations on the file will likely be cached and
+    delayed, thus making true memory sharing impossible.
+
+    This solution has the major advantages of being independent of any backend
+    API and of being simpler to interoperate with from non-Qt applications.
+    Since \l{QTemporaryFile} is a \l{QFile}, applications can use that class to
+    achieve clean-up semantics and to create unique shared memory segments too.
+
+    To achieve locking of the shared memory segment, applications will need to
+    deploy their own mechanisms. One way may be to use \l QLockFile. Another
+    and less costly solution is to \l QBasicAtomicInteger or \c{std::atomic} in
+    a pre-determined offset in the segment itself. Higher-level locking
+    primitives may be available on some operating systems; for example, on
+    Linux, applications can set the "pshared" flag in the mutex attribute
+    passed to \c{pthread_mutex_create()} to indicate that the mutex resides in
+    a shared memory segment.
+
+    Be aware that the operating system will likely attempt to commit to
+    permanent storage any writes made to the shared memory. This may be desired
+    or it may be a performance penalty if the file itself was meant to be
+    temporary. In that case, applications should locate a RAM-backed
+    filesystem, such as \c{tmpfs} on Linux (see
+    QStorageInfo::fileSystemType()), or pass a flag to the native file-opening
+    function to inform the OS to avoid committing the contents to storage.
+
+    It is possible to use file-backed shared memory to communicate with
+    untrusted processes, in which case the application should exercise great
+    care. The files may be truncated/shrunk and cause applications accessing
+    memory beyond the file's size to crash.
+
+    \section2 Linux hints on memory-mapped files
+
+    On modern Linux systems, while the \c{/tmp} directory is often a \c{tmpfs}
+    mount point, that is not a requirement. However, the \c{/dev/shm} directory
+    is required to be a \c{tmpfs} and exists for the very purpose of sharing
+    memory. Do note that it is world-readable and writable (like \c{/tmp} and
+    \c{/var/tmp}), so applications must be careful of the contents revealed
+    there. Another alternative is to use the XDG Runtime Directory (see
+    QStandardPaths::writableLocation() and \l{QStandardPaths::RuntimeLocation}),
+    which on Linux systems using systemd is a user-specific \c{tmpfs}.
+
+    An even more secure solution is to create a "memfd" using \c{memfd_create(2)}
+    and use interprocess communication to pass the file descriptor, like
+    \l{QDBusUnixFileDescriptor} or by letting the child process of a \l{QProcess}
+    inherit it. "memfds" can also be sealed against being shrunk, so they are
+    safe to be used when communicating with processes with a different privilege
+    level.
+
+    \section2 FreeBSD hints on memory-mapped files
+
+    FreeBSD also has \c{memfd_create(2)} and can pass file descriptors to other
+    processes using the same techniques as Linux. It does not have temporary
+    filesystems mounted by default.
+
+    \section2 Windows hints on memory-mapped files
+
+    On Windows, the application can request the operating system avoid saving
+    the file's contents on permanent storage. This request is performed by
+    passing the \c{FILE_ATTRIBUTE_TEMPORARY} flag in the
+    \c{dwFlagsAndAttributes} parameter to the \c{CreateFile} Win32 function,
+    the \c{_O_SHORT_LIVED} flag to \c{_open()} low-level function, or by
+    including the modifier "T" to the
+    \c{fopen()} C runtime function.
+
+    There's also a flag to inform the operating system to delete the file when
+    the last handle to it is closed (\c{FILE_FLAG_DELETE_ON_CLOSE},
+    \c{_O_TEMPORARY}, and the "D" modifier), but do note that all processes
+    attempting to open the file must agree on using this flag or not using it. A
+    mismatch will likely cause a sharing violation and failure to open the file.
+*/
+
+/*!
+    \page native-ipc-keys.html
+    \title Native IPC Keys
+    \keyword ipc
+    \keyword shared memory
+    \keyword system semaphore
+
+    \brief An overview of keys for QSharedMemory and QSystemSemaphore
+
+    The \l QSharedMemory and \l QSystemSemaphore classes identify their
+    resource using a system-wide identifier known as a "key". The low-level key
+    value as well as the key type are encapsulated in Qt using the \l
+    QNativeIpcKey class. That class also provides the proper means of
+    exchanging the key with other processes, by way of
+    QNativeIpcKey::toString() and QNativeIpcKey::fromString().
+
+    Qt currently supports three distinct backends for those two classes, which
+    match the values available in the \l{QNativeIpcKey::Type} enumeration.
+    \list
+      \li POSIX Realtime extensions (IEEE 1003.1b, POSIX.1b)
+      \li X/Open System Interfaces (XSI) or System V (SVr4), though also now part of POSIX
+      \li Windows primitives
+    \endlist
+
+    As the name indicates, the Windows primitives are only available on the
+    Windows operating system, where they are the default backend. The other two
+    are usually both available on Unix operating systems. The following table
+    provides an overview of typical availability since Qt 6.6:
+
+    \table
+      \header   \li Operating system    \li POSIX   \li System V    \li Windows
+      \row      \li Android             \li         \li             \li
+      \row      \li INTEGRITY           \li         \li             \li
+      \row      \li QNX                 \li Yes     \li             \li
+      \row      \li \macos              \li Yes     \li Usually (1) \li
+      \row      \li Other Apple OSes    \li Yes     \li             \li
+      \row      \li Other Unix systems  \li Yes     \li Yes         \li
+      \row      \li Windows             \li Rarely (2) \li          \li Yes
+    \endtable
+
+    \note 1 Sandboxed \macos applications, which include all applications
+    distributed via the Apple App Store, may not use System V objects.
+
+    \note 2 Some GCC-compatible C runtimes on Windows provide POSIX-compatible
+    shared memory support, but this is rare. It is always absent with the
+    Microsoft compiler.
+
+    To determine whether a given key type is supported, applications should
+    call QSharedMemory::isKeyTypeSupported() and
+    QSystemSemaphore::isKeyTypeSupported().
+
+    QNativeIpcKey also provides support for compatibility with Qt applications
+    prior to its introduction. The following sections detail the limitations of
+    the backends, the contents of the string keys themselves, and
+    compatibility.
+
+    \section1 Cross-platform safe key format
+
+    QNativeIpcKey::setNativeKey() and QNativeIpcKey::nativeKey() handle the
+    low-level native key, which may be used with the native APIs and shared
+    with other, non-Qt processes (see below for the API). This format is not
+    usually cross-platform, so both QSharedMemory and QSystemSemaphore provide
+    a function to translate a cross-platform identifier string to the native
+    key: QSharedMemory::platformSafeKey() and
+    QSystemSemaphore::platformSafeKey().
+
+    The length of the cross-platform key on most platforms is the same as that
+    of a file name, but is severely limited on Apple platforms to only 30
+    usable bytes (be mindful of UTF-8 encoding if using characters outside the
+    US-ASCII range). The format of the key is also similar to that of a file
+    path component, meaning it should not contain any characters not allowed in
+    file names, in particular those that separate path components (slash and
+    backslash), with the exception of sandboxed applications on Apple operating
+    systems. The following are good examples of cross-platform keys: "myapp",
+    "org.example.myapp", "org.example.myapp-12345".
+
+    \b{Apple sandbox limitations:} if the application is running inside of a
+    sandbox in an Apple operating system, the key must be in a very specific
+    format: \c {<application group identifier>/<custom identifier>}. Sandboxing
+    is implied for all applications distributed through the Apple App Store.
+    See Apple's documentation
+    \l{https://developer.apple.com/library/archive/documentation/Security/Conceptual/AppSandboxDesignGuide/AppSandboxInDepth/AppSandboxInDepth.html#//apple_ref/doc/uid/TP40011183-CH3-SW24}
+    {here} and \l{https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_application-groups}
+    {here} for more information, including how to obtain the application's group identifier.
+
+    \section1 Native key format
+
+    This section details the format of the native keys of the supported
+    backends.
+
+    \section3 POSIX Realtime
+    Native keys resemble file names and may contain any character that file
+    names do, except for a slash. POSIX requires the first character in the key
+    name to be a slash and leaves undetermined whether any additional slashes
+    are permitted. On most operating systems, the key length is the same as a
+    file name, but it is limited to 32 characters on Apple operating systems
+    (this includes the first slash and the terminating null, so only 30 usable
+    characters are possible).
+
+    The following are good examples of native POSIX keys: "/myapp",
+    "/org.example.myapp", "/org.example.myapp-12345".
+
+    QSharedMemory::platformSafeKey() and QSystemSemaphore::platformSafeKey()
+    simply prepend the slash. On Apple operating systems, they also truncate
+    the result to the available size.
+
+    \section3 Windows
+    Windows key types are NT
+    \l{https://learn.microsoft.com/en-us/windows/win32/sync/object-namespaces}{kernel
+    object names} and may be up to \c{MAX_PATH} (260) characters in length.
+    They look like relative paths (that is, they don't start with a backslash
+    or a drive letter), but unlike file names on Windows, they are
+    case-sensitive.
+
+    The following are good examples of native Windows keys: "myapp",
+    "org.example.myapp", "org.example.myapp-12345".
+
+    QSharedMemory::platformSafeKey() and QSystemSemaphore::platformSafeKey()
+    insert a prefix to disambiguate shared memory and system semaphores,
+    respectively.
+
+    \section3 X/Open System Interfaces (XSI) / System V
+    System V keys take the form of the name of a file in the system, and thus
+    have the exact same limitations as file paths do. Both QSharedMemory and
+    QSystemSemaphore will create this file if it does not exist when creating
+    the object. If auto-removal is disabled, it may also be shared between
+    QSharedMemory and QSystemSemaphore without conflict and can be any extant
+    file (for example, it can be the process executable itself, see
+    QCoreApplication::applicationFilePath()). The path should be an absolute
+    one to avoid mistakes due to different current directories.
+
+    QSharedMemory::platformSafeKey() and QSystemSemaphore::platformSafeKey()
+    always return an absolute path. If the input was already absolute, they
+    will return their input unchanged. Otherwise, they will prepend a suitable
+    path where the application usually has permission to create files in.
+
+    \section1 Ownership
+
+    Shared memory and system semaphore objects need to be created before use,
+    which is accomplished with QSharedMemory::create() or by passing
+    QSystemSemaphore::Create to the constructor, respectively.
+
+    On Unix systems, the Qt classes that created the object will be responsible
+    for cleaning up the object in question. Therefore, if the application with
+    that C++ object exits uncleanly (a crash, qFatal(), etc.), the object may
+    be left behind. If that happens, applications may fail to create the
+    object again and should instead attach to an existing one. For example, for
+    QSharedMemory:
+
+    \code
+      if (!shm.create(4096) && shm.error() == QSharedMemory::AlreadyExists)
+          shm.attach();
+    \endcode
+
+    Re-attaching to a QSystemSemaphore is probably unwise, as the token counter
+    in it is probably in an unknown state and therefore may lead to deadlocks.
+
+    \section3 POSIX Realtime
+    POSIX Realtime object ownership is patterned after files, in the sense that
+    they exist independent of any process using them or not. Qt is unable to
+    determine if the object is still in use, so auto-removal will remove it
+    even then, which will make attaching to the same object impossible but
+    otherwise not affecting existing attachments.
+
+    Prior to Qt 6.6, Qt never cleaned up POSIX Realtime objects, except on QNX.
+
+    \section3 X/Open System Interfaces (XSI) / System V
+    There are two resources managed by the Qt classes: the file the key refers
+    to and the object itself. QSharedMemory manages the object cooperatively:
+    the last attachment is responsible for removing the object itself and then
+    removing the key file. QSystemSemaphore will remove the object if and only
+    if it was passed QSystemSemaphore::Create; additionally, if it created the
+    key file, it will remove that too.
+
+    Since Qt 6.6, it is possible to ask either class not to clean up.
+
+    \section3 Windows
+    The operating system owns the object and will clean up after the last
+    handle to the object is closed.
+
+    \section1 Interoperability with old Qt applications
+
+    The QNativeIpcKey class was introduced in Qt 6.6. Prior to this version,
+    QSharedMemory and QSystemSemaphore backends were determined at the time of
+    Qt's own build. For Windows systems, it was always the Windows backend. For
+    Unix systems, it defaulted to the System V backend if the configuration
+    script determined it was available. If it was not available, it fell back
+    to the POSIX one (since Qt 4.8). The POSIX backend could be explicitly
+    selected using the \c{-feature-ipc_posix} option to the Qt configure
+    script; if it was enabled, the \c{QT_POSIX_IPC} macro would be defined.
+
+    Qt 6.6 retains the configure script option but it no longer controls the
+    availability of the backends. Instead, it changes what
+    QNativeIpcKey::legacyDefaultTypeForOs() will return. Applications that need
+    to retain compatibility must use this key type exclusively to guarantee
+    interoperability.
+
+    The API in both QSharedMemory and QSystemSemaphore had the concept of a
+    cross-platform key, which is now deprecated in favor of using
+    QSharedMemory::legacyNativeKey() and QSystemSemaphore::legacyNativeKey().
+    Those two functions produce the same native key as the deprecated functions
+    did in prior versions. If the old code was for example:
+
+    \code
+        QSharedMemory shm("org.example.myapplication");
+        QSystemSemaphore sem("org.example.myapplication");
+    \endcode
+
+    It can be updated to be:
+    \code
+        QSharedMemory shm(QSharedMemory::legacyNativeKey("org.example.myapplication"));
+        QSystemSempahore sem(QSystemSemaphore::legacyNativeKey("org.example.myapplication"));
+    \endcode
+
+    If the two applications exchanged native keys, there is no need to update
+    code such as:
+
+    \code
+        QSharedMemory shm;
+        shm.setNativeKey(key);
+    \endcode
+
+    Though if the older application did accept a native key, the new one may
+    opt to use \c{platformSafeKey()} with a second argument of
+    QNativeIpcKey::legacyDefaultTypeForOs().
+
+    \section3 X/Open System Interfaces (XSI) / System V
+    Never use existing files for QSharedMemory keys, as the old Qt application
+    may attempt to remove it. Instead, let QSharedMemory create it.
+
+    \section1 Interoperability with non-Qt applications
+
+    Interoperability with non-Qt applications is possible, with some limitations:
+    \list
+      \li Creation of shared memory segments must not race
+      \li QSharedMemory support for locking the segment is unavailable
+    \endlist
+
+    Communication with non-Qt applications must always be through the native
+    key.
+
+    QSharedMemory always maps the entire segment to memory. The non-Qt
+    application may choose to only map a subset of it to memory, with no ill
+    effects.
+
+    \section3 POSIX Realtime
+    POSIX shared memory can be opened using
+    \l{https://pubs.opengroup.org/onlinepubs/9699919799/functions/shm_open.html}{shm_open()}
+    and POSIX system semaphores can be opened using
+    \l{https://pubs.opengroup.org/onlinepubs/9699919799/functions/sem_open.html}{sem_open()}.
+
+    Both of those functions take a \c name parameter that is the result of
+    QNativeIpcKey::nativeKey(), encoded for file names using
+    QFile::encodeName() / QFile::decodeName().
+
+    \section3 Windows
+    Windows shared memory objects can be opened using
+    \l{https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-createfilemappingw}{CreateFileMappingW}
+    and Windows system semaphore objects can be opened using
+    \l{https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createsemaphorew}{CreateSemaphoreW}.
+    Despite the name of both functions starting with "Create", they are able
+    to attach to existing objects.
+
+    The \c lpName parameter to those functions is the result of
+    QNativeIpcKey::nativeKey(), without transformation.
+
+    If the foreign application uses the non-Unicode version of those functions
+    (ending in "A"), the name can be converted to and from 8-bit using QString.
+
+    \section3 X/Open System Interfaces (XSI) / System V
+    System V shared memory can be obtained using
+    \l{https://pubs.opengroup.org/onlinepubs/9699919799/functions/shmget.html}{shmget()}
+    and System V system semaphores can be obtained using
+    \l{https://pubs.opengroup.org/onlinepubs/9699919799/functions/semget.html}{semget()}.
+
+    The \c{key} parameter to either of those functions is the result of the
+    \l{https://pubs.opengroup.org/onlinepubs/9699919799/functions/ftok.html}{ftok()}
+    function when passed the file name obtained from QNativeIpcKey::nativeKey()
+    with an \c id of 81 or 0x51 (the ASCII capital letter 'Q').
+
+    System V semaphore objects may contain multiple semaphores, but
+    QSystemSemaphore only uses the first one (number 0 for \c{sem_num}).
+
+    Both QSharedMemory and QSystemSemaphore default to removing the object
+    using the \c{IPC_RMID} operation to \c{shmctl()} and \c{semctl()}
+    respectively if they are the last attachment.
+*/
