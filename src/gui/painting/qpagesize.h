@@ -257,6 +257,8 @@ private:
     { return !(lhs == rhs); }
 
     QPageSize(const QString &key, const QSize &pointSize, const QString &name);
+    QPageSize(const QString &key, const QSizeF &size,
+              QPageSize::Unit units, const QString &name);
     QPageSize(int windowsId, const QSize &pointSize, const QString &name);
     QPageSize(QPageSizePrivate &dd);
     QSharedDataPointer<QPageSizePrivate> d;

@@ -364,6 +364,12 @@ QPageSize QPlatformPrintDevice::createPageSize(const QString &key, const QSize &
     return QPageSize(key, size, localizedName);
 }
 
+QPageSize QPlatformPrintDevice::createPageSize(const QString &key, const QSizeF &size,
+                                               QPageSize::Unit units, const QString &localizedName)
+{
+    return QPageSize(key, size, units, localizedName);
+}
+
 QPageSize QPlatformPrintDevice::createPageSize(int windowsId, const QSize &size, const QString &localizedName)
 {
     return QPageSize(windowsId, size, localizedName);

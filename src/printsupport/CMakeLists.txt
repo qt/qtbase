@@ -84,6 +84,22 @@ qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewwidget
         widgets/qprintpreviewwidget.cpp widgets/qprintpreviewwidget.h
 )
 
+qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_cpdb AND UNIX AND NOT APPLE
+    SOURCES
+        kernel/qcpdb.cpp kernel/qcpdb_p.h
+    LIBRARIES
+        WrapCPDB::WrapCPDB
+)
+
+qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_cpdbjobwidget AND UNIX AND NOT APPLE
+    SOURCES
+        widgets/qcpdbjobwidget.cpp widgets/qcupsjobwidget.ui widgets/qcpdbjobwidget_p.h
+    LIBRARIES
+        WrapCPDB::WrapCPDB
+    ENABLE_AUTOGEN_TOOLS
+        uic
+)
+
 qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_cups AND UNIX AND NOT APPLE
     SOURCES
         kernel/qcups.cpp kernel/qcups_p.h
@@ -201,7 +217,7 @@ qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printdialog AND UNIX
     NO_UNITY_BUILD_SOURCES
         dialogs/qprintdialog_unix.cpp   # Clashes with CUPS headers
     INCLUDE_DIRECTORIES
-        ${QtBase_SOURCE_DIR}/src/plugins/printsupport/cups
+        ${QtBase_SOURCE_DIR}/src/plugins/printsupport/cpdb
     ENABLE_AUTOGEN_TOOLS
         uic
 )

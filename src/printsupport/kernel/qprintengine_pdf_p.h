@@ -89,6 +89,8 @@ private:
 
     friend class QCupsPrintEngine;
     friend class QCupsPrintEnginePrivate;
+    friend class QCpdbPrintEngine;
+    friend class QCpdbPrintEnginePrivate;
 
     QString printerName;
     QString printProgram;

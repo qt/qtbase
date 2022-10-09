@@ -58,7 +58,6 @@ struct PaperSourceNames
 };
 #endif
 
-
 // QPagePreview
 // - Private widget to display preview of page layout
 // - Embedded in QPageSetupWidget
@@ -202,6 +201,9 @@ QPageSetupWidget::QPageSetupWidget(QWidget *parent)
       m_pagePreview(nullptr),
       m_printer(nullptr),
       m_printDevice(nullptr),
+#if QT_CONFIG(cpdb)
+      m_printerObj(nullptr),
+#endif
 #if QT_CONFIG(cups)
       m_pageSizePpdOption(nullptr),
 #endif
@@ -235,7 +237,6 @@ QPageSetupWidget::QPageSetupWidget(QWidget *parent)
     m_ui.reversePortrait->setVisible(false);
 
     initUnits();
-    initPagesPerSheet();
 
     connect(m_ui.unitCombo, &QComboBox::activated, this, &QPageSetupWidget::unitChanged);
 
@@ -271,7 +272,51 @@ void QPageSetupWidget::initUnits()
 // Init the Pages Per Sheet (n-up) combo boxes if using CUPS
 void QPageSetupWidget::initPagesPerSheet()
 {
-#if QT_CONFIG(cups)
+#if QT_CONFIG(cpdb)
+    bool showNumUp = false;
+    const cpdb_option_t *opt = cpdbGetOption(m_printerObj, CPDB_OPTION_NUMBER_UP);
+    if (opt && opt->num_supported > 1) {
+        showNumUp = true;
+        m_ui.pagesPerSheetCombo->clear();
+        for (int i = 0; i < opt->num_supported; i++) {
+            QByteArray value = opt->supported_values[i];
+            QByteArray displayVal = QCPDBSupport::translateChoice(m_printerObj,
+                                                                  CPDB_OPTION_NUMBER_UP,
+                                                                  opt->supported_values[i]);
+            m_ui.pagesPerSheetCombo->addItem(QString::fromLocal8Bit(displayVal),
+                                             QVariant::fromValue(value));
+        }
+
+        QByteArray defaultVal = opt->default_value;
+        int idx = m_ui.pagesPerSheetCombo->findData(QVariant::fromValue(defaultVal));
+        if (idx >= 0)
+            m_ui.pagesPerSheetCombo->setCurrentIndex(idx);
+    }
+    m_ui.pagesPerSheetCombo->setVisible(showNumUp);
+
+    bool showNumUpLayout = false;
+    opt = cpdbGetOption(m_printerObj, CPDB_OPTION_NUMBER_UP_LAYOUT);
+    if (opt && opt->num_supported > 1) {
+        showNumUpLayout = true;
+        m_ui.pagesPerSheetLayoutCombo->clear();
+        for (int i = 0; i < opt->num_supported; i++) {
+            QByteArray value = opt->supported_values[i];
+            QByteArray displayVal = QCPDBSupport::translateChoice(m_printerObj,
+                                                                  CPDB_OPTION_NUMBER_UP_LAYOUT,
+                                                                  opt->supported_values[i]);
+            m_ui.pagesPerSheetLayoutCombo->addItem(QString::fromLocal8Bit(displayVal),
+                                                   QVariant::fromValue(value));
+        }
+
+        QByteArray defaultVal = opt->default_value;
+        int idx = m_ui.pagesPerSheetLayoutCombo->findData(QVariant::fromValue(defaultVal));
+        if (idx >= 0)
+            m_ui.pagesPerSheetLayoutCombo->setCurrentIndex(idx);
+    }
+    m_ui.pagesPerSheetLayoutCombo->setVisible(showNumUpLayout);
+
+    m_ui.pagesPerSheetButtonGroup->setVisible(showNumUp || showNumUpLayout);
+#elif QT_CONFIG(cups)
     m_ui.pagesPerSheetLayoutCombo->addItem(QPrintDialog::tr("Left to Right, Top to Bottom"),
                                            QVariant::fromValue(QCUPSSupport::LeftToRightTopToBottom));
     m_ui.pagesPerSheetLayoutCombo->addItem(QPrintDialog::tr("Left to Right, Bottom to Top"),
@@ -366,7 +411,13 @@ void QPageSetupWidget::setPrinter(QPrinter *printer, QPrintDevice *printDevice,
     m_printer = printer;
     m_printDevice = printDevice;
 
-#if QT_CONFIG(cups)
+#if QT_CONFIG(cpdb)
+    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    if (ps) {
+        QPrintDevice printDevice = ps->createPrintDevice(printerName);
+        m_printerObj = qvariant_cast<cpdb_printer_obj_t *>(printDevice.property(PDPK_CpdbPrinterObj));
+    }
+#elif QT_CONFIG(cups)
     // find the PageSize cups option
     m_pageSizePpdOption = m_printDevice ? QCUPSSupport::findPpdOption("PageSize", m_printDevice) : nullptr;
 #endif
@@ -386,6 +437,7 @@ void QPageSetupWidget::setPrinter(QPrinter *printer, QPrintDevice *printDevice,
 
     m_outputFormat = outputFormat;
     m_printerName = printerName;
+    initPagesPerSheet();
     initPageSizes();
     updateWidget();
     updateSavedValues();
@@ -495,7 +547,39 @@ void QPageSetupWidget::updateWidget()
 void QPageSetupWidget::setupPrinter() const
 {
     m_printer->setPageLayout(m_pageLayout);
+
+#if QT_CONFIG(cpdb)
+    QSizeF size = m_pageLayout.pageSize().size(QPageSize::Millimeter);
+    QMarginsF margins = m_pageLayout.margins(QPageLayout::Millimeter);
+
+    int width = size.width() * 100.0;
+    int height = size.height() * 100.0;
+    int left = margins.left() * 100.0;
+    int right = margins.right() * 100.0;
+    int top = margins.top() * 100.0;
+    int bottom = margins.bottom() * 100.0;
+
+    char *borderless = cpdbGetSetting(m_printerObj, "borderless");
+    if (qstrcmp(borderless, "true") == 0) {
+        left = right = top = bottom = 0;
+        cpdbClearSetting(m_printerObj->settings, "borderless");
+    }
+
+    QString value = QStringLiteral("{media-size={x-dimension=%1 y-dimension=%2} media-bottom-margin=%3"
+                                   " media-left-margin=%4 media-right-margin=%5 media-top-margin=%6}")
+                        .arg(width).arg(height).arg(bottom).arg(left).arg(right).arg(top);
+
+    cpdbAddSettingToPrinter(m_printerObj, CPDB_OPTION_MEDIA_COL, value.toLocal8Bit().constData());
+#endif
+
     m_printer->setPageOrientation(m_pageLayout.orientation());
+
+#if QT_CONFIG(cpdb)
+    cpdbAddSettingToPrinter(m_printerObj, CPDB_OPTION_NUMBER_UP,
+                            qvariant_cast<QByteArray>(m_ui.pagesPerSheetCombo->currentData()));
+    cpdbAddSettingToPrinter(m_printerObj, CPDB_OPTION_NUMBER_UP_LAYOUT,
+                            qvariant_cast<QByteArray>(m_ui.pagesPerSheetLayoutCombo->currentData()));
+#endif
 #if QT_CONFIG(cups)
     QCUPSSupport::PagesPerSheet pagesPerSheet = qvariant_cast<QCUPSSupport::PagesPerSheet>(m_ui.pagesPerSheetCombo->currentData()
 );
@@ -567,7 +651,7 @@ void QPageSetupWidget::pageSizeChanged()
                     const auto values = QStringList{} << QString::fromLatin1(m_pageSizePpdOption->keyword)
                                                       << QString::fromLatin1(choice->choice);
                     m_printDevice->setProperty(PDPK_PpdOption, values);
-                    emit ppdOptionChanged();
+                    Q_EMIT ppdOptionChanged();
                     break;
                 }
             }
@@ -587,7 +671,7 @@ void QPageSetupWidget::pageSizeChanged()
             const auto values = QStringList{} << QString::fromLatin1(m_pageSizePpdOption->keyword)
                                               << QStringLiteral("Custom");
             m_printDevice->setProperty(PDPK_PpdOption, values);
-            emit ppdOptionChanged();
+            Q_EMIT ppdOptionChanged();
         }
 #endif
     }

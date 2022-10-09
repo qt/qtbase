@@ -105,7 +105,7 @@ protected:
         QLineEdit::focusOutEvent(e);
     }
 
-private slots:
+private Q_SLOTS:
     void handleReturnPressed()
     {
         origText = text();

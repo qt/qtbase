@@ -97,6 +97,8 @@ public:
 
     static QPageSize createPageSize(const QString &key, const QSize &size, const QString &localizedName);
     static QPageSize createPageSize(int windowsId, const QSize &size, const QString &localizedName);
+    static QPageSize createPageSize(const QString &key, const QSizeF &size,
+                                    QPageSize::Unit units, const QString &localizedName);
 
 protected:
     virtual void loadPageSizes() const;

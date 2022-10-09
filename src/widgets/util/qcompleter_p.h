@@ -212,7 +212,7 @@ public:
 
     Q_DECLARE_PRIVATE(QCompletionModel)
 
-signals:
+Q_SIGNALS:
     void rowsAdded();
 
 public Q_SLOTS:

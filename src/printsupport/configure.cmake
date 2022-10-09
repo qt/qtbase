@@ -16,6 +16,9 @@ else()
 endif()
 qt_find_package(Cups PROVIDED_TARGETS Cups::Cups
     MODULE_NAME printsupport QMAKE_LIB cups ${mark_cups_optional})
+qt_find_package(Cups PROVIDED_TARGETS Cups::Cups MODULE_NAME printsupport QMAKE_LIB cups)
+qt_find_package(WrapCPDB PROVIDED_TARGETS WrapCPDB::WrapCPDB MODULE_NAME printsupport QMAKE_LIB cpdb)
+
 
 #### Tests
 
@@ -41,6 +44,19 @@ qt_feature("cupspassworddialog" PRIVATE
     LABEL "CUPS password dialog"
     CONDITION ( QT_FEATURE_dialogbuttonbox ) AND ( QT_FEATURE_formlayout ) AND ( QT_FEATURE_lineedit )
 )
+qt_feature("cpdb" PUBLIC PRIVATE
+    SECTION "Painting"
+    LABEL "CPDB"
+    PURPOSE "Provides Common Print Dialog Backend support"
+    CONDITION WrapCPDB_FOUND AND QT_FEATURE_printer AND QT_FEATURE_datestring AND NOT QT_FEATURE_cups
+)
+qt_feature_definition("cpdb" "QT_NO_CPDB" NEGATE VALUE "1")
+qt_feature("cpdbjobwidget" PUBLIC PRIVATE
+    SECTION "Widgets"
+    LABEL "CPDB job control widget"
+    CONDITION ( QT_FEATURE_buttongroup ) AND ( QT_FEATURE_calendarwidget ) AND ( QT_FEATURE_checkbox ) AND ( QT_FEATURE_combobox ) AND ( QT_FEATURE_cpdb ) AND ( QT_FEATURE_datetimeedit ) AND ( QT_FEATURE_groupbox ) AND ( QT_FEATURE_tablewidget )
+)
+qt_feature_definition("cpdbjobwidget" "QT_NO_CPDBJOBWIDGET" NEGATE VALUE "1")
 qt_feature("printer" PUBLIC
     SECTION "Painting"
     LABEL "QPrinter"
@@ -70,5 +86,6 @@ qt_feature("printpreviewdialog" PUBLIC
 )
 qt_feature_definition("printpreviewdialog" "QT_NO_PRINTPREVIEWDIALOG" NEGATE VALUE "1")
 qt_configure_add_summary_section(NAME "Qt PrintSupport")
+qt_configure_add_summary_entry(ARGS "cpdb")
 qt_configure_add_summary_entry(ARGS "cups")
 qt_configure_end_summary_section() # end of "Qt PrintSupport" section

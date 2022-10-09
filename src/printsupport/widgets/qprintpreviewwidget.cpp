@@ -115,7 +115,7 @@ public:
         setFrameStyle(QFrame::NoFrame);
 #endif
     }
-signals:
+Q_SIGNALS:
     void resized();
 
 protected:
@@ -125,13 +125,13 @@ protected:
             const QSignalBlocker blocker(verticalScrollBar()); // Don't change page, QTBUG-14517
             QGraphicsView::resizeEvent(e);
         }
-        emit resized();
+        Q_EMIT resized();
     }
 
     void showEvent(QShowEvent* e) override
     {
         QGraphicsView::showEvent(e);
-        emit resized();
+        Q_EMIT resized();
     }
 };
 
@@ -237,7 +237,7 @@ void QPrintPreviewWidgetPrivate::_q_fit(bool doFitting)
     }
 
     zoomFactor = graphicsView->transform().m11() * (float(printer->logicalDpiY()) / q->logicalDpiY());
-    emit q->previewChanged();
+    Q_EMIT q->previewChanged();
 }
 
 void QPrintPreviewWidgetPrivate::_q_updateCurrentPage()
@@ -250,7 +250,7 @@ void QPrintPreviewWidgetPrivate::_q_updateCurrentPage()
     int newPage = calcCurrentPage();
     if (newPage != curPage) {
         curPage = newPage;
-        emit q->previewChanged();
+        Q_EMIT q->previewChanged();
     }
 }
 
@@ -365,7 +365,7 @@ void QPrintPreviewWidgetPrivate::generatePreview()
     if (printer->d_func()->previewMode())
         return;
     printer->d_func()->setPreviewMode(true);
-    emit q->paintRequested(printer);
+    Q_EMIT q->paintRequested(printer);
     printer->d_func()->setPreviewMode(false);
     pictures = printer->d_func()->previewPages();
     populateScene(); // i.e. setPreviewPrintedPictures() e.l.
@@ -373,7 +373,7 @@ void QPrintPreviewWidgetPrivate::generatePreview()
     curPage = pages.size() > 0 ? qBound(1, curPage, pages.size()) : 1;
     if (fitting)
         _q_fit();
-    emit q->previewChanged();
+    Q_EMIT q->previewChanged();
 }
 
 void QPrintPreviewWidgetPrivate::setCurrentPage(int pageNumber)
@@ -548,7 +548,7 @@ void QPrintPreviewWidget::setViewMode(ViewMode mode)
         d->fitting = false;
         d->zoomMode = QPrintPreviewWidget::CustomZoom;
         d->zoomFactor = d->graphicsView->transform().m11() * (float(d->printer->logicalDpiY()) / logicalDpiY());
-        emit previewChanged();
+        Q_EMIT previewChanged();
     } else {
         d->fitting = true;
         d->_q_fit();
@@ -583,7 +583,7 @@ void QPrintPreviewWidget::print()
 {
     Q_D(QPrintPreviewWidget);
     // ### make use of the generated pages
-    emit paintRequested(d->printer);
+    Q_EMIT paintRequested(d->printer);
 }
 
 /*!
