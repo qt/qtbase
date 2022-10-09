@@ -2652,10 +2652,10 @@ void QString::resize(qsizetype size)
     \snippet qstring/main.cpp 46
 */
 
-void QString::resize(qsizetype size, QChar fillChar)
+void QString::resize(qsizetype newSize, QChar fillChar)
 {
     const qsizetype oldSize = length();
-    resize(size);
+    resize(newSize);
     const qsizetype difference = length() - oldSize;
     if (difference > 0)
         std::fill_n(d.data() + oldSize, difference, fillChar.unicode());
