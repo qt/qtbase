@@ -26,16 +26,21 @@ int main(int argc, char *argv[])
 #endif
 
     QCoreApplication app(argc, argv);
+    if (argc < 1) {
+        fprintf(stderr, "Need a port number\n");
+        return 1;
+    }
 
+    int port = QByteArrayView(argv[1]).toInt();
     QTcpServer server;
-    if (!server.listen(QHostAddress::LocalHost, 49199)) {
+    if (!server.listen(QHostAddress::LocalHost, port)) {
         fprintf(stderr, "Failed to listen: %s\n", server.errorString().toLatin1().constData());
         if (server.serverError() == QTcpSocket::AddressInUseError) {
             // let's see if we can find the process that would be holding this
             // still open
 #ifdef Q_OS_LINUX
             static const char *ss_args[] = {
-                "ss", "-nap", "sport", "=", ":49199", nullptr
+                "ss", "-nap", "sport", "=", argv[1], nullptr
             };
             dup2(STDERR_FILENO, STDOUT_FILENO);
             execvp(ss_args[0], const_cast<char **>(ss_args));
