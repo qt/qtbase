@@ -143,6 +143,48 @@ Q_LOGGING_CATEGORY(lcPointerGrab, "qt.pointer.grab");
         Any of the above (used as a default filter value).
 */
 
+/*! \enum QPointingDevice::GrabTransition
+
+    This enum represents a transition of exclusive or passive grab
+    from one object (possibly \c nullptr) to another (possibly \c nullptr).
+    It is emitted as an argument of the QPointingDevice::grabChanged() signal.
+
+    Valid values are:
+
+    \value GrabExclusive
+        Emitted after QPointerEvent::setExclusiveGrabber().
+    \value UngrabExclusive
+        Emitted after QPointerEvent::setExclusiveGrabber() when the grabber is
+        set to \c nullptr, to notify that the grab has terminated normally.
+    \value CancelGrabExclusive
+        Emitted after QPointerEvent::setExclusiveGrabber() when the grabber is set
+        to a different object, to notify that the old grabber's grab is "stolen".
+    \value GrabPassive
+        Emitted after QPointerEvent::addPassiveGrabber().
+    \value UngrabPassive
+        Emitted when a passive grab is terminated normally,
+        for example after QPointerEvent::removePassiveGrabber().
+    \value CancelGrabPassive
+        Emitted when a passive grab is terminated abnormally (a gesture is canceled).
+    \value OverrideGrabPassive
+        This value is not currently used.
+*/
+
+/*! \fn void QPointingDevice::grabChanged(QObject *grabber, QPointingDevice::GrabTransition transition, const QPointerEvent *event, const QEventPoint &point) const
+
+    This signal is emitted when the \a grabber object gains or loses an
+    exclusive or passive grab of \a point during delivery of \a event.
+    The \a transition tells what happened, from the perspective of the
+    \c grabber object.
+
+    \note A grab transition from one object to another results in two signals,
+    to notify that one object has lost its grab, and to notify that there is
+    another grabber. In other cases, when transitioning to or from a non-grabbing
+    state, only one signal is emitted: the \a grabber argument is never \c nullptr.
+
+    \sa QPointerEvent::setExclusiveGrabber(), QPointerEvent::addPassiveGrabber(), QPointerEvent::removePassiveGrabber()
+*/
+
 /*!
     Creates a new invalid pointing device instance as a child of \a parent.
 */
