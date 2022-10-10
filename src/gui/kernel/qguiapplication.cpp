@@ -2629,8 +2629,9 @@ void QGuiApplicationPrivate::processCloseEvent(QWindowSystemInterfacePrivate::Cl
 {
     if (e->window.isNull())
         return;
-    if (e->window.data()->d_func()->blockedByModalWindow) {
-        // a modal window is blocking this window, don't allow close events through
+    if (e->window.data()->d_func()->blockedByModalWindow && !e->window.data()->d_func()->inClose) {
+        // a modal window is blocking this window, don't allow close events through, unless they
+        // originate from a call to QWindow::close.
         return;
     }
 

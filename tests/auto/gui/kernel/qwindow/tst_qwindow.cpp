@@ -70,6 +70,7 @@ private slots:
     void modalWithChildWindow();
     void modalWindowModallity();
     void modalWindowPosition();
+    void modalCloseWhileBlocked();
 #ifndef QT_NO_CURSOR
     void modalWindowEnterEventOnHide_QTBUG35109();
     void spuriousMouseMove();
@@ -2248,6 +2249,22 @@ void tst_QWindow::modalWindowPosition()
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
     QCOMPARE(window.geometry(), origGeo);
+}
+
+void tst_QWindow::modalCloseWhileBlocked()
+{
+    QWindow first;
+    first.setModality(Qt::ApplicationModal);
+    first.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&first));
+
+    QWindow second;
+    second.setModality(Qt::ApplicationModal);
+    second.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&first));
+
+    first.close();
+    QTRY_VERIFY(!first.isVisible());
 }
 
 #ifndef QT_NO_CURSOR
