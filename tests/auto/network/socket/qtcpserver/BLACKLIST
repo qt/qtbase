@@ -16,3 +16,5 @@ windows-10
 [linkLocal]
 macos arm
 
+[addressReusable]
+linux # QTBUG-39985
