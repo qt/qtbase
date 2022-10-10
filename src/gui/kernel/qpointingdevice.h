@@ -107,7 +107,12 @@ public:
     bool operator==(const QPointingDevice &other) const;
 
 Q_SIGNALS:
-    void grabChanged(QObject *grabber, GrabTransition transition, const QPointerEvent *event, const QEventPoint &point) const;
+    void grabChanged(QObject *grabber, QPointingDevice::GrabTransition transition,
+                     const QPointerEvent *event, const QEventPoint &point)
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    const
+#endif
+    ;
 
 protected:
     QPointingDevice(QPointingDevicePrivate &d, QObject *parent);
