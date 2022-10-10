@@ -18,3 +18,4 @@ macos arm
 
 [addressReusable]
 linux # QTBUG-39985
+macos ci # QTBUG-107500
