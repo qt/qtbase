@@ -594,7 +594,7 @@ void tst_QTcpServer::addressReusable()
     process.start(processExe);
     QVERIFY2(process.waitForStarted(), qPrintable(
         QString::fromLatin1("Could not start %1: %2").arg(processExe, process.errorString())));
-    QVERIFY(process.waitForReadyRead(5000));
+    QVERIFY2(process.waitForReadyRead(5000), qPrintable(process.readAllStandardError()));
 
     QTcpSocket socket;
     socket.connectToHost(QHostAddress::LocalHost, 49199);
