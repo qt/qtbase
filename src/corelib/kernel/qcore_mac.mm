@@ -35,11 +35,13 @@ extern "C" {
 typedef uint32_t csr_config_t;
 extern int csr_get_active_config(csr_config_t *) __attribute__((weak_import));
 
+#ifdef QT_BUILD_INTERNAL
 int responsibility_spawnattrs_setdisclaim(posix_spawnattr_t attrs, int disclaim)
 __attribute__((availability(macos,introduced=10.14),weak_import));
 pid_t responsibility_get_pid_responsible_for_pid(pid_t) __attribute__((weak_import));
 char *** _NSGetArgv();
 extern char **environ;
+#endif
 }
 #endif
 
@@ -384,6 +386,7 @@ std::optional<uint32_t> qt_mac_sipConfiguration()
         return; \
     }
 
+#ifdef QT_BUILD_INTERNAL
 void qt_mac_ensureResponsible()
 {
 #if !defined(QT_APPLE_NO_PRIVATE_APIS)
@@ -421,6 +424,7 @@ void qt_mac_ensureResponsible()
     posix_spawnattr_destroy(&attr);
 #endif
 }
+#endif // QT_BUILD_INTERNAL
 
 #endif
 
