@@ -7,6 +7,9 @@
 #if defined(Q_OS_WIN) && defined(Q_CC_MSVC)
 #  include <crtdbg.h>
 #endif
+#ifdef Q_OS_UNIX
+#  include <unistd.h>
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -18,7 +21,18 @@ int main(int argc, char *argv[])
 
     QTcpServer server;
     if (!server.listen(QHostAddress::LocalHost, 49199)) {
-        qDebug("Failed to listen: %s", server.errorString().toLatin1().constData());
+        fprintf(stderr, "Failed to listen: %s\n", server.errorString().toLatin1().constData());
+        if (server.serverError() == QTcpSocket::AddressInUseError) {
+            // let's see if we can find the process that would be holding this
+            // still open
+#ifdef Q_OS_LINUX
+            static const char *ss_args[] = {
+                "ss", "-nap", "sport", "=", ":49199", nullptr
+            };
+            dup2(STDERR_FILENO, STDOUT_FILENO);
+            execvp(ss_args[0], const_cast<char **>(ss_args));
+#endif
+        }
         return 1;
     }
 
