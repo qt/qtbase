@@ -20,6 +20,8 @@
 #include <QtGui/qguiapplication.h>
 #include <private/qhighdpiscaling_p.h>
 
+#include <tuple>
+
 QT_BEGIN_NAMESPACE
 
 using namespace emscripten;
@@ -169,10 +171,46 @@ std::string QWasmScreen::canvasSpecialHtmlTargetId() const
     return std::string("!qtcanvas_") + std::to_string(uint32_t(this));
 }
 
+namespace {
+
+// Compare Emscripten versions, returns > 0 if a is greater than b.
+
+int compareVersionComponents(int a, int b)
+{
+    return a >= 0 && b >= 0 ? a - b : 0;
+}
+
+int compareEmscriptenVersions(std::tuple<int, int, int> a, std::tuple<int, int, int> b)
+{
+    if (std::get<0>(a) == std::get<0>(b)) {
+        if (std::get<1>(a) == std::get<1>(b)) {
+            return compareVersionComponents(std::get<2>(a), std::get<2>(b));
+        }
+        return compareVersionComponents(std::get<1>(a), std::get<1>(b));
+    }
+    return compareVersionComponents(std::get<0>(a), std::get<0>(b));
+}
+
+bool isEmsdkVersionGreaterThan(std::tuple<int, int, int> test)
+{
+    return compareEmscriptenVersions(
+        std::make_tuple(__EMSCRIPTEN_major__, __EMSCRIPTEN_minor__, __EMSCRIPTEN_tiny__), test) > 0;
+}
+
+} // namespace
+
 bool QWasmScreen::hasSpecialHtmlTargets() const
 {
     static bool gotIt = []{
         // Enable use of specialHTMLTargets, if available
+
+        // On Emscripten > 3.1.14 (exact version not known), emscripten::val::module_property()
+        // aborts instead of returning undefined when attempting to resolve the specialHTMLTargets
+        // property, in the case where it is not defined. Disable the availability test in this case.
+        // FIXME: Add alternative way to enable.
+        if (isEmsdkVersionGreaterThan(std::make_tuple(3, 1, 14)))
+            return false;
+
         emscripten::val htmlTargets = emscripten::val::module_property("specialHTMLTargets");
         if (htmlTargets.isUndefined())
             return false;
