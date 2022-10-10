@@ -578,9 +578,6 @@ void tst_QTcpServer::addressReusable()
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
-#ifdef Q_OS_LINUX
-    QSKIP("The addressReusable test is unstable on Linux. See QTBUG-39985.");
-#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
 #ifndef QT_NO_NETWORKPROXY
