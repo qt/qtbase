@@ -933,55 +933,56 @@ void tst_QSplitter::rubberBandNotInSplitter()
 
 void tst_QSplitter::task187373_addAbstractScrollAreas_data()
 {
-    QTest::addColumn<QString>("className");
+    QTest::addColumn<QByteArray>("className");
     QTest::addColumn<bool>("addInConstructor");
     QTest::addColumn<bool>("addOutsideConstructor");
 
-    QStringList classNames;
-    classNames << QLatin1String("QGraphicsView");
-    classNames << QLatin1String("QMdiArea");
-    classNames << QLatin1String("QScrollArea");
-    classNames << QLatin1String("QTextEdit");
-    classNames << QLatin1String("QTreeView");
+    QList<QByteArray> classNames{
+        "QGraphicsView",
+        "QMdiArea",
+        "QScrollArea",
+        "QTextEdit",
+        "QTreeView"
+    };
 
-    foreach (QString className, classNames) {
-        QTest::newRow(qPrintable(className + QLatin1String(" 1"))) << className << false << true;
-        QTest::newRow(qPrintable(className + QLatin1String(" 2"))) << className << true << false;
-        QTest::newRow(qPrintable(className + QLatin1String(" 3"))) << className << true << true;
+    for (const auto &className : qAsConst(classNames)) {
+        QTest::newRow(qPrintable(className + " 1")) << className << false << true;
+        QTest::newRow(qPrintable(className + " 2")) << className << true << false;
+        QTest::newRow(qPrintable(className + " 3")) << className << true << true;
     }
 }
 
 static QAbstractScrollArea *task187373_createScrollArea(
-    QSplitter *splitter, const QString &className, bool addInConstructor)
+    QSplitter *splitter, const QByteArray &className, bool addInConstructor)
 {
-    if (className == QLatin1String("QGraphicsView"))
+    if (className == "QGraphicsView")
         return new QGraphicsView(addInConstructor ? splitter : 0);
-    if (className == QLatin1String("QMdiArea"))
+    if (className == "QMdiArea")
         return new QMdiArea(addInConstructor ? splitter : 0);
-    if (className == QLatin1String("QScrollArea"))
+    if (className == "QScrollArea")
         return new QScrollArea(addInConstructor ? splitter : 0);
-    if (className == QLatin1String("QTextEdit"))
+    if (className == "QTextEdit")
         return new QTextEdit(addInConstructor ? splitter : 0);
-    if (className == QLatin1String("QTreeView"))
+    if (className == "QTreeView")
         return new QTreeView(addInConstructor ? splitter : 0);
     return 0;
 }
 
 void tst_QSplitter::task187373_addAbstractScrollAreas()
 {
-    QFETCH(QString, className);
+    QFETCH(QByteArray, className);
     QFETCH(bool, addInConstructor);
     QFETCH(bool, addOutsideConstructor);
     QVERIFY(addInConstructor || addOutsideConstructor);
 
-    QSplitter *splitter = new QSplitter;
-    splitter->show();
-    QVERIFY(splitter->isVisible());
+    QSplitter splitter;
+    splitter.show();
+    QVERIFY(splitter.isVisible());
 
-    QAbstractScrollArea *w = task187373_createScrollArea(splitter, className, addInConstructor);
+    QAbstractScrollArea *w = task187373_createScrollArea(&splitter, className, addInConstructor);
     QVERIFY(w);
     if (addOutsideConstructor)
-        splitter->addWidget(w);
+        splitter.addWidget(w);
 
     QTRY_VERIFY(w->isVisible());
     QVERIFY(!w->isHidden());
