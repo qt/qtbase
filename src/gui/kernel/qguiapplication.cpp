@@ -4282,6 +4282,9 @@ void *QGuiApplication::resolveInterface(const char *name, int revision) const
 #if QT_CONFIG(xcb)
     QT_NATIVE_INTERFACE_RETURN_IF(QX11Application, platformNativeInterface());
 #endif
+#if defined(Q_OS_UNIX)
+    QT_NATIVE_INTERFACE_RETURN_IF(QWaylandApplication, platformNativeInterface());
+#endif
 
     return QCoreApplication::resolveInterface(name, revision);
 }

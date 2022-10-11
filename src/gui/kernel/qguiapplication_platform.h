@@ -23,6 +23,15 @@ typedef struct _XDisplay Display;
 struct xcb_connection_t;
 #endif
 
+#if defined(Q_OS_UNIX)
+struct wl_display;
+struct wl_compositor;
+struct wl_seat;
+struct wl_keyboard;
+struct wl_pointer;
+struct wl_touch;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 namespace QNativeInterface
@@ -34,6 +43,21 @@ struct Q_GUI_EXPORT QX11Application
     QT_DECLARE_NATIVE_INTERFACE(QX11Application, 1, QGuiApplication)
     virtual Display *display() const = 0;
     virtual xcb_connection_t *connection() const = 0;
+};
+#endif
+
+#if defined(Q_OS_UNIX) || defined(Q_CLANG_QDOC)
+struct Q_GUI_EXPORT QWaylandApplication
+{
+    QT_DECLARE_NATIVE_INTERFACE(QWaylandApplication, 1, QGuiApplication)
+    virtual wl_display *display() const = 0;
+    virtual wl_compositor *compositor() const = 0;
+    virtual wl_seat *seat() const = 0;
+    virtual wl_keyboard *keyboard() const = 0;
+    virtual wl_pointer *pointer() const = 0;
+    virtual wl_touch *touch() const = 0;
+    virtual uint lastInputSerial() const = 0;
+    virtual wl_seat *lastInputSeat() const = 0;
 };
 #endif
 

@@ -215,4 +215,49 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QEvdevKeyMapper);
 
 #endif // QT_CONFIG(evdev)
 
+#if defined(Q_OS_UNIX)
+
+/*!
+    \class QNativeInterface::QWaylandApplication
+    \since 6.5
+    \brief Native interface to a Wayland application.
+
+    Accessed through QGuiApplication::nativeInterface().
+    \inmodule QtGui
+    \ingroup native-interfaces
+    \ingroup native-interfaces-qguiapplication
+*/
+/*!
+    \fn wl_display *QNativeInterface::QWaylandApplication::display() const
+    \return the wl_display that the application is using.
+*/
+/*!
+    \fn wl_compositor *QNativeInterface::QWaylandApplication::compositor() const
+    \return the wl_compositor that the application is using.
+*/
+/*!
+    \fn wl_keyboard *QNativeInterface::QWaylandApplication::keyboard() const
+    \return the wl_keyboard belonging to seat() if available.
+*/
+/*!
+    \fn wl_pointer *QNativeInterface::QWaylandApplication::pointer() const
+    \return the wl_pointer belonging to seat() if available.
+*/
+/*!
+    \fn wl_touch *QNativeInterface::QWaylandApplication::touch() const
+    \return the wl_touch belonging to seat() if available.
+*/
+/*!
+    \fn uint *QNativeInterface::QWaylandApplication::lastInputSerial() const
+    \return the serial of the last input event on any seat.
+*/
+/*!
+    \fn wl_seat *QNativeInterface::QWaylandApplication::lastInputSeat() const
+    \return the seat on which the last input event happened.
+*/
+
+QT_DEFINE_NATIVE_INTERFACE(QWaylandApplication);
+
+#endif // Q_OS_UNIX
+
 QT_END_NAMESPACE
