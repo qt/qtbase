@@ -126,7 +126,7 @@ void QWidgetPrivate::invalidateBackingStore(const T &r)
         return;
 
     QTLWExtra *tlwExtra = q->window()->d_func()->maybeTopData();
-    if (!tlwExtra || !tlwExtra->backingStore)
+    if (!tlwExtra || !tlwExtra->backingStore || !tlwExtra->repaintManager)
         return;
 
     T clipped(r);
