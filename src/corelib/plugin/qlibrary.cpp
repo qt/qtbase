@@ -911,13 +911,7 @@ QLibrary::~QLibrary()
 
 void QLibrary::setFileName(const QString &fileName)
 {
-    QLibrary::LoadHints lh;
-    if (d) {
-        lh = d->loadHints();
-        d->release();
-        d = {};
-    }
-    d = QLibraryPrivate::findOrCreate(fileName, QString(), lh);
+    setFileNameAndVersion(fileName, QString());
 }
 
 QString QLibrary::fileName() const
@@ -940,13 +934,7 @@ QString QLibrary::fileName() const
 */
 void QLibrary::setFileNameAndVersion(const QString &fileName, int verNum)
 {
-    QLibrary::LoadHints lh;
-    if (d) {
-        lh = d->loadHints();
-        d->release();
-        d = {};
-    }
-    d = QLibraryPrivate::findOrCreate(fileName, verNum >= 0 ? QString::number(verNum) : QString(), lh);
+    setFileNameAndVersion(fileName, verNum >= 0 ? QString::number(verNum) : QString());
 }
 
 /*!
