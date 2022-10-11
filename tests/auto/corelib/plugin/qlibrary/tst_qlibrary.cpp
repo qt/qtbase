@@ -96,6 +96,8 @@ private slots:
     void isLibrary();
     void version_data();
     void version();
+    void loadTwoVersions();
+    void setFileNameAndVersionTwice();
     void setFileNameAndVersionAfterFailedLoad_data() { version_data(); }
     void setFileNameAndVersionAfterFailedLoad();
     void errorString_data();
@@ -194,6 +196,70 @@ void tst_QLibrary::version()
     Q_UNUSED(loadversion);
     Q_UNUSED(resultversion);
 #endif
+}
+
+void tst_QLibrary::loadTwoVersions()
+{
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WIN)
+    QSKIP("Versioned files are not generated for this OS, so this test is not applicable.");
+#endif
+
+    QLibrary lib1(directory + "/mylib", 1);
+    QLibrary lib2(directory + "/mylib", 2);
+    QVERIFY(!lib1.isLoaded());
+    QVERIFY(!lib2.isLoaded());
+
+    // load the first one
+    QVERIFY(lib1.load());
+    QVERIFY(lib1.isLoaded());
+
+    // let's see if we can load the second one too
+    QVERIFY(lib2.load());
+    QVERIFY(lib2.isLoaded());
+
+    auto p1 = (VersionFunction)lib1.resolve("mylibversion");
+    QVERIFY(p1);
+
+    auto p2 = (VersionFunction)lib2.resolve("mylibversion");
+    QVERIFY(p2);
+
+    QCOMPARE_NE(p1(), p2());
+
+    lib2.unload();
+    lib1.unload();
+}
+
+void tst_QLibrary::setFileNameAndVersionTwice()
+{
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WIN)
+    QSKIP("Versioned files are not generated for this OS, so this test is not applicable.");
+#endif
+
+    QLibrary library(directory + "/mylib", 1);
+    QVERIFY(library.load());
+    QVERIFY(library.isLoaded());
+
+    auto p1 = (VersionFunction)library.resolve("mylibversion");
+    QVERIFY(p1);
+    // don't .unload()
+
+    library.setFileNameAndVersion(directory + "/mylib", 2);
+    QVERIFY(!library.isLoaded());
+    QVERIFY(library.load());
+    QVERIFY(library.isLoaded());
+
+    auto p2 = (VersionFunction)library.resolve("mylibversion");
+    QVERIFY(p2);
+    QCOMPARE_NE(p1(), p2());
+
+    QVERIFY(library.unload());
+    QVERIFY(!library.isLoaded());
+
+    // set back
+    library.setFileNameAndVersion(directory + "/mylib", 1);
+    QVERIFY(library.isLoaded());
+    QVERIFY(library.unload());
+    QVERIFY(!library.isLoaded());
 }
 
 void tst_QLibrary::load_data()

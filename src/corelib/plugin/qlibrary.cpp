@@ -391,10 +391,12 @@ inline QLibraryPrivate *QLibraryStore::findOrCreate(const QString &fileName, con
     QMutexLocker locker(&qt_library_mutex);
     QLibraryStore *data = instance();
 
+    QString mapName = version.isEmpty() ? fileName : fileName + u'\0' + version;
+
     // check if this library is already loaded
     QLibraryPrivate *lib = nullptr;
     if (Q_LIKELY(data)) {
-        lib = data->libraryMap.value(fileName);
+        lib = data->libraryMap.value(mapName);
         if (lib)
             lib->mergeLoadHints(loadHints);
     }
@@ -403,7 +405,7 @@ inline QLibraryPrivate *QLibraryStore::findOrCreate(const QString &fileName, con
 
     // track this library
     if (Q_LIKELY(data) && !fileName.isEmpty())
-        data->libraryMap.insert(fileName, lib);
+        data->libraryMap.insert(mapName, lib);
 
     lib->libraryRefCount.ref();
     return lib;
@@ -423,9 +425,11 @@ inline void QLibraryStore::releaseLibrary(QLibraryPrivate *lib)
     Q_ASSERT(lib->libraryUnloadCount.loadRelaxed() == 0);
 
     if (Q_LIKELY(data) && !lib->fileName.isEmpty()) {
-        QLibraryPrivate *that = data->libraryMap.take(lib->fileName);
-        Q_ASSERT(lib == that);
-        Q_UNUSED(that);
+        qsizetype n = erase_if(data->libraryMap, [lib](LibraryMap::iterator it) {
+            return it.value() == lib;
+        });
+        Q_ASSERT_X(n, "~QLibrary", "Did not find this library in the library map");
+        Q_UNUSED(n);
     }
     delete lib;
 }
