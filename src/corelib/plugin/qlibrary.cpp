@@ -952,9 +952,10 @@ void QLibrary::setFileNameAndVersion(const QString &fileName, const QString &ver
     if (d) {
         lh = d->loadHints();
         d->release();
-        d = {};
     }
-    d = QLibraryPrivate::findOrCreate(fileName, version, lh);
+    QLibraryPrivate *dd = QLibraryPrivate::findOrCreate(fileName, version, lh);
+    d = dd;
+    d.setTag(isLoaded() ? Loaded : NotLoaded);
 }
 
 /*!
