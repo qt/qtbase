@@ -15,7 +15,7 @@
 #include <QtCore/qdebug.h>
 #include <QtGui/qopenglcontext.h>
 
-#if defined(Q_CLANG_QDOC)
+#if defined(Q_QDOC)
 #undef GLuint
 typedef unsigned int GLuint;
 #endif

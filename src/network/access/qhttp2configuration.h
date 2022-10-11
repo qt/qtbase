@@ -8,7 +8,7 @@
 
 #include <QtCore/qshareddata.h>
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 QT_REQUIRE_CONFIG(http);
 #endif
 

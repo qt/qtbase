@@ -51,7 +51,7 @@ namespace QtPrivate {
 template <bool...B> class BoolList;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED) || defined(Q_CLANG_QDOC)
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED) || defined(Q_QDOC)
 #    define Q_L1S_VIEW_IS_PRIMARY
 class QLatin1StringView
 #else
@@ -443,7 +443,7 @@ public:
     QString(QChar c);
     QString(qsizetype size, QChar c);
     inline QString(QLatin1StringView latin1);
-#if defined(__cpp_char8_t) || defined(Q_CLANG_QDOC)
+#if defined(__cpp_char8_t) || defined(Q_QDOC)
     Q_WEAK_OVERLOAD
     inline QString(const char8_t *str)
         : QString(fromUtf8(str))
@@ -536,7 +536,7 @@ private:
 public:
     template <typename...Args>
     [[nodiscard]]
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     QString
 #else
     typename std::enable_if<
@@ -646,7 +646,7 @@ public:
     [[nodiscard]] QString leftJustified(qsizetype width, QChar fill = u' ', bool trunc = false) const;
     [[nodiscard]] QString rightJustified(qsizetype width, QChar fill = u' ', bool trunc = false) const;
 
-#if !defined(Q_CLANG_QDOC)
+#if !defined(Q_QDOC)
     [[nodiscard]] QString toLower() const &
     { return toLower_helper(*this); }
     [[nodiscard]] QString toLower() &&
@@ -772,7 +772,7 @@ public:
 
     const ushort *utf16() const; // ### Qt 7 char16_t
 
-#if !defined(Q_CLANG_QDOC)
+#if !defined(Q_QDOC)
     [[nodiscard]] QByteArray toLatin1() const &
     { return toLatin1_helper(*this); }
     [[nodiscard]] QByteArray toLatin1() &&
@@ -807,7 +807,7 @@ public:
     {
         return fromUtf8(QByteArrayView(utf8, !utf8 || size < 0 ? qstrlen(utf8) : size));
     }
-#if defined(__cpp_char8_t) || defined(Q_CLANG_QDOC)
+#if defined(__cpp_char8_t) || defined(Q_QDOC)
     Q_WEAK_OVERLOAD
     static inline QString fromUtf8(const char8_t *str)
     { return fromUtf8(reinterpret_cast<const char *>(str)); }

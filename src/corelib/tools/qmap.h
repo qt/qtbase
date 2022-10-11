@@ -240,7 +240,7 @@ public:
         return {};
     }
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
     template <typename AKey = Key, typename AT = T> friend
     QTypeTraits::compare_eq_result_container<QMap, AKey, AT> operator==(const QMap &lhs, const QMap &rhs)
     {
@@ -261,7 +261,7 @@ public:
 #else
     friend bool operator==(const QMap &lhs, const QMap &rhs);
     friend bool operator!=(const QMap &lhs, const QMap &rhs);
-#endif // Q_CLANG_QDOC
+#endif // Q_QDOC
 
     size_type size() const { return d ? size_type(d->m.size()) : size_type(0); }
 
@@ -885,7 +885,7 @@ public:
         return {};
     }
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
     template <typename AKey = Key, typename AT = T> friend
     QTypeTraits::compare_eq_result_container<QMultiMap, AKey, AT> operator==(const QMultiMap &lhs, const QMultiMap &rhs)
     {
@@ -906,7 +906,7 @@ public:
 #else
     friend bool operator==(const QMultiMap &lhs, const QMultiMap &rhs);
     friend bool operator!=(const QMultiMap &lhs, const QMultiMap &rhs);
-#endif // Q_CLANG_QDOC
+#endif // Q_QDOC
 
     size_type size() const { return d ? size_type(d->m.size()) : size_type(0); }
 

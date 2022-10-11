@@ -55,7 +55,7 @@ public:
         return *this;
     }
 
-#if defined(Q_CLANG_QDOC)
+#if defined(Q_QDOC)
     ~QFuture() { }
     QFuture(const QFuture<T> &) { }
     QFuture<T> & operator=(const QFuture<T> &) { }
@@ -155,7 +155,7 @@ QT_WARNING_POP
     template<class Function, typename = std::enable_if_t<std::is_invocable_r_v<T, Function>>>
     QFuture<T> onCanceled(QObject *context, Function &&handler);
 
-#if !defined(Q_CLANG_QDOC)
+#if !defined(Q_QDOC)
     template<class U = T, typename = std::enable_if_t<QtPrivate::isQFutureV<U>>>
     auto unwrap();
 #else
@@ -445,7 +445,7 @@ struct MetaTypeQFutureHelper<QFuture<T>>
 
 namespace QtFuture {
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 
 template<typename OutputSequence, typename InputIt,
          typename ValueType = typename std::iterator_traits<InputIt>::value_type,
@@ -520,7 +520,7 @@ QFuture<QtFuture::WhenAnyResult<T>> whenAny(InputIt first, InputIt last);
 template<typename... Futures>
 QFuture<std::variant<std::decay_t<Futures>...>> whenAny(Futures &&... futures);
 
-#endif // Q_CLANG_QDOC
+#endif // Q_QDOC
 
 } // namespace QtFuture
 

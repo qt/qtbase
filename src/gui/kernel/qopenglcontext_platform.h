@@ -34,7 +34,7 @@ typedef void *EGLDisplay;
 typedef void *EGLConfig;
 #endif
 
-#if !defined(Q_OS_MACOS) && defined(Q_CLANG_QDOC)
+#if !defined(Q_OS_MACOS) && defined(Q_QDOC)
 typedef void *NSOpenGLContext;
 #endif
 
@@ -42,7 +42,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QNativeInterface {
 
-#if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_MACOS) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QCocoaGLContext
 {
     QT_DECLARE_NATIVE_INTERFACE(QCocoaGLContext, 1, QOpenGLContext)
@@ -51,7 +51,7 @@ struct Q_GUI_EXPORT QCocoaGLContext
 };
 #endif
 
-#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QWGLContext
 {
     QT_DECLARE_NATIVE_INTERFACE(QWGLContext, 1, QOpenGLContext)
@@ -61,7 +61,7 @@ struct Q_GUI_EXPORT QWGLContext
 };
 #endif
 
-#if QT_CONFIG(xcb_glx_plugin) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(xcb_glx_plugin) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QGLXContext
 {
     QT_DECLARE_NATIVE_INTERFACE(QGLXContext, 1, QOpenGLContext)
@@ -71,7 +71,7 @@ struct Q_GUI_EXPORT QGLXContext
 };
 #endif
 
-#if QT_CONFIG(egl) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(egl) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QEGLContext
 {
     QT_DECLARE_NATIVE_INTERFACE(QEGLContext, 1, QOpenGLContext)

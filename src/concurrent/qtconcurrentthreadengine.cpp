@@ -3,7 +3,7 @@
 
 #include "qtconcurrentthreadengine.h"
 
-#if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)
+#if !defined(QT_NO_CONCURRENT) || defined(Q_QDOC)
 
 QT_BEGIN_NAMESPACE
 

@@ -16,7 +16,7 @@ QT_REQUIRE_CONFIG(future);
 QT_BEGIN_NAMESPACE
 
 
-#if !defined(QT_NO_EXCEPTIONS) || defined(Q_CLANG_QDOC)
+#if !defined(QT_NO_EXCEPTIONS) || defined(Q_QDOC)
 
 class Q_CORE_EXPORT QException : public std::exception
 {

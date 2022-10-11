@@ -55,7 +55,7 @@ class QWindowContainer;
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;
 #endif
-#if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(vulkan) || defined(Q_QDOC)
 class QVulkanInstance;
 #endif
 
@@ -248,7 +248,7 @@ public:
 
     static QWindow *fromWinId(WId id);
 
-#if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(vulkan) || defined(Q_QDOC)
     void setVulkanInstance(QVulkanInstance *instance);
     QVulkanInstance *vulkanInstance() const;
 #endif

@@ -429,7 +429,7 @@ public:
     }
 
     template<typename T>
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
     static inline auto fromValue(const T &value)
         noexcept(std::is_nothrow_copy_constructible_v<T> && Private::CanUseInternalSpace<T>)
         -> std::enable_if_t<std::is_copy_constructible_v<T> && std::is_destructible_v<T>, QVariant>

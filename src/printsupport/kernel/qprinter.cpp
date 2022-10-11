@@ -1272,7 +1272,7 @@ QPrinter::PrinterState QPrinter::printerState() const
     return d->printEngine->printerState();
 }
 
-#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
 /*!
     Returns the supported paper sizes for this printer.
 

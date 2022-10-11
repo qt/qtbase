@@ -277,7 +277,7 @@ public:
 Q_SIGNALS:
     void buttonClicked(QAbstractButton *button);
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
 public Q_SLOTS:
     int exec() override;
 #endif

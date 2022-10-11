@@ -573,7 +573,7 @@ protected:
     int m_lastColumn;
 };
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 #define QAccessibleInterface_iid "org.qt-project.Qt.QAccessibleInterface"
 Q_DECLARE_INTERFACE(QAccessibleInterface, QAccessibleInterface_iid)
 #endif

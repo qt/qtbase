@@ -163,7 +163,7 @@ public:
     constexpr QAnyStringView(const Char *f, const Char *l)
         : QAnyStringView(f, l - f) {}
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     template <typename Char, size_t N>
     constexpr QAnyStringView(const Char (&array)[N]) noexcept;
 

@@ -233,7 +233,7 @@ struct Q_CORE_EXPORT QMetaObject
     { return const_cast<QObject *>(cast(const_cast<const QObject *>(obj))); }
     const QObject *cast(const QObject *obj) const;
 
-#if !defined(QT_NO_TRANSLATION) || defined(Q_CLANG_QDOC)
+#if !defined(QT_NO_TRANSLATION) || defined(Q_QDOC)
     QString tr(const char *s, const char *c, int n = -1) const;
 #endif // QT_NO_TRANSLATION
 
@@ -355,7 +355,7 @@ struct Q_CORE_EXPORT QMetaObject
 #endif // Qt < 7.0
 
     template <typename... Args> static
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     bool
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
@@ -369,7 +369,7 @@ struct Q_CORE_EXPORT QMetaObject
     }
 
     template <typename... Args> static
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     bool
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
@@ -381,7 +381,7 @@ struct Q_CORE_EXPORT QMetaObject
     }
 
     template <typename... Args> static
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     bool
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
@@ -393,7 +393,7 @@ struct Q_CORE_EXPORT QMetaObject
     }
 
     template <typename... Args> static
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     bool
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
@@ -404,7 +404,7 @@ struct Q_CORE_EXPORT QMetaObject
         return invokeMethod(obj, member, Qt::AutoConnection, r, std::forward<Args>(arguments)...);
     }
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     template<typename Functor, typename FunctorReturnType>
     static bool invokeMethod(QObject *context, Functor function, Qt::ConnectionType type = Qt::AutoConnection, FunctorReturnType *ret = nullptr);
     template<typename Functor, typename FunctorReturnType>
@@ -499,7 +499,7 @@ struct Q_CORE_EXPORT QMetaObject
 #endif
 
     template <typename... Args>
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     QObject *
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<QObject *, Args...>

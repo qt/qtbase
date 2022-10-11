@@ -28,7 +28,7 @@ QT_BEGIN_NAMESPACE
 namespace QNativeInterface
 {
 
-#if QT_CONFIG(xcb) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(xcb) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QX11Application
 {
     QT_DECLARE_NATIVE_INTERFACE(QX11Application, 1, QGuiApplication)

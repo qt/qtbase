@@ -173,7 +173,7 @@ public:
     void truncate(qsizetype pos);
     void chop(qsizetype n);
 
-#if !defined(Q_CLANG_QDOC)
+#if !defined(Q_QDOC)
     [[nodiscard]] QByteArray toLower() const &
     { return toLower_helper(*this); }
     [[nodiscard]] QByteArray toLower() &&

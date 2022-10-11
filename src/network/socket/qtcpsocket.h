@@ -21,7 +21,7 @@ public:
     explicit QTcpSocket(QObject *parent = nullptr);
     virtual ~QTcpSocket();
 
-#if QT_VERSION < QT_VERSION_CHECK(7,0,0) && !defined(Q_CLANG_QDOC)
+#if QT_VERSION < QT_VERSION_CHECK(7,0,0) && !defined(Q_QDOC)
     // ### Qt7: move into QAbstractSocket
     using QAbstractSocket::bind;
     bool bind(QHostAddress::SpecialAddress addr, quint16 port = 0, BindMode mode = DefaultForPlatform)

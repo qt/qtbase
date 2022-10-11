@@ -6,7 +6,7 @@
 
 #include <QtCore/qstring.h>
 
-#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
 #ifndef GUID_DEFINED
 #define GUID_DEFINED
 typedef struct _GUID
@@ -19,7 +19,7 @@ typedef struct _GUID
 #endif
 #endif
 
-#if defined(Q_OS_DARWIN) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_CF_TYPE(CFUUID);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSUUID);
 #endif
@@ -101,7 +101,7 @@ public:
     bool operator<(const QUuid &other) const noexcept;
     bool operator>(const QUuid &other) const noexcept;
 
-#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
     // On Windows we have a type GUID that is used by the platform API, so we
     // provide convenience operators to cast from and to this type.
     constexpr QUuid(const GUID &guid) noexcept
@@ -151,7 +151,7 @@ public:
     QUuid::Variant variant() const noexcept;
     QUuid::Version version() const noexcept;
 
-#if defined(Q_OS_DARWIN) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     static QUuid fromCFUUID(CFUUIDRef uuid);
     CFUUIDRef toCFUUID() const Q_DECL_CF_RETURNS_RETAINED;
     static QUuid fromNSUUID(const NSUUID *uuid);

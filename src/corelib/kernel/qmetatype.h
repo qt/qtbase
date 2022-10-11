@@ -310,7 +310,7 @@ To convertImplicit(const From& from)
 
 class Q_CORE_EXPORT QMetaType {
 public:
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
     // The code that actually gets compiled.
     enum Type {
         // these are merged with QVariant
@@ -719,7 +719,7 @@ public:
 
     static bool hasRegisteredMutableViewFunction(QMetaType fromType, QMetaType toType);
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
     template<typename, bool> friend struct QtPrivate::SequentialValueTypeIsMetaType;
     template<typename, bool> friend struct QtPrivate::AssociativeValueTypeIsMetaType;
     template<typename, bool> friend struct QtPrivate::IsMetaTypePair;

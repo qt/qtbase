@@ -4,13 +4,13 @@
 #ifndef QTBASE_QTTASKBUILDER_H
 #define QTBASE_QTTASKBUILDER_H
 
-#if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)
+#if !defined(QT_NO_CONCURRENT) || defined(Q_QDOC)
 
 #include <QtConcurrent/qtconcurrentstoredfunctioncall.h>
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
 
 namespace QtConcurrent {
 
@@ -126,7 +126,7 @@ private: // Data
 
 } // namespace QtConcurrent
 
-#endif // Q_CLANG_QDOC
+#endif // Q_QDOC
 
 QT_END_NAMESPACE
 

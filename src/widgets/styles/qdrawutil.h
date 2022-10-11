@@ -83,7 +83,7 @@ struct QTileRules
     Qt::TileRule vertical;
 };
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 // For internal use only.
 namespace QDrawBorderPixmap
 {
@@ -115,7 +115,7 @@ Q_WIDGETS_EXPORT void qDrawBorderPixmap(QPainter *painter,
                                     const QRect &sourceRect,
                                     const QMargins &sourceMargins,
                                     const QTileRules &rules = QTileRules()
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
                                     , QDrawBorderPixmap::DrawingHints hints = QDrawBorderPixmap::DrawingHints()
 #endif
                                     );

@@ -50,7 +50,7 @@ public:
         initArgs(mo->method(sigIndex), obj);
     }
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     template <typename PointerToMemberFunction>
     QSignalSpy(const QObject *object, PointerToMemberFunction signal);
 #else
@@ -79,7 +79,7 @@ public:
         sig = signalMetaMethod.methodSignature();
         initArgs(mo->method(sigIndex), obj);
     }
-#endif // Q_CLANG_QDOC
+#endif // Q_QDOC
 
     QSignalSpy(const QObject *obj, const QMetaMethod &signal)
         : m_waiting(false)

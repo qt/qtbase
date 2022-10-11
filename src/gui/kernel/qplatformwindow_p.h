@@ -35,7 +35,7 @@ public:
 
 namespace QNativeInterface::Private {
 
-#if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_MACOS) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QCocoaWindow
 {
     QT_DECLARE_NATIVE_INTERFACE(QCocoaWindow, 1, QWindow)
@@ -44,7 +44,7 @@ struct Q_GUI_EXPORT QCocoaWindow
 };
 #endif
 
-#if QT_CONFIG(xcb) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(xcb) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QXcbWindow
 {
     QT_DECLARE_NATIVE_INTERFACE(QXcbWindow, 1, QWindow)
@@ -76,7 +76,7 @@ struct Q_GUI_EXPORT QXcbWindow
 };
 #endif // xcb
 
-#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QWindowsWindow
 {
     QT_DECLARE_NATIVE_INTERFACE(QWindowsWindow, 1, QWindow)

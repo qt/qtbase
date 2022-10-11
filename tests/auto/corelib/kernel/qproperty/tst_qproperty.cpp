@@ -7,10 +7,10 @@
 #include <qproperty.h>
 #include <private/qproperty_p.h>
 
-#if __has_include(<source_location>) && __cplusplus >= 202002L && !defined(Q_CLANG_QDOC)
+#if __has_include(<source_location>) && __cplusplus >= 202002L && !defined(Q_QDOC)
 #include <source_location>
 #define QT_SOURCE_LOCATION_NAMESPACE std
-#elif __has_include(<experimental/source_location>) && !defined(Q_CLANG_QDOC)
+#elif __has_include(<experimental/source_location>) && !defined(Q_QDOC)
 #include <experimental/source_location>
 #define QT_SOURCE_LOCATION_NAMESPACE std::experimental
 #endif

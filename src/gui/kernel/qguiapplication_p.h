@@ -335,7 +335,7 @@ private:
 
 namespace QNativeInterface::Private {
 
-#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
 
 class QWindowsMime;
 

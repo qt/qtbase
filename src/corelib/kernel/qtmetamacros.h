@@ -89,7 +89,7 @@ QT_BEGIN_NAMESPACE
 # define QT_TR_FUNCTIONS
 #endif
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
 #define QT_TR_FUNCTIONS
 #endif
 

@@ -10,7 +10,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_VSNPRINTF) || defined(Q_CLANG_QDOC)
+#if !defined(QT_VSNPRINTF) || defined(Q_QDOC)
 
 /*!
     \relates QByteArray

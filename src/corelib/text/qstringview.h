@@ -150,7 +150,7 @@ public:
     constexpr QStringView(const Char *f, const Char *l)
         : QStringView(f, l - f) {}
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     template <typename Char, size_t N>
     constexpr QStringView(const Char (&array)[N]) noexcept;
 
@@ -163,7 +163,7 @@ public:
         : QStringView(str, str ? lengthHelperPointer(str) : 0) {}
 #endif
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     QStringView(const QString &str) noexcept;
 #else
     template <typename String, if_compatible_qstring_like<String> = true>

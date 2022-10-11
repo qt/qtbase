@@ -29,7 +29,7 @@ public:
 
     void swap(QDBusPendingCall &other) noexcept { d.swap(other.d); }
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
     // pretend that they aren't here
     bool isFinished() const;
     void waitForFinished();

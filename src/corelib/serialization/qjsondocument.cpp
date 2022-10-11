@@ -251,7 +251,7 @@ QVariant QJsonDocument::toVariant() const
 
     \sa fromJson(), JsonFormat
  */
-#if !defined(QT_JSON_READONLY) || defined(Q_CLANG_QDOC)
+#if !defined(QT_JSON_READONLY) || defined(Q_QDOC)
 QByteArray QJsonDocument::toJson(JsonFormat format) const
 {
     QByteArray json;

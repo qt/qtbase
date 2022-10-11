@@ -10,7 +10,7 @@
 #include <QtGui/qicon.h>
 #include <QtGui/qaction.h>
 
-#if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_MACOS) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_OBJC_CLASS(NSMenu);
 #endif
 
@@ -60,7 +60,7 @@ public:
                        const QObject *receiver, const char* member,
                        const QKeySequence &shortcut);
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     template<typename Functor>
     QAction *addAction(const QString &text, Functor functor, const QKeySequence &shortcut);
     template<typename Functor>
@@ -106,7 +106,7 @@ public:
     {
         return addAction(actionIcon, text, shortcut, slot);
     }
-#endif // !Q_CLANG_QDOC
+#endif // !Q_QDOC
 #endif // QT_DEPRECATED_SINCE(6, 4)
 #endif // QT_CONFIG(shortcut)
 
@@ -166,7 +166,7 @@ public:
     QPlatformMenu *platformMenu();
     void setPlatformMenu(QPlatformMenu *platformMenu);
 
-#if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_MACOS) || defined(Q_QDOC)
     NSMenu* toNSMenu();
     void setAsDockMenu();
 #endif

@@ -8,7 +8,7 @@
 #if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
 #include <QtNetwork/qabstractsocket.h>
 #endif
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
 #include <QtNetwork/qhostaddress.h>
 #endif
 #include <QtCore/qiodevice.h>
@@ -129,7 +129,7 @@ public:
 
     virtual bool bind(const QHostAddress &address, quint16 port = 0,
                       BindMode mode = DefaultForPlatform);
-#if QT_VERSION >= QT_VERSION_CHECK(7,0,0) || defined(Q_CLANG_QDOC)
+#if QT_VERSION >= QT_VERSION_CHECK(7,0,0) || defined(Q_QDOC)
     bool bind(QHostAddress::SpecialAddress addr, quint16 port = 0, BindMode mode = DefaultForPlatform)
     { return bind(QHostAddress(addr), port, mode); }
     bool bind(quint16 port = 0, BindMode mode = DefaultForPlatform)

@@ -11,7 +11,7 @@
 #pragma qt_sync_skip_header_check
 #endif
 
-#if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(vulkan) || defined(Q_QDOC)
 
 #include <QtGui/qvulkaninstance.h>
 #include <QtGui/qwindow.h>
@@ -19,7 +19,7 @@
 #include <QtGui/qmatrix4x4.h>
 #include <QtCore/qset.h>
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
 typedef void* VkQueue;
 typedef void* VkCommandPool;
 typedef void* VkRenderPass;

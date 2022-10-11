@@ -4,7 +4,7 @@
 #include "qexception.h"
 #include "QtCore/qshareddata.h"
 
-#if !defined(QT_NO_EXCEPTIONS) || defined(Q_CLANG_QDOC)
+#if !defined(QT_NO_EXCEPTIONS) || defined(Q_QDOC)
 
 QT_BEGIN_NAMESPACE
 
@@ -180,7 +180,7 @@ QUnhandledException *QUnhandledException::clone() const
     return new QUnhandledException(*this);
 }
 
-#if !defined(Q_CLANG_QDOC)
+#if !defined(Q_QDOC)
 
 namespace QtPrivate {
 
@@ -224,7 +224,7 @@ void ExceptionStore::rethrowException() const
 
 } // namespace QtPrivate
 
-#endif //Q_CLANG_QDOC
+#endif //Q_QDOC
 
 QT_END_NAMESPACE
 

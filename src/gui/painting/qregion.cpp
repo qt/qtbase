@@ -636,7 +636,7 @@ bool QRegion::intersects(const QRegion &region) const
 */
 
 
-#if !defined (Q_OS_UNIX) && !defined (Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#if !defined (Q_OS_UNIX) && !defined (Q_OS_WIN) || defined(Q_QDOC)
 /*
     \overload
     \since 4.4

@@ -17,13 +17,13 @@
 #include <QtCore/qnativeinterface.h>
 #include <QtCore/qcoreapplication.h>
 
-#if defined(Q_OS_ANDROID) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_ANDROID) || defined(Q_QDOC)
 #include <QtCore/qjnitypes.h>
 #if QT_CONFIG(future) && !defined(QT_NO_QOBJECT)
 #include <QtCore/qfuture.h>
 #include <QtCore/qvariant.h>
 #endif
-#endif // #if defined(Q_OS_ANDROID) || defined(Q_CLANG_QDOC)
+#endif // #if defined(Q_OS_ANDROID) || defined(Q_QDOC)
 
 #if defined(Q_OS_ANDROID)
 class _jobject;
@@ -38,11 +38,11 @@ Q_DECLARE_JNI_TYPE(Context, "Landroid/content/Context;")
 
 namespace QNativeInterface
 {
-#if defined(Q_OS_ANDROID) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_ANDROID) || defined(Q_QDOC)
 struct Q_CORE_EXPORT QAndroidApplication
 {
     QT_DECLARE_NATIVE_INTERFACE(QAndroidApplication, 1, QCoreApplication)
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     static jobject context();
 #else
     static QtJniTypes::Context context();

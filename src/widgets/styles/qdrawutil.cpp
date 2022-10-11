@@ -878,7 +878,7 @@ typedef QVarLengthArray<QPainter::PixmapFragment, 16> QPixmapFragmentsArray;
 void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargins &targetMargins,
                        const QPixmap &pixmap, const QRect &sourceRect,const QMargins &sourceMargins,
                        const QTileRules &rules
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
                        , QDrawBorderPixmap::DrawingHints hints
 #endif
                        )

@@ -64,7 +64,7 @@
 
    int size() const { return int(size(QT6_CALL_NEW_OVERLOAD)); }
 */
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
 # define QT6_DECL_NEW_OVERLOAD
 # define QT6_DECL_NEW_OVERLOAD_TAIL
 # define QT6_IMPL_NEW_OVERLOAD

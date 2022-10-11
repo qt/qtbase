@@ -15,7 +15,7 @@ struct Q_CORE_EXPORT QFactoryInterface
     virtual QStringList keys() const = 0;
 };
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 Q_DECLARE_INTERFACE(QFactoryInterface, "org.qt-project.Qt.QFactoryInterface")
 #endif
 

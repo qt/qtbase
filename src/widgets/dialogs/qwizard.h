@@ -152,7 +152,7 @@ protected:
     bool event(QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
-#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
     bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
 #endif
     void done(int result) override;

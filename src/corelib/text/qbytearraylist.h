@@ -19,7 +19,7 @@ typedef QListIterator<QByteArray> QByteArrayListIterator;
 typedef QMutableListIterator<QByteArray> QMutableByteArrayListIterator;
 #endif
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 
 namespace QtPrivate {
 #if QT_CORE_REMOVED_SINCE(6, 3) && QT_POINTER_SIZE != 4
@@ -29,13 +29,13 @@ namespace QtPrivate {
 }
 #endif
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
 class QByteArrayList : public QList<QByteArray>
 #else
 template <> struct QListSpecialMethods<QByteArray> : QListSpecialMethodsBase<QByteArray>
 #endif
 {
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 protected:
     ~QListSpecialMethods() = default;
 #endif

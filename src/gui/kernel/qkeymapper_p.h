@@ -67,7 +67,7 @@ QKeyMapperPrivate *qt_keymapper_private(); // from qkeymapper.cpp
 
 namespace QNativeInterface::Private {
 
-#if QT_CONFIG(evdev) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(evdev) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QEvdevKeyMapper
 {
     QT_DECLARE_NATIVE_INTERFACE(QEvdevKeyMapper, 1, QKeyMapper)

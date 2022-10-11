@@ -80,7 +80,7 @@ public:
 
     static QJsonDocument fromJson(const QByteArray &json, QJsonParseError *error = nullptr);
 
-#if !defined(QT_JSON_READONLY) || defined(Q_CLANG_QDOC)
+#if !defined(QT_JSON_READONLY) || defined(Q_QDOC)
     QByteArray toJson(JsonFormat format = Indented) const;
 #endif
 

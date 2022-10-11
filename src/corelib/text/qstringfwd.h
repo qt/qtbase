@@ -26,7 +26,7 @@ QT_END_NO_CHAR8_T_NAMESPACE
 
 class QByteArray;
 class QByteArrayView;
-#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED) || defined(Q_CLANG_QDOC)
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED) || defined(Q_QDOC)
 class QLatin1StringView;
 using QLatin1String = QLatin1StringView;
 #else
@@ -40,7 +40,7 @@ class QChar;
 class QRegularExpression;
 class QRegularExpressionMatch;
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 // ### Qt 7: remove the non-char8_t version of QUtf8StringView
 QT_BEGIN_NO_CHAR8_T_NAMESPACE
 using QUtf8StringView = QBasicUtf8StringView<false>;
@@ -49,7 +49,7 @@ QT_END_NO_CHAR8_T_NAMESPACE
 QT_BEGIN_HAS_CHAR8_T_NAMESPACE
 using QUtf8StringView = QBasicUtf8StringView<true>;
 QT_END_HAS_CHAR8_T_NAMESPACE
-#endif // Q_CLANG_QDOC
+#endif // Q_QDOC
 
 QT_END_NAMESPACE
 

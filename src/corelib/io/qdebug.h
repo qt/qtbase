@@ -241,7 +241,7 @@ template<typename Container, typename ...T>
 using QDebugIfHasDebugStreamContainer =
     std::enable_if_t<std::conjunction_v<QTypeTraits::has_ostream_operator_container<QDebug, Container, T>...>, QDebug>;
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 
 template<typename T>
 inline QDebugIfHasDebugStreamContainer<QList<T>, T> operator<<(QDebug debug, const QList<T> &vec)
@@ -380,7 +380,7 @@ QDebug operator<<(QDebug debug, const std::pair<T1, T2> &pair);
 template <typename T>
 QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache);
 
-#endif // Q_CLANG_QDOC
+#endif // Q_QDOC
 
 template <class T>
 inline QDebug operator<<(QDebug debug, const QSharedPointer<T> &ptr)

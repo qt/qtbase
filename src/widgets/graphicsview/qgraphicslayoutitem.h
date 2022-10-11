@@ -81,7 +81,7 @@ private:
     friend class QGraphicsLayout;
 };
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 Q_DECLARE_INTERFACE(QGraphicsLayoutItem, "org.qt-project.Qt.QGraphicsLayoutItem")
 #endif
 

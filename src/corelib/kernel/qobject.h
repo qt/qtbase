@@ -101,7 +101,7 @@ public:
     virtual bool event(QEvent *event);
     virtual bool eventFilter(QObject *watched, QEvent *event);
 
-#if defined(QT_NO_TRANSLATION) || defined(Q_CLANG_QDOC)
+#if defined(QT_NO_TRANSLATION) || defined(Q_QDOC)
     static QString tr(const char *sourceText, const char * = nullptr, int = -1)
         { return QString::fromUtf8(sourceText); }
 #endif // QT_NO_TRANSLATION
@@ -188,7 +188,7 @@ public:
     inline QMetaObject::Connection connect(const QObject *sender, const char *signal,
                         const char *member, Qt::ConnectionType type = Qt::AutoConnection) const;
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     template<typename PointerToMemberFunction>
     static QMetaObject::Connection connect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method, Qt::ConnectionType type = Qt::AutoConnection);
     template<typename PointerToMemberFunction, typename Functor>
@@ -311,7 +311,7 @@ public:
                                 typename SignalType::ReturnType>(std::move(slot)),
                            type, types, &SignalType::Object::staticMetaObject);
     }
-#endif //Q_CLANG_QDOC
+#endif //Q_QDOC
 
     static bool disconnect(const QObject *sender, const char *signal,
                            const QObject *receiver, const char *member);
@@ -324,7 +324,7 @@ public:
         { return disconnect(this, nullptr, receiver, member); }
     static bool disconnect(const QMetaObject::Connection &);
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     template<typename PointerToMemberFunction>
     static bool disconnect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method);
 #else
@@ -357,7 +357,7 @@ public:
         return disconnectImpl(sender, reinterpret_cast<void **>(&signal), receiver, zero,
                               &SignalType::Object::staticMetaObject);
     }
-#endif //Q_CLANG_QDOC
+#endif //Q_QDOC
 
     void dumpObjectTree() const;
     void dumpObjectInfo() const;
@@ -466,7 +466,7 @@ qobject_iid_cast(const QObject *object)
     return qobject_iid_cast<std::remove_cv_t<T>>(o);
 }
 
-#if defined(Q_CLANG_QDOC)
+#if defined(Q_QDOC)
 #  define Q_DECLARE_INTERFACE(IFace, IId)
 #elif !defined(Q_MOC_RUN)
 #  define Q_DECLARE_INTERFACE(IFace, IId) \

@@ -11,7 +11,7 @@
 
 #include <QtCore/qscopedpointer.h>
 
-#if defined(Q_CLANG_QDOC)
+#if defined(Q_QDOC)
 #undef GLuint
 typedef unsigned int GLuint;
 #undef GLenum

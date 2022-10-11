@@ -23,7 +23,7 @@ QT_BEGIN_NAMESPACE
 
 // ----------------- QNativeInterface -----------------
 
-#if !defined(Q_OS_MACOS) && defined(Q_CLANG_QDOC)
+#if !defined(Q_OS_MACOS) && defined(Q_QDOC)
 typedef void NSMenu;
 #else
 QT_END_NAMESPACE
@@ -33,7 +33,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QNativeInterface::Private {
 
-#if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_MACOS) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QCocoaMenu
 {
     QT_DECLARE_NATIVE_INTERFACE(QCocoaMenu)

@@ -25,7 +25,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QNativeInterface {
 
-#if defined(Q_OS_ANDROID) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_ANDROID) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QAndroidOffscreenSurface
 {
     QT_DECLARE_NATIVE_INTERFACE(QAndroidOffscreenSurface, 1, QOffscreenSurface)

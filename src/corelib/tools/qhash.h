@@ -891,7 +891,7 @@ public:
 #endif
     void swap(QHash &other) noexcept { qt_ptr_swap(d, other.d); }
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
     template <typename AKey = Key, typename AT = T>
     QTypeTraits::compare_eq_result_container<QHash, AKey, AT> operator==(const QHash &other) const noexcept
     {
@@ -914,7 +914,7 @@ public:
 #else
     bool operator==(const QHash &other) const;
     bool operator!=(const QHash &other) const;
-#endif // Q_CLANG_QDOC
+#endif // Q_QDOC
 
     inline qsizetype size() const noexcept { return d ? qsizetype(d->size) : 0; }
     inline bool isEmpty() const noexcept { return !d || d->size == 0; }
@@ -1438,7 +1438,7 @@ public:
         std::swap(m_size, other.m_size);
     }
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
     template <typename AKey = Key, typename AT = T>
     QTypeTraits::compare_eq_result_container<QMultiHash, AKey, AT> operator==(const QMultiHash &other) const noexcept
     {
@@ -1479,7 +1479,7 @@ public:
 #else
     bool operator==(const QMultiHash &other) const;
     bool operator!=(const QMultiHash &other) const;
-#endif // Q_CLANG_QDOC
+#endif // Q_QDOC
 
     inline qsizetype size() const noexcept { return m_size; }
 

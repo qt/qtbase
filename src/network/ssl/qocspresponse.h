@@ -11,7 +11,7 @@
 #include <QtCore/qmetatype.h>
 #include <QtCore/qobject.h>
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 QT_REQUIRE_CONFIG(ssl);
 #endif
 

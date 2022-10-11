@@ -29,7 +29,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QTest
 {
-#if defined(QT_WIDGETS_LIB) || defined(Q_CLANG_QDOC)
+#if defined(QT_WIDGETS_LIB) || defined(Q_QDOC)
     inline
     QTouchEventWidgetSequence touchEvent(QWidget *widget,
                                    QPointingDevice *device,

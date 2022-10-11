@@ -302,7 +302,7 @@ public:
     static constexpr T fromSpecial(T source) { return qFromBigEndian(source); }
 };
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
 template<typename T>
 class QLEInteger {
 public:

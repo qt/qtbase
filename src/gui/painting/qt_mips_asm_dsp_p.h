@@ -19,7 +19,7 @@
 #pragma qt_sync_stop_processing
 #endif
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 #define zero $0
 #define AT   $1
 #define v0   $2

@@ -10,7 +10,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
 
 namespace QtConcurrent {
 
@@ -30,7 +30,7 @@ constexpr auto task(Task &&t) { return QTaskBuilder(std::forward<Task>(t)); }
 
 } // namespace QtConcurrent
 
-#endif // Q_CLANG_QDOC
+#endif // Q_QDOC
 
 QT_END_NAMESPACE
 

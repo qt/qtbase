@@ -66,7 +66,7 @@ public:
     QDir(const QString &path = QString());
     QDir(const QString &path, const QString &nameFilter,
          SortFlags sort = SortFlags(Name | IgnoreCase), Filters filter = AllEntries);
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     QDir(const std::filesystem::path &path);
     QDir(const std::filesystem::path &path, const QString &nameFilter,
          SortFlags sort = SortFlags(Name | IgnoreCase), Filters filter = AllEntries);
@@ -91,7 +91,7 @@ public:
     { d_ptr.swap(other.d_ptr); }
 
     void setPath(const QString &path);
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     void setPath(const std::filesystem::path &path);
 #elif QT_CONFIG(cxx17_filesystem)
     template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>
@@ -103,7 +103,7 @@ public:
     QString path() const;
     QString absolutePath() const;
     QString canonicalPath() const;
-#if QT_CONFIG(cxx17_filesystem) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(cxx17_filesystem) || defined(Q_QDOC)
     std::filesystem::path filesystemPath() const
     { return QtPrivate::toFilesystemPath(path()); }
     std::filesystem::path filesystemAbsolutePath() const
@@ -115,7 +115,7 @@ public:
 #ifndef QT_BOOTSTRAPPED
     static void setSearchPaths(const QString &prefix, const QStringList &searchPaths);
     static void addSearchPath(const QString &prefix, const QString &path);
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     static void addSearchPath(const QString &prefix, const std::filesystem::path &path);
 #elif QT_CONFIG(cxx17_filesystem)
     template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>

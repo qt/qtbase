@@ -9,7 +9,7 @@
 QT_BEGIN_NAMESPACE
 
 
-#if !defined(QT_NO_SCTP) || defined(Q_CLANG_QDOC)
+#if !defined(QT_NO_SCTP) || defined(Q_QDOC)
 
 class QSctpServerPrivate;
 class QSctpSocket;

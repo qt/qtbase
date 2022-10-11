@@ -24,7 +24,7 @@ public:
     // Microsoft Visual Studio has buggy behavior when it comes to
     // unsigned enums: even if the enum is unsigned, the enum tags are
     // always signed
-#  if !defined(__LP64__) && !defined(Q_CLANG_QDOC)
+#  if !defined(__LP64__) && !defined(Q_QDOC)
     constexpr inline Q_IMPLICIT QFlag(long value) noexcept : i(int(value)) {}
     constexpr inline Q_IMPLICIT QFlag(ulong value) noexcept : i(int(long(value))) {}
 #  endif
@@ -57,7 +57,7 @@ class QFlags
     static_assert((std::is_enum<Enum>::value), "QFlags is only usable on enumeration types.");
 
 public:
-#if defined(Q_CC_MSVC) || defined(Q_CLANG_QDOC)
+#if defined(Q_CC_MSVC) || defined(Q_QDOC)
     // see above for MSVC
     // the definition below is too complex for qdoc
     typedef int Int;

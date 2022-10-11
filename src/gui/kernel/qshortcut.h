@@ -32,7 +32,7 @@ public:
                        const char *member = nullptr, const char *ambiguousMember = nullptr,
                        Qt::ShortcutContext context = Qt::WindowShortcut);
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     template<typename Functor>
     QShortcut(const QKeySequence &key, QObject *parent,
               Functor functor,
@@ -177,7 +177,7 @@ public:
     QString whatsThis() const;
 
 #if QT_DEPRECATED_SINCE(6,0)
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     QWidget *parentWidget() const;
 #else
     template<typename T = QWidget*>

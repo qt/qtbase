@@ -49,7 +49,7 @@ public:
         NativeFormat,
         IniFormat,
 
-#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
         Registry32Format,
         Registry64Format,
 #endif

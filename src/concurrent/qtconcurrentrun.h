@@ -10,14 +10,14 @@
 
 #include <QtConcurrent/qtconcurrentcompilertest.h>
 
-#if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)
+#if !defined(QT_NO_CONCURRENT) || defined(Q_QDOC)
 
 #include <QtConcurrent/qtconcurrentrunbase.h>
 #include <QtConcurrent/qtconcurrentstoredfunctioncall.h>
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
 
 typedef int Function;
 
@@ -82,7 +82,7 @@ auto run(Function &&f, Args &&...args)
 
 } //namespace QtConcurrent
 
-#endif // Q_CLANG_QDOC
+#endif // Q_QDOC
 
 QT_END_NAMESPACE
 

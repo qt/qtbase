@@ -191,7 +191,7 @@ struct QOpenGLFunctionsPrivate;
 
 #undef glTexLevelParameteriv
 
-#if defined(Q_CLANG_QDOC)
+#if defined(Q_QDOC)
 #undef GLbitfield
 typedef unsigned int GLbitfield;
 #undef GLchar

@@ -138,7 +138,7 @@ Q_DECL_CONST_FUNCTION static inline int qt_fpclassify(float f)
     return qnumeric_std_wrapper::fpclassify(f);
 }
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 namespace {
 /*!
     Returns true if the double \a v can be converted to type \c T, false if
@@ -312,7 +312,7 @@ template <auto V2, typename T> bool mul_overflow(T v1, T *r)
     return qMulOverflow<V2, T>(v1, r);
 }
 }
-#endif // Q_CLANG_QDOC
+#endif // Q_QDOC
 
 /*
     Safely narrows \a x to \c{To}. Let \c L be

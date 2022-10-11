@@ -74,7 +74,7 @@ public:
     QList<QObject *> associatedObjects() const;
 
 #if QT_DEPRECATED_SINCE(6,0)
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     QWidget *parentWidget() const;
     QList<QWidget*> associatedWidgets() const;
     QList<QGraphicsWidget*> associatedGraphicsWidgets() const;
@@ -178,7 +178,7 @@ public:
     void setMenuRole(MenuRole menuRole);
     MenuRole menuRole() const;
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     QMenu *menu() const;
     void setMenu(QMenu *menu);
 #else

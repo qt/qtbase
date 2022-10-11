@@ -331,7 +331,7 @@ bool genVulkanFunctionsH(const QList<VkSpecParser::Command> &commands,
 "\n"
 "#include <QtGui/qtguiglobal.h>\n"
 "\n"
-"#if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)\n"
+"#if QT_CONFIG(vulkan) || defined(Q_QDOC)\n"
 "\n"
 "#ifndef VK_NO_PROTOTYPES\n"
 "#define VK_NO_PROTOTYPES\n"
@@ -376,7 +376,7 @@ bool genVulkanFunctionsH(const QList<VkSpecParser::Command> &commands,
 "\n"
 "QT_END_NAMESPACE\n"
 "\n"
-"#endif // QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)\n"
+"#endif // QT_CONFIG(vulkan) || defined(Q_QDOC)\n"
 "\n"
 "#endif // QVULKANFUNCTIONS_H\n";
 

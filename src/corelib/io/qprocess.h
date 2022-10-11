@@ -12,7 +12,7 @@
 
 QT_REQUIRE_CONFIG(processenvironment);
 
-#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
 struct _PROCESS_INFORMATION;
 struct _SECURITY_ATTRIBUTES;
 struct _STARTUPINFOW;
@@ -150,7 +150,7 @@ public:
     void setStandardErrorFile(const QString &fileName, OpenMode mode = Truncate);
     void setStandardOutputProcess(QProcess *destination);
 
-#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
     QString nativeArguments() const;
     void setNativeArguments(const QString &arguments);
     struct CreateProcessArguments
@@ -169,8 +169,8 @@ public:
     typedef std::function<void(CreateProcessArguments *)> CreateProcessArgumentModifier;
     CreateProcessArgumentModifier createProcessArgumentsModifier() const;
     void setCreateProcessArgumentsModifier(CreateProcessArgumentModifier modifier);
-#endif // Q_OS_WIN || Q_CLANG_QDOC
-#if defined(Q_OS_UNIX) || defined(Q_CLANG_QDOC)
+#endif // Q_OS_WIN || Q_QDOC
+#if defined(Q_OS_UNIX) || defined(Q_QDOC)
     std::function<void(void)> childProcessModifier() const;
     void setChildProcessModifier(const std::function<void(void)> &modifier);
 #endif

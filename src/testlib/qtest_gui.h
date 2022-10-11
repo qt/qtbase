@@ -78,7 +78,7 @@ template<> inline char *toString(const QRegion &region)
     return qstrdup(result.constData());
 }
 
-#if !defined(QT_NO_VECTOR2D) || defined(Q_CLANG_QDOC)
+#if !defined(QT_NO_VECTOR2D) || defined(Q_QDOC)
 template<> inline char *toString(const QVector2D &v)
 {
     QByteArray result = "QVector2D(" + QByteArray::number(double(v.x())) + ", "
@@ -86,7 +86,7 @@ template<> inline char *toString(const QVector2D &v)
     return qstrdup(result.constData());
 }
 #endif // !QT_NO_VECTOR2D
-#if !defined(QT_NO_VECTOR3D) || defined(Q_CLANG_QDOC)
+#if !defined(QT_NO_VECTOR3D) || defined(Q_QDOC)
 template<> inline char *toString(const QVector3D &v)
 {
     QByteArray result = "QVector3D(" + QByteArray::number(double(v.x())) + ", "
@@ -94,7 +94,7 @@ template<> inline char *toString(const QVector3D &v)
     return qstrdup(result.constData());
 }
 #endif // !QT_NO_VECTOR3D
-#if !defined(QT_NO_VECTOR4D) || defined(Q_CLANG_QDOC)
+#if !defined(QT_NO_VECTOR4D) || defined(Q_QDOC)
 template<> inline char *toString(const QVector4D &v)
 {
     QByteArray result = "QVector4D(" + QByteArray::number(double(v.x())) + ", "

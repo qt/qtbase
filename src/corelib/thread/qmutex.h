@@ -17,7 +17,7 @@ class tst_QMutex;
 QT_BEGIN_NAMESPACE
 
 
-#if QT_CONFIG(thread) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(thread) || defined(Q_QDOC)
 
 #if defined(Q_OS_LINUX) || defined(Q_OS_WIN) // these platforms use futex
 # define QT_MUTEX_LOCK_NOEXCEPT noexcept
@@ -289,7 +289,7 @@ private:
     bool m_isLocked = false;
 };
 
-#else // !QT_CONFIG(thread) && !Q_CLANG_QDOC
+#else // !QT_CONFIG(thread) && !Q_QDOC
 
 class QMutex
 {
@@ -339,7 +339,7 @@ private:
 
 typedef QMutex QBasicMutex;
 
-#endif // !QT_CONFIG(thread) && !Q_CLANG_QDOC
+#endif // !QT_CONFIG(thread) && !Q_QDOC
 
 QT_END_NAMESPACE
 

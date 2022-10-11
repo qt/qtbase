@@ -34,7 +34,7 @@ public:
         return *this;
     }
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     T loadRelaxed() const;
     T loadAcquire() const;
     void storeRelaxed(T newValue);

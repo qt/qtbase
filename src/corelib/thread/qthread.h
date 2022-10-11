@@ -69,7 +69,7 @@ public:
     bool event(QEvent *event) override;
     int loopLevel() const;
 
-#if QT_CONFIG(cxx11_future) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(cxx11_future) || defined(Q_QDOC)
     template <typename Function, typename... Args>
     [[nodiscard]] static QThread *create(Function &&f, Args &&... args);
 #endif

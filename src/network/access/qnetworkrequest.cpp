@@ -6,7 +6,7 @@
 #include "qplatformdefs.h"
 #include "qnetworkcookie.h"
 #include "qsslconfiguration.h"
-#if QT_CONFIG(http) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(http) || defined(Q_QDOC)
 #include "qhttp2configuration.h"
 #include "private/http2protocol_p.h"
 #endif
@@ -852,7 +852,7 @@ void QNetworkRequest::setPeerVerifyName(const QString &peerName)
     d->peerVerifyName = peerName;
 }
 
-#if QT_CONFIG(http) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(http) || defined(Q_QDOC)
 /*!
     \since 5.14
 
@@ -938,9 +938,9 @@ void QNetworkRequest::setDecompressedSafetyCheckThreshold(qint64 threshold)
 {
     d->decompressedSafetyCheckThreshold = threshold;
 }
-#endif // QT_CONFIG(http) || defined(Q_CLANG_QDOC)
+#endif // QT_CONFIG(http) || defined(Q_QDOC)
 
-#if QT_CONFIG(http) || defined(Q_CLANG_QDOC) || defined (Q_OS_WASM)
+#if QT_CONFIG(http) || defined(Q_QDOC) || defined (Q_OS_WASM)
 /*!
     \since 5.15
 
@@ -974,7 +974,7 @@ void QNetworkRequest::setTransferTimeout(int timeout)
 {
     d->transferTimeout = timeout;
 }
-#endif // QT_CONFIG(http) || defined(Q_CLANG_QDOC) || defined (Q_OS_WASM)
+#endif // QT_CONFIG(http) || defined(Q_QDOC) || defined (Q_OS_WASM)
 
 static QByteArray headerName(QNetworkRequest::KnownHeaders header)
 {

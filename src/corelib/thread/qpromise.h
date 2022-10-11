@@ -79,7 +79,7 @@ public:
         d.swap(other.d);
     }
 
-#if defined(Q_CLANG_QDOC)  // documentation-only simplified signatures
+#if defined(Q_QDOC)  // documentation-only simplified signatures
     bool addResult(const T &result, int index = -1) { }
     bool addResult(T &&result, int index = -1) { }
 #endif

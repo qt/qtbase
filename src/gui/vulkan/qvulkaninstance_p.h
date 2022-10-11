@@ -6,7 +6,7 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 
-#if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(vulkan) || defined(Q_QDOC)
 
 #include "qvulkaninstance.h"
 #include <private/qvulkanfunctions_p.h>

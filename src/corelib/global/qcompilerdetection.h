@@ -1040,7 +1040,7 @@
  * "Weak overloads" - makes an otherwise confliciting overload weaker
  * (by making it a template)
  */
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 #  define Q_WEAK_OVERLOAD template <typename = void>
 #else
 #  define Q_WEAK_OVERLOAD
@@ -1064,7 +1064,7 @@
  * The workaround: declare such functions as function templates.
  * (Obviously a function template does not need this marker.)
 */
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 #  define QT_POST_CXX17_API_IN_EXPORTED_CLASS template <typename = void>
 #else
 #  define QT_POST_CXX17_API_IN_EXPORTED_CLASS

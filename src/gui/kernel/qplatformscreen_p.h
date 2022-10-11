@@ -38,7 +38,7 @@ public:
 
 namespace QNativeInterface::Private {
 
-#if QT_CONFIG(xcb) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(xcb) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QXcbScreen
 {
     QT_DECLARE_NATIVE_INTERFACE(QXcbScreen, 1, QScreen)
@@ -46,7 +46,7 @@ struct Q_GUI_EXPORT QXcbScreen
 };
 #endif
 
-#if QT_CONFIG(vsp2) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(vsp2) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QVsp2Screen
 {
     QT_DECLARE_NATIVE_INTERFACE(QVsp2Screen, 1, QScreen)
@@ -59,7 +59,7 @@ struct Q_GUI_EXPORT QVsp2Screen
 };
 #endif
 
-#if defined(Q_OS_WEBOS) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_WEBOS) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QWebOSScreen
 {
     QT_DECLARE_NATIVE_INTERFACE(QWebOSScreen, 1, QScreen)
@@ -72,7 +72,7 @@ struct Q_GUI_EXPORT QWebOSScreen
 };
 #endif
 
-#if defined(Q_OS_WIN32) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_WIN32) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QWindowsScreen
 {
     QT_DECLARE_NATIVE_INTERFACE(QWindowsScreen, 1, QScreen)

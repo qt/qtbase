@@ -960,7 +960,7 @@ static QFuture<std::decay_t<T>> makeReadyFuture(T &&value)
     return promise.future();
 }
 
-#if defined(Q_CLANG_QDOC)
+#if defined(Q_QDOC)
 static QFuture<void> makeReadyFuture()
 #else
 template<typename T = void>

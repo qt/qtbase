@@ -120,7 +120,7 @@ Q_DECL_CONST_FUNCTION inline size_t qHash(float key, size_t seed = 0) noexcept
     return QHashPrivate::hash(k, seed);
 }
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION size_t qHash(double key, size_t seed = 0) noexcept;
-#if !defined(Q_OS_DARWIN) || defined(Q_CLANG_QDOC)
+#if !defined(Q_OS_DARWIN) || defined(Q_QDOC)
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION size_t qHash(long double key, size_t seed = 0) noexcept;
 #endif
 Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(wchar_t key, size_t seed = 0) noexcept

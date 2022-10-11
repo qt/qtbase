@@ -6,7 +6,7 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 
-#if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(vulkan) || defined(Q_QDOC)
 
 #include "qvulkanwindow.h"
 #include <QtCore/QHash>

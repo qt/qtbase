@@ -13,7 +13,7 @@
 
 #include <QtCore/qpropertyprivate.h>
 
-#if __has_include(<source_location>) && __cplusplus >= 202002L && !defined(Q_CLANG_QDOC)
+#if __has_include(<source_location>) && __cplusplus >= 202002L && !defined(Q_QDOC)
 #include <source_location>
 #if defined(__cpp_lib_source_location)
 #define QT_SOURCE_LOCATION_NAMESPACE std
@@ -22,7 +22,7 @@
 #endif
 #endif
 
-#if __has_include(<experimental/source_location>) && !defined(Q_CLANG_QDOC)
+#if __has_include(<experimental/source_location>) && !defined(Q_QDOC)
 #include <experimental/source_location>
 #if !defined(QT_PROPERTY_COLLECT_BINDING_LOCATION)
 #if defined(__cpp_lib_experimental_source_location)
@@ -334,7 +334,7 @@ public:
     explicit QProperty(const QPropertyBinding<T> &binding)
         : QProperty()
     { setBinding(binding); }
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
     template <typename Functor>
     explicit QProperty(Functor &&f, const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
                        typename std::enable_if_t<std::is_invocable_r_v<T, Functor&>> * = nullptr)
@@ -417,7 +417,7 @@ public:
         return true;
     }
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
     template <typename Functor>
     QPropertyBinding<T> setBinding(Functor &&f,
                                    const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
@@ -759,7 +759,7 @@ public:
 #endif
         return QPropertyBinding<T>();
     }
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
     template <typename Functor>
     QPropertyBinding<T> setBinding(Functor &&f,
                                    const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
@@ -861,7 +861,7 @@ public:
         return QBindable<T>(aliasedProperty(), iface).setBinding(newBinding);
     }
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
     template <typename Functor>
     QPropertyBinding<T> setBinding(Functor &&f,
                                    const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
@@ -951,7 +951,7 @@ public:
     explicit QObjectBindableProperty(const QPropertyBinding<T> &binding)
         : QObjectBindableProperty()
     { setBinding(binding); }
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
     template <typename Functor>
     explicit QObjectBindableProperty(Functor &&f, const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
                        typename std::enable_if_t<std::is_invocable_r_v<T, Functor&>> * = nullptr)
@@ -1044,7 +1044,7 @@ public:
         return true;
     }
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
     template <typename Functor>
     QPropertyBinding<T> setBinding(Functor &&f,
                                    const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,

@@ -15,7 +15,7 @@
 
 Q_MOC_INCLUDE(<QtNetwork/QSslPreSharedKeyAuthenticator>)
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 QT_REQUIRE_CONFIG(dtls);
 #endif
 

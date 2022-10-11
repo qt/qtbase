@@ -136,7 +136,7 @@ public:
 #endif
 
     template <typename... Args>
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     bool
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
@@ -150,7 +150,7 @@ public:
     }
 
     template <typename... Args>
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     bool
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
@@ -161,7 +161,7 @@ public:
     }
 
     template <typename... Args>
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     bool
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
@@ -172,7 +172,7 @@ public:
     }
 
     template <typename... Args>
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     bool
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
@@ -183,7 +183,7 @@ public:
     }
 
     template <typename... Args>
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     bool
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
@@ -196,7 +196,7 @@ public:
     }
 
     template <typename... Args>
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     bool
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>

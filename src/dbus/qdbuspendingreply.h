@@ -81,7 +81,7 @@ public:
         return qdbus_cast<ResultType>(argumentAt(Index));
     }
 
-#if defined(Q_CLANG_QDOC)
+#if defined(Q_QDOC)
     bool isFinished() const;
     void waitForFinished();
     QVariant argumentAt(int index) const;

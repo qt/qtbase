@@ -138,7 +138,7 @@ public:
 
     QList<int> supportedResolutions() const;
 
-#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
     QList<PaperSource> supportedPaperSources() const;
 #endif
 

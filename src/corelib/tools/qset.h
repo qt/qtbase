@@ -35,7 +35,7 @@ public:
 
     inline void swap(QSet<T> &other) noexcept { q_hash.swap(other.q_hash); }
 
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
     template <typename U = T>
     QTypeTraits::compare_eq_result_container<QSet, U> operator==(const QSet<T> &other) const
     { return q_hash == other.q_hash; }

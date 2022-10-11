@@ -6,7 +6,7 @@
 
 #include "QtCore/qobject.h"
 
-#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
 
 QT_BEGIN_NAMESPACE
 

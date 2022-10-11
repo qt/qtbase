@@ -55,7 +55,7 @@ public:
     static QString localHostName();
     static QString localDomainName();
 
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     template<typename Functor>
     static int lookupHost(const QString &name, Functor functor);
     template<typename Functor>

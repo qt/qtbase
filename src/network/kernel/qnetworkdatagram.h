@@ -55,7 +55,7 @@ public:
     QByteArray data() const;
     void setData(const QByteArray &data);
 
-#if defined(Q_COMPILER_REF_QUALIFIERS) || defined(Q_CLANG_QDOC)
+#if defined(Q_COMPILER_REF_QUALIFIERS) || defined(Q_QDOC)
     QNetworkDatagram makeReply(const QByteArray &payload) const &
     { return makeReply_helper(payload); }
     QNetworkDatagram makeReply(const QByteArray &payload) &&

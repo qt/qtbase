@@ -125,7 +125,7 @@ public:
     static QSslConfiguration defaultConfiguration();
     static void setDefaultConfiguration(const QSslConfiguration &configuration);
 
-#if QT_CONFIG(dtls) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(dtls) || defined(Q_QDOC)
     bool dtlsCookieVerificationEnabled() const;
     void setDtlsCookieVerificationEnabled(bool enable);
 

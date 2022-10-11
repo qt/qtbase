@@ -6,7 +6,7 @@
 
 #include <QtConcurrent/qtconcurrent_global.h>
 
-#if !defined(QT_NO_CONCURRENT) ||defined(Q_CLANG_QDOC)
+#if !defined(QT_NO_CONCURRENT) ||defined(Q_QDOC)
 
 #include <QtCore/qthreadpool.h>
 #include <QtCore/qfuture.h>

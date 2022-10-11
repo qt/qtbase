@@ -15,7 +15,7 @@
 //
 
 // Dummy declarations for generating docs on non-Windows platforms
-#if !defined(Q_OS_WIN) && defined(Q_CLANG_QDOC)
+#if !defined(Q_OS_WIN) && defined(Q_QDOC)
 typedef struct _FORMATETC {} FORMATETC;
 typedef struct _STGMEDIUM {} STGMEDIUM;
 typedef void *IDataObject;

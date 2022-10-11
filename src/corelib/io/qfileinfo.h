@@ -34,7 +34,7 @@ public:
     QFILEINFO_MAYBE_EXPLICIT QFileInfo(const QFileDevice &file);
     QFILEINFO_MAYBE_EXPLICIT QFileInfo(const QDir &dir, const QString &file);
     QFileInfo(const QFileInfo &fileinfo);
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     QFileInfo(const std::filesystem::path &file);
     QFileInfo(const QDir &dir, const std::filesystem::path &file);
 #elif QT_CONFIG(cxx17_filesystem)
@@ -63,7 +63,7 @@ public:
     void setFile(const QString &file);
     void setFile(const QFileDevice &file);
     void setFile(const QDir &dir, const QString &file);
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
     void setFile(const std::filesystem::path &file);
 #elif QT_CONFIG(cxx17_filesystem)
     template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>
@@ -77,7 +77,7 @@ public:
     QString filePath() const;
     QString absoluteFilePath() const;
     QString canonicalFilePath() const;
-#if QT_CONFIG(cxx17_filesystem) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(cxx17_filesystem) || defined(Q_QDOC)
     std::filesystem::path filesystemFilePath() const
     { return QtPrivate::toFilesystemPath(filePath()); }
     std::filesystem::path filesystemAbsoluteFilePath() const
@@ -95,7 +95,7 @@ public:
     QString path() const;
     QString absolutePath() const;
     QString canonicalPath() const;
-#if QT_CONFIG(cxx17_filesystem) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(cxx17_filesystem) || defined(Q_QDOC)
     std::filesystem::path filesystemPath() const { return QtPrivate::toFilesystemPath(path()); }
     std::filesystem::path filesystemAbsolutePath() const
     { return QtPrivate::toFilesystemPath(absolutePath()); }
@@ -128,7 +128,7 @@ public:
     QString symLinkTarget() const;
     QString junctionTarget() const;
 
-#if QT_CONFIG(cxx17_filesystem) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(cxx17_filesystem) || defined(Q_QDOC)
     std::filesystem::path filesystemSymLinkTarget() const
     { return QtPrivate::toFilesystemPath(symLinkTarget()); }
 

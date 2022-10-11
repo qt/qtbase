@@ -6,7 +6,7 @@
 
 #include <QtConcurrent/qtconcurrent_global.h>
 
-#if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)
+#if !defined(QT_NO_CONCURRENT) || defined(Q_QDOC)
 
 #include <QtCore/qatomic.h>
 #include <QtCore/qlist.h>
@@ -40,7 +40,7 @@ namespace QtConcurrent {
     MapReduce won't start any new threads, and when it exceeds
     ReduceQueueThrottleLimit running threads will be stopped.
 */
-#ifdef Q_CLANG_QDOC
+#ifdef Q_QDOC
 enum ReduceQueueLimits {
     ReduceQueueStartLimit = 20,
     ReduceQueueThrottleLimit = 30
@@ -70,7 +70,7 @@ enum ReduceOption {
     // ParallelReduce = 0x8
 };
 Q_DECLARE_FLAGS(ReduceOptions, ReduceOption)
-#ifndef Q_CLANG_QDOC
+#ifndef Q_QDOC
 Q_DECLARE_OPERATORS_FOR_FLAGS(ReduceOptions)
 #endif
 // supports both ordered and out-of-order reduction
