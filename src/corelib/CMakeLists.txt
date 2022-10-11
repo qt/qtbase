@@ -510,7 +510,6 @@ qt_internal_extend_target(Core
 qt_internal_extend_target(Core CONDITION ANDROID
     SOURCES
         ipc/qsharedmemory_android.cpp
-        ipc/qsystemsemaphore_android.cpp
     DEFINES
         LIBS_SUFFIX="_${ANDROID_ABI}.so" # special case
 )

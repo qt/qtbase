@@ -297,49 +297,71 @@ inotify_rm_watch(0, 1);
 }
 ")
 
-# ipc_sysv
-qt_config_compile_test(ipc_sysv
-    LABEL "SysV IPC"
+qt_config_compile_test(sysv_shm
+    LABEL "System V/XSI shared memory"
     CODE
 "#include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/sem.h>
 #include <sys/shm.h>
 #include <fcntl.h>
 
 int main(void)
 {
-    /* BEGIN TEST: */
-key_t unix_key = ftok(\"test\", 'Q');
-semctl(semget(unix_key, 1, 0666 | IPC_CREAT | IPC_EXCL), 0, IPC_RMID, 0);
-shmget(unix_key, 0, 0666 | IPC_CREAT | IPC_EXCL);
-shmctl(0, 0, (struct shmid_ds *)(0));
-    /* END TEST: */
+    key_t unix_key = ftok(\"test\", 'Q');
+    shmget(unix_key, 0, 0666 | IPC_CREAT | IPC_EXCL);
+    shmctl(0, 0, (struct shmid_ds *)(0));
     return 0;
 }
 ")
 
-# ipc_posix
+qt_config_compile_test(sysv_sem
+    LABEL "System V/XSI semaphores"
+    CODE
+"#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
+#include <fcntl.h>
+
+int main(void)
+{
+    key_t unix_key = ftok(\"test\", 'Q');
+    semctl(semget(unix_key, 1, 0666 | IPC_CREAT | IPC_EXCL), 0, IPC_RMID, 0);
+    return 0;
+}
+")
+
 if (LINUX)
     set(ipc_posix_TEST_LIBRARIES pthread rt)
 endif()
-qt_config_compile_test(ipc_posix
-    LABEL "POSIX IPC"
+qt_config_compile_test(posix_shm
+    LABEL "POSIX shared memory"
     LIBRARIES
      "${ipc_posix_TEST_LIBRARIES}"
     CODE
 "#include <sys/types.h>
 #include <sys/mman.h>
+#include <fcntl.h>
+
+int main(void)
+{
+    shm_open(\"test\", O_RDWR | O_CREAT | O_EXCL, 0666);
+    shm_unlink(\"test\");
+    return 0;
+}
+")
+
+qt_config_compile_test(posix_sem
+    LABEL "POSIX semaphores"
+    LIBRARIES
+     "${ipc_posix_TEST_LIBRARIES}"
+    CODE
+"#include <sys/types.h>
 #include <semaphore.h>
 #include <fcntl.h>
 
 int main(void)
 {
-    /* BEGIN TEST: */
-sem_close(sem_open(\"test\", O_CREAT | O_EXCL, 0666, 0));
-shm_open(\"test\", O_RDWR | O_CREAT | O_EXCL, 0666);
-shm_unlink(\"test\");
-    /* END TEST: */
+    sem_close(sem_open(\"test\", O_CREAT | O_EXCL, 0666, 0));
     return 0;
 }
 ")
@@ -593,8 +615,10 @@ qt_feature("inotify" PUBLIC PRIVATE
 qt_feature_definition("inotify" "QT_NO_INOTIFY" NEGATE VALUE "1")
 qt_feature("ipc_posix"
     LABEL "Using POSIX IPC"
-    AUTODETECT NOT WIN32 AND ( ( APPLE AND QT_FEATURE_appstore_compliant ) OR NOT TEST_ipc_sysv )
-    CONDITION TEST_ipc_posix
+    CONDITION TEST_posix_shm AND TEST_posix_sem AND (
+        FEATURE_ipc_posix OR (APPLE AND QT_FEATURE_appstore_compliant)
+        OR NOT (TEST_sysv_shm AND TEST_sysv_sem)
+    )
 )
 qt_feature_definition("ipc_posix" "QT_POSIX_IPC")
 qt_feature("journald" PRIVATE
@@ -662,6 +686,14 @@ qt_feature("poll_select" PRIVATE
     EMIT_IF NOT WIN32
 )
 qt_feature_definition("poll_select" "QT_NO_NATIVE_POLL")
+qt_feature("posix_sem" PRIVATE
+    LABEL "POSIX semaphores"
+    CONDITION TEST_posix_sem
+)
+qt_feature("posix_shm" PRIVATE
+    LABEL "POSIX shared memory"
+    CONDITION TEST_posix_shm
+)
 qt_feature("qqnx_pps" PRIVATE
     LABEL "PPS"
     CONDITION PPS_FOUND
@@ -684,6 +716,14 @@ qt_feature("syslog" PRIVATE
     AUTODETECT OFF
     CONDITION TEST_syslog
 )
+qt_feature("sysv_sem" PRIVATE
+    LABEL "System V / XSI semaphores"
+    CONDITION TEST_sysv_sem
+)
+qt_feature("sysv_shm" PRIVATE
+    LABEL "System V / XSI shared memory"
+    CONDITION TEST_sysv_shm
+)
 qt_feature("threadsafe-cloexec"
     LABEL "Threadsafe pipe creation"
     CONDITION TEST_cloexec
@@ -705,7 +745,7 @@ qt_feature("sharedmemory" PUBLIC
     SECTION "Kernel"
     LABEL "QSharedMemory"
     PURPOSE "Provides access to a shared memory segment."
-    CONDITION ( ANDROID OR WIN32 OR ( NOT VXWORKS AND ( TEST_ipc_sysv OR TEST_ipc_posix ) ) )
+    CONDITION ( ANDROID OR WIN32 OR ( NOT VXWORKS AND ( TEST_sysv_shm OR TEST_posix_shm ) ) )
 )
 qt_feature_definition("sharedmemory" "QT_NO_SHAREDMEMORY" NEGATE VALUE "1")
 qt_feature("shortcut" PUBLIC
@@ -718,7 +758,7 @@ qt_feature("systemsemaphore" PUBLIC
     SECTION "Kernel"
     LABEL "QSystemSemaphore"
     PURPOSE "Provides a general counting system semaphore."
-    CONDITION ( NOT INTEGRITY AND NOT VXWORKS AND NOT rtems ) AND ( ANDROID OR WIN32 OR TEST_ipc_sysv OR TEST_ipc_posix )
+    CONDITION ( NOT INTEGRITY AND NOT VXWORKS AND NOT rtems ) AND ( ANDROID OR WIN32 OR TEST_sysv_sem OR TEST_posix_sem )
 )
 qt_feature_definition("systemsemaphore" "QT_NO_SYSTEMSEMAPHORE" NEGATE VALUE "1")
 qt_feature("xmlstream" PUBLIC
