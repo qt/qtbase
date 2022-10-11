@@ -42,6 +42,7 @@ class QAccessibleImageInterface;
 class QAccessibleTableInterface;
 class QAccessibleTableCellInterface;
 class QAccessibleHyperlinkInterface;
+class QAccessibleSelectionInterface;
 class QAccessibleTableModelChangeEvent;
 
 class Q_GUI_EXPORT QAccessibleInterface
@@ -101,6 +102,12 @@ public:
 
     inline QAccessibleHyperlinkInterface *hyperlinkInterface()
     { return reinterpret_cast<QAccessibleHyperlinkInterface *>(interface_cast(QAccessible::HyperlinkInterface)); }
+
+    /*!
+        \since 6.5
+     */
+    inline QAccessibleSelectionInterface *selectionInterface()
+    { return reinterpret_cast<QAccessibleSelectionInterface *>(interface_cast(QAccessible::SelectionInterface)); }
 
     virtual void virtual_hook(int id, void *data);
 
@@ -263,6 +270,21 @@ public:
     virtual int startIndex() const = 0;
     virtual int endIndex() const = 0;
     virtual bool isValid() const = 0;
+};
+
+class Q_GUI_EXPORT QAccessibleSelectionInterface
+{
+public:
+    virtual ~QAccessibleSelectionInterface();
+
+    virtual int selectedItemCount() const = 0;
+    virtual QList<QAccessibleInterface*> selectedItems() const = 0;
+    virtual QAccessibleInterface* selectedItem(int selectionIndex) const;
+    virtual bool isSelected(QAccessibleInterface *childItem) const;
+    virtual bool select(QAccessibleInterface *childItem) = 0;
+    virtual bool unselect(QAccessibleInterface *childItem) = 0;
+    virtual bool selectAll() = 0;
+    virtual bool clear() = 0;
 };
 
 class Q_GUI_EXPORT QAccessibleEvent

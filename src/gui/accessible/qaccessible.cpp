@@ -415,8 +415,9 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \value TableInterface           For lists, tables and trees.
     \value TableCellInterface       For cells in a TableInterface object.
     \value HyperlinkInterface       For hyperlink nodes (usually embedded as children of text nodes)
+    \value [since 6.5] SelectionInterface For non-text objects that support selection of child objects.
 
-    \sa QAccessibleInterface::interface_cast(), QAccessibleTextInterface, QAccessibleValueInterface, QAccessibleActionInterface, QAccessibleTableInterface, QAccessibleTableCellInterface
+    \sa QAccessibleInterface::interface_cast(), QAccessibleTextInterface, QAccessibleValueInterface, QAccessibleActionInterface, QAccessibleTableInterface, QAccessibleTableCellInterface, QAccessibleSelectionInterface
 */
 
 #if QT_CONFIG(accessibility)
@@ -2940,6 +2941,114 @@ QString QAccessibleActionInterface::nextPageAction()
 {
     return accessibleActionStrings()->nextPageAction;
 }
+
+
+/*!
+    \since 6.5
+    \class QAccessibleSelectionInterface
+    \inmodule QtGui
+    \ingroup accessibility
+    \preliminary
+
+    \brief The QAccessibleSelectionInterface class implements support for
+    selection handling.
+
+    It provides methods for both, retrieving the current selection
+    as well as modifying the selection.
+
+    Only selections of direct children are supported.
+*/
+
+/*!
+
+    Destroys the QAccessibleSelectionInterface.
+*/
+QAccessibleSelectionInterface::~QAccessibleSelectionInterface()
+{
+}
+
+/*!
+    \fn virtual int QAccessibleSelectionInterface::selectedItemCount() const
+
+    Returns the total number of selected accessible items.
+*/
+
+/*!
+    \fn virtual QList<QAccessibleInterface *> QAccessibleSelectionInterface::selectedItems() const
+
+    Returns the list of selected accessible items.
+*/
+
+/*!
+    Returns the selected accessible item at index \a selectionIndex in the selection.
+
+    Note that the index refers to the n-th selected accessible item (i.e. the index in the current selection),
+    which generally differs from the index that would be passed to \l QAccessibleInterface::child()
+    in order to retrieve the same item.
+
+    The default implementation uses \a selectionIndex to retrieve the item from the list
+    of selected items retrieved by \l QAccessibleSelectionInterface::selectedItems().
+
+    In particular for implementations dealing with many selected items, reimplementing
+    this method in a more efficient way may be desirable for performance reasons.
+*/
+QAccessibleInterface* QAccessibleSelectionInterface::selectedItem(int selectionIndex) const
+{
+    QList<QAccessibleInterface*> items = selectedItems();
+    if (selectionIndex < 0 || selectionIndex > items.length() -1) {
+        qCWarning(lcAccessibilityCore) << "Selection index" << selectionIndex << "out of range.";
+        return nullptr;
+    }
+
+    return items.at(selectionIndex);
+}
+
+/*!
+    Returns whether \a childItem is part of the current selection.
+
+    The default implementation checks whether \a childItem is contained
+    in the list of items retrieved by \l QAccessibleSelectionInterface::selectedItems.
+*/
+bool QAccessibleSelectionInterface::isSelected(QAccessibleInterface *childItem) const
+{
+    return selectedItems().contains(childItem);
+}
+
+/*!
+    \fn virtual bool QAccessibleSelectionInterface::select(QAccessibleInterface *childItem)
+
+    Adds \a childItem to the selection.
+    Returns whether \a childItem has actually been added to the selection.
+
+    For implementations that only allow single selections,
+    this may replace the current selection.
+*/
+
+/*!
+    \fn virtual bool QAccessibleSelectionInterface::unselect(QAccessibleInterface *childItem)
+
+    Removes \a childItem from the selection.
+
+    Returns whether the accessible item has actually been removed from the selection.
+*/
+
+/*!
+    \fn virtual bool QAccessibleSelectionInterface::selectAll()
+
+    Selects all accessible child items.
+
+    Returns whether all accessible child items have actually been added to the selection.
+*/
+
+/*!
+    \fn virtual bool QAccessibleSelectionInterface::clear()
+
+    Unselects all accessible child items.
+
+    Returns whether all accessible child items have actually been removed from the selection,
+    i.e. whether the selection is empty after this method has been called.
+*/
+
 
 /*! \internal */
 QString qAccessibleLocalizedActionDescription(const QString &actionName)

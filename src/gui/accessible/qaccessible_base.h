@@ -344,7 +344,8 @@ public:
         ImageInterface,
         TableInterface,
         TableCellInterface,
-        HyperlinkInterface
+        HyperlinkInterface,
+        SelectionInterface
     };
 
     enum TextBoundaryType {
