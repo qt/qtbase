@@ -310,6 +310,39 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "  </interface>\n"
                 );
 
+    static const QLatin1StringView selectionIntrospection(
+                "  <interface name=\"org.a11y.atspi.Selection\">\n"
+                "    <property name=\"NSelectedChildren\" type=\"i\" access=\"read\"/>\n"
+                "    <method name=\"GetSelectedChild\">\n"
+                "      <arg direction=\"in\" name=\"selectedChildIndex\" type=\"i\"/>\n"
+                "      <arg direction=\"out\" type=\"(so)\"/>\n"
+                "      <annotation name=\"org.qtproject.QtDBus.QtTypeName.Out0\" value=\"QSpiObjectReference\"/>\n"
+                "    </method>\n"
+                "    <method name=\"SelectChild\">\n"
+                "      <arg direction=\"in\" name=\"childIndex\" type=\"i\"/>\n"
+                "      <arg direction=\"out\" type=\"b\"/>\n"
+                "    </method>\n"
+                "    <method name=\"DeselectSelectedChild\">\n"
+                "      <arg direction=\"in\" name=\"selectedChildIndex\" type=\"i\"/>\n"
+                "      <arg direction=\"out\" type=\"b\"/>\n"
+                "    </method>\n"
+                "    <method name=\"IsChildSelected\">\n"
+                "      <arg direction=\"in\" name=\"childIndex\" type=\"i\"/>\n"
+                "      <arg direction=\"out\" type=\"b\"/>\n"
+                "    </method>\n"
+                "    <method name=\"SelectAll\">\n"
+                "      <arg direction=\"out\" type=\"b\"/>\n"
+                "    </method>\n"
+                "    <method name=\"ClearSelection\">\n"
+                "      <arg direction=\"out\" type=\"b\"/>\n"
+                "    </method>\n"
+                "    <method name=\"DeselectChild\">\n"
+                "      <arg direction=\"in\" name=\"childIndex\" type=\"i\"/>\n"
+                "      <arg direction=\"out\" type=\"b\"/>\n"
+                "    </method>\n"
+                "  </interface>\n"
+                );
+
     static const QLatin1StringView tableIntrospection(
                 "  <interface name=\"org.a11y.atspi.Table\">\n"
                 "    <property access=\"read\" type=\"i\" name=\"NRows\"/>\n"
@@ -608,6 +641,8 @@ QString AtSpiAdaptor::introspect(const QString &path) const
         xml.append(editableTextIntrospection);
     if (interfaces.contains(ATSPI_DBUS_INTERFACE_ACTION ""_L1))
         xml.append(actionIntrospection);
+    if (interfaces.contains(ATSPI_DBUS_INTERFACE_SELECTION ""_L1))
+        xml.append(selectionIntrospection);
     if (interfaces.contains(ATSPI_DBUS_INTERFACE_TABLE ""_L1))
         xml.append(tableIntrospection);
     if (interfaces.contains(ATSPI_DBUS_INTERFACE_TABLE_CELL ""_L1))
@@ -1392,6 +1427,8 @@ bool AtSpiAdaptor::handleMessage(const QDBusMessage &message, const QDBusConnect
         return componentInterface(accessible, function, message, connection);
     if (interface == ATSPI_DBUS_INTERFACE_ACTION ""_L1)
         return actionInterface(accessible, function, message, connection);
+    if (interface == ATSPI_DBUS_INTERFACE_SELECTION ""_L1)
+        return selectionInterface(accessible, function, message, connection);
     if (interface == ATSPI_DBUS_INTERFACE_TEXT ""_L1)
         return textInterface(accessible, function, message, connection);
     if (interface == ATSPI_DBUS_INTERFACE_EDITABLE_TEXT ""_L1)
@@ -1616,6 +1653,9 @@ QStringList AtSpiAdaptor::accessibleInterfaces(QAccessibleInterface *interface) 
 
     if (interface->actionInterface() || interface->valueInterface())
         ifaces << u"" ATSPI_DBUS_INTERFACE_ACTION ""_s;
+
+    if (interface->selectionInterface())
+        ifaces << ATSPI_DBUS_INTERFACE_SELECTION ""_L1;
 
     if (interface->textInterface())
         ifaces << u"" ATSPI_DBUS_INTERFACE_TEXT ""_s;
@@ -2447,6 +2487,63 @@ bool AtSpiAdaptor::valueInterface(QAccessibleInterface *interface, const QString
     }
     return true;
 }
+
+// Selection interface
+bool AtSpiAdaptor::selectionInterface(QAccessibleInterface *interface, const QString &function, const QDBusMessage &message, const QDBusConnection &connection)
+{
+    QAccessibleSelectionInterface* selectionInterface = interface->selectionInterface();
+    if (!selectionInterface) {
+        qCWarning(lcAccessibilityAtspi) << "Could not find selection interface for: " << message.path() << interface;
+        return false;
+    }
+
+    if (function == "ClearSelection"_L1 ) {
+        connection.send(message.createReply(QVariant::fromValue((selectionInterface->clear()))));
+    } else if (function == "DeselectChild"_L1 ) {
+        int childIndex = message.arguments().at(0).toInt();
+        bool ret = false;
+        QAccessibleInterface *child = interface->child(childIndex);
+        if (child)
+            ret = selectionInterface->unselect(child);
+        connection.send(message.createReply(QVariant::fromValue(ret)));
+    } else if (function == "DeselectSelectedChild"_L1 ) {
+        int selectionIndex = message.arguments().at(0).toInt();
+        bool ret = false;
+        QAccessibleInterface *selectedChild = selectionInterface->selectedItem(selectionIndex);
+        if (selectedChild)
+            ret = selectionInterface->unselect(selectedChild);
+        connection.send(message.createReply(QVariant::fromValue(ret)));
+    } else if (function == "GetNSelectedChildren"_L1) {
+        connection.send(message.createReply(QVariant::fromValue(QDBusVariant(
+            QVariant::fromValue(selectionInterface->selectedItemCount())))));
+    } else if (function == "GetSelectedChild"_L1) {
+        int selectionIndex = message.arguments().at(0).toInt();
+        QSpiObjectReference ref(connection, QDBusObjectPath(pathForInterface(selectionInterface->selectedItem(selectionIndex))));
+        connection.send(message.createReply(QVariant::fromValue(ref)));
+    } else if (function == "IsChildSelected"_L1 ) {
+        int childIndex = message.arguments().at(0).toInt();
+        bool ret = false;
+        QAccessibleInterface *child = interface->child(childIndex);
+        if (child)
+            ret = selectionInterface->isSelected(child);
+        connection.send(message.createReply(QVariant::fromValue(ret)));
+    } else if (function == "SelectAll"_L1 ) {
+        connection.send(message.createReply(QVariant::fromValue(selectionInterface->selectAll())));
+    } else if (function == "SelectChild"_L1 ) {
+        int childIndex = message.arguments().at(0).toInt();
+        bool ret = false;
+        QAccessibleInterface *child = interface->child(childIndex);
+        if (child)
+            ret = selectionInterface->select(child);
+        connection.send(message.createReply(QVariant::fromValue(ret)));
+    } else {
+        qCWarning(lcAccessibilityAtspi) << "AtSpiAdaptor::selectionInterface does not implement " << function << message.path();
+        return false;
+    }
+
+    return true;
+}
+
 
 // Table interface
 bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString &function, const QDBusMessage &message, const QDBusConnection &connection)
