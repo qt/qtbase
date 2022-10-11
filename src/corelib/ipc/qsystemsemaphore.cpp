@@ -323,6 +323,41 @@ QString QSystemSemaphore::errorString() const
     return d->errorString;
 }
 
+void QSystemSemaphorePrivate::setUnixErrorString(QLatin1StringView function)
+{
+    // EINVAL is handled in functions so they can give better error strings
+    switch (errno) {
+    case EPERM:
+    case EACCES:
+        errorString = QSystemSemaphore::tr("%1: permission denied").arg(function);
+        error = QSystemSemaphore::PermissionDenied;
+        break;
+    case EEXIST:
+        errorString = QSystemSemaphore::tr("%1: already exists").arg(function);
+        error = QSystemSemaphore::AlreadyExists;
+        break;
+    case ENOENT:
+        errorString = QSystemSemaphore::tr("%1: does not exist").arg(function);
+        error = QSystemSemaphore::NotFound;
+        break;
+    case ERANGE:
+    case ENOSPC:
+        errorString = QSystemSemaphore::tr("%1: out of resources").arg(function);
+        error = QSystemSemaphore::OutOfResources;
+        break;
+    case ENAMETOOLONG:
+        errorString = QSystemSemaphore::tr("%1: key too long").arg(function);
+        error = QSystemSemaphore::KeyError;
+        break;
+    default:
+        errorString = QSystemSemaphore::tr("%1: unknown error %2").arg(function).arg(errno);
+        error = QSystemSemaphore::UnknownError;
+#if defined QSYSTEMSEMAPHORE_DEBUG
+        qDebug() << errorString << "key" << key << "errno" << errno << EINVAL;
+#endif
+    }
+}
+
 #endif // QT_CONFIG(systemsemaphore)
 
 QT_END_NAMESPACE
