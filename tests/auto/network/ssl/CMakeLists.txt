@@ -1,10 +1,10 @@
 # Generated from ssl.pro.
 
 add_subdirectory(qpassworddigestor)
-add_subdirectory(qsslcertificate)
-add_subdirectory(qsslcipher)
-add_subdirectory(qsslellipticcurve)
 if(QT_FEATURE_ssl)
+    add_subdirectory(qsslcertificate)
+    add_subdirectory(qsslcipher)
+    add_subdirectory(qsslellipticcurve)
     add_subdirectory(qsslkey)
     add_subdirectory(qsslerror)
 endif()
