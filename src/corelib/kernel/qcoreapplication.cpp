@@ -1363,9 +1363,6 @@ void QCoreApplicationPrivate::execCleanup()
 {
     threadData.loadRelaxed()->quitNow = false;
     in_exec = false;
-    if (!aboutToQuitEmitted)
-        emit q_func()->aboutToQuit(QCoreApplication::QPrivateSignal());
-    aboutToQuitEmitted = true;
     QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 }
 
@@ -1404,7 +1401,12 @@ void QCoreApplication::exit(int returnCode)
 {
     if (!self)
         return;
-    QThreadData *data = self->d_func()->threadData.loadRelaxed();
+    QCoreApplicationPrivate *d = self->d_func();
+    if (!d->aboutToQuitEmitted) {
+        emit self->aboutToQuit(QCoreApplication::QPrivateSignal());
+        d->aboutToQuitEmitted = true;
+    }
+    QThreadData *data = d->threadData.loadRelaxed();
     data->quitNow = true;
     for (qsizetype i = 0; i < data->eventLoops.size(); ++i) {
         QEventLoop *eventLoop = data->eventLoops.at(i);
