@@ -19,6 +19,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <string_view>
 #include <cstring>
 #include <sstream>
 #include <filesystem>
@@ -50,6 +51,9 @@ enum HeaderChecks {
 constexpr int LinkerScriptCommentAlignment = 55;
 
 static const std::regex GlobalHeaderRegex("^q(.*)global\\.h$");
+
+constexpr std::string_view ErrorMessagePreamble = "ERROR: ";
+constexpr std::string_view WarningMessagePreamble = "WARNING: ";
 
 // This comparator is used to sort include records in master header.
 // It's used to put q.*global.h file to the top of the list and sort all other files alphabetically.
@@ -511,10 +515,13 @@ class SyncScanner
     unsigned int m_currentFileType = PublicHeader;
 
     int m_criticalChecks = CriticalChecks;
+    std::string_view m_warningMessagePreamble;
 
 public:
     SyncScanner(CommandLineOptions *commandLineArgs)
-        : m_commandLineArgs(commandLineArgs), m_masterHeaderContents(MasterHeaderIncludeComparator)
+        : m_commandLineArgs(commandLineArgs),
+          m_masterHeaderContents(MasterHeaderIncludeComparator),
+          m_warningMessagePreamble(WarningMessagePreamble)
     {
     }
 
@@ -526,7 +533,11 @@ public:
 
     ErrorCodes sync()
     {
-        m_criticalChecks = m_commandLineArgs->warningsAreErrors() ? AllChecks : CriticalChecks;
+        if (m_commandLineArgs->warningsAreErrors()) {
+            m_criticalChecks = AllChecks;
+            m_warningMessagePreamble = ErrorMessagePreamble;
+        }
+
         m_versionScriptGeneratorState =
                 m_commandLineArgs->versionScriptFile().empty() ? Stopped : Active;
         auto error = NoError;
@@ -1126,7 +1137,7 @@ public:
                                                        .filename()
                                                        .generic_string())) {
                             faults |= PrivateHeaderChecks;
-                            std::cerr << "ERROR: " << m_currentFileString
+                            std::cerr << ErrorMessagePreamble << m_currentFileString
                                       << ":" << m_currentFileLineNumber
                                       << " includes private header " << includedHeader << std::endl;
                         }
@@ -1135,7 +1146,7 @@ public:
                             if (std::filesystem::exists(m_commandLineArgs->includeDir() + "/../"
                                                         + suggestedHeader)) {
                                 faults |= IncludeChecks;
-                                std::cerr << "WARNING: " << m_currentFileString
+                                std::cerr << m_warningMessagePreamble << m_currentFileString
                                           << ":" << m_currentFileLineNumber
                                           << " includes " << includedHeader
                                           << " when it should include "
@@ -1193,21 +1204,21 @@ public:
             if (hasQtBeginNamespace) {
                 if (qtBeginNamespace != qtEndNamespace) {
                     faults |= NamespaceChecks;
-                    std::cerr << "WARNING: " << m_currentFileString
+                    std::cerr << m_warningMessagePreamble << m_currentFileString
                               << " the begin namespace macro QT_BEGIN_NAMESPACE" << qtBeginNamespace
                               << " doesn't match the end namespace macro QT_END_NAMESPACE"
                               << qtEndNamespace << std::endl;
                 }
             } else {
                 faults |= NamespaceChecks;
-                std::cerr << "WARNING: " << m_currentFileString
+                std::cerr << m_warningMessagePreamble << m_currentFileString
                           << " does not include QT_BEGIN_NAMESPACE" << std::endl;
             }
         }
 
         if (!(skipChecks & WeMeantItChecks) && !hasWeMeantIt) {
             faults |= WeMeantItChecks;
-            std::cerr << "WARNING: " << m_currentFileString
+            std::cerr << m_warningMessagePreamble << m_currentFileString
                       << " does not have the \"We mean it.\" warning"
                       << std::endl;
         }
