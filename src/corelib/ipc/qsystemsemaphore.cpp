@@ -342,6 +342,7 @@ void QSystemSemaphorePrivate::setUnixErrorString(QLatin1StringView function)
         break;
     case ERANGE:
     case ENOSPC:
+    case EMFILE:
         errorString = QSystemSemaphore::tr("%1: out of resources").arg(function);
         error = QSystemSemaphore::OutOfResources;
         break;
