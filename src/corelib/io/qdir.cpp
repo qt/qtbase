@@ -486,8 +486,8 @@ inline void QDirPrivate::initFileEngine()
 
     \snippet code/src_corelib_io_qdir.cpp 4
 
-    (We could also use the static convenience function
-    QFile::exists().)
+    (We could also use one of the static convenience functions
+    QFileInfo::exists() or QFile::exists().)
 
     Traversing directories and reading a file:
 
@@ -1882,7 +1882,7 @@ bool QDir::exists(const QString &name) const
         qWarning("QDir::exists: Empty or null file name");
         return false;
     }
-    return QFile::exists(filePath(name));
+    return QFileInfo::exists(filePath(name));
 }
 
 /*!
