@@ -900,11 +900,6 @@ template <typename T> static void mapFromArray_template(T key)
     if (v.isMap())
         return;     // already a map, nothing will happen
 
-    auto ignoreMessage = [type]() {
-        if (type == QCborValue::Array)
-            QTest::ignoreMessage(QtWarningMsg, "Using CBOR array as map forced conversion");
-    };
-
     // verify forced conversions work
     // (our only Array row is an empty array, so it doesn't produce the warning)
     QCborValue v2 = v;
@@ -918,7 +913,7 @@ template <typename T> static void mapFromArray_template(T key)
     // non-empty array conversions
     QCborValue va = QCborArray{v};
     v2 = va;
-    ignoreMessage();
+    QTest::ignoreMessage(QtWarningMsg, "Using CBOR array as map forced conversion");
     QVERIFY(v2[key].isUndefined());
     QCOMPARE(v2.type(), QCborValue::Map);
     QCOMPARE(va.type(), QCborValue::Array);
