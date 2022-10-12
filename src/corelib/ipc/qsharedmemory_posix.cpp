@@ -51,7 +51,8 @@ bool QSharedMemoryPosix::handle(QSharedMemoryPrivate *self)
 
 bool QSharedMemoryPosix::cleanHandle(QSharedMemoryPrivate *)
 {
-    qt_safe_close(hand);
+    if (hand != -1)
+        qt_safe_close(hand);
     hand = -1;
 
     return true;
