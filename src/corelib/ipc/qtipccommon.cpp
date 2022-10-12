@@ -5,7 +5,7 @@
 #include "qtipccommon_p.h"
 
 #include <qcryptographichash.h>
-#include <qdir.h>
+#include <qstandardpaths.h>
 #include <qstringconverter.h>
 #include <private/qurl_p.h>
 
@@ -153,7 +153,66 @@ QString QtIpcCommon::legacyPlatformSafeKey(const QString &key, QtIpcCommon::IpcT
     }
     if (!isIpcSupported(ipcType, QNativeIpcKey::Type::SystemV))
         return QString();
-    return QDir::tempPath() + u'/' + result;
+    return QStandardPaths::writableLocation(QStandardPaths::TempLocation) + u'/' + result;
+}
+
+QString QtIpcCommon::platformSafeKey(const QString &key, QtIpcCommon::IpcType ipcType,
+                                     QNativeIpcKey::Type type)
+{
+    if (key.isEmpty())
+        return key;
+
+    switch (type) {
+    case QNativeIpcKey::Type::PosixRealtime:
+        if (!isIpcSupported(ipcType, QNativeIpcKey::Type::PosixRealtime))
+            return QString();
+#ifdef SHM_NAME_MAX
+        // The shared memory name limit on Apple platforms is very low (30
+        // characters), so we have to cut it down to avoid ENAMETOOLONG. We
+        // hope that there won't be too many collisions...
+        return u'/' + QStringView(key).left(SHM_NAME_MAX - 1);
+#endif
+        return u'/' + key;
+
+    case QNativeIpcKey::Type::Windows:
+        if (isIpcSupported(ipcType, QNativeIpcKey::Type::Windows)) {
+            QStringView prefix;
+            QStringView payload = key;
+            // see https://learn.microsoft.com/en-us/windows/win32/termserv/kernel-object-namespaces
+            for (QStringView candidate : { u"Local\\", u"Global\\" }) {
+                if (!key.startsWith(candidate))
+                    continue;
+                prefix = candidate;
+                payload = payload.sliced(prefix.size());
+                break;
+            }
+
+            QStringView mid;
+            switch (ipcType) {
+            case IpcType::SharedMemory:     mid = u"shm_"; break;
+            case IpcType::SystemSemaphore:  mid = u"sem_"; break;
+            }
+
+            QString result = prefix + mid + payload;
+#ifdef MAX_PATH
+            result.truncate(MAX_PATH);
+#endif
+            return result;
+        }
+        return QString();
+
+    case QNativeIpcKey::Type::SystemV:
+        break;
+    }
+
+    // System V
+    if (!isIpcSupported(ipcType, QNativeIpcKey::Type::SystemV))
+        return QString();
+    if (key.startsWith(u'/'))
+        return key;
+
+    QString baseDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+    return baseDir + u'/' + key;
 }
 
 /*!

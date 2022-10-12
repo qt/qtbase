@@ -61,6 +61,7 @@ static constexpr bool isIpcSupported(IpcType ipcType, QNativeIpcKey::Type type)
 Q_AUTOTEST_EXPORT QString
 legacyPlatformSafeKey(const QString &key, IpcType ipcType,
                       QNativeIpcKey::Type type = QNativeIpcKey::legacyDefaultTypeForOs());
+Q_AUTOTEST_EXPORT QString platformSafeKey(const QString &key, IpcType ipcType, QNativeIpcKey::Type type);
 
 #ifdef Q_OS_UNIX
 // Convenience function to create the file if needed
