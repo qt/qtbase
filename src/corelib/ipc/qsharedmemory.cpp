@@ -267,7 +267,8 @@ bool QSharedMemoryPrivate::initKey(SemaphoreAccessMode mode)
     systemSemaphore.setNativeKey(semaphoreNativeKey(), 1, mode);
     if (systemSemaphore.error() != QSystemSemaphore::NoError) {
         QString function = "QSharedMemoryPrivate::initKey"_L1;
-        errorString = QSharedMemory::tr("%1: unable to set key on lock").arg(function);
+        errorString = QSharedMemory::tr("%1: unable to set key on lock (%2)")
+                .arg(function, systemSemaphore.errorString());
         switch(systemSemaphore.error()) {
         case QSystemSemaphore::PermissionDenied:
             error = QSharedMemory::PermissionDenied;
