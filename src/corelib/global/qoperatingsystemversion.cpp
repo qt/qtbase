@@ -665,24 +665,18 @@ const QOperatingSystemVersion QOperatingSystemVersion::Android11 =
     \brief a version corresponding to Android 12 (version 12.0, API level 31).
     \since 6.5
  */
-const QOperatingSystemVersion QOperatingSystemVersion::Android12 =
-    QOperatingSystemVersion(QOperatingSystemVersion::Android, 12, 0);
 
 /*!
     \variable QOperatingSystemVersion::Android12L
     \brief a version corresponding to Android 12L (version 12.0, API level 32).
     \since 6.5
  */
-const QOperatingSystemVersion QOperatingSystemVersion::Android12L =
-    QOperatingSystemVersion(QOperatingSystemVersion::Android, 12, 0);
 
 /*!
     \variable QOperatingSystemVersion::Android13
     \brief a version corresponding to Android 13 (version 13.0, API level 33).
     \since 6.5
  */
-const QOperatingSystemVersion QOperatingSystemVersion::Android13 =
-    QOperatingSystemVersion(QOperatingSystemVersion::Android, 13, 0);
 
 
 
