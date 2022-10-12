@@ -7465,7 +7465,8 @@ void tst_QWidget::renderChildFillsBackground()
 #ifndef Q_OS_ANDROID
     // On Android all widgets are shown maximized, so the pixmaps
     // will be similar
-    QEXPECT_FAIL("", "This test fails on all platforms", Continue);
+    if (!m_platform.startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QEXPECT_FAIL("", "This test fails on all platforms", Continue);
 #endif
     QCOMPARE(childPixmap, windowPixmap);
 }
