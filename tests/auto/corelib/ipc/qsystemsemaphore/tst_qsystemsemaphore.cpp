@@ -1,4 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2022 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QTest>
@@ -20,13 +21,21 @@ class tst_QSystemSemaphore : public QObject
 public:
     tst_QSystemSemaphore();
 
+    QNativeIpcKey platformSafeKey(const QString &key)
+    {
+        QNativeIpcKey::Type keyType = QNativeIpcKey::DefaultTypeForOs;
+        return QSystemSemaphore::platformSafeKey(key, keyType);
+    }
+
 public Q_SLOTS:
     void init();
     void cleanup();
 
 private slots:
-    void key_data();
-    void key();
+    void nativeKey_data();
+    void nativeKey();
+    void legacyKey_data() { nativeKey_data(); }
+    void legacyKey();
 
     void basicacquire();
     void complexacquire();
@@ -37,9 +46,7 @@ private slots:
     void processes_data();
     void processes();
 
-#if !defined(Q_OS_WIN) && !defined(QT_POSIX_IPC)
     void undo();
-#endif
     void initialValue();
 
 private:
@@ -55,7 +62,8 @@ tst_QSystemSemaphore::tst_QSystemSemaphore()
 
 void tst_QSystemSemaphore::init()
 {
-    existingLock = new QSystemSemaphore(EXISTING_SHARE, 1, QSystemSemaphore::Create);
+    QNativeIpcKey key = platformSafeKey(EXISTING_SHARE);
+    existingLock = new QSystemSemaphore(key, 1, QSystemSemaphore::Create);
 }
 
 void tst_QSystemSemaphore::cleanup()
@@ -63,7 +71,7 @@ void tst_QSystemSemaphore::cleanup()
     delete existingLock;
 }
 
-void tst_QSystemSemaphore::key_data()
+void tst_QSystemSemaphore::nativeKey_data()
 {
     QTest::addColumn<QString>("constructorKey");
     QTest::addColumn<QString>("setKey");
@@ -76,7 +84,27 @@ void tst_QSystemSemaphore::key_data()
 /*!
     Basic key testing
  */
-void tst_QSystemSemaphore::key()
+void tst_QSystemSemaphore::nativeKey()
+{
+    QFETCH(QString, constructorKey);
+    QFETCH(QString, setKey);
+    QNativeIpcKey constructorIpcKey = platformSafeKey(constructorKey);
+    QNativeIpcKey setIpcKey = platformSafeKey(setKey);
+
+    QSystemSemaphore sem(constructorIpcKey);
+    QCOMPARE(sem.nativeIpcKey(), constructorIpcKey);
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
+    QCOMPARE(sem.errorString(), QString());
+
+    sem.setNativeKey(setIpcKey);
+    QCOMPARE(sem.nativeIpcKey(), setIpcKey);
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
+    QCOMPARE(sem.errorString(), QString());
+}
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+void tst_QSystemSemaphore::legacyKey()
 {
     QFETCH(QString, constructorKey);
     QFETCH(QString, setKey);
@@ -91,10 +119,12 @@ void tst_QSystemSemaphore::key()
     QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QCOMPARE(sem.errorString(), QString());
 }
+QT_WARNING_POP
 
 void tst_QSystemSemaphore::basicacquire()
 {
-    QSystemSemaphore sem("QSystemSemaphore_basicacquire", 1, QSystemSemaphore::Create);
+    QNativeIpcKey key = platformSafeKey("QSystemSemaphore_basicacquire");
+    QSystemSemaphore sem(key, 1, QSystemSemaphore::Create);
     QVERIFY(sem.acquire());
     QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.release());
@@ -104,7 +134,8 @@ void tst_QSystemSemaphore::basicacquire()
 
 void tst_QSystemSemaphore::complexacquire()
 {
-    QSystemSemaphore sem("QSystemSemaphore_complexacquire", 2, QSystemSemaphore::Create);
+    QNativeIpcKey key = platformSafeKey("QSystemSemaphore_complexacquire");
+    QSystemSemaphore sem(key, 2, QSystemSemaphore::Create);
     QVERIFY(sem.acquire());
     QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.release());
@@ -126,7 +157,8 @@ void tst_QSystemSemaphore::complexacquire()
 
 void tst_QSystemSemaphore::release()
 {
-    QSystemSemaphore sem("QSystemSemaphore_release", 0, QSystemSemaphore::Create);
+    QNativeIpcKey key = platformSafeKey("QSystemSemaphore_release");
+    QSystemSemaphore sem(key, 0, QSystemSemaphore::Create);
     QVERIFY(sem.release());
     QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.release());
@@ -147,7 +179,8 @@ void tst_QSystemSemaphore::basicProcesses()
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
-    QSystemSemaphore sem("store", 0, QSystemSemaphore::Create);
+    QNativeIpcKey key = platformSafeKey("store");
+    QSystemSemaphore sem(key, 0, QSystemSemaphore::Create);
 
     QProcess acquire;
     acquire.setProcessChannelMode(QProcess::ForwardedChannels);
@@ -155,12 +188,12 @@ void tst_QSystemSemaphore::basicProcesses()
     QProcess release;
     release.setProcessChannelMode(QProcess::ForwardedChannels);
 
-    acquire.start(m_helperBinary, QStringList("acquire"));
+    acquire.start(m_helperBinary, { "acquire", key.toString() });
     QVERIFY2(acquire.waitForStarted(), "Could not start helper binary");
     acquire.waitForFinished(HELPERWAITTIME);
     QCOMPARE(acquire.state(), QProcess::Running);
     acquire.kill();
-    release.start(m_helperBinary, QStringList("release"));
+    release.start(m_helperBinary, { "release", key.toString() });
     QVERIFY2(release.waitForStarted(), "Could not start helper binary");
     acquire.waitForFinished(HELPERWAITTIME);
     release.waitForFinished(HELPERWAITTIME);
@@ -183,7 +216,8 @@ void tst_QSystemSemaphore::processes()
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
-    QSystemSemaphore sem("store", 1, QSystemSemaphore::Create);
+    QNativeIpcKey key = platformSafeKey("store");
+    QSystemSemaphore sem(key, 1, QSystemSemaphore::Create);
 
     QFETCH(int, processes);
     QList<QString> scripts(processes, "acquirerelease");
@@ -193,7 +227,7 @@ void tst_QSystemSemaphore::processes()
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
         consumers.append(p);
-        p->start(m_helperBinary, QStringList(scripts.at(i)));
+        p->start(m_helperBinary, { scripts.at(i), key.toString() });
     }
 
     while (!consumers.isEmpty()) {
@@ -205,16 +239,24 @@ void tst_QSystemSemaphore::processes()
 #endif
 }
 
-// This test only checks a system v unix behavior.
-#if !defined(Q_OS_WIN) && !defined(QT_POSIX_IPC)
 void tst_QSystemSemaphore::undo()
 {
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
-    QSystemSemaphore sem("store", 1, QSystemSemaphore::Create);
+    QNativeIpcKey key = platformSafeKey("store");
+    switch (key.type()) {
+    case QNativeIpcKey::Type::PosixRealtime:
+    case QNativeIpcKey::Type::Windows:
+        QSKIP("This test only checks a System V behavior.");
 
-    QStringList acquireArguments = QStringList("acquire");
+    case QNativeIpcKey::Type::SystemV:
+        break;
+    }
+
+    QSystemSemaphore sem(key, 1, QSystemSemaphore::Create);
+
+    QStringList acquireArguments = { "acquire", key.toString() };
     QProcess acquire;
     acquire.setProcessChannelMode(QProcess::ForwardedChannels);
     acquire.start(m_helperBinary, acquireArguments);
@@ -230,17 +272,17 @@ void tst_QSystemSemaphore::undo()
     QVERIFY(acquire.state()== QProcess::NotRunning);
 #endif
 }
-#endif
 
 void tst_QSystemSemaphore::initialValue()
 {
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
-    QSystemSemaphore sem("store", 1, QSystemSemaphore::Create);
+    QNativeIpcKey key = platformSafeKey("store");
+    QSystemSemaphore sem(key, 1, QSystemSemaphore::Create);
 
-    QStringList acquireArguments = QStringList("acquire");
-    QStringList releaseArguments = QStringList("release");
+    QStringList acquireArguments = { "acquire", key.toString() };
+    QStringList releaseArguments = { "release", key.toString() };
     QProcess acquire;
     acquire.setProcessChannelMode(QProcess::ForwardedChannels);
 

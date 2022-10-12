@@ -6,9 +6,9 @@
 #include <QStringList>
 #include <QSystemSemaphore>
 
-int acquire(int count = 1)
+int acquire(const QNativeIpcKey &key, int count = 1)
 {
-    QSystemSemaphore sem("store");
+    QSystemSemaphore sem(key);
 
     for (int i = 0; i < count; ++i) {
         if (!sem.acquire()) {
@@ -20,9 +20,9 @@ int acquire(int count = 1)
     return EXIT_SUCCESS;
 }
 
-int release()
+int release(const QNativeIpcKey &key)
 {
-    QSystemSemaphore sem("store");
+    QSystemSemaphore sem(key);
     if (!sem.release()) {
         qWarning() << "Could not release" << sem.key();
         return EXIT_FAILURE;
@@ -31,9 +31,9 @@ int release()
     return EXIT_SUCCESS;
 }
 
-int acquirerelease()
+int acquirerelease(const QNativeIpcKey &key)
 {
-    QSystemSemaphore sem("store");
+    QSystemSemaphore sem(key);
     if (!sem.acquire()) {
         qWarning() << "Could not acquire" << sem.key();
         return EXIT_FAILURE;
@@ -52,11 +52,15 @@ int main(int argc, char *argv[])
     QStringList arguments = app.arguments();
     // binary name is not used here
     arguments.takeFirst();
-    if (arguments.size() < 1) {
-        qWarning("Please call the helper with the function to call as argument");
+    if (arguments.size() < 2) {
+        fprintf(stderr,
+                "Usage: %s <acquire|release|acquirerelease> <key> [other args...]\n",
+                argv[0]);
         return EXIT_FAILURE;
     }
+
     QString function = arguments.takeFirst();
+    QNativeIpcKey key = QNativeIpcKey::fromString(arguments.takeFirst());
     if (function == QLatin1String("acquire")) {
         int count = 1;
         bool ok = true;
@@ -64,11 +68,11 @@ int main(int argc, char *argv[])
             count = arguments.takeFirst().toInt(&ok);
         if (!ok)
             count = 1;
-        return acquire(count);
+        return acquire(key, count);
     } else if (function == QLatin1String("release")) {
-        return release();
+        return release(key);
     } else if (function == QLatin1String("acquirerelease")) {
-        return acquirerelease();
+        return acquirerelease(key);
     } else {
         qWarning() << "Unknown function" << function;
     }

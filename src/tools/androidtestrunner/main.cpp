@@ -478,7 +478,8 @@ struct RunnerLocker
     {
         runner.release();
     }
-    QSystemSemaphore runner{QStringLiteral("androidtestrunner"), 1, QSystemSemaphore::Open};
+    QSystemSemaphore runner{ QSystemSemaphore::platformSafeKey(u"androidtestrunner"_s),
+                1, QSystemSemaphore::Open };
 };
 
 int main(int argc, char *argv[])

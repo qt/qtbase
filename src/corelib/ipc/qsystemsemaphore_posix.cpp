@@ -34,14 +34,13 @@ bool QSystemSemaphorePosix::handle(QSystemSemaphorePrivate *self, QSystemSemapho
     if (semaphore != SEM_FAILED)
         return true;  // we already have a semaphore
 
-    if (self->fileName.isEmpty()) {
+    const QByteArray semName = QFile::encodeName(self->nativeKey.nativeKey());
+    if (semName.isEmpty()) {
         self->setError(QSystemSemaphore::KeyError,
                        QSystemSemaphore::tr("%1: key is empty")
                        .arg("QSystemSemaphore::handle"_L1));
         return false;
     }
-
-    const QByteArray semName = QFile::encodeName(self->fileName);
 
     // Always try with O_EXCL so we know whether we created the semaphore.
     int oflag = O_CREAT | O_EXCL;
@@ -92,8 +91,8 @@ void QSystemSemaphorePosix::cleanHandle(QSystemSemaphorePrivate *self)
     }
 
     if (createdSemaphore) {
-        if (::sem_unlink(QFile::encodeName(self->fileName).constData()) == -1
-                && errno != ENOENT) {
+        const QByteArray semName = QFile::encodeName(self->nativeKey.nativeKey());
+        if (::sem_unlink(semName) == -1 && errno != ENOENT) {
             self->setUnixErrorString("QSystemSemaphore::cleanHandle (sem_unlink)"_L1);
 #if defined QSYSTEMSEMAPHORE_DEBUG
             qDebug("QSystemSemaphorePosix::cleanHandle sem_unlink failed.");

@@ -12,11 +12,35 @@
 #  include <qt_windows.h>
 #endif
 
+#ifndef MAX_PATH
+#  define MAX_PATH PATH_MAX
+#endif
+
 QT_BEGIN_NAMESPACE
 
+#if QT_CONFIG(sharedmemory)
+
+using namespace QtIpcCommon;
 using namespace Qt::StringLiterals;
 
-#if QT_CONFIG(sharedmemory)
+#if QT_CONFIG(systemsemaphore)
+inline QNativeIpcKey QSharedMemoryPrivate::semaphoreNativeKey() const
+{
+    if (isIpcSupported(IpcType::SharedMemory, QNativeIpcKey::Type::Windows)
+            && nativeKey.type() == QNativeIpcKey::Type::Windows) {
+        // native keys are plain kernel object names, limited to MAX_PATH
+        auto suffix = "_sem"_L1;
+        QString semkey = nativeKey.nativeKey();
+        semkey.truncate(MAX_PATH - suffix.size() - 1);
+        semkey += suffix;
+        return { semkey, QNativeIpcKey::Type::Windows };
+    }
+
+    // System V and POSIX keys appear to operate in different namespaces, so we
+    // can just use the same native key
+    return nativeKey;
+}
+#endif
 
 /*!
   \class QSharedMemory
@@ -293,8 +317,8 @@ bool QSharedMemoryPrivate::initKey()
     if (!cleanHandle())
         return false;
 #if QT_CONFIG(systemsemaphore)
-    systemSemaphore.setKey(QString(), 1);
-    systemSemaphore.setKey(key, 1);
+    systemSemaphore.setNativeKey(QNativeIpcKey(), 1);
+    systemSemaphore.setNativeKey(semaphoreNativeKey(), 1);
     if (systemSemaphore.error() != QSystemSemaphore::NoError) {
         QString function = "QSharedMemoryPrivate::initKey"_L1;
         errorString = QSharedMemory::tr("%1: unable to set key on lock").arg(function);

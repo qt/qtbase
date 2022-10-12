@@ -42,13 +42,13 @@ void QSystemSemaphorePrivate::setWindowsErrorString(QLatin1StringView function)
 HANDLE QSystemSemaphoreWin32::handle(QSystemSemaphorePrivate *self, QSystemSemaphore::AccessMode)
 {
     // don't allow making handles on empty keys
-    if (self->key.isEmpty())
+    if (self->nativeKey.isEmpty())
         return 0;
 
     // Create it if it doesn't already exists.
     if (semaphore == 0) {
         semaphore = CreateSemaphore(0, self->initialValue, MAXLONG,
-                                    reinterpret_cast<const wchar_t*>(self->fileName.utf16()));
+                                    reinterpret_cast<const wchar_t*>(self->nativeKey.nativeKey().utf16()));
         if (semaphore == NULL)
             self->setWindowsErrorString("QSystemSemaphore::handle"_L1);
     }

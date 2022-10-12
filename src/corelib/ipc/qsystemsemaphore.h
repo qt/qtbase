@@ -5,11 +5,11 @@
 #define QSYSTEMSEMAPHORE_H
 
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/qtipccommon.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_NAMESPACE
-
 
 #if QT_CONFIG(systemsemaphore)
 
@@ -38,17 +38,35 @@ public:
         UnknownError
     };
 
-    QSystemSemaphore(const QString &key, int initialValue = 0, AccessMode mode = Open);
+    QSystemSemaphore(const QNativeIpcKey &key, int initialValue = 0, AccessMode = Open);
     ~QSystemSemaphore();
 
+    void setNativeKey(const QNativeIpcKey &key, int initialValue = 0, AccessMode = Open);
+    void setNativeKey(const QString &key, int initialValue = 0, AccessMode mode = Open,
+                      QNativeIpcKey::Type type = QNativeIpcKey::legacyDefaultTypeForOs())
+    { setNativeKey({ key, type }, initialValue, mode); }
+    QNativeIpcKey nativeIpcKey() const;
+
+#if QT_DEPRECATED_SINCE(6, 9)
+    QT_DEPRECATED_VERSION_X_6_9("Please refer to 'Native IPC Key' documentation")
+    QSystemSemaphore(const QString &key, int initialValue = 0, AccessMode mode = Open);
+    QT_DEPRECATED_VERSION_X_6_9("Please refer to 'Native IPC Key' documentation")
     void setKey(const QString &key, int initialValue = 0, AccessMode mode = Open);
+    QT_DEPRECATED_VERSION_X_6_9("Please refer to 'Native IPC Key' documentation")
     QString key() const;
+#endif
 
     bool acquire();
     bool release(int n = 1);
 
     SystemSemaphoreError error() const;
     QString errorString() const;
+
+    static bool isKeyTypeSupported(QNativeIpcKey::Type type) Q_DECL_CONST_FUNCTION;
+    static QNativeIpcKey platformSafeKey(const QString &key,
+            QNativeIpcKey::Type type = QNativeIpcKey::DefaultTypeForOs);
+    static QNativeIpcKey legacyNativeKey(const QString &key,
+            QNativeIpcKey::Type type = QNativeIpcKey::legacyDefaultTypeForOs());
 
 private:
     Q_DISABLE_COPY(QSystemSemaphore)

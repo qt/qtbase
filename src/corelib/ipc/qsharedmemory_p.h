@@ -115,7 +115,7 @@ public:
     QString nativeKey;
     QString errorString;
 #if QT_CONFIG(systemsemaphore)
-    QSystemSemaphore systemSemaphore{QString()};
+    QSystemSemaphore systemSemaphore{ QNativeIpcKey() };
     bool lockedByMe = false;
 #endif
     QSharedMemory::SharedMemoryError error = QSharedMemory::NoError;
@@ -166,6 +166,7 @@ public:
         }
         return true;
     }
+    QNativeIpcKey semaphoreNativeKey() const;
 #endif // QT_CONFIG(systemsemaphore)
 };
 

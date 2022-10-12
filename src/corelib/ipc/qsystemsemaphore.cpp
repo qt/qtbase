@@ -7,6 +7,9 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace QtIpcCommon;
+using namespace Qt::StringLiterals;
+
 #if QT_CONFIG(systemsemaphore)
 
 /*!
@@ -16,12 +19,10 @@ QT_BEGIN_NAMESPACE
 
   \brief The QSystemSemaphore class provides a general counting system semaphore.
 
-  A semaphore is a generalization of a mutex. While a mutex can be
-  locked only once, a semaphore can be acquired multiple times.
-  Typically, a semaphore is used to protect a certain number of
-  identical resources.
+  A system semaphore is a generalization of \l QSemaphore. Typically, a
+  semaphore is used to protect a certain number of identical resources.
 
-  Like its lighter counterpart QSemaphore, a QSystemSemaphore can be
+  Like its lighter counterpart, a QSystemSemaphore can be
   accessed from multiple \l {QThread} {threads}. Unlike QSemaphore, a
   QSystemSemaphore can also be accessed from multiple \l {QProcess}
   {processes}. This means QSystemSemaphore is a much heavier class, so
@@ -38,65 +39,42 @@ QT_BEGIN_NAMESPACE
   process. The function can also be called with a parameter n > 1,
   which releases n resources.
 
-  A system semaphore is created with a string key that other processes
-  can use to use the same semaphore.
+  System semaphores are identified by a key, represented by \l QNativeIpcKey. A
+  key can be created in a cross-platform manner by using platformSafeKey(). A
+  system semaphore is created by the QSystemSemaphore constructor when passed
+  an access mode parameter of AccessMode::Create. Once it is created, other
+  processes may attach to the same semaphore using the same key and an access
+  mode parameter of AccessMode::Open.
 
   Example: Create a system semaphore
   \snippet code/src_corelib_kernel_qsystemsemaphore.cpp 0
 
-  A typical application of system semaphores is for controlling access
-  to a circular buffer shared by a producer process and a consumer
-  processes.
+  For details on the key types, platform-specific limitations, and
+  interoperability with older or non-Qt applications, see the \l{Native IPC
+  Key} documentation. That includes important information for sandboxed
+  applications on Apple platforms, including all apps obtained via the Apple
+  App Store.
 
-  \section1 Platform-Specific Behavior
-
-  When using this class, be aware of the following platform
-  differences:
-
-  \b{Windows:} QSystemSemaphore does not own its underlying system
-  semaphore. Windows owns it. This means that when all instances of
-  QSystemSemaphore for a particular key have been destroyed, either by
-  having their destructors called, or because one or more processes
-  crash, Windows removes the underlying system semaphore.
-
-  \b{Unix:}
-
-  \list
-  \li QSystemSemaphore owns the underlying system semaphore
-  in Unix systems. This means that the last process having an instance of
-  QSystemSemaphore for a particular key must remove the underlying
-  system semaphore in its destructor. If the last process crashes
-  without running the QSystemSemaphore destructor, Unix does not
-  automatically remove the underlying system semaphore, and the
-  semaphore survives the crash. A subsequent process that constructs a
-  QSystemSemaphore with the same key will then be given the existing
-  system semaphore. In that case, if the QSystemSemaphore constructor
-  has specified its \l {QSystemSemaphore::AccessMode} {access mode} as
-  \l {QSystemSemaphore::} {Open}, its initial resource count will not
-  be reset to the one provided but remain set to the value it received
-  in the crashed process. To protect against this, the first process
-  to create a semaphore for a particular key (usually a server), must
-  pass its \l {QSystemSemaphore::AccessMode} {access mode} as \l
-  {QSystemSemaphore::} {Create}, which will force Unix to reset the
-  resource count in the underlying system semaphore.
-
-  \li When a process using QSystemSemaphore terminates for
-  any reason, Unix automatically reverses the effect of all acquire
-  operations that were not released. Thus if the process acquires a
-  resource and then exits without releasing it, Unix will release that
-  resource.
-
-  \endlist
-
-  \b{Apple platforms:} Sandboxed applications (including apps
-  shipped through the Apple App Store) require the key to
-  be in the form \c {<application group identifier>/<custom identifier>},
-  as documented \l {https://developer.apple.com/library/archive/documentation/Security/Conceptual/AppSandboxDesignGuide/AppSandboxInDepth/AppSandboxInDepth.html#//apple_ref/doc/uid/TP40011183-CH3-SW24}
-  {here} and \l {https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_application-groups}
-  {here}, and the key length is limited to 30 characters.
-
-  \sa QSharedMemory, QSemaphore
+  \sa Inter-Process Communication, QSharedMemory, QSemaphore
  */
+
+/*!
+  \deprecated
+
+  Requests a system semaphore identified by the legacy key \a key. This
+  constructor does the same as:
+
+  \code
+    QSystemSemaphore(QSystemSemaphore::legacyNativeKey(key), initialValue, mode)
+  \endcode
+
+  except that it stores the legacy native key to retrieve using key().
+ */
+QSystemSemaphore::QSystemSemaphore(const QString &key, int initialValue, AccessMode mode)
+    : QSystemSemaphore(legacyNativeKey(key), initialValue, mode)
+{
+    d->legacyKey = key;
+}
 
 /*!
   Requests a system semaphore for the specified \a key. The parameters
@@ -134,10 +112,10 @@ QT_BEGIN_NAMESPACE
 
   \sa acquire(), key()
  */
-QSystemSemaphore::QSystemSemaphore(const QString &key, int initialValue, AccessMode mode)
+QSystemSemaphore::QSystemSemaphore(const QNativeIpcKey &key, int initialValue, AccessMode mode)
     : d(new QSystemSemaphorePrivate)
 {
-    setKey(key, initialValue, mode);
+    setNativeKey(key, initialValue, mode);
 }
 
 /*!
@@ -192,16 +170,25 @@ QSystemSemaphore::~QSystemSemaphore()
   create a new semaphore with the new \a key. The \a initialValue and
   \a mode parameters are as defined for the constructor.
 
-  \sa QSystemSemaphore(), key()
+  This function is useful if the native key was shared from another process.
+  See \l{Native IPC Keys} for more information.
+
+  \sa QSystemSemaphore(), nativeKey()
  */
-void QSystemSemaphore::setKey(const QString &key, int initialValue, AccessMode mode)
+void QSystemSemaphore::setNativeKey(const QNativeIpcKey &key, int initialValue, AccessMode mode)
 {
-    if (key == d->key && mode == Open)
+    if (key == d->nativeKey && mode == Open)
         return;
+    if (!isKeyTypeSupported(key.type())) {
+        d->setError(KeyError, tr("%1: unsupported key type")
+                    .arg("QSystemSemaphore::setNativeKey"_L1));
+        return;
+    }
+
     d->clearError();
 #if !defined(Q_OS_WIN) && !defined(QT_POSIX_IPC)
     // optimization to not destroy/create the file & semaphore
-    if (key == d->key && mode == Create && d->backend.createdSemaphore && d->backend.createdFile) {
+    if (key == d->nativeKey && mode == Create && d->backend.createdSemaphore && d->backend.createdFile) {
         d->initialValue = initialValue;
         d->backend.unix_key = -1;
         d->handle(mode);
@@ -209,22 +196,55 @@ void QSystemSemaphore::setKey(const QString &key, int initialValue, AccessMode m
     }
 #endif
     d->cleanHandle();
-    d->key = key;
+    d->nativeKey = key;
     d->initialValue = initialValue;
-    // cache the file name so it doesn't have to be generated all the time.
-    d->fileName = d->makeKeyFileName();
     d->handle(mode);
+
+    d->legacyKey.clear();
 }
 
 /*!
   Returns the key assigned to this system semaphore. The key is the
   name by which the semaphore can be accessed from other processes.
 
+  You can use the native key to access system semaphores that have not been
+  created by Qt, or to grant access to non-Qt applications. See \l{Native IPC
+  Keys} for more information.
+
+  \sa setNativeKey()
+ */
+QNativeIpcKey QSystemSemaphore::nativeIpcKey() const
+{
+    return d->nativeKey;
+}
+
+/*!
+  \deprecated
+  This function works the same as the constructor. It reconstructs
+  this QSystemSemaphore object. If the new \a key is different from
+  the old key, calling this function is like calling the destructor of
+  the semaphore with the old key, then calling the constructor to
+  create a new semaphore with the new \a key. The \a initialValue and
+  \a mode parameters are as defined for the constructor.
+
+  \sa QSystemSemaphore(), key()
+ */
+void QSystemSemaphore::setKey(const QString &key, int initialValue, AccessMode mode)
+{
+    setNativeKey(legacyNativeKey(key), initialValue, mode);
+    d->legacyKey = key;
+}
+
+/*!
+  \deprecated
+  Returns the legacy key assigned to this system semaphore. The key is the
+  name by which the semaphore can be accessed from other processes.
+
   \sa setKey()
  */
 QString QSystemSemaphore::key() const
 {
-    return d->key;
+    return d->legacyKey;
 }
 
 /*!
@@ -358,6 +378,21 @@ void QSystemSemaphorePrivate::setUnixErrorString(QLatin1StringView function)
         qDebug() << errorString << "key" << key << "errno" << errno << EINVAL;
 #endif
     }
+}
+
+bool QSystemSemaphore::isKeyTypeSupported(QNativeIpcKey::Type type)
+{
+    return QSystemSemaphorePrivate::DefaultBackend::supports(type);
+}
+
+QNativeIpcKey QSystemSemaphore::platformSafeKey(const QString &key, QNativeIpcKey::Type type)
+{
+    return { QtIpcCommon::platformSafeKey(key, IpcType::SystemSemaphore, type), type };
+}
+
+QNativeIpcKey QSystemSemaphore::legacyNativeKey(const QString &key, QNativeIpcKey::Type type)
+{
+    return { legacyPlatformSafeKey(key, IpcType::SystemSemaphore, type), type };
 }
 
 #endif // QT_CONFIG(systemsemaphore)

@@ -42,6 +42,9 @@ class QSystemSemaphorePrivate;
 
 struct QSystemSemaphorePosix
 {
+    static bool supports(QNativeIpcKey::Type type)
+    { return type == QNativeIpcKey::Type::PosixRealtime; }
+
     bool handle(QSystemSemaphorePrivate *self, QSystemSemaphore::AccessMode mode);
     void cleanHandle(QSystemSemaphorePrivate *self);
     bool modifySemaphore(QSystemSemaphorePrivate *self, int count);
@@ -52,11 +55,15 @@ struct QSystemSemaphorePosix
 
 struct QSystemSemaphoreSystemV
 {
+    static bool supports(QNativeIpcKey::Type type)
+    { return quint16(type) <= 0xff; }
+
 #if QT_CONFIG(sysv_sem)
     key_t handle(QSystemSemaphorePrivate *self, QSystemSemaphore::AccessMode mode);
     void cleanHandle(QSystemSemaphorePrivate *self);
     bool modifySemaphore(QSystemSemaphorePrivate *self, int count);
 
+    QByteArray nativeKeyFile;
     key_t unix_key = -1;
     int semaphore = -1;
     bool createdFile = false;
@@ -66,6 +73,9 @@ struct QSystemSemaphoreSystemV
 
 struct QSystemSemaphoreWin32
 {
+    static bool supports(QNativeIpcKey::Type type)
+    { return type == QNativeIpcKey::Type::Windows; }
+
 //#ifdef Q_OS_WIN32     but there's nothing Windows-specific in the header
     Qt::HANDLE handle(QSystemSemaphorePrivate *self, QSystemSemaphore::AccessMode mode);
     void cleanHandle(QSystemSemaphorePrivate *self);
@@ -77,11 +87,6 @@ struct QSystemSemaphoreWin32
 class QSystemSemaphorePrivate
 {
 public:
-    QString makeKeyFileName()
-    {
-        return QtIpcCommon::legacyPlatformSafeKey(key, QtIpcCommon::IpcType::SystemSemaphore);
-    }
-
     void setWindowsErrorString(QLatin1StringView function);    // Windows only
     void setUnixErrorString(QLatin1StringView function);
     inline void setError(QSystemSemaphore::SystemSemaphoreError e, const QString &message)
@@ -89,8 +94,7 @@ public:
     inline void clearError()
     { setError(QSystemSemaphore::NoError, QString()); }
 
-    QString key;
-    QString fileName;
+    QNativeIpcKey nativeKey;
     QString errorString;
     int initialValue;
     QSystemSemaphore::SystemSemaphoreError error = QSystemSemaphore::NoError;
@@ -116,6 +120,8 @@ public:
     {
         return backend.modifySemaphore(this, count);
     }
+
+    QString legacyKey;  // deprecated
 };
 
 QT_END_NAMESPACE

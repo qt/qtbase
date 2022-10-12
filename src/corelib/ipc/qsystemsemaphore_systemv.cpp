@@ -52,19 +52,19 @@ key_t QSystemSemaphoreSystemV::handle(QSystemSemaphorePrivate *self, QSystemSema
     }
 #endif
 
-    if (self->key.isEmpty()) {
+    nativeKeyFile = QFile::encodeName(self->nativeKey.nativeKey());
+    if (nativeKeyFile.isEmpty()) {
         self->setError(QSystemSemaphore::KeyError,
                        QSystemSemaphore::tr("%1: key is empty")
                        .arg("QSystemSemaphore::handle:"_L1));
         return -1;
     }
 
-    // ftok requires that an actual file exists somewhere
     if (-1 != unix_key)
         return unix_key;
 
-    // Create the file needed for ftok
-    int built = QtIpcCommon::createUnixKeyFile(QFile::encodeName(self->fileName));
+    // ftok requires that an actual file exists somewhere
+    int built = QtIpcCommon::createUnixKeyFile(nativeKeyFile);
     if (-1 == built) {
         self->setError(QSystemSemaphore::KeyError,
                        QSystemSemaphore::tr("%1: unable to make key")
@@ -75,7 +75,7 @@ key_t QSystemSemaphoreSystemV::handle(QSystemSemaphorePrivate *self, QSystemSema
     createdFile = (1 == built);
 
     // Get the unix key for the created file
-    unix_key = ftok(QFile::encodeName(self->fileName).constData(), 'Q');
+    unix_key = ftok(nativeKeyFile, int(self->nativeKey.type()));
     if (-1 == unix_key) {
         self->setError(QSystemSemaphore::KeyError,
                        QSystemSemaphore::tr("%1: ftok failed")
@@ -129,7 +129,7 @@ void QSystemSemaphoreSystemV::cleanHandle(QSystemSemaphorePrivate *self)
 
     // remove the file if we made it
     if (createdFile) {
-        QFile::remove(self->fileName);
+        unlink(nativeKeyFile.constData());
         createdFile = false;
     }
 
