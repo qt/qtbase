@@ -559,14 +559,25 @@ void tst_QVariant::canConvert()
 {
     TST_QVARIANT_CANCONVERT_FETCH_DATA
 
+    // This test links against QtGui but not QtWidgets, so QSizePolicy isn't real for it.
+    QTest::ignoreMessage(QtWarningMsg, // QSizePolicy's id is 0x2000, a.k.a. 8192
+                         "Trying to construct an instance of an invalid type, type id: 8192");
     TST_QVARIANT_CANCONVERT_COMPARE_DATA
 
 #if QT_DEPRECATED_SINCE(6, 0)
 QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     // Invalid type ids
+    QTest::ignoreMessage(QtWarningMsg,
+                         "Trying to construct an instance of an invalid type, type id: -1");
     QCOMPARE(val.canConvert(-1), false);
+    QTest::ignoreMessage(QtWarningMsg,
+                         "Trying to construct an instance of an invalid type, type id: -23");
     QCOMPARE(val.canConvert(-23), false);
+    QTest::ignoreMessage(QtWarningMsg,
+                         "Trying to construct an instance of an invalid type, type id: -23876");
     QCOMPARE(val.canConvert(-23876), false);
+    QTest::ignoreMessage(QtWarningMsg,
+                         "Trying to construct an instance of an invalid type, type id: 23876");
     QCOMPARE(val.canConvert(23876), false);
 QT_WARNING_POP
 #endif // QT_DEPRECATED_SINCE(6, 0)
@@ -1817,17 +1828,23 @@ void tst_QVariant::typeToName()
     // assumes that QVariant::Type contains consecutive values
 
     int max = QVariant::LastGuiType;
-    for ( int t = 1; t <= max; t++ ) {
+    for (int t = 1; t <= max; ++t) {
+        if (!QMetaType::isRegistered(t)) {
+            QTest::ignoreMessage(QtWarningMsg, QRegularExpression(
+                                     "^Trying to construct an instance of an invalid type"));
+        }
         const char *n = QVariant::typeToName( (QVariant::Type)t );
         if (n)
             QCOMPARE( int(QVariant::nameToType( n )), t );
-
     }
+
     QCOMPARE(QVariant::typeToName(QVariant::Int), "int");
     // not documented but we return 0 if the type is out of range
     // by testing this we catch cases where QVariant is extended
     // but type_map is not updated accordingly
-    QCOMPARE( QVariant::typeToName( QVariant::Type(max+1) ), (char*)0 );
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression(
+                             "^Trying to construct an instance of an invalid type"));
+    QCOMPARE(QVariant::typeToName(QVariant::Type(max + 1)), (const char *)nullptr);
     // invalid type names
     QVERIFY( QVariant::nameToType( 0 ) == QVariant::Invalid );
     QVERIFY( QVariant::nameToType( "" ) == QVariant::Invalid );
@@ -3929,12 +3946,13 @@ void tst_QVariant::debugStream_data()
     QTest::addColumn<QVariant>("variant");
     QTest::addColumn<int>("typeId");
     for (int id = 0; id < QMetaType::LastCoreType + 1; ++id) {
-        const char *tagName = QMetaType(id).name();
-        if (!tagName)
-            continue;
-        if (id != QMetaType::Void) {
-            QTest::newRow(tagName) << QVariant(QMetaType(id)) << id;
+        if (id && !QMetaType::isRegistered(id)) {
+            QTest::ignoreMessage(QtWarningMsg, QRegularExpression(
+                                     "^Trying to construct an instance of an invalid type"));
         }
+        const char *tagName = QMetaType(id).name();
+        if (tagName && id != QMetaType::Void)
+            QTest::newRow(tagName) << QVariant(QMetaType(id)) << id;
     }
     QTest::newRow("QBitArray(111)") << QVariant(QBitArray(3, true)) << qMetaTypeId<QBitArray>();
     QTest::newRow("CustomStreamableClass") << QVariant(QMetaType::fromType<CustomStreamableClass>(), 0) << qMetaTypeId<CustomStreamableClass>();
@@ -5185,21 +5203,25 @@ void tst_QVariant::constructFromIncompatibleMetaType_data()
 void tst_QVariant::constructFromIncompatibleMetaType()
 {
    QFETCH(QMetaType, type);
-   // in that case, we run into a different condition (size == 0), and do not warn
-   if (type == QMetaType::fromType<NonDefaultConstructible>()) {
-       QTest::ignoreMessage(QtWarningMsg,
-                            "QVariant: Cannot create type 'NonDefaultConstructible' without a "
-                            "default constructor");
-   } else if (type != QMetaType::fromType<void>()) {
-      QTest::ignoreMessage(
-            QtWarningMsg,
-            "QVariant: Provided metatype for '" + QByteArray(type.name()) +
-            "' does not support destruction and copy construction");
-   }
+   const auto anticipate = [type]() {
+       // In that case, we run into a different condition (size == 0), and do not warn
+       if (type == QMetaType::fromType<NonDefaultConstructible>()) {
+           QTest::ignoreMessage(QtWarningMsg,
+                                "QVariant: Cannot create type 'NonDefaultConstructible' without a "
+                                "default constructor");
+       } else if (type != QMetaType::fromType<void>()) {
+           QTest::ignoreMessage(
+               QtWarningMsg,
+               "QVariant: Provided metatype for '" + QByteArray(type.name()) +
+               "' does not support destruction and copy construction");
+       }
+   };
+   anticipate();
    QVariant var(type, nullptr);
    QVERIFY(!var.isValid());
    QVERIFY(!var.metaType().isValid());
 
+   anticipate();
    QVariant regular(1.0);
    QVERIFY(!var.canView(type));
    QVERIFY(!var.canConvert(type));
