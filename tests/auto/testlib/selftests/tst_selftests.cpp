@@ -636,6 +636,11 @@ bool TestLogger::shouldIgnoreTest(const QString &test) const
         return true;
 #endif
 
+    if (!qEnvironmentVariableIsEmpty("WAYLAND_DISPLAY")) {
+        qDebug() << "TestLogger::shouldIgnoreTest() ignore" << test << "on wayland/xwayland!";
+        return true;
+    }
+
     // These tests are affected by timing and whether the CPU tick counter
     // is monotonically increasing. They won't work on some machines so
     // leave them off by default. Feel free to enable them for your own
