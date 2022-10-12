@@ -164,10 +164,8 @@ namespace QTest {
                 // remove the item from the list
                 if (last)
                     last->next = list->next;
-                else if (list->next)
-                    ignoreResultList = list->next;
                 else
-                    ignoreResultList = nullptr;
+                    ignoreResultList = list->next;
 
                 delete list;
                 return true;
