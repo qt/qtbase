@@ -118,6 +118,8 @@ QGtk3Theme::QGtk3Theme()
                 qputenv("XCURSOR_THEME", cursorTheme.toUtf8());
         }
     }
+
+    m_storage.reset(new QGtk3Storage);
 }
 
 static inline QVariant gtkGetLongPressTime()
@@ -175,6 +177,8 @@ QString QGtk3Theme::gtkFontName() const
 
 Qt::Appearance QGtk3Theme::appearance() const
 {
+    if (m_storage)
+        return m_storage->appearance();
     /*
         https://docs.gtk.org/gtk3/running.html
 
@@ -189,9 +193,9 @@ Qt::Appearance QGtk3Theme::appearance() const
         to override any other settings.
     */
     QString themeName = qEnvironmentVariable("GTK_THEME");
-    const QRegularExpression darkRegex(QStringLiteral("[:-]dark"), QRegularExpression::CaseInsensitiveOption);
     if (!themeName.isEmpty())
-        return darkRegex.match(themeName).hasMatch() ? Qt::Appearance::Dark : Qt::Appearance::Light;
+        return themeName.contains("dark"_L1, Qt::CaseInsensitive)
+                ? Qt::Appearance::Dark : Qt::Appearance::Light;
 
     /*
         https://docs.gtk.org/gtk3/property.Settings.gtk-application-prefer-dark-theme.html
@@ -209,7 +213,8 @@ Qt::Appearance QGtk3Theme::appearance() const
     */
     themeName = gtkSetting("gtk-theme-name");
     if (!themeName.isEmpty())
-        return darkRegex.match(themeName).hasMatch() ? Qt::Appearance::Dark : Qt::Appearance::Light;
+        return themeName.contains("dark"_L1, Qt::CaseInsensitive)
+                ? Qt::Appearance::Dark : Qt::Appearance::Light;
 
     return Qt::Appearance::Unknown;
 }
@@ -265,6 +270,27 @@ bool QGtk3Theme::useNativeFileDialog()
      * dialog helper.
      */
     return gtk_check_version(3, 15, 5) == nullptr;
+}
+
+const QPalette *QGtk3Theme::palette(Palette type) const
+{
+    return m_storage ? m_storage->palette(type) : QPlatformTheme::palette(type);
+}
+
+QPixmap QGtk3Theme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
+{
+    return m_storage ? m_storage->standardPixmap(sp, size) : QPlatformTheme::standardPixmap(sp, size);
+}
+
+const QFont *QGtk3Theme::font(Font type) const
+{
+    return m_storage ? m_storage->font(type) : QGnomeTheme::font(type);
+}
+
+QIcon QGtk3Theme::fileIcon(const QFileInfo &fileInfo,
+                           QPlatformTheme::IconOptions iconOptions) const
+{
+    return m_storage ? m_storage->fileIcon(fileInfo) : QGnomeTheme::fileIcon(fileInfo, iconOptions);
 }
 
 QT_END_NAMESPACE

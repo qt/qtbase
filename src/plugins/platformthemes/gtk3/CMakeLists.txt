@@ -22,6 +22,9 @@ qt_internal_add_plugin(QGtk3ThemePlugin
         qgtk3dialoghelpers.cpp qgtk3dialoghelpers.h
         qgtk3menu.cpp qgtk3menu.h
         qgtk3theme.cpp qgtk3theme.h
+        qgtk3interface.cpp qgtk3interface_p.h
+        qgtk3storage.cpp qgtk3storage_p.h
+        qgtk3json.cpp qgtk3json_p.h
     DEFINES
         GDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_6
     LIBRARIES # special case

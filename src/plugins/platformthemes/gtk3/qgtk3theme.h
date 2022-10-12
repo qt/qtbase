@@ -6,6 +6,7 @@
 
 #include <private/qtguiglobal_p.h>
 #include <private/qgenericunixthemes_p.h>
+#include "qgtk3storage_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -25,9 +26,16 @@ public:
     QPlatformMenu* createPlatformMenu() const override;
     QPlatformMenuItem* createPlatformMenuItem() const override;
 
+    const QPalette *palette(Palette type = SystemPalette) const override;
+    const QFont *font(Font type = SystemFont) const override;
+    QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const override;
+    QIcon fileIcon(const QFileInfo &fileInfo,
+                           QPlatformTheme::IconOptions iconOptions = { }) const override;
+
     static const char *name;
 private:
     static bool useNativeFileDialog();
+    std::unique_ptr<QGtk3Storage> m_storage;
 };
 
 QT_END_NAMESPACE
