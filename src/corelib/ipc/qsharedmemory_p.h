@@ -127,8 +127,11 @@ public:
     QNativeIpcKey nativeKey;
     QString errorString;
 #if QT_CONFIG(systemsemaphore)
+    using SemaphoreAccessMode = QSystemSemaphore::AccessMode;
     QSystemSemaphore systemSemaphore{ QNativeIpcKey() };
     bool lockedByMe = false;
+#else
+    enum SemaphoreAccessMode {};
 #endif
     QSharedMemory::SharedMemoryError error = QSharedMemory::NoError;
 
@@ -141,7 +144,7 @@ public:
 #endif
     DefaultBackend backend;
 
-    bool initKey();
+    bool initKey(SemaphoreAccessMode mode);
 
     bool handle()
     {

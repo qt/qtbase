@@ -227,13 +227,12 @@ void QSharedMemory::setNativeKey(const QNativeIpcKey &key)
     d->nativeKey = key;
 }
 
-bool QSharedMemoryPrivate::initKey()
+bool QSharedMemoryPrivate::initKey(SemaphoreAccessMode mode)
 {
     if (!cleanHandle())
         return false;
 #if QT_CONFIG(systemsemaphore)
-    systemSemaphore.setNativeKey(QNativeIpcKey(), 1);
-    systemSemaphore.setNativeKey(semaphoreNativeKey(), 1);
+    systemSemaphore.setNativeKey(semaphoreNativeKey(), 1, mode);
     if (systemSemaphore.error() != QSystemSemaphore::NoError) {
         QString function = "QSharedMemoryPrivate::initKey"_L1;
         errorString = QSharedMemory::tr("%1: unable to set key on lock").arg(function);
@@ -260,6 +259,8 @@ bool QSharedMemoryPrivate::initKey()
         }
         return false;
     }
+#else
+    Q_UNUSED(mode);
 #endif
     errorString = QString();
     error = QSharedMemory::NoError;
@@ -335,22 +336,16 @@ QNativeIpcKey QSharedMemory::nativeIpcKey() const
 bool QSharedMemory::create(qsizetype size, AccessMode mode)
 {
     Q_D(QSharedMemory);
+    QLatin1StringView function = "QSharedMemory::create"_L1;
 
-    if (!d->initKey())
+#if QT_CONFIG(systemsemaphore)
+    if (!d->initKey(QSystemSemaphore::Create))
         return false;
-
-#if QT_CONFIG(systemsemaphore)
-#ifndef Q_OS_WIN
-    // Take ownership and force set initialValue because the semaphore
-    // might have already existed from a previous crash.
-    d->systemSemaphore.setKey(d->semaphoreNativeKey(), 1, QSystemSemaphore::Create);
-#endif
-#endif
-
-    QString function = "QSharedMemory::create"_L1;
-#if QT_CONFIG(systemsemaphore)
     QSharedMemoryLocker lock(this);
     if (!d->nativeKey.isEmpty() && !d->tryLocker(&lock, function))
+        return false;
+#else
+    if (!d->initKey({}))
         return false;
 #endif
 
@@ -410,7 +405,7 @@ bool QSharedMemory::attach(AccessMode mode)
 {
     Q_D(QSharedMemory);
 
-    if (isAttached() || !d->initKey())
+    if (isAttached() || !d->initKey({}))
         return false;
 #if QT_CONFIG(systemsemaphore)
     QSharedMemoryLocker lock(this);
