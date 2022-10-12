@@ -7529,6 +7529,9 @@ void tst_QWidget::renderInvisible()
     if (m_platform == QStringLiteral("xcb"))
         QSKIP("QTBUG-26424");
 
+    if (m_platform.startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: Skip this test, see also QTBUG-107157");
+
     QScopedPointer<QCalendarWidget> calendar(new QCalendarWidget);
     calendar->move(m_availableTopLeft + QPoint(100, 100));
     calendar->setWindowTitle(QLatin1String(QTest::currentTestFunction()));
