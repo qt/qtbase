@@ -1829,6 +1829,9 @@ void tst_QCompleter::QTBUG_51889_activatedSentTwice()
 
 void tst_QCompleter::showPopupInGraphicsView()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: Skip this test, see also QTBUG-107186");
+
     QGraphicsView view;
     QGraphicsScene scene;
     view.setScene(&scene);
