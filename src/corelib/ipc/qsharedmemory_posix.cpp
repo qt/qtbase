@@ -19,6 +19,10 @@
 
 #include "private/qcore_unix_p.h"
 
+#ifndef O_CLOEXEC
+#  define O_CLOEXEC 0
+#endif
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -61,14 +65,7 @@ bool QSharedMemoryPosix::create(QSharedMemoryPrivate *self, qsizetype size)
     const QByteArray shmName = QFile::encodeName(self->nativeKey.nativeKey());
 
     int fd;
-#ifdef O_CLOEXEC
-    // First try with O_CLOEXEC flag, if that fails, fall back to normal flags
     EINTR_LOOP(fd, ::shm_open(shmName.constData(), O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC, 0600));
-    if (fd == -1)
-        EINTR_LOOP(fd, ::shm_open(shmName.constData(), O_RDWR | O_CREAT | O_EXCL, 0600));
-#else
-    EINTR_LOOP(fd, ::shm_open(shmName.constData(), O_RDWR | O_CREAT | O_EXCL, 0600));
-#endif
     if (fd == -1) {
         const int errorNumber = errno;
         const auto function = "QSharedMemory::attach (shm_open)"_L1;
@@ -104,14 +101,7 @@ bool QSharedMemoryPosix::attach(QSharedMemoryPrivate *self, QSharedMemory::Acces
     const int oflag = (mode == QSharedMemory::ReadOnly ? O_RDONLY : O_RDWR);
     const mode_t omode = (mode == QSharedMemory::ReadOnly ? 0400 : 0600);
 
-#ifdef O_CLOEXEC
-    // First try with O_CLOEXEC flag, if that fails, fall back to normal flags
     EINTR_LOOP(hand, ::shm_open(shmName.constData(), oflag | O_CLOEXEC, omode));
-    if (hand == -1)
-        EINTR_LOOP(hand, ::shm_open(shmName.constData(), oflag, omode));
-#else
-    EINTR_LOOP(hand, ::shm_open(shmName.constData(), oflag, omode));
-#endif
     if (hand == -1) {
         const int errorNumber = errno;
         const auto function = "QSharedMemory::attach (shm_open)"_L1;
