@@ -17,6 +17,10 @@ instructions:
         - condition: property
           property: features
           not_contains_value: "TargetBuildOnly"
+        - condition: property
+          property: features
+          not_contains_value: "DebianPackaging"
+
   - type: Group
     instructions:
       - type: Group
@@ -53,3 +57,15 @@ instructions:
             - condition: property
               property: target.arch
               equals_value: ARM64
+            - condition: property
+              property: features
+              not_contains_value: "DebianPackaging"
+  - type: Group
+    instructions:
+      - type: Group
+        instructions:
+          - !include "{{qt/qtbase}}/debian/debian_build_module.yaml"
+        enable_if:
+          condition: property
+          property: features
+          contains_value: "DebianPackaging"

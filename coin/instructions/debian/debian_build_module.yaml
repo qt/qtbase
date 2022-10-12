@@ -1,0 +1,102 @@
+type: Group
+enable_if:
+  condition: property
+  property: features
+  contains_value: DebianPackaging
+instructions:
+  - !include "{{qt/qtbase}}/debian/prepare_debian_env.yaml"
+  - type: EnvironmentVariable
+    variableName: GIT_SSH_COMMAND
+    variableValue: "ssh -o StrictHostKeyChecking=no"
+  - type: ChangeDirectory
+    directory: "{{.AgentWorkingDir}}"
+  - type: MakeDirectory
+    directory: output/debian_packages
+  - type: MakeDirectory
+    directory: debian_packages
+  - type: ExecuteCommand
+    command: "git clone git@git.qt.io:tqtc-debian/package_generator.git"
+    maxTimeInSeconds: 900
+    maxTimeBetweenOutput: 900
+    userMessageOnFailure: "Failed to clone package generator repo"
+    disable_if:
+      condition: runtime
+      env_var:  COIN_SKIP_DEBIAN
+      contains_value: "MISSING_DEBIAN_INST"
+  - type: ExecuteCommand
+    command: "git clone -b 6.6 git@git.qt.io:tqtc-debian/qt6-{{.Env.TESTED_MODULE_PLAIN_COIN}}.git"
+    maxTimeInSeconds: 900
+    maxTimeBetweenOutput: 900
+    userMessageOnFailure: "Failed to clone debian packaging repo"
+    disable_if:
+      condition: runtime
+      env_var:  COIN_SKIP_DEBIAN
+      contains_value: "MISSING_DEBIAN_INST"
+  - type: ExecuteCommand
+    command: "wget -q {{.CoinDownloadURL}}/{{.Env.MODULE_SOURCES_RELATIVE_STORAGE_PATH}}"
+    maxTimeInSeconds: 900
+    maxTimeBetweenOutput: 900
+    userMessageOnFailure: "Failed get sources"
+    disable_if:
+      condition: runtime
+      env_var:  COIN_SKIP_DEBIAN
+      contains_value: "MISSING_DEBIAN_INST"
+  - type: ExecuteCommand
+    command: "mv sources_unix.tar.gz qt-{{.Env.QT_REPO_MODULE_VERSION}}-{{.Env.TESTED_MODULE_PLAIN_COIN}}-src_{{.Env.QT_REPO_MODULE_VERSION}}.orig.tar.gz"
+    maxTimeInSeconds: 900
+    maxTimeBetweenOutput: 900
+    userMessageOnFailure: "Failed rename src pkg"
+    disable_if:
+      condition: runtime
+      env_var:  COIN_SKIP_DEBIAN
+      contains_value: "MISSING_DEBIAN_INST"
+  - type: ChangeDirectory
+    directory: "{{.AgentWorkingDir}}/qt6-{{.Env.TESTED_MODULE_PLAIN_COIN}}"
+    disable_if:
+      condition: runtime
+      env_var:  COIN_SKIP_DEBIAN
+      contains_value: "MISSING_DEBIAN_INST"
+
+
+  # rc is required currently by the script
+  - type: ExecuteCommand
+    command: "../package_generator/generate_packaging.sh --qt-version {{.Env.QT_REPO_MODULE_VERSION}} --deb-rev 1 --release tqtc-focal"
+    maxTimeInSeconds: 900
+    maxTimeBetweenOutput: 900
+    userMessageOnFailure: "Failed to generate pkg"
+    disable_if:
+      condition: runtime
+      env_var:  COIN_SKIP_DEBIAN
+      contains_value: "MISSING_DEBIAN_INST"
+  - type: ChangeDirectory
+    directory: "{{.AgentWorkingDir}}"
+  - type: ExecuteCommand
+    command: "dpkg-source -b qt6-{{.Env.TESTED_MODULE_PLAIN_COIN}}"
+    maxTimeInSeconds: 900
+    maxTimeBetweenOutput: 900
+    userMessageOnFailure: "Failed dpkg-source"
+    disable_if:
+      condition: runtime
+      env_var:  COIN_SKIP_DEBIAN
+      contains_value: "MISSING_DEBIAN_INST"
+  - type: ExecuteCommand
+    command: ["sbuild",
+      "--build-dep-resolver=aptitude",
+      "-sAd", "tqtc-focal",
+      "-c", "{{.Env.COIN_SBUILD_CHROOT}}",
+      "--build-dir", "output/debian_packages",
+      "--extra-package={{.AgentWorkingDir}}/debian_packages/",
+      "--extra-package={{.AgentWorkingDir}}/output/debian_packages/",
+      "qt-{{.Env.QT_REPO_MODULE_VERSION}}-{{.Env.TESTED_MODULE_PLAIN_COIN}}-src_{{.Env.QT_REPO_MODULE_VERSION}}-1.dsc"]
+    maxTimeInSeconds: 18000
+    maxTimeBetweenOutput: 1800
+    userMessageOnFailure: "Failed build debian packages"
+    disable_if:
+      condition: runtime
+      env_var:  COIN_SKIP_DEBIAN
+      contains_value: "MISSING_DEBIAN_INST"
+  - type: UploadArtifact
+    archiveDirectory: "{{.AgentWorkingDir}}/output"
+    transferType: UploadModuleBuildArtifact
+    maxTimeInSeconds: 1200
+    maxTimeBetweenOutput: 1200

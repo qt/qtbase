@@ -1,0 +1,102 @@
+type: Group
+enable_if:
+  condition: property
+  property: features
+  contains_value: DebianPackaging
+instructions:
+  - type: EnvironmentVariable
+    variableName: COIN_SBUILD_CHROOT
+    variableValue: "stable-arm64-sbuild"
+    enable_if:
+      condition: property
+      property: target.arch
+      equals_value: AARCH64
+  - type: EnvironmentVariable
+    variableName: COIN_SBUILD_CHROOT
+    variableValue: "stable-amd64-sbuild"
+    disable_if:
+      condition: property
+      property: target.arch
+      equals_value: AARCH64
+  - type: EnvironmentVariable
+    variableName: COIN_SBUILD_DISTRO
+    variableValue: "arm64-focal"
+    enable_if:
+      condition: property
+      property: target.arch
+      equals_value: AARCH64
+  - type: EnvironmentVariable
+    variableName: COIN_SBUILD_DISTRO
+    variableValue: "amd64-focal"
+    disable_if:
+      condition: property
+      property: target.arch
+      equals_value: AARCH64
+
+  - type: EnvironmentVariable
+    variableName: COIN_SKIP_DEBIAN
+    variableValue: "MISSING_DEBIAN_INST"
+    enable_if:
+      condition: or
+      conditions:
+        - condition: runtime
+          env_var: TESTED_MODULE_COIN
+          equals_value: "qtquick3dphysics"
+        - condition: runtime
+          env_var: TESTED_MODULE_COIN
+          equals_value: "qtquickeffectmaker"
+        - condition: runtime
+          env_var: TESTED_MODULE_COIN
+          equals_value: "qtspeech"
+        - condition: runtime
+          env_var: TESTED_MODULE_COIN
+          equals_value: "qtlocation"
+        - condition: runtime
+          env_var: TESTED_MODULE_COIN
+          equals_value: "qthttpserver"
+        - condition: runtime
+          env_var: TESTED_MODULE_COIN
+          equals_value: "qtactiveqt"
+        - condition: runtime
+          env_var: TESTED_MODULE_COIN
+          equals_value: "qtcoap"
+        - condition: runtime
+          env_var: TESTED_MODULE_COIN
+          equals_value: "qtmqtt"
+        - condition: runtime
+          env_var: TESTED_MODULE_COIN
+          equals_value: "qtopcua"
+        - condition: runtime
+          env_var: TESTED_MODULE_COIN
+          equals_value: "qtgrpc"
+        - condition: runtime
+          env_var: TESTED_MODULE_COIN
+          equals_value: "qtqa"
+        - condition: runtime
+          env_var: TESTED_MODULE_COIN
+          equals_value: "qtdoc"
+        - condition: runtime
+          env_var: TESTED_MODULE_COIN
+          equals_value: "qt5"
+  # Set version info to environment
+  - type: ParseEnvironmentVariableFromFile
+    regex: "QT_REPO_MODULE_VERSION \"(?P<QT_REPO_MODULE_VERSION>.*)\""
+    filename: "{{.SourceDir}}/.cmake.conf"
+    maxTimeInSeconds: 300
+    maxTimeBetweenOutput: 300
+    userMessageOnFailure: "Failed to parse version information from .cmake.conf"
+    disable_if:
+      condition: runtime
+      env_var: TESTED_MODULE_COIN
+      equals_value: "qt5"
+  - type: ParseEnvironmentVariableFromFile
+    regex: "QT_REPO_MODULE_PRERELEASE_VERSION_SEGMENT \"(?P<QT_REPO_MODULE_PRERELEASE_VERSION_SEGMENT>.*)\""
+    filename: "{{.SourceDir}}/.cmake.conf"
+    maxTimeInSeconds: 300
+    maxTimeBetweenOutput: 300
+    userMessageOnFailure: "Failed to parse status information from .cmake.conf"
+    disable_if:
+      condition: runtime
+      env_var: TESTED_MODULE_COIN
+      equals_value: "qt5"
+
