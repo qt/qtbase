@@ -15,7 +15,9 @@
 // We mean it.
 //
 
+#include "qtipccommon.h"
 #include <private/qglobal_p.h>
+#include <private/qtcore-config_p.h>
 
 #if QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
 
@@ -32,7 +34,33 @@ enum class IpcType {
     SystemSemaphore
 };
 
-Q_AUTOTEST_EXPORT QString legacyPlatformSafeKey(const QString &key, IpcType ipcType);
+static constexpr bool isIpcSupported(IpcType ipcType, QNativeIpcKey::Type type)
+{
+    switch (type) {
+    case QNativeIpcKey::Type::SystemV:
+        break;
+
+    case QNativeIpcKey::Type::PosixRealtime:
+        if (ipcType == IpcType::SharedMemory)
+            return QT_CONFIG(posix_shm);
+        return QT_CONFIG(posix_sem);
+
+    case QNativeIpcKey::Type::Windows:
+#ifdef Q_OS_WIN
+        return true;
+#else
+        return false;
+#endif
+    }
+
+    if (ipcType == IpcType::SharedMemory)
+        return QT_CONFIG(sysv_shm);
+    return QT_CONFIG(sysv_sem);
+}
+
+Q_AUTOTEST_EXPORT QString
+legacyPlatformSafeKey(const QString &key, IpcType ipcType,
+                      QNativeIpcKey::Type type = QNativeIpcKey::legacyDefaultTypeForOs());
 
 #ifdef Q_OS_UNIX
 // Convenience function to create the file if needed

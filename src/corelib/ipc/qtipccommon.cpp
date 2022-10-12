@@ -96,28 +96,30 @@ static QNativeIpcKey::Type stringToType(QStringView typeString)
 
     On Unix this will be a file name
 */
-QString QtIpcCommon::legacyPlatformSafeKey(const QString &key, QtIpcCommon::IpcType ipcType)
+QString QtIpcCommon::legacyPlatformSafeKey(const QString &key, QtIpcCommon::IpcType ipcType,
+                                           QNativeIpcKey::Type type)
 {
     if (key.isEmpty())
         return QString();
 
     QByteArray hex = QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex();
 
-#if defined(Q_OS_DARWIN) && defined(QT_POSIX_IPC)
-    if (qt_apple_isSandboxed()) {
-        // Sandboxed applications on Apple platforms require the shared memory name
-        // to be in the form <application group identifier>/<custom identifier>.
-        // Since we don't know which application group identifier the user wants
-        // to apply, we instead document that requirement, and use the key directly.
-        return key;
-    } else {
+    if (type == QNativeIpcKey::Type::PosixRealtime) {
+#if defined(Q_OS_DARWIN)
+        if (qt_apple_isSandboxed()) {
+            // Sandboxed applications on Apple platforms require the shared memory name
+            // to be in the form <application group identifier>/<custom identifier>.
+            // Since we don't know which application group identifier the user wants
+            // to apply, we instead document that requirement, and use the key directly.
+            return key;
+        }
         // The shared memory name limit on Apple platforms is very low (30 characters),
         // so we can't use the logic below of combining the prefix, key, and a hash,
         // to ensure a unique and valid name. Instead we use the first part of the
         // hash, which should still long enough to avoid collisions in practice.
         return u'/' + hex.left(SHM_NAME_MAX - 1);
-    }
 #endif
+    }
 
     QString result;
     result.reserve(1 + 18 + key.size() + 40);
@@ -137,13 +139,21 @@ QString QtIpcCommon::legacyPlatformSafeKey(const QString &key, QtIpcCommon::IpcT
     }
     result.append(QLatin1StringView(hex));
 
-#ifdef Q_OS_WIN
-    return result;
-#elif defined(QT_POSIX_IPC)
-    return u'/' + result;
-#else
+    switch (type) {
+    case QNativeIpcKey::Type::Windows:
+        if (!isIpcSupported(ipcType, QNativeIpcKey::Type::Windows))
+            return QString();
+        return result;
+    case QNativeIpcKey::Type::PosixRealtime:
+        if (!isIpcSupported(ipcType, QNativeIpcKey::Type::PosixRealtime))
+            return QString();
+        return result.prepend(u'/');
+    case QNativeIpcKey::Type::SystemV:
+        break;
+    }
+    if (!isIpcSupported(ipcType, QNativeIpcKey::Type::SystemV))
+        return QString();
     return QDir::tempPath() + u'/' + result;
-#endif
 }
 
 /*!
