@@ -9157,6 +9157,9 @@ void tst_QWidget::opaqueChildren()
 
 void tst_QWidget::dumpObjectTree()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     QWidget w;
     w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     Q_SET_OBJECT_NAME(w);
@@ -10184,6 +10187,9 @@ void tst_QWidget::enterLeaveOnWindowShowHide_data()
 */
 void tst_QWidget::enterLeaveOnWindowShowHide()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     QFETCH(Qt::WindowType, windowType);
     class Widget : public QWidget
     {
@@ -10960,6 +10966,9 @@ void tst_QWidget::focusProxy()
 
 void tst_QWidget::imEnabledNotImplemented()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     // Check that a plain widget doesn't report that it supports IM. Only
     // widgets that implements either Qt::ImEnabled, or the Qt4 backup
     // solution, Qt::ImSurroundingText, should do so.
@@ -12764,6 +12773,9 @@ void tst_QWidget::setParentChangesFocus()
 
 void tst_QWidget::activateWhileModalHidden()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     QDialog dialog;
     dialog.setWindowModality(Qt::ApplicationModal);
     dialog.show();
