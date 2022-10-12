@@ -24,6 +24,10 @@
 #include <qwindowdefs_win.h>
 #endif
 
+#if defined(Q_OS_UNIX)
+struct wl_output;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QScreen;
@@ -77,6 +81,14 @@ struct Q_GUI_EXPORT QWindowsScreen
 {
     QT_DECLARE_NATIVE_INTERFACE(QWindowsScreen, 1, QScreen)
     virtual HMONITOR handle() const = 0;
+};
+#endif
+
+#if defined(Q_OS_UNIX) || defined(Q_CLANG_QDOC)
+struct Q_GUI_EXPORT QWaylandScreen
+{
+    QT_DECLARE_NATIVE_INTERFACE(QWaylandScreen, 1, QScreen)
+    virtual wl_output *output() const = 0;
 };
 #endif
 

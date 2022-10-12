@@ -258,6 +258,17 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QEvdevKeyMapper);
 
 QT_DEFINE_NATIVE_INTERFACE(QWaylandApplication);
 
+/*!
+    \class QNativeInterface::Private::QWaylandScreen
+    \since 6.5
+    \internal
+    \brief Native interface to QPlatformScreen.
+    \inmodule QtGui
+    \ingroup native-interfaces
+*/
+
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWaylandScreen);
+
 #endif // Q_OS_UNIX
 
 QT_END_NAMESPACE
