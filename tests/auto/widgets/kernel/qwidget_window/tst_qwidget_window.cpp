@@ -1629,6 +1629,9 @@ void tst_QWidget_window::mouseMoveWithPopup()
 
 void tst_QWidget_window::resetFocusObjectOnDestruction()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     QSignalSpy focusObjectChangedSpy(qApp, &QGuiApplication::focusObjectChanged);
 
     // single top level widget that has focus
