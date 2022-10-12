@@ -31,7 +31,7 @@ QT_BEGIN_NAMESPACE
 class QAccessibleTableCell;
 class QAccessibleTableHeaderCell;
 
-class QAccessibleTable :public QAccessibleTableInterface, public QAccessibleObject
+class QAccessibleTable :public QAccessibleTableInterface, public QAccessibleSelectionInterface, public QAccessibleObject
 {
 public:
     explicit QAccessibleTable(QWidget *w);
@@ -74,6 +74,15 @@ public:
     virtual bool selectColumn(int column) override;
     virtual bool unselectRow(int row) override;
     virtual bool unselectColumn(int column) override;
+
+    // QAccessibleSelectionInterface
+    virtual int selectedItemCount() const override;
+    virtual QList<QAccessibleInterface*> selectedItems() const override;
+    virtual bool isSelected(QAccessibleInterface *childCell) const override;
+    virtual bool select(QAccessibleInterface *childCell) override;
+    virtual bool unselect(QAccessibleInterface *childCell) override;
+    virtual bool selectAll() override;
+    virtual bool clear() override;
 
     QAbstractItemView *view() const;
 

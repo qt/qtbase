@@ -366,6 +366,85 @@ bool QAccessibleTable::unselectColumn(int column)
     return true;
 }
 
+int QAccessibleTable::selectedItemCount() const
+{
+    return selectedCellCount();
+}
+
+QList<QAccessibleInterface*> QAccessibleTable::selectedItems() const
+{
+    return selectedCells();
+}
+
+bool QAccessibleTable::isSelected(QAccessibleInterface *childCell) const
+{
+    if (!childCell || childCell->parent() != this) {
+        qWarning() << "QAccessibleTable::isSelected: Accessible interface must be a direct child of the table interface.";
+        return false;
+    }
+
+    const QAccessibleTableCellInterface *cell = childCell->tableCellInterface();
+    if (cell)
+        return cell->isSelected();
+
+    return false;
+}
+
+bool QAccessibleTable::select(QAccessibleInterface *childCell)
+{
+    if (!childCell || childCell->parent() != this) {
+        qWarning() << "QAccessibleTable::select: Accessible interface must be a direct child of the table interface.";
+        return false;
+    }
+
+    if (!childCell->tableCellInterface()) {
+        qWarning() << "QAccessibleTable::select: Accessible interface doesn't implement table cell interface.";
+        return false;
+    }
+
+    if (childCell->role() == QAccessible::Cell || childCell->role() == QAccessible::ListItem || childCell->role() == QAccessible::TreeItem) {
+        QAccessibleTableCell* cell = static_cast<QAccessibleTableCell*>(childCell);
+        cell->selectCell();
+        return true;
+    }
+
+    return false;
+}
+
+bool QAccessibleTable::unselect(QAccessibleInterface *childCell)
+{
+    if (!childCell || childCell->parent() != this) {
+        qWarning() << "QAccessibleTable::select: Accessible interface must be a direct child of the table interface.";
+        return false;
+    }
+
+    if (!childCell->tableCellInterface()) {
+        qWarning() << "QAccessibleTable::unselect: Accessible interface doesn't implement table cell interface.";
+        return false;
+    }
+
+    if (childCell->role() == QAccessible::Cell || childCell->role() == QAccessible::ListItem || childCell->role() == QAccessible::TreeItem) {
+        QAccessibleTableCell* cell = static_cast<QAccessibleTableCell*>(childCell);
+        cell->unselectCell();
+        return true;
+    }
+
+    return false;
+}
+
+bool QAccessibleTable::selectAll()
+{
+    view()->selectAll();
+    return true;
+}
+
+bool QAccessibleTable::clear()
+{
+    view()->selectionModel()->clearSelection();
+    return true;
+}
+
+
 QAccessible::Role QAccessibleTable::role() const
 {
     return m_role;
@@ -533,6 +612,8 @@ QAccessibleInterface *QAccessibleTable::child(int logicalIndex) const
 
 void *QAccessibleTable::interface_cast(QAccessible::InterfaceType t)
 {
+    if (t == QAccessible::SelectionInterface)
+       return static_cast<QAccessibleSelectionInterface*>(this);
     if (t == QAccessible::TableInterface)
        return static_cast<QAccessibleTableInterface*>(this);
    return nullptr;
