@@ -30,6 +30,7 @@ public:
         ReadOnly,
         ReadWrite
     };
+    Q_ENUM(AccessMode)
 
     enum SharedMemoryError
     {
@@ -43,6 +44,7 @@ public:
         OutOfResources,
         UnknownError
     };
+    Q_ENUM(SharedMemoryError)
 
     QSharedMemory(QObject *parent = nullptr);
     QSharedMemory(const QNativeIpcKey &key, QObject *parent = nullptr);
