@@ -39,6 +39,8 @@
 #include <private/qevent_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <private/qpointingdevice_p.h>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 Q_LOGGING_CATEGORY(lcTests, "qt.gui.tests")
 
@@ -1148,6 +1150,9 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
 #endif
         QSKIP("The macOS mouse cursor interferes with this test can cannot be moved away");
 #endif
+
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
 
     tst_QTouchEventWidget touchWidget;
     touchWidget.setObjectName("touchWidget");
