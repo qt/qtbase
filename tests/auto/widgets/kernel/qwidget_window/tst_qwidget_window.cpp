@@ -1452,6 +1452,9 @@ void tst_QWidget_window::mouseMoveWithPopup_data()
 
 void tst_QWidget_window::mouseMoveWithPopup()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: Skip this test, see also QTBUG-107154");
+
     QFETCH(Qt::WindowType, windowType);
 
     class Window : public QWidget
