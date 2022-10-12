@@ -5606,8 +5606,8 @@ void tst_QWidget::setWindowGeometry_data()
 
 void tst_QWidget::setWindowGeometry()
 {
-    if (m_platform == QStringLiteral("xcb"))
-         QSKIP("X11: Skip this test due to Window manager positioning issues.");
+    if (m_platform == QStringLiteral("xcb") || m_platform.startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+         QSKIP("X11/Wayland: Skip this test due to Window manager positioning issues.");
 
     QFETCH(Rects, rects);
     QFETCH(int, windowFlags);
