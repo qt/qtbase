@@ -227,6 +227,12 @@ static const QHash<QByteArray, QByteArray> elfArchitectures = {
     {"x86_64", "x86_64"}
 };
 
+bool goodToCopy(const Options *options, const QString &file, QStringList *unmetDependencies);
+bool checkCanImportFromRootPaths(const Options *options, const QString &absolutePath,
+                                 const QUrl &moduleUrl);
+bool readDependenciesFromElf(Options *options, const QString &fileName,
+                             QSet<QString> *usedDependencies, QSet<QString> *remainingDependencies);
+
 QString architectureFromName(const QString &name)
 {
     QRegularExpression architecture(QStringLiteral("_(armeabi-v7a|arm64-v8a|x86|x86_64).so$"));
@@ -1772,6 +1778,11 @@ bool readAndroidDependencyXml(Options *options,
                         if (usedDependencies->contains(fileName.absolutePath))
                             continue;
 
+                        if (fileName.absolutePath.endsWith(".so"_L1)) {
+                            QSet<QString> remainingDependencies;
+                            readDependenciesFromElf(options, fileName.absolutePath,
+                                                    usedDependencies, &remainingDependencies);
+                        }
                         usedDependencies->insert(fileName.absolutePath);
 
                         if (options->verbose)
@@ -1925,10 +1936,6 @@ bool readDependenciesFromElf(Options *options,
 
     return true;
 }
-
-bool goodToCopy(const Options *options, const QString &file, QStringList *unmetDependencies);
-bool checkCanImportFromRootPaths(const Options *options, const QString &absolutePath,
-                                 const QUrl &moduleUrl);
 
 bool scanImports(Options *options, QSet<QString> *usedDependencies)
 {
