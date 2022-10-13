@@ -12,6 +12,8 @@ namespace {
 const char *Style = R"css(
 .qt-screen {
     --border-width: 4px;
+    --resize-outline-width: 8px;
+    --resize-outline-half-width: var(--resize-outline-width) / 2;
 
     position: relative;
     border: none;
@@ -33,6 +35,80 @@ const char *Style = R"css(
 .qt-window.has-title-bar {
     border: var(--border-width) solid lightgray;
     caret-color: transparent;
+}
+
+.resize-outline {
+    position: absolute;
+    pointer-events: all;
+    display: none;
+}
+
+.qt-window.has-title-bar:not(.maximized) .resize-outline {
+    display: block;
+}
+
+.resize-outline.nw {
+    left: calc(-1 * var(--resize-outline-half-width) - var(--border-width));
+    top: calc(-1 * var(--resize-outline-half-width) - var(--border-width));
+    width: var(--resize-outline-width);
+    height: var(--resize-outline-width);
+    cursor: nwse-resize;
+}
+
+.resize-outline.n {
+    left: var(--resize-outline-half-width);
+    top: calc(-1 * var(--resize-outline-half-width) - var(--border-width));
+    height: var(--resize-outline-width);
+    width: calc(100% + 2 * var(--border-width) - var(--resize-outline-width));
+    cursor: ns-resize;
+}
+
+.resize-outline.ne {
+    left: calc(100% + var(--border-width) - var(--resize-outline-half-width));
+    top: calc(-1 * var(--resize-outline-half-width) - var(--border-width));
+    width: var(--resize-outline-width);
+    height: var(--resize-outline-width);
+    cursor: nesw-resize;
+}
+
+.resize-outline.w {
+    left: calc(-1 * var(--resize-outline-half-width) - var(--border-width));
+    top: 0;
+    height: calc(100% + 2 * var(--border-width) - var(--resize-outline-width));
+    width: var(--resize-outline-width);
+    cursor: ew-resize;
+}
+
+.resize-outline.e {
+    left: calc(100% + var(--border-width) - var(--resize-outline-half-width));
+    top: 0;
+    height: calc(100% + 2 * var(--border-width) - var(--resize-outline-width));
+    width: var(--resize-outline-width);
+    cursor: ew-resize;
+}
+
+.resize-outline.sw {
+    left: calc(-1 * var(--resize-outline-half-width) - var(--border-width));
+    top: calc(100% + var(--border-width) - var(--resize-outline-half-width));
+    width: var(--resize-outline-width);
+    height: var(--resize-outline-width);
+    cursor: nesw-resize;
+}
+
+.resize-outline.s {
+    left: var(--resize-outline-half-width);
+    top: calc(100% + var(--border-width) - var(--resize-outline-half-width));
+    height: var(--resize-outline-width);
+    width: calc(100% + 2 * var(--border-width) - var(--resize-outline-width));
+    cursor: ns-resize;
+}
+
+.resize-outline.se {
+    left: calc(100% + var(--border-width) - var(--resize-outline-half-width));
+    top: calc(100% + var(--border-width) - var(--resize-outline-half-width));
+    width: var(--resize-outline-width);
+    height: var(--resize-outline-width);
+    cursor: nwse-resize;
 }
 
 .title-bar {

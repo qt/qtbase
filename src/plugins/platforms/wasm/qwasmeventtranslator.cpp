@@ -283,29 +283,6 @@ QWasmEventTranslator::QWasmEventTranslator() = default;
 
 QWasmEventTranslator::~QWasmEventTranslator() = default;
 
-QCursor QWasmEventTranslator::cursorForEdges(Qt::Edges edges)
-{
-    switch (edges) {
-    case Qt::Edge::LeftEdge | Qt::Edge::TopEdge:
-    case Qt::Edge::RightEdge | Qt::Edge::BottomEdge:
-        return Qt::SizeFDiagCursor;
-    case Qt::Edge::LeftEdge | Qt::Edge::BottomEdge:
-    case Qt::Edge::RightEdge | Qt::Edge::TopEdge:
-        return Qt::SizeBDiagCursor;
-    case Qt::Edge::TopEdge:
-    case Qt::Edge::BottomEdge:
-        return Qt::SizeVerCursor;
-    case Qt::Edge::LeftEdge:
-    case Qt::Edge::RightEdge:
-        return Qt::SizeHorCursor;
-    case Qt::Edge(0):
-        return Qt::ArrowCursor;
-    default:
-        Q_ASSERT(false); // Bad edges
-    }
-    return Qt::ArrowCursor;
-}
-
 QWasmEventTranslator::TranslatedEvent
 QWasmEventTranslator::translateKeyEvent(int emEventType, const EmscriptenKeyboardEvent *keyEvent)
 {

@@ -45,7 +45,221 @@ void syncCSSClassWith(emscripten::val element, std::string cssClassName, bool fl
 
     element["classList"].call<void>("remove", emscripten::val(std::move(cssClassName)));
 }
+
 } // namespace
+
+class QWasmWindow::Resizer
+{
+public:
+    class ResizerElement
+    {
+    public:
+        static constexpr const char *cssClassNameForEdges(Qt::Edges edges)
+        {
+            switch (edges) {
+            case Qt::TopEdge | Qt::LeftEdge:;
+                return "nw";
+            case Qt::TopEdge:
+                return "n";
+            case Qt::TopEdge | Qt::RightEdge:
+                return "ne";
+            case Qt::LeftEdge:
+                return "w";
+            case Qt::RightEdge:
+                return "e";
+            case Qt::BottomEdge | Qt::LeftEdge:
+                return "sw";
+            case Qt::BottomEdge:
+                return "s";
+            case Qt::BottomEdge | Qt::RightEdge:
+                return "se";
+            default:
+                Q_ASSERT(false); // notreached
+                return "";
+            }
+        }
+
+        ResizerElement(emscripten::val parentElement, Qt::Edges edges, Resizer *resizer)
+            : m_element(emscripten::val::global("document")
+                                .call<emscripten::val>("createElement", emscripten::val("div"))),
+              m_edges(edges),
+              m_resizer(resizer)
+        {
+            Q_ASSERT_X(m_resizer, Q_FUNC_INFO, "Resizer cannot be null");
+
+            m_element["classList"].call<void>("add", emscripten::val("resize-outline"));
+            m_element["classList"].call<void>("add", emscripten::val(cssClassNameForEdges(edges)));
+
+            parentElement.call<void>("appendChild", m_element);
+
+            m_mouseDownEvent = std::make_unique<qstdweb::EventCallback>(
+                    m_element, "pointerdown", [this](emscripten::val event) {
+                        if (!onPointerDown(*PointerEvent::fromWeb(event)))
+                            return;
+                        m_resizer->onInteraction();
+                        event.call<void>("preventDefault");
+                        event.call<void>("stopPropagation");
+                    });
+            m_mouseDragEvent = std::make_unique<qstdweb::EventCallback>(
+                    m_element, "pointermove", [this](emscripten::val event) {
+                        if (onPointerMove(*PointerEvent::fromWeb(event))) {
+                            event.call<void>("preventDefault");
+                            event.call<void>("stopPropagation");
+                        }
+                    });
+            m_mouseUpEvent = std::make_unique<qstdweb::EventCallback>(
+                    m_element, "pointerup", [this](emscripten::val event) {
+                        if (onPointerUp(*PointerEvent::fromWeb(event))) {
+                            event.call<void>("preventDefault");
+                            event.call<void>("stopPropagation");
+                        }
+                    });
+        }
+
+        ~ResizerElement()
+        {
+            m_element["parentElement"].call<emscripten::val>("removeChild", m_element);
+        }
+        ResizerElement(const ResizerElement &other) = delete;
+        ResizerElement(ResizerElement &&other) = default;
+        ResizerElement &operator=(const ResizerElement &other) = delete;
+        ResizerElement &operator=(ResizerElement &&other) = delete;
+
+        bool onPointerDown(const PointerEvent &event)
+        {
+            if (event.pointerType != PointerType::Mouse)
+                return false;
+
+            m_element.call<void>("setPointerCapture", event.pointerId);
+            m_capturedPointerId = event.pointerId;
+
+            m_resizer->startResize(m_edges, event.pointInViewport);
+            return true;
+        }
+
+        bool onPointerMove(const PointerEvent &event)
+        {
+            if (m_capturedPointerId != event.pointerId)
+                return false;
+
+            m_resizer->continueResize(event.pointInViewport);
+            return true;
+        }
+
+        bool onPointerUp(const PointerEvent &event)
+        {
+            if (m_capturedPointerId != event.pointerId)
+                return false;
+
+            m_resizer->finishResize();
+            m_element.call<void>("releasePointerCapture", event.pointerId);
+            m_capturedPointerId = -1;
+            return true;
+        }
+
+    private:
+        emscripten::val m_element;
+
+        int m_capturedPointerId = -1;
+
+        const Qt::Edges m_edges;
+
+        Resizer *m_resizer;
+
+        std::unique_ptr<qstdweb::EventCallback> m_mouseDownEvent;
+        std::unique_ptr<qstdweb::EventCallback> m_mouseDragEvent;
+        std::unique_ptr<qstdweb::EventCallback> m_mouseUpEvent;
+    };
+
+    using ClickCallback = std::function<void()>;
+
+    Resizer(QWasmWindow *window, emscripten::val parentElement) : m_window(window)
+    {
+        Q_ASSERT_X(m_window, Q_FUNC_INFO, "Window must not be null");
+
+        constexpr std::array<int, 8> ResizeEdges = { Qt::TopEdge | Qt::LeftEdge,
+                                                     Qt::TopEdge,
+                                                     Qt::TopEdge | Qt::RightEdge,
+                                                     Qt::LeftEdge,
+                                                     Qt::RightEdge,
+                                                     Qt::BottomEdge | Qt::LeftEdge,
+                                                     Qt::BottomEdge,
+                                                     Qt::BottomEdge | Qt::RightEdge };
+        std::transform(std::begin(ResizeEdges), std::end(ResizeEdges),
+                       std::back_inserter(m_elements), [parentElement, this](int edges) {
+                           return std::make_unique<ResizerElement>(parentElement,
+                                                                   Qt::Edges::fromInt(edges), this);
+                       });
+    }
+
+    ~Resizer() = default;
+
+private:
+    void onInteraction() { m_window->onInteraction(); }
+
+    void startResize(Qt::Edges resizeEdges, const QPoint &origin)
+    {
+        Q_ASSERT_X(!m_currentResizeData, Q_FUNC_INFO, "Another resize in progress");
+
+        const QWindow *window = m_window->window();
+        // TODO(mikolajboc): Implement system resize
+        // .m_originInScreenCoords = m_systemDragInitData.lastMouseMovePoint,
+        m_currentResizeData.reset(new ResizeData{
+                .edges = resizeEdges,
+                .originInScreenCoords = origin,
+                .initialWindowBounds = window->geometry(),
+                .minShrink = QPoint(window->minimumWidth() - window->geometry().width(),
+                                    window->minimumHeight() - window->geometry().height()),
+                .maxGrow = QPoint(window->maximumWidth() - window->geometry().width(),
+                                  window->maximumHeight() - window->geometry().height()) });
+    }
+
+    void continueResize(const QPoint &point)
+    {
+        const auto amount = point - m_currentResizeData->originInScreenCoords;
+        const QPoint cappedGrowVector(
+                std::min(m_currentResizeData->maxGrow.x(),
+                         std::max(m_currentResizeData->minShrink.x(),
+                                  (m_currentResizeData->edges & Qt::Edge::LeftEdge) ? -amount.x()
+                                          : (m_currentResizeData->edges & Qt::Edge::RightEdge)
+                                          ? amount.x()
+                                          : 0)),
+                std::min(m_currentResizeData->maxGrow.y(),
+                         std::max(m_currentResizeData->minShrink.y(),
+                                  (m_currentResizeData->edges & Qt::Edge::TopEdge) ? -amount.y()
+                                          : (m_currentResizeData->edges & Qt::Edge::BottomEdge)
+                                          ? amount.y()
+                                          : 0)));
+
+        auto bounds = m_currentResizeData->initialWindowBounds.adjusted(
+                (m_currentResizeData->edges & Qt::Edge::LeftEdge) ? -cappedGrowVector.x() : 0,
+                (m_currentResizeData->edges & Qt::Edge::TopEdge) ? -cappedGrowVector.y() : 0,
+                (m_currentResizeData->edges & Qt::Edge::RightEdge) ? cappedGrowVector.x() : 0,
+                (m_currentResizeData->edges & Qt::Edge::BottomEdge) ? cappedGrowVector.y() : 0);
+        bounds.setY(std::max(m_window->screen()->geometry().y() + m_window->frameMargins().top(),
+                             bounds.y()));
+        m_window->setGeometry(std::move(bounds));
+    }
+
+    void finishResize()
+    {
+        Q_ASSERT_X(m_currentResizeData, Q_FUNC_INFO, "No resize in progress");
+        m_currentResizeData.reset();
+    }
+
+    struct ResizeData
+    {
+        Qt::Edges edges = Qt::Edges::fromInt(0);
+        QPoint originInScreenCoords;
+        QRect initialWindowBounds;
+        QPoint minShrink;
+        QPoint maxGrow;
+    };
+    std::unique_ptr<ResizeData> m_currentResizeData;
+
+    QWasmWindow *m_window;
+    std::vector<std::unique_ptr<ResizerElement>> m_elements;
+};
 
 class QWasmWindow::WebImageButton
 {
@@ -180,6 +394,8 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
     m_qtWindow["style"].set("display", std::string("none"));
 
     m_qtWindow.call<void>("appendChild", m_windowContents);
+
+    m_resizer = std::make_unique<Resizer>(this, m_qtWindow);
 
     m_icon = std::make_unique<WebImageButton>();
     m_icon->setImage(IconType::QtLogo);
@@ -411,11 +627,10 @@ void QWasmWindow::propagateSizeHints()
     }
 }
 
-bool QWasmWindow::startSystemResize(Qt::Edges edges)
+bool QWasmWindow::startSystemResize(Qt::Edges)
 {
-    m_compositor->startResize(edges);
-
-    return true;
+    // TODO(mikolajboc): This can only be implemented if per-window events are up and running
+    return false;
 }
 
 void QWasmWindow::onRestoreClicked()
@@ -450,49 +665,10 @@ QMarginsF QWasmWindow::borderMargins() const
                      frameRect.bottom() - canvasRect.bottom());
 }
 
-QRegion QWasmWindow::resizeRegion() const
-{
-    QMargins margins = borderMargins().toMargins();
-    QRegion result(window()->frameGeometry().marginsAdded(margins));
-    result -= window()->frameGeometry().marginsRemoved(margins);
-
-    return result;
-}
-
 bool QWasmWindow::isPointOnTitle(QPoint globalPoint) const
 {
     return QRectF::fromDOMRect(m_titleBar.call<emscripten::val>("getBoundingClientRect"))
             .contains(globalPoint);
-}
-
-bool QWasmWindow::isPointOnResizeRegion(QPoint point) const
-{
-    // Certain windows, like undocked dock widgets, are both popups and dialogs. Those should be
-    // resizable.
-    if (windowIsPopupType(window()->flags()))
-        return false;
-    return (window()->maximumSize().isEmpty() || window()->minimumSize() != window()->maximumSize())
-            && resizeRegion().contains(point);
-}
-
-Qt::Edges QWasmWindow::resizeEdgesAtPoint(QPoint point) const
-{
-    const QPoint topLeft = window()->frameGeometry().topLeft() - QPoint(5, 5);
-    const QPoint bottomRight = window()->frameGeometry().bottomRight() + QPoint(5, 5);
-    const int gripAreaWidth = std::min(20, (bottomRight.y() - topLeft.y()) / 2);
-
-    const QRect top(topLeft, QPoint(bottomRight.x(), topLeft.y() + gripAreaWidth));
-    const QRect bottom(QPoint(topLeft.x(), bottomRight.y() - gripAreaWidth), bottomRight);
-    const QRect left(topLeft, QPoint(topLeft.x() + gripAreaWidth, bottomRight.y()));
-    const QRect right(QPoint(bottomRight.x() - gripAreaWidth, topLeft.y()), bottomRight);
-
-    Q_ASSERT(!top.intersects(bottom));
-    Q_ASSERT(!left.intersects(right));
-
-    Qt::Edges edges(top.contains(point) ? Qt::Edge::TopEdge : Qt::Edge(0));
-    edges |= bottom.contains(point) ? Qt::Edge::BottomEdge : Qt::Edge(0);
-    edges |= left.contains(point) ? Qt::Edge::LeftEdge : Qt::Edge(0);
-    return edges | (right.contains(point) ? Qt::Edge::RightEdge : Qt::Edge(0));
 }
 
 void QWasmWindow::invalidate()
@@ -565,6 +741,7 @@ void QWasmWindow::applyWindowState()
         newGeom = normalGeometry();
 
     syncCSSClassWith(m_qtWindow, "has-title-bar", hasTitleBar());
+    syncCSSClassWith(m_qtWindow, "maximized", isMaximized);
 
     m_restore->setVisible(isMaximized);
     m_maximize->setVisible(!isMaximized);

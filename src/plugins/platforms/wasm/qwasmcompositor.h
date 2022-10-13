@@ -43,8 +43,6 @@ public:
         QPalette palette;
     };
 
-    void startResize(Qt::Edges edges);
-
     void addWindow(QWasmWindow *window);
     void removeWindow(QWasmWindow *window);
 
@@ -72,47 +70,26 @@ private:
         enum class Operation {
             None,
             Move,
-            Resize,
         };
 
         WindowManipulation(QWasmScreen* screen);
 
         void onPointerDown(const PointerEvent& event, QWindow* windowAtPoint);
         void onPointerMove(const PointerEvent& event);
-        void onPointerUp(const PointerEvent& event);
-        void startResize(Qt::Edges edges);
+        void onPointerUp(const PointerEvent &event);
 
         Operation operation() const;
 
     private:
-        struct ResizeState {
-            Qt::Edges m_resizeEdges;
-            QPoint m_originInScreenCoords;
-            QRect m_initialWindowBounds;
-            const QPoint m_minShrink;
-            const QPoint m_maxGrow;
-        };
-        struct MoveState {
-            QPoint m_lastPointInScreenCoords;
-        };
         struct OperationState
         {
             int pointerId;
             QPointer<QWindow> window;
-            std::variant<ResizeState, MoveState> operationSpecific;
+            QPoint lastPointInScreenCoords;
         };
-        struct SystemDragInitData
-        {
-            QPoint lastMouseMovePoint;
-            int lastMousePointerId = -1;
-        };
-
-        void resizeWindow(const QPoint& amount);
-        ResizeState makeResizeState(Qt::Edges edges, const QPoint &startPoint, QWindow *window);
 
         QWasmScreen *m_screen;
 
-        SystemDragInitData m_systemDragInitData;
         std::unique_ptr<OperationState> m_state;
     };
 

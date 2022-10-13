@@ -33,8 +33,6 @@ public:
     explicit QWasmEventTranslator();
     ~QWasmEventTranslator();
 
-    static QCursor cursorForEdges(Qt::Edges edges);
-
     TranslatedEvent translateKeyEvent(int emEventType, const EmscriptenKeyboardEvent *keyEvent);
 
 private:

@@ -149,11 +149,6 @@ void QWasmCompositor::initEventHandlers()
                       emscripten::val(quintptr(reinterpret_cast<void *>(screen()))));
 }
 
-void QWasmCompositor::startResize(Qt::Edges edges)
-{
-    m_windowManipulation.startResize(edges);
-}
-
 void QWasmCompositor::addWindow(QWasmWindow *window)
 {
     m_windowStack.pushWindow(window);
@@ -317,33 +312,6 @@ void QWasmCompositor::frame(bool all, const QList<QWasmWindow *> &windows)
     }
 }
 
-void QWasmCompositor::WindowManipulation::resizeWindow(const QPoint& amount)
-{
-    const auto& minShrink = std::get<ResizeState>(m_state->operationSpecific).m_minShrink;
-    const auto& maxGrow = std::get<ResizeState>(m_state->operationSpecific).m_maxGrow;
-    const auto &resizeEdges = std::get<ResizeState>(m_state->operationSpecific).m_resizeEdges;
-
-    const QPoint cappedGrowVector(
-            std::min(maxGrow.x(),
-                     std::max(minShrink.x(),
-                              (resizeEdges & Qt::Edge::LeftEdge)            ? -amount.x()
-                                      : (resizeEdges & Qt::Edge::RightEdge) ? amount.x()
-                                                                            : 0)),
-            std::min(maxGrow.y(),
-                     std::max(minShrink.y(),
-                              (resizeEdges & Qt::Edge::TopEdge)              ? -amount.y()
-                                      : (resizeEdges & Qt::Edge::BottomEdge) ? amount.y()
-                                                                             : 0)));
-
-    const auto& initialBounds =
-        std::get<ResizeState>(m_state->operationSpecific).m_initialWindowBounds;
-    m_state->window->setGeometry(initialBounds.adjusted(
-            (resizeEdges & Qt::Edge::LeftEdge) ? -cappedGrowVector.x() : 0,
-            (resizeEdges & Qt::Edge::TopEdge) ? -cappedGrowVector.y() : 0,
-            (resizeEdges & Qt::Edge::RightEdge) ? cappedGrowVector.x() : 0,
-            (resizeEdges & Qt::Edge::BottomEdge) ? cappedGrowVector.y() : 0));
-}
-
 void QWasmCompositor::onTopWindowChanged()
 {
     constexpr int zOrderForElementInFrontOfScreen = 3;
@@ -413,7 +381,6 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
 
     const QPoint pointInTargetWindowCoords = targetWindow->mapFromGlobal(event.point);
     const bool pointerIsWithinTargetWindowBounds = targetWindow->geometry().contains(event.point);
-    const bool isTargetWindowBlocked = QGuiApplicationPrivate::instance()->isWindowBlocked(targetWindow);
 
     if (m_mouseInScreen && m_windowUnderMouse != targetWindow
         && pointerIsWithinTargetWindowBounds) {
@@ -421,10 +388,6 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
         enterWindow(targetWindow, pointInTargetWindowCoords, event.point);
         m_windowUnderMouse = targetWindow;
     }
-
-    QWasmWindow *wasmTargetWindow = asWasmWindow(targetWindow);
-    Qt::WindowStates windowState = targetWindow->windowState();
-    const bool isTargetWindowResizable = !windowState.testFlag(Qt::WindowMaximized) && !windowState.testFlag(Qt::WindowFullScreen);
 
     switch (event.type) {
     case EventType::PointerDown:
@@ -444,25 +407,7 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
         m_windowManipulation.onPointerUp(event);
         break;
     }
-    case EventType::PointerMove:
-    {
-        if (wasmTargetWindow && event.mouseButtons.testFlag(Qt::NoButton)) {
-            const bool isOnResizeRegion = wasmTargetWindow->isPointOnResizeRegion(event.point);
-
-            if (isTargetWindowResizable && isOnResizeRegion && !isTargetWindowBlocked) {
-                const QCursor resizingCursor = QWasmEventTranslator::cursorForEdges(
-                        wasmTargetWindow->resizeEdgesAtPoint(event.point));
-
-                if (resizingCursor != targetWindow->cursor()) {
-                    m_isResizeCursorDisplayed = true;
-                    QWasmCursor::setOverrideWasmCursor(resizingCursor, targetWindow->screen());
-                }
-            } else if (m_isResizeCursorDisplayed) {  // off resizing area
-                m_isResizeCursorDisplayed = false;
-                QWasmCursor::clearOverrideWasmCursor(targetWindow->screen());
-            }
-        }
-
+    case EventType::PointerMove: {
         m_windowManipulation.onPointerMove(event);
         if (m_windowManipulation.operation() != WindowManipulation::Operation::None)
             requestUpdate();
@@ -538,9 +483,7 @@ QWasmCompositor::WindowManipulation::Operation QWasmCompositor::WindowManipulati
 {
     if (!m_state)
         return Operation::None;
-
-    return std::holds_alternative<MoveState>(m_state->operationSpecific)
-        ? Operation::Move : Operation::Resize;
+    return Operation::Move;
 }
 
 void QWasmCompositor::WindowManipulation::onPointerDown(
@@ -564,59 +507,28 @@ void QWasmCompositor::WindowManipulation::onPointerDown(
     if (isTargetWindowBlocked)
         return;
 
-    std::unique_ptr<std::variant<ResizeState, MoveState>> operationSpecific;
-    if (asWasmWindow(windowAtPoint)->isPointOnTitle(event.point)) {
-        operationSpecific = std::make_unique<std::variant<ResizeState, MoveState>>(
-                MoveState{ .m_lastPointInScreenCoords = event.point });
-    } else if (asWasmWindow(windowAtPoint)->isPointOnResizeRegion(event.point)) {
-        operationSpecific = std::make_unique<std::variant<ResizeState, MoveState>>(ResizeState{
-                .m_resizeEdges = asWasmWindow(windowAtPoint)->resizeEdgesAtPoint(event.point),
-                .m_originInScreenCoords = event.point,
-                .m_initialWindowBounds = windowAtPoint->geometry(),
-                .m_minShrink =
-                        QPoint(windowAtPoint->minimumWidth() - windowAtPoint->geometry().width(),
-                               windowAtPoint->minimumHeight() - windowAtPoint->geometry().height()),
-                .m_maxGrow =
-                        QPoint(windowAtPoint->maximumWidth() - windowAtPoint->geometry().width(),
-                               windowAtPoint->maximumHeight() - windowAtPoint->geometry().height()),
-        });
-    } else {
+    if (!asWasmWindow(windowAtPoint)->isPointOnTitle(event.point))
         return;
-    }
 
-    m_state.reset(new OperationState{
-        .pointerId = event.pointerId,
-        .window = windowAtPoint,
-        .operationSpecific = std::move(*operationSpecific),
-    });
+    m_state.reset(new OperationState{ .pointerId = event.pointerId,
+                                      .window = windowAtPoint,
+                                      .lastPointInScreenCoords = event.point });
 }
 
 void QWasmCompositor::WindowManipulation::onPointerMove(
     const PointerEvent& event)
 {
-    m_systemDragInitData = {
-        .lastMouseMovePoint = m_screen->clipPoint(event.point),
-        .lastMousePointerId = event.pointerId,
-    };
-
     if (operation() == Operation::None || event.pointerId != m_state->pointerId)
         return;
 
     switch (operation()) {
         case Operation::Move: {
             const QPoint targetPointClippedToScreen = m_screen->clipPoint(event.point);
-            const QPoint difference = targetPointClippedToScreen -
-                std::get<MoveState>(m_state->operationSpecific).m_lastPointInScreenCoords;
+            const QPoint difference = targetPointClippedToScreen - m_state->lastPointInScreenCoords;
 
-            std::get<MoveState>(m_state->operationSpecific).m_lastPointInScreenCoords = targetPointClippedToScreen;
+            m_state->lastPointInScreenCoords = targetPointClippedToScreen;
 
             m_state->window->setPosition(m_state->window->position() + difference);
-            break;
-        }
-        case Operation::Resize: {
-            const auto pointInScreenCoords = m_screen->geometry().topLeft() + event.point;
-            resizeWindow(pointInScreenCoords -
-                std::get<ResizeState>(m_state->operationSpecific).m_originInScreenCoords);
             break;
         }
         case Operation::None:
@@ -631,34 +543,6 @@ void QWasmCompositor::WindowManipulation::onPointerUp(const PointerEvent& event)
         return;
 
     m_state.reset();
-}
-
-void QWasmCompositor::WindowManipulation::startResize(Qt::Edges edges)
-{
-    Q_ASSERT_X(operation() == Operation::None, Q_FUNC_INFO,
-               "Resize must not start anew when one is in progress");
-
-    auto *window = m_screen->compositor()->windowAt(m_systemDragInitData.lastMouseMovePoint);
-    if (Q_UNLIKELY(!window))
-        return;
-
-    m_state.reset(new OperationState{
-        .pointerId = m_systemDragInitData.lastMousePointerId,
-        .window = window,
-        .operationSpecific =
-            ResizeState{
-                .m_resizeEdges = edges,
-                .m_originInScreenCoords = m_systemDragInitData.lastMouseMovePoint,
-                .m_initialWindowBounds = window->geometry(),
-                .m_minShrink =
-                    QPoint(window->minimumWidth() - window->geometry().width(),
-                        window->minimumHeight() - window->geometry().height()),
-                .m_maxGrow =
-                    QPoint(window->maximumWidth() - window->geometry().width(),
-                        window->maximumHeight() - window->geometry().height()),
-            },
-    });
-    m_screen->element().call<void>("setPointerCapture", m_systemDragInitData.lastMousePointerId);
 }
 
 bool QWasmCompositor::processKeyboard(int eventType, const EmscriptenKeyboardEvent *emKeyEvent)

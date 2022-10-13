@@ -55,9 +55,6 @@ public:
     bool startSystemResize(Qt::Edges edges) final;
 
     bool isPointOnTitle(QPoint point) const;
-    bool isPointOnResizeRegion(QPoint point) const;
-
-    Qt::Edges resizeEdgesAtPoint(QPoint point) const;
 
     void setWindowFlags(Qt::WindowFlags flags) override;
     void setWindowState(Qt::WindowStates state) override;
@@ -74,10 +71,10 @@ public:
 private:
     friend class QWasmScreen;
 
+    class Resizer;
     class WebImageButton;
 
     QMarginsF borderMargins() const;
-    QRegion resizeRegion() const;
 
     void onRestoreClicked();
     void onMaximizeClicked();
@@ -100,6 +97,8 @@ private:
     emscripten::val m_canvasContainer;
     emscripten::val m_canvas;
     emscripten::val m_context2d = emscripten::val::undefined();
+
+    std::unique_ptr<Resizer> m_resizer;
 
     std::unique_ptr<WebImageButton> m_close;
     std::unique_ptr<WebImageButton> m_maximize;
