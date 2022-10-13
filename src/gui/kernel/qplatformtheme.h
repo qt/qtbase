@@ -95,7 +95,8 @@ public:
         FlickDeceleration,
         MenuBarFocusOnAltPressRelease,
         MouseCursorTheme,
-        MouseCursorSize
+        MouseCursorSize,
+        UnderlineShortcut,
     };
     Q_ENUM(ThemeHint)
 

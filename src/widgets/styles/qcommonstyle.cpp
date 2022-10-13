@@ -5156,9 +5156,12 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = 1;
         break;
 
-    case SH_UnderlineShortcut:
-        ret = 1;
+    case SH_UnderlineShortcut: {
+        const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
+        ret = theme ? theme->themeHint(QPlatformTheme::UnderlineShortcut).toInt()
+                    : QPlatformTheme::defaultThemeHint(QPlatformTheme::UnderlineShortcut).toInt();
         break;
+    }
 
     case SH_SpinBox_ClickAutoRepeatRate:
         ret = 150;
