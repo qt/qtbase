@@ -20,11 +20,12 @@
 
 #include "private/qtcore-config_p.h"
 
-#define EXISTING_SHARE "existing"
 #define EXISTING_SIZE 1024
 
 Q_DECLARE_METATYPE(QSharedMemory::SharedMemoryError)
 Q_DECLARE_METATYPE(QSharedMemory::AccessMode)
+
+using namespace Qt::StringLiterals;
 
 class tst_QSharedMemory : public QObject
 {
@@ -81,10 +82,18 @@ private slots:
 protected:
     void remove(const QNativeIpcKey &key);
 
+    QString mangleKey(QStringView key)
+    {
+        if (key.isEmpty())
+            return key.toString();
+        return u"tstshm_%1-%2_%3"_s.arg(QCoreApplication::applicationPid())
+                .arg(seq).arg(key);
+    }
+
     QNativeIpcKey platformSafeKey(const QString &key)
     {
         QNativeIpcKey::Type keyType = QNativeIpcKey::DefaultTypeForOs;
-        return QSharedMemory::platformSafeKey(key, keyType);
+        return QSharedMemory::platformSafeKey(mangleKey(key), keyType);
     }
 
     QNativeIpcKey rememberKey(const QString &key)
@@ -100,6 +109,7 @@ protected:
     QList<QNativeIpcKey> keys;
     QList<QSharedMemory*> jail;
     QSharedMemory *existingSharedMemory;
+    int seq = 0;
 
 private:
     const QString m_helperBinary;
@@ -117,7 +127,7 @@ tst_QSharedMemory::~tst_QSharedMemory()
 
 void tst_QSharedMemory::init()
 {
-    QNativeIpcKey key = platformSafeKey(EXISTING_SHARE);
+    QNativeIpcKey key = platformSafeKey("existing");
     existingSharedMemory = new QSharedMemory(key);
     if (!existingSharedMemory->create(EXISTING_SIZE)) {
         QCOMPARE(existingSharedMemory->error(), QSharedMemory::AlreadyExists);
@@ -138,9 +148,10 @@ void tst_QSharedMemory::cleanup()
             //    qWarning() << "test cleanup: remove failed:" << keys.at(i) << sm.error() << sm.errorString();
             sm.attach();
             sm.detach();
-            remove(keys.at(i));
         }
+        remove(keys.at(i));
     }
+    ++seq;
 }
 
 #if QT_CONFIG(posix_shm)
@@ -320,7 +331,7 @@ void tst_QSharedMemory::create_data()
         << false << QSharedMemory::InvalidSize;
     QTest::newRow("nor size") << QString("norsize") << 1024
         << true << QSharedMemory::NoError;
-    QTest::newRow("already exists") << QString(EXISTING_SHARE) << EXISTING_SIZE
+    QTest::newRow("existing") << QString("existing") << EXISTING_SIZE
         << false << QSharedMemory::AlreadyExists;
 }
 
@@ -359,7 +370,7 @@ void tst_QSharedMemory::attach_data()
     QTest::newRow("null") << QString() << false << QSharedMemory::KeyError;
     QTest::newRow("doesntexists") << QString("doesntexist") << false << QSharedMemory::NotFound;
 
-    QTest::newRow(EXISTING_SHARE) << QString(EXISTING_SHARE) << true << QSharedMemory::NoError;
+    QTest::newRow("existing") << QString("existing") << true << QSharedMemory::NoError;
 }
 
 /*!

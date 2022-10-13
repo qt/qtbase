@@ -11,8 +11,9 @@
 #include <QtCore/QSystemSemaphore>
 #include <QtCore/QTemporaryDir>
 
-#define EXISTING_SHARE "existing"
 #define HELPERWAITTIME 10000
+
+using namespace Qt::StringLiterals;
 
 class tst_QSystemSemaphore : public QObject
 {
@@ -21,10 +22,18 @@ class tst_QSystemSemaphore : public QObject
 public:
     tst_QSystemSemaphore();
 
+    QString mangleKey(QStringView key)
+    {
+        if (key.isEmpty())
+            return key.toString();
+        return u"tstsyssem_%1-%2_%3"_s.arg(QCoreApplication::applicationPid())
+                .arg(seq).arg(key);
+    }
+
     QNativeIpcKey platformSafeKey(const QString &key)
     {
         QNativeIpcKey::Type keyType = QNativeIpcKey::DefaultTypeForOs;
-        return QSystemSemaphore::platformSafeKey(key, keyType);
+        return QSystemSemaphore::platformSafeKey(mangleKey(key), keyType);
     }
 
 public Q_SLOTS:
@@ -50,6 +59,7 @@ private slots:
     void initialValue();
 
 private:
+    int seq = 0;
     QSystemSemaphore *existingLock;
 
     const QString m_helperBinary;
@@ -62,13 +72,14 @@ tst_QSystemSemaphore::tst_QSystemSemaphore()
 
 void tst_QSystemSemaphore::init()
 {
-    QNativeIpcKey key = platformSafeKey(EXISTING_SHARE);
+    QNativeIpcKey key = platformSafeKey("existing");
     existingLock = new QSystemSemaphore(key, 1, QSystemSemaphore::Create);
 }
 
 void tst_QSystemSemaphore::cleanup()
 {
     delete existingLock;
+    ++seq;
 }
 
 void tst_QSystemSemaphore::nativeKey_data()
@@ -123,7 +134,7 @@ QT_WARNING_POP
 
 void tst_QSystemSemaphore::basicacquire()
 {
-    QNativeIpcKey key = platformSafeKey("QSystemSemaphore_basicacquire");
+    QNativeIpcKey key = platformSafeKey("basicacquire");
     QSystemSemaphore sem(key, 1, QSystemSemaphore::Create);
     QVERIFY(sem.acquire());
     QCOMPARE(sem.error(), QSystemSemaphore::NoError);
@@ -134,7 +145,7 @@ void tst_QSystemSemaphore::basicacquire()
 
 void tst_QSystemSemaphore::complexacquire()
 {
-    QNativeIpcKey key = platformSafeKey("QSystemSemaphore_complexacquire");
+    QNativeIpcKey key = platformSafeKey("complexacquire");
     QSystemSemaphore sem(key, 2, QSystemSemaphore::Create);
     QVERIFY(sem.acquire());
     QCOMPARE(sem.error(), QSystemSemaphore::NoError);
@@ -157,7 +168,7 @@ void tst_QSystemSemaphore::complexacquire()
 
 void tst_QSystemSemaphore::release()
 {
-    QNativeIpcKey key = platformSafeKey("QSystemSemaphore_release");
+    QNativeIpcKey key = platformSafeKey("release");
     QSystemSemaphore sem(key, 0, QSystemSemaphore::Create);
     QVERIFY(sem.release());
     QCOMPARE(sem.error(), QSystemSemaphore::NoError);
