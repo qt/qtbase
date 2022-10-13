@@ -502,8 +502,8 @@ QIOSMenuItemList QIOSMenu::filterFirstResponderActions(const QIOSMenuItemList &m
                 || (shortcut == QKeySequence::Paste && [responder canPerformAction:@selector(paste:) withSender:nil])
                 || (shortcut == QKeySequence::Delete && [responder canPerformAction:@selector(delete:) withSender:nil])
                 || (shortcut == QKeySequence::SelectAll && [responder canPerformAction:@selector(selectAll:) withSender:nil])
-                || (shortcut == QKeySequence::Undo && [responder canPerformAction:@selector(undo:) withSender:nil])
-                || (shortcut == QKeySequence::Redo && [responder canPerformAction:@selector(redo:) withSender:nil])
+                || (shortcut == QKeySequence::Undo && [responder canPerformAction:@selector(undo) withSender:nil])
+                || (shortcut == QKeySequence::Redo && [responder canPerformAction:@selector(redo) withSender:nil])
                 || (shortcut == QKeySequence::Bold && [responder canPerformAction:@selector(toggleBoldface:) withSender:nil])
                 || (shortcut == QKeySequence::Italic && [responder canPerformAction:@selector(toggleItalics:) withSender:nil])
                 || (shortcut == QKeySequence::Underline && [responder canPerformAction:@selector(toggleUnderline:) withSender:nil])) {
