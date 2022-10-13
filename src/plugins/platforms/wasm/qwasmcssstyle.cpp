@@ -3,6 +3,8 @@
 
 #include "qwasmcssstyle.h"
 
+#include "qwasmbase64iconstore.h"
+
 #include <QtCore/qstring.h>
 #include <QtCore/qfile.h>
 
@@ -117,6 +119,7 @@ const char *Style = R"css(
     overflow: hidden;
     height: 18px;
     padding-bottom: 4px;
+    pointer-events: all;
 }
 
 .qt-window.has-title-bar .title-bar {
@@ -142,6 +145,10 @@ const char *Style = R"css(
     display: flex;
 }
 
+.title-bar div {
+    pointer-events: none;
+}
+
 .title-bar .image-button {
     width: 18px;
     height: 18px;
@@ -151,7 +158,7 @@ const char *Style = R"css(
     align-items: center;
 }
 
-.title-bar .image-button span {
+.title-bar .image-button img {
     width: 10px;
     height: 10px;
     user-select: none;
@@ -160,19 +167,19 @@ const char *Style = R"css(
     background-size: 10px 10px;
 }
 
-.title-bar .image-button span[qt-builtin-image-type=x] {
+.title-bar .image-button img[qt-builtin-image-type=x] {
     background-image: url("data:image/svg+xml;base64,$close_icon");
 }
 
-.title-bar .image-button span[qt-builtin-image-type=qt-logo] {
+.title-bar .image-button img[qt-builtin-image-type=qt-logo] {
     background-image: url("qtlogo.svg");
 }
 
-.title-bar .image-button span[qt-builtin-image-type=restore] {
+.title-bar .image-button img[qt-builtin-image-type=restore] {
     background-image: url("data:image/svg+xml;base64,$restore_icon");
 }
 
-.title-bar .image-button span[qt-builtin-image-type=maximize] {
+.title-bar .image-button img[qt-builtin-image-type=maximize] {
     background-image: url("data:image/svg+xml;base64,$maximize_icon");
 }
 .title-bar .action-button {
@@ -180,59 +187,23 @@ const char *Style = R"css(
     align-self: end;
 }
 
-.qt-window.blocked .title-bar .action-button {
+.qt-window.blocked div {
     pointer-events: none;
 }
 
-.title-bar .action-button span {
+.title-bar .action-button img {
     transition: filter 0.08s ease-out;
 }
 
-.title-bar .action-button:hover span {
+.title-bar .action-button:hover img {
     filter: invert(0.45);
 }
 
-.title-bar .action-button:active span {
+.title-bar .action-button:active img {
     filter: invert(0.6);
 }
 
 )css";
-
-class Base64IconStore
-{
-public:
-    enum class IconType {
-        Maximize,
-        First = Maximize,
-        QtLogo,
-        Restore,
-        X,
-        Size,
-    };
-
-    Base64IconStore()
-    {
-        QString iconSources[static_cast<size_t>(IconType::Size)] = {
-            QStringLiteral(":/wasm-window/maximize.svg"),
-            QStringLiteral(":/wasm-window/qtlogo.svg"), QStringLiteral(":/wasm-window/restore.svg"),
-            QStringLiteral(":/wasm-window/x.svg")
-        };
-
-        for (size_t iconType = static_cast<size_t>(IconType::First);
-             iconType < static_cast<size_t>(IconType::Size); ++iconType) {
-            QFile svgFile(iconSources[static_cast<size_t>(iconType)]);
-            if (!svgFile.open(QIODevice::ReadOnly))
-                Q_ASSERT(false); // A resource should always be opened.
-            m_storage[static_cast<size_t>(iconType)] = svgFile.readAll().toBase64();
-        }
-    }
-    ~Base64IconStore() = default;
-
-    std::string_view getIcon(IconType type) const { return m_storage[static_cast<size_t>(type)]; }
-
-private:
-    std::string m_storage[static_cast<size_t>(IconType::Size)];
-};
 
 void replace(std::string &str, const std::string &from, const std::string_view &to)
 {
@@ -242,13 +213,14 @@ void replace(std::string &str, const std::string &from, const std::string_view &
 
 emscripten::val QWasmCSSStyle::createStyleElement(emscripten::val parent)
 {
-    Base64IconStore store;
     auto document = parent["ownerDocument"];
     auto screenStyle = document.call<emscripten::val>("createElement", emscripten::val("style"));
     auto text = std::string(Style);
-    replace(text, "$close_icon", store.getIcon(Base64IconStore::IconType::X));
-    replace(text, "$restore_icon", store.getIcon(Base64IconStore::IconType::Restore));
-    replace(text, "$maximize_icon", store.getIcon(Base64IconStore::IconType::Maximize));
+
+    using IconType = Base64IconStore::IconType;
+    replace(text, "$close_icon", Base64IconStore::get()->getIcon(IconType::X));
+    replace(text, "$restore_icon", Base64IconStore::get()->getIcon(IconType::Restore));
+    replace(text, "$maximize_icon", Base64IconStore::get()->getIcon(IconType::Maximize));
 
     screenStyle.set("textContent", text);
     return screenStyle;

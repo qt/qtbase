@@ -230,9 +230,8 @@ QPoint QWasmScreen::mapFromLocal(const QPoint &p) const
 
 QPoint QWasmScreen::clipPoint(const QPoint &p) const
 {
-    return QPoint(
-            std::max(screen()->geometry().left(), std::min(screen()->geometry().right(), p.x())),
-            std::max(screen()->geometry().top(), std::min(screen()->geometry().bottom(), p.y())));
+    return QPoint(qBound(screen()->geometry().left(), p.x(), screen()->geometry().right()),
+                  qBound(screen()->geometry().top(), p.y(), screen()->geometry().bottom()));
 }
 
 void QWasmScreen::invalidateSize()
