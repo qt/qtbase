@@ -85,6 +85,33 @@ static QNativeIpcKey::Type stringToType(QStringView typeString)
     return QNativeIpcKey::Type{};
 }
 
+#if defined(Q_OS_DARWIN) || defined(QT_BUILD_INTERNAL)
+/*!
+    \internal
+
+    Returns whether this IPC type \a ipcType and key type \a keyType is
+    supported on the current machine, with a runtime check.
+*/
+bool QtIpcCommon::isIpcSupportedAtRuntime(IpcType ipcType, QNativeIpcKey::Type keyType)
+{
+    switch (keyType) {
+    case QNativeIpcKey::Type::SystemV:
+        break;
+
+    case QNativeIpcKey::Type::PosixRealtime:
+    case QNativeIpcKey::Type::Windows:
+        return isIpcSupported(ipcType, keyType);
+    }
+
+#  if defined(Q_OS_DARWIN)
+    // System V IPC is not supported on Apple platforms if the application is
+    // currently running in a sandbox.
+    return !qt_apple_isSandboxed();
+#  endif
+    return isIpcSupported(ipcType, keyType);
+}
+#endif
+
 /*!
     \internal
 
