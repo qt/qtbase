@@ -186,15 +186,6 @@ void QSystemSemaphore::setNativeKey(const QNativeIpcKey &key, int initialValue, 
     }
 
     d->clearError();
-#if !defined(Q_OS_WIN) && !defined(QT_POSIX_IPC)
-    // optimization to not destroy/create the file & semaphore
-    if (key == d->nativeKey && mode == Create && d->backend.createdSemaphore && d->backend.createdFile) {
-        d->initialValue = initialValue;
-        d->backend.unix_key = -1;
-        d->handle(mode);
-        return;
-    }
-#endif
     d->cleanHandle();
     d->nativeKey = key;
     d->initialValue = initialValue;
