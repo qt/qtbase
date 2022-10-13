@@ -17,7 +17,7 @@ class QOCIDriverPlugin : public QSqlDriverPlugin
 public:
     QOCIDriverPlugin();
 
-    QSqlDriver* create(const QString &);
+    QSqlDriver* create(const QString &) override;
 };
 
 QOCIDriverPlugin::QOCIDriverPlugin()
