@@ -426,6 +426,7 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
             break;
         }
     } // fall through for OUT values
+    Q_FALLTHROUGH();
     default: {
         if (val.typeId() >= QMetaType::User) {
             if (val.canConvert<QOCIRowIdPointer>() && !isOutValue(pos)) {
@@ -2434,7 +2435,7 @@ static QString make_where_clause(const QString &user, Expression e)
         "WMSYS",
     };
     static const char joinC[][4] = { "or" , "and" };
-    static constexpr QLatin1Char bang[] = { u' ', u'!' };
+    static constexpr char16_t bang[] = { u' ', u'!' };
 
     const QLatin1StringView join(joinC[e]);
 
