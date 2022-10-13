@@ -1722,22 +1722,22 @@ function(_qt_internal_process_resource target resourceName)
 
     if("${rcc_OPTIONS}" MATCHES "-binary")
         set(isBinary TRUE)
-        if(arg_BIG_RESOURCES)
+        if(rcc_BIG_RESOURCES)
             message(FATAL_ERROR "BIG_RESOURCES cannot be used together with the -binary option.")
         endif()
     endif()
 
-    if(arg_BIG_RESOURCES AND CMAKE_GENERATOR STREQUAL "Xcode" AND IOS)
+    if(rcc_BIG_RESOURCES AND CMAKE_GENERATOR STREQUAL "Xcode" AND IOS)
         message(WARNING
             "Due to CMake limitations, the BIG_RESOURCES option can't be used when building "
             "for iOS. "
             "See https://bugreports.qt.io/browse/QTBUG-103497 for details. "
             "Falling back to using regular resources. "
         )
-        set(arg_BIG_RESOURCES OFF)
+        set(rcc_BIG_RESOURCES OFF)
     endif()
 
-    if(arg_BIG_RESOURCES AND CMAKE_VERSION VERSION_LESS "3.17")
+    if(rcc_BIG_RESOURCES AND CMAKE_VERSION VERSION_LESS "3.17")
         message(WARNING
             "The BIG_RESOURCES option does not work reliably with CMake < 3.17. "
             "Consider upgrading to a more recent CMake version or disable the BIG_RESOURCES "
