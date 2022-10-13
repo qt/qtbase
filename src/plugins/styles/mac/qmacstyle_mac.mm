@@ -3298,7 +3298,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_Frame: {
         QPen oldPen = p->pen();
         p->setPen(opt->palette.base().color().darker(140));
-        p->drawRect(opt->rect.adjusted(0, 0, -1, -1));
+        p->drawRect(opt->rect);
         p->setPen(opt->palette.base().color().darker(180));
         p->drawLine(opt->rect.topLeft(), opt->rect.topRight());
         p->setPen(oldPen);
@@ -3382,11 +3382,11 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         }
         break;
     case PE_PanelScrollAreaCorner: {
-        const QBrush brush(opt->palette.brush(QPalette::Base));
-        p->fillRect(opt->rect, brush);
-        p->setPen(QPen(QColor(217, 217, 217)));
-        p->drawLine(opt->rect.topLeft(), opt->rect.topRight());
-        p->drawLine(opt->rect.topLeft(), opt->rect.bottomLeft());
+        QBrush brush(opt->palette.brush(isDarkMode() ? QPalette::WindowText : QPalette::Base));
+        auto color(brush.color());
+        color.setAlphaF(isDarkMode() ? 0.059 : 0.76);
+        brush.setColor(color);
+        p->fillRect(opt->rect, color);
         } break;
     case PE_FrameStatusBarItem:
         break;
