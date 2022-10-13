@@ -1781,7 +1781,7 @@ function(_qt_internal_process_resource target resourceName)
     if(NOT rcc_PREFIX)
         get_target_property(rcc_PREFIX ${target} QT_RESOURCE_PREFIX)
         if (NOT rcc_PREFIX)
-            message(FATAL_ERROR "_qt_internal_process_resource() was called without a PREFIX and the target does not provide QT_RESOURCE_PREFIX. Please either add a PREFIX or make the target ${target} provide a default.")
+            set(rcc_PREFIX "/")
         endif()
     endif()
 
@@ -1797,9 +1797,8 @@ function(_qt_internal_process_resource target resourceName)
 
     # <RCC><qresource ...>
     set(qrcContents "<RCC>\n  <qresource")
-    if (rcc_PREFIX)
-        string(APPEND qrcContents " prefix=\"${rcc_PREFIX}\"")
-    endif()
+    string(APPEND qrcContents " prefix=\"${rcc_PREFIX}\"")
+
     if (rcc_LANG)
         string(APPEND qrcContents " lang=\"${rcc_LANG}\"")
     endif()

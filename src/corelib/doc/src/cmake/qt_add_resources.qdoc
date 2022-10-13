@@ -57,7 +57,9 @@ See \l{The Qt Resource System} for a general description of Qt resources.
 \c PREFIX specifies a path prefix under which all files of this resource are
 accessible from C++ code. This corresponds to the XML attribute \c prefix of the
 \c .qrc file format. If \c PREFIX is not given, the target property
-\l{cmake-target-property-QT_RESOURCE_PREFIX}{QT_RESOURCE_PREFIX} is used.
+\l{cmake-target-property-QT_RESOURCE_PREFIX}{QT_RESOURCE_PREFIX} is used. Since
+6.5, \c{PREFIX} is optional. If it is omitted and not specified by
+\c{QT_RESOURCE_PREFIX}, \c{"/"} will be used as the default path prefix.
 
 \c LANG specifies the locale of this resource. This corresponds to the XML
 attribute \c lang of the \c .qrc file format.
