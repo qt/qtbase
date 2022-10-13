@@ -24,6 +24,12 @@ qt_generate_deploy_app_script(
     FILENAME_VARIABLE var_name
     [NO_TRANSLATIONS]
     [NO_UNSUPPORTED_PLATFORM_ERROR]
+    [PRE_INCLUDE_REGEXES regexes...]
+    [PRE_EXCLUDE_REGEXES regexes...]
+    [POST_INCLUDE_REGEXES regexes...]
+    [POST_EXCLUDE_REGEXES regexes...]
+    [POST_INCLUDE_FILES files...]
+    [POST_EXCLUDE_FILES files...]
 )
 \endcode
 
@@ -71,6 +77,12 @@ instead.
 
 For generating a custom deployment script, use
 \l{qt6_generate_deploy_script}{qt_generate_deploy_script}.
+
+The options \c{PRE_INCLUDE_REGEXES}, \c{PRE_EXCLUDE_REGEXES},
+\c{POST_INCLUDE_REGEXES}, \c{POST_EXCLUDE_REGEXES}, \c{POST_INCLUDE_FILES}, and
+\c{POST_EXCLUDE_FILES} can be specified to control the deployment of runtime
+dependencies. These options do not apply to all platforms and are forwarded
+unmodified to \l{qt_deploy_runtime_dependencies()}.
 
 \sa {qt6_standard_project_setup}{qt_standard_project_setup()},
     {qt6_generate_deploy_script}{qt_generate_deploy_script()},

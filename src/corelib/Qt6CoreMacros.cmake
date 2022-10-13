@@ -2732,7 +2732,18 @@ function(qt6_generate_deploy_app_script)
         TARGET
         FILENAME_VARIABLE
     )
-    set(multi_value_options "")
+    set(qt_deploy_runtime_dependencies_options
+        # These options are forwarded as is to qt_deploy_runtime_dependencies.
+        PRE_INCLUDE_REGEXES
+        PRE_EXCLUDE_REGEXES
+        POST_INCLUDE_REGEXES
+        POST_EXCLUDE_REGEXES
+        POST_INCLUDE_FILES
+        POST_EXCLUDE_FILES
+    )
+    set(multi_value_options
+        ${qt_deploy_runtime_dependencies_options}
+    )
     cmake_parse_arguments(PARSE_ARGV 0 arg
         "${no_value_options}" "${single_value_options}" "${multi_value_options}"
     )
@@ -2761,6 +2772,13 @@ function(qt6_generate_deploy_app_script)
     if(arg_NO_TRANSLATIONS)
         string(APPEND common_deploy_args "    NO_TRANSLATIONS\n")
     endif()
+
+    # Forward the arguments that are exactly the same for qt_deploy_runtime_dependencies.
+    foreach(var IN LISTS qt_deploy_runtime_dependencies_options)
+        if(NOT "${arg_${var}}" STREQUAL "")
+            list(APPEND common_deploy_args ${var} ${arg_${var}})
+        endif()
+    endforeach()
 
     if(APPLE AND NOT IOS AND QT6_IS_SHARED_LIBS_BUILD)
         # TODO: Handle non-bundle applications if possible.
