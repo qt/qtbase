@@ -36,8 +36,6 @@
 #
 ######################################
 
-include(CMakeParseArguments)
-
 
 # qt6_wrap_ui(outfiles inputfile ... )
 

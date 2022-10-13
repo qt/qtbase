@@ -36,8 +36,6 @@
 #
 ######################################
 
-include(CMakeParseArguments)
-
 set(__qt_core_macros_module_base_dir "${CMAKE_CURRENT_LIST_DIR}")
 
 # macro used to create the names of output files preserving relative dirs

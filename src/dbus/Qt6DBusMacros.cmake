@@ -32,8 +32,6 @@
 
 include(MacroAddFileDependencies)
 
-include(CMakeParseArguments)
-
 function(qt6_add_dbus_interface _sources _interface _basename)
     get_filename_component(_infile ${_interface} ABSOLUTE)
     set(_header "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.h")
