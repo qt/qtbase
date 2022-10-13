@@ -644,6 +644,84 @@ IDropTargetHelper* QWindowsDrag::dropHelper() {
     return m_cachedDropTargetHelper;
 }
 
+// Workaround for DoDragDrop() not working with touch/pen input, causing DnD to hang until the mouse is moved.
+// We process pointer messages for touch/pen and generate mouse input through SendInput() to trigger DoDragDrop()
+static HRESULT startDoDragDrop(LPDATAOBJECT pDataObj, LPDROPSOURCE pDropSource, DWORD dwOKEffects, LPDWORD pdwEffect)
+{
+    HWND hwnd = ::GetFocus();
+    bool starting = false;
+
+    for (;;) {
+        MSG msg{};
+        if (::GetMessage(&msg, hwnd, 0, 0) > 0) {
+
+            if (msg.message == WM_MOUSEMOVE) {
+
+                // Only consider the first simulated event, or actual mouse messages.
+                if (!starting && (msg.wParam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON | MK_XBUTTON1 | MK_XBUTTON2)) == 0)
+                    return E_FAIL;
+
+                return ::DoDragDrop(pDataObj, pDropSource, dwOKEffects, pdwEffect);
+            }
+
+            if (msg.message == WM_POINTERUPDATE) {
+
+                const quint32 pointerId = GET_POINTERID_WPARAM(msg.wParam);
+
+                POINTER_INFO pointerInfo{};
+                if (!GetPointerInfo(pointerId, &pointerInfo))
+                    return E_FAIL;
+
+                if (pointerInfo.pointerFlags & POINTER_FLAG_PRIMARY) {
+
+                    DWORD flags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_MOVE;
+                    if (IS_POINTER_FIRSTBUTTON_WPARAM(msg.wParam))
+                        flags |= MOUSEEVENTF_LEFTDOWN;
+                    if (IS_POINTER_SECONDBUTTON_WPARAM(msg.wParam))
+                        flags |= MOUSEEVENTF_RIGHTDOWN;
+                    if (IS_POINTER_THIRDBUTTON_WPARAM(msg.wParam))
+                        flags |= MOUSEEVENTF_MIDDLEDOWN;
+
+                    if (!starting) {
+                        POINT pt{};
+                        if (::GetCursorPos(&pt)) {
+
+                            // Send mouse input that can generate a WM_MOUSEMOVE message.
+                            if ((flags & MOUSEEVENTF_LEFTDOWN || flags & MOUSEEVENTF_RIGHTDOWN || flags & MOUSEEVENTF_MIDDLEDOWN)
+                                && (pt.x != pointerInfo.ptPixelLocation.x || pt.y != pointerInfo.ptPixelLocation.y)) {
+
+                                const int origin_x = ::GetSystemMetrics(SM_XVIRTUALSCREEN);
+                                const int origin_y = ::GetSystemMetrics(SM_YVIRTUALSCREEN);
+                                const int virt_w = ::GetSystemMetrics(SM_CXVIRTUALSCREEN);
+                                const int virt_h = ::GetSystemMetrics(SM_CYVIRTUALSCREEN);
+                                const int virt_x = pointerInfo.ptPixelLocation.x - origin_x;
+                                const int virt_y = pointerInfo.ptPixelLocation.y - origin_y;
+
+                                INPUT input{};
+                                input.type = INPUT_MOUSE;
+                                input.mi.dx = static_cast<DWORD>(virt_x * (65535.0 / virt_w));
+                                input.mi.dy = static_cast<DWORD>(virt_y * (65535.0 / virt_h));
+                                input.mi.dwFlags = flags;
+
+                                ::SendInput(1, &input, sizeof(input));
+                                starting = true;
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Handle other messages.
+                qWindowsWndProc(msg.hwnd, msg.message, msg.wParam, msg.lParam);
+
+                if (msg.message == WM_POINTERLEAVE)
+                    return E_FAIL;
+            }
+        } else {
+            return E_FAIL;
+        }
+    }
+}
+
 Qt::DropAction QWindowsDrag::drag(QDrag *drag)
 {
     // TODO: Accessibility handling?
@@ -661,7 +739,7 @@ Qt::DropAction QWindowsDrag::drag(QDrag *drag)
         << Qt::hex << int(possibleActions) << "effects=0x" << allowedEffects << Qt::dec;
     // Indicate message handlers we are in DoDragDrop() event loop.
     QWindowsDrag::m_dragging = true;
-    const HRESULT r = DoDragDrop(dropDataObject, windowDropSource, allowedEffects, &resultEffect);
+    const HRESULT r = startDoDragDrop(dropDataObject, windowDropSource, allowedEffects, &resultEffect);
     QWindowsDrag::m_dragging = false;
     const DWORD  reportedPerformedEffect = dropDataObject->reportedPerformedEffect();
     if (r == DRAGDROP_S_DROP) {
