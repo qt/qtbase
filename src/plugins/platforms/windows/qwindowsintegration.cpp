@@ -264,6 +264,7 @@ void QWindowsIntegrationPrivate::parseOptions(QWindowsIntegration *q, const QStr
         QCoreApplication::setAttribute(Qt::AA_CompressHighFrequencyEvents);
     else
         m_context.initTablet();
+    QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
 
     if (!dpiAwarenessSet) { // Set only once in case of repeated instantiations of QGuiApplication.
         if (!QCoreApplication::testAttribute(Qt::AA_PluginApplication)) {

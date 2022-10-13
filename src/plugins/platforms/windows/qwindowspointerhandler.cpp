@@ -837,8 +837,8 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
             break;
         case QT_PT_PEN:
 #if QT_CONFIG(tabletevent)
-            if (!m_activeTabletDevice.isNull())
-                device = m_activeTabletDevice.data();
+            qCDebug(lcQpaTablet) << "ignoring synth-mouse event for tablet event from" << device;
+            return false;
 #endif
             break;
         }
