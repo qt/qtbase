@@ -84,23 +84,10 @@ do {\
         QTEST_FAIL_ACTION; \
 } while (false)
 
-// A wrapper lambda is introduced to extend the lifetime of lhs and rhs in
-// case they are temporary objects.
-// We also use IILE to prevent potential name clashes and shadowing of variables
-// from user code. A drawback of the approach is that it looks ugly :(
 #define QCOMPARE_OP_IMPL(lhs, rhs, op, opId) \
 do { \
-    if (![](auto &&qt_lhs_arg, auto &&qt_rhs_arg) { \
-        /* assumes that op does not actually move from qt_{lhs, rhs}_arg */ \
-        return QTest::reportResult(std::forward<decltype(qt_lhs_arg)>(qt_lhs_arg) \
-                                   op \
-                                   std::forward<decltype(qt_rhs_arg)>(qt_rhs_arg), \
-                                   qt_lhs_arg, qt_rhs_arg, \
-                                   #lhs, #rhs, QTest::ComparisonOperation::opId, \
-                                   __FILE__, __LINE__); \
-    }(lhs, rhs)) { \
+    if (!QTest::qCompareOp<QTest::ComparisonOperation::opId>(lhs, rhs, #lhs, #rhs, __FILE__, __LINE__)) \
         QTEST_FAIL_ACTION; \
-    } \
 } while (false)
 
 #define QCOMPARE_EQ(computed, baseline) QCOMPARE_OP_IMPL(computed, baseline, ==, Equal)
@@ -239,7 +226,8 @@ do { \
 
 #define QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(computed, baseline, op, opId, timeout) \
 do { \
-    QTRY_IMPL(((computed) op (baseline)), timeout) \
+    using Q_Cmp = QTest::Internal::Compare<QTest::ComparisonOperation::opId>; \
+    QTRY_IMPL(Q_Cmp::compare((computed), (baseline)), timeout) \
     QCOMPARE_OP_IMPL(computed, baseline, op, opId); \
 } while (false)
 
@@ -328,6 +316,38 @@ namespace QTest
     Q_TESTLIB_EXPORT void maybeThrowOnSkip();
 
     Q_TESTLIB_EXPORT QString formatTryTimeoutDebugMessage(q_no_char8_t::QUtf8StringView expr, int timeout, int actual);
+
+    template <ComparisonOperation> struct Compare;
+    template <> struct Compare<ComparisonOperation::Equal>
+    {
+        template <typename T1, typename T2> static bool compare(T1 &&lhs, T2 &&rhs)
+        { return std::forward<T1>(lhs) == std::forward<T2>(rhs); }
+    };
+    template <> struct Compare<ComparisonOperation::NotEqual>
+    {
+        template <typename T1, typename T2> static bool compare(T1 &&lhs, T2 &&rhs)
+        { return std::forward<T1>(lhs) != std::forward<T2>(rhs); }
+    };
+    template <> struct Compare<ComparisonOperation::LessThan>
+    {
+        template <typename T1, typename T2> static bool compare(T1 &&lhs, T2 &&rhs)
+        { return std::forward<T1>(lhs) < std::forward<T2>(rhs); }
+    };
+    template <> struct Compare<ComparisonOperation::LessThanOrEqual>
+    {
+        template <typename T1, typename T2> static bool compare(T1 &&lhs, T2 &&rhs)
+        { return std::forward<T1>(lhs) <= std::forward<T2>(rhs); }
+    };
+    template <> struct Compare<ComparisonOperation::GreaterThan>
+    {
+        template <typename T1, typename T2> static bool compare(T1 &&lhs, T2 &&rhs)
+        { return std::forward<T1>(lhs) > std::forward<T2>(rhs); }
+    };
+    template <> struct Compare<ComparisonOperation::GreaterThanOrEqual>
+    {
+        template <typename T1, typename T2> static bool compare(T1 &&lhs, T2 &&rhs)
+        { return std::forward<T1>(lhs) >= std::forward<T2>(rhs); }
+    };
 
     template <typename T1> const char *genericToString(const void *arg)
     {
@@ -700,17 +720,21 @@ namespace QTest
                                        const char *lhsExpr, const char *rhsExpr,
                                        ComparisonOperation op, const char *file, int line);
 
-    template <typename T1, typename T2>
-    inline bool reportResult(bool result, const T1 &lhs, const T2 &rhs,
-                             const char *lhsExpr, const char *rhsExpr,
-                             ComparisonOperation op, const char *file, int line)
+    template <ComparisonOperation op, typename T1, typename T2 = T1>
+    inline bool qCompareOp(T1 &&lhs, T2 &&rhs, const char *lhsExpr, const char *rhsExpr,
+                           const char *file, int line)
     {
         using D1 = std::decay_t<T1>;
         using D2 = std::decay_t<T2>;
         using Internal::genericToString;
+        using Comparator = Internal::Compare<op>;
+
+        /* assumes that op does not actually move from lhs and rhs */
+        bool result = Comparator::compare(std::forward<T1>(lhs), std::forward<T2>(rhs));
         return reportResult(result, std::addressof(lhs), std::addressof(rhs),
                             genericToString<D1>, genericToString<D2>,
                             lhsExpr, rhsExpr, op, file, line);
+
     }
 }
 
