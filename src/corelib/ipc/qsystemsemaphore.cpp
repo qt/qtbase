@@ -3,14 +3,33 @@
 
 #include "qsystemsemaphore.h"
 #include "qsystemsemaphore_p.h"
-#include <qglobal.h>
+
+#if QT_CONFIG(systemsemaphore)
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
 using namespace QtIpcCommon;
 using namespace Qt::StringLiterals;
 
-#if QT_CONFIG(systemsemaphore)
+#if __cplusplus >= 202002L
+using std::construct_at;
+#else
+template <typename T> static void construct_at(T *ptr)
+{
+    new (ptr) T;
+}
+#endif
+
+inline void QSystemSemaphorePrivate::constructBackend()
+{
+    visit([](auto p) { construct_at(p); });
+}
+
+inline void QSystemSemaphorePrivate::destructBackend()
+{
+    visit([](auto p) { std::destroy_at(p); });
+}
 
 /*!
   \class QSystemSemaphore
@@ -113,7 +132,7 @@ QSystemSemaphore::QSystemSemaphore(const QString &key, int initialValue, AccessM
   \sa acquire(), key()
  */
 QSystemSemaphore::QSystemSemaphore(const QNativeIpcKey &key, int initialValue, AccessMode mode)
-    : d(new QSystemSemaphorePrivate)
+    : d(new QSystemSemaphorePrivate(key.type()))
 {
     setNativeKey(key, initialValue, mode);
 }
@@ -187,7 +206,15 @@ void QSystemSemaphore::setNativeKey(const QNativeIpcKey &key, int initialValue, 
 
     d->clearError();
     d->cleanHandle();
-    d->nativeKey = key;
+    if (key.type() == d->nativeKey.type()) {
+        // we can reuse the backend
+        d->nativeKey = key;
+    } else {
+        // we must recreate the backend
+        d->destructBackend();
+        d->nativeKey = key;
+        d->constructBackend();
+    }
     d->initialValue = initialValue;
     d->handle(mode);
 
@@ -373,7 +400,13 @@ void QSystemSemaphorePrivate::setUnixErrorString(QLatin1StringView function)
 
 bool QSystemSemaphore::isKeyTypeSupported(QNativeIpcKey::Type type)
 {
-    return QSystemSemaphorePrivate::DefaultBackend::supports(type);
+    if (!isIpcSupported(IpcType::SystemSemaphore, type))
+        return false;
+    using Variant = decltype(QSystemSemaphorePrivate::backend);
+    return Variant::staticVisit(type, [](auto ptr) {
+        using Impl = std::decay_t<decltype(*ptr)>;
+        return Impl::runtimeSupportCheck();
+    });
 }
 
 QNativeIpcKey QSystemSemaphore::platformSafeKey(const QString &key, QNativeIpcKey::Type type)
@@ -386,8 +419,8 @@ QNativeIpcKey QSystemSemaphore::legacyNativeKey(const QString &key, QNativeIpcKe
     return { legacyPlatformSafeKey(key, IpcType::SystemSemaphore, type), type };
 }
 
-#endif // QT_CONFIG(systemsemaphore)
-
 QT_END_NAMESPACE
 
 #include "moc_qsystemsemaphore.cpp"
+
+#endif // QT_CONFIG(systemsemaphore)

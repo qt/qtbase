@@ -33,6 +33,19 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+bool QSystemSemaphoreSystemV::runtimeSupportCheck()
+{
+#if defined(Q_OS_DARWIN)
+    if (qt_apple_isSandboxed())
+        return false;
+#endif
+    static const bool result = []() {
+        semget(IPC_PRIVATE, -1, 0);     // this will fail
+        return errno != ENOSYS;
+    }();
+    return result;
+}
+
 /*!
     \internal
 

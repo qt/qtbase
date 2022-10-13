@@ -42,8 +42,10 @@ class QSystemSemaphorePrivate;
 
 struct QSystemSemaphorePosix
 {
+    static constexpr bool Enabled = QT_CONFIG(posix_sem);
     static bool supports(QNativeIpcKey::Type type)
     { return type == QNativeIpcKey::Type::PosixRealtime; }
+    static bool runtimeSupportCheck();
 
     bool handle(QSystemSemaphorePrivate *self, QSystemSemaphore::AccessMode mode);
     void cleanHandle(QSystemSemaphorePrivate *self);
@@ -55,8 +57,10 @@ struct QSystemSemaphorePosix
 
 struct QSystemSemaphoreSystemV
 {
+    static constexpr bool Enabled = QT_CONFIG(sysv_sem);
     static bool supports(QNativeIpcKey::Type type)
     { return quint16(type) <= 0xff; }
+    static bool runtimeSupportCheck();
 
 #if QT_CONFIG(sysv_sem)
     key_t handle(QSystemSemaphorePrivate *self, QSystemSemaphore::AccessMode mode);
@@ -73,10 +77,16 @@ struct QSystemSemaphoreSystemV
 
 struct QSystemSemaphoreWin32
 {
+#ifdef Q_OS_WIN32
+    static constexpr bool Enabled = true;
+#else
+    static constexpr bool Enabled = false;
+#endif
     static bool supports(QNativeIpcKey::Type type)
     { return type == QNativeIpcKey::Type::Windows; }
+    static bool runtimeSupportCheck() { return Enabled; }
 
-//#ifdef Q_OS_WIN32     but there's nothing Windows-specific in the header
+    // we can declare the members without the #if
     Qt::HANDLE handle(QSystemSemaphorePrivate *self, QSystemSemaphore::AccessMode mode);
     void cleanHandle(QSystemSemaphorePrivate *self);
     bool modifySemaphore(QSystemSemaphorePrivate *self, int count);
@@ -87,6 +97,10 @@ struct QSystemSemaphoreWin32
 class QSystemSemaphorePrivate
 {
 public:
+    QSystemSemaphorePrivate(QNativeIpcKey::Type type) : nativeKey(type)
+    { constructBackend(); }
+    ~QSystemSemaphorePrivate() { destructBackend(); }
+
     void setWindowsErrorString(QLatin1StringView function);    // Windows only
     void setUnixErrorString(QLatin1StringView function);
     inline void setError(QSystemSemaphore::SystemSemaphoreError e, const QString &message)
@@ -99,26 +113,34 @@ public:
     int initialValue;
     QSystemSemaphore::SystemSemaphoreError error = QSystemSemaphore::NoError;
 
-#if defined(Q_OS_WIN)
-    using DefaultBackend = QSystemSemaphoreWin32;
-#elif defined(QT_POSIX_IPC)
-    using DefaultBackend = QSystemSemaphorePosix;
-#else
-    using DefaultBackend = QSystemSemaphoreSystemV;
-#endif
-    DefaultBackend backend;
+    union Backend {
+        Backend() {}
+        ~Backend() {}
+        QSystemSemaphorePosix posix;
+        QSystemSemaphoreSystemV sysv;
+        QSystemSemaphoreWin32 win32;
+    };
+    QtIpcCommon::IpcStorageVariant<&Backend::posix, &Backend::sysv, &Backend::win32> backend;
+
+    void constructBackend();
+    void destructBackend();
+
+    template <typename Lambda> auto visit(const Lambda &lambda)
+    {
+        return backend.visit(nativeKey.type(), lambda);
+    }
 
     void handle(QSystemSemaphore::AccessMode mode)
     {
-        backend.handle(this, mode);
+        visit([=](auto p) { p->handle(this, mode); });
     }
     void cleanHandle()
     {
-        backend.cleanHandle(this);
+        visit([=](auto p) { p->cleanHandle(this); });
     }
     bool modifySemaphore(int count)
     {
-        return backend.modifySemaphore(this, count);
+        return visit([=](auto p) { return p->modifySemaphore(this, count); });
     }
 
     QString legacyKey;  // deprecated

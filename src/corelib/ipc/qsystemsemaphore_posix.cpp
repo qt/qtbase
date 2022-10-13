@@ -35,6 +35,15 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+bool QSystemSemaphorePosix::runtimeSupportCheck()
+{
+    static const bool result = []() {
+        sem_open("/", 0, 0, 0);     // this WILL fail
+        return errno != ENOSYS;
+    }();
+    return result;
+}
+
 bool QSystemSemaphorePosix::handle(QSystemSemaphorePrivate *self, QSystemSemaphore::AccessMode mode)
 {
     if (semaphore != SEM_FAILED)

@@ -1139,7 +1139,13 @@ qt_internal_extend_target(Core CONDITION UNIX
     SOURCES
         ipc/qsharedmemory_posix.cpp
         ipc/qsharedmemory_systemv.cpp
+)
+qt_internal_extend_target(Core CONDITION QT_FEATURE_posix_sem
+    SOURCES
         ipc/qsystemsemaphore_posix.cpp
+)
+qt_internal_extend_target(Core CONDITION QT_FEATURE_sysv_sem
+    SOURCES
         ipc/qsystemsemaphore_systemv.cpp
 )
 

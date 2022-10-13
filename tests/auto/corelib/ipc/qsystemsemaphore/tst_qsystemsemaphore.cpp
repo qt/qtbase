@@ -11,6 +11,8 @@
 #include <QtCore/QSystemSemaphore>
 #include <QtCore/QTemporaryDir>
 
+#include "../ipctestcommon.h"
+
 #define HELPERWAITTIME 10000
 
 using namespace Qt::StringLiterals;
@@ -32,11 +34,12 @@ public:
 
     QNativeIpcKey platformSafeKey(const QString &key)
     {
-        QNativeIpcKey::Type keyType = QNativeIpcKey::DefaultTypeForOs;
+        QFETCH_GLOBAL(QNativeIpcKey::Type, keyType);
         return QSystemSemaphore::platformSafeKey(mangleKey(key), keyType);
     }
 
 public Q_SLOTS:
+    void initTestCase();
     void init();
     void cleanup();
 
@@ -46,9 +49,11 @@ private slots:
     void legacyKey_data() { nativeKey_data(); }
     void legacyKey();
 
+    void changeKeyType();
     void basicacquire();
     void complexacquire();
     void release();
+    void twoSemaphores();
 
     void basicProcesses();
 
@@ -68,6 +73,11 @@ private:
 tst_QSystemSemaphore::tst_QSystemSemaphore()
     : m_helperBinary("./acquirerelease_helper")
 {
+}
+
+void tst_QSystemSemaphore::initTestCase()
+{
+    IpcTestCommon::addGlobalTestRows<QSystemSemaphore>();
 }
 
 void tst_QSystemSemaphore::init()
@@ -111,6 +121,14 @@ void tst_QSystemSemaphore::nativeKey()
     QCOMPARE(sem.nativeIpcKey(), setIpcKey);
     QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QCOMPARE(sem.errorString(), QString());
+
+    // change the key type
+    QNativeIpcKey::Type nextKeyType = IpcTestCommon::nextKeyType(setIpcKey.type());
+    if (nextKeyType != setIpcKey.type()) {
+        QNativeIpcKey setIpcKey2 = QSystemSemaphore::platformSafeKey(setKey, nextKeyType);
+        sem.setNativeKey(setIpcKey2);
+        QCOMPARE(sem.nativeIpcKey(), setIpcKey2);
+    }
 }
 
 QT_WARNING_PUSH
@@ -131,6 +149,21 @@ void tst_QSystemSemaphore::legacyKey()
     QCOMPARE(sem.errorString(), QString());
 }
 QT_WARNING_POP
+
+void tst_QSystemSemaphore::changeKeyType()
+{
+    QString keyName = "changeKeyType";
+    QNativeIpcKey key = platformSafeKey(keyName);
+    QNativeIpcKey otherKey =
+            QSystemSemaphore::platformSafeKey(mangleKey(keyName), IpcTestCommon::nextKeyType(key.type()));
+    if (key == otherKey)
+        QSKIP("System only supports one key type");
+
+    QSystemSemaphore sem1(key, 1, QSystemSemaphore::Create);
+    QSystemSemaphore sem2(otherKey);
+    sem1.setNativeKey(otherKey);
+    sem2.setNativeKey(key);
+}
 
 void tst_QSystemSemaphore::basicacquire()
 {
@@ -183,6 +216,17 @@ void tst_QSystemSemaphore::release()
     QVERIFY(sem.release());
     QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QCOMPARE(sem.errorString(), QString());
+}
+
+void tst_QSystemSemaphore::twoSemaphores()
+{
+    QNativeIpcKey key = platformSafeKey("twoSemaphores");
+    QSystemSemaphore sem1(key, 1, QSystemSemaphore::Create);
+    QSystemSemaphore sem2(key);
+    QVERIFY(sem1.acquire());
+    QVERIFY(sem2.release());
+    QVERIFY(sem1.acquire());
+    QVERIFY(sem2.release());
 }
 
 void tst_QSystemSemaphore::basicProcesses()

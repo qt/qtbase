@@ -4,38 +4,9 @@
 #include <QtCore/QNativeIpcKey>
 #include <QtTest/QTest>
 
+#include "../ipctestcommon.h"
+
 using namespace Qt::StringLiterals;
-
-namespace QTest {
-template<> inline char *toString(const QNativeIpcKey::Type &type)
-{
-    switch (type) {
-    case QNativeIpcKey::Type::SystemV:  return qstrdup("SystemV");
-    case QNativeIpcKey::Type::PosixRealtime: return qstrdup("PosixRealTime");
-    case QNativeIpcKey::Type::Windows:  return qstrdup("Windows");
-    }
-    if (type == QNativeIpcKey::Type{})
-        return qstrdup("Invalid");
-
-    char buf[32];
-    qsnprintf(buf, sizeof(buf), "%u", unsigned(type));
-    return qstrdup(buf);
-}
-
-template<> inline char *toString(const QNativeIpcKey &key)
-{
-    if (!key.isValid())
-        return qstrdup("<invalid>");
-
-    const char *type = toString(key.type());
-    const char *text = toString(key.nativeKey());
-    char buf[256];
-    qsnprintf(buf, sizeof(buf), "QNativeIpcKey(%s, %s)", text, type);
-    delete[] type;
-    delete[] text;
-    return qstrdup(buf);
-}
-} // namespace QTest
 
 class tst_QNativeIpcKey : public QObject
 {
