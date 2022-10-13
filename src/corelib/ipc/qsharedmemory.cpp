@@ -670,7 +670,8 @@ void QSharedMemoryPrivate::setUnixErrorString(QLatin1StringView function)
         error = QSharedMemory::OutOfResources;
         break;
     default:
-        errorString = QSharedMemory::tr("%1: unknown error %2").arg(function).arg(errno);
+        errorString = QSharedMemory::tr("%1: unknown error: %2")
+                .arg(function, qt_error_string(errno));
         error = QSharedMemory::UnknownError;
 #if defined QSHAREDMEMORY_DEBUG
         qDebug() << errorString << "key" << key << "errno" << errno << EINVAL;

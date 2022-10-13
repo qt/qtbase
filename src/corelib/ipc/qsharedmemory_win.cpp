@@ -41,7 +41,8 @@ void QSharedMemoryPrivate::setWindowsErrorString(QLatin1StringView function)
         errorString = QSharedMemory::tr("%1: permission denied").arg(function);
         break;
     default:
-        errorString = QSharedMemory::tr("%1: unknown error %2").arg(function).arg(windowsError);
+        errorString = QSharedMemory::tr("%1: unknown error: %2")
+                .arg(function, qt_error_string(windowsError));
         error = QSharedMemory::UnknownError;
 #if defined QSHAREDMEMORY_DEBUG
         qDebug() << errorString << "key" << key;

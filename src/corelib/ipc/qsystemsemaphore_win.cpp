@@ -30,7 +30,8 @@ void QSystemSemaphorePrivate::setWindowsErrorString(QLatin1StringView function)
         errorString = QCoreApplication::translate("QSystemSemaphore", "%1: permission denied").arg(function);
         break;
     default:
-        errorString = QCoreApplication::translate("QSystemSemaphore", "%1: unknown error %2").arg(function).arg(windowsError);
+        errorString = QCoreApplication::translate("QSystemSemaphore", "%1: unknown error: %2")
+                .arg(function, qt_error_string(windowsError));
         error = QSystemSemaphore::UnknownError;
 #if defined QSYSTEMSEMAPHORE_DEBUG
         qDebug() << errorString << "key" << key;

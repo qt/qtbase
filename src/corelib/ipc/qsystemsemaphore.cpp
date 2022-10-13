@@ -351,7 +351,8 @@ void QSystemSemaphorePrivate::setUnixErrorString(QLatin1StringView function)
         error = QSystemSemaphore::KeyError;
         break;
     default:
-        errorString = QSystemSemaphore::tr("%1: unknown error %2").arg(function).arg(errno);
+        errorString = QSystemSemaphore::tr("%1: unknown error: %2")
+                .arg(function, qt_error_string(errno));
         error = QSystemSemaphore::UnknownError;
 #if defined QSYSTEMSEMAPHORE_DEBUG
         qDebug() << errorString << "key" << key << "errno" << errno << EINVAL;
