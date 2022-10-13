@@ -123,8 +123,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-include(CMakeParseArguments)
-
 macro(ecm_find_package_version_check module_name)
     if(CMAKE_VERSION VERSION_LESS 2.8.12)
         message(FATAL_ERROR "CMake 2.8.12 is required by Find${module_name}.cmake")

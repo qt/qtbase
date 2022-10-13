@@ -107,9 +107,6 @@ set_package_properties(WaylandScanner PROPERTIES
     DESCRIPTION "Executable that converts XML protocol files to C code"
 )
 
-
-include(CMakeParseArguments)
-
 function(ecm_add_wayland_client_protocol out_var)
     # Parse arguments
     set(oneValueArgs PROTOCOL BASENAME)

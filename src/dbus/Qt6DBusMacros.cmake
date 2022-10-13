@@ -4,8 +4,6 @@
 
 include(MacroAddFileDependencies)
 
-include(CMakeParseArguments)
-
 function(qt6_add_dbus_interface _sources _interface _relativename)
     get_filename_component(_infile ${_interface} ABSOLUTE)
     get_filename_component(_basepath ${_relativename} DIRECTORY)
