@@ -74,7 +74,7 @@ class SomethingOfEverything : public QObject
     Q_PROPERTY(SomethingFlagEnum fprop READ fprop)
     Q_PROPERTY(QLocale::Language language READ language)
     Q_ENUMS(SomethingEnum)
-    Q_FLAGS(SomethingFlagEnum)
+    Q_FLAGS(SomethingFlag)
 public:
     Q_INVOKABLE SomethingOfEverything() {}
     ~SomethingOfEverything() {}
@@ -90,6 +90,7 @@ public:
         XYZ = 1,
         UVW = 8
     };
+    Q_DECLARE_FLAGS(SomethingFlag, SomethingFlagEnum)
 
     Q_INVOKABLE Q_SCRIPTABLE void method1() {}
 

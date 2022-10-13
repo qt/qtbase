@@ -867,7 +867,7 @@ public:
         RejectTrailingZeroesAfterDot = 0x20
     };
     Q_DECLARE_FLAGS(NumberOptions, NumberOption)
-    Q_FLAG(NumberOption)
+    Q_FLAG(NumberOptions)
 
     enum FloatingPointPrecisionOption {
         FloatingPointShortest = -128
@@ -1064,7 +1064,7 @@ public:
         AnyLanguageCode = -1
     };
     Q_DECLARE_FLAGS(LanguageCodeTypes, LanguageCodeType)
-    Q_FLAG(LanguageCodeType)
+    Q_FLAG(LanguageCodeTypes)
 
 #if QT_CORE_REMOVED_SINCE(6, 3)
     static QString languageToCode(Language language);
