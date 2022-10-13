@@ -1135,9 +1135,12 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_clock_gettime AND UNIX
         WrapRt::WrapRt
 )
 
-qt_internal_extend_target(Core CONDITION UNIX
+qt_internal_extend_target(Core CONDITION QT_FEATURE_posix_shm
     SOURCES
         ipc/qsharedmemory_posix.cpp
+)
+qt_internal_extend_target(Core CONDITION QT_FEATURE_sysv_shm
+    SOURCES
         ipc/qsharedmemory_systemv.cpp
 )
 qt_internal_extend_target(Core CONDITION QT_FEATURE_posix_sem

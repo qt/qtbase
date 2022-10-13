@@ -21,6 +21,7 @@
 
 #if QT_CONFIG(sharedmemory)
 #include "qsystemsemaphore.h"
+#include "qtipccommon_p.h"
 #include "private/qobject_p.h"
 
 #if QT_CONFIG(posix_shm)
@@ -69,8 +70,10 @@ private:
 class QSharedMemoryPosix
 {
 public:
+    static constexpr bool Enabled = QT_CONFIG(posix_shm);
     static bool supports(QNativeIpcKey::Type type)
     { return type == QNativeIpcKey::Type::PosixRealtime; }
+    static bool runtimeSupportCheck();
 
     bool handle(QSharedMemoryPrivate *self);
     bool cleanHandle(QSharedMemoryPrivate *self);
@@ -84,8 +87,10 @@ public:
 class QSharedMemorySystemV
 {
 public:
+    static constexpr bool Enabled = QT_CONFIG(sysv_shm);
     static bool supports(QNativeIpcKey::Type type)
     { return quint16(type) <= 0xff; }
+    static bool runtimeSupportCheck();
 
 #if QT_CONFIG(sysv_sem)
     key_t handle(QSharedMemoryPrivate *self);
@@ -105,6 +110,12 @@ private:
 class QSharedMemoryWin32
 {
 public:
+#ifdef Q_OS_WIN32
+    static constexpr bool Enabled = true;
+#else
+    static constexpr bool Enabled = false;
+#endif
+    static bool runtimeSupportCheck() { return Enabled; }
     static bool supports(QNativeIpcKey::Type type)
     { return type == QNativeIpcKey::Type::Windows; }
 
@@ -122,6 +133,10 @@ class Q_AUTOTEST_EXPORT QSharedMemoryPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QSharedMemory)
 
 public:
+    QSharedMemoryPrivate(QNativeIpcKey::Type type) : nativeKey(type)
+    { constructBackend(); }
+    ~QSharedMemoryPrivate();
+
     void *memory = nullptr;
     qsizetype size = 0;
     QNativeIpcKey nativeKey;
@@ -135,36 +150,43 @@ public:
 #endif
     QSharedMemory::SharedMemoryError error = QSharedMemory::NoError;
 
-#if defined(Q_OS_WIN)
-    using DefaultBackend = QSharedMemoryWin32;
-#elif defined(QT_POSIX_IPC)
-    using DefaultBackend = QSharedMemoryPosix;
-#else
-    using DefaultBackend = QSharedMemorySystemV;
-#endif
-    DefaultBackend backend;
+    union Backend {
+        Backend() {}
+        ~Backend() {}
+        QSharedMemoryPosix posix;
+        QSharedMemorySystemV sysv;
+        QSharedMemoryWin32 win32;
+    };
+    QtIpcCommon::IpcStorageVariant<&Backend::posix, &Backend::sysv, &Backend::win32> backend;
 
+    void constructBackend();
+    void destructBackend();
     bool initKey(SemaphoreAccessMode mode);
+
+    template <typename Lambda> auto visit(const Lambda &lambda)
+    {
+        return backend.visit(nativeKey.type(), lambda);
+    }
 
     bool handle()
     {
-        return backend.handle(this);
+        return visit([=](auto p) { return !!p->handle(this); });
     }
     bool cleanHandle()
     {
-        return backend.cleanHandle(this);
+        return visit([=](auto p) { return p->cleanHandle(this); });
     }
     bool create(qsizetype size)
     {
-        return backend.create(this, size);
+        return visit([=](auto p) { return p->create(this, size); });
     }
     bool attach(QSharedMemory::AccessMode mode)
     {
-        return backend.attach(this, mode);
+        return visit([=](auto p) { return p->attach(this, mode); });
     }
     bool detach()
     {
-        return backend.detach(this);
+        return visit([=](auto p) { return p->detach(this); });
     }
 
     inline void setError(QSharedMemory::SharedMemoryError e, const QString &message)

@@ -19,6 +19,7 @@
 #endif
 
 #include "private/qtcore-config_p.h"
+#include "../ipctestcommon.h"
 
 #define EXISTING_SIZE 1024
 
@@ -31,14 +32,10 @@ class tst_QSharedMemory : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QSharedMemory();
-    virtual ~tst_QSharedMemory();
-
 public Q_SLOTS:
+    void initTestCase();
     void init();
     void cleanup();
-
 
 private slots:
     // basics
@@ -51,6 +48,8 @@ private slots:
     void create();
     void attach_data();
     void attach();
+    void changeKeyType_data() { attach_data(); }
+    void changeKeyType();
     void lock();
 
     // custom edge cases
@@ -92,7 +91,7 @@ protected:
 
     QNativeIpcKey platformSafeKey(const QString &key)
     {
-        QNativeIpcKey::Type keyType = QNativeIpcKey::DefaultTypeForOs;
+        QFETCH_GLOBAL(QNativeIpcKey::Type, keyType);
         return QSharedMemory::platformSafeKey(mangleKey(key), keyType);
     }
 
@@ -108,21 +107,16 @@ protected:
 
     QList<QNativeIpcKey> keys;
     QList<QSharedMemory*> jail;
-    QSharedMemory *existingSharedMemory;
+    QSharedMemory *existingSharedMemory = nullptr;
     int seq = 0;
 
 private:
-    const QString m_helperBinary;
+    const QString m_helperBinary = "./producerconsumer_helper";
 };
 
-tst_QSharedMemory::tst_QSharedMemory()
-    : existingSharedMemory(0)
-    , m_helperBinary("./producerconsumer_helper")
+void tst_QSharedMemory::initTestCase()
 {
-}
-
-tst_QSharedMemory::~tst_QSharedMemory()
-{
+    IpcTestCommon::addGlobalTestRows<QSharedMemory>();
 }
 
 void tst_QSharedMemory::init()
@@ -285,6 +279,25 @@ void tst_QSharedMemory::nativeKey()
     QCOMPARE(sm.size(), 0);
 
     QCOMPARE(sm.detach(), false);
+
+    // change the key type
+    QNativeIpcKey::Type nextKeyType = IpcTestCommon::nextKeyType(setIpcKey.type());
+    if (nextKeyType != setIpcKey.type()) {
+        QNativeIpcKey setIpcKey2 = QSharedMemory::platformSafeKey(setKey, nextKeyType);
+        sm.setNativeKey(setIpcKey2);
+
+        QCOMPARE(sm.nativeIpcKey(), setIpcKey2);
+        QCOMPARE(sm.nativeKey(), setIpcKey2.nativeKey());
+
+        QCOMPARE(sm.isAttached(), false);
+
+        QCOMPARE(sm.error(), QSharedMemory::NoError);
+        QCOMPARE(sm.errorString(), QString());
+        QVERIFY(!sm.data());
+        QCOMPARE(sm.size(), 0);
+
+        QCOMPARE(sm.detach(), false);
+    }
 }
 
 QT_WARNING_PUSH
@@ -406,6 +419,34 @@ void tst_QSharedMemory::attach()
         QVERIFY(sm.errorString() != QString());
         QVERIFY(!sm.detach());
     }
+}
+
+void tst_QSharedMemory::changeKeyType()
+{
+    QFETCH(QString, key);
+    QFETCH(bool, exists);
+    QFETCH(QSharedMemory::SharedMemoryError, error);
+
+    QNativeIpcKey nativeKey = platformSafeKey(key);
+    QNativeIpcKey::Type nextKeyType = IpcTestCommon::nextKeyType(nativeKey.type());
+    if (nextKeyType == nativeKey.type())
+        QSKIP("System only supports one key type");
+//    qDebug() << "Changing from" << nativeKey.type() << "to" << nextKeyType;
+
+    QSharedMemory sm(nativeKey);
+    QCOMPARE(sm.attach(), exists);
+    QCOMPARE(sm.error(), error);
+
+    QNativeIpcKey nextKey =
+            QSharedMemory::platformSafeKey(mangleKey(key), nextKeyType);
+    sm.setNativeKey(nextKey);
+    QCOMPARE(sm.isAttached(), false);
+    QVERIFY(!sm.attach());
+
+    if (exists)
+        QCOMPARE(sm.error(), QSharedMemory::NotFound);
+    else
+        QCOMPARE(sm.error(), error);
 }
 
 void tst_QSharedMemory::lock()

@@ -23,6 +23,30 @@ QT_BEGIN_NAMESPACE
 using namespace QtIpcCommon;
 using namespace Qt::StringLiterals;
 
+#if __cplusplus >= 202002L
+using std::construct_at;
+#else
+template <typename T> static void construct_at(T *ptr)
+{
+    new (ptr) T;
+}
+#endif
+
+QSharedMemoryPrivate::~QSharedMemoryPrivate()
+{
+    destructBackend();
+}
+
+inline void QSharedMemoryPrivate::constructBackend()
+{
+    visit([](auto p) { construct_at(p); });
+}
+
+inline void QSharedMemoryPrivate::destructBackend()
+{
+    visit([](auto p) { std::destroy_at(p); });
+}
+
 #if QT_CONFIG(systemsemaphore)
 inline QNativeIpcKey QSharedMemoryPrivate::semaphoreNativeKey() const
 {
@@ -103,7 +127,7 @@ QSharedMemory::QSharedMemory(QObject *parent)
   \sa setNativeKey(), create(), attach()
  */
 QSharedMemory::QSharedMemory(const QNativeIpcKey &key, QObject *parent)
-    : QObject(*new QSharedMemoryPrivate, parent)
+    : QObject(*new QSharedMemoryPrivate(key.type()), parent)
 {
     setNativeKey(key);
 }
@@ -120,12 +144,9 @@ QSharedMemory::QSharedMemory(const QNativeIpcKey &key, QObject *parent)
   \sa setKey(), create(), attach()
  */
 QSharedMemory::QSharedMemory(const QString &key, QObject *parent)
-    : QObject(*new QSharedMemoryPrivate, parent)
+    : QSharedMemory(legacyNativeKey(key), parent)
 {
-    QT_WARNING_PUSH
-    QT_WARNING_DISABLE_DEPRECATED
-    setKey(key);
-    QT_WARNING_POP
+    d_func()->legacyKey = key;
 }
 
 /*!
@@ -139,7 +160,10 @@ QSharedMemory::QSharedMemory(const QString &key, QObject *parent)
  */
 QSharedMemory::~QSharedMemory()
 {
-    setNativeKey(QNativeIpcKey());
+    Q_D(QSharedMemory);
+    if (isAttached())
+        detach();
+    d->cleanHandle();
 }
 
 /*!
@@ -224,7 +248,15 @@ void QSharedMemory::setNativeKey(const QNativeIpcKey &key)
         detach();
     d->cleanHandle();
     d->legacyKey = QString();
-    d->nativeKey = key;
+    if (key.type() == d->nativeKey.type()) {
+        // we can reuse the backend
+        d->nativeKey = key;
+    } else {
+        // we must recreate the backend
+        d->destructBackend();
+        d->nativeKey = key;
+        d->constructBackend();
+    }
 }
 
 bool QSharedMemoryPrivate::initKey(SemaphoreAccessMode mode)
@@ -642,7 +674,13 @@ void QSharedMemoryPrivate::setUnixErrorString(QLatin1StringView function)
 
 bool QSharedMemory::isKeyTypeSupported(QNativeIpcKey::Type type)
 {
-    return QSharedMemoryPrivate::DefaultBackend::supports(type);
+    if (!isIpcSupported(IpcType::SharedMemory, type))
+        return false;
+    using Variant = decltype(QSharedMemoryPrivate::backend);
+    return Variant::staticVisit(type, [](auto ptr) {
+        using Impl = std::decay_t<decltype(*ptr)>;
+        return Impl::runtimeSupportCheck();
+    });
 }
 
 QNativeIpcKey QSharedMemory::platformSafeKey(const QString &key, QNativeIpcKey::Type type)

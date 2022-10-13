@@ -24,6 +24,15 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 using namespace QtIpcCommon;
 
+bool QSharedMemoryPosix::runtimeSupportCheck()
+{
+    static const bool result = []() {
+        shm_open("", 0, 0);         // this WILL fail
+        return errno != ENOSYS;
+    }();
+    return result;
+}
+
 bool QSharedMemoryPosix::handle(QSharedMemoryPrivate *self)
 {
     // don't allow making handles on empty keys

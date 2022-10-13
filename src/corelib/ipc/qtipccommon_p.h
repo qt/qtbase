@@ -57,11 +57,6 @@ static constexpr bool isIpcSupported(IpcType ipcType, QNativeIpcKey::Type type)
         return QT_CONFIG(sysv_shm);
     return QT_CONFIG(sysv_sem);
 }
-#if defined(Q_OS_DARWIN) || defined(QT_BUILD_INTERNAL)
-bool isIpcSupportedAtRuntime(IpcType type, QNativeIpcKey::Type);
-#else
-static constexpr auto isIpcSupportedAtRuntime = isIpcSupported;
-#endif
 
 template <auto Member1, auto... Members> class IpcStorageVariant
 {

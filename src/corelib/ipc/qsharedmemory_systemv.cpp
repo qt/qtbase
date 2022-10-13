@@ -20,11 +20,28 @@
 #include <unistd.h>
 
 #include "private/qcore_unix_p.h"
+#if defined(Q_OS_DARWIN)
+#include "private/qcore_mac_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 using namespace QtIpcCommon;
+
+bool QSharedMemorySystemV::runtimeSupportCheck()
+{
+#if defined(Q_OS_DARWIN)
+    if (qt_apple_isSandboxed())
+        return false;
+#endif
+    static const bool result = []() {
+        shmget(IPC_PRIVATE, ~size_t(0), 0);     // this will fail
+        return errno != ENOSYS;
+    }();
+    return result;
+}
+
 
 inline void QSharedMemorySystemV::updateNativeKeyFile(const QNativeIpcKey &nativeKey)
 {
