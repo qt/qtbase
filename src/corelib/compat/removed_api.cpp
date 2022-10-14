@@ -313,6 +313,15 @@ int QMetaType::idHelper() const
     return registerHelper(d_ptr);
 }
 
+#if QT_CONFIG(sharedmemory)
+#include "qsharedmemory.h"
+
+void QSharedMemory::setNativeKey(const QString &key)
+{
+    setNativeKey(key, QNativeIpcKey::legacyDefaultTypeForOs());
+}
+#endif
+
 #include "qvariant.h"
 
 // these implementations aren't as efficient as they used to be prior to

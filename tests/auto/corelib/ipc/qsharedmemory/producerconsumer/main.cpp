@@ -17,10 +17,9 @@ QChar get(QSharedMemory &sm, int i)
     return QChar::fromLatin1(((char*)sm.data())[i]);
 }
 
-int readonly_segfault()
+int readonly_segfault(const QNativeIpcKey &key)
 {
-    QSharedMemory sharedMemory;
-    sharedMemory.setKey("readonly_segfault");
+    QSharedMemory sharedMemory(key);
     sharedMemory.create(1024, QSharedMemory::ReadOnly);
     sharedMemory.lock();
     set(sharedMemory, 0, 'a');
@@ -28,10 +27,9 @@ int readonly_segfault()
     return EXIT_SUCCESS;
 }
 
-int producer()
+int producer(const QNativeIpcKey &key)
 {
-    QSharedMemory producer;
-    producer.setKey("market");
+    QSharedMemory producer(key);
 
     int size = 1024;
     if (!producer.create(size)) {
@@ -100,10 +98,9 @@ int producer()
     return EXIT_SUCCESS;
 }
 
-int consumer()
+int consumer(const QNativeIpcKey &key)
 {
-    QSharedMemory consumer;
-    consumer.setKey("market");
+    QSharedMemory consumer(key);
 
     //qDebug("consumer starting");
     int tries = 0;
@@ -155,17 +152,21 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
 
     QStringList arguments = app.arguments();
-    if (app.arguments().size() != 2) {
-        qWarning("Please call the helper with the function to call as argument");
+    if (app.arguments().size() != 3) {
+        fprintf(stderr, "Usage: %s <mode> <key>\n"
+                "<mode> is one of: readonly_segfault, producer, consumer\n",
+                argv[0]);
         return EXIT_FAILURE;
     }
     QString function = arguments.at(1);
+    QNativeIpcKey key = QNativeIpcKey::fromString(arguments.at(2));
+
     if (function == QLatin1String("readonly_segfault"))
-        return readonly_segfault();
+        return readonly_segfault(key);
     else if (function == QLatin1String("producer"))
-        return producer();
+        return producer(key);
     else if (function == QLatin1String("consumer"))
-        return consumer();
+        return consumer(key);
     else
         qWarning() << "Unknown function" << arguments.at(1);
 

@@ -1,4 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2022 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QDebug>
@@ -10,6 +11,14 @@
 #include <QTest>
 #include <QThread>
 #include <QElapsedTimer>
+
+#include <errno.h>
+#include <stdio.h>
+#ifdef Q_OS_UNIX
+#  include <unistd.h>
+#endif
+
+#include "private/qtcore-config_p.h"
 
 #define EXISTING_SHARE "existing"
 #define EXISTING_SIZE 1024
@@ -33,8 +42,10 @@ public Q_SLOTS:
 private slots:
     // basics
     void constructor();
-    void key_data();
-    void key();
+    void nativeKey_data();
+    void nativeKey();
+    void legacyKey_data() { nativeKey_data(); }
+    void legacyKey();
     void create_data();
     void create();
     void attach_data();
@@ -76,20 +87,25 @@ private slots:
     void uniqueKey();
 
 protected:
-    int remove(const QString &key);
+    void remove(const QNativeIpcKey &key);
 
-    QString rememberKey(const QString &key)
+    QNativeIpcKey platformSafeKey(const QString &key)
     {
-        if (key == EXISTING_SHARE)
-            return key;
-        if (!keys.contains(key)) {
-            keys.append(key);
-            remove(key);
-        }
-        return key;
+        QNativeIpcKey::Type keyType = QNativeIpcKey::DefaultTypeForOs;
+        return QSharedMemory::platformSafeKey(key, keyType);
     }
 
-    QStringList keys;
+    QNativeIpcKey rememberKey(const QString &key)
+    {
+        QNativeIpcKey ipcKey = platformSafeKey(key);
+        if (!keys.contains(ipcKey)) {
+            keys.append(ipcKey);
+            remove(ipcKey);
+        }
+        return ipcKey;
+    }
+
+    QList<QNativeIpcKey> keys;
     QList<QSharedMemory*> jail;
     QSharedMemory *existingSharedMemory;
 
@@ -109,10 +125,12 @@ tst_QSharedMemory::~tst_QSharedMemory()
 
 void tst_QSharedMemory::init()
 {
-    existingSharedMemory = new QSharedMemory(EXISTING_SHARE);
+    QNativeIpcKey key = platformSafeKey(EXISTING_SHARE);
+    existingSharedMemory = new QSharedMemory(key);
     if (!existingSharedMemory->create(EXISTING_SIZE)) {
         QCOMPARE(existingSharedMemory->error(), QSharedMemory::AlreadyExists);
     }
+    keys.append(key);
 }
 
 void tst_QSharedMemory::cleanup()
@@ -121,7 +139,6 @@ void tst_QSharedMemory::cleanup()
     qDeleteAll(jail.begin(), jail.end());
     jail.clear();
 
-    keys.append(EXISTING_SHARE);
     for (int i = 0; i < keys.size(); ++i) {
         QSharedMemory sm(keys.at(i));
         if (!sm.create(1024)) {
@@ -134,65 +151,70 @@ void tst_QSharedMemory::cleanup()
     }
 }
 
-#ifndef Q_OS_WIN
-#include <private/qtipccommon_p.h>
+#if QT_CONFIG(posix_shm)
 #include <sys/types.h>
-#ifndef QT_POSIX_IPC
+#include <sys/mman.h>
+#endif
+#if QT_CONFIG(sysv_shm)
+#include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#else
-#include <sys/mman.h>
-#endif // QT_POSIX_IPC
-#include <errno.h>
 #endif
 
-int tst_QSharedMemory::remove(const QString &key)
+void tst_QSharedMemory::remove(const QNativeIpcKey &key)
 {
-#ifdef Q_OS_WIN
-    Q_UNUSED(key);
-    return 0;
-#else
-    // On unix the shared memory might exists from a previously failed test
+    // On Unix, the shared memory might exist from a previously failed test
     // or segfault, remove it it does
     if (key.isEmpty())
-        return -1;
+        return;
 
-    QString fileName = QtIpcCommon::legacyPlatformSafeKey(key, QtIpcCommon::IpcType::SharedMemory);
+    switch (key.type()) {
+    case QNativeIpcKey::Type::Windows:
+        return;
 
-#ifndef QT_POSIX_IPC
-    // ftok requires that an actual file exists somewhere
-    if (!QFile::exists(fileName)) {
-        //qDebug() << "exits failed";
-        return -2;
+    case QNativeIpcKey::Type::PosixRealtime:
+#if QT_CONFIG(posix_shm)
+        if (shm_unlink(QFile::encodeName(key.nativeKey()).constData()) == -1) {
+            if (errno != ENOENT) {
+                perror("shm_unlink");
+                return;
+            }
+        }
+#endif
+        return;
+
+    case QNativeIpcKey::Type::SystemV:
+        break;
     }
 
-    int unix_key = ftok(fileName.toLatin1().constData(), 'Q');
+#if QT_CONFIG(sysv_shm)
+    // ftok requires that an actual file exists somewhere
+    QString fileName = key.nativeKey();
+    if (!QFile::exists(fileName)) {
+        //qDebug() << "exits failed";
+        return;
+    }
+
+    int unix_key = ftok(fileName.toLatin1().constData(), int(key.type()));
     if (-1 == unix_key) {
-        qDebug() << "ftok failed";
-        return -3;
+        perror("ftok");
+        return;
     }
 
     int id = shmget(unix_key, 0, 0600);
     if (-1 == id) {
-        qDebug() << "shmget failed" << strerror(errno);
-        return -4;
+        if (errno != ENOENT)
+            perror("shmget");
+        return;
     }
 
     struct shmid_ds shmid_ds;
     if (-1 == shmctl(id, IPC_RMID, &shmid_ds)) {
-        qDebug() << "shmctl failed";
-        return -5;
+        perror("shmctl");
+        return;
     }
-#else
-    if (shm_unlink(QFile::encodeName(fileName).constData()) == -1) {
-        if (errno != ENOENT) {
-            qDebug() << "shm_unlink failed";
-            return -5;
-        }
-    }
-#endif // QT_POSIX_IPC
 
-    return QFile::remove(fileName);
+    QFile::remove(fileName);
 #endif // Q_OS_WIN
 }
 
@@ -202,19 +224,25 @@ int tst_QSharedMemory::remove(const QString &key)
 void tst_QSharedMemory::constructor()
 {
     QSharedMemory sm;
-    QCOMPARE(sm.key(), QString());
     QVERIFY(!sm.isAttached());
     QVERIFY(!sm.data());
+    QCOMPARE(sm.nativeKey(), QString());
+    QCOMPARE(sm.nativeIpcKey(), QNativeIpcKey());
     QCOMPARE(sm.size(), 0);
     QCOMPARE(sm.error(), QSharedMemory::NoError);
     QCOMPARE(sm.errorString(), QString());
+
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
+    QCOMPARE(sm.key(), QString());
+    QT_WARNING_POP
 }
 
-void tst_QSharedMemory::key_data()
+void tst_QSharedMemory::nativeKey_data()
 {
     QTest::addColumn<QString>("constructorKey");
     QTest::addColumn<QString>("setKey");
-    QTest::addColumn<QString>("setNativeKey");
+    QTest::addColumn<QString>("setNativeKey");   // only used in the legacyKey test
 
     QTest::newRow("null, null, null") << QString() << QString() << QString();
     QTest::newRow("one, null, null") << QString("one") << QString() << QString();
@@ -230,12 +258,43 @@ void tst_QSharedMemory::key_data()
 /*!
     Basic key testing
  */
-void tst_QSharedMemory::key()
+void tst_QSharedMemory::nativeKey()
 {
     QFETCH(QString, constructorKey);
     QFETCH(QString, setKey);
     QFETCH(QString, setNativeKey);
 
+    QNativeIpcKey constructorIpcKey = platformSafeKey(constructorKey);
+    QNativeIpcKey setIpcKey = platformSafeKey(setKey);
+
+    QSharedMemory sm(constructorIpcKey);
+    QCOMPARE(sm.nativeIpcKey(), constructorIpcKey);
+    QCOMPARE(sm.nativeKey(), constructorIpcKey.nativeKey());
+    sm.setNativeKey(setIpcKey);
+    QCOMPARE(sm.nativeIpcKey(), setIpcKey);
+    QCOMPARE(sm.nativeKey(), setIpcKey.nativeKey());
+
+    QCOMPARE(sm.isAttached(), false);
+
+    QCOMPARE(sm.error(), QSharedMemory::NoError);
+    QCOMPARE(sm.errorString(), QString());
+    QVERIFY(!sm.data());
+    QCOMPARE(sm.size(), 0);
+
+    QCOMPARE(sm.detach(), false);
+}
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+void tst_QSharedMemory::legacyKey()
+{
+    QFETCH(QString, constructorKey);
+    QFETCH(QString, setKey);
+    QFETCH(QString, setNativeKey);
+
+#ifdef Q_OS_QNX
+    QSKIP("The legacy native key type is incorrectly set on QNX");
+#endif
     QSharedMemory sm(constructorKey);
     QCOMPARE(sm.key(), constructorKey);
     QCOMPARE(sm.nativeKey().isEmpty(), constructorKey.isEmpty());
@@ -254,6 +313,7 @@ void tst_QSharedMemory::key()
 
     QCOMPARE(sm.detach(), false);
 }
+QT_WARNING_POP
 
 void tst_QSharedMemory::create_data()
 {
@@ -282,11 +342,12 @@ void tst_QSharedMemory::create()
     QFETCH(bool, canCreate);
     QFETCH(QSharedMemory::SharedMemoryError, error);
 
-    QSharedMemory sm(rememberKey(key));
+    QNativeIpcKey nativeKey = rememberKey(key);
+    QSharedMemory sm(nativeKey);
     QCOMPARE(sm.create(size), canCreate);
     if (sm.error() != error)
         qDebug() << sm.errorString();
-    QCOMPARE(sm.key(), key);
+    QCOMPARE(sm.nativeIpcKey(), nativeKey);
     if (canCreate) {
         QCOMPARE(sm.errorString(), QString());
         QVERIFY(sm.data() != 0);
@@ -303,13 +364,10 @@ void tst_QSharedMemory::attach_data()
     QTest::addColumn<bool>("exists");
     QTest::addColumn<QSharedMemory::SharedMemoryError>("error");
 
-    QTest::newRow("null key") << QString() << false << QSharedMemory::KeyError;
-    QTest::newRow("doesn't exists") << QString("doesntexists") << false << QSharedMemory::NotFound;
+    QTest::newRow("null") << QString() << false << QSharedMemory::KeyError;
+    QTest::newRow("doesntexists") << QString("doesntexist") << false << QSharedMemory::NotFound;
 
-    // HPUX doesn't allow for multiple attaches per process.
-#ifndef Q_OS_HPUX
-    QTest::newRow("already exists") << QString(EXISTING_SHARE) << true << QSharedMemory::NoError;
-#endif
+    QTest::newRow(EXISTING_SHARE) << QString(EXISTING_SHARE) << true << QSharedMemory::NoError;
 }
 
 /*!
@@ -321,11 +379,12 @@ void tst_QSharedMemory::attach()
     QFETCH(bool, exists);
     QFETCH(QSharedMemory::SharedMemoryError, error);
 
-    QSharedMemory sm(key);
+    QNativeIpcKey nativeKey = platformSafeKey(key);
+    QSharedMemory sm(nativeKey);
     QCOMPARE(sm.attach(), exists);
     QCOMPARE(sm.isAttached(), exists);
     QCOMPARE(sm.error(), error);
-    QCOMPARE(sm.key(), key);
+    QCOMPARE(sm.nativeIpcKey(), nativeKey);
     if (exists) {
         QVERIFY(sm.data() != 0);
         QVERIFY(sm.size() != 0);
@@ -352,7 +411,7 @@ void tst_QSharedMemory::lock()
     QVERIFY(!shm.lock());
     QCOMPARE(shm.error(), QSharedMemory::LockError);
 
-    shm.setKey(rememberKey(QLatin1String("qsharedmemory")));
+    shm.setNativeKey(rememberKey(QLatin1String("qsharedmemory")));
 
     QVERIFY(!shm.lock());
     QCOMPARE(shm.error(), QSharedMemory::LockError);
@@ -376,12 +435,13 @@ void tst_QSharedMemory::removeWhileAttached()
     rememberKey("one");
 
     // attach 1
-    QSharedMemory *smOne = new QSharedMemory(QLatin1String("one"));
+    QNativeIpcKey keyOne = platformSafeKey("one");
+    QSharedMemory *smOne = new QSharedMemory(keyOne);
     QVERIFY(smOne->create(1024));
     QVERIFY(smOne->isAttached());
 
     // attach 2
-    QSharedMemory *smTwo = new QSharedMemory(QLatin1String("one"));
+    QSharedMemory *smTwo = new QSharedMemory(platformSafeKey("one"));
     QVERIFY(smTwo->attach());
     QVERIFY(smTwo->isAttached());
 
@@ -389,13 +449,13 @@ void tst_QSharedMemory::removeWhileAttached()
     delete smOne;
     delete smTwo;
 
-#ifdef QT_POSIX_IPC
-    // POSIX IPC doesn't guarantee that the shared memory is removed
-    remove("one");
-#endif
+    if (keyOne.type() == QNativeIpcKey::Type::PosixRealtime) {
+        // POSIX IPC doesn't guarantee that the shared memory is removed
+        remove(keyOne);
+    }
 
     // three shouldn't be able to attach
-    QSharedMemory smThree(QLatin1String("one"));
+    QSharedMemory smThree(keyOne);
     QVERIFY(!smThree.attach());
     QCOMPARE(smThree.error(), QSharedMemory::NotFound);
 }
@@ -430,11 +490,12 @@ void tst_QSharedMemory::readOnly()
 #elif defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
     QSKIP("ASan prevents the crash this test is looking for.", SkipAll);
 #else
-    rememberKey("readonly_segfault");
+    QNativeIpcKey key = rememberKey("readonly_segfault");
+
     // ### on windows disable the popup somehow
     QProcess p;
-    p.start(m_helperBinary, QStringList("readonly_segfault"));
     p.setProcessChannelMode(QProcess::ForwardedChannels);
+    p.start(m_helperBinary, { "readonly_segfault", key.toString() });
     p.waitForFinished();
     QCOMPARE(p.error(), QProcess::Crashed);
 #endif
@@ -451,7 +512,8 @@ void tst_QSharedMemory::useTooMuchMemory()
     int count = 0;
     while (success) {
         QString key = QLatin1String("maxmemorytest_") + QString::number(count++);
-        QSharedMemory *sm = new QSharedMemory(rememberKey(key));
+        QNativeIpcKey nativeKey = rememberKey(key);
+        QSharedMemory *sm = new QSharedMemory(nativeKey);
         QVERIFY(sm);
         jail.append(sm);
         int size = 32768 * 1024;
@@ -465,7 +527,7 @@ void tst_QSharedMemory::useTooMuchMemory()
 
         if (!success) {
             QVERIFY(!sm->isAttached());
-            QCOMPARE(sm->key(), key);
+            QCOMPARE(sm->nativeIpcKey(), nativeKey);
             QCOMPARE(sm->size(), 0);
             QVERIFY(!sm->data());
             if (sm->error() != QSharedMemory::OutOfResources)
@@ -496,12 +558,12 @@ void tst_QSharedMemory::attachTooMuch()
     QSharedMemory government(rememberKey("government"));
     QVERIFY(government.create(1024));
     while (true) {
-        QSharedMemory *war = new QSharedMemory(government.key());
+        QSharedMemory *war = new QSharedMemory(government.nativeIpcKey());
         QVERIFY(war);
         jail.append(war);
         if (!war->attach()) {
             QVERIFY(!war->isAttached());
-            QCOMPARE(war->key(), government.key());
+            QCOMPARE(war->nativeIpcKey(), government.nativeIpcKey());
             QCOMPARE(war->size(), 0);
             QVERIFY(!war->data());
             QCOMPARE(war->error(), QSharedMemory::OutOfResources);
@@ -537,8 +599,8 @@ void tst_QSharedMemory::simpleProducerConsumer()
     QFETCH(QSharedMemory::AccessMode, mode);
 
     rememberKey(QLatin1String("market"));
-    QSharedMemory producer(QLatin1String("market"));
-    QSharedMemory consumer(QLatin1String("market"));
+    QSharedMemory producer(platformSafeKey("market"));
+    QSharedMemory consumer(platformSafeKey("market"));
     int size = 512;
     QVERIFY(producer.create(size));
     QVERIFY(consumer.attach(mode));
@@ -560,19 +622,21 @@ void tst_QSharedMemory::simpleProducerConsumer()
 #ifndef Q_OS_HPUX
 void tst_QSharedMemory::simpleDoubleProducerConsumer()
 {
-    rememberKey(QLatin1String("market"));
-    QSharedMemory producer(QLatin1String("market"));
+    QNativeIpcKey nativeKey = rememberKey(QLatin1String("market"));
+    QSharedMemory producer(nativeKey);
     int size = 512;
     QVERIFY(producer.create(size));
     QVERIFY(producer.detach());
-#ifdef QT_POSIX_IPC
-    // POSIX IPC doesn't guarantee that the shared memory is removed
-    remove("market");
-#endif
+
+    if (nativeKey.type() == QNativeIpcKey::Type::PosixRealtime) {
+        // POSIX IPC doesn't guarantee that the shared memory is removed
+        remove(nativeKey);
+    }
+
     QVERIFY(producer.create(size));
 
     {
-        QSharedMemory consumer(QLatin1String("market"));
+        QSharedMemory consumer(nativeKey);
         QVERIFY(consumer.attach());
     }
 }
@@ -580,11 +644,13 @@ void tst_QSharedMemory::simpleDoubleProducerConsumer()
 
 class Consumer : public QThread
 {
-
 public:
+    QNativeIpcKey nativeKey;
+    Consumer(const QNativeIpcKey &nativeKey) : nativeKey(nativeKey) {}
+
     void run() override
     {
-        QSharedMemory consumer(QLatin1String("market"));
+        QSharedMemory consumer(nativeKey);
         while (!consumer.attach()) {
             if (consumer.error() != QSharedMemory::NotFound)
                 qDebug() << "consumer: failed to connect" << consumer.error() << consumer.errorString();
@@ -615,9 +681,8 @@ public:
 
 class Producer : public QThread
 {
-
 public:
-    Producer() : producer(QLatin1String("market"))
+    Producer(const QNativeIpcKey &nativeKey) : producer(nativeKey)
     {
         int size = 1024;
         if (!producer.create(size)) {
@@ -682,16 +747,16 @@ void tst_QSharedMemory::simpleThreadedProducerConsumer()
 {
     QFETCH(bool, producerIsThread);
     QFETCH(int, threads);
-    rememberKey(QLatin1String("market"));
+    QNativeIpcKey nativeKey = rememberKey(QLatin1String("market"));
 
-    Producer p;
+    Producer p(nativeKey);
     QVERIFY(p.producer.isAttached());
     if (producerIsThread)
         p.start();
 
     QList<Consumer*> consumers;
     for (int i = 0; i < threads; ++i) {
-        consumers.append(new Consumer());
+        consumers.append(new Consumer(nativeKey));
         consumers.last()->start();
     }
 
@@ -730,17 +795,17 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
 
     QSKIP("This test is unstable: QTBUG-25655");
 
-    rememberKey("market");
+    QNativeIpcKey nativeKey = rememberKey("market");
 
     QProcess producer;
-    producer.start(m_helperBinary, QStringList("producer"));
+    producer.start(m_helperBinary, { "producer", nativeKey.toString() });
     QVERIFY2(producer.waitForStarted(), "Could not start helper binary");
     QVERIFY2(producer.waitForReadyRead(), "Helper process failed to create shared memory segment: " +
              producer.readAllStandardError());
 
     QList<QProcess*> consumers;
     unsigned int failedProcesses = 0;
-    const QStringList consumerArguments = QStringList("consumer");
+    QStringList consumerArguments = { "consumer", nativeKey.toString() };
     for (int i = 0; i < processes; ++i) {
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
@@ -791,11 +856,11 @@ void tst_QSharedMemory::uniqueKey()
     QFETCH(QString, key1);
     QFETCH(QString, key2);
 
-    QSharedMemory sm1(key1);
-    QSharedMemory sm2(key2);
+    QSharedMemory sm1(platformSafeKey(key1));
+    QSharedMemory sm2(platformSafeKey(key2));
 
     bool setEqual = (key1 == key2);
-    bool keyEqual = (sm1.key() == sm2.key());
+    bool keyEqual = (sm1.nativeIpcKey() == sm2.nativeIpcKey());
     bool nativeEqual = (sm1.nativeKey() == sm2.nativeKey());
 
     QCOMPARE(keyEqual, setEqual);

@@ -27,8 +27,7 @@ using namespace QtIpcCommon;
 bool QSharedMemoryPosix::handle(QSharedMemoryPrivate *self)
 {
     // don't allow making handles on empty keys
-    const QString safeKey = legacyPlatformSafeKey(self->key, IpcType::SharedMemory);
-    if (safeKey.isEmpty()) {
+    if (self->nativeKey.isEmpty()) {
         self->setError(QSharedMemory::KeyError,
                        QSharedMemory::tr("%1: key is empty").arg("QSharedMemory::handle"_L1));
         return false;
@@ -50,7 +49,7 @@ bool QSharedMemoryPosix::create(QSharedMemoryPrivate *self, qsizetype size)
     if (!handle(self))
         return false;
 
-    const QByteArray shmName = QFile::encodeName(legacyPlatformSafeKey(self->key, IpcType::SharedMemory));
+    const QByteArray shmName = QFile::encodeName(self->nativeKey.nativeKey());
 
     int fd;
 #ifdef O_CLOEXEC
@@ -91,7 +90,7 @@ bool QSharedMemoryPosix::create(QSharedMemoryPrivate *self, qsizetype size)
 
 bool QSharedMemoryPosix::attach(QSharedMemoryPrivate *self, QSharedMemory::AccessMode mode)
 {
-    const QByteArray shmName = QFile::encodeName(legacyPlatformSafeKey(self->key, IpcType::SharedMemory));
+    const QByteArray shmName = QFile::encodeName(self->nativeKey.nativeKey());
 
     const int oflag = (mode == QSharedMemory::ReadOnly ? O_RDONLY : O_RDWR);
     const mode_t omode = (mode == QSharedMemory::ReadOnly ? 0400 : 0600);
@@ -177,7 +176,7 @@ bool QSharedMemoryPosix::detach(QSharedMemoryPrivate *self)
 
     // if there are no attachments then unlink the shared memory
     if (shm_nattch == 0) {
-        const QByteArray shmName = QFile::encodeName(legacyPlatformSafeKey(self->key, IpcType::SharedMemory));
+        const QByteArray shmName = QFile::encodeName(self->nativeKey.nativeKey());
         if (::shm_unlink(shmName.constData()) == -1 && errno != ENOENT)
             self->setUnixErrorString("QSharedMemory::detach (shm_unlink)"_L1);
     }

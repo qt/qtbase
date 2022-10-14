@@ -69,6 +69,9 @@ private:
 class QSharedMemoryPosix
 {
 public:
+    static bool supports(QNativeIpcKey::Type type)
+    { return type == QNativeIpcKey::Type::PosixRealtime; }
+
     bool handle(QSharedMemoryPrivate *self);
     bool cleanHandle(QSharedMemoryPrivate *self);
     bool create(QSharedMemoryPrivate *self, qsizetype size);
@@ -81,6 +84,9 @@ public:
 class QSharedMemorySystemV
 {
 public:
+    static bool supports(QNativeIpcKey::Type type)
+    { return quint16(type) <= 0xff; }
+
 #if QT_CONFIG(sysv_sem)
     key_t handle(QSharedMemoryPrivate *self);
     bool cleanHandle(QSharedMemoryPrivate *self);
@@ -88,6 +94,10 @@ public:
     bool attach(QSharedMemoryPrivate *self, QSharedMemory::AccessMode mode);
     bool detach(QSharedMemoryPrivate *self);
 
+private:
+    void updateNativeKeyFile(const QNativeIpcKey &nativeKey);
+
+    QByteArray nativeKeyFile;
     key_t unix_key = 0;
 #endif
 };
@@ -95,6 +105,9 @@ public:
 class QSharedMemoryWin32
 {
 public:
+    static bool supports(QNativeIpcKey::Type type)
+    { return type == QNativeIpcKey::Type::Windows; }
+
     Qt::HANDLE handle(QSharedMemoryPrivate *self);
     bool cleanHandle(QSharedMemoryPrivate *self);
     bool create(QSharedMemoryPrivate *self, qsizetype size);
@@ -111,8 +124,7 @@ class Q_AUTOTEST_EXPORT QSharedMemoryPrivate : public QObjectPrivate
 public:
     void *memory = nullptr;
     qsizetype size = 0;
-    QString key;
-    QString nativeKey;
+    QNativeIpcKey nativeKey;
     QString errorString;
 #if QT_CONFIG(systemsemaphore)
     QSystemSemaphore systemSemaphore{ QNativeIpcKey() };
@@ -168,6 +180,8 @@ public:
     }
     QNativeIpcKey semaphoreNativeKey() const;
 #endif // QT_CONFIG(systemsemaphore)
+
+    QString legacyKey;  // deprecated
 };
 
 QT_END_NAMESPACE

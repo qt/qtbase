@@ -60,7 +60,7 @@ HANDLE QSharedMemoryWin32::handle(QSharedMemoryPrivate *self)
             return 0;
         }
         hand = OpenFileMapping(FILE_MAP_ALL_ACCESS, false,
-                               reinterpret_cast<const wchar_t *>(self->nativeKey.utf16()));
+                               reinterpret_cast<const wchar_t *>(self->nativeKey.nativeKey().utf16()));
         if (!hand) {
             self->setWindowsErrorString(function);
             return 0;
@@ -96,7 +96,7 @@ bool QSharedMemoryWin32::create(QSharedMemoryPrivate *self, qsizetype size)
         high = 0;
     low = DWORD(size_t(size) & 0xffffffff);
     hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, high, low,
-                             reinterpret_cast<const wchar_t *>(self->nativeKey.utf16()));
+                             reinterpret_cast<const wchar_t *>(self->nativeKey.nativeKey().utf16()));
     self->setWindowsErrorString(function);
 
     // hand is valid when it already exists unlike unix so explicitly check

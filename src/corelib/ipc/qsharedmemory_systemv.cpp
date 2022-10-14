@@ -26,6 +26,13 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 using namespace QtIpcCommon;
 
+inline void QSharedMemorySystemV::updateNativeKeyFile(const QNativeIpcKey &nativeKey)
+{
+    Q_ASSERT(nativeKeyFile.isEmpty() );
+    if (!nativeKey.nativeKey().isEmpty())
+        nativeKeyFile = QFile::encodeName(nativeKey.nativeKey());
+}
+
 /*!
     \internal
 
@@ -38,7 +45,9 @@ key_t QSharedMemorySystemV::handle(QSharedMemoryPrivate *self)
         return unix_key;
 
     // don't allow making handles on empty keys
-    if (self->nativeKey.isEmpty()) {
+    if (nativeKeyFile.isEmpty())
+        updateNativeKeyFile(self->nativeKey);
+    if (nativeKeyFile.isEmpty()) {
         self->setError(QSharedMemory::KeyError,
                        QSharedMemory::tr("%1: key is empty")
                        .arg("QSharedMemory::handle:"_L1));
@@ -46,14 +55,14 @@ key_t QSharedMemorySystemV::handle(QSharedMemoryPrivate *self)
     }
 
     // ftok requires that an actual file exists somewhere
-    if (!QFile::exists(self->nativeKey)) {
+    if (!QFile::exists(nativeKeyFile)) {
         self->setError(QSharedMemory::NotFound,
                        QSharedMemory::tr("%1: UNIX key file doesn't exist")
                        .arg("QSharedMemory::handle:"_L1));
         return 0;
     }
 
-    unix_key = ftok(QFile::encodeName(self->nativeKey).constData(), 'Q');
+    unix_key = ftok(nativeKeyFile, int(self->nativeKey.type()));
     if (-1 == unix_key) {
         self->setError(QSharedMemory::KeyError,
                        QSharedMemory::tr("%1: ftok failed")
@@ -66,6 +75,7 @@ key_t QSharedMemorySystemV::handle(QSharedMemoryPrivate *self)
 bool QSharedMemorySystemV::cleanHandle(QSharedMemoryPrivate *)
 {
     unix_key = 0;
+    nativeKeyFile.clear();
     return true;
 }
 
@@ -73,7 +83,7 @@ bool QSharedMemorySystemV::create(QSharedMemoryPrivate *self, qsizetype size)
 {
     // build file if needed
     bool createdFile = false;
-    QByteArray nativeKeyFile = QFile::encodeName(self->nativeKey);
+    updateNativeKeyFile(self->nativeKey);
     int built = createUnixKeyFile(nativeKeyFile);
     if (built == -1) {
         self->setError(QSharedMemory::KeyError,
@@ -161,6 +171,7 @@ bool QSharedMemorySystemV::detach(QSharedMemoryPrivate *self)
 
     // Get the number of current attachments
     int id = shmget(unix_key, 0, 0400);
+    QByteArray oldNativeKeyFile = nativeKeyFile;
     cleanHandle(self);
 
     struct shmid_ds shmid_ds;
@@ -186,7 +197,7 @@ bool QSharedMemorySystemV::detach(QSharedMemoryPrivate *self)
         }
 
         // remove file
-        if (!unlink(QFile::encodeName(self->nativeKey)))
+        if (unlink(oldNativeKeyFile) < 0)
             return false;
     }
     return true;
