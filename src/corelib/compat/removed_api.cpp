@@ -194,6 +194,8 @@ void QObject::setObjectName(const QString &name)
 
 #include "qlocale.h" // uses QT_CORE_INLINE_SINCE
 
+#if QT_CONFIG(settings)
+
 #include "qsettings.h"
 
 void QSettings::beginGroup(const QString &prefix)
@@ -236,6 +238,7 @@ QVariant QSettings::value(const QString &key) const
     return value(qToAnyStringViewIgnoringNull(key));
 }
 
+#endif // QT_CONFIG(settings)
 
 #include "qversionnumber.h"
 
