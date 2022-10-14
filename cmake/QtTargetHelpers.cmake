@@ -76,6 +76,11 @@ function(qt_internal_extend_target target)
             list(APPEND dbus_sources "${interface}")
         endforeach()
 
+        set(all_sources
+            ${arg_SOURCES}
+            ${dbus_sources}
+        )
+
         get_target_property(target_type ${target} TYPE)
         set(is_library FALSE)
         set(is_interface_lib FALSE)
@@ -108,14 +113,14 @@ function(qt_internal_extend_target target)
         # functions. The property itself is not exported and should only be used in the Qt internal
         # build tree.
         if(NOT is_interface_lib OR CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
-            target_sources("${target}" PRIVATE ${arg_SOURCES} ${dbus_sources})
+            target_sources("${target}" PRIVATE ${all_sources})
             if(arg_COMPILE_FLAGS)
-                set_source_files_properties(${arg_SOURCES} PROPERTIES
+                set_source_files_properties(${all_sources} PROPERTIES
                     COMPILE_FLAGS "${arg_COMPILE_FLAGS}")
             endif()
         else()
             set_property(TARGET ${target} APPEND PROPERTY
-                _qt_internal_target_sources ${arg_SOURCES} ${dbus_sources})
+                _qt_internal_target_sources ${all_sources})
         endif()
 
         set(public_visibility_option "PUBLIC")
