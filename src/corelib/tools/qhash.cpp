@@ -107,8 +107,7 @@ private:
     StateResult result = { 0, OverriddenByEnvironment };
 #ifdef QT_BOOTSTRAPPED
     Q_UNUSED(which);
-    // NOLINTNEXTLINE(qt-use-unreachable-return): triggers on QT_BOOTSTRAPPED, breaking #else case
-    Q_UNREACHABLE();
+    Q_UNREACHABLE_RETURN(result);
 #else
     // can't use qEnvironmentVariableIntValue (reentrancy)
     const char *seedstr = getenv("QT_HASH_SEED");
@@ -138,8 +137,8 @@ private:
             result.requestedSeed = x.data[i];
     }
     result.state = JustInitialized;
-#endif
     return result;
+#endif
 }
 
 inline HashSeedStorage::StateResult HashSeedStorage::state(int which)
