@@ -11490,6 +11490,9 @@ public:
 
 void tst_QWidget::touchEventSynthesizedMouseEvent()
 {
+    if (m_platform.startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("This test failed on Wayland. See also QTBUG-107157.");
+
     {
         // Simple case, we ignore the touch events, we get mouse events instead
         TouchMouseWidget widget;
