@@ -330,6 +330,8 @@ QVariant::QVariant(const QSize &s) : QVariant(QVariant::fromValue(s)) {}
 QVariant::QVariant(const QSizeF &s) : QVariant(QVariant::fromValue(s)) {}
 #endif
 
+#if QT_CONFIG(xmlstreamreader)
+
 #include "qxmlstream.h"
 
 QXmlStreamReader::QXmlStreamReader(const QByteArray &data)
@@ -360,5 +362,7 @@ void QXmlStreamReader::addData(const char *data)
 {
     addData(QAnyStringView(data));
 }
+
+#endif // QT_CONFIG(xmlstreamreader)
 
 #endif // QT_CORE_REMOVED_SINCE(6, 5)
