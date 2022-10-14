@@ -1,13 +1,7 @@
 // Copyright (C) 2017 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef WINVER
-#  define WINVER 0x0A00 // required for NOTIFYICONDATA_V2_SIZE, ChangeWindowMessageFilterEx() (MinGW 5.3)
-#endif
-
-#ifndef NTDDI_VERSION
-#  define NTDDI_VERSION 0x0A00000B // required for Shell_NotifyIconGetRect (MinGW 5.3)
-#endif
+#include <QtCore/qt_windows.h>
 
 #include "qwindowssystemtrayicon.h"
 #include "qwindowscontext.h"
@@ -23,7 +17,6 @@
 #include <QtCore/qsettings.h>
 #include <qpa/qwindowsysteminterface.h>
 
-#include <qt_windows.h>
 #include <commctrl.h>
 #include <shellapi.h>
 #include <shlobj.h>

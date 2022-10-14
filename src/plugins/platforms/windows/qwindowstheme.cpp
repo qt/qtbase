@@ -1,10 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-// SHSTOCKICONINFO is only available since Vista
-#ifndef _WIN32_WINNT
-#  define _WIN32_WINNT 0x0A00
-#endif
+#include <QtCore/qt_windows.h>
 
 #include "qwindowstheme.h"
 #include "qwindowsmenu.h"
@@ -15,7 +12,6 @@
 #  include "qwindowssystemtrayicon.h"
 #endif
 #include "qwindowsscreen.h"
-#include "qt_windows.h"
 #include <commctrl.h>
 #include <objbase.h>
 #ifndef Q_CC_MINGW

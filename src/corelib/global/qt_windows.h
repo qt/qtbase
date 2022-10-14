@@ -19,7 +19,7 @@
 #  define _WIN32_IE 0x0A00
 #endif
 #ifndef NTDDI_VERSION
-#  define NTDDI_VERSION 0x0A00000B // NTDDI_WIN10_CO
+#  define NTDDI_VERSION 0x0A00000C // NTDDI_WIN10_NI
 #endif
 
 #ifndef NOMINMAX
