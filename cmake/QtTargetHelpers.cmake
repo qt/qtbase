@@ -3,6 +3,16 @@
 
 # This function can be used to add sources/libraries/etc. to the specified CMake target
 # if the provided CONDITION evaluates to true.
+# One-value Arguments:
+#   PRECOMPILED_HEADER
+#     Name of the precompiled header that is used for the target.
+# Multi-value Arguments:
+#   CONDITION
+#     The condition under which the target will be extended.
+#   COMPILE_FLAGS
+#     Custom compilation flags.
+#   NO_PCH_SOURCES
+#     Skip the specified source files by PRECOMPILE_HEADERS feature.
 function(qt_internal_extend_target target)
     if(NOT TARGET "${target}")
         qt_internal_is_in_test_batch(in_batch ${target})
@@ -18,32 +28,58 @@ function(qt_internal_extend_target target)
         return()
     endif()
 
-    qt_parse_all_arguments(arg "qt_extend_target" "" "PRECOMPILED_HEADER"
-        "CONDITION;${__default_public_args};${__default_private_args};${__default_private_module_args};COMPILE_FLAGS;NO_PCH_SOURCES" ${ARGN})
-    if ("x${arg_CONDITION}" STREQUAL x)
+    set(option_args "")
+    set(single_args
+        PRECOMPILED_HEADER
+    )
+    set(multi_args
+        ${__default_public_args}
+        ${__default_private_args}
+        ${__default_private_module_args}
+        CONDITION
+        COMPILE_FLAGS
+        NO_PCH_SOURCES
+    )
+
+    qt_parse_all_arguments(arg "qt_extend_target"
+        "${option_args}"
+        "${single_args}"
+        "${multi_args}"
+        ${ARGN}
+    )
+
+    if("x${arg_CONDITION}" STREQUAL "x")
         set(arg_CONDITION ON)
     endif()
 
     qt_evaluate_config_expression(result ${arg_CONDITION})
-    if (${result})
+    if(${result})
         if(QT_CMAKE_DEBUG_EXTEND_TARGET)
             message("qt_extend_target(${target} CONDITION ${arg_CONDITION} ...): Evaluated")
         endif()
         set(dbus_sources "")
         foreach(adaptor ${arg_DBUS_ADAPTOR_SOURCES})
-            qt_create_qdbusxml2cpp_command("${target}" "${adaptor}" ADAPTOR BASENAME "${arg_DBUS_ADAPTOR_BASENAME}" FLAGS "${arg_DBUS_ADAPTOR_FLAGS}")
+            qt_create_qdbusxml2cpp_command("${target}" "${adaptor}"
+                ADAPTOR
+                BASENAME "${arg_DBUS_ADAPTOR_BASENAME}"
+                FLAGS "${arg_DBUS_ADAPTOR_FLAGS}"
+            )
             list(APPEND dbus_sources "${adaptor}")
         endforeach()
 
         foreach(interface ${arg_DBUS_INTERFACE_SOURCES})
-            qt_create_qdbusxml2cpp_command("${target}" "${interface}" INTERFACE BASENAME "${arg_DBUS_INTERFACE_BASENAME}" FLAGS "${arg_DBUS_INTERFACE_FLAGS}")
+            qt_create_qdbusxml2cpp_command("${target}" "${interface}"
+                INTERFACE
+                BASENAME "${arg_DBUS_INTERFACE_BASENAME}"
+                FLAGS "${arg_DBUS_INTERFACE_FLAGS}"
+            )
             list(APPEND dbus_sources "${interface}")
         endforeach()
 
         get_target_property(target_type ${target} TYPE)
         set(is_library FALSE)
         set(is_interface_lib FALSE)
-        if (${target_type} STREQUAL "STATIC_LIBRARY" OR ${target_type} STREQUAL "SHARED_LIBRARY")
+        if(${target_type} STREQUAL "STATIC_LIBRARY" OR ${target_type} STREQUAL "SHARED_LIBRARY")
             set(is_library TRUE)
         elseif(target_type STREQUAL "INTERFACE_LIBRARY")
             set(is_interface_lib TRUE)
@@ -73,7 +109,7 @@ function(qt_internal_extend_target target)
         # build tree.
         if(NOT is_interface_lib OR CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
             target_sources("${target}" PRIVATE ${arg_SOURCES} ${dbus_sources})
-            if (arg_COMPILE_FLAGS)
+            if(arg_COMPILE_FLAGS)
                 set_source_files_properties(${arg_SOURCES} PROPERTIES
                     COMPILE_FLAGS "${arg_COMPILE_FLAGS}")
             endif()
@@ -105,7 +141,7 @@ function(qt_internal_extend_target target)
                             ${private_visibility_option} ${arg_LINK_OPTIONS})
 
         if(NOT is_interface_lib)
-            set_property (TARGET "${target}" APPEND PROPERTY
+            set_property(TARGET "${target}" APPEND PROPERTY
                 AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}"
             )
             # Plugin types associated to a module
