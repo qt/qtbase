@@ -148,8 +148,8 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
         return false;
     }
     if (reply.signature() != "v"_L1) {
-        QString errmsg = "Invalid signature `%1' in return from call to "
-                         DBUS_INTERFACE_PROPERTIES ""_L1;
+        QString errmsg =
+                "Invalid signature '%1' in return from call to " DBUS_INTERFACE_PROPERTIES ""_L1;
         lastError = QDBusError(QDBusError::InvalidSignature, std::move(errmsg).arg(reply.signature()));
         return false;
     }
@@ -185,8 +185,8 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
     }
 
     // there was an error...
-    const auto errmsg = "Unexpected `%1' (%2) when retrieving property `%3.%4' "
-                        "(expected type `%5' (%6))"_L1;
+    const auto errmsg = "Unexpected '%1' (%2) when retrieving property '%3.%4' "
+                        "(expected type '%5' (%6))"_L1;
     lastError = QDBusError(QDBusError::InvalidSignature,
                            errmsg.arg(QLatin1StringView(foundType),
                                       QLatin1StringView(foundSignature),

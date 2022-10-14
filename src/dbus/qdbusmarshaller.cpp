@@ -28,7 +28,7 @@ QDBusMarshaller::~QDBusMarshaller()
 void QDBusMarshaller::unregisteredTypeError(QMetaType id)
 {
     const char *name = id.name();
-    qWarning("QDBusMarshaller: type `%s' (%d) is not registered with D-BUS. "
+    qWarning("QDBusMarshaller: type '%s' (%d) is not registered with D-BUS. "
              "Use qDBusRegisterMetaType to register it",
              name ? name : "", id.id());
     error("Unregistered type %1 passed in arguments"_L1

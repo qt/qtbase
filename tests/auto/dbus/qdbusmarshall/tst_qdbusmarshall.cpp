@@ -962,7 +962,7 @@ void tst_QDBusMarshall::sendCallErrors_data()
             << (QVariantList() << QLocale::c())
             << "org.freedesktop.DBus.Error.Failed"
             << "Marshalling failed: Unregistered type QLocale passed in arguments"
-            << "QDBusMarshaller: type `QLocale' (18) is not registered with D-BUS. Use qDBusRegisterMetaType to register it";
+            << "QDBusMarshaller: type 'QLocale' (18) is not registered with D-BUS. Use qDBusRegisterMetaType to register it";
 
     // this type is known to the meta type system, but not registered with D-Bus
     qRegisterMetaType<UnregisteredType>();
@@ -970,7 +970,7 @@ void tst_QDBusMarshall::sendCallErrors_data()
             << (QVariantList() << QVariant::fromValue(UnregisteredType()))
             << "org.freedesktop.DBus.Error.Failed"
             << "Marshalling failed: Unregistered type UnregisteredType passed in arguments"
-            << QString("QDBusMarshaller: type `UnregisteredType' (%1) is not registered with D-BUS. Use qDBusRegisterMetaType to register it")
+            << QString("QDBusMarshaller: type 'UnregisteredType' (%1) is not registered with D-BUS. Use qDBusRegisterMetaType to register it")
             .arg(qMetaTypeId<UnregisteredType>());
 
     QTest::newRow("invalid-object-path-arg") << serviceName << objectPath << interfaceName << "ping"

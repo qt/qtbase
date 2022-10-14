@@ -365,21 +365,21 @@ void tst_QDBusMetaType::invalidTypes()
 {
     // same test
     if (qstrcmp(QTest::currentDataTag(), "Invalid0") == 0)
-        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type `Invalid0' produces invalid D-BUS signature `<empty>' (Did you forget to call beginStructure() ?)");
+        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type 'Invalid0' produces invalid D-BUS signature '<empty>' (Did you forget to call beginStructure() ?)");
     else if (qstrcmp(QTest::currentDataTag(), "Invalid1") == 0)
-        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type `Invalid1' attempts to redefine basic D-BUS type 's' (QString) (Did you forget to call beginStructure() ?)");
+        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type 'Invalid1' attempts to redefine basic D-BUS type 's' (QString) (Did you forget to call beginStructure() ?)");
     else if (qstrcmp(QTest::currentDataTag(), "Invalid2") == 0)
-        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type `Invalid2' attempts to redefine basic D-BUS type 'o' (QDBusObjectPath) (Did you forget to call beginStructure() ?)");
+        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type 'Invalid2' attempts to redefine basic D-BUS type 'o' (QDBusObjectPath) (Did you forget to call beginStructure() ?)");
     else if (qstrcmp(QTest::currentDataTag(), "Invalid3") == 0)
-        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type `Invalid3' attempts to redefine basic D-BUS type 'as' (QStringList) (Did you forget to call beginStructure() ?)");
+        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type 'Invalid3' attempts to redefine basic D-BUS type 'as' (QStringList) (Did you forget to call beginStructure() ?)");
     else if (qstrcmp(QTest::currentDataTag(), "Invalid4") == 0)
-        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type `Invalid4' attempts to redefine basic D-BUS type 'ay' (QByteArray) (Did you forget to call beginStructure() ?)");
+        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type 'Invalid4' attempts to redefine basic D-BUS type 'ay' (QByteArray) (Did you forget to call beginStructure() ?)");
     else if (qstrcmp(QTest::currentDataTag(), "Invalid5") == 0)
-        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type `Invalid5' produces invalid D-BUS signature `ii' (Did you forget to call beginStructure() ?)");
+        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type 'Invalid5' produces invalid D-BUS signature 'ii' (Did you forget to call beginStructure() ?)");
     else if (qstrcmp(QTest::currentDataTag(), "Invalid7") == 0)
-        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type `Invalid7' produces invalid D-BUS signature `()' (Did you forget to call beginStructure() ?)");
+        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type 'Invalid7' produces invalid D-BUS signature '()' (Did you forget to call beginStructure() ?)");
     else if (qstrcmp(QTest::currentDataTag(), "QList<Invalid0>") == 0)
-        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type `QList<Invalid0>' produces invalid D-BUS signature `a' (Did you forget to call beginStructure() ?)");
+        QTest::ignoreMessage(QtWarningMsg, "QDBusMarshaller: type 'QList<Invalid0>' produces invalid D-BUS signature 'a' (Did you forget to call beginStructure() ?)");
 
     staticTypes();
     staticTypes();              // run twice: the error messages should be printed once only

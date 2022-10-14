@@ -50,18 +50,16 @@ QByteArray QDBusArgumentPrivate::createSignature(int id)
     delete marshaller;
 
     if (signature.isEmpty() || !ok || !QDBusUtil::isValidSingleSignature(QString::fromLatin1(signature))) {
-        qWarning("QDBusMarshaller: type `%s' produces invalid D-BUS signature `%s' "
+        qWarning("QDBusMarshaller: type '%s' produces invalid D-BUS signature '%s' "
                  "(Did you forget to call beginStructure() ?)",
-                 QMetaType(id).name(),
-                 signature.isEmpty() ? "<empty>" : signature.constData());
+                 QMetaType(id).name(), signature.isEmpty() ? "<empty>" : signature.constData());
         return "";
     } else if ((signature.at(0) != DBUS_TYPE_ARRAY && signature.at(0) != DBUS_STRUCT_BEGIN_CHAR) ||
                (signature.at(0) == DBUS_TYPE_ARRAY && (signature.at(1) == DBUS_TYPE_BYTE ||
                                                        signature.at(1) == DBUS_TYPE_STRING))) {
-        qWarning("QDBusMarshaller: type `%s' attempts to redefine basic D-BUS type '%s' (%s) "
+        qWarning("QDBusMarshaller: type '%s' attempts to redefine basic D-BUS type '%s' (%s) "
                  "(Did you forget to call beginStructure() ?)",
-                 QMetaType(id).name(),
-                 signature.constData(),
+                 QMetaType(id).name(), signature.constData(),
                  QDBusMetaType::signatureToMetaType(signature).name());
         return "";
     }

@@ -326,7 +326,7 @@ static int writeProperty(QObject *obj, const QByteArray &property_name, QVariant
         // we have to demarshall before writing
         QVariant other{QMetaType(id)};
         if (!QDBusMetaType::demarshall(qvariant_cast<QDBusArgument>(value), other.metaType(), other.data())) {
-            qWarning("QDBusConnection: type `%s' (%d) is not registered with QtDBus. "
+            qWarning("QDBusConnection: type '%s' (%d) is not registered with QtDBus. "
                      "Use qDBusRegisterMetaType to register it",
                      mp.typeName(), id.id());
             return PropertyWriteFailed;
