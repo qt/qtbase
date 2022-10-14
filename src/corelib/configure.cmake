@@ -614,7 +614,7 @@ qt_feature("inotify" PUBLIC PRIVATE
 )
 qt_feature_definition("inotify" "QT_NO_INOTIFY" NEGATE VALUE "1")
 qt_feature("ipc_posix"
-    LABEL "Using POSIX IPC"
+    LABEL "Defaulting legacy IPC to POSIX"
     CONDITION TEST_posix_shm AND TEST_posix_sem AND (
         FEATURE_ipc_posix OR (APPLE AND QT_FEATURE_appstore_compliant)
         OR NOT (TEST_sysv_shm AND TEST_sysv_sem)
@@ -769,6 +769,7 @@ qt_feature("xmlstream" PUBLIC
 qt_feature("cpp-winrt" PRIVATE PUBLIC
     LABEL "cpp/winrt base"
     PURPOSE "basic cpp/winrt language projection support"
+    AUTODETECT WIN32
     CONDITION WIN32 AND TEST_cpp_winrt
 )
 qt_feature_definition("xmlstream" "QT_NO_XMLSTREAM" NEGATE VALUE "1")
@@ -999,15 +1000,18 @@ qt_feature("permissions" PUBLIC
     PURPOSE "Provides support for requesting user permission to access restricted data or APIs"
     CONDITION APPLE OR ANDROID OR WASM
 )
+
 qt_configure_add_summary_section(NAME "Qt Core")
 qt_configure_add_summary_entry(ARGS "backtrace")
 qt_configure_add_summary_entry(ARGS "doubleconversion")
 qt_configure_add_summary_entry(ARGS "system-doubleconversion")
+qt_configure_add_summary_entry(ARGS "forkfd_pidfd" CONDITION LINUX)
 qt_configure_add_summary_entry(ARGS "glib")
 qt_configure_add_summary_entry(ARGS "icu")
 qt_configure_add_summary_entry(ARGS "system-libb2")
 qt_configure_add_summary_entry(ARGS "mimetype-database")
-qt_configure_add_summary_entry(ARGS "cpp-winrt")
+qt_configure_add_summary_entry(ARGS "permissions")
+qt_configure_add_summary_entry(ARGS "ipc_posix" CONDITION UNIX)
 qt_configure_add_summary_entry(
     TYPE "firstAvailableFeature"
     ARGS "etw lttng ctf"
@@ -1024,11 +1028,6 @@ qt_configure_add_summary_entry(
 )
 qt_configure_add_summary_entry(ARGS "pcre2")
 qt_configure_add_summary_entry(ARGS "system-pcre2")
-qt_configure_add_summary_entry(
-    ARGS "forkfd_pidfd"
-    CONDITION LINUX
-)
-qt_configure_add_summary_entry(ARGS "permissions")
 qt_configure_end_summary_section() # end of "Qt Core" section
 qt_configure_add_report_entry(
     TYPE NOTE

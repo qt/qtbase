@@ -31,8 +31,6 @@ public:
     static constexpr Type DefaultTypeForOs =
 #ifdef Q_OS_WIN
             Type::Windows
-#elif !defined(QT_POSIX_IPC)
-            Type::SystemV
 #else
             Type::PosixRealtime
 #endif

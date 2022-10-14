@@ -46,8 +46,6 @@ void tst_QNativeIpcKey::defaultTypes()
 
 #ifdef Q_OS_WIN
     QCOMPARE(type, QNativeIpcKey::Type::Windows);
-#elif !defined(QT_POSIX_IPC)
-    QCOMPARE(type, QNativeIpcKey::Type::SystemV);
 #else
     QCOMPARE(type, QNativeIpcKey::Type::PosixRealtime);
 #endif
