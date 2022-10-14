@@ -8,7 +8,7 @@
     to perform Inter-Process Communication using the \l{Qt D-Bus}{D-Bus} protocol.
 
     \ingroup modules
-    \qtcmakepackage Dbus
+    \qtcmakepackage DBus
     \qtvariable dbus
 
     \keyword The QDBus compiler
