@@ -437,6 +437,22 @@ public:
         return QLatin1String("datetime");
     }
 
+    static QString timeTypeName(QSqlDatabase db)
+    {
+        const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+        if (dbType == QSqlDriver::Oracle && getOraVersion(db) >= 9)
+            return QLatin1String("timestamp(0)");
+        return QLatin1String("time");
+    }
+
+    static QString dateTypeName(QSqlDatabase db)
+    {
+        const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+        if (dbType == QSqlDriver::Oracle && getOraVersion(db) >= 9)
+            return QLatin1String("timestamp(0)");
+        return QLatin1String("date");
+    }
+
     static QString autoFieldName( QSqlDatabase db )
     {
         const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);

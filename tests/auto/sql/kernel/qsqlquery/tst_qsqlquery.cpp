@@ -1785,9 +1785,9 @@ void tst_QSqlQuery::writeNull()
     QMultiHash<QString, QVariant> nullableTypes = {
         {"varchar(20)", u"not null"_s},
         {"varchar(20)", "not null"_ba},
-        {"date", QDateTime::currentDateTime()},
-        {"date", QDate::currentDate()},
-        {"date", QTime::currentTime()},
+        {tst_Databases::dateTimeTypeName(db), QDateTime::currentDateTime()},
+        {tst_Databases::dateTypeName(db), QDate::currentDate()},
+        {tst_Databases::timeTypeName(db), QTime::currentTime()},
     };
     if (dbType == QSqlDriver::PostgreSQL)
         nullableTypes["uuid"] = QUuid::createUuid();
@@ -3827,7 +3827,7 @@ void tst_QSqlQuery::QTBUG_5251()
     tst_Databases::safeDropTable(db, timetest);
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %1 (t TIME)").arg(timetest)));
-    QVERIFY_SQL(q, exec(QLatin1String("INSERT INTO VALUES ('1:2:3.666')").arg(timetest)));
+    QVERIFY_SQL(q, exec(QLatin1String("INSERT INTO %1 VALUES ('1:2:3.666')").arg(timetest)));
 
     QSqlTableModel timetestModel(0, db);
     timetestModel.setEditStrategy(QSqlTableModel::OnManualSubmit);
