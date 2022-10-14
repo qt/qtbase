@@ -12,6 +12,7 @@
 /*
    The compiler, must be one of: (Q_CC_x)
 
+     COVERITY - Coverity cov-scan
      SYM      - Digital Mars C/C++ (used to be Symantec C++)
      MSVC     - Microsoft Visual C/C++, Intel C++ for Windows
      BOR      - Borland/Turbo C++
@@ -37,6 +38,10 @@
 
    Should be sorted most to least authoritative.
 */
+
+#if defined(__COVERITY__)
+#  define Q_CC_COVERITY
+#endif
 
 /* Symantec C++ is now Digital Mars */
 #if defined(__DMC__) || defined(__SC__)
