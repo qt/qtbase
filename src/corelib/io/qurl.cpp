@@ -3493,9 +3493,7 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &err
 
     switch (errorCode) {
     case QUrlPrivate::NoError:
-        Q_ASSERT_X(false, "QUrl::errorString",
-                   "Impossible: QUrl::errorString should have treated this condition");
-        Q_UNREACHABLE_RETURN(QString());
+        Q_UNREACHABLE_RETURN(QString()); // QUrl::errorString should have treated this condition
 
     case QUrlPrivate::InvalidSchemeError: {
         auto msg = "Invalid scheme (character '%1' not permitted)"_L1;
@@ -3552,7 +3550,6 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &err
         return QStringLiteral("Relative URL's path component contains ':' before any '/'");
     }
 
-    Q_ASSERT_X(false, "QUrl::errorString", "Cannot happen, unknown error");
     Q_UNREACHABLE_RETURN(QString());
 }
 
