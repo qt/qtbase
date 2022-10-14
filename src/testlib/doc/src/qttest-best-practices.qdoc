@@ -355,24 +355,47 @@
     helpful test output:
 
     \list
-        \li \l {Explicitly Ignore Expected Warnings}
+        \li \l {Test for Warnings}
         \li \l {Avoid Printing Debug Messages from Autotests}
         \li \l {Write Well-structured Diagnostic Code}
     \endlist
 
-    \section2 Explicitly Ignore Expected Warnings
+    \section2 Test for Warnings
 
-    If a test is expected to cause Qt to output a warning or debug message
-    on the console, it should call \l QTest::ignoreMessage() to filter that
-    message out of the test output and to fail the test if the message is
-    not output.
+    Just as when building your software, if test output is cluttered with
+    warnings you will find it harder to notice a warning that really is a clue
+    to the emergence of a bug. It is thus prudent to regularly check your test
+    logs for warnings, and other extraneous output, and investigate the
+    causes. When they are signs of a bug, you can make warnings trigger test
+    failure.
 
-    If such a message is only output when Qt is built in debug mode, use
-    \l QLibraryInfo::isDebugBuild() to determine whether the Qt libraries
-    were built in debug mode. Using \c{#ifdef QT_DEBUG} is not enough, as
-    it will only tell you whether the test was built in debug mode, and
-    that does not guarantee that the Qt libraries were also built in debug
-    mode.
+    When the code under test \e should produce messages, such as warnings
+    about misguided use, it is also important to test that it \e does produce
+    them when so used. You can test for expected messages from the code under
+    test, produced by \l qWarning(), \l qDebug(), \l qInfo() and friends,
+    using \l QTest::ignoreMessage(). This will verify that the message is
+    produced and filter it out of the output of the test run. If the message
+    is not produced, the test will fail.
+
+    If an expected message is only output when Qt is built in debug mode, use
+    \l QLibraryInfo::isDebugBuild() to determine whether the Qt libraries were
+    built in debug mode. Using \c{#ifdef QT_DEBUG} is not enough, as it will
+    only tell you whether \e{the test} was built in debug mode, and that does
+    not guarantee that the \e{Qt libraries} were also built in debug mode.
+
+    Your tests can (since Qt 6.3) verify that they do not trigger calls to \l
+    qWarning() by calling \l QTest::failOnWarnings(). This takes the warning
+    message to test for or a \l QRegularExpression to match against warnings; if
+    a matching warning is produced, it will be reported and cause the test to
+    fail. For example, a test that should produce no warnings at all can
+    \c{QTest::failOnWarnings(QRegularExpression(u".*"_s))}, which will match any
+    warning at all.
+
+    You can also set the environment variable \c QT_FATAL_WARNINGS to cause
+    warnings to be treated as fatal errors. See \l qWarning() for details; this
+    is not specific to autotests. If warnings would otherwise be lost in vast
+    test logs, the occasional run with this environment variable set can help
+    you to find and eliminate any that do arise.
 
     \section2 Avoid Printing Debug Messages from Autotests
 

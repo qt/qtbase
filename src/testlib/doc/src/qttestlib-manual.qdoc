@@ -733,7 +733,9 @@
 
     The names of rows and columns, in a given test function's data table, should
     be unique: if two rows share a name, or two columns share a name, a warning
-    will (since Qt 6.5) be produced.
+    will (since Qt 6.5) be produced. See \l qWarning() for how you can cause
+    warnings to be treated as errors and \l {Test for Warnings} for how to get
+    your tests clear of other warnings.
 
     \section1 Rewriting the Test Function
 
