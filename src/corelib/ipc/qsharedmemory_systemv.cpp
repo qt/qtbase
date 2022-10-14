@@ -72,19 +72,9 @@ key_t QSharedMemorySystemV::handle(QSharedMemoryPrivate *self)
         return 0;
     }
 
-    // ftok requires that an actual file exists somewhere
-    if (!QFile::exists(QFile::decodeName(nativeKeyFile))) {
-        self->setError(QSharedMemory::NotFound,
-                       QSharedMemory::tr("%1: UNIX key file doesn't exist")
-                       .arg("QSharedMemory::handle:"_L1));
-        return 0;
-    }
-
     unix_key = ftok(nativeKeyFile, int(self->nativeKey.type()));
-    if (-1 == unix_key) {
-        self->setError(QSharedMemory::KeyError,
-                       QSharedMemory::tr("%1: ftok failed")
-                       .arg("QSharedMemory::handle:"_L1));
+    if (unix_key < 0) {
+        self->setUnixErrorString("QSharedMemory::handle"_L1);
         unix_key = 0;
     }
     return unix_key;
