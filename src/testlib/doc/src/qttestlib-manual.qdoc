@@ -403,7 +403,7 @@
     Setting this variable to a non-zero value will cause a failure in
     an autotest to immediately abort the entire autotest. This is useful
     to e.g. debug an unstable or intermittent failure in a test, by
-    launching the test in a debugger. Support for this variable has been
+    launching the test in a debugger. Support for this variable was
     added in Qt 6.1.
     \endlist
 
@@ -689,14 +689,17 @@
     expected result of applying the QString::toUpper() function to
     that string.
 
-    Then, we add some data to the table using the \l
-    QTest::newRow() function. Each set of data will become a
-    separate row in the test table.
+    Then, we add some data to the table using the \l QTest::newRow()
+    function. We can also use \l QTest::addRow() if we need to format some data
+    in the row name, for example when generating many data rows iteratively.
+    Each row of data will become a separate row in the test table.
 
-    \l QTest::newRow() takes one argument: a name that will be associated
-    with the data set and used in the test log to identify the data set.
-    Then, we stream the data set into the new table row. First an arbitrary
-    string, and then the expected result of applying the
+    \l QTest::newRow() takes one argument: a name that will be associated with
+    the data set and used in the test log to identify the data row. \l
+    QTest::addRow() takes a (\c{printf}-style) format string followed by the
+    parameters to be represented in place of the formatting tokens in the format
+    string. Then, we stream the data set into the new table row. First an
+    arbitrary string, and then the expected result of applying the
     QString::toUpper() function to that string.
 
     You can think of the test data as a two-dimensional table. In

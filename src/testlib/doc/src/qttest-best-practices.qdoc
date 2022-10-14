@@ -154,8 +154,8 @@
 
     \section2 Use Data-driven Testing
 
-    Data-driven tests make it easier to add new tests for boundary conditions
-    found in later bug reports.
+    \l{Chapter 2: Data Driven Testing}{Data-driven tests} make it easier to add
+    new tests for boundary conditions found in later bug reports.
 
     Using a data-driven test rather than testing several items in sequence in
     a test saves repetition of very similar code and ensures later cases are
