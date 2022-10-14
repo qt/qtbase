@@ -516,6 +516,7 @@ QRasterPaintEngineState::QRasterPaintEngineState()
 
     txscale = 1.;
 
+    flag_bits = 0;
     flags.fast_pen = true;
     flags.non_complex_pen = false;
     flags.antialiased = false;
