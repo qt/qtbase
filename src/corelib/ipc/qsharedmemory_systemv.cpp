@@ -89,11 +89,33 @@ key_t QSharedMemorySystemV::handle(QSharedMemoryPrivate *self)
     return unix_key;
 }
 
-bool QSharedMemorySystemV::cleanHandle(QSharedMemoryPrivate *)
+bool QSharedMemorySystemV::cleanHandle(QSharedMemoryPrivate *self)
 {
+    if (unix_key == 0)
+        return true;
+
+    // Get the number of current attachments
+    struct shmid_ds shmid_ds;
+    QByteArray keyfile = std::exchange(nativeKeyFile, QByteArray());
+
+    int id = shmget(unix_key, 0, 0400);
     unix_key = 0;
-    nativeKeyFile.clear();
-    return true;
+    if (shmctl(id, IPC_STAT, &shmid_ds))
+        return errno != EINVAL;
+
+    // If there are still attachments, keep the keep file and shm
+    if (shmid_ds.shm_nattch != 0)
+        return true;
+
+    if (shmctl(id, IPC_RMID, &shmid_ds) < 0) {
+        if (errno != EINVAL) {
+            self->setUnixErrorString("QSharedMemory::remove"_L1);
+            return false;
+        }
+    };
+
+    // remove file
+    return unlink(keyfile) == 0;
 }
 
 bool QSharedMemorySystemV::create(QSharedMemoryPrivate *self, qsizetype size)
@@ -186,38 +208,7 @@ bool QSharedMemorySystemV::detach(QSharedMemoryPrivate *self)
     self->memory = nullptr;
     self->size = 0;
 
-    // Get the number of current attachments
-    int id = shmget(unix_key, 0, 0400);
-    QByteArray oldNativeKeyFile = nativeKeyFile;
-    cleanHandle(self);
-
-    struct shmid_ds shmid_ds;
-    if (0 != shmctl(id, IPC_STAT, &shmid_ds)) {
-        switch (errno) {
-        case EINVAL:
-            return true;
-        default:
-            return false;
-        }
-    }
-    // If there are no attachments then remove it.
-    if (shmid_ds.shm_nattch == 0) {
-        // mark for removal
-        if (-1 == shmctl(id, IPC_RMID, &shmid_ds)) {
-            self->setUnixErrorString("QSharedMemory::remove"_L1);
-            switch (errno) {
-            case EINVAL:
-                return true;
-            default:
-                return false;
-            }
-        }
-
-        // remove file
-        if (unlink(oldNativeKeyFile) < 0)
-            return false;
-    }
-    return true;
+    return cleanHandle(self);
 }
 
 QT_END_NAMESPACE
