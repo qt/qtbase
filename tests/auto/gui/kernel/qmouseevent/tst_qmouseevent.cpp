@@ -97,6 +97,7 @@ private slots:
     void grabbers_data();
     void grabbers();
     void velocity();
+    void clone();
 
 private:
     MouseEventWidget* testMouseWidget;
@@ -307,6 +308,25 @@ void tst_QMouseEvent::velocity()
     qCDebug(lcTests) << firstPoint;
     QVERIFY(testMouseWidget->velocity.x() > 0);
     QVERIFY(testMouseWidget->velocity.y() > 0);
+}
+
+void tst_QMouseEvent::clone()
+{
+    const QPointF pos(10.0f, 10.0f);
+
+    QMouseEvent originalMe(QEvent::MouseButtonPress, pos, pos, pos, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    QVERIFY(!originalMe.allPointsAccepted());
+    QVERIFY(!originalMe.points().first().isAccepted());
+
+    // create a clone of the original
+    std::unique_ptr<QMouseEvent> clonedMe(originalMe.clone());
+    QVERIFY(!clonedMe->allPointsAccepted());
+    QVERIFY(!clonedMe->points().first().isAccepted());
+
+    // now we alter originalMe, which should *not* change clonedMe
+    originalMe.setAccepted(true);
+    QVERIFY(!clonedMe->allPointsAccepted());
+    QVERIFY(!clonedMe->points().first().isAccepted());
 }
 
 QTEST_MAIN(tst_QMouseEvent)

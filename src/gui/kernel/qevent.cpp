@@ -28,6 +28,22 @@
 
 #include <private/qdebug_p.h>
 
+#define Q_IMPL_POINTER_EVENT(Class) \
+    Class::Class(const Class &) = default; \
+    Class::~Class() = default; \
+    Class* Class::clone() const \
+    { \
+        auto c = new Class(*this); \
+        for (auto &point : c->m_points) \
+            QMutableEventPoint::detach(point); \
+        QEvent *e = c; \
+        /* check that covariant return is safe to add */ \
+        Q_ASSERT(reinterpret_cast<quintptr>(c) == reinterpret_cast<quintptr>(e)); \
+        return c; \
+    }
+
+
+
 QT_BEGIN_NAMESPACE
 
 static_assert(sizeof(QMutableTouchEvent) == sizeof(QTouchEvent));
@@ -59,7 +75,7 @@ QEnterEvent::QEnterEvent(const QPointF &localPos, const QPointF &scenePos, const
 {
 }
 
-Q_IMPL_EVENT_COMMON(QEnterEvent)
+Q_IMPL_POINTER_EVENT(QEnterEvent)
 
 /*!
    \fn QPoint QEnterEvent::globalPos() const
@@ -252,7 +268,7 @@ QPointerEvent::QPointerEvent(QEvent::Type type, QEvent::SinglePointEventTag, con
 {
 }
 
-Q_IMPL_EVENT_COMMON(QPointerEvent)
+Q_IMPL_POINTER_EVENT(QPointerEvent);
 
 /*!
     Returns the point whose \l {QEventPoint::id()}{id} matches the given \a id,
@@ -555,7 +571,7 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
     m_points << point;
 }
 
-Q_IMPL_EVENT_COMMON(QSinglePointEvent)
+Q_IMPL_POINTER_EVENT(QSinglePointEvent)
 
 /*!
     Returns \c true if this event represents a \l {button()}{button} being pressed.
@@ -744,7 +760,7 @@ QMouseEvent::QMouseEvent(QEvent::Type type, const QPointF &localPos, const QPoin
 {
 }
 
-Q_IMPL_EVENT_COMMON(QMouseEvent)
+Q_IMPL_POINTER_EVENT(QMouseEvent)
 
 /*!
     \fn Qt::MouseEventSource QMouseEvent::source() const
@@ -1062,7 +1078,7 @@ QHoverEvent::QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos,
 }
 #endif
 
-Q_IMPL_EVENT_COMMON(QHoverEvent)
+Q_IMPL_POINTER_EVENT(QHoverEvent)
 
 #if QT_CONFIG(wheelevent)
 /*!
@@ -1187,7 +1203,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF &globalPos, QPoint pi
     m_invertedScrolling = inverted;
 }
 
-Q_IMPL_EVENT_COMMON(QWheelEvent)
+Q_IMPL_POINTER_EVENT(QWheelEvent)
 
 /*!
     Returns \c true if this event's phase() is Qt::ScrollBegin.
@@ -2494,7 +2510,7 @@ QTabletEvent::QTabletEvent(Type type, const QPointingDevice *dev, const QPointF 
     QMutableEventPoint::setRotation(p, rotation);
 }
 
-Q_IMPL_EVENT_COMMON(QTabletEvent)
+Q_IMPL_POINTER_EVENT(QTabletEvent)
 
 /*!
     \fn qreal QTabletEvent::tangentialPressure() const
@@ -2818,7 +2834,7 @@ QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPoin
     Q_ASSERT(fingerCount < 16); // we store it in 4 bits unsigned
 }
 
-Q_IMPL_EVENT_COMMON(QNativeGestureEvent)
+Q_IMPL_POINTER_EVENT(QNativeGestureEvent)
 
 /*!
     \fn QNativeGestureEvent::gestureType() const
@@ -4481,7 +4497,7 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
 }
 #endif // QT_DEPRECATED_SINCE(6, 0)
 
-Q_IMPL_EVENT_COMMON(QTouchEvent)
+Q_IMPL_POINTER_EVENT(QTouchEvent)
 
 /*!
     Returns true if this event includes at least one newly-pressed touchpoint.
