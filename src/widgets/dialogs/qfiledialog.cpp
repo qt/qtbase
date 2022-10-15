@@ -4157,12 +4157,12 @@ QString QFSCompleter::pathFromIndex(const QModelIndex &index) const
     if (!currentLocation.isEmpty() && path.startsWith(currentLocation)) {
 #if defined(Q_OS_UNIX)
         if (currentLocation == QDir::separator())
-            return path.mid(currentLocation.size());
+            return path.remove(0, currentLocation.size());
 #endif
         if (currentLocation.endsWith(u'/'))
-            return path.mid(currentLocation.size());
+            return path.remove(0, currentLocation.size());
         else
-            return path.mid(currentLocation.size()+1);
+            return path.remove(0, currentLocation.size()+1);
     }
     return index.data(QFileSystemModel::FilePathRole).toString();
 }
