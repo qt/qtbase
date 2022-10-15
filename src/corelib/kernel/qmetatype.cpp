@@ -5,6 +5,7 @@
 
 #include "qmetatype.h"
 #include "qmetatype_p.h"
+#include "qobject.h"
 #include "qobjectdefs.h"
 #include "qdatetime.h"
 #include "qbytearray.h"
