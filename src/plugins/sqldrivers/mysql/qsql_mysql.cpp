@@ -171,10 +171,10 @@ public:
     bool preparedQuery = false;
 };
 
-static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
-                            const QMYSQLDriverPrivate* p)
+static QSqlError qMakeError(const QString &err, QSqlError::ErrorType type,
+                            const QMYSQLDriverPrivate *p)
 {
-    const char *cerr = p->mysql ? mysql_error(p->mysql) : 0;
+    const char *cerr = p->mysql ? mysql_error(p->mysql) : nullptr;
     return QSqlError("QMYSQL: "_L1 + err,
                      QString::fromUtf8(cerr),
                      type, QString::number(mysql_errno(p->mysql)));
@@ -252,8 +252,8 @@ static QSqlField qToField(MYSQL_FIELD *field)
     return f;
 }
 
-static QSqlError qMakeStmtError(const QString& err, QSqlError::ErrorType type,
-                            MYSQL_STMT* stmt)
+static QSqlError qMakeStmtError(const QString &err, QSqlError::ErrorType type,
+                                 MYSQL_STMT *stmt)
 {
     const char *cerr = mysql_stmt_error(stmt);
     return QSqlError("QMYSQL: "_L1 + err,
@@ -391,9 +391,8 @@ void QMYSQLResult::cleanup()
         d->meta = 0;
     }
 
-    int i;
-    for (i = 0; i < d->fields.size(); ++i)
-        delete[] d->fields[i].outField;
+    for (const QMYSQLResultPrivate::QMyField &f : std::as_const(d->fields))
+        delete[] f.outField;
 
     if (d->outBinds) {
         delete[] d->outBinds;
@@ -483,12 +482,7 @@ bool QMYSQLResult::fetchLast()
         return success;
     }
 
-    my_ulonglong numRows;
-    if (d->preparedQuery) {
-        numRows = mysql_stmt_num_rows(d->stmt);
-    } else {
-        numRows = mysql_num_rows(d->result);
-    }
+    my_ulonglong numRows = d->preparedQuery ? mysql_stmt_num_rows(d->stmt) : mysql_num_rows(d->result);
     if (at() == int(numRows))
         return true;
     if (!numRows)
@@ -729,7 +723,7 @@ QSqlRecord QMYSQLResult::record() const
     if (!mysql_errno(d->drv_d_func()->mysql)) {
         mysql_field_seek(res, 0);
         MYSQL_FIELD* field = mysql_fetch_field(res);
-        while(field) {
+        while (field) {
             info.append(qToField(field));
             field = mysql_fetch_field(res);
         }
@@ -752,8 +746,8 @@ bool QMYSQLResult::nextResult()
     d->result = 0;
     setSelect(false);
 
-    for (int i = 0; i < d->fields.size(); ++i)
-        delete[] d->fields[i].outField;
+    for (const QMYSQLResultPrivate::QMyField &f : std::as_const(d->fields))
+        delete[] f.outField;
     d->fields.clear();
 
     int status = mysql_next_result(d->drv_d_func()->mysql);
@@ -766,7 +760,7 @@ bool QMYSQLResult::nextResult()
     }
 
     d->result = mysql_store_result(d->drv_d_func()->mysql);
-    int numFields = mysql_field_count(d->drv_d_func()->mysql);
+    unsigned int numFields = mysql_field_count(d->drv_d_func()->mysql);
     if (!d->result && numFields > 0) {
         setLastError(qMakeError(QCoreApplication::translate("QMYSQLResult", "Unable to store next result"),
                      QSqlError::StatementError, d->drv_d_func()));
@@ -778,8 +772,8 @@ bool QMYSQLResult::nextResult()
     d->rowsAffected = mysql_affected_rows(d->drv_d_func()->mysql);
 
     if (isSelect()) {
-        for (int i = 0; i < numFields; i++) {
-            MYSQL_FIELD* field = mysql_fetch_field_direct(d->result, i);
+        for (unsigned int i = 0; i < numFields; i++) {
+            MYSQL_FIELD *field = mysql_fetch_field_direct(d->result, i);
             d->fields[i].type = qDecodeMYSQLType(field->type, field->flags);
         }
     }
@@ -885,7 +879,7 @@ bool QMYSQLResult::exec()
         mysql_stmt_param_count(d->stmt) == (uint)values.size()) {
 
         nullVector.resize(values.size());
-        for (int i = 0; i < values.size(); ++i) {
+        for (qsizetype i = 0; i < values.size(); ++i) {
             const QVariant &val = boundValues().at(i);
             void *data = const_cast<void *>(val.constData());
 
@@ -1352,7 +1346,7 @@ QStringList QMYSQLDriver::tables(QSql::TableType type) const
     return tl;
 }
 
-QSqlIndex QMYSQLDriver::primaryIndex(const QString& tablename) const
+QSqlIndex QMYSQLDriver::primaryIndex(const QString &tablename) const
 {
     QSqlIndex idx;
     if (!isOpen())
@@ -1373,22 +1367,19 @@ QSqlIndex QMYSQLDriver::primaryIndex(const QString& tablename) const
     return idx;
 }
 
-QSqlRecord QMYSQLDriver::record(const QString& tablename) const
+QSqlRecord QMYSQLDriver::record(const QString &tablename) const
 {
     Q_D(const QMYSQLDriver);
-    QString table=tablename;
-    if (isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
+    const QString table = stripDelimiters(tablename, QSqlDriver::TableName);
 
     QSqlRecord info;
     if (!isOpen())
         return info;
-    MYSQL_RES* r = mysql_list_fields(d->mysql, table.toUtf8().constData(), 0);
-    if (!r) {
+    MYSQL_RES *r = mysql_list_fields(d->mysql, table.toUtf8().constData(), nullptr);
+    if (!r)
         return info;
-    }
-    MYSQL_FIELD* field;
 
+    MYSQL_FIELD *field;
     while ((field = mysql_fetch_field(r)))
         info.append(qToField(field));
     mysql_free_result(r);
@@ -1499,9 +1490,9 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
 QString QMYSQLDriver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     QString res = identifier;
-    if (!identifier.isEmpty() && !identifier.startsWith(u'`') && !identifier.endsWith(u'`') ) {
-        res.prepend(u'`').append(u'`');
+    if (!identifier.isEmpty() && !identifier.startsWith(u'`') && !identifier.endsWith(u'`')) {
         res.replace(u'.', "`.`"_L1);
+        res = u'`' + res + u'`';
     }
     return res;
 }
