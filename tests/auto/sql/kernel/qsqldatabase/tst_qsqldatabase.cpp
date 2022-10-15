@@ -1243,21 +1243,21 @@ void tst_QSqlDatabase::caseSensivity()
     }
 
     QSqlRecord rec = db.record(qTableName("qtest", __FILE__, db, driverQuotedCaseSensitive(db)));
-    QVERIFY((int)rec.count() > 0);
+    QVERIFY(rec.count() > 0);
     if (!cs) {
-    rec = db.record(qTableName("QTEST", __FILE__, db, false).toUpper());
-    QVERIFY((int)rec.count() > 0);
-    rec = db.record(qTableName("qTesT", __FILE__, db, false));
-    QVERIFY((int)rec.count() > 0);
+        rec = db.record(qTableName("QTEST", __FILE__, db, false).toUpper());
+        QVERIFY(rec.count() > 0);
+        rec = db.record(qTableName("qTesT", __FILE__, db, false));
+        QVERIFY(rec.count() > 0);
     }
 
     rec = db.primaryIndex(qTableName("qtest", __FILE__, db, driverQuotedCaseSensitive(db)));
-    QVERIFY((int)rec.count() > 0);
+    QVERIFY(rec.count() > 0);
     if (!cs) {
-    rec = db.primaryIndex(qTableName("QTEST", __FILE__, db, false).toUpper());
-    QVERIFY((int)rec.count() > 0);
-    rec = db.primaryIndex(qTableName("qTesT", __FILE__, db, false));
-    QVERIFY((int)rec.count() > 0);
+        rec = db.primaryIndex(qTableName("QTEST", __FILE__, db, false).toUpper());
+        QVERIFY(rec.count() > 0);
+        rec = db.primaryIndex(qTableName("qTesT", __FILE__, db, false));
+        QVERIFY(rec.count() > 0);
     }
 
     // Explicit test for case sensitive table creation without quoting
@@ -1269,6 +1269,13 @@ void tst_QSqlDatabase::caseSensivity()
     QVERIFY_SQL(qry, exec("SELECT * FROM " + noQuotesTable));
     QVERIFY_SQL(qry, next());
     QCOMPARE(qry.value(0).toInt(), 1);
+    // QMYSQLDriver::record() is using a mysql function instead of a query, so quoting
+    // will not help when the table names are not stored lowercase.
+    if (dbType == QSqlDriver::MySqlServer) {
+        QVERIFY_SQL(qry, exec("SHOW GLOBAL VARIABLES LIKE 'lower_case_table_names'"));
+        QVERIFY_SQL(qry, next());
+        cs = qry.value(1).toInt() != 0;
+    }
     rec = db.record(cs ? noQuotesTable.toLower() : noQuotesTable);
     QVERIFY(rec.count() > 0);
 }
