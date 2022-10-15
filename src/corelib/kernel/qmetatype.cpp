@@ -43,6 +43,7 @@
 #include "qmetatype.h"
 #undef QT_QMETATYPE_BC_COMPAT
 #include "qmetatype_p.h"
+#include "qobject.h"
 #include "qobjectdefs.h"
 #include "qdatetime.h"
 #include "qbytearray.h"
