@@ -259,6 +259,8 @@ private:
     virtual void helperPrepareShow(QPlatformDialogHelper *) override;
     virtual void helperDone(QDialog::DialogCode, QPlatformDialogHelper *) override;
 
+    void itemNotFound(const QString &fileName, QFileDialog::FileMode mode);
+    bool itemAlreadyExists(const QString &fileName);
     Q_DISABLE_COPY_MOVE(QFileDialogPrivate)
 };
 

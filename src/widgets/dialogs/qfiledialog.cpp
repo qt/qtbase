@@ -2667,6 +2667,32 @@ void QFileDialog::done(int result)
     d->signalToDisconnectOnClose.clear();
 }
 
+bool QFileDialogPrivate::itemAlreadyExists(const QString &fileName)
+{
+#if QT_CONFIG(messagebox)
+    Q_Q(QFileDialog);
+    const QString msg = QFileDialog::tr("%1 already exists.\nDo you want to replace it?").arg(fileName);
+    using B = QMessageBox;
+    const auto res = B::warning(q, q->windowTitle(), msg, B::Yes | B::No, B::No);
+    return res == B::Yes;
+#endif
+    return false;
+}
+
+void QFileDialogPrivate::itemNotFound(const QString &fileName, QFileDialog::FileMode mode)
+{
+#if QT_CONFIG(messagebox)
+    Q_Q(QFileDialog);
+    const QString message = mode == QFileDialog::Directory
+            ? QFileDialog::tr("%1\nDirectory not found.\n"
+                              "Please verify the correct directory name was given.")
+            : QFileDialog::tr("%1\nFile not found.\nPlease verify the "
+                              "correct file name was given.");
+
+    QMessageBox::warning(q, q->windowTitle(), message.arg(fileName));
+#endif // QT_CONFIG(messagebox)
+}
+
 /*!
  \reimp
 */
@@ -2697,18 +2723,15 @@ void QFileDialog::accept()
         return;
     }
 
-    switch (fileMode()) {
+    const auto mode = fileMode();
+    switch (mode) {
     case Directory: {
         QString fn = files.first();
         QFileInfo info(fn);
         if (!info.exists())
             info = QFileInfo(d->getEnvironmentVariable(fn));
         if (!info.exists()) {
-#if QT_CONFIG(messagebox)
-            QString message = tr("%1\nDirectory not found.\nPlease verify the "
-                                          "correct directory name was given.");
-            QMessageBox::warning(this, windowTitle(), message.arg(info.fileName()));
-#endif // QT_CONFIG(messagebox)
+            d->itemNotFound(info.fileName(), mode);
             return;
         }
         if (info.isDir()) {
@@ -2736,17 +2759,11 @@ void QFileDialog::accept()
         if (!info.exists() || testOption(DontConfirmOverwrite) || acceptMode() == AcceptOpen) {
             d->emitFilesSelected(QStringList(fn));
             QDialog::accept();
-#if QT_CONFIG(messagebox)
         } else {
-            if (QMessageBox::warning(this, windowTitle(),
-                                     tr("%1 already exists.\nDo you want to replace it?")
-                                     .arg(info.fileName()),
-                                     QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
-                    == QMessageBox::Yes) {
+            if (d->itemAlreadyExists(info.fileName())) {
                 d->emitFilesSelected(QStringList(fn));
                 QDialog::accept();
             }
-#endif
         }
         return;
     }
@@ -2758,11 +2775,7 @@ void QFileDialog::accept()
             if (!info.exists())
                 info = QFileInfo(d->getEnvironmentVariable(file));
             if (!info.exists()) {
-#if QT_CONFIG(messagebox)
-                QString message = tr("%1\nFile not found.\nPlease verify the "
-                                     "correct file name was given.");
-                QMessageBox::warning(this, windowTitle(), message.arg(info.fileName()));
-#endif // QT_CONFIG(messagebox)
+                d->itemNotFound(info.fileName(), mode);
                 return;
             }
             if (info.isDir()) {
