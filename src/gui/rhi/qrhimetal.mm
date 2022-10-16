@@ -1656,7 +1656,8 @@ void QRhiMetal::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
 
     [cbD->d->currentRenderPassEncoder setViewport: vp];
 
-    if (!cbD->currentGraphicsPipeline->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor)) {
+    if (cbD->currentGraphicsPipeline
+        && !cbD->currentGraphicsPipeline->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor)) {
         MTLScissorRect s;
         s.x = NSUInteger(x);
         s.y = NSUInteger(y);

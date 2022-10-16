@@ -4946,7 +4946,9 @@ void QRhiVulkan::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport
         cmd.cmd = QVkCommandBuffer::Command::SetViewport;
     }
 
-    if (!QRHI_RES(QVkGraphicsPipeline, cbD->currentGraphicsPipeline)->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor)) {
+    if (cbD->currentGraphicsPipeline
+        && !QRHI_RES(QVkGraphicsPipeline, cbD->currentGraphicsPipeline)
+                    ->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor)) {
         QVkCommandBuffer::Command &cmd(cbD->commands.get());
         VkRect2D *s = &cmd.args.setScissor.scissor;
         s->offset.x = int32_t(x);
