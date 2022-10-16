@@ -17,7 +17,7 @@ template <typename QAS> struct ApplicationHolder
     using Type = typename QAS::QAS_Type;
     using PlainType = std::remove_cv_t<Type>;
 
-    Q_CONSTINIT static inline std::aligned_union_t<1, PlainType> storage = {};
+    Q_CONSTINIT static inline struct { alignas(Type) unsigned char data[sizeof(Type)]; } storage = {};
     Q_CONSTINIT static inline QBasicAtomicInteger<qint8> guard = { QtGlobalStatic::Uninitialized };
     Q_CONSTINIT static inline QBasicMutex mutex {};
 
