@@ -4312,15 +4312,20 @@ QRhiDriverInfo QRhiVulkan::driverInfo() const
 
 QRhiStats QRhiVulkan::statistics()
 {
-    VmaTotalStatistics stats;
-    vmaCalculateStatistics(toVmaAllocator(allocator), &stats);
-
     QRhiStats result;
     result.totalPipelineCreationTime = totalPipelineCreationTime();
-    result.blockCount = stats.total.statistics.blockCount;
-    result.allocCount = stats.total.statistics.allocationCount;
-    result.usedBytes = stats.total.statistics.allocationBytes;
-    result.unusedBytes = stats.total.statistics.blockBytes - stats.total.statistics.allocationBytes;
+
+    VmaBudget budgets[VK_MAX_MEMORY_HEAPS];
+    vmaGetHeapBudgets(toVmaAllocator(allocator), budgets);
+
+    uint32_t count = toVmaAllocator(allocator)->GetMemoryHeapCount();
+    for (uint32_t i = 0; i < count; ++i) {
+        const VmaStatistics &stats(budgets[i].statistics);
+        result.blockCount += stats.blockCount;
+        result.allocCount += stats.allocationCount;
+        result.usedBytes += stats.allocationBytes;
+        result.unusedBytes += stats.blockBytes - stats.allocationBytes;
+    }
 
     return result;
 }

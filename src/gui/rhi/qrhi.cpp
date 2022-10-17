@@ -7156,9 +7156,6 @@ QDebug operator<<(QDebug dbg, const QRhiStats &info)
     from the underlying memory allocator library. This gives an insight into
     the memory requirements of the active buffers and textures.
 
-    \warning Gathering some of the data may be an expensive operation, and
-    therefore the function must not be called at a high frequency.
-
     Additional data, such as the total time in milliseconds spent in graphics
     and compute pipeline creation (which usually involves shader compilation or
     cache lookups, and potentially expensive processing) is available with most
