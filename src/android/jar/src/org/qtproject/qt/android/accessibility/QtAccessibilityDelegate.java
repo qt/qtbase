@@ -57,6 +57,7 @@ import android.view.MotionEvent;
 import android.view.View.OnHoverListener;
 
 import android.content.Context;
+import android.system.Os;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -124,6 +125,8 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         @Override
         public void onAccessibilityStateChanged(boolean enabled)
         {
+            if (Os.getenv("QT_ANDROID_DISABLE_ACCESSIBILITY") != null)
+                return;
             if (enabled) {
                     try {
                         View view = m_view;
