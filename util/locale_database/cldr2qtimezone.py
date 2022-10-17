@@ -4,11 +4,12 @@
 """Parse CLDR data for QTimeZone use with MS-Windows
 
 Script to parse the CLDR common/supplemental/windowsZones.xml file and
-encode for use in QTimeZone.  See ``./cldr2qlocalexml.py`` for where
-to get the CLDR data.  Pass its root directory as first parameter to
-this script and the qtbase root directory as second parameter.  It
-shall update qtbase's src/corelib/time/qtimezoneprivate_data_p.h ready
-for use.
+prepare its data for use in QTimeZone.  See ``./cldr2qlocalexml.py`` for
+where to get the CLDR data.  Pass its root directory as first parameter
+to this script.  You can optionally pass the qtbase root directory as
+second parameter; it defaults to the root of the checkout containing
+this script.  This script updates qtbase's
+src/corelib/time/qtimezoneprivate_data_p.h with the new data.
 """
 
 import datetime
@@ -16,7 +17,7 @@ from pathlib import Path
 import textwrap
 import argparse
 
-from localetools import unicode2hex, wrap_list, Error, SourceFileEditor
+from localetools import unicode2hex, wrap_list, Error, SourceFileEditor, qtbase_root
 from cldr import CldrAccess
 
 ### Data that may need updates in response to new entries in the CLDR file ###
@@ -310,7 +311,9 @@ def main(out, err):
     parser = argparse.ArgumentParser(
         description="Update Qt's CLDR-derived timezone data.")
     parser.add_argument('cldr_path', help='path to the root of the CLDR tree')
-    parser.add_argument('qtbase_path', help='path to the root of the qtbase source tree')
+    parser.add_argument('qtbase_path',
+                        help='path to the root of the qtbase source tree',
+                        nargs='?', default=qtbase_root)
 
     args = parser.parse_args()
 

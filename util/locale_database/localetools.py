@@ -16,6 +16,9 @@ from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
+qtbase_root = Path(__file__).parents[2]
+assert qtbase_root.name == 'qtbase'
+
 class Error (Exception):
     def __init__(self, msg, *args):
         super().__init__(msg, *args)
