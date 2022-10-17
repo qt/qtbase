@@ -347,6 +347,9 @@ private:
 QGenericUnixServices::QGenericUnixServices()
 {
 #if QT_CONFIG(dbus)
+    if (qEnvironmentVariableIntValue("QT_NO_XDG_DESKTOP_PORTAL") > 0) {
+        return;
+    }
     QDBusMessage message = QDBusMessage::createMethodCall(
             "org.freedesktop.portal.Desktop"_L1, "/org/freedesktop/portal/desktop"_L1,
             "org.freedesktop.DBus.Properties"_L1, "Get"_L1);
