@@ -7,10 +7,10 @@
         "QtUsage": "Memory management for the Vulkan backend of QRhi.",
 
         "Homepage": "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator",
-        "Version": "2.3.0",
+        "Version": "3.0.1",
         "License": "MIT License",
         "LicenseId": "MIT",
         "LicenseFile": "LICENSE.txt",
-        "Copyright": "Copyright (c) 2017-2019 Advanced Micro Devices, Inc. All rights reserved."
+        "Copyright": "Copyright (c) 2017-2022 Advanced Micro Devices, Inc. All rights reserved."
     }
 ]

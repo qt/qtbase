@@ -1,0 +1,50 @@
+From aca24b15fbb6b47c35cbd7cd31a3db840df52ded Mon Sep 17 00:00:00 2001
+From: Laszlo Agocs <laszlo.agocs@qt.io>
+Date: Mon, 17 Oct 2022 16:33:50 +0200
+Subject: [PATCH] Disable some warnings for gcc and clang
+
+Change-Id: I81c6c5a2ce736846b6fd95c7f66b7946f7357cf2
+---
+ .../VulkanMemoryAllocator/vk_mem_alloc.h      | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h b/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
+index ef3ad65060..2a5b1e4b1a 100644
+--- a/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
++++ b/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
+@@ -2565,6 +2565,18 @@ VMA_CALL_PRE void VMA_CALL_POST vmaFreeStatsString(
+ #ifdef VMA_IMPLEMENTATION
+ #undef VMA_IMPLEMENTATION
+ 
++#if defined(__GNUC__) && !defined(__clang__)
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wunused-variable"
++#pragma GCC diagnostic ignored "-Wunused-parameter"
++#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
++#elif defined(__clang__)
++#pragma clang diagnostic push
++#pragma clang diagnostic ignored "-Wunused-variable"
++#pragma clang diagnostic ignored "-Wunused-parameter"
++#pragma clang diagnostic ignored "-Wmissing-field-initializers"
++#endif
++
+ #include <cstdint>
+ #include <cstdlib>
+ #include <cstring>
+@@ -17526,6 +17538,13 @@ VMA_CALL_PRE void VMA_CALL_POST vmaFreeVirtualBlockStatsString(VmaVirtualBlock V
+ }
+ #endif // VMA_STATS_STRING_ENABLED
+ #endif // _VMA_PUBLIC_INTERFACE
++
++#if defined(__GNUC__) && !defined(__clang__)
++#pragma GCC diagnostic pop
++#elif defined(__clang__)
++#pragma clang diagnostic pop
++#endif
++
+ #endif // VMA_IMPLEMENTATION
+ 
+ /**
+-- 
+2.36.1.windows.1
+

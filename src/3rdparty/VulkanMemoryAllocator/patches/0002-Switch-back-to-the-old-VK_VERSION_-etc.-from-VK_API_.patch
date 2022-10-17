@@ -1,0 +1,33 @@
+From 81ec04850473efe01ffdc5bc9383272e77f8cc4e Mon Sep 17 00:00:00 2001
+From: Laszlo Agocs <laszlo.agocs@qt.io>
+Date: Mon, 17 Oct 2022 14:14:12 +0200
+Subject: [PATCH] Switch back to the old VK_VERSION_* etc. from
+ VK_API_VERSION_*
+
+Change-Id: I412ff542ddda895a837c34c4ca40fb4845eae2ba
+---
+ src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h b/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
+index 02de45fa1c..ef3ad65060 100644
+--- a/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
++++ b/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
+@@ -16114,11 +16114,11 @@ VMA_CALL_PRE void VMA_CALL_POST vmaBuildStatsString(
+ 
+                 json.WriteString("apiVersion");
+                 json.BeginString();
+-                json.ContinueString(VK_API_VERSION_MAJOR(deviceProperties.apiVersion));
++                json.ContinueString(VK_VERSION_MAJOR(deviceProperties.apiVersion));
+                 json.ContinueString(".");
+-                json.ContinueString(VK_API_VERSION_MINOR(deviceProperties.apiVersion));
++                json.ContinueString(VK_VERSION_MINOR(deviceProperties.apiVersion));
+                 json.ContinueString(".");
+-                json.ContinueString(VK_API_VERSION_PATCH(deviceProperties.apiVersion));
++                json.ContinueString(VK_VERSION_PATCH(deviceProperties.apiVersion));
+                 json.EndString();
+ 
+                 json.WriteString("GPU");
+-- 
+2.36.1.windows.1
+

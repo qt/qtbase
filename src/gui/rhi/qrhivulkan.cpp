@@ -5,6 +5,7 @@
 #include "qrhivulkanext_p.h"
 
 #define VMA_IMPLEMENTATION
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
 #define VMA_STATIC_VULKAN_FUNCTIONS 0
 #define VMA_RECORDING_ENABLED 0
 #define VMA_DEDICATED_ALLOCATION 0
@@ -199,84 +200,14 @@ inline Int aligned(Int v, Int byteAlign)
 
 static QVulkanInstance *globalVulkanInstance;
 
-static void VKAPI_PTR wrap_vkGetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties* pProperties)
+static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL wrap_vkGetInstanceProcAddr(VkInstance, const char *pName)
 {
-    globalVulkanInstance->functions()->vkGetPhysicalDeviceProperties(physicalDevice, pProperties);
+    return globalVulkanInstance->getInstanceProcAddr(pName);
 }
 
-static void VKAPI_PTR wrap_vkGetPhysicalDeviceMemoryProperties(VkPhysicalDevice physicalDevice, VkPhysicalDeviceMemoryProperties* pMemoryProperties)
+static VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL wrap_vkGetDeviceProcAddr(VkDevice device, const char *pName)
 {
-    globalVulkanInstance->functions()->vkGetPhysicalDeviceMemoryProperties(physicalDevice, pMemoryProperties);
-}
-
-static VkResult VKAPI_PTR wrap_vkAllocateMemory(VkDevice device, const VkMemoryAllocateInfo* pAllocateInfo, const VkAllocationCallbacks* pAllocator, VkDeviceMemory* pMemory)
-{
-    return globalVulkanInstance->deviceFunctions(device)->vkAllocateMemory(device, pAllocateInfo, pAllocator, pMemory);
-}
-
-void VKAPI_PTR wrap_vkFreeMemory(VkDevice device, VkDeviceMemory memory, const VkAllocationCallbacks* pAllocator)
-{
-    globalVulkanInstance->deviceFunctions(device)->vkFreeMemory(device, memory, pAllocator);
-}
-
-VkResult VKAPI_PTR wrap_vkMapMemory(VkDevice device, VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size, VkMemoryMapFlags flags, void** ppData)
-{
-    return globalVulkanInstance->deviceFunctions(device)->vkMapMemory(device, memory, offset, size, flags, ppData);
-}
-
-void VKAPI_PTR wrap_vkUnmapMemory(VkDevice device, VkDeviceMemory memory)
-{
-    globalVulkanInstance->deviceFunctions(device)->vkUnmapMemory(device, memory);
-}
-
-VkResult VKAPI_PTR wrap_vkFlushMappedMemoryRanges(VkDevice device, uint32_t memoryRangeCount, const VkMappedMemoryRange* pMemoryRanges)
-{
-    return globalVulkanInstance->deviceFunctions(device)->vkFlushMappedMemoryRanges(device, memoryRangeCount, pMemoryRanges);
-}
-
-VkResult VKAPI_PTR wrap_vkInvalidateMappedMemoryRanges(VkDevice device, uint32_t memoryRangeCount, const VkMappedMemoryRange* pMemoryRanges)
-{
-    return globalVulkanInstance->deviceFunctions(device)->vkInvalidateMappedMemoryRanges(device, memoryRangeCount, pMemoryRanges);
-}
-
-VkResult VKAPI_PTR wrap_vkBindBufferMemory(VkDevice device, VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memoryOffset)
-{
-    return globalVulkanInstance->deviceFunctions(device)->vkBindBufferMemory(device, buffer, memory, memoryOffset);
-}
-
-VkResult VKAPI_PTR wrap_vkBindImageMemory(VkDevice device, VkImage image, VkDeviceMemory memory, VkDeviceSize memoryOffset)
-{
-    return globalVulkanInstance->deviceFunctions(device)->vkBindImageMemory(device, image, memory, memoryOffset);
-}
-
-void VKAPI_PTR wrap_vkGetBufferMemoryRequirements(VkDevice device, VkBuffer buffer, VkMemoryRequirements* pMemoryRequirements)
-{
-    globalVulkanInstance->deviceFunctions(device)->vkGetBufferMemoryRequirements(device, buffer, pMemoryRequirements);
-}
-
-void VKAPI_PTR wrap_vkGetImageMemoryRequirements(VkDevice device, VkImage image, VkMemoryRequirements* pMemoryRequirements)
-{
-    globalVulkanInstance->deviceFunctions(device)->vkGetImageMemoryRequirements(device, image, pMemoryRequirements);
-}
-
-VkResult VKAPI_PTR wrap_vkCreateBuffer(VkDevice device, const VkBufferCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkBuffer* pBuffer)
-{
-    return globalVulkanInstance->deviceFunctions(device)->vkCreateBuffer(device, pCreateInfo, pAllocator, pBuffer);
-}
-
-void VKAPI_PTR wrap_vkDestroyBuffer(VkDevice device, VkBuffer buffer, const VkAllocationCallbacks* pAllocator)
-{
-    globalVulkanInstance->deviceFunctions(device)->vkDestroyBuffer(device, buffer, pAllocator);
-}
-
-VkResult VKAPI_PTR wrap_vkCreateImage(VkDevice device, const VkImageCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkImage* pImage)
-{
-    return globalVulkanInstance->deviceFunctions(device)->vkCreateImage(device, pCreateInfo, pAllocator, pImage);
-}
-
-void VKAPI_PTR wrap_vkDestroyImage(VkDevice device, VkImage image, const VkAllocationCallbacks* pAllocator)
-{
-    globalVulkanInstance->deviceFunctions(device)->vkDestroyImage(device, image, pAllocator);
+    return globalVulkanInstance->functions()->vkGetDeviceProcAddr(device, pName);
 }
 
 static inline VmaAllocation toVmaAllocation(QVkAlloc a)
@@ -726,23 +657,9 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     caps.nonFillPolygonMode = physDevFeatures.fillModeNonSolid;
 
     if (!importedAllocator) {
-        VmaVulkanFunctions afuncs;
-        afuncs.vkGetPhysicalDeviceProperties = wrap_vkGetPhysicalDeviceProperties;
-        afuncs.vkGetPhysicalDeviceMemoryProperties = wrap_vkGetPhysicalDeviceMemoryProperties;
-        afuncs.vkAllocateMemory = wrap_vkAllocateMemory;
-        afuncs.vkFreeMemory = wrap_vkFreeMemory;
-        afuncs.vkMapMemory = wrap_vkMapMemory;
-        afuncs.vkUnmapMemory = wrap_vkUnmapMemory;
-        afuncs.vkFlushMappedMemoryRanges = wrap_vkFlushMappedMemoryRanges;
-        afuncs.vkInvalidateMappedMemoryRanges = wrap_vkInvalidateMappedMemoryRanges;
-        afuncs.vkBindBufferMemory = wrap_vkBindBufferMemory;
-        afuncs.vkBindImageMemory = wrap_vkBindImageMemory;
-        afuncs.vkGetBufferMemoryRequirements = wrap_vkGetBufferMemoryRequirements;
-        afuncs.vkGetImageMemoryRequirements = wrap_vkGetImageMemoryRequirements;
-        afuncs.vkCreateBuffer = wrap_vkCreateBuffer;
-        afuncs.vkDestroyBuffer = wrap_vkDestroyBuffer;
-        afuncs.vkCreateImage = wrap_vkCreateImage;
-        afuncs.vkDestroyImage = wrap_vkDestroyImage;
+        VmaVulkanFunctions funcs = {};
+        funcs.vkGetInstanceProcAddr = wrap_vkGetInstanceProcAddr;
+        funcs.vkGetDeviceProcAddr = wrap_vkGetDeviceProcAddr;
 
         VmaAllocatorCreateInfo allocatorInfo = {};
         // A QRhi is supposed to be used from one single thread only. Disable
@@ -750,7 +667,14 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         allocatorInfo.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
         allocatorInfo.physicalDevice = physDev;
         allocatorInfo.device = dev;
-        allocatorInfo.pVulkanFunctions = &afuncs;
+        allocatorInfo.pVulkanFunctions = &funcs;
+        allocatorInfo.instance = inst->vkInstance();
+        const QVersionNumber apiVer = inst->apiVersion();
+        if (!apiVer.isNull()) {
+            allocatorInfo.vulkanApiVersion = VK_MAKE_VERSION(apiVer.majorVersion(),
+                                                             apiVer.minorVersion(),
+                                                             apiVer.microVersion());
+        }
         VmaAllocator vmaallocator;
         VkResult err = vmaCreateAllocator(&allocatorInfo, &vmaallocator);
         if (err != VK_SUCCESS) {
@@ -4388,15 +4312,15 @@ QRhiDriverInfo QRhiVulkan::driverInfo() const
 
 QRhiStats QRhiVulkan::statistics()
 {
-    VmaStats stats;
-    vmaCalculateStats(toVmaAllocator(allocator), &stats);
+    VmaTotalStatistics stats;
+    vmaCalculateStatistics(toVmaAllocator(allocator), &stats);
 
     QRhiStats result;
     result.totalPipelineCreationTime = totalPipelineCreationTime();
-    result.blockCount = stats.total.blockCount;
-    result.allocCount = stats.total.allocationCount;
-    result.usedBytes = stats.total.usedBytes;
-    result.unusedBytes = stats.total.unusedBytes;
+    result.blockCount = stats.total.statistics.blockCount;
+    result.allocCount = stats.total.statistics.allocationCount;
+    result.usedBytes = stats.total.statistics.allocationBytes;
+    result.unusedBytes = stats.total.statistics.blockBytes - stats.total.statistics.allocationBytes;
 
     return result;
 }
