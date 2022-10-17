@@ -36,8 +36,32 @@ instructions:
         userMessageOnFailure: >
           Failed to build sources.
       - type: EnvironmentVariable
-        variableName: COIN_CMAKE_INSTALL_SCRIPT_PATH
+        variableName: COIN_CMAKE_BUILD_DIR
         variableValue: "{{.BuildDir}}"
+      - type: EnvironmentVariable
+        variableName: COIN_CMAKE_BUILD_LIBEXEC_DIR
+        variableValue: "{{.BuildDir}}{{.Env.CI_PATH_SEP}}libexec"
+        disable_if:
+          condition: and
+          conditions:
+            - condition: property
+              property: host.os
+              equals_value: Windows
+            - condition: property
+              property: target.osVersion
+              not_in_values: [WebAssembly, Android_ANY]
+      - type: EnvironmentVariable
+        variableName: COIN_CMAKE_BUILD_LIBEXEC_DIR
+        variableValue: "{{.BuildDir}}{{.Env.CI_PATH_SEP}}bin"
+        enable_if:
+          condition: and
+          conditions:
+            - condition: property
+              property: host.os
+              equals_value: Windows
+            - condition: property
+              property: target.osVersion
+              not_in_values: [WebAssembly, Android_ANY]
       - !include "{{qt/qtbase}}/call_host_install.yaml"
       - type: EnvironmentVariable
         variableName: DESTDIR
@@ -89,8 +113,32 @@ instructions:
     userMessageOnFailure: >
       Failed to build sources.
   - type: EnvironmentVariable
-    variableName: COIN_CMAKE_INSTALL_SCRIPT_PATH
+    variableName: COIN_CMAKE_BUILD_DIR
     variableValue: "{{.BuildDir}}"
+  - type: EnvironmentVariable
+    variableName: COIN_CMAKE_BUILD_LIBEXEC_DIR
+    variableValue: "{{.Env.COIN_CMAKE_BUILD_DIR}}{{.Env.CI_PATH_SEP}}libexec"
+    disable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: host.os
+          equals_value: Windows
+        - condition: property
+          property: target.osVersion
+          not_in_values: [WebAssembly, Android_ANY]
+  - type: EnvironmentVariable
+    variableName: COIN_CMAKE_BUILD_LIBEXEC_DIR
+    variableValue: "{{.Env.COIN_CMAKE_BUILD_DIR}}{{.Env.CI_PATH_SEP}}bin"
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: host.os
+          equals_value: Windows
+        - condition: property
+          property: target.osVersion
+          not_in_values: [WebAssembly, Android_ANY]
   - !include "{{qt/qtbase}}/call_target_install.yaml"
   - type: EnvironmentVariable
     variableName: DESTDIR

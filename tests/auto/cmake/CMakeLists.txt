@@ -275,10 +275,11 @@ if(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX)
 elseif(QT6_INSTALL_PREFIX)
     set(qt_install_prefix "${QT6_INSTALL_PREFIX}")
 endif()
-if(INSTALL_BINDIR)
-    set(qt_install_bin_dir "${INSTALL_BINDIR}")
-elseif(QT6_INSTALL_BINS)
-    set(qt_install_bin_dir "${QT6_INSTALL_BINS}")
+
+if(INSTALL_LIBEXECDIR)
+    set(qt_install_libexec_dir "${INSTALL_LIBEXECDIR}")
+elseif(QT6_INSTALL_LIBEXECS)
+    set(qt_install_libexec_dir "${QT6_INSTALL_LIBEXECS}")
 endif()
 
 # Test building and installing a few dummy Qt modules and plugins.
@@ -289,7 +290,7 @@ if(is_qt_build_platform)
             BINARY "${CMAKE_COMMAND}"
             BINARY_ARGS
             "-DQT_BUILD_DIR=${CMAKE_CURRENT_BINARY_DIR}/mockplugins"
-            -P "${qt_install_prefix}/${qt_install_bin_dir}/qt-cmake-private-install.cmake"
+            -P "${qt_install_prefix}/${qt_install_libexec_dir}/qt-cmake-private-install.cmake"
         )
     endif()
     _qt_internal_test_expect_pass(mockplugins ${mockplugins_test_args})

@@ -12,14 +12,14 @@ instructions:
     instructions:
       - type: EnvironmentVariable
         variableName: CONFIGURE_EXECUTABLE
-        variableValue: "{{.InstallDir}}{{.Env.INSTALL_DIR_SUFFIX}}/bin/qt-configure-module"
+        variableValue: "{{.InstallDir}}{{.Env.INSTALL_DIR_SUFFIX}}{{.Env.CI_PATH_SEP}}libexec{{.Env.CI_PATH_SEP}}qt-configure-module"
         disable_if:
           condition: property
           property: host.os
           equals_value: Windows
       - type: EnvironmentVariable
         variableName: CONFIGURE_EXECUTABLE
-        variableValue: "{{.InstallDir}}{{.Env.INSTALL_DIR_SUFFIX}}\\bin\\qt-configure-module.bat"
+        variableValue: "{{.InstallDir}}{{.Env.INSTALL_DIR_SUFFIX}}{{.Env.CI_PATH_SEP}}bin{{.Env.CI_PATH_SEP}}qt-configure-module.bat"
         enable_if:
           condition: property
           property: host.os
@@ -32,14 +32,14 @@ instructions:
     instructions:
       - type: EnvironmentVariable
         variableName: CONFIGURE_EXECUTABLE
-        variableValue: "{{.InstallDir}}{{.Env.INSTALL_DIR_SUFFIX}}/bin/qt-cmake-private"
+        variableValue: "{{.InstallDir}}{{.Env.INSTALL_DIR_SUFFIX}}{{.Env.CI_PATH_SEP}}libexec{{.Env.CI_PATH_SEP}}qt-cmake-private"
         disable_if:
           condition: property
           property: host.os
           equals_value: Windows
       - type: EnvironmentVariable
         variableName: CONFIGURE_EXECUTABLE
-        variableValue: "{{.InstallDir}}{{.Env.INSTALL_DIR_SUFFIX}}\\bin\\qt-cmake-private.bat"
+        variableValue: "{{.InstallDir}}{{.Env.INSTALL_DIR_SUFFIX}}{{.Env.CI_PATH_SEP}}bin{{.Env.CI_PATH_SEP}}qt-cmake-private.bat"
         enable_if:
           condition: property
           property: host.os

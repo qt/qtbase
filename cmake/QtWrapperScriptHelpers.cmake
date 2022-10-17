@@ -50,10 +50,10 @@ function(qt_internal_create_wrapper_scripts)
     set(__qt_cmake_extra "-G\"${CMAKE_GENERATOR}\"")
     if(generate_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.in"
-            "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private" @ONLY
+            "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-cmake-private" @ONLY
             NEWLINE_STYLE LF)
-        qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private"
-               DESTINATION "${INSTALL_BINDIR}")
+        qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-cmake-private"
+               DESTINATION "${INSTALL_LIBEXECDIR}")
     endif()
     if(generate_non_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.bat.in"
@@ -76,10 +76,10 @@ function(qt_internal_create_wrapper_scripts)
         __relative_path_to_cmake_scripts_dir)
     if(generate_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-configure-module.in"
-            "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module" @ONLY
+            "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-configure-module" @ONLY
             NEWLINE_STYLE LF)
-        qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module"
-            DESTINATION "${INSTALL_BINDIR}")
+        qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-configure-module"
+            DESTINATION "${INSTALL_LIBEXECDIR}")
     endif()
     if(generate_non_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-configure-module.bat.in"
@@ -140,7 +140,7 @@ function(qt_internal_create_wrapper_scripts)
             "${QT_BUILD_DIR}/${__qt_cmake_standalone_test_bin_path}"
             NEWLINE_STYLE LF)
         qt_install(PROGRAMS "${QT_BUILD_DIR}/${__qt_cmake_standalone_test_bin_path}"
-                   DESTINATION "${INSTALL_BINDIR}")
+                   DESTINATION "${INSTALL_LIBEXECDIR}")
     endif()
     if(generate_non_unix)
         set(__qt_cmake_standalone_test_os_prelude "@echo off")
@@ -167,9 +167,9 @@ function(qt_internal_create_wrapper_scripts)
         set(__qt_configured_configs "${CMAKE_BUILD_TYPE}")
     endif()
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/${__qt_cmake_install_script_name}.in"
-                   "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${__qt_cmake_install_script_name}" @ONLY)
-    qt_install(FILES "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${__qt_cmake_install_script_name}"
-               DESTINATION "${INSTALL_BINDIR}")
+                   "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${__qt_cmake_install_script_name}" @ONLY)
+    qt_install(FILES "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${__qt_cmake_install_script_name}"
+               DESTINATION "${INSTALL_LIBEXECDIR}")
 
     qt_internal_create_qt_configure_tests_wrapper_script()
     qt_internal_install_android_helper_scripts()
@@ -213,11 +213,11 @@ function(qt_internal_create_qt_configure_tests_wrapper_script)
     endif()
     if(generate_non_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/libexec/${script_name}.bat.in"
-            "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}.bat" @ONLY
+            "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${script_name}.bat" @ONLY
             NEWLINE_STYLE CRLF)
 
-        qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}.bat"
-                   DESTINATION "${INSTALL_LIBEXECDIR}")
+        qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${script_name}.bat"
+                   DESTINATION "${INSTALL_BINDIR}")
     endif()
 endfunction()
 

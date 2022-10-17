@@ -1,9 +1,24 @@
 type: Group
 instructions:
   - type: ExecuteCommand
-    command: "{{.Env.TARGET_ENV_PREFIX}} cmake -DQT_BUILD_DIR={{.BuildDir}} -P {{.Env.COIN_CMAKE_INSTALL_SCRIPT_PATH}}/bin/qt-cmake-private-install.cmake"
+    command: "{{.Env.TARGET_ENV_PREFIX}} cmake -DQT_BUILD_DIR={{.BuildDir}} -P {{.Env.COIN_CMAKE_BUILD_LIBEXEC_DIR}}{{.Env.CI_PATH_SEP}}qt-cmake-private-install.cmake"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
+    enable_if:
+      condition: runtime
+      env_var: TESTED_MODULE_COIN
+      equals_value: qtbase
+    userMessageOnFailure: >
+      Failed to install package.
+  - type: ExecuteCommand
+    command: "{{.Env.TARGET_ENV_PREFIX}} cmake -DQT_BUILD_DIR={{.BuildDir}} -P {{.Env.COIN_CMAKE_INSTALL_LIBEXEC_DIR}}{{.Env.CI_PATH_SEP}}qt-cmake-private-install.cmake"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    disable_if:
+      condition: runtime
+      env_var: TESTED_MODULE_COIN
+      equals_value: qtbase
     userMessageOnFailure: >
       Failed to install package.
