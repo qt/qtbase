@@ -1045,17 +1045,27 @@ void tst_QSet::qhash()
         s1.reserve(4);
         s1 << 400 << 300 << 200 << 100;
 
-        // also change the seed:
-        QHashSeed::resetRandomGlobalSeed();
+        int retries = 128;
+        while (--retries >= 0) {
+            // reset the global seed to something different
+            QHashSeed::resetRandomGlobalSeed();
 
-        QSet<int> s2;
-        s2.reserve(100); // provoke different bucket counts
-        s2 << 100 << 200 << 300 << 400; // and insert elements in different order, too
+            QSet<int> s2;
+            s2.reserve(100); // provoke different bucket counts
+            s2 << 100 << 200 << 300 << 400; // and insert elements in different order, too
+            QVERIFY(s1.capacity() != s2.capacity());
 
-        QVERIFY(s1.capacity() != s2.capacity());
-        QCOMPARE(s1, s2);
-        QVERIFY(!std::equal(s1.cbegin(), s1.cend(), s2.cbegin())); // verify that the order _is_ different
-        QCOMPARE(qHash(s1), qHash(s2));
+            // see if we got a _different_ order
+            if (std::equal(s1.cbegin(), s1.cend(), s2.cbegin()))
+                continue;
+
+            // check if the two QHashes still compare equal and produce the
+            // same hash, despite containing elements in different orders
+            QCOMPARE(s1, s2);
+            QCOMPARE(qHash(s1), qHash(s2));
+        }
+        QVERIFY2(retries != 0, "Could not find a QSet with a different order of elements even "
+                               "after a lot of retries. This is unlikely, but possible.");
     }
 
     //
