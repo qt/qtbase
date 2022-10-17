@@ -726,11 +726,11 @@ void QOpenGL2PaintEngineExPrivate::resetGLState()
         float color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
         funcs.glVertexAttrib4fv(3, color);
     }
-    if (vao.isCreated()) {
+    if (vao.isCreated())
         vao.release();
-        funcs.glBindBuffer(GL_ARRAY_BUFFER, 0);
-        funcs.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
+
+    funcs.glBindBuffer(GL_ARRAY_BUFFER, 0);
+    funcs.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void QOpenGL2PaintEngineEx::endNativePainting()
@@ -2198,28 +2198,27 @@ bool QOpenGL2PaintEngineEx::begin(QPaintDevice *pdev)
         bool created = d->vao.create();
 
         // If we managed to create it then we have a profile that supports VAOs
-        if (created) {
+        if (created)
             d->vao.bind();
+    }
 
-            // Generate a new Vertex Buffer Object if we don't have one already
-            if (!d->vertexBuffer.isCreated()) {
-                d->vertexBuffer.create();
-                // Set its usage to StreamDraw, we will use this buffer only a few times before refilling it
-                d->vertexBuffer.setUsagePattern(QOpenGLBuffer::StreamDraw);
-            }
-            if (!d->texCoordBuffer.isCreated()) {
-                d->texCoordBuffer.create();
-                d->texCoordBuffer.setUsagePattern(QOpenGLBuffer::StreamDraw);
-            }
-            if (!d->opacityBuffer.isCreated()) {
-                d->opacityBuffer.create();
-                d->opacityBuffer.setUsagePattern(QOpenGLBuffer::StreamDraw);
-            }
-            if (!d->indexBuffer.isCreated()) {
-                d->indexBuffer.create();
-                d->indexBuffer.setUsagePattern(QOpenGLBuffer::StreamDraw);
-            }
-        }
+    // Generate a new Vertex Buffer Object if we don't have one already
+    if (!d->vertexBuffer.isCreated()) {
+        d->vertexBuffer.create();
+        // Set its usage to StreamDraw, we will use this buffer only a few times before refilling it
+        d->vertexBuffer.setUsagePattern(QOpenGLBuffer::StreamDraw);
+    }
+    if (!d->texCoordBuffer.isCreated()) {
+        d->texCoordBuffer.create();
+        d->texCoordBuffer.setUsagePattern(QOpenGLBuffer::StreamDraw);
+    }
+    if (!d->opacityBuffer.isCreated()) {
+        d->opacityBuffer.create();
+        d->opacityBuffer.setUsagePattern(QOpenGLBuffer::StreamDraw);
+    }
+    if (!d->indexBuffer.isCreated()) {
+        d->indexBuffer.create();
+        d->indexBuffer.setUsagePattern(QOpenGLBuffer::StreamDraw);
     }
 
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
