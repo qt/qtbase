@@ -1822,13 +1822,20 @@ function(_qt_internal_process_resource target resourceName)
         endif()
         get_source_file_property(
             target_dependency ${file} ${scope_args} _qt_resource_target_dependency)
-        if (NOT target_dependency)
-            list(APPEND resource_dependencies ${file})
-        else()
-            if (NOT TARGET ${target_dependency})
-                message(FATAL_ERROR "Target dependency on resource file ${file} is not a cmake target.")
+
+        # The target dependency code path does not take care of rebuilds when ${file}
+        # is touched. Limit its usage to the Xcode generator to avoid the Xcode common
+        # dependency issue.
+        # TODO: Figure out how to avoid the issue on Xcode, while also enabling proper
+        # dependency tracking when ${file} is touched.
+        if(target_dependency AND CMAKE_GENERATOR STREQUAL "Xcode")
+            if(NOT TARGET ${target_dependency})
+                message(FATAL_ERROR
+                        "Target dependency on resource file ${file} is not a cmake target.")
             endif()
             list(APPEND resource_dependencies ${target_dependency})
+        else()
+            list(APPEND resource_dependencies ${file})
         endif()
         _qt_internal_expose_source_file_to_ide(${target} "${file}")
     endforeach()
