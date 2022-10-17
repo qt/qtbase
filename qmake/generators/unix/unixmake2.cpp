@@ -803,7 +803,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
                 QString icon = fileFixify(var("ICON"));
                 t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
-                  << "@sed ";
+                  << "@plutil -convert xml1 -o - " << info_plist << " | "
+                  << "sed ";
                 for (const ProString &arg : std::as_const(commonSedArgs))
                     t << arg;
                 const QString iconName = icon.section(Option::dir_sep, -1);
@@ -814,7 +815,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "-e \"s,\\$${EXECUTABLE_NAME}," << (app_bundle_name.isEmpty() ? app_bundle_name : plugin_bundle_name) << ",g\" "
                   << "-e \"s,@TYPEINFO@,"<< typeInfo << ",g\" "
                   << "-e \"s,\\$${QMAKE_PKGINFO_TYPEINFO},"<< typeInfo << ",g\" "
-                  << "" << info_plist << " >" << info_plist_out << Qt::endl;
+                  << ">" << info_plist_out << Qt::endl;
                 //copy the icon
                 if (!project->isEmpty("ICON")) {
                     QString dir = bundle_dir + "Contents/Resources/";
@@ -835,14 +836,15 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 if (!isShallowBundle)
                     symlinks[bundle_dir + "Resources"] = "Versions/Current/Resources";
                 t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
-                  << "@sed ";
+                  << "@plutil -convert xml1 -o - " << info_plist << " | "
+                  << "sed ";
                 for (const ProString &arg : std::as_const(commonSedArgs))
                     t << arg;
                 t << "-e \"s,@LIBRARY@," << lib_bundle_name << ",g\" "
                   << "-e \"s,\\$${EXECUTABLE_NAME}," << lib_bundle_name << ",g\" "
                   << "-e \"s,@TYPEINFO@," << typeInfo << ",g\" "
                   << "-e \"s,\\$${QMAKE_PKGINFO_TYPEINFO}," << typeInfo << ",g\" "
-                  << "" << info_plist << " >" << info_plist_out << Qt::endl;
+                  << ">" << info_plist_out << Qt::endl;
             }
             break;
         } // project->isActiveConfig("no_plist")
