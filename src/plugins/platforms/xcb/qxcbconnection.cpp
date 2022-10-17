@@ -71,6 +71,10 @@
 #undef explicit
 #include <xcb/xinput.h>
 
+#if QT_CONFIG(xcb_xlib)
+#include "qt_xlib_wrapper.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaXInput, "qt.qpa.input")
@@ -1104,6 +1108,10 @@ void QXcbConnection::processXcbEvents(QEventLoop::ProcessEventsFlags flags)
         // this flush here after QTBUG-70095
         m_eventQueue->flushBufferedEvents();
     }
+
+#if QT_CONFIG(xcb_xlib)
+    qt_XFlush(static_cast<Display *>(xlib_display()));
+#endif
 
     xcb_flush(xcb_connection());
 }
