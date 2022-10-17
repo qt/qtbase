@@ -168,6 +168,7 @@ void tst_QBitArray::countBits()
             bits.setBit(i);
     }
 
+    QCOMPARE(bits.size(), numBits);
     QCOMPARE(bits.count(), numBits);
     QCOMPARE(bits.count(true), onBits);
     QCOMPARE(bits.count(false), numBits - onBits);
