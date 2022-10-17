@@ -889,20 +889,20 @@
     [self sendEventToFocusObject:e];
 }
 
-- (void)setBaseWritingDirection:(UITextWritingDirection)writingDirection forRange:(UITextRange *)range
+- (void)setBaseWritingDirection:(NSWritingDirection)writingDirection forRange:(UITextRange *)range
 {
     Q_UNUSED(writingDirection);
     Q_UNUSED(range);
     // Writing direction is handled by QLocale
 }
 
-- (UITextWritingDirection)baseWritingDirectionForPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction
+- (NSWritingDirection)baseWritingDirectionForPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction
 {
     Q_UNUSED(position);
     Q_UNUSED(direction);
     if (QLocale::system().textDirection() == Qt::RightToLeft)
-        return UITextWritingDirectionRightToLeft;
-    return UITextWritingDirectionLeftToRight;
+        return NSWritingDirectionRightToLeft;
+    return NSWritingDirectionLeftToRight;
 }
 
 - (UITextRange *)characterRangeByExtendingPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction
