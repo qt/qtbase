@@ -805,10 +805,9 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
             line_thickness = 2;
         underline_position =  ((line_thickness * 2) + 3) / 6;
 
-        if (isScalableBitmap()) {
+        cacheEnabled = false;
+        if (isScalableBitmap())
             glyphFormat = defaultFormat = GlyphFormat::Format_ARGB;
-            cacheEnabled = false;
-        }
     }
     if (line_thickness < 1)
         line_thickness = 1;
@@ -1828,6 +1827,10 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph,
     // When rendering glyphs into a cache via the alphaMap* functions, we disable
     // outline drawing. To ensure the bounding box matches the rendered glyph, we
     // need to do the same here.
+
+    const bool needsImageTransform = !FT_IS_SCALABLE(freetype->face) && !matrix.isIdentity();
+    if (needsImageTransform && format == QFontEngine::Format_Mono)
+        format = QFontEngine::Format_A8;
     Glyph *g = loadGlyphFor(glyph, subPixelPosition, format, matrix, true, true);
 
     glyph_metrics_t overall;
@@ -1854,7 +1857,7 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph,
         unlockFace();
     }
 
-    if (isScalableBitmap())
+    if (isScalableBitmap() || needsImageTransform)
         overall = scaledBitmapMetrics(overall, matrix);
     return overall;
 }
@@ -1954,12 +1957,16 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g,
                                        const QFixedPoint &subPixelPosition,
                                        const QTransform &t)
 {
-    const GlyphFormat neededFormat = antialias ? Format_A8 : Format_Mono;
+    const bool needsImageTransform = !FT_IS_SCALABLE(freetype->face) && !t.isIdentity();
+    const GlyphFormat neededFormat = antialias || needsImageTransform ? Format_A8 : Format_Mono;
 
     Glyph *glyph = loadGlyphFor(g, subPixelPosition, neededFormat, t, false, true);
 
     QImage img = alphaMapFromGlyphData(glyph, neededFormat);
-    img = img.copy();
+    if (needsImageTransform)
+        img = img.transformed(t, Qt::SmoothTransformation);
+    else
+        img = img.copy();
 
     if (!cacheEnabled && glyph != &emptyGlyph)
         delete glyph;
