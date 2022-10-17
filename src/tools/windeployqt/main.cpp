@@ -86,7 +86,8 @@ enum QtModule
     Qt3DAnimationModule       = 0x0002000000000000,
     QtWebViewModule           = 0x0004000000000000,
     Qt3DExtrasModule          = 0x0008000000000000,
-    QtShaderToolsModule       = 0x0010000000000000
+    QtShaderToolsModule       = 0x0010000000000000,
+    QtUiToolsModule           = 0x0020000000000000
 };
 
 struct QtModuleEntry {
@@ -147,7 +148,8 @@ static QtModuleEntry qtModuleEntries[] = {
     { QtTextToSpeechModule, "texttospeech", "Qt6TextToSpeech", nullptr },
     { QtSerialBusModule, "serialbus", "Qt6SerialBus", nullptr },
     { QtWebViewModule, "webview", "Qt6WebView", nullptr },
-    { QtShaderToolsModule, "shadertools", "Qt6ShaderTools", nullptr }
+    { QtShaderToolsModule, "shadertools", "Qt6ShaderTools", nullptr },
+    { QtUiToolsModule, "uitools", "Qt6UiTools", nullptr }
 };
 
 enum QtPlugin {
@@ -843,7 +845,8 @@ static const PluginModuleMapping pluginModuleMappings[] =
     {"renderers", Qt3DRendererModule | QtShaderToolsModule},
     {"renderplugins", Qt3DRendererModule},
     {"geometryloaders", Qt3DRendererModule},
-    {"webview", QtWebViewModule}
+    {"webview", QtWebViewModule},
+    {"designer", QtUiToolsModule},
 };
 
 static inline quint64 qtModuleForPlugin(const QString &subDirName)
@@ -879,13 +882,63 @@ static quint64 qtModule(QString module, const QString &infix)
     return 0;
 }
 
+// Return the path if a plugin is to be deployed
+static QString deployPlugin(const QString &plugin, const QDir &subDir,
+                            quint64 *usedQtModules, quint64 disabledQtModules,
+                            unsigned disabledPlugins,
+                            const QString &libraryLocation, const QString &infix,
+                            Platform platform)
+{
+    // Filter out disabled plugins
+    if ((disabledPlugins & QtVirtualKeyboardPlugin)
+        && plugin.startsWith("qtvirtualkeyboardplugin"_L1)) {
+        return {};
+    }
+
+    const QString pluginPath = subDir.absoluteFilePath(plugin);
+    // Deploy QUiTools plugins as is without further dependency checking.
+    // The user needs to ensure all required libraries are present (would
+    // otherwise pull QtWebEngine for its plugin).
+    if (subDir.dirName() == u"designer")
+        return pluginPath;
+
+    QStringList dependentQtLibs;
+    quint64 neededModules = 0;
+    QString errorMessage;
+    if (findDependentQtLibraries(libraryLocation, pluginPath, platform,
+                                 &errorMessage, &dependentQtLibs)) {
+        for (int d = 0; d < dependentQtLibs.size(); ++ d)
+            neededModules |= qtModule(dependentQtLibs.at(d), infix);
+    } else {
+        std::wcerr << "Warning: Cannot determine dependencies of "
+            << QDir::toNativeSeparators(pluginPath) << ": " << errorMessage << '\n';
+    }
+
+    if (const quint64 missingModules = neededModules & disabledQtModules) {
+        if (optVerboseLevel) {
+            std::wcout << "Skipping plugin " << plugin
+                << " due to disabled dependencies ("
+                << formatQtModules(missingModules).constData() << ").\n";
+        }
+        return {};
+    }
+
+    if (const quint64 missingModules = (neededModules & ~*usedQtModules)) {
+        *usedQtModules |= missingModules;
+        if (optVerboseLevel) {
+            std::wcout << "Adding " << formatQtModules(missingModules).constData()
+                << " for " << plugin << '\n';
+        }
+    }
+    return pluginPath;
+}
+
 QStringList findQtPlugins(quint64 *usedQtModules, quint64 disabledQtModules,
                           unsigned disabledPlugins,
                           const QString &qtPluginsDirName, const QString &libraryLocation,
                           const QString &infix,
                           DebugMatchMode debugMatchModeIn, Platform platform, QString *platformPlugin)
 {
-    QString errorMessage;
     if (qtPluginsDirName.isEmpty())
         return QStringList();
     QDir pluginsDir(qtPluginsDirName);
@@ -924,35 +977,12 @@ QStringList findQtPlugins(quint64 *usedQtModules, quint64 disabledQtModules,
             }
             const QStringList plugins = findSharedLibraries(subDir, platform, debugMatchMode, filter);
             for (const QString &plugin : plugins) {
-                // Filter out disabled plugins
-                if ((disabledPlugins & QtVirtualKeyboardPlugin)
-                    && plugin.startsWith("qtvirtualkeyboardplugin"_L1)) {
-                    continue;
-                }
-                const QString pluginPath = subDir.absoluteFilePath(plugin);
-                if (isPlatformPlugin)
-                    *platformPlugin = pluginPath;
-                QStringList dependentQtLibs;
-                quint64 neededModules = 0;
-                if (findDependentQtLibraries(libraryLocation, pluginPath, platform, &errorMessage, &dependentQtLibs)) {
-                    for (int d = 0; d < dependentQtLibs.size(); ++ d)
-                        neededModules |= qtModule(dependentQtLibs.at(d), infix);
-                } else {
-                    std::wcerr << "Warning: Cannot determine dependencies of "
-                        << QDir::toNativeSeparators(pluginPath) << ": " << errorMessage << '\n';
-                }
-                if (const quint64 missingModules = neededModules & disabledQtModules) {
-                    if (optVerboseLevel) {
-                        std::wcout << "Skipping plugin " << plugin
-                            << " due to disabled dependencies ("
-                            << formatQtModules(missingModules).constData() << ").\n";
-                    }
-                } else {
-                    if (const quint64 missingModules = (neededModules & ~*usedQtModules)) {
-                        *usedQtModules |= missingModules;
-                        if (optVerboseLevel)
-                            std::wcout << "Adding " << formatQtModules(missingModules).constData() << " for " << plugin << '\n';
-                    }
+                const QString pluginPath =
+                    deployPlugin(plugin, subDir, usedQtModules, disabledQtModules,
+                                 disabledPlugins, libraryLocation, infix, platform);
+                if (!pluginPath.isEmpty()) {
+                    if (isPlatformPlugin)
+                        *platformPlugin = subDir.absoluteFilePath(plugin);
                     result.append(pluginPath);
                 }
             } // for filter
