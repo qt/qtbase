@@ -166,13 +166,16 @@ if(QT_FEATURE_private_tests)
 endif()
 
 if(WASM)
+    # Keep in sync with is_test files in Qt6WasmMacros.cmake
     set(testrunner_files
         "${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/batchedtestrunner.html"
         "${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/batchedtestrunner.js"
         "${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/emrunadapter.js"
         "${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qwasmjsruntime.js"
         "${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qwasmtestmain.js"
-        "${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/util.js")
+        "${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/util.js"
+        "${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qtestoutputreporter.js"
+        "${QtBase_SOURCE_DIR}/util/wasm/batchedtestrunner/qtestoutputreporter.css")
 
     qt_path_join(install_dir_libexec "${QT_INSTALL_DIR}" "${INSTALL_LIBEXECDIR}")
     qt_copy_or_install(FILES ${testrunner_files}
