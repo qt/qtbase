@@ -269,6 +269,17 @@ QT_DEFINE_NATIVE_INTERFACE(QWaylandApplication);
 
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWaylandScreen);
 
+/*!
+    \class QNativeInterface::QWaylandWindow
+    \since 6.5
+    \internal
+    \brief Native interface to a Wayland window.
+    \inmodule QtGui
+    \ingroup native-interfaces
+*/
+
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWaylandWindow);
+
 #endif // Q_OS_UNIX
 
 QT_END_NAMESPACE
