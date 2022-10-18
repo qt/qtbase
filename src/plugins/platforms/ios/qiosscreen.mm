@@ -254,7 +254,7 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
     if (!qt_apple_isApplicationExtension()) {
         for (UIWindow *existingWindow in qt_apple_sharedApplication().windows) {
             if (existingWindow.screen == m_uiScreen) {
-                m_uiWindow = [m_uiWindow retain];
+                m_uiWindow = [existingWindow retain];
                 break;
             }
         }
