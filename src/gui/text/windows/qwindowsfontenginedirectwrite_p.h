@@ -134,6 +134,9 @@ public:
 
     void initializeHeightMetrics() const override;
 
+    Properties properties() const override;
+    void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics) override;
+
 private:
     QImage imageForGlyph(glyph_t t,
                          const QFixedPoint &subPixelPosition,
