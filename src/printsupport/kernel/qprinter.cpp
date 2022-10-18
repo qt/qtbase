@@ -1410,7 +1410,8 @@ int QPrinter::toPage() const
 void QPrinter::setFromTo(int from, int to)
 {
     d->pageRanges.clear();
-    d->pageRanges.addRange(from, to);
+    if (from && to)
+        d->pageRanges.addRange(from, to);
 }
 
 /*!
