@@ -857,8 +857,15 @@ void tst_QDoubleSpinBox::editingFinished()
     testFocusWidget.show();
     testFocusWidget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&testFocusWidget));
+
+    box->show();
+    QVERIFY(QTest::qWaitForWindowExposed(box));
     box->setFocus();
-    QTRY_VERIFY(box->hasFocus());
+
+    // Box may fail to acquire focus due to a system popup
+    // it is fair in that case to skip the test
+    if (!QTest::qWaitForWindowActive(box))
+        QSKIP("Focus acquisition failed.");
 
     QSignalSpy editingFinishedSpy1(box, SIGNAL(editingFinished()));
     QSignalSpy editingFinishedSpy2(box2, SIGNAL(editingFinished()));
