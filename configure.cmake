@@ -940,6 +940,12 @@ qt_feature("posix_fallocate" PRIVATE
     LABEL "POSIX fallocate()"
     CONDITION TEST_posix_fallocate
 )
+qt_feature("wasm_exceptions" PRIVATE
+    LABEL "WebAssembly exception handling"
+    AUTODETECT OFF
+)
+qt_feature_definition("wasm_exceptions" "QT_WASM_EXCEPTIONS" VALUE "1")
+qt_feature_config("wasm_exceptions" QMAKE_PRIVATE_CONFIG)
 qt_feature("alloca_h" PRIVATE
     LABEL "alloca.h"
     CONDITION TEST_alloca_h
