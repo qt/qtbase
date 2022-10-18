@@ -500,6 +500,53 @@ void QWindowsFontEngineDirectWrite::recalcAdvances(QGlyphLayout *glyphs, QFontEn
     }
 }
 
+void QWindowsFontEngineDirectWrite::getUnscaledGlyph(glyph_t glyph,
+                                                     QPainterPath *path,
+                                                     glyph_metrics_t *metric)
+{
+    float advance = 0.0f;
+    UINT16 g = glyph;
+    DWRITE_GLYPH_OFFSET offset;
+    offset.advanceOffset = 0;
+    offset.ascenderOffset = 0;
+    GeometrySink geometrySink(path);
+    HRESULT hr = m_directWriteFontFace->GetGlyphRunOutline(m_unitsPerEm,
+                                                           &g,
+                                                           &advance,
+                                                           &offset,
+                                                           1,
+                                                           false,
+                                                           false,
+                                                           &geometrySink);
+    if (FAILED(hr)) {
+        qErrnoWarning("%s: GetGlyphRunOutline failed", __FUNCTION__);
+        return;
+    }
+
+    DWRITE_GLYPH_METRICS glyphMetrics;
+    hr = m_directWriteFontFace->GetDesignGlyphMetrics(&g, 1, &glyphMetrics);
+    if (FAILED(hr)) {
+        qErrnoWarning("%s: GetDesignGlyphMetrics failed", __FUNCTION__);
+        return;
+    }
+
+    QFixed advanceWidth = QFixed(int(glyphMetrics.advanceWidth));
+    QFixed leftSideBearing = QFixed(glyphMetrics.leftSideBearing);
+    QFixed rightSideBearing = QFixed(glyphMetrics.rightSideBearing);
+    QFixed advanceHeight = QFixed(int(glyphMetrics.advanceHeight));
+    QFixed verticalOriginY = QFixed(glyphMetrics.verticalOriginY);
+    QFixed topSideBearing = QFixed(glyphMetrics.topSideBearing);
+    QFixed bottomSideBearing = QFixed(glyphMetrics.bottomSideBearing);
+    QFixed width = advanceWidth - leftSideBearing - rightSideBearing;
+    QFixed height = advanceHeight - topSideBearing - bottomSideBearing;
+    *metric = glyph_metrics_t(leftSideBearing,
+                              -verticalOriginY + topSideBearing,
+                              width,
+                              height,
+                              advanceWidth,
+                              0);
+}
+
 void QWindowsFontEngineDirectWrite::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
                                              QPainterPath *path, QTextItem::RenderFlags flags)
 {
@@ -619,6 +666,33 @@ QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph,
 bool QWindowsFontEngineDirectWrite::supportsHorizontalSubPixelPositions() const
 {
     return true;
+}
+
+QFontEngine::Properties QWindowsFontEngineDirectWrite::properties() const
+{
+    IDWriteFontFace2 *directWriteFontFace2;
+    if (SUCCEEDED(m_directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace2),
+                                                        reinterpret_cast<void **>(&directWriteFontFace2)))) {
+        DWRITE_FONT_METRICS1 metrics;
+        directWriteFontFace2->GetMetrics(&metrics);
+
+        Properties p = QFontEngine::properties();
+        p.emSquare = metrics.designUnitsPerEm;
+        p.boundingBox = QRectF(metrics.glyphBoxLeft,
+                               -metrics.glyphBoxTop,
+                               metrics.glyphBoxRight - metrics.glyphBoxLeft,
+                               metrics.glyphBoxTop - metrics.glyphBoxBottom);
+        p.ascent = metrics.ascent;
+        p.descent = metrics.descent;
+        p.leading = metrics.lineGap;
+        p.capHeight = metrics.capHeight;
+        p.lineWidth = metrics.underlineThickness;
+
+        directWriteFontFace2->Release();
+        return p;
+    } else {
+        return QFontEngine::properties();
+    }
 }
 
 QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
