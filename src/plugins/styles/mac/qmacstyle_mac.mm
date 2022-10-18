@@ -468,7 +468,9 @@ static bool setupSlider(NSSlider *slider, const QStyleOptionSlider *sl)
     // NSSlider seems to cache values based on tracking and the last layout of the
     // NSView, resulting in incorrect knob rects that break the interaction with
     // multiple sliders. So completely reinitialize the slider.
+    const auto controlSize = slider.controlSize;
     [slider initWithFrame:sl->rect.toCGRect()];
+    slider.controlSize = controlSize;
 
     slider.minValue = sl->minimum;
     slider.maxValue = sl->maximum;
