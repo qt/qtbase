@@ -83,6 +83,8 @@ qt_internal_extend_target(XcbQpaPrivate CONDITION QT_FEATURE_draganddrop
 )
 
 qt_internal_extend_target(XcbQpaPrivate CONDITION QT_FEATURE_xcb_xlib
+    SOURCES
+        qt_xlib_wrapper.c qt_xlib_wrapper.h
     PUBLIC_LIBRARIES
         X11::XCB
         # special case begin
