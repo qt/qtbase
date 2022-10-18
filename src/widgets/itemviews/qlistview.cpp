@@ -3398,6 +3398,7 @@ void QIconModeViewBase::updateContentsSize()
 */
 void QListView::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
+    QAbstractItemView::currentChanged(current, previous);
 #if QT_CONFIG(accessibility)
     if (QAccessible::isActive()) {
         if (current.isValid()) {
@@ -3408,7 +3409,6 @@ void QListView::currentChanged(const QModelIndex &current, const QModelIndex &pr
         }
     }
 #endif
-    QAbstractItemView::currentChanged(current, previous);
 }
 
 /*!
