@@ -225,10 +225,20 @@ if(QT_BUILD_STANDALONE_TESTS)
 endif()
 set(BUILD_TESTING ${QT_BUILD_TESTS} CACHE INTERNAL "")
 
-set(_qt_batch_tests OFF)
-if(INPUT_batch_tests)
+if (WASM)
     set(_qt_batch_tests ON)
+else()
+    set(_qt_batch_tests OFF)
 endif()
+
+if(DEFINED INPUT_batch_tests)
+    if (${INPUT_batch_tests})
+        set(_qt_batch_tests ON)
+    else()
+        set(_qt_batch_tests OFF)
+    endif()
+endif()
+
 option(QT_BUILD_TESTS_BATCHED "Link all tests into a single binary." ${_qt_batch_tests})
 
 if(QT_BUILD_TESTS AND QT_BUILD_TESTS_BATCHED AND CMAKE_VERSION VERSION_LESS "3.18")
