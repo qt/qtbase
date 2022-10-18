@@ -1,0 +1,27 @@
+From 1d0c960caba0b5aa7e686deafd455d4a3c84db49 Mon Sep 17 00:00:00 2001
+From: Laszlo Agocs <laszlo.agocs@qt.io>
+Date: Tue, 18 Oct 2022 13:26:38 +0200
+Subject: [PATCH] Disable nullability warning on Apple with clang
+
+Change-Id: I6602d1cb695d6483177d3c3722b468a0c9df235a
+---
+ src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h b/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
+index 2a5b1e4b1a..18081839c0 100644
+--- a/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
++++ b/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
+@@ -2575,6 +2575,9 @@ VMA_CALL_PRE void VMA_CALL_POST vmaFreeStatsString(
+ #pragma clang diagnostic ignored "-Wunused-variable"
+ #pragma clang diagnostic ignored "-Wunused-parameter"
+ #pragma clang diagnostic ignored "-Wmissing-field-initializers"
++#if defined(__APPLE__)
++#pragma clang diagnostic ignored "-Wnullability-completeness"
++#endif
+ #endif
+ 
+ #include <cstdint>
+-- 
+2.37.0 (Apple Git-136)
+
