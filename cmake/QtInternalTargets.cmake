@@ -248,7 +248,7 @@ if (MSVC)
     if (MSVC_VERSION GREATER_EQUAL 1919 AND NOT CLANG) # MSVC 2019
         target_compile_options(PlatformCommonInternal INTERFACE
             -Zc:externConstexpr
-            -Zc:lambda
+            #-Zc:lambda # Buggy. TODO: Enable again when stable enough.
             -Zc:preprocessor
         )
     endif()
