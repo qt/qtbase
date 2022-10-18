@@ -1041,7 +1041,10 @@ void tst_QDateTime::toString_enumformat()
     QString str2 = dt1.toString(Qt::ISODate);
     QCOMPARE(str2, QString("1995-05-20T12:34:56"));
 
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     QString str3 = dt1.toString(Qt::LocalDate);
+    QT_WARNING_POP
     QVERIFY(!str3.isEmpty());
     //check for date/time components in any order
     //year may be 2 or 4 digits
@@ -1050,6 +1053,7 @@ void tst_QDateTime::toString_enumformat()
     QVERIFY(str3.contains("12"));
     QVERIFY(str3.contains("34"));
     //seconds may be absent
+#endif // 5.15 deprecations
 }
 
 void tst_QDateTime::addDays()
