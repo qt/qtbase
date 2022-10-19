@@ -1017,6 +1017,8 @@ static constexpr struct : QMetaTypeModuleHelper
         using Double = double;
         using Bool = bool;
         using Nullptr = std::nullptr_t;
+        using Char16 = char16_t;
+        using Char32 = char32_t;
 
 #define QMETATYPE_CONVERTER_ASSIGN_DOUBLE(To, From) \
     QMETATYPE_CONVERTER(To, From, result = double(source); return true;)
@@ -1206,6 +1208,14 @@ static constexpr struct : QMetaTypeModuleHelper
         QMETATYPE_CONVERTER(QString, UChar,
             char s = source;
             result = QString::fromLatin1(&s, 1);
+            return true;
+        );
+        QMETATYPE_CONVERTER(QString, Char16,
+            result = QChar(source);
+            return true;
+        );
+        QMETATYPE_CONVERTER(QString, Char32,
+            result = QChar::fromUcs4(source).operator QStringView().toString();
             return true;
         );
 #if QT_CONFIG(datestring)
