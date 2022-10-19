@@ -1534,8 +1534,14 @@ bool SyncScanner::writeIfDifferent(const std::string &outputFile, const std::str
     if (!std::filesystem::exists(outputDirectory))
         std::filesystem::create_directories(outputDirectory);
 
+    int expectedSize = buffer.size();
+#ifdef _WINDOWS
+    // File on disk has \r\n instead of just \n
+    expectedSize += std::count(buffer.begin(), buffer.end(), '\n');
+#endif
+
     if (std::filesystem::exists(outputFilePath)
-        && buffer.size() == std::filesystem::file_size(outputFilePath)) {
+        && expectedSize == std::filesystem::file_size(outputFilePath)) {
         char rdBuffer[bufferSize];
         memset(rdBuffer, 0, bufferSize);
 
