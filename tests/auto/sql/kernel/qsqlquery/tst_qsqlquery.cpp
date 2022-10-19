@@ -251,6 +251,9 @@ private slots:
     void sqlite_real_data() { generic_data("QSQLITE"); }
     void sqlite_real();
 
+    void prepared_query_json_row_data() { generic_data(); }
+    void prepared_query_json_row();
+
     void aggregateFunctionTypes_data() { generic_data(); }
     void aggregateFunctionTypes();
 
@@ -4429,6 +4432,43 @@ void tst_QSqlQuery::sqlite_real()
     QVERIFY_SQL(q, exec("SELECT realVal FROM " + tableName + " WHERE ID=4"));
     QVERIFY(q.next());
     QCOMPARE(q.value(0).toDouble(), 5.6);
+}
+
+void tst_QSqlQuery::prepared_query_json_row()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    if (tst_Databases::getDatabaseType(db) != QSqlDriver::MySqlServer &&
+        tst_Databases::getDatabaseType(db) != QSqlDriver::PostgreSQL) {
+        QSKIP("PostgreSQL / MySQL specific test");
+    }
+
+    const QString tableName(qTableName("tableWithJsonRow", __FILE__, db));
+    tst_Databases::safeDropTable(db, tableName);
+
+    QSqlQuery q(db);
+    const QLatin1String vals[] = {QLatin1String("{\"certificateNumber\": \"CERT-001\"}"),
+                                  QLatin1String("{\"certificateNumber\": \"CERT-002\"}")};
+    QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %1 (id INTEGER, value JSON)").arg(tableName)));
+    for (const QLatin1String &json : vals) {
+        QVERIFY_SQL(q, exec(QLatin1String("INSERT INTO %1 (id, value) VALUES (1, '%2')")
+                            .arg(tableName, json)));
+    }
+
+    QVERIFY_SQL(q, prepare(QLatin1String("SELECT id, value FROM %1 WHERE id = ?").arg(tableName)));
+    q.addBindValue(1);
+    QVERIFY_SQL(q, exec());
+
+    size_t iCount = 0;
+    while (q.next()) {
+        QVERIFY(iCount < sizeof(vals));
+        const int id = q.value(0).toInt();
+        const QByteArray json = q.value(1).toByteArray();
+        QCOMPARE(id, 1);
+        QCOMPARE(json, vals[iCount].data());
+        ++iCount;
+    }
 }
 
 void tst_QSqlQuery::aggregateFunctionTypes()
