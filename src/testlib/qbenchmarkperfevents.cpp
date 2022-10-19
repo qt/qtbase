@@ -477,14 +477,13 @@ void QBenchmarkPerfEventsMeasurer::init()
 
 void QBenchmarkPerfEventsMeasurer::start()
 {
-
     initPerf();
     if (fd == -1) {
         // pid == 0 -> attach to the current process
         // cpu == -1 -> monitor on all CPUs
         // group_fd == -1 -> this is the group leader
         // flags == 0 -> reserved, must be zero
-        fd = perf_event_open(&attr, 0, -1, -1, 0);
+        fd = perf_event_open(&attr, 0, -1, -1, PERF_FLAG_FD_CLOEXEC);
         if (fd == -1) {
             perror("QBenchmarkPerfEventsMeasurer::start: perf_event_open");
             exit(1);
