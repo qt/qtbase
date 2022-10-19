@@ -309,6 +309,7 @@ static QMetaType::Type qDecodeMYSQLType(int mysqltype, uint flags)
     case FIELD_TYPE_MEDIUM_BLOB :
     case FIELD_TYPE_LONG_BLOB :
     case FIELD_TYPE_GEOMETRY :
+    case MYSQL_TYPE_JSON :
         type = (flags & BINARY_FLAG) ? QMetaType::QByteArray : QMetaType::QString;
         break;
     default:
@@ -347,7 +348,8 @@ static bool qIsBlob(int t)
     return t == MYSQL_TYPE_TINY_BLOB
            || t == MYSQL_TYPE_BLOB
            || t == MYSQL_TYPE_MEDIUM_BLOB
-           || t == MYSQL_TYPE_LONG_BLOB;
+           || t == MYSQL_TYPE_LONG_BLOB
+           || t == MYSQL_TYPE_JSON;
 }
 
 static bool qIsInteger(int t)
