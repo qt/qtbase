@@ -20,5 +20,7 @@
 	<string>NSApplication</string>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>
 	<true/>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
 </dict>
 </plist>
