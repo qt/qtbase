@@ -362,6 +362,7 @@ bool QCoreTextFontEngine::hasColorGlyphs() const
     return glyphFormat == QFontEngine::Format_ARGB;
 }
 
+Q_GUI_EXPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
 void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextItemInt &ti, int paintDeviceHeight)
 {
     QVarLengthArray<QFixedPoint> positions;
@@ -406,7 +407,15 @@ void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextIt
     CTFontDrawGlyphs(ctfont, cgGlyphs.data(), cgPositions.data(), glyphs.size(), ctx);
 
     if (synthesisFlags & QFontEngine::SynthesizedBold) {
-        CGContextSetTextPosition(ctx, positions[0].x.toReal() + 0.5 * lineThickness().toReal(),
+        QTransform matrix(cgMatrix.a, cgMatrix.b, cgMatrix.c, cgMatrix.d, cgMatrix.tx, cgMatrix.ty);
+
+        qreal boldOffset = 0.5 * lineThickness().toReal();
+        qreal scale;
+        qt_scaleForTransform(matrix, &scale);
+        boldOffset *= scale;
+
+        CGContextSetTextPosition(ctx,
+                                 positions[0].x.toReal() + boldOffset,
                                  positions[0].y.toReal());
         CTFontDrawGlyphs(ctfont, cgGlyphs.data(), cgPositions.data(), glyphs.size(), ctx);
     }
@@ -753,7 +762,13 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, const QFixedPoint &subP
         CTFontDrawGlyphs(ctfont, &cgGlyph, &CGPointZero, 1, ctx);
 
         if (synthesisFlags & QFontEngine::SynthesizedBold) {
-            CGContextSetTextPosition(ctx, pos_x + 0.5 * lineThickness().toReal(), pos_y);
+            qreal boldOffset = 0.5 * lineThickness().toReal();
+
+            qreal scale;
+            qt_scaleForTransform(matrix, &scale);
+            boldOffset *= scale;
+
+            CGContextSetTextPosition(ctx, pos_x + boldOffset, pos_y);
             CTFontDrawGlyphs(ctfont, &cgGlyph, &CGPointZero, 1, ctx);
         }
     } else {
