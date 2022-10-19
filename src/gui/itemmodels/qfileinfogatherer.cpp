@@ -121,9 +121,13 @@ void QFileInfoGatherer::fetchExtendedInformation(const QString &path, const QStr
         }
         loc = this->path.lastIndexOf(path, loc - 1);
     }
+#if QT_CONFIG(thread)
     this->path.push(path);
     this->files.push(files);
     condition.wakeAll();
+#else // !QT_CONFIG(thread)
+    getFileInfos(path, files);
+#endif // QT_CONFIG(thread)
 
 #if QT_CONFIG(filesystemwatcher)
     if (files.isEmpty()
