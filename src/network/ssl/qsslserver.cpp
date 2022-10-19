@@ -16,7 +16,7 @@
     Transport Layer Security (TLS).
 
     To configure the secure handshake settings, use the applicable setter
-    functions on a QSslConfiguration object, and then use it as a argument
+    functions on a QSslConfiguration object, and then use it as an argument
     to the setSslConfiguration() function. All following incoming
     connections handled will use these settings.
 
