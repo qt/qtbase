@@ -11,7 +11,7 @@ class QWasmWindow
 };
 
 namespace {
-std::vector<QWasmWindow *> getWindowsFrontToBack(const QWasmWasmWindowStack *stack)
+std::vector<QWasmWindow *> getWindowsFrontToBack(const QWasmWindowStack *stack)
 {
     return std::vector<QWasmWindow *>(stack->begin(), stack->end());
 }
@@ -54,8 +54,8 @@ private:
 
     void clearCallbackCounter() { m_topLevelChangedCallCount = 0; }
 
-    QWasmWasmWindowStack::TopWindowChangedCallbackType m_mockCallback;
-    QWasmWasmWindowStack::TopWindowChangedCallbackType m_onTopLevelChangedAction;
+    QWasmWindowStack::TopWindowChangedCallbackType m_mockCallback;
+    QWasmWindowStack::TopWindowChangedCallbackType m_onTopLevelChangedAction;
     int m_topLevelChangedCallCount = 0;
 
     QWasmWindow m_root;
@@ -68,13 +68,13 @@ private:
 
 void tst_QWasmWindowStack::init()
 {
-    m_onTopLevelChangedAction = QWasmWasmWindowStack::TopWindowChangedCallbackType();
+    m_onTopLevelChangedAction = QWasmWindowStack::TopWindowChangedCallbackType();
     clearCallbackCounter();
 }
 
 void tst_QWasmWindowStack::insertion()
 {
-    QWasmWasmWindowStack stack(m_mockCallback);
+    QWasmWindowStack stack(m_mockCallback);
 
     m_onTopLevelChangedAction = [this, &stack]() { QVERIFY(stack.topWindow() == &m_root); };
     stack.pushWindow(&m_root);
@@ -91,7 +91,7 @@ void tst_QWasmWindowStack::insertion()
 
 void tst_QWasmWindowStack::raisingTheRootIsImpossible()
 {
-    QWasmWasmWindowStack stack(m_mockCallback);
+    QWasmWindowStack stack(m_mockCallback);
 
     stack.pushWindow(&m_root);
     stack.pushWindow(&m_window1);
@@ -114,7 +114,7 @@ void tst_QWasmWindowStack::raisingTheRootIsImpossible()
 
 void tst_QWasmWindowStack::raising()
 {
-    QWasmWasmWindowStack stack(m_mockCallback);
+    QWasmWindowStack stack(m_mockCallback);
 
     stack.pushWindow(&m_root);
     stack.pushWindow(&m_window1);
@@ -144,7 +144,7 @@ void tst_QWasmWindowStack::raising()
 
 void tst_QWasmWindowStack::lowering()
 {
-    QWasmWasmWindowStack stack(m_mockCallback);
+    QWasmWindowStack stack(m_mockCallback);
 
     stack.pushWindow(&m_root);
     stack.pushWindow(&m_window1);
@@ -175,7 +175,7 @@ void tst_QWasmWindowStack::lowering()
 
 void tst_QWasmWindowStack::removing()
 {
-    QWasmWasmWindowStack stack(m_mockCallback);
+    QWasmWindowStack stack(m_mockCallback);
 
     stack.pushWindow(&m_root);
     stack.pushWindow(&m_window1);
@@ -206,7 +206,7 @@ void tst_QWasmWindowStack::removing()
 
 void tst_QWasmWindowStack::removingTheRoot()
 {
-    QWasmWasmWindowStack stack(m_mockCallback);
+    QWasmWindowStack stack(m_mockCallback);
 
     stack.pushWindow(&m_root);
     stack.pushWindow(&m_window1);
@@ -244,7 +244,7 @@ void tst_QWasmWindowStack::removingTheRoot()
 
 void tst_QWasmWindowStack::clearing()
 {
-    QWasmWasmWindowStack stack(m_mockCallback);
+    QWasmWindowStack stack(m_mockCallback);
 
     stack.pushWindow(&m_root);
     stack.pushWindow(&m_window1);

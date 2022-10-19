@@ -162,7 +162,7 @@ private:
     void leaveWindow(QWindow *window);
 
     WindowManipulation m_windowManipulation;
-    QWasmWasmWindowStack m_windowStack;
+    QWasmWindowStack m_windowStack;
 
     QScopedPointer<QOpenGLContext> m_context;
     QScopedPointer<QOpenGLTextureBlitter> m_blitter;

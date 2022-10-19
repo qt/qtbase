@@ -5,14 +5,14 @@
 
 QT_BEGIN_NAMESPACE
 
-QWasmWasmWindowStack::QWasmWasmWindowStack(TopWindowChangedCallbackType topWindowChangedCallback)
+QWasmWindowStack::QWasmWindowStack(TopWindowChangedCallbackType topWindowChangedCallback)
     : m_topWindowChangedCallback(std::move(topWindowChangedCallback))
 {
 }
 
-QWasmWasmWindowStack::~QWasmWasmWindowStack() = default;
+QWasmWindowStack::~QWasmWindowStack() = default;
 
-void QWasmWasmWindowStack::pushWindow(QWasmWindow *window)
+void QWasmWindowStack::pushWindow(QWasmWindow *window)
 {
     Q_ASSERT(m_windowStack.count(window) == 0);
 
@@ -21,7 +21,7 @@ void QWasmWasmWindowStack::pushWindow(QWasmWindow *window)
     m_topWindowChangedCallback();
 }
 
-void QWasmWasmWindowStack::removeWindow(QWasmWindow *window)
+void QWasmWindowStack::removeWindow(QWasmWindow *window)
 {
     Q_ASSERT(m_windowStack.count(window) == 1);
 
@@ -37,7 +37,7 @@ void QWasmWasmWindowStack::removeWindow(QWasmWindow *window)
         m_topWindowChangedCallback();
 }
 
-void QWasmWasmWindowStack::raise(QWasmWindow *window)
+void QWasmWindowStack::raise(QWasmWindow *window)
 {
     Q_ASSERT(m_windowStack.count(window) == 1);
 
@@ -49,7 +49,7 @@ void QWasmWasmWindowStack::raise(QWasmWindow *window)
     m_topWindowChangedCallback();
 }
 
-void QWasmWasmWindowStack::lower(QWasmWindow *window)
+void QWasmWindowStack::lower(QWasmWindow *window)
 {
     Q_ASSERT(m_windowStack.count(window) == 1);
 
@@ -63,58 +63,58 @@ void QWasmWasmWindowStack::lower(QWasmWindow *window)
         m_topWindowChangedCallback();
 }
 
-QWasmWasmWindowStack::iterator QWasmWasmWindowStack::begin()
+QWasmWindowStack::iterator QWasmWindowStack::begin()
 {
     return m_windowStack.rbegin();
 }
 
-QWasmWasmWindowStack::iterator QWasmWasmWindowStack::end()
+QWasmWindowStack::iterator QWasmWindowStack::end()
 {
     return m_windowStack.rend();
 }
 
-QWasmWasmWindowStack::const_iterator QWasmWasmWindowStack::begin() const
+QWasmWindowStack::const_iterator QWasmWindowStack::begin() const
 {
     return m_windowStack.rbegin();
 }
 
-QWasmWasmWindowStack::const_iterator QWasmWasmWindowStack::end() const
+QWasmWindowStack::const_iterator QWasmWindowStack::end() const
 {
     return m_windowStack.rend();
 }
 
-QWasmWasmWindowStack::const_reverse_iterator QWasmWasmWindowStack::rbegin() const
+QWasmWindowStack::const_reverse_iterator QWasmWindowStack::rbegin() const
 {
     return m_windowStack.begin();
 }
 
-QWasmWasmWindowStack::const_reverse_iterator QWasmWasmWindowStack::rend() const
+QWasmWindowStack::const_reverse_iterator QWasmWindowStack::rend() const
 {
     return m_windowStack.end();
 }
 
-bool QWasmWasmWindowStack::empty() const
+bool QWasmWindowStack::empty() const
 {
     return m_windowStack.empty();
 }
 
-size_t QWasmWasmWindowStack::size() const
+size_t QWasmWindowStack::size() const
 {
     return m_windowStack.size();
 }
 
-QWasmWindow *QWasmWasmWindowStack::rootWindow() const
+QWasmWindow *QWasmWindowStack::rootWindow() const
 {
     return m_firstWindowTreatment == FirstWindowTreatment::AlwaysAtBottom ? m_windowStack.first()
                                                                           : nullptr;
 }
 
-QWasmWindow *QWasmWasmWindowStack::topWindow() const
+QWasmWindow *QWasmWindowStack::topWindow() const
 {
     return m_windowStack.empty() ? nullptr : m_windowStack.last();
 }
 
-QWasmWasmWindowStack::StorageType::iterator QWasmWasmWindowStack::regularWindowsBegin()
+QWasmWindowStack::StorageType::iterator QWasmWindowStack::regularWindowsBegin()
 {
     return m_windowStack.begin()
             + (m_firstWindowTreatment == FirstWindowTreatment::AlwaysAtBottom ? 1 : 0);
