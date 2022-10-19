@@ -4929,7 +4929,7 @@ void QRhiVulkan::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport
 
     // x,y is top-left in VkViewport but bottom-left in QRhiViewport
     float x, y, w, h;
-    if (!qrhi_toTopLeftRenderTargetRect(outputSize, viewport.viewport(), &x, &y, &w, &h))
+    if (!qrhi_toTopLeftRenderTargetRect<UnBounded>(outputSize, viewport.viewport(), &x, &y, &w, &h))
         return;
 
     QVkCommandBuffer::Command &cmd(cbD->commands.get());
@@ -4951,6 +4951,7 @@ void QRhiVulkan::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport
     if (!QRHI_RES(QVkGraphicsPipeline, cbD->currentGraphicsPipeline)->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor)) {
         QVkCommandBuffer::Command &cmd(cbD->commands.get());
         VkRect2D *s = &cmd.args.setScissor.scissor;
+        qrhi_toTopLeftRenderTargetRect<Bounded>(outputSize, viewport.viewport(), &x, &y, &w, &h);
         s->offset.x = int32_t(x);
         s->offset.y = int32_t(y);
         s->extent.width = uint32_t(w);
@@ -4973,7 +4974,7 @@ void QRhiVulkan::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
 
     // x,y is top-left in VkRect2D but bottom-left in QRhiScissor
     int x, y, w, h;
-    if (!qrhi_toTopLeftRenderTargetRect(outputSize, scissor.scissor(), &x, &y, &w, &h))
+    if (!qrhi_toTopLeftRenderTargetRect<Bounded>(outputSize, scissor.scissor(), &x, &y, &w, &h))
         return;
 
     QVkCommandBuffer::Command &cmd(cbD->commands.get());

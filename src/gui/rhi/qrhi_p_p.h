@@ -224,7 +224,13 @@ private:
     friend class QRhiResourceUpdateBatchPrivate;
 };
 
-template<typename T, size_t N>
+enum QRhiTargetRectBoundMode
+{
+    UnBounded,
+    Bounded
+};
+
+template<QRhiTargetRectBoundMode boundingMode, typename T, size_t N>
 bool qrhi_toTopLeftRenderTargetRect(const QSize &outputSize, const std::array<T, N> &r,
                                     T *x, T *y, T *w, T *h)
 {
@@ -235,7 +241,7 @@ bool qrhi_toTopLeftRenderTargetRect(const QSize &outputSize, const std::array<T,
     // or height. We must handle all other input gracefully, clamping to a zero
     // width or height rect in the worst case, and ensuring the resulting rect
     // is inside the rendertarget's bounds because some APIs' validation/debug
-    // layers are allergic to out of bounds scissor or viewport rects.
+    // layers are allergic to out of bounds scissor rects.
 
     const T outputWidth = outputSize.width();
     const T outputHeight = outputSize.height();
@@ -247,20 +253,23 @@ bool qrhi_toTopLeftRenderTargetRect(const QSize &outputSize, const std::array<T,
 
     *x = r[0];
     *y = outputHeight - (r[1] + inputHeight);
+    *w = inputWidth;
+    *h = inputHeight;
 
-    const T widthOffset = *x < 0 ? -*x : 0;
-    const T heightOffset = *y < 0 ? -*y : 0;
-    *w = *x < outputWidth ? qMax<T>(0, inputWidth - widthOffset) : 0;
-    *h = *y < outputHeight ? qMax<T>(0, inputHeight - heightOffset) : 0;
+    if (boundingMode == Bounded) {
+        const T widthOffset = *x < 0 ? -*x : 0;
+        const T heightOffset = *y < 0 ? -*y : 0;
+        *w = *x < outputWidth ? qMax<T>(0, inputWidth - widthOffset) : 0;
+        *h = *y < outputHeight ? qMax<T>(0, inputHeight - heightOffset) : 0;
 
-    *x = qBound<T>(0, *x, outputWidth - 1);
-    *y = qBound<T>(0, *y, outputHeight - 1);
+        *x = qBound<T>(0, *x, outputWidth - 1);
+        *y = qBound<T>(0, *y, outputHeight - 1);
 
-    if (*x + *w > outputWidth)
-        *w = qMax<T>(0, outputWidth - *x);
-    if (*y + *h > outputHeight)
-        *h = qMax<T>(0, outputHeight - *y);
-
+        if (*x + *w > outputWidth)
+            *w = qMax<T>(0, outputWidth - *x);
+        if (*y + *h > outputHeight)
+            *h = qMax<T>(0, outputHeight - *y);
+    }
     return true;
 }
 

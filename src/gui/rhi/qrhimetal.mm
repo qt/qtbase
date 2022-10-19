@@ -1305,7 +1305,7 @@ void QRhiMetal::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
 
     // x,y is top-left in MTLViewportRect but bottom-left in QRhiViewport
     float x, y, w, h;
-    if (!qrhi_toTopLeftRenderTargetRect(outputSize, viewport.viewport(), &x, &y, &w, &h))
+    if (!qrhi_toTopLeftRenderTargetRect<UnBounded>(outputSize, viewport.viewport(), &x, &y, &w, &h))
         return;
 
     MTLViewport vp;
@@ -1320,6 +1320,7 @@ void QRhiMetal::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
 
     if (!QRHI_RES(QMetalGraphicsPipeline, cbD->currentGraphicsPipeline)->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor)) {
         MTLScissorRect s;
+        qrhi_toTopLeftRenderTargetRect<Bounded>(outputSize, viewport.viewport(), &x, &y, &w, &h);
         s.x = NSUInteger(x);
         s.y = NSUInteger(y);
         s.width = NSUInteger(w);
@@ -1337,7 +1338,7 @@ void QRhiMetal::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
 
     // x,y is top-left in MTLScissorRect but bottom-left in QRhiScissor
     int x, y, w, h;
-    if (!qrhi_toTopLeftRenderTargetRect(outputSize, scissor.scissor(), &x, &y, &w, &h))
+    if (!qrhi_toTopLeftRenderTargetRect<Bounded>(outputSize, scissor.scissor(), &x, &y, &w, &h))
         return;
 
     MTLScissorRect s;

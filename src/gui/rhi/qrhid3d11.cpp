@@ -1090,7 +1090,7 @@ void QRhiD3D11::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
 
     // d3d expects top-left, QRhiViewport is bottom-left
     float x, y, w, h;
-    if (!qrhi_toTopLeftRenderTargetRect(outputSize, viewport.viewport(), &x, &y, &w, &h))
+    if (!qrhi_toTopLeftRenderTargetRect<UnBounded>(outputSize, viewport.viewport(), &x, &y, &w, &h))
         return;
 
     QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
@@ -1112,7 +1112,7 @@ void QRhiD3D11::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
 
     // d3d expects top-left, QRhiScissor is bottom-left
     int x, y, w, h;
-    if (!qrhi_toTopLeftRenderTargetRect(outputSize, scissor.scissor(), &x, &y, &w, &h))
+    if (!qrhi_toTopLeftRenderTargetRect<Bounded>(outputSize, scissor.scissor(), &x, &y, &w, &h))
         return;
 
     QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
