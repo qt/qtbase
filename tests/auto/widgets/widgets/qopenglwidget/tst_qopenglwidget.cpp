@@ -47,6 +47,8 @@ private slots:
     void offscreen();
     void offscreenThenOnscreen();
     void paintWhileHidden();
+    void widgetWindowColorFormat_data();
+    void widgetWindowColorFormat();
 
 #ifdef QT_BUILD_INTERNAL
     void staticTextDanglingPointer();
@@ -789,6 +791,30 @@ void tst_QOpenGLWidget::paintWhileHidden()
     w->update();
     w->setVisible(true);
     QTRY_VERIFY(w->m_paintCalled > 0);
+}
+
+void tst_QOpenGLWidget::widgetWindowColorFormat_data()
+{
+    QTest::addColumn<bool>("translucent");
+    QTest::newRow("Translucent background disabled") << false;
+    QTest::newRow("Translucent background enabled") << true;
+}
+
+void tst_QOpenGLWidget::widgetWindowColorFormat()
+{
+    QFETCH(bool, translucent);
+
+    QOpenGLWidget w;
+    w.setAttribute(Qt::WA_TranslucentBackground, translucent);
+    w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    w.setFixedSize(16, 16);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    QCOMPARE(w.format().redBufferSize(), ctx->format().redBufferSize());
+    QCOMPARE(w.format().greenBufferSize(), ctx->format().greenBufferSize());
+    QCOMPARE(w.format().blueBufferSize(), ctx->format().blueBufferSize());
 }
 
 class StaticTextPainterWidget : public QOpenGLWidget
