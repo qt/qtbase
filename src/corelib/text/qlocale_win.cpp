@@ -175,10 +175,11 @@ QVariant QSystemLocalePrivate::getLocaleInfo(LCTYPE type)
 
 int QSystemLocalePrivate::getLocaleInfo_int(LCTYPE type)
 {
-    const QString str = getLocaleInfo(type).toString();
-    bool ok = false;
-    const int v = str.toInt(&ok);
-    return ok ? v : 0;
+    DWORD value;
+    int r = GetLocaleInfo(lcid, type | LOCALE_RETURN_NUMBER,
+                          reinterpret_cast<wchar_t *>(&value),
+                          sizeof(value) / sizeof(wchar_t));
+    return r == sizeof(value) / sizeof(wchar_t) ? value : 0;
 }
 
 QSystemLocalePrivate::SubstitutionType QSystemLocalePrivate::substitution()
