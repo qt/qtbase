@@ -217,7 +217,7 @@ function(qt_auto_detect_ios)
                 set(osx_architectures "x86_64")
             else()
                 if(NOT DEFINED QT_UIKIT_SDK)
-                    message(FATAL_ERROR "Please proviude a value for -DQT_UIKIT_SDK."
+                    message(FATAL_ERROR "Please provide a value for -DQT_UIKIT_SDK."
                         " Possible values: iphoneos, iphonesimulator.")
                 else()
                     message(FATAL_ERROR
@@ -233,7 +233,7 @@ function(qt_auto_detect_ios)
                 set(osx_architectures "x86_64")
             else()
                 if(NOT DEFINED QT_UIKIT_SDK)
-                    message(FATAL_ERROR "Please proviude a value for -DQT_UIKIT_SDK."
+                    message(FATAL_ERROR "Please provide a value for -DQT_UIKIT_SDK."
                         " Possible values: appletvos, appletvsimulator.")
                 else()
                     message(FATAL_ERROR
@@ -249,7 +249,7 @@ function(qt_auto_detect_ios)
                 set(osx_architectures "i386")
             else()
                 if(NOT DEFINED QT_UIKIT_SDK)
-                    message(FATAL_ERROR "Please proviude a value for -DQT_UIKIT_SDK."
+                    message(FATAL_ERROR "Please provide a value for -DQT_UIKIT_SDK."
                         " Possible values: watchos, watchsimulator.")
                 else()
                     message(FATAL_ERROR
@@ -335,7 +335,7 @@ endfunction()
 
 function(qt_internal_get_xcode_version out_var)
     if(APPLE)
-        execute_process(COMMAND /usr/bin/xcrun  xcodebuild -version
+        execute_process(COMMAND /usr/bin/xcrun xcodebuild -version
                         OUTPUT_VARIABLE xcode_version
                         ERROR_VARIABLE xcrun_error)
         string(REPLACE "\n" " " xcode_version "${xcode_version}")
