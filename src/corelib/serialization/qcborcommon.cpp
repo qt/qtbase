@@ -198,7 +198,7 @@ QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st)
    \value UnexpectedBreak   The CBOR stream contains a Break where it is not allowed (data is
                             corrupt and the error is not recoverable).
    \value UnknownType       The CBOR stream contains an unknown/unparsable Type (data is corrupt
-                            and the and the error is not recoverable).
+                            and the error is not recoverable).
    \value IllegalType       The CBOR stream contains a known type in a position it is not allowed
                             to exist (data is corrupt and the error is not recoverable).
    \value IllegalNumber     The CBOR stream appears to be encoding a number larger than 64-bit

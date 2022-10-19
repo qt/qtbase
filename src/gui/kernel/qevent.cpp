@@ -2075,7 +2075,7 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
     has to be inserted to the widgets text directly before the preedit
     string.
 
-    If the commitString() should replace parts of the of the text in
+    If the commitString() should replace parts of the text in
     the editor, replacementLength() will contain the number of
     characters to be replaced. replacementStart() contains the position
     at which characters are to be replaced relative from the start of
@@ -2241,7 +2241,7 @@ Q_IMPL_EVENT_COMMON(QInputMethodEvent)
     result of the input operations and has to be inserted to the
     widgets text directly before the preedit string.
 
-    If the commit string should replace parts of the of the text in
+    If the commit string should replace parts of the text in
     the editor, \a replaceLength specifies the number of
     characters to be replaced. \a replaceFrom specifies the position
     at which characters are to be replaced relative from the start of
