@@ -32,7 +32,7 @@
     nextPendingConnection() function to fetch the next incoming connection and
     take it out of the pending connection queue. The QSslSocket is a child of
     the QSslServer and will be deleted when the QSslServer is deleted. It is
-    still a good a good idea to destroy the object explicitly when you are done
+    still a good idea to destroy the object explicitly when you are done
     with it, to avoid wasting memory.
 
     \sa QTcpServer, QSslConfiguration, QSslSocket
