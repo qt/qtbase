@@ -441,6 +441,13 @@ const QOperatingSystemVersion QOperatingSystemVersion::Windows10 =
  */
 
 /*!
+    \variable QOperatingSystemVersion::Windows10_22H2
+    \brief a version corresponding to Windows 10 October 2022 Update
+           Version 22H2 (version 10.0.19045).
+    \since 6.5
+ */
+
+/*!
     \variable QOperatingSystemVersion::Windows11
     \brief a version corresponding to the initial release of Windows 11
            (version 10.0.22000).
