@@ -479,11 +479,17 @@ void QBenchmarkPerfEventsMeasurer::start()
 {
     initPerf();
     if (fd == -1) {
-        // pid == 0 -> attach to the current process
-        // cpu == -1 -> monitor on all CPUs
-        // group_fd == -1 -> this is the group leader
-        // flags == 0 -> reserved, must be zero
-        fd = perf_event_open(&attr, 0, -1, -1, PERF_FLAG_FD_CLOEXEC);
+        pid_t pid = 0;      // attach to the current process only
+        int cpu = -1;       // on any CPU
+        int group_fd = -1;
+        int flags = PERF_FLAG_FD_CLOEXEC;
+        fd = perf_event_open(&attr, pid, cpu, group_fd, flags);
+        if (fd == -1) {
+            // probably a paranoid kernel (/proc/sys/kernel/perf_event_paranoid)
+            attr.exclude_kernel = true;
+            attr.exclude_hv = true;
+            fd = perf_event_open(&attr, pid, cpu, group_fd, flags);
+        }
         if (fd == -1) {
             perror("QBenchmarkPerfEventsMeasurer::start: perf_event_open");
             exit(1);
