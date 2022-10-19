@@ -20,8 +20,8 @@
 #include "qshaderdescription_p.h"
 #include <qopengl.h>
 #include <QByteArray>
-#include <QSurface>
-
+#include <QWindow>
+#include <QPointer>
 #include <QtCore/private/qduplicatetracker_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -816,6 +816,7 @@ public:
     void setPipelineCacheData(const QByteArray &data) override;
 
     bool ensureContext(QSurface *surface = nullptr) const;
+    QSurface *evaluateFallbackSurface() const;
     void executeDeferredReleases();
     void trackedBufferBarrier(QGles2CommandBuffer *cbD, QGles2Buffer *bufD, QGles2Buffer::Access access);
     void trackedImageBarrier(QGles2CommandBuffer *cbD, QGles2Texture *texD, QGles2Texture::Access access);
@@ -879,7 +880,7 @@ public:
     bool importedContext = false;
     QSurfaceFormat requestedFormat;
     QSurface *fallbackSurface = nullptr;
-    QWindow *maybeWindow = nullptr;
+    QPointer<QWindow> maybeWindow = nullptr;
     QOpenGLContext *maybeShareContext = nullptr;
     mutable bool needsMakeCurrentDueToSwap = false;
     QOpenGLExtensions *f = nullptr;

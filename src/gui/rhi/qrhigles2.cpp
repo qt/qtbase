@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qrhigles2_p_p.h"
-#include <QWindow>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QtCore/qmap.h>
@@ -515,15 +514,32 @@ static inline QSurface *currentSurfaceForCurrentContext(QOpenGLContext *ctx)
     return currentSurface;
 }
 
+QSurface *QRhiGles2::evaluateFallbackSurface() const
+{
+    // With Apple's deprecated OpenGL support we need to minimize the usage of
+    // QOffscreenSurface since delicate problems can pop up with
+    // NSOpenGLContext and drawables.
+#if defined(Q_OS_MACOS)
+    return maybeWindow && maybeWindow->handle() ? static_cast<QSurface *>(maybeWindow) : fallbackSurface;
+#else
+    return fallbackSurface;
+#endif
+}
+
 bool QRhiGles2::ensureContext(QSurface *surface) const
 {
     if (!surface) {
+        // null means any surface is good because not going to render
         if (currentSurfaceForCurrentContext(ctx))
             return true;
-        surface = fallbackSurface;
+        // if the context is not already current with a valid surface, use our
+        // fallback surface, but platform specific quirks may apply
+        surface = evaluateFallbackSurface();
     } else if (surface->surfaceClass() == QSurface::Window && !surface->surfaceHandle()) {
-        surface = fallbackSurface;
+        // the window is not usable anymore (no native window underneath), behave as if offscreen
+        surface = evaluateFallbackSurface();
     } else if (!needsMakeCurrentDueToSwap && currentSurfaceForCurrentContext(ctx) == surface) {
+        // bail out if the makeCurrent is not necessary
         return true;
     }
     needsMakeCurrentDueToSwap = false;
