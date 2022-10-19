@@ -249,7 +249,7 @@ if (MSVC)
         target_compile_options(PlatformCommonInternal INTERFACE
             -Zc:externConstexpr
             #-Zc:lambda # Buggy. TODO: Enable again when stable enough.
-            -Zc:preprocessor
+            #-Zc:preprocessor # breaks build due to bug in default Windows SDK 10.0.19041
         )
     endif()
 
