@@ -2201,7 +2201,7 @@ void QWidgetPrivate::updateIsTranslucent()
     if (QWindow *window = q->windowHandle()) {
         QSurfaceFormat format = window->format();
         const int oldAlpha = format.alphaBufferSize();
-        const int newAlpha = q->testAttribute(Qt::WA_TranslucentBackground)? 8 : 0;
+        const int newAlpha = q->testAttribute(Qt::WA_TranslucentBackground) ? 8 : -1;
         if (oldAlpha != newAlpha) {
             // QTBUG-85714: Do this only when the QWindow has not yet been create()'ed yet.
             //
