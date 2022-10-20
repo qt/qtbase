@@ -635,7 +635,7 @@ void tst_QOpenGLWidget::stackWidgetOpaqueChildIsVisible()
 
     // Switch to the QOpenGLWidget.
     stack.setCurrentIndex(1);
-    QTRY_COMPARE(clearWidget->m_paintCalled, true);
+    QTRY_VERIFY(clearWidget->m_paintCalled);
 
     // Resize the tested region to be half size in the middle, because some OSes make the widget
     // have rounded corners (e.g. OSX), and the grabbed window pixmap will not coincide perfectly
@@ -743,10 +743,10 @@ void tst_QOpenGLWidget::paintWhileHidden()
     // on-screen at the point when update() is called.
 
     w->setVisible(false);
-    w->m_paintCalled = 0;
+    w->m_paintCalled = false;
     w->update();
     w->setVisible(true);
-    QTRY_VERIFY(w->m_paintCalled > 0);
+    QTRY_VERIFY(w->m_paintCalled);
 }
 
 class StaticTextPainterWidget : public QOpenGLWidget
