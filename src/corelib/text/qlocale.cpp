@@ -875,29 +875,41 @@ static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Sc
     return new QLocalePrivate(data, index, numberOptions);
 }
 
-QString QLocaleData::decimalPoint() const
+static std::optional<QString>
+systemLocaleString(const QLocaleData *that, QSystemLocale::QueryType type)
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (this == &systemLocaleData) {
-        auto res = systemLocale()->query(QSystemLocale::DecimalPoint).toString();
-        if (!res.isEmpty())
-            return res;
-    }
+    if (that != &systemLocaleData)
+        return std::nullopt;
+
+    QVariant v = systemLocale()->query(type);
+    if (v.metaType() != QMetaType::fromType<QString>())
+        return std::nullopt;
+
+    return v.toString();
+#else
+    Q_UNUSED(that)
+    Q_UNUSED(type)
+    return std::nullopt;
 #endif
-    return decimalSeparator().getData(single_character_data);
+}
+
+static QString localeString(const QLocaleData *that, QSystemLocale::QueryType type,
+                            QLocaleData::DataRange range)
+{
+    if (auto opt = systemLocaleString(that, type))
+        return *opt;
+    return range.getData(single_character_data);
+}
+
+QString QLocaleData::decimalPoint() const
+{
+    return localeString(this, QSystemLocale::DecimalPoint, decimalSeparator());
 }
 
 QString QLocaleData::groupSeparator() const
 {
-    // Empty => don't do grouping
-#ifndef QT_NO_SYSTEMLOCALE
-    if (this == &systemLocaleData) {
-        QVariant res = systemLocale()->query(QSystemLocale::GroupSeparator);
-        if (!res.isNull())
-            return res.toString();
-    }
-#endif
-    return groupDelim().getData(single_character_data);
+    return localeString(this, QSystemLocale::GroupSeparator, groupDelim());
 }
 
 QString QLocaleData::percentSign() const
@@ -912,14 +924,7 @@ QString QLocaleData::listSeparator() const
 
 QString QLocaleData::zeroDigit() const
 {
-#ifndef QT_NO_SYSTEMLOCALE
-    if (this == &systemLocaleData) {
-        auto res = systemLocale()->query(QSystemLocale::ZeroDigit).toString();
-        if (!res.isEmpty())
-            return res;
-    }
-#endif
-    return zero().getData(single_character_data);
+    return localeString(this, QSystemLocale::ZeroDigit, zero());
 }
 
 char32_t QLocaleData::zeroUcs() const
@@ -940,26 +945,12 @@ char32_t QLocaleData::zeroUcs() const
 
 QString QLocaleData::negativeSign() const
 {
-#ifndef QT_NO_SYSTEMLOCALE
-    if (this == &systemLocaleData) {
-        auto res = systemLocale()->query(QSystemLocale::NegativeSign).toString();
-        if (!res.isEmpty())
-            return res;
-    }
-#endif
-    return minus().getData(single_character_data);
+    return localeString(this, QSystemLocale::NegativeSign, minus());
 }
 
 QString QLocaleData::positiveSign() const
 {
-#ifndef QT_NO_SYSTEMLOCALE
-    if (this == &systemLocaleData) {
-        auto res = systemLocale()->query(QSystemLocale::PositiveSign).toString();
-        if (!res.isEmpty())
-            return res;
-    }
-#endif
-    return plus().getData(single_character_data);
+    return localeString(this, QSystemLocale::PositiveSign, plus());
 }
 
 QString QLocaleData::exponentSeparator() const
