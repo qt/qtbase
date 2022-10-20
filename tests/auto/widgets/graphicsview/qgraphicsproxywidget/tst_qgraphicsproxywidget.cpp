@@ -3071,6 +3071,9 @@ void tst_QGraphicsProxyWidget::bypassGraphicsProxyWidget_data()
 
 void tst_QGraphicsProxyWidget::bypassGraphicsProxyWidget()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     QFETCH(bool, bypass);
 
     std::unique_ptr<QWidget> widgetGuard(new QWidget);
