@@ -1135,6 +1135,9 @@ void QPainterPath::addEllipse(const QRectF &boundingRect)
     that the left end of the text's baseline lies at the specified \a
     point.
 
+    Some fonts may yield overlapping subpaths and will require the
+    \c Qt::WindingFill fill rule for correct rendering.
+
     \table 100%
     \row
     \li \inlineimage qpainterpath-addtext.png
@@ -1143,7 +1146,7 @@ void QPainterPath::addEllipse(const QRectF &boundingRect)
     \endtable
 
     \sa QPainter::drawText(), {QPainterPath#Composing a
-    QPainterPath}{Composing a QPainterPath}
+    QPainterPath}{Composing a QPainterPath}, setFillRule()
 */
 void QPainterPath::addText(const QPointF &point, const QFont &f, const QString &text)
 {
