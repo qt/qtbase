@@ -128,8 +128,8 @@ bool QBenchmarkPerfEventsMeasurer::isAvailable()
    HARDWARE     BUS_CYCLES              BusCycles       bus-cycles
    HARDWARE     STALLED_CYCLES_FRONTEND StalledCycles   stalled-cycles-frontend idle-cycles-frontend
    HARDWARE     STALLED_CYCLES_BACKEND  StalledCycles   stalled-cycles-backend idle-cycles-backend
-   SOFTWARE     CPU_CLOCK               WalltimeMilliseconds cpu-clock
-   SOFTWARE     TASK_CLOCK              WalltimeMilliseconds task-clock
+   SOFTWARE     CPU_CLOCK               WalltimeNanoseconds cpu-clock
+   SOFTWARE     TASK_CLOCK              WalltimeNanoseconds task-clock
    SOFTWARE     PAGE_FAULTS             PageFaults      page-faults faults
    SOFTWARE     PAGE_FAULTS_MAJ         MajorPageFaults major-faults
    SOFTWARE     PAGE_FAULTS_MIN         MinorPageFaults minor-faults
@@ -309,7 +309,7 @@ static const Events eventlist[] = {
     { 170, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES, QTest::CacheMisses },
     { 183, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES, QTest::CacheReferences },
     { 200, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES, QTest::ContextSwitches },
-    { 217, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_CLOCK, QTest::WalltimeMilliseconds },
+    { 217, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_CLOCK, QTest::WalltimeNanoseconds },
     { 227, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, QTest::CPUCycles },
     { 238, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_MIGRATIONS, QTest::CPUMigrations },
     { 253, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES, QTest::ContextSwitches },
@@ -378,7 +378,7 @@ static const Events eventlist[] = {
     { 1292, PERF_TYPE_HARDWARE, PERF_COUNT_HW_REF_CPU_CYCLES, QTest::RefCPUCycles },
     { 1303, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_BACKEND, QTest::StalledCycles },
     { 1326, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND, QTest::StalledCycles },
-    { 1350, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK, QTest::WalltimeMilliseconds },
+    { 1350, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK, QTest::WalltimeNanoseconds },
     {   0, PERF_TYPE_MAX, 0, QTest::Events }
 };
 /* -- END GENERATED CODE -- */
@@ -570,10 +570,6 @@ static quint64 rawReadValue(int fd)
 qint64 QBenchmarkPerfEventsMeasurer::readValue()
 {
     quint64 raw = rawReadValue(fd);
-    if (metricType() == QTest::WalltimeMilliseconds) {
-        // perf returns nanoseconds
-        return raw / 1000000;
-    }
     return raw;
 }
 
