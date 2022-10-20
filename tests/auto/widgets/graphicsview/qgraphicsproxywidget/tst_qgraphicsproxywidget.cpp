@@ -1326,6 +1326,9 @@ static QList<QRect> rects(const QRegion &region)
 
 void tst_QGraphicsProxyWidget::scrollUpdate()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     ScrollWidget *widget = new ScrollWidget;
 
     QGraphicsScene scene;
