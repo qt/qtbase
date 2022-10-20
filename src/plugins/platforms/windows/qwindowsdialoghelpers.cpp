@@ -544,8 +544,18 @@ QWindowsShellItem::QWindowsShellItem(IShellItem *item)
     : m_item(item)
     , m_attributes(0)
 {
-    if (FAILED(item->GetAttributes(SFGAO_CAPABILITYMASK | SFGAO_DISPLAYATTRMASK | SFGAO_CONTENTSMASK | SFGAO_STORAGECAPMASK, &m_attributes)))
+    SFGAOF mask = (SFGAO_CAPABILITYMASK | SFGAO_CONTENTSMASK | SFGAO_STORAGECAPMASK);
+
+    // Check for attributes which might be expensive to enumerate for subfolders
+    if (FAILED(item->GetAttributes((SFGAO_STREAM | SFGAO_COMPRESSED), &m_attributes))) {
         m_attributes = 0;
+    } else {
+        // If the item is compressed or stream, skip expensive subfolder test
+        if (m_attributes & (SFGAO_STREAM | SFGAO_COMPRESSED))
+            mask &= ~SFGAO_HASSUBFOLDER;
+        if (FAILED(item->GetAttributes(mask, &m_attributes)))
+            m_attributes = 0;
+    }
 }
 
 QString QWindowsShellItem::path() const
