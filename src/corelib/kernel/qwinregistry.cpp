@@ -38,10 +38,11 @@ void QWinRegistryKey::close()
 
 QVariant QWinRegistryKey::value(QStringView subKey) const
 {
-    Q_ASSERT(!subKey.isEmpty());
-
     if (!isValid())
         return {};
+
+    if (subKey.isEmpty())
+        subKey = u"Default";
 
     auto subKeyC = reinterpret_cast<const wchar_t *>(subKey.utf16());
 
