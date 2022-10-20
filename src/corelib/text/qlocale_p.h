@@ -31,7 +31,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_SYSTEMLOCALE
 struct QLocaleData;
 // Subclassed by Android platform plugin:
 class Q_CORE_EXPORT QSystemLocale
@@ -106,7 +105,6 @@ public:
 };
 Q_DECLARE_TYPEINFO(QSystemLocale::QueryType, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QSystemLocale::CurrencyToStringArgument, Q_RELOCATABLE_TYPE);
-#endif
 
 #if QT_CONFIG(icu)
 namespace QIcu {
