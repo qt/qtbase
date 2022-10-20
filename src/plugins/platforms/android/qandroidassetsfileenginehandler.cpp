@@ -108,10 +108,12 @@ public:
     FolderIterator(const QString &path)
         : m_path(path)
     {
+        // Note that empty dirs in the assets dir before the build are not going to be
+        // included in the final apk, so no empty folders should expected to be listed.
         QJniObject files = QJniObject::callStaticObjectMethod(QtAndroid::applicationClass(),
-                                                                            "listAssetContent",
-                                                                            "(Landroid/content/res/AssetManager;Ljava/lang/String;)[Ljava/lang/String;",
-                                                                            QtAndroid::assets(), QJniObject::fromString(path).object());
+                        "listAssetContent",
+                        "(Landroid/content/res/AssetManager;Ljava/lang/String;)[Ljava/lang/String;",
+                        QtAndroid::assets(), QJniObject::fromString(path).object());
         if (files.isValid()) {
             QJniEnvironment env;
             jobjectArray jFiles = files.object<jobjectArray>();
@@ -350,8 +352,7 @@ public:
         } else {
             auto *assetDir = AAssetManager_openDir(m_assetManager, m_fileName.toUtf8());
             if (assetDir) {
-                if (AAssetDir_getNextFileName(assetDir))
-                    m_assetInfo->type = AssetItem::Type::Folder;
+                m_assetInfo->type = AssetItem::Type::Folder;
                 AAssetDir_close(assetDir);
             }
         }
