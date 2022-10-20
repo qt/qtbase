@@ -429,6 +429,7 @@ public:
     { prepend(a); }
     void shrink_to_fit() { squeeze(); }
     iterator erase(const_iterator first, const_iterator last);
+    inline iterator erase(const_iterator it) { return erase(it, it + 1); }
 
     static QByteArray fromStdString(const std::string &s);
     std::string toStdString() const;

@@ -366,6 +366,8 @@ private slots:
     void remove_regexp();
 #endif
     void remove_extra();
+    void erase_single_arg();
+    void erase();
     void swap();
 
     void prepend_qstring()            { prepend_impl<QString>(); }
@@ -3422,6 +3424,44 @@ void tst_QString::remove_extra()
         s1.remove(0, 1);
         QCOMPARE(s1, s);
     }
+}
+
+void tst_QString::erase_single_arg()
+{
+    QString s = "abcdefg";
+    auto it = s.erase(s.cbegin());
+    QCOMPARE_EQ(s, "bcdefg");
+    QCOMPARE(it, s.cbegin());
+
+    it = s.erase(std::prev(s.end()));
+    QCOMPARE_EQ(s, "bcdef");
+    QCOMPARE(it, s.cend());
+
+    it = s.erase(std::find(s.begin(), s.end(), QChar('d')));
+    QCOMPARE(it, s.begin() + 2);
+}
+
+void tst_QString::erase()
+{
+    QString str = "abcdefg";
+
+    QString s = str;
+    auto it = s.erase(s.begin(), s.end());
+    QCOMPARE_EQ(s, "");
+    QCOMPARE(it, s.end());
+
+    s = str;
+    it = s.erase(std::prev(s.end()));
+    QCOMPARE_EQ(s, "abcdef");
+    QCOMPARE(it, s.end());
+
+    it = s.erase(s.begin() + 2, s.end());
+    QCOMPARE_EQ(s, "ab");
+    QCOMPARE(it, s.end());
+
+    it = s.erase(s.begin(), s.begin() + 1);
+    QCOMPARE_EQ(s, "b");
+    QCOMPARE(it, s.begin());
 }
 
 void tst_QString::toNum()

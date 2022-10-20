@@ -68,6 +68,7 @@ private slots:
     void remove_data();
     void remove();
     void removeIf();
+    void erase_single_arg();
     void replace_data();
     void replace();
     void replaceWithSpecifiedLength();
@@ -1270,6 +1271,22 @@ void tst_QByteArray::removeIf()
 
     a = QByteArray("aBcAbC");
     QCOMPARE(a.removeIf(removeA), QByteArray("BcbC"));
+}
+
+void tst_QByteArray::erase_single_arg()
+{
+    QByteArray ba = "abcdefg";
+    ba.erase(ba.cend());
+    auto it = ba.erase(ba.cbegin());
+    QCOMPARE_EQ(ba, "bcdefg");
+    QCOMPARE(it, ba.cbegin());
+
+    it = ba.erase(std::prev(ba.end()));
+    QCOMPARE_EQ(ba, "bcdef");
+    QCOMPARE(it, ba.cend());
+
+    it = ba.erase(std::find(ba.begin(), ba.end(), QChar('d')));
+    QCOMPARE(it, ba.begin() + 2);
 }
 
 void tst_QByteArray::replace_data()

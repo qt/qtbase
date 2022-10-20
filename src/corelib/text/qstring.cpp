@@ -8935,7 +8935,8 @@ bool QString::isRightToLeft() const
 
     Removes from the string the characters in the half-open range
     [ \a first , \a last ). Returns an iterator to the character
-    referred to by \a last before the erase.
+    immediately after the last erased character (i.e. the character
+    referred to by \a last before the erase).
 */
 QString::iterator QString::erase(QString::const_iterator first, QString::const_iterator last)
 {
@@ -8944,6 +8945,21 @@ QString::iterator QString::erase(QString::const_iterator first, QString::const_i
     remove(start, len);
     return begin() + start;
 }
+
+/*!
+    \fn QString::iterator QString::erase(QString::const_iterator it)
+
+    \since 6.5
+
+    Removes the character denoted by \c it from the string.
+    Returns an iterator to the character immediately after the
+    erased character.
+
+    \code
+    QString c = "abcdefg";
+    auto it = c.erase(c.cbegin()); // c is now "bcdefg"; "it" points to "b"
+    \endcode
+*/
 
 /*! \fn void QString::shrink_to_fit()
     \since 5.10

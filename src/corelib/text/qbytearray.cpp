@@ -1271,6 +1271,21 @@ QByteArray::iterator QByteArray::erase(QByteArray::const_iterator first, QByteAr
     return begin() + start;
 }
 
+/*!
+    \fn QByteArray::iterator QByteArray::erase(QByteArray::const_iterator it)
+
+    \since 6.5
+
+    Removes the character denoted by \c it from the byte array.
+    Returns an iterator to the character immediately after the
+    erased character.
+
+    \code
+    QByteArray ba = "abcdefg";
+    auto it = ba.erase(ba.cbegin()); // ba is now "bcdefg" and it points to "b"
+    \endcode
+*/
+
 /*! \fn QByteArray::QByteArray(const QByteArray &other)
 
     Constructs a copy of \a other.
