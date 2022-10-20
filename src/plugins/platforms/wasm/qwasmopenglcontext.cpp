@@ -4,7 +4,17 @@
 #include "qwasmopenglcontext.h"
 #include "qwasmintegration.h"
 #include <EGL/egl.h>
+#include <emscripten/bind.h>
 #include <emscripten/val.h>
+
+namespace {
+void qtDoNothing(emscripten::val) { }
+} // namespace
+
+EMSCRIPTEN_BINDINGS(qwasmopenglcontext)
+{
+    function("qtDoNothing", &qtDoNothing);
+}
 
 QT_BEGIN_NAMESPACE
 
@@ -26,12 +36,14 @@ QWasmOpenGLContext::~QWasmOpenGLContext()
 {
     if (m_context) {
         // Destroy GL context. Work around bug in emscripten_webgl_destroy_context
-        // which removes all event handlers on the canvas by temporarily removing
-        // emscripten's JSEvents global object.
-        emscripten::val jsEvents = emscripten::val::global("window")["JSEvents"];
-        emscripten::val::global("window").set("JSEvents", emscripten::val::undefined());
+        // which removes all event handlers on the canvas by temporarily replacing the function
+        // that does the removal with a function that does nothing.
+        emscripten::val jsEvents = emscripten::val::module_property("JSEvents");
+        emscripten::val savedRemoveAllHandlersOnTargetFunction =
+                jsEvents["removeAllHandlersOnTarget"];
+        jsEvents.set("removeAllHandlersOnTarget", emscripten::val::module_property("qtDoNothing"));
         emscripten_webgl_destroy_context(m_context);
-        emscripten::val::global("window").set("JSEvents", jsEvents);
+        jsEvents.set("removeAllHandlersOnTarget", savedRemoveAllHandlersOnTargetFunction);
         m_context = 0;
     }
 }

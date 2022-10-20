@@ -44,3 +44,29 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_SOURCE_DIR}/../qtwasmtestlib/qtwasmtestlib.js
             ${CMAKE_CURRENT_BINARY_DIR}/qtwasmtestlib.js)
+
+qt_internal_add_manual_test(qwasmcompositor_auto
+    SOURCES
+        qwasmcompositor_main.cpp
+        ../qtwasmtestlib/qtwasmtestlib.cpp
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::CorePrivate
+        Qt::GuiPrivate
+)
+
+include_directories(../qtwasmtestlib/)
+
+add_custom_command(
+    TARGET qwasmcompositor_auto POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_SOURCE_DIR}/qwasmcompositor_auto.html
+            ${CMAKE_CURRENT_BINARY_DIR}/qwasmcompositor_auto.html)
+
+add_custom_command(
+    TARGET qwasmcompositor_auto POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_SOURCE_DIR}/../qtwasmtestlib/qtwasmtestlib.js
+            ${CMAKE_CURRENT_BINARY_DIR}/qtwasmtestlib.js)
+
+target_link_options(qwasmcompositor_auto PRIVATE -sASYNCIFY -Os)

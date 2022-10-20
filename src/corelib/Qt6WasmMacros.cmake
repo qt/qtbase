@@ -85,18 +85,20 @@ endfunction()
 function(_qt_internal_add_wasm_extra_exported_methods target)
     get_target_property(wasm_extra_exported_methods "${target}" QT_WASM_EXTRA_EXPORTED_METHODS)
 
+    set(wasm_default_exported_methods "UTF16ToString,stringToUTF16,JSEvents")
+
     if(NOT wasm_extra_exported_methods)
         set(wasm_extra_exported_methods ${QT_WASM_EXTRA_EXPORTED_METHODS})
     endif()
 
     if(wasm_extra_exported_methods)
         target_link_options("${target}" PRIVATE
-        "SHELL:-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16,${wasm_extra_exported_methods}"
+        "SHELL:-s EXPORTED_RUNTIME_METHODS=${wasm_default_exported_methods},${wasm_extra_exported_methods}"
         )
     else()
         # an errant dangling comma will break this
         target_link_options("${target}" PRIVATE
-            "SHELL:-s EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16"
+            "SHELL:-s EXPORTED_RUNTIME_METHODS=${wasm_default_exported_methods}"
         )
     endif()
 endfunction()
