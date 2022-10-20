@@ -181,59 +181,59 @@ static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
 }
 
 
-static QMetaType qDecodeMYSQLType(int mysqltype, uint flags)
+static QMetaType qDecodeMYSQLType(enum_field_types mysqltype, uint flags)
 {
     QMetaType::Type type;
     switch (mysqltype) {
-    case FIELD_TYPE_TINY :
+    case MYSQL_TYPE_TINY:
         type = (flags & UNSIGNED_FLAG) ? QMetaType::UChar : QMetaType::Char;
         break;
-    case FIELD_TYPE_SHORT :
+    case MYSQL_TYPE_SHORT:
         type = (flags & UNSIGNED_FLAG) ? QMetaType::UShort : QMetaType::Short;
         break;
-    case FIELD_TYPE_LONG :
-    case FIELD_TYPE_INT24 :
+    case MYSQL_TYPE_LONG:
+    case MYSQL_TYPE_INT24:
         type = (flags & UNSIGNED_FLAG) ? QMetaType::UInt : QMetaType::Int;
         break;
-    case FIELD_TYPE_YEAR :
+    case MYSQL_TYPE_YEAR:
         type = QMetaType::Int;
         break;
-    case FIELD_TYPE_LONGLONG :
+    case MYSQL_TYPE_LONGLONG:
         type = (flags & UNSIGNED_FLAG) ? QMetaType::ULongLong : QMetaType::LongLong;
         break;
-    case FIELD_TYPE_FLOAT :
-    case FIELD_TYPE_DOUBLE :
-    case FIELD_TYPE_DECIMAL :
-#if defined(FIELD_TYPE_NEWDECIMAL)
-    case FIELD_TYPE_NEWDECIMAL:
-#endif
+    case MYSQL_TYPE_FLOAT:
+    case MYSQL_TYPE_DOUBLE:
+    case MYSQL_TYPE_DECIMAL:
+    case MYSQL_TYPE_NEWDECIMAL:
         type = QMetaType::Double;
         break;
-    case FIELD_TYPE_DATE :
+    case MYSQL_TYPE_DATE:
         type = QMetaType::QDate;
         break;
-    case FIELD_TYPE_TIME :
+    case MYSQL_TYPE_TIME:
         // A time field can be within the range '-838:59:59' to '838:59:59' so
         // use QString instead of QTime since QTime is limited to 24 hour clock
         type = QMetaType::QString;
         break;
-    case FIELD_TYPE_DATETIME :
-    case FIELD_TYPE_TIMESTAMP :
+    case MYSQL_TYPE_DATETIME:
+    case MYSQL_TYPE_TIMESTAMP:
         type = QMetaType::QDateTime;
         break;
-    case FIELD_TYPE_STRING :
-    case FIELD_TYPE_VAR_STRING :
-    case FIELD_TYPE_BLOB :
-    case FIELD_TYPE_TINY_BLOB :
-    case FIELD_TYPE_MEDIUM_BLOB :
-    case FIELD_TYPE_LONG_BLOB :
-    case FIELD_TYPE_GEOMETRY :
-    case MYSQL_TYPE_JSON :
+    case MYSQL_TYPE_STRING:
+    case MYSQL_TYPE_VAR_STRING:
+    case MYSQL_TYPE_BLOB:
+    case MYSQL_TYPE_TINY_BLOB:
+    case MYSQL_TYPE_MEDIUM_BLOB:
+    case MYSQL_TYPE_LONG_BLOB:
+    case MYSQL_TYPE_GEOMETRY:
+    case MYSQL_TYPE_JSON:
         type = (flags & BINARY_FLAG) ? QMetaType::QByteArray : QMetaType::QString;
         break;
-    default:
-    case FIELD_TYPE_ENUM :
-    case FIELD_TYPE_SET :
+    case MYSQL_TYPE_ENUM:
+    case MYSQL_TYPE_SET:
+        type = QMetaType::QString;
+        break;
+    default:  // needed because there are more enum values which are not available in all headers
         type = QMetaType::QString;
         break;
     }
@@ -243,7 +243,7 @@ static QMetaType qDecodeMYSQLType(int mysqltype, uint flags)
 static QSqlField qToField(MYSQL_FIELD *field)
 {
     QSqlField f(QString::fromUtf8(field->name),
-                qDecodeMYSQLType(int(field->type), field->flags),
+                qDecodeMYSQLType(field->type, field->flags),
                 QString::fromUtf8(field->table));
     f.setRequired(IS_NOT_NULL(field->flags));
     f.setLength(field->length);
@@ -262,7 +262,7 @@ static QSqlError qMakeStmtError(const QString& err, QSqlError::ErrorType type,
                      type, QString::number(mysql_stmt_errno(stmt)));
 }
 
-static bool qIsBlob(int t)
+static bool qIsBlob(enum_field_types t)
 {
     return t == MYSQL_TYPE_TINY_BLOB
            || t == MYSQL_TYPE_BLOB
@@ -271,7 +271,7 @@ static bool qIsBlob(int t)
            || t == MYSQL_TYPE_JSON;
 }
 
-static bool qIsTimeOrDate(int t)
+static bool qIsTimeOrDate(enum_field_types t)
 {
     // *not* MYSQL_TYPE_TIME because its range is bigger than QTime
     // (see above)
