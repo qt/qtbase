@@ -487,8 +487,6 @@ void QBenchmarkPerfEventsMeasurer::start()
         if (fd == -1) {
             perror("QBenchmarkPerfEventsMeasurer::start: perf_event_open");
             exit(1);
-        } else {
-            ::fcntl(fd, F_SETFD, FD_CLOEXEC);
         }
     }
 
