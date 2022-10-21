@@ -3505,6 +3505,16 @@ void tst_QString::erase()
     it = s.erase(s.begin(), s.begin() + 1);
     QCOMPARE_EQ(s, "b");
     QCOMPARE(it, s.begin());
+
+    {
+        QString s1 = QLatin1String("house");
+        QString copy = s1;
+        // erase() should return an iterator, not const_iterator
+        auto it = s1.erase(s1.cbegin(), s1.cbegin());
+        *it = QLatin1Char('m');
+        QCOMPARE(s1, "mouse");
+        QCOMPARE(copy, "house");
+    }
 }
 
 void tst_QString::toNum()
