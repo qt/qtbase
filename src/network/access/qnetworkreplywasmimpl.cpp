@@ -17,6 +17,42 @@
 #include <emscripten/fetch.h>
 
 QT_BEGIN_NAMESPACE
+namespace {
+constexpr const char *BannedHeaders[] = {
+    "accept-charset",
+    "accept-encoding",
+    "access-control-request-headers",
+    "access-control-request-method",
+    "connection",
+    "content-length",
+    "cookie",
+    "cookie2",
+    "date",
+    "dnt",
+    "expect",
+    "host",
+    "keep-alive",
+    "origin",
+    "referer",
+    "te",
+    "trailer",
+    "transfer-encoding",
+    "upgrade",
+    "via",
+};
+
+bool isUnsafeHeader(QLatin1StringView header)
+{
+    return header.startsWith(QStringLiteral("proxy-"), Qt::CaseInsensitive)
+            || header.startsWith(QStringLiteral("sec-"), Qt::CaseInsensitive)
+            || std::any_of(std::begin(BannedHeaders), std::end(BannedHeaders),
+                           [&header](const char *bannedHeader) {
+                               return 0
+                                       == header.compare(QLatin1StringView(bannedHeader),
+                                                         Qt::CaseInsensitive);
+                           });
+}
+} // namespace
 
 QNetworkReplyWasmImplPrivate::QNetworkReplyWasmImplPrivate()
     : QNetworkReplyPrivate()
@@ -190,15 +226,22 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
 
     QList<QByteArray> headersData = request.rawHeaderList();
     int arrayLength = getArraySize(headersData.count());
-    const char* customHeaders[arrayLength];
+    const char *customHeaders[arrayLength];
+    QStringList trimmedHeaders;
 
     if (headersData.count() > 0) {
         int i = 0;
-        for (int j = 0; j < headersData.count(); j++) {
-            customHeaders[i] = headersData[j].constData();
-            i += 1;
-            customHeaders[i] = request.rawHeader(headersData[j]).constData();
-            i += 1;
+        for (const auto &headerName : headersData) {
+            if (isUnsafeHeader(QLatin1StringView(headerName.constData()))) {
+                trimmedHeaders.push_back(QString::fromLatin1(headerName));
+            } else {
+                customHeaders[i++] = headerName.constData();
+                customHeaders[i++] = request.rawHeader(headerName).constData();
+            }
+        }
+        if (!trimmedHeaders.isEmpty()) {
+            qWarning() << "Qt has trimmed the following forbidden headers from the request:"
+                       << trimmedHeaders.join(QLatin1StringView(", "));
         }
         customHeaders[i] = nullptr;
         attr.requestHeaders = customHeaders;
