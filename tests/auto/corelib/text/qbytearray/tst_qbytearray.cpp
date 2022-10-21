@@ -68,6 +68,7 @@ private slots:
     void remove_data();
     void remove();
     void removeIf();
+    void erase();
     void erase_single_arg();
     void replace_data();
     void replace();
@@ -1278,6 +1279,33 @@ void tst_QByteArray::removeIf()
 
     a = QByteArray("aBcAbC");
     QCOMPARE(a.removeIf(removeA), QByteArray("BcbC"));
+}
+
+void tst_QByteArray::erase()
+{
+    {
+        QByteArray ba = "kittens";
+        auto it = ba.erase(ba.cbegin(), ba.cbegin() + 2);
+        QCOMPARE(ba, "ttens");
+        QCOMPARE(it, ba.cbegin());
+    }
+
+    {
+        QByteArray ba = "kittens";
+        auto it = ba.erase(ba.cbegin(), ba.cend());
+        QCOMPARE(ba, "");
+        QCOMPARE(it, ba.cbegin());
+        QCOMPARE(ba.cbegin(), ba.cend());
+    }
+
+    {
+        QByteArray ba = "kite";
+        auto it = ba.erase(ba.cbegin(), ba.cbegin());
+        // erase() should return an iterator (not const_iterator)
+        *it = 'Z';
+        QCOMPARE(ba, "Zite");
+        QCOMPARE(it, ba.cbegin());
+    }
 }
 
 void tst_QByteArray::erase_single_arg()
