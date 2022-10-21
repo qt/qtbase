@@ -412,31 +412,12 @@ void QBenchmarkPerfEventsMeasurer::setCounter(const char *name)
     attr.type = ptr->type;
     attr.config = ptr->event_id;
 
-    // now parse the attributes
+    // We used to support attributes, but our code was the opposite of what
+    // perf(1) does, plus QBenchlib isn't exactly expected to be used to
+    // profile Linux kernel code or launch guest VMs as part of the workload.
+    // So we keep accepting the colon as a delimiter but ignore it.
     if (!colon)
         return;
-    while (*++colon) {
-        switch (*colon) {
-        case 'u':
-            attr.exclude_user = true;
-            break;
-        case 'k':
-            attr.exclude_kernel = true;
-            break;
-        case 'h':
-            attr.exclude_hv = true;
-            break;
-        case 'G':
-            attr.exclude_guest = true;
-            break;
-        case 'H':
-            attr.exclude_host = true;
-            break;
-        default:
-            fprintf(stderr, "ERROR: Unknown attribute '%c'\n", *colon);
-            exit(1);
-        }
-    }
 }
 
 void QBenchmarkPerfEventsMeasurer::listCounters()
@@ -454,14 +435,6 @@ void QBenchmarkPerfEventsMeasurer::listCounters()
                ptr->type == PERF_TYPE_SOFTWARE ? "software" :
                ptr->type == PERF_TYPE_HW_CACHE ? "cache" : "other");
     }
-
-    printf("\nAttributes can be specified by adding a colon and the following:\n"
-           "  u - exclude measuring in the userspace\n"
-           "  k - exclude measuring in kernel mode\n"
-           "  h - exclude measuring in the hypervisor\n"
-           "  G - exclude measuring when running virtualized (guest VM)\n"
-           "  H - exclude measuring when running non-virtualized (host system)\n"
-           "Attributes can be combined, for example: -perfcounter branch-mispredicts:kh\n");
 }
 
 QBenchmarkPerfEventsMeasurer::QBenchmarkPerfEventsMeasurer() = default;
