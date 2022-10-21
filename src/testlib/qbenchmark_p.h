@@ -154,8 +154,8 @@ namespace QTest
     void setIterationCountHint(int count);
     void setIterationCount(int count);
 
-    Q_TESTLIB_EXPORT void beginBenchmarkMeasurement();
-    Q_TESTLIB_EXPORT quint64 endBenchmarkMeasurement();
+    void beginBenchmarkMeasurement();
+    quint64 endBenchmarkMeasurement();
 }
 
 QT_END_NAMESPACE
