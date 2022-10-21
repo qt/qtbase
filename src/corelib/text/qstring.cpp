@@ -3279,11 +3279,11 @@ QString &QString::remove(qsizetype pos, qsizetype len)
 {
     if (pos < 0)  // count from end of string
         pos += size();
+
     if (size_t(pos) >= size_t(size())) {
         // range problems
-    } else if (len >= size() - pos) {
-        resize(pos); // truncate
     } else if (len > 0) {
+        len = std::min(len, size() - pos);
         detach();
         d->erase(d.begin() + pos, len);
         d.data()[d.size] = u'\0';
