@@ -18,16 +18,16 @@ void QBenchmarkEvent::start()
     QAbstractEventDispatcher::instance()->installNativeEventFilter(this);
 }
 
-qint64 QBenchmarkEvent::stop()
+QBenchmarkMeasurerBase::Measurement QBenchmarkEvent::stop()
 {
     QAbstractEventDispatcher::instance()->removeNativeEventFilter(this);
-    return eventCounter;
+    return { qreal(eventCounter), QTest::Events };
 }
 
 // It's very tempting to simply reject a measurement if 0 events
 // where counted, however that is a possible situation and returning
 // false here will create a infinite loop. Do not change this.
-bool QBenchmarkEvent::isMeasurementAccepted(qint64 measurement)
+bool QBenchmarkEvent::isMeasurementAccepted(QBenchmarkMeasurerBase::Measurement measurement)
 {
     Q_UNUSED(measurement);
     return true;
@@ -42,11 +42,6 @@ int QBenchmarkEvent::adjustMedianCount(int suggestion)
 {
     Q_UNUSED(suggestion);
     return 1;
-}
-
-QTest::QBenchmarkMetric QBenchmarkEvent::metricType()
-{
-    return QTest::Events;
 }
 
 // This could be done in a much better way, this is just the beginning.

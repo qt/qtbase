@@ -474,14 +474,14 @@ void QBenchmarkPerfEventsMeasurer::start()
     ::ioctl(fd, PERF_EVENT_IOC_ENABLE);
 }
 
-qint64 QBenchmarkPerfEventsMeasurer::stop()
+QBenchmarkMeasurerBase::Measurement QBenchmarkPerfEventsMeasurer::stop()
 {
     // disable the counter
     ::ioctl(fd, PERF_EVENT_IOC_DISABLE);
     return readValue();
 }
 
-bool QBenchmarkPerfEventsMeasurer::isMeasurementAccepted(qint64)
+bool QBenchmarkPerfEventsMeasurer::isMeasurementAccepted(Measurement)
 {
     return true;
 }
@@ -494,11 +494,6 @@ int QBenchmarkPerfEventsMeasurer::adjustIterationCount(int)
 int QBenchmarkPerfEventsMeasurer::adjustMedianCount(int)
 {
     return 1;
-}
-
-QTest::QBenchmarkMetric QBenchmarkPerfEventsMeasurer::metricType()
-{
-    return metricForEvent(attr.type, attr.config);
 }
 
 static quint64 rawReadValue(int fd)
@@ -536,10 +531,10 @@ static quint64 rawReadValue(int fd)
     return results.value * (double(results.time_running) / double(results.time_enabled));
 }
 
-qint64 QBenchmarkPerfEventsMeasurer::readValue()
+QBenchmarkMeasurerBase::Measurement QBenchmarkPerfEventsMeasurer::readValue()
 {
     quint64 raw = rawReadValue(fd);
-    return raw;
+    return { qreal(qint64(raw)), metricForEvent(attr.type, attr.config) };
 }
 
 QT_END_NAMESPACE

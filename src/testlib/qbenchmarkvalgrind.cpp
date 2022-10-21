@@ -170,14 +170,14 @@ void QBenchmarkCallgrindMeasurer::start()
     CALLGRIND_ZERO_STATS;
 }
 
-qint64 QBenchmarkCallgrindMeasurer::stop()
+QBenchmarkMeasurerBase::Measurement QBenchmarkCallgrindMeasurer::stop()
 {
     CALLGRIND_DUMP_STATS;
     const qint64 result = QBenchmarkValgrindUtils::extractLastResult();
-    return result;
+    return { qreal(result), QTest::InstructionReads };
 }
 
-bool QBenchmarkCallgrindMeasurer::isMeasurementAccepted(qint64 measurement)
+bool QBenchmarkCallgrindMeasurer::isMeasurementAccepted(Measurement measurement)
 {
     Q_UNUSED(measurement);
     return true;
@@ -196,11 +196,6 @@ int QBenchmarkCallgrindMeasurer::adjustMedianCount(int)
 bool QBenchmarkCallgrindMeasurer::needsWarmupIteration()
 {
     return true;
-}
-
-QTest::QBenchmarkMetric QBenchmarkCallgrindMeasurer::metricType()
-{
-    return QTest::InstructionReads;
 }
 
 QT_END_NAMESPACE

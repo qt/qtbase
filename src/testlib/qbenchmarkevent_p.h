@@ -28,11 +28,10 @@ public:
     QBenchmarkEvent();
     ~QBenchmarkEvent();
     void start() override;
-    qint64 stop() override;
-    bool isMeasurementAccepted(qint64 measurement) override;
+    Measurement stop() override;
+    bool isMeasurementAccepted(Measurement measurement) override;
     int adjustIterationCount(int suggestion) override;
     int adjustMedianCount(int suggestion) override;
-    QTest::QBenchmarkMetric metricType() override;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override;
 #else

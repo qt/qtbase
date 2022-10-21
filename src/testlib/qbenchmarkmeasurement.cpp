@@ -16,14 +16,14 @@ void QBenchmarkTimeMeasurer::start()
     time.start();
 }
 
-qint64 QBenchmarkTimeMeasurer::stop()
+QBenchmarkMeasurerBase::Measurement QBenchmarkTimeMeasurer::stop()
 {
-    return time.elapsed();
+    return { qreal(time.elapsed()), QTest::WalltimeMilliseconds };
 }
 
-bool QBenchmarkTimeMeasurer::isMeasurementAccepted(qint64 measurement)
+bool QBenchmarkTimeMeasurer::isMeasurementAccepted(Measurement measurement)
 {
-    return (measurement > 50);
+    return (measurement.value > 50);
 }
 
 int QBenchmarkTimeMeasurer::adjustIterationCount(int suggestion)
@@ -41,11 +41,6 @@ int QBenchmarkTimeMeasurer::adjustMedianCount(int)
     return 1;
 }
 
-QTest::QBenchmarkMetric QBenchmarkTimeMeasurer::metricType()
-{
-    return QTest::WalltimeMilliseconds;
-}
-
 #ifdef HAVE_TICK_COUNTER // defined in 3rdparty/cycle_p.h
 
 void QBenchmarkTickMeasurer::start()
@@ -53,13 +48,13 @@ void QBenchmarkTickMeasurer::start()
     startTicks = getticks();
 }
 
-qint64 QBenchmarkTickMeasurer::stop()
+QBenchmarkMeasurerBase::Measurement QBenchmarkTickMeasurer::stop()
 {
     CycleCounterTicks now = getticks();
-    return qRound64(elapsed(now, startTicks));
+    return { elapsed(now, startTicks), QTest::CPUTicks };
 }
 
-bool QBenchmarkTickMeasurer::isMeasurementAccepted(qint64)
+bool QBenchmarkTickMeasurer::isMeasurementAccepted(QBenchmarkMeasurerBase::Measurement)
 {
     return true;
 }
@@ -77,11 +72,6 @@ int QBenchmarkTickMeasurer::adjustMedianCount(int)
 bool QBenchmarkTickMeasurer::needsWarmupIteration()
 {
     return true;
-}
-
-QTest::QBenchmarkMetric QBenchmarkTickMeasurer::metricType()
-{
-    return QTest::CPUTicks;
 }
 
 #endif

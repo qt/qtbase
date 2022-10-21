@@ -139,7 +139,7 @@ public:
     bool isBenchmark() const { return result.valid; }
     bool resultsAccepted() const { return resultAccepted; }
     int adjustIterationCount(int suggestion);
-    void setResult(qreal value, QTest::QBenchmarkMetric metric, bool setByMacro = true);
+    void setResult(QBenchmarkMeasurerBase::Measurement m, bool setByMacro = true);
 
     QBenchmarkResult result;
     bool resultAccepted = false;
@@ -155,7 +155,7 @@ namespace QTest
     void setIterationCount(int count);
 
     void beginBenchmarkMeasurement();
-    quint64 endBenchmarkMeasurement();
+    QBenchmarkMeasurerBase::Measurement endBenchmarkMeasurement();
 }
 
 QT_END_NAMESPACE

@@ -26,12 +26,11 @@ public:
     ~QBenchmarkPerfEventsMeasurer();
     void init() override;
     void start() override;
-    qint64 stop() override;
-    bool isMeasurementAccepted(qint64 measurement) override;
+    Measurement stop() override;
+    bool isMeasurementAccepted(Measurement measurement) override;
     int adjustIterationCount(int suggestion) override;
     int adjustMedianCount(int suggestion) override;
     bool needsWarmupIteration() override { return true; }
-    QTest::QBenchmarkMetric metricType() override;
 
     static bool isAvailable();
     static QTest::QBenchmarkMetric metricForEvent(quint32 type, quint64 event_id);
@@ -40,7 +39,7 @@ public:
 private:
     int fd = -1;
 
-    qint64 readValue();
+    Measurement readValue();
 };
 
 QT_END_NAMESPACE

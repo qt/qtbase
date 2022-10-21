@@ -96,8 +96,8 @@ int QBenchmarkTestMethodData::adjustIterationCount(int suggestion)
     return iterationCount;
 }
 
-void QBenchmarkTestMethodData::setResult(
-    qreal value, QTest::QBenchmarkMetric metric, bool setByMacro)
+void QBenchmarkTestMethodData::setResult(QBenchmarkMeasurerBase::Measurement m,
+                                         bool setByMacro)
 {
     bool accepted = false;
 
@@ -114,9 +114,9 @@ void QBenchmarkTestMethodData::setResult(
     // Test the result directly without calling the measurer if the minimum time
     // has been specified on the command line with -minimumvalue.
     else if (QBenchmarkGlobalData::current->walltimeMinimum != -1)
-        accepted = (value > QBenchmarkGlobalData::current->walltimeMinimum);
+        accepted = (m.value > QBenchmarkGlobalData::current->walltimeMinimum);
     else
-        accepted = QBenchmarkGlobalData::current->measurer->isMeasurementAccepted(value);
+        accepted = QBenchmarkGlobalData::current->measurer->isMeasurementAccepted(m);
 
     // Accept the result or double the number of iterations.
     if (accepted)
@@ -125,7 +125,7 @@ void QBenchmarkTestMethodData::setResult(
         iterationCount *= 2;
 
     this->result = QBenchmarkResult(
-        QBenchmarkGlobalData::current->context, value, iterationCount, metric, setByMacro);
+        QBenchmarkGlobalData::current->context, m.value, iterationCount, m.metric, setByMacro);
 }
 
 /*!
@@ -157,8 +157,8 @@ QTest::QBenchmarkIterationController::QBenchmarkIterationController()
 */
 QTest::QBenchmarkIterationController::~QBenchmarkIterationController()
 {
-    const qreal result = QTest::endBenchmarkMeasurement();
-    QBenchmarkTestMethodData::current->setResult(result, QBenchmarkGlobalData::current->measurer->metricType());
+    QBenchmarkMeasurerBase::Measurement measurement = QTest::endBenchmarkMeasurement();
+    QBenchmarkTestMethodData::current->setResult(measurement);
 }
 
 /*! \internal
@@ -209,7 +209,7 @@ void QTest::beginBenchmarkMeasurement()
 
 /*! \internal
 */
-quint64 QTest::endBenchmarkMeasurement()
+QBenchmarkMeasurerBase::Measurement QTest::endBenchmarkMeasurement()
 {
     // the clock is ticking before the line below, don't add code here.
     return QBenchmarkGlobalData::current->measurer->stop();
@@ -234,7 +234,7 @@ quint64 QTest::endBenchmarkMeasurement()
 */
 void QTest::setBenchmarkResult(qreal result, QTest::QBenchmarkMetric metric)
 {
-    QBenchmarkTestMethodData::current->setResult(result, metric, false);
+    QBenchmarkTestMethodData::current->setResult({ result, metric }, false);
 }
 
 template <typename T>
