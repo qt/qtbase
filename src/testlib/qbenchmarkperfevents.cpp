@@ -409,27 +409,38 @@ void QBenchmarkPerfEventsMeasurer::setCounter(const char *name)
 {
     initPerf();
     eventTypes->clear();
-    const char *colon = strchr(name, ':');
-    int n = colon ? colon - name : strlen(name);
-    const Events *ptr = eventlist;
-    for ( ; ptr->type != PERF_TYPE_MAX; ++ptr) {
-        int c = strncmp(name, eventlist_strings + ptr->offset, n);
-        if (c == 0)
-            break;
-        if (c < 0) {
-            fprintf(stderr, "ERROR: Performance counter type '%s' is unknown\n", name);
-            exit(1);
-        }
-    }
+    std::string_view input = name;
+    if (qsizetype idx = input.find(':'); idx >= 0)
+        input = input.substr(0, idx);
 
-    *eventTypes = { { ptr->type, ptr->event_id } };
+    while (!input.empty()) {
+        std::string_view countername = input;
+        if (qsizetype idx = countername.find(','); idx >= 0)
+            countername = countername.substr(0, idx);
+
+        for (const Events *ptr = eventlist; ptr->type != PERF_TYPE_MAX; ++ptr) {
+            int c = countername.compare(eventlist_strings + ptr->offset);
+            if (c > 0)
+                continue;
+            if (c < 0) {
+                fprintf(stderr, "ERROR: Performance counter type '%.*s' is unknown\n",
+                        int(countername.size()), countername.data());
+                exit(1);
+            }
+            eventTypes->append({ ptr->type, ptr->event_id });
+            break;
+        }
+
+        if (countername.size() == input.size())
+            input = {};
+        else
+            input.remove_prefix(countername.size() + 1);
+    }
 
     // We used to support attributes, but our code was the opposite of what
     // perf(1) does, plus QBenchlib isn't exactly expected to be used to
     // profile Linux kernel code or launch guest VMs as part of the workload.
     // So we keep accepting the colon as a delimiter but ignore it.
-    if (!colon)
-        return;
 }
 
 void QBenchmarkPerfEventsMeasurer::listCounters()
