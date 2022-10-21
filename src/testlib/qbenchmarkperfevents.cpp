@@ -17,8 +17,9 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <sys/syscall.h>
 #include <sys/ioctl.h>
+#include <sys/prctl.h>
+#include <sys/syscall.h>
 
 #include "3rdparty/linux_perf_event_p.h"
 
@@ -504,15 +505,13 @@ void QBenchmarkPerfEventsMeasurer::start()
     // enable the counters
     for (int fd : std::as_const(fds))
         ::ioctl(fd, PERF_EVENT_IOC_RESET);
-    for (int fd : std::as_const(fds))
-        ::ioctl(fd, PERF_EVENT_IOC_ENABLE);
+    prctl(PR_TASK_PERF_EVENTS_ENABLE);
 }
 
 QList<QBenchmarkMeasurerBase::Measurement> QBenchmarkPerfEventsMeasurer::stop()
 {
     // disable the counters
-    for (int fd : std::as_const(fds))
-        ::ioctl(fd, PERF_EVENT_IOC_DISABLE);
+    prctl(PR_TASK_PERF_EVENTS_DISABLE);
 
     const QList<PerfEvent> &counters = *eventTypes;
     QList<Measurement> result(counters.size(), {});
