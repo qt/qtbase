@@ -20,7 +20,7 @@ static const QPair<QStringView, quint32> TEST_DWORD = qMakePair(u"dword", 123);
 static const QPair<QStringView, quint64> TEST_QWORD = qMakePair(u"qword", 456);
 static const QPair<QStringView, QByteArray> TEST_BINARY = qMakePair(u"binary", "binary\0"_ba);
 static const QPair<QStringView, QVariant> TEST_NOT_EXIST = qMakePair(u"not_exist", QVariant());
-static const QPair<QStringView, QVariant> TEST_DEFAULT = qMakePair(u"Default", u"default"_s);
+static const QPair<QStringView, QVariant> TEST_DEFAULT = qMakePair(u"", u"default"_s);
 
 [[nodiscard]] static inline bool write(const HKEY key, const QStringView name, const QVariant &value)
 {
@@ -212,12 +212,6 @@ void tst_qwinregistrykey::qwinregistrykey()
 
     {
         const auto value = registry.value<QString>(TEST_DEFAULT.first);
-        QVERIFY(value.has_value());
-        QCOMPARE(value.value_or(QString()), TEST_DEFAULT.second);
-    }
-
-    {
-        const auto value = registry.value<QString>(L"");
         QVERIFY(value.has_value());
         QCOMPARE(value.value_or(QString()), TEST_DEFAULT.second);
     }

@@ -38,13 +38,14 @@ void QWinRegistryKey::close()
 
 QVariant QWinRegistryKey::value(QStringView subKey) const
 {
+    // NOTE: Empty value name is allowed in Windows registry, it means the default
+    // or unnamed value of a key, you can read/write/delete such value normally.
+
     if (!isValid())
         return {};
 
-    if (subKey.isEmpty())
-        subKey = u"Default";
-
-    auto subKeyC = reinterpret_cast<const wchar_t *>(subKey.utf16());
+    // Use nullptr when we need to access the default value.
+    const auto subKeyC = subKey.isEmpty() ? nullptr : reinterpret_cast<const wchar_t *>(subKey.utf16());
 
     // Get the size and type of the value.
     DWORD dataType = REG_NONE;
