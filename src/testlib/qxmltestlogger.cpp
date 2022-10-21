@@ -255,14 +255,14 @@ void QXmlTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
     QTestCharBuffer quotedMetric;
     QTestCharBuffer quotedTag;
 
-    if (xmlQuote(&quotedMetric, benchmarkMetricName(result.metric))
+    if (xmlQuote(&quotedMetric, benchmarkMetricName(result.measurement.metric))
         && xmlQuote(&quotedTag, result.context.tag.toUtf8().constData())) {
         QTestCharBuffer buf;
         QTest::qt_asprintf(&buf,
                            QTest::benchmarkResultFormatString(),
                            quotedMetric.constData(),
                            quotedTag.constData(),
-                           result.value / double(result.iterations),
+                           result.measurement.value / double(result.iterations),
                            result.iterations);
         outputString(buf.constData());
     }

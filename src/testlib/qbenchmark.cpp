@@ -124,8 +124,8 @@ void QBenchmarkTestMethodData::setResult(QBenchmarkMeasurerBase::Measurement m,
     else
         iterationCount *= 2;
 
-    this->result = QBenchmarkResult(
-        QBenchmarkGlobalData::current->context, m.value, iterationCount, m.metric, setByMacro);
+    this->result = QBenchmarkResult(QBenchmarkGlobalData::current->context, m,
+                                    iterationCount, setByMacro);
 }
 
 /*!

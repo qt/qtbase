@@ -265,11 +265,11 @@ void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
     char fill[1024];
     qsnprintf(fill, sizeof(fill), fillFormat, "");
 
-    const char * unitText = QTest::benchmarkMetricUnit(result.metric);
+    const char * unitText = QTest::benchmarkMetricUnit(result.measurement.metric);
 
-    qreal valuePerIteration = qreal(result.value) / qreal(result.iterations);
+    qreal valuePerIteration = qreal(result.measurement.value) / qreal(result.iterations);
     char resultBuffer[100] = "";
-    QTest::formatResult(resultBuffer, 100, valuePerIteration, QTest::countSignificantDigits(result.value));
+    QTest::formatResult(resultBuffer, 100, valuePerIteration, QTest::countSignificantDigits(result.measurement.value));
 
     char buf2[1024];
     qsnprintf(buf2, sizeof(buf2), "%s %s", resultBuffer, unitText);
@@ -281,7 +281,8 @@ void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
 
     char buf3[1024];
     Q_ASSERT(result.iterations > 0);
-    QTest::formatResult(resultBuffer, 100, result.value, QTest::countSignificantDigits(result.value));
+    QTest::formatResult(resultBuffer, 100, result.measurement.value,
+                        QTest::countSignificantDigits(result.measurement.value));
     qsnprintf(buf3, sizeof(buf3), " (total: %s, iterations: %d)", resultBuffer, result.iterations);
 
     char buf[1024];

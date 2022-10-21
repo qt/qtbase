@@ -61,28 +61,26 @@ class QBenchmarkResult
 {
 public:
     QBenchmarkContext context;
-    qreal value = -1;
+    QBenchmarkMeasurerBase::Measurement measurement = { -1, QTest::FramesPerSecond };
     int iterations = -1;
-    QTest::QBenchmarkMetric metric = QTest::FramesPerSecond;
     bool setByMacro = true;
     bool valid = false;
 
     QBenchmarkResult() = default;
 
     QBenchmarkResult(
-        const QBenchmarkContext &context, const qreal value, const int iterations,
-        QTest::QBenchmarkMetric metric, bool setByMacro)
+        const QBenchmarkContext &context, QBenchmarkMeasurerBase::Measurement m,
+            const int iterations, bool setByMacro)
         : context(context)
-        , value(value)
+        , measurement(m)
         , iterations(iterations)
-        , metric(metric)
         , setByMacro(setByMacro)
         , valid(true)
     { }
 
     bool operator<(const QBenchmarkResult &other) const
     {
-        return (value / iterations) < (other.value / other.iterations);
+        return (measurement.value / iterations) < (other.measurement.value / other.iterations);
     }
 };
 Q_DECLARE_TYPEINFO(QBenchmarkResult, Q_RELOCATABLE_TYPE);

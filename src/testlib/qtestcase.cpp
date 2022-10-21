@@ -1097,15 +1097,6 @@ struct QTestDataSetter
     }
 };
 
-namespace {
-
-qreal addResult(qreal current, const QBenchmarkResult& r)
-{
-    return current + r.value;
-}
-
-}
-
 void TestMethods::invokeTestOnData(int index) const
 {
     /* Benchmarking: for each median iteration*/
@@ -1179,11 +1170,11 @@ void TestMethods::invokeTestOnData(int index) const
                 if (i == -1) {
                     QTestLog::info(qPrintable(
                         QString::fromLatin1("warmup stage result      : %1")
-                            .arg(QBenchmarkTestMethodData::current->result.value)), nullptr, 0);
+                            .arg(QBenchmarkTestMethodData::current->result.measurement.value)), nullptr, 0);
                 } else {
                     QTestLog::info(qPrintable(
                         QString::fromLatin1("accumulation stage result: %1")
-                            .arg(QBenchmarkTestMethodData::current->result.value)), nullptr, 0);
+                            .arg(QBenchmarkTestMethodData::current->result.measurement.value)), nullptr, 0);
                 }
             }
         }
@@ -1192,6 +1183,9 @@ void TestMethods::invokeTestOnData(int index) const
         if (QBenchmarkGlobalData::current->minimumTotal == -1) {
             minimumTotalReached = true;
         } else {
+            auto addResult = [](qreal current, const QBenchmarkResult& r) {
+                return current + r.measurement.value;
+            };
             const qreal total = std::accumulate(results.begin(), results.end(), 0.0, addResult);
             minimumTotalReached = (total >= QBenchmarkGlobalData::current->minimumTotal);
         }
