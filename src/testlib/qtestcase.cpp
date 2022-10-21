@@ -1067,17 +1067,20 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml) {
     qtest_qParseArgs(argc, const_cast<const char *const *>(argv), qml);
 }
 
-QBenchmarkResult qMedian(const QList<QBenchmarkResult> &container)
+static QList<QBenchmarkResult> qMedian(const QList<QList<QBenchmarkResult>> &container)
 {
     const int count = container.size();
     if (count == 0)
-        return QBenchmarkResult();
+        return {};
 
     if (count == 1)
         return container.front();
 
-    QList<QBenchmarkResult> containerCopy = container;
-    std::sort(containerCopy.begin(), containerCopy.end());
+    QList<QList<QBenchmarkResult>> containerCopy = container;
+    std::sort(containerCopy.begin(), containerCopy.end(),
+              [](const QList<QBenchmarkResult> &a, const QList<QBenchmarkResult> &b) {
+        return a.first() < b.first();
+    });
 
     const int middle = count / 2;
 
@@ -1104,7 +1107,7 @@ void TestMethods::invokeTestOnData(int index) const
     bool isBenchmark = false;
     int i = (QBenchmarkGlobalData::current->measurer->needsWarmupIteration()) ? -1 : 0;
 
-    QList<QBenchmarkResult> results;
+    QList<QList<QBenchmarkResult>> resultsList;
     bool minimumTotalReached = false;
     do {
         QBenchmarkTestMethodData::current->beginDataRun();
@@ -1121,8 +1124,9 @@ void TestMethods::invokeTestOnData(int index) const
             const bool initQuit =
                 QTestResult::skipCurrentTest() || QTestResult::currentTestFailed();
             if (!initQuit) {
-                QBenchmarkTestMethodData::current->result = QBenchmarkResult();
+                QBenchmarkTestMethodData::current->results.clear();
                 QBenchmarkTestMethodData::current->resultAccepted = false;
+                QBenchmarkTestMethodData::current->valid = false;
 
                 QBenchmarkGlobalData::current->context.tag = QLatin1StringView(
                     QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "");
@@ -1164,29 +1168,29 @@ void TestMethods::invokeTestOnData(int index) const
         QBenchmarkTestMethodData::current->endDataRun();
         if (!QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed()) {
             if (i > -1)  // iteration -1 is the warmup iteration.
-                results.append(QBenchmarkTestMethodData::current->result);
+                resultsList.append(QBenchmarkTestMethodData::current->results);
 
-            if (isBenchmark && QBenchmarkGlobalData::current->verboseOutput) {
-                if (i == -1) {
-                    QTestLog::info(qPrintable(
-                        QString::fromLatin1("warmup stage result      : %1")
-                            .arg(QBenchmarkTestMethodData::current->result.measurement.value)), nullptr, 0);
-                } else {
-                    QTestLog::info(qPrintable(
-                        QString::fromLatin1("accumulation stage result: %1")
-                            .arg(QBenchmarkTestMethodData::current->result.measurement.value)), nullptr, 0);
-                }
+            if (isBenchmark && QBenchmarkGlobalData::current->verboseOutput &&
+                    !QBenchmarkTestMethodData::current->results.isEmpty()) {
+                // we only print the first result
+                const QBenchmarkResult &first = QBenchmarkTestMethodData::current->results.constFirst();
+                QString pattern = i < 0 ? "warmup stage result      : %1"_L1
+                                        : "accumulation stage result: %1"_L1;
+                QTestLog::info(qPrintable(pattern.arg(first.measurement.value)), nullptr, 0);
             }
         }
 
-        // Verify if the minimum total measurement is reached, if it was specified:
+        // Verify if the minimum total measurement (for the first measurement)
+        // was reached, if it was specified:
         if (QBenchmarkGlobalData::current->minimumTotal == -1) {
             minimumTotalReached = true;
         } else {
-            auto addResult = [](qreal current, const QBenchmarkResult& r) {
-                return current + r.measurement.value;
+            auto addResult = [](qreal current, const QList<QBenchmarkResult> &r) {
+                if (!r.isEmpty())
+                    current += r.first().measurement.value;
+                return current;
             };
-            const qreal total = std::accumulate(results.begin(), results.end(), 0.0, addResult);
+            const qreal total = std::accumulate(resultsList.begin(), resultsList.end(), 0.0, addResult);
             minimumTotalReached = (total >= QBenchmarkGlobalData::current->minimumTotal);
         }
     } while (isBenchmark
@@ -1198,8 +1202,12 @@ void TestMethods::invokeTestOnData(int index) const
         bool testPassed = !QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed();
         QTestResult::finishedCurrentTestDataCleanup();
         // Only report benchmark figures if the test passed
-        if (testPassed && QBenchmarkTestMethodData::current->resultsAccepted())
-            QTestLog::addBenchmarkResult(qMedian(results));
+        if (testPassed && QBenchmarkTestMethodData::current->resultsAccepted()) {
+            const QList<QBenchmarkResult> median = qMedian(resultsList);
+            for (auto m : median) {
+                QTestLog::addBenchmarkResult(m);
+            }
+        }
     }
 }
 

@@ -16,9 +16,9 @@ void QBenchmarkTimeMeasurer::start()
     time.start();
 }
 
-QBenchmarkMeasurerBase::Measurement QBenchmarkTimeMeasurer::stop()
+QList<QBenchmarkMeasurerBase::Measurement> QBenchmarkTimeMeasurer::stop()
 {
-    return { qreal(time.elapsed()), QTest::WalltimeMilliseconds };
+    return { { qreal(time.elapsed()), QTest::WalltimeMilliseconds } };
 }
 
 bool QBenchmarkTimeMeasurer::isMeasurementAccepted(Measurement measurement)
@@ -48,10 +48,10 @@ void QBenchmarkTickMeasurer::start()
     startTicks = getticks();
 }
 
-QBenchmarkMeasurerBase::Measurement QBenchmarkTickMeasurer::stop()
+QList<QBenchmarkMeasurerBase::Measurement> QBenchmarkTickMeasurer::stop()
 {
     CycleCounterTicks now = getticks();
-    return { elapsed(now, startTicks), QTest::CPUTicks };
+    return { { elapsed(now, startTicks), QTest::CPUTicks } };
 }
 
 bool QBenchmarkTickMeasurer::isMeasurementAccepted(QBenchmarkMeasurerBase::Measurement)

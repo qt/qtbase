@@ -170,11 +170,11 @@ void QBenchmarkCallgrindMeasurer::start()
     CALLGRIND_ZERO_STATS;
 }
 
-QBenchmarkMeasurerBase::Measurement QBenchmarkCallgrindMeasurer::stop()
+QList<QBenchmarkMeasurerBase::Measurement> QBenchmarkCallgrindMeasurer::stop()
 {
     CALLGRIND_DUMP_STATS;
     const qint64 result = QBenchmarkValgrindUtils::extractLastResult();
-    return { qreal(result), QTest::InstructionReads };
+    return { { qreal(result), QTest::InstructionReads } };
 }
 
 bool QBenchmarkCallgrindMeasurer::isMeasurementAccepted(Measurement measurement)

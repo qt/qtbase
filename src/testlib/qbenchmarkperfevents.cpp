@@ -47,7 +47,13 @@
 
 QT_BEGIN_NAMESPACE
 
+struct PerfEvent
+{
+    quint32 type;
+    quint64 config;
+};
 static perf_event_attr attr;
+Q_GLOBAL_STATIC(QList<PerfEvent>, eventTypes);
 
 static void initPerf()
 {
@@ -62,12 +68,18 @@ static void initPerf()
         attr.inherit_stat = true; // aggregate all the info from child processes
         attr.task = true; // trace fork/exits
 
-        // set a default performance counter: CPU cycles
-        attr.type = PERF_TYPE_HARDWARE;
-        attr.config = PERF_COUNT_HW_CPU_CYCLES; // default
-
         done = true;
     }
+}
+
+static QList<PerfEvent> defaultCounters()
+{
+    return {
+        { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_TASK_CLOCK },
+        { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_CPU_CYCLES },
+        { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_INSTRUCTIONS },
+        { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_BRANCH_INSTRUCTIONS },
+    };
 }
 
 // This class does not exist in the API so it's qdoc comment marker was removed.
@@ -383,11 +395,11 @@ static const Events eventlist[] = {
 };
 /* -- END GENERATED CODE -- */
 
-QTest::QBenchmarkMetric QBenchmarkPerfEventsMeasurer::metricForEvent(quint32 type, quint64 event_id)
+static QTest::QBenchmarkMetric metricForEvent(PerfEvent counter)
 {
     const Events *ptr = eventlist;
     for ( ; ptr->type != PERF_TYPE_MAX; ++ptr) {
-        if (ptr->type == type && ptr->event_id == event_id)
+        if (ptr->type == counter.type && ptr->event_id == counter.config)
             return ptr->metric;
     }
     return QTest::Events;
@@ -396,6 +408,7 @@ QTest::QBenchmarkMetric QBenchmarkPerfEventsMeasurer::metricForEvent(quint32 typ
 void QBenchmarkPerfEventsMeasurer::setCounter(const char *name)
 {
     initPerf();
+    eventTypes->clear();
     const char *colon = strchr(name, ':');
     int n = colon ? colon - name : strlen(name);
     const Events *ptr = eventlist;
@@ -409,8 +422,7 @@ void QBenchmarkPerfEventsMeasurer::setCounter(const char *name)
         }
     }
 
-    attr.type = ptr->type;
-    attr.config = ptr->event_id;
+    *eventTypes = { { ptr->type, ptr->event_id } };
 
     // We used to support attributes, but our code was the opposite of what
     // perf(1) does, plus QBenchlib isn't exactly expected to be used to
@@ -441,7 +453,8 @@ QBenchmarkPerfEventsMeasurer::QBenchmarkPerfEventsMeasurer() = default;
 
 QBenchmarkPerfEventsMeasurer::~QBenchmarkPerfEventsMeasurer()
 {
-    qt_safe_close(fd);
+    for (int fd : std::as_const(fds))
+        qt_safe_close(fd);
 }
 
 void QBenchmarkPerfEventsMeasurer::init()
@@ -451,34 +464,54 @@ void QBenchmarkPerfEventsMeasurer::init()
 void QBenchmarkPerfEventsMeasurer::start()
 {
     initPerf();
-    if (fd == -1) {
+    QList<PerfEvent> &counters = *eventTypes;
+    if (counters.isEmpty())
+        counters = defaultCounters();
+    if (fds.isEmpty()) {
         pid_t pid = 0;      // attach to the current process only
         int cpu = -1;       // on any CPU
         int group_fd = -1;
         int flags = PERF_FLAG_FD_CLOEXEC;
-        fd = perf_event_open(&attr, pid, cpu, group_fd, flags);
-        if (fd == -1) {
-            // probably a paranoid kernel (/proc/sys/kernel/perf_event_paranoid)
-            attr.exclude_kernel = true;
-            attr.exclude_hv = true;
-            fd = perf_event_open(&attr, pid, cpu, group_fd, flags);
-        }
-        if (fd == -1) {
-            perror("QBenchmarkPerfEventsMeasurer::start: perf_event_open");
-            exit(1);
+
+        fds.reserve(counters.size());
+        for (PerfEvent counter : std::as_const(counters)) {
+            attr.type = counter.type;
+            attr.config = counter.config;
+            int fd = perf_event_open(&attr, pid, cpu, group_fd, flags);
+            if (fd == -1) {
+                // probably a paranoid kernel (/proc/sys/kernel/perf_event_paranoid)
+                attr.exclude_kernel = true;
+                attr.exclude_hv = true;
+                fd = perf_event_open(&attr, pid, cpu, group_fd, flags);
+            }
+            if (fd == -1) {
+                perror("QBenchmarkPerfEventsMeasurer::start: perf_event_open");
+                exit(1);
+            }
+
+            fds.append(fd);
         }
     }
 
-    // enable the counter
-    ::ioctl(fd, PERF_EVENT_IOC_RESET);
-    ::ioctl(fd, PERF_EVENT_IOC_ENABLE);
+    // enable the counters
+    for (int fd : std::as_const(fds))
+        ::ioctl(fd, PERF_EVENT_IOC_RESET);
+    for (int fd : std::as_const(fds))
+        ::ioctl(fd, PERF_EVENT_IOC_ENABLE);
 }
 
-QBenchmarkMeasurerBase::Measurement QBenchmarkPerfEventsMeasurer::stop()
+QList<QBenchmarkMeasurerBase::Measurement> QBenchmarkPerfEventsMeasurer::stop()
 {
-    // disable the counter
-    ::ioctl(fd, PERF_EVENT_IOC_DISABLE);
-    return readValue();
+    // disable the counters
+    for (int fd : std::as_const(fds))
+        ::ioctl(fd, PERF_EVENT_IOC_DISABLE);
+
+    const QList<PerfEvent> &counters = *eventTypes;
+    QList<Measurement> result(counters.size(), {});
+    for (qsizetype i = 0; i < counters.size(); ++i) {
+        result[i] = readValue(i);
+    }
+    return result;
 }
 
 bool QBenchmarkPerfEventsMeasurer::isMeasurementAccepted(Measurement)
@@ -531,10 +564,10 @@ static quint64 rawReadValue(int fd)
     return results.value * (double(results.time_running) / double(results.time_enabled));
 }
 
-QBenchmarkMeasurerBase::Measurement QBenchmarkPerfEventsMeasurer::readValue()
+QBenchmarkMeasurerBase::Measurement QBenchmarkPerfEventsMeasurer::readValue(qsizetype idx)
 {
-    quint64 raw = rawReadValue(fd);
-    return { qreal(qint64(raw)), metricForEvent(attr.type, attr.config) };
+    quint64 raw = rawReadValue(fds.at(idx));
+    return { qreal(qint64(raw)), metricForEvent(eventTypes->at(idx)) };
 }
 
 QT_END_NAMESPACE

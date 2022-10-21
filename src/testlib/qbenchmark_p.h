@@ -64,7 +64,6 @@ public:
     QBenchmarkMeasurerBase::Measurement measurement = { -1, QTest::FramesPerSecond };
     int iterations = -1;
     bool setByMacro = true;
-    bool valid = false;
 
     QBenchmarkResult() = default;
 
@@ -75,7 +74,6 @@ public:
         , measurement(m)
         , iterations(iterations)
         , setByMacro(setByMacro)
-        , valid(true)
     { }
 
     bool operator<(const QBenchmarkResult &other) const
@@ -134,12 +132,15 @@ public:
     void beginDataRun();
     void endDataRun();
 
-    bool isBenchmark() const { return result.valid; }
+    bool isBenchmark() const { return valid; }
     bool resultsAccepted() const { return resultAccepted; }
     int adjustIterationCount(int suggestion);
-    void setResult(QBenchmarkMeasurerBase::Measurement m, bool setByMacro = true);
+    void setResults(const QList<QBenchmarkMeasurerBase::Measurement> &m, bool setByMacro = true);
+    void setResult(QBenchmarkMeasurerBase::Measurement m, bool setByMacro = true)
+    { setResults({ m }, setByMacro); }
 
-    QBenchmarkResult result;
+    QList<QBenchmarkResult> results;
+    bool valid = false;
     bool resultAccepted = false;
     bool runOnce = false;
     int iterationCount = -1;
@@ -153,7 +154,7 @@ namespace QTest
     void setIterationCount(int count);
 
     void beginBenchmarkMeasurement();
-    QBenchmarkMeasurerBase::Measurement endBenchmarkMeasurement();
+    QList<QBenchmarkMeasurerBase::Measurement> endBenchmarkMeasurement();
 }
 
 QT_END_NAMESPACE

@@ -96,10 +96,13 @@ int QBenchmarkTestMethodData::adjustIterationCount(int suggestion)
     return iterationCount;
 }
 
-void QBenchmarkTestMethodData::setResult(QBenchmarkMeasurerBase::Measurement m,
-                                         bool setByMacro)
+void QBenchmarkTestMethodData::setResults(const QList<QBenchmarkMeasurerBase::Measurement> &list,
+                                          bool setByMacro)
 {
     bool accepted = false;
+    QBenchmarkMeasurerBase::Measurement firstMeasurement = {};
+    if (!list.isEmpty())
+        firstMeasurement = list.constFirst();
 
     // Always accept the result if the iteration count has been
     // specified on the command line with -iterations.
@@ -114,9 +117,9 @@ void QBenchmarkTestMethodData::setResult(QBenchmarkMeasurerBase::Measurement m,
     // Test the result directly without calling the measurer if the minimum time
     // has been specified on the command line with -minimumvalue.
     else if (QBenchmarkGlobalData::current->walltimeMinimum != -1)
-        accepted = (m.value > QBenchmarkGlobalData::current->walltimeMinimum);
+        accepted = (firstMeasurement.value > QBenchmarkGlobalData::current->walltimeMinimum);
     else
-        accepted = QBenchmarkGlobalData::current->measurer->isMeasurementAccepted(m);
+        accepted = QBenchmarkGlobalData::current->measurer->isMeasurementAccepted(firstMeasurement);
 
     // Accept the result or double the number of iterations.
     if (accepted)
@@ -124,8 +127,10 @@ void QBenchmarkTestMethodData::setResult(QBenchmarkMeasurerBase::Measurement m,
     else
         iterationCount *= 2;
 
-    this->result = QBenchmarkResult(QBenchmarkGlobalData::current->context, m,
-                                    iterationCount, setByMacro);
+    valid = true;
+    results.reserve(list.size());
+    for (auto m : list)
+        results.emplaceBack(QBenchmarkGlobalData::current->context, m, iterationCount, setByMacro);
 }
 
 /*!
@@ -157,8 +162,7 @@ QTest::QBenchmarkIterationController::QBenchmarkIterationController()
 */
 QTest::QBenchmarkIterationController::~QBenchmarkIterationController()
 {
-    QBenchmarkMeasurerBase::Measurement measurement = QTest::endBenchmarkMeasurement();
-    QBenchmarkTestMethodData::current->setResult(measurement);
+    QBenchmarkTestMethodData::current->setResults(QTest::endBenchmarkMeasurement());
 }
 
 /*! \internal
@@ -209,7 +213,7 @@ void QTest::beginBenchmarkMeasurement()
 
 /*! \internal
 */
-QBenchmarkMeasurerBase::Measurement QTest::endBenchmarkMeasurement()
+QList<QBenchmarkMeasurerBase::Measurement> QTest::endBenchmarkMeasurement()
 {
     // the clock is ticking before the line below, don't add code here.
     return QBenchmarkGlobalData::current->measurer->stop();
