@@ -3265,6 +3265,8 @@ QString &QString::append(QChar ch)
   position + \a n is beyond the end of the string, the string is
   truncated at the specified \a position.
 
+  If \a n is <= 0 nothing is changed.
+
   \snippet qstring/main.cpp 37
 
 //! [shrinking-erase]
@@ -3280,14 +3282,13 @@ QString &QString::remove(qsizetype pos, qsizetype len)
     if (pos < 0)  // count from end of string
         pos += size();
 
-    if (size_t(pos) >= size_t(size())) {
-        // range problems
-    } else if (len > 0) {
-        len = std::min(len, size() - pos);
-        detach();
-        d->erase(d.begin() + pos, len);
-        d.data()[d.size] = u'\0';
-    }
+    if (pos >= size() || len <= 0)
+        return *this;
+
+    len = std::min(len, size() - pos);
+    detach();
+    d->erase(d.begin() + pos, len);
+    d.data()[d.size] = u'\0';
     return *this;
 }
 
