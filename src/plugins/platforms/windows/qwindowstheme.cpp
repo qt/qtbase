@@ -558,6 +558,8 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
     }
     case MouseDoubleClickDistance:
         return GetSystemMetrics(SM_CXDOUBLECLK);
+    case MenuBarFocusOnAltPressRelease:
+        return true;
     default:
         break;
     }

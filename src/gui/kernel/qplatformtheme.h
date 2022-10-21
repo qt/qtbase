@@ -91,7 +91,8 @@ public:
         SetFocusOnTouchRelease,
         FlickStartDistance,
         FlickMaximumVelocity,
-        FlickDeceleration
+        FlickDeceleration,
+        MenuBarFocusOnAltPressRelease
     };
     Q_ENUM(ThemeHint)
 

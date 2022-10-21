@@ -625,6 +625,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return QVariant(2500);
     case FlickDeceleration:
         return QVariant(5000);
+    case MenuBarFocusOnAltPressRelease:
+        return false;
     }
     return QVariant();
 }

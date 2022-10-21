@@ -5384,7 +5384,6 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_Menu_AllowActiveAndDisabled:
     case SH_Menu_SpaceActivatesItem:
     case SH_ScrollView_FrameOnlyAroundContents:
-    case SH_MenuBar_AltKeyNavigation:
     case SH_ComboBox_ListMouseTracking:
     case SH_Menu_MouseTracking:
     case SH_MenuBar_MouseTracking:
@@ -5409,6 +5408,10 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_ComboBox_UseNativePopup:
     case SH_Table_AlwaysDrawLeftTopGridLines:
         ret = false;
+        break;
+    case SH_MenuBar_AltKeyNavigation:
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+            ret = theme->themeHint(QPlatformTheme::MenuBarFocusOnAltPressRelease).toBool();
         break;
     case SH_CustomBase:
         // Added to get compiler errors when a style hint is missing
