@@ -30,6 +30,8 @@
 
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<key>CFBundleAllowMixedLocalizations</key>
+	<true/>
 
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
