@@ -1117,6 +1117,8 @@ void TestMethods::invokeTestOnData(int index) const
     bool minimumTotalReached = false;
     do {
         QBenchmarkTestMethodData::current->beginDataRun();
+        if (i < 0)
+            QBenchmarkTestMethodData::current->iterationCount = 1;
 
         /* Benchmarking: for each accumulation iteration*/
         bool invokeOk;
