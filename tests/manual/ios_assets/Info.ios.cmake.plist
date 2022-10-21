@@ -33,7 +33,7 @@
     <string></string>
 
     <key>CFBundleDevelopmentRegion</key>
-    <string>English</string>
+    <string>en</string>
 
     <key>LSRequiresIPhoneOS</key>
     <true/>
