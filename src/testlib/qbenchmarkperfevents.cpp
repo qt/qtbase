@@ -207,7 +207,7 @@ for $entry (sort @strings) {
         $map{$entry}[2],
         $map{$entry}[3];
 }
-print "    {   0, PERF_TYPE_MAX, 0, QTest::Events }\n};\n";
+print "};\n";
 === cut perl ===
 */
 
@@ -391,16 +391,14 @@ static const Events eventlist[] = {
     { 1303, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_BACKEND, QTest::StalledCycles },
     { 1326, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND, QTest::StalledCycles },
     { 1350, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK, QTest::WalltimeNanoseconds },
-    {   0, PERF_TYPE_MAX, 0, QTest::Events }
 };
 /* -- END GENERATED CODE -- */
 
 static QTest::QBenchmarkMetric metricForEvent(PerfEvent counter)
 {
-    const Events *ptr = eventlist;
-    for ( ; ptr->type != PERF_TYPE_MAX; ++ptr) {
-        if (ptr->type == counter.type && ptr->event_id == counter.config)
-            return ptr->metric;
+    for (const Events &ev : eventlist) {
+        if (ev.type == counter.type && ev.event_id == counter.config)
+            return ev.metric;
     }
     return QTest::Events;
 }
@@ -418,8 +416,8 @@ void QBenchmarkPerfEventsMeasurer::setCounter(const char *name)
         if (qsizetype idx = countername.find(','); idx >= 0)
             countername = countername.substr(0, idx);
 
-        for (const Events *ptr = eventlist; ptr->type != PERF_TYPE_MAX; ++ptr) {
-            int c = countername.compare(eventlist_strings + ptr->offset);
+        for (const Events &ev : eventlist) {
+            int c = countername.compare(eventlist_strings + ev.offset);
             if (c > 0)
                 continue;
             if (c < 0) {
@@ -427,7 +425,7 @@ void QBenchmarkPerfEventsMeasurer::setCounter(const char *name)
                         int(countername.size()), countername.data());
                 exit(1);
             }
-            eventTypes->append({ ptr->type, ptr->event_id });
+            eventTypes->append({ ev.type, ev.event_id });
             break;
         }
 
@@ -451,12 +449,11 @@ void QBenchmarkPerfEventsMeasurer::listCounters()
     }
 
     printf("The following performance counters are available:\n");
-    const Events *ptr = eventlist;
-    for ( ; ptr->type != PERF_TYPE_MAX; ++ptr) {
-        printf("  %-30s [%s]\n", eventlist_strings + ptr->offset,
-               ptr->type == PERF_TYPE_HARDWARE ? "hardware" :
-               ptr->type == PERF_TYPE_SOFTWARE ? "software" :
-               ptr->type == PERF_TYPE_HW_CACHE ? "cache" : "other");
+    for (const Events &ev : eventlist) {
+        printf("  %-30s [%s]\n", eventlist_strings + ev.offset,
+               ev.type == PERF_TYPE_HARDWARE ? "hardware" :
+               ev.type == PERF_TYPE_SOFTWARE ? "software" :
+               ev.type == PERF_TYPE_HW_CACHE ? "cache" : "other");
     }
 }
 
