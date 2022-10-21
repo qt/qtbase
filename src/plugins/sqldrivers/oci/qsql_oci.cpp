@@ -196,6 +196,7 @@ public:
     OCISession *authp = nullptr;
     OCITrans *trans = nullptr;
     OCIError *err = nullptr;
+    ub4 authMode = OCI_DEFAULT;
     bool transaction = false;
     int serverVersion = -1;
     int prefetchRows = -1;
@@ -2193,17 +2194,16 @@ bool QOCIDriver::hasFeature(DriverFeature f) const
 
 static void qParseOpts(const QString &options, QOCIDriverPrivate *d)
 {
-    const QStringList opts(options.split(u';', Qt::SkipEmptyParts));
-    for (int i = 0; i < opts.count(); ++i) {
-        const QString tmp(opts.at(i));
+    const QVector<QStringView> opts(QStringView(options).split(u';', Qt::SkipEmptyParts));
+    for (const auto tmp : opts) {
         qsizetype idx;
         if ((idx = tmp.indexOf(u'=')) == -1) {
             qWarning("QOCIDriver::parseArgs: Invalid parameter: '%s'",
                      tmp.toLocal8Bit().constData());
             continue;
         }
-        const QString opt = tmp.left(idx);
-        const QString val = tmp.mid(idx + 1).simplified();
+        const QStringView opt = tmp.left(idx);
+        const QStringView val = tmp.mid(idx + 1).trimmed();
         bool ok;
         if (opt == "OCI_ATTR_PREFETCH_ROWS"_L1) {
             d->prefetchRows = val.toInt(&ok);
@@ -2213,9 +2213,18 @@ static void qParseOpts(const QString &options, QOCIDriverPrivate *d)
             d->prefetchMem = val.toInt(&ok);
             if (!ok)
                 d->prefetchMem = -1;
+        } else if (opt == "OCI_AUTH_MODE"_L1) {
+            if (val == "OCI_SYSDBA"_L1) {
+                d->authMode = OCI_SYSDBA;
+            } else if (val == "OCI_SYSOPER"_L1) {
+                d->authMode = OCI_SYSOPER;
+            } else if (val != "OCI_DEFAULT"_L1) {
+                qWarning("QOCIDriver::parseArgs: Unsupported value for OCI_AUTH_MODE: '%s'",
+                         val.toLocal8Bit().constData());
+            }
         } else {
-            qWarning ("QOCIDriver::parseArgs: Invalid parameter: '%s'",
-                      opt.toLocal8Bit().constData());
+            qWarning("QOCIDriver::parseArgs: Invalid parameter: '%s'",
+                     opt.toLocal8Bit().constData());
         }
     }
 }
@@ -2279,9 +2288,9 @@ bool QOCIDriver::open(const QString & db,
 
     if (r == OCI_SUCCESS) {
         if (user.isEmpty() && password.isEmpty())
-            r = OCISessionBegin(d->svc, d->err, d->authp, OCI_CRED_EXT, OCI_DEFAULT);
+            r = OCISessionBegin(d->svc, d->err, d->authp, OCI_CRED_EXT, d->authMode);
         else
-            r = OCISessionBegin(d->svc, d->err, d->authp, OCI_CRED_RDBMS, OCI_DEFAULT);
+            r = OCISessionBegin(d->svc, d->err, d->authp, OCI_CRED_RDBMS, d->authMode);
     }
     if (r == OCI_SUCCESS || r == OCI_SUCCESS_WITH_INFO)
         r = OCIAttrSet(d->svc, OCI_HTYPE_SVCCTX, d->authp, 0, OCI_ATTR_SESSION, d->err);

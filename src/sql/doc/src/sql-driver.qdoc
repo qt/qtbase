@@ -318,6 +318,13 @@
       \li Sets the OCI attribute
           \l {https://docs.oracle.com/database/121/LNOCI/oci04sql.htm#LNOCI16355}
           {OCI_ATTR_PREFETCH_MEMORY} to the specified value
+    \row
+      \li OCI_AUTH_MODE
+      \li OCI_SYSDBA: authenticate for SYSDBA access\br
+          OCI_SYSOPER: authenticate for SYSOPER access\br
+          OCI_DEFAULT: authenticate with normal access\br
+          see \l {https://docs.oracle.com/cd/B10500_01/appdev.920/a96584/oci15r13.htm}
+          {OCISessionBegin} for more information about the access modes
     \endtable
 
     \section3 How to Build the OCI Plugin on Unix and \macos
