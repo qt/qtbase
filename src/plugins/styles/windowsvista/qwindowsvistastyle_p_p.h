@@ -120,7 +120,6 @@ public:
     static int pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *option = nullptr, const QWidget *widget = nullptr);
     static int fixedPixelMetric(QStyle::PixelMetric pm);
     static bool isLineEditBaseColorSet(const QStyleOption *option, const QWidget *widget);
-    static QRect scrollBarGripperBounds(QStyle::State flags, const QWidget *widget, QWindowsThemeData *theme);
     static HWND winId(const QWidget *widget);
     static bool useVista(bool update = false);
     static QBackingStore *backingStoreForWidget(const QWidget *widget);
