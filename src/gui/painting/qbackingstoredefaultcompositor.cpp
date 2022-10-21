@@ -508,8 +508,7 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
     if (m_texture) {
         // The backingstore is for the entire tlw.
         // In case of native children offset tells the position relative to the tlw.
-        const QRect textureRect = QRect(QPoint(), m_texture->pixelSize());
-        const QRect srcRect = toBottomLeftRect(textureRect.translated(deviceWindowOffset), m_texture->pixelSize().height());
+        const QRect srcRect = toBottomLeftRect(deviceWindowRect.translated(deviceWindowOffset), m_texture->pixelSize().height());
         const QMatrix3x3 source = sourceTransform(srcRect, m_texture->pixelSize(), origin);
         QMatrix4x4 target; // identity
         if (invertTargetY)
