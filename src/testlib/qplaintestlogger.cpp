@@ -109,15 +109,15 @@ namespace QTest {
     }
 
     // Pretty-prints a benchmark result using the given number of digits.
-    template <typename T> QString formatResult(T number, int significantDigits)
+    template <typename T> QByteArray formatResult(T number, int significantDigits)
     {
         if (number < T(0))
-            return u"NAN"_s;
+            return "NAN";
         if (number == T(0))
-            return u"0"_s;
+            return "0";
 
-        QString beforeDecimalPoint = QString::number(qint64(number), 'f', 0);
-        QString afterDecimalPoint = QString::number(number, 'f', 20);
+        QByteArray beforeDecimalPoint = QByteArray::number(qint64(number), 'f', 0);
+        QByteArray afterDecimalPoint = QByteArray::number(number, 'f', 20);
         afterDecimalPoint.remove(0, beforeDecimalPoint.size() + 1);
 
         int beforeUse = qMin(beforeDecimalPoint.size(), significantDigits);
@@ -132,11 +132,11 @@ namespace QTest {
         int afterUse = significantDigits - beforeUse;
 
         // leading zeroes after the decimal point does not count towards the digit use.
-        if (beforeDecimalPoint == u'0' && !afterDecimalPoint.isEmpty()) {
+        if (beforeDecimalPoint == "0" && !afterDecimalPoint.isEmpty()) {
             ++afterUse;
 
             int i = 0;
-            while (i < afterDecimalPoint.size() && afterDecimalPoint.at(i) == u'0')
+            while (i < afterDecimalPoint.size() && afterDecimalPoint.at(i) == '0')
                 ++i;
 
             afterUse += i;
@@ -145,8 +145,8 @@ namespace QTest {
         int afterRemove = afterDecimalPoint.size() - afterUse;
         afterDecimalPoint.chop(afterRemove);
 
-        QChar separator = u',';
-        QChar decimalPoint = u'.';
+        char separator = ',';
+        char decimalPoint = '.';
 
         // insert thousands separators
         int length = beforeDecimalPoint.size();
@@ -155,7 +155,7 @@ namespace QTest {
                 beforeDecimalPoint.insert(i, separator);
         }
 
-        QString print;
+        QByteArray print;
         print = beforeDecimalPoint;
         if (afterUse > 0)
             print.append(decimalPoint);
@@ -167,11 +167,11 @@ namespace QTest {
     }
 
     template <typename T>
-    int formatResult(char * buffer, int bufferSize, T number, int significantDigits)
+    qsizetype formatResult(char * buffer, int bufferSize, T number, int significantDigits)
     {
-        QString result = formatResult(number, significantDigits);
-        int size = result.size();
-        qstrncpy(buffer, std::move(result).toLatin1().constData(), bufferSize);
+        QByteArray result = formatResult(number, significantDigits);
+        qsizetype size = result.size();
+        qstrncpy(buffer, result.constData(), bufferSize);
         return size;
     }
 }
