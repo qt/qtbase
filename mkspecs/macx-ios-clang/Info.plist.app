@@ -37,6 +37,8 @@
 
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
+    <key>CFBundleAllowMixedLocalizations</key>
+    <true/>
 
     <key>UISupportedInterfaceOrientations</key>
     <array>
