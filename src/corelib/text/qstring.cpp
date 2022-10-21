@@ -2703,7 +2703,7 @@ void QString::resize(qsizetype size)
         reallocData(size, QArrayData::Grow);
     d.size = size;
     if (d->allocatedCapacity())
-        d.data()[size] = 0;
+        d.data()[size] = u'\0';
 }
 
 /*!
