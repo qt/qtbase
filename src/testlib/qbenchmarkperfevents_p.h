@@ -26,7 +26,6 @@ public:
     ~QBenchmarkPerfEventsMeasurer();
     void init() override;
     void start() override;
-    qint64 checkpoint() override;
     qint64 stop() override;
     bool isMeasurementAccepted(qint64 measurement) override;
     int adjustIterationCount(int suggestion) override;

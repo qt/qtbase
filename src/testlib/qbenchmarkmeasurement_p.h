@@ -26,7 +26,6 @@ public:
     virtual ~QBenchmarkMeasurerBase() = default;
     virtual void init() {}
     virtual void start() = 0;
-    virtual qint64 checkpoint() = 0;
     virtual qint64 stop() = 0;
     virtual bool isMeasurementAccepted(qint64 measurement) = 0;
     virtual int adjustIterationCount(int suggestion) = 0;

@@ -18,11 +18,6 @@ void QBenchmarkEvent::start()
     QAbstractEventDispatcher::instance()->installNativeEventFilter(this);
 }
 
-qint64 QBenchmarkEvent::checkpoint()
-{
-    return eventCounter;
-}
-
 qint64 QBenchmarkEvent::stop()
 {
     QAbstractEventDispatcher::instance()->removeNativeEventFilter(this);

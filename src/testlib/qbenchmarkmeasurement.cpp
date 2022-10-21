@@ -16,11 +16,6 @@ void QBenchmarkTimeMeasurer::start()
     time.start();
 }
 
-qint64 QBenchmarkTimeMeasurer::checkpoint()
-{
-    return time.elapsed();
-}
-
 qint64 QBenchmarkTimeMeasurer::stop()
 {
     return time.elapsed();
@@ -56,12 +51,6 @@ QTest::QBenchmarkMetric QBenchmarkTimeMeasurer::metricType()
 void QBenchmarkTickMeasurer::start()
 {
     startTicks = getticks();
-}
-
-qint64 QBenchmarkTickMeasurer::checkpoint()
-{
-    CycleCounterTicks now = getticks();
-    return qRound64(elapsed(now, startTicks));
 }
 
 qint64 QBenchmarkTickMeasurer::stop()

@@ -495,14 +495,6 @@ void QBenchmarkPerfEventsMeasurer::start()
     ::ioctl(fd, PERF_EVENT_IOC_ENABLE);
 }
 
-qint64 QBenchmarkPerfEventsMeasurer::checkpoint()
-{
-    ::ioctl(fd, PERF_EVENT_IOC_DISABLE);
-    qint64 value = readValue();
-    ::ioctl(fd, PERF_EVENT_IOC_ENABLE);
-    return value;
-}
-
 qint64 QBenchmarkPerfEventsMeasurer::stop()
 {
     // disable the counter

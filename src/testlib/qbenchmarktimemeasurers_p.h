@@ -25,7 +25,6 @@ class QBenchmarkTimeMeasurer : public QBenchmarkMeasurerBase
 {
 public:
     void start() override;
-    qint64 checkpoint() override;
     qint64 stop() override;
     bool isMeasurementAccepted(qint64 measurement) override;
     int adjustIterationCount(int sugestion) override;
@@ -42,7 +41,6 @@ class QBenchmarkTickMeasurer : public QBenchmarkMeasurerBase
 {
 public:
     void start() override;
-    qint64 checkpoint() override;
     qint64 stop() override;
     bool isMeasurementAccepted(qint64 measurement) override;
     int adjustIterationCount(int) override;

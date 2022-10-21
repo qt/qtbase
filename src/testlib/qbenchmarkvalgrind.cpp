@@ -170,16 +170,11 @@ void QBenchmarkCallgrindMeasurer::start()
     CALLGRIND_ZERO_STATS;
 }
 
-qint64 QBenchmarkCallgrindMeasurer::checkpoint()
+qint64 QBenchmarkCallgrindMeasurer::stop()
 {
     CALLGRIND_DUMP_STATS;
     const qint64 result = QBenchmarkValgrindUtils::extractLastResult();
     return result;
-}
-
-qint64 QBenchmarkCallgrindMeasurer::stop()
-{
-    return checkpoint();
 }
 
 bool QBenchmarkCallgrindMeasurer::isMeasurementAccepted(qint64 measurement)
