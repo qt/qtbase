@@ -40,6 +40,9 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 namespace {
+static const char multiplePrefixes[] = "\0kMGTPE"; // kilo, mega, giga, tera, peta, exa
+static const char submultiplePrefixes[] = "afpnum"; // atto, femto, pico, nano, micro, milli
+
 template <int N> struct FixedBufString
 {
     static constexpr size_t MaxSize = N;
@@ -73,6 +76,34 @@ template <int N> struct FixedBufString
         // vsnprintf includes the terminating null
         used += qsnprintf(buf.data() + used, MaxSize - used + 1, format,
                           std::forward<Args>(args)...);
+    }
+
+    template <int Power = 1000> void appendScaled(qreal value, const char *unit)
+    {
+        char prefix[2] = {};
+        qreal v = qAbs(value);
+        qint64 ratio;
+        if (v < 1 && Power == 1000) {
+            const char *prefixes = submultiplePrefixes;
+            ratio = qreal(std::atto::num) / std::atto::den;
+            while (value * ratio > 1000 && *prefixes) {
+                ++prefixes;
+                ratio *= 1000;
+            }
+            prefix[0] = *prefixes;
+        } else {
+            const char *prefixes = multiplePrefixes;
+            ratio = 1;
+            while (value > 1000 * ratio) {  // yes, even for binary
+                ++prefixes;
+                ratio *= Power;
+            }
+            prefix[0] = *prefixes;
+        }
+
+        // adjust the value by the ratio
+        value /= ratio;
+        appendf(", %.3g %s%s", value, prefix, unit);
     }
 };
 } // unnamed namespace
@@ -285,7 +316,23 @@ void QPlainTestLogger::printBenchmarkResultsHeader(const QBenchmarkResult &resul
 
 void QPlainTestLogger::printBenchmarkResults(const QList<QBenchmarkResult> &results)
 {
+    using namespace std::chrono;
     FixedBufString<1022> buf;
+    auto findResultFor = [&results](QTest::QBenchmarkMetric metric) -> std::optional<qreal> {
+        for (const QBenchmarkResult &result : results) {
+            if (result.measurement.metric == metric)
+                return result.measurement.value;
+        }
+        return std::nullopt;
+    };
+
+    // we need the execution time quite often, so find it first
+    qreal executionTime = 0;
+    if (auto ns = findResultFor(QTest::WalltimeNanoseconds))
+        executionTime = *ns / (1000 * 1000 * 1000);
+    else if (auto ms = findResultFor(QTest::WalltimeMilliseconds))
+        executionTime = *ms / 1000;
+
     for (const QBenchmarkResult &result : results) {
         buf.clear();
 
@@ -294,6 +341,62 @@ void QPlainTestLogger::printBenchmarkResults(const QList<QBenchmarkResult> &resu
         qreal valuePerIteration = qreal(result.measurement.value) / qreal(result.iterations);
         buf.appendf("     %s %s%s", QTest::formatResult(valuePerIteration, significantDigits).constData(),
                     unitText, result.setByMacro ? " per iteration" : "");
+
+        switch (result.measurement.metric) {
+        case QTest::BitsPerSecond:
+            // for bits/s, we'll use powers of 10 (1 Mbit/s = 1000 kbit/s = 1000000 bit/s)
+            buf.appendScaled<1000>(result.measurement.value, "bit/s");
+            break;
+        case QTest::BytesPerSecond:
+            // for B/s, we'll use powers of 2 (1 MB/s = 1024 kB/s = 1048576 B/s)
+            buf.appendScaled<1024>(result.measurement.value, "B/s");
+            break;
+
+        case QTest::CPUCycles:
+        case QTest::RefCPUCycles:
+            if (!qIsNull(executionTime))
+                buf.appendScaled(result.measurement.value / executionTime, "Hz");
+            break;
+
+        case QTest::Instructions:
+            if (auto cycles = findResultFor(QTest::CPUCycles)) {
+                buf.appendf(", %.3f instr/cycle", result.measurement.value / *cycles);
+                break;
+            }
+            Q_FALLTHROUGH();
+
+        case QTest::InstructionReads:
+        case QTest::Events:
+        case QTest::BytesAllocated:
+        case QTest::CPUMigrations:
+        case QTest::BusCycles:
+        case QTest::StalledCycles:
+        case QTest::BranchInstructions:
+        case QTest::BranchMisses:
+        case QTest::CacheReferences:
+        case QTest::CacheReads:
+        case QTest::CacheWrites:
+        case QTest::CachePrefetches:
+        case QTest::CacheMisses:
+        case QTest::CacheReadMisses:
+        case QTest::CacheWriteMisses:
+        case QTest::CachePrefetchMisses:
+        case QTest::ContextSwitches:
+        case QTest::PageFaults:
+        case QTest::MinorPageFaults:
+        case QTest::MajorPageFaults:
+        case QTest::AlignmentFaults:
+        case QTest::EmulationFaults:
+            if (!qIsNull(executionTime))
+                buf.appendScaled(result.measurement.value / executionTime, "/sec");
+            break;
+
+        case QTest::FramesPerSecond:
+        case QTest::CPUTicks:
+        case QTest::WalltimeMilliseconds:
+        case QTest::WalltimeNanoseconds:
+            break;  // no additional information
+        }
 
         Q_ASSERT(result.iterations > 0);
         buf.appendf(" (total: %s, iterations: %d)\n",
