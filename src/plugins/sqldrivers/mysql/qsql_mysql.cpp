@@ -1203,6 +1203,7 @@ bool QMYSQLDriver::open(const QString &db,
         {"MYSQL_OPT_READ_TIMEOUT"_L1,    MYSQL_OPT_READ_TIMEOUT,    setOptionInt},
         {"MYSQL_OPT_WRITE_TIMEOUT"_L1,   MYSQL_OPT_WRITE_TIMEOUT,   setOptionInt},
         {"MYSQL_OPT_RECONNECT"_L1,       MYSQL_OPT_RECONNECT,       setOptionBool},
+        {"MYSQL_OPT_LOCAL_INFILE"_L1,    MYSQL_OPT_LOCAL_INFILE,    setOptionInt},
     };
     auto trySetOption = [&](const QStringView &key, const QStringView &value) -> bool {
       for (const mysqloptions &opt : options) {

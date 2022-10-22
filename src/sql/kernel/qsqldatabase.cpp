@@ -1132,6 +1132,7 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
     \li MYSQL_OPT_CONNECT_TIMEOUT
     \li MYSQL_OPT_READ_TIMEOUT
     \li MYSQL_OPT_WRITE_TIMEOUT
+    \li MYSQL_OPT_LOCAL_INFILE
     \li MYSQL_OPT_SSL_KEY
     \li MYSQL_OPT_SSL_CERT
     \li MYSQL_OPT_SSL_CA
