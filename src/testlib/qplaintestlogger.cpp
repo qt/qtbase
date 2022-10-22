@@ -10,7 +10,8 @@
 
 #include <QtCore/private/qlogging_p.h>
 
-#include <stdarg.h>
+#include <array>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,6 +38,39 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+
+namespace {
+template <int N> struct FixedBufString
+{
+    static constexpr size_t MaxSize = N;
+    size_t used = 0;
+    std::array<char, N + 2> buf;    // for the newline and terminating null
+    FixedBufString()
+    {
+        buf[0] = '\0';
+    }
+
+    operator const char *() const
+    {
+        return buf.data();
+    }
+
+    void append(const char *text)
+    {
+        size_t len = qMin(strlen(text), MaxSize - used);
+        memcpy(buf.data() + used, text, len);
+        used += len;
+        buf[used] = '\0';
+    }
+
+    template <typename... Args> void appendf(const char *format, Args &&... args)
+    {
+        // vsnprintf includes the terminating null
+        used += qsnprintf(buf.data() + used, MaxSize - used + 1, format,
+                          std::forward<Args>(args)...);
+    }
+};
+} // unnamed namespace
 
 namespace QTest {
 
@@ -165,15 +199,6 @@ namespace QTest {
 
         return print;
     }
-
-    template <typename T>
-    qsizetype formatResult(char * buffer, int bufferSize, T number, int significantDigits)
-    {
-        QByteArray result = formatResult(number, significantDigits);
-        qsizetype size = result.size();
-        qstrncpy(buffer, result.constData(), bufferSize);
-        return size;
-    }
 }
 
 /*! \internal
@@ -242,58 +267,26 @@ void QPlainTestLogger::printMessage(MessageSource source, const char *type, cons
 
 void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
 {
-    const char *bmtag = QTest::benchmarkResult2String();
+    FixedBufString<1022> buf;
 
-    char buf1[1024];
-    qsnprintf(
-        buf1, sizeof(buf1), "%s: %s::%s",
-        bmtag,
-        QTestResult::currentTestObjectName(),
-        result.context.slotName.toLatin1().data());
+    buf.appendf("%s: %s::%s", QTest::benchmarkResult2String(),
+                QTestResult::currentTestObjectName(), result.context.slotName.toLatin1().data());
 
-    char bufTag[1024];
-    bufTag[0] = 0;
-    QByteArray tag = result.context.tag.toLocal8Bit();
-    if (tag.isEmpty() == false) {
-        qsnprintf(bufTag, sizeof(bufTag), ":\"%s\"", tag.data());
-    }
-
-
-    char fillFormat[8];
-    int fillLength = 5;
-    qsnprintf(fillFormat, sizeof(fillFormat), ":\n%%%ds", fillLength);
-    char fill[1024];
-    qsnprintf(fill, sizeof(fill), fillFormat, "");
+    if (QByteArray tag = result.context.tag.toLocal8Bit(); !tag.isEmpty())
+        buf.appendf(":\"%s\"", tag.data());
 
     const char * unitText = QTest::benchmarkMetricUnit(result.measurement.metric);
-
+    int significantDigits = QTest::countSignificantDigits(result.measurement.value);
     qreal valuePerIteration = qreal(result.measurement.value) / qreal(result.iterations);
-    char resultBuffer[100] = "";
-    QTest::formatResult(resultBuffer, 100, valuePerIteration, QTest::countSignificantDigits(result.measurement.value));
+    buf.appendf(":\n     %s %s%s",
+                QTest::formatResult(valuePerIteration, significantDigits).constData(),
+                unitText, result.setByMacro ? " per iteration" : "");
 
-    char buf2[1024];
-    qsnprintf(buf2, sizeof(buf2), "%s %s", resultBuffer, unitText);
-
-    char buf2_[1024];
-    QByteArray iterationText = " per iteration";
     Q_ASSERT(result.iterations > 0);
-    qsnprintf(buf2_, sizeof(buf2_), "%s", iterationText.data());
+    buf.appendf(" (total: %s, iterations: %d)",
+                QTest::formatResult(result.measurement.value, significantDigits).constData(),
+                result.iterations);
 
-    char buf3[1024];
-    Q_ASSERT(result.iterations > 0);
-    QTest::formatResult(resultBuffer, 100, result.measurement.value,
-                        QTest::countSignificantDigits(result.measurement.value));
-    qsnprintf(buf3, sizeof(buf3), " (total: %s, iterations: %d)", resultBuffer, result.iterations);
-
-    char buf[1024];
-
-    if (result.setByMacro) {
-        qsnprintf(buf, sizeof(buf), "%s%s%s%s%s%s\n", buf1, bufTag, fill, buf2, buf2_, buf3);
-    } else {
-        qsnprintf(buf, sizeof(buf), "%s%s%s%s\n", buf1, bufTag, fill, buf2);
-    }
-
-    memcpy(buf, bmtag, strlen(bmtag));
     outputMessage(buf);
 }
 
