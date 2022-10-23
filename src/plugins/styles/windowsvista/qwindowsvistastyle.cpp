@@ -86,6 +86,12 @@ bool QWindowsVistaStylePrivate::useVista()
     return QWindowsVistaStylePrivate::useXP();
 }
 
+namespace QOSWorkaround {
+    // Qt 6.2's QOperatingSystemVersion doesn't know about Windows 11
+    static const QOperatingSystemVersion Windows11(QOperatingSystemVersion::Windows,
+                                                   10, 0, 22000);
+}
+
 /* \internal
     Checks and returns the style object
 */
@@ -1261,6 +1267,9 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                     else
                         theme.stateId = bullet ? MC_BULLETNORMAL: MC_CHECKMARKNORMAL;
                     d->drawBackground(theme);
+                } else if (QOperatingSystemVersion::current() >= QOSWorkaround::Windows11
+                           && !act) {
+                    painter->fillRect(checkRect, menuitem->palette.highlight().color().lighter(200));
                 }
             }
 
