@@ -160,19 +160,29 @@ void tst_Stylesheet::tst_QTreeView()
     tw->header()->hide();
     layout->addWidget(tw);
 
-    for (int i = 0; i < 6; ++i) {
+    enum {
+        Unchecked           = 0,
+        Checked             = 1,
+        Children            = 2,
+        Disabled            = 3,
+        CheckedDisabled     = 4,
+        ChildrenDisabled    = 5,
+        NConfigs
+    };
+
+    for (int i = 0; i < NConfigs; ++i) {
         QTreeWidgetItem *topLevelItem = new QTreeWidgetItem(tw, QStringList{QString("top %1").arg(i)});
         switch (i) {
-        case 0:
-        case 3:
+        case Unchecked:
+        case Disabled:
             topLevelItem->setCheckState(0, Qt::Unchecked);
             break;
-        case 1:
-        case 4:
+        case Checked:
+        case CheckedDisabled:
             topLevelItem->setCheckState(0, Qt::Checked);
             break;
-        case 2:
-        case 5:
+        case Children:
+        case ChildrenDisabled:
             topLevelItem->setCheckState(0, Qt::PartiallyChecked);
             topLevelItem->setExpanded(true);
             for (int j = 0; j < 2; ++j) {
@@ -181,7 +191,7 @@ void tst_Stylesheet::tst_QTreeView()
             }
             break;
         }
-        topLevelItem->setDisabled(i > 2);
+        topLevelItem->setDisabled(i >= Disabled);
     }
     testWindow()->setLayout(layout);
     tw->setRootIsDecorated(true);
@@ -190,6 +200,9 @@ void tst_Stylesheet::tst_QTreeView()
     QBASELINE_CHECK_DEFERRED(takeSnapshot(), "rootDecorated");
     tw->setRootIsDecorated(false);
     QBASELINE_CHECK_DEFERRED(takeSnapshot(), "rootNotDecorated");
+
+    tw->topLevelItem(Children)->child(0)->setSelected(true);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "itemSelected");
 }
 
 #define main _realmain
