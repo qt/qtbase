@@ -4737,10 +4737,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_TreeViewBranch);
             if (subRule.hasDrawable()) {
-                if ((vopt->state & QStyle::State_Selected) && vopt->showDecorationSelected)
-                    p->fillRect(vopt->rect, vopt->palette.highlight());
-                else if (vopt->features & QStyleOptionViewItem::Alternate)
-                    p->fillRect(vopt->rect, vopt->palette.alternateBase());
+                proxy()->drawPrimitive(PE_PanelItemViewRow, vopt, p, w);
                 subRule.drawRule(p, opt->rect);
             } else {
                 baseStyle()->drawPrimitive(pe, vopt, p, w);
@@ -4808,6 +4805,17 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         pseudoElement = PseudoElement_DockWidgetSeparator;
         break;
 
+    case PE_PanelItemViewRow:
+        // For compatibility reasons, QTreeView draws different parts of
+        // the background of an item row separately, before calling the
+        // delegate to draw the item. The row background of an item is
+        // however not separately styleable through a style sheet, but
+        // only indirectly through the background of the item. To get the
+        // same background for all parts drawn by QTreeView, we have to
+        // use the background rule for the item here.
+        if (renderRule(w, opt, PseudoElement_ViewItem).hasBackground())
+            pseudoElement = PseudoElement_ViewItem;
+        break;
     case PE_PanelItemViewItem:
         pseudoElement = PseudoElement_ViewItem;
         break;
