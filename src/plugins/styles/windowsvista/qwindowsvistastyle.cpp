@@ -41,6 +41,14 @@ static const int windowsRightBorder      = 15; // right border on windows
 #  define CMDLGS_DISABLED 4
 #endif
 
+namespace QOSWorkaround {
+    // Due to a mingw bug being confused by static constexpr variables in an exported class,
+    // we cannot use QOperatingSystemVersion::Windows11 in libraries outside of QtCore.
+    // ### TODO Remove this when that problem is fixed.
+    static constexpr QOperatingSystemVersionBase Windows11 { QOperatingSystemVersionBase::Windows,
+                                                             10, 0, 22000 };
+}
+
 /* \internal
     Checks if we should use Vista style , or if we should
     fall back to Windows style.
@@ -1241,6 +1249,9 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                     else
                         theme.stateId = bullet ? MC_BULLETNORMAL: MC_CHECKMARKNORMAL;
                     d->drawBackground(theme);
+                } else if (QOperatingSystemVersion::current() >= QOSWorkaround::Windows11
+                           && !act) {
+                    painter->fillRect(checkRect, menuitem->palette.highlight().color().lighter(200));
                 }
             }
 
