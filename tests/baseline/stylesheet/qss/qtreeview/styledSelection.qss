@@ -1,0 +1,10 @@
+QTreeView {
+    alternate-background-color: yellow;
+    show-decoration-selected: 1;
+}
+QTreeView::item:selected:active {
+    background: qlineargradient(x1:0, y1:0 x2: 0, y2: 1, stop: 0 #fea1f1 stop: 1 #567dbc)
+}
+QTreeView::branch {
+    border: 2px
+}
