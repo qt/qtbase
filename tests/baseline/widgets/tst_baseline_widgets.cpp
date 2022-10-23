@@ -945,19 +945,22 @@ void tst_Widgets::tst_QTreeView_data()
 {
     QTest::addColumn<bool>("showHeader");
     QTest::addColumn<bool>("hasIcons");
+    QTest::addColumn<bool>("alternatingRowColors");
     QTest::addColumn<QSize>("fixedSize");
     QTest::addColumn<int>("treeHeight");
     QTest::addColumn<int>("itemsPerNode");
 
     // QSize() => variable size
-    QTest::newRow("HeaderIcons_4_3") << true << true << QSize() << 3 << 2;
-    QTest::newRow("NoHeaderNoIcons_4_4") << false << false << QSize(100, 350) << 3 << 2;
+    QTest::newRow("HeaderIcons_4_3") << true << true << false << QSize() << 3 << 2;
+    QTest::newRow("NoHeaderNoIcons_4_4") << false << false << false << QSize(100, 350) << 3 << 2;
+    QTest::newRow("AlternatingRows") << true << true << true << QSize() << 3 << 2;
 }
 
 void tst_Widgets::tst_QTreeView()
 {
     QFETCH(bool, showHeader);
     QFETCH(bool, hasIcons);
+    QFETCH(bool, alternatingRowColors);
     QFETCH(QSize, fixedSize);
     QFETCH(int, treeHeight);
     QFETCH(int, itemsPerNode);
@@ -970,6 +973,8 @@ void tst_Widgets::tst_QTreeView()
     QStandardItemModel model(&treeView);
     showHeader ? model.setHorizontalHeaderItem(0, new QStandardItem("TreeHeader"))
                : treeView.setHeaderHidden(true);
+
+    treeView.setAlternatingRowColors(alternatingRowColors);
 
     // Populate tree model
     for (int i = 0; i < itemsPerNode; ++i) {
