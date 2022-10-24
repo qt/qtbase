@@ -55,7 +55,7 @@ qt_feature("use_bfd_linker"
     PRIVATE
     LABEL "bfd"
     AUTODETECT false
-    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_bfd_linker
+    CONDITION NOT MSVC AND NOT INTEGRITY AND NOT WASM AND TEST_use_bfd_linker
     ENABLE INPUT_linker STREQUAL 'bfd'
     DISABLE INPUT_linker STREQUAL 'gold' OR INPUT_linker STREQUAL 'lld'
             OR INPUT_linker STREQUAL 'mold'
@@ -81,7 +81,7 @@ qt_feature("use_lld_linker"
     PRIVATE
     LABEL "lld"
     AUTODETECT false
-    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_lld_linker
+    CONDITION NOT MSVC AND NOT INTEGRITY AND NOT WASM AND TEST_use_lld_linker
     ENABLE INPUT_linker STREQUAL 'lld'
     DISABLE INPUT_linker STREQUAL 'bfd' OR INPUT_linker STREQUAL 'gold'
             OR INPUT_linker STREQUAL 'mold'
