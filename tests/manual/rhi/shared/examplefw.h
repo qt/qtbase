@@ -259,7 +259,6 @@ void Window::init()
     // now onto the backend-independent init
 
     m_sc = m_r->newSwapChain();
-    // allow depth-stencil, although we do not actually enable depth test/write for the triangle
     m_ds = m_r->newRenderBuffer(QRhiRenderBuffer::DepthStencil,
                                 QSize(), // no need to set the size here, due to UsedWithSwapChainOnly
                                 sampleCount,
