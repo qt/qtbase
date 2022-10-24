@@ -73,6 +73,7 @@ public:
     static QString infoDictionaryStringProperty(const QString &propertyName);
 #endif
 
+    void initConsole();
     static void initLocale();
 
     static bool checkInstance(const char *method);
@@ -125,6 +126,7 @@ public:
 #if defined(Q_OS_WIN)
     int origArgc;
     char **origArgv; // store unmodified arguments for QCoreApplication::arguments()
+    bool consoleAllocated = false;
 #endif
     void appendApplicationPathToLibraryPaths(void);
 

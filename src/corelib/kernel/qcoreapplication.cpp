@@ -451,6 +451,8 @@ QCoreApplicationPrivate::~QCoreApplicationPrivate()
 #endif
 #if defined(Q_OS_WIN)
     delete [] origArgv;
+    if (consoleAllocated)
+        FreeConsole();
 #endif
     QCoreApplicationPrivate::clearApplicationFilePath();
 }
@@ -547,6 +549,37 @@ QString qAppName()
     if (!QCoreApplicationPrivate::checkInstance("qAppName"))
         return QString();
     return QCoreApplication::instance()->d_func()->appName();
+}
+
+void QCoreApplicationPrivate::initConsole()
+{
+#ifdef Q_OS_WINDOWS
+    const QString env = qEnvironmentVariable("QT_WIN_DEBUG_CONSOLE");
+    if (env.isEmpty())
+        return;
+    if (env.compare(u"new"_s, Qt::CaseInsensitive) == 0) {
+        if (AllocConsole() == FALSE)
+            return;
+        consoleAllocated = true;
+    } else if (env.compare(u"attach"_s, Qt::CaseInsensitive) == 0) {
+        if (AttachConsole(ATTACH_PARENT_PROCESS) == FALSE)
+            return;
+    } else {
+        // Unknown input, don't make any decision for the user.
+        return;
+    }
+    // The std{in,out,err} handles are read-only, so we need to pass in dummies.
+    FILE *in = nullptr;
+    FILE *out = nullptr;
+    FILE *err = nullptr;
+    freopen_s(&in, "CONIN$", "r", stdin);
+    freopen_s(&out, "CONOUT$", "w", stdout);
+    freopen_s(&err, "CONOUT$", "w", stderr);
+    // However, things wouldn't work if the runtime did not preserve the pointers.
+    Q_ASSERT(in == stdin);
+    Q_ASSERT(out == stdout);
+    Q_ASSERT(err == stderr);
+#endif
 }
 
 void QCoreApplicationPrivate::initLocale()
@@ -743,6 +776,8 @@ void QCoreApplicationPrivate::init()
 #endif
 
     Q_Q(QCoreApplication);
+
+    initConsole();
 
     initLocale();
 
