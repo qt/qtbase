@@ -549,6 +549,12 @@ const QOperatingSystemVersion QOperatingSystemVersion::MacOSMonterey =
     QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 12, 0);
 
 /*!
+    \variable QOperatingSystemVersion::MacOSVentura
+    \brief a version corresponding to macOS Ventura (version 13).
+    \since 6.4
+*/
+
+/*!
     \variable QOperatingSystemVersion::AndroidJellyBean
     \brief a version corresponding to Android Jelly Bean (version 4.1, API level 16).
     \since 5.9
