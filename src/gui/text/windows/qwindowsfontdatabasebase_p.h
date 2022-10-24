@@ -89,6 +89,7 @@ public:
     QWindowsFontDatabaseBase();
     ~QWindowsFontDatabaseBase() override;
 
+    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) override;
 
     static int defaultVerticalDPI();

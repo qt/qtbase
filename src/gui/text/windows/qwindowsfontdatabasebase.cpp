@@ -789,6 +789,13 @@ IDWriteFontFace *QWindowsFontDatabaseBase::createDirectWriteFace(const QByteArra
 }
 #endif // directwrite && direct2d
 
+QFontEngine *QWindowsFontDatabaseBase::fontEngine(const QFontDef &fontDef, void *handle)
+{
+    // This function was apparently not used before, and probably isn't now either,
+    // call the base implementation which just prints that it's not supported.
+    return QPlatformFontDatabase::fontEngine(fontDef, handle);
+}
+
 QFontEngine *QWindowsFontDatabaseBase::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
 {
     QFontEngine *fontEngine = nullptr;
