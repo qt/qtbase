@@ -5,8 +5,8 @@
 # ${module_headers} with a custom set of defines. This makes sure our public headers
 # are self-contained, and also compile with more strict compiler options.
 function(qt_internal_add_headersclean_target module_target module_headers)
-    get_target_property(has_headers ${module_target} _qt_module_has_headers)
-    if(NOT has_headers)
+    get_target_property(no_headersclean_check ${module_target} _qt_no_headersclean_check)
+    if(no_headersclean_check)
         return()
     endif()
 

@@ -15,6 +15,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         NO_CONFIG_HEADER_FILE
         NO_ADDITIONAL_TARGET_INFO
         NO_GENERATE_METATYPES
+        NO_HEADERSCLEAN_CHECK
         GENERATE_CPP_EXPORTS # TODO: Rename to NO_GENERATE_CPP_EXPORTS once migration is done
         GENERATE_METATYPES          # TODO: Remove once it is not used anymore
         GENERATE_PRIVATE_CPP_EXPORTS
@@ -490,6 +491,11 @@ function(qt_internal_add_module target)
         endif()
     endif()
 
+    if(arg_NO_HEADERSCLEAN_CHECK OR arg_NO_MODULE_HEADERS OR arg_NO_SYNC_QT
+        OR NOT QT_FEATURE_headersclean)
+        set_target_properties("${target}" PROPERTIES _qt_no_headersclean_check ON)
+    endif()
+
     if(NOT arg_HEADER_MODULE)
         # Plugin types associated to a module
         if(NOT "x${arg_PLUGIN_TYPES}" STREQUAL "x")
@@ -876,7 +882,7 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
         endif()
     endif()
 
-    if(QT_FEATURE_headersclean AND NOT arg_NO_MODULE_HEADERS AND NOT QT_USE_SYNCQT_CPP)
+    if(NOT QT_USE_SYNCQT_CPP)
         qt_internal_add_headersclean_target(
             ${target}
             "${module_headers_clean}")
@@ -918,9 +924,7 @@ function(qt_finalize_module target)
     # property which supposed to be updated inside every qt_internal_install_module_headers
     # call.
     if(QT_USE_SYNCQT_CPP)
-        if(QT_FEATURE_headersclean)
-            qt_internal_add_headersclean_target(${target} "${module_headers_public}")
-        endif()
+        qt_internal_add_headersclean_target(${target} "${module_headers_public}")
         qt_internal_target_sync_headers(${target} "${module_headers_all}"
             "${module_headers_generated}")
         get_target_property(module_depends_header ${target} _qt_module_depends_header)

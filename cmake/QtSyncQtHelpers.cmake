@@ -257,7 +257,8 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
         set(non_qt_module_argument "-nonQt")
     else()
         list(APPEND syncqt_outputs "${module_build_interface_include_dir}/${module}")
-        if(QT_FEATURE_headersclean)
+        get_target_property(no_headersclean_check ${target} _qt_no_headersclean_check)
+        if(NOT no_headersclean_check)
             list(APPEND syncqt_outputs
                 "${CMAKE_CURRENT_BINARY_DIR}/${module}_header_check_exceptions")
         endif()
