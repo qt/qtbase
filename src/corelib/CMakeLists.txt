@@ -1318,6 +1318,13 @@ qt_internal_extend_target(Core CONDITION WASM
         kernel/qeventdispatcher_wasm.cpp kernel/qeventdispatcher_wasm_p.h
 )
 
+qt_internal_extend_target(Core CONDITION QT_FEATURE_ctf AND QT_FEATURE_library
+    SOURCES
+        tracing/qctf_p.h tracing/qctf.cpp
+    PLUGIN_TYPES
+        tracing
+)
+
 set_source_files_properties(
     thread/qmutex_mac.cpp
     thread/qmutex_unix.cpp

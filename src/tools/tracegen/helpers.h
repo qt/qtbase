@@ -11,12 +11,13 @@
 
 enum ParamType {
     LTTNG,
-    ETW
+    ETW,
+    CTF
 };
 
 QString typeToName(const QString &name);
 QString includeGuard(const QString &filename);
 QString formatFunctionSignature(const QList<Tracepoint::Argument> &args);
-QString formatParameterList(const QList<Tracepoint::Argument> &args, const QList<Tracepoint::Field> &fields, ParamType type);
+QString formatParameterList(const Provider &provider, const QList<Tracepoint::Argument> &args, const QList<Tracepoint::Field> &fields, ParamType type);
 
 #endif // HELPERS_H

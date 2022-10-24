@@ -160,11 +160,11 @@ static void writeEpilogue(QTextStream &stream, const QString &fileName)
            << "#include <private/qtrace_p.h>\n";
 }
 
-static void writeWrapper(QTextStream &stream, const Tracepoint &tracepoint,
+static void writeWrapper(QTextStream &stream, const Provider &provider, const Tracepoint &tracepoint,
                          const QString &providerName)
 {
     const QString argList = formatFunctionSignature(tracepoint.args);
-    const QString paramList = formatParameterList(tracepoint.args, tracepoint.fields, ETW);
+    const QString paramList = formatParameterList(provider, tracepoint.args, tracepoint.fields, ETW);
     const QString &name = tracepoint.name;
     const QString includeGuard = QStringLiteral("TP_%1_%2").arg(providerName).arg(name).toUpper();
     const QString provar = providerVar(providerName);
@@ -259,7 +259,7 @@ static void writeTracepoints(QTextStream &stream, const Provider &provider)
         writeFlagConverter(stream, flag);
 
     for (const Tracepoint &t : provider.tracepoints)
-        writeWrapper(stream, t, provider.name);
+        writeWrapper(stream, provider, t, provider.name);
 
     stream << "} // namespace QtPrivate\n"
            << "QT_END_NAMESPACE\n"

@@ -57,7 +57,7 @@
  *     qcoreapplication_qrect(const QRect &rect)
  *
  * The provider file is then parsed by src/tools/tracegen, which can be
- * switched to output either ETW or LTTNG tracepoint definitions. The provider
+ * switched to output either ETW, CTF or LTTNG tracepoint definitions. The provider
  * name is deduced to be basename(provider_file).
  *
  * To use the above (inside qtcore), you need to include

@@ -124,7 +124,7 @@ static void writeWrapper(QTextStream &stream,
         const Tracepoint &tracepoint, const Provider &provider)
 {
     const QString argList = formatFunctionSignature(tracepoint.args);
-    const QString paramList = formatParameterList(tracepoint.args, tracepoint.fields, LTTNG);
+    const QString paramList = formatParameterList(provider, tracepoint.args, tracepoint.fields, LTTNG);
     const QString &name = tracepoint.name;
     const QString includeGuard = QStringLiteral("TP_%1_%2").arg(provider.name).arg(name).toUpper();
 

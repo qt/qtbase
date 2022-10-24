@@ -1,0 +1,77 @@
+/* CTF 1.8 */
+
+typealias integer { size = 8; align = 8; signed = false; } := uint8_t;
+typealias integer { size = 16; align = 8; signed = false; } := uint16_t;
+typealias integer { size = 32; align = 8; signed = false; } := uint32_t;
+typealias integer { size = 64; align = 8; signed = false; } := uint64_t;
+typealias integer { size = 8; align = 8; signed = true; } := int8_t;
+typealias integer { size = 16; align = 8; signed = true; } := int16_t;
+typealias integer { size = 32; align = 8; signed = true; } := int32_t;
+typealias integer { size = 64; align = 8; signed = true; } := int64_t;
+typealias integer { size = 32; align = 8; signed = true; base = 16; } := intptr32_t;
+typealias integer { size = 64; align = 8; signed = true; base = 16; } := intptr64_t;
+typealias floating_point { exp_dig = 8; mant_dig = 24; align = 8; byte_order = native; } := float;
+typealias floating_point { exp_dig = 11; mant_dig = 53; align = 8; byte_order = native; } := double;
+
+typealias enum : integer { size = 8; } {
+    false,
+    true
+} := Boolean;
+
+trace {
+    major = 1;
+    minor = 8;
+    uuid = "$TRACE_UUID";
+    byte_order = $ENDIANNESS;
+    packet.header := struct {
+            uint32_t magic;
+            uint8_t  uuid[16];
+            uint32_t stream_id;
+    } align(8);
+};
+
+env {
+    domain = "ust";
+    tracer_name = "qtctf";
+    tracer_major = 1;
+    tracer_minor = 0;
+    architecture_bit_width = $ARC_BIT_WIDTH;
+    trace_name = "$SESSION_NAME";
+    trace_creation_datetime = "$CREATION_TIME";
+    hostname = "$HOST_NAME";
+};
+
+clock {
+    name = "$CLOCK_NAME";
+    uuid = "53836526-5a62-4de0-93c8-3a1970afab23";
+    description = "$CLOCK_TYPE";
+    freq = $CLOCK_FREQUENCY;
+    offset = $CLOCK_OFFSET;
+};
+
+typealias integer {
+    size = 64; align = 8; signed = false;
+    map = clock.monotonic.value;
+} := uint64_clock_monotonic_t;
+
+struct packet_context {
+    uint64_clock_monotonic_t timestamp_begin;
+    uint64_clock_monotonic_t timestamp_end;
+    uint64_t content_size;
+    uint64_t packet_size;
+    uint64_t packet_seq_num;
+    uint64_t events_discarded;
+    uint32_t thread_id;
+    string thread_name;
+} align(8);
+
+struct event_header {
+    uint32_t id;
+    uint64_clock_monotonic_t timestamp;
+} align(8);
+
+stream {
+    id = 0;
+    event.header := struct event_header;
+    packet.context := struct packet_context;
+};
