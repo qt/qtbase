@@ -328,8 +328,13 @@ OSStatus CGSClearWindowTags(const CGSConnectionID, const CGSWindowID, int *, int
     // we assume that if you have translucent content, without a
     // frame then you intend to do all background drawing yourself.
     const QWindow *window = m_platformWindow ? m_platformWindow->window() : nullptr;
-    if (!self.opaque && window && window->flags().testFlag(Qt::FramelessWindowHint))
-        return [NSColor clearColor];
+    if (!self.opaque && window) {
+        // Qt::Popup also requires clearColor - in qmacstyle
+        // we fill background using a special path with rounded corners.
+        if (window->flags().testFlag(Qt::FramelessWindowHint)
+            || (window->flags() & Qt::WindowType_Mask) == Qt::Popup)
+            return [NSColor clearColor];
+    }
 
     // This still allows you to have translucent content with a frame,
     // where the system background (or color set via NSWindow) will
