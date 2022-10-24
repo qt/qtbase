@@ -3318,13 +3318,23 @@ void tst_QString::remove_uint_uint()
     QFETCH( int, index );
     QFETCH( int, len );
     QFETCH( QString, after );
+    QFETCH(QString, result);
 
-    if ( after.size() == 0 ) {
-        QString s1 = string;
-        s1.remove( (uint) index, (uint) len );
-        QTEST( s1, "result" );
-    } else
-        QCOMPARE( 0, 0 ); // shut Qt Test
+    // For the replace() unitests?
+    if ( after.size() != 0 ) {
+        return;
+    }
+
+    // Test when isShared() is true
+    QString s1 = string;
+    s1.remove((qsizetype)index, (qsizetype)len);
+    QCOMPARE(s1, result);
+
+    QString s2 = string;
+    // Test when isShared() is false
+    s2.detach();
+    s2.remove((qsizetype)index, (qsizetype)len);
+    QCOMPARE(s2, result);
 }
 
 void tst_QString::remove_string()
