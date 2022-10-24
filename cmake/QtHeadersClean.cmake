@@ -34,7 +34,7 @@ function(qt_internal_add_headersclean_target module_target module_headers)
     endif()
 
     set(prop_prefix "")
-    get_target_property(target_type "${target}" TYPE)
+    get_target_property(target_type "${module_target}" TYPE)
     if(target_type STREQUAL "INTERFACE_LIBRARY")
         set(prop_prefix "INTERFACE_")
     endif()
@@ -209,12 +209,12 @@ function(qt_internal_add_headersclean_target module_target module_headers)
             " for the headersclean check.")
     endif()
 
-    get_target_property(module_include_name ${target} _qt_module_include_name)
+    qt_internal_module_info(module ${module_target})
 
     unset(header_check_exceptions)
     if(QT_USE_SYNCQT_CPP)
         set(header_check_exceptions
-            "${CMAKE_CURRENT_BINARY_DIR}/${module_include_name}_header_check_exceptions")
+            "${CMAKE_CURRENT_BINARY_DIR}/${module}_header_check_exceptions")
     endif()
     set(headers_check_parameters
         "${CMAKE_CURRENT_BINARY_DIR}/${module_target}HeadersCheckParameters${config_suffix}.cmake")
@@ -270,7 +270,7 @@ function(qt_internal_add_headersclean_target module_target module_headers)
     endforeach()
 
     add_custom_target(${module_target}_headersclean_check
-        COMMENT "headersclean: Checking headers in ${module_include_name}"
+        COMMENT "headersclean: Checking headers in ${module}"
         DEPENDS ${hclean_artifacts}
         VERBATIM)
 
