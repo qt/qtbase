@@ -359,6 +359,8 @@ bool QOperatingSystemVersionBase::isAnyOfType(std::initializer_list<OSType> type
     return std::find(types.begin(), types.end(), type) != types.end();
 }
 
+#ifndef QT_BOOTSTRAPPED
+
 /*!
     \variable QOperatingSystemVersion::Windows7
     \brief a version corresponding to Windows 7 (version 6.1).
@@ -691,7 +693,7 @@ const QOperatingSystemVersion QOperatingSystemVersion::Android11 =
     \since 6.5
  */
 
-
+#endif // !QT_BOOTSTRAPPED
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QOperatingSystemVersion &ov)

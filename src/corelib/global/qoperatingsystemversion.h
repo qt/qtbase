@@ -105,7 +105,7 @@ class Q_CORE_EXPORT QOperatingSystemVersion : public QOperatingSystemVersionBase
 {
 public:
     // ### Qt7: Remove. Keep synchronized with QOperatingSystemVersionBase::OSType until then!
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
     enum OSType {
         Unknown = 0,
         Windows,
@@ -122,7 +122,7 @@ public:
     // without breaking our BC promises. They must be fully inline but we cannot make that change
     // until Qt7
     // @note: New entries should be added after the if-def-ery until Qt 7!!
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
     static const QOperatingSystemVersion Windows7;
     static const QOperatingSystemVersion Windows8;
     static const QOperatingSystemVersion Windows8_1;
