@@ -27,7 +27,7 @@ QString QFileSystemEngine::slowCanonicalized(const QString &path)
     QFileInfo fi;
     const QChar slash(u'/');
     QString tmpPath = path;
-    int separatorPos = 0;
+    qsizetype separatorPos = 0;
     QSet<QString> nonSymlinks;
     QDuplicateTracker<QString> known;
 
@@ -104,7 +104,7 @@ static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &ent
         return _q_checkEntry(engine, resolvingEntry);
 
 #if defined(QT_BUILD_CORE_LIB)
-    for (int prefixSeparator = 0; prefixSeparator < filePath.size(); ++prefixSeparator) {
+    for (qsizetype prefixSeparator = 0; prefixSeparator < filePath.size(); ++prefixSeparator) {
         QChar const ch = filePath[prefixSeparator];
         if (ch == u'/')
             break;
@@ -119,7 +119,7 @@ static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &ent
                 break;
 
             const QStringList &paths = QDir::searchPaths(filePath.left(prefixSeparator));
-            for (int i = 0; i < paths.count(); i++) {
+            for (qsizetype i = 0; i < paths.count(); i++) {
                 entry = QFileSystemEntry(QDir::cleanPath(
                         paths.at(i) % u'/' % QStringView{filePath}.mid(prefixSeparator + 1)));
                 // Recurse!
