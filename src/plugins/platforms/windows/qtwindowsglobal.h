@@ -93,7 +93,7 @@ QT_BEGIN_NAMESPACE
 namespace QtWindows
 {
 
-enum
+enum WindowsEventTypeFlags
 {
     WindowEventFlag = 0x10000,
     MouseEventFlag = 0x20000,
@@ -174,6 +174,8 @@ enum WindowsEventType // Simplify event types
     GestureEvent = 124,
     UnknownEvent = 542
 };
+Q_DECLARE_MIXED_ENUM_OPERATORS(bool, WindowsEventTypeFlags, WindowsEventType);
+Q_DECLARE_MIXED_ENUM_OPERATORS(bool, WindowsEventType, WindowsEventTypeFlags);
 
 // Matches Process_DPI_Awareness (Windows 8.1 onwards), used for SetProcessDpiAwareness()
 enum ProcessDpiAwareness
