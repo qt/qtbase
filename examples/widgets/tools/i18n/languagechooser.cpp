@@ -22,12 +22,12 @@ LanguageChooser::LanguageChooser(const QString &defaultLang, QWidget *parent)
 
     const QStringList qmFiles = findQmFiles();
     for (int i = 0; i < qmFiles.size(); ++i) {
-        const QString &qmlFile = qmFiles.at(i);
-        QCheckBox *checkBox = new QCheckBox(languageName(qmlFile));
-        qmFileForCheckBoxMap.insert(checkBox, qmlFile);
+        const QString &qmFile = qmFiles.at(i);
+        QCheckBox *checkBox = new QCheckBox(languageName(qmFile));
+        qmFileForCheckBoxMap.insert(checkBox, qmFile);
         connect(checkBox, &QCheckBox::toggled,
                 this, &LanguageChooser::checkBoxToggled);
-        if (languageMatch(defaultLang, qmlFile))
+        if (languageMatch(defaultLang, qmFile))
             checkBox->setCheckState(Qt::Checked);
         groupBoxLayout->addWidget(checkBox, i / 2, i % 2);
     }
@@ -82,11 +82,11 @@ void LanguageChooser::checkBoxToggled()
     MainWindow *window = mainWindowForCheckBoxMap.value(checkBox);
     if (!window) {
         QTranslator translator;
-        const QString qmlFile = qmFileForCheckBoxMap.value(checkBox);
-        if (translator.load(qmlFile))
+        const QString qmFile = qmFileForCheckBoxMap.value(checkBox);
+        if (translator.load(qmFile))
             QCoreApplication::installTranslator(&translator);
         else
-            qWarning("Unable to load %s", qPrintable(QDir::toNativeSeparators(qmlFile)));
+            qWarning("Unable to load %s", qPrintable(QDir::toNativeSeparators(qmFile)));
 
         window = new MainWindow;
         window->setPalette(colorForLanguage(checkBox->text()));
