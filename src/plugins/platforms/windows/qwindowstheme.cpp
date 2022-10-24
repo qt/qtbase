@@ -22,7 +22,6 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdebug.h>
-#include <QtCore/qtextstream.h>
 #include <QtCore/qsysinfo.h>
 #include <QtCore/qcache.h>
 #include <QtCore/qthread.h>
@@ -66,17 +65,6 @@ using namespace Qt::StringLiterals;
 static inline QColor COLORREFToQColor(COLORREF cr)
 {
     return QColor(GetRValue(cr), GetGValue(cr), GetBValue(cr));
-}
-
-static inline QTextStream& operator<<(QTextStream &str, const QColor &c)
-{
-    str.setIntegerBase(16);
-    str.setFieldWidth(2);
-    str.setPadChar(u'0');
-    str << " rgb: #" << c.red()  << c.green() << c.blue();
-    str.setIntegerBase(10);
-    str.setFieldWidth(0);
-    return str;
 }
 
 static inline bool booleanSystemParametersInfo(UINT what, bool defaultValue)
