@@ -983,7 +983,6 @@ void tst_QFile::readAllStdin()
     process.start(m_stdinProcess, QStringList(QStringLiteral("all")));
     QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
     for (int i = 0; i < 5; ++i) {
-        QTest::qWait(1000);
         process.write(lotsOfData);
         while (process.bytesToWrite() > 0)
             QVERIFY(process.waitForBytesWritten());
@@ -1018,7 +1017,6 @@ void tst_QFile::readLineStdin()
                       QIODevice::Text | QIODevice::ReadWrite);
         QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
         for (int i = 0; i < 5; ++i) {
-            QTest::qWait(1000);
             process.write(lotsOfData);
             while (process.bytesToWrite() > 0)
                 QVERIFY(process.waitForBytesWritten());
