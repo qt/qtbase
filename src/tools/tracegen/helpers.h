@@ -11,7 +11,8 @@
 
 enum ParamType {
     LTTNG,
-    ETW
+    ETW,
+    CTF
 };
 
 QString typeToName(const QString &name);

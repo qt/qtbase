@@ -15,6 +15,7 @@ qt_internal_add_tool(${target_name}
     SOURCES
         etw.cpp etw.h
         helpers.cpp helpers.h
+        ctf.cpp ctf.h
         lttng.cpp lttng.h
         panic.cpp panic.h
         provider.cpp provider.h

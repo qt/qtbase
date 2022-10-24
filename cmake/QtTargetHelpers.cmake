@@ -709,7 +709,7 @@ function(qt_internal_create_tracepoints name tracepoints_file)
     set(header_filename "${provider_name}_tracepoints_p.h")
     set(header_path "${CMAKE_CURRENT_BINARY_DIR}/${header_filename}")
 
-    if(QT_FEATURE_lttng OR QT_FEATURE_etw)
+    if(QT_FEATURE_lttng OR QT_FEATURE_etw OR QT_FEATURE_ctf)
         set(source_path "${CMAKE_CURRENT_BINARY_DIR}/${provider_name}_tracepoints.cpp")
         qt_configure_file(OUTPUT "${source_path}"
             CONTENT "#define TRACEPOINT_CREATE_PROBES
@@ -723,6 +723,8 @@ function(qt_internal_create_tracepoints name tracepoints_file)
             target_link_libraries(${name} PRIVATE LTTng::UST)
         elseif(QT_FEATURE_etw)
             set(tracegen_arg "etw")
+        elseif(QT_FEATURE_ctf)
+            set(tracegen_arg "ctf")
         endif()
 
         if(NOT "${QT_HOST_PATH}" STREQUAL "")
@@ -754,7 +756,7 @@ function(qt_internal_generate_tracepoints name provider)
     set(header_filename "${provider_name}_tracepoints_p.h")
     set(header_path "${CMAKE_CURRENT_BINARY_DIR}/${header_filename}")
 
-    if(QT_FEATURE_lttng OR QT_FEATURE_etw)
+    if(QT_FEATURE_lttng OR QT_FEATURE_etw OR QT_FEATURE_ctf)
 
         set(absolute_file_paths "")
         foreach(file IN LISTS arg_SOURCES)
@@ -791,6 +793,8 @@ function(qt_internal_generate_tracepoints name provider)
             target_link_libraries(${name} PRIVATE LTTng::UST)
         elseif(QT_FEATURE_etw)
             set(tracegen_arg "etw")
+        elseif(QT_FEATURE_ctf)
+            set(tracegen_arg "ctf")
         endif()
 
         if(NOT "${QT_HOST_PATH}" STREQUAL "")

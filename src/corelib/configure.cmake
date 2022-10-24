@@ -925,6 +925,12 @@ qt_feature("etw" PRIVATE
     ENABLE INPUT_trace STREQUAL 'etw' OR ( INPUT_trace STREQUAL 'yes' AND WIN32 )
     DISABLE INPUT_trace STREQUAL 'lttng' OR INPUT_trace STREQUAL 'no'
 )
+qt_feature("ctf" PRIVATE
+    LABEL "CTF"
+    AUTODETECT OFF
+    ENABLE INPUT_trace STREQUAL 'ctf'
+    DISABLE INPUT_trace STREQUAL 'etw' OR INPUT_trace STREQUAL 'no' OR INPUT_trace STREQUAL 'lttng'
+)
 qt_feature("forkfd_pidfd" PRIVATE
     LABEL "CLONE_PIDFD support in forkfd"
     CONDITION LINUX
@@ -962,7 +968,7 @@ qt_configure_add_summary_entry(ARGS "mimetype-database")
 qt_configure_add_summary_entry(ARGS "cpp-winrt")
 qt_configure_add_summary_entry(
     TYPE "firstAvailableFeature"
-    ARGS "etw lttng"
+    ARGS "etw lttng ctf"
     MESSAGE "Tracing backend"
 )
 qt_configure_add_summary_section(NAME "Logging backends")
