@@ -1016,13 +1016,17 @@ function(_qt_internal_configure_android_multiabi_target target)
             ExternalProject_Add("qt_internal_android_${abi}"
                 SOURCE_DIR "${CMAKE_SOURCE_DIR}"
                 BINARY_DIR "${android_abi_build_dir}"
-                CMAKE_ARGS
+                CONFIGURE_COMMAND
+                    "${CMAKE_COMMAND}"
+                    "-G${CMAKE_GENERATOR}"
                     "-DCMAKE_TOOLCHAIN_FILE=${qt_abi_toolchain_path}"
                     "-DQT_HOST_PATH=${QT_HOST_PATH}"
                     "-DQT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT=ON"
                     "-DQT_INTERNAL_ANDROID_MULTI_ABI_BINARY_DIR=${CMAKE_BINARY_DIR}"
                     "${config_arg}"
                     "${extra_cmake_args}"
+                    "-B" "${android_abi_build_dir}"
+                    "-S" "${CMAKE_SOURCE_DIR}"
                 EXCLUDE_FROM_ALL TRUE
                 BUILD_COMMAND "" # avoid top-level build of external project
             )
