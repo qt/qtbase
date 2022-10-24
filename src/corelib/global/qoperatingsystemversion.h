@@ -204,6 +204,8 @@ public:
     static constexpr QOperatingSystemVersionBase Android12L { QOperatingSystemVersionBase::Android, 12, 0 };
     static constexpr QOperatingSystemVersionBase Android13 { QOperatingSystemVersionBase::Android, 13, 0 };
 
+    static constexpr QOperatingSystemVersionBase MacOSVentura { QOperatingSystemVersionBase::MacOS, 13, 0 };
+
     constexpr QOperatingSystemVersion(const QOperatingSystemVersionBase &osversion)
         : QOperatingSystemVersionBase(osversion) {}
 
