@@ -126,7 +126,7 @@ void QWasmBackingStore::beginPaint(const QRegion &region)
 {
     m_dirty |= region;
     // Keep backing store device pixel ratio in sync with window
-    if (m_image.devicePixelRatio() != window()->devicePixelRatio())
+    if (m_image.devicePixelRatio() != window()->handle()->devicePixelRatio())
         resize(backingStore()->size(), backingStore()->staticContents());
 
     QPainter painter(&m_image);
@@ -145,8 +145,9 @@ void QWasmBackingStore::resize(const QSize &size, const QRegion &staticContents)
 
     QImage::Format format = window()->format().hasAlpha() ?
         QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
-    m_image = QImage(size * window()->devicePixelRatio(), format);
-    m_image.setDevicePixelRatio(window()->devicePixelRatio());
+    const auto platformScreenDPR = window()->handle()->devicePixelRatio();
+    m_image = QImage(size * platformScreenDPR, format);
+    m_image.setDevicePixelRatio(platformScreenDPR);
     m_recreateTexture = true;
 }
 
