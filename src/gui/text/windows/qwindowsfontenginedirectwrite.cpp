@@ -101,7 +101,7 @@ namespace {
     };
 
     void GeometrySink::AddBeziers(const D2D1_BEZIER_SEGMENT *beziers,
-                                  UINT bezierCount)
+                                  UINT bezierCount) noexcept
     {
         for (uint i=0; i<bezierCount; ++i) {
             QPointF c1 = fromD2D1_POINT_2F(beziers[i].point1);
@@ -112,48 +112,48 @@ namespace {
         }
     }
 
-    void GeometrySink::AddLines(const D2D1_POINT_2F *points, UINT pointsCount)
+    void GeometrySink::AddLines(const D2D1_POINT_2F *points, UINT pointsCount) noexcept
     {
         for (uint i=0; i<pointsCount; ++i)
             m_path->lineTo(fromD2D1_POINT_2F(points[i]));
     }
 
     void GeometrySink::BeginFigure(D2D1_POINT_2F startPoint,
-                                   D2D1_FIGURE_BEGIN /*figureBegin*/)
+                                   D2D1_FIGURE_BEGIN /*figureBegin*/) noexcept
     {
         m_startPoint = fromD2D1_POINT_2F(startPoint);
         m_path->moveTo(m_startPoint);
     }
 
-    IFACEMETHODIMP GeometrySink::Close()
+    IFACEMETHODIMP GeometrySink::Close() noexcept
     {
         return E_NOTIMPL;
     }
 
-    void GeometrySink::EndFigure(D2D1_FIGURE_END figureEnd)
+    void GeometrySink::EndFigure(D2D1_FIGURE_END figureEnd) noexcept
     {
         if (figureEnd == D2D1_FIGURE_END_CLOSED)
             m_path->closeSubpath();
     }
 
-    void GeometrySink::SetFillMode(D2D1_FILL_MODE fillMode)
+    void GeometrySink::SetFillMode(D2D1_FILL_MODE fillMode) noexcept
     {
         m_path->setFillRule(fillMode == D2D1_FILL_MODE_ALTERNATE
                             ? Qt::OddEvenFill
                             : Qt::WindingFill);
     }
 
-    void GeometrySink::SetSegmentFlags(D2D1_PATH_SEGMENT /*vertexFlags*/)
+    void GeometrySink::SetSegmentFlags(D2D1_PATH_SEGMENT /*vertexFlags*/) noexcept
     {
         /* Not implemented */
     }
 
-    IFACEMETHODIMP_(unsigned long) GeometrySink::AddRef()
+    IFACEMETHODIMP_(unsigned long) GeometrySink::AddRef() noexcept
     {
         return InterlockedIncrement(&m_refCount);
     }
 
-    IFACEMETHODIMP_(unsigned long) GeometrySink::Release()
+    IFACEMETHODIMP_(unsigned long) GeometrySink::Release() noexcept
     {
         unsigned long newCount = InterlockedDecrement(&m_refCount);
         if (newCount == 0)
@@ -165,7 +165,7 @@ namespace {
         return newCount;
     }
 
-    IFACEMETHODIMP GeometrySink::QueryInterface(IID const &riid, void **ppvObject)
+    IFACEMETHODIMP GeometrySink::QueryInterface(IID const &riid, void **ppvObject) noexcept
     {
         if (__uuidof(IDWriteGeometrySink) == riid) {
             *ppvObject = this;
