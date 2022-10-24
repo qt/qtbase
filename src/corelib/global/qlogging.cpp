@@ -862,7 +862,7 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
     if (info.isEmpty())
         return info;
 
-    int pos;
+    qsizetype pos;
 
     // Skip trailing [with XXX] for templates (gcc), but make
     // sure to not affect Objective-C message names.
@@ -909,7 +909,7 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
         info.truncate(++pos);
 
         if (info.at(pos - 1) == ')') {
-            if (info.indexOf(operator_call) == pos - (int)strlen(operator_call))
+            if (info.indexOf(operator_call) == pos - (qsizetype)strlen(operator_call))
                 break;
 
             // this function returns a pointer to a function
@@ -932,19 +932,19 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
     if (pos > -1) {
         switch (info.at(pos)) {
         case ')':
-            if (info.indexOf(operator_call) == pos - (int)strlen(operator_call) + 1)
+            if (info.indexOf(operator_call) == pos - (qsizetype)strlen(operator_call) + 1)
                 pos -= 2;
             break;
         case '<':
-            if (info.indexOf(operator_lessThan) == pos - (int)strlen(operator_lessThan) + 1)
+            if (info.indexOf(operator_lessThan) == pos - (qsizetype)strlen(operator_lessThan) + 1)
                 --pos;
             break;
         case '>':
-            if (info.indexOf(operator_greaterThan) == pos - (int)strlen(operator_greaterThan) + 1)
+            if (info.indexOf(operator_greaterThan) == pos - (qsizetype)strlen(operator_greaterThan) + 1)
                 --pos;
             break;
         case '=': {
-            int operatorLength = (int)strlen(operator_lessThanEqual);
+            qsizetype operatorLength = (qsizetype)strlen(operator_lessThanEqual);
             if (info.indexOf(operator_lessThanEqual) == pos - operatorLength + 1)
                 pos -= 2;
             else if (info.indexOf(operator_greaterThanEqual) == pos - operatorLength + 1)
@@ -988,7 +988,7 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
             break;
 
         // find the matching close
-        int end = pos;
+        qsizetype end = pos;
         templatecount = 1;
         --pos;
         while (pos && templatecount) {
@@ -1151,7 +1151,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                 tokens[i] = qthreadptrTokenC;
             else if (lexeme.startsWith(QLatin1StringView(timeTokenC))) {
                 tokens[i] = timeTokenC;
-                int spaceIdx = lexeme.indexOf(QChar::fromLatin1(' '));
+                qsizetype spaceIdx = lexeme.indexOf(QChar::fromLatin1(' '));
                 if (spaceIdx > 0)
                     timeArgs.append(lexeme.mid(spaceIdx + 1, lexeme.length() - spaceIdx - 2));
                 else
