@@ -32,7 +32,7 @@ public:
                       QVector3D(0,0,0),
                       QVector3D(0,1,0));
         m_timer.setInterval(16);
-        connect(&m_timer, SIGNAL(timeout()), this, SLOT(update()));
+        connect(&m_timer, &QTimer::timeout, this, qOverload<>(&PaintedWindow::update));
         m_timer.start();
     }
 
