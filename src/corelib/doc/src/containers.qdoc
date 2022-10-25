@@ -380,7 +380,7 @@
 
     \section1 Qt containers and std algorithms
 
-    You can used Qt containers with functions from \c{#include <algorithm>}.
+    You can use Qt containers with functions from \c{#include <algorithm>}.
 
     \snippet code/doc_src_containers.cpp 26
 
