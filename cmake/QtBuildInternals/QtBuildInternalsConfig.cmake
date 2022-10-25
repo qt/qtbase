@@ -382,6 +382,8 @@ macro(qt_internal_prepare_single_repo_target_set_build)
 endmacro()
 
 macro(qt_build_repo_begin)
+    list(APPEND CMAKE_MESSAGE_CONTEXT "${PROJECT_NAME}")
+
     qt_build_internals_set_up_private_api()
 
     # Prevent installation in non-prefix builds.
@@ -524,6 +526,8 @@ macro(qt_build_repo_end)
         set(QT_INTERNAL_SYNCED_MODULES ${synced_modules} CACHE INTERNAL
             "List of the synced modules. Prevents running syncqt.cpp after the first configuring.")
     endif()
+
+    list(POP_BACK CMAKE_MESSAGE_CONTEXT)
 endmacro()
 
 macro(qt_build_repo)

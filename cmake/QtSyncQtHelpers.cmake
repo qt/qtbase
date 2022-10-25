@@ -436,7 +436,7 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
                 "syncqt.cpp failed for module ${module}:\n${syncqt_output}")
         endif()
         if(syncqt_output)
-            message("${syncqt_output}")
+            message(WARNING "${syncqt_output}")
         endif()
         set_property(GLOBAL APPEND PROPERTY _qt_synced_modules ${module})
     endif()

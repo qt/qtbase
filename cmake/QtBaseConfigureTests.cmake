@@ -12,10 +12,14 @@ function(qt_run_config_test_architecture)
     qt_get_platform_try_compile_vars(platform_try_compile_vars)
     list(APPEND flags ${platform_try_compile_vars})
 
-    list(TRANSFORM flags PREPEND "    " OUTPUT_VARIABLE flags_indented)
+    list(TRANSFORM flags PREPEND "            " OUTPUT_VARIABLE flags_indented)
     list(JOIN flags_indented "\n" flags_indented)
+
     message(STATUS
-            "Building architecture extraction project with the following CMake arguments:\n${flags_indented}")
+            "Building architecture extraction project with the following CMake arguments:")
+    list(POP_BACK CMAKE_MESSAGE_CONTEXT _context)
+    message(NOTICE ${flags_indented})
+    list(APPEND CMAKE_MESSAGE_CONTEXT ${_context})
 
     try_compile(
         _arch_result

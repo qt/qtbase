@@ -11,13 +11,13 @@
 #
 # We mean it.
 
-message("CMAKE_VERSION: ${CMAKE_VERSION}")
-message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
-message("CMAKE_MODULES_UNDER_TEST: ${CMAKE_MODULES_UNDER_TEST}")
+message(STATUS "CMAKE_VERSION: ${CMAKE_VERSION}")
+message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+message(STATUS "CMAKE_MODULES_UNDER_TEST: ${CMAKE_MODULES_UNDER_TEST}")
 foreach(_mod ${CMAKE_MODULES_UNDER_TEST})
-    message("CMAKE_${_mod}_MODULE_MAJOR_VERSION: ${CMAKE_${_mod}_MODULE_MAJOR_VERSION}")
-    message("CMAKE_${_mod}_MODULE_MINOR_VERSION: ${CMAKE_${_mod}_MODULE_MINOR_VERSION}")
-    message("CMAKE_${_mod}_MODULE_PATCH_VERSION: ${CMAKE_${_mod}_MODULE_PATCH_VERSION}")
+    message(STATUS "CMAKE_${_mod}_MODULE_MAJOR_VERSION: ${CMAKE_${_mod}_MODULE_MAJOR_VERSION}")
+    message(STATUS "CMAKE_${_mod}_MODULE_MINOR_VERSION: ${CMAKE_${_mod}_MODULE_MINOR_VERSION}")
+    message(STATUS "CMAKE_${_mod}_MODULE_PATCH_VERSION: ${CMAKE_${_mod}_MODULE_PATCH_VERSION}")
 endforeach()
 
 # Generate a shell script wrapper that calls ninja with -v parameter.
