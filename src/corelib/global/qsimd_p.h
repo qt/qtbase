@@ -349,12 +349,16 @@ Q_CORE_EXPORT uint64_t QT_MANGLE_NAMESPACE(qDetectCpuFeatures)();
 
 static inline uint64_t qCpuFeatures()
 {
+#ifdef QT_BOOTSTRAPPED
+    return qCompilerCpuFeatures;    // no detection
+#else
     quint64 features = atomic_load_explicit(QT_MANGLE_NAMESPACE(qt_cpu_features), memory_order_relaxed);
     if (!QT_SUPPORTS_INIT_PRIORITY) {
         if (Q_UNLIKELY(features == 0))
             features = QT_MANGLE_NAMESPACE(qDetectCpuFeatures)();
     }
     return features;
+#endif
 }
 
 #define qCpuHasFeature(feature)     (((qCompilerCpuFeatures & CpuFeature ## feature) == CpuFeature ## feature) \
