@@ -110,7 +110,7 @@
     etc. is allowed in datagram mode with the same limitations as in
     continuous byte stream mode.
 
-    \note This feature is not supported on the Windows platform.
+    \note This class is not supported on the Windows platform.
 
     \sa QSctpServer, QTcpSocket, QAbstractSocket
 */
