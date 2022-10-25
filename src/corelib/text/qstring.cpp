@@ -3416,13 +3416,26 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
         return ch == (isCase ? x : x.toCaseFolded());
     };
 
-    detach();
+
     auto begin = d.begin();
     auto first_match = begin + idx;
     auto end = d.end();
-    auto it = std::remove_if(first_match, end, match);
-    d->erase(it, std::distance(it, end));
-    d.data()[d.size] = u'\0';
+    if (!d->isShared()) {
+        auto it = std::remove_if(first_match, end, match);
+        d->erase(it, std::distance(it, end));
+        d.data()[d.size] = u'\0';
+    } else {
+        // Instead of detaching, create a new string and copy all characters except for
+        // the ones we're removing
+        // TODO: size() is more than the needed since "copy" would be shorter
+        QString copy{size(), Qt::Uninitialized};
+        auto dst = copy.d.begin();
+        auto it = std::copy(begin, first_match, dst); // Chunk before idx
+        it = std::remove_copy_if(first_match + 1, end, it, match);
+        copy.d.size = std::distance(dst, it);
+        copy.d.data()[copy.d.size] = u'\0';
+        *this = copy;
+    }
     return *this;
 }
 

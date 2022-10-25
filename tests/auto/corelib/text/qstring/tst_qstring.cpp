@@ -830,6 +830,7 @@ void tst_QString::replace_string_data()
     QTest::newRow( "rem20" ) << QString("a") << QString("A") << QString("") << QString("") << false;
     QTest::newRow( "rem21" ) << QString("A") << QString("a") << QString("") << QString("") << false;
     QTest::newRow( "rem22" ) << QString("Alpha beta") << QString("a") << QString("") << QString("lph bet") << false;
+    QTest::newRow( "rem23" ) << QString("+00:00") << QString(":") << QString("") << QString("+0000") << false;
 
     QTest::newRow( "rep00" ) << QString("ABC") << QString("B") << QString("-") << QString("A-C") << true;
     QTest::newRow( "rep01" ) << QString("$()*+.?[\\]^{|}") << QString("$()*+.?[\\]^{|}") << QString("X") << QString("X") << true;
@@ -3208,26 +3209,35 @@ void tst_QString::replace_string()
     QFETCH( QString, before );
     QFETCH( QString, after );
     QFETCH( bool, bcs );
+    QFETCH(QString, result);
 
     Qt::CaseSensitivity cs = bcs ? Qt::CaseSensitive : Qt::CaseInsensitive;
 
     if ( before.size() == 1 ) {
         QChar ch = before.at( 0 );
 
+        // Test when isShared() is true
         QString s1 = string;
         s1.replace( ch, after, cs );
-        QTEST( s1, "result" );
+        QCOMPARE(s1, result);
 
+        QString s4 = string;
+        s4.begin(); // Test when isShared() is false
+        s4.replace(ch, after, cs);
+        QCOMPARE(s4, result);
+
+        // What is this one testing? it calls the same replace() overload
+        // as the previous two
         if ( QChar(ch.toLatin1()) == ch ) {
             QString s2 = string;
             s2.replace( ch.toLatin1(), after, cs );
-            QTEST( s2, "result" );
+            QCOMPARE(s2, result);
         }
     }
 
     QString s3 = string;
     s3.replace( before, after, cs );
-    QTEST( s3, "result" );
+    QCOMPARE(s3, result);
 }
 
 void tst_QString::replace_string_extra()
@@ -3343,6 +3353,7 @@ void tst_QString::remove_string()
     QFETCH( QString, before );
     QFETCH( QString, after );
     QFETCH( bool, bcs );
+    QFETCH(QString, result);
 
     Qt::CaseSensitivity cs = bcs ? Qt::CaseSensitive : Qt::CaseInsensitive;
 
@@ -3350,28 +3361,35 @@ void tst_QString::remove_string()
         if ( before.size() == 1 && cs ) {
             QChar ch = before.at( 0 );
 
+            // Test when isShared() is true
             QString s1 = string;
             s1.remove( ch );
-            QTEST( s1, "result" );
+            QCOMPARE(s1, result);
 
+            // Test again with isShared() is false
+            QString s4 = string;
+            s4.begin(); // Detach
+            s4.remove( ch );
+            QCOMPARE(s4, result);
+
+            // What is this one testing? it calls the same remove() overload
+            // as the previous two
             if ( QChar(ch.toLatin1()) == ch ) {
                 QString s2 = string;
                 s2.remove( ch );
-                QTEST( s2, "result" );
+                QCOMPARE(s2, result);
             }
         }
 
         QString s3 = string;
         s3.remove( before, cs );
-        QTEST( s3, "result" );
+        QCOMPARE(s3, result);
 
         if (QtPrivate::isLatin1(before)) {
             QString s6 = string;
             s6.remove( QLatin1String(before.toLatin1()), cs );
-            QTEST( s6, "result" );
+            QCOMPARE(s6, result);
         }
-    } else {
-        QCOMPARE( 0, 0 ); // shut Qt Test
     }
 }
 
