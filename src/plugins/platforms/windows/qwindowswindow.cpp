@@ -31,6 +31,7 @@
 #include <private/qguiapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <qpa/qwindowsysteminterface.h>
+#include <qpa/qplatformtheme.h>
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qlibraryinfo.h>
@@ -2301,9 +2302,22 @@ static inline bool isSoftwareGl()
 }
 
 bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
-                                         WPARAM, LPARAM, LRESULT *result)
+                                   WPARAM wParam, LPARAM, LRESULT *result)
 {
     if (message == WM_ERASEBKGND) { // Backing store - ignored.
+        if (!m_firstBgDraw && QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle)) {
+            // Get system background color
+            const QColor bgColor = QGuiApplicationPrivate::platformTheme()->palette()->color(QPalette::Window);
+            HBRUSH bgBrush = CreateSolidBrush(RGB(bgColor.red(), bgColor.green(), bgColor.blue()));
+            // Fill rectangle with system background color
+            RECT rc;
+            auto hdc = reinterpret_cast<HDC>(wParam);
+            GetClientRect(hwnd, &rc);
+            FillRect(hdc, &rc, bgBrush);
+            DeleteObject(bgBrush);
+            // Brush the window with system background color only for first time
+            m_firstBgDraw = true;
+        }
         *result = 1;
         return true;
     }
