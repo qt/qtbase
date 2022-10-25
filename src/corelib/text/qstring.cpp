@@ -3325,21 +3325,19 @@ static void removeStringImpl(QString &s, const T &needle, Qt::CaseSensitivity cs
     if (i < 0)
         return;
 
-    const auto beg = s.begin(); // detaches
+    auto beg = s.begin(); // detaches
     auto dst = beg + i;
     auto src = beg + i + needleSize;
-    const auto end = s.end();
+    auto end = s.end();
     // loop invariant: [beg, dst[ is partial result
     //                 [src, end[ still to be checked for needles
     while (src < end) {
-        const auto i = s.indexOf(needle, src - beg, cs);
-        const auto hit = i == -1 ? end : beg + i;
-        const auto skipped = hit - src;
-        memmove(dst, src, skipped * sizeof(QChar));
-        dst += skipped;
+        i = s.indexOf(needle, std::distance(beg, src), cs);
+        auto hit = i == -1 ? end : beg + i;
+        dst = std::copy(src, hit, dst);
         src = hit + needleSize;
     }
-    s.truncate(dst - beg);
+    s.truncate(std::distance(beg, dst));
 }
 
 /*!
