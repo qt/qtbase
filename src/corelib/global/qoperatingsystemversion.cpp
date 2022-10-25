@@ -399,6 +399,7 @@ const QOperatingSystemVersion QOperatingSystemVersion::Windows10 =
            Version 1809 (version 10.0.17763).
     \since 6.3
  */
+const QOperatingSystemVersionBase QOperatingSystemVersion::Windows10_1809;
 
 /*!
     \variable QOperatingSystemVersion::Windows10_1903
@@ -406,6 +407,7 @@ const QOperatingSystemVersion QOperatingSystemVersion::Windows10 =
            Version 1903 (version 10.0.18362).
     \since 6.3
  */
+const QOperatingSystemVersionBase QOperatingSystemVersion::Windows10_1903;
 
 /*!
     \variable QOperatingSystemVersion::Windows10_1909
@@ -413,6 +415,7 @@ const QOperatingSystemVersion QOperatingSystemVersion::Windows10 =
            Version 1909 (version 10.0.18363).
     \since 6.3
  */
+const QOperatingSystemVersionBase QOperatingSystemVersion::Windows10_1909;
 
 /*!
     \variable QOperatingSystemVersion::Windows10_2004
@@ -420,6 +423,7 @@ const QOperatingSystemVersion QOperatingSystemVersion::Windows10 =
            Version 2004 (version 10.0.19041).
     \since 6.3
  */
+const QOperatingSystemVersionBase QOperatingSystemVersion::Windows10_2004;
 
 /*!
     \variable QOperatingSystemVersion::Windows10_20H2
@@ -427,6 +431,7 @@ const QOperatingSystemVersion QOperatingSystemVersion::Windows10 =
            Version 20H2 (version 10.0.19042).
     \since 6.3
  */
+const QOperatingSystemVersionBase QOperatingSystemVersion::Windows10_20H2;
 
 /*!
     \variable QOperatingSystemVersion::Windows10_21H1
@@ -434,6 +439,7 @@ const QOperatingSystemVersion QOperatingSystemVersion::Windows10 =
            Version 21H1 (version 10.0.19043).
     \since 6.3
  */
+const QOperatingSystemVersionBase QOperatingSystemVersion::Windows10_21H1;
 
 /*!
     \variable QOperatingSystemVersion::Windows10_21H2
@@ -441,6 +447,7 @@ const QOperatingSystemVersion QOperatingSystemVersion::Windows10 =
            Version 21H2 (version 10.0.19044).
     \since 6.3
  */
+const QOperatingSystemVersionBase QOperatingSystemVersion::Windows10_21H2;
 
 /*!
     \variable QOperatingSystemVersion::Windows10_22H2
@@ -448,6 +455,7 @@ const QOperatingSystemVersion QOperatingSystemVersion::Windows10 =
            Version 22H2 (version 10.0.19045).
     \since 6.5
  */
+const QOperatingSystemVersionBase QOperatingSystemVersion::Windows10_22H2;
 
 /*!
     \variable QOperatingSystemVersion::Windows11
@@ -455,18 +463,21 @@ const QOperatingSystemVersion QOperatingSystemVersion::Windows10 =
            (version 10.0.22000).
     \since 6.3
  */
+const QOperatingSystemVersionBase QOperatingSystemVersion::Windows11;
 
 /*!
     \variable QOperatingSystemVersion::Windows11_21H2
     \brief a version corresponding to Windows 11 Version 21H2 (version 10.0.22000).
     \since 6.4
  */
+const QOperatingSystemVersionBase QOperatingSystemVersion::Windows11_21H2;
 
 /*!
     \variable QOperatingSystemVersion::Windows11_22H2
     \brief a version corresponding to Windows 11 Version 22H2 (version 10.0.22621).
     \since 6.4
  */
+const QOperatingSystemVersionBase QOperatingSystemVersion::Windows11_22H2;
 
 /*!
     \variable QOperatingSystemVersion::OSXMavericks
@@ -558,6 +569,7 @@ const QOperatingSystemVersion QOperatingSystemVersion::MacOSMonterey =
     \brief a version corresponding to macOS Ventura (version 13).
     \since 6.4
 */
+const QOperatingSystemVersionBase QOperatingSystemVersion::MacOSVentura;
 
 /*!
     \variable QOperatingSystemVersion::AndroidJellyBean
@@ -680,18 +692,21 @@ const QOperatingSystemVersion QOperatingSystemVersion::Android11 =
     \brief a version corresponding to Android 12 (version 12.0, API level 31).
     \since 6.5
  */
+const QOperatingSystemVersionBase QOperatingSystemVersion::Android12;
 
 /*!
     \variable QOperatingSystemVersion::Android12L
     \brief a version corresponding to Android 12L (version 12.0, API level 32).
     \since 6.5
  */
+const QOperatingSystemVersionBase QOperatingSystemVersion::Android12L;
 
 /*!
     \variable QOperatingSystemVersion::Android13
     \brief a version corresponding to Android 13 (version 13.0, API level 33).
     \since 6.5
  */
+const QOperatingSystemVersionBase QOperatingSystemVersion::Android13;
 
 #endif // !QT_BOOTSTRAPPED
 

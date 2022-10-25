@@ -10,6 +10,8 @@ class tst_QOperatingSystemVersion : public QObject
 private slots:
     void construction_data();
     void construction();
+    void globals_data();
+    void globals();
 
     void anyOf();
 
@@ -50,6 +52,34 @@ void tst_QOperatingSystemVersion::construction()
     QCOMPARE(systemVersion.microVersion(), microVersion);
     if (osType != QOperatingSystemVersion::OSType::Unknown)
         QVERIFY(!systemVersion.name().isEmpty());
+}
+
+void tst_QOperatingSystemVersion::globals_data()
+{
+    QTest::addColumn<QOperatingSystemVersion>("osver");
+    QTest::addColumn<QOperatingSystemVersion::OSType>("osType");
+
+#define ADDROW(os)  QTest::newRow(#os) << QOperatingSystemVersion(QOperatingSystemVersion::os)
+    // legacy ones (global variables)
+    ADDROW(Windows7) << QOperatingSystemVersion::Windows;
+    ADDROW(Windows10) << QOperatingSystemVersion::Windows;
+    ADDROW(OSXMavericks) << QOperatingSystemVersion::MacOS;
+    ADDROW(MacOSMonterey) << QOperatingSystemVersion::MacOS;
+    ADDROW(AndroidJellyBean) << QOperatingSystemVersion::Android;
+    ADDROW(Android11) << QOperatingSystemVersion::Android;
+
+    // new ones (static constexpr)
+    ADDROW(Windows11) << QOperatingSystemVersion::Windows;
+    ADDROW(Android12) << QOperatingSystemVersion::Android;
+#undef ADDROW
+}
+
+void tst_QOperatingSystemVersion::globals()
+{
+    QFETCH(QOperatingSystemVersion, osver);
+    QFETCH(QOperatingSystemVersion::OSType, osType);
+    QCOMPARE(osver.type(), osType);
+    QCOMPARE_NE(osver.majorVersion(), 0);
 }
 
 void tst_QOperatingSystemVersion::anyOf()
