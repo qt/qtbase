@@ -265,11 +265,8 @@ int QWindowsVistaStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, c
                 : QWindowsThemeData::themeSize(widget, nullptr, QWindowsVistaStylePrivate::ProgressTheme, PP_CHUNKVERT).height();
     case QStyle::PM_SliderThickness:
         return QWindowsThemeData::themeSize(widget, nullptr, QWindowsVistaStylePrivate::TrackBarTheme, TKP_THUMB).height();
-    case QStyle::PM_TitleBarHeight: {
-        return widget && (widget->windowType() == Qt::Tool)
-                ? GetSystemMetrics(SM_CYSMCAPTION) + GetSystemMetrics(SM_CXSIZEFRAME)
-                : GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CXSIZEFRAME);
-    }
+    case QStyle::PM_TitleBarHeight:
+        return QWindowsStylePrivate::pixelMetricFromSystemDp(QStyle::PM_TitleBarHeight, option, widget);
     case QStyle::PM_MdiSubWindowFrameWidth:
         return QWindowsThemeData::themeSize(widget, nullptr, QWindowsVistaStylePrivate::WindowTheme, WP_FRAMELEFT, FS_ACTIVE).width();
     case QStyle::PM_DockWidgetFrameWidth:
