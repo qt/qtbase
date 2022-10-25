@@ -1103,8 +1103,10 @@ public class QtNative
         if (m_clipboardManager == null)
             return false;
 
-        ClipData clip = m_clipboardManager.getPrimaryClip();
-        ClipDescription description = clip.getDescription();
+        ClipDescription description = m_clipboardManager.getPrimaryClipDescription();
+        // getPrimaryClipDescription can fail if the app does not have input focus
+        if (description == null)
+            return false;
 
         for (int i = 0; i < description.getMimeTypeCount(); ++i) {
             String itemMimeType = description.getMimeType(i);
