@@ -87,7 +87,8 @@ enum QtModule
     QtWebViewModule           = 0x0004000000000000,
     Qt3DExtrasModule          = 0x0008000000000000,
     QtShaderToolsModule       = 0x0010000000000000,
-    QtUiToolsModule           = 0x0020000000000000
+    QtUiToolsModule           = 0x0020000000000000,
+    QtCore5CompatModule       = 0x0040000000000000
 };
 
 struct QtModuleEntry {
@@ -149,7 +150,8 @@ static QtModuleEntry qtModuleEntries[] = {
     { QtSerialBusModule, "serialbus", "Qt6SerialBus", nullptr },
     { QtWebViewModule, "webview", "Qt6WebView", nullptr },
     { QtShaderToolsModule, "shadertools", "Qt6ShaderTools", nullptr },
-    { QtUiToolsModule, "uitools", "Qt6UiTools", nullptr }
+    { QtUiToolsModule, "uitools", "Qt6UiTools", nullptr },
+    { QtCore5CompatModule, "core5compat", "Qt6Core5Compat", nullptr}
 };
 
 enum QtPlugin {
