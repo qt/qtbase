@@ -119,10 +119,10 @@ private:
 };
 
 /*
-    The QBenchmarkTestMethodData class stores all benchmark-related data
-    for the current test case. QBenchmarkTestMethodData:current is
-    created at the beginning of qInvokeTestMethod() and cleared at
-    the end.
+    The QBenchmarkTestMethodData class stores all benchmark-related data for the
+    current test case. QBenchmarkTestMethodData:current is set to a local
+    instance at the beginning of TestMethods::invokeTest() and cleared by its
+    destructor when that instance drops out of scope.
 */
 class Q_TESTLIB_EXPORT QBenchmarkTestMethodData
 {
