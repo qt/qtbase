@@ -377,6 +377,7 @@ private:
     HICON m_iconBig = nullptr;
     void *m_surface = nullptr;
     int m_savedDpi = 96;
+    bool m_firstBgDraw = false;
 
     static bool m_screenForGLInitialized;
 
