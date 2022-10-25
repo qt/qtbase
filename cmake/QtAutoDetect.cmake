@@ -182,9 +182,7 @@ function(qt_auto_detect_vcpkg)
 endfunction()
 
 function(qt_auto_detect_ios)
-    if(CMAKE_SYSTEM_NAME STREQUAL iOS
-            OR CMAKE_SYSTEM_NAME STREQUAL watchOS
-            OR CMAKE_SYSTEM_NAME STREQUAL tvOS)
+    if(CMAKE_SYSTEM_NAME STREQUAL iOS)
         message(STATUS "Using internal CMake ${CMAKE_SYSTEM_NAME} toolchain file.")
 
         # The QT_UIKIT_SDK check simulates the input.sdk condition for simulator_and_device in
@@ -201,55 +199,21 @@ function(qt_auto_detect_ios)
         message(STATUS "simulator_and_device set to: \"${simulator_and_device}\".")
 
         # Choose relevant architectures.
-        # Using a non xcode generator requires explicit setting of the
+        # Using a non Xcode generator requires explicit setting of the
         # architectures, otherwise compilation fails with unknown defines.
-        if(CMAKE_SYSTEM_NAME STREQUAL iOS)
-            if(simulator_and_device)
-                set(osx_architectures "arm64;x86_64")
-            elseif(QT_UIKIT_SDK STREQUAL "iphoneos")
-                set(osx_architectures "arm64")
-            elseif(QT_UIKIT_SDK STREQUAL "iphonesimulator")
-                set(osx_architectures "x86_64")
+        if(simulator_and_device)
+            set(osx_architectures "arm64;x86_64")
+        elseif(QT_UIKIT_SDK STREQUAL "iphoneos")
+            set(osx_architectures "arm64")
+        elseif(QT_UIKIT_SDK STREQUAL "iphonesimulator")
+            set(osx_architectures "x86_64")
+        else()
+            if(NOT DEFINED QT_UIKIT_SDK)
+                message(FATAL_ERROR "Please provide a value for -DQT_UIKIT_SDK."
+                    " Possible values: iphoneos, iphonesimulator.")
             else()
-                if(NOT DEFINED QT_UIKIT_SDK)
-                    message(FATAL_ERROR "Please proviude a value for -DQT_UIKIT_SDK."
-                        " Possible values: iphoneos, iphonesimulator.")
-                else()
-                    message(FATAL_ERROR
-                            "Unknown SDK argument given to QT_UIKIT_SDK: ${QT_UIKIT_SDK}.")
-                endif()
-            endif()
-        elseif(CMAKE_SYSTEM_NAME STREQUAL tvOS)
-            if(simulator_and_device)
-                set(osx_architectures "arm64;x86_64")
-            elseif(QT_UIKIT_SDK STREQUAL "appletvos")
-                set(osx_architectures "arm64")
-            elseif(QT_UIKIT_SDK STREQUAL "appletvsimulator")
-                set(osx_architectures "x86_64")
-            else()
-                if(NOT DEFINED QT_UIKIT_SDK)
-                    message(FATAL_ERROR "Please proviude a value for -DQT_UIKIT_SDK."
-                        " Possible values: appletvos, appletvsimulator.")
-                else()
-                    message(FATAL_ERROR
-                            "Unknown SDK argument given to QT_UIKIT_SDK: ${QT_UIKIT_SDK}.")
-                endif()
-            endif()
-        elseif(CMAKE_SYSTEM_NAME STREQUAL watchOS)
-            if(simulator_and_device)
-                set(osx_architectures "armv7k;i386")
-            elseif(QT_UIKIT_SDK STREQUAL "watchos")
-                set(osx_architectures "armv7k")
-            elseif(QT_UIKIT_SDK STREQUAL "watchsimulator")
-                set(osx_architectures "i386")
-            else()
-                if(NOT DEFINED QT_UIKIT_SDK)
-                    message(FATAL_ERROR "Please proviude a value for -DQT_UIKIT_SDK."
-                        " Possible values: watchos, watchsimulator.")
-                else()
-                    message(FATAL_ERROR
-                            "Unknown SDK argument given to QT_UIKIT_SDK: ${QT_UIKIT_SDK}.")
-                endif()
+                message(FATAL_ERROR
+                        "Unknown SDK argument given to QT_UIKIT_SDK: ${QT_UIKIT_SDK}.")
             endif()
         endif()
 
@@ -307,10 +271,6 @@ function(qt_internal_get_darwin_sdk_version out_var)
     if(APPLE)
         if(IOS)
             set(sdk_name "iphoneos")
-        elseif(TVOS)
-            set(sdk_name "appletvos")
-        elseif(WATCHOS)
-            set(sdk_name "watchos")
         else()
             # Default to macOS
             set(sdk_name "macosx")
@@ -352,10 +312,6 @@ function(qt_auto_detect_darwin)
                 set(version "10.14")
             elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
                 set(version "13.0")
-            elseif(CMAKE_SYSTEM_NAME STREQUAL watchOS)
-                set(version "6.0")
-            elseif(CMAKE_SYSTEM_NAME STREQUAL tvOS)
-                set(version "13.0")
             endif()
             if(version)
                 set(CMAKE_OSX_DEPLOYMENT_TARGET "${version}" CACHE STRING "${description}")
@@ -368,9 +324,8 @@ function(qt_auto_detect_darwin)
         qt_internal_get_xcode_version(xcode_version)
         set(QT_MAC_XCODE_VERSION "${xcode_version}" CACHE STRING "Xcode version.")
 
-        set(device_names "iOS" "watchOS" "tvOS")
         list(LENGTH CMAKE_OSX_ARCHITECTURES arch_count)
-        if(NOT CMAKE_SYSTEM_NAME IN_LIST device_names AND arch_count GREATER 0)
+        if(NOT CMAKE_SYSTEM_NAME STREQUAL iOS AND arch_count GREATER 0)
             foreach(arch ${CMAKE_OSX_ARCHITECTURES})
                 if(arch STREQUAL "arm64e")
                     message(WARNING "Applications built against an arm64e Qt architecture will "
@@ -383,8 +338,7 @@ function(qt_auto_detect_darwin)
 endfunction()
 
 function(qt_auto_detect_macos_universal)
-    set(device_names "iOS" "watchOS" "tvOS")
-    if(APPLE AND NOT CMAKE_SYSTEM_NAME IN_LIST device_names)
+    if(APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL iOS)
         list(LENGTH CMAKE_OSX_ARCHITECTURES arch_count)
 
         set(is_universal "OFF")
