@@ -71,8 +71,8 @@ public:
 
         ui.searchBar->hide();
         ui.infoBox->hide();
-        connect(ui.searchButton, SIGNAL(clicked()), SLOT(startSearch()));
-        connect(ui.flightEdit, SIGNAL(returnPressed()), SLOT(startSearch()));
+        connect(ui.searchButton, &QPushButton::clicked, this, &FlightInfo::startSearch);
+        connect(ui.flightEdit, &QLineEdit::returnPressed, this, &FlightInfo::startSearch);
 
         setWindowTitle("Flight Info");
 
@@ -83,11 +83,11 @@ public:
         QAction *searchTodayAction = new QAction("Today's Flight", this);
         QAction *searchYesterdayAction = new QAction("Yesterday's Flight", this);
         QAction *randomAction = new QAction("Random Flight", this);
-        connect(searchTodayAction, SIGNAL(triggered()), SLOT(today()));
-        connect(searchYesterdayAction, SIGNAL(triggered()), SLOT(yesterday()));
-        connect(randomAction, SIGNAL(triggered()), SLOT(randomFlight()));
-        connect(&m_manager, SIGNAL(finished(QNetworkReply*)),
-                this, SLOT(handleNetworkData(QNetworkReply*)));
+        connect(searchTodayAction, &QAction::triggered, this, &FlightInfo::today);
+        connect(searchYesterdayAction, &QAction::triggered, this, &FlightInfo::yesterday);
+        connect(randomAction, &QAction::triggered, this, &FlightInfo::randomFlight);
+        connect(&m_manager, &QNetworkAccessManager::finished,
+                this, &FlightInfo::handleNetworkData);
         addAction(searchTodayAction);
         addAction(searchYesterdayAction);
         addAction(randomAction);

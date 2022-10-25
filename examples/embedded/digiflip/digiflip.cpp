@@ -23,7 +23,8 @@ public:
     {
         setAttribute(Qt::WA_OpaquePaintEvent, true);
         setAttribute(Qt::WA_NoSystemBackground, true);
-        connect(&m_animator, SIGNAL(frameChanged(int)), SLOT(update()));
+        connect(&m_animator, &QTimeLine::frameChanged,
+                this, qOverload<>(&Digits::update));
         m_animator.setFrameRange(0, 100);
         m_animator.setDuration(600);
         m_animator.setEasingCurve(QEasingCurve::InOutSine);
@@ -272,9 +273,9 @@ public:
         QAction *slideAction = new QAction("&Slide", this);
         QAction *flipAction = new QAction("&Flip", this);
         QAction *rotateAction = new QAction("&Rotate", this);
-        connect(slideAction, SIGNAL(triggered()), SLOT(chooseSlide()));
-        connect(flipAction, SIGNAL(triggered()), SLOT(chooseFlip()));
-        connect(rotateAction, SIGNAL(triggered()), SLOT(chooseRotate()));
+        connect(slideAction, &QAction::triggered, this, &DigiFlip::chooseSlide);
+        connect(flipAction, &QAction::triggered, this, &DigiFlip::chooseFlip);
+        connect(rotateAction, &QAction::triggered, this, &DigiFlip::chooseRotate);
         addAction(slideAction);
         addAction(flipAction);
         addAction(rotateAction);

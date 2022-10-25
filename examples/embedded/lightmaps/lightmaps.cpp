@@ -24,8 +24,8 @@ LightMaps::LightMaps(QWidget *parent)
 {
     m_normalMap = new SlippyMap(this);
     m_largeMap = new SlippyMap(this);
-    connect(m_normalMap, SIGNAL(updated(QRect)), SLOT(updateMap(QRect)));
-    connect(m_largeMap, SIGNAL(updated(QRect)), SLOT(update()));
+    connect(m_normalMap, &SlippyMap::updated, this, &LightMaps::updateMap);
+    connect(m_largeMap, &SlippyMap::updated, this, &LightMaps::updateMap);
 }
 
 void LightMaps::setCenter(qreal lat, qreal lng)
