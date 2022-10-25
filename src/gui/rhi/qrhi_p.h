@@ -1379,6 +1379,11 @@ public:
         HDR10
     };
 
+    enum StereoTargetBuffer {
+        LeftBuffer,
+        RightBuffer
+    };
+
     QRhiResource::Type resourceType() const override;
 
     QWindow *window() const { return m_window; }
@@ -1403,6 +1408,7 @@ public:
 
     virtual QRhiCommandBuffer *currentFrameCommandBuffer() = 0;
     virtual QRhiRenderTarget *currentFrameRenderTarget() = 0;
+    virtual QRhiRenderTarget *currentFrameRenderTarget(StereoTargetBuffer targetBuffer);
     virtual QSize surfacePixelSize() = 0;
     virtual bool isFormatSupported(Format f) = 0;
     virtual QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() = 0;

@@ -23,6 +23,7 @@
 #include <QWindow>
 #include <QPointer>
 #include <QtCore/private/qduplicatetracker_p.h>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -173,6 +174,8 @@ struct QGles2RenderTargetData
 {
     QGles2RenderTargetData(QRhiImplementation *) { }
 
+    bool isValid() const { return rp != nullptr; }
+
     QGles2RenderPassDescriptor *rp = nullptr;
     QSize pixelSize;
     float dpr = 1;
@@ -181,6 +184,7 @@ struct QGles2RenderTargetData
     int dsAttCount = 0;
     bool srgbUpdateAndBlend = false;
     QRhiRenderTargetAttachmentTracker::ResIdList currentResIdList;
+    std::optional<QRhiSwapChain::StereoTargetBuffer> stereoTarget;
 };
 
 struct QGles2SwapChainRenderTarget : public QRhiSwapChainRenderTarget
@@ -399,6 +403,8 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 GLuint fbo;
                 bool srgb;
                 int colorAttCount;
+                bool stereo;
+                QRhiSwapChain::StereoTargetBuffer stereoTarget;
             } bindFramebuffer;
             struct {
                 GLenum target;
@@ -690,6 +696,7 @@ struct QGles2SwapChain : public QRhiSwapChain
 
     QRhiCommandBuffer *currentFrameCommandBuffer() override;
     QRhiRenderTarget *currentFrameRenderTarget() override;
+    QRhiRenderTarget *currentFrameRenderTarget(StereoTargetBuffer targetBuffer) override;
 
     QSize surfacePixelSize() override;
     bool isFormatSupported(Format f) override;
@@ -697,9 +704,13 @@ struct QGles2SwapChain : public QRhiSwapChain
     QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() override;
     bool createOrResize() override;
 
+    void initSwapChainRenderTarget(QGles2SwapChainRenderTarget *rt);
+
     QSurface *surface = nullptr;
     QSize pixelSize;
     QGles2SwapChainRenderTarget rt;
+    QGles2SwapChainRenderTarget rtLeft;
+    QGles2SwapChainRenderTarget rtRight;
     QGles2CommandBuffer cb;
     int frameCount = 0;
 };

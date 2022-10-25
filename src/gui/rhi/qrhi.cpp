@@ -4860,6 +4860,35 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
  */
 
 /*!
+    \enum QRhiSwapChain::StereoTargetBuffer
+    Selects the backbuffer to use with a stereoscopic swapchain.
+
+    \value LeftBuffer
+    \value RightBuffer
+ */
+
+/*!
+    \return a render target that can be used with beginPass() in order to
+    render to the swapchain's left or right backbuffer. This overload should be
+    used only with stereoscopic rendering, that is, when the associated QWindow
+    is backed by two color buffers, one for each eye, instead of just one.
+
+    When stereoscopic rendering is not supported, the return value will be
+    null. For the time being the only backend and 3D API where traditional
+    stereoscopic rendering is supported is OpenGL (excluding OpenGL ES), in
+    combination with \l QSurfaceFormat::StereoBuffers, assuming it is supported
+    by the graphics and display driver stack at run time. All other backends
+    are going to return null from this overload.
+
+    \note the value must not be cached and reused between frames
+ */
+QRhiRenderTarget *QRhiSwapChain::currentFrameRenderTarget(StereoTargetBuffer targetBuffer)
+{
+    Q_UNUSED(targetBuffer);
+    return nullptr;
+}
+
+/*!
     \fn bool QRhiSwapChain::createOrResize()
 
     Creates the swapchain if not already done and resizes the swapchain buffers

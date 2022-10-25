@@ -435,6 +435,14 @@ QT_BEGIN_NAMESPACE
 #define GL_GEOMETRY_SHADER                0x8DD9
 #endif
 
+#ifndef GL_BACK_LEFT
+#define GL_BACK_LEFT                      0x0402
+#endif
+
+#ifndef GL_BACK_RIGHT
+#define GL_BACK_RIGHT                     0x0403
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -2997,24 +3005,31 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                                 cmd.args.bindShaderResources.dynamicOffsetCount);
             break;
         case QGles2CommandBuffer::Command::BindFramebuffer:
+        {
+            QVarLengthArray<GLenum, 8> bufs;
             if (cmd.args.bindFramebuffer.fbo) {
                 f->glBindFramebuffer(GL_FRAMEBUFFER, cmd.args.bindFramebuffer.fbo);
+                const int colorAttCount = cmd.args.bindFramebuffer.colorAttCount;
+                bufs.append(colorAttCount > 0 ? GL_COLOR_ATTACHMENT0 : GL_NONE);
                 if (caps.maxDrawBuffers > 1) {
-                    const int colorAttCount = cmd.args.bindFramebuffer.colorAttCount;
-                    QVarLengthArray<GLenum, 8> bufs;
-                    for (int i = 0; i < colorAttCount; ++i)
+                    for (int i = 1; i < colorAttCount; ++i)
                         bufs.append(GL_COLOR_ATTACHMENT0 + uint(i));
-                    f->glDrawBuffers(colorAttCount, bufs.constData());
                 }
             } else {
                 f->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
+                if (cmd.args.bindFramebuffer.stereo && cmd.args.bindFramebuffer.stereoTarget == QRhiSwapChain::RightBuffer)
+                    bufs.append(GL_BACK_RIGHT);
+                else
+                    bufs.append(caps.gles ? GL_BACK : GL_BACK_LEFT);
             }
+            f->glDrawBuffers(bufs.count(), bufs.constData());
             if (caps.srgbCapableDefaultFramebuffer) {
                 if (cmd.args.bindFramebuffer.srgb)
                     f->glEnable(GL_FRAMEBUFFER_SRGB);
                 else
                     f->glDisable(GL_FRAMEBUFFER_SRGB);
             }
+        }
             break;
         case QGles2CommandBuffer::Command::Clear:
             f->glDisable(GL_SCISSOR_TEST);
@@ -3980,6 +3995,9 @@ QGles2RenderTargetData *QRhiGles2::enqueueBindFramebuffer(QRhiRenderTarget *rt, 
             *wantsDsClear = doClearBuffers;
         fbCmd.args.bindFramebuffer.fbo = 0;
         fbCmd.args.bindFramebuffer.colorAttCount = 1;
+        fbCmd.args.bindFramebuffer.stereo = rtD->stereoTarget.has_value();
+        if (fbCmd.args.bindFramebuffer.stereo)
+            fbCmd.args.bindFramebuffer.stereoTarget = rtD->stereoTarget.value();
         break;
     case QRhiResource::TextureRenderTarget:
     {
@@ -3991,6 +4009,7 @@ QGles2RenderTargetData *QRhiGles2::enqueueBindFramebuffer(QRhiRenderTarget *rt, 
             *wantsDsClear = !rtTex->m_flags.testFlag(QRhiTextureRenderTarget::PreserveDepthStencilContents);
         fbCmd.args.bindFramebuffer.fbo = rtTex->framebuffer;
         fbCmd.args.bindFramebuffer.colorAttCount = rtD->colorAttCount;
+        fbCmd.args.bindFramebuffer.stereo = false;
 
         for (auto it = rtTex->m_desc.cbeginColorAttachments(), itEnd = rtTex->m_desc.cendColorAttachments();
              it != itEnd; ++it)
@@ -5753,6 +5772,8 @@ void QGles2CommandBuffer::destroy()
 QGles2SwapChain::QGles2SwapChain(QRhiImplementation *rhi)
     : QRhiSwapChain(rhi),
       rt(rhi, this),
+      rtLeft(rhi, this),
+      rtRight(rhi, this),
       cb(rhi)
 {
 }
@@ -5779,6 +5800,16 @@ QRhiRenderTarget *QGles2SwapChain::currentFrameRenderTarget()
     return &rt;
 }
 
+QRhiRenderTarget *QGles2SwapChain::currentFrameRenderTarget(StereoTargetBuffer targetBuffer)
+{
+    if (targetBuffer == LeftBuffer)
+        return rtLeft.d.isValid() ? &rtLeft : &rt;
+    else if (targetBuffer == RightBuffer)
+        return rtRight.d.isValid() ? &rtRight : &rt;
+    else
+        Q_UNREACHABLE_RETURN(nullptr);
+}
+
 QSize QGles2SwapChain::surfacePixelSize()
 {
     Q_ASSERT(m_window);
@@ -5793,6 +5824,18 @@ bool QGles2SwapChain::isFormatSupported(Format f)
 QRhiRenderPassDescriptor *QGles2SwapChain::newCompatibleRenderPassDescriptor()
 {
     return new QGles2RenderPassDescriptor(m_rhi);
+}
+
+void QGles2SwapChain::initSwapChainRenderTarget(QGles2SwapChainRenderTarget *rt)
+{
+    rt->setRenderPassDescriptor(m_renderPassDesc); // for the public getter in QRhiRenderTarget
+    rt->d.rp = QRHI_RES(QGles2RenderPassDescriptor, m_renderPassDesc);
+    rt->d.pixelSize = pixelSize;
+    rt->d.dpr = float(m_window->devicePixelRatio());
+    rt->d.sampleCount = qBound(1, m_sampleCount, 64);
+    rt->d.colorAttCount = 1;
+    rt->d.dsAttCount = m_depthStencil ? 1 : 0;
+    rt->d.srgbUpdateAndBlend = m_flags.testFlag(QRhiSwapChain::sRGB);
 }
 
 bool QGles2SwapChain::createOrResize()
@@ -5813,14 +5856,14 @@ bool QGles2SwapChain::createOrResize()
         m_depthStencil->create();
     }
 
-    rt.setRenderPassDescriptor(m_renderPassDesc); // for the public getter in QRhiRenderTarget
-    rt.d.rp = QRHI_RES(QGles2RenderPassDescriptor, m_renderPassDesc);
-    rt.d.pixelSize = pixelSize;
-    rt.d.dpr = float(m_window->devicePixelRatio());
-    rt.d.sampleCount = qBound(1, m_sampleCount, 64);
-    rt.d.colorAttCount = 1;
-    rt.d.dsAttCount = m_depthStencil ? 1 : 0;
-    rt.d.srgbUpdateAndBlend = m_flags.testFlag(QRhiSwapChain::sRGB);
+    initSwapChainRenderTarget(&rt);
+
+    if (m_window->format().stereo()) {
+        initSwapChainRenderTarget(&rtLeft);
+        rtLeft.d.stereoTarget = QRhiSwapChain::LeftBuffer;
+        initSwapChainRenderTarget(&rtRight);
+        rtRight.d.stereoTarget = QRhiSwapChain::RightBuffer;
+    }
 
     frameCount = 0;
 
