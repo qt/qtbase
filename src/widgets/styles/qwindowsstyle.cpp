@@ -265,12 +265,13 @@ int QWindowsStylePrivate::pixelMetricFromSystemDp(QStyle::PixelMetric pm, const 
     case QStyle::PM_DockWidgetFrameWidth:
         return GetSystemMetrics(SM_CXFRAME);
 
-    case QStyle::PM_TitleBarHeight:
-        if (widget && (widget->windowType() == Qt::Tool)) {
-            // MS always use one less than they say
-            return GetSystemMetrics(SM_CYSMCAPTION) - 1;
-        }
-        return GetSystemMetrics(SM_CYCAPTION) - 1;
+    case QStyle::PM_TitleBarHeight: {
+        const int resizeBorderThickness =
+            GetSystemMetrics(SM_CXSIZEFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+        if (widget && (widget->windowType() == Qt::Tool))
+            return GetSystemMetrics(SM_CYSMCAPTION) + resizeBorderThickness;
+        return GetSystemMetrics(SM_CYCAPTION) + resizeBorderThickness;
+    }
 
     case QStyle::PM_ScrollBarExtent:
         {
