@@ -939,7 +939,7 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
         info.truncate(++pos);
 
         if (info.at(pos - 1) == ')') {
-            if (info.indexOf(operator_call) == pos - (qsizetype)strlen(operator_call))
+            if (info.indexOf(operator_call) == pos - qsizetype(strlen(operator_call)))
                 break;
 
             // this function returns a pointer to a function
@@ -962,19 +962,19 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
     if (pos > -1) {
         switch (info.at(pos)) {
         case ')':
-            if (info.indexOf(operator_call) == pos - (qsizetype)strlen(operator_call) + 1)
+            if (info.indexOf(operator_call) == pos - qsizetype(strlen(operator_call)) + 1)
                 pos -= 2;
             break;
         case '<':
-            if (info.indexOf(operator_lessThan) == pos - (qsizetype)strlen(operator_lessThan) + 1)
+            if (info.indexOf(operator_lessThan) == pos - qsizetype(strlen(operator_lessThan)) + 1)
                 --pos;
             break;
         case '>':
-            if (info.indexOf(operator_greaterThan) == pos - (qsizetype)strlen(operator_greaterThan) + 1)
+            if (info.indexOf(operator_greaterThan) == pos - qsizetype(strlen(operator_greaterThan)) + 1)
                 --pos;
             break;
         case '=': {
-            qsizetype operatorLength = (qsizetype)strlen(operator_lessThanEqual);
+            auto operatorLength = qsizetype(strlen(operator_lessThanEqual));
             if (info.indexOf(operator_lessThanEqual) == pos - operatorLength + 1)
                 pos -= 2;
             else if (info.indexOf(operator_greaterThanEqual) == pos - operatorLength + 1)
