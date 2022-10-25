@@ -3407,20 +3407,22 @@ QString &QString::remove(QLatin1StringView str, Qt::CaseSensitivity cs)
 QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
 {
     const qsizetype idx = indexOf(ch, 0, cs);
-    if (idx != -1) {
-        const auto first = begin(); // implicit detach()
-        auto last = end();
-        if (cs == Qt::CaseSensitive) {
-            last = std::remove(first + idx, last, ch);
-        } else {
-            const QChar c = ch.toCaseFolded();
-            auto caseInsensEqual = [c](QChar x) {
-                return c == x.toCaseFolded();
-            };
-            last = std::remove_if(first + idx, last, caseInsensEqual);
-        }
-        resize(last - first);
-    }
+    if (idx == -1)
+        return *this;
+
+    const bool isCase = cs == Qt::CaseSensitive;
+    ch = isCase ? ch : ch.toCaseFolded();
+    auto match = [ch, isCase](QChar x) {
+        return ch == (isCase ? x : x.toCaseFolded());
+    };
+
+    detach();
+    auto begin = d.begin();
+    auto first_match = begin + idx;
+    auto end = d.end();
+    auto it = std::remove_if(first_match, end, match);
+    d->erase(it, std::distance(it, end));
+    d.data()[d.size] = u'\0';
     return *this;
 }
 
