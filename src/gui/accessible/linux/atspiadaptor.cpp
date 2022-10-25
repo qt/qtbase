@@ -591,7 +591,7 @@ QString AtSpiAdaptor::introspect(const QString &path) const
 
     QAccessibleInterface * interface = interfaceFromPath(path);
     if (!interface) {
-        qCDebug(lcAccessibilityAtspi) << "WARNING Qt AtSpiAdaptor: Could not find accessible on path: " << path;
+        qCWarning(lcAccessibilityAtspi) << "Could not find accessible on path:" << path;
         return QString();
     }
 
@@ -702,7 +702,7 @@ void AtSpiAdaptor::setBitFlag(const QString &flag)
                     || right.startsWith("VisibledataChanged"_L1)) { // typo in libatspi
                 sendObject_visible_data_changed = 1;
             } else {
-                qCDebug(lcAccessibilityAtspi) << "WARNING: subscription string not handled:" << flag;
+                qCWarning(lcAccessibilityAtspi) << "Subscription string not handled:" << flag;
             }
         }
         break;
@@ -748,7 +748,7 @@ void AtSpiAdaptor::setBitFlag(const QString &flag)
             } else if (right.startsWith("DesktopDestroy"_L1)) {
                 // ignore this one
             } else {
-                qCDebug(lcAccessibilityAtspi) << "WARNING: subscription string not handled:" << flag;
+                qCWarning(lcAccessibilityAtspi) << "Subscription string not handled:" << flag;
             }
         }
         break;
@@ -767,7 +767,7 @@ void AtSpiAdaptor::setBitFlag(const QString &flag)
         break;
     }
     default:
-        qCDebug(lcAccessibilityAtspi) << "WARNING: subscription string not handled:" << flag;
+        qCWarning(lcAccessibilityAtspi) << "Subscription string not handled:" << flag;
     }
 }
 
@@ -965,7 +965,7 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
         if (sendObject || sendObject_text_changed) {
             QAccessibleInterface * iface = event->accessibleInterface();
             if (!iface || !iface->textInterface()) {
-                qCDebug(lcAccessibilityAtspi) << "Received text event for invalid interface.";
+                qCWarning(lcAccessibilityAtspi) << "Received text event for invalid interface.";
                 return;
             }
             QString path = pathForInterface(iface);
@@ -1358,11 +1358,11 @@ bool AtSpiAdaptor::handleMessage(const QDBusMessage &message, const QDBusConnect
     // get accessible interface
     QAccessibleInterface * accessible = interfaceFromPath(message.path());
     if (!accessible) {
-        qCDebug(lcAccessibilityAtspi) << "WARNING Qt AtSpiAdaptor: Could not find accessible on path: " << message.path();
+        qCWarning(lcAccessibilityAtspi) << "Could not find accessible on path:" << message.path();
         return false;
     }
     if (!accessible->isValid()) {
-        qCWarning(lcAccessibilityAtspi) << "WARNING Qt AtSpiAdaptor: Accessible invalid: " << accessible << message.path();
+        qCWarning(lcAccessibilityAtspi) << "Accessible invalid:" << accessible << message.path();
         return false;
     }
 
@@ -1411,7 +1411,7 @@ bool AtSpiAdaptor::handleMessage(const QDBusMessage &message, const QDBusConnect
 bool AtSpiAdaptor::applicationInterface(QAccessibleInterface *interface, const QString &function, const QDBusMessage &message, const QDBusConnection &connection)
 {
     if (message.path() != ATSPI_DBUS_PATH_ROOT ""_L1) {
-        qCDebug(lcAccessibilityAtspi) << "WARNING Qt AtSpiAdaptor: Could not find application interface for: " << message.path() << interface;
+        qCWarning(lcAccessibilityAtspi) << "Could not find application interface for:" << message.path() << interface;
         return false;
     }
 
@@ -1463,7 +1463,7 @@ void AtSpiAdaptor::registerApplication()
         const QSpiObjectReference &socket = reply.value();
         accessibilityRegistry = QSpiObjectReference(socket);
     } else {
-        qCDebug(lcAccessibilityAtspi) << "Error in contacting registry: "
+        qCWarning(lcAccessibilityAtspi) << "Error in contacting registry:"
                    << reply.error().name()
                    << reply.error().message();
     }
@@ -1580,7 +1580,7 @@ bool AtSpiAdaptor::accessibleInterface(QAccessibleInterface *interface, const QS
         sendReply(connection, message,
                   QVariant::fromValue(QDBusVariant(accessibleIdForAccessible(interface))));
     } else {
-        qCDebug(lcAccessibilityAtspi) << "WARNING: AtSpiAdaptor::accessibleInterface does not implement " << function << message.path();
+        qCWarning(lcAccessibilityAtspi) << "AtSpiAdaptor::accessibleInterface does not implement" << function << message.path();
         return false;
     }
     return true;
@@ -1667,7 +1667,7 @@ QString AtSpiAdaptor::pathForObject(QObject *object) const
     Q_ASSERT(object);
 
     if (inheritsQAction(object)) {
-        qCDebug(lcAccessibilityAtspi) << "AtSpiAdaptor::pathForObject: warning: creating path with QAction as object.";
+        qCWarning(lcAccessibilityAtspi) << "AtSpiAdaptor::pathForObject: Creating path with QAction as object.";
     }
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(object);
@@ -1796,7 +1796,7 @@ bool AtSpiAdaptor::componentInterface(QAccessibleInterface *interface, const QSt
         qCDebug(lcAccessibilityAtspi) << "SetSize is not implemented.";
         sendReply(connection, message, false);
     } else {
-        qCDebug(lcAccessibilityAtspi) << "WARNING: AtSpiAdaptor::componentInterface does not implement " << function << message.path();
+        qCWarning(lcAccessibilityAtspi) << "AtSpiAdaptor::componentInterface does not implement" << function << message.path();
         return false;
     }
     return true;
@@ -1858,7 +1858,7 @@ bool AtSpiAdaptor::actionInterface(QAccessibleInterface *interface, const QStrin
         else
             sendReply(connection, message, QString());
     } else {
-        qCDebug(lcAccessibilityAtspi) << "WARNING: AtSpiAdaptor::actionInterface does not implement " << function << message.path();
+        qCWarning(lcAccessibilityAtspi) << "AtSpiAdaptor::actionInterface does not implement" << function << message.path();
         return false;
     }
     return true;
@@ -2038,7 +2038,7 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
         interface->textInterface()->setSelection(selectionNum, startOffset, endOffset);
         sendReply(connection, message, true);
     } else {
-        qCDebug(lcAccessibilityAtspi) << "WARNING: AtSpiAdaptor::textInterface does not implement " << function << message.path();
+        qCWarning(lcAccessibilityAtspi) << "AtSpiAdaptor::textInterface does not implement" << function << message.path();
         return false;
     }
     return true;
@@ -2278,7 +2278,7 @@ bool AtSpiAdaptor::isValidCoordType(uint coordType)
     if (coordType == ATSPI_COORD_TYPE_SCREEN || coordType == ATSPI_COORD_TYPE_WINDOW || coordType == ATSPI_COORD_TYPE_PARENT)
         return true;
 
-    qCWarning(lcAccessibilityAtspi) << "unknown value" << coordType << "for AT-SPI coord type";
+    qCWarning(lcAccessibilityAtspi) << "Unknown value" << coordType << "for AT-SPI coord type";
     return false;
 }
 
@@ -2402,7 +2402,7 @@ bool AtSpiAdaptor::editableTextInterface(QAccessibleInterface *interface, const 
     } else if (function.isEmpty()) {
         connection.send(message.createReply());
     } else {
-        qCDebug(lcAccessibilityAtspi) << "WARNING: AtSpiAdaptor::editableTextInterface does not implement " << function << message.path();
+        qCWarning(lcAccessibilityAtspi) << "AtSpiAdaptor::editableTextInterface does not implement" << function << message.path();
         return false;
     }
     return true;
@@ -2433,11 +2433,11 @@ bool AtSpiAdaptor::valueInterface(QAccessibleInterface *interface, const QString
         else if (function == "GetMinimumValue"_L1)
             value = valueIface->minimumValue();
         else {
-            qCDebug(lcAccessibilityAtspi) << "WARNING: AtSpiAdaptor::valueInterface does not implement " << function << message.path();
+            qCWarning(lcAccessibilityAtspi) << "AtSpiAdaptor::valueInterface does not implement" << function << message.path();
             return false;
         }
         if (!value.canConvert<double>()) {
-            qCDebug(lcAccessibilityAtspi) << "AtSpiAdaptor::valueInterface: Could not convert to double: " << function;
+            qCWarning(lcAccessibilityAtspi) << "AtSpiAdaptor::valueInterface: Could not convert to double:" << function;
         }
 
         // explicitly convert to dbus-variant containing one double since atspi expects that
@@ -2452,7 +2452,7 @@ bool AtSpiAdaptor::valueInterface(QAccessibleInterface *interface, const QString
 bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString &function, const QDBusMessage &message, const QDBusConnection &connection)
 {
     if (!(interface->tableInterface() || interface->tableCellInterface())) {
-        qCDebug(lcAccessibilityAtspi) << "WARNING Qt AtSpiAdaptor: Could not find table interface for: " << message.path() << interface;
+        qCWarning(lcAccessibilityAtspi) << "Qt AtSpiAdaptor: Could not find table interface for:" << message.path() << interface;
         return false;
     }
 
@@ -2488,7 +2488,7 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
             (column < 0) ||
             (row >= interface->tableInterface()->rowCount()) ||
             (column >= interface->tableInterface()->columnCount())) {
-            qCDebug(lcAccessibilityAtspi) << "WARNING: invalid index for tableInterface GetAccessibleAt (" << row << ", " << column << ')';
+            qCWarning(lcAccessibilityAtspi) << "Invalid index for tableInterface GetAccessibleAt (" << row << "," << column << ')';
             return false;
         }
 
@@ -2497,7 +2497,7 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
         if (cell) {
             ref = QSpiObjectReference(connection, QDBusObjectPath(pathForInterface(cell)));
         } else {
-            qCDebug(lcAccessibilityAtspi) << "WARNING: no cell interface returned for " << interface->object() << row << column;
+            qCWarning(lcAccessibilityAtspi) << "No cell interface returned for" << interface->object() << row << column;
             ref = QSpiObjectReference();
         }
         connection.send(message.createReply(QVariant::fromValue(ref)));
@@ -2507,7 +2507,7 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
         int column = message.arguments().at(1).toInt();
         QAccessibleInterface *cell = interface->tableInterface()->cellAt(row, column);
         if (!cell) {
-            qCDebug(lcAccessibilityAtspi) << "WARNING: AtSpiAdaptor::GetIndexAt(" << row << ',' << column << ") did not find a cell. " << interface;
+            qCWarning(lcAccessibilityAtspi) << "AtSpiAdaptor::GetIndexAt(" << row << ',' << column << ") did not find a cell." << interface;
             return false;
         }
         int index = interface->indexOfChild(cell);
@@ -2527,7 +2527,7 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
                         ret = -1;
                     } else {
                         if (!cell->tableCellInterface()) {
-                            qCDebug(lcAccessibilityAtspi) << "WARNING: AtSpiAdaptor::" << function << " No table cell interface: " << cell;
+                            qCWarning(lcAccessibilityAtspi).nospace() << "AtSpiAdaptor::" << function << " No table cell interface: " << cell;
                             return false;
                         }
                         ret = cell->tableCellInterface()->columnIndex();
@@ -2539,14 +2539,14 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
                         ret = index % interface->tableInterface()->columnCount();
                     } else {
                         if (!cell->tableCellInterface()) {
-                            qCDebug(lcAccessibilityAtspi) << "WARNING: AtSpiAdaptor::" << function << " No table cell interface: " << cell;
+                            qCWarning(lcAccessibilityAtspi).nospace() << "AtSpiAdaptor::" << function << " No table cell interface: " << cell;
                             return false;
                         }
                         ret = cell->tableCellInterface()->rowIndex();
                     }
                 }
             } else {
-                qCDebug(lcAccessibilityAtspi) << "WARNING: AtSpiAdaptor::" << function << " No cell at index: " << index << interface;
+                qCWarning(lcAccessibilityAtspi).nospace() << "AtSpiAdaptor::" << function << " No cell at index: " << index << " " << interface;
                 return false;
             }
         }
@@ -2652,7 +2652,7 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
         int row = message.arguments().at(0).toInt();
         connection.send(message.createReply(interface->tableInterface()->unselectRow(row)));
     } else {
-        qCDebug(lcAccessibilityAtspi) << "WARNING: AtSpiAdaptor::tableInterface does not implement " << function << message.path();
+        qCWarning(lcAccessibilityAtspi) << "AtSpiAdaptor::tableInterface does not implement" << function << message.path();
         return false;
     }
     return true;
