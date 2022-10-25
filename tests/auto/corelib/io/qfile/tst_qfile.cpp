@@ -1557,7 +1557,6 @@ void tst_QFile::copyFallback()
 #if defined(Q_OS_WIN)
 static QString getWorkingDirectoryForLink(const QString &linkFileName)
 {
-    bool neededCoInit = false;
     QString ret;
 
     QComHelper comHelper;
