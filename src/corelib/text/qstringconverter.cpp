@@ -194,7 +194,7 @@ static inline const uchar *simdFindNonAscii(const uchar *src, const uchar *end, 
 #ifdef __AVX2__
     // do 32 characters at a time
     // (this is similar to simdTestMask in qstring.cpp)
-    const __m256i mask = _mm256_set1_epi8(0x80);
+    const __m256i mask = _mm256_set1_epi8(char(0x80));
     for ( ; end - src >= 32; src += 32) {
         __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src));
         if (_mm256_testz_si256(mask, data))
