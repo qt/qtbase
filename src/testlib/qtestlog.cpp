@@ -471,10 +471,10 @@ void QTestLog::addSkip(const char *msg, const char *file, int line)
         logger->addIncident(QAbstractTestLogger::Skip, msg, file, line);
 }
 
-void QTestLog::addBenchmarkResult(const QBenchmarkResult &result)
+void QTestLog::addBenchmarkResults(const QList<QBenchmarkResult> &results)
 {
     FOREACH_TEST_LOGGER
-        logger->addBenchmarkResult(result);
+        logger->addBenchmarkResults(results);
 }
 
 void QTestLog::startLogging()

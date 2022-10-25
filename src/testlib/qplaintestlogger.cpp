@@ -47,6 +47,11 @@ template <int N> struct FixedBufString
     std::array<char, N + 2> buf;    // for the newline and terminating null
     FixedBufString()
     {
+        clear();
+    }
+    void clear()
+    {
+        used = 0;
         buf[0] = '\0';
     }
 
@@ -265,29 +270,38 @@ void QPlainTestLogger::printMessage(MessageSource source, const char *type, cons
     outputMessage(messagePrefix.data());
 }
 
-void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
+void QPlainTestLogger::printBenchmarkResultsHeader(const QBenchmarkResult &result)
 {
     FixedBufString<1022> buf;
-
     buf.appendf("%s: %s::%s", QTest::benchmarkResult2String(),
                 QTestResult::currentTestObjectName(), result.context.slotName.toLatin1().data());
 
     if (QByteArray tag = result.context.tag.toLocal8Bit(); !tag.isEmpty())
-        buf.appendf(":\"%s\"", tag.data());
-
-    const char * unitText = QTest::benchmarkMetricUnit(result.measurement.metric);
-    int significantDigits = QTest::countSignificantDigits(result.measurement.value);
-    qreal valuePerIteration = qreal(result.measurement.value) / qreal(result.iterations);
-    buf.appendf(":\n     %s %s%s",
-                QTest::formatResult(valuePerIteration, significantDigits).constData(),
-                unitText, result.setByMacro ? " per iteration" : "");
-
-    Q_ASSERT(result.iterations > 0);
-    buf.appendf(" (total: %s, iterations: %d)",
-                QTest::formatResult(result.measurement.value, significantDigits).constData(),
-                result.iterations);
-
+        buf.appendf(":\"%s\":\n", tag.data());
+    else
+        buf.append(":\n");
     outputMessage(buf);
+}
+
+void QPlainTestLogger::printBenchmarkResults(const QList<QBenchmarkResult> &results)
+{
+    FixedBufString<1022> buf;
+    for (const QBenchmarkResult &result : results) {
+        buf.clear();
+
+        const char * unitText = QTest::benchmarkMetricUnit(result.measurement.metric);
+        int significantDigits = QTest::countSignificantDigits(result.measurement.value);
+        qreal valuePerIteration = qreal(result.measurement.value) / qreal(result.iterations);
+        buf.appendf("     %s %s%s", QTest::formatResult(valuePerIteration, significantDigits).constData(),
+                    unitText, result.setByMacro ? " per iteration" : "");
+
+        Q_ASSERT(result.iterations > 0);
+        buf.appendf(" (total: %s, iterations: %d)\n",
+                    QTest::formatResult(result.measurement.value, significantDigits).constData(),
+                    result.iterations);
+
+        outputMessage(buf);
+    }
 }
 
 QPlainTestLogger::QPlainTestLogger(const char *filename)
@@ -357,13 +371,14 @@ void QPlainTestLogger::addIncident(IncidentTypes type, const char *description,
     printMessage(MessageSource::Incident, QTest::incidentType2String(type), description, file, line);
 }
 
-void QPlainTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
+void QPlainTestLogger::addBenchmarkResults(const QList<QBenchmarkResult> &results)
 {
     // suppress benchmark results in silent mode
-    if (QTestLog::verboseLevel() < 0)
+    if (QTestLog::verboseLevel() < 0 || results.isEmpty())
         return;
 
-    printBenchmarkResult(result);
+    printBenchmarkResultsHeader(results.first());
+    printBenchmarkResults(results);
 }
 
 void QPlainTestLogger::addMessage(QtMsgType type, const QMessageLogContext &context, const QString &message)

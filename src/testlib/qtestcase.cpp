@@ -1202,12 +1202,8 @@ void TestMethods::invokeTestOnData(int index) const
         bool testPassed = !QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed();
         QTestResult::finishedCurrentTestDataCleanup();
         // Only report benchmark figures if the test passed
-        if (testPassed && QBenchmarkTestMethodData::current->resultsAccepted()) {
-            const QList<QBenchmarkResult> median = qMedian(resultsList);
-            for (auto m : median) {
-                QTestLog::addBenchmarkResult(m);
-            }
-        }
+        if (testPassed && QBenchmarkTestMethodData::current->resultsAccepted())
+            QTestLog::addBenchmarkResults(qMedian(resultsList));
     }
 }
 

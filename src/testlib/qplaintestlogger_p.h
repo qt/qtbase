@@ -33,7 +33,9 @@ public:
 
     void addIncident(IncidentTypes type, const char *description,
                      const char *file = nullptr, int line = 0) override;
-    void addBenchmarkResult(const QBenchmarkResult &result) override;
+    void addBenchmarkResult(const QBenchmarkResult &) final override
+    { Q_UNREACHABLE(); }
+    void addBenchmarkResults(const QList<QBenchmarkResult> &results) override;
 
     void addMessage(QtMsgType, const QMessageLogContext &,
                     const QString &) override;
@@ -49,7 +51,8 @@ private:
     void printMessage(MessageSource source, const char *type, const char *msg,
                       const char *file = nullptr, int line = 0);
     void outputMessage(const char *str);
-    void printBenchmarkResult(const QBenchmarkResult &result);
+    void printBenchmarkResultsHeader(const QBenchmarkResult &result);
+    void printBenchmarkResults(const QList<QBenchmarkResult> &result);
 };
 
 QT_END_NAMESPACE

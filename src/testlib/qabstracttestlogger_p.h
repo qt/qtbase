@@ -68,6 +68,7 @@ public:
     virtual void addIncident(IncidentTypes type, const char *description,
                              const char *file = nullptr, int line = 0) = 0;
     virtual void addBenchmarkResult(const QBenchmarkResult &result) = 0;
+    virtual void addBenchmarkResults(const QList<QBenchmarkResult> &result);
 
     virtual void addMessage(QtMsgType, const QMessageLogContext &,
                             const QString &);

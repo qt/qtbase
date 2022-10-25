@@ -3,6 +3,7 @@
 
 #include <QtTest/private/qabstracttestlogger_p.h>
 #include <QtTest/qtestassert.h>
+#include <qbenchmark_p.h>
 #include <qtestresult_p.h>
 
 #include <QtCore/qbytearray.h>
@@ -220,6 +221,12 @@ void QAbstractTestLogger::startLogging()
 */
 void QAbstractTestLogger::stopLogging()
 {
+}
+
+void QAbstractTestLogger::addBenchmarkResults(const QList<QBenchmarkResult> &result)
+{
+    for (const auto &m : result)
+        addBenchmarkResult(m);
 }
 
 /*!

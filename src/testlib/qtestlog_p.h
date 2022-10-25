@@ -63,7 +63,9 @@ public:
     static void addBXPass(const char *msg, const char *file, int line);
     static void addBXFail(const char *msg, const char *file, int line);
     static void addSkip(const char *msg, const char *file, int line);
-    static void addBenchmarkResult(const QBenchmarkResult &result);
+    static void addBenchmarkResult(const QList<QBenchmarkResult> &result)
+    { return addBenchmarkResults({ result }); }
+    static void addBenchmarkResults(const QList<QBenchmarkResult> &result);
 
     static void ignoreMessage(QtMsgType type, const char *msg);
 #ifndef QT_NO_REGULAREXPRESSION
