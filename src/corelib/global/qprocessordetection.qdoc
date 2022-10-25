@@ -106,6 +106,40 @@
 */
 
 /*!
+    \macro Q_PROCESSOR_LOONGARCH
+    \relates <QtProcessorDetection>
+    \since 6.5
+
+    Defined if the application is compiled for LoongArch processors.
+
+    \sa QSysInfo::buildCpuArchitecture()
+*/
+
+/*!
+    \macro Q_PROCESSOR_LOONGARCH_32
+    \relates <QtProcessorDetection>
+    \since 6.5
+
+    Defined if the application is compiled for 32-bit LoongArch processors.
+    The \l Q_PROCESSOR_LOONGARCH macro is also defined when
+    Q_PROCESSOR_LOONGARCH_32 is defined.
+
+    \sa QSysInfo::buildCpuArchitecture()
+*/
+
+/*!
+    \macro Q_PROCESSOR_LOONGARCH_64
+    \relates <QtProcessorDetection>
+    \since 6.5
+
+    Defined if the application is compiled for 64-bit LoongArch processors.
+    The \l Q_PROCESSOR_LOONGARCH macro is also defined when
+    Q_PROCESSOR_LOONGARCH_64 is defined.
+
+    \sa QSysInfo::buildCpuArchitecture()
+*/
+
+/*!
     \macro Q_PROCESSOR_M68K
     \relates <QtProcessorDetection>
 

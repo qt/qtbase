@@ -200,6 +200,20 @@
 // Q_BYTE_ORDER not defined, use endianness auto-detection
 
 /*
+    LoongArch family, known variants: 32- and 64-bit
+
+    LoongArch is little-endian.
+*/
+#elif defined(__loongarch__)
+#  define Q_PROCESSOR_LOONGARCH
+#  if __loongarch_grlen == 64
+#    define Q_PROCESSOR_LOONGARCH_64
+#  else
+#    define Q_PROCESSOR_LOONGARCH_32
+#  endif
+#  define Q_BYTE_ORDER Q_LITTLE_ENDIAN
+
+/*
     Motorola 68000 family, no revisions or variants
 
     M68K is big-endian.
