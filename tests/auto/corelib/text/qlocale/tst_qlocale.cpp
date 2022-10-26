@@ -847,7 +847,26 @@ void tst_QLocale::toReal_data()
     QTest::newRow("de_DE 9.876543,0e-2") << QString("de_DE") << QString("9.876543,0e-2")   << false << 0.0;
     QTest::newRow("de_DE 9.876543e--2")   << QString("de_DE") << QString("9.876543e")+QChar(8722)+QString("2")     << false << 0.0;
     QTest::newRow("de_DE 9.876543,0e--2") << QString("de_DE") << QString("9.876543,0e")+QChar(8722)+QString("2")   << false << 0.0;
+
+    // Signs and exponent separator aren't single characters:
+    QTest::newRow("sv_SE 4e-3") // Swedish, Sweden
+        << u"sv_SE"_s << QStringView(u"4\u00d7" "10^\u2212" "03").toString() << true << 4e-3;
+    QTest::newRow("se_NO 4e-3") // Northern Sami, Norway
+        << u"se_NO"_s << QStringView(u"4\u00b7" "10^\u2212" "03").toString() << true << 4e-3;
+    QTest::newRow("ar_EG 4e-3") // Arabic, Egypt
+        << u"ar_EG"_s << QStringView(u"\u0664\u0627\u0633\u061c-\u0660\u0663").toString()
+        << true << 4e-3;
+    QTest::newRow("fa_IR 4e-3") // Farsi, Iran
+        << u"fa_IR"_s
+        << QStringView(u"\u06f4\u00d7\u06f1\u06f0^\u200e\u2212\u06f0\u06f3").toString()
+        << true << 4e-3;
 }
+#define EXPECT_NONSINGLE_FAILURES do { \
+        QEXPECT_FAIL("sv_SE 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort); \
+        QEXPECT_FAIL("se_NO 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort); \
+        QEXPECT_FAIL("ar_EG 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort); \
+        QEXPECT_FAIL("fa_IR 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort); \
+    } while (0)
 
 void tst_QLocale::stringToDouble_data()
 {
@@ -890,6 +909,7 @@ void tst_QLocale::stringToDouble()
 
     bool ok;
     double d = locale.toDouble(num_str, &ok);
+    EXPECT_NONSINGLE_FAILURES;
     QCOMPARE(ok, good);
 
     {
@@ -982,6 +1002,7 @@ void tst_QLocale::stringToFloat()
     }
     bool ok;
     float f = locale.toFloat(num_str, &ok);
+    EXPECT_NONSINGLE_FAILURES;
     QCOMPARE(ok, good);
 
     if constexpr (std::numeric_limits<double>::has_denorm != std::denorm_present) {
@@ -1021,6 +1042,7 @@ void tst_QLocale::stringToFloat()
     }
 #undef MY_FLOAT_EPSILON
 }
+#undef EXPECT_NONSINGLE_FAILURES
 
 void tst_QLocale::doubleToString_data()
 {
@@ -1097,6 +1119,19 @@ void tst_QLocale::doubleToString_data()
     QTest::newRow("C 0.000003945 e 0")  << QString("C") << QString("4e-06")          << 0.000003945 << 'e' << 0;
     QTest::newRow("C 0.000003945 g 7")  << QString("C") << QString("3.945e-06")      << 0.000003945 << 'g' << 7;
     QTest::newRow("C 0.000003945 g 1")  << QString("C") << QString("4e-06")          << 0.000003945 << 'g' << 1;
+    QTest::newRow("sv_SE 0.000003945 g 1") // Swedish, Sweden (among others)
+        << u"sv_SE"_s << u"4\u00d7" "10^\u2212" "06"_s << 0.000003945 << 'g' << 1;
+    QTest::newRow("sv_SE 3945e3 g 1")
+        << u"sv_SE"_s << u"4\u00d7" "10^+06"_s << 3945e3 << 'g' << 1;
+    QTest::newRow("se 0.000003945 g 1") // Northern Sami
+        << u"se"_s << u"4\u00b7" "10^\u2212" "06"_s << 0.000003945 << 'g' << 1;
+    QTest::newRow("ar_EG 0.000003945 g 1") // Arabic, Egypt (among others)
+        << u"ar_EG"_s << u"\u0664\u0627\u0633\u061c-\u0660\u0666"_s << 0.000003945 << 'g' << 1;
+    QTest::newRow("ar_EG 3945e3 g 1")
+        << u"ar_EG"_s << u"\u0664\u0627\u0633\u061c+\u0660\u0666"_s << 3945e3 << 'g' << 1;
+    QTest::newRow("fa_IR 0.000003945 g 1") // Farsi, Iran (same for Afghanistan)
+        << u"fa_IR"_s << u"\u06f4\u00d7\u06f1\u06f0^\u200e\u2212\u06f0\u06f6"_s
+        << 0.000003945 << 'g' << 1;
 
     QTest::newRow("C 0.000003945 f 9") << QString("C") << QString("0.000003945") << 0.000003945 << 'f' << 9;
     QTest::newRow("C 0.000003945 f -") << QString("C") << QString("0.000003945") << 0.000003945 << 'f' << shortest;
