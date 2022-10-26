@@ -98,6 +98,9 @@ QPlatformDialogHelper *QDialogPrivate::platformHelper() const
 
 bool QDialogPrivate::canBeNativeDialog() const
 {
+    if (QCoreApplication::testAttribute(Qt::AA_DontUseNativeDialogs))
+        return false;
+
     QDialogPrivate *ncThis = const_cast<QDialogPrivate *>(this);
     QDialog *dialog = ncThis->q_func();
     const int type = themeDialogType(dialog);
