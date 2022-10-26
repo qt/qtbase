@@ -517,7 +517,8 @@ void QXcbConnection::initializeScreensFromMonitor(xcb_screen_iterator_t *it, int
                 old.removeAll(screen);
             }
         }
-        m_screens << screen;
+        if (!m_screens.contains(screen))
+            m_screens << screen;
         siblings << screen;
 
         // similar logic with QXcbConnection::initializeScreensFromOutput()
