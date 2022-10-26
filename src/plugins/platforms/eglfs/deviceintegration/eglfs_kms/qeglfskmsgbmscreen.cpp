@@ -209,8 +209,10 @@ void QEglFSKmsGbmScreen::initCloning(QPlatformScreen *screenThisScreenClones,
         qWarning("QEglFSKmsGbmScreen %s cannot be clone source and destination at the same time", qPrintable(name()));
         return;
     }
-    if (clonesAnother)
+    if (clonesAnother) {
         m_cloneSource = static_cast<QEglFSKmsGbmScreen *>(screenThisScreenClones);
+        qCDebug(qLcEglfsKmsDebug, "Screen %s clones %s", qPrintable(name()), qPrintable(m_cloneSource->name()));
+    }
 
     // clone sources need to know their additional destinations
     for (QPlatformScreen *s : screensCloningThisScreen) {
@@ -271,11 +273,22 @@ void QEglFSKmsGbmScreen::nonThreadedPageFlipHandler(int fd,
                                                     unsigned int tv_usec,
                                                     void *user_data)
 {
+    // note that with cloning involved this callback is called also for screens that clone another one
     Q_UNUSED(fd);
     Q_UNUSED(sequence);
     Q_UNUSED(tv_sec);
     Q_UNUSED(tv_usec);
     QEglFSKmsGbmScreen *screen = static_cast<QEglFSKmsGbmScreen *>(user_data);
+    screen->flipFinished();
+}
+
+void QEglFSKmsGbmScreen::waitForFlipWithEventReader(QEglFSKmsGbmScreen *screen)
+{
+    m_flipMutex.lock();
+    QEglFSKmsGbmDevice *dev = static_cast<QEglFSKmsGbmDevice *>(device());
+    dev->eventReader()->startWaitFlip(screen, &m_flipMutex, &m_flipCond);
+    m_flipCond.wait(&m_flipMutex);
+    m_flipMutex.unlock();
     screen->flipFinished();
 }
 
@@ -290,11 +303,15 @@ void QEglFSKmsGbmScreen::waitForFlip()
 
     QEglFSKmsGbmDevice *dev = static_cast<QEglFSKmsGbmDevice *>(device());
     if (dev->usesEventReader()) {
-        m_flipMutex.lock();
-        dev->eventReader()->startWaitFlip(this, &m_flipMutex, &m_flipCond);
-        m_flipCond.wait(&m_flipMutex);
-        m_flipMutex.unlock();
-        flipFinished();
+        waitForFlipWithEventReader(this);
+        // Now, unlike on the other code path, we need to ensure the
+        // flips have completed for the screens that just scan out
+        // this one's content, because the eventReader's wait is
+        // per-output.
+        for (CloneDestination &d : m_cloneDests) {
+            if (d.screen != this)
+                waitForFlipWithEventReader(d.screen);
+        }
     } else {
         QMutexLocker lock(&m_nonThreadedFlipMutex);
         while (m_gbm_bo_next) {
@@ -311,6 +328,41 @@ void QEglFSKmsGbmScreen::waitForFlip()
     device()->threadLocalAtomicReset();
 #endif
 }
+
+#if QT_CONFIG(drm_atomic)
+static void addAtomicFlip(drmModeAtomicReq *request, const QKmsOutput &output, uint32_t fb)
+{
+    drmModeAtomicAddProperty(request, output.eglfs_plane->id,
+                             output.eglfs_plane->framebufferPropertyId, fb);
+
+    drmModeAtomicAddProperty(request, output.eglfs_plane->id,
+                             output.eglfs_plane->crtcPropertyId, output.crtc_id);
+
+    drmModeAtomicAddProperty(request, output.eglfs_plane->id,
+                             output.eglfs_plane->srcwidthPropertyId, output.size.width() << 16);
+
+    drmModeAtomicAddProperty(request, output.eglfs_plane->id,
+                             output.eglfs_plane->srcXPropertyId, 0);
+
+    drmModeAtomicAddProperty(request, output.eglfs_plane->id,
+                             output.eglfs_plane->srcYPropertyId, 0);
+
+    drmModeAtomicAddProperty(request, output.eglfs_plane->id,
+                             output.eglfs_plane->srcheightPropertyId, output.size.height() << 16);
+
+    drmModeAtomicAddProperty(request, output.eglfs_plane->id,
+                             output.eglfs_plane->crtcXPropertyId, 0);
+
+    drmModeAtomicAddProperty(request, output.eglfs_plane->id,
+                             output.eglfs_plane->crtcYPropertyId, 0);
+
+    drmModeAtomicAddProperty(request, output.eglfs_plane->id,
+                             output.eglfs_plane->crtcwidthPropertyId, output.modes[output.mode].hdisplay);
+
+    drmModeAtomicAddProperty(request, output.eglfs_plane->id,
+                             output.eglfs_plane->crtcheightPropertyId, output.modes[output.mode].vdisplay);
+}
+#endif
 
 void QEglFSKmsGbmScreen::flip()
 {
@@ -331,14 +383,14 @@ void QEglFSKmsGbmScreen::flip()
 
     m_gbm_bo_next = gbm_surface_lock_front_buffer(m_gbm_surface);
     if (!m_gbm_bo_next) {
-        qWarning("Could not lock GBM surface front buffer!");
+        qWarning("Could not lock GBM surface front buffer for screen %s", qPrintable(name()));
         return;
     }
 
     FrameBuffer *fb = framebufferForBufferObject(m_gbm_bo_next);
     ensureModeSet(fb->fb);
 
-    QKmsOutput &op(output());
+    const QKmsOutput &thisOutput(output());
     const int fd = device()->fd();
     m_flipPending = true;
 
@@ -346,35 +398,25 @@ void QEglFSKmsGbmScreen::flip()
 #if QT_CONFIG(drm_atomic)
         drmModeAtomicReq *request = device()->threadLocalAtomicRequest();
         if (request) {
-            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->framebufferPropertyId, fb->fb);
-            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->crtcPropertyId, op.crtc_id);
-            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->srcwidthPropertyId,
-                                     op.size.width() << 16);
-            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->srcXPropertyId, 0);
-            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->srcYPropertyId, 0);
-            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->srcheightPropertyId,
-                                     op.size.height() << 16);
-            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->crtcXPropertyId, 0);
-            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->crtcYPropertyId, 0);
-            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->crtcwidthPropertyId,
-                                     m_output.modes[m_output.mode].hdisplay);
-            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->crtcheightPropertyId,
-                                     m_output.modes[m_output.mode].vdisplay);
-
+            addAtomicFlip(request, thisOutput, fb->fb);
             static int zpos = qEnvironmentVariableIntValue("QT_QPA_EGLFS_KMS_ZPOS");
-            if (zpos)
-                drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->zposPropertyId, zpos);
+            if (zpos) {
+                drmModeAtomicAddProperty(request, thisOutput.eglfs_plane->id,
+                                         thisOutput.eglfs_plane->zposPropertyId, zpos);
+            }
             static uint blendOp = uint(qEnvironmentVariableIntValue("QT_QPA_EGLFS_KMS_BLEND_OP"));
-            if (blendOp)
-                drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->blendOpPropertyId, blendOp);
+            if (blendOp) {
+                drmModeAtomicAddProperty(request, thisOutput.eglfs_plane->id,
+                                         thisOutput.eglfs_plane->blendOpPropertyId, blendOp);
+            }
         }
 #endif
     } else {
         int ret = drmModePageFlip(fd,
-                              op.crtc_id,
-                              fb->fb,
-                              DRM_MODE_PAGE_FLIP_EVENT,
-                              this);
+                                  thisOutput.crtc_id,
+                                  fb->fb,
+                                  DRM_MODE_PAGE_FLIP_EVENT,
+                                  this);
         if (ret) {
             qErrnoWarning("Could not queue DRM page flip on screen %s", qPrintable(name()));
             m_flipPending = false;
@@ -388,17 +430,20 @@ void QEglFSKmsGbmScreen::flip()
         if (d.screen != this) {
             d.screen->ensureModeSet(fb->fb);
             d.cloneFlipPending = true;
-            QKmsOutput &destOutput(d.screen->output());
+            const QKmsOutput &destOutput(d.screen->output());
 
             if (device()->hasAtomicSupport()) {
 #if QT_CONFIG(drm_atomic)
                 drmModeAtomicReq *request = device()->threadLocalAtomicRequest();
-                if (request) {
-                    drmModeAtomicAddProperty(request, destOutput.eglfs_plane->id,
-                                                      destOutput.eglfs_plane->framebufferPropertyId, fb->fb);
-                    drmModeAtomicAddProperty(request, destOutput.eglfs_plane->id,
-                                                      destOutput.eglfs_plane->crtcPropertyId, destOutput.crtc_id);
-                }
+                if (request)
+                    addAtomicFlip(request, destOutput, fb->fb);
+
+                // ### This path is broken. On the other branch we can easily
+                // pass in d.screen as the user_data for drmModePageFlip, but
+                // using one atomic request breaks down here since we get events
+                // with the same user_data passed to drmModeAtomicCommit.  Until
+                // this gets reworked (multiple requests?) screen cloning is not
+                // compatible with atomic.
 #endif
             } else {
                 int ret = drmModePageFlip(fd,
@@ -407,7 +452,9 @@ void QEglFSKmsGbmScreen::flip()
                                           DRM_MODE_PAGE_FLIP_EVENT,
                                           d.screen);
                 if (ret) {
-                    qErrnoWarning("Could not queue DRM page flip for clone screen %s", qPrintable(name()));
+                    qErrnoWarning("Could not queue DRM page flip for screen %s (clones screen %s)",
+                                  qPrintable(d.screen->name()),
+                                  qPrintable(name()));
                     d.cloneFlipPending = false;
                 }
             }
@@ -443,8 +490,11 @@ void QEglFSKmsGbmScreen::cloneDestFlipFinished(QEglFSKmsGbmScreen *cloneDestScre
 
 void QEglFSKmsGbmScreen::updateFlipStatus()
 {
-    Q_ASSERT(!m_cloneSource);
+    // only for 'real' outputs that own the color buffer, i.e. that are not cloning another one
+    if (m_cloneSource)
+        return;
 
+    // proceed only if flips for both this and all others that clone this have finished
     if (m_flipPending)
         return;
 
@@ -453,9 +503,10 @@ void QEglFSKmsGbmScreen::updateFlipStatus()
             return;
     }
 
-    if (m_gbm_bo_current)
+    if (m_gbm_bo_current) {
         gbm_surface_release_buffer(m_gbm_surface,
                                    m_gbm_bo_current);
+    }
 
     m_gbm_bo_current = m_gbm_bo_next;
     m_gbm_bo_next = nullptr;
