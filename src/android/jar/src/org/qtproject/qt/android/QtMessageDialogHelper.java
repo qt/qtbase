@@ -59,15 +59,15 @@ public class QtMessageDialogHelper
     }
 
 
-    public void setIcon(int icon)
+    public void setStandardIcon(int icon)
     {
-        m_icon = icon;
+        m_standardIcon = icon;
 
     }
 
     private Drawable getIconDrawable()
     {
-        if (m_icon == 0)
+        if (m_standardIcon == 0)
             return null;
 
         try {
@@ -79,7 +79,7 @@ public class QtMessageDialogHelper
         }
 
         // Information, Warning, Critical, Question
-        switch (m_icon)
+        switch (m_standardIcon)
         {
             case 1: // Information
                 try {
@@ -332,7 +332,7 @@ public class QtMessageDialogHelper
 
     public void reset()
     {
-        m_icon = 0;
+        m_standardIcon = 0;
         m_title = null;
         m_text = null;
         m_informativeText = null;
@@ -343,7 +343,7 @@ public class QtMessageDialogHelper
     }
 
     private Activity m_activity;
-    private int m_icon = 0;
+    private int m_standardIcon = 0;
     private Spanned m_title, m_text, m_informativeText, m_detailedText;
     private ArrayList<ButtonStruct> m_buttonsList;
     private AlertDialog m_dialog;

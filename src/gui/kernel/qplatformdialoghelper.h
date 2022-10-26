@@ -404,8 +404,8 @@ protected:
 
 public:
     // Keep in sync with QMessageBox::Icon
-    enum Icon { NoIcon, Information, Warning, Critical, Question };
-    Q_ENUM(Icon)
+    enum StandardIcon { NoIcon, Information, Warning, Critical, Question };
+    Q_ENUM(StandardIcon)
 
     static QSharedPointer<QMessageDialogOptions> create();
     QSharedPointer<QMessageDialogOptions> clone() const;
@@ -413,8 +413,8 @@ public:
     QString windowTitle() const;
     void setWindowTitle(const QString &);
 
-    void setIcon(Icon icon);
-    Icon icon() const;
+    void setStandardIcon(StandardIcon icon);
+    StandardIcon standardIcon() const;
 
     void setIconPixmap(const QPixmap &pixmap);
     QPixmap iconPixmap() const;

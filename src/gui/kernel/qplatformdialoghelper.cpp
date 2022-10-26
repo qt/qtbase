@@ -768,7 +768,7 @@ public:
     {}
 
     QString windowTitle;
-    QMessageDialogOptions::Icon icon;
+    QMessageDialogOptions::StandardIcon icon;
     QString text;
     QString informativeText;
     QString detailedText;
@@ -818,12 +818,12 @@ void QMessageDialogOptions::setWindowTitle(const QString &title)
     d->windowTitle = title;
 }
 
-QMessageDialogOptions::Icon QMessageDialogOptions::icon() const
+QMessageDialogOptions::StandardIcon QMessageDialogOptions::standardIcon() const
 {
     return d->icon;
 }
 
-void QMessageDialogOptions::setIcon(Icon icon)
+void QMessageDialogOptions::setStandardIcon(StandardIcon icon)
 {
     d->icon = icon;
 }

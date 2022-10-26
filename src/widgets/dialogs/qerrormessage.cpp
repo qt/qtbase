@@ -85,7 +85,7 @@ void QErrorMessagePrivate::helperPrepareShow(QPlatformDialogHelper *helper)
     options->setWindowTitle(q->windowTitle());
     options->setText(QErrorMessage::tr("An error occurred"));
     options->setInformativeText(currentMessage);
-    options->setIcon(QMessageDialogOptions::Critical);
+    options->setStandardIcon(QMessageDialogOptions::Critical);
     options->setSupressionCheckBoxEnabled(true);
     messageDialogHelper->setOptions(options);
 }

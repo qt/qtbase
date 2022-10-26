@@ -2683,7 +2683,7 @@ void QMessageBoxPrivate::initHelper(QPlatformDialogHelper *h)
     static_cast<QPlatformMessageDialogHelper *>(h)->setOptions(options);
 }
 
-static QMessageDialogOptions::Icon helperIcon(QMessageBox::Icon i)
+static QMessageDialogOptions::StandardIcon helperIcon(QMessageBox::Icon i)
 {
     switch (i) {
     case QMessageBox::NoIcon:
@@ -2715,7 +2715,7 @@ void QMessageBoxPrivate::helperPrepareShow(QPlatformDialogHelper *)
 #if QT_CONFIG(textedit)
     options->setDetailedText(q->detailedText());
 #endif
-    options->setIcon(helperIcon(q->icon()));
+    options->setStandardIcon(helperIcon(q->icon()));
     options->setIconPixmap(q->iconPixmap());
     options->setStandardButtons(helperStandardButtons(q));
 }
