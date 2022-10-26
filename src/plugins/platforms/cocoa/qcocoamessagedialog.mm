@@ -12,6 +12,7 @@
 
 #include <QtGui/qtextdocument.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/qpa/qplatformtheme.h>
 
 #include <AppKit/NSAlert.h>
@@ -90,8 +91,18 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
     m_alert.messageText = text.toNSString();
     m_alert.informativeText = toPlainText(options()->informativeText()).toNSString();
 
-    switch (options()->icon()) {
-    case QMessageDialogOptions::NoIcon:
+    switch (auto standardIcon = options()->icon()) {
+    case QMessageDialogOptions::NoIcon: {
+        // We only reflect the pixmap icon if the standard icon is unset,
+        // as setting a standard icon will also set a corresponding pixmap
+        // icon, which we don't want since it conflicts with the platform.
+        // If the user has set an explicit pixmap icon however, the standard
+        // icon will be NoIcon, so we're good.
+        QPixmap iconPixmap = options()->iconPixmap();
+        if (!iconPixmap.isNull())
+            m_alert.icon = [NSImage imageFromQImage:iconPixmap.toImage()];
+        break;
+    }
     case QMessageDialogOptions::Information:
     case QMessageDialogOptions::Question:
         [m_alert setAlertStyle:NSAlertStyleInformational];
@@ -103,8 +114,6 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
         [m_alert setAlertStyle:NSAlertStyleCritical];
         break;
     }
-
-    // FIXME: Propagate iconPixmap through dialog options
 
     bool defaultButtonAdded = false;
     bool cancelButtonAdded = false;

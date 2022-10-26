@@ -15,6 +15,7 @@
 #include <QtCore/QUrl>
 #include <QtCore/QVariant>
 #include <QtGui/QColor>
+#include <QtGui/QPixmap>
 
 #include <algorithm>
 
@@ -774,6 +775,7 @@ public:
     QPlatformDialogHelper::StandardButtons buttons;
     QList<QMessageDialogOptions::CustomButton> customButtons;
     int nextCustomButtonId;
+    QPixmap iconPixmap;
 };
 
 QMessageDialogOptions::QMessageDialogOptions(QMessageDialogOptionsPrivate *dd)
@@ -823,6 +825,16 @@ QMessageDialogOptions::Icon QMessageDialogOptions::icon() const
 void QMessageDialogOptions::setIcon(Icon icon)
 {
     d->icon = icon;
+}
+
+void QMessageDialogOptions::setIconPixmap(const QPixmap &pixmap)
+{
+    d->iconPixmap = pixmap;
+}
+
+QPixmap QMessageDialogOptions::iconPixmap() const
+{
+    return d->iconPixmap;
 }
 
 QString QMessageDialogOptions::text() const

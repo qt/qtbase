@@ -2719,6 +2719,7 @@ void QMessageBoxPrivate::helperPrepareShow(QPlatformDialogHelper *)
     options->setDetailedText(q->detailedText());
 #endif
     options->setIcon(helperIcon(q->icon()));
+    options->setIconPixmap(q->iconPixmap());
     options->setStandardButtons(helperStandardButtons(q));
 }
 

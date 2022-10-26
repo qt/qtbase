@@ -416,6 +416,9 @@ public:
     void setIcon(Icon icon);
     Icon icon() const;
 
+    void setIconPixmap(const QPixmap &pixmap);
+    QPixmap iconPixmap() const;
+
     void setText(const QString &text);
     QString text() const;
 
