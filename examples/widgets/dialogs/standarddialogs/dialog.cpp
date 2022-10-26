@@ -7,8 +7,9 @@
 
 #define MESSAGE \
     Dialog::tr("<p>Message boxes have a caption, a text, " \
-               "and any number of buttons, each with standard or custom texts." \
-               "<p>Click a button to close the message box. Pressing the Esc button " \
+               "and any number of buttons, each with standard or custom texts.")
+#define INFORMATIVE_TEXT \
+    Dialog::tr("<p>Click a button to close the message box. Pressing the Escape key " \
                "will activate the detected escape button (if any).")
 #define MESSAGE_DETAILS \
     Dialog::tr("If a message box has detailed text, the user can reveal it " \
@@ -413,10 +414,13 @@ void Dialog::setSaveFileName()
 
 void Dialog::criticalMessage()
 {
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::critical(this, tr("QMessageBox::critical()"),
-                                    MESSAGE,
-                                    QMessageBox::Abort | QMessageBox::Retry | QMessageBox::Ignore);
+    QMessageBox msgBox(QMessageBox::Critical, tr("QMessageBox::critical()"),
+                       MESSAGE, { }, this);
+    msgBox.setInformativeText(INFORMATIVE_TEXT);
+    msgBox.addButton(QMessageBox::Abort);
+    msgBox.addButton(QMessageBox::Retry);
+    msgBox.addButton(QMessageBox::Ignore);
+    int reply = msgBox.exec();
     if (reply == QMessageBox::Abort)
         criticalLabel->setText(tr("Abort"));
     else if (reply == QMessageBox::Retry)
@@ -427,9 +431,10 @@ void Dialog::criticalMessage()
 
 void Dialog::informationMessage()
 {
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::information(this, tr("QMessageBox::information()"), MESSAGE);
-    if (reply == QMessageBox::Ok)
+    QMessageBox msgBox(QMessageBox::Information, tr("QMessageBox::information()"),
+                       MESSAGE, { }, this);
+    msgBox.setInformativeText(INFORMATIVE_TEXT);
+    if (msgBox.exec() == QMessageBox::Ok)
         informationLabel->setText(tr("OK"));
     else
         informationLabel->setText(tr("Escape"));
@@ -437,10 +442,13 @@ void Dialog::informationMessage()
 
 void Dialog::questionMessage()
 {
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, tr("QMessageBox::question()"),
-                                    MESSAGE,
-                                    QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+    QMessageBox msgBox(QMessageBox::Question, tr("QMessageBox::question()"),
+                       MESSAGE, { }, this);
+    msgBox.setInformativeText(INFORMATIVE_TEXT);
+    msgBox.addButton(QMessageBox::Yes);
+    msgBox.addButton(QMessageBox::No);
+    msgBox.addButton(QMessageBox::Cancel);
+    int reply = msgBox.exec();
     if (reply == QMessageBox::Yes)
         questionLabel->setText(tr("Yes"));
     else if (reply == QMessageBox::No)
@@ -453,6 +461,7 @@ void Dialog::warningMessage()
 {
     QMessageBox msgBox(QMessageBox::Warning, tr("QMessageBox::warning()"),
                        MESSAGE, { }, this);
+    msgBox.setInformativeText(INFORMATIVE_TEXT);
     msgBox.setDetailedText(MESSAGE_DETAILS);
     msgBox.addButton(tr("Save &Again"), QMessageBox::AcceptRole);
     msgBox.addButton(tr("&Continue"), QMessageBox::RejectRole);
