@@ -54,6 +54,10 @@ void QCocoaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
     case QAccessible::NameChanged:
         NSAccessibilityPostNotification(element, NSAccessibilityTitleChangedNotification);
         break;
+    case QAccessible::TableModelChanged:
+        // ### Could NSAccessibilityRowCountChangedNotification be relevant here?
+        [element updateTableModel];
+        break;
     default:
         break;
     }

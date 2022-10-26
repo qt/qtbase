@@ -80,14 +80,37 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
 @implementation QMacAccessibilityElement {
     QAccessible::Id axid;
+
+    // used by NSAccessibilityTable
+    NSMutableArray<QMacAccessibilityElement *> *rows;       // corresponds to accessibilityRows
+    NSMutableArray<QMacAccessibilityElement *> *columns;    // corresponds to accessibilityColumns
+
+    // If synthesizedRole is set, this means that this objects does not have a corresponding
+    // QAccessibleInterface, but it is synthesized by the cocoa plugin in order to meet the
+    // NSAccessibility requirements.
+    // The ownership is controlled by the parent object identified with the axid member variable.
+    // (Therefore, if this member is set, this objects axid member is the same as the parents axid
+    // member)
+    NSString *synthesizedRole;
 }
 
 - (instancetype)initWithId:(QAccessible::Id)anId
+{
+    return [self initWithId:anId role:nil];
+}
+
+- (instancetype)initWithId:(QAccessible::Id)anId role:(NSAccessibilityRole)role
 {
     Q_ASSERT((int)anId < 0);
     self = [super init];
     if (self) {
         axid = anId;
+        rows = nil;
+        columns = nil;
+        synthesizedRole = role;
+        QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+        if (iface && iface->tableInterface() && !synthesizedRole)
+            [self updateTableModel];
     }
 
     return self;
@@ -115,18 +138,26 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
 - (void)invalidate {
     axid = 0;
+    rows = nil;
+    columns = nil;
+    synthesizedRole = nil;
+
     NSAccessibilityPostNotification(self, NSAccessibilityUIElementDestroyedNotification);
     [self release];
 }
 
 - (void)dealloc {
+    if (rows)
+        [rows release]; // will also release all entries first
+    if (columns)
+        [columns release]; // will also release all entries first
     [super dealloc];
 }
 
 - (BOOL)isEqual:(id)object {
     if ([object isKindOfClass:[QMacAccessibilityElement class]]) {
         QMacAccessibilityElement *other = object;
-        return other->axid == axid;
+        return other->axid == axid && other->synthesizedRole == synthesizedRole;
     } else {
         return NO;
     }
@@ -134,6 +165,50 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
 - (NSUInteger)hash {
     return axid;
+}
+
+- (BOOL)isManagedByParent {
+    return synthesizedRole != nil;
+}
+
+- (NSMutableArray *)populateTableArray:(NSMutableArray *)array role:(NSAccessibilityRole)role count:(int)count
+{
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (iface && iface->isValid()) {
+        if (!array) {
+            array = [NSMutableArray<QMacAccessibilityElement *> arrayWithCapacity:count];
+            [array retain];
+        } else {
+            [array removeAllObjects];
+        }
+        Q_ASSERT(array);
+        for (int n = 0; n < count; ++n) {
+            // columns will have same axid as table (but not inserted in cache)
+            QMacAccessibilityElement *element =
+                    [[QMacAccessibilityElement alloc] initWithId:axid role:role];
+            if (element) {
+                [array addObject:element];
+                [element release];
+            } else {
+                qWarning("QCocoaAccessibility: invalid child");
+            }
+        }
+        return array;
+    }
+    return nil;
+}
+
+
+- (void)updateTableModel
+{
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (iface && iface->isValid()) {
+        if (QAccessibleTableInterface *table = iface->tableInterface()) {
+            Q_ASSERT(!self.isManagedByParent);
+            rows = [self populateTableArray:rows role:NSAccessibilityRowRole count:table->rowCount()];
+            columns = [self populateTableArray:columns role:NSAccessibilityColumnRole count:table->columnCount()];
+        }
+    }
 }
 
 //
@@ -168,6 +243,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
     if (!iface || !iface->isValid())
         return NSAccessibilityUnknownRole;
+    if (synthesizedRole)
+        return synthesizedRole;
     return QCocoaAccessible::macRole(iface);
 }
 
@@ -189,6 +266,81 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
     if (!iface || !iface->isValid())
         return nil;
+    if (QAccessibleTableInterface *table = iface->tableInterface()) {
+        // either a table or table rows/columns
+        if (!synthesizedRole) {
+            // This is the table element, parent of all rows and columns
+            /*
+             * Typical 2x2 table hierarchy as can be observed in a table found under
+             *   Apple -> System Settings -> General -> Login Items    (macOS 13)
+             *
+             *  (AXTable)
+             *  | Columns: NSArray* (2 items)
+             *  | Rows: NSArray* (2 items)
+             *  | Visible Columns: NSArray* (2 items)
+             *  | Visible Rows: NSArray* (2 items)
+             *  | Children: NSArray* (5 items)
+        +----<--| Header: (AXGroup)
+        |    *  +-- (AXRow)
+        |    *  |   +-- (AXText)
+        |    *  |   +-- (AXTextField)
+        |    *  +-- (AXRow)
+        |    *  |   +-- (AXText)
+        |    *  |   +-- (AXTextField)
+        |    *  +-- (AXColumn)
+        |    *  |     Header: "Item" (sort button)
+        |    *  |     Index: 0
+        |    *  |     Rows: NSArray* (2 items)
+        |    *  |     Visible Rows: NSArray* (2 items)
+        |    *  +-- (AXColumn)
+        |    *  |     Header: "Kind" (sort button)
+        |    *  |     Index: 1
+        |    *  |     Rows: NSArray* (2 items)
+        |    *  |     Visible Rows: NSArray* (2 items)
+        +---->  +-- (AXGroup)
+             *      +-- (AXButton/AXSortButton) Item [NSAccessibilityTableHeaderCellProxy]
+             *      +-- (AXButton/AXSortButton) Kind [NSAccessibilityTableHeaderCellProxy]
+             */
+            NSArray *rs = [self accessibilityRows];
+            NSArray *cs = [self accessibilityColumns];
+            const int rCount = int([rs count]);
+            const int cCount = int([cs count]);
+            int childCount = rCount + cCount;
+            NSMutableArray<QMacAccessibilityElement *> *tableChildren =
+                    [NSMutableArray<QMacAccessibilityElement *> arrayWithCapacity:childCount];
+            for (int i = 0; i < rCount; ++i) {
+                [tableChildren addObject:[rs objectAtIndex:i]];
+            }
+            for (int i = 0; i < cCount; ++i) {
+                [tableChildren addObject:[cs objectAtIndex:i]];
+            }
+            return NSAccessibilityUnignoredChildren(tableChildren);
+        } else if (synthesizedRole == NSAccessibilityColumnRole) {
+            return nil;
+        } else if (synthesizedRole == NSAccessibilityRowRole) {
+            // axid matches the parent table axid so that we can easily find the parent table
+            // children of row are cell/any items
+            QMacAccessibilityElement *tableElement = [QMacAccessibilityElement elementWithId:axid];
+            Q_ASSERT(tableElement->rows);
+            NSUInteger rowIndex = [tableElement->rows indexOfObjectIdenticalTo:self];
+            Q_ASSERT(rowIndex != NSNotFound);
+            int numColumns = table->columnCount();
+            NSMutableArray<QMacAccessibilityElement *> *cells =
+                    [NSMutableArray<QMacAccessibilityElement *> arrayWithCapacity:numColumns];
+            for (int i = 0; i < numColumns; ++i) {
+                QAccessibleInterface *cell = table->cellAt(rowIndex, i);
+                if (cell && cell->isValid()) {
+                    QAccessible::Id cellId = QAccessible::uniqueId(cell);
+                    QMacAccessibilityElement *element =
+                            [QMacAccessibilityElement elementWithId:cellId];
+                    if (element) {
+                        [cells addObject:element];
+                    }
+                }
+            }
+            return NSAccessibilityUnignoredChildren(cells);
+        }
+    }
     return QCocoaAccessible::unignoredChildren(iface);
 }
 
@@ -208,6 +360,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         return nil;
     if (iface->role() == QAccessible::StaticText)
         return nil;
+    if (self.isManagedByParent)
+        return nil;
     return iface->text(QAccessible::Name).toNSString();
 }
 
@@ -223,12 +377,31 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     if (!iface || !iface->isValid())
         return nil;
 
+    if (self.isManagedByParent) {
+        // axid is the same for the parent element
+        return NSAccessibilityUnignoredAncestor([QMacAccessibilityElement elementWithId:axid]);
+    }
+
     // macOS expects that the hierarchy is:
     // App -> Window -> Children
     // We don't actually have the window reflected properly in QAccessibility.
     // Check if the parent is the application and then instead return the native window.
 
     if (QAccessibleInterface *parent = iface->parent()) {
+        if (parent->tableInterface()) {
+            if (QAccessibleTableCellInterface *cell = iface->tableCellInterface()) {
+                // parent of cell should be row
+                QAccessible::Id parentId = QAccessible::uniqueId(parent);
+                QMacAccessibilityElement *tableElement =
+                        [QMacAccessibilityElement elementWithId:parentId];
+
+                const int rowIndex = cell->rowIndex();
+                if (tableElement->rows && int([tableElement->rows count]) > rowIndex) {
+                    QMacAccessibilityElement *rowElement = tableElement->rows[rowIndex];
+                    return NSAccessibilityUnignoredAncestor(rowElement);
+                }
+            }
+        }
         if (parent->role() != QAccessible::Application) {
             QAccessible::Id parentId = QAccessible::uniqueId(parent);
             return NSAccessibilityUnignoredAncestor([QMacAccessibilityElement elementWithId: parentId]);
@@ -249,7 +422,44 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
     if (!iface || !iface->isValid())
         return NSZeroRect;
-    return QCocoaScreen::mapToNative(iface->rect());
+
+    QRect rect;
+    if (self.isManagedByParent) {
+        if (QAccessibleTableInterface *table = iface->tableInterface()) {
+            // Construct the geometry of the Row/Column by looking at the individual table cells
+            // ### Assumes that cells logical coordinates have spatial ordering (e.g finds the
+            // rows width by taking the union between the leftmost item and the rightmost item in
+            // a row).
+            // Otherwise, we have to iterate over *all* cells in a row/columns to
+            // find out the Row/Column geometry
+            const bool isRow = synthesizedRole == NSAccessibilityRowRole;
+            QPoint cellPos;
+            int &row = isRow ? cellPos.ry() : cellPos.rx();
+            int &col = isRow ? cellPos.rx() : cellPos.ry();
+
+            QMacAccessibilityElement *tableElement =
+                    [QMacAccessibilityElement elementWithId:axid];
+            NSArray *tracks = isRow ? tableElement->rows : tableElement->columns;
+            NSUInteger trackIndex = [tracks indexOfObjectIdenticalTo:self];
+            if (trackIndex != NSNotFound) {
+                row = int(trackIndex);
+                if (QAccessibleInterface *firstCell = table->cellAt(cellPos.y(), cellPos.x())) {
+                    rect = firstCell->rect();
+                    col = isRow ? table->columnCount() : table->rowCount();
+                    if (col > 1) {
+                        --col;
+                        if (QAccessibleInterface *lastCell =
+                                    table->cellAt(cellPos.y(), cellPos.x()))
+                            rect = rect.united(lastCell->rect());
+                    }
+                }
+            }
+        }
+    } else {
+        rect = iface->rect();
+    }
+
+    return QCocoaScreen::mapToNative(rect);
 }
 
 - (NSString*)accessibilityLabel {
@@ -614,6 +824,49 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return nil;
 }
 
+/*
+ * Support for table
+ */
+- (NSInteger) accessibilityIndex {
+    NSInteger index = 0;
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (iface && iface->isValid()) {
+        if (self.isManagedByParent) {
+            // axid matches the parent table axid so that we can easily find the parent table
+            // children of row are cell/any items
+            if (QAccessibleTableInterface *table = iface->tableInterface()) {
+                QMacAccessibilityElement *tableElement = [QMacAccessibilityElement elementWithId:axid];
+                NSArray *track = synthesizedRole == NSAccessibilityRowRole
+                               ? tableElement->rows : tableElement->columns;
+                if (track) {
+                    NSUInteger trackIndex = [track indexOfObjectIdenticalTo:self];
+                    index = (NSInteger)trackIndex;
+                }
+            }
+        }
+    }
+    return index;
+}
+
+- (NSArray *) accessibilityRows {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (iface && iface->isValid() && iface->tableInterface() && !synthesizedRole) {
+        if (rows)
+            return NSAccessibilityUnignoredChildren(rows);
+    }
+    return nil;
+}
+
+- (NSArray *) accessibilityColumns {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (iface && iface->isValid() && iface->tableInterface() && !synthesizedRole) {
+        if (columns)
+            return NSAccessibilityUnignoredChildren(columns);
+    }
+    return nil;
+}
+
 @end
 
 #endif // QT_CONFIG(accessibility)
+

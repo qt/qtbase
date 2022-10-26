@@ -109,6 +109,28 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
     return list;
 }
 
+- (NSArray *)tableRows
+{
+        NSArray *arr;
+        AXUIElementCopyAttributeValues(
+                    reference,
+                    kAXRowsAttribute,
+                    0, 100, /*min, max*/
+                    (CFArrayRef *) &arr);
+        return arr;
+}
+
+- (NSArray *)tableColumns
+{
+        NSArray *arr;
+        AXUIElementCopyAttributeValues(
+                    reference,
+                    kAXColumnsAttribute,
+                    0, 100, /*min, max*/
+                    (CFArrayRef *) &arr);
+        return arr;
+}
+
 - (AXUIElementRef) findDirectChildByRole: (CFStringRef) role
 {
     TestAXObject *result = nil;
@@ -384,6 +406,7 @@ private Q_SLOTS:
     void hierarchyTest();
     void notificationsTest();
     void checkBoxTest();
+    void tableViewTest();
 
 private:
     AccessibleTestWindow *m_window;
@@ -639,6 +662,72 @@ void tst_QAccessibilityMac::checkBoxTest()
 
     ckBox->setCheckState(Qt::PartiallyChecked);
     QVERIFY([cb valueNumber] == 2);
+}
+
+void tst_QAccessibilityMac::tableViewTest()
+{
+    QTableWidget *tw = new QTableWidget(3, 2, m_window);
+    struct Person
+    {
+        const char *name;
+        const char *address;
+    };
+    const Person contents[] = { { "Socrates", "Greece" },
+                                { "Confucius", "China" },
+                                { "Kant", "Preussia" }
+                              };
+    for (int i = 0; i < int(sizeof(contents) / sizeof(Person)); ++i) {
+        Person p = contents[i];
+        QTableWidgetItem *name = new QTableWidgetItem(QString::fromLatin1(p.name));
+        tw->setItem(i, 0, name);
+        QTableWidgetItem *address = new QTableWidgetItem(QString::fromLatin1(p.address));
+        tw->setItem(i, 1, address);
+    }
+    m_window->addWidget(tw);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+
+    TestAXObject *appObject = [TestAXObject getApplicationAXObject];
+    QVERIFY(appObject);
+
+    NSArray *windowList = [appObject windowList];
+    // one window
+    QVERIFY([windowList count] == 1);
+    AXUIElementRef windowRef = (AXUIElementRef)[windowList objectAtIndex:0];
+    QVERIFY(windowRef != nil);
+    TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef:windowRef];
+
+    // children of window:
+    AXUIElementRef tableView = [window findDirectChildByRole:kAXTableRole];
+    QVERIFY(tableView != nil);
+
+    TestAXObject *tv = [[TestAXObject alloc] initWithAXUIElementRef:tableView];
+
+    // here start actual tableview tests
+    // Should have 2 columns
+    NSArray *columnArray = [tv tableColumns];
+    QCOMPARE([columnArray count], 2);
+
+    // should have 3 rows
+    NSArray *rowArray = [tv tableRows];
+    QCOMPARE([rowArray count], 3);
+
+    // The individual cells are children of the rows
+    TestAXObject *row = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)rowArray[0]];
+    TestAXObject *cell = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)[row childList][0]];
+    QVERIFY([cell.title isEqualToString:@"Socrates"]);
+    row = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)rowArray[2]];
+    cell = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)[row childList][1]];
+    QVERIFY([cell.title isEqualToString:@"Preussia"]);
+
+    // both rows and columns are direct children of the table
+    NSArray *childList = [tv childList];
+    QCOMPARE([childList count], 5); // 3 rows + 2 columns
+    for (id child in childList) {
+        TestAXObject *childObject = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)child];
+        QVERIFY([childObject.role isEqualToString:NSAccessibilityRowRole] ||
+               [childObject.role isEqualToString:NSAccessibilityColumnRole]);
+    }
 }
 
 QTEST_MAIN(tst_QAccessibilityMac)

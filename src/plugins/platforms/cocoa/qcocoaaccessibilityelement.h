@@ -13,7 +13,9 @@
 
 QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QMacAccessibilityElement, NSObject <NSAccessibilityElement>
 - (instancetype)initWithId:(QAccessible::Id)anId;
+- (instancetype)initWithId:(QAccessible::Id)anId role:(NSAccessibilityRole)role;
 + (instancetype)elementWithId:(QAccessible::Id)anId;
+- (void)updateTableModel;
 )
 
 #endif // QT_CONFIG(accessibility)
