@@ -556,7 +556,7 @@ const QOperatingSystemVersion QOperatingSystemVersion::MacOSMonterey =
 /*!
     \variable QOperatingSystemVersion::MacOSVentura
     \brief a version corresponding to macOS Ventura (version 13).
-    \since 6.5
+    \since 6.4
 */
 
 /*!
