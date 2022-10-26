@@ -126,8 +126,16 @@ public class QtLayout extends ViewGroup
              final DisplayMetrics appMetrics = new DisplayMetrics();
              display.getMetrics(appMetrics);
 
-             appWidth = appMetrics.widthPixels;
-             appHeight = appMetrics.heightPixels;
+             final WindowInsets rootInsets = getRootWindowInsets();
+
+             insetLeft = rootInsets.getStableInsetLeft();
+             insetTop = rootInsets.getStableInsetTop();
+
+             int insetsWidth = rootInsets.getStableInsetRight() + rootInsets.getStableInsetLeft();
+             int insetsHeight = rootInsets.getStableInsetTop() + rootInsets.getStableInsetBottom();
+
+             appWidth = appMetrics.widthPixels - insetsWidth;
+             appHeight = appMetrics.heightPixels - insetsHeight;
 
              final DisplayMetrics maxMetrics = new DisplayMetrics();
              display.getRealMetrics(maxMetrics);
@@ -139,10 +147,6 @@ public class QtLayout extends ViewGroup
              xdpi = appMetrics.xdpi;
              ydpi = appMetrics.ydpi;
              scaledDensity = appMetrics.scaledDensity;
-
-             final WindowInsets rootInsets = getRootWindowInsets();
-             insetLeft = rootInsets.getSystemWindowInsetLeft();
-             insetTop = rootInsets.getSystemWindowInsetTop();
         } else {
             // after API 30 use getCurrentWindowMetrics for application metrics
             // getMaximumWindowMetrics for the screen metrics
@@ -151,6 +155,7 @@ public class QtLayout extends ViewGroup
             display = activity.getDisplay();
 
             final WindowMetrics appMetrics = windowManager.getCurrentWindowMetrics();
+            final WindowMetrics maxMetrics = windowManager.getMaximumWindowMetrics();
 
             final WindowInsets windowInsets = appMetrics.getWindowInsets();
             Insets insets = windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.navigationBars()
@@ -162,10 +167,14 @@ public class QtLayout extends ViewGroup
             int insetsWidth = insets.right + insets.left;
             int insetsHeight = insets.top + insets.bottom;
 
+            if (h == maxMetrics.getBounds().height()) {
+                //when h == maxheight the system is ignoring insets
+                insetsWidth = insetsHeight = insetLeft = insetTop = 0;
+            }
+
             appWidth = appMetrics.getBounds().width() - insetsWidth;
             appHeight = appMetrics.getBounds().height() - insetsHeight;
 
-            final WindowMetrics maxMetrics = windowManager.getMaximumWindowMetrics();
             maxWidth = maxMetrics.getBounds().width();
             maxHeight = maxMetrics.getBounds().height();
 
