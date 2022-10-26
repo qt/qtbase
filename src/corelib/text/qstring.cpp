@@ -6933,6 +6933,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
         int precision = -1; // -1 means unspecified
         if (*c == '.') {
             ++c;
+            precision = 0;
             if (qIsDigit(*c)) {
                 precision = parse_field_width(c, formatEnd - c);
             } else if (*c == '*') { // can't parse this in another function, not portably, at least
