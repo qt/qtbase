@@ -7,6 +7,10 @@
 qt_internal_add_test(tst_android
     SOURCES
         tst_android.cpp
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::Gui
+        Qt::GuiPrivate
 )
 
 if(ANDROID)
