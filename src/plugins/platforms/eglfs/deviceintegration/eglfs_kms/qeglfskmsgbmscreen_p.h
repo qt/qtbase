@@ -52,6 +52,7 @@ protected:
     void flipFinished();
     void ensureModeSet(uint32_t fb);
     void cloneDestFlipFinished(QEglFSKmsGbmScreen *cloneDestScreen);
+    void waitForFlipWithEventReader(QEglFSKmsGbmScreen *screen);
     static void nonThreadedPageFlipHandler(int fd,
                                            unsigned int sequence,
                                            unsigned int tv_sec,
