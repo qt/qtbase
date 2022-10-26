@@ -1393,6 +1393,43 @@ void tst_QString::asprintf()
 
     double d = -514.25683;
     QCOMPARE(QString::asprintf("%f", d), QLatin1String("-514.256830"));
+    QCOMPARE(QString::asprintf("%.f", d), QLatin1String("-514"));
+    QCOMPARE(QString::asprintf("%.0f", d), QLatin1String("-514"));
+    QCOMPARE(QString::asprintf("%1f", d), QLatin1String("-514.256830"));
+    QCOMPARE(QString::asprintf("%1.f", d), QLatin1String("-514"));
+    QCOMPARE(QString::asprintf("%1.0f", d), QLatin1String("-514"));
+    QCOMPARE(QString::asprintf("%1.6f", d), QLatin1String("-514.256830"));
+    QCOMPARE(QString::asprintf("%1.10f", d), QLatin1String("-514.2568300000"));
+    QCOMPARE(QString::asprintf("%-1f", d), QLatin1String("-514.256830"));
+    QCOMPARE(QString::asprintf("%-1.f", d), QLatin1String("-514"));
+    QCOMPARE(QString::asprintf("%-1.0f", d), QLatin1String("-514"));
+    QCOMPARE(QString::asprintf("%-1.6f", d), QLatin1String("-514.256830"));
+    QCOMPARE(QString::asprintf("%-1.10f", d), QLatin1String("-514.2568300000"));
+    QCOMPARE(QString::asprintf("%10f", d), QLatin1String("-514.256830"));
+    QCOMPARE(QString::asprintf("%10.f", d), QLatin1String("      -514"));
+    QCOMPARE(QString::asprintf("%10.0f", d), QLatin1String("      -514"));
+    QCOMPARE(QString::asprintf("%-10f", d), QLatin1String("-514.256830"));
+    QCOMPARE(QString::asprintf("%-10.f", d), QLatin1String("-514      "));
+    QCOMPARE(QString::asprintf("%-10.0f", d), QLatin1String("-514      "));
+    QCOMPARE(QString::asprintf("%010f", d), QLatin1String("-514.256830"));
+    QCOMPARE(QString::asprintf("%010.f", d), QLatin1String("-000000514"));
+    QCOMPARE(QString::asprintf("%010.0f", d), QLatin1String("-000000514"));
+    QCOMPARE(QString::asprintf("%15f", d), QLatin1String("    -514.256830"));
+    QCOMPARE(QString::asprintf("%15.6f", d), QLatin1String("    -514.256830"));
+    QCOMPARE(QString::asprintf("%15.10f", d), QLatin1String("-514.2568300000"));
+    QCOMPARE(QString::asprintf("%-15f", d), QLatin1String("-514.256830    "));
+    QCOMPARE(QString::asprintf("%-15.6f", d), QLatin1String("-514.256830    "));
+    QCOMPARE(QString::asprintf("%-15.10f", d), QLatin1String("-514.2568300000"));
+    QCOMPARE(QString::asprintf("%015f", d), QLatin1String("-0000514.256830"));
+    QCOMPARE(QString::asprintf("%015.6f", d), QLatin1String("-0000514.256830"));
+    QCOMPARE(QString::asprintf("%015.10f", d), QLatin1String("-514.2568300000"));
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wformat")
+QT_WARNING_DISABLE_CLANG("-Wformat") // Flag '0' ignored when flag '-' is present
+    QCOMPARE(QString::asprintf("%-015f", d), QLatin1String("-514.256830    "));
+    QCOMPARE(QString::asprintf("%-015.6f", d), QLatin1String("-514.256830    "));
+    QCOMPARE(QString::asprintf("%-015.10f", d), QLatin1String("-514.2568300000"));
+QT_WARNING_POP
 
     {
         /* This code crashed. I don't know how to reduce it further. In other words,
