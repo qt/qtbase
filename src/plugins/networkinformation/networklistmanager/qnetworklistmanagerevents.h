@@ -14,7 +14,6 @@
 #include <netlistmgr.h>
 #include <wrl/client.h>
 #include <wrl/wrappers/corewrappers.h>
-#include <comdef.h>
 
 #if QT_CONFIG(cpp_winrt)
 #include <winrt/base.h>
@@ -25,12 +24,6 @@ using namespace Microsoft::WRL;
 
 QT_BEGIN_NAMESPACE
 Q_DECLARE_LOGGING_CATEGORY(lcNetInfoNLM)
-
-inline QString errorStringFromHResult(HRESULT hr)
-{
-    _com_error error(hr);
-    return QString::fromWCharArray(error.ErrorMessage());
-}
 
 class QNetworkListManagerEvents : public QObject, public INetworkListManagerEvents
 {

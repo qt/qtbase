@@ -44,6 +44,8 @@ public:
     static Q_CORE_EXPORT QString stdString(int errorCode = -1);
 #ifdef Q_OS_WIN
     static Q_CORE_EXPORT QString windowsString(int errorCode = -1);
+    using HRESULT = long;
+    static Q_CORE_EXPORT QString windowsComString(HRESULT hr);
 #endif
 
     // data members

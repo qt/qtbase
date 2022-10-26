@@ -9,6 +9,7 @@
 
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
+#  include <private/qsystemerror_p.h>
 #else
 #  include <sys/types.h>
 #  include <sys/stat.h>
@@ -212,23 +213,6 @@ QString IoUtils::shellQuoteWin(const QString &arg)
 
 #if defined(PROEVALUATOR_FULL)
 
-#  if defined(Q_OS_WIN)
-static QString windowsErrorCode()
-{
-    wchar_t *string = nullptr;
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
-                  NULL,
-                  GetLastError(),
-                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                  (LPWSTR)&string,
-                  0,
-                  NULL);
-    QString ret = QString::fromWCharArray(string);
-    LocalFree((HLOCAL)string);
-    return ret.trimmed();
-}
-#  endif
-
 bool IoUtils::touchFile(const QString &targetFileName, const QString &referenceFileName, QString *errorString)
 {
 #  ifdef Q_OS_UNIX
@@ -255,7 +239,8 @@ bool IoUtils::touchFile(const QString &targetFileName, const QString &referenceF
                               GENERIC_READ, FILE_SHARE_READ,
                               NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (rHand == INVALID_HANDLE_VALUE) {
-        *errorString = fL1S("Cannot open reference file %1: %2").arg(referenceFileName, windowsErrorCode());
+        *errorString = fL1S("Cannot open reference file %1: %2")
+            .arg(referenceFileName, QSystemError::windowsString());
         return false;
         }
     FILETIME ft;
@@ -265,7 +250,8 @@ bool IoUtils::touchFile(const QString &targetFileName, const QString &referenceF
                               GENERIC_WRITE, FILE_SHARE_READ,
                               NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (wHand == INVALID_HANDLE_VALUE) {
-        *errorString = fL1S("Cannot open %1: %2").arg(targetFileName, windowsErrorCode());
+        *errorString = fL1S("Cannot open %1: %2")
+            .arg(targetFileName, QSystemError::windowsString());
         return false;
     }
     SetFileTime(wHand, NULL, NULL, &ft);

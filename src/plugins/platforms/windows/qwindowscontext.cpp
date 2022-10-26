@@ -46,13 +46,13 @@
 #include <QtCore/quuid.h>
 #include <QtCore/private/qwinregistry_p.h>
 #include <QtCore/private/qfactorycacheregistration_p.h>
+#include <QtCore/private/qsystemerror_p.h>
 
 #include <QtGui/private/qwindowsguieventdispatcher_p.h>
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <windowsx.h>
-#include <comdef.h>
 #include <dbt.h>
 #include <wtsapi32.h>
 #include <shellscalingapi.h>
@@ -192,7 +192,7 @@ QWindowsContextPrivate::QWindowsContextPrivate()
     m_darkMode = QWindowsTheme::queryDarkMode();
     if (FAILED(m_oleInitializeResult)) {
        qWarning() << "QWindowsContext: OleInitialize() failed: "
-           << QWindowsContext::comErrorString(m_oleInitializeResult);
+           << QSystemError::windowsComString(m_oleInitializeResult);
     }
 }
 
@@ -383,7 +383,7 @@ void QWindowsContext::setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiA
     // Silence warning in that case unless debug is enabled.
     if (FAILED(hr) && hr != E_ACCESSDENIED) {
         qCWarning(lcQpaWindow).noquote().nospace() << "SetProcessDpiAwareness("
-            << dpiAwareness << ") failed: " << QWindowsContext::comErrorString(hr)
+            << dpiAwareness << ") failed: " << QSystemError::windowsComString(hr)
             << ", using " << QWindowsContext::processDpiAwareness();
     }
 }
@@ -399,7 +399,7 @@ bool QWindowsContext::setProcessDpiV2Awareness()
         if (dwError != ERROR_ACCESS_DENIED) {
             qCWarning(lcQpaWindow).noquote().nospace()
                 << "SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) failed: "
-                << QWindowsContext::comErrorString(HRESULT(dwError));
+                << QSystemError::windowsComString(HRESULT(dwError));
             return false;
         }
     }
@@ -622,23 +622,6 @@ int QWindowsContext::screenDepth() const
     return GetDeviceCaps(d->m_displayContext, BITSPIXEL);
 }
 
-QString QWindowsContext::windowsErrorMessage(unsigned long errorCode)
-{
-    QString rc = QString::fromLatin1("#%1: ").arg(errorCode);
-    char16_t *lpMsgBuf;
-
-    const DWORD len = FormatMessage(
-            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-            nullptr, errorCode, 0, reinterpret_cast<LPTSTR>(&lpMsgBuf), 0, nullptr);
-    if (len) {
-        rc = QString::fromUtf16(lpMsgBuf, int(len));
-        LocalFree(lpMsgBuf);
-    } else {
-        rc += QString::fromLatin1("<unknown error>");
-    }
-    return rc;
-}
-
 void QWindowsContext::addWindow(HWND hwnd, QWindowsWindow *w)
 {
     d->m_windows.insert(hwnd, w);
@@ -837,79 +820,6 @@ HWND QWindowsContext::createDummyWindow(const QString &classNameIn,
                           CW_USEDEFAULT, CW_USEDEFAULT,
                           CW_USEDEFAULT, CW_USEDEFAULT,
                           HWND_MESSAGE, nullptr, static_cast<HINSTANCE>(GetModuleHandle(nullptr)), nullptr);
-}
-
-/*!
-    \brief Common COM error strings.
-*/
-
-QByteArray QWindowsContext::comErrorString(HRESULT hr)
-{
-    QByteArray result = QByteArrayLiteral("COM error 0x")
-        + QByteArray::number(quintptr(hr), 16) + ' ';
-    switch (hr) {
-    case S_OK:
-        result += QByteArrayLiteral("S_OK");
-        break;
-    case S_FALSE:
-        result += QByteArrayLiteral("S_FALSE");
-        break;
-    case E_UNEXPECTED:
-        result += QByteArrayLiteral("E_UNEXPECTED");
-        break;
-    case E_ACCESSDENIED:
-        result += QByteArrayLiteral("E_ACCESSDENIED");
-        break;
-    case CO_E_ALREADYINITIALIZED:
-        result += QByteArrayLiteral("CO_E_ALREADYINITIALIZED");
-        break;
-    case CO_E_NOTINITIALIZED:
-        result += QByteArrayLiteral("CO_E_NOTINITIALIZED");
-        break;
-    case RPC_E_CHANGED_MODE:
-        result += QByteArrayLiteral("RPC_E_CHANGED_MODE");
-        break;
-    case OLE_E_WRONGCOMPOBJ:
-        result += QByteArrayLiteral("OLE_E_WRONGCOMPOBJ");
-        break;
-    case CO_E_NOT_SUPPORTED:
-        result += QByteArrayLiteral("CO_E_NOT_SUPPORTED");
-        break;
-    case E_NOTIMPL:
-        result += QByteArrayLiteral("E_NOTIMPL");
-        break;
-    case E_INVALIDARG:
-        result += QByteArrayLiteral("E_INVALIDARG");
-        break;
-    case E_NOINTERFACE:
-        result += QByteArrayLiteral("E_NOINTERFACE");
-        break;
-    case E_POINTER:
-        result += QByteArrayLiteral("E_POINTER");
-        break;
-    case E_HANDLE:
-        result += QByteArrayLiteral("E_HANDLE");
-        break;
-    case E_ABORT:
-        result += QByteArrayLiteral("E_ABORT");
-        break;
-    case E_FAIL:
-        result += QByteArrayLiteral("E_FAIL");
-        break;
-    case RPC_E_WRONG_THREAD:
-        result += QByteArrayLiteral("RPC_E_WRONG_THREAD");
-        break;
-    case RPC_E_THREAD_NOT_INIT:
-        result += QByteArrayLiteral("RPC_E_THREAD_NOT_INIT");
-        break;
-    default:
-        break;
-    }
-    _com_error error(hr);
-    result += QByteArrayLiteral(" (");
-    result += QString::fromWCharArray(error.ErrorMessage()).toUtf8();
-    result += ')';
-    return result;
 }
 
 void QWindowsContext::forceNcCalcSize(HWND hwnd)

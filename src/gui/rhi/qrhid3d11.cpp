@@ -9,9 +9,9 @@
 #include <qmath.h>
 #include <private/qsystemlibrary_p.h>
 #include <QtCore/qcryptographichash.h>
+#include <QtCore/private/qsystemerror_p.h>
 
 #include <d3dcompiler.h>
-#include <comdef.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -123,15 +123,6 @@ QRhiD3D11::QRhiD3D11(QRhiD3D11InitParams *params, QRhiD3D11NativeHandles *import
     }
 }
 
-static QString comErrorMessage(HRESULT hr)
-{
-    const _com_error comError(hr);
-    QString result = "Error 0x"_L1 + QString::number(ulong(hr), 16);
-    if (const wchar_t *msg = comError.ErrorMessage())
-        result += ": "_L1 + QString::fromWCharArray(msg);
-    return result;
-}
-
 template <class Int>
 inline Int aligned(Int v, Int byteAlign)
 {
@@ -143,7 +134,8 @@ static IDXGIFactory1 *createDXGIFactory2()
     IDXGIFactory1 *result = nullptr;
     const HRESULT hr = CreateDXGIFactory2(0, __uuidof(IDXGIFactory2), reinterpret_cast<void **>(&result));
     if (FAILED(hr)) {
-        qWarning("CreateDXGIFactory2() failed to create DXGI factory: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("CreateDXGIFactory2() failed to create DXGI factory: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         result = nullptr;
     }
     return result;
@@ -271,7 +263,8 @@ bool QRhiD3D11::create(QRhi::Flags flags)
                                    &dev, &featureLevel, &ctx);
         }
         if (FAILED(hr)) {
-            qWarning("Failed to create D3D11 device and context: %s", qPrintable(comErrorMessage(hr)));
+            qWarning("Failed to create D3D11 device and context: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
             return false;
         }
 
@@ -1318,7 +1311,8 @@ QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
             deviceLost = true;
             return QRhi::FrameOpDeviceLost;
         } else if (FAILED(hr)) {
-            qWarning("Failed to present: %s", qPrintable(comErrorMessage(hr)));
+            qWarning("Failed to present: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
             return QRhi::FrameOpError;
         }
 
@@ -1648,7 +1642,8 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
                 HRESULT hr = dev->CreateBuffer(&desc, nullptr, &readback.stagingBuf);
                 if (FAILED(hr)) {
-                    qWarning("Failed to create buffer: %s", qPrintable(comErrorMessage(hr)));
+                    qWarning("Failed to create buffer: %s",
+                        qPrintable(QSystemError::windowsComString(hr)));
                     continue;
                 }
 
@@ -1778,7 +1773,8 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             ID3D11Texture2D *stagingTex;
             HRESULT hr = dev->CreateTexture2D(&desc, nullptr, &stagingTex);
             if (FAILED(hr)) {
-                qWarning("Failed to create readback staging texture: %s", qPrintable(comErrorMessage(hr)));
+                qWarning("Failed to create readback staging texture: %s",
+                    qPrintable(QSystemError::windowsComString(hr)));
                 return;
             }
 
@@ -1845,7 +1841,8 @@ void QRhiD3D11::finishActiveReadbacks()
             }
             context->Unmap(readback.stagingTex, 0);
         } else {
-            qWarning("Failed to map readback staging texture: %s", qPrintable(comErrorMessage(hr)));
+            qWarning("Failed to map readback staging texture: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
         }
 
         readback.stagingTex->Release();
@@ -1866,7 +1863,8 @@ void QRhiD3D11::finishActiveReadbacks()
             memcpy(readback.result->data.data(), mp.pData, readback.byteSize);
             context->Unmap(readback.stagingBuf, 0);
         } else {
-            qWarning("Failed to map readback staging texture: %s", qPrintable(comErrorMessage(hr)));
+            qWarning("Failed to map readback staging texture: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
         }
 
         readback.stagingBuf->Release();
@@ -2390,7 +2388,8 @@ void QRhiD3D11::executeBufferHostWrites(QD3D11Buffer *bufD)
         memcpy(mp.pData, bufD->dynBuf, bufD->m_size);
         context->Unmap(bufD->buffer, 0);
     } else {
-        qWarning("Failed to map buffer: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to map buffer: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
     }
 }
 
@@ -2861,7 +2860,8 @@ bool QD3D11Buffer::create()
     QRHI_RES_RHI(QRhiD3D11);
     HRESULT hr = rhiD->dev->CreateBuffer(&desc, nullptr, &buffer);
     if (FAILED(hr)) {
-        qWarning("Failed to create buffer: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to create buffer: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         return false;
     }
 
@@ -2900,7 +2900,8 @@ char *QD3D11Buffer::beginFullDynamicBufferUpdateForCurrentFrame()
     QRHI_RES_RHI(QRhiD3D11);
     HRESULT hr = rhiD->context->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mp);
     if (FAILED(hr)) {
-        qWarning("Failed to map buffer: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to map buffer: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         return nullptr;
     }
     return static_cast<char *>(mp.pData);
@@ -2928,7 +2929,8 @@ ID3D11UnorderedAccessView *QD3D11Buffer::unorderedAccessView()
     QRHI_RES_RHI(QRhiD3D11);
     HRESULT hr = rhiD->dev->CreateUnorderedAccessView(buffer, &desc, &uav);
     if (FAILED(hr)) {
-        qWarning("Failed to create UAV: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to create UAV: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         return nullptr;
     }
 
@@ -2996,7 +2998,8 @@ bool QD3D11RenderBuffer::create()
         desc.BindFlags = D3D11_BIND_RENDER_TARGET;
         HRESULT hr = rhiD->dev->CreateTexture2D(&desc, nullptr, &tex);
         if (FAILED(hr)) {
-            qWarning("Failed to create color renderbuffer: %s", qPrintable(comErrorMessage(hr)));
+            qWarning("Failed to create color renderbuffer: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
             return false;
         }
         D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
@@ -3005,7 +3008,8 @@ bool QD3D11RenderBuffer::create()
                                                           : D3D11_RTV_DIMENSION_TEXTURE2D;
         hr = rhiD->dev->CreateRenderTargetView(tex, &rtvDesc, &rtv);
         if (FAILED(hr)) {
-            qWarning("Failed to create rtv: %s", qPrintable(comErrorMessage(hr)));
+            qWarning("Failed to create rtv: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
             return false;
         }
     } else if (m_type == DepthStencil) {
@@ -3014,7 +3018,8 @@ bool QD3D11RenderBuffer::create()
         desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
         HRESULT hr = rhiD->dev->CreateTexture2D(&desc, nullptr, &tex);
         if (FAILED(hr)) {
-            qWarning("Failed to create depth-stencil buffer: %s", qPrintable(comErrorMessage(hr)));
+            qWarning("Failed to create depth-stencil buffer: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
             return false;
         }
         D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
@@ -3023,7 +3028,8 @@ bool QD3D11RenderBuffer::create()
                                                           : D3D11_DSV_DIMENSION_TEXTURE2D;
         hr = rhiD->dev->CreateDepthStencilView(tex, &dsvDesc, &dsv);
         if (FAILED(hr)) {
-            qWarning("Failed to create dsv: %s", qPrintable(comErrorMessage(hr)));
+            qWarning("Failed to create dsv: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
             return false;
         }
     } else {
@@ -3268,7 +3274,8 @@ bool QD3D11Texture::finishCreate()
 
     HRESULT hr = rhiD->dev->CreateShaderResourceView(textureResource(), &srvDesc, &srv);
     if (FAILED(hr)) {
-        qWarning("Failed to create srv: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to create srv: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         return false;
     }
 
@@ -3320,7 +3327,8 @@ bool QD3D11Texture::create()
 
         HRESULT hr = rhiD->dev->CreateTexture1D(&desc, nullptr, &tex1D);
         if (FAILED(hr)) {
-            qWarning("Failed to create 1D texture: %s", qPrintable(comErrorMessage(hr)));
+            qWarning("Failed to create 1D texture: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
             return false;
         }
         if (!m_objectName.isEmpty())
@@ -3340,7 +3348,8 @@ bool QD3D11Texture::create()
 
         HRESULT hr = rhiD->dev->CreateTexture2D(&desc, nullptr, &tex);
         if (FAILED(hr)) {
-            qWarning("Failed to create 2D texture: %s", qPrintable(comErrorMessage(hr)));
+            qWarning("Failed to create 2D texture: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
             return false;
         }
         if (!m_objectName.isEmpty())
@@ -3358,7 +3367,8 @@ bool QD3D11Texture::create()
 
         HRESULT hr = rhiD->dev->CreateTexture3D(&desc, nullptr, &tex3D);
         if (FAILED(hr)) {
-            qWarning("Failed to create 3D texture: %s", qPrintable(comErrorMessage(hr)));
+            qWarning("Failed to create 3D texture: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
             return false;
         }
         if (!m_objectName.isEmpty())
@@ -3434,7 +3444,8 @@ ID3D11UnorderedAccessView *QD3D11Texture::unorderedAccessViewForLevel(int level)
     ID3D11UnorderedAccessView *uav = nullptr;
     HRESULT hr = rhiD->dev->CreateUnorderedAccessView(textureResource(), &desc, &uav);
     if (FAILED(hr)) {
-        qWarning("Failed to create UAV: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to create UAV: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         return nullptr;
     }
 
@@ -3557,7 +3568,8 @@ bool QD3D11Sampler::create()
     QRHI_RES_RHI(QRhiD3D11);
     HRESULT hr = rhiD->dev->CreateSamplerState(&desc, &samplerState);
     if (FAILED(hr)) {
-        qWarning("Failed to create sampler state: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to create sampler state: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         return false;
     }
 
@@ -3740,7 +3752,8 @@ bool QD3D11TextureRenderTarget::create()
             }
             HRESULT hr = rhiD->dev->CreateRenderTargetView(texD->textureResource(), &rtvDesc, &rtv[attIndex]);
             if (FAILED(hr)) {
-                qWarning("Failed to create rtv: %s", qPrintable(comErrorMessage(hr)));
+                qWarning("Failed to create rtv: %s",
+                    qPrintable(QSystemError::windowsComString(hr)));
                 return false;
             }
             ownsRtv[attIndex] = true;
@@ -3770,7 +3783,8 @@ bool QD3D11TextureRenderTarget::create()
                                                                     : D3D11_DSV_DIMENSION_TEXTURE2D;
             HRESULT hr = rhiD->dev->CreateDepthStencilView(depthTexD->tex, &dsvDesc, &dsv);
             if (FAILED(hr)) {
-                qWarning("Failed to create dsv: %s", qPrintable(comErrorMessage(hr)));
+                qWarning("Failed to create dsv: %s",
+                    qPrintable(QSystemError::windowsComString(hr)));
                 return false;
             }
             if (d.colorAttCount == 0) {
@@ -4299,7 +4313,8 @@ bool QD3D11GraphicsPipeline::create()
     rastDesc.MultisampleEnable = rhiD->effectiveSampleCount(m_sampleCount).Count > 1;
     HRESULT hr = rhiD->dev->CreateRasterizerState(&rastDesc, &rastState);
     if (FAILED(hr)) {
-        qWarning("Failed to create rasterizer state: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to create rasterizer state: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         return false;
     }
 
@@ -4322,7 +4337,8 @@ bool QD3D11GraphicsPipeline::create()
     }
     hr = rhiD->dev->CreateDepthStencilState(&dsDesc, &dsState);
     if (FAILED(hr)) {
-        qWarning("Failed to create depth-stencil state: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to create depth-stencil state: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         return false;
     }
 
@@ -4348,7 +4364,8 @@ bool QD3D11GraphicsPipeline::create()
     }
     hr = rhiD->dev->CreateBlendState(&blendDesc, &blendState);
     if (FAILED(hr)) {
-        qWarning("Failed to create blend state: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to create blend state: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         return false;
     }
 
@@ -4409,7 +4426,8 @@ bool QD3D11GraphicsPipeline::create()
             case QRhiShaderStage::Vertex:
                 hr = rhiD->dev->CreateVertexShader(bytecode.constData(), SIZE_T(bytecode.size()), nullptr, &vs.shader);
                 if (FAILED(hr)) {
-                    qWarning("Failed to create vertex shader: %s", qPrintable(comErrorMessage(hr)));
+                    qWarning("Failed to create vertex shader: %s",
+                        qPrintable(QSystemError::windowsComString(hr)));
                     return false;
                 }
                 vsByteCode = bytecode;
@@ -4420,7 +4438,8 @@ bool QD3D11GraphicsPipeline::create()
             case QRhiShaderStage::TessellationControl:
                 hr = rhiD->dev->CreateHullShader(bytecode.constData(), SIZE_T(bytecode.size()), nullptr, &hs.shader);
                 if (FAILED(hr)) {
-                    qWarning("Failed to create hull shader: %s", qPrintable(comErrorMessage(hr)));
+                    qWarning("Failed to create hull shader: %s",
+                        qPrintable(QSystemError::windowsComString(hr)));
                     return false;
                 }
                 hs.nativeResourceBindingMap = shaderStage.shader().nativeResourceBindingMap(shaderKey);
@@ -4430,7 +4449,8 @@ bool QD3D11GraphicsPipeline::create()
             case QRhiShaderStage::TessellationEvaluation:
                 hr = rhiD->dev->CreateDomainShader(bytecode.constData(), SIZE_T(bytecode.size()), nullptr, &ds.shader);
                 if (FAILED(hr)) {
-                    qWarning("Failed to create domain shader: %s", qPrintable(comErrorMessage(hr)));
+                    qWarning("Failed to create domain shader: %s",
+                        qPrintable(QSystemError::windowsComString(hr)));
                     return false;
                 }
                 ds.nativeResourceBindingMap = shaderStage.shader().nativeResourceBindingMap(shaderKey);
@@ -4440,7 +4460,8 @@ bool QD3D11GraphicsPipeline::create()
             case QRhiShaderStage::Geometry:
                 hr = rhiD->dev->CreateGeometryShader(bytecode.constData(), SIZE_T(bytecode.size()), nullptr, &gs.shader);
                 if (FAILED(hr)) {
-                    qWarning("Failed to create geometry shader: %s", qPrintable(comErrorMessage(hr)));
+                    qWarning("Failed to create geometry shader: %s",
+                        qPrintable(QSystemError::windowsComString(hr)));
                     return false;
                 }
                 gs.nativeResourceBindingMap = shaderStage.shader().nativeResourceBindingMap(shaderKey);
@@ -4450,7 +4471,8 @@ bool QD3D11GraphicsPipeline::create()
             case QRhiShaderStage::Fragment:
                 hr = rhiD->dev->CreatePixelShader(bytecode.constData(), SIZE_T(bytecode.size()), nullptr, &fs.shader);
                 if (FAILED(hr)) {
-                    qWarning("Failed to create pixel shader: %s", qPrintable(comErrorMessage(hr)));
+                    qWarning("Failed to create pixel shader: %s",
+                        qPrintable(QSystemError::windowsComString(hr)));
                     return false;
                 }
                 fs.nativeResourceBindingMap = shaderStage.shader().nativeResourceBindingMap(shaderKey);
@@ -4504,7 +4526,8 @@ bool QD3D11GraphicsPipeline::create()
             hr = rhiD->dev->CreateInputLayout(inputDescs.constData(), UINT(inputDescs.count()),
                                               vsByteCode, SIZE_T(vsByteCode.size()), &inputLayout);
             if (FAILED(hr)) {
-                qWarning("Failed to create input layout: %s", qPrintable(comErrorMessage(hr)));
+                qWarning("Failed to create input layout: %s",
+                    qPrintable(QSystemError::windowsComString(hr)));
                 return false;
             }
         } // else leave inputLayout set to nullptr; that's valid and it avoids a debug layer warning about an input layout with 0 elements
@@ -4568,7 +4591,8 @@ bool QD3D11ComputePipeline::create()
 
         HRESULT hr = rhiD->dev->CreateComputeShader(bytecode.constData(), SIZE_T(bytecode.size()), nullptr, &cs.shader);
         if (FAILED(hr)) {
-            qWarning("Failed to create compute shader: %s", qPrintable(comErrorMessage(hr)));
+            qWarning("Failed to create compute shader: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
             return false;
         }
 
@@ -4796,7 +4820,8 @@ bool QD3D11SwapChain::newColorBuffer(const QSize &size, DXGI_FORMAT format, DXGI
     QRHI_RES_RHI(QRhiD3D11);
     HRESULT hr = rhiD->dev->CreateTexture2D(&desc, nullptr, tex);
     if (FAILED(hr)) {
-        qWarning("Failed to create color buffer texture: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to create color buffer texture: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         return false;
     }
 
@@ -4805,7 +4830,8 @@ bool QD3D11SwapChain::newColorBuffer(const QSize &size, DXGI_FORMAT format, DXGI
     rtvDesc.ViewDimension = sampleDesc.Count > 1 ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
     hr = rhiD->dev->CreateRenderTargetView(*tex, &rtvDesc, rtv);
     if (FAILED(hr)) {
-        qWarning("Failed to create color buffer rtv: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to create color buffer rtv: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         (*tex)->Release();
         *tex = nullptr;
         return false;
@@ -4826,7 +4852,8 @@ bool QRhiD3D11::ensureDirectCompositionDevice()
 
     HRESULT hr = DCompositionCreateDevice(nullptr, __uuidof(IDCompositionDevice), reinterpret_cast<void **>(&dcompDevice));
     if (FAILED(hr)) {
-        qWarning("Failed to Direct Composition device: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to Direct Composition device: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         return false;
     }
 
@@ -4863,14 +4890,14 @@ bool QD3D11SwapChain::createOrResize()
                 hr = rhiD->dcompDevice->CreateTargetForHwnd(hwnd, true, &dcompTarget);
                 if (FAILED(hr)) {
                     qWarning("Failed to create Direct Compsition target for the window: %s",
-                             qPrintable(comErrorMessage(hr)));
+                             qPrintable(QSystemError::windowsComString(hr)));
                 }
             }
             if (dcompTarget && !dcompVisual) {
                 hr = rhiD->dcompDevice->CreateVisual(&dcompVisual);
                 if (FAILED(hr)) {
                     qWarning("Failed to create DirectComposition visual: %s",
-                             qPrintable(comErrorMessage(hr)));
+                             qPrintable(QSystemError::windowsComString(hr)));
                 }
             }
         }
@@ -4979,7 +5006,8 @@ bool QD3D11SwapChain::createOrResize()
                 if (SUCCEEDED(sc1->QueryInterface(__uuidof(IDXGISwapChain3), reinterpret_cast<void **>(&sc3)))) {
                     hr = sc3->SetColorSpace1(hdrColorSpace);
                     if (FAILED(hr))
-                        qWarning("Failed to set color space on swapchain: %s", qPrintable(comErrorMessage(hr)));
+                        qWarning("Failed to set color space on swapchain: %s",
+                            qPrintable(QSystemError::windowsComString(hr)));
                     sc3->Release();
                 } else {
                     qWarning("IDXGISwapChain3 not available, HDR swapchain will not work as expected");
@@ -4991,16 +5019,17 @@ bool QD3D11SwapChain::createOrResize()
                     hr = dcompTarget->SetRoot(dcompVisual);
                     if (FAILED(hr)) {
                         qWarning("Failed to associate Direct Composition visual with the target: %s",
-                                 qPrintable(comErrorMessage(hr)));
+                                 qPrintable(QSystemError::windowsComString(hr)));
                     }
                 } else {
                     qWarning("Failed to set content for Direct Composition visual: %s",
-                             qPrintable(comErrorMessage(hr)));
+                             qPrintable(QSystemError::windowsComString(hr)));
                 }
             }
         }
         if (FAILED(hr)) {
-            qWarning("Failed to create D3D11 swapchain: %s", qPrintable(comErrorMessage(hr)));
+            qWarning("Failed to create D3D11 swapchain: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
             return false;
         }
         rhiD->dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
@@ -5014,7 +5043,8 @@ bool QD3D11SwapChain::createOrResize()
             rhiD->deviceLost = true;
             return false;
         } else if (FAILED(hr)) {
-            qWarning("Failed to resize D3D11 swapchain: %s", qPrintable(comErrorMessage(hr)));
+            qWarning("Failed to resize D3D11 swapchain: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
             return false;
         }
     }
@@ -5035,7 +5065,8 @@ bool QD3D11SwapChain::createOrResize()
     // So just query index 0 once (per resize) and be done with it.
     hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&backBufferTex));
     if (FAILED(hr)) {
-        qWarning("Failed to query swapchain backbuffer: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to query swapchain backbuffer: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         return false;
     }
     D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
@@ -5043,7 +5074,8 @@ bool QD3D11SwapChain::createOrResize()
     rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
     hr = rhiD->dev->CreateRenderTargetView(backBufferTex, &rtvDesc, &backBufferRtv);
     if (FAILED(hr)) {
-        qWarning("Failed to create rtv for swapchain backbuffer: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to create rtv for swapchain backbuffer: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         return false;
     }
 
@@ -5092,7 +5124,8 @@ bool QD3D11SwapChain::createOrResize()
                 queryDesc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
                 hr = rhiD->dev->CreateQuery(&queryDesc, &timestampDisjointQuery[i]);
                 if (FAILED(hr)) {
-                    qWarning("Failed to create timestamp disjoint query: %s", qPrintable(comErrorMessage(hr)));
+                    qWarning("Failed to create timestamp disjoint query: %s",
+                        qPrintable(QSystemError::windowsComString(hr)));
                     break;
                 }
             }
@@ -5102,7 +5135,8 @@ bool QD3D11SwapChain::createOrResize()
                 if (!timestampQuery[idx]) {
                     hr = rhiD->dev->CreateQuery(&queryDesc, &timestampQuery[idx]);
                     if (FAILED(hr)) {
-                        qWarning("Failed to create timestamp query: %s", qPrintable(comErrorMessage(hr)));
+                        qWarning("Failed to create timestamp query: %s",
+                            qPrintable(QSystemError::windowsComString(hr)));
                         break;
                     }
                 }
@@ -5123,7 +5157,8 @@ void QRhiD3D11::DeviceCurse::initResources()
 
     HRESULT hr = q->dev->CreateComputeShader(g_killDeviceByTimingOut, sizeof(g_killDeviceByTimingOut), nullptr, &cs);
     if (FAILED(hr)) {
-        qWarning("Failed to create compute shader: %s", qPrintable(comErrorMessage(hr)));
+        qWarning("Failed to create compute shader: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
         return;
     }
 }

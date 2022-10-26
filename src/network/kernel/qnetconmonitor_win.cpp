@@ -9,6 +9,7 @@
 #include <QtCore/qmetaobject.h>
 
 #include <QtCore/private/qfunctions_win_p.h>
+#include <QtCore/private/qsystemerror_p.h>
 
 #include <QtNetwork/qnetworkinterface.h>
 
@@ -16,7 +17,6 @@
 #include <netlistmgr.h>
 #include <wrl/client.h>
 #include <wrl/wrappers/corewrappers.h>
-#include <comdef.h>
 #include <iphlpapi.h>
 
 #include <algorithm>
@@ -28,12 +28,6 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcNetMon, "qt.network.monitor");
 
 namespace {
-QString errorStringFromHResult(HRESULT hr)
-{
-    _com_error error(hr);
-    return QString::fromWCharArray(error.ErrorMessage());
-}
-
 template<typename T>
 bool QueryInterfaceImpl(IUnknown *from, REFIID riid, void **ppvObject)
 {
@@ -150,7 +144,7 @@ QNetworkConnectionEvents::QNetworkConnectionEvents(QNetworkConnectionMonitorPriv
                                IID_INetworkListManager, &networkListManager);
     if (FAILED(hr)) {
         qCDebug(lcNetMon) << "Could not get a NetworkListManager instance:"
-                            << errorStringFromHResult(hr);
+                            << QSystemError::windowsComString(hr);
         return;
     }
 
@@ -162,7 +156,7 @@ QNetworkConnectionEvents::QNetworkConnectionEvents(QNetworkConnectionMonitorPriv
     }
     if (FAILED(hr)) {
         qCDebug(lcNetMon) << "Failed to get connection point for network events:"
-                            << errorStringFromHResult(hr);
+                            << QSystemError::windowsComString(hr);
     }
 }
 
@@ -177,7 +171,7 @@ ComPtr<INetworkConnection> QNetworkConnectionEvents::getNetworkConnectionFromAda
     auto hr = networkListManager->GetNetworkConnections(connections.GetAddressOf());
     if (FAILED(hr)) {
         qCDebug(lcNetMon) << "Failed to enumerate network connections:"
-                            << errorStringFromHResult(hr);
+                            << QSystemError::windowsComString(hr);
         return nullptr;
     }
     ComPtr<INetworkConnection> connection = nullptr;
@@ -185,7 +179,7 @@ ComPtr<INetworkConnection> QNetworkConnectionEvents::getNetworkConnectionFromAda
         hr = connections->Next(1, connection.GetAddressOf(), nullptr);
         if (FAILED(hr)) {
             qCDebug(lcNetMon) << "Failed to get next network connection in enumeration:"
-                                << errorStringFromHResult(hr);
+                                << QSystemError::windowsComString(hr);
             break;
         }
         if (connection) {
@@ -193,7 +187,7 @@ ComPtr<INetworkConnection> QNetworkConnectionEvents::getNetworkConnectionFromAda
             hr = connection->GetAdapterId(&adapterId);
             if (FAILED(hr)) {
                 qCDebug(lcNetMon) << "Failed to get adapter ID from network connection:"
-                                    << errorStringFromHResult(hr);
+                                    << QSystemError::windowsComString(hr);
                 continue;
             }
             if (guid == adapterId)
@@ -258,7 +252,8 @@ bool QNetworkConnectionEvents::setTarget(const QNetworkInterface &iface)
     }
     auto hr = connection->GetConnectionId(&guid);
     if (FAILED(hr)) {
-        qCDebug(lcNetMon) << "Failed to get the connection's GUID:" << errorStringFromHResult(hr);
+        qCDebug(lcNetMon) << "Failed to get the connection's GUID:"
+                          << QSystemError::windowsComString(hr);
         return false;
     }
     currentConnectionId = guid;
@@ -281,7 +276,7 @@ bool QNetworkConnectionEvents::startMonitoring()
     auto hr = connectionPoint->Advise(this, &cookie);
     if (FAILED(hr)) {
         qCDebug(lcNetMon) << "Failed to subscribe to network connectivity events:"
-                            << errorStringFromHResult(hr);
+                            << QSystemError::windowsComString(hr);
         return false;
     }
     return true;
@@ -292,7 +287,7 @@ bool QNetworkConnectionEvents::stopMonitoring()
     auto hr = connectionPoint->Unadvise(cookie);
     if (FAILED(hr)) {
         qCDebug(lcNetMon) << "Failed to unsubscribe from network connection events:"
-                            << errorStringFromHResult(hr);
+                            << QSystemError::windowsComString(hr);
         return false;
     }
     cookie = 0;

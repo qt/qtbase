@@ -88,8 +88,6 @@ public:
 
     static QWindowsContext *instance();
 
-    static QString windowsErrorMessage(unsigned long errorCode);
-
     void addWindow(HWND, QWindowsWindow *w);
     void removeWindow(HWND);
 
@@ -139,7 +137,6 @@ public:
     QWindowsScreenManager &screenManager();
     QWindowsTabletSupport *tabletSupport() const;
 
-    static QByteArray comErrorString(HRESULT hr);
     bool asyncExpose() const;
     void setAsyncExpose(bool value);
 

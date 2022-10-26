@@ -31,6 +31,7 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/quuid.h>
 #include <QtCore/qtemporaryfile.h>
+#include <QtCore/private/qsystemerror_p.h>
 
 #include <algorithm>
 #include <vector>
@@ -631,7 +632,7 @@ bool QWindowsShellItem::copyData(QIODevice *out, QString *errorMessage)
     HRESULT hr = m_item->BindToHandler(nullptr, BHID_Stream, IID_PPV_ARGS(&istream));
     if (FAILED(hr)) {
         *errorMessage = "BindToHandler() failed: "_L1
-                        + QLatin1StringView(QWindowsContext::comErrorString(hr));
+                        + QSystemError::windowsComString(hr);
         return false;
     }
     enum : ULONG { bufSize = 102400 };
@@ -648,7 +649,7 @@ bool QWindowsShellItem::copyData(QIODevice *out, QString *errorMessage)
     istream->Release();
     if (hr != S_OK && hr != S_FALSE) {
         *errorMessage = "Read() failed: "_L1
-                        + QLatin1StringView(QWindowsContext::comErrorString(hr));
+                        + QSystemError::windowsComString(hr);
         return false;
     }
     return true;

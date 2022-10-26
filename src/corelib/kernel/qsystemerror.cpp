@@ -9,6 +9,7 @@
 #endif
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
+#  include <comdef.h>
 #endif
 #ifndef QT_BOOTSTRAPPED
 #  include <qcoreapplication.h>
@@ -46,7 +47,7 @@ static QString windowsErrorString(int errorCode)
 {
     QString ret;
     wchar_t *string = nullptr;
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
                   NULL,
                   errorCode,
                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
@@ -131,6 +132,15 @@ QString QSystemError::stdString(int errorCode)
 QString QSystemError::windowsString(int errorCode)
 {
     return windowsErrorString(errorCode == -1 ? GetLastError() : errorCode);
+}
+
+QString QSystemError::windowsComString(HRESULT hr)
+{
+    const _com_error comError(hr);
+    QString result = "COM error 0x"_L1 + QString::number(ulong(hr), 16);
+    if (const wchar_t *msg = comError.ErrorMessage())
+        result += ": "_L1 + QString::fromWCharArray(msg);
+    return result;
 }
 
 QString qt_error_string(int code)

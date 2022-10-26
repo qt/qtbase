@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qnetworklistmanagerevents.h"
+#include <QtCore/private/qsystemerror_p.h>
 
 #include <QtCore/qpointer.h>
 
@@ -42,7 +43,7 @@ QNetworkListManagerEvents::QNetworkListManagerEvents() : QObject(nullptr)
                                IID_INetworkListManager, &networkListManager);
     if (FAILED(hr)) {
         qCWarning(lcNetInfoNLM) << "Could not get a NetworkListManager instance:"
-                                << errorStringFromHResult(hr);
+                                << QSystemError::windowsComString(hr);
         return;
     }
 
@@ -54,7 +55,7 @@ QNetworkListManagerEvents::QNetworkListManagerEvents() : QObject(nullptr)
     }
     if (FAILED(hr)) {
         qCWarning(lcNetInfoNLM) << "Failed to get connection point for network list manager events:"
-                                << errorStringFromHResult(hr);
+                                << QSystemError::windowsComString(hr);
     }
 }
 
@@ -92,17 +93,19 @@ bool QNetworkListManagerEvents::start()
     auto hr = connectionPoint->Advise(this, &cookie);
     if (FAILED(hr)) {
         qCWarning(lcNetInfoNLM) << "Failed to subscribe to network connectivity events:"
-                                << errorStringFromHResult(hr);
+                                << QSystemError::windowsComString(hr);
         return false;
     }
 
     // Update connectivity since it might have changed since this class was constructed
     NLM_CONNECTIVITY connectivity;
     hr = networkListManager->GetConnectivity(&connectivity);
-    if (FAILED(hr))
-        qCWarning(lcNetInfoNLM) << "Could not get connectivity:" << errorStringFromHResult(hr);
-    else
+    if (FAILED(hr)) {
+        qCWarning(lcNetInfoNLM) << "Could not get connectivity:"
+                                << QSystemError::windowsComString(hr);
+    } else {
         emit connectivityChanged(connectivity);
+    }
 
 #if QT_CONFIG(cpp_winrt)
     using namespace winrt::Windows::Networking::Connectivity;
@@ -130,7 +133,7 @@ void QNetworkListManagerEvents::stop()
     auto hr = connectionPoint->Unadvise(cookie);
     if (FAILED(hr)) {
         qCWarning(lcNetInfoNLM) << "Failed to unsubscribe from network connectivity events:"
-                                << errorStringFromHResult(hr);
+                                << QSystemError::windowsComString(hr);
     } else {
         cookie = 0;
     }
