@@ -274,7 +274,7 @@ endfunction()
 
 function(qt_internal_get_darwin_sdk_version out_var)
     if(APPLE)
-        if(IOS)
+        if(CMAKE_SYSTEM_NAME STREQUAL iOS)
             set(sdk_name "iphoneos")
         else()
             # Default to macOS
