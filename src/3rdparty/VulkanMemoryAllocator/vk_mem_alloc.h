@@ -2579,9 +2579,7 @@ VMA_CALL_PRE void VMA_CALL_POST vmaFreeStatsString(
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
 #pragma clang diagnostic ignored "-Wparentheses"
 #pragma clang diagnostic ignored "-Wimplicit-fallthrough"
-#if defined(__APPLE__)
 #pragma clang diagnostic ignored "-Wnullability-completeness"
-#endif
 #endif
 
 #include <cstdint>

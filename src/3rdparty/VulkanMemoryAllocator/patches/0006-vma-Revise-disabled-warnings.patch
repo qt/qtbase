@@ -1,0 +1,28 @@
+From 48762c18eb8a1430540214a6c1cb4572cc108a05 Mon Sep 17 00:00:00 2001
+From: Laszlo Agocs <laszlo.agocs@qt.io>
+Date: Wed, 26 Oct 2022 10:46:48 +0200
+Subject: [PATCH] vma: Revise disabled warnings
+
+Change-Id: I92f62022329ded94778b1385e72336ef9376baee
+---
+ src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h b/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
+index 1b27eeac16..b8f9ab52aa 100644
+--- a/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
++++ b/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
+@@ -2579,10 +2579,8 @@ VMA_CALL_PRE void VMA_CALL_POST vmaFreeStatsString(
+ #pragma clang diagnostic ignored "-Wmissing-field-initializers"
+ #pragma clang diagnostic ignored "-Wparentheses"
+ #pragma clang diagnostic ignored "-Wimplicit-fallthrough"
+-#if defined(__APPLE__)
+ #pragma clang diagnostic ignored "-Wnullability-completeness"
+ #endif
+-#endif
+ 
+ #include <cstdint>
+ #include <cstdlib>
+-- 
+2.37.3
+
