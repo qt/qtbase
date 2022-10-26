@@ -48,6 +48,7 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         qcocoacolordialoghelper.h qcocoacolordialoghelper.mm
         qcocoafiledialoghelper.h qcocoafiledialoghelper.mm
         qcocoafontdialoghelper.h qcocoafontdialoghelper.mm
+        qcocoamessagedialog.h qcocoamessagedialog.mm
     DEFINES
         QT_NO_FOREACH
     LIBRARIES

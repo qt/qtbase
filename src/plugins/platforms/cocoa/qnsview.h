@@ -4,6 +4,8 @@
 #ifndef QNSVIEW_H
 #define QNSVIEW_H
 
+#include <AppKit/NSView.h>
+
 #include <QtCore/private/qcore_mac_p.h>
 
 QT_BEGIN_NAMESPACE

@@ -31,6 +31,7 @@
 #include "qcocoacolordialoghelper.h"
 #include "qcocoafiledialoghelper.h"
 #include "qcocoafontdialoghelper.h"
+#include "qcocoamessagedialog.h"
 
 #include <CoreServices/CoreServices.h>
 
@@ -251,13 +252,15 @@ void QCocoaTheme::handleSystemThemeChange()
 
 bool QCocoaTheme::usePlatformNativeDialog(DialogType dialogType) const
 {
-    if (dialogType == QPlatformTheme::FileDialog)
+    switch (dialogType) {
+    case QPlatformTheme::FileDialog:
+    case QPlatformTheme::ColorDialog:
+    case QPlatformTheme::FontDialog:
+    case QPlatformTheme::MessageDialog:
         return true;
-    if (dialogType == QPlatformTheme::ColorDialog)
-        return true;
-    if (dialogType == QPlatformTheme::FontDialog)
-        return true;
-    return false;
+    default:
+        return false;
+    }
 }
 
 QPlatformDialogHelper *QCocoaTheme::createPlatformDialogHelper(DialogType dialogType) const
@@ -269,6 +272,8 @@ QPlatformDialogHelper *QCocoaTheme::createPlatformDialogHelper(DialogType dialog
         return new QCocoaColorDialogHelper();
     case QPlatformTheme::FontDialog:
         return new QCocoaFontDialogHelper();
+    case QPlatformTheme::MessageDialog:
+        return new QCocoaMessageDialog;
     default:
         return nullptr;
     }

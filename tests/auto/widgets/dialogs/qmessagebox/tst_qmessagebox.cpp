@@ -23,6 +23,9 @@ class tst_QMessageBox : public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase_data();
+    void init();
+
     void sanityTest();
     void defaultButton();
     void escapeButton();
@@ -127,6 +130,22 @@ void ExecCloseHelper::timerEvent(QTimerEvent *te)
         killTimer(m_timerId);
         m_timerId = m_key = 0;
     }
+}
+
+void tst_QMessageBox::initTestCase_data()
+{
+    QTest::addColumn<bool>("useNativeDialog");
+    QTest::newRow("widget") << false;
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+        if (theme->usePlatformNativeDialog(QPlatformTheme::MessageDialog))
+            QTest::newRow("native") << true;
+    }
+}
+
+void tst_QMessageBox::init()
+{
+    QFETCH_GLOBAL(bool, useNativeDialog);
+    qApp->setAttribute(Qt::AA_DontUseNativeDialogs, !useNativeDialog);
 }
 
 void tst_QMessageBox::cleanup()
@@ -484,6 +503,10 @@ void tst_QMessageBox::instanceSourceCompat()
 
 void tst_QMessageBox::detailsText()
 {
+    QFETCH_GLOBAL(bool, useNativeDialog);
+    if (useNativeDialog)
+         QSKIP("Native dialogs do not propagate expose events");
+
     QMessageBox box;
     QString text("This is the details text.");
     box.setDetailedText(text);
@@ -497,6 +520,10 @@ void tst_QMessageBox::detailsText()
 
 void tst_QMessageBox::detailsButtonText()
 {
+    QFETCH_GLOBAL(bool, useNativeDialog);
+    if (useNativeDialog)
+         QSKIP("Native dialogs do not propagate expose events");
+
     QMessageBox box;
     box.setDetailedText("bla");
     box.open();
@@ -518,6 +545,10 @@ void tst_QMessageBox::detailsButtonText()
 
 void tst_QMessageBox::expandDetailsWithoutMoving() // QTBUG-32473
 {
+    QFETCH_GLOBAL(bool, useNativeDialog);
+    if (useNativeDialog)
+         QSKIP("Native dialogs do not propagate expose events");
+
     tst_ResizingMessageBox box;
     box.setDetailedText("bla");
     box.show();
@@ -617,6 +648,10 @@ Q_DECLARE_METATYPE(RoleSet);
 
 void tst_QMessageBox::acceptedRejectedSignals()
 {
+    QFETCH_GLOBAL(bool, useNativeDialog);
+    if (useNativeDialog)
+         QSKIP("Native dialogs do not propagate expose events");
+
     QMessageBox messageBox(QMessageBox::Information, "Test window", "Test text");
 
     QFETCH(ButtonsCreator, buttonsCreator);
