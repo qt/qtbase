@@ -19,12 +19,9 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         qcocoaapplicationdelegate.h qcocoaapplicationdelegate.mm
         qcocoabackingstore.h qcocoabackingstore.mm
         qcocoaclipboard.h qcocoaclipboard.mm
-        qcocoacolordialoghelper.h qcocoacolordialoghelper.mm
         qcocoacursor.h qcocoacursor.mm
         qcocoadrag.h qcocoadrag.mm
         qcocoaeventdispatcher.h qcocoaeventdispatcher.mm
-        qcocoafiledialoghelper.h qcocoafiledialoghelper.mm
-        qcocoafontdialoghelper.h qcocoafontdialoghelper.mm
         qcocoahelpers.h qcocoahelpers.mm
         qcocoainputcontext.h qcocoainputcontext.mm
         qcocoaintegration.h qcocoaintegration.mm
