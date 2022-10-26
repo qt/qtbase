@@ -17,6 +17,8 @@ private slots:
 
     void comparison_data();
     void comparison();
+    void comparison2_data();
+    void comparison2();
 
     void mixedComparison();
 };
@@ -182,6 +184,64 @@ void tst_QOperatingSystemVersion::comparison()
 
     QFETCH(bool, moreEqualResult);
     QCOMPARE(lhsSystemInfo >= rhsSystemInfo, moreEqualResult);
+}
+
+void tst_QOperatingSystemVersion::comparison2_data()
+{
+    QTest::addColumn<QOperatingSystemVersion>("lhs");
+    QTest::addColumn<QOperatingSystemVersion>("rhs");
+    QTest::addColumn<int>("result");
+
+#define ADDROW(os1, os2)    \
+    QTest::newRow(#os1 "-vs-" #os2) << QOperatingSystemVersion(QOperatingSystemVersion::os1) \
+                                    << QOperatingSystemVersion(QOperatingSystemVersion::os2)
+
+    // Cross-OS testing: not comparables.
+    ADDROW(Windows10, MacOSMonterey) << -128;
+    ADDROW(Windows11, MacOSMonterey) << -128;
+    ADDROW(MacOSMonterey, Windows10) << -128;
+    ADDROW(MacOSMonterey, Windows11) << -128;
+    ADDROW(Windows10, MacOSVentura) << -128;
+    ADDROW(Windows11, MacOSVentura) << -128;
+    ADDROW(MacOSVentura, Windows10) << -128;
+    ADDROW(MacOSVentura, Windows11) << -128;
+    ADDROW(Windows10, Android10) << -128;
+    ADDROW(Windows11, Android11) << -128;
+
+    // Same-OS tests. This list does not have to be exhaustive.
+    ADDROW(Windows7, Windows7) << 0;
+    ADDROW(Windows7, Windows8) << -1;
+    ADDROW(Windows8, Windows7) << 1;
+    ADDROW(Windows8, Windows10) << -1;
+    ADDROW(Windows10, Windows8) << 1;
+    ADDROW(Windows10, Windows10_21H1) << -1;
+    ADDROW(Windows10_21H1, Windows10) << 1;
+    ADDROW(Windows10, Windows11) << -1;
+    ADDROW(MacOSCatalina, MacOSCatalina) << 0;
+    ADDROW(MacOSCatalina, MacOSBigSur) << -1;
+    ADDROW(MacOSBigSur, MacOSCatalina) << 1;
+    ADDROW(MacOSMonterey, MacOSVentura) << -1;
+    ADDROW(MacOSVentura, MacOSVentura) << 0;
+    ADDROW(MacOSVentura, MacOSMonterey) << 1;
+#undef ADDROW
+}
+
+void tst_QOperatingSystemVersion::comparison2()
+{
+    QFETCH(QOperatingSystemVersion, lhs);
+    QFETCH(QOperatingSystemVersion, rhs);
+    QFETCH(int, result);
+
+    QEXPECT_FAIL("Windows10-vs-Windows10_21H1", "QTBUG-107907: Unexpected behavior", Abort);
+    QEXPECT_FAIL("Windows10-vs-Windows11", "QTBUG-107907: Unexpected behavior", Abort);
+
+    // value -128 indicates "not comparable"
+    bool comparable = (result != -128);
+    QCOMPARE(lhs < rhs, result < 0 && comparable);
+    QEXPECT_FAIL("Windows10_21H1-vs-Windows10", "QTBUG-107907: Unexpected behavior", Abort);
+    QCOMPARE(lhs <= rhs, result <= 0 && comparable);
+    QCOMPARE(lhs > rhs, result > 0 && comparable);
+    QCOMPARE(lhs >= rhs, result >= 0 && comparable);
 }
 
 void tst_QOperatingSystemVersion::mixedComparison()
