@@ -7109,7 +7109,9 @@ qlonglong QString::toIntegral_helper(QStringView string, bool *ok, int base)
     }
 #endif
 
-    return QLocaleData::c()->stringToLongLong(string, base, ok, QLocale::RejectGroupSeparator);
+    QVarLengthArray<uchar> latin1(string.size());
+    qt_to_latin1(latin1.data(), string.utf16(), string.size());
+    return QLocaleData::bytearrayToLongLong(latin1, base, ok);
 }
 
 
@@ -7154,7 +7156,9 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     }
 #endif
 
-    return QLocaleData::c()->stringToUnsLongLong(string, base, ok, QLocale::RejectGroupSeparator);
+    QVarLengthArray<uchar> latin1(string.size());
+    qt_to_latin1(latin1.data(), string.utf16(), string.size());
+    return QLocaleData::bytearrayToUnsLongLong(latin1, base, ok);
 }
 
 /*!
