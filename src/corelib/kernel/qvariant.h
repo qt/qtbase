@@ -126,6 +126,7 @@ public:
         ULongLong = QMetaType::ULongLong,
         Double = QMetaType::Double,
         Char = QMetaType::QChar,
+        UChar = QMetaType::UChar,
         Map = QMetaType::QVariantMap,
         List = QMetaType::QVariantList,
         String = QMetaType::QString,
