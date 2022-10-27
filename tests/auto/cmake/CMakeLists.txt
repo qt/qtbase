@@ -196,12 +196,11 @@ _qt_internal_test_expect_pass(test_json_plugin_includes)
 
 if(NOT NO_GUI)
     _qt_internal_test_expect_build_fail(test_testlib_no_link_gui)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_CURRENT_SOURCE_DIR}/test_testlib_definitions/main.cpp"
+        "${CMAKE_CURRENT_BINARY_DIR}/failbuild/test_testlib_no_link_gui/test_testlib_no_link_gui/"
+    )
 endif()
-
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-    "${CMAKE_CURRENT_SOURCE_DIR}/test_testlib_definitions/main.cpp"
-    "${CMAKE_CURRENT_BINARY_DIR}/failbuild/test_testlib_no_link_gui/test_testlib_no_link_gui/"
-)
 
 if (NOT NO_WIDGETS)
     _qt_internal_test_expect_build_fail(test_testlib_no_link_widgets)

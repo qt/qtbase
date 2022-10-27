@@ -9,14 +9,13 @@ qt_internal_add_benchmark(tst_bench_qvariant
     SOURCES
         tst_bench_qvariant.cpp
     LIBRARIES
-        Qt::Gui
         Qt::Test
 )
 
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(tst_bench_qvariant CONDITION NOT TARGET Qt::Gui
+qt_internal_extend_target(tst_bench_qvariant CONDITION TARGET Qt::Gui
     LIBRARIES
-        # Remove: gui
+        Qt::Gui
 )
