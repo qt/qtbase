@@ -4,15 +4,11 @@
 ## tst_qbytearray Test:
 #####################################################################
 
-# Collect test data
-list(APPEND test_data "rfc3252.txt")
-
 qt_internal_add_test(tst_qbytearray
     SOURCES
         tst_qbytearray.cpp
     PUBLIC_LIBRARIES
         Qt::CorePrivate
-    TESTDATA ${test_data}
 )
 
 ## Scopes:

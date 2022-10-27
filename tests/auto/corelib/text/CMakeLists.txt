@@ -2,6 +2,7 @@
 
 add_subdirectory(qanystringview)
 add_subdirectory(qbytearray)
+add_subdirectory(qbytearray_large)
 add_subdirectory(qbytearrayapisymmetry)
 add_subdirectory(qbytearraylist)
 add_subdirectory(qbytearraymatcher)
