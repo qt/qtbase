@@ -404,19 +404,18 @@ static QVersionNumber from_string(QLatin1StringView string, qsizetype *suffixInd
     QVarLengthArray<int, 32> seg;
 
     const char *start = string.begin();
-    const char *end = start;
     const char *lastGoodEnd = start;
     const char *endOfString = string.end();
 
     do {
-        bool ok = false;
-        const qulonglong value = qstrntoull(start, endOfString - start, &end, 10, &ok);
-        if (!ok || value > qulonglong(std::numeric_limits<int>::max()))
+        // parsing as unsigned so a minus sign is rejected
+        auto [value, end] = qstrntoull(start, endOfString - start, 10);
+        if (!end || value > qulonglong(std::numeric_limits<int>::max()))
             break;
         seg.append(int(value));
         start = end + 1;
         lastGoodEnd = end;
-    } while (start < endOfString && end < endOfString && *end == '.');
+    } while (start < endOfString && *lastGoodEnd == '.');
 
     if (suffixIndex)
         *suffixIndex = lastGoodEnd - string.begin();

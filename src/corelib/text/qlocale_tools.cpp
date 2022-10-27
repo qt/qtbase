@@ -191,11 +191,10 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision,
             // which case the missing digits are zeroes. In the 'e' case decptInTarget is always 1,
             // as variants of snprintf always generate numbers with one digit before the '.' then.
             // This is why the final decimal point is offset by 1, relative to the number after 'e'.
-            bool ok;
-            const char *endptr;
-            decpt = qstrntoll(target.data() + eSign + 1, length - eSign - 1, &endptr, 10, &ok) + 1;
-            Q_ASSERT(ok);
-            Q_ASSERT(endptr - target.data() <= length);
+            auto r = qstrntoll(target.data() + eSign + 1, length - eSign - 1, 10);
+            decpt = r.result + 1;
+            Q_ASSERT(r.ok());
+            Q_ASSERT(r.endptr - target.data() <= length);
         } else {
             // No 'e' found, so it's the 'f' form. Variants of snprintf generate numbers with
             // potentially multiple digits before the '.', but without decimal exponent then. So we
@@ -423,36 +422,25 @@ static bool isDigitForBase(char d, int base)
     return false;
 }
 
-unsigned long long
-qstrntoull(const char *begin, qsizetype size, const char **endptr, int base, bool *ok)
+QSimpleParsedNumber<qulonglong> qstrntoull(const char *begin, qsizetype size, int base)
 {
     const char *p = begin, *const stop = begin + size;
     while (p < stop && ascii_isspace(*p))
         ++p;
     unsigned long long result = 0;
-    if (p >= stop || *p == '-') {
-        *ok = false;
-        if (endptr)
-            *endptr = begin;
-        return result;
-    }
+    if (p >= stop || *p == '-')
+        return { };
     const auto prefix = scanPrefix(*p == '+' ? p + 1 : p, stop, base);
-    if (!prefix.base || prefix.next >= stop) {
-        if (endptr)
-            *endptr = begin;
-        *ok = false;
-        return 0;
-    }
+    if (!prefix.base || prefix.next >= stop)
+        return { };
 
     const auto res = std::from_chars(prefix.next, stop, result, prefix.base);
-    *ok = res.ec == std::errc{};
-    if (endptr)
-        *endptr = res.ptr == prefix.next ? begin : res.ptr;
-    return result;
+    if (res.ec != std::errc{})
+        return { };
+    return { result, res.ptr == prefix.next ? begin : res.ptr };
 }
 
-long long
-qstrntoll(const char *begin, qsizetype size, const char **endptr, int base, bool *ok)
+QSimpleParsedNumber<qlonglong> qstrntoll(const char *begin, qsizetype size, int base)
 {
     const char *p = begin, *const stop = begin + size;
     while (p < stop && ascii_isspace(*p))
@@ -467,30 +455,22 @@ qstrntoll(const char *begin, qsizetype size, const char **endptr, int base, bool
     const auto prefix = scanPrefix(p, stop, base);
     // Must check for digit, as from_chars() will accept a sign, which would be
     // a second sign, that we should reject.
-    if (!prefix.base || prefix.next >= stop || !isDigitForBase(*prefix.next, prefix.base)) {
-        if (endptr)
-            *endptr = begin;
-        *ok = false;
-        return 0;
-    }
+    if (!prefix.base || prefix.next >= stop || !isDigitForBase(*prefix.next, prefix.base))
+        return { };
 
     long long result = 0;
     auto res = std::from_chars(prefix.next, stop, result, prefix.base);
-    *ok = res.ec == std::errc{};
     if (negate && res.ec == std::errc::result_out_of_range) {
         // Maybe LLONG_MIN:
         unsigned long long check = 0;
         res = std::from_chars(prefix.next, stop, check, prefix.base);
-        if (res.ec == std::errc{} && check + std::numeric_limits<long long>::min() == 0) {
-            *ok = true;
-            if (endptr)
-                *endptr = res.ptr;
-            return std::numeric_limits<long long>::min();
-        }
+        if (res.ec == std::errc{} && check + std::numeric_limits<long long>::min() == 0)
+            return { std::numeric_limits<long long>::min(), res.ptr };
+        return { };
     }
-    if (endptr)
-        *endptr = res.ptr == prefix.next ? begin : res.ptr;
-    return negate && *ok ? -result : result;
+    if (res.ec != std::errc{})
+        return { };
+    return { negate ? -result : result, res.ptr };
 }
 
 template <typename Char>

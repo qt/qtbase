@@ -60,11 +60,9 @@ static bool parseIp4Internal(IPv4Address &address, const char *ptr, bool acceptL
                 ptr[1] != '.' && ptr[1] != '\0')
             return false;
 
-        const char *endptr;
-        bool ok;
-        quint64 ll = qstrntoull(ptr, stop - ptr, &endptr, 0, &ok);
+        auto [ll, endptr] = qstrntoull(ptr, stop - ptr, 0);
         quint32 x = ll;
-        if (!ok || endptr == ptr || ll != x)
+        if (!endptr || endptr == ptr || ll != x)
             return false;
 
         if (*endptr == '.' || dotCount == 3) {
@@ -176,15 +174,13 @@ const QChar *parseIp6(IPv6Address &address, const QChar *begin, const QChar *end
             continue;
         }
 
-        const char *endptr;
-        bool ok;
-        quint64 ll = qstrntoull(ptr, stop - ptr, &endptr, 16, &ok);
+        auto [ll, endptr] = qstrntoull(ptr, stop - ptr, 16);
         quint16 x = ll;
 
         // Reject malformed fields:
         // - failed to parse
         // - too many hex digits
-        if (!ok || endptr > ptr + 4)
+        if (!endptr || endptr > ptr + 4)
             return begin + (ptr - buffer.data());
 
         if (*endptr == '.') {

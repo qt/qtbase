@@ -6887,14 +6887,14 @@ static int parse_field_width(const char *&c, qsizetype size)
 
     // can't be negative - started with a digit
     // contains at least one digit
-    const char *endp;
-    bool ok;
-    const qulonglong result = qstrntoull(c, size, &endp, 10, &ok);
+    auto [result, endp] = qstrntoull(c, size, 10);
     c = endp;
+    if (!endp)
+        return false;
     // preserve Qt 5.5 behavior of consuming all digits, no matter how many
     while (c < stop && qIsDigit(*c))
         ++c;
-    return ok && result < qulonglong(std::numeric_limits<int>::max()) ? int(result) : 0;
+    return result < qulonglong(std::numeric_limits<int>::max()) ? int(result) : 0;
 }
 
 enum LengthMod { lm_none, lm_hh, lm_h, lm_l, lm_ll, lm_L, lm_j, lm_z, lm_t };

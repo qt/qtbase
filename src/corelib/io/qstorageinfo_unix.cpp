@@ -451,32 +451,35 @@ inline bool QStorageIterator::next()
     const char *const stop = ptr + len - 1;
 
     // parse the line
-    bool ok;
     mnt.mnt_freq = 0;
     mnt.mnt_passno = 0;
 
-    mnt.mount_id = qstrntoll(ptr, stop - ptr, const_cast<const char **>(&ptr), 10, &ok);
-    if (!ok)
+    auto r = qstrntoll(ptr, stop - ptr, 10);
+    if (!r.ok())
         return false;
+    mnt.mount_id = r.result;
 
-    int parent_id = qstrntoll(ptr, stop - ptr, const_cast<const char **>(&ptr), 10, &ok);
+    r = qstrntoll(r.endptr, stop - r.endptr, 10);
+    if (!r.ok())
+        return false;
+    int parent_id = r.result;
     Q_UNUSED(parent_id);
-    if (!ok)
+
+    r = qstrntoll(r.endptr, stop - r.endptr, 10);
+    if (!r.ok())
+        return false;
+    if (*r.endptr != ':')
+        return false;
+    int rdevmajor = r.result;
+    r = qstrntoll(r.endptr + 1, stop - r.endptr - 1, 10);
+    if (!r.ok())
+        return false;
+    mnt.rdev = makedev(rdevmajor, r.result);
+
+    if (*r.endptr != ' ')
         return false;
 
-    int rdevmajor = qstrntoll(ptr, stop - ptr, const_cast<const char **>(&ptr), 10, &ok);
-    if (!ok)
-        return false;
-    if (*ptr != ':')
-        return false;
-    int rdevminor = qstrntoll(ptr + 1, stop - ptr - 1, const_cast<const char **>(&ptr), 10, &ok);
-    if (!ok)
-        return false;
-    mnt.rdev = makedev(rdevmajor, rdevminor);
-
-    if (*ptr != ' ')
-        return false;
-
+    ptr = const_cast<char *>(r.endptr);
     mnt.subvolume = ++ptr;
     ptr = parseMangledPath(ptr);
     if (!ptr)
