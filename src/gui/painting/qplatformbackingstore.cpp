@@ -37,6 +37,7 @@ struct QBackingstoreTextureInfo
 {
     void *source; // may be null
     QRhiTexture *texture;
+    QRhiTexture *textureExtra;
     QRect rect;
     QRect clipRect;
     QPlatformTextureList::Flags flags;
@@ -75,6 +76,12 @@ QRhiTexture *QPlatformTextureList::texture(int index) const
 {
     Q_D(const QPlatformTextureList);
     return d->textures.at(index).texture;
+}
+
+QRhiTexture *QPlatformTextureList::textureExtra(int index) const
+{
+    Q_D(const QPlatformTextureList);
+    return d->textures.at(index).textureExtra;
 }
 
 void *QPlatformTextureList::source(int index)
@@ -123,6 +130,22 @@ void QPlatformTextureList::appendTexture(void *source, QRhiTexture *texture, con
     QBackingstoreTextureInfo bi;
     bi.source = source;
     bi.texture = texture;
+    bi.textureExtra = nullptr;
+    bi.rect = geometry;
+    bi.clipRect = clipRect;
+    bi.flags = flags;
+    d->textures.append(bi);
+}
+
+void QPlatformTextureList::appendTexture(void *source, QRhiTexture *textureLeft, QRhiTexture *textureRight, const QRect &geometry,
+                                         const QRect &clipRect, Flags flags)
+{
+    Q_D(QPlatformTextureList);
+
+    QBackingstoreTextureInfo bi;
+    bi.source = source;
+    bi.texture = textureLeft;
+    bi.textureExtra = textureRight;
     bi.rect = geometry;
     bi.clipRect = clipRect;
     bi.flags = flags;

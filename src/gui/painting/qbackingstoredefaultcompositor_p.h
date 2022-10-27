@@ -70,21 +70,28 @@ private:
         QRhiBuffer *ubuf = nullptr;
         // All srbs are layout-compatible.
         QRhiShaderResourceBindings *srb = nullptr;
+        QRhiShaderResourceBindings *srbExtra = nullptr; // may be null (used for stereo)
         QRhiTexture *lastUsedTexture = nullptr;
+        QRhiTexture *lastUsedTextureExtra = nullptr;    // may be null (used for stereo)
         bool isValid() const { return ubuf && srb; }
         void reset() {
             delete ubuf;
             ubuf = nullptr;
             delete srb;
             srb = nullptr;
+            if (srbExtra) {
+                delete srbExtra;
+                srbExtra = nullptr;
+            }
             lastUsedTexture = nullptr;
+            lastUsedTextureExtra = nullptr;
         }
     };
     PerQuadData m_widgetQuadData;
     QVarLengthArray<PerQuadData, 8> m_textureQuadData;
 
-    PerQuadData createPerQuadData(QRhiTexture *texture);
-    void updatePerQuadData(PerQuadData *d, QRhiTexture *texture);
+    PerQuadData createPerQuadData(QRhiTexture *texture, QRhiTexture *textureExtra = nullptr);
+    void updatePerQuadData(PerQuadData *d, QRhiTexture *texture, QRhiTexture *textureExtra = nullptr);
     void updateUniforms(PerQuadData *d, QRhiResourceUpdateBatch *resourceUpdates,
                         const QMatrix4x4 &target, const QMatrix3x3 &source, UpdateUniformOption option);
 };

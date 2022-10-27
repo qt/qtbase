@@ -1,0 +1,41 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \example stereoqopenglwidget
+    \title QOpenGLWidget Stereoscopic Rendering Example
+
+    \brief This example shows how to create a minimal QOpenGLWidget based application
+    with stereoscopic rendering support.
+
+    \image stereoexample-leftbuffer.png
+
+    The above image is what will be rendered to the left buffer.
+
+    \image stereoexample-rightbuffer.png
+
+    The above image is what will be rendered to the right buffer.
+
+    \note Support for stereoscopic rendering has certain hardware requirements, like
+    your graphics card needs stereo support.
+
+    \section1 Setting the correct surface flag
+    To enable stereoscopic rendering you need to set the flag
+    QSurfaceFormat::StereoBuffers globally. Just doing it on the widget is not enough
+    because of how the flag is handled internally. The safest is to do it on
+    QSurfaceFormat::SetDefaultFormat prior to starting the application.
+
+    \snippet stereoqopenglwidget/main.cpp 1
+
+    \section1 Rendering twice
+    After QSurfaceFormat::StereoBuffers is set, then paintGL() will be called twice,
+    once for each buffer. In paintGL() you can call currentTargetBuffer() to query
+    which TargetBuffer is currently active.
+
+    In the following snippet we slightly translate the matrix to not render the
+    vertices on top of each other. This is a simple example just too see that if the
+    necessary support is there, at runtime you should see two objects, one on the left
+    and one on the right.
+
+    \snippet stereoqopenglwidget/glwidget.cpp 1
+*/

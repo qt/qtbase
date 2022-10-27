@@ -415,6 +415,26 @@ QT_BEGIN_NAMESPACE
   certain desktop platforms (e.g. \macos) too. The stable,
   cross-platform solution is always QOpenGLWidget.
 
+
+  \section1 Stereoscopic rendering
+
+  Starting from 6.5 QOpenGLWidget has support for stereoscopic rendering.
+  To enable it, set the QSurfaceFormat::StereoBuffers flag
+  globally before the window is created, using QSurfaceFormat::SetDefaultFormat().
+
+  \note Using setFormat() will not necessarily work because of how the flag is
+  handled internally.
+
+  This will trigger paintGL() to be called twice each frame,
+  once for each QOpenGLWidget::TargetBuffer. In paintGL(), call
+  currentTargetBuffer() to query which one is currently being drawn to.
+
+  \note For more control over the left and right color buffers, consider using
+  QOpenGLWindow + QWidget::createWindowContainer() instead.
+
+  \note This type of 3D rendering has certain hardware requirements,
+  like the graphics card needs to be setup with stereo support.
+
   \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
   countries.}
 
@@ -449,6 +469,20 @@ QT_BEGIN_NAMESPACE
     This signal is emitted right after the framebuffer object has been recreated
     due to resizing the widget.
 */
+
+/*!
+    \enum QOpenGLWidget::TargetBuffer
+    \since 6.5
+
+    Specifies the buffer to use when stereoscopic rendering is enabled, which is
+    toggled by setting \l QSurfaceFormat::StereoBuffers.
+
+    \note LeftBuffer is always the default and used as fallback value when
+    stereoscopic rendering is disabled or not supported by the graphics driver.
+
+    \value LeftBuffer
+    \value RightBuffer
+ */
 
 /*!
     \enum QOpenGLWidget::UpdateBehavior
@@ -503,10 +537,10 @@ public:
 
     void reset();
     void resetRhiDependentResources();
-    void recreateFbo();
+    void recreateFbos();
     void ensureRhiDependentResources();
 
-    QRhiTexture *texture() const override;
+    QWidgetPrivate::TextureData texture() const override;
     QPlatformTextureList::Flags textureListFlags() override;
 
     QPlatformBackingStoreRhiConfig rhiConfig() const override { return { QPlatformBackingStoreRhiConfig::OpenGL }; }
@@ -516,6 +550,10 @@ public:
 
     void invalidateFbo();
 
+    void destroyFbos();
+
+    void setCurrentTargetBuffer(QOpenGLWidget::TargetBuffer targetBuffer);
+    QImage grabFramebuffer(QOpenGLWidget::TargetBuffer targetBuffer);
     QImage grabFramebuffer() override;
     void beginBackingStorePainting() override { inBackingStorePaint = true; }
     void endBackingStorePainting() override { inBackingStorePaint = false; }
@@ -526,9 +564,9 @@ public:
     void resolveSamples() override;
 
     QOpenGLContext *context = nullptr;
-    QRhiTexture *wrapperTexture = nullptr;
-    QOpenGLFramebufferObject *fbo = nullptr;
-    QOpenGLFramebufferObject *resolvedFbo = nullptr;
+    QRhiTexture *wrapperTextures[2] = {};
+    QOpenGLFramebufferObject *fbos[2] = {};
+    QOpenGLFramebufferObject *resolvedFbos[2] = {};
     QOffscreenSurface *surface = nullptr;
     QOpenGLPaintDevice *paintDevice = nullptr;
     int requestedSamples = 0;
@@ -541,6 +579,7 @@ public:
     bool hasBeenComposed = false;
     bool flushPending = false;
     bool inPaintGL = false;
+    QOpenGLWidget::TargetBuffer currentTargetBuffer = QOpenGLWidget::LeftBuffer;
 };
 
 void QOpenGLWidgetPaintDevicePrivate::beginPaint()
@@ -582,10 +621,11 @@ void QOpenGLWidgetPaintDevice::ensureActiveTarget()
     if (QOpenGLContext::currentContext() != wd->context)
         d->w->makeCurrent();
     else
-        wd->fbo->bind();
+        wd->fbos[wd->currentTargetBuffer]->bind();
+
 
     if (!wd->inPaintGL)
-        QOpenGLContextPrivate::get(wd->context)->defaultFboRedirect = wd->fbo->handle();
+        QOpenGLContextPrivate::get(wd->context)->defaultFboRedirect = wd->fbos[wd->currentTargetBuffer]->handle();
 
     // When used as a viewport, drawing is done via opening a QPainter on the widget
     // without going through paintEvent(). We will have to make sure a glFlush() is done
@@ -593,9 +633,9 @@ void QOpenGLWidgetPaintDevice::ensureActiveTarget()
     wd->flushPending = true;
 }
 
-QRhiTexture *QOpenGLWidgetPrivate::texture() const
+QWidgetPrivate::TextureData QOpenGLWidgetPrivate::texture() const
 {
-    return wrapperTexture;
+    return { wrapperTextures[QOpenGLWidget::LeftBuffer], wrapperTextures[QOpenGLWidget::RightBuffer] };
 }
 
 #ifndef GL_SRGB
@@ -637,10 +677,8 @@ void QOpenGLWidgetPrivate::reset()
 
     delete paintDevice;
     paintDevice = nullptr;
-    delete fbo;
-    fbo = nullptr;
-    delete resolvedFbo;
-    resolvedFbo = nullptr;
+
+    destroyFbos();
 
     resetRhiDependentResources();
 
@@ -659,15 +697,22 @@ void QOpenGLWidgetPrivate::reset()
 
 void QOpenGLWidgetPrivate::resetRhiDependentResources()
 {
+    Q_Q(QOpenGLWidget);
+
     // QRhi resource created from the QRhi. These must be released whenever the
     // widget gets associated with a different QRhi, even when all OpenGL
     // contexts share resources.
 
-    delete wrapperTexture;
-    wrapperTexture = nullptr;
+    delete wrapperTextures[0];
+    wrapperTextures[0] = nullptr;
+
+    if (q->format().stereo()) {
+        delete wrapperTextures[1];
+        wrapperTextures[1] = nullptr;
+    }
 }
 
-void QOpenGLWidgetPrivate::recreateFbo()
+void QOpenGLWidgetPrivate::recreateFbos()
 {
     Q_Q(QOpenGLWidget);
 
@@ -675,10 +720,7 @@ void QOpenGLWidgetPrivate::recreateFbo()
 
     context->makeCurrent(surface);
 
-    delete fbo;
-    fbo = nullptr;
-    delete resolvedFbo;
-    resolvedFbo = nullptr;
+    destroyFbos();
 
     int samples = requestedSamples;
     QOpenGLExtensions *extfuncs = static_cast<QOpenGLExtensions *>(context->functions());
@@ -692,20 +734,36 @@ void QOpenGLWidgetPrivate::recreateFbo()
         format.setInternalTextureFormat(textureFormat);
 
     const QSize deviceSize = q->size() * q->devicePixelRatio();
-    fbo = new QOpenGLFramebufferObject(deviceSize, format);
+    fbos[QOpenGLWidget::LeftBuffer] = new QOpenGLFramebufferObject(deviceSize, format);
     if (samples > 0)
-        resolvedFbo = new QOpenGLFramebufferObject(deviceSize);
+        resolvedFbos[QOpenGLWidget::LeftBuffer] = new QOpenGLFramebufferObject(deviceSize);
 
-    textureFormat = fbo->format().internalTextureFormat();
+    const bool stereoEnabled = q->format().stereo();
 
-    fbo->bind();
+    if (stereoEnabled) {
+        fbos[QOpenGLWidget::RightBuffer] = new QOpenGLFramebufferObject(deviceSize, format);
+        if (samples > 0)
+            resolvedFbos[QOpenGLWidget::RightBuffer] = new QOpenGLFramebufferObject(deviceSize);
+    }
+
+    textureFormat = fbos[QOpenGLWidget::LeftBuffer]->format().internalTextureFormat();
+
+    currentTargetBuffer = QOpenGLWidget::LeftBuffer;
+    fbos[currentTargetBuffer]->bind();
     context->functions()->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    ensureRhiDependentResources();
+
+    if (stereoEnabled) {
+        currentTargetBuffer = QOpenGLWidget::RightBuffer;
+        fbos[currentTargetBuffer]->bind();
+        context->functions()->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        ensureRhiDependentResources();
+    }
+
     flushPending = true; // Make sure the FBO is initialized before use
 
     paintDevice->setSize(deviceSize);
     paintDevice->setDevicePixelRatio(q->devicePixelRatio());
-
-    ensureRhiDependentResources();
 
     emit q->resized();
 }
@@ -721,13 +779,15 @@ void QOpenGLWidgetPrivate::ensureRhiDependentResources()
     // If there is no rhi, because we are completely offscreen, then there's no wrapperTexture either
     if (rhi && rhi->backend() == QRhi::OpenGLES2) {
         const QSize deviceSize = q->size() * q->devicePixelRatio();
-        if (!wrapperTexture || wrapperTexture->pixelSize() != deviceSize) {
-            const uint textureId = resolvedFbo ? resolvedFbo->texture() : (fbo ? fbo->texture() : 0);
-            if (!wrapperTexture)
-                wrapperTexture = rhi->newTexture(QRhiTexture::RGBA8, deviceSize, 1, QRhiTexture::RenderTarget);
+        if (!wrapperTextures[currentTargetBuffer] || wrapperTextures[currentTargetBuffer]->pixelSize() != deviceSize) {
+            const uint textureId = resolvedFbos[currentTargetBuffer] ?
+                        resolvedFbos[currentTargetBuffer]->texture()
+                      : (fbos[currentTargetBuffer] ? fbos[currentTargetBuffer]->texture() : 0);
+            if (!wrapperTextures[currentTargetBuffer])
+                wrapperTextures[currentTargetBuffer] = rhi->newTexture(QRhiTexture::RGBA8, deviceSize, 1, QRhiTexture::RenderTarget);
             else
-                wrapperTexture->setPixelSize(deviceSize);
-            if (!wrapperTexture->createFrom({textureId, 0 }))
+                wrapperTextures[currentTargetBuffer]->setPixelSize(deviceSize);
+            if (!wrapperTextures[currentTargetBuffer]->createFrom({textureId, 0 }))
                 qWarning("QOpenGLWidget: Failed to create wrapper texture");
         }
     }
@@ -836,10 +896,10 @@ void QOpenGLWidgetPrivate::initialize()
 void QOpenGLWidgetPrivate::resolveSamples()
 {
     Q_Q(QOpenGLWidget);
-    if (resolvedFbo) {
+    if (resolvedFbos[currentTargetBuffer]) {
         q->makeCurrent();
-        QRect rect(QPoint(0, 0), fbo->size());
-        QOpenGLFramebufferObject::blitFramebuffer(resolvedFbo, rect, fbo, rect);
+        QRect rect(QPoint(0, 0), fbos[currentTargetBuffer]->size());
+        QOpenGLFramebufferObject::blitFramebuffer(resolvedFbos[currentTargetBuffer], rect, fbos[currentTargetBuffer], rect);
         flushPending = true;
     }
 }
@@ -851,33 +911,56 @@ void QOpenGLWidgetPrivate::render()
     if (fakeHidden || !initialized)
         return;
 
-    q->makeCurrent();
+    setCurrentTargetBuffer(QOpenGLWidget::LeftBuffer);
 
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
     if (!ctx) {
         qWarning("QOpenGLWidget: No current context, cannot render");
         return;
     }
-    if (!fbo) {
+
+    if (!fbos[QOpenGLWidget::LeftBuffer]) {
         qWarning("QOpenGLWidget: No fbo, cannot render");
         return;
     }
 
+    const bool stereoEnabled = q->format().stereo();
+    if (stereoEnabled) {
+        static bool warningGiven = false;
+        if (!fbos[QOpenGLWidget::RightBuffer] && !warningGiven) {
+            qWarning("QOpenGLWidget: Stereo is enabled, but no right buffer. Using only left buffer");
+            warningGiven = true;
+        }
+    }
+
     if (updateBehavior == QOpenGLWidget::NoPartialUpdate && hasBeenComposed) {
         invalidateFbo();
+
+        if (stereoEnabled && fbos[QOpenGLWidget::RightBuffer]) {
+            setCurrentTargetBuffer(QOpenGLWidget::RightBuffer);
+            invalidateFbo();
+            setCurrentTargetBuffer(QOpenGLWidget::LeftBuffer);
+        }
+
         hasBeenComposed = false;
     }
 
     QOpenGLFunctions *f = ctx->functions();
-    QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbo->handle();
-
     f->glViewport(0, 0, q->width() * q->devicePixelRatio(), q->height() * q->devicePixelRatio());
     inPaintGL = true;
+
+    QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbos[currentTargetBuffer]->handle();
     q->paintGL();
+
+    if (stereoEnabled && fbos[QOpenGLWidget::RightBuffer]) {
+        setCurrentTargetBuffer(QOpenGLWidget::RightBuffer);
+        QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbos[currentTargetBuffer]->handle();
+        q->paintGL();
+    }
+    QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = 0;
+
     inPaintGL = false;
     flushPending = true;
-
-    QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = 0;
 }
 
 void QOpenGLWidgetPrivate::invalidateFbo()
@@ -906,7 +989,25 @@ void QOpenGLWidgetPrivate::invalidateFbo()
     }
 }
 
+void QOpenGLWidgetPrivate::destroyFbos()
+{
+    delete fbos[QOpenGLWidget::LeftBuffer];
+    fbos[QOpenGLWidget::LeftBuffer] = nullptr;
+    delete resolvedFbos[QOpenGLWidget::LeftBuffer];
+    resolvedFbos[QOpenGLWidget::LeftBuffer] = nullptr;
+
+    delete fbos[QOpenGLWidget::RightBuffer];
+    fbos[QOpenGLWidget::RightBuffer] = nullptr;
+    delete resolvedFbos[QOpenGLWidget::RightBuffer];
+    resolvedFbos[QOpenGLWidget::RightBuffer] = nullptr;
+}
+
 QImage QOpenGLWidgetPrivate::grabFramebuffer()
+{
+    return grabFramebuffer(QOpenGLWidget::LeftBuffer);
+}
+
+QImage QOpenGLWidgetPrivate::grabFramebuffer(QOpenGLWidget::TargetBuffer targetBuffer)
 {
     Q_Q(QOpenGLWidget);
 
@@ -914,17 +1015,21 @@ QImage QOpenGLWidgetPrivate::grabFramebuffer()
     if (!initialized)
         return QImage();
 
-    if (!fbo) // could be completely offscreen, without ever getting a resize event
-        recreateFbo();
+    // The second fbo is only created when stereoscopic rendering is enabled
+    // Just use the default one if not.
+    if (targetBuffer == QOpenGLWidget::RightBuffer && !q->format().stereo())
+        targetBuffer = QOpenGLWidget::LeftBuffer;
+
+    if (!fbos[targetBuffer]) // could be completely offscreen, without ever getting a resize event
+        recreateFbos();
 
     if (!inPaintGL)
         render();
 
-    if (resolvedFbo) {
+    setCurrentTargetBuffer(targetBuffer);
+    if (resolvedFbos[targetBuffer]) {
         resolveSamples();
-        resolvedFbo->bind();
-    } else {
-        q->makeCurrent();
+        resolvedFbos[targetBuffer]->bind();
     }
 
     const bool hasAlpha = q->format().hasAlpha();
@@ -934,8 +1039,9 @@ QImage QOpenGLWidgetPrivate::grabFramebuffer()
     // While we give no guarantees of what is going to be left bound, prefer the
     // multisample fbo instead of the resolved one. Clients may continue to
     // render straight after calling this function.
-    if (resolvedFbo)
-        q->makeCurrent();
+    if (resolvedFbos[targetBuffer]) {
+        setCurrentTargetBuffer(targetBuffer);
+    }
 
     return res;
 }
@@ -954,8 +1060,8 @@ void QOpenGLWidgetPrivate::resizeViewportFramebuffer()
     if (!initialized)
         return;
 
-    if (!fbo || q->size() * q->devicePixelRatio() != fbo->size()) {
-        recreateFbo();
+    if (!fbos[currentTargetBuffer] || q->size() * q->devicePixelRatio() != fbos[currentTargetBuffer]->size()) {
+        recreateFbos();
         q->update();
     }
 }
@@ -1143,8 +1249,8 @@ void QOpenGLWidget::makeCurrent()
 
     d->context->makeCurrent(d->surface);
 
-    if (d->fbo) // there may not be one if we are in reset()
-        d->fbo->bind();
+    if (d->fbos[d->currentTargetBuffer]) // there may not be one if we are in reset()
+        d->fbos[d->currentTargetBuffer]->bind();
 }
 
 /*!
@@ -1192,7 +1298,31 @@ QOpenGLContext *QOpenGLWidget::context() const
 GLuint QOpenGLWidget::defaultFramebufferObject() const
 {
     Q_D(const QOpenGLWidget);
-    return d->fbo ? d->fbo->handle() : 0;
+    return d->fbos[TargetBuffer::LeftBuffer] ? d->fbos[TargetBuffer::LeftBuffer]->handle() : 0;
+}
+
+/*!
+  \return The framebuffer object handle of the specified target buffer or
+  \c 0 if not yet initialized.
+
+  \note Calling this overload only makes sense if \l QSurfaceFormat::StereoBuffer is enabled
+   and supported by the hardware. Will return the default buffer if it's not.
+
+  \note The framebuffer object belongs to the context returned by context()
+  and may not be accessible from other contexts.
+
+  \note The context and the framebuffer object used by the widget changes when
+  reparenting the widget via setParent(). In addition, the framebuffer object
+  changes on each resize.
+
+  \since 6.5
+
+  \sa context()
+ */
+GLuint QOpenGLWidget::defaultFramebufferObject(TargetBuffer targetBuffer) const
+{
+    Q_D(const QOpenGLWidget);
+    return d->fbos[targetBuffer] ? d->fbos[targetBuffer]->handle() : 0;
 }
 
 /*!
@@ -1241,7 +1371,15 @@ void QOpenGLWidget::resizeGL(int w, int h)
   other state is set and no clearing or drawing is performed by the
   framework.
 
-  \sa initializeGL(), resizeGL()
+  When \l QSurfaceFormat::StereoBuffers is enabled, this function
+  will be called twice - once for each buffer. Query what buffer is
+  currently bound by calling currentTargetBuffer().
+
+  \note The framebuffer of each target will be drawn to even when
+  stereoscopic rendering is not supported by the hardware.
+  Only the left buffer will actually be visible in the window.
+
+  \sa initializeGL(), resizeGL(), currentTargetBuffer()
 */
 void QOpenGLWidget::paintGL()
 {
@@ -1270,7 +1408,7 @@ void QOpenGLWidget::resizeEvent(QResizeEvent *e)
     if (!d->initialized)
         return;
 
-    d->recreateFbo();
+    d->recreateFbos();
     // Make sure our own context is current before invoking user overrides. If
     // the fbo was recreated then there's a chance something else is current now.
     makeCurrent();
@@ -1312,6 +1450,39 @@ QImage QOpenGLWidget::grabFramebuffer()
 {
     Q_D(QOpenGLWidget);
     return d->grabFramebuffer();
+}
+
+/*!
+  Renders and returns a 32-bit RGB image of the framebuffer of the specified target buffer.
+  This overload only makes sense to call when \l QSurfaceFormat::StereoBuffers is enabled.
+  Grabbing the framebuffer of the right target buffer will return the default image
+  if stereoscopic rendering is disabled or if not supported by the hardware.
+
+  \note This is a potentially expensive operation because it relies on glReadPixels()
+  to read back the pixels. This may be slow and can stall the GPU pipeline.
+
+  \since 6.5
+*/
+QImage QOpenGLWidget::grabFramebuffer(TargetBuffer targetBuffer)
+{
+    Q_D(QOpenGLWidget);
+    return d->grabFramebuffer(targetBuffer);
+}
+
+/*!
+  Returns the currently active target buffer. This will be the left buffer by default,
+  the right buffer is only used when \l QSurfaceFormat::StereoBuffers is enabled.
+  When stereoscopic rendering is enabled, this can be queried in paintGL() to know
+  what buffer is currently in use. paintGL() will be called twice, once for each target.
+
+  \since 6.5
+
+  \sa paintGL()
+*/
+QOpenGLWidget::TargetBuffer QOpenGLWidget::currentTargetBuffer() const
+{
+    Q_D(const QOpenGLWidget);
+    return d->currentTargetBuffer;
 }
 
 /*!
@@ -1414,6 +1585,13 @@ QPaintEngine *QOpenGLWidget::paintEngine() const
     return d->paintDevice->paintEngine();
 }
 
+void QOpenGLWidgetPrivate::setCurrentTargetBuffer(QOpenGLWidget::TargetBuffer targetBuffer)
+{
+    Q_Q(QOpenGLWidget);
+    currentTargetBuffer = targetBuffer;
+    q->makeCurrent();
+}
+
 /*!
   \reimp
 */
@@ -1433,7 +1611,7 @@ bool QOpenGLWidget::event(QEvent *e)
             break;
         Q_FALLTHROUGH();
     case QEvent::Show: // reparenting may not lead to a resize so reinitialize on Show too
-        if (d->initialized && !d->wrapperTexture && window()->windowHandle()) {
+        if (d->initialized && !d->wrapperTextures[d->currentTargetBuffer] && window()->windowHandle()) {
             // Special case: did grabFramebuffer() for a hidden widget that then became visible.
             // Recreate all resources since the context now needs to share with the TLW's.
             if (!QCoreApplication::testAttribute(Qt::AA_ShareOpenGLContexts))
@@ -1443,7 +1621,7 @@ bool QOpenGLWidget::event(QEvent *e)
             if (!d->initialized && !size().isEmpty() && repaintManager->rhi()) {
                 d->initialize();
                 if (d->initialized) {
-                    d->recreateFbo();
+                    d->recreateFbos();
                     // QTBUG-89812: generate a paint event, like resize would do,
                     // otherwise a QOpenGLWidget in a QDockWidget may not show the
                     // content upon (un)docking.
@@ -1454,7 +1632,7 @@ bool QOpenGLWidget::event(QEvent *e)
         break;
     case QEvent::ScreenChangeInternal:
         if (d->initialized && d->paintDevice->devicePixelRatio() != devicePixelRatio())
-            d->recreateFbo();
+            d->recreateFbos();
         break;
     default:
         break;

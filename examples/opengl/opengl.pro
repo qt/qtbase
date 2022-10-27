@@ -14,5 +14,6 @@ qtHaveModule(widgets) {
                cube \
                textures \
                hellogles3 \
-               computegles31
+               computegles31 \
+               stereoqopenglwidget
 }

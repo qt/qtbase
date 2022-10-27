@@ -25,6 +25,11 @@ public:
         PartialUpdate
     };
 
+    enum TargetBuffer {
+        LeftBuffer = 0,   // Default
+        RightBuffer       // Only used when QSurfaceFormat::StereoBuffers is enabled
+    };
+
     explicit QOpenGLWidget(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~QOpenGLWidget();
 
@@ -44,8 +49,12 @@ public:
 
     QOpenGLContext *context() const;
     GLuint defaultFramebufferObject() const;
+    GLuint defaultFramebufferObject(TargetBuffer targetBuffer) const;
 
     QImage grabFramebuffer();
+    QImage grabFramebuffer(TargetBuffer targetBuffer);
+
+    TargetBuffer currentTargetBuffer() const;
 
 Q_SIGNALS:
     void aboutToCompose();

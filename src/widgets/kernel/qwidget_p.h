@@ -579,7 +579,13 @@ public:
 
     virtual QPlatformBackingStoreRhiConfig rhiConfig() const { return {}; }
 
-    virtual QRhiTexture *texture() const { return nullptr; }
+    // Note that textureRight may be null, as it's only used in stereoscopic rendering
+    struct TextureData {
+        QRhiTexture *textureLeft = nullptr;
+        QRhiTexture *textureRight = nullptr;
+    };
+
+    virtual TextureData texture() const { return {}; }
     virtual QPlatformTextureList::Flags textureListFlags() {
         Q_Q(QWidget);
         return q->testAttribute(Qt::WA_AlwaysStackOnTop)

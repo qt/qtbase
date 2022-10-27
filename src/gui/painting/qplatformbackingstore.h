@@ -103,6 +103,7 @@ public:
     int count() const;
     bool isEmpty() const { return count() == 0; }
     QRhiTexture *texture(int index) const;
+    QRhiTexture *textureExtra(int index) const;
     QRect geometry(int index) const;
     QRect clipRect(int index) const;
     void *source(int index);
@@ -111,6 +112,9 @@ public:
     bool isLocked() const;
 
     void appendTexture(void *source, QRhiTexture *texture, const QRect &geometry,
+                       const QRect &clipRect = QRect(), Flags flags = { });
+
+    void appendTexture(void *source, QRhiTexture *textureLeft, QRhiTexture *textureRight, const QRect &geometry,
                        const QRect &clipRect = QRect(), Flags flags = { });
     void clear();
 

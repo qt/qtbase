@@ -335,7 +335,7 @@ static QRhiGraphicsPipeline *createGraphicsPipeline(QRhi *rhi,
 
 static const int UBUF_SIZE = 120;
 
-QBackingStoreDefaultCompositor::PerQuadData QBackingStoreDefaultCompositor::createPerQuadData(QRhiTexture *texture)
+QBackingStoreDefaultCompositor::PerQuadData QBackingStoreDefaultCompositor::createPerQuadData(QRhiTexture *texture, QRhiTexture *textureExtra)
 {
     PerQuadData d;
 
@@ -350,13 +350,24 @@ QBackingStoreDefaultCompositor::PerQuadData QBackingStoreDefaultCompositor::crea
     });
     if (!d.srb->create())
         qWarning("QBackingStoreDefaultCompositor: Failed to create srb");
-
     d.lastUsedTexture = texture;
+
+    if (textureExtra) {
+        d.srbExtra = m_rhi->newShaderResourceBindings();
+        d.srbExtra->setBindings({
+            QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d.ubuf, 0, UBUF_SIZE),
+            QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, textureExtra, m_sampler)
+        });
+        if (!d.srbExtra->create())
+            qWarning("QBackingStoreDefaultCompositor: Failed to create srb");
+    }
+
+    d.lastUsedTextureExtra = textureExtra;
 
     return d;
 }
 
-void QBackingStoreDefaultCompositor::updatePerQuadData(PerQuadData *d, QRhiTexture *texture)
+void QBackingStoreDefaultCompositor::updatePerQuadData(PerQuadData *d, QRhiTexture *texture, QRhiTexture *textureExtra)
 {
     // This whole check-if-texture-ptr-is-different is needed because there is
     // nothing saying a QPlatformTextureList cannot return a different
@@ -371,8 +382,17 @@ void QBackingStoreDefaultCompositor::updatePerQuadData(PerQuadData *d, QRhiTextu
     });
 
     d->srb->updateResources(QRhiShaderResourceBindings::BindingsAreSorted);
-
     d->lastUsedTexture = texture;
+
+    if (textureExtra) {
+        d->srbExtra->setBindings({
+            QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d->ubuf, 0, UBUF_SIZE),
+            QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, textureExtra, m_sampler)
+        });
+
+        d->srbExtra->updateResources(QRhiShaderResourceBindings::BindingsAreSorted);
+        d->lastUsedTextureExtra = textureExtra;
+    }
 }
 
 void QBackingStoreDefaultCompositor::updateUniforms(PerQuadData *d, QRhiResourceUpdateBatch *resourceUpdates,
@@ -534,11 +554,14 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
             continue;
         }
         QRhiTexture *t = textures->texture(i);
+        QRhiTexture *tExtra = textures->textureExtra(i);
         if (t) {
-            if (!m_textureQuadData[i].isValid())
-                m_textureQuadData[i] = createPerQuadData(t);
-            else
-                updatePerQuadData(&m_textureQuadData[i], t);
+            if (!m_textureQuadData[i].isValid()) {
+                m_textureQuadData[i] = createPerQuadData(t, tExtra);
+            }
+            else {
+                updatePerQuadData(&m_textureQuadData[i], t, tExtra);
+            }
             updateUniforms(&m_textureQuadData[i], resourceUpdates, target, source, NoOption);
         } else {
             m_textureQuadData[i].reset();
@@ -549,47 +572,74 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
     QRhiCommandBuffer *cb = swapchain->currentFrameCommandBuffer();
     const QSize outputSizeInPixels = swapchain->currentPixelSize();
     QColor clearColor = translucentBackground ? Qt::transparent : Qt::black;
-    cb->beginPass(swapchain->currentFrameRenderTarget(), clearColor, { 1.0f, 0 }, resourceUpdates);
 
-    cb->setGraphicsPipeline(m_psNoBlend);
-    cb->setViewport({ 0, 0, float(outputSizeInPixels.width()), float(outputSizeInPixels.height()) });
-    QRhiCommandBuffer::VertexInput vbufBinding(m_vbuf, 0);
-    cb->setVertexInput(0, 1, &vbufBinding);
+    cb->resourceUpdate(resourceUpdates);
 
-    // Textures for renderToTexture widgets.
-    for (int i = 0; i < textureWidgetCount; ++i) {
-        if (!textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop)) {
-            if (m_textureQuadData[i].isValid()) {
-                cb->setShaderResources(m_textureQuadData[i].srb);
-                cb->draw(6);
+    auto render = [&](std::optional<QRhiSwapChain::StereoTargetBuffer> buffer = std::nullopt) {
+        QRhiRenderTarget* target = nullptr;
+        if (buffer.has_value())
+            target = swapchain->currentFrameRenderTarget(buffer.value());
+        else
+            target = swapchain->currentFrameRenderTarget();
+
+        cb->beginPass(target, clearColor, { 1.0f, 0 });
+
+        cb->setGraphicsPipeline(m_psNoBlend);
+        cb->setViewport({ 0, 0, float(outputSizeInPixels.width()), float(outputSizeInPixels.height()) });
+        QRhiCommandBuffer::VertexInput vbufBinding(m_vbuf, 0);
+        cb->setVertexInput(0, 1, &vbufBinding);
+
+        // Textures for renderToTexture widgets.
+        for (int i = 0; i < textureWidgetCount; ++i) {
+            if (!textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop)) {
+                if (m_textureQuadData[i].isValid()) {
+
+                    QRhiShaderResourceBindings* srb = m_textureQuadData[i].srb;
+                    if (buffer == QRhiSwapChain::RightBuffer && m_textureQuadData[i].srbExtra)
+                        srb = m_textureQuadData[i].srbExtra;
+
+                    cb->setShaderResources(srb);
+                    cb->draw(6);
+                }
             }
         }
-    }
 
-    cb->setGraphicsPipeline(premultiplied ? m_psPremulBlend : m_psBlend);
+        cb->setGraphicsPipeline(premultiplied ? m_psPremulBlend : m_psBlend);
 
-    // Backingstore texture with the normal widgets.
-    if (m_texture) {
-        cb->setShaderResources(m_widgetQuadData.srb);
-        cb->draw(6);
-    }
+        // Backingstore texture with the normal widgets.
+        if (m_texture) {
+            cb->setShaderResources(m_widgetQuadData.srb);
+            cb->draw(6);
+        }
 
-    // Textures for renderToTexture widgets that have WA_AlwaysStackOnTop set.
-    for (int i = 0; i < textureWidgetCount; ++i) {
-        const QPlatformTextureList::Flags flags = textures->flags(i);
-        if (flags.testFlag(QPlatformTextureList::StacksOnTop)) {
-            if (m_textureQuadData[i].isValid()) {
-                if (flags.testFlag(QPlatformTextureList::NeedsPremultipliedAlphaBlending))
-                    cb->setGraphicsPipeline(m_psPremulBlend);
-                else
-                    cb->setGraphicsPipeline(m_psBlend);
-                cb->setShaderResources(m_textureQuadData[i].srb);
-                cb->draw(6);
+        // Textures for renderToTexture widgets that have WA_AlwaysStackOnTop set.
+        for (int i = 0; i < textureWidgetCount; ++i) {
+            const QPlatformTextureList::Flags flags = textures->flags(i);
+            if (flags.testFlag(QPlatformTextureList::StacksOnTop)) {
+                if (m_textureQuadData[i].isValid()) {
+                    if (flags.testFlag(QPlatformTextureList::NeedsPremultipliedAlphaBlending))
+                        cb->setGraphicsPipeline(m_psPremulBlend);
+                    else
+                        cb->setGraphicsPipeline(m_psBlend);
+
+                    QRhiShaderResourceBindings* srb = m_textureQuadData[i].srb;
+                    if (buffer == QRhiSwapChain::RightBuffer && m_textureQuadData[i].srbExtra)
+                        srb = m_textureQuadData[i].srbExtra;
+
+                    cb->setShaderResources(srb);
+                    cb->draw(6);
+                }
             }
         }
-    }
 
-    cb->endPass();
+        cb->endPass();
+    };
+
+    if (swapchain->window()->format().stereo()) {
+        render(QRhiSwapChain::LeftBuffer);
+        render(QRhiSwapChain::RightBuffer);
+    } else
+        render();
 
     rhi->endFrame(swapchain);
 
