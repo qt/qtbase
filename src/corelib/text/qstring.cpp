@@ -3325,19 +3325,33 @@ static void removeStringImpl(QString &s, const T &needle, Qt::CaseSensitivity cs
     if (i < 0)
         return;
 
-    auto beg = s.begin(); // detaches
-    auto dst = beg + i;
-    auto src = beg + i + needleSize;
-    auto end = s.end();
-    // loop invariant: [beg, dst[ is partial result
-    //                 [src, end[ still to be checked for needles
-    while (src < end) {
-        i = s.indexOf(needle, std::distance(beg, src), cs);
-        auto hit = i == -1 ? end : beg + i;
-        dst = std::copy(src, hit, dst);
-        src = hit + needleSize;
+    QString::DataPointer &dptr = s.data_ptr();
+    auto begin = dptr.begin();
+    auto end = dptr.end();
+
+    auto copyFunc = [&](auto &dst) {
+        auto src = begin + i + needleSize;
+        while (src < end) {
+            i = s.indexOf(needle, std::distance(begin, src), cs);
+            auto hit = i == -1 ? end : begin + i;
+            dst = std::copy(src, hit, dst);
+            src = hit + needleSize;
+        }
+        return dst;
+    };
+
+    if (!dptr->needsDetach()) {
+        auto dst = begin + i;
+        dst = copyFunc(dst);
+        s.truncate(std::distance(begin, dst));
+    } else {
+        QString copy{s.size(), Qt::Uninitialized};
+        auto copy_begin = copy.begin();
+        auto dst = std::copy(begin, begin + i, copy_begin); // Chunk before the first hit
+        dst = copyFunc(dst);
+        copy.resize(std::distance(copy_begin, dst));
+        s.swap(copy);
     }
-    s.truncate(std::distance(beg, dst));
 }
 
 /*!

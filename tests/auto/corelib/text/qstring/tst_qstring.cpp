@@ -3381,9 +3381,15 @@ void tst_QString::remove_string()
             }
         }
 
+        // Test when needsDetach() is true
         QString s3 = string;
         s3.remove( before, cs );
         QCOMPARE(s3, result);
+
+        QString s5 = string;
+        s5.begin(); // Detach so needsDetach() is false
+        s5.remove( before, cs );
+        QCOMPARE(s5, result);
 
         if (QtPrivate::isLatin1(before)) {
             QString s6 = string;
@@ -3440,9 +3446,17 @@ void tst_QString::remove_regexp()
 void tst_QString::remove_extra()
 {
     {
-        QString s = "The quick brown fox jumps over the lazy dog. "
-                    "The lazy dog jumps over the quick brown fox.";
-        s.remove(s);
+        QString quickFox = "The quick brown fox jumps over the lazy dog. "
+                           "The lazy dog jumps over the quick brown fox.";
+        QString s1 = quickFox;
+        QVERIFY(s1.data_ptr().needsDetach());
+        s1.remove(s1);
+        QVERIFY(s1.isEmpty());
+        QVERIFY(!quickFox.isEmpty());
+
+        QVERIFY(!quickFox.data_ptr().needsDetach());
+        quickFox.remove(quickFox);
+        QVERIFY(quickFox.isEmpty());
     }
 
     {
