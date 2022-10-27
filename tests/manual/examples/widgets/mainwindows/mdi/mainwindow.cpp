@@ -74,6 +74,12 @@ bool MainWindow::loadFile(const QString &fileName)
     return succeeded;
 }
 
+void MainWindow::newSubWindow()
+{
+    MdiChild *child = createMdiChild(static_cast<MdiChild *>(mdiArea->activeSubWindow()->widget()));
+    child->show();
+}
+
 static inline QString recentFilesKey() { return QStringLiteral("recentFileList"); }
 static inline QString fileKey() { return QStringLiteral("file"); }
 
@@ -201,6 +207,7 @@ void MainWindow::updateMenus()
 #ifndef QT_NO_CLIPBOARD
     pasteAct->setEnabled(hasMdiChild);
 #endif
+    newWindowAct->setEnabled(hasMdiChild);
     closeAct->setEnabled(hasMdiChild);
     closeAllAct->setEnabled(hasMdiChild);
     tileAct->setEnabled(hasMdiChild);
@@ -220,6 +227,7 @@ void MainWindow::updateMenus()
 void MainWindow::updateWindowMenu()
 {
     windowMenu->clear();
+    windowMenu->addAction(newWindowAct);
     windowMenu->addAction(closeAct);
     windowMenu->addAction(closeAllAct);
     windowMenu->addSeparator();
@@ -253,9 +261,9 @@ void MainWindow::updateWindowMenu()
     }
 }
 
-MdiChild *MainWindow::createMdiChild()
+MdiChild *MainWindow::createMdiChild(MdiChild *other)
 {
-    MdiChild *child = new MdiChild;
+    MdiChild *child = new MdiChild(other);
     mdiArea->addSubWindow(child);
 
 #ifndef QT_NO_CLIPBOARD
@@ -364,6 +372,11 @@ void MainWindow::createActions()
 
     windowMenu = menuBar()->addMenu(tr("&Window"));
     connect(windowMenu, &QMenu::aboutToShow, this, &MainWindow::updateWindowMenu);
+
+    newWindowAct = new QAction(tr("&New view"), this);
+    newWindowAct->setStatusTip(tr("Make another window viewing the same document"));
+    connect(newWindowAct, &QAction::triggered,
+            this, &MainWindow::newSubWindow);
 
     closeAct = new QAction(tr("Cl&ose"), this);
     closeAct->setStatusTip(tr("Close the active window"));

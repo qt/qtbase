@@ -5,10 +5,18 @@
 
 #include "mdichild.h"
 
-MdiChild::MdiChild()
+MdiChild::MdiChild(MdiChild *other)
 {
     setAttribute(Qt::WA_DeleteOnClose);
-    isUntitled = true;
+    if (other) {
+        auto *doc = other->document();
+        setDocument(doc);
+        setWindowModified(other->isWindowModified());
+        connect(doc, &QTextDocument::contentsChanged,
+                this, &MdiChild::documentWasModified);
+        curFile = other->curFile;
+        setWindowTitle(userFriendlyCurrentFile() + "[*]");
+    }
 }
 
 void MdiChild::newFile()

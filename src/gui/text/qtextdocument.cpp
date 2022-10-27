@@ -11,6 +11,7 @@
 #include "qtexttable.h"
 #include "qtextlist.h"
 #include <qdebug.h>
+#include <qloggingcategory.h>
 #if QT_CONFIG(regularexpression)
 #include <qregularexpression.h>
 #endif
@@ -41,6 +42,8 @@
 #include <limits.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcLayout);
 
 using namespace Qt::StringLiterals;
 
@@ -727,6 +730,8 @@ void QTextDocument::setTextWidth(qreal width)
 {
     Q_D(QTextDocument);
     QSizeF sz = d->pageSize;
+
+    qCDebug(lcLayout) << "page size" << sz << "-> width" << width;
     sz.setWidth(width);
     sz.setHeight(-1);
     setPageSize(sz);

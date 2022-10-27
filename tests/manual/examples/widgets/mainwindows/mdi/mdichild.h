@@ -11,7 +11,7 @@ class MdiChild : public QTextEdit
     Q_OBJECT
 
 public:
-    MdiChild();
+    MdiChild(MdiChild *other = nullptr);
 
     void newFile();
     bool loadFile(const QString &fileName);
@@ -33,7 +33,7 @@ private:
     QString strippedName(const QString &fullFileName);
 
     QString curFile;
-    bool isUntitled;
+    bool isUntitled = true;
 };
 
 #endif

@@ -12,6 +12,7 @@ class QAction;
 class QMenu;
 class QMdiArea;
 class QMdiSubWindow;
+class QTextDocument;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -41,8 +42,9 @@ private slots:
     void about();
     void updateMenus();
     void updateWindowMenu();
-    MdiChild *createMdiChild();
+    MdiChild *createMdiChild(MdiChild *other = nullptr);
     void switchLayoutDirection();
+    void newSubWindow();
 
 private:
     enum { MaxRecentFiles = 5 };
@@ -72,6 +74,7 @@ private:
     QAction *copyAct;
     QAction *pasteAct;
 #endif
+    QAction *newWindowAct;
     QAction *closeAct;
     QAction *closeAllAct;
     QAction *tileAct;
