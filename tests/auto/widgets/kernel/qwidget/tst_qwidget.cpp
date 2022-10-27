@@ -166,6 +166,7 @@ private slots:
     void reverseTabOrder();
     void tabOrderWithProxy();
     void tabOrderWithProxyDisabled();
+    void tabOrderWithProxyOutOfOrder();
     void tabOrderWithCompoundWidgets();
     void tabOrderWithCompoundWidgetsNoFocusPolicy();
     void tabOrderNoChange();
@@ -1899,8 +1900,11 @@ public:
         setObjectName(name);
 
         lineEdit1 = new QLineEdit;
+        lineEdit1->setObjectName(name + "/lineEdit1");
         lineEdit2 = new QLineEdit;
+        lineEdit2->setObjectName(name + "/lineEdit2");
         lineEdit3 = new QLineEdit;
+        lineEdit3->setObjectName(name + "/lineEdit3");
         lineEdit3->setEnabled(false);
 
         QHBoxLayout* hbox = new QHBoxLayout(this);
@@ -2146,6 +2150,24 @@ void tst_QWidget::tabOrderWithProxyDisabled()
              qPrintable(QApplication::focusWidget()->objectName()));
 }
 
+//#define DEBUG_FOCUS_CHAIN
+static void dumpFocusChain(QWidget *start, bool bForward, const char *desc = nullptr)
+{
+#ifdef DEBUG_FOCUS_CHAIN
+    qDebug() << "Dump focus chain, start:" << start << "isForward:" << bForward << desc;
+    QWidget *cur = start;
+    do {
+        qDebug() << "-" << cur;
+        auto widgetPrivate = static_cast<QWidgetPrivate *>(qt_widget_private(cur));
+        cur = bForward ? widgetPrivate->focus_next : widgetPrivate->focus_prev;
+    } while (cur != start);
+#else
+    Q_UNUSED(start);
+    Q_UNUSED(bForward);
+    Q_UNUSED(desc);
+#endif
+}
+
 void tst_QWidget::tabOrderWithCompoundWidgets()
 {
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
@@ -2249,22 +2271,65 @@ static QList<QWidget *> getFocusChain(QWidget *start, bool bForward)
     return ret;
 }
 
-//#define DEBUG_FOCUS_CHAIN
-static void dumpFocusChain(QWidget *start, bool bForward, const char *desc = nullptr)
+void tst_QWidget::tabOrderWithProxyOutOfOrder()
 {
-#ifdef DEBUG_FOCUS_CHAIN
-    qDebug() << "Dump focus chain, start:" << start << "isForward:" << bForward << desc;
-    QWidget *cur = start;
-    do {
-        qDebug() << cur;
-        auto widgetPrivate = static_cast<QWidgetPrivate *>(qt_widget_private(cur));
-        cur = bForward ? widgetPrivate->focus_next : widgetPrivate->focus_prev;
-    } while (cur != start);
-#else
-    Q_UNUSED(start);
-    Q_UNUSED(bForward);
-    Q_UNUSED(desc);
-#endif
+    Container container;
+    container.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+
+    // important to create the widgets with parent so that they are
+    // added to the focus chain already now, and with the buttonBox
+    // before the outsideButton.
+    QWidget buttonBox(&container);
+    buttonBox.setObjectName("buttonBox");
+    QPushButton outsideButton(&container);
+    outsideButton.setObjectName("outsideButton");
+
+    container.box->addWidget(&outsideButton);
+    container.box->addWidget(&buttonBox);
+    QCOMPARE(getFocusChain(&container, true),
+             QList<QWidget*>({&container, &buttonBox, &outsideButton}));
+
+    // this now adds okButon and cancelButton to the focus chain,
+    // after the outsideButton - so the outsideButton is in between
+    // the buttonBox and the children of the buttonBox!
+    QPushButton okButton(&buttonBox);
+    okButton.setObjectName("okButton");
+    QPushButton cancelButton(&buttonBox);
+    cancelButton.setObjectName("cancelButton");
+    QCOMPARE(getFocusChain(&container, true),
+             QList<QWidget*>({&container, &buttonBox, &outsideButton, &okButton, &cancelButton}));
+
+    // by setting the okButton as the focusProxy, the outsideButton becomes
+    // unreachable when navigating the focus chain as the buttonBox is in front
+    // of, and proxies to the okButton behind the outsideButton. setFocusProxy
+    // must fix that by moving the buttonBox in front of the first sibling of
+    // the proxy.
+    buttonBox.setFocusProxy(&okButton);
+    QCOMPARE(getFocusChain(&container, true),
+             QList<QWidget*>({&container, &outsideButton, &buttonBox, &okButton, &cancelButton}));
+
+    container.show();
+    container.activateWindow();
+    QApplicationPrivate::setActiveWindow(&container);
+    if (!QTest::qWaitForWindowActive(&container))
+        QSKIP("Window failed to activate, skipping test");
+
+    QCOMPARE(QApplication::focusWidget(), &outsideButton);
+    container.tab();
+    QCOMPARE(QApplication::focusWidget(), &okButton);
+    container.tab();
+    QCOMPARE(QApplication::focusWidget(), &cancelButton);
+    container.tab();
+    QCOMPARE(QApplication::focusWidget(), &outsideButton);
+
+    container.backTab();
+    QCOMPARE(QApplication::focusWidget(), &cancelButton);
+    container.backTab();
+    QCOMPARE(QApplication::focusWidget(), &okButton);
+    container.backTab();
+    QCOMPARE(QApplication::focusWidget(), &outsideButton);
+    container.backTab();
+    QCOMPARE(QApplication::focusWidget(), &cancelButton);
 }
 
 void tst_QWidget::tabOrderWithCompoundWidgetsNoFocusPolicy()
