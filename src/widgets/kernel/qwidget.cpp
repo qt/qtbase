@@ -6381,6 +6381,33 @@ void QWidget::setFocusProxy(QWidget * w)
     d->createExtra();
     d->extra->focus_proxy = w;
 
+    if (w && isAncestorOf(w)) {
+        // If the focus proxy is a child of this (so this is a compound widget), then
+        // we need to make sure that this widget is immediately in front of its own children
+        // in the focus chain. Otherwise focusNextPrev_helper might jump over unrelated
+        // widgets that are positioned between this compound widget, and its proxy in
+        // the focus chain.
+        const QWidget *parentOfW = w->parentWidget();
+        Q_ASSERT(parentOfW); // can't be nullptr since we are an ancestor of w
+        QWidget *firstChild = nullptr;
+        const auto childList = children();
+        for (QObject *child : childList) {
+            if ((firstChild = qobject_cast<QWidget *>(child)))
+                break;
+        }
+        Q_ASSERT(firstChild); // can't be nullptr since w is a child
+        QWidget *oldNext = d->focus_next;
+        QWidget *oldPrev = d->focus_prev;
+        oldNext->d_func()->focus_prev = oldPrev;
+        oldPrev->d_func()->focus_next = oldNext;
+
+        oldPrev = firstChild->d_func()->focus_prev;
+        d->focus_next = firstChild;
+        d->focus_prev = oldPrev;
+        oldPrev->d_func()->focus_next = this;
+        firstChild->d_func()->focus_prev = this;
+    }
+
     if (moveFocusToProxy)
         setFocus(Qt::OtherFocusReason);
 }
@@ -7072,8 +7099,8 @@ void QWidgetPrivate::reparentFocusWidgets(QWidget * oldtlw)
         n->d_func()->focus_next = topLevel;
     } else {
         //repair the new list
-            n->d_func()->focus_next = q;
-            focus_prev = n;
+        n->d_func()->focus_next = q;
+        focus_prev = n;
     }
 
 }
