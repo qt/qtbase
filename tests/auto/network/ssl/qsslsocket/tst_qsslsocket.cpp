@@ -1455,7 +1455,7 @@ public:
           config(QSslConfiguration::defaultConfiguration()),
           ignoreSslErrors(true),
           peerVerifyMode(QSslSocket::AutoVerifyPeer),
-          protocol(QSsl::TlsV1_0),
+          protocol(QSsl::TlsV1_2),
           m_keyFile(keyFile),
           m_certFile(certFile),
           m_interFile(interFile)
