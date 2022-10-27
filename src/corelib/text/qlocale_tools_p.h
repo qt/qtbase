@@ -26,6 +26,13 @@ enum StrayCharacterMode {
     WhitespacesAllowed
 };
 
+template <typename T> struct QSimpleParsedNumber
+{
+    T result;
+    const char *endptr;
+    bool ok() { return endptr; }
+};
+
 // API note: this function can't process a number with more than 2.1 billion digits
 [[nodiscard]] double qt_asciiToDouble(const char *num, qsizetype numLen, bool &ok, int &processed,
                                       StrayCharacterMode strayCharMode = TrailingJunkProhibited);
@@ -81,10 +88,8 @@ template <typename UcsInt>
     return qstrntod(s00, len, se, ok);
 }
 
-[[nodiscard]] qlonglong qstrntoll(const char *nptr, qsizetype size, const char **endptr,
-                                  int base, bool *ok);
-[[nodiscard]] qulonglong qstrntoull(const char *nptr, qsizetype size, const char **endptr,
-                                    int base, bool *ok);
+[[nodiscard]] QSimpleParsedNumber<qlonglong> qstrntoll(const char *nptr, qsizetype size, int base);
+[[nodiscard]] QSimpleParsedNumber<qulonglong> qstrntoull(const char *nptr, qsizetype size, int base);
 
 QT_END_NAMESPACE
 

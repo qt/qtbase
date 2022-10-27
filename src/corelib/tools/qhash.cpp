@@ -111,22 +111,18 @@ private:
 #else
     // can't use qEnvironmentVariableIntValue (reentrancy)
     const char *seedstr = getenv("QT_HASH_SEED");
-    const char *endptr = nullptr;
-    bool ok = false;
-    int seed = 0;
-    if (seedstr)
-        seed = qstrntoll(seedstr, strlen(seedstr), &endptr, 10, &ok);
-    if (ok && endptr != seedstr + strlen(seedstr))
-        ok = false;
-    if (ok) {
-        if (seed) {
-            // can't use qWarning here (reentrancy)
-            fprintf(stderr, "QT_HASH_SEED: forced seed value is not 0; ignored.\n");
-        }
+    if (seedstr) {
+        auto r = qstrntoll(seedstr, strlen(seedstr), 10);
+        if (r.endptr == seedstr + strlen(seedstr)) {
+            if (r.result) {
+                // can't use qWarning here (reentrancy)
+                fprintf(stderr, "QT_HASH_SEED: forced seed value is not 0; ignored.\n");
+            }
 
-        // we don't have to store to the seed, since it's pre-initialized by
-        // the compiler to zero
-        return result;
+            // we don't have to store to the seed, since it's pre-initialized by
+            // the compiler to zero
+            return result;
+        }
     }
 
     // update the full seed
