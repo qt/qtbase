@@ -4144,12 +4144,6 @@ qulonglong QLocaleData::stringToUnsLongLong(QStringView str, int base, bool *ok,
 
 qlonglong QLocaleData::bytearrayToLongLong(QByteArrayView num, int base, bool *ok)
 {
-    if (num.isEmpty() || num.at(0) == '\0') {
-        if (ok != nullptr)
-            *ok = false;
-        return 0;
-    }
-
     bool _ok;
     const char *endptr;
     const qlonglong l = qstrntoll(num.data(), num.size(), &endptr, base, &_ok);
@@ -4180,12 +4174,6 @@ qlonglong QLocaleData::bytearrayToLongLong(QByteArrayView num, int base, bool *o
 
 qulonglong QLocaleData::bytearrayToUnsLongLong(QByteArrayView num, int base, bool *ok)
 {
-    if (num.isEmpty() || num.at(0) == '\0') {
-        if (ok != nullptr)
-            *ok = false;
-        return 0;
-    }
-
     bool _ok;
     const char *endptr;
     const qulonglong l = qstrntoull(num.data(), num.size(), &endptr, base, &_ok);
