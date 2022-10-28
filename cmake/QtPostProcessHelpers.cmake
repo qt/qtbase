@@ -696,7 +696,7 @@ endif()\n")
         # find_package(Qt6Core) is called in case if the feature was disabled.
         string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "
 if(NOT QT_SKIP_BUILD_INTERNALS_PKG_CONFIG_FEATURE)
-    set(FEATURE_pkg_config \"${FEATURE_pkg_config}\" CACHE STRING \"Using pkg-config\" FORCE)
+    set(FEATURE_pkg_config \"${FEATURE_pkg_config}\" CACHE BOOL \"Using pkg-config\" FORCE)
 endif()\n")
 
         # The OpenSSL root dir needs to be saved so that repos other than qtbase (like qtopcua) can
