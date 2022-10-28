@@ -221,6 +221,9 @@
     mac*: SUBDIRS -= someclass
     \endcode
 
+    See also \l {Chapter 6: Skipping Tests with QSKIP}
+    {Skipping Tests with QSKIP}.
+
     \section2 Avoid Q_ASSERT
 
     The \l Q_ASSERT macro causes a program to abort whenever the asserted
