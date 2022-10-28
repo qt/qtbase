@@ -3,9 +3,6 @@
 
 qt_internal_add_example(completer)
 qt_internal_add_example(customcompleter)
-if(QT_FEATURE_translation)
-    qt_internal_add_example(i18n)
-endif()
 qt_internal_add_example(regularexpression)
 qt_internal_add_example(settingseditor)
 qt_internal_add_example(styleplugin)
