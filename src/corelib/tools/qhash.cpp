@@ -1679,10 +1679,15 @@ size_t qHash(long double key, size_t seed) noexcept
 
     The two-arguments overloads take an unsigned integer that should be used to
     seed the calculation of the hash function. This seed is provided by QHash
-    in order to prevent a family of \l{algorithmic complexity attacks}. If both
-    a one-argument and a two-arguments overload are defined for a key type,
-    the latter is used by QHash (note that you can simply define a
-    two-arguments version, and use a default value for the seed parameter).
+    in order to prevent a family of \l{algorithmic complexity attacks}.
+
+    \note In Qt 6 it is possible to define a \c{qHash()} overload
+    taking only one argument; support for this is deprecated. Starting
+    with Qt 7, it will be mandatory to use a two-arguments overload. If
+    both a one-argument and a two-arguments overload are defined for a
+    key type, the latter is used by QHash (note that you can simply
+    define a two-arguments version, and use a default value for the
+    seed parameter).
 
     The second way to provide a hashing function is by specializing
     the \c{std::hash} class for the key type \c{K}, and providing a

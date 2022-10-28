@@ -53,6 +53,8 @@ private Q_SLOTS:
     void stdPair_string_pairIntInt()    { stdPair_template(QString("Hello"), std::make_pair(42, -47)); } // QTBUG-92910
     void stdPair_int_pairIntPairIntInt() { stdPair_template(1, std::make_pair(2, std::make_pair(3, 4))); }
 
+    void enum_int_consistent_hash_qtbug108032();
+
     void setGlobalQHashSeed();
 };
 
@@ -368,6 +370,17 @@ void tst_QHashFunctions::stdPair_template(const T1 &t1, const T2 &t2)
     QCOMPARE(qHash(dpair, seed), qHash(dpair, seed));
     QCOMPARE(qHash(vpair), qHash(vpair));
     QCOMPARE(qHash(vpair, seed), qHash(vpair, seed));
+}
+
+void tst_QHashFunctions::enum_int_consistent_hash_qtbug108032()
+{
+    enum E { E1, E2, E3 };
+
+    static_assert(QHashPrivate::HasQHashSingleArgOverload<E>);
+
+    QCOMPARE(qHash(E1, seed), qHash(int(E1), seed));
+    QCOMPARE(qHash(E2, seed), qHash(int(E2), seed));
+    QCOMPARE(qHash(E3, seed), qHash(int(E3), seed));
 }
 
 void tst_QHashFunctions::setGlobalQHashSeed()
