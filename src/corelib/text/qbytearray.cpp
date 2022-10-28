@@ -620,7 +620,8 @@ static QByteArray xxflate(ZLibOp op, QArrayDataPointer<char> out, QByteArrayView
                 avail_out = capacity - out.size;
             }
             zs.next_out = reinterpret_cast<uchar *>(out.data()) + out.size;
-            zs.avail_out = avail_out > MaxChunkSize ? MaxChunkSize : ZlibChunkSize_t(avail_out);
+            zs.avail_out = size_t(avail_out) > size_t(MaxChunkSize) ? MaxChunkSize
+                                                                    : ZlibChunkSize_t(avail_out);
             out.size += zs.avail_out;
 
             Q_ASSERT(zs.avail_out > 0);
