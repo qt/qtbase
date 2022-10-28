@@ -2507,9 +2507,13 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
 
 void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *wse)
 {
-    if (QWindow *window  = wse->window.data()) {
+    if (QWindow *window = wse->window.data()) {
+        QWindowPrivate *windowPrivate = qt_window_private(window);
+        const auto newEffectiveState = QWindowPrivate::effectiveState(windowPrivate->windowState);
         QWindowStateChangeEvent e(wse->oldState);
-        window->d_func()->windowState = wse->newState;
+        windowPrivate->windowState = wse->newState;
+        emit window->windowStateChanged(newEffectiveState);
+        windowPrivate->updateVisibility();
         QGuiApplication::sendSpontaneousEvent(window, &e);
     }
 }

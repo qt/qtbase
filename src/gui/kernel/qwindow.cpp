@@ -2501,13 +2501,6 @@ bool QWindow::event(QEvent *ev)
         setIcon(icon());
         break;
 
-    case QEvent::WindowStateChange: {
-        Q_D(QWindow);
-        emit windowStateChanged(QWindowPrivate::effectiveState(d->windowState));
-        d->updateVisibility();
-        break;
-    }
-
 #if QT_CONFIG(tabletevent)
     case QEvent::TabletPress:
     case QEvent::TabletMove:
