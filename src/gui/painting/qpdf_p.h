@@ -271,7 +271,9 @@ private:
     int writeXmpDcumentMetaData();
     int writeOutputIntent();
     void writePageRoot();
+    void writeDestsRoot();
     void writeAttachmentRoot();
+    void writeNamesRoot();
     void writeFonts();
     void embedFont(QFontSubset *font);
     qreal calcUserUnit() const;
@@ -305,11 +307,20 @@ private:
         QString mimeType;
     };
 
+    struct DestInfo
+    {
+        QString anchor;
+        uint pageObj;
+        QPointF coords;
+    };
+
     // various PDF objects
-    int pageRoot, embeddedfilesRoot, namesRoot, catalog, info, graphicsState, patternColorSpace;
+    int pageRoot, namesRoot, destsRoot, attachmentsRoot, catalog, info;
+    int graphicsState, patternColorSpace;
     QList<uint> pages;
     QHash<qint64, uint> imageCache;
     QHash<QPair<uint, uint>, uint > alphaCache;
+    QList<DestInfo> destCache;
     QList<AttachmentInfo> fileCache;
     QByteArray xmpDocumentMetadata;
 };

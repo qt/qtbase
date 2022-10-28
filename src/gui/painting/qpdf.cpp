@@ -1505,8 +1505,9 @@ bool QPdfEngine::begin(QPaintDevice *pdev)
 
     d->xrefPositions.clear();
     d->pageRoot = 0;
-    d->embeddedfilesRoot = 0;
     d->namesRoot = 0;
+    d->destsRoot = 0;
+    d->attachmentsRoot = 0;
     d->catalog = 0;
     d->info = 0;
     d->graphicsState = 0;
@@ -1543,6 +1544,7 @@ bool QPdfEngine::end()
         d->outDevice = nullptr;
     }
 
+    d->destCache.clear();
     d->fileCache.clear();
 
     setActive(false);
@@ -1591,10 +1593,7 @@ void QPdfEnginePrivate::writeHeader()
 
     catalog = addXrefEntry(-1);
     pageRoot = requestObject();
-    if (!fileCache.isEmpty()) {
-        namesRoot = requestObject();
-        embeddedfilesRoot = requestObject();
-    }
+    namesRoot = requestObject();
 
     // catalog
     {
@@ -1602,11 +1601,8 @@ void QPdfEnginePrivate::writeHeader()
         QPdf::ByteStream s(&catalog);
         s << "<<\n"
           << "/Type /Catalog\n"
-          << "/Pages " << pageRoot << "0 R\n";
-
-        // Embedded files, if any
-        if (!fileCache.isEmpty())
-            s << "/Names " << embeddedfilesRoot << "0 R\n";
+          << "/Pages " << pageRoot << "0 R\n"
+          << "/Names " << namesRoot << "0 R\n";
 
         if (pdfVersion == QPdfEngine::Version_A1b || !xmpDocumentMetadata.isEmpty())
             s << "/Metadata " << metaDataObj << "0 R\n";
@@ -1618,12 +1614,6 @@ void QPdfEnginePrivate::writeHeader()
           << "endobj\n";
 
         write(catalog);
-    }
-
-    if (!fileCache.isEmpty()) {
-        addXrefEntry(embeddedfilesRoot);
-        xprintf("<</EmbeddedFiles %d 0 R>>\n"
-                "endobj\n", namesRoot);
     }
 
     // graphics state
@@ -1793,6 +1783,39 @@ void QPdfEnginePrivate::writePageRoot()
             "endobj\n");
 }
 
+void QPdfEnginePrivate::writeDestsRoot()
+{
+    if (destCache.isEmpty())
+        return;
+
+    QHash<QString, int> destObjects;
+    QByteArray xs, ys;
+    for (const DestInfo &destInfo : qAsConst(destCache)) {
+        int destObj = addXrefEntry(-1);
+        xs.setNum(static_cast<double>(destInfo.coords.x()), 'f');
+        ys.setNum(static_cast<double>(destInfo.coords.y()), 'f');
+        xprintf("[%d 0 R /XYZ %s %s 0]\n", destInfo.pageObj, xs.constData(), ys.constData());
+        xprintf("endobj\n");
+        destObjects.insert(destInfo.anchor, destObj);
+    }
+
+    // names
+    destsRoot = addXrefEntry(-1);
+    QStringList anchors = destObjects.keys();
+    anchors.sort();
+    xprintf("<<\n/Limits [");
+    printString(anchors.constFirst());
+    xprintf(" ");
+    printString(anchors.constLast());
+    xprintf("]\n/Names [\n");
+    for (const QString &anchor : qAsConst(anchors)) {
+        printString(anchor);
+        xprintf(" %d 0 R\n", destObjects[anchor]);
+    }
+    xprintf("]\n>>\n"
+            "endobj\n");
+}
+
 void QPdfEnginePrivate::writeAttachmentRoot()
 {
     if (fileCache.isEmpty())
@@ -1832,7 +1855,7 @@ void QPdfEnginePrivate::writeAttachmentRoot()
     }
 
     // names
-    addXrefEntry(namesRoot);
+    attachmentsRoot = addXrefEntry(-1);
     xprintf("<</Names[");
     for (int i = 0; i < size; ++i) {
         auto attachment = fileCache.at(i);
@@ -1841,6 +1864,21 @@ void QPdfEnginePrivate::writeAttachmentRoot()
     }
     xprintf("]>>\n"
             "endobj\n");
+}
+
+void QPdfEnginePrivate::writeNamesRoot()
+{
+    addXrefEntry(namesRoot);
+    xprintf("<<\n");
+
+    if (attachmentsRoot)
+        xprintf("/EmbeddedFiles %d 0 R\n", attachmentsRoot);
+
+    if (destsRoot)
+        xprintf("/Dests %d 0 R\n", destsRoot);
+
+    xprintf(">>\n");
+    xprintf("endobj\n");
 }
 
 void QPdfEnginePrivate::embedFont(QFontSubset *font)
@@ -2099,7 +2137,9 @@ void QPdfEnginePrivate::writeTail()
     writePage();
     writeFonts();
     writePageRoot();
+    writeDestsRoot();
     writeAttachmentRoot();
+    writeNamesRoot();
 
     addXrefEntry(xrefPositions.size(),false);
     xprintf("xref\n"
@@ -2951,7 +2991,9 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
 {
     Q_Q(QPdfEngine);
 
-    if (ti.charFormat.hasProperty(QTextFormat::AnchorHref)) {
+    const bool isLink = ti.charFormat.hasProperty(QTextFormat::AnchorHref);
+    const bool isAnchor = ti.charFormat.hasProperty(QTextFormat::AnchorName);
+    if (isLink || isAnchor) {
         qreal size = ti.fontEngine->fontDef.pixelSize;
         int synthesized = ti.fontEngine->synthesized();
         qreal stretch = synthesized & QFontEngine::SynthesizedStretch ? ti.fontEngine->fontDef.stretch/100. : 1.;
@@ -2971,32 +3013,47 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
         trans.map(0, 0, &x1, &y1);
         trans.map(ti.width.toReal()/size, (ti.ascent.toReal()-ti.descent.toReal())/size, &x2, &y2);
 
-        uint annot = addXrefEntry(-1);
-        QByteArray x1s, y1s, x2s, y2s;
-        x1s.setNum(static_cast<double>(x1), 'f');
-        y1s.setNum(static_cast<double>(y1), 'f');
-        x2s.setNum(static_cast<double>(x2), 'f');
-        y2s.setNum(static_cast<double>(y2), 'f');
-        QByteArray rectData = x1s + ' ' + y1s + ' ' + x2s + ' ' + y2s;
-        xprintf("<<\n/Type /Annot\n/Subtype /Link\n");
+        if (isLink) {
+            uint annot = addXrefEntry(-1);
+            QByteArray x1s, y1s, x2s, y2s;
+            x1s.setNum(static_cast<double>(x1), 'f');
+            y1s.setNum(static_cast<double>(y1), 'f');
+            x2s.setNum(static_cast<double>(x2), 'f');
+            y2s.setNum(static_cast<double>(y2), 'f');
+            QByteArray rectData = x1s + ' ' + y1s + ' ' + x2s + ' ' + y2s;
+            xprintf("<<\n/Type /Annot\n/Subtype /Link\n");
 
-        if (pdfVersion == QPdfEngine::Version_A1b)
-            xprintf("/F 4\n"); // enable print flag, disable all other
+            if (pdfVersion == QPdfEngine::Version_A1b)
+                xprintf("/F 4\n"); // enable print flag, disable all other
 
-        xprintf("/Rect [");
-        xprintf(rectData.constData());
+            xprintf("/Rect [");
+            xprintf(rectData.constData());
 #ifdef Q_DEBUG_PDF_LINKS
-        xprintf("]\n/Border [16 16 1]\n/A <<\n");
+            xprintf("]\n/Border [16 16 1]\n");
 #else
-        xprintf("]\n/Border [0 0 0]\n/A <<\n");
+            xprintf("]\n/Border [0 0 0]\n");
 #endif
-        xprintf("/Type /Action\n/S /URI\n/URI (%s)\n",
-                ti.charFormat.anchorHref().toLatin1().constData());
-        xprintf(">>\n>>\n");
-        xprintf("endobj\n");
+            const QString link = ti.charFormat.anchorHref();
+            const bool isInternal = link.startsWith(QLatin1Char('#'));
+            if (!isInternal) {
+                xprintf("/A <<\n");
+                xprintf("/Type /Action\n/S /URI\n/URI (%s)\n", link.toLatin1().constData());
+                xprintf(">>\n");
+            } else {
+                xprintf("/Dest ");
+                printString(link.sliced(1));
+                xprintf("\n");
+            }
+            xprintf(">>\n");
+            xprintf("endobj\n");
 
-        if (!currentPage->annotations.contains(annot)) {
-            currentPage->annotations.append(annot);
+            if (!currentPage->annotations.contains(annot)) {
+                currentPage->annotations.append(annot);
+            }
+        } else {
+            const QString anchor = ti.charFormat.anchorNames().constFirst();
+            const uint curPage = pages.last();
+            destCache.append(DestInfo({ anchor, curPage, QPointF(x1, y2) }));
         }
     }
 
