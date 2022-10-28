@@ -322,6 +322,7 @@ public:
         char32_t zeroUcs = 0;
         qint8 zeroLen = 0;
         bool isC = false; // C locale sets this and nothing else.
+        bool exponentCyrillic = false; // True only for floating-point parsing of Cyrillic.
         void setZero(QStringView zero)
         {
             // No known locale has digits that are more than one Unicode
@@ -346,6 +347,8 @@ public:
         {
             if (isC)
                 return true;
+            if (exponentCyrillic && exponent != u"E" && exponent != u"\u0415")
+                return false;
             return (zeroLen == 1 || zeroLen == 2) && zeroUcs > 0
                 && (mode == IntegerMode || !decimal.isEmpty())
                 // group may be empty (user config in system locale)

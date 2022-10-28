@@ -3839,8 +3839,11 @@ inline QLocaleData::NumericData QLocaleData::numericData(QLocaleData::NumberMode
     result.plus = plus().viewData(single_character_data);
     if (mode != IntegerMode)
         result.decimal = decimalSeparator().viewData(single_character_data);
-    if (mode == DoubleScientificMode)
+    if (mode == DoubleScientificMode) {
         result.exponent = exponential().viewData(single_character_data);
+        // exponentCyrillic means "apply the Cyrrilic-specific exponent hack"
+        result.exponentCyrillic = m_script_id == QLocale::CyrillicScript;
+    }
 #ifndef QT_NO_SYSTEMLOCALE
     if (this == &systemLocaleData) {
         const auto getString = [sys = systemLocale()](QSystemLocale::QueryType query) {
@@ -4015,6 +4018,15 @@ char NumericTokenizer::nextToken()
     if ((m_guide.group == u"\u00a0" || m_guide.group == u"\u202f") && tail.startsWith(u' ')) {
         ++m_index;
         return ',';
+    }
+
+    // Cyrillic has its own E, used by Ukrainian as exponent; but others
+    // writing Cyrillic may well use that; and Ukrainians might well use E.
+    // All other Cyrillic locales (officially) use plain ASCII E.
+    if (m_guide.exponentCyrillic // Only true in scientific float mode.
+        && (tail.startsWith(u"\u0415") || tail.startsWith(u"E"))) {
+        ++m_index;
+        return 'e';
     }
 
     return 0;
