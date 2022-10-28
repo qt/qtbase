@@ -1720,9 +1720,6 @@ QString QLocale::scriptToString(QLocale::Script script)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    This function does not fall back to the 'C' locale if the string
-    cannot be interpreted in this locale.
-
     This function ignores leading and trailing whitespace.
 
     \sa toDouble(), toInt(), toString()
@@ -1737,9 +1734,6 @@ QString QLocale::scriptToString(QLocale::Script script)
 
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
-
-    This function does not fall back to the 'C' locale if the string
-    cannot be interpreted in this locale.
 
     \snippet code/src_corelib_text_qlocale.cpp 3
 
@@ -1941,10 +1935,6 @@ float QLocale::toFloat(QStringView s, bool *ok) const
 
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
-
-    Unlike QString::toDouble(), this function does not fall back to
-    the "C" locale if the string cannot be interpreted in this
-    locale.
 
     \snippet code/src_corelib_text_qlocale.cpp 3-qstringview
 
