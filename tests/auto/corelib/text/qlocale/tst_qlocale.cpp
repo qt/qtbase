@@ -78,6 +78,10 @@ private slots:
     void formatTimeZone();
     void toDateTime_data();
     void toDateTime();
+    void doubleRoundTrip_data();
+    void doubleRoundTrip();
+    void integerRoundTrip_data();
+    void integerRoundTrip();
     void negativeNumbers();
     void numberOptions();
     void dayName_data();
@@ -907,12 +911,6 @@ void tst_QLocale::toReal_data()
     QTest::newRow("fa_IR 4x!3") // Only first character of exponent and sign
         << u"fa_IR"_s << u"\u06f4\u00d7\u200e\u06f0\u06f3"_s << false << 0.0;
 }
-#define EXPECT_NONSINGLE_FAILURES do { \
-        QEXPECT_FAIL("sv_SE 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort); \
-        QEXPECT_FAIL("se_NO 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort); \
-        QEXPECT_FAIL("ar_EG 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort); \
-        QEXPECT_FAIL("fa_IR 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort); \
-    } while (0)
 
 void tst_QLocale::stringToDouble_data()
 {
@@ -955,7 +953,6 @@ void tst_QLocale::stringToDouble()
 
     bool ok;
     double d = locale.toDouble(num_str, &ok);
-    EXPECT_NONSINGLE_FAILURES;
     QCOMPARE(ok, good);
 
     {
@@ -1048,7 +1045,6 @@ void tst_QLocale::stringToFloat()
     }
     bool ok;
     float f = locale.toFloat(num_str, &ok);
-    EXPECT_NONSINGLE_FAILURES;
     QCOMPARE(ok, good);
 
     if constexpr (std::numeric_limits<double>::has_denorm != std::denorm_present) {
@@ -1088,7 +1084,6 @@ void tst_QLocale::stringToFloat()
     }
 #undef MY_FLOAT_EPSILON
 }
-#undef EXPECT_NONSINGLE_FAILURES
 
 void tst_QLocale::doubleToString_data()
 {
@@ -2182,6 +2177,62 @@ void tst_QLocale::toDateTime()
         QCOMPARE(l.toDateTime(string, QLocale::ShortFormat), result);
 }
 
+void tst_QLocale::doubleRoundTrip_data()
+{
+    QTest::addColumn<QString>("localeName");
+    QTest::addColumn<QString>("numberText");
+    QTest::addColumn<char>("numberFormat");
+
+    // Signs and exponent separator aren't single characters:
+    QTest::newRow("sv_SE 4e-06 g") // Swedish, Sweden
+        << u"sv_SE"_s << u"4\u00d7" "10^\u2212" "06"_s << 'g';
+    QTest::newRow("se_NO 4e-06 g") // Northern Sami, Norway
+        << u"se_NO"_s << u"4\u00b7" "10^\u2212" "06"_s << 'g';
+    QTest::newRow("ar_EG 4e-06 g") // Arabic, Egypt
+        << u"ar_EG"_s << u"\u0664\u0627\u0633\u061c-\u0660\u0666"_s << 'g';
+    QTest::newRow("fa_IR 4e-06 g") // Farsi, Iran
+        << u"fa_IR"_s << u"\u06f4\u00d7\u06f1\u06f0^\u200e\u2212\u06f0\u06f6"_s << 'g';
+}
+
+void tst_QLocale::doubleRoundTrip()
+{
+    QFETCH(QString, localeName);
+    QFETCH(QString, numberText);
+    QFETCH(char, numberFormat);
+
+    QLocale locale(localeName);
+    bool ok;
+
+    double number = locale.toDouble(numberText, &ok);
+    QVERIFY(ok);
+    QCOMPARE(locale.toString(number, numberFormat), numberText);
+}
+
+void tst_QLocale::integerRoundTrip_data()
+{
+    QTest::addColumn<QString>("localeName");
+    QTest::addColumn<QString>("numberText");
+
+    // Two-character signs:
+    // Arabic, Egypt
+    QTest::newRow("ar_EG -406") << u"ar_EG"_s << u"\u061c-\u0664\u0660\u0666"_s;
+    // Farsi, Iran
+    QTest::newRow("fa_IR -406") << u"fa_IR"_s << u"\u200e\u2212\u06f4\u06f0\u06f6"_s;
+}
+
+void tst_QLocale::integerRoundTrip()
+{
+    QFETCH(QString, localeName);
+    QFETCH(QString, numberText);
+
+    QLocale locale(localeName);
+    bool ok;
+
+    qlonglong number = locale.toLongLong(numberText, &ok);
+    QVERIFY(ok);
+    QCOMPARE(locale.toString(number), numberText);
+}
+
 #ifdef Q_OS_MAC
 
 // Format number string according to system locale settings.
@@ -2529,7 +2580,6 @@ void tst_QLocale::negativeNumbers()
     // Several Arabic locales have an invisible script-marker before their signs:
     const QLocale egypt(QLocale::Arabic, QLocale::Egypt);
     QCOMPARE(egypt.toString(-403), u"\u061c-\u0664\u0660\u0663"_s);
-    QEXPECT_FAIL("", "Code wrongly assumes single character, QTBUG-107801", Abort);
     i = egypt.toInt(u"\u061c-\u0664\u0660\u0663"_s, &ok);
     QVERIFY(ok);
     QCOMPARE(i, -403);

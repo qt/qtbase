@@ -455,10 +455,6 @@ void tst_QLocale::toLongLong()
     QBENCHMARK {
         actual = loc.toLongLong(text, &ok);
     }
-    QEXPECT_FAIL("ar_EG: +403", "Code wrongly assumes single character, QTBUG-107801", Abort);
-    QEXPECT_FAIL("ar_EG: -403", "Code wrongly assumes single character, QTBUG-107801", Abort);
-    QEXPECT_FAIL("fa_IR: +403", "Code wrongly assumes single character, QTBUG-107801", Abort);
-    QEXPECT_FAIL("fa_IR: -403", "Code wrongly assumes single character, QTBUG-107801", Abort);
     QCOMPARE(ok, good);
     QCOMPARE(actual, expected);
 }
@@ -488,8 +484,6 @@ void tst_QLocale::toULongLong()
     QBENCHMARK {
         actual = loc.toULongLong(text, &ok);
     }
-    QEXPECT_FAIL("ar_EG: +403", "Code wrongly assumes single character, QTBUG-107801", Abort);
-    QEXPECT_FAIL("fa_IR: +403", "Code wrongly assumes single character, QTBUG-107801", Abort);
     QCOMPARE(ok, good);
     QCOMPARE(actual, expected);
 }
@@ -588,9 +582,6 @@ void tst_QLocale::toDouble()
     QBENCHMARK {
         actual = loc.toDouble(text, &ok);
     }
-    QEXPECT_FAIL("sv_SE: 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort);
-    QEXPECT_FAIL("se_NO: 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort);
-    QEXPECT_FAIL("ar_EG: 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort);
     QEXPECT_FAIL("en: &infin;", "Localized infinity support missing: QTBUG-95460", Abort);
     QEXPECT_FAIL("ga: Nuimh", "Localized NaN support missing: QTBUG-95460", Abort);
     QCOMPARE(ok, good);

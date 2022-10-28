@@ -311,7 +311,49 @@ public:
 
     [[nodiscard]] bool numberToCLocale(QStringView s, QLocale::NumberOptions number_options,
                                        NumberMode mode, CharBuff *result) const;
-    [[nodiscard]] inline char numericToCLocale(QStringView in) const;
+
+    struct NumericData
+    {
+#ifndef QT_NO_SYSTEMLOCALE
+        // Only used for the system locale, to store data for the view to look at:
+        QString sysDecimal, sysGroup, sysMinus, sysPlus;
+#endif
+        QStringView decimal, group, minus, plus, exponent;
+        char32_t zeroUcs = 0;
+        qint8 zeroLen = 0;
+        bool isC = false; // C locale sets this and nothing else.
+        void setZero(QStringView zero)
+        {
+            // No known locale has digits that are more than one Unicode
+            // code-point, so we can safely deal with digits as plain char32_t.
+            switch (zero.size()) {
+            case 1:
+                Q_ASSERT(!zero.at(0).isSurrogate());
+                zeroUcs = zero.at(0).unicode();
+                zeroLen = 1;
+                break;
+            case 2:
+                Q_ASSERT(zero.at(0).isHighSurrogate());
+                zeroUcs = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
+                zeroLen = 2;
+                break;
+            default:
+                Q_ASSERT(zero.size() == 0); // i.e. we got no value to use
+                break;
+            }
+        }
+        [[nodiscard]] bool isValid(NumberMode mode) const // Asserted as a sanity check.
+        {
+            if (isC)
+                return true;
+            return (zeroLen == 1 || zeroLen == 2) && zeroUcs > 0
+                && (mode == IntegerMode || !decimal.isEmpty())
+                // group may be empty (user config in system locale)
+                && !minus.isEmpty() && !plus.isEmpty()
+                && (mode != DoubleScientificMode || !exponent.isEmpty());
+        }
+    };
+    [[nodiscard]] inline NumericData numericData(NumberMode mode) const;
 
     // this function is used in QIntValidator (QtGui)
     [[nodiscard]] Q_CORE_EXPORT bool validateChars(
@@ -480,52 +522,6 @@ inline QLocalePrivate *QSharedDataPointer<QLocalePrivate>::clone()
     // cannot use QLocalePrivate's copy constructor
     // since it is deleted in C++11
     return new QLocalePrivate(d->m_data, d->m_index, d->m_numberOptions);
-}
-
-inline char QLocaleData::numericToCLocale(QStringView in) const
-{
-    Q_ASSERT(in.size() == 1 || (in.size() == 2 && in.at(0).isHighSurrogate()));
-
-    if (in == positiveSign() || in == u"+")
-        return '+';
-
-    if (in == negativeSign() || in == u"-" || in == u"\x2212")
-        return '-';
-
-    if (in == decimalPoint())
-        return '.';
-
-    if (in.compare(exponentSeparator(), Qt::CaseInsensitive) == 0)
-        return 'e';
-
-    const QString group = groupSeparator();
-    if (in == group)
-        return ',';
-
-    // In several languages group() is a non-breaking space (U+00A0) or its thin
-    // version (U+202f), which look like spaces.  People (and thus some of our
-    // tests) use a regular space instead and complain if it doesn't work.
-    // Should this be extended generally to any case where group is a space ?
-    if ((group == u"\xa0" || group == u"\x202f") && in == u" ")
-        return ',';
-
-    const char32_t inUcs4 = in.size() == 2
-        ? QChar::surrogateToUcs4(in.at(0), in.at(1)) : in.at(0).unicode();
-    const char32_t zeroUcs4 = zeroUcs();
-    // Must match qlocale_tools.h's unicodeForDigit()
-    if (zeroUcs4 == u'\u3007') {
-        // QTBUG-85409: Suzhou's digits aren't contiguous !
-        if (inUcs4 == zeroUcs4)
-            return '0';
-        if (inUcs4 > u'\u3020' && inUcs4 <= u'\u3029')
-            return inUcs4 - u'\u3020';
-    } else if (zeroUcs4 <= inUcs4 && inUcs4 < zeroUcs4 + 10) {
-        return '0' + inUcs4 - zeroUcs4;
-    }
-    if ('0' <= inUcs4 && inUcs4 <= '9')
-        return inUcs4;
-
-    return 0;
 }
 
 // Also used to merely skip over an escape in a format string, advancint idx to
