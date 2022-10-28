@@ -3873,9 +3873,16 @@ QString QLocaleData::applyIntegerFormatting(QString &&numStr, bool negative, int
 }
 
 /*
-    Converts a number in locale to its representation in the C locale.
-    Only has to guarantee that a string that is a correct representation of
-    a number will be converted.
+    Converts a number in locale representation to the C locale equivalent.
+
+    Only has to guarantee that a string that is a correct representation of a
+    number will be converted. Checks signs, separators and digits appear in all
+    the places they should, and nowhere else.
+
+    Returns true precisely if the number appears to be well-formed, modulo
+    things a parser for C Locale strings (without digit-grouping separators;
+    they're stripped) will catch. When it returns true, it records (and
+    '\0'-terminates) the C locale representation in *result.
 
     Note: only QString integer-parsing methods have a base parameter (hence need
     to cope with letters as possible digits); but these are now all routed via
@@ -3884,7 +3891,7 @@ QString QLocaleData::applyIntegerFormatting(QString &&numStr, bool negative, int
     other than 0 through 9.
 */
 bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_options,
-                                  CharBuff *result) const
+                                  NumberMode mode, CharBuff *result) const
 {
     s = s.trimmed();
     if (s.size() < 1)
@@ -3909,9 +3916,9 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
 
         char out = numericToCLocale(in);
         if (out == 0) {
-            // Allow ASCII letters of inf, nan:
-            if (in.size() != 1)
+            if (mode == IntegerMode || in.size() != 1)
                 return false;
+            // Allow ASCII letters of inf, nan:
             char16_t ch = in.front().unicode();
             if (ch > 'n')
                 return false;
@@ -3923,7 +3930,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
             if (decpt_idx != -1 || exponent_idx != -1)
                 return false;
             decpt_idx = idx;
-        } else if (out == 'e') {
+        } else if (mode == DoubleScientificMode && out == 'e') {
             exponent_idx = idx;
         }
 
@@ -3966,7 +3973,8 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
 
                 last_separator_idx = idx;
                 digitsInGroup = 0;
-            } else if ((out == '.' || idx == exponent_idx) && last_separator_idx != -1) {
+            } else if (mode != IntegerMode && (out == '.' || idx == exponent_idx)
+                       && last_separator_idx != -1) {
                 // Were there enough digits since the last group separator?
                 if (digitsInGroup != m_grouping_least)
                     return false;
@@ -4094,7 +4102,7 @@ double QLocaleData::stringToDouble(QStringView str, bool *ok,
                                    QLocale::NumberOptions number_options) const
 {
     CharBuff buff;
-    if (!numberToCLocale(str, number_options, &buff)) {
+    if (!numberToCLocale(str, number_options, DoubleScientificMode, &buff)) {
         if (ok != nullptr)
             *ok = false;
         return 0.0;
@@ -4109,7 +4117,7 @@ qlonglong QLocaleData::stringToLongLong(QStringView str, int base, bool *ok,
                                         QLocale::NumberOptions number_options) const
 {
     CharBuff buff;
-    if (!numberToCLocale(str, number_options, &buff)) {
+    if (!numberToCLocale(str, number_options, IntegerMode, &buff)) {
         if (ok != nullptr)
             *ok = false;
         return 0;
@@ -4122,7 +4130,7 @@ qulonglong QLocaleData::stringToUnsLongLong(QStringView str, int base, bool *ok,
                                             QLocale::NumberOptions number_options) const
 {
     CharBuff buff;
-    if (!numberToCLocale(str, number_options, &buff)) {
+    if (!numberToCLocale(str, number_options, IntegerMode, &buff)) {
         if (ok != nullptr)
             *ok = false;
         return 0;

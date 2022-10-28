@@ -252,7 +252,7 @@ public:
     [[nodiscard]] static quint64 bytearrayToUnsLongLong(QByteArrayView num, int base, bool *ok);
 
     [[nodiscard]] bool numberToCLocale(QStringView s, QLocale::NumberOptions number_options,
-                                       CharBuff *result) const;
+                                       NumberMode mode, CharBuff *result) const;
     [[nodiscard]] inline char numericToCLocale(QStringView in) const;
 
     // this function is used in QIntValidator (QtGui)
