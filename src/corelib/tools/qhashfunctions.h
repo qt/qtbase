@@ -68,14 +68,6 @@ Q_DECL_CONST_FUNCTION constexpr size_t hash(size_t key, size_t seed) noexcept
     }
 }
 
-template <typename T, typename = void>
-constexpr inline bool HasQHashSingleArgOverload = false;
-
-template <typename T>
-constexpr inline bool HasQHashSingleArgOverload<T, std::enable_if_t<
-    std::is_convertible_v<decltype(qHash(std::declval<const T &>())), size_t>
->> = true;
-
 template <typename T1, typename T2> static constexpr bool noexceptPairHash();
 }
 
@@ -141,6 +133,9 @@ Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(std::nullptr_t, size_t seed 
 {
     return seed;
 }
+template <class Enum, std::enable_if_t<std::is_enum_v<Enum>, bool> = true>
+Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(Enum e, size_t seed = 0) noexcept
+{ return QHashPrivate::hash(qToUnderlying(e), seed); }
 
 // (some) Qt types
 Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(const QChar key, size_t seed = 0) noexcept { return qHash(key.unicode(), seed); }
@@ -168,9 +163,26 @@ template <typename Enum>
 Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(QFlags<Enum> flags, size_t seed = 0) noexcept
 { return qHash(flags.toInt(), seed); }
 
-template <typename T, std::enable_if_t<QHashPrivate::HasQHashSingleArgOverload<T>, bool> = true>
+// ### Qt 7: remove this "catch-all" overload logic, and require users
+// to provide the two-argument version of qHash.
+#if (QT_VERSION < QT_VERSION_CHECK(7, 0, 0))
+// Beware of moving this code from here. It needs to see all the
+// declarations of qHash overloads for C++ fundamental types *before*
+// its own declaration.
+namespace QHashPrivate {
+template <typename T, typename = void>
+constexpr inline bool HasQHashSingleArgOverload = false;
+
+template <typename T>
+constexpr inline bool HasQHashSingleArgOverload<T, std::enable_if_t<
+    std::is_convertible_v<decltype(qHash(std::declval<const T &>())), size_t>
+>> = true;
+}
+
+template <typename T, std::enable_if_t<QHashPrivate::HasQHashSingleArgOverload<T> && !std::is_enum_v<T>, bool> = true>
 size_t qHash(const T &t, size_t seed) noexcept(noexcept(qHash(t)))
 { return qHash(t) ^ seed; }
+#endif // < Qt 7
 
 template<typename T>
 bool qHashEquals(const T &a, const T &b)

@@ -297,11 +297,11 @@ inline size_t qHash(const std::unordered_set<int> &key, size_t seed = 0)
 //! [31]
 
 //! [32]
-size_t qHash(K key);
-size_t qHash(const K &key);
-
 size_t qHash(K key, size_t seed);
 size_t qHash(const K &key, size_t seed);
+
+size_t qHash(K key);        // deprecated, do not use
+size_t qHash(const K &key); // deprecated, do not use
 //! [32]
 
 //! [33]
