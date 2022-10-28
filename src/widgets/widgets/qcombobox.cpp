@@ -2813,41 +2813,54 @@ void QComboBox::hidePopup()
     auto resetHidingPopup = qScopeGuard([d]{
         d->hidingPopup = false;
     });
-    if (d->container && d->container->isVisible()) {
+
+    if (!d->container || !d->container->isVisible())
+        return;
+
 #if QT_CONFIG(effects)
-        QSignalBlocker modelBlocker(d->model);
-        QSignalBlocker viewBlocker(d->container->itemView());
-        QSignalBlocker containerBlocker(d->container);
-        // Flash selected/triggered item (if any).
-        if (style()->styleHint(QStyle::SH_Menu_FlashTriggeredItem)) {
-            QItemSelectionModel *selectionModel = view() ? view()->selectionModel() : nullptr;
-            if (selectionModel && selectionModel->hasSelection()) {
-                QEventLoop eventLoop;
-                const QItemSelection selection = selectionModel->selection();
+    // Flash selected/triggered item (if any).
+    if (style()->styleHint(QStyle::SH_Menu_FlashTriggeredItem)) {
+        QItemSelectionModel *selectionModel = d->container->itemView()
+                                            ? d->container->itemView()->selectionModel() : nullptr;
+        if (selectionModel && selectionModel->hasSelection()) {
+            const QItemSelection selection = selectionModel->selection();
+
+            QTimer::singleShot(0, d->container, [d, selection, selectionModel]{
+                QSignalBlocker modelBlocker(d->model);
+                QSignalBlocker viewBlocker(d->container->itemView());
+                QSignalBlocker containerBlocker(d->container);
 
                 // Deselect item and wait 60 ms.
                 selectionModel->select(selection, QItemSelectionModel::Toggle);
-                QTimer::singleShot(60, &eventLoop, SLOT(quit()));
-                eventLoop.exec();
-
-                // Select item and wait 20 ms.
-                selectionModel->select(selection, QItemSelectionModel::Toggle);
-                QTimer::singleShot(20, &eventLoop, SLOT(quit()));
-                eventLoop.exec();
-            }
+                QTimer::singleShot(60, d->container, [d, selection, selectionModel]{
+                    QSignalBlocker modelBlocker(d->model);
+                    QSignalBlocker viewBlocker(d->container->itemView());
+                    QSignalBlocker containerBlocker(d->container);
+                    selectionModel->select(selection, QItemSelectionModel::Toggle);
+                    QTimer::singleShot(20, d->container, [d] {
+                        d->doHidePopup();
+                    });
+                });
+            });
         }
-
-        containerBlocker.unblock();
-        viewBlocker.unblock();
-        modelBlocker.unblock();
+    } else
 #endif // QT_CONFIG(effects)
-        d->container->hide();
+    {
+        d->doHidePopup();
     }
+}
+
+void QComboBoxPrivate::doHidePopup()
+{
+    if (container && container->isVisible())
+        container->hide();
+
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplicationPrivate::keypadNavigationEnabled() && isEditable() && hasFocus())
         setEditFocus(true);
 #endif
-    d->_q_resetButton();
+
+    _q_resetButton();
 }
 
 /*!

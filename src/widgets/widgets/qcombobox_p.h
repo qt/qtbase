@@ -352,6 +352,7 @@ public:
     void updateViewContainerPaletteAndOpacity();
     void updateFocusPolicy();
     void showPopupFromMouseEvent(QMouseEvent *e);
+    void doHidePopup();
 
 #ifdef Q_OS_MAC
     void cleanupNativePopup();
