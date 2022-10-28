@@ -1384,8 +1384,13 @@ void QWindow::setWindowStates(Qt::WindowStates state)
 
     if (d->platformWindow)
         d->platformWindow->setWindowState(state);
+
+    auto originalEffectiveState = QWindowPrivate::effectiveState(d->windowState);
     d->windowState = state;
-    emit windowStateChanged(QWindowPrivate::effectiveState(d->windowState));
+    auto newEffectiveState = QWindowPrivate::effectiveState(d->windowState);
+    if (newEffectiveState != originalEffectiveState)
+        emit windowStateChanged(newEffectiveState);
+
     d->updateVisibility();
 }
 

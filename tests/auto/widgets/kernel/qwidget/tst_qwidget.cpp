@@ -2752,18 +2752,15 @@ void tst_QWidget::resizePropagation()
         QSKIP("resizePropagation test is designed for XCB only");
 #endif
 
-    // Platform specific notes:
-    // Linux/XCB:
-    // - Unless maximized, a widget and its corresponding window can have different sizes
-    // - windowStateChanged can be fired multiple times (QTBUG-102478) when widget is maximized
-    //
     // Windows:
     // When a widget is maximized after it has been resized, the widget retains its original size,
-    // while the window shows maximum size
+    // while the window shows maximum size.
+    // windowStateChanged signal gets fired on a no-op change from/to WindowNoState
 
     // Initialize widget and signal spy for window handle
     QWidget widget;
     widget.showMaximized();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QWindow *window = widget.windowHandle();
     QTRY_VERIFY(window);
     QSignalSpy spy(window, &QWindow::windowStateChanged);
@@ -2773,11 +2770,15 @@ void tst_QWidget::resizePropagation()
     const QSize size1 = QSize(screenSize.width() * 0.5, screenSize.height() * 0.5);
     const QSize size2 = QSize(screenSize.width() * 0.625, screenSize.height() * 0.833);
 
-    auto verifyResize = [&](const QSize &size, Qt::WindowState windowState, bool checkCountIncrement, bool checkTargetSize)
+    enum CountIncrementCheck {Equal, Greater};
+    enum TargetSizeCheck {Fail, Warn};
+    auto verifyResize = [&](const QSize &size, Qt::WindowState windowState,
+                            CountIncrementCheck checkCountIncrement,
+                            TargetSizeCheck checkTargetSize)
     {
         // Capture count of latest async signals
-        if (!checkCountIncrement)
-            count = spy.size();
+        if (checkCountIncrement == Equal)
+            count = spy.count();
 
         // Resize if required
         if (size.isValid())
@@ -2787,13 +2788,24 @@ void tst_QWidget::resizePropagation()
         QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
         // Check signal count and qDebug output for fail analysis
-        if (checkCountIncrement) {
-            QTRY_VERIFY(spy.size() > count);
-            qDebug() << "spy count:" << spy.size() << "previous count:" << count;
-            count = spy.size();
-        } else {
-            qDebug() << spy << widget.windowState() << window->windowState();
-            QCOMPARE(spy.size(), count);
+        switch (checkCountIncrement) {
+        case Greater: {
+                auto logger = qScopeGuard([&](){
+                    qDebug() << "spy count:" << spy.count() << "previous count:" << count;
+                });
+                QTRY_VERIFY(spy.count() > count);
+                logger.dismiss();
+                count = spy.count();
+            }
+            break;
+        case Equal: {
+                auto logger = qScopeGuard([&](){
+                   qDebug() << spy << widget.windowState() << window->windowState();
+                });
+                QCOMPARE(spy.count(), count);
+                logger.dismiss();
+            }
+            break;
         }
 
         // QTRY necessary because state changes are propagated async
@@ -2801,32 +2813,37 @@ void tst_QWidget::resizePropagation()
         QTRY_COMPARE(window->windowState(), windowState);
 
         // Check target size with fail or warning
-        if (checkTargetSize) {
+        switch (checkTargetSize) {
+        case Fail:
             QCOMPARE(widget.size(), window->size());
-        } else if (widget.size() != window->size()) {
-            qWarning() << m_platform << "size mismtach tolerated. Widget:"
-                       << widget.size() << "Window:" << window->size();
+            break;
+        case Warn:
+            if (widget.size() != window->size()) {
+                qWarning() << m_platform << "size mismtach tolerated. Widget:"
+                           << widget.size() << "Window:" << window->size();
+            }
+            break;
         }
     };
 
     // test state and size consistency of maximized window
-    verifyResize(QSize(), Qt::WindowMaximized, true, true);
+    verifyResize(QSize(), Qt::WindowMaximized, Equal, Fail);
     if (QTest::currentTestFailed())
         return;
 
     // test state transition, state and size consistency after resize
-    verifyResize(size1, Qt::WindowNoState, true, !xcb );
+    verifyResize(size1, Qt::WindowNoState, Greater, xcb ? Warn : Fail );
     if (QTest::currentTestFailed())
         return;
 
     // test unchanged state, state and size consistency after resize
-    verifyResize(size2, Qt::WindowNoState, false, !xcb);
+    verifyResize(size2, Qt::WindowNoState, Equal, xcb ? Warn : Fail);
     if (QTest::currentTestFailed())
         return;
 
     // test state transition, state and size consistency after maximize
     widget.showMaximized();
-    verifyResize(QSize(), Qt::WindowMaximized, true, xcb);
+    verifyResize(QSize(), Qt::WindowMaximized, Greater, xcb ? Fail : Warn);
     if (QTest::currentTestFailed())
         return;
 

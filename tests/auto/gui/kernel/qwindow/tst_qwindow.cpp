@@ -88,6 +88,7 @@ private slots:
     void activateDeactivateEvent();
     void qobject_castOnDestruction();
     void touchToMouseTranslationByPopup();
+    void stateChangeSignal();
 
 private:
     QPoint m_availableTopLeft;
@@ -2776,6 +2777,103 @@ void tst_QWindow::touchToMouseTranslationByPopup()
     QTRY_COMPARE(window.mousePressButton, int(Qt::LeftButton));
     QTest::touchEvent(&window, touchDevice).release(1, tp1, &window);
     QTRY_COMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
+}
+
+// Test that windowStateChanged is not emitted on noop change (QTBUG-102478)
+void tst_QWindow::stateChangeSignal()
+{
+    // Test only for Windows, Linux and macOS
+#if !defined(Q_OS_LINUX) && !defined(Q_OS_WINDOWS) && !defined(Q_OS_DARWIN)
+    QSKIP("Singular windowStateChanged signal emission is guaranteed for Linux, Windows and macOS only.\n"
+          "On other operating systems, the signal may be emitted twice.");
+#endif
+    QWindow w;
+    Q_ASSUME(connect (&w, &QWindow::windowStateChanged, [](Qt::WindowState s){qCDebug(lcTests) << "State change to" << s;}));
+    QSignalSpy spy(&w, SIGNAL(windowStateChanged(Qt::WindowState)));
+    unsigned short signalCount = 0;
+    QList<Qt::WindowState> effectiveStates;
+    Q_ASSUME(connect(&w, &QWindow::windowStateChanged, [&effectiveStates](Qt::WindowState state)
+            { effectiveStates.append(state); }));
+    // Part 1:
+    // => test signal emission on programmatic state changes
+    QCOMPARE(w.windowState(), Qt::WindowNoState);
+    // - wait for target state to be set
+    // - wait for signal spy to have reached target count
+    // - extract state from signal and compare to target
+#define CHECK_STATE(State)\
+    QTRY_VERIFY(QTest::qWaitFor([&w](){return (w.windowState() == State); }));\
+    CHECK_SIGNAL(State)
+#define CHECK_SIGNAL(State)\
+    QTRY_COMPARE(spy.count(), signalCount);\
+    if (signalCount > 0) {\
+        QVariantList list = spy.at(signalCount - 1).toList();\
+        QCOMPARE(list.count(), 1);\
+        bool ok;\
+        const int stateInt = list.at(0).toInt(&ok);\
+        QVERIFY(ok);\
+        const Qt::WindowState newState = static_cast<Qt::WindowState>(stateInt);\
+        QCOMPARE(newState, State);\
+    }
+    // Check initialization
+    CHECK_STATE(Qt::WindowNoState);
+    // showMaximized after init
+    // expected behavior: signal emitted once with state == WindowMaximized
+    ++signalCount;
+    w.showMaximized();
+    CHECK_STATE(Qt::WindowMaximized);
+    // setWindowState to normal
+    // expected behavior: signal emitted once with state == WindowNoState
+    ++signalCount;
+    w.setWindowState(Qt::WindowNoState);
+    CHECK_STATE(Qt::WindowNoState);
+    // redundant setWindowState to normal - except windows, where the no-op is counted
+    // expected behavior: No emits.
+    // On Windows, a no-op state change causes a no-op resize and repaint, leading to a
+    // no-op state change and singal emission.
+#ifdef Q_OS_WINDOWS
+    ++signalCount;
+    ++signalCount;
+#endif
+    w.setWindowState(Qt::WindowNoState);
+    CHECK_STATE(Qt::WindowNoState);
+    // setWindowState to minimized
+    // expected behavior: signal emitted once with state == WindowMinimized
+    ++signalCount;
+    w.showMinimized();
+    CHECK_STATE(Qt::WindowMinimized);
+    // setWindowState to Normal
+    // expected behavior: signal emitted once with state == WindowNoState
+    ++signalCount;
+    w.showNormal();
+    CHECK_STATE(Qt::WindowNoState);
+    /*
+     - Testcase showFullScreen is omitted: Depending on window manager,
+     WindowFullScreen can be mapped to WindowMaximized
+     - Transition from WindowMinimized to WindowMaximized is omitted:
+     WindowNoState to WindowMaximized
+     */
+    // Part 2:
+    // => test signal emission on simulated user interaction
+    // To test the code path, inject state change events into the QPA event queue.
+    // Test the signal emission only, not the window's actual visible state.
+
+    // Flush pending events and clear
+    QCoreApplication::processEvents();
+    spy.clear();
+    effectiveStates.clear();
+    signalCount = 0;
+    // Maximize window
+    QWindowSystemInterface::handleWindowStateChanged(&w, Qt::WindowMaximized, w.windowState());
+    ++signalCount;
+    CHECK_SIGNAL(Qt::WindowMaximized);
+    // Normalize window
+    QWindowSystemInterface::handleWindowStateChanged(&w, Qt::WindowNoState, w.windowState());
+    ++signalCount;
+    CHECK_SIGNAL(Qt::WindowNoState);
+    // Minimize window
+    QWindowSystemInterface::handleWindowStateChanged(&w, Qt::WindowMinimized, w.windowState());
+    ++signalCount;
+    CHECK_SIGNAL(Qt::WindowMinimized);
 }
 
 #include <tst_qwindow.moc>
