@@ -339,10 +339,16 @@ void QCocoaMenuBar::insertWindowMenu()
     [mainMenu insertItem:winMenuItem atIndex:mainMenu.itemArray.count];
     app.windowsMenu = winMenuItem.submenu;
 
-    // Windows, created and 'ordered front' before, will not be in this menu:
+    // Windows that have already been ordered in at this point have already been
+    // evaluated by AppKit via _addToWindowsMenuIfNecessary and added to the menu,
+    // but since the menu didn't exist at that point the addition was a noop.
+    // Instead of trying to duplicate the logic AppKit uses for deciding if
+    // a window should be part of the Window menu we toggle one of the settings
+    // that definitely will affect this, which results in AppKit reevaluating the
+    // situation and adding the window to the menu if necessary.
     for (NSWindow *win in app.windows) {
-        if (win.title && ![win.title isEqualToString:@""])
-            [app addWindowsItem:win title:win.title filename:NO];
+        win.excludedFromWindowsMenu = !win.excludedFromWindowsMenu;
+        win.excludedFromWindowsMenu = !win.excludedFromWindowsMenu;
     }
 }
 
