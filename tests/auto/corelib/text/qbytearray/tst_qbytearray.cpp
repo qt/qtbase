@@ -1258,7 +1258,14 @@ void tst_QByteArray::remove()
     QFETCH(int, position);
     QFETCH(int, length);
     QFETCH(QByteArray, expected);
-    QCOMPARE(src.remove(position, length), expected);
+    // Test when it's shared
+    QByteArray ba1 = src;
+    QCOMPARE(ba1.remove(position, length), expected);
+
+    // Test when it's not shared
+    QByteArray ba2 = src;
+    ba2.detach();
+    QCOMPARE(ba2.remove(position, length), expected);
 }
 
 void tst_QByteArray::removeIf()

@@ -2253,11 +2253,20 @@ QByteArray &QByteArray::remove(qsizetype pos, qsizetype len)
 {
     if (len <= 0  || pos < 0 || size_t(pos) >= size_t(size()))
         return *this;
-    detach();
     if (pos + len > d->size)
         len = d->size - pos;
-    d->erase(d.begin() + pos, len);
-    d.data()[d.size] = '\0';
+
+    auto begin = d.begin();
+    if (!d->isShared()) {
+        d->erase(begin + pos, len);
+        d.data()[d.size] = '\0';
+    } else {
+        QByteArray copy{size() - len, Qt::Uninitialized};
+        const auto toRemove_start = d.begin() + pos;
+        copy.d->copyRanges({{d.begin(), toRemove_start},
+                           {toRemove_start + len, d.end()}});
+        swap(copy);
+    }
     return *this;
 }
 
