@@ -488,27 +488,31 @@ void QThread::yieldCurrentThread()
 
 #endif // QT_CONFIG(thread)
 
-static timespec makeTimespec(time_t secs, long nsecs)
+static timespec makeTimespec(std::chrono::nanoseconds nsecs)
 {
+    using namespace std::chrono;
+    const seconds secs = duration_cast<seconds>(nsecs);
+    const nanoseconds frac = nsecs - secs;
     struct timespec ts;
-    ts.tv_sec = secs;
-    ts.tv_nsec = nsecs;
+    ts.tv_sec = secs.count();
+    ts.tv_nsec = frac.count();
     return ts;
 }
 
+
 void QThread::sleep(unsigned long secs)
 {
-    qt_nanosleep(makeTimespec(secs, 0));
+    qt_nanosleep(makeTimespec(std::chrono::seconds{secs}));
 }
 
 void QThread::msleep(unsigned long msecs)
 {
-    qt_nanosleep(makeTimespec(msecs / 1000, msecs % 1000 * 1000 * 1000));
+    qt_nanosleep(makeTimespec(std::chrono::milliseconds{msecs}));
 }
 
 void QThread::usleep(unsigned long usecs)
 {
-    qt_nanosleep(makeTimespec(usecs / 1000 / 1000, usecs % (1000*1000) * 1000));
+    qt_nanosleep(makeTimespec(std::chrono::microseconds{usecs}));
 }
 
 #if QT_CONFIG(thread)
