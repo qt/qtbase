@@ -295,8 +295,16 @@ void WebPromiseManager::adoptPromise(emscripten::val target, PromiseCallbacks ca
         registerPromise(std::move(allocation), std::move(callbacks));
     });
 }
+#if defined(QT_STATIC)
 
 EM_JS(bool, jsHaveAsyncify, (), { return typeof Asyncify !== "undefined"; });
+
+#else
+
+bool jsHaveAsyncify() { return false; }
+
+#endif
+
 } // namespace
 
 ArrayBuffer::ArrayBuffer(uint32_t size)
