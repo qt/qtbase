@@ -184,6 +184,7 @@ private slots:
 
     void fileTimes_data();
     void fileTimes();
+    void setFileTimes();
     void fakeFileTimes_data();
     void fakeFileTimes();
 
@@ -1201,6 +1202,21 @@ void tst_QFileInfo::fileTimes()
 
     QVERIFY2(readTime > beforeRead, datePairString(readTime, beforeRead));
     QVERIFY(writeTime < beforeRead);
+}
+
+void tst_QFileInfo::setFileTimes()
+{
+    QByteArray data("OLE\nOLE\nOLE");
+    QTemporaryFile file;
+
+    QVERIFY(file.open());
+    QCOMPARE(file.write(data), data.size());
+    QCOMPARE(file.size(), data.size());
+
+    const QDateTime before = QDateTime::currentDateTimeUtc().addMSecs(-5000);
+    QVERIFY(file.setFileTime(before, QFile::FileModificationTime));
+    const QDateTime mtime = file.fileTime(QFile::FileModificationTime).toUTC();
+    QCOMPARE(mtime, before);
 }
 
 void tst_QFileInfo::fakeFileTimes_data()
