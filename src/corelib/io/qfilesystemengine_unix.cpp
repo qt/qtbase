@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include <chrono>
 #include <memory> // for std::unique_ptr
 
 #if __has_include(<paths.h>)
@@ -159,16 +160,39 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
 
 namespace {
 namespace GetFileTimes {
-qint64 timespecToMSecs(const timespec &spec)
+qint64 time_t_toMsecs(time_t t)
 {
-    return (qint64(spec.tv_sec) * 1000) + (spec.tv_nsec / 1000000);
+    using namespace std::chrono;
+    return milliseconds{seconds{t}}.count();
 }
 
 // fallback set
-[[maybe_unused]] qint64 atime(const QT_STATBUF &statBuffer, ulong) { return qint64(statBuffer.st_atime) * 1000; }
-[[maybe_unused]] qint64 birthtime(const QT_STATBUF &, ulong)       { return Q_INT64_C(0); }
-[[maybe_unused]] qint64 ctime(const QT_STATBUF &statBuffer, ulong) { return qint64(statBuffer.st_ctime) * 1000; }
-[[maybe_unused]] qint64 mtime(const QT_STATBUF &statBuffer, ulong) { return qint64(statBuffer.st_mtime) * 1000; }
+[[maybe_unused]] qint64 atime(const QT_STATBUF &statBuffer, ulong)
+{
+    return time_t_toMsecs(statBuffer.st_atime);
+}
+[[maybe_unused]] qint64 birthtime(const QT_STATBUF &, ulong)
+{
+    return Q_INT64_C(0);
+}
+[[maybe_unused]] qint64 ctime(const QT_STATBUF &statBuffer, ulong)
+{
+    return time_t_toMsecs(statBuffer.st_ctime);
+}
+[[maybe_unused]] qint64 mtime(const QT_STATBUF &statBuffer, ulong)
+{
+    return time_t_toMsecs(statBuffer.st_mtime);
+}
+
+// T is either a stat.timespec or statx.statx_timestamp,
+// both have tv_sec and tv_nsec members
+template<typename T>
+qint64 timespecToMSecs(const T &spec)
+{
+    using namespace std::chrono;
+    const nanoseconds nsecs = seconds{spec.tv_sec} + nanoseconds{spec.tv_nsec};
+    return duration_cast<milliseconds>(nsecs).count();
+}
 
 // Xtim, POSIX.1-2008
 template <typename T>
@@ -303,17 +327,12 @@ inline void QFileSystemMetaData::fillFromStatxBuf(const struct statx &statxBuffe
     size_ = qint64(statxBuffer.stx_size);
 
     // Times
-    auto toMSecs = [](struct statx_timestamp ts)
-    {
-        return qint64(ts.tv_sec) * 1000 + (ts.tv_nsec / 1000000);
-    };
-    accessTime_ = toMSecs(statxBuffer.stx_atime);
-    metadataChangeTime_ = toMSecs(statxBuffer.stx_ctime);
-    modificationTime_ = toMSecs(statxBuffer.stx_mtime);
-    if (statxBuffer.stx_mask & STATX_BTIME)
-        birthTime_ = toMSecs(statxBuffer.stx_btime);
-    else
-        birthTime_ = 0;
+    using namespace GetFileTimes;
+    accessTime_ = timespecToMSecs(statxBuffer.stx_atime);
+    metadataChangeTime_ = timespecToMSecs(statxBuffer.stx_ctime);
+    modificationTime_ = timespecToMSecs(statxBuffer.stx_mtime);
+    const bool birthMask = statxBuffer.stx_mask & STATX_BTIME;
+    birthTime_ = birthMask ? timespecToMSecs(statxBuffer.stx_btime) : 0;
 
     userId_ = statxBuffer.stx_uid;
     groupId_ = statxBuffer.stx_gid;
@@ -1512,19 +1531,17 @@ bool QFileSystemEngine::setFileTime(int fd, const QDateTime &newDate, QAbstractF
     }
 
 #if QT_CONFIG(futimens)
-    struct timespec ts[2];
+    // UTIME_OMIT: leave file timestamp unchanged
+    struct timespec ts[2] = {{0, UTIME_OMIT}, {0, UTIME_OMIT}};
 
-    ts[0].tv_sec = ts[1].tv_sec = 0;
-    ts[0].tv_nsec = ts[1].tv_nsec = UTIME_OMIT;
-
-    const qint64 msecs = newDate.toMSecsSinceEpoch();
-
-    if (time == QAbstractFileEngine::AccessTime) {
-        ts[0].tv_sec = msecs / 1000;
-        ts[0].tv_nsec = (msecs % 1000) * 1000000;
-    } else if (time == QAbstractFileEngine::ModificationTime) {
-        ts[1].tv_sec = msecs / 1000;
-        ts[1].tv_nsec = (msecs % 1000) * 1000000;
+    if (time == QAbstractFileEngine::AccessTime || time == QAbstractFileEngine::ModificationTime) {
+        using namespace std::chrono;
+        const milliseconds msecs{newDate.toMSecsSinceEpoch()};
+        const seconds secs = duration_cast<seconds>(msecs);
+        const nanoseconds frac = msecs - secs;
+        const int idx = time == QAbstractFileEngine::AccessTime ? 0 : 1;
+        ts[idx].tv_sec = secs.count();
+        ts[idx].tv_nsec = frac.count();
     }
 
     if (futimens(fd, ts) == -1) {
