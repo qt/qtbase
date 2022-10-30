@@ -760,7 +760,8 @@ public:
         ExternalOES = 1 << 9,
         ThreeDimensional = 1 << 10,
         TextureRectangleGL = 1 << 11,
-        TextureArray = 1 << 12
+        TextureArray = 1 << 12,
+        OneDimensional = 1 << 13
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -1672,7 +1673,9 @@ public:
         Tessellation,
         GeometryShader,
         TextureArrayRange,
-        NonFillPolygonMode
+        NonFillPolygonMode,
+        OneDimensionalTextures,
+        OneDimensionalTextureMipmaps
     };
 
     enum BeginFrameFlag {

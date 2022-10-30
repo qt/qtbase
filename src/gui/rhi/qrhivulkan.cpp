@@ -2939,6 +2939,7 @@ void QRhiVulkan::prepareUploadSubres(QVkTexture *texD, int layer, int level,
     qsizetype imageSizeBytes = 0;
     const void *src = nullptr;
     const bool is3D = texD->m_flags.testFlag(QRhiTexture::ThreeDimensional);
+    const bool is1D = texD->m_flags.testFlag(QRhiTexture::OneDimensional);
 
     VkBufferImageCopy copyInfo = {};
     copyInfo.bufferOffset = *curOfs;
@@ -2949,6 +2950,8 @@ void QRhiVulkan::prepareUploadSubres(QVkTexture *texD, int layer, int level,
     copyInfo.imageExtent.depth = 1;
     if (is3D)
         copyInfo.imageOffset.z = uint32_t(layer);
+    if (is1D)
+        copyInfo.imageOffset.y = uint32_t(layer);
 
     const QByteArray rawData = subresDesc.data();
     const QPoint dp = subresDesc.destinationTopLeft();
@@ -4257,6 +4260,10 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::NonFillPolygonMode:
         return caps.nonFillPolygonMode;
+    case QRhi::OneDimensionalTextures:
+        return true;
+    case QRhi::OneDimensionalTextureMipmaps:
+        return true;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -5874,11 +5881,14 @@ bool QVkTexture::prepareCreate(QSize *adjustedSize)
         return false;
     }
 
-    const QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool isArray = m_flags.testFlag(TextureArray);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
+    const bool is1D = m_flags.testFlag(OneDimensional);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
+
+    const QSize size = is1D ? QSize(qMax(1, m_pixelSize.width()), 1)
+                            : (m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize);
 
     mipLevelCount = uint(hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1);
     const int maxLevels = QRhi::MAX_MIP_LEVELS;
@@ -5907,6 +5917,14 @@ bool QVkTexture::prepareCreate(QSize *adjustedSize)
     }
     if (isArray && is3D) {
         qWarning("Texture cannot be both array and 3D");
+        return false;
+    }
+    if (isCube && is1D) {
+        qWarning("Texture cannot be both cube and 1D");
+        return false;
+    }
+    if (is1D && is3D) {
+        qWarning("Texture cannot be both 1D and 3D");
         return false;
     }
     m_depth = qMax(1, m_depth);
@@ -5942,13 +5960,16 @@ bool QVkTexture::finishCreate()
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool isArray = m_flags.testFlag(TextureArray);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
+    const bool is1D = m_flags.testFlag(OneDimensional);
 
     VkImageViewCreateInfo viewInfo = {};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = image;
-    viewInfo.viewType = isCube ? VK_IMAGE_VIEW_TYPE_CUBE
-        : (is3D ? VK_IMAGE_VIEW_TYPE_3D
-           : (isArray ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D));
+    viewInfo.viewType = isCube
+            ? VK_IMAGE_VIEW_TYPE_CUBE
+            : (is3D ? VK_IMAGE_VIEW_TYPE_3D
+                    : (is1D ? (isArray ? VK_IMAGE_VIEW_TYPE_1D_ARRAY : VK_IMAGE_VIEW_TYPE_1D)
+                            : (isArray ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D)));
     viewInfo.format = vkformat;
     viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
     viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
@@ -5987,6 +6008,7 @@ bool QVkTexture::create()
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool isArray = m_flags.testFlag(TextureArray);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
+    const bool is1D = m_flags.testFlag(OneDimensional);
 
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -6009,7 +6031,7 @@ bool QVkTexture::create()
 #endif
     }
 
-    imageInfo.imageType = is3D ? VK_IMAGE_TYPE_3D : VK_IMAGE_TYPE_2D;
+    imageInfo.imageType = is1D ? VK_IMAGE_TYPE_1D : is3D ? VK_IMAGE_TYPE_3D : VK_IMAGE_TYPE_2D;
     imageInfo.format = vkformat;
     imageInfo.extent.width = uint32_t(size.width());
     imageInfo.extent.height = uint32_t(size.height());
@@ -6097,13 +6119,16 @@ VkImageView QVkTexture::imageViewForLevel(int level)
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool isArray = m_flags.testFlag(TextureArray);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
+    const bool is1D = m_flags.testFlag(OneDimensional);
 
     VkImageViewCreateInfo viewInfo = {};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = image;
-    viewInfo.viewType = isCube ? VK_IMAGE_VIEW_TYPE_CUBE
-        : (is3D ? VK_IMAGE_VIEW_TYPE_3D
-           : (isArray ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D));
+    viewInfo.viewType = isCube
+            ? VK_IMAGE_VIEW_TYPE_CUBE
+            : (is3D ? VK_IMAGE_VIEW_TYPE_3D
+                    : (is1D ? (isArray ? VK_IMAGE_VIEW_TYPE_1D_ARRAY : VK_IMAGE_VIEW_TYPE_1D)
+                            : (isArray ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D)));
     viewInfo.format = vkformat;
     viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
     viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
@@ -6487,7 +6512,9 @@ bool QVkTextureRenderTarget::create()
             VkImageViewCreateInfo viewInfo = {};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             viewInfo.image = texD->image;
-            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.viewType = texD->flags().testFlag(QRhiTexture::OneDimensional)
+                    ? VK_IMAGE_VIEW_TYPE_1D
+                    : VK_IMAGE_VIEW_TYPE_2D;
             viewInfo.format = texD->vkformat;
             viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
             viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;

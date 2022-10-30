@@ -82,11 +82,14 @@ struct QD3D11Texture : public QRhiTexture
     {
         if (tex)
             return tex;
+        else if (tex1D)
+            return tex1D;
         return tex3D;
     }
 
     ID3D11Texture2D *tex = nullptr;
     ID3D11Texture3D *tex3D = nullptr;
+    ID3D11Texture1D *tex1D = nullptr;
     bool owns = true;
     ID3D11ShaderResourceView *srv = nullptr;
     DXGI_FORMAT dxgiFormat;

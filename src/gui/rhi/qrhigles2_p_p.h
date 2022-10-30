@@ -896,6 +896,20 @@ public:
     mutable bool needsMakeCurrentDueToSwap = false;
     QOpenGLExtensions *f = nullptr;
     void (QOPENGLF_APIENTRYP glPolygonMode) (GLenum, GLenum) = nullptr;
+    void(QOPENGLF_APIENTRYP glTexImage1D)(GLenum, GLint, GLint, GLsizei, GLint, GLenum, GLenum,
+                                          const void *) = nullptr;
+    void(QOPENGLF_APIENTRYP glTexStorage1D)(GLenum, GLint, GLenum, GLsizei) = nullptr;
+    void(QOPENGLF_APIENTRYP glTexSubImage1D)(GLenum, GLint, GLint, GLsizei, GLenum, GLenum,
+                                             const GLvoid *) = nullptr;
+    void(QOPENGLF_APIENTRYP glCopyTexSubImage1D)(GLenum, GLint, GLint, GLint, GLint,
+                                                 GLsizei) = nullptr;
+    void(QOPENGLF_APIENTRYP glCompressedTexImage1D)(GLenum, GLint, GLenum, GLsizei, GLint, GLsizei,
+                                                    const GLvoid *) = nullptr;
+    void(QOPENGLF_APIENTRYP glCompressedTexSubImage1D)(GLenum, GLint, GLint, GLsizei, GLenum,
+                                                       GLsizei, const GLvoid *) = nullptr;
+    void(QOPENGLF_APIENTRYP glFramebufferTexture1D)(GLenum, GLenum, GLenum, GLuint,
+                                                    GLint) = nullptr;
+
     uint vao = 0;
     struct Caps {
         Caps()
@@ -945,7 +959,8 @@ public:
               programBinary(false),
               texture3D(false),
               tessellation(false),
-              geometryShader(false)
+              geometryShader(false),
+              texture1D(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -996,6 +1011,7 @@ public:
         uint texture3D : 1;
         uint tessellation : 1;
         uint geometryShader : 1;
+        uint texture1D : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;

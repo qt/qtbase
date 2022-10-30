@@ -543,6 +543,10 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::NonFillPolygonMode:
         return true;
+    case QRhi::OneDimensionalTextures:
+        return true;
+    case QRhi::OneDimensionalTextureMipmaps:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -3057,7 +3061,7 @@ QD3D11Texture::~QD3D11Texture()
 
 void QD3D11Texture::destroy()
 {
-    if (!tex && !tex3D)
+    if (!tex && !tex3D && !tex1D)
         return;
 
     if (srv) {
@@ -3077,10 +3081,13 @@ void QD3D11Texture::destroy()
             tex->Release();
         if (tex3D)
             tex3D->Release();
+        if (tex1D)
+            tex1D->Release();
     }
 
     tex = nullptr;
     tex3D = nullptr;
+    tex1D = nullptr;
 
     QRHI_RES_RHI(QRhiD3D11);
     if (rhiD)
@@ -3123,15 +3130,18 @@ static inline DXGI_FORMAT toD3DDepthTextureDSVFormat(QRhiTexture::Format format)
 
 bool QD3D11Texture::prepareCreate(QSize *adjustedSize)
 {
-    if (tex || tex3D)
+    if (tex || tex3D || tex1D)
         destroy();
 
-    const QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
     const bool isDepth = isDepthTextureFormat(m_format);
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
     const bool isArray = m_flags.testFlag(TextureArray);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
+    const bool is1D = m_flags.testFlag(OneDimensional);
+
+    const QSize size = is1D ? QSize(qMax(1, m_pixelSize.width()), 1)
+                            : (m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize);
 
     QRHI_RES_RHI(QRhiD3D11);
     dxgiFormat = toD3DTextureFormat(m_format, m_flags);
@@ -3163,6 +3173,14 @@ bool QD3D11Texture::prepareCreate(QSize *adjustedSize)
         qWarning("Texture cannot be both array and 3D");
         return false;
     }
+    if (isCube && is1D) {
+        qWarning("Texture cannot be both cube and 1D");
+        return false;
+    }
+    if (is1D && is3D) {
+        qWarning("Texture cannot be both 1D and 3D");
+        return false;
+    }
     m_depth = qMax(1, m_depth);
     if (m_depth > 1 && !is3D) {
         qWarning("Texture cannot have a depth of %d when it is not 3D", m_depth);
@@ -3191,6 +3209,7 @@ bool QD3D11Texture::finishCreate()
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
     const bool isArray = m_flags.testFlag(TextureArray);
+    const bool is1D = m_flags.testFlag(OneDimensional);
 
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
     srvDesc.Format = isDepth ? toD3DDepthTextureSRVFormat(m_format) : dxgiFormat;
@@ -3198,7 +3217,22 @@ bool QD3D11Texture::finishCreate()
         srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
         srvDesc.TextureCube.MipLevels = mipLevelCount;
     } else {
-        if (isArray) {
+        if (is1D) {
+            if (isArray) {
+                srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE1DARRAY;
+                srvDesc.Texture1DArray.MipLevels = mipLevelCount;
+                if (m_arrayRangeStart >= 0 && m_arrayRangeLength >= 0) {
+                    srvDesc.Texture1DArray.FirstArraySlice = UINT(m_arrayRangeStart);
+                    srvDesc.Texture1DArray.ArraySize = UINT(m_arrayRangeLength);
+                } else {
+                    srvDesc.Texture1DArray.FirstArraySlice = 0;
+                    srvDesc.Texture1DArray.ArraySize = UINT(m_arraySize);
+                }
+            } else {
+                srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE1D;
+                srvDesc.Texture1D.MipLevels = mipLevelCount;
+            }
+        } else if (isArray) {
             if (sampleDesc.Count > 1) {
                 srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY;
                 if (m_arrayRangeStart >= 0 && m_arrayRangeLength >= 0) {
@@ -3252,6 +3286,7 @@ bool QD3D11Texture::create()
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
     const bool isArray = m_flags.testFlag(TextureArray);
+    const bool is1D = m_flags.testFlag(OneDimensional);
 
     uint bindFlags = D3D11_BIND_SHADER_RESOURCE;
     uint miscFlags = isCube ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0;
@@ -3273,7 +3308,25 @@ bool QD3D11Texture::create()
         bindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 
     QRHI_RES_RHI(QRhiD3D11);
-    if (!is3D) {
+    if (is1D) {
+        D3D11_TEXTURE1D_DESC desc = {};
+        desc.Width = UINT(size.width());
+        desc.MipLevels = mipLevelCount;
+        desc.ArraySize = isArray ? UINT(m_arraySize) : 1;
+        desc.Format = dxgiFormat;
+        desc.Usage = D3D11_USAGE_DEFAULT;
+        desc.BindFlags = bindFlags;
+        desc.MiscFlags = miscFlags;
+
+        HRESULT hr = rhiD->dev->CreateTexture1D(&desc, nullptr, &tex1D);
+        if (FAILED(hr)) {
+            qWarning("Failed to create 1D texture: %s", qPrintable(comErrorMessage(hr)));
+            return false;
+        }
+        if (!m_objectName.isEmpty())
+            tex->SetPrivateData(WKPDID_D3DDebugObjectName, UINT(m_objectName.size()),
+                                m_objectName.constData());
+    } else if (!is3D) {
         D3D11_TEXTURE2D_DESC desc = {};
         desc.Width = UINT(size.width());
         desc.Height = UINT(size.height());
@@ -3330,6 +3383,8 @@ bool QD3D11Texture::createFrom(QRhiTexture::NativeTexture src)
 
     if (m_flags.testFlag(ThreeDimensional))
         tex3D = reinterpret_cast<ID3D11Texture3D *>(src.object);
+    else if (m_flags.testFlags(OneDimensional))
+        tex1D = reinterpret_cast<ID3D11Texture1D *>(src.object);
     else
         tex = reinterpret_cast<ID3D11Texture2D *>(src.object);
 
@@ -3649,6 +3704,16 @@ bool QD3D11TextureRenderTarget::create()
                 rtvDesc.Texture2DArray.MipSlice = UINT(colorAtt.level());
                 rtvDesc.Texture2DArray.FirstArraySlice = UINT(colorAtt.layer());
                 rtvDesc.Texture2DArray.ArraySize = 1;
+            } else if (texD->flags().testFlag(QRhiTexture::OneDimensional)) {
+                if (texD->flags().testFlag(QRhiTexture::TextureArray)) {
+                    rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE1DARRAY;
+                    rtvDesc.Texture1DArray.MipSlice = UINT(colorAtt.level());
+                    rtvDesc.Texture1DArray.FirstArraySlice = UINT(colorAtt.layer());
+                    rtvDesc.Texture1DArray.ArraySize = 1;
+                } else {
+                    rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE1D;
+                    rtvDesc.Texture1D.MipSlice = UINT(colorAtt.level());
+                }
             } else if (texD->flags().testFlag(QRhiTexture::TextureArray)) {
                 if (texD->sampleDesc.Count > 1) {
                     rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY;

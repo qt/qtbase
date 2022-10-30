@@ -727,6 +727,15 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     for changing the mode to Line is to get wireframe rendering. This however
     is not available as a core OpenGL ES feature, and is optional with Vulkan
     as well as some mobile GPUs may not offer the feature.
+
+    \value OneDimensionalTextures Indicates that 1D textures are supported.
+    In practice this feature will be unsupported on OpenGL ES.
+
+    \value OneDimensionalTextureMipmaps Indicates that 1D texture mipmaps and
+    1D texture render targets are supported. In practice this feature will be
+    unsupported on backends that do not report support for
+    \l{OneDimensionalTextures}, and Metal.
+
  */
 
 /*!
@@ -7296,13 +7305,20 @@ QRhiRenderBuffer *QRhi::newRenderBuffer(QRhiRenderBuffer::Type type,
 }
 
 /*!
-    \return a new 2D texture with the specified \a format, \a pixelSize, \a
+    \return a new 1D or 2D texture with the specified \a format, \a pixelSize, \a
     sampleCount, and \a flags.
+
+    A 1D texture array must have QRhiTexture::OneDimensional set in \a flags.  This
+    function will implicitly set this flag if the \a pixelSize height is 0.
 
     \note \a format specifies the requested internal and external format,
     meaning the data to be uploaded to the texture will need to be in a
     compatible format, while the native texture may (but is not guaranteed to,
     in case of OpenGL at least) use this format internally.
+
+    \note 1D textures are only functional when the OneDimensionalTextures feature is
+    reported as supported at run time. Further, mipmaps on 1D textures are only
+    functional when the OneDimensionalTextureMipmaps feature is reported at run time.
 
     \sa QRhiResource::destroy()
  */
@@ -7311,21 +7327,31 @@ QRhiTexture *QRhi::newTexture(QRhiTexture::Format format,
                               int sampleCount,
                               QRhiTexture::Flags flags)
 {
+    if (pixelSize.height() == 0)
+        flags |= QRhiTexture::OneDimensional;
+
     return d->createTexture(format, pixelSize, 1, 0, sampleCount, flags);
 }
 
 /*!
-    \return a new 2D or 3D texture with the specified \a format, \a width, \a
+    \return a new 1D, 2D or 3D texture with the specified \a format, \a width, \a
     height, \a depth, \a sampleCount, and \a flags.
 
     This overload is suitable for 3D textures because it allows specifying \a
     depth. A 3D texture must have QRhiTexture::ThreeDimensional set in \a
     flags, but using this overload that can be omitted because the flag is set
-    implicitly whenever \a depth is greater than 0. For 2D and cube textures \a
+    implicitly whenever \a depth is greater than 0. For 1D, 2D and cube textures \a
     depth should be set to 0.
+
+    A 1D texture must have QRhiTexture::OneDimensional set in \a flags.  This overload
+    will implicitly set this flag if both \a height and \a depth are 0.
 
     \note 3D textures are only functional when the ThreeDimensionalTextures
     feature is reported as supported at run time.
+
+    \note 1D textures are only functional when the OneDimensionalTextures feature is
+    reported as supported at run time. Further, mipmaps on 1D textures are only
+    functional when the OneDimensionalTextureMipmaps feature is reported at run time.
 
     \overload
  */
@@ -7337,17 +7363,23 @@ QRhiTexture *QRhi::newTexture(QRhiTexture::Format format,
     if (depth > 0)
         flags |= QRhiTexture::ThreeDimensional;
 
+    if (height == 0 && depth == 0)
+        flags |= QRhiTexture::OneDimensional;
+
     return d->createTexture(format, QSize(width, height), depth, 0, sampleCount, flags);
 }
 
 /*!
-    \return a new 2D texture array with the specified \a format, \a arraySize,
+    \return a new 1D or 2D texture array with the specified \a format, \a arraySize,
     \a pixelSize, \a sampleCount, and \a flags.
 
     This function implicitly sets QRhiTexture::TextureArray in \a flags.
 
+    A 1D texture array must have QRhiTexture::OneDimensional set in \a flags.  This
+    function will implicitly set this flag if the \a pixelSize height is 0.
+
     \note Do not confuse texture arrays with arrays of textures. A QRhiTexture
-    created by this function is usable with 2D array samplers in the shader, for
+    created by this function is usable with 1D or 2D array samplers in the shader, for
     example: \c{layout(binding = 1) uniform sampler2DArray texArr;}. Arrays of
     textures refers to a list of textures that are exposed to the shader via
     QRhiShaderResourceBinding::sampledTextures() and a count > 1, and declared
@@ -7356,6 +7388,11 @@ QRhiTexture *QRhi::newTexture(QRhiTexture::Format format,
 
     \note This is only functional when the TextureArrays feature is reported as
     supported at run time.
+
+    \note 1D textures are only functional when the OneDimensionalTextures feature is
+    reported as supported at run time. Further, mipmaps on 1D textures are only
+    functional when the OneDimensionalTextureMipmaps feature is reported at run time.
+
 
     \sa newTexture()
  */
@@ -7366,6 +7403,10 @@ QRhiTexture *QRhi::newTextureArray(QRhiTexture::Format format,
                                    QRhiTexture::Flags flags)
 {
     flags |= QRhiTexture::TextureArray;
+
+    if (pixelSize.height() == 0)
+        flags |= QRhiTexture::OneDimensional;
+
     return d->createTexture(format, pixelSize, 1, arraySize, sampleCount, flags);
 }
 

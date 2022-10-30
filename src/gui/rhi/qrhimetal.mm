@@ -772,6 +772,10 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::NonFillPolygonMode:
         return true;
+    case QRhi::OneDimensionalTextures:
+        return true;
+    case QRhi::OneDimensionalTextureMipmaps:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;
@@ -3414,11 +3418,14 @@ bool QMetalTexture::prepareCreate(QSize *adjustedSize)
     if (d->tex)
         destroy();
 
-    const QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
     const bool isArray = m_flags.testFlag(TextureArray);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
+    const bool is1D = m_flags.testFlag(OneDimensional);
+
+    const QSize size = is1D ? QSize(qMax(1, m_pixelSize.width()), 1)
+                            : (m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize);
 
     QRHI_RES_RHI(QRhiMetal);
     d->format = toMetalTextureFormat(m_format, m_flags, rhiD);
@@ -3444,6 +3451,14 @@ bool QMetalTexture::prepareCreate(QSize *adjustedSize)
     }
     if (isArray && is3D) {
         qWarning("Texture cannot be both array and 3D");
+        return false;
+    }
+    if (is1D && is3D) {
+        qWarning("Texture cannot be both 1D and 3D");
+        return false;
+    }
+    if (is1D && isCube) {
+        qWarning("Texture cannot be both 1D and cube");
         return false;
     }
     m_depth = qMax(1, m_depth);
@@ -3478,10 +3493,13 @@ bool QMetalTexture::create()
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
     const bool isArray = m_flags.testFlag(TextureArray);
+    const bool is1D = m_flags.testFlag(OneDimensional);
     if (isCube) {
         desc.textureType = MTLTextureTypeCube;
     } else if (is3D) {
         desc.textureType = MTLTextureType3D;
+    } else if (is1D) {
+        desc.textureType = isArray ? MTLTextureType1DArray : MTLTextureType1D;
     } else if (isArray) {
 #ifdef Q_OS_IOS
         if (samples > 1) {
