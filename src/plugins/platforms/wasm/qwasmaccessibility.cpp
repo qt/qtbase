@@ -4,6 +4,8 @@
 #include "qwasmaccessibility.h"
 #include "qwasmscreen.h"
 
+#include <QtGui/qwindow.h>
+
 // Qt WebAssembly a11y backend
 //
 // This backend implements accessibility support by creating "shadowing" html
