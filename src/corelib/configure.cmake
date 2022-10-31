@@ -229,22 +229,6 @@ futimens(-1, 0);
     /* END TEST: */
     return 0;
 }
-"# FIXME: qmake: ["# Block futimens() on Apple platforms unless it's available on ALL", '# deployment targets. This simplifies the logic at the call site', "# dramatically, as it isn't strictly needed compared to futimes().", 'darwin: QMAKE_CXXFLAGS += -Werror=unguarded-availability -Werror=unguarded-availability-new', 'CONFIG += warn_on']
-)
-
-# futimes
-qt_config_compile_test(futimes
-    LABEL "futimes()"
-    CODE
-"#include <sys/time.h>
-
-int main(void)
-{
-    /* BEGIN TEST: */
-futimes(-1, 0);
-    /* END TEST: */
-    return 0;
-}
 ")
 
 # getauxval
@@ -577,10 +561,6 @@ qt_feature_definition("eventfd" "QT_NO_EVENTFD" NEGATE VALUE "1")
 qt_feature("futimens" PRIVATE
     LABEL "futimens()"
     CONDITION NOT WIN32 AND TEST_futimens
-)
-qt_feature("futimes" PRIVATE
-    LABEL "futimes()"
-    CONDITION NOT WIN32 AND NOT QT_FEATURE_futimens AND TEST_futimes
 )
 qt_feature("getauxval" PRIVATE
     LABEL "getauxval()"

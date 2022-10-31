@@ -159,41 +159,6 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
 
 namespace {
 namespace GetFileTimes {
-#if !QT_CONFIG(futimens) && (QT_CONFIG(futimes))
-template <typename T>
-static inline typename std::enable_if_t<(&T::st_atim, &T::st_mtim, true)> get(const T *p, struct timeval *access, struct timeval *modification)
-{
-    access->tv_sec = p->st_atim.tv_sec;
-    access->tv_usec = p->st_atim.tv_nsec / 1000;
-
-    modification->tv_sec = p->st_mtim.tv_sec;
-    modification->tv_usec = p->st_mtim.tv_nsec / 1000;
-}
-
-template <typename T>
-static inline typename std::enable_if_t<(&T::st_atimespec, &T::st_mtimespec, true)> get(const T *p, struct timeval *access, struct timeval *modification)
-{
-    access->tv_sec = p->st_atimespec.tv_sec;
-    access->tv_usec = p->st_atimespec.tv_nsec / 1000;
-
-    modification->tv_sec = p->st_mtimespec.tv_sec;
-    modification->tv_usec = p->st_mtimespec.tv_nsec / 1000;
-}
-
-#  ifndef st_atimensec
-// if "st_atimensec" is defined, this would expand to invalid C++
-template <typename T>
-static inline typename std::enable_if_t<(&T::st_atimensec, &T::st_mtimensec, true)> get(const T *p, struct timeval *access, struct timeval *modification)
-{
-    access->tv_sec = p->st_atime;
-    access->tv_usec = p->st_atimensec / 1000;
-
-    modification->tv_sec = p->st_mtime;
-    modification->tv_usec = p->st_mtimensec / 1000;
-}
-#  endif
-#endif
-
 qint64 timespecToMSecs(const timespec &spec)
 {
     return (qint64(spec.tv_sec) * 1000) + (spec.tv_nsec / 1000000);
@@ -1563,33 +1528,6 @@ bool QFileSystemEngine::setFileTime(int fd, const QDateTime &newDate, QAbstractF
     }
 
     if (futimens(fd, ts) == -1) {
-        error = QSystemError(errno, QSystemError::StandardLibraryError);
-        return false;
-    }
-
-    return true;
-#elif QT_CONFIG(futimes)
-    struct timeval tv[2];
-    QT_STATBUF st;
-
-    if (QT_FSTAT(fd, &st) == -1) {
-        error = QSystemError(errno, QSystemError::StandardLibraryError);
-        return false;
-    }
-
-    GetFileTimes::get(&st, &tv[0], &tv[1]);
-
-    const qint64 msecs = newDate.toMSecsSinceEpoch();
-
-    if (time == QAbstractFileEngine::AccessTime) {
-        tv[0].tv_sec = msecs / 1000;
-        tv[0].tv_usec = (msecs % 1000) * 1000;
-    } else if (time == QAbstractFileEngine::ModificationTime) {
-        tv[1].tv_sec = msecs / 1000;
-        tv[1].tv_usec = (msecs % 1000) * 1000;
-    }
-
-    if (futimes(fd, tv) == -1) {
         error = QSystemError(errno, QSystemError::StandardLibraryError);
         return false;
     }
