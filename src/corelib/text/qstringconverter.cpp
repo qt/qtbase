@@ -571,6 +571,21 @@ char *QUtf8::convertFromUnicode(char *out, QStringView in, QStringConverter::Sta
     return reinterpret_cast<char *>(cursor);
 }
 
+char *QUtf8::convertFromLatin1(char *out, QLatin1StringView in)
+{
+    // ### SIMD-optimize:
+    for (uchar ch : in) {
+        if (ch < 128) {
+            *out++ = ch;
+        } else {
+            // as per https://en.wikipedia.org/wiki/UTF-8#Encoding, 2nd row
+            *out++ = 0b110'0'0000u | (ch >> 6);
+            *out++ = 0b10'00'0000u | (ch & 0b0011'1111);
+        }
+    }
+    return out;
+}
+
 QString QUtf8::convertToUnicode(QByteArrayView in)
 {
     // UTF-8 to UTF-16 always needs the exact same number of words or less:

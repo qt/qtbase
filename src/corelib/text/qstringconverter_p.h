@@ -270,6 +270,7 @@ struct QUtf8
     Q_CORE_EXPORT static QByteArray convertFromUnicode(QStringView in);
     Q_CORE_EXPORT static QByteArray convertFromUnicode(QStringView in, QStringConverterBase::State *state);
     static char *convertFromUnicode(char *out, QStringView in, QStringConverter::State *state);
+    Q_CORE_EXPORT static char *convertFromLatin1(char *out, QLatin1StringView in);
     struct ValidUtf8Result {
         bool isValidUtf8;
         bool isValidAscii;

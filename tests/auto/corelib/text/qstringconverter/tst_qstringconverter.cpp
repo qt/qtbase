@@ -6,9 +6,11 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include <qstringconverter.h>
+#include <private/qstringconverter_p.h>
 #include <qthreadpool.h>
 
 #include <array>
+#include <numeric>
 
 using namespace Qt::StringLiterals;
 
@@ -129,6 +131,8 @@ private slots:
     void convertUtf8CharByChar();
     void roundtrip_data();
     void roundtrip();
+
+    void convertL1U8();
 
 #if QT_CONFIG(icu)
     void roundtripIcu_data();
@@ -425,6 +429,18 @@ void tst_QStringConverter::roundtrip()
     QStringDecoder back2(code, flag);
     decoded = back2.decode(out2.encode(uniString));
     QCOMPARE(decoded, uniString);
+}
+
+void tst_QStringConverter::convertL1U8()
+{
+    {
+        std::array<char, 256> latin1;
+        std::iota(latin1.data(), latin1.data() + latin1.size(), uchar(0));
+        std::array<char, 512> utf8;
+        auto out = QUtf8::convertFromLatin1(utf8.data(), QLatin1StringView{latin1.data(), latin1.size()});
+        QCOMPARE(QString::fromLatin1(latin1.data(), latin1.size()),
+                 QString::fromUtf8(utf8.data(), out - utf8.data()));
+    }
 }
 
 #if QT_CONFIG(icu)
