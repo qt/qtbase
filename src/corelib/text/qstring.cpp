@@ -3104,6 +3104,14 @@ QString &QString::append(const QString &str)
 }
 
 /*!
+    \fn QString &QString::append(QStringView v)
+    \overload append()
+    \since 6.0
+
+    Appends the given string view \a v to this string and returns the result.
+*/
+
+/*!
   \overload append()
   \since 5.0
 
