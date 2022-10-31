@@ -29,7 +29,7 @@ qt_internal_add_plugin(QWindowsIntegrationPlugin
         qwindowsinternalmimedata.cpp qwindowsinternalmimedata.h
         qwindowskeymapper.cpp qwindowskeymapper.h
         qwindowsmenu.cpp qwindowsmenu.h
-        qwindowsmime.cpp qwindowsmime.h
+        qwindowsmimeregistry.cpp qwindowsmimeregistry.h
         qwindowsmousehandler.cpp qwindowsmousehandler.h
         qwindowsnativeinterface.cpp qwindowsnativeinterface.h
         qwindowsole.cpp qwindowsole.h

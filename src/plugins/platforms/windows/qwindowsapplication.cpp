@@ -4,7 +4,7 @@
 #include "qwindowsapplication.h"
 #include "qwindowsclipboard.h"
 #include "qwindowscontext.h"
-#include "qwindowsmime.h"
+#include "qwindowsmimeregistry.h"
 #include "qwin10helpers.h"
 #include "qwindowsopengltester.h"
 #include "qwindowswindow.h"
@@ -96,7 +96,7 @@ void QWindowsApplication::unregisterMime(QNativeInterface::Private::QWindowsMime
 
 int QWindowsApplication::registerMimeType(const QString &mime)
 {
-    return QWindowsMimeConverter::registerMimeType(mime);
+    return QWindowsMimeRegistry::registerMimeType(mime);
 }
 
 HWND QWindowsApplication::createMessageWindow(const QString &classNameTemplate,

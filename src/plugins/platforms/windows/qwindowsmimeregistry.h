@@ -1,8 +1,8 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QWINDOWSMIME_H
-#define QWINDOWSMIME_H
+#ifndef QWINDOWSMIMEREGISTRY_H
+#define QWINDOWSMIMEREGISTRY_H
 
 #include <QtGui/private/qwindowsmime_p.h>
 
@@ -16,14 +16,14 @@ QT_BEGIN_NAMESPACE
 class QDebug;
 class QMimeData;
 
-class QWindowsMimeConverter
+class QWindowsMimeRegistry
 {
-    Q_DISABLE_COPY_MOVE(QWindowsMimeConverter)
+    Q_DISABLE_COPY_MOVE(QWindowsMimeRegistry)
 public:
     using QWindowsMime = QNativeInterface::Private::QWindowsMime;
 
-    QWindowsMimeConverter();
-    ~QWindowsMimeConverter();
+    QWindowsMimeRegistry();
+    ~QWindowsMimeRegistry();
 
     QWindowsMime *converterToMime(const QString &mimeType, IDataObject *pDataObj) const;
     QStringList allMimesForFormats(IDataObject *pDataObj) const;
@@ -55,4 +55,4 @@ QDebug operator<<(QDebug d, IDataObject *);
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSMIME_H
+#endif // QWINDOWSMIMEREGISTRY_H

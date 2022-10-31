@@ -5,7 +5,7 @@
 
 #include <QtCore/qurl.h>
 #include <QtCore/qmimedata.h>
-#include "qwindowsmime.h"
+#include "qwindowsmimeregistry.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -53,7 +53,7 @@ bool QWindowsDropDataObject::shouldIgnore(LPFORMATETC pformatetc) const
     QMimeData *dropData = mimeData();
 
     if (dropData && dropData->formats().size() == 1 && dropData->hasUrls()) {
-        QString formatName = QWindowsMimeConverter::clipboardFormatName(pformatetc->cfFormat);
+        QString formatName = QWindowsMimeRegistry::clipboardFormatName(pformatetc->cfFormat);
         if (pformatetc->cfFormat == CF_UNICODETEXT
                 || pformatetc->cfFormat == CF_TEXT
                 || formatName == QStringLiteral("UniformResourceLocator")

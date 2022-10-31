@@ -11,7 +11,7 @@
 #include "qwindowspointerhandler.h"
 #include "qtwindowsglobal.h"
 #include "qwindowsmenu.h"
-#include "qwindowsmime.h"
+#include "qwindowsmimeregistry.h"
 #include "qwindowsinputcontext.h"
 #if QT_CONFIG(tabletevent)
 #  include "qwindowstabletsupport.h"
@@ -160,7 +160,7 @@ struct QWindowsContextPrivate {
     QWindowsKeyMapper m_keyMapper;
     QWindowsMouseHandler m_mouseHandler;
     QWindowsPointerHandler m_pointerHandler;
-    QWindowsMimeConverter m_mimeConverter;
+    QWindowsMimeRegistry m_mimeConverter;
     QWindowsScreenManager m_screenManager;
     QSharedPointer<QWindowCreationContext> m_creationContext;
 #if QT_CONFIG(tabletevent)
@@ -801,7 +801,7 @@ bool QWindowsContext::isSessionLocked()
     return result;
 }
 
-QWindowsMimeConverter &QWindowsContext::mimeConverter() const
+QWindowsMimeRegistry &QWindowsContext::mimeConverter() const
 {
     return d->m_mimeConverter;
 }

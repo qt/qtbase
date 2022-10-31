@@ -37,7 +37,7 @@ class QWindowsMenuBar;
 class QWindowsScreenManager;
 class QWindowsTabletSupport;
 class QWindowsWindow;
-class QWindowsMimeConverter;
+class QWindowsMimeRegistry;
 struct QWindowCreationContext;
 struct QWindowsContextPrivate;
 class QPoint;
@@ -135,7 +135,7 @@ public:
 
     static bool isSessionLocked();
 
-    QWindowsMimeConverter &mimeConverter() const;
+    QWindowsMimeRegistry &mimeConverter() const;
     QWindowsScreenManager &screenManager();
     QWindowsTabletSupport *tabletSupport() const;
 

@@ -3,7 +3,7 @@
 
 #include "qwindowsinternalmimedata.h"
 #include "qwindowscontext.h"
-#include "qwindowsmime.h"
+#include "qwindowsmimeregistry.h"
 #include <QtCore/qdebug.h>
 #include <QtCore/qvariant.h>
 
@@ -24,7 +24,7 @@
     the instances IDataObject from the clipboard or Drag and Drop and
     does conversion using QWindowsMime classes.
 
-    \sa QInternalMimeData, QWindowsMime, QWindowsMimeConverter
+    \sa QInternalMimeData, QWindowsMime, QWindowsMimeRegistry
     \internal
 */
 
@@ -34,7 +34,7 @@ bool QWindowsInternalMimeData::hasFormat_sys(const QString &mime) const
     if (!pDataObj)
         return false;
 
-    const QWindowsMimeConverter &mc = QWindowsContext::instance()->mimeConverter();
+    const QWindowsMimeRegistry &mc = QWindowsContext::instance()->mimeConverter();
     const bool has = mc.converterToMime(mime, pDataObj) != nullptr;
     releaseDataObject(pDataObj);
     qCDebug(lcQpaMime) << __FUNCTION__ <<  mime << has;
@@ -47,7 +47,7 @@ QStringList QWindowsInternalMimeData::formats_sys() const
     if (!pDataObj)
         return QStringList();
 
-    const QWindowsMimeConverter &mc = QWindowsContext::instance()->mimeConverter();
+    const QWindowsMimeRegistry &mc = QWindowsContext::instance()->mimeConverter();
     const QStringList fmts = mc.allMimesForFormats(pDataObj);
     releaseDataObject(pDataObj);
     qCDebug(lcQpaMime) << __FUNCTION__ <<  fmts;
@@ -61,7 +61,7 @@ QVariant QWindowsInternalMimeData::retrieveData_sys(const QString &mimeType, QMe
         return QVariant();
 
     QVariant result;
-    const QWindowsMimeConverter &mc = QWindowsContext::instance()->mimeConverter();
+    const QWindowsMimeRegistry &mc = QWindowsContext::instance()->mimeConverter();
     if (auto converter = mc.converterToMime(mimeType, pDataObj))
         result = converter->convertToMime(mimeType, pDataObj, type);
     releaseDataObject(pDataObj);

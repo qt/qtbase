@@ -1,7 +1,7 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qwindowsmime.h"
+#include "qwindowsmimeregistry.h"
 #include "qwindowscontext.h"
 
 #include <QtGui/private/qinternalmimedata_p.h>
@@ -300,7 +300,7 @@ QDebug operator<<(QDebug d, const FORMATETC &tc)
         d << "CF_ENHMETAFILE";
         break;
     default:
-        d << QWindowsMimeConverter::clipboardFormatName(tc.cfFormat);
+        d << QWindowsMimeRegistry::clipboardFormatName(tc.cfFormat);
         break;
     }
     d << ", dwAspect=" << tc.dwAspect << ", lindex=" << tc.lindex
@@ -370,7 +370,7 @@ QDebug operator<<(QDebug d, IDataObject *dataObj)
     You can check if a MIME type is convertible using canConvertFromMime() and
     can perform conversions with convertToMime() and convertFromMime().
 
-    \sa QWindowsMimeConverter
+    \sa QWindowsMimeRegistry
 */
 
 
@@ -605,8 +605,8 @@ private:
 
 QWindowsMimeURI::QWindowsMimeURI()
 {
-    CF_INETURL_W = QWindowsMimeConverter::registerMimeType(QStringLiteral("UniformResourceLocatorW"));
-    CF_INETURL = QWindowsMimeConverter::registerMimeType(QStringLiteral("UniformResourceLocator"));
+    CF_INETURL_W = QWindowsMimeRegistry::registerMimeType(QStringLiteral("UniformResourceLocatorW"));
+    CF_INETURL = QWindowsMimeRegistry::registerMimeType(QStringLiteral("UniformResourceLocator"));
 }
 
 bool QWindowsMimeURI::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
@@ -775,7 +775,7 @@ private:
 
 QWindowsMimeHtml::QWindowsMimeHtml()
 {
-    CF_HTML = QWindowsMimeConverter::registerMimeType(QStringLiteral("HTML Format"));
+    CF_HTML = QWindowsMimeRegistry::registerMimeType(QStringLiteral("HTML Format"));
 }
 
 QList<FORMATETC> QWindowsMimeHtml::formatsForMime(const QString &mimeType, const QMimeData *mimeData) const
@@ -1075,8 +1075,8 @@ private:
 QBuiltInMimes::QBuiltInMimes()
 : QWindowsMime()
 {
-    outFormats.insert(QWindowsMimeConverter::registerMimeType(QStringLiteral("application/x-color")), QStringLiteral("application/x-color"));
-    inFormats.insert(QWindowsMimeConverter::registerMimeType(QStringLiteral("application/x-color")), QStringLiteral("application/x-color"));
+    outFormats.insert(QWindowsMimeRegistry::registerMimeType(QStringLiteral("application/x-color")), QStringLiteral("application/x-color"));
+    inFormats.insert(QWindowsMimeRegistry::registerMimeType(QStringLiteral("application/x-color")), QStringLiteral("application/x-color"));
 }
 
 bool QBuiltInMimes::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
@@ -1257,7 +1257,7 @@ QList<FORMATETC> QLastResortMimes::formatsForMime(const QString &mimeType, const
     auto mit = std::find(formats.begin(), formats.end(), mimeType);
     // register any other available formats
     if (mit == formats.end() && !excludeList.contains(mimeType, Qt::CaseInsensitive))
-        mit = formats.insert(QWindowsMimeConverter::registerMimeType(mimeType), mimeType);
+        mit = formats.insert(QWindowsMimeRegistry::registerMimeType(mimeType), mimeType);
     if (mit != formats.end())
         formatetcs += setCf(mit.key());
 
@@ -1301,7 +1301,7 @@ bool QLastResortMimes::canConvertToMime(const QString &mimeType, IDataObject *pD
     }
     // if it is not in there then register it and see if we can get it
     const auto mit = std::find(formats.cbegin(), formats.cend(), mimeType);
-    const int cf = mit != formats.cend() ? mit.key() : QWindowsMimeConverter::registerMimeType(mimeType);
+    const int cf = mit != formats.cend() ? mit.key() : QWindowsMimeRegistry::registerMimeType(mimeType);
     return canGetData(cf, pDataObj);
 }
 
@@ -1318,7 +1318,7 @@ QVariant QLastResortMimes::convertToMime(const QString &mimeType, IDataObject *p
             data = getData(int(cf), pDataObj, lindex);
         } else {
             const auto mit = std::find(formats.cbegin(), formats.cend(), mimeType);
-            const int cf = mit != formats.cend() ? mit.key() : QWindowsMimeConverter::registerMimeType(mimeType);
+            const int cf = mit != formats.cend() ? mit.key() : QWindowsMimeRegistry::registerMimeType(mimeType);
             data = getData(cf, pDataObj);
         }
         if (!data.isEmpty())
@@ -1333,7 +1333,7 @@ QString QLastResortMimes::mimeForFormat(const FORMATETC &formatetc) const
     if (!format.isEmpty())
         return format;
 
-    const QString clipFormat = QWindowsMimeConverter::clipboardFormatName(getCf(formatetc));
+    const QString clipFormat = QWindowsMimeRegistry::clipboardFormatName(getCf(formatetc));
     if (!clipFormat.isEmpty()) {
 #if QT_CONFIG(draganddrop)
         if (QInternalMimeData::canReadData(clipFormat))
@@ -1363,20 +1363,20 @@ QString QLastResortMimes::mimeForFormat(const FORMATETC &formatetc) const
 }
 
 /*!
-    \class QWindowsMimeConverter
+    \class QWindowsMimeRegistry
     \brief Manages the list of QWindowsMime instances.
     \internal
     \sa QWindowsMime
 */
 
-QWindowsMimeConverter::QWindowsMimeConverter() = default;
+QWindowsMimeRegistry::QWindowsMimeRegistry() = default;
 
-QWindowsMimeConverter::~QWindowsMimeConverter()
+QWindowsMimeRegistry::~QWindowsMimeRegistry()
 {
     qDeleteAll(m_mimes.begin(), m_mimes.begin() + m_internalMimeCount);
 }
 
-QWindowsMimeConverter::QWindowsMime *QWindowsMimeConverter::converterToMime(const QString &mimeType, IDataObject *pDataObj) const
+QWindowsMimeRegistry::QWindowsMime *QWindowsMimeRegistry::converterToMime(const QString &mimeType, IDataObject *pDataObj) const
 {
     ensureInitialized();
     for (int i = m_mimes.size()-1; i >= 0; --i) {
@@ -1386,7 +1386,7 @@ QWindowsMimeConverter::QWindowsMime *QWindowsMimeConverter::converterToMime(cons
     return nullptr;
 }
 
-QStringList QWindowsMimeConverter::allMimesForFormats(IDataObject *pDataObj) const
+QStringList QWindowsMimeRegistry::allMimesForFormats(IDataObject *pDataObj) const
 {
     qCDebug(lcQpaMime) << "QWindowsMime::allMimesForFormats()";
     ensureInitialized();
@@ -1415,7 +1415,7 @@ QStringList QWindowsMimeConverter::allMimesForFormats(IDataObject *pDataObj) con
     return formats;
 }
 
-QWindowsMimeConverter::QWindowsMime *QWindowsMimeConverter::converterFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
+QWindowsMimeRegistry::QWindowsMime *QWindowsMimeRegistry::converterFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
 {
     ensureInitialized();
     qCDebug(lcQpaMime) << __FUNCTION__ << formatetc;
@@ -1426,7 +1426,7 @@ QWindowsMimeConverter::QWindowsMime *QWindowsMimeConverter::converterFromMime(co
     return nullptr;
 }
 
-QList<FORMATETC> QWindowsMimeConverter::allFormatsForMime(const QMimeData *mimeData) const
+QList<FORMATETC> QWindowsMimeRegistry::allFormatsForMime(const QMimeData *mimeData) const
 {
     ensureInitialized();
     QList<FORMATETC> formatics;
@@ -1443,7 +1443,7 @@ QList<FORMATETC> QWindowsMimeConverter::allFormatsForMime(const QMimeData *mimeD
     return formatics;
 }
 
-void QWindowsMimeConverter::ensureInitialized() const
+void QWindowsMimeRegistry::ensureInitialized() const
 {
     if (m_mimes.isEmpty()) {
         m_mimes
@@ -1457,14 +1457,14 @@ void QWindowsMimeConverter::ensureInitialized() const
     }
 }
 
-QString QWindowsMimeConverter::clipboardFormatName(int cf)
+QString QWindowsMimeRegistry::clipboardFormatName(int cf)
 {
     wchar_t buf[256] = {0};
     return GetClipboardFormatName(UINT(cf), buf, 255)
         ? QString::fromWCharArray(buf) : QString();
 }
 
-QVariant QWindowsMimeConverter::convertToMime(const QStringList &mimeTypes,
+QVariant QWindowsMimeRegistry::convertToMime(const QStringList &mimeTypes,
                                               IDataObject *pDataObj,
                                               QMetaType preferredType,
                                               QString *formatIn /* = 0 */) const
@@ -1487,7 +1487,7 @@ QVariant QWindowsMimeConverter::convertToMime(const QStringList &mimeTypes,
     return QVariant();
 }
 
-void QWindowsMimeConverter::registerMime(QWindowsMime *mime)
+void QWindowsMimeRegistry::registerMime(QWindowsMime *mime)
 {
     ensureInitialized();
     m_mimes.append(mime);
@@ -1497,7 +1497,7 @@ void QWindowsMimeConverter::registerMime(QWindowsMime *mime)
     Registers the MIME type \a mime, and returns an ID number
     identifying the format on Windows.
 */
-int QWindowsMimeConverter::registerMimeType(const QString &mime)
+int QWindowsMimeRegistry::registerMimeType(const QString &mime)
 {
     const UINT f = RegisterClipboardFormat(reinterpret_cast<const wchar_t *> (mime.utf16()));
     if (!f)

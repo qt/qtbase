@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qwindowsole.h"
-#include "qwindowsmime.h"
+#include "qwindowsmimeregistry.h"
 #include "qwindowscontext.h"
 \
 #include <QtGui/qevent.h>
@@ -66,7 +66,7 @@ QWindowsOleDataObject::GetData(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium)
     HRESULT hr = ResultFromScode(DATA_E_FORMATETC);
 
     if (data) {
-        const QWindowsMimeConverter &mc = QWindowsContext::instance()->mimeConverter();
+        const QWindowsMimeRegistry &mc = QWindowsContext::instance()->mimeConverter();
         if (auto converter = mc.converterFromMime(*pformatetc, data))
             if (converter->convertFromMime(*pformatetc, data, pmedium))
                 hr = ResultFromScode(S_OK);
@@ -93,7 +93,7 @@ QWindowsOleDataObject::QueryGetData(LPFORMATETC pformatetc)
         qCDebug(lcQpaMime) << __FUNCTION__;
 
     if (data) {
-        const QWindowsMimeConverter &mc = QWindowsContext::instance()->mimeConverter();
+        const QWindowsMimeRegistry &mc = QWindowsContext::instance()->mimeConverter();
         hr = mc.converterFromMime(*pformatetc, data) ?
              ResultFromScode(S_OK) : ResultFromScode(S_FALSE);
     }
@@ -144,7 +144,7 @@ QWindowsOleDataObject::EnumFormatEtc(DWORD dwDirection, LPENUMFORMATETC FAR* ppe
 
     QList<FORMATETC> fmtetcs;
     if (dwDirection == DATADIR_GET) {
-        QWindowsMimeConverter &mc = QWindowsContext::instance()->mimeConverter();
+        QWindowsMimeRegistry &mc = QWindowsContext::instance()->mimeConverter();
         fmtetcs = mc.allFormatsForMime(data);
     } else {
         FORMATETC formatetc;

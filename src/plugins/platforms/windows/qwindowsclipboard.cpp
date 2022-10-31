@@ -4,7 +4,6 @@
 #include "qwindowsclipboard.h"
 #include "qwindowscontext.h"
 #include "qwindowsole.h"
-#include "qwindowsmime.h"
 
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qclipboard.h>
