@@ -148,7 +148,8 @@ template <bool IsTimed> bool
 futexSemaphoreTryAcquire_loop(QBasicAtomicInteger<quintptr> &u, quintptr curValue, quintptr nn,
                               QDeadlineTimer timer)
 {
-    qint64 remainingTime = IsTimed ? timer.remainingTimeNSecs() : -1;
+    using namespace std::chrono;
+    nanoseconds remainingTime = IsTimed ? timer.remainingTimeAsDuration() : -1ns;
     int n = int(unsigned(nn));
 
     // we're called after one testAndSet, so start by waiting first
@@ -165,7 +166,7 @@ futexSemaphoreTryAcquire_loop(QBasicAtomicInteger<quintptr> &u, quintptr curValu
             }
         }
 
-        if (IsTimed && remainingTime > 0) {
+        if (IsTimed && remainingTime > 0ns) {
             bool timedout = !futexWait(*ptr, curValue, remainingTime);
             if (timedout)
                 return false;
@@ -175,7 +176,7 @@ futexSemaphoreTryAcquire_loop(QBasicAtomicInteger<quintptr> &u, quintptr curValu
 
         curValue = u.loadAcquire();
         if (IsTimed)
-            remainingTime = timer.remainingTimeNSecs();
+            remainingTime = timer.remainingTimeAsDuration();
 
         // try to acquire
         while (futexAvailCounter(curValue) >= n) {
@@ -185,7 +186,7 @@ futexSemaphoreTryAcquire_loop(QBasicAtomicInteger<quintptr> &u, quintptr curValu
         }
 
         // not enough tokens available, put us to wait
-        if (remainingTime == 0)
+        if (IsTimed && remainingTime == 0ns)
             return false;
     }
 }

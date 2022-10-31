@@ -18,12 +18,14 @@
 #include <private/qglobal_p.h>
 #include <QtCore/qtsan_impl.h>
 
+#include <chrono>
+
 QT_BEGIN_NAMESPACE
 
 namespace QtDummyFutex {
     constexpr inline bool futexAvailable() { return false; }
     template <typename Atomic>
-    inline bool futexWait(Atomic &, typename Atomic::Type, int = 0)
+    inline bool futexWait(Atomic &, typename Atomic::Type, std::chrono::nanoseconds = {})
     { Q_UNREACHABLE_RETURN(false); }
     template <typename Atomic> inline void futexWakeOne(Atomic &)
     { Q_UNREACHABLE(); }
@@ -34,6 +36,7 @@ namespace QtDummyFutex {
 QT_END_NAMESPACE
 
 #if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
+#  include <private/qcore_unix_p.h>
 // use Linux mutexes everywhere except for LSB builds
 #  include <sys/syscall.h>
 #  include <errno.h>
@@ -83,11 +86,9 @@ namespace QtLinuxFutex {
         _q_futex(addr(&futex), FUTEX_WAIT, qintptr(expectedValue));
     }
     template <typename Atomic>
-    inline bool futexWait(Atomic &futex, typename Atomic::Type expectedValue, qint64 nstimeout)
+    inline bool futexWait(Atomic &futex, typename Atomic::Type expectedValue, std::chrono::nanoseconds timeout)
     {
-        struct timespec ts;
-        ts.tv_sec = nstimeout / 1000 / 1000 / 1000;
-        ts.tv_nsec = nstimeout % (1000 * 1000 * 1000);
+        struct timespec ts= durationToTimespec(timeout);
         int r = _q_futex(addr(&futex), FUTEX_WAIT, qintptr(expectedValue), quintptr(&ts));
         return r == 0 || errno != ETIMEDOUT;
     }
@@ -124,9 +125,12 @@ inline void futexWait(Atomic &futex, typename Atomic::Type expectedValue)
     QtTsan::futexAcquire(&futex);
 }
 template <typename Atomic>
-inline bool futexWait(Atomic &futex, typename Atomic::Type expectedValue, qint64 nstimeout)
+inline bool futexWait(Atomic &futex, typename Atomic::Type expectedValue, std::chrono::nanoseconds timeout)
 {
-    BOOL r = WaitOnAddress(&futex, &expectedValue, sizeof(expectedValue), DWORD(nstimeout / 1000 / 1000));
+    using namespace std::chrono;
+    // Using ceil so that any non-zero timeout doesn't get trunated to 0ms
+    auto msecs = ceil<milliseconds>(timeout);
+    BOOL r = WaitOnAddress(&futex, &expectedValue, sizeof(expectedValue), DWORD(msecs.count()));
     return r || GetLastError() != ERROR_TIMEOUT;
 }
 template <typename Atomic> inline void futexWakeAll(Atomic &futex)
