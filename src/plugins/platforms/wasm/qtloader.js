@@ -109,8 +109,25 @@
 //      Loading to Running occurs.
 
 
+// Forces the use of constructor on QtLoader instance.
+// This passthrough makes both the old-style:
+//
+//   const loader = QtLoader(config);
+//
+// and the new-style:
+//
+//   const loader = new QtLoader(config);
+//
+// styles work.
 function QtLoader(config)
 {
+    return new _QtLoader(config);
+}
+
+function _QtLoader(config)
+{
+    const self = this;
+
     // The Emscripten module and module configuration object. The module
     // object is created in completeLoadEmscriptenModule().
     self.module = undefined;
