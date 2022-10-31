@@ -213,11 +213,12 @@ static void calculateCoarseTimerTimeout(QTimerInfo *t, timespec currentTime)
     // The objective is to make most timers wake up at the same time, thereby reducing CPU wakeups.
 
     uint interval = uint(t->interval);
-    uint msec = uint(t->timeout.tv_nsec) / 1000 / 1000;
     Q_ASSERT(interval >= 20);
-
     // Calculate how much we can round and still keep within 5% error
     uint absMaxRounding = interval / 20;
+
+    using namespace std::chrono;
+    uint msec = duration_cast<milliseconds>(nanoseconds{t->timeout.tv_nsec}).count();
 
     if (interval < 100 && interval != 25 && interval != 50 && interval != 75) {
         // special mode for timers of less than 100 ms
@@ -297,7 +298,7 @@ recalculate:
         ++t->timeout.tv_sec;
         t->timeout.tv_nsec = 0;
     } else {
-        t->timeout.tv_nsec = msec * 1000 * 1000;
+        t->timeout.tv_nsec = nanoseconds{milliseconds{msec}}.count();
     }
 
     if (t->timeout < currentTime)
@@ -395,7 +396,9 @@ qint64 QTimerInfoList::timerRemainingTime(int timerId)
             if (currentTime < t->timeout) {
                 // time to wait
                 tm = roundToMillisecond(t->timeout - currentTime);
-                return tm.tv_sec*1000 + tm.tv_nsec/1000/1000;
+                using namespace std::chrono;
+                const auto dur = duration_cast<milliseconds>(seconds{tm.tv_sec} + nanoseconds{tm.tv_nsec});
+                return dur.count();
             } else {
                 return 0;
             }
@@ -455,7 +458,8 @@ void QTimerInfoList::registerTimer(int timerId, qint64 interval, Qt::TimerType t
         t->timeout.tv_nsec = 0;
 
         // if we're past the half-second mark, increase the timeout again
-        if (currentTime.tv_nsec > 500*1000*1000)
+        using namespace std::chrono;
+        if (currentTime.tv_nsec > nanoseconds{500ms}.count())
             ++t->timeout.tv_sec;
     }
 
