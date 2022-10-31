@@ -640,6 +640,12 @@ static QStringList findAllLibCrypto()
 }
 # endif
 
+#if (OPENSSL_VERSION_NUMBER >> 28) < 3
+#define QT_OPENSSL_VERSION "1_1"
+#elif OPENSSL_VERSION_MAJOR == 3 // Starting with 3.0 this define is available
+#define QT_OPENSSL_VERSION "3"
+#endif // > 3 intentionally left undefined
+
 #ifdef Q_OS_WIN
 
 struct LoadedOpenSsl {
@@ -671,12 +677,6 @@ static LoadedOpenSsl loadOpenSsl()
     // MSVC and GCC. For 3.0 the version suffix changed again, to just '3'.
     // For non-x86 builds, an architecture suffix is also appended.
 
-#if (OPENSSL_VERSION_NUMBER >> 28) < 3
-#define QT_OPENSSL_VERSION "1_1"
-#elif OPENSSL_VERSION_MAJOR == 3 // Starting with 3.0 this define is available
-#define QT_OPENSSL_VERSION "3"
-#endif // > 3 intentionally left undefined
-
 #if defined(Q_PROCESSOR_X86_64)
 #define QT_SSL_SUFFIX "-x64"
 #elif defined(Q_PROCESSOR_ARM_64)
@@ -693,7 +693,7 @@ static LoadedOpenSsl loadOpenSsl()
 #undef QT_SSL_SUFFIX
     return result;
 }
-#else
+#else // !Q_OS_WIN:
 
 struct LoadedOpenSsl {
     std::unique_ptr<QLibrary> ssl, crypto;
@@ -772,7 +772,7 @@ static LoadedOpenSsl loadOpenSsl()
         return suffix;
     };
 
-    static QString suffix = QString::fromLatin1(openSSLSuffix("_1_1"));
+    static QString suffix = QString::fromLatin1(openSSLSuffix("_" QT_OPENSSL_VERSION));
 
     libssl->setFileNameAndVersion("ssl"_L1 + suffix, -1);
     libcrypto->setFileNameAndVersion("crypto"_L1 + suffix, -1);
