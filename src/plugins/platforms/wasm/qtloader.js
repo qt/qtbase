@@ -18,10 +18,10 @@
 //     var config = {
 //         containerElements : [$("container-id")];
 //     }
-//     var qtLoader = QtLoader(config);
+//     var qtLoader = new QtLoader(config);
 //     qtLoader.loadEmscriptenModule("applicationName");
 //
-// External mode.usage:
+// External mode usage:
 //
 //    var config = {
 //        canvasElements : [$("canvas-id")],
@@ -35,7 +35,7 @@
 //            return canvas;
 //        }
 //     }
-//     var qtLoader = QtLoader(config);
+//     var qtLoader = new QtLoader(config);
 //     qtLoader.loadEmscriptenModule("applicationName");
 //
 // Config keys
@@ -118,7 +118,7 @@
 //
 //   const loader = new QtLoader(config);
 //
-// styles work.
+// instantiation types work.
 function QtLoader(config)
 {
     return new _QtLoader(config);

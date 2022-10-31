@@ -35,7 +35,7 @@
           var canvas = document.querySelector('#qtcanvas');
           var status = document.querySelector('#qtstatus')
 
-          qtLoader = QtLoader({
+          qtLoader = new QtLoader({
               canvasElements : [canvas],
               showLoader: function(loaderStatus) {
                   spinner.style.display = 'block';
