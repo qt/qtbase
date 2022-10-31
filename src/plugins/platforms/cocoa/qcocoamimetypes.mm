@@ -16,33 +16,39 @@ class QMacPasteboardMimeTraditionalMacPlainText : public QMacInternalPasteboardM
 public:
     QMacPasteboardMimeTraditionalMacPlainText() : QMacInternalPasteboardMime(MIME_ALL) { }
 
-    QString flavorFor(const QString &mime);
-    QString mimeFor(QString flav);
-    bool canConvert(const QString &mime, QString flav);
-    QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav);
-    QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav);
+    QString flavorFor(const QString &mime) const override;
+    QString mimeFor(const QString &flav) const override;
+    bool canConvert(const QString &mime, const QString &flav) const override;
+    QVariant convertToMime(const QString &mime, const QList<QByteArray> &data,
+                           const QString &flav) const override;
+    QList<QByteArray> convertFromMime(const QString &mime, const QVariant &data,
+                                      const QString &flav) const override;
 };
 
-QString QMacPasteboardMimeTraditionalMacPlainText::flavorFor(const QString &mime)
+QString QMacPasteboardMimeTraditionalMacPlainText::flavorFor(const QString &mime) const
 {
     if (mime == "text/plain"_L1)
         return "com.apple.traditional-mac-plain-text"_L1;
     return QString();
 }
 
-QString QMacPasteboardMimeTraditionalMacPlainText::mimeFor(QString flav)
+QString QMacPasteboardMimeTraditionalMacPlainText::mimeFor(const QString &flav) const
 {
     if (flav == "com.apple.traditional-mac-plain-text"_L1)
         return "text/plain"_L1;
     return QString();
 }
 
-bool QMacPasteboardMimeTraditionalMacPlainText::canConvert(const QString &mime, QString flav)
+bool QMacPasteboardMimeTraditionalMacPlainText::canConvert(const QString &mime,
+                                                           const QString &flav) const
 {
     return flavorFor(mime) == flav;
 }
 
-QVariant QMacPasteboardMimeTraditionalMacPlainText::convertToMime(const QString &mimetype, QList<QByteArray> data, QString flavor)
+QVariant
+QMacPasteboardMimeTraditionalMacPlainText::convertToMime(const QString &mimetype,
+                                                         const QList<QByteArray> &data,
+                                                         const QString &flavor) const
 {
     if (data.count() > 1)
         qWarning("QMacPasteboardMimeTraditionalMacPlainText: Cannot handle multiple member data");
@@ -58,7 +64,10 @@ QVariant QMacPasteboardMimeTraditionalMacPlainText::convertToMime(const QString 
     return ret;
 }
 
-QList<QByteArray> QMacPasteboardMimeTraditionalMacPlainText::convertFromMime(const QString &, QVariant data, QString flavor)
+QList<QByteArray>
+QMacPasteboardMimeTraditionalMacPlainText::convertFromMime(const QString &,
+                                                           const QVariant &data,
+                                                           const QString &flavor) const
 {
     QList<QByteArray> ret;
     QString string = data.toString();

@@ -40,12 +40,12 @@ public:
 
     char type() const { return m_type; }
 
-    virtual bool canConvert(const QString &mime, QString flav) = 0;
-    virtual QString mimeFor(QString flav) = 0;
-    virtual QString flavorFor(const QString &mime) = 0;
-    virtual QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav) = 0;
-    virtual QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav) = 0;
-    virtual int count(QMimeData *mimeData);
+    virtual bool canConvert(const QString &mime, const QString &flav) const = 0;
+    virtual QString mimeFor(const QString &flav) const = 0;
+    virtual QString flavorFor(const QString &mime) const = 0;
+    virtual QVariant convertToMime(const QString &mime, const QList<QByteArray> &data, const QString &flav) const = 0;
+    virtual QList<QByteArray> convertFromMime(const QString &mime, const QVariant &data, const QString &flav) const = 0;
+    virtual int count(const QMimeData *mimeData) const;
 
 private:
     const QMacPasteboardMimeType m_type;
