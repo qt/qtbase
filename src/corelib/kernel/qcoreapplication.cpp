@@ -590,12 +590,14 @@ void QCoreApplicationPrivate::initLocale()
         return;
     qt_locale_initialized = true;
 
-#ifdef Q_OS_INTEGRITY
+#  ifdef Q_OS_INTEGRITY
     setlocale(LC_CTYPE, "UTF-8");
-#else
-    // Android's Bionic didn't get nl_langinfo until NDK 15 (Android 8.0),
-    // which is too new for Qt, so we just assume it's always UTF-8.
+#  else
+#    if defined(Q_OS_QNX) || (defined(Q_OS_ANDROID) && __ANDROID_API__ < __ANDROID_API_O__)
+    // Android 6 still lacks nl_langinfo(), as does QNX, so we just assume it's
+    // always UTF-8 on these platforms.
     auto nl_langinfo = [](int) { return "UTF-8"; };
+#   endif // QNX or Android NDK < 26, "O".
 
     const char *locale = setlocale(LC_ALL, "");
     const char *codec = nl_langinfo(CODESET);
@@ -610,10 +612,10 @@ void QCoreApplicationPrivate::initLocale()
         newLocale = setlocale(LC_CTYPE, newLocale);
 
         // if locale doesn't exist, try some fallbacks
-#  ifdef Q_OS_DARWIN
+#    ifdef Q_OS_DARWIN
         if (newLocale.isEmpty())
             newLocale = setlocale(LC_CTYPE, "UTF-8");
-#  endif
+#    endif
         if (newLocale.isEmpty())
             newLocale = setlocale(LC_CTYPE, "C.UTF-8");
         if (newLocale.isEmpty())
@@ -624,8 +626,8 @@ void QCoreApplicationPrivate::initLocale()
                  "reconfigure your locale. See the locale(1) manual for more information.",
                  codec, oldLocale.constData(), newLocale.constData());
     }
-#endif
-#endif
+#  endif // Integrity
+#endif // Unix
 }
 
 
