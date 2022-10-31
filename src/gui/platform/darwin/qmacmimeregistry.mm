@@ -87,9 +87,8 @@ QMacInternalPasteboardMime *convertor(uchar t, const QString &mime, QString flav
     MimeList *mimes = globalMimeList();
     for (MimeList::const_iterator it = mimes->constBegin(); it != mimes->constEnd(); ++it) {
 #ifdef DEBUG_MIME_MAPS
-        qDebug("QMacMimeRegistry::convertor: seeing if %s (%d) can convert %s to %s [%d]",
-               qPrintable((*it)->convertorName()), (*it)->type() & t, qPrintable(mime),
-               qPrintable(flav), (*it)->canConvert(mime,flav));
+        qDebug("QMacMimeRegistry::convertor: seeing if converter(%d) can convert %s to %s [%d]",
+              (*it)->type() & t, qPrintable(mime), qPrintable(flav), (*it)->canConvert(mime,flav));
 #endif
         if (((*it)->type() & t) && (*it)->canConvert(mime, flav))
             return (*it);
@@ -104,9 +103,8 @@ QString flavorToMime(uchar t, QString flav)
     MimeList *mimes = globalMimeList();
     for (MimeList::const_iterator it = mimes->constBegin(); it != mimes->constEnd(); ++it) {
 #ifdef DEBUG_MIME_MAPS
-        qDebug("QMacMimeRegistry::flavorToMime: attempting %s (%d) for flavor %s [%s]",
-               qPrintable((*it)->convertorName()), (*it)->type() & t, qPrintable(flav),
-               qPrintable((*it)->mimeFor(flav)));
+        qDebug("QMacMimeRegistry::flavorToMime: attempting (%d) for flavor %s [%s]",
+               (*it)->type() & t, qPrintable(flav), qPrintable((*it)->mimeFor(flav)));
 #endif
         if ((*it)->type() & t) {
             QString mimeType = (*it)->mimeFor(flav);

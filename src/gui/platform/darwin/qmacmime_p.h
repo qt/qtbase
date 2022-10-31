@@ -40,8 +40,6 @@ public:
 
     char type() const { return m_type; }
 
-    virtual QString convertorName() = 0;
-
     virtual bool canConvert(const QString &mime, QString flav) = 0;
     virtual QString mimeFor(QString flav) = 0;
     virtual QString flavorFor(const QString &mime) = 0;

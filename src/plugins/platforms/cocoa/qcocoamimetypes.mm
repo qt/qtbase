@@ -15,7 +15,6 @@ using namespace Qt::StringLiterals;
 class QMacPasteboardMimeTraditionalMacPlainText : public QMacInternalPasteboardMime {
 public:
     QMacPasteboardMimeTraditionalMacPlainText() : QMacInternalPasteboardMime(MIME_ALL) { }
-    QString convertorName();
 
     QString flavorFor(const QString &mime);
     QString mimeFor(QString flav);
@@ -23,11 +22,6 @@ public:
     QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav);
     QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav);
 };
-
-QString QMacPasteboardMimeTraditionalMacPlainText::convertorName()
-{
-    return "PlainText (traditional-mac-plain-text)"_L1;
-}
 
 QString QMacPasteboardMimeTraditionalMacPlainText::flavorFor(const QString &mime)
 {

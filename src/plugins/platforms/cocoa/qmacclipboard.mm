@@ -169,8 +169,8 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
         return cantGetFlavorErr;
     }
 
-    qCDebug(lcQpaClipboard, "PasteBoard: Calling in promise for %s[%ld] [%s] (%s) [%d]", qPrintable(promise.mime), promise_id,
-           qPrintable(flavorAsQString), qPrintable(promise.convertor->convertorName()), promise.offset);
+    qCDebug(lcQpaClipboard, "PasteBoard: Calling in promise for %s[%ld] [%s] [%d]", qPrintable(promise.mime), promise_id,
+           qPrintable(flavorAsQString), promise.offset);
 
     // Get the promise data. If this is a "lazy" promise call variantData()
     // to request the data from the application.
@@ -321,7 +321,7 @@ QMacPasteboard::setMimeData(QMimeData *mime_src, DataRequestType dataRequestType
                 // Hack: The Rtf handler converts incoming Rtf to Html. We do
                 // not want to convert outgoing Html to Rtf but instead keep
                 // posting it as Html. Skip the Rtf handler here.
-                if (c->convertorName() == "Rtf"_L1)
+                if (c->flavorFor("text/html"_L1) == "public.rtf"_L1)
                     continue;
                 QString flavor(c->flavorFor(mimeType));
                 if (!flavor.isEmpty()) {
@@ -337,8 +337,8 @@ QMacPasteboard::setMimeData(QMimeData *mime_src, DataRequestType dataRequestType
                         QMacPasteboard::Promise promise(itemID, c, mimeType, mimeData, item, dataRequestType);
                         promises.append(promise);
                         PasteboardPutItemFlavor(paste, reinterpret_cast<PasteboardItemID>(itemID), QCFString(flavor), 0, kPasteboardFlavorNoFlags);
-                        qCDebug(lcQpaClipboard, " -  adding %ld %s [%s] <%s> [%d]",
-                               itemID, qPrintable(mimeType), qPrintable(flavor), qPrintable(c->convertorName()), item);
+                        qCDebug(lcQpaClipboard, " -  adding %ld %s [%s] [%d]",
+                               itemID, qPrintable(mimeType), qPrintable(flavor), item);
                     }
                 }
             }
@@ -469,14 +469,14 @@ QMacPasteboard::retrieveData(const QString &format, QMetaType) const
                         if (PasteboardCopyItemFlavorData(paste, id, flavor, &macBuffer) == noErr) {
                             QByteArray buffer((const char *)CFDataGetBytePtr(macBuffer), CFDataGetLength(macBuffer));
                             if (!buffer.isEmpty()) {
-                                qCDebug(lcQpaClipboard, "  - %s [%s] (%s)", qPrintable(format), qPrintable(c_flavor), qPrintable(c->convertorName()));
+                                qCDebug(lcQpaClipboard, "  - %s [%s]", qPrintable(format), qPrintable(c_flavor));
                                 buffer.detach(); //detach since we release the macBuffer
                                 retList.append(buffer);
                                 break; //skip to next element
                             }
                         }
                     } else {
-                        qCDebug(lcQpaClipboard, "  - NoMatch %s [%s] (%s)", qPrintable(c_flavor), qPrintable(QString::fromCFString(flavor)), qPrintable(c->convertorName()));
+                        qCDebug(lcQpaClipboard, "  - NoMatch %s [%s]", qPrintable(c_flavor), qPrintable(QString::fromCFString(flavor)));
                     }
                 }
             }
