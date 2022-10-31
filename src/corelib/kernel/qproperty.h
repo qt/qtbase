@@ -18,7 +18,16 @@
 #if defined(__cpp_lib_source_location)
 #define QT_SOURCE_LOCATION_NAMESPACE std
 #define QT_PROPERTY_COLLECT_BINDING_LOCATION
-#define QT_PROPERTY_DEFAULT_BINDING_LOCATION QPropertyBindingSourceLocation::fromStdSourceLocation(std::source_location::current())
+#if defined(Q_CC_MSVC)
+/* MSVC runs into an issue with constexpr with source location (error C7595)
+   so use the factory function as a workaround */
+#  define QT_PROPERTY_DEFAULT_BINDING_LOCATION QPropertyBindingSourceLocation::fromStdSourceLocation(std::source_location::current())
+#else
+/* some versions of gcc in turn run into
+   expression ‘std::source_location::current()’ is not a constant expression
+   so don't use the workaround there */
+#  define QT_PROPERTY_DEFAULT_BINDING_LOCATION QPropertyBindingSourceLocation(std::source_location::current())
+#endif
 #endif
 #endif
 
