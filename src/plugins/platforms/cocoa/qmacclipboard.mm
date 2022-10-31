@@ -299,7 +299,7 @@ QMacPasteboard::setMimeData(QMimeData *mime_src, DataRequestType dataRequestType
     delete mime;
     mime = mime_src;
 
-    QList<QMacInternalPasteboardMime*> availableConverters = QMacMimeRegistry::all(mime_type);
+    const QList<QMacInternalPasteboardMime*> availableConverters = QMacMimeRegistry::all(mime_type);
     if (mime != nullptr) {
         clear_helper();
         QStringList formats = mime_src->formats();
@@ -316,8 +316,7 @@ QMacPasteboard::setMimeData(QMimeData *mime_src, DataRequestType dataRequestType
         }
         for (int f = 0; f < formats.size(); ++f) {
             QString mimeType = formats.at(f);
-            for (QList<QMacInternalPasteboardMime *>::Iterator it = availableConverters.begin(); it != availableConverters.end(); ++it) {
-                QMacInternalPasteboardMime *c = (*it);
+            for (auto *c : availableConverters) {
                 // Hack: The Rtf handler converts incoming Rtf to Html. We do
                 // not want to convert outgoing Html to Rtf but instead keep
                 // posting it as Html. Skip the Rtf handler here.
@@ -434,9 +433,8 @@ QMacPasteboard::retrieveData(const QString &format, QMetaType) const
         return QByteArray();
 
     qCDebug(lcQpaClipboard, "Pasteboard: retrieveData [%s]", qPrintable(format));
-    const QList<QMacInternalPasteboardMime *> mimes = QMacMimeRegistry::all(mime_type);
-    for (int mime = 0; mime < mimes.size(); ++mime) {
-        QMacInternalPasteboardMime *c = mimes.at(mime);
+    const QList<QMacInternalPasteboardMime *> availableConverters = QMacMimeRegistry::all(mime_type);
+    for (const auto *c : availableConverters) {
         QString c_flavor = c->flavorFor(format);
         if (!c_flavor.isEmpty()) {
             // Converting via PasteboardCopyItemFlavorData below will for some UITs result

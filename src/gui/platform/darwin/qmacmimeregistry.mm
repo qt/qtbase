@@ -78,24 +78,6 @@ void destroyMimeTypes()
 }
 
 /*
-  Returns the most-recently created QMacPasteboardMime of type \a t that can convert
-  between the \a mime and \a flav formats.  Returns 0 if no such convertor
-  exists.
-*/
-QMacInternalPasteboardMime *convertor(uchar t, const QString &mime, QString flav)
-{
-    MimeList *mimes = globalMimeList();
-    for (MimeList::const_iterator it = mimes->constBegin(); it != mimes->constEnd(); ++it) {
-#ifdef DEBUG_MIME_MAPS
-        qDebug("QMacMimeRegistry::convertor: seeing if converter(%d) can convert %s to %s [%d]",
-              (*it)->type() & t, qPrintable(mime), qPrintable(flav), (*it)->canConvert(mime,flav));
-#endif
-        if (((*it)->type() & t) && (*it)->canConvert(mime, flav))
-            return (*it);
-    }
-    return 0;
-}
-/*
   Returns a MIME type of type \a t for \a flav, or 0 if none exists.
 */
 QString flavorToMime(uchar t, QString flav)

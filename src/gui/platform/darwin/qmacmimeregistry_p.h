@@ -32,7 +32,6 @@ namespace QMacMimeRegistry {
     Q_GUI_EXPORT void unregisterMimeConverter(QMacInternalPasteboardMime *);
 
     Q_GUI_EXPORT QList<QMacInternalPasteboardMime *> all(uchar);
-    Q_GUI_EXPORT QMacInternalPasteboardMime *convertor(uchar, const QString &mime, QString flav);
     Q_GUI_EXPORT QString flavorToMime(uchar, QString flav);
 
     Q_GUI_EXPORT void registerDraggedTypes(const QStringList &types);
