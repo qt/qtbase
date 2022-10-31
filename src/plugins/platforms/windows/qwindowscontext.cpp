@@ -378,30 +378,35 @@ int QWindowsContext::processDpiAwareness()
 void QWindowsContext::setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiAwareness)
 {
     qCDebug(lcQpaWindow) << __FUNCTION__ << dpiAwareness;
+    if (processDpiAwareness() == int(dpiAwareness))
+        return;
+
     const HRESULT hr = SetProcessDpiAwareness(static_cast<PROCESS_DPI_AWARENESS>(dpiAwareness));
-    // E_ACCESSDENIED means set externally (MSVC manifest or external app loading Qt plugin).
-    // Silence warning in that case unless debug is enabled.
-    if (FAILED(hr) && hr != E_ACCESSDENIED) {
+    if (FAILED(hr)) {
         qCWarning(lcQpaWindow).noquote().nospace() << "SetProcessDpiAwareness("
-            << dpiAwareness << ") failed: " << QSystemError::windowsComString(hr)
-            << ", using " << QWindowsContext::processDpiAwareness();
+            << dpiAwareness << ") failed: " << QSystemError::windowsComString(hr) << ", using "
+            << QWindowsContext::processDpiAwareness() << "\nQt's fallback DPI awareness is "
+            << "PROCESS_DPI_AWARENESS. If you know what you are doing consider an override in qt.conf";
     }
 }
 
 bool QWindowsContext::setProcessDpiV2Awareness()
 {
     qCDebug(lcQpaWindow) << __FUNCTION__;
+    auto dpiContext = GetThreadDpiAwarenessContext();
+    if (AreDpiAwarenessContextsEqual(dpiContext, DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
+        return true;
+
     const BOOL ok = SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     if (!ok) {
         const DWORD dwError = GetLastError();
-        // ERROR_ACCESS_DENIED means set externally (MSVC manifest or external app loading Qt plugin).
-        // Silence warning in that case unless debug is enabled.
-        if (dwError != ERROR_ACCESS_DENIED) {
-            qCWarning(lcQpaWindow).noquote().nospace()
-                << "SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) failed: "
-                << QSystemError::windowsComString(HRESULT(dwError));
-            return false;
-        }
+        qCWarning(lcQpaWindow).noquote().nospace()
+            << "SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) failed: "
+            << QSystemError::windowsComString(HRESULT(dwError)) << "\nQt's default DPI awareness "
+            << "context is DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2. If you know what you "
+            << "are doing you can overwrite this default using qt.conf "
+            << "(https://doc.qt.io/qt-6/highdpi.html#configuring-windows)";
+        return false;
     }
     QWindowsContextPrivate::m_v2DpiAware = true;
     return true;
