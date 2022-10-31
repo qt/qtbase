@@ -581,7 +581,7 @@ function _QtLoader(config)
     function setFontDpi(dpi) {
         self.qtFontDpi = dpi;
         if (publicAPI.status == "Running")
-            self.qtUpdateDpi();
+            self.module.qtUpdateDpi();
     }
 
     function fontDpi() {
