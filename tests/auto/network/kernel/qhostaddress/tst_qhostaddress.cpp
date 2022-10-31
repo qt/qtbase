@@ -351,6 +351,12 @@ void tst_QHostAddress::isEqual_data()
     QTest::newRow("anyv6-anyv4-local") << QHostAddress(QHostAddress::AnyIPv6) << QHostAddress(QHostAddress::AnyIPv4) << (int)QHostAddress::ConvertLocalHost << false;
     QTest::newRow("any-anyv4-local") << QHostAddress(QHostAddress::Any) << QHostAddress(QHostAddress::AnyIPv4) << (int)QHostAddress::ConvertLocalHost << false;
     QTest::newRow("any-anyv6-local") << QHostAddress(QHostAddress::Any) << QHostAddress(QHostAddress::AnyIPv6) << (int)QHostAddress::ConvertLocalHost << false;
+    QTest::newRow("localhostv6-any-tolerant") << QHostAddress(QHostAddress::LocalHostIPv6) << QHostAddress(QHostAddress::Any) << (int)QHostAddress::TolerantConversion << false;
+    QTest::newRow("localhostv4-any-tolerant") << QHostAddress(QHostAddress::LocalHost) << QHostAddress(QHostAddress::Any) << (int)QHostAddress::TolerantConversion << false;
+    QTest::newRow("localhostv6-anyv6-tolerant") << QHostAddress(QHostAddress::LocalHostIPv6) << QHostAddress(QHostAddress::AnyIPv6) << (int)QHostAddress::TolerantConversion << false;
+    QTest::newRow("localhostv4-anyv6-tolerant") << QHostAddress(QHostAddress::LocalHost) << QHostAddress(QHostAddress::AnyIPv6) << (int)QHostAddress::TolerantConversion << false;
+    QTest::newRow("localhostv6-anyv4-tolerant") << QHostAddress(QHostAddress::LocalHostIPv6) << QHostAddress(QHostAddress::AnyIPv4) << (int)QHostAddress::TolerantConversion << false;
+    QTest::newRow("localhostv4-anyv4-tolerant") << QHostAddress(QHostAddress::LocalHost) << QHostAddress(QHostAddress::AnyIPv4) << (int)QHostAddress::TolerantConversion << false;
 }
 
 void tst_QHostAddress::isEqual()
