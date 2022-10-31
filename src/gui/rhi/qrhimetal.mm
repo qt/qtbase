@@ -10,6 +10,7 @@
 #include <QTemporaryFile>
 #include <QFileInfo>
 #include <qmath.h>
+#include <QOperatingSystemVersion>
 
 #include <QtCore/private/qcore_mac_p.h>
 
@@ -476,7 +477,11 @@ bool QRhiMetal::create(QRhi::Flags flags)
     const QString deviceName = QString::fromNSString([d->dev name]);
     qCDebug(QRHI_LOG_INFO, "Metal device: %s", qPrintable(deviceName));
     driverInfoStruct.deviceName = deviceName.toUtf8();
-    driverInfoStruct.deviceId = [d->dev registryID];
+
+    // deviceId and vendorId stay unset for now. Note that registryID is not
+    // suitable as deviceId because it does not seem stable on macOS and can
+    // apparently change when the system is rebooted.
+
 #ifdef Q_OS_IOS
     driverInfoStruct.deviceType = QRhiDriverInfo::IntegratedDevice;
 #else
@@ -497,6 +502,10 @@ bool QRhiMetal::create(QRhi::Flags flags)
         }
     }
 #endif
+
+    const QOperatingSystemVersion ver = QOperatingSystemVersion::current();
+    osMajor = ver.majorVersion();
+    osMinor = ver.minorVersion();
 
     if (importedCmdQueue)
         [d->cmdQueue retain];
@@ -844,10 +853,9 @@ struct QMetalPipelineCacheDataHeader
     quint32 rhiId;
     quint32 arch;
     quint32 dataSize;
-    quint32 reserved;
-    quint64 deviceId;
-    quint64 vendorId;
-    char driver[224];
+    quint32 osMajor;
+    quint32 osMinor;
+    char driver[236];
 };
 
 QByteArray QRhiMetal::pipelineCacheData()
@@ -891,9 +899,8 @@ QByteArray QRhiMetal::pipelineCacheData()
         header.rhiId = pipelineCacheRhiId();
         header.arch = quint32(sizeof(void*));
         header.dataSize = quint32(dataSize);
-        header.deviceId = driverInfoStruct.deviceId;
-        header.vendorId = driverInfoStruct.vendorId;
-
+        header.osMajor = osMajor;
+        header.osMinor = osMinor;
         const size_t driverStrLen = qMin(sizeof(header.driver) - 1, size_t(driverInfoStruct.deviceName.length()));
         if (driverStrLen)
             memcpy(header.driver, driverInfoStruct.deviceName.constData(), driverStrLen);
@@ -934,15 +941,9 @@ void QRhiMetal::setPipelineCacheData(const QByteArray &data)
         return;
     }
 
-    if (header.deviceId != driverInfoStruct.deviceId) {
-        qWarning("setPipelineCacheData: Metal device ID does not match (%llu, %llu)",
-                 driverInfoStruct.deviceId, header.deviceId);
-        return;
-    }
-
-    if (header.vendorId != driverInfoStruct.vendorId) {
-        qWarning("setPipelineCacheData: Metal vendor ID does not match (%llu, %llu)",
-                 driverInfoStruct.vendorId, header.vendorId);
+    if (header.osMajor != osMajor || header.osMinor != osMinor) {
+        qWarning("setPipelineCacheData: OS version does not match (%u.%u, %u.%u)",
+                 osMajor, osMinor, header.osMajor, header.osMinor);
         return;
     }
 

@@ -488,6 +488,8 @@ public:
     QSet<QMetalSwapChain *> swapchains;
     QRhiMetalNativeHandles nativeHandlesStruct;
     QRhiDriverInfo driverInfoStruct;
+    quint32 osMajor = 0;
+    quint32 osMinor = 0;
 
     struct {
         int maxTextureSize = 4096;
