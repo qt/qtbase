@@ -21,7 +21,7 @@
                    NSPasteboardTypeMultipleTextSelection, mimeTypeGeneric]];
 
     // Add custom types supported by the application
-    for (const QString &customType : qt_mac_enabledDraggedTypes())
+    for (const QString &customType : QMacMimeRegistry::enabledDraggedTypes())
         [supportedTypes addObject:customType.toNSString()];
 
     [self registerForDraggedTypes:supportedTypes];

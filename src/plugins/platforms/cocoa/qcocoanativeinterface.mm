@@ -26,6 +26,7 @@
 #include <QtGui/qguiapplication.h>
 #include <qdebug.h>
 
+#include <QtGui/private/qmacmimeregistry_p.h>
 #include <QtGui/private/qcoregraphics_p.h>
 
 #if QT_CONFIG(vulkan)
@@ -120,7 +121,7 @@ void QCocoaNativeInterface::onAppFocusWindowChanged(QWindow *window)
 
 void QCocoaNativeInterface::registerDraggedTypes(const QStringList &types)
 {
-    qt_mac_registerDraggedTypes(types);
+    QMacMimeRegistry::registerDraggedTypes(types);
 }
 
 void QCocoaNativeInterface::setEmbeddedInForeignView(QPlatformWindow *window, bool embedded)

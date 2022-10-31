@@ -34,6 +34,7 @@
 #include "qcocoaglcontext.h"
 #endif
 #include "qcocoaintegration.h"
+#include <QtGui/private/qmacmimeregistry_p.h>
 
 // Private interface
 @interface QNSView ()

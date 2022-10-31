@@ -20,53 +20,13 @@
 #endif
 
 #include "qmacmime_p.h"
+#include "qmacmimeregistry_p.h"
 #include "qguiapplication.h"
 #include "private/qcore_mac_p.h"
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
-
-typedef QList<QMacInternalPasteboardMime*> MimeList;
-Q_GLOBAL_STATIC(MimeList, globalMimeList)
-Q_GLOBAL_STATIC(QStringList, globalDraggedTypesList)
-
-void qt_mac_addToGlobalMimeList(QMacInternalPasteboardMime *macMime)
-{
-    // globalMimeList is in decreasing priority order. Recently added
-    // converters take prioity over previously added converters: prepend
-    // to the list.
-    globalMimeList()->prepend(macMime);
-}
-
-void qt_mac_removeFromGlobalMimeList(QMacInternalPasteboardMime *macMime)
-{
-    if (!QGuiApplication::closingDown())
-        globalMimeList()->removeAll(macMime);
-}
-
-/*!
-    \fn void qRegisterDraggedTypes(const QStringList &types)
-    \relates QMacPasteboardMime
-
-    Registers the given \a types as custom pasteboard types.
-
-    This function should be called to enable the Drag and Drop events
-    for custom pasteboard types on Cocoa implementations. This is required
-    in addition to a QMacPasteboardMime subclass implementation. By default
-    drag and drop is enabled for all standard pasteboard types.
-
-   \sa QMacPasteboardMime
-*/
-void qt_mac_registerDraggedTypes(const QStringList &types)
-{
-    (*globalDraggedTypesList()) += types;
-}
-
-const QStringList& qt_mac_enabledDraggedTypes()
-{
-    return (*globalDraggedTypesList());
-}
 
 /*****************************************************************************
   QDnD debug facilities
@@ -127,9 +87,10 @@ const QStringList& qt_mac_enabledDraggedTypes()
   Constructs a new conversion object of type \a t, adding it to the
   globally accessed list of available converters.
 */
-QMacInternalPasteboardMime::QMacInternalPasteboardMime(char t) : type(t)
+QMacInternalPasteboardMime::QMacInternalPasteboardMime(QMacPasteboardMimeType t)
+    : m_type(t)
 {
-    qt_mac_addToGlobalMimeList(this);
+    QMacMimeRegistry::registerMimeConverter(this);
 }
 
 /*
@@ -138,7 +99,7 @@ QMacInternalPasteboardMime::QMacInternalPasteboardMime(char t) : type(t)
 */
 QMacInternalPasteboardMime::~QMacInternalPasteboardMime()
 {
-    qt_mac_removeFromGlobalMimeList(this);
+    QMacMimeRegistry::unregisterMimeConverter(this);
 }
 
 /*
@@ -151,13 +112,9 @@ int QMacInternalPasteboardMime::count(QMimeData *mimeData)
 }
 
 class QMacPasteboardMimeAny : public QMacInternalPasteboardMime {
-private:
-
 public:
-    QMacPasteboardMimeAny() : QMacInternalPasteboardMime(MIME_QT_CONVERTOR|MIME_ALL) {
-    }
-    ~QMacPasteboardMimeAny() {
-    }
+    QMacPasteboardMimeAny() : QMacInternalPasteboardMime(MIME_ALL_COMPATIBLE) {}
+
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -220,10 +177,8 @@ class QMacPasteboardMimeTypeName : public QMacInternalPasteboardMime {
 private:
 
 public:
-    QMacPasteboardMimeTypeName() : QMacInternalPasteboardMime(MIME_QT_CONVERTOR|MIME_ALL) {
-    }
-    ~QMacPasteboardMimeTypeName() {
-    }
+    QMacPasteboardMimeTypeName(): QMacInternalPasteboardMime(MIME_ALL_COMPATIBLE) {}
+
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -270,7 +225,7 @@ QList<QByteArray> QMacPasteboardMimeTypeName::convertFromMime(const QString &, Q
 
 class QMacPasteboardMimePlainTextFallback : public QMacInternalPasteboardMime {
 public:
-    QMacPasteboardMimePlainTextFallback() : QMacInternalPasteboardMime(MIME_ALL) { }
+    QMacPasteboardMimePlainTextFallback() : QMacInternalPasteboardMime(MIME_ALL) {}
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -333,7 +288,7 @@ QList<QByteArray> QMacPasteboardMimePlainTextFallback::convertFromMime(const QSt
 
 class QMacPasteboardMimeUnicodeText : public QMacInternalPasteboardMime {
 public:
-    QMacPasteboardMimeUnicodeText() : QMacInternalPasteboardMime(MIME_ALL) { }
+    QMacPasteboardMimeUnicodeText() : QMacInternalPasteboardMime(MIME_ALL) {}
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -425,7 +380,7 @@ QList<QByteArray> QMacPasteboardMimeUnicodeText::convertFromMime(const QString &
 
 class QMacPasteboardMimeHTMLText : public QMacInternalPasteboardMime {
 public:
-    QMacPasteboardMimeHTMLText() : QMacInternalPasteboardMime(MIME_ALL) { }
+    QMacPasteboardMimeHTMLText() : QMacInternalPasteboardMime(MIME_ALL) {}
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -479,7 +434,7 @@ QList<QByteArray> QMacPasteboardMimeHTMLText::convertFromMime(const QString &mim
 
 class QMacPasteboardMimeRtfText : public QMacInternalPasteboardMime {
 public:
-    QMacPasteboardMimeRtfText() : QMacInternalPasteboardMime(MIME_ALL) { }
+    QMacPasteboardMimeRtfText() : QMacInternalPasteboardMime(MIME_ALL) {}
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -554,7 +509,7 @@ QList<QByteArray> QMacPasteboardMimeRtfText::convertFromMime(const QString &mime
 
 class QMacPasteboardMimeFileUri : public QMacInternalPasteboardMime {
 public:
-    QMacPasteboardMimeFileUri() : QMacInternalPasteboardMime(MIME_ALL) { }
+    QMacPasteboardMimeFileUri() : QMacInternalPasteboardMime(MIME_ALL) {}
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -644,7 +599,7 @@ int QMacPasteboardMimeFileUri::count(QMimeData *mimeData)
 
 class QMacPasteboardMimeUrl : public QMacInternalPasteboardMime {
 public:
-    QMacPasteboardMimeUrl() : QMacInternalPasteboardMime(MIME_ALL) { }
+    QMacPasteboardMimeUrl() : QMacInternalPasteboardMime(MIME_ALL) {}
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -719,7 +674,7 @@ QList<QByteArray> QMacPasteboardMimeUrl::convertFromMime(const QString &mime, QV
 class QMacPasteboardMimeVCard : public QMacInternalPasteboardMime
 {
 public:
-    QMacPasteboardMimeVCard() : QMacInternalPasteboardMime(MIME_ALL){ }
+    QMacPasteboardMimeVCard() : QMacInternalPasteboardMime(MIME_ALL) {}
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -776,7 +731,7 @@ extern CGImageRef qt_mac_toCGImage(const QImage &qImage);
 
 class QMacPasteboardMimeTiff : public QMacInternalPasteboardMime {
 public:
-    QMacPasteboardMimeTiff() : QMacInternalPasteboardMime(MIME_ALL) { }
+    QMacPasteboardMimeTiff() : QMacInternalPasteboardMime(MIME_ALL) {}
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -850,106 +805,27 @@ QList<QByteArray> QMacPasteboardMimeTiff::convertFromMime(const QString &mime, Q
     return QList<QByteArray>() << QByteArray::fromCFData(data);
 }
 
-/*!
-  \internal
+namespace QMacMimeRegistry {
 
-  This is an internal function.
-*/
-void QMacInternalPasteboardMime::initializeMimeTypes()
+void registerBuiltInTypes()
 {
-    if (globalMimeList()->isEmpty()) {
-        // Create QMacPasteboardMimeAny first to put it at the end of globalMimeList
-        // with lowest priority. (the constructor prepends to the list)
-        new QMacPasteboardMimeAny;
+    // Create QMacPasteboardMimeAny first to put it at the end of globalMimeList
+    // with lowest priority. (the constructor prepends to the list)
+    new QMacPasteboardMimeAny;
 
-        //standard types that we wrap
-        new QMacPasteboardMimeTiff;
-        new QMacPasteboardMimePlainTextFallback;
-        new QMacPasteboardMimeUnicodeText;
-        new QMacPasteboardMimeRtfText;
-        new QMacPasteboardMimeHTMLText;
-        new QMacPasteboardMimeFileUri;
-        new QMacPasteboardMimeUrl;
-        new QMacPasteboardMimeTypeName;
-        new QMacPasteboardMimeVCard;
-    }
+    //standard types that we wrap
+    new QMacPasteboardMimeTiff;
+    new QMacPasteboardMimePlainTextFallback;
+    new QMacPasteboardMimeUnicodeText;
+    new QMacPasteboardMimeRtfText;
+    new QMacPasteboardMimeHTMLText;
+    new QMacPasteboardMimeFileUri;
+    new QMacPasteboardMimeUrl;
+    new QMacPasteboardMimeTypeName;
+    new QMacPasteboardMimeVCard;
 }
 
-/*!
-  \internal
-*/
-void QMacInternalPasteboardMime::destroyMimeTypes()
-{
-    MimeList *mimes = globalMimeList();
-    while (!mimes->isEmpty())
-        delete mimes->takeFirst();
 }
-
-/*
-  Returns the most-recently created QMacPasteboardMime of type \a t that can convert
-  between the \a mime and \a flav formats.  Returns 0 if no such convertor
-  exists.
-*/
-QMacInternalPasteboardMime*
-QMacInternalPasteboardMime::convertor(uchar t, const QString &mime, QString flav)
-{
-    MimeList *mimes = globalMimeList();
-    for (MimeList::const_iterator it = mimes->constBegin(); it != mimes->constEnd(); ++it) {
-#ifdef DEBUG_MIME_MAPS
-        qDebug("QMacPasteboardMime::convertor: seeing if %s (%d) can convert %s to %d[%c%c%c%c] [%d]",
-               (*it)->convertorName().toLatin1().constData(),
-               (*it)->type & t, mime.toLatin1().constData(),
-               flav, (flav >> 24) & 0xFF, (flav >> 16) & 0xFF, (flav >> 8) & 0xFF, (flav) & 0xFF,
-               (*it)->canConvert(mime,flav));
-        for (int i = 0; i < (*it)->countFlavors(); ++i) {
-            int f = (*it)->flavor(i);
-            qDebug("  %d) %d[%c%c%c%c] [%s]", i, f,
-                   (f >> 24) & 0xFF, (f >> 16) & 0xFF, (f >> 8) & 0xFF, (f) & 0xFF,
-                   (*it)->convertorName().toLatin1().constData());
-        }
-#endif
-        if (((*it)->type & t) && (*it)->canConvert(mime, flav))
-            return (*it);
-    }
-    return 0;
-}
-/*
-  Returns a MIME type of type \a t for \a flav, or 0 if none exists.
-*/
-QString QMacInternalPasteboardMime::flavorToMime(uchar t, QString flav)
-{
-    MimeList *mimes = globalMimeList();
-    for (MimeList::const_iterator it = mimes->constBegin(); it != mimes->constEnd(); ++it) {
-#ifdef DEBUG_MIME_MAPS
-        qDebug("QMacMIme::flavorToMime: attempting %s (%d) for flavor %d[%c%c%c%c] [%s]",
-               (*it)->convertorName().toLatin1().constData(),
-               (*it)->type & t, flav, (flav >> 24) & 0xFF, (flav >> 16) & 0xFF, (flav >> 8) & 0xFF, (flav) & 0xFF,
-               (*it)->mimeFor(flav).toLatin1().constData());
-
-#endif
-        if ((*it)->type & t) {
-            QString mimeType = (*it)->mimeFor(flav);
-            if (!mimeType.isNull())
-                return mimeType;
-        }
-    }
-    return QString();
-}
-
-/*
-  Returns a list of all currently defined QMacPasteboardMime objects of type \a t.
-*/
-QList<QMacInternalPasteboardMime*> QMacInternalPasteboardMime::all(uchar t)
-{
-    MimeList ret;
-    MimeList *mimes = globalMimeList();
-    for (MimeList::const_iterator it = mimes->constBegin(); it != mimes->constEnd(); ++it) {
-        if ((*it)->type & t)
-            ret.append((*it));
-    }
-    return ret;
-}
-
 
 /*
   \fn QString QMacPasteboardMime::convertorName()

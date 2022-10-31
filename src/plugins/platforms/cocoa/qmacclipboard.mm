@@ -4,6 +4,8 @@
 #include <AppKit/AppKit.h>
 
 #include "qmacclipboard.h"
+#include <QtGui/private/qmacmimeregistry_p.h>
+#include <QtGui/private/qmacmime_p.h>
 #include <QtGui/qclipboard.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qbitmap.h>
@@ -130,7 +132,7 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
 
     // Find the kept promise
     QList<QMacInternalPasteboardMime*> availableConverters
-        = QMacInternalPasteboardMime::all(QMacInternalPasteboardMime::MIME_ALL);
+        = QMacMimeRegistry::all(QMacInternalPasteboardMime::MIME_ALL);
     const QString flavorAsQString = QString::fromCFString(flavor);
     QMacPasteboard::Promise promise;
     for (int i = 0; i < qpaste->promises.size(); i++){
@@ -297,7 +299,7 @@ QMacPasteboard::setMimeData(QMimeData *mime_src, DataRequestType dataRequestType
     delete mime;
     mime = mime_src;
 
-    QList<QMacInternalPasteboardMime*> availableConverters = QMacInternalPasteboardMime::all(mime_type);
+    QList<QMacInternalPasteboardMime*> availableConverters = QMacMimeRegistry::all(mime_type);
     if (mime != nullptr) {
         clear_helper();
         QStringList formats = mime_src->formats();
@@ -372,7 +374,7 @@ QMacPasteboard::formats() const
         for (int i = 0; i < type_count; ++i) {
             const QString flavor = QString::fromCFString((CFStringRef)CFArrayGetValueAtIndex(types, i));
             qCDebug(lcQpaClipboard, " -%s", qPrintable(QString(flavor)));
-            QString mimeType = QMacInternalPasteboardMime::flavorToMime(mime_type, flavor);
+            QString mimeType = QMacMimeRegistry::flavorToMime(mime_type, flavor);
             if (!mimeType.isEmpty() && !ret.contains(mimeType)) {
                 qCDebug(lcQpaClipboard, "   -<%lld> %s [%s]", ret.size(), qPrintable(mimeType), qPrintable(QString(flavor)));
                 ret << mimeType;
@@ -409,7 +411,7 @@ QMacPasteboard::hasFormat(const QString &format) const
         for (int i = 0; i < type_count; ++i) {
             const QString flavor = QString::fromCFString((CFStringRef)CFArrayGetValueAtIndex(types, i));
             qCDebug(lcQpaClipboard, " -%s [0x%x]", qPrintable(QString(flavor)), mime_type);
-            QString mimeType = QMacInternalPasteboardMime::flavorToMime(mime_type, flavor);
+            QString mimeType = QMacMimeRegistry::flavorToMime(mime_type, flavor);
             if (!mimeType.isEmpty())
                 qCDebug(lcQpaClipboard, "   - %s", qPrintable(mimeType));
             if (mimeType == format)
@@ -432,7 +434,7 @@ QMacPasteboard::retrieveData(const QString &format, QMetaType) const
         return QByteArray();
 
     qCDebug(lcQpaClipboard, "Pasteboard: retrieveData [%s]", qPrintable(format));
-    const QList<QMacInternalPasteboardMime *> mimes = QMacInternalPasteboardMime::all(mime_type);
+    const QList<QMacInternalPasteboardMime *> mimes = QMacMimeRegistry::all(mime_type);
     for (int mime = 0; mime < mimes.size(); ++mime) {
         QMacInternalPasteboardMime *c = mimes.at(mime);
         QString c_flavor = c->flavorFor(format);

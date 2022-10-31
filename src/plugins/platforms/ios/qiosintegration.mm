@@ -24,6 +24,7 @@
 #include <qpa/qplatformoffscreensurface.h>
 
 #include <QtGui/private/qcoretextfontdatabase_p.h>
+#include <QtGui/private/qmacmimeregistry_p.h>
 #include <QtGui/private/qmacmime_p.h>
 #include <QDir>
 #include <QOperatingSystemVersion>
@@ -89,7 +90,7 @@ void QIOSIntegration::initialize()
 #if QT_CONFIG(tabletevent)
     QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
 #endif
-    QMacInternalPasteboardMime::initializeMimeTypes();
+    QMacMimeRegistry::initializeMimeTypes();
 
     qsizetype size = QList<QPluginParsedMetaData>(m_optionalPlugins->metaData()).size();
     for (qsizetype i = 0; i < size; ++i)
@@ -105,7 +106,7 @@ QIOSIntegration::~QIOSIntegration()
     delete m_clipboard;
     m_clipboard = 0;
 #endif
-    QMacInternalPasteboardMime::destroyMimeTypes();
+    QMacMimeRegistry::destroyMimeTypes();
 
     delete m_inputContext;
     m_inputContext = 0;

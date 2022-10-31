@@ -5,13 +5,14 @@
 #define QMACCLIPBOARD_H
 
 #include <QtGui>
-#include <QtGui/private/qmacmime_p.h>
 
 #include <ApplicationServices/ApplicationServices.h>
 
 QT_BEGIN_NAMESPACE
 
 class QMacMimeData;
+class QMacInternalPasteboardMime;
+
 class QMacPasteboard
 {
 public:

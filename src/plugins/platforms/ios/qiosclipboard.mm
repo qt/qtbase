@@ -6,6 +6,7 @@
 #ifndef QT_NO_CLIPBOARD
 
 #include <QtCore/qurl.h>
+#include <QtGui/private/qmacmimeregistry_p.h>
 #include <QtGui/private/qmacmime_p.h>
 #include <QtCore/QMimeData>
 #include <QtGui/QGuiApplication>
@@ -116,7 +117,7 @@ QStringList QIOSMimeData::formats() const
 
     for (NSUInteger i = 0; i < [pasteboardTypes count]; ++i) {
         QString uti = QString::fromNSString([pasteboardTypes objectAtIndex:i]);
-        QString mimeType = QMacInternalPasteboardMime::flavorToMime(QMacInternalPasteboardMime::MIME_ALL, uti);
+        QString mimeType = QMacMimeRegistry::flavorToMime(QMacInternalPasteboardMime::MIME_ALL, uti);
         if (!mimeType.isEmpty() && !foundMimeTypes.contains(mimeType))
             foundMimeTypes << mimeType;
     }
@@ -130,7 +131,7 @@ QVariant QIOSMimeData::retrieveData(const QString &mimeType, QMetaType) const
     NSArray<NSString *> *pasteboardTypes = [pb pasteboardTypes];
 
     foreach (QMacInternalPasteboardMime *converter,
-             QMacInternalPasteboardMime::all(QMacInternalPasteboardMime::MIME_ALL)) {
+             QMacMimeRegistry::all(QMacInternalPasteboardMime::MIME_ALL)) {
         if (!converter->canConvert(mimeType, converter->flavorFor(mimeType)))
             continue;
 
@@ -185,7 +186,7 @@ void QIOSClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
 
     foreach (const QString &mimeType, mimeData->formats()) {
         foreach (QMacInternalPasteboardMime *converter,
-                 QMacInternalPasteboardMime::all(QMacInternalPasteboardMime::MIME_ALL)) {
+                 QMacMimeRegistry::all(QMacInternalPasteboardMime::MIME_ALL)) {
             QString uti = converter->flavorFor(mimeType);
             if (uti.isEmpty() || !converter->canConvert(mimeType, uti))
                 continue;

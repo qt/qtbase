@@ -32,6 +32,7 @@
 
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtGui/private/qcoregraphics_p.h>
+#include <QtGui/private/qmacmimeregistry_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/private/qrhibackingstore_p.h>
 #include <QtGui/private/qfontengine_coretext_p.h>
@@ -164,7 +165,7 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
 
     QCocoaScreen::initializeScreens();
 
-    QMacInternalPasteboardMime::initializeMimeTypes();
+    QMacMimeRegistry::initializeMimeTypes();
     QCocoaMimeTypes::initializeMimeTypes();
     QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
     QWindowSystemInterface::registerInputDevice(new QInputDevice(QString("keyboard"), 0,
@@ -194,7 +195,7 @@ QCocoaIntegration::~QCocoaIntegration()
     // Deleting the clipboard integration flushes promised pastes using
     // the mime converters - the ordering here is important.
     delete mCocoaClipboard;
-    QMacInternalPasteboardMime::destroyMimeTypes();
+    QMacMimeRegistry::destroyMimeTypes();
 #endif
 
     QCocoaScreen::cleanupScreens();

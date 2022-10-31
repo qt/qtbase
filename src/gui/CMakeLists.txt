@@ -389,6 +389,7 @@ qt_internal_extend_target(Gui CONDITION APPLE
         painting/qcoregraphics.mm painting/qcoregraphics_p.h
         painting/qrasterbackingstore.cpp painting/qrasterbackingstore_p.h
         painting/qrhibackingstore.cpp painting/qrhibackingstore_p.h
+        platform/darwin/qmacmimeregistry.mm platform/darwin/qmacmimeregistry_p.h
         platform/darwin/qmacmime.mm platform/darwin/qmacmime_p.h
         platform/darwin/qapplekeymapper.mm platform/darwin/qapplekeymapper_p.h
         text/coretext/qcoretextfontdatabase.mm text/coretext/qcoretextfontdatabase_p.h

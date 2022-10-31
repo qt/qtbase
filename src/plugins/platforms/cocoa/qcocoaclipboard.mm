@@ -3,6 +3,8 @@
 
 #include "qcocoaclipboard.h"
 
+#include <QtGui/private/qmacmime_p.h>
+
 #ifndef QT_NO_CLIPBOARD
 
 QT_BEGIN_NAMESPACE
