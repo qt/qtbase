@@ -4339,19 +4339,9 @@ void tst_QAccessibility::messageBoxTest()
     if (!boxPrivate->canBeNativeDialog()) {
         // platforms that use a native message box will not emit accessibility events
         box.show();
-        QVERIFY(QTest::qWaitForWindowActive(&box));
 
         QAccessibleEvent showEvent(&box, QAccessible::DialogStart);
         QVERIFY(QTestAccessibility::containsEvent(&showEvent));
-
-        // on some platforms, like macOS, not all widgets get key board focus; we
-        // only care about a push button getting focus
-        if (QTest::qWaitFor([&box]{ return qobject_cast<QPushButton *>(box.focusWidget()); }, 1000)) {
-            // a widget that gets focus through window activation should not emit an accessibility
-            // notification
-            QAccessibleEvent focusEvent(box.focusWidget(), QAccessible::Focus);
-            QVERIFY(!QTestAccessibility::containsEvent(&focusEvent));
-        }
 
         box.hide();
 
