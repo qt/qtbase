@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-\page qt_set_finalizer_mode.html
+\page qt-set-finalizer-mode.html
 \ingroup cmake-commands-qtcore
 
 \title qt_set_finalizer_mode

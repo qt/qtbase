@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-\page qt_android_generate_deployment_settings.html
+\page qt-android-generate-deployment-settings.html
 \ingroup cmake-commands-qtcore
 
 \title qt_android_generate_deployment_settings

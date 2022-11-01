@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-\page qt_wrap_ui.html
+\page qt-wrap-ui.html
 \ingroup cmake-macros-qtwidgets
 
 \title qt_wrap_ui

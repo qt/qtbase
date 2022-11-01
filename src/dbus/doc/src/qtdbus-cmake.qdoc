@@ -254,7 +254,7 @@ source file properties:
 */
 
 /*!
-\page cmake-source-file-property-CLASSNAME.html
+\page cmake-source-file-property-classname.html
 \ingroup cmake-source-file-properties-qtdbus
 
 \title CLASSNAME
@@ -271,7 +271,7 @@ with the provided property value.
 */
 
 /*!
-\page cmake-source-file-property-INCLUDE.html
+\page cmake-source-file-property-include.html
 \ingroup cmake-source-file-properties-qtdbus
 
 \title INCLUDE
@@ -288,7 +288,7 @@ to the generated C++ file.
 */
 
 /*!
-\page cmake-source-file-property-NO_NAMESPACE.html
+\page cmake-source-file-property-no-namespace.html
 \ingroup cmake-source-file-properties-qtdbus
 
 \title NO_NAMESPACE

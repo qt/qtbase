@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-\page qt_disable_unicode_defines.html
+\page qt-disable-unicode-defines.html
 \ingroup cmake-commands-qtcore
 
 \title qt_disable_unicode_defines
