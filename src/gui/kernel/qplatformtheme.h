@@ -92,7 +92,9 @@ public:
         FlickStartDistance,
         FlickMaximumVelocity,
         FlickDeceleration,
-        MenuBarFocusOnAltPressRelease
+        MenuBarFocusOnAltPressRelease,
+        MouseCursorTheme,
+        MouseCursorSize
     };
     Q_ENUM(ThemeHint)
 

@@ -86,6 +86,20 @@ static bool isDBusTrayAvailable() {
 }
 #endif
 
+static QString mouseCursorTheme()
+{
+    static QString themeName = qEnvironmentVariable("XCURSOR_THEME");
+    return themeName;
+}
+
+static QSize mouseCursorSize()
+{
+    constexpr int defaultCursorSize = 24;
+    static const int xCursorSize = qEnvironmentVariableIntValue("XCURSOR_SIZE");
+    static const int s = xCursorSize > 0 ? xCursorSize : defaultCursorSize;
+    return QSize(s, s);
+}
+
 #ifndef QT_NO_DBUS
 static bool checkDBusGlobalMenuAvailable()
 {
@@ -290,6 +304,10 @@ QVariant QGenericUnixTheme::themeHint(ThemeHint hint) const
         return QVariant(int(X11KeyboardScheme));
     case QPlatformTheme::UiEffects:
         return QVariant(int(HoverEffect));
+    case QPlatformTheme::MouseCursorTheme:
+        return QVariant(mouseCursorTheme());
+    case QPlatformTheme::MouseCursorSize:
+        return QVariant(mouseCursorSize());
     default:
         break;
     }
@@ -711,6 +729,10 @@ QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(d->cursorBlinkRate);
     case QPlatformTheme::UiEffects:
         return QVariant(int(HoverEffect));
+    case QPlatformTheme::MouseCursorTheme:
+        return QVariant(mouseCursorTheme());
+    case QPlatformTheme::MouseCursorSize:
+        return QVariant(mouseCursorSize());
     default:
         break;
     }
@@ -983,6 +1005,10 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
                 QList<Qt::Key>({ Qt::Key_Space, Qt::Key_Return, Qt::Key_Enter, Qt::Key_Select }));
     case QPlatformTheme::PreselectFirstFileInDirectory:
         return true;
+    case QPlatformTheme::MouseCursorTheme:
+        return QVariant(mouseCursorTheme());
+    case QPlatformTheme::MouseCursorSize:
+        return QVariant(mouseCursorSize());
     default:
         break;
     }

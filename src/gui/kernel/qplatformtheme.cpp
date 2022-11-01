@@ -147,6 +147,12 @@ QT_BEGIN_NAMESPACE
            input focus after a touch/mouse release.
            This enum value has been added in Qt 6.5.
 
+    \value MouseCursorTheme (QString) Name of the mouse cursor theme.
+           This enum value has been added in Qt 6.5.
+
+    \value MouseCursorSize (QSize) Size of the mouse cursor.
+           This enum value has been added in Qt 6.5.
+
     \sa themeHint(), QStyle::pixelMetric()
 */
 
@@ -627,6 +633,10 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return QVariant(5000);
     case MenuBarFocusOnAltPressRelease:
         return false;
+    case MouseCursorTheme:
+        return QVariant(QString());
+    case MouseCursorSize:
+        return QVariant(QSize(16, 16));
     }
     return QVariant();
 }

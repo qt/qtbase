@@ -101,6 +101,8 @@ QGtk3Theme::QGtk3Theme()
     SETTING_CONNECT("gtk-font-name");
     SETTING_CONNECT("gtk-application-prefer-dark-theme");
     SETTING_CONNECT("gtk-theme-name");
+    SETTING_CONNECT("gtk-cursor-theme-name");
+    SETTING_CONNECT("gtk-cursor-theme-size");
 #undef SETTING_CONNECT
 
     /* Set XCURSOR_SIZE and XCURSOR_THEME for Wayland sessions */
@@ -150,6 +152,14 @@ QVariant QGtk3Theme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(gtkSetting("gtk-icon-theme-name"));
     case QPlatformTheme::SystemIconFallbackThemeName:
         return QVariant(gtkSetting("gtk-fallback-icon-theme"));
+    case QPlatformTheme::MouseCursorTheme:
+        return QVariant(gtkSetting("gtk-cursor-theme-name"));
+    case QPlatformTheme::MouseCursorSize: {
+        int s = gtkSetting<gint>("gtk-cursor-theme-size");
+        if (s > 0)
+            return QVariant(QSize(s, s));
+        return QGnomeTheme::themeHint(hint);
+    }
     default:
         return QGnomeTheme::themeHint(hint);
     }
