@@ -4022,7 +4022,7 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
 
     enum { Whole, Fractional, Exponent } state = Whole;
     const bool scientific = numMode == DoubleScientificMode;
-    char last = 0;
+    char last = '\0';
 
     for (qsizetype i = 0; i < str.size();) {
         const QStringView in = str.mid(i, str.at(i).isHighSurrogate() ? 2 : 1);
@@ -4064,7 +4064,7 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
                 case '+':
                 case '-':
                     // A sign can only appear at the start or after the e of scientific:
-                    if (i != 0 && !(scientific && last == 'e'))
+                    if (last != '\0' && !(scientific && last == 'e'))
                         return false;
                     break;
 
