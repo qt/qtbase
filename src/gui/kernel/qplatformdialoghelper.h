@@ -84,7 +84,7 @@ public:
 
     enum ButtonRole {
         // keep this in sync with QDialogButtonBox::ButtonRole and QMessageBox::ButtonRole
-        // TODO Qt 6: make the enum copies explicit, and make InvalidRole == 0 so that
+        // ### Qt 7: make the enum copies explicit, and make InvalidRole == 0 so that
         // AcceptRole can be or'ed with flags, and EOL can be the same as InvalidRole (null-termination)
         InvalidRole = -1,
         AcceptRole,

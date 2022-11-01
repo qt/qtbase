@@ -689,7 +689,7 @@ HFONT QWindowsFontDatabaseBase::systemFont()
 
 QFont QWindowsFontDatabaseBase::systemDefaultFont()
 {
-    // Qt 6: Obtain default GUI font (typically "Segoe UI, 9pt", see QTBUG-58610)
+    // ### Qt 7: Obtain default GUI font (typically "Segoe UI, 9pt", see QTBUG-58610)
     NONCLIENTMETRICS ncm;
     ncm.cbSize = FIELD_OFFSET(NONCLIENTMETRICS, lfMessageFont) + sizeof(LOGFONT);
     SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize , &ncm, 0);

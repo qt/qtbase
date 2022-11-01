@@ -1113,7 +1113,7 @@ bool q_evaluateRhiConfig(const QWidget *w, QPlatformBackingStoreRhiConfig *outCo
     return false;
 }
 
-// ### fixme: Qt 6: Remove parameter window from QWidget::create()
+// ### Qt 7: Remove parameter window from QWidget::create()
 
 /*!
     Creates a new widget window.

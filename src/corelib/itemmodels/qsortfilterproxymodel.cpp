@@ -2337,7 +2337,7 @@ Qt::DropActions QSortFilterProxyModel::supportedDropActions() const
     return d->model->supportedDropActions();
 }
 
-// Qt6: remove unnecessary reimplementation
+// ### Qt 7: remove unnecessary reimplementation
 /*!
   \reimp
 */

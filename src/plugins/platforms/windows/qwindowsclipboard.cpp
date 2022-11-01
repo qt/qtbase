@@ -182,7 +182,7 @@ void QWindowsClipboard::unregisterViewer()
     }
 }
 
-// ### FIXME: Qt 6: Remove the clipboard chain handling code and make the
+// ### Qt 7: Remove the clipboard chain handling code and make the
 // format listener the default.
 
 static bool isProcessBeingDebugged(HWND hwnd)
