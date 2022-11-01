@@ -3907,6 +3907,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
     qsizetype decpt_idx = -1;
     qsizetype exponent_idx = -1;
 
+    char last = '\0';
     while (idx < length) {
         const QStringView in = QStringView(uc + idx, uc[idx].isHighSurrogate() ? 2 : 1);
 
@@ -3934,7 +3935,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
             if (exponent_idx != -1 && out == '0' && idx < length - 1) {
                 // After the exponent there can only be '+', '-' or digits.
                 // If we find a '0' directly after some non-digit, then that is a leading zero.
-                if (result->last() < '0' || result->last() > '9')
+                if (last < '0' || last > '9')
                     return false;
             }
         }
@@ -3942,7 +3943,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
         if (number_options.testFlag(QLocale::RejectTrailingZeroesAfterDot)) {
             // If we've seen a decimal point and the last character after the exponent is 0, then
             // that is a trailing zero.
-            if (decpt_idx >= 0 && idx == exponent_idx && result->last() == '0')
+            if (decpt_idx >= 0 && idx == exponent_idx && last == '0')
                     return false;
         }
 
@@ -3985,6 +3986,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
             return false;
         }
 
+        last = out;
         if (out != ',') // Leave group separators out of the result.
             result->append(out);
         idx += in.size();
@@ -4004,7 +4006,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
 
     if (number_options.testFlag(QLocale::RejectTrailingZeroesAfterDot)) {
         // In decimal form, the last character can be a trailing zero if we've seen a decpt.
-        if (decpt_idx != -1 && exponent_idx == -1 && result->last() == '0')
+        if (decpt_idx != -1 && exponent_idx == -1 && last == '0')
             return false;
     }
 
