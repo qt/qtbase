@@ -73,7 +73,7 @@ struct QVersionTag
 };
 }
 
-#if defined(QT_BUILD_CORE_LIB) || defined(QT_BOOTSTRAPPED) || defined(QT_STATIC)
+#if !defined(QT_NO_VERSION_TAGGING) && (defined(QT_BUILD_CORE_LIB) || defined(QT_BOOTSTRAPPED) || defined(QT_STATIC))
 // don't make tags in QtCore, bootstrapped systems or if the user asked not to
 #  define QT_NO_VERSION_TAGGING
 #endif
