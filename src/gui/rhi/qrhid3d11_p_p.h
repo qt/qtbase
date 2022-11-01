@@ -737,7 +737,6 @@ public:
     IDXGIFactory1 *dxgiFactory = nullptr;
     IDCompositionDevice *dcompDevice = nullptr;
     bool supportsAllowTearing = false;
-    bool forceFlipDiscard = false;
     bool deviceLost = false;
     QRhiD3D11NativeHandles nativeHandlesStruct;
     QRhiDriverInfo driverInfoStruct;

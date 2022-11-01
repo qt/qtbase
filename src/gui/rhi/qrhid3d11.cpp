@@ -173,8 +173,8 @@ bool QRhiD3D11::create(QRhi::Flags flags)
         factory5->Release();
     }
 
-    // if we default to FLIP_SEQUENTIAL, have a way to request FLIP_DISCARD
-    forceFlipDiscard = qEnvironmentVariableIntValue("QT_D3D_FLIP_DISCARD");
+    if (qEnvironmentVariableIntValue("QT_D3D_FLIP_DISCARD"))
+        qWarning("The default swap effect is FLIP_DISCARD, QT_D3D_FLIP_DISCARD is now ignored");
 
     if (qEnvironmentVariableIntValue("QT_D3D_NO_FLIP"))
         qWarning("Non-FLIP swapchains are no longer supported, QT_D3D_NO_FLIP is now ignored");
@@ -182,8 +182,7 @@ bool QRhiD3D11::create(QRhi::Flags flags)
     qCDebug(QRHI_LOG_INFO, "FLIP_* swapchain supported = true, ALLOW_TEARING supported = %s",
             supportsAllowTearing ? "true" : "false");
 
-    qCDebug(QRHI_LOG_INFO, "Default swap effect: %s",
-            forceFlipDiscard ? "FLIP_DISCARD" : "FLIP_SEQUENTIAL");
+    qCDebug(QRHI_LOG_INFO, "Default swap effect: FLIP_DISCARD");
 
     if (!importedDeviceAndContext) {
         IDXGIAdapter1 *adapter;
@@ -4873,21 +4872,8 @@ bool QD3D11SwapChain::createOrResize()
         desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         desc.BufferCount = BUFFER_COUNT;
         desc.Flags = swapChainFlags;
-
-        // Normally we'd want FLIP_DISCARD, but that comes with the default
-        // SCALING_STRETCH, as SCALING_NONE is documented to be only
-        // available for FLIP_SEQUENTIAL. The problem with stretch is that
-        // Qt Quick and similar apps typically running in resizable windows
-        // will not like how that looks in practice: the content will
-        // appear to be "jumping" around during a window resize. So choose
-        // sequential/none by default.
-        if (rhiD->forceFlipDiscard) {
-            desc.Scaling = DXGI_SCALING_STRETCH;
-            desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-        } else {
-            desc.Scaling = DXGI_SCALING_NONE;
-            desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-        }
+        desc.Scaling = DXGI_SCALING_NONE;
+        desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
         if (dcompVisual) {
             // With DirectComposition setting AlphaMode to STRAIGHT fails the
