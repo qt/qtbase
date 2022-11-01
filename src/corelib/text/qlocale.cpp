@@ -3969,10 +3969,6 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
 
                 last_separator_idx = idx;
                 digitsInGroup = 0;
-
-                // don't add the group separator
-                idx += in.size();
-                continue;
             } else if (out == '.' || idx == exponent_idx) {
                 // Were there enough digits since the last separator?
                 if (last_separator_idx != -1 && digitsInGroup != m_grouping_least)
@@ -3985,9 +3981,12 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
             } else if (out >= '0' && out <= '9') {
                 digitsInGroup++;
             }
+        } else if (out == ',') {
+            return false;
         }
 
-        result->append(out);
+        if (out != ',') // Leave group separators out of the result.
+            result->append(out);
         idx += in.size();
     }
 
