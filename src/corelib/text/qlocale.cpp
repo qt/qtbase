@@ -3895,10 +3895,13 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
     auto length = s.size();
     decltype(length) idx = 0;
 
+    // Digit-grouping details (all modes):
     qsizetype digitsInGroup = 0;
-    qsizetype decpt_idx = -1;
     qsizetype last_separator_idx = -1;
     qsizetype start_of_digits_idx = -1;
+
+    // Floating-point details (non-integer modes):
+    qsizetype decpt_idx = -1;
     qsizetype exponent_idx = -1;
 
     while (idx < length) {
@@ -3927,7 +3930,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
             exponent_idx = idx;
         }
 
-        if (number_options & QLocale::RejectLeadingZeroInExponent) {
+        if (number_options.testFlag(QLocale::RejectLeadingZeroInExponent)) {
             if (exponent_idx != -1 && out == '0' && idx < length - 1) {
                 // After the exponent there can only be '+', '-' or digits.
                 // If we find a '0' directly after some non-digit, then that is a leading zero.
@@ -3936,14 +3939,14 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
             }
         }
 
-        if (number_options & QLocale::RejectTrailingZeroesAfterDot) {
+        if (number_options.testFlag(QLocale::RejectTrailingZeroesAfterDot)) {
             // If we've seen a decimal point and the last character after the exponent is 0, then
             // that is a trailing zero.
             if (decpt_idx >= 0 && idx == exponent_idx && result->last() == '0')
                     return false;
         }
 
-        if (!(number_options & QLocale::RejectGroupSeparator)) {
+        if (!number_options.testFlag(QLocale::RejectGroupSeparator)) {
             if (start_of_digits_idx == -1 && out >= '0' && out <= '9') {
                 start_of_digits_idx = idx;
                 digitsInGroup++;
@@ -3988,7 +3991,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
         idx += in.size();
     }
 
-    if (!(number_options & QLocale::RejectGroupSeparator)) {
+    if (!number_options.testFlag(QLocale::RejectGroupSeparator)) {
         // group separator post-processing
         // did we end in a separator?
         if (last_separator_idx + 1 == idx)
@@ -4000,7 +4003,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
         // digitsInGroup > m_grouping_top + m_grouping_least ?
     }
 
-    if (number_options & QLocale::RejectTrailingZeroesAfterDot) {
+    if (number_options.testFlag(QLocale::RejectTrailingZeroesAfterDot)) {
         // In decimal form, the last character can be a trailing zero if we've seen a decpt.
         if (decpt_idx != -1 && exponent_idx == -1 && result->last() == '0')
             return false;
