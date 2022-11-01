@@ -3719,7 +3719,8 @@ void tst_QWidget::raise()
 
     for (int i = 0; i < 5; ++i)
         child2->raise();
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowExposed(child2));
+    QApplication::processEvents(); // process events that could be triggered by raise();
 
     for (UpdateWidget *child : std::as_const(allChildren)) {
         int expectedPaintEvents = child == child2 ? 1 : 0;
@@ -3748,6 +3749,7 @@ void tst_QWidget::raise()
     onTop->show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
     QTRY_VERIFY(onTop->numPaintEvents > 0);
+    QApplication::processEvents(); // process remaining paint events if there's more than one
     onTop->reset();
 
     // Reset all the children.
@@ -3756,7 +3758,8 @@ void tst_QWidget::raise()
 
     for (int i = 0; i < 5; ++i)
         child3->raise();
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowExposed(child3));
+    QApplication::processEvents(); // process events that could be triggered by raise();
 
     QCOMPARE(onTop->numPaintEvents, 0);
     QCOMPARE(onTop->numZOrderChangeEvents, 0);
