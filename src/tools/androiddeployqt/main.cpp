@@ -1769,11 +1769,6 @@ bool readAndroidDependencyXml(Options *options,
 
                     QString file = reader.attributes().value("file"_L1).toString();
 
-                    // Special case, since this is handled by qmlimportscanner instead
-                    if (!options->rootPaths.empty()
-                        && (file == "qml"_L1 || file == "qml/"_L1))
-                        continue;
-
                     const QList<QtDependency> fileNames = findFilesRecursively(*options, file);
                     for (const QtDependency &fileName : fileNames) {
                         if (usedDependencies->contains(fileName.absolutePath))
