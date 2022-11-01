@@ -1496,12 +1496,18 @@ void QWindowsMimeRegistry::registerMime(QWindowsMime *mime)
 /*!
     Registers the MIME type \a mime, and returns an ID number
     identifying the format on Windows.
+
+    A mime type \c {application/x-qt-windows-mime;value="WindowsType"} will be
+    registered as the clipboard format for \c WindowsType.
 */
 int QWindowsMimeRegistry::registerMimeType(const QString &mime)
 {
-    const UINT f = RegisterClipboardFormat(reinterpret_cast<const wchar_t *> (mime.utf16()));
-    if (!f)
-        qErrnoWarning("QWindowsApplication::registerMimeType: Failed to register clipboard format");
+    const QString mimeType = isCustomMimeType(mime) ? customMimeType(mime) : mime;
+    const UINT f = RegisterClipboardFormat(reinterpret_cast<const wchar_t *> (mimeType.utf16()));
+    if (!f) {
+        qErrnoWarning("QWindowsMimeRegistry::registerMimeType: Failed to register clipboard format "
+                      "for %s", qPrintable(mime));
+    }
 
     return int(f);
 }
