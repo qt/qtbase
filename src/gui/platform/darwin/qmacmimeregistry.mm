@@ -14,7 +14,7 @@ using namespace Qt::StringLiterals;
 
 namespace QMacMimeRegistry {
 
-typedef QList<QMacInternalPasteboardMime*> MimeList;
+typedef QList<QMacMime*> MimeList;
 Q_GLOBAL_STATIC(MimeList, globalMimeList)
 Q_GLOBAL_STATIC(QStringList, globalDraggedTypesList)
 
@@ -23,16 +23,16 @@ void registerBuiltInTypes();
 
 /*!
     \fn void qRegisterDraggedTypes(const QStringList &types)
-    \relates QMacPasteboardMime
+    \relates QMacMime
 
     Registers the given \a types as custom pasteboard types.
 
     This function should be called to enable the Drag and Drop events
     for custom pasteboard types on Cocoa implementations. This is required
-    in addition to a QMacPasteboardMime subclass implementation. By default
+    in addition to a QMacMime subclass implementation. By default
     drag and drop is enabled for all standard pasteboard types.
 
-   \sa QMacPasteboardMime
+   \sa QMacMime
 */
 
 void registerDraggedTypes(const QStringList &types)
@@ -97,7 +97,7 @@ QString flavorToMime(uchar t, QString flav)
     return QString();
 }
 
-void registerMimeConverter(QMacInternalPasteboardMime *macMime)
+void registerMimeConverter(QMacMime *macMime)
 {
     // globalMimeList is in decreasing priority order. Recently added
     // converters take prioity over previously added converters: prepend
@@ -105,7 +105,7 @@ void registerMimeConverter(QMacInternalPasteboardMime *macMime)
     globalMimeList()->prepend(macMime);
 }
 
-void unregisterMimeConverter(QMacInternalPasteboardMime *macMime)
+void unregisterMimeConverter(QMacMime *macMime)
 {
     if (!QGuiApplication::closingDown())
         globalMimeList()->removeAll(macMime);
@@ -113,9 +113,9 @@ void unregisterMimeConverter(QMacInternalPasteboardMime *macMime)
 
 
 /*
-  Returns a list of all currently defined QMacPasteboardMime objects of type \a t.
+  Returns a list of all currently defined QMacMime objects of type \a t.
 */
-QList<QMacInternalPasteboardMime *> all(uchar t)
+QList<QMacMime *> all(uchar t)
 {
     MimeList ret;
     MimeList *mimes = globalMimeList();

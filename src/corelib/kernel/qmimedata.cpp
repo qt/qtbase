@@ -282,7 +282,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType ty
     On Windows, the MIME format does not always map directly to the
     clipboard formats. Qt provides QWinMime to map clipboard
     formats to open-standard MIME formats. Similarly, the
-    QMacPasteboardMime maps MIME to Mac flavors.
+    QMacMime maps MIME to Mac flavors.
 
     \sa QClipboard, QDragEnterEvent, QDragMoveEvent, QDropEvent, QDrag,
         {Drag and Drop}

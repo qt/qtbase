@@ -380,6 +380,6 @@
 
     Custom classes for translating proprietary clipboard formats can be
     registered by reimplementing QWinMime on Windows or
-    QMacPasteboardMime on \macos.
+    QMacMime on \macos.
 
 */

@@ -11,7 +11,7 @@
 QT_BEGIN_NAMESPACE
 
 class QMacMimeData;
-class QMacInternalPasteboardMime;
+class QMacMime;
 
 class QMacPasteboard
 {
@@ -21,12 +21,12 @@ private:
     struct Promise {
         Promise() : itemId(0), converter(nullptr) { }
 
-        static Promise eagerPromise(int itemId, QMacInternalPasteboardMime *c, QString m, QMacMimeData *d, int o = 0);
-        static Promise lazyPromise(int itemId, QMacInternalPasteboardMime *c, QString m, QMacMimeData *d, int o = 0);
-        Promise(int itemId, QMacInternalPasteboardMime *c, QString m, QMacMimeData *md, int o, DataRequestType drt);
+        static Promise eagerPromise(int itemId, QMacMime *c, QString m, QMacMimeData *d, int o = 0);
+        static Promise lazyPromise(int itemId, QMacMime *c, QString m, QMacMimeData *d, int o = 0);
+        Promise(int itemId, QMacMime *c, QString m, QMacMimeData *md, int o, DataRequestType drt);
 
         int itemId, offset;
-        QMacInternalPasteboardMime *converter;
+        QMacMime *converter;
         QString mime;
         QPointer<QMacMimeData> mimeData;
         QVariant variantData;

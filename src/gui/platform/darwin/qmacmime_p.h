@@ -22,7 +22,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QMacInternalPasteboardMime
+class Q_GUI_EXPORT QMacMime
 {
 public:
     enum QMacPasteboardMimeType
@@ -35,8 +35,9 @@ public:
         MIME_ALL_COMPATIBLE = MIME_ALL|MIME_QT_CONVERTOR
     };
 
-    explicit QMacInternalPasteboardMime(QMacPasteboardMimeType);
-    virtual ~QMacInternalPasteboardMime();
+    QMacMime();
+    explicit QMacMime(QMacPasteboardMimeType type); // internal
+    virtual ~QMacMime();
 
     char type() const { return m_type; }
 

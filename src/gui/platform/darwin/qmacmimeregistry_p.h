@@ -22,16 +22,16 @@
 
 QT_BEGIN_NAMESPACE
 
-class QMacInternalPasteboardMime;
+class QMacMime;
 
 namespace QMacMimeRegistry {
     Q_GUI_EXPORT void initializeMimeTypes();
     Q_GUI_EXPORT void destroyMimeTypes();
 
-    Q_GUI_EXPORT void registerMimeConverter(QMacInternalPasteboardMime *);
-    Q_GUI_EXPORT void unregisterMimeConverter(QMacInternalPasteboardMime *);
+    Q_GUI_EXPORT void registerMimeConverter(QMacMime *);
+    Q_GUI_EXPORT void unregisterMimeConverter(QMacMime *);
 
-    Q_GUI_EXPORT QList<QMacInternalPasteboardMime *> all(uchar);
+    Q_GUI_EXPORT QList<QMacMime *> all(uchar);
     Q_GUI_EXPORT QString flavorToMime(uchar, QString flav);
 
     Q_GUI_EXPORT void registerDraggedTypes(const QStringList &types);

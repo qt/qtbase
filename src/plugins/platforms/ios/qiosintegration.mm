@@ -106,6 +106,7 @@ QIOSIntegration::~QIOSIntegration()
     delete m_clipboard;
     m_clipboard = 0;
 #endif
+
     QMacMimeRegistry::destroyMimeTypes();
 
     delete m_inputContext;

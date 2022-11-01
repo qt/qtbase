@@ -12,10 +12,8 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-class QMacPasteboardMimeTraditionalMacPlainText : public QMacInternalPasteboardMime {
+class QMacMimeTraditionalMacPlainText : public QMacMime {
 public:
-    QMacPasteboardMimeTraditionalMacPlainText() : QMacInternalPasteboardMime(MIME_ALL) { }
-
     QString flavorFor(const QString &mime) const override;
     QString mimeFor(const QString &flav) const override;
     bool canConvert(const QString &mime, const QString &flav) const override;
@@ -25,33 +23,33 @@ public:
                                       const QString &flav) const override;
 };
 
-QString QMacPasteboardMimeTraditionalMacPlainText::flavorFor(const QString &mime) const
+QString QMacMimeTraditionalMacPlainText::flavorFor(const QString &mime) const
 {
     if (mime == "text/plain"_L1)
         return "com.apple.traditional-mac-plain-text"_L1;
     return QString();
 }
 
-QString QMacPasteboardMimeTraditionalMacPlainText::mimeFor(const QString &flav) const
+QString QMacMimeTraditionalMacPlainText::mimeFor(const QString &flav) const
 {
     if (flav == "com.apple.traditional-mac-plain-text"_L1)
         return "text/plain"_L1;
     return QString();
 }
 
-bool QMacPasteboardMimeTraditionalMacPlainText::canConvert(const QString &mime,
+bool QMacMimeTraditionalMacPlainText::canConvert(const QString &mime,
                                                            const QString &flav) const
 {
     return flavorFor(mime) == flav;
 }
 
 QVariant
-QMacPasteboardMimeTraditionalMacPlainText::convertToMime(const QString &mimetype,
+QMacMimeTraditionalMacPlainText::convertToMime(const QString &mimetype,
                                                          const QList<QByteArray> &data,
                                                          const QString &flavor) const
 {
     if (data.count() > 1)
-        qWarning("QMacPasteboardMimeTraditionalMacPlainText: Cannot handle multiple member data");
+        qWarning("QMacMimeTraditionalMacPlainText: Cannot handle multiple member data");
     const QByteArray &firstData = data.first();
     QVariant ret;
     if (flavor == "com.apple.traditional-mac-plain-text"_L1) {
@@ -65,7 +63,7 @@ QMacPasteboardMimeTraditionalMacPlainText::convertToMime(const QString &mimetype
 }
 
 QList<QByteArray>
-QMacPasteboardMimeTraditionalMacPlainText::convertFromMime(const QString &,
+QMacMimeTraditionalMacPlainText::convertFromMime(const QString &,
                                                            const QVariant &data,
                                                            const QString &flavor) const
 {
@@ -78,7 +76,7 @@ QMacPasteboardMimeTraditionalMacPlainText::convertFromMime(const QString &,
 
 void QCocoaMimeTypes::initializeMimeTypes()
 {
-    new QMacPasteboardMimeTraditionalMacPlainText;
+    new QMacMimeTraditionalMacPlainText;
 }
 
 QT_END_NAMESPACE
