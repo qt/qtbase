@@ -185,6 +185,7 @@ endif()
 _qt_internal_test_expect_pass(test_multiple_find_package)
 _qt_internal_test_expect_pass(test_add_resources_delayed_file)
 _qt_internal_test_expect_pass(test_add_binary_resources_delayed_file BINARY test_add_binary_resources_delayed_file)
+_qt_internal_test_expect_pass(test_qt_add_resources_rebuild)
 
 if(NOT NO_GUI)
     _qt_internal_test_expect_pass(test_private_includes)
