@@ -207,7 +207,7 @@ private:
     MetaDataFlags knownFlagsMask;
     MetaDataFlags entryFlags;
 
-    qint64 size_;
+    qint64 size_ = 0;
 
     // Platform-specific data goes here:
 #if defined(Q_OS_WIN)
@@ -218,13 +218,13 @@ private:
     FILETIME lastWriteTime_;
 #else
     // msec precision
-    qint64 accessTime_;
-    qint64 birthTime_;
-    qint64 metadataChangeTime_;
-    qint64 modificationTime_;
+    qint64 accessTime_ = 0;
+    qint64 birthTime_ = 0;
+    qint64 metadataChangeTime_ = 0;
+    qint64 modificationTime_ = 0;
 
-    uint userId_;
-    uint groupId_;
+    uint userId_ = (uint) -2;
+    uint groupId_ = (uint) -2;
 #endif
 
 };
