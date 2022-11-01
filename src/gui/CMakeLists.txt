@@ -413,7 +413,7 @@ qt_internal_extend_target(Gui CONDITION WIN32
         image/qpixmap_win.cpp
         kernel/qwindowdefs_win.h
         platform/windows/qwindowsguieventdispatcher.cpp platform/windows/qwindowsguieventdispatcher_p.h
-        platform/windows/qwindowsmime_p.h
+        platform/windows/qwindowsmime_p.h platform/windows/qwindowsmime.cpp
         platform/windows/qwindowsnativeinterface.cpp
         rhi/cs_tdr_p.h
         rhi/qrhid3d11.cpp rhi/qrhid3d11_p.h

@@ -333,105 +333,6 @@ QDebug operator<<(QDebug d, IDataObject *dataObj)
 }
 #endif // !QT_NO_DEBUG_STREAM
 
-/*!
-    \class QWindowsMime
-    \brief The QWindowsMime class maps open-standard MIME to Window Clipboard formats.
-    \internal
-
-    Qt's drag-and-drop and clipboard facilities use the MIME standard.
-    On X11, this maps trivially to the Xdnd protocol, but on Windows
-    although some applications use MIME types to describe clipboard
-    formats, others use arbitrary non-standardized naming conventions,
-    or unnamed built-in formats of Windows.
-
-    By instantiating subclasses of QWindowsMime that provide conversions
-    between Windows Clipboard and MIME formats, you can convert
-    proprietary clipboard formats to MIME formats.
-
-    Qt has predefined support for the following Windows Clipboard formats:
-
-    \table
-    \header \li Windows Format \li Equivalent MIME type
-    \row \li \c CF_UNICODETEXT \li \c text/plain
-    \row \li \c CF_TEXT        \li \c text/plain
-    \row \li \c CF_DIB         \li \c{image/xyz}, where \c xyz is
-                                 a \l{QImageWriter::supportedImageFormats()}{Qt image format}
-    \row \li \c CF_HDROP       \li \c text/uri-list
-    \row \li \c CF_INETURL     \li \c text/uri-list
-    \row \li \c CF_HTML        \li \c text/html
-    \endtable
-
-    An example use of this class would be to map the Windows Metafile
-    clipboard format (\c CF_METAFILEPICT) to and from the MIME type
-    \c{image/x-wmf}. This conversion might simply be adding or removing
-    a header, or even just passing on the data. See \l{Drag and Drop}
-    for more information on choosing and definition MIME types.
-
-    You can check if a MIME type is convertible using canConvertFromMime() and
-    can perform conversions with convertToMime() and convertFromMime().
-
-    \sa QWindowsMimeRegistry
-*/
-
-
-/*!
-\fn bool QWindowsMime::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
-
-  Returns \c true if the converter can convert from the \a mimeData to
-  the format specified in \a formatetc.
-
-  All subclasses must reimplement this pure virtual function.
-*/
-
-/*!
-  \fn bool QWindowsMime::canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const
-
-  Returns \c true if the converter can convert to the \a mimeType from
-  the available formats in \a pDataObj.
-
-  All subclasses must reimplement this pure virtual function.
-*/
-
-/*!
-\fn QString QWindowsMime::mimeForFormat(const FORMATETC &formatetc) const
-
-  Returns the mime type that will be created form the format specified
-  in \a formatetc, or an empty string if this converter does not support
-  \a formatetc.
-
-  All subclasses must reimplement this pure virtual function.
-*/
-
-/*!
-\fn QList<FORMATETC> QWindowsMime::formatsForMime(const QString &mimeType, const QMimeData *mimeData) const
-
-  Returns a QList of FORMATETC structures representing the different windows clipboard
-  formats that can be provided for the \a mimeType from the \a mimeData.
-
-  All subclasses must reimplement this pure virtual function.
-*/
-
-/*!
-    \fn QVariant QWindowsMime::convertToMime(const QString &mimeType, IDataObject *pDataObj,
-                                             QMetaType preferredType) const
-
-    Returns a QVariant containing the converted data for \a mimeType from \a pDataObj.
-    If possible the QVariant should be of the \a preferredType to avoid needless conversions.
-
-    All subclasses must reimplement this pure virtual function.
-*/
-
-/*!
-\fn bool QWindowsMime::convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM * pmedium) const
-
-  Convert the \a mimeData to the format specified in \a formatetc.
-  The converted data should then be placed in \a pmedium structure.
-
-  Return true if the conversion was successful.
-
-  All subclasses must reimplement this pure virtual function.
-*/
-
 class QWindowsMimeText : public QNativeInterface::Private::QWindowsMime
 {
 public:
@@ -605,8 +506,8 @@ private:
 
 QWindowsMimeURI::QWindowsMimeURI()
 {
-    CF_INETURL_W = QWindowsMimeRegistry::registerMimeType(QStringLiteral("UniformResourceLocatorW"));
-    CF_INETURL = QWindowsMimeRegistry::registerMimeType(QStringLiteral("UniformResourceLocator"));
+    CF_INETURL_W = registerMimeType(QStringLiteral("UniformResourceLocatorW"));
+    CF_INETURL = registerMimeType(QStringLiteral("UniformResourceLocator"));
 }
 
 bool QWindowsMimeURI::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
@@ -775,7 +676,7 @@ private:
 
 QWindowsMimeHtml::QWindowsMimeHtml()
 {
-    CF_HTML = QWindowsMimeRegistry::registerMimeType(QStringLiteral("HTML Format"));
+    CF_HTML = registerMimeType(QStringLiteral("HTML Format"));
 }
 
 QList<FORMATETC> QWindowsMimeHtml::formatsForMime(const QString &mimeType, const QMimeData *mimeData) const
@@ -1075,8 +976,8 @@ private:
 QBuiltInMimes::QBuiltInMimes()
 : QWindowsMime()
 {
-    outFormats.insert(QWindowsMimeRegistry::registerMimeType(QStringLiteral("application/x-color")), QStringLiteral("application/x-color"));
-    inFormats.insert(QWindowsMimeRegistry::registerMimeType(QStringLiteral("application/x-color")), QStringLiteral("application/x-color"));
+    outFormats.insert(registerMimeType(QStringLiteral("application/x-color")), QStringLiteral("application/x-color"));
+    inFormats.insert(registerMimeType(QStringLiteral("application/x-color")), QStringLiteral("application/x-color"));
 }
 
 bool QBuiltInMimes::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
@@ -1257,7 +1158,7 @@ QList<FORMATETC> QLastResortMimes::formatsForMime(const QString &mimeType, const
     auto mit = std::find(formats.begin(), formats.end(), mimeType);
     // register any other available formats
     if (mit == formats.end() && !excludeList.contains(mimeType, Qt::CaseInsensitive))
-        mit = formats.insert(QWindowsMimeRegistry::registerMimeType(mimeType), mimeType);
+        mit = formats.insert(registerMimeType(mimeType), mimeType);
     if (mit != formats.end())
         formatetcs += setCf(mit.key());
 
@@ -1301,7 +1202,7 @@ bool QLastResortMimes::canConvertToMime(const QString &mimeType, IDataObject *pD
     }
     // if it is not in there then register it and see if we can get it
     const auto mit = std::find(formats.cbegin(), formats.cend(), mimeType);
-    const int cf = mit != formats.cend() ? mit.key() : QWindowsMimeRegistry::registerMimeType(mimeType);
+    const int cf = mit != formats.cend() ? mit.key() : registerMimeType(mimeType);
     return canGetData(cf, pDataObj);
 }
 
@@ -1318,7 +1219,7 @@ QVariant QLastResortMimes::convertToMime(const QString &mimeType, IDataObject *p
             data = getData(int(cf), pDataObj, lindex);
         } else {
             const auto mit = std::find(formats.cbegin(), formats.cend(), mimeType);
-            const int cf = mit != formats.cend() ? mit.key() : QWindowsMimeRegistry::registerMimeType(mimeType);
+            const int cf = mit != formats.cend() ? mit.key() : registerMimeType(mimeType);
             data = getData(cf, pDataObj);
         }
         if (!data.isEmpty())
@@ -1445,15 +1346,18 @@ QList<FORMATETC> QWindowsMimeRegistry::allFormatsForMime(const QMimeData *mimeDa
 
 void QWindowsMimeRegistry::ensureInitialized() const
 {
-    if (m_mimes.isEmpty()) {
-        m_mimes
+    if (m_internalMimeCount == 0) {
+        m_internalMimeCount = -1; // prevent reentrancy when types register themselves
 #ifndef QT_NO_IMAGEFORMAT_BMP
-                << new QWindowsMimeImage
+        (void)new QWindowsMimeImage;
 #endif //QT_NO_IMAGEFORMAT_BMP
-                << new QLastResortMimes
-                << new QWindowsMimeText << new QWindowsMimeURI
-                << new QWindowsMimeHtml << new QBuiltInMimes;
+        (void)new QLastResortMimes;
+        (void)new QWindowsMimeText;
+        (void)new QWindowsMimeURI;
+        (void)new QWindowsMimeHtml;
+        (void)new QBuiltInMimes;
         m_internalMimeCount = m_mimes.size();
+        Q_ASSERT(m_internalMimeCount > 0);
     }
 }
 

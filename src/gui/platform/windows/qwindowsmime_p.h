@@ -30,7 +30,10 @@ namespace QNativeInterface::Private {
 class Q_GUI_EXPORT QWindowsMime
 {
 public:
-    virtual ~QWindowsMime() = default;
+    QWindowsMime();
+    virtual ~QWindowsMime();
+
+    static int registerMimeType(const QString &mimeType);
 
     // for converting from Qt
     virtual bool canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const = 0;
