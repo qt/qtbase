@@ -1781,8 +1781,13 @@ bool readAndroidDependencyXml(Options *options,
 
                         if (fileName.absolutePath.endsWith(".so"_L1)) {
                             QSet<QString> remainingDependencies;
-                            readDependenciesFromElf(options, fileName.absolutePath,
-                                                    usedDependencies, &remainingDependencies);
+                            if (!readDependenciesFromElf(options, fileName.absolutePath,
+                                                         usedDependencies,
+                                                         &remainingDependencies)) {
+                                fprintf(stdout, "Skipping dependencies from xml: %s\n",
+                                        qPrintable(fileName.relativePath));
+                                continue;
+                            }
                         }
                         usedDependencies->insert(fileName.absolutePath);
 
