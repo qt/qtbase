@@ -3948,9 +3948,10 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
         }
 
         if (!number_options.testFlag(QLocale::RejectGroupSeparator)) {
-            if (start_of_digits_idx == -1 && out >= '0' && out <= '9') {
-                start_of_digits_idx = idx;
-                digitsInGroup++;
+            if (out >= '0' && out <= '9') {
+                if (start_of_digits_idx == -1)
+                    start_of_digits_idx = idx;
+                ++digitsInGroup;
             } else if (out == ',') {
                 // Don't allow group chars after the decimal point or exponent
                 if (decpt_idx != -1 || exponent_idx != -1)
@@ -3979,8 +3980,6 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
 
                 // stop processing separators
                 last_separator_idx = -1;
-            } else if (out >= '0' && out <= '9') {
-                digitsInGroup++;
             }
         } else if (out == ',') {
             return false;
