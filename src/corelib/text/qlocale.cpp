@@ -3879,10 +3879,13 @@ QString QLocaleData::applyIntegerFormatting(QString &&numStr, bool negative, int
 /*
     Converts a number in locale to its representation in the C locale.
     Only has to guarantee that a string that is a correct representation of
-    a number will be converted. If junk is passed in, junk will be passed
-    out and the error will be detected during the actual conversion to a
-    number. We can't detect junk here, since we don't even know the base
-    of the number.
+    a number will be converted.
+
+    Note: only QString integer-parsing methods have a base parameter (hence need
+    to cope with letters as possible digits); but these are now all routed via
+    byteArrayToU?LongLong(), so no longer come via here. The QLocale
+    number-parsers only work in decimal, so don't have to cope with any digits
+    other than 0 through 9.
 */
 bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_options,
                                   CharBuff *result) const
@@ -3909,18 +3912,15 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
 
         char out = numericToCLocale(in);
         if (out == 0) {
-            const QChar simple = in.size() == 1 ? in.front() : QChar::Null;
-            if (in == listSeparator())
-                out = ';';
-            else if (in == percentSign())
-                out = '%';
-            // for handling base-x numbers
-            else if (simple.toLatin1() >= 'A' && simple.toLatin1() <= 'Z')
-                out = simple.toLower().toLatin1();
-            else if (simple.toLatin1() >= 'a' && simple.toLatin1() <= 'z')
-                out = simple.toLatin1();
-            else
-                break;
+            // Allow ASCII letters of inf, nan:
+            if (in.size() != 1)
+                return false;
+            char16_t ch = in.front().unicode();
+            if (ch > 'n')
+                return false;
+            out = int(ch | 0x20); // tolower(), when ch is a letter
+            if (out != 'a' && out != 'f' && out != 'i' && out != 'n')
+                return false;
         } else if (out == '.') {
             // Fail if more than one decimal point or point after e
             if (decpt_idx != -1 || exponent_idx != -1)
