@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-\page qt_finalize_target.html
+\page qt-finalize-target.html
 \ingroup cmake-commands-qtcore
 
 \title qt_finalize_target

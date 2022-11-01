@@ -12,7 +12,7 @@ target properties:
 */
 
 /*!
-\page cmake-target-property-QT_ANDROID_DEPLOYMENT_DEPENDENCIES.html
+\page cmake-target-property-qt-android-deployment-dependencies.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -43,7 +43,7 @@ is listed before its dependencies, it will fail to load on some devices.
 */
 
 /*!
-\page cmake-target-property-QT_ANDROID_EXTRA_LIBS.html
+\page cmake-target-property-qt-android-extra-libs.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -65,7 +65,7 @@ to enable OpenSSL in your application. For more information, see
 */
 
 /*!
-\page cmake-target-property-QT_ANDROID_EXTRA_PLUGINS.html
+\page cmake-target-property-qt-android-extra-plugins.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -96,7 +96,7 @@ mangling is applied to the plugin library.
 */
 
 /*!
-\page cmake-target-property-QT_ANDROID_MIN_SDK_VERSION.html
+\page cmake-target-property-qt-android-min-sdk-version.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -115,7 +115,7 @@ Specifies the minimum Android API level for the target.
 */
 
 /*!
-\page cmake-target-property-QT_ANDROID_PACKAGE_SOURCE_DIR.html
+\page cmake-target-property-qt-android-package-source-dir.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -148,7 +148,7 @@ then place this directly into the directory specified by this variable.
 */
 
 /*!
-\page cmake-target-property-QT_ANDROID_TARGET_SDK_VERSION.html
+\page cmake-target-property-qt-android-target-sdk-version.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -167,7 +167,7 @@ Specifies the target Android API level for the target.
 */
 
 /*!
-\page cmake-target-property-QT_ANDROID_VERSION_CODE.html
+\page cmake-target-property-qt-android-version-code.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -189,7 +189,7 @@ For more information, see \l{Android: App Versioning}{Android App Versioning}.
 */
 
 /*!
-\page cmake-target-property-QT_ANDROID_VERSION_NAME.html
+\page cmake-target-property-qt-android-version-name.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -211,7 +211,7 @@ For more information, see \l{Android: App Versioning}{Android App Versioning}.
 */
 
 /*!
-\page cmake-target-property-QT_ANDROID_ABIS.html
+\page cmake-target-property-qt-android-abis.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -234,7 +234,7 @@ The property only affects targets created with
 */
 
 /*!
-\page cmake-target-property-QT_QML_ROOT_PATH.html
+\page cmake-target-property-qt-qml-root-path.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -255,7 +255,7 @@ will be used instead.
 */
 
 /*!
-\page cmake-target-property-QT_QML_IMPORT_PATH.html
+\page cmake-target-property-qt-qml-import-path.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -277,7 +277,7 @@ For application-specific QML imports, use
 */
 
 /*!
-\page cmake-target-property-QT_ANDROID_DEPLOYMENT_SETTINGS_FILE.html
+\page cmake-target-property-qt-android-deployment-settings-file.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -297,7 +297,7 @@ and overwritten by that command.
 */
 
 /*!
-\page cmake-target-property-QT_ANDROID_SYSTEM_LIBS_PREFIX.html
+\page cmake-target-property-qt-android-system-libs-prefix.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -314,7 +314,7 @@ when those libraries are installed outside app's native (JNI) library directory.
 */
 
 /*!
-\page cmake-target-property-QT_ANDROID_NO_DEPLOY_QT_LIBS.html
+\page cmake-target-property-qt-android-no-deploy-qt-libs.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -336,7 +336,7 @@ instead.
 */
 
 /*!
-\page cmake-target-property-qt_no_entrypoint.html
+\page cmake-target-property-qt-no-entrypoint.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -355,7 +355,7 @@ On targets that must provide their own entry point, set the property \c qt_no_en
 */
 
 /*!
-\page cmake-target-property-qt_resource_prefix.html
+\page cmake-target-property-qt-resource-prefix.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -383,7 +383,7 @@ source file properties:
 */
 
 /*!
-\page cmake-source-file-property-QT_RESOURCE_ALIAS.html
+\page cmake-source-file-property-qt-resource-alias.html
 \ingroup cmake-source-file-properties-qtcore
 
 \title QT_RESOURCE_ALIAS
@@ -401,7 +401,7 @@ the property value overrides the runtime path where the resource file is found.
 */
 
 /*!
-\page cmake-target-property-QT_WASM_PTHREAD_POOL_SIZE.html
+\page cmake-target-property-qt-wasm-pthread-pool-size.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -425,7 +425,7 @@ For more information, see \l{https://emscripten.org/docs/porting/pthreads.html}{
 */
 
 /*!
-\page cmake-target-property-QT_WASM_INITIAL_MEMORY.html
+\page cmake-target-property-qt-wasm-initial-memory.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 
@@ -447,7 +447,7 @@ For more information, see \l{https://github.com/emscripten-core/emscripten/blob/
 */
 
 /*!
-\page cmake-target-property-QT_IOS_LAUNCH_SCREEN.html
+\page cmake-target-property-qt-ios-launch-screen.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
 

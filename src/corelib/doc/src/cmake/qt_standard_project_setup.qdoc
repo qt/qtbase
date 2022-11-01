@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-\page qt_standard_project_setup.html
+\page qt-standard-project-setup.html
 \ingroup cmake-commands-qtcore
 
 \title qt_standard_project_setup

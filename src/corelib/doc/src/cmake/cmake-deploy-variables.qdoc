@@ -8,7 +8,7 @@
 **/
 
 /*!
-\page cmake-variable-QT_DEPLOY_PREFIX.html
+\page cmake-variable-qt-deploy-prefix.html
 \ingroup cmake-variables-qtcore
 
 \title QT_DEPLOY_PREFIX
@@ -53,7 +53,7 @@ variables.
 */
 
 /*!
-\page cmake-variable-QT_DEPLOY_BIN_DIR.html
+\page cmake-variable-qt-deploy-bin-dir.html
 \ingroup cmake-variables-qtcore
 
 \title QT_DEPLOY_BIN_DIR
@@ -94,7 +94,7 @@ should not be used for that scenario.
 */
 
 /*!
-\page cmake-variable-QT_DEPLOY_LIB_DIR.html
+\page cmake-variable-qt-deploy-lib-dir.html
 \ingroup cmake-variables-qtcore
 
 \title QT_DEPLOY_LIB_DIR
@@ -136,7 +136,7 @@ should not be used for that scenario.
 */
 
 /*!
-\page cmake-variable-QT_DEPLOY_PLUGINS_DIR.html
+\page cmake-variable-qt-deploy-plugins-dir.html
 \ingroup cmake-variables-qtcore
 
 \title QT_DEPLOY_PLUGINS_DIR
@@ -172,7 +172,7 @@ bundle contents.
 */
 
 /*!
-\page cmake-variable-QT_DEPLOY_QML_DIR.html
+\page cmake-variable-qt-deploy-qml-dir.html
 \ingroup cmake-variables-qtcore
 
 \title QT_DEPLOY_QML_DIR

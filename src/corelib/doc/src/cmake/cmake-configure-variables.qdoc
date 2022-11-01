@@ -22,7 +22,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 */
 
 */*!
-\page cmake-variable-ANDROID_NDK_HOST_SYSTEM_NAME.html
+\page cmake-variable-android-ndk-host-system-name.html
 \ingroup cmake-variables-qtcore
 
 \title ANDROID_NDK_HOST_SYSTEM_NAME
@@ -41,7 +41,7 @@ part of the deployment settings for a target.
 */
 
 /*!
-\page cmake-variable-ANDROID_SDK_ROOT.html
+\page cmake-variable-android-sdk-root.html
 \ingroup cmake-variables-qtcore
 
 \title ANDROID_SDK_ROOT
@@ -60,7 +60,7 @@ It is written out as part of the deployment settings for a target.
 */
 
 /*!
-\page cmake-variable-QT_ANDROID_APPLICATION_ARGUMENTS.html
+\page cmake-variable-qt-android-application-arguments.html
 \ingroup cmake-variables-qtcore
 
 \title QT_ANDROID_APPLICATION_ARGUMENTS
@@ -79,7 +79,7 @@ out as part of the deployment settings for a target.
 */
 
 /*!
-\page cmake-variable-QT_ANDROID_BUILD_ALL_ABIS.html
+\page cmake-variable-qt-android-build-all-abis.html
 \ingroup cmake-variables-qtcore
 
 \title QT_ANDROID_BUILD_ALL_ABIS
@@ -112,7 +112,7 @@ The variable is set to FALSE by default.
 */
 
 /*!
-\page cmake-variable-QT_ANDROID_ABIS.html
+\page cmake-variable-qt-android-abis.html
 \ingroup cmake-variables-qtcore
 
 \title QT_ANDROID_ABIS
@@ -137,7 +137,7 @@ QT_ANDROID_ABIS logic.
 */
 
 /*!
-\page cmake-variable-QT_PATH_ANDROID_ABI.html
+\page cmake-variable-qt-path-android-abi.html
 \ingroup cmake-variables-qtcore
 
 \title QT_PATH_ANDROID_ABI_<ABI>
@@ -156,7 +156,7 @@ Each variable can be used to specify the path to Qt for Android for the correspo
 */
 
 /*!
-\page cmake-variable-QT_ANDROID_SIGN_AAB.html
+\page cmake-variable-qt-android-sign-aab.html
 \ingroup cmake-variables-qtcore
 
 \title QT_ANDROID_SIGN_AAB
@@ -181,7 +181,7 @@ Mentioned variables are used internally by \l{androiddeployqt}.
 */
 
 /*!
-\page cmake-variable-QT_ANDROID_SIGN_APK.html
+\page cmake-variable-qt-android-sign-apk.html
 \ingroup cmake-variables-qtcore
 
 \title QT_ANDROID_SIGN_APK
@@ -206,7 +206,7 @@ Mentioned variables are used internally by \l{androiddeployqt}.
 */
 
 /*!
-\page cmake-variable-QT_NO_COLLECT_BUILD_TREE_APK_DEPS.html
+\page cmake-variable-qt-no-collect-build-tree-apk-deps.html
 \ingroup cmake-variables-qtcore
 
 \title QT_NO_COLLECT_BUILD_TREE_APK_DEPS
@@ -228,7 +228,7 @@ Set \c QT_NO_COLLECT_BUILD_TREE_APK_DEPS to \c TRUE to disable this behavior.
 */
 
 /*!
-\page cmake-variable-QT_HOST_PATH.html
+\page cmake-variable-qt-host-path.html
 \ingroup cmake-variables-qtcore
 
 \title QT_HOST_PATH
@@ -244,7 +244,7 @@ platform. It is used to locate tools to be run on the host (\l{moc}, \l{rcc},
 */
 
 /*!
-\page cmake-variable-QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID.html
+\page cmake-variable-qt-no-set-xcode-development-team-id.html
 \ingroup cmake-variables-qtcore
 
 \title QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID
@@ -261,7 +261,7 @@ Set \c QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID to true if you want to prevent this.
 */
 
 /*!
-\page cmake-variable-QT_NO_SET_XCODE_BUNDLE_IDENTIFIER.html
+\page cmake-variable-qt-no-set-xcode-bundle-identifier.html
 \ingroup cmake-variables-qtcore
 
 \title QT_NO_SET_XCODE_BUNDLE_IDENTIFIER
@@ -279,7 +279,7 @@ Set \c QT_NO_SET_XCODE_BUNDLE_IDENTIFIER to true if you want to prevent this.
 */
 
 /*!
-\page cmake-variable-QT_ENABLE_VERBOSE_DEPLOYMENT.html
+\page cmake-variable-qt-enable-verbose-deployment.html
 \ingroup cmake-variables-qtcore
 
 \title QT_ENABLE_VERBOSE_DEPLOYMENT
@@ -299,7 +299,7 @@ must be set before the first \c{find_package(Qt6)} call to have that effect.
 */
 
 /*!
-\page cmake-variable-QT_DEPLOY_SUPPORT.html
+\page cmake-variable-qt-deploy-support.html
 \ingroup cmake-variables-qtcore
 
 \title QT_DEPLOY_SUPPORT
@@ -326,7 +326,7 @@ an application, along with its runtime dependencies:
 */
 
 /*!
-\page cmake-variable-QT_NO_STANDARD_PROJECT_SETUP.html
+\page cmake-variable-qt-no-standard-project-setup.html
 \ingroup cmake-variables-qtcore
 
 \title QT_NO_STANDARD_PROJECT_SETUP
@@ -350,7 +350,7 @@ methods provided by CMake.
 */
 
 /*!
-\page cmake-variable-QT_IOS_LAUNCH_SCREEN.html
+\page cmake-variable-qt-ios-launch-screen.html
 \ingroup cmake-variables-qtcore
 
 \title QT_IOS_LAUNCH_SCREEN

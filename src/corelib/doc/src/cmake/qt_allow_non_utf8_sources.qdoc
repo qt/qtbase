@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-\page qt_allow_non_utf8_sources.html
+\page qt-allow-non-utf8-sources.html
 \ingroup cmake-commands-qtcore
 
 \title qt_allow_non_utf8_sources
