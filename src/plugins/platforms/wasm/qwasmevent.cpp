@@ -43,7 +43,7 @@ std::optional<PointerEvent> PointerEvent::fromWeb(emscripten::val event)
         PointerType::Mouse : PointerType::Other;
     ret.mouseButton = MouseEvent::buttonFromWeb(event["button"].as<int>());
     ret.mouseButtons = MouseEvent::buttonsFromWeb(event["buttons"].as<unsigned short>());
-    ret.point = QPoint(event["x"].as<int>(), event["y"].as<int>());
+    ret.point = QPoint(event["offsetX"].as<int>(), event["offsetY"].as<int>());
     ret.pointerId = event["pointerId"].as<int>();
     ret.modifiers = KeyboardModifier::getForEvent(event);
 
