@@ -3786,8 +3786,13 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             const auto ct = cocoaControlType(&btn, w);
 
             if (!hasMenu && ct != QMacStylePrivate::Button_SquareButton) {
-                if (isPressed || (isActive && isEnabled && ((btn.state & State_On) || isDefault)))
-                    btn.palette.setColor(QPalette::ButtonText, Qt::white);
+                if (isPressed || (isActive && isEnabled && ((btn.state & State_On) || isDefault))) {
+                    if (!isPressed && NSApplication.sharedApplication.active) {
+                        // !isPressed means isActive, but it can differ from
+                        // the actual application state, so don't set white.
+                        btn.palette.setColor(QPalette::ButtonText, Qt::white);
+                    }
+                }
             }
 
             if (isEnabled && !isDarkMode() && QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSBigSur) {
