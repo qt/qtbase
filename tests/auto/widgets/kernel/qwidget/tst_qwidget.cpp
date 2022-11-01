@@ -4013,6 +4013,13 @@ void tst_QWidget::saveRestoreGeometry()
         QVERIFY(QTest::qWaitForWindowExposed(&widget));
         QApplication::processEvents();
 
+
+    /* ---------------------------------------------------------------------
+     * This test function is likely to flake when debugged with Qt Creator.
+     * (29px offset making the following QTRY_VERIFY2 fail)
+     * ---------------------------------------------------------------------
+     */
+
         QTRY_VERIFY2(HighDpi::fuzzyCompare(widget.pos(), position, m_fuzz),
                      qPrintable(HighDpi::msgPointMismatch(widget.pos(), position)));
         QCOMPARE(widget.size(), size);
