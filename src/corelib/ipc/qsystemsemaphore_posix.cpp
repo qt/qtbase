@@ -17,7 +17,13 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include "private/qcore_unix_p.h"
+#ifdef Q_OS_UNIX
+#  include "private/qcore_unix_p.h"
+#else
+#define EINTR_LOOP_VAL(var, val, cmd)       \
+    (void)var; var = cmd
+#define EINTR_LOOP(var, cmd)    EINTR_LOOP_VAL(var, -1, cmd)
+#endif
 
 // OpenBSD 4.2 doesn't define EIDRM, see BUGS section:
 // http://www.openbsd.org/cgi-bin/man.cgi?query=semop&manpath=OpenBSD+4.2
