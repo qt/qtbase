@@ -42,10 +42,13 @@ public:
     HandlerScope scope() const { return m_scope; }
 
     virtual bool canConvert(const QString &mime, const QString &flav) const = 0;
-    virtual QString mimeFor(const QString &flav) const = 0;
-    virtual QString flavorFor(const QString &mime) const = 0;
-    virtual QVariant convertToMime(const QString &mime, const QList<QByteArray> &data, const QString &flav) const = 0;
+    // for converting from Qt
     virtual QList<QByteArray> convertFromMime(const QString &mime, const QVariant &data, const QString &flav) const = 0;
+    virtual QString flavorForMime(const QString &mime) const = 0;
+
+    // for converting to Qt
+    virtual QString mimeForFlavor(const QString &flav) const = 0;
+    virtual QVariant convertToMime(const QString &mime, const QList<QByteArray> &data, const QString &flav) const = 0;
     virtual int count(const QMimeData *mimeData) const;
 
 private:

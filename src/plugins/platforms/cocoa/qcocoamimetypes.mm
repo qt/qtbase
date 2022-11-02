@@ -14,8 +14,8 @@ using namespace Qt::StringLiterals;
 
 class QMacMimeTraditionalMacPlainText : public QMacMime {
 public:
-    QString flavorFor(const QString &mime) const override;
-    QString mimeFor(const QString &flav) const override;
+    QString flavorForMime(const QString &mime) const override;
+    QString mimeForFlavor(const QString &flav) const override;
     bool canConvert(const QString &mime, const QString &flav) const override;
     QVariant convertToMime(const QString &mime, const QList<QByteArray> &data,
                            const QString &flav) const override;
@@ -23,14 +23,14 @@ public:
                                       const QString &flav) const override;
 };
 
-QString QMacMimeTraditionalMacPlainText::flavorFor(const QString &mime) const
+QString QMacMimeTraditionalMacPlainText::flavorForMime(const QString &mime) const
 {
     if (mime == "text/plain"_L1)
         return "com.apple.traditional-mac-plain-text"_L1;
     return QString();
 }
 
-QString QMacMimeTraditionalMacPlainText::mimeFor(const QString &flav) const
+QString QMacMimeTraditionalMacPlainText::mimeForFlavor(const QString &flav) const
 {
     if (flav == "com.apple.traditional-mac-plain-text"_L1)
         return "text/plain"_L1;
@@ -40,7 +40,7 @@ QString QMacMimeTraditionalMacPlainText::mimeFor(const QString &flav) const
 bool QMacMimeTraditionalMacPlainText::canConvert(const QString &mime,
                                                            const QString &flav) const
 {
-    return flavorFor(mime) == flav;
+    return flavorForMime(mime) == flav;
 }
 
 QVariant

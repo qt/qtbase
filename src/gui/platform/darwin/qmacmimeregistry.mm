@@ -87,10 +87,10 @@ QString flavorToMime(QMacMime::HandlerScope scope, const QString &flav)
         const bool relevantScope = uchar((*it)->scope()) & uchar(scope);
 #ifdef DEBUG_MIME_MAPS
         qDebug("QMacMimeRegistry::flavorToMime: attempting (%d) for flavor %s [%s]",
-               relevantScope, qPrintable(flav), qPrintable((*it)->mimeFor(flav)));
+               relevantScope, qPrintable(flav), qPrintable((*it)->mimeForFlavor(flav)));
 #endif
         if (relevantScope) {
-            QString mimeType = (*it)->mimeFor(flav);
+            QString mimeType = (*it)->mimeForFlavor(flav);
             if (!mimeType.isNull())
                 return mimeType;
         }

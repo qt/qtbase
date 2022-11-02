@@ -320,9 +320,9 @@ QMacPasteboard::setMimeData(QMimeData *mime_src, DataRequestType dataRequestType
                 // Hack: The Rtf handler converts incoming Rtf to Html. We do
                 // not want to convert outgoing Html to Rtf but instead keep
                 // posting it as Html. Skip the Rtf handler here.
-                if (c->flavorFor("text/html"_L1) == "public.rtf"_L1)
+                if (c->flavorForMime("text/html"_L1) == "public.rtf"_L1)
                     continue;
-                QString flavor(c->flavorFor(mimeType));
+                QString flavor(c->flavorForMime(mimeType));
                 if (!flavor.isEmpty()) {
                     QMacMimeData *mimeData = static_cast<QMacMimeData*>(mime_src);
 
@@ -435,7 +435,7 @@ QMacPasteboard::retrieveData(const QString &format, QMetaType) const
     qCDebug(lcQpaClipboard, "Pasteboard: retrieveData [%s]", qPrintable(format));
     const QList<QMacMime *> availableConverters = QMacMimeRegistry::all(scope);
     for (const auto *c : availableConverters) {
-        QString c_flavor = c->flavorFor(format);
+        QString c_flavor = c->flavorForMime(format);
         if (!c_flavor.isEmpty()) {
             // Converting via PasteboardCopyItemFlavorData below will for some UITs result
             // in newlines mapping to '\r' instead of '\n'. To work around this we shortcut

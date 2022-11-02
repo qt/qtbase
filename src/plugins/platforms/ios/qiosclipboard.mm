@@ -131,7 +131,7 @@ QVariant QIOSMimeData::retrieveData(const QString &mimeType, QMetaType) const
     NSArray<NSString *> *pasteboardTypes = [pb pasteboardTypes];
 
     foreach (QMacMime *converter, QMacMimeRegistry::all(QMacMime::HandlerScope::All)) {
-        if (!converter->canConvert(mimeType, converter->flavorFor(mimeType)))
+        if (!converter->canConvert(mimeType, converter->flavorForMime(mimeType)))
             continue;
 
         for (NSUInteger i = 0; i < [pasteboardTypes count]; ++i) {
@@ -185,7 +185,7 @@ void QIOSClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
 
     foreach (const QString &mimeType, mimeData->formats()) {
         foreach (QMacMime *converter, QMacMimeRegistry::all(QMacMime::HandlerScope::All)) {
-            QString uti = converter->flavorFor(mimeType);
+            const QString uti = converter->flavorForMime(mimeType);
             if (uti.isEmpty() || !converter->canConvert(mimeType, uti))
                 continue;
 
