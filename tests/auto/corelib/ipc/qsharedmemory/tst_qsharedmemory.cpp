@@ -53,20 +53,14 @@ private slots:
     void lock();
 
     // custom edge cases
-#ifndef Q_OS_HPUX
     void removeWhileAttached();
-#endif
     void emptyMemory();
-#if !defined(Q_OS_WIN)
     void readOnly();
-#endif
 
     // basics all together
-#ifndef Q_OS_HPUX
     void simpleProducerConsumer_data();
     void simpleProducerConsumer();
     void simpleDoubleProducerConsumer();
-#endif
 
     // with threads
     void simpleThreadedProducerConsumer_data();
@@ -78,9 +72,7 @@ private slots:
 
     // extreme cases
     void useTooMuchMemory();
-#if !defined(Q_OS_HPUX)
     void attachTooMuch();
-#endif
 
     // unique keys
     void uniqueKey_data();
@@ -429,7 +421,6 @@ void tst_QSharedMemory::lock()
     but new shared memory are not allowed to attach after a remove.
  */
 // HPUX doesn't allow for multiple attaches per process.
-#ifndef Q_OS_HPUX
 void tst_QSharedMemory::removeWhileAttached()
 {
     rememberKey("one");
@@ -459,7 +450,6 @@ void tst_QSharedMemory::removeWhileAttached()
     QVERIFY(!smThree.attach());
     QCOMPARE(smThree.error(), QSharedMemory::NotFound);
 }
-#endif
 
 /*!
     The memory should be set to 0 after created.
@@ -479,14 +469,14 @@ void tst_QSharedMemory::emptyMemory()
     Verify that attach with ReadOnly is actually read only
     by writing to data and causing a segfault.
 */
-// This test opens a crash dialog on Windows.
-#if !defined(Q_OS_WIN)
 void tst_QSharedMemory::readOnly()
 {
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #elif defined(Q_OS_MACOS)
     QSKIP("QTBUG-59936: Times out on macOS", SkipAll);
+#elif defined(Q_OS_WIN)
+    QSKIP("This test opens a crash dialog on Windows.");
 #elif defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
     QSKIP("ASan prevents the crash this test is looking for.", SkipAll);
 #else
@@ -500,7 +490,6 @@ void tst_QSharedMemory::readOnly()
     QCOMPARE(p.error(), QProcess::Crashed);
 #endif
 }
-#endif
 
 /*!
     Keep making shared memory until the kernel stops us.
@@ -549,8 +538,6 @@ void tst_QSharedMemory::useTooMuchMemory()
     Create one shared memory (government) and see how many other shared memories (wars) we can
     attach before the system runs out of resources.
  */
-// HPUX doesn't allow for multiple attaches per process.
-#if !defined(Q_OS_HPUX)
 void tst_QSharedMemory::attachTooMuch()
 {
     QSKIP("disabled");
@@ -575,10 +562,7 @@ void tst_QSharedMemory::attachTooMuch()
         }
     }
 }
-#endif
 
-// HPUX doesn't allow for multiple attaches per process.
-#ifndef Q_OS_HPUX
 void tst_QSharedMemory::simpleProducerConsumer_data()
 {
     QTest::addColumn<QSharedMemory::AccessMode>("mode");
@@ -616,10 +600,7 @@ void tst_QSharedMemory::simpleProducerConsumer()
     }
     QVERIFY(consumer.detach());
 }
-#endif
 
-// HPUX doesn't allow for multiple attaches per process.
-#ifndef Q_OS_HPUX
 void tst_QSharedMemory::simpleDoubleProducerConsumer()
 {
     QNativeIpcKey nativeKey = rememberKey(QLatin1String("market"));
@@ -640,7 +621,6 @@ void tst_QSharedMemory::simpleDoubleProducerConsumer()
         QVERIFY(consumer.attach());
     }
 }
-#endif
 
 class Consumer : public QThread
 {
