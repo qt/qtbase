@@ -103,6 +103,9 @@ set(QT_BUILD_EXAMPLES_AS_EXTERNAL "@QT_BUILD_EXAMPLES_AS_EXTERNAL@" CACHE BOOL
 # Propagate usage of ccache.
 set(QT_USE_CCACHE @QT_USE_CCACHE@ CACHE BOOL "Enable the use of ccache")
 
+# Propragate the value of WARNINGS_ARE_ERRORS.
+set(WARNINGS_ARE_ERRORS "@WARNINGS_ARE_ERRORS@" CACHE BOOL "Build Qt with warnings as errors")
+
 # Propagate usage of versioned hard link.
 set(QT_CREATE_VERSIONED_HARD_LINK "@QT_CREATE_VERSIONED_HARD_LINK@" CACHE BOOL
     "Enable the use of versioned hard link")
