@@ -28,8 +28,66 @@
 
 #include <limits>
 #include <cmath>
+#include <string_view>
 
 QT_BEGIN_NAMESPACE
+
+template <typename MaskType, uchar Lowest> struct QCharacterSetMatch
+{
+    static constexpr int MaxRange = std::numeric_limits<MaskType>::digits;
+    MaskType mask;
+
+    constexpr QCharacterSetMatch(std::string_view set)
+        : mask(0)
+    {
+        for (char c : set) {
+            int idx = uchar(c) - Lowest;
+            mask |= MaskType(1) << idx;
+        }
+    }
+
+    constexpr bool matches(uchar c) const
+    {
+        unsigned idx = c - Lowest;
+        if (idx >= MaxRange)
+            return false;
+        return (mask >> idx) & 1;
+    }
+};
+
+namespace {
+static constexpr char ascii_space_chars[] =
+        "\t"    // 9: HT - horizontal tab
+        "\n"    // 10: LF - line feed
+        "\v"    // 11: VT - vertical tab
+        "\f"    // 12: FF - form feed
+        "\r"    // 13: CR - carriage return
+        " ";    // 32: space
+
+template <const char *Set, int ForcedLowest = -1> static constexpr auto makeCharacterSetMatch()
+{
+    constexpr auto view = std::string_view(Set);
+    constexpr uchar MinElement = *std::min_element(view.begin(), view.end());
+    constexpr uchar MaxElement = *std::max_element(view.begin(), view.end());
+    constexpr int Range = MaxElement - MinElement;
+    static_assert(Range < 64, "Characters in the set are 64 or more values apart");
+
+    if constexpr (ForcedLowest >= 0) {
+        // use the force
+        static_assert(ForcedLowest <= int(MinElement), "The force is not with you");
+        using MaskType = std::conditional_t<MaxElement - ForcedLowest < 32, quint32, quint64>;
+        return QCharacterSetMatch<MaskType, ForcedLowest>(view);
+    } else if constexpr (MaxElement < std::numeric_limits<qregisteruint>::digits) {
+        // if we can use a Lowest of zero, we can remove a subtraction
+        // from the matches() code at runtime
+        using MaskType = std::conditional_t<(MaxElement < 32), quint32, qregisteruint>;
+        return QCharacterSetMatch<MaskType, 0>(view);
+    } else {
+        using MaskType = std::conditional_t<(Range < 32), quint32, quint64>;
+        return QCharacterSetMatch<MaskType, MinElement>(view);
+    }
+}
+} // unnamed namespace
 
 struct QLocaleData;
 // Subclassed by Android platform plugin:
@@ -477,15 +535,10 @@ QString qt_readEscapedFormatString(QStringView format, qsizetype *idx);
                                       QStringView *script = nullptr, QStringView *cntry = nullptr);
 [[nodiscard]] qsizetype qt_repeatCount(QStringView s);
 
-enum { AsciiSpaceMask = (1u << (' ' - 1)) |
-                        (1u << ('\t' - 1)) |   // 9: HT - horizontal tab
-                        (1u << ('\n' - 1)) |   // 10: LF - line feed
-                        (1u << ('\v' - 1)) |   // 11: VT - vertical tab
-                        (1u << ('\f' - 1)) |   // 12: FF - form feed
-                        (1u << ('\r' - 1)) };  // 13: CR - carriage return
 [[nodiscard]] constexpr inline bool ascii_isspace(uchar c)
 {
-    return c >= 1u && c <= 32u && (AsciiSpaceMask >> uint(c - 1)) & 1u;
+    constexpr auto matcher = makeCharacterSetMatch<ascii_space_chars>();
+    return matcher.matches(c);
 }
 
 QT_END_NAMESPACE

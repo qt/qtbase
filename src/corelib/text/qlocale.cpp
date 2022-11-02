@@ -79,7 +79,7 @@ static_assert(!ascii_isspace('\a'));
 static_assert(!ascii_isspace('a'));
 static_assert(!ascii_isspace('\177'));
 static_assert(!ascii_isspace(uchar('\200')));
-static_assert(!ascii_isspace(uchar('\xA0')));
+static_assert(!ascii_isspace(uchar('\xA0')));   // NBSP (is a space but Latin 1, not ASCII)
 static_assert(!ascii_isspace(uchar('\377')));
 
 /******************************************************************************
