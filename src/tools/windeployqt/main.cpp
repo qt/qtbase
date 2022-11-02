@@ -22,6 +22,7 @@
 #define IMAGE_FILE_MACHINE_ARM64 0xaa64
 #endif
 
+#include <bitset>
 #include <algorithm>
 #include <iostream>
 #include <iterator>
@@ -31,73 +32,75 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+using ModuleBitset = std::bitset<62>;
+
 enum QtModule
 #if defined(Q_COMPILER_CLASS_ENUM) || defined(Q_CC_MSVC)
     : quint64
 #endif
 {
-    QtBluetoothModule              = 0x0000000000000001,
-    QtConcurrentModule             = 0x0000000000000002,
-    QtCoreModule                   = 0x0000000000000004,
-    QtDeclarativeModule            = 0x0000000000000008,
-    QtDesignerComponents           = 0x0000000000000010,
-    QtDesignerModule               = 0x0000000000000020,
-    QtGuiModule                    = 0x0000000000000040,
-    QtHelpModule                   = 0x0000000000000080,
-    QtMultimediaModule             = 0x0000000000000100,
-    QtMultimediaWidgetsModule      = 0x0000000000000200,
-    QtMultimediaQuickModule        = 0x0000000000000400,
-    QtNetworkModule                = 0x0000000000000800,
-    QtNfcModule                    = 0x0000000000001000,
-    QtOpenGLModule                 = 0x0000000000002000,
-    QtOpenGLWidgetsModule          = 0x0000000000004000,
-    QtPositioningModule            = 0x0000000000008000,
-    QtPrintSupportModule           = 0x0000000000010000,
-    QtQmlModule                    = 0x0000000000020000,
-    QtQuickModule                  = 0x0000000000040000,
-    QtQuickParticlesModule         = 0x0000000000080000,
-    QtScriptModule                 = 0x0000000000100000,
-    QtScriptToolsModule            = 0x0000000000200000,
-    QtSensorsModule                = 0x0000000000400000,
-    QtSerialPortModule             = 0x0000000000800000,
-    QtSqlModule                    = 0x0000000001000000,
-    QtSvgModule                    = 0x0000000002000000,
-    QtSvgWidgetsModule             = 0x0000000004000000,
-    QtTestModule                   = 0x0000000008000000,
-    QtWidgetsModule                = 0x0000000010000000,
-    QtWinExtrasModule              = 0x0000000020000000,
-    QtXmlModule                    = 0x0000000040000000,
-    QtQuickWidgetsModule           = 0x0000000100000000,
-    QtWebSocketsModule             = 0x0000000200000000,
-    QtWebEngineCoreModule          = 0x0000000800000000,
-    QtWebEngineModule              = 0x0000001000000000,
-    QtWebEngineWidgetsModule       = 0x0000002000000000,
-    QtQmlToolingModule             = 0x0000004000000000,
-    Qt3DCoreModule                 = 0x0000008000000000,
-    Qt3DRendererModule             = 0x0000010000000000,
-    Qt3DQuickModule                = 0x0000020000000000,
-    Qt3DQuickRendererModule        = 0x0000040000000000,
-    Qt3DInputModule                = 0x0000080000000000,
-    QtLocationModule               = 0x0000100000000000,
-    QtWebChannelModule             = 0x0000200000000000,
-    QtTextToSpeechModule           = 0x0000400000000000,
-    QtSerialBusModule              = 0x0000800000000000,
-    QtGamePadModule                = 0x0001000000000000,
-    Qt3DAnimationModule            = 0x0002000000000000,
-    QtWebViewModule                = 0x0004000000000000,
-    Qt3DExtrasModule               = 0x0008000000000000,
-    QtShaderToolsModule            = 0x0010000000000000,
-    QtUiToolsModule                = 0x0020000000000000,
-    QtCore5CompatModule            = 0x0040000000000000,
-    QtChartsModule                 = 0x0080000000000000,
-    QtDataVisualizationModule      = 0x0100000000000000,
-    QtRemoteObjectsModule          = 0x0200000000000000,
-    QtScxmlModule                  = 0x0400000000000000,
-    QtNetworkAuthorizationModule   = 0x0800000000000000,
-    QtMqttModule                   = 0x1000000000000000,
-    QtPdfModule                    = 0x2000000000000000,
-    QtPdfQuickModule               = 0x4000000000000000,
-    QtPdfWidgetsModule             = 0x8000000000000000
+    QtBluetoothModule,
+    QtConcurrentModule,
+    QtCoreModule,
+    QtDeclarativeModule,
+    QtDesignerComponents,
+    QtDesignerModule,
+    QtGuiModule,
+    QtHelpModule,
+    QtMultimediaModule,
+    QtMultimediaWidgetsModule,
+    QtMultimediaQuickModule,
+    QtNetworkModule,
+    QtNfcModule,
+    QtOpenGLModule,
+    QtOpenGLWidgetsModule,
+    QtPositioningModule,
+    QtPrintSupportModule,
+    QtQmlModule,
+    QtQuickModule,
+    QtQuickParticlesModule,
+    QtScriptModule,
+    QtScriptToolsModule,
+    QtSensorsModule,
+    QtSerialPortModule,
+    QtSqlModule,
+    QtSvgModule,
+    QtSvgWidgetsModule,
+    QtTestModule,
+    QtWidgetsModule,
+    QtWinExtrasModule,
+    QtXmlModule,
+    QtQuickWidgetsModule,
+    QtWebSocketsModule,
+    QtWebEngineCoreModule,
+    QtWebEngineModule,
+    QtWebEngineWidgetsModule,
+    QtQmlToolingModule,
+    Qt3DCoreModule,
+    Qt3DRendererModule,
+    Qt3DQuickModule,
+    Qt3DQuickRendererModule,
+    Qt3DInputModule,
+    QtLocationModule,
+    QtWebChannelModule,
+    QtTextToSpeechModule,
+    QtSerialBusModule,
+    QtGamePadModule,
+    Qt3DAnimationModule,
+    QtWebViewModule,
+    Qt3DExtrasModule,
+    QtShaderToolsModule,
+    QtUiToolsModule,
+    QtCore5CompatModule,
+    QtChartsModule,
+    QtDataVisualizationModule,
+    QtRemoteObjectsModule,
+    QtScxmlModule,
+    QtNetworkAuthorizationModule,
+    QtMqttModule,
+    QtPdfModule,
+    QtPdfQuickModule,
+    QtPdfWidgetsModule
 };
 
 struct QtModuleEntry {
@@ -184,11 +187,11 @@ static inline QString webProcessBinary(const char *binaryName, Platform p)
     return (p & WindowsBased) ? webProcess + QStringLiteral(".exe") : webProcess;
 }
 
-static QByteArray formatQtModules(quint64 mask, bool option = false)
+static QByteArray formatQtModules(const ModuleBitset &mask, bool option = false)
 {
     QByteArray result;
     for (const auto &qtModule : qtModuleEntries) {
-        if (mask & qtModule.module) {
+        if (mask.test(qtModule.module)) {
             if (!result.isEmpty())
                 result.append(' ');
             result.append(option ? qtModule.option : qtModule.libraryName);
@@ -251,8 +254,8 @@ struct Options {
     unsigned disabledPlugins = 0;
     bool softwareRasterizer = true;
     Platform platform = WindowsDesktopMsvc;
-    quint64 additionalLibraries = 0;
-    quint64 disabledLibraries = 0;
+    ModuleBitset additionalLibraries;
+    ModuleBitset disabledLibraries;
     unsigned updateFileFlags = 0;
     QStringList qmlDirectories; // Project's QML files.
     QStringList qmlImportPaths; // Custom QML module locations.
@@ -536,16 +539,16 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
 
     for (int i = 0; i < qtModulesCount; ++i) {
         if (parser->isSet(*enabledModuleOptions.at(i)))
-            options->additionalLibraries |= qtModuleEntries[i].module;
+            options->additionalLibraries[qtModuleEntries[i].module] = 1;
         if (parser->isSet(*disabledModuleOptions.at(i)))
-            options->disabledLibraries |= qtModuleEntries[i].module;
+            options->disabledLibraries[qtModuleEntries[i].module] = 1;
     }
 
     // Add some dependencies
-    if (options->additionalLibraries & QtQuickModule)
-        options->additionalLibraries |= QtQmlModule;
-    if (options->additionalLibraries & QtDesignerComponents)
-        options->additionalLibraries |= QtDesignerModule;
+    if (options->additionalLibraries.test(QtQuickModule))
+        options->additionalLibraries[QtQmlModule] = 1;
+    if (options->additionalLibraries.test(QtDesignerComponents))
+        options->additionalLibraries[QtDesignerModule] = 1;
 
     if (parser->isSet(listOption)) {
         const QString value = parser->value(listOption);
@@ -905,7 +908,7 @@ static quint64 qtModule(QString module, const QString &infix)
 
 // Return the path if a plugin is to be deployed
 static QString deployPlugin(const QString &plugin, const QDir &subDir,
-                            quint64 *usedQtModules, quint64 disabledQtModules,
+                            ModuleBitset *usedQtModules, const ModuleBitset &disabledQtModules,
                             unsigned disabledPlugins,
                             const QString &libraryLocation, const QString &infix,
                             Platform platform)
@@ -924,18 +927,20 @@ static QString deployPlugin(const QString &plugin, const QDir &subDir,
         return pluginPath;
 
     QStringList dependentQtLibs;
-    quint64 neededModules = 0;
+    ModuleBitset neededModules;
     QString errorMessage;
     if (findDependentQtLibraries(libraryLocation, pluginPath, platform,
                                  &errorMessage, &dependentQtLibs)) {
         for (int d = 0; d < dependentQtLibs.size(); ++ d)
-            neededModules |= qtModule(dependentQtLibs.at(d), infix);
+            neededModules[qtModule(dependentQtLibs.at(d), infix)] = 1;
     } else {
         std::wcerr << "Warning: Cannot determine dependencies of "
             << QDir::toNativeSeparators(pluginPath) << ": " << errorMessage << '\n';
     }
 
-    if (const quint64 missingModules = neededModules & disabledQtModules) {
+    ModuleBitset missingModules;
+    missingModules = neededModules & disabledQtModules;
+    if (missingModules.any()) {
         if (optVerboseLevel) {
             std::wcout << "Skipping plugin " << plugin
                 << " due to disabled dependencies ("
@@ -944,7 +949,8 @@ static QString deployPlugin(const QString &plugin, const QDir &subDir,
         return {};
     }
 
-    if (const quint64 missingModules = (neededModules & ~*usedQtModules)) {
+    missingModules = (neededModules & ~*usedQtModules);
+    if (missingModules.any()) {
         *usedQtModules |= missingModules;
         if (optVerboseLevel) {
             std::wcout << "Adding " << formatQtModules(missingModules).constData()
@@ -954,7 +960,7 @@ static QString deployPlugin(const QString &plugin, const QDir &subDir,
     return pluginPath;
 }
 
-QStringList findQtPlugins(quint64 *usedQtModules, quint64 disabledQtModules,
+QStringList findQtPlugins(ModuleBitset *usedQtModules, const ModuleBitset &disabledQtModules,
                           unsigned disabledPlugins,
                           const QString &qtPluginsDirName, const QString &libraryLocation,
                           const QString &infix,
@@ -968,7 +974,7 @@ QStringList findQtPlugins(quint64 *usedQtModules, quint64 disabledQtModules,
     for (const QFileInfo &subDirFi : pluginDirs) {
         const QString subDirName = subDirFi.fileName();
         const quint64 module = qtModuleForPlugin(subDirName);
-        if (module & *usedQtModules) {
+        if (usedQtModules->test(module)) {
             const DebugMatchMode debugMatchMode = (module & QtWebEngineCoreModule)
                 ? MatchDebugOrRelease // QTBUG-44331: Debug detection does not work for webengine, deploy all.
                 : debugMatchModeIn;
@@ -976,7 +982,7 @@ QStringList findQtPlugins(quint64 *usedQtModules, quint64 disabledQtModules,
             // Filter out disabled plugins
             if ((disabledPlugins & QtVirtualKeyboardPlugin) && subDirName == "virtualkeyboard"_L1)
                 continue;
-            if (disabledQtModules & QtQmlToolingModule && subDirName == "qmltooling"_L1)
+            if (disabledQtModules.test(QtQmlToolingModule) && subDirName == "qmltooling"_L1)
                 continue;
             // Filter for platform or any.
             QString filter;
@@ -1012,11 +1018,11 @@ QStringList findQtPlugins(quint64 *usedQtModules, quint64 disabledQtModules,
     return result;
 }
 
-static QStringList translationNameFilters(quint64 modules, const QString &prefix)
+static QStringList translationNameFilters(const ModuleBitset &modules, const QString &prefix)
 {
     QStringList result;
     for (const auto &qtModule : qtModuleEntries) {
-        if ((qtModule.module & modules) && qtModule.translation) {
+        if (modules.test(qtModule.module) && qtModule.translation) {
             const QString name = QLatin1StringView(qtModule.translation) +
                                  u'_' +  prefix + QStringLiteral(".qm");
             if (!result.contains(name))
@@ -1026,7 +1032,7 @@ static QStringList translationNameFilters(quint64 modules, const QString &prefix
     return result;
 }
 
-static bool deployTranslations(const QString &sourcePath, quint64 usedQtModules,
+static bool deployTranslations(const QString &sourcePath, const ModuleBitset &usedQtModules,
                                const QString &target, const Options &options,
                                QString *errorMessage)
 {
@@ -1084,9 +1090,9 @@ struct DeployResult
 
     bool success = false;
     bool isDebug = false;
-    quint64 directlyUsedQtLibraries = 0;
-    quint64 usedQtLibraries = 0;
-    quint64 deployedQtLibraries = 0;
+    ModuleBitset directlyUsedQtLibraries;
+    ModuleBitset usedQtLibraries;
+    ModuleBitset deployedQtLibraries;
 };
 
 static QString libraryPath(const QString &libraryLocation, const char *name,
@@ -1323,14 +1329,16 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     QString qtLibInfix;
     for (int m = 0; m < directDependencyCount; ++m) {
         const quint64 module = qtModule(dependentQtLibs.at(m), infix);
-        result.directlyUsedQtLibraries |= module;
+        result.directlyUsedQtLibraries[module] = 1;
         if (module == QtCoreModule)
             qtLibInfix = qtlibInfixFromCoreLibName(dependentQtLibs.at(m), detectedDebug, options.platform);
     }
 
-    const bool usesQml2 = !(options.disabledLibraries & QtQmlModule)
-        && ((result.directlyUsedQtLibraries & (QtQmlModule | QtQuickModule | Qt3DQuickModule))
-                                || (options.additionalLibraries & QtQmlModule));
+    const bool usesQml = result.directlyUsedQtLibraries.test(QtQmlModule);
+    const bool usesQuick = result.directlyUsedQtLibraries.test(QtQuickModule);
+    const bool uses3DQuick = result.directlyUsedQtLibraries.test(Qt3DQuickModule);
+    const bool usesQml2 = !(options.disabledLibraries.test(QtQmlModule))
+        && (usesQml || usesQuick || uses3DQuick || (options.additionalLibraries.test(QtQmlModule)));
 
     if (optVerboseLevel) {
         std::wcout << QDir::toNativeSeparators(options.binaries.first()) << ' '
@@ -1404,7 +1412,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
                 std::wcout << "Scanning " << QDir::toNativeSeparators(qmlDirectory) << ":\n";
             const QmlImportScanResult scanResult =
                 runQmlImportScanner(qmlDirectory, qmlImportPaths,
-                                    result.directlyUsedQtLibraries & QtWidgetsModule,
+                                    result.directlyUsedQtLibraries.test(QtWidgetsModule),
                                     options.platform, debugMatchMode, errorMessage);
             if (!scanResult.ok)
                 return result;
@@ -1435,24 +1443,29 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     QStringList deployedQtLibraries;
     for (int i = 0 ; i < dependentQtLibs.size(); ++i)  {
         if (const quint64 qtm = qtModule(dependentQtLibs.at(i), infix))
-            result.usedQtLibraries |= qtm;
+            result.usedQtLibraries[qtm] = 1;
         else
             deployedQtLibraries.push_back(dependentQtLibs.at(i)); // Not represented by flag.
     }
     result.deployedQtLibraries = (result.usedQtLibraries | options.additionalLibraries) & ~options.disabledLibraries;
 
+    ModuleBitset disabled = options.disabledLibraries;
+    if (!usesQml2) {
+        disabled[QtQmlModule] = 1;
+        disabled[QtQuickModule] = 1;
+    }
     const QStringList plugins = findQtPlugins(
             &result.deployedQtLibraries,
             // For non-QML applications, disable QML to prevent it from being pulled in by the
             // qtaccessiblequick plugin.
-            options.disabledLibraries | (usesQml2 ? 0 : (QtQmlModule | QtQuickModule)),
+            disabled,
             options.disabledPlugins, qtpathsVariables.value(QStringLiteral("QT_INSTALL_PLUGINS")),
             libraryLocation, infix, debugMatchMode, options.platform, &platformPlugin);
 
     // Apply options flags and re-add library names.
     QString qtGuiLibrary;
     for (const auto &qtModule : qtModuleEntries) {
-        if (result.deployedQtLibraries & qtModule.module) {
+        if (result.deployedQtLibraries.test(qtModule.module)) {
             const QString library = libraryPath(libraryLocation, qtModule.libraryName, qtLibInfix, options.platform, result.isDebug);
             deployedQtLibraries.append(library);
             if (qtModule.module == QtGuiModule)
@@ -1461,15 +1474,15 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     }
 
     if (optVerboseLevel >= 1) {
-        std::wcout << "Direct dependencies: " << formatQtModules(result.directlyUsedQtLibraries).constData()
-                   << "\nAll dependencies   : " << formatQtModules(result.usedQtLibraries).constData()
-                   << "\nTo be deployed     : " << formatQtModules(result.deployedQtLibraries).constData() << '\n';
+        std::wcout << "Direct dependencies: " << formatQtModules(result.directlyUsedQtLibraries.to_ullong()).constData()
+                   << "\nAll dependencies   : " << formatQtModules(result.usedQtLibraries.to_ullong()).constData()
+                   << "\nTo be deployed     : " << formatQtModules(result.deployedQtLibraries.to_ullong()).constData() << '\n';
     }
 
     if (optVerboseLevel > 1)
         std::wcout << "Plugins: " << plugins.join(u',') << '\n';
 
-    if ((result.deployedQtLibraries & QtGuiModule) && platformPlugin.isEmpty()) {
+    if ((result.deployedQtLibraries.test(QtGuiModule)) && platformPlugin.isEmpty()) {
         *errorMessage =QStringLiteral("Unable to find the platform plugin.");
         return result;
     }
@@ -1543,7 +1556,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     } // optPlugins
 
     // Update Quick imports
-    const bool usesQuick1 = result.deployedQtLibraries & QtDeclarativeModule;
+    const bool usesQuick1 = result.deployedQtLibraries.test(QtDeclarativeModule);
     // Do not be fooled by QtWebKit.dll depending on Quick into always installing Quick imports
     // for WebKit1-applications. Check direct dependency only.
     if (options.quickImports && (usesQuick1 || usesQml2)) {
@@ -1731,7 +1744,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (result.deployedQtLibraries & QtWebEngineCoreModule) {
+    if (result.deployedQtLibraries.test(QtWebEngineCoreModule)) {
         if (!deployWebEngineCore(qtpathsVariables, options, result.isDebug, &errorMessage)) {
             std::wcerr << errorMessage << '\n';
             return 1;
