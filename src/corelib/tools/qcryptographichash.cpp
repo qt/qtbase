@@ -217,6 +217,7 @@ public:
     void addData(QByteArrayView bytes) noexcept;
     void finalize() noexcept;
     QByteArrayView resultView() const noexcept { return result.toByteArrayView(); }
+    static bool supportsAlgorithm(QCryptographicHash::Algorithm method);
 
     const QCryptographicHash::Algorithm method;
 
@@ -863,6 +864,40 @@ QByteArray QCryptographicHash::hash(QByteArrayView data, Algorithm method)
 int QCryptographicHash::hashLength(QCryptographicHash::Algorithm method)
 {
     return hashLengthInternal(method);
+}
+
+/*!
+  Returns whether the selected algorithm \a method is supported and if
+  result() will return a value when the \a method is used.
+
+  \note OpenSSL will be responsible for providing this information when
+  used as a provider, otherwise \c true will be returned as the non-OpenSSL
+  implementation doesn't have any restrictions.
+  We return \c false if we fail to query OpenSSL.
+
+  \since 6.5
+*/
+
+
+bool QCryptographicHash::supportsAlgorithm(QCryptographicHash::Algorithm method)
+{
+    return QCryptographicHashPrivate::supportsAlgorithm(method);
+}
+
+bool QCryptographicHashPrivate::supportsAlgorithm(QCryptographicHash::Algorithm method)
+{
+#ifdef USING_OPENSSL30
+    OSSL_PROVIDER_load(nullptr, "legacy");
+    OSSL_PROVIDER_load(nullptr, "default");
+
+    const char *restriction = "-fips";
+    EVP_MD_ptr algorithm = EVP_MD_ptr(EVP_MD_fetch(nullptr, methodToName(method), restriction));
+
+    return algorithm != nullptr;
+#else
+    Q_UNUSED(method);
+    return true;
+#endif
 }
 
 QT_END_NAMESPACE
