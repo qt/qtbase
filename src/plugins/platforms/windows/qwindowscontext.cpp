@@ -541,7 +541,7 @@ QString QWindowsContext::registerWindowClass(const QWindow *w)
     if (icon)
         cname += "Icon"_L1;
 
-    return registerWindowClass(cname, qWindowsWndProc, style, GetSysColorBrush(COLOR_WINDOW), icon);
+    return registerWindowClass(cname, qWindowsWndProc, style, nullptr, icon);
 }
 
 QString QWindowsContext::registerWindowClass(QString cname,

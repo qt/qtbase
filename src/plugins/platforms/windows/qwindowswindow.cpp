@@ -2303,9 +2303,10 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
                                    WPARAM wParam, LPARAM, LRESULT *result)
 {
     if (message == WM_ERASEBKGND) { // Backing store - ignored.
-        if (!m_firstBgDraw && QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle)) {
-            // Get system background color
-            const QColor bgColor = QGuiApplicationPrivate::platformTheme()->palette()->color(QPalette::Window);
+        if (!m_firstBgDraw) {
+            // Get window background from the default palette; this will
+            // usually be the system background color.
+            const QColor bgColor = QGuiApplication::palette().color(QPalette::Window);
             HBRUSH bgBrush = CreateSolidBrush(RGB(bgColor.red(), bgColor.green(), bgColor.blue()));
             // Fill rectangle with system background color
             RECT rc;
