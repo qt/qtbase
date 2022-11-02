@@ -3290,7 +3290,7 @@ QString &QString::remove(qsizetype pos, qsizetype len)
     if (pos < 0)  // count from end of string
         pos += size();
 
-    if (pos >= size() || len <= 0)
+    if (size_t(pos) >= size_t(size()) || len <= 0)
         return *this;
 
     len = std::min(len, size() - pos);
