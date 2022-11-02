@@ -850,16 +850,29 @@ void tst_QLocale::toReal_data()
 
     // Signs and exponent separator aren't single characters:
     QTest::newRow("sv_SE 4e-3") // Swedish, Sweden
-        << u"sv_SE"_s << QStringView(u"4\u00d7" "10^\u2212" "03").toString() << true << 4e-3;
+        << u"sv_SE"_s << u"4\u00d7" "10^\u2212" "03"_s << true << 4e-3;
+    QTest::newRow("sv_SE 4x-3") // Only first character of exponent
+        << u"sv_SE"_s << u"4\u00d7\u2212" "03"_s << false << 0.0;
     QTest::newRow("se_NO 4e-3") // Northern Sami, Norway
-        << u"se_NO"_s << QStringView(u"4\u00b7" "10^\u2212" "03").toString() << true << 4e-3;
+        << u"se_NO"_s << u"4\u00b7" "10^\u2212" "03"_s << true << 4e-3;
+    QTest::newRow("se_NO 4x-3") // Only first character of exponent
+        << u"se_NO"_s << u"4\u00b7\u2212" "03"_s << false << 0.0;
     QTest::newRow("ar_EG 4e-3") // Arabic, Egypt
-        << u"ar_EG"_s << QStringView(u"\u0664\u0627\u0633\u061c-\u0660\u0663").toString()
-        << true << 4e-3;
+        << u"ar_EG"_s << u"\u0664\u0627\u0633\u061c-\u0660\u0663"_s << true << 4e-3;
+    QTest::newRow("ar_EG 4e!3") // Only first character of sign:
+        << u"ar_EG"_s << u"\u0664\u0627\u0633\u061c\u0660\u0663"_s << false << 0.0;
+    QTest::newRow("ar_EG 4x-3") // Only first character of exponent
+        << u"ar_EG"_s << u"\u0664\u0627\u061c-\u0660\u0663"_s << false << 0.0;
+    QTest::newRow("ar_EG 4x!3") // Only first character of exponent and sign
+        << u"ar_EG"_s << u"\u0664\u0627\u061c\u0660\u0663"_s << false << 0.0;
     QTest::newRow("fa_IR 4e-3") // Farsi, Iran
-        << u"fa_IR"_s
-        << QStringView(u"\u06f4\u00d7\u06f1\u06f0^\u200e\u2212\u06f0\u06f3").toString()
-        << true << 4e-3;
+        << u"fa_IR"_s << u"\u06f4\u00d7\u06f1\u06f0^\u200e\u2212\u06f0\u06f3"_s << true << 4e-3;
+    QTest::newRow("fa_IR 4e!3") // Only first character of sign:
+        << u"fa_IR"_s << u"\u06f4\u00d7\u06f1\u06f0^\u200e\u06f0\u06f3"_s << false << 0.0;
+    QTest::newRow("fa_IR 4x-3") // Only first character of exponent
+        << u"fa_IR"_s << u"\u06f4\u00d7\u200e\u2212\u06f0\u06f3"_s << false << 0.0;
+    QTest::newRow("fa_IR 4x!3") // Only first character of exponent and sign
+        << u"fa_IR"_s << u"\u06f4\u00d7\u200e\u06f0\u06f3"_s << false << 0.0;
 }
 #define EXPECT_NONSINGLE_FAILURES do { \
         QEXPECT_FAIL("sv_SE 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort); \
@@ -2459,6 +2472,27 @@ void tst_QLocale::negativeNumbers()
     i = locale.toInt(QLatin1String("-1000000"), &ok);
     QVERIFY(ok);
     QCOMPARE(i, -1000000);
+
+    // Several Arabic locales have an invisible script-marker before their signs:
+    const QLocale egypt(QLocale::Arabic, QLocale::Egypt);
+    QCOMPARE(egypt.toString(-403), u"\u061c-\u0664\u0660\u0663"_s);
+    QEXPECT_FAIL("", "Code wrongly assumes single character, QTBUG-107801", Abort);
+    i = egypt.toInt(u"\u061c-\u0664\u0660\u0663"_s, &ok);
+    QVERIFY(ok);
+    QCOMPARE(i, -403);
+    i = egypt.toInt(u"\u061c+\u0664\u0660\u0663"_s, &ok);
+    QVERIFY(ok);
+    QCOMPARE(i, 403);
+
+    // Likewise Farsi:
+    const QLocale farsi(QLocale::Persian, QLocale::Iran);
+    QCOMPARE(farsi.toString(-403), u"\u200e\u2212\u06f4\u06f0\u06f3"_s);
+    i = farsi.toInt(u"\u200e\u2212\u06f4\u06f0\u06f3"_s, &ok);
+    QVERIFY(ok);
+    QCOMPARE(i, -403);
+    i = farsi.toInt(u"\u200e+\u06f4\u06f0\u06f3"_s, &ok);
+    QVERIFY(ok);
+    QCOMPARE(i, 403);
 }
 
 #include <private/qlocale_p.h>
