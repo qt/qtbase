@@ -322,7 +322,14 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
 
     set(build_time_syncqt_arguments "")
     if(WARNINGS_ARE_ERRORS)
-        list(APPEND build_time_syncqt_arguments -warningsAreErrors)
+        if(is_interface_lib)
+            set(warnings_are_errors_enabled_genex 1)
+        else()
+            set(warnings_are_errors_enabled_genex
+                "$<NOT:$<BOOL:$<TARGET_PROPERTY:${target},QT_SKIP_WARNINGS_ARE_ERRORS>>>")
+        endif()
+        list(APPEND build_time_syncqt_arguments
+            "$<${warnings_are_errors_enabled_genex}:-warningsAreErrors>")
     endif()
 
     if(is_framework)
