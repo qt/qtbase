@@ -77,9 +77,11 @@
 #  ifdef __AVX2__
 // MSVC defines __AVX2__ with /arch:AVX2
 #    define __F16C__                        1
+#    define __RDRND__                       1
 #    define __FMA__                         1
 #    define __BMI__                         1
 #    define __BMI2__                        1
+#    define __MOVBE__                       1
 #    define __LZCNT__                       1
 #  endif
 // Starting with /arch:AVX512, MSVC defines all the macros
