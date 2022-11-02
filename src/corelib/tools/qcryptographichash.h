@@ -91,6 +91,7 @@ public:
 #endif
     static QByteArray hash(QByteArrayView data, Algorithm method);
     static int hashLength(Algorithm method);
+    static bool supportsAlgorithm(Algorithm method);
 private:
     Q_DISABLE_COPY(QCryptographicHash)
     QCryptographicHashPrivate *d;
