@@ -17,12 +17,11 @@
 
 
 #include <QtGui/private/qtguiglobal_p.h>
+#include <QtGui/private/qmacmime_p.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 
 QT_BEGIN_NAMESPACE
-
-class QMacMime;
 
 namespace QMacMimeRegistry {
     Q_GUI_EXPORT void initializeMimeTypes();
@@ -31,8 +30,8 @@ namespace QMacMimeRegistry {
     Q_GUI_EXPORT void registerMimeConverter(QMacMime *);
     Q_GUI_EXPORT void unregisterMimeConverter(QMacMime *);
 
-    Q_GUI_EXPORT QList<QMacMime *> all(uchar);
-    Q_GUI_EXPORT QString flavorToMime(uchar, QString flav);
+    Q_GUI_EXPORT QList<QMacMime *> all(QMacMime::HandlerScope scope);
+    Q_GUI_EXPORT QString flavorToMime(QMacMime::HandlerScope scope, const QString &flav);
 
     Q_GUI_EXPORT void registerDraggedTypes(const QStringList &types);
     Q_GUI_EXPORT const QStringList& enabledDraggedTypes();

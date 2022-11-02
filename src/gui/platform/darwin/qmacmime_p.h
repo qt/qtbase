@@ -25,21 +25,21 @@ QT_BEGIN_NAMESPACE
 class Q_GUI_EXPORT QMacMime
 {
 public:
-    enum QMacPasteboardMimeType
+    enum class HandlerScope : uchar
     {
-        MIME_DND            = 0x01,
-        MIME_CLIP           = 0x02,
-        MIME_QT_CONVERTOR   = 0x04,
-        MIME_QT3_CONVERTOR  = 0x08,
-        MIME_ALL            = MIME_DND|MIME_CLIP,
-        MIME_ALL_COMPATIBLE = MIME_ALL|MIME_QT_CONVERTOR
+        DnD            = 0x01,
+        Clipboard      = 0x02,
+        Qt_compatible  = 0x04,
+        Qt3_compatible = 0x08,
+        All            = DnD|Clipboard,
+        AllCompatible  = All|Qt_compatible
     };
 
     QMacMime();
-    explicit QMacMime(QMacPasteboardMimeType type); // internal
+    explicit QMacMime(HandlerScope scope); // internal
     virtual ~QMacMime();
 
-    char type() const { return m_type; }
+    HandlerScope scope() const { return m_scope; }
 
     virtual bool canConvert(const QString &mime, const QString &flav) const = 0;
     virtual QString mimeFor(const QString &flav) const = 0;
@@ -49,7 +49,7 @@ public:
     virtual int count(const QMimeData *mimeData) const;
 
 private:
-    const QMacPasteboardMimeType m_type;
+    const HandlerScope m_scope;
 };
 
 QT_END_NAMESPACE

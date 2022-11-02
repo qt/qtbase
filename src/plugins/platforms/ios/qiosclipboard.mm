@@ -117,7 +117,7 @@ QStringList QIOSMimeData::formats() const
 
     for (NSUInteger i = 0; i < [pasteboardTypes count]; ++i) {
         const QString uti = QString::fromNSString([pasteboardTypes objectAtIndex:i]);
-        const QString mimeType = QMacMimeRegistry::flavorToMime(QMacMime::MIME_ALL, uti);
+        const QString mimeType = QMacMimeRegistry::flavorToMime(QMacMime::HandlerScope::All, uti);
         if (!mimeType.isEmpty() && !foundMimeTypes.contains(mimeType))
             foundMimeTypes << mimeType;
     }
@@ -130,7 +130,7 @@ QVariant QIOSMimeData::retrieveData(const QString &mimeType, QMetaType) const
     UIPasteboard *pb = [UIPasteboard pasteboardWithQClipboardMode:m_mode];
     NSArray<NSString *> *pasteboardTypes = [pb pasteboardTypes];
 
-    foreach (QMacMime *converter, QMacMimeRegistry::all(QMacMime::MIME_ALL)) {
+    foreach (QMacMime *converter, QMacMimeRegistry::all(QMacMime::HandlerScope::All)) {
         if (!converter->canConvert(mimeType, converter->flavorFor(mimeType)))
             continue;
 
@@ -184,7 +184,7 @@ void QIOSClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
     NSMutableDictionary<NSString *, id> *pbItem = [NSMutableDictionary<NSString *, id> dictionaryWithCapacity:mimeData->formats().size()];
 
     foreach (const QString &mimeType, mimeData->formats()) {
-        foreach (QMacMime *converter, QMacMimeRegistry::all(QMacMime::MIME_ALL)) {
+        foreach (QMacMime *converter, QMacMimeRegistry::all(QMacMime::HandlerScope::All)) {
             QString uti = converter->flavorFor(mimeType);
             if (uti.isEmpty() || !converter->canConvert(mimeType, uti))
                 continue;

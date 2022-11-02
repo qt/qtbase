@@ -69,19 +69,19 @@ QMacPasteboard::Promise::Promise(int itemId, QMacMime *c, QString m, QMacMimeDat
     }
 }
 
-QMacPasteboard::QMacPasteboard(PasteboardRef p, uchar mt)
+QMacPasteboard::QMacPasteboard(PasteboardRef p, QMacMime::HandlerScope scope)
+    : scope(scope)
 {
     mac_mime_source = false;
-    mime_type = mt ? mt : uchar(QMacMime::MIME_ALL);
     paste = p;
     CFRetain(paste);
     resolvingBeforeDestruction = false;
 }
 
-QMacPasteboard::QMacPasteboard(uchar mt)
+QMacPasteboard::QMacPasteboard(QMacMime::HandlerScope scope)
+    : scope(scope)
 {
     mac_mime_source = false;
-    mime_type = mt ? mt : uchar(QMacMime::MIME_ALL);
     paste = nullptr;
     OSStatus err = PasteboardCreate(nullptr, &paste);
     if (err == noErr) {
@@ -92,10 +92,10 @@ QMacPasteboard::QMacPasteboard(uchar mt)
     resolvingBeforeDestruction = false;
 }
 
-QMacPasteboard::QMacPasteboard(CFStringRef name, uchar mt)
+QMacPasteboard::QMacPasteboard(CFStringRef name, QMacMime::HandlerScope scope)
+    : scope(scope)
 {
     mac_mime_source = false;
-    mime_type = mt ? mt : uchar(QMacMime::MIME_ALL);
     paste = nullptr;
     OSStatus err = PasteboardCreate(name, &paste);
     if (err == noErr) {
@@ -112,7 +112,7 @@ QMacPasteboard::~QMacPasteboard()
         Commit all promises for paste when shutting down,
         unless we are the stack-allocated clipboard used by QCocoaDrag.
     */
-    if (mime_type == QMacMime::MIME_DND)
+    if (scope == QMacMime::HandlerScope::DnD)
         resolvingBeforeDestruction = true;
     PasteboardResolvePromises(paste);
     if (paste)
@@ -132,7 +132,7 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
 
     // Find the kept promise
     QList<QMacMime*> availableConverters
-        = QMacMimeRegistry::all(QMacMime::MIME_ALL);
+        = QMacMimeRegistry::all(QMacMime::HandlerScope::All);
     const QString flavorAsQString = QString::fromCFString(flavor);
     QMacPasteboard::Promise promise;
     for (int i = 0; i < qpaste->promises.size(); i++){
@@ -299,7 +299,7 @@ QMacPasteboard::setMimeData(QMimeData *mime_src, DataRequestType dataRequestType
     delete mime;
     mime = mime_src;
 
-    const QList<QMacMime*> availableConverters = QMacMimeRegistry::all(mime_type);
+    const QList<QMacMime*> availableConverters = QMacMimeRegistry::all(scope);
     if (mime != nullptr) {
         clear_helper();
         QStringList formats = mime_src->formats();
@@ -373,7 +373,7 @@ QMacPasteboard::formats() const
         for (int i = 0; i < type_count; ++i) {
             const QString flavor = QString::fromCFString((CFStringRef)CFArrayGetValueAtIndex(types, i));
             qCDebug(lcQpaClipboard, " -%s", qPrintable(QString(flavor)));
-            QString mimeType = QMacMimeRegistry::flavorToMime(mime_type, flavor);
+            const QString mimeType = QMacMimeRegistry::flavorToMime(scope, flavor);
             if (!mimeType.isEmpty() && !ret.contains(mimeType)) {
                 qCDebug(lcQpaClipboard, "   -<%lld> %s [%s]", ret.size(), qPrintable(mimeType), qPrintable(QString(flavor)));
                 ret << mimeType;
@@ -409,8 +409,8 @@ QMacPasteboard::hasFormat(const QString &format) const
         const int type_count = CFArrayGetCount(types);
         for (int i = 0; i < type_count; ++i) {
             const QString flavor = QString::fromCFString((CFStringRef)CFArrayGetValueAtIndex(types, i));
-            qCDebug(lcQpaClipboard, " -%s [0x%x]", qPrintable(QString(flavor)), mime_type);
-            QString mimeType = QMacMimeRegistry::flavorToMime(mime_type, flavor);
+            qCDebug(lcQpaClipboard, " -%s [0x%x]", qPrintable(flavor), uchar(scope));
+            QString mimeType = QMacMimeRegistry::flavorToMime(scope, flavor);
             if (!mimeType.isEmpty())
                 qCDebug(lcQpaClipboard, "   - %s", qPrintable(mimeType));
             if (mimeType == format)
@@ -433,7 +433,7 @@ QMacPasteboard::retrieveData(const QString &format, QMetaType) const
         return QByteArray();
 
     qCDebug(lcQpaClipboard, "Pasteboard: retrieveData [%s]", qPrintable(format));
-    const QList<QMacMime *> availableConverters = QMacMimeRegistry::all(mime_type);
+    const QList<QMacMime *> availableConverters = QMacMimeRegistry::all(scope);
     for (const auto *c : availableConverters) {
         QString c_flavor = c->flavorFor(format);
         if (!c_flavor.isEmpty()) {

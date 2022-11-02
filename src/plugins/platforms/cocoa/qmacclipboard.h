@@ -5,6 +5,7 @@
 #define QMACCLIPBOARD_H
 
 #include <QtGui>
+#include <QtGui/private/qmacmime_p.h>
 
 #include <ApplicationServices/ApplicationServices.h>
 
@@ -41,16 +42,16 @@ private:
     QList<Promise> promises;
 
     PasteboardRef paste;
-    uchar mime_type;
+    const QMacMime::HandlerScope scope;
     mutable QPointer<QMimeData> mime;
     mutable bool mac_mime_source;
     bool resolvingBeforeDestruction;
     static OSStatus promiseKeeper(PasteboardRef, PasteboardItemID, CFStringRef, void *);
     void clear_helper();
 public:
-    QMacPasteboard(PasteboardRef p, uchar mime_type=0);
-    QMacPasteboard(uchar mime_type);
-    QMacPasteboard(CFStringRef name=nullptr, uchar mime_type=0);
+    QMacPasteboard(PasteboardRef p, QMacMime::HandlerScope scope = QMacMime::HandlerScope::All);
+    QMacPasteboard(QMacMime::HandlerScope scope);
+    QMacPasteboard(CFStringRef name=nullptr, QMacMime::HandlerScope scope = QMacMime::HandlerScope::All);
     ~QMacPasteboard();
 
     bool hasFlavor(QString flavor) const;

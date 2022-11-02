@@ -78,17 +78,18 @@ void destroyMimeTypes()
 }
 
 /*
-  Returns a MIME type of type \a t for \a flav, or 0 if none exists.
+  Returns a MIME type of for scope \a scope for \a flav, or \nullptr if none exists.
 */
-QString flavorToMime(uchar t, QString flav)
+QString flavorToMime(QMacMime::HandlerScope scope, const QString &flav)
 {
     MimeList *mimes = globalMimeList();
     for (MimeList::const_iterator it = mimes->constBegin(); it != mimes->constEnd(); ++it) {
+        const bool relevantScope = uchar((*it)->scope()) & uchar(scope);
 #ifdef DEBUG_MIME_MAPS
         qDebug("QMacMimeRegistry::flavorToMime: attempting (%d) for flavor %s [%s]",
-               (*it)->type() & t, qPrintable(flav), qPrintable((*it)->mimeFor(flav)));
+               relevantScope, qPrintable(flav), qPrintable((*it)->mimeFor(flav)));
 #endif
-        if ((*it)->type() & t) {
+        if (relevantScope) {
             QString mimeType = (*it)->mimeFor(flav);
             if (!mimeType.isNull())
                 return mimeType;
@@ -113,14 +114,15 @@ void unregisterMimeConverter(QMacMime *macMime)
 
 
 /*
-  Returns a list of all currently defined QMacMime objects of type \a t.
+  Returns a list of all currently defined QMacMime objects for scope \a scope.
 */
-QList<QMacMime *> all(uchar t)
+QList<QMacMime *> all(QMacMime::HandlerScope scope)
 {
     MimeList ret;
     MimeList *mimes = globalMimeList();
     for (MimeList::const_iterator it = mimes->constBegin(); it != mimes->constEnd(); ++it) {
-        if ((*it)->type() & t)
+        const bool relevantScope = uchar((*it)->scope()) & uchar(scope);
+        if (relevantScope)
             ret.append((*it));
     }
     return ret;

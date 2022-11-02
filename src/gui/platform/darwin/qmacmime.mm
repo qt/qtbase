@@ -84,11 +84,11 @@ using namespace Qt::StringLiterals;
 */
 
 /*
-  Constructs a new conversion object of type \a t, adding it to the
+  Constructs a new conversion object of type \a scope, adding it to the
   globally accessed list of available converters.
 */
-QMacMime::QMacMime(QMacPasteboardMimeType t)
-    : m_type(t)
+QMacMime::QMacMime(HandlerScope scope)
+    : m_scope(scope)
 {
     QMacMimeRegistry::registerMimeConverter(this);
 }
@@ -98,8 +98,9 @@ QMacMime::QMacMime(QMacPasteboardMimeType t)
   globally accessed list of available converters.
 */
 QMacMime::QMacMime()
-    : QMacMime(MIME_ALL)
-{}
+    : QMacMime(HandlerScope::All)
+{
+}
 
 /*
   Destroys a conversion object, removing it from the global
@@ -119,10 +120,9 @@ int QMacMime::count(const QMimeData *mimeData) const
     return 1;
 }
 
-class QMacMimeAny : public QMacMime
-{
+class QMacMimeAny : public QMacMime {
 public:
-    QMacMimeAny() : QMacMime(MIME_ALL_COMPATIBLE) {}
+    QMacMimeAny() : QMacMime(HandlerScope::AllCompatible) {}
 
     QString flavorFor(const QString &mime) const override;
     QString mimeFor(const QString &flav) const override;
@@ -175,10 +175,11 @@ QList<QByteArray> QMacMimeAny::convertFromMime(const QString &mime, const QVaria
     return ret;
 }
 
-class QMacMimeTypeName : public QMacMime
-{
+class QMacMimeTypeName : public QMacMime {
+private:
+
 public:
-    QMacMimeTypeName(): QMacMime(MIME_ALL_COMPATIBLE) {}
+    QMacMimeTypeName(): QMacMime(HandlerScope::AllCompatible) {}
 
     QString flavorFor(const QString &mime) const override;
     QString mimeFor(const QString &flav) const override;
@@ -217,7 +218,8 @@ QList<QByteArray> QMacMimeTypeName::convertFromMime(const QString &, const QVari
     return ret;
 }
 
-class QMacMimePlainTextFallback : public QMacMime {
+class QMacMimePlainTextFallback : public QMacMime
+{
 public:
     QString flavorFor(const QString &mime) const override;
     QString mimeFor(const QString &flav) const override;
