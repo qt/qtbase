@@ -7186,18 +7186,27 @@ QString QString::vasprintf(const char *cformat, va_list ap)
     \sa number(), toULongLong(), toInt(), QLocale::toLongLong()
 */
 
-qlonglong QString::toIntegral_helper(QStringView string, bool *ok, int base)
+template <typename Int>
+static Int toIntegral(QStringView string, bool *ok, int base)
 {
 #if defined(QT_CHECK_RANGE)
     if (base != 0 && (base < 2 || base > 36)) {
-        qWarning("QString::toULongLong: Invalid base (%d)", base);
+        qWarning("QString::toIntegral: Invalid base (%d)", base);
         base = 10;
     }
 #endif
 
     QVarLengthArray<uchar> latin1(string.size());
     qt_to_latin1(latin1.data(), string.utf16(), string.size());
-    return QLocaleData::bytearrayToLongLong(latin1, base, ok);
+    if constexpr (std::is_signed_v<Int>)
+        return QLocaleData::bytearrayToLongLong(latin1, base, ok);
+    else
+        return QLocaleData::bytearrayToUnsLongLong(latin1, base, ok);
+}
+
+qlonglong QString::toIntegral_helper(QStringView string, bool *ok, int base)
+{
+    return toIntegral<qlonglong>(string, ok, base);
 }
 
 /*!
@@ -7231,16 +7240,7 @@ qlonglong QString::toIntegral_helper(QStringView string, bool *ok, int base)
 
 qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
 {
-#if defined(QT_CHECK_RANGE)
-    if (base != 0 && (base < 2 || base > 36)) {
-        qWarning("QString::toULongLong: Invalid base (%d)", base);
-        base = 10;
-    }
-#endif
-
-    QVarLengthArray<uchar> latin1(string.size());
-    qt_to_latin1(latin1.data(), string.utf16(), string.size());
-    return QLocaleData::bytearrayToUnsLongLong(latin1, base, ok);
+    return toIntegral<qulonglong>(string, ok, base);
 }
 
 /*!
