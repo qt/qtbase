@@ -354,6 +354,15 @@ private:
     template <typename Container>
     void erase_if_associative_impl() const;
 
+    template <typename Container>
+    void member_erase_impl() const;
+
+    template <typename Container>
+    void member_erase_associative_impl() const;
+
+    template <typename Container>
+    void member_erase_set_impl() const;
+
 private Q_SLOTS:
     void erase_QList() { erase_impl<QList<int>>(); }
     void erase_QVarLengthArray() { erase_impl<QVarLengthArray<int>>(); }
@@ -379,6 +388,17 @@ private Q_SLOTS:
     void erase_if_QMultiMap() {erase_if_associative_impl<QMultiMap<int, int>>(); }
     void erase_if_QHash() { erase_if_associative_impl<QHash<int, int>>(); }
     void erase_if_QMultiHash() { erase_if_associative_impl<QMultiHash<int, int>>(); }
+
+    void member_erase_QList() { member_erase_impl<QList<int>>(); }
+    void member_erase_QVarLengthArray() { member_erase_impl<QVarLengthArray<int>>(); }
+    void member_erase_QString() { member_erase_impl<QString>(); }
+    void member_erase_QByteArray() { member_erase_impl<QByteArray>(); }
+    void member_erase_QSet() { member_erase_set_impl<QSet<int>>(); }
+
+    void member_erase_QMap() { member_erase_associative_impl<QMap<int, int>>(); }
+    void member_erase_QMultiMap() {member_erase_associative_impl<QMultiMap<int, int>>(); }
+    void member_erase_QHash() { member_erase_associative_impl<QHash<int, int>>(); }
+    void member_erase_QMultiHash() { member_erase_associative_impl<QMultiHash<int, int>>(); }
 
 private:
     template <typename Container>
@@ -871,6 +891,65 @@ void tst_ContainerApiSymmetry::erase_if_associative_impl() const
     result = erase_if(c, [](const I &it) { return Conv::toInt(it.key()) % 2 == 1; });
     QCOMPARE(result, S(7));
     QCOMPARE(c.size(), S(0));
+}
+
+template <typename Container>
+void tst_ContainerApiSymmetry::member_erase_impl() const
+{
+    using S = typename Container::size_type;
+    using V = typename Container::value_type;
+    const S size = 7;
+    auto c = make<Container>(size); // {1, 2, 3, 4, 5, 6, 7}
+    QCOMPARE(c.size(), size);
+
+    auto copy = c;
+    // Container::erase() returns an iterator, not const_iterator
+    auto it = c.erase(c.cbegin(), c.cbegin());
+    static_assert(std::is_same_v<decltype(it), typename Container::iterator>);
+    QCOMPARE(c.size(), size);
+    const V newVal{100};
+    QCOMPARE_NE(*it, newVal);
+    *it = newVal;
+    QCOMPARE(it, c.cbegin());
+    QCOMPARE(*c.cbegin(), newVal);
+
+    QCOMPARE(std::find(copy.cbegin(), copy.cend(), newVal), copy.cend());
+}
+
+template <typename Container>
+void tst_ContainerApiSymmetry::member_erase_associative_impl() const
+{
+    using S = typename Container::size_type;
+    using V = typename Container::mapped_type;
+
+    const S size = 20;
+    auto c = makeAssociative<Container>(size);
+    QCOMPARE(c.size(), size);
+
+    // Verify Container::erase() returns iterator, not const_iterator
+    auto it = c.erase(c.cbegin());
+    static_assert(std::is_same_v<decltype(it), typename Container::iterator>);
+    QCOMPARE(c.size(), size - 1);
+    QCOMPARE(it, c.cbegin());
+    const auto current = it.value();
+    it.value() = current + V(5);
+    QCOMPARE(c.cbegin().value(),current + V(5));
+}
+
+template <typename Container>
+void tst_ContainerApiSymmetry::member_erase_set_impl() const
+{
+    using S = typename Container::size_type;
+
+    const S size = 20;
+    auto c = make<Container>(size);
+    QCOMPARE(c.size(), size);
+
+    // Verify Container::erase() returns iterator, not const_iterator
+    auto it = c.erase(c.cbegin());
+    static_assert(std::is_same_v<decltype(it), typename Container::iterator>);
+    QCOMPARE(c.size(), size - 1);
+    QCOMPARE(it, c.cbegin());
 }
 
 template <typename Container>
