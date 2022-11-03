@@ -74,7 +74,7 @@ public:
 
     using value_type = std::pair<const Key, T>;
     static constexpr bool is_comparator_noexcept = noexcept(
-        std::declval<Compare>()(std::declval<Key>(), std::declval<Key>()));
+        std::declval<Compare>()(std::declval<const Key &>(), std::declval<const Key &>()));
 
     bool operator()(const value_type &lhs, const value_type &rhs) const
         noexcept(is_comparator_noexcept)
