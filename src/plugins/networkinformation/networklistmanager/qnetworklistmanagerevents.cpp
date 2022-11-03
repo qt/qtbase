@@ -186,7 +186,12 @@ QNetworkInformation::TransportMedium getTransportMedium(const ConnectionProfile 
     if (profile.IsWlanConnectionProfile())
         return QNetworkInformation::TransportMedium::WiFi;
 
-    NetworkAdapter adapter = profile.NetworkAdapter();
+    NetworkAdapter adapter(nullptr);
+    try {
+        adapter = profile.NetworkAdapter();
+    } catch (...) {
+        // pass, we will return Unknown anyway
+    }
     if (adapter == nullptr)
         return QNetworkInformation::TransportMedium::Unknown;
 
@@ -209,7 +214,14 @@ QNetworkInformation::TransportMedium getTransportMedium(const ConnectionProfile 
 
 [[nodiscard]] bool getMetered(const ConnectionProfile &profile)
 {
-    ConnectionCost cost = profile.GetConnectionCost();
+    ConnectionCost cost(nullptr);
+    try {
+        cost = profile.GetConnectionCost();
+    } catch (...) {
+        // pass, we return false if we get an empty object back anyway
+    }
+    if (cost == nullptr)
+        return false;
     NetworkCostType type = cost.NetworkCostType();
     return type == NetworkCostType::Fixed || type == NetworkCostType::Variable;
 }
