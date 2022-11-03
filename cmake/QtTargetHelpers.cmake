@@ -9,6 +9,9 @@
 # Multi-value Arguments:
 #   CONDITION
 #     The condition under which the target will be extended.
+#   CONDITION_INDEPENDENT_SOURCES
+#     Source files that should be added to the target unconditionally. Note that if target is Qt
+#     module, these files will raise a warning at configure time if the condition is not met.
 #   COMPILE_FLAGS
 #     Custom compilation flags.
 #   NO_PCH_SOURCES
@@ -37,6 +40,7 @@ function(qt_internal_extend_target target)
         ${__default_private_args}
         ${__default_private_module_args}
         CONDITION
+        CONDITION_INDEPENDENT_SOURCES
         COMPILE_FLAGS
         NO_PCH_SOURCES
     )
@@ -210,6 +214,17 @@ function(qt_internal_extend_target target)
         if(QT_CMAKE_DEBUG_EXTEND_TARGET)
             message("qt_extend_target(${target} CONDITION ${arg_CONDITION} ...): Skipped")
         endif()
+    endif()
+
+    if(arg_CONDITION_INDEPENDENT_SOURCES)
+        set_source_files_properties(${arg_CONDITION_INDEPENDENT_SOURCES} PROPERTIES
+            _qt_extend_target_condition "${arg_CONDITION}"
+            SKIP_AUTOGEN TRUE
+        )
+
+        qt_internal_get_target_sources_property(sources_property)
+        set_property(TARGET ${target} APPEND PROPERTY
+            ${sources_property} "${arg_CONDITION_INDEPENDENT_SOURCES}")
     endif()
 endfunction()
 

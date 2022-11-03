@@ -1125,11 +1125,20 @@ function(qt_internal_collect_module_headers out_var target)
     get_target_property(private_filter ${target} _qt_module_private_headers_filter_regex)
     get_target_property(qpa_filter ${target} _qt_module_qpa_headers_filter_regex)
 
+    set(condition_independent_headers_warning "")
     foreach(file_path IN LISTS sources)
         get_filename_component(file_name "${file_path}" NAME)
         if(NOT file_name MATCHES ".+\\.h$")
             continue()
         endif()
+        get_source_file_property(condition ${file_path} _qt_extend_target_condition)
+        if(NOT condition STREQUAL "" AND NOT condition STREQUAL "NOTFOUND")
+            list(JOIN condition " " condition_string)
+            string(APPEND condition_independent_headers_warning
+                "\nFile:\n    ${file_path}"
+                "\nCondition:\n    ${condition_string}")
+        endif()
+
         get_source_file_property(is_generated "${file_path}" GENERATED)
         get_filename_component(file_path "${file_path}" ABSOLUTE)
         get_filename_component(file_path "${file_path}" REALPATH)
@@ -1145,6 +1154,18 @@ function(qt_internal_collect_module_headers out_var target)
             list(APPEND ${out_var}_generated "${file_path}")
         endif()
     endforeach()
+
+    if(NOT condition_independent_headers_warning STREQUAL "" AND QT_FEATURE_developer_build)
+        message(AUTHOR_WARNING "Condition is ignored when adding the following header file(s) to"
+            " the ${target} module:"
+            "${condition_independent_headers_warning}"
+            "\nThe usage of the file(s) is not properly isolated in this or other modules according"
+            " to the condition. This warning is for the Qt maintainers. Please make sure that file"
+            " include(s) are guarded with the appropriate macros in the Qt code. If files should be"
+            " added to the module unconditionally, please move them to the common SOURCES section"
+            " in the qt_internal_add_module call.")
+    endif()
+
 
     set(header_types public private qpa)
     set(has_header_types_properties "")
