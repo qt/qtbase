@@ -93,7 +93,11 @@ enum QtModule
     QtDataVisualizationModule      = 0x0100000000000000,
     QtRemoteObjectsModule          = 0x0200000000000000,
     QtScxmlModule                  = 0x0400000000000000,
-    QtNetworkAuthorizationModule   = 0x0800000000000000
+    QtNetworkAuthorizationModule   = 0x0800000000000000,
+    QtMqttModule                   = 0x1000000000000000,
+    QtPdfModule                    = 0x2000000000000000,
+    QtPdfQuickModule               = 0x4000000000000000,
+    QtPdfWidgetsModule             = 0x8000000000000000
 };
 
 struct QtModuleEntry {
@@ -161,7 +165,11 @@ static QtModuleEntry qtModuleEntries[] = {
     { QtDataVisualizationModule, "datavisualization", "Qt6DataVisualization", nullptr},
     { QtRemoteObjectsModule, "remoteobjects", "Qt6RemoteObjects", nullptr},
     { QtScxmlModule, "scxml", "Qt6Scxml", nullptr},
-    { QtNetworkAuthorizationModule, "networkauthorization", "Qt6NetworkAuth", nullptr }
+    { QtNetworkAuthorizationModule, "networkauthorization", "Qt6NetworkAuth", nullptr },
+    { QtMqttModule, "mqtt", "Qt6Mqtt", nullptr},
+    { QtPdfModule, "pdf", "Qt6Pdf", nullptr},
+    { QtPdfQuickModule, "pdfquick", "Qt6PdfQuick", nullptr},
+    { QtPdfWidgetsModule, "pdfwidgets", "Qt6PdfWidgets", nullptr}
 };
 
 enum QtPlugin {
