@@ -258,7 +258,9 @@ void QCocoaScreen::update(CGDirectDisplayID displayId)
     m_depth = NSBitsPerPixelFromDepth(nsScreen.depth);
     m_colorSpace = QColorSpace::fromIccProfile(QByteArray::fromNSData(nsScreen.colorSpace.ICCProfileData));
     if (!m_colorSpace.isValid()) {
-        qWarning() << "macOS generated a color-profile Qt couldn't parse. This shouldn't happen.";
+        qCWarning(lcQpaScreen) << "Failed to parse ICC profile for" << nsScreen.colorSpace
+                               << "with ICC data" << nsScreen.colorSpace.ICCProfileData
+                               << "- Falling back to sRGB";
         m_colorSpace = QColorSpace::SRgb;
     }
 
