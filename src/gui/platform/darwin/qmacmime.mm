@@ -793,7 +793,7 @@ void registerBuiltInTypes()
 /*
   \fn bool QMacPasteboardMime::canConvert(const QString &mime, QString flav)
 
-  Returns \c true if the convertor can convert (both ways) between
+  Returns \c true if the converter can convert (both ways) between
   \a mime and \a flav; otherwise returns \c false.
 
   All subclasses must reimplement this pure virtual function.
@@ -803,7 +803,7 @@ void registerBuiltInTypes()
   \fn QString QMacPasteboardMime::mimeFor(QString flav)
 
   Returns the MIME UTI used for Mac flavor \a flav, or 0 if this
-  convertor does not support \a flav.
+  converter does not support \a flav.
 
   All subclasses must reimplement this pure virtual function.
 */
@@ -812,7 +812,7 @@ void registerBuiltInTypes()
   \fn QString QMacPasteboardMime::flavorFor(const QString &mime)
 
   Returns the Mac UTI used for MIME type \a mime, or 0 if this
-  convertor does not support \a mime.
+  converter does not support \a mime.
 
   All subclasses must reimplement this pure virtual function.
 */

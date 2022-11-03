@@ -19,14 +19,14 @@ public:
     enum DataRequestType { EagerRequest, LazyRequest };
 private:
     struct Promise {
-        Promise() : itemId(0), convertor(nullptr) { }
+        Promise() : itemId(0), converter(nullptr) { }
 
         static Promise eagerPromise(int itemId, QMacInternalPasteboardMime *c, QString m, QMacMimeData *d, int o = 0);
         static Promise lazyPromise(int itemId, QMacInternalPasteboardMime *c, QString m, QMacMimeData *d, int o = 0);
         Promise(int itemId, QMacInternalPasteboardMime *c, QString m, QMacMimeData *md, int o, DataRequestType drt);
 
         int itemId, offset;
-        QMacInternalPasteboardMime *convertor;
+        QMacInternalPasteboardMime *converter;
         QString mime;
         QPointer<QMacMimeData> mimeData;
         QVariant variantData;

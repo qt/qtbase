@@ -45,7 +45,7 @@ Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale
  * class QOutlineMapper
  *
  * Used to map between QPainterPath and the QT_FT_Outline structure used by the
- * freetype scanconvertor.
+ * freetype scanconverter.
  *
  * The outline mapper uses a path iterator to get points from the path,
  * so that it is possible to transform the points as they are converted. The

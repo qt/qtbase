@@ -55,7 +55,7 @@ private:
 };
 
 QMacPasteboard::Promise::Promise(int itemId, QMacInternalPasteboardMime *c, QString m, QMacMimeData *md, int o, DataRequestType drt)
-    : itemId(itemId), offset(o), convertor(c), mime(m), dataRequestType(drt)
+    : itemId(itemId), offset(o), converter(c), mime(m), dataRequestType(drt)
 {
     // Request the data from the application immediately for eager requests.
     if (dataRequestType == QMacPasteboard::EagerRequest) {
@@ -137,7 +137,7 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
     QMacPasteboard::Promise promise;
     for (int i = 0; i < qpaste->promises.size(); i++){
         QMacPasteboard::Promise tmp = qpaste->promises[i];
-        if (!availableConverters.contains(tmp.convertor)) {
+        if (!availableConverters.contains(tmp.converter)) {
             // promise.converter is a pointer initialized by the value found
             // in QMacInternalPasteboardMime's global list of QMacInternalPasteboardMimes.
             // We add pointers to this list in QMacInternalPasteboardMime's ctor;
@@ -147,7 +147,7 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
             continue;
         }
 
-        if (tmp.itemId == promise_id && tmp.convertor->canConvert(tmp.mime, flavorAsQString)){
+        if (tmp.itemId == promise_id && tmp.converter->canConvert(tmp.mime, flavorAsQString)){
             promise = tmp;
             break;
         }
@@ -188,7 +188,7 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
         promiseData = promise.variantData;
     }
 
-    QList<QByteArray> md = promise.convertor->convertFromMime(promise.mime, promiseData, flavorAsQString);
+    QList<QByteArray> md = promise.converter->convertFromMime(promise.mime, promiseData, flavorAsQString);
     if (md.size() <= promise.offset)
         return cantGetFlavorErr;
     const QByteArray &ba = md[promise.offset];
