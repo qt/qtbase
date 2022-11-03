@@ -14,45 +14,45 @@ using namespace Qt::StringLiterals;
 
 class QMacMimeTraditionalMacPlainText : public QMacMime {
 public:
-    QString flavorForMime(const QString &mime) const override;
-    QString mimeForFlavor(const QString &flav) const override;
-    bool canConvert(const QString &mime, const QString &flav) const override;
+    QString utiForMime(const QString &mime) const override;
+    QString mimeForUti(const QString &uti) const override;
+    bool canConvert(const QString &mime, const QString &uti) const override;
     QVariant convertToMime(const QString &mime, const QList<QByteArray> &data,
-                           const QString &flav) const override;
+                           const QString &uti) const override;
     QList<QByteArray> convertFromMime(const QString &mime, const QVariant &data,
-                                      const QString &flav) const override;
+                                      const QString &uti) const override;
 };
 
-QString QMacMimeTraditionalMacPlainText::flavorForMime(const QString &mime) const
+QString QMacMimeTraditionalMacPlainText::utiForMime(const QString &mime) const
 {
     if (mime == "text/plain"_L1)
         return "com.apple.traditional-mac-plain-text"_L1;
     return QString();
 }
 
-QString QMacMimeTraditionalMacPlainText::mimeForFlavor(const QString &flav) const
+QString QMacMimeTraditionalMacPlainText::mimeForUti(const QString &uti) const
 {
-    if (flav == "com.apple.traditional-mac-plain-text"_L1)
+    if (uti == "com.apple.traditional-mac-plain-text"_L1)
         return "text/plain"_L1;
     return QString();
 }
 
 bool QMacMimeTraditionalMacPlainText::canConvert(const QString &mime,
-                                                           const QString &flav) const
+                                                           const QString &uti) const
 {
-    return flavorForMime(mime) == flav;
+    return utiForMime(mime) == uti;
 }
 
 QVariant
 QMacMimeTraditionalMacPlainText::convertToMime(const QString &mimetype,
                                                          const QList<QByteArray> &data,
-                                                         const QString &flavor) const
+                                                         const QString &uti) const
 {
     if (data.count() > 1)
         qWarning("QMacMimeTraditionalMacPlainText: Cannot handle multiple member data");
     const QByteArray &firstData = data.first();
     QVariant ret;
-    if (flavor == "com.apple.traditional-mac-plain-text"_L1) {
+    if (uti == "com.apple.traditional-mac-plain-text"_L1) {
         return QString(QCFString(CFStringCreateWithBytes(kCFAllocatorDefault,
                                              reinterpret_cast<const UInt8 *>(firstData.constData()),
                                              firstData.size(), CFStringGetSystemEncoding(), false)));
@@ -65,11 +65,11 @@ QMacMimeTraditionalMacPlainText::convertToMime(const QString &mimetype,
 QList<QByteArray>
 QMacMimeTraditionalMacPlainText::convertFromMime(const QString &,
                                                            const QVariant &data,
-                                                           const QString &flavor) const
+                                                           const QString &uti) const
 {
     QList<QByteArray> ret;
     QString string = data.toString();
-    if (flavor == "com.apple.traditional-mac-plain-text"_L1)
+    if (uti == "com.apple.traditional-mac-plain-text"_L1)
         ret.append(string.toLatin1());
     return ret;
 }

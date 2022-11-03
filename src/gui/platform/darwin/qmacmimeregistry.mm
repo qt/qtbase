@@ -78,19 +78,19 @@ void destroyMimeTypes()
 }
 
 /*
-  Returns a MIME type of for scope \a scope for \a flav, or \nullptr if none exists.
+  Returns a MIME type of for scope \a scope for \a uti, or \nullptr if none exists.
 */
-QString flavorToMime(QMacMime::HandlerScope scope, const QString &flav)
+QString flavorToMime(QMacMime::HandlerScope scope, const QString &uti)
 {
     MimeList *mimes = globalMimeList();
     for (MimeList::const_iterator it = mimes->constBegin(); it != mimes->constEnd(); ++it) {
         const bool relevantScope = uchar((*it)->scope()) & uchar(scope);
 #ifdef DEBUG_MIME_MAPS
-        qDebug("QMacMimeRegistry::flavorToMime: attempting (%d) for flavor %s [%s]",
-               relevantScope, qPrintable(flav), qPrintable((*it)->mimeForFlavor(flav)));
+        qDebug("QMacMimeRegistry::flavorToMime: attempting (%d) for uti %s [%s]",
+               relevantScope, qPrintable(uti), qPrintable((*it)->mimeForUti(uti)));
 #endif
         if (relevantScope) {
-            QString mimeType = (*it)->mimeForFlavor(flav);
+            QString mimeType = (*it)->mimeForUti(uti);
             if (!mimeType.isNull())
                 return mimeType;
         }
