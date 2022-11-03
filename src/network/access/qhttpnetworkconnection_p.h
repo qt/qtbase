@@ -228,7 +228,7 @@ public:
         QUrl redirectUrl;
         QNetworkReply::NetworkError errorCode;
     };
-    ParseRedirectResult parseRedirectResponse(QHttpNetworkReply *reply);
+    static ParseRedirectResult parseRedirectResponse(QHttpNetworkReply *reply);
     // Used by the HTTP1 code-path
     QUrl parseRedirectResponse(QAbstractSocket *socket, QHttpNetworkReply *reply);
 
