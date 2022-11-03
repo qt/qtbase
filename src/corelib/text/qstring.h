@@ -693,6 +693,7 @@ public:
     QString &append(const QString &s);
     inline QString &append(QStringView v) { return append(v.data(), v.size()); }
     QString &append(QLatin1StringView s);
+    QString &append(QUtf8StringView s);
 
     inline QString &prepend(QChar c) { return insert(0, c); }
     inline QString &prepend(const QChar *uc, qsizetype len) { return insert(0, uc, len); }

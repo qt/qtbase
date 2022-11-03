@@ -150,6 +150,22 @@ public:
     { (s.*mf)(a1, l1); }
 };
 
+template <bool b>
+class Arg<QBasicUtf8StringView<b>>
+{
+    QUtf8StringView u8;
+public:
+    explicit Arg(const char *str) : u8(str) {}
+
+    template <typename MemFunc>
+    void apply0(QString &s, MemFunc mf) const
+    { (s.*mf)(u8); }
+
+    template <typename MemFunc, typename A1>
+    void apply1(QString &s, MemFunc mf, A1 a1) const
+    { (s.*mf)(a1, u8); }
+};
+
 template <>
 class Arg<char>
 {
@@ -402,6 +418,8 @@ private slots:
     void append_qstringview_data()   { append_data(EmptyIsNoop); }
     void append_qlatin1string()      { append_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
     void append_qlatin1string_data() { append_data(Latin1Encoded); }
+    void append_qutf8stringview()    { append_impl<QUtf8StringView,  QString &(QString::*)(QUtf8StringView)>(); }
+    void append_qutf8stringview_data() { append_data(); }
     void append_qcharstar_int()      { append_impl<QPair<const QChar *, int>, QString&(QString::*)(const QChar *, qsizetype)>(); }
     void append_qcharstar_int_data() { append_data(EmptyIsNoop); }
     void append_qchar()              { append_impl<QChar, QString &(QString::*)(QChar)>(); }

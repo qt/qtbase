@@ -290,6 +290,26 @@ bool qt_ends_with_impl(Haystack haystack, Needle needle, Qt::CaseSensitivity cs)
 
     return QtPrivate::compareStrings(haystack.right(needleLen), needle, cs) == 0;
 }
+
+template <typename T, typename F>
+static void append_helper(QString &self, T view, F appendToUtf16)
+{
+    const auto strData = view.data();
+    const qsizetype strSize = view.size();
+    auto &d = self.data_ptr();
+    if (strData && strSize > 0) {
+        // the number of UTF-8 code units is always at a minimum equal to the number
+        // of equivalent UTF-16 code units
+        d.detachAndGrow(QArrayData::GrowsAtEnd, strSize, nullptr, nullptr);
+        Q_CHECK_PTR(d.data());
+        Q_ASSERT(strSize <= d.freeSpaceAtEnd());
+        const auto newEnd = appendToUtf16(self.data() + self.size(), view);
+        self.resize(newEnd - std::as_const(self).data());
+    } else if (d.isNull() && !view.isNull()) { // special case
+        self = QLatin1StringView("");
+    }
+}
+
 } // unnamed namespace
 
 /*
@@ -3125,23 +3145,35 @@ QString &QString::append(const QChar *str, qsizetype len)
 /*!
   \overload append()
 
-  Appends the Latin-1 string \a str to this string.
+  Appends the Latin-1 string view \a str to this string.
 */
 QString &QString::append(QLatin1StringView str)
 {
-    const char *s = str.latin1();
-    const qsizetype len = str.size();
-    if (s && len > 0) {
-        d.detachAndGrow(Data::GrowsAtEnd, len, nullptr, nullptr);
-        Q_CHECK_PTR(d.data());
-        Q_ASSERT(len <= d->freeSpaceAtEnd());
-        char16_t *i = d.data() + d.size;
+    auto appendUtf16 = [](QChar *dst, QLatin1StringView str) {
+        const qsizetype len = str.size();
+        const char *s = str.latin1();
+        char16_t *i = reinterpret_cast<char16_t *>(dst);
         qt_from_latin1(i, s, size_t(len));
-        d.size += len;
-        d.data()[d.size] = '\0';
-    } else if (d.isNull() && !str.isNull()) { // special case
-        d = DataPointer::fromRawData(&_empty, 0);
-    }
+        return dst + len;
+    };
+
+    append_helper(*this, str, appendUtf16);
+    return *this;
+}
+
+/*!
+  \overload append()
+  \since 6.5
+
+  Appends the UTF-8 string view \a str to this string.
+*/
+QString &QString::append(QUtf8StringView str)
+{
+    auto appendUtf16 = [](QChar *dst, QUtf8StringView str) {
+        return QUtf8::convertToUnicode(dst, str);
+    };
+
+    append_helper(*this, str, appendUtf16);
     return *this;
 }
 
