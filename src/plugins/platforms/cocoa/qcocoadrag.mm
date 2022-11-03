@@ -309,7 +309,7 @@ QStringList QCocoaDropData::formats_sys() const
     return formats;
 }
 
-QVariant QCocoaDropData::retrieveData_sys(const QString &mimeType, QMetaType type) const
+QVariant QCocoaDropData::retrieveData_sys(const QString &mimeType, QMetaType) const
 {
     QVariant data;
     PasteboardRef board;
@@ -317,7 +317,7 @@ QVariant QCocoaDropData::retrieveData_sys(const QString &mimeType, QMetaType typ
         qDebug("DnD: Cannot get PasteBoard!");
         return data;
     }
-    data = QMacPasteboard(board, QMacMime::HandlerScope::DnD).retrieveData(mimeType, type);
+    data = QMacPasteboard(board, QMacMime::HandlerScope::DnD).retrieveData(mimeType);
     CFRelease(board);
     return data;
 }

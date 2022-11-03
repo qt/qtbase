@@ -11,7 +11,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QMacMimeData;
 class QMacMime;
 
 class QMacPasteboard
@@ -22,14 +21,14 @@ private:
     struct Promise {
         Promise() : itemId(0), converter(nullptr) { }
 
-        static Promise eagerPromise(int itemId, QMacMime *c, QString m, QMacMimeData *d, int o = 0);
-        static Promise lazyPromise(int itemId, QMacMime *c, QString m, QMacMimeData *d, int o = 0);
-        Promise(int itemId, QMacMime *c, QString m, QMacMimeData *md, int o, DataRequestType drt);
+        static Promise eagerPromise(int itemId, const QMacMime *c, const QString &m, QMimeData *d, int o = 0);
+        static Promise lazyPromise(int itemId, const QMacMime *c, const QString &m, QMimeData *d, int o = 0);
+        Promise(int itemId, const QMacMime *c, const QString &m, QMimeData *md, int o, DataRequestType drt);
 
         int itemId, offset;
-        QMacMime *converter;
+        const QMacMime *converter;
         QString mime;
-        QPointer<QMacMimeData> mimeData;
+        QPointer<QMimeData> mimeData;
         QVariant variantData;
         DataRequestType dataRequestType;
         // QMimeData can be set from QVariant, holding
@@ -54,8 +53,7 @@ public:
     QMacPasteboard(CFStringRef name=nullptr, QMacMime::HandlerScope scope = QMacMime::HandlerScope::All);
     ~QMacPasteboard();
 
-    bool hasFlavor(QString flavor) const;
-    bool hasOSType(int c_flavor) const;
+    bool hasUti(const QString &uti) const;
 
     PasteboardRef pasteBoard() const;
     QMimeData *mimeData() const;
@@ -64,7 +62,7 @@ public:
 
     QStringList formats() const;
     bool hasFormat(const QString &format) const;
-    QVariant retrieveData(const QString &format, QMetaType) const;
+    QVariant retrieveData(const QString &format) const;
 
     void clear();
     bool sync() const;
