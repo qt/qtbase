@@ -9,6 +9,8 @@
 
 #include <emscripten/val.h>
 
+Q_DECLARE_LOGGING_CATEGORY(lcQpaAccessibility)
+
 class QWasmAccessibility : public QPlatformAccessibility
 {
 public:

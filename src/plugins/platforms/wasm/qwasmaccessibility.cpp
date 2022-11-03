@@ -6,6 +6,8 @@
 
 #include <QtGui/qwindow.h>
 
+Q_LOGGING_CATEGORY(lcQpaAccessibility, "qt.qpa.accessibility")
+
 // Qt WebAssembly a11y backend
 //
 // This backend implements accessibility support by creating "shadowing" html
@@ -81,7 +83,7 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
         } break;
 
         default:
-            qDebug() << "TODO: createHtmlElement() handle" << iface->role();
+            qCDebug(lcQpaAccessibility) << "TODO: createHtmlElement() handle" << iface->role();
             element = document.call<emscripten::val>("createElement", std::string("div"));
             //element.set("AriaRole", "foo");
         }
@@ -101,7 +103,7 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
 void QWasmAccessibility::destroyHtmlElement(QAccessibleInterface *iface)
 {
     Q_UNUSED(iface);
-    qDebug() << "TODO destroyHtmlElement";
+    qCDebug(lcQpaAccessibility) << "TODO destroyHtmlElement";
 }
 
 emscripten::val QWasmAccessibility::ensureHtmlElement(QAccessibleInterface *iface)
@@ -122,7 +124,7 @@ void QWasmAccessibility::setHtmlElementVisibility(QAccessibleInterface *iface, b
     emscripten::val container = getContainer(iface);
 
     if (container.isUndefined()) {
-        qDebug() << "TODO: setHtmlElementVisibility: unable to find html container for element" << iface;
+        qCDebug(lcQpaAccessibility) << "TODO: setHtmlElementVisibility: unable to find html container for element" << iface;
         return;
     }
 
@@ -165,14 +167,14 @@ void QWasmAccessibility::handleStaticTextUpdate(QAccessibleEvent *event)
         setHtmlElementTextName(event->accessibleInterface());
     } break;
     default:
-        qDebug() << "TODO: implement handleStaticTextUpdate for event" << event->type();
+        qCDebug(lcQpaAccessibility) << "TODO: implement handleStaticTextUpdate for event" << event->type();
     break;
     }
 }
 
 void QWasmAccessibility::handleButtonUpdate(QAccessibleEvent *event)
 {
-    qDebug() << "TODO: implement handleButtonUpdate for event" << event->type();
+    qCDebug(lcQpaAccessibility) << "TODO: implement handleButtonUpdate for event" << event->type();
 }
 
 void QWasmAccessibility::handleCheckBoxUpdate(QAccessibleEvent *event)
@@ -182,7 +184,7 @@ void QWasmAccessibility::handleCheckBoxUpdate(QAccessibleEvent *event)
         setHtmlElementTextName(event->accessibleInterface());
     } break;
     default:
-        qDebug() << "TODO: implement handleCheckBoxUpdate for event" << event->type();
+        qCDebug(lcQpaAccessibility) << "TODO: implement handleCheckBoxUpdate for event" << event->type();
     break;
     }
 }
@@ -230,13 +232,13 @@ void QWasmAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
         handleCheckBoxUpdate(event);
     break;
     default:
-        qDebug() << "TODO: implement notifyAccessibilityUpdate for role" << iface->role();
+        qCDebug(lcQpaAccessibility) << "TODO: implement notifyAccessibilityUpdate for role" << iface->role();
     };
 }
 
 void QWasmAccessibility::setRootObject(QObject *o)
 {
-    qDebug() << "setRootObject" << o;
+    qCDebug(lcQpaAccessibility) << "setRootObject" << o;
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(o);
     Q_UNUSED(iface)
 }
