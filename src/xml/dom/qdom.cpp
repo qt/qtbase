@@ -2523,7 +2523,7 @@ QDomNamedNodeMapPrivate* QDomNamedNodeMapPrivate::clone(QDomNodePrivate* p)
 
     auto it = map.constBegin();
     for (; it != map.constEnd(); ++it) {
-        QDomNodePrivate *new_node = (*it)->cloneNode();
+        QDomNodePrivate *new_node = it.value()->cloneNode();
         new_node->setParent(p);
         m->setNamedItem(new_node);
     }
@@ -2539,16 +2539,16 @@ void QDomNamedNodeMapPrivate::clearMap()
     if (!appendToParent) {
         auto it = map.constBegin();
         for (; it != map.constEnd(); ++it)
-            if (!(*it)->ref.deref())
-                delete *it;
+            if (!it.value()->ref.deref())
+                delete it.value();
     }
     map.clear();
 }
 
 QDomNodePrivate* QDomNamedNodeMapPrivate::namedItem(const QString& name) const
 {
-    auto it = map.constFind(name);
-    return it == map.cend() ? nullptr : *it;
+    auto it = map.find(name);
+    return it == map.end() ? nullptr : it.value();
 }
 
 QDomNodePrivate* QDomNamedNodeMapPrivate::namedItemNS(const QString& nsURI, const QString& localName) const
@@ -2556,7 +2556,7 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::namedItemNS(const QString& nsURI, cons
     auto it = map.constBegin();
     QDomNodePrivate *n;
     for (; it != map.constEnd(); ++it) {
-        n = *it;
+        n = it.value();
         if (!n->prefix.isNull()) {
             // node has a namespace
             if (n->namespaceURI == nsURI && n->name == localName)
@@ -2623,7 +2623,7 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::item(int index) const
 {
     if (index >= length() || index < 0)
         return nullptr;
-    return *std::next(map.cbegin(), index);
+    return std::next(map.begin(), index).value();
 }
 
 int QDomNamedNodeMapPrivate::length() const
@@ -3069,11 +3069,11 @@ void QDomDocumentTypePrivate::save(QTextStream& s, int, int indent) const
 
         auto it2 = notations->map.constBegin();
         for (; it2 != notations->map.constEnd(); ++it2)
-            (*it2)->save(s, 0, indent);
+            it2.value()->save(s, 0, indent);
 
         auto it = entities->map.constBegin();
         for (; it != entities->map.constEnd(); ++it)
-            (*it)->save(s, 0, indent);
+            it.value()->save(s, 0, indent);
 
         s << ']';
     }
