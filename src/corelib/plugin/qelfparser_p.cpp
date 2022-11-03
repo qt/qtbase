@@ -20,6 +20,11 @@
 #  error "Need ELF header to parse plugins."
 #endif
 
+// Support older ELFOSABI define for GNU/Linux
+#if !defined(ELFOSABI_GNU) && defined(ELFOSABI_LINUX)
+#  define ELFOSABI_GNU ELFOSABI_LINUX
+#endif
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
