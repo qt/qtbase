@@ -56,8 +56,6 @@ qt_internal_add_module(Gui
         Qt::Network
     QMAKE_MODULE_CONFIG "${qmake_module_config}"
     SOURCES
-        accessible/qaccessible.h
-        accessible/qplatformaccessibility.h
         image/qabstractfileiconengine.cpp image/qabstractfileiconengine_p.h
         image/qabstractfileiconprovider.cpp image/qabstractfileiconprovider.h image/qabstractfileiconprovider_p.h
         image/qbitmap.cpp image/qbitmap.h
@@ -440,6 +438,8 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_egl
 )
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_accessibility
+    CONDITION_INDEPENDENT_SOURCES
+        accessible/qaccessible.h accessible/qplatformaccessibility.h
     SOURCES
         accessible/qaccessible.cpp accessible/qaccessible_base.h
         accessible/qaccessiblebridge.cpp accessible/qaccessiblebridge.h
