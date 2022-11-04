@@ -108,32 +108,28 @@ static qulonglong qMetaTypeUNumber(const QVariant::Private *d)
     return 0;
 }
 
-static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok, bool allowStringToBool = false)
+static std::optional<qlonglong> qConvertToNumber(const QVariant::Private *d, bool allowStringToBool = false)
 {
-    *ok = true;
-
+    bool ok;
     switch (uint(d->type().id())) {
     case QMetaType::QString: {
         const QString &s = d->get<QString>();
-        qlonglong l = s.toLongLong(ok);
-        if (*ok)
+        if (qlonglong l = s.toLongLong(&ok); ok)
             return l;
         if (allowStringToBool) {
-            if (s == "false"_L1 || s == "0"_L1) {
-                *ok = true;
+            if (s == "false"_L1 || s == "0"_L1)
                 return 0;
-            }
-            if (s == "true"_L1 || s == "1"_L1) {
-                *ok = true;
+            if (s == "true"_L1 || s == "1"_L1)
                 return 1;
-            }
         }
         return 0;
     }
     case QMetaType::QChar:
         return d->get<QChar>().unicode();
     case QMetaType::QByteArray:
-        return d->get<QByteArray>().toLongLong(ok);
+        if (qlonglong l = d->get<QByteArray>().toLongLong(&ok); ok)
+            return l;
+        return std::nullopt;
     case QMetaType::Bool:
         return qlonglong(d->get<bool>());
 #ifndef QT_BOOTSTRAPPED
@@ -179,16 +175,17 @@ static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok, bool all
         }
     }
 
-    *ok = false;
-    return Q_INT64_C(0);
+    return std::nullopt;
 }
 
-static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
+static std::optional<qreal> qConvertToRealNumber(const QVariant::Private *d)
 {
-    *ok = true;
+    bool ok;
     switch (uint(d->type().id())) {
     case QMetaType::QString:
-        return d->get<QString>().toDouble(ok);
+        if (double r = d->get<QString>().toDouble(&ok); ok)
+            return qreal(r);
+        return std::nullopt;
     case QMetaType::Double:
         return qreal(d->get<double>());
     case QMetaType::Float:
@@ -207,7 +204,9 @@ static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
 #endif
     default:
         // includes enum conversion as well as invalid types
-        return qreal(qConvertToNumber(d, ok));
+        if (std::optional<qlonglong> l = qConvertToNumber(d))
+            return qreal(*l);
+        return std::nullopt;
     }
 }
 
@@ -2241,25 +2240,18 @@ static int numericTypePromotion(uint t1, uint t2)
 static bool integralEquals(uint promotedType, const QVariant::Private *d1, const QVariant::Private *d2)
 {
     // use toLongLong to retrieve the data, it gets us all the bits
-    bool ok;
-    qlonglong l1 = qConvertToNumber(d1, &ok, promotedType == QMetaType::Bool);
-    if (!ok)
-        return false;
-
-    qlonglong l2 = qConvertToNumber(d2, &ok, promotedType == QMetaType::Bool);
-    if (!ok)
-        return false;
-
+    std::optional<qlonglong> l1 = qConvertToNumber(d1, promotedType == QMetaType::Bool);
+    std::optional<qlonglong> l2 = qConvertToNumber(d2, promotedType == QMetaType::Bool);
     if (promotedType == QMetaType::Bool)
-        return bool(l1) == bool(l2);
+        return bool(*l1) == bool(*l2);
     if (promotedType == QMetaType::Int)
-        return int(l1) == int(l2);
+        return int(*l1) == int(*l2);
     if (promotedType == QMetaType::UInt)
-        return uint(l1) == uint(l2);
+        return uint(*l1) == uint(*l2);
     if (promotedType == QMetaType::LongLong)
         return l1 == l2;
     if (promotedType == QMetaType::ULongLong)
-        return qulonglong(l1) == qulonglong(l2);
+        return qulonglong(*l1) == qulonglong(*l2);
 
     Q_UNREACHABLE_RETURN(0);
 }
@@ -2285,25 +2277,21 @@ int spaceShip(Numeric lhs, Numeric rhs)
 static std::optional<int> integralCompare(uint promotedType, const QVariant::Private *d1, const QVariant::Private *d2)
 {
     // use toLongLong to retrieve the data, it gets us all the bits
-    bool ok;
-    qlonglong l1 = qConvertToNumber(d1, &ok, promotedType == QMetaType::Bool);
-    if (!ok)
-        return std::nullopt;
-
-    qlonglong l2 = qConvertToNumber(d2, &ok, promotedType == QMetaType::Bool);
-    if (!ok)
+    std::optional<qlonglong> l1 = qConvertToNumber(d1, promotedType == QMetaType::Bool);
+    std::optional<qlonglong> l2 = qConvertToNumber(d2, promotedType == QMetaType::Bool);
+    if (!l1 || !l2)
         return std::nullopt;
 
     if (promotedType == QMetaType::Bool)
-        return spaceShip<bool>(l1, l2);
+        return spaceShip<bool>(*l1, *l2);
     if (promotedType == QMetaType::Int)
-        return spaceShip<int>(l1, l2);
+        return spaceShip<int>(*l1, *l2);
     if (promotedType == QMetaType::UInt)
-        return spaceShip<uint>(l1, l2);
+        return spaceShip<uint>(*l1, *l2);
     if (promotedType == QMetaType::LongLong)
-        return spaceShip<qlonglong>(l1, l2);
+        return spaceShip<qlonglong>(*l1, *l2);
     if (promotedType == QMetaType::ULongLong)
-        return spaceShip<qulonglong>(l1, l2);
+        return spaceShip<qulonglong>(*l1, *l2);
 
     Q_UNREACHABLE_RETURN(0);
 }
@@ -2313,20 +2301,18 @@ static std::optional<int> numericCompare(const QVariant::Private *d1, const QVar
     uint promotedType = numericTypePromotion(d1->type().id(), d2->type().id());
     if (promotedType != QMetaType::QReal)
         return integralCompare(promotedType, d1, d2);
+
     // qreal comparisons
-    bool ok;
-    qreal r1 = qConvertToRealNumber(d1, &ok);
-    if (!ok)
+    std::optional<qreal> r1 = qConvertToRealNumber(d1);
+    std::optional<qreal> r2 = qConvertToRealNumber(d2);
+    if (!r1 || !r2)
         return std::nullopt;
-    qreal r2 = qConvertToRealNumber(d2, &ok);
-    if (!ok)
-        return std::nullopt;
-    if (r1 == r2)
+    if (*r1 == *r2)
         return 0;
 
-    if (std::isnan(r1) || std::isnan(r2))
+    if (std::isnan(*r1) || std::isnan(*r2))
         return std::nullopt;
-    return spaceShip<qreal>(r1, r2);
+    return spaceShip<qreal>(*r1, *r2);
 }
 
 static bool numericEquals(const QVariant::Private *d1, const QVariant::Private *d2)
@@ -2336,17 +2322,9 @@ static bool numericEquals(const QVariant::Private *d1, const QVariant::Private *
         return integralEquals(promotedType, d1, d2);
 
     // qreal comparisons
-    bool ok;
-    qreal r1 = qConvertToRealNumber(d1, &ok);
-    if (!ok)
-        return false;
-    qreal r2 = qConvertToRealNumber(d2, &ok);
-    if (!ok)
-        return false;
-    if (r1 == r2)
-        return true;
-
-    return false;
+    std::optional<qreal> r1 = qConvertToRealNumber(d1);
+    std::optional<qreal> r2 = qConvertToRealNumber(d2);
+    return r1 == r2;
 }
 
 #ifndef QT_BOOTSTRAPPED
