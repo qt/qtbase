@@ -2226,22 +2226,6 @@ static int numericTypePromotion(const QtPrivate::QMetaTypeInterface *iface1,
     return QMetaType::Int;
 }
 
-static bool integralEquals(uint promotedType, const QVariant::Private *d1, const QVariant::Private *d2)
-{
-    // use toLongLong to retrieve the data, it gets us all the bits
-    std::optional<qlonglong> l1 = qConvertToNumber(d1, promotedType == QMetaType::Bool);
-    std::optional<qlonglong> l2 = qConvertToNumber(d2, promotedType == QMetaType::Bool);
-    if (promotedType == QMetaType::Bool)
-        return bool(*l1) == bool(*l2);
-    if (promotedType == QMetaType::Int)
-        return int(*l1) == int(*l2);
-    if (promotedType == QMetaType::UInt)
-        return uint(*l1) == uint(*l2);
-    if (promotedType == QMetaType::ULongLong)
-        return qulonglong(*l1) == qulonglong(*l2);
-    return l1 == l2;
-}
-
 namespace {
 template<typename Numeric>
 int spaceShip(Numeric lhs, Numeric rhs)
@@ -2296,18 +2280,6 @@ static std::optional<int> numericCompare(const QVariant::Private *d1, const QVar
     return spaceShip<qreal>(*r1, *r2);
 }
 
-static bool numericEquals(const QVariant::Private *d1, const QVariant::Private *d2)
-{
-    uint promotedType = numericTypePromotion(d1->typeInterface(), d2->typeInterface());
-    if (promotedType != QMetaType::QReal)
-        return integralEquals(promotedType, d1, d2);
-
-    // qreal comparisons
-    std::optional<qreal> r1 = qConvertToRealNumber(d1);
-    std::optional<qreal> r2 = qConvertToRealNumber(d2);
-    return r1 == r2;
-}
-
 #ifndef QT_BOOTSTRAPPED
 static bool canConvertMetaObject(QMetaType fromType, QMetaType toType)
 {
@@ -2318,12 +2290,6 @@ static bool canConvertMetaObject(QMetaType fromType, QMetaType toType)
         return f && t && (f->inherits(t) || t->inherits(f));
     }
     return false;
-}
-
-static bool pointerEquals(const QVariant::Private *d1, const QVariant::Private *d2)
-{
-    // simply check whether both types point to the same data
-    return d1->get<QObject *>() == d2->get<QObject *>();
 }
 
 static int pointerCompare(const QVariant::Private *d1, const QVariant::Private *d2)
@@ -2342,11 +2308,11 @@ bool QVariant::equals(const QVariant &v) const
     if (metatype != v.metaType()) {
         // try numeric comparisons, with C++ type promotion rules (no conversion)
         if (qIsNumericType(metatype.id()) && qIsNumericType(v.d.type().id()))
-            return numericEquals(&d, &v.d);
+            return numericCompare(&d, &v.d) == 0;
 #ifndef QT_BOOTSTRAPPED
         // if both types are related pointers to QObjects, check if they point to the same object
         if (canConvertMetaObject(metatype, v.metaType()))
-            return pointerEquals(&d, &v.d);
+            return pointerCompare(&d, &v.d) == 0;
 #endif
         return false;
     }
