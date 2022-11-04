@@ -300,7 +300,7 @@ private:
         std::set<std::string> *currentListValue = nullptr;
         for (int i = 1; i < argc; ++i) {
             std::string arg(argv[i]);
-            if (arg.size() == 0)
+            if (arg.empty())
                 continue;
 
             if (arg.size() > 0 && arg[0] == '-') {
@@ -380,7 +380,7 @@ private:
         }
 
         for (const auto &header : generatedHeaders) {
-            if (header.size() == 0)
+            if (header.empty())
                 continue;
             if (header[0] == '@') {
                 std::ifstream ifs(header.substr(1), std::ifstream::in);
@@ -563,7 +563,7 @@ public:
             const auto &headers = m_commandLineArgs->headers();
             for (auto it = headers.begin(); it != headers.end(); ++it) {
                 const auto &header = *it;
-                if (header.size() > 0 && header[0] == '@') {
+                if (!header.empty() && header[0] == '@') {
                     std::ifstream ifs(header.substr(1), std::ifstream::in);
                     if (ifs.is_open()) {
                         std::string headerFromFile;
@@ -823,7 +823,7 @@ public:
 
             // Record the private header file inside the version script content.
             if (isPrivate && !m_commandLineArgs->versionScriptFile().empty()
-                && parsingResult.versionScriptContent.size() > 0) {
+                && !parsingResult.versionScriptContent.empty()) {
                 m_versionScriptContents.insert(m_versionScriptContents.end(),
                                                parsingResult.versionScriptContent.begin(),
                                                parsingResult.versionScriptContent.end());
@@ -882,7 +882,7 @@ public:
             symbol = match[1].str();
 
         // checkLineForSymbols(buffer, symbol);
-        if (symbol.size() > 0 && symbol[symbol.size() - 1] != ';') {
+        if (!symbol.empty() && symbol[symbol.size() - 1] != ';') {
             std::string relPath = m_currentFileInSourceDir
                     ? std::filesystem::relative(m_currentFile, m_commandLineArgs->sourceDir())
                               .string()
@@ -1091,7 +1091,7 @@ public:
             }
             line.clear();
 
-            if (buffer.size() == 0)
+            if (buffer.empty())
                 continue;
             scannerDebug() << m_currentFilename << ": " << buffer << std::endl;
 
