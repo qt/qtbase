@@ -209,6 +209,8 @@ private slots:
     void variantHash();
 
     void convertToQUint8() const;
+    void compareNumerics_data() const;
+    void compareNumerics() const;
     void comparePointers() const;
     void voidStar() const;
     void dataStar() const;
@@ -2712,6 +2714,194 @@ void tst_QVariant::convertToQUint8() const
         QCOMPARE(int(v0.toUInt()), 32);
         QCOMPARE(v0.toString(), QString("32"));
     }
+}
+
+void tst_QVariant::compareNumerics_data() const
+{
+    QTest::addColumn<QVariant>("v1");
+    QTest::addColumn<QVariant>("v2");
+    QTest::addColumn<QPartialOrdering>("result");
+
+    QTest::addRow("invalid-invalid")
+            << QVariant() << QVariant() << QPartialOrdering::Unordered;
+
+    static const auto asString = [](const QVariant &v) {
+        if (v.isNull())
+            return QStringLiteral("null");
+        switch (v.typeId()) {
+        case QMetaType::Char:
+        case QMetaType::Char16:
+        case QMetaType::Char32:
+        case QMetaType::UChar:
+            return QString::number(v.toUInt());
+        case QMetaType::SChar:
+            return QString::number(v.toInt());
+        }
+        return v.toString();
+    };
+
+    auto addCompareToInvalid = [](auto value) {
+        QVariant v = QVariant::fromValue(value);
+        QTest::addRow("invalid-%s(%s)", v.typeName(), qPrintable(asString(v)))
+                << QVariant() << v << QPartialOrdering::Unordered;
+        QTest::addRow("%s(%s)-invalid", v.typeName(), qPrintable(asString(v)))
+                << v << QVariant() << QPartialOrdering::Unordered;
+    };
+    addCompareToInvalid(false);
+    addCompareToInvalid(true);
+    addCompareToInvalid(char(0));
+    addCompareToInvalid(qint8(0));
+    addCompareToInvalid(quint8(0));
+    addCompareToInvalid(short(0));
+    addCompareToInvalid(ushort(0));
+    addCompareToInvalid(int(0));
+    addCompareToInvalid(uint(0));
+    addCompareToInvalid(long(0));
+    addCompareToInvalid(ulong(0));
+    addCompareToInvalid(qint64(0));
+    addCompareToInvalid(quint64(0));
+    addCompareToInvalid(0.f);
+    addCompareToInvalid(0.0);
+    addCompareToInvalid(QCborSimpleType{});
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wsign-compare")
+QT_WARNING_DISABLE_GCC("-Wsign-compare")
+QT_WARNING_DISABLE_MSVC(4018)   // '<': signed/unsigned mismatch
+    static const auto addComparePair = [](auto value1, auto value2) {
+        QVariant v1 = QVariant::fromValue(value1);
+        QVariant v2 = QVariant::fromValue(value2);
+        QPartialOrdering order = QPartialOrdering::Unordered;
+        if (value1 == value2)
+            order = QPartialOrdering::Equivalent;
+        else if (value1 < value2)
+            order = QPartialOrdering::Less;
+        else if (value1 > value2)
+            order = QPartialOrdering::Greater;
+        QTest::addRow("%s(%s)-%s(%s)", v1.typeName(), qPrintable(asString(v1)),
+                      v2.typeName(), qPrintable(asString(v2)))
+                << v1 << v2 << order;
+    };
+QT_WARNING_POP
+
+    // homogeneous first
+    static const auto addList = [](auto list) {
+        for (auto v1 : list)
+            for (auto v2 : list)
+                addComparePair(v1, v2);
+    };
+
+    auto addSingleType = [](auto zero) {
+        using T = decltype(zero);
+        T one = T(zero + 1);
+        T min = std::numeric_limits<T>::min();
+        T max = std::numeric_limits<T>::max();
+        T mid = max / 2 + 1;
+        if (min != zero)
+            addList(std::array{zero, one, min, mid, max});
+        else
+            addList(std::array{zero, one, mid, max});
+    };
+    addList(std::array{ false, true });
+    addList(std::array{ QCborSimpleType{}, QCborSimpleType::False, QCborSimpleType(0xff) });
+    addSingleType(char(0));
+    addSingleType(qint8(0));
+    addSingleType(quint8(0));
+    addSingleType(qint16(0));
+    addSingleType(quint16(0));
+    addSingleType(qint32(0));
+    addSingleType(quint32(0));
+    addSingleType(qint64(0));
+    addSingleType(quint64(0));
+    addSingleType(0.f);
+    addSingleType(0.0);
+
+    // heterogeneous
+    addComparePair(char(0), qint8(-127));
+    addComparePair(char(127), qint8(127));
+    addComparePair(char(127), quint8(127));
+    addComparePair(qint8(-1), quint8(255));
+    addComparePair(0U, -1);
+    addComparePair(~0U, -1);
+    addComparePair(Q_UINT64_C(0), -1);
+    addComparePair(~Q_UINT64_C(0), -1);
+    addComparePair(Q_UINT64_C(0), Q_INT64_C(-1));
+    addComparePair(~Q_UINT64_C(0), Q_INT64_C(-1));
+    addComparePair(INT_MAX, uint(INT_MAX));
+    addComparePair(INT_MAX, qint64(INT_MAX) + 1);
+    addComparePair(INT_MAX, UINT_MAX);
+    addComparePair(INT_MAX, qint64(UINT_MAX));
+    addComparePair(INT_MAX, qint64(UINT_MAX) + 1);
+    addComparePair(INT_MAX, quint64(UINT_MAX));
+    addComparePair(INT_MAX, quint64(UINT_MAX) + 1);
+    addComparePair(INT_MAX, LONG_MIN);
+    addComparePair(INT_MAX, LONG_MAX);
+    addComparePair(INT_MAX, LLONG_MIN);
+    addComparePair(INT_MAX, LLONG_MAX);
+    addComparePair(INT_MIN, uint(INT_MIN));
+    addComparePair(INT_MIN, uint(INT_MIN) + 1);
+    addComparePair(INT_MIN + 1, uint(INT_MIN));
+    addComparePair(INT_MIN + 1, uint(INT_MIN) + 1);
+    addComparePair(INT_MIN, qint64(INT_MIN) - 1);
+    addComparePair(INT_MIN + 1, qint64(INT_MIN) + 1);
+    addComparePair(INT_MIN + 1, qint64(INT_MIN) - 1);
+    addComparePair(INT_MIN, UINT_MAX);
+    addComparePair(INT_MIN, qint64(UINT_MAX));
+    addComparePair(INT_MIN, qint64(UINT_MAX) + 1);
+    addComparePair(INT_MIN, quint64(UINT_MAX));
+    addComparePair(INT_MIN, quint64(UINT_MAX) + 1);
+    addComparePair(UINT_MAX, qint64(UINT_MAX) + 1);
+    addComparePair(UINT_MAX, quint64(UINT_MAX) + 1);
+    addComparePair(UINT_MAX, qint64(INT_MIN) - 1);
+    addComparePair(UINT_MAX, quint64(INT_MIN) + 1);
+    addComparePair(LLONG_MAX, quint64(LLONG_MAX));
+    addComparePair(LLONG_MAX, quint64(LLONG_MAX) + 1);
+    addComparePair(LLONG_MIN, quint64(LLONG_MAX));
+    addComparePair(LLONG_MIN, quint64(LLONG_MAX) + 1);
+    addComparePair(LLONG_MIN, quint64(LLONG_MIN) + 1);
+    addComparePair(LLONG_MIN + 1, quint64(LLONG_MIN) + 1);
+    addComparePair(LLONG_MIN, LLONG_MAX - 1);
+    addComparePair(LLONG_MIN, LLONG_MAX);
+
+    // floating point
+    addComparePair(0.f, 0);
+    addComparePair(0.f, 0U);
+    addComparePair(0.f, Q_INT64_C(0));
+    addComparePair(0.f, Q_UINT64_C(0));
+    addComparePair(0.f, 0.);
+    addComparePair(0.f, 1.);
+    addComparePair(0.f, 1.);
+    addComparePair(float(1 << 24), 1 << 24);
+    addComparePair(float(1 << 24) - 1, (1 << 24) - 1);
+    addComparePair(-float(1 << 24), 1 << 24);
+    addComparePair(-float(1 << 24) + 1, -(1 << 24) + 1);
+    addComparePair(HUGE_VALF, qInf());
+    addComparePair(HUGE_VALF, -qInf());
+    addComparePair(qQNaN(), std::numeric_limits<float>::quiet_NaN());
+    if (sizeof(qreal) == sizeof(double)) {
+        addComparePair(std::numeric_limits<float>::min(), std::numeric_limits<double>::min());
+        addComparePair(std::numeric_limits<float>::min(), std::numeric_limits<double>::min());
+        addComparePair(std::numeric_limits<float>::max(), std::numeric_limits<double>::min());
+        addComparePair(std::numeric_limits<float>::max(), std::numeric_limits<double>::max());
+        addComparePair(double(Q_INT64_C(1) << 53), Q_INT64_C(1) << 53);
+        addComparePair(double(Q_INT64_C(1) << 53) - 1, (Q_INT64_C(1) << 53) - 1);
+        addComparePair(-double(Q_INT64_C(1) << 53), Q_INT64_C(1) << 53);
+        addComparePair(-double(Q_INT64_C(1) << 53) + 1, (Q_INT64_C(1) << 53) + 1);
+    }
+}
+
+void tst_QVariant::compareNumerics() const
+{
+    QFETCH(QVariant, v1);
+    QFETCH(QVariant, v2);
+    QFETCH(QPartialOrdering, result);
+    QCOMPARE(QVariant::compare(v1, v2), result);
+
+    QEXPECT_FAIL("invalid-invalid", "needs fixing", Continue);
+    if (result == QPartialOrdering::Equivalent)
+        QCOMPARE_EQ(v1, v2);
+    else
+        QCOMPARE_NE(v1, v2);
 }
 
 void tst_QVariant::comparePointers() const

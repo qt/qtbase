@@ -2167,28 +2167,13 @@ static bool qIsFloatingPoint(uint tp)
     return tp == QMetaType::Double || tp == QMetaType::Float;
 }
 
-static int normalizeLowerRanks(uint tp)
+static int numericTypePromotion(const QtPrivate::QMetaTypeInterface *iface1,
+                                const QtPrivate::QMetaTypeInterface *iface2)
 {
-    static const qulonglong numericTypeBits =
-            Q_UINT64_C(1) << QMetaType::Bool |
-            Q_UINT64_C(1) << QMetaType::Char |
-            Q_UINT64_C(1) << QMetaType::SChar |
-            Q_UINT64_C(1) << QMetaType::UChar |
-            Q_UINT64_C(1) << QMetaType::Short |
-            Q_UINT64_C(1) << QMetaType::UShort;
-    return numericTypeBits & (Q_UINT64_C(1) << tp) ? uint(QMetaType::Int) : tp;
-}
-
-static int normalizeLong(uint tp)
-{
-    const uint IntType = sizeof(long) == sizeof(int) ? QMetaType::Int : QMetaType::LongLong;
-    const uint UIntType = sizeof(ulong) == sizeof(uint) ? QMetaType::UInt : QMetaType::ULongLong;
-    return tp == QMetaType::Long ? IntType :
-           tp == QMetaType::ULong ? UIntType : tp;
-}
-
-static int numericTypePromotion(uint t1, uint t2)
-{
+    // We don't need QMetaType::id() here because the type Id is always stored
+    // directly for the types we're comparing against below.
+    uint t1 = iface1->typeId;
+    uint t2 = iface2->typeId;
     Q_ASSERT(qIsNumericType(t1));
     Q_ASSERT(qIsNumericType(t2));
 
@@ -2214,26 +2199,30 @@ static int numericTypePromotion(uint t1, uint t2)
     if (qIsFloatingPoint(t1) || qIsFloatingPoint(t2))
         return QMetaType::QReal;
 
+    auto isUnsigned = [](uint tp) {
+        // only types for which sizeof(T) >= sizeof(int); lesser ones promote to int
+        return tp == QMetaType::ULongLong || tp == QMetaType::ULong ||
+                tp == QMetaType::UInt;
+    };
+    bool isUnsigned1 = isUnsigned(t1);
+    bool isUnsigned2 = isUnsigned(t2);
+
     // integral rules:
-    // for all platforms we support, int can always hold the values of lower-ranked types
-    t1 = normalizeLowerRanks(t1);
-    t2 = normalizeLowerRanks(t2);
-
-    // normalize long / ulong: in all platforms we run, they're either the same as int or as long long
-    t1 = normalizeLong(t1);
-    t2 = normalizeLong(t2);
-
-    // implement the other rules
-    // the four possibilities are Int, UInt, LongLong and ULongLong
-    // if any of the two is ULongLong, then it wins (highest rank, unsigned)
-    // otherwise, if one of the two is LongLong, then the other is either LongLong too or lower-ranked
-    // otherwise, if one of the two is UInt, then the other is either UInt too or Int
-    if (t1 == QMetaType::ULongLong || t2 == QMetaType::ULongLong)
+    // 1) if either type is a 64-bit unsigned, compare as 64-bit unsigned
+    if (isUnsigned1 && iface1->size > sizeof(int))
         return QMetaType::ULongLong;
-    if (t1 == QMetaType::LongLong || t2 == QMetaType::LongLong)
+    if (isUnsigned2 && iface2->size > sizeof(int))
+        return QMetaType::ULongLong;
+
+    // 2) if either type is 64-bit, compare as 64-bit signed
+    if (iface1->size > sizeof(int) || iface2->size > sizeof(int))
         return QMetaType::LongLong;
-    if (t1 == QMetaType::UInt || t2 == QMetaType::UInt)
+
+    // 3) if either type is 32-bit unsigned, compare as 32-bit unsigned
+    if (isUnsigned1 || isUnsigned2)
         return QMetaType::UInt;
+
+    // 4) otherwise, just do int promotion
     return QMetaType::Int;
 }
 
@@ -2248,12 +2237,9 @@ static bool integralEquals(uint promotedType, const QVariant::Private *d1, const
         return int(*l1) == int(*l2);
     if (promotedType == QMetaType::UInt)
         return uint(*l1) == uint(*l2);
-    if (promotedType == QMetaType::LongLong)
-        return l1 == l2;
     if (promotedType == QMetaType::ULongLong)
         return qulonglong(*l1) == qulonglong(*l2);
-
-    Q_UNREACHABLE_RETURN(0);
+    return l1 == l2;
 }
 
 namespace {
@@ -2281,11 +2267,6 @@ static std::optional<int> integralCompare(uint promotedType, const QVariant::Pri
     std::optional<qlonglong> l2 = qConvertToNumber(d2, promotedType == QMetaType::Bool);
     if (!l1 || !l2)
         return std::nullopt;
-
-    if (promotedType == QMetaType::Bool)
-        return spaceShip<bool>(*l1, *l2);
-    if (promotedType == QMetaType::Int)
-        return spaceShip<int>(*l1, *l2);
     if (promotedType == QMetaType::UInt)
         return spaceShip<uint>(*l1, *l2);
     if (promotedType == QMetaType::LongLong)
@@ -2293,12 +2274,12 @@ static std::optional<int> integralCompare(uint promotedType, const QVariant::Pri
     if (promotedType == QMetaType::ULongLong)
         return spaceShip<qulonglong>(*l1, *l2);
 
-    Q_UNREACHABLE_RETURN(0);
+    return spaceShip<int>(*l1, *l2);
 }
 
 static std::optional<int> numericCompare(const QVariant::Private *d1, const QVariant::Private *d2)
 {
-    uint promotedType = numericTypePromotion(d1->type().id(), d2->type().id());
+    uint promotedType = numericTypePromotion(d1->typeInterface(), d2->typeInterface());
     if (promotedType != QMetaType::QReal)
         return integralCompare(promotedType, d1, d2);
 
@@ -2317,7 +2298,7 @@ static std::optional<int> numericCompare(const QVariant::Private *d1, const QVar
 
 static bool numericEquals(const QVariant::Private *d1, const QVariant::Private *d2)
 {
-    uint promotedType = numericTypePromotion(d1->type().id(), d2->type().id());
+    uint promotedType = numericTypePromotion(d1->typeInterface(), d2->typeInterface());
     if (promotedType != QMetaType::QReal)
         return integralEquals(promotedType, d1, d2);
 

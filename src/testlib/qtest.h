@@ -207,6 +207,19 @@ template<> inline char *toString(const QVariant &v)
     return qstrdup(vstring.constData());
 }
 
+template<> inline char *toString(const QPartialOrdering &o)
+{
+    if (o == QPartialOrdering::Less)
+        return qstrdup("Less");
+    if (o == QPartialOrdering::Equivalent)
+        return qstrdup("Equivalent");
+    if (o == QPartialOrdering::Greater)
+        return qstrdup("Greater");
+    if (o == QPartialOrdering::Unordered)
+        return qstrdup("Unordered");
+    return qstrdup("<invalid>");
+}
+
 namespace Internal {
 struct QCborValueFormatter
 {
