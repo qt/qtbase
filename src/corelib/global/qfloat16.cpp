@@ -7,7 +7,10 @@
 #include <cmath> // for fpclassify()'s return values
 
 #include <QtCore/qdatastream.h>
+#include <QtCore/qmetatype.h>
+#include <QtCore/qtextstream.h>
 
+QT_DECL_METATYPE_EXTERN(qfloat16, Q_CORE_EXPORT)
 QT_BEGIN_NAMESPACE
 
 QT_IMPL_METATYPE_EXTERN(qfloat16)

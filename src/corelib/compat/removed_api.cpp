@@ -369,6 +369,7 @@ void QXmlStreamReader::addData(const char *data)
 #endif // QT_CONFIG(xmlstreamreader)
 
 // inlined API
+#include "qfloat16.h"
 #include "qstring.h"
 
 #endif // QT_CORE_REMOVED_SINCE(6, 5)

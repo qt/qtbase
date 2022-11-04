@@ -6,7 +6,7 @@
 #define QFLOAT16_H
 
 #include <QtCore/qglobal.h>
-#include <QtCore/qmetatype.h>
+#include <QtCore/qmath.h>
 #include <QtCore/qnamespace.h>
 #include <limits>
 #include <string.h>
@@ -344,8 +344,6 @@ inline auto qHypot(qfloat16 x, qfloat16 y, qfloat16 z)
 #endif // 3-arg std::hypot() is available
 
 QT_END_NAMESPACE
-
-QT_DECL_METATYPE_EXTERN(qfloat16, Q_CORE_EXPORT)
 
 namespace std {
 template<>
