@@ -129,6 +129,9 @@ template<> struct TestValueFactory<QMetaType::UChar> {
 template<> struct TestValueFactory<QMetaType::Float> {
     static float *create() { return new float(FLT_MIN); }
 };
+template<> struct TestValueFactory<QMetaType::Float16> {
+    static auto create() { return new qfloat16(std::numeric_limits<qfloat16>::min()); }
+};
 template<> struct TestValueFactory<QMetaType::QObjectStar> {
     static QObject * *create() { return new QObject *(0); }
 };

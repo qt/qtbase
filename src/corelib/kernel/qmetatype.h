@@ -10,13 +10,14 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qcompare.h>
-#include <QtCore/qscopeguard.h>
 #include <QtCore/qdatastream.h>
+#include <QtCore/qfloat16.h>
+#include <QtCore/qhashfunctions.h>
 #include <QtCore/qiterable.h>
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qobjectdefs.h>
 #endif
-#include <QtCore/qhashfunctions.h>
+#include <QtCore/qscopeguard.h>
 
 #include <array>
 #include <new>
@@ -121,6 +122,7 @@ inline constexpr int qMetaTypeId();
     F(QCborValue, 53, QCborValue) \
     F(QCborArray, 54, QCborArray) \
     F(QCborMap, 55, QCborMap) \
+    F(Float16, 63, qfloat16) \
     QT_FOR_EACH_STATIC_ITEMMODEL_CLASS(F)
 
 #define QT_FOR_EACH_STATIC_CORE_POINTER(F)\
@@ -317,7 +319,7 @@ public:
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
 
         FirstCoreType = Bool,
-        LastCoreType = QVariantPair,
+        LastCoreType = Float16,
         FirstGuiType = QFont,
         LastGuiType = QColorSpace,
         FirstWidgetsType = QSizePolicy,
@@ -349,6 +351,7 @@ public:
         QVariantMap = 8, QVariantList = 9, QVariantHash = 28, QVariantPair = 58,
         QCborSimpleType = 52, QCborValue = 53, QCborArray = 54, QCborMap = 55,
         Char16 = 56, Char32 = 57,
+        Int128 = 59, UInt128 = 60, Float128 = 61, BFloat16 = 62, Float16 = 63,
 
         // Gui types
         QFont = 0x1000, QPixmap = 0x1001, QBrush = 0x1002, QColor = 0x1003, QPalette = 0x1004,

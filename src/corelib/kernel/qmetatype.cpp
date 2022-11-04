@@ -353,8 +353,12 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
     \value SChar \c{signed char}
     \value UChar \c{unsigned char}
     \value Float \c float
+    \value Float16 qfloat16
+    \omitvalue Float128
+    \omitvalue BFloat16
+    \omitvalue Int128
+    \omitvalue UInt128
     \value QObjectStar QObject *
-    \value QVariant QVariant
 
     \value QCursor QCursor
     \value QDate QDate
@@ -413,6 +417,7 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
     \value QPersistentModelIndex QPersistentModelIndex (introduced in Qt 5.5)
     \value QUuid QUuid
     \value QByteArrayList QByteArrayList
+    \value QVariant QVariant
 
     \value User  Base value for user types
     \value UnknownType This is an invalid type id. It is returned from QMetaType for types that are not registered

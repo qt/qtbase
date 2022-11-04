@@ -183,6 +183,8 @@ static std::optional<qreal> qConvertToRealNumber(const QVariant::Private *d)
         return qreal(d->get<double>());
     case QMetaType::Float:
         return qreal(d->get<float>());
+    case QMetaType::Float16:
+        return qreal(d->get<qfloat16>());
     case QMetaType::ULongLong:
     case QMetaType::UInt:
     case QMetaType::UChar:
@@ -2161,7 +2163,7 @@ static bool qIsNumericType(uint tp)
 
 static bool qIsFloatingPoint(uint tp)
 {
-    return tp == QMetaType::Double || tp == QMetaType::Float;
+    return tp == QMetaType::Double || tp == QMetaType::Float || tp == QMetaType::Float16;
 }
 
 static bool canBeNumericallyCompared(const QtPrivate::QMetaTypeInterface *iface1,

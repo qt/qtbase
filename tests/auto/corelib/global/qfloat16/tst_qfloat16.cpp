@@ -4,6 +4,7 @@
 
 #include <QTest>
 #include <QFloat16>
+#include <QMetaType>
 #include <QTextStream>
 
 #include <math.h>
@@ -655,6 +656,17 @@ void tst_qfloat16::dataStream()
     qfloat16 zero = 1;
     ds >> zero;
     QCOMPARE(ds.status(), QDataStream::Ok);
+    QCOMPARE(zero, qfloat16(0));
+
+    ds.device()->seek(0);
+    ds.resetStatus();
+    QMetaType mt = QMetaType(QMetaType::Float16);
+    QVERIFY(mt.save(ds, &zero));
+
+    ds.device()->seek(0);
+    ds.resetStatus();
+    zero = -1;
+    QVERIFY(mt.load(ds, &zero));
     QCOMPARE(zero, qfloat16(0));
 }
 
