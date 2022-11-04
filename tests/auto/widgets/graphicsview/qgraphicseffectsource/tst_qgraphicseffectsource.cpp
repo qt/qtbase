@@ -157,8 +157,8 @@ void tst_QGraphicsEffectSource::init()
     effect->reset();
     effect->storeDeviceDependentStuff = false;
     effect->doNothingInDraw = false;
-    item->reset();
     QCoreApplication::processEvents(); // Process all queued paint events
+    item->reset();
 }
 
 void tst_QGraphicsEffectSource::graphicsItem()
