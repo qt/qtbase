@@ -438,7 +438,7 @@ QString QWindowsMimeText::mimeForFormat(const FORMATETC &formatetc) const
 {
     int cf = getCf(formatetc);
     if (cf == CF_UNICODETEXT || cf == CF_TEXT)
-        return QStringLiteral("text/plain");
+        return u"text/plain"_s;
     return QString();
 }
 
@@ -506,8 +506,8 @@ private:
 
 QWindowsMimeURI::QWindowsMimeURI()
 {
-    CF_INETURL_W = registerMimeType(QStringLiteral("UniformResourceLocatorW"));
-    CF_INETURL = registerMimeType(QStringLiteral("UniformResourceLocator"));
+    CF_INETURL_W = registerMimeType(u"UniformResourceLocatorW"_s);
+    CF_INETURL = registerMimeType(u"UniformResourceLocator"_s);
 }
 
 bool QWindowsMimeURI::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
@@ -590,7 +590,7 @@ QString QWindowsMimeURI::mimeForFormat(const FORMATETC &formatetc) const
 {
     QString format;
     if (getCf(formatetc) == CF_HDROP || getCf(formatetc) == CF_INETURL_W || getCf(formatetc) == CF_INETURL)
-        format = QStringLiteral("text/uri-list");
+        format = u"text/uri-list"_s;
     return format;
 }
 
@@ -676,7 +676,7 @@ private:
 
 QWindowsMimeHtml::QWindowsMimeHtml()
 {
-    CF_HTML = registerMimeType(QStringLiteral("HTML Format"));
+    CF_HTML = registerMimeType(u"HTML Format"_s);
 }
 
 QList<FORMATETC> QWindowsMimeHtml::formatsForMime(const QString &mimeType, const QMimeData *mimeData) const
@@ -690,7 +690,7 @@ QList<FORMATETC> QWindowsMimeHtml::formatsForMime(const QString &mimeType, const
 QString QWindowsMimeHtml::mimeForFormat(const FORMATETC &formatetc) const
 {
     if (getCf(formatetc) == CF_HTML)
-        return QStringLiteral("text/html");
+        return u"text/html"_s;
     return QString();
 }
 
@@ -835,7 +835,7 @@ QString QWindowsMimeImage::mimeForFormat(const FORMATETC &formatetc) const
 {
     int cf = getCf(formatetc);
     if (cf == CF_DIB || cf == CF_DIBV5 || cf == int(CF_PNG))
-       return QStringLiteral("application/x-qt-image");
+       return u"application/x-qt-image"_s;
     return QString();
 }
 
@@ -976,8 +976,8 @@ private:
 QBuiltInMimes::QBuiltInMimes()
 : QWindowsMime()
 {
-    outFormats.insert(registerMimeType(QStringLiteral("application/x-color")), QStringLiteral("application/x-color"));
-    inFormats.insert(registerMimeType(QStringLiteral("application/x-color")), QStringLiteral("application/x-color"));
+    outFormats.insert(registerMimeType(u"application/x-color"_s), u"application/x-color"_s);
+    inFormats.insert(registerMimeType(u"application/x-color"_s), u"application/x-color"_s);
 }
 
 bool QBuiltInMimes::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
@@ -1102,25 +1102,25 @@ QLastResortMimes::QLastResortMimes()
 {
     //MIME Media-Types
     if (ianaTypes.isEmpty()) {
-        ianaTypes.append(QStringLiteral("application/"));
-        ianaTypes.append(QStringLiteral("audio/"));
-        ianaTypes.append(QStringLiteral("example/"));
-        ianaTypes.append(QStringLiteral("image/"));
-        ianaTypes.append(QStringLiteral("message/"));
-        ianaTypes.append(QStringLiteral("model/"));
-        ianaTypes.append(QStringLiteral("multipart/"));
-        ianaTypes.append(QStringLiteral("text/"));
-        ianaTypes.append(QStringLiteral("video/"));
+        ianaTypes.append(u"application/"_s);
+        ianaTypes.append(u"audio/"_s);
+        ianaTypes.append(u"example/"_s);
+        ianaTypes.append(u"image/"_s);
+        ianaTypes.append(u"message/"_s);
+        ianaTypes.append(u"model/"_s);
+        ianaTypes.append(u"multipart/"_s);
+        ianaTypes.append(u"text/"_s);
+        ianaTypes.append(u"video/"_s);
     }
     //Types handled by other classes
     if (excludeList.isEmpty()) {
-        excludeList.append(QStringLiteral("HTML Format"));
-        excludeList.append(QStringLiteral("UniformResourceLocator"));
-        excludeList.append(QStringLiteral("text/html"));
-        excludeList.append(QStringLiteral("text/plain"));
-        excludeList.append(QStringLiteral("text/uri-list"));
-        excludeList.append(QStringLiteral("application/x-qt-image"));
-        excludeList.append(QStringLiteral("application/x-color"));
+        excludeList.append(u"HTML Format"_s);
+        excludeList.append(u"UniformResourceLocator"_s);
+        excludeList.append(u"text/html"_s);
+        excludeList.append(u"text/plain"_s);
+        excludeList.append(u"text/uri-list"_s);
+        excludeList.append(u"application/x-qt-image"_s);
+        excludeList.append(u"application/x-color"_s);
     }
 }
 
