@@ -238,8 +238,7 @@ bool QHttpProtocolHandler::sendRequest()
             // _q_connected or _q_encrypted
             return false;
         }
-        QString scheme = m_channel->request.url().scheme();
-        if (scheme == "preconnect-http"_L1 || scheme == "preconnect-https"_L1) {
+        if (m_channel->request.isPreConnect()) {
             m_channel->state = QHttpNetworkConnectionChannel::IdleState;
             m_reply->d_func()->state = QHttpNetworkReplyPrivate::AllDoneState;
             m_channel->allDone();

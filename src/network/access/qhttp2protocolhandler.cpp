@@ -309,8 +309,7 @@ bool QHttp2ProtocolHandler::sendRequest()
     auto &requests = m_channel->h2RequestsToSend;
     for (auto it = requests.begin(), endIt = requests.end(); it != endIt;) {
         const auto &pair = *it;
-        const QString scheme(pair.first.url().scheme());
-        if (scheme == "preconnect-http"_L1 || scheme == "preconnect-https"_L1) {
+        if (pair.first.isPreConnect()) {
             m_connection->preConnectFinished();
             emit pair.second->finished();
             it = requests.erase(it);
