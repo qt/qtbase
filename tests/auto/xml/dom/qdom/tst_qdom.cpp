@@ -2011,15 +2011,8 @@ void tst_QDom::doubleNamespaceDeclarations() const
     QXmlStreamReader streamReader(&file);
     QVERIFY(doc.setContent(&streamReader, QDomDocument::ParseOption::UseNamespaceProcessing));
 
-    // tst_QDom relies on a specific QHash ordering, see QTBUG-25071
     QString docAsString = doc.toString(0);
-    QVERIFY(docAsString == QString::fromLatin1("<a>\n<b p:c=\"\" xmlns:p=\"NS\" p:d=\"\"/>\n</a>\n") ||
-            docAsString == QString::fromLatin1("<a>\n<b p:c=\"\" p:d=\"\" xmlns:p=\"NS\"/>\n</a>\n") ||
-            docAsString == QString::fromLatin1("<a>\n<b p:d=\"\" p:c=\"\" xmlns:p=\"NS\"/>\n</a>\n") ||
-            docAsString == QString::fromLatin1("<a>\n<b p:d=\"\" xmlns:p=\"NS\" p:c=\"\"/>\n</a>\n") ||
-            docAsString == QString::fromLatin1("<a>\n<b xmlns:p=\"NS\" p:c=\"\" p:d=\"\"/>\n</a>\n") ||
-            docAsString == QString::fromLatin1("<a>\n<b xmlns:p=\"NS\" p:d=\"\" p:c=\"\"/>\n</a>\n")
-            );
+    QCOMPARE(docAsString, "<a>\n<b p:c=\"\" p:d=\"\" xmlns:p=\"NS\"/>\n</a>\n");
 }
 
 void tst_QDom::setContentQXmlReaderOverload() const

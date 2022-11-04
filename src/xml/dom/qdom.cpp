@@ -23,6 +23,7 @@
 #include <qxmlstream.h>
 #include <private/qduplicatetracker_p.h>
 #include <private/qstringiterator_p.h>
+#include <qvarlengtharray.h>
 
 #include <stdio.h>
 #include <limits>
@@ -4026,31 +4027,81 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
 
     /* Write out attributes. */
     if (!m_attr->map.isEmpty()) {
+        /*
+         * To ensure that we always output attributes in a consistent
+         * order, sort the attributes before writing them into the
+         * stream. (Note that the order may be different than the one
+         * that e.g. we've read from a file, or the program order in
+         * which these attributes have been populated. We just want to
+         * guarantee reproducibile outputs.)
+         */
+        struct SavedAttribute {
+            QString prefix;
+            QString name;
+            QString encodedValue;
+        };
+
+        /* Gather all the attributes to save. */
+        QVarLengthArray<SavedAttribute, 8> attributesToSave;
+        attributesToSave.reserve(m_attr->map.size());
+
         QDuplicateTracker<QString> outputtedPrefixes;
-        auto it = m_attr->map.constBegin();
-        for (; it != m_attr->map.constEnd(); ++it) {
-            s << ' ';
-            if (it.value()->namespaceURI.isNull()) {
-                s << it.value()->name << "=\"" << encodeText(it.value()->value, true, true) << '\"';
-            } else {
-                s << it.value()->prefix << ':' << it.value()->name << "=\"" << encodeText(it.value()->value, true, true) << '\"';
-                /* This is a fix for 138243, as good as it gets.
-                 *
-                 * QDomElementPrivate::save() output a namespace declaration if
-                 * the element is in a namespace, no matter what. This function do as well, meaning
-                 * that we get two identical namespace declaration if we don't have the if-
-                 * statement below.
-                 *
-                 * This doesn't work when the parent element has the same prefix as us but
-                 * a different namespace. However, this can only occur by the user modifying the element,
-                 * and we don't do fixups by that anyway, and hence it's the user responsibility to not
-                 * arrive in those situations. */
-                if ((!it.value()->ownerNode ||
-                   it.value()->ownerNode->prefix != it.value()->prefix) &&
-                   !outputtedPrefixes.hasSeen(it.value()->prefix)) {
-                    s << " xmlns:" << it.value()->prefix << "=\"" << encodeText(it.value()->namespaceURI, true, true) << '\"';
-                }
+        for (const auto &[key, value] : std::as_const(m_attr->map).asKeyValueRange()) {
+            Q_UNUSED(key); /* We extract the attribute name from the value. */
+            bool mayNeedXmlNS = false;
+
+            SavedAttribute attr;
+            attr.name = value->name;
+            attr.encodedValue = encodeText(value->value, true, true);
+            if (!value->namespaceURI.isNull()) {
+                attr.prefix = value->prefix;
+                mayNeedXmlNS = true;
             }
+
+            attributesToSave.push_back(std::move(attr));
+
+            /*
+             * This is a fix for 138243, as good as it gets.
+             *
+             * QDomElementPrivate::save() output a namespace
+             * declaration if the element is in a namespace, no matter
+             * what. This function do as well, meaning that we get two
+             * identical namespace declaration if we don't have the if-
+             * statement below.
+             *
+             * This doesn't work when the parent element has the same
+             * prefix as us but a different namespace. However, this
+             * can only occur by the user modifying the element, and we
+             * don't do fixups by that anyway, and hence it's the user
+             * responsibility to avoid those situations.
+             */
+
+            if (mayNeedXmlNS
+                && ((!value->ownerNode || value->ownerNode->prefix != value->prefix)
+                    && !outputtedPrefixes.hasSeen(value->prefix)))
+            {
+                attr.prefix = QStringLiteral("xmlns");
+                attr.name = value->prefix;
+                attr.encodedValue = encodeText(value->namespaceURI, true, true);
+                attributesToSave.push_back(std::move(attr));
+            }
+        }
+
+        /* Sort the attributes by prefix and name. */
+        const auto savedAttributeComparator = [](const SavedAttribute &lhs, const SavedAttribute &rhs)
+        {
+            const int cmp = QString::compare(lhs.prefix, rhs.prefix);
+            return (cmp < 0) || ((cmp == 0) && (lhs.name < rhs.name));
+        };
+
+        std::sort(attributesToSave.begin(), attributesToSave.end(), savedAttributeComparator);
+
+        /* Actually stream the sorted attributes. */
+        for (const auto &attr : attributesToSave) {
+            s << ' ';
+            if (!attr.prefix.isEmpty())
+                s << attr.prefix << ':';
+            s << attr.name << "=\"" << attr.encodedValue << '\"';
         }
     }
 
