@@ -422,13 +422,9 @@ void tst_QFiledialog::completer_data()
 
     QDir dir = QDir::root();
 #ifdef Q_OS_ANDROID
-    // Android 11 and above doesn't allow accessing root filesystem as before,
-    // so let's opt int for the app's home.
-    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 30) {
-        const auto homePaths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
-        QVERIFY(!homePaths.isEmpty());
-        dir = QDir(homePaths.first());
-    }
+    const auto homePaths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
+    QVERIFY(!homePaths.isEmpty());
+    dir = QDir(homePaths.first());
 #endif
 
     QFileInfoList list = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
