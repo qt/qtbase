@@ -2226,31 +2226,26 @@ static int numericTypePromotion(const QtPrivate::QMetaTypeInterface *iface1,
     return QMetaType::Int;
 }
 
-namespace {
-template<typename Numeric>
-int spaceShip(Numeric lhs, Numeric rhs)
+template <typename Numeric> static QPartialOrdering spaceShip(Numeric lhs, Numeric rhs)
 {
+    if (lhs == rhs)
+        return QPartialOrdering::Equivalent;
+
     bool smaller;
     if constexpr (std::is_same_v<Numeric, QObject *>)
         smaller = std::less<QObject *>()(lhs, rhs); // can't use less all the time because of bool
     else
         smaller = lhs < rhs;
-    if (smaller)
-        return -1;
-    else if (lhs == rhs)
-        return 0;
-    else
-        return 1;
-}
+    return smaller ? QPartialOrdering::Less : QPartialOrdering::Greater;
 }
 
-static std::optional<int> integralCompare(uint promotedType, const QVariant::Private *d1, const QVariant::Private *d2)
+static QPartialOrdering integralCompare(uint promotedType, const QVariant::Private *d1, const QVariant::Private *d2)
 {
     // use toLongLong to retrieve the data, it gets us all the bits
     std::optional<qlonglong> l1 = qConvertToNumber(d1, promotedType == QMetaType::Bool);
     std::optional<qlonglong> l2 = qConvertToNumber(d2, promotedType == QMetaType::Bool);
     if (!l1 || !l2)
-        return std::nullopt;
+        return QPartialOrdering::Unordered;
     if (promotedType == QMetaType::UInt)
         return spaceShip<uint>(*l1, *l2);
     if (promotedType == QMetaType::LongLong)
@@ -2261,7 +2256,7 @@ static std::optional<int> integralCompare(uint promotedType, const QVariant::Pri
     return spaceShip<int>(*l1, *l2);
 }
 
-static std::optional<int> numericCompare(const QVariant::Private *d1, const QVariant::Private *d2)
+static QPartialOrdering numericCompare(const QVariant::Private *d1, const QVariant::Private *d2)
 {
     uint promotedType = numericTypePromotion(d1->typeInterface(), d2->typeInterface());
     if (promotedType != QMetaType::QReal)
@@ -2271,12 +2266,12 @@ static std::optional<int> numericCompare(const QVariant::Private *d1, const QVar
     std::optional<qreal> r1 = qConvertToRealNumber(d1);
     std::optional<qreal> r2 = qConvertToRealNumber(d2);
     if (!r1 || !r2)
-        return std::nullopt;
+        return QPartialOrdering::Unordered;
     if (*r1 == *r2)
-        return 0;
+        return QPartialOrdering::Equivalent;
 
     if (std::isnan(*r1) || std::isnan(*r2))
-        return std::nullopt;
+        return QPartialOrdering::Unordered;
     return spaceShip<qreal>(*r1, *r2);
 }
 
@@ -2292,7 +2287,7 @@ static bool canConvertMetaObject(QMetaType fromType, QMetaType toType)
     return false;
 }
 
-static int pointerCompare(const QVariant::Private *d1, const QVariant::Private *d2)
+static QPartialOrdering pointerCompare(const QVariant::Private *d1, const QVariant::Private *d2)
 {
     return spaceShip<QObject *>(d1->get<QObject *>(), d2->get<QObject *>());
 }
@@ -2308,11 +2303,11 @@ bool QVariant::equals(const QVariant &v) const
     if (metatype != v.metaType()) {
         // try numeric comparisons, with C++ type promotion rules (no conversion)
         if (qIsNumericType(metatype.id()) && qIsNumericType(v.d.type().id()))
-            return numericCompare(&d, &v.d) == 0;
+            return numericCompare(&d, &v.d) == QPartialOrdering::Equivalent;
 #ifndef QT_BOOTSTRAPPED
         // if both types are related pointers to QObjects, check if they point to the same object
         if (canConvertMetaObject(metatype, v.metaType()))
-            return pointerCompare(&d, &v.d) == 0;
+            return pointerCompare(&d, &v.d) == QPartialOrdering::Equivalent;
 #endif
         return false;
     }
@@ -2322,18 +2317,6 @@ bool QVariant::equals(const QVariant &v) const
         return true;
 
     return metatype.equals(d.storage(), v.d.storage());
-}
-
-static QPartialOrdering convertOptionalToPartialOrdering(const std::optional<int> &opt)
-{
-    if (!opt)
-        return QPartialOrdering::Unordered;
-    else if (*opt < 0)
-        return QPartialOrdering::Less;
-    else if (*opt == 0)
-        return QPartialOrdering::Equivalent;
-    else
-        return QPartialOrdering::Greater;
 }
 
 /*!
@@ -2364,10 +2347,10 @@ QPartialOrdering QVariant::compare(const QVariant &lhs, const QVariant &rhs)
     if (t != rhs.d.type()) {
         // try numeric comparisons, with C++ type promotion rules (no conversion)
         if (qIsNumericType(lhs.d.type().id()) && qIsNumericType(rhs.d.type().id()))
-            return convertOptionalToPartialOrdering(numericCompare(&lhs.d, &rhs.d));
+            return numericCompare(&lhs.d, &rhs.d);
 #ifndef QT_BOOTSTRAPPED
         if (canConvertMetaObject(lhs.metaType(), rhs.metaType()))
-            return convertOptionalToPartialOrdering(pointerCompare(&lhs.d, &rhs.d));
+            return pointerCompare(&lhs.d, &rhs.d);
 #endif
         return QPartialOrdering::Unordered;
     }
