@@ -419,10 +419,9 @@ void tst_QAccessibilityMac::singleWidgetTest()
     TestAXObject *appObject = [TestAXObject getApplicationAXObject];
     QVERIFY(appObject);
 
-    NSArray *windows = [appObject windowList];
-    QVERIFY([windows count] == 1);
+    QTRY_VERIFY(appObject.windowList.count == 1);
 
-    AXUIElementRef windowRef = (AXUIElementRef) [windows objectAtIndex: 0];
+    AXUIElementRef windowRef = (AXUIElementRef) [appObject.windowList objectAtIndex: 0];
     QVERIFY(windowRef != nil);
     TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef: windowRef];
 
@@ -449,10 +448,9 @@ void tst_QAccessibilityMac::lineEditTest()
     TestAXObject *appObject = [TestAXObject getApplicationAXObject];
     QVERIFY(appObject);
 
-    NSArray *windowList = [appObject windowList];
     // one window
-    QVERIFY([windowList count] == 1);
-    AXUIElementRef windowRef = (AXUIElementRef) [windowList objectAtIndex: 0];
+    QTRY_VERIFY(appObject.windowList.count == 1);
+    AXUIElementRef windowRef = (AXUIElementRef) [appObject.windowList objectAtIndex: 0];
     QVERIFY(windowRef != nil);
     TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef: windowRef];
 
@@ -510,10 +508,9 @@ void tst_QAccessibilityMac::hierarchyTest()
     TestAXObject *appObject = [TestAXObject getApplicationAXObject];
     QVERIFY(appObject);
 
-    NSArray *windowList = [appObject windowList];
     // one window
-    QVERIFY([windowList count] == 1);
-    AXUIElementRef windowRef = (AXUIElementRef) [windowList objectAtIndex: 0];
+    QTRY_VERIFY(appObject.windowList.count == 1);
+    AXUIElementRef windowRef = (AXUIElementRef) [appObject.windowList objectAtIndex: 0];
     QVERIFY(windowRef != nil);
     TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef: windowRef];
 
@@ -572,10 +569,9 @@ void tst_QAccessibilityMac::notificationsTest()
     TestAXObject *appObject = [TestAXObject getApplicationAXObject];
     QVERIFY(appObject);
 
-    NSArray *windowList = [appObject windowList];
     // one window
-    QVERIFY([windowList count] == 1);
-    AXUIElementRef windowRef = (AXUIElementRef) [windowList objectAtIndex: 0];
+    QTRY_VERIFY(appObject.windowList.count == 1);
+    AXUIElementRef windowRef = (AXUIElementRef) [appObject.windowList objectAtIndex: 0];
     QVERIFY(windowRef != nil);
     TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef: windowRef];
 
@@ -616,10 +612,9 @@ void tst_QAccessibilityMac::checkBoxTest()
     TestAXObject *appObject = [TestAXObject getApplicationAXObject];
     QVERIFY(appObject);
 
-    NSArray *windowList = [appObject windowList];
     // one window
-    QVERIFY([windowList count] == 1);
-    AXUIElementRef windowRef = (AXUIElementRef) [windowList objectAtIndex: 0];
+    QTRY_VERIFY(appObject.windowList.count == 1);
+    AXUIElementRef windowRef = (AXUIElementRef) [appObject.windowList objectAtIndex: 0];
     QVERIFY(windowRef != nil);
     TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef: windowRef];
 
