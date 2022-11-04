@@ -1,10 +1,14 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#include <QApplication>
+#include <QtWidgets>
+#include <QTest>
+#include <QtCore/qcoreapplication.h>
+
 // some versions of CALayer.h use 'slots' as an identifier
 #define QT_NO_KEYWORDS
 
-#include "tst_qaccessibilitymac_helpers.h"
 #include <QtWidgets/qapplication.h>
 #include <QtWidgets/qlineedit.h>
 #include <QtWidgets/qpushbutton.h>
@@ -54,14 +58,6 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
 
     return dbg;
 }
-
-#define EXPECT(cond) \
-    if (!(cond)) { \
-        qWarning("Failure in %s, line: %d", __FILE__ , __LINE__); \
-        return false; \
-    } \
-
-#define TRY_EXPECT(cond) EXPECT(QTest::qWaitFor([&]{ return (cond); }))
 
 @interface TestAXObject : NSObject
 {
@@ -341,66 +337,140 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
 
 @end
 
+QVector<int> notificationList;
 
-bool singleWidget()
+void observerCallback(AXObserverRef /*observer*/, AXUIElementRef /*element*/, CFStringRef notification, void *)
 {
+    if ([(NSString*)notification isEqualToString: NSAccessibilityFocusedUIElementChangedNotification])
+        notificationList.append(QAccessible::Focus);
+    else if ([(NSString*)notification isEqualToString: NSAccessibilityValueChangedNotification])
+        notificationList.append(QAccessible::ValueChanged);
+    else
+        notificationList.append(-1);
+}
+
+class AccessibleTestWindow : public QWidget
+{
+    Q_OBJECT
+public:
+    AccessibleTestWindow()
+    {
+        new QHBoxLayout(this);
+    }
+
+    void addWidget(QWidget* widget)
+    {
+        layout()->addWidget(widget);
+        widget->show();
+        QVERIFY(QTest::qWaitForWindowExposed(widget));
+    }
+
+    void clearChildren()
+    {
+        qDeleteAll(children());
+        new QHBoxLayout(this);
+    }
+};
+
+class tst_QAccessibilityMac : public QObject
+{
+Q_OBJECT
+private Q_SLOTS:
+    void init();
+    void cleanup();
+
+    void singleWidgetTest();
+    void lineEditTest();
+    void hierarchyTest();
+    void notificationsTest();
+    void checkBoxTest();
+
+private:
+    AccessibleTestWindow *m_window;
+};
+
+
+void tst_QAccessibilityMac::init()
+{
+    m_window = new AccessibleTestWindow();
+    m_window->setWindowTitle("Test window");
+    m_window->show();
+    m_window->resize(400, 400);
+
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+}
+
+void tst_QAccessibilityMac::cleanup()
+{
+    delete m_window;
+}
+
+void tst_QAccessibilityMac::singleWidgetTest()
+{
+    delete m_window;
+    m_window = 0;
+
     QLineEdit *le = new QLineEdit();
     le->setText("button");
     le->show();
-    EXPECT(QTest::qWaitForWindowExposed(le));
+    QVERIFY(QTest::qWaitForWindowExposed(le));
     QCoreApplication::processEvents();
 
     TestAXObject *appObject = [TestAXObject getApplicationAXObject];
-    EXPECT(appObject);
+    QVERIFY(appObject);
 
     NSArray *windows = [appObject windowList];
-    EXPECT([windows count] == 1);
+    QVERIFY([windows count] == 1);
 
     AXUIElementRef windowRef = (AXUIElementRef) [windows objectAtIndex: 0];
-    EXPECT(windowRef != nil);
+    QVERIFY(windowRef != nil);
     TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef: windowRef];
 
     AXUIElementRef lineEditRef = [window findDirectChildByRole: kAXTextFieldRole];
-    EXPECT(lineEditRef != nil);
+    QVERIFY(lineEditRef != nil);
     TestAXObject *lineEdit = [[TestAXObject alloc] initWithAXUIElementRef: lineEditRef];
-    EXPECT([[lineEdit value] isEqualToString:@"button"]);
+    QVERIFY([[lineEdit value] isEqualToString:@"button"]);
 
     // Access invalid reference, should return empty value
     delete le;
     QCoreApplication::processEvents();
     TestAXObject *lineEditInvalid = [[TestAXObject alloc] initWithAXUIElementRef: lineEditRef];
-    EXPECT([[lineEditInvalid value] length] == 0);
-
-    return true;
+    QVERIFY([[lineEditInvalid value] length] == 0);
 }
 
-bool testLineEdit()
+void tst_QAccessibilityMac::lineEditTest()
 {
+    QLineEdit *lineEdit = new QLineEdit(m_window);
+    lineEdit->setText("a11y test QLineEdit");
+    m_window->addWidget(lineEdit);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+
     TestAXObject *appObject = [TestAXObject getApplicationAXObject];
-    EXPECT(appObject);
+    QVERIFY(appObject);
 
     NSArray *windowList = [appObject windowList];
     // one window
-    EXPECT([windowList count] == 1);
+    QVERIFY([windowList count] == 1);
     AXUIElementRef windowRef = (AXUIElementRef) [windowList objectAtIndex: 0];
-    EXPECT(windowRef != nil);
+    QVERIFY(windowRef != nil);
     TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef: windowRef];
 
-    EXPECT([window rect].size.width == 400);
+    QVERIFY([window rect].size.width == 400);
     // height of window includes title bar
-    EXPECT([window rect].size.height >= 400);
+    QVERIFY([window rect].size.height >= 400);
 
-    EXPECT([window.title isEqualToString:@"Test window"]);
+    QVERIFY([window.title isEqualToString:@"Test window"]);
 
     // children of window:
-    AXUIElementRef lineEdit = [window findDirectChildByRole: kAXTextFieldRole];
-    EXPECT(lineEdit != nil);
+    AXUIElementRef lineEditElement = [window findDirectChildByRole: kAXTextFieldRole];
+    QVERIFY(lineEditElement != nil);
 
-    TestAXObject *le = [[TestAXObject alloc] initWithAXUIElementRef: lineEdit];
+    TestAXObject *le = [[TestAXObject alloc] initWithAXUIElementRef: lineEditElement];
     NSString *value = @"a11y test QLineEdit";
-    EXPECT([le.value isEqualToString:value]);
-    EXPECT(value.length <= NSIntegerMax);
-    EXPECT(le.numberOfCharacters == static_cast<NSInteger>(value.length));
+    QVERIFY([le.value isEqualToString:value]);
+    QVERIFY(value.length <= NSIntegerMax);
+    QVERIFY(le.numberOfCharacters == static_cast<NSInteger>(value.length));
     const NSRange ranges[] = {
         { 0, 0},
         { 0, 1},
@@ -415,82 +485,82 @@ bool testLineEdit()
         NSString *expectedSubstring = [value substringWithRange:range];
         NSString *actualSubstring = [le stringForRange:range];
         NSString *actualAttributedSubstring = [le attributedStringForRange:range].string;
-        EXPECT([actualSubstring isEqualTo:expectedSubstring]);
-        EXPECT([actualAttributedSubstring isEqualTo:expectedSubstring]);
+        QVERIFY([actualSubstring isEqualTo:expectedSubstring]);
+        QVERIFY([actualAttributedSubstring isEqualTo:expectedSubstring]);
     }
-    return true;
 }
 
-bool testHierarchy(QWidget *w)
+void tst_QAccessibilityMac::hierarchyTest()
 {
+    QWidget *w = new QWidget(m_window);
+    m_window->addWidget(w);
+
+    w->setLayout(new QVBoxLayout());
+    QPushButton *b = new QPushButton(w);
+    w->layout()->addWidget(b);
+    b->setText("I am a button");
+
+    QPushButton *b2 = new QPushButton(w);
+    w->layout()->addWidget(b2);
+    b2->setText("Button 2");
+
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+
     TestAXObject *appObject = [TestAXObject getApplicationAXObject];
-    EXPECT(appObject);
+    QVERIFY(appObject);
 
     NSArray *windowList = [appObject windowList];
     // one window
-    EXPECT([windowList count] == 1);
+    QVERIFY([windowList count] == 1);
     AXUIElementRef windowRef = (AXUIElementRef) [windowList objectAtIndex: 0];
-    EXPECT(windowRef != nil);
+    QVERIFY(windowRef != nil);
     TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef: windowRef];
 
     // Because the plain widget is filtered out of the hierarchy, we expect the button
     // to be a direct child of the window
     AXUIElementRef buttonRef = [window findDirectChildByRole: kAXButtonRole];
-    EXPECT(buttonRef != nil);
+    QVERIFY(buttonRef != nil);
 
     TestAXObject *buttonObject = [[TestAXObject alloc] initWithAXUIElementRef: buttonRef];
     TestAXObject *parentObject = [[TestAXObject alloc] initWithAXUIElementRef: [buttonObject parent]];
 
     // check that the parent is a window
-    EXPECT([[parentObject role] isEqualToString: NSAccessibilityWindowRole]);
+    QVERIFY([[parentObject role] isEqualToString: NSAccessibilityWindowRole]);
 
     // test the focus
     // child 0 is the layout, then button1 and 2
     QPushButton *button1 = qobject_cast<QPushButton*>(w->children().at(1));
-    EXPECT(button1);
+    QVERIFY(button1);
     QPushButton *button2 = qobject_cast<QPushButton*>(w->children().at(2));
-    EXPECT(button2);
+    QVERIFY(button2);
     button2->setFocus();
 
     AXUIElementRef systemWideElement = AXUIElementCreateSystemWide();
     AXUIElementRef focussedElement = NULL;
     AXError error = AXUIElementCopyAttributeValue(systemWideElement,
         (CFStringRef)NSAccessibilityFocusedUIElementAttribute, (CFTypeRef*)&focussedElement);
-    EXPECT(!error);
-    EXPECT(focussedElement);
+    QVERIFY(!error);
+    QVERIFY(focussedElement);
     TestAXObject *focusButton2 = [[TestAXObject alloc] initWithAXUIElementRef: focussedElement];
 
-    EXPECT([[focusButton2 role] isEqualToString: NSAccessibilityButtonRole]);
-    EXPECT([[focusButton2 title] isEqualToString: @"Button 2"]);
+    QVERIFY([[focusButton2 role] isEqualToString: NSAccessibilityButtonRole]);
+    QVERIFY([[focusButton2 title] isEqualToString: @"Button 2"]);
 
 
     button1->setFocus();
     error = AXUIElementCopyAttributeValue(systemWideElement,
         (CFStringRef)NSAccessibilityFocusedUIElementAttribute, (CFTypeRef*)&focussedElement);
-    EXPECT(!error);
-    EXPECT(focussedElement);
+    QVERIFY(!error);
+    QVERIFY(focussedElement);
     TestAXObject *focusButton1 = [[TestAXObject alloc] initWithAXUIElementRef: focussedElement];
-    EXPECT([[focusButton1 role] isEqualToString: NSAccessibilityButtonRole]);
-    EXPECT([[focusButton1 title] isEqualToString: @"I am a button"]);
-
-    return true;
+    QVERIFY([[focusButton1 role] isEqualToString: NSAccessibilityButtonRole]);
+    QVERIFY([[focusButton1 title] isEqualToString: @"I am a button"]);
 }
 
-QVector<int> notificationList;
-
-void observerCallback(AXObserverRef /*observer*/, AXUIElementRef /*element*/, CFStringRef notification, void *)
+void tst_QAccessibilityMac::notificationsTest()
 {
-    if ([(NSString*)notification isEqualToString: NSAccessibilityFocusedUIElementChangedNotification])
-        notificationList.append(QAccessible::Focus);
-    else if ([(NSString*)notification isEqualToString: NSAccessibilityValueChangedNotification])
-        notificationList.append(QAccessible::ValueChanged);
-    else
-        notificationList.append(-1);
-}
-
-
-bool notifications(QWidget *w)
-{
+    auto *w = m_window;
     QLineEdit *le1 = new QLineEdit(w);
     QLineEdit *le2 = new QLineEdit(w);
     w->layout()->addWidget(le1);
@@ -500,76 +570,81 @@ bool notifications(QWidget *w)
     QTest::qWait(100);
 
     TestAXObject *appObject = [TestAXObject getApplicationAXObject];
-    EXPECT(appObject);
+    QVERIFY(appObject);
 
     NSArray *windowList = [appObject windowList];
     // one window
-    EXPECT([windowList count] == 1);
+    QVERIFY([windowList count] == 1);
     AXUIElementRef windowRef = (AXUIElementRef) [windowList objectAtIndex: 0];
-    EXPECT(windowRef != nil);
+    QVERIFY(windowRef != nil);
     TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef: windowRef];
 
     AXUIElementRef lineEdit1 = [window findDirectChildByRole: kAXTextFieldRole];
-    EXPECT(lineEdit1 != nil);
+    QVERIFY(lineEdit1 != nil);
 
     AXObserverRef observer = 0;
     AXError err = AXObserverCreate(getpid(), observerCallback, &observer);
-    EXPECT(!err);
+    QVERIFY(!err);
     AXObserverAddNotification(observer, appObject.ref, kAXFocusedUIElementChangedNotification, 0);
     AXObserverAddNotification(observer, lineEdit1, kAXValueChangedNotification, 0);
 
     CFRunLoopAddSource( [[NSRunLoop currentRunLoop] getCFRunLoop], AXObserverGetRunLoopSource(observer), kCFRunLoopDefaultMode);
 
-    EXPECT(notificationList.length() == 0);
+    QVERIFY(notificationList.length() == 0);
     le2->setFocus();
-    TRY_EXPECT(notificationList.length() == 1);
-    TRY_EXPECT(notificationList.at(0) == QAccessible::Focus);
+    QTRY_VERIFY(notificationList.length() == 1);
+    QTRY_VERIFY(notificationList.at(0) == QAccessible::Focus);
     le1->setFocus();
-    TRY_EXPECT(notificationList.length() == 2);
-    TRY_EXPECT(notificationList.at(1) == QAccessible::Focus);
+    QTRY_VERIFY(notificationList.length() == 2);
+    QTRY_VERIFY(notificationList.at(1) == QAccessible::Focus);
     le1->setText("hello");
-    TRY_EXPECT(notificationList.length() == 3);
-    TRY_EXPECT(notificationList.at(2) == QAccessible::ValueChanged);
+    QTRY_VERIFY(notificationList.length() == 3);
+    QTRY_VERIFY(notificationList.at(2) == QAccessible::ValueChanged);
     le1->setText("foo");
-    TRY_EXPECT(notificationList.length() == 4);
-    TRY_EXPECT(notificationList.at(3) == QAccessible::ValueChanged);
-
-    return true;
+    QTRY_VERIFY(notificationList.length() == 4);
+    QTRY_VERIFY(notificationList.at(3) == QAccessible::ValueChanged);
 }
 
-bool testCheckBox(QCheckBox *ckBox)
+void tst_QAccessibilityMac::checkBoxTest()
 {
+    QCheckBox *ckBox = new QCheckBox(m_window);
+    ckBox->setText("Great option");
+    m_window->addWidget(ckBox);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+
     TestAXObject *appObject = [TestAXObject getApplicationAXObject];
-    EXPECT(appObject);
+    QVERIFY(appObject);
 
     NSArray *windowList = [appObject windowList];
     // one window
-    EXPECT([windowList count] == 1);
+    QVERIFY([windowList count] == 1);
     AXUIElementRef windowRef = (AXUIElementRef) [windowList objectAtIndex: 0];
-    EXPECT(windowRef != nil);
+    QVERIFY(windowRef != nil);
     TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef: windowRef];
 
     // children of window:
     AXUIElementRef checkBox = [window findDirectChildByRole: kAXCheckBoxRole];
-    EXPECT(checkBox != nil);
+    QVERIFY(checkBox != nil);
 
     TestAXObject *cb = [[TestAXObject alloc] initWithAXUIElementRef: checkBox];
 
     // here start actual checkbox tests
-    EXPECT([cb valueNumber] == 0);
-    EXPECT([cb.title isEqualToString:@"Great option"]);
+    QVERIFY([cb valueNumber] == 0);
+    QVERIFY([cb.title isEqualToString:@"Great option"]);
     // EXPECT(cb.description == nil); // currently returns "" instead of nil
 
-    EXPECT([cb.actions containsObject:(NSString*)kAXPressAction]);
+    QVERIFY([cb.actions containsObject:(NSString*)kAXPressAction]);
 
     [cb performAction:kAXPressAction];
-    EXPECT([cb valueNumber] == 1);
+    QVERIFY([cb valueNumber] == 1);
 
     [cb performAction:kAXPressAction];
-    EXPECT([cb valueNumber] == 0);
+    QVERIFY([cb valueNumber] == 0);
 
     ckBox->setCheckState(Qt::PartiallyChecked);
-    EXPECT([cb valueNumber] == 2);
-
-    return true;
+    QVERIFY([cb valueNumber] == 2);
 }
+
+QTEST_MAIN(tst_QAccessibilityMac)
+#include "tst_qaccessibilitymac.moc"
