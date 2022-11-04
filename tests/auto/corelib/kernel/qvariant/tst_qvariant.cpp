@@ -59,6 +59,29 @@ struct QVariantFromValueCompiles<T, std::void_t<decltype (QVariant::fromValue(st
 static_assert(QVariantFromValueCompiles<int>::value);
 static_assert(!QVariantFromValueCompiles<QObject>::value);
 
+enum EnumTest_Enum0 { EnumTest_Enum0_value = 42, EnumTest_Enum0_negValue = -8 };
+Q_DECLARE_METATYPE(EnumTest_Enum0)
+enum EnumTest_Enum1 : qint64 { EnumTest_Enum1_value = 42, EnumTest_Enum1_bigValue = (Q_INT64_C(1) << 33) + 50 };
+Q_DECLARE_METATYPE(EnumTest_Enum1)
+
+enum EnumTest_Enum3 : qint64 { EnumTest_Enum3_value = -47, EnumTest_Enum3_bigValue = (Q_INT64_C(1) << 56) + 5  };
+Q_DECLARE_METATYPE(EnumTest_Enum3)
+enum EnumTest_Enum4 : quint64 { EnumTest_Enum4_value = 47, EnumTest_Enum4_bigValue = (Q_INT64_C(1) << 52) + 45 };
+Q_DECLARE_METATYPE(EnumTest_Enum4)
+enum EnumTest_Enum5 : uint { EnumTest_Enum5_value = 47 };
+Q_DECLARE_METATYPE(EnumTest_Enum5)
+enum EnumTest_Enum6 : uchar { EnumTest_Enum6_value = 47 };
+Q_DECLARE_METATYPE(EnumTest_Enum6)
+enum class EnumTest_Enum7 { EnumTest_Enum7_value = 47, ensureSignedEnum7 = -1 };
+Q_DECLARE_METATYPE(EnumTest_Enum7)
+enum EnumTest_Enum8 : short { EnumTest_Enum8_value = 47 };
+Q_DECLARE_METATYPE(EnumTest_Enum8)
+
+template <typename T> int qToUnderlying(QFlags<T> f)
+{
+    return f.toInt();
+}
+
 class tst_QVariant : public QObject
 {
     Q_OBJECT
@@ -2728,6 +2751,10 @@ void tst_QVariant::compareNumerics_data() const
     static const auto asString = [](const QVariant &v) {
         if (v.isNull())
             return QStringLiteral("null");
+        if (v.metaType().flags() & QMetaType::IsEnumeration)
+            return v.metaType().flags() & QMetaType::IsUnsignedEnumeration ?
+                        QString::number(v.toULongLong()) :
+                        QString::number(v.toLongLong());
         switch (v.typeId()) {
         case QMetaType::Char:
         case QMetaType::Char16:
@@ -2768,9 +2795,15 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wsign-compare")
 QT_WARNING_DISABLE_GCC("-Wsign-compare")
 QT_WARNING_DISABLE_MSVC(4018)   // '<': signed/unsigned mismatch
-    static const auto addComparePair = [](auto value1, auto value2) {
+    static const auto addComparePairWithResult = [](auto value1, auto value2, QPartialOrdering order) {
         QVariant v1 = QVariant::fromValue(value1);
         QVariant v2 = QVariant::fromValue(value2);
+        QTest::addRow("%s(%s)-%s(%s)", v1.typeName(), qPrintable(asString(v1)),
+                      v2.typeName(), qPrintable(asString(v2)))
+                << v1 << v2 << order;
+    };
+
+    static const auto addComparePair = [](auto value1, auto value2) {
         QPartialOrdering order = QPartialOrdering::Unordered;
         if (value1 == value2)
             order = QPartialOrdering::Equivalent;
@@ -2778,9 +2811,7 @@ QT_WARNING_DISABLE_MSVC(4018)   // '<': signed/unsigned mismatch
             order = QPartialOrdering::Less;
         else if (value1 > value2)
             order = QPartialOrdering::Greater;
-        QTest::addRow("%s(%s)-%s(%s)", v1.typeName(), qPrintable(asString(v1)),
-                      v2.typeName(), qPrintable(asString(v2)))
-                << v1 << v2 << order;
+        addComparePairWithResult(value1, value2, order);
     };
 QT_WARNING_POP
 
@@ -2815,6 +2846,10 @@ QT_WARNING_POP
     addSingleType(quint64(0));
     addSingleType(0.f);
     addSingleType(0.0);
+    addList(std::array{ EnumTest_Enum0{}, EnumTest_Enum0_value, EnumTest_Enum0_negValue });
+    addList(std::array{ EnumTest_Enum1{}, EnumTest_Enum1_value, EnumTest_Enum1_bigValue });
+    addList(std::array{ EnumTest_Enum7{}, EnumTest_Enum7::EnumTest_Enum7_value, EnumTest_Enum7::ensureSignedEnum7 });
+    addList(std::array{ Qt::AlignRight|Qt::AlignHCenter, Qt::AlignCenter|Qt::AlignVCenter });
 
     // heterogeneous
     addComparePair(char(0), qint8(-127));
@@ -2888,6 +2923,52 @@ QT_WARNING_POP
         addComparePair(-double(Q_INT64_C(1) << 53), Q_INT64_C(1) << 53);
         addComparePair(-double(Q_INT64_C(1) << 53) + 1, (Q_INT64_C(1) << 53) + 1);
     }
+
+    // enums vs integers
+    addComparePair(EnumTest_Enum0_value, 0);
+    addComparePair(EnumTest_Enum0_value, 0U);
+    addComparePair(EnumTest_Enum0_value, 0LL);
+    addComparePair(EnumTest_Enum0_value, 0ULL);
+    addComparePair(EnumTest_Enum0_value, int(EnumTest_Enum0_value));
+    addComparePair(EnumTest_Enum0_value, qint64(EnumTest_Enum0_value));
+    addComparePair(EnumTest_Enum0_value, quint64(EnumTest_Enum0_value));
+    addComparePair(EnumTest_Enum0_negValue, int(EnumTest_Enum0_value));
+    addComparePair(EnumTest_Enum0_negValue, qint64(EnumTest_Enum0_value));
+    addComparePair(EnumTest_Enum0_negValue, quint64(EnumTest_Enum0_value));
+    addComparePair(EnumTest_Enum0_negValue, int(EnumTest_Enum0_negValue));
+    addComparePair(EnumTest_Enum0_negValue, qint64(EnumTest_Enum0_negValue));
+    addComparePair(EnumTest_Enum0_negValue, quint64(EnumTest_Enum0_negValue));
+
+    addComparePair(EnumTest_Enum1_value, 0);
+    addComparePair(EnumTest_Enum1_value, 0U);
+    addComparePair(EnumTest_Enum1_value, 0LL);
+    addComparePair(EnumTest_Enum1_value, 0ULL);
+    addComparePair(EnumTest_Enum1_value, int(EnumTest_Enum1_value));
+    addComparePair(EnumTest_Enum1_value, qint64(EnumTest_Enum1_value));
+    addComparePair(EnumTest_Enum1_value, quint64(EnumTest_Enum1_value));
+    addComparePair(EnumTest_Enum1_bigValue, int(EnumTest_Enum1_value));
+    addComparePair(EnumTest_Enum1_bigValue, qint64(EnumTest_Enum1_value));
+    addComparePair(EnumTest_Enum1_bigValue, quint64(EnumTest_Enum1_value));
+    addComparePair(EnumTest_Enum1_bigValue, int(EnumTest_Enum1_bigValue));
+    addComparePair(EnumTest_Enum1_bigValue, qint64(EnumTest_Enum1_bigValue));
+    addComparePair(EnumTest_Enum1_bigValue, quint64(EnumTest_Enum1_bigValue));
+
+    addComparePair(EnumTest_Enum3_value, 0);
+    addComparePair(EnumTest_Enum3_value, 0U);
+    addComparePair(EnumTest_Enum3_value, 0LL);
+    addComparePair(EnumTest_Enum3_value, 0ULL);
+    addComparePair(EnumTest_Enum3_value, int(EnumTest_Enum3_value));
+    addComparePair(EnumTest_Enum3_value, qint64(EnumTest_Enum3_value));
+    addComparePair(EnumTest_Enum3_value, quint64(EnumTest_Enum3_value));
+    addComparePair(EnumTest_Enum3_bigValue, int(EnumTest_Enum3_value));
+    addComparePair(EnumTest_Enum3_bigValue, qint64(EnumTest_Enum3_value));
+    addComparePair(EnumTest_Enum3_bigValue, quint64(EnumTest_Enum3_value));
+    addComparePair(EnumTest_Enum3_bigValue, int(EnumTest_Enum3_bigValue));
+    addComparePair(EnumTest_Enum3_bigValue, qint64(EnumTest_Enum3_bigValue));
+    addComparePair(EnumTest_Enum3_bigValue, quint64(EnumTest_Enum3_bigValue));
+
+    // enums of different types always compare as unordered
+    addComparePairWithResult(EnumTest_Enum0_value, EnumTest_Enum1_value, QPartialOrdering::Unordered);
 }
 
 void tst_QVariant::compareNumerics() const
@@ -4818,27 +4899,16 @@ void tst_QVariant::pairElements()
     TEST_PAIR_ELEMENT_ACCESS(std::pair, int, QVariant, 44, 15)
 }
 
-enum EnumTest_Enum0 { EnumTest_Enum0_value = 42, EnumTest_Enum0_negValue = -8 };
-Q_DECLARE_METATYPE(EnumTest_Enum0)
-enum EnumTest_Enum1 : qint64 { EnumTest_Enum1_value = 42, EnumTest_Enum1_bigValue = (Q_INT64_C(1) << 33) + 50 };
-Q_DECLARE_METATYPE(EnumTest_Enum1)
-
-enum EnumTest_Enum3 : qint64 { EnumTest_Enum3_value = -47, EnumTest_Enum3_bigValue = (Q_INT64_C(1) << 56) + 5  };
-Q_DECLARE_METATYPE(EnumTest_Enum3)
-enum EnumTest_Enum4 : quint64 { EnumTest_Enum4_value = 47, EnumTest_Enum4_bigValue = (Q_INT64_C(1) << 52) + 45 };
-Q_DECLARE_METATYPE(EnumTest_Enum4)
-enum EnumTest_Enum5 : uint { EnumTest_Enum5_value = 47 };
-Q_DECLARE_METATYPE(EnumTest_Enum5)
-enum EnumTest_Enum6 : uchar { EnumTest_Enum6_value = 47 };
-Q_DECLARE_METATYPE(EnumTest_Enum6)
-enum class EnumTest_Enum7 { EnumTest_Enum7_value = 47, ensureSignedEnum7 = -1 };
-Q_DECLARE_METATYPE(EnumTest_Enum7)
-enum EnumTest_Enum8 : short { EnumTest_Enum8_value = 47 };
-Q_DECLARE_METATYPE(EnumTest_Enum8)
-
 template<typename Enum> void testVariant(Enum value, bool *ok)
 {
     *ok = false;
+
+    auto canLosslesslyConvert = [=](auto zero) {
+        return sizeof(value) <= sizeof(zero) ||
+                value == Enum(decltype(zero)(qToUnderlying(value)));
+    };
+    bool losslessConvertToInt = canLosslesslyConvert(int{});
+
     QVariant var = QVariant::fromValue(value);
 
     QCOMPARE(var.userType(), qMetaTypeId<Enum>());
@@ -4850,7 +4920,6 @@ template<typename Enum> void testVariant(Enum value, bool *ok)
     QVERIFY(var.canConvert<unsigned short>());
     QVERIFY(var.canConvert<qint64>());
     QVERIFY(var.canConvert<quint64>());
-
 
     QCOMPARE(var.value<Enum>(), value);
     QCOMPARE(var.value<int>(), static_cast<int>(value));
@@ -4865,7 +4934,7 @@ template<typename Enum> void testVariant(Enum value, bool *ok)
     QCOMPARE(var2.value<int>(), static_cast<int>(value));
 
     // unary + to silence gcc warning
-    if ((+static_cast<qint64>(value) <= INT_MAX) && (+static_cast<qint64>(value) >= INT_MIN)) {
+    if (losslessConvertToInt) {
         int intValue = static_cast<int>(value);
         QVariant intVar = intValue;
         QVERIFY(intVar.canConvert<Enum>());
@@ -4874,6 +4943,72 @@ template<typename Enum> void testVariant(Enum value, bool *ok)
     qint64 longValue = static_cast<qint64>(value);
     QVERIFY(QVariant(longValue).canConvert<Enum>());
     QCOMPARE(QVariant(longValue).value<Enum>(), value);
+
+    auto value2 = Enum(qToUnderlying(value) + 1);
+    var2 = QVariant::fromValue(value2);
+    QCOMPARE_EQ(var, var);
+    QCOMPARE_NE(var, var2);
+    QCOMPARE(QVariant::compare(var, var), QPartialOrdering::Equivalent);
+    QCOMPARE(QVariant::compare(var, var2), QPartialOrdering::Less);
+    QCOMPARE(QVariant::compare(var2, var), QPartialOrdering::Greater);
+
+    QCOMPARE_EQ(var, static_cast<qint64>(value));
+    QCOMPARE_EQ(var, static_cast<quint64>(value));
+    QCOMPARE_EQ(static_cast<qint64>(value), var);
+    QCOMPARE_EQ(static_cast<quint64>(value), var);
+    QCOMPARE_NE(var2, static_cast<qint64>(value));
+    QCOMPARE_NE(var2, static_cast<quint64>(value));
+    QCOMPARE_NE(static_cast<qint64>(value), var2);
+    QCOMPARE_NE(static_cast<quint64>(value), var2);
+
+    if (losslessConvertToInt) {
+        QCOMPARE_EQ(var, int(value));
+        QCOMPARE_EQ(int(value), var);
+        QCOMPARE_NE(var2, int(value));
+        QCOMPARE_NE(int(value), var2);
+    }
+    if (canLosslesslyConvert(uint{})) {
+        QCOMPARE_EQ(var, uint(value));
+        QCOMPARE_EQ(uint(value), var);
+        QCOMPARE_NE(var2, uint(value));
+        QCOMPARE_NE(uint(value), var2);
+    }
+    if (canLosslesslyConvert(short{})) {
+        QCOMPARE_EQ(var, short(value));
+        QCOMPARE_EQ(short(value), var);
+        QCOMPARE_NE(var2, short(value));
+        QCOMPARE_NE(short(value), var2);
+    }
+    if (canLosslesslyConvert(ushort{})) {
+        QCOMPARE_EQ(var, ushort(value));
+        QCOMPARE_EQ(ushort(value), var);
+        QCOMPARE_NE(var2, ushort(value));
+        QCOMPARE_NE(ushort(value), var2);
+    }
+    if (canLosslesslyConvert(char{})) {
+        QCOMPARE_EQ(var, char(value));
+        QCOMPARE_EQ(char(value), var);
+        QCOMPARE_NE(var2, char(value));
+        QCOMPARE_NE(char(value), var2);
+    }
+    if (canLosslesslyConvert(uchar{})) {
+        QCOMPARE_EQ(var, uchar(value));
+        QCOMPARE_EQ(uchar(value), var);
+        QCOMPARE_NE(var2, uchar(value));
+        QCOMPARE_NE(uchar(value), var2);
+    }
+    if (canLosslesslyConvert(qint8{})) {
+        QCOMPARE_EQ(var, qint8(value));
+        QCOMPARE_EQ(qint8(value), var);
+        QCOMPARE_NE(var2, qint8(value));
+        QCOMPARE_NE(qint8(value), var2);
+    }
+
+    // string compares too (of the values in decimal)
+    QCOMPARE_EQ(var, QString::number(qToUnderlying(value)));
+    QCOMPARE_EQ(QString::number(qToUnderlying(value)), var);
+    QCOMPARE_NE(var, QString::number(qToUnderlying(value2)));
+    QCOMPARE_NE(QString::number(qToUnderlying(value2)), var);
 
     *ok = true;
 }

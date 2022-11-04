@@ -2158,15 +2158,49 @@ static bool qIsFloatingPoint(uint tp)
     return tp == QMetaType::Double || tp == QMetaType::Float;
 }
 
+static bool canBeNumericallyCompared(const QtPrivate::QMetaTypeInterface *iface1,
+                                     const QtPrivate::QMetaTypeInterface *iface2)
+{
+    if (!iface1 || !iface2)
+        return false;
+
+    // We don't need QMetaType::id() here because the type Id is always stored
+    // directly for all built-in types.
+    bool isNumeric1 = qIsNumericType(iface1->typeId);
+    bool isNumeric2 = qIsNumericType(iface2->typeId);
+
+    // if they're both numeric (or QString), then they can be compared
+    if (isNumeric1 && isNumeric2)
+        return true;
+
+    bool isEnum1 = iface1->flags & QMetaType::IsEnumeration;
+    bool isEnum2 = iface2->flags & QMetaType::IsEnumeration;
+
+    // if both are enums, we can only compare if they are the same enum
+    // (the language does allow comparing two different enum types, but that's
+    // usually considered poor coding and produces a warning)
+    if (isEnum1 && isEnum2)
+        return QMetaType(iface1) == QMetaType(iface2);
+
+    // if one is an enum and the other is a numeric, we can compare too
+    if (isEnum1 && isNumeric2)
+        return true;
+    if (isNumeric1 && isEnum2)
+        return true;
+
+    // we need at least one enum and one numeric...
+    return false;
+}
+
 static int numericTypePromotion(const QtPrivate::QMetaTypeInterface *iface1,
                                 const QtPrivate::QMetaTypeInterface *iface2)
 {
+    Q_ASSERT(canBeNumericallyCompared(iface1, iface2));
+
     // We don't need QMetaType::id() here because the type Id is always stored
     // directly for the types we're comparing against below.
     uint t1 = iface1->typeId;
     uint t2 = iface2->typeId;
-    Q_ASSERT(qIsNumericType(t1));
-    Q_ASSERT(qIsNumericType(t2));
 
     if ((t1 == QMetaType::Bool && t2 == QMetaType::QString) ||
         (t2 == QMetaType::Bool && t1 == QMetaType::QString))
@@ -2295,7 +2329,7 @@ bool QVariant::equals(const QVariant &v) const
 
     if (metatype != v.metaType()) {
         // try numeric comparisons, with C++ type promotion rules (no conversion)
-        if (qIsNumericType(metatype.id()) && qIsNumericType(v.d.type().id()))
+        if (canBeNumericallyCompared(metatype.iface(), v.d.type().iface()))
             return numericCompare(&d, &v.d) == QPartialOrdering::Equivalent;
 #ifndef QT_BOOTSTRAPPED
         // if both types are related pointers to QObjects, check if they point to the same object
@@ -2339,7 +2373,7 @@ QPartialOrdering QVariant::compare(const QVariant &lhs, const QVariant &rhs)
     QMetaType t = lhs.d.type();
     if (t != rhs.d.type()) {
         // try numeric comparisons, with C++ type promotion rules (no conversion)
-        if (qIsNumericType(lhs.d.type().id()) && qIsNumericType(rhs.d.type().id()))
+        if (canBeNumericallyCompared(lhs.d.type().iface(), rhs.d.type().iface()))
             return numericCompare(&lhs.d, &rhs.d);
 #ifndef QT_BOOTSTRAPPED
         if (canConvertMetaObject(lhs.metaType(), rhs.metaType()))
