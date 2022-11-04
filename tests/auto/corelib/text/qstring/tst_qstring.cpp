@@ -3016,8 +3016,7 @@ void tst_QString::append_special_cases()
 
     {
         QString a = "onetwothree";
-        while (a.size() - 1)
-            a.remove(0, 1);
+        a.erase(a.cbegin(), std::prev(a.cend()));
         QCOMPARE(a.append(u'b'), QString("eb"));
     }
 }
@@ -3705,7 +3704,7 @@ void tst_QString::remove_extra()
         QString s = "BCDEFGHJK";
         QString s1 = s;
         s1.insert(0, u'A');  // detaches
-        s1.remove(0, 1);
+        s1.erase(s1.cbegin());
         QCOMPARE(s1, s);
     }
 

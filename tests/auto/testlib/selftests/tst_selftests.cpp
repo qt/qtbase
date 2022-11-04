@@ -459,11 +459,13 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
     // This code avoids using a QRegExp because QRegExp might be broken.
     // Sample format: 4,000 msec per iteration (total: 4,000, iterations: 1)
 
-    QString sFirstNumber;
-    while (!remaining.isEmpty() && !remaining.at(0).isSpace()) {
-        sFirstNumber += remaining.at(0);
-        remaining.remove(0,1);
-    }
+    const auto begin = remaining.cbegin();
+    auto it = std::find_if(begin, remaining.cend(), [](const auto ch) {
+        return ch.isSpace();
+    });
+    QString sFirstNumber{std::distance(begin, it), Qt::Uninitialized};
+    std::move(begin, it, sFirstNumber.begin());
+    remaining.erase(begin, it);
     remaining = remaining.trimmed();
 
     // 4,000 -> 4000
