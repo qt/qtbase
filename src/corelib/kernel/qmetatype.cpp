@@ -3109,6 +3109,13 @@ static const QtPrivate::QMetaTypeInterface *interfaceForType(int typeId)
 }
 
 /*!
+     \fn QMetaType::QMetaType()
+     \since 6.0
+
+     Constructs a default, invalid, QMetaType object.
+*/
+
+/*!
      \fn QMetaType::QMetaType(int typeId)
      \since 5.0
 
