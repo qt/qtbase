@@ -179,10 +179,10 @@ void tst_QGraphicsEffectSource::init()
     QVERIFY(effect);
     QVERIFY(item);
     QVERIFY(effect->source());
-    effect->reset();
     effect->storeDeviceDependentStuff = false;
     effect->doNothingInDraw = false;
     QCoreApplication::processEvents(); // Process all queued paint events
+    effect->reset();
     item->reset();
 }
 
