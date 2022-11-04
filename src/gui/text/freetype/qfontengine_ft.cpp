@@ -218,10 +218,10 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         FT_Face face;
         if (!face_id.filename.isEmpty()) {
             QString fileName = QFile::decodeName(face_id.filename);
-            if (face_id.filename.startsWith(":qmemoryfonts/")) {
+            if (const char *prefix = ":qmemoryfonts/"; face_id.filename.startsWith(prefix)) {
                 // from qfontdatabase.cpp
                 QByteArray idx = face_id.filename;
-                idx.remove(0, 14); // remove ':qmemoryfonts/'
+                idx.remove(0, strlen(prefix)); // remove ':qmemoryfonts/'
                 bool ok = false;
                 newFreetype->fontData = qt_fontdata_from_index(idx.toInt(&ok));
                 if (!ok)
