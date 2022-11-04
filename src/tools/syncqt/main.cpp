@@ -303,7 +303,7 @@ private:
             if (arg.empty())
                 continue;
 
-            if (arg.size() > 0 && arg[0] == '-') {
+            if (arg[0] == '-') {
                 currentValue = nullptr;
                 currentListValue = nullptr;
                 {
