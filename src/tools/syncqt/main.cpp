@@ -379,7 +379,7 @@ private:
             return false;
         }
 
-        for (auto header : generatedHeaders) {
+        for (const auto &header : generatedHeaders) {
             if (header.size() == 0)
                 continue;
             if (header[0] == '@') {
