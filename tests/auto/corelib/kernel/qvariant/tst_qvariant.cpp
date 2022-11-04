@@ -86,6 +86,12 @@ class tst_QVariant : public QObject
 {
     Q_OBJECT
 
+    static void runTestFunction()
+    {
+        QFETCH(QFunctionPointer, testFunction);
+        testFunction();
+    }
+
 public:
     tst_QVariant(QObject *parent = nullptr)
       : QObject(parent), customNonQObjectPointer(0)
@@ -293,11 +299,18 @@ private slots:
 
     void implicitConstruction();
 
+    void iterateSequentialContainerElements_data();
+    void iterateSequentialContainerElements() { runTestFunction(); }
+    void iterateAssociativeContainerElements_data();
+    void iterateAssociativeContainerElements() { runTestFunction(); }
     void iterateContainerElements();
-    void pairElements();
+    void pairElements_data();
+    void pairElements() { runTestFunction(); }
 
-    void enums();
-    void metaEnums();
+    void enums_data();
+    void enums() { runTestFunction(); }
+    void metaEnums_data();
+    void metaEnums() { runTestFunction(); }
 
     void nullConvert();
 
@@ -4589,7 +4602,7 @@ void sortIterable(QSequentialIterable *iterable)
 }
 
 template<typename Container>
-void testSequentialIteration()
+static void testSequentialIteration()
 {
     int numSeen = 0;
     Container sequence;
@@ -4708,7 +4721,7 @@ void testSequentialIteration()
 }
 
 template<typename Container>
-void testAssociativeIteration()
+static void testAssociativeIteration()
 {
     using Key = typename Container::key_type;
     using Mapped = typename Container::mapped_type;
@@ -4779,35 +4792,53 @@ void testAssociativeIteration()
     QCOMPARE(f, iter.constEnd());
 }
 
-void tst_QVariant::iterateContainerElements()
+void tst_QVariant::iterateSequentialContainerElements_data()
 {
-    testSequentialIteration<QQueue<int>>();
-    testSequentialIteration<QQueue<QVariant>>();
-    testSequentialIteration<QQueue<QString>>();
-    testSequentialIteration<QList<int>>();
-    testSequentialIteration<QList<QVariant>>();
-    testSequentialIteration<QList<QString>>();
-    testSequentialIteration<QList<QByteArray>>();
-    testSequentialIteration<QStack<int>>();
-    testSequentialIteration<QStack<QVariant>>();
-    testSequentialIteration<QStack<QString>>();
-    testSequentialIteration<std::vector<int>>();
-    testSequentialIteration<std::vector<QVariant>>();
-    testSequentialIteration<std::vector<QString>>();
-    testSequentialIteration<std::list<int>>();
-    testSequentialIteration<std::list<QVariant>>();
-    testSequentialIteration<std::list<QString>>();
-    testSequentialIteration<QStringList>();
-    testSequentialIteration<QByteArrayList>();
-    testSequentialIteration<QString>();
-    testSequentialIteration<QByteArray>();
+    QTest::addColumn<QFunctionPointer>("testFunction");
+#define ADD(T)  QTest::newRow(#T) << &testSequentialIteration<T>
+    ADD(QQueue<int>);
+    ADD(QQueue<QVariant>);
+    ADD(QQueue<QString>);
+    ADD(QList<int>);
+    ADD(QList<QVariant>);
+    ADD(QList<QString>);
+    ADD(QList<QByteArray>);
+    ADD(QStack<int>);
+    ADD(QStack<QVariant>);
+    ADD(QStack<QString>);
+    ADD(std::vector<int>);
+    ADD(std::vector<QVariant>);
+    ADD(std::vector<QString>);
+    ADD(std::list<int>);
+    ADD(std::list<QVariant>);
+    ADD(std::list<QString>);
+    ADD(QStringList);
+    ADD(QByteArrayList);
+    ADD(QString);
+    ADD(QByteArray);
 
 #ifdef TEST_FORWARD_LIST
-    testSequentialIteration<std::forward_list<int>>();
-    testSequentialIteration<std::forward_list<QVariant>>();
-    testSequentialIteration<std::forward_list<QString>>();
+    ADD(std::forward_list<int>);
+    ADD(std::forward_list<QVariant>);
+    ADD(std::forward_list<QString>);
 #endif
+#undef ADD
+}
 
+void tst_QVariant::iterateAssociativeContainerElements_data()
+{
+    QTest::addColumn<QFunctionPointer>("testFunction");
+#define ADD(C, K, V)  QTest::newRow(#C #K #V) << &testAssociativeIteration<C<K, V>>;
+    ADD(QHash, int, bool);
+    ADD(QHash, int, int);
+    ADD(QMap, int, bool);
+    ADD(std::map, int, bool);
+    ADD(std::unordered_map, int, bool);
+#undef ADD
+}
+
+void tst_QVariant::iterateContainerElements()
+{
     {
         QVariantList ints;
         ints << 1 << 2 << 3;
@@ -4829,12 +4860,6 @@ void tst_QVariant::iterateContainerElements()
         intsCopy << *(it++);
         QCOMPARE(ints, intsCopy);
     }
-
-    testAssociativeIteration<QHash<int, bool>>();
-    testAssociativeIteration<QHash<int, int>>();
-    testAssociativeIteration<QMap<int, bool>>();
-    testAssociativeIteration<std::map<int, bool>>();
-    testAssociativeIteration<std::unordered_map<int, bool>>();
 
     {
         QMap<int, QString> mapping;
@@ -4878,37 +4903,54 @@ void tst_QVariant::iterateContainerElements()
     }
 }
 
-void tst_QVariant::pairElements()
+template <typename Pair> static void testVariantPairElements()
 {
-    typedef QPair<QVariant, QVariant> QVariantPair;
+    QFETCH(std::function<void(void *)>, makeValue);
+    Pair p;
+    makeValue(&p);
+    QVariant v = QVariant::fromValue(p);
 
-#define TEST_PAIR_ELEMENT_ACCESS(PAIR, T1, T2, VALUE1, VALUE2) \
-    { \
-    PAIR<T1, T2> p(VALUE1, VALUE2); \
-    QVariant v = QVariant::fromValue(p); \
-    \
-    QVERIFY(v.canConvert<QVariantPair>()); \
-    QVariantPair pi = v.value<QVariantPair>(); \
-    QCOMPARE(pi.first, QVariant::fromValue(VALUE1)); \
-    QCOMPARE(pi.second, QVariant::fromValue(VALUE2)); \
-    }
-
-    TEST_PAIR_ELEMENT_ACCESS(QPair, int, int, 4, 5)
-    TEST_PAIR_ELEMENT_ACCESS(std::pair, int, int, 4, 5)
-    TEST_PAIR_ELEMENT_ACCESS(QPair, QString, QString, QStringLiteral("one"), QStringLiteral("two"))
-    TEST_PAIR_ELEMENT_ACCESS(std::pair, QString, QString, QStringLiteral("one"), QStringLiteral("two"))
-    TEST_PAIR_ELEMENT_ACCESS(QPair, QVariant, QVariant, 4, 5)
-    TEST_PAIR_ELEMENT_ACCESS(std::pair, QVariant, QVariant, 4, 5)
-    TEST_PAIR_ELEMENT_ACCESS(QPair, QVariant, int, 41, 15)
-    TEST_PAIR_ELEMENT_ACCESS(std::pair, QVariant, int, 34, 65)
-    TEST_PAIR_ELEMENT_ACCESS(QPair, int, QVariant, 24, 25)
-    TEST_PAIR_ELEMENT_ACCESS(std::pair, int, QVariant, 44, 15)
+    QVERIFY(v.canConvert<QVariantPair>());
+    QVariantPair pi = v.value<QVariantPair>();
+    QCOMPARE(pi.first, QVariant::fromValue(p.first));
+    QCOMPARE(pi.second, QVariant::fromValue(p.second));
 }
 
-template<typename Enum> void testVariant(Enum value, bool *ok)
+void tst_QVariant::pairElements_data()
 {
-    *ok = false;
+    QTest::addColumn<QFunctionPointer>("testFunction");
+    QTest::addColumn<std::function<void(void *)>>("makeValue");
 
+    static auto makeString = [](auto &&value) -> QString {
+        using T = std::decay_t<decltype(value)>;
+        if constexpr (std::is_integral_v<T> || std::is_floating_point_v<T>) {
+            return QString::number(value);
+        } else if constexpr (std::is_same_v<T, QVariant>) {
+            return value.toString();
+        } else {
+            return value;
+        }
+    };
+    auto addRow = [](auto &&first, auto &&second) {
+        using Pair = std::pair<std::decay_t<decltype(first)>, std::decay_t<decltype(second)>>;
+        std::function<void(void *)> makeValue = [=](void *pair) {
+            *static_cast<Pair *>(pair) = Pair{first, second};
+        };
+
+        QTest::addRow("%s", qPrintable(makeString(first) + u',' + makeString(second)))
+                << &testVariantPairElements<Pair> << makeValue;
+    };
+
+    addRow(4, 5);
+    addRow(QStringLiteral("one"), QStringLiteral("two"));
+    addRow(QVariant(4), QVariant(5));
+    addRow(QVariant(41), 65);
+    addRow(41, QVariant(15));
+}
+
+template <auto value> static void testVariantEnum()
+{
+    using Enum = decltype(value);
     auto canLosslesslyConvert = [=](auto zero) {
         return sizeof(value) <= sizeof(zero) ||
                 value == Enum(decltype(zero)(qToUnderlying(value)));
@@ -4916,7 +4958,6 @@ template<typename Enum> void testVariant(Enum value, bool *ok)
     bool losslessConvertToInt = canLosslesslyConvert(int{});
 
     QVariant var = QVariant::fromValue(value);
-
     QCOMPARE(var.userType(), qMetaTypeId<Enum>());
 
     QVERIFY(var.canConvert<Enum>());
@@ -5015,73 +5056,61 @@ template<typename Enum> void testVariant(Enum value, bool *ok)
     QCOMPARE_EQ(QString::number(qToUnderlying(value)), var);
     QCOMPARE_NE(var, QString::number(qToUnderlying(value2)));
     QCOMPARE_NE(QString::number(qToUnderlying(value2)), var);
-
-    *ok = true;
 }
 
-void tst_QVariant::enums()
+void tst_QVariant::enums_data()
 {
-    bool ok = false;
-    testVariant(EnumTest_Enum0_value, &ok);
-    QVERIFY(ok);
-    testVariant(EnumTest_Enum0_negValue, &ok);
-    QVERIFY(ok);
-    testVariant(EnumTest_Enum1_value, &ok);
-    QVERIFY(ok);
-    testVariant(EnumTest_Enum1_bigValue, &ok);
-    QVERIFY(ok);
-    testVariant(EnumTest_Enum3::EnumTest_Enum3_value, &ok);
-    QVERIFY(ok);
-    testVariant(EnumTest_Enum3::EnumTest_Enum3_bigValue, &ok);
-    QVERIFY(ok);
-    testVariant(EnumTest_Enum4::EnumTest_Enum4_value, &ok);
-    QVERIFY(ok);
-    testVariant(EnumTest_Enum4::EnumTest_Enum4_bigValue, &ok);
-    QVERIFY(ok);
-    testVariant(EnumTest_Enum5::EnumTest_Enum5_value, &ok);
-    QVERIFY(ok);
-    testVariant(EnumTest_Enum6::EnumTest_Enum6_value, &ok);
-    QVERIFY(ok);
-    testVariant(EnumTest_Enum7::EnumTest_Enum7_value, &ok);
-    QVERIFY(ok);
-    testVariant(EnumTest_Enum8::EnumTest_Enum8_value, &ok);
-    QVERIFY(ok);
-    testVariant(EnumTest_Enum3::EnumTest_Enum3_value, &ok);
-    QVERIFY(ok);
+    QTest::addColumn<QFunctionPointer>("testFunction");
+
+#define ADD(V)      QTest::newRow(#V) << &testVariantEnum<V>
+    ADD(EnumTest_Enum0_value);
+    ADD(EnumTest_Enum0_negValue);
+    ADD(EnumTest_Enum1_value);
+    ADD(EnumTest_Enum1_bigValue);
+    ADD(EnumTest_Enum3::EnumTest_Enum3_value);
+    ADD(EnumTest_Enum3::EnumTest_Enum3_bigValue);
+    ADD(EnumTest_Enum4::EnumTest_Enum4_value);
+    ADD(EnumTest_Enum4::EnumTest_Enum4_bigValue);
+    ADD(EnumTest_Enum5::EnumTest_Enum5_value);
+    ADD(EnumTest_Enum6::EnumTest_Enum6_value);
+    ADD(EnumTest_Enum7::EnumTest_Enum7_value);
+    ADD(EnumTest_Enum8::EnumTest_Enum8_value);
+    ADD(EnumTest_Enum3::EnumTest_Enum3_value);
+#undef ADD
 }
 
-template<typename Enum> void testVariantMeta(Enum value, bool *ok, const char *string)
+// ### C++20: this would be easier if QFlags were a structural type
+template <typename Enum, auto Value> static void testVariantMetaEnum()
 {
-    testVariant<Enum>(value, ok);
-    QVERIFY(ok);
-    *ok = false;
+    Enum value(Value);
+    QFETCH(QString, string);
 
     QVariant var = QVariant::fromValue(value);
     QVERIFY(var.canConvert<QString>());
     QVERIFY(var.canConvert<QByteArray>());
 
-    QCOMPARE(var.value<QString>(), QString::fromLatin1(string));
-    QCOMPARE(var.value<QByteArray>(), QByteArray(string));
+    QCOMPARE(var.value<QString>(), string);
+    QCOMPARE(var.value<QByteArray>(), string.toLatin1());
 
-    QVariant strVar = QString::fromLatin1(string);
+    QVariant strVar = string;
     QVERIFY(strVar.canConvert<Enum>());
     // unary + to silence gcc warning
     if ((+static_cast<qint64>(value) > INT_MAX) || (+static_cast<qint64>(value) < INT_MIN)) {
         QEXPECT_FAIL("", "QMetaEnum api uses 'int' as return type  QTBUG-27451", Abort);
-        *ok = true;
     }
     QCOMPARE(strVar.value<Enum>(), value);
-    strVar = QByteArray(string);
+    strVar = string.toLatin1();
     QVERIFY(strVar.canConvert<Enum>());
     QCOMPARE(strVar.value<Enum>(), value);
-    *ok = true;
 }
 
-void tst_QVariant::metaEnums()
+void tst_QVariant::metaEnums_data()
 {
-    bool ok = false;
+    QTest::addColumn<QFunctionPointer>("testFunction");
+    QTest::addColumn<QString>("string");
+
 #define METAENUMS_TEST(Value) \
-    testVariantMeta(Value, &ok, #Value); QVERIFY(ok)
+    QTest::newRow(#Value) << &testVariantMetaEnum<decltype(Value), Value> << #Value;
 
     METAENUMS_TEST(MetaEnumTest_Enum0_value);
     METAENUMS_TEST(MetaEnumTest_Enum1_value);
@@ -5094,13 +5123,15 @@ void tst_QVariant::metaEnums()
     METAENUMS_TEST(MetaEnumTest_Enum5_value);
     METAENUMS_TEST(MetaEnumTest_Enum6_value);
     METAENUMS_TEST(MetaEnumTest_Enum8_value);
-
+    { using namespace Qt; METAENUMS_TEST(RichText); }
 #undef METAENUMS_TEST
 
-    testVariantMeta(Qt::RichText, &ok, "RichText");
-    testVariantMeta(Qt::Alignment(Qt::AlignBottom), &ok, "AlignBottom");
-    testVariantMeta(Qt::Alignment(Qt::AlignHCenter | Qt::AlignBottom), &ok,
-                    "AlignHCenter|AlignBottom");
+    QTest::newRow("AlignBottom")
+            << &testVariantMetaEnum<Qt::Alignment, Qt::AlignBottom> << "AlignBottom";
+
+    constexpr auto AlignHCenterBottom = Qt::AlignmentFlag((Qt::AlignHCenter | Qt::AlignBottom).toInt());
+    QTest::newRow("AlignHCenter|AlignBottom")
+            << &testVariantMetaEnum<Qt::Alignment, AlignHCenterBottom> << "AlignHCenter|AlignBottom";
 }
 
 void tst_QVariant::nullConvert()
