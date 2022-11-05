@@ -9,7 +9,6 @@
 #include "qhash.h"
 #include "qsocketnotifier.h"
 #include "qthread.h"
-#include "qelapsedtimer.h"
 
 #include "qeventdispatcher_unix_p.h"
 #include <private/qthread_p.h>
