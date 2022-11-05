@@ -2230,6 +2230,10 @@ template <typename Numeric> static QPartialOrdering spaceShip(Numeric lhs, Numer
 {
     if (lhs == rhs)
         return QPartialOrdering::Equivalent;
+    if constexpr (std::numeric_limits<Numeric>::has_quiet_NaN) {
+        if (std::isnan(lhs) || std::isnan(rhs))
+            return QPartialOrdering::Unordered;
+    }
 
     bool smaller;
     if constexpr (std::is_same_v<Numeric, QObject *>)
@@ -2270,8 +2274,6 @@ static QPartialOrdering numericCompare(const QVariant::Private *d1, const QVaria
     if (*r1 == *r2)
         return QPartialOrdering::Equivalent;
 
-    if (std::isnan(*r1) || std::isnan(*r2))
-        return QPartialOrdering::Unordered;
     return spaceShip<qreal>(*r1, *r2);
 }
 
