@@ -57,24 +57,31 @@ using namespace Qt::StringLiterals;
 
 namespace { // anonymous used to hide QVariant handlers
 
-/*!
-  \internal
- */
+static qlonglong qMetaTypeNumberBySize(const QVariant::Private *d)
+{
+    switch (d->typeInterface()->size) {
+    case 1:
+        return d->get<signed char>();
+    case 2:
+        return d->get<short>();
+    case 4:
+        return d->get<int>();
+    case 8:
+        return d->get<qlonglong>();
+    }
+    Q_UNREACHABLE_RETURN(0);
+}
+
 static qlonglong qMetaTypeNumber(const QVariant::Private *d)
 {
-    switch (d->type().id()) {
+    switch (d->typeInterface()->typeId) {
     case QMetaType::Int:
-        return d->get<int>();
     case QMetaType::LongLong:
-        return d->get<qlonglong>();
     case QMetaType::Char:
-        return qlonglong(d->get<char>());
     case QMetaType::SChar:
-        return qlonglong(d->get<signed char>());
     case QMetaType::Short:
-        return qlonglong(d->get<short>());
     case QMetaType::Long:
-        return qlonglong(d->get<long>());
+        return qMetaTypeNumberBySize(d);
     case QMetaType::Float:
         return qRound64(d->get<float>());
     case QMetaType::Double:
@@ -86,32 +93,28 @@ static qlonglong qMetaTypeNumber(const QVariant::Private *d)
         return d->get<QCborValue>().toInteger();
 #endif
     }
-    Q_ASSERT(false);
-    return 0;
+    Q_UNREACHABLE_RETURN(0);
 }
 
 static qulonglong qMetaTypeUNumber(const QVariant::Private *d)
 {
-    switch (d->type().id()) {
-    case QMetaType::UInt:
-        return d->get<unsigned int>();
-    case QMetaType::ULongLong:
-        return d->get<qulonglong>();
-    case QMetaType::UChar:
+    switch (d->typeInterface()->size) {
+    case 1:
         return d->get<unsigned char>();
-    case QMetaType::UShort:
+    case 2:
         return d->get<unsigned short>();
-    case QMetaType::ULong:
-        return d->get<unsigned long>();
+    case 4:
+        return d->get<unsigned int>();
+    case 8:
+        return d->get<qulonglong>();
     }
-    Q_ASSERT(false);
-    return 0;
+    Q_UNREACHABLE_RETURN(0);
 }
 
 static std::optional<qlonglong> qConvertToNumber(const QVariant::Private *d, bool allowStringToBool = false)
 {
     bool ok;
-    switch (uint(d->type().id())) {
+    switch (d->typeInterface()->typeId) {
     case QMetaType::QString: {
         const QString &s = d->get<QString>();
         if (qlonglong l = s.toLongLong(&ok); ok)
@@ -156,24 +159,12 @@ static std::optional<qlonglong> qConvertToNumber(const QVariant::Private *d, boo
     case QMetaType::UChar:
     case QMetaType::UShort:
     case QMetaType::ULong:
-
         return qlonglong(qMetaTypeUNumber(d));
     }
 
-    QMetaType typeInfo = d->type();
-    if (typeInfo.flags() & QMetaType::IsEnumeration
-        || d->type().id() == QMetaType::QCborSimpleType) {
-        switch (typeInfo.sizeOf()) {
-        case 1:
-            return d->get<signed char>();
-        case 2:
-            return d->get<short>();
-        case 4:
-            return d->get<int>();
-        case 8:
-            return d->get<qlonglong>();
-        }
-    }
+    if (d->typeInterface()->flags & QMetaType::IsEnumeration
+        || d->typeInterface()->typeId == QMetaType::QCborSimpleType)
+        return qMetaTypeNumberBySize(d);
 
     return std::nullopt;
 }
@@ -181,7 +172,7 @@ static std::optional<qlonglong> qConvertToNumber(const QVariant::Private *d, boo
 static std::optional<qreal> qConvertToRealNumber(const QVariant::Private *d)
 {
     bool ok;
-    switch (uint(d->type().id())) {
+    switch (d->typeInterface()->typeId) {
     case QMetaType::QString:
         if (double r = d->get<QString>().toDouble(&ok); ok)
             return qreal(r);
