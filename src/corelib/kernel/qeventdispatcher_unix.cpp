@@ -465,7 +465,7 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     switch (qt_safe_poll(d->pollfds.data(), d->pollfds.size(), tm)) {
     case -1:
-#ifdef QT_POLL_EXIT_ON_ERROR
+#if QT_CONFIG(poll_exit_on_error)
         qFatal("qt_safe_poll errno: %i error: %ls", errno, qUtf16Printable(qt_error_string()));
 #else
         perror("qt_safe_poll");

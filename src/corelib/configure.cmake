@@ -961,13 +961,12 @@ qt_feature("cborstreamwriter" PUBLIC
     LABEL "CBOR stream writing"
     PURPOSE "Provides support for writing the CBOR binary format."
 )
-qt_feature("poll-exit-on-error" PUBLIC
+qt_feature("poll-exit-on-error" PRIVATE
     LABEL "Poll exit on error"
     AUTODETECT OFF
     CONDITION UNIX
     PURPOSE "Exit on error instead of just printing the error code and continue."
 )
-qt_feature_definition("poll-exit-on-error" "QT_POLL_EXIT_ON_ERROR")
 qt_feature("permissions" PUBLIC
     SECTION "Utilities"
     LABEL "Application permissions"
@@ -983,7 +982,6 @@ qt_configure_add_summary_entry(ARGS "icu")
 qt_configure_add_summary_entry(ARGS "system-libb2")
 qt_configure_add_summary_entry(ARGS "mimetype-database")
 qt_configure_add_summary_entry(ARGS "cpp-winrt")
-qt_configure_add_summary_entry(ARGS "poll-exit-on-error")
 qt_configure_add_summary_entry(
     TYPE "firstAvailableFeature"
     ARGS "etw lttng"
