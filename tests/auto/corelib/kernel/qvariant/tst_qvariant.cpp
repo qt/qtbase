@@ -2836,6 +2836,8 @@ QT_WARNING_POP
     addList(std::array{ false, true });
     addList(std::array{ QCborSimpleType{}, QCborSimpleType::False, QCborSimpleType(0xff) });
     addSingleType(char(0));
+    addSingleType(char16_t(0));
+    addSingleType(char32_t(0));
     addSingleType(qint8(0));
     addSingleType(quint8(0));
     addSingleType(qint16(0));
@@ -2856,6 +2858,10 @@ QT_WARNING_POP
     addComparePair(char(127), qint8(127));
     addComparePair(char(127), quint8(127));
     addComparePair(qint8(-1), quint8(255));
+    addComparePair(char16_t(256), qint8(-1));
+    addComparePair(char16_t(256), short(-1));
+    addComparePair(char16_t(256), int(-1));
+    addComparePair(char32_t(256), int(-1));
     addComparePair(0U, -1);
     addComparePair(~0U, -1);
     addComparePair(Q_UINT64_C(0), -1);

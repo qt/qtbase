@@ -157,6 +157,8 @@ static std::optional<qlonglong> qConvertToNumber(const QVariant::Private *d, boo
     case QMetaType::ULongLong:
     case QMetaType::UInt:
     case QMetaType::UChar:
+    case QMetaType::Char16:
+    case QMetaType::Char32:
     case QMetaType::UShort:
     case QMetaType::ULong:
         return qlonglong(qMetaTypeUNumber(d));
@@ -184,6 +186,8 @@ static std::optional<qreal> qConvertToRealNumber(const QVariant::Private *d)
     case QMetaType::ULongLong:
     case QMetaType::UInt:
     case QMetaType::UChar:
+    case QMetaType::Char16:
+    case QMetaType::Char32:
     case QMetaType::UShort:
     case QMetaType::ULong:
         return qreal(qMetaTypeUNumber(d));
@@ -2140,6 +2144,8 @@ static bool qIsNumericType(uint tp)
             Q_UINT64_C(1) << QMetaType::Double |
             Q_UINT64_C(1) << QMetaType::Float |
             Q_UINT64_C(1) << QMetaType::Char |
+            Q_UINT64_C(1) << QMetaType::Char16 |
+            Q_UINT64_C(1) << QMetaType::Char32 |
             Q_UINT64_C(1) << QMetaType::SChar |
             Q_UINT64_C(1) << QMetaType::UChar |
             Q_UINT64_C(1) << QMetaType::Short |
@@ -2227,7 +2233,7 @@ static int numericTypePromotion(const QtPrivate::QMetaTypeInterface *iface1,
     auto isUnsigned = [](uint tp) {
         // only types for which sizeof(T) >= sizeof(int); lesser ones promote to int
         return tp == QMetaType::ULongLong || tp == QMetaType::ULong ||
-                tp == QMetaType::UInt;
+                tp == QMetaType::UInt || tp == QMetaType::Char32;
     };
     bool isUnsigned1 = isUnsigned(t1);
     bool isUnsigned2 = isUnsigned(t2);
