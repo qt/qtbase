@@ -201,9 +201,9 @@ void QSystemSemaphore::setKey(const QString &key, int initialValue, AccessMode m
     d->clearError();
 #if !defined(Q_OS_WIN) && !defined(QT_POSIX_IPC)
     // optimization to not destroy/create the file & semaphore
-    if (key == d->key && mode == Create && d->createdSemaphore && d->createdFile) {
+    if (key == d->key && mode == Create && d->backend.createdSemaphore && d->backend.createdFile) {
         d->initialValue = initialValue;
-        d->unix_key = -1;
+        d->backend.unix_key = -1;
         d->handle(mode);
         return;
     }

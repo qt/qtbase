@@ -1142,6 +1142,9 @@ qt_internal_extend_target(Core CONDITION UNIX AND NOT ANDROID
         ipc/qsharedmemory_posix.cpp
         ipc/qsharedmemory_systemv.cpp
         ipc/qsharedmemory_unix.cpp
+)
+qt_internal_extend_target(Core CONDITION UNIX
+    SOURCES
         ipc/qsystemsemaphore_posix.cpp
         ipc/qsystemsemaphore_systemv.cpp
         ipc/qsystemsemaphore_unix.cpp

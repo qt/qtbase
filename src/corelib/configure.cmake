@@ -758,7 +758,7 @@ qt_feature("systemsemaphore" PUBLIC
     SECTION "Kernel"
     LABEL "QSystemSemaphore"
     PURPOSE "Provides a general counting system semaphore."
-    CONDITION ( NOT INTEGRITY AND NOT VXWORKS AND NOT rtems ) AND ( ANDROID OR WIN32 OR TEST_sysv_sem OR TEST_posix_sem )
+    CONDITION WIN32 OR TEST_sysv_sem OR TEST_posix_sem
 )
 qt_feature_definition("systemsemaphore" "QT_NO_SYSTEMSEMAPHORE" NEGATE VALUE "1")
 qt_feature("xmlstream" PUBLIC

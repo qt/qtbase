@@ -1,4 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2022 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qsystemsemaphore.h"
@@ -8,9 +9,7 @@
 #include <qfile.h>
 #include <qcoreapplication.h>
 
-#ifndef QT_POSIX_IPC
-
-#if QT_CONFIG(systemsemaphore)
+#if QT_CONFIG(sysv_sem)
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -39,22 +38,24 @@ using namespace Qt::StringLiterals;
 
     Setup unix_key
  */
-key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
+key_t QSystemSemaphoreSystemV::handle(QSystemSemaphorePrivate *self, QSystemSemaphore::AccessMode mode)
 {
 #if defined(Q_OS_DARWIN)
     if (qt_apple_isSandboxed()) {
-        errorString = QSystemSemaphore::tr("%1: System V semaphores are not available " \
-            "for sandboxed applications. Please build Qt with -feature-ipc_posix")
-                      .arg("QSystemSemaphore::handle:"_L1);
-        error = QSystemSemaphore::PermissionDenied;
+        // attempting to use System V semaphores will get us a SIGSYS
+        self->setError(QSystemSemaphore::PermissionDenied,
+                       QSystemSemaphore::tr("%1: System V semaphores are not available for "
+                                            "sandboxed applications. Please build Qt with "
+                                            "-feature-ipc_posix")
+                       .arg("QSystemSemaphore::handle:"_L1));
         return -1;
     }
 #endif
 
-    if (key.isEmpty()){
-        errorString = QSystemSemaphore::tr("%1: key is empty")
-                      .arg("QSystemSemaphore::handle:"_L1);
-        error = QSystemSemaphore::KeyError;
+    if (self->key.isEmpty()) {
+        self->setError(QSystemSemaphore::KeyError,
+                       QSystemSemaphore::tr("%1: key is empty")
+                       .arg("QSystemSemaphore::handle:"_L1));
         return -1;
     }
 
@@ -63,23 +64,22 @@ key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
         return unix_key;
 
     // Create the file needed for ftok
-    int built = QtIpcCommon::createUnixKeyFile(QFile::encodeName(fileName));
+    int built = QtIpcCommon::createUnixKeyFile(QFile::encodeName(self->fileName));
     if (-1 == built) {
-        errorString = QSystemSemaphore::tr("%1: unable to make key")
-                      .arg("QSystemSemaphore::handle:"_L1);
-        error = QSystemSemaphore::KeyError;
+        self->setError(QSystemSemaphore::KeyError,
+                       QSystemSemaphore::tr("%1: unable to make key")
+                       .arg("QSystemSemaphore::handle:"_L1));
+
         return -1;
     }
     createdFile = (1 == built);
 
-#if QT_CONFIG(sharedmemory) && !defined(QT_POSIX_IPC) && !defined(Q_OS_ANDROID)
     // Get the unix key for the created file
-    unix_key = ftok(QFile::encodeName(fileName).constData(), 'Q');
-#endif
+    unix_key = ftok(QFile::encodeName(self->fileName).constData(), 'Q');
     if (-1 == unix_key) {
-        errorString = QSystemSemaphore::tr("%1: ftok failed")
-                      .arg("QSystemSemaphore::handle:"_L1);
-        error = QSystemSemaphore::KeyError;
+        self->setError(QSystemSemaphore::KeyError,
+                       QSystemSemaphore::tr("%1: ftok failed")
+                       .arg("QSystemSemaphore::handle:"_L1));
         return -1;
     }
 
@@ -89,8 +89,8 @@ key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
         if (errno == EEXIST)
             semaphore = semget(unix_key, 1, 0600 | IPC_CREAT);
         if (-1 == semaphore) {
-            setErrorString("QSystemSemaphore::handle"_L1);
-            cleanHandle();
+            self->setUnixErrorString("QSystemSemaphore::handle"_L1);
+            cleanHandle(self);
             return -1;
         }
     } else {
@@ -105,12 +105,12 @@ key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
     }
 
     // Created semaphore so initialize its value.
-    if (createdSemaphore && initialValue >= 0) {
+    if (createdSemaphore && self->initialValue >= 0) {
         qt_semun init_op;
-        init_op.val = initialValue;
+        init_op.val = self->initialValue;
         if (-1 == semctl(semaphore, 0, SETVAL, init_op)) {
-            setErrorString("QSystemSemaphore::handle"_L1);
-            cleanHandle();
+            self->setUnixErrorString("QSystemSemaphore::handle"_L1);
+            cleanHandle(self);
             return -1;
         }
     }
@@ -123,22 +123,22 @@ key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
 
     Cleanup the unix_key
  */
-void QSystemSemaphorePrivate::cleanHandle()
+void QSystemSemaphoreSystemV::cleanHandle(QSystemSemaphorePrivate *self)
 {
     unix_key = -1;
 
     // remove the file if we made it
     if (createdFile) {
-        QFile::remove(fileName);
+        QFile::remove(self->fileName);
         createdFile = false;
     }
 
     if (createdSemaphore) {
         if (-1 != semaphore) {
             if (-1 == semctl(semaphore, 0, IPC_RMID, 0)) {
-                setErrorString("QSystemSemaphore::cleanHandle"_L1);
+                self->setUnixErrorString("QSystemSemaphore::cleanHandle"_L1);
 #if defined QSYSTEMSEMAPHORE_DEBUG
-                qDebug("QSystemSemaphore::cleanHandle semctl failed.");
+                qDebug("QSystemSemaphoreSystemV::cleanHandle semctl failed.");
 #endif
             }
             semaphore = -1;
@@ -150,9 +150,9 @@ void QSystemSemaphorePrivate::cleanHandle()
 /*!
     \internal
  */
-bool QSystemSemaphorePrivate::modifySemaphore(int count)
+bool QSystemSemaphoreSystemV::modifySemaphore(QSystemSemaphorePrivate *self, int count)
 {
-    if (-1 == handle())
+    if (handle(self, QSystemSemaphore::Open) == -1)
         return false;
 
     struct sembuf operation;
@@ -166,25 +166,23 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
         // If the semaphore was removed be nice and create it and then modifySemaphore again
         if (errno == EINVAL || errno == EIDRM) {
             semaphore = -1;
-            cleanHandle();
-            handle();
-            return modifySemaphore(count);
+            cleanHandle(self);
+            handle(self, QSystemSemaphore::Open);
+            return modifySemaphore(self, count);
         }
-        setErrorString("QSystemSemaphore::modifySemaphore"_L1);
+        self->setUnixErrorString("QSystemSemaphore::modifySemaphore"_L1);
 #if defined QSYSTEMSEMAPHORE_DEBUG
-        qDebug("QSystemSemaphore::modify failed %d %d %d %d %d",
+        qDebug("QSystemSemaphoreSystemV::modify failed %d %d %d %d %d",
                count, int(semctl(semaphore, 0, GETVAL)), int(errno), int(EIDRM), int(EINVAL);
 #endif
         return false;
     }
 
-    clearError();
+    self->clearError();
     return true;
 }
 
 
 QT_END_NAMESPACE
 
-#endif // QT_CONFIG(systemsemaphore)
-
-#endif // QT_POSIX_IPC
+#endif // QT_CONFIG(sysv_sem)

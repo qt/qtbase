@@ -21,7 +21,7 @@
 
 QT_BEGIN_NAMESPACE
 
-void QSystemSemaphorePrivate::setErrorString(const QString &function)
+void QSystemSemaphorePrivate::setUnixErrorString(QLatin1StringView function)
 {
     // EINVAL is handled in functions so they can give better error strings
     switch (errno) {
@@ -43,12 +43,10 @@ void QSystemSemaphorePrivate::setErrorString(const QString &function)
         errorString = QSystemSemaphore::tr("%1: out of resources").arg(function);
         error = QSystemSemaphore::OutOfResources;
         break;
-#if defined(QT_POSIX_IPC)
     case ENAMETOOLONG:
         errorString = QSystemSemaphore::tr("%1: key too long").arg(function);
         error = QSystemSemaphore::KeyError;
         break;
-#endif
     default:
         errorString = QSystemSemaphore::tr("%1: unknown error %2").arg(function).arg(errno);
         error = QSystemSemaphore::UnknownError;

@@ -13,7 +13,7 @@ using namespace Qt::StringLiterals;
 
 #if QT_CONFIG(systemsemaphore)
 
-void QSystemSemaphorePrivate::setErrorString(const QString &function)
+void QSystemSemaphorePrivate::setWindowsErrorString(QLatin1StringView function)
 {
     BOOL windowsError = GetLastError();
     if (windowsError == 0)
@@ -38,41 +38,41 @@ void QSystemSemaphorePrivate::setErrorString(const QString &function)
     }
 }
 
-HANDLE QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode)
+HANDLE QSystemSemaphoreWin32::handle(QSystemSemaphorePrivate *self, QSystemSemaphore::AccessMode)
 {
     // don't allow making handles on empty keys
-    if (key.isEmpty())
+    if (self->key.isEmpty())
         return 0;
 
     // Create it if it doesn't already exists.
     if (semaphore == 0) {
-        semaphore = CreateSemaphore(0, initialValue, MAXLONG,
-                                    reinterpret_cast<const wchar_t*>(fileName.utf16()));
+        semaphore = CreateSemaphore(0, self->initialValue, MAXLONG,
+                                    reinterpret_cast<const wchar_t*>(self->fileName.utf16()));
         if (semaphore == NULL)
-            setErrorString("QSystemSemaphore::handle"_L1);
+            self->setWindowsErrorString("QSystemSemaphore::handle"_L1);
     }
 
     return semaphore;
 }
 
-void QSystemSemaphorePrivate::cleanHandle()
+void QSystemSemaphoreWin32::cleanHandle(QSystemSemaphorePrivate *)
 {
     if (semaphore && !CloseHandle(semaphore)) {
 #if defined QSYSTEMSEMAPHORE_DEBUG
-        qDebug("QSystemSemaphorePrivate::CloseHandle: sem failed");
+        qDebug("QSystemSemaphoreWin32::CloseHandle: sem failed");
 #endif
     }
     semaphore = 0;
 }
 
-bool QSystemSemaphorePrivate::modifySemaphore(int count)
+bool QSystemSemaphoreWin32::modifySemaphore(QSystemSemaphorePrivate *self, int count)
 {
-    if (0 == handle())
+    if (handle(self, QSystemSemaphore::Open) == nullptr)
         return false;
 
     if (count > 0) {
         if (0 == ReleaseSemaphore(semaphore, count, 0)) {
-            setErrorString("QSystemSemaphore::modifySemaphore"_L1);
+            self->setWindowsErrorString("QSystemSemaphore::modifySemaphore"_L1);
 #if defined QSYSTEMSEMAPHORE_DEBUG
             qDebug("QSystemSemaphore::modifySemaphore ReleaseSemaphore failed");
 #endif
@@ -80,7 +80,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
         }
     } else {
         if (WAIT_OBJECT_0 != WaitForSingleObjectEx(semaphore, INFINITE, FALSE)) {
-            setErrorString("QSystemSemaphore::modifySemaphore"_L1);
+            self->setWindowsErrorString("QSystemSemaphore::modifySemaphore"_L1);
 #if defined QSYSTEMSEMAPHORE_DEBUG
             qDebug("QSystemSemaphore::modifySemaphore WaitForSingleObject failed");
 #endif
@@ -88,7 +88,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
         }
     }
 
-    clearError();
+    self->clearError();
     return true;
 }
 
