@@ -41,6 +41,7 @@ private slots:
     void properties();
     void limits();
     void mantissaOverflow();
+    void dataStream();
 };
 
 void tst_qfloat16::fuzzyCompare_data()
@@ -629,6 +630,30 @@ void tst_qfloat16::mantissaOverflow()
     qFloatToFloat16(f16s, &f, 1);
     QCOMPARE(f16, f16s[0]);
     QVERIFY(qIsNaN(f16));
+}
+
+void tst_qfloat16::dataStream()
+{
+    QByteArray ba;
+    QDataStream ds(&ba, QIODevice::ReadWrite);
+    ds << qfloat16(1.5) << qfloat16(-1);
+    QCOMPARE(ba.size(), 4);
+    QCOMPARE(ds.status(), QDataStream::Ok);
+    QCOMPARE(ba, QByteArray("\x3e\0\xbc\0", 4));
+
+    ds.device()->seek(0);
+    ds.resetStatus();
+    ds.setByteOrder(QDataStream::LittleEndian);
+    ds << qfloat16(0) << qfloat16(-1);
+    QCOMPARE(ds.status(), QDataStream::Ok);
+    QCOMPARE(ba, QByteArray("\0\0\0\xbc", 4));
+
+    ds.device()->seek(0);
+    ds.resetStatus();
+    qfloat16 zero = 1;
+    ds >> zero;
+    QCOMPARE(ds.status(), QDataStream::Ok);
+    QCOMPARE(zero, qfloat16(0));
 }
 
 QTEST_APPLESS_MAIN(tst_qfloat16)
