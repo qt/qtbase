@@ -1,34 +1,15 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qplatformdefs.h"
-
 #include "qsharedmemory.h"
-#include "qsharedmemory_p.h"
-#include "qsystemsemaphore.h"
-#include <qdebug.h>
-
-#include <errno.h>
 
 #if QT_CONFIG(sharedmemory)
-#include <sys/types.h>
-#ifndef QT_POSIX_IPC
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#else
-#include <sys/mman.h>
-#endif
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#endif // QT_CONFIG(sharedmemory)
+#  include "qsharedmemory_p.h"
+#  include <errno.h>
 
-#include "private/qcore_unix_p.h"
-
-#if QT_CONFIG(sharedmemory)
 QT_BEGIN_NAMESPACE
 
-void QSharedMemoryPrivate::setErrorString(QLatin1StringView function)
+void QSharedMemoryPrivate::setUnixErrorString(QLatin1StringView function)
 {
     // EINVAL is handled in functions so they can give better error strings
     switch (errno) {

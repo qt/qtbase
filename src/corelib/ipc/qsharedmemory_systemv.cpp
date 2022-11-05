@@ -11,20 +11,16 @@
 
 #include <errno.h>
 
-#ifndef QT_POSIX_IPC
-
-#if QT_CONFIG(sharedmemory)
+#if QT_CONFIG(sysv_shm)
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#endif // QT_CONFIG(sharedmemory)
 
 #include "private/qcore_unix_p.h"
 
-#if QT_CONFIG(sharedmemory)
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -35,50 +31,54 @@ using namespace QtIpcCommon;
 
     If not already made create the handle used for accessing the shared memory.
 */
-key_t QSharedMemoryPrivate::handle()
+key_t QSharedMemorySystemV::handle(QSharedMemoryPrivate *self)
 {
     // already made
     if (unix_key)
         return unix_key;
 
     // don't allow making handles on empty keys
-    if (nativeKey.isEmpty()) {
-        errorString = QSharedMemory::tr("%1: key is empty").arg("QSharedMemory::handle:"_L1);
-        error = QSharedMemory::KeyError;
+    if (self->nativeKey.isEmpty()) {
+        self->setError(QSharedMemory::KeyError,
+                       QSharedMemory::tr("%1: key is empty")
+                       .arg("QSharedMemory::handle:"_L1));
         return 0;
     }
 
     // ftok requires that an actual file exists somewhere
-    if (!QFile::exists(nativeKey)) {
-        errorString = QSharedMemory::tr("%1: UNIX key file doesn't exist").arg("QSharedMemory::handle:"_L1);
-        error = QSharedMemory::NotFound;
+    if (!QFile::exists(self->nativeKey)) {
+        self->setError(QSharedMemory::NotFound,
+                       QSharedMemory::tr("%1: UNIX key file doesn't exist")
+                       .arg("QSharedMemory::handle:"_L1));
         return 0;
     }
 
-    unix_key = ftok(QFile::encodeName(nativeKey).constData(), 'Q');
+    unix_key = ftok(QFile::encodeName(self->nativeKey).constData(), 'Q');
     if (-1 == unix_key) {
-        errorString = QSharedMemory::tr("%1: ftok failed").arg("QSharedMemory::handle:"_L1);
-        error = QSharedMemory::KeyError;
+        self->setError(QSharedMemory::KeyError,
+                       QSharedMemory::tr("%1: ftok failed")
+                       .arg("QSharedMemory::handle:"_L1));
         unix_key = 0;
     }
     return unix_key;
 }
 
-bool QSharedMemoryPrivate::cleanHandle()
+bool QSharedMemorySystemV::cleanHandle(QSharedMemoryPrivate *)
 {
     unix_key = 0;
     return true;
 }
 
-bool QSharedMemoryPrivate::create(qsizetype size)
+bool QSharedMemorySystemV::create(QSharedMemoryPrivate *self, qsizetype size)
 {
     // build file if needed
     bool createdFile = false;
-    QByteArray nativeKeyFile = QFile::encodeName(nativeKey);
+    QByteArray nativeKeyFile = QFile::encodeName(self->nativeKey);
     int built = createUnixKeyFile(nativeKeyFile);
     if (built == -1) {
-        errorString = QSharedMemory::tr("%1: unable to make key").arg("QSharedMemory::handle:"_L1);
-        error = QSharedMemory::KeyError;
+        self->setError(QSharedMemory::KeyError,
+                       QSharedMemory::tr("%1: unable to make key")
+                       .arg("QSharedMemory::handle:"_L1));
         return false;
     }
     if (built == 1) {
@@ -86,7 +86,7 @@ bool QSharedMemoryPrivate::create(qsizetype size)
     }
 
     // get handle
-    if (!handle()) {
+    if (!handle(self)) {
         if (createdFile)
             unlink(nativeKeyFile);
         return false;
@@ -97,13 +97,14 @@ bool QSharedMemoryPrivate::create(qsizetype size)
         const auto function = "QSharedMemory::create"_L1;
         switch (errno) {
         case EINVAL:
-            errorString = QSharedMemory::tr("%1: system-imposed size restrictions").arg("QSharedMemory::handle"_L1);
-            error = QSharedMemory::InvalidSize;
+            self->setError(QSharedMemory::InvalidSize,
+                           QSharedMemory::tr("%1: system-imposed size restrictions")
+                           .arg("QSharedMemory::handle"_L1));
             break;
         default:
-            setErrorString(function);
+            self->setUnixErrorString(function);
         }
-        if (createdFile && error != QSharedMemory::AlreadyExists)
+        if (createdFile && self->error != QSharedMemory::AlreadyExists)
             unlink(nativeKeyFile);
         return false;
     }
@@ -111,56 +112,56 @@ bool QSharedMemoryPrivate::create(qsizetype size)
     return true;
 }
 
-bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
+bool QSharedMemorySystemV::attach(QSharedMemoryPrivate *self, QSharedMemory::AccessMode mode)
 {
     // grab the shared memory segment id
     int id = shmget(unix_key, 0, (mode == QSharedMemory::ReadOnly ? 0400 : 0600));
     if (-1 == id) {
-        setErrorString("QSharedMemory::attach (shmget)"_L1);
+        self->setUnixErrorString("QSharedMemory::attach (shmget)"_L1);
         return false;
     }
 
     // grab the memory
-    memory = shmat(id, nullptr, (mode == QSharedMemory::ReadOnly ? SHM_RDONLY : 0));
-    if ((void *)-1 == memory) {
-        memory = nullptr;
-        setErrorString("QSharedMemory::attach (shmat)"_L1);
+    self->memory = shmat(id, nullptr, (mode == QSharedMemory::ReadOnly ? SHM_RDONLY : 0));
+    if (self->memory == MAP_FAILED) {
+        self->memory = nullptr;
+        self->setUnixErrorString("QSharedMemory::attach (shmat)"_L1);
         return false;
     }
 
     // grab the size
     shmid_ds shmid_ds;
     if (!shmctl(id, IPC_STAT, &shmid_ds)) {
-        size = (qsizetype)shmid_ds.shm_segsz;
+        self->size = (qsizetype)shmid_ds.shm_segsz;
     } else {
-        setErrorString("QSharedMemory::attach (shmctl)"_L1);
+        self->setUnixErrorString("QSharedMemory::attach (shmctl)"_L1);
         return false;
     }
 
     return true;
 }
 
-bool QSharedMemoryPrivate::detach()
+bool QSharedMemorySystemV::detach(QSharedMemoryPrivate *self)
 {
     // detach from the memory segment
-    if (-1 == shmdt(memory)) {
+    if (shmdt(self->memory) < 0) {
         const auto function = "QSharedMemory::detach"_L1;
         switch (errno) {
         case EINVAL:
-            errorString = QSharedMemory::tr("%1: not attached").arg(function);
-            error = QSharedMemory::NotFound;
+            self->setError(QSharedMemory::NotFound,
+                           QSharedMemory::tr("%1: not attached").arg(function));
             break;
         default:
-            setErrorString(function);
+            self->setUnixErrorString(function);
         }
         return false;
     }
-    memory = nullptr;
-    size = 0;
+    self->memory = nullptr;
+    self->size = 0;
 
     // Get the number of current attachments
     int id = shmget(unix_key, 0, 0400);
-    cleanHandle();
+    cleanHandle(self);
 
     struct shmid_ds shmid_ds;
     if (0 != shmctl(id, IPC_STAT, &shmid_ds)) {
@@ -175,7 +176,7 @@ bool QSharedMemoryPrivate::detach()
     if (shmid_ds.shm_nattch == 0) {
         // mark for removal
         if (-1 == shmctl(id, IPC_RMID, &shmid_ds)) {
-            setErrorString("QSharedMemory::remove"_L1);
+            self->setUnixErrorString("QSharedMemory::remove"_L1);
             switch (errno) {
             case EINVAL:
                 return true;
@@ -185,15 +186,12 @@ bool QSharedMemoryPrivate::detach()
         }
 
         // remove file
-        if (!unlink(QFile::encodeName(nativeKey)))
+        if (!unlink(QFile::encodeName(self->nativeKey)))
             return false;
     }
     return true;
 }
 
-
 QT_END_NAMESPACE
 
-#endif // QT_CONFIG(sharedmemory)
-
-#endif // QT_POSIX_IPC
+#endif // QT_CONFIG(sysv_shm)

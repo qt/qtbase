@@ -13,7 +13,7 @@ using namespace Qt::StringLiterals;
 
 #if QT_CONFIG(sharedmemory)
 
-void QSharedMemoryPrivate::setErrorString(QLatin1StringView function)
+void QSharedMemoryPrivate::setWindowsErrorString(QLatin1StringView function)
 {
     DWORD windowsError = GetLastError();
     if (windowsError == 0)
@@ -49,42 +49,41 @@ void QSharedMemoryPrivate::setErrorString(QLatin1StringView function)
     }
 }
 
-HANDLE QSharedMemoryPrivate::handle()
+HANDLE QSharedMemoryWin32::handle(QSharedMemoryPrivate *self)
 {
     if (!hand) {
         const auto function = "QSharedMemory::handle"_L1;
-        if (nativeKey.isEmpty()) {
-            error = QSharedMemory::KeyError;
-            errorString = QSharedMemory::tr("%1: unable to make key").arg(function);
+        if (self->nativeKey.isEmpty()) {
+            self->setError(QSharedMemory::KeyError,
+                           QSharedMemory::tr("%1: unable to make key").arg(function));
             return 0;
         }
         hand = OpenFileMapping(FILE_MAP_ALL_ACCESS, false,
-                               reinterpret_cast<const wchar_t *>(nativeKey.utf16()));
+                               reinterpret_cast<const wchar_t *>(self->nativeKey.utf16()));
         if (!hand) {
-            setErrorString(function);
+            self->setWindowsErrorString(function);
             return 0;
         }
     }
     return hand;
 }
 
-bool QSharedMemoryPrivate::cleanHandle()
+bool QSharedMemoryWin32::cleanHandle(QSharedMemoryPrivate *)
 {
     if (hand != 0 && !CloseHandle(hand)) {
         hand = 0;
-        setErrorString("QSharedMemory::cleanHandle"_L1);
         return false;
     }
     hand = 0;
     return true;
 }
 
-bool QSharedMemoryPrivate::create(qsizetype size)
+bool QSharedMemoryWin32::create(QSharedMemoryPrivate *self, qsizetype size)
 {
     const auto function = "QSharedMemory::create"_L1;
-    if (nativeKey.isEmpty()) {
-        error = QSharedMemory::KeyError;
-        errorString = QSharedMemory::tr("%1: key error").arg(function);
+    if (self->nativeKey.isEmpty()) {
+        self->setError(QSharedMemory::KeyError,
+                       QSharedMemory::tr("%1: key error").arg(function));
         return false;
     }
 
@@ -96,50 +95,51 @@ bool QSharedMemoryPrivate::create(qsizetype size)
         high = 0;
     low = DWORD(size_t(size) & 0xffffffff);
     hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, high, low,
-                             reinterpret_cast<const wchar_t *>(nativeKey.utf16()));
-    setErrorString(function);
+                             reinterpret_cast<const wchar_t *>(self->nativeKey.utf16()));
+    self->setWindowsErrorString(function);
 
     // hand is valid when it already exists unlike unix so explicitly check
-    return error != QSharedMemory::AlreadyExists && hand;
+    return self->error != QSharedMemory::AlreadyExists && hand;
 }
 
-bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
+bool QSharedMemoryWin32::attach(QSharedMemoryPrivate *self, QSharedMemory::AccessMode mode)
 {
     // Grab a pointer to the memory block
     int permissions = (mode == QSharedMemory::ReadOnly ? FILE_MAP_READ : FILE_MAP_ALL_ACCESS);
-    memory = (void *)MapViewOfFile(handle(), permissions, 0, 0, 0);
-    if (0 == memory) {
-        setErrorString("QSharedMemory::attach"_L1);
-        cleanHandle();
+    self->memory = (void *)MapViewOfFile(handle(self), permissions, 0, 0, 0);
+    if (!self->memory) {
+        self->setWindowsErrorString("QSharedMemory::attach"_L1);
+        cleanHandle(self);
         return false;
     }
 
     // Grab the size of the memory we have been given (a multiple of 4K on windows)
     MEMORY_BASIC_INFORMATION info;
-    if (!VirtualQuery(memory, &info, sizeof(info))) {
+    if (!VirtualQuery(self->memory, &info, sizeof(info))) {
         // Windows doesn't set an error code on this one,
         // it should only be a kernel memory error.
-        error = QSharedMemory::UnknownError;
-        errorString = QSharedMemory::tr("%1: size query failed").arg("QSharedMemory::attach: "_L1);
+        self->setError(QSharedMemory::UnknownError,
+                       QSharedMemory::tr("%1: size query failed")
+                       .arg("QSharedMemory::attach: "_L1));
         return false;
     }
-    size = qsizetype(info.RegionSize);
+    self->size = qsizetype(info.RegionSize);
 
     return true;
 }
 
-bool QSharedMemoryPrivate::detach()
+bool QSharedMemoryWin32::detach(QSharedMemoryPrivate *self)
 {
     // umap memory
-    if (!UnmapViewOfFile(memory)) {
-        setErrorString("QSharedMemory::detach"_L1);
+    if (!UnmapViewOfFile(self->memory)) {
+        self->setWindowsErrorString("QSharedMemory::detach"_L1);
         return false;
     }
-    memory = 0;
-    size = 0;
+    self->memory = 0;
+    self->size = 0;
 
     // close handle
-    return cleanHandle();
+    return cleanHandle(self);
 }
 
 #endif // QT_CONFIG(sharedmemory)

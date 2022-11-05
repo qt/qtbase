@@ -23,11 +23,16 @@
 #include "qsystemsemaphore.h"
 #include "private/qobject_p.h"
 
-#if !defined(Q_OS_WIN) && !defined(Q_OS_ANDROID) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_RTEMS)
-#  include <sys/sem.h>
+#if QT_CONFIG(posix_shm)
+#  include <sys/mman.h>
+#endif
+#if QT_CONFIG(sysv_shm)
+#  include <sys/shm.h>
 #endif
 
 QT_BEGIN_NAMESPACE
+
+class QSharedMemoryPrivate;
 
 #if QT_CONFIG(systemsemaphore)
 /*!
@@ -61,6 +66,44 @@ private:
 };
 #endif // QT_CONFIG(systemsemaphore)
 
+class QSharedMemoryPosix
+{
+public:
+    bool handle(QSharedMemoryPrivate *self);
+    bool cleanHandle(QSharedMemoryPrivate *self);
+    bool create(QSharedMemoryPrivate *self, qsizetype size);
+    bool attach(QSharedMemoryPrivate *self, QSharedMemory::AccessMode mode);
+    bool detach(QSharedMemoryPrivate *self);
+
+    int hand = -1;
+};
+
+class QSharedMemorySystemV
+{
+public:
+#if QT_CONFIG(sysv_sem)
+    key_t handle(QSharedMemoryPrivate *self);
+    bool cleanHandle(QSharedMemoryPrivate *self);
+    bool create(QSharedMemoryPrivate *self, qsizetype size);
+    bool attach(QSharedMemoryPrivate *self, QSharedMemory::AccessMode mode);
+    bool detach(QSharedMemoryPrivate *self);
+
+    key_t unix_key = 0;
+#endif
+};
+
+class QSharedMemoryWin32
+{
+public:
+    Qt::HANDLE handle(QSharedMemoryPrivate *self);
+    bool cleanHandle(QSharedMemoryPrivate *self);
+    bool create(QSharedMemoryPrivate *self, qsizetype size);
+    bool attach(QSharedMemoryPrivate *self, QSharedMemory::AccessMode mode);
+    bool detach(QSharedMemoryPrivate *self);
+
+    Qt::HANDLE hand = nullptr;
+};
+
 class Q_AUTOTEST_EXPORT QSharedMemoryPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QSharedMemory)
@@ -70,27 +113,49 @@ public:
     qsizetype size = 0;
     QString key;
     QString nativeKey;
-    QSharedMemory::SharedMemoryError error = QSharedMemory::NoError;
     QString errorString;
 #if QT_CONFIG(systemsemaphore)
     QSystemSemaphore systemSemaphore{QString()};
     bool lockedByMe = false;
 #endif
+    QSharedMemory::SharedMemoryError error = QSharedMemory::NoError;
 
-#ifdef Q_OS_WIN
-    Qt::HANDLE handle();
+#if defined(Q_OS_WIN)
+    using DefaultBackend = QSharedMemoryWin32;
 #elif defined(QT_POSIX_IPC)
-    int handle();
+    using DefaultBackend = QSharedMemoryPosix;
 #else
-    key_t handle();
+    using DefaultBackend = QSharedMemorySystemV;
 #endif
-    bool initKey();
-    bool cleanHandle();
-    bool create(qsizetype size);
-    bool attach(QSharedMemory::AccessMode mode);
-    bool detach();
+    DefaultBackend backend;
 
-    void setErrorString(QLatin1StringView function);
+    bool initKey();
+
+    bool handle()
+    {
+        return backend.handle(this);
+    }
+    bool cleanHandle()
+    {
+        return backend.cleanHandle(this);
+    }
+    bool create(qsizetype size)
+    {
+        return backend.create(this, size);
+    }
+    bool attach(QSharedMemory::AccessMode mode)
+    {
+        return backend.attach(this, mode);
+    }
+    bool detach()
+    {
+        return backend.detach(this);
+    }
+
+    inline void setError(QSharedMemory::SharedMemoryError e, const QString &message)
+    { error = e; errorString = message; }
+    void setUnixErrorString(QLatin1StringView function);
+    void setWindowsErrorString(QLatin1StringView function);
 
 #if QT_CONFIG(systemsemaphore)
     bool tryLocker(QSharedMemoryLocker *locker, const QString &function) {
@@ -102,15 +167,6 @@ public:
         return true;
     }
 #endif // QT_CONFIG(systemsemaphore)
-
-private:
-#ifdef Q_OS_WIN
-    Qt::HANDLE hand = nullptr;
-#elif defined(QT_POSIX_IPC)
-    int hand = -1;
-#else
-    key_t unix_key = 0;
-#endif
 };
 
 QT_END_NAMESPACE

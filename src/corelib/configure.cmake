@@ -745,7 +745,7 @@ qt_feature("sharedmemory" PUBLIC
     SECTION "Kernel"
     LABEL "QSharedMemory"
     PURPOSE "Provides access to a shared memory segment."
-    CONDITION ( ANDROID OR WIN32 OR ( NOT VXWORKS AND ( TEST_sysv_shm OR TEST_posix_shm ) ) )
+    CONDITION WIN32 OR TEST_sysv_shm OR TEST_posix_shm
 )
 qt_feature_definition("sharedmemory" "QT_NO_SHAREDMEMORY" NEGATE VALUE "1")
 qt_feature("shortcut" PUBLIC
