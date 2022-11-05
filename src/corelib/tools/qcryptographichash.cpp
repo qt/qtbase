@@ -5,6 +5,8 @@
 #include <qcryptographichash.h>
 #include <qiodevice.h>
 
+#include <array>
+
 #include "../../3rdparty/sha1/sha1.cpp"
 
 #if defined(QT_BOOTSTRAPPED) && !defined(QT_CRYPTOGRAPHICHASH_ONLY_SHA1)
