@@ -704,6 +704,12 @@ public:
     QString &remove(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive);
     QString &remove(QLatin1StringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive);
     QString &remove(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive);
+
+    QString &removeAt(qsizetype pos)
+    { return size_t(pos) < size_t(size()) ? remove(pos, 1) : *this; }
+    QString &removeFirst() { return !isEmpty() ? remove(0, 1) : *this; }
+    QString &removeLast() { return !isEmpty() ? remove(size() - 1, 1) : *this; }
+
     template <typename Predicate>
     QString &removeIf(Predicate pred)
     {

@@ -53,6 +53,7 @@ private slots:
     void insertExtended();
     void remove_data();
     void remove();
+    void remove_extra();
     void removeIf();
     void erase();
     void erase_single_arg();
@@ -1068,6 +1069,22 @@ void tst_QByteArray::remove()
     QByteArray ba2 = src;
     ba2.detach();
     QCOMPARE(ba2.remove(position, length), expected);
+}
+
+void tst_QByteArray::remove_extra()
+{
+    QByteArray ba = "Clock";
+    ba.removeFirst();
+    QCOMPARE(ba, "lock");
+    ba.removeLast();
+    QCOMPARE(ba, "loc");
+    ba.removeAt(ba.indexOf('o'));
+    QCOMPARE(ba, "lc");
+    ba.clear();
+    // No crash on empty byte arrays
+    ba.removeFirst();
+    ba.removeLast();
+    ba.removeAt(2);
 }
 
 void tst_QByteArray::removeIf()

@@ -233,6 +233,11 @@ public:
     { return insert(i, QByteArrayView(s, len)); }
 
     QByteArray &remove(qsizetype index, qsizetype len);
+    QByteArray &removeAt(qsizetype pos)
+    { return size_t(pos) < size_t(size()) ? remove(pos, 1) : *this; }
+    QByteArray &removeFirst() { return !isEmpty() ? remove(0, 1) : *this; }
+    QByteArray &removeLast() { return !isEmpty() ? remove(size() - 1, 1) : *this; }
+
     template <typename Predicate>
     QByteArray &removeIf(Predicate pred)
     {

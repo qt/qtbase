@@ -3386,6 +3386,39 @@ QString &QString::remove(QLatin1StringView str, Qt::CaseSensitivity cs)
 }
 
 /*!
+  \fn QString &QString::removeAt(qsizetype pos)
+
+  \since 6.5
+
+  Removes the character at index \a pos. If \a pos is out of bounds
+  (i.e. \a pos >= size()), this function does nothing.
+
+  \sa remove()
+*/
+
+/*!
+  \fn QString &QString::removeFirst()
+
+  \since 6.5
+
+  Removes the first character in this string. If the string is empty,
+  this function does nothing.
+
+  \sa remove()
+*/
+
+/*!
+  \fn QString &QString::removeLast()
+
+  \since 6.5
+
+  Removes the last character in this string. If the string is empty,
+  this function does nothing.
+
+  \sa remove()
+*/
+
+/*!
   Removes every occurrence of the character \a ch in this string, and
   returns a reference to this string.
 

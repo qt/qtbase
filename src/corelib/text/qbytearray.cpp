@@ -2271,6 +2271,38 @@ QByteArray &QByteArray::remove(qsizetype pos, qsizetype len)
 }
 
 /*!
+  \fn QByteArray &QByteArray::removeAt(qsizetype pos)
+
+  \since 6.5
+
+  Removes the character at index \a pos. If \a pos is out of bounds
+  (i.e. \a pos >= size()) this function does nothing.
+
+  \sa remove()
+*/
+
+/*!
+  \fn QByteArray &QByteArray::removeFirst()
+
+  \since 6.5
+
+  Removes the first character in this byte array. If the byte array is empty,
+  this function does nothing.
+
+  \sa remove()
+*/
+/*!
+  \fn QByteArray &QByteArray::removeLast()
+
+  \since 6.5
+
+  Removes the last character in this byte array. If the byte array is empty,
+  this function does nothing.
+
+  \sa remove()
+*/
+
+/*!
     \fn template <typename Predicate> QByteArray &QByteArray::removeIf(Predicate pred)
     \since 6.1
 

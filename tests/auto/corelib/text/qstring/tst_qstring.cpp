@@ -3452,6 +3452,21 @@ void tst_QString::remove_extra()
         s1.remove(0, 1);
         QCOMPARE(s1, s);
     }
+
+    {
+        QString s = "Clock";
+        s.removeFirst();
+        QCOMPARE(s, "lock");
+        s.removeLast();
+        QCOMPARE(s, "loc");
+        s.removeAt(s.indexOf('o'));
+        QCOMPARE(s, "lc");
+        s.clear();
+        // No crash on empty strings
+        s.removeFirst();
+        s.removeLast();
+        s.removeAt(2);
+    }
 }
 
 void tst_QString::erase_single_arg()
