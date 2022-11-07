@@ -45,12 +45,15 @@
 #include <QHostInfo>
 
 #include "QtCore/qapplicationstatic.h"
+#include "QtCore/qloggingcategory.h"
 #include <QtCore/private/qfactoryloader_p.h>
 
 #if defined(Q_OS_MACOS)
+#include <QtCore/private/qcore_mac_p.h>
+
 #include <CoreServices/CoreServices.h>
 #include <SystemConfiguration/SystemConfiguration.h>
-#include <Security/SecKeychain.h>
+#include <Security/Security.h>
 #endif
 #ifdef Q_OS_WASM
 #include "qnetworkreplywasmimpl_p.h"
@@ -66,6 +69,8 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+Q_LOGGING_CATEGORY(lcQnam, "qt.network.access.manager")
+
 Q_APPLICATION_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
 
 #ifdef QT_BUILD_INTERNAL
@@ -77,55 +82,72 @@ Q_APPLICATION_STATIC(QFactoryLoader, loader, QNetworkAccessBackendFactory_iid, "
 #if defined(Q_OS_MACOS)
 bool getProxyAuth(const QString& proxyHostname, const QString &scheme, QString& username, QString& password)
 {
-    OSStatus err;
-    SecKeychainItemRef itemRef;
-    bool retValue = false;
-    SecProtocolType protocolType = kSecProtocolTypeAny;
+    CFStringRef protocolType = nullptr;
     if (scheme.compare("ftp"_L1, Qt::CaseInsensitive) == 0) {
-        protocolType = kSecProtocolTypeFTPProxy;
+        protocolType = kSecAttrProtocolFTPProxy;
     } else if (scheme.compare("http"_L1, Qt::CaseInsensitive) == 0
                || scheme.compare("preconnect-http"_L1, Qt::CaseInsensitive) == 0) {
-        protocolType = kSecProtocolTypeHTTPProxy;
+        protocolType = kSecAttrProtocolHTTPProxy;
     } else if (scheme.compare("https"_L1,Qt::CaseInsensitive)==0
                || scheme.compare("preconnect-https"_L1, Qt::CaseInsensitive) == 0) {
-        protocolType = kSecProtocolTypeHTTPSProxy;
+        protocolType = kSecAttrProtocolHTTPSProxy;
+    } else {
+        qCWarning(lcQnam) << "Cannot query user name and password for a proxy, unnknown protocol:"
+                          << scheme;
+        return false;
     }
-    QByteArray proxyHostnameUtf8(proxyHostname.toUtf8());
-    err = SecKeychainFindInternetPassword(NULL,
-                                          proxyHostnameUtf8.length(), proxyHostnameUtf8.constData(),
-                                          0,NULL,
-                                          0, NULL,
-                                          0, NULL,
-                                          0,
-                                          protocolType,
-                                          kSecAuthenticationTypeAny,
-                                          0, NULL,
-                                          &itemRef);
-    if (err == noErr) {
 
-        SecKeychainAttribute attr;
-        SecKeychainAttributeList attrList;
-        UInt32 length;
-        void *outData;
+    QCFType<CFMutableDictionaryRef> query(CFDictionaryCreateMutable(kCFAllocatorDefault,
+                                                                    0, nullptr, nullptr));
+    Q_ASSERT(query);
 
-        attr.tag = kSecAccountItemAttr;
-        attr.length = 0;
-        attr.data = NULL;
+    CFDictionaryAddValue(query, kSecClass, kSecClassInternetPassword);
+    CFDictionaryAddValue(query, kSecAttrProtocol, protocolType);
 
-        attrList.count = 1;
-        attrList.attr = &attr;
-
-        if (SecKeychainItemCopyContent(itemRef, NULL, &attrList, &length, &outData) == noErr) {
-            username = QString::fromUtf8((const char*)attr.data, attr.length);
-            password = QString::fromUtf8((const char*)outData, length);
-            SecKeychainItemFreeContent(&attrList,outData);
-            retValue = true;
-        }
-        CFRelease(itemRef);
+    QCFType<CFStringRef> serverName; // Note the scope.
+    if (proxyHostname.size()) {
+        serverName = proxyHostname.toCFString();
+        CFDictionaryAddValue(query, kSecAttrServer, serverName);
     }
-    return retValue;
+
+    // This is to get the user name in the result:
+    CFDictionaryAddValue(query, kSecReturnAttributes, kCFBooleanTrue);
+    // This one to get the password:
+    CFDictionaryAddValue(query, kSecReturnData, kCFBooleanTrue);
+
+    // The default for kSecMatchLimit key is 1 (the first match only), which is fine,
+    // so don't set this value explicitly.
+
+    QCFType<CFTypeRef> replyData;
+    if (SecItemCopyMatching(query, &replyData) != errSecSuccess) {
+        qCWarning(lcQnam, "Failed to extract user name and password from the keychain.");
+        return false;
+    }
+
+    if (!replyData || CFDictionaryGetTypeID() != CFGetTypeID(replyData)) {
+        qCWarning(lcQnam, "Query returned data in unexpected format.");
+        return false;
+    }
+
+    CFDictionaryRef accountData = replyData.as<CFDictionaryRef>();
+    const void *value = CFDictionaryGetValue(accountData, kSecAttrAccount);
+    if (!value || CFGetTypeID(value) != CFStringGetTypeID()) {
+        qCWarning(lcQnam, "Cannot find user name or its format is unknown.");
+        return false;
+    }
+    username = QString::fromCFString(static_cast<CFStringRef>(value));
+
+    value = CFDictionaryGetValue(accountData, kSecValueData);
+    if (!value || CFGetTypeID(value) != CFDataGetTypeID()) {
+        qCWarning(lcQnam, "Cannot find password or its format is unknown.");
+        return false;
+    }
+    const CFDataRef passData = static_cast<const CFDataRef>(value);
+    password = QString::fromLocal8Bit(reinterpret_cast<const char *>(CFDataGetBytePtr(passData)),
+                                      qsizetype(CFDataGetLength(passData)));
+    return true;
 }
-#endif
+#endif // Q_OS_MACOS
 
 
 
