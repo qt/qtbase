@@ -1216,20 +1216,18 @@ void QPdfEngine::updateClipPath(const QPainterPath &p, Qt::ClipOperation op)
     QPainterPath path = d->stroker.matrix.map(p);
     //qDebug() << "updateClipPath: " << d->stroker.matrix << p.boundingRect() << path.boundingRect() << op;
 
-    if (op == Qt::NoClip) {
+    switch (op) {
+    case Qt::NoClip:
         d->clipEnabled = false;
         d->clips.clear();
-    } else if (op == Qt::ReplaceClip) {
+        break;
+    case Qt::ReplaceClip:
         d->clips.clear();
         d->clips.append(path);
-    } else if (op == Qt::IntersectClip) {
+        break;
+    case Qt::IntersectClip:
         d->clips.append(path);
-    } else { // UniteClip
-        // ask the painter for the current clipping path. that's the easiest solution
-        path = painter()->clipPath();
-        path = d->stroker.matrix.map(path);
-        d->clips.clear();
-        d->clips.append(path);
+        break;
     }
 }
 
