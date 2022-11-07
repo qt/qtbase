@@ -315,7 +315,7 @@ public:
     int clipSpanHeight;
     struct ClipLine {
         int count;
-        QSpan *spans;
+        QT_FT_Span *spans;
     } *m_clipLines;
 
     void initialize();
@@ -326,7 +326,7 @@ public:
         return m_clipLines;
     }
 
-    inline QSpan *spans() {
+    inline QT_FT_Span *spans() {
         if (!m_spans)
             initialize();
         return m_spans;
@@ -334,7 +334,7 @@ public:
 
     int allocated;
     int count;
-    QSpan *m_spans;
+    QT_FT_Span *m_spans;
     int xmin, xmax, ymin, ymax;
 
     QRect clipRect;
@@ -345,7 +345,7 @@ public:
     uint hasRegionClip : 1;
 
     void appendSpan(int x, int length, int y, int coverage);
-    void appendSpans(const QSpan *s, int num);
+    void appendSpans(const QT_FT_Span *s, int num);
 
     // ### Should optimize and actually kill the QSpans if the rect is
     // ### a subset of The current region. Thus the "fast" clipspan
@@ -361,7 +361,7 @@ inline void QClipData::appendSpan(int x, int length, int y, int coverage)
 
     if (count == allocated) {
         allocated *= 2;
-        m_spans = (QSpan *)realloc(m_spans, allocated*sizeof(QSpan));
+        m_spans = (QT_FT_Span *)realloc(m_spans, allocated*sizeof(QT_FT_Span));
     }
     m_spans[count].x = x;
     m_spans[count].len = length;
@@ -370,7 +370,7 @@ inline void QClipData::appendSpan(int x, int length, int y, int coverage)
     ++count;
 }
 
-inline void QClipData::appendSpans(const QSpan *s, int num)
+inline void QClipData::appendSpans(const QT_FT_Span *s, int num)
 {
     Q_ASSERT(m_spans);
 
@@ -378,9 +378,9 @@ inline void QClipData::appendSpans(const QSpan *s, int num)
         do {
             allocated *= 2;
         } while (count + num > allocated);
-        m_spans = (QSpan *)realloc(m_spans, allocated*sizeof(QSpan));
+        m_spans = (QT_FT_Span *)realloc(m_spans, allocated*sizeof(QT_FT_Span));
     }
-    memcpy(m_spans+count, s, num*sizeof(QSpan));
+    memcpy(m_spans+count, s, num*sizeof(QT_FT_Span));
     count += num;
 }
 

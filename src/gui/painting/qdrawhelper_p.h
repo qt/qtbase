@@ -147,8 +147,8 @@ struct quint24 {
     uchar data[3];
 };
 
-void qBlendGradient(int count, const QSpan *spans, void *userData);
-void qBlendTexture(int count, const QSpan *spans, void *userData);
+void qBlendGradient(int count, const QT_FT_Span *spans, void *userData);
+void qBlendTexture(int count, const QT_FT_Span *spans, void *userData);
 #ifdef __SSE2__
 extern void (*qt_memfill64)(quint64 *dest, quint64 value, qsizetype count);
 extern void (*qt_memfill32)(quint32 *dest, quint32 value, qsizetype count);

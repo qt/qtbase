@@ -144,9 +144,9 @@ bool QRasterPaintEngine::clearTypeFontsEnabled()
 /********************************************************************************
  * Span functions
  */
-static void qt_span_fill_clipRect(int count, const QSpan *spans, void *userData);
-static void qt_span_fill_clipped(int count, const QSpan *spans, void *userData);
-static void qt_span_clip(int count, const QSpan *spans, void *userData);
+static void qt_span_fill_clipRect(int count, const QT_FT_Span *spans, void *userData);
+static void qt_span_fill_clipped(int count, const QT_FT_Span *spans, void *userData);
+static void qt_span_clip(int count, const QT_FT_Span *spans, void *userData);
 
 struct ClipData
 {
@@ -2662,7 +2662,7 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
         return;
 
     const int NSPANS = 512;
-    QSpan spans[NSPANS];
+    QT_FT_Span spans[NSPANS];
     int current = 0;
 
     const int x1 = x0 + w;
@@ -3819,7 +3819,7 @@ void QClipData::initialize()
                 const int numRects = clipRegion.rectCount();
                 const int maxSpans = (ymax - ymin) * numRects;
                 allocated = qMax(allocated, maxSpans);
-                m_spans = (QSpan *)malloc(allocated * sizeof(QSpan));
+                m_spans = (QT_FT_Span *)malloc(allocated * sizeof(QT_FT_Span));
                 Q_CHECK_PTR(m_spans);
 
                 int y = 0;
@@ -3845,7 +3845,7 @@ void QClipData::initialize()
 
                         for (int r = firstInBand; r <= lastInBand; ++r) {
                             const QRect &currRect = rects[r];
-                            QSpan *span = m_spans + count;
+                            QT_FT_Span *span = m_spans + count;
                             span->x = currRect.x();
                             span->len = currRect.width();
                             span->y = y;
@@ -3869,7 +3869,7 @@ void QClipData::initialize()
                 return;
             }
 
-            m_spans = (QSpan *)malloc(allocated * sizeof(QSpan));
+            m_spans = (QT_FT_Span *)malloc(allocated * sizeof(QT_FT_Span));
             Q_CHECK_PTR(m_spans);
 
             if (hasRectClip) {
@@ -3882,7 +3882,7 @@ void QClipData::initialize()
 
                 const int len = clipRect.width();
                 while (y < ymax) {
-                    QSpan *span = m_spans + count;
+                    QT_FT_Span *span = m_spans + count;
                     span->x = xmin;
                     span->len = len;
                     span->y = y;
@@ -4021,16 +4021,16 @@ void QClipData::setClipRegion(const QRegion &region)
     \internal
     spans must be sorted on y
 */
-static const QSpan *qt_intersect_spans(const QClipData *clip, int *currentClip,
-                                       const QSpan *spans, const QSpan *end,
-                                       QSpan **outSpans, int available)
+static const QT_FT_Span *qt_intersect_spans(const QClipData *clip, int *currentClip,
+                                            const QT_FT_Span *spans, const QT_FT_Span *end,
+                                            QT_FT_Span **outSpans, int available)
 {
     const_cast<QClipData *>(clip)->initialize();
 
-    QSpan *out = *outSpans;
+    QT_FT_Span *out = *outSpans;
 
-    const QSpan *clipSpans = clip->m_spans + *currentClip;
-    const QSpan *clipEnd = clip->m_spans + clip->count;
+    const QT_FT_Span *clipSpans = clip->m_spans + *currentClip;
+    const QT_FT_Span *clipEnd = clip->m_spans + clip->count;
 
     while (available && spans < end ) {
         if (clipSpans >= clipEnd) {
@@ -4084,7 +4084,7 @@ static const QSpan *qt_intersect_spans(const QClipData *clip, int *currentClip,
     return spans;
 }
 
-static void qt_span_fill_clipped(int spanCount, const QSpan *spans, void *userData)
+static void qt_span_fill_clipped(int spanCount, const QT_FT_Span *spans, void *userData)
 {
 //     qDebug() << "qt_span_fill_clipped" << spanCount;
     QSpanData *fillData = reinterpret_cast<QSpanData *>(userData);
@@ -4092,11 +4092,11 @@ static void qt_span_fill_clipped(int spanCount, const QSpan *spans, void *userDa
     Q_ASSERT(fillData->blend && fillData->unclipped_blend);
 
     const int NSPANS = 512;
-    QSpan cspans[NSPANS];
+    QT_FT_Span cspans[NSPANS];
     int currentClip = 0;
-    const QSpan *end = spans + spanCount;
+    const QT_FT_Span *end = spans + spanCount;
     while (spans < end) {
-        QSpan *clipped = cspans;
+        QT_FT_Span *clipped = cspans;
         spans = qt_intersect_spans(fillData->clip, &currentClip, spans, end, &clipped, NSPANS);
 //         qDebug() << "processed " << spanCount - (end - spans) << "clipped" << clipped-cspans
 //                  << "span:" << cspans->x << cspans->y << cspans->len << spans->coverage;
@@ -4148,7 +4148,7 @@ static int qt_intersect_spans(QT_FT_Span *&spans, int numSpans,
 }
 
 
-static void qt_span_fill_clipRect(int count, const QSpan *spans,
+static void qt_span_fill_clipRect(int count, const QT_FT_Span *spans,
                                   void *userData)
 {
     QSpanData *fillData = reinterpret_cast<QSpanData *>(userData);
@@ -4157,7 +4157,7 @@ static void qt_span_fill_clipRect(int count, const QSpan *spans,
     Q_ASSERT(fillData->clip);
     Q_ASSERT(!fillData->clip->clipRect.isEmpty());
 
-    QSpan *s = const_cast<QSpan *>(spans);
+    QT_FT_Span *s = const_cast<QT_FT_Span *>(spans);
     // hw: check if this const_cast<> is safe!!!
     count = qt_intersect_spans(s, count,
                                fillData->clip->clipRect);
@@ -4165,7 +4165,7 @@ static void qt_span_fill_clipRect(int count, const QSpan *spans,
         fillData->unclipped_blend(count, s, fillData);
 }
 
-static void qt_span_clip(int count, const QSpan *spans, void *userData)
+static void qt_span_clip(int count, const QT_FT_Span *spans, void *userData)
 {
     ClipData *clipData = reinterpret_cast<ClipData *>(userData);
 
@@ -4182,14 +4182,14 @@ static void qt_span_clip(int count, const QSpan *spans, void *userData)
             newClip->initialize();
 
             int currentClip = 0;
-            const QSpan *end = spans + count;
+            const QT_FT_Span *end = spans + count;
             while (spans < end) {
-                QSpan *newspans = newClip->m_spans + newClip->count;
+                QT_FT_Span *newspans = newClip->m_spans + newClip->count;
                 spans = qt_intersect_spans(clipData->oldClip, &currentClip, spans, end,
                                            &newspans, newClip->allocated - newClip->count);
                 newClip->count = newspans - newClip->m_spans;
                 if (spans < end) {
-                    newClip->m_spans = q_check_ptr((QSpan *)realloc(newClip->m_spans, newClip->allocated*2*sizeof(QSpan)));
+                    newClip->m_spans = q_check_ptr((QT_FT_Span *)realloc(newClip->m_spans, newClip->allocated * 2 * sizeof(QT_FT_Span)));
                     newClip->allocated *= 2;
                 }
             }
@@ -4870,7 +4870,7 @@ void dumpClip(int width, int height, const QClipData *clip)
     ((QClipData *) clip)->spans(); // Force allocation of the spans structure...
 
     for (int i = 0; i < clip->count; ++i) {
-        const QSpan *span = ((QClipData *) clip)->spans() + i;
+        const QT_FT_Span *span = ((QClipData *) clip)->spans() + i;
         for (int j = 0; j < span->len; ++j)
             clipImg.setPixel(span->x + j, span->y, 0xffffff00);
         x0 = qMin(x0, int(span->x));
