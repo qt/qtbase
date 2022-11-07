@@ -354,6 +354,16 @@ int QAccessibleComboBox::indexOfChild(const QAccessibleInterface *child) const
     return -1;
 }
 
+QAccessibleInterface *QAccessibleComboBox::focusChild() const
+{
+    // The editable combobox is the focus proxy of its lineedit, so the
+    // lineedit itself never gets focus. But it is the accessible focus
+    // child of an editable combobox.
+    if (comboBox()->isEditable())
+        return child(1);
+    return nullptr;
+}
+
 /*! \reimp */
 QString QAccessibleComboBox::text(QAccessible::Text t) const
 {
