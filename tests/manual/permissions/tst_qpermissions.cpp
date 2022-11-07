@@ -82,7 +82,7 @@ void tst_QPermissions::checkPermissionInNonMainThread()
 void tst_QPermissions::requestPermission()
 {
     QFETCH_GLOBAL(QPermission, permission);
-    QTimer::singleShot(0, [=] {
+    QTimer::singleShot(0, this, [=] {
         qApp->requestPermission(permission, [=](auto result) {
             qDebug() << result;
             Q_ASSERT(QThread::currentThread() == thread());

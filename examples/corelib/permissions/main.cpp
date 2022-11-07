@@ -29,7 +29,7 @@ public:
         };
 
         for (auto permission : permissions) {
-            auto permissionName = QString::fromLatin1(permission.name());
+            auto permissionName = QString::fromLatin1(permission.type().name());
             QPushButton *button = new QPushButton(permissionName.sliced(1, permissionName.length() - 11));
             connect(button, &QPushButton::clicked, this, &PermissionWidget::buttonClicked);
             button->setProperty("permission", QVariant::fromValue(permission));
@@ -52,7 +52,8 @@ private:
         switch (qApp->checkPermission(permission)) {
         case Qt::PermissionStatus::Undetermined:
                 qApp->requestPermission(permission, this,
-                    [this, button](const QPermission &permission) {
+                    [button](const QPermission &permission) {
+                        Q_UNUSED(permission);
                         emit button->clicked(); // Try again
                     }
                 );
