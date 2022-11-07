@@ -1932,7 +1932,7 @@ bool readDependenciesFromElf(Options *options,
 
 bool goodToCopy(const Options *options, const QString &file, QStringList *unmetDependencies);
 bool checkCanImportFromRootPaths(const Options *options, const QString &absolutePath,
-                                 const QUrl &moduleUrl);
+                                 const QString &moduleUrlPath);
 
 bool scanImports(Options *options, QSet<QString> *usedDependencies)
 {
@@ -2072,7 +2072,8 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
 
             const QUrl url(object.value("name"_L1).toString());
 
-            if (checkCanImportFromRootPaths(options, info.absolutePath(), url)) {
+            const QString moduleUrlPath = u"/"_s + url.toString().replace(u'.', u'/');
+            if (checkCanImportFromRootPaths(options, info.absolutePath(), moduleUrlPath)) {
                 if (options->verbose)
                     fprintf(stdout, "    -- Skipping because path is in QML root path.\n");
                 continue;
@@ -2080,13 +2081,8 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
 
             QString importPathOfThisImport;
             for (const QString &importPath : qAsConst(importPaths)) {
-#if defined(Q_OS_WIN32)
-                Qt::CaseSensitivity caseSensitivity = Qt::CaseInsensitive;
-#else
-                Qt::CaseSensitivity caseSensitivity = Qt::CaseSensitive;
-#endif
                 QString cleanImportPath = QDir::cleanPath(importPath);
-                if (info.absoluteFilePath().startsWith(cleanImportPath, caseSensitivity)) {
+                if (QFile::exists(cleanImportPath + moduleUrlPath)) {
                     importPathOfThisImport = importPath;
                     break;
                 }
@@ -2165,11 +2161,10 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
 }
 
 bool checkCanImportFromRootPaths(const Options *options, const QString &absolutePath,
-                                 const QUrl &moduleUrl)
+                                 const QString &moduleUrlPath)
 {
-    const QString pathFromUrl = u"/"_s + moduleUrl.toString().replace(u'.', u'/');
     for (auto rootPath : options->rootPaths) {
-        if ((rootPath + pathFromUrl) == absolutePath)
+        if ((rootPath + moduleUrlPath) == absolutePath)
             return true;
     }
     return false;
