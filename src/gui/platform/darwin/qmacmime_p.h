@@ -40,8 +40,8 @@ public:
     virtual ~QMacMime();
 
     HandlerScope scope() const { return m_scope; }
+    bool canConvert(const QString &mime, const QString &uti) const { return mimeForUti(uti) == mime; }
 
-    virtual bool canConvert(const QString &mime, const QString &uti) const = 0;
     // for converting from Qt
     virtual QList<QByteArray> convertFromMime(const QString &mime, const QVariant &data, const QString &uti) const = 0;
     virtual QString utiForMime(const QString &mime) const = 0;

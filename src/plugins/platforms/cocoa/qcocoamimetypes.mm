@@ -16,7 +16,6 @@ class QMacMimeTraditionalMacPlainText : public QMacMime {
 public:
     QString utiForMime(const QString &mime) const override;
     QString mimeForUti(const QString &uti) const override;
-    bool canConvert(const QString &mime, const QString &uti) const override;
     QVariant convertToMime(const QString &mime, const QList<QByteArray> &data,
                            const QString &uti) const override;
     QList<QByteArray> convertFromMime(const QString &mime, const QVariant &data,
@@ -35,12 +34,6 @@ QString QMacMimeTraditionalMacPlainText::mimeForUti(const QString &uti) const
     if (uti == "com.apple.traditional-mac-plain-text"_L1)
         return "text/plain"_L1;
     return QString();
-}
-
-bool QMacMimeTraditionalMacPlainText::canConvert(const QString &mime,
-                                                           const QString &uti) const
-{
-    return utiForMime(mime) == uti;
 }
 
 QVariant

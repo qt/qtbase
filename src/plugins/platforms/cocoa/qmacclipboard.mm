@@ -130,9 +130,8 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
     const long promise_id = (long)id;
 
     // Find the kept promise
-    QList<QMacMime*> availableConverters
-        = QMacMimeRegistry::all(QMacMime::HandlerScope::All);
-    const QString flavorAsQString = QString::fromCFString(uti);
+    const QList<QMacMime*> availableConverters = QMacMimeRegistry::all(QMacMime::HandlerScope::All);
+    const QString utiAsQString = QString::fromCFString(uti);
     QMacPasteboard::Promise promise;
     for (int i = 0; i < qpaste->promises.size(); i++){
         const QMacPasteboard::Promise tmp = qpaste->promises[i];
@@ -146,13 +145,13 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
             continue;
         }
 
-        if (tmp.itemId == promise_id && tmp.converter->canConvert(tmp.mime, flavorAsQString)){
+        if (tmp.itemId == promise_id && tmp.converter->canConvert(tmp.mime, utiAsQString)) {
             promise = tmp;
             break;
         }
     }
 
-    if (!promise.itemId && flavorAsQString == "com.trolltech.qt.MimeTypeName"_L1) {
+    if (!promise.itemId && utiAsQString == "com.trolltech.qt.MimeTypeName"_L1) {
         // we have promised this data, but won't be able to convert, so return null data.
         // This helps in making the application/x-qt-mime-type-name hidden from normal use.
         QByteArray ba;
@@ -164,12 +163,12 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
     if (!promise.itemId) {
         // There was no promise that could deliver data for the
         // given id and uti. This should not happen.
-        qDebug("Pasteboard: %d: Request for %ld, %s, but no promise found!", __LINE__, promise_id, qPrintable(flavorAsQString));
+        qDebug("Pasteboard: %d: Request for %ld, %s, but no promise found!", __LINE__, promise_id, qPrintable(utiAsQString));
         return cantGetFlavorErr;
     }
 
     qCDebug(lcQpaClipboard, "PasteBoard: Calling in promise for %s[%ld] [%s] [%d]", qPrintable(promise.mime), promise_id,
-           qPrintable(flavorAsQString), promise.offset);
+           qPrintable(utiAsQString), promise.offset);
 
     // Get the promise data. If this is a "lazy" promise call variantData()
     // to request the data from the application.
@@ -187,7 +186,7 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
         promiseData = promise.variantData;
     }
 
-    const QList<QByteArray> md = promise.converter->convertFromMime(promise.mime, promiseData, flavorAsQString);
+    const QList<QByteArray> md = promise.converter->convertFromMime(promise.mime, promiseData, utiAsQString);
     if (md.size() <= promise.offset)
         return cantGetFlavorErr;
     const QByteArray &ba = md[promise.offset];
