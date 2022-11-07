@@ -2014,15 +2014,12 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
                 continue;
             }
 
+            const QUrl url(object.value(QLatin1String("name")).toString());
+            const QString moduleUrlPath = QLatin1String("/") + url.toString().replace(QLatin1Char('.'), QLatin1Char('/'));
             QString importPathOfThisImport;
             for (const QString &importPath : qAsConst(importPaths)) {
-#if defined(Q_OS_WIN32)
-                Qt::CaseSensitivity caseSensitivity = Qt::CaseInsensitive;
-#else
-                Qt::CaseSensitivity caseSensitivity = Qt::CaseSensitive;
-#endif
                 QString cleanImportPath = QDir::cleanPath(importPath);
-                if (info.absoluteFilePath().startsWith(cleanImportPath, caseSensitivity)) {
+                if (QFile::exists(cleanImportPath + moduleUrlPath)) {
                     importPathOfThisImport = importPath;
                     break;
                 }
