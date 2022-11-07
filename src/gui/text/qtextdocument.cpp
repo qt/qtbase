@@ -2235,7 +2235,8 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
         int index = me->indexOfMethod("loadResource(int,QUrl)");
         if (index >= 0) {
             QMetaMethod loader = me->method(index);
-            loader.invoke(p, Q_RETURN_ARG(QVariant, r), Q_ARG(int, type), Q_ARG(QUrl, name));
+            // don't invoke() via a queued connection: this function needs to return a value
+            loader.invoke(p, Qt::DirectConnection, Q_RETURN_ARG(QVariant, r), Q_ARG(int, type), Q_ARG(QUrl, name));
         }
     }
 
