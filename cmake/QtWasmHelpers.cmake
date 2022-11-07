@@ -70,7 +70,6 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     # target_link_options("${wasmTarget}" INTERFACE "SHELL:-s SOCKET_DEBUG") # print out socket,network data transfer
 
     if ("QT_EMSCRIPTEN_ASYNCIFY=1" IN_LIST QT_QMAKE_DEVICE_OPTIONS)
-
         # Emscripten recommends building with optimizations when using asyncify
         # in order to reduce wasm file size, and may also generate broken wasm
         # (with "wasm validation error: too many locals" type errors) if optimizations

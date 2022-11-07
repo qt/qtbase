@@ -558,6 +558,11 @@ function(qt_internal_add_test name)
         # TODO: Add functionality to specify browser
         list(APPEND extra_test_args "--browser=chrome")
 
+        # We always want to enable asyncify for tests, as some of them use exec
+        # Optimize for size (-Os), since asyncify tends to make the resulting
+        # binary very large
+        target_link_options("${name}" PRIVATE "SHELL:-s ASYNCIFY" "-Os")
+
         # This tells cmake to run the tests with this script, since wasm files can't be
         # executed directly
         set_property(TARGET "${name}" PROPERTY CROSSCOMPILING_EMULATOR "emrun")
