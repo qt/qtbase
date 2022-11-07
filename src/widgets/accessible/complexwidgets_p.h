@@ -99,6 +99,7 @@ public:
     QAccessibleInterface *childAt(int x, int y) const override;
     int indexOfChild(const QAccessibleInterface *child) const override;
     QAccessibleInterface* child(int index) const override;
+    QAccessibleInterface* focusChild() const override;
 
     QString text(QAccessible::Text t) const override;
 
