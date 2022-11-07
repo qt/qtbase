@@ -53,13 +53,6 @@ static const uint RMASK = 0x00ff0000;
 static const uint GMASK = 0x0000ff00;
 static const uint BMASK = 0x000000ff;
 
-/*******************************************************************************
- * QSpan
- *
- * duplicate definition of FT_Span
- */
-typedef QT_FT_Span QSpan;
-
 struct QSolidData;
 struct QTextureData;
 struct QGradientData;
