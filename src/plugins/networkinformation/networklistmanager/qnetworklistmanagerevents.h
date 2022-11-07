@@ -8,6 +8,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qmutex.h>
 
 #include <objbase.h>
 #include <netlistmgr.h>
@@ -57,7 +58,7 @@ public:
     HRESULT STDMETHODCALLTYPE ConnectivityChanged(NLM_CONNECTIVITY newConnectivity) override;
 
     [[nodiscard]] bool start();
-    bool stop();
+    void stop();
 
     [[nodiscard]] bool checkBehindCaptivePortal();
 
@@ -74,6 +75,7 @@ private:
     void emitWinRTUpdates();
 
     winrt::event_token token;
+    QMutex winrtLock;
 #endif
 
     QAtomicInteger<ULONG> ref = 0;

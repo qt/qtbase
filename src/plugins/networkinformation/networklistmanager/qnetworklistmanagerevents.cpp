@@ -3,6 +3,10 @@
 
 #include "qnetworklistmanagerevents.h"
 
+#include <QtCore/qpointer.h>
+
+#include <mutex>
+
 #ifdef SUPPORTS_WINRT
 #include <winrt/base.h>
 #include <QtCore/private/qfactorycacheregistration_p.h>
@@ -102,11 +106,16 @@ bool QNetworkListManagerEvents::start()
 
 #ifdef SUPPORTS_WINRT
     using namespace winrt::Windows::Networking::Connectivity;
+    using winrt::Windows::Foundation::IInspectable;
     // Register for changes in the network and store a token to unregister later:
     token = NetworkInformation::NetworkStatusChanged(
-            [this](const winrt::Windows::Foundation::IInspectable sender) {
+            [owner = QPointer(this)](const IInspectable sender) {
                 Q_UNUSED(sender);
-                emitWinRTUpdates();
+                if (owner) {
+                    std::scoped_lock locker(owner->winrtLock);
+                    if (owner->token)
+                        owner->emitWinRTUpdates();
+                }
             });
     // Emit initial state
     emitWinRTUpdates();
@@ -115,24 +124,28 @@ bool QNetworkListManagerEvents::start()
     return true;
 }
 
-bool QNetworkListManagerEvents::stop()
+void QNetworkListManagerEvents::stop()
 {
     Q_ASSERT(connectionPoint);
     auto hr = connectionPoint->Unadvise(cookie);
     if (FAILED(hr)) {
         qCWarning(lcNetInfoNLM) << "Failed to unsubscribe from network connectivity events:"
                                 << errorStringFromHResult(hr);
-        return false;
+    } else {
+        cookie = 0;
     }
-    cookie = 0;
+    // Even if we fail we should still try to unregister from winrt events:
 
 #ifdef SUPPORTS_WINRT
-    using namespace winrt::Windows::Networking::Connectivity;
-    // Pass the token we stored earlier to unregister:
-    NetworkInformation::NetworkStatusChanged(token);
-    token = {};
+    // Try to synchronize unregistering with potentially in-progress callbacks
+    std::scoped_lock locker(winrtLock);
+    if (token) {
+        using namespace winrt::Windows::Networking::Connectivity;
+        // Pass the token we stored earlier to unregister:
+        NetworkInformation::NetworkStatusChanged(token);
+        token = {};
+    }
 #endif
-    return true;
 }
 
 bool QNetworkListManagerEvents::checkBehindCaptivePortal()

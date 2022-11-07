@@ -198,7 +198,6 @@ void QNetworkListManagerNetworkInformationBackend::stop()
 {
     if (monitoring) {
         Q_ASSERT(managerEvents);
-        // Can return false but realistically shouldn't since that would break everything:
         managerEvents->stop();
         monitoring = false;
         managerEvents.Reset();
