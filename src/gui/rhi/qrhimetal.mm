@@ -127,11 +127,13 @@ struct QMetalShader
 
 struct QRhiMetalData
 {
-    QRhiMetalData(QRhiImplementation *rhi) : ofr(rhi) { }
+    QRhiMetalData(QRhiMetal *rhi) : q(rhi), ofr(rhi) { }
 
+    QRhiMetal *q;
     id<MTLDevice> dev = nil;
     id<MTLCommandQueue> cmdQueue = nil;
     API_AVAILABLE(macosx(11.0), ios(14.0)) id<MTLBinaryArchive> binArch = nil;
+    bool binArchWasEmpty = false;
 
     MTLRenderPassDescriptor *createDefaultRenderPass(bool hasDepthStencil,
                                                      const QColor &colorClearValue,
@@ -455,6 +457,7 @@ bool QRhiMetalData::setupBinaryArchive(NSURL *sourceFileUrl)
             qWarning("newBinaryArchiveWithDescriptor failed: %s", qPrintable(msg));
             return false;
         }
+        binArchWasEmpty = sourceFileUrl == nil;
         return true;
     }
     return false;
@@ -4485,10 +4488,33 @@ void QRhiMetalData::trySeedingRenderPipelineFromBinaryArchive(MTLRenderPipelineD
     }
 }
 
+static bool canAddToBinaryArchive(QRhiMetalData *d)
+{
+    if (@available(macOS 11.0, iOS 14.0, *)) {
+        if (!d->binArch)
+            return false;
+
+        // ### QTBUG-106703, QTBUG-108216, revisit after 13.0
+        if (!d->binArchWasEmpty && d->q->osMajor >= 13) {
+            static bool logPrinted = false;
+            if (!logPrinted) {
+                logPrinted = true;
+                qCDebug(QRHI_LOG_INFO, "Skipping adding more pipelines to MTLBinaryArchive on this OS version (%d.%d) due to known issues.",
+                        d->q->osMajor, d->q->osMinor);
+            }
+            return false;
+        }
+
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void QRhiMetalData::addRenderPipelineToBinaryArchive(MTLRenderPipelineDescriptor *rpDesc)
 {
     if (@available(macOS 11.0, iOS 14.0, *)) {
-        if (binArch)  {
+        if (canAddToBinaryArchive(this)) {
             NSError *err = nil;
             if (![binArch addRenderPipelineFunctionsWithDescriptor: rpDesc error: &err]) {
                 const QString msg = QString::fromNSString(err.localizedDescription);
@@ -5211,7 +5237,7 @@ void QRhiMetalData::trySeedingComputePipelineFromBinaryArchive(MTLComputePipelin
 void QRhiMetalData::addComputePipelineToBinaryArchive(MTLComputePipelineDescriptor *cpDesc)
 {
     if (@available(macOS 11.0, iOS 14.0, *)) {
-        if (binArch)  {
+        if (canAddToBinaryArchive(this)) {
             NSError *err = nil;
             if (![binArch addComputePipelineFunctionsWithDescriptor: cpDesc error: &err]) {
                 const QString msg = QString::fromNSString(err.localizedDescription);
