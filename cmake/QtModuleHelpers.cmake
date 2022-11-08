@@ -327,14 +327,21 @@ function(qt_internal_add_module target)
                      EXPORT_PROPERTIES "${export_properties}")
     endif()
 
+    if(WASM AND BUILD_SHARED_LIBS)
+        set(version_args "")
+    else()
+        set(version_args
+            VERSION ${PROJECT_VERSION}
+            SOVERSION ${PROJECT_VERSION_MAJOR})
+    endif()
+
     if(NOT arg_HEADER_MODULE)
         set_target_properties(${target} PROPERTIES
             LIBRARY_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
             RUNTIME_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
             ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
-            VERSION ${PROJECT_VERSION}
-            SOVERSION ${PROJECT_VERSION_MAJOR}
-            )
+            ${version_args}
+        )
         qt_set_target_info_properties(${target} ${ARGN})
         qt_handle_multi_config_output_dirs("${target}")
 
