@@ -6,6 +6,8 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/qpa/qplatformintegration.h>
 
+QT_BEGIN_NAMESPACE
+
 using namespace QNativeInterface::Private;
 
 /*!
@@ -151,3 +153,5 @@ int QWindowsMime::registerMimeType(const QString &mimeType)
     Q_ASSERT(nativeWindowsApp);
     return nativeWindowsApp->registerMimeType(mimeType);
 }
+
+QT_END_NAMESPACE
