@@ -431,7 +431,6 @@ void QAndroidPlatformTheme::updateStyle()
     m_defaultPalette.setBrush(QPalette::Disabled, QPalette::Highlight, highlight.lighter(150));
 
     loadAndroidStyle(&m_defaultPalette, m_androidStyleData);
-    QGuiApplication::setPalette(m_defaultPalette);
 }
 
 QPlatformMenuBar *QAndroidPlatformTheme::createPlatformMenuBar() const
