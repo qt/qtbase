@@ -72,8 +72,8 @@ qt_internal_add_module(Core
         global/qvolatile_p.h
         global/q20algorithm.h
         global/q20functional.h
-        global/q23functional.h
         global/q20iterator.h
+        global/q23functional.h
         global/qxpfunctional.h
         io/qabstractfileengine.cpp io/qabstractfileengine_p.h
         io/qbuffer.cpp io/qbuffer.h
