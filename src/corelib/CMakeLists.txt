@@ -1049,7 +1049,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_library AND UNIX AND NOT APP
         plugin/qlibrary_unix.cpp
 )
 
-qt_internal_extend_target(Core CONDITION QT_FEATURE_dlopen AND QT_FEATURE_library
+qt_internal_extend_target(Core CONDITION QT_FEATURE_dlopen
     LIBRARIES
         ${CMAKE_DL_LIBS}
 )
