@@ -11,9 +11,9 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API. Types and functions defined
-// in this file will behave exactly as their std counterparts. You
-// may use these definitions in your own code, but be aware that we
+// This file is not part of the Qt API. Types and functions defined in this
+// file can reliably be replaced by their std counterparts, once available.
+// You may use these definitions in your own code, but be aware that we
 // will remove them once Qt depends on the C++ version that supports
 // them in namespace std. There will be NO deprecation warning, the
 // definitions will JUST go away.
