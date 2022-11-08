@@ -1794,10 +1794,6 @@ QRectF QMacStylePrivate::comboboxEditBounds(const QRectF &outerBounds, const Coc
 QMacStylePrivate::QMacStylePrivate()
     : backingStoreNSView(nil)
 {
-    if (auto *ssf = QGuiApplicationPrivate::platformTheme()->font(QPlatformTheme::SmallFont))
-        smallSystemFont = *ssf;
-    if (auto *msf = QGuiApplicationPrivate::platformTheme()->font(QPlatformTheme::MiniFont))
-        miniSystemFont = *msf;
 }
 
 QMacStylePrivate::~QMacStylePrivate()
@@ -2092,6 +2088,14 @@ void QMacStyle::unpolish(QApplication *)
 
 void QMacStyle::polish(QWidget* w)
 {
+    Q_D(QMacStyle);
+    if (!d->smallSystemFont && QGuiApplicationPrivate::platformTheme()) {
+        if (auto *ssf = QGuiApplicationPrivate::platformTheme()->font(QPlatformTheme::SmallFont))
+            d->smallSystemFont = *ssf;
+        else
+            d->smallSystemFont = QFont();
+    }
+
     if (false
 #if QT_CONFIG(menu)
         || qobject_cast<QMenu*>(w)
@@ -5689,8 +5693,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 const bool rtl = groupBox.direction == Qt::RightToLeft;
                 const int alignment = Qt::TextHideMnemonic | (rtl ? Qt::AlignRight : Qt::AlignLeft);
                 const QFont savedFont = p->font();
-                if (!flat)
-                    p->setFont(d->smallSystemFont);
+                if (!flat && d->smallSystemFont)
+                    p->setFont(*d->smallSystemFont);
                 proxy()->drawItemText(p, rect, alignment, groupBox.palette, groupBox.state & State_Enabled, groupBox.text, QPalette::WindowText);
                 if (!flat)
                     p->setFont(savedFont);
@@ -6054,7 +6058,9 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 const int margin =  flat || hasNoText ? 0 : 9;
                 ret = groupBox->rect.adjusted(margin, 0, -margin, 0);
 
-                const QFontMetricsF fm = flat || fontIsSet ? QFontMetricsF(groupBox->fontMetrics) : QFontMetricsF(d->smallSystemFont);
+                const QFontMetricsF fm = flat || fontIsSet || !d->smallSystemFont
+                                       ? QFontMetricsF(groupBox->fontMetrics)
+                                       : QFontMetricsF(*d->smallSystemFont);
                 const QSizeF s = fm.size(Qt::AlignHCenter | Qt::AlignVCenter, qt_mac_removeMnemonics(groupBox->text), 0, nullptr);
                 const int tw = qCeil(s.width());
                 const int h = qCeil(fm.height());

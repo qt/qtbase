@@ -262,8 +262,7 @@ public:
     mutable QHash<CocoaControl, NSView *> cocoaControls;
     mutable QHash<CocoaControl, NSCell *> cocoaCells;
 
-    QFont smallSystemFont;
-    QFont miniSystemFont;
+    std::optional<QFont> smallSystemFont;
 
     QMacKeyValueObserver appearanceObserver;
 };
