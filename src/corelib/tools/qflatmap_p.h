@@ -83,6 +83,24 @@ public:
     }
 };
 
+namespace detail {
+template <class T>
+class QFlatMapMockPointer
+{
+    T ref;
+public:
+    QFlatMapMockPointer(T r)
+        : ref(r)
+    {
+    }
+
+    T *operator->()
+    {
+        return &ref;
+    }
+};
+} // namespace detail
+
 template<class Key, class T, class Compare = std::less<Key>, class KeyContainer = QList<Key>,
          class MappedContainer = QList<T>>
 class QFlatMap : private QFlatMapValueCompare<Key, T, Compare>
@@ -90,21 +108,7 @@ class QFlatMap : private QFlatMapValueCompare<Key, T, Compare>
     static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
 
     template <class U>
-    class mock_pointer
-    {
-        U ref;
-    public:
-        mock_pointer(U r)
-            : ref(r)
-        {
-        }
-
-        U *operator->()
-        {
-            return &ref;
-        }
-    };
-
+    using mock_pointer = detail::QFlatMapMockPointer<U>;
 public:
     using key_type = Key;
     using mapped_type = T;
