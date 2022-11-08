@@ -526,6 +526,7 @@ function(qt_internal_add_darwin_permission_plugin permission)
         LIBRARIES
             Qt::Core
             Qt::CorePrivate
+            ${FWFoundation}
     )
 
     # Disable PCH since CMake falls over on single .mm source targets
