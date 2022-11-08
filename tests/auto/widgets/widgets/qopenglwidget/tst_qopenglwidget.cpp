@@ -423,6 +423,7 @@ void tst_QOpenGLWidget::asViewport()
         // repainted when going from Inactive to Active. So wait for the window to be
         // active before we continue, so the activation doesn't happen at a random
         // time below. And call processEvents to have the paint events delivered right away.
+        widget.activateWindow();
         QVERIFY(QTest::qWaitForWindowActive(&widget));
         qApp->processEvents();
     }
@@ -599,50 +600,59 @@ static QPixmap grabWidgetWithoutRepaint(const QWidget *widget, QRect clipArea)
 
 bool verifyColor(const QWidget *widget, const QRect &clipArea, const QColor &color, int callerLine)
 {
-    for (int t = 0; t < 6; t++) {
-        const QPixmap pixmap = grabWidgetWithoutRepaint(widget, clipArea);
-        if (!QTest::qCompare(pixmap.size(),
-                             clipArea.size(),
-                             "pixmap.size()",
-                             "rect.size()",
-                             __FILE__,
-                             callerLine))
-            return false;
+    // Create a comparison target image
+    QPixmap expectedPixmap(grabWidgetWithoutRepaint(widget, clipArea)); /* ensure equal formats */
+    expectedPixmap.detach();
+    expectedPixmap.fill(color);
+    const QImage expectedImage = expectedPixmap.toImage();
 
+    // test image size
+    QPixmap pixmap;
+    auto testSize = [&](){
+        pixmap = grabWidgetWithoutRepaint(widget, clipArea);
+        return pixmap.size() == clipArea.size();
+    };
 
-        const QImage image = pixmap.toImage();
-        QPixmap expectedPixmap(pixmap); /* ensure equal formats */
-        expectedPixmap.detach();
-        expectedPixmap.fill(color);
-
+    // test the first pixel's color
+    uint firstPixel;
+    auto testPixel = [&](){
+        const QImage image = grabWidgetWithoutRepaint(widget, clipArea).toImage();
         uint alphaCorrection = image.format() == QImage::Format_RGB32 ? 0xff000000 : 0;
-        uint firstPixel = image.pixel(0,0) | alphaCorrection;
+        firstPixel = image.pixel(0,0) | alphaCorrection;
+        return firstPixel == QColor(color).rgb();
+    };
 
-        // Retry a couple of times. Some window managers have transparency animation, or are
-        // just slow to render.
-        if (t < 5) {
-            if (firstPixel == QColor(color).rgb()
-                && image == expectedPixmap.toImage())
-                return true;
-            else
-                QTest::qWait(200);
-        } else {
-            if (!QTest::qVerify(firstPixel == QColor(color).rgb(),
-                               "firstPixel == QColor(color).rgb()",
-                                qPrintable(msgRgbMismatch(firstPixel, QColor(color).rgb())),
-                                __FILE__, callerLine)) {
-                return false;
-            }
-            if (!QTest::qVerify(image == expectedPixmap.toImage(),
-                                "image == expectedPixmap.toImage()",
-                                "grabbed pixmap differs from expected pixmap",
-                                __FILE__, callerLine)) {
-                return false;
-            }
-        }
+    // test the rendered image
+    QImage image;
+    auto testImage = [&](){
+        image = grabWidgetWithoutRepaint(widget, clipArea).toImage();
+        return image == expectedImage;
+    };
+
+    // Perform checks and make test case fail if unsuccessful
+    if (!QTest::qWaitFor(testSize))
+        return QTest::qCompare(pixmap.size(),
+                         clipArea.size(),
+                         "pixmap.size()",
+                         "rect.size()",
+                         __FILE__,
+                         callerLine);
+
+    if (!QTest::qWaitFor(testPixel)) {
+        return QTest::qVerify(firstPixel == QColor(color).rgb(),
+                           "firstPixel == QColor(color).rgb()",
+                            qPrintable(msgRgbMismatch(firstPixel, QColor(color).rgb())),
+                            __FILE__, callerLine);
     }
 
-    return false;
+    if (!QTest::qWaitFor(testImage)) {
+        return QTest::qVerify(image == expectedImage,
+                            "image == expectedPixmap.toImage()",
+                            "grabbed pixmap differs from expected pixmap",
+                            __FILE__, callerLine);
+    }
+
+    return true;
 }
 
 void tst_QOpenGLWidget::stackWidgetOpaqueChildIsVisible()
@@ -675,6 +685,7 @@ void tst_QOpenGLWidget::stackWidgetOpaqueChildIsVisible()
     stack.resize(dimensionSize, dimensionSize);
     stack.show();
     QVERIFY(QTest::qWaitForWindowExposed(&stack));
+    stack.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&stack));
 
     // Switch to the QOpenGLWidget.
