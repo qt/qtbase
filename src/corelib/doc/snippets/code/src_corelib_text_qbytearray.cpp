@@ -461,4 +461,15 @@ QByteArray ba = QByteArrayLiteral("byte array contents");
 QByteArray encoded("Qt%20is%20great%33");
 QByteArray decoded = encoded.percentDecoded(); // Set to "Qt is great!"
 //! [54]
+
+//! [55]
+emscripten::val uint8array = emscripten::val::global("g_uint8array");
+QByteArray byteArray = QByteArray::fromUint8Array(uint8array);
+//! [55]
+
+//! [56]
+QByteArray byteArray = "test";
+emscripten::val uint8array = QByteArray::toUint8Array(byteArray);
+//! [56]
+
 }

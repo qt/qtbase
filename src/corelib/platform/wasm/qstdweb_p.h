@@ -128,8 +128,11 @@ namespace qstdweb {
         void set(const Uint8Array &source);
 
         void copyTo(char *destination) const;
+        QByteArray copyToQByteArray() const;
+
         static void copy(char *destination, const Uint8Array &source);
         static Uint8Array copyFrom(const char *buffer, uint32_t size);
+        static Uint8Array copyFrom(const QByteArray &buffer);
         emscripten::val val();
 
     private:

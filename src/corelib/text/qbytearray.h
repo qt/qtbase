@@ -34,6 +34,12 @@ Q_FORWARD_DECLARE_CF_TYPE(CFData);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSData);
 #endif
 
+#if defined(Q_OS_WASM) || defined(Q_QDOC)
+namespace emscripten {
+    class val;
+}
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QString;
@@ -385,6 +391,11 @@ public:
     static QByteArray fromRawNSData(const NSData *data);
     NSData *toNSData() const Q_DECL_NS_RETURNS_AUTORELEASED;
     NSData *toRawNSData() const Q_DECL_NS_RETURNS_AUTORELEASED;
+#endif
+
+#if defined(Q_OS_WASM) || defined(Q_QDOC)
+    static QByteArray fromUint8Array(emscripten::val uint8array);
+    emscripten::val toUint8Array();
 #endif
 
     typedef char *iterator;

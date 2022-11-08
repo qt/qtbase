@@ -18,6 +18,9 @@
 #include "qstringconverter_p.h"
 #include <qdatastream.h>
 #include <qmath.h>
+#if defined(Q_OS_WASM)
+#include "private/qstdweb_p.h"
+#endif
 
 #ifndef QT_NO_COMPRESS
 #include <zconf.h>
@@ -4837,6 +4840,60 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 
     return result;
 }
+
+#if defined(Q_OS_WASM) || defined(Q_QDOC)
+
+/*!
+    \brief Constructs a new QByteArray containing a copy of the Uint8Array \a uint8array.
+
+    This function transfers data from a JavaScript data buffer - which
+    is not addressable from C++ code - to heap memory owned by a QByteArray.
+    The Uint8Array can be released once this function returns and a copy
+    has been made.
+
+    The \a uint8array argument must an emscripten::val referencing an Uint8Array
+    object, e.g. obtained from a global JavaScript variable:
+
+    \snippet code/src_corelib_text_qbytearray.cpp 55
+
+    This function returns a null QByteArray if the size of the Uint8Array
+    exceeds the maximum capacity of QByteArray, or if the \a uint8array
+    argument is not of the Uint8Array type.
+
+    \since 6.4
+    \ingroup platform-type-conversions
+
+    \sa toUint8Array()
+*/
+
+QByteArray QByteArray::fromUint8Array(emscripten::val uint8array)
+{
+    return qstdweb::Uint8Array(uint8array).copyToQByteArray();
+}
+
+/*!
+    \brief Creates a Uint8Array from a QByteArray
+
+    This function transfers data from heap memory owned by a QByteArray
+    to a JavaScript data buffer. The function allocates and copies into an
+    ArrayBuffer, and returns a Uint8Array view to that buffer.
+
+    The JavaScript objects own a copy of the data, and this
+    QByteArray can be safely deleted after the copy has been made.
+
+    \snippet code/src_corelib_text_qbytearray.cpp 56
+
+    \since 6.4
+    \ingroup platform-type-conversions
+
+    \sa toUint8Array()
+*/
+emscripten::val QByteArray::toUint8Array()
+{
+    return qstdweb::Uint8Array::copyFrom(*this).val();
+}
+
+#endif
 
 /*! \typedef QByteArray::ConstIterator
     \internal

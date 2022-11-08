@@ -573,6 +573,18 @@ void Uint8Array::copyTo(char *destination) const
     Uint8Array(destination, length()).set(*this);
 }
 
+// Copies the Uint8Array content to a destination QByteArray
+QByteArray Uint8Array::copyToQByteArray() const
+{
+    if (length() > std::numeric_limits<qsizetype>::max())
+        return QByteArray();
+
+    QByteArray destinationArray;
+    destinationArray.resize(length());
+    copyTo(destinationArray.data());
+    return destinationArray;
+}
+
 // Copies the Uint8Array content to a destination on the heap
 void Uint8Array::copy(char *destination, const Uint8Array &source)
 {
@@ -585,6 +597,12 @@ Uint8Array Uint8Array::copyFrom(const char *buffer, uint32_t size)
     Uint8Array contentCopy(size);
     contentCopy.set(Uint8Array(buffer, size));
     return contentCopy;
+}
+
+// Copies content from a QByteArray to a new Uint8Array object
+Uint8Array Uint8Array::copyFrom(const QByteArray &buffer)
+{
+    return copyFrom(buffer.constData(), buffer.size());
 }
 
 emscripten::val Uint8Array::val()
