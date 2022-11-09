@@ -5358,6 +5358,31 @@ inline bool QObjectPrivate::removeConnection(QObjectPrivate::Connection *c)
     return true;
 }
 
+/*!
+ \internal
+
+ Used by QPropertyAdaptorSlotObject to get an existing instance for a property, if available
+ */
+QtPrivate::QPropertyAdaptorSlotObject *
+QObjectPrivate::getPropertyAdaptorSlotObject(const QMetaProperty &property)
+{
+    if (auto conns = connections.loadRelaxed()) {
+        Q_Q(QObject);
+        const QMetaObject *metaObject = q->metaObject();
+        int signal_index = methodIndexToSignalIndex(&metaObject, property.notifySignalIndex());
+        auto connectionList = conns->connectionsForSignal(signal_index);
+        for (auto c = connectionList.first.loadRelaxed(); c;
+             c = c->nextConnectionList.loadRelaxed()) {
+            if (c->isSlotObject) {
+                if (auto p = QtPrivate::QPropertyAdaptorSlotObject::cast(c->slotObj,
+                                                                         property.propertyIndex()))
+                    return p;
+            }
+        }
+    }
+    return nullptr;
+}
+
 /*! \class QMetaObject::Connection
     \inmodule QtCore
      Represents a handle to a signal-slot (or signal-functor) connection.

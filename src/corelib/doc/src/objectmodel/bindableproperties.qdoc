@@ -247,4 +247,18 @@
     be called for the current value of the property, register your callback using
     subscribe() instead.
 
+    \section1 Interaction with Q_PROPERTYs
+
+    A \l {The Property System}{Q_PROPERTY} that defines \c BINDABLE can be bound and
+    used in binding expressions. You can implement such properties using \l {QProperty},
+    \l {QObjectBindableProperty}, or \l {QObjectComputedProperty}.
+
+    Q_PROPERTYs without \c BINDABLE can also be bound and be used in binding expressions,
+    as long as they define a \c NOTIFY signal. You must wrap the property in a \l QBindable
+    using the \c {QBindable(QObject* obj, const char* property)} constructor. Then, the
+    property can be bound using \c \l QBindable::setBinding() or used in a binding
+    expression via \c \l QBindable::value(). You must use \c QBindable::value() in binding
+    expressions instead of the normal property \c READ function (or \c MEMBER) to enable
+    dependency tracking if the property is not \c BINDABLE.
+
 */

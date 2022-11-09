@@ -179,6 +179,9 @@ public:
 
     virtual std::string flagsForDumping() const;
 
+    QtPrivate::QPropertyAdaptorSlotObject *
+    getPropertyAdaptorSlotObject(const QMetaProperty &property);
+
 public:
     mutable ExtraData *extraData; // extra data set by the user
     // This atomic requires acquire/release semantics in a few places,

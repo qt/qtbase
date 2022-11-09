@@ -361,6 +361,7 @@ namespace QtPrivate {
 
         inline bool compare(void **a) { bool ret = false; m_impl(Compare, this, nullptr, a, &ret); return ret; }
         inline void call(QObject *r, void **a)  { m_impl(Call,    this, r, a, nullptr); }
+        bool isImpl(ImplFn f) const { return m_impl == f; }
     protected:
         ~QSlotObjectBase() {}
     private:

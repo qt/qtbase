@@ -597,6 +597,60 @@ enum Reason { InvalidInterface, NonBindableInterface, ReadOnlyInterface };
 Q_CORE_EXPORT void printUnsuitableBindableWarning(QAnyStringView prefix, Reason reason);
 Q_CORE_EXPORT void printMetaTypeMismatch(QMetaType actual, QMetaType expected);
 }
+
+namespace PropertyAdaptorSlotObjectHelpers {
+Q_CORE_EXPORT void getter(const QUntypedPropertyData *d, void *value);
+Q_CORE_EXPORT void setter(QUntypedPropertyData *d, const void *value);
+Q_CORE_EXPORT QUntypedPropertyBinding getBinding(const QUntypedPropertyData *d);
+Q_CORE_EXPORT bool bindingWrapper(QMetaType type, QUntypedPropertyData *d,
+                                  QtPrivate::QPropertyBindingFunction binding,
+                                  QUntypedPropertyData *temp, void *value);
+Q_CORE_EXPORT QUntypedPropertyBinding setBinding(QUntypedPropertyData *d,
+                                                 const QUntypedPropertyBinding &binding,
+                                                 QPropertyBindingWrapper wrapper);
+Q_CORE_EXPORT void setObserver(const QUntypedPropertyData *d, QPropertyObserver *observer);
+
+template<typename T>
+bool bindingWrapper(QMetaType type, QUntypedPropertyData *d,
+                    QtPrivate::QPropertyBindingFunction binding)
+{
+    struct Data : QPropertyData<T>
+    {
+        void *data() { return &this->val; }
+    } temp;
+    return bindingWrapper(type, d, binding, &temp, temp.data());
+}
+
+template<typename T>
+QUntypedPropertyBinding setBinding(QUntypedPropertyData *d, const QUntypedPropertyBinding &binding)
+{
+    return setBinding(d, binding, &bindingWrapper<T>);
+}
+
+template<typename T>
+QUntypedPropertyBinding makeBinding(const QUntypedPropertyData *d,
+                                    const QPropertyBindingSourceLocation &location)
+{
+    return Qt::makePropertyBinding(
+            [d]() -> T {
+                T r;
+                getter(d, &r);
+                return r;
+            },
+            location);
+}
+
+template<class T>
+inline constexpr QBindableInterface iface = {
+    &getter,
+    &setter,
+    &getBinding,
+    &setBinding<T>,
+    &makeBinding<T>,
+    &setObserver,
+    &QMetaType::fromType<T>,
+};
+}
 }
 
 class QUntypedBindable
@@ -608,6 +662,9 @@ protected:
     constexpr QUntypedBindable(QUntypedPropertyData *d, const QtPrivate::QBindableInterface *i)
         : data(d), iface(i)
     {}
+
+    Q_CORE_EXPORT QUntypedBindable(QObject* obj, const QMetaProperty &property, const QtPrivate::QBindableInterface *i);
+    Q_CORE_EXPORT QUntypedBindable(QObject* obj, const char* property, const QtPrivate::QBindableInterface *i);
 
 public:
     constexpr QUntypedBindable() = default;
@@ -744,6 +801,12 @@ public:
             iface = nullptr;
         }
     }
+
+    QBindable(QObject *obj, const QMetaProperty &property)
+        : QUntypedBindable(obj, property, &QtPrivate::PropertyAdaptorSlotObjectHelpers::iface<T>) {}
+
+    QBindable(QObject *obj, const char *property)
+        : QUntypedBindable(obj, property, &QtPrivate::PropertyAdaptorSlotObjectHelpers::iface<T>) {}
 
     QPropertyBinding<T> makeBinding(const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION) const
     {

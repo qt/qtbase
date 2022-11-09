@@ -99,6 +99,8 @@ private slots:
     void scheduleNotify();
 
     void notifyAfterAllDepsGone();
+
+    void propertyAdaptorBinding();
 };
 
 void tst_QProperty::functorBinding()
@@ -1661,6 +1663,190 @@ void tst_QProperty::noFakeDependencies()
     int old = bindingFunctionCalled;
     fdc.setProp3(100);
     QCOMPARE(old, bindingFunctionCalled);
+}
+
+class PropertyAdaptorTester : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(int foo READ foo WRITE setFoo NOTIFY fooChanged)
+    Q_PROPERTY(int foo1 READ foo WRITE setFoo)
+
+signals:
+    void fooChanged(int newFoo);
+
+public slots:
+    void fooHasChanged() { fooChangedCount++; }
+
+public:
+    int foo() const { return fooData; }
+    void setFoo(int i)
+    {
+        if (i != fooData) {
+            fooData = i;
+            fooChanged(fooData);
+        }
+    }
+
+public:
+    int fooData = 0;
+    int fooChangedCount = 0;
+};
+
+void tst_QProperty::propertyAdaptorBinding()
+{
+    QProperty<int> source { 5 };
+    QProperty<int> dest1 { 99 };
+    QProperty<int> dest2 { 98 };
+
+    // Check binding of non BINDABLE property
+    PropertyAdaptorTester object;
+    QObject::connect(&object, &PropertyAdaptorTester::fooChanged, &object,
+                     &PropertyAdaptorTester::fooHasChanged);
+    QBindable<int> binding(&object, "foo");
+    binding.setBinding([&]() { return source + 1; });
+    QCOMPARE(object.foo(), 6);
+    QCOMPARE(object.fooChangedCount, 1);
+
+    struct MyBindable : QBindable<int> {
+        using QBindable<int>::QBindable;
+        QtPrivate::QPropertyAdaptorSlotObject* data() {
+            return static_cast<QtPrivate::QPropertyAdaptorSlotObject*>(QUntypedBindable::data);
+        }
+    } dataBinding(&object, "foo");
+    QPropertyBindingDataPointer data{&dataBinding.data()->bindingData()};
+
+    QCOMPARE(data.observerCount(), 0);
+    dest1.setBinding(binding.makeBinding());
+    QCOMPARE(data.observerCount(), 1);
+    dest2.setBinding([=]() { return binding.value() + 1; });
+    binding = {};
+    QCOMPARE(data.observerCount(), 2);
+
+    // Check addNotifer
+    {
+        int local_foo = 0;
+        auto notifier = QBindable<int>(&object, "foo").addNotifier([&]() { local_foo++; });
+        QCOMPARE(data.observerCount(), 3);
+        QCOMPARE(object.foo(), 6);
+        QCOMPARE(dest1.value(), 6);
+        QCOMPARE(dest2.value(), 7);
+        QCOMPARE(local_foo, 0);
+        QCOMPARE(object.fooChangedCount, 1);
+
+        source = 7;
+        QCOMPARE(object.foo(), 8);
+        QCOMPARE(dest1.value(), 8);
+        QCOMPARE(dest2.value(), 9);
+        QCOMPARE(local_foo, 1);
+        QCOMPARE(object.fooChangedCount, 2);
+    }
+
+    QCOMPARE(data.observerCount(), 2);
+
+    // Check a new QBindable object can override the existing binding
+    QBindable<int>(&object, "foo").setValue(10);
+    QCOMPARE(object.foo(), 10);
+    QCOMPARE(dest1.value(), 10);
+    QCOMPARE(dest2.value(), 11);
+    QCOMPARE(object.fooChangedCount, 3);
+    source.setValue(99);
+    QCOMPARE(object.foo(), 10);
+    QCOMPARE(dest1.value(), 10);
+    QCOMPARE(dest2.value(), 11);
+    QCOMPARE(object.fooChangedCount, 3);
+    object.setFoo(12);
+    QCOMPARE(object.foo(), 12);
+    QCOMPARE(dest1.value(), 12);
+    QCOMPARE(dest2.value(), 13);
+    QCOMPARE(object.fooChangedCount, 4);
+
+    // Check binding multiple notifiers
+    QProperty<int> source2 { 20 };
+    source.setValue(21);
+    binding = QBindable<int>(&object, "foo");
+    binding.setBinding([&]() { return source + source2; });
+    QCOMPARE(object.foo(), 41);
+    QCOMPARE(dest1.value(), 41);
+    QCOMPARE(object.fooChangedCount, 5);
+    source.setValue(22);
+    QCOMPARE(object.foo(), 42);
+    QCOMPARE(dest1.value(), 42);
+    QCOMPARE(object.fooChangedCount, 6);
+    source2.setValue(21);
+    QCOMPARE(object.foo(), 43);
+    QCOMPARE(dest1.value(), 43);
+    QCOMPARE(object.fooChangedCount, 7);
+
+    // Check update group
+    Qt::beginPropertyUpdateGroup();
+    source.setValue(23);
+    source2.setValue(22);
+    QCOMPARE(object.foo(), 43);
+    QCOMPARE(dest1.value(), 43);
+    QCOMPARE(object.fooChangedCount, 7);
+    Qt::endPropertyUpdateGroup();
+    QCOMPARE(object.foo(), 45);
+    QCOMPARE(dest1.value(), 45);
+    QCOMPARE(object.fooChangedCount, 8);
+
+    PropertyAdaptorTester object2;
+    PropertyAdaptorTester object3;
+
+    // Check multiple observers
+    QBindable<int> binding2(&object2, "foo");
+    QBindable<int> binding3(&object3, "foo");
+    binding.setBinding([=]() { return binding2.value(); });
+    binding3.setBinding([=]() { return binding.value(); });
+    QCOMPARE(object.foo(), 0);
+    QCOMPARE(object2.foo(), 0);
+    QCOMPARE(object3.foo(), 0);
+    QCOMPARE(dest1.value(), 0);
+    object2.setFoo(1);
+    QCOMPARE(object.foo(), 1);
+    QCOMPARE(object2.foo(), 1);
+    QCOMPARE(object3.foo(), 1);
+    QCOMPARE(dest1.value(), 1);
+
+    // Check interoperation with BINDABLE properties
+    MyQObject bindableObject;
+    bindableObject.fooData.setBinding([]() { return 5; });
+    QVERIFY(bindableObject.fooData.hasBinding());
+    QVERIFY(!bindableObject.barData.hasBinding());
+    QVERIFY(QBindable<int>(&bindableObject, "foo").hasBinding());
+    QBindable<int> bindableBar(&bindableObject, "bar");
+    QVERIFY(!bindableBar.hasBinding());
+    bindableBar.setBinding([]() { return 6; });
+    QVERIFY(bindableBar.hasBinding());
+    QVERIFY(bindableObject.barData.hasBinding());
+
+    // Check bad arguments
+#ifndef QT_NO_DEBUG
+    QTest::ignoreMessage(QtMsgType::QtWarningMsg, "QUntypedBindable: Property is not valid");
+#endif
+    QVERIFY(!QBindable<int>(&object, QMetaProperty{}).isValid());
+#ifndef QT_NO_DEBUG
+    QTest::ignoreMessage(QtMsgType::QtWarningMsg, "QUntypedBindable: Property foo1 has no notify signal");
+#endif
+    QVERIFY(!QBindable<int>(&object, "foo1").isValid());
+#ifndef QT_NO_DEBUG
+    QTest::ignoreMessage(QtMsgType::QtWarningMsg, "QUntypedBindable: Property foo of type int does not match requested type bool");
+#endif
+    QVERIFY(!QBindable<bool>(&object, "foo").isValid());
+#ifndef QT_NO_DEBUG
+    QTest::ignoreMessage(QtMsgType::QtWarningMsg,
+                         "QUntypedBindable: Property foo does not belong to this object");
+#endif
+    QObject qobj;
+    QVERIFY(!QBindable<int>(
+                     &qobj,
+                     object.metaObject()->property(object.metaObject()->indexOfProperty("foo")))
+                     .isValid());
+#ifndef QT_NO_DEBUG
+    QTest::ignoreMessage(QtMsgType::QtWarningMsg, "QUntypedBindable: No property named fizz");
+    QTest::ignoreMessage(QtMsgType::QtWarningMsg, "QUntypedBindable: Property is not valid");
+#endif
+    QVERIFY(!QBindable<int>(&object, "fizz").isValid());
 }
 
 #if QT_CONFIG(thread)

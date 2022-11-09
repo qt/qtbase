@@ -18,8 +18,10 @@
 #include <private/qglobal_p.h>
 #include <qproperty.h>
 
+#include <qmetaobject.h>
 #include <qscopedpointer.h>
 #include <qscopedvaluerollback.h>
+#include <qvariant.h>
 #include <vector>
 #include <QtCore/QVarLengthArray>
 
@@ -897,6 +899,37 @@ QBindingObserverPtr::~QBindingObserverPtr() { if (d)  QPropertyObserverPointer{d
 QPropertyBindingPrivate *QBindingObserverPtr::binding() const noexcept { return QPropertyObserverPointer{d}.binding(); }
 
 QPropertyObserver *QBindingObserverPtr::operator->() { return d; }
+
+namespace QtPrivate {
+class QPropertyAdaptorSlotObject : public QUntypedPropertyData, public QSlotObjectBase
+{
+    QPropertyBindingData bindingData_;
+    QObject *obj;
+    QMetaProperty metaProperty_;
+
+    static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret);
+
+    QPropertyAdaptorSlotObject(QObject *o, const QMetaProperty& p);
+
+public:
+    static QPropertyAdaptorSlotObject *cast(QSlotObjectBase *ptr, int propertyIndex)
+    {
+        if (ptr->isImpl(&QPropertyAdaptorSlotObject::impl)) {
+            auto p = static_cast<QPropertyAdaptorSlotObject *>(ptr);
+            if (p->metaProperty_.propertyIndex() == propertyIndex)
+                return p;
+        }
+        return nullptr;
+    }
+
+    inline const QPropertyBindingData &bindingData() const { return bindingData_; }
+    inline QPropertyBindingData &bindingData() { return bindingData_; }
+    inline QObject *object() const { return obj; }
+    inline const QMetaProperty &metaProperty() const { return metaProperty_; }
+
+    friend class QT_PREPEND_NAMESPACE(QUntypedBindable);
+};
+}
 
 QT_END_NAMESPACE
 

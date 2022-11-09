@@ -8,6 +8,9 @@
 #include <QScopeGuard>
 #include <QtCore/qloggingcategory.h>
 #include <QThread>
+#include <QtCore/qmetaobject.h>
+
+#include "qobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -1133,6 +1136,31 @@ QString QPropertyBindingError::description() const
 
    \sa QMetaProperty::isBindable, QProperty, QObjectBindableProperty,
        QObjectComputedProperty, {Qt Bindable Properties}
+*/
+
+/*!
+   \fn template<typename T> QBindable<T>::QBindable(QObject *obj, const char *property)
+
+   Constructs a QBindable for the \l Q_PROPERTY \a property on \a obj. The property must
+   have a notify signal but does not need to have \c BINDABLE in its \c Q_PROPERTY
+   definition, so even binding unaware \c {Q_PROPERTY}s can be bound or used in binding
+   expressions. You must use \c QBindable::value() in binding expressions instead of the
+   normal property \c READ function (or \c MEMBER) to enable dependency tracking if the
+   property is not \c BINDABLE. When binding using a lambda, you may prefer to capture the
+   QBindable by value to avoid the cost of calling this constructor in the binding
+   expression.
+   This constructor should not be used to implement \c BINDABLE for a Q_PROPERTY, as the
+   resulting Q_PROPERTY will not support dependency tracking. To make a property that is
+   usable directly without reading through a QBindable use \l QProperty or
+   \l QObjectBindableProperty.
+
+   \sa QProperty, QObjectBindableProperty, {Qt Bindable Properties}
+*/
+
+/*!
+   \fn template<typename T> QBindable<T>::QBindable(QObject *obj, const QMetaProperty &property)
+
+   See \c \l QBindable::QBindable(QObject *obj, const char *property)
 */
 
 /*!
@@ -2386,6 +2414,154 @@ void printMetaTypeMismatch(QMetaType actual, QMetaType expected)
  */
 QBindingStatus* getBindingStatus(QtPrivate::QBindingStatusAccessToken) { return &QT_PREPEND_NAMESPACE(bindingStatus); }
 
+namespace PropertyAdaptorSlotObjectHelpers {
+void getter(const QUntypedPropertyData *d, void *value)
+{
+    auto adaptor = static_cast<const QtPrivate::QPropertyAdaptorSlotObject *>(d);
+    adaptor->bindingData().registerWithCurrentlyEvaluatingBinding();
+    auto mt = adaptor->metaProperty().metaType();
+    mt.destruct(value);
+    mt.construct(value, adaptor->metaProperty().read(adaptor->object()).data());
+}
+
+void setter(QUntypedPropertyData *d, const void *value)
+{
+    auto adaptor = static_cast<QtPrivate::QPropertyAdaptorSlotObject *>(d);
+    adaptor->bindingData().removeBinding();
+    adaptor->metaProperty().write(adaptor->object(),
+                                  QVariant(adaptor->metaProperty().metaType(), value));
+}
+
+QUntypedPropertyBinding getBinding(const QUntypedPropertyData *d)
+{
+    auto adaptor = static_cast<const QtPrivate::QPropertyAdaptorSlotObject *>(d);
+    return QUntypedPropertyBinding(adaptor->bindingData().binding());
+}
+
+bool bindingWrapper(QMetaType type, QUntypedPropertyData *d,
+                    QtPrivate::QPropertyBindingFunction binding, QUntypedPropertyData *temp,
+                    void *value)
+{
+    auto adaptor = static_cast<const QtPrivate::QPropertyAdaptorSlotObject *>(d);
+    type.destruct(value);
+    type.construct(value, adaptor->metaProperty().read(adaptor->object()).data());
+    if (binding.vtable->call(type, temp, binding.functor)) {
+        adaptor->metaProperty().write(adaptor->object(), QVariant(type, value));
+        return true;
+    }
+    return false;
+}
+
+QUntypedPropertyBinding setBinding(QUntypedPropertyData *d, const QUntypedPropertyBinding &binding,
+                                   QPropertyBindingWrapper wrapper)
+{
+    auto adaptor = static_cast<QPropertyAdaptorSlotObject *>(d);
+    return adaptor->bindingData().setBinding(binding, d, nullptr, wrapper);
+}
+
+void setObserver(const QUntypedPropertyData *d, QPropertyObserver *observer)
+{
+    observer->setSource(static_cast<const QPropertyAdaptorSlotObject *>(d)->bindingData());
+}
+}
+
+QPropertyAdaptorSlotObject::QPropertyAdaptorSlotObject(QObject *o, const QMetaProperty &p)
+    : QSlotObjectBase(&impl), obj(o), metaProperty_(p)
+{
+}
+
+void QPropertyAdaptorSlotObject::impl(int which, QSlotObjectBase *this_, QObject *r, void **a,
+                                      bool *ret)
+{
+    auto self = static_cast<QPropertyAdaptorSlotObject *>(this_);
+    switch (which) {
+    case Destroy:
+        delete self;
+        break;
+    case Call:
+        if (!self->bindingData_.hasBinding())
+            self->bindingData_.notifyObservers(self);
+        break;
+    case Compare:
+    case NumOperations:
+        Q_UNUSED(r);
+        Q_UNUSED(a);
+        Q_UNUSED(ret);
+        break;
+    }
+}
+
 } // namespace QtPrivate end
+
+QUntypedBindable::QUntypedBindable(QObject *obj, const QMetaProperty &metaProperty,
+                                   const QtPrivate::QBindableInterface *i)
+    : iface(i)
+{
+    if (!obj)
+        return;
+
+    if (!metaProperty.isValid()) {
+        qCWarning(lcQPropertyBinding) << "QUntypedBindable: Property is not valid";
+        return;
+    }
+
+    if (metaProperty.isBindable()) {
+        *this = metaProperty.bindable(obj);
+        return;
+    }
+
+    if (!metaProperty.hasNotifySignal()) {
+        qCWarning(lcQPropertyBinding)
+                << "QUntypedBindable: Property" << metaProperty.name() << "has no notify signal";
+        return;
+    }
+
+    auto metatype = iface->metaType();
+    if (metaProperty.metaType() != metatype) {
+        qCWarning(lcQPropertyBinding) << "QUntypedBindable: Property" << metaProperty.name()
+                                      << "of type" << metaProperty.metaType().name()
+                                      << "does not match requested type" << metatype.name();
+        return;
+    }
+
+    // Test for name pointer equality proves it's exactly the same property
+    if (obj->metaObject()->property(metaProperty.propertyIndex()).name() != metaProperty.name()) {
+        qCWarning(lcQPropertyBinding) << "QUntypedBindable: Property" << metaProperty.name()
+                                      << "does not belong to this object";
+        return;
+    }
+
+    // Get existing binding data if it exists
+    auto adaptor = QObjectPrivate::get(obj)->getPropertyAdaptorSlotObject(metaProperty);
+
+    if (!adaptor) {
+        adaptor = new QPropertyAdaptorSlotObject(obj, metaProperty);
+
+        auto c = QObjectPrivate::connect(obj, metaProperty.notifySignalIndex(), obj, adaptor,
+                                         Qt::DirectConnection);
+        Q_ASSERT(c);
+    }
+
+    data = adaptor;
+}
+
+QUntypedBindable::QUntypedBindable(QObject *obj, const char *property,
+                                   const QtPrivate::QBindableInterface *i)
+    : QUntypedBindable(
+            obj,
+            [=]() -> QMetaProperty {
+                if (!obj)
+                    return {};
+                auto propertyIndex = obj->metaObject()->indexOfProperty(property);
+                if (propertyIndex < 0) {
+                    qCWarning(lcQPropertyBinding)
+                            << "QUntypedBindable: No property named" << property;
+                    return {};
+                }
+                return obj->metaObject()->property(propertyIndex);
+            }(),
+            i)
+{
+}
 
 QT_END_NAMESPACE
