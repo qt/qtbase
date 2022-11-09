@@ -340,11 +340,11 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
     list(FILTER module_headers EXCLUDE REGEX
         "(.+/(ui_)[^/]+\\.h|${CMAKE_CURRENT_SOURCE_DIR}(/.+)?/doc/+\\.h)")
 
-    set(module_headers_rsp "${binary_dir_real}/module_headers")
+    set(module_headers_rsp "${binary_dir_real}/${target}_module_headers")
     list(JOIN module_headers "\n" module_headers_string)
     qt_configure_file_v2(OUTPUT "${module_headers_rsp}" CONTENT "${module_headers_string}")
 
-    set(module_headers_generated_rsp "${binary_dir_real}/module_headers_generated")
+    set(module_headers_generated_rsp "${binary_dir_real}/${target}_module_headers_generated")
     list(JOIN module_headers_generated "\n" module_headers_generated_string)
     qt_configure_file_v2(OUTPUT "${module_headers_generated_rsp}" CONTENT
         "${module_headers_generated_string}")
