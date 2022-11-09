@@ -285,6 +285,10 @@ void tst_QPalette::cacheKey()
     const auto differentDataKey = copyDifferentData.cacheKey();
     const auto differentDataSerNo = differentDataKey >> 32;
     const auto differentDataDetachNo = differentDataKey & 0xffffffff;
+    auto loggerDeepDetach = qScopeGuard([&](){
+        qDebug() << "Deep detach serial" << differentDataSerNo;
+        qDebug() << "Deep detach detach number" << differentDataDetachNo;
+    });
 
     QCOMPARE_NE(copyDifferentData.cacheKey(), defaultCacheKey);
     QCOMPARE(defaultPalette.cacheKey(), defaultCacheKey);
@@ -294,6 +298,11 @@ void tst_QPalette::cacheKey()
     const auto differentMaskKey = copyDifferentMask.cacheKey();
     const auto differentMaskSerNo = differentMaskKey >> 32;
     const auto differentMaskDetachNo = differentMaskKey & 0xffffffff;
+    auto loggerShallowDetach = qScopeGuard([&](){
+        qDebug() << "Shallow detach serial" << differentMaskSerNo;
+        qDebug() << "Shallow detach detach number" << differentMaskDetachNo;
+    });
+
     QCOMPARE(differentMaskSerNo, defaultSerNo);
     QCOMPARE_NE(differentMaskSerNo, defaultDetachNo);
     QCOMPARE_NE(differentMaskKey, defaultCacheKey);
@@ -319,6 +328,9 @@ void tst_QPalette::cacheKey()
     QCOMPARE_NE(modifiedAllKey, defaultCacheKey);
     QCOMPARE_NE(modifiedAllKey, differentDataKey);
     QCOMPARE_NE(modifiedAllKey, modifiedCacheKey);
+
+    loggerDeepDetach.dismiss();
+    loggerShallowDetach.dismiss();
 }
 
 QTEST_MAIN(tst_QPalette)
