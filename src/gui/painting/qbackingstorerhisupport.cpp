@@ -116,7 +116,6 @@ bool QBackingStoreRhiSupport::create()
             return false;
         }
         params.window = m_window;
-        params.deviceExtensions = m_config.deviceExtensions();
         rhi = QRhi::create(QRhi::Vulkan, &params, flags);
     }
 #endif

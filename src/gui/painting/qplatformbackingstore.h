@@ -66,22 +66,10 @@ struct Q_GUI_EXPORT QPlatformBackingStoreRhiConfig
     bool isDebugLayerEnabled() const { return m_debugLayer; }
     void setDebugLayer(bool enable) { m_debugLayer = enable; }
 
-    QByteArrayList instanceExtensions() const { return m_instanceExtensions; }
-    void setInstanceExtensions(const QByteArrayList &e) { m_instanceExtensions = e; }
-
-    QByteArrayList instanceLayers() const { return m_instanceLayers; }
-    void setInstanceLayers(const QByteArrayList &e) { m_instanceLayers = e; }
-
-    QByteArrayList deviceExtensions() const { return m_deviceExtensions; }
-    void setDeviceExtensions(const QByteArrayList &e) { m_deviceExtensions = e; }
-
 private:
     bool m_enable;
     Api m_api = Null;
     bool m_debugLayer = false;
-    QByteArrayList m_instanceExtensions;
-    QByteArrayList m_instanceLayers;
-    QByteArrayList m_deviceExtensions;
     friend bool operator==(const QPlatformBackingStoreRhiConfig &a, const QPlatformBackingStoreRhiConfig &b);
 };
 
@@ -89,10 +77,7 @@ inline bool operator==(const QPlatformBackingStoreRhiConfig &a, const QPlatformB
 {
     return a.m_enable == b.m_enable
             && a.m_api == b.m_api
-            && a.m_debugLayer == b.m_debugLayer
-            && a.m_instanceExtensions == b.m_instanceExtensions
-            && a.m_instanceLayers == b.m_instanceLayers
-            && a.m_deviceExtensions == b.m_deviceExtensions;
+            && a.m_debugLayer == b.m_debugLayer;
 }
 
 inline bool operator!=(const QPlatformBackingStoreRhiConfig &a, const QPlatformBackingStoreRhiConfig &b)
