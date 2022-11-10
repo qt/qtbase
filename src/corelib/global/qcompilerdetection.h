@@ -445,6 +445,12 @@
 #define QT_HAS_INCLUDE(x)        __has_include(x)
 #define QT_HAS_INCLUDE_NEXT(x)   __has_include_next(x)
 
+#ifdef __cplusplus
+# if __has_include(<version>) /* remove this check once Integrity, QNX have caught up */
+#  include <version>
+# endif
+#endif
+
 /*
  * C++11 support
  *
@@ -485,9 +491,15 @@
  *  N1653           Q_COMPILER_VARIADIC_MACROS
  *  N2242 N2555     Q_COMPILER_VARIADIC_TEMPLATES       __cpp_variadic_templates = 200704
  *
- * For any future version of the C++ standard, we use only the SD-6 macro.
+ *
+ * For the C++ standards C++14 and C++17, we use only the SD-6 macro.
  * For full listing, see
  *  http://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations
+ *
+ * For any future version of the C++ standard, we use only the C++20 feature test macro.
+ * For library features, we assume <version> is present (this header includes it).
+ * For full listing, see
+ *  https://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros
  *
  * C++ extensions:
  *  Q_COMPILER_RESTRICTED_VLA       variable-length arrays, prior to __cpp_runtime_arrays
