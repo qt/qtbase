@@ -10,10 +10,9 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of qmutex.cpp, qmutex_unix.cpp, and qmutex_win.cpp.  This header
-// file may change from version to version without notice, or even be
-// removed.
+// This file is not part of the Qt API. It exists for the convenience of
+// qmutex.cpp and qmutex_unix.cpp. This header file may change from version to
+// version without notice, or even be removed.
 //
 // We mean it.
 //
@@ -90,8 +89,6 @@ public:
     bool wakeup;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
-#elif defined(Q_OS_WIN)
-    Qt::HANDLE event;
 #endif
 };
 
