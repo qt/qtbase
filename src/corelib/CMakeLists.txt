@@ -493,7 +493,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_animation
 # from the wrong DLL at runtime and crash!
 qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND WIN32
     SOURCES
-        thread/qmutex_win.cpp
         thread/qwaitcondition_win.cpp
     LIBRARIES
         synchronization
@@ -1287,7 +1286,6 @@ qt_internal_extend_target(Core CONDITION WASM
 set_source_files_properties(
     thread/qmutex_mac.cpp
     thread/qmutex_unix.cpp
-    thread/qmutex_win.cpp
     PROPERTIES HEADER_FILE_ONLY ON)  # special case: These files are included by qmutex.cpp!
 
 
