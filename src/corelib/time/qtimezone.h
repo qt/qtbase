@@ -33,6 +33,28 @@ public:
         MaxUtcOffsetSecs = +14 * 3600
     };
 
+    QTimeZone() noexcept;
+    explicit QTimeZone(int offsetSeconds);
+
+    explicit QTimeZone(const QByteArray &ianaId);
+    QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name,
+              const QString &abbreviation, QLocale::Territory territory = QLocale::AnyTerritory,
+              const QString &comment = QString());
+    QTimeZone(const QTimeZone &other) noexcept;
+    QTimeZone(QTimeZone &&other) noexcept;
+    ~QTimeZone();
+
+    QTimeZone &operator=(const QTimeZone &other);
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QTimeZone)
+
+    void swap(QTimeZone &other) noexcept
+    { d.swap(other.d); }
+
+    bool operator==(const QTimeZone &other) const;
+    bool operator!=(const QTimeZone &other) const;
+
+    bool isValid() const;
+
     enum TimeType {
         StandardTime = 0,
         DaylightTime = 1,
@@ -54,27 +76,6 @@ public:
         int daylightTimeOffset;
     };
     typedef QList<OffsetData> OffsetDataList;
-
-    QTimeZone() noexcept;
-    explicit QTimeZone(const QByteArray &ianaId);
-    explicit QTimeZone(int offsetSeconds);
-    QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name,
-              const QString &abbreviation, QLocale::Territory territory = QLocale::AnyTerritory,
-              const QString &comment = QString());
-    QTimeZone(const QTimeZone &other) noexcept;
-    QTimeZone(QTimeZone &&other) noexcept;
-    ~QTimeZone();
-
-    QTimeZone &operator=(const QTimeZone &other);
-    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QTimeZone)
-
-    void swap(QTimeZone &other) noexcept
-    { d.swap(other.d); }
-
-    bool operator==(const QTimeZone &other) const;
-    bool operator!=(const QTimeZone &other) const;
-
-    bool isValid() const;
 
     QByteArray id() const;
     QLocale::Territory territory() const;
@@ -143,10 +144,10 @@ public:
 #endif
 
 private:
-    QTimeZone(QTimeZonePrivate &dd);
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &ds, const QTimeZone &tz);
 #endif
+    QTimeZone(QTimeZonePrivate &dd);
     friend class QTimeZonePrivate;
     friend class QDateTime;
     friend class QDateTimePrivate;
