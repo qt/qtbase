@@ -204,7 +204,7 @@ QPlatformTheme::Appearance QGtk3Theme::appearance() const
         gtk-theme-name provides both light and dark variants. We can save a
         regex check by testing this property first.
     */
-    const auto preferDark = gtkSetting<bool>("gtk-application-prefer-dark-theme");
+    const auto preferDark = gtkSetting<gboolean>("gtk-application-prefer-dark-theme");
     if (preferDark)
         return Appearance::Dark;
 
