@@ -676,7 +676,7 @@ void tst_QGlyphRun::stringIndexes()
             QCOMPARE(glyphRuns.size(), 1);
 
             QCOMPARE(glyphRuns.at(0).glyphIndexes().size(), 1);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), 233);
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), uint(233));
 
             QList<qsizetype> stringIndexes = glyphRuns.at(0).stringIndexes();
             QCOMPARE(stringIndexes.size(), 1);
@@ -688,7 +688,7 @@ void tst_QGlyphRun::stringIndexes()
             QCOMPARE(glyphRuns.size(), 1);
 
             QCOMPARE(glyphRuns.at(0).glyphIndexes().size(), 1);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), 233);
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), uint(233));
 
             QList<qsizetype> stringIndexes = glyphRuns.at(0).stringIndexes();
             QCOMPARE(stringIndexes.size(), 1);
@@ -710,15 +710,15 @@ void tst_QGlyphRun::stringIndexes()
             QCOMPARE(glyphRuns.size(), 1);
 
             QCOMPARE(glyphRuns.at(0).glyphIndexes().size(), 3);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), 71);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(1), 233);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(2), 74);
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), uint(71));
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(1), uint(233));
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(2), uint(74));
 
             QList<qsizetype> stringIndexes = glyphRuns.at(0).stringIndexes();
             QCOMPARE(stringIndexes.size(), 3);
-            QCOMPARE(stringIndexes.at(0), 0);
-            QCOMPARE(stringIndexes.at(1), 1);
-            QCOMPARE(stringIndexes.at(2), 3);
+            QCOMPARE(stringIndexes.at(0), uint(0));
+            QCOMPARE(stringIndexes.at(1), uint(1));
+            QCOMPARE(stringIndexes.at(2), uint(3));
         }
 
         {
@@ -726,11 +726,11 @@ void tst_QGlyphRun::stringIndexes()
             QCOMPARE(glyphRuns.size(), 1);
 
             QCOMPARE(glyphRuns.at(0).glyphIndexes().size(), 1);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), 233);
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), uint(233));
 
             QList<qsizetype> stringIndexes = glyphRuns.at(0).stringIndexes();
             QCOMPARE(stringIndexes.size(), 1);
-            QCOMPARE(stringIndexes.at(0), 1);
+            QCOMPARE(stringIndexes.at(0), uint(1));
         }
 
         {
@@ -738,11 +738,11 @@ void tst_QGlyphRun::stringIndexes()
             QCOMPARE(glyphRuns.size(), 1);
 
             QCOMPARE(glyphRuns.at(0).glyphIndexes().size(), 1);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), 233);
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), uint(233));
 
             QList<qsizetype> stringIndexes = glyphRuns.at(0).stringIndexes();
             QCOMPARE(stringIndexes.size(), 1);
-            QCOMPARE(stringIndexes.at(0), 1);
+            QCOMPARE(stringIndexes.at(0), uint(1));
         }
 
         {
@@ -750,8 +750,8 @@ void tst_QGlyphRun::stringIndexes()
             QCOMPARE(glyphRuns.size(), 1);
 
             QCOMPARE(glyphRuns.at(0).glyphIndexes().size(), 2);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), 233);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(1), 74);
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), uint(233));
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(1), uint(74));
 
             QList<qsizetype> stringIndexes = glyphRuns.at(0).stringIndexes();
             QCOMPARE(stringIndexes.size(), 2);
@@ -774,13 +774,13 @@ void tst_QGlyphRun::stringIndexes()
         QCOMPARE(glyphRuns.size(), 1);
 
         QCOMPARE(glyphRuns.at(0).glyphIndexes().size(), 2);
-        QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), 66);
-        QCOMPARE(glyphRuns.at(0).glyphIndexes().at(1), 70);
+        QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), uint(66));
+        QCOMPARE(glyphRuns.at(0).glyphIndexes().at(1), uint(70));
 
         QList<qsizetype> stringIndexes = glyphRuns.at(0).stringIndexes();
         QCOMPARE(stringIndexes.size(), 2);
-        QCOMPARE(stringIndexes.at(0), 0);
-        QCOMPARE(stringIndexes.at(1), 0);
+        QCOMPARE(stringIndexes.at(0), uint(0));
+        QCOMPARE(stringIndexes.at(1), uint(0));
     }
 
     // Three characters -> four glyphs
@@ -797,10 +797,10 @@ void tst_QGlyphRun::stringIndexes()
             QCOMPARE(glyphRuns.size(), 1);
 
             QCOMPARE(glyphRuns.at(0).glyphIndexes().size(), 4);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), 71);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(1), 66);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(2), 70);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(3), 74);
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), uint(71));
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(1), uint(66));
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(2), uint(70));
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(3), uint(74));
 
             QList<qsizetype> stringIndexes = glyphRuns.at(0).stringIndexes();
             QCOMPARE(stringIndexes.size(), 4);
@@ -815,9 +815,9 @@ void tst_QGlyphRun::stringIndexes()
             QCOMPARE(glyphRuns.size(), 1);
 
             QCOMPARE(glyphRuns.at(0).glyphIndexes().size(), 3);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), 66);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(1), 70);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(2), 74);
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), uint(66));
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(1), uint(70));
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(2), uint(74));
 
             QList<qsizetype> stringIndexes = glyphRuns.at(0).stringIndexes();
             QCOMPARE(stringIndexes.size(), 3);
@@ -831,9 +831,9 @@ void tst_QGlyphRun::stringIndexes()
             QCOMPARE(glyphRuns.size(), 1);
 
             QCOMPARE(glyphRuns.at(0).glyphIndexes().size(), 3);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), 71);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(1), 66);
-            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(2), 70);
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), uint(71));
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(1), uint(66));
+            QCOMPARE(glyphRuns.at(0).glyphIndexes().at(2), uint(70));
 
             QList<qsizetype> stringIndexes = glyphRuns.at(0).stringIndexes();
             QCOMPARE(stringIndexes.size(), 3);
@@ -858,11 +858,11 @@ void tst_QGlyphRun::stringIndexes()
         QCOMPARE(glyphRuns.size(), 1);
 
         QCOMPARE(glyphRuns.at(0).glyphIndexes().size(), 5);
-        QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), 71);
-        QCOMPARE(glyphRuns.at(0).glyphIndexes().at(1), 233);
-        QCOMPARE(glyphRuns.at(0).glyphIndexes().at(2), 66);
-        QCOMPARE(glyphRuns.at(0).glyphIndexes().at(3), 70);
-        QCOMPARE(glyphRuns.at(0).glyphIndexes().at(4), 74);
+        QCOMPARE(glyphRuns.at(0).glyphIndexes().at(0), uint(71));
+        QCOMPARE(glyphRuns.at(0).glyphIndexes().at(1), uint(233));
+        QCOMPARE(glyphRuns.at(0).glyphIndexes().at(2), uint(66));
+        QCOMPARE(glyphRuns.at(0).glyphIndexes().at(3), uint(70));
+        QCOMPARE(glyphRuns.at(0).glyphIndexes().at(4), uint(74));
 
         QList<qsizetype> stringIndexes = glyphRuns.at(0).stringIndexes();
         QCOMPARE(stringIndexes.size(), 5);
