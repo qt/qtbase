@@ -22,8 +22,14 @@ private Q_SLOTS:
     // Public class default system tests
     void createTest();
     void nullTest();
-    void systemZone();
+    void assign();
+    void compare();
+    void timespec();
+    void offset();
     void dataStreamTest();
+#if QT_CONFIG(timezone)
+    void asBackendZone();
+    void systemZone();
     void isTimeZoneIdAvailable();
     void availableTimeZoneIds();
     void utcOffsetId_data();
@@ -51,16 +57,17 @@ private Q_SLOTS:
     void localeSpecificDisplayName();
     void stdCompatibility_data();
     void stdCompatibility();
+#endif // timezone backends
 
 private:
     void printTimeZone(const QTimeZone &tz);
-#ifdef QT_BUILD_INTERNAL
+#if defined(QT_BUILD_INTERNAL) && QT_CONFIG(timezone)
     // Generic tests of privates, called by implementation-specific private tests:
     void testCetPrivate(const QTimeZonePrivate &tzp);
     void testEpochTranPrivate(const QTimeZonePrivate &tzp);
-#endif // QT_BUILD_INTERNAL
+#endif // QT_BUILD_INTERNAL && timezone backends
     // Set to true to print debug output, test Display Names and run long stress tests
-    const bool debug = false;
+    static constexpr bool debug = false;
 };
 
 void tst_QTimeZone::printTimeZone(const QTimeZone &tz)
@@ -292,33 +299,138 @@ void tst_QTimeZone::nullTest()
     QCOMPARE(data.daylightTimeOffset, invalidOffset);
 }
 
-void tst_QTimeZone::systemZone()
+void tst_QTimeZone::assign()
 {
-    const QTimeZone zone = QTimeZone::systemTimeZone();
-    QVERIFY(zone.isValid());
-    QCOMPARE(zone.id(), QTimeZone::systemTimeZoneId());
-    QCOMPARE(zone, QTimeZone(QTimeZone::systemTimeZoneId()));
-    // Check it behaves the same as local-time:
-    const QDate dates[] = {
-        QDate::fromJulianDay(0), // far in the distant past (LMT)
-        QDate(1625, 6, 8), // Before time-zones (date of Cassini's birth)
-        QDate(1901, 12, 13), // Last day before 32-bit time_t's range
-        QDate(1969, 12, 31), // Last day before the epoch
-        QDate(1970, 0, 0), // Start of epoch
-        QDate(2000, 2, 29), // An anomalous leap day
-        QDate(2038, 1, 20) // First day after 32-bit time_t's range
-    };
-    for (const auto &date : dates)
-        QCOMPARE(date.startOfDay(Qt::LocalTime), date.startOfDay(zone));
+    QTimeZone assignee;
+    QCOMPARE(assignee.timeSpec(), Qt::TimeZone);
+    assignee = QTimeZone();
+    QCOMPARE(assignee.timeSpec(), Qt::TimeZone);
+    assignee = QTimeZone::UTC;
+    QCOMPARE(assignee.timeSpec(), Qt::UTC);
+    assignee = QTimeZone::LocalTime;
+    QCOMPARE(assignee.timeSpec(), Qt::LocalTime);
+    assignee = QTimeZone();
+    QCOMPARE(assignee.timeSpec(), Qt::TimeZone);
+    assignee = QTimeZone::fromSecondsAheadOfUtc(1);
+    QCOMPARE(assignee.timeSpec(), Qt::OffsetFromUTC);
+    assignee = QTimeZone::fromSecondsAheadOfUtc(0);
+    QCOMPARE(assignee.timeSpec(), Qt::UTC);
+#if QT_CONFIG(timezone)
+    {
+        const QTimeZone cet("Europe/Oslo");
+        assignee = cet;
+        QCOMPARE(assignee.timeSpec(), Qt::TimeZone);
+    }
+#endif
+}
 
-#if __cpp_lib_chrono >= 201907L
-    const std::chrono::time_zone *currentTimeZone = std::chrono::current_zone();
-    QCOMPARE(QByteArrayView(currentTimeZone->name()), QByteArrayView(zone.id()));
+void tst_QTimeZone::compare()
+{
+    const QTimeZone local;
+    const QTimeZone utc(QTimeZone::UTC);
+    const auto secondEast = QTimeZone::fromSecondsAheadOfUtc(1);
+
+    QCOMPARE_NE(local, utc);
+    QCOMPARE_NE(utc, secondEast);
+    QCOMPARE_NE(secondEast, local);
+
+    QCOMPARE(local, QTimeZone());
+    QCOMPARE(utc, QTimeZone::fromSecondsAheadOfUtc(0));
+    QCOMPARE(secondEast, QTimeZone::fromDurationAheadOfUtc(std::chrono::seconds{1}));
+}
+
+void tst_QTimeZone::timespec()
+{
+    using namespace std::chrono_literals;
+    QCOMPARE(QTimeZone().timeSpec(), Qt::TimeZone);
+    QCOMPARE(QTimeZone(QTimeZone::UTC).timeSpec(), Qt::UTC);
+    QCOMPARE(QTimeZone(QTimeZone::LocalTime).timeSpec(), Qt::LocalTime);
+    QCOMPARE(QTimeZone::fromSecondsAheadOfUtc(0).timeSpec(), Qt::UTC);
+    QCOMPARE(QTimeZone::fromDurationAheadOfUtc(0s).timeSpec(), Qt::UTC);
+    QCOMPARE(QTimeZone::fromDurationAheadOfUtc(0min).timeSpec(), Qt::UTC);
+    QCOMPARE(QTimeZone::fromDurationAheadOfUtc(0h).timeSpec(), Qt::UTC);
+    QCOMPARE(QTimeZone::fromSecondsAheadOfUtc(1).timeSpec(), Qt::OffsetFromUTC);
+    QCOMPARE(QTimeZone::fromSecondsAheadOfUtc(-1).timeSpec(), Qt::OffsetFromUTC);
+    QCOMPARE(QTimeZone::fromSecondsAheadOfUtc(36000).timeSpec(), Qt::OffsetFromUTC);
+    QCOMPARE(QTimeZone::fromSecondsAheadOfUtc(-36000).timeSpec(), Qt::OffsetFromUTC);
+    QCOMPARE(QTimeZone::fromDurationAheadOfUtc(3h - 20min +17s).timeSpec(), Qt::OffsetFromUTC);
+    {
+        const QTimeZone zone;
+        QCOMPARE(zone.timeSpec(), Qt::TimeZone);
+    }
+    {
+        const QTimeZone zone = { QTimeZone::UTC };
+        QCOMPARE(zone.timeSpec(), Qt::UTC);
+    }
+    {
+        const QTimeZone zone = { QTimeZone::LocalTime };
+        QCOMPARE(zone.timeSpec(), Qt::LocalTime);
+    }
+    {
+        const auto zone = QTimeZone::fromSecondsAheadOfUtc(0);
+        QCOMPARE(zone.timeSpec(), Qt::UTC);
+    }
+    {
+        const auto zone = QTimeZone::fromDurationAheadOfUtc(0s);
+        QCOMPARE(zone.timeSpec(), Qt::UTC);
+    }
+    {
+        const auto zone = QTimeZone::fromSecondsAheadOfUtc(1);
+        QCOMPARE(zone.timeSpec(), Qt::OffsetFromUTC);
+    }
+    {
+        const auto zone = QTimeZone::fromDurationAheadOfUtc(1s);
+        QCOMPARE(zone.timeSpec(), Qt::OffsetFromUTC);
+    }
+#if QT_CONFIG(timezone)
+    QCOMPARE(QTimeZone("Europe/Oslo").timeSpec(), Qt::TimeZone);
+#endif
+}
+
+void tst_QTimeZone::offset()
+{
+    QCOMPARE(QTimeZone().fixedSecondsAheadOfUtc(), 0);
+    QCOMPARE(QTimeZone(QTimeZone::UTC).fixedSecondsAheadOfUtc(), 0);
+    QCOMPARE(QTimeZone::fromSecondsAheadOfUtc(0).fixedSecondsAheadOfUtc(), 0);
+    QCOMPARE(QTimeZone::fromDurationAheadOfUtc(std::chrono::seconds{}).fixedSecondsAheadOfUtc(), 0);
+    QCOMPARE(QTimeZone::fromDurationAheadOfUtc(std::chrono::minutes{}).fixedSecondsAheadOfUtc(), 0);
+    QCOMPARE(QTimeZone::fromDurationAheadOfUtc(std::chrono::hours{}).fixedSecondsAheadOfUtc(), 0);
+    QCOMPARE(QTimeZone::fromSecondsAheadOfUtc(1).fixedSecondsAheadOfUtc(), 1);
+    QCOMPARE(QTimeZone::fromSecondsAheadOfUtc(-1).fixedSecondsAheadOfUtc(), -1);
+    QCOMPARE(QTimeZone::fromSecondsAheadOfUtc(36000).fixedSecondsAheadOfUtc(), 36000);
+    QCOMPARE(QTimeZone::fromSecondsAheadOfUtc(-36000).fixedSecondsAheadOfUtc(), -36000);
+    {
+        const QTimeZone zone;
+        QCOMPARE(zone.fixedSecondsAheadOfUtc(), 0);
+    }
+    {
+        const QTimeZone zone = { QTimeZone::UTC };
+        QCOMPARE(zone.fixedSecondsAheadOfUtc(), 0);
+    }
+    {
+        const auto zone = QTimeZone::fromSecondsAheadOfUtc(0);
+        QCOMPARE(zone.fixedSecondsAheadOfUtc(), 0);
+    }
+    {
+        const auto zone = QTimeZone::fromDurationAheadOfUtc(std::chrono::seconds{});
+        QCOMPARE(zone.fixedSecondsAheadOfUtc(), 0);
+    }
+    {
+        const auto zone = QTimeZone::fromSecondsAheadOfUtc(1);
+        QCOMPARE(zone.fixedSecondsAheadOfUtc(), 1);
+    }
+    {
+        const auto zone = QTimeZone::fromDurationAheadOfUtc(std::chrono::seconds{1});
+        QCOMPARE(zone.fixedSecondsAheadOfUtc(), 1);
+    }
+#if QT_CONFIG(timezone)
+    QCOMPARE(QTimeZone("Europe/Oslo").fixedSecondsAheadOfUtc(), 0);
 #endif
 }
 
 void tst_QTimeZone::dataStreamTest()
 {
+#ifndef QT_NO_DATASTREAM
     // Test the OffsetFromUtc backend serialization. First with a custom timezone:
     QTimeZone tz1("QST", 123456, "Qt Standard Time", "QST", QLocale::Norway, "Qt Testing");
     QByteArray tmp;
@@ -372,6 +484,42 @@ void tst_QTimeZone::dataStreamTest()
         ds >> tz2;
     }
     QCOMPARE(tz2.id(), tz1.id());
+#endif
+}
+
+#if QT_CONFIG(timezone)
+void tst_QTimeZone::asBackendZone()
+{
+    QCOMPARE(QTimeZone(QTimeZone::LocalTime).asBackendZone(), QTimeZone::systemTimeZone());
+    QCOMPARE(QTimeZone(QTimeZone::UTC).asBackendZone(), QTimeZone::utc());
+    QCOMPARE(QTimeZone::fromSecondsAheadOfUtc(-300).asBackendZone(), QTimeZone(-300));
+    QTimeZone cet("Europe/Oslo");
+    QCOMPARE(cet.asBackendZone(), cet);
+}
+
+void tst_QTimeZone::systemZone()
+{
+    const QTimeZone zone = QTimeZone::systemTimeZone();
+    QVERIFY(zone.isValid());
+    QCOMPARE(zone.id(), QTimeZone::systemTimeZoneId());
+    QCOMPARE(zone, QTimeZone(QTimeZone::systemTimeZoneId()));
+    // Check it behaves the same as local-time:
+    const QDate dates[] = {
+        QDate::fromJulianDay(0), // far in the distant past (LMT)
+        QDate(1625, 6, 8), // Before time-zones (date of Cassini's birth)
+        QDate(1901, 12, 13), // Last day before 32-bit time_t's range
+        QDate(1969, 12, 31), // Last day before the epoch
+        QDate(1970, 0, 0), // Start of epoch
+        QDate(2000, 2, 29), // An anomalous leap day
+        QDate(2038, 1, 20) // First day after 32-bit time_t's range
+    };
+    for (const auto &date : dates)
+        QCOMPARE(date.startOfDay(Qt::LocalTime), date.startOfDay(zone));
+
+#if __cpp_lib_chrono >= 201907L
+    const std::chrono::time_zone *currentTimeZone = std::chrono::current_zone();
+    QCOMPARE(QByteArrayView(currentTimeZone->name()), QByteArrayView(zone.id()));
+#endif
 }
 
 void tst_QTimeZone::isTimeZoneIdAvailable()
@@ -1624,6 +1772,7 @@ void tst_QTimeZone::stdCompatibility()
     QSKIP("This test requires C++20's <chrono>.");
 #endif
 }
+#endif // timezone backends
 
 QTEST_APPLESS_MAIN(tst_QTimeZone)
 #include "tst_qtimezone.moc"

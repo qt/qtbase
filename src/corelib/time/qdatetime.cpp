@@ -2704,6 +2704,7 @@ QDateTimePrivate::ZoneState QDateTimePrivate::zoneStateAtMillis(const QTimeZone 
                                                                 qint64 millis, DaylightStatus dst)
 {
     Q_ASSERT(zone.isValid());
+    Q_ASSERT(zone.timeSpec() == Qt::TimeZone);
     // Get the effective data from QTimeZone
     QTimeZonePrivate::Data data = zone.d->dataForLocalTime(millis, int(dst));
     if (data.offsetFromUtc == QTimeZonePrivate::invalidSeconds())
@@ -3170,6 +3171,7 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, Qt::TimeSpe
 inline QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime,
                                                 const QTimeZone &toTimeZone)
 {
+    Q_ASSERT(toTimeZone.timeSpec() == Qt::TimeZone);
     QDateTime::Data result(Qt::TimeZone);
     Q_ASSERT(!result.isShort());
 
@@ -3396,7 +3398,10 @@ QDateTime::QDateTime(QDate date, QTime time, Qt::TimeSpec spec, int offsetSecond
 */
 
 QDateTime::QDateTime(QDate date, QTime time, const QTimeZone &timeZone)
-    : d(QDateTimePrivate::create(date, time, timeZone))
+    : d(timeZone.timeSpec() == Qt::TimeZone
+        ? QDateTimePrivate::create(date, time, timeZone)
+        : QDateTimePrivate::create(date, time, timeZone.timeSpec(),
+                                   timeZone.fixedSecondsAheadOfUtc()))
 {
 }
 #endif // timezone
@@ -3757,10 +3762,11 @@ void QDateTime::setOffsetFromUtc(int offsetSeconds)
 void QDateTime::setTimeZone(const QTimeZone &toZone)
 {
     d.detach();         // always detach
-    d->m_status = mergeSpec(d->m_status, Qt::TimeZone);
-    d->m_offsetFromUtc = 0;
-    d->m_timeZone = toZone;
-    refreshZonedDateTime(d, Qt::TimeZone);
+    d->m_status = mergeSpec(d->m_status, toZone.timeSpec());
+    d->m_offsetFromUtc = toZone.fixedSecondsAheadOfUtc();
+    if (toZone.timeSpec() == Qt::TimeZone)
+        d->m_timeZone = toZone;
+    checkValidDateTime(d);
 }
 #endif // timezone
 
@@ -4527,6 +4533,16 @@ QDateTime QDateTime::toUTC() const
 
 QDateTime QDateTime::toTimeZone(const QTimeZone &timeZone) const
 {
+    switch (timeZone.timeSpec()) {
+    case Qt::OffsetFromUTC:
+        return toOffsetFromUtc(timeZone.fixedSecondsAheadOfUtc());
+    case Qt::LocalTime:
+        return toLocalTime();
+    case Qt::UTC:
+        return toUTC();
+    case Qt::TimeZone:
+        break;
+    }
     if (getSpec(d) == Qt::TimeZone && d->m_timeZone == timeZone)
         return *this;
 
@@ -4939,6 +4955,9 @@ QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec, int offs
 */
 QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone)
 {
+    if (timeZone.timeSpec() != Qt::TimeZone)
+        return fromMSecsSinceEpoch(msecs, timeZone.timeSpec(), timeZone.fixedSecondsAheadOfUtc());
+
     QDateTime dt;
     dt.setTimeZone(timeZone);
     if (timeZone.isValid())
@@ -4962,6 +4981,9 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone
 */
 QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone)
 {
+    if (timeZone.timeSpec() != Qt::TimeZone)
+        return fromSecsSinceEpoch(secs, timeZone.timeSpec(), timeZone.fixedSecondsAheadOfUtc());
+
     QDateTime dt;
     dt.setTimeZone(timeZone);
     if (timeZone.isValid())

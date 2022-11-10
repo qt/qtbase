@@ -256,12 +256,13 @@ qt_internal_add_module(Core
         time/qcalendarbackend_p.h
         time/qcalendarmath_p.h
         time/qdatetime.cpp time/qdatetime.h time/qdatetime_p.h
-        time/qlocaltime.cpp time/qlocaltime_p.h
         time/qgregoriancalendar.cpp time/qgregoriancalendar_p.h
         time/qjuliancalendar.cpp time/qjuliancalendar_p.h
+        time/qlocaltime.cpp time/qlocaltime_p.h
         time/qmilankoviccalendar.cpp time/qmilankoviccalendar_p.h
         time/qromancalendar.cpp time/qromancalendar_p.h
         time/qromancalendar_data_p.h
+        time/qtimezone.cpp time/qtimezone.h
         tools/qalgorithms.h
         tools/qarraydata.cpp tools/qarraydata.h
         tools/qarraydataops.h
@@ -872,7 +873,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_jalalicalendar
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_timezone
     SOURCES
-        time/qtimezone.cpp time/qtimezone.h
         time/qtimezoneprivate.cpp time/qtimezoneprivate_p.h
         time/qtimezoneprivate_data_p.h
 )

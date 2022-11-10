@@ -495,9 +495,9 @@ QTimeZone QTimeZone::fromCFTimeZone(CFTimeZoneRef timeZone)
 CFTimeZoneRef QTimeZone::toCFTimeZone() const
 {
 #ifndef QT_NO_DYNAMIC_CAST
-    Q_ASSERT(dynamic_cast<const QMacTimeZonePrivate *>(d.data()));
+    Q_ASSERT(dynamic_cast<const QMacTimeZonePrivate *>(d.d));
 #endif
-    const QMacTimeZonePrivate *p = static_cast<const QMacTimeZonePrivate *>(d.data());
+    const QMacTimeZonePrivate *p = static_cast<const QMacTimeZonePrivate *>(d.d);
     return reinterpret_cast<CFTimeZoneRef>([p->nsTimeZone() copy]);
 }
 

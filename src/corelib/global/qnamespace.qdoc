@@ -728,15 +728,25 @@
     Mean Time has zero offset from it. Neither UTC nor OffsetFromUTC
     has any transitions.
 
+    When specifying a datetime using OffsetFromUTC, the offset from UTC must
+    also be supplied (it is measured in seconds). To specify a datetime using
+    TimeZone, a QTimeZone must be supplied. From Qt 6.5, a QTimeZone can now
+    package a timespec with, where needed, an offset as a lightweight time
+    description, so that passing a QTimeZone now provides a uniform way to use
+    datetime APIs, saving the need to call them differently for different
+    timespecs.
+
     \note After a change to the system time-zone setting, the behavior
     of LocalTime-based QDateTime objects created before the change is
     undefined: QDateTime may have cached data that the change
-    invalidates. (This is not triggered by transitions of the system
+    invalidates. (This is not triggered by \e transitions of the system
     time-zone.) In long-running processes, updates to the system's
     time-zone data (e.g. when politicians change the rules for a zone)
     may likewise lead to conflicts between the updated time-zone
     information and data cached by QDateTime objects created before
     the update, using either LocalTime or TimeZone.
+
+    \sa QTimeZone, QDateTime
 */
 
 /*!
