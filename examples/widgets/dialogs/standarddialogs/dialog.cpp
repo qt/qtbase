@@ -12,8 +12,8 @@
     Dialog::tr("<p>Click a button to close the message box. Pressing the Escape key " \
                "will activate the detected escape button (if any).")
 #define MESSAGE_DETAILS \
-    Dialog::tr("If a message box has detailed text, the user can reveal it " \
-               "by pressing the Show Details... button.")
+    Dialog::tr("Additional detailed text can be provided, which may require user " \
+               "action to be revealed.")
 
 
 class DialogOptionsWidget : public QGroupBox

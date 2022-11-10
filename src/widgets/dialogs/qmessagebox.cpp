@@ -843,8 +843,12 @@ void QMessageBox::addButton(QAbstractButton *button, ButtonRole role)
     if (!button)
         return;
     removeButton(button);
-    d->options->addButton(button->text(), static_cast<QPlatformDialogHelper::ButtonRole>(role),
-                          button);
+    // Add button to native dialog helper, unless it's the details button,
+    // since we don't do any plumbing for the button's action in that case.
+    if (button != d->detailsButton) {
+        d->options->addButton(button->text(),
+            static_cast<QPlatformDialogHelper::ButtonRole>(role), button);
+    }
     d->buttonBox->addButton(button, (QDialogButtonBox::ButtonRole)role);
     d->customButtonList.append(button);
     d->autoAddOkButton = false;
