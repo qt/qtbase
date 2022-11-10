@@ -970,7 +970,6 @@ void QFontDialog::setVisible(bool visible)
         // updates the state correctly, but skips showing the non-native version:
         setAttribute(Qt::WA_DontShowOnScreen, true);
     } else {
-        d->nativeDialogInUse = false;
         setAttribute(Qt::WA_DontShowOnScreen, false);
     }
     QDialog::setVisible(visible);
