@@ -40,14 +40,6 @@ qt_internal_extend_target(tst_qwidget CONDITION AIX
         -fpermissive
 )
 
-qt_internal_extend_target(tst_qwidget CONDITION APPLE
-    SOURCES
-        tst_qwidget_mac_helpers.mm
-    LIBRARIES
-        ${FWAppKit}
-        ${FWSecurity}
-)
-
 qt_internal_extend_target(tst_qwidget CONDITION WIN32
     LIBRARIES
         gdi32

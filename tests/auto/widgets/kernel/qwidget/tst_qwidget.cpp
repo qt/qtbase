@@ -50,10 +50,6 @@
 #include <qtimer.h>
 #include <QtWidgets/QDoubleSpinBox>
 
-#if defined(Q_OS_MACOS)
-#include "tst_qwidget_mac_helpers.h"  // Abstract the ObjC stuff out so not everyone must run an ObjC++ compile.
-#endif
-
 #include <QtTest/QTest>
 #include <QtTest/private/qtesthelpers_p.h>
 
