@@ -4,5 +4,7 @@ android # QTBUG-101194
 android # QTBUG-101194
 [historyBack]
 android # QTBUG-101194
+[completer_data]
+android # QTBUG-108329
 [completer]
 android # QTBUG-101194

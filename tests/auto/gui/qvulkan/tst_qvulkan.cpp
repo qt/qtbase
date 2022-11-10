@@ -166,6 +166,10 @@ void tst_QVulkan::vulkan11()
 
 void tst_QVulkan::vulkanPlainWindow()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Fails on Android 7 emulator (QTBUG-108328)");
+#endif
+
     QVulkanInstance inst;
     if (!inst.create())
         QSKIP("Vulkan init failed; skip");
