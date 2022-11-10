@@ -40,6 +40,7 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_DATASTREAM
 class QDataStream;
 #endif
+class QTextStream;
 
 class qfloat16
 {
@@ -223,6 +224,8 @@ QT_WARNING_POP
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &ds, qfloat16 f);
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &ds, qfloat16 &f);
 #endif
+    friend Q_CORE_EXPORT QTextStream &operator<<(QTextStream &ts, qfloat16 f);
+    friend Q_CORE_EXPORT QTextStream &operator>>(QTextStream &ts, qfloat16 &f);
 };
 
 Q_DECLARE_TYPEINFO(qfloat16, Q_PRIMITIVE_TYPE);

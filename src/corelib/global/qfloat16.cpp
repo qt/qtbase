@@ -398,6 +398,19 @@ QDataStream &operator>>(QDataStream &ds, qfloat16 &f)
 }
 #endif
 
+QTextStream &operator>>(QTextStream &ts, qfloat16 &f16)
+{
+    float f;
+    ts >> f;
+    f16 = qfloat16(f);
+    return ts;
+}
+
+QTextStream &operator<<(QTextStream &ts, qfloat16 f)
+{
+    return ts << float(f);
+}
+
 QT_END_NAMESPACE
 
 #include "qfloat16tables.cpp"

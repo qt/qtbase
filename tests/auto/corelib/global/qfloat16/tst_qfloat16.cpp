@@ -4,6 +4,7 @@
 
 #include <QTest>
 #include <QFloat16>
+#include <QTextStream>
 
 #include <math.h>
 
@@ -42,6 +43,7 @@ private slots:
     void limits();
     void mantissaOverflow();
     void dataStream();
+    void textStream();
 };
 
 void tst_qfloat16::fuzzyCompare_data()
@@ -654,6 +656,26 @@ void tst_qfloat16::dataStream()
     ds >> zero;
     QCOMPARE(ds.status(), QDataStream::Ok);
     QCOMPARE(zero, qfloat16(0));
+}
+
+void tst_qfloat16::textStream()
+{
+    QString buffer;
+    {
+        QTextStream ts(&buffer);
+        ts << qfloat16(0) << Qt::endl << qfloat16(1.5);
+        QCOMPARE(ts.status(), QTextStream::Ok);
+    }
+    QCOMPARE(buffer, "0\n1.5");
+
+    {
+        QTextStream ts(&buffer);
+        qfloat16 zero = qfloat16(-2.5), threehalves = 1234;
+        ts >> zero >> threehalves;
+        QCOMPARE(ts.status(), QTextStream::Ok);
+        QCOMPARE(zero, qfloat16(0));
+        QCOMPARE(threehalves, 1.5);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_qfloat16)

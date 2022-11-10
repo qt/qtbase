@@ -4,6 +4,7 @@
 #ifndef QTEXTSTREAM_H
 #define QTEXTSTREAM_H
 
+#include <QtCore/qfloat16.h>
 #include <QtCore/qiodevicebase.h>
 #include <QtCore/qchar.h>
 #include <QtCore/qscopedpointer.h>

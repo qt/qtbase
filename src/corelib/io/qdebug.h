@@ -108,6 +108,7 @@ public:
     inline QDebug &operator<<(unsigned long t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(qint64 t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(quint64 t) { stream->ts << t; return maybeSpace(); }
+    inline QDebug &operator<<(qfloat16 t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(float t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(double t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(const char* t) { stream->ts << QString::fromUtf8(t); return maybeSpace(); }
