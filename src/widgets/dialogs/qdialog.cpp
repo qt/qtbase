@@ -199,14 +199,6 @@ QVariant QDialogPrivate::styleHint(QPlatformDialogHelper::StyleHint hint) const
     return QPlatformDialogHelper::defaultStyleHint(hint);
 }
 
-void QDialogPrivate::deletePlatformHelper()
-{
-    delete m_platformHelper;
-    m_platformHelper = nullptr;
-    m_platformHelperCreated = false;
-    nativeDialogInUse = false;
-}
-
 /*!
     \class QDialog
     \brief The QDialog class is the base class of dialog windows.

@@ -54,7 +54,6 @@ public:
     QWindow *transientParentWindow() const;
     bool setNativeDialogVisible(bool visible);
     QVariant styleHint(QPlatformDialogHelper::StyleHint hint) const;
-    void deletePlatformHelper();
 
 #if QT_CONFIG(pushbutton)
     QPointer<QPushButton> mainDef;

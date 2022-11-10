@@ -531,7 +531,6 @@ void QFileDialogPrivate::initHelper(QPlatformDialogHelper *h)
     QObject::connect(h, SIGNAL(directoryEntered(QUrl)), d, SLOT(_q_nativeEnterDirectory(QUrl)));
     QObject::connect(h, SIGNAL(filterSelected(QString)), d, SIGNAL(filterSelected(QString)));
     static_cast<QPlatformFileDialogHelper *>(h)->setOptions(options);
-    nativeDialogInUse = true;
 }
 
 void QFileDialogPrivate::helperPrepareShow(QPlatformDialogHelper *)
@@ -765,8 +764,10 @@ void QFileDialog::setOptions(Options options)
 
     d->options->setOptions(QFileDialogOptions::FileDialogOptions(int(options)));
 
-    if ((options & DontUseNativeDialog) && !d->usingWidgets())
+    if (options & DontUseNativeDialog) {
+        d->nativeDialogInUse = false;
         d->createWidgets();
+    }
 
     if (d->usingWidgets()) {
         if (changed & DontResolveSymlinks)
@@ -2963,8 +2964,6 @@ void QFileDialogPrivate::createWidgets()
         model->setNameFilterDisables(helper->defaultNameFilterDisables());
     else
         model->setNameFilterDisables(false);
-    if (nativeDialogInUse)
-        deletePlatformHelper();
     model->d_func()->disableRecursiveSort = true;
     QFileDialog::connect(model, SIGNAL(fileRenamed(QString,QString,QString)), q, SLOT(_q_fileRenamed(QString,QString,QString)));
     QFileDialog::connect(model, SIGNAL(rootPathChanged(QString)),
