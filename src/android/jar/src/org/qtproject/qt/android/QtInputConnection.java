@@ -253,6 +253,7 @@ public class QtInputConnection extends BaseInputConnection
                     return super.sendKeyEvent(fakeEvent);
 
                 default:
+                   QtNative.activityDelegate().hideSoftwareKeyboard();
                    break;
             }
         }
