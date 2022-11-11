@@ -1032,7 +1032,7 @@ void QWidgetRepaintManager::flush(QWidget *widget, const QRegion &region, QPlatf
     if (widget != tlw)
         offset += widget->mapTo(tlw, QPoint());
 
-    if (widget->d_func()->usesRhiFlush) {
+    if (tlw->d_func()->usesRhiFlush) {
         QRhi *rhi = store->handle()->rhi();
         qCDebug(lcWidgetPainting) << "Flushing" << region << "of" << widget
                                   << "with QRhi" << rhi
