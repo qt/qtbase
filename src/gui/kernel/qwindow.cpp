@@ -1935,7 +1935,12 @@ void QWindow::resize(const QSize &newSize)
     Q_D(QWindow);
     d->positionPolicy = QWindowPrivate::WindowFrameExclusive;
     if (d->platformWindow) {
-        d->platformWindow->setGeometry(QHighDpi::toNativePixels(QRect(position(), newSize), this));
+        if (isTopLevel()) {
+            d->platformWindow->setGeometry(QHighDpi::toNativePixels(QRect(position(), newSize), this));
+        } else {
+            d->platformWindow->setGeometry(QRect(QHighDpi::toNativeLocalPosition(position(), this),
+                                                 QHighDpi::toNativePixels(newSize, this)));
+        }
     } else {
         const QSize oldSize = d->geometry.size();
         d->geometry.setSize(newSize);

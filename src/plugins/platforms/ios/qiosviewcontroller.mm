@@ -145,9 +145,13 @@
     UIWindow *uiWindow = self.window;
 
     if (uiWindow.screen != [UIScreen mainScreen] && self.subviews.count == 1) {
-        // Removing the last view of an external screen, go back to mirror mode
-        uiWindow.screen = [UIScreen mainScreen];
-        uiWindow.hidden = YES;
+        // We're about to remove the last view of an external screen, so go back
+        // to mirror mode, but defer it until after the view has been removed,
+        // to ensure that we don't try to layout the view that's being removed.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            uiWindow.hidden = YES;
+            uiWindow.screen = [UIScreen mainScreen];
+        });
     }
 }
 

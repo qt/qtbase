@@ -4,12 +4,11 @@
     "QDocModule": "qtcore",
     "QtParts": ["tools"],
     "Homepage": "https://gradle.org",
-    "Version": "3.4.1",
-    "DownloadLocation": "https://github.com/gradle/gradle/releases/tag/v3.4.1",
+    "Version": "7.2.0",
+    "DownloadLocation": "https://github.com/gradle/gradle/releases/tag/v7.2.0",
     "QtUsage": "Needed to create Android packages",
-
     "License": "Apache License 2.0",
     "LicenseId": "Apache-2.0",
-    "LicenseFile": "LICENSE-GRADLEW.txt",
-    "Copyright": "Copyright (C) 2017 Gradle Inc."
+    "LicenseFile": "LICENSE",
+    "Copyright": "Copyright (C) 2021 Gradle Inc."
 }

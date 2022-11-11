@@ -152,19 +152,18 @@ public:
         if (s == a) {   // i.e. s != 0
             T copy(t);
             realloc(s, s<<1);
-            const int idx = s++;
-            new (ptr + idx) T(std::move(copy));
+            new (end()) T(std::move(copy));
         } else {
-            const int idx = s++;
-            new (ptr + idx) T(t);
+            new (end()) T(t);
         }
+        ++s;
     }
 
     void append(T &&t) {
         if (s == a)
             realloc(s, s << 1);
-        const int idx = s++;
-        new (ptr + idx) T(std::move(t));
+        new (end()) T(std::move(t));
+        ++s;
     }
 
     void append(const T *buf, int size);
@@ -501,7 +500,7 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
 }
 
 template <class T, int Prealloc>
-Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, size_type n, const T &t)
+Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, int n, const T &t)
 {
     Q_ASSERT_X(isValidIterator(before), "QVarLengthArray::insert", "The specified const_iterator argument 'before' is invalid");
 
@@ -538,6 +537,12 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     int f = int(abegin - ptr);
     int l = int(aend - ptr);
     int n = l - f;
+
+    if (n == 0) // avoid UB in std::copy() below
+        return data() + f;
+
+    Q_ASSERT(n > 0); // aend must be reachable from abegin
+
     if (QTypeInfo<T>::isComplex) {
         std::copy(ptr + l, ptr + s, QT_MAKE_CHECKED_ARRAY_ITERATOR(ptr + f, s - f));
         T *i = ptr + s;

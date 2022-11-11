@@ -381,8 +381,11 @@ int QTextDocumentPrivate::insert_block(int pos, uint strPos, int format, int blo
     Q_ASSERT(blocks.length() == fragments.length());
 
     QTextBlockGroup *group = qobject_cast<QTextBlockGroup *>(objectForFormat(blockFormat));
-    if (group)
+    if (group) {
         group->blockInserted(QTextBlock(this, b));
+        docChangeOldLength--;
+        docChangeLength--;
+    }
 
     QTextFrame *frame = qobject_cast<QTextFrame *>(objectForFormat(formats.format(format)));
     if (frame) {

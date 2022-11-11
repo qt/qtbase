@@ -157,6 +157,7 @@ class QWindowsContext
 {
     Q_DISABLE_COPY_MOVE(QWindowsContext)
 public:
+    using HandleBaseWindowHash = QHash<HWND, QWindowsWindow *>;
 
     enum SystemInfoFlags
     {
@@ -235,6 +236,8 @@ public:
 
     bool useRTLExtensions() const;
     QList<int> possibleKeys(const QKeyEvent *e) const;
+
+    HandleBaseWindowHash &windows();
 
     static bool isSessionLocked();
 

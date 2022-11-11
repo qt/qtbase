@@ -750,7 +750,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
                 case XCB_XKB_NEW_KEYBOARD_NOTIFY: {
                     xcb_xkb_new_keyboard_notify_event_t *ev = &xkb_event->new_keyboard_notify;
                     if (ev->changed & XCB_XKB_NKN_DETAIL_KEYCODES)
-                        m_keyboard->updateKeymap();
+                        m_keyboard->updateKeymap(ev);
                     break;
                 }
                 default:
@@ -838,7 +838,13 @@ xcb_timestamp_t QXcbConnection::getTimestamp()
 
 xcb_window_t QXcbConnection::getSelectionOwner(xcb_atom_t atom) const
 {
-    return Q_XCB_REPLY(xcb_get_selection_owner, xcb_connection(), atom)->owner;
+    auto reply = Q_XCB_REPLY(xcb_get_selection_owner, xcb_connection(), atom);
+    if (!reply) {
+        qCDebug(lcQpaXcb) << "failed to query selection owner";
+        return XCB_NONE;
+    }
+
+    return reply->owner;
 }
 
 xcb_window_t QXcbConnection::getQtSelectionOwner()

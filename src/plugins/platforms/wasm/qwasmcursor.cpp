@@ -41,20 +41,24 @@ using namespace emscripten;
 
 void QWasmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 {
-    if (!windowCursor || !window)
+    if (!window)
         return;
     QScreen *screen = window->screen();
     if (!screen)
         return;
 
-    // Bitmap and custom cursors are not implemented (will fall back to "auto")
-    if (windowCursor->shape() == Qt::BitmapCursor || windowCursor->shape() >= Qt::CustomCursor)
-        qWarning() << "QWasmCursor: bitmap and custom cursors are not supported";
+    QByteArray htmlCursorName;
+    if (windowCursor) {
 
-    QByteArray htmlCursorName = cursorShapeToHtml(windowCursor->shape());
+        // Bitmap and custom cursors are not implemented (will fall back to "auto")
+        if (windowCursor->shape() == Qt::BitmapCursor || windowCursor->shape() >= Qt::CustomCursor)
+            qWarning() << "QWasmCursor: bitmap and custom cursors are not supported";
 
+
+        htmlCursorName = cursorShapeToHtml(windowCursor->shape());
+    }
     if (htmlCursorName.isEmpty())
-        htmlCursorName = "auto";
+        htmlCursorName = "default";
 
     // Set cursor on the canvas
     val canvas = QWasmScreen::get(screen)->canvas();

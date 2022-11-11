@@ -112,12 +112,16 @@ void tst_VerifyExceptionThrown::testCorrectMyExceptions() const
 
 void tst_VerifyExceptionThrown::testFailInt() const
 {
-    QVERIFY_EXCEPTION_THROWN(throw int(5), double);
+    try {
+        QVERIFY_EXCEPTION_THROWN(throw int(5), double);
+    } catch (int) {}
 }
 
 void tst_VerifyExceptionThrown::testFailStdString() const
 {
-    QVERIFY_EXCEPTION_THROWN(throw std::string("some string"), char*);
+    try {
+        QVERIFY_EXCEPTION_THROWN(throw std::string("some string"), char*);
+    } catch (const std::string &) {}
 }
 
 void tst_VerifyExceptionThrown::testFailStdRuntimeError() const

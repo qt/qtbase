@@ -66,6 +66,11 @@
 
 - (void)initAccessibility
 {
+    // The window may have gone away, but with the view
+    // temporarily caught in the a11y subsystem.
+    if (!self.platformWindow)
+        return;
+
     static bool init = false;
     if (!init)
         QGuiApplicationPrivate::platformIntegration()->accessibility()->setActive(true);

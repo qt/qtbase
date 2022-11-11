@@ -447,6 +447,8 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
 {
     Q_UNUSED(hwnd);
 
+    auto *touchInfo = static_cast<POINTER_TOUCH_INFO *>(vTouchInfo);
+
     if (et & QtWindows::NonClientEventFlag)
         return false; // Let DefWindowProc() handle Non Client messages.
 
@@ -456,8 +458,17 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     if (msg.message == WM_POINTERCAPTURECHANGED) {
         QWindowSystemInterface::handleTouchCancelEvent(window, m_touchDevice,
                                                        QWindowsKeyMapper::queryKeyboardModifiers());
-        m_lastTouchPositions.clear();
+        m_lastTouchPoints.clear();
         return true;
+    }
+
+    if (msg.message == WM_POINTERLEAVE) {
+        for (quint32 i = 0; i < count; ++i) {
+            const quint32 pointerId = touchInfo[i].pointerInfo.pointerId;
+            int id = m_touchInputIDToTouchPointID.value(pointerId, -1);
+            if (id != -1)
+                m_lastTouchPoints.remove(id);
+        }
     }
 
     // Only handle down/up/update, ignore others like WM_POINTERENTER, WM_POINTERLEAVE, etc.
@@ -470,8 +481,6 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     if (!screen)
         return false;
 
-    auto *touchInfo = static_cast<POINTER_TOUCH_INFO *>(vTouchInfo);
-
     const QRect screenGeometry = screen->geometry();
 
     QList<QWindowSystemInterface::TouchPoint> touchPoints;
@@ -483,6 +492,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
                 << " count=" << Qt::dec << count;
 
     Qt::TouchPointStates allStates;
+    QSet<int> inputIds;
 
     for (quint32 i = 0; i < count; ++i) {
         if (QWindowsContext::verbose > 1)
@@ -495,14 +505,17 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
         const quint32 pointerId = touchInfo[i].pointerInfo.pointerId;
         int id = m_touchInputIDToTouchPointID.value(pointerId, -1);
         if (id == -1) {
+            // Start tracking after fingers touch the screen. Ignore bogus updates after touch is released.
+            if ((touchInfo[i].pointerInfo.pointerFlags & POINTER_FLAG_DOWN) == 0)
+                continue;
             id = m_touchInputIDToTouchPointID.size();
             m_touchInputIDToTouchPointID.insert(pointerId, id);
         }
         touchPoint.id = id;
         touchPoint.pressure = (touchInfo[i].touchMask & TOUCH_MASK_PRESSURE) ?
                     touchInfo[i].pressure / 1024.0 : 1.0;
-        if (m_lastTouchPositions.contains(touchPoint.id))
-            touchPoint.normalPosition = m_lastTouchPositions.value(touchPoint.id);
+        if (m_lastTouchPoints.contains(touchPoint.id))
+            touchPoint.normalPosition = m_lastTouchPoints.value(touchPoint.id).normalPosition;
 
         const QPointF screenPos = QPointF(touchInfo[i].pointerInfo.ptPixelLocation.x,
                                           touchInfo[i].pointerInfo.ptPixelLocation.y);
@@ -518,21 +531,35 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
 
         if (touchInfo[i].pointerInfo.pointerFlags & POINTER_FLAG_DOWN) {
             touchPoint.state = Qt::TouchPointPressed;
-            m_lastTouchPositions.insert(touchPoint.id, touchPoint.normalPosition);
+            m_lastTouchPoints.insert(touchPoint.id, touchPoint);
         } else if (touchInfo[i].pointerInfo.pointerFlags & POINTER_FLAG_UP) {
             touchPoint.state = Qt::TouchPointReleased;
-            m_lastTouchPositions.remove(touchPoint.id);
+            m_lastTouchPoints.remove(touchPoint.id);
         } else {
             touchPoint.state = stationaryTouchPoint ? Qt::TouchPointStationary : Qt::TouchPointMoved;
-            m_lastTouchPositions.insert(touchPoint.id, touchPoint.normalPosition);
+            m_lastTouchPoints.insert(touchPoint.id, touchPoint);
         }
         allStates |= touchPoint.state;
 
         touchPoints.append(touchPoint);
+        inputIds.insert(touchPoint.id);
 
         // Avoid getting repeated messages for this frame if there are multiple pointerIds
         QWindowsContext::user32dll.skipPointerFrameMessages(touchInfo[i].pointerInfo.pointerId);
     }
+
+    // Some devices send touches for each finger in a different message/frame, instead of consolidating
+    // them in the same frame as we were expecting. We account for missing unreleased touches here.
+    for (auto tp : qAsConst(m_lastTouchPoints)) {
+        if (!inputIds.contains(tp.id)) {
+            tp.state = Qt::TouchPointStationary;
+            allStates |= tp.state;
+            touchPoints.append(tp);
+        }
+    }
+
+    if (touchPoints.count() == 0)
+        return false;
 
     // all touch points released, forget the ids we've seen.
     if (allStates == Qt::TouchPointReleased)
@@ -712,8 +739,13 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
         globalPos = eventPos;
         localPos = QWindowsGeometryHint::mapFromGlobal(hwnd, eventPos);
     } else {
-        localPos = eventPos;
         globalPos = QWindowsGeometryHint::mapToGlobal(hwnd, eventPos);
+        auto targetHwnd = hwnd;
+        if (auto *pw = window->handle())
+            targetHwnd = HWND(pw->winId());
+        localPos = targetHwnd == hwnd
+            ? eventPos
+            : QWindowsGeometryHint::mapFromGlobal(targetHwnd, globalPos);
     }
 
     const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();

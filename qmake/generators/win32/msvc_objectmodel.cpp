@@ -50,6 +50,8 @@ DotNET vsVersionFromString(const ProString &versionString)
     int versionMajor = versionView.left(idx).toInt();
     int versionMinor = versionView.mid(idx + 1).toInt();
 
+    if (versionMajor == 17)
+        return NET2022;
     if (versionMajor == 16)
         return NET2019;
     if (versionMajor == 15)
@@ -2436,6 +2438,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
                 cmd_name = cmd.left(space);
             else
                 cmd_name = cmd;
+            cmd_name = cmd_name.trimmed();
         }
 
         // Fixify paths

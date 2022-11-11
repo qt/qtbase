@@ -186,6 +186,7 @@ private slots:
     void defaultTabOrder();
     void reverseTabOrder();
     void tabOrderWithProxy();
+    void tabOrderWithProxyDisabled();
     void tabOrderWithCompoundWidgets();
     void tabOrderWithCompoundWidgetsNoFocusPolicy();
     void tabOrderNoChange();
@@ -366,6 +367,8 @@ private slots:
     void focusWidget_task254563();
     void rectOutsideCoordinatesLimit_task144779();
     void setGraphicsEffect();
+    void render_graphicsEffect_data();
+    void render_graphicsEffect();
 
 #ifdef QT_BUILD_INTERNAL
     void destroyBackingStore();
@@ -2004,6 +2007,57 @@ void tst_QWidget::tabOrderWithProxy()
 
     container.backTab();
     QVERIFY(firstEdit->hasFocus());
+}
+
+void tst_QWidget::tabOrderWithProxyDisabled()
+{
+    Container container;
+    container.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+
+    QLineEdit lineEdit1;
+    lineEdit1.setObjectName("lineEdit1");
+
+    QWidget containingWidget;
+    containingWidget.setFocusPolicy(Qt::StrongFocus);
+    auto *containingLayout = new QVBoxLayout;
+    QLineEdit lineEdit2;
+    lineEdit2.setObjectName("lineEdit2");
+    QLineEdit lineEdit3;
+    lineEdit3.setObjectName("lineEdit3");
+    containingLayout->addWidget(&lineEdit2);
+    containingLayout->addWidget(&lineEdit3);
+    containingWidget.setLayout(containingLayout);
+    containingWidget.setFocusProxy(&lineEdit2);
+    lineEdit2.setEnabled(false);
+
+    container.box->addWidget(&lineEdit1);
+    container.box->addWidget(&containingWidget);
+
+    container.show();
+    container.activateWindow();
+
+    QApplication::setActiveWindow(&container);
+    if (!QTest::qWaitForWindowActive(&container))
+        QSKIP("Window failed to activate, skipping test");
+
+    QVERIFY2(lineEdit1.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    container.tab();
+    QVERIFY2(!lineEdit2.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    QVERIFY2(lineEdit3.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    container.tab();
+    QVERIFY2(lineEdit1.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    container.backTab();
+    QVERIFY2(lineEdit3.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    container.backTab();
+    QVERIFY2(!lineEdit2.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    QVERIFY2(lineEdit1.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
 }
 
 void tst_QWidget::tabOrderWithCompoundWidgets()
@@ -10094,6 +10148,157 @@ void tst_QWidget::setGraphicsEffect()
     widget->setGraphicsEffect(nullptr);
     QVERIFY(!widget->graphicsEffect());
     QVERIFY(!blurEffect);
+}
+
+
+class TestGraphicsEffect : public QGraphicsEffect
+{
+public:
+    TestGraphicsEffect(QObject *parent = nullptr)
+        : QGraphicsEffect(parent)
+    {
+        m_pattern = QPixmap(10, 10);
+        m_pattern.fill(Qt::lightGray);
+        QPainter p(&m_pattern);
+        p.fillRect(QRectF(0, 0, 5, 5), QBrush(Qt::darkGray));
+        p.fillRect(QRectF(5, 5, 5, 5), QBrush(Qt::darkGray));
+    }
+    void setExtent(int extent)
+    {
+        m_extent = extent;
+    }
+    QRectF boundingRectFor(const QRectF &sr) const override
+    {
+        return QRectF(sr.x() - m_extent, sr.y() - m_extent,
+                      sr.width() + 2 * m_extent, sr.height() + 2 * m_extent);
+    }
+protected:
+    void draw(QPainter *painter) override
+    {
+        QBrush brush;
+        brush.setTexture(m_pattern);
+        brush.setStyle(Qt::TexturePattern);
+        QPaintDevice *p = painter->device();
+        painter->fillRect(QRect(-m_extent, -m_extent,
+                                p->width() + m_extent, p->height() + m_extent), brush);
+    }
+    QPixmap m_pattern;
+    int m_extent = 0;
+};
+
+static QImage fillExpected1()
+{
+    QImage expected(QSize(40, 40), QImage::Format_RGB32);
+    QPainter p(&expected);
+    p.fillRect(QRect{{0, 0}, expected.size()}, QBrush(Qt::gray));
+    p.fillRect(QRect(10, 10, 10, 10), QBrush(Qt::red));
+    p.fillRect(QRect(20, 20, 10, 10), QBrush(Qt::blue));
+    return expected;
+}
+static QImage fillExpected2()
+{
+    QImage expected = fillExpected1();
+    QPainter p(&expected);
+    p.fillRect(QRect(10, 10, 5, 5), QBrush(Qt::darkGray));
+    p.fillRect(QRect(15, 15, 5, 5), QBrush(Qt::darkGray));
+    p.fillRect(QRect(15, 10, 5, 5), QBrush(Qt::lightGray));
+    p.fillRect(QRect(10, 15, 5, 5), QBrush(Qt::lightGray));
+    return expected;
+}
+static QImage fillExpected3()
+{
+    QImage expected(QSize(40, 40), QImage::Format_RGB32);
+    QPixmap pattern;
+    pattern = QPixmap(10, 10);
+    pattern.fill(Qt::lightGray);
+    QPainter p(&pattern);
+    p.fillRect(QRectF(0, 0, 5, 5), QBrush(Qt::darkGray));
+    p.fillRect(QRectF(5, 5, 5, 5), QBrush(Qt::darkGray));
+    QBrush brush;
+    brush.setTexture(pattern);
+    brush.setStyle(Qt::TexturePattern);
+    QPainter p2(&expected);
+    p2.fillRect(QRect{{0, 0}, expected.size()}, brush);
+    return expected;
+}
+static QImage fillExpected4()
+{
+    QImage expected = fillExpected1();
+    QPixmap pattern;
+    pattern = QPixmap(10, 10);
+    pattern.fill(Qt::lightGray);
+    QPainter p(&pattern);
+    p.fillRect(QRectF(0, 0, 5, 5), QBrush(Qt::darkGray));
+    p.fillRect(QRectF(5, 5, 5, 5), QBrush(Qt::darkGray));
+    QBrush brush;
+    brush.setTexture(pattern);
+    brush.setStyle(Qt::TexturePattern);
+    QPainter p2(&expected);
+    p2.fillRect(QRect{{15, 15}, QSize{20, 20}}, brush);
+    return expected;
+}
+
+void tst_QWidget::render_graphicsEffect_data()
+{
+    QTest::addColumn<QImage>("expected");
+    QTest::addColumn<bool>("topLevelEffect");
+    QTest::addColumn<bool>("child1Effect");
+    QTest::addColumn<bool>("child2Effect");
+    QTest::addColumn<int>("extent");
+
+    QTest::addRow("no_effect") << fillExpected1() << false << false << false << 0;
+    QTest::addRow("first_child_effect") << fillExpected2() << false << true << false << 0;
+    QTest::addRow("top_level_effect") << fillExpected3() << true << false << false << 0;
+    QTest::addRow("effect_with_extent") << fillExpected4() << false << false << true << 5;
+}
+
+void tst_QWidget::render_graphicsEffect()
+{
+    QFETCH(QImage, expected);
+    QFETCH(bool, topLevelEffect);
+    QFETCH(bool, child1Effect);
+    QFETCH(bool, child2Effect);
+    QFETCH(int, extent);
+
+    QScopedPointer<QWidget> topLevel(new QWidget);
+    topLevel->setPalette(Qt::gray);
+    topLevel->resize(40, 40);
+    topLevel->setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1String("::")
+                             + QLatin1String(QTest::currentDataTag()));
+
+    // Render widget with 2 child widgets
+    QImage image(topLevel->size(), QImage::Format_RGB32);
+    image.fill(QColor(Qt::gray).rgb());
+
+    QPainter painter(&image);
+
+    QWidget *childWidget1(new QWidget(topLevel.data()));
+    childWidget1->setAutoFillBackground(true);
+    childWidget1->setPalette(Qt::red);
+    childWidget1->resize(10, 10);
+    childWidget1->move(10, 10);
+    QWidget *childWidget2(new QWidget(topLevel.data()));
+    childWidget2->setAutoFillBackground(true);
+    childWidget2->setPalette(Qt::blue);
+    childWidget2->resize(10, 10);
+    childWidget2->move(20, 20);
+
+    TestGraphicsEffect *graphicsEffect(new TestGraphicsEffect(topLevel.data()));
+    if (topLevelEffect)
+        topLevel->setGraphicsEffect(graphicsEffect);
+    if (child1Effect)
+        childWidget1->setGraphicsEffect(graphicsEffect);
+    if (child2Effect)
+        childWidget2->setGraphicsEffect(graphicsEffect);
+    graphicsEffect->setExtent(extent);
+
+    // Render without effect
+    topLevel->render(&painter);
+#ifdef RENDER_DEBUG
+    image.save("render_GraphicsEffect" + QTest::currentDataTag() + ".png");
+    expected.save("render_GraphicsEffect_expected" + QTest::currentDataTag() + ".png");
+#endif
+    QCOMPARE(image, expected);
 }
 
 void tst_QWidget::activateWindow()

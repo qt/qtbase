@@ -74,6 +74,7 @@ public:
     QRect normalGeometry() const override;
     qreal devicePixelRatio() const override;
     void requestUpdate() override;
+    void requestActivateWindow() override;
 
     QWasmScreen *platformScreen() const;
     void setBackingStore(QWasmBackingStore *store) { m_backingStore = store; }

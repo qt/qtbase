@@ -52,6 +52,10 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/qdatastream.h>
 
+#if defined(Q_OS_MACOS)
+#include <QtCore/private/qcore_mac_p.h>
+#endif
+
 #define PCRE2_CODE_UNIT_WIDTH 16
 
 #include <pcre2.h>
@@ -1122,6 +1126,8 @@ static bool isJitEnabled()
 
 #ifdef QT_DEBUG
     return false;
+#elif defined(Q_OS_MACOS)
+    return !qt_mac_runningUnderRosetta();
 #else
     return true;
 #endif
@@ -1291,7 +1297,7 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     pcre2_jit_stack_assign_16(matchContext, &qtPcreCallback, nullptr);
     pcre2_match_data_16 *matchData = pcre2_match_data_create_from_pattern_16(compiledPattern, nullptr);
 
-    const unsigned short * const subjectUtf16 = subject.utf16() + subjectStart;
+    const auto subjectUtf16 = reinterpret_cast<const ushort*>(subject.data()) + subjectStart;
 
     int result;
 

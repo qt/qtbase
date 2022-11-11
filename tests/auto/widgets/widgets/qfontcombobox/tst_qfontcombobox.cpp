@@ -261,15 +261,18 @@ void tst_QFontComboBox::writingSystem()
 // protected void currentFontChanged(QFont const& f)
 void tst_QFontComboBox::currentFontChanged()
 {
-    SubQFontComboBox box;
-    QSignalSpy spy0(&box, SIGNAL(currentFontChanged(QFont)));
+    // The absence of this file does not affect the test results
+    QFontDatabase::addApplicationFont("ArianaVioleta-dz2K.ttf");
 
-    if (box.model()->rowCount() > 2) {
-        QTest::keyPress(&box, Qt::Key_Down);
+    SubQFontComboBox *box = new SubQFontComboBox;
+    QSignalSpy spy0(box, SIGNAL(currentFontChanged(QFont)));
+
+    if (box->model()->rowCount() > 2) {
+        QTest::keyPress(box, Qt::Key_Down);
         QCOMPARE(spy0.count(), 1);
 
         QFont f( "Sans Serif" );
-        box.setCurrentFont(f);
+        box->setCurrentFont(f);
         QCOMPARE(spy0.count(), 2);
     } else
         qWarning("Not enough fonts installed on test system. Consider adding some");

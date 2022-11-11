@@ -835,18 +835,25 @@ typename QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, c
         if (!isDetached() || d->size + n > int(d->alloc))
             realloc(d->size + n, QArrayData::Grow);
         if (!QTypeInfoQuery<T>::isRelocatable) {
-            T *b = d->end();
-            T *i = d->end() + n;
-            while (i != b)
-                new (--i) T;
-            i = d->end();
+            T *const e = d->end();
+            T *const b = d->begin() + offset;
+
+            T *i = e;
             T *j = i + n;
-            b = d->begin() + offset;
+
+            // move old elements into the uninitialized space
+            while (i != b && j > e)
+                new (--j) T(std::move(*--i));
+            // move the rest of old elements into the tail using assignment
             while (i != b)
-                *--j = *--i;
-            i = b+n;
-            while (i != b)
-                *--i = copy;
+                *--j = std::move(*--i);
+
+            // construct copies of t inside the uninitialized space
+            while (j != b && j > e)
+                new (--j) T(copy);
+            // use assignment to fill the recently-moved-from space
+            while (j != b)
+                *--j = copy;
         } else {
             T *b = d->begin() + offset;
             T *i = b + n;

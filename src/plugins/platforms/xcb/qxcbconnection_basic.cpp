@@ -179,7 +179,13 @@ xcb_atom_t QXcbBasicConnection::internAtom(const char *name)
     if (!name || *name == 0)
         return XCB_NONE;
 
-    return Q_XCB_REPLY(xcb_intern_atom, m_xcbConnection, false, strlen(name), name)->atom;
+    auto reply = Q_XCB_REPLY(xcb_intern_atom, m_xcbConnection, false, strlen(name), name);
+    if (!reply) {
+        qCDebug(lcQpaXcb) << "failed to query intern atom: " << name;
+        return XCB_NONE;
+    }
+
+    return reply->atom;
 }
 
 QByteArray QXcbBasicConnection::atomName(xcb_atom_t atom)

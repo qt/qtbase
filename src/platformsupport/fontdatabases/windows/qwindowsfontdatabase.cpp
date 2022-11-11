@@ -1719,6 +1719,7 @@ static const char *other_tryFonts[] = {
 };
 
 static const char *jp_tryFonts [] = {
+    "Yu Gothic UI",
     "MS UI Gothic",
     "Arial",
     "Gulim",

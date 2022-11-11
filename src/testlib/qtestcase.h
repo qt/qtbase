@@ -101,6 +101,7 @@ do {\
                              " but no exception caught", __FILE__, __LINE__);\
                 return;\
             } QT_CATCH (const exceptiontype &) {\
+                /* success */\
             }\
         } QT_CATCH (const std::exception &e) {\
             QByteArray msg = QByteArray() + "Expected exception of type " #exceptiontype \
@@ -110,7 +111,7 @@ do {\
         } QT_CATCH (...) {\
             QTest::qFail("Expected exception of type " #exceptiontype " to be thrown" \
                          " but unknown exception caught", __FILE__, __LINE__);\
-            return;\
+            QT_RETHROW;\
         }\
     } while (false)
 

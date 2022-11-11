@@ -10,5 +10,16 @@
     "License": "Independent JPEG Group License and BSD 3-Clause \"New\" or \"Revised\" License and zlib License",
     "LicenseId": "IJG AND BSD-3-Clause AND Zlib",
     "LicenseFiles": [ "LICENSE", "ijg-license.txt", "zlib-license.txt"],
-    "CopyrightFile": "COPYRIGHT.txt"
+    "Copyright": "Copyright (C) 2009-2021 D. R. Commander
+Copyright (C) 2015, 2020 Google, Inc.
+Copyright (C) 2019 Arm Limited
+Copyright (C) 2015-2016, 2018 Matthieu Darbois
+Copyright (C) 2011-2016 Siarhei Siamashka
+Copyright (C) 2015 Intel Corporation
+Copyright (C) 2013-2014 Linaro Limited
+Copyright (C) 2013-2014 MIPS Technologies, Inc.
+Copyright (C) 2009, 2012 Pierre Ossman for Cendio AB
+Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)
+Copyright (C) 1999-2006 MIYASAKA Masaru
+Copyright (C) 1991-2017 Thomas G. Lane, Guido Vollbeding"
 }

@@ -206,7 +206,7 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString &fileName)
 
     QRegularExpression re("^\\s+");
     while (!file.atEnd()) {
-        const QString line = QString::fromUtf8(file.readLine()).trimmed();
+        const QString line = QString::fromUtf8(file.readLine());
         const QString trimmedLine = line.trimmed();
         if (trimmedLine.isEmpty())
             continue;
@@ -218,7 +218,7 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString &fileName)
             level = 0;
         } else {
             const int capLen = match.capturedLength();
-            level = line.startsWith(QLatin1Char('\t')) ? capLen / 4 : capLen;
+            level = capLen / 4;
         }
 
         if (level + 1 >= parents.size())
@@ -267,4 +267,3 @@ void MainWindow::updateContentsLabel(const QString &sep)
 {
     contentsLabel->setText(tr("Type path from model above with items at each level separated by a '%1'").arg(sep));
 }
-

@@ -153,6 +153,7 @@ QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const Q
             }
         }
 
+        QFont::Stretch stretch = QFont::Unstretched;
         TT_OS2 *os2 = (TT_OS2 *)FT_Get_Sfnt_Table(face, ft_sfnt_os2);
         if (os2) {
             quint32 unicodeRange[4] = {
@@ -191,6 +192,36 @@ QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const Q
                 else if (w <= 10)
                     weight = QFont::Black;
             }
+
+            switch (os2->usWidthClass) {
+            case 1:
+                stretch = QFont::UltraCondensed;
+                break;
+            case 2:
+                stretch = QFont::ExtraCondensed;
+                break;
+            case 3:
+                stretch = QFont::Condensed;
+                break;
+            case 4:
+                stretch = QFont::SemiCondensed;
+                break;
+            case 5:
+                stretch = QFont::Unstretched;
+                break;
+            case 6:
+                stretch = QFont::SemiExpanded;
+                break;
+            case 7:
+                stretch = QFont::Expanded;
+                break;
+            case 8:
+                stretch = QFont::ExtraExpanded;
+                break;
+            case 9:
+                stretch = QFont::UltraExpanded;
+                break;
+            }
         }
 
         QString family = QString::fromLatin1(face->family_name);
@@ -198,7 +229,6 @@ QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const Q
         fontFile->fileName = QFile::decodeName(file);
         fontFile->indexValue = index;
 
-        QFont::Stretch stretch = QFont::Unstretched;
 
         registerFont(family,QString::fromLatin1(face->style_name),QString(),weight,style,stretch,true,true,0,fixedPitch,writingSystems,fontFile);
 

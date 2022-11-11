@@ -45,6 +45,7 @@
 #include <QMimeType>
 #include <QMimeDatabase>
 #include <QRegularExpression>
+#include <QUrl>
 
 QT_BEGIN_NAMESPACE
 
@@ -118,7 +119,7 @@ void QAndroidPlatformFileDialogHelper::takePersistableUriPermission(const QJNIOb
                                      uri.object(), modeFlags);
 }
 
-void QAndroidPlatformFileDialogHelper::setIntentTitle(const QString &title)
+void QAndroidPlatformFileDialogHelper::setInitialFileName(const QString &title)
 {
     const QJNIObjectPrivate extraTitle = QJNIObjectPrivate::getStaticObjectField(
             JniIntentClass, "EXTRA_TITLE", "Ljava/lang/String;");
@@ -208,6 +209,12 @@ bool QAndroidPlatformFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::Win
 
     if (options()->acceptMode() == QFileDialogOptions::AcceptSave) {
         m_intent = getFileDialogIntent("ACTION_CREATE_DOCUMENT");
+        const QList<QUrl> selectedFiles = options()->initiallySelectedFiles();
+        if (selectedFiles.size() > 0) {
+            // TODO: The initial folder to show at the start should be handled by EXTRA_INITIAL_URI
+            // Take only the file name.
+            setInitialFileName(selectedFiles.first().fileName());
+        }
     } else if (options()->acceptMode() == QFileDialogOptions::AcceptOpen) {
         switch (options()->fileMode()) {
         case QFileDialogOptions::FileMode::DirectoryOnly:
@@ -230,8 +237,6 @@ bool QAndroidPlatformFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::Win
         setOpenableCategory();
         setMimeTypes();
     }
-
-    setIntentTitle(options()->windowTitle());
 
     QtAndroidPrivate::registerActivityResultListener(this);
     m_activity.callMethod<void>("startActivityForResult", "(Landroid/content/Intent;I)V",

@@ -34,7 +34,7 @@ contains(TEMPLATE, .*app) {
 
         !sdk_no_version_check:!versionAtMost(QMAKE_MAC_SDK_MAJOR_VERSION, $$QT_MAC_SDK_VERSION_MAX) {
             warning("Qt has only been tested with version $$QT_MAC_SDK_VERSION_MAX"\
-                    "of the platform SDK, you're using $${QMAKE_MAC_SDK_MAJOR_MINOR_VERSION}.")
+                    "of the platform SDK, you're using $${QMAKE_MAC_SDK_MAJOR_VERSION}.")
             warning("This is an unsupported configuration. You may experience build issues," \
                     "and by using")
             warning("the $$QMAKE_MAC_SDK_VERSION SDK you are opting in to new features" \
@@ -95,6 +95,19 @@ app_extension_api_only {
     QMAKE_LFLAGS              += $$QMAKE_CFLAGS_APPLICATION_EXTENSION
 }
 
+macos {
+    !isEmpty(QMAKE_APPLE_DEVICE_ARCHS) {
+        # If the user has requested a specific set of architectures,
+        # build all of those by default, but limited to only those.
+        CONFIG -= only_active_arch
+    } else {
+        # Otherwise allow building all of the architectures available
+        # in Qt, but only build the active arch (unless the user has
+        # manually overridden this via CONFIG -= only_active_arch).
+        QMAKE_APPLE_DEVICE_ARCHS = $$QT_ARCHS
+    }
+}
+
 macx-xcode {
     qmake_pkginfo_typeinfo.name = QMAKE_PKGINFO_TYPEINFO
     !isEmpty(QMAKE_PKGINFO_TYPEINFO): \
@@ -150,15 +163,20 @@ macx-xcode {
     simulator: VALID_SIMULATOR_ARCHS = $$QMAKE_APPLE_SIMULATOR_ARCHS
     VALID_ARCHS = $$VALID_DEVICE_ARCHS $$VALID_SIMULATOR_ARCHS
 
-    isEmpty(VALID_ARCHS): \
-        error("QMAKE_APPLE_DEVICE_ARCHS or QMAKE_APPLE_SIMULATOR_ARCHS must contain at least one architecture")
-
     single_arch: VALID_ARCHS = $$first(VALID_ARCHS)
 
-    ACTIVE_ARCHS = $(filter $(EXPORT_VALID_ARCHS), $(ARCHS))
-    ARCH_ARGS = $(foreach arch, $(if $(EXPORT_ACTIVE_ARCHS), $(EXPORT_ACTIVE_ARCHS), $(EXPORT_VALID_ARCHS)), -arch $(arch))
+    macos {
+        only_active_arch: DEFAULT_ARCHS = $$system("uname -m")
+        else: DEFAULT_ARCHS = $$VALID_ARCHS
+    }
 
-    QMAKE_EXTRA_VARIABLES += VALID_ARCHS ACTIVE_ARCHS ARCH_ARGS
+    ARCHS = $(filter $(EXPORT_VALID_ARCHS), \
+        $(if $(ARCHS), $(ARCHS), \
+            $(if $(EXPORT_DEFAULT_ARCHS), $(EXPORT_DEFAULT_ARCHS), \
+        $(EXPORT_VALID_ARCHS))))
+    ARCH_ARGS = $(foreach arch, $(if $(EXPORT_ARCHS), $(EXPORT_ARCHS), $(EXPORT_VALID_ARCHS)), -arch $(arch))
+
+    QMAKE_EXTRA_VARIABLES += VALID_ARCHS DEFAULT_ARCHS ARCHS ARCH_ARGS
 
     arch_flags = $(EXPORT_ARCH_ARGS)
 

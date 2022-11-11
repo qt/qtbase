@@ -86,6 +86,7 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
         return false; \
     } \
 
+#define TRY_EXPECT(cond) EXPECT(QTest::qWaitFor([&]{ return (cond); }))
 
 @interface TestAXObject : NSObject
 {
@@ -546,21 +547,17 @@ bool notifications(QWidget *w)
 
     EXPECT(notificationList.length() == 0);
     le2->setFocus();
-    QCoreApplication::processEvents();
-    EXPECT(notificationList.length() == 1);
-    EXPECT(notificationList.at(0) == QAccessible::Focus);
+    TRY_EXPECT(notificationList.length() == 1);
+    TRY_EXPECT(notificationList.at(0) == QAccessible::Focus);
     le1->setFocus();
-    QCoreApplication::processEvents();
-    EXPECT(notificationList.length() == 2);
-    EXPECT(notificationList.at(1) == QAccessible::Focus);
+    TRY_EXPECT(notificationList.length() == 2);
+    TRY_EXPECT(notificationList.at(1) == QAccessible::Focus);
     le1->setText("hello");
-    QCoreApplication::processEvents();
-    EXPECT(notificationList.length() == 3);
-    EXPECT(notificationList.at(2) == QAccessible::ValueChanged);
+    TRY_EXPECT(notificationList.length() == 3);
+    TRY_EXPECT(notificationList.at(2) == QAccessible::ValueChanged);
     le1->setText("foo");
-    QCoreApplication::processEvents();
-    EXPECT(notificationList.length() == 4);
-    EXPECT(notificationList.at(3) == QAccessible::ValueChanged);
+    TRY_EXPECT(notificationList.length() == 4);
+    TRY_EXPECT(notificationList.at(3) == QAccessible::ValueChanged);
 
     return true;
 }

@@ -2220,6 +2220,40 @@ void tst_QSortFilterProxyModel::changeSourceDataProxySendDataChanged_qtbug87781(
     QCOMPARE(afterDataChangedSpy.size(), 1);
 }
 
+void tst_QSortFilterProxyModel::changeSourceDataTreeModel()
+{
+    QStandardItemModel treeModel;
+    QSortFilterProxyModel treeProxyModelBefore;
+    QSortFilterProxyModel treeProxyModelAfter;
+
+    QSignalSpy treeBaseDataChangedSpy(&treeModel, &QStandardItemModel::dataChanged);
+    QSignalSpy treeBeforeDataChangedSpy(&treeProxyModelBefore, &QSortFilterProxyModel::dataChanged);
+    QSignalSpy treeAfterDataChangedSpy(&treeProxyModelAfter, &QSortFilterProxyModel::dataChanged);
+
+    QVERIFY(treeBaseDataChangedSpy.isValid());
+    QVERIFY(treeBeforeDataChangedSpy.isValid());
+    QVERIFY(treeAfterDataChangedSpy.isValid());
+
+    treeProxyModelBefore.setSourceModel(&treeModel);
+    QStandardItem treeNode1("data1");
+    QStandardItem treeNode11("data11");
+    QStandardItem treeNode111("data111");
+
+    treeNode1.appendRow(&treeNode11);
+    treeNode11.appendRow(&treeNode111);
+    treeModel.appendRow(&treeNode1);
+    treeProxyModelAfter.setSourceModel(&treeModel);
+
+    QCOMPARE(treeBaseDataChangedSpy.size(), 0);
+    QCOMPARE(treeBeforeDataChangedSpy.size(), 0);
+    QCOMPARE(treeAfterDataChangedSpy.size(), 0);
+
+    treeNode111.setData(QStringLiteral("new data"), Qt::DisplayRole);
+    QCOMPARE(treeBaseDataChangedSpy.size(), 1);
+    QCOMPARE(treeBeforeDataChangedSpy.size(), 1);
+    QCOMPARE(treeAfterDataChangedSpy.size(), 1);
+}
+
 void tst_QSortFilterProxyModel::changeSourceDataProxyFilterSingleColumn()
 {
     enum modelRow { Row0, Row1, RowCount };

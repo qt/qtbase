@@ -101,7 +101,7 @@ QT_BEGIN_NAMESPACE
     \sa QAbstractFileEngine, QAbstractFileEngine::create()
 */
 
-static bool qt_file_engine_handlers_in_use = false;
+static QBasicAtomicInt qt_file_engine_handlers_in_use = Q_BASIC_ATOMIC_INITIALIZER(false);
 
 /*
     All application-wide handlers are stored in this list. The mutex must be
@@ -132,7 +132,7 @@ Q_GLOBAL_STATIC(QAbstractFileEngineHandlerList, fileEngineHandlers)
 QAbstractFileEngineHandler::QAbstractFileEngineHandler()
 {
     QWriteLocker locker(fileEngineHandlerMutex());
-    qt_file_engine_handlers_in_use = true;
+    qt_file_engine_handlers_in_use.storeRelaxed(true);
     fileEngineHandlers()->prepend(this);
 }
 
@@ -148,7 +148,7 @@ QAbstractFileEngineHandler::~QAbstractFileEngineHandler()
         QAbstractFileEngineHandlerList *handlers = fileEngineHandlers();
         handlers->removeOne(this);
         if (handlers->isEmpty())
-            qt_file_engine_handlers_in_use = false;
+            qt_file_engine_handlers_in_use.storeRelaxed(false);
     }
 }
 
@@ -161,7 +161,7 @@ QAbstractFileEngine *qt_custom_file_engine_handler_create(const QString &path)
 {
     QAbstractFileEngine *engine = nullptr;
 
-    if (qt_file_engine_handlers_in_use) {
+    if (qt_file_engine_handlers_in_use.loadRelaxed()) {
         QReadLocker locker(fileEngineHandlerMutex());
 
         // check for registered handlers that can load the file

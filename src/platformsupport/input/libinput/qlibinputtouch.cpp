@@ -82,7 +82,7 @@ QPointF QLibInputTouch::getPos(libinput_event_touch *e)
         if (m_screen)
             screen = m_screen;
     }
-    const QRect geom = QHighDpi::toNativePixels(screen->geometry(), screen);
+    const QRect geom = screen ? QHighDpi::toNativePixels(screen->geometry(), screen) : QRect();
     const double x = libinput_event_touch_get_x_transformed(e, geom.width());
     const double y = libinput_event_touch_get_y_transformed(e, geom.height());
     return geom.topLeft() + QPointF(x, y);

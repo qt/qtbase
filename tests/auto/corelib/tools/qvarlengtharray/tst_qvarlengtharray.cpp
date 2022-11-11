@@ -29,6 +29,7 @@
 #include <QtTest/QTest>
 #include <qvarlengtharray.h>
 #include <qvariant.h>
+#include <qscopedvaluerollback.h>
 
 #include <memory>
 
@@ -36,10 +37,13 @@ class tst_QVarLengthArray : public QObject
 {
     Q_OBJECT
 private slots:
+    void defaultConstructor_int() { defaultConstructor<int>(); }
+    void defaultConstructor_QString() { defaultConstructor<QString>(); }
     void append();
     void removeLast();
     void oldTests();
     void appendCausingRealloc();
+    void appendIsStronglyExceptionSafe();
     void resize();
     void realloc();
     void reverseIterators();
@@ -61,6 +65,8 @@ private slots:
     void implicitDefaultCtor();
 
 private:
+    template <typename T>
+    void defaultConstructor();
     template<typename T>
     void initializeList();
 };
@@ -79,6 +85,23 @@ struct Tracker
 };
 
 int Tracker::count = 0;
+
+template <typename T>
+void tst_QVarLengthArray::defaultConstructor()
+{
+    {
+        QVarLengthArray<T, 123> vla;
+        QCOMPARE(vla.size(), 0);
+        QVERIFY(vla.empty());
+        QVERIFY(vla.isEmpty());
+        QCOMPARE(vla.begin(), vla.end());
+        QCOMPARE(vla.capacity(), 123);
+    }
+    {
+        QVarLengthArray<T> vla;
+        QCOMPARE(vla.capacity(), 256);    // notice, should we change the default
+    }
+}
 
 void tst_QVarLengthArray::append()
 {
@@ -243,6 +266,49 @@ void tst_QVarLengthArray::appendCausingRealloc()
     QVarLengthArray<float, 1> d(1);
     for (int i=0; i<30; i++)
         d.append(i);
+}
+
+void tst_QVarLengthArray::appendIsStronglyExceptionSafe()
+{
+#ifdef QT_NO_EXCEPTIONS
+    QSKIP("This test requires exception support enabled in the compiler.");
+#else
+    static bool throwOnCopyNow = false;
+    static bool throwOnMoveNow = false;
+    struct Thrower {
+        Thrower() = default;
+        Thrower(const Thrower &)
+        {
+            if (throwOnCopyNow)
+                throw 1;
+        }
+        Thrower &operator=(const Thrower &) = default;
+        Thrower(Thrower &&)
+        {
+            if (throwOnMoveNow)
+                throw 1;
+        }
+        Thrower &operator=(Thrower &&) = default;
+        ~Thrower() = default;
+    };
+
+    {
+        // ### TODO: QVLA isn't exception-safe when throwing during reallocation,
+        // ### so check with size() < capacity() for now
+        QVarLengthArray<Thrower, 2> vla(1);
+        {
+            Thrower t;
+            const QScopedValueRollback<bool> rb(throwOnCopyNow, true);
+            QVERIFY_EXCEPTION_THROWN(vla.push_back(t), int);
+            QCOMPARE(vla.size(), 1);
+        }
+        {
+            const QScopedValueRollback<bool> rb(throwOnMoveNow, true);
+            QVERIFY_EXCEPTION_THROWN(vla.push_back({}), int);
+            QCOMPARE(vla.size(), 1);
+        }
+    }
+#endif
 }
 
 void tst_QVarLengthArray::resize()

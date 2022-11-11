@@ -143,6 +143,7 @@ public:
 
     int release() noexcept { int result = m_fd; m_fd = -1; return result; }
     void reset() noexcept;
+    void reset(int fd) { reset(); m_fd = fd; }
 };
 
 class QEvdevKeyboardHandler : public QObject

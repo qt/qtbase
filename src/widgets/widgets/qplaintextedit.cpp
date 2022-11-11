@@ -1942,7 +1942,7 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
 
     // keep right margin clean from full-width selection
     int maxX = offset.x() + qMax((qreal)viewportRect.width(), maximumWidth)
-               - document()->documentMargin();
+               - document()->documentMargin() + cursorWidth();
     er.setRight(qMin(er.right(), maxX));
     painter.setClipRect(er);
 

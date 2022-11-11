@@ -756,7 +756,8 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
         }
         // underline metrics
         line_thickness =  QFixed::fromFixed(FT_MulFix(face->underline_thickness, face->size->metrics.y_scale));
-        underline_position = QFixed::fromFixed(-FT_MulFix(face->underline_position, face->size->metrics.y_scale));
+        QFixed center_position = QFixed::fromFixed(-FT_MulFix(face->underline_position, face->size->metrics.y_scale));
+        underline_position = center_position - line_thickness / 2;
     } else {
         // ad hoc algorithm
         int score = fontDef.weight * fontDef.pixelSize;
@@ -1782,7 +1783,10 @@ glyph_metrics_t QFontEngineFT::boundingBox(glyph_t glyph, const QTransform &matr
 
 glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixelPosition, const QTransform &matrix, QFontEngine::GlyphFormat format)
 {
-    Glyph *g = loadGlyphFor(glyph, subPixelPosition, format, matrix, true);
+    // When rendering glyphs into a cache via the alphaMap* functions, we disable
+    // outline drawing. To ensure the bounding box matches the rendered glyph, we
+    // need to do the same here.
+    Glyph *g = loadGlyphFor(glyph, subPixelPosition, format, matrix, true, true);
 
     glyph_metrics_t overall;
     if (g) {

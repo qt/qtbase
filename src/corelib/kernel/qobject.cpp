@@ -2333,6 +2333,10 @@ void QObject::removeEventFilter(QObject *obj)
 */
 void QObject::deleteLater()
 {
+#ifdef QT_DEBUG
+    if (qApp == this)
+        qWarning("You are deferring the delete of QCoreApplication, this may not work as expected.");
+#endif
     QCoreApplication::postEvent(this, new QDeferredDeleteEvent());
 }
 

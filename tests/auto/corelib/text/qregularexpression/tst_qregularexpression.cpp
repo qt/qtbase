@@ -80,6 +80,7 @@ private slots:
     void threadSafety_data();
     void threadSafety();
 
+    void returnsViewsIntoOriginalString();
     void wildcard_data();
     void wildcard();
     void testInvalidWildcard_data();
@@ -2186,6 +2187,31 @@ void tst_QRegularExpression::threadSafety()
 
         qDeleteAll(threads);
     }
+}
+
+void tst_QRegularExpression::returnsViewsIntoOriginalString()
+{
+    // https://bugreports.qt.io/browse/QTBUG-98653
+
+    auto to_void = [](const QChar *p) -> const void* { return p; };
+
+    // GIVEN
+    //  a QString with dynamically-allocated data:
+    const QString string = QLatin1String("A\nA\nB\nB\n\nC\nC"); // NOT QStringLiteral!
+    const auto stringDataAddress = to_void(string.data());
+
+    //  and a view over said QString:
+    QStringView view(string);
+    const auto viewDataAddress = to_void(view.data());
+    QCOMPARE(stringDataAddress, viewDataAddress);
+
+    // WHEN
+    //  we call view.split() with a temporary QRegularExpression object
+    const auto split = view.split(QRegularExpression( "(\r\n|\n|\r)" ), Qt::KeepEmptyParts);
+
+    // THEN
+    //  the returned views should point into the underlying string:
+    QCOMPARE(to_void(split.front().data()), stringDataAddress);
 }
 
 void tst_QRegularExpression::wildcard_data()

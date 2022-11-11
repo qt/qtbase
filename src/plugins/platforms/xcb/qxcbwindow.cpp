@@ -258,7 +258,7 @@ enum : quint32 {
             | XCB_EVENT_MASK_POINTER_MOTION,
 
     transparentForInputEventMask = baseEventMask
-            | XCB_EVENT_MASK_VISIBILITY_CHANGE | XCB_EVENT_MASK_RESIZE_REDIRECT
+            | XCB_EVENT_MASK_VISIBILITY_CHANGE
             | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT
             | XCB_EVENT_MASK_COLOR_MAP_CHANGE | XCB_EVENT_MASK_OWNER_GRAB_BUTTON
 };
@@ -1894,7 +1894,7 @@ void QXcbWindow::handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event)
     if (event->window == m_window) {
         m_mapped = false;
         QWindowSystemInterface::handleExposeEvent(window(), QRegion());
-        if (!m_isWmManagedWindow) {
+        if (!m_isWmManagedWindow || parent()) {
             m_wmStateValid = true;
             handleDeferredTasks();
         }

@@ -53,7 +53,8 @@ enum DotNET {
     NET2013 = 0xc0,
     NET2015 = 0xd0,
     NET2017 = 0xe0,
-    NET2019
+    NET2019,
+    NET2022
 };
 
 DotNET vsVersionFromString(const ProString &versionString);

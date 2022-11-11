@@ -230,8 +230,14 @@ namespace SomeNamespace {
     struct Hashable { int i; };
     inline uint qHash(Hashable h, uint seed = 0)
     { return QT_PREPEND_NAMESPACE(qHash)(h.i, seed); }
-}
 
+    struct AdlHashable {
+        int i;
+    private:
+        friend size_t qHash(AdlHashable h, size_t seed = 0)
+        { return QT_PREPEND_NAMESPACE(qHash)(h.i, seed); }
+    };
+}
 void tst_QHashFunctions::range()
 {
     static const int ints[] = {0, 1, 2, 3, 4, 5};
@@ -253,10 +259,16 @@ void tst_QHashFunctions::range()
         QCOMPARE(qHashRange(ints, ints + numInts, seed), qHashRange(it, end, seed));
     }
 
-    SomeNamespace::Hashable hashables[] = {{0}, {1}, {2}, {3}, {4}, {5}};
-    static const size_t numHashables = sizeof hashables / sizeof *hashables;
-    // compile check: is qHash() found using ADL?
-    (void)qHashRange(hashables, hashables + numHashables, seed);
+    {
+        SomeNamespace::Hashable hashables[] = {{0}, {1}, {2}, {3}, {4}, {5}};
+        // compile check: is qHash() found using ADL?
+        [[maybe_unused]] auto r = qHashRange(std::begin(hashables), std::end(hashables), seed);
+    }
+    {
+        SomeNamespace::AdlHashable hashables[] = {{0}, {1}, {2}, {3}, {4}, {5}};
+        // compile check: is qHash() found as a hidden friend?
+        [[maybe_unused]] auto r = qHashRange(std::begin(hashables), std::end(hashables), seed);
+    }
 }
 
 void tst_QHashFunctions::rangeCommutative()
@@ -279,10 +291,16 @@ void tst_QHashFunctions::rangeCommutative()
         QCOMPARE(qHashRangeCommutative(ints, ints + numInts, seed), qHashRangeCommutative(it, end, seed));
     }
 
-    SomeNamespace::Hashable hashables[] = {{0}, {1}, {2}, {3}, {4}, {5}};
-    static const size_t numHashables = sizeof hashables / sizeof *hashables;
-    // compile check: is qHash() found using ADL?
-    (void)qHashRangeCommutative(hashables, hashables + numHashables, seed);
+    {
+        SomeNamespace::Hashable hashables[] = {{0}, {1}, {2}, {3}, {4}, {5}};
+        // compile check: is qHash() found using ADL?
+        [[maybe_unused]] auto r = qHashRangeCommutative(std::begin(hashables), std::end(hashables), seed);
+    }
+    {
+        SomeNamespace::AdlHashable hashables[] = {{0}, {1}, {2}, {3}, {4}, {5}};
+        // compile check: is qHash() found as a hidden friend?
+        [[maybe_unused]] auto r = qHashRangeCommutative(std::begin(hashables), std::end(hashables), seed);
+    }
 }
 
 void tst_QHashFunctions::stdHash()
