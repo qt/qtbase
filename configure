@@ -221,6 +221,8 @@ checkTopLevelBuild "$@"
 parseCommandline "$@"
 handleHelp
 determineOptFilePath "$@"
+
+fresh_requested_arg=
 optfilename=config.opt
 if [ -z "$optfile" ]; then   # only write optfile if not currently redoing
     optfilepath=${outpathPrefix}${optfilename}
@@ -231,6 +233,8 @@ if [ -z "$optfile" ]; then   # only write optfile if not currently redoing
         fi
         echo $arg >> "$optfilepath"
     done
+else
+    fresh_requested_arg=-DFRESH_REQUESTED=TRUE
 fi
 
 top_level_arg=
@@ -239,4 +243,4 @@ if [ -n "$CFG_TOPLEVEL" ]; then
     cd ..
 fi
 
-cmake "-DOPTFILE=$optfilename" $top_level_arg -P "$relpath/cmake/QtProcessConfigureArgs.cmake"
+cmake "-DOPTFILE=$optfilename" $top_level_arg $fresh_requested_arg -P "$relpath/cmake/QtProcessConfigureArgs.cmake"

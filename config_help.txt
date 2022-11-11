@@ -44,7 +44,9 @@ options without auto-detection.
 Configure meta:
 
   -help, -h ............ Display this help screen
-  -redo ................ Re-configure with previously used options.
+  -redo ................ Re-configure with previously used options. In addition,
+                         redo removes CMakeCache.txt file and CMakeFiles/ directory
+                         and recreates them from scratch.
                          Additional options may be passed, but will not be
                          saved for later use by -redo.
 

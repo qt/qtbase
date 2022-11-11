@@ -144,6 +144,15 @@ while(NOT "${configure_args}" STREQUAL "")
     endif()
 endwhile()
 
+if(FRESH_REQUESTED)
+    push("-DQT_INTERNAL_FRESH_REQUESTED:BOOL=TRUE")
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
+        push("--fresh")
+    else()
+        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/CMakeCache.txt"
+                            "${CMAKE_BINARY_DIR}/CMakeFiles")
+    endif()
+endif()
 
 ####################################################################################################
 # Define functions/macros that are called in configure.cmake files

@@ -78,12 +78,15 @@ goto doneargs
 cd "%TOPQTDIR%"
 
 rem Write config.opt if we're not currently -redo'ing
+set FRESH_REQUESTED_ARG=
 if "!rargs!" == "" (
     echo.%*>config.opt.in
     cmake -DIN_FILE=config.opt.in -DOUT_FILE=config.opt -DIGNORE_ARGS=-top-level -P "%QTSRC%\cmake\QtWriteArgsFile.cmake"
+) else if NOT "!rargs!" == "" (
+    set FRESH_REQUESTED_ARG=-DFRESH_REQUESTED=TRUE
 )
 
 rem Launch CMake-based configure
 set TOP_LEVEL_ARG=
 if %TOPLEVEL% == true set TOP_LEVEL_ARG=-DTOP_LEVEL=TRUE
-cmake -DOPTFILE=config.opt %TOP_LEVEL_ARG% -P "%QTSRC%\cmake\QtProcessConfigureArgs.cmake"
+cmake -DOPTFILE=config.opt %TOP_LEVEL_ARG% %FRESH_REQUESTED_ARG% -P "%QTSRC%\cmake\QtProcessConfigureArgs.cmake"

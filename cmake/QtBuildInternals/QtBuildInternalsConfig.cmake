@@ -531,6 +531,10 @@ macro(qt_build_repo_end)
         qt_internal_save_previously_found_packages()
     endif()
 
+    if(QT_INTERNAL_FRESH_REQUESTED)
+        set(QT_INTERNAL_FRESH_REQUESTED "FALSE" CACHE INTERNAL "")
+    endif()
+
     list(POP_BACK CMAKE_MESSAGE_CONTEXT)
 endmacro()
 

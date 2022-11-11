@@ -93,7 +93,13 @@ function(qt_print_build_instructions)
         "\nTo configure and build other Qt modules, you can use the following convenience script:
         ${local_install_prefix}/${INSTALL_BINDIR}/${configure_module_command}")
     list(APPEND msg "\nIf reconfiguration fails for some reason, try removing 'CMakeCache.txt' \
-from the build directory \n")
+from the build directory")
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
+        list(APPEND msg "Alternatively, you can add the --fresh flag to your CMake flags.\n")
+    else()
+        list(APPEND msg "\n")
+    endif()
+
     list(JOIN msg "\n" msg)
 
     if(NOT QT_INTERNAL_BUILD_INSTRUCTIONS_SHOWN)
