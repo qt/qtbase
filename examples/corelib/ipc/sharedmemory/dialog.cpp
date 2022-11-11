@@ -89,7 +89,8 @@ void Dialog::loadFromFile()
     int size = buffer.size();
 
     if (!sharedMemory.create(size)) {
-        ui.label->setText(tr("Unable to create shared memory segment."));
+        ui.label->setText(tr("Unable to create shared memory segment: %1")
+                            .arg(sharedMemory.errorString()));
         return;
     }
     sharedMemory.lock();
