@@ -122,13 +122,21 @@ QStringList QWasmLocalStorageSettingsPrivate::children(const QString &prefix, Ch
 
 void QWasmLocalStorageSettingsPrivate::clear()
 {
-    // Remove all Qt keys from window.localStorage
+    // Get all Qt keys from window.localStorage
     const int length = m_localStorage["length"].as<int>();
+    std::vector<std::string> keys;
+    keys.reserve(length);
     for (int i = 0; i < length; ++i) {
-        std::string fullKey = (m_localStorage.call<val>("key", i).as<std::string>());
-        QString key = QString::fromStdString(fullKey);
-        if (removeStoragePrefix(QStringView(key)).isEmpty() == false)
-            m_localStorage.call<val>("removeItem", fullKey);
+        std::string key = (m_localStorage.call<val>("key", i).as<std::string>());
+        keys.push_back(std::move(key));
+    }
+
+    // Remove all Qt keys. Note that localStorage does not guarantee a stable
+    // iteration order when the storage is mutated, which is why removal is done
+    // in a second step after getting all keys.
+    for (std::string key: keys) {
+        if (removeStoragePrefix(QString::fromStdString(key)).isEmpty() == false)
+            m_localStorage.call<val>("removeItem", key);
     }
 }
 
