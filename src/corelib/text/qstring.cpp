@@ -7490,15 +7490,6 @@ double QStringView::toDouble(bool *ok) const
     QStringView string = qt_trimmed(*this);
     QVarLengthArray<uchar> latin1(string.size());
     qt_to_latin1(latin1.data(), string.utf16(), string.size());
-
-    // We need lowetcased "inf" and "nan".
-    // This mangles the string, but nothing can become a number or letter
-    // that isn't already a number or letter.
-    for (uchar &c : latin1) {
-        if (c >= 'A')
-            c |= 0x20;
-    }
-
     auto r = qt_asciiToDouble(reinterpret_cast<const char *>(latin1.data()), string.size());
     if (ok != nullptr)
         *ok = r.ok();

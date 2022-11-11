@@ -250,31 +250,43 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision,
 QSimpleParsedNumber<double> qt_asciiToDouble(const char *num, qsizetype numLen,
                                              StrayCharacterMode strayCharMode)
 {
-    auto string_equals = [](const char *needle, const char *haystack, qsizetype haystackLen) {
-        qsizetype needleLen = strlen(needle);
-        return needleLen == haystackLen && memcmp(needle, haystack, haystackLen) == 0;
-    };
-
     if (numLen <= 0)
         return {};
 
     // We have to catch NaN before because we need NaN as marker for "garbage" in the
     // libdouble-conversion case and, in contrast to libdouble-conversion or sscanf, we don't allow
     // "-nan" or "+nan"
-    if (string_equals("nan", num, numLen)) {
-        return { qt_qnan(), num + 3 };
-    } else if (string_equals("+nan", num, numLen) || string_equals("-nan", num, numLen)) {
-        return {};
-    }
+    if (char c = *num; numLen >= 3
+            && (c == '-' || c == '+' || c == 'I' || c == 'i' || c == 'N' || c == 'n')) {
+        bool negative = (c == '-');
+        bool hasSign = negative || (c == '+');
+        qptrdiff offset = 0;
+        if (hasSign) {
+            offset = 1;
+            c = num[offset];
+        }
 
-    // Infinity values are implementation defined in the sscanf case. In the libdouble-conversion
-    // case we need infinity as overflow marker.
-    if (string_equals("+inf", num, numLen)) {
-        return { qt_inf(), num + 4 };
-    } else if (string_equals("inf", num, numLen)) {
-        return { qt_inf(), num + 3 };
-    } else if (string_equals("-inf", num, numLen)) {
-        return { -qt_inf(), num + 4 };
+        if (c > '9') {
+            auto lowered = [](char c) {
+                // this will mangle non-letters, but none can become a letter
+                return c | 0x20;
+            };
+
+            // Found a non-digit, so this MUST be either "inf", "+inf", "-inf"
+            // or "nan". Anything else is an invalid parse and we don't need to
+            // feed it to the converter below.
+            if (numLen != offset + 3)
+                return {};
+
+            c = lowered(c);
+            char c2 = lowered(num[offset + 1]);
+            char c3 = lowered(num[offset + 2]);
+            if (c == 'i' && c2 == 'n' && c3 == 'f')
+                return { negative ? -qt_inf() : qt_inf(), num + offset + 3 };
+            else if (c == 'n' && c2 == 'a' && c3 == 'n' && !hasSign)
+                return { qt_qnan(), num + 3 };
+            return {};
+        }
     }
 
     double d = 0.0;
