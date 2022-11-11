@@ -89,9 +89,13 @@ void Dialog::loadFromFile()
     int size = buffer.size();
 
     if (!sharedMemory.create(size)) {
-        ui.label->setText(tr("Unable to create shared memory segment: %1")
-                            .arg(sharedMemory.errorString()));
-        return;
+        if (sharedMemory.error() == QSharedMemory::AlreadyExists) {
+            sharedMemory.attach();
+        } else {
+            ui.label->setText(tr("Unable to create or attach to shared memory segment: %1")
+                                .arg(sharedMemory.errorString()));
+            return;
+        }
     }
     sharedMemory.lock();
     char *to = (char*)sharedMemory.data();
