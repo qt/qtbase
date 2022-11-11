@@ -33,6 +33,29 @@ public:
     typedef qptrdiff difference_type;
     typedef qsizetype size_type;
 private:
+    // TODO: Optimize by inverting and storing the flags in the low bits and
+    //       the size in the high.
+    static_assert(std::is_same_v<std::size_t, size_t>);
+    static_assert(sizeof(size_t) == sizeof(qsizetype));
+    static constexpr size_t SizeMask = (std::numeric_limits<size_t>::max)() / 4;
+    static constexpr size_t Latin1Flag = SizeMask + 1;
+    static constexpr size_t TwoByteCodePointFlag = Latin1Flag << 1;
+    static constexpr size_t TypeMask = (std::numeric_limits<size_t>::max)() & ~SizeMask;
+    static_assert(TypeMask == (Latin1Flag|TwoByteCodePointFlag));
+    // HI HI LO LO ...
+    //  0  0 SZ SZ  Utf8
+    //  0  1 SZ SZ  Latin1
+    //  1  0 SZ SZ  Utf16
+    //  1  1 SZ SZ  Unused
+    //  ^  ^ latin1
+    //  | sizeof code-point == 2
+    enum Tag : size_t {
+        Utf8     = 0,
+        Latin1   = Latin1Flag,
+        Utf16    = TwoByteCodePointFlag,
+        Unused   = TypeMask,
+    };
+
     template <typename Char>
     using if_compatible_char = std::enable_if_t<std::disjunction_v<
         QtPrivate::IsCompatibleCharType<Char>,
@@ -56,6 +79,7 @@ private:
     using if_convertible_to = std::enable_if_t<std::conjunction_v<
         // need to exclude a bunch of stuff, because we take by universal reference:
         std::negation<std::disjunction<
+            std::is_same<q20::remove_cvref_t<T>, QAnyStringView::Tag>,
             std::is_same<q20::remove_cvref_t<T>, QAnyStringView>, // don't make a copy/move ctor
             std::is_pointer<std::decay_t<T>>, // const char*, etc
             std::is_same<q20::remove_cvref_t<T>, QByteArray>,
@@ -273,28 +297,6 @@ private:
     { return QAnyStringView::compare(lhs, rhs) > 0; }
 #endif
 
-    // TODO: Optimize by inverting and storing the flags in the low bits and
-    //       the size in the high.
-    static_assert(std::is_same_v<std::size_t, size_t>);
-    static_assert(sizeof(size_t) == sizeof(qsizetype));
-    static constexpr size_t SizeMask = (std::numeric_limits<size_t>::max)() / 4;
-    static constexpr size_t Latin1Flag = SizeMask + 1;
-    static constexpr size_t TwoByteCodePointFlag = Latin1Flag << 1;
-    static constexpr size_t TypeMask = (std::numeric_limits<size_t>::max)() & ~SizeMask;
-    static_assert(TypeMask == (Latin1Flag|TwoByteCodePointFlag));
-    // HI HI LO LO ...
-    //  0  0 SZ SZ  Utf8
-    //  0  1 SZ SZ  Latin1
-    //  1  0 SZ SZ  Utf16
-    //  1  1 SZ SZ  Unused
-    //  ^  ^ latin1
-    //  | sizeof code-point == 2
-    enum Tag : size_t {
-        Utf8     = 0,
-        Latin1   = Latin1Flag,
-        Utf16    = TwoByteCodePointFlag,
-        Unused   = TypeMask,
-    };
     [[nodiscard]] constexpr Tag tag() const noexcept { return Tag{m_size & TypeMask}; }
     [[nodiscard]] constexpr bool isUtf16() const noexcept { return tag() == Tag::Utf16; }
     [[nodiscard]] constexpr bool isUtf8() const noexcept { return tag() == Tag::Utf8; }
