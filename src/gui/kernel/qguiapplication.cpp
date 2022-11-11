@@ -833,7 +833,7 @@ void QGuiApplicationPrivate::showModalWindow(QWindow *modal)
         }
     }
 
-    for (QWindow *window : qAsConst(QGuiApplicationPrivate::window_list)) {
+    for (QWindow *window : std::as_const(QGuiApplicationPrivate::window_list)) {
         if (needsWindowBlockedEvent(window) && !window->d_func()->blockedByModalWindow)
             updateBlockedStatus(window);
     }
@@ -845,7 +845,7 @@ void QGuiApplicationPrivate::hideModalWindow(QWindow *window)
 {
     self->modalWindowList.removeAll(window);
 
-    for (QWindow *window : qAsConst(QGuiApplicationPrivate::window_list)) {
+    for (QWindow *window : std::as_const(QGuiApplicationPrivate::window_list)) {
         if (needsWindowBlockedEvent(window) && window->d_func()->blockedByModalWindow)
             updateBlockedStatus(window);
     }
@@ -1098,7 +1098,7 @@ qreal QGuiApplication::devicePixelRatio() const
         return QGuiApplicationPrivate::m_maxDevicePixelRatio;
 
     QGuiApplicationPrivate::m_maxDevicePixelRatio = 1.0; // make sure we never return 0.
-    for (QScreen *screen : qAsConst(QGuiApplicationPrivate::screen_list))
+    for (QScreen *screen : std::as_const(QGuiApplicationPrivate::screen_list))
         QGuiApplicationPrivate::m_maxDevicePixelRatio = qMax(QGuiApplicationPrivate::m_maxDevicePixelRatio, screen->devicePixelRatio());
 
     return QGuiApplicationPrivate::m_maxDevicePixelRatio;
@@ -1246,7 +1246,7 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
     qCDebug(lcQpaTheme) << "Adding platform integration's theme names to list of theme names:" << platformIntegrationThemeNames;
     themeNames += platformIntegrationThemeNames;
     // 4) Look for a theme plugin.
-    for (const QString &themeName : qAsConst(themeNames)) {
+    for (const QString &themeName : std::as_const(themeNames)) {
         qCDebug(lcQpaTheme) << "Attempting to create platform theme" << themeName << "via QPlatformThemeFactory::create";
         QGuiApplicationPrivate::platform_theme = QPlatformThemeFactory::create(themeName, platformPluginPath);
         if (QGuiApplicationPrivate::platform_theme) {
@@ -1258,7 +1258,7 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
     // 5) If no theme plugin was found ask the platform integration to
     // create a theme
     if (!QGuiApplicationPrivate::platform_theme) {
-        for (const QString &themeName : qAsConst(themeNames)) {
+        for (const QString &themeName : std::as_const(themeNames)) {
             qCDebug(lcQpaTheme) << "Attempting to create platform theme" << themeName << "via createPlatformTheme";
             QGuiApplicationPrivate::platform_theme = QGuiApplicationPrivate::platform_integration->createPlatformTheme(themeName);
             if (QGuiApplicationPrivate::platform_theme) {
@@ -1279,7 +1279,7 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
     // boolean 'foo' or strings: 'foo=bar'
     if (!platformArguments.isEmpty()) {
         if (QObject *nativeInterface = QGuiApplicationPrivate::platform_integration->nativeInterface()) {
-            for (const QString &argument : qAsConst(platformArguments)) {
+            for (const QString &argument : std::as_const(platformArguments)) {
                 const int equalsPos = argument.indexOf(u'=');
                 const QByteArray name =
                     equalsPos != -1 ? argument.left(equalsPos).toUtf8() : argument.toUtf8();

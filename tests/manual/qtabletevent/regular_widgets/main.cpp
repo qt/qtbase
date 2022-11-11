@@ -152,7 +152,7 @@ void EventReportWidget::paintEvent(QPaintEvent *)
     p.setPen(Qt::white);
     QPainterPath ellipse;
     ellipse.addEllipse(0, 0, halfLineSpacing * 5, halfLineSpacing);
-    for (const TabletPoint &t : qAsConst(m_points)) {
+    for (const TabletPoint &t : std::as_const(m_points)) {
         if (geom.contains(t.pos)) {
               QPainterPath pp;
               pp.addEllipse(t.pos, halfLineSpacing, halfLineSpacing);

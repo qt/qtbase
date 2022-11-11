@@ -132,7 +132,7 @@ Q_GLOBAL_STATIC(QFactoryLoaderGlobals, qt_factoryloader_global)
 
 QFactoryLoaderPrivate::~QFactoryLoaderPrivate()
 {
-    for (QLibraryPrivate *library : qAsConst(libraryList))
+    for (QLibraryPrivate *library : std::as_const(libraryList))
         library->release();
 }
 

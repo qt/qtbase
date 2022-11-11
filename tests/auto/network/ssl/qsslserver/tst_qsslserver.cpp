@@ -241,13 +241,13 @@ void tst_QSslServer::testSelfSignedCertificateRejectedByServer()
 
     // Check the sslErrorsSpy
     const auto sslErrorsSpyErrors =
-            qvariant_cast<QList<QSslError>>(qAsConst(server.sslErrorsSpy).first()[1]);
+            qvariant_cast<QList<QSslError>>(std::as_const(server.sslErrorsSpy).first()[1]);
     QCOMPARE(sslErrorsSpyErrors.size(), 1);
     QCOMPARE(sslErrorsSpyErrors.first().error(), certificateError);
 
     // Check the peerVerifyErrorSpy
     const auto peerVerifyErrorSpyError =
-            qvariant_cast<QSslError>(qAsConst(server.peerVerifyErrorSpy).first()[1]);
+            qvariant_cast<QSslError>(std::as_const(server.peerVerifyErrorSpy).first()[1]);
     QCOMPARE(peerVerifyErrorSpyError.error(), certificateError);
 
     // Check client socket
@@ -302,7 +302,7 @@ void tst_QSslServer::testSelfSignedCertificateRejectedByClient()
         QCOMPARE(server.startedEncryptionHandshakeSpy.size(), 1);
 
         const auto errrOccuredSpyError = qvariant_cast<QAbstractSocket::SocketError>(
-                qAsConst(server.errorOccurredSpy).first()[1]);
+                std::as_const(server.errorOccurredSpy).first()[1]);
         QCOMPARE(errrOccuredSpyError, socketError);
     } else {
         // Client disconnected after connection accepted by server

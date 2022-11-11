@@ -1588,9 +1588,9 @@ void QMainWindowLayout::setDocumentMode(bool enabled)
     _documentMode = enabled;
 
     // Update the document mode for all tab bars
-    for (QTabBar *bar : qAsConst(usedTabBars))
+    for (QTabBar *bar : std::as_const(usedTabBars))
         bar->setDocumentMode(_documentMode);
-    for (QTabBar *bar : qAsConst(unusedTabBars))
+    for (QTabBar *bar : std::as_const(unusedTabBars))
         bar->setDocumentMode(_documentMode);
 }
 
@@ -2992,7 +2992,7 @@ bool QMainWindowLayout::restoreState(QDataStream &stream)
 #if QT_CONFIG(dockwidget)
     if (parentWidget()->isVisible()) {
 #if QT_CONFIG(tabbar)
-        for (QTabBar *tab_bar : qAsConst(usedTabBars))
+        for (QTabBar *tab_bar : std::as_const(usedTabBars))
             tab_bar->show();
 
 #endif

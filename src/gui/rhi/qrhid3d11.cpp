@@ -1682,7 +1682,7 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             QD3D11Texture *texD = QRHI_RES(QD3D11Texture, u.dst);
             for (int layer = 0, maxLayer = u.subresDesc.count(); layer < maxLayer; ++layer) {
                 for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.subresDesc[layer][level]))
+                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : std::as_const(u.subresDesc[layer][level]))
                         enqueueSubresUpload(texD, cbD, layer, level, subresDesc);
                 }
             }
@@ -2307,7 +2307,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
         });
     }
 
-    for (const Stage::Buffer &buf : qAsConst(res[RBM_VERTEX].buffers)) {
+    for (const Stage::Buffer &buf : std::as_const(res[RBM_VERTEX].buffers)) {
         srbD->vsubufs.feed(buf.breg, buf.buffer);
         srbD->vsubuforigbindings.feed(buf.breg, UINT(buf.binding));
         srbD->vsubufoffsets.feed(buf.breg, buf.offsetInConstants);
@@ -2318,7 +2318,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
     srbD->vsubufoffsets.finish();
     srbD->vsubufsizes.finish();
 
-    for (const Stage::Buffer &buf : qAsConst(res[RBM_FRAGMENT].buffers)) {
+    for (const Stage::Buffer &buf : std::as_const(res[RBM_FRAGMENT].buffers)) {
         srbD->fsubufs.feed(buf.breg, buf.buffer);
         srbD->fsubuforigbindings.feed(buf.breg, UINT(buf.binding));
         srbD->fsubufoffsets.feed(buf.breg, buf.offsetInConstants);
@@ -2329,7 +2329,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
     srbD->fsubufoffsets.finish();
     srbD->fsubufsizes.finish();
 
-    for (const Stage::Buffer &buf : qAsConst(res[RBM_COMPUTE].buffers)) {
+    for (const Stage::Buffer &buf : std::as_const(res[RBM_COMPUTE].buffers)) {
         srbD->csubufs.feed(buf.breg, buf.buffer);
         srbD->csubuforigbindings.feed(buf.breg, UINT(buf.binding));
         srbD->csubufoffsets.feed(buf.breg, buf.offsetInConstants);
@@ -2340,28 +2340,28 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
     srbD->csubufoffsets.finish();
     srbD->csubufsizes.finish();
 
-    for (const Stage::Texture &t : qAsConst(res[RBM_VERTEX].textures))
+    for (const Stage::Texture &t : std::as_const(res[RBM_VERTEX].textures))
         srbD->vsshaderresources.feed(t.treg, t.srv);
-    for (const Stage::Sampler &s : qAsConst(res[RBM_VERTEX].samplers))
+    for (const Stage::Sampler &s : std::as_const(res[RBM_VERTEX].samplers))
         srbD->vssamplers.feed(s.sreg, s.sampler);
     srbD->vssamplersPresent = srbD->vssamplers.finish();
     srbD->vsshaderresources.finish();
 
-    for (const Stage::Texture &t : qAsConst(res[RBM_FRAGMENT].textures))
+    for (const Stage::Texture &t : std::as_const(res[RBM_FRAGMENT].textures))
         srbD->fsshaderresources.feed(t.treg, t.srv);
-    for (const Stage::Sampler &s : qAsConst(res[RBM_FRAGMENT].samplers))
+    for (const Stage::Sampler &s : std::as_const(res[RBM_FRAGMENT].samplers))
         srbD->fssamplers.feed(s.sreg, s.sampler);
     srbD->fssamplersPresent = srbD->fssamplers.finish();
     srbD->fsshaderresources.finish();
 
-    for (const Stage::Texture &t : qAsConst(res[RBM_COMPUTE].textures))
+    for (const Stage::Texture &t : std::as_const(res[RBM_COMPUTE].textures))
         srbD->csshaderresources.feed(t.treg, t.srv);
-    for (const Stage::Sampler &s : qAsConst(res[RBM_COMPUTE].samplers))
+    for (const Stage::Sampler &s : std::as_const(res[RBM_COMPUTE].samplers))
         srbD->cssamplers.feed(s.sreg, s.sampler);
     srbD->cssamplersPresent = srbD->cssamplers.finish();
     srbD->csshaderresources.finish();
 
-    for (const Stage::Uav &u : qAsConst(res[RBM_COMPUTE].uavs))
+    for (const Stage::Uav &u : std::as_const(res[RBM_COMPUTE].uavs))
         srbD->csUAVs.feed(u.ureg, u.uav);
     srbD->csUAVsPresent = srbD->csUAVs.finish();
 }
@@ -4325,7 +4325,7 @@ bool QD3D11GraphicsPipeline::create()
     }
 
     QByteArray vsByteCode;
-    for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
+    for (const QRhiShaderStage &shaderStage : std::as_const(m_shaderStages)) {
         auto cacheIt = rhiD->m_shaderCache.constFind(shaderStage);
         if (cacheIt != rhiD->m_shaderCache.constEnd()) {
             switch (shaderStage.type()) {

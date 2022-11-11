@@ -60,7 +60,7 @@ int collectJson(const QStringList &jsonFiles, const QString &outputFile, bool sk
 
     QStringList jsonFilesSorted = jsonFiles;
     jsonFilesSorted.sort();
-    for (const QString &jsonFile : qAsConst(jsonFilesSorted)) {
+    for (const QString &jsonFile : std::as_const(jsonFilesSorted)) {
         QFile f(jsonFile);
         if (!f.open(QIODevice::ReadOnly)) {
             fprintf(stderr, "Error opening %s for reading\n", qPrintable(jsonFile));

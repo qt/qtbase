@@ -309,7 +309,7 @@ static void getAddresses(int sock, char *buf, QList<QNetworkInterfacePrivate *> 
 
         // find the interface this is relevant to
         QNetworkInterfacePrivate *iface = nullptr;
-        for (auto candidate : qAsConst(result)) {
+        for (auto candidate : std::as_const(result)) {
             if (candidate->index != int(ifa->ifa_index))
                 continue;
             iface = candidate;

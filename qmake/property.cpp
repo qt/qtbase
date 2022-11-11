@@ -142,7 +142,7 @@ int QMakeProperty::queryProperty(const QStringList &optionProperties,
         specialProps.append("QMAKE_VERSION");
 #endif
         specialProps.append("QT_VERSION");
-        for (const QString &prop : qAsConst(specialProps)) {
+        for (const QString &prop : std::as_const(specialProps)) {
             ProString val = value(ProKey(prop));
             ProString pval = value(ProKey(prop + "/raw"));
             ProString gval = value(ProKey(prop + "/get"));

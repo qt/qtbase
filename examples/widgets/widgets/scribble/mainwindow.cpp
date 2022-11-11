@@ -153,7 +153,7 @@ void MainWindow::createMenus()
 //! [15] //! [16]
 {
     saveAsMenu = new QMenu(tr("&Save As"), this);
-    for (QAction *action : qAsConst(saveAsActs))
+    for (QAction *action : std::as_const(saveAsActs))
         saveAsMenu->addAction(action);
 
     fileMenu = new QMenu(tr("&File"), this);

@@ -139,7 +139,7 @@ void Compress::operator () (int *table, int row_count, int column_count)
 #ifndef QLALR_NO_CHECK_SORTED_TABLE
   int previous_zeros = INT_MAX;
 
-  for (const UncompressedRow &row : qAsConst(sortedTable))
+  for (const UncompressedRow &row : std::as_const(sortedTable))
     {
       int zeros = row.count (0);
 
@@ -151,7 +151,7 @@ void Compress::operator () (int *table, int row_count, int column_count)
 
   index.fill (-999999, row_count);
 
-  for (const UncompressedRow &row : qAsConst(sortedTable))
+  for (const UncompressedRow &row : std::as_const(sortedTable))
     {
       int first_token = std::distance (row.begin (), row.beginNonZeros ());
       QList<int>::iterator pos = info.begin();
@@ -226,7 +226,7 @@ void Compress::operator () (int *table, int row_count, int column_count)
     }
 
 #if 0
-  for (const UncompressedRow &row : qAsConst(sortedTable))
+  for (const UncompressedRow &row : std::as_const(sortedTable))
     {
       int i = row.index ();
       Q_ASSERT (i < sortedTable.size ());

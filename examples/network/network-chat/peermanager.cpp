@@ -78,7 +78,7 @@ void PeerManager::sendBroadcastDatagram()
     }
 
     bool validBroadcastAddresses = true;
-    for (const QHostAddress &address : qAsConst(broadcastAddresses)) {
+    for (const QHostAddress &address : std::as_const(broadcastAddresses)) {
         if (broadcastSocket.writeDatagram(datagram, address,
                                           broadcastPort) == -1)
             validBroadcastAddresses = false;

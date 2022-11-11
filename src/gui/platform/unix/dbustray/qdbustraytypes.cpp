@@ -45,7 +45,7 @@ QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
     bool hasSmallIcon = false;
     bool hasMediumIcon = false;
     QList<QSize> toRemove;
-    for (const QSize &size : qAsConst(sizes)) {
+    for (const QSize &size : std::as_const(sizes)) {
         int maxSize = qMax(size.width(), size.height());
         if (maxSize <= IconNormalSmallSize)
             hasSmallIcon = true;
@@ -54,7 +54,7 @@ QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
         else if (maxSize > IconSizeLimit)
             toRemove << size;
     }
-    for (const QSize &size : qAsConst(toRemove))
+    for (const QSize &size : std::as_const(toRemove))
         sizes.removeOne(size);
     if (!hasSmallIcon)
         sizes.append(QSize(IconNormalSmallSize, IconNormalSmallSize));
@@ -62,7 +62,7 @@ QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
         sizes.append(QSize(IconNormalMediumSize, IconNormalMediumSize));
 
     ret.reserve(sizes.size());
-    for (const QSize &size : qAsConst(sizes)) {
+    for (const QSize &size : std::as_const(sizes)) {
         // Protocol specifies ARGB32 format in network byte order
         QImage im = engine->pixmap(size, QIcon::Normal, QIcon::Off).toImage().convertToFormat(QImage::Format_ARGB32);
         // letterbox if necessary to make it square

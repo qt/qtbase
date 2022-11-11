@@ -471,7 +471,7 @@ void tst_QMdiSubWindow::mainWindowSupport()
 
     workspace->activateNextSubWindow();
     QCoreApplication::processEvents();
-    for (QMdiSubWindow *window : qAsConst(windows)) {
+    for (QMdiSubWindow *window : std::as_const(windows)) {
         QCOMPARE(workspace->activeSubWindow(), window);
         QVERIFY(window->isMaximized());
         QVERIFY(window->maximizedButtonsWidget());

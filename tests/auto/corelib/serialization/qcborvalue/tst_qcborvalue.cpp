@@ -785,7 +785,7 @@ void tst_QCborValue::arrayInitializerList()
 
     // range for
     int i = 0;
-    for (const QCborValue v : qAsConst(a)) {
+    for (const QCborValue v : std::as_const(a)) {
         QVERIFY(!v.isInvalid());
         QCOMPARE(v.isUndefined(), i == 5); // 6th element is Undefined
         ++i;
@@ -885,7 +885,7 @@ void tst_QCborValue::mapSimpleInitializerList()
 
     // range for
     int i = 0;
-    for (auto pair : qAsConst(m)) {
+    for (auto pair : std::as_const(m)) {
         QVERIFY(!pair.first.isUndefined());
         QVERIFY(!pair.second.isUndefined());
         ++i;
@@ -1294,16 +1294,16 @@ void tst_QCborValue::arrayValueRefLargeKey()
     a[LargeKey + 1] = 123;
 
     QCborValue v(a);
-    QCOMPARE(qAsConst(v)[LargeKey], QCborValue());
-    QCOMPARE(qAsConst(v)[LargeKey + 1], 123);
+    QCOMPARE(std::as_const(v)[LargeKey], QCborValue());
+    QCOMPARE(std::as_const(v)[LargeKey + 1], 123);
     QCOMPARE(v[LargeKey], QCborValue());
     QCOMPARE(v[LargeKey + 1], 123);
     QCOMPARE(v.type(), QCborValue::Array);
 
     QCborArray outer = { QCborValue(a) };
     QCborValueRef ref = outer[0];
-    QCOMPARE(qAsConst(ref)[LargeKey], QCborValue());
-    QCOMPARE(qAsConst(ref)[LargeKey + 1], 123);
+    QCOMPARE(std::as_const(ref)[LargeKey], QCborValue());
+    QCOMPARE(std::as_const(ref)[LargeKey + 1], 123);
     QCOMPARE(ref[LargeKey], QCborValue());
     QCOMPARE(ref[LargeKey + 1], 123);
     QCOMPARE(ref.type(), QCborValue::Array);
@@ -1714,7 +1714,7 @@ void tst_QCborValue::arrayNested()
         QCborArray a1 = { 42, 47 };
         QCborArray a2 = { QCborValue(a1) };
         QCOMPARE(a2.size(), 1);
-        const QCborValue &first = qAsConst(a2).first();
+        const QCborValue &first = std::as_const(a2).first();
         QVERIFY(first.isArray());
         QCOMPARE(first.toArray(wrongArray).size(), 2);
         QCOMPARE(first.toArray(wrongArray).first(), 42);
@@ -1735,7 +1735,7 @@ void tst_QCborValue::arrayNested()
         QCborArray a1;
         a1 = { QCborValue(a1) };        // insert it into itself
         QCOMPARE(a1.size(), 1);
-        const QCborValue &first = qAsConst(a1).first();
+        const QCborValue &first = std::as_const(a1).first();
         QVERIFY(first.isArray());
         QCOMPARE(first, QCborArray());
         QCOMPARE(first.toArray(wrongArray), QCborArray());
@@ -1752,7 +1752,7 @@ void tst_QCborValue::arrayNested()
         QCborArray a1;
         a1.append(a1);                  // insert into itself
         QCOMPARE(a1.size(), 1);
-        const QCborValue &first = qAsConst(a1).first();
+        const QCborValue &first = std::as_const(a1).first();
         QVERIFY(first.isArray());
         QCOMPARE(first, QCborArray());
         QCOMPARE(first.toArray(), QCborArray());
@@ -2695,9 +2695,9 @@ template <typename ValueRef> static void cborValueRef_template()
 
     QCOMPARE(ref.toArray().isEmpty(), v.toArray().isEmpty());
     QCOMPARE(ref.toMap().isEmpty(), v.toMap().isEmpty());
-    QCOMPARE(ref[0], qAsConst(v)[0]);
-    QCOMPARE(ref[QLatin1String("other")], qAsConst(v)[QLatin1String("other")]);
-    QCOMPARE(ref[QString("other")], qAsConst(v)[QString("other")]);
+    QCOMPARE(ref[0], std::as_const(v)[0]);
+    QCOMPARE(ref[QLatin1String("other")], std::as_const(v)[QLatin1String("other")]);
+    QCOMPARE(ref[QString("other")], std::as_const(v)[QString("other")]);
 
     if (qIsNaN(v.toDouble()))
         QCOMPARE(qIsNaN(ref.toVariant().toDouble()), qIsNaN(v.toVariant().toDouble()));

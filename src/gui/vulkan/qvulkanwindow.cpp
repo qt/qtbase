@@ -657,7 +657,7 @@ void QVulkanWindowPrivate::init()
         queueCreateInfoModifier(queueFamilyProps.constData(), queueCount, queueInfo);
         bool foundGfxQueue = false;
         bool foundPresQueue = false;
-        for (const VkDeviceQueueCreateInfo& createInfo : qAsConst(queueInfo)) {
+        for (const VkDeviceQueueCreateInfo& createInfo : std::as_const(queueInfo)) {
             foundGfxQueue |= createInfo.queueFamilyIndex == gfxQueueFamilyIdx;
             foundPresQueue |= createInfo.queueFamilyIndex == presQueueFamilyIdx;
         }
@@ -857,7 +857,7 @@ void QVulkanWindowPrivate::init()
 
     // Try to honor the user request.
     if (!formats.isEmpty() && !requestedColorFormats.isEmpty()) {
-        for (VkFormat reqFmt : qAsConst(requestedColorFormats)) {
+        for (VkFormat reqFmt : std::as_const(requestedColorFormats)) {
             auto r = std::find_if(formats.cbegin(), formats.cend(),
                                   [reqFmt](const VkSurfaceFormatKHR &sfmt) { return sfmt.format == reqFmt; });
             if (r != formats.cend()) {

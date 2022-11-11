@@ -41,7 +41,7 @@ bool QVncScreen::initialize()
     mDepth = 32;
     mPhysicalSize = QSizeF(mGeometry.width()/96.*25.4, mGeometry.height()/96.*25.4);
 
-    for (const QString &arg : qAsConst(mArgs)) {
+    for (const QString &arg : std::as_const(mArgs)) {
         QRegularExpressionMatch match;
         if (arg.contains(mmSizeRx, &match)) {
             mPhysicalSize = QSizeF(match.captured("width").toDouble(), match.captured("height").toDouble());

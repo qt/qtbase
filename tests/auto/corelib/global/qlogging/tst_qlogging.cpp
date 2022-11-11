@@ -774,7 +774,7 @@ void tst_qmessagehandler::qMessagePattern()
     QVERIFY(!output.isEmpty());
     QCOMPARE(!output.contains("QT_MESSAGE_PATTERN"), valid);
 
-    for (const QByteArray &e : qAsConst(expected)) {
+    for (const QByteArray &e : std::as_const(expected)) {
         if (!output.contains(e)) {
             // use QDebug so we get proper string escaping for the newlines
             QString buf;

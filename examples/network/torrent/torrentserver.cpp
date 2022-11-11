@@ -55,7 +55,7 @@ void TorrentServer::removeClient()
 void TorrentServer::processInfoHash(const QByteArray &infoHash)
 {
     PeerWireClient *peer = qobject_cast<PeerWireClient *>(sender());
-    for (TorrentClient *client : qAsConst(clients)) {
+    for (TorrentClient *client : std::as_const(clients)) {
         if (client->state() >= TorrentClient::Searching && client->infoHash() == infoHash) {
             peer->disconnect(peer, nullptr, this, nullptr);
             client->setupIncomingConnection(peer);

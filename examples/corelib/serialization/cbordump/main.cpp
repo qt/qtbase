@@ -703,7 +703,7 @@ int main(int argc, char *argv[])
     QStringList files = parser.positionalArguments();
     if (files.isEmpty())
         files << "-";
-    for (const QString &file : qAsConst(files)) {
+    for (const QString &file : std::as_const(files)) {
         QFile f(file);
         if (file == "-" ? f.open(stdin, QIODevice::ReadOnly) : f.open(QIODevice::ReadOnly)) {
             if (files.size() > 1)

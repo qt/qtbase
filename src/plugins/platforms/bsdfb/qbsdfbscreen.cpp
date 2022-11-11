@@ -128,7 +128,7 @@ bool QBsdFbScreen::initialize()
     QRect userGeometry;
 
     // Parse arguments
-    for (const QString &arg : qAsConst(m_arguments)) {
+    for (const QString &arg : std::as_const(m_arguments)) {
         QRegularExpressionMatch match;
         if (arg.contains(mmSizeRx, &match))
             userMmSize = QSize(match.captured(1).toInt(), match.captured(2).toInt());

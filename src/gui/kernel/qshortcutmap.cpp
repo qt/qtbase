@@ -621,7 +621,7 @@ void QShortcutMap::dispatchEvent(QKeyEvent *e)
     if (lcShortcutMap().isDebugEnabled()) {
         if (ambiguousShortcuts.size() > 1) {
             qCDebug(lcShortcutMap) << "The following shortcuts are about to be activated ambiguously:";
-            for (const QShortcutEntry *entry : qAsConst(ambiguousShortcuts))
+            for (const QShortcutEntry *entry : std::as_const(ambiguousShortcuts))
                 qCDebug(lcShortcutMap).nospace() << "- " << entry->keyseq << " (belonging to " << entry->owner << ")";
         }
 

@@ -1432,7 +1432,7 @@ QWidget::~QWidget()
 
 #ifndef QT_NO_ACTION
     // remove all actions from this widget
-    for (auto action : qAsConst(d->actions)) {
+    for (auto action : std::as_const(d->actions)) {
         QActionPrivate *apriv = action->d_func();
         apriv->associatedObjects.removeAll(this);
     }

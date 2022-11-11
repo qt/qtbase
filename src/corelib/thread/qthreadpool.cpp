@@ -188,7 +188,7 @@ inline bool comparePriority(int priority, const QueuePage *p)
 void QThreadPoolPrivate::enqueueTask(QRunnable *runnable, int priority)
 {
     Q_ASSERT(runnable != nullptr);
-    for (QueuePage *page : qAsConst(queue)) {
+    for (QueuePage *page : std::as_const(queue)) {
         if (page->priority() == priority && !page->isFull()) {
             page->push(runnable);
             return;
@@ -269,7 +269,7 @@ void QThreadPoolPrivate::reset()
 
     mutex.unlock();
 
-    for (QThreadPoolThread *thread : qAsConst(allThreadsCopy)) {
+    for (QThreadPoolThread *thread : std::as_const(allThreadsCopy)) {
         if (thread->isRunning()) {
             thread->runnableReady.wakeAll();
             thread->wait();
@@ -348,7 +348,7 @@ bool QThreadPool::tryTake(QRunnable *runnable)
         return false;
 
     QMutexLocker locker(&d->mutex);
-    for (QueuePage *page : qAsConst(d->queue)) {
+    for (QueuePage *page : std::as_const(d->queue)) {
         if (page->tryTake(runnable)) {
             if (page->isFinished()) {
                 d->queue.removeOne(page);

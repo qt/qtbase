@@ -246,9 +246,9 @@ static QString locatePlugin(const QString& fileName)
         paths = QCoreApplication::libraryPaths();
     }
 
-    for (const QString &path : qAsConst(paths)) {
-        for (const QString &prefix : qAsConst(prefixes)) {
-            for (const QString &suffix : qAsConst(suffixes)) {
+    for (const QString &path : std::as_const(paths)) {
+        for (const QString &prefix : std::as_const(prefixes)) {
+            for (const QString &suffix : std::as_const(suffixes)) {
 #ifdef Q_OS_ANDROID
                 {
                     QString pluginPath = basePath + prefix + baseName + suffix;

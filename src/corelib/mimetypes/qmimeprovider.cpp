@@ -449,10 +449,10 @@ void QMimeBinaryProvider::addAllMimeTypes(QList<QMimeType> &result)
     loadMimeTypeList();
     if (result.isEmpty()) {
         result.reserve(m_mimetypeNames.size());
-        for (const QString &name : qAsConst(m_mimetypeNames))
+        for (const QString &name : std::as_const(m_mimetypeNames))
             result.append(mimeTypeForNameUnchecked(name));
     } else {
-        for (const QString &name : qAsConst(m_mimetypeNames))
+        for (const QString &name : std::as_const(m_mimetypeNames))
             if (std::find_if(result.constBegin(), result.constEnd(), [name](const QMimeType &mime) -> bool { return mime.name() == name; })
                     == result.constEnd())
                 result.append(mimeTypeForNameUnchecked(name));
@@ -680,7 +680,7 @@ void QMimeXMLProvider::findByMagic(const QByteArray &data, int *accuracyPtr, QMi
 {
     QString candidateName;
     bool foundOne = false;
-    for (const QMimeMagicRuleMatcher &matcher : qAsConst(m_magicMatchers)) {
+    for (const QMimeMagicRuleMatcher &matcher : std::as_const(m_magicMatchers)) {
         if (matcher.matches(data)) {
             const int priority = matcher.priority();
             if (priority > *accuracyPtr) {
@@ -716,7 +716,7 @@ void QMimeXMLProvider::ensureLoaded()
 
     //qDebug() << "Loading" << m_allFiles;
 
-    for (const QString &file : qAsConst(allFiles))
+    for (const QString &file : std::as_const(allFiles))
         load(file);
 }
 

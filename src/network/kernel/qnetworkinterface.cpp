@@ -873,7 +873,7 @@ QList<QHostAddress> QNetworkInterface::allAddresses()
         if ((p->flags & QNetworkInterface::IsUp) == 0)
             continue;
 
-        for (const QNetworkAddressEntry &entry : qAsConst(p->addressEntries))
+        for (const QNetworkAddressEntry &entry : std::as_const(p->addressEntries))
             result += entry.ip();
     }
 

@@ -461,7 +461,7 @@ QList<xkb_keysym_t> QXkbCommon::toKeysym(QKeyEvent *event)
     // From libxkbcommon keysym-utf.c:
     // "We allow to represent any UCS character in the range U-00000000 to
     // U-00FFFFFF by a keysym value in the range 0x01000000 to 0x01ffffff."
-    for (uint utf32 : qAsConst(ucs4))
+    for (uint utf32 : std::as_const(ucs4))
         keysyms.append(utf32 | 0x01000000);
 
     return keysyms;
@@ -682,7 +682,7 @@ QList<int> QXkbCommon::possibleKeys(xkb_state *state, const QKeyEvent *event,
             // catch only more specific shortcuts, i.e. Ctrl+Shift+= also generates Ctrl++ and +,
             // but Ctrl++ is more specific than +, so we should skip the last one
             bool ambiguous = false;
-            for (int shortcut : qAsConst(result)) {
+            for (int shortcut : std::as_const(result)) {
                 if (int(shortcut & ~Qt::KeyboardModifierMask) == qtKey && (shortcut & mods) == mods) {
                     ambiguous = true;
                     break;

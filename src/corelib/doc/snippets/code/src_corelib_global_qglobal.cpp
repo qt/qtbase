@@ -708,7 +708,7 @@ bool readConfiguration(const QFile &file)
     QString s = ...;
     for (QChar ch : s) // detaches 's' (performs a deep-copy if 's' was shared)
         process(ch);
-    for (QChar ch : qAsConst(s)) // ok, no detach attempt
+    for (QChar ch : std::as_const(s)) // ok, no detach attempt
         process(ch);
 //! [as-const-0]
 
@@ -724,12 +724,12 @@ bool readConfiguration(const QFile &file)
 //! [as-const-2]
 
 //! [as-const-3]
-    for (QChar ch : qAsConst(funcReturningQString()))
+    for (QChar ch : std::as_const(funcReturningQString()))
         process(ch); // ERROR: ch is copied from deleted memory
 //! [as-const-3]
 
 //! [as-const-4]
-    for (QChar ch : qAsConst(funcReturningQString()))
+    for (QChar ch : std::as_const(funcReturningQString()))
         process(ch); // ERROR: ch is copied from deleted memory
 //! [as-const-4]
 

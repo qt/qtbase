@@ -69,7 +69,7 @@ private slots:
             stack.push(line);
 
             line = prefix;
-            for (const QByteArray &pathElement : qAsConst(stack))
+            for (const QByteArray &pathElement : std::as_const(stack))
                 line += pathElement;
 
             if (line.endsWith('/'))

@@ -39,7 +39,7 @@ QCocoaMenuBar::~QCocoaMenuBar()
 #ifdef QT_COCOA_ENABLE_MENU_DEBUG
     qDebug() << "~QCocoaMenuBar" << this;
 #endif
-    for (auto menu : qAsConst(m_menus)) {
+    for (auto menu : std::as_const(m_menus)) {
         if (!menu)
             continue;
         NSMenuItem *item = nativeItemForMenu(menu);
@@ -228,7 +228,7 @@ QCocoaWindow *QCocoaMenuBar::findWindowForMenubar()
 
 QCocoaMenuBar *QCocoaMenuBar::findGlobalMenubar()
 {
-    for (auto *menubar : qAsConst(static_menubars)) {
+    for (auto *menubar : std::as_const(static_menubars)) {
         if (menubar->m_window.isNull())
             return menubar;
     }
@@ -269,7 +269,7 @@ void QCocoaMenuBar::updateMenuBarImmediately()
 #endif
     bool disableForModal = mb->shouldDisable(cw);
 
-    for (auto menu : qAsConst(mb->m_menus)) {
+    for (auto menu : std::as_const(mb->m_menus)) {
         if (!menu)
             continue;
         NSMenuItem *item = mb->nativeItemForMenu(menu);
@@ -354,7 +354,7 @@ void QCocoaMenuBar::insertWindowMenu()
 QList<QCocoaMenuItem*> QCocoaMenuBar::merged() const
 {
     QList<QCocoaMenuItem*> r;
-    for (auto menu : qAsConst(m_menus))
+    for (auto menu : std::as_const(m_menus))
         r.append(menu->merged());
 
     return r;
@@ -374,10 +374,10 @@ bool QCocoaMenuBar::shouldDisable(QCocoaWindow *active) const
     // When there is an application modal window on screen, the entries of
     // the menubar should be disabled. The exception in Qt is that if the
     // modal window is the only window on screen, then we enable the menu bar.
-    for (auto *window : qAsConst(topWindows)) {
+    for (auto *window : std::as_const(topWindows)) {
         if (window->isVisible() && window->modality() == Qt::ApplicationModal) {
             // check for other visible windows
-            for (auto *other : qAsConst(topWindows)) {
+            for (auto *other : std::as_const(topWindows)) {
                 if ((window != other) && (other->isVisible())) {
                     // INVARIANT: we found another visible window
                     // on screen other than our modalWidget. We therefore
@@ -398,7 +398,7 @@ bool QCocoaMenuBar::shouldDisable(QCocoaWindow *active) const
 
 QPlatformMenu *QCocoaMenuBar::menuForTag(quintptr tag) const
 {
-    for (auto menu : qAsConst(m_menus))
+    for (auto menu : std::as_const(m_menus))
         if (menu->tag() ==  tag)
             return menu;
 
@@ -407,7 +407,7 @@ QPlatformMenu *QCocoaMenuBar::menuForTag(quintptr tag) const
 
 NSMenuItem *QCocoaMenuBar::itemForRole(QPlatformMenuItem::MenuRole role)
 {
-    for (auto menu : qAsConst(m_menus))
+    for (auto menu : std::as_const(m_menus))
         for (auto *item : menu->items())
             if (item->effectiveRole() == role)
                 return item->nsItem();
@@ -428,7 +428,7 @@ void QCocoaMenuBar::insertDefaultEditItems(QCocoaMenu *menu)
     NSMenu *nsEditMenu = menu->nsMenu();
     if ([nsEditMenu itemAtIndex:nsEditMenu.numberOfItems - 1].action
         == @selector(orderFrontCharacterPalette:)) {
-        for (auto defaultEditMenuItem : qAsConst(m_defaultEditMenuItems)) {
+        for (auto defaultEditMenuItem : std::as_const(m_defaultEditMenuItems)) {
             if (menu->items().contains(defaultEditMenuItem))
                 menu->removeMenuItem(defaultEditMenuItem);
         }
@@ -454,7 +454,7 @@ void QCocoaMenuBar::insertDefaultEditItems(QCocoaMenu *menu)
 
             m_defaultEditMenuItems << separator << dictationItem << emojiItem;
         }
-        for (auto defaultEditMenuItem : qAsConst(m_defaultEditMenuItems)) {
+        for (auto defaultEditMenuItem : std::as_const(m_defaultEditMenuItems)) {
             if (menu->items().contains(defaultEditMenuItem))
                 menu->removeMenuItem(defaultEditMenuItem);
             menu->insertMenuItem(defaultEditMenuItem, nullptr);

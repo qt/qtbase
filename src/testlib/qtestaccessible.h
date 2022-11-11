@@ -115,7 +115,7 @@ public:
         return res;
     }
     static bool containsEvent(QAccessibleEvent *event) {
-        for (const QAccessibleEvent *ev : qAsConst(eventList())) {
+        for (const QAccessibleEvent *ev : std::as_const(eventList())) {
             if (*ev == *event)
                 return true;
         }

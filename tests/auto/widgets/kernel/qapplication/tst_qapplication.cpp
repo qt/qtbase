@@ -894,7 +894,7 @@ void tst_QApplication::closeAllWindows()
 
     // show all windows
     auto topLevels = QApplication::topLevelWidgets();
-    for (QWidget *w : qAsConst(topLevels)) {
+    for (QWidget *w : std::as_const(topLevels)) {
         w->show();
         QVERIFY(QTest::qWaitForWindowExposed(w));
     }
@@ -911,14 +911,14 @@ void tst_QApplication::closeAllWindows()
     PromptOnCloseWidget *promptOnCloseWidget = new PromptOnCloseWidget;
     // show all windows
     topLevels = QApplication::topLevelWidgets();
-    for (QWidget *w : qAsConst(topLevels)) {
+    for (QWidget *w : std::as_const(topLevels)) {
         w->show();
         QVERIFY(QTest::qWaitForWindowExposed(w));
     }
     // close the last window to open the prompt (eventloop recurses)
     promptOnCloseWidget->close();
     // all windows should not be visible, except the one that opened the prompt
-    for (QWidget *w : qAsConst(topLevels)) {
+    for (QWidget *w : std::as_const(topLevels)) {
         if (w == promptOnCloseWidget)
             QVERIFY(w->isVisible());
         else
@@ -2481,7 +2481,7 @@ void tst_QApplication::wheelEventPropagation()
     int vcount = 0;
     int hcount = 0;
 
-    for (const auto &event : qAsConst(events)) {
+    for (const auto &event : std::as_const(events)) {
         const QPoint pixelDelta = event.orientation == Qt::Vertical ? QPoint(0, -scrollStep) : QPoint(-scrollStep, 0);
         const QPoint angleDelta = event.orientation == Qt::Vertical ? QPoint(0, -120) : QPoint(-120, 0);
         QWindowSystemInterface::handleWheelEvent(outerArea.windowHandle(), center, global,

@@ -611,7 +611,7 @@ template <typename UInt> static void boundedQuality_template()
         QVector<UInt> buffer(BufferCount, filler);
         generate(buffer.begin(), buffer.end(), [&] { return rng.bounded(Bound); });
 
-        for (UInt value : qAsConst(buffer)) {
+        for (UInt value : std::as_const(buffer)) {
             QVERIFY(value < Bound);
             histogram[value]++;
         }

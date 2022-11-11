@@ -269,7 +269,7 @@ void QWindowsContext::registerTouchWindows()
 {
     if (QGuiApplicationPrivate::is_app_running
         && (d->m_systemInfo & QWindowsContext::SI_SupportsTouch) != 0) {
-        for (QWindowsWindow *w : qAsConst(d->m_windows))
+        for (QWindowsWindow *w : std::as_const(d->m_windows))
             w->registerTouchWindow();
     }
 }
@@ -606,7 +606,7 @@ void QWindowsContext::unregisterWindowClasses()
 {
     const auto appInstance = static_cast<HINSTANCE>(GetModuleHandle(nullptr));
 
-    for (const QString &name : qAsConst(d->m_registeredWindowClassNames)) {
+    for (const QString &name : std::as_const(d->m_registeredWindowClassNames)) {
         if (!UnregisterClass(reinterpret_cast<LPCWSTR>(name.utf16()), appInstance) && QWindowsContext::verbose)
             qErrnoWarning("UnregisterClass failed for '%s'", qPrintable(name));
     }

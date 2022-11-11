@@ -1134,7 +1134,7 @@ QAndroidStyle::AndroidStateDrawable::AndroidStateDrawable(const QVariantMap &dra
 
 QAndroidStyle::AndroidStateDrawable::~AndroidStateDrawable()
 {
-    for (const StateType &type : qAsConst(m_states))
+    for (const StateType &type : std::as_const(m_states))
         delete type.second;
 }
 
@@ -1259,7 +1259,7 @@ int QAndroidStyle::AndroidStateDrawable::extractState(const QVariantMap &value)
 
 void QAndroidStyle::AndroidStateDrawable::setPaddingLeftToSizeWidth()
 {
-    for (const StateType &type : qAsConst(m_states))
+    for (const StateType &type : std::as_const(m_states))
         const_cast<AndroidDrawable *>(type.second)->setPaddingLeftToSizeWidth();
 }
 
@@ -1285,7 +1285,7 @@ QAndroidStyle::AndroidLayerDrawable::AndroidLayerDrawable(const QVariantMap &dra
 
 QAndroidStyle::AndroidLayerDrawable::~AndroidLayerDrawable()
 {
-    for (const LayerType &layer : qAsConst(m_layers))
+    for (const LayerType &layer : std::as_const(m_layers))
         delete layer.second;
 }
 

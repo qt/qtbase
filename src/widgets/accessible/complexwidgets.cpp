@@ -177,7 +177,7 @@ QAccessibleTabBar::QAccessibleTabBar(QWidget *w)
 
 QAccessibleTabBar::~QAccessibleTabBar()
 {
-    for (QAccessible::Id id : qAsConst(m_childInterfaces))
+    for (QAccessible::Id id : std::as_const(m_childInterfaces))
         QAccessible::deleteAccessibleInterface(id);
 }
 

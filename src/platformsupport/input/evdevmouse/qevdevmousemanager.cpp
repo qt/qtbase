@@ -34,7 +34,7 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
     auto parsed = QEvdevUtil::parseSpecification(spec);
     m_spec = std::move(parsed.spec);
 
-    for (const auto &arg : qAsConst(parsed.args)) {
+    for (const auto &arg : std::as_const(parsed.args)) {
         if (arg.startsWith("xoffset="_L1)) {
             m_xoffset = arg.mid(8).toInt();
         } else if (arg.startsWith("yoffset="_L1)) {
@@ -43,7 +43,7 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
     }
 
     // add all mice for devices specified in the argument list
-    for (const QString &device : qAsConst(parsed.devices))
+    for (const QString &device : std::as_const(parsed.devices))
         addMouse(device);
 
     if (parsed.devices.isEmpty()) {

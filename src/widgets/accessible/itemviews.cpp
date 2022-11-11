@@ -79,7 +79,7 @@ bool QAccessibleTable::isValid() const
 
 QAccessibleTable::~QAccessibleTable()
 {
-    for (QAccessible::Id id : qAsConst(childToId))
+    for (QAccessible::Id id : std::as_const(childToId))
         QAccessible::deleteAccessibleInterface(id);
 }
 
@@ -546,7 +546,7 @@ void QAccessibleTable::modelChange(QAccessibleTableModelChangeEvent *event)
 
     switch (event->modelChangeType()) {
     case QAccessibleTableModelChangeEvent::ModelReset:
-        for (QAccessible::Id id : qAsConst(childToId))
+        for (QAccessible::Id id : std::as_const(childToId))
             QAccessible::deleteAccessibleInterface(id);
         childToId.clear();
         break;

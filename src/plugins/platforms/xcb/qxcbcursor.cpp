@@ -317,7 +317,7 @@ QXcbCursor::~QXcbCursor()
         xcb_close_font(conn, cursorFont);
 
 #ifndef QT_NO_CURSOR
-    for (xcb_cursor_t cursor : qAsConst(m_cursorHash))
+    for (xcb_cursor_t cursor : std::as_const(m_cursorHash))
         xcb_free_cursor(conn, cursor);
 #endif
 }

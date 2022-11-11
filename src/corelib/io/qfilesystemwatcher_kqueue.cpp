@@ -51,7 +51,7 @@ QKqueueFileSystemWatcherEngine::~QKqueueFileSystemWatcherEngine()
     notifier.setEnabled(false);
     close(kqfd);
 
-    for (int id : qAsConst(pathToID))
+    for (int id : std::as_const(pathToID))
         ::close(id < 0 ? -id : id);
 }
 

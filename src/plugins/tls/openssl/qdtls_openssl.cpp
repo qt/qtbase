@@ -1328,7 +1328,7 @@ bool QDtlsPrivateOpenSSL::verifyPeer()
     // Translate errors from the error list into QSslErrors
     using CertClass = QTlsPrivate::X509CertificateOpenSSL;
     errors.reserve(errors.size() + opensslErrors.size());
-    for (const auto &error : qAsConst(opensslErrors)) {
+    for (const auto &error : std::as_const(opensslErrors)) {
         const auto value = peerCertificateChain.value(error.depth);
         errors << CertClass::openSSLErrorToQSslError(error.code, value);
     }

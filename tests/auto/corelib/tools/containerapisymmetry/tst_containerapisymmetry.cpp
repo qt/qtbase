@@ -746,14 +746,14 @@ void tst_ContainerApiSymmetry::front_back_impl() const
     auto c1 = make<Container>(1);
     QCOMPARE(clean(c1.front()), V(1));
     QCOMPARE(clean(c1.back()), V(1));
-    QCOMPARE(clean(qAsConst(c1).front()), V(1));
-    QCOMPARE(clean(qAsConst(c1).back()), V(1));
+    QCOMPARE(clean(std::as_const(c1).front()), V(1));
+    QCOMPARE(clean(std::as_const(c1).back()), V(1));
 
     auto c2 = make<Container>(2);
     QCOMPARE(clean(c2.front()), V(1));
     QCOMPARE(clean(c2.back()), V(2));
-    QCOMPARE(clean(qAsConst(c2).front()), V(1));
-    QCOMPARE(clean(qAsConst(c2).back()), V(2));
+    QCOMPARE(clean(std::as_const(c2).front()), V(1));
+    QCOMPARE(clean(std::as_const(c2).back()), V(2));
 }
 
 namespace {

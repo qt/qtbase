@@ -385,7 +385,7 @@ QList<QSslCertificate> systemCaCertificates()
                 certFiles.insert(it.nextFileInfo().canonicalFilePath());
             }
         }
-        for (const QString& file : qAsConst(certFiles))
+        for (const QString& file : std::as_const(certFiles))
             systemCerts.append(QSslCertificate::fromPath(file, QSsl::Pem));
     }
 #endif // platform

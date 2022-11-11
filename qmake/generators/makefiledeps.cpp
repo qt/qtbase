@@ -788,7 +788,7 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                         }
                     }
                     if(!exists) { //path lookup
-                        for (const QMakeLocalFileName &depdir : qAsConst(depdirs)) {
+                        for (const QMakeLocalFileName &depdir : std::as_const(depdirs)) {
                             QMakeLocalFileName f(depdir.real() + Option::dir_sep + lfn.real());
                             QFileInfo fi(findFileInfo(f));
                             if(fi.exists() && !fi.isDir()) {

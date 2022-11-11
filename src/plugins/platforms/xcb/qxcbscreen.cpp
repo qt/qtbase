@@ -92,7 +92,7 @@ QXcbVirtualDesktop::~QXcbVirtualDesktop()
 {
     delete m_xSettings;
 
-    for (auto cmap : qAsConst(m_visualColormaps))
+    for (auto cmap : std::as_const(m_visualColormaps))
         xcb_free_colormap(xcb_connection(), cmap);
 }
 
@@ -222,7 +222,7 @@ void QXcbVirtualDesktop::handleScreenChange(xcb_randr_screen_change_notify_event
     case XCB_RANDR_ROTATION_REFLECT_Y: break;
     }
 
-    for (QPlatformScreen *platformScreen : qAsConst(m_screens)) {
+    for (QPlatformScreen *platformScreen : std::as_const(m_screens)) {
         QDpi ldpi = platformScreen->logicalDpi();
         QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(platformScreen->screen(), ldpi.first, ldpi.second);
     }
@@ -271,7 +271,7 @@ void QXcbVirtualDesktop::updateWorkArea()
     QRect workArea = getWorkArea();
     if (m_workArea != workArea) {
         m_workArea = workArea;
-        for (QPlatformScreen *screen : qAsConst(m_screens))
+        for (QPlatformScreen *screen : std::as_const(m_screens))
             ((QXcbScreen *)screen)->updateAvailableGeometry();
     }
 }

@@ -900,13 +900,13 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
     QJsonObject root;
 
     QJsonArray jinputs;
-    for (const QShaderDescription::InOutVariable &v : qAsConst(inVars))
+    for (const QShaderDescription::InOutVariable &v : std::as_const(inVars))
         jinputs.append(inOutObject(v));
     if (!jinputs.isEmpty())
         root[inputsKey()] = jinputs;
 
     QJsonArray joutputs;
-    for (const QShaderDescription::InOutVariable &v : qAsConst(outVars))
+    for (const QShaderDescription::InOutVariable &v : std::as_const(outVars))
         joutputs.append(inOutObject(v));
     if (!joutputs.isEmpty())
         root[outputsKey()] = joutputs;
@@ -964,7 +964,7 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
         root[storageBlocksKey()] = jstorageBlocks;
 
     QJsonArray jcombinedSamplers;
-    for (const QShaderDescription::InOutVariable &v : qAsConst(combinedImageSamplers)) {
+    for (const QShaderDescription::InOutVariable &v : std::as_const(combinedImageSamplers)) {
         QJsonObject sampler;
         sampler[nameKey()] = QString::fromUtf8(v.name);
         sampler[typeKey()] = typeStr(v.type);
@@ -975,7 +975,7 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
         root[combinedImageSamplersKey()] = jcombinedSamplers;
 
     QJsonArray jstorageImages;
-    for (const QShaderDescription::InOutVariable &v : qAsConst(storageImages)) {
+    for (const QShaderDescription::InOutVariable &v : std::as_const(storageImages)) {
         QJsonObject image;
         image[nameKey()] = QString::fromUtf8(v.name);
         image[typeKey()] = typeStr(v.type);
@@ -991,7 +991,7 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
     root[localSizeKey()] = jlocalSize;
 
     QJsonArray jseparateImages;
-    for (const QShaderDescription::InOutVariable &v : qAsConst(separateImages)) {
+    for (const QShaderDescription::InOutVariable &v : std::as_const(separateImages)) {
         QJsonObject image;
         image[nameKey()] = QString::fromUtf8(v.name);
         image[typeKey()] = typeStr(v.type);
@@ -1002,7 +1002,7 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
         root[separateImagesKey()] = jseparateImages;
 
     QJsonArray jseparateSamplers;
-    for (const QShaderDescription::InOutVariable &v : qAsConst(separateSamplers)) {
+    for (const QShaderDescription::InOutVariable &v : std::as_const(separateSamplers)) {
         QJsonObject sampler;
         sampler[nameKey()] = QString::fromUtf8(v.name);
         sampler[typeKey()] = typeStr(v.type);
@@ -1018,11 +1018,11 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
 void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
 {
     (*stream) << int(inVars.size());
-    for (const QShaderDescription::InOutVariable &v : qAsConst(inVars))
+    for (const QShaderDescription::InOutVariable &v : std::as_const(inVars))
         serializeInOutVar(stream, v);
 
     (*stream) << int(outVars.size());
-    for (const QShaderDescription::InOutVariable &v : qAsConst(outVars))
+    for (const QShaderDescription::InOutVariable &v : std::as_const(outVars))
         serializeInOutVar(stream, v);
 
     (*stream) << int(uniformBlocks.size());
@@ -1059,14 +1059,14 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
     }
 
     (*stream) << int(combinedImageSamplers.size());
-    for (const QShaderDescription::InOutVariable &v : qAsConst(combinedImageSamplers)) {
+    for (const QShaderDescription::InOutVariable &v : std::as_const(combinedImageSamplers)) {
         (*stream) << QString::fromUtf8(v.name);
         (*stream) << int(v.type);
         serializeDecorations(stream, v);
     }
 
     (*stream) << int(storageImages.size());
-    for (const QShaderDescription::InOutVariable &v : qAsConst(storageImages)) {
+    for (const QShaderDescription::InOutVariable &v : std::as_const(storageImages)) {
         (*stream) << QString::fromUtf8(v.name);
         (*stream) << int(v.type);
         serializeDecorations(stream, v);
@@ -1076,14 +1076,14 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
         (*stream) << localSize[i];
 
     (*stream) << int(separateImages.size());
-    for (const QShaderDescription::InOutVariable &v : qAsConst(separateImages)) {
+    for (const QShaderDescription::InOutVariable &v : std::as_const(separateImages)) {
         (*stream) << QString::fromUtf8(v.name);
         (*stream) << int(v.type);
         serializeDecorations(stream, v);
     }
 
     (*stream) << int(separateSamplers.size());
-    for (const QShaderDescription::InOutVariable &v : qAsConst(separateSamplers)) {
+    for (const QShaderDescription::InOutVariable &v : std::as_const(separateSamplers)) {
         (*stream) << QString::fromUtf8(v.name);
         (*stream) << int(v.type);
         serializeDecorations(stream, v);

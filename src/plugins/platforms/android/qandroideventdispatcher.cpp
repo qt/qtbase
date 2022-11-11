@@ -75,7 +75,7 @@ void QAndroidEventDispatcherStopper::startAll()
     if (!m_started.testAndSetOrdered(0, 1))
         return;
 
-    for (QAndroidEventDispatcher *d : qAsConst(m_dispatchers))
+    for (QAndroidEventDispatcher *d : std::as_const(m_dispatchers))
         d->start();
 }
 
@@ -85,7 +85,7 @@ void QAndroidEventDispatcherStopper::stopAll()
     if (!m_started.testAndSetOrdered(1, 0))
         return;
 
-    for (QAndroidEventDispatcher *d : qAsConst(m_dispatchers))
+    for (QAndroidEventDispatcher *d : std::as_const(m_dispatchers))
         d->stop();
 }
 
@@ -104,6 +104,6 @@ void QAndroidEventDispatcherStopper::removeEventDispatcher(QAndroidEventDispatch
 void QAndroidEventDispatcherStopper::goingToStop(bool stop)
 {
     QMutexLocker lock(&m_mutex);
-    for (QAndroidEventDispatcher *d : qAsConst(m_dispatchers))
+    for (QAndroidEventDispatcher *d : std::as_const(m_dispatchers))
         d->goingToStop(stop);
 }

@@ -22,13 +22,13 @@ template <typename T>
 class QForeachContainer {
     Q_DISABLE_COPY(QForeachContainer)
 public:
-    QForeachContainer(const T &t) : c(t), i(qAsConst(c).begin()), e(qAsConst(c).end()) {}
-    QForeachContainer(T &&t) : c(std::move(t)), i(qAsConst(c).begin()), e(qAsConst(c).end())  {}
+    QForeachContainer(const T &t) : c(t), i(std::as_const(c).begin()), e(std::as_const(c).end()) {}
+    QForeachContainer(T &&t) : c(std::move(t)), i(std::as_const(c).begin()), e(std::as_const(c).end())  {}
 
     QForeachContainer(QForeachContainer &&other)
         : c(std::move(other.c)),
-          i(qAsConst(c).begin()),
-          e(qAsConst(c).end()),
+          i(std::as_const(c).begin()),
+          e(std::as_const(c).end()),
           control(std::move(other.control))
     {
     }
@@ -36,8 +36,8 @@ public:
     QForeachContainer &operator=(QForeachContainer &&other)
     {
         c = std::move(other.c);
-        i = qAsConst(c).begin();
-        e = qAsConst(c).end();
+        i = std::as_const(c).begin();
+        e = std::as_const(c).end();
         control = std::move(other.control);
         return *this;
     }

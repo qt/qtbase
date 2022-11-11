@@ -513,7 +513,7 @@ void WriteInitialization::acceptUI(DomUI *node)
 
     if (!m_buddies.empty())
         m_output << language::openQtConfig(shortcutConfigKey());
-    for (const Buddy &b : qAsConst(m_buddies)) {
+    for (const Buddy &b : std::as_const(m_buddies)) {
         const QString buddyVarName = m_driver->widgetVariableName(b.buddyAttributeName);
         if (buddyVarName.isEmpty()) {
             fprintf(stderr, "%s: Warning: Buddy assignment: '%s' is not a valid widget.\n",
@@ -2734,7 +2734,7 @@ QString WriteInitialization::Item::writeSetupUi(const QString &parent, Item::Emp
             m_setupUiStream << language::closeQtConfig(it.key());
         ++it;
     }
-    for (Item *child : qAsConst(m_children))
+    for (Item *child : std::as_const(m_children))
         child->writeSetupUi(uniqueName);
     return uniqueName;
 }

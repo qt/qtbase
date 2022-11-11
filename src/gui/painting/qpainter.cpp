@@ -381,7 +381,7 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
 
     if (q->hasClipping()) {
         bool hasPerspectiveTransform = false;
-        for (const QPainterClipInfo &info : qAsConst(state->clipInfo)) {
+        for (const QPainterClipInfo &info : std::as_const(state->clipInfo)) {
             if (info.matrix.type() == QTransform::TxProject) {
                 hasPerspectiveTransform = true;
                 break;
@@ -1616,7 +1616,7 @@ void QPainter::restore()
         tmp->clipPath = QPainterPath();
         d->engine->updateState(*tmp);
         // replay the list of clip states,
-        for (const QPainterClipInfo &info : qAsConst(d->state->clipInfo)) {
+        for (const QPainterClipInfo &info : std::as_const(d->state->clipInfo)) {
             tmp->matrix = info.matrix;
             tmp->matrix *= d->state->redirectionMatrix;
             tmp->clipOperation = info.operation;
@@ -2478,7 +2478,7 @@ QRegion QPainter::clipRegion() const
         const_cast<QPainter *>(this)->d_ptr->updateInvMatrix();
 
     // ### Falcon: Use QPainterPath
-    for (const QPainterClipInfo &info : qAsConst(d->state->clipInfo)) {
+    for (const QPainterClipInfo &info : std::as_const(d->state->clipInfo)) {
         switch (info.clipType) {
 
         case QPainterClipInfo::RegionClip: {
@@ -2645,7 +2645,7 @@ QRectF QPainter::clipBoundingRect() const
     // fast.
     QRectF bounds;
     bool first = true;
-    for (const QPainterClipInfo &info : qAsConst(d->state->clipInfo)) {
+    for (const QPainterClipInfo &info : std::as_const(d->state->clipInfo)) {
          QRectF r;
 
          if (info.clipType == QPainterClipInfo::RectClip)

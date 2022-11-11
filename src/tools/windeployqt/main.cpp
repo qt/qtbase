@@ -725,7 +725,7 @@ static bool findDependentQtLibraries(const QString &qtBinDir, const QString &bin
     // Filter out the Qt libraries. Note that depends.exe finds libs from optDirectory if we
     // are run the 2nd time (updating). We want to check against the Qt bin dir libraries
     const int start = result->size();
-    for (const QString &lib : qAsConst(dependentLibs)) {
+    for (const QString &lib : std::as_const(dependentLibs)) {
         if (isQtModule(lib)) {
             const QString path = normalizeFileName(qtBinDir + u'/' + QFileInfo(lib).fileName());
             if (!result->contains(path))
@@ -1049,7 +1049,7 @@ static bool deployTranslations(const QString &sourcePath, quint64 usedQtModules,
     const QString absoluteTarget = QFileInfo(target).absoluteFilePath();
     const QString binary = QStringLiteral("lconvert");
     QStringList arguments;
-    for (const QString &prefix : qAsConst(prefixes)) {
+    for (const QString &prefix : std::as_const(prefixes)) {
         arguments.clear();
         const QString targetFile = QStringLiteral("qt_") + prefix + QStringLiteral(".qm");
         arguments.append(QStringLiteral("-o"));
@@ -1372,7 +1372,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
                     }
                     icuLibs.push_back(icuLib);
                 }
-                for (const QString &icuLib : qAsConst(icuLibs)) {
+                for (const QString &icuLib : std::as_const(icuLibs)) {
                     const QString icuPath = findInPath(icuLib);
                     if (icuPath.isEmpty()) {
                         *errorMessage = QStringLiteral("Unable to locate ICU library ") + icuLib;
@@ -1398,7 +1398,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
             if (!qmlDirectory.isEmpty())
                 qmlDirectories.append(qmlDirectory);
         }
-        for (const QString &qmlDirectory : qAsConst(qmlDirectories)) {
+        for (const QString &qmlDirectory : std::as_const(qmlDirectories)) {
             if (optVerboseLevel >= 1)
                 std::wcout << "Scanning " << QDir::toNativeSeparators(qmlDirectory) << ":\n";
             const QmlImportScanResult scanResult =
@@ -1409,19 +1409,19 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
                 return result;
             qmlScanResult.append(scanResult);
             // Additional dependencies of QML plugins.
-            for (const QString &plugin : qAsConst(qmlScanResult.plugins)) {
+            for (const QString &plugin : std::as_const(qmlScanResult.plugins)) {
                 if (!findDependentQtLibraries(libraryLocation, plugin, options.platform, errorMessage, &dependentQtLibs, &wordSize, &detectedDebug, &machineArch))
                     return result;
             }
             if (optVerboseLevel >= 1) {
                 std::wcout << "QML imports:\n";
-                for (const QmlImportScanResult::Module &mod : qAsConst(qmlScanResult.modules)) {
+                for (const QmlImportScanResult::Module &mod : std::as_const(qmlScanResult.modules)) {
                     std::wcout << "  '" << mod.name << "' "
                                << QDir::toNativeSeparators(mod.sourcePath) << '\n';
                 }
                 if (optVerboseLevel >= 2) {
                     std::wcout << "QML plugins:\n";
-                    for (const QString &p : qAsConst(qmlScanResult.plugins))
+                    for (const QString &p : std::as_const(qmlScanResult.plugins))
                         std::wcout << "  " << QDir::toNativeSeparators(p) << '\n';
                 }
             }
@@ -1498,7 +1498,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
         QStringList libraries = deployedQtLibraries;
         if (options.compilerRunTime)
             libraries.append(compilerRunTimeLibs(options.platform, result.isDebug, machineArch));
-        for (const QString &qtLib : qAsConst(libraries)) {
+        for (const QString &qtLib : std::as_const(libraries)) {
             if (!updateLibrary(qtLib, targetPath, options, errorMessage))
                 return result;
         }
@@ -1547,7 +1547,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     // for WebKit1-applications. Check direct dependency only.
     if (options.quickImports && (usesQuick1 || usesQml2)) {
         if (usesQml2) {
-            for (const QmlImportScanResult::Module &module : qAsConst(qmlScanResult.modules)) {
+            for (const QmlImportScanResult::Module &module : std::as_const(qmlScanResult.modules)) {
                 const QString installPath = module.installPath(options.directory);
                 if (optVerboseLevel > 1)
                     std::wcout << "Installing: '" << module.name
@@ -1570,7 +1570,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
                     qtpathsVariables.value(QStringLiteral("QT_INSTALL_IMPORTS"));
             const QmlDirectoryFileEntryFunction qmlFileEntryFunction(options.platform, debugMatchMode, options.deployPdb ? QmlDirectoryFileEntryFunction::DeployPdb : 0);
             QStringList quick1Imports(QStringLiteral("Qt"));
-            for (const QString &quick1Import : qAsConst(quick1Imports)) {
+            for (const QString &quick1Import : std::as_const(quick1Imports)) {
                 const QString sourceFile = quick1ImportPath + slash + quick1Import;
                 if (!updateFile(sourceFile, qmlFileEntryFunction, options.directory, options.updateFileFlags, options.json, errorMessage))
                     return result;

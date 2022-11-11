@@ -351,7 +351,7 @@ void Automaton::closure (StatePointer state)
 
       if (_M_grammar->isNonTerminal (*item->dot))
         {
-          const auto range = qAsConst(_M_grammar->rule_map).equal_range(*item->dot);
+          const auto range = std::as_const(_M_grammar->rule_map).equal_range(*item->dot);
           for (auto it = range.first; it != range.second; ++it)
             {
               const RulePointer &rule = *it;
@@ -399,7 +399,7 @@ void Automaton::buildLookbackSets ()
           if (! _M_grammar->isNonTerminal (A))
             continue;
 
-          const auto range = qAsConst(_M_grammar->rule_map).equal_range(A);
+          const auto range = std::as_const(_M_grammar->rule_map).equal_range(A);
           for (auto it = range.first; it != range.second; ++it)
             {
               const RulePointer &rule = *it;
@@ -594,7 +594,7 @@ void Automaton::buildIncludesDigraph ()
           if (! _M_grammar->isNonTerminal (name))
             continue;
 
-          const auto range = qAsConst(_M_grammar->rule_map).equal_range(name);
+          const auto range = std::as_const(_M_grammar->rule_map).equal_range(name);
           for (auto it = range.first; it != range.second; ++it)
             {
               const RulePointer &rule = *it;
@@ -696,7 +696,7 @@ void Automaton::buildLookaheads ()
     {
       for (ItemPointer item = p->closure.begin (); item != p->closure.end (); ++item)
         {
-          const auto range = qAsConst(lookbacks).equal_range(item);
+          const auto range = std::as_const(lookbacks).equal_range(item);
           for (auto it = range.first; it != range.second; ++it)
             {
               const Lookback &lookback = *it;

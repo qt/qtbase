@@ -970,7 +970,7 @@ void tst_QSslSocket::sslErrors()
     // check the same errors were emitted by sslErrors
     QVERIFY(!sslErrorsSpy.isEmpty());
     SslErrorList emittedErrors;
-    const auto sslErrorsSpyErrors = qvariant_cast<QList<QSslError> >(qAsConst(sslErrorsSpy).first().first());
+    const auto sslErrorsSpyErrors = qvariant_cast<QList<QSslError> >(std::as_const(sslErrorsSpy).first().first());
     for (const QSslError &err : sslErrorsSpyErrors)
         emittedErrors << err.error();
     std::sort(emittedErrors.begin(), emittedErrors.end());

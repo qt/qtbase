@@ -67,7 +67,7 @@ void Node::calculateForces()
 //! [4]
     // Now subtract all forces pulling items together
     double weight = (edgeList.size() + 1) * 10;
-    for (const Edge *edge : qAsConst(edgeList)) {
+    for (const Edge *edge : std::as_const(edgeList)) {
         QPointF vec;
         if (edge->sourceNode() == this)
             vec = mapToItem(edge->destNode(), 0, 0);
@@ -148,7 +148,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     switch (change) {
     case ItemPositionHasChanged:
-        for (Edge *edge : qAsConst(edgeList))
+        for (Edge *edge : std::as_const(edgeList))
             edge->adjust();
         graph->itemMoved();
         break;

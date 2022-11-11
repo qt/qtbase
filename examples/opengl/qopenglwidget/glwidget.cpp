@@ -358,7 +358,7 @@ void GLWidget::paintGL()
     painter.endNativePainting();
 
     if (m_showBubbles) {
-        for (Bubble *bubble : qAsConst(m_bubbles))
+        for (Bubble *bubble : std::as_const(m_bubbles))
             bubble->drawBubble(&painter);
     }
 
@@ -371,7 +371,7 @@ void GLWidget::paintGL()
 
     painter.end();
 
-    for (Bubble *bubble : qAsConst(m_bubbles))
+    for (Bubble *bubble : std::as_const(m_bubbles))
         bubble->move(rect());
 
     if (!(m_frames % 100)) {

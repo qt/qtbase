@@ -195,7 +195,7 @@ QOffscreenBackingStore *QOffscreenBackingStore::backingStoreForWinId(WId id)
 void QOffscreenBackingStore::clearHash()
 {
     for (auto it = m_windowAreaHash.cbegin(), end = m_windowAreaHash.cend(); it != end; ++it) {
-        const auto it2 = qAsConst(m_backingStoreForWinIdHash).find(it.key());
+        const auto it2 = std::as_const(m_backingStoreForWinIdHash).find(it.key());
         if (it2.value() == this)
             m_backingStoreForWinIdHash.erase(it2);
     }

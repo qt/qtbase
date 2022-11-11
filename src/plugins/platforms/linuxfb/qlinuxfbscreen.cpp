@@ -286,7 +286,7 @@ bool QLinuxFbScreen::initialize()
     bool doSwitchToGraphicsMode = true;
 
     // Parse arguments
-    for (const QString &arg : qAsConst(mArgs)) {
+    for (const QString &arg : std::as_const(mArgs)) {
         QRegularExpressionMatch match;
         if (arg == "nographicsmodeswitch"_L1)
             doSwitchToGraphicsMode = false;

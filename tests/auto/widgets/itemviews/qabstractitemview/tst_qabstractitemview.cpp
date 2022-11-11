@@ -3032,7 +3032,7 @@ void tst_QAbstractItemView::mouseSelection()
     Qt::MouseButton buttonDown = Qt::NoButton;
     int targetRow = -1;
     QModelIndex pressedIndex;
-    for (const auto &event : qAsConst(selectionEvents)) {
+    for (const auto &event : std::as_const(selectionEvents)) {
         if (event.row != -1)
             targetRow = event.row;
         const QModelIndex targetIndex = model.index(targetRow, 0);

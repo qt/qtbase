@@ -70,7 +70,7 @@ void tst_QPageRanges::addPage()
     QFETCH(PageRangeList, expected);
 
     QPageRanges result;
-    for (int pageNumber : qAsConst(pageNumbers)) {
+    for (int pageNumber : std::as_const(pageNumbers)) {
         if (QByteArrayView(QTest::currentDataTag()) == "invalid")
             QTest::ignoreMessage(QtWarningMsg, "QPageRanges::addPage: 'pageNumber' must be greater than 0");
         result.addPage(pageNumber);
@@ -112,7 +112,7 @@ void tst_QPageRanges::addRange()
     QFETCH(PageRangeList, expected);
 
     QPageRanges result;
-    for (const auto &range : qAsConst(ranges)) {
+    for (const auto &range : std::as_const(ranges)) {
         const QByteArrayView testdata(QTest::currentDataTag());
         if (testdata.startsWith("invalid"))
             QTest::ignoreMessage(QtWarningMsg, "QPageRanges::addRange: 'from' and 'to' must be greater than 0");

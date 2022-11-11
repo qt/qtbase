@@ -164,7 +164,7 @@ bool QLibraryPrivate::load_sys()
             QStringList tmp;
             qSwap(tmp, list);
             list.reserve(tmp.size() * 2);
-            for (const QString &s : qAsConst(tmp)) {
+            for (const QString &s : std::as_const(tmp)) {
                 QString modifiedPath = s;
                 f(&modifiedPath);
                 list.append(modifiedPath);

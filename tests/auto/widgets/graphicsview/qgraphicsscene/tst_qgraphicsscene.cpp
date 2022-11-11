@@ -532,7 +532,7 @@ void tst_QGraphicsScene::itemsBoundingRect()
 
     QGraphicsScene scene;
 
-    for (const auto &rect : qAsConst(rects)) {
+    for (const auto &rect : std::as_const(rects)) {
         QPainterPath path;
         path.addRect(rect);
         QGraphicsPathItem *item = scene.addPath(path);
@@ -597,7 +597,7 @@ void tst_QGraphicsScene::items_QPointF()
 
     int n = 0;
     QList<QGraphicsItem *> addedItems;
-    for (const auto &rect : qAsConst(items)) {
+    for (const auto &rect : std::as_const(items)) {
         QPainterPath path;
         path.addRect(0, 0, rect.width(), rect.height());
 
@@ -1732,7 +1732,7 @@ void tst_QGraphicsScene::createItemGroup()
 
     // All items in children1 are children of parent1
     QGraphicsItem *parent1 = scene.addRect(QRectF(-10, -10, 20, 20));
-    for (QGraphicsItem *item : qAsConst(children1))
+    for (QGraphicsItem *item : std::as_const(children1))
         item->setParentItem(parent1);
 
     QGraphicsItemGroup *group = scene.createItemGroup(children1);
@@ -1748,7 +1748,7 @@ void tst_QGraphicsScene::createItemGroup()
 
     // All items in children2 are children of parent2
     QGraphicsItem *parent2 = scene.addRect(QRectF(-10, -10, 20, 20));
-    for (QGraphicsItem *item : qAsConst(children2))
+    for (QGraphicsItem *item : std::as_const(children2))
         item->setParentItem(parent2);
 
     // Now make parent2 a child of parent1, so all children2 are also children
@@ -1772,7 +1772,7 @@ void tst_QGraphicsScene::createItemGroup()
     QCOMPARE(children2.first()->parentItem(), parent1);
 
     // Fixup the parent-child chain
-    for (QGraphicsItem *item : qAsConst(children2))
+    for (QGraphicsItem *item : std::as_const(children2))
         item->setParentItem(parent2);
 
     // These share no common parent
@@ -1782,7 +1782,7 @@ void tst_QGraphicsScene::createItemGroup()
 
     // Make children3 children of parent3
     QGraphicsItem *parent3 = scene.addRect(QRectF(-10, -10, 20, 20));
-    for (QGraphicsItem *item : qAsConst(children3))
+    for (QGraphicsItem *item : std::as_const(children3))
         item->setParentItem(parent3);
 
     // These should have parent3 as a parent

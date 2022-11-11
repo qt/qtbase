@@ -123,11 +123,11 @@ void GraphWidget::timerEvent(QTimerEvent *event)
             nodes << node;
     }
 
-    for (Node *node : qAsConst(nodes))
+    for (Node *node : std::as_const(nodes))
         node->calculateForces();
 
     bool itemsMoved = false;
-    for (Node *node : qAsConst(nodes)) {
+    for (Node *node : std::as_const(nodes)) {
         if (node->advancePosition())
             itemsMoved = true;
     }

@@ -56,13 +56,13 @@ public:
         painter.drawText(rect(), Qt::AlignHCenter | Qt::AlignCenter, objectName());
         static const QString pointFormat = QString::fromUtf8("\360\237\226\227 %1, %2");
         painter.setPen(Qt::darkGreen);
-        for (const auto &pt : qAsConst(touchBeginPoints))
+        for (const auto &pt : std::as_const(touchBeginPoints))
             painter.drawText(pt.position(), pointFormat.arg(pt.position().toPoint().x()).arg(pt.position().toPoint().y()));
         painter.setPen(Qt::darkYellow);
-        for (const auto &pt : qAsConst(touchUpdatePoints))
+        for (const auto &pt : std::as_const(touchUpdatePoints))
             painter.drawText(pt.position(), pointFormat.arg(pt.position().toPoint().x()).arg(pt.position().toPoint().y()));
         painter.setPen(Qt::darkRed);
-        for (const auto &pt : qAsConst(touchEndPoints))
+        for (const auto &pt : std::as_const(touchEndPoints))
             painter.drawText(pt.position(), pointFormat.arg(pt.position().toPoint().x()).arg(pt.position().toPoint().y()));
     }
 
@@ -79,7 +79,7 @@ public:
             auto touchEvent = static_cast<QTouchEvent *>(event);
             touchBeginPoints = touchEvent->points();
             Q_ASSERT(touchBeginPoints.first().device() == touchEvent->pointingDevice());
-            for (const QEventPoint &pt : qAsConst(touchBeginPoints))
+            for (const QEventPoint &pt : std::as_const(touchBeginPoints))
                 lastNormalizedPositions << pt.normalizedPosition();
             timestamp = touchEvent->timestamp();
             deviceFromEvent = touchEvent->pointingDevice();
@@ -97,7 +97,7 @@ public:
             seenTouchUpdate = seenTouchBegin && !seenTouchEnd;
             auto touchEvent = static_cast<QTouchEvent *>(event);
             touchUpdatePoints = touchEvent->points();
-            for (const QEventPoint &pt : qAsConst(touchUpdatePoints))
+            for (const QEventPoint &pt : std::as_const(touchUpdatePoints))
                 lastNormalizedPositions << pt.normalizedPosition();
             timestamp = touchEvent->timestamp();
             deviceFromEvent = touchEvent->pointingDevice();
@@ -115,7 +115,7 @@ public:
             seenTouchEnd = seenTouchBegin && !seenTouchEnd;
             auto touchEvent = static_cast<QTouchEvent *>(event);
             touchEndPoints = touchEvent->points();
-            for (const QEventPoint &pt : qAsConst(touchEndPoints))
+            for (const QEventPoint &pt : std::as_const(touchEndPoints))
                 lastNormalizedPositions << pt.normalizedPosition();
             timestamp = touchEvent->timestamp();
             deviceFromEvent = touchEvent->pointingDevice();

@@ -666,7 +666,7 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
                                                                                   mouseEvent.widget());
     }
     // Find the topmost item under the mouse with a cursor.
-    for (QGraphicsItem *item : qAsConst(scene->d_func()->cachedItemsUnderMouse)) {
+    for (QGraphicsItem *item : std::as_const(scene->d_func()->cachedItemsUnderMouse)) {
         if (item->isEnabled() && item->hasCursor()) {
             _q_setViewportCursor(item->cursor());
             return;
@@ -2652,7 +2652,7 @@ void QGraphicsView::updateScene(const QList<QRectF> &rects)
         dirtyViewportRects << xrect;
     }
 
-    for (const QRect &rect : qAsConst(dirtyViewportRects)) {
+    for (const QRect &rect : std::as_const(dirtyViewportRects)) {
         // Add the exposed rect to the update region. In rect update
         // mode, we only count the bounding rect of items.
         if (!boundingRectUpdate) {

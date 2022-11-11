@@ -632,7 +632,7 @@ QT_WARNING_POP
 
         // If we have any intermediate certificates then we need to add them to our chain
         bool first = true;
-        for (const QSslCertificate &cert : qAsConst(configuration.d->localCertificateChain)) {
+        for (const QSslCertificate &cert : std::as_const(configuration.d->localCertificateChain)) {
             if (first) {
                 first = false;
                 continue;

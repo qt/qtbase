@@ -2383,7 +2383,7 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
             atAction = defaultAction;
             // TODO: This works for first level menus, not yet sub menus
         } else {
-            for (QAction *action : qAsConst(actions))
+            for (QAction *action : std::as_const(actions))
                 if (action->isEnabled()) {
                     atAction = action;
                     break;

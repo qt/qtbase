@@ -1616,7 +1616,7 @@ bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &par
 
     QItemSelection sel = d->ranges;
     sel.merge(d->currentSelection, d->currentCommand);
-    for (const QItemSelectionRange &range : qAsConst(sel)) {
+    for (const QItemSelectionRange &range : std::as_const(sel)) {
         if (range.parent() != parent)
             return false;
         int top = range.top();
@@ -1651,7 +1651,7 @@ bool QItemSelectionModel::columnIntersectsSelection(int column, const QModelInde
 
     QItemSelection sel = d->ranges;
     sel.merge(d->currentSelection, d->currentCommand);
-    for (const QItemSelectionRange &range : qAsConst(sel)) {
+    for (const QItemSelectionRange &range : std::as_const(sel)) {
         if (range.parent() != parent)
             return false;
         int top = range.top();

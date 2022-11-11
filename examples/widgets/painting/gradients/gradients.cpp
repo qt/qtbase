@@ -534,7 +534,7 @@ void GradientRenderer::paint(QPainter *p)
         g = QConicalGradient(pts.at(0), angle);
     }
 
-    for (const auto &stop : qAsConst(m_stops))
+    for (const auto &stop : std::as_const(m_stops))
         g.setColorAt(stop.first, stop.second);
 
     g.setSpread(m_spread);

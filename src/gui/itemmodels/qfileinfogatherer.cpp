@@ -282,9 +282,9 @@ void QFileInfoGatherer::run()
             condition.wait(&mutex);
         if (abort.loadRelaxed())
             return;
-        const QString thisPath = qAsConst(path).front();
+        const QString thisPath = std::as_const(path).front();
         path.pop_front();
-        const QStringList thisList = qAsConst(files).front();
+        const QStringList thisList = std::as_const(files).front();
         files.pop_front();
         locker.unlock();
 

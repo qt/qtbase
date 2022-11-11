@@ -1075,7 +1075,7 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
 
 void QWindowsFontDatabase::removeApplicationFonts()
 {
-    for (const WinApplicationFont &font : qAsConst(m_applicationFonts)) {
+    for (const WinApplicationFont &font : std::as_const(m_applicationFonts)) {
         if (font.handle) {
             RemoveFontMemResourceEx(font.handle);
         } else {

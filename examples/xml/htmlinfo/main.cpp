@@ -51,7 +51,7 @@ void parseHtmlFile(QTextStream &out, const QString &fileName)
     while (links.size() > 5)
         links.removeLast();
 
-    for (const QString &link : qAsConst(links))
+    for (const QString &link : std::as_const(links))
         out << "    " << link << Qt::endl;
     out << Qt::endl << Qt::endl;
 }

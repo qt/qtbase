@@ -35,7 +35,7 @@ QCocoaMenu::QCocoaMenu() :
 
 QCocoaMenu::~QCocoaMenu()
 {
-    for (auto *item : qAsConst(m_menuItems)) {
+    for (auto *item : std::as_const(m_menuItems)) {
         if (item->menuParent() == this)
             item->setMenuParent(nullptr);
     }
@@ -284,7 +284,7 @@ void QCocoaMenu::syncSeparatorsCollapsible(bool enable)
         if (lastVisibleItem && lastVisibleItem.separatorItem)
             lastVisibleItem.hidden = YES;
     } else {
-        for (auto *item : qAsConst(m_menuItems)) {
+        for (auto *item : std::as_const(m_menuItems)) {
             if (!item->isSeparator())
                 continue;
 
@@ -423,7 +423,7 @@ QPlatformMenuItem *QCocoaMenu::menuItemAt(int position) const
 
 QPlatformMenuItem *QCocoaMenu::menuItemForTag(quintptr tag) const
 {
-    for (auto *item : qAsConst(m_menuItems)) {
+    for (auto *item : std::as_const(m_menuItems)) {
         if (item->tag() ==  tag)
             return item;
     }
@@ -439,7 +439,7 @@ QList<QCocoaMenuItem *> QCocoaMenu::items() const
 QList<QCocoaMenuItem *> QCocoaMenu::merged() const
 {
     QList<QCocoaMenuItem *> result;
-    for (auto *item : qAsConst(m_menuItems)) {
+    for (auto *item : std::as_const(m_menuItems)) {
         if (item->menu()) { // recurse into submenus
             result.append(item->menu()->merged());
             continue;
@@ -460,7 +460,7 @@ void QCocoaMenu::propagateEnabledState(bool enabled)
     if (!m_enabled && enabled) // Some ancestor was enabled, but this menu is not
         return;
 
-    for (auto *item : qAsConst(m_menuItems)) {
+    for (auto *item : std::as_const(m_menuItems)) {
         if (QCocoaMenu *menu = item->menu())
             menu->propagateEnabledState(enabled);
         else

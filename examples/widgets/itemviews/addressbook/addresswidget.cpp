@@ -164,7 +164,7 @@ void AddressWidget::readFromFile(const QString &fileName)
         QMessageBox::information(this, tr("No contacts in file"),
                                  tr("The file you are attempting to open contains no contacts."));
     } else {
-        for (const auto &contact: qAsConst(contacts))
+        for (const auto &contact: std::as_const(contacts))
             addEntry(contact.name, contact.address);
     }
 }

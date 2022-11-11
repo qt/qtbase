@@ -979,7 +979,7 @@ int QTabBar::insertTab(int index, const QIcon& icon, const QString &text)
         setTabButton(index, closeSide, closeButton);
     }
 
-    for (const auto tab : qAsConst(d->tabList)) {
+    for (const auto tab : std::as_const(d->tabList)) {
         if (tab->lastTab >= index)
             ++tab->lastTab;
     }
@@ -1025,7 +1025,7 @@ void QTabBar::removeTab(int index)
         int newIndex = removedTab->lastTab;
         d->tabList.removeAt(index);
         delete removedTab;
-        for (auto tab : qAsConst(d->tabList)) {
+        for (auto tab : std::as_const(d->tabList)) {
             if (tab->lastTab == index)
                 tab->lastTab = -1;
             if (tab->lastTab > index)
@@ -2039,7 +2039,7 @@ void QTabBar::moveTab(int from, int to)
     d->tabList.move(from, to);
 
     // update lastTab locations
-    for (const auto tab : qAsConst(d->tabList))
+    for (const auto tab : std::as_const(d->tabList))
         tab->lastTab = d->calculateNewPosition(from, to, tab->lastTab);
 
     // update external variables
@@ -2257,7 +2257,7 @@ void QTabBarPrivate::moveTabFinished(int index)
     bool cleanup = (pressedIndex == index) || (pressedIndex == -1) || !validIndex(index);
     bool allAnimationsFinished = true;
 #if QT_CONFIG(animation)
-    for (const auto tab : qAsConst(tabList)) {
+    for (const auto tab : std::as_const(tabList)) {
         if (tab->animation && tab->animation->state() == QAbstractAnimation::Running) {
             allAnimationsFinished = false;
             break;
@@ -2267,7 +2267,7 @@ void QTabBarPrivate::moveTabFinished(int index)
     if (allAnimationsFinished && cleanup) {
         if (movingTab)
             movingTab->setVisible(false); // We might not get a mouse release
-        for (auto tab : qAsConst(tabList)) {
+        for (auto tab : std::as_const(tabList)) {
             tab->dragOffset = 0;
         }
         if (pressedIndex != -1 && movable) {
@@ -2545,7 +2545,7 @@ void QTabBar::setTabsClosable(bool closable)
     d->closeButtonOnTabs = closable;
     ButtonPosition closeSide = (ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this);
     if (!closable) {
-        for (auto tab : qAsConst(d->tabList)) {
+        for (auto tab : std::as_const(d->tabList)) {
             if (closeSide == LeftSide && tab->leftWidget) {
                 tab->leftWidget->deleteLater();
                 tab->leftWidget = nullptr;

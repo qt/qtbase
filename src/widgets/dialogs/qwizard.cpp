@@ -698,7 +698,7 @@ void QWizardPrivate::reset()
         for (int i = history.size() - 1; i >= 0; --i)
             q->cleanupPage(history.at(i));
         history.clear();
-        for (QWizardPage *page : qAsConst(pageMap))
+        for (QWizardPage *page : std::as_const(pageMap))
             page->d_func()->initialized = false;
 
         current = -1;

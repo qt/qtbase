@@ -39,7 +39,7 @@ QTEST_MAIN(tst_QSqlRecord)
 void tst_QSqlRecord::initTestCase()
 {
     dbs.open();
-    for (const auto &dbName : qAsConst(dbs.dbNames)) {
+    for (const auto &dbName : std::as_const(dbs.dbNames)) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
         CHECK_DATABASE(db);
         dropTestTables(db); // In case of leftovers
@@ -50,7 +50,7 @@ void tst_QSqlRecord::initTestCase()
 
 void tst_QSqlRecord::cleanupTestCase()
 {
-    for (const auto &dbName : qAsConst(dbs.dbNames)) {
+    for (const auto &dbName : std::as_const(dbs.dbNames)) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
         CHECK_DATABASE(db);
         dropTestTables(db);

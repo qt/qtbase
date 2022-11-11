@@ -2256,7 +2256,7 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             QGles2Texture *texD = QRHI_RES(QGles2Texture, u.dst);
             for (int layer = 0, maxLayer = u.subresDesc.size(); layer < maxLayer; ++layer) {
                 for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.subresDesc[layer][level]))
+                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : std::as_const(u.subresDesc[layer][level]))
                         enqueueSubresUpload(texD, cbD, layer, level, subresDesc);
                 }
             }
@@ -3601,7 +3601,7 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
             }
             QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.ubuf.buf);
             const char *bufView = bufD->data.constData() + viewOffset;
-            for (const QGles2UniformDescription &uniform : qAsConst(uniforms)) {
+            for (const QGles2UniformDescription &uniform : std::as_const(uniforms)) {
                 if (uniform.binding == b->binding) {
                     // in a uniform buffer everything is at least 4 byte aligned
                     // so this should not cause unaligned reads
@@ -5500,7 +5500,7 @@ bool QGles2GraphicsPipeline::create()
     };
     QShaderDescription desc[LastIdx];
     QShader::SeparateToCombinedImageSamplerMappingList samplerMappingList[LastIdx];
-    for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
+    for (const QRhiShaderStage &shaderStage : std::as_const(m_shaderStages)) {
         if (isGraphicsStage(shaderStage)) {
             const int idx = descIdxForStage(shaderStage);
             QShader shader = shaderStage.shader();
@@ -5523,7 +5523,7 @@ bool QGles2GraphicsPipeline::create()
         return false;
 
     if (cacheResult == QRhiGles2::ProgramCacheMiss) {
-        for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
+        for (const QRhiShaderStage &shaderStage : std::as_const(m_shaderStages)) {
             if (isGraphicsStage(shaderStage)) {
                 if (!rhiD->compileShader(program, shaderStage, nullptr))
                     return false;
@@ -5562,7 +5562,7 @@ bool QGles2GraphicsPipeline::create()
     // present in both shaders.
     QDuplicateTracker<int, 256> activeUniformLocations;
 
-    for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
+    for (const QRhiShaderStage &shaderStage : std::as_const(m_shaderStages)) {
         if (isGraphicsStage(shaderStage)) {
             const int idx = descIdxForStage(shaderStage);
             for (const QShaderDescription::UniformBlock &ub : desc[idx].uniformBlocks())

@@ -478,7 +478,7 @@ int main(int argc, char **argv)
 
     output.write(docTypeHeader);
     output.write("<node>\n");
-    for (const ClassDef &cdef : qAsConst(classes)) {
+    for (const ClassDef &cdef : std::as_const(classes)) {
         QString xml = qDBusGenerateClassDefXml(&cdef);
         output.write(std::move(xml).toLocal8Bit());
     }

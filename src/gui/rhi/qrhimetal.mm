@@ -820,7 +820,7 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
     } res[SUPPORTED_STAGES];
     enum { VERTEX = 0, FRAGMENT = 1, COMPUTE = 2 };
 
-    for (const QRhiShaderResourceBinding &binding : qAsConst(srbD->sortedBindings)) {
+    for (const QRhiShaderResourceBinding &binding : std::as_const(srbD->sortedBindings)) {
         const QRhiShaderResourceBinding::Data *b = binding.data();
         switch (b->type) {
         case QRhiShaderResourceBinding::UniformBuffer:
@@ -962,7 +962,7 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             return a.nativeBinding < b.nativeBinding;
         });
 
-        for (const Stage::Buffer &buf : qAsConst(res[stage].buffers)) {
+        for (const Stage::Buffer &buf : std::as_const(res[stage].buffers)) {
             res[stage].bufferBatches.feed(buf.nativeBinding, buf.mtlbuf);
             res[stage].bufferOffsetBatches.feed(buf.nativeBinding, buf.offset);
         }
@@ -1006,10 +1006,10 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             return a.nativeBinding < b.nativeBinding;
         });
 
-        for (const Stage::Texture &t : qAsConst(res[stage].textures))
+        for (const Stage::Texture &t : std::as_const(res[stage].textures))
             res[stage].textureBatches.feed(t.nativeBinding, t.mtltex);
 
-        for (const Stage::Sampler &s : qAsConst(res[stage].samplers))
+        for (const Stage::Sampler &s : std::as_const(res[stage].samplers))
             res[stage].samplerBatches.feed(s.nativeBinding, s.mtlsampler);
 
         res[stage].textureBatches.finish();
@@ -1479,7 +1479,7 @@ QRhi::FrameOpResult QRhiMetal::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     // commands+present to complete, while for others just for the commands
     // (for this same frame slot) but not sure how to do that in a sane way so
     // wait for full cb completion for now.
-    for (QMetalSwapChain *sc : qAsConst(swapchains)) {
+    for (QMetalSwapChain *sc : std::as_const(swapchains)) {
         dispatch_semaphore_t sem = sc->d->sem[swapChainD->currentFrameSlot];
         dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
         if (sc != swapChainD)
@@ -1573,7 +1573,7 @@ QRhi::FrameOpResult QRhiMetal::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi:
 
     currentFrameSlot = (currentFrameSlot + 1) % QMTL_FRAMES_IN_FLIGHT;
     if (swapchains.count() > 1) {
-        for (QMetalSwapChain *sc : qAsConst(swapchains)) {
+        for (QMetalSwapChain *sc : std::as_const(swapchains)) {
             // wait+signal is the general pattern to ensure the commands for a
             // given frame slot have completed (if sem is 1, we go 0 then 1; if
             // sem is 0 we go -1, block, completion increments to 0, then us to 1)
@@ -1627,7 +1627,7 @@ QRhi::FrameOpResult QRhiMetal::finish()
         }
     }
 
-    for (QMetalSwapChain *sc : qAsConst(swapchains)) {
+    for (QMetalSwapChain *sc : std::as_const(swapchains)) {
         for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
             if (currentSwapChain && sc == currentSwapChain && i == currentFrameSlot) {
                 // no wait as this is the thing we're going to be commit below and
@@ -1875,7 +1875,7 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             qsizetype stagingSize = 0;
             for (int layer = 0, maxLayer = u.subresDesc.count(); layer < maxLayer; ++layer) {
                 for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.subresDesc[layer][level]))
+                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : std::as_const(u.subresDesc[layer][level]))
                         stagingSize += subresUploadByteSize(subresDesc);
                 }
             }
@@ -1889,7 +1889,7 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             qsizetype curOfs = 0;
             for (int layer = 0, maxLayer = u.subresDesc.count(); layer < maxLayer; ++layer) {
                 for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.subresDesc[layer][level]))
+                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : std::as_const(u.subresDesc[layer][level]))
                         enqueueSubresUpload(utexD, mp, blitEnc, layer, level, subresDesc, &curOfs);
                 }
             }
@@ -2002,7 +2002,7 @@ void QRhiMetal::executeBufferHostWritesForSlot(QMetalBuffer *bufD, int slot)
     void *p = [bufD->d->buf[slot] contents];
     int changeBegin = -1;
     int changeEnd = -1;
-    for (const QMetalBufferData::BufferUpdate &u : qAsConst(bufD->d->pendingUpdates[slot])) {
+    for (const QMetalBufferData::BufferUpdate &u : std::as_const(bufD->d->pendingUpdates[slot])) {
         memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
         if (changeBegin == -1 || u.offset < changeBegin)
             changeBegin = u.offset;
@@ -3772,7 +3772,7 @@ bool QMetalGraphicsPipeline::create()
     // descriptor for each buffer combination as this depends on the actual
     // buffers not just the resource binding layout) so leave it at the default
 
-    for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
+    for (const QRhiShaderStage &shaderStage : std::as_const(m_shaderStages)) {
         auto cacheIt = rhiD->d->shaderCache.constFind(shaderStage);
         if (cacheIt != rhiD->d->shaderCache.constEnd()) {
             switch (shaderStage.type()) {

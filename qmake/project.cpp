@@ -138,7 +138,7 @@ void QMakeProject::dump() const
         }
     }
     out.sort();
-    for (const QString &v : qAsConst(out))
+    for (const QString &v : std::as_const(out))
         puts(qPrintable(v));
 }
 

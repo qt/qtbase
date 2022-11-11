@@ -2314,7 +2314,7 @@ void tst_QTreeWidget::insertExpandedItemsWithSorting()
     QCOMPARE(tree.model()->rowCount(), parentTexts.size());
 
     // verify that the items are still expanded
-    for (const QTreeWidgetItem *item : qAsConst(items)) {
+    for (const QTreeWidgetItem *item : std::as_const(items)) {
         if (item->childCount() > 0)
             QVERIFY(item->isExpanded());
         QModelIndex idx = tree.indexFromItem(item);
@@ -2429,7 +2429,7 @@ void tst_QTreeWidget::changeDataWithSorting()
     item->setText(0, newValue);
     for (int i = 0; i < expectedItems.size(); ++i) {
         QCOMPARE(w.topLevelItem(i)->text(0), expectedItems.at(i));
-        for (const QPersistentModelIndex &p : qAsConst(persistent)) {
+        for (const QPersistentModelIndex &p : std::as_const(persistent)) {
             if (p.row() == i) // the same toplevel row
                 QCOMPARE(p.internalPointer(), static_cast<void *>(w.topLevelItem(i)));
         }
@@ -2598,7 +2598,7 @@ void tst_QTreeWidget::changeDataWithStableSorting()
         item->emitDataChanged();
     for (int i = 0; i < expectedItems.size(); ++i) {
         QCOMPARE(w.topLevelItem(i)->text(0), expectedItems.at(i));
-        for (const QPersistentModelIndex &p : qAsConst(persistent)) {
+        for (const QPersistentModelIndex &p : std::as_const(persistent)) {
             if (p.row() == i) // the same toplevel row
                 QCOMPARE(p.internalPointer(), static_cast<void *>(w.topLevelItem(i)));
         }

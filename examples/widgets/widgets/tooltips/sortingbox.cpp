@@ -97,7 +97,7 @@ void SortingBox::paintEvent(QPaintEvent * /* event */)
 {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    for (const ShapeItem &shapeItem : qAsConst(shapeItems)) {
+    for (const ShapeItem &shapeItem : std::as_const(shapeItems)) {
 //! [8] //! [9]
         painter.translate(shapeItem.position());
 //! [9] //! [10]

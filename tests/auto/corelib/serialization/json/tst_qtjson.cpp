@@ -940,7 +940,7 @@ void tst_QtJson::testValueRef()
     QCOMPARE(object.value(QLatin1String("null")), QJsonValue());
     object[QLatin1String("null")] = 100.;
     QCOMPARE(object.value(QLatin1String("null")).type(), QJsonValue::Double);
-    QJsonValue val = qAsConst(object)[QLatin1String("null")];
+    QJsonValue val = std::as_const(object)[QLatin1String("null")];
     QCOMPARE(val.toDouble(), 100.);
     QCOMPARE(object.size(), 2);
 

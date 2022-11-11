@@ -80,7 +80,7 @@ QList<QGraphicsItem *> QGraphicsSceneBspTree::items(const QRectF &rect, bool onl
         }
     }, rect);
     // Reset discovery bits.
-    for (const auto &foundItem : qAsConst(foundItems))
+    for (const auto &foundItem : std::as_const(foundItems))
         foundItem->d_ptr->itemDiscovered = 0;
     return foundItems;
 }

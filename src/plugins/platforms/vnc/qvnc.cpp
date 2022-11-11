@@ -567,7 +567,7 @@ void QVncClientCursor::changeCursor(QCursor *widgetCursor, QWindow *window)
         cursor = *platformImage.image();
         hotspot = platformImage.hotspot();
     }
-    for (auto client : qAsConst(clients))
+    for (auto client : std::as_const(clients))
         client->setDirtyCursor();
 }
 
@@ -613,7 +613,7 @@ QVncServer::~QVncServer()
 
 void QVncServer::setDirty()
 {
-    for (auto client : qAsConst(clients))
+    for (auto client : std::as_const(clients))
         client->setDirty(qvnc_screen->dirtyRegion);
 
     qvnc_screen->clearDirty();

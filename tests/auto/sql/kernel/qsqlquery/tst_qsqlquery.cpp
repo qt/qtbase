@@ -3609,7 +3609,7 @@ void tst_QSqlQuery::task_250026()
 
 void tst_QSqlQuery::crashQueryOnCloseDatabase()
 {
-    for (const auto &dbName : qAsConst(dbs.dbNames)) {
+    for (const auto &dbName : std::as_const(dbs.dbNames)) {
         const auto tidier = qScopeGuard([]() { QSqlDatabase::removeDatabase("crashTest"); });
         // Note: destruction of clonedDb needs to happen before we call removeDatabase.
         QSqlDatabase clonedDb = QSqlDatabase::cloneDatabase(
@@ -4825,7 +4825,7 @@ void tst_QSqlQuery::dateTime_data()
 #endif
     };
 
-    for (const QString &dbName : qAsConst(dbs.dbNames)) {
+    for (const QString &dbName : std::as_const(dbs.dbNames)) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
         if (!db.isValid())
             continue;
@@ -4868,13 +4868,13 @@ void tst_QSqlQuery::dateTime()
 
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + createTableString));
-    for (const QDateTime &dt : qAsConst(initialDateTimes)) {
+    for (const QDateTime &dt : std::as_const(initialDateTimes)) {
         QVERIFY_SQL(q, prepare(QLatin1String("INSERT INTO %1 values(:dt)").arg(tableName)));
         q.bindValue(":dt", dt);
         QVERIFY_SQL(q, exec());
     }
     QVERIFY_SQL(q, exec("SELECT * FROM " + tableName));
-    for (const QDateTime &dt : qAsConst(expectedDateTimes)) {
+    for (const QDateTime &dt : std::as_const(expectedDateTimes)) {
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toDateTime(), dt);
     }

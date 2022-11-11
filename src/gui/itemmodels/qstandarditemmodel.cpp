@@ -840,7 +840,7 @@ QStandardItem &QStandardItem::operator=(const QStandardItem &other)
 QStandardItem::~QStandardItem()
 {
     Q_D(QStandardItem);
-    for (QStandardItem *child : qAsConst(d->children)) {
+    for (QStandardItem *child : std::as_const(d->children)) {
         if (child)
             child->d_func()->setModel(nullptr);
         delete child;
@@ -3144,7 +3144,7 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
     }
 
     stack.reserve(itemsSet.size());
-    for (QStandardItem *item : qAsConst(itemsSet))
+    for (QStandardItem *item : std::as_const(itemsSet))
         stack.push(item);
 
     //stream everything recursively

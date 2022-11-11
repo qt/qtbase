@@ -2121,7 +2121,7 @@ public:
     {
         const auto copy = isDetached() ? QMultiHash() : *this; // keep 'key' alive across the detach
         detach();
-        auto pair = qAsConst(*this).equal_range(key);
+        auto pair = std::as_const(*this).equal_range(key);
         return qMakePair(iterator(pair.first.i), iterator(pair.second.i));
     }
 

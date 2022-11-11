@@ -187,7 +187,7 @@ QNetworkInformation *QNetworkInformationPrivate::create(QStringView name)
         } else {
             QString listNames;
             listNames.reserve(8 * dataHolder->factories.count());
-            for (const auto *factory : qAsConst(dataHolder->factories))
+            for (const auto *factory : std::as_const(dataHolder->factories))
                 listNames += factory->name() + QStringLiteral(", ");
             listNames.chop(2);
             qDebug().nospace() << "Couldn't find " << name << " in list with names: { "
@@ -243,7 +243,7 @@ QNetworkInformation *QNetworkInformationPrivate::create(QNetworkInformation::Fea
             } else {
                 QStringList names;
                 names.reserve(dataHolder->factories.count());
-                for (const auto *factory : qAsConst(dataHolder->factories))
+                for (const auto *factory : std::as_const(dataHolder->factories))
                     names += factory->name();
                 qDebug() << "None of the following backends has all the requested features:"
                          << names << features;

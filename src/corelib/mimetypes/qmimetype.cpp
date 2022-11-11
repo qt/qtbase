@@ -225,7 +225,7 @@ QString QMimeType::comment() const
     languageList << QLocale().name();
     languageList << QLocale().uiLanguages();
     languageList << u"default"_s; // use the default locale if possible.
-    for (const QString &language : qAsConst(languageList)) {
+    for (const QString &language : std::as_const(languageList)) {
         const QString lang = language == "C"_L1 ? u"en_US"_s : language;
         const QString comm = d->localeComments.value(lang);
         if (!comm.isEmpty())
@@ -410,7 +410,7 @@ QStringList QMimeType::suffixes() const
     QMimeDatabasePrivate::instance()->loadMimeTypePrivate(const_cast<QMimeTypePrivate&>(*d));
 
     QStringList result;
-    for (const QString &pattern : qAsConst(d->globPatterns)) {
+    for (const QString &pattern : std::as_const(d->globPatterns)) {
         // Not a simple suffix if it looks like: README or *. or *.* or *.JP*G or *.JP?
         if (pattern.startsWith("*."_L1) &&
             pattern.size() > 2 &&

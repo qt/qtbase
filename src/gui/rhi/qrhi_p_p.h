@@ -187,7 +187,7 @@ public:
 
     void runGpuFrameTimeCallbacks(float t)
     {
-        for (const QRhi::GpuFrameTimeCallback &f : qAsConst(gpuFrameTimeCallbacks))
+        for (const QRhi::GpuFrameTimeCallback &f : std::as_const(gpuFrameTimeCallbacks))
             f(t);
     }
 

@@ -311,7 +311,7 @@ bool MainWindow::addTorrent(const QString &fileName, const QString &destinationF
                             const QByteArray &resumeState)
 {
     // Check if the torrent is already being downloaded.
-    for (const Job &job : qAsConst(jobs)) {
+    for (const Job &job : std::as_const(jobs)) {
         if (job.torrentFileName == fileName && job.destinationDirectory == destinationFolder) {
             QMessageBox::warning(this, tr("Already downloading"),
                                  tr("The torrent file %1 is "
@@ -644,7 +644,7 @@ void MainWindow::closeEvent(QCloseEvent *)
     // them to signal that they have stopped.
     jobsToStop = 0;
     jobsStopped = 0;
-    for (const Job &job : qAsConst(jobs)) {
+    for (const Job &job : std::as_const(jobs)) {
         ++jobsToStop;
         TorrentClient *client = job.client;
         client->disconnect();

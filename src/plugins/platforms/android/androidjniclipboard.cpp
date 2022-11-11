@@ -37,7 +37,7 @@ namespace QtAndroidClipboard
         clearClipboardData();
         if (data->hasUrls()) {
             QList<QUrl> urls = data->urls();
-            for (const auto &u : qAsConst(urls)) {
+            for (const auto &u : std::as_const(urls)) {
                 QJniObject::callStaticMethod<void>(applicationClass(),
                                                    "setClipboardUri",
                                                    "(Ljava/lang/String;)V",

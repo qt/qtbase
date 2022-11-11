@@ -362,7 +362,7 @@ inline void QLibraryStore::cleanup()
 
     // dump all objects that remain
     if (lcDebugLibrary().isDebugEnabled()) {
-        for (QLibraryPrivate *lib : qAsConst(data->libraryMap)) {
+        for (QLibraryPrivate *lib : std::as_const(data->libraryMap)) {
             if (lib)
                 qDebug(lcDebugLibrary)
                         << "On QtCore unload," << lib->fileName << "was leaked, with"

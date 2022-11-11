@@ -931,7 +931,7 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
     QList<RowColSpanInfo> rowColSpanForColumn;
 
     int effectiveRow = 0;
-    for (int row : qAsConst(rowNodes)) {
+    for (int row : std::as_const(rowNodes)) {
         int colsInRow = 0;
 
         for (int cell : at(row).children) {

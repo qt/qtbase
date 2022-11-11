@@ -415,9 +415,9 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     qsizetype data_size = idata.size() +
                     (header->methodCount * (QMetaObjectPrivate::IntsPerMethod+intsPerMethod)) + methodParametersDataSize +
                     (header->propertyCount * (QMetaObjectPrivate::IntsPerProperty+intsPerProperty));
-    for (const Method &mm : qAsConst(signals_))
+    for (const Method &mm : std::as_const(signals_))
         data_size += 2 + mm.inputTypes.size() + mm.outputTypes.size();
-    for (const Method &mm : qAsConst(methods))
+    for (const Method &mm : std::as_const(methods))
         data_size += 2 + mm.inputTypes.size() + mm.outputTypes.size();
     idata.resize(data_size + 1);
 

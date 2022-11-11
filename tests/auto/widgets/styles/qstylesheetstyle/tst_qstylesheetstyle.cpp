@@ -1715,7 +1715,7 @@ void tst_QStyleSheetStyle::toolTip()
 
         topLevels = QApplication::topLevelWidgets();
         QWidget *tooltip = nullptr;
-        for (QWidget *widget : qAsConst(topLevels)) {
+        for (QWidget *widget : std::as_const(topLevels)) {
             if (widget->inherits("QTipLabel")) {
                 tooltip = widget;
                 break;
@@ -1731,7 +1731,7 @@ void tst_QStyleSheetStyle::toolTip()
     delete wid3; //should not crash;
     QTest::qWait(10);
     topLevels = QApplication::topLevelWidgets();
-    for (QWidget *widget : qAsConst(topLevels))
+    for (QWidget *widget : std::as_const(topLevels))
         widget->update(); //should not crash either
 }
 

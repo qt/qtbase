@@ -635,7 +635,7 @@ static QString find_translation(const QLocale & locale,
             languages.insert(i + 1, lowerLang);
     }
 
-    for (QString localeName : qAsConst(languages)) {
+    for (QString localeName : std::as_const(languages)) {
         localeName.replace(u'-', u'_');
 
         // try the complete locale name first and progressively truncate from

@@ -216,7 +216,7 @@ int QEventDispatcherUNIXPrivate::activateTimers()
 
 void QEventDispatcherUNIXPrivate::markPendingSocketNotifiers()
 {
-    for (const pollfd &pfd : qAsConst(pollfds)) {
+    for (const pollfd &pfd : std::as_const(pollfds)) {
         if (pfd.fd < 0 || pfd.revents == 0)
             continue;
 

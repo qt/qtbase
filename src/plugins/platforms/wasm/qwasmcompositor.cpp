@@ -774,7 +774,7 @@ void QWasmCompositor::frame()
 
     QWasmWindow *someWindow = nullptr;
 
-    for (QWasmWindow *window : qAsConst(m_windowStack)) {
+    for (QWasmWindow *window : std::as_const(m_windowStack)) {
         if (window->window()->surfaceClass() == QSurface::Window
                 && qt_window_private(static_cast<QWindow *>(window->window()))->receivedExpose) {
             someWindow = window;
@@ -808,7 +808,7 @@ void QWasmCompositor::frame()
     m_blitter->bind();
     m_blitter->setRedBlueSwizzle(true);
 
-    for (QWasmWindow *window : qAsConst(m_windowStack)) {
+    for (QWasmWindow *window : std::as_const(m_windowStack)) {
         if (m_windowVisibility[window])
             drawWindow(m_blitter.data(), screen(), window);
     }

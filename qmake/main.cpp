@@ -126,7 +126,7 @@ static int doSed(int argc, char **argv)
     }
     if (inFiles.isEmpty())
         inFiles << "-";
-    for (const char *inFile : qAsConst(inFiles)) {
+    for (const char *inFile : std::as_const(inFiles)) {
         FILE *f;
         if (!strcmp(inFile, "-")) {
             f = stdin;

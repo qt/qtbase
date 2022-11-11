@@ -72,7 +72,7 @@ void tst_QSortFilterProxyModel::clearFilter()
 {
     QFETCH(const int, itemCount);
     resizeNumberList(m_numberList, itemCount);
-    QStringListModel model(qAsConst(m_numberList));
+    QStringListModel model(std::as_const(m_numberList));
     QCOMPARE(model.rowCount(), itemCount);
 
     QSortFilterProxyModel proxy;

@@ -132,7 +132,7 @@ QT_END_NAMESPACE
 
     auto nsImage = [[[NSImage alloc] initWithSize:NSZeroSize] autorelease];
 
-    for (QSize size : qAsConst(availableSizes)) {
+    for (QSize size : std::as_const(availableSizes)) {
         QImage image = icon.pixmap(size).toImage();
         if (image.isNull())
             continue;

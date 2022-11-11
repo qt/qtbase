@@ -277,7 +277,7 @@ int main(int argc, char *argv[])
         QPoint pos = availableGeometry.topLeft() + QPoint(availableGeometry.width(), availableGeometry.height()) / 3;
 
         WidgetPtrList mainWindows;
-        for (QWindow *window : qAsConst(windows)) {
+        for (QWindow *window : std::as_const(windows)) {
             WidgetPtr mainWindow(new EmbeddingWindow(window));
             mainWindow->move(pos);
             mainWindow->resize(availableGeometry.size() / 4);

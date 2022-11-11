@@ -386,7 +386,7 @@ QMimeType QMimeDatabasePrivate::mimeTypeForFileNameAndData(const QString &fileNa
                 if (candidatesByName.m_matchingMimeTypes.contains(sniffedMime)) {
                     return candidateByData;
                 }
-                for (const QString &m : qAsConst(candidatesByName.m_allMatchingMimeTypes)) {
+                for (const QString &m : std::as_const(candidatesByName.m_allMatchingMimeTypes)) {
                     if (inherits(m, sniffedMime)) {
                         // We have magic + pattern pointing to this, so it's a pretty good match
                         return mimeTypeForName(m);
