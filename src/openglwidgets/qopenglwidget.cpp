@@ -719,7 +719,7 @@ void QOpenGLWidgetPrivate::ensureRhiDependentResources()
         rhi = repaintManager->rhi();
 
     // If there is no rhi, because we are completely offscreen, then there's no wrapperTexture either
-    if (rhi) {
+    if (rhi && rhi->backend() == QRhi::OpenGLES2) {
         const QSize deviceSize = q->size() * q->devicePixelRatio();
         if (!wrapperTexture || wrapperTexture->pixelSize() != deviceSize) {
             const uint textureId = resolvedFbo ? resolvedFbo->texture() : (fbo ? fbo->texture() : 0);
@@ -854,7 +854,14 @@ void QOpenGLWidgetPrivate::render()
     q->makeCurrent();
 
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
-    Q_ASSERT(ctx && fbo);
+    if (!ctx) {
+        qWarning("QOpenGLWidget: No current context, cannot render");
+        return;
+    }
+    if (!fbo) {
+        qWarning("QOpenGLWidget: No fbo, cannot render");
+        return;
+    }
 
     if (updateBehavior == QOpenGLWidget::NoPartialUpdate && hasBeenComposed) {
         invalidateFbo();
