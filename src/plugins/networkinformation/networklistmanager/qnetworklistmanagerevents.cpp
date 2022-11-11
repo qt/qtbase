@@ -243,7 +243,12 @@ QNetworkInformation::TransportMedium getTransportMedium(const ConnectionProfile 
 void QNetworkListManagerEvents::emitWinRTUpdates()
 {
     using namespace winrt::Windows::Networking::Connectivity;
-    ConnectionProfile profile = NetworkInformation::GetInternetConnectionProfile();
+    ConnectionProfile profile = nullptr;
+    try {
+        profile = NetworkInformation::GetInternetConnectionProfile();
+    } catch (...) {
+        // pass, we would just return early if we get an empty object back anyway
+    }
     if (profile == nullptr)
         return;
     emit transportMediumChanged(getTransportMedium(profile));
