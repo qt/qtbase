@@ -7369,6 +7369,11 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
 
 double QString::toDouble(bool *ok) const
 {
+    return QStringView(*this).toDouble(ok);
+}
+
+double QStringView::toDouble(bool *ok) const
+{
     return QLocaleData::c()->stringToDouble(*this, ok, QLocale::RejectGroupSeparator);
 }
 
@@ -7403,6 +7408,11 @@ double QString::toDouble(bool *ok) const
 */
 
 float QString::toFloat(bool *ok) const
+{
+    return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
+}
+
+float QStringView::toFloat(bool *ok) const
 {
     return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
 }
@@ -11057,16 +11067,6 @@ QString QString::toHtmlEscaped() const
 void QAbstractConcatenable::appendLatin1To(QLatin1StringView in, QChar *out) noexcept
 {
     qt_from_latin1(reinterpret_cast<char16_t *>(out), in.data(), size_t(in.size()));
-}
-
-double QStringView::toDouble(bool *ok) const
-{
-    return QLocaleData::c()->stringToDouble(*this, ok, QLocale::RejectGroupSeparator);
-}
-
-float QStringView::toFloat(bool *ok) const
-{
-    return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
 }
 
 /*!
