@@ -4111,12 +4111,10 @@ double QLocaleData::stringToDouble(QStringView str, bool *ok,
             *ok = false;
         return 0.0;
     }
-    int processed = 0;
-    bool nonNullOk = false;
-    double d = qt_asciiToDouble(buff.constData(), buff.size() - 1, nonNullOk, processed);
+    auto r = qt_asciiToDouble(buff.constData(), buff.size() - 1);
     if (ok != nullptr)
-        *ok = nonNullOk;
-    return d;
+        *ok = r.ok();
+    return r.result;
 }
 
 qlonglong QLocaleData::stringToLongLong(QStringView str, int base, bool *ok,

@@ -3982,11 +3982,9 @@ double QByteArray::toDouble(bool *ok) const
 
 auto QtPrivate::toDouble(QByteArrayView a) noexcept -> ParsedNumber<double>
 {
-    bool nonNullOk = false;
-    int processed = 0;
-    double d = qt_asciiToDouble(a.data(), a.size(), nonNullOk, processed, WhitespacesAllowed);
-    if (nonNullOk)
-        return ParsedNumber{d};
+    auto r = qt_asciiToDouble(a.data(), a.size(), WhitespacesAllowed);
+    if (r.ok())
+        return ParsedNumber{r.result};
     else
         return {};
 }

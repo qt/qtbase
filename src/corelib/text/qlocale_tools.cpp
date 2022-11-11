@@ -247,48 +247,38 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision,
         --length;
 }
 
-double qt_asciiToDouble(const char *num, qsizetype numLen, bool &ok, int &processed,
-                        StrayCharacterMode strayCharMode)
+QSimpleParsedNumber<double> qt_asciiToDouble(const char *num, qsizetype numLen,
+                                             StrayCharacterMode strayCharMode)
 {
     auto string_equals = [](const char *needle, const char *haystack, qsizetype haystackLen) {
         qsizetype needleLen = strlen(needle);
         return needleLen == haystackLen && memcmp(needle, haystack, haystackLen) == 0;
     };
 
-    if (numLen <= 0) {
-        ok = false;
-        processed = 0;
-        return 0.0;
-    }
-
-    ok = true;
+    if (numLen <= 0)
+        return {};
 
     // We have to catch NaN before because we need NaN as marker for "garbage" in the
     // libdouble-conversion case and, in contrast to libdouble-conversion or sscanf, we don't allow
     // "-nan" or "+nan"
     if (string_equals("nan", num, numLen)) {
-        processed = 3;
-        return qt_qnan();
+        return { qt_qnan(), num + 3 };
     } else if (string_equals("+nan", num, numLen) || string_equals("-nan", num, numLen)) {
-        processed = 0;
-        ok = false;
-        return 0.0;
+        return {};
     }
 
     // Infinity values are implementation defined in the sscanf case. In the libdouble-conversion
     // case we need infinity as overflow marker.
     if (string_equals("+inf", num, numLen)) {
-        processed = 4;
-        return qt_inf();
+        return { qt_inf(), num + 4 };
     } else if (string_equals("inf", num, numLen)) {
-        processed = 3;
-        return qt_inf();
+        return { qt_inf(), num + 3 };
     } else if (string_equals("-inf", num, numLen)) {
-        processed = 4;
-        return -qt_inf();
+        return { -qt_inf(), num + 4 };
     }
 
     double d = 0.0;
+    int processed;
 #if !defined(QT_NO_DOUBLECONVERSION) && !defined(QT_BOOTSTRAPPED)
     int conv_flags = double_conversion::StringToDoubleConverter::NO_FLAGS;
     if (strayCharMode == TrailingJunkAllowed) {
@@ -300,22 +290,18 @@ double qt_asciiToDouble(const char *num, qsizetype numLen, bool &ok, int &proces
     double_conversion::StringToDoubleConverter conv(conv_flags, 0.0, qt_qnan(), nullptr, nullptr);
     if (int(numLen) != numLen) {
         // a number over 2 GB in length is silly, just assume it isn't valid
-        ok = false;
-        processed = 0;
-        return 0.0;
+        return {};
     } else {
         d = conv.StringToDouble(num, numLen, &processed);
     }
 
     if (!qIsFinite(d)) {
-        ok = false;
         if (qIsNaN(d)) {
             // Garbage found. We don't accept it and return 0.
-            processed = 0;
-            return 0.0;
+            return {};
         } else {
             // Overflow. That's not OK, but we still return infinity.
-            return d;
+            return { d, nullptr };
         }
     }
 #else
@@ -330,25 +316,21 @@ double qt_asciiToDouble(const char *num, qsizetype numLen, bool &ok, int &proces
 
     if ((strayCharMode == TrailingJunkProhibited && processed != numLen) || qIsNaN(d)) {
         // Implementation defined nan symbol or garbage found. We don't accept it.
-        processed = 0;
-        ok = false;
-        return 0.0;
+        return {};
     }
 
     if (!qIsFinite(d)) {
         // Overflow. Check for implementation-defined infinity symbols and reject them.
         // We assume that any infinity symbol has to contain a character that cannot be part of a
         // "normal" number (that is 0-9, ., -, +, e).
-        ok = false;
         for (int i = 0; i < processed; ++i) {
             char c = num[i];
             if ((c < '0' || c > '9') && c != '.' && c != '-' && c != '+' && c != 'e' && c != 'E') {
                 // Garbage found
-                processed = 0;
-                return 0.0;
+                return {};
             }
         }
-        return d;
+        return { d, nullptr };
     }
 #endif // !defined(QT_NO_DOUBLECONVERSION) && !defined(QT_BOOTSTRAPPED)
 
@@ -360,14 +342,13 @@ double qt_asciiToDouble(const char *num, qsizetype numLen, bool &ok, int &proces
         for (int i = 0; i < processed; ++i) {
             if (num[i] >= '1' && num[i] <= '9') {
                 // if a digit before any 'e' is not 0, then a non-zero number was intended.
-                ok = false;
-                return 0.0;
+                return {};
             } else if (num[i] == 'e' || num[i] == 'E') {
                 break;
             }
         }
     }
-    return d;
+    return { d, num + processed };
 }
 
 /* Detect base if 0 and, if base is hex or bin, skip over 0x/0b prefixes */
@@ -563,14 +544,12 @@ QString qulltoa(qulonglong number, int base, const QStringView zero)
  */
 double qstrntod(const char *s00, qsizetype len, const char **se, bool *ok)
 {
-    int processed = 0;
-    bool nonNullOk = false;
-    double d = qt_asciiToDouble(s00, len, nonNullOk, processed, TrailingJunkAllowed);
+    auto r = qt_asciiToDouble(s00, len, TrailingJunkAllowed);
     if (se)
-        *se = s00 + processed;
+        *se = r.endptr ? r.endptr : s00;
     if (ok)
-        *ok = nonNullOk;
-    return d;
+        *ok = r.ok();
+    return r.result;
 }
 
 QString qdtoa(qreal d, int *decpt, int *sign)
