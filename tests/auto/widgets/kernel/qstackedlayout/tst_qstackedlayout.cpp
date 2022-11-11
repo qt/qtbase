@@ -107,7 +107,7 @@ void tst_QStackedLayout::testCase()
     // One widget added to layout
     QWidget *w1 = new QWidget(testWidget);
     testLayout->addWidget(w1);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toInt(), 0);
     spy.clear();
     QCOMPARE(testLayout->currentIndex(), 0);
@@ -124,7 +124,7 @@ void tst_QStackedLayout::testCase()
 
     // Change the current index
     testLayout->setCurrentIndex(1);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toInt(), 1);
     spy.clear();
     QCOMPARE(testLayout->currentIndex(), 1);
@@ -138,7 +138,7 @@ void tst_QStackedLayout::testCase()
 
     // Second widget removed from layout; back to nothing
     testLayout->removeWidget(w2);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toInt(), -1);
     spy.clear();
     QCOMPARE(testLayout->currentIndex(), -1);

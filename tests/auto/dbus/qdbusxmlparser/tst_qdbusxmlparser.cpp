@@ -106,9 +106,9 @@ void tst_QDBusXmlParser::parsing_common(const QString &xmlData)
     QFETCH(int, objectCount);
     QFETCH(int, annotationCount);
     QFETCH(QStringList, introspection);
-    QCOMPARE(obj.interfaces.count(), interfaceCount);
-    QCOMPARE(obj.childObjects.count(), objectCount);
-    QCOMPARE(QDBusIntrospection::parseInterface(xmlData).annotations.count(), annotationCount);
+    QCOMPARE(obj.interfaces.size(), interfaceCount);
+    QCOMPARE(obj.childObjects.size(), objectCount);
+    QCOMPARE(QDBusIntrospection::parseInterface(xmlData).annotations.size(), annotationCount);
 
     QDBusIntrospection::Interfaces ifaces = QDBusIntrospection::parseInterfaces(xmlData);
 
@@ -327,7 +327,7 @@ void tst_QDBusXmlParser::methods()
     QFETCH(MethodMap, methodMap);
     MethodMap parsedMap = iface.methods;
 
-    QCOMPARE(parsedMap.count(), methodMap.count());
+    QCOMPARE(parsedMap.size(), methodMap.size());
     QCOMPARE(parsedMap, methodMap);
 }
 
@@ -441,7 +441,7 @@ void tst_QDBusXmlParser::signals_()
     QFETCH(SignalMap, signalMap);
     SignalMap parsedMap = iface.signals_;
 
-    QCOMPARE(signalMap.count(), parsedMap.count());
+    QCOMPARE(signalMap.size(), parsedMap.size());
     QCOMPARE(signalMap, parsedMap);
 }
 
@@ -531,7 +531,7 @@ void tst_QDBusXmlParser::properties()
     QFETCH(PropertyMap, propertyMap);
     PropertyMap parsedMap = iface.properties;
 
-    QCOMPARE(propertyMap.count(), parsedMap.count());
+    QCOMPARE(propertyMap.size(), parsedMap.size());
     QCOMPARE(propertyMap, parsedMap);
 }
 

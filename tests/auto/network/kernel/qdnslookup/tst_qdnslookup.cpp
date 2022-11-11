@@ -66,7 +66,7 @@ QString tst_QDnsLookup::domainNameList(const QString &input)
 QStringList tst_QDnsLookup::domainNameListAlternatives(const QString &input)
 {
     QStringList alternatives = input.split('|');
-    for (int i = 0; i < alternatives.length(); ++i)
+    for (int i = 0; i < alternatives.size(); ++i)
         alternatives[i] = domainNameList(alternatives[i]);
     return alternatives;
 }
@@ -367,7 +367,7 @@ void tst_QDnsLookup::bindingsAndProperties()
     const QSignalSpy typeChangeSpy(&lookup, &QDnsLookup::typeChanged);
 
     dnsTypeProp = QDnsLookup::AAAA;
-    QCOMPARE(typeChangeSpy.count(), 1);
+    QCOMPARE(typeChangeSpy.size(), 1);
     QCOMPARE(lookup.type(), QDnsLookup::AAAA);
 
     dnsTypeProp.setBinding(lookup.bindableType().makeBinding());
@@ -379,7 +379,7 @@ void tst_QDnsLookup::bindingsAndProperties()
     const QSignalSpy nameChangeSpy(&lookup, &QDnsLookup::nameChanged);
 
     nameProp = QStringLiteral("a-plus-aaaa");
-    QCOMPARE(nameChangeSpy.count(), 1);
+    QCOMPARE(nameChangeSpy.size(), 1);
     QCOMPARE(lookup.name(), QStringLiteral("a-plus-aaaa"));
 
     nameProp.setBinding(lookup.bindableName().makeBinding());
@@ -391,7 +391,7 @@ void tst_QDnsLookup::bindingsAndProperties()
     const QSignalSpy nameserverChangeSpy(&lookup, &QDnsLookup::nameserverChanged);
 
     nameserverProp = QHostAddress::LocalHost;
-    QCOMPARE(nameserverChangeSpy.count(), 1);
+    QCOMPARE(nameserverChangeSpy.size(), 1);
     QCOMPARE(lookup.nameserver(), QHostAddress::LocalHost);
 
     nameserverProp.setBinding(lookup.bindableNameserver().makeBinding());

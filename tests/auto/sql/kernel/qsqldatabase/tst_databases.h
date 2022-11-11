@@ -125,7 +125,7 @@ public:
         QTest::addColumn<QString>( "dbName" );
         int count = 0;
 
-        for ( int i = 0; i < dbNames.count(); ++i ) {
+        for ( int i = 0; i < dbNames.size(); ++i ) {
             QSqlDatabase db = QSqlDatabase::database( dbNames.at( i ) );
 
             if ( !db.isValid() )
@@ -146,7 +146,7 @@ public:
         QTest::addColumn<int>("submitpolicy_i");
         int count = 0;
 
-        for ( int i = 0; i < dbNames.count(); ++i ) {
+        for ( int i = 0; i < dbNames.size(); ++i ) {
             QSqlDatabase db = QSqlDatabase::database( dbNames.at( i ) );
 
             if ( !db.isValid() )

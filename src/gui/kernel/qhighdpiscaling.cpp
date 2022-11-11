@@ -489,7 +489,7 @@ void QHighDpiScaling::updateHighDpiScaling()
         for (const auto &[name, factor] : m_screenFactors) {
             ++i;
             if (name.isNull()) {
-                if (i < screens.count())
+                if (i < screens.size())
                     setScreenFactor(screens.at(i), factor);
             } else {
                 for (QScreen *screen : screens) {

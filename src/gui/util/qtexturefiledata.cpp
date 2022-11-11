@@ -117,8 +117,8 @@ bool QTextureFileData::isValid() const
     if (d->data.isEmpty() || d->size.isEmpty() || (!d->format && !d->internalFormat))
         return false;
 
-    const int numFacesOffset = d->offsets.length();
-    const int numFacesLength = d->lengths.length();
+    const int numFacesOffset = d->offsets.size();
+    const int numFacesLength = d->lengths.size();
     if (numFacesOffset == 0 || numFacesLength == 0 || d->numFaces != numFacesOffset
         || d->numFaces != numFacesLength)
         return false;

@@ -505,7 +505,7 @@ char *QUtf8::convertFromUnicode(char *out, QStringView in, QStringConverter::Sta
 {
     Q_ASSERT(state);
     const QChar *uc = in.data();
-    qsizetype len = in.length();
+    qsizetype len = in.size();
     if (!len)
         return out;
 
@@ -878,7 +878,7 @@ QByteArray QUtf16::convertFromUnicode(QStringView in, QStringConverter::State *s
 
     QByteArray d(length, Qt::Uninitialized);
     char *end = convertFromUnicode(d.data(), in, state, endian);
-    Q_ASSERT(end - d.constData() == d.length());
+    Q_ASSERT(end - d.constData() == d.size());
     Q_UNUSED(end);
     return d;
 }
@@ -901,13 +901,13 @@ char *QUtf16::convertFromUnicode(char *out, QStringView in, QStringConverter::St
         out += 2;
     }
     if (endian == BigEndianness)
-        qToBigEndian<char16_t>(in.data(), in.length(), out);
+        qToBigEndian<char16_t>(in.data(), in.size(), out);
     else
-        qToLittleEndian<char16_t>(in.data(), in.length(), out);
+        qToLittleEndian<char16_t>(in.data(), in.size(), out);
 
     state->remainingChars = 0;
     state->internalState |= HeaderDone;
-    return out + 2*in.length();
+    return out + 2*in.size();
 }
 
 QString QUtf16::convertToUnicode(QByteArrayView in, QStringConverter::State *state, DataEndianness endian)
@@ -1037,7 +1037,7 @@ char *QUtf32::convertFromUnicode(char *out, QStringView in, QStringConverter::St
     }
 
     const QChar *uc = in.data();
-    const QChar *end = in.data() + in.length();
+    const QChar *end = in.data() + in.size();
     QChar ch;
     char32_t ucs4;
     if (state->remainingChars == 1) {
@@ -1475,7 +1475,7 @@ static char *toLatin1(char *out, QStringView in, QStringConverter::State *state)
 
     const char replacement = (state && state->flags & QStringConverter::Flag::ConvertInvalidToNull) ? 0 : '?';
     qsizetype invalid = 0;
-    for (qsizetype i = 0; i < in.length(); ++i) {
+    for (qsizetype i = 0; i < in.size(); ++i) {
         if (in[i] > QChar(0xff)) {
             *out = replacement;
             ++invalid;
@@ -1492,15 +1492,15 @@ static char *toLatin1(char *out, QStringView in, QStringConverter::State *state)
 static QChar *fromLocal8Bit(QChar *out, QByteArrayView in, QStringConverter::State *state)
 {
     QString s = QLocal8Bit::convertToUnicode(in, state);
-    memcpy(out, s.constData(), s.length()*sizeof(QChar));
-    return out + s.length();
+    memcpy(out, s.constData(), s.size()*sizeof(QChar));
+    return out + s.size();
 }
 
 static char *toLocal8Bit(char *out, QStringView in, QStringConverter::State *state)
 {
     QByteArray s = QLocal8Bit::convertFromUnicode(in, state);
-    memcpy(out, s.constData(), s.length());
-    return out + s.length();
+    memcpy(out, s.constData(), s.size());
+    return out + s.size();
 }
 
 
@@ -1751,7 +1751,7 @@ struct QStringConverterICU : QStringConverter
         auto source = reinterpret_cast<const UChar *>(in.data());
         auto sourceLimit = reinterpret_cast<const UChar *>(in.data() + in.size());
 
-        qsizetype length = UCNV_GET_MAX_BYTES_FOR_STRING(in.length(), ucnv_getMaxCharSize(icu_conv));
+        qsizetype length = UCNV_GET_MAX_BYTES_FOR_STRING(in.size(), ucnv_getMaxCharSize(icu_conv));
 
         char *target = out;
         char *targetLimit = out + length;

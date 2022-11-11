@@ -185,8 +185,8 @@ void QDialogButtonBoxPrivate::resetLayout()
 void QDialogButtonBoxPrivate::addButtonsToLayout(const QList<QAbstractButton *> &buttonList,
                                                  bool reverse)
 {
-    int start = reverse ? buttonList.count() - 1 : 0;
-    int end = reverse ? -1 : buttonList.count();
+    int start = reverse ? buttonList.size() - 1 : 0;
+    int end = reverse ? -1 : buttonList.size();
     int step = reverse ? -1 : 1;
 
     for (int i = start; i != end; i += step) {
@@ -636,7 +636,7 @@ void QDialogButtonBox::clear()
     d->standardButtonHash.clear();
     for (int i = 0; i < NRoles; ++i) {
         QList<QAbstractButton *> &list = d->buttonLists[i];
-        while (list.count()) {
+        while (list.size()) {
             QAbstractButton *button = list.takeAt(0);
             QObject::disconnect(button, SIGNAL(destroyed()), this, SLOT(_q_handleButtonDestroyed()));
             delete button;
@@ -655,7 +655,7 @@ QList<QAbstractButton *> QDialogButtonBox::buttons() const
     QList<QAbstractButton *> finalList;
     for (int i = 0; i < NRoles; ++i) {
         const QList<QAbstractButton *> &list = d->buttonLists[i];
-        for (int j = 0; j < list.count(); ++j)
+        for (int j = 0; j < list.size(); ++j)
             finalList.append(list.at(j));
     }
     return finalList;
@@ -672,7 +672,7 @@ QDialogButtonBox::ButtonRole QDialogButtonBox::buttonRole(QAbstractButton *butto
     Q_D(const QDialogButtonBox);
     for (int i = 0; i < NRoles; ++i) {
         const QList<QAbstractButton *> &list = d->buttonLists[i];
-        for (int j = 0; j < list.count(); ++j) {
+        for (int j = 0; j < list.size(); ++j) {
             if (list.at(j) == button)
                 return ButtonRole(i);
         }
@@ -696,7 +696,7 @@ void QDialogButtonBox::removeButton(QAbstractButton *button)
     d->standardButtonHash.remove(reinterpret_cast<QPushButton *>(button));
     for (int i = 0; i < NRoles; ++i) {
         QList<QAbstractButton *> &list = d->buttonLists[i];
-        for (int j = 0; j < list.count(); ++j) {
+        for (int j = 0; j < list.size(); ++j) {
             if (list.at(j) == button) {
                 list.takeAt(j);
                 if (!d->internalRemove) {

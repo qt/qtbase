@@ -90,7 +90,7 @@ void tst_QScrollBar::task_209492()
 
     QSignalSpy spy(verticalScrollBar, SIGNAL(actionTriggered(int)));
     QCOMPARE(scrollArea.scrollCount, 0);
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     // Simulate a mouse click on the "scroll down button".
     const QPoint pressPoint(verticalScrollBar->width() / 2, verticalScrollBar->height() - 10);
@@ -109,7 +109,7 @@ void tst_QScrollBar::task_209492()
     QSKIP("The result depends on system setting and is not relevant on Mac");
 #endif
     QCOMPARE(scrollArea.scrollCount, 1);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 #if QT_CONFIG(wheelevent)
@@ -159,7 +159,7 @@ void tst_QScrollBar::QTBUG_42871()
     QSignalSpy spy(&scrollBarWidget, SIGNAL(actionTriggered(int)));
     QVERIFY(spy.isValid());
     QCOMPARE(myHandler.updatesCount, 0);
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     // Simulate a mouse click on the "scroll down button".
     const QPoint pressPoint(scrollBarWidget.width() / 2, scrollBarWidget.height() - 10);
@@ -180,7 +180,7 @@ void tst_QScrollBar::QTBUG_42871()
     }
     // Check that the action was triggered once.
     QCOMPARE(myHandler.updatesCount, 1);
-    QCOMPARE(spy.count(), myHandler.updatesCount);
+    QCOMPARE(spy.size(), myHandler.updatesCount);
 }
 
 QTEST_MAIN(tst_QScrollBar)

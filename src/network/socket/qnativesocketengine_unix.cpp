@@ -729,10 +729,10 @@ QNetworkInterface QNativeSocketEnginePrivate::nativeMulticastInterface() const
     if (v.s_addr != 0 && sizeofv >= QT_SOCKOPTLEN_T(sizeof(v))) {
         QHostAddress ipv4(ntohl(v.s_addr));
         QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
-        for (int i = 0; i < ifaces.count(); ++i) {
+        for (int i = 0; i < ifaces.size(); ++i) {
             const QNetworkInterface &iface = ifaces.at(i);
             QList<QNetworkAddressEntry> entries = iface.addressEntries();
-            for (int j = 0; j < entries.count(); ++j) {
+            for (int j = 0; j < entries.size(); ++j) {
                 const QNetworkAddressEntry &entry = entries.at(j);
                 if (entry.ip() == ipv4)
                     return iface;
@@ -752,7 +752,7 @@ bool QNativeSocketEnginePrivate::nativeSetMulticastInterface(const QNetworkInter
     struct in_addr v;
     if (iface.isValid()) {
         QList<QNetworkAddressEntry> entries = iface.addressEntries();
-        for (int i = 0; i < entries.count(); ++i) {
+        for (int i = 0; i < entries.size(); ++i) {
             const QNetworkAddressEntry &entry = entries.at(i);
             const QHostAddress &ip = entry.ip();
             if (ip.protocol() == QAbstractSocket::IPv4Protocol) {

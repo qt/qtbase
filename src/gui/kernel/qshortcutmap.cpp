@@ -305,7 +305,7 @@ bool QShortcutMap::tryShortcut(QKeyEvent *e)
     case QKeySequence::ExactMatch: {
         // Save number of identical matches before dispatching
         // to keep QShortcutMap and tryShortcut reentrant.
-        const int identicalMatches = d->identicals.count();
+        const int identicalMatches = d->identicals.size();
         resetState();
         dispatchEvent(e);
         // If there are no identicals we've only found disabled shortcuts, and
@@ -389,7 +389,7 @@ bool QShortcutMap::hasShortcutForKeySequence(const QKeySequence &seq) const
 QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifiers)
 {
     Q_D(QShortcutMap);
-    if (!d->sequences.count())
+    if (!d->sequences.size())
         return QKeySequence::NoMatch;
 
     createNewSequences(e, d->newEntries, ignoredModifiers);
@@ -397,7 +397,7 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
 
     // Should never happen
     if (d->newEntries == d->currentSequences) {
-        Q_ASSERT_X(e->key() != Qt::Key_unknown || e->text().length(),
+        Q_ASSERT_X(e->key() != Qt::Key_unknown || e->text().size(),
                    "QShortcutMap::find", "New sequence to find identical to previous");
         return QKeySequence::NoMatch;
     }
@@ -409,7 +409,7 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
     bool identicalDisabledFound = false;
     QList<QKeySequence> okEntries;
     int result = QKeySequence::NoMatch;
-    for (int i = d->newEntries.count()-1; i >= 0 ; --i) {
+    for (int i = d->newEntries.size()-1; i >= 0 ; --i) {
         QShortcutEntry entry(d->newEntries.at(i)); // needed for searching
         const auto itEnd = d->sequences.constEnd();
         auto it = std::lower_bound(d->sequences.constBegin(), itEnd, entry);
@@ -491,11 +491,11 @@ void QShortcutMap::createNewSequences(QKeyEvent *e, QList<QKeySequence> &ksl, in
     QList<int> possibleKeys = QKeyMapper::possibleKeys(e);
     qCDebug(lcShortcutMap) << "Creating new sequences for" << e
         << "with ignoredModifiers=" << Qt::KeyboardModifiers(ignoredModifiers);
-    int pkTotal = possibleKeys.count();
+    int pkTotal = possibleKeys.size();
     if (!pkTotal)
         return;
 
-    int ssActual = d->currentSequences.count();
+    int ssActual = d->currentSequences.size();
     int ssTotal = qMax(1, ssActual);
     // Resize to possible permutations of the current sequence(s).
     ksl.resize(pkTotal * ssTotal);

@@ -209,7 +209,7 @@ void tst_QTabBar::testCurrentChanged()
     QCOMPARE(tabBar.currentIndex(), 0);
     tabBar.setCurrentIndex(tabToSet);
     QCOMPARE(tabBar.currentIndex(), tabToSet);
-    QCOMPARE(spy.count(), expectedCount);
+    QCOMPARE(spy.size(), expectedCount);
 }
 
 class TabBar : public QTabBar
@@ -283,7 +283,7 @@ void tst_QTabBar::removeTab()
     tabbar.setCurrentIndex(currentIndex);
     QSignalSpy spy(&tabbar, SIGNAL(currentChanged(int)));
     tabbar.removeTab(deleteIndex);
-    QTEST(int(spy.count()), "spyCount");
+    QTEST(int(spy.size()), "spyCount");
     QTEST(tabbar.currentIndex(), "finalIndex");
 }
 
@@ -314,7 +314,7 @@ void tst_QTabBar::hideTab()
     tabbar.setCurrentIndex(currentIndex);
     QSignalSpy spy(&tabbar, &QTabBar::currentChanged);
     tabbar.setTabVisible(hideIndex, false);
-    QTEST(int(spy.count()), "spyCount");
+    QTEST(int(spy.size()), "spyCount");
     QTEST(tabbar.currentIndex(), "finalIndex");
 }
 
@@ -458,12 +458,12 @@ void tst_QTabBar::removeLastTab()
     QTabBar tabbar;
     QSignalSpy spy(&tabbar, SIGNAL(currentChanged(int)));
     int index = tabbar.addTab("foo");
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toInt(), index);
     spy.clear();
 
     tabbar.removeTab(index);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toInt(), -1);
     spy.clear();
 }
@@ -482,7 +482,7 @@ void tst_QTabBar::removeLastVisibleTab()
     {
         QSignalSpy spy(&tabbar, SIGNAL(currentChanged(int)));
         tabbar.removeTab(visible);
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         QCOMPARE(spy.at(0).at(0).toInt(), -1);
         QCOMPARE(tabbar.currentIndex(), -1);
     }
@@ -495,7 +495,7 @@ void tst_QTabBar::removeLastVisibleTab()
     {
         QSignalSpy spy(&tabbar, SIGNAL(currentChanged(int)));
         tabbar.removeTab(visible);
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
         QCOMPARE(spy.at(0).at(0).toInt(), -1);
         QCOMPARE(tabbar.currentIndex(), -1);
     }
@@ -519,7 +519,7 @@ void tst_QTabBar::closeButton()
     QSignalSpy spy(&tabbar, SIGNAL(tabCloseRequested(int)));
     button->click();
     QCOMPARE(tabbar.count(), 1);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 Q_DECLARE_METATYPE(QTabBar::ButtonPosition)
@@ -791,36 +791,36 @@ void tst_QTabBar::tabBarClicked()
     QSignalSpy clickSpy(&tabBar, SIGNAL(tabBarClicked(int)));
     QSignalSpy doubleClickSpy(&tabBar, SIGNAL(tabBarDoubleClicked(int)));
 
-    QCOMPARE(clickSpy.count(), 0);
-    QCOMPARE(doubleClickSpy.count(), 0);
+    QCOMPARE(clickSpy.size(), 0);
+    QCOMPARE(doubleClickSpy.size(), 0);
 
     Qt::MouseButton button = Qt::LeftButton;
     while (button <= Qt::MaxMouseButton) {
         const QPoint tabPos = tabBar.tabRect(0).center();
 
         QTest::mouseClick(&tabBar, button, {}, tabPos);
-        QCOMPARE(clickSpy.count(), 1);
+        QCOMPARE(clickSpy.size(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), 0);
-        QCOMPARE(doubleClickSpy.count(), 0);
+        QCOMPARE(doubleClickSpy.size(), 0);
 
         QTest::mouseDClick(&tabBar, button, {}, tabPos);
-        QCOMPARE(clickSpy.count(), 1);
+        QCOMPARE(clickSpy.size(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), 0);
-        QCOMPARE(doubleClickSpy.count(), 1);
+        QCOMPARE(doubleClickSpy.size(), 1);
         QCOMPARE(doubleClickSpy.takeFirst().takeFirst().toInt(), 0);
         QTest::mouseRelease(&tabBar, button, {}, tabPos);
 
         const QPoint barPos(tabBar.tabRect(0).right() + 5, tabBar.tabRect(0).center().y());
 
         QTest::mouseClick(&tabBar, button, {}, barPos);
-        QCOMPARE(clickSpy.count(), 1);
+        QCOMPARE(clickSpy.size(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), -1);
-        QCOMPARE(doubleClickSpy.count(), 0);
+        QCOMPARE(doubleClickSpy.size(), 0);
 
         QTest::mouseDClick(&tabBar, button, {}, barPos);
-        QCOMPARE(clickSpy.count(), 1);
+        QCOMPARE(clickSpy.size(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), -1);
-        QCOMPARE(doubleClickSpy.count(), 1);
+        QCOMPARE(doubleClickSpy.size(), 1);
         QCOMPARE(doubleClickSpy.takeFirst().takeFirst().toInt(), -1);
         QTest::mouseRelease(&tabBar, button, {}, barPos);
 

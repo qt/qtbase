@@ -102,7 +102,7 @@ bool QHttpHeaderParser::parseStatus(QByteArrayView status)
     static const int spacePos = 8;
     static const char httpMagic[] = "HTTP/";
 
-    if (status.length() < minLength
+    if (status.size() < minLength
         || !status.startsWith(httpMagic)
         || status.at(dotPos) != '.'
         || status.at(spacePos) != ' ') {

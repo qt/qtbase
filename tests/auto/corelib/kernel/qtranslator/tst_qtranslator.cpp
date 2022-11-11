@@ -98,7 +98,7 @@ void tst_QTranslator::load()
         file.open(QFile::ReadOnly);
         QByteArray data = file.readAll();
         QTranslator tor;
-        QVERIFY(tor.load((const uchar *)data.constData(), data.length()));
+        QVERIFY(tor.load((const uchar *)data.constData(), data.size()));
         QCOMPARE(tor.isEmpty(), isEmpty);
         QCOMPARE(tor.translate("QPushButton", "Hello world!"), translation);
         QCOMPARE(tor.filePath(), "");
@@ -331,7 +331,7 @@ void tst_QTranslator::dependencies()
         QFile file("dependencies_la.qm");
         file.open(QFile::ReadOnly);
         QByteArray data = file.readAll();
-        QVERIFY(tor.load((const uchar *)data.constData(), data.length()));
+        QVERIFY(tor.load((const uchar *)data.constData(), data.size()));
         QVERIFY(!tor.isEmpty());
         QCOMPARE(tor.translate("QPushButton", "Hello world!"), QLatin1String("Hallo Welt!"));
     }

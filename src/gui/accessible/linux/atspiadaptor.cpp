@@ -935,14 +935,14 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
 
             if (!textRemoved.isEmpty()) {
                 data.setVariant(QVariant::fromValue(textRemoved));
-                QVariantList args = packDBusSignalArguments("delete"_L1, changePosition, textRemoved.length(), QVariant::fromValue(data));
+                QVariantList args = packDBusSignalArguments("delete"_L1, changePosition, textRemoved.size(), QVariant::fromValue(data));
                 sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1,
                                "TextChanged"_L1, args);
             }
 
             if (!textInserted.isEmpty()) {
                 data.setVariant(QVariant::fromValue(textInserted));
-                QVariantList args = packDBusSignalArguments("insert"_L1, changePosition, textInserted.length(), QVariant::fromValue(data));
+                QVariantList args = packDBusSignalArguments("insert"_L1, changePosition, textInserted.size(), QVariant::fromValue(data));
                 sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1,
                                "TextChanged"_L1, args);
             }
@@ -1656,12 +1656,12 @@ QRect AtSpiAdaptor::getExtents(QAccessibleInterface *interface, uint coordType)
 bool AtSpiAdaptor::actionInterface(QAccessibleInterface *interface, const QString &function, const QDBusMessage &message, const QDBusConnection &connection)
 {
     if (function == "GetNActions"_L1) {
-        int count = QAccessibleBridgeUtils::effectiveActionNames(interface).count();
+        int count = QAccessibleBridgeUtils::effectiveActionNames(interface).size();
         sendReply(connection, message, QVariant::fromValue(QDBusVariant(QVariant::fromValue(count))));
     } else if (function == "DoAction"_L1) {
         int index = message.arguments().at(0).toInt();
         const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(interface);
-        if (index < 0 || index >= actionNames.count())
+        if (index < 0 || index >= actionNames.size())
             return false;
         const QString actionName = actionNames.at(index);
         bool success = QAccessibleBridgeUtils::performEffectiveAction(interface, actionName);
@@ -1671,13 +1671,13 @@ bool AtSpiAdaptor::actionInterface(QAccessibleInterface *interface, const QStrin
     } else if (function == "GetName"_L1) {
         int index = message.arguments().at(0).toInt();
         const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(interface);
-        if (index < 0 || index >= actionNames.count())
+        if (index < 0 || index >= actionNames.size())
             return false;
         sendReply(connection, message, actionNames.at(index));
     } else if (function == "GetDescription"_L1) {
         int index = message.arguments().at(0).toInt();
         const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(interface);
-        if (index < 0 || index >= actionNames.count())
+        if (index < 0 || index >= actionNames.size())
             return false;
         QString description;
         if (QAccessibleActionInterface *actionIface = interface->actionInterface())
@@ -1688,7 +1688,7 @@ bool AtSpiAdaptor::actionInterface(QAccessibleInterface *interface, const QStrin
     } else if (function == "GetKeyBinding"_L1) {
         int index = message.arguments().at(0).toInt();
         const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(interface);
-        if (index < 0 || index >= actionNames.count())
+        if (index < 0 || index >= actionNames.size())
             return false;
         QStringList keyBindings;
         if (QAccessibleActionInterface *actionIface = interface->actionInterface())
@@ -1698,7 +1698,7 @@ bool AtSpiAdaptor::actionInterface(QAccessibleInterface *interface, const QStrin
             if (!acc.isEmpty())
                 keyBindings.append(acc);
         }
-        if (keyBindings.length() > 0)
+        if (keyBindings.size() > 0)
             sendReply(connection, message, keyBindings.join(u';'));
         else
             sendReply(connection, message, QString());
@@ -1904,13 +1904,13 @@ namespace
     QString atspiColor(const QString &ia2Color)
     {
         // "rgb(%u,%u,%u)" -> "%u,%u,%u"
-        return ia2Color.mid(4, ia2Color.length() - (4+1));
+        return ia2Color.mid(4, ia2Color.size() - (4+1));
     }
 
     QString atspiSize(const QString &ia2Size)
     {
         // "%fpt" -> "%f"
-        return ia2Size.left(ia2Size.length() - 2);
+        return ia2Size.left(ia2Size.size() - 2);
     }
 
     AtSpiAttribute atspiTextAttribute(const QString &ia2Name, const QString &ia2Value)
@@ -2096,7 +2096,7 @@ static QString textForRange(QAccessibleInterface *accessible, int startOffset, i
     }
     QString txt = accessible->text(QAccessible::Value);
     if (endOffset == -1)
-        endOffset = txt.length();
+        endOffset = txt.size();
     return txt.mid(startOffset, endOffset - startOffset);
 }
 
@@ -2104,7 +2104,7 @@ static void replaceTextFallback(QAccessibleInterface *accessible, long startOffs
 {
     QString t = textForRange(accessible, 0, -1);
     if (endOffset == -1)
-        endOffset = t.length();
+        endOffset = t.size();
     if (endOffset - startOffset == 0)
         t.insert(startOffset, txt);
     else

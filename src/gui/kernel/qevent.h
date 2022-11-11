@@ -74,7 +74,7 @@ public:
         return pointingDevice() ? pointingDevice()->pointerType() : QPointingDevice::PointerType::Unknown;
     }
     void setTimestamp(quint64 timestamp) override;
-    qsizetype pointCount() const { return m_points.count(); }
+    qsizetype pointCount() const { return m_points.size(); }
     QEventPoint &point(qsizetype i);
     const QList<QEventPoint> &points() const { return m_points; }
     QEventPoint *pointById(int id);

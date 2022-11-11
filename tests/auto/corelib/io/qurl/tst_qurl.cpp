@@ -1090,7 +1090,7 @@ void tst_QUrl::toAndFromStringList()
     QFETCH(QStringList, strings);
 
     const QList<QUrl> urls = QUrl::fromStringList(strings);
-    QCOMPARE(urls.count(), strings.count());
+    QCOMPARE(urls.size(), strings.size());
     const QStringList converted = QUrl::toStringList(urls);
     QCOMPARE(converted, strings);
 }

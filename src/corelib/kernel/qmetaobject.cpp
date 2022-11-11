@@ -227,7 +227,7 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
             constructorName.remove(0, idx+1); // remove qualified part
     }
     QVarLengthArray<char, 512> sig;
-    sig.append(constructorName.constData(), constructorName.length());
+    sig.append(constructorName.constData(), constructorName.size());
     sig.append('(');
 
     enum { MaximumParamCount = 10 };

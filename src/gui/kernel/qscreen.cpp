@@ -413,7 +413,7 @@ QList<QScreen *> QScreen::virtualSiblings() const
     Q_D(const QScreen);
     const QList<QPlatformScreen *> platformScreens = d->platformScreen->virtualSiblings();
     QList<QScreen *> screens;
-    screens.reserve(platformScreens.count());
+    screens.reserve(platformScreens.size());
     for (QPlatformScreen *platformScreen : platformScreens)
         screens << platformScreen->screen();
     return screens;

@@ -180,10 +180,10 @@ QAbstractButton *QAbstractButtonPrivate::queryCheckedButton() const
 
     Q_Q(const QAbstractButton);
     QList<QAbstractButton *> buttonList = queryButtonList();
-    if (!autoExclusive || buttonList.count() == 1) // no group
+    if (!autoExclusive || buttonList.size() == 1) // no group
         return nullptr;
 
-    for (int i = 0; i < buttonList.count(); ++i) {
+    for (int i = 0; i < buttonList.size(); ++i) {
         QAbstractButton *b = buttonList.at(i);
         if (b->d_func()->checked && b != q)
             return b;
@@ -227,7 +227,7 @@ void QAbstractButtonPrivate::moveFocus(int key)
     QPoint goal = target.center();
     uint focus_flag = qt_tab_all_widgets() ? Qt::TabFocus : Qt::StrongFocus;
 
-    for (int i = 0; i < buttonList.count(); ++i) {
+    for (int i = 0; i < buttonList.size(); ++i) {
         QAbstractButton *button = buttonList.at(i);
         if (button != f && button->window() == f->window() && button->isEnabled() && !button->isHidden() &&
             (exclusive || (button->focusPolicy() & focus_flag) == focus_flag)) {
@@ -310,7 +310,7 @@ void QAbstractButtonPrivate::fixFocusPolicy()
         return;
 
     QList<QAbstractButton *> buttonList = queryButtonList();
-    for (int i = 0; i < buttonList.count(); ++i) {
+    for (int i = 0; i < buttonList.size(); ++i) {
         QAbstractButton *b = buttonList.at(i);
         if (!b->isCheckable())
             continue;

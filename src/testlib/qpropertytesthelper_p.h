@@ -129,7 +129,7 @@ void testReadWritePropertyBasics(
             testedObj.property(propertyName).template value<PropertyType>(), initial, comparator,
             represent);
     if (spy)
-        QCOMPARE(spy->count(), 1);
+        QCOMPARE(spy->size(), 1);
 
     QUntypedBindable bindable = metaProperty.bindable(&instance);
 
@@ -148,7 +148,7 @@ void testReadWritePropertyBasics(
     QPROPERTY_TEST_COMPARISON_HELPER(propObserver.value(), changed, comparator, represent);
     QPROPERTY_TEST_COMPARISON_HELPER(propObserverLambda.value(), changed, comparator, represent);
     if (spy)
-        QCOMPARE(spy->count(), 2);
+        QCOMPARE(spy->size(), 2);
 
     // Bind object's property to other property
     QProperty<PropertyType> propSetter(initial);
@@ -162,7 +162,7 @@ void testReadWritePropertyBasics(
     QPROPERTY_TEST_COMPARISON_HELPER(propObserver.value(), initial, comparator, represent);
     QPROPERTY_TEST_COMPARISON_HELPER(propObserverLambda.value(), initial, comparator, represent);
     if (spy)
-        QCOMPARE(spy->count(), 3);
+        QCOMPARE(spy->size(), 3);
 
     // Count notifications triggered; should only happen on actual change.
     int updateCount = 0;
@@ -177,7 +177,7 @@ void testReadWritePropertyBasics(
     QPROPERTY_TEST_COMPARISON_HELPER(propObserverLambda.value(), changed, comparator, represent);
     QCOMPARE(updateCount, 1);
     if (spy)
-        QCOMPARE(spy->count(), 4);
+        QCOMPARE(spy->size(), 4);
 
     // Test that manually setting the value (even the same one) breaks the
     // binding.
@@ -188,7 +188,7 @@ void testReadWritePropertyBasics(
 
     // value didn't change -> the signal should not be emitted
     if (spy)
-        QCOMPARE(spy->count(), 4);
+        QCOMPARE(spy->size(), 4);
 }
 
 /*!
@@ -287,7 +287,7 @@ void testWriteOncePropertyBasics(
             represent);
     QPROPERTY_TEST_COMPARISON_HELPER(propObserver.value(), changed, comparator, represent);
     if (spy)
-        QCOMPARE(spy->count(), 1);
+        QCOMPARE(spy->size(), 1);
 
     // Attempt to set back the 'prior' value and verify that it has no effect
     testedObj.setProperty(propertyName, QVariant::fromValue(prior));
@@ -296,7 +296,7 @@ void testWriteOncePropertyBasics(
             represent);
     QPROPERTY_TEST_COMPARISON_HELPER(propObserver.value(), changed, comparator, represent);
     if (spy)
-        QCOMPARE(spy->count(), 1);
+        QCOMPARE(spy->size(), 1);
     if (bindingPreservedOnWrite)
         QVERIFY(bindable.hasBinding());
     else
@@ -386,7 +386,7 @@ void testReadOnlyPropertyBasics(
             testedObj.property(propertyName).template value<PropertyType>(), initial, comparator,
             represent);
     if (spy)
-        QCOMPARE(spy->count(), 0);
+        QCOMPARE(spy->size(), 0);
 
     QProperty<PropertyType> propObserver;
     propObserver.setBinding(bindable.makeBinding());
@@ -402,7 +402,7 @@ void testReadOnlyPropertyBasics(
     QPROPERTY_TEST_COMPARISON_HELPER(propObserver.value(), changed, comparator, represent);
 
     if (spy)
-        QCOMPARE(spy->count(), 1);
+        QCOMPARE(spy->size(), 1);
 }
 
 } // namespace QTestPrivate

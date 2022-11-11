@@ -550,7 +550,7 @@ void tst_QSettings::ctor()
         QCOMPARE(settings1.value("alpha/beta/geometry/width").toInt(), 3);
         QCOMPARE(settings1.value("alpha/beta/geometry/height").toInt(), 4);
         QCOMPARE(settings1.value("alpha/gamma/splitter").toInt(), 5);
-        QCOMPARE(settings1.allKeys().count(), 6);
+        QCOMPARE(settings1.allKeys().size(), 6);
 
         QCOMPARE(settings2.value("alpha/beta/geometry").toInt(), -7);
         QCOMPARE(settings2.value("alpha/beta/geometry/x").toInt(), 1);
@@ -558,7 +558,7 @@ void tst_QSettings::ctor()
         QCOMPARE(settings2.value("alpha/beta/geometry/width").toInt(), 3);
         QCOMPARE(settings2.value("alpha/beta/geometry/height").toInt(), 4);
         QCOMPARE(settings2.value("alpha/gamma/splitter").toInt(), 5);
-        QCOMPARE(settings2.allKeys().count(), 6);
+        QCOMPARE(settings2.allKeys().size(), 6);
     }
 
     {
@@ -569,7 +569,7 @@ void tst_QSettings::ctor()
         QCOMPARE(settings1.value("alpha/beta/geometry/width").toInt(), 3);
         QCOMPARE(settings1.value("alpha/beta/geometry/height").toInt(), 4);
         QCOMPARE(settings1.value("alpha/gamma/splitter").toInt(), 5);
-        QCOMPARE(settings1.allKeys().count(), 6);
+        QCOMPARE(settings1.allKeys().size(), 6);
     }
 
     {
@@ -1731,12 +1731,12 @@ void tst_QSettings::sync()
     QCOMPARE(settings2.value("moo/beta/geometry/width").toInt(), 3);
     QCOMPARE(settings2.value("moo/beta/geometry/height").toInt(), 4);
     QCOMPARE(settings2.value("moo/gamma/splitter").toInt(), 5);
-    QCOMPARE(settings2.allKeys().count(), 11);
+    QCOMPARE(settings2.allKeys().size(), 11);
 
     // Now, software.org.ini no longer exists, this is same as another app
     // clearing all settings.
     settings1.sync();
-    QCOMPARE(settings1.allKeys().count(), 0);
+    QCOMPARE(settings1.allKeys().size(), 0);
 
     // Now "some other app" will change software.org.ini
     QVERIFY(QFile::rename((userConfDir + "other.software.org.ini").toLatin1(),
@@ -1754,7 +1754,7 @@ void tst_QSettings::sync()
     QCOMPARE(settings1.value("moo/beta/geometry/width").toInt(), 3);
     QCOMPARE(settings1.value("moo/beta/geometry/height").toInt(), 4);
     QCOMPARE(settings1.value("moo/gamma/splitter").toInt(), 5);
-    QCOMPARE(settings1.allKeys().count(), 11);
+    QCOMPARE(settings1.allKeys().size(), 11);
 }
 
 void tst_QSettings::syncNonWriteableDir()
@@ -2441,17 +2441,17 @@ void tst_QSettings::testArrays()
         QCOMPARE(settings1.value("ene").toInt(), 2);
         QCOMPARE(settings1.value("due").toInt(), 3);
         QCOMPARE(settings1.value("rike").toInt(), 4);
-        QCOMPARE(settings1.allKeys().count(), 3);
+        QCOMPARE(settings1.allKeys().size(), 3);
         settings1.setArrayIndex(1);
         QCOMPARE(settings1.value("ene").toInt(), 5);
         QCOMPARE(settings1.value("due").toInt(), 6);
         QCOMPARE(settings1.value("rike").toInt(), 7);
-        QCOMPARE(settings1.allKeys().count(), 3);
+        QCOMPARE(settings1.allKeys().size(), 3);
         settings1.setArrayIndex(2);
         QCOMPARE(settings1.value("ene").toInt(), 8);
         QCOMPARE(settings1.value("due").toInt(), 9);
         QCOMPARE(settings1.value("rike").toInt(), 10);
-        QCOMPARE(settings1.allKeys().count(), 3);
+        QCOMPARE(settings1.allKeys().size(), 3);
 
         settings1.endArray();
         settings1.endGroup();
@@ -2501,17 +2501,17 @@ void tst_QSettings::testArrays()
         QCOMPARE(settings1.value("ene").toInt(), 2);
         QCOMPARE(settings1.value("due").toInt(), 3);
         QCOMPARE(settings1.value("rike").toInt(), 4);
-        QCOMPARE(settings1.allKeys().count(), 3);
+        QCOMPARE(settings1.allKeys().size(), 3);
         settings1.setArrayIndex(1);
         QCOMPARE(settings1.value("ene").toInt(), 5);
         QCOMPARE(settings1.value("due").toInt(), 6);
         QCOMPARE(settings1.value("rike").toInt(), 7);
-        QCOMPARE(settings1.allKeys().count(), 3);
+        QCOMPARE(settings1.allKeys().size(), 3);
         settings1.setArrayIndex(2);
         QCOMPARE(settings1.value("ene").toInt(), 8);
         QCOMPARE(settings1.value("due").toInt(), 9);
         QCOMPARE(settings1.value("rike").toInt(), 10);
-        QCOMPARE(settings1.allKeys().count(), 3);
+        QCOMPARE(settings1.allKeys().size(), 3);
 
         settings1.endArray();
         settings1.endGroup();
@@ -2683,7 +2683,7 @@ QString escapeWeirdChars(const QString &s)
     QString result;
     bool escapeNextDigit = false;
 
-    for (int i = 0; i < s.length(); ++i) {
+    for (int i = 0; i < s.size(); ++i) {
         QChar c = s.at(i);
         if (c.unicode() < ' ' || c.unicode() > '~'
             || (escapeNextDigit && c.unicode() >= '0' && c.unicode() <= 'f')) {

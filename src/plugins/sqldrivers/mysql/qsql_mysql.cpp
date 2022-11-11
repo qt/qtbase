@@ -80,7 +80,7 @@ static inline QVariant qDateTimeFromString(QString &val)
 #else
     if (val.isEmpty())
         return QVariant(QDateTime());
-    if (val.length() == 14)
+    if (val.size() == 14)
         // TIMESTAMPS have the format yyyyMMddhhmmss
         val.insert(4, u'-').insert(7, u'-').insert(10, u'T').insert(13, u':').insert(16, u':');
     return QVariant(QDateTime::fromString(val, Qt::ISODate));
@@ -286,7 +286,7 @@ static bool qIsInteger(int t)
 
 void QMYSQLResultPrivate::bindBlobs()
 {
-    for (int i = 0; i < fields.count(); ++i) {
+    for (int i = 0; i < fields.size(); ++i) {
         const MYSQL_FIELD *fieldInfo = fields.at(i).myField;
         if (qIsBlob(inBinds[i].buffer_type) && meta && fieldInfo) {
             MYSQL_BIND *bind = &inBinds[i];
@@ -392,7 +392,7 @@ void QMYSQLResult::cleanup()
     }
 
     int i;
-    for (i = 0; i < d->fields.count(); ++i)
+    for (i = 0; i < d->fields.size(); ++i)
         delete[] d->fields[i].outField;
 
     if (d->outBinds) {
@@ -509,7 +509,7 @@ bool QMYSQLResult::fetchFirst()
 QVariant QMYSQLResult::data(int field)
 {
     Q_D(QMYSQLResult);
-    if (!isSelect() || field >= d->fields.count()) {
+    if (!isSelect() || field >= d->fields.size()) {
         qWarning("QMYSQLResult::data: column %d out of range", field);
         return QVariant();
     }
@@ -625,7 +625,7 @@ QVariant QMYSQLResult::data(int field)
 bool QMYSQLResult::isNull(int field)
 {
    Q_D(const QMYSQLResult);
-   if (field < 0 || field >= d->fields.count())
+   if (field < 0 || field >= d->fields.size())
        return true;
    if (d->preparedQuery)
        return d->fields.at(field).nullIndicator;
@@ -644,7 +644,7 @@ bool QMYSQLResult::reset (const QString& query)
     cleanup();
 
     const QByteArray encQuery = query.toUtf8();
-    if (mysql_real_query(d->drv_d_func()->mysql, encQuery.data(), encQuery.length())) {
+    if (mysql_real_query(d->drv_d_func()->mysql, encQuery.data(), encQuery.size())) {
         setLastError(qMakeError(QCoreApplication::translate("QMYSQLResult", "Unable to execute query"),
                      QSqlError::StatementError, d->drv_d_func()));
         return false;
@@ -752,7 +752,7 @@ bool QMYSQLResult::nextResult()
     d->result = 0;
     setSelect(false);
 
-    for (int i = 0; i < d->fields.count(); ++i)
+    for (int i = 0; i < d->fields.size(); ++i)
         delete[] d->fields[i].outField;
     d->fields.clear();
 
@@ -840,7 +840,7 @@ bool QMYSQLResult::prepare(const QString& query)
     }
 
     const QByteArray encQuery = query.toUtf8();
-    r = mysql_stmt_prepare(d->stmt, encQuery.constData(), encQuery.length());
+    r = mysql_stmt_prepare(d->stmt, encQuery.constData(), encQuery.size());
     if (r != 0) {
         setLastError(qMakeStmtError(QCoreApplication::translate("QMYSQLResult",
                      "Unable to prepare statement"), QSqlError::StatementError, d->stmt));
@@ -882,10 +882,10 @@ bool QMYSQLResult::exec()
     }
 
     if (mysql_stmt_param_count(d->stmt) > 0 &&
-        mysql_stmt_param_count(d->stmt) == (uint)values.count()) {
+        mysql_stmt_param_count(d->stmt) == (uint)values.size()) {
 
-        nullVector.resize(values.count());
-        for (int i = 0; i < values.count(); ++i) {
+        nullVector.resize(values.size());
+        for (int i = 0; i < values.size(); ++i) {
             const QVariant &val = boundValues().at(i);
             void *data = const_cast<void *>(val.constData());
 
@@ -960,7 +960,7 @@ bool QMYSQLResult::exec()
                     stringVector.append(ba);
                     currBind->buffer_type = MYSQL_TYPE_STRING;
                     currBind->buffer = const_cast<char *>(ba.constData());
-                    currBind->buffer_length = ba.length();
+                    currBind->buffer_length = ba.size();
                     break; }
             }
         }
@@ -1178,7 +1178,7 @@ bool QMYSQLDriver::open(const QString& db,
     uint writeTimeout = 0;
 
     // extract the real options from the string
-    for (int i = 0; i < opts.count(); ++i) {
+    for (int i = 0; i < opts.size(); ++i) {
         QString tmp(opts.at(i).simplified());
         qsizetype idx;
         if ((idx = tmp.indexOf(u'=')) != -1) {

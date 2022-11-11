@@ -534,7 +534,7 @@ QString QLibraryInfoPrivate::path(QLibraryInfo::LibraryPath p, UsageMode usageMo
                 startIndex = ret.indexOf(u'$', startIndex);
                 if (startIndex < 0)
                     break;
-                if (ret.length() < startIndex + 3)
+                if (ret.size() < startIndex + 3)
                     break;
                 if (ret.at(startIndex + 1) != u'(') {
                     startIndex++;
@@ -546,7 +546,7 @@ QString QLibraryInfoPrivate::path(QLibraryInfo::LibraryPath p, UsageMode usageMo
                 auto envVarName = QStringView{ret}.mid(startIndex + 2, endIndex - startIndex - 2);
                 QString value = QString::fromLocal8Bit(qgetenv(envVarName.toLocal8Bit().constData()));
                 ret.replace(startIndex, endIndex - startIndex + 1, value);
-                startIndex += value.length();
+                startIndex += value.size();
             }
 
             config->endGroup();

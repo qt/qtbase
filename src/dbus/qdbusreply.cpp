@@ -169,7 +169,7 @@ void qDBusReplyFill(const QDBusMessage &reply, QDBusError &error, QVariant &data
         return;
     }
 
-    if (reply.arguments().count() >= 1 && reply.arguments().at(0).metaType() == data.metaType()) {
+    if (reply.arguments().size() >= 1 && reply.arguments().at(0).metaType() == data.metaType()) {
         data = reply.arguments().at(0);
         return;
     }
@@ -178,7 +178,7 @@ void qDBusReplyFill(const QDBusMessage &reply, QDBusError &error, QVariant &data
     const char *receivedType = nullptr;
     QByteArray receivedSignature;
 
-    if (reply.arguments().count() >= 1) {
+    if (reply.arguments().size() >= 1) {
         if (reply.arguments().at(0).metaType() == QDBusMetaTypeId::argument()) {
             // compare signatures instead
             QDBusArgument arg = qvariant_cast<QDBusArgument>(reply.arguments().at(0));

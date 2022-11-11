@@ -139,14 +139,14 @@ public:
     NumberParsingStatus getNumber(qulonglong *l);
     bool getReal(double *f);
 
-    inline void write(QStringView data) { write(data.begin(), data.length()); }
+    inline void write(QStringView data) { write(data.begin(), data.size()); }
     inline void write(QChar ch);
     void write(const QChar *data, qsizetype len);
     void write(QLatin1StringView data);
     void writePadding(qsizetype len);
     inline void putString(QStringView string, bool number = false)
     {
-        putString(string.constData(), string.length(), number);
+        putString(string.constData(), string.size(), number);
     }
     void putString(const QChar *data, qsizetype len, bool number = false);
     void putString(QLatin1StringView data, bool number = false);

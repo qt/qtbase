@@ -315,7 +315,7 @@ void tst_QSslKey::constructorHandle()
         passphrase = "1234";
 
     BIO* bio = q_BIO_new(q_BIO_s_mem());
-    q_BIO_write(bio, pem.constData(), pem.length());
+    q_BIO_write(bio, pem.constData(), pem.size());
     EVP_PKEY *origin = func(bio, nullptr, nullptr, static_cast<void *>(passphrase.data()));
     Q_ASSERT(origin);
     q_EVP_PKEY_up_ref(origin);

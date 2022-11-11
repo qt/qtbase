@@ -420,7 +420,7 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
         if (c == '\n') {
             // remove the CR at the end
             if (fragment.endsWith('\r')) {
-                fragment.truncate(fragment.length()-1);
+                fragment.truncate(fragment.size()-1);
             }
             bool ok = parseStatus(fragment);
             state = ReadingHeaderState;
@@ -434,7 +434,7 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
         }
 
         // is this a valid reply?
-        if (fragment.length() == 5 && !fragment.startsWith("HTTP/")) {
+        if (fragment.size() == 5 && !fragment.startsWith("HTTP/")) {
             fragment.clear();
             return -1;
         }
@@ -482,8 +482,8 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
                     allHeaders = true;
 
                 // there is another case: We have no headers. Then the fragment equals just the line ending
-                if ((fragment.length() == 2 && fragment.endsWith("\r\n"))
-                    || (fragment.length() == 1 && fragment.endsWith("\n")))
+                if ((fragment.size() == 2 && fragment.endsWith("\r\n"))
+                    || (fragment.size() == 1 && fragment.endsWith("\n")))
                     allHeaders = true;
             }
         }

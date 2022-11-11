@@ -1350,10 +1350,10 @@ void tst_QShortcut::keys()
     QCOMPARE(QApplication::focusWidget(), &le);
 
     QTest::keyEvent(QTest::Press, QApplication::focusWidget(), Qt::Key_Enter);
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
 
     QTest::keyEvent(QTest::Press, QApplication::focusWidget(), Qt::Key_Return);
-    QTRY_COMPARE(spy.count(), 2);
+    QTRY_COMPARE(spy.size(), 2);
 }
 
 QTEST_MAIN(tst_QShortcut)

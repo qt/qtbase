@@ -101,7 +101,7 @@ private:
 
         if (!m_splitter)
             m_splitter = new QTextBoundaryFinder(QTextBoundaryFinder::Word,
-                                                 m_string.constData(), m_string.length(),
+                                                 m_string.constData(), m_string.size(),
                                                  /*buffer*/nullptr, /*buffer size*/0);
 
         m_splitter->setPosition(start);
@@ -1781,7 +1781,7 @@ const QCharAttributes *QTextEngine::attributes() const
         return (QCharAttributes *) layoutData->memory;
 
     itemize();
-    if (! ensureSpace(layoutData->string.length()))
+    if (! ensureSpace(layoutData->string.size()))
         return nullptr;
 
     QVarLengthArray<QUnicodeTools::ScriptItem> scriptItems(layoutData->items.size());
@@ -1888,7 +1888,7 @@ void QTextEngine::itemize() const
     if (layoutData->items.size())
         return;
 
-    int length = layoutData->string.length();
+    int length = layoutData->string.size();
     if (!length)
         return;
 
@@ -1905,9 +1905,9 @@ void QTextEngine::itemize() const
     {
         QUnicodeTools::ScriptItemArray scriptItems;
         QUnicodeTools::initScripts(layoutData->string, &scriptItems);
-        for (int i = 0; i < scriptItems.length(); ++i) {
+        for (int i = 0; i < scriptItems.size(); ++i) {
             const auto &item = scriptItems.at(i);
-            int end = i < scriptItems.length() - 1 ? scriptItems.at(i + 1).position : length;
+            int end = i < scriptItems.size() - 1 ? scriptItems.at(i + 1).position : length;
             for (int j = item.position; j < end; ++j)
                 analysis[j].script = item.script;
         }
@@ -1970,7 +1970,7 @@ void QTextEngine::itemize() const
             const QTextFragmentData * const frag = it.value();
             if (it == end || format != frag->format) {
                 if (s && position >= preeditPosition) {
-                    position += s->preeditText.length();
+                    position += s->preeditText.size();
                     preeditPosition = INT_MAX;
                 }
                 Q_ASSERT(position <= length);
@@ -2399,7 +2399,7 @@ void QTextEngine::justify(const QScriptLine &line)
 
     if (!forceJustification) {
         int end = line.from + (int)line.length + line.trailingSpaces;
-        if (end == layoutData->string.length())
+        if (end == layoutData->string.size())
             return; // no justification at end of paragraph
         if (end && layoutData->items.at(findItem(end - 1)).analysis.flags == QScriptAnalysis::LineOrParagraphSeparator)
             return; // no justification at the end of an explicitly separated line
@@ -2612,11 +2612,11 @@ QTextEngine::LayoutData::LayoutData(const QString &str, void **stack_memory, int
 {
     allocated = _allocated;
 
-    int space_charAttributes = int(sizeof(QCharAttributes) * string.length() / sizeof(void*) + 1);
-    int space_logClusters = int(sizeof(unsigned short) * string.length() / sizeof(void*) + 1);
+    int space_charAttributes = int(sizeof(QCharAttributes) * string.size() / sizeof(void*) + 1);
+    int space_logClusters = int(sizeof(unsigned short) * string.size() / sizeof(void*) + 1);
     available_glyphs = ((int)allocated - space_charAttributes - space_logClusters)*(int)sizeof(void*)/(int)QGlyphLayout::SpaceNeeded;
 
-    if (available_glyphs < str.length()) {
+    if (available_glyphs < str.size()) {
         // need to allocate on the heap
         allocated = 0;
 
@@ -2629,7 +2629,7 @@ QTextEngine::LayoutData::LayoutData(const QString &str, void **stack_memory, int
         logClustersPtr = (unsigned short *)(memory + space_charAttributes);
 
         void *m = memory + space_charAttributes + space_logClusters;
-        glyphLayout = QGlyphLayout(reinterpret_cast<char *>(m), str.length());
+        glyphLayout = QGlyphLayout(reinterpret_cast<char *>(m), str.size());
         glyphLayout.clear();
         memset(memory, 0, space_charAttributes*sizeof(void *));
     }
@@ -2654,8 +2654,8 @@ bool QTextEngine::LayoutData::reallocate(int totalGlyphs)
         return true;
     }
 
-    int space_charAttributes = int(sizeof(QCharAttributes) * string.length() / sizeof(void*) + 1);
-    int space_logClusters = int(sizeof(unsigned short) * string.length() / sizeof(void*) + 1);
+    int space_charAttributes = int(sizeof(QCharAttributes) * string.size() / sizeof(void*) + 1);
+    int space_logClusters = int(sizeof(unsigned short) * string.size() / sizeof(void*) + 1);
     int space_glyphs = (totalGlyphs * QGlyphLayout::SpaceNeeded) / sizeof(void *) + 2;
 
     int newAllocated = space_charAttributes + space_glyphs + space_logClusters;
@@ -2745,10 +2745,10 @@ int QTextEngine::formatIndex(const QScriptItem *si) const
         return -1;
     int pos = si->position;
     if (specialData && si->position >= specialData->preeditPosition) {
-        if (si->position < specialData->preeditPosition + specialData->preeditText.length())
+        if (si->position < specialData->preeditPosition + specialData->preeditText.size())
             pos = qMax(qMin(block.length(), specialData->preeditPosition) - 1, 0);
         else
-            pos -= specialData->preeditText.length();
+            pos -= specialData->preeditText.size();
     }
     QTextDocumentPrivate::FragmentIterator it = p->find(block.position() + pos);
     return it.value()->format;
@@ -2883,9 +2883,9 @@ void QTextEngine::indexFormats()
 */
 static inline bool nextCharJoins(const QString &string, int pos)
 {
-    while (pos < string.length() && string.at(pos).category() == QChar::Mark_NonSpacing)
+    while (pos < string.size() && string.at(pos).category() == QChar::Mark_NonSpacing)
         ++pos;
-    if (pos == string.length())
+    if (pos == string.size())
         return false;
     QChar::JoiningType joining = string.at(pos).joiningType();
     return joining != QChar::Joining_None && joining != QChar::Joining_Transparent;
@@ -2968,12 +2968,12 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, QFixed width, int flags,
 
     validate();
 
-    const int to = count >= 0 && count <= layoutData->string.length() - from
+    const int to = count >= 0 && count <= layoutData->string.size() - from
             ? from + count
-            : layoutData->string.length();
+            : layoutData->string.size();
 
     if (mode == Qt::ElideNone
-        || this->width(from, layoutData->string.length()) <= width
+        || this->width(from, layoutData->string.size()) <= width
         || to - from <= 1)
         return layoutData->string.mid(from, from - to);
 
@@ -3040,7 +3040,7 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, QFixed width, int flags,
             pos = nextBreak;
 
             ++nextBreak;
-            while (nextBreak < layoutData->string.length() && !attributes[nextBreak].graphemeBoundary)
+            while (nextBreak < layoutData->string.size() && !attributes[nextBreak].graphemeBoundary)
                 ++nextBreak;
 
             currentWidth += this->width(pos, nextBreak - pos);
@@ -3092,7 +3092,7 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, QFixed width, int flags,
             rightPos = nextRightBreak;
 
             ++nextLeftBreak;
-            while (nextLeftBreak < layoutData->string.length() && !attributes[nextLeftBreak].graphemeBoundary)
+            while (nextLeftBreak < layoutData->string.size() && !attributes[nextLeftBreak].graphemeBoundary)
                 ++nextLeftBreak;
 
             --nextRightBreak;
@@ -3168,11 +3168,11 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
         for (const QTextOption::Tab &tabSpec : qAsConst(tabArray)) {
             QFixed tab = QFixed::fromReal(tabSpec.position) * dpiScale;
             if (tab > x) {  // this is the tab we need.
-                int tabSectionEnd = layoutData->string.length();
+                int tabSectionEnd = layoutData->string.size();
                 if (tabSpec.type == QTextOption::RightTab || tabSpec.type == QTextOption::CenterTab) {
                     // find next tab to calculate the width required.
                     tab = QFixed::fromReal(tabSpec.position);
-                    for (int i=item + 1; i < layoutData->items.count(); i++) {
+                    for (int i=item + 1; i < layoutData->items.size(); i++) {
                         const QScriptItem &item = layoutData->items[i];
                         if (item.analysis.flags == QScriptAnalysis::TabOrObject) { // found it.
                             tabSectionEnd = item.position;
@@ -3187,7 +3187,7 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
                 if (tabSectionEnd > si.position) {
                     QFixed length;
                     // Calculate the length of text between this tab and the tabSectionEnd
-                    for (int i=item; i < layoutData->items.count(); i++) {
+                    for (int i=item; i < layoutData->items.size(); i++) {
                         const QScriptItem &item = layoutData->items.at(i);
                         if (item.position > tabSectionEnd || item.position <= si.position)
                             continue;
@@ -3259,7 +3259,7 @@ void QTextEngine::resolveFormats() const
 
     QTextFormatCollection *collection = formatCollection();
 
-    QList<QTextCharFormat> resolvedFormats(layoutData->items.count());
+    QList<QTextCharFormat> resolvedFormats(layoutData->items.size());
 
     QVarLengthArray<int, 64> formatsSortedByStart;
     formatsSortedByStart.reserve(specialData->formats.size());
@@ -3277,7 +3277,7 @@ void QTextEngine::resolveFormats() const
     const int *startIt = formatsSortedByStart.constBegin();
     const int *endIt = formatsSortedByEnd.constBegin();
 
-    for (int i = 0; i < layoutData->items.count(); ++i) {
+    for (int i = 0; i < layoutData->items.size(); ++i) {
         const QScriptItem *si = &layoutData->items.at(i);
         int end = si->position + length(si);
 
@@ -3453,8 +3453,8 @@ int QTextEngine::previousLogicalPosition(int oldPos) const
 {
     const QCharAttributes *attrs = attributes();
     int len = block.isValid() ? block.length() - 1
-                              : layoutData->string.length();
-    Q_ASSERT(len <= layoutData->string.length());
+                              : layoutData->string.size();
+    Q_ASSERT(len <= layoutData->string.size());
     if (!attrs || oldPos <= 0 || oldPos > len)
         return oldPos;
 
@@ -3468,8 +3468,8 @@ int QTextEngine::nextLogicalPosition(int oldPos) const
 {
     const QCharAttributes *attrs = attributes();
     int len = block.isValid() ? block.length() - 1
-                              : layoutData->string.length();
-    Q_ASSERT(len <= layoutData->string.length());
+                              : layoutData->string.size();
+    Q_ASSERT(len <= layoutData->string.size());
     if (!attrs || oldPos < 0 || oldPos >= len)
         return oldPos;
 
@@ -3483,7 +3483,7 @@ int QTextEngine::lineNumberForTextPosition(int pos)
 {
     if (!layoutData)
         itemize();
-    if (pos == layoutData->string.length() && lines.size())
+    if (pos == layoutData->string.size() && lines.size())
         return lines.size() - 1;
     for (int i = 0; i < lines.size(); ++i) {
         const QScriptLine& line = lines[i];

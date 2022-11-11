@@ -48,7 +48,7 @@ UnixMakefileGenerator::init()
     for (const ProString &iif : project->values("QMAKE_INTERNAL_INCLUDED_FILES")) {
         if (iif == project->cacheFile())
             continue;
-        if (iif.startsWith(sroot) && iif.at(sroot.length()) == QLatin1Char('/'))
+        if (iif.startsWith(sroot) && iif.at(sroot.size()) == QLatin1Char('/'))
             project->values("DISTFILES") += fileFixify(iif.toQString(), FileFixifyRelative);
     }
 
@@ -101,7 +101,7 @@ UnixMakefileGenerator::init()
         const ProStringList &rpathdirs = project->values("QMAKE_RPATHDIR");
         for (int i = 0; i < rpathdirs.size(); ++i) {
             QString rpathdir = rpathdirs[i].toQString();
-            if (rpathdir.length() > 1 && rpathdir.at(0) == '$' && rpathdir.at(1) != '(') {
+            if (rpathdir.size() > 1 && rpathdir.at(0) == '$' && rpathdir.at(1) != '(') {
                 rpathdir.replace(0, 1, "\\$$");  // Escape from make and the shell
             } else if (!rpathdir.startsWith('@') && fileInfo(rpathdir).isRelative()) {
                 QString rpathbase = project->first("QMAKE_REL_RPATH_BASE").toQString();
@@ -436,7 +436,7 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                                 break;
                         }
                     } else {
-                        if (opt.length() == 10)
+                        if (opt.size() == 10)
                             ++it;
                         // Skip
                     }
@@ -689,7 +689,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
                     QString link = Option::fixPathToTargetOS(destdir + links[i], false);
                     int lslash = link.lastIndexOf(Option::dir_sep);
                     if(lslash != -1)
-                        link = link.right(link.length() - (lslash + 1));
+                        link = link.right(link.size() - (lslash + 1));
                     QString dst_link = escapeFilePath(
                                 filePrefixRoot(root, fileFixify(targetdir + link, FileFixifyAbsolute)));
                     ret += "\n\t-$(SYMLINK) $(TARGET) " + dst_link;

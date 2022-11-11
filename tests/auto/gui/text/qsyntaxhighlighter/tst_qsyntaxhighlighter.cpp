@@ -100,7 +100,7 @@ public:
 
             virtual void highlightBlock(const QString &text) override
             {
-                for (int i = 0; i < formats.count(); ++i) {
+                for (int i = 0; i < formats.size(); ++i) {
                     const QTextLayout::FormatRange &range = formats.at(i);
                     setFormat(range.start, range.length, range.format);
                 }
@@ -161,7 +161,7 @@ public:
             commentFormat.setForeground(Qt::darkGreen);
             commentFormat.setFontWeight(QFont::StyleItalic);
             commentFormat.setFontFixedPitch(true);
-            int textLength = text.length();
+            int textLength = text.size();
 
             if (text.startsWith(QLatin1Char(';'))){
                 // The entire line is a comment
@@ -414,7 +414,7 @@ void tst_QSyntaxHighlighter::preservePreeditArea()
     QCOMPARE(hl->callCount, 1);
 
     formats = layout->formats();
-    QCOMPARE(formats.count(), 3);
+    QCOMPARE(formats.size(), 3);
 
     range = formats.at(0);
 
@@ -493,7 +493,7 @@ void tst_QSyntaxHighlighter::noContentsChangedDuringHighlight()
     QSignalSpy contentsChangedSpy(doc, SIGNAL(contentsChanged()));
     cursor.insertText("Hello World");
 
-    QCOMPARE(contentsChangedSpy.count(), 1);
+    QCOMPARE(contentsChangedSpy.size(), 1);
     QVERIFY(hl->highlighted);
     QVERIFY(lout->documentChangedCalled);
 }

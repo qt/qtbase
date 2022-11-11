@@ -2283,19 +2283,19 @@ static bool readEtcFile(QUnixOSVersion &v, const char *filename,
         line.setRawData(ptr, eol - ptr);
 
         if (line.startsWith(idKey)) {
-            ptr += idKey.length();
+            ptr += idKey.size();
             v.productType = unquote(ptr, eol);
             continue;
         }
 
         if (line.startsWith(prettyNameKey)) {
-            ptr += prettyNameKey.length();
+            ptr += prettyNameKey.size();
             v.prettyName = unquote(ptr, eol);
             continue;
         }
 
         if (line.startsWith(versionKey)) {
-            ptr += versionKey.length();
+            ptr += versionKey.size();
             v.productVersion = unquote(ptr, eol);
             continue;
         }
@@ -2332,7 +2332,7 @@ static bool readEtcLsbRelease(QUnixOSVersion &v)
         int fd = qt_safe_open(distrorelease, O_RDONLY);
         if (fd != -1) {
             QT_STATBUF sbuf;
-            if (QT_FSTAT(fd, &sbuf) != -1 && sbuf.st_size > v.prettyName.length()) {
+            if (QT_FSTAT(fd, &sbuf) != -1 && sbuf.st_size > v.prettyName.size()) {
                 // file apparently contains interesting information
                 QByteArray buffer(sbuf.st_size, Qt::Uninitialized);
                 buffer.resize(qt_safe_read(fd, buffer.data(), sbuf.st_size));

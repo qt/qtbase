@@ -98,7 +98,7 @@ void QColumnView::setResizeGripsVisible(bool visible)
     if (d->showResizeGrips == visible)
         return;
     d->showResizeGrips = visible;
-    for (int i = 0; i < d->columns.count(); ++i) {
+    for (int i = 0; i < d->columns.size(); ++i) {
         QAbstractItemView *view = d->columns[i];
         if (visible) {
             QColumnViewGrip *grip = new QColumnViewGrip(view);
@@ -140,7 +140,7 @@ void QColumnView::setRootIndex(const QModelIndex &index)
         return;
 
     d->closeColumns();
-    Q_ASSERT(d->columns.count() == 0);
+    Q_ASSERT(d->columns.size() == 0);
 
     QAbstractItemView *view = d->createColumn(index, true);
     if (view->selectionModel())
@@ -206,7 +206,7 @@ void QColumnView::scrollContentsBy(int dx, int dy)
         return;
 
     dx = isRightToLeft() ? -dx : dx;
-    for (int i = 0; i < d->columns.count(); ++i)
+    for (int i = 0; i < d->columns.size(); ++i)
         d->columns.at(i)->move(d->columns.at(i)->x() + dx, 0);
     d->offset += dx;
     QAbstractItemView::scrollContentsBy(dx, dy);
@@ -420,7 +420,7 @@ int QColumnView::verticalOffset() const
 */
 QRegion QColumnView::visualRegionForSelection(const QItemSelection &selection) const
 {
-    int ranges = selection.count();
+    int ranges = selection.size();
 
     if (ranges == 0)
         return QRect();
@@ -603,7 +603,7 @@ void QColumnViewPrivate::_q_clicked(const QModelIndex &index)
     Q_Q(QColumnView);
     QModelIndex parent = index.parent();
     QAbstractItemView *columnClicked = nullptr;
-    for (int column = 0; column < columns.count(); ++column) {
+    for (int column = 0; column < columns.size(); ++column) {
         if (columns.at(column)->rootIndex() == parent) {
             columnClicked = columns[column];
             break;
@@ -664,16 +664,16 @@ QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bo
         q->connect(grip, SIGNAL(gripMoved(int)), q, SLOT(_q_gripMoved(int)));
     }
 
-    if (columnSizes.count() > columns.count()) {
-        view->setGeometry(0, 0, columnSizes.at(columns.count()), viewport->height());
+    if (columnSizes.size() > columns.size()) {
+        view->setGeometry(0, 0, columnSizes.at(columns.size()), viewport->height());
     } else {
         int initialWidth = view->sizeHint().width();
         if (q->isRightToLeft())
             view->setGeometry(viewport->width() - initialWidth, 0, initialWidth, viewport->height());
         else
             view->setGeometry(0, 0, initialWidth, viewport->height());
-        columnSizes.resize(qMax(columnSizes.count(), columns.count() + 1));
-        columnSizes[columns.count()] = initialWidth;
+        columnSizes.resize(qMax(columnSizes.size(), columns.size() + 1));
+        columnSizes[columns.size()] = initialWidth;
     }
     if (!columns.isEmpty() && columns.constLast()->isHidden())
         columns.constLast()->setVisible(true);
@@ -826,8 +826,8 @@ void QColumnView::setColumnWidths(const QList<int> &list)
 {
     Q_D(QColumnView);
     int i = 0;
-    const int listCount = list.count();
-    const int count = qMin(listCount, d->columns.count());
+    const int listCount = list.size();
+    const int count = qMin(listCount, d->columns.size());
     for (; i < count; ++i) {
         d->columns.at(i)->resize(list.at(i), d->columns.at(i)->height());
         d->columnSizes[i] = list.at(i);
@@ -847,7 +847,7 @@ QList<int> QColumnView::columnWidths() const
 {
     Q_D(const QColumnView);
     QList<int> list;
-    const int columnCount = d->columns.count();
+    const int columnCount = d->columns.size();
     list.reserve(columnCount);
     for (int i = 0; i < columnCount; ++i)
         list.append(d->columnSizes.at(i));
@@ -984,9 +984,9 @@ void QColumnView::selectAll()
     QModelIndexList indexList = selectionModel()->selectedIndexes();
     QModelIndex parent = rootIndex();
     QItemSelection selection;
-    if (indexList.count() >= 1)
+    if (indexList.size() >= 1)
         parent = indexList.at(0).parent();
-    if (indexList.count() == 1) {
+    if (indexList.size() == 1) {
         parent = indexList.at(0);
         if (!model()->hasChildren(parent))
             parent = parent.parent();
@@ -1039,7 +1039,7 @@ void QColumnViewPrivate::checkColumnCreation(const QModelIndex &parent)
     if (parent == q_func()->currentIndex() && model->hasChildren(parent)) {
         //the parent has children and is the current
         //let's try to find out if there is already a mapping that is good
-        for (int i = 0; i < columns.count(); ++i) {
+        for (int i = 0; i < columns.size(); ++i) {
             QAbstractItemView *view = columns.at(i);
             if (view->rootIndex() == parent) {
                 if (view == previewColumn) {

@@ -458,7 +458,7 @@ static inline void set_text(const QImage &image, j_compress_ptr cinfo, const QSt
         if (!comment.isEmpty())
             comment += ": ";
         comment += it.value().toUtf8();
-        if (comment.length() > maxMarkerSize)
+        if (comment.size() > maxMarkerSize)
             comment.truncate(maxMarkerSize);
         jpeg_write_marker(cinfo, JPEG_COM, (const JOCTET *)comment.constData(), comment.size());
     }

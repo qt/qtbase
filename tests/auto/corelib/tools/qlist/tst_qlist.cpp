@@ -1078,20 +1078,20 @@ void tst_QList::count() const
     {
         // zero size
         QList<T> myvec;
-        QVERIFY(myvec.count() == 0);
+        QVERIFY(myvec.size() == 0);
         QVERIFY(!myvec.isDetached());
 
         // grow
         myvec.append(SimpleValue<T>::at(0));
-        QVERIFY(myvec.count() == 1);
+        QVERIFY(myvec.size() == 1);
         myvec.append(SimpleValue<T>::at(1));
-        QVERIFY(myvec.count() == 2);
+        QVERIFY(myvec.size() == 2);
 
         // shrink
         myvec.remove(0);
-        QVERIFY(myvec.count() == 1);
+        QVERIFY(myvec.size() == 1);
         myvec.remove(0);
-        QVERIFY(myvec.count() == 0);
+        QVERIFY(myvec.size() == 0);
     }
 
     // count of items
@@ -1905,11 +1905,11 @@ void tst_QList::move() const
     list << T_FOO << T_BAR << T_BAZ;
 
     // move an item
-    list.move(0, list.count() - 1);
+    list.move(0, list.size() - 1);
     QCOMPARE(list, QList<T>() << T_BAR << T_BAZ << T_FOO);
 
     // move it back
-    list.move(list.count() - 1, 0);
+    list.move(list.size() - 1, 0);
     QCOMPARE(list, QList<T>() << T_FOO << T_BAR << T_BAZ);
 
     // move an item in the middle
@@ -2673,24 +2673,24 @@ void tst_QList::size() const
     // zero size
     QList<T> myvec;
     QVERIFY(myvec.size() == 0);
-    QCOMPARE(myvec.length(), myvec.size());
+    QCOMPARE(myvec.size(), myvec.size());
     QVERIFY(!myvec.isDetached());
 
     // grow
     myvec.append(SimpleValue<T>::at(0));
     QVERIFY(myvec.size() == 1);
-    QCOMPARE(myvec.length(), myvec.size());
+    QCOMPARE(myvec.size(), myvec.size());
     myvec.append(SimpleValue<T>::at(1));
     QVERIFY(myvec.size() == 2);
-    QCOMPARE(myvec.length(), myvec.size());
+    QCOMPARE(myvec.size(), myvec.size());
 
     // shrink
     myvec.remove(0);
     QVERIFY(myvec.size() == 1);
-    QCOMPARE(myvec.length(), myvec.size());
+    QCOMPARE(myvec.size(), myvec.size());
     myvec.remove(0);
     QVERIFY(myvec.size() == 0);
-    QCOMPARE(myvec.length(), myvec.size());
+    QCOMPARE(myvec.size(), myvec.size());
 }
 
 // ::squeeze() is tested in ::capacity().

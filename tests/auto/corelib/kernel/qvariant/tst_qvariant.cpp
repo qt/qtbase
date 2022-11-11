@@ -3067,57 +3067,57 @@ void tst_QVariant::convertIterables() const
     {
         QStringList list;
         list.append("Hello");
-        QCOMPARE(QVariant::fromValue(list).value<QVariantList>().count(), list.count());
+        QCOMPARE(QVariant::fromValue(list).value<QVariantList>().size(), list.size());
     }
     {
         QByteArrayList list;
         list.append("Hello");
-        QCOMPARE(QVariant::fromValue(list).value<QVariantList>().count(), list.count());
+        QCOMPARE(QVariant::fromValue(list).value<QVariantList>().size(), list.size());
     }
     {
         QVariantList list;
         list.append("World");
-        QCOMPARE(QVariant::fromValue(list).value<QVariantList>().count(), list.count());
+        QCOMPARE(QVariant::fromValue(list).value<QVariantList>().size(), list.size());
     }
     {
         QMap<QString, int> map;
         map.insert("3", 4);
-        QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().count(), map.count());
-        QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().count(), map.count());
+        QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().size(), map.size());
+        QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().size(), map.size());
 
         map.insert("4", 5);
-        QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().count(), map.count());
-        QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().count(), map.count());
+        QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().size(), map.size());
+        QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().size(), map.size());
     }
     {
         QVariantMap map;
         map.insert("3", 4);
-        QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().count(), map.count());
-        QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().count(), map.count());
+        QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().size(), map.size());
+        QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().size(), map.size());
 
         map.insert("4", 5);
-        QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().count(), map.count());
-        QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().count(), map.count());
+        QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().size(), map.size());
+        QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().size(), map.size());
     }
     {
         QHash<QString, int> hash;
         hash.insert("3", 4);
-        QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().count(), hash.count());
-        QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().count(), hash.count());
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().size(), hash.size());
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().size(), hash.size());
 
         hash.insert("4", 5);
-        QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().count(), hash.count());
-        QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().count(), hash.count());
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().size(), hash.size());
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().size(), hash.size());
     }
     {
         QVariantHash hash;
         hash.insert("3", 4);
-        QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().count(), hash.count());
-        QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().count(), hash.count());
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().size(), hash.size());
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().size(), hash.size());
 
         hash.insert("4", 5);
-        QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().count(), hash.count());
-        QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().count(), hash.count());
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().size(), hash.size());
+        QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().size(), hash.size());
     }
 }
 

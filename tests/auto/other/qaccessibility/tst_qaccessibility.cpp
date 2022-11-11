@@ -294,9 +294,9 @@ void tst_QAccessibility::cleanup()
 {
     const EventList list = QTestAccessibility::events();
     if (!list.isEmpty()) {
-        qWarning("%zd accessibility event(s) were not handled in testfunction '%s':", size_t(list.count()),
+        qWarning("%zd accessibility event(s) were not handled in testfunction '%s':", size_t(list.size()),
                  QString(QTest::currentTestFunction()).toLatin1().constData());
-        for (int i = 0; i < list.count(); ++i)
+        for (int i = 0; i < list.size(); ++i)
             qWarning(" %d: Object: %p Event: '%s' Child: %d", i + 1, list.at(i)->object(),
                      qAccessibleEventString(list.at(i)->type()), list.at(i)->child());
     }
@@ -782,7 +782,7 @@ void tst_QAccessibility::textAttributes()
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&textEdit);
     QAccessibleTextInterface *textInterface=interface->textInterface();
     QVERIFY(textInterface);
-    QCOMPARE(textInterface->characterCount(), textEdit.toPlainText().length());
+    QCOMPARE(textInterface->characterCount(), textEdit.toPlainText().size());
 
     int startOffset = -1;
     int endOffset = -1;
@@ -1944,7 +1944,7 @@ void tst_QAccessibility::mdiAreaTest()
         mdiArea.addSubWindow(new QWidget, Qt::Dialog)->show();
 
     QList<QMdiSubWindow *> subWindows = mdiArea.subWindowList();
-    QCOMPARE(subWindows.count(), subWindowCount);
+    QCOMPARE(subWindows.size(), subWindowCount);
 
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&mdiArea);
     QVERIFY(interface);
@@ -1982,7 +1982,7 @@ void tst_QAccessibility::mdiSubWindowTest()
     }
 
     QList<QMdiSubWindow *> subWindows = mdiArea.subWindowList();
-    QCOMPARE(subWindows.count(), subWindowCount);
+    QCOMPARE(subWindows.size(), subWindowCount);
 
     QMdiSubWindow *testWindow = subWindows.at(3);
     QVERIFY(testWindow);
@@ -2106,10 +2106,10 @@ void tst_QAccessibility::lineEditTest()
     QCOMPARE(iface->text(QAccessible::Value), QString());
     le->setEchoMode(QLineEdit::Password);
     QVERIFY(iface->state().passwordEdit);
-    QCOMPARE(iface->text(QAccessible::Value), QString(secret.length(), QLatin1Char('*')));
+    QCOMPARE(iface->text(QAccessible::Value), QString(secret.size(), QLatin1Char('*')));
     le->setEchoMode(QLineEdit::PasswordEchoOnEdit);
     QVERIFY(iface->state().passwordEdit);
-    QCOMPARE(iface->text(QAccessible::Value), QString(secret.length(), QLatin1Char('*')));
+    QCOMPARE(iface->text(QAccessible::Value), QString(secret.size(), QLatin1Char('*')));
     le->setEchoMode(QLineEdit::Normal);
     QVERIFY(!(iface->state().passwordEdit));
     QCOMPARE(iface->text(QAccessible::Value), secret);
@@ -2201,7 +2201,7 @@ void tst_QAccessibility::lineEditTest()
 
     QCOMPARE(textIface->textAtOffset(5, QAccessible::ParagraphBoundary,&start,&end), cite);
     QCOMPARE(start, 0);
-    QCOMPARE(end, cite.length());
+    QCOMPARE(end, cite.size());
     QCOMPARE(textIface->textAtOffset(5, QAccessible::LineBoundary,&start,&end), cite);
     QCOMPARE(textIface->textAtOffset(5, QAccessible::NoBoundary,&start,&end), cite);
 
@@ -2245,8 +2245,8 @@ void tst_QAccessibility::lineEditTest()
     QVERIFY_EVENT(&sel);
 
     lineEdit->selectAll();
-    sel.setSelection(0, lineEdit->text().length());
-    sel.setCursorPosition(lineEdit->text().length());
+    sel.setSelection(0, lineEdit->text().size());
+    sel.setCursorPosition(lineEdit->text().size());
     QVERIFY_EVENT(&sel);
 
     lineEdit->setSelection(10, -4);
@@ -2602,7 +2602,7 @@ void tst_QAccessibility::dialogButtonBoxTest()
 
     std::sort(buttons.begin(), buttons.end(), accessibleInterfaceLeftOf);
 
-    for (int i = 0; i < buttons.count(); ++i)
+    for (int i = 0; i < buttons.size(); ++i)
         actualOrder << buttons.at(i)->text(QAccessible::Name);
 
     QStringList expectedOrder;
@@ -2654,7 +2654,7 @@ void tst_QAccessibility::dialogButtonBoxTest()
 
     std::sort(buttons.begin(), buttons.end(), accessibleInterfaceAbove);
 
-    for (int i = 0; i < buttons.count(); ++i)
+    for (int i = 0; i < buttons.size(); ++i)
         actualOrder << buttons.at(i)->text(QAccessible::Name);
 
     QStringList expectedOrder;
@@ -3716,7 +3716,7 @@ void tst_QAccessibility::labelTest()
     QCOMPARE(acc_label->state().readOnly, true);
 
     QList<QPair<QAccessibleInterface *, QAccessible::Relation>> rels = acc_label->relations();
-    QCOMPARE(rels.count(), 1);
+    QCOMPARE(rels.size(), 1);
     QAccessibleInterface *iface = rels.first().first;
     QAccessible::Relation rel = rels.first().second;
 
@@ -4173,7 +4173,7 @@ void tst_QAccessibility::focusChild()
 
         spy.clear();
         tableView->setCurrentCell(2, 1);
-        QTRY_COMPARE(spy.count(), 1);
+        QTRY_COMPARE(spy.size(), 1);
 
         QAccessibleInterface *child = iface->focusChild();
         QVERIFY(child);
@@ -4181,7 +4181,7 @@ void tst_QAccessibility::focusChild()
 
         spy.clear();
         tableView->setCurrentCell(1, 2);
-        QTRY_COMPARE(spy.count(), 1);
+        QTRY_COMPARE(spy.size(), 1);
 
         child = iface->focusChild();
         QVERIFY(child);
@@ -4233,7 +4233,7 @@ void tst_QAccessibility::focusChild()
 
         spy.clear();
         treeView->setCurrentItem(item2);
-        QTRY_COMPARE(spy.count(), 1);
+        QTRY_COMPARE(spy.size(), 1);
 
         QAccessibleInterface *child = iface->focusChild();
         QVERIFY(child);
@@ -4241,7 +4241,7 @@ void tst_QAccessibility::focusChild()
 
         spy.clear();
         treeView->setCurrentItem(item3);
-        QTRY_COMPARE(spy.count(), 1);
+        QTRY_COMPARE(spy.size(), 1);
 
         child = iface->focusChild();
         QVERIFY(child);

@@ -77,7 +77,7 @@ public Q_SLOTS: // METHODS
     inline QDBusReply<QString> getServerInformation(QString &vendor, QString &version, QString &specVersion)
     {
         QDBusMessage reply = call(QDBus::Block, QStringLiteral("GetServerInformation"));
-        if (reply.type() == QDBusMessage::ReplyMessage && reply.arguments().count() == 4) {
+        if (reply.type() == QDBusMessage::ReplyMessage && reply.arguments().size() == 4) {
             vendor = qdbus_cast<QString>(reply.arguments().at(1));
             version = qdbus_cast<QString>(reply.arguments().at(2));
             specVersion = qdbus_cast<QString>(reply.arguments().at(3));

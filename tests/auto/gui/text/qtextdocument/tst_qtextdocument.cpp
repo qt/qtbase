@@ -465,17 +465,17 @@ void tst_QTextDocument::basicIsModifiedChecks()
     QVERIFY(!doc->isModified());
     cursor.insertText("Hello World");
     QVERIFY(doc->isModified());
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QVERIFY(spy.takeFirst().at(0).toBool());
 
     doc->undo();
     QVERIFY(!doc->isModified());
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QVERIFY(!spy.takeFirst().at(0).toBool());
 
     doc->redo();
     QVERIFY(doc->isModified());
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QVERIFY(spy.takeFirst().at(0).toBool());
 }
 
@@ -566,16 +566,16 @@ void tst_QTextDocument::noundo_basicIsModifiedChecks()
     QVERIFY(!doc->isModified());
     cursor.insertText("Hello World");
     QVERIFY(doc->isModified());
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QVERIFY(spy.takeFirst().at(0).toBool());
 
     doc->undo();
     QVERIFY(doc->isModified());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     doc->redo();
     QVERIFY(doc->isModified());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QTextDocument::task240325()
@@ -1945,7 +1945,7 @@ void tst_QTextDocument::toHtmlBodyBgColor()
     doc.rootFrame()->setFrameFormat(fmt);
 
     QString expectedHtml = htmlHead;
-    expectedHtml.insert(htmlHead.length() - 2, " bgcolor=\"#0000ff\"");
+    expectedHtml.insert(htmlHead.size() - 2, " bgcolor=\"#0000ff\"");
     expectedHtml += "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Blah</p>"
              + htmlTail;
 
@@ -1965,7 +1965,7 @@ void tst_QTextDocument::toHtmlBodyBgColorRgba()
     doc.rootFrame()->setFrameFormat(fmt);
 
     QString expectedHtml = htmlHead;
-    expectedHtml.insert(htmlHead.length() - 2, " bgcolor=\"rgba(255,0,0,0.2)\"");
+    expectedHtml.insert(htmlHead.size() - 2, " bgcolor=\"rgba(255,0,0,0.2)\"");
     expectedHtml += "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Blah</p>"
              + htmlTail;
 
@@ -1985,7 +1985,7 @@ void tst_QTextDocument::toHtmlBodyBgColorTransparent()
     doc.rootFrame()->setFrameFormat(fmt);
 
     QString expectedHtml = htmlHead;
-    expectedHtml.insert(htmlHead.length() - 2, " bgcolor=\"transparent\"");
+    expectedHtml.insert(htmlHead.size() - 2, " bgcolor=\"transparent\"");
     expectedHtml += "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Blah</p>"
              + htmlTail;
 
@@ -2051,7 +2051,7 @@ void tst_QTextDocument::toHtmlDefaultFontSpacingProperties()
     doc.setDefaultFont(fnt);
 
     QString expectedOutput = htmlHead;
-    expectedOutput.insert(htmlHead.length() - 3, " letter-spacing:13px; word-spacing:15px;");
+    expectedOutput.insert(htmlHead.size() - 3, " letter-spacing:13px; word-spacing:15px;");
     expectedOutput +=
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Blah</p>"
             + htmlTail;
@@ -2071,7 +2071,7 @@ void tst_QTextDocument::toHtmlTextDecorationUnderline()
     doc.setDefaultFont(fnt);
 
     QString expectedOutput = htmlHead;
-    expectedOutput.insert(htmlHead.length() - 3, " text-decoration: underline;");
+    expectedOutput.insert(htmlHead.size() - 3, " text-decoration: underline;");
     expectedOutput +=
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Some text</p>"
             + htmlTail;
@@ -2086,7 +2086,7 @@ void tst_QTextDocument::toHtmlTextDecorationUnderline()
     cursor.mergeCharFormat(format);
 
     expectedOutput = htmlHead;
-    expectedOutput.insert(htmlHead.length() - 3, " text-decoration: underline;");
+    expectedOutput.insert(htmlHead.size() - 3, " text-decoration: underline;");
     expectedOutput +=
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; "
             "margin-right:0px; -qt-block-indent:0; text-indent:0px;\">"
@@ -2740,11 +2740,11 @@ void tst_QTextDocument::defaultTableStyle()
                 brushes << sideProperty.value<QBrush>();
             }
             auto errorDetails = qScopeGuard([&]{
-                if (brushes.count() != borderBrushes.count()) {
-                    qWarning("Different count: %lld vs %lld", brushes.count(), borderBrushes.count());
+                if (brushes.size() != borderBrushes.size()) {
+                    qWarning("Different count: %lld vs %lld", brushes.size(), borderBrushes.size());
                     return;
                 }
-                for (int i = 0; i < brushes.count(); ++i) {
+                for (int i = 0; i < brushes.size(); ++i) {
                     QString side;
                     QDebug(&side) << QTextFormat::Property(QTextFormat::TableCellTopBorderBrush + i);
                     QString actual;
@@ -2868,13 +2868,13 @@ void tst_QTextDocument::blockCountChanged()
     doc->setPlainText("Foo");
 
     QCOMPARE(doc->blockCount(), 1);
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     spy.clear();
 
     doc->setPlainText("Foo\nBar");
     QCOMPARE(doc->blockCount(), 2);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).value(0).toInt(), 2);
 
     spy.clear();
@@ -2882,16 +2882,16 @@ void tst_QTextDocument::blockCountChanged()
     cursor.movePosition(QTextCursor::End);
     cursor.insertText("Blahblah");
 
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     cursor.insertBlock();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).value(0).toInt(), 3);
 
     spy.clear();
     doc->undo();
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).value(0).toInt(), 2);
 }
 
@@ -3070,12 +3070,12 @@ void tst_QTextDocument::characterAt()
     QString text("12345\n67890");
     cursor.insertText(text);
     int length = doc.characterCount();
-    QCOMPARE(length, text.length() + 1);
+    QCOMPARE(length, text.size() + 1);
     QCOMPARE(doc.characterAt(length-1), QChar(QChar::ParagraphSeparator));
     QCOMPARE(doc.characterAt(-1), QChar());
     QCOMPARE(doc.characterAt(length), QChar());
     QCOMPARE(doc.characterAt(length + 1), QChar());
-    for (int i = 0; i < text.length(); ++i) {
+    for (int i = 0; i < text.size(); ++i) {
         QChar c = text.at(i);
         if (c == QLatin1Char('\n'))
             c = QChar(QChar::ParagraphSeparator);
@@ -3155,11 +3155,11 @@ void tst_QTextDocument::testUndoCommandAdded()
     QVERIFY(spy.isEmpty());
 
     cursor.insertText("a");
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     cursor.insertText("b"); // should be merged
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     cursor.insertText("c"); // should be merged
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(doc->toPlainText(), QString("abc"));
     doc->undo();
     QCOMPARE(doc->toPlainText(), QString(""));
@@ -3167,11 +3167,11 @@ void tst_QTextDocument::testUndoCommandAdded()
     doc->clear();
     spy.clear();
     cursor.insertText("aaa");
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     spy.clear();
     cursor.insertText("aaaa\nbcd");
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     spy.clear();
     cursor.beginEditBlock();
@@ -3181,11 +3181,11 @@ void tst_QTextDocument::testUndoCommandAdded()
     cursor.insertText("\nccc");
     QVERIFY(spy.isEmpty());
     cursor.endEditBlock();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     spy.clear();
     cursor.insertBlock();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     spy.clear();
     cursor.setPosition(5);
@@ -3197,18 +3197,18 @@ void tst_QTextDocument::testUndoCommandAdded()
     QTextCharFormat cf;
     cf.setFontItalic(true);
     cursor.mergeCharFormat(cf);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     spy.clear();
     doc->undo();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     doc->undo();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     spy.clear();
     doc->redo();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     doc->redo();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QTextDocument::testUndoBlocks()
@@ -3788,7 +3788,7 @@ void tst_QTextDocument::mergeFontFamilies()
 
     QTextCursor cursor = QTextCursor(&td);
     cursor.setPosition(0);
-    cursor.setPosition(QByteArray("Hello World").length(), QTextCursor::KeepAnchor);
+    cursor.setPosition(QByteArray("Hello World").size(), QTextCursor::KeepAnchor);
     cursor.mergeCharFormat(newFormat);
 
     QVERIFY(td.toHtml().contains(QLatin1String("font-family:'Jokerman';")));
@@ -3934,7 +3934,7 @@ void tst_QTextDocument::insertHtmlWithComments()
     QTextDocument doc;
     doc.setHtml(html);
 
-    QCOMPARE(doc.blockCount(), expectedBlocks.count());
+    QCOMPARE(doc.blockCount(), expectedBlocks.size());
 
     QStringList blockContent;
     auto currentBlock = doc.begin();

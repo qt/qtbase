@@ -168,13 +168,13 @@ void tst_QHash::count()
     {
         MyMap map;
         MyMap map2( map );
-        QCOMPARE( map.count(), 0 );
-        QCOMPARE( map2.count(), 0 );
+        QCOMPARE( map.size(), 0 );
+        QCOMPARE( map2.size(), 0 );
         QCOMPARE( MyClass::count, 0 );
         // detach
         map2["Hallo"] = MyClass( "Fritz" );
-        QCOMPARE( map.count(), 0 );
-        QCOMPARE( map2.count(), 1 );
+        QCOMPARE( map.size(), 0 );
+        QCOMPARE( map2.size(), 1 );
 #ifndef Q_CC_SUN
         QCOMPARE( MyClass::count, 1 );
 #endif
@@ -184,11 +184,11 @@ void tst_QHash::count()
     {
         typedef QHash<QString, MyClass> Map;
         Map map;
-        QCOMPARE( map.count(), 0);
+        QCOMPARE( map.size(), 0);
         map.insert( "Torben", MyClass("Weis") );
-        QCOMPARE( map.count(), 1 );
+        QCOMPARE( map.size(), 1 );
         map.insert( "Claudia", MyClass("Sorg") );
-        QCOMPARE( map.count(), 2 );
+        QCOMPARE( map.size(), 2 );
         map.insert( "Lars", MyClass("Linzbach") );
         map.insert( "Matthias", MyClass("Ettrich") );
         map.insert( "Sue", MyClass("Paludo") );
@@ -196,7 +196,7 @@ void tst_QHash::count()
         map.insert( "Haavard", MyClass("Nord") );
         map.insert( "Arnt", MyClass("Gulbrandsen") );
         map.insert( "Paul", MyClass("Tvete") );
-        QCOMPARE( map.count(), 9 );
+        QCOMPARE( map.size(), 9 );
         map.insert( "Paul", MyClass("Tvete 1") );
         map.insert( "Paul", MyClass("Tvete 2") );
         map.insert( "Paul", MyClass("Tvete 3") );
@@ -204,68 +204,68 @@ void tst_QHash::count()
         map.insert( "Paul", MyClass("Tvete 5") );
         map.insert( "Paul", MyClass("Tvete 6") );
 
-        QCOMPARE( map.count(), 9 );
+        QCOMPARE( map.size(), 9 );
 #ifndef Q_CC_SUN
         QCOMPARE( MyClass::count, 9 );
 #endif
 
         Map map2( map );
-        QVERIFY( map2.count() == 9 );
+        QVERIFY( map2.size() == 9 );
 #ifndef Q_CC_SUN
         QCOMPARE( MyClass::count, 9 );
 #endif
 
         map2.insert( "Kay", MyClass("Roemer") );
-        QVERIFY( map2.count() == 10 );
-        QVERIFY( map.count() == 9 );
+        QVERIFY( map2.size() == 10 );
+        QVERIFY( map.size() == 9 );
 #ifndef Q_CC_SUN
         QCOMPARE( MyClass::count, 19 );
 #endif
 
         map2 = map;
-        QVERIFY( map.count() == 9 );
-        QVERIFY( map2.count() == 9 );
+        QVERIFY( map.size() == 9 );
+        QVERIFY( map2.size() == 9 );
 #ifndef Q_CC_SUN
         QCOMPARE( MyClass::count, 9 );
 #endif
 
         map2.insert( "Kay", MyClass("Roemer") );
-        QVERIFY( map2.count() == 10 );
+        QVERIFY( map2.size() == 10 );
 #ifndef Q_CC_SUN
         QCOMPARE( MyClass::count, 19 );
 #endif
 
         map2.clear();
-        QVERIFY( map.count() == 9 );
-        QVERIFY( map2.count() == 0 );
+        QVERIFY( map.size() == 9 );
+        QVERIFY( map2.size() == 0 );
 #ifndef Q_CC_SUN
         QCOMPARE( MyClass::count, 9 );
 #endif
 
         map2 = map;
-        QVERIFY( map.count() == 9 );
-        QVERIFY( map2.count() == 9 );
+        QVERIFY( map.size() == 9 );
+        QVERIFY( map2.size() == 9 );
 #ifndef Q_CC_SUN
         QCOMPARE( MyClass::count, 9 );
 #endif
 
         map2.clear();
-        QVERIFY( map.count() == 9 );
-        QVERIFY( map2.count() == 0 );
+        QVERIFY( map.size() == 9 );
+        QVERIFY( map2.size() == 0 );
 #ifndef Q_CC_SUN
         QCOMPARE( MyClass::count, 9 );
 #endif
 
         map.remove( "Lars" );
-        QVERIFY( map.count() == 8 );
-        QVERIFY( map2.count() == 0 );
+        QVERIFY( map.size() == 8 );
+        QVERIFY( map2.size() == 0 );
 #ifndef Q_CC_SUN
         QCOMPARE( MyClass::count, 8 );
 #endif
 
         map.remove( "Mist" );
-        QVERIFY( map.count() == 8 );
-        QVERIFY( map2.count() == 0 );
+        QVERIFY( map.size() == 8 );
+        QVERIFY( map2.size() == 0 );
 #ifndef Q_CC_SUN
         QCOMPARE( MyClass::count, 8 );
 #endif
@@ -279,22 +279,22 @@ void tst_QHash::count()
 #ifndef Q_CC_SUN
          QVERIFY( MyClass::count == 1 );
 #endif
-         QVERIFY( map.count() == 1 );
+         QVERIFY( map.size() == 1 );
 
          (void)map["Torben"].str;
          (void)map["Lars"].str;
 #ifndef Q_CC_SUN
          QVERIFY( MyClass::count == 2 );
 #endif
-         QVERIFY( map.count() == 2 );
+         QVERIFY( map.size() == 2 );
 
          const Map& cmap = map;
          (void)cmap["Depp"].str;
 #ifndef Q_CC_SUN
          QVERIFY( MyClass::count == 2 );
 #endif
-         QVERIFY( map.count() == 2 );
-         QVERIFY( cmap.count() == 2 );
+         QVERIFY( map.size() == 2 );
+         QVERIFY( cmap.size() == 2 );
     }
     QCOMPARE( MyClass::count, 0 );
     {
@@ -1688,26 +1688,26 @@ void tst_QHash::qmultihash_specific()
     }
 
     QVERIFY(hash1.contains(9, 99));
-    QCOMPARE(hash1.count(), 45);
+    QCOMPARE(hash1.size(), 45);
     hash1.remove(9, 99);
     QVERIFY(!hash1.contains(9, 99));
-    QCOMPARE(hash1.count(), 44);
+    QCOMPARE(hash1.size(), 44);
 
     hash1.remove(9, 99);
     QVERIFY(!hash1.contains(9, 99));
-    QCOMPARE(hash1.count(), 44);
+    QCOMPARE(hash1.size(), 44);
 
     hash1.remove(1, 99);
-    QCOMPARE(hash1.count(), 44);
+    QCOMPARE(hash1.size(), 44);
 
     hash1.insert(1, 99);
     hash1.insert(1, 99);
 
-    QCOMPARE(hash1.count(), 46);
+    QCOMPARE(hash1.size(), 46);
     hash1.remove(1, 99);
-    QCOMPARE(hash1.count(), 44);
+    QCOMPARE(hash1.size(), 44);
     hash1.remove(1, 99);
-    QCOMPARE(hash1.count(), 44);
+    QCOMPARE(hash1.size(), 44);
 
     {
     QMultiHash<int, int>::const_iterator i = hash1.constFind(1, 11);
@@ -1753,10 +1753,10 @@ void tst_QHash::qmultihash_specific()
     }
 
     QCOMPARE(hash1.count(9), 8);
-    QCOMPARE(hash1.count(), 44);
+    QCOMPARE(hash1.size(), 44);
     hash1.remove(9);
     QCOMPARE(hash1.count(9), 0);
-    QCOMPARE(hash1.count(), 36);
+    QCOMPARE(hash1.size(), 36);
 
     {
     QMultiHash<int, int> map1;
@@ -1772,7 +1772,7 @@ void tst_QHash::qmultihash_specific()
     map2.insert(42, 1);
     map2.insert(10, 2);
     map2.insert(48, 3);
-    QCOMPARE(map1.count(), map2.count());
+    QCOMPARE(map1.size(), map2.size());
     QVERIFY(map1.remove(42,5));
     QVERIFY(map1 != map2);
     QVERIFY(map2.remove(42,5));
@@ -1781,7 +1781,7 @@ void tst_QHash::qmultihash_specific()
     QHash<int, int> hash;
     hash.insert(-1, -1);
     map2.unite(hash);
-    QCOMPARE(map2.count(), 6);
+    QCOMPARE(map2.size(), 6);
     QCOMPARE(map2[-1], -1);
     }
 }
@@ -2168,7 +2168,7 @@ void tst_QHash::twoArguments_qHash()
 void tst_QHash::initializerList()
 {
     QHash<int, QString> hash = {{1, "bar"}, {1, "hello"}, {2, "initializer_list"}};
-    QCOMPARE(hash.count(), 2);
+    QCOMPARE(hash.size(), 2);
     QCOMPARE(hash[1], QString("hello"));
     QCOMPARE(hash[2], QString("initializer_list"));
 
@@ -2178,9 +2178,9 @@ void tst_QHash::initializerList()
     // QCOMPARE(stdh[1], QString("bar"));
 
     QMultiHash<QString, int> multiHash{{"il", 1}, {"il", 2}, {"il", 3}};
-    QCOMPARE(multiHash.count(), 3);
+    QCOMPARE(multiHash.size(), 3);
     QList<int> values = multiHash.values("il");
-    QCOMPARE(values.count(), 3);
+    QCOMPARE(values.size(), 3);
 
     QHash<int, int> emptyHash{};
     QVERIFY(emptyHash.isEmpty());
@@ -2352,7 +2352,7 @@ void tst_QHash::insert_hash()
 
         hash.insert(hash2);
 
-        QCOMPARE(hash.count(), 5);
+        QCOMPARE(hash.size(), 5);
         for (int i = 0; i < 5; ++i)
             QCOMPARE(hash[i], i);
     }
@@ -2364,7 +2364,7 @@ void tst_QHash::insert_hash()
 
         hash.insert(hash2);
 
-        QCOMPARE(hash.count(), 1);
+        QCOMPARE(hash.size(), 1);
         QCOMPARE(hash[0], 5);
     }
     {
@@ -2374,7 +2374,7 @@ void tst_QHash::insert_hash()
 
         hash.insert(hash2);
 
-        QCOMPARE(hash.count(), 1);
+        QCOMPARE(hash.size(), 1);
         QCOMPARE(hash[0], 5);
         QCOMPARE(hash, hash2);
     }
@@ -2387,7 +2387,7 @@ void tst_QHash::insert_hash()
         // insert into ourself, nothing should happen
         hash.insert(hash);
 
-        QCOMPARE(hash.count(), 3);
+        QCOMPARE(hash.size(), 3);
         QCOMPARE(hash[0], 7);
         QCOMPARE(hash[2], 5);
         QCOMPARE(hash[7], 55);
@@ -2561,13 +2561,13 @@ void tst_QHash::countInEmptyHash()
 {
     {
         QHash<int, int> hash;
-        QCOMPARE(hash.count(), 0);
+        QCOMPARE(hash.size(), 0);
         QCOMPARE(hash.count(42), 0);
     }
 
     {
         QMultiHash<int, int> hash;
-        QCOMPARE(hash.count(), 0);
+        QCOMPARE(hash.size(), 0);
         QCOMPARE(hash.count(42), 0);
         QCOMPARE(hash.count(42, 1), 0);
     }

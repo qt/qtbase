@@ -315,7 +315,7 @@ QMimeData *QConcatenateTablesProxyModel::mimeData(const QModelIndexList &indexes
     Q_ASSERT(checkIndex(firstIndex, CheckIndexOption::IndexIsValid));
     const auto result = d->sourceModelForRow(firstIndex.row());
     QModelIndexList sourceIndexes;
-    sourceIndexes.reserve(indexes.count());
+    sourceIndexes.reserve(indexes.size());
     for (const QModelIndex &index : indexes) {
         const QModelIndex sourceIndex = mapToSource(index);
         Q_ASSERT(sourceIndex.model() == result.sourceModel); // see documentation above
@@ -688,7 +688,7 @@ void QConcatenateTablesProxyModelPrivate::updateColumnCount()
 int QConcatenateTablesProxyModelPrivate::columnCountAfterChange(const QAbstractItemModel *model, int newCount) const
 {
     int newColumnCount = 0;
-    for (int i = 0; i < m_models.count(); ++i) {
+    for (int i = 0; i < m_models.size(); ++i) {
         const QAbstractItemModel *mod = m_models.at(i);
         const int colCount = mod == model ? newCount : mod->columnCount();
         if (i == 0)

@@ -330,7 +330,7 @@ int runMoc(int argc, char **argv)
     if (parser.isSet(collectOption))
         return collectJson(files, output, hasOptionFiles);
 
-    if (files.count() > 1) {
+    if (files.size() > 1) {
         error(qPrintable("Too many input files specified: '"_L1 + files.join("' '"_L1) + u'\''));
         parser.showHelp(1);
     } else if (!files.isEmpty()) {

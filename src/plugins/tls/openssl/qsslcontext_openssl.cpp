@@ -218,7 +218,7 @@ SSL* QSslContext::createSsl()
     QList<QByteArray> protocols = sslConfiguration.d.constData()->nextAllowedProtocols;
     if (!protocols.isEmpty()) {
         m_supportedNPNVersions.clear();
-        for (int a = 0; a < protocols.count(); ++a) {
+        for (int a = 0; a < protocols.size(); ++a) {
             if (protocols.at(a).size() > 255) {
                 qCWarning(lcTlsBackend) << "TLS NPN extension" << protocols.at(a)
                                  << "is too long and will be ignored.";
@@ -230,7 +230,7 @@ SSL* QSslContext::createSsl()
         }
         if (m_supportedNPNVersions.size()) {
             m_npnContext.data = reinterpret_cast<unsigned char *>(m_supportedNPNVersions.data());
-            m_npnContext.len = m_supportedNPNVersions.length();
+            m_npnContext.len = m_supportedNPNVersions.size();
             m_npnContext.status = QSslConfiguration::NextProtocolNegotiationNone;
             // Callback's type has a parameter 'const unsigned char ** out'
             // since it was introduced in 1.0.2. Internally, OpenSSL's own code
@@ -702,7 +702,7 @@ QT_WARNING_POP
         const QByteArray &params = dhparams.d->derData;
         const char *ptr = params.constData();
         DH *dh = q_d2i_DHparams(nullptr, reinterpret_cast<const unsigned char **>(&ptr),
-                                params.length());
+                                params.size());
         if (dh == nullptr)
             qFatal("q_d2i_DHparams failed to convert QSslDiffieHellmanParameters to DER form");
         q_SSL_CTX_set_tmp_dh(sslContext->ctx, dh);

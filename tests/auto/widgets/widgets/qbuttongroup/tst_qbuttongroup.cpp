@@ -349,17 +349,17 @@ void tst_QButtonGroup::testSignals()
     pb1.animateClick();
     QTestEventLoop::instance().enterLoop(1);
 
-    QCOMPARE(clickedSpy.count(), 1);
-    QCOMPARE(clickedIdSpy.count(), 1);
+    QCOMPARE(clickedSpy.size(), 1);
+    QCOMPARE(clickedIdSpy.size(), 1);
 
     int expectedId = -2;
 
     QCOMPARE(clickedIdSpy.takeFirst().at(0).toInt(), expectedId);
-    QCOMPARE(pressedSpy.count(), 1);
-    QCOMPARE(pressedIdSpy.count(), 1);
+    QCOMPARE(pressedSpy.size(), 1);
+    QCOMPARE(pressedIdSpy.size(), 1);
     QCOMPARE(pressedIdSpy.takeFirst().at(0).toInt(), expectedId);
-    QCOMPARE(releasedSpy.count(), 1);
-    QCOMPARE(releasedIdSpy.count(), 1);
+    QCOMPARE(releasedSpy.size(), 1);
+    QCOMPARE(releasedIdSpy.size(), 1);
     QCOMPARE(releasedIdSpy.takeFirst().at(0).toInt(), expectedId);
 
     clickedSpy.clear();
@@ -372,14 +372,14 @@ void tst_QButtonGroup::testSignals()
     pb2.animateClick();
     QTestEventLoop::instance().enterLoop(1);
 
-    QCOMPARE(clickedSpy.count(), 1);
-    QCOMPARE(clickedIdSpy.count(), 1);
+    QCOMPARE(clickedSpy.size(), 1);
+    QCOMPARE(clickedIdSpy.size(), 1);
     QCOMPARE(clickedIdSpy.takeFirst().at(0).toInt(), 23);
-    QCOMPARE(pressedSpy.count(), 1);
-    QCOMPARE(pressedIdSpy.count(), 1);
+    QCOMPARE(pressedSpy.size(), 1);
+    QCOMPARE(pressedIdSpy.size(), 1);
     QCOMPARE(pressedIdSpy.takeFirst().at(0).toInt(), 23);
-    QCOMPARE(releasedSpy.count(), 1);
-    QCOMPARE(releasedIdSpy.count(), 1);
+    QCOMPARE(releasedSpy.size(), 1);
+    QCOMPARE(releasedIdSpy.size(), 1);
     QCOMPARE(releasedIdSpy.takeFirst().at(0).toInt(), 23);
 
 
@@ -389,18 +389,18 @@ void tst_QButtonGroup::testSignals()
     pb1.setCheckable(true);
     pb2.setCheckable(true);
     pb1.toggle();
-    QCOMPARE(toggledSpy.count(), 1);
-    QCOMPARE(toggledIdSpy.count(), 1);
+    QCOMPARE(toggledSpy.size(), 1);
+    QCOMPARE(toggledIdSpy.size(), 1);
 
     pb2.toggle();
-    QCOMPARE(toggledSpy.count(), 3);     // equals 3 since pb1 and pb2 are both toggled
-    QCOMPARE(toggledIdSpy.count(), 3);
+    QCOMPARE(toggledSpy.size(), 3);     // equals 3 since pb1 and pb2 are both toggled
+    QCOMPARE(toggledIdSpy.size(), 3);
 
     pb1.setCheckable(false);
     pb2.setCheckable(false);
     pb1.toggle();
-    QCOMPARE(toggledSpy.count(), 3);
-    QCOMPARE(toggledIdSpy.count(), 3);
+    QCOMPARE(toggledSpy.size(), 3);
+    QCOMPARE(toggledIdSpy.size(), 3);
 }
 
 void tst_QButtonGroup::task106609()
@@ -440,7 +440,7 @@ void tst_QButtonGroup::task106609()
     radio1->setChecked(true);
     QTestEventLoop::instance().enterLoop(1);
 
-    QCOMPARE(spy1.count(), 2);
+    QCOMPARE(spy1.size(), 2);
 }
 
 void tst_QButtonGroup::checkedButton()
@@ -525,7 +525,7 @@ void tst_QButtonGroup::task209485_removeFromGroupInEventHandler()
     // NOTE: Reintroducing the bug of this task will cause the following line to crash:
     QTest::mouseClick(button, Qt::LeftButton);
 
-    QCOMPARE(spy1.count(), signalCount);
+    QCOMPARE(spy1.size(), signalCount);
 }
 
 void tst_QButtonGroup::autoIncrementId()

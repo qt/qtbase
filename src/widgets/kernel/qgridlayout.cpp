@@ -109,18 +109,18 @@ public:
     int minimumHeightForWidth(int width, int hSpacing, int vSpacing);
 
     inline void getNextPos(int &row, int &col) { row = nextR; col = nextC; }
-    inline int count() const { return things.count(); }
+    inline int count() const { return things.size(); }
     QRect cellRect(int row, int col) const;
 
     inline QLayoutItem *itemAt(int index) const {
-        if (index >= 0 && index < things.count())
+        if (index >= 0 && index < things.size())
             return things.at(index)->item();
         else
             return nullptr;
     }
     inline QLayoutItem *takeAt(int index) {
         Q_Q(QGridLayout);
-        if (index >= 0 && index < things.count()) {
+        if (index >= 0 && index < things.size()) {
             if (QGridBox *b = things.takeAt(index)) {
                 QLayoutItem *item = b->takeItem();
                 if (QLayout *l = item->layout()) {
@@ -148,7 +148,7 @@ public:
     }
 
     void getItemPosition(int index, int *row, int *column, int *rowSpan, int *columnSpan) const {
-        if (index >= 0 && index < things.count()) {
+        if (index >= 0 && index < things.size()) {
             const QGridBox *b =  things.at(index);
             int toRow = b->toRow(rr);
             int toCol = b->toCol(cc);
@@ -1294,7 +1294,7 @@ QLayoutItem *QGridLayout::itemAt(int index) const
 QLayoutItem *QGridLayout::itemAtPosition(int row, int column) const
 {
     Q_D(const QGridLayout);
-    int n = d->things.count();
+    int n = d->things.size();
     for (int i = 0; i < n; ++i) {
         QGridBox *box = d->things.at(i);
         if (row >= box->row && row <= box->toRow(d->rr)

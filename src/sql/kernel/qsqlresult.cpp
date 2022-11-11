@@ -630,7 +630,7 @@ bool QSqlResult::exec()
         int i;
         QVariant val;
         QString holder;
-        for (i = d->holders.count() - 1; i >= 0; --i) {
+        for (i = d->holders.size() - 1; i >= 0; --i) {
             holder = d->holders.at(i).holderName;
             val = d->values.value(d->indexes.value(holder).value(0,-1));
             QSqlField f(""_L1, val.metaType());
@@ -639,13 +639,13 @@ bool QSqlResult::exec()
             else
                 f.setValue(val);
             query = query.replace(d->holders.at(i).holderPos,
-                                   holder.length(), driver()->formatValue(f));
+                                   holder.size(), driver()->formatValue(f));
         }
     } else {
         QString val;
         qsizetype i = 0;
         int idx = 0;
-        for (idx = 0; idx < d->values.count(); ++idx) {
+        for (idx = 0; idx < d->values.size(); ++idx) {
             i = query.indexOf(u'?', i);
             if (i == -1)
                 continue;
@@ -657,7 +657,7 @@ bool QSqlResult::exec()
                 f.setValue(var);
             val = driver()->formatValue(f);
             query = query.replace(i, 1, driver()->formatValue(f));
-            i += val.length();
+            i += val.size();
         }
     }
 
@@ -683,7 +683,7 @@ void QSqlResult::bindValue(int index, const QVariant& val, QSql::ParamType param
     QList<int> &indexes = d->indexes[d->fieldSerial(index)];
     if (!indexes.contains(index))
         indexes.append(index);
-    if (d->values.count() <= index)
+    if (d->values.size() <= index)
         d->values.resize(index + 1);
     d->values[index] = val;
     if (paramType != QSql::In || !d->types.isEmpty())
@@ -709,7 +709,7 @@ void QSqlResult::bindValue(const QString& placeholder, const QVariant& val,
     // bindings - don't reset it
     const QList<int> indexes = d->indexes.value(placeholder);
     for (int idx : indexes) {
-        if (d->values.count() <= idx)
+        if (d->values.size() <= idx)
             d->values.resize(idx + 1);
         d->values[idx] = val;
         if (paramType != QSql::In || !d->types.isEmpty())
@@ -789,7 +789,7 @@ QSql::ParamType QSqlResult::bindValueType(const QString& placeholder) const
 int QSqlResult::boundValueCount() const
 {
     Q_D(const QSqlResult);
-    return d->values.count();
+    return d->values.size();
 }
 
 /*!
@@ -949,10 +949,10 @@ bool QSqlResult::execBatch(bool arrayBind)
     Q_D(QSqlResult);
 
     QList<QVariant> values = d->values;
-    if (values.count() == 0)
+    if (values.size() == 0)
         return false;
-    for (int i = 0; i < values.at(0).toList().count(); ++i) {
-        for (int j = 0; j < values.count(); ++j)
+    for (int i = 0; i < values.at(0).toList().size(); ++i) {
+        for (int j = 0; j < values.size(); ++j)
             bindValue(j, values.at(j).toList().at(i), QSql::In);
         if (!exec())
             return false;

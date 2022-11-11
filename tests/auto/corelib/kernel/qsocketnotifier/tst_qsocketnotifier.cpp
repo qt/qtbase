@@ -309,8 +309,8 @@ void tst_QSocketNotifier::posixSockets()
         passive->waitForBytesWritten(5000);
 
         QTestEventLoop::instance().enterLoop(3);
-        QCOMPARE(readSpy.count(), 1);
-        QCOMPARE(errorSpy.count(), 0);
+        QCOMPARE(readSpy.size(), 1);
+        QCOMPARE(errorSpy.size(), 0);
 
         char buffer[100];
         int r = qt_safe_read(posixSocket, buffer, 100);
@@ -324,9 +324,9 @@ void tst_QSocketNotifier::posixSockets()
         qt_safe_write(posixSocket, "goodbye", 8);
 
         QTestEventLoop::instance().enterLoop(3);
-        QCOMPARE(readSpy.count(), 1);
-        QCOMPARE(writeSpy.count(), 1);
-        QCOMPARE(errorSpy.count(), 0);
+        QCOMPARE(readSpy.size(), 1);
+        QCOMPARE(writeSpy.size(), 1);
+        QCOMPARE(errorSpy.size(), 0);
 
         // Write notifier may have fired before the read notifier inside
         // QTcpSocket, give QTcpSocket a chance to see the incoming data
@@ -387,7 +387,7 @@ void tst_QSocketNotifier::asyncMultipleDatagram()
 
     QTestEventLoop::instance().enterLoop(1);
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 
     delete m_asyncSender;
     delete m_asyncReceiver;

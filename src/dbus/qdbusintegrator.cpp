@@ -327,7 +327,7 @@ static QByteArray buildMatchRule(const QString &service,
     // add the argument string-matching now
     if (!argMatch.args.isEmpty()) {
         const QString keyValue = "arg%1='%2',"_L1;
-        for (int i = 0; i < argMatch.args.count(); ++i)
+        for (int i = 0; i < argMatch.args.size(); ++i)
             if (!argMatch.args.at(i).isNull())
                 result += keyValue.arg(i).arg(argMatch.args.at(i));
     }
@@ -349,7 +349,7 @@ static bool findObject(const QDBusConnectionPrivate::ObjectTreeNode *root,
         return root;
     }
     int start = 0;
-    int length = fullpath.length();
+    int length = fullpath.size();
     if (fullpath.at(0) == u'/')
         start = 1;
 
@@ -391,7 +391,7 @@ static bool findObject(const QDBusConnectionPrivate::ObjectTreeNode *root,
 static QObject *findChildObject(const QDBusConnectionPrivate::ObjectTreeNode *root,
                                 const QString &fullpath, int start)
 {
-    int length = fullpath.length();
+    int length = fullpath.size();
 
     // any object in the tree can tell us to switch to its own object tree:
     const QDBusConnectionPrivate::ObjectTreeNode *node = root;
@@ -575,7 +575,7 @@ static void huntAndUnregister(const QList<QStringView> &pathComponents, int i,
                               QDBusConnection::UnregisterMode mode,
                               QDBusConnectionPrivate::ObjectTreeNode *node)
 {
-    if (pathComponents.count() == i) {
+    if (pathComponents.size() == i) {
         // found it
         node->obj = nullptr;
         node->flags = 0;
@@ -699,14 +699,14 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
             continue;
 
         bool ok = true;
-        for (int j = i; ok && j < metaTypes.count(); ++j)
+        for (int j = i; ok && j < metaTypes.size(); ++j)
             if (QDBusMetaType::typeToSignature(metaTypes.at(i)) == nullptr)
                 ok = false;
         if (!ok)
             continue;
 
         // consistency check:
-        if (isAsync && metaTypes.count() > i + 1)
+        if (isAsync && metaTypes.size() > i + 1)
             continue;
 
         if (mm.methodType() == QMetaMethod::Slot) {
@@ -753,11 +753,11 @@ QDBusCallDeliveryEvent *QDBusConnectionPrivate::prepareReply(QDBusConnectionPriv
     Q_ASSERT(object);
     Q_UNUSED(object);
 
-    int n = metaTypes.count() - 1;
+    int n = metaTypes.size() - 1;
     if (metaTypes[n] == QDBusMetaTypeId::message())
         --n;
 
-    if (msg.arguments().count() < n)
+    if (msg.arguments().size() < n)
         return nullptr;               // too few arguments
 
     // check that types match
@@ -829,7 +829,7 @@ bool QDBusConnectionPrivate::activateCall(QObject* object, int flags, const QDBu
         qvariant_cast<QDBusSlotCache>(object->property(cachePropertyName));
     QString cacheKey = msg.member(), signature = msg.signature();
     if (!signature.isEmpty()) {
-        cacheKey.reserve(cacheKey.length() + 1 + signature.length());
+        cacheKey.reserve(cacheKey.size() + 1 + signature.size());
         cacheKey += u'.';
         cacheKey += signature;
     }
@@ -852,7 +852,7 @@ bool QDBusConnectionPrivate::activateCall(QObject* object, int flags, const QDBu
             // ### this is where we want to add the connection as an arg too
             // try with no parameters, but with a QDBusMessage
             slotData.slotIdx = ::findSlot(mo, memberName, flags, QString(), slotData.metaTypes);
-            if (slotData.metaTypes.count() != 2 ||
+            if (slotData.metaTypes.size() != 2 ||
                 slotData.metaTypes.at(1) != QDBusMetaTypeId::message()) {
                 // not found
                 // save the negative lookup
@@ -890,10 +890,10 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
                "function called for an object that is in another thread!!");
 
     QVarLengthArray<void *, 10> params;
-    params.reserve(metaTypes.count());
+    params.reserve(metaTypes.size());
 
     QVarLengthArray<QVariant, 10> auxParameters; // we cannot allow reallocation here, since we
-    auxParameters.reserve(metaTypes.count());    // keep references to the entries
+    auxParameters.reserve(metaTypes.size());    // keep references to the entries
 
     // let's create the parameter list
 
@@ -902,7 +902,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
 
     // add the input parameters
     int i;
-    int pCount = qMin(msg.arguments().count(), metaTypes.count() - 1);
+    int pCount = qMin(msg.arguments().size(), metaTypes.size() - 1);
     for (i = 1; i <= pCount; ++i) {
         auto id = metaTypes[i];
         if (id == QDBusMetaTypeId::message())
@@ -918,7 +918,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
 
             const QDBusArgument &in =
                 *reinterpret_cast<const QDBusArgument *>(arg.constData());
-            QVariant &out = auxParameters[auxParameters.count() - 1];
+            QVariant &out = auxParameters[auxParameters.size() - 1];
 
             if (Q_UNLIKELY(!QDBusMetaType::demarshall(in, out.metaType(), out.data())))
                 qFatal("Internal error: demarshalling function for type '%s' (%d) failed!",
@@ -933,19 +933,19 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
         }
     }
 
-    if (metaTypes.count() > i && metaTypes[i] == QDBusMetaTypeId::message()) {
+    if (metaTypes.size() > i && metaTypes[i] == QDBusMetaTypeId::message()) {
         params.append(const_cast<void*>(static_cast<const void*>(&msg)));
         ++i;
     }
 
     // output arguments
-    const int numMetaTypes = metaTypes.count();
+    const int numMetaTypes = metaTypes.size();
     QVariantList outputArgs;
     if (metaTypes[0].id() != QMetaType::Void && metaTypes[0].isValid()) {
         outputArgs.reserve(numMetaTypes - i + 1);
         QVariant arg{QMetaType(metaTypes[0])};
         outputArgs.append( arg );
-        params[0] = const_cast<void*>(outputArgs.at( outputArgs.count() - 1 ).constData());
+        params[0] = const_cast<void*>(outputArgs.at( outputArgs.size() - 1 ).constData());
     } else {
         outputArgs.reserve(numMetaTypes - i);
     }
@@ -953,7 +953,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
     for ( ; i < numMetaTypes; ++i) {
         QVariant arg{QMetaType(metaTypes[i])};
         outputArgs.append( arg );
-        params.append(const_cast<void*>(outputArgs.at( outputArgs.count() - 1 ).constData()));
+        params.append(const_cast<void*>(outputArgs.at( outputArgs.size() - 1 ).constData()));
     }
 
     // make call:
@@ -1296,7 +1296,7 @@ int QDBusConnectionPrivate::findSlot(QObject *obj, const QByteArray &normalizedN
 
     QString errorMsg;
     int inputCount = qDBusParametersForMethod(obj->metaObject()->method(midx), params, errorMsg);
-    if ( inputCount == -1 || inputCount + 1 != params.count() )
+    if ( inputCount == -1 || inputCount + 1 != params.size() )
         return -1;              // failed to parse or invalid arguments or output arguments
 
     return midx;
@@ -1333,13 +1333,13 @@ bool QDBusConnectionPrivate::prepareHook(QDBusConnectionPrivate::SignalHook &hoo
         mname = QString::fromUtf8(normalizedName);
     }
     key = mname;
-    key.reserve(interface.length() + 1 + mname.length());
+    key.reserve(interface.size() + 1 + mname.size());
     key += u':';
     key += interface;
 
     if (buildSignature) {
         hook.signature.clear();
-        for (int i = 1; i < hook.params.count(); ++i)
+        for (int i = 1; i < hook.params.size(); ++i)
             if (hook.params.at(i) != QDBusMetaTypeId::message())
                 hook.signature += QLatin1StringView(QDBusMetaType::typeToSignature(hook.params.at(i)));
     }
@@ -1435,7 +1435,7 @@ void QDBusConnectionPrivate::activateObject(ObjectTreeNode &node, const QDBusMes
         }
     }
 
-    if (pathStartPos != msg.path().length()) {
+    if (pathStartPos != msg.path().size()) {
         node.flags &= ~QDBusConnection::ExportAllSignals;
         node.obj = findChildObject(&node, msg.path(), pathStartPos);
         if (!node.obj) {
@@ -1653,14 +1653,14 @@ void QDBusConnectionPrivate::handleSignal(const QDBusMessage& msg)
     // (but not both)
 
     QString key = msg.member();
-    key.reserve(key.length() + 1 + msg.interface().length());
+    key.reserve(key.size() + 1 + msg.interface().size());
     key += u':';
     key += msg.interface();
 
     QDBusReadLocker locker(HandleSignalAction, this);
     handleSignal(key, msg);                  // one try
 
-    key.truncate(msg.member().length() + 1); // keep the ':'
+    key.truncate(msg.member().size() + 1); // keep the ':'
     handleSignal(key, msg);                  // second try
 
     key = u':';

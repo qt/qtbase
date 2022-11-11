@@ -198,7 +198,7 @@ QCUPSSupport::JobSheets QCUPSSupport::parseJobSheets(const QString &jobSheets)
     JobSheets result;
 
     const QStringList parts = jobSheets.split(u',');
-    if (parts.count() == 2) {
+    if (parts.size() == 2) {
         result.startBannerPage = stringToBannerPage(parts[0]);
         result.endBannerPage = stringToBannerPage(parts[1]);
     }

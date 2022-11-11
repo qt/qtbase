@@ -373,7 +373,7 @@ int QTextDocumentPrivate::insertBlock(QChar blockSeparator,
 
     beginEditBlock();
 
-    int strPos = text.length();
+    int strPos = text.size();
     text.append(blockSeparator);
 
     int ob = blocks.findNode(pos);
@@ -450,9 +450,9 @@ void QTextDocumentPrivate::insert(int pos, const QString &str, int format)
 
     Q_ASSERT(noBlockInString(str));
 
-    int strPos = text.length();
+    int strPos = text.size();
     text.append(str);
-    insert(pos, strPos, str.length(), format);
+    insert(pos, strPos, str.size(), format);
 }
 
 int QTextDocumentPrivate::remove_string(int pos, uint length, QTextUndoCommand::Operation op)
@@ -1433,7 +1433,7 @@ QTextFrame *QTextDocumentPrivate::frameAt(int pos) const
 
 void QTextDocumentPrivate::clearFrame(QTextFrame *f)
 {
-    for (int i = 0; i < f->d_func()->childFrames.count(); ++i)
+    for (int i = 0; i < f->d_func()->childFrames.size(); ++i)
         clearFrame(f->d_func()->childFrames.at(i));
     f->d_func()->childFrames.clear();
     f->d_func()->parentFrame = nullptr;

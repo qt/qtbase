@@ -52,14 +52,14 @@ void tst_QDial::valueChanged()
     dial.setMaximum(100);
     QSignalSpy spy(&dial, SIGNAL(valueChanged(int)));
     dial.setValue(50);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     spy.clear();
     dial.setValue(25);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     spy.clear();
     // repeat!
     dial.setValue(25);
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QDial::sliderMoved()
@@ -88,8 +88,8 @@ void tst_QDial::sliderMoved()
         QMouseEvent moveevent(QEvent::MouseMove, init, dial.mapToGlobal(init),
                               Qt::LeftButton, Qt::LeftButton, {});
         qApp->sendEvent(&dial, &moveevent);
-        QCOMPARE( sliderspy.count(), 1);
-        QCOMPARE( valuespy.count(), 0);
+        QCOMPARE( sliderspy.size(), 1);
+        QCOMPARE( valuespy.size(), 0);
     }
 
 
@@ -98,14 +98,14 @@ void tst_QDial::sliderMoved()
         QMouseEvent moveevent(QEvent::MouseMove, init, dial.mapToGlobal(init),
                               Qt::LeftButton, Qt::LeftButton, {});
         qApp->sendEvent(&dial, &moveevent);
-        QCOMPARE( sliderspy.count(), 2);
-        QCOMPARE( valuespy.count(), 0);
+        QCOMPARE( sliderspy.size(), 2);
+        QCOMPARE( valuespy.size(), 0);
     }
 
     QMouseEvent releaseevent(QEvent::MouseButtonRelease, init, dial.mapToGlobal(init),
                              Qt::LeftButton, Qt::LeftButton, {});
     qApp->sendEvent(&dial, &releaseevent);
-    QCOMPARE( valuespy.count(), 1); // valuechanged signal should be called at this point
+    QCOMPARE( valuespy.size(), 1); // valuechanged signal should be called at this point
 
 }
 

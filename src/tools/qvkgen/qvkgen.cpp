@@ -606,7 +606,7 @@ int main(int argc, char **argv)
         QStringLiteral("vkGetInstanceProcAddr"),
         QStringLiteral("vkEnumerateInstanceVersion")
     };
-    for (int i = 0; i < commands.count(); ++i) {
+    for (int i = 0; i < commands.size(); ++i) {
         if (ignoredFuncs.contains(commands[i].cmd.name))
             commands.remove(i--);
     }

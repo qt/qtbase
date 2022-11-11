@@ -220,8 +220,8 @@ void tst_QTimeZone::createTest()
         tran.daylightTimeOffset = 3600;
         expected << tran;
         QTimeZone::OffsetDataList result = tz.transitions(janPrev, jan);
-        QCOMPARE(result.count(), expected.count());
-        for (int i = 0; i < expected.count(); ++i) {
+        QCOMPARE(result.size(), expected.size());
+        for (int i = 0; i < expected.size(); ++i) {
             QCOMPARE(result.at(i).atUtc, expected.at(i).atUtc);
             QCOMPARE(result.at(i).offsetFromUtc, expected.at(i).offsetFromUtc);
             QCOMPARE(result.at(i).standardTimeOffset, expected.at(i).standardTimeOffset);
@@ -559,7 +559,7 @@ void tst_QTimeZone::specificTransition()
         QSKIP("Missing time-zone data");
     QTimeZone::OffsetDataList transits =
         timeZone.transitions(start.startOfDay(timeZone), stop.endOfDay(timeZone));
-    QCOMPARE(transits.length(), count);
+    QCOMPARE(transits.size(), count);
     if (count) {
         const QTimeZone::OffsetData &transition = transits.at(0);
         QCOMPARE(transition.offsetFromUtc, offset);
@@ -1538,8 +1538,8 @@ void tst_QTimeZone::testCetPrivate(const QTimeZonePrivate &tzp)
         tran.daylightTimeOffset = 0;
         expected << tran;
         QTimeZonePrivate::DataList result = tzp.transitions(prev, std);
-        QCOMPARE(result.count(), expected.count());
-        for (int i = 0; i < expected.count(); ++i) {
+        QCOMPARE(result.size(), expected.size());
+        for (int i = 0; i < expected.size(); ++i) {
             QCOMPARE(QDateTime::fromMSecsSinceEpoch(result.at(i).atMSecsSinceEpoch,
                                                     Qt::OffsetFromUTC, 3600),
                      QDateTime::fromMSecsSinceEpoch(expected.at(i).atMSecsSinceEpoch,

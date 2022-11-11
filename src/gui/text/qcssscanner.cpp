@@ -8,7 +8,7 @@ public:
     QCssScanner_Generated(const QString &inp);
 
     inline QChar next() {
-        return (pos < input.length()) ? input.at(pos++) : QChar();
+        return (pos < input.size()) ? input.at(pos++) : QChar();
     }
     int handleCommentStart();
     int lex();

@@ -939,7 +939,7 @@ void QTextTable::removeColumns(int pos, int num)
     QTextTableFormat tfmt = format();
     tfmt.setColumns(tfmt.columns()-num);
     QList<QTextLength> columnWidths = tfmt.columnWidthConstraints();
-    if (columnWidths.count() > pos) {
+    if (columnWidths.size() > pos) {
         columnWidths.remove(pos, num);
         tfmt.setColumnWidthConstraints (columnWidths);
     }

@@ -76,7 +76,7 @@ void QMakeLibraryInfo::sysrootify(QString &path)
     if (sysroot.isEmpty())
         return;
 
-    if (path.length() > 2 && path.at(1) == QLatin1Char(':')
+    if (path.size() > 2 && path.at(1) == QLatin1Char(':')
         && (path.at(2) == QLatin1Char('/') || path.at(2) == QLatin1Char('\\'))) {
         path.replace(0, 2, sysroot); // Strip out the drive on Windows targets
     } else {
@@ -217,7 +217,7 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
                 startIndex = ret.indexOf(QLatin1Char('$'), startIndex);
                 if (startIndex < 0)
                     break;
-                if (ret.length() < startIndex + 3)
+                if (ret.size() < startIndex + 3)
                     break;
                 if (ret.at(startIndex + 1) != QLatin1Char('(')) {
                     startIndex++;
@@ -231,7 +231,7 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
                 QString value =
                         QString::fromLocal8Bit(qgetenv(envVarName.toLocal8Bit().constData()));
                 ret.replace(startIndex, endIndex - startIndex + 1, value);
-                startIndex += value.length();
+                startIndex += value.size();
             }
             config->endGroup();
 

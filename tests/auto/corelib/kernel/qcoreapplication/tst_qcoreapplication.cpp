@@ -175,7 +175,7 @@ void tst_QCoreApplication::argc()
         char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
         TestApplication app(argc, argv);
         QCOMPARE(argc, 1);
-        QCOMPARE(app.arguments().count(), 1);
+        QCOMPARE(app.arguments().size(), 1);
     }
 
     {
@@ -186,7 +186,7 @@ void tst_QCoreApplication::argc()
                          const_cast<char*>("arg3") };
         TestApplication app(argc, argv);
         QCOMPARE(argc, 4);
-        QCOMPARE(app.arguments().count(), 4);
+        QCOMPARE(app.arguments().size(), 4);
     }
 
     {
@@ -194,7 +194,7 @@ void tst_QCoreApplication::argc()
         char **argv = 0;
         TestApplication app(argc, argv);
         QCOMPARE(argc, 0);
-        QCOMPARE(app.arguments().count(), 0);
+        QCOMPARE(app.arguments().size(), 0);
     }
 
     {
@@ -203,7 +203,7 @@ void tst_QCoreApplication::argc()
                          const_cast<char*>("-qmljsdebugger=port:3768,block") };
         TestApplication app(argc, argv);
         QCOMPARE(argc, 1);
-        QCOMPARE(app.arguments().count(), 1);
+        QCOMPARE(app.arguments().size(), 1);
     }
 }
 
@@ -1021,7 +1021,7 @@ void tst_QCoreApplication::addRemoveLibPaths()
     TestApplication app(argc, argv);
 
     // If libraryPaths only contains currentDir, neither will be in libraryPaths now.
-    if (paths.length() != 1 && currentDir != paths[0]) {
+    if (paths.size() != 1 && currentDir != paths[0]) {
         // Check that modifications stay alive across the creation of an application.
         QVERIFY(QCoreApplication::libraryPaths().contains(currentDir));
         QVERIFY(!QCoreApplication::libraryPaths().contains(paths[0]));

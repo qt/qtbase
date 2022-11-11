@@ -77,7 +77,7 @@ void tst_QColorDialog::native_activeModalWidget()
 
 void tst_QColorDialog::postKeyReturn() {
     QWidgetList list = QApplication::topLevelWidgets();
-    for (int i=0; i<list.count(); ++i) {
+    for (int i=0; i<list.size(); ++i) {
         QColorDialog *dialog = qobject_cast<QColorDialog *>(list[i]);
         if (dialog) {
             QTest::keyClick( list[i], Qt::Key_Return, Qt::NoModifier );

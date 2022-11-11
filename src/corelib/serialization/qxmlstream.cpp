@@ -3035,7 +3035,7 @@ void QXmlStreamWriterPrivate::indent(int level)
 {
     write("\n");
     for (int i = level; i > 0; --i)
-        write(autoFormattingIndent.constData(), autoFormattingIndent.length());
+        write(autoFormattingIndent.constData(), autoFormattingIndent.size());
 }
 
 

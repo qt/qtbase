@@ -76,7 +76,7 @@ static Option::QMAKE_MODE default_mode(QString progname)
 {
     int s = progname.lastIndexOf(QDir::separator());
     if(s != -1)
-        progname = progname.right(progname.length() - (s + 1));
+        progname = progname.right(progname.size() - (s + 1));
     if(progname == "qmakegen")
         return Option::QMAKE_GENERATE_PROJECT;
     else if(progname == "qt-config")
@@ -95,7 +95,7 @@ static QString detectProjectFile(const QString &path, QString *singleProFileCand
         ret = candidate;
     } else { //last try..
         QStringList profiles = dir.entryList(QStringList("*" + Option::pro_ext));
-        if(profiles.count() == 1)
+        if(profiles.size() == 1)
             ret = dir.filePath(profiles.at(0));
     }
     return ret;
@@ -173,7 +173,7 @@ Option::parseCommandLine(QStringList &args, QMakeCmdLineParserState &state)
 {
     enum { ArgNone, ArgOutput } argState = ArgNone;
     int x = 0;
-    while (x < args.count()) {
+    while (x < args.size()) {
         switch (argState) {
         case ArgOutput:
             Option::output.setFileName(args.at(x--));
@@ -389,7 +389,7 @@ Option::init(int argc, char **argv)
             } else if (opt == "-qtconf") {
                 // Skip "-qtconf <file>" and proceed.
                 ++idx;
-                if (idx + 1 < args.length())
+                if (idx + 1 < args.size())
                     ++idx;
                 continue;
             } else {
@@ -464,7 +464,7 @@ bool Option::postProcessProject(QMakeProject *project)
 
     if (!project->buildRoot().isEmpty() && Option::output_dir.startsWith(project->buildRoot()))
         Option::mkfile::cachefile_depth =
-                Option::output_dir.mid(project->buildRoot().length()).count('/');
+                Option::output_dir.mid(project->buildRoot().size()).count('/');
 
     return true;
 }
@@ -527,7 +527,7 @@ Option::fixString(QString string, uchar flags)
 
     if ((string.startsWith("\"") && string.endsWith("\"")) ||
         (string.startsWith("\'") && string.endsWith("\'")))
-        string = string.mid(1, string.length()-2);
+        string = string.mid(1, string.size()-2);
 
     //cache
     //qDebug() << "Fix" << orig_string << "->" << string;

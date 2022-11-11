@@ -154,11 +154,11 @@ static bool qt_socks5_set_host_name_and_port(const QString &hostname, quint16 po
     QByteArray encodedHostName = QUrl::toAce(hostname);
     QByteArray &buf = *pBuf;
 
-    if (encodedHostName.length() > 255)
+    if (encodedHostName.size() > 255)
         return false;
 
     buf.append(S5_DOMAINNAME);
-    buf.append(uchar(encodedHostName.length()));
+    buf.append(uchar(encodedHostName.size()));
     buf.append(encodedHostName);
 
     // add port

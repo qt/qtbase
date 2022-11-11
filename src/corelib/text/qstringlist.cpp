@@ -387,7 +387,7 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, QStringView befo
                                              QStringView after, Qt::CaseSensitivity cs)
 {
     for (qsizetype i = 0; i < that->size(); ++i)
-        (*that)[i].replace(before.data(), before.length(), after.data(), after.length(), cs);
+        (*that)[i].replace(before.data(), before.size(), after.data(), after.size(), cs);
 }
 
 #if QT_CONFIG(regularexpression)
@@ -492,7 +492,7 @@ QString QtPrivate::QStringList_join(const QStringList &list, QLatin1StringView s
 */
 QString QtPrivate::QStringList_join(const QStringList *that, QStringView sep)
 {
-    return QStringList_join(that, sep.data(), sep.length());
+    return QStringList_join(that, sep.data(), sep.size());
 }
 
 /*!

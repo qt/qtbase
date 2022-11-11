@@ -406,7 +406,7 @@ void tst_QStringListModel::setData_emits_on_change_only()
     const QModelIndex modelIdx = model.index(0, 0);
     const QString newStringData = QStringLiteral("test");
     QVERIFY(model.setData(modelIdx, newStringData));
-    QCOMPARE(dataChangedSpy.count(), 1);
+    QCOMPARE(dataChangedSpy.size(), 1);
     const QList<QVariant> spyList = dataChangedSpy.takeFirst();
     QCOMPARE(spyList.at(0).value<QModelIndex>(), modelIdx);
     QCOMPARE(spyList.at(1).value<QModelIndex>(), modelIdx);

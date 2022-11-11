@@ -646,10 +646,10 @@ bool quasiLexicographicalReverseLessThan(const QFileInfo &fi1, const QFileInfo &
     QString s1 = fi1.baseName();
     QString s2 = fi2.baseName();
 
-    if (s1.length() == s2.length())
+    if (s1.size() == s2.size())
         return s1 > s2;
     else
-        return s1.length() > s2.length();
+        return s1.size() > s2.size();
 }
 
 // Files which contain templates that need to be overwritten by build data should be overwritten every
@@ -739,10 +739,10 @@ QString cleanPackageName(QString packageName)
 
     // No keywords
     qsizetype index = -1;
-    while (index < packageName.length()) {
+    while (index < packageName.size()) {
         qsizetype next = packageName.indexOf(u'.', index + 1);
         if (next == -1)
-            next = packageName.length();
+            next = packageName.size();
         QString word = packageName.mid(index + 1, next - index - 1);
         if (!word.isEmpty()) {
             QChar c = word[0];
@@ -1133,7 +1133,7 @@ bool readInputFile(Options *options)
                             QString subPath = iterator.filePath();
                             auto arch = fileArchitecture(*options, subPath);
                             if (!arch.isEmpty()) {
-                                options->qtDependencies[arch].append(QtDependency(subPath.mid(options->qtInstallDirectory.length() + 1),
+                                options->qtDependencies[arch].append(QtDependency(subPath.mid(options->qtInstallDirectory.size() + 1),
                                                                                   subPath));
                             } else if (options->verbose) {
                                 fprintf(stderr, "Skipping \"%s\", unknown architecture\n", qPrintable(subPath));
@@ -1407,7 +1407,7 @@ bool updateFile(const QString &fileName, const QHash<QString, QString> &replacem
         forever {
             int index = contents.indexOf(it.key().toUtf8());
             if (index >= 0) {
-                contents.replace(index, it.key().length(), it.value().toUtf8());
+                contents.replace(index, it.key().size(), it.value().toUtf8());
                 hasReplacements = true;
             } else {
                 break;
@@ -1721,7 +1721,7 @@ QList<QtDependency> findFilesRecursively(const Options &options, const QFileInfo
 
         return ret;
     } else {
-        return QList<QtDependency>() << QtDependency(info.absoluteFilePath().mid(rootPath.length()), info.absoluteFilePath());
+        return QList<QtDependency>() << QtDependency(info.absoluteFilePath().mid(rootPath.size()), info.absoluteFilePath());
     }
 }
 

@@ -1642,9 +1642,9 @@ void tst_QWidget_window::resetFocusObjectOnDestruction()
     widget->show();
     QVERIFY(QTest::qWaitForWindowActive(widget.get()));
 
-    int activeCount = focusObjectChangedSpy.count();
+    int activeCount = focusObjectChangedSpy.size();
     widget.reset();
-    QVERIFY(focusObjectChangedSpy.count() > activeCount);
+    QVERIFY(focusObjectChangedSpy.size() > activeCount);
     QCOMPARE(focusObjectChangedSpy.last().last().value<QObject*>(), nullptr);
     focusObjectChangedSpy.clear();
 
@@ -1657,10 +1657,10 @@ void tst_QWidget_window::resetFocusObjectOnDestruction()
     widget->show();
     QVERIFY(QTest::qWaitForWindowActive(widget.get()));
 
-    activeCount = focusObjectChangedSpy.count();
+    activeCount = focusObjectChangedSpy.size();
     widget.reset();
     // we might get more than one signal emission
-    QVERIFY(focusObjectChangedSpy.count() > activeCount);
+    QVERIFY(focusObjectChangedSpy.size() > activeCount);
     QCOMPARE(focusObjectChangedSpy.last().last().value<QObject*>(), nullptr);
 }
 

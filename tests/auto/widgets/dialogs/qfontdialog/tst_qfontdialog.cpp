@@ -76,7 +76,7 @@ void tst_QFontDialog::cleanup()
 
 void tst_QFontDialog::postKeyReturn() {
     QWidgetList list = QApplication::topLevelWidgets();
-    for (int i=0; i<list.count(); ++i) {
+    for (int i=0; i<list.size(); ++i) {
         QFontDialog *dialog = qobject_cast<QFontDialog*>(list[i]);
         if (dialog) {
             QTest::keyClick( list[i], Qt::Key_Return, Qt::NoModifier );
@@ -215,7 +215,7 @@ void tst_QFontDialog::testNonStandardFontSize()
     QList<int> standardSizesList = QFontDatabase::standardSizes();
     int nonStandardFontSize;
     if (!standardSizesList.isEmpty()) {
-        nonStandardFontSize = standardSizesList.at(standardSizesList.count()-1); // get the maximum standard size.
+        nonStandardFontSize = standardSizesList.at(standardSizesList.size()-1); // get the maximum standard size.
         nonStandardFontSize += 1; // the increment of 1 to mock a non-standard font size.
     } else {
         QSKIP("QFontDatabase::standardSizes() is empty.");

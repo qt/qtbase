@@ -206,7 +206,7 @@ void tst_QFiledialog::currentChangedSignal()
     QVERIFY(listView->model()->hasChildren(folder));
     listView->setCurrentIndex(folder);
 
-    QCOMPARE(spyCurrentChanged.count(), 1);
+    QCOMPARE(spyCurrentChanged.size(), 1);
 }
 
 // only emitted from the views, sidebar, or lookin combo
@@ -228,7 +228,7 @@ void tst_QFiledialog::directoryEnteredSignal()
     QVERIFY(secondItem.isValid());
     sidebar->setCurrentIndex(secondItem);
     QTest::keyPress(sidebar->viewport(), Qt::Key_Return);
-    QCOMPARE(spyDirectoryEntered.count(), 1);
+    QCOMPARE(spyDirectoryEntered.size(), 1);
     spyDirectoryEntered.clear();
 
     // lookInCombo
@@ -237,7 +237,7 @@ void tst_QFiledialog::directoryEnteredSignal()
     QVERIFY(comboBox->view()->model()->index(1, 0).isValid());
     comboBox->view()->setCurrentIndex(comboBox->view()->model()->index(1, 0));
     QTest::keyPress(comboBox->view()->viewport(), Qt::Key_Return);
-    QCOMPARE(spyDirectoryEntered.count(), 1);
+    QCOMPARE(spyDirectoryEntered.size(), 1);
     spyDirectoryEntered.clear();
 
     // view
@@ -314,7 +314,7 @@ void tst_QFiledialog::filesSelectedSignal()
     QVERIFY(button->isEnabled());
     button->animateClick();
     QTRY_COMPARE(fd.isVisible(), false);
-    QCOMPARE(spyFilesSelected.count(), 1);
+    QCOMPARE(spyFilesSelected.size(), 1);
 }
 
 // only emitted when the combo box is activated
@@ -339,7 +339,7 @@ void tst_QFiledialog::filterSelectedSignal()
 
     QTest::keyPress(filters, Qt::Key_Down);
 
-    QCOMPARE(spyFilterSelected.count(), 1);
+    QCOMPARE(spyFilterSelected.size(), 1);
 }
 
 void tst_QFiledialog::args()
@@ -380,14 +380,14 @@ void tst_QFiledialog::directory()
 #ifndef Q_OS_WIN
     QCOMPARE(tempPath, fd.directory().absolutePath());
 #endif
-    QCOMPARE(spyCurrentChanged.count(), 0);
-    QCOMPARE(spyDirectoryEntered.count(), 0);
-    QCOMPARE(spyFilesSelected.count(), 0);
-    QCOMPARE(spyFilterSelected.count(), 0);
+    QCOMPARE(spyCurrentChanged.size(), 0);
+    QCOMPARE(spyDirectoryEntered.size(), 0);
+    QCOMPARE(spyFilesSelected.size(), 0);
+    QCOMPARE(spyFilterSelected.size(), 0);
 
     // Check my way
     QList<QListView*> list = fd.findChildren<QListView*>("listView");
-    QVERIFY(list.count() > 0);
+    QVERIFY(list.size() > 0);
 #ifdef Q_OS_WIN
     QCOMPARE(list.at(0)->rootIndex().data().toString().toLower(), temp.dirName().toLower());
 #else
@@ -572,16 +572,16 @@ void tst_QFiledialog::completer_up()
     fd.show();
     QLineEdit *lineEdit = fd.findChild<QLineEdit*>("fileNameEdit");
     QVERIFY(lineEdit);
-    QCOMPARE(spyFilesSelected.count(), 0);
-    int depth = QDir::currentPath().split('/').count();
+    QCOMPARE(spyFilesSelected.size(), 0);
+    int depth = QDir::currentPath().split('/').size();
     for (int i = 0; i <= depth * 3 + 1; ++i) {
         lineEdit->insert("../");
         qApp->processEvents();
     }
-    QCOMPARE(spyCurrentChanged.count(), 0);
-    QCOMPARE(spyDirectoryEntered.count(), 0);
-    QCOMPARE(spyFilesSelected.count(), 0);
-    QCOMPARE(spyFilterSelected.count(), 0);
+    QCOMPARE(spyCurrentChanged.size(), 0);
+    QCOMPARE(spyDirectoryEntered.size(), 0);
+    QCOMPARE(spyFilesSelected.size(), 0);
+    QCOMPARE(spyFilterSelected.size(), 0);
 }
 
 void tst_QFiledialog::acceptMode()
@@ -661,7 +661,7 @@ void tst_QFiledialog::filters()
 
     // effects
     QList<QComboBox*> views = fd.findChildren<QComboBox*>("fileTypeCombo");
-    QCOMPARE(views.count(), 1);
+    QCOMPARE(views.size(), 1);
     QCOMPARE(views.at(0)->isVisible(), false);
 
     QStringList filters;
@@ -676,15 +676,15 @@ void tst_QFiledialog::filters()
     QCOMPARE(fd.nameFilters(), filters);
     fd.setNameFilter("Image files (*.png *.xpm *.jpg);;Text files (*.txt);;Any files (*.*)");
     QCOMPARE(fd.nameFilters(), filters);
-    QCOMPARE(spyCurrentChanged.count(), 0);
-    QCOMPARE(spyDirectoryEntered.count(), 0);
-    QCOMPARE(spyFilesSelected.count(), 0);
-    QCOMPARE(spyFilterSelected.count(), 0);
+    QCOMPARE(spyCurrentChanged.size(), 0);
+    QCOMPARE(spyDirectoryEntered.size(), 0);
+    QCOMPARE(spyFilesSelected.size(), 0);
+    QCOMPARE(spyFilterSelected.size(), 0);
 
     // setting shouldn't emit any signals
     for (int i = views.at(0)->currentIndex(); i < views.at(0)->count(); ++i)
         views.at(0)->setCurrentIndex(i);
-    QCOMPARE(spyFilterSelected.count(), 0);
+    QCOMPARE(spyFilterSelected.size(), 0);
 
     //Let check if filters with whitespaces
     QFileDialog fd2;
@@ -723,7 +723,7 @@ void tst_QFiledialog::selectFilter()
     QCOMPARE(fd.selectedNameFilter(), filters.at(2));
     fd.selectNameFilter("");
     QCOMPARE(fd.selectedNameFilter(), filters.at(2));
-    QCOMPARE(spyFilterSelected.count(), 0);
+    QCOMPARE(spyFilterSelected.size(), 0);
 }
 
 void tst_QFiledialog::history()
@@ -762,10 +762,10 @@ void tst_QFiledialog::history()
     badHistory << QDir::toNativeSeparators(QDir::current().absolutePath());
     QCOMPARE(fd.history(), badHistory);
 
-    QCOMPARE(spyCurrentChanged.count(), 0);
-    QCOMPARE(spyDirectoryEntered.count(), 0);
-    QCOMPARE(spyFilesSelected.count(), 0);
-    QCOMPARE(spyFilterSelected.count(), 0);
+    QCOMPARE(spyCurrentChanged.size(), 0);
+    QCOMPARE(spyDirectoryEntered.size(), 0);
+    QCOMPARE(spyFilesSelected.size(), 0);
+    QCOMPARE(spyFilterSelected.size(), 0);
 }
 
 void tst_QFiledialog::iconProvider()
@@ -868,7 +868,7 @@ void tst_QFiledialog::selectFile()
     QVERIFY(model);
     fd->setDirectory(QDir::currentPath());
     // default value
-    QCOMPARE(fd->selectedFiles().count(), 1);
+    QCOMPARE(fd->selectedFiles().size(), 1);
 
     QScopedPointer<QTemporaryFile> tempFile;
     if (file == QLatin1String("temp")) {
@@ -878,7 +878,7 @@ void tst_QFiledialog::selectFile()
     }
 
     fd->selectFile(file);
-    QCOMPARE(fd->selectedFiles().count(), count);
+    QCOMPARE(fd->selectedFiles().size(), count);
     if (tempFile.isNull()) {
         QCOMPARE(model->index(fd->directory().path()), model->index(QDir::currentPath()));
     } else {
@@ -935,29 +935,29 @@ void tst_QFiledialog::selectFiles()
     // Get a list of files in the view and then get the corresponding index's
     QStringList list = fd.directory().entryList(QDir::Files);
     QModelIndexList toSelect;
-    QVERIFY(list.count() > 1);
+    QVERIFY(list.size() > 1);
     QListView* listView = fd.findChild<QListView*>("listView");
     QVERIFY(listView);
-    for (int i = 0; i < list.count(); ++i) {
+    for (int i = 0; i < list.size(); ++i) {
         fd.selectFile(fd.directory().path() + QLatin1Char('/') + list.at(i));
         QTRY_VERIFY(!listView->selectionModel()->selectedRows().isEmpty());
         toSelect.append(listView->selectionModel()->selectedRows().last());
     }
-    QCOMPARE(spyFilesSelected.count(), 0);
+    QCOMPARE(spyFilesSelected.size(), 0);
 
     listView->selectionModel()->clear();
-    QCOMPARE(spyFilesSelected.count(), 0);
+    QCOMPARE(spyFilesSelected.size(), 0);
 
     // select the indexes
-    for (int i = 0; i < toSelect.count(); ++i) {
+    for (int i = 0; i < toSelect.size(); ++i) {
         listView->selectionModel()->select(toSelect.at(i),
                 QItemSelectionModel::Select | QItemSelectionModel::Rows);
     }
-    QCOMPARE(fd.selectedFiles().count(), toSelect.count());
-    QCOMPARE(spyCurrentChanged.count(), 0);
-    QCOMPARE(spyDirectoryEntered.count(), 0);
-    QCOMPARE(spyFilesSelected.count(), 0);
-    QCOMPARE(spyFilterSelected.count(), 0);
+    QCOMPARE(fd.selectedFiles().size(), toSelect.size());
+    QCOMPARE(spyCurrentChanged.size(), 0);
+    QCOMPARE(spyDirectoryEntered.size(), 0);
+    QCOMPARE(spyFilesSelected.size(), 0);
+    QCOMPARE(spyFilterSelected.size(), 0);
 
     }
 
@@ -983,13 +983,13 @@ void tst_QFiledialog::viewMode()
 
     // find widgets
     QList<QTreeView*> treeView = fd.findChildren<QTreeView*>("treeView");
-    QCOMPARE(treeView.count(), 1);
+    QCOMPARE(treeView.size(), 1);
     QList<QListView*> listView = fd.findChildren<QListView*>("listView");
-    QCOMPARE(listView.count(), 1);
+    QCOMPARE(listView.size(), 1);
     QList<QToolButton*> listButton = fd.findChildren<QToolButton*>("listModeButton");
-    QCOMPARE(listButton.count(), 1);
+    QCOMPARE(listButton.size(), 1);
     QList<QToolButton*> treeButton = fd.findChildren<QToolButton*>("detailModeButton");
-    QCOMPARE(treeButton.count(), 1);
+    QCOMPARE(treeButton.size(), 1);
 
     // default value
     QCOMPARE(fd.viewMode(), QFileDialog::List);
@@ -1128,7 +1128,7 @@ void tst_QFiledialog::focus()
     QCursor::setPos(fd.geometry().center());
 
     QList<QWidget*> treeView = fd.findChildren<QWidget*>("fileNameEdit");
-    QCOMPARE(treeView.count(), 1);
+    QCOMPARE(treeView.size(), 1);
     QVERIFY(treeView.at(0));
     QTRY_COMPARE(treeView.at(0)->hasFocus(), true);
     QCOMPARE(treeView.at(0)->hasFocus(), true);
@@ -1158,13 +1158,13 @@ void tst_QFiledialog::historyBack()
     QCOMPARE(backButton->isEnabled(), true);
     QCOMPARE(forwardButton->isEnabled(), false);
     fd.setDirectory(desktop);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 
     backButton->click();
     qApp->processEvents();
     QCOMPARE(backButton->isEnabled(), true);
     QCOMPARE(forwardButton->isEnabled(), true);
-    QCOMPARE(spy.count(), 3);
+    QCOMPARE(spy.size(), 3);
     QString currentPath = qvariant_cast<QString>(spy.last().first());
     QCOMPARE(model->index(currentPath), model->index(temp));
 
@@ -1173,11 +1173,11 @@ void tst_QFiledialog::historyBack()
     QCOMPARE(currentPath, home);
     QCOMPARE(backButton->isEnabled(), false);
     QCOMPARE(forwardButton->isEnabled(), true);
-    QCOMPARE(spy.count(), 4);
+    QCOMPARE(spy.size(), 4);
 
     // nothing should change at this point
     backButton->click();
-    QCOMPARE(spy.count(), 4);
+    QCOMPARE(spy.size(), 4);
     QCOMPARE(backButton->isEnabled(), false);
     QCOMPARE(forwardButton->isEnabled(), true);
 }
@@ -1211,7 +1211,7 @@ void tst_QFiledialog::historyForward()
     QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(desktop));
     QCOMPARE(backButton->isEnabled(), true);
     QCOMPARE(forwardButton->isEnabled(), false);
-    QCOMPARE(spy.count(), 4);
+    QCOMPARE(spy.size(), 4);
 
     backButton->click();
     QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(temp));
@@ -1221,13 +1221,13 @@ void tst_QFiledialog::historyForward()
     QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(home));
     QCOMPARE(backButton->isEnabled(), false);
     QCOMPARE(forwardButton->isEnabled(), true);
-    QCOMPARE(spy.count(), 6);
+    QCOMPARE(spy.size(), 6);
 
     forwardButton->click();
     QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(temp));
     backButton->click();
     QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(home));
-    QCOMPARE(spy.count(), 8);
+    QCOMPARE(spy.size(), 8);
 
     forwardButton->click();
     QCOMPARE(model->index(qvariant_cast<QString>(spy.last().first())), model->index(temp));

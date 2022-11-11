@@ -52,7 +52,7 @@ public:
 void
 BuildsMetaMakefileGenerator::clearBuilds()
 {
-    for(int i = 0; i < makefiles.count(); i++) {
+    for(int i = 0; i < makefiles.size(); i++) {
         Build *build = makefiles[i];
         if(QMakeProject *p = build->makefile->projectFile()) {
             if(p != project)
@@ -73,12 +73,12 @@ BuildsMetaMakefileGenerator::init()
 
     const ProStringList &builds = project->values("BUILDS");
     bool use_single_build = builds.isEmpty();
-    if(builds.count() > 1 && Option::output.fileName() == "-") {
+    if(builds.size() > 1 && Option::output.fileName() == "-") {
         use_single_build = true;
         warn_msg(WarnLogic, "Cannot direct to stdout when using multiple BUILDS.");
     }
     if(!use_single_build) {
-        for(int i = 0; i < builds.count(); i++) {
+        for(int i = 0; i < builds.size(); i++) {
             ProString build = builds[i];
             MakefileGenerator *makefile = processBuild(build);
             if(!makefile)
@@ -91,7 +91,7 @@ BuildsMetaMakefileGenerator::init()
             } else {
                 Build *b = new Build;
                 b->name = name;
-                if(builds.count() != 1)
+                if(builds.size() != 1)
                     b->build = build.toQString();
                 b->makefile = makefile;
                 makefiles += b;
@@ -126,7 +126,7 @@ BuildsMetaMakefileGenerator::write()
 
     bool ret = true;
     const QString &output_name = Option::output.fileName();
-    for(int i = 0; ret && i < makefiles.count(); i++) {
+    for(int i = 0; ret && i < makefiles.size(); i++) {
         Option::output.setFileName(output_name);
         Build *build = makefiles[i];
 
@@ -223,7 +223,7 @@ void BuildsMetaMakefileGenerator::accumulateVariableFromBuilds(const ProKey &nam
 
 void BuildsMetaMakefileGenerator::checkForConflictingTargets() const
 {
-    if (makefiles.count() < 3) {
+    if (makefiles.size() < 3) {
         // Checking for conflicts only makes sense if we have more than one BUILD,
         // and the last entry in makefiles is the "glue" Build.
         return;
@@ -234,7 +234,7 @@ void BuildsMetaMakefileGenerator::checkForConflictingTargets() const
     }
     using TargetInfo = std::pair<Build *, ProString>;
     QList<TargetInfo> targets;
-    const int last = makefiles.count() - 1;
+    const int last = makefiles.size() - 1;
     targets.resize(last);
     for (int i = 0; i < last; ++i) {
         Build *b = makefiles.at(i);
@@ -324,7 +324,7 @@ SubdirsMetaMakefileGenerator::init()
             if(!subdir.isRelative()) { //we can try to make it relative
                 QString subdir_path = subdir.filePath();
                 if(subdir_path.startsWith(thispwd))
-                    subdir = QFileInfo(subdir_path.mid(thispwd.length()));
+                    subdir = QFileInfo(subdir_path.mid(thispwd.size()));
             }
 
             //handle sub project
@@ -391,12 +391,12 @@ SubdirsMetaMakefileGenerator::write()
     const QString &pwd = qmake_getpwd();
     const QString &output_dir = Option::output_dir;
     const QString &output_name = Option::output.fileName();
-    for(int i = 0; ret && i < subs.count(); i++) {
+    for(int i = 0; ret && i < subs.size(); i++) {
         const Subdir *sub = subs.at(i);
         qmake_setpwd(sub->input_dir);
         Option::output_dir = QFileInfo(sub->output_dir).absoluteFilePath();
         Option::output.setFileName(sub->output_file);
-        if(i != subs.count()-1) {
+        if(i != subs.size()-1) {
             for (int ind = 0; ind < sub->indent; ++ind)
                 printf(" ");
             printf("Writing %s\n", QDir::cleanPath(Option::output_dir+"/"+
@@ -414,7 +414,7 @@ SubdirsMetaMakefileGenerator::write()
 
 SubdirsMetaMakefileGenerator::~SubdirsMetaMakefileGenerator()
 {
-    for(int i = 0; i < subs.count(); i++)
+    for(int i = 0; i < subs.size(); i++)
         delete subs[i];
     subs.clear();
 }

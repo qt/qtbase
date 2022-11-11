@@ -371,7 +371,7 @@ qint64 RCCFileInfo::writeDataName(RCCResourceLibrary &lib, qint64 offset)
     }
 
     // write the length
-    lib.writeNumber2(m_name.length());
+    lib.writeNumber2(m_name.size());
     if (text || pass1)
         lib.writeString("\n  ");
     else if (python)
@@ -388,14 +388,14 @@ qint64 RCCFileInfo::writeDataName(RCCResourceLibrary &lib, qint64 offset)
 
     // write the m_name
     const QChar *unicode = m_name.unicode();
-    for (int i = 0; i < m_name.length(); ++i) {
+    for (int i = 0; i < m_name.size(); ++i) {
         lib.writeNumber2(unicode[i].unicode());
         if ((text || pass1) && i % 16 == 0)
             lib.writeString("\n  ");
         else if (python && i % 16 == 0)
             lib.writeString("\\\n");
     }
-    offset += m_name.length()*2;
+    offset += m_name.size()*2;
 
     // done
     if (text || pass1)
@@ -506,7 +506,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                         QString attribute = attributes.value(m_strings.ATTRIBUTE_LANG).toString();
                         QLocale lang = QLocale(attribute);
                         language = lang.language();
-                        if (2 == attribute.length()) {
+                        if (2 == attribute.size()) {
                             // Language only
                             territory = QLocale::AnyTerritory;
                         } else {

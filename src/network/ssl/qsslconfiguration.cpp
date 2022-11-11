@@ -218,15 +218,15 @@ bool QSslConfiguration::isNull() const
             d->peerVerifyMode == QSslSocket::AutoVerifyPeer &&
             d->peerVerifyDepth == 0 &&
             d->allowRootCertOnDemandLoading == true &&
-            d->caCertificates.count() == 0 &&
-            d->ciphers.count() == 0 &&
+            d->caCertificates.size() == 0 &&
+            d->ciphers.size() == 0 &&
             d->ellipticCurves.isEmpty() &&
             d->ephemeralServerKey.isNull() &&
             d->dhParams == QSslDiffieHellmanParameters::defaultParameters() &&
             d->localCertificateChain.isEmpty() &&
             d->privateKey.isNull() &&
             d->peerCertificate.isNull() &&
-            d->peerCertificateChain.count() == 0 &&
+            d->peerCertificateChain.size() == 0 &&
             d->backendConfig.isEmpty() &&
             d->sslOptions == QSslConfigurationPrivate::defaultSslOptions &&
             d->sslSession.isNull() &&

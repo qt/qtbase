@@ -757,10 +757,10 @@ void tst_QStandardItem::takeColumn()
 
     QList<QStandardItem *> taken = item.takeColumn(column);
     if (expectSuccess) {
-        QCOMPARE(taken.count(), item.rowCount());
+        QCOMPARE(taken.size(), item.rowCount());
         QCOMPARE(item.columnCount(), columns - 1);
         int index = column;
-        for (int i = 0; i < taken.count(); ++i) {
+        for (int i = 0; i < taken.size(); ++i) {
             QCOMPARE(taken.at(i), originalChildren.takeAt(index));
             index += item.columnCount();
         }
@@ -818,10 +818,10 @@ void tst_QStandardItem::takeRow()
 
     QList<QStandardItem *> taken = item.takeRow(row);
     if (expectSuccess) {
-        QCOMPARE(taken.count(), item.columnCount());
+        QCOMPARE(taken.size(), item.columnCount());
         QCOMPARE(item.rowCount(), rows - 1);
         int index = row * columns;
-        for (int i = 0; i < taken.count(); ++i) {
+        for (int i = 0; i < taken.size(); ++i) {
             QCOMPARE(taken.at(i), originalChildren.takeAt(index));
         }
         index = 0;
@@ -984,8 +984,8 @@ void tst_QStandardItem::sortChildren()
         QCOMPARE(two->child(1)->text(), QLatin1String("e"));
         QCOMPARE(two->child(2)->text(), QLatin1String("f"));
 
-        QCOMPARE(layoutAboutToBeChangedSpy.count(), (x == 0) ? 0 : 3);
-        QCOMPARE(layoutChangedSpy.count(), (x == 0) ? 0 : 3);
+        QCOMPARE(layoutAboutToBeChangedSpy.size(), (x == 0) ? 0 : 3);
+        QCOMPARE(layoutChangedSpy.size(), (x == 0) ? 0 : 3);
 
         if (x == 0)
             delete item;
@@ -1001,7 +1001,7 @@ public:
     int type() const override { return QStandardItem::UserType + 1; }
 
     bool operator<(const QStandardItem &other) const override {
-        return text().length() < other.text().length();
+        return text().size() < other.text().size();
     }
 
     using QStandardItem::clone;
@@ -1027,8 +1027,8 @@ void tst_QStandardItem::subclassing()
 
     QSignalSpy itemChangedSpy(&model, &QStandardItemModel::itemChanged);
     item->emitDataChanged();
-    QCOMPARE(itemChangedSpy.count(), 1);
-    QCOMPARE(itemChangedSpy.at(0).count(), 1);
+    QCOMPARE(itemChangedSpy.size(), 1);
+    QCOMPARE(itemChangedSpy.at(0).size(), 1);
     QCOMPARE(qvariant_cast<QStandardItem*>(itemChangedSpy.at(0).at(0)), item);
 
     CustomItem *child0 = new CustomItem("cc");

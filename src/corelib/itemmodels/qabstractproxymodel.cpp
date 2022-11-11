@@ -443,7 +443,7 @@ QMimeData* QAbstractProxyModel::mimeData(const QModelIndexList &indexes) const
 {
     Q_D(const QAbstractProxyModel);
     QModelIndexList list;
-    list.reserve(indexes.count());
+    list.reserve(indexes.size());
     for (const QModelIndex &index : indexes)
         list << mapToSource(index);
     return d->model->mimeData(list);

@@ -50,7 +50,7 @@ void tst_QUrlUts46::idnaTestV2_data()
 
         Q_ASSERT(s.startsWith('[') && s.endsWith(']'));
 
-        const auto errors = s.sliced(1, s.length() - 2).split(',');
+        const auto errors = s.sliced(1, s.size() - 2).split(',');
         // NOTE: empty string is not in fatalErrors and it's ok
         return std::all_of(errors.begin(), errors.end(),
                            [](auto &e) { return !fatalErrors.contains(e.trimmed()); });

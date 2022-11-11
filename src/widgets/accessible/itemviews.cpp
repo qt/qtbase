@@ -154,21 +154,21 @@ int QAccessibleTable::selectedCellCount() const
 {
     if (!view()->selectionModel())
         return 0;
-    return view()->selectionModel()->selectedIndexes().count();
+    return view()->selectionModel()->selectedIndexes().size();
 }
 
 int QAccessibleTable::selectedColumnCount() const
 {
     if (!view()->selectionModel())
         return 0;
-    return view()->selectionModel()->selectedColumns().count();
+    return view()->selectionModel()->selectedColumns().size();
 }
 
 int QAccessibleTable::selectedRowCount() const
 {
     if (!view()->selectionModel())
         return 0;
-    return view()->selectionModel()->selectedRows().count();
+    return view()->selectionModel()->selectedRows().size();
 }
 
 QString QAccessibleTable::rowDescription(int row) const
@@ -654,7 +654,7 @@ QModelIndex QAccessibleTree::indexFromLogical(int row, int column) const
         return QModelIndex();
 
     const QTreeView *treeView = qobject_cast<const QTreeView*>(view());
-    if (Q_UNLIKELY(row < 0 || column < 0 || treeView->d_func()->viewItems.count() <= row)) {
+    if (Q_UNLIKELY(row < 0 || column < 0 || treeView->d_func()->viewItems.size() <= row)) {
         qWarning() << "QAccessibleTree::indexFromLogical: invalid index: " << row << column << " for " << treeView;
         return QModelIndex();
     }
@@ -707,7 +707,7 @@ int QAccessibleTree::childCount() const
         return 0;
 
     int hHeader = horizontalHeader() ? 1 : 0;
-    return (treeView->d_func()->viewItems.count() + hHeader)* view()->model()->columnCount();
+    return (treeView->d_func()->viewItems.size() + hHeader)* view()->model()->columnCount();
 }
 
 QAccessibleInterface *QAccessibleTree::child(int logicalIndex) const
@@ -743,7 +743,7 @@ int QAccessibleTree::rowCount() const
 {
     const QTreeView *treeView = qobject_cast<const QTreeView*>(view());
     Q_ASSERT(treeView);
-    return treeView->d_func()->viewItems.count();
+    return treeView->d_func()->viewItems.size();
 }
 
 int QAccessibleTree::indexOfChild(const QAccessibleInterface *iface) const
@@ -1024,7 +1024,7 @@ void QAccessibleTableCell::unselectCell()
     //one cell is selected it cannot be unselected by the user
     if ((selectionMode != QAbstractItemView::MultiSelection)
         && (selectionMode != QAbstractItemView::ExtendedSelection)
-        && (view->selectionModel()->selectedIndexes().count() <= 1))
+        && (view->selectionModel()->selectedIndexes().size() <= 1))
         return;
 
     view->selectionModel()->select(m_index, QItemSelectionModel::Deselect);

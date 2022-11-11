@@ -186,7 +186,7 @@ static void doTestData(const QString &testString, const QList<int> &expectedBrea
     QVERIFY(boundaryFinder.boundaryReasons() == QTextBoundaryFinder::NotAtBoundary);
 
     // test boundaryReasons()
-    for (int i = 0; i <= testString.length(); ++i) {
+    for (int i = 0; i <= testString.size(); ++i) {
         boundaryFinder.setPosition(i);
         QCOMPARE(!!(boundaryFinder.boundaryReasons() & reasons), expectedBreakPositions.contains(i));
     }
@@ -768,7 +768,7 @@ void tst_QTextBoundaryFinder::emptyText()
 void tst_QTextBoundaryFinder::fastConstructor()
 {
     QString text("Hello World");
-    QTextBoundaryFinder finder(QTextBoundaryFinder::Word, text.constData(), text.length(), /*buffer*/0, /*buffer size*/0);
+    QTextBoundaryFinder finder(QTextBoundaryFinder::Word, text.constData(), text.size(), /*buffer*/0, /*buffer size*/0);
 
     QCOMPARE(finder.position(), 0);
     QVERIFY(finder.boundaryReasons() & QTextBoundaryFinder::StartOfItem);
@@ -782,7 +782,7 @@ void tst_QTextBoundaryFinder::fastConstructor()
     QVERIFY(finder.boundaryReasons() & QTextBoundaryFinder::StartOfItem);
 
     finder.toNextBoundary();
-    QCOMPARE(finder.position(), text.length());
+    QCOMPARE(finder.position(), text.size());
     QVERIFY(finder.boundaryReasons() & QTextBoundaryFinder::EndOfItem);
 
     finder.toNextBoundary();

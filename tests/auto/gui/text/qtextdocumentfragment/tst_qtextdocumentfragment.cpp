@@ -1175,7 +1175,7 @@ void tst_QTextDocumentFragment::copySubTable()
                 table->cellAt(row, col).firstCursorPosition().insertText(rowS + QString::number(col));
         }
 
-        QCOMPARE(table->format().columnWidthConstraints().count(), table->columns());
+        QCOMPARE(table->format().columnWidthConstraints().size(), table->columns());
 
         // select 2x2 subtable
         cursor = table->cellAt(1, 1).firstCursorPosition();
@@ -2235,7 +2235,7 @@ void tst_QTextDocumentFragment::html_frameImport()
     cursor.insertFragment(frag);
 
     QList<QTextFrame *> childFrames = doc->rootFrame()->childFrames();
-    QCOMPARE(childFrames.count(), 1);
+    QCOMPARE(childFrames.size(), 1);
     QTextFrame *frame = childFrames.first();
     QCOMPARE(frame->frameFormat().margin(), ffmt.margin());
     QCOMPARE(frame->frameFormat().border(), ffmt.border());
@@ -2263,7 +2263,7 @@ void tst_QTextDocumentFragment::html_frameImport2()
     cursor.insertFragment(frag);
 
     QList<QTextFrame *> childFrames = doc->rootFrame()->childFrames();
-    QCOMPARE(childFrames.count(), 1);
+    QCOMPARE(childFrames.size(), 1);
     QTextFrame *frame = childFrames.first();
     QCOMPARE(frame->frameFormat().topMargin(), ffmt.topMargin());
     QCOMPARE(frame->frameFormat().bottomMargin(), ffmt.bottomMargin());
@@ -2278,7 +2278,7 @@ void tst_QTextDocumentFragment::html_dontAddMarginsAcrossTableCells()
     cursor.insertFragment(QTextDocumentFragment::fromHtml(QString::fromLatin1(html)));
 
     QList<QTextFrame *> childFrames = doc->rootFrame()->childFrames();
-    QCOMPARE(childFrames.count(), 1);
+    QCOMPARE(childFrames.size(), 1);
     QTextFrame *frame = childFrames.first();
     cursor = frame->firstCursorPosition();
     QCOMPARE(cursor.blockFormat().leftMargin(), qreal(50.0));
@@ -2760,7 +2760,7 @@ void tst_QTextDocumentFragment::html_columnWidths()
     QTextTableFormat fmt = table->format();
 
     const QList<QTextLength> columnWidths = fmt.columnWidthConstraints();
-    QCOMPARE(columnWidths.count(), 2);
+    QCOMPARE(columnWidths.size(), 2);
     QCOMPARE(columnWidths.at(0).type(), QTextLength::VariableLength);
     QCOMPARE(columnWidths.at(1).type(), QTextLength::PercentageLength);
     QCOMPARE(columnWidths.at(1).rawValue(), qreal(1));
@@ -4168,7 +4168,7 @@ void tst_QTextDocumentFragment::html_entities()
     setHtml(html);
     QCOMPARE(doc->blockCount(), 1);
     QString txt = doc->begin().text();
-    QCOMPARE(txt.length(), 1);
+    QCOMPARE(txt.size(), 1);
     QCOMPARE(txt.at(0).unicode(), code);
 }
 

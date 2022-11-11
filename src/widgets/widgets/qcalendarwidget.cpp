@@ -72,7 +72,7 @@ QString QCalendarDateSectionValidator::highlightString(const QString &str, int p
 {
     if (pos == 0)
         return "<b>"_L1 + str + "</b>"_L1;
-    int startPos = str.length() - pos;
+    int startPos = str.size() - pos;
     return QStringView{str}.mid(0, startPos) + "<b>"_L1 + QStringView{str}.mid(startPos, pos) + "</b>"_L1;
 
 }
@@ -728,7 +728,7 @@ bool QCalendarTextNavigator::eventFilter(QObject *o, QEvent *e)
     if (m_widget) {
         if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
             QKeyEvent* ke = (QKeyEvent*)e;
-            if ((ke->text().length() > 0 && ke->text().at(0).isPrint()) || m_dateFrame) {
+            if ((ke->text().size() > 0 && ke->text().at(0).isPrint()) || m_dateFrame) {
                 if (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter || ke->key() == Qt::Key_Select) {
                     applyDate();
                     emit editingFinished();

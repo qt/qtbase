@@ -2781,7 +2781,7 @@ void tst_QWidget::resizePropagation()
     {
         // Capture count of latest async signals
         if (!checkCountIncrement)
-            count = spy.count();
+            count = spy.size();
 
         // Resize if required
         if (size.isValid())
@@ -2792,12 +2792,12 @@ void tst_QWidget::resizePropagation()
 
         // Check signal count and qDebug output for fail analysis
         if (checkCountIncrement) {
-            QTRY_VERIFY(spy.count() > count);
-            qDebug() << "spy count:" << spy.count() << "previous count:" << count;
-            count = spy.count();
+            QTRY_VERIFY(spy.size() > count);
+            qDebug() << "spy count:" << spy.size() << "previous count:" << count;
+            count = spy.size();
         } else {
             qDebug() << spy << widget.windowState() << window->windowState();
-            QCOMPARE(spy.count(), count);
+            QCOMPARE(spy.size(), count);
         }
 
         // QTRY necessary because state changes are propagated async
@@ -3296,7 +3296,7 @@ void tst_QWidget::reparent()
 void tst_QWidget::setScreen()
 {
     const auto screens = QApplication::screens();
-    if (screens.count() < 2)
+    if (screens.size() < 2)
         QSKIP("This test tests nothing on a machine with a single screen.");
 
     QScreen *screen0 = screens.at(0);
@@ -3690,7 +3690,7 @@ void tst_QWidget::raise()
 
     QObjectList list1{child1, child2, child3, child4};
     QCOMPARE(parentPtr->children(), list1);
-    QCOMPARE(allChildren.count(), list1.count());
+    QCOMPARE(allChildren.size(), list1.size());
 
     for (UpdateWidget *child : qAsConst(allChildren)) {
         int expectedPaintEvents = child == child4 ? 1 : 0;
@@ -3789,7 +3789,7 @@ void tst_QWidget::lower()
 
     QObjectList list1{child1, child2, child3, child4};
     QCOMPARE(parent->children(), list1);
-    QCOMPARE(allChildren.count(), list1.count());
+    QCOMPARE(allChildren.size(), list1.size());
 
     for (UpdateWidget *child : qAsConst(allChildren)) {
         int expectedPaintEvents = child == child4 ? 1 : 0;
@@ -4807,7 +4807,7 @@ protected:
     }
 public:
     QList<WId> m_winIdList;
-    int winIdChangeEventCount() const { return m_winIdList.count(); }
+    int winIdChangeEventCount() const { return m_winIdList.size(); }
 };
 
 class CreateDestroyWidget : public WinIdChangeWidget
@@ -6877,7 +6877,7 @@ void tst_QWidget::testWindowIconChangeEventPropagation()
     QWidgetList widgets;
     widgets << &topLevelWidget << &topLevelChild
             << &dialog << &dialogChild;
-    QCOMPARE(widgets.count(), 4);
+    QCOMPARE(widgets.size(), 4);
 
     topLevelWidget.show();
     dialog.show();
@@ -6906,7 +6906,7 @@ void tst_QWidget::testWindowIconChangeEventPropagation()
     const QIcon windowIcon = qApp->style()->standardIcon(QStyle::SP_TitleBarMenuButton);
     qApp->setWindowIcon(windowIcon);
 
-    for (int i = 0; i < widgets.count(); ++i) {
+    for (int i = 0; i < widgets.size(); ++i) {
         // Check QEvent::ApplicationWindowIconChange
         EventSpyPtr spy = applicationEventSpies.at(i);
         QWidget *widget = spy->widget();
@@ -6923,7 +6923,7 @@ void tst_QWidget::testWindowIconChangeEventPropagation()
         QCOMPARE(spy->count(), 1);
         spy->clear();
     }
-    for (int i = 0; i < windows.count(); ++i) {
+    for (int i = 0; i < windows.size(); ++i) {
         // Check QEvent::ApplicationWindowIconChange (sent to QWindow)
         // QWidgetWindows don't get this event, since the widget takes care of changing the icon
         WindowEventSpyPtr spy = appWindowEventSpies.at(i);
@@ -6941,7 +6941,7 @@ void tst_QWidget::testWindowIconChangeEventPropagation()
     // Set icon on a top-level widget.
     topLevelWidget.setWindowIcon(QIcon());
 
-    for (int i = 0; i < widgets.count(); ++i) {
+    for (int i = 0; i < widgets.size(); ++i) {
         // Check QEvent::ApplicationWindowIconChange
         EventSpyPtr spy = applicationEventSpies.at(i);
         QCOMPARE(spy->count(), 0);
@@ -12840,7 +12840,7 @@ void tst_QWidget::deleteWindowInCloseEvent()
     QApplication::exec();
 
     // It should still result in a single lastWindowClosed emit
-    QCOMPARE(quitSpy.count(), 1);
+    QCOMPARE(quitSpy.size(), 1);
 }
 
 /*!
@@ -12861,7 +12861,7 @@ void tst_QWidget::quitOnClose()
         widget->close();
     });
     QApplication::exec();
-    QCOMPARE(quitSpy.count(), 1);
+    QCOMPARE(quitSpy.size(), 1);
 
     widget->show();
     QVERIFY(QTest::qWaitForWindowExposed(widget.get()));
@@ -12869,7 +12869,7 @@ void tst_QWidget::quitOnClose()
         widget.reset();
     });
     QApplication::exec();
-    QCOMPARE(quitSpy.count(), 2);
+    QCOMPARE(quitSpy.size(), 2);
 }
 
 void tst_QWidget::setParentChangesFocus_data()

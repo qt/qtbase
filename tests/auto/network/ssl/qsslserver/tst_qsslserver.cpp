@@ -142,15 +142,15 @@ void tst_QSslServer::testOneSuccessfulConnection()
     QVERIFY(server.startedEncryptionHandshakeSpy.isValid());
 
     // Check that no connections has occurred
-    QCOMPARE(server.sslErrorsSpy.count(), 0);
-    QCOMPARE(server.peerVerifyErrorSpy.count(), 0);
-    QCOMPARE(server.errorOccurredSpy.count(), 0);
-    QCOMPARE(server.pendingConnectionAvailableSpy.count(), 0);
-    QCOMPARE(server.preSharedKeyAuthenticationRequiredSpy.count(), 0);
-    QCOMPARE(server.alertSentSpy.count(), 0);
-    QCOMPARE(server.alertReceivedSpy.count(), 0);
-    QCOMPARE(server.handshakeInterruptedOnErrorSpy.count(), 0);
-    QCOMPARE(server.startedEncryptionHandshakeSpy.count(), 0);
+    QCOMPARE(server.sslErrorsSpy.size(), 0);
+    QCOMPARE(server.peerVerifyErrorSpy.size(), 0);
+    QCOMPARE(server.errorOccurredSpy.size(), 0);
+    QCOMPARE(server.pendingConnectionAvailableSpy.size(), 0);
+    QCOMPARE(server.preSharedKeyAuthenticationRequiredSpy.size(), 0);
+    QCOMPARE(server.alertSentSpy.size(), 0);
+    QCOMPARE(server.alertReceivedSpy.size(), 0);
+    QCOMPARE(server.handshakeInterruptedOnErrorSpy.size(), 0);
+    QCOMPARE(server.startedEncryptionHandshakeSpy.size(), 0);
 
     // Connect client
     QSslSocket client;
@@ -187,15 +187,15 @@ void tst_QSslServer::testOneSuccessfulConnection()
     loop.exec();
 
     // Check that one encrypted connection has occurred without error
-    QCOMPARE(server.sslErrorsSpy.count(), 0);
-    QCOMPARE(server.peerVerifyErrorSpy.count(), 0);
-    QCOMPARE(server.errorOccurredSpy.count(), 0);
-    QCOMPARE(server.pendingConnectionAvailableSpy.count(), 1);
-    QCOMPARE(server.preSharedKeyAuthenticationRequiredSpy.count(), 0);
-    QCOMPARE(server.alertSentSpy.count(), 0);
-    QCOMPARE(server.alertReceivedSpy.count(), 0);
-    QCOMPARE(server.handshakeInterruptedOnErrorSpy.count(), 0);
-    QCOMPARE(server.startedEncryptionHandshakeSpy.count(), 1);
+    QCOMPARE(server.sslErrorsSpy.size(), 0);
+    QCOMPARE(server.peerVerifyErrorSpy.size(), 0);
+    QCOMPARE(server.errorOccurredSpy.size(), 0);
+    QCOMPARE(server.pendingConnectionAvailableSpy.size(), 1);
+    QCOMPARE(server.preSharedKeyAuthenticationRequiredSpy.size(), 0);
+    QCOMPARE(server.alertSentSpy.size(), 0);
+    QCOMPARE(server.alertReceivedSpy.size(), 0);
+    QCOMPARE(server.handshakeInterruptedOnErrorSpy.size(), 0);
+    QCOMPARE(server.startedEncryptionHandshakeSpy.size(), 1);
 
     // Check client socket
     QVERIFY(client.isEncrypted());
@@ -224,16 +224,16 @@ void tst_QSslServer::testSelfSignedCertificateRejectedByServer()
     loop.exec();
 
     // Check that one encrypted connection has failed
-    QCOMPARE(server.sslErrorsSpy.count(), 1);
-    QCOMPARE(server.peerVerifyErrorSpy.count(), 1);
-    QCOMPARE(server.errorOccurredSpy.count(), 1);
-    QCOMPARE(server.pendingConnectionAvailableSpy.count(), 0);
-    QCOMPARE(server.preSharedKeyAuthenticationRequiredSpy.count(), 0);
-    QCOMPARE(server.alertSentSpy.count(),
+    QCOMPARE(server.sslErrorsSpy.size(), 1);
+    QCOMPARE(server.peerVerifyErrorSpy.size(), 1);
+    QCOMPARE(server.errorOccurredSpy.size(), 1);
+    QCOMPARE(server.pendingConnectionAvailableSpy.size(), 0);
+    QCOMPARE(server.preSharedKeyAuthenticationRequiredSpy.size(), 0);
+    QCOMPARE(server.alertSentSpy.size(),
              isTestingOpenSsl ? 1 : 0); // OpenSSL only signal
-    QCOMPARE(server.alertReceivedSpy.count(), 0);
-    QCOMPARE(server.handshakeInterruptedOnErrorSpy.count(), 0);
-    QCOMPARE(server.startedEncryptionHandshakeSpy.count(), 1);
+    QCOMPARE(server.alertReceivedSpy.size(), 0);
+    QCOMPARE(server.handshakeInterruptedOnErrorSpy.size(), 0);
+    QCOMPARE(server.startedEncryptionHandshakeSpy.size(), 1);
 
     // Type of certificate error to expect
     const auto certificateError =
@@ -290,32 +290,32 @@ void tst_QSslServer::testSelfSignedCertificateRejectedByClient()
     QTcpSocket *connection = server.server.nextPendingConnection();
     if (connection == nullptr) {
         // Client disconnected before connection accepted by server
-        QCOMPARE(server.sslErrorsSpy.count(), 0);
-        QCOMPARE(server.peerVerifyErrorSpy.count(), 0);
-        QCOMPARE(server.errorOccurredSpy.count(), 1); // Client rejected first
-        QCOMPARE(server.pendingConnectionAvailableSpy.count(), 0);
-        QCOMPARE(server.preSharedKeyAuthenticationRequiredSpy.count(), 0);
-        QCOMPARE(server.alertSentSpy.count(), 0);
-        QCOMPARE(server.alertReceivedSpy.count(),
+        QCOMPARE(server.sslErrorsSpy.size(), 0);
+        QCOMPARE(server.peerVerifyErrorSpy.size(), 0);
+        QCOMPARE(server.errorOccurredSpy.size(), 1); // Client rejected first
+        QCOMPARE(server.pendingConnectionAvailableSpy.size(), 0);
+        QCOMPARE(server.preSharedKeyAuthenticationRequiredSpy.size(), 0);
+        QCOMPARE(server.alertSentSpy.size(), 0);
+        QCOMPARE(server.alertReceivedSpy.size(),
                  isTestingOpenSsl ? 1 : 0); // OpenSSL only signal
-        QCOMPARE(server.handshakeInterruptedOnErrorSpy.count(), 0);
-        QCOMPARE(server.startedEncryptionHandshakeSpy.count(), 1);
+        QCOMPARE(server.handshakeInterruptedOnErrorSpy.size(), 0);
+        QCOMPARE(server.startedEncryptionHandshakeSpy.size(), 1);
 
         const auto errrOccuredSpyError = qvariant_cast<QAbstractSocket::SocketError>(
                 qAsConst(server.errorOccurredSpy).first()[1]);
         QCOMPARE(errrOccuredSpyError, socketError);
     } else {
         // Client disconnected after connection accepted by server
-        QCOMPARE(server.sslErrorsSpy.count(), 0);
-        QCOMPARE(server.peerVerifyErrorSpy.count(), 0);
-        QCOMPARE(server.errorOccurredSpy.count(), 0); // Server accepted first
-        QCOMPARE(server.pendingConnectionAvailableSpy.count(), 1);
-        QCOMPARE(server.preSharedKeyAuthenticationRequiredSpy.count(), 0);
-        QCOMPARE(server.alertSentSpy.count(), 0);
-        QCOMPARE(server.alertReceivedSpy.count(),
+        QCOMPARE(server.sslErrorsSpy.size(), 0);
+        QCOMPARE(server.peerVerifyErrorSpy.size(), 0);
+        QCOMPARE(server.errorOccurredSpy.size(), 0); // Server accepted first
+        QCOMPARE(server.pendingConnectionAvailableSpy.size(), 1);
+        QCOMPARE(server.preSharedKeyAuthenticationRequiredSpy.size(), 0);
+        QCOMPARE(server.alertSentSpy.size(), 0);
+        QCOMPARE(server.alertReceivedSpy.size(),
                  isTestingOpenSsl ? 1 : 0); // OpenSSL only signal
-        QCOMPARE(server.handshakeInterruptedOnErrorSpy.count(), 0);
-        QCOMPARE(server.startedEncryptionHandshakeSpy.count(), 1);
+        QCOMPARE(server.handshakeInterruptedOnErrorSpy.size(), 0);
+        QCOMPARE(server.startedEncryptionHandshakeSpy.size(), 1);
 
         QCOMPARE(connection->state(), QAbstractSocket::UnconnectedState);
         QCOMPARE(connection->error(), socketError);
@@ -325,12 +325,12 @@ void tst_QSslServer::testSelfSignedCertificateRejectedByClient()
     }
 
     // Check that client has rejected server
-    QCOMPARE(clientConnectedSpy.count(), 1);
-    QCOMPARE(clientHostFoundSpy.count(), 1);
-    QCOMPARE(clientDisconnectedSpy.count(), 1);
-    QCOMPARE(clientConnectionEncryptedSpy.count(), 0);
-    QCOMPARE(clientSslErrorsSpy.count(), isTestingOpenSsl ? 0 : 1);
-    QCOMPARE(clientErrorOccurredSpy.count(), 1);
+    QCOMPARE(clientConnectedSpy.size(), 1);
+    QCOMPARE(clientHostFoundSpy.size(), 1);
+    QCOMPARE(clientDisconnectedSpy.size(), 1);
+    QCOMPARE(clientConnectionEncryptedSpy.size(), 0);
+    QCOMPARE(clientSslErrorsSpy.size(), isTestingOpenSsl ? 0 : 1);
+    QCOMPARE(clientErrorOccurredSpy.size(), 1);
 
     // Check client socket
     QVERIFY(!client.isEncrypted());
@@ -364,15 +364,15 @@ void tst_QSslServer::testHandshakeInterruptedOnError()
     loop.exec();
 
     // Check that client certificate causes handshake interrupted signal to be emitted
-    QCOMPARE(server.sslErrorsSpy.count(), 0);
-    QCOMPARE(server.peerVerifyErrorSpy.count(), 0);
-    QCOMPARE(server.errorOccurredSpy.count(), 1);
-    QCOMPARE(server.pendingConnectionAvailableSpy.count(), 0);
-    QCOMPARE(server.preSharedKeyAuthenticationRequiredSpy.count(), 0);
-    QCOMPARE(server.alertSentSpy.count(), 1);
-    QCOMPARE(server.alertReceivedSpy.count(), 0);
-    QCOMPARE(server.handshakeInterruptedOnErrorSpy.count(), 1);
-    QCOMPARE(server.startedEncryptionHandshakeSpy.count(), 1);
+    QCOMPARE(server.sslErrorsSpy.size(), 0);
+    QCOMPARE(server.peerVerifyErrorSpy.size(), 0);
+    QCOMPARE(server.errorOccurredSpy.size(), 1);
+    QCOMPARE(server.pendingConnectionAvailableSpy.size(), 0);
+    QCOMPARE(server.preSharedKeyAuthenticationRequiredSpy.size(), 0);
+    QCOMPARE(server.alertSentSpy.size(), 1);
+    QCOMPARE(server.alertReceivedSpy.size(), 0);
+    QCOMPARE(server.handshakeInterruptedOnErrorSpy.size(), 1);
+    QCOMPARE(server.startedEncryptionHandshakeSpy.size(), 1);
 }
 
 void tst_QSslServer::testPreSharedKeyAuthenticationRequired()
@@ -422,15 +422,15 @@ void tst_QSslServer::testPreSharedKeyAuthenticationRequired()
     loop.exec();
 
     // Check that server is connected
-    QCOMPARE(server.sslErrorsSpy.count(), 1);
-    QCOMPARE(server.peerVerifyErrorSpy.count(), 1);
-    QCOMPARE(server.errorOccurredSpy.count(), 0);
-    QCOMPARE(server.pendingConnectionAvailableSpy.count(), 1);
-    QCOMPARE(server.preSharedKeyAuthenticationRequiredSpy.count(), 1);
-    QCOMPARE(server.alertSentSpy.count(), 0);
-    QCOMPARE(server.alertReceivedSpy.count(), 0);
-    QCOMPARE(server.handshakeInterruptedOnErrorSpy.count(), 0);
-    QCOMPARE(server.startedEncryptionHandshakeSpy.count(), 1);
+    QCOMPARE(server.sslErrorsSpy.size(), 1);
+    QCOMPARE(server.peerVerifyErrorSpy.size(), 1);
+    QCOMPARE(server.errorOccurredSpy.size(), 0);
+    QCOMPARE(server.pendingConnectionAvailableSpy.size(), 1);
+    QCOMPARE(server.preSharedKeyAuthenticationRequiredSpy.size(), 1);
+    QCOMPARE(server.alertSentSpy.size(), 0);
+    QCOMPARE(server.alertReceivedSpy.size(), 0);
+    QCOMPARE(server.handshakeInterruptedOnErrorSpy.size(), 0);
+    QCOMPARE(server.startedEncryptionHandshakeSpy.size(), 1);
 
     // Check client socket
     QVERIFY(client.isEncrypted());
@@ -457,7 +457,7 @@ void tst_QSslServer::plaintextClient()
     socket.write("Hello World!");
     socket.waitForBytesWritten();
     // ... and quickly get disconnected:
-    QTRY_COMPARE_GT(socketDisconnectedSpy.count(), 0);
+    QTRY_COMPARE_GT(socketDisconnectedSpy.size(), 0);
     QCOMPARE(socket.state(), QAbstractSocket::SocketState::UnconnectedState);
 }
 

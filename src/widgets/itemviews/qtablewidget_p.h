@@ -118,7 +118,7 @@ public:
 
     bool isValid(const QModelIndex &index) const;
     inline long tableIndex(int row, int column) const
-        { return (row * horizontalHeaderItems.count()) + column; }
+        { return (row * horizontalHeaderItems.size()) + column; }
 
     void clear();
     void clearContents();

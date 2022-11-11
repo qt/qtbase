@@ -421,7 +421,7 @@ QDebug operator<<(QDebug dbg, const QPolygon &a)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "QPolygon(";
-    for (int i = 0; i < a.count(); ++i)
+    for (int i = 0; i < a.size(); ++i)
         dbg.nospace() << a.at(i);
     dbg.nospace() << ')';
     return dbg;
@@ -742,7 +742,7 @@ QDebug operator<<(QDebug dbg, const QPolygonF &a)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "QPolygonF(";
-    for (int i = 0; i < a.count(); ++i)
+    for (int i = 0; i < a.size(); ++i)
         dbg.nospace() << a.at(i);
     dbg.nospace() << ')';
     return dbg;

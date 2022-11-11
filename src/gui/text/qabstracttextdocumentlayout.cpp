@@ -602,7 +602,7 @@ QTextFormat QAbstractTextDocumentLayout::formatAt(const QPointF &pos) const
         if (blockBr.contains(pos)) {
             QTextLayout *layout = block.layout();
             int relativeCursorPos = cursorPos - block.position();
-            const int preeditLength = layout ? layout->preeditAreaText().length() : 0;
+            const int preeditLength = layout ? layout->preeditAreaText().size() : 0;
             if (preeditLength > 0 && relativeCursorPos > layout->preeditAreaPosition())
                 cursorPos -= qMin(cursorPos - layout->preeditAreaPosition(), preeditLength);
             break;

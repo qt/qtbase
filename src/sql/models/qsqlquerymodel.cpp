@@ -628,7 +628,7 @@ bool QSqlQueryModel::insertColumns(int column, int count, const QModelIndex &par
             d->colOffsets.append(nVal);
             Q_ASSERT(d->colOffsets.size() >= d->rec.count());
         }
-        for (int i = column + 1; i < d->colOffsets.count(); ++i)
+        for (int i = column + 1; i < d->colOffsets.size(); ++i)
             ++d->colOffsets[i];
     }
     endInsertColumns();
@@ -657,7 +657,7 @@ bool QSqlQueryModel::removeColumns(int column, int count, const QModelIndex &par
     int i;
     for (i = 0; i < count; ++i)
         d->rec.remove(column);
-    for (i = column; i < d->colOffsets.count(); ++i)
+    for (i = column; i < d->colOffsets.size(); ++i)
         d->colOffsets[i] -= count;
 
     endRemoveColumns();

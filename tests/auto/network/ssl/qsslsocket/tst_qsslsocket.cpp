@@ -836,30 +836,30 @@ void tst_QSslSocket::simpleConnect()
 
     // Entered connecting state
     QCOMPARE(socket.state(), QAbstractSocket::ConnectingState);
-    QCOMPARE(connectedSpy.count(), 0);
-    QCOMPARE(hostFoundSpy.count(), 1);
-    QCOMPARE(disconnectedSpy.count(), 0);
+    QCOMPARE(connectedSpy.size(), 0);
+    QCOMPARE(hostFoundSpy.size(), 1);
+    QCOMPARE(disconnectedSpy.size(), 0);
     enterLoop(10);
 
     // Entered connected state
     QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
     QCOMPARE(socket.mode(), QSslSocket::UnencryptedMode);
     QVERIFY(!socket.isEncrypted());
-    QCOMPARE(connectedSpy.count(), 1);
-    QCOMPARE(hostFoundSpy.count(), 1);
-    QCOMPARE(disconnectedSpy.count(), 0);
+    QCOMPARE(connectedSpy.size(), 1);
+    QCOMPARE(hostFoundSpy.size(), 1);
+    QCOMPARE(disconnectedSpy.size(), 0);
 
     // Enter encrypted mode
     socket.startClientEncryption();
     QCOMPARE(socket.mode(), QSslSocket::SslClientMode);
     QVERIFY(!socket.isEncrypted());
-    QCOMPARE(connectionEncryptedSpy.count(), 0);
-    QCOMPARE(sslErrorsSpy.count(), 0);
+    QCOMPARE(connectionEncryptedSpy.size(), 0);
+    QCOMPARE(sslErrorsSpy.size(), 0);
 
     // Starting handshake
     enterLoop(10);
-    QCOMPARE(sslErrorsSpy.count(), 1);
-    QCOMPARE(connectionEncryptedSpy.count(), 0);
+    QCOMPARE(sslErrorsSpy.size(), 1);
+    QCOMPARE(connectionEncryptedSpy.size(), 0);
     QVERIFY(!socket.isEncrypted());
     QCOMPARE(socket.state(), QAbstractSocket::UnconnectedState);
 }
@@ -897,10 +897,10 @@ void tst_QSslSocket::simpleConnectWithIgnore()
     enterLoop(10);
 
     // Done; encryption should be enabled.
-    QCOMPARE(sslErrorsSpy.count(), 1);
+    QCOMPARE(sslErrorsSpy.size(), 1);
     QVERIFY(socket.isEncrypted());
     QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
-    QCOMPARE(encryptedSpy.count(), 1);
+    QCOMPARE(encryptedSpy.size(), 1);
 
     // Wait for incoming data
     if (!socket.canReadLine())
@@ -1019,7 +1019,7 @@ void tst_QSslSocket::ciphers()
     QString ciphersAsString;
     const auto &supported = sslConfig.supportedCiphers();
     for (const auto &cipher : supported) {
-        if (cipher.isNull() || !cipher.name().length())
+        if (cipher.isNull() || !cipher.name().size())
             continue;
         if (ciphers.size() > 0)
             ciphersAsString += QStringLiteral(":");
@@ -1237,7 +1237,7 @@ void tst_QSslSocket::peerCertificateChain()
     QSslSocketPtr socket = newSocket();
     this->socket = socket.data();
     QList<QSslCertificate> caCertificates = QSslCertificate::fromPath(httpServerCertChainPath());
-    QCOMPARE(caCertificates.count(), 1);
+    QCOMPARE(caCertificates.size(), 1);
     auto config = socket->sslConfiguration();
     config.addCaCertificates(caCertificates);
     socket->setSslConfiguration(config);
@@ -1254,7 +1254,7 @@ void tst_QSslSocket::peerCertificateChain()
         QSKIP("Skipping flaky test - See QTBUG-29941");
 
     QList<QSslCertificate> certChain = socket->peerCertificateChain();
-    QVERIFY(certChain.count() > 0);
+    QVERIFY(certChain.size() > 0);
     QCOMPARE(certChain.first(), socket->peerCertificate());
 
     socket->disconnectFromHost();
@@ -2829,7 +2829,7 @@ void tst_QSslSocket::closeWhileEmittingSocketError()
     QTestEventLoop::instance().enterLoopMSecs(1000);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(socketErrorSpy.count(), 1);
+    QCOMPARE(socketErrorSpy.size(), 1);
 }
 
 #endif // Feature 'openssl'.
@@ -2926,7 +2926,7 @@ void tst_QSslSocket::ignoreSslErrorsList()
     bool expectEncryptionSuccess = (expectedSslErrorSignalCount == 0);
     if (socket.waitForEncrypted(10000) != expectEncryptionSuccess)
         QSKIP("Skipping flaky test - See QTBUG-29941");
-    QCOMPARE(sslErrorsSpy.count(), expectedSslErrorSignalCount);
+    QCOMPARE(sslErrorsSpy.size(), expectedSslErrorSignalCount);
 }
 
 void tst_QSslSocket::ignoreSslErrorsListWithSlot_data()
@@ -3086,7 +3086,7 @@ void tst_QSslSocket::blacklistedCertificates()
     connect(receiver, SIGNAL(encrypted()), SLOT(exitLoop()));
     enterLoop(1);
     QList<QSslError> sslErrors = receiver->sslHandshakeErrors();
-    QVERIFY(sslErrors.count() > 0);
+    QVERIFY(sslErrors.size() > 0);
     // there are more errors (self signed cert and hostname mismatch), but we only care about the blacklist error
     QCOMPARE(sslErrors.at(0).error(), QSslError::CertificateBlacklisted);
 }
@@ -3170,9 +3170,9 @@ void tst_QSslSocket::resume()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy && QTestEventLoop::instance().timeout())
         QSKIP("Skipping flaky test - See QTBUG-29941");
-    QCOMPARE(sslErrorSpy.count(), 1);
-    QCOMPARE(errorSpy.count(), 0);
-    QCOMPARE(encryptedSpy.count(), 0);
+    QCOMPARE(sslErrorSpy.size(), 1);
+    QCOMPARE(errorSpy.size(), 0);
+    QCOMPARE(encryptedSpy.size(), 0);
     QVERIFY(!socket.isEncrypted());
     if (ignoreErrorsAfterPause) {
         if (errorsToIgnore.empty())
@@ -3184,15 +3184,15 @@ void tst_QSslSocket::resume()
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout()); // quit by encrypted() or error() signal
     if (expectSuccess) {
-        QCOMPARE(encryptedSpy.count(), 1);
+        QCOMPARE(encryptedSpy.size(), 1);
         QVERIFY(socket.isEncrypted());
-        QCOMPARE(errorSpy.count(), 0);
+        QCOMPARE(errorSpy.size(), 0);
         socket.disconnectFromHost();
         QVERIFY(socket.waitForDisconnected(10000));
     } else {
-        QCOMPARE(encryptedSpy.count(), 0);
+        QCOMPARE(encryptedSpy.size(), 0);
         QVERIFY(!socket.isEncrypted());
-        QCOMPARE(errorSpy.count(), 1);
+        QCOMPARE(errorSpy.size(), 1);
         QCOMPARE(socket.error(), QAbstractSocket::SslHandshakeFailedError);
     }
 }
@@ -3379,17 +3379,17 @@ void tst_QSslSocket::qtbug18498_peek2()
     bigblock.fill('#', QIODEVICE_BUFFERSIZE + 1024);
     QVERIFY(client->write(QByteArray("head")));
     QVERIFY(client->write(bigblock));
-    QTRY_COMPARE(server->bytesAvailable(), bigblock.length() + 4);
+    QTRY_COMPARE(server->bytesAvailable(), bigblock.size() + 4);
     QCOMPARE(server->read(4), QByteArray("head"));
-    QCOMPARE(server->peek(bigblock.length()), bigblock);
-    b.reserve(bigblock.length());
-    b.resize(server->peek(b.data(), bigblock.length()));
+    QCOMPARE(server->peek(bigblock.size()), bigblock);
+    b.reserve(bigblock.size());
+    b.resize(server->peek(b.data(), bigblock.size()));
     QCOMPARE(b, bigblock);
 
     //check oversized peek
-    QCOMPARE(server->peek(bigblock.length() * 3), bigblock);
-    b.reserve(bigblock.length() * 3);
-    b.resize(server->peek(b.data(), bigblock.length() * 3));
+    QCOMPARE(server->peek(bigblock.size() * 3), bigblock);
+    b.reserve(bigblock.size() * 3);
+    b.resize(server->peek(b.data(), bigblock.size() * 3));
     QCOMPARE(b, bigblock);
 
     QCOMPARE(server->readAll(), bigblock);
@@ -3725,7 +3725,7 @@ void tst_QSslSocket::verifyClientCertificate()
     } else {
         QCOMPARE(server.socket->peerCertificate(), clientCerts.first());
         if (isTestingSchannel) {
-            if (clientCerts.count() == 1 && server.socket->peerCertificateChain().count() == 2) {
+            if (clientCerts.size() == 1 && server.socket->peerCertificateChain().size() == 2) {
                 QEXPECT_FAIL("",
                              "Schannel includes the entire chain, not just the leaf and intermediates",
                              Continue);
@@ -4085,14 +4085,14 @@ void tst_QSslSocket::simplePskConnect()
 
     case PskConnectWrongCredentials:
         // provide totally wrong credentials
-        provider.setIdentity(PSK_CLIENT_IDENTITY.left(PSK_CLIENT_IDENTITY.length() - 1));
-        provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY.left(PSK_CLIENT_PRESHAREDKEY.length() - 1));
+        provider.setIdentity(PSK_CLIENT_IDENTITY.left(PSK_CLIENT_IDENTITY.size() - 1));
+        provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY.left(PSK_CLIENT_PRESHAREDKEY.size() - 1));
         connect(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), &provider, SLOT(providePsk(QSslPreSharedKeyAuthenticator*)));
         break;
 
     case PskConnectWrongIdentity:
         // right PSK, wrong identity
-        provider.setIdentity(PSK_CLIENT_IDENTITY.left(PSK_CLIENT_IDENTITY.length() - 1));
+        provider.setIdentity(PSK_CLIENT_IDENTITY.left(PSK_CLIENT_IDENTITY.size() - 1));
         provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY);
         connect(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), &provider, SLOT(providePsk(QSslPreSharedKeyAuthenticator*)));
         break;
@@ -4100,7 +4100,7 @@ void tst_QSslSocket::simplePskConnect()
     case PskConnectWrongPreSharedKey:
         // right identity, wrong PSK
         provider.setIdentity(PSK_CLIENT_IDENTITY);
-        provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY.left(PSK_CLIENT_PRESHAREDKEY.length() - 1));
+        provider.setPreSharedKey(PSK_CLIENT_PRESHAREDKEY.left(PSK_CLIENT_PRESHAREDKEY.size() - 1));
         connect(&socket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), &provider, SLOT(providePsk(QSslPreSharedKeyAuthenticator*)));
         break;
 
@@ -4152,32 +4152,32 @@ void tst_QSslSocket::simplePskConnect()
 
     // Entered connecting state
     QCOMPARE(socket.state(), QAbstractSocket::ConnectingState);
-    QCOMPARE(connectedSpy.count(), 0);
-    QCOMPARE(hostFoundSpy.count(), 1);
-    QCOMPARE(disconnectedSpy.count(), 0);
+    QCOMPARE(connectedSpy.size(), 0);
+    QCOMPARE(hostFoundSpy.size(), 1);
+    QCOMPARE(disconnectedSpy.size(), 0);
     enterLoop(10);
 
     // Entered connected state
     QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
     QCOMPARE(socket.mode(), QSslSocket::UnencryptedMode);
     QVERIFY(!socket.isEncrypted());
-    QCOMPARE(connectedSpy.count(), 1);
-    QCOMPARE(hostFoundSpy.count(), 1);
-    QCOMPARE(disconnectedSpy.count(), 0);
+    QCOMPARE(connectedSpy.size(), 1);
+    QCOMPARE(hostFoundSpy.size(), 1);
+    QCOMPARE(disconnectedSpy.size(), 0);
 
     // Enter encrypted mode
     socket.startClientEncryption();
     QCOMPARE(socket.mode(), QSslSocket::SslClientMode);
     QVERIFY(!socket.isEncrypted());
-    QCOMPARE(connectionEncryptedSpy.count(), 0);
-    QCOMPARE(sslErrorsSpy.count(), 0);
-    QCOMPARE(peerVerifyErrorSpy.count(), 0);
+    QCOMPARE(connectionEncryptedSpy.size(), 0);
+    QCOMPARE(sslErrorsSpy.size(), 0);
+    QCOMPARE(peerVerifyErrorSpy.size(), 0);
 
     // Start handshake.
     enterLoop(10);
 
     // We must get the PSK signal in all cases
-    QCOMPARE(pskAuthenticationRequiredSpy.count(), 1);
+    QCOMPARE(pskAuthenticationRequiredSpy.size(), 1);
 
     switch (pskTestType) {
     case PskConnectDoNotHandlePsk:
@@ -4186,40 +4186,40 @@ void tst_QSslSocket::simplePskConnect()
     case PskConnectWrongIdentity:
     case PskConnectWrongPreSharedKey:
         // Handshake failure
-        QCOMPARE(socketErrorsSpy.count(), 1);
+        QCOMPARE(socketErrorsSpy.size(), 1);
         QCOMPARE(qvariant_cast<QAbstractSocket::SocketError>(socketErrorsSpy.at(0).at(0)), QAbstractSocket::SslHandshakeFailedError);
-        QCOMPARE(sslErrorsSpy.count(), 0);
-        QCOMPARE(peerVerifyErrorSpy.count(), 0);
-        QCOMPARE(connectionEncryptedSpy.count(), 0);
+        QCOMPARE(sslErrorsSpy.size(), 0);
+        QCOMPARE(peerVerifyErrorSpy.size(), 0);
+        QCOMPARE(connectionEncryptedSpy.size(), 0);
         QVERIFY(!socket.isEncrypted());
         break;
 
     case PskConnectRightCredentialsPeerVerifyFailure:
         // Peer verification failure
-        QCOMPARE(socketErrorsSpy.count(), 1);
+        QCOMPARE(socketErrorsSpy.size(), 1);
         QCOMPARE(qvariant_cast<QAbstractSocket::SocketError>(socketErrorsSpy.at(0).at(0)), QAbstractSocket::SslHandshakeFailedError);
-        QCOMPARE(sslErrorsSpy.count(), 1);
-        QCOMPARE(peerVerifyErrorSpy.count(), 1);
-        QCOMPARE(connectionEncryptedSpy.count(), 0);
+        QCOMPARE(sslErrorsSpy.size(), 1);
+        QCOMPARE(peerVerifyErrorSpy.size(), 1);
+        QCOMPARE(connectionEncryptedSpy.size(), 0);
         QVERIFY(!socket.isEncrypted());
         break;
 
     case PskConnectRightCredentialsVerifyPeer:
         // Peer verification failure, but ignore it and keep connecting
-        QCOMPARE(socketErrorsSpy.count(), 0);
-        QCOMPARE(sslErrorsSpy.count(), 1);
-        QCOMPARE(peerVerifyErrorSpy.count(), 1);
-        QCOMPARE(connectionEncryptedSpy.count(), 1);
+        QCOMPARE(socketErrorsSpy.size(), 0);
+        QCOMPARE(sslErrorsSpy.size(), 1);
+        QCOMPARE(peerVerifyErrorSpy.size(), 1);
+        QCOMPARE(connectionEncryptedSpy.size(), 1);
         QVERIFY(socket.isEncrypted());
         QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
         break;
 
     case PskConnectRightCredentialsDoNotVerifyPeer:
         // No peer verification => no failure
-        QCOMPARE(socketErrorsSpy.count(), 0);
-        QCOMPARE(sslErrorsSpy.count(), 0);
-        QCOMPARE(peerVerifyErrorSpy.count(), 0);
-        QCOMPARE(connectionEncryptedSpy.count(), 1);
+        QCOMPARE(socketErrorsSpy.size(), 0);
+        QCOMPARE(sslErrorsSpy.size(), 0);
+        QCOMPARE(peerVerifyErrorSpy.size(), 0);
+        QCOMPARE(connectionEncryptedSpy.size(), 1);
         QVERIFY(socket.isEncrypted());
         QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
         break;
@@ -4260,7 +4260,7 @@ void tst_QSslSocket::simplePskConnect()
     }
 
     QCOMPARE(socket.state(), QAbstractSocket::UnconnectedState);
-    QCOMPARE(disconnectedSpy.count(), 1);
+    QCOMPARE(disconnectedSpy.size(), 1);
 }
 
 void tst_QSslSocket::ephemeralServerKey_data()
@@ -4293,7 +4293,7 @@ void tst_QSslSocket::ephemeralServerKey()
     client->connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
     spy.wait();
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QVERIFY(server.config.ephemeralServerKey().isNull());
     QCOMPARE(client->sslConfiguration().ephemeralServerKey().isNull(), emptyKey);
 }
@@ -4356,22 +4356,22 @@ void tst_QSslSocket::pskServer()
     QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
     QCOMPARE(socket.mode(), QSslSocket::UnencryptedMode);
     QVERIFY(!socket.isEncrypted());
-    QCOMPARE(connectedSpy.count(), 1);
-    QCOMPARE(disconnectedSpy.count(), 0);
+    QCOMPARE(connectedSpy.size(), 1);
+    QCOMPARE(disconnectedSpy.size(), 0);
 
     // Enter encrypted mode
     socket.startClientEncryption();
     QCOMPARE(socket.mode(), QSslSocket::SslClientMode);
     QVERIFY(!socket.isEncrypted());
-    QCOMPARE(connectionEncryptedSpy.count(), 0);
+    QCOMPARE(connectionEncryptedSpy.size(), 0);
 
     // Start handshake.
     enterLoop(10);
 
     // We must get the PSK signal in all cases
-    QCOMPARE(pskAuthenticationRequiredSpy.count(), 1);
+    QCOMPARE(pskAuthenticationRequiredSpy.size(), 1);
 
-    QCOMPARE(connectionEncryptedSpy.count(), 1);
+    QCOMPARE(connectionEncryptedSpy.size(), 1);
     QVERIFY(socket.isEncrypted());
     QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
 
@@ -4384,7 +4384,7 @@ void tst_QSslSocket::pskServer()
     enterLoop(10);
 
     QCOMPARE(socket.state(), QAbstractSocket::UnconnectedState);
-    QCOMPARE(disconnectedSpy.count(), 1);
+    QCOMPARE(disconnectedSpy.size(), 1);
 }
 
 void tst_QSslSocket::signatureAlgorithm_data()
@@ -4537,7 +4537,7 @@ void tst_QSslSocket::forwardReadChannelFinished()
             &QTestEventLoop::instance(), &QTestEventLoop::exitLoop);
     socket.connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
     enterLoop(10);
-    QVERIFY(readChannelFinishedSpy.count());
+    QVERIFY(readChannelFinishedSpy.size());
 }
 
 #endif // QT_CONFIG(openssl)
@@ -4724,8 +4724,8 @@ void tst_QSslSocket::alertMissingCertificate()
         runner.enterLoopMSecs(10000);
     }
 
-    QVERIFY(serverSpy.count() > 0);
-    QVERIFY(clientSpy.count() > 0);
+    QVERIFY(serverSpy.size() > 0);
+    QVERIFY(clientSpy.size() > 0);
     QVERIFY(server.socket && !server.socket->isEncrypted());
     QVERIFY(!clientSocket.isEncrypted());
 }
@@ -4778,9 +4778,9 @@ void tst_QSslSocket::alertInvalidCertificate()
 
     runner.enterLoopMSecs(1000);
 
-    QVERIFY(serverSpy.count() > 0);
-    QVERIFY(clientSpy.count() > 0);
-    QVERIFY(interruptedSpy.count() > 0);
+    QVERIFY(serverSpy.size() > 0);
+    QVERIFY(clientSpy.size() > 0);
+    QVERIFY(interruptedSpy.size() > 0);
     QVERIFY(server.socket && !server.socket->isEncrypted());
     QVERIFY(!clientSocket.isEncrypted());
 }
@@ -4907,14 +4907,14 @@ void tst_QSslSocket::selfSignedCertificates()
     runner.enterLoopMSecs(1000);
 
     if (clientKnown) {
-        QCOMPARE(serverSpy.count(), 0);
-        QCOMPARE(clientSpy.count(), 0);
+        QCOMPARE(serverSpy.size(), 0);
+        QCOMPARE(clientSpy.size(), 0);
         QVERIFY(server.socket && server.socket->isEncrypted());
         QVERIFY(clientSocket.isEncrypted());
     } else {
-        QVERIFY(serverSpy.count() > 0);
+        QVERIFY(serverSpy.size() > 0);
         QEXPECT_FAIL("", "Failing to trigger signal, QTBUG-81661", Continue);
-        QVERIFY(clientSpy.count() > 0);
+        QVERIFY(clientSpy.size() > 0);
         QVERIFY(server.socket && !server.socket->isEncrypted());
         QVERIFY(!clientSocket.isEncrypted());
     }
@@ -5045,15 +5045,15 @@ void tst_QSslSocket::pskHandshake()
     runner.enterLoopMSecs(1000);
 
     if (pskRight) {
-        QCOMPARE(serverSpy.count(), 0);
-        QCOMPARE(clientSpy.count(), 0);
+        QCOMPARE(serverSpy.size(), 0);
+        QCOMPARE(clientSpy.size(), 0);
         QVERIFY(server.socket && server.socket->isEncrypted());
         QVERIFY(clientSocket.isEncrypted());
     } else {
-        QVERIFY(serverSpy.count() > 0);
+        QVERIFY(serverSpy.size() > 0);
         QCOMPARE(serverSpy.first().at(0).toInt(), static_cast<int>(QSsl::AlertLevel::Fatal));
         QCOMPARE(serverSpy.first().at(1).toInt(), static_cast<int>(QSsl::AlertType::BadRecordMac));
-        QVERIFY(clientSpy.count() > 0);
+        QVERIFY(clientSpy.size() > 0);
         QCOMPARE(clientSpy.first().at(0).toInt(), static_cast<int>(QSsl::AlertLevel::Fatal));
         QCOMPARE(clientSpy.first().at(1).toInt(), static_cast<int>(QSsl::AlertType::BadRecordMac));
         QVERIFY(server.socket && !server.socket->isEncrypted());

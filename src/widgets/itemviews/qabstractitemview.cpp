@@ -2829,10 +2829,10 @@ void QAbstractItemView::updateEditorGeometries()
 
     //we hide and release the editor outside of the loop because it might change the focus and try
     //to change the editors hashes.
-    for (int i = 0; i < editorsToHide.count(); ++i) {
+    for (int i = 0; i < editorsToHide.size(); ++i) {
         editorsToHide.at(i)->hide();
     }
-    for (int i = 0; i < editorsToRelease.count(); ++i) {
+    for (int i = 0; i < editorsToRelease.size(); ++i) {
         d->releaseEditor(editorsToRelease.at(i));
     }
 }
@@ -3053,9 +3053,9 @@ void QAbstractItemView::keyboardSearch(const QString &search)
 
     // special case for searches with same key like 'aaaaa'
     bool sameKey = false;
-    if (d->keyboardInput.length() > 1) {
-        int c = d->keyboardInput.count(d->keyboardInput.at(d->keyboardInput.length() - 1));
-        sameKey = (c == d->keyboardInput.length());
+    if (d->keyboardInput.size() > 1) {
+        int c = d->keyboardInput.count(d->keyboardInput.at(d->keyboardInput.size() - 1));
+        sameKey = (c == d->keyboardInput.size());
         if (sameKey)
             skipRow = true;
     }
@@ -3793,7 +3793,7 @@ void QAbstractItemView::startDrag(Qt::DropActions supportedActions)
 {
     Q_D(QAbstractItemView);
     QModelIndexList indexes = d->selectedDraggableIndexes();
-    if (indexes.count() > 0) {
+    if (indexes.size() > 0) {
         QMimeData *data = d->model->mimeData(indexes);
         if (!data)
             return;
@@ -4636,7 +4636,7 @@ QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes,
     QStyleOptionViewItem option;
     q->initViewItemOption(&option);
     option.state |= QStyle::State_Selected;
-    for (int j = 0; j < paintPairs.count(); ++j) {
+    for (int j = 0; j < paintPairs.size(); ++j) {
         option.rect = paintPairs.at(j).rect.translated(-r->topLeft());
         const QModelIndex &current = paintPairs.at(j).index;
         adjustViewOptionsForIndex(&option, current);

@@ -636,7 +636,7 @@ void tst_QMessageBox::acceptedRejectedSignals()
         button->click();
 
         if (roles.contains(messageBox.buttonRole(button)))
-            QCOMPARE(spy.count(), 1);
+            QCOMPARE(spy.size(), 1);
         else
             QVERIFY(spy.isEmpty());
     }

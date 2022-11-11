@@ -401,8 +401,8 @@ bool QLocalSocketPrivate::parseSockaddr(const struct ::sockaddr_un &addr,
     if (!name.isEmpty() && !toUtf16.hasError()) {
         //conversion encodes the trailing zeros. So, in case of non-abstract namespace we
         //chop them off as \0 character is not allowed in filenames
-        if (!abstractNamespace && (name.at(name.length() - 1) == QChar::fromLatin1('\0'))) {
-            int truncPos = name.length() - 1;
+        if (!abstractNamespace && (name.at(name.size() - 1) == QChar::fromLatin1('\0'))) {
+            int truncPos = name.size() - 1;
             while (truncPos > 0 && name.at(truncPos - 1) == QChar::fromLatin1('\0'))
                 truncPos--;
             name.truncate(truncPos);

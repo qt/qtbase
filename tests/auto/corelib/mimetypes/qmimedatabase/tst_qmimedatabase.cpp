@@ -277,7 +277,7 @@ void tst_QMimeDatabase::mimeTypeForFileName()
         QVERIFY(mimes.isEmpty());
     } else {
         QVERIFY2(!mimes.isEmpty(), msgMimeTypeForFileNameFailed(mimes, expectedMimeType).constData());
-        QVERIFY2(mimes.count() == 1, msgMimeTypeForFileNameFailed(mimes, expectedMimeType).constData());
+        QVERIFY2(mimes.size() == 1, msgMimeTypeForFileNameFailed(mimes, expectedMimeType).constData());
         QCOMPARE(mimes.first().name(), expectedMimeType);
     }
 }
@@ -328,7 +328,7 @@ void tst_QMimeDatabase::inheritance()
 
     const QMimeType directory = db.mimeTypeForName(QString::fromLatin1("inode/directory"));
     QVERIFY(directory.isValid());
-    QCOMPARE(directory.parentMimeTypes().count(), 0);
+    QCOMPARE(directory.parentMimeTypes().size(), 0);
     QVERIFY(!directory.inherits(QLatin1String("application/octet-stream")));
 
     // Check that text/x-patch knows that it inherits from text/plain (it says so explicitly)
@@ -349,7 +349,7 @@ void tst_QMimeDatabase::inheritance()
     const QStringList shellParents = shellscript.parentMimeTypes();
     QVERIFY(shellParents.contains(QLatin1String("text/plain")));
     QVERIFY(shellParents.contains(QLatin1String("application/x-executable")));
-    QCOMPARE(shellParents.count(), 2); // only the above two
+    QCOMPARE(shellParents.size(), 2); // only the above two
     const QStringList allShellAncestors = shellscript.allAncestors();
     QVERIFY(allShellAncestors.contains(QLatin1String("text/plain")));
     QVERIFY(allShellAncestors.contains(QLatin1String("application/x-executable")));
@@ -591,7 +591,7 @@ void tst_QMimeDatabase::allMimeTypes()
     QVERIFY(!lst.isEmpty());
 
     // Hardcoding this is the only way to check both providers find the same number of mimetypes.
-    QCOMPARE(lst.count(), 851);
+    QCOMPARE(lst.size(), 851);
 
     foreach (const QMimeType &mime, lst) {
         const QString name = mime.name();
@@ -741,7 +741,7 @@ void tst_QMimeDatabase::findByFileName()
     //qDebug() << Q_FUNC_INFO << "mimeTypeForFile() returned" << resultMimeTypeName;
 
     const bool failed = resultMimeTypeName != mimeTypeName;
-    const bool shouldFail = (xFail.length() >= 1 && xFail.at(0) == QLatin1Char('x'));
+    const bool shouldFail = (xFail.size() >= 1 && xFail.at(0) == QLatin1Char('x'));
     if (shouldFail != failed) {
         // Results are ambiguous when multiple MIME types have the same glob
         // -> accept the current result if the found MIME type actually
@@ -788,7 +788,7 @@ void tst_QMimeDatabase::findByData()
     QByteArray data = f.read(16384);
 
     const QString resultMimeTypeName = database.mimeTypeForData(data).name();
-    if (xFail.length() >= 2 && xFail.at(1) == QLatin1Char('x')) {
+    if (xFail.size() >= 2 && xFail.at(1) == QLatin1Char('x')) {
         // Expected to fail
         QVERIFY2(resultMimeTypeName != mimeTypeName, qPrintable(resultMimeTypeName));
     } else {
@@ -819,7 +819,7 @@ void tst_QMimeDatabase::findByFile()
     QMimeDatabase database;
     const QString resultMimeTypeName = database.mimeTypeForFile(filePath).name();
     //qDebug() << Q_FUNC_INFO << filePath << "->" << resultMimeTypeName;
-    if (xFail.length() >= 3 && xFail.at(2) == QLatin1Char('x')) {
+    if (xFail.size() >= 3 && xFail.at(2) == QLatin1Char('x')) {
         // Expected to fail
         QVERIFY2(resultMimeTypeName != mimeTypeName, qPrintable(resultMimeTypeName));
     } else {

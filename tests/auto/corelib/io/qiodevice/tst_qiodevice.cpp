@@ -174,13 +174,13 @@ void tst_QIODevice::read_QByteArray()
     f.open(QIODevice::ReadOnly);
 
     QByteArray b = f.read(10);
-    QCOMPARE(b.length(), 10);
+    QCOMPARE(b.size(), 10);
 
     b = f.read(256);
-    QCOMPARE(b.length(), 256);
+    QCOMPARE(b.size(), 256);
 
     b = f.read(0);
-    QCOMPARE(b.length(), 0);
+    QCOMPARE(b.size(), 0);
 }
 
 //--------------------------------------------------------------------

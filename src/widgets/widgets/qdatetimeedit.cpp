@@ -1830,7 +1830,7 @@ int QDateTimeEditPrivate::sectionAt(int pos) const
     const int textSize = text.size();
     if (textSize - pos < separators.last().size() + 1) {
         if (separators.last().size() == 0) {
-            return sectionNodes.count() - 1;
+            return sectionNodes.size() - 1;
         }
         return (pos == textSize ? LastSectionIndex : NoSectionIndex);
     }

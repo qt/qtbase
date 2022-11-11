@@ -862,7 +862,7 @@ bool QDBusConnection::registerObject(const QString &path, const QString &interfa
     QDBusConnectionPrivate::ObjectTreeNode *node = &d->rootNode;
     int i = 1;
     while (node) {
-        if (pathComponents.count() == i) {
+        if (pathComponents.size() == i) {
             // this node exists
             // consider it free if there's no object here and the user is not trying to
             // replace the object sub-tree
@@ -972,7 +972,7 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
 
     int i = 1;
     while (node) {
-        if (pathComponents.count() == i)
+        if (pathComponents.size() == i)
             return node->obj;
         if ((node->flags & QDBusConnectionPrivate::VirtualObject) && (node->flags & QDBusConnection::SubPath))
             return node->obj;

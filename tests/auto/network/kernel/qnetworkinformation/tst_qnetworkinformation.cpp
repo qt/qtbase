@@ -241,14 +241,14 @@ void tst_QNetworkInformation::isMetered()
     QSignalSpy spy(info, &QNetworkInformation::isMeteredChanged);
     QVERIFY(!info->isMetered());
     MockBackend::setNewMetered(true);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QVERIFY(info->isMetered());
     QVERIFY(spy[0][0].toBool());
     spy.clear();
 
     // Set the same value again, signal should not be emitted again
     MockBackend::setNewMetered(true);
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 QTEST_MAIN(tst_QNetworkInformation);

@@ -270,12 +270,12 @@ void tst_QDockWidget::features()
     QVERIFY(!hasFeature(&dw, QDockWidget::DockWidgetClosable));
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetMovable));
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetFloatable));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE((int)*(static_cast<const QDockWidget::DockWidgetFeature *>(spy.at(0).value(0).constData())),
             (int)dw.features());
     spy.clear();
     dw.setFeatures(dw.features());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     spy.clear();
 
     setFeature(&dw, QDockWidget::DockWidgetClosable);
@@ -283,12 +283,12 @@ void tst_QDockWidget::features()
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetClosable));
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetMovable));
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetFloatable));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE((int)*static_cast<const QDockWidget::DockWidgetFeature *>(spy.at(0).value(0).constData()),
             (int)dw.features());
     spy.clear();
     dw.setFeatures(dw.features());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     spy.clear();
 
     setFeature(&dw, QDockWidget::DockWidgetMovable, false);
@@ -296,12 +296,12 @@ void tst_QDockWidget::features()
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetClosable));
     QVERIFY(!hasFeature(&dw, QDockWidget::DockWidgetMovable));
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetFloatable));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE((int)*static_cast<const QDockWidget::DockWidgetFeature *>(spy.at(0).value(0).constData()),
             (int)dw.features());
     spy.clear();
     dw.setFeatures(dw.features());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     spy.clear();
 
     setFeature(&dw, QDockWidget::DockWidgetMovable);
@@ -309,12 +309,12 @@ void tst_QDockWidget::features()
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetClosable));
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetMovable));
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetFloatable));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE((int)*static_cast<const QDockWidget::DockWidgetFeature *>(spy.at(0).value(0).constData()),
             (int)dw.features());
     spy.clear();
     dw.setFeatures(dw.features());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     spy.clear();
 
     setFeature(&dw, QDockWidget::DockWidgetFloatable, false);
@@ -322,12 +322,12 @@ void tst_QDockWidget::features()
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetClosable));
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetMovable));
     QVERIFY(!hasFeature(&dw, QDockWidget::DockWidgetFloatable));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE((int)*static_cast<const QDockWidget::DockWidgetFeature *>(spy.at(0).value(0).constData()),
             (int)dw.features());
     spy.clear();
     dw.setFeatures(dw.features());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     spy.clear();
 
     setFeature(&dw, QDockWidget::DockWidgetFloatable);
@@ -335,12 +335,12 @@ void tst_QDockWidget::features()
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetClosable));
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetMovable));
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetFloatable));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE((int)*static_cast<const QDockWidget::DockWidgetFeature *>(spy.at(0).value(0).constData()),
             (int)dw.features());
     spy.clear();
     dw.setFeatures(dw.features());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     spy.clear();
 
     // set all at once
@@ -349,12 +349,12 @@ void tst_QDockWidget::features()
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetClosable));
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetMovable));
     QVERIFY(!hasFeature(&dw, QDockWidget::DockWidgetFloatable));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE((int)*static_cast<const QDockWidget::DockWidgetFeature *>(spy.at(0).value(0).constData()),
             (int)dw.features());
     spy.clear();
     dw.setFeatures(dw.features());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     spy.clear();
 
     dw.setFeatures(QDockWidget::DockWidgetClosable);
@@ -362,12 +362,12 @@ void tst_QDockWidget::features()
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetClosable));
     QVERIFY(!hasFeature(&dw, QDockWidget::DockWidgetMovable));
     QVERIFY(!hasFeature(&dw, QDockWidget::DockWidgetFloatable));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE((int)*static_cast<const QDockWidget::DockWidgetFeature *>(spy.at(0).value(0).constData()),
             (int)dw.features());
     spy.clear();
     dw.setFeatures(dw.features());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     spy.clear();
 
     dw.setFeatures(allDockWidgetFeatures);
@@ -375,12 +375,12 @@ void tst_QDockWidget::features()
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetClosable));
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetMovable));
     QVERIFY(hasFeature(&dw, QDockWidget::DockWidgetFloatable));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE((int)*static_cast<const QDockWidget::DockWidgetFeature *>(spy.at(0).value(0).constData()),
             (int)dw.features());
     spy.clear();
     dw.setFeatures(dw.features());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     spy.clear();
 }
 
@@ -407,20 +407,20 @@ void tst_QDockWidget::setFloating()
     QVERIFY((dockedPosition - floatingPosition).manhattanLength() < 50);
 
     QVERIFY(dw.isFloating());
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).value(0).toBool(), dw.isFloating());
     spy.clear();
     dw.setFloating(dw.isFloating());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     spy.clear();
 
     dw.setFloating(false);
     QVERIFY(!dw.isFloating());
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).value(0).toBool(), dw.isFloating());
     spy.clear();
     dw.setFloating(dw.isFloating());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     spy.clear();
 }
 
@@ -444,12 +444,12 @@ void tst_QDockWidget::allowedAreas()
     QVERIFY(!dw.isAreaAllowed(Qt::RightDockWidgetArea));
     QVERIFY(!dw.isAreaAllowed(Qt::TopDockWidgetArea));
     QVERIFY(!dw.isAreaAllowed(Qt::BottomDockWidgetArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::DockWidgetAreas *>(spy.at(0).value(0).constData()),
             dw.allowedAreas());
     spy.clear();
     dw.setAllowedAreas(dw.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     dw.setAllowedAreas(Qt::RightDockWidgetArea);
     QCOMPARE(dw.allowedAreas(), Qt::RightDockWidgetArea);
@@ -457,12 +457,12 @@ void tst_QDockWidget::allowedAreas()
     QVERIFY(dw.isAreaAllowed(Qt::RightDockWidgetArea));
     QVERIFY(!dw.isAreaAllowed(Qt::TopDockWidgetArea));
     QVERIFY(!dw.isAreaAllowed(Qt::BottomDockWidgetArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::DockWidgetAreas *>(spy.at(0).value(0).constData()),
             dw.allowedAreas());
     spy.clear();
     dw.setAllowedAreas(dw.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     dw.setAllowedAreas(Qt::TopDockWidgetArea);
     QCOMPARE(dw.allowedAreas(), Qt::TopDockWidgetArea);
@@ -470,12 +470,12 @@ void tst_QDockWidget::allowedAreas()
     QVERIFY(!dw.isAreaAllowed(Qt::RightDockWidgetArea));
     QVERIFY(dw.isAreaAllowed(Qt::TopDockWidgetArea));
     QVERIFY(!dw.isAreaAllowed(Qt::BottomDockWidgetArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::DockWidgetAreas *>(spy.at(0).value(0).constData()),
             dw.allowedAreas());
     spy.clear();
     dw.setAllowedAreas(dw.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     dw.setAllowedAreas(Qt::BottomDockWidgetArea);
     QCOMPARE(dw.allowedAreas(), Qt::BottomDockWidgetArea);
@@ -483,12 +483,12 @@ void tst_QDockWidget::allowedAreas()
     QVERIFY(!dw.isAreaAllowed(Qt::RightDockWidgetArea));
     QVERIFY(!dw.isAreaAllowed(Qt::TopDockWidgetArea));
     QVERIFY(dw.isAreaAllowed(Qt::BottomDockWidgetArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::DockWidgetAreas *>(spy.at(0).value(0).constData()),
             dw.allowedAreas());
     spy.clear();
     dw.setAllowedAreas(dw.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     // multiple dock window areas
     dw.setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
@@ -498,12 +498,12 @@ void tst_QDockWidget::allowedAreas()
     QVERIFY(dw.isAreaAllowed(Qt::TopDockWidgetArea));
     QVERIFY(dw.isAreaAllowed(Qt::BottomDockWidgetArea));
     //QVERIFY(!dw.isAreaAllowed(Qt::FloatingDockWidgetArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::DockWidgetAreas *>(spy.at(0).value(0).constData()),
             dw.allowedAreas());
     spy.clear();
     dw.setAllowedAreas(dw.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     dw.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     QCOMPARE(dw.allowedAreas(), Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
@@ -512,12 +512,12 @@ void tst_QDockWidget::allowedAreas()
     QVERIFY(!dw.isAreaAllowed(Qt::TopDockWidgetArea));
     QVERIFY(!dw.isAreaAllowed(Qt::BottomDockWidgetArea));
     //QVERIFY(!dw.isAreaAllowed(Qt::FloatingDockWidgetArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::DockWidgetAreas *>(spy.at(0).value(0).constData()),
             dw.allowedAreas());
     spy.clear();
     dw.setAllowedAreas(dw.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     dw.setAllowedAreas(Qt::TopDockWidgetArea | Qt::LeftDockWidgetArea);
     QCOMPARE(dw.allowedAreas(), Qt::TopDockWidgetArea | Qt::LeftDockWidgetArea);
@@ -526,12 +526,12 @@ void tst_QDockWidget::allowedAreas()
     QVERIFY(dw.isAreaAllowed(Qt::TopDockWidgetArea));
     QVERIFY(!dw.isAreaAllowed(Qt::BottomDockWidgetArea));
     //QVERIFY(!dw.isAreaAllowed(Qt::FloatingDockWidgetArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::DockWidgetAreas *>(spy.at(0).value(0).constData()),
             dw.allowedAreas());
     spy.clear();
     dw.setAllowedAreas(dw.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     //dw.setAllowedAreas(Qt::BottomDockWidgetArea | Qt::FloatingDockWidgetArea);
     dw.setAllowedAreas(Qt::BottomDockWidgetArea);
@@ -541,12 +541,12 @@ void tst_QDockWidget::allowedAreas()
     QVERIFY(!dw.isAreaAllowed(Qt::TopDockWidgetArea));
     QVERIFY(dw.isAreaAllowed(Qt::BottomDockWidgetArea));
     //QVERIFY(dw.isAreaAllowed(Qt::FloatingDockWidgetArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::DockWidgetAreas *>(spy.at(0).value(0).constData()),
             dw.allowedAreas());
     spy.clear();
     dw.setAllowedAreas(dw.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     dw.setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
     QCOMPARE(dw.allowedAreas(), Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
@@ -555,12 +555,12 @@ void tst_QDockWidget::allowedAreas()
     QVERIFY(!dw.isAreaAllowed(Qt::TopDockWidgetArea));
     QVERIFY(dw.isAreaAllowed(Qt::BottomDockWidgetArea));
     //QVERIFY(!dw.isAreaAllowed(Qt::FloatingDockWidgetArea));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const Qt::DockWidgetAreas *>(spy.at(0).value(0).constData()),
             dw.allowedAreas());
     spy.clear();
     dw.setAllowedAreas(dw.allowedAreas());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QDockWidget::toggleViewAction()
@@ -588,65 +588,65 @@ void tst_QDockWidget::visibilityChanged()
     mw.addDockWidget(Qt::LeftDockWidgetArea, &dw);
     mw.show();
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toBool(), true);
     spy.clear();
 
     dw.hide();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toBool(), false);
     spy.clear();
 
     dw.hide();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     dw.show();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toBool(), true);
     spy.clear();
 
     dw.show();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     QDockWidget dw2;
     mw.tabifyDockWidget(&dw, &dw2);
     dw2.show();
     dw2.raise();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toBool(), false);
     spy.clear();
 
     dw2.hide();
     qApp->processEvents();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toBool(), true);
     spy.clear();
 
     dw2.show();
     dw2.raise();
     qApp->processEvents();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toBool(), false);
     spy.clear();
 
     dw.raise();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toBool(), true);
     spy.clear();
 
     dw.raise();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     dw2.raise();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toBool(), false);
     spy.clear();
 
     dw2.raise();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     mw.addDockWidget(Qt::RightDockWidgetArea, &dw2);
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
     QCOMPARE(spy.at(0).at(0).toBool(), true);
 }
 
@@ -700,56 +700,56 @@ void tst_QDockWidget::dockLocationChanged()
     QSignalSpy spy(&dw, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)));
 
     mw.addDockWidget(Qt::LeftDockWidgetArea, &dw);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
                 Qt::LeftDockWidgetArea);
     spy.clear();
 
     mw.addDockWidget(Qt::LeftDockWidgetArea, &dw);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
                 Qt::LeftDockWidgetArea);
     spy.clear();
 
     mw.addDockWidget(Qt::RightDockWidgetArea, &dw);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
                 Qt::RightDockWidgetArea);
     spy.clear();
 
     mw.removeDockWidget(&dw);
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     QDockWidget dw2;
     dw2.setObjectName("dock2");
     mw.addDockWidget(Qt::TopDockWidgetArea, &dw2);
     mw.tabifyDockWidget(&dw2, &dw);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
                 Qt::TopDockWidgetArea);
     spy.clear();
 
     mw.splitDockWidget(&dw2, &dw, Qt::Horizontal);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
                 Qt::TopDockWidgetArea);
     spy.clear();
 
     dw.setFloating(true);
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
     QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
              Qt::NoDockWidgetArea);
     spy.clear();
 
     dw.setFloating(false);
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
     QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
              Qt::TopDockWidgetArea);
     spy.clear();
 
     QByteArray ba = mw.saveState();
     mw.restoreState(ba);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
              Qt::TopDockWidgetArea);
 }
@@ -1020,9 +1020,9 @@ void tst_QDockWidget::task258459_visibilityChanged()
     QSignalSpy spy2(&dock2, SIGNAL(visibilityChanged(bool)));
     win.show();
     QVERIFY(QTest::qWaitForWindowActive(&win));
-    QCOMPARE(spy1.count(), 1);
+    QCOMPARE(spy1.size(), 1);
     QCOMPARE(spy1.first().first().toBool(), false); //dock1 is invisible
-    QCOMPARE(spy2.count(), 1);
+    QCOMPARE(spy2.size(), 1);
     QCOMPARE(spy2.first().first().toBool(), true); //dock1 is visible
 }
 
@@ -1276,14 +1276,14 @@ bool tst_QDockWidget::checkFloatingTabs(QMainWindow* mainWindow, QPointer<QDockW
 
     // both dock widgets must be direct children of the main window
     const QList<QDockWidget*> children = ftabs->findChildren<QDockWidget*>(QString(), Qt::FindDirectChildrenOnly);
-    if (dwList.count() > 0)
+    if (dwList.size() > 0)
     {
-        if (dwList.count() != children.count()) {
-            qCDebug(lcTestDockWidget) << "Expected DockWidgetGroupWindow children:" << dwList.count()
-                                      << "Children found:" << children.count();
+        if (dwList.size() != children.size()) {
+            qCDebug(lcTestDockWidget) << "Expected DockWidgetGroupWindow children:" << dwList.size()
+                                      << "Children found:" << children.size();
 
             qCDebug(lcTestDockWidget) << "Expected:" << dwList;
-            qCDebug(lcTestDockWidget) << "Found in" << ftabs << ":" << children.count();
+            qCDebug(lcTestDockWidget) << "Found in" << ftabs << ":" << children.size();
             return false;
         }
 
@@ -1580,7 +1580,7 @@ void tst_QDockWidget::dockPermissions()
     // both dock widgets must be direct children of the main window
     {
         const QList<QDockWidget*> children = mainWindow->findChildren<QDockWidget*>(QString(), Qt::FindDirectChildrenOnly);
-        QTRY_VERIFY(children.count() == 2);
+        QTRY_VERIFY(children.size() == 2);
         for (const QDockWidget* child : children)
             QTRY_VERIFY(child == d1 || child == d2);
     }

@@ -1090,7 +1090,7 @@ void tst_Widgets::tst_QLineEdit()
     lineEdit.setAlignment(Qt::AlignCenter);
     QBASELINE_CHECK_DEFERRED(takeSnapshot(), "alignedCenter");
 
-    lineEdit.setSelection(0,text.length());
+    lineEdit.setSelection(0,text.size());
     QBASELINE_CHECK_DEFERRED(takeSnapshot(), "textSelected");
 }
 

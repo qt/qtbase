@@ -182,7 +182,7 @@ void QPrintPreviewWidgetPrivate::_q_fit(bool doFitting)
 {
     Q_Q(QPrintPreviewWidget);
 
-    if (curPage < 1 || curPage > pages.count())
+    if (curPage < 1 || curPage > pages.size())
         return;
 
     if (!doFitting && !fitting)
@@ -314,7 +314,7 @@ void QPrintPreviewWidgetPrivate::populateScene()
 
 void QPrintPreviewWidgetPrivate::layoutPages()
 {
-    int numPages = pages.count();
+    int numPages = pages.size();
     if (numPages < 1)
         return;
 
@@ -365,7 +365,7 @@ void QPrintPreviewWidgetPrivate::generatePreview()
     pictures = printer->d_func()->previewPages();
     populateScene(); // i.e. setPreviewPrintedPictures() e.l.
     layoutPages();
-    curPage = pages.count() > 0 ? qBound(1, curPage, pages.count()) : 1;
+    curPage = pages.size() > 0 ? qBound(1, curPage, pages.size()) : 1;
     if (fitting)
         _q_fit();
     emit q->previewChanged();
@@ -373,13 +373,13 @@ void QPrintPreviewWidgetPrivate::generatePreview()
 
 void QPrintPreviewWidgetPrivate::setCurrentPage(int pageNumber)
 {
-    if (pageNumber < 1 || pageNumber > pages.count())
+    if (pageNumber < 1 || pageNumber > pages.size())
         return;
 
     int lastPage = curPage;
     curPage = pageNumber;
 
-    if (lastPage != curPage && lastPage > 0 && lastPage <= pages.count()) {
+    if (lastPage != curPage && lastPage > 0 && lastPage <= pages.size()) {
         if (zoomMode != QPrintPreviewWidget::FitInView) {
             QScrollBar *hsc = graphicsView->horizontalScrollBar();
             QScrollBar *vsc = graphicsView->verticalScrollBar();

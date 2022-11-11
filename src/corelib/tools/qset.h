@@ -151,7 +151,7 @@ public:
     // more Qt
     typedef iterator Iterator;
     typedef const_iterator ConstIterator;
-    inline qsizetype count() const { return q_hash.count(); }
+    inline qsizetype count() const { return q_hash.size(); }
     inline iterator insert(const T &value)
         { return q_hash.insert(value, QHashDummyValue()); }
     inline iterator insert(T &&value)

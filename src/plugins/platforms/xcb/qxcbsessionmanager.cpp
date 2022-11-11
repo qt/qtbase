@@ -101,19 +101,19 @@ static void sm_setProperty(const QString &name, const QString &value)
 {
     QByteArray v = value.toUtf8();
     SmPropValue prop;
-    prop.length = v.length();
+    prop.length = v.size();
     prop.value = (SmPointer) const_cast<char *>(v.constData());
     sm_setProperty(name.toLatin1().data(), SmARRAY8, 1, &prop);
 }
 
 static void sm_setProperty(const QString &name, const QStringList &value)
 {
-    SmPropValue *prop = new SmPropValue[value.count()];
+    SmPropValue *prop = new SmPropValue[value.size()];
     int count = 0;
     QList<QByteArray> vl;
     vl.reserve(value.size());
     for (QStringList::ConstIterator it = value.begin(); it != value.end(); ++it) {
-      prop[count].length = (*it).length();
+      prop[count].length = (*it).size();
       vl.append((*it).toUtf8());
       prop[count].value = (char*)vl.constLast().data();
       ++count;

@@ -97,11 +97,11 @@ public:
     bool wait(int timeout = 5000)
     {
         Q_ASSERT(!m_waiting);
-        const int origCount = count();
+        const int origCount = size();
         m_waiting = true;
         m_loop.enterLoopMSecs(timeout);
         m_waiting = false;
-        return count() > origCount;
+        return size() > origCount;
     }
 
     int qt_metacall(QMetaObject::Call call, int methodId, void **a) override
@@ -177,8 +177,8 @@ private:
     void appendArgs(void **a)
     {
         QList<QVariant> list;
-        list.reserve(args.count());
-        for (int i = 0; i < args.count(); ++i) {
+        list.reserve(args.size());
+        for (int i = 0; i < args.size(); ++i) {
             const QMetaType::Type type = static_cast<QMetaType::Type>(args.at(i));
             if (type == QMetaType::QVariant)
                 list << *reinterpret_cast<QVariant *>(a[i + 1]);

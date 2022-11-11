@@ -743,7 +743,7 @@ static QString fbname(const QString &fileName) // get file basename (sort of)
                     ch.unicode() == '_';
         };
         int start = -1;
-        for (; i < s.length(); ++i) {
+        for (; i < s.size(); ++i) {
             if (isAsciiLetterOrNumber(s.at(i))) {
                 start = i;
             } else if (start > 0)
@@ -898,8 +898,8 @@ static bool read_xpm_body(
             }
         } else {
             QRgb c_rgb = 0;
-            if (((buf.length()-1) % 3) && (buf[0] == '#')) {
-                buf.truncate(((buf.length()-1) / 4 * 3) + 1); // remove alpha channel left by imagemagick
+            if (((buf.size()-1) % 3) && (buf[0] == '#')) {
+                buf.truncate(((buf.size()-1) / 4 * 3) + 1); // remove alpha channel left by imagemagick
             }
             if (buf[0] == '#') {
                 c_rgb = qt_get_hex_rgb(buf).value_or(0);
@@ -932,7 +932,7 @@ static bool read_xpm_body(
         if (image.depth() == 8) {
             uchar *p = image.scanLine(y);
             uchar *d = (uchar *)buf.data();
-            uchar *end = d + buf.length();
+            uchar *end = d + buf.size();
             int x;
             if (cpp == 1) {
                 char b[2];
@@ -958,7 +958,7 @@ static bool read_xpm_body(
         } else {
             QRgb *p = (QRgb*)image.scanLine(y);
             uchar *d = (uchar *)buf.data();
-            uchar *end = d + buf.length();
+            uchar *end = d + buf.size();
             int x;
             char b[16];
             b[cpp] = '\0';

@@ -1309,7 +1309,7 @@ QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
     if (r.status == Error) {
         result.data.clear();
     } else {
-        Q_ASSERT(r.data == result.data.length());
+        Q_ASSERT(r.data == result.data.size());
         if (r.status == EndOfString && lastError() == QCborError::NoError)
             preparse();
     }
@@ -1341,7 +1341,7 @@ QCborStreamReader::StringResult<QByteArray> QCborStreamReader::_readByteArray_he
     if (r.status == Error) {
         result.data.clear();
     } else {
-        Q_ASSERT(r.data == result.data.length());
+        Q_ASSERT(r.data == result.data.size());
         if (r.status == EndOfString && lastError() == QCborError::NoError)
             preparse();
     }

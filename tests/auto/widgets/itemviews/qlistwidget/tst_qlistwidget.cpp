@@ -344,7 +344,7 @@ void tst_QListWidget::addItems()
                                  QString::number(testWidget->count() + 3),
                                  label};
     testWidget->addItems(stringList);
-    QCOMPARE(testWidget->count(), count + stringList.count());
+    QCOMPARE(testWidget->count(), count + stringList.size());
     QCOMPARE(testWidget->item(testWidget->count()-1)->text(), label);
 }
 
@@ -356,30 +356,30 @@ void tst_QListWidget::openPersistentEditor()
     QListWidgetItem *item = new QListWidgetItem(QString::number(testWidget->count()));
     testWidget->openPersistentEditor(item);
 
-    int childCount = testWidget->viewport()->children().count();
+    int childCount = testWidget->viewport()->children().size();
     testWidget->addItem(item);
     testWidget->openPersistentEditor(item);
-    QCOMPARE(childCount + 1, testWidget->viewport()->children().count());
+    QCOMPARE(childCount + 1, testWidget->viewport()->children().size());
 }
 
 void tst_QListWidget::closePersistentEditor()
 {
     // Boundary checking
-    int childCount = testWidget->viewport()->children().count();
+    int childCount = testWidget->viewport()->children().size();
     testWidget->closePersistentEditor(nullptr);
     QListWidgetItem *item = new QListWidgetItem(QString::number(testWidget->count()));
     testWidget->closePersistentEditor(item);
-    QCOMPARE(childCount, testWidget->viewport()->children().count());
+    QCOMPARE(childCount, testWidget->viewport()->children().size());
 
     // Create something
     testWidget->addItem(item);
     testWidget->openPersistentEditor(item);
 
     // actual test
-    childCount = testWidget->viewport()->children().count();
+    childCount = testWidget->viewport()->children().size();
     testWidget->closePersistentEditor(item);
     QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
-    QCOMPARE(testWidget->viewport()->children().count(), childCount - 1);
+    QCOMPARE(testWidget->viewport()->children().size(), childCount - 1);
 }
 
 void tst_QListWidget::setItemHidden()
@@ -529,7 +529,7 @@ void tst_QListWidget::editItem()
         item->setFlags(item->flags() | Qt::ItemIsEditable);
     testWidget->addItem(item);
 
-    int childCount = testWidget->viewport()->children().count();
+    int childCount = testWidget->viewport()->children().size();
     QWidget *existsAlready = testWidget->indexWidget(testWidget->model()->index(testWidget->row(item), 0));
     testWidget->editItem(item);
     Qt::ItemFlags flags = item->flags();
@@ -537,7 +537,7 @@ void tst_QListWidget::editItem()
     // There doesn't seem to be a way to detect if the item has already been edited...
     if (!existsAlready && flags & Qt::ItemIsEditable && flags & Qt::ItemIsEnabled) {
         QList<QObject *> children = testWidget->viewport()->children();
-        QVERIFY(children.count() > childCount);
+        QVERIFY(children.size() > childCount);
         bool found = false;
         for (int i = 0; i < children.size(); ++i) {
             if (children.at(i)->inherits("QExpandingLineEdit"))
@@ -545,7 +545,7 @@ void tst_QListWidget::editItem()
         }
         QVERIFY(found);
     } else {
-        QCOMPARE(testWidget->viewport()->children().count(), childCount);
+        QCOMPARE(testWidget->viewport()->children().size(), childCount);
     }
 }
 
@@ -554,12 +554,12 @@ void tst_QListWidget::findItems()
     // This really just tests that the items that are returned are converted from index's to items correctly.
 
     // Boundary checking
-    QCOMPARE(testWidget->findItems("GirlsCanWearJeansAndCutTheirHairShort", Qt::MatchExactly).count(), 0);
+    QCOMPARE(testWidget->findItems("GirlsCanWearJeansAndCutTheirHairShort", Qt::MatchExactly).size(), 0);
 
     populate();
 
     for (int i = 0; i < testWidget->count(); ++i)
-        QCOMPARE(testWidget->findItems(testWidget->item(i)->text(), Qt::MatchExactly).count(), 1);
+        QCOMPARE(testWidget->findItems(testWidget->item(i)->text(), Qt::MatchExactly).size(), 1);
 }
 
 
@@ -574,8 +574,8 @@ void tst_QListWidget::insertItem_data()
 
     QTest::newRow("Insert less then 0") << initialItems << -1 << "inserted" << 0;
     QTest::newRow("Insert at 0") << initialItems << 0 << "inserted" << 0;
-    QTest::newRow("Insert beyond count") << initialItems << initialItems.count()+1 << "inserted" << initialItems.count();
-    QTest::newRow("Insert at count") << initialItems << initialItems.count() << "inserted" << initialItems.count();
+    QTest::newRow("Insert beyond count") << initialItems << initialItems.size()+1 << "inserted" << initialItems.size();
+    QTest::newRow("Insert at count") << initialItems << initialItems.size() << "inserted" << initialItems.size();
     QTest::newRow("Insert in the middle") << initialItems << 1 << "inserted" << 1;
 }
 
@@ -587,7 +587,7 @@ void tst_QListWidget::insertItem()
     QFETCH(int, expectedIndex);
 
     testWidget->insertItems(0, initialItems);
-    QCOMPARE(testWidget->count(), initialItems.count());
+    QCOMPARE(testWidget->count(), initialItems.size());
 
     testWidget->insertItem(insertIndex, itemLabel);
 
@@ -596,7 +596,7 @@ void tst_QListWidget::insertItem()
     QCOMPARE(rcFirst[RowsInserted], expectedIndex);
     QCOMPARE(rcLast[RowsInserted], expectedIndex);
 
-    QCOMPARE(testWidget->count(), initialItems.count() + 1);
+    QCOMPARE(testWidget->count(), initialItems.size() + 1);
     QCOMPARE(testWidget->item(expectedIndex)->text(), itemLabel);
 }
 
@@ -669,8 +669,8 @@ void tst_QListWidget::insertItems()
     for (int i = 0; i < testWidget->count(); ++i)
         QCOMPARE(testWidget->item(i)->listWidget(), testWidget);
 
-    QCOMPARE(itemChangedSpy.count(), 0);
-    QCOMPARE(dataChangedSpy.count(), 0);
+    QCOMPARE(itemChangedSpy.size(), 0);
+    QCOMPARE(dataChangedSpy.size(), 0);
 }
 
 void tst_QListWidget::itemAssignment()
@@ -825,7 +825,7 @@ void tst_QListWidget::selectedItems()
         QListWidgetItem *item = testWidget->item(i);
         item->setSelected(true);
         QVERIFY(item->isSelected());
-        QCOMPARE(testWidget->selectedItems().count(), 1);
+        QCOMPARE(testWidget->selectedItems().size(), 1);
     }
     //let's clear the selection
     testWidget->clearSelection();
@@ -843,7 +843,7 @@ void tst_QListWidget::selectedItems()
 
     // check that the correct number of items and the expected items are there
     QList<QListWidgetItem *> selectedItems = testWidget->selectedItems();
-    QCOMPARE(selectedItems.count(), expectedRows.count());
+    QCOMPARE(selectedItems.size(), expectedRows.size());
     for (int row : expectedRows)
         QVERIFY(selectedItems.contains(testWidget->item(row)));
 
@@ -939,20 +939,20 @@ void tst_QListWidget::moveItemsPriv()
         else
             QCOMPARE(testWidget->item(dstRow)->text(), QString::number(srcRow));
 
-        QCOMPARE(beginMoveSpy.count(), 1);
+        QCOMPARE(beginMoveSpy.size(), 1);
         const QList<QVariant> &beginMoveArgs = beginMoveSpy.takeFirst();
         QCOMPARE(beginMoveArgs.at(1).toInt(), srcRow);
         QCOMPARE(beginMoveArgs.at(2).toInt(), srcRow);
         QCOMPARE(beginMoveArgs.at(4).toInt(), dstRow);
 
-        QCOMPARE(movedSpy.count(), 1);
+        QCOMPARE(movedSpy.size(), 1);
         const QList<QVariant> &movedArgs = movedSpy.takeFirst();
         QCOMPARE(movedArgs.at(1).toInt(), srcRow);
         QCOMPARE(movedArgs.at(2).toInt(), srcRow);
         QCOMPARE(movedArgs.at(4).toInt(), dstRow);
     } else {
-        QCOMPARE(beginMoveSpy.count(), 0);
-        QCOMPARE(movedSpy.count(), 0);
+        QCOMPARE(beginMoveSpy.size(), 0);
+        QCOMPARE(movedSpy.size(), 0);
     }
 }
 
@@ -1045,7 +1045,7 @@ void tst_QListWidget::sortItems()
 
     testWidget->sortItems(order);
 
-    QCOMPARE(testWidget->count(), expectedList.count());
+    QCOMPARE(testWidget->count(), expectedList.size());
     for (int i = 0; i < testWidget->count(); ++i)
         QCOMPARE(testWidget->item(i)->text(), expectedList.at(i).toString());
 
@@ -1115,7 +1115,7 @@ void tst_QListWidget::sortHiddenItems()
     tw->setSortingEnabled(true);
     tw->sortItems(order);
 
-    QCOMPARE(tw->count(), expectedList.count());
+    QCOMPARE(tw->count(), expectedList.size());
     for (int i = 0; i < tw->count(); ++i) {
         QCOMPARE(tw->item(i)->text(), expectedList.at(i));
         QCOMPARE(tw->item(i)->isHidden(), !expectedVisibility.at(i));
@@ -1212,17 +1212,17 @@ void tst_QListWidget::setData()
     QFETCH(QVariantList, values);
     QFETCH(int, expectedSignalCount);
 
-    QCOMPARE(roles.count(), values.count());
+    QCOMPARE(roles.size(), values.size());
 
     for (int manipulateModel = 0; manipulateModel < 2; ++manipulateModel) {
         testWidget->clear();
         testWidget->insertItems(0, initialItems);
-        QCOMPARE(testWidget->count(), initialItems.count());
+        QCOMPARE(testWidget->count(), initialItems.size());
 
         QSignalSpy itemChanged(testWidget, &QListWidget::itemChanged);
         QSignalSpy dataChanged(testWidget->model(), &QAbstractItemModel::dataChanged);
 
-        for (int i = 0; i < roles.count(); ++i) {
+        for (int i = 0; i < roles.size(); ++i) {
             if (manipulateModel)
                 testWidget->model()->setData(
                     testWidget->model()->index(itemIndex, 0, testWidget->rootIndex()),
@@ -1233,12 +1233,12 @@ void tst_QListWidget::setData()
         }
 
         // make sure the data is actually set
-        for (int i = 0; i < roles.count(); ++i)
+        for (int i = 0; i < roles.size(); ++i)
             QCOMPARE(testWidget->item(itemIndex)->data(roles.at(i)), values.at(i));
 
         // make sure we get the right number of emits
-        QCOMPARE(itemChanged.count(), expectedSignalCount);
-        QCOMPARE(dataChanged.count(), expectedSignalCount);
+        QCOMPARE(itemChanged.size(), expectedSignalCount);
+        QCOMPARE(dataChanged.size(), expectedSignalCount);
     }
 }
 
@@ -1380,11 +1380,11 @@ void tst_QListWidget::insertItemsWithSorting()
                     w.addItem(str);
                 break;
         }
-        QCOMPARE(w.count(), expectedItems.count());
+        QCOMPARE(w.count(), expectedItems.size());
         for (int i = 0; i < w.count(); ++i)
             QCOMPARE(w.item(i)->text(), expectedItems.at(i));
 
-        for (int k = 0; k < persistent.count(); ++k)
+        for (int k = 0; k < persistent.size(); ++k)
             QCOMPARE(persistent.at(k).row(), expectedRows.at(k));
     }
 }
@@ -1480,7 +1480,7 @@ void tst_QListWidget::itemData()
         QCOMPARE(widget.currentRoles, QList<int> { Qt::UserRole + i });
     }
     QMap<int, QVariant> flags = widget.model()->itemData(widget.model()->index(0, 0));
-    QCOMPARE(flags.count(), 6);
+    QCOMPARE(flags.size(), 6);
     for (int i = 0; i < 4; ++i)
         QCOMPARE(flags[Qt::UserRole + i].toString(), QString::number(i + 1));
 
@@ -1524,19 +1524,19 @@ void tst_QListWidget::changeDataWithSorting()
 
     QListWidgetItem *item = w.item(itemIndex);
     item->setText(newValue);
-    for (int i = 0; i < expectedItems.count(); ++i) {
+    for (int i = 0; i < expectedItems.size(); ++i) {
         QCOMPARE(w.item(i)->text(), expectedItems.at(i));
-        for (int j = 0; j < persistent.count(); ++j) {
+        for (int j = 0; j < persistent.size(); ++j) {
             if (persistent.at(j).row() == i) // the same toplevel row
                 QCOMPARE(persistent.at(j).internalPointer(), static_cast<void *>(w.item(i)));
         }
     }
 
-    for (int k = 0; k < persistent.count(); ++k)
+    for (int k = 0; k < persistent.size(); ++k)
         QCOMPARE(persistent.at(k).row(), expectedRows.at(k));
 
-    QCOMPARE(dataChangedSpy.count(), 1);
-    QCOMPARE(layoutChangedSpy.count(), reorderingExpected ? 1 : 0);
+    QCOMPARE(dataChangedSpy.size(), 1);
+    QCOMPARE(layoutChangedSpy.size(), reorderingExpected ? 1 : 0);
 }
 
 void tst_QListWidget::itemWidget()
@@ -1615,7 +1615,7 @@ void tst_QListWidget::insertUnchanged()
     QListWidget w;
     QSignalSpy itemChangedSpy(&w, &QListWidget::itemChanged);
     QListWidgetItem item("foo", &w);
-    QCOMPARE(itemChangedSpy.count(), 0);
+    QCOMPARE(itemChangedSpy.size(), 0);
 }
 
 void tst_QListWidget::setSortingEnabled()
@@ -1706,12 +1706,12 @@ void tst_QListWidget::QTBUG8086_currentItemChangedOnClick()
 
     QVERIFY(QTest::qWaitForWindowExposed(&win));
 
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     QTest::mouseClick(list.viewport(), Qt::LeftButton, {},
                       list.visualItemRect(list.item(2)).center());
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 
@@ -1810,14 +1810,14 @@ void tst_QListWidget::QTBUG50891_ensureSelectionModelSignalConnectionsAreSet()
     QSignalSpy currentItemChangedSpy(&list, &QListWidget::currentItemChanged);
     QSignalSpy itemSelectionChangedSpy(&list, &QListWidget::itemSelectionChanged);
 
-    QCOMPARE(currentItemChangedSpy.count(), 0);
-    QCOMPARE(itemSelectionChangedSpy.count(), 0);
+    QCOMPARE(currentItemChangedSpy.size(), 0);
+    QCOMPARE(itemSelectionChangedSpy.size(), 0);
 
     QTest::mouseClick(list.viewport(), Qt::LeftButton, {},
                       list.visualItemRect(list.item(2)).center());
 
-    QCOMPARE(currentItemChangedSpy.count(), 1);
-    QCOMPARE(itemSelectionChangedSpy.count(), 1);
+    QCOMPARE(currentItemChangedSpy.size(), 1);
+    QCOMPARE(itemSelectionChangedSpy.size(), 1);
 
 }
 

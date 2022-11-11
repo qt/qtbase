@@ -552,7 +552,7 @@ bool Parser::parseArray()
         }
     }
 
-    DEBUG << "size =" << (container ? container->elements.length() : 0);
+    DEBUG << "size =" << (container ? container->elements.size() : 0);
     END;
 
     --nestingLevel;

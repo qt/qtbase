@@ -652,7 +652,7 @@ void tst_QLineEdit::setInputMask()
         testWidget->insert(input);
     } else {
         psKeyClick(testWidget, Qt::Key_Home);
-        for (int i=0; i<input.length(); i++)
+        for (int i=0; i<input.size(); i++)
             QTest::keyClick(testWidget, input.at(i).toLatin1());
     }
 
@@ -919,8 +919,8 @@ void tst_QLineEdit::hasAcceptableInputValidator()
     qApp->sendEvent(testWidget, &lostFocus);
     QVERIFY(testWidget->hasAcceptableInput());
 
-    QCOMPARE(spyChanged.count(), 2);
-    QCOMPARE(spyEdited.count(), 0);
+    QCOMPARE(spyChanged.size(), 2);
+    QCOMPARE(spyEdited.size(), 0);
 }
 
 
@@ -1592,7 +1592,7 @@ void tst_QLineEdit::setText()
     QSignalSpy editedSpy(testWidget, SIGNAL(textEdited(QString)));
     QSignalSpy changedSpy(testWidget, SIGNAL(textChanged(QString)));
     testWidget->setText("hello");
-    QCOMPARE(editedSpy.count(), 0);
+    QCOMPARE(editedSpy.size(), 0);
     QCOMPARE(changedSpy.value(0).value(0).toString(), QString("hello"));
 }
 
@@ -1664,7 +1664,7 @@ void tst_QLineEdit::displayText_data()
         QString input;
         QString pass;
         input = "Hello World";
-        pass.resize(input.length());
+        pass.resize(input.size());
         pass.fill(passChar);
         QTest::newRow(QString(s + " text0").toLatin1()) << input << pass << m << bool(use_setText);
         QTest::newRow(QString(s + " text1").toLatin1()) << QString("") <<
@@ -1672,14 +1672,14 @@ void tst_QLineEdit::displayText_data()
                       m << bool(use_setText);
         QTest::newRow(QString(s + " text2").toLatin1()) << QString("A") << QString(passChar) << m << bool(use_setText);
         input = QString("ryyryryryryryryryryryryryryryryryryryryryryryryryryryrryryryryryryryryryryryryryryryryryryryryryryryryryryryryryryryryryrryryryryryryryryryryryryry");
-        pass.resize(input.length());
+        pass.resize(input.size());
         pass.fill(passChar);
         QTest::newRow(QString(s + " text3").toLatin1()) << input << pass << m << bool(use_setText);
         input = QString("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890`~!@#$%^&*()_-+={[}]|\\:;'?/>.<,\"");
-        pass.fill(passChar, input.length());
+        pass.fill(passChar, input.size());
         QTest::newRow(QString(s + " text4").toLatin1()) << input << pass << m << bool(use_setText);
         input = QString("Hello") + QChar(0xa0) + "World";
-        pass.resize(input.length());
+        pass.resize(input.size());
         pass.fill(passChar);
         QTest::newRow(QString(s + " text with nbsp").toLatin1()) << input << pass << m << bool(use_setText);
     }
@@ -2292,7 +2292,7 @@ void tst_QLineEdit::deleteSelectedText()
 
 #ifndef QT_NO_CONTEXTMENU
     QMenu *menu = edit.createStandardContextMenu();
-    for (int i = 0; i < menu->actions().count(); ++i) {
+    for (int i = 0; i < menu->actions().size(); ++i) {
         QAction *current = menu->actions().at(i);
         if (current->text() == QLineEdit::tr("Delete")) {
             current->trigger(); //this will delete the whole text selected
@@ -2425,7 +2425,7 @@ class QIntFixValidator : public QIntValidator {
 public:
     QIntFixValidator(int min, int max, QObject *parent) : QIntValidator(min, max, parent) {}
     void fixup (QString &input) const override {
-        for (int i=0; i<input.length(); ++i)
+        for (int i=0; i<input.size(); ++i)
             if (!input.at(i).isNumber()) {
                 input[(int)i] = QChar('0');
             }
@@ -2991,7 +2991,7 @@ void tst_QLineEdit::setSelection_data()
     QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString("Abc ") << true;
 
-    start = -1; length = 0; pos = text.length();
+    start = -1; length = 0; pos = text.size();
     QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString() << false;
 
@@ -3011,7 +3011,7 @@ void tst_QLineEdit::setSelection_data()
     QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString("A") << true;
 
-    start = -1; length = -1; pos = text.length();
+    start = -1; length = -1; pos = text.size();
     QTest::newRow(selectionTestName(start, length).constData())
         << text << start << length << pos << QString() << false;
 }
@@ -3308,7 +3308,7 @@ void tst_QLineEdit::validateOnFocusOut()
     QTest::keyPress(testWidget, '0');
     QCOMPARE(testWidget->text(), QString("10"));
     testWidget->clearFocus();
-    QCOMPARE(editingFinishedSpy.count(), 0);
+    QCOMPARE(editingFinishedSpy.size(), 0);
 
     testWidget->setFocus();
     centerOnScreen(testWidget);
@@ -3321,7 +3321,7 @@ void tst_QLineEdit::validateOnFocusOut()
     QTRY_COMPARE(testWidget->text(), QString("100"));
 
     testWidget->clearFocus();
-    QCOMPARE(editingFinishedSpy.count(), 1);
+    QCOMPARE(editingFinishedSpy.size(), 1);
 }
 
 void tst_QLineEdit::editInvalidText()
@@ -3499,7 +3499,7 @@ void tst_QLineEdit::noTextEditedOnClear()
     testWidget->setText("Test");
     QSignalSpy textEditedSpy(testWidget, SIGNAL(textEdited(QString)));
     testWidget->clear();
-    QCOMPARE(textEditedSpy.count(), 0);
+    QCOMPARE(textEditedSpy.size(), 0);
 }
 
 void tst_QLineEdit::textMargin_data()
@@ -3603,7 +3603,7 @@ void tst_QLineEdit::returnKeyClearsEditedFlag()
     // Focus drop with no edits shouldn't emit signal, edited flag == false
     testWidget.clearFocus(); // Signal not emitted
     QVERIFY(!testWidget.hasFocus());
-    QCOMPARE(leSpy.count(), 0);
+    QCOMPARE(leSpy.size(), 0);
 
     // Focus drop after edits should emit signal, edited flag == true
     testWidget.setFocus();
@@ -3611,7 +3611,7 @@ void tst_QLineEdit::returnKeyClearsEditedFlag()
     QTest::keyClicks(&testWidget, "edit1 "); // edited flag set
     testWidget.clearFocus(); // edited flag cleared, signal emitted
     QVERIFY(!testWidget.hasFocus());
-    QCOMPARE(leSpy.count(), 1);
+    QCOMPARE(leSpy.size(), 1);
 
     // Only text related keys should set edited flag
     testWidget.setFocus();
@@ -3621,7 +3621,7 @@ void tst_QLineEdit::returnKeyClearsEditedFlag()
     QTest::keyClick(&testWidget, Qt::Key_PageUp);
     testWidget.clearFocus(); // Signal not emitted
     QVERIFY(!testWidget.hasFocus());
-    QCOMPARE(leSpy.count(), 1); // No change
+    QCOMPARE(leSpy.size(), 1); // No change
 
     // Return should always emit signal
     testWidget.setFocus();
@@ -3629,12 +3629,12 @@ void tst_QLineEdit::returnKeyClearsEditedFlag()
     QTest::keyClick(&testWidget, Qt::Key_Return); /* Without edits,
                                                      signal emitted,
                                                      edited flag cleared */
-    QCOMPARE(leSpy.count(), 2);
+    QCOMPARE(leSpy.size(), 2);
     QTest::keyClicks(&testWidget, "edit2 "); // edited flag set
     QTest::keyClick(&testWidget, Qt::Key_Return); /* With edits,
                                                      signal emitted,
                                                      edited flag cleared */
-    QCOMPARE(leSpy.count(), 3);
+    QCOMPARE(leSpy.size(), 3);
 
     /* After editing the line edit following a Return key press with a
        focus drop should not emit signal a second time since Return now
@@ -3642,10 +3642,10 @@ void tst_QLineEdit::returnKeyClearsEditedFlag()
     QTest::keyClicks(&testWidget, "edit3 "); // edited flag set
     QTest::keyClick(&testWidget, Qt::Key_Return); /* signal emitted,
                                                      edited flag cleared */
-    QCOMPARE(leSpy.count(), 4);
+    QCOMPARE(leSpy.size(), 4);
     testWidget.clearFocus(); // Signal not emitted since edited == false
     QVERIFY(!testWidget.hasFocus());
-    QCOMPARE(leSpy.count(), 4); // No change
+    QCOMPARE(leSpy.size(), 4); // No change
 }
 
 #ifndef QT_NO_CURSOR
@@ -3721,19 +3721,19 @@ void tst_QLineEdit::task174640_editingFinished()
 
     le1->setFocus();
     QTRY_VERIFY(le1->hasFocus());
-    QCOMPARE(editingFinishedSpy.count(), 0);
+    QCOMPARE(editingFinishedSpy.size(), 0);
 
     le2->setFocus();
     QTRY_VERIFY(le2->hasFocus());
     // editingFinished will not be emitted anew because no editing happened
-    QCOMPARE(editingFinishedSpy.count(), 0);
+    QCOMPARE(editingFinishedSpy.size(), 0);
 
     le1->setFocus();
     QTRY_VERIFY(le1->hasFocus());
     QTest::keyPress(le1, Qt::Key_Plus);
     le2->setFocus();
     QTRY_VERIFY(le2->hasFocus());
-    QCOMPARE(editingFinishedSpy.count(), 1);
+    QCOMPARE(editingFinishedSpy.size(), 1);
     editingFinishedSpy.clear();
 
     le1->setFocus();
@@ -3748,7 +3748,7 @@ void tst_QLineEdit::task174640_editingFinished()
     mw.activateWindow();
 
     delete testMenu1;
-    QCOMPARE(editingFinishedSpy.count(), 0);
+    QCOMPARE(editingFinishedSpy.size(), 0);
     QTRY_VERIFY(le1->hasFocus());
     // Ensure le1 has been edited
     QTest::keyPress(le1, Qt::Key_Plus);
@@ -3761,7 +3761,7 @@ void tst_QLineEdit::task174640_editingFinished()
     QTest::qWait(20);
     mw.activateWindow();
     delete testMenu2;
-    QCOMPARE(editingFinishedSpy.count(), 1);
+    QCOMPARE(editingFinishedSpy.size(), 1);
 }
 
 #if QT_CONFIG(completer)
@@ -3846,7 +3846,7 @@ void tst_QLineEdit::task229938_dontEmitChangedWhenTextIsNotChanged()
     QTest::keyPress(&lineEdit, 'd');
     QTest::keyPress(&lineEdit, 'e');
     QTest::keyPress(&lineEdit, 'f');
-    QCOMPARE(changedSpy.count(), 5);
+    QCOMPARE(changedSpy.size(), 5);
 }
 
 void tst_QLineEdit::task233101_cursorPosAfterInputMethod_data()
@@ -4061,7 +4061,7 @@ void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
     QTRY_VERIFY(le.hasFocus());
 
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_P);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
@@ -4348,14 +4348,14 @@ void tst_QLineEdit::inputMethodSelection()
     testWidget->setSelection(0,0);
     QSignalSpy selectionSpy(testWidget, SIGNAL(selectionChanged()));
 
-    QCOMPARE(selectionSpy.count(), 0);
+    QCOMPARE(selectionSpy.size(), 0);
     QCOMPARE(testWidget->selectionStart(), -1);
     QCOMPARE(testWidget->selectionEnd(), -1);
     QCOMPARE(testWidget->selectionLength(), 0);
 
     testWidget->setSelection(0,5);
 
-    QCOMPARE(selectionSpy.count(), 1);
+    QCOMPARE(selectionSpy.size(), 1);
     QCOMPARE(testWidget->selectionStart(), 0);
     QCOMPARE(testWidget->selectionEnd(), 5);
     QCOMPARE(testWidget->selectionLength(), 5);
@@ -4369,7 +4369,7 @@ void tst_QLineEdit::inputMethodSelection()
         QApplication::sendEvent(testWidget, &event);
     }
 
-    QCOMPARE(selectionSpy.count(), 2);
+    QCOMPARE(selectionSpy.size(), 2);
     QCOMPARE(testWidget->selectionStart(), 12);
     QCOMPARE(testWidget->selectionEnd(), 17);
     QCOMPARE(testWidget->selectionLength(), 5);
@@ -4382,7 +4382,7 @@ void tst_QLineEdit::inputMethodSelection()
         QApplication::sendEvent(testWidget, &event);
     }
 
-    QCOMPARE(selectionSpy.count(), 3);
+    QCOMPARE(selectionSpy.size(), 3);
     QCOMPARE(testWidget->selectionStart(), -1);
     QCOMPARE(testWidget->selectionEnd(), -1);
     QCOMPARE(testWidget->selectionLength(), 0);
@@ -4570,11 +4570,11 @@ void tst_QLineEdit::clearButton()
     QSignalSpy spyEdited(filterLineEdit, &QLineEdit::textEdited);
     const QPoint clearButtonCenterPos = QRect(QPoint(0, 0), clearButton->size()).center();
     QTest::mouseClick(clearButton, Qt::LeftButton, {}, clearButtonCenterPos);
-    QCOMPARE(spyEdited.count(), 1);
+    QCOMPARE(spyEdited.size(), 1);
     QTRY_COMPARE(clearButton->cursor().shape(), filterLineEdit->cursor().shape());
     QTRY_COMPARE(filterModel->rowCount(), 3);
     QCoreApplication::processEvents();
-    QCOMPARE(spyEdited.count(), 1);
+    QCOMPARE(spyEdited.size(), 1);
 
     filterLineEdit->setReadOnly(true); // QTBUG-34315
     QVERIFY(!clearButton->isEnabled());
@@ -4851,7 +4851,7 @@ void tst_QLineEdit::QTBUG1266_setInputMaskEmittingTextEdited()
     QSignalSpy spy(&lineEdit, SIGNAL(textEdited(QString)));
     lineEdit.setInputMask("AAAA");
     lineEdit.setInputMask(QString());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 #if QT_CONFIG(shortcut)
@@ -4912,7 +4912,7 @@ void tst_QLineEdit::shortcutOverrideOnReadonlyLineEdit()
     }
 
     const int activationCount = shouldBeHandledByQLineEdit ? 0 : 1;
-    QCOMPARE(spy.count(), activationCount);
+    QCOMPARE(spy.size(), activationCount);
 }
 
 #endif // QT_CONFIG(shortcut)
@@ -4965,10 +4965,10 @@ void tst_QLineEdit::QTBUG_60319_setInputMaskCheckImSurroundingText()
     QLineEdit *testWidget = ensureTestWidget();
     QString mask("+000(000)-000-00-00");
     testWidget->setInputMask(mask);
-    testWidget->setCursorPosition(mask.length());
+    testWidget->setCursorPosition(mask.size());
     QString surroundingText = testWidget->inputMethodQuery(Qt::ImSurroundingText).toString();
     int cursorPosition = testWidget->inputMethodQuery(Qt::ImCursorPosition).toInt();
-    QCOMPARE(surroundingText.length(), cursorPosition);
+    QCOMPARE(surroundingText.size(), cursorPosition);
 }
 
 void tst_QLineEdit::testQuickSelectionWithMouse()
@@ -5065,18 +5065,18 @@ void tst_QLineEdit::inputRejected()
     QSignalSpy spyInputRejected(testWidget, SIGNAL(inputRejected()));
 
     QTest::keyClicks(testWidget, "abcde");
-    QCOMPARE(spyInputRejected.count(), 0);
+    QCOMPARE(spyInputRejected.size(), 0);
     testWidget->setText("fghij");
-    QCOMPARE(spyInputRejected.count(), 0);
+    QCOMPARE(spyInputRejected.size(), 0);
     testWidget->insert("k");
-    QCOMPARE(spyInputRejected.count(), 0);
+    QCOMPARE(spyInputRejected.size(), 0);
 
     testWidget->clear();
     testWidget->setMaxLength(5);
     QTest::keyClicks(testWidget, "abcde");
-    QCOMPARE(spyInputRejected.count(), 0);
+    QCOMPARE(spyInputRejected.size(), 0);
     QTest::keyClicks(testWidget, "fgh");
-    QCOMPARE(spyInputRejected.count(), 3);
+    QCOMPARE(spyInputRejected.size(), 3);
 #if QT_CONFIG(clipboard)
     testWidget->clear();
     spyInputRejected.clear();
@@ -5084,7 +5084,7 @@ void tst_QLineEdit::inputRejected()
     testWidget->paste();
     // The first 5 characters are accepted, but
     // the last 2 are not.
-    QCOMPARE(spyInputRejected.count(), 1);
+    QCOMPARE(spyInputRejected.size(), 1);
 #endif
 
     testWidget->setMaxLength(INT_MAX);
@@ -5093,15 +5093,15 @@ void tst_QLineEdit::inputRejected()
     QIntValidator intValidator(1, 100);
     testWidget->setValidator(&intValidator);
     QTest::keyClicks(testWidget, "11");
-    QCOMPARE(spyInputRejected.count(), 0);
+    QCOMPARE(spyInputRejected.size(), 0);
     QTest::keyClicks(testWidget, "a#");
-    QCOMPARE(spyInputRejected.count(), 2);
+    QCOMPARE(spyInputRejected.size(), 2);
 #if QT_CONFIG(clipboard)
     testWidget->clear();
     spyInputRejected.clear();
     QApplication::clipboard()->setText("a#");
     testWidget->paste();
-    QCOMPARE(spyInputRejected.count(), 1);
+    QCOMPARE(spyInputRejected.size(), 1);
 #endif
 
     testWidget->clear();
@@ -5109,9 +5109,9 @@ void tst_QLineEdit::inputRejected()
     spyInputRejected.clear();
     testWidget->setInputMask("999.999.999.999;_");
     QTest::keyClicks(testWidget, "11");
-    QCOMPARE(spyInputRejected.count(), 0);
+    QCOMPARE(spyInputRejected.size(), 0);
     QTest::keyClicks(testWidget, "a#");
-    QCOMPARE(spyInputRejected.count(), 2);
+    QCOMPARE(spyInputRejected.size(), 2);
 }
 
 QTEST_MAIN(tst_QLineEdit)

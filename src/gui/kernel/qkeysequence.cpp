@@ -947,7 +947,7 @@ QKeySequence QKeySequence::mnemonic(const QString &text)
     int p = 0;
     while (p >= 0) {
         p = text.indexOf(u'&', p) + 1;
-        if (p <= 0 || p >= (int)text.length())
+        if (p <= 0 || p >= (int)text.size())
             break;
         if (text.at(p) != u'&') {
             QChar c = text.at(p);
@@ -1001,13 +1001,13 @@ int QKeySequence::assign(const QString &ks, QKeySequence::SequenceFormat format)
 
     // Run through the whole string, but stop
     // if we have MaxKeyCount keys before the end.
-    while (keyseq.length() && n < QKeySequencePrivate::MaxKeyCount) {
+    while (keyseq.size() && n < QKeySequencePrivate::MaxKeyCount) {
         // We MUST use something to separate each sequence, and space
         // does not cut it, since some of the key names have space
         // in them.. (Let's hope no one translate with a comma in it:)
         p = keyseq.indexOf(u',');
         if (-1 != p) {
-            if (p == keyseq.length() - 1) { // Last comma 'Ctrl+,'
+            if (p == keyseq.size() - 1) { // Last comma 'Ctrl+,'
                 p = -1;
             } else {
                 if (u',' == keyseq.at(p+1)) // e.g. 'Ctrl+,, Shift+,,'
@@ -1020,8 +1020,8 @@ int QKeySequence::assign(const QString &ks, QKeySequence::SequenceFormat format)
                 }
             }
         }
-        QString part = keyseq.left(-1 == p ? keyseq.length() : p - diff);
-        keyseq = keyseq.right(-1 == p ? 0 : keyseq.length() - (p + 1));
+        QString part = keyseq.left(-1 == p ? keyseq.size() : p - diff);
+        keyseq = keyseq.right(-1 == p ? 0 : keyseq.size() - (p + 1));
         d->key[n] = QKeySequencePrivate::decodeString(std::move(part), format);
         ++n;
     }
@@ -1128,9 +1128,9 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
         // except for a single '+' at the end of the string.
 
         // Only '+' can have length 1.
-        if (sub.length() == 1) {
+        if (sub.size() == 1) {
             // Make sure we only encounter a single '+' at the end of the accel
-            if (accel.lastIndexOf(u'+') != accel.length()-1)
+            if (accel.lastIndexOf(u'+') != accel.size()-1)
                 return Qt::Key_unknown;
         } else {
             // Identify the modifier
@@ -1150,13 +1150,13 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
         lastI = i + 1;
     }
 
-    int p = accel.lastIndexOf(u'+', accel.length() - 2); // -2 so that Ctrl++ works
+    int p = accel.lastIndexOf(u'+', accel.size() - 2); // -2 so that Ctrl++ works
     QStringView accelRef(accel);
     if (p > 0)
         accelRef = accelRef.mid(p + 1);
 
     int fnum = 0;
-    if (accelRef.length() == 1) {
+    if (accelRef.size() == 1) {
 #if defined(Q_OS_MACOS)
         int qtKey = qtkeyForMacSymbol(accelRef.at(0));
         if (qtKey != -1) {
@@ -1524,7 +1524,7 @@ QString QKeySequence::toString(SequenceFormat format) const
         finalString += d->encodeString(d->key[i], format);
         finalString += ", "_L1;
     }
-    finalString.truncate(finalString.length() - 2);
+    finalString.truncate(finalString.size() - 2);
     return finalString;
 }
 
@@ -1553,7 +1553,7 @@ QList<QKeySequence> QKeySequence::listFromString(const QString &str, SequenceFor
     QList<QKeySequence> result;
 
     const QStringList strings = str.split("; "_L1);
-    result.reserve(strings.count());
+    result.reserve(strings.size());
     for (const QString &string : strings) {
         result << fromString(string, format);
     }
@@ -1577,7 +1577,7 @@ QString QKeySequence::listToString(const QList<QKeySequence> &list, SequenceForm
         result += sequence.toString(format);
         result += "; "_L1;
     }
-    result.truncate(result.length() - 2);
+    result.truncate(result.size() - 2);
 
     return result;
 }

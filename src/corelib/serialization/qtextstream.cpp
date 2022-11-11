@@ -2497,7 +2497,7 @@ QTextStream &QTextStream::operator<<(const QByteArray &array)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
-    d->putString(QString::fromUtf8(array.constData(), array.length()));
+    d->putString(QString::fromUtf8(array.constData(), array.size()));
     return *this;
 }
 

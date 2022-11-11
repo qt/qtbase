@@ -117,7 +117,7 @@ QTextureFileData QKtxHandler::read()
     texData.setNumFaces(decode(header->numberOfFaces));
 
     const quint32 bytesOfKeyValueData = decode(header->bytesOfKeyValueData);
-    if (headerSize + bytesOfKeyValueData < quint64(buf.length())) // oob check
+    if (headerSize + bytesOfKeyValueData < quint64(buf.size())) // oob check
         texData.setKeyValueMetadata(
                 decodeKeyValues(QByteArrayView(buf.data() + headerSize, bytesOfKeyValueData)));
     quint32 offset = headerSize + bytesOfKeyValueData;

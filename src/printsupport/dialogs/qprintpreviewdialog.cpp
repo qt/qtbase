@@ -61,7 +61,7 @@ public:
     {
         bool replacePercent = false;
         if (input.endsWith(u'%')) {
-            input = input.left(input.length() - 1);
+            input = input.left(input.size() - 1);
             replacePercent = true;
         }
         State state = QDoubleValidator::validate(input, pos);
@@ -450,7 +450,7 @@ void QPrintPreviewDialogPrivate::updatePageNumLabel()
     Q_Q(QPrintPreviewDialog);
 
     int numPages = preview->pageCount();
-    int maxChars = QString::number(numPages).length();
+    int maxChars = QString::number(numPages).size();
     pageNumLabel->setText(QString::fromLatin1("/ %1").arg(numPages));
     int cyphersWidth = q->fontMetrics().horizontalAdvance(QString().fill(u'8', maxChars));
     int maxWidth = pageNumEdit->minimumSizeHint().width() + cyphersWidth;

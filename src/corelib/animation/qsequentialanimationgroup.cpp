@@ -172,7 +172,7 @@ void QSequentialAnimationGroupPrivate::rewindForwards(const AnimationIndex &newA
             // we need to force activation because setCurrentAnimation will have no effect
             activateCurrentAnimation();
         else
-            setCurrentAnimation(animations.count() - 1, true);
+            setCurrentAnimation(animations.size() - 1, true);
     }
 
     // and now we need to fast rewind from the current position to
@@ -396,7 +396,7 @@ void QSequentialAnimationGroupPrivate::setCurrentAnimation(int index, bool inter
     // currentAnimation.removeBindingUnlessInWrapper()
     // is not necessary here, since it is read only
 
-    index = qMin(index, animations.count() - 1);
+    index = qMin(index, animations.size() - 1);
 
     if (index == -1) {
         Q_ASSERT(animations.isEmpty());
@@ -517,7 +517,7 @@ void QSequentialAnimationGroupPrivate::animationRemoved(int index, QAbstractAnim
 
         disconnectUncontrolledAnimation(currentAnimation);
 
-        if (index < animations.count())
+        if (index < animations.size())
             setCurrentAnimation(index); //let's try to take the next one
         else if (index > 0)
             setCurrentAnimation(index - 1);

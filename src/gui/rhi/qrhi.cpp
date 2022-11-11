@@ -4963,7 +4963,7 @@ QRhiImplementation::~QRhiImplementation()
     if (!resources.isEmpty()) {
         if (leakCheck) {
             qWarning("QRhi %p going down with %d unreleased resources that own native graphics objects. This is not nice.",
-                     q, int(resources.count()));
+                     q, int(resources.size()));
         }
         for (QRhiResource *res : qAsConst(resources)) {
             if (leakCheck)
@@ -6018,7 +6018,7 @@ QRhiResourceUpdateBatch *QRhi::nextResourceUpdateBatch()
 
     QRhiResourceUpdateBatch *u = nextFreeBatch();
     if (!u) {
-        const int oldSize = d->resUpdPool.count();
+        const int oldSize = d->resUpdPool.size();
         const int newSize = oldSize + qMin(4, qMax(0, 64 - oldSize));
         d->resUpdPool.resize(newSize);
         for (int i = oldSize; i < newSize; ++i)

@@ -143,7 +143,7 @@ void QFileInfoGatherer::fetchExtendedInformation(const QString &path, const QStr
 void QFileInfoGatherer::updateFile(const QString &filePath)
 {
     QString dir = filePath.mid(0, filePath.lastIndexOf(u'/'));
-    QString fileName = filePath.mid(dir.length() + 1);
+    QString fileName = filePath.mid(dir.size() + 1);
     fetchExtendedInformation(dir, QStringList(fileName));
 }
 
@@ -340,13 +340,13 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
         if (files.isEmpty()) {
             infoList = QDir::drives();
         } else {
-            infoList.reserve(files.count());
+            infoList.reserve(files.size());
             for (const auto &file : files)
                 infoList << QFileInfo(file);
         }
         QList<QPair<QString, QFileInfo>> updatedFiles;
-        updatedFiles.reserve(infoList.count());
-        for (int i = infoList.count() - 1; i >= 0; --i) {
+        updatedFiles.reserve(infoList.size());
+        for (int i = infoList.size() - 1; i >= 0; --i) {
             QFileInfo driveInfo = infoList.at(i);
             driveInfo.stat();
             QString driveName = translateDriveName(driveInfo);
@@ -394,7 +394,7 @@ void QFileInfoGatherer::fetch(const QFileInfo &fileInfo, QElapsedTimer &base, bo
     updatedFiles.append(QPair<QString, QFileInfo>(fileInfo.fileName(), fileInfo));
     QElapsedTimer current;
     current.start();
-    if ((firstTime && updatedFiles.count() > 100) || base.msecsTo(current) > 1000) {
+    if ((firstTime && updatedFiles.size() > 100) || base.msecsTo(current) > 1000) {
         emit updates(path, updatedFiles);
         updatedFiles.clear();
         base = current;

@@ -73,11 +73,11 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(QStringView in, QString *output)
     // Do not try to encode strings that certainly will result in output
     // that is longer than allowable domain name label length. Note that
     // non-BMP codepoints are encoded as two QChars.
-    if (in.length() > MaxDomainLabelLength * 2)
+    if (in.size() > MaxDomainLabelLength * 2)
         return;
 
-    int outLen = output->length();
-    output->resize(outLen + in.length());
+    int outLen = output->size();
+    output->resize(outLen + in.size());
 
     QChar *d = output->data() + outLen;
     bool skipped = false;
@@ -177,7 +177,7 @@ Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
     // Do not try to decode strings longer than allowable for a domain label.
     // Non-ASCII strings are not allowed here anyway, so there is no need
     // to account for surrogates.
-    if (pc.length() > MaxDomainLabelLength)
+    if (pc.size() > MaxDomainLabelLength)
         return QString();
 
     // strip any ACE prefix
@@ -468,7 +468,7 @@ static QString mapDomainName(const QString &in, QUrl::AceProcessingOptions optio
 */
 static bool validateAsciiLabel(QStringView label)
 {
-    if (label.length() > MaxDomainLabelLength)
+    if (label.size() > MaxDomainLabelLength)
         return false;
 
     if (label.first() == u'-' || label.last() == u'-')
@@ -709,7 +709,7 @@ bool DomainValidityChecker::checkLabel(const QString &label, QUrl::AceProcessing
     if (label != label.normalized(QString::NormalizationForm_C))
         return false;
 
-    if (label.length() >= 4) {
+    if (label.size() >= 4) {
         // This assumes that the first two characters are in BMP, but that's ok
         // because non-BMP characters are unlikely to be used for specifying
         // future extensions.

@@ -521,12 +521,12 @@ void tst_QDir::removeRecursively_data()
          << tmpdir + "two/three"
          << "relative";
     QDir dir;
-    for (int i = 0; i < dirs.count(); ++i)
+    for (int i = 0; i < dirs.size(); ++i)
         dir.mkpath(dirs.at(i));
     QStringList files;
     files << tmpdir + "one/file";
     files << tmpdir + "two/three/file";
-    for (int i = 0; i < files.count(); ++i) {
+    for (int i = 0; i < files.size(); ++i) {
         QFile file(files.at(i));
         QVERIFY(file.open(QIODevice::WriteOnly));
         file.write("Hello");
@@ -1045,7 +1045,7 @@ void tst_QDir::entryListSimple()
 
     QDir dir(dirName);
     QStringList actual = dir.entryList();
-    QVERIFY2(actual.count() >= countMin, msgEntryListFailed(actual.count(), countMin, dirName).constData());
+    QVERIFY2(actual.size() >= countMin, msgEntryListFailed(actual.size(), countMin, dirName).constData());
 }
 
 void tst_QDir::entryListWithSymLinks()
@@ -1254,11 +1254,11 @@ void tst_QDir::setNameFilters()
 
     dir.setNameFilters(nameFilters);
     QStringList actual = dir.entryList();
-    int max = qMin(actual.count(), expected.count());
+    int max = qMin(actual.size(), expected.size());
 
     for (int i=0; i<max; ++i)
         QCOMPARE(actual[i], expected[i]);
-    QCOMPARE(actual.count(), expected.count());
+    QCOMPARE(actual.size(), expected.size());
 }
 
 void
@@ -1734,7 +1734,7 @@ void tst_QDir::homePath()
     QVERIFY(QDir::isAbsolutePath(strHome));
 
 #ifdef Q_OS_UNIX
-    if (strHome.length() > 1)      // root dir = "/"
+    if (strHome.size() > 1)      // root dir = "/"
         QVERIFY(!strHome.endsWith('/'));
 
     QByteArray envHome = qgetenv("HOME");
@@ -1748,7 +1748,7 @@ void tst_QDir::homePath()
 #endif
 
     QStringList entries = homeDir.entryList();
-    for (int i = 0; i < entries.count(); ++i) {
+    for (int i = 0; i < entries.size(); ++i) {
         QFileInfo fi(QDir::homePath() + "/" + entries[i]);
         QCOMPARE(fi.exists(), true);
     }
@@ -1764,7 +1764,7 @@ void tst_QDir::tempPath()
     QVERIFY(QDir::isAbsolutePath(path));
 
 #ifdef Q_OS_UNIX
-    if (path.length() > 1)      // root dir = "/"
+    if (path.size() > 1)      // root dir = "/"
         QVERIFY(!path.endsWith('/'));
 #elif defined(Q_OS_WIN)
     if (path.length() > 3)      // root dir = "c:/"; "//" is not really valid...
@@ -1845,10 +1845,10 @@ void tst_QDir::searchPaths()
     QFETCH(QString, expectedAbsolutePath);
     bool exists = !expectedAbsolutePath.isEmpty();
 
-    for (int i = 0; i < searchPathPrefixList.count(); ++i) {
+    for (int i = 0; i < searchPathPrefixList.size(); ++i) {
         QDir::setSearchPaths(searchPathPrefixList.at(i), searchPathsList.at(i).split(","));
     }
-    for (int i = 0; i < searchPathPrefixList.count(); ++i) {
+    for (int i = 0; i < searchPathPrefixList.size(); ++i) {
         QCOMPARE(QDir::searchPaths(searchPathPrefixList.at(i)), searchPathsList.at(i).split(","));
     }
 
@@ -1859,19 +1859,19 @@ void tst_QDir::searchPaths()
         QCOMPARE(QFileInfo(filename).absoluteFilePath(), expectedAbsolutePath);
     }
 
-    for (int i = 0; i < searchPathPrefixList.count(); ++i) {
+    for (int i = 0; i < searchPathPrefixList.size(); ++i) {
         QDir::setSearchPaths(searchPathPrefixList.at(i), QStringList());
     }
-    for (int i = 0; i < searchPathPrefixList.count(); ++i) {
+    for (int i = 0; i < searchPathPrefixList.size(); ++i) {
         QVERIFY(QDir::searchPaths(searchPathPrefixList.at(i)).isEmpty());
     }
 
-    for (int i = 0; i < searchPathPrefixList.count(); ++i) {
+    for (int i = 0; i < searchPathPrefixList.size(); ++i) {
         foreach (QString path, searchPathsList.at(i).split(",")) {
             QDir::addSearchPath(searchPathPrefixList.at(i), path);
         }
     }
-    for (int i = 0; i < searchPathPrefixList.count(); ++i) {
+    for (int i = 0; i < searchPathPrefixList.size(); ++i) {
         QCOMPARE(QDir::searchPaths(searchPathPrefixList.at(i)), searchPathsList.at(i).split(","));
     }
 
@@ -1882,10 +1882,10 @@ void tst_QDir::searchPaths()
         QCOMPARE(QFileInfo(filename).absoluteFilePath(), expectedAbsolutePath);
     }
 
-    for (int i = 0; i < searchPathPrefixList.count(); ++i) {
+    for (int i = 0; i < searchPathPrefixList.size(); ++i) {
         QDir::setSearchPaths(searchPathPrefixList.at(i), QStringList());
     }
-    for (int i = 0; i < searchPathPrefixList.count(); ++i) {
+    for (int i = 0; i < searchPathPrefixList.size(); ++i) {
         QVERIFY(QDir::searchPaths(searchPathPrefixList.at(i)).isEmpty());
     }
 }
@@ -2212,7 +2212,7 @@ void tst_QDir::drives()
     }
     QCOMPARE(foundsystem, true);
 #else
-    QCOMPARE(list.count(), 1); //root
+    QCOMPARE(list.size(), 1); //root
     QCOMPARE(list.at(0).absolutePath(), QLatin1String("/"));
 #endif
 }
@@ -2224,7 +2224,7 @@ void tst_QDir::arrayOperator()
 
     QStringList entries(dir1.entryList());
     int i = dir2.count();
-    QCOMPARE(i, entries.count());
+    QCOMPARE(i, entries.size());
     --i;
     for (;i>=0;--i) {
         QCOMPARE(dir2[i], entries.at(i));
@@ -2477,7 +2477,7 @@ void tst_QDir::stdfilesystem()
         QCOMPARE(entries, QStringList() << "subdir2" << "subdir1");
         QCOMPARE(filteredDir.sorting(), QDir::SortFlag::Reversed);
         QCOMPARE(filteredDir.filter(), QDir::Filter::Dirs);
-        QCOMPARE(filteredDir.nameFilters().length(), 1);
+        QCOMPARE(filteredDir.nameFilters().size(), 1);
         QCOMPARE(filteredDir.nameFilters().first(), "subdir*");
     }
 #else

@@ -47,20 +47,20 @@ void QTextMarkdownWriter::writeTable(const QAbstractItemModel *table)
 {
     QList<int> tableColumnWidths(table->columnCount());
     for (int col = 0; col < table->columnCount(); ++col) {
-        tableColumnWidths[col] = table->headerData(col, Qt::Horizontal).toString().length();
+        tableColumnWidths[col] = table->headerData(col, Qt::Horizontal).toString().size();
         for (int row = 0; row < table->rowCount(); ++row) {
             tableColumnWidths[col] = qMax(tableColumnWidths[col],
-                table->data(table->index(row, col)).toString().length());
+                table->data(table->index(row, col)).toString().size());
         }
     }
 
     // write the header and separator
     for (int col = 0; col < table->columnCount(); ++col) {
         QString s = table->headerData(col, Qt::Horizontal).toString();
-        m_stream << "|" << s << QString(tableColumnWidths[col] - s.length(), Space);
+        m_stream << "|" << s << QString(tableColumnWidths[col] - s.size(), Space);
     }
     m_stream << "|" << Qt::endl;
-    for (int col = 0; col < tableColumnWidths.length(); ++col)
+    for (int col = 0; col < tableColumnWidths.size(); ++col)
         m_stream << '|' << QString(tableColumnWidths[col], u'-');
     m_stream << '|'<< Qt::endl;
 
@@ -68,7 +68,7 @@ void QTextMarkdownWriter::writeTable(const QAbstractItemModel *table)
     for (int row = 0; row < table->rowCount(); ++row) {
         for (int col = 0; col < table->columnCount(); ++col) {
             QString s = table->data(table->index(row, col)).toString();
-            m_stream << "|" << s << QString(tableColumnWidths[col] - s.length(), Space);
+            m_stream << "|" << s << QString(tableColumnWidths[col] - s.size(), Space);
         }
         m_stream << '|'<< Qt::endl;
     }
@@ -95,7 +95,7 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
                 while (it != cell.end()) {
                     QTextBlock block = it.currentBlock();
                     if (block.isValid())
-                        cellTextLen += block.text().length();
+                        cellTextLen += block.text().size();
                     ++it;
                 }
                 if (cell.columnSpan() == 1 && tableColumnWidths[col] < cellTextLen)
@@ -131,7 +131,7 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
                 if (tableRow < cell.row()) {
                     if (tableRow == 0) {
                         m_stream << Newline;
-                        for (int col = 0; col < tableColumnWidths.length(); ++col)
+                        for (int col = 0; col < tableColumnWidths.size(); ++col)
                             m_stream << '|' << QString(tableColumnWidths[col], u'-');
                         m_stream << '|';
                     }
@@ -213,7 +213,7 @@ QTextMarkdownWriter::ListInfo QTextMarkdownWriter::listInfo(QTextList *list)
 
 static int nearestWordWrapIndex(const QString &s, int before)
 {
-    before = qMin(before, s.length());
+    before = qMin(before, s.size());
     int fragBegin = qMax(before - 15, 0);
     if (lcMDW().isDebugEnabled()) {
         QString frag = s.mid(fragBegin, 30);
@@ -232,7 +232,7 @@ static int nearestWordWrapIndex(const QString &s, int before)
 
 static int adjacentBackticksCount(const QString &s)
 {
-    int start = -1, len = s.length();
+    int start = -1, len = s.size();
     int ret = 0;
     for (int i = 0; i < len; ++i) {
         if (s.at(i) == Backtick) {
@@ -334,7 +334,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
     QTextBlockFormat blockFmt = block.blockFormat();
     bool missedBlankCodeBlockLine = false;
     const bool codeBlock = blockFmt.hasProperty(QTextFormat::BlockCodeFence) ||
-            blockFmt.stringProperty(QTextFormat::BlockCodeLanguage).length() > 0 ||
+            blockFmt.stringProperty(QTextFormat::BlockCodeLanguage).size() > 0 ||
             blockFmt.nonBreakableLines();
     if (m_fencedCodeBlock && !codeBlock) {
         m_stream << m_linePrefix << m_codeBlockFence << Newline;
@@ -391,7 +391,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             if (suffix.isEmpty())
                 suffix = QString(Period);
             QString numberStr = QString::number(number) + suffix + Space;
-            if (numberStr.length() == 3)
+            if (numberStr.size() == 3)
                 numberStr += Space;
             prefix += numberStr;
         } else {
@@ -444,7 +444,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
     // It would be convenient if QTextStream had a lineCharPos() accessor,
     // to keep track of how many characters (not bytes) have been written on the current line,
     // but it doesn't.  So we have to keep track with this col variable.
-    int col = wrapIndentString.length();
+    int col = wrapIndentString.size();
     bool mono = false;
     bool startsOrEndsWithBacktick = false;
     bool bold = false;
@@ -477,12 +477,12 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             if (!title.isEmpty())
                 s += Space + DoubleQuote + title + DoubleQuote;
             s += u')';
-            if (wrap && col + s.length() > ColumnLimit) {
+            if (wrap && col + s.size() > ColumnLimit) {
                 m_stream << Newline << wrapIndentString;
                 col = m_wrappedLineIndent;
             }
             m_stream << s;
-            col += s.length();
+            col += s.size();
         } else if (fmt.hasProperty(QTextFormat::AnchorHref)) {
             const auto href = fmt.property(QTextFormat::AnchorHref).toString();
             const bool hasToolTip = fmt.hasProperty(QTextFormat::TextToolTip);
@@ -497,12 +497,12 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                 }
                 s += u')';
             }
-            if (wrap && col + s.length() > ColumnLimit) {
+            if (wrap && col + s.size() > ColumnLimit) {
                 m_stream << Newline << wrapIndentString;
                 col = m_wrappedLineIndent;
             }
             m_stream << s;
-            col += s.length();
+            col += s.size();
         } else {
             QFontInfo fontInfo(fmt.font());
             bool monoFrag = fontInfo.fixedPitch() || fmt.fontFixedPitch();
@@ -538,9 +538,9 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                     }
                 }
             }
-            if (wrap && col + markers.length() * 2 + fragmentText.length() > ColumnLimit) {
+            if (wrap && col + markers.size() * 2 + fragmentText.size() > ColumnLimit) {
                 int i = 0;
-                const int fragLen = fragmentText.length();
+                const int fragLen = fragmentText.size();
                 bool breakingLine = false;
                 while (i < fragLen) {
                     if (col >= ColumnLimit) {
@@ -565,7 +565,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                     QString subfrag = fragmentText.mid(i, j - i);
                     if (!i) {
                         m_stream << markers;
-                        col += markers.length();
+                        col += markers.size();
                     }
                     if (col == m_wrappedLineIndent)
                         maybeEscapeFirstChar(subfrag);
@@ -574,13 +574,13 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                         m_stream << Newline << wrapIndentString;
                         col = m_wrappedLineIndent;
                     } else {
-                        col += subfrag.length();
+                        col += subfrag.size();
                     }
                     i = j + 1;
                 }
             } else {
                 m_stream << markers << fragmentText;
-                col += markers.length() + fragmentText.length();
+                col += markers.size() + fragmentText.size();
             }
         }
     }

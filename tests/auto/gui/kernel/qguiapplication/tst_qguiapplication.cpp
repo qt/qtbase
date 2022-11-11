@@ -98,20 +98,20 @@ void tst_QGuiApplication::displayName()
     QGuiApplication::setApplicationName("The Core Application");
     QCOMPARE(QGuiApplication::applicationName(), QString::fromLatin1("The Core Application"));
     QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("The Core Application"));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     QGuiApplication::setApplicationDisplayName("The GUI Application");
     QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("The GUI Application"));
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 
     QGuiApplication::setApplicationName("The Core Application 2");
     QCOMPARE(QGuiApplication::applicationName(), QString::fromLatin1("The Core Application 2"));
     QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("The GUI Application"));
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 
     QGuiApplication::setApplicationDisplayName("The GUI Application 2");
     QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("The GUI Application 2"));
-    QCOMPARE(spy.count(), 3);
+    QCOMPARE(spy.size(), 3);
 }
 
 void tst_QGuiApplication::desktopFileName()
@@ -222,12 +222,12 @@ void tst_QGuiApplication::focusObject()
 
     window1.setFocusObject(&obj1);
     QCOMPARE(app.focusObject(), &obj1);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     spy.clear();
     window1.setFocusObject(&obj2);
     QCOMPARE(app.focusObject(), &obj2);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     spy.clear();
     window2.setFocusObject(&obj3);
@@ -236,12 +236,12 @@ void tst_QGuiApplication::focusObject()
     QVERIFY(QTest::qWaitForWindowExposed(&window2));
     QTRY_COMPARE(app.focusWindow(), &window2);
     QCOMPARE(app.focusObject(), &obj3);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     // focus change on unfocused window does not show
     spy.clear();
     window1.setFocusObject(&obj1);
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     QCOMPARE(app.focusObject(), &obj3);
 }
 
@@ -253,13 +253,13 @@ void tst_QGuiApplication::allWindows()
     QWindow *window2 = new QWindow(window1);
     QVERIFY(app.allWindows().contains(window1));
     QVERIFY(app.allWindows().contains(window2));
-    QCOMPARE(app.allWindows().count(), 2);
+    QCOMPARE(app.allWindows().size(), 2);
     delete window1;
     window1 = nullptr;
     window2 = nullptr;
     QVERIFY(!app.allWindows().contains(window2));
     QVERIFY(!app.allWindows().contains(window1));
-    QCOMPARE(app.allWindows().count(), 0);
+    QCOMPARE(app.allWindows().size(), 0);
 }
 
 void tst_QGuiApplication::topLevelWindows()
@@ -270,13 +270,13 @@ void tst_QGuiApplication::topLevelWindows()
     QWindow *window2 = new QWindow(window1);
     QVERIFY(app.topLevelWindows().contains(window1));
     QVERIFY(!app.topLevelWindows().contains(window2));
-    QCOMPARE(app.topLevelWindows().count(), 1);
+    QCOMPARE(app.topLevelWindows().size(), 1);
     delete window1;
     window1 = nullptr;
     window2 = nullptr;
     QVERIFY(!app.topLevelWindows().contains(window2));
     QVERIFY(!app.topLevelWindows().contains(window1));
-    QCOMPARE(app.topLevelWindows().count(), 0);
+    QCOMPARE(app.topLevelWindows().size(), 0);
 }
 
 class ShowCloseShowWindow : public QWindow
@@ -531,7 +531,7 @@ void tst_QGuiApplication::palette()
     QGuiApplication::setPalette(newPalette);
     QVERIFY(palettesMatch(QGuiApplication::palette(), newPalette));
 #if QT_DEPRECATED_SINCE(6, 0)
-    QCOMPARE(signalSpy.count(), 1);
+    QCOMPARE(signalSpy.size(), 1);
 #endif
     QVERIFY(palettesMatch(signalSpy.at(0).at(0).value<QPalette>(), newPalette));
     QCOMPARE(QGuiApplication::palette(), QPalette());
@@ -539,7 +539,7 @@ void tst_QGuiApplication::palette()
     QGuiApplication::setPalette(oldPalette);
     QVERIFY(palettesMatch(QGuiApplication::palette(), oldPalette));
 #if QT_DEPRECATED_SINCE(6, 0)
-    QCOMPARE(signalSpy.count(), 2);
+    QCOMPARE(signalSpy.size(), 2);
 #endif
     QVERIFY(palettesMatch(signalSpy.at(1).at(0).value<QPalette>(), oldPalette));
     QCOMPARE(QGuiApplication::palette(), QPalette());
@@ -547,7 +547,7 @@ void tst_QGuiApplication::palette()
     QGuiApplication::setPalette(oldPalette);
     QVERIFY(palettesMatch(QGuiApplication::palette(), oldPalette));
 #if QT_DEPRECATED_SINCE(6, 0)
-    QCOMPARE(signalSpy.count(), 2);
+    QCOMPARE(signalSpy.size(), 2);
 #endif
     QCOMPARE(QGuiApplication::palette(), QPalette());
 }
@@ -564,17 +564,17 @@ void tst_QGuiApplication::font()
 
     QGuiApplication::setFont(newFont);
     QCOMPARE(QGuiApplication::font(), newFont);
-    QCOMPARE(signalSpy.count(), 1);
+    QCOMPARE(signalSpy.size(), 1);
     QCOMPARE(signalSpy.at(0).at(0), QVariant(newFont));
 
     QGuiApplication::setFont(oldFont);
     QCOMPARE(QGuiApplication::font(), oldFont);
-    QCOMPARE(signalSpy.count(), 2);
+    QCOMPARE(signalSpy.size(), 2);
     QCOMPARE(signalSpy.at(1).at(0), QVariant(oldFont));
 
     QGuiApplication::setFont(oldFont);
     QCOMPARE(QGuiApplication::font(), oldFont);
-    QCOMPARE(signalSpy.count(), 2);
+    QCOMPARE(signalSpy.size(), 2);
 }
 
 class BlockableWindow : public QWindow
@@ -879,9 +879,9 @@ void tst_QGuiApplication::quitOnLastWindowClosed()
 
     app.exec();
 
-    QCOMPARE(spyAboutToQuit.count(), 1);
+    QCOMPARE(spyAboutToQuit.size(), 1);
     // Should be around 10 if closing caused the quit
-    QVERIFY2(spyTimeout.count() < 15, QByteArray::number(spyTimeout.count()).constData());
+    QVERIFY2(spyTimeout.size() < 15, QByteArray::number(spyTimeout.size()).constData());
 }
 
 void tst_QGuiApplication::quitOnLastWindowClosedMulti()
@@ -922,7 +922,7 @@ void tst_QGuiApplication::quitOnLastWindowClosedMulti()
     app.exec();
 
     QVERIFY(!prematureQuit);
-    QCOMPARE(spyAboutToQuit.count(), 1); // fired only once
+    QCOMPARE(spyAboutToQuit.size(), 1); // fired only once
 }
 
 void tst_QGuiApplication::dontQuitOnLastWindowClosed()
@@ -950,8 +950,8 @@ void tst_QGuiApplication::dontQuitOnLastWindowClosed()
 
     app.setQuitOnLastWindowClosed(true); // restore underlying static to default value
 
-    QCOMPARE(spyTimeout.count(), 1); // quit timer fired
-    QCOMPARE(spyLastWindowClosed.count(), 1); // lastWindowClosed emitted
+    QCOMPARE(spyTimeout.size(), 1); // quit timer fired
+    QCOMPARE(spyLastWindowClosed.size(), 1); // lastWindowClosed emitted
 }
 
 class QuitSpy : public QObject
@@ -1153,12 +1153,12 @@ void tst_QGuiApplication::layoutDirection()
 
     QGuiApplication::setLayoutDirection(oldDirection);
     QCOMPARE(QGuiApplication::layoutDirection(), oldDirection);
-    QCOMPARE(signalSpy.count(), 1);
+    QCOMPARE(signalSpy.size(), 1);
     QCOMPARE(signalSpy.at(0).at(0).toInt(), static_cast<int>(oldDirection));
 
     QGuiApplication::setLayoutDirection(oldDirection);
     QCOMPARE(QGuiApplication::layoutDirection(), oldDirection);
-    QCOMPARE(signalSpy.count(), 1);
+    QCOMPARE(signalSpy.size(), 1);
 
     // with QGuiApplication instantiated, install a translator that gives us control
     class LayoutDirectionTranslator : public QTranslator
@@ -1189,31 +1189,31 @@ void tst_QGuiApplication::layoutDirection()
         LayoutDirectionTranslator translator(oldDirection);
         QGuiApplication::installTranslator(&translator);
         QCOMPARE(QGuiApplication::layoutDirection(), translator.direction);
-        QCOMPARE(signalSpy.count(), layoutDirectionChangedCount);
+        QCOMPARE(signalSpy.size(), layoutDirectionChangedCount);
     }
-    QCOMPARE(signalSpy.count(), layoutDirectionChangedCount); // ltrTranslator removed, no change
+    QCOMPARE(signalSpy.size(), layoutDirectionChangedCount); // ltrTranslator removed, no change
 
     // install a new translator that changes the direction
     {
         LayoutDirectionTranslator translator(newDirection);
         QGuiApplication::installTranslator(&translator);
         QCOMPARE(QGuiApplication::layoutDirection(), translator.direction);
-        QCOMPARE(signalSpy.count(), ++layoutDirectionChangedCount);
+        QCOMPARE(signalSpy.size(), ++layoutDirectionChangedCount);
     }
     // rtlTranslator removed
-    QCOMPARE(signalSpy.count(), ++layoutDirectionChangedCount);
+    QCOMPARE(signalSpy.size(), ++layoutDirectionChangedCount);
 
     // override translation
     QGuiApplication::setLayoutDirection(newDirection);
-    QCOMPARE(signalSpy.count(), ++layoutDirectionChangedCount);
+    QCOMPARE(signalSpy.size(), ++layoutDirectionChangedCount);
     {
         // this translator will be ignored
         LayoutDirectionTranslator translator(oldDirection);
         QGuiApplication::installTranslator(&translator);
         QCOMPARE(QGuiApplication::layoutDirection(), newDirection);
-        QCOMPARE(signalSpy.count(), layoutDirectionChangedCount);
+        QCOMPARE(signalSpy.size(), layoutDirectionChangedCount);
     }
-    QCOMPARE(signalSpy.count(), layoutDirectionChangedCount);
+    QCOMPARE(signalSpy.size(), layoutDirectionChangedCount);
 }
 
 

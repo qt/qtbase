@@ -368,7 +368,7 @@ QTypeRevision Moc::parseRevision()
     revisionString.remove(0, 1);
     revisionString.chop(1);
     const QList<QByteArray> majorMinor = revisionString.split(',');
-    switch (majorMinor.length()) {
+    switch (majorMinor.size()) {
     case 1: {
         bool ok = false;
         const int revision = revisionString.toInt(&ok);
@@ -1066,7 +1066,7 @@ static QByteArrayList requiredQtContainers(const QList<ClassDef> &classes)
 void Moc::generate(FILE *out, FILE *jsonOutput)
 {
     QByteArray fn = filename;
-    int i = filename.length()-1;
+    int i = filename.size()-1;
     while (i > 0 && filename.at(i - 1) != '/' && filename.at(i - 1) != '\\')
         --i;                                // skip path
     if (i >= 0)
@@ -1315,7 +1315,7 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
         QByteArray v, v2;
         if (test(LPAREN)) {
             v = lexemUntil(RPAREN);
-            v = v.mid(1, v.length() - 2); // removes the '(' and ')'
+            v = v.mid(1, v.size() - 2); // removes the '(' and ')'
         } else if (test(INTEGER_LITERAL)) {
             v = lexem();
             if (l != "REVISION")
@@ -1596,7 +1596,7 @@ void Moc::parseInterfaces(ClassDef *def)
             }
         }
         // resolve from classnames to interface ids
-        for (int i = 0; i < iface.count(); ++i) {
+        for (int i = 0; i < iface.size(); ++i) {
             const QByteArray iid = interface2IdMap.value(iface.at(i).className);
             if (iid.isEmpty())
                 error("Undefined interface");
@@ -1792,7 +1792,7 @@ void Moc::checkSuperClasses(ClassDef *def)
 #endif
         return;
     }
-    for (int i = 1; i < def->superclassList.count(); ++i) {
+    for (int i = 1; i < def->superclassList.size(); ++i) {
         const QByteArray superClass = def->superclassList.at(i).first;
         if (knownQObjectClasses.contains(superClass)) {
             const QByteArray msg
@@ -1808,7 +1808,7 @@ void Moc::checkSuperClasses(ClassDef *def)
 
         if (interface2IdMap.contains(superClass)) {
             bool registeredInterface = false;
-            for (int i = 0; i < def->interfaceList.count(); ++i)
+            for (int i = 0; i < def->interfaceList.size(); ++i)
                 if (def->interfaceList.at(i).constFirst().className == superClass) {
                     registeredInterface = true;
                     break;
@@ -1835,8 +1835,8 @@ void Moc::checkProperties(ClassDef *cdef)
     // specify get function, for compatibility we accept functions
     // returning pointers, or const char * for QByteArray.
     //
-    QDuplicateTracker<QByteArray> definedProperties(cdef->propertyList.count());
-    for (int i = 0; i < cdef->propertyList.count(); ++i) {
+    QDuplicateTracker<QByteArray> definedProperties(cdef->propertyList.size());
+    for (int i = 0; i < cdef->propertyList.size(); ++i) {
         PropertyDef &p = cdef->propertyList[i];
         if (definedProperties.hasSeen(p.name)) {
             QByteArray msg = "The property '" + p.name + "' is defined multiple times in class " + cdef->classname + ".";
@@ -1858,7 +1858,7 @@ void Moc::checkProperties(ClassDef *cdef)
             continue;
         }
 
-        for (int j = 0; j < cdef->publicList.count(); ++j) {
+        for (int j = 0; j < cdef->publicList.size(); ++j) {
             const FunctionDef &f = cdef->publicList.at(j);
             if (f.name != p.read)
                 continue;
@@ -1885,7 +1885,7 @@ void Moc::checkProperties(ClassDef *cdef)
         }
         if (!p.notify.isEmpty()) {
             int notifyId = -1;
-            for (int j = 0; j < cdef->signalList.count(); ++j) {
+            for (int j = 0; j < cdef->signalList.size(); ++j) {
                 const FunctionDef &f = cdef->signalList.at(j);
                 if (f.name != p.notify) {
                     continue;
@@ -1899,7 +1899,7 @@ void Moc::checkProperties(ClassDef *cdef)
                 int index = cdef->nonClassSignalList.indexOf(p.notify);
                 if (index == -1) {
                     cdef->nonClassSignalList << p.notify;
-                    p.notifyId = -1 - cdef->nonClassSignalList.count();
+                    p.notifyId = -1 - cdef->nonClassSignalList.size();
                 } else {
                     p.notifyId = -2 - index;
                 }

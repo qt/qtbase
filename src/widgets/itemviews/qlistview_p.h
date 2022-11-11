@@ -460,7 +460,7 @@ inline QAbstractItemDelegate *QCommonListViewBase::delegate(const QModelIndex &i
     { return qq->itemDelegateForIndex(idx); }
 
 inline bool QCommonListViewBase::isHidden(int row) const { return dd->isHidden(row); }
-inline int QCommonListViewBase::hiddenCount() const { return dd->hiddenRows.count(); }
+inline int QCommonListViewBase::hiddenCount() const { return dd->hiddenRows.size(); }
 
 inline bool QCommonListViewBase::isRightToLeft() const { return qq->isRightToLeft(); }
 

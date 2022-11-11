@@ -139,7 +139,7 @@ void fetchCustomClientProperties()
             key = line.left(colonPos).simplified().replace(' ', '_');
             val = line.mid(colonPos+1).trimmed();
         }
-        if (!key.isEmpty() && key.length() < 64 && val.length() < 256)  // ###TBD: maximum 256 chars in value?
+        if (!key.isEmpty() && key.size() < 64 && val.size() < 256)  // ###TBD: maximum 256 chars in value?
             addClientProperty(key, val);
         else
             qDebug() << "Unparseable script output ignored:" << line;

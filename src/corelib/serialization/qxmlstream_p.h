@@ -42,7 +42,7 @@ public:
     {
     }
     XmlStringRef(const QString *string)
-        : XmlStringRef(string, 0, string->length())
+        : XmlStringRef(string, 0, string->size())
     {
     }
 

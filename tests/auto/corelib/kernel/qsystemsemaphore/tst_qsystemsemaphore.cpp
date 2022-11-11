@@ -189,7 +189,7 @@ void tst_QSystemSemaphore::processes()
     QList<QString> scripts(processes, "acquirerelease");
 
     QList<QProcess*> consumers;
-    for (int i = 0; i < scripts.count(); ++i) {
+    for (int i = 0; i < scripts.size(); ++i) {
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
         consumers.append(p);

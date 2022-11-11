@@ -1268,9 +1268,9 @@ void tst_QMenuBar::task223138_triggered()
     //let's trigger the first action
     top->trigger();
 
-    QCOMPARE(menubarSpy.count(), 1);
-    QCOMPARE(menuSpy.count(), 1);
-    QCOMPARE(submenuSpy.count(), 0);
+    QCOMPARE(menubarSpy.size(), 1);
+    QCOMPARE(menuSpy.size(), 1);
+    QCOMPARE(submenuSpy.size(), 0);
 
     menubarSpy.clear();
     menuSpy.clear();
@@ -1278,9 +1278,9 @@ void tst_QMenuBar::task223138_triggered()
 
     //let's trigger the sub action
     action->trigger();
-    QCOMPARE(menubarSpy.count(), 1);
-    QCOMPARE(menuSpy.count(), 1);
-    QCOMPARE(submenuSpy.count(), 1);
+    QCOMPARE(menubarSpy.size(), 1);
+    QCOMPARE(menuSpy.size(), 1);
+    QCOMPARE(submenuSpy.size(), 1);
 }
 
 void tst_QMenuBar::task256322_highlight()
@@ -1623,7 +1623,7 @@ void tst_QMenuBar::QTBUG_65488_hiddenActionTriggered()
     // click center of the blank area on the menubar where Action1 resided
     QTest::mouseClick(win.windowHandle(), Qt::LeftButton, Qt::NoModifier, win.menuBar()->geometry().center());
     QCoreApplication::sendPostedEvents(); // make sure all queued events also dispatched
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 // QTBUG-56526
@@ -1697,13 +1697,13 @@ void tst_QMenuBar::QTBUG_25669_menubarActionDoubleTriggered()
     QPoint posAct2 = menuBarActionWindowPos(win.menuBar(), act2);
 
     QTest::mouseClick(win.windowHandle(), Qt::LeftButton, Qt::NoModifier, posAct1);
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
 
     QTest::mouseClick(win.windowHandle(), Qt::LeftButton, Qt::NoModifier, posAct2);
-    QTRY_COMPARE(spy.count(), 2);
+    QTRY_COMPARE(spy.size(), 2);
 
     QTest::mouseClick(win.windowHandle(), Qt::LeftButton, Qt::NoModifier, posAct2);
-    QTRY_COMPARE(spy.count(), 3);
+    QTRY_COMPARE(spy.size(), 3);
 }
 
 void tst_QMenuBar::slotForTaskQTBUG53205()

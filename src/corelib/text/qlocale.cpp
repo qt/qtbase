@@ -559,7 +559,7 @@ static bool isScript(QStringView tag)
     static const QString allScripts =
         QString::fromLatin1(reinterpret_cast<const char *>(script_code_list),
                             sizeof(script_code_list) - 1);
-    return tag.length() == 4 && allScripts.indexOf(tag) % 4 == 0;
+    return tag.size() == 4 && allScripts.indexOf(tag) % 4 == 0;
 }
 
 bool qt_splitLocaleName(QStringView name, QStringView *lang, QStringView *script, QStringView *land)
@@ -3698,11 +3698,11 @@ QString QLocaleData::decimalForm(QString &&digits, int decpt, int precision,
             digits.append(zero);
         break;
     case PMChopTrailingZeros:
-        Q_ASSERT(digits.length() / digitWidth <= qMax(decpt, 1) || !digits.endsWith(zero));
+        Q_ASSERT(digits.size() / digitWidth <= qMax(decpt, 1) || !digits.endsWith(zero));
         break;
     }
 
-    if (mustMarkDecimal || decpt < digits.length() / digitWidth)
+    if (mustMarkDecimal || decpt < digits.size() / digitWidth)
         digits.insert(decpt * digitWidth, decimalPoint());
 
     if (groupDigits) {
@@ -3740,11 +3740,11 @@ QString QLocaleData::exponentForm(QString &&digits, int decpt, int precision,
             digits.append(zero);
         break;
     case PMChopTrailingZeros:
-        Q_ASSERT(digits.length() / digitWidth <= 1 || !digits.endsWith(zero));
+        Q_ASSERT(digits.size() / digitWidth <= 1 || !digits.endsWith(zero));
         break;
     }
 
-    if (mustMarkDecimal || digits.length() > digitWidth)
+    if (mustMarkDecimal || digits.size() > digitWidth)
         digits.insert(digitWidth, decimalPoint());
 
     digits.append(exponentSeparator());
@@ -3793,7 +3793,7 @@ QString QLocaleData::applyIntegerFormatting(QString &&numStr, bool negative, int
 {
     const QString zero = base == 10 ? zeroDigit() : QStringLiteral("0");
     const auto digitWidth = zero.size();
-    const auto digitCount = numStr.length() / digitWidth;
+    const auto digitCount = numStr.size() / digitWidth;
 
     const auto basePrefix = [&] () -> QStringView {
         if (flags & ShowBase) {
@@ -3986,7 +3986,7 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
                                 int decDigits, QLocale::NumberOptions number_options) const
 {
     buff->clear();
-    buff->reserve(str.length());
+    buff->reserve(str.size());
 
     enum { Whole, Fractional, Exponent } state = Whole;
     const bool scientific = numMode == DoubleScientificMode;
@@ -4082,7 +4082,7 @@ double QLocaleData::stringToDouble(QStringView str, bool *ok,
     }
     int processed = 0;
     bool nonNullOk = false;
-    double d = qt_asciiToDouble(buff.constData(), buff.length() - 1, nonNullOk, processed);
+    double d = qt_asciiToDouble(buff.constData(), buff.size() - 1, nonNullOk, processed);
     if (ok != nullptr)
         *ok = nonNullOk;
     return d;

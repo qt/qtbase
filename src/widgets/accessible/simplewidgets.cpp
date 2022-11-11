@@ -673,7 +673,7 @@ QString QAccessibleLineEdit::text(QAccessible::Text t) const
         if (lineEdit()->echoMode() == QLineEdit::Normal)
             str = lineEdit()->text();
         else if (lineEdit()->echoMode() != QLineEdit::NoEcho)
-            str = QString(lineEdit()->text().length(), QChar::fromLatin1('*'));
+            str = QString(lineEdit()->text().size(), QChar::fromLatin1('*'));
         break;
     default:
         break;
@@ -779,7 +779,7 @@ void QAccessibleLineEdit::selection(int selectionIndex, int *startOffset, int *e
         return;
 
     *startOffset = lineEdit()->selectionStart();
-    *endOffset = *startOffset + lineEdit()->selectedText().length();
+    *endOffset = *startOffset + lineEdit()->selectedText().size();
 }
 
 QString QAccessibleLineEdit::text(int startOffset, int endOffset) const
@@ -852,7 +852,7 @@ void QAccessibleLineEdit::setSelection(int selectionIndex, int startOffset, int 
 
 int QAccessibleLineEdit::characterCount() const
 {
-    return lineEdit()->text().length();
+    return lineEdit()->text().size();
 }
 
 void QAccessibleLineEdit::scrollToSubstring(int startIndex, int endIndex)

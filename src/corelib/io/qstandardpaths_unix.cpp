@@ -260,16 +260,16 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             QRegularExpressionMatch match = exp.match(line);
             if (match.hasMatch() && match.capturedView(1) == key) {
                 QStringView value = match.capturedView(2);
-                if (value.length() > 2
+                if (value.size() > 2
                     && value.startsWith(u'\"')
                     && value.endsWith(u'\"'))
-                    value = value.mid(1, value.length() - 2);
+                    value = value.mid(1, value.size() - 2);
                 // value can start with $HOME
                 if (value.startsWith("$HOME"_L1))
                     result = QDir::homePath() + value.mid(5);
                 else
                     result = value.toString();
-                if (result.length() > 1 && result.endsWith(u'/'))
+                if (result.size() > 1 && result.endsWith(u'/'))
                     result.chop(1);
             }
         }
@@ -371,7 +371,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
         break;
     case AppConfigLocation:
         dirs = xdgConfigDirs();
-        for (int i = 0; i < dirs.count(); ++i)
+        for (int i = 0; i < dirs.size(); ++i)
             appendOrganizationAndApp(dirs[i]);
         break;
     case GenericDataLocation:
@@ -379,19 +379,19 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
         break;
     case ApplicationsLocation:
         dirs = xdgDataDirs();
-        for (int i = 0; i < dirs.count(); ++i)
+        for (int i = 0; i < dirs.size(); ++i)
             dirs[i].append("/applications"_L1);
         break;
     case AppDataLocation:
     case AppLocalDataLocation:
         dirs = xdgDataDirs();
-        for (int i = 0; i < dirs.count(); ++i)
+        for (int i = 0; i < dirs.size(); ++i)
             appendOrganizationAndApp(dirs[i]);
         break;
     case FontsLocation:
         dirs += QDir::homePath() + "/.fonts"_L1;
         dirs += xdgDataDirs();
-        for (int i = 1; i < dirs.count(); ++i)
+        for (int i = 1; i < dirs.size(); ++i)
             dirs[i].append("/fonts"_L1);
         break;
     default:

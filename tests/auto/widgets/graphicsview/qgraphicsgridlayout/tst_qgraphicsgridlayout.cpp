@@ -1658,7 +1658,7 @@ void tst_QGraphicsGridLayout::sizeHint()
     widget->setContentsMargins(0, 0, 0, 0);
 
     int i;
-    for (i = 0; i < itemDescriptions.count(); ++i) {
+    for (i = 0; i < itemDescriptions.size(); ++i) {
         ItemDesc desc = itemDescriptions.at(i);
         RectWidget *item = new RectWidget(widget);
         desc.apply(layout, item);
@@ -2159,7 +2159,7 @@ void tst_QGraphicsGridLayout::defaultStretchFactors()
     widget->setContentsMargins(0, 0, 0, 0);
 
     int i;
-    for (i = 0; i < itemDescriptions.count(); ++i) {
+    for (i = 0; i < itemDescriptions.size(); ++i) {
         ItemDesc desc = itemDescriptions.at(i);
         RectWidget *item = new RectWidget(widget);
         desc.apply(layout, item);
@@ -2174,7 +2174,7 @@ void tst_QGraphicsGridLayout::defaultStretchFactors()
         widget->resize(newSize);
 
     QApplication::sendPostedEvents(0, 0);
-    for (i = 0; i < expectedSizes.count(); ++i) {
+    for (i = 0; i < expectedSizes.size(); ++i) {
         QSizeF itemSize = layout->itemAt(i)->geometry().size();
         QCOMPARE(itemSize, expectedSizes.at(i));
     }
@@ -2318,7 +2318,7 @@ void tst_QGraphicsGridLayout::alignment2()
     widget->setContentsMargins(0, 0, 0, 0);
 
     int i;
-    for (i = 0; i < itemDescriptions.count(); ++i) {
+    for (i = 0; i < itemDescriptions.size(); ++i) {
         ItemDesc desc = itemDescriptions.at(i);
         RectWidget *item = new RectWidget(widget);
         desc.apply(layout, item);
@@ -2333,7 +2333,7 @@ void tst_QGraphicsGridLayout::alignment2()
         widget->resize(newSize);
 
     QApplication::sendPostedEvents(0, 0);
-    for (i = 0; i < expectedGeometries.count(); ++i) {
+    for (i = 0; i < expectedGeometries.size(); ++i) {
         QRectF itemRect = layout->itemAt(i)->geometry();
         QCOMPARE(itemRect, expectedGeometries.at(i));
     }
@@ -2896,7 +2896,7 @@ void tst_QGraphicsGridLayout::geometries()
     widget->setContentsMargins(0, 0, 0, 0);
 
     int i;
-    for (i = 0; i < itemDescriptions.count(); ++i) {
+    for (i = 0; i < itemDescriptions.size(); ++i) {
         ItemDesc desc = itemDescriptions.at(i);
         RectWidget *item = new RectWidget(widget);
         desc.apply(layout, item);
@@ -2911,7 +2911,7 @@ void tst_QGraphicsGridLayout::geometries()
         widget->resize(newSize);
 
     QApplication::processEvents();
-    for (i = 0; i < expectedGeometries.count(); ++i) {
+    for (i = 0; i < expectedGeometries.size(); ++i) {
         QRectF itemRect = layout->itemAt(i)->geometry();
         QCOMPARE(itemRect, expectedGeometries.at(i));
     }

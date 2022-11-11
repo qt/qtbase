@@ -214,7 +214,7 @@ void CppGenerator::operator () ()
     }
 
   auto rule = grammar.rules.begin();
-  for (int i = 0; i < used_rules.count (); ++i, ++rule)
+  for (int i = 0; i < used_rules.size(); ++i, ++rule)
     {
       if (! used_rules.testBit (i))
         {

@@ -124,7 +124,7 @@ static QObjectList topLevelObjects()
 {
     QObjectList list;
     const QWindowList tlw(QGuiApplication::topLevelWindows());
-    for (int i = 0; i < tlw.count(); ++i) {
+    for (int i = 0; i < tlw.size(); ++i) {
         QWindow *w = tlw.at(i);
         if (w->type() != Qt::Popup && w->type() != Qt::Desktop) {
             if (QAccessibleInterface *root = w->accessibleRoot()) {
@@ -140,7 +140,7 @@ static QObjectList topLevelObjects()
 /*! \reimp */
 int QAccessibleApplication::childCount() const
 {
-    return topLevelObjects().count();
+    return topLevelObjects().size();
 }
 
 /*! \reimp */
@@ -160,7 +160,7 @@ QAccessibleInterface *QAccessibleApplication::parent() const
 QAccessibleInterface *QAccessibleApplication::child(int index) const
 {
     const QObjectList tlo(topLevelObjects());
-    if (index >= 0 && index < tlo.count())
+    if (index >= 0 && index < tlo.size())
         return QAccessible::queryAccessibleInterface(tlo.at(index));
     return nullptr;
 }

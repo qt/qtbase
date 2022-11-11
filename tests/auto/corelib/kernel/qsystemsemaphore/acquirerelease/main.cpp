@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     QStringList arguments = app.arguments();
     // binary name is not used here
     arguments.takeFirst();
-    if (arguments.count() < 1) {
+    if (arguments.size() < 1) {
         qWarning("Please call the helper with the function to call as argument");
         return EXIT_FAILURE;
     }
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     if (function == QLatin1String("acquire")) {
         int count = 1;
         bool ok = true;
-        if (arguments.count())
+        if (arguments.size())
             count = arguments.takeFirst().toInt(&ok);
         if (!ok)
             count = 1;

@@ -123,13 +123,13 @@ static QString convertMnemonics(QString text, bool *found)
 {
     *found = false;
 
-    qsizetype i = text.length() - 1;
+    qsizetype i = text.size() - 1;
     while (i >= 0) {
         const QChar c = text.at(i);
         if (c == u'&') {
             if (i == 0 || text.at(i - 1) != u'&') {
                 // convert Qt to GTK mnemonic
-                if (i < text.length() - 1 && !text.at(i + 1).isSpace()) {
+                if (i < text.size() - 1 && !text.at(i + 1).isSpace()) {
                     text.replace(i, 1, u'_');
                     *found = true;
                 }
@@ -329,7 +329,7 @@ void QGtk3Menu::insertMenuItem(QPlatformMenuItem *item, QPlatformMenuItem *befor
     GtkWidget *handle = gitem->create();
     int index = m_items.indexOf(static_cast<QGtk3MenuItem *>(before));
     if (index < 0)
-        index = m_items.count();
+        index = m_items.size();
     m_items.insert(index, gitem);
     gtk_menu_shell_insert(GTK_MENU_SHELL(m_menu), handle, index);
 }

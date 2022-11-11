@@ -44,7 +44,7 @@ QMenu *QAccessibleMenu::menu() const
 
 int QAccessibleMenu::childCount() const
 {
-    return menu()->actions().count();
+    return menu()->actions().size();
 }
 
 QAccessibleInterface *QAccessibleMenu::childAt(int x, int y) const
@@ -123,7 +123,7 @@ QMenuBar *QAccessibleMenuBar::menuBar() const
 
 int QAccessibleMenuBar::childCount() const
 {
-    return menuBar()->actions().count();
+    return menuBar()->actions().size();
 }
 
 QAccessibleInterface *QAccessibleMenuBar::child(int index) const

@@ -164,23 +164,23 @@ public:
         if (containsValidResultItem(index)) // reject if already present
             return -1;
 
-        return addResults(index, new QList<T>(*results), results->count(), results->count());
+        return addResults(index, new QList<T>(*results), results->size(), results->size());
     }
 
     template<typename T>
     int addResults(int index, const QList<T> *results, int totalCount)
     {
         // reject if results are empty, and nothing is filtered away
-        if ((m_filterMode == false || results->count() == totalCount) && results->empty())
+        if ((m_filterMode == false || results->size() == totalCount) && results->empty())
             return -1;
 
         if (containsValidResultItem(index)) // reject if already present
             return -1;
 
-        if (m_filterMode == true && results->count() != totalCount && 0 == results->count())
+        if (m_filterMode == true && results->size() != totalCount && 0 == results->size())
             return addResults(index, nullptr, 0, totalCount);
 
-        return addResults(index, new QList<T>(*results), results->count(), totalCount);
+        return addResults(index, new QList<T>(*results), results->size(), totalCount);
     }
 
     int addCanceledResult(int index)

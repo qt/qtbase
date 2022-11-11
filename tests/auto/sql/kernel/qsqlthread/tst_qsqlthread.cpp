@@ -258,7 +258,7 @@ void tst_QSqlThread::generic_data(const QString& engine)
 
 void tst_QSqlThread::dropTestTables()
 {
-    for (int i = 0; i < dbs.dbNames.count(); ++i) {
+    for (int i = 0; i < dbs.dbNames.size(); ++i) {
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlQuery q(db);
 
@@ -268,7 +268,7 @@ void tst_QSqlThread::dropTestTables()
 
 void tst_QSqlThread::createTestTables()
 {
-    for (int i = 0; i < dbs.dbNames.count(); ++i) {
+    for (int i = 0; i < dbs.dbNames.size(); ++i) {
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlQuery q(db);
 
@@ -285,7 +285,7 @@ void tst_QSqlThread::createTestTables()
 
 void tst_QSqlThread::repopulateTestTables()
 {
-    for (int i = 0; i < dbs.dbNames.count(); ++i) {
+    for (int i = 0; i < dbs.dbNames.size(); ++i) {
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlQuery q(db);
 

@@ -1159,7 +1159,7 @@ void tst_QDateTimeEdit::enterKey()
     // we include this test so a change to the behaviour can't go unnoticed.
     QSignalSpy enterSpy(testWidget, SIGNAL(dateChanged(QDate)));
     QTest::keyClick(testWidget, Qt::Key_Enter);
-    QCOMPARE(enterSpy.count(), 1);
+    QCOMPARE(enterSpy.size(), 1);
     QVariantList list = enterSpy.takeFirst();
     QCOMPARE(list.at(0).toDate(), QDate(2004, 5, 9));
 }
@@ -2234,7 +2234,7 @@ void tst_QDateTimeEdit::dateSignalChecking()
     QSignalSpy timeSpy(testWidget, SIGNAL(timeChanged(QTime)));
 
     testWidget->setDate(newDate);
-    QCOMPARE(dateSpy.count(), timesEmitted);
+    QCOMPARE(dateSpy.size(), timesEmitted);
 
     if (timesEmitted > 0) {
         QList<QVariant> list = dateSpy.takeFirst();
@@ -2242,8 +2242,8 @@ void tst_QDateTimeEdit::dateSignalChecking()
         d = qvariant_cast<QDate>(list.at(0));
         QCOMPARE(d, newDate);
     }
-    QCOMPARE(dateTimeSpy.count(), timesEmitted);
-    QCOMPARE(timeSpy.count(), 0);
+    QCOMPARE(dateTimeSpy.size(), timesEmitted);
+    QCOMPARE(timeSpy.size(), 0);
 }
 
 void tst_QDateTimeEdit::timeSignalChecking_data()
@@ -2270,7 +2270,7 @@ void tst_QDateTimeEdit::timeSignalChecking()
     QSignalSpy timeSpy(testWidget, SIGNAL(timeChanged(QTime)));
 
     testWidget->setTime(newTime);
-    QCOMPARE(timeSpy.count(), timesEmitted);
+    QCOMPARE(timeSpy.size(), timesEmitted);
 
     if (timesEmitted > 0) {
         QList<QVariant> list = timeSpy.takeFirst();
@@ -2278,8 +2278,8 @@ void tst_QDateTimeEdit::timeSignalChecking()
         t = qvariant_cast<QTime>(list.at(0));
         QCOMPARE(t, newTime);
     }
-    QCOMPARE(dateTimeSpy.count(), timesEmitted);
-    QCOMPARE(dateSpy.count(), 0);
+    QCOMPARE(dateTimeSpy.size(), timesEmitted);
+    QCOMPARE(dateSpy.size(), 0);
 }
 
 void tst_QDateTimeEdit::dateTimeSignalChecking_data()
@@ -2320,7 +2320,7 @@ void tst_QDateTimeEdit::dateTimeSignalChecking()
     QSignalSpy dateTimeSpy(testWidget, SIGNAL(dateTimeChanged(QDateTime)));
 
     testWidget->setDateTime(newDateTime);
-    QCOMPARE(dateSpy.count(), timesDateEmitted);
+    QCOMPARE(dateSpy.size(), timesDateEmitted);
     if (timesDateEmitted > 0) {
         QCOMPARE(timesDateEmitted, 1);
         QList<QVariant> list = dateSpy.takeFirst();
@@ -2328,14 +2328,14 @@ void tst_QDateTimeEdit::dateTimeSignalChecking()
         d = qvariant_cast<QDate>(list.at(0));
         QCOMPARE(d, newDateTime.date());
     }
-    QCOMPARE(timeSpy.count(), timesTimeEmitted);
+    QCOMPARE(timeSpy.size(), timesTimeEmitted);
     if (timesTimeEmitted > 0) {
         QList<QVariant> list = timeSpy.takeFirst();
         QTime t;
         t = qvariant_cast<QTime>(list.at(0));
         QCOMPARE(t, newDateTime.time());
     }
-    QCOMPARE(dateTimeSpy.count(), timesDateTimeEmitted);
+    QCOMPARE(dateTimeSpy.size(), timesDateTimeEmitted);
     if (timesDateTimeEmitted > 0) {
         QList<QVariant> list = dateTimeSpy.takeFirst();
         QDateTime dt;
@@ -3199,22 +3199,22 @@ void tst_QDateTimeEdit::task149097()
     testWidget->setDisplayFormat("yyyy/MM/dd hh:mm:ss");
     testWidget->setDateTime(QDateTime(QDate(2001, 02, 03), QTime(5, 1, 2)));
 //    QTest::keyClick(testWidget, Qt::Key_Enter);
-    QCOMPARE(dtSpy.count(), 1);
-    QCOMPARE(dSpy.count(), 1);
-    QCOMPARE(tSpy.count(), 1);
+    QCOMPARE(dtSpy.size(), 1);
+    QCOMPARE(dSpy.size(), 1);
+    QCOMPARE(tSpy.size(), 1);
     testWidget->setCurrentSection(QDateTimeEdit::YearSection);
     testWidget->stepBy(1);
 
-    QCOMPARE(dtSpy.count(), 2);
-    QCOMPARE(dSpy.count(), 2);
-    QCOMPARE(tSpy.count(), 1);
+    QCOMPARE(dtSpy.size(), 2);
+    QCOMPARE(dSpy.size(), 2);
+    QCOMPARE(tSpy.size(), 1);
 
     testWidget->setCurrentSection(QDateTimeEdit::MinuteSection);
     testWidget->stepBy(1);
 
-    QCOMPARE(dtSpy.count(), 3);
-    QCOMPARE(dSpy.count(), 2);
-    QCOMPARE(tSpy.count(), 2);
+    QCOMPARE(dtSpy.size(), 3);
+    QCOMPARE(dSpy.size(), 2);
+    QCOMPARE(tSpy.size(), 2);
 }
 
 void tst_QDateTimeEdit::task148725()
@@ -4592,12 +4592,12 @@ void tst_QDateTimeEdit::stepModifierPressAndHold()
                 QStyle::CC_SpinBox, &spinBoxStyleOption, subControl, &edit);
 
     QTest::mousePress(&edit, Qt::LeftButton, modifiers, buttonRect.center());
-    QTRY_VERIFY(spy.length() >= 3);
+    QTRY_VERIFY(spy.size() >= 3);
     QTest::mouseRelease(&edit, Qt::LeftButton, modifiers, buttonRect.center());
 
     const auto value = spy.last().at(0);
     QVERIFY(value.userType() == QMetaType::QDate);
-    const QDate expectedDate = startDate.addYears(spy.length() *
+    const QDate expectedDate = startDate.addYears(spy.size() *
                                                   expectedStepModifier);
     QCOMPARE(value.toDate(), expectedDate);
 }

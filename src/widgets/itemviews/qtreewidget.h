@@ -148,8 +148,8 @@ public:
         executePendingSort();
         return children.at(index);
     }
-    inline int childCount() const { return children.count(); }
-    inline int columnCount() const { return values.count(); }
+    inline int childCount() const { return children.size(); }
+    inline int columnCount() const { return values.size(); }
     inline int indexOfChild(QTreeWidgetItem *child) const;
 
     void addChild(QTreeWidgetItem *child);

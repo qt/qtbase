@@ -971,7 +971,7 @@ void tst_QTextPieceTable::checkFrames1()
     QVERIFY(root);
     QVERIFY(!root->parentFrame());
 
-    QCOMPARE(root->childFrames().count(), 1);
+    QCOMPARE(root->childFrames().size(), 1);
     QVERIFY(frame->format() == ffmt);
     QCOMPARE(frame->firstPosition(), 2);
     QCOMPARE(frame->lastPosition(), 4);
@@ -979,10 +979,10 @@ void tst_QTextPieceTable::checkFrames1()
 
     QPointer<QTextFrame> frame2 = table->insertFrame(2, 3, ffmt);
 
-    QCOMPARE(root->childFrames().count(), 1);
+    QCOMPARE(root->childFrames().size(), 1);
     QCOMPARE(root->childFrames().at(0), frame.data());
-    QCOMPARE(frame->childFrames().count(), 1);
-    QCOMPARE(frame2->childFrames().count(), 0);
+    QCOMPARE(frame->childFrames().size(), 1);
+    QCOMPARE(frame2->childFrames().size(), 0);
     QCOMPARE(frame2->parentFrame(), frame.data());
     QCOMPARE(frame2->firstPosition(), 3);
     QCOMPARE(frame2->lastPosition(), 4);
@@ -993,10 +993,10 @@ void tst_QTextPieceTable::checkFrames1()
 
     table->removeFrame(frame);
 
-    QCOMPARE(root->childFrames().count(), 1);
+    QCOMPARE(root->childFrames().size(), 1);
     QCOMPARE(root->childFrames().at(0), frame2.data());
     QVERIFY(!frame);
-    QCOMPARE(frame2->childFrames().count(), 0);
+    QCOMPARE(frame2->childFrames().size(), 0);
     QCOMPARE(frame2->parentFrame(), root);
     QCOMPARE(frame2->firstPosition(), 2);
     QCOMPARE(frame2->lastPosition(), 3);
@@ -1005,11 +1005,11 @@ void tst_QTextPieceTable::checkFrames1()
 
     frame = table->frameAt(2);
 
-    QCOMPARE(root->childFrames().count(), 1);
+    QCOMPARE(root->childFrames().size(), 1);
     QCOMPARE(root->childFrames().at(0), frame.data());
-    QCOMPARE(frame->childFrames().count(), 1);
+    QCOMPARE(frame->childFrames().size(), 1);
     QCOMPARE(frame->childFrames().at(0), frame2.data());
-    QCOMPARE(frame2->childFrames().count(), 0);
+    QCOMPARE(frame2->childFrames().size(), 0);
     QCOMPARE(frame2->parentFrame(), frame.data());
     QCOMPARE(frame2->firstPosition(), 3);
     QCOMPARE(frame2->lastPosition(), 4);
@@ -1019,9 +1019,9 @@ void tst_QTextPieceTable::checkFrames1()
 
     table->undo();
 
-    QCOMPARE(root->childFrames().count(), 1);
+    QCOMPARE(root->childFrames().size(), 1);
     QCOMPARE(root->childFrames().at(0), frame.data());
-    QCOMPARE(frame->childFrames().count(), 0);
+    QCOMPARE(frame->childFrames().size(), 0);
     QVERIFY(!frame2);
 
     QCOMPARE(frame->firstPosition(), 2);

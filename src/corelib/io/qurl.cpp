@@ -510,7 +510,7 @@ public:
     ErrorCode validityError(QString *source = nullptr, qsizetype *position = nullptr) const;
     bool validateComponent(Section section, const QString &input, qsizetype begin, qsizetype end);
     bool validateComponent(Section section, const QString &input)
-    { return validateComponent(section, input, 0, input.length()); }
+    { return validateComponent(section, input, 0, input.size()); }
 
     // no QString scheme() const;
     void appendAuthority(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
@@ -918,7 +918,7 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
     }
     // check if we need to remove trailing slashes
     if (options & QUrl::StripTrailingSlash) {
-        while (thePathView.length() > 1 && thePathView.endsWith(u'/'))
+        while (thePathView.size() > 1 && thePathView.endsWith(u'/'))
             thePathView.chop(1);
     }
 
@@ -1191,7 +1191,7 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
 
         // uppercase the version, if necessary
         if (begin[2].unicode() >= 'a')
-            host[host.length() - 2] = QChar{begin[2].unicode() - 0x20};
+            host[host.size() - 2] = QChar{begin[2].unicode() - 0x20};
 
         begin += 4;
         --end;
@@ -1341,7 +1341,7 @@ QUrlPrivate::setHost(const QString &value, qsizetype from, qsizetype iend, QUrl:
         }
 
         // recurse
-        return setHost(s, 0, s.length(), QUrl::StrictMode);
+        return setHost(s, 0, s.size(), QUrl::StrictMode);
     }
 
     s = qt_ACE_do(value.mid(from, iend - from), NormalizeAce, ForbidLeadingDot, {});
@@ -1377,7 +1377,7 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
     qsizetype colon = -1;
     qsizetype question = -1;
     qsizetype hash = -1;
-    const qsizetype len = url.length();
+    const qsizetype len = url.size();
     const QChar *const begin = url.constData();
     const ushort *const data = reinterpret_cast<const ushort *>(begin);
 
@@ -1628,7 +1628,7 @@ inline QUrlPrivate::ErrorCode QUrlPrivate::validityError(QString *source, qsizet
     if (path.isEmpty())
         return NoError;
     if (path.at(0) == u'/') {
-        if (hasAuthority() || path.length() == 1 || path.at(1) != u'/')
+        if (hasAuthority() || path.size() == 1 || path.at(1) != u'/')
             return NoError;
         if (source) {
             *source = path;
@@ -1648,7 +1648,7 @@ inline QUrlPrivate::ErrorCode QUrlPrivate::validityError(QString *source, qsizet
         return NoError;
 
     // check for a path of "text:text/"
-    for (qsizetype i = 0; i < path.length(); ++i) {
+    for (qsizetype i = 0; i < path.size(); ++i) {
         ushort c = path.at(i).unicode();
         if (c == '/') {
             // found the slash before the colon
@@ -1956,7 +1956,7 @@ void QUrl::setScheme(const QString &scheme)
         d->flags &= ~QUrlPrivate::IsLocalFile;
         d->scheme.clear();
     } else {
-        d->setScheme(scheme, scheme.length(), /* do set error */ true);
+        d->setScheme(scheme, scheme.size(), /* do set error */ true);
     }
 }
 
@@ -2016,7 +2016,7 @@ void QUrl::setAuthority(const QString &authority, ParsingMode mode)
         return;
     }
 
-    d->setAuthority(authority, 0, authority.length(), mode);
+    d->setAuthority(authority, 0, authority.size(), mode);
     if (authority.isNull()) {
         // QUrlPrivate::setAuthority cleared almost everything
         // but it leaves the Host bit set
@@ -2087,7 +2087,7 @@ void QUrl::setUserInfo(const QString &userInfo, ParsingMode mode)
         return;
     }
 
-    d->setUserInfo(trimmed, 0, trimmed.length());
+    d->setUserInfo(trimmed, 0, trimmed.size());
     if (userInfo.isNull()) {
         // QUrlPrivate::setUserInfo cleared almost everything
         // but it leaves the UserName bit set
@@ -2159,7 +2159,7 @@ void QUrl::setUserName(const QString &userName, ParsingMode mode)
         mode = TolerantMode;
     }
 
-    d->setUserName(data, 0, data.length());
+    d->setUserName(data, 0, data.size());
     if (userName.isNull())
         d->sectionIsPresent &= ~QUrlPrivate::UserName;
     else if (mode == StrictMode && !d->validateComponent(QUrlPrivate::UserName, userName))
@@ -2222,7 +2222,7 @@ void QUrl::setPassword(const QString &password, ParsingMode mode)
         mode = TolerantMode;
     }
 
-    d->setPassword(data, 0, data.length());
+    d->setPassword(data, 0, data.size());
     if (password.isNull())
         d->sectionIsPresent &= ~QUrlPrivate::Password;
     else if (mode == StrictMode && !d->validateComponent(QUrlPrivate::Password, password))
@@ -2284,7 +2284,7 @@ void QUrl::setHost(const QString &host, ParsingMode mode)
         mode = TolerantMode;
     }
 
-    if (d->setHost(data, 0, data.length(), mode)) {
+    if (d->setHost(data, 0, data.size(), mode)) {
         if (host.isNull())
             d->sectionIsPresent &= ~QUrlPrivate::Host;
     } else if (!data.startsWith(u'[')) {
@@ -2293,7 +2293,7 @@ void QUrl::setHost(const QString &host, ParsingMode mode)
 
         data.prepend(u'[');
         data.append(u']');
-        if (!d->setHost(data, 0, data.length(), mode)) {
+        if (!d->setHost(data, 0, data.size(), mode)) {
             // failed again
             if (data.contains(u':')) {
                 // source data contains ':', so it's an IPv6 error
@@ -2330,7 +2330,7 @@ QString QUrl::host(ComponentFormattingOptions options) const
     if (d) {
         d->appendHost(result, options);
         if (result.startsWith(u'['))
-            result = result.mid(1, result.length() - 2);
+            result = result.mid(1, result.size() - 2);
     }
     return result;
 }
@@ -2409,7 +2409,7 @@ void QUrl::setPath(const QString &path, ParsingMode mode)
         mode = TolerantMode;
     }
 
-    d->setPath(data, 0, data.length());
+    d->setPath(data, 0, data.size());
 
     // optimized out, since there is no path delimiter
 //    if (path.isNull())
@@ -2545,7 +2545,7 @@ void QUrl::setQuery(const QString &query, ParsingMode mode)
         mode = TolerantMode;
     }
 
-    d->setQuery(data, 0, data.length());
+    d->setQuery(data, 0, data.size());
     if (query.isNull())
         d->sectionIsPresent &= ~QUrlPrivate::Query;
     else if (mode == StrictMode && !d->validateComponent(QUrlPrivate::Query, query))
@@ -2643,7 +2643,7 @@ void QUrl::setFragment(const QString &fragment, ParsingMode mode)
         mode = TolerantMode;
     }
 
-    d->setFragment(data, 0, data.length());
+    d->setFragment(data, 0, data.size());
     if (fragment.isNull())
         d->sectionIsPresent &= ~QUrlPrivate::Fragment;
     else if (mode == StrictMode && !d->validateComponent(QUrlPrivate::Fragment, fragment))
@@ -2937,7 +2937,7 @@ QUrl QUrl::adjusted(QUrl::FormattingOptions options) const
         that.detach();
         QString path;
         d->appendPath(path, options | FullyEncoded, QUrlPrivate::Path);
-        that.d->setPath(path, 0, path.length());
+        that.d->setPath(path, 0, path.size());
     }
     return that;
 }
@@ -3346,7 +3346,7 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
     QString deslashified = fromNativeSeparators(localFile);
 
     // magic for drives on windows
-    if (deslashified.length() > 1 && deslashified.at(1) == u':' && deslashified.at(0) != u'/') {
+    if (deslashified.size() > 1 && deslashified.at(1) == u':' && deslashified.at(0) != u'/') {
         deslashified.prepend(u'/');
     } else if (deslashified.startsWith("//"_L1)) {
         // magic for shared drive on windows
@@ -3367,7 +3367,7 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
             // Path hostname is not a valid URL host, so set it entirely in the path
             // (by leaving deslashified unchanged)
         } else if (indexOfPath > 2) {
-            deslashified = deslashified.right(deslashified.length() - indexOfPath);
+            deslashified = deslashified.right(deslashified.size() - indexOfPath);
         } else {
             deslashified.clear();
         }
@@ -3431,16 +3431,16 @@ bool QUrl::isParentOf(const QUrl &childUrl) const
     if (!d)
         return ((childUrl.scheme().isEmpty())
             && (childUrl.authority().isEmpty())
-            && childPath.length() > 0 && childPath.at(0) == u'/');
+            && childPath.size() > 0 && childPath.at(0) == u'/');
 
     QString ourPath = path();
 
     return ((childUrl.scheme().isEmpty() || d->scheme == childUrl.scheme())
             && (childUrl.authority().isEmpty() || authority() == childUrl.authority())
             &&  childPath.startsWith(ourPath)
-            && ((ourPath.endsWith(u'/') && childPath.length() > ourPath.length())
-                || (!ourPath.endsWith(u'/') && childPath.length() > ourPath.length()
-                    && childPath.at(ourPath.length()) == u'/')));
+            && ((ourPath.endsWith(u'/') && childPath.size() > ourPath.size())
+                || (!ourPath.endsWith(u'/') && childPath.size() > ourPath.size()
+                    && childPath.at(ourPath.size()) == u'/')));
 }
 
 
@@ -3488,7 +3488,7 @@ QDebug operator<<(QDebug d, const QUrl &url)
 
 static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &errorSource, qsizetype errorPosition)
 {
-    QChar c = size_t(errorPosition) < size_t(errorSource.length()) ?
+    QChar c = size_t(errorPosition) < size_t(errorSource.size()) ?
                 errorSource.at(errorPosition) : QChar(QChar::Null);
 
     switch (errorCode) {

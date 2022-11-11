@@ -32,7 +32,7 @@ QSqlTableModelPrivate::~QSqlTableModelPrivate()
 QSqlRecord QSqlTableModelPrivate::record(const QList<QVariant> &values) const
 {
     QSqlRecord r = rec;
-    for (int i = 0; i < r.count() && i < values.count(); ++i)
+    for (int i = 0; i < r.count() && i < values.size(); ++i)
         r.setValue(i, values.at(i));
     return r;
 }
@@ -382,7 +382,7 @@ bool QSqlTableModel::selectRow(int row)
                                               false);
     static const QString wh = Sql::where() + Sql::sp();
     if (d->filter.startsWith(wh, Qt::CaseInsensitive))
-        d->filter.remove(0, wh.length());
+        d->filter.remove(0, wh.size());
 
     QString stmt;
 

@@ -253,7 +253,7 @@ public:
 
 void QSqlRelationalTableModelPrivate::clearChanges()
 {
-    for (int i = 0; i < relations.count(); ++i) {
+    for (int i = 0; i < relations.size(); ++i) {
         QRelation &rel = relations[i];
         rel.clear();
     }
@@ -277,7 +277,7 @@ int QSqlRelationalTableModelPrivate::nameToIndex(const QString &name) const
 
 void QSqlRelationalTableModelPrivate::clearCache()
 {
-    for (int i = 0; i < relations.count(); ++i)
+    for (int i = 0; i < relations.size(); ++i)
         relations[i].clearDictionary();
 
     QSqlTableModelPrivate::clearCache();
@@ -395,7 +395,7 @@ QVariant QSqlRelationalTableModel::data(const QModelIndex &index, int role) cons
 {
     Q_D(const QSqlRelationalTableModel);
 
-    if (role == Qt::DisplayRole && index.column() >= 0 && index.column() < d->relations.count() &&
+    if (role == Qt::DisplayRole && index.column() >= 0 && index.column() < d->relations.size() &&
             d->relations.value(index.column()).isValid()) {
         QRelation &relation = d->relations[index.column()];
         if (!relation.isDictionaryInitialized())
@@ -438,7 +438,7 @@ bool QSqlRelationalTableModel::setData(const QModelIndex &index, const QVariant 
                                        int role)
 {
     Q_D(QSqlRelationalTableModel);
-    if ( role == Qt::EditRole && index.column() > 0 && index.column() < d->relations.count()
+    if ( role == Qt::EditRole && index.column() > 0 && index.column() < d->relations.size()
             && d->relations.value(index.column()).isValid()) {
         QRelation &relation = d->relations[index.column()];
         if (!relation.isDictionaryInitialized())
@@ -603,7 +603,7 @@ QString QSqlRelationalTableModel::selectStatement() const
 QSqlTableModel *QSqlRelationalTableModel::relationModel(int column) const
 {
     Q_D(const QSqlRelationalTableModel);
-    if (column < 0 || column >= d->relations.count())
+    if (column < 0 || column >= d->relations.size())
         return nullptr;
 
     QRelation &relation = const_cast<QSqlRelationalTableModelPrivate *>(d)->relations[column];
@@ -749,7 +749,7 @@ bool QSqlRelationalTableModel::removeColumns(int column, int count, const QModel
 
     for (int i = 0; i < count; ++i) {
         d->baseRec.remove(column);
-        if (d->relations.count() > column)
+        if (d->relations.size() > column)
             d->relations.remove(column);
     }
     return QSqlTableModel::removeColumns(column, count, parent);

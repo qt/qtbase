@@ -45,7 +45,7 @@ QTemporaryFileName::QTemporaryFileName(const QString &templateName)
 {
     // Ensure there is a placeholder mask
     QString qfilename = QDir::fromNativeSeparators(templateName);
-    uint phPos = qfilename.length();
+    uint phPos = qfilename.size();
     uint phLength = 0;
 
     while (phPos != 0) {
@@ -75,7 +75,7 @@ QTemporaryFileName::QTemporaryFileName(const QString &templateName)
         .nativeFilePath();
 
     // Find mask in native path
-    phPos = filename.length();
+    phPos = filename.size();
     phLength = 0;
     while (phPos != 0) {
         --phPos;
@@ -109,8 +109,8 @@ QTemporaryFileName::QTemporaryFileName(const QString &templateName)
 QFileSystemEntry::NativePath QTemporaryFileName::generateNext()
 {
     Q_ASSERT(length != 0);
-    Q_ASSERT(pos < path.length());
-    Q_ASSERT(length <= path.length() - pos);
+    Q_ASSERT(pos < path.size());
+    Q_ASSERT(length <= path.size() - pos);
 
     Char *const placeholderStart = (Char *)path.data() + pos;
     Char *const placeholderEnd = placeholderStart + length;

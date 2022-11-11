@@ -84,7 +84,7 @@ int QTextCopyHelper::appendFragment(int pos, int endPos, int objectIndex)
     }
 
     QString txtToInsert(originalText.constData() + frag->stringPosition + inFragmentOffset, charsToCopy);
-    if (txtToInsert.length() == 1
+    if (txtToInsert.size() == 1
         && (txtToInsert.at(0) == QChar::ParagraphSeparator
             || txtToInsert.at(0) == QTextBeginningOfFrame
             || txtToInsert.at(0) == QTextEndOfFrame
@@ -109,7 +109,7 @@ int QTextCopyHelper::appendFragment(int pos, int endPos, int objectIndex)
         const int userState = nextBlock.userState();
         if (userState != -1)
             dst->blocksFind(insertPos).setUserState(userState);
-        insertPos += txtToInsert.length();
+        insertPos += txtToInsert.size();
     }
 
     return charsToCopy;
@@ -580,7 +580,7 @@ bool QTextHtmlImporter::appendNodeText()
     QString textToInsert;
     textToInsert.reserve(text.size());
 
-    for (int i = 0; i < text.length(); ++i) {
+    for (int i = 0; i < text.size(); ++i) {
         QChar ch = text.at(i);
 
         if (ch.isSpace()
@@ -621,7 +621,7 @@ bool QTextHtmlImporter::appendNodeText()
             || ch == QChar::ParagraphSeparator) {
 
             if (!textToInsert.isEmpty()) {
-                if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && textToInsert.at(textToInsert.length() - 1) == u' ')
+                if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && textToInsert.at(textToInsert.size() - 1) == u' ')
                     textToInsert = textToInsert.chopped(1);
                 cursor.insertText(textToInsert, format);
                 textToInsert.clear();
@@ -906,7 +906,7 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
 
     int tableHeaderRowCount = 0;
     QList<int> rowNodes;
-    rowNodes.reserve(at(tableNodeIdx).children.count());
+    rowNodes.reserve(at(tableNodeIdx).children.size());
     for (int row : at(tableNodeIdx).children) {
         switch (at(row).id) {
             case Html_tr:
@@ -959,7 +959,7 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
                 if (spanInfo.colSpan > 1 || spanInfo.rowSpan > 1)
                     rowColSpans.append(spanInfo);
 
-                columnWidths.resize(qMax(columnWidths.count(), colsInRow));
+                columnWidths.resize(qMax(columnWidths.size(), colsInRow));
                 rowColSpanForColumn.resize(columnWidths.size());
                 for (int i = currentColumn; i < currentColumn + c.tableCellColSpan; ++i) {
                     if (columnWidths.at(i).type() == QTextLength::VariableLength) {
@@ -1041,7 +1041,7 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
         QTextTable *textTable = cursor.insertTable(table.rows, table.columns, fmt.toTableFormat());
         table.frame = textTable;
 
-        for (int i = 0; i < rowColSpans.count(); ++i) {
+        for (int i = 0; i < rowColSpans.size(); ++i) {
             const RowColSpanInfo &nfo = rowColSpans.at(i);
             textTable->mergeCells(nfo.row, nfo.col, nfo.rowSpan, nfo.colSpan);
         }

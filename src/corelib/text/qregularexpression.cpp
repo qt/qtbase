@@ -894,7 +894,7 @@ void QRegularExpressionPrivate::compilePattern()
 
     PCRE2_SIZE patternErrorOffset;
     compiledPattern = pcre2_compile_16(reinterpret_cast<PCRE2_SPTR16>(pattern.constData()),
-                                       pattern.length(),
+                                       pattern.size(),
                                        options,
                                        &errorCode,
                                        &patternErrorOffset,
@@ -1547,10 +1547,10 @@ QString QRegularExpression::errorString() const
         QString errorString;
         int errorStringLength;
         do {
-            errorString.resize(errorString.length() + 64);
+            errorString.resize(errorString.size() + 64);
             errorStringLength = pcre2_get_error_message_16(d->errorCode,
                                                            reinterpret_cast<ushort *>(errorString.data()),
-                                                           errorString.length());
+                                                           errorString.size());
         } while (errorStringLength < 0);
         errorString.resize(errorStringLength);
 

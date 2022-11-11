@@ -241,7 +241,7 @@ public:
     // the number of QByteArrays
     inline int bufferCount() const
     {
-        return buffers.length();
+        return buffers.size();
     }
 
     inline bool isEmpty() const
@@ -267,12 +267,12 @@ public:
 
     inline bool canReadLine() const {
         int i = 0;
-        if (i < buffers.length()) {
+        if (i < buffers.size()) {
             if (buffers.at(i).indexOf('\n', firstPos) != -1)
                 return true;
             ++i;
 
-            for (; i < buffers.length(); i++)
+            for (; i < buffers.size(); i++)
                 if (buffers.at(i).contains('\n'))
                     return true;
         }

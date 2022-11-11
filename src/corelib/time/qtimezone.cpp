@@ -742,7 +742,7 @@ QTimeZone::OffsetDataList QTimeZone::transitions(const QDateTime &fromDateTime,
     if (hasTransitions()) {
         const QTimeZonePrivate::DataList plist = d->transitions(fromDateTime.toMSecsSinceEpoch(),
                                                                 toDateTime.toMSecsSinceEpoch());
-        list.reserve(plist.count());
+        list.reserve(plist.size());
         for (const QTimeZonePrivate::Data &pdata : plist)
             list.append(QTimeZonePrivate::toOffsetData(pdata));
     }

@@ -246,13 +246,13 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
 
         // No clever stuff with QSet and friends: the order for layers matters
         // and the user-provided order must be kept.
-        for (int i = 0; i < m_enabledLayers.count(); ++i) {
+        for (int i = 0; i < m_enabledLayers.size(); ++i) {
             const QByteArray &layerName(m_enabledLayers[i]);
             if (!m_supportedLayers.contains(layerName))
                 m_enabledLayers.removeAt(i--);
         }
         qDebug(lcPlatVk) << "Enabling Vulkan instance layers:" << m_enabledLayers;
-        for (int i = 0; i < m_enabledExtensions.count(); ++i) {
+        for (int i = 0; i < m_enabledExtensions.size(); ++i) {
             const QByteArray &extName(m_enabledExtensions[i]);
             if (!m_supportedExtensions.contains(extName))
                 m_enabledExtensions.removeAt(i--);
@@ -269,7 +269,7 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
         for (const QByteArray &ba : qAsConst(m_enabledLayers))
             layerNameVec.append(ba.constData());
         if (!layerNameVec.isEmpty()) {
-            instInfo.enabledLayerCount = layerNameVec.count();
+            instInfo.enabledLayerCount = layerNameVec.size();
             instInfo.ppEnabledLayerNames = layerNameVec.constData();
         }
 
@@ -277,7 +277,7 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
         for (const QByteArray &ba : qAsConst(m_enabledExtensions))
             extNameVec.append(ba.constData());
         if (!extNameVec.isEmpty()) {
-            instInfo.enabledExtensionCount = extNameVec.count();
+            instInfo.enabledExtensionCount = extNameVec.size();
             instInfo.ppEnabledExtensionNames = extNameVec.constData();
         }
 

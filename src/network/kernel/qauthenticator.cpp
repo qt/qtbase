@@ -657,7 +657,7 @@ QAuthenticatorPrivate::parseDigestAuthenticationChallenge(QByteArrayView challen
     QHash<QByteArray, QByteArray> options;
     // parse the challenge
     const char *d = challenge.data();
-    const char *end = d + challenge.length();
+    const char *end = d + challenge.size();
     while (d < end) {
         while (d < end && (*d == ' ' || *d == '\n' || *d == '\r'))
             ++d;
@@ -798,7 +798,7 @@ QByteArray QAuthenticatorPrivate::digestMd5Response(QByteArrayView challenge, QB
 
     ++nonceCount;
     QByteArray nonceCountString = QByteArray::number(nonceCount, 16);
-    while (nonceCountString.length() < 8)
+    while (nonceCountString.size() < 8)
         nonceCountString.prepend('0');
 
     QByteArray nonce = options.value("nonce");
@@ -1079,7 +1079,7 @@ static int qEncodeNtlmString(QNtlmBuffer& buf, int offset, const QString& s, boo
 {
     if (!unicode)
         return qEncodeNtlmBuffer(buf, offset, s.toLatin1());
-    buf.len = 2 * s.length();
+    buf.len = 2 * s.size();
     buf.maxLen = buf.len;
     buf.offset = (offset + 1) & ~1;
     return buf.offset + buf.len;
@@ -1201,7 +1201,7 @@ static QByteArray qNtlmPhase1()
 
 static QByteArray qStringAsUcs2Le(const QString& src)
 {
-    QByteArray rc(2*src.length(), 0);
+    QByteArray rc(2*src.size(), 0);
     unsigned short *d = (unsigned short*)rc.data();
     for (QChar ch : src)
         *d++ = qToLittleEndian(quint16(ch.unicode()));
@@ -1214,7 +1214,7 @@ static QString qStringFromUcs2Le(QByteArray src)
 {
     Q_ASSERT(src.size() % 2 == 0);
     unsigned short *d = (unsigned short*)src.data();
-    for (int i = 0; i < src.length() / 2; ++i) {
+    for (int i = 0; i < src.size() / 2; ++i) {
         d[i] = qFromLittleEndian(d[i]);
     }
     return QString((const QChar *)src.data(), src.size()/2);
@@ -1256,7 +1256,7 @@ QByteArray qEncodeHmacMd5(QByteArray &key, QByteArrayView message)
     hash.reset();
     // Adjust the key length to blockSize
 
-    if (blockSize < key.length()) {
+    if (blockSize < key.size()) {
         hash.addData(key);
         key = hash.result(); //MD5 will always return 16 bytes length output
     }
@@ -1759,7 +1759,7 @@ static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, QByteArrayView cha
 
     if (!challenge.isEmpty()) {
         inBuf.value = const_cast<char*>(challenge.data());
-        inBuf.length = challenge.length();
+        inBuf.length = challenge.size();
     }
 
     majStat = gss_init_sec_context(&minStat,

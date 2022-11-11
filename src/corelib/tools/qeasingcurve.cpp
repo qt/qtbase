@@ -447,7 +447,7 @@ struct BezierEase : public QEasingCurveFunction
     {
         if (_bezierCurves.constLast() == QPointF(1.0, 1.0)) {
             _init = true;
-            _curveCount = _bezierCurves.count() / 3;
+            _curveCount = _bezierCurves.size() / 3;
 
             for (int i=0; i < _curveCount; i++) {
                 _intervals[i] = _bezierCurves.at(i * 3 + 2).x();
@@ -466,17 +466,17 @@ struct BezierEase : public QEasingCurveFunction
                     _curves[0].p3y = _bezierCurves.at(2).y();
 
                 } else if (i == (_curveCount - 1)) {
-                    _curves[i].p0x = _bezierCurves.at(_bezierCurves.count() - 4).x();
-                    _curves[i].p0y = _bezierCurves.at(_bezierCurves.count() - 4).y();
+                    _curves[i].p0x = _bezierCurves.at(_bezierCurves.size() - 4).x();
+                    _curves[i].p0y = _bezierCurves.at(_bezierCurves.size() - 4).y();
 
-                    _curves[i].p1x = _bezierCurves.at(_bezierCurves.count() - 3).x();
-                    _curves[i].p1y = _bezierCurves.at(_bezierCurves.count() - 3).y();
+                    _curves[i].p1x = _bezierCurves.at(_bezierCurves.size() - 3).x();
+                    _curves[i].p1y = _bezierCurves.at(_bezierCurves.size() - 3).y();
 
-                    _curves[i].p2x = _bezierCurves.at(_bezierCurves.count() - 2).x();
-                    _curves[i].p2y = _bezierCurves.at(_bezierCurves.count() - 2).y();
+                    _curves[i].p2x = _bezierCurves.at(_bezierCurves.size() - 2).x();
+                    _curves[i].p2y = _bezierCurves.at(_bezierCurves.size() - 2).y();
 
-                    _curves[i].p3x = _bezierCurves.at(_bezierCurves.count() - 1).x();
-                    _curves[i].p3y = _bezierCurves.at(_bezierCurves.count() - 1).y();
+                    _curves[i].p3x = _bezierCurves.at(_bezierCurves.size() - 1).x();
+                    _curves[i].p3y = _bezierCurves.at(_bezierCurves.size() - 1).y();
                 } else {
                     _curves[i].p0x = _bezierCurves.at(i * 3 - 1).x();
                     _curves[i].p0y = _bezierCurves.at(i * 3 - 1).y();
@@ -535,7 +535,7 @@ struct BezierEase : public QEasingCurveFunction
 
     qreal value(qreal x) override
     {
-        Q_ASSERT(_bezierCurves.count() % 3 == 0);
+        Q_ASSERT(_bezierCurves.size() % 3 == 0);
 
         if (_bezierCurves.isEmpty()) {
             return x;
@@ -869,7 +869,7 @@ struct TCBEase : public BezierEase
 
     qreal value(qreal x) override
     {
-        Q_ASSERT(_bezierCurves.count() % 3 == 0);
+        Q_ASSERT(_bezierCurves.size() % 3 == 0);
 
         if (_bezierCurves.isEmpty()) {
             qWarning("QEasingCurve: Invalid tcb curve");
@@ -1274,7 +1274,7 @@ void QEasingCurve::addCubicBezierSegment(const QPointF & c1, const QPointF & c2,
 
 QList<QPointF> static inline tcbToBezier(const TCBPoints &tcbPoints)
 {
-    const int count = tcbPoints.count();
+    const int count = tcbPoints.size();
     QList<QPointF> bezierPoints;
     bezierPoints.reserve(3 * (count - 1));
 

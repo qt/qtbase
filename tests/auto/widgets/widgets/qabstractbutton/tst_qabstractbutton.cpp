@@ -516,24 +516,24 @@ void tst_QAbstractButton::animateClick()
     button.animateClick();
 
     QVERIFY(button.isDown());
-    QCOMPARE(pressedSpy.count(), 1);
-    QCOMPARE(releasedSpy.count(), 0);
-    QCOMPARE(clickedSpy.count(), 0);
+    QCOMPARE(pressedSpy.size(), 1);
+    QCOMPARE(releasedSpy.size(), 0);
+    QCOMPARE(clickedSpy.size(), 0);
     qApp->processEvents(QEventLoop::AllEvents, 10);
     // QAbstractButton starts a 100ms timer which performs the click. If it
     // took more than 100ms to get here, then the button might no longer be down.
     if (elapsed.elapsed() < 100) {
         QVERIFY(button.isDown());
-        QCOMPARE(pressedSpy.count(), 1);
-        QCOMPARE(releasedSpy.count(), 0);
-        QCOMPARE(clickedSpy.count(), 0);
+        QCOMPARE(pressedSpy.size(), 1);
+        QCOMPARE(releasedSpy.size(), 0);
+        QCOMPARE(clickedSpy.size(), 0);
     }
     QTRY_VERIFY(!button.isDown());
     // but once the button has been clicked, it must have taken at least 100ms
     QVERIFY(elapsed.elapsed() >= 100);
-    QCOMPARE(pressedSpy.count(), 1);
-    QCOMPARE(releasedSpy.count(), 1);
-    QCOMPARE(clickedSpy.count(), 1);
+    QCOMPARE(pressedSpy.size(), 1);
+    QCOMPARE(releasedSpy.size(), 1);
+    QCOMPARE(clickedSpy.size(), 1);
 }
 
 #if QT_CONFIG(shortcut)
@@ -556,9 +556,9 @@ void tst_QAbstractButton::shortcutEvents()
 
     QTest::qWait(1000); // ensure animate timer is expired
 
-    QCOMPARE(pressedSpy.count(), 3);
-    QCOMPARE(releasedSpy.count(), 3);
-    QCOMPARE(clickedSpy.count(), 3);
+    QCOMPARE(pressedSpy.size(), 3);
+    QCOMPARE(releasedSpy.size(), 3);
+    QCOMPARE(clickedSpy.size(), 3);
 }
 
 #endif // QT_CONFIG(shortcut)
@@ -600,14 +600,14 @@ void tst_QAbstractButton::mouseReleased() // QTBUG-53244
     QSignalSpy spyRelease(&button, &QAbstractButton::released);
 
     QTest::mousePress(&button, Qt::LeftButton);
-    QCOMPARE(spyPress.count(), 1);
+    QCOMPARE(spyPress.size(), 1);
     QCOMPARE(button.isDown(), true);
-    QCOMPARE(spyRelease.count(), 0);
+    QCOMPARE(spyRelease.size(), 0);
 
     QTest::mouseClick(&button, Qt::RightButton);
-    QCOMPARE(spyPress.count(), 1);
+    QCOMPARE(spyPress.size(), 1);
     QCOMPARE(button.isDown(), true);
-    QCOMPARE(spyRelease.count(), 0);
+    QCOMPARE(spyRelease.size(), 0);
 
     QPointF posOutOfWidget = QPointF(30, 30);
     QMouseEvent me(QEvent::MouseMove,
@@ -617,9 +617,9 @@ void tst_QAbstractButton::mouseReleased() // QTBUG-53244
 
     qApp->sendEvent(&button, &me);
     // should emit released signal once mouse is dragging out of boundary
-    QCOMPARE(spyPress.count(), 1);
+    QCOMPARE(spyPress.size(), 1);
     QCOMPARE(button.isDown(), false);
-    QCOMPARE(spyRelease.count(), 1);
+    QCOMPARE(spyRelease.size(), 1);
 }
 
 #ifdef QT_KEYPAD_NAVIGATION
@@ -684,7 +684,7 @@ void tst_QAbstractButton::buttonPressKeys()
     const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
                                          ->themeHint(QPlatformTheme::ButtonPressKeys)
                                          .value<QList<Qt::Key>>();
-    for (uint i = 0; i < buttonPressKeys.length(); ++i) {
+    for (uint i = 0; i < buttonPressKeys.size(); ++i) {
         QTest::keyClick(testWidget, buttonPressKeys[i]);
         QCOMPARE(click_count, i + 1);
     }

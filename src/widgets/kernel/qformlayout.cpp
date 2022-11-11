@@ -1643,7 +1643,7 @@ void QFormLayout::addItem(QLayoutItem *item)
 int QFormLayout::count() const
 {
     Q_D(const QFormLayout);
-    return d->m_things.count();
+    return d->m_things.size();
 }
 
 /*!

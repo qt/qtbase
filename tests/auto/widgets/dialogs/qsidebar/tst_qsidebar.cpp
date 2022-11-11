@@ -38,9 +38,9 @@ void tst_QSidebar::setUrls()
     QCOMPARE(model->rowCount(), 0);
     qsidebar.setUrls(urls);
     QCOMPARE(qsidebar.urls(), urls);
-    QCOMPARE(model->rowCount(), urls.count());
+    QCOMPARE(model->rowCount(), urls.size());
     qsidebar.setUrls(urls);
-    QCOMPARE(model->rowCount(), urls.count());
+    QCOMPARE(model->rowCount(), urls.size());
 }
 
 void tst_QSidebar::selectUrls()
@@ -55,7 +55,7 @@ void tst_QSidebar::selectUrls()
 
     QSignalSpy spy(&qsidebar, SIGNAL(goToUrl(QUrl)));
     qsidebar.selectUrl(urls.at(0));
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QSidebar::addUrls()
@@ -171,7 +171,7 @@ void tst_QSidebar::goToUrl()
     QSignalSpy spy(&qsidebar, SIGNAL(goToUrl(QUrl)));
     QTest::mousePress(qsidebar.viewport(), Qt::LeftButton, {},
                       qsidebar.visualRect(qsidebar.model()->index(0, 0)).center());
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE((spy.value(0)).at(0).toUrl(), urls.first());
 }
 

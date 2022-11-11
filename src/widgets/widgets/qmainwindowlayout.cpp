@@ -106,7 +106,7 @@ static void dumpLayout(QTextStream &qout, const QDockAreaLayoutInfo &layout, QSt
 
     indent += "  "_L1;
 
-    for (int i = 0; i < layout.item_list.count(); ++i) {
+    for (int i = 0; i < layout.item_list.size(); ++i) {
         qout << indent << "Item: " << i << '\n';
         dumpLayout(qout, layout.item_list.at(i), indent + "  "_L1);
     }
@@ -366,7 +366,7 @@ QDockWidget *QDockWidgetGroupWindow::activeTabbedDockWidget() const
         }
     }
     if (!dw) {
-        for (int i = 0; !dw && i < info->item_list.count(); ++i) {
+        for (int i = 0; !dw && i < info->item_list.size(); ++i) {
             const QDockAreaLayoutItem &item = info->item_list.at(i);
             if (item.skip())
                 continue;
@@ -1470,7 +1470,7 @@ inline static Qt::DockWidgetArea toDockWidgetArea(int pos)
 #if QT_CONFIG(dockwidget)
 static bool isAreaAllowed(QWidget *widget, const QList<int> &path)
 {
-    Q_ASSERT_X((path.count() > 1), "isAreaAllowed", "invalid path size");
+    Q_ASSERT_X((path.size() > 1), "isAreaAllowed", "invalid path size");
     const Qt::DockWidgetArea area = toDockWidgetArea(path[1]);
 
     // Read permissions directly from a single dock widget
@@ -1485,7 +1485,7 @@ static bool isAreaAllowed(QWidget *widget, const QList<int> &path)
     if (QDockWidgetGroupWindow *dwgw = qobject_cast<QDockWidgetGroupWindow *>(widget)) {
         const QList<QDockWidget *> children = dwgw->findChildren<QDockWidget *>(QString(), Qt::FindDirectChildrenOnly);
 
-        if (children.count() == 1) {
+        if (children.size() == 1) {
             // Group window has a single child => read its permissions
             const bool allowed = children.at(0)->isAreaAllowed(area);
             if (!allowed)
@@ -1493,7 +1493,7 @@ static bool isAreaAllowed(QWidget *widget, const QList<int> &path)
             return allowed;
         } else {
             // Group window has more than one or no children => dock it anywhere
-            qCDebug(lcQpaDockWidgets) << "DockWidgetGroupWindow" << widget << "has" << children.count() << "children:";
+            qCDebug(lcQpaDockWidgets) << "DockWidgetGroupWindow" << widget << "has" << children.size() << "children:";
             qCDebug(lcQpaDockWidgets) << children;
             qCDebug(lcQpaDockWidgets) << "DockWidgetGroupWindow" << widget << "can dock at" << area << "and anywhere else.";
             return true;

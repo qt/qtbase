@@ -122,7 +122,7 @@ void tst_QMessageAuthenticationCode::result_incremental()
     QFETCH(QByteArray, message);
     QFETCH(QByteArray, code);
 
-    int index = message.length() / 2;
+    int index = message.size() / 2;
     QByteArray leftPart(message.mid(0, index));
     QByteArray rightPart(message.mid(index));
 

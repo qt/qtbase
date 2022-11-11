@@ -661,7 +661,7 @@ void tst_QGridLayout::spacingsAndMargins()
         QSKIP("The screen is too small to run this test case");
 
 // We are relying on the order here...
-    for (int pi = 0; pi < sizehinters.count(); ++pi) {
+    for (int pi = 0; pi < sizehinters.size(); ++pi) {
         QPoint pt = sizehinters.at(pi)->mapTo(&toplevel, QPoint(0, 0));
         QCOMPARE(pt, expectedpositions.at(pi));
     }
@@ -831,7 +831,7 @@ void tst_QGridLayout::minMaxSize()
         QList<QPointer<SizeHinterFrame> > sizehinters;
         for (int i = 0; i < rows; ++i) {
             for (int j = 0; j < columns; ++j) {
-                SizeInfo si = sizeinfos.at(sizehinters.count());
+                SizeInfo si = sizeinfos.at(sizehinters.size());
                 int numpixels = si.hfwNumPixels;
                 if (pass == 1 && numpixels == -1)
                     numpixels = -2; //### yuk, (and don't fake it if it already tests sizehint)
@@ -860,7 +860,7 @@ void tst_QGridLayout::minMaxSize()
             QTRY_COMPARE(toplevel.size(), toplevel.sizeHint());
         }
         // We are relying on the order here...
-        for (int pi = 0; pi < sizehinters.count(); ++pi) {
+        for (int pi = 0; pi < sizehinters.size(); ++pi) {
             QPoint pt = sizehinters.at(pi)->mapTo(&toplevel, QPoint(0, 0));
             QCOMPARE(pt, sizeinfos.at(pi).expectedPos);
         }
@@ -1030,7 +1030,7 @@ void tst_QGridLayout::styleDependentSpacingsAndMargins()
     widget.adjustSize();
     QApplication::processEvents();
 
-    for (int pi = 0; pi < expectedpositions.count(); ++pi) {
+    for (int pi = 0; pi < expectedpositions.size(); ++pi) {
         QCOMPARE(sizehinters.at(pi)->pos(), expectedpositions.at(pi));
     }
 }
@@ -1420,7 +1420,7 @@ void tst_QGridLayout::layoutSpacing()
 
     QLayout *layout = widget->layout();
     QVERIFY(layout);
-    for (int pi = 0; pi < expectedpositions.count(); ++pi) {
+    for (int pi = 0; pi < expectedpositions.size(); ++pi) {
         QLayoutItem *item = layout->itemAt(pi);
         //qDebug()  << item->widget()->pos();
         QCOMPARE(item->widget()->pos(), expectedpositions.at(pi));

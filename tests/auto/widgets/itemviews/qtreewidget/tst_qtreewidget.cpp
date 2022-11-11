@@ -281,8 +281,8 @@ void tst_QTreeWidget::addTopLevelItem()
     while (!tops.isEmpty()) {
         TreeItem *ti = tops.takeFirst();
         delete ti;
-        QCOMPARE(tree.topLevelItemCount(), tops.count());
-        for (int i = 0; i < tops.count(); ++i)
+        QCOMPARE(tree.topLevelItemCount(), tops.size());
+        for (int i = 0; i < tops.size(); ++i)
             QCOMPARE(tree.topLevelItem(i), tops.at(i));
     }
 
@@ -378,12 +378,12 @@ void tst_QTreeWidget::currentItem()
             tree.setCurrentItem(item);
             QCOMPARE(tree.currentItem(), item);
 
-            QCOMPARE(currentItemChangedSpy.count(), 1);
+            QCOMPARE(currentItemChangedSpy.size(), 1);
             QVariantList args = currentItemChangedSpy.takeFirst();
             QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
             QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(1)), previous);
 
-            QCOMPARE(itemSelectionChangedSpy.count(), 1);
+            QCOMPARE(itemSelectionChangedSpy.size(), 1);
             itemSelectionChangedSpy.clear();
 
             previous = item;
@@ -396,15 +396,15 @@ void tst_QTreeWidget::currentItem()
                 if (!currentItemChangedSpy.isEmpty()) {
                     // ### we get a currentItemChanged() when what really
                     // changed was just currentColumn(). Should it be like this?
-                    QCOMPARE(currentItemChangedSpy.count(), 1);
+                    QCOMPARE(currentItemChangedSpy.size(), 1);
                     QVariantList args = currentItemChangedSpy.takeFirst();
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(1)), item);
                     if (tree.selectionBehavior() == QAbstractItemView::SelectItems) {
-                        QCOMPARE(itemSelectionChangedSpy.count(), 1);
+                        QCOMPARE(itemSelectionChangedSpy.size(), 1);
                         itemSelectionChangedSpy.clear();
                     } else {
-                        QCOMPARE(itemSelectionChangedSpy.count(), 0);
+                        QCOMPARE(itemSelectionChangedSpy.size(), 0);
                     }
                 }
             }
@@ -464,7 +464,7 @@ void tst_QTreeWidget::editItem()
                 QTest::keyClick(editor, Qt::Key_A);
                 QTest::keyClick(editor, Qt::Key_Enter);
                 QCoreApplication::processEvents();
-                QCOMPARE(itemChangedSpy.count(), 1);
+                QCOMPARE(itemChangedSpy.size(), 1);
                 QVariantList args = itemChangedSpy.takeFirst();
                 QCOMPARE(qvariant_cast<QTreeWidgetItem *>(args.at(0)), item);
                 QCOMPARE(qvariant_cast<int>(args.at(1)), col);
@@ -620,7 +620,7 @@ void tst_QTreeWidget::setItemHidden2()
 {
     // From Task 78587
     const QStringList hl({"ID", "Desc"});
-    testWidget->setColumnCount(hl.count());
+    testWidget->setColumnCount(hl.size());
     testWidget->setHeaderLabels(hl);
     testWidget->setSortingEnabled(true);
 
@@ -821,7 +821,7 @@ void tst_QTreeWidget::selectedItems()
 
     // check selectedItems
     const auto sel = testWidget->selectedItems();
-    QCOMPARE(sel.count(), expectedItems.count());
+    QCOMPARE(sel.size(), expectedItems.size());
     for (const auto &itemPath : expectedItems) {
         QTreeWidgetItem *item = nullptr;
         for (int index : itemPath) {
@@ -857,7 +857,7 @@ void tst_QTreeWidget::selectedItems()
         }
         item->setSelected(false);
     }
-    QCOMPARE(testWidget->selectedItems().count(), 0);
+    QCOMPARE(testWidget->selectedItems().size(), 0);
 }
 
 void tst_QTreeWidget::itemAssignment()
@@ -1090,9 +1090,9 @@ void tst_QTreeWidget::findItems()
 
     QList<QTreeWidgetItem*> result = testWidget->findItems(pattern,
                                                            Qt::MatchExactly|Qt::MatchRecursive);
-    QCOMPARE(result.count(), resultCount);
+    QCOMPARE(result.size(), resultCount);
 
-    for (int k = 0; k < result.count() && k < resultText.count(); ++k)
+    for (int k = 0; k < result.size() && k < resultText.size(); ++k)
         QCOMPARE(result.at(k)->text(column), resultText.at(k));
 }
 
@@ -1110,7 +1110,7 @@ void tst_QTreeWidget::findItemsInColumn()
 
     // Recursively search column one for 400.
     QList<QTreeWidgetItem*> items = testWidget->findItems("400", Qt::MatchExactly|Qt::MatchRecursive, 1);
-    QCOMPARE(items.count(), 1);
+    QCOMPARE(items.size(), 1);
 }
 
 void tst_QTreeWidget::sortItems_data()
@@ -1177,16 +1177,16 @@ void tst_QTreeWidget::sortItems()
     testWidget->sortItems(column, order);
     QCOMPARE(testWidget->sortColumn(), column);
 
-    for (int k = 0; k < topLevelResult.count(); ++k) {
+    for (int k = 0; k < topLevelResult.size(); ++k) {
         QTreeWidgetItem *item = testWidget->topLevelItem(k);
         QCOMPARE(item->text(column), topLevelResult.at(k));
-        for (int l = 0; l < childResult.count(); ++l)
+        for (int l = 0; l < childResult.size(); ++l)
             QCOMPARE(item->child(l)->text(column), childResult.at(l));
     }
 
-    for (int m = 0; m < tops.count(); ++m)
+    for (int m = 0; m < tops.size(); ++m)
         QCOMPARE(tops.at(m).row(), expectedTopRows.at(m));
-    for (int n = 0; n < children.count(); ++n)
+    for (int n = 0; n < children.size(); ++n)
         QCOMPARE(children.at(n).row(), expectedChildRows.at(n));
 }
 
@@ -1346,17 +1346,17 @@ void tst_QTreeWidget::insertTopLevelItems_data()
     const QStringList insert{ "baz" };
 
     QTest::newRow("Insert at count") << initial << insert
-                                     << initial.count() << initial.count()
-                                     << initial.count() << initial.count();
+                                     << initial.size() << initial.size()
+                                     << initial.size() << initial.size();
     QTest::newRow("Insert in the middle") << initial << insert
-                                          << (initial.count() / 2) << (initial.count() / 2)
-                                          << (initial.count() / 2) << (initial.count() / 2);
+                                          << (initial.size() / 2) << (initial.size() / 2)
+                                          << (initial.size() / 2) << (initial.size() / 2);
     QTest::newRow("Insert less than 0") << initial << insert
                                         << -1 << -1
                                         << -1 << -1;
     QTest::newRow("Insert beyond count") << initial << insert
-                                         << initial.count() + 1 << -1
-                                         << initial.count() + 1 << -1;
+                                         << initial.size() + 1 << -1
+                                         << initial.size() + 1 << -1;
 }
 
 void tst_QTreeWidget::insertTopLevelItems()
@@ -1371,26 +1371,26 @@ void tst_QTreeWidget::insertTopLevelItems()
 
     { // insert the initial items
         QCOMPARE(testWidget->topLevelItemCount(), 0);
-        for (int i = 0; i < initialText.count(); ++i) {
+        for (int i = 0; i < initialText.size(); ++i) {
             QTreeWidgetItem *top = new QTreeWidgetItem(QStringList(initialText.at(i)));
             testWidget->addTopLevelItem(top);
             QCOMPARE(testWidget->indexOfTopLevelItem(top), i);
         }
-        QCOMPARE(testWidget->topLevelItemCount(), initialText.count());
+        QCOMPARE(testWidget->topLevelItemCount(), initialText.size());
     }
 
     { // test adding children
         QTreeWidgetItem *topLevel = testWidget->topLevelItem(0);
-        for (int i = 0; i < initialText.count(); ++i)
+        for (int i = 0; i < initialText.size(); ++i)
             topLevel->addChild(new QTreeWidgetItem(QStringList(initialText.at(i))));
-        QCOMPARE(topLevel->childCount(), initialText.count());
+        QCOMPARE(topLevel->childCount(), initialText.size());
     }
 
     { // test adding more top level items
         QTreeWidgetItem *topsy = new QTreeWidgetItem(QStringList(insertText.at(0)));
         testWidget->insertTopLevelItem(insertTopLevelIndex, topsy);
         if (expectedTopLevelIndex == -1) {
-            QCOMPARE(testWidget->topLevelItemCount(), initialText.count());
+            QCOMPARE(testWidget->topLevelItemCount(), initialText.size());
             delete topsy;
         } else {
             QTreeWidgetItem *item = testWidget->topLevelItem(expectedTopLevelIndex);
@@ -1406,7 +1406,7 @@ void tst_QTreeWidget::insertTopLevelItems()
         QTreeWidgetItem *child = new QTreeWidgetItem(QStringList(insertText.at(0)));
         topLevel->insertChild(insertChildIndex, child);
         if (expectedChildIndex == -1) {
-            QCOMPARE(topLevel->childCount(), initialText.count());
+            QCOMPARE(topLevel->childCount(), initialText.size());
             delete child;
         } else {
             QTreeWidgetItem *item = topLevel->child(expectedChildIndex);
@@ -1592,7 +1592,7 @@ void tst_QTreeWidget::scrollToItem()
 void tst_QTreeWidget::setSortingEnabled()
 {
     const QStringList hl{ "ID" };
-    testWidget->setColumnCount(hl.count());
+    testWidget->setColumnCount(hl.size());
     testWidget->setHeaderLabels(hl);
 
     QTreeWidgetItem *item1 = new QTreeWidgetItem(testWidget);
@@ -1661,7 +1661,7 @@ void tst_QTreeWidget::addChild()
         QList<QTreeWidgetItem*> taken = item->takeChildren();
         QCOMPARE(taken, children);
         QCOMPARE(item->childCount(), 0);
-        for (int i = 0; i < taken.count(); ++i) {
+        for (int i = 0; i < taken.size(); ++i) {
             QCOMPARE(taken.at(i)->parent(), nullptr);
             QCOMPARE(taken.at(i)->treeWidget(), nullptr);
             item->addChild(taken.at(i)); // re-add
@@ -1671,8 +1671,8 @@ void tst_QTreeWidget::addChild()
         while (!children.isEmpty()) {
             QTreeWidgetItem *ti = children.takeFirst();
             delete ti;
-            QCOMPARE(item->childCount(), children.count());
-            for (int i = 0; i < children.count(); ++i)
+            QCOMPARE(item->childCount(), children.size());
+            for (int i = 0; i < children.size(); ++i)
                 QCOMPARE(item->child(i), children.at(i));
         }
 
@@ -1719,9 +1719,9 @@ void tst_QTreeWidget::setData()
         QSignalSpy itemChangedSpy(
             testWidget, &QTreeWidget::itemChanged);
         headerItem->setText(0, "test");
-        QCOMPARE(dataChangedSpy.count(), 0);
-        QCOMPARE(headerDataChangedSpy.count(), 1);
-        QCOMPARE(itemChangedSpy.count(), 0); // no itemChanged() signal for header item
+        QCOMPARE(dataChangedSpy.size(), 0);
+        QCOMPARE(headerDataChangedSpy.size(), 1);
+        QCOMPARE(itemChangedSpy.size(), 0); // no itemChanged() signal for header item
 
         headerItem->setData(-1, -1, QVariant());
     }
@@ -1739,24 +1739,24 @@ void tst_QTreeWidget::setData()
                     const QString text = QLatin1String("text ") + iS;
                     item->setText(j, text);
                     QCOMPARE(item->text(j), text);
-                    QCOMPARE(itemChangedSpy.count(), 1);
+                    QCOMPARE(itemChangedSpy.size(), 1);
                     args = itemChangedSpy.takeFirst();
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
                     item->setText(j, text);
-                    QCOMPARE(itemChangedSpy.count(), 0);
+                    QCOMPARE(itemChangedSpy.size(), 0);
 
                     QPixmap pixmap(32, 32);
                     pixmap.fill((i == 1) ? Qt::red : Qt::green);
                     QIcon icon(pixmap);
                     item->setIcon(j, icon);
                     QCOMPARE(item->icon(j), icon);
-                    QCOMPARE(itemChangedSpy.count(), 1);
+                    QCOMPARE(itemChangedSpy.size(), 1);
                     args = itemChangedSpy.takeFirst();
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
                     item->setIcon(j, icon);
-                    QCOMPARE(itemChangedSpy.count(), 1);
+                    QCOMPARE(itemChangedSpy.size(), 1);
                     args = itemChangedSpy.takeFirst();
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
@@ -1764,94 +1764,94 @@ void tst_QTreeWidget::setData()
                     const QString toolTip = QLatin1String("toolTip ") + iS;
                     item->setToolTip(j, toolTip);
                     QCOMPARE(item->toolTip(j), toolTip);
-                    QCOMPARE(itemChangedSpy.count(), 1);
+                    QCOMPARE(itemChangedSpy.size(), 1);
                     args = itemChangedSpy.takeFirst();
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
                     item->setToolTip(j, toolTip);
-                    QCOMPARE(itemChangedSpy.count(), 0);
+                    QCOMPARE(itemChangedSpy.size(), 0);
 
                     const QString statusTip = QLatin1String("statusTip ") + iS;
                     item->setStatusTip(j, statusTip);
                     QCOMPARE(item->statusTip(j), statusTip);
-                    QCOMPARE(itemChangedSpy.count(), 1);
+                    QCOMPARE(itemChangedSpy.size(), 1);
                     args = itemChangedSpy.takeFirst();
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
                     item->setStatusTip(j, statusTip);
-                    QCOMPARE(itemChangedSpy.count(), 0);
+                    QCOMPARE(itemChangedSpy.size(), 0);
 
                     const QString whatsThis = QLatin1String("whatsThis ") + iS;
                     item->setWhatsThis(j, whatsThis);
                     QCOMPARE(item->whatsThis(j), whatsThis);
-                    QCOMPARE(itemChangedSpy.count(), 1);
+                    QCOMPARE(itemChangedSpy.size(), 1);
                     args = itemChangedSpy.takeFirst();
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
                     item->setWhatsThis(j, whatsThis);
-                    QCOMPARE(itemChangedSpy.count(), 0);
+                    QCOMPARE(itemChangedSpy.size(), 0);
 
                     QSize sizeHint(64*i, 48*i);
                     item->setSizeHint(j, sizeHint);
                     QCOMPARE(item->sizeHint(j), sizeHint);
-                    QCOMPARE(itemChangedSpy.count(), 1);
+                    QCOMPARE(itemChangedSpy.size(), 1);
                     args = itemChangedSpy.takeFirst();
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
                     item->setSizeHint(j, sizeHint);
-                    QCOMPARE(itemChangedSpy.count(), 0);
+                    QCOMPARE(itemChangedSpy.size(), 0);
 
                     QFont font;
                     item->setFont(j, font);
                     QCOMPARE(item->font(j), font);
-                    QCOMPARE(itemChangedSpy.count(), 1);
+                    QCOMPARE(itemChangedSpy.size(), 1);
                     args = itemChangedSpy.takeFirst();
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
                     item->setFont(j, font);
-                    QCOMPARE(itemChangedSpy.count(), 0);
+                    QCOMPARE(itemChangedSpy.size(), 0);
 
                     Qt::Alignment textAlignment((i == 1)
                                                 ? Qt::AlignLeft|Qt::AlignVCenter
                                                 : Qt::AlignRight);
                     item->setTextAlignment(j, textAlignment);
                     QCOMPARE(item->textAlignment(j), int(textAlignment));
-                    QCOMPARE(itemChangedSpy.count(), 1);
+                    QCOMPARE(itemChangedSpy.size(), 1);
                     args = itemChangedSpy.takeFirst();
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
                     item->setTextAlignment(j, textAlignment);
-                    QCOMPARE(itemChangedSpy.count(), 0);
+                    QCOMPARE(itemChangedSpy.size(), 0);
 
                     QColor backgroundColor((i == 1) ? Qt::blue : Qt::yellow);
                     item->setBackground(j, backgroundColor);
                     QCOMPARE(item->background(j).color(), backgroundColor);
-                    QCOMPARE(itemChangedSpy.count(), 1);
+                    QCOMPARE(itemChangedSpy.size(), 1);
                     args = itemChangedSpy.takeFirst();
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
                     item->setBackground(j, backgroundColor);
-                    QCOMPARE(itemChangedSpy.count(), 0);
+                    QCOMPARE(itemChangedSpy.size(), 0);
 
                     const QColor foregroundColor((i == 1) ? Qt::green : Qt::cyan);
                     item->setForeground(j, foregroundColor);
                     QCOMPARE(item->foreground(j), foregroundColor);
-                    QCOMPARE(itemChangedSpy.count(), 1);
+                    QCOMPARE(itemChangedSpy.size(), 1);
                     args = itemChangedSpy.takeFirst();
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
                     item->setForeground(j, foregroundColor);
-                    QCOMPARE(itemChangedSpy.count(), 0);
+                    QCOMPARE(itemChangedSpy.size(), 0);
 
                     Qt::CheckState checkState((i == 1) ? Qt::PartiallyChecked : Qt::Checked);
                     item->setCheckState(j, checkState);
                     QCOMPARE(item->checkState(j), checkState);
-                    QCOMPARE(itemChangedSpy.count(), 1);
+                    QCOMPARE(itemChangedSpy.size(), 1);
                     args = itemChangedSpy.takeFirst();
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
                     item->setCheckState(j, checkState);
-                    QCOMPARE(itemChangedSpy.count(), 0);
+                    QCOMPARE(itemChangedSpy.size(), 0);
 
                     QCOMPARE(item->text(j), text);
                     QCOMPARE(item->icon(j), icon);
@@ -1884,7 +1884,7 @@ void tst_QTreeWidget::setData()
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
                     item->setBackground(j, pixmap);
-                    QCOMPARE(itemChangedSpy.count(), 0);
+                    QCOMPARE(itemChangedSpy.size(), 0);
 
                     item->setData(j, Qt::DisplayRole, QVariant());
                     item->setData(j, Qt::DecorationRole, QVariant());
@@ -1897,7 +1897,7 @@ void tst_QTreeWidget::setData()
                     item->setData(j, Qt::BackgroundRole, QVariant());
                     item->setData(j, Qt::ForegroundRole, QVariant());
                     item->setData(j, Qt::CheckStateRole, QVariant());
-                    QCOMPARE(itemChangedSpy.count(), 11);
+                    QCOMPARE(itemChangedSpy.size(), 11);
                     itemChangedSpy.clear();
 
                     QCOMPARE(item->data(j, Qt::DisplayRole).toString(), QString());
@@ -1960,11 +1960,11 @@ void tst_QTreeWidget::itemData()
         QCOMPARE(widget.currentRoles, QList<int> { Qt::UserRole + i });
     }
     QMap<int, QVariant> flags = widget.model()->itemData(widget.model()->index(0, 0));
-    QCOMPARE(flags.count(), 6);
+    QCOMPARE(flags.size(), 6);
     for (int i = 0; i < 4; ++i)
         QCOMPARE(flags[Qt::UserRole + i].toString(), QString::number(i + 1));
     flags = widget.model()->itemData(widget.model()->index(0, 1));
-    QCOMPARE(flags.count(), 0);
+    QCOMPARE(flags.size(), 0);
 
     item.setBackground(0, QBrush(Qt::red));
     item.setForeground(0, QBrush(Qt::green));
@@ -2033,7 +2033,7 @@ void tst_QTreeWidget::setHeaderLabels()
 {
     QStringList list = QString("a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z").split(QLatin1Char(','));
     testWidget->setHeaderLabels(list);
-    QCOMPARE(testWidget->header()->count(), list.count());
+    QCOMPARE(testWidget->header()->count(), list.size());
 }
 
 void tst_QTreeWidget::setHeaderItem()
@@ -2263,11 +2263,11 @@ void tst_QTreeWidget::insertItemsWithSorting()
                     w.addTopLevelItem(new QTreeWidgetItem({ txt }));
                 break;
         }
-        QCOMPARE(w.topLevelItemCount(), expectedItems.count());
+        QCOMPARE(w.topLevelItemCount(), expectedItems.size());
         for (int i = 0; i < w.topLevelItemCount(); ++i)
             QCOMPARE(w.topLevelItem(i)->text(0), expectedItems.at(i));
 
-        for (int k = 0; k < persistent.count(); ++k)
+        for (int k = 0; k < persistent.size(); ++k)
             QCOMPARE(persistent.at(k).row(), expectedRows.at(k));
     }
 }
@@ -2308,10 +2308,10 @@ void tst_QTreeWidget::insertExpandedItemsWithSorting()
             QTreeWidgetItem *child = new QTreeWidgetItem(parent, {text});
             items << child;
         }
-        QCOMPARE(parent->childCount(), childTexts.count());
+        QCOMPARE(parent->childCount(), childTexts.size());
         QVERIFY(parent->isExpanded());
     }
-    QCOMPARE(tree.model()->rowCount(), parentTexts.count());
+    QCOMPARE(tree.model()->rowCount(), parentTexts.size());
 
     // verify that the items are still expanded
     for (const QTreeWidgetItem *item : qAsConst(items)) {
@@ -2332,10 +2332,10 @@ void tst_QTreeWidget::insertExpandedItemsWithSorting()
     PersistentModelIndexVec children;
     for (int i = 0; i < model->rowCount(parents.constFirst()); ++i)
         children.push_back(model->index(i, 0, parents.constFirst()));
-    for (int i = 0; i < parentResult.count(); ++i) {
+    for (int i = 0; i < parentResult.size(); ++i) {
         QTreeWidgetItem *item = tree.topLevelItem(i);
         QCOMPARE(item->text(0), parentResult.at(i));
-        for (int j = 0; j < childResult.count(); ++j)
+        for (int j = 0; j < childResult.size(); ++j)
             QCOMPARE(item->child(j)->text(0), childResult.at(j));
     }
 }
@@ -2427,7 +2427,7 @@ void tst_QTreeWidget::changeDataWithSorting()
 
     QTreeWidgetItem *item = w.topLevelItem(itemIndex);
     item->setText(0, newValue);
-    for (int i = 0; i < expectedItems.count(); ++i) {
+    for (int i = 0; i < expectedItems.size(); ++i) {
         QCOMPARE(w.topLevelItem(i)->text(0), expectedItems.at(i));
         for (const QPersistentModelIndex &p : qAsConst(persistent)) {
             if (p.row() == i) // the same toplevel row
@@ -2435,11 +2435,11 @@ void tst_QTreeWidget::changeDataWithSorting()
         }
     }
 
-    for (int k = 0; k < persistent.count(); ++k)
+    for (int k = 0; k < persistent.size(); ++k)
         QCOMPARE(persistent.at(k).row(), expectedRows.at(k));
 
-    QCOMPARE(dataChangedSpy.count(), 1);
-    QCOMPARE(layoutChangedSpy.count(), reorderingExpected ? 1 : 0);
+    QCOMPARE(dataChangedSpy.size(), 1);
+    QCOMPARE(layoutChangedSpy.size(), reorderingExpected ? 1 : 0);
 }
 
 void tst_QTreeWidget::changeDataWithStableSorting_data()
@@ -2596,7 +2596,7 @@ void tst_QTreeWidget::changeDataWithStableSorting()
     item->setText(0, newValue);
     if (forceChange)
         item->emitDataChanged();
-    for (int i = 0; i < expectedItems.count(); ++i) {
+    for (int i = 0; i < expectedItems.size(); ++i) {
         QCOMPARE(w.topLevelItem(i)->text(0), expectedItems.at(i));
         for (const QPersistentModelIndex &p : qAsConst(persistent)) {
             if (p.row() == i) // the same toplevel row
@@ -2604,11 +2604,11 @@ void tst_QTreeWidget::changeDataWithStableSorting()
         }
     }
 
-    for (int k = 0; k < persistent.count(); ++k)
+    for (int k = 0; k < persistent.size(); ++k)
         QCOMPARE(persistent.at(k).row(), expectedRows.at(k));
 
-    QCOMPARE(dataChangedSpy.count(), 1);
-    QCOMPARE(layoutChangedSpy.count(), reorderingExpected ? 1 : 0);
+    QCOMPARE(dataChangedSpy.size(), 1);
+    QCOMPARE(layoutChangedSpy.size(), reorderingExpected ? 1 : 0);
 }
 
 void tst_QTreeWidget::sizeHint_data()
@@ -2714,8 +2714,8 @@ void tst_QTreeWidget::sortedIndexOfChild()
     tw.sortItems(0, sortOrder);
     tw.expandAll();
 
-    QCOMPARE(itms.count(), expectedIndexes.count());
-    for (int j = 0; j < expectedIndexes.count(); ++j)
+    QCOMPARE(itms.size(), expectedIndexes.size());
+    for (int j = 0; j < expectedIndexes.size(); ++j)
         QCOMPARE(top->indexOfChild(itms.at(j)), expectedIndexes.at(j));
 }
 
@@ -2740,8 +2740,8 @@ void tst_QTreeWidget::expandAndCallapse()
     tw.collapseItem(top);
     tw.collapseItem(top);
 
-    QCOMPARE(spy0.count(), 3);
-    QCOMPARE(spy1.count(), 2);
+    QCOMPARE(spy0.size(), 3);
+    QCOMPARE(spy1.size(), 2);
 }
 
 void tst_QTreeWidget::setDisabled()
@@ -2854,13 +2854,13 @@ void tst_QTreeWidget::removeSelectedItem()
 
     QItemSelectionModel *selModel = w->selectionModel();
     QCOMPARE(selModel->hasSelection(), true);
-    QCOMPARE(selModel->selectedRows().count(), 1);
+    QCOMPARE(selModel->selectedRows().size(), 1);
 
     const QScopedPointer<QTreeWidgetItem> taken(w->takeTopLevelItem(2));
     QCOMPARE(taken->text(0), QLatin1String("C"));
 
     QCOMPARE(selModel->hasSelection(), false);
-    QCOMPARE(selModel->selectedRows().count(), 0);
+    QCOMPARE(selModel->selectedRows().size(), 0);
     QItemSelection sel = selModel->selection();
     QCOMPARE(selModel->isSelected(w->model()->index(0,0)), false);
 }
@@ -2971,7 +2971,7 @@ protected:
             auto newItem = new QTreeWidgetItem({QString::number(i++)});
             m_list.append(newItem);
             insertTopLevelItem(0, newItem);
-            while (m_list.count() > 10)
+            while (m_list.size() > 10)
                 delete m_list.takeFirst();
         }
         QTreeWidget::timerEvent(event);
@@ -3285,7 +3285,7 @@ void tst_QTreeWidget::emitDataChanged()
     auto item = new PublicTreeItem;
     tree.insertTopLevelItem(0, item);
     item->emitDataChanged();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 void tst_QTreeWidget::setCurrentItemExpandsParent()

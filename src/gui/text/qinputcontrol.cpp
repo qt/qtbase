@@ -43,7 +43,7 @@ bool QInputControl::isAcceptableInput(const QKeyEvent *event) const
     if (c.category() == QChar::Other_PrivateUse)
         return true;
 
-    if (c.isHighSurrogate() && text.length() > 1 && text.at(1).isLowSurrogate())
+    if (c.isHighSurrogate() && text.size() > 1 && text.at(1).isLowSurrogate())
         return true;
 
     if (m_type == TextEdit && c == u'\t')

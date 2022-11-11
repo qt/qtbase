@@ -520,14 +520,14 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
             inputType = QScroller::InputMove;
 
         if (te->pointingDevice()->type() == QInputDevice::DeviceType::TouchPad) {
-            if (te->points().count() != 2)  // 2 fingers on pad
+            if (te->points().size() != 2)  // 2 fingers on pad
                 return Ignore;
 
             point = te->points().at(0).scenePressPosition() +
                     ((te->points().at(0).scenePosition() - te->points().at(0).scenePressPosition()) +
                      (te->points().at(1).scenePosition() - te->points().at(1).scenePressPosition())) / 2;
         } else { // TouchScreen
-            if (te->points().count() != 1) // 1 finger on screen
+            if (te->points().size() != 1) // 1 finger on screen
                 return Ignore;
 
             point = te->points().at(0).scenePosition();

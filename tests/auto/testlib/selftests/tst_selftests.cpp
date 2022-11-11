@@ -432,8 +432,8 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
         // format:
         //  "function","[globaltag:]tag","metric",value_per_iteration,total,iterations
         QStringList split = line.split(',');
-        if (split.count() != 6) {
-            if (error) *error = QString("Wrong number of columns (%1)").arg(split.count());
+        if (split.size() != 6) {
+            if (error) *error = QString("Wrong number of columns (%1)").arg(split.size());
             return out;
         }
 

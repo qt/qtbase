@@ -187,7 +187,7 @@ propertyNotFoundError(const QDBusMessage &msg, const QString &interface_name, co
 QDBusMessage qDBusPropertyGet(const QDBusConnectionPrivate::ObjectTreeNode &node,
                               const QDBusMessage &msg)
 {
-    Q_ASSERT(msg.arguments().count() == 2);
+    Q_ASSERT(msg.arguments().size() == 2);
     Q_ASSERT_X(!node.obj || QThread::currentThread() == node.obj->thread(),
                "QDBusConnection: internal threading error",
                "function called for an object that is in another thread!!");
@@ -345,7 +345,7 @@ static int writeProperty(QObject *obj, const QByteArray &property_name, QVariant
 QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNode &node,
                               const QDBusMessage &msg)
 {
-    Q_ASSERT(msg.arguments().count() == 3);
+    Q_ASSERT(msg.arguments().size() == 3);
     Q_ASSERT_X(!node.obj || QThread::currentThread() == node.obj->thread(),
                "QDBusConnection: internal threading error",
                "function called for an object that is in another thread!!");
@@ -445,7 +445,7 @@ static QVariantMap readAllProperties(QObject *object, int flags)
 QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTreeNode &node,
                                  const QDBusMessage &msg)
 {
-    Q_ASSERT(msg.arguments().count() == 1);
+    Q_ASSERT(msg.arguments().size() == 1);
     Q_ASSERT_X(!node.obj || QThread::currentThread() == node.obj->thread(),
                "QDBusConnection: internal threading error",
                "function called for an object that is in another thread!!");

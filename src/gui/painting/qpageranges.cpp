@@ -14,7 +14,7 @@ QT_IMPL_METATYPE_EXTERN(QPageRanges)
 
 void QPageRangesPrivate::mergeIntervals()
 {
-    const int count = intervals.count();
+    const int count = intervals.size();
 
     if (count <= 1)
         return;
@@ -162,7 +162,7 @@ QPageRanges QPageRanges::fromString(const QString &ranges)
 
         if (item.contains(u'-')) {
             const QStringList rangeItems = item.split(u'-');
-            if (rangeItems.count() != 2)
+            if (rangeItems.size() != 2)
                 return QPageRanges();
 
             bool ok;

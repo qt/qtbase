@@ -611,7 +611,7 @@ void tst_QPushButton::taskQTBUG_20191_shortcutWithKeypadModifer()
     QTest::qWait(300);
     QTest::keyClick(&dialog, Qt::Key_5, Qt::KeypadModifier);
     QTest::qWait(300);
-    QCOMPARE(spy1.count(), 2);
+    QCOMPARE(spy1.size(), 2);
 
     // add shortcut 'keypad 5' to button2
     spy1.clear();
@@ -621,8 +621,8 @@ void tst_QPushButton::taskQTBUG_20191_shortcutWithKeypadModifer()
     QTest::qWait(300);
     QTest::keyClick(&dialog, Qt::Key_5, Qt::KeypadModifier);
     QTest::qWait(300);
-    QCOMPARE(spy1.count(), 1);
-    QCOMPARE(spy2.count(), 1);
+    QCOMPARE(spy1.size(), 1);
+    QCOMPARE(spy2.size(), 1);
 
     // remove shortcut from button1
     spy1.clear();
@@ -632,8 +632,8 @@ void tst_QPushButton::taskQTBUG_20191_shortcutWithKeypadModifer()
     QTest::qWait(300);
     QTest::keyClick(&dialog, Qt::Key_5, Qt::KeypadModifier);
     QTest::qWait(300);
-    QCOMPARE(spy1.count(), 0);
-    QCOMPARE(spy2.count(), 1);
+    QCOMPARE(spy1.size(), 0);
+    QCOMPARE(spy2.size(), 1);
 }
 
 #endif // QT_CONFIG(shortcut)
@@ -657,16 +657,16 @@ void tst_QPushButton::emitReleasedAfterChange()
     QVERIFY(button1->isDown());
     QTest::keyClick(&dialog, Qt::Key_Tab);
     QVERIFY(!button1->isDown());
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     spy.clear();
 
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     button1->setFocus();
     QTest::mousePress(button1, Qt::LeftButton);
     QVERIFY(button1->isDown());
     button1->setEnabled(false);
     QVERIFY(!button1->isDown());
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 /*
@@ -744,22 +744,22 @@ void tst_QPushButton::mousePressAndMove()
     QSignalSpy releaseSpy(&button, &QAbstractButton::released);
 
     QTest::mousePress(&button, Qt::LeftButton);
-    QCOMPARE(pressSpy.count(), 1);
-    QCOMPARE(releaseSpy.count(), 0);
+    QCOMPARE(pressSpy.size(), 1);
+    QCOMPARE(releaseSpy.size(), 0);
 
     // mouse pressed and moving out
     QTest::mouseMove(&button, QPoint(100, 100));
 
     // should emit released signal when the mouse is dragged out of boundary
-    QCOMPARE(pressSpy.count(), 1);
-    QCOMPARE(releaseSpy.count(), 1);
+    QCOMPARE(pressSpy.size(), 1);
+    QCOMPARE(releaseSpy.size(), 1);
 
     // mouse pressed and moving into
     QTest::mouseMove(&button, QPoint(10, 10));
 
     // should emit pressed signal when the mouse is dragged into of boundary
-    QCOMPARE(pressSpy.count(), 2);
-    QCOMPARE(releaseSpy.count(), 1);
+    QCOMPARE(pressSpy.size(), 2);
+    QCOMPARE(releaseSpy.size(), 1);
 }
 
 QTEST_MAIN(tst_QPushButton)

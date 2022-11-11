@@ -55,7 +55,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
         exportMacro.append(u' ');
 
     QStringList namespaceList = qualifiedClassName.split("::"_L1);
-    if (namespaceList.count()) {
+    if (namespaceList.size()) {
         className = namespaceList.last();
         namespaceList.removeLast();
     }
@@ -65,7 +65,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
     // is a User using Qt-in-namespace having his own classes not in a namespace.
     // In this case the generated Ui helper classes will also end up in
     // the Qt namespace (which is harmless, but not "pretty")
-    const bool needsMacro = namespaceList.count() == 0
+    const bool needsMacro = namespaceList.size() == 0
         || namespaceList[0] == "qdesigner_internal"_L1;
 
     if (needsMacro)
@@ -73,7 +73,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
 
     openNameSpaces(namespaceList, m_output);
 
-    if (namespaceList.count())
+    if (namespaceList.size())
         m_output << "\n";
 
     m_output << "class " << exportMacro << m_option.prefix << className << "\n"
@@ -98,7 +98,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
 
     closeNameSpaces(namespaceList, m_output);
 
-    if (namespaceList.count())
+    if (namespaceList.size())
         m_output << "\n";
 
     if (m_option.generateNamespace && !m_option.prefix.isEmpty()) {
@@ -110,7 +110,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
 
         closeNameSpaces(namespaceList, m_output);
 
-        if (namespaceList.count())
+        if (namespaceList.size())
             m_output << "\n";
     }
 

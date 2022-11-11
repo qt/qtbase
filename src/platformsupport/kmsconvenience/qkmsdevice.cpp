@@ -200,7 +200,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     if (userConnectorConfig.contains(QStringLiteral("virtualPos"))) {
         const QByteArray vpos = userConnectorConfig.value(QStringLiteral("virtualPos")).toByteArray();
         const QByteArrayList vposComp = vpos.split(',');
-        if (vposComp.count() == 2)
+        if (vposComp.size() == 2)
             vinfo->virtualPos = QPoint(vposComp[0].trimmed().toInt(), vposComp[1].trimmed().toInt());
     }
     if (userConnectorConfig.value(QStringLiteral("primary")).toBool())
@@ -437,7 +437,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         }
     }
     qCDebug(qLcKmsDebug, "Output %s can use %d planes: %s",
-            connectorName.constData(), int(output.available_planes.count()), qPrintable(planeListStr));
+            connectorName.constData(), int(output.available_planes.size()), qPrintable(planeListStr));
 
     // This is for the EGLDevice/EGLStream backend. On some of those devices one
     // may want to target a pre-configured plane. It is probably useless for
@@ -478,7 +478,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         const QStringList crtcPlanePairs = val.split(u':');
         for (const QString &crtcPlanePair : crtcPlanePairs) {
             const QStringList values = crtcPlanePair.split(u',');
-            if (values.count() == 2 && uint(values[0].toInt()) == output.crtc_id) {
+            if (values.size() == 2 && uint(values[0].toInt()) == output.crtc_id) {
                 uint planeId = values[1].toInt();
                 for (QKmsPlane &kmsplane : m_planes) {
                     if (kmsplane.id == planeId) {
@@ -719,7 +719,7 @@ void QKmsDevice::createScreens()
             siblings.append(s);
             virtualPositions.append(virtualPos);
             if (orderedScreen.vinfo.isPrimary)
-                primarySiblingIdx = siblings.count() - 1;
+                primarySiblingIdx = siblings.size() - 1;
         } else {
             registerScreen(s, orderedScreen.vinfo.isPrimary, virtualPos, QList<QPlatformScreen *>() << s);
         }
@@ -727,7 +727,7 @@ void QKmsDevice::createScreens()
 
     if (!m_screenConfig->separateScreens()) {
         // enable the virtual desktop
-        for (int i = 0; i < siblings.count(); ++i)
+        for (int i = 0; i < siblings.size(); ++i)
             registerScreen(siblings[i], i == primarySiblingIdx, virtualPositions[i], siblings);
     }
 }

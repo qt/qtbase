@@ -1840,7 +1840,7 @@ void tst_QDBusAbstractAdaptor::typeMatching()
 
     reply = iface.call(QDBus::BlockWithGui, "retrieve" + basename);
     QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
-    QCOMPARE(reply.arguments().count(), 1);
+    QCOMPARE(reply.arguments().size(), 1);
 
     const QVariant &retval = reply.arguments().at(0);
     QVERIFY(compare(retval, value));
@@ -1858,7 +1858,7 @@ void tst_QDBusAbstractAdaptor::methodWithMoreThanOneReturnValue()
 
     QDBusInterface remote(con.baseService(), "/", "local.Interface3", con);
     QDBusMessage reply = remote.call(QDBus::BlockWithGui, "methodStringString", testString);
-    QCOMPARE(reply.arguments().count(), 2);
+    QCOMPARE(reply.arguments().size(), 2);
 
     QDBusReply<int> intreply = reply;
     QVERIFY(intreply.isValid());
@@ -1881,7 +1881,7 @@ void tst_QDBusAbstractAdaptor::methodWithMoreThanOneReturnValuePeer()
 
     QDBusInterface remote(QString(), "/", "local.Interface3", con);
     QDBusMessage reply = remote.call(QDBus::BlockWithGui, "methodStringString", testString);
-    QCOMPARE(reply.arguments().count(), 2);
+    QCOMPARE(reply.arguments().size(), 2);
 
     QDBusReply<int> intreply = reply;
     QVERIFY(intreply.isValid());

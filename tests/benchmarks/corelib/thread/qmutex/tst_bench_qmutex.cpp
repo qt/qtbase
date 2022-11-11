@@ -274,7 +274,7 @@ void tst_QMutex::contendedNative()
     NativeMutexInitialize(&mutex2);
 
     QList<NativeMutexThread *> threads(threadCount);
-    for (int i = 0; i < threads.count(); ++i) {
+    for (int i = 0; i < threads.size(); ++i) {
         threads[i] = new NativeMutexThread(&mutex1, &mutex2, iterations, msleepDuration, use2mutexes);
         threads[i]->start();
     }
@@ -286,11 +286,11 @@ void tst_QMutex::contendedNative()
         semaphore4.release(threadCount);
     }
 
-    for (int i = 0; i < threads.count(); ++i)
+    for (int i = 0; i < threads.size(); ++i)
         threads[i]->done = true;
     semaphore1.acquire(threadCount);
     semaphore2.release(threadCount);
-    for (int i = 0; i < threads.count(); ++i)
+    for (int i = 0; i < threads.size(); ++i)
         threads[i]->wait();
     qDeleteAll(threads);
 
@@ -342,7 +342,7 @@ void tst_QMutex::contendedQMutex()
     QMutex mutex1, mutex2;
 
     QList<QMutexThread *> threads(threadCount);
-    for (int i = 0; i < threads.count(); ++i) {
+    for (int i = 0; i < threads.size(); ++i) {
         threads[i] = new QMutexThread(&mutex1, &mutex2, iterations, msleepDuration, use2mutexes);
         threads[i]->start();
     }
@@ -354,11 +354,11 @@ void tst_QMutex::contendedQMutex()
         semaphore4.release(threadCount);
     }
 
-    for (int i = 0; i < threads.count(); ++i)
+    for (int i = 0; i < threads.size(); ++i)
         threads[i]->done = true;
     semaphore1.acquire(threadCount);
     semaphore2.release(threadCount);
-    for (int i = 0; i < threads.count(); ++i)
+    for (int i = 0; i < threads.size(); ++i)
         threads[i]->wait();
     qDeleteAll(threads);
 }
@@ -405,7 +405,7 @@ void tst_QMutex::contendedQMutexLocker()
     QMutex mutex1, mutex2;
 
     QList<QMutexLockerThread *> threads(threadCount);
-    for (int i = 0; i < threads.count(); ++i) {
+    for (int i = 0; i < threads.size(); ++i) {
         threads[i] = new QMutexLockerThread(&mutex1, &mutex2, iterations, msleepDuration, use2mutexes);
         threads[i]->start();
     }
@@ -417,11 +417,11 @@ void tst_QMutex::contendedQMutexLocker()
         semaphore4.release(threadCount);
     }
 
-    for (int i = 0; i < threads.count(); ++i)
+    for (int i = 0; i < threads.size(); ++i)
         threads[i]->done = true;
     semaphore1.acquire(threadCount);
     semaphore2.release(threadCount);
-    for (int i = 0; i < threads.count(); ++i)
+    for (int i = 0; i < threads.size(); ++i)
         threads[i]->wait();
     qDeleteAll(threads);
 }

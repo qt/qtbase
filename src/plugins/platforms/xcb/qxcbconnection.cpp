@@ -790,7 +790,7 @@ void QXcbConnection::setStartupId(const QByteArray &nextId)
                                 atom(QXcbAtom::_NET_STARTUP_ID),
                                 atom(QXcbAtom::UTF8_STRING),
                                 8,
-                                nextId.length(),
+                                nextId.size(),
                                 nextId.constData());
         else
             xcb_delete_property(xcb_connection(), clientLeader(), atom(QXcbAtom::_NET_STARTUP_ID));
@@ -939,7 +939,7 @@ xcb_window_t QXcbConnection::clientLeader()
                                 atom(QXcbAtom::SM_CLIENT_ID),
                                 XCB_ATOM_STRING,
                                 8,
-                                session.length(),
+                                session.size(),
                                 session.constData());
         }
 #endif

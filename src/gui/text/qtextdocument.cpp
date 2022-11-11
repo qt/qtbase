@@ -67,14 +67,14 @@ bool Qt::mightBeRichText(const QString& text)
         return false;
     int start = 0;
 
-    while (start < text.length() && text.at(start).isSpace())
+    while (start < text.size() && text.at(start).isSpace())
         ++start;
 
     // skip a leading <?xml ... ?> as for example with xhtml
     if (QStringView{text}.mid(start, 5).compare("<?xml"_L1) == 0) {
-        while (start < text.length()) {
+        while (start < text.size()) {
             if (text.at(start) == u'?'
-                && start + 2 < text.length()
+                && start + 2 < text.size()
                 && text.at(start + 1) == u'>') {
                 start += 2;
                 break;
@@ -82,20 +82,20 @@ bool Qt::mightBeRichText(const QString& text)
             ++start;
         }
 
-        while (start < text.length() && text.at(start).isSpace())
+        while (start < text.size() && text.at(start).isSpace())
             ++start;
     }
 
     if (QStringView{text}.mid(start, 5).compare("<!doc"_L1, Qt::CaseInsensitive) == 0)
         return true;
     int open = start;
-    while (open < text.length() && text.at(open) != u'<'
+    while (open < text.size() && text.at(open) != u'<'
             && text.at(open) != u'\n') {
         if (text.at(open) == u'&' &&  QStringView{text}.mid(open + 1, 3) == "lt;"_L1)
             return true; // support desperate attempt of user to see <...>
         ++open;
     }
-    if (open < text.length() && text.at(open) == u'<') {
+    if (open < text.size() && text.at(open) == u'<') {
         const int close = text.indexOf(u'>', open);
         if (close > -1) {
             QString tag;
@@ -134,10 +134,10 @@ QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
     int col = 0;
     QString rich;
     rich += "<p>"_L1;
-    for (int i = 0; i < plain.length(); ++i) {
+    for (int i = 0; i < plain.size(); ++i) {
         if (plain[i] == u'\n'){
             int c = 1;
-            while (i+1 < plain.length() && plain[i+1] == u'\n') {
+            while (i+1 < plain.size() && plain[i+1] == u'\n') {
                 i++;
                 c++;
             }
@@ -1310,7 +1310,7 @@ static bool findInBlock(const QTextBlock &block, const QString &expression, int 
     Qt::CaseSensitivity sensitivity = options & QTextDocument::FindCaseSensitively ? Qt::CaseSensitive : Qt::CaseInsensitive;
     int idx = -1;
 
-    while (offset >= 0 && offset <= text.length()) {
+    while (offset >= 0 && offset <= text.size()) {
         idx = (options & QTextDocument::FindBackward) ?
                text.lastIndexOf(expression, offset, sensitivity) : text.indexOf(expression, offset, sensitivity);
         if (idx == -1)
@@ -1318,9 +1318,9 @@ static bool findInBlock(const QTextBlock &block, const QString &expression, int 
 
         if (options & QTextDocument::FindWholeWords) {
             const int start = idx;
-            const int end = start + expression.length();
+            const int end = start + expression.size();
             if ((start != 0 && text.at(start - 1).isLetterOrNumber())
-                || (end != text.length() && text.at(end).isLetterOrNumber())) {
+                || (end != text.size() && text.at(end).isLetterOrNumber())) {
                 //if this is not a whole word, continue the search in the string
                 offset = (options & QTextDocument::FindBackward) ? idx-1 : end+1;
                 idx = -1;
@@ -1330,7 +1330,7 @@ static bool findInBlock(const QTextBlock &block, const QString &expression, int 
         //we have a hit, return the cursor for that.
         *cursor = QTextCursorPrivate::fromPosition(const_cast<QTextDocumentPrivate *>(QTextDocumentPrivate::get(block)),
                                                    block.position() + idx);
-        cursor->setPosition(cursor->position() + expression.length(), QTextCursor::KeepAnchor);
+        cursor->setPosition(cursor->position() + expression.size(), QTextCursor::KeepAnchor);
         return true;
     }
     return false;
@@ -1430,7 +1430,7 @@ static bool findInBlock(const QTextBlock &block, const QRegularExpression &expr,
     QRegularExpressionMatch match;
     int idx = -1;
 
-    while (offset >= 0 && offset <= text.length()) {
+    while (offset >= 0 && offset <= text.size()) {
         idx = (options & QTextDocument::FindBackward) ?
                text.lastIndexOf(expr, offset, &match) : text.indexOf(expr, offset, &match);
         if (idx == -1)
@@ -1440,7 +1440,7 @@ static bool findInBlock(const QTextBlock &block, const QRegularExpression &expr,
             const int start = idx;
             const int end = start + match.capturedLength();
             if ((start != 0 && text.at(start - 1).isLetterOrNumber())
-                || (end != text.length() && text.at(end).isLetterOrNumber())) {
+                || (end != text.size() && text.at(end).isLetterOrNumber())) {
                 //if this is not a whole word, continue the search in the string
                 offset = (options & QTextDocument::FindBackward) ? idx-1 : end+1;
                 idx = -1;
@@ -2324,7 +2324,7 @@ static QString colorValue(QColor color)
         result = color.name();
     } else if (color.alpha()) {
         QString alphaValue = QString::number(color.alphaF(), 'f', 6);
-        while (alphaValue.length() > 1 && alphaValue.at(alphaValue.size() - 1) == u'0')
+        while (alphaValue.size() > 1 && alphaValue.at(alphaValue.size() - 1) == u'0')
             alphaValue.chop(1);
         if (alphaValue.at(alphaValue.size() - 1) == u'.')
             alphaValue.chop(1);
@@ -2830,7 +2830,7 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
         html.chop(styleTag.size());
 
     if (isObject) {
-        for (int i = 0; isImage && i < txt.length(); ++i) {
+        for (int i = 0; isImage && i < txt.size(); ++i) {
             QTextImageFormat imgFmt = format.toImageFormat();
 
             html += "<img"_L1;
@@ -3260,7 +3260,7 @@ void QTextHtmlExporter::emitTable(const QTextTable *table)
         columnWidths.resize(columns);
         columnWidths.fill(QTextLength());
     }
-    Q_ASSERT(columnWidths.count() == columns);
+    Q_ASSERT(columnWidths.size() == columns);
 
     QVarLengthArray<bool> widthEmittedForColumn(columns);
     for (int i = 0; i < columns; ++i)
@@ -3437,7 +3437,7 @@ void QTextHtmlExporter::emitFrameStyle(const QTextFrameFormat &format, FrameType
 {
     const auto styleAttribute = " style=\""_L1;
     html += styleAttribute;
-    const int originalHtmlLength = html.length();
+    const int originalHtmlLength = html.size();
 
     if (frameType == TextFrame)
         html += "-qt-table-type: frame;"_L1;
@@ -3471,7 +3471,7 @@ void QTextHtmlExporter::emitFrameStyle(const QTextFrameFormat &format, FrameType
     if (format.property(QTextFormat::TableBorderCollapse).toBool())
         html += " border-collapse:collapse;"_L1;
 
-    if (html.length() == originalHtmlLength) // nothing emitted?
+    if (html.size() == originalHtmlLength) // nothing emitted?
         html.chop(styleAttribute.size());
     else
         html += u'\"';

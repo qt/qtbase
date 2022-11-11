@@ -46,7 +46,7 @@ QNetworkAccessFileBackendFactory::create(QNetworkAccessManager::Operation op,
 #endif
             || url.isLocalFile()) {
         return new QNetworkAccessFileBackend;
-    } else if (!url.scheme().isEmpty() && url.authority().isEmpty() && (url.scheme().length() > 1)) {
+    } else if (!url.scheme().isEmpty() && url.authority().isEmpty() && (url.scheme().size() > 1)) {
         // check if QFile could, in theory, open this URL via the file engines
         // it has to be in the format:
         //    prefix:path/to/file

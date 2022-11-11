@@ -158,27 +158,27 @@ void tst_QScreen::orientationChange()
     QWindowSystemInterface::handleScreenOrientationChange(screen, Qt::LandscapeOrientation);
     QWindowSystemInterface::flushWindowSystemEvents();
     QTRY_COMPARE(screen->orientation(), Qt::LandscapeOrientation);
-    QCOMPARE(spy.count(), ++expectedSignalCount);
+    QCOMPARE(spy.size(), ++expectedSignalCount);
 
     QWindowSystemInterface::handleScreenOrientationChange(screen, Qt::PortraitOrientation);
     QWindowSystemInterface::flushWindowSystemEvents();
     QTRY_COMPARE(screen->orientation(), Qt::PortraitOrientation);
-    QCOMPARE(spy.count(), ++expectedSignalCount);
+    QCOMPARE(spy.size(), ++expectedSignalCount);
 
     QWindowSystemInterface::handleScreenOrientationChange(screen, Qt::InvertedLandscapeOrientation);
     QWindowSystemInterface::flushWindowSystemEvents();
     QTRY_COMPARE(screen->orientation(), Qt::InvertedLandscapeOrientation);
-    QCOMPARE(spy.count(), ++expectedSignalCount);
+    QCOMPARE(spy.size(), ++expectedSignalCount);
 
     QWindowSystemInterface::handleScreenOrientationChange(screen, Qt::InvertedPortraitOrientation);
     QWindowSystemInterface::flushWindowSystemEvents();
     QTRY_COMPARE(screen->orientation(), Qt::InvertedPortraitOrientation);
-    QCOMPARE(spy.count(), ++expectedSignalCount);
+    QCOMPARE(spy.size(), ++expectedSignalCount);
 
     QWindowSystemInterface::handleScreenOrientationChange(screen, Qt::LandscapeOrientation);
     QWindowSystemInterface::flushWindowSystemEvents();
     QTRY_COMPARE(screen->orientation(), Qt::LandscapeOrientation);
-    QCOMPARE(spy.count(), ++expectedSignalCount);
+    QCOMPARE(spy.size(), ++expectedSignalCount);
 }
 
 void tst_QScreen::grabWindow_data()

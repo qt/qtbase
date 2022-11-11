@@ -86,7 +86,7 @@ QTextList::~QTextList()
 int QTextList::count() const
 {
     Q_D(const QTextList);
-    return d->blocks.count();
+    return d->blocks.size();
 }
 
 /*!

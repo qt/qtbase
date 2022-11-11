@@ -64,13 +64,13 @@ public:
     HistoryEntry history(int i) const
     {
         if (i <= 0)
-            if (-i < stack.count())
-                return stack[stack.count()+i-1];
+            if (-i < stack.size())
+                return stack[stack.size()+i-1];
             else
                 return HistoryEntry();
         else
-            if (i <= forwardStack.count())
-                return forwardStack[forwardStack.count()-i];
+            if (i <= forwardStack.size())
+                return forwardStack[forwardStack.size()-i];
             else
                 return HistoryEntry();
     }
@@ -828,11 +828,11 @@ void QTextBrowser::doSetSource(const QUrl &url, QTextDocument::ResourceType type
     entry.vpos = 0;
     d->stack.push(entry);
 
-    emit backwardAvailable(d->stack.count() > 1);
+    emit backwardAvailable(d->stack.size() > 1);
 
     if (!d->forwardStack.isEmpty() && d->forwardStack.top().url == url) {
         d->forwardStack.pop();
-        emit forwardAvailable(d->forwardStack.count() > 0);
+        emit forwardAvailable(d->forwardStack.size() > 0);
     } else {
         d->forwardStack.clear();
         emit forwardAvailable(false);
@@ -906,14 +906,14 @@ void QTextBrowser::doSetSource(const QUrl &url, QTextDocument::ResourceType type
 void QTextBrowser::backward()
 {
     Q_D(QTextBrowser);
-    if (d->stack.count() <= 1)
+    if (d->stack.size() <= 1)
         return;
 
     // Update the history entry
     d->forwardStack.push(d->createHistoryEntry());
     d->stack.pop(); // throw away the old version of the current entry
     d->restoreHistoryEntry(d->stack.top()); // previous entry
-    emit backwardAvailable(d->stack.count() > 1);
+    emit backwardAvailable(d->stack.size() > 1);
     emit forwardAvailable(true);
     emit historyChanged();
 }
@@ -1156,7 +1156,7 @@ QVariant QTextBrowser::loadResource(int /*type*/, const QUrl &name)
 bool QTextBrowser::isBackwardAvailable() const
 {
     Q_D(const QTextBrowser);
-    return d->stack.count() > 1;
+    return d->stack.size() > 1;
 }
 
 /*!
@@ -1243,7 +1243,7 @@ QString QTextBrowser::historyTitle(int i) const
 int QTextBrowser::forwardHistoryCount() const
 {
     Q_D(const QTextBrowser);
-    return d->forwardStack.count();
+    return d->forwardStack.size();
 }
 
 /*!
@@ -1254,7 +1254,7 @@ int QTextBrowser::forwardHistoryCount() const
 int QTextBrowser::backwardHistoryCount() const
 {
     Q_D(const QTextBrowser);
-    return d->stack.count()-1;
+    return d->stack.size()-1;
 }
 
 /*!

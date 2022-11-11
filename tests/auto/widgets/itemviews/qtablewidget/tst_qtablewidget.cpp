@@ -192,8 +192,8 @@ void tst_QTableWidget::clear()
     QVERIFY(bla.isNull());
 
     QVERIFY(!testWidget->item(0,0));
-    QVERIFY(!testWidget->selectedRanges().count());
-    QVERIFY(!testWidget->selectedItems().count());
+    QVERIFY(!testWidget->selectedRanges().size());
+    QVERIFY(!testWidget->selectedItems().size());
 }
 
 void tst_QTableWidget::rowCount()
@@ -360,7 +360,7 @@ void tst_QTableWidget::takeItem()
         QCOMPARE(item->text(), QString::number(row * column + column));
         delete item;
 
-        QTRY_COMPARE(spy.count(), 1);
+        QTRY_COMPARE(spy.size(), 1);
         const QList<QVariant> arguments = spy.takeFirst();
         QCOMPARE(arguments.size(), 2);
         QCOMPARE(arguments.at(0).toInt(), row);
@@ -525,24 +525,24 @@ void tst_QTableWidget::selectedItems()
         testWidget->setColumnHidden(column, true);
 
     // make sure we don't have any previous selections hanging around
-    QVERIFY(!testWidget->selectedRanges().count());
-    QVERIFY(!testWidget->selectedItems().count());
+    QVERIFY(!testWidget->selectedRanges().size());
+    QVERIFY(!testWidget->selectedItems().size());
 
     // select range and check that it is set correctly
     testWidget->setRangeSelected(selectionRange, true);
     if (selectionRange.topRow() >= 0) {
-        QCOMPARE(testWidget->selectedRanges().count(), 1);
+        QCOMPARE(testWidget->selectedRanges().size(), 1);
         QCOMPARE(testWidget->selectedRanges().at(0).topRow(), selectionRange.topRow());
         QCOMPARE(testWidget->selectedRanges().at(0).bottomRow(), selectionRange.bottomRow());
         QCOMPARE(testWidget->selectedRanges().at(0).leftColumn(), selectionRange.leftColumn());
         QCOMPARE(testWidget->selectedRanges().at(0).rightColumn(), selectionRange.rightColumn());
     } else {
-        QCOMPARE(testWidget->selectedRanges().count(), 0);
+        QCOMPARE(testWidget->selectedRanges().size(), 0);
     }
 
     // check that the correct number of items and the expected items are there
     const QList<QTableWidgetItem *> selectedItems = testWidget->selectedItems();
-    QCOMPARE(selectedItems.count(), expectedItems.count());
+    QCOMPARE(selectedItems.size(), expectedItems.size());
     for (const auto &intPair : expectedItems)
         QVERIFY(selectedItems.contains(testWidget->item(intPair.first, intPair.second)));
 
@@ -627,7 +627,7 @@ void tst_QTableWidget::selectedSpannedCells() // QTBUG-255
                       testWidget.visualRect(testWidget.model()->index(selectionEndCell.y(), selectionEndCell.x())).center());
 
     auto ranges = testWidget.selectedRanges();
-    QCOMPARE(ranges.count(), expectedSelectionRangeCount);
+    QCOMPARE(ranges.size(), expectedSelectionRangeCount);
     QCOMPARE(ranges.first(), expectedFirstSelectionRange);
 }
 
@@ -1194,15 +1194,15 @@ void tst_QTableWidget::sortItems()
             persistent << model->index(r, sortColumn, QModelIndex());
     }
 
-    for (int h = 0; h < initialHidden.count(); ++h)
+    for (int h = 0; h < initialHidden.size(); ++h)
         testWidget->hideRow(initialHidden.at(h));
 
-    QCOMPARE(testWidget->verticalHeader()->hiddenSectionCount(), initialHidden.count());
+    QCOMPARE(testWidget->verticalHeader()->hiddenSectionCount(), initialHidden.size());
 
     testWidget->sortItems(sortColumn, sortOrder);
 
     int te = 0;
-    for (int i = 0; i < rows.count(); ++i) {
+    for (int i = 0; i < rows.size(); ++i) {
         for (int j = 0; j < columnCount; ++j) {
             QString value;
             QTableWidgetItem *itm = testWidget->item(i, j);
@@ -1216,7 +1216,7 @@ void tst_QTableWidget::sortItems()
         //         << "expected" << rows.at(i);
     }
 
-    for (int k = 0; k < expectedHidden.count(); ++k)
+    for (int k = 0; k < expectedHidden.size(); ++k)
         QVERIFY(testWidget->isRowHidden(expectedHidden.at(k)));
 }
 
@@ -1397,18 +1397,18 @@ void tst_QTableWidget::setItemWithSorting()
             }
         }
 
-        for (int k = 0; k < persistent.count(); ++k) {
+        for (int k = 0; k < persistent.size(); ++k) {
             QCOMPARE(persistent.at(k).row(), expectedRows.at(k));
             int i = (persistent.at(k).row() * columnCount) + sortColumn;
             QCOMPARE(persistent.at(k).data().toString(), expectedValues.at(i));
         }
 
         if (i == 0)
-            QCOMPARE(dataChangedSpy.count(), reorderingExpected ? 0 : 1);
+            QCOMPARE(dataChangedSpy.size(), reorderingExpected ? 0 : 1);
         else
-            QCOMPARE(dataChangedSpy.count(), 1);
+            QCOMPARE(dataChangedSpy.size(), 1);
 
-        QCOMPARE(layoutChangedSpy.count(), reorderingExpected ? 1 : 0);
+        QCOMPARE(layoutChangedSpy.size(), reorderingExpected ? 1 : 0);
     }
 }
 
@@ -1444,7 +1444,7 @@ void tst_QTableWidget::itemData()
         QCOMPARE(widget.currentRoles, QList<int> { Qt::UserRole + i });
     }
     QMap<int, QVariant> flags = widget.model()->itemData(widget.model()->index(0, 0));
-    QCOMPARE(flags.count(), 6);
+    QCOMPARE(flags.size(), 6);
     for (int i = 0; i < 4; ++i)
         QCOMPARE(flags[Qt::UserRole + i].toString(), QString::number(i + 1));
 }
@@ -1457,7 +1457,7 @@ void tst_QTableWidget::setItemData()
 
     QTableWidgetItem *item = new QTableWidgetItem;
     table.setItem(0, 0, item);
-    QCOMPARE(dataChangedSpy.count(), 1);
+    QCOMPARE(dataChangedSpy.size(), 1);
     QModelIndex idx = qvariant_cast<QModelIndex>(dataChangedSpy.takeFirst().at(0));
 
     QMap<int, QVariant> data;
@@ -1469,7 +1469,7 @@ void tst_QTableWidget::setItemData()
     QCOMPARE(table.model()->data(idx, Qt::DisplayRole).toString(), QLatin1String("Display"));
     QCOMPARE(table.model()->data(idx, Qt::EditRole).toString(), QLatin1String("Display"));
     QCOMPARE(table.model()->data(idx, Qt::ToolTipRole).toString(), QLatin1String("ToolTip"));
-    QCOMPARE(dataChangedSpy.count(), 1);
+    QCOMPARE(dataChangedSpy.size(), 1);
     QCOMPARE(idx, qvariant_cast<QModelIndex>(dataChangedSpy.first().at(0)));
     QCOMPARE(idx, qvariant_cast<QModelIndex>(dataChangedSpy.first().at(1)));
     const auto roles = qvariant_cast<QList<int>>(dataChangedSpy.first().at(2));
@@ -1480,13 +1480,13 @@ void tst_QTableWidget::setItemData()
     dataChangedSpy.clear();
 
     table.model()->setItemData(idx, data);
-    QCOMPARE(dataChangedSpy.count(), 0);
+    QCOMPARE(dataChangedSpy.size(), 0);
 
     data.clear();
     data.insert(Qt::DisplayRole, QLatin1String("dizplaye"));
     table.model()->setItemData(idx, data);
     QCOMPARE(table.model()->data(idx, Qt::DisplayRole).toString(), QLatin1String("dizplaye"));
-    QCOMPARE(dataChangedSpy.count(), 1);
+    QCOMPARE(dataChangedSpy.size(), 1);
     QCOMPARE(QList<int>({ Qt::DisplayRole, Qt::EditRole }),
              qvariant_cast<QList<int>>(dataChangedSpy.first().at(2)));
 
@@ -1649,7 +1649,7 @@ void tst_QTableWidget::task262056_sortDuplicate()
     QSignalSpy layoutChangedSpy(testWidget->model(), &QAbstractItemModel::layoutChanged);
     testWidget->item(3,0)->setBackground(Qt::red);
 
-    QCOMPARE(layoutChangedSpy.count(),0);
+    QCOMPARE(layoutChangedSpy.size(),0);
 
 }
 
@@ -1746,7 +1746,7 @@ void tst_QTableWidget::selectedRowAfterSorting()
     table.setProperty("sortingEnabled",true);
     table.selectRow(1);
     table.item(1,1)->setText("9");
-    QCOMPARE(table.selectedItems().count(),3);
+    QCOMPARE(table.selectedItems().size(),3);
     const auto selectedItems = table.selectedItems();
     for (QTableWidgetItem *item : selectedItems)
         QCOMPARE(item->row(), 0);

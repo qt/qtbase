@@ -148,7 +148,7 @@ static QRegion scaledRegion(const QRegion &region, qreal factor, const QPoint &o
         rects.append(scaledRect(rect.translated(offset), factor));
 
     QRegion deviceRegion;
-    deviceRegion.setRects(rects.constData(), rects.count());
+    deviceRegion.setRects(rects.constData(), rects.size());
     return deviceRegion;
 }
 
@@ -517,7 +517,7 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
     }
 
     const int textureWidgetCount = textures->count();
-    const int oldTextureQuadDataCount = m_textureQuadData.count();
+    const int oldTextureQuadDataCount = m_textureQuadData.size();
     if (oldTextureQuadDataCount != textureWidgetCount) {
         for (int i = textureWidgetCount; i < oldTextureQuadDataCount; ++i)
             m_textureQuadData[i].reset();

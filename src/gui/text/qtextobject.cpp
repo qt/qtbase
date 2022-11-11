@@ -165,7 +165,7 @@ QTextDocument *QTextObject::document() const
 
 void QTextBlockGroupPrivate::markBlocksDirty()
 {
-    for (int i = 0; i < blocks.count(); ++i) {
+    for (int i = 0; i < blocks.size(); ++i) {
         const QTextBlock &block = blocks.at(i);
         pieceTable->documentChange(block.position(), block.length());
     }

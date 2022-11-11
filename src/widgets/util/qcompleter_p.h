@@ -78,7 +78,7 @@ public:
     QIndexMapper(int f, int t) : v(false), f(f), t(t) { }
     QIndexMapper(const QList<int> &vec) : v(true), vector(vec), f(-1), t(-1) { }
 
-    inline int count() const { return v ? vector.count() : t - f + 1; }
+    inline int count() const { return v ? vector.size() : t - f + 1; }
     inline int operator[] (int index) const { return v ? vector[index] : f + index; }
     inline int indexOf(int x) const { return v ? vector.indexOf(x) : ((t < f) ? -1 : x - f); }
     inline bool isValid() const { return !isEmpty(); }
@@ -88,7 +88,7 @@ public:
     inline int last() const { return v ? vector.last() : t; }
     inline int from() const { Q_ASSERT(!v); return f; }
     inline int to() const { Q_ASSERT(!v); return t; }
-    inline int cost() const { return vector.count()+2; }
+    inline int cost() const { return vector.size()+2; }
 
 private:
     bool v;

@@ -80,7 +80,7 @@ void tst_QTimeLine::range()
     timeLine.setStartFrame(5000);
     QVERIFY(timeLine.currentFrame() > oldValue);
     timeLine.setFrameRange(0, 500);
-    QTRY_VERIFY(spy.count() > 1);
+    QTRY_VERIFY(spy.size() > 1);
     QVERIFY(timeLine.currentFrame() < oldValue);
 }
 
@@ -102,7 +102,7 @@ void tst_QTimeLine::currentTime()
     spy.clear();
     timeLine.setCurrentTime(timeLine.duration()/2);
     timeLine.setCurrentTime(timeLine.duration()/2);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     spy.clear();
     QCOMPARE(timeLine.currentTime(), timeLine.duration()/2);
     timeLine.resume();
@@ -153,10 +153,10 @@ void tst_QTimeLine::bindableCurrentTime()
     spy.clear();
     QProperty<int> referenceCurrentTime(timeLine.duration() / 2);
     timeLine.bindableCurrentTime().setBinding([&]() { return referenceCurrentTime.value(); });
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     // setting it a second time to check that valueChanged() is emitted only once
     referenceCurrentTime = timeLine.duration() / 2;
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     spy.clear();
     QCOMPARE(timeLine.currentTime(), timeLine.duration() / 2);
@@ -172,7 +172,7 @@ void tst_QTimeLine::bindableCurrentTime()
     spy.clear();
     referenceCurrentTime = 0;
     QCOMPARE(currentTimeObserver.value(), timeLine.duration());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QTimeLine::duration()
@@ -236,7 +236,7 @@ void tst_QTimeLine::frameRate()
     timeLine.start();
     QTest::qWait(timeLine.duration()*2);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
-    int slowCount = spy.count();
+    int slowCount = spy.size();
 
     // Faster!!
     timeLine.setUpdateInterval(1000 / 100);
@@ -245,7 +245,7 @@ void tst_QTimeLine::frameRate()
     timeLine.start();
     QTest::qWait(timeLine.duration()*2);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
-    QVERIFY2(slowCount < spy.count(), QByteArray::number(spy.count()));
+    QVERIFY2(slowCount < spy.size(), QByteArray::number(spy.size()));
 }
 
 void tst_QTimeLine::bindableUpdateInterval()
@@ -270,7 +270,7 @@ void tst_QTimeLine::bindableUpdateInterval()
     timeLine.start();
     QTest::qWait(timeLine.duration() * 2);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
-    int slowCount = spy.count();
+    int slowCount = spy.size();
 
     // Faster!!
     updateIntervalReference = 1000 / 100;
@@ -279,7 +279,7 @@ void tst_QTimeLine::bindableUpdateInterval()
     timeLine.start();
     QTest::qWait(timeLine.duration() * 2);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
-    QVERIFY2(slowCount < spy.count(), QByteArray::number(spy.count()));
+    QVERIFY2(slowCount < spy.size(), QByteArray::number(spy.size()));
 }
 
 void tst_QTimeLine::value()
@@ -294,7 +294,7 @@ void tst_QTimeLine::value()
     QTRY_VERIFY(timeLine.currentValue() > 0);
     QTRY_COMPARE(timeLine.state(), QTimeLine::NotRunning);
     QCOMPARE(timeLine.currentValue(), 1.0);
-    QVERIFY(spy.count() > 0);
+    QVERIFY(spy.size() > 0);
 
     // Reverse should decrease the value
     timeLine.setCurrentTime(100);
@@ -380,8 +380,8 @@ void tst_QTimeLine::loopCount()
 
         loop.exec();
 
-        QCOMPARE(finishedSpy.count(), 1);
-        QCOMPARE(frameChangedSpy.count(), 11);
+        QCOMPARE(finishedSpy.size(), 1);
+        QCOMPARE(frameChangedSpy.size(), 11);
         for (int i = 0; i < 11; ++i)
             QCOMPARE(frameChangedSpy.at(i).at(0).toInt(), (i+1) % 3);
     }
@@ -390,8 +390,8 @@ void tst_QTimeLine::loopCount()
     timeLine.start();
     loop.exec();
 
-    QCOMPARE(finishedSpy.count(), 2);
-    QCOMPARE(frameChangedSpy.count(), 22);
+    QCOMPARE(finishedSpy.size(), 2);
+    QCOMPARE(frameChangedSpy.size(), 22);
     for (int i = 11; i < 22; ++i) {
         QCOMPARE(frameChangedSpy.at(i).at(0).toInt(), 2 - (i+2) % 3);
     }
@@ -456,8 +456,8 @@ void tst_QTimeLine::bindableLoopCount()
 
         loop.exec();
 
-        QCOMPARE(finishedSpy.count(), 1);
-        QCOMPARE(frameChangedSpy.count(), 11);
+        QCOMPARE(finishedSpy.size(), 1);
+        QCOMPARE(frameChangedSpy.size(), 11);
         for (int i = 0; i < 11; ++i)
             QCOMPARE(frameChangedSpy.at(i).at(0).toInt(), (i + 1) % 3);
     }
@@ -466,8 +466,8 @@ void tst_QTimeLine::bindableLoopCount()
     timeLine.start();
     loop.exec();
 
-    QCOMPARE(finishedSpy.count(), 2);
-    QCOMPARE(frameChangedSpy.count(), 22);
+    QCOMPARE(finishedSpy.size(), 2);
+    QCOMPARE(frameChangedSpy.size(), 22);
     for (int i = 11; i < 22; ++i)
         QCOMPARE(frameChangedSpy.at(i).at(0).toInt(), 2 - (i + 2) % 3);
 }
@@ -636,14 +636,14 @@ void tst_QTimeLine::frameChanged()
     timeLine.start();
     QTest::qWait(timeLine.duration()/2);
     QCOMPARE(timeLine.state(), QTimeLine::Running);
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     QTest::qWait(timeLine.duration());
     if (timeLine.state() != QTimeLine::NotRunning)
         QEXPECT_FAIL("", "QTBUG-24796: QTimeLine runs slower than it should", Abort);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
-    if (spy.count() != 1)
+    if (spy.size() != 1)
         QEXPECT_FAIL("", "QTBUG-24796: QTimeLine runs slower than it should", Abort);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     // Test what happens when the frames are all emitted well before duration expires.
     timeLine.setUpdateInterval(5);
@@ -652,7 +652,7 @@ void tst_QTimeLine::frameChanged()
     timeLine.start();
     QTest::qWait(timeLine.duration()*2);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
-    QCOMPARE(spy.count(), 10);
+    QCOMPARE(spy.size(), 10);
 }
 
 void tst_QTimeLine::stopped()
@@ -665,11 +665,11 @@ void tst_QTimeLine::stopped()
     timeLine.start();
     QTest::qWait(timeLine.duration()*2);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
     spy.clear();
     timeLine.start();
     timeLine.stop();
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
     timeLine.setDirection(QTimeLine::Backward);
     QCOMPARE(timeLine.loopCount(), 1);
 }
@@ -681,13 +681,13 @@ void tst_QTimeLine::finished()
     QSignalSpy spy(&timeLine, &QTimeLine::finished);
     QVERIFY(spy.isValid());
     timeLine.start();
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
 
     spy.clear();
     timeLine.start();
     timeLine.stop();
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QTimeLine::isRunning()
@@ -720,7 +720,7 @@ void tst_QTimeLine::multipleTimeLines()
     timeLine.start();
     timeLineKiller.stop();
     QTest::qWait(timeLine.duration()*2);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 void tst_QTimeLine::sineCurve()

@@ -104,11 +104,11 @@ UnixMakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::
         if (!out_directory.isEmpty() && !out_directory.endsWith(Option::dir_sep))
             out_directory += Option::dir_sep;
         if (!abs_source_path.isEmpty() && out_directory.startsWith(abs_source_path))
-            out_directory = Option::output_dir + out_directory.mid(abs_source_path.length());
+            out_directory = Option::output_dir + out_directory.mid(abs_source_path.size());
 
         QString dist_directory = out_directory;
         if (dist_directory.endsWith(Option::dir_sep))
-            dist_directory.chop(Option::dir_sep.length());
+            dist_directory.chop(Option::dir_sep.size());
         if (!dist_directory.startsWith(Option::dir_sep))
             dist_directory.prepend(Option::dir_sep);
 
@@ -120,7 +120,7 @@ UnixMakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::
         QString out = subtarget->makefile;
         QString in = escapeFilePath(fileFixify(in_directory + subtarget->profile, FileFixifyAbsolute));
         if (out.startsWith(in_directory))
-            out.remove(0, in_directory.length());
+            out.remove(0, in_directory.size());
 
         t << subtarget->target << "-distdir: FORCE";
         writeSubTargetCall(t, in_directory, in, out_directory, escapeFilePath(out),
@@ -302,7 +302,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                         for(QStringList::Iterator cit = Option::c_ext.begin();
                             cit != Option::c_ext.end(); ++cit) {
                             if((*it).endsWith((*cit))) {
-                                d_file = (*it).left((*it).length() - (*cit).length()).toQString();
+                                d_file = (*it).left((*it).length() - (*cit).size()).toQString();
                                 break;
                             }
                         }
@@ -310,7 +310,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                             for(QStringList::Iterator cppit = Option::cpp_ext.begin();
                                 cppit != Option::cpp_ext.end(); ++cppit) {
                                 if((*it).endsWith((*cppit))) {
-                                    d_file = (*it).left((*it).length() - (*cppit).length()).toQString();
+                                    d_file = (*it).left((*it).length() - (*cppit).size()).toQString();
                                     break;
                                 }
                             }
@@ -387,7 +387,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             //incremental target
             QString incr_target = var("TARGET") + "_incremental";
             if(incr_target.indexOf(Option::dir_sep) != -1)
-                incr_target = incr_target.right(incr_target.length() -
+                incr_target = incr_target.right(incr_target.size() -
                                                 (incr_target.lastIndexOf(Option::dir_sep) + 1));
             QString incr_deps, incr_objs;
             if(project->first("QMAKE_INCREMENTAL_STYLE") == "ld") {
@@ -488,7 +488,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             QString incr_target = var("QMAKE_ORIG_TARGET").replace(
                 QRegularExpression("\\." + s_ext), "").replace(QRegularExpression("^lib"), "") + "_incremental";
             if(incr_target.indexOf(Option::dir_sep) != -1)
-                incr_target = incr_target.right(incr_target.length() -
+                incr_target = incr_target.right(incr_target.size() -
                                                 (incr_target.lastIndexOf(Option::dir_sep) + 1));
 
             if(project->first("QMAKE_INCREMENTAL_STYLE") == "ld") {
@@ -849,7 +849,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         //copy other data
         if(!project->isEmpty("QMAKE_BUNDLE_DATA")) {
             const ProStringList &bundle_data = project->values("QMAKE_BUNDLE_DATA");
-            for(int i = 0; i < bundle_data.count(); i++) {
+            for(int i = 0; i < bundle_data.size(); i++) {
                 const ProStringList &files = project->values(ProKey(bundle_data[i] + ".files"));
                 QString path = bundle_dir;
                 const ProKey pkey(bundle_data[i] + ".path");
@@ -869,7 +869,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 }
                 path += project->first(pkey).toQString();
                 path = Option::fixPathToTargetOS(path);
-                for(int file = 0; file < files.count(); file++) {
+                for(int file = 0; file < files.size(); file++) {
                     QString fn = files.at(file).toQString();
                     QString src = fileFixify(fn, FileFixifyAbsolute);
                     if (!QFile::exists(src))
@@ -1394,7 +1394,7 @@ UnixMakefileGenerator::libtoolFileName(bool fixify)
     QString ret = var("TARGET");
     int slsh = ret.lastIndexOf(Option::dir_sep);
     if(slsh != -1)
-        ret = ret.right(ret.length() - slsh - 1);
+        ret = ret.right(ret.size() - slsh - 1);
     int dot = ret.indexOf('.');
     if(dot != -1)
         ret = ret.left(dot);
@@ -1464,7 +1464,7 @@ UnixMakefileGenerator::writeLibtoolFile()
     mkdir(fileInfo(fname).path());
     int slsh = lname.lastIndexOf(Option::dir_sep);
     if(slsh != -1)
-        lname = lname.right(lname.length() - slsh - 1);
+        lname = lname.right(lname.size() - slsh - 1);
     QFile ft(fname);
     if(!ft.open(QIODevice::WriteOnly))
         return;
@@ -1494,7 +1494,7 @@ UnixMakefileGenerator::writeLibtoolFile()
     t << "'\n\n";
 
     t << "# The name of the static archive.\n"
-      << "old_library='" << escapeFilePath(lname.left(lname.length()-Option::libtool_ext.length()))
+      << "old_library='" << escapeFilePath(lname.left(lname.size()-Option::libtool_ext.size()))
                          << ".a'\n\n";
 
     t << "# Libraries that this one depends upon.\n";
@@ -1557,9 +1557,9 @@ bool UnixMakefileGenerator::writeObjectsPart(QTextStream &t, bool do_incremental
             if (!increment)
                 t << "\\\n\t\t" << (*objit);
         }
-        if (incrs_out.count() == objs.count()) { //we just switched places, no real incrementals to be done!
+        if (incrs_out.size() == objs.size()) { //we just switched places, no real incrementals to be done!
             t << escapeFilePaths(incrs_out).join(QString(" \\\n\t\t")) << Qt::endl;
-        } else if (!incrs_out.count()) {
+        } else if (!incrs_out.size()) {
             t << Qt::endl;
         } else {
             src_incremental = true;

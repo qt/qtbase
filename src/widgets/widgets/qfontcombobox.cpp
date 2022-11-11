@@ -132,13 +132,13 @@ static QFontDatabase::WritingSystem writingSystemForFont(const QFont &font, bool
         return system;
     }
 
-    if (writingSystems.count() == 1 && system > QFontDatabase::Cyrillic)
+    if (writingSystems.size() == 1 && system > QFontDatabase::Cyrillic)
         return system;
 
-    if (writingSystems.count() <= 2 && system > QFontDatabase::Armenian && system < QFontDatabase::Vietnamese)
+    if (writingSystems.size() <= 2 && system > QFontDatabase::Armenian && system < QFontDatabase::Vietnamese)
         return system;
 
-    if (writingSystems.count() <= 5 && system >= QFontDatabase::SimplifiedChinese && system <= QFontDatabase::Korean)
+    if (writingSystems.size() <= 5 && system >= QFontDatabase::SimplifiedChinese && system <= QFontDatabase::Korean)
         return system;
 
     return QFontDatabase::Any;
@@ -317,7 +317,7 @@ void QFontComboBoxPrivate::_q_updateModel()
         }
         result += list.at(i);
         if (list.at(i) == fi.family() || list.at(i).startsWith(fi.family() + " ["_L1))
-            offset = result.count() - 1;
+            offset = result.size() - 1;
     }
     list = result;
 

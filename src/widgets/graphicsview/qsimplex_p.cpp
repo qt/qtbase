@@ -580,7 +580,7 @@ bool QSimplex::simplifyConstraints(QList<QSimplexConstraint *> *constraints)
         QList<QSimplexConstraint *>::iterator iter = constraints->begin();
         while (iter != constraints->end()) {
             QSimplexConstraint *c = *iter;
-            if ((c->ratio == QSimplexConstraint::Equal) && (c->variables.count() == 1)) {
+            if ((c->ratio == QSimplexConstraint::Equal) && (c->variables.size() == 1)) {
                 // Check whether this is a constraint of type Var == K
                 // If so, save its value to "results".
                 QSimplexVariable *variable = c->variables.constBegin().key();

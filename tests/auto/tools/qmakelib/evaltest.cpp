@@ -2800,7 +2800,7 @@ static bool compareState(QMakeEvaluator *eval, ProFile *out)
         }
         ProValueMap::Iterator it;
         ProValueMap *vmap = eval->findValues(var, &it);
-        if (value.length() == 1 && value.at(0) == "UNDEF") {
+        if (value.size() == 1 && value.at(0) == "UNDEF") {
             if (vmap) {
                 qWarning("Value of %s is incorrect.\n  Actual:%s\nExpected: <UNDEFINED>",
                          qPrintable(var.toQString()),

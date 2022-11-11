@@ -211,7 +211,7 @@ void QUrlModel::addUrls(const QList<QUrl> &list, int row, bool move)
     if (row == -1)
         row = rowCount();
     row = qMin(row, rowCount());
-    for (int i = list.count() - 1; i >= 0; --i) {
+    for (int i = list.size() - 1; i >= 0; --i) {
         QUrl url = list.at(i);
         if (!url.isValid() || url.scheme() != "file"_L1)
             continue;
@@ -291,7 +291,7 @@ void QUrlModel::setFileSystemModel(QFileSystemModel *model)
 void QUrlModel::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
     QModelIndex parent = topLeft.parent();
-    for (int i = 0; i < watching.count(); ++i) {
+    for (int i = 0; i < watching.size(); ++i) {
         QModelIndex index = watching.at(i).index;
         if (index.model() && topLeft.model()) {
             Q_ASSERT(index.model() == topLeft.model());
@@ -312,7 +312,7 @@ void QUrlModel::dataChanged(const QModelIndex &topLeft, const QModelIndex &botto
 void QUrlModel::layoutChanged()
 {
     QStringList paths;
-    const int numPaths = watching.count();
+    const int numPaths = watching.size();
     paths.reserve(numPaths);
     for (int i = 0; i < numPaths; ++i)
         paths.append(watching.at(i).path);
@@ -417,7 +417,7 @@ void QSidebar::showContextMenu(const QPoint &position)
         connect(action, SIGNAL(triggered()), this, SLOT(removeEntry()));
         actions.append(action);
     }
-    if (actions.count() > 0)
+    if (actions.size() > 0)
         QMenu::exec(actions, mapToGlobal(position));
 }
 #endif // QT_CONFIG(menu)
@@ -431,7 +431,7 @@ void QSidebar::removeEntry()
 {
     QList<QModelIndex> idxs = selectionModel()->selectedIndexes();
     QList<QPersistentModelIndex> indexes;
-    const int numIndexes = idxs.count();
+    const int numIndexes = idxs.size();
     indexes.reserve(numIndexes);
     for (int i = 0; i < numIndexes; i++)
         indexes.append(idxs.at(i));

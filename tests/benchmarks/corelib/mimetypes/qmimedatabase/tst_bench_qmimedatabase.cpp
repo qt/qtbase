@@ -56,7 +56,7 @@ void tst_QMimeDatabase::inheritsPerformance()
     mimeTypes += mimeTypes;
     mimeTypes += mimeTypes;
     mimeTypes += mimeTypes;
-    QCOMPARE(mimeTypes.count(), 40);
+    QCOMPARE(mimeTypes.size(), 40);
     QMimeDatabase db;
     QMimeType mime = db.mimeTypeForName(QString::fromLatin1("text/x-chdr"));
     QVERIFY(mime.isValid());

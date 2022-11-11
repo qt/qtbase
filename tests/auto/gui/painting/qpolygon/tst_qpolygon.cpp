@@ -168,8 +168,8 @@ void tst_QPolygon::swap()
     QPolygon p2(QList<QPoint>() << QPoint(0, 0) << QPoint(0, 10) << QPoint(10, 10)
                                 << QPoint(10, 0));
     p1.swap(p2);
-    QCOMPARE(p1.count(),4);
-    QCOMPARE(p2.count(),3);
+    QCOMPARE(p1.size(),4);
+    QCOMPARE(p2.size(),3);
 }
 
 void tst_QPolygon::intersections_data()

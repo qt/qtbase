@@ -19,7 +19,7 @@ QWindowSystemInterface::TouchPoint *QLibInputTouch::DeviceState::point(int32_t s
 {
     const int id = qMax(0, slot);
 
-    for (int i = 0; i < m_points.count(); ++i)
+    for (int i = 0; i < m_points.size(); ++i)
         if (m_points.at(i).id == id)
             return &m_points[i];
 
@@ -146,7 +146,7 @@ void QLibInputTouch::processTouchUp(libinput_event_touch *e)
         tp->state = QEventPoint::State::Released;
         // There may not be a Frame event after the last Up. Work this around.
         QEventPoint::States s;
-        for (int i = 0; i < state->m_points.count(); ++i)
+        for (int i = 0; i < state->m_points.size(); ++i)
             s |= state->m_points.at(i).state;
         if (s == QEventPoint::State::Released)
             processTouchFrame(e);
@@ -177,7 +177,7 @@ void QLibInputTouch::processTouchFrame(libinput_event_touch *e)
     QWindowSystemInterface::handleTouchEvent(nullptr, state->m_touchDevice, state->m_points,
                                              QGuiApplication::keyboardModifiers());
 
-    for (int i = 0; i < state->m_points.count(); ++i) {
+    for (int i = 0; i < state->m_points.size(); ++i) {
         QWindowSystemInterface::TouchPoint &tp(state->m_points[i]);
         if (tp.state == QEventPoint::State::Released)
             state->m_points.removeAt(i--);

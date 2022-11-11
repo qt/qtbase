@@ -72,7 +72,7 @@ static QString lookupVendorIdInSystemDatabase(QByteArrayView id)
 bool QEdidParser::parse(const QByteArray &blob)
 {
     const quint8 *data = reinterpret_cast<const quint8 *>(blob.constData());
-    const size_t length = blob.length();
+    const size_t length = blob.size();
 
     // Verify header
     if (length < 128)

@@ -65,7 +65,7 @@ public:
     void reserveSpace(int resultCount)
     {
         currentResultCount = resultCount;
-        resizeList(qMax(resultCount, vector.count()));
+        resizeList(qMax(resultCount, vector.size()));
     }
 
     void reportResults(int begin)

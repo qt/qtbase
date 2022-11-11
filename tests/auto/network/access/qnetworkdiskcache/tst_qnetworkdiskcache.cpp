@@ -278,17 +278,17 @@ void tst_QNetworkDiskCache::clear()
     QVERIFY(cache.cacheSize() > qint64(0));
 
     QString cacheDirectory = cache.cacheDirectory();
-    QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 3);
+    QCOMPARE(countFiles(cacheDirectory).size(), NUM_SUBDIRECTORIES + 3);
     cache.clear();
-    QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 2);
+    QCOMPARE(countFiles(cacheDirectory).size(), NUM_SUBDIRECTORIES + 2);
 
     // don't delete files that it didn't create
     QTemporaryFile file(cacheDirectory + "/XXXXXX");
     if (file.open()) {
         file.fileName();    // make sure it exists with a name
-        QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 3);
+        QCOMPARE(countFiles(cacheDirectory).size(), NUM_SUBDIRECTORIES + 3);
         cache.clear();
-        QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 3);
+        QCOMPARE(countFiles(cacheDirectory).size(), NUM_SUBDIRECTORIES + 3);
     }
 }
 
@@ -355,9 +355,9 @@ void tst_QNetworkDiskCache::remove()
     QUrl url(EXAMPLE_URL);
     cache.setupWithOne(tempDir.path(), url);
     QString cacheDirectory = cache.cacheDirectory();
-    QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 3);
+    QCOMPARE(countFiles(cacheDirectory).size(), NUM_SUBDIRECTORIES + 3);
     cache.remove(url);
-    QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 2);
+    QCOMPARE(countFiles(cacheDirectory).size(), NUM_SUBDIRECTORIES + 2);
 }
 
 void tst_QNetworkDiskCache::accessAfterRemove() // QTBUG-17400
@@ -477,7 +477,7 @@ void tst_QNetworkDiskCache::fileMetaData()
 
     QString cacheDirectory = cache.cacheDirectory();
     QStringList list = countFiles(cacheDirectory);
-    QCOMPARE(list.count(), NUM_SUBDIRECTORIES + 3);
+    QCOMPARE(list.size(), NUM_SUBDIRECTORIES + 3);
     foreach(QString fileName, list) {
         QFileInfo info(fileName);
         if (info.isFile()) {
@@ -531,7 +531,7 @@ void tst_QNetworkDiskCache::expire()
         }
     }
     std::sort(cacheList.begin(), cacheList.end());
-    for (int i = 0; i < cacheList.count(); ++i) {
+    for (int i = 0; i < cacheList.size(); ++i) {
         QString fileName = cacheList[i];
         QCOMPARE(fileName, QLatin1String("http://localhost:4/") + QString::number(i + 6));
     }
@@ -570,7 +570,7 @@ void tst_QNetworkDiskCache::oldCacheVersionFile()
         QVERIFY(!QFile::exists(name));
     } else {
         QStringList files = countFiles(cache.cacheDirectory());
-        QCOMPARE(files.count(), NUM_SUBDIRECTORIES + 3);
+        QCOMPARE(files.size(), NUM_SUBDIRECTORIES + 3);
         // find the file
         QString cacheFile;
         foreach (QString file, files) {
@@ -736,7 +736,7 @@ public:
                 if (d) {
                     QByteArray x = d->readAll();
                     if (x != longString && x != longString2) {
-                        qDebug() << x.length() << QString(x);
+                        qDebug() << x.size() << QString(x);
                         gotMetaData = cache.metaData(url);
                         qDebug() << (gotMetaData.url().toString())
                          << gotMetaData.lastModified()

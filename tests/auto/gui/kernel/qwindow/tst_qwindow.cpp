@@ -988,7 +988,7 @@ public:
         }
         touchEventType = event->type();
         QList<QTouchEvent::TouchPoint> points = event->points();
-        for (int i = 0; i < points.count(); ++i) {
+        for (int i = 0; i < points.size(); ++i) {
             const auto &point = points.at(i);
             switch (point.state()) {
             case QEventPoint::State::Pressed:
@@ -1505,7 +1505,7 @@ void tst_QWindow::orientation()
 
     QSignalSpy spy(&window, SIGNAL(contentOrientationChanged(Qt::ScreenOrientation)));
     window.reportContentOrientationChange(Qt::LandscapeOrientation);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 void tst_QWindow::sizes()
@@ -1524,40 +1524,40 @@ void tst_QWindow::sizes()
     QCOMPARE(window.minimumHeight(), 0);
     QCOMPARE(window.minimumSize(), QSize(10, 0));
     QCOMPARE(window.maximumSize(), oldMaximum);
-    QCOMPARE(minimumWidthSpy.count(), 1);
-    QCOMPARE(minimumHeightSpy.count(), 0);
-    QCOMPARE(maximumWidthSpy.count(), 0);
-    QCOMPARE(maximumHeightSpy.count(), 0);
+    QCOMPARE(minimumWidthSpy.size(), 1);
+    QCOMPARE(minimumHeightSpy.size(), 0);
+    QCOMPARE(maximumWidthSpy.size(), 0);
+    QCOMPARE(maximumHeightSpy.size(), 0);
 
     window.setMinimumHeight(10);
     QCOMPARE(window.minimumWidth(), 10);
     QCOMPARE(window.minimumHeight(), 10);
     QCOMPARE(window.minimumSize(), QSize(10, 10));
     QCOMPARE(window.maximumSize(), oldMaximum);
-    QCOMPARE(minimumWidthSpy.count(), 1);
-    QCOMPARE(minimumHeightSpy.count(), 1);
-    QCOMPARE(maximumWidthSpy.count(), 0);
-    QCOMPARE(maximumHeightSpy.count(), 0);
+    QCOMPARE(minimumWidthSpy.size(), 1);
+    QCOMPARE(minimumHeightSpy.size(), 1);
+    QCOMPARE(maximumWidthSpy.size(), 0);
+    QCOMPARE(maximumHeightSpy.size(), 0);
 
     window.setMaximumWidth(100);
     QCOMPARE(window.maximumWidth(), 100);
     QCOMPARE(window.maximumHeight(), oldMaximum.height());
     QCOMPARE(window.minimumSize(), QSize(10, 10));
     QCOMPARE(window.maximumSize(), QSize(100, oldMaximum.height()));
-    QCOMPARE(minimumWidthSpy.count(), 1);
-    QCOMPARE(minimumHeightSpy.count(), 1);
-    QCOMPARE(maximumWidthSpy.count(), 1);
-    QCOMPARE(maximumHeightSpy.count(), 0);
+    QCOMPARE(minimumWidthSpy.size(), 1);
+    QCOMPARE(minimumHeightSpy.size(), 1);
+    QCOMPARE(maximumWidthSpy.size(), 1);
+    QCOMPARE(maximumHeightSpy.size(), 0);
 
     window.setMaximumHeight(100);
     QCOMPARE(window.maximumWidth(), 100);
     QCOMPARE(window.maximumHeight(), 100);
     QCOMPARE(window.minimumSize(), QSize(10, 10));
     QCOMPARE(window.maximumSize(), QSize(100, 100));
-    QCOMPARE(minimumWidthSpy.count(), 1);
-    QCOMPARE(minimumHeightSpy.count(), 1);
-    QCOMPARE(maximumWidthSpy.count(), 1);
-    QCOMPARE(maximumHeightSpy.count(), 1);
+    QCOMPARE(minimumWidthSpy.size(), 1);
+    QCOMPARE(minimumHeightSpy.size(), 1);
+    QCOMPARE(maximumWidthSpy.size(), 1);
+    QCOMPARE(maximumHeightSpy.size(), 1);
 }
 
 class CloseOnCloseEventWindow : public QWindow
@@ -1789,25 +1789,25 @@ void tst_QWindow::windowModality()
     QCOMPARE(window.modality(), Qt::NonModal);
     window.setModality(Qt::NonModal);
     QCOMPARE(window.modality(), Qt::NonModal);
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     window.setModality(Qt::WindowModal);
     QCOMPARE(window.modality(), Qt::WindowModal);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     window.setModality(Qt::WindowModal);
     QCOMPARE(window.modality(), Qt::WindowModal);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     window.setModality(Qt::ApplicationModal);
     QCOMPARE(window.modality(), Qt::ApplicationModal);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
     window.setModality(Qt::ApplicationModal);
     QCOMPARE(window.modality(), Qt::ApplicationModal);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 
     window.setModality(Qt::NonModal);
     QCOMPARE(window.modality(), Qt::NonModal);
-    QCOMPARE(spy.count(), 3);
+    QCOMPARE(spy.size(), 3);
 }
 
 void tst_QWindow::inputReentrancy()
@@ -1990,32 +1990,32 @@ void tst_QWindow::visibility()
     QVERIFY(window.isVisible());
     QVERIFY(window.visibility() != QWindow::Hidden);
     QVERIFY(window.visibility() != QWindow::AutomaticVisibility);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     spy.clear();
 
     window.setVisibility(QWindow::Hidden);
     QVERIFY(!window.isVisible());
     QCOMPARE(window.visibility(), QWindow::Hidden);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     spy.clear();
 
     window.setVisibility(QWindow::FullScreen);
     QVERIFY(window.isVisible());
     QCOMPARE(window.windowState(), Qt::WindowFullScreen);
     QCOMPARE(window.visibility(), QWindow::FullScreen);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QTRY_COMPARE(window.lastReceivedWindowState, Qt::WindowFullScreen);
     spy.clear();
 
     window.setWindowState(Qt::WindowNoState);
     QCOMPARE(window.visibility(), QWindow::Windowed);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QTRY_COMPARE(window.lastReceivedWindowState, Qt::WindowNoState);
     spy.clear();
 
     window.setVisible(false);
     QCOMPARE(window.visibility(), QWindow::Hidden);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     spy.clear();
 }
 

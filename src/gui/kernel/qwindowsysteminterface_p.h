@@ -464,7 +464,7 @@ public:
         void append(WindowSystemEvent *e)
         { const QMutexLocker locker(&mutex); impl.append(e); }
         int count() const
-        { const QMutexLocker locker(&mutex); return impl.count(); }
+        { const QMutexLocker locker(&mutex); return impl.size(); }
         WindowSystemEvent *peekAtFirstOfType(EventType t) const
         {
             const QMutexLocker locker(&mutex);

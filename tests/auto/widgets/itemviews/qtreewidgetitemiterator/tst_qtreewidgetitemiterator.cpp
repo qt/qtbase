@@ -866,7 +866,7 @@ void tst_QTreeWidgetItemIterator::iteratorflags()
     QTreeWidgetItemIterator it(testWidget, iteratorflags);
     it += start;
     int iMatch = 0;
-    while (*it && iMatch < matches.count()) {
+    while (*it && iMatch < matches.size()) {
         QTreeWidgetItem *item = *it;
         QCOMPARE(item->text(0), matches[iMatch]);
         ++it;

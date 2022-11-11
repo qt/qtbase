@@ -105,8 +105,8 @@ static QString prettyByteArray(const QByteArray &array)
 {
     // any control chars?
     QString result;
-    result.reserve(array.length() + array.length() / 3);
-    for (int i = 0; i < array.length(); ++i) {
+    result.reserve(array.size() + array.size() / 3);
+    for (int i = 0; i < array.size(); ++i) {
         char c = array.at(i);
         switch (c) {
         case '\n':
@@ -208,11 +208,11 @@ static void netChat(int port, const QList<Chat> &chat)
         switch (it->type) {
             case Chat::Expect: {
                     qDebug() << i << "Expecting" << prettyByteArray(it->data);
-                    if (!doSocketRead(&socket, it->data.length(), 3 * defaultReadTimeoutMS))
-                        QFAIL(msgDoSocketReadFailed(serverName, port, i, it->data.length()));
+                    if (!doSocketRead(&socket, it->data.size(), 3 * defaultReadTimeoutMS))
+                        QFAIL(msgDoSocketReadFailed(serverName, port, i, it->data.size()));
 
                     // pop that many bytes off the socket
-                    QByteArray received = socket.read(it->data.length());
+                    QByteArray received = socket.read(it->data.size());
 
                     // is it what we expected?
                     QVERIFY2(received == it->data,
@@ -226,8 +226,8 @@ static void netChat(int port, const QList<Chat> &chat)
                 qDebug() << i << "Discarding until" << prettyByteArray(it->data);
                 while (true) {
                     // scan the buffer until we have our string
-                    if (!doSocketRead(&socket, it->data.length()))
-                        QFAIL(msgDoSocketReadFailed(serverName, port, i, it->data.length()));
+                    if (!doSocketRead(&socket, it->data.size()))
+                        QFAIL(msgDoSocketReadFailed(serverName, port, i, it->data.size()));
 
                     QByteArray buffer;
                     buffer.resize(socket.bytesAvailable());
@@ -239,7 +239,7 @@ static void netChat(int port, const QList<Chat> &chat)
                         continue;
                     }
 
-                    buffer = socket.read(pos + it->data.length());
+                    buffer = socket.read(pos + it->data.size());
                     qDebug() << i << "Discarded" << prettyByteArray(buffer);
                     break;
                 }

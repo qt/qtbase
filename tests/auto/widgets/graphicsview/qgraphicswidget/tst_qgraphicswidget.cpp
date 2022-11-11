@@ -950,9 +950,9 @@ void tst_QGraphicsWidget::geometry()
     widget.setPos(pos);
     widget.resize(size);
     if (!size.isNull() && !pos.isNull())
-        QCOMPARE(spy.count(), 2);
+        QCOMPARE(spy.size(), 2);
     if (!size.isNull() && pos.isNull())
-        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.size(), 1);
     QCOMPARE(widget.geometry(), QRectF(pos, size));
 }
 
@@ -963,10 +963,10 @@ void tst_QGraphicsWidget::geometryChanged()
     QCOMPARE(w.geometry(), QRectF(0, 0, 200, 200));
     QSignalSpy spy(&w, SIGNAL(geometryChanged()));
     w.setGeometry(0, 0, 100, 100);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(w.geometry(), QRectF(0, 0, 100, 100));
     w.setPos(10, 10);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
     QCOMPARE(w.geometry(), QRectF(10, 10, 100, 100));
 
 }
@@ -978,10 +978,10 @@ void tst_QGraphicsWidget::width()
     QSignalSpy spy(&w, SIGNAL(widthChanged()));
     w.setProperty("width", qreal(50));
     QCOMPARE(w.property("width").toReal(), qreal(50));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     //calling old school setGeometry should work too
     w.setGeometry(0, 0, 200, 200);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 }
 
 void tst_QGraphicsWidget::height()
@@ -991,10 +991,10 @@ void tst_QGraphicsWidget::height()
     QSignalSpy spy(&w, SIGNAL(heightChanged()));
     w.setProperty("height", qreal(50));
     QCOMPARE(w.property("height").toReal(), qreal(50));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     //calling old school setGeometry should work too
     w.setGeometry(0, 0, 200, 200);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 }
 
 void tst_QGraphicsWidget::getContentsMargins_data()
@@ -1140,12 +1140,12 @@ void tst_QGraphicsWidget::layout()
     widget.setLayout(layout);
 
     QTRY_COMPARE(widget.layout(), static_cast<QGraphicsLayout*>(layout));
-    for (int i = 0; i < children.count(); ++i) {
+    for (int i = 0; i < children.size(); ++i) {
         SubQGraphicsWidget *item = children[i];
         QCOMPARE(item->parentWidget(), (QGraphicsWidget *)&widget);
         QVERIFY(item->geometry() != QRectF(0, 0, -1, -1));
     }
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     // don't crash
     widget.setLayout(0);
 }
@@ -1178,7 +1178,7 @@ void tst_QGraphicsWidget::layoutDirection()
     QCOMPARE(widget.testAttribute(Qt::WA_SetLayoutDirection), true);
     view->show();
     QVERIFY(QTest::qWaitForWindowExposed(view.data()));
-    for (int i = 0; i < children.count(); ++i) {
+    for (int i = 0; i < children.size(); ++i) {
         QTRY_COMPARE(children[i]->layoutDirection(), layoutDirection);
         QTRY_COMPARE(children[i]->testAttribute(Qt::WA_SetLayoutDirection), false);
         view->update();
@@ -1416,7 +1416,7 @@ void tst_QGraphicsWidget::setTabOrder()
         QVERIFY(view.viewport()->hasFocus());
 
         int currentItem = 0;
-        while (currentItem < children.count() - 1) {
+        while (currentItem < children.size() - 1) {
             QTest::keyPress(view.viewport(), Qt::Key_Tab);
             ++currentItem;
             QVERIFY(children[currentItem % children.size()]->hasFocus());
@@ -1565,7 +1565,7 @@ void tst_QGraphicsWidget::unsetLayoutDirection()
     widget.setLayoutDirection(layoutDirection);
     widget.unsetLayoutDirection();
     QCOMPARE(widget.testAttribute(Qt::WA_SetLayoutDirection), false);
-    for (int i = 0; i < children.count(); ++i) {
+    for (int i = 0; i < children.size(); ++i) {
         QCOMPARE(children[i]->layoutDirection(), Qt::LeftToRight);
     }
 }
@@ -1927,7 +1927,7 @@ void tst_QGraphicsWidget::setSizes()
     QSizeF max = QSizeF(50, 50);
 
     int i;
-    for (i = 0; i < inputInstructions.count(); ++i) {
+    for (i = 0; i < inputInstructions.size(); ++i) {
         Inst input = inputInstructions.at(i);
 
         // defaults
@@ -1981,7 +1981,7 @@ void tst_QGraphicsWidget::setSizes()
     widget->setPreferredSize(pref);
     widget->setMaximumSize(max);
 
-    for (i = 0; i < compareInstructions.count(); ++i) {
+    for (i = 0; i < compareInstructions.size(); ++i) {
         Inst input = compareInstructions.at(i);
         switch (input.first) {
             case MinimumSize:
@@ -2731,11 +2731,11 @@ void tst_QGraphicsWidget::task250119_shortcutContext()
 
     w_signal.setFocus();
     QTest::keyPress(&view, Qt::Key_B);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     w_signal.clearFocus();
     QTest::keyPress(&view, Qt::Key_B);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     scene.removeItem(&w_signal);
 }

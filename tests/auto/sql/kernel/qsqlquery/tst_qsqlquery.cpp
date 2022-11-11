@@ -2221,7 +2221,7 @@ void tst_QSqlQuery::prepare_bind_exec()
             q.bindValue(":id", i);
             QVERIFY_SQL(q, exec());
             const QVariantList m = q.boundValues();
-            QCOMPARE(m.count(), qsizetype(2));
+            QCOMPARE(m.size(), qsizetype(2));
             QCOMPARE(m.at(0).toInt(), i);
             QCOMPARE(m.at(1).toString(), values[i]);
         }
@@ -3602,9 +3602,9 @@ void tst_QSqlQuery::task_250026()
     QVERIFY_SQL(q, exec());
     QVERIFY_SQL(q, exec("select * from " + tableName));
     QVERIFY_SQL(q, next());
-    QCOMPARE(q.value(0).toString().length(), data258.length());
+    QCOMPARE(q.value(0).toString().size(), data258.size());
     QVERIFY_SQL(q, next());
-    QCOMPARE(q.value(0).toString().length(), data1026.length());
+    QCOMPARE(q.value(0).toString().size(), data1026.size());
 }
 
 void tst_QSqlQuery::crashQueryOnCloseDatabase()

@@ -10,7 +10,7 @@ QT_BEGIN_NAMESPACE
 void qmakePropertyPrinter(const QList<QPair<QString, QString>> &values)
 {
     // Assume single property request
-    if (values.count() == 1) {
+    if (values.size() == 1) {
         std::cout << qPrintable(values.at(0).second) << std::endl;
         return;
     }

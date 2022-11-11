@@ -226,7 +226,7 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
     auto *deviceInfo = reinterpret_cast<xcb_input_xi_device_info_t *>(info);
     if (removeExisting) {
 #if QT_CONFIG(tabletevent)
-        for (int i = 0; i < m_tabletData.count(); ++i) {
+        for (int i = 0; i < m_tabletData.size(); ++i) {
             if (m_tabletData.at(i).deviceId == deviceInfo->deviceid) {
                 m_tabletData.remove(i);
                 break;
@@ -1627,7 +1627,7 @@ void QXcbConnection::xi2ReportTabletEvent(const void *event, TabletData *tabletD
 
 QXcbConnection::TabletData *QXcbConnection::tabletDataForDevice(int id)
 {
-    for (int i = 0; i < m_tabletData.count(); ++i) {
+    for (int i = 0; i < m_tabletData.size(); ++i) {
         if (m_tabletData.at(i).deviceId == id)
             return &m_tabletData[i];
     }

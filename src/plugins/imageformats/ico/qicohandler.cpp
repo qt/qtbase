@@ -565,14 +565,14 @@ bool ICOReader::write(QIODevice *device, const QList<QImage> &images)
 {
     bool retValue = false;
 
-    if (images.count()) {
+    if (images.size()) {
 
         qint64 origOffset = device->pos();
 
         ICONDIR id;
         id.idReserved = 0;
         id.idType = 1;
-        id.idCount = images.count();
+        id.idCount = images.size();
 
         ICONDIRENTRY * entries = new ICONDIRENTRY[id.idCount];
         BMP_INFOHDR * bmpHeaders = new BMP_INFOHDR[id.idCount];

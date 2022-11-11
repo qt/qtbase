@@ -220,29 +220,29 @@ void tst_QTextBrowser::relativeLinks()
     QSignalSpy sourceChangedSpy(browser, SIGNAL(sourceChanged(QUrl)));
     browser->setSource(QUrl("subdir/../qtextbrowser.html"));
     QVERIFY(!browser->document()->isEmpty());
-    QCOMPARE(sourceChangedSpy.count(), 1);
+    QCOMPARE(sourceChangedSpy.size(), 1);
     QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("subdir/../qtextbrowser.html"));
     browser->setSource(QUrl("subdir/index.html"));
     QVERIFY(!browser->document()->isEmpty());
-    QCOMPARE(sourceChangedSpy.count(), 1);
+    QCOMPARE(sourceChangedSpy.size(), 1);
     QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("subdir/index.html"));
     browser->setSource(QUrl("anchor.html"));
     QVERIFY(!browser->document()->isEmpty());
-    QCOMPARE(sourceChangedSpy.count(), 1);
+    QCOMPARE(sourceChangedSpy.size(), 1);
     QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("anchor.html"));
     browser->setSource(QUrl("subdir/index.html"));
     QVERIFY(!browser->document()->isEmpty());
-    QCOMPARE(sourceChangedSpy.count(), 1);
+    QCOMPARE(sourceChangedSpy.size(), 1);
     QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("subdir/index.html"));
 
     // using QUrl::fromLocalFile()
     browser->setSource(QUrl::fromLocalFile("anchor.html"));
     QVERIFY(!browser->document()->isEmpty());
-    QCOMPARE(sourceChangedSpy.count(), 1);
+    QCOMPARE(sourceChangedSpy.size(), 1);
     QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("file:anchor.html"));
     browser->setSource(QUrl("subdir/../qtextbrowser.html"));
     QVERIFY(!browser->document()->isEmpty());
-    QCOMPARE(sourceChangedSpy.count(), 1);
+    QCOMPARE(sourceChangedSpy.size(), 1);
     QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("subdir/../qtextbrowser.html"));
 }
 
@@ -274,9 +274,9 @@ void tst_QTextBrowser::forwardBackwardAvailable()
     browser->setSource(QUrl::fromLocalFile("anchor.html"));
     QVERIFY(!browser->isBackwardAvailable());
     QVERIFY(!browser->isForwardAvailable());
-    QCOMPARE(backwardSpy.count(), 1);
+    QCOMPARE(backwardSpy.size(), 1);
     QVERIFY(!backwardSpy.at(0).at(0).toBool());
-    QCOMPARE(forwardSpy.count(), 1);
+    QCOMPARE(forwardSpy.size(), 1);
     QVERIFY(!forwardSpy.at(0).at(0).toBool());
 
     backwardSpy.clear();
@@ -285,9 +285,9 @@ void tst_QTextBrowser::forwardBackwardAvailable()
     browser->setSource(QUrl::fromLocalFile("bigpage.html"));
     QVERIFY(browser->isBackwardAvailable());
     QVERIFY(!browser->isForwardAvailable());
-    QCOMPARE(backwardSpy.count(), 1);
+    QCOMPARE(backwardSpy.size(), 1);
     QVERIFY(backwardSpy.at(0).at(0).toBool());
-    QCOMPARE(forwardSpy.count(), 1);
+    QCOMPARE(forwardSpy.size(), 1);
     QVERIFY(!forwardSpy.at(0).at(0).toBool());
 
     backwardSpy.clear();
@@ -296,9 +296,9 @@ void tst_QTextBrowser::forwardBackwardAvailable()
     browser->setSource(QUrl::fromLocalFile("pagewithbg.html"));
     QVERIFY(browser->isBackwardAvailable());
     QVERIFY(!browser->isForwardAvailable());
-    QCOMPARE(backwardSpy.count(), 1);
+    QCOMPARE(backwardSpy.size(), 1);
     QVERIFY(backwardSpy.at(0).at(0).toBool());
-    QCOMPARE(forwardSpy.count(), 1);
+    QCOMPARE(forwardSpy.size(), 1);
     QVERIFY(!forwardSpy.at(0).at(0).toBool());
 
     backwardSpy.clear();
@@ -307,9 +307,9 @@ void tst_QTextBrowser::forwardBackwardAvailable()
     browser->backward();
     QVERIFY(browser->isBackwardAvailable());
     QVERIFY(browser->isForwardAvailable());
-    QCOMPARE(backwardSpy.count(), 1);
+    QCOMPARE(backwardSpy.size(), 1);
     QVERIFY(backwardSpy.at(0).at(0).toBool());
-    QCOMPARE(forwardSpy.count(), 1);
+    QCOMPARE(forwardSpy.size(), 1);
     QVERIFY(forwardSpy.at(0).at(0).toBool());
 
     backwardSpy.clear();
@@ -318,9 +318,9 @@ void tst_QTextBrowser::forwardBackwardAvailable()
     browser->backward();
     QVERIFY(!browser->isBackwardAvailable());
     QVERIFY(browser->isForwardAvailable());
-    QCOMPARE(backwardSpy.count(), 1);
+    QCOMPARE(backwardSpy.size(), 1);
     QVERIFY(!backwardSpy.at(0).at(0).toBool());
-    QCOMPARE(forwardSpy.count(), 1);
+    QCOMPARE(forwardSpy.size(), 1);
     QVERIFY(forwardSpy.at(0).at(0).toBool());
 
     backwardSpy.clear();
@@ -329,9 +329,9 @@ void tst_QTextBrowser::forwardBackwardAvailable()
     browser->forward();
     QVERIFY(browser->isBackwardAvailable());
     QVERIFY(browser->isForwardAvailable());
-    QCOMPARE(backwardSpy.count(), 1);
+    QCOMPARE(backwardSpy.size(), 1);
     QVERIFY(backwardSpy.at(0).at(0).toBool());
-    QCOMPARE(forwardSpy.count(), 1);
+    QCOMPARE(forwardSpy.size(), 1);
     QVERIFY(forwardSpy.at(0).at(0).toBool());
 
     backwardSpy.clear();
@@ -340,9 +340,9 @@ void tst_QTextBrowser::forwardBackwardAvailable()
     browser->forward();
     QVERIFY(browser->isBackwardAvailable());
     QVERIFY(!browser->isForwardAvailable());
-    QCOMPARE(backwardSpy.count(), 1);
+    QCOMPARE(backwardSpy.size(), 1);
     QVERIFY(backwardSpy.at(0).at(0).toBool());
-    QCOMPARE(forwardSpy.count(), 1);
+    QCOMPARE(forwardSpy.size(), 1);
     QVERIFY(!forwardSpy.at(0).at(0).toBool());
 
     backwardSpy.clear();
@@ -360,9 +360,9 @@ void tst_QTextBrowser::clearHistory()
     browser->clearHistory();
     QVERIFY(!browser->isBackwardAvailable());
     QVERIFY(!browser->isForwardAvailable());
-    QCOMPARE(backwardSpy.count(), 1);
+    QCOMPARE(backwardSpy.size(), 1);
     QVERIFY(!backwardSpy.at(0).at(0).toBool());
-    QCOMPARE(forwardSpy.count(), 1);
+    QCOMPARE(forwardSpy.size(), 1);
     QVERIFY(!forwardSpy.at(0).at(0).toBool());
     QVERIFY(browser->historyTitle(-1).isEmpty());
     QVERIFY(browser->historyTitle(0).isEmpty());
@@ -374,9 +374,9 @@ void tst_QTextBrowser::clearHistory()
     browser->setSource(QUrl::fromLocalFile("anchor.html"));
     QVERIFY(!browser->isBackwardAvailable());
     QVERIFY(!browser->isForwardAvailable());
-    QCOMPARE(backwardSpy.count(), 1);
+    QCOMPARE(backwardSpy.size(), 1);
     QVERIFY(!backwardSpy.at(0).at(0).toBool());
-    QCOMPARE(forwardSpy.count(), 1);
+    QCOMPARE(forwardSpy.size(), 1);
     QVERIFY(!forwardSpy.at(0).at(0).toBool());
 
     backwardSpy.clear();
@@ -385,9 +385,9 @@ void tst_QTextBrowser::clearHistory()
     browser->setSource(QUrl::fromLocalFile("bigpage.html"));
     QVERIFY(browser->isBackwardAvailable());
     QVERIFY(!browser->isForwardAvailable());
-    QCOMPARE(backwardSpy.count(), 1);
+    QCOMPARE(backwardSpy.size(), 1);
     QVERIFY(backwardSpy.at(0).at(0).toBool());
-    QCOMPARE(forwardSpy.count(), 1);
+    QCOMPARE(forwardSpy.size(), 1);
     QVERIFY(!forwardSpy.at(0).at(0).toBool());
 
     backwardSpy.clear();
@@ -396,9 +396,9 @@ void tst_QTextBrowser::clearHistory()
     browser->clearHistory();
     QVERIFY(!browser->isBackwardAvailable());
     QVERIFY(!browser->isForwardAvailable());
-    QCOMPARE(backwardSpy.count(), 1);
+    QCOMPARE(backwardSpy.size(), 1);
     QVERIFY(!backwardSpy.at(0).at(0).toBool());
-    QCOMPARE(forwardSpy.count(), 1);
+    QCOMPARE(forwardSpy.size(), 1);
     QVERIFY(!forwardSpy.at(0).at(0).toBool());
     QVERIFY(browser->historyTitle(-1).isEmpty());
     QVERIFY(browser->historyTitle(1).isEmpty());
@@ -671,7 +671,7 @@ void tst_QTextBrowser::urlEncoding()
     browser->setEditFocus(true);
 #endif
     QTest::keyClick(browser, Qt::Key_Enter);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     QUrl url = spy.at(0).at(0).toUrl();
     QCOMPARE(url.toEncoded(), QByteArray("http://www.google.com/q=%22"));

@@ -156,7 +156,7 @@ void QVariantAnimationPrivate::convertValues(int t)
 {
     auto type = QMetaType(t);
     //this ensures that all the keyValues are of type t
-    for (int i = 0; i < keyValues.count(); ++i) {
+    for (int i = 0; i < keyValues.size(); ++i) {
         QVariantAnimation::KeyValue &pair = keyValues[i];
         pair.second.convert(type);
     }
@@ -190,7 +190,7 @@ void QVariantAnimationPrivate::updateInterpolator()
 void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
 {
     // can't interpolate if we don't have at least 2 values
-    if ((keyValues.count() + (defaultStartEndValue.isValid() ? 1 : 0)) < 2)
+    if ((keyValues.size() + (defaultStartEndValue.isValid() ? 1 : 0)) < 2)
         return;
 
     const qreal endProgress = (direction == QAbstractAnimation::Forward) ? qreal(1) : qreal(0);
@@ -207,7 +207,7 @@ void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
                                                                            animationValueLessThan);
         if (it == keyValues.constBegin()) {
             //the item pointed to by it is the start element in the range
-            if (it->first == 0 && keyValues.count() > 1) {
+            if (it->first == 0 && keyValues.size() > 1) {
                 currentInterval.start = *it;
                 currentInterval.end = *(it+1);
             } else {
@@ -216,7 +216,7 @@ void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
             }
         } else if (it == keyValues.constEnd()) {
             --it; //position the iterator on the last item
-            if (it->first == 1 && keyValues.count() > 1) {
+            if (it->first == 1 && keyValues.size() > 1) {
                 //we have an end value (item with progress = 1)
                 currentInterval.start = *(it-1);
                 currentInterval.end = *it;
@@ -405,7 +405,7 @@ void QVariantAnimation::registerInterpolator(QVariantAnimation::Interpolator fun
     // to continue causes the app to crash on exit with a SEGV
     if (interpolators) {
         const auto locker = qt_scoped_lock(registeredInterpolatorsMutex);
-        if (interpolationType >= interpolators->count())
+        if (interpolationType >= interpolators->size())
             interpolators->resize(interpolationType + 1);
         interpolators->replace(interpolationType, func);
     }
@@ -423,7 +423,7 @@ QVariantAnimation::Interpolator QVariantAnimationPrivate::getInterpolator(int in
         QInterpolatorVector *interpolators = registeredInterpolators();
         const auto locker = qt_scoped_lock(registeredInterpolatorsMutex);
         QVariantAnimation::Interpolator ret = nullptr;
-        if (interpolationType < interpolators->count()) {
+        if (interpolationType < interpolators->size()) {
             ret = interpolators->at(interpolationType);
             if (ret) return ret;
         }

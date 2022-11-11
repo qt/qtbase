@@ -277,7 +277,7 @@ void QDockWidgetLayout::addItem(QLayoutItem*)
 QLayoutItem *QDockWidgetLayout::itemAt(int index) const
 {
     int cnt = 0;
-    for (int i = 0; i < item_list.count(); ++i) {
+    for (int i = 0; i < item_list.size(); ++i) {
         QLayoutItem *item = item_list.at(i);
         if (item == nullptr)
             continue;
@@ -290,7 +290,7 @@ QLayoutItem *QDockWidgetLayout::itemAt(int index) const
 QLayoutItem *QDockWidgetLayout::takeAt(int index)
 {
     int j = 0;
-    for (int i = 0; i < item_list.count(); ++i) {
+    for (int i = 0; i < item_list.size(); ++i) {
         QLayoutItem *item = item_list.at(i);
         if (item == nullptr)
             continue;
@@ -307,7 +307,7 @@ QLayoutItem *QDockWidgetLayout::takeAt(int index)
 int QDockWidgetLayout::count() const
 {
     int result = 0;
-    for (int i = 0; i < item_list.count(); ++i) {
+    for (int i = 0; i < item_list.size(); ++i) {
         if (item_list.at(i))
             ++result;
     }
@@ -1577,7 +1577,7 @@ bool QDockWidget::event(QEvent *event)
         bool onTop = false;
         if (win != nullptr) {
             const QObjectList &siblings = win->children();
-            onTop = siblings.count() > 0 && siblings.last() == (QObject*)this;
+            onTop = siblings.size() > 0 && siblings.last() == (QObject*)this;
         }
 #if QT_CONFIG(tabbar)
         if (!isFloating() && layout != nullptr && onTop)

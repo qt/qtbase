@@ -265,7 +265,7 @@ void tst_QAbstractNetworkCache::runTest()
     // prime the cache
     QNetworkReply *reply = manager.get(request);
     QSignalSpy downloaded1(reply, SIGNAL(finished()));
-    QTRY_COMPARE(downloaded1.count(), 1);
+    QTRY_COMPARE(downloaded1.size(), 1);
     QCOMPARE(diskCache->gotData, false);
     QByteArray goodData = reply->readAll();
 
@@ -274,7 +274,7 @@ void tst_QAbstractNetworkCache::runTest()
     // should be in the cache now
     QNetworkReply *reply2 = manager.get(request);
     QSignalSpy downloaded2(reply2, SIGNAL(finished()));
-    QTRY_COMPARE(downloaded2.count(), 1);
+    QTRY_COMPARE(downloaded2.size(), 1);
 
     QByteArray secondData = reply2->readAll();
     if (!fetchFromCache && cacheLoadControl == QNetworkRequest::AlwaysCache) {
@@ -363,7 +363,7 @@ void tst_QAbstractNetworkCache::deleteCache()
     QNetworkReply *reply = manager.get(request);
     QSignalSpy downloaded1(reply, SIGNAL(finished()));
     manager.setCache(0);
-    QTRY_COMPARE(downloaded1.count(), 1);
+    QTRY_COMPARE(downloaded1.size(), 1);
 }
 
 

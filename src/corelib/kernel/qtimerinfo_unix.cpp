@@ -390,7 +390,7 @@ int QTimerInfoList::timerRemainingTime(int timerId)
     repairTimersIfNeeded();
     timespec tm = {0, 0};
 
-    for (int i = 0; i < count(); ++i) {
+    for (int i = 0; i < size(); ++i) {
         QTimerInfo *t = at(i);
         if (t->id == timerId) {
             if (currentTime < t->timeout) {
@@ -475,7 +475,7 @@ void QTimerInfoList::registerTimer(int timerId, qint64 interval, Qt::TimerType t
 bool QTimerInfoList::unregisterTimer(int timerId)
 {
     // set timer inactive
-    for (int i = 0; i < count(); ++i) {
+    for (int i = 0; i < size(); ++i) {
         QTimerInfo *t = at(i);
         if (t->id == timerId) {
             // found it
@@ -496,7 +496,7 @@ bool QTimerInfoList::unregisterTimers(QObject *object)
 {
     if (isEmpty())
         return false;
-    for (int i = 0; i < count(); ++i) {
+    for (int i = 0; i < size(); ++i) {
         QTimerInfo *t = at(i);
         if (t->obj == object) {
             // object found
@@ -516,7 +516,7 @@ bool QTimerInfoList::unregisterTimers(QObject *object)
 QList<QAbstractEventDispatcher::TimerInfo> QTimerInfoList::registeredTimers(QObject *object) const
 {
     QList<QAbstractEventDispatcher::TimerInfo> list;
-    for (int i = 0; i < count(); ++i) {
+    for (int i = 0; i < size(); ++i) {
         const QTimerInfo * const t = at(i);
         if (t->obj == object) {
             list << QAbstractEventDispatcher::TimerInfo(t->id,

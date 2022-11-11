@@ -359,7 +359,7 @@ QAccessibleMdiArea::QAccessibleMdiArea(QWidget *widget)
 
 int QAccessibleMdiArea::childCount() const
 {
-    return mdiArea()->subWindowList().count();
+    return mdiArea()->subWindowList().size();
 }
 
 QAccessibleInterface *QAccessibleMdiArea::child(int index) const
@@ -1072,7 +1072,7 @@ QAccessibleMainWindow::QAccessibleMainWindow(QWidget *widget)
 QAccessibleInterface *QAccessibleMainWindow::child(int index) const
 {
     QList<QWidget*> kids = childWidgets(mainWindow());
-    if (index >= 0 && index < kids.count()) {
+    if (index >= 0 && index < kids.size()) {
         return QAccessible::queryAccessibleInterface(kids.at(index));
     }
     return nullptr;
@@ -1081,7 +1081,7 @@ QAccessibleInterface *QAccessibleMainWindow::child(int index) const
 int QAccessibleMainWindow::childCount() const
 {
     QList<QWidget*> kids = childWidgets(mainWindow());
-    return kids.count();
+    return kids.size();
 }
 
 int QAccessibleMainWindow::indexOfChild(const QAccessibleInterface *iface) const

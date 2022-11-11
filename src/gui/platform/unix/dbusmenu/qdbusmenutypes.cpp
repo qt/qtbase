@@ -204,7 +204,7 @@ QString QDBusMenuItem::convertMnemonic(const QString &label)
     // convert only the first occurrence of ampersand which is not at the end
     // dbusmenu uses underscore instead of ampersand
     int idx = label.indexOf(u'&');
-    if (idx < 0 || idx == label.length() - 1)
+    if (idx < 0 || idx == label.size() - 1)
         return label;
     QString ret(label);
     ret[idx] = u'_';
@@ -271,7 +271,7 @@ QDebug operator<<(QDebug d, const QDBusMenuLayoutItem &item)
 {
     QDebugStateSaver saver(d);
     d.nospace();
-    d << "QDBusMenuLayoutItem(id=" << item.m_id << ", properties=" << item.m_properties << ", " << item.m_children.count() << " children)";
+    d << "QDBusMenuLayoutItem(id=" << item.m_id << ", properties=" << item.m_properties << ", " << item.m_children.size() << " children)";
     return d;
 }
 #endif

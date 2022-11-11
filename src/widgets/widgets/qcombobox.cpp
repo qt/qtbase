@@ -2298,7 +2298,7 @@ void QComboBox::insertItems(int index, const QStringList &list)
     if (list.isEmpty())
         return;
     index = qBound(0, index, count());
-    int insertCount = qMin(d->maxCount - index, list.count());
+    int insertCount = qMin(d->maxCount - index, list.size());
     if (insertCount <= 0)
         return;
     // For the common case where we are using the built in QStandardItemModel

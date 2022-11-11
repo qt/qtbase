@@ -1054,14 +1054,14 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
 
     // parse the address manually
     auto parts = netStr.split(u'.');
-    if (parts.isEmpty() || parts.count() > 4)
+    if (parts.isEmpty() || parts.size() > 4)
         return invalid;         // invalid IPv4 address
 
     if (parts.constLast().isEmpty())
         parts.removeLast();
 
     quint32 addr = 0;
-    for (int i = 0; i < parts.count(); ++i) {
+    for (int i = 0; i < parts.size(); ++i) {
         bool ok;
         uint byteValue = parts.at(i).toUInt(&ok);
         if (!ok || byteValue > 255)
@@ -1070,9 +1070,9 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
         addr <<= 8;
         addr += byteValue;
     }
-    addr <<= 8 * (4 - parts.count());
+    addr <<= 8 * (4 - parts.size());
     if (netmask == -1) {
-        netmask = 8 * parts.count();
+        netmask = 8 * parts.size();
     } else if (netmask == 0) {
         // special case here
         // x86's instructions "shr" and "shl" do not operate when

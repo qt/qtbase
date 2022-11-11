@@ -785,7 +785,7 @@ public:
 
     inline void skipSpace() { while (test(S)) {}; }
 
-    inline bool hasNext() const { return index < symbols.count(); }
+    inline bool hasNext() const { return index < symbols.size(); }
     inline TokenType next() { return symbols.at(index++).token; }
     bool next(TokenType t);
     bool test(TokenType t);
@@ -796,7 +796,7 @@ public:
     QString lexemUntil(TokenType t);
     bool until(TokenType target, TokenType target2 = NONE);
     inline TokenType lookup() const {
-        return (index - 1) < symbols.count() ? symbols.at(index - 1).token : NONE;
+        return (index - 1) < symbols.size() ? symbols.at(index - 1).token : NONE;
     }
 
     bool testTokenAndEndsWith(TokenType t, QLatin1StringView str);

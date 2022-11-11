@@ -245,8 +245,8 @@ void tst_QLocalSocket::server_basic()
     QVERIFY(!timedOut);
     QCOMPARE(server.listen(QString()), false);
 
-    QCOMPARE(server.hits.count(), 0);
-    QCOMPARE(spyNewConnection.count(), 0);
+    QCOMPARE(server.hits.size(), 0);
+    QCOMPARE(spyNewConnection.size(), 0);
 }
 
 void tst_QLocalSocket::server_connectionsCount()
@@ -287,11 +287,11 @@ void tst_QLocalSocket::socket_basic()
     QCOMPARE(socket.waitForDisconnected(0), false);
     QCOMPARE(socket.waitForReadyRead(0), false);
 
-    QCOMPARE(spyConnected.count(), 0);
-    QCOMPARE(spyDisconnected.count(), 0);
-    QCOMPARE(spyError.count(), 0);
-    QCOMPARE(spyStateChanged.count(), 0);
-    QCOMPARE(spyReadyRead.count(), 0);
+    QCOMPARE(spyConnected.size(), 0);
+    QCOMPARE(spyDisconnected.size(), 0);
+    QCOMPARE(spyError.size(), 0);
+    QCOMPARE(spyStateChanged.size(), 0);
+    QCOMPARE(spyReadyRead.size(), 0);
 }
 
 void tst_QLocalSocket::listen_data()
@@ -321,8 +321,8 @@ void tst_QLocalSocket::listen()
     QCOMPARE(server.isListening(), canListen);
     QCOMPARE(server.hasPendingConnections(), false);
     QCOMPARE(server.nextPendingConnection(), (QLocalSocket*)0);
-    QCOMPARE(server.hits.count(), 0);
-    QCOMPARE(spyNewConnection.count(), 0);
+    QCOMPARE(server.hits.size(), 0);
+    QCOMPARE(spyNewConnection.size(), 0);
     if (canListen) {
         QVERIFY(server.errorString().isEmpty());
         QCOMPARE(server.serverError(), QAbstractSocket::UnknownSocketError);
@@ -396,7 +396,7 @@ void tst_QLocalSocket::listenAndConnect()
             QCOMPARE(socket->error(), QLocalSocket::UnknownSocketError);
             QCOMPARE(socket->state(), QLocalSocket::ConnectedState);
             //QVERIFY(socket->socketDescriptor() != -1);
-            QCOMPARE(spyError.count(), 0);
+            QCOMPARE(spyError.size(), 0);
         } else {
             QVERIFY(!socket->errorString().isEmpty());
             QVERIFY(socket->error() != QLocalSocket::UnknownSocketError);
@@ -415,13 +415,13 @@ void tst_QLocalSocket::listenAndConnect()
         QCOMPARE(socket->waitForConnected(0), canListen);
         QCOMPARE(socket->waitForReadyRead(0), false);
 
-        QTRY_COMPARE(spyConnected.count(), canListen ? 1 : 0);
-        QCOMPARE(spyDisconnected.count(), 0);
+        QTRY_COMPARE(spyConnected.size(), canListen ? 1 : 0);
+        QCOMPARE(spyDisconnected.size(), 0);
 
         // error signals
-        QVERIFY(spyError.count() >= 0);
+        QVERIFY(spyError.size() >= 0);
         if (canListen) {
-            if (spyError.count() > 0)
+            if (spyError.size() > 0)
                 QCOMPARE(qvariant_cast<QLocalSocket::LocalSocketError>(spyError.first()[0]),
                          QLocalSocket::SocketTimeoutError);
         } else {
@@ -436,8 +436,8 @@ void tst_QLocalSocket::listenAndConnect()
         if (canListen)
             QCOMPARE(qvariant_cast<QLocalSocket::LocalSocketState>(spyStateChanged.last()[0]),
                      QLocalSocket::ConnectedState);
-        QCOMPARE(spyStateChanged.count(), 2);
-        QCOMPARE(spyReadyRead.count(), 0);
+        QCOMPARE(spyStateChanged.size(), 2);
+        QCOMPARE(spyReadyRead.size(), 0);
 
         bool timedOut = true;
         QCOMPARE(server.waitForNewConnection(3000, &timedOut), canListen);
@@ -451,16 +451,16 @@ void tst_QLocalSocket::listenAndConnect()
             QCOMPARE(server.serverName(), name);
             QVERIFY(server.fullServerName().contains(name));
             QVERIFY(server.nextPendingConnection() != (QLocalSocket*)0);
-            QTRY_COMPARE(server.hits.count(), i + 1);
-            QCOMPARE(spyNewConnection.count(), i + 1);
+            QTRY_COMPARE(server.hits.size(), i + 1);
+            QCOMPARE(spyNewConnection.size(), i + 1);
             QVERIFY(server.errorString().isEmpty());
             QCOMPARE(server.serverError(), QAbstractSocket::UnknownSocketError);
         } else {
             QVERIFY(server.serverName().isEmpty());
             QVERIFY(server.fullServerName().isEmpty());
             QCOMPARE(server.nextPendingConnection(), (QLocalSocket*)0);
-            QCOMPARE(spyNewConnection.count(), 0);
-            QCOMPARE(server.hits.count(), 0);
+            QCOMPARE(spyNewConnection.size(), 0);
+            QCOMPARE(server.hits.size(), 0);
             QVERIFY(!server.errorString().isEmpty());
             QCOMPARE(server.serverError(), QAbstractSocket::HostNotFoundError);
         }
@@ -469,8 +469,8 @@ void tst_QLocalSocket::listenAndConnect()
 
     server.close();
 
-    QCOMPARE(server.hits.count(), (canListen ? connections : 0));
-    QCOMPARE(spyNewConnection.count(), (canListen ? connections : 0));
+    QCOMPARE(server.hits.size(), (canListen ? connections : 0));
+    QCOMPARE(spyNewConnection.size(), (canListen ? connections : 0));
 }
 
 void tst_QLocalSocket::connectWithOpen()
@@ -494,7 +494,7 @@ void tst_QLocalSocket::connectWithOpen()
     socket.close();
     server.close();
 
-    QCOMPARE(spyAboutToClose.count(), 1);
+    QCOMPARE(spyAboutToClose.size(), 1);
 }
 
 void tst_QLocalSocket::listenAndConnectAbstractNamespaceTrailingZeros_data()
@@ -660,7 +660,7 @@ void tst_QLocalSocket::sendData()
     QTest::qWait(250);
 #endif
     QVERIFY(!timedOut);
-    QCOMPARE(spyConnected.count(), canListen ? 1 : 0);
+    QCOMPARE(spyConnected.size(), canListen ? 1 : 0);
     QCOMPARE(socket.state(), canListen ? QLocalSocket::ConnectedState : QLocalSocket::UnconnectedState);
 
     // test sending/receiving data
@@ -686,7 +686,7 @@ void tst_QLocalSocket::sendData()
         QCOMPARE(socket.flush(), false);
         QCOMPARE(socket.isValid(), canListen);
         QCOMPARE(socket.readBufferSize(), (qint64)0);
-        QCOMPARE(spyReadyRead.count(), expectedReadyReadSignals);
+        QCOMPARE(spyReadyRead.size(), expectedReadyReadSignals);
 
         QVERIFY(testLine.startsWith(in.readLine()));
 
@@ -697,16 +697,16 @@ void tst_QLocalSocket::sendData()
     }
 
     socket.disconnectFromServer();
-    QCOMPARE(spyConnected.count(), canListen ? 1 : 0);
-    QCOMPARE(spyDisconnected.count(), canListen ? 1 : 0);
-    QCOMPARE(spyError.count(), canListen ? 0 : 1);
-    QCOMPARE(spyStateChanged.count(), canListen ? 4 : 2);
-    QCOMPARE(spyReadyRead.count(), canListen ? expectedReadyReadSignals : 0);
+    QCOMPARE(spyConnected.size(), canListen ? 1 : 0);
+    QCOMPARE(spyDisconnected.size(), canListen ? 1 : 0);
+    QCOMPARE(spyError.size(), canListen ? 0 : 1);
+    QCOMPARE(spyStateChanged.size(), canListen ? 4 : 2);
+    QCOMPARE(spyReadyRead.size(), canListen ? expectedReadyReadSignals : 0);
 
     server.close();
 
-    QCOMPARE(server.hits.count(), (canListen ? 1 : 0));
-    QCOMPARE(spy.count(), (canListen ? 1 : 0));
+    QCOMPARE(server.hits.size(), (canListen ? 1 : 0));
+    QCOMPARE(spy.size(), (canListen ? 1 : 0));
 }
 
 void tst_QLocalSocket::readLine_data()
@@ -1006,7 +1006,7 @@ void tst_QLocalSocket::simpleCommandProtocol2()
 
     localSocketWrite.abort();
     QCOMPARE(localSocketWrite.state(), QLocalSocket::UnconnectedState);
-    QCOMPARE(spyDisconnected.count(), 1);
+    QCOMPARE(spyDisconnected.size(), 1);
     QCOMPARE(localSocketWrite.bytesToWrite(), 0);
     QVERIFY(!localSocketWrite.isOpen());
 
@@ -1068,7 +1068,7 @@ void tst_QLocalSocket::hitMaximumConnections()
    bool timedOut = true;
    QVERIFY(server.waitForNewConnection(3000, &timedOut));
    QVERIFY(!timedOut);
-   QVERIFY(server.hits.count() > 0);
+   QVERIFY(server.hits.size() > 0);
    qDeleteAll(sockets.begin(), sockets.end());
 }
 
@@ -1096,9 +1096,9 @@ public:
         QVERIFY(socket.waitForConnected(1000));
 
         // We should *not* have this signal yet!
-        QCOMPARE(spyReadyRead.count(), 0);
+        QCOMPARE(spyReadyRead.size(), 0);
         socket.waitForReadyRead();
-        QCOMPARE(spyReadyRead.count(), 1);
+        QCOMPARE(spyReadyRead.size(), 1);
         QTextStream in(&socket);
         QCOMPARE(in.readLine(), testLine);
         socket.close();
@@ -1140,7 +1140,7 @@ public:
             --done;
             delete serverSocket;
         }
-        QCOMPARE(server.hits.count(), clients);
+        QCOMPARE(server.hits.size(), clients);
     }
 };
 
@@ -1309,7 +1309,7 @@ void tst_QLocalSocket::waitForDisconnectByServer()
     serverSocket->close();
     QCOMPARE(serverSocket->state(), QLocalSocket::UnconnectedState);
     QVERIFY(socket.waitForDisconnected(3000));
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 void tst_QLocalSocket::waitForReadyReadOnDisconnected()
@@ -1426,7 +1426,7 @@ void tst_QLocalSocket::recycleClientSocket()
     QLocalSocket client;
     QSignalSpy clientReadyReadSpy(&client, SIGNAL(readyRead()));
     QSignalSpy clientErrorSpy(&client, SIGNAL(errorOccurred(QLocalSocket::LocalSocketError)));
-    for (int i = 0; i < lines.count(); ++i) {
+    for (int i = 0; i < lines.size(); ++i) {
         client.abort();
         clientReadyReadSpy.clear();
         client.connectToServer(serverName);
@@ -1521,7 +1521,7 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
     QVERIFY(clientSocket->waitForDisconnected());
 
     QVERIFY(client.waitForDisconnected());
-    QCOMPARE(readChannelFinishedSpy.count(), 1);
+    QCOMPARE(readChannelFinishedSpy.size(), 1);
     const QByteArray received = client.readAll();
     QCOMPARE(received.size(), qint64(sizeof(buffer) * chunks));
     QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
@@ -1551,7 +1551,7 @@ void tst_QLocalSocket::writeToDisconnected()
 
     QCOMPARE(client.bytesToWrite(), qint64(1));
     QVERIFY(!client.waitForBytesWritten());
-    QCOMPARE(spyError.count(), 1);
+    QCOMPARE(spyError.size(), 1);
     QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
 }
 
@@ -1656,7 +1656,7 @@ void tst_QLocalSocket::asyncDisconnectNotify()
     QVERIFY(serverSocket);
     delete serverSocket;
     QTRY_VERIFY(!disconnectedSpy.isEmpty());
-    QCOMPARE(readChannelFinishedSpy.count(), 1);
+    QCOMPARE(readChannelFinishedSpy.size(), 1);
 }
 
 void tst_QLocalSocket::verifySocketOptions_data()

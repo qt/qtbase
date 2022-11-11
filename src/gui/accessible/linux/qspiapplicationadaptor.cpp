@@ -173,11 +173,11 @@ QKeyEvent* QSpiApplicationAdaptor::copyKeyEvent(QKeyEvent* old)
 
 void QSpiApplicationAdaptor::notifyKeyboardListenerCallback(const QDBusMessage& message)
 {
-    if (!keyEvents.length()) {
+    if (!keyEvents.size()) {
         qWarning("QSpiApplication::notifyKeyboardListenerCallback with no queued key called");
         return;
     }
-    Q_ASSERT(message.arguments().length() == 1);
+    Q_ASSERT(message.arguments().size() == 1);
     if (message.arguments().at(0).toBool() == true) {
         QPair<QPointer<QObject>, QKeyEvent*> event = keyEvents.dequeue();
         delete event.second;

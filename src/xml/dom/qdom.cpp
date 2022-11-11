@@ -728,7 +728,7 @@ int QDomNodeListPrivate::length() const
         that->createList();
     }
 
-    return list.count();
+    return list.size();
 }
 
 /**************************************************************
@@ -2628,7 +2628,7 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::item(int index) const
 
 int QDomNamedNodeMapPrivate::length() const
 {
-    return map.count();
+    return map.size();
 }
 
 bool QDomNamedNodeMapPrivate::contains(const QString& name) const
@@ -3354,7 +3354,7 @@ QDomNodePrivate* QDomCharacterDataPrivate::cloneNode(bool deep)
 
 int QDomCharacterDataPrivate::dataLength() const
 {
-    return value.length();
+    return value.size();
 }
 
 QString QDomCharacterDataPrivate::substringData(unsigned long offset, unsigned long n) const
@@ -3612,7 +3612,7 @@ static QString encodeText(const QString &str,
                           const bool encodeEOLs = false)
 {
     QString retval(str);
-    int len = retval.length();
+    int len = retval.size();
     int i = 0;
 
     while (i < len) {
@@ -3640,8 +3640,8 @@ static QString encodeText(const QString &str,
                     ati == QChar(0x9))) {
             const QString replacement(u"&#x"_s + QString::number(ati.unicode(), 16) + u';');
             retval.replace(i, 1, replacement);
-            i += replacement.length();
-            len += replacement.length() - 1;
+            i += replacement.size();
+            len += replacement.size() - 1;
         } else if (encodeEOLs && ati == QChar(0xD)) {
             retval.replace(i, 1, "&#xd;"_L1); // Replace a single 0xD with a ref for 0xD
             len += 4;

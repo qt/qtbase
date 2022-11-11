@@ -229,9 +229,9 @@ void tst_QTemporaryDir::fileTemplate()
     QVERIFY(tempDir.isValid());
 
     QString dirName = QDir(tempDir.path()).dirName();
-    if (prefix.length()) {
-        QCOMPARE(dirName.left(prefix.length()), prefix);
-        QCOMPARE(dirName.right(suffix.length()), suffix);
+    if (prefix.size()) {
+        QCOMPARE(dirName.left(prefix.size()), prefix);
+        QCOMPARE(dirName.right(suffix.size()), suffix);
     }
 }
 

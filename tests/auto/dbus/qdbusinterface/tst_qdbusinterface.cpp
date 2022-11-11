@@ -468,14 +468,14 @@ void tst_QDBusInterface::callMethod()
     QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
 
     // verify what the callee received
-    QCOMPARE(MyObject::callArgs.count(), 1);
+    QCOMPARE(MyObject::callArgs.size(), 1);
     QVariant v = MyObject::callArgs.at(0);
     QDBusVariant dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
     QCOMPARE(dv.variant().toString(), QString("foo"));
 
     // verify reply
-    QCOMPARE(reply.arguments().count(), 1);
+    QCOMPARE(reply.arguments().size(), 1);
     v = reply.arguments().at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -487,14 +487,14 @@ void tst_QDBusInterface::callMethod()
     QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
 
     // verify what the callee received
-    QCOMPARE(MyObject::callArgs.count(), 1);
+    QCOMPARE(MyObject::callArgs.size(), 1);
     v = MyObject::callArgs.at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
     QCOMPARE(dv.variant().toString(), QString("bar"));
 
     // verify reply
-    QCOMPARE(reply.arguments().count(), 1);
+    QCOMPARE(reply.arguments().size(), 1);
     v = reply.arguments().at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -515,7 +515,7 @@ void tst_QDBusInterface::invokeMethod()
     QCOMPARE(MyObject::callCount, 1);
 
     // verify what the callee received
-    QCOMPARE(MyObject::callArgs.count(), 1);
+    QCOMPARE(MyObject::callArgs.size(), 1);
     QVariant v = MyObject::callArgs.at(0);
     QDBusVariant dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -527,7 +527,7 @@ void tst_QDBusInterface::invokeMethod()
     QCOMPARE(MyObject::callCount, 2);
 
     // verify what the callee received
-    QCOMPARE(MyObject::callArgs.count(), 1);
+    QCOMPARE(MyObject::callArgs.size(), 1);
     v = MyObject::callArgs.at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -549,7 +549,7 @@ void tst_QDBusInterface::invokeMethodWithReturn()
     QCOMPARE(MyObject::callCount, 1);
 
     // verify what the callee received
-    QCOMPARE(MyObject::callArgs.count(), 1);
+    QCOMPARE(MyObject::callArgs.size(), 1);
     QVariant v = MyObject::callArgs.at(0);
     QDBusVariant dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -564,7 +564,7 @@ void tst_QDBusInterface::invokeMethodWithReturn()
     QCOMPARE(MyObject::callCount, 2);
 
     // verify what the callee received
-    QCOMPARE(MyObject::callArgs.count(), 1);
+    QCOMPARE(MyObject::callArgs.size(), 1);
     v = MyObject::callArgs.at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -593,7 +593,7 @@ void tst_QDBusInterface::invokeMethodWithMultiReturn()
     QCOMPARE(MyObject::callCount, 1);
 
     // verify what the callee received
-    QCOMPARE(MyObject::callArgs.count(), 2);
+    QCOMPARE(MyObject::callArgs.size(), 2);
     QVariant v = MyObject::callArgs.at(0);
     QDBusVariant dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -618,7 +618,7 @@ void tst_QDBusInterface::invokeMethodWithMultiReturn()
     QCOMPARE(MyObject::callCount, 2);
 
     // verify what the callee received
-    QCOMPARE(MyObject::callArgs.count(), 2);
+    QCOMPARE(MyObject::callArgs.size(), 2);
     v = MyObject::callArgs.at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -649,7 +649,7 @@ void tst_QDBusInterface::invokeMethodWithComplexReturn()
     QCOMPARE(MyObject::callCount, 1);
 
     // verify what the callee received
-    QCOMPARE(MyObject::callArgs.count(), 1);
+    QCOMPARE(MyObject::callArgs.size(), 1);
     QVariant v = MyObject::callArgs.at(0);
     QCOMPARE(v.userType(), qMetaTypeId<QDBusArgument>());
     QCOMPARE(qdbus_cast<QList<int> >(v), arg);
@@ -663,7 +663,7 @@ void tst_QDBusInterface::invokeMethodWithComplexReturn()
     QCOMPARE(MyObject::callCount, 2);
 
     // verify what the callee received
-    QCOMPARE(MyObject::callArgs.count(), 1);
+    QCOMPARE(MyObject::callArgs.size(), 1);
     v = MyObject::callArgs.at(0);
     QCOMPARE(v.userType(), qMetaTypeId<QDBusArgument>());
     QCOMPARE(qdbus_cast<QList<int> >(v), arg2);
@@ -703,14 +703,14 @@ void tst_QDBusInterface::callMethodPeer()
 
     // verify what the callee received
     QVariantList callArgs = callArgsPeer();
-    QCOMPARE(callArgs.count(), 1);
+    QCOMPARE(callArgs.size(), 1);
     QVariant v = callArgs.at(0);
     QDBusVariant dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
     QCOMPARE(dv.variant().toString(), QString("foo"));
 
     // verify reply
-    QCOMPARE(reply.arguments().count(), 1);
+    QCOMPARE(reply.arguments().size(), 1);
     v = reply.arguments().at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -723,14 +723,14 @@ void tst_QDBusInterface::callMethodPeer()
 
     // verify what the callee received
     callArgs = callArgsPeer();
-    QCOMPARE(callArgs.count(), 1);
+    QCOMPARE(callArgs.size(), 1);
     v = callArgs.at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
     QCOMPARE(dv.variant().toString(), QString("bar"));
 
     // verify reply
-    QCOMPARE(reply.arguments().count(), 1);
+    QCOMPARE(reply.arguments().size(), 1);
     v = reply.arguments().at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -752,7 +752,7 @@ void tst_QDBusInterface::invokeMethodPeer()
 
     // verify what the callee received
     QVariantList callArgs = callArgsPeer();
-    QCOMPARE(callArgs.count(), 1);
+    QCOMPARE(callArgs.size(), 1);
     QVariant v = callArgs.at(0);
     QDBusVariant dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -765,7 +765,7 @@ void tst_QDBusInterface::invokeMethodPeer()
 
     // verify what the callee received
     callArgs = callArgsPeer();
-    QCOMPARE(callArgs.count(), 1);
+    QCOMPARE(callArgs.size(), 1);
     v = callArgs.at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -788,7 +788,7 @@ void tst_QDBusInterface::invokeMethodWithReturnPeer()
 
     // verify what the callee received
     QVariantList callArgs = callArgsPeer();
-    QCOMPARE(callArgs.count(), 1);
+    QCOMPARE(callArgs.size(), 1);
     QVariant v = callArgs.at(0);
     QDBusVariant dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -804,7 +804,7 @@ void tst_QDBusInterface::invokeMethodWithReturnPeer()
 
     // verify what the callee received
     callArgs = callArgsPeer();
-    QCOMPARE(callArgs.count(), 1);
+    QCOMPARE(callArgs.size(), 1);
     v = callArgs.at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -834,7 +834,7 @@ void tst_QDBusInterface::invokeMethodWithMultiReturnPeer()
 
     // verify what the callee received
     QVariantList callArgs = callArgsPeer();
-    QCOMPARE(callArgs.count(), 2);
+    QCOMPARE(callArgs.size(), 2);
     QVariant v = callArgs.at(0);
     QDBusVariant dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -860,7 +860,7 @@ void tst_QDBusInterface::invokeMethodWithMultiReturnPeer()
 
     // verify what the callee received
     callArgs = callArgsPeer();
-    QCOMPARE(callArgs.count(), 2);
+    QCOMPARE(callArgs.size(), 2);
     v = callArgs.at(0);
     dv = qdbus_cast<QDBusVariant>(v);
     QCOMPARE(dv.variant().userType(), QMetaType::QString);
@@ -892,7 +892,7 @@ void tst_QDBusInterface::invokeMethodWithComplexReturnPeer()
 
     // verify what the callee received
     QVariantList callArgs = callArgsPeer();
-    QCOMPARE(callArgs.count(), 1);
+    QCOMPARE(callArgs.size(), 1);
     QVariant v = callArgs.at(0);
     QCOMPARE(v.userType(), qMetaTypeId<QDBusArgument>());
     QCOMPARE(qdbus_cast<QList<int> >(v), arg);
@@ -907,7 +907,7 @@ void tst_QDBusInterface::invokeMethodWithComplexReturnPeer()
 
     // verify what the callee received
     callArgs = callArgsPeer();
-    QCOMPARE(callArgs.count(), 1);
+    QCOMPARE(callArgs.size(), 1);
     v = callArgs.at(0);
     QCOMPARE(v.userType(), qMetaTypeId<QDBusArgument>());
     QCOMPARE(qdbus_cast<QList<int> >(v), arg2);

@@ -517,14 +517,14 @@ void tst_QBoxLayout::testLayoutEngine()
     QHBoxLayout box;
     box.setSpacing(spacing);
     int i;
-    for (i = 0; i < itemDescriptions.count(); ++i) {
+    for (i = 0; i < itemDescriptions.size(); ++i) {
          Descr descr = itemDescriptions.at(i);
          LayoutItem *li = new LayoutItem(descr);
          box.addItem(li);
          box.setStretch(i, descr.stretch);
     }
     box.setGeometry(QRect(0,0,size,100));
-    for (i = 0; i < expectedSizes.count(); ++i) {
+    for (i = 0; i < expectedSizes.size(); ++i) {
         int xSize = expectedSizes.at(i);
         int xPos = expectedPositions.at(i);
         QLayoutItem *item = box.itemAt(i);

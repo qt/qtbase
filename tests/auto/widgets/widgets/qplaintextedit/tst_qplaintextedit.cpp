@@ -393,7 +393,7 @@ void tst_QPlainTextEdit::cursorPositionChanged()
 
     spy.clear();
     QTest::keyClick(ed, Qt::Key_A);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     QTextCursor cursor = ed->textCursor();
     cursor.movePosition(QTextCursor::Start);
@@ -401,23 +401,23 @@ void tst_QPlainTextEdit::cursorPositionChanged()
     cursor.movePosition(QTextCursor::End);
     spy.clear();
     cursor.insertText("Test");
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     cursor.movePosition(QTextCursor::End);
     ed->setTextCursor(cursor);
     cursor.movePosition(QTextCursor::Start);
     spy.clear();
     cursor.insertText("Test");
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     spy.clear();
     QTest::keyClick(ed, Qt::Key_Left);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     CursorPositionChangedRecorder spy2(ed);
     QVERIFY(ed->textCursor().position() > 0);
     ed->setPlainText("Hello World");
-    QCOMPARE(spy2.cursorPositions.count(), 1);
+    QCOMPARE(spy2.cursorPositions.size(), 1);
     QCOMPARE(spy2.cursorPositions.at(0), 0);
     QCOMPARE(ed->textCursor().position(), 0);
 }
@@ -434,7 +434,7 @@ void tst_QPlainTextEdit::setTextCursor()
     spy.clear();
 
     ed->setTextCursor(cursor);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 #ifndef QT_NO_CLIPBOARD
@@ -451,7 +451,7 @@ void tst_QPlainTextEdit::undoAvailableAfterPaste()
     const QString txt("Test");
     QApplication::clipboard()->setText(txt);
     ed->paste();
-    QVERIFY(spy.count() >= 1);
+    QVERIFY(spy.size() >= 1);
     QCOMPARE(ed->toPlainText(), txt);
 }
 #endif
@@ -705,16 +705,16 @@ void tst_QPlainTextEdit::noPropertiesOnDefaultTextEditCharFormat()
     // on a text edit. Font properties instead should be taken from the
     // widget's font (in sync with defaultFont property in document) and the
     // foreground color should be taken from the palette.
-    QCOMPARE(ed->textCursor().charFormat().properties().count(), 0);
+    QCOMPARE(ed->textCursor().charFormat().properties().size(), 0);
 }
 
 void tst_QPlainTextEdit::setPlainTextShouldEmitTextChangedOnce()
 {
     QSignalSpy spy(ed, SIGNAL(textChanged()));
     ed->setPlainText("Yankee Doodle");
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     ed->setPlainText("");
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 }
 
 void tst_QPlainTextEdit::overwriteMode()
@@ -1026,8 +1026,8 @@ void tst_QPlainTextEdit::copyAvailable()
     //Compare spied signals
     QEXPECT_FAIL("Case7 T,A,A, <- + shift, <- + shift, <- + shift, ctrl + x, undo() | signals: true, false, true",
         "Wrong undo selection behaviour. Should be fixed in some future release. (See task: 132482)", Abort);
-    QCOMPARE(spyCopyAvailabe.count(), copyAvailable.count());
-    for (int i=0;i<spyCopyAvailabe.count(); i++) {
+    QCOMPARE(spyCopyAvailabe.size(), copyAvailable.size());
+    for (int i=0;i<spyCopyAvailabe.size(); i++) {
         QVariant variantSpyCopyAvailable = spyCopyAvailabe.at(i).at(0);
         QVERIFY2(variantSpyCopyAvailable.toBool() == copyAvailable.at(i), QString("Spied singnal: %1").arg(i).toLatin1());
     }
@@ -1063,10 +1063,10 @@ void tst_QPlainTextEdit::moveCursor()
     QCOMPARE(ed->textCursor().position(), 0);
     ed->moveCursor(QTextCursor::NextCharacter);
     QCOMPARE(ed->textCursor().position(), 1);
-    QCOMPARE(cursorMovedSpy.count(), 1);
+    QCOMPARE(cursorMovedSpy.size(), 1);
     ed->moveCursor(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
     QCOMPARE(ed->textCursor().position(), 2);
-    QCOMPARE(cursorMovedSpy.count(), 2);
+    QCOMPARE(cursorMovedSpy.size(), 2);
     QCOMPARE(ed->textCursor().selectedText(), QString("e"));
 }
 
@@ -1278,7 +1278,7 @@ void tst_QPlainTextEdit::ensureVisibleWithRtl()
     ed->setLayoutDirection(Qt::RightToLeft);
     ed->setLineWrapMode(QPlainTextEdit::NoWrap);
     QString txt(500, QChar(QLatin1Char('a')));
-    QCOMPARE(txt.length(), 500);
+    QCOMPARE(txt.size(), 500);
     ed->setPlainText(txt);
     ed->resize(100, 100);
     ed->show();
@@ -1331,7 +1331,7 @@ void tst_QPlainTextEdit::extraSelections()
     ed->setExtraSelections(QList<QTextEdit::ExtraSelection>() << sel);
 
     QList<QTextEdit::ExtraSelection> selections = ed->extraSelections();
-    QCOMPARE(selections.count(), 1);
+    QCOMPARE(selections.size(), 1);
     QCOMPARE(selections.at(0).cursor.position(), endPos);
     QCOMPARE(selections.at(0).cursor.anchor(), wordPos);
 }
@@ -1461,44 +1461,44 @@ void tst_QPlainTextEdit::selectionChanged()
 
     QTest::keyClick(ed, Qt::Key_Right);
     QCOMPARE(ed->textCursor().position(), 1);
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
 
     QTest::keyClick(ed, Qt::Key_Right, Qt::ShiftModifier);
     QCOMPARE(ed->textCursor().position(), 2);
-    QCOMPARE(selectionChangedSpy.count(), 1);
+    QCOMPARE(selectionChangedSpy.size(), 1);
 
     QTest::keyClick(ed, Qt::Key_Right, Qt::ShiftModifier);
     QCOMPARE(ed->textCursor().position(), 3);
-    QCOMPARE(selectionChangedSpy.count(), 2);
+    QCOMPARE(selectionChangedSpy.size(), 2);
 
     QTest::keyClick(ed, Qt::Key_Right, Qt::ShiftModifier);
     QCOMPARE(ed->textCursor().position(), 4);
-    QCOMPARE(selectionChangedSpy.count(), 3);
+    QCOMPARE(selectionChangedSpy.size(), 3);
 
     QTest::keyClick(ed, Qt::Key_Right);
     QCOMPARE(ed->textCursor().position(), 4);
-    QCOMPARE(selectionChangedSpy.count(), 4);
+    QCOMPARE(selectionChangedSpy.size(), 4);
 
     QTest::keyClick(ed, Qt::Key_Right);
     QCOMPARE(ed->textCursor().position(), 5);
-    QCOMPARE(selectionChangedSpy.count(), 4);
+    QCOMPARE(selectionChangedSpy.size(), 4);
 }
 
 void tst_QPlainTextEdit::blockCountChanged()
 {
     QSignalSpy blockCountCpangedSpy(ed, SIGNAL(blockCountChanged(int)));
     ed->setPlainText("Hello");
-    QCOMPARE(blockCountCpangedSpy.count(), 0);
+    QCOMPARE(blockCountCpangedSpy.size(), 0);
     ed->setPlainText("Hello World");
-    QCOMPARE(blockCountCpangedSpy.count(), 0);
+    QCOMPARE(blockCountCpangedSpy.size(), 0);
     ed->setPlainText("Hello \n World \n this \n has \n more \n blocks \n than \n just \n one");
-    QCOMPARE(blockCountCpangedSpy.count(), 1);
+    QCOMPARE(blockCountCpangedSpy.size(), 1);
     ed->setPlainText("One");
-    QCOMPARE(blockCountCpangedSpy.count(), 2);
+    QCOMPARE(blockCountCpangedSpy.size(), 2);
     ed->setPlainText("One \n Two");
-    QCOMPARE(blockCountCpangedSpy.count(), 3);
+    QCOMPARE(blockCountCpangedSpy.size(), 3);
     ed->setPlainText("Three \n Four");
-    QCOMPARE(blockCountCpangedSpy.count(), 3);
+    QCOMPARE(blockCountCpangedSpy.size(), 3);
 }
 
 
@@ -1699,7 +1699,7 @@ void tst_QPlainTextEdit::contextMenu()
     QVERIFY(!ed->findChild<QAction *>(QStringLiteral("link-copy")));
 
     QTextCursor cursor = ed->textCursor();
-    cursor.setPosition(ed->toPlainText().length() - 2);
+    cursor.setPosition(ed->toPlainText().size() - 2);
     ed->setTextCursor(cursor);
 
     menu = ed->createStandardContextMenu(ed->cursorRect().center());
@@ -1782,7 +1782,7 @@ void tst_QPlainTextEdit::updateCursorPositionAfterEdit()
     QTest::keyClick(&plaintextEdit, Qt::Key_Up);
 
     // The curser should move back to the end of the copied text
-    QCOMPARE(plaintextEdit.textCursor().position(), initialPosition + txt.length());
+    QCOMPARE(plaintextEdit.textCursor().position(), initialPosition + txt.size());
 }
 #endif
 

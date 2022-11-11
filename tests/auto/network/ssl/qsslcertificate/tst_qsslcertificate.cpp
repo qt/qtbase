@@ -498,7 +498,7 @@ void tst_QSslCertificate::utf8SubjectNames()
     static const char *ou = "\xe3\x88\xa7" "A" "\xe3\x89\x81\xef\xbd\xab" "BC";
 
     // the following two tests should help find "\x"-literal encoding bugs in the test itself
-    QCOMPARE(cert.subjectInfo("O")[0].length(), QString::fromUtf8(o).length());
+    QCOMPARE(cert.subjectInfo("O")[0].size(), QString::fromUtf8(o).size());
     QCOMPARE (cert.subjectInfo("O")[0].toUtf8().toHex(), QByteArray(o).toHex());
 
     QCOMPARE(cert.subjectInfo("O")[0], QString::fromUtf8(o));
@@ -946,8 +946,8 @@ void tst_QSslCertificate::largeExpirationDate() // QTBUG-12489
 void tst_QSslCertificate::blacklistedCertificates()
 {
     QList<QSslCertificate> blacklistedCerts = QSslCertificate::fromPath(testDataDir + "more-certificates/blacklisted*.pem", QSsl::Pem, QSslCertificate::PatternSyntax::Wildcard);
-    QVERIFY(blacklistedCerts.count() > 0);
-    for (int a = 0; a < blacklistedCerts.count(); a++) {
+    QVERIFY(blacklistedCerts.size() > 0);
+    for (int a = 0; a < blacklistedCerts.size(); a++) {
         QVERIFY(blacklistedCerts.at(a).isBlacklisted());
     }
 }
@@ -989,7 +989,7 @@ void tst_QSslCertificate::multipleCommonNames()
 {
     QList<QSslCertificate> certList =
         QSslCertificate::fromPath(testDataDir + "more-certificates/test-cn-two-cns-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
-    QVERIFY(certList.count() > 0);
+    QVERIFY(certList.size() > 0);
 
     QStringList commonNames = certList[0].subjectInfo(QSslCertificate::CommonName);
     QVERIFY(commonNames.contains(QString("www.example.com")));
@@ -1000,14 +1000,14 @@ void tst_QSslCertificate::subjectAndIssuerAttributes()
 {
     QList<QSslCertificate> certList =
         QSslCertificate::fromPath(testDataDir + "more-certificates/test-cn-with-drink-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
-    QVERIFY(certList.count() > 0);
+    QVERIFY(certList.size() > 0);
 
     QList<QByteArray> attributes = certList[0].subjectInfoAttributes();
     QVERIFY(attributes.contains(QByteArray("favouriteDrink")));
     attributes.clear();
 
     certList = QSslCertificate::fromPath(testDataDir + "more-certificates/natwest-banking.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
-    QVERIFY(certList.count() > 0);
+    QVERIFY(certList.size() > 0);
 
     QByteArray shortName("1.3.6.1.4.1.311.60.2.1.3");
 #if !defined(QT_NO_OPENSSL) && defined(SN_jurisdictionCountryName)
@@ -1034,7 +1034,7 @@ void tst_QSslCertificate::verify()
 
     // Empty chain is unspecified error
     errors = QSslCertificate::verify(toVerify);
-    VERIFY_VERBOSE(errors.count() == 1);
+    VERIFY_VERBOSE(errors.size() == 1);
     VERIFY_VERBOSE(errors[0] == QSslError(QSslError::UnspecifiedError));
     errors.clear();
 
@@ -1053,7 +1053,7 @@ void tst_QSslCertificate::verify()
     toVerify = QSslCertificate::fromPath(testDataDir + "verify-certs/test-ocsp-good-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
 
     errors = QSslCertificate::verify(toVerify);
-    VERIFY_VERBOSE(errors.count() == 0);
+    VERIFY_VERBOSE(errors.size() == 0);
     errors.clear();
 
     // Test a blacklisted certificate
@@ -1088,11 +1088,11 @@ void tst_QSslCertificate::verify()
     toVerify << QSslCertificate::fromPath(testDataDir + "verify-certs/test-intermediate-is-ca-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString).first();
     toVerify << QSslCertificate::fromPath(testDataDir + "verify-certs/test-intermediate-ca-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString).first();
     errors = QSslCertificate::verify(toVerify);
-    VERIFY_VERBOSE(errors.count() == 0);
+    VERIFY_VERBOSE(errors.size() == 0);
 
     // Recheck the above with hostname validation
     errors = QSslCertificate::verify(toVerify, QLatin1String("example.com"));
-    VERIFY_VERBOSE(errors.count() == 0);
+    VERIFY_VERBOSE(errors.size() == 0);
 
     // Recheck the above with a bad hostname
     errors = QSslCertificate::verify(toVerify, QLatin1String("fail.example.com"));
@@ -1117,11 +1117,11 @@ void tst_QSslCertificate::extensions()
 {
     QList<QSslCertificate> certList =
         QSslCertificate::fromPath(testDataDir + "more-certificates/natwest-banking.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
-    QVERIFY(certList.count() > 0);
+    QVERIFY(certList.size() > 0);
 
     QSslCertificate cert = certList[0];
     QList<QSslCertificateExtension> extensions = cert.extensions();
-    QCOMPARE(extensions.count(), 9);
+    QCOMPARE(extensions.size(), 9);
 
     int unknown_idx = -1;
     int authority_info_idx = -1;
@@ -1129,7 +1129,7 @@ void tst_QSslCertificate::extensions()
     int subject_key_idx = -1;
     int auth_key_idx = -1;
 
-    for (int i=0; i < extensions.length(); ++i) {
+    for (int i=0; i < extensions.size(); ++i) {
         QSslCertificateExtension ext = extensions[i];
 
         //qDebug() << i << ":" << ext.name() << ext.oid();
@@ -1215,16 +1215,16 @@ void tst_QSslCertificate::extensionsCritical()
 {
     QList<QSslCertificate> certList =
         QSslCertificate::fromPath(testDataDir + "verify-certs/test-addons-mozilla-org-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
-    QVERIFY(certList.count() > 0);
+    QVERIFY(certList.size() > 0);
 
     QSslCertificate cert = certList[0];
     QList<QSslCertificateExtension> extensions = cert.extensions();
-    QCOMPARE(extensions.count(), 9);
+    QCOMPARE(extensions.size(), 9);
 
     int basic_constraints_idx = -1;
     int key_usage_idx = -1;
 
-    for (int i=0; i < extensions.length(); ++i) {
+    for (int i=0; i < extensions.size(); ++i) {
         QSslCertificateExtension ext = extensions[i];
 
         if (ext.name() == QStringLiteral("basicConstraints"))

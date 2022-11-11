@@ -517,9 +517,9 @@ void tst_QTextEdit::clearShouldClearExtraSelections()
     sel.cursor = ed->textCursor();
     sel.format.setProperty(QTextFormat::FullWidthSelection, true);
     ed->setExtraSelections(QList<QTextEdit::ExtraSelection>() << sel);
-    QCOMPARE(ed->extraSelections().count(), 1);
+    QCOMPARE(ed->extraSelections().size(), 1);
     ed->clear();
-    QCOMPARE(ed->extraSelections().count(), 0);
+    QCOMPARE(ed->extraSelections().size(), 0);
 }
 
 void tst_QTextEdit::paragSeparatorOnPlaintextAppend()
@@ -719,7 +719,7 @@ void tst_QTextEdit::cursorPositionChanged()
 
     spy.clear();
     QTest::keyClick(ed, Qt::Key_A);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     QTextCursor cursor = ed->textCursor();
     cursor.movePosition(QTextCursor::Start);
@@ -727,18 +727,18 @@ void tst_QTextEdit::cursorPositionChanged()
     cursor.movePosition(QTextCursor::End);
     spy.clear();
     cursor.insertText("Test");
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     cursor.movePosition(QTextCursor::End);
     ed->setTextCursor(cursor);
     cursor.movePosition(QTextCursor::Start);
     spy.clear();
     cursor.insertText("Test");
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     spy.clear();
     QTest::keyClick(ed, Qt::Key_Left);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     cursor.movePosition(QTextCursor::Start);
     ed->setTextCursor(cursor);
@@ -747,12 +747,12 @@ void tst_QTextEdit::cursorPositionChanged()
     QTest::mouseDClick(ed->viewport(), Qt::LeftButton, {}, ed->cursorRect().center());
     QVERIFY(ed->textCursor().hasSelection());
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     CursorPositionChangedRecorder spy2(ed);
     QVERIFY(ed->textCursor().position() > 0);
     ed->setPlainText("Hello World");
-    QCOMPARE(spy2.cursorPositions.count(), 1);
+    QCOMPARE(spy2.cursorPositions.size(), 1);
     QCOMPARE(spy2.cursorPositions.at(0), 0);
     QCOMPARE(ed->textCursor().position(), 0);
 }
@@ -769,7 +769,7 @@ void tst_QTextEdit::setTextCursor()
     spy.clear();
 
     ed->setTextCursor(cursor);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 #ifndef QT_NO_CLIPBOARD
@@ -786,7 +786,7 @@ void tst_QTextEdit::undoAvailableAfterPaste()
     const QString txt("Test");
     QApplication::clipboard()->setText(txt);
     ed->paste();
-    QVERIFY(spy.count() >= 1);
+    QVERIFY(spy.size() >= 1);
     QCOMPARE(ed->toPlainText(), txt);
 }
 #endif
@@ -1039,7 +1039,7 @@ void tst_QTextEdit::noPropertiesOnDefaultTextEditCharFormat()
     // on a text edit. Font properties instead should be taken from the
     // widget's font (in sync with defaultFont property in document) and the
     // foreground color should be taken from the palette.
-    QCOMPARE(ed->currentCharFormat().properties().count(), 0);
+    QCOMPARE(ed->currentCharFormat().properties().size(), 0);
 }
 
 void tst_QTextEdit::setPlainTextShouldUseCurrentCharFormat()
@@ -1061,9 +1061,9 @@ void tst_QTextEdit::setPlainTextShouldEmitTextChangedOnce()
 {
     QSignalSpy spy(ed, SIGNAL(textChanged()));
     ed->setPlainText("Yankee Doodle");
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     ed->setPlainText("");
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 }
 
 void tst_QTextEdit::overwriteMode()
@@ -1377,8 +1377,8 @@ void tst_QTextEdit::copyAvailable()
     //Compare spied signals
     QEXPECT_FAIL("Case7 T,A,A, <- + shift, <- + shift, <- + shift, ctrl + x, undo() | signals: true, false, true",
         "Wrong undo selection behaviour. Should be fixed in some future release. (See task: 132482)", Abort);
-    QCOMPARE(spyCopyAvailabe.count(), copyAvailable.count());
-    for (int i=0;i<spyCopyAvailabe.count(); i++) {
+    QCOMPARE(spyCopyAvailabe.size(), copyAvailable.size());
+    for (int i=0;i<spyCopyAvailabe.size(); i++) {
         QVariant variantSpyCopyAvailable = spyCopyAvailabe.at(i).at(0);
         QVERIFY2(variantSpyCopyAvailable.toBool() == copyAvailable.at(i), QString("Spied singnal: %1").arg(i).toLatin1());
     }
@@ -1414,10 +1414,10 @@ void tst_QTextEdit::moveCursor()
     QCOMPARE(ed->textCursor().position(), 0);
     ed->moveCursor(QTextCursor::NextCharacter);
     QCOMPARE(ed->textCursor().position(), 1);
-    QCOMPARE(cursorMovedSpy.count(), 1);
+    QCOMPARE(cursorMovedSpy.size(), 1);
     ed->moveCursor(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
     QCOMPARE(ed->textCursor().position(), 2);
-    QCOMPARE(cursorMovedSpy.count(), 2);
+    QCOMPARE(cursorMovedSpy.size(), 2);
     QCOMPARE(ed->textCursor().selectedText(), QString("e"));
 }
 
@@ -1692,7 +1692,7 @@ void tst_QTextEdit::ensureVisibleWithRtl()
     ed->setLayoutDirection(Qt::RightToLeft);
     ed->setLineWrapMode(QTextEdit::NoWrap);
     QString txt(500, QChar(QLatin1Char('a')));
-    QCOMPARE(txt.length(), 500);
+    QCOMPARE(txt.size(), 500);
     ed->setPlainText(txt);
     ed->resize(100, 100);
     ed->show();
@@ -1743,7 +1743,7 @@ void tst_QTextEdit::extraSelections()
     ed->setExtraSelections(QList<QTextEdit::ExtraSelection>() << sel);
 
     QList<QTextEdit::ExtraSelection> selections = ed->extraSelections();
-    QCOMPARE(selections.count(), 1);
+    QCOMPARE(selections.size(), 1);
     QCOMPARE(selections.at(0).cursor.position(), endPos);
     QCOMPARE(selections.at(0).cursor.anchor(), wordPos);
 }
@@ -1885,27 +1885,27 @@ void tst_QTextEdit::selectionChanged()
 
     QTest::keyClick(ed, Qt::Key_Right);
     QCOMPARE(ed->textCursor().position(), 1);
-    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(selectionChangedSpy.size(), 0);
 
     QTest::keyClick(ed, Qt::Key_Right, Qt::ShiftModifier);
     QCOMPARE(ed->textCursor().position(), 2);
-    QCOMPARE(selectionChangedSpy.count(), 1);
+    QCOMPARE(selectionChangedSpy.size(), 1);
 
     QTest::keyClick(ed, Qt::Key_Right, Qt::ShiftModifier);
     QCOMPARE(ed->textCursor().position(), 3);
-    QCOMPARE(selectionChangedSpy.count(), 2);
+    QCOMPARE(selectionChangedSpy.size(), 2);
 
     QTest::keyClick(ed, Qt::Key_Right, Qt::ShiftModifier);
     QCOMPARE(ed->textCursor().position(), 4);
-    QCOMPARE(selectionChangedSpy.count(), 3);
+    QCOMPARE(selectionChangedSpy.size(), 3);
 
     QTest::keyClick(ed, Qt::Key_Right);
     QCOMPARE(ed->textCursor().position(), 4);
-    QCOMPARE(selectionChangedSpy.count(), 4);
+    QCOMPARE(selectionChangedSpy.size(), 4);
 
     QTest::keyClick(ed, Qt::Key_Right);
     QCOMPARE(ed->textCursor().position(), 5);
-    QCOMPARE(selectionChangedSpy.count(), 4);
+    QCOMPARE(selectionChangedSpy.size(), 4);
 }
 
 #ifndef QT_NO_CLIPBOARD
@@ -2533,7 +2533,7 @@ void tst_QTextEdit::inputMethodEvent()
     QInputMethodEvent event;
     event.setCommitString("text");
     QApplication::sendEvent(ed, &event);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(ed->toPlainText(), QString("text"));
 
     // test that input method gets chance to commit preedit when removing focus
@@ -2563,7 +2563,7 @@ void tst_QTextEdit::inputMethodSelection()
     cursor.setPosition(5, QTextCursor::KeepAnchor);
     ed->setTextCursor(cursor);
 
-    QCOMPARE(selectionSpy.count(), 1);
+    QCOMPARE(selectionSpy.size(), 1);
     QCOMPARE(ed->textCursor().selectionStart(), 0);
     QCOMPARE(ed->textCursor().selectionEnd(), 5);
 
@@ -2572,7 +2572,7 @@ void tst_QTextEdit::inputMethodSelection()
     QInputMethodEvent event("", attributes);
     QApplication::sendEvent(ed, &event);
 
-    QCOMPARE(selectionSpy.count(), 2);
+    QCOMPARE(selectionSpy.size(), 2);
     QCOMPARE(ed->textCursor().selectionStart(), 12);
     QCOMPARE(ed->textCursor().selectionEnd(), 17);
 }
@@ -2587,7 +2587,7 @@ void tst_QTextEdit::inputMethodQuery()
     QGuiApplication::sendEvent(ed, &event);
     int anchor = event.value(Qt::ImAnchorPosition).toInt();
     int position = event.value(Qt::ImCursorPosition).toInt();
-    QCOMPARE(qAbs(position - anchor), text.length());
+    QCOMPARE(qAbs(position - anchor), text.size());
     QCOMPARE(event.value(Qt::ImEnabled).toBool(), true);
 
     ed->setEnabled(false);
@@ -2672,7 +2672,7 @@ void tst_QTextEdit::countTextChangedOnRemove()
     QKeyEvent event(QEvent::KeyPress, Qt::Key_Backspace, Qt::NoModifier);
     QCoreApplication::instance()->notify(&edit, &event);
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 #if QT_CONFIG(regularexpression)

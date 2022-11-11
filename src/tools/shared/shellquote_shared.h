@@ -11,7 +11,7 @@
 // Copy-pasted from qmake/library/ioutil.cpp
 inline static bool hasSpecialChars(const QString &arg, const uchar (&iqm)[16])
 {
-    for (int x = arg.length() - 1; x >= 0; --x) {
+    for (int x = arg.size() - 1; x >= 0; --x) {
         ushort c = arg.unicode()[x].unicode();
         if ((c < sizeof(iqm) * 8) && (iqm[c / 8] & (1 << (c & 7))))
             return true;
@@ -27,7 +27,7 @@ static QString shellQuoteUnix(const QString &arg)
         0x00, 0x00, 0x00, 0x38, 0x01, 0x00, 0x00, 0x78
     }; // 0-32 \'"$`<>|;&(){}*?#!~[]
 
-    if (!arg.length())
+    if (!arg.size())
         return QLatin1String("\"\"");
 
     QString ret(arg);
@@ -50,7 +50,7 @@ static QString shellQuoteWin(const QString &arg)
         0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x10
     };
 
-    if (!arg.length())
+    if (!arg.size())
         return QLatin1String("\"\"");
 
     QString ret(arg);
@@ -62,7 +62,7 @@ static QString shellQuoteWin(const QString &arg)
         // The argument must not end with a \ since this would be interpreted
         // as escaping the quote -- rather put the \ behind the quote: e.g.
         // rather use "foo"\ than "foo\"
-        int i = ret.length();
+        int i = ret.size();
         while (i > 0 && ret.at(i - 1) == QLatin1Char('\\'))
             --i;
         ret.insert(i, QLatin1Char('"'));

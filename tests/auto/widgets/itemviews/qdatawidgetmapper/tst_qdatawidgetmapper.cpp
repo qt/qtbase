@@ -252,22 +252,22 @@ void tst_QDataWidgetMapper::currentIndexChanged()
     QSignalSpy spy(&mapper, &QDataWidgetMapper::currentIndexChanged);
 
     mapper.toFirst();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.takeFirst().at(0).toInt(), 0);
 
     mapper.toNext();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.takeFirst().at(0).toInt(), 1);
 
     mapper.setCurrentIndex(7);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(spy.takeFirst().at(0).toInt(), 7);
 
     mapper.setCurrentIndex(-1);
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     mapper.setCurrentIndex(42);
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QDataWidgetMapper::changingValues()
@@ -424,21 +424,21 @@ void tst_QDataWidgetMapper::textEditDoesntChangeFocusOnTab_qtbug3305()
     int closeEditorSpyCount = 0;
     const QString textEditContents = textEdit->toPlainText();
 
-    QCOMPARE(closeEditorSpy.count(), closeEditorSpyCount);
+    QCOMPARE(closeEditorSpy.size(), closeEditorSpyCount);
     QVERIFY(lineEdit->hasFocus());
     QVERIFY(!textEdit->hasFocus());
 
     // this will generate a closeEditor for the tab key, and another for the focus out
     QTest::keyClick(QApplication::focusWidget(), Qt::Key_Tab);
     closeEditorSpyCount += 2;
-    QTRY_COMPARE(closeEditorSpy.count(), closeEditorSpyCount);
+    QTRY_COMPARE(closeEditorSpy.size(), closeEditorSpyCount);
 
     QTRY_VERIFY(textEdit->hasFocus());
     QVERIFY(!lineEdit->hasFocus());
 
     // now that the text edit is focused, a tab keypress will insert a tab, not change focus
     QTest::keyClick(QApplication::focusWidget(), Qt::Key_Tab);
-    QTRY_COMPARE(closeEditorSpy.count(), closeEditorSpyCount);
+    QTRY_COMPARE(closeEditorSpy.size(), closeEditorSpyCount);
 
     QVERIFY(!lineEdit->hasFocus());
     QVERIFY(textEdit->hasFocus());
@@ -449,7 +449,7 @@ void tst_QDataWidgetMapper::textEditDoesntChangeFocusOnTab_qtbug3305()
     QTRY_VERIFY(lineEdit->hasFocus());
     QVERIFY(!textEdit->hasFocus());
     ++closeEditorSpyCount;
-    QCOMPARE(closeEditorSpy.count(), closeEditorSpyCount);
+    QCOMPARE(closeEditorSpy.size(), closeEditorSpyCount);
 }
 
 QTEST_MAIN(tst_QDataWidgetMapper)

@@ -678,20 +678,20 @@ public:
 
     QString &insert(qsizetype i, QChar c);
     QString &insert(qsizetype i, const QChar *uc, qsizetype len);
-    inline QString &insert(qsizetype i, const QString &s) { return insert(i, s.constData(), s.length()); }
-    inline QString &insert(qsizetype i, QStringView v) { return insert(i, v.data(), v.length()); }
+    inline QString &insert(qsizetype i, const QString &s) { return insert(i, s.constData(), s.size()); }
+    inline QString &insert(qsizetype i, QStringView v) { return insert(i, v.data(), v.size()); }
     QString &insert(qsizetype i, QLatin1StringView s);
 
     QString &append(QChar c);
     QString &append(const QChar *uc, qsizetype len);
     QString &append(const QString &s);
-    inline QString &append(QStringView v) { return append(v.data(), v.length()); }
+    inline QString &append(QStringView v) { return append(v.data(), v.size()); }
     QString &append(QLatin1StringView s);
 
     inline QString &prepend(QChar c) { return insert(0, c); }
     inline QString &prepend(const QChar *uc, qsizetype len) { return insert(0, uc, len); }
     inline QString &prepend(const QString &s) { return insert(0, s); }
-    inline QString &prepend(QStringView v) { return prepend(v.data(), v.length()); }
+    inline QString &prepend(QStringView v) { return prepend(v.data(), v.size()); }
     inline QString &prepend(QLatin1StringView s) { return insert(0, s); }
 
     inline QString &operator+=(QChar c) { return append(c); }
@@ -1192,7 +1192,7 @@ QString QLatin1StringView::toString() const { return *this; }
 //
 
 QString QStringView::toString() const
-{ return Q_ASSERT(size() == length()), QString(data(), length()); }
+{ return Q_ASSERT(size() == size()), QString(data(), size()); }
 
 qint64 QStringView::toLongLong(bool *ok, int base) const
 { return QString::toIntegral_helper<qint64>(*this, ok, base); }
@@ -1482,7 +1482,7 @@ inline QString QString::fromStdString(const std::string &s)
 inline std::wstring QString::toStdWString() const
 {
     std::wstring str;
-    str.resize(length());
+    str.resize(size());
     str.resize(toWCharArray(str.data()));
     return str;
 }
@@ -1494,16 +1494,16 @@ inline QString QString::fromStdU16String(const std::u16string &s)
 { return fromUtf16(s.data(), qsizetype(s.size())); }
 
 inline std::u16string QString::toStdU16String() const
-{ return std::u16string(reinterpret_cast<const char16_t*>(data()), length()); }
+{ return std::u16string(reinterpret_cast<const char16_t*>(data()), size()); }
 
 inline QString QString::fromStdU32String(const std::u32string &s)
 { return fromUcs4(s.data(), qsizetype(s.size())); }
 
 inline std::u32string QString::toStdU32String() const
 {
-    std::u32string u32str(length(), char32_t(0));
+    std::u32string u32str(size(), char32_t(0));
     qsizetype len = toUcs4_helper(reinterpret_cast<const ushort *>(constData()),
-                                  length(), reinterpret_cast<uint*>(&u32str[0]));
+                                  size(), reinterpret_cast<uint*>(&u32str[0]));
     u32str.resize(len);
     return u32str;
 }
@@ -1520,9 +1520,9 @@ inline int QString::compare(QStringView s, Qt::CaseSensitivity cs) const noexcep
 { return -s.compare(*this, cs); }
 
 inline int QString::localeAwareCompare(QStringView s) const
-{ return localeAwareCompare_helper(constData(), length(), s.constData(), s.length()); }
+{ return localeAwareCompare_helper(constData(), size(), s.constData(), s.size()); }
 inline int QString::localeAwareCompare(QStringView s1, QStringView s2)
-{ return localeAwareCompare_helper(s1.constData(), s1.length(), s2.constData(), s2.length()); }
+{ return localeAwareCompare_helper(s1.constData(), s1.size(), s2.constData(), s2.size()); }
 inline int QStringView::localeAwareCompare(QStringView other) const
 { return QString::localeAwareCompare(*this, other); }
 

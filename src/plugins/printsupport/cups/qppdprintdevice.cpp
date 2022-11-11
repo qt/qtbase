@@ -428,7 +428,7 @@ bool QPpdPrintDevice::setProperty(QPrintDevice::PrintDevicePropertyKey key, cons
 {
     if (key == PDPK_PpdOption) {
         const QStringList values = value.toStringList();
-        if (values.count() == 2) {
+        if (values.size() == 2) {
             ppdMarkOption(m_ppd, values[0].toLatin1(), values[1].toLatin1());
             return true;
         }
@@ -441,7 +441,7 @@ bool QPpdPrintDevice::isFeatureAvailable(QPrintDevice::PrintDevicePropertyKey ke
 {
     if (key == PDPK_PpdChoiceIsInstallableConflict) {
         const QStringList values = params.toStringList();
-        if (values.count() == 2)
+        if (values.size() == 2)
             return ppdInstallableConflict(m_ppd, values[0].toLatin1(), values[1].toLatin1());
     }
 

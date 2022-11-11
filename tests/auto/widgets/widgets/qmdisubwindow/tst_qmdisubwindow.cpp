@@ -528,9 +528,9 @@ void tst_QMdiSubWindow::emittingOfSignals()
 
     int count = 0;
     if (signal == SIGNAL(aboutToActivate())) {
-        count += spy.count();
+        count += spy.size();
     } else {
-        for (int i = 0; i < spy.count(); ++i) {
+        for (int i = 0; i < spy.size(); ++i) {
             Qt::WindowStates oldState = qvariant_cast<Qt::WindowStates>(spy.at(i).at(0));
             Qt::WindowStates newState = qvariant_cast<Qt::WindowStates>(spy.at(i).at(1));
             if (watchedState != Qt::WindowNoState) {
@@ -553,7 +553,7 @@ void tst_QMdiSubWindow::emittingOfSignals()
 
     spy.clear();
     triggerSignal(window, &workspace, signal);
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     delete window;
     window = nullptr;
@@ -1030,7 +1030,7 @@ void tst_QMdiSubWindow::setSystemMenu()
     subWindow->setSystemMenu(systemMenu);
     QCOMPARE(subWindow->systemMenu(), qobject_cast<QMenu *>(systemMenu));
     QCOMPARE(subWindow->systemMenu()->parentWidget(), static_cast<QWidget *>(subWindow));
-    QCOMPARE(subWindow->systemMenu()->actions().count(), 1);
+    QCOMPARE(subWindow->systemMenu()->actions().size(), 1);
 
     // Show the new system menu
     QVERIFY(!QApplication::activePopupWidget());
@@ -1254,7 +1254,7 @@ void tst_QMdiSubWindow::changeFocusWithTab()
     mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     mdiArea.addSubWindow(widget);
     mdiArea.show();
-    QCOMPARE(mdiArea.subWindowList().count(), 1);
+    QCOMPARE(mdiArea.subWindowList().size(), 1);
 
     QApplication::setActiveWindow(&mdiArea);
     QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(firstLineEdit));
@@ -1336,7 +1336,7 @@ void tst_QMdiSubWindow::closeEvent()
 
     QVERIFY(window->close());
     QCOMPARE(closeSpy.count(), 3);
-    QCOMPARE(mdiArea.subWindowList().count(), 0);
+    QCOMPARE(mdiArea.subWindowList().size(), 0);
 }
 
 // There exists more tests in QMdiArea which covers window title support
@@ -2101,7 +2101,7 @@ void tst_QMdiSubWindow::styleChange()
 
     // subWindowActivated should NOT be activated by a style change,
     // even if internally QMdiSubWindow un-minimizes subwindows temporarily.
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 }
 
 void tst_QMdiSubWindow::testFullScreenState()

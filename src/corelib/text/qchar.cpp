@@ -1815,7 +1815,7 @@ static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion 
     QString &s = *str;
 
     const unsigned short *utf16 = reinterpret_cast<unsigned short *>(s.data());
-    const unsigned short *uc = utf16 + s.length();
+    const unsigned short *uc = utf16 + s.size();
     while (uc != utf16 + from) {
         char32_t ucs4 = *(--uc);
         if (QChar(ucs4).isLowSurrogate() && uc != utf16) {
@@ -1910,7 +1910,7 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, qsizetype
 {
     QString &s = *str;
 
-    if (from < 0 || s.length() - from < 2)
+    if (from < 0 || s.size() - from < 2)
         return;
 
     char32_t stcode = 0; // starter code point
@@ -1919,10 +1919,10 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, qsizetype
     int lastCombining = 255; // to prevent combining > lastCombining
 
     qsizetype pos = from;
-    while (pos < s.length()) {
+    while (pos < s.size()) {
         qsizetype i = pos;
         char32_t uc = s.at(pos).unicode();
-        if (QChar(uc).isHighSurrogate() && pos < s.length()-1) {
+        if (QChar(uc).isHighSurrogate() && pos < s.size()-1) {
             ushort low = s.at(pos+1).unicode();
             if (QChar(low).isLowSurrogate()) {
                 uc = QChar::surrogateToUcs4(uc, low);
@@ -1969,7 +1969,7 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, qsizetype
 static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, qsizetype from)
 {
     QString &s = *str;
-    const qsizetype l = s.length()-1;
+    const qsizetype l = s.size()-1;
 
     char32_t u1, u2;
     char16_t c1, c2;
@@ -2058,7 +2058,7 @@ static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationFo
     enum { NFQC_YES = 0, NFQC_NO = 1, NFQC_MAYBE = 3 };
 
     const ushort *string = reinterpret_cast<const ushort *>(str->constData());
-    qsizetype length = str->length();
+    qsizetype length = str->size();
 
     // this avoids one out of bounds check in the loop
     while (length > from && QChar::isHighSurrogate(string[length - 1]))
@@ -2101,8 +2101,8 @@ static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationFo
             *lastStable = pos;
     }
 
-    if (length != str->length()) // low surrogate parts at the end of text
-        *lastStable = str->length() - 1;
+    if (length != str->size()) // low surrogate parts at the end of text
+        *lastStable = str->size() - 1;
 
     return true;
 }

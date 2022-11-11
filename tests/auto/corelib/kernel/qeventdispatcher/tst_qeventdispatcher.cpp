@@ -159,7 +159,7 @@ private:
         bool foundCoarse = false;
         bool foundVeryCoarse = false;
         const QList<QAbstractEventDispatcher::TimerInfo> timers = registeredTimers();
-        for (int i = 0; i < timers.count(); ++i) {
+        for (int i = 0; i < timers.size(); ++i) {
             const QAbstractEventDispatcher::TimerInfo &timerInfo = timers.at(i);
             if (timerInfo.timerId == m_preciseTimerId) {
                 QCOMPARE(timerInfo.interval, int(PreciseTimerInterval));
@@ -201,7 +201,7 @@ void tst_QEventDispatcher::registerTimer()
         return;
 
     // check that all 3 are present in the eventDispatcher's registeredTimer() list
-    QCOMPARE(timers.registeredTimers().count(), 3);
+    QCOMPARE(timers.registeredTimers().size(), 3);
     QVERIFY(timers.foundPrecise());
     QVERIFY(timers.foundCoarse());
     QVERIFY(timers.foundVeryCoarse());
@@ -236,7 +236,7 @@ void tst_QEventDispatcher::registerTimer()
     timers.unregister(timers.preciseTimerId());
     if (QTest::currentTestFailed())
         return;
-    QCOMPARE(timers.registeredTimers().count(), 2);
+    QCOMPARE(timers.registeredTimers().size(), 2);
     QVERIFY(!timers.foundPrecise());
     QVERIFY(timers.foundCoarse());
     QVERIFY(timers.foundVeryCoarse());
@@ -260,7 +260,7 @@ void tst_QEventDispatcher::registerTimer()
     timers.unregister(timers.coarseTimerId());
     if (QTest::currentTestFailed())
         return;
-    QCOMPARE(timers.registeredTimers().count(), 1);
+    QCOMPARE(timers.registeredTimers().size(), 1);
     QVERIFY(!timers.foundPrecise());
     QVERIFY(!timers.foundCoarse());
     QVERIFY(timers.foundVeryCoarse());

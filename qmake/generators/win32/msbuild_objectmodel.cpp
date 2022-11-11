@@ -283,7 +283,7 @@ static QString commandLinesForOutput(QStringList commands)
     // As we want every sub-command to be error-checked (as is done by makefile-based
     // backends), we insert the checks ourselves, using the undocumented jump target.
     static QString errchk = QStringLiteral("if errorlevel 1 goto VCEnd");
-    for (int i = commands.count() - 2; i >= 0; --i) {
+    for (int i = commands.size() - 2; i >= 0; --i) {
         if (!commands.at(i).startsWith("rem", Qt::CaseInsensitive))
             commands.insert(i + 1, errchk);
     }
@@ -301,7 +301,7 @@ static QStringList unquote(const QStringList &values)
 {
     QStringList result;
     result.reserve(values.size());
-    for (int i = 0; i < values.count(); ++i)
+    for (int i = 0; i < values.size(); ++i)
         result << unquote(values.at(i));
     return result;
 }
@@ -544,7 +544,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
                    [] (const VCFilter &filter) { return filter.Name; });
     tempProj.ExtraCompilers.removeDuplicates();
 
-    for (int x = 0; x < tempProj.ExtraCompilers.count(); ++x)
+    for (int x = 0; x < tempProj.ExtraCompilers.size(); ++x)
         addFilters(tempProj, xmlFilter, tempProj.ExtraCompilers.at(x));
 
     xmlFilter << closetag();
@@ -559,7 +559,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
     outputFilter(tempProj, xml, xmlFilter, "Deployment Files");
     outputFilter(tempProj, xml, xmlFilter, "Distribution Files");
 
-    for (int x = 0; x < tempProj.ExtraCompilers.count(); ++x) {
+    for (int x = 0; x < tempProj.ExtraCompilers.size(); ++x) {
         outputFilter(tempProj, xml, xmlFilter, tempProj.ExtraCompilers.at(x));
     }
 
@@ -574,7 +574,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
 
 void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
 {
-    if (tool.SingleProjects.count() == 0) {
+    if (tool.SingleProjects.size() == 0) {
         warn_msg(WarnLogic, "Generator: .NET: no single project in merge project, no output");
         return;
     }
@@ -589,7 +589,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         << tag("ItemGroup")
         << attrTag("Label", "ProjectConfigurations");
 
-    for (int i = 0; i < tool.SingleProjects.count(); ++i) {
+    for (int i = 0; i < tool.SingleProjects.size(); ++i) {
         xml << tag("ProjectConfiguration")
             << attrTag("Include" , tool.SingleProjects.at(i).Configuration.Name)
             << tagValue("Configuration", tool.SingleProjects.at(i).Configuration.ConfigurationName)
@@ -613,7 +613,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
 
     // config part.
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.Default.props");
-    for (int i = 0; i < tool.SingleProjects.count(); ++i)
+    for (int i = 0; i < tool.SingleProjects.size(); ++i)
         write(xml, tool.SingleProjects.at(i).Configuration);
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.props");
 
@@ -623,7 +623,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         << closetag();
 
     // PropertySheets
-    for (int i = 0; i < tool.SingleProjects.count(); ++i) {
+    for (int i = 0; i < tool.SingleProjects.size(); ++i) {
         xml << tag("ImportGroup")
             << attrTag("Condition", generateCondition(tool.SingleProjects.at(i).Configuration))
             << attrTag("Label", "PropertySheets");
@@ -641,7 +641,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         << closetag();
 
     xml << tag("PropertyGroup");
-    for (int i = 0; i < tool.SingleProjects.count(); ++i) {
+    for (int i = 0; i < tool.SingleProjects.size(); ++i) {
         const VCConfiguration &config = tool.SingleProjects.at(i).Configuration;
         const QString condition = generateCondition(config);
 
@@ -708,7 +708,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
     }
     xml << closetag();
 
-    for (int i = 0; i < tool.SingleProjects.count(); ++i) {
+    for (int i = 0; i < tool.SingleProjects.size(); ++i) {
         const VCConfiguration &config = tool.SingleProjects.at(i).Configuration;
 
         xml << tag("ItemDefinitionGroup")
@@ -774,7 +774,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
     addFilters(tool, xmlFilter, "Deployment Files");
     addFilters(tool, xmlFilter, "Distribution Files");
 
-    for (int x = 0; x < tool.ExtraCompilers.count(); ++x)
+    for (int x = 0; x < tool.ExtraCompilers.size(); ++x)
         addFilters(tool, xmlFilter, tool.ExtraCompilers.at(x));
 
     xmlFilter << closetag();
@@ -788,7 +788,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
     outputFilter(tool, xml, xmlFilter, "Resource Files");
     outputFilter(tool, xml, xmlFilter, "Deployment Files");
     outputFilter(tool, xml, xmlFilter, "Distribution Files");
-    for (int x = 0; x < tool.ExtraCompilers.count(); ++x) {
+    for (int x = 0; x < tool.ExtraCompilers.size(); ++x) {
         outputFilter(tool, xml, xmlFilter, tool.ExtraCompilers.at(x));
     }
     outputFilter(tool, xml, xmlFilter, "Root Files");
@@ -1737,7 +1737,7 @@ void VCXProjectWriter::addFilters(VCProject &project, XmlOutput &xmlFilter, cons
 {
     bool added = false;
 
-    for (int i = 0; i < project.SingleProjects.count(); ++i) {
+    for (int i = 0; i < project.SingleProjects.size(); ++i) {
         const VCFilter filter = project.SingleProjects.at(i).filterByName(filtername);
         if(!filter.Files.isEmpty() && !added) {
             xmlFilter << tag("Filter")
@@ -1759,10 +1759,10 @@ void VCXProjectWriter::outputFilter(VCProject &project, XmlOutput &xml, XmlOutpu
     else
         root.reset(new XTreeNode);
 
-    for (int i = 0; i < project.SingleProjects.count(); ++i) {
+    for (int i = 0; i < project.SingleProjects.size(); ++i) {
         const VCFilter filter = project.SingleProjects.at(i).filterByName(filtername);
         // Merge all files in this filter to root tree
-        for (int x = 0; x < filter.Files.count(); ++x)
+        for (int x = 0; x < filter.Files.size(); ++x)
             root->addElement(filter.Files.at(x));
     }
 
@@ -1789,8 +1789,8 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
     // We need to check if the file has any custom build step.
     // If there is one then it has to be included with "CustomBuild Include"
     bool hasCustomBuildStep = false;
-    QVarLengthArray<OutputFilterData> data(project.SingleProjects.count());
-    for (int i = 0; i < project.SingleProjects.count(); ++i) {
+    QVarLengthArray<OutputFilterData> data(project.SingleProjects.size());
+    for (int i = 0; i < project.SingleProjects.size(); ++i) {
         data[i].filter = project.SingleProjects.at(i).filterByName(cleanFilterName);
         if (!data[i].filter.Config) // only if the filter is not empty
             continue;
@@ -1812,7 +1812,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
     }
 
     bool fileAdded = false;
-    for (int i = 0; i < project.SingleProjects.count(); ++i) {
+    for (int i = 0; i < project.SingleProjects.size(); ++i) {
         OutputFilterData *d = &data[i];
         if (!d->filter.Config) // only if the filter is not empty
             continue;

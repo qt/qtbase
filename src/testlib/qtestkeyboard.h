@@ -259,7 +259,7 @@ namespace QTest
     inline static void keyClicks(QWidget *widget, const QString &sequence,
                                  Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     {
-        for (int i=0; i < sequence.length(); i++)
+        for (int i=0; i < sequence.size(); i++)
             keyEvent(Click, widget, sequence.at(i).toLatin1(), modifier, delay);
     }
 

@@ -960,7 +960,7 @@ void tst_QObject::disconnectNotify_receiverDestroyed()
         QVERIFY(QObject::connect((SenderObject *)&s, SIGNAL(signal1()),
                                  (ReceiverObject *)&r, SLOT(slot1())));
     }
-    QCOMPARE(s.disconnectedSignals.count(), 1);
+    QCOMPARE(s.disconnectedSignals.size(), 1);
     QCOMPARE(s.disconnectedSignals.at(0), QMetaMethod::fromSignal(&SenderObject::signal1));
 
     s.disconnectedSignals.clear();
@@ -971,7 +971,7 @@ void tst_QObject::disconnectNotify_receiverDestroyed()
                                  (ReceiverObject *)&r, SLOT(slot3())));
     }
 
-    QCOMPARE(s.disconnectedSignals.count(), 1);
+    QCOMPARE(s.disconnectedSignals.size(), 1);
     QCOMPARE(s.disconnectedSignals.at(0), QMetaMethod::fromSignal(&SenderObject::signal3));
 
     s.disconnectedSignals.clear();
@@ -981,7 +981,7 @@ void tst_QObject::disconnectNotify_receiverDestroyed()
         QVERIFY(QObject::connect((SenderObject *)&s, SIGNAL(destroyed()), (ReceiverObject *)&r, SLOT(slot3())));
     }
 
-    QCOMPARE(s.disconnectedSignals.count(), 1);
+    QCOMPARE(s.disconnectedSignals.size(), 1);
     QCOMPARE(s.disconnectedSignals.at(0), QMetaMethod::fromSignal(&QObject::destroyed));
 }
 
@@ -996,10 +996,10 @@ void tst_QObject::disconnectNotify_metaObjConnection()
         QVERIFY(c);
         QVERIFY(QObject::disconnect(c));
 
-        QCOMPARE(s.disconnectedSignals.count(), 1);
+        QCOMPARE(s.disconnectedSignals.size(), 1);
         QCOMPARE(s.disconnectedSignals.at(0), QMetaMethod::fromSignal(&SenderObject::signal1));
 
-        QCOMPARE(s.disconnectedSignals.count(), 1);
+        QCOMPARE(s.disconnectedSignals.size(), 1);
     }
 }
 
@@ -2125,18 +2125,18 @@ void tst_QObject::metamethod()
     QVERIFY(!(m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("invoke1()"));
-    QCOMPARE(m.parameterNames().count(), 0);
-    QCOMPARE(m.parameterTypes().count(), 0);
+    QCOMPARE(m.parameterNames().size(), 0);
+    QCOMPARE(m.parameterTypes().size(), 0);
 
     m = mobj->method(mobj->indexOfMethod("invoke2(int)"));
-    QCOMPARE(m.parameterNames().count(), 1);
-    QCOMPARE(m.parameterTypes().count(), 1);
+    QCOMPARE(m.parameterNames().size(), 1);
+    QCOMPARE(m.parameterTypes().size(), 1);
     QCOMPARE(m.parameterTypes().at(0), QByteArray("int"));
     QVERIFY(m.parameterNames().at(0).isEmpty());
 
     m = mobj->method(mobj->indexOfMethod("invoke3(int,int)"));
-    QCOMPARE(m.parameterNames().count(), 2);
-    QCOMPARE(m.parameterTypes().count(), 2);
+    QCOMPARE(m.parameterNames().size(), 2);
+    QCOMPARE(m.parameterTypes().size(), 2);
     QCOMPARE(m.parameterTypes().at(0), QByteArray("int"));
     QCOMPARE(m.parameterNames().at(0), QByteArray("hinz"));
     QCOMPARE(m.parameterTypes().at(1), QByteArray("int"));
@@ -2951,22 +2951,22 @@ void tst_QObject::dynamicProperties()
 
     // set a dynamic property
     QVERIFY(!obj.setProperty("myuserproperty", "Hello"));
-    QCOMPARE(obj.changedDynamicProperties.count(), 1);
+    QCOMPARE(obj.changedDynamicProperties.size(), 1);
     QCOMPARE(obj.changedDynamicProperties.first(), QByteArray("myuserproperty"));
     //check if there is no redundant DynamicPropertyChange events
     QVERIFY(!obj.setProperty("myuserproperty", "Hello"));
-    QCOMPARE(obj.changedDynamicProperties.count(), 1);
+    QCOMPARE(obj.changedDynamicProperties.size(), 1);
 
     QCOMPARE(obj.property("myuserproperty").type(), QVariant::String);
     QCOMPARE(obj.property("myuserproperty").toString(), QString("Hello"));
 
-    QCOMPARE(obj.dynamicPropertyNames().count(), 1);
+    QCOMPARE(obj.dynamicPropertyNames().size(), 1);
     QCOMPARE(obj.dynamicPropertyNames().first(), QByteArray("myuserproperty"));
 
     // change type of the dynamic property
     obj.changedDynamicProperties.clear();
     QVERIFY(!obj.setProperty("myuserproperty", QByteArray("Hello")));
-    QCOMPARE(obj.changedDynamicProperties.count(), 1);
+    QCOMPARE(obj.changedDynamicProperties.size(), 1);
     QCOMPARE(obj.changedDynamicProperties.first(), QByteArray("myuserproperty"));
     QCOMPARE(obj.property("myuserproperty").type(), QVariant::ByteArray);
     QCOMPARE(obj.property("myuserproperty").toString(), QByteArray("Hello"));
@@ -2975,7 +2975,7 @@ void tst_QObject::dynamicProperties()
     obj.changedDynamicProperties.clear();
     QVERIFY(!obj.setProperty("myuserproperty", QVariant()));
 
-    QCOMPARE(obj.changedDynamicProperties.count(), 1);
+    QCOMPARE(obj.changedDynamicProperties.size(), 1);
     QCOMPARE(obj.changedDynamicProperties.first(), QByteArray("myuserproperty"));
     obj.changedDynamicProperties.clear();
 

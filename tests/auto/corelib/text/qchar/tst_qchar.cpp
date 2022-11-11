@@ -797,7 +797,7 @@ void tst_QChar::normalization_data()
 
         line = line.trimmed();
         if (line.endsWith(';'))
-            line.truncate(line.length()-1);
+            line.truncate(line.size()-1);
 
         QList<QByteArray> l = line.split(';');
 

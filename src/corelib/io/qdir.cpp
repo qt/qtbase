@@ -153,12 +153,12 @@ inline void QDirPrivate::setPath(const QString &path)
 {
     QString p = QDir::fromNativeSeparators(path);
     if (p.endsWith(u'/')
-            && p.length() > 1
+            && p.size() > 1
 #if defined(Q_OS_WIN)
         && (!(p.length() == 3 && p.at(1).unicode() == ':' && p.at(0).isLetter()))
 #endif
     ) {
-            p.truncate(p.length() - 1);
+            p.truncate(p.size() - 1);
     }
 
     dirEntry = QFileSystemEntry(p, QFileSystemEntry::FromInternalPath());
@@ -1051,12 +1051,12 @@ void QDir::setNameFilters(const QStringList &nameFilters)
 */
 void QDir::setSearchPaths(const QString &prefix, const QStringList &searchPaths)
 {
-    if (prefix.length() < 2) {
+    if (prefix.size() < 2) {
         qWarning("QDir::setSearchPaths: Prefix must be longer than 1 character");
         return;
     }
 
-    for (int i = 0; i < prefix.length(); ++i) {
+    for (int i = 0; i < prefix.size(); ++i) {
         if (!prefix.at(i).isLetterOrNumber()) {
             qWarning("QDir::setSearchPaths: Prefix can only contain letters or numbers");
             return;
@@ -1262,7 +1262,7 @@ uint QDir::count() const
 {
     Q_D(const QDir);
     d->initFileLists(*this);
-    return d->files.count();
+    return d->files.size();
 }
 
 /*!
@@ -2293,7 +2293,7 @@ static QString qt_cleanPath(const QString &path, bool *ok)
     QString ret = qt_normalizePathSegments(name, OSSupportsUncPaths ? QDirPrivate::AllowUncPaths : QDirPrivate::DefaultNormalization, ok);
 
     // Strip away last slash except for root directories
-    if (ret.length() > 1 && ret.endsWith(u'/')) {
+    if (ret.size() > 1 && ret.endsWith(u'/')) {
 #if defined (Q_OS_WIN)
         if (!(ret.length() == 3 && ret.at(1) == u':'))
 #endif

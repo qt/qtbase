@@ -196,7 +196,7 @@ public:
     }
 
     inline bool isItemHiddenOrDisabled(int i) const {
-        if (i < 0 || i >= viewItems.count())
+        if (i < 0 || i >= viewItems.size())
             return false;
         const QModelIndex index = viewItems.at(i).index;
         return isRowHidden(index) || !isIndexEnabled(index);
@@ -205,7 +205,7 @@ public:
     inline int above(int item) const
         { int i = item; while (isItemHiddenOrDisabled(--item)){} return item < 0 ? i : item; }
     inline int below(int item) const
-        { int i = item; while (isItemHiddenOrDisabled(++item)){} return item >= viewItems.count() ? i : item; }
+        { int i = item; while (isItemHiddenOrDisabled(++item)){} return item >= viewItems.size() ? i : item; }
     inline void invalidateHeightCache(int item) const
         { viewItems[item].height = 0; }
 

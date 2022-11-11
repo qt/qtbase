@@ -110,13 +110,13 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
         qWarning() << qPrintable(errorMsg);
         return QString();           // invalid form
     }
-    if (isSignal && inputCount + 1 != types.count())
+    if (isSignal && inputCount + 1 != types.size())
         return QString();           // signal with output arguments?
     if (isSignal && types.at(inputCount) == QDBusMetaTypeId::message())
         return QString();           // signal with QDBusMessage argument?
 
     bool isScriptable = mm.isScriptable;
-    for (int j = 1; j < types.count(); ++j) {
+    for (int j = 1; j < types.size(); ++j) {
         // input parameter for a slot or output for a signal
         if (types.at(j) == QDBusMetaTypeId::message()) {
             isScriptable = true;
@@ -253,7 +253,7 @@ QString qDBusInterfaceFromClassDef(const ClassDef *mo)
     if (interface.startsWith("QDBus"_L1)) {
         interface.prepend("org.qtproject.QtDBus."_L1);
     } else if (interface.startsWith(u'Q') &&
-                interface.length() >= 2 && interface.at(1).isUpper()) {
+                interface.size() >= 2 && interface.at(1).isUpper()) {
         // assume it's Qt
         interface.prepend("local.org.qtproject.Qt."_L1);
     } else {
@@ -333,7 +333,7 @@ static std::deque<CustomType> s_customTypes;
 static void parseCmdLine(QStringList &arguments)
 {
     flags = 0;
-    for (int i = 0; i < arguments.count(); ++i) {
+    for (int i = 0; i < arguments.size(); ++i) {
         const QString arg = arguments.at(i);
 
         if (arg == "--help"_L1)
@@ -373,7 +373,7 @@ static void parseCmdLine(QStringList &arguments)
             break;
 
         case 't':
-            if (arguments.count() < i + 2) {
+            if (arguments.size() < i + 2) {
                 printf("-t expects a type=dbustype argument\n");
                 exit(1);
             } else {
@@ -394,7 +394,7 @@ static void parseCmdLine(QStringList &arguments)
             break;
 
         case 'o':
-            if (arguments.count() < i + 2 || arguments.at(i + 1).startsWith(u'-')) {
+            if (arguments.size() < i + 2 || arguments.at(i + 1).startsWith(u'-')) {
                 printf("-o expects a filename\n");
                 exit(1);
             }
@@ -431,7 +431,7 @@ int main(int argc, char **argv)
 
     QList<ClassDef> classes;
 
-    for (int i = 0; i < args.count(); ++i) {
+    for (int i = 0; i < args.size(); ++i) {
         const QString arg = args.at(i);
 
         if (arg.startsWith(u'-'))

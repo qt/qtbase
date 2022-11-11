@@ -371,8 +371,8 @@ void tst_QGroupBox::clicked()
     else
         QTest::mouseClick(&testWidget, Qt::LeftButton);
 
-    QTEST(int(spy.count()), "clickedCount");
-    if (spy.count() > 0)
+    QTEST(int(spy.size()), "clickedCount");
+    if (spy.size() > 0)
         QTEST(spy.at(0).at(0).toBool(), "finalCheck");
     QTEST(testWidget.isChecked(), "finalCheck");
 }
@@ -386,9 +386,9 @@ void tst_QGroupBox::toggledVsClicked()
     QSignalSpy clickSpy(&groupBox, SIGNAL(clicked(bool)));
 
     groupBox.setChecked(!groupBox.isChecked());
-    QCOMPARE(clickSpy.count(), 0);
-    QCOMPARE(toggleSpy.count(), 1);
-    if (toggleSpy.count() > 0)
+    QCOMPARE(clickSpy.size(), 0);
+    QCOMPARE(toggleSpy.size(), 1);
+    if (toggleSpy.size() > 0)
         QCOMPARE(toggleSpy.at(0).at(0).toBool(), groupBox.isChecked());
 
     connect(&groupBox, SIGNAL(clicked(bool)), this, SLOT(clickTimestampSlot()));
@@ -401,8 +401,8 @@ void tst_QGroupBox::toggledVsClicked()
                                                   QStyle::SC_GroupBoxCheckBox, &groupBox);
 
     QTest::mouseClick(&groupBox, Qt::LeftButton, {}, rect.center());
-    QCOMPARE(clickSpy.count(), 1);
-    QCOMPARE(toggleSpy.count(), 2);
+    QCOMPARE(clickSpy.size(), 1);
+    QCOMPARE(toggleSpy.size(), 2);
     QVERIFY(toggleTimeStamp < clickTimeStamp);
 }
 
@@ -598,9 +598,9 @@ void tst_QGroupBox::buttonPressKeys()
     const auto buttonPressKeys = QGuiApplicationPrivate::platformTheme()
                                          ->themeHint(QPlatformTheme::ButtonPressKeys)
                                          .value<QList<Qt::Key>>();
-    for (int i = 0; i < buttonPressKeys.length(); ++i) {
+    for (int i = 0; i < buttonPressKeys.size(); ++i) {
         QTest::keyClick(&groupBox, buttonPressKeys[i]);
-        QCOMPARE(clickedSpy.length(), i + 1);
+        QCOMPARE(clickedSpy.size(), i + 1);
     }
 }
 

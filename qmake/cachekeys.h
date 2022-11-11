@@ -65,7 +65,7 @@ struct FileInfoCacheKey
         return hash;
     }
     inline bool isRelativePath(const QString &file) {
-        int length = file.length();
+        int length = file.size();
         if (!length)
             return true;
 

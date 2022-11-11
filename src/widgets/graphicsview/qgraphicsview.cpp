@@ -2413,7 +2413,7 @@ QPolygonF QGraphicsView::mapToScene(const QRect &rect) const
 QPolygonF QGraphicsView::mapToScene(const QPolygon &polygon) const
 {
     QPolygonF poly;
-    poly.reserve(polygon.count());
+    poly.reserve(polygon.size());
     for (const QPoint &point : polygon)
         poly << mapToScene(point);
     return poly;
@@ -2509,7 +2509,7 @@ QPolygon QGraphicsView::mapFromScene(const QRectF &rect) const
 QPolygon QGraphicsView::mapFromScene(const QPolygonF &polygon) const
 {
     QPolygon poly;
-    poly.reserve(polygon.count());
+    poly.reserve(polygon.size());
     for (const QPointF &point : polygon)
         poly << mapFromScene(point);
     return poly;
@@ -2623,7 +2623,7 @@ void QGraphicsView::updateScene(const QList<QRectF> &rects)
 
     // Extract and reset dirty scene rect info.
     QList<QRect> dirtyViewportRects;
-    dirtyViewportRects.reserve(d->dirtyRegion.rectCount() + rects.count());
+    dirtyViewportRects.reserve(d->dirtyRegion.rectCount() + rects.size());
     for (const QRect &dirtyRect : d->dirtyRegion)
         dirtyViewportRects += dirtyRect;
     d->dirtyRegion = QRegion();

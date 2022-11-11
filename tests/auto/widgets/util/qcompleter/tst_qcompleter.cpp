@@ -57,7 +57,7 @@ QString CsvCompleter::pathFromIndex(const QModelIndex &sourceIndex) const
         idx = parent.sibling(parent.row(), sourceIndex.column());
     } while (idx.isValid());
 
-    return list.count() == 1 ? list.constFirst() : list.join(QLatin1Char(','));
+    return list.size() == 1 ? list.constFirst() : list.join(QLatin1Char(','));
 }
 
 class tst_QCompleter : public QObject
@@ -1176,10 +1176,10 @@ void tst_QCompleter::disabledItems()
     QAbstractItemView *view = lineEdit.completer()->popup();
     QVERIFY(view->isVisible());
     QTest::mouseClick(view->viewport(), Qt::LeftButton, {}, view->visualRect(view->model()->index(0, 0)).center());
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     QVERIFY(view->isVisible());
     QTest::mouseClick(view->viewport(), Qt::LeftButton, {}, view->visualRect(view->model()->index(1, 0)).center());
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QVERIFY(!view->isVisible());
 }
 
@@ -1193,7 +1193,7 @@ void tst_QCompleter::task178797_activatedOnReturn()
     auto completer = new QCompleter({"foobar1", "foobar2"}, &ledit);
     ledit.setCompleter(completer);
     QSignalSpy spy(completer, QOverload<const QString &>::of(&QCompleter::activated));
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
     ledit.move(200, 200);
     ledit.show();
     QApplication::setActiveWindow(&ledit);
@@ -1205,7 +1205,7 @@ void tst_QCompleter::task178797_activatedOnReturn()
     QCoreApplication::processEvents();
     QTest::keyClick(QApplication::activePopupWidget(), Qt::Key_Return);
     QCoreApplication::processEvents();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 class task189564_StringListModel : public QStringListModel
@@ -1287,7 +1287,7 @@ void tst_QCompleter::task246056_setCompletionPrefix()
     QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Down);
     QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Down);
     QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Enter); // don't crash!
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     const auto index = spy.at(0).constFirst().toModelIndex();
     QVERIFY(!index.isValid());
 }
@@ -1761,10 +1761,10 @@ void tst_QCompleter::QTBUG_52028_tabAutoCompletes()
     QTRY_VERIFY(cbox.completer()->popup()->isVisible());
     QTest::keyClick(cbox.completer()->popup(), Qt::Key_Tab);
     QCOMPARE(cbox.completer()->currentCompletion(), QLatin1String("hux"));
-    QCOMPARE(activatedSpy.count(), 0);
+    QCOMPARE(activatedSpy.size(), 0);
     QEXPECT_FAIL("", "QTBUG-52028 will not be fixed today.", Abort);
     QCOMPARE(cbox.currentText(), QLatin1String("hux"));
-    QCOMPARE(activatedSpy.count(), 0);
+    QCOMPARE(activatedSpy.size(), 0);
     QVERIFY(!le->hasFocus());
 }
 
@@ -1805,7 +1805,7 @@ void tst_QCompleter::QTBUG_51889_activatedSentTwice()
     QTRY_VERIFY(cbox.completer()->popup()->isVisible());
     QTest::keyClick(cbox.completer()->popup(), Qt::Key_Down);
     QTest::keyClick(cbox.completer()->popup(), Qt::Key_Return);
-    QTRY_COMPARE(activatedSpy.count(), 1);
+    QTRY_COMPARE(activatedSpy.size(), 1);
 
     // Navigate + enter activates only once (non-first item)
     cbox.lineEdit()->clear();
@@ -1815,7 +1815,7 @@ void tst_QCompleter::QTBUG_51889_activatedSentTwice()
     QTRY_VERIFY(cbox.completer()->popup()->isVisible());
     QTest::keyClick(cbox.completer()->popup(), Qt::Key_Down);
     QTest::keyClick(cbox.completer()->popup(), Qt::Key_Return);
-    QTRY_COMPARE(activatedSpy.count(), 1);
+    QTRY_COMPARE(activatedSpy.size(), 1);
 
     // Full text + enter activates only once
     cbox.lineEdit()->clear();
@@ -1824,7 +1824,7 @@ void tst_QCompleter::QTBUG_51889_activatedSentTwice()
     QVERIFY(cbox.completer()->popup());
     QTRY_VERIFY(cbox.completer()->popup()->isVisible());
     QTest::keyClick(&cbox, Qt::Key_Return);
-    QTRY_COMPARE(activatedSpy.count(), 1);
+    QTRY_COMPARE(activatedSpy.size(), 1);
 }
 
 void tst_QCompleter::showPopupInGraphicsView()

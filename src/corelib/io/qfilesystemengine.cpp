@@ -119,7 +119,7 @@ static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &ent
                 break;
 
             const QStringList &paths = QDir::searchPaths(filePath.left(prefixSeparator));
-            for (qsizetype i = 0; i < paths.count(); i++) {
+            for (qsizetype i = 0; i < paths.size(); i++) {
                 entry = QFileSystemEntry(QDir::cleanPath(
                         paths.at(i) % u'/' % QStringView{filePath}.mid(prefixSeparator + 1)));
                 // Recurse!

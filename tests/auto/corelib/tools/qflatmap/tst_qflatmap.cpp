@@ -682,7 +682,7 @@ void tst_QFlatMap::viewIterators()
                        });
         auto it = keys.begin();
         QCOMPARE(*it, "kaksi");
-        QCOMPARE(it->length(), 5);
+        QCOMPARE(it->size(), 5);
         ++it;
         QCOMPARE(*it, "kolme");
         it++;
@@ -703,7 +703,7 @@ void tst_QFlatMap::viewIterators()
                        });
         auto it = values.begin();
         QCOMPARE(*it, "twee");
-        QCOMPARE(it->length(), 4);
+        QCOMPARE(it->size(), 4);
         ++it;
         QCOMPARE(*it, "dree");
         it++;

@@ -1175,7 +1175,7 @@ void QTextDocumentLayoutPrivate::drawFrame(const QPointF &offset, QPainter *pain
             it = frameIteratorForYPosition(QFixed::fromReal(context.clip.top()));
 
         QList<QTextFrame *> floats;
-        const int numFloats = fd->floats.count();
+        const int numFloats = fd->floats.size();
         floats.reserve(numFloats);
         for (int i = 0; i < numFloats; ++i)
             floats.append(fd->floats.at(i));
@@ -1967,7 +1967,7 @@ void QTextDocumentLayoutPrivate::drawFlow(const QPointF &offset, QPainter *paint
         previousFrame = c;
     }
 
-    for (int i = 0; i < floats.count(); ++i) {
+    for (int i = 0; i < floats.size(); ++i) {
         QTextFrame *frame = floats.at(i);
         if (!isFrameFromInlineObject(frame)
             || frame->frameFormat().position() == QTextFrameFormat::InFlow)
@@ -2368,7 +2368,7 @@ QRectF QTextDocumentLayoutPrivate::layoutTable(QTextTable *table, int layoutFrom
     td->childFrameMap.clear();
     {
         const QList<QTextFrame *> children = table->childFrames();
-        for (int i = 0; i < children.count(); ++i) {
+        for (int i = 0; i < children.size(); ++i) {
             QTextFrame *frame = children.at(i);
             QTextTableCell cell = table->cellAt(frame->firstPosition());
             td->childFrameMap.insert(cell.row() + cell.column() * rows, frame);
@@ -2378,7 +2378,7 @@ QRectF QTextDocumentLayoutPrivate::layoutTable(QTextTable *table, int layoutFrom
     QList<QTextLength> columnWidthConstraints = fmt.columnWidthConstraints();
     if (columnWidthConstraints.size() != columns)
         columnWidthConstraints.resize(columns);
-    Q_ASSERT(columnWidthConstraints.count() == columns);
+    Q_ASSERT(columnWidthConstraints.size() == columns);
 
     // borderCollapse will disable drawing the html4 style table cell borders
     // and draw a 1px grid instead. This also sets a fixed cellspacing
@@ -2575,9 +2575,9 @@ recalc_minmax_widths:
 
         QFixed lastRemainingWidth = remainingWidth;
         while (remainingWidth > 0) {
-            for (int k = 0; k < columnsWithProperMaxSize.count(); ++k) {
+            for (int k = 0; k < columnsWithProperMaxSize.size(); ++k) {
                 const int col = columnsWithProperMaxSize[k];
-                const int colsLeft = columnsWithProperMaxSize.count() - k;
+                const int colsLeft = columnsWithProperMaxSize.size() - k;
                 const QFixed w = qMin(td->maxWidths.at(col) - td->widths.at(col), remainingWidth / colsLeft);
                 td->widths[col] += w;
                 remainingWidth -= w;
@@ -3349,7 +3349,7 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QTextLayout
     // and not per cell and layoutCell already takes care of doing the same as we do here
     if (!qobject_cast<QTextTable *>(layoutStruct->frame)) {
         QList<QTextFrame *> children = layoutStruct->frame->childFrames();
-        for (int i = 0; i < children.count(); ++i) {
+        for (int i = 0; i < children.size(); ++i) {
             QTextFrameData *fd = data(children.at(i));
             if (!fd->layoutDirty && children.at(i)->frameFormat().position() != QTextFrameFormat::InFlow)
                 layoutStruct->y = qMax(layoutStruct->y, fd->position.y + fd->size.height);
@@ -3850,7 +3850,7 @@ int QTextDocumentLayout::hitTest(const QPointF &point, Qt::HitTestAccuracy accur
     // ensure we stay within document bounds
     int lastPos = f->lastPosition();
     if (l && !l->preeditAreaText().isEmpty())
-        lastPos += l->preeditAreaText().length();
+        lastPos += l->preeditAreaText().size();
     if (position > lastPos)
         position = lastPos;
     else if (position < 0)

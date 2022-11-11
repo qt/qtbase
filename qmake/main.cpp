@@ -479,7 +479,7 @@ int runQMake(int argc, char **argv)
 
         Option::output_dir = dir.path();
         QString absoluteFilePath = QDir::cleanPath(fi.absoluteFilePath());
-        Option::output.setFileName(absoluteFilePath.mid(Option::output_dir.length() + 1));
+        Option::output.setFileName(absoluteFilePath.mid(Option::output_dir.size() + 1));
     }
 
     QMakeProperty prop;
@@ -531,7 +531,7 @@ int runQMake(int argc, char **argv)
                 if(!qmake_setpwd(fn.left(di)))
                     fprintf(stderr, "Cannot find directory: %s\n",
                             QDir::toNativeSeparators(fn.left(di)).toLatin1().constData());
-                fn = fn.right(fn.length() - di - 1);
+                fn = fn.right(fn.size() - di - 1);
             }
 
             Option::prepareProject(fn);

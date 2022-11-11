@@ -614,7 +614,7 @@ void QXcbDrag::stopListeningForActionListChanges()
 int QXcbDrag::findTransactionByWindow(xcb_window_t window)
 {
     int at = -1;
-    for (int i = 0; i < transactions.count(); ++i) {
+    for (int i = 0; i < transactions.size(); ++i) {
         const Transaction &t = transactions.at(i);
         if (t.target == window || t.proxy_target == window) {
             at = i;
@@ -627,7 +627,7 @@ int QXcbDrag::findTransactionByWindow(xcb_window_t window)
 int QXcbDrag::findTransactionByTime(xcb_timestamp_t timestamp)
 {
     int at = -1;
-    for (int i = 0; i < transactions.count(); ++i) {
+    for (int i = 0; i < transactions.size(); ++i) {
         const Transaction &t = transactions.at(i);
         if (t.timestamp == timestamp) {
             at = i;
@@ -720,7 +720,7 @@ void QXcbDrag::handleEnter(QPlatformWindow *, const xcb_client_message_event_t *
                 xdnd_types.append(event->data.data32[i]);
         }
     }
-    for(int i = 0; i < xdnd_types.length(); ++i)
+    for(int i = 0; i < xdnd_types.size(); ++i)
         qCDebug(lcQpaXDnd) << "    " << connection()->atomName(xdnd_types.at(i));
 }
 
@@ -1089,7 +1089,7 @@ void QXcbDrag::timerEvent(QTimerEvent* e)
 {
     if (e->timerId() == cleanup_timer) {
         bool stopTimer = true;
-        for (int i = 0; i < transactions.count(); ++i) {
+        for (int i = 0; i < transactions.size(); ++i) {
             const Transaction &t = transactions.at(i);
             if (t.targetWindow) {
                 // dnd within the same process, don't delete, these are taken care of

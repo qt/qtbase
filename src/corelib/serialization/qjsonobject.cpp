@@ -236,8 +236,8 @@ QStringList QJsonObject::keys() const
 {
     QStringList keys;
     if (o) {
-        keys.reserve(o->elements.length() / 2);
-        for (qsizetype i = 0, end = o->elements.length(); i < end; i += 2)
+        keys.reserve(o->elements.size() / 2);
+        for (qsizetype i = 0, end = o->elements.size(); i < end; i += 2)
             keys.append(o->stringAt(i));
     }
     return keys;
@@ -248,7 +248,7 @@ QStringList QJsonObject::keys() const
  */
 qsizetype QJsonObject::size() const
 {
-    return o ? o->elements.length() / 2 : 0;
+    return o ? o->elements.size() / 2 : 0;
 }
 
 /*!
@@ -400,7 +400,7 @@ QJsonValueRef QJsonObject::atImpl(T key)
     bool keyExists = false;
     auto index = indexOf(o, key, &keyExists);
     if (!keyExists) {
-        detach(o->elements.length() / 2 + 1);
+        detach(o->elements.size() / 2 + 1);
         o->insertAt(index, key);
         o->insertAt(index + 1, QCborValue::fromJsonValue(QJsonValue()));
     }
@@ -466,7 +466,7 @@ template <typename T>
 QJsonObject::iterator QJsonObject::insertAt(qsizetype pos, T key, const QJsonValue &value, bool keyExists)
 {
     if (o)
-        detach(o->elements.length() / 2 + (keyExists ? 0 : 1));
+        detach(o->elements.size() / 2 + (keyExists ? 0 : 1));
     else
         o = new QCborContainerPrivate;
 
@@ -627,13 +627,13 @@ bool QJsonObject::operator==(const QJsonObject &other) const
         return true;
 
     if (!o)
-        return !other.o->elements.length();
+        return !other.o->elements.size();
     if (!other.o)
-        return !o->elements.length();
-    if (o->elements.length() != other.o->elements.length())
+        return !o->elements.size();
+    if (o->elements.size() != other.o->elements.size())
         return false;
 
-    for (qsizetype i = 0, end = o->elements.length(); i < end; ++i) {
+    for (qsizetype i = 0, end = o->elements.size(); i < end; ++i) {
         if (o->valueAt(i) != other.o->valueAt(i))
             return false;
     }
@@ -1360,7 +1360,7 @@ bool QJsonObject::detach(qsizetype reserve)
 {
     if (!o)
         return true;
-    o = QCborContainerPrivate::detach(o.data(), reserve ? reserve * 2 : o->elements.length());
+    o = QCborContainerPrivate::detach(o.data(), reserve ? reserve * 2 : o->elements.size());
     return o;
 }
 
@@ -1370,7 +1370,7 @@ bool QJsonObject::detach(qsizetype reserve)
  */
 QString QJsonObject::keyAt(qsizetype i) const
 {
-    Q_ASSERT(o && i >= 0 && i * 2 < o->elements.length());
+    Q_ASSERT(o && i >= 0 && i * 2 < o->elements.size());
     return o->stringAt(i * 2);
 }
 
@@ -1379,7 +1379,7 @@ QString QJsonObject::keyAt(qsizetype i) const
  */
 QJsonValue QJsonObject::valueAt(qsizetype i) const
 {
-    if (!o || i < 0 || 2 * i + 1 >= o->elements.length())
+    if (!o || i < 0 || 2 * i + 1 >= o->elements.size())
         return QJsonValue(QJsonValue::Undefined);
     return QJsonPrivate::Value::fromTrustedCbor(o->valueAt(2 * i + 1));
 }
@@ -1389,7 +1389,7 @@ QJsonValue QJsonObject::valueAt(qsizetype i) const
  */
 void QJsonObject::setValueAt(qsizetype i, const QJsonValue &val)
 {
-    Q_ASSERT(o && i >= 0 && 2 * i + 1 < o->elements.length());
+    Q_ASSERT(o && i >= 0 && 2 * i + 1 < o->elements.size());
     detach();
     if (val.isUndefined()) {
         o->removeAt(2 * i + 1);

@@ -642,7 +642,7 @@ static void qPrintDataTags(FILE *stream)
 
             // Print all tag combinations:
             if (gTable->dataCount() == 0) {
-                if (localTags.count() == 0) {
+                if (localTags.size() == 0) {
                     // No tags at all, so just print the test function:
                     fprintf(stream, "%s %s\n", currTestMetaObj->className(), slot);
                 } else {
@@ -654,7 +654,7 @@ static void qPrintDataTags(FILE *stream)
                 }
             } else {
                 for (int j = 0; j < gTable->dataCount(); ++j) {
-                    if (localTags.count() == 0) {
+                    if (localTags.size() == 0) {
                         // Only global tags, so print the current one:
                         fprintf(
                             stream, "%s %s __global__ %s\n",
@@ -1056,7 +1056,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml) {
 
 QBenchmarkResult qMedian(const QList<QBenchmarkResult> &container)
 {
-    const int count = container.count();
+    const int count = container.size();
     if (count == 0)
         return QBenchmarkResult();
 
@@ -2392,7 +2392,7 @@ void QTest::qCleanup()
 */
 int QTest::qExec(QObject *testObject, const QStringList &arguments)
 {
-    const int argc = arguments.count();
+    const int argc = arguments.size();
     QVarLengthArray<char *> argv(argc);
 
     QList<QByteArray> args;
@@ -2642,7 +2642,7 @@ QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
           QFileInfo fileInfo = it.nextFileInfo();
 
           if (!fileInfo.isDir()) {
-              const QString destination = dataPath + u'/' + QStringView{fileInfo.filePath()}.mid(resourcePath.length());
+              const QString destination = dataPath + u'/' + QStringView{fileInfo.filePath()}.mid(resourcePath.size());
               QFileInfo destinationFileInfo(destination);
               QDir().mkpath(destinationFileInfo.path());
               if (!QFile::copy(fileInfo.filePath(), destination)) {

@@ -116,7 +116,7 @@ namespace QTest {
             // (the space was added automatically by ~QDebug() until Qt 5.3,
             //  so autotests still might expect it)
             if (expected.endsWith(u' '))
-                return actual == QStringView{expected}.left(expected.length() - 1);
+                return actual == QStringView{expected}.left(expected.size() - 1);
 
             return false;
         }

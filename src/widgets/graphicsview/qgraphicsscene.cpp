@@ -411,7 +411,7 @@ void QGraphicsScenePrivate::_q_polishItems()
     const QVariant booleanTrueVariant(true);
     QGraphicsItem *item = nullptr;
     QGraphicsItemPrivate *itemd = nullptr;
-    const int oldUnpolishedCount = unpolishedItems.count();
+    const int oldUnpolishedCount = unpolishedItems.size();
 
     for (int i = 0; i < oldUnpolishedCount; ++i) {
         item = unpolishedItems.at(i);
@@ -429,7 +429,7 @@ void QGraphicsScenePrivate::_q_polishItems()
         }
     }
 
-    if (unpolishedItems.count() == oldUnpolishedCount) {
+    if (unpolishedItems.size() == oldUnpolishedCount) {
         // No new items were added to the vector.
         unpolishedItems.clear();
     } else {

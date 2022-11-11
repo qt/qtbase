@@ -104,7 +104,7 @@ public:
 
     void populateSettings(const QByteArray &xSettings)
     {
-        if (xSettings.length() < 12)
+        if (xSettings.size() < 12)
             return;
         char byteOrder = xSettings.at(0);
         if (byteOrder != XCB_IMAGE_ORDER_LSB_FIRST && byteOrder != XCB_IMAGE_ORDER_MSB_FIRST) {
@@ -192,7 +192,7 @@ QXcbXSettings::QXcbXSettings(QXcbVirtualDesktop *screen)
     auto atom_reply = Q_XCB_REPLY(xcb_intern_atom,
                                   screen->xcb_connection(),
                                   true,
-                                  settings_atom_for_screen.length(),
+                                  settings_atom_for_screen.size(),
                                   settings_atom_for_screen.constData());
     if (!atom_reply)
         return;

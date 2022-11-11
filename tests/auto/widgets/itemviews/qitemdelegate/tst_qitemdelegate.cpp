@@ -327,7 +327,7 @@ void tst_QItemDelegate::editorKeyPress()
     view.edit(index);
 
     QList<QLineEdit*> lineEditors = view.viewport()->findChildren<QLineEdit *>();
-    QCOMPARE(lineEditors.count(), 1);
+    QCOMPARE(lineEditors.size(), 1);
 
     QLineEdit *editor = lineEditors.at(0);
     QCOMPARE(editor->selectedText(), initial);
@@ -355,7 +355,7 @@ void tst_QItemDelegate::doubleEditorNegativeInput()
     view.edit(index);
 
     QList<QDoubleSpinBox*> editors = view.viewport()->findChildren<QDoubleSpinBox *>();
-    QCOMPARE(editors.count(), 1);
+    QCOMPARE(editors.size(), 1);
 
     QDoubleSpinBox *editor = editors.at(0);
     QCOMPARE(editor->value(), double(10));
@@ -672,33 +672,33 @@ void tst_QItemDelegate::testEventFilter()
     //For each test we send a key event and check if signals were emitted.
     event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Tab, Qt::NoModifier);
     QVERIFY(delegate.eventFilter(&widget, event));
-    QCOMPARE(closeEditorSpy.count(), 1);
-    QCOMPARE(commitDataSpy.count(), 1);
+    QCOMPARE(closeEditorSpy.size(), 1);
+    QCOMPARE(commitDataSpy.size(), 1);
     delete event;
 
     event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Backtab, Qt::NoModifier);
     QVERIFY(delegate.eventFilter(&widget, event));
-    QCOMPARE(closeEditorSpy.count(), 2);
-    QCOMPARE(commitDataSpy.count(), 2);
+    QCOMPARE(closeEditorSpy.size(), 2);
+    QCOMPARE(commitDataSpy.size(), 2);
     delete event;
 
     event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Escape, Qt::NoModifier);
     QVERIFY(delegate.eventFilter(&widget, event));
-    QCOMPARE(closeEditorSpy.count(), 3);
-    QCOMPARE(commitDataSpy.count(), 2);
+    QCOMPARE(closeEditorSpy.size(), 3);
+    QCOMPARE(commitDataSpy.size(), 2);
     delete event;
 
     event = new QKeyEvent(QEvent::KeyPress, Qt::Key_A, Qt::NoModifier);
     QVERIFY(!delegate.eventFilter(&widget, event));
-    QCOMPARE(closeEditorSpy.count(), 3);
-    QCOMPARE(commitDataSpy.count(), 2);
+    QCOMPARE(closeEditorSpy.size(), 3);
+    QCOMPARE(commitDataSpy.size(), 2);
     delete event;
 
     //Subtest focusEvent
     event = new QFocusEvent(QEvent::FocusOut);
     QVERIFY(!delegate.eventFilter(&widget, event));
-    QCOMPARE(closeEditorSpy.count(), 4);
-    QCOMPARE(commitDataSpy.count(), 3);
+    QCOMPARE(closeEditorSpy.size(), 4);
+    QCOMPARE(commitDataSpy.size(), 3);
     delete event;
 }
 
@@ -1314,7 +1314,7 @@ void tst_QItemDelegate::enterKey()
     view.edit(index);
 
     QList<QWidget*> lineEditors = view.viewport()->findChildren<QWidget *>(QString::fromLatin1("TheEditor"));
-    QCOMPARE(lineEditors.count(), 1);
+    QCOMPARE(lineEditors.size(), 1);
 
     QPointer<QWidget> editor = lineEditors.at(0);
     QCOMPARE(editor->hasFocus(), true);
@@ -1348,7 +1348,7 @@ void tst_QItemDelegate::task257859_finalizeEdit()
     view.edit(index);
 
     QList<QLineEdit *> lineEditors = view.viewport()->findChildren<QLineEdit *>();
-    QCOMPARE(lineEditors.count(), 1);
+    QCOMPARE(lineEditors.size(), 1);
 
     QPointer<QWidget> editor = lineEditors.at(0);
     QCOMPARE(editor->hasFocus(), true);
@@ -1479,7 +1479,7 @@ void tst_QItemDelegate::testLineEditValidation()
     const auto findEditors = [&]() {
         return view.findChildren<QLineEdit *>(QStringLiteral("TheEditor"));
     };
-    QCOMPARE(findEditors().count(), 1);
+    QCOMPARE(findEditors().size(), 1);
     editor = findEditors().at(0);
     editor->clear();
 
@@ -1499,7 +1499,7 @@ void tst_QItemDelegate::testLineEditValidation()
     view.setCurrentIndex(index);
     view.edit(index);
 
-    QTRY_COMPARE(findEditors().count(), 1);
+    QTRY_COMPARE(findEditors().size(), 1);
     editor = findEditors().at(0);
     editor->clear();
 
@@ -1521,13 +1521,13 @@ void tst_QItemDelegate::testLineEditValidation()
 
     // reset the view to forcibly close the editor
     view.reset();
-    QTRY_COMPARE(findEditors().count(), 0);
+    QTRY_COMPARE(findEditors().size(), 0);
 
     // set a valid text again
     view.setCurrentIndex(index);
     view.edit(index);
 
-    QTRY_COMPARE(findEditors().count(), 1);
+    QTRY_COMPARE(findEditors().size(), 1);
     editor = findEditors().at(0);
     editor->clear();
 

@@ -779,7 +779,7 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
                 if (!root.endsWith(u'/'))
                     root += u'/';
                 if (path.size() >= root.size() && path.startsWith(root))
-                    path = path.mid(root.length() - 1);
+                    path = path.mid(root.size() - 1);
                 if (path.isEmpty())
                     path = u'/';
             }

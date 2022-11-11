@@ -87,7 +87,7 @@ public:
     }
 
     inline QString join(const QString &sep) const
-    { return QtPrivate::QStringList_join(self(), sep.constData(), sep.length()); }
+    { return QtPrivate::QStringList_join(self(), sep.constData(), sep.size()); }
     inline QStringList filter(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     { return QtPrivate::QStringList_filter(self(), str, cs); }
     inline QStringList &replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs = Qt::CaseSensitive)

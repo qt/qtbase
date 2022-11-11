@@ -380,7 +380,7 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
     //    (1)  token
     //    (2)  token = token
     //    (3)  token = quoted-string
-    const int length = text.length();
+    const int length = text.size();
     position = nextNonWhitespace(text, position);
 
     int semiColonPosition = text.indexOf(';', position);
@@ -578,7 +578,7 @@ static bool checkStaticArray(int &val, const QByteArray &dateString, int at, con
 {
     if (dateString[at] < 'a' || dateString[at] > 'z')
         return false;
-    if (val == -1 && dateString.length() >= at + 3) {
+    if (val == -1 && dateString.size() >= at + 3) {
         int j = 0;
         int i = 0;
         while (i <= size) {
@@ -636,7 +636,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
             u"(\\d\\d?):(\\d\\d?)(?::(\\d\\d?)(?:\\.(\\d{1,3}))?)?(?:\\s*(am|pm))?"_s);
 
     int at = 0;
-    while (at < dateString.length()) {
+    while (at < dateString.size()) {
 #ifdef PARSEDATESTRINGDEBUG
         qDebug() << dateString.mid(at);
 #endif
@@ -677,7 +677,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
                     && (dateString[at - 1] == 't')))) {
 
             int end = 1;
-            while (end < 5 && dateString.length() > at+end
+            while (end < 5 && dateString.size() > at+end
                    && dateString[at + end] >= '0' && dateString[at + end] <= '9')
                 ++end;
             int minutes = 0;
@@ -709,7 +709,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
 
         // Time
         if (isNum && time.isNull()
-            && dateString.length() >= at + 3
+            && dateString.size() >= at + 3
             && (dateString[at + 2] == ':' || dateString[at + 1] == ':')) {
             // While the date can be found all over the string the format
             // for the time is set and a nice regexp can be used.
@@ -737,7 +737,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
         // 4 digit Year
         if (isNum
             && year == -1
-            && dateString.length() > at + 3) {
+            && dateString.size() > at + 3) {
             if (isNumber(dateString[at + 1])
                 && isNumber(dateString[at + 2])
                 && isNumber(dateString[at + 3])) {
@@ -754,7 +754,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
         // Could be month, day or year
         if (isNum) {
             int length = 1;
-            if (dateString.length() > at + 1
+            if (dateString.size() > at + 1
                 && isNumber(dateString[at + 1]))
                 ++length;
             int x = atoi(dateString.mid(at, length).constData());
@@ -953,7 +953,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
     const QDateTime now = QDateTime::currentDateTimeUtc();
 
     int position = 0;
-    const int length = cookieString.length();
+    const int length = cookieString.size();
     while (position < length) {
         QNetworkCookie cookie;
 
@@ -974,7 +974,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                 field.first = field.first.toLower(); // everything but the NAME=VALUE is case-insensitive
 
                 if (field.first == "expires") {
-                    position -= field.second.length();
+                    position -= field.second.size();
                     int end;
                     for (end = position; end < length; ++end)
                         if (isValueSeparator(cookieString.at(end)))

@@ -236,7 +236,7 @@ void tst_QFontDatabase::addAppFont()
     QCOMPARE(id, -1);
     return;
 #endif
-    QCOMPARE(fontDbChangedSpy.count(), 1);
+    QCOMPARE(fontDbChangedSpy.size(), 1);
     if (id == -1)
         QSKIP("Skip the test since app fonts are not supported on this system");
 
@@ -245,9 +245,9 @@ void tst_QFontDatabase::addAppFont()
 
     const QStringList newFamilies = QFontDatabase::families();
     QVERIFY(!newFamilies.isEmpty());
-    QVERIFY(newFamilies.count() >= oldFamilies.count());
+    QVERIFY(newFamilies.size() >= oldFamilies.size());
 
-    for (int i = 0; i < addedFamilies.count(); ++i) {
+    for (int i = 0; i < addedFamilies.size(); ++i) {
         QString family = addedFamilies.at(i);
         QVERIFY(newFamilies.contains(family));
         QFont qfont(family);
@@ -256,9 +256,9 @@ void tst_QFontDatabase::addAppFont()
     }
 
     QVERIFY(QFontDatabase::removeApplicationFont(id));
-    QCOMPARE(fontDbChangedSpy.count(), 2);
+    QCOMPARE(fontDbChangedSpy.size(), 2);
 
-    QVERIFY(QFontDatabase::families().count() <= oldFamilies.count());
+    QVERIFY(QFontDatabase::families().size() <= oldFamilies.size());
 }
 
 void tst_QFontDatabase::addTwoAppFontsFromFamily()

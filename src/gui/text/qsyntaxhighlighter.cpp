@@ -66,7 +66,7 @@ void QSyntaxHighlighterPrivate::applyFormatChanges()
     QList<QTextLayout::FormatRange> ranges = layout->formats();
 
     const int preeditAreaStart = layout->preeditAreaPosition();
-    const int preeditAreaLength = layout->preeditAreaText().length();
+    const int preeditAreaLength = layout->preeditAreaText().size();
 
     if (preeditAreaLength != 0) {
         auto isOutsidePreeditArea = [=](const QTextLayout::FormatRange &range) {
@@ -81,22 +81,22 @@ void QSyntaxHighlighterPrivate::applyFormatChanges()
     }
 
     int i = 0;
-    while (i < formatChanges.count()) {
+    while (i < formatChanges.size()) {
         QTextLayout::FormatRange r;
 
-        while (i < formatChanges.count() && formatChanges.at(i) == r.format)
+        while (i < formatChanges.size() && formatChanges.at(i) == r.format)
             ++i;
 
-        if (i == formatChanges.count())
+        if (i == formatChanges.size())
             break;
 
         r.start = i;
         r.format = formatChanges.at(i);
 
-        while (i < formatChanges.count() && formatChanges.at(i) == r.format)
+        while (i < formatChanges.size() && formatChanges.at(i) == r.format)
             ++i;
 
-        Q_ASSERT(i <= formatChanges.count());
+        Q_ASSERT(i <= formatChanges.size());
         r.length = i - r.start;
 
         if (preeditAreaLength != 0) {
@@ -403,10 +403,10 @@ void QSyntaxHighlighter::rehighlightBlock(const QTextBlock &block)
 void QSyntaxHighlighter::setFormat(int start, int count, const QTextCharFormat &format)
 {
     Q_D(QSyntaxHighlighter);
-    if (start < 0 || start >= d->formatChanges.count())
+    if (start < 0 || start >= d->formatChanges.size())
         return;
 
-    const int end = qMin(start + count, d->formatChanges.count());
+    const int end = qMin(start + count, d->formatChanges.size());
     for (int i = start; i < end; ++i)
         d->formatChanges[i] = format;
 }
@@ -456,7 +456,7 @@ void QSyntaxHighlighter::setFormat(int start, int count, const QFont &font)
 QTextCharFormat QSyntaxHighlighter::format(int pos) const
 {
     Q_D(const QSyntaxHighlighter);
-    if (pos < 0 || pos >= d->formatChanges.count())
+    if (pos < 0 || pos >= d->formatChanges.size())
         return QTextCharFormat();
     return d->formatChanges.at(pos);
 }

@@ -56,7 +56,7 @@ protected:
         if (isEmpty())
             return QStringList();
 
-        if (!formatList.count()) {
+        if (!formatList.size()) {
             QXcbClipboardMime *that = const_cast<QXcbClipboardMime *>(this);
             // get the list of targets from the current clipboard owner - we do this
             // once so that multiple calls to this function don't require multiple

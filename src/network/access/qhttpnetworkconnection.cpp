@@ -762,7 +762,7 @@ void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
     if (channels[i].reply == nullptr)
         return;
 
-    if (! (defaultPipelineLength - channels[i].alreadyPipelinedRequests.length() >= defaultRePipelineLength)) {
+    if (! (defaultPipelineLength - channels[i].alreadyPipelinedRequests.size() >= defaultRePipelineLength)) {
         return;
     }
 
@@ -803,28 +803,28 @@ void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
 
     int lengthBefore;
     while (!highPriorityQueue.isEmpty()) {
-        lengthBefore = channels[i].alreadyPipelinedRequests.length();
+        lengthBefore = channels[i].alreadyPipelinedRequests.size();
         fillPipeline(highPriorityQueue, channels[i]);
 
-        if (channels[i].alreadyPipelinedRequests.length() >= defaultPipelineLength) {
+        if (channels[i].alreadyPipelinedRequests.size() >= defaultPipelineLength) {
             channels[i].pipelineFlush();
             return;
         }
 
-        if (lengthBefore == channels[i].alreadyPipelinedRequests.length())
+        if (lengthBefore == channels[i].alreadyPipelinedRequests.size())
             break; // did not process anything, now do the low prio queue
     }
 
     while (!lowPriorityQueue.isEmpty()) {
-        lengthBefore = channels[i].alreadyPipelinedRequests.length();
+        lengthBefore = channels[i].alreadyPipelinedRequests.size();
         fillPipeline(lowPriorityQueue, channels[i]);
 
-        if (channels[i].alreadyPipelinedRequests.length() >= defaultPipelineLength) {
+        if (channels[i].alreadyPipelinedRequests.size() >= defaultPipelineLength) {
             channels[i].pipelineFlush();
             return;
         }
 
-        if (lengthBefore == channels[i].alreadyPipelinedRequests.length())
+        if (lengthBefore == channels[i].alreadyPipelinedRequests.size())
             break; // did not process anything
     }
 
@@ -838,7 +838,7 @@ bool QHttpNetworkConnectionPrivate::fillPipeline(QList<HttpMessagePair> &queue, 
     if (queue.isEmpty())
         return true;
 
-    for (int i = queue.count() - 1; i >= 0; --i) {
+    for (int i = queue.size() - 1; i >= 0; --i) {
         HttpMessagePair messagePair = queue.at(i);
         const QHttpNetworkRequest &request = messagePair.first;
 
@@ -960,7 +960,7 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
         }
 
         // is the reply inside the pipeline of this channel already?
-        for (int j = 0; j < channels[i].alreadyPipelinedRequests.length(); j++) {
+        for (int j = 0; j < channels[i].alreadyPipelinedRequests.size(); j++) {
             if (channels[i].alreadyPipelinedRequests.at(j).second == reply) {
                // Remove that HttpMessagePair
                channels[i].alreadyPipelinedRequests.removeAt(j);
@@ -994,7 +994,7 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
     }
     // remove from the high priority queue
     if (!highPriorityQueue.isEmpty()) {
-        for (int j = highPriorityQueue.count() - 1; j >= 0; --j) {
+        for (int j = highPriorityQueue.size() - 1; j >= 0; --j) {
             HttpMessagePair messagePair = highPriorityQueue.at(j);
             if (messagePair.second == reply) {
                 highPriorityQueue.removeAt(j);
@@ -1005,7 +1005,7 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
     }
     // remove from the low priority queue
     if (!lowPriorityQueue.isEmpty()) {
-        for (int j = lowPriorityQueue.count() - 1; j >= 0; --j) {
+        for (int j = lowPriorityQueue.size() - 1; j >= 0; --j) {
             HttpMessagePair messagePair = lowPriorityQueue.at(j);
             if (messagePair.second == reply) {
                 lowPriorityQueue.removeAt(j);
@@ -1108,7 +1108,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     // If there is not already any connected channels we need to connect a new one.
     // We do not pair the channel with the request until we know if it is
     // connected or not. This is to reuse connected channels before we connect new once.
-    int queuedRequests = highPriorityQueue.count() + lowPriorityQueue.count();
+    int queuedRequests = highPriorityQueue.size() + lowPriorityQueue.size();
 
     // in case we have in-flight preconnect requests and normal requests,
     // we only need one socket for each (preconnect, normal request) pair
@@ -1558,12 +1558,12 @@ void QHttpNetworkConnectionPrivate::emitProxyAuthenticationRequired(const QHttpN
     pauseConnection();
     QHttpNetworkReply *reply;
     if ((connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2
-         && (chan->switchedToHttp2 || chan->h2RequestsToSend.count() > 0))
+         && (chan->switchedToHttp2 || chan->h2RequestsToSend.size() > 0))
         || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
         // we choose the reply to emit the proxyAuth signal from somewhat arbitrarily,
         // but that does not matter because the signal will ultimately be emitted
         // by the QNetworkAccessManager.
-        Q_ASSERT(chan->h2RequestsToSend.count() > 0);
+        Q_ASSERT(chan->h2RequestsToSend.size() > 0);
         reply = chan->h2RequestsToSend.cbegin().value().second;
     } else { // HTTP
         reply = chan->reply;

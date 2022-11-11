@@ -84,7 +84,7 @@ void tst_QCalendarWidget::getSetCheck()
     QDate selectedDate(2005, 7, 3);
     QSignalSpy spy(&object, SIGNAL(selectionChanged()));
     object.setSelectedDate(selectedDate);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(selectedDate, object.selectedDate());
     //month and year
     object.setCurrentPage(2004, 1);

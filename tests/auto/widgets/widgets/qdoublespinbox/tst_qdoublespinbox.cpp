@@ -865,37 +865,37 @@ void tst_QDoubleSpinBox::editingFinished()
     QTest::keyClick(box, Qt::Key_Up);
 
 
-    QCOMPARE(editingFinishedSpy1.count(), 0);
-    QCOMPARE(editingFinishedSpy2.count(), 0);
+    QCOMPARE(editingFinishedSpy1.size(), 0);
+    QCOMPARE(editingFinishedSpy2.size(), 0);
 
     QTest::keyClick(box2, Qt::Key_Up);
     QTest::keyClick(box2, Qt::Key_Up);
     box2->setFocus();
-    QCOMPARE(editingFinishedSpy1.count(), 1);
+    QCOMPARE(editingFinishedSpy1.size(), 1);
     box->setFocus();
-    QCOMPARE(editingFinishedSpy1.count(), 1);
-    QCOMPARE(editingFinishedSpy2.count(), 1);
+    QCOMPARE(editingFinishedSpy1.size(), 1);
+    QCOMPARE(editingFinishedSpy2.size(), 1);
     QTest::keyClick(box, Qt::Key_Up);
-    QCOMPARE(editingFinishedSpy1.count(), 1);
-    QCOMPARE(editingFinishedSpy2.count(), 1);
+    QCOMPARE(editingFinishedSpy1.size(), 1);
+    QCOMPARE(editingFinishedSpy2.size(), 1);
     QTest::keyClick(box, Qt::Key_Enter);
-    QCOMPARE(editingFinishedSpy1.count(), 2);
-    QCOMPARE(editingFinishedSpy2.count(), 1);
+    QCOMPARE(editingFinishedSpy1.size(), 2);
+    QCOMPARE(editingFinishedSpy2.size(), 1);
     QTest::keyClick(box, Qt::Key_Return);
-    QCOMPARE(editingFinishedSpy1.count(), 3);
-    QCOMPARE(editingFinishedSpy2.count(), 1);
+    QCOMPARE(editingFinishedSpy1.size(), 3);
+    QCOMPARE(editingFinishedSpy2.size(), 1);
     box2->setFocus();
-    QCOMPARE(editingFinishedSpy1.count(), 4);
-    QCOMPARE(editingFinishedSpy2.count(), 1);
+    QCOMPARE(editingFinishedSpy1.size(), 4);
+    QCOMPARE(editingFinishedSpy2.size(), 1);
     QTest::keyClick(box2, Qt::Key_Enter);
-    QCOMPARE(editingFinishedSpy1.count(), 4);
-    QCOMPARE(editingFinishedSpy2.count(), 2);
+    QCOMPARE(editingFinishedSpy1.size(), 4);
+    QCOMPARE(editingFinishedSpy2.size(), 2);
     QTest::keyClick(box2, Qt::Key_Return);
-    QCOMPARE(editingFinishedSpy1.count(), 4);
-    QCOMPARE(editingFinishedSpy2.count(), 3);
+    QCOMPARE(editingFinishedSpy1.size(), 4);
+    QCOMPARE(editingFinishedSpy2.size(), 3);
     testFocusWidget.hide();
-    QCOMPARE(editingFinishedSpy1.count(), 4);
-    QCOMPARE(editingFinishedSpy2.count(), 4);
+    QCOMPARE(editingFinishedSpy1.size(), 4);
+    QCOMPARE(editingFinishedSpy2.size(), 4);
 }
 
 void tst_QDoubleSpinBox::removeAll()
@@ -1751,12 +1751,12 @@ void tst_QDoubleSpinBox::stepModifierPressAndHold()
                 QStyle::CC_SpinBox, &spinBoxStyleOption, subControl, &spin);
 
     QTest::mousePress(&spin, Qt::LeftButton, modifiers, buttonRect.center());
-    QTRY_VERIFY(spy.length() >= 3);
+    QTRY_VERIFY(spy.size() >= 3);
     QTest::mouseRelease(&spin, Qt::LeftButton, modifiers, buttonRect.center());
 
     const auto value = spy.last().at(0);
     QVERIFY(value.userType() == QMetaType::Double);
-    QCOMPARE(value.toDouble(), spy.length() * expectedStepModifier);
+    QCOMPARE(value.toDouble(), spy.size() * expectedStepModifier);
 }
 
 QTEST_MAIN(tst_QDoubleSpinBox)

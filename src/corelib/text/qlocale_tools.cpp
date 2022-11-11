@@ -667,7 +667,7 @@ static T dtoString(double d, QLocaleData::DoubleForm form, int precision, bool u
     bool negative = false;
     int length = 0;
     int decpt = 0;
-    qt_doubleToAscii(d, form, precision, buffer.data(), buffer.length(), negative, length, decpt);
+    qt_doubleToAscii(d, form, precision, buffer.data(), buffer.size(), negative, length, decpt);
     QLatin1StringView view(buffer.data(), length);
     const bool succinct = form == QLocaleData::DFSignificantDigits;
     qsizetype total = (negative ? 1 : 0) + length;

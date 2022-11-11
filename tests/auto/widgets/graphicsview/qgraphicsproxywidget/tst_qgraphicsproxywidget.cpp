@@ -943,7 +943,7 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
     proxy->setPos(50, 0);
     QSignalSpy sceneChangedSpy(&scene, &QGraphicsScene::changed);
     scene.addItem(proxy);
-    QTRY_VERIFY(sceneChangedSpy.count() > 0);
+    QTRY_VERIFY(sceneChangedSpy.size() > 0);
 
     // outside graphics item
     QTest::mouseMove(&view, QPoint(10, 10));
@@ -1041,9 +1041,9 @@ void tst_QGraphicsProxyWidget::keyReleaseEvent()
     proxy->setFocus();
 
     QTest::keyPress(view.viewport(), Qt::Key_Space);
-    QTRY_COMPARE(spy.count(), 0);
+    QTRY_COMPARE(spy.size(), 0);
     QTest::keyRelease(view.viewport(), Qt::Key_Space);
-    QTRY_COMPARE(spy.count(), hasWidget ? 1 : 0);
+    QTRY_COMPARE(spy.size(), hasWidget ? 1 : 0);
 }
 
 // protected void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event)
@@ -1071,7 +1071,7 @@ void tst_QGraphicsProxyWidget::mouseDoubleClickEvent()
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), (QWidget*)&view);
     // wait for scene to be updated before doing any coordinate mappings on it
-    QTRY_VERIFY(sceneChangedSpy.count() > 0);
+    QTRY_VERIFY(sceneChangedSpy.size() > 0);
 
     QPoint pointInLineEdit = view.mapFromScene(proxy->mapToScene(15, proxy->boundingRect().center().y()));
     QTest::mousePress(view.viewport(), Qt::LeftButton, {}, pointInLineEdit);
@@ -1112,13 +1112,13 @@ void tst_QGraphicsProxyWidget::mousePressReleaseEvent()
     proxy->setFocus();
 
     // wait for scene to be updated before doing any coordinate mappings on it
-    QTRY_VERIFY(sceneChangedSpy.count() > 0);
+    QTRY_VERIFY(sceneChangedSpy.size() > 0);
 
     QPoint buttonCenter = view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center()));
     QTest::mousePress(view.viewport(), Qt::LeftButton, {}, buttonCenter);
-    QTRY_COMPARE(spy.count(), 0);
+    QTRY_COMPARE(spy.size(), 0);
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, {}, buttonCenter);
-    QTRY_COMPARE(spy.count(), hasWidget ? 1 : 0);
+    QTRY_COMPARE(spy.size(), hasWidget ? 1 : 0);
 }
 
 void tst_QGraphicsProxyWidget::resizeEvent_data()
@@ -1169,7 +1169,7 @@ void tst_QGraphicsProxyWidget::paintEvent()
     QSignalSpy sceneChangedSpy(&scene, &QGraphicsScene::changed);
     scene.addItem(&proxy);
 
-    QTRY_VERIFY(sceneChangedSpy.count() > 0); // make sure the scene is ready
+    QTRY_VERIFY(sceneChangedSpy.size() > 0); // make sure the scene is ready
 
     proxy.paintCount = 0;
     w->update();
@@ -2311,7 +2311,7 @@ void tst_QGraphicsProxyWidget::popup_basic()
     box->setGeometry(0, 0, 320, 40);
     box->addItems(QStringList() << "monday" << "tuesday" << "wednesday"
                   << "thursday" << "saturday" << "sunday");
-    QCOMPARE(proxy->childItems().count(), 0);
+    QCOMPARE(proxy->childItems().size(), 0);
     proxy->setWidget(boxGuard.release());
     proxy->show();
     scene.addItem(proxy);
@@ -2328,7 +2328,7 @@ void tst_QGraphicsProxyWidget::popup_basic()
 
     QTRY_COMPARE(box->pos(), QPoint());
 
-    QCOMPARE(proxy->childItems().count(), 1);
+    QCOMPARE(proxy->childItems().size(), 1);
     QGraphicsProxyWidget *child = (QGraphicsProxyWidget*)(proxy->childItems())[0];
     QVERIFY(child->isWidget());
     QVERIFY(child->widget());
@@ -2408,7 +2408,7 @@ void tst_QGraphicsProxyWidget::changingCursor_basic()
     proxy->setWidget(widget);
     QSignalSpy sceneChangedSpy(&scene, &QGraphicsScene::changed);
     scene.addItem(proxy);
-    QTRY_VERIFY(sceneChangedSpy.count() > 0); // make sure the scene is ready
+    QTRY_VERIFY(sceneChangedSpy.size() > 0); // make sure the scene is ready
 
     // in
     QTest::mouseMove(view.viewport(), view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
@@ -2626,7 +2626,7 @@ void tst_QGraphicsProxyWidget::windowOpacity()
     QTRY_COMPARE(eventSpy.counts[QEvent::UpdateRequest], 0);
     QTRY_COMPARE(eventSpy.counts[QEvent::Paint], paints);
 
-    QTRY_COMPARE(signalSpy.count(), 1);
+    QTRY_COMPARE(signalSpy.size(), 1);
     const QList<QVariant> arguments = signalSpy.takeFirst();
     const QList<QRectF> updateRects = qvariant_cast<QList<QRectF> >(arguments.at(0));
     QCOMPARE(updateRects.size(), 1);
@@ -2901,10 +2901,10 @@ void tst_QGraphicsProxyWidget::createProxyForChildWidget()
 
     QTest::mousePress(view.viewport(), Qt::LeftButton, {},
                       view.mapFromScene(checkboxProxy->mapToScene(QPointF(8,8))));
-    QTRY_COMPARE(spy.count(), 0);
+    QTRY_COMPARE(spy.size(), 0);
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, {},
                         view.mapFromScene(checkboxProxy->mapToScene(QPointF(8,8))));
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.size(), 1);
 
 
 
@@ -3700,27 +3700,27 @@ void tst_QGraphicsProxyWidget::wheelEventPropagation()
     // accepted by the embedded widget
     QCOMPARE(view.itemAt(wheelPosition), nullptr);
     wheelUp(Qt::NoScrollPhase);
-    QCOMPARE(scrollSpy.count(), ++scrollCount);
+    QCOMPARE(scrollSpy.size(), ++scrollCount);
 
     // wheeling on the label, which ignores the event, should scroll the view
     QCOMPARE(view.itemAt(wheelPosition), labelProxy);
     wheelUp(Qt::NoScrollPhase);
-    QCOMPARE(scrollSpy.count(), ++scrollCount);
+    QCOMPARE(scrollSpy.size(), ++scrollCount);
     QCOMPARE(view.itemAt(wheelPosition), labelProxy);
     wheelUp(Qt::NoScrollPhase);
-    QCOMPARE(scrollSpy.count(), ++scrollCount);
+    QCOMPARE(scrollSpy.size(), ++scrollCount);
 
     // left the widget
     QCOMPARE(view.itemAt(wheelPosition), nullptr);
     wheelUp(Qt::NoScrollPhase);
-    QCOMPARE(scrollSpy.count(), ++scrollCount);
+    QCOMPARE(scrollSpy.size(), ++scrollCount);
 
     // reached the nested widget, which accepts the wheel event, so no more scrolling
     QCOMPARE(view.itemAt(wheelPosition), nestedProxy);
     // remember this position for later
     const int scrollBarValueOnNestedProxy = view.verticalScrollBar()->value();
     wheelUp(Qt::NoScrollPhase);
-    QCOMPARE(scrollSpy.count(), scrollCount);
+    QCOMPARE(scrollSpy.size(), scrollCount);
     QCOMPARE(nestedWidget->wheelEventCount, 1);
 
     // reset, try with kinetic events
@@ -3731,41 +3731,41 @@ void tst_QGraphicsProxyWidget::wheelEventPropagation()
     // no matter if the widget accepts wheel events - the view has the grab
     QCOMPARE(view.itemAt(wheelPosition), nullptr);
     wheelUp(Qt::ScrollBegin);
-    QCOMPARE(scrollSpy.count(), ++scrollCount);
+    QCOMPARE(scrollSpy.size(), ++scrollCount);
     for (int i = 0; i < 5; ++i) {
         wheelUp(Qt::ScrollUpdate);
-        QCOMPARE(scrollSpy.count(), ++scrollCount);
+        QCOMPARE(scrollSpy.size(), ++scrollCount);
     }
     wheelUp(Qt::ScrollEnd);
-    QCOMPARE(scrollSpy.count(), ++scrollCount);
+    QCOMPARE(scrollSpy.size(), ++scrollCount);
 
     // reset
     view.verticalScrollBar()->setValue(0);
-    scrollCount = scrollSpy.count();
+    scrollCount = scrollSpy.size();
 
     // starting a scroll on a widget that doesn't accept wheel events
     // should also scroll the view, which still gets the grab
     wheelUp(Qt::NoScrollPhase);
-    scrollCount = scrollSpy.count();
+    scrollCount = scrollSpy.size();
 
     QCOMPARE(view.itemAt(wheelPosition), labelProxy);
     wheelUp(Qt::ScrollBegin);
-    QCOMPARE(scrollSpy.count(), ++scrollCount);
+    QCOMPARE(scrollSpy.size(), ++scrollCount);
     for (int i = 0; i < 5; ++i) {
         wheelUp(Qt::ScrollUpdate);
-        QCOMPARE(scrollSpy.count(), ++scrollCount);
+        QCOMPARE(scrollSpy.size(), ++scrollCount);
     }
     wheelUp(Qt::ScrollEnd);
-    QCOMPARE(scrollSpy.count(), ++scrollCount);
+    QCOMPARE(scrollSpy.size(), ++scrollCount);
 
     // starting a scroll on a widget that does accept wheel events
     // should not scroll the view
     view.verticalScrollBar()->setValue(scrollBarValueOnNestedProxy);
-    scrollCount = scrollSpy.count();
+    scrollCount = scrollSpy.size();
 
     QCOMPARE(view.itemAt(wheelPosition), nestedProxy);
     wheelUp(Qt::ScrollBegin);
-    QCOMPARE(scrollSpy.count(), scrollCount);
+    QCOMPARE(scrollSpy.size(), scrollCount);
 }
 #endif // QT_CONFIG(wheelevent)
 
@@ -3863,7 +3863,7 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
         QHash<int, QList<TouchRecord>> records;
         QWidget *mousePressReceiver = nullptr;
 
-        int count(int id = 0) const { return records.value(id).count(); }
+        int count(int id = 0) const { return records.value(id).size(); }
         TouchRecord at(int i, int id = 0) const { return records.value(id).at(i); }
         void clear()
         {
@@ -3967,7 +3967,7 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
     QCOMPARE(record.receiver, view.windowHandle());
     QCOMPARE(record.eventType, QEvent::TouchEnd);
     QCOMPARE(eventSpy.mousePressReceiver, pushButton1);
-    QCOMPARE(clickedSpy.count(), 1);
+    QCOMPARE(clickedSpy.size(), 1);
     eventSpy.clear();
     clickedSpy.clear();
 
@@ -4035,7 +4035,7 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
     QCOMPARE(eventSpy.at(0, 3).receiver, touchWidget2);
     QCOMPARE(eventSpy.at(1, 3).receiver, touchWidget2);
     QCOMPARE(eventSpy.at(2, 3).receiver, touchWidget2);
-    QCOMPARE(clickedSpy.count(), 0); // multi-touch event does not synthesize a mouse event
+    QCOMPARE(clickedSpy.size(), 0); // multi-touch event does not synthesize a mouse event
 }
 
 QTEST_MAIN(tst_QGraphicsProxyWidget)

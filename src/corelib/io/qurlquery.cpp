@@ -515,7 +515,7 @@ QString QUrlQuery::query(QUrl::ComponentFormattingOptions encoding) const
     {
         int size = 0;
         for ( ; it != end; ++it)
-            size += it->first.length() + 1 + it->second.length() + 1;
+            size += it->first.size() + 1 + it->second.size() + 1;
         result.reserve(size + size / 4);
     }
 
@@ -630,7 +630,7 @@ QList<QPair<QString, QString> > QUrlQuery::queryItems(QUrl::ComponentFormattingO
     QList<QPair<QString, QString> > result;
     Map::const_iterator it = d->itemList.constBegin();
     Map::const_iterator end = d->itemList.constEnd();
-    result.reserve(d->itemList.count());
+    result.reserve(d->itemList.size());
     for ( ; it != end; ++it)
         result << qMakePair(d->recodeToUser(it->first, encoding),
                             d->recodeToUser(it->second, encoding));

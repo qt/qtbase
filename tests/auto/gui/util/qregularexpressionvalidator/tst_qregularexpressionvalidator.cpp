@@ -73,12 +73,12 @@ void tst_QRegularExpressionValidator::validate()
 
     QTEST(result, "state");
     if (result == QValidator::Invalid)
-        QCOMPARE(pos, value.length());
+        QCOMPARE(pos, value.size());
     else
         QCOMPARE(pos, -1); // ensure pos is not modified if validate returned Acceptable or Intermediate
 
-    QCOMPARE(spy.count(), signalCount);
-    QCOMPARE(changedSpy.count(), signalCount);
+    QCOMPARE(spy.size(), signalCount);
+    QCOMPARE(changedSpy.size(), signalCount);
 }
 
 QTEST_GUILESS_MAIN(tst_QRegularExpressionValidator)

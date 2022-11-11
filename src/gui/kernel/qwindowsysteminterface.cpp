@@ -644,7 +644,7 @@ QList<QEventPoint>
     QList<QEventPoint> touchPoints;
     QEventPoint::States states;
 
-    touchPoints.reserve(points.count());
+    touchPoints.reserve(points.size());
     QList<QWindowSystemInterface::TouchPoint>::const_iterator point = points.constBegin();
     QList<QWindowSystemInterface::TouchPoint>::const_iterator end = points.constEnd();
     while (point != end) {

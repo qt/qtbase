@@ -260,7 +260,7 @@ void QEglFSWindow::lower()
 #ifndef QT_NO_OPENGL
     QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     QList<QOpenGLCompositorWindow *> windows = compositor->windows();
-    if (window()->type() != Qt::Desktop && windows.count() > 1) {
+    if (window()->type() != Qt::Desktop && windows.size() > 1) {
         int idx = windows.indexOf(this);
         if (idx > 0) {
             compositor->changeWindowIndex(this, idx - 1);

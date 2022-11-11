@@ -319,7 +319,7 @@ const QPointingDevice *QPointingDevice::primaryPointingDevice(const QString& sea
         QInputDevicePrivate::registerDevice(mouse);
         return mouse;
     }
-    if (v.length() > 1)
+    if (v.size() > 1)
         qCDebug(lcQpaInputDevices) << "core pointer ambiguous for seat" << seatName;
     if (mouse)
         return mouse;

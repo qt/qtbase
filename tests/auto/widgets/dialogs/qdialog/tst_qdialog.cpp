@@ -694,7 +694,7 @@ void tst_QDialog::virtualsOnClose()
         // Qt doesn't deliver events to QWidgets closed during destruction
         QCOMPARE(filter.closeEventCount, 0);
         // QDialog doesn't emit signals when closed by destruction
-        QCOMPARE(rejectedSpy.count(), 0);
+        QCOMPARE(rejectedSpy.size(), 0);
     }
 }
 
@@ -747,7 +747,7 @@ void tst_QDialog::quitOnDone()
     // also quit with a timer in case the test fails
     QTimer::singleShot(1000, QApplication::instance(), &QApplication::quit);
     QApplication::exec();
-    QCOMPARE(quitSpy.count(), 1);
+    QCOMPARE(quitSpy.size(), 1);
 }
 
 void tst_QDialog::focusWidgetAfterOpen()

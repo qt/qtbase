@@ -1434,7 +1434,7 @@ void tst_QtConcurrentFilter::incrementalResults()
 
     QCOMPARE(future.isFinished(), true);
     QCOMPARE(future.resultCount(), count / 2);
-    QCOMPARE(future.results().count(), count / 2);
+    QCOMPARE(future.results().size(), count / 2);
 }
 
 void tst_QtConcurrentFilter::noDetach()

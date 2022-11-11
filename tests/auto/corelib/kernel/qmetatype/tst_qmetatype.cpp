@@ -525,14 +525,14 @@ void tst_QMetaType::properties()
     QCOMPARE(v.typeName(), "QVariantList");
 
     QList<QVariant> values = v.toList();
-    QCOMPARE(values.count(), 2);
+    QCOMPARE(values.size(), 2);
     QCOMPARE(values.at(0).toInt(), 42);
 
     values << 43 << "world";
 
     QVERIFY(setProperty("prop", values));
     v = property("prop");
-    QCOMPARE(v.toList().count(), 4);
+    QCOMPARE(v.toList().size(), 4);
 }
 
 void tst_QMetaType::normalizedTypes()

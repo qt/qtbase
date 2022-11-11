@@ -84,7 +84,7 @@ void tst_QComplexText::bidiReorderString()
         if (si.analysis.bidiLevel % 2) {
             // reverse sub
             QChar *a = sub.data();
-            QChar *b = a + sub.length() - 1;
+            QChar *b = a + sub.size() - 1;
             while (a < b) {
                 QChar tmp = *a;
                 *a = *b;
@@ -93,7 +93,7 @@ void tst_QComplexText::bidiReorderString()
                 --b;
             }
             a = (QChar *)sub.unicode();
-            b = a + sub.length();
+            b = a + sub.size();
             while (a<b) {
                 *a = a->mirroredChar();
                 ++a;
@@ -315,7 +315,7 @@ static void testBidiString(const QString &data, int paragraphDirection,
         if (si.analysis.bidiLevel % 2) {
             // reverse sub
             QChar *a = sub.data();
-            QChar *b = a + sub.length() - 1;
+            QChar *b = a + sub.size() - 1;
             while (a < b) {
                 QChar tmp = *a;
                 *a = *b;
@@ -324,7 +324,7 @@ static void testBidiString(const QString &data, int paragraphDirection,
                 --b;
             }
             a = (QChar *)sub.unicode();
-            b = a + sub.length();
+            b = a + sub.size();
 //            while (a<b) {
 //                *a = a->mirroredChar();
 //                ++a;

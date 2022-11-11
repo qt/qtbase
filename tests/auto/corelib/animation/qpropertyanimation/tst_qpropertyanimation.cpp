@@ -283,9 +283,9 @@ void tst_QPropertyAnimation::statesAndSignals()
 
     anim->setCurrentTime(1);
     anim->setCurrentTime(100);
-    QCOMPARE(finishedSpy.count(), 0);
-    QCOMPARE(runningSpy.count(), 0);
-    QCOMPARE(currentLoopSpy.count(), 0);
+    QCOMPARE(finishedSpy.size(), 0);
+    QCOMPARE(runningSpy.size(), 0);
+    QCOMPARE(currentLoopSpy.size(), 0);
     QCOMPARE(anim->state(), QAnimationGroup::Stopped);
 
     anim->setLoopCount(3);
@@ -294,26 +294,26 @@ void tst_QPropertyAnimation::statesAndSignals()
     if (uncontrolled)
         QSKIP("Uncontrolled animations don't handle looping");
 
-    QCOMPARE(currentLoopSpy.count(), 1);
+    QCOMPARE(currentLoopSpy.size(), 1);
     QCOMPARE(anim->currentLoop(), 1);
 
     anim->setCurrentTime(0);
-    QCOMPARE(currentLoopSpy.count(), 2);
+    QCOMPARE(currentLoopSpy.size(), 2);
     QCOMPARE(anim->currentLoop(), 0);
 
     anim->start();
     QCOMPARE(anim->state(), QAnimationGroup::Running);
-    QCOMPARE(runningSpy.count(), 1); //anim must have started
+    QCOMPARE(runningSpy.size(), 1); //anim must have started
     QCOMPARE(anim->currentLoop(), 0);
     runningSpy.clear();
 
     anim->stop();
     QCOMPARE(anim->state(), QAnimationGroup::Stopped);
-    QCOMPARE(runningSpy.count(), 1); //anim must have stopped
-    QCOMPARE(finishedSpy.count(), 0);
+    QCOMPARE(runningSpy.size(), 1); //anim must have stopped
+    QCOMPARE(finishedSpy.size(), 0);
     QCOMPARE(anim->currentLoopTime(), 0);
     QCOMPARE(anim->currentLoop(), 0);
-    QCOMPARE(currentLoopSpy.count(), 2);
+    QCOMPARE(currentLoopSpy.size(), 2);
     runningSpy.clear();
 
     {
@@ -321,30 +321,30 @@ void tst_QPropertyAnimation::statesAndSignals()
         anim->start();
         timeDriver.wait(1000);
         QCOMPARE(anim->state(), QAnimationGroup::Stopped);
-        QCOMPARE(runningSpy.count(), 2); //started and stopped again
+        QCOMPARE(runningSpy.size(), 2); //started and stopped again
         runningSpy.clear();
-        QCOMPARE(finishedSpy.count(), 1);
+        QCOMPARE(finishedSpy.size(), 1);
         QCOMPARE(anim->currentLoopTime(), 100);
         QCOMPARE(anim->currentLoop(), 2);
-        QCOMPARE(currentLoopSpy.count(), 4);
+        QCOMPARE(currentLoopSpy.size(), 4);
 
         anim->start(); // auto-rewinds
         QCOMPARE(anim->state(), QAnimationGroup::Running);
         QCOMPARE(anim->currentTime(), 0);
         QCOMPARE(anim->currentLoop(), 0);
-        QCOMPARE(currentLoopSpy.count(), 5);
-        QCOMPARE(runningSpy.count(), 1); // anim has started
-        QCOMPARE(finishedSpy.count(), 1);
+        QCOMPARE(currentLoopSpy.size(), 5);
+        QCOMPARE(runningSpy.size(), 1); // anim has started
+        QCOMPARE(finishedSpy.size(), 1);
         QCOMPARE(anim->currentLoop(), 0);
         runningSpy.clear();
 
         timeDriver.wait(1000);
 
-        QCOMPARE(currentLoopSpy.count(), 7);
+        QCOMPARE(currentLoopSpy.size(), 7);
         QCOMPARE(anim->state(), QAnimationGroup::Stopped);
         QCOMPARE(anim->currentLoop(), 2);
-        QCOMPARE(runningSpy.count(), 1); // anim has stopped
-        QCOMPARE(finishedSpy.count(), 2);
+        QCOMPARE(runningSpy.size(), 1); // anim has stopped
+        QCOMPARE(finishedSpy.size(), 2);
         QCOMPARE(anim->currentLoopTime(), 100);
     }
 }
@@ -364,8 +364,8 @@ void tst_QPropertyAnimation::deletion1()
     anim->setEndValue(20);
     anim->setDuration(200);
     anim->start();
-    QCOMPARE(runningSpy.count(), 1);
-    QCOMPARE(finishedSpy.count(), 0);
+    QCOMPARE(runningSpy.size(), 1);
+    QCOMPARE(finishedSpy.size(), 0);
 
     QVERIFY(anim);
     QCOMPARE(anim->state(), QAnimationGroup::Running);
@@ -375,8 +375,8 @@ void tst_QPropertyAnimation::deletion1()
     timeDriver.wait(150);
     QVERIFY(anim); //The animation should not have been deleted
     QCOMPARE(anim->state(), QAnimationGroup::Stopped);
-    QCOMPARE(runningSpy.count(), 2);
-    QCOMPARE(finishedSpy.count(), 1);
+    QCOMPARE(runningSpy.size(), 2);
+    QCOMPARE(finishedSpy.size(), 1);
 
     anim->start(QVariantAnimation::DeleteWhenStopped);
     QVERIFY(anim);
@@ -385,8 +385,8 @@ void tst_QPropertyAnimation::deletion1()
     QVERIFY(anim);
     QCOMPARE(anim->state(), QAnimationGroup::Running);
     timeDriver.wait(150);
-    QCOMPARE(runningSpy.count(), 4);
-    QCOMPARE(finishedSpy.count(), 2);
+    QCOMPARE(runningSpy.size(), 4);
+    QCOMPARE(finishedSpy.size(), 2);
     QVERIFY(!anim);  //The animation must have been deleted
     delete object;
 }
@@ -417,8 +417,8 @@ void tst_QPropertyAnimation::deletion2()
     QVERIFY(anim);
     QCOMPARE(anim->state(), QAnimationGroup::Running);
 
-    QCOMPARE(runningSpy.count(), 1);
-    QCOMPARE(finishedSpy.count(), 0);
+    QCOMPARE(runningSpy.size(), 1);
+    QCOMPARE(finishedSpy.size(), 0);
 
     //we can't call deletaLater directly because the delete would only happen in the next loop of _this_ event loop
     QTimer::singleShot(0, object, SLOT(deleteLater()));
@@ -451,11 +451,11 @@ void tst_QPropertyAnimation::deletion3()
 
     timeDriver.wait(50);
     QCOMPARE(anim->state(), QAnimationGroup::Running);
-    QCOMPARE(runningSpy.count(), 1);
-    QCOMPARE(finishedSpy.count(), 0);
+    QCOMPARE(runningSpy.size(), 1);
+    QCOMPARE(finishedSpy.size(), 0);
     delete anim;
-    QCOMPARE(runningSpy.count(), 2);
-    QCOMPARE(finishedSpy.count(), 0);
+    QCOMPARE(runningSpy.size(), 2);
+    QCOMPARE(finishedSpy.size(), 0);
 }
 
 void tst_QPropertyAnimation::duration0()
@@ -547,7 +547,7 @@ void tst_QPropertyAnimation::startWhenAnotherIsRunning()
         QVERIFY(runningSpy.isValid());
         anim->start(QVariantAnimation::DeleteWhenStopped);
         timeDriver.wait(anim->duration());
-        QCOMPARE(runningSpy.count(), 2); //started and then stopped
+        QCOMPARE(runningSpy.size(), 2); //started and then stopped
         QVERIFY(!anim);
     }
     {
@@ -559,7 +559,7 @@ void tst_QPropertyAnimation::startWhenAnotherIsRunning()
         timeDriver.wait(anim->duration()/2);
         QPointer<QVariantAnimation> anim2 = new QPropertyAnimation(&o, "ole");
         anim2->setEndValue(100);
-        QCOMPARE(runningSpy.count(), 1);
+        QCOMPARE(runningSpy.size(), 1);
         QCOMPARE(anim->state(), QVariantAnimation::Running);
 
         //anim2 will interrupt anim1
@@ -908,7 +908,7 @@ void tst_QPropertyAnimation::zeroDurationStart()
     anim.start();
     //the animation stops immediately
     QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 
     //let's check the first state change
     const QVariantList firstChange = spy.first();
@@ -1193,8 +1193,8 @@ void tst_QPropertyAnimation::valueChanged()
     QCOMPARE(anim.currentTime(), anim.duration());
 
     //let's check that the values go forward
-    QCOMPARE(spy.count(), 6); //we should have got everything from 0 to 5
-    for (int i = 0; i < spy.count(); ++i) {
+    QCOMPARE(spy.size(), 6); //we should have got everything from 0 to 5
+    for (int i = 0; i < spy.size(); ++i) {
         QCOMPARE(qvariant_cast<QVariant>(spy.at(i).first()).toInt(), i);
     }
 }
@@ -1324,15 +1324,15 @@ void tst_QPropertyAnimation::zeroLoopCount()
 
     QCOMPARE(anim->state(), QAnimationGroup::Stopped);
     QCOMPARE(anim->currentValue().toInt(), 0);
-    QCOMPARE(runningSpy.count(), 0);
-    QCOMPARE(finishedSpy.count(), 0);
+    QCOMPARE(runningSpy.size(), 0);
+    QCOMPARE(finishedSpy.size(), 0);
 
     anim->start();
 
     QCOMPARE(anim->state(), QAnimationGroup::Stopped);
     QCOMPARE(anim->currentValue().toInt(), 0);
-    QCOMPARE(runningSpy.count(), 0);
-    QCOMPARE(finishedSpy.count(), 0);
+    QCOMPARE(runningSpy.size(), 0);
+    QCOMPARE(finishedSpy.size(), 0);
 }
 
 

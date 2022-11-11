@@ -1153,7 +1153,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                 tokens[i] = timeTokenC;
                 qsizetype spaceIdx = lexeme.indexOf(QChar::fromLatin1(' '));
                 if (spaceIdx > 0)
-                    timeArgs.append(lexeme.mid(spaceIdx + 1, lexeme.length() - spaceIdx - 2));
+                    timeArgs.append(lexeme.mid(spaceIdx + 1, lexeme.size() - spaceIdx - 2));
                 else
                     timeArgs.append(QString());
             } else if (lexeme.startsWith(QLatin1StringView(backtraceTokenC))) {

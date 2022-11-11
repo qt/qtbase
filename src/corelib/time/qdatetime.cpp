@@ -122,7 +122,7 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
     QDate date;
 
     const auto isShortName = [](QStringView name) {
-        return (name.length() == 3 && name[0].isUpper()
+        return (name.size() == 3 && name[0].isUpper()
                 && name[1].isLower() && name[2].isLower());
     };
 
@@ -4947,7 +4947,7 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
 
         // Documented as "ddd MMM d HH:mm:ss yyyy" with optional offset-suffix;
         // and allow time either before or after year.
-        if (parts.count() < 5 || it != tokens.end())
+        if (parts.size() < 5 || it != tokens.end())
             return QDateTime();
 
         // Year and time can be in either order.
@@ -4976,7 +4976,7 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
         if (!time.isValid())
             return QDateTime();
 
-        if (parts.count() == 5)
+        if (parts.size() == 5)
             return QDateTime(date, time, Qt::LocalTime);
 
         QStringView tz = parts.at(5);

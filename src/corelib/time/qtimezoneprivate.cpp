@@ -664,7 +664,7 @@ QByteArray QTimeZonePrivate::windowsIdToDefaultIanaId(const QByteArray &windowsI
                                                       QLocale::Territory territory)
 {
     const QList<QByteArray> list = windowsIdToIanaIds(windowsId, territory);
-    return list.count() > 0 ? list.first() : QByteArray();
+    return list.size() > 0 ? list.first() : QByteArray();
 }
 
 QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windowsId)

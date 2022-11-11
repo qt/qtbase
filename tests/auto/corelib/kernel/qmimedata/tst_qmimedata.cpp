@@ -71,8 +71,8 @@ void tst_QMimeData::data() const
     // set text, verify
     mimeData.setData("text/plain", "pirates");
     QCOMPARE(mimeData.data("text/plain"), QByteArray("pirates"));
-    QCOMPARE(mimeData.data("text/html").length(), 0);
-    QCOMPARE(mimeData.data("text/markdown").length(), 0);
+    QCOMPARE(mimeData.data("text/html").size(), 0);
+    QCOMPARE(mimeData.data("text/markdown").size(), 0);
 
     // html time
     mimeData.setData("text/html", "ninjas");

@@ -1952,7 +1952,7 @@ QValidator::State QSpinBoxValidator::validate(QString &input, int &pos) const
 
     if (!dptr->prefix.isEmpty() && !input.startsWith(dptr->prefix)) {
         input.prepend(dptr->prefix);
-        pos += dptr->prefix.length();
+        pos += dptr->prefix.size();
     }
 
     if (!dptr->suffix.isEmpty() && !input.endsWith(dptr->suffix))

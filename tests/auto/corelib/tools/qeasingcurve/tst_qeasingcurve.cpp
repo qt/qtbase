@@ -374,7 +374,7 @@ void tst_QEasingCurve::valueForProgress()
     // in theory the baseline should't have an error of more than 0.00005 due to how its rounded,
     // but due to FP imprecision, we have to adjust the error a bit more.
     const qreal errorBound = 0.00006;
-    for (int i = 0; i < at.count(); ++i) {
+    for (int i = 0; i < at.size(); ++i) {
         const qreal ex = expected.at(i);
         const qreal error = qAbs(ex - curve.valueForProgress(at.at(i)/qreal(100)));
         QVERIFY(error <= errorBound);
@@ -583,9 +583,9 @@ static inline void setupBezierSpline(QEasingCurve *easingCurve, const QString &s
         points.append(point);
     }
 
-    QVERIFY(points.count() % 3 == 0);
+    QVERIFY(points.size() % 3 == 0);
 
-    for (int i = 0; i < points.count() / 3; i++) {
+    for (int i = 0; i < points.size() / 3; i++) {
         QPointF c1 = points.at(i * 3);
         QPointF c2 = points.at(i * 3 + 1);
         QPointF p1 = points.at(i * 3 + 2);
@@ -603,7 +603,7 @@ void tst_QEasingCurve::bezierSpline()
     setupBezierSpline(&bezierEasingCurve, definition);
 
     const qreal errorBound = 0.002;
-    for (int i = 0; i < at.count(); ++i) {
+    for (int i = 0; i < at.size(); ++i) {
         const qreal ex = expected.at(i);
         const qreal value = bezierEasingCurve.valueForProgress(at.at(i)/qreal(100));
         const qreal error = qAbs(ex - value);
@@ -646,7 +646,7 @@ static inline void setupTCBSpline(QEasingCurve *easingCurve, const QString &stri
 
     foreach (const QString &str, pointStr) {
         QStringList coordStr = str.split(QLatin1Char(','));
-        Q_ASSERT(coordStr.count() == 5);
+        Q_ASSERT(coordStr.size() == 5);
         QPointF point(coordStr.first().toDouble(), coordStr.at(1).toDouble());
         qreal t = coordStr.at(2).toDouble();
         qreal c = coordStr.at(3).toDouble();
@@ -665,7 +665,7 @@ void tst_QEasingCurve::tcbSpline()
     setupTCBSpline(&tcbEasingCurve, definition);
 
     const qreal errorBound = 0.002;
-    for (int i = 0; i < at.count(); ++i) {
+    for (int i = 0; i < at.size(); ++i) {
         const qreal ex = expected.at(i);
         const qreal value = tcbEasingCurve.valueForProgress(at.at(i)/qreal(100));
         const qreal error = qAbs(ex - value);

@@ -62,7 +62,7 @@ public:
 
     void swapBuffers(Output *output);
 
-    int outputCount() const { return m_outputs.count(); }
+    int outputCount() const { return m_outputs.size(); }
     Output *output(int idx) { return &m_outputs[idx]; }
 
 private:

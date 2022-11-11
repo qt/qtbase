@@ -50,7 +50,7 @@ void QPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
     if (!bridges() || bridges()->isEmpty())
         return;
 
-    for (int i = 0; i < bridges()->count(); ++i)
+    for (int i = 0; i < bridges()->size(); ++i)
         bridges()->at(i)->notifyAccessibilityUpdate(event);
 }
 
@@ -63,7 +63,7 @@ void QPlatformAccessibility::setRootObject(QObject *o)
     if (!o)
         return;
 
-    for (int i = 0; i < bridges()->count(); ++i) {
+    for (int i = 0; i < bridges()->size(); ++i) {
         QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(o);
         bridges()->at(i)->setRootObject(iface);
     }

@@ -1383,7 +1383,7 @@ void tst_QtConcurrentRun::withPromiseAndThen()
         setFlag(syncEnd);
 
         future.waitForFinished();
-        QCOMPARE(future.results().count(), 0);
+        QCOMPARE(future.results().size(), 0);
         QVERIFY(runExecuted);
         QVERIFY(!cancelReceivedBeforeSync);
         QVERIFY(cancelReceivedAfterSync);
@@ -1403,7 +1403,7 @@ void tst_QtConcurrentRun::withPromiseAndThen()
         setFlag(syncEnd);
 
         resultFuture.waitForFinished();
-        QCOMPARE(future.results().count(), 1);
+        QCOMPARE(future.results().size(), 1);
         QCOMPARE(future.result(), 1);
         QVERIFY(runExecuted);
         QVERIFY(thenExecuted);
@@ -1426,7 +1426,7 @@ void tst_QtConcurrentRun::withPromiseAndThen()
         setFlag(syncEnd);
 
         resultFuture.waitForFinished();
-        QCOMPARE(future.results().count(), 0);
+        QCOMPARE(future.results().size(), 0);
         QVERIFY(runExecuted);
         QVERIFY(!thenExecuted);
         QVERIFY(cancelExecuted);

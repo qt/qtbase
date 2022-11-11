@@ -61,7 +61,7 @@ template<> inline char *toString(const QLatin1StringView &str)
 
 template<> inline char *toString(const QByteArray &ba)
 {
-    return QTest::toPrettyCString(ba.constData(), ba.length());
+    return QTest::toPrettyCString(ba.constData(), ba.size());
 }
 
 template<> inline char *toString(const QBitArray &ba)

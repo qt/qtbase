@@ -156,7 +156,7 @@ void tst_QMovie::playMovie()
     movie.start();
     QCOMPARE(movie.state(), QMovie::Running);
     QTestEventLoop::instance().enterLoop(2);
-    QCOMPARE(finishedSpy.count(), 0);
+    QCOMPARE(finishedSpy.size(), 0);
     QCOMPARE(movie.state(), QMovie::Running);
     QCOMPARE(movie.currentFrameNumber(), 0);
 }

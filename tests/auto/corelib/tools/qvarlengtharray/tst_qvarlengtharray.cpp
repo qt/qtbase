@@ -936,8 +936,8 @@ void tst_QVarLengthArray::count()
     // tests size(), count() and length(), since they're the same thing
     {
         const QVarLengthArray<int> list;
-        QCOMPARE(list.length(), 0);
-        QCOMPARE(list.count(), 0);
+        QCOMPARE(list.size(), 0);
+        QCOMPARE(list.size(), 0);
         QCOMPARE(list.size(), 0);
         QVERIFY(list.isEmpty());
     }
@@ -945,8 +945,8 @@ void tst_QVarLengthArray::count()
     {
         QVarLengthArray<int> list;
         list.append(0);
-        QCOMPARE(list.length(), 1);
-        QCOMPARE(list.count(), 1);
+        QCOMPARE(list.size(), 1);
+        QCOMPARE(list.size(), 1);
         QCOMPARE(list.size(), 1);
         QVERIFY(!list.isEmpty());
     }
@@ -955,8 +955,8 @@ void tst_QVarLengthArray::count()
         QVarLengthArray<int> list;
         list.append(0);
         list.append(1);
-        QCOMPARE(list.length(), 2);
-        QCOMPARE(list.count(), 2);
+        QCOMPARE(list.size(), 2);
+        QCOMPARE(list.size(), 2);
         QCOMPARE(list.size(), 2);
         QVERIFY(!list.isEmpty());
     }
@@ -966,8 +966,8 @@ void tst_QVarLengthArray::count()
         list.append(0);
         list.append(0);
         list.append(0);
-        QCOMPARE(list.length(), 3);
-        QCOMPARE(list.count(), 3);
+        QCOMPARE(list.size(), 3);
+        QCOMPARE(list.size(), 3);
         QCOMPARE(list.size(), 3);
         QVERIFY(!list.isEmpty());
     }
@@ -978,23 +978,23 @@ void tst_QVarLengthArray::count()
         list.append(0);
         list.append(0);
         list.append(0);
-        QCOMPARE(list.length(), 3);
-        QCOMPARE(list.count(), 3);
+        QCOMPARE(list.size(), 3);
+        QCOMPARE(list.size(), 3);
         QCOMPARE(list.size(), 3);
         QVERIFY(!list.isEmpty());
         list.removeLast();
-        QCOMPARE(list.length(), 2);
-        QCOMPARE(list.count(), 2);
+        QCOMPARE(list.size(), 2);
+        QCOMPARE(list.size(), 2);
         QCOMPARE(list.size(), 2);
         QVERIFY(!list.isEmpty());
         list.removeLast();
-        QCOMPARE(list.length(), 1);
-        QCOMPARE(list.count(), 1);
+        QCOMPARE(list.size(), 1);
+        QCOMPARE(list.size(), 1);
         QCOMPARE(list.size(), 1);
         QVERIFY(!list.isEmpty());
         list.removeLast();
-        QCOMPARE(list.length(), 0);
-        QCOMPARE(list.count(), 0);
+        QCOMPARE(list.size(), 0);
+        QCOMPARE(list.size(), 0);
         QCOMPARE(list.size(), 0);
         QVERIFY(list.isEmpty());
     }
@@ -1033,16 +1033,16 @@ void tst_QVarLengthArray::first()
     QCOMPARE(list.first(), 27);
     list.append(1987);
     QCOMPARE(list.first(), 27);
-    QCOMPARE(list.length(), 3);
+    QCOMPARE(list.size(), 3);
 
     // remove some, make sure it stays sane
     list.removeLast();
     QCOMPARE(list.first(), 27);
-    QCOMPARE(list.length(), 2);
+    QCOMPARE(list.size(), 2);
 
     list.removeLast();
     QCOMPARE(list.first(), 27);
-    QCOMPARE(list.length(), 1);
+    QCOMPARE(list.size(), 1);
 }
 
 void tst_QVarLengthArray::last()
@@ -1055,16 +1055,16 @@ void tst_QVarLengthArray::last()
     QCOMPARE(list.last(), 4);
     list.append(1987);
     QCOMPARE(list.last(), 1987);
-    QCOMPARE(list.length(), 3);
+    QCOMPARE(list.size(), 3);
 
     // remove some, make sure it stays sane
     list.removeLast();
     QCOMPARE(list.last(), 4);
-    QCOMPARE(list.length(), 2);
+    QCOMPARE(list.size(), 2);
 
     list.removeLast();
     QCOMPARE(list.last(), 27);
-    QCOMPARE(list.length(), 1);
+    QCOMPARE(list.size(), 1);
 }
 
 void tst_QVarLengthArray::squeeze()

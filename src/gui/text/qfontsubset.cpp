@@ -608,7 +608,7 @@ static QTtfTable generateName(const QList<QTtfNameRecord> &name)
     const int name_size = 6 + 12*name.size();
     int string_size = 0;
     for (int i = 0; i < name.size(); ++i) {
-        string_size += name.at(i).value.length()*char_size;
+        string_size += name.at(i).value.size()*char_size;
     }
     t.data.resize(name_size + string_size);
 
@@ -624,7 +624,7 @@ static QTtfTable generateName(const QList<QTtfNameRecord> &name)
 
     int off = 0;
     for (int i = 0; i < name.size(); ++i) {
-        int len = name.at(i).value.length()*char_size;
+        int len = name.at(i).value.size()*char_size;
 // quint16  platformID  Platform ID.
 // quint16  encodingID  Platform-specific encoding ID.
 // quint16  languageID  Language ID.

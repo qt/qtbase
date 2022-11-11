@@ -54,7 +54,7 @@ ProjectGenerator::init()
             dirs.prepend(qmake_getpwd());
         }
 
-        for(int i = 0; i < dirs.count(); ++i) {
+        for(int i = 0; i < dirs.size(); ++i) {
             QString dir, regex, pd = dirs.at(i);
             bool add_depend = false;
             if(exists(pd)) {
@@ -66,7 +66,7 @@ ProjectGenerator::init()
                         dir += Option::dir_sep;
                     if (Option::recursive) {
                         QStringList files = QDir(dir).entryList(QDir::Files);
-                        for (int i = 0; i < files.count(); i++)
+                        for (int i = 0; i < files.size(); i++)
                             dirs.append(dir + files[i] + QDir::separator() + builtin_regex);
                     }
                     regex = builtin_regex;
@@ -87,16 +87,16 @@ ProjectGenerator::init()
                 int s = regex.lastIndexOf(Option::dir_sep);
                 if(s != -1) {
                     dir = regex.left(s+1);
-                    regex = regex.right(regex.length() - (s+1));
+                    regex = regex.right(regex.size() - (s+1));
                 }
                 const QDir d(dir);
                 if (Option::recursive) {
                     QStringList entries = d.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-                    for (int i = 0; i < entries.count(); i++)
+                    for (int i = 0; i < entries.size(); i++)
                         dirs.append(dir + entries[i] + QDir::separator() + regex);
                 }
                 QStringList files = d.entryList(QDir::nameFiltersFromString(regex));
-                for(int i = 0; i < (int)files.count(); i++) {
+                for(int i = 0; i < (int)files.size(); i++) {
                     QString file = d.absoluteFilePath(files[i]);
                     if (addFile(file)) {
                         add_depend = true;
@@ -116,7 +116,7 @@ ProjectGenerator::init()
         if(Option::projfile::do_pwd)
             knownDirs.prepend(".");
         const QString out_file = fileFixify(Option::output.fileName());
-        for(int i = 0; i < knownDirs.count(); ++i) {
+        for(int i = 0; i < knownDirs.size(); ++i) {
             QString pd = knownDirs.at(i);
             if(exists(pd)) {
                 QString newdir = pd;
@@ -129,7 +129,7 @@ ProjectGenerator::init()
                         subdirs.append(newdir);
                     } else {
                         QStringList profiles = QDir(newdir).entryList(QStringList("*" + Option::pro_ext), QDir::Files);
-                        for(int i = 0; i < (int)profiles.count(); i++) {
+                        for(int i = 0; i < (int)profiles.size(); i++) {
                             QString nd = newdir;
                             if(nd == ".")
                                 nd = "";
@@ -143,7 +143,7 @@ ProjectGenerator::init()
                     }
                     if (Option::recursive) {
                         QStringList dirs = QDir(newdir).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-                        for(int i = 0; i < (int)dirs.count(); i++) {
+                        for(int i = 0; i < (int)dirs.size(); i++) {
                             QString nd = fileFixify(newdir + QDir::separator() + dirs[i]);
                             if (!knownDirs.contains(nd, Qt::CaseInsensitive))
                                 knownDirs.append(nd);
@@ -155,12 +155,12 @@ ProjectGenerator::init()
                 int s = regx.lastIndexOf(Option::dir_sep);
                 if(s != -1) {
                     dir = regx.left(s+1);
-                    regx = regx.right(regx.length() - (s+1));
+                    regx = regx.right(regx.size() - (s+1));
                 }
                 QStringList files = QDir(dir).entryList(QDir::nameFiltersFromString(regx),
                                                         QDir::Dirs | QDir::NoDotAndDotDot);
                 ProStringList &subdirs = v["SUBDIRS"];
-                for(int i = 0; i < (int)files.count(); i++) {
+                for(int i = 0; i < (int)files.size(); i++) {
                     QString newdir(dir + files[i]);
                     QFileInfo fi(fileInfo(newdir));
                     {
@@ -170,7 +170,7 @@ ProjectGenerator::init()
                            subdirs.append(newdir);
                         } else {
                             QStringList profiles = QDir(newdir).entryList(QStringList("*" + Option::pro_ext), QDir::Files);
-                            for(int i = 0; i < (int)profiles.count(); i++) {
+                            for(int i = 0; i < (int)profiles.size(); i++) {
                                 QString nd = newdir + QDir::separator() + files[i];
                                 fileFixify(nd);
                                 if(files[i] != "." && files[i] != ".." && !subdirs.contains(nd, Qt::CaseInsensitive)) {
@@ -231,7 +231,7 @@ ProjectGenerator::init()
                     }
                     if(!h_ext.isEmpty()) {
                         for(int cppit = 0; cppit < Option::cpp_ext.size(); ++cppit) {
-                            QString src(dep.left(dep.length() - h_ext.length()) +
+                            QString src(dep.left(dep.size() - h_ext.size()) +
                                         Option::cpp_ext.at(cppit));
                             if(exists(src)) {
                                 ProStringList &srcl = v["SOURCES"];
@@ -358,7 +358,7 @@ ProjectGenerator::addFile(QString file)
     int s = file.lastIndexOf(Option::dir_sep);
     if(s != -1)
         dir = file.left(s+1);
-    if(file.mid(dir.length(), Option::h_moc_mod.length()) == Option::h_moc_mod)
+    if(file.mid(dir.size(), Option::h_moc_mod.size()) == Option::h_moc_mod)
         return false;
 
     ProKey where;
@@ -428,9 +428,9 @@ ProjectGenerator::getWritableVar(const char *vk, bool)
     else
         ret = v + " += ";
     QString join = vals.join(' ');
-    if(ret.length() + join.length() > 80) {
+    if(ret.size() + join.size() > 80) {
         QString spaces;
-        for(int i = 0; i < ret.length(); i++)
+        for(int i = 0; i < ret.size(); i++)
             spaces += " ";
         join = vals.join(" \\\n" + spaces);
     }

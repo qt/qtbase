@@ -256,7 +256,7 @@ ProStringList QMakeEvaluator::split_value_list(QStringView vals, int source)
         source = currentFileId();
 
     const QChar *vals_data = vals.data();
-    const int vals_len = vals.length();
+    const int vals_len = vals.size();
     char16_t quote = 0;
     bool hadWord = false;
     for (int x = 0; x < vals_len; x++) {
@@ -801,7 +801,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProLoop(
         } else {
             ProString val;
             do {
-                if (index >= list.count())
+                if (index >= list.size())
                     goto do_break;
                 val = list.at(index++);
             } while (val.isEmpty()); // stupid, but qmake is like that
@@ -853,19 +853,19 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProVariable(
         if (expandVariableReferences(tokPtr, sizeHint, &varVal, true) == ReturnError)
             return ReturnError;
         QStringView val = varVal.at(0).toQStringView();
-        if (val.length() < 4 || val.at(0) != QLatin1Char('s')) {
+        if (val.size() < 4 || val.at(0) != QLatin1Char('s')) {
             evalError(fL1S("The ~= operator can handle only the s/// function."));
             return ReturnTrue;
         }
         QChar sep = val.at(1);
         auto func = val.split(sep, Qt::KeepEmptyParts);
-        if (func.count() < 3 || func.count() > 4) {
+        if (func.size() < 3 || func.size() > 4) {
             evalError(fL1S("The s/// function expects 3 or 4 arguments."));
             return ReturnTrue;
         }
 
         bool global = false, quote = false, case_sense = false;
-        if (func.count() == 4) {
+        if (func.size() == 4) {
             global = func[3].indexOf(QLatin1Char('g')) != -1;
             case_sense = func[3].indexOf(QLatin1Char('i')) == -1;
             quote = func[3].indexOf(QLatin1Char('q')) != -1;
@@ -1545,7 +1545,7 @@ void QMakeEvaluator::updateFeaturePaths()
         feature_roots << (fb + features_concat);
     }
 
-    for (int i = 0; i < feature_roots.count(); ++i)
+    for (int i = 0; i < feature_roots.size(); ++i)
         if (!feature_roots.at(i).endsWith(QLatin1Char('/')))
             feature_roots[i].append(QLatin1Char('/'));
 
@@ -1570,7 +1570,7 @@ ProString QMakeEvaluator::propertyValue(const ProKey &name) const
 
 ProFile *QMakeEvaluator::currentProFile() const
 {
-    if (m_profileStack.count() > 0)
+    if (m_profileStack.size() > 0)
         return m_profileStack.top();
     return nullptr;
 }
@@ -1693,12 +1693,12 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateFunction(
         m_locationStack.push(m_current);
 
         ProStringList args;
-        for (int i = 0; i < argumentsList.count(); ++i) {
+        for (int i = 0; i < argumentsList.size(); ++i) {
             args += argumentsList[i];
             m_valuemapStack.top()[ProKey(QString::number(i+1))] = argumentsList[i];
         }
         m_valuemapStack.top()[statics.strARGS] = args;
-        m_valuemapStack.top()[statics.strARGC] = ProStringList(ProString(QString::number(argumentsList.count())));
+        m_valuemapStack.top()[statics.strARGC] = ProStringList(ProString(QString::number(argumentsList.size())));
         vr = visitProBlock(func.pro(), func.tokPtr());
         if (vr == ReturnReturn)
             vr = ReturnTrue;

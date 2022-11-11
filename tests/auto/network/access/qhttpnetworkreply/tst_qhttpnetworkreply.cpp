@@ -77,7 +77,7 @@ void tst_QHttpNetworkReply::parseHeader()
 
     QHttpNetworkReply reply;
     reply.parseHeader(headers);
-    for (int i = 0; i < fields.count(); ++i) {
+    for (int i = 0; i < fields.size(); ++i) {
         //qDebug() << "field" << fields.at(i) << "value" << reply.headerField(fields.at(i)) << "expected" << values.at(i);
         QString field = reply.headerField(fields.at(i).toLatin1());
         QCOMPARE(field, values.at(i));

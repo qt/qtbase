@@ -1611,7 +1611,7 @@ void QLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
         if (d->control->composeMode()) {
             int preeditPos = d->control->cursor();
             int posInPreedit = position - d->control->cursor();
-            int preeditLength = d->control->preeditAreaText().length();
+            int preeditLength = d->control->preeditAreaText().size();
             bool positionOnPreedit = false;
 
             if (posInPreedit >= 0 && posInPreedit <= preeditLength)
@@ -2123,13 +2123,13 @@ void QLineEdit::dropEvent(QDropEvent* e)
         if (e->source() == this) {
             if (e->dropAction() == Qt::MoveAction) {
                 if (selStart > oldSelStart && selStart <= oldSelEnd)
-                    setSelection(oldSelStart, str.length());
+                    setSelection(oldSelStart, str.size());
                 else if (selStart > oldSelEnd)
-                    setSelection(selStart - str.length(), str.length());
+                    setSelection(selStart - str.size(), str.size());
                 else
-                    setSelection(selStart, str.length());
+                    setSelection(selStart, str.size());
             } else {
-                setSelection(selStart, str.length());
+                setSelection(selStart, str.size());
             }
         }
     } else {

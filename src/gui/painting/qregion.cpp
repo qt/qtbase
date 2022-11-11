@@ -3818,7 +3818,7 @@ QRegion::QRegion(const QRect &r, RegionType t)
 
 QRegion::QRegion(const QPolygon &a, Qt::FillRule fillRule)
 {
-    if (a.count() > 2) {
+    if (a.size() > 2) {
         QRegionPrivate *qt_rgn = PolygonRegion(a.constData(), a.size(),
                                                fillRule == Qt::WindingFill ? WindingRule : EvenOddRule);
         if (qt_rgn) {

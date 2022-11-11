@@ -1938,7 +1938,7 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
         addXrefEntry(toUnicode);
         QByteArray touc = font->createToUnicodeMap();
         xprintf("<< /Length %d >>\n"
-                "stream\n", touc.length());
+                "stream\n", touc.size());
         write(touc);
         write("\nendstream\n"
               "endobj\n");
@@ -2334,7 +2334,7 @@ int QPdfEnginePrivate::writeImage(const QByteArray &data, int width, int height,
         //qDebug("DCT");
         xprintf("/Filter /DCTDecode\n>>\nstream\n");
         write(data);
-        len = data.length();
+        len = data.size();
     } else {
         if (do_compress)
             xprintf("/Filter /FlateDecode\n>>\nstream\n");
@@ -2665,7 +2665,7 @@ int QPdfEnginePrivate::gradientBrush(const QBrush &b, const QTransform &matrix, 
                 "/Shading << /Shader" << alphaShaderObject << alphaShaderObject << "0 R >>\n"
                 ">>\n";
 
-            f << "/Length " << content.length() << "\n"
+            f << "/Length " << content.size() << "\n"
                 ">>\n"
                 "stream\n"
               << content
@@ -2783,7 +2783,7 @@ int QPdfEnginePrivate::addBrushPattern(const QTransform &m, bool *specifyColor, 
         s << "/XObject << /Im" << imageObject << ' ' << imageObject << "0 R >> ";
     }
     s << ">>\n"
-        "/Length " << pattern.length() << "\n"
+        "/Length " << pattern.size() << "\n"
         ">>\n"
         "stream\n"
       << pattern

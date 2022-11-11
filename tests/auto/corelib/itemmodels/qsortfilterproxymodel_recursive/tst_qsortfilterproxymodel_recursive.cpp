@@ -119,7 +119,7 @@ static void fillModel(QStandardItemModel &model, const QString &str)
     QCOMPARE(str.count('['), str.count(']'));
     QStandardItem *item = nullptr;
     QString data;
-    for ( int i = 0 ; i < str.length() ; ++i ) {
+    for ( int i = 0 ; i < str.size() ; ++i ) {
         const QChar ch = str.at(i);
         if ((ch == '[' || ch == ']' || ch == ' ') && !data.isEmpty()) {
             if (data.endsWith('*')) {

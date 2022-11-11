@@ -670,7 +670,7 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         const QString cn = QLatin1StringView(mo->className());
 
         // Check if the class has a InterfaceFactory installed.
-        for (int i = qAccessibleFactories()->count(); i > 0; --i) {
+        for (int i = qAccessibleFactories()->size(); i > 0; --i) {
             InterfaceFactory factory = qAccessibleFactories()->at(i - 1);
             if (QAccessibleInterface *iface = factory(cn, object)) {
                 QAccessibleCache::instance()->insert(object, iface);
@@ -787,7 +787,7 @@ bool QAccessible::isActive()
 */
 void QAccessible::setActive(bool active)
 {
-    for (int i = 0; i < qAccessibleActivationObservers()->count() ;++i)
+    for (int i = 0; i < qAccessibleActivationObservers()->size() ;++i)
         qAccessibleActivationObservers()->at(i)->accessibilityActiveChanged(active);
 }
 
@@ -2008,7 +2008,7 @@ static QString textLineBoundary(int beforeAtAfter, const QString &text, int offs
 {
     Q_ASSERT(beforeAtAfter >= -1 && beforeAtAfter <= 1);
     Q_ASSERT(*startOffset == -1 && *endOffset == -1);
-    int length = text.length();
+    int length = text.size();
     Q_ASSERT(offset >= 0 && offset <= length);
 
     // move offset into the right range (if asking for line before or after
@@ -2057,10 +2057,10 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::Text
     const QString txt = text(0, characterCount());
 
     if (offset == -1)
-        offset = txt.length();
+        offset = txt.size();
 
     *startOffset = *endOffset = -1;
-    if (txt.isEmpty() || offset <= 0 || offset > txt.length())
+    if (txt.isEmpty() || offset <= 0 || offset > txt.size())
         return QString();
 
     // type initialized just to silence a compiler warning [-Werror=maybe-uninitialized]
@@ -2131,10 +2131,10 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
     const QString txt = text(0, characterCount());
 
     if (offset == -1)
-        offset = txt.length();
+        offset = txt.size();
 
     *startOffset = *endOffset = -1;
-    if (txt.isEmpty() || offset < 0 || offset >= txt.length())
+    if (txt.isEmpty() || offset < 0 || offset >= txt.size())
         return QString();
 
     // type initialized just to silence a compiler warning [-Werror=maybe-uninitialized]
@@ -2169,20 +2169,20 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
         int toNext = boundary.toNextBoundary();
         if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
             break;
-        if (toNext < 0 || toNext >= txt.length())
+        if (toNext < 0 || toNext >= txt.size())
             break; // not found, the boundary might not exist
     }
-    Q_ASSERT(boundary.position() <= txt.length());
+    Q_ASSERT(boundary.position() <= txt.size());
     *startOffset = boundary.position();
 
     while (true) {
         int toNext = boundary.toNextBoundary();
         if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
             break;
-        if (toNext < 0 || toNext >= txt.length())
+        if (toNext < 0 || toNext >= txt.size())
             break; // not found, the boundary might not exist
     }
-    Q_ASSERT(boundary.position() <= txt.length());
+    Q_ASSERT(boundary.position() <= txt.size());
     *endOffset = boundary.position();
 
     if ((*startOffset == -1) || (*endOffset == -1) || (*startOffset == *endOffset)) {
@@ -2216,13 +2216,13 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
     const QString txt = text(0, characterCount());
 
     if (offset == -1)
-        offset = txt.length();
+        offset = txt.size();
 
     *startOffset = *endOffset = -1;
-    if (txt.isEmpty() || offset < 0 || offset > txt.length())
+    if (txt.isEmpty() || offset < 0 || offset > txt.size())
         return QString();
 
-    if (offset == txt.length() && boundaryType == QAccessible::CharBoundary)
+    if (offset == txt.size() && boundaryType == QAccessible::CharBoundary)
         return QString();
 
     // type initialized just to silence a compiler warning [-Werror=maybe-uninitialized]
@@ -2243,7 +2243,7 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
         return textLineBoundary(0, txt, offset, startOffset, endOffset);
     case QAccessible::NoBoundary:
         *startOffset = 0;
-        *endOffset = txt.length();
+        *endOffset = txt.size();
         return txt;
     default:
         Q_UNREACHABLE();
@@ -2261,11 +2261,11 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
     Q_ASSERT(boundary.position() >= 0);
     *startOffset = boundary.position();
 
-    while (boundary.toNextBoundary() < txt.length()) {
+    while (boundary.toNextBoundary() < txt.size()) {
         if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
             break;
     }
-    Q_ASSERT(boundary.position() <= txt.length());
+    Q_ASSERT(boundary.position() <= txt.size());
     *endOffset = boundary.position();
 
     return txt.mid(*startOffset, *endOffset - *startOffset);

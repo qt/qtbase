@@ -36,7 +36,7 @@ QListModel::~QListModel()
 void QListModel::clear()
 {
     beginResetModel();
-    for (int i = 0; i < items.count(); ++i) {
+    for (int i = 0; i < items.size(); ++i) {
         if (items.at(i)) {
             items.at(i)->d->theid = -1;
             items.at(i)->view = nullptr;
@@ -80,8 +80,8 @@ void QListModel::insert(int row, QListWidgetItem *item)
     } else {
         if (row < 0)
             row = 0;
-        else if (row > items.count())
-            row = items.count();
+        else if (row > items.size())
+            row = items.size();
     }
     beginInsertRows(QModelIndex(), row, row);
     items.insert(row, item);
@@ -91,7 +91,7 @@ void QListModel::insert(int row, QListWidgetItem *item)
 
 void QListModel::insert(int row, const QStringList &labels)
 {
-    const int count = labels.count();
+    const int count = labels.size();
     if (count <= 0)
         return;
     QListWidget *view = qobject_cast<QListWidget*>(QObject::parent());
@@ -104,8 +104,8 @@ void QListModel::insert(int row, const QStringList &labels)
     } else {
         if (row < 0)
             row = 0;
-        else if (row > items.count())
-            row = items.count();
+        else if (row > items.size())
+            row = items.size();
         beginInsertRows(QModelIndex(), row, row + count - 1);
         for (int i = 0; i < count; ++i) {
             QListWidgetItem *item = new QListWidgetItem(labels.at(i));
@@ -119,7 +119,7 @@ void QListModel::insert(int row, const QStringList &labels)
 
 QListWidgetItem *QListModel::take(int row)
 {
-    if (row < 0 || row >= items.count())
+    if (row < 0 || row >= items.size())
         return nullptr;
 
     beginRemoveRows(QModelIndex(), row, row);
@@ -133,8 +133,8 @@ QListWidgetItem *QListModel::take(int row)
 void QListModel::move(int srcRow, int dstRow)
 {
     if (srcRow == dstRow
-        || srcRow < 0 || srcRow >= items.count()
-        || dstRow < 0 || dstRow > items.count())
+        || srcRow < 0 || srcRow >= items.size()
+        || dstRow < 0 || dstRow > items.size())
         return;
 
     if (!beginMoveRows(QModelIndex(), srcRow, srcRow, QModelIndex(), dstRow))
@@ -147,7 +147,7 @@ void QListModel::move(int srcRow, int dstRow)
 
 int QListModel::rowCount(const QModelIndex &parent) const
 {
-    return parent.isValid() ? 0 : items.count();
+    return parent.isValid() ? 0 : items.size();
 }
 
 QModelIndex QListModel::index(const QListWidgetItem *item_) const
@@ -158,7 +158,7 @@ QModelIndex QListModel::index(const QListWidgetItem *item_) const
         return QModelIndex();
     int row;
     const int theid = item->d->theid;
-    if (theid >= 0 && theid < items.count() && items.at(theid) == item) {
+    if (theid >= 0 && theid < items.size() && items.at(theid) == item) {
         row = theid;
     } else { // we need to search for the item
         row = items.lastIndexOf(item);  // lastIndexOf is an optimization in favor of indexOf
@@ -178,14 +178,14 @@ QModelIndex QListModel::index(int row, int column, const QModelIndex &parent) co
 
 QVariant QListModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid() || index.row() >= items.count())
+    if (!index.isValid() || index.row() >= items.size())
         return QVariant();
     return items.at(index.row())->data(role);
 }
 
 bool QListModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if (!index.isValid() || index.row() >= items.count())
+    if (!index.isValid() || index.row() >= items.size())
         return false;
     items.at(index.row())->setData(role, value);
     return true;
@@ -208,10 +208,10 @@ bool QListModel::clearItemData(const QModelIndex &index)
 QMap<int, QVariant> QListModel::itemData(const QModelIndex &index) const
 {
     QMap<int, QVariant> roles;
-    if (!index.isValid() || index.row() >= items.count())
+    if (!index.isValid() || index.row() >= items.size())
         return roles;
     QListWidgetItem *itm = items.at(index.row());
-    for (int i = 0; i < itm->d->values.count(); ++i) {
+    for (int i = 0; i < itm->d->values.size(); ++i) {
         roles.insert(itm->d->values.at(i).role,
                      itm->d->values.at(i).value);
     }
@@ -288,7 +288,7 @@ bool QListModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int co
 
 Qt::ItemFlags QListModel::flags(const QModelIndex &index) const
 {
-    if (!index.isValid() || index.row() >= items.count() || index.model() != this)
+    if (!index.isValid() || index.row() >= items.size() || index.model() != this)
         return Qt::ItemIsDropEnabled; // we allow drops outside the items
     return items.at(index.row())->flags();
 }
@@ -300,8 +300,8 @@ void QListModel::sort(int column, Qt::SortOrder order)
 
     emit layoutAboutToBeChanged({}, QAbstractItemModel::VerticalSortHint);
 
-    QList<QPair<QListWidgetItem *, int>> sorting(items.count());
-    for (int i = 0; i < items.count(); ++i) {
+    QList<QPair<QListWidgetItem *, int>> sorting(items.size());
+    for (int i = 0; i < items.size(); ++i) {
         QListWidgetItem *item = items.at(i);
         sorting[i].first = item;
         sorting[i].second = i;
@@ -311,7 +311,7 @@ void QListModel::sort(int column, Qt::SortOrder order)
     std::sort(sorting.begin(), sorting.end(), compare);
     QModelIndexList fromIndexes;
     QModelIndexList toIndexes;
-    const int sortingCount = sorting.count();
+    const int sortingCount = sorting.size();
     fromIndexes.reserve(sortingCount);
     toIndexes.reserve(sortingCount);
     for (int r = 0; r < sortingCount; ++r) {
@@ -376,7 +376,7 @@ void QListModel::ensureSorted(int column, Qt::SortOrder order, int start, int en
                 else if (oldRow > otherRow && newRow <= otherRow)
                     ++sorting[j].second;
             }
-            for (int k = 0; k < newPersistentIndexes.count(); ++k) {
+            for (int k = 0; k < newPersistentIndexes.size(); ++k) {
                 QModelIndex pi = newPersistentIndexes.at(k);
                 int oldPersistentRow = pi.row();
                 int newPersistentRow = oldPersistentRow;
@@ -444,7 +444,7 @@ QMimeData *QListModel::internalMimeData()  const
 QMimeData *QListModel::mimeData(const QModelIndexList &indexes) const
 {
     QList<QListWidgetItem*> itemlist;
-    const int indexesCount = indexes.count();
+    const int indexesCount = indexes.size();
     itemlist.reserve(indexesCount);
     for (int i = 0; i < indexesCount; ++i)
         itemlist << at(indexes.at(i).row());
@@ -465,7 +465,7 @@ bool QListModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
     if (index.isValid())
         row = index.row();
     else if (row == -1)
-        row = items.count();
+        row = items.size();
 
     return view->dropMimeData(row, data, action);
 }
@@ -702,7 +702,7 @@ void QListWidgetItem::setData(int role, const QVariant &value)
 {
     bool found = false;
     role = (role == Qt::EditRole ? Qt::DisplayRole : role);
-    for (int i = 0; i < d->values.count(); ++i) {
+    for (int i = 0; i < d->values.size(); ++i) {
         if (d->values.at(i).role == role) {
             if (d->values.at(i).value == value)
                 return;
@@ -730,7 +730,7 @@ void QListWidgetItem::setData(int role, const QVariant &value)
 QVariant QListWidgetItem::data(int role) const
 {
     role = (role == Qt::EditRole ? Qt::DisplayRole : role);
-    for (int i = 0; i < d->values.count(); ++i)
+    for (int i = 0; i < d->values.size(); ++i)
         if (d->values.at(i).role == role)
             return d->values.at(i).value;
     return QVariant();
@@ -1760,7 +1760,7 @@ QList<QListWidgetItem*> QListWidget::selectedItems() const
     Q_D(const QListWidget);
     QModelIndexList indexes = selectionModel()->selectedIndexes();
     QList<QListWidgetItem*> items;
-    const int numIndexes = indexes.count();
+    const int numIndexes = indexes.size();
     items.reserve(numIndexes);
     for (int i = 0; i < numIndexes; ++i)
         items.append(d->listModel()->at(indexes.at(i).row()));
@@ -1837,7 +1837,7 @@ QMimeData *QListWidget::mimeData(const QList<QListWidgetItem *> &items) const
 
     // if non empty, it's called from the model's own mimeData
     if (cachedIndexes.isEmpty()) {
-        cachedIndexes.reserve(items.count());
+        cachedIndexes.reserve(items.size());
         for (QListWidgetItem *item : items)
             cachedIndexes << indexFromItem(item);
 

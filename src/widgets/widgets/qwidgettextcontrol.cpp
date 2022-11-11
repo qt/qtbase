@@ -1403,7 +1403,7 @@ QRectF QWidgetTextControlPrivate::rectForPosition(int position) const
         if (relativePos == preeditPos)
             relativePos += preeditCursor;
         else if (relativePos > preeditPos)
-            relativePos += layout->preeditAreaText().length();
+            relativePos += layout->preeditAreaText().size();
     }
     QTextLine line = layout->lineForTextPosition(relativePos);
 
@@ -1900,7 +1900,7 @@ bool QWidgetTextControlPrivate::sendMouseEventToInputContext(
         QTextLayout *layout = cursor.block().layout();
         int cursorPos = q->hitTest(pos, Qt::FuzzyHit) - cursor.position();
 
-        if (cursorPos < 0 || cursorPos > layout->preeditAreaText().length())
+        if (cursorPos < 0 || cursorPos > layout->preeditAreaText().size())
             cursorPos = -1;
 
         if (cursorPos >= 0) {
@@ -2060,7 +2060,7 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     QList<QTextLayout::FormatRange> overrides;
     overrides.reserve(e->attributes().size());
     const int oldPreeditCursor = preeditCursor;
-    preeditCursor = e->preeditString().length();
+    preeditCursor = e->preeditString().size();
     hideCursor = false;
     for (int i = 0; i < e->attributes().size(); ++i) {
         const QInputMethodEvent::Attribute &a = e->attributes().at(i);
@@ -2095,7 +2095,7 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
 
     if (cursor.charFormat().isValid()) {
         int start = cursor.position() - block.position();
-        int end = start + e->preeditString().length();
+        int end = start + e->preeditString().size();
 
         QList<QTextLayout::FormatRange>::iterator it = overrides.begin();
         while (it != overrides.end()) {
@@ -2168,7 +2168,7 @@ QVariant QWidgetTextControl::inputMethodQuery(Qt::InputMethodQuery property, QVa
         QTextCursor tmpCursor = d->cursor;
         int localPos = d->cursor.position() - block.position();
         QString result = block.text().mid(localPos);
-        while (result.length() < maxLength) {
+        while (result.size() < maxLength) {
             int currentBlock = tmpCursor.blockNumber();
             tmpCursor.movePosition(QTextCursor::NextBlock);
             if (tmpCursor.blockNumber() == currentBlock)
@@ -2475,12 +2475,12 @@ void QWidgetTextControl::setExtraSelections(const QList<QTextEdit::ExtraSelectio
     Q_D(QWidgetTextControl);
 
     QMultiHash<int, int> hash;
-    for (int i = 0; i < d->extraSelections.count(); ++i) {
+    for (int i = 0; i < d->extraSelections.size(); ++i) {
         const QAbstractTextDocumentLayout::Selection &esel = d->extraSelections.at(i);
         hash.insert(esel.cursor.anchor(), i);
     }
 
-    for (int i = 0; i < selections.count(); ++i) {
+    for (int i = 0; i < selections.size(); ++i) {
         const QTextEdit::ExtraSelection &sel = selections.at(i);
         const auto it = hash.constFind(sel.cursor.anchor());
         if (it != hash.cend()) {
@@ -2509,8 +2509,8 @@ void QWidgetTextControl::setExtraSelections(const QList<QTextEdit::ExtraSelectio
         emit updateRequest(r);
     }
 
-    d->extraSelections.resize(selections.count());
-    for (int i = 0; i < selections.count(); ++i) {
+    d->extraSelections.resize(selections.size());
+    for (int i = 0; i < selections.size(); ++i) {
         d->extraSelections[i].cursor = selections.at(i).cursor;
         d->extraSelections[i].format = selections.at(i).format;
     }
@@ -2520,7 +2520,7 @@ QList<QTextEdit::ExtraSelection> QWidgetTextControl::extraSelections() const
 {
     Q_D(const QWidgetTextControl);
     QList<QTextEdit::ExtraSelection> selections;
-    const int numExtraSelections = d->extraSelections.count();
+    const int numExtraSelections = d->extraSelections.size();
     selections.reserve(numExtraSelections);
     for (int i = 0; i < numExtraSelections; ++i) {
         QTextEdit::ExtraSelection sel;

@@ -244,7 +244,7 @@ void tst_QProcess::simpleStart()
 
     process.reset();
 
-    QCOMPARE(spy.count(), 3);
+    QCOMPARE(spy.size(), 3);
     QCOMPARE(qvariant_cast<QProcess::ProcessState>(spy.at(0).at(0)), QProcess::Starting);
     QCOMPARE(qvariant_cast<QProcess::ProcessState>(spy.at(1).at(0)), QProcess::Running);
     QCOMPARE(qvariant_cast<QProcess::ProcessState>(spy.at(2).at(0)), QProcess::NotRunning);
@@ -381,10 +381,10 @@ void tst_QProcess::crashTest()
 
     QVERIFY(process->waitForFinished(30000));
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const QProcess::ProcessError *>(spy.at(0).at(0).constData()), QProcess::Crashed);
 
-    QCOMPARE(spy2.count(), 1);
+    QCOMPARE(spy2.size(), 1);
     QCOMPARE(*static_cast<const QProcess::ExitStatus *>(spy2.at(0).at(1).constData()), QProcess::CrashExit);
 
     QCOMPARE(process->exitStatus(), QProcess::CrashExit);
@@ -392,7 +392,7 @@ void tst_QProcess::crashTest()
     // delete process;
     process.reset();
 
-    QCOMPARE(stateSpy.count(), 3);
+    QCOMPARE(stateSpy.size(), 3);
     QCOMPARE(qvariant_cast<QProcess::ProcessState>(stateSpy.at(0).at(0)), QProcess::Starting);
     QCOMPARE(qvariant_cast<QProcess::ProcessState>(stateSpy.at(1).at(0)), QProcess::Running);
     QCOMPARE(qvariant_cast<QProcess::ProcessState>(stateSpy.at(2).at(0)), QProcess::NotRunning);
@@ -419,10 +419,10 @@ void tst_QProcess::crashTest2()
     if (QTestEventLoop::instance().timeout())
         QFAIL("Failed to detect crash : operation timed out");
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const QProcess::ProcessError *>(spy.at(0).at(0).constData()), QProcess::Crashed);
 
-    QCOMPARE(spy2.count(), 1);
+    QCOMPARE(spy2.size(), 1);
     QCOMPARE(*static_cast<const QProcess::ExitStatus *>(spy2.at(0).at(1).constData()), QProcess::CrashExit);
 
     QCOMPARE(process.exitStatus(), QProcess::CrashExit);
@@ -528,9 +528,9 @@ void tst_QProcess::echoTest2()
             break;
     }
 
-    QVERIFY(spy0.count() > 0);
-    QVERIFY(spy1.count() > 0);
-    QVERIFY(spy2.count() > 0);
+    QVERIFY(spy0.size() > 0);
+    QVERIFY(spy1.size() > 0);
+    QVERIFY(spy2.size() > 0);
 
     QCOMPARE(process.readAllStandardOutput(), QByteArray("Hello"));
     QCOMPARE(process.readAllStandardError(), QByteArray("Hello"));
@@ -631,8 +631,8 @@ void tst_QProcess::exitStatus()
     QFETCH(QStringList, processList);
     QFETCH(QList<QProcess::ExitStatus>, exitStatus);
 
-    QCOMPARE(exitStatus.count(), processList.count());
-    for (int i = 0; i < processList.count(); ++i) {
+    QCOMPARE(exitStatus.size(), processList.size());
+    for (int i = 0; i < processList.size(); ++i) {
         process.start(processList.at(i));
         QVERIFY(process.waitForStarted(5000));
         QVERIFY(process.waitForFinished(30000));
@@ -685,7 +685,7 @@ void tst_QProcess::readTimeoutAndThenCrash()
     QVERIFY(process.waitForFinished(5000));
     QCOMPARE(process.state(), QProcess::NotRunning);
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QCOMPARE(*static_cast<const QProcess::ProcessError *>(spy.at(0).at(0).constData()), QProcess::Crashed);
 }
 
@@ -862,7 +862,7 @@ void tst_QProcess::emitReadyReadOnlyWhenNewDataArrives()
 
     proc.start("testProcessEcho/testProcessEcho");
 
-    QCOMPARE(spy.count(), 0);
+    QCOMPARE(spy.size(), 0);
 
     proc.write("A");
 
@@ -870,7 +870,7 @@ void tst_QProcess::emitReadyReadOnlyWhenNewDataArrives()
     if (QTestEventLoop::instance().timeout())
         QFAIL("Operation timed out");
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     QTestEventLoop::instance().enterLoop(1);
     QVERIFY(QTestEventLoop::instance().timeout());
@@ -1282,7 +1282,7 @@ void tst_QProcess::waitForReadyReadInAReadyReadSlot()
     QTestEventLoop::instance().enterLoop(30);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     process.disconnect();
     QVERIFY(process.waitForFinished(5000));
@@ -1318,7 +1318,7 @@ void tst_QProcess::waitForBytesWrittenInABytesWrittenSlot()
     QTestEventLoop::instance().enterLoop(30);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     process.write("", 1);
     process.disconnect();
     QVERIFY(process.waitForFinished());
@@ -1508,7 +1508,7 @@ void tst_QProcess::failToStart()
 
     for (int j = 0; j < 8; ++j) {
         for (int i = 0; i < attempts; ++i) {
-            QCOMPARE(errorSpy.count(), j * attempts + i);
+            QCOMPARE(errorSpy.size(), j * attempts + i);
             process.start("/blurp");
 
             switch (j) {
@@ -1532,12 +1532,12 @@ void tst_QProcess::failToStart()
             }
 
             QCOMPARE(process.error(), QProcess::FailedToStart);
-            QCOMPARE(errorSpy.count(), j * attempts + i + 1);
-            QCOMPARE(finishedSpy.count(), 0);
+            QCOMPARE(errorSpy.size(), j * attempts + i + 1);
+            QCOMPARE(finishedSpy.size(), 0);
 
             int it = j * attempts + i + 1;
 
-            QCOMPARE(stateSpy.count(), it * 2);
+            QCOMPARE(stateSpy.size(), it * 2);
             QCOMPARE(qvariant_cast<QProcess::ProcessState>(stateSpy.at(it * 2 - 2).at(0)), QProcess::Starting);
             QCOMPARE(qvariant_cast<QProcess::ProcessState>(stateSpy.at(it * 2 - 1).at(0)), QProcess::NotRunning);
         }
@@ -1561,8 +1561,8 @@ void tst_QProcess::failToStartWithWait()
         process.waitForStarted();
 
         QCOMPARE(process.error(), QProcess::FailedToStart);
-        QCOMPARE(errorSpy.count(), i + 1);
-        QCOMPARE(finishedSpy.count(), 0);
+        QCOMPARE(errorSpy.size(), i + 1);
+        QCOMPARE(finishedSpy.size(), 0);
     }
 }
 
@@ -1588,8 +1588,8 @@ void tst_QProcess::failToStartWithEventLoop()
         loop.exec();
 
         QCOMPARE(process.error(), QProcess::FailedToStart);
-        QCOMPARE(errorSpy.count(), i + 1);
-        QCOMPARE(finishedSpy.count(), 0);
+        QCOMPARE(errorSpy.size(), i + 1);
+        QCOMPARE(finishedSpy.size(), 0);
     }
 }
 
@@ -1621,7 +1621,7 @@ void tst_QProcess::failToStartEmptyArgs()
     };
 
     QVERIFY(!process.waitForStarted());
-    QCOMPARE(errorSpy.count(), 1);
+    QCOMPARE(errorSpy.size(), 1);
     QCOMPARE(process.error(), QProcess::FailedToStart);
 }
 
@@ -1860,9 +1860,9 @@ void tst_QProcess::waitForReadyReadForNonexistantProcess()
     QVERIFY(!process.waitForReadyRead()); // used to crash
     process.start("doesntexist");
     QVERIFY(!process.waitForReadyRead());
-    QCOMPARE(errorSpy.count(), 1);
+    QCOMPARE(errorSpy.size(), 1);
     QCOMPARE(errorSpy.at(0).at(0).toInt(), 0);
-    QCOMPARE(finishedSpy.count(), 0);
+    QCOMPARE(finishedSpy.size(), 0);
 }
 
 void tst_QProcess::setStandardInputFile()
@@ -2317,7 +2317,7 @@ void tst_QProcess::invalidProgramString()
 
     process.start(programString);
     QCOMPARE(process.error(), QProcess::FailedToStart);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     QVERIFY(!QProcess::startDetached(programString));
 }
@@ -2336,8 +2336,8 @@ void tst_QProcess::onlyOneStartedSignal()
     process.start("testProcessNormal/testProcessNormal");
     QVERIFY(process.waitForStarted(5000));
     QVERIFY(process.waitForFinished(5000));
-    QCOMPARE(spyStarted.count(), 1);
-    QCOMPARE(spyFinished.count(), 1);
+    QCOMPARE(spyStarted.size(), 1);
+    QCOMPARE(spyFinished.size(), 1);
 
     spyStarted.clear();
     spyFinished.clear();
@@ -2346,8 +2346,8 @@ void tst_QProcess::onlyOneStartedSignal()
     QVERIFY(process.waitForFinished(5000));
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
-    QCOMPARE(spyStarted.count(), 1);
-    QCOMPARE(spyFinished.count(), 1);
+    QCOMPARE(spyStarted.size(), 1);
+    QCOMPARE(spyFinished.size(), 1);
 }
 
 class BlockOnReadStdOut : public QObject
@@ -2597,7 +2597,7 @@ void tst_QProcess::startFromCurrentWorkingDir()
     }
 
     QCOMPARE(process.waitForStarted(), success);
-    QCOMPARE(errorSpy.count(), int(!success));
+    QCOMPARE(errorSpy.size(), int(!success));
     if (success) {
         QVERIFY(process.waitForFinished());
     } else {

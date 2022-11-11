@@ -84,7 +84,7 @@ void tst_QTimer::zeroTimer()
     // Pass timeout to work round glib issue, see QTBUG-84291.
     QCoreApplication::processEvents(QEventLoop::AllEvents, INT_MAX);
 
-    QCOMPARE(timeoutSpy.count(), 1);
+    QCOMPARE(timeoutSpy.size(), 1);
 }
 
 void tst_QTimer::singleShotTimeout()
@@ -98,9 +98,9 @@ void tst_QTimer::singleShotTimeout()
     timer.start(100);
 
     QVERIFY(timeoutSpy.wait(500));
-    QCOMPARE(timeoutSpy.count(), 1);
+    QCOMPARE(timeoutSpy.size(), 1);
     QTest::qWait(500);
-    QCOMPARE(timeoutSpy.count(), 1);
+    QCOMPARE(timeoutSpy.size(), 1);
 }
 
 #define TIMEOUT_TIMEOUT 200
@@ -111,12 +111,12 @@ void tst_QTimer::timeout()
     QSignalSpy timeoutSpy(&timer, &QTimer::timeout);
     timer.start(100);
 
-    QCOMPARE(timeoutSpy.count(), 0);
+    QCOMPARE(timeoutSpy.size(), 0);
 
-    QTRY_VERIFY_WITH_TIMEOUT(timeoutSpy.count() > 0, TIMEOUT_TIMEOUT);
-    int oldCount = timeoutSpy.count();
+    QTRY_VERIFY_WITH_TIMEOUT(timeoutSpy.size() > 0, TIMEOUT_TIMEOUT);
+    int oldCount = timeoutSpy.size();
 
-    QTRY_VERIFY_WITH_TIMEOUT(timeoutSpy.count() > oldCount, TIMEOUT_TIMEOUT);
+    QTRY_VERIFY_WITH_TIMEOUT(timeoutSpy.size() > oldCount, TIMEOUT_TIMEOUT);
 }
 
 void tst_QTimer::remainingTime()
@@ -259,24 +259,24 @@ void tst_QTimer::basic_chrono()
 
     QCoreApplication::processEvents();
 
-    QCOMPARE(timeoutSpy.count(), 1);
+    QCOMPARE(timeoutSpy.size(), 1);
 
     timeoutSpy.clear();
     timer.start(milliseconds(100));
-    QCOMPARE(timeoutSpy.count(), 0);
+    QCOMPARE(timeoutSpy.size(), 0);
 
     QVERIFY(timeoutSpy.wait(TIMEOUT_TIMEOUT));
-    QVERIFY(timeoutSpy.count() > 0);
-    int oldCount = timeoutSpy.count();
+    QVERIFY(timeoutSpy.size() > 0);
+    int oldCount = timeoutSpy.size();
 
     QVERIFY(timeoutSpy.wait(TIMEOUT_TIMEOUT));
-    QVERIFY(timeoutSpy.count() > oldCount);
+    QVERIFY(timeoutSpy.size() > oldCount);
 
     timeoutSpy.clear();
     timer.start(to_ms(microseconds(200000)));
     QCOMPARE(timer.intervalAsDuration().count(), milliseconds::rep(200));
     QTest::qWait(50);
-    QCOMPARE(timeoutSpy.count(), 0);
+    QCOMPARE(timeoutSpy.size(), 0);
 
     milliseconds rt = timer.remainingTimeAsDuration();
     QVERIFY2(rt.count() >= 50 && rt.count() <= 200, qPrintable(QString::number(rt.count())));
@@ -285,9 +285,9 @@ void tst_QTimer::basic_chrono()
     timer.setSingleShot(true);
     timer.start(milliseconds(100));
     QVERIFY(timeoutSpy.wait(TIMEOUT_TIMEOUT));
-    QCOMPARE(timeoutSpy.count(), 1);
+    QCOMPARE(timeoutSpy.size(), 1);
     QTest::qWait(500);
-    QCOMPARE(timeoutSpy.count(), 1);
+    QCOMPARE(timeoutSpy.size(), 1);
 }
 
 void tst_QTimer::livelock_data()
@@ -1001,7 +1001,7 @@ void tst_QTimer::postedEventsShouldNotStarveTimers()
     timer.start();
     SlotRepeater slotRepeater;
     slotRepeater.repeatThisSlot();
-    QTRY_VERIFY_WITH_TIMEOUT(timeoutSpy.count() > 5, 100);
+    QTRY_VERIFY_WITH_TIMEOUT(timeoutSpy.size() > 5, 100);
 }
 
 struct DummyFunctor {
@@ -1044,7 +1044,7 @@ void tst_QTimer::callOnTimeout()
 
     QTest::qWait(100);
     QCOMPARE(count, 2);
-    QCOMPARE(timeoutSpy.count(), 1);
+    QCOMPARE(timeoutSpy.size(), 1);
 
     // Test that connection is bound to context lifetime
     QVERIFY(connection);

@@ -126,7 +126,7 @@ void tst_QAbstractTextDocumentLayout::anchorAt()
     QAbstractTextDocumentLayout *documentLayout = doc.documentLayout();
     QTextBlock firstBlock = doc.begin();
     QTextLayout *layout = firstBlock.layout();
-    layout->setPreeditArea(doc.toPlainText().length(), "xxx");
+    layout->setPreeditArea(doc.toPlainText().size(), "xxx");
 
     doc.setPageSize(QSizeF(1000, 1000));
     QFontMetrics metrics(layout->font());
@@ -156,7 +156,7 @@ void tst_QAbstractTextDocumentLayout::imageAt()
     QAbstractTextDocumentLayout *documentLayout = doc.documentLayout();
     QTextBlock firstBlock = doc.begin();
     QTextLayout *layout = firstBlock.layout();
-    layout->setPreeditArea(doc.toPlainText().length(), "xxx");
+    layout->setPreeditArea(doc.toPlainText().size(), "xxx");
 
     doc.setPageSize(QSizeF(1000, 1000));
     QFontMetrics metrics(layout->font());
@@ -181,7 +181,7 @@ void tst_QAbstractTextDocumentLayout::formatAt()
     QAbstractTextDocumentLayout *documentLayout = doc.documentLayout();
     QTextBlock firstBlock = doc.begin();
     QTextLayout *layout = firstBlock.layout();
-    layout->setPreeditArea(doc.toPlainText().length(), "xxx");
+    layout->setPreeditArea(doc.toPlainText().size(), "xxx");
 
     doc.setPageSize(QSizeF(1000, 1000));
     QFontMetrics metrics(layout->font());

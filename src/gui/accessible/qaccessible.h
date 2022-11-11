@@ -409,13 +409,13 @@ class Q_GUI_EXPORT QAccessibleTextInsertEvent : public QAccessibleTextCursorEven
 {
 public:
     inline QAccessibleTextInsertEvent(QObject *obj, int position, const QString &text)
-        : QAccessibleTextCursorEvent(obj, position + int(text.length()))
+        : QAccessibleTextCursorEvent(obj, position + int(text.size()))
         , m_position(position), m_text(text)
     {
         m_type = QAccessible::TextInserted;
     }
     inline QAccessibleTextInsertEvent(QAccessibleInterface *iface, int position, const QString &text)
-        : QAccessibleTextCursorEvent(iface, position + int(text.length()))
+        : QAccessibleTextCursorEvent(iface, position + int(text.size()))
         , m_position(position), m_text(text)
     {
         m_type = QAccessible::TextInserted;
@@ -469,13 +469,13 @@ class Q_GUI_EXPORT QAccessibleTextUpdateEvent : public QAccessibleTextCursorEven
 {
 public:
     inline QAccessibleTextUpdateEvent(QObject *obj, int position, const QString &oldText, const QString &text)
-        : QAccessibleTextCursorEvent(obj, position + int(text.length()))
+        : QAccessibleTextCursorEvent(obj, position + int(text.size()))
         , m_position(position), m_oldText(oldText), m_text(text)
     {
         m_type = QAccessible::TextUpdated;
     }
     inline QAccessibleTextUpdateEvent(QAccessibleInterface *iface, int position, const QString &oldText, const QString &text)
-        : QAccessibleTextCursorEvent(iface, position + int(text.length()))
+        : QAccessibleTextCursorEvent(iface, position + int(text.size()))
         , m_position(position), m_oldText(oldText), m_text(text)
     {
         m_type = QAccessible::TextUpdated;

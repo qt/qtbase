@@ -125,7 +125,7 @@ void tst_qinputmethod::animating()
 
     QSignalSpy spy(qApp->inputMethod(), SIGNAL(animatingChanged()));
     m_platformInputContext.emitAnimatingChanged();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 void tst_qinputmethod::keyboarRectangle()
@@ -137,7 +137,7 @@ void tst_qinputmethod::keyboarRectangle()
 
     QSignalSpy spy(qApp->inputMethod(), SIGNAL(keyboardRectangleChanged()));
     m_platformInputContext.emitKeyboardRectChanged();
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 }
 
 void tst_qinputmethod::inputItemTransform()
@@ -152,7 +152,7 @@ void tst_qinputmethod::inputItemTransform()
     qApp->inputMethod()->setInputItemTransform(transform);
 
     QCOMPARE(qApp->inputMethod()->inputItemTransform(), transform);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
 
     // reset
     qApp->inputMethod()->setInputItemTransform(QTransform());

@@ -616,7 +616,7 @@ QList<QSslError> X509CertificateOpenSSL::verify(const QList<QSslCertificate> &ca
                                                 const QString &hostName)
 {
     // This was previously QSslSocketPrivate::verify().
-    if (certificateChain.count() <= 0)
+    if (certificateChain.size() <= 0)
         return {QSslError(QSslError::UnspecifiedError)};
 
     QList<QSslError> errors;
@@ -658,7 +658,7 @@ QList<QSslError> X509CertificateOpenSSL::verify(const QList<QSslCertificate> &ca
 
     // Build the chain of intermediate certificates
     STACK_OF(X509) *intermediates = nullptr;
-    if (certificateChain.length() > 1) {
+    if (certificateChain.size() > 1) {
         intermediates = (STACK_OF(X509) *) q_OPENSSL_sk_new_null();
 
         if (!intermediates) {

@@ -84,7 +84,7 @@ void tst_QGlobal::for_each()
     foreach(int i, list) {
         QCOMPARE(i, counter++);
     }
-    QCOMPARE(counter, list.count());
+    QCOMPARE(counter, list.size());
 
     // do it again, to make sure we don't have any for-scoping
     // problems with older compilers
@@ -92,21 +92,21 @@ void tst_QGlobal::for_each()
     foreach(int i, list) {
         QCOMPARE(i, counter++);
     }
-    QCOMPARE(counter, list.count());
+    QCOMPARE(counter, list.size());
 
     // check whether we can pass a constructor as container argument
     counter = 0;
     foreach (int i, QList<int>(list)) {
         QCOMPARE(i, counter++);
     }
-    QCOMPARE(counter, list.count());
+    QCOMPARE(counter, list.size());
 
     // check whether we can use a lambda
     counter = 0;
     foreach (int i, [&](){ return list; }()) {
         QCOMPARE(i, counter++);
     }
-    QCOMPARE(counter, list.count());
+    QCOMPARE(counter, list.size());
 
     // Should also work with an existing variable
     int local = 0;
@@ -114,7 +114,7 @@ void tst_QGlobal::for_each()
     foreach (local, list) {
         QCOMPARE(local, counter++);
     }
-    QCOMPARE(counter, list.count());
+    QCOMPARE(counter, list.size());
     QCOMPARE(local, counter - 1);
 
     // Test the macro does not mess if/else conditions
@@ -124,7 +124,7 @@ void tst_QGlobal::for_each()
             QCOMPARE(i, counter++);
     else
         QFAIL("If/Else mismatch");
-    QCOMPARE(counter, list.count());
+    QCOMPARE(counter, list.size());
 
     counter = 0;
     if (false)
@@ -135,7 +135,7 @@ void tst_QGlobal::for_each()
         foreach (int i, list)
             if (false) { }
             else QCOMPARE(i, counter++);
-    QCOMPARE(counter, list.count());
+    QCOMPARE(counter, list.size());
 
     // break and continue
     counter = 0;

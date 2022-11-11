@@ -106,7 +106,7 @@ public:
     inline QDebug &operator<<(double t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(const char* t) { stream->ts << QString::fromUtf8(t); return maybeSpace(); }
     inline QDebug &operator<<(const char16_t *t)  { stream->ts << QStringView(t); return maybeSpace(); }
-    inline QDebug &operator<<(const QString & t) { putString(t.constData(), size_t(t.length())); return maybeSpace(); }
+    inline QDebug &operator<<(const QString & t) { putString(t.constData(), size_t(t.size())); return maybeSpace(); }
     inline QDebug &operator<<(QStringView s) { putString(s.data(), size_t(s.size())); return maybeSpace(); }
     inline QDebug &operator<<(QUtf8StringView s) { putByteArray(reinterpret_cast<const char*>(s.data()), s.size(), ContainsBinary); return maybeSpace(); }
     inline QDebug &operator<<(QLatin1StringView t) { putByteArray(t.latin1(), t.size(), ContainsLatin1); return maybeSpace(); }

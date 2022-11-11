@@ -666,7 +666,7 @@ void tst_QHttpNetworkConnection::getMultiple_data()
 static bool allRepliesFinished(const QList<QHttpNetworkReply*> *_replies)
 {
     const QList<QHttpNetworkReply*> &replies = *_replies;
-    for (int i = 0; i < replies.length(); i++)
+    for (int i = 0; i < replies.size(); i++)
         if (!replies.at(i)->isFinished())
             return false;
     return true;
@@ -735,7 +735,7 @@ void tst_QHttpNetworkConnection::getMultipleWithPipeliningAndMultiplePriorities(
     QTRY_VERIFY_WITH_TIMEOUT(allRepliesFinished(&replies), 60000);
 
     int pipelinedCount = 0;
-    for (int i = 0; i < replies.length(); i++) {
+    for (int i = 0; i < replies.size(); i++) {
         QVERIFY (!(replies.at(i)->request().isPipeliningAllowed() == false
             && replies.at(i)->isPipeliningUsed()));
 

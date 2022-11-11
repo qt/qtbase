@@ -803,8 +803,8 @@ void tst_QFileDialog2::task235069_hideOnEscape()
     child->setFocus();
     QTest::keyClick(child, Qt::Key_Escape);
     QCOMPARE(fd.isVisible(), false);
-    QCOMPARE(spyFinished.count(), 1); // QTBUG-7690
-    QCOMPARE(spyRejected.count(), 1); // reject(), don't hide()
+    QCOMPARE(spyFinished.size(), 1); // QTBUG-7690
+    QCOMPARE(spyRejected.size(), 1); // reject(), don't hide()
 }
 
 #ifdef QT_BUILD_INTERNAL
@@ -1026,10 +1026,10 @@ public :
     void removeSelection() {
         QList<QModelIndex> idxs = selectionModel()->selectedIndexes();
         QList<QPersistentModelIndex> indexes;
-        for (int i = 0; i < idxs.count(); i++)
+        for (int i = 0; i < idxs.size(); i++)
             indexes.append(idxs.at(i));
 
-        for (int i = 0; i < indexes.count(); ++i)
+        for (int i = 0; i < indexes.size(); ++i)
             if (!indexes.at(i).data(Qt::UserRole + 1).toUrl().path().isEmpty())
                 model()->removeRow(indexes.at(i).row());
     }
@@ -1131,7 +1131,7 @@ void tst_QFileDialog2::task254490_selectFileMultipleTimes()
     QCOMPARE(lineEdit->text(),QLatin1String("new_file.txt"));
     QListView *list = fd.findChild<QListView*>("listView");
     QVERIFY(list);
-    QCOMPARE(list->selectionModel()->selectedRows(0).count(), 0);
+    QCOMPARE(list->selectionModel()->selectedRows(0).size(), 0);
 
     t->deleteLater();
 }
@@ -1147,7 +1147,7 @@ void tst_QFileDialog2::task257579_sideBarWithNonCleanUrls()
     QFileDialog fd;
     fd.setSidebarUrls(QList<QUrl>() << QUrl::fromLocalFile(url));
     QSidebar *sidebar = fd.findChild<QSidebar*>("sidebar");
-    QCOMPARE(sidebar->urls().count(), 1);
+    QCOMPARE(sidebar->urls().size(), 1);
     QVERIFY(sidebar->urls().first().toLocalFile() != url);
     QCOMPARE(sidebar->urls().first().toLocalFile(), QDir::cleanPath(url));
 

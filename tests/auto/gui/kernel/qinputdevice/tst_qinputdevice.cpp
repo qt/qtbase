@@ -78,7 +78,7 @@ void tst_QInputDevice::multiSeatDevices()
     QWindowSystemInterface::registerInputDevice(new QPointingDevice("seat 2 mouse", 2010, QInputDevice::DeviceType::Mouse, QPointingDevice::PointerType::Generic,
                                                                     QInputDevice::Capability::Position | QInputDevice::Capability::Hover,
                                                                     1, 2, "seat 2", QPointingDeviceUniqueId(), this));
-    QVERIFY(QInputDevice::devices().count() >= 4);
+    QVERIFY(QInputDevice::devices().size() >= 4);
     QVERIFY(QInputDevicePrivate::fromId(1010));
     QVERIFY(QInputDevicePrivate::fromId(1010)->hasCapability(QInputDevice::Capability::Scroll));
     QVERIFY(QInputDevicePrivate::fromId(2010));

@@ -347,7 +347,7 @@ inline bool QFutureInterface<T>::reportResults(const QList<T> &_results, int beg
     if (store.filterMode()) {
         this->reportResultsReady(resultCountBefore, store.count());
     } else {
-        this->reportResultsReady(insertIndex, insertIndex + _results.count());
+        this->reportResultsReady(insertIndex, insertIndex + _results.size());
     }
     return true;
 }

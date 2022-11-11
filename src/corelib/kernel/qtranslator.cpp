@@ -449,7 +449,7 @@ bool QTranslator::load(const QString & filename, const QString & directory,
     QString prefix;
     if (QFileInfo(filename).isRelative()) {
         prefix = directory;
-        if (prefix.length() && !prefix.endsWith(u'/'))
+        if (prefix.size() && !prefix.endsWith(u'/'))
             prefix += u'/';
     }
 
@@ -472,7 +472,7 @@ bool QTranslator::load(const QString & filename, const QString & directory,
             break;
 
         int rightmost = 0;
-        for (int i = 0; i < (int)delims.length(); i++) {
+        for (int i = 0; i < (int)delims.size(); i++) {
             int k = fname.lastIndexOf(delims[i]);
             if (k > rightmost)
                 rightmost = k;
@@ -914,7 +914,7 @@ end:
     if (!tn)
         return QString();
     QString str(tn_length / 2, Qt::Uninitialized);
-    qFromBigEndian<ushort>(tn, str.length(), str.data());
+    qFromBigEndian<ushort>(tn, str.size(), str.data());
     return str;
 }
 

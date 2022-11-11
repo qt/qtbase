@@ -2661,7 +2661,7 @@ bool QSslSocketPrivate::verifyErrorsHaveBeenIgnored()
         // was called)
         const auto &sslErrors = backend->tlsErrors();
         doEmitSslError = false;
-        for (int a = 0; a < sslErrors.count(); a++) {
+        for (int a = 0; a < sslErrors.size(); a++) {
             if (!ignoreErrorsList.contains(sslErrors.at(a))) {
                 doEmitSslError = true;
                 break;
@@ -2799,11 +2799,11 @@ QByteArray QSslSocketPrivate::peek(qint64 maxSize)
         QByteArray ret;
         ret.reserve(maxSize);
         ret.resize(buffer.peek(ret.data(), maxSize, transactionPos));
-        if (ret.length() == maxSize)
+        if (ret.size() == maxSize)
             return ret;
         //peek at data in the plain socket
         if (plainSocket)
-            return ret + plainSocket->peek(maxSize - ret.length());
+            return ret + plainSocket->peek(maxSize - ret.size());
 
         return QByteArray();
     } else {
@@ -3031,7 +3031,7 @@ bool QSslSocketPrivate::isMatchingHostname(const QString &cn, const QString &hos
     qsizetype secondCnDot = cn.indexOf(u'.', firstCnDot+1);
 
     // Check at least 3 components
-    if ((-1 == secondCnDot) || (secondCnDot+1 >= cn.length()))
+    if ((-1 == secondCnDot) || (secondCnDot+1 >= cn.size()))
         return false;
 
     // Check * is last character of 1st component (ie. there's a following .)

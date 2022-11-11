@@ -723,7 +723,7 @@ void tst_QGraphicsLinearLayout::orientation()
     // important to resize to preferredsize when orientation is switched
     widget->resize(widget->effectiveSizeHint(Qt::PreferredSize));
     qApp->processEvents();
-    for (i = 0; i < positions.count(); ++i) {
+    for (i = 0; i < positions.size(); ++i) {
         QGraphicsWidget *item = static_cast<QGraphicsWidget*>(layout.itemAt(i));
         if (initialOrientation == Qt::Horizontal)
             QCOMPARE(item->pos().y(), positions.at(i));
@@ -1121,7 +1121,7 @@ void tst_QGraphicsLinearLayout::setStretchFactor()
 
 
     int i;
-    for (i = 0; i < stretches.count(); ++i) {
+    for (i = 0; i < stretches.size(); ++i) {
         QGraphicsWidget *item = new RectWidget(widget);
         item->setMinimumSize(5,5);
         item->setPreferredSize(10,5);
@@ -1139,7 +1139,7 @@ void tst_QGraphicsLinearLayout::setStretchFactor()
     qreal firstStretch = -1;
     qreal firstExtent = -1.;
     qreal sumExtent = 0;
-    for (i = 0; i < stretches.count(); ++i) {
+    for (i = 0; i < stretches.size(); ++i) {
         QGraphicsWidget *item = static_cast<QGraphicsWidget*>(layout.itemAt(i));
         qreal extent = item->size().width();
         qreal stretch = (qreal)stretches.at(i);
@@ -1297,7 +1297,7 @@ void tst_QGraphicsLinearLayout::defaultStretchFactors()
         QSizeF itemSize = layout->itemAt(i)->geometry().size();
         if (orientation == Qt::Vertical)
             itemSize.transpose();
-        if (i < expectedSizes.count())
+        if (i < expectedSizes.size())
             QCOMPARE(itemSize.width(), qreal(expectedSizes.at(i)));
     }
 

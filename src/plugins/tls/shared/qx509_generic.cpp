@@ -188,7 +188,7 @@ bool X509CertificateGeneric::parse(const QByteArray &data)
     if (!elem.read(certStream) || elem.type() != QAsn1Element::SequenceType)
         return false;
 
-    QByteArray issuerDer = data.mid(dataStream.device()->pos() - elem.value().length(), elem.value().length());
+    QByteArray issuerDer = data.mid(dataStream.device()->pos() - elem.value().size(), elem.value().size());
     issuerInfoEntries = elem.toInfo();
 
     // validity period
@@ -215,7 +215,7 @@ bool X509CertificateGeneric::parse(const QByteArray &data)
     if (!elem.read(certStream) || elem.type() != QAsn1Element::SequenceType)
         return false;
 
-    QByteArray subjectDer = data.mid(dataStream.device()->pos() - elem.value().length(), elem.value().length());
+    QByteArray subjectDer = data.mid(dataStream.device()->pos() - elem.value().size(), elem.value().size());
     subjectInfoEntries = elem.toInfo();
     subjectMatchesIssuer = issuerDer == subjectDer;
 
@@ -285,7 +285,7 @@ bool X509CertificateGeneric::parse(const QByteArray &data)
                                 case QAsn1Element::IpAddressType: {
                                     QHostAddress ipAddress;
                                     QByteArray ipAddrValue = nameElem.value();
-                                    switch (ipAddrValue.length()) {
+                                    switch (ipAddrValue.size()) {
                                     case 4: // IPv4
                                         ipAddress = QHostAddress(qFromBigEndian(*reinterpret_cast<quint32 *>(ipAddrValue.data())));
                                         break;

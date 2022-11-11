@@ -5181,7 +5181,7 @@ void tst_QPainter::drawPolyline()
         p.setPen(pen);
         QVERIFY(p.pen().isCosmetic());
         if (r) {
-            for (int i = 0; i < points.count()-1; i++) {
+            for (int i = 0; i < points.size()-1; i++) {
                 p.drawLine(points.at(i), points.at(i+1));
             }
         } else {

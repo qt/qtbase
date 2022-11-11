@@ -1459,7 +1459,7 @@ QRegion QTransform::map(const QRegion &r) const
                 if (!nr.isEmpty())
                     rects.append(nr);
             }
-            res.setRects(rects.constData(), rects.count());
+            res.setRects(rects.constData(), rects.size());
         }
         return res;
     }
@@ -1706,7 +1706,7 @@ QPolygon QTransform::mapToPolygon(const QRect &rect) const
 */
 bool QTransform::squareToQuad(const QPolygonF &quad, QTransform &trans)
 {
-    if (quad.count() != 4)
+    if (quad.size() != 4)
         return false;
 
     qreal dx0 = quad[0].x();

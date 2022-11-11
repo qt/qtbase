@@ -118,12 +118,12 @@ void tst_QSortFilterProxyModelRegularExpression::tst_regexCaseSensitivityNotific
     QSortFilterProxyModel proxy;
     QSignalSpy spy(&proxy, &QSortFilterProxyModel::filterCaseSensitivityChanged);
     proxy.setFilterCaseSensitivity(Qt::CaseInsensitive);
-    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.size(), 1);
     QRegularExpression re("regex");
     QVERIFY(!re.patternOptions().testFlag(QRegularExpression::CaseInsensitiveOption));
     proxy.setFilterRegularExpression(re);
     QCOMPARE(proxy.filterCaseSensitivity(), Qt::CaseSensitive);
-    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.size(), 2);
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModelRegularExpression)

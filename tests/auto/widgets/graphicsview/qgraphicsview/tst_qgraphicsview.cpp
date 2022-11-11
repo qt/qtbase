@@ -665,16 +665,16 @@ void tst_QGraphicsView::openGLViewport()
 
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QTRY_VERIFY(spy1.count() > 0);
-    QTRY_VERIFY(spy2.count() >= spy1.count());
+    QTRY_VERIFY(spy1.size() > 0);
+    QTRY_VERIFY(spy2.size() >= spy1.size());
     spy1.clear();
     spy2.clear();
 
     // Now test for resize (QTBUG-52419). This is special when the viewport is
     // a QOpenGLWidget since the underlying FBO must also be maintained.
     view.resize(300, 300);
-    QTRY_VERIFY(spy1.count() > 0);
-    QTRY_VERIFY(spy2.count() >= spy1.count());
+    QTRY_VERIFY(spy1.size() > 0);
+    QTRY_VERIFY(spy2.size() >= spy1.size());
     // There is no sane way to check if the framebuffer contents got updated
     // (grabFramebuffer is no good for the viewport case as that does not go
     // through paintGL). So skip the actual verification.
@@ -1044,7 +1044,7 @@ void tst_QGraphicsView::rotated_rubberBand()
     sendMousePress(view.viewport(), QPoint(midWidth - 2, 0), Qt::LeftButton);
     sendMouseMove(view.viewport(), QPoint(midWidth + 2, view.viewport()->height()),
                   Qt::LeftButton, Qt::LeftButton);
-    QCOMPARE(scene.selectedItems().count(), dim);
+    QCOMPARE(scene.selectedItems().size(), dim);
     foreach (const QGraphicsItem *item, scene.items()) {
         QCOMPARE(item->isSelected(), item->data(0).toBool());
     }

@@ -95,7 +95,7 @@ void tst_QGraphicsLayout::invalidate()
     QBENCHMARK {
         leaf->setMinimumSize(size);
         leaf->setMaximumSize(size);
-        while (setGeometryCalls->count() < depth) {
+        while (setGeometryCalls->size() < depth) {
             QApplication::sendPostedEvents();
         }
         // force a resize on each widget, this will ensure

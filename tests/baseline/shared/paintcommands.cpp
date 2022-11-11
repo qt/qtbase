@@ -907,7 +907,7 @@ void PaintCommands::command_import(QRegularExpressionMatch re)
 
     if (m_verboseMode) {
         printf(" -(lance) Command buffer now looks like:\n");
-        for (int i = 0; i < m_commands.count(); ++i)
+        for (int i = 0; i < m_commands.size(); ++i)
             printf(" ---> {%s}\n", qPrintable(m_commands.at(i)));
     }
     delete file;
@@ -925,7 +925,7 @@ void PaintCommands::command_begin_block(QRegularExpressionMatch re)
     m_commands[m_currentCommandIndex] = QLatin1String("# begin block (") + blockName + QLatin1Char(')');
     QStringList newBlock;
     int i = m_currentCommandIndex + 1;
-    for (; i < m_commands.count(); ++i) {
+    for (; i < m_commands.size(); ++i) {
         const QString &nextCmd = m_commands.at(i);
         if (nextCmd.startsWith("end_block")) {
             m_commands[i] = QLatin1String("# end block (") + blockName + QLatin1Char(')');
@@ -935,10 +935,10 @@ void PaintCommands::command_begin_block(QRegularExpressionMatch re)
     }
 
     if (m_verboseMode)
-        for (int j = 0; j < newBlock.count(); ++j)
+        for (int j = 0; j < newBlock.size(); ++j)
             printf("      %d: %s\n", j, qPrintable(newBlock.at(j)));
 
-    if (i >= m_commands.count())
+    if (i >= m_commands.size())
         printf(" - Warning! Block doesn't have an 'end_block' marker!\n");
 
     m_blockMap.insert(blockName, newBlock);

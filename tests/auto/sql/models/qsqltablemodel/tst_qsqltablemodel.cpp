@@ -148,7 +148,7 @@ tst_QSqlTableModel::~tst_QSqlTableModel()
 
 void tst_QSqlTableModel::dropTestTables()
 {
-    for (int i = 0; i < dbs.dbNames.count(); ++i) {
+    for (int i = 0; i < dbs.dbNames.size(); ++i) {
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         QSqlQuery q(db);
@@ -177,7 +177,7 @@ void tst_QSqlTableModel::dropTestTables()
 
 void tst_QSqlTableModel::createTestTables()
 {
-    for (int i = 0; i < dbs.dbNames.count(); ++i) {
+    for (int i = 0; i < dbs.dbNames.size(); ++i) {
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         QSqlQuery q(db);
@@ -207,7 +207,7 @@ void tst_QSqlTableModel::createTestTables()
 
 void tst_QSqlTableModel::repopulateTestTables()
 {
-    for (int i = 0; i < dbs.dbNames.count(); ++i) {
+    for (int i = 0; i < dbs.dbNames.size(); ++i) {
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlQuery q(db);
         const auto test = qTableName("test1", __FILE__, db);
@@ -602,8 +602,8 @@ void tst_QSqlTableModel::setRecord()
 
             // dataChanged() emitted by setData() for each *changed* column
             if ((QSqlTableModel::EditStrategy)submitpolicy == QSqlTableModel::OnManualSubmit) {
-                QCOMPARE(spy.count(), 2);
-                QCOMPARE(spy.at(0).count(), 2);
+                QCOMPARE(spy.size(), 2);
+                QCOMPARE(spy.at(0).size(), 2);
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(0)), model.index(i, 1));
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(1)), model.index(i, 1));
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(1).at(0)), model.index(i, 2));
@@ -614,10 +614,10 @@ void tst_QSqlTableModel::setRecord()
             else {
                 if ((QSqlTableModel::EditStrategy)submitpolicy != QSqlTableModel::OnManualSubmit)
                     // dataChanged() also emitted by selectRow()
-                    QCOMPARE(spy.count(), 3);
+                    QCOMPARE(spy.size(), 3);
                 else
-                    QCOMPARE(spy.count(), 2);
-                QCOMPARE(spy.at(0).count(), 2);
+                    QCOMPARE(spy.size(), 2);
+                QCOMPARE(spy.at(0).size(), 2);
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(0)), model.index(i, 1));
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(1)), model.index(i, 1));
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(1).at(0)), model.index(i, 2));
@@ -1092,7 +1092,7 @@ void tst_QSqlTableModel::removeRow()
     QSignalSpy headerDataChangedSpy(&model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)));
 
     QVERIFY(model.removeRow(1));
-    QCOMPARE(headerDataChangedSpy.count(), 1);
+    QCOMPARE(headerDataChangedSpy.size(), 1);
     QCOMPARE(*static_cast<const Qt::Orientation *>(headerDataChangedSpy.at(0).value(0).constData()), Qt::Vertical);
     QCOMPARE(headerDataChangedSpy.at(0).at(1).toInt(), 1);
     QCOMPARE(headerDataChangedSpy.at(0).at(2).toInt(), 1);
@@ -1112,7 +1112,7 @@ void tst_QSqlTableModel::removeRow()
 
     headerDataChangedSpy.clear();
     QVERIFY(model.removeRow(1));
-    QCOMPARE(headerDataChangedSpy.count(), 1);
+    QCOMPARE(headerDataChangedSpy.size(), 1);
     QCOMPARE(model.rowCount(), 3);
 
     QVERIFY_SQL(model, select());
@@ -1148,7 +1148,7 @@ void tst_QSqlTableModel::removeRows()
 
     QVERIFY_SQL(model, removeRows(0, 1));
     QVERIFY_SQL(model, removeRows(1, 1));
-    QCOMPARE(beforeDeleteSpy.count(), 2);
+    QCOMPARE(beforeDeleteSpy.size(), 2);
     QCOMPARE(beforeDeleteSpy.at(0).at(0).toInt(), 0);
     QCOMPARE(beforeDeleteSpy.at(1).at(0).toInt(), 1);
     // deleted rows shown as empty until select
@@ -1179,15 +1179,15 @@ void tst_QSqlTableModel::removeRows()
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
     QSignalSpy headerDataChangedSpy(&model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)));
     QVERIFY(model.removeRows(0, 2, QModelIndex()));
-    QCOMPARE(headerDataChangedSpy.count(), 2);
+    QCOMPARE(headerDataChangedSpy.size(), 2);
     QCOMPARE(headerDataChangedSpy.at(0).at(1).toInt(), 1);
     QCOMPARE(headerDataChangedSpy.at(0).at(2).toInt(), 1);
     QCOMPARE(headerDataChangedSpy.at(1).at(1).toInt(), 0);
     QCOMPARE(headerDataChangedSpy.at(1).at(2).toInt(), 0);
     QCOMPARE(model.rowCount(), 3);
-    QCOMPARE(beforeDeleteSpy.count(), 0);
+    QCOMPARE(beforeDeleteSpy.size(), 0);
     QVERIFY(model.submitAll());
-    QCOMPARE(beforeDeleteSpy.count(), 2);
+    QCOMPARE(beforeDeleteSpy.size(), 2);
     QCOMPARE(beforeDeleteSpy.at(0).at(0).toInt(), 0);
     QCOMPARE(beforeDeleteSpy.at(1).at(0).toInt(), 1);
     QCOMPARE(model.rowCount(), 1);
@@ -1784,8 +1784,8 @@ void tst_QSqlTableModel::setFilter()
     model.setFilter("id = 2");
 
     // check the signals
-    QCOMPARE(modelAboutToBeResetSpy.count(), 1);
-    QCOMPARE(modelResetSpy.count(), 1);
+    QCOMPARE(modelAboutToBeResetSpy.size(), 1);
+    QCOMPARE(modelResetSpy.size(), 1);
 
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 2);
@@ -1928,8 +1928,8 @@ void tst_QSqlTableModel::insertRecordsInLoop()
     model.submitAll(); // submitAll() calls select() which clears and repopulates the table
 
     // model emits reset signals
-    QCOMPARE(modelAboutToBeResetSpy.count(), 1);
-    QCOMPARE(modelResetSpy.count(), 1);
+    QCOMPARE(modelAboutToBeResetSpy.size(), 1);
+    QCOMPARE(modelResetSpy.size(), 1);
 
     QCOMPARE(model.rowCount(), 13);
     QCOMPARE(model.columnCount(), 3);

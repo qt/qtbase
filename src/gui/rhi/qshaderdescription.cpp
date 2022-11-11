@@ -829,7 +829,7 @@ static void serializeDecorations(QDataStream *stream, const QShaderDescription::
     (*stream) << v.descriptorSet;
     (*stream) << int(v.imageFormat);
     (*stream) << int(v.imageFlags);
-    (*stream) << int(v.arrayDims.count());
+    (*stream) << int(v.arrayDims.size());
     for (int dim : v.arrayDims)
         (*stream) << dim;
 }
@@ -884,13 +884,13 @@ static void serializeBlockMemberVar(QDataStream *stream, const QShaderDescriptio
     (*stream) << int(v.type);
     (*stream) << v.offset;
     (*stream) << v.size;
-    (*stream) << int(v.arrayDims.count());
+    (*stream) << int(v.arrayDims.size());
     for (int dim : v.arrayDims)
         (*stream) << dim;
     (*stream) << v.arrayStride;
     (*stream) << v.matrixStride;
     (*stream) << v.matrixIsRowMajor;
-    (*stream) << int(v.structMembers.count());
+    (*stream) << int(v.structMembers.size());
     for (const QShaderDescription::BlockVariable &sv : v.structMembers)
         serializeBlockMemberVar(stream, sv);
 }
@@ -1017,55 +1017,55 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
 
 void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
 {
-    (*stream) << int(inVars.count());
+    (*stream) << int(inVars.size());
     for (const QShaderDescription::InOutVariable &v : qAsConst(inVars))
         serializeInOutVar(stream, v);
 
-    (*stream) << int(outVars.count());
+    (*stream) << int(outVars.size());
     for (const QShaderDescription::InOutVariable &v : qAsConst(outVars))
         serializeInOutVar(stream, v);
 
-    (*stream) << int(uniformBlocks.count());
+    (*stream) << int(uniformBlocks.size());
     for (const QShaderDescription::UniformBlock &b : uniformBlocks) {
         (*stream) << QString::fromUtf8(b.blockName);
         (*stream) << QString::fromUtf8(b.structName);
         (*stream) << b.size;
         (*stream) << b.binding;
         (*stream) << b.descriptorSet;
-        (*stream) << int(b.members.count());
+        (*stream) << int(b.members.size());
         for (const QShaderDescription::BlockVariable &v : b.members)
             serializeBlockMemberVar(stream, v);
     }
 
-    (*stream) << int(pushConstantBlocks.count());
+    (*stream) << int(pushConstantBlocks.size());
     for (const QShaderDescription::PushConstantBlock &b : pushConstantBlocks) {
         (*stream) << QString::fromUtf8(b.name);
         (*stream) << b.size;
-        (*stream) << int(b.members.count());
+        (*stream) << int(b.members.size());
         for (const QShaderDescription::BlockVariable &v : b.members)
             serializeBlockMemberVar(stream, v);
     }
 
-    (*stream) << int(storageBlocks.count());
+    (*stream) << int(storageBlocks.size());
     for (const QShaderDescription::StorageBlock &b : storageBlocks) {
         (*stream) << QString::fromUtf8(b.blockName);
         (*stream) << QString::fromUtf8(b.instanceName);
         (*stream) << b.knownSize;
         (*stream) << b.binding;
         (*stream) << b.descriptorSet;
-        (*stream) << int(b.members.count());
+        (*stream) << int(b.members.size());
         for (const QShaderDescription::BlockVariable &v : b.members)
             serializeBlockMemberVar(stream, v);
     }
 
-    (*stream) << int(combinedImageSamplers.count());
+    (*stream) << int(combinedImageSamplers.size());
     for (const QShaderDescription::InOutVariable &v : qAsConst(combinedImageSamplers)) {
         (*stream) << QString::fromUtf8(v.name);
         (*stream) << int(v.type);
         serializeDecorations(stream, v);
     }
 
-    (*stream) << int(storageImages.count());
+    (*stream) << int(storageImages.size());
     for (const QShaderDescription::InOutVariable &v : qAsConst(storageImages)) {
         (*stream) << QString::fromUtf8(v.name);
         (*stream) << int(v.type);
@@ -1075,14 +1075,14 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
     for (size_t i = 0; i < 3; ++i)
         (*stream) << localSize[i];
 
-    (*stream) << int(separateImages.count());
+    (*stream) << int(separateImages.size());
     for (const QShaderDescription::InOutVariable &v : qAsConst(separateImages)) {
         (*stream) << QString::fromUtf8(v.name);
         (*stream) << int(v.type);
         serializeDecorations(stream, v);
     }
 
-    (*stream) << int(separateSamplers.count());
+    (*stream) << int(separateSamplers.size());
     for (const QShaderDescription::InOutVariable &v : qAsConst(separateSamplers)) {
         (*stream) << QString::fromUtf8(v.name);
         (*stream) << int(v.type);

@@ -132,14 +132,14 @@ void QToolBarLayout::addItem(QLayoutItem*)
 
 QLayoutItem *QToolBarLayout::itemAt(int index) const
 {
-    if (index < 0 || index >= items.count())
+    if (index < 0 || index >= items.size())
         return nullptr;
     return items.at(index);
 }
 
 QLayoutItem *QToolBarLayout::takeAt(int index)
 {
-    if (index < 0 || index >= items.count())
+    if (index < 0 || index >= items.size())
         return nullptr;
     QToolBarItem *item = items.takeAt(index);
 
@@ -162,7 +162,7 @@ QLayoutItem *QToolBarLayout::takeAt(int index)
 void QToolBarLayout::insertAction(int index, QAction *action)
 {
     index = qMax(0, index);
-    index = qMin(items.count(), index);
+    index = qMin(items.size(), index);
 
     QToolBarItem *item = createItem(action);
     if (item) {
@@ -173,7 +173,7 @@ void QToolBarLayout::insertAction(int index, QAction *action)
 
 int QToolBarLayout::indexOf(const QAction *action) const
 {
-    for (int i = 0; i < items.count(); ++i) {
+    for (int i = 0; i < items.size(); ++i) {
         if (items.at(i)->action == action)
             return i;
     }
@@ -182,7 +182,7 @@ int QToolBarLayout::indexOf(const QAction *action) const
 
 int QToolBarLayout::count() const
 {
-    return items.count();
+    return items.size();
 }
 
 bool QToolBarLayout::isEmpty() const
@@ -246,10 +246,10 @@ void QToolBarLayout::updateGeomArray() const
     that->expanding = false;
     that->empty = false;
 
-    QList<QLayoutStruct> a(items.count() + 1); // + 1 for the stretch
+    QList<QLayoutStruct> a(items.size() + 1); // + 1 for the stretch
 
     int count = 0;
-    for (int i = 0; i < items.count(); ++i) {
+    for (int i = 0; i < items.size(); ++i) {
         QToolBarItem *item = items.at(i);
 
         QSize max = item->maximumSize();
@@ -296,7 +296,7 @@ void QToolBarLayout::updateGeomArray() const
 
     rpick(o, that->minSize) += handleExtent;
     that->minSize += QSize(pick(Qt::Horizontal, margins), pick(Qt::Vertical, margins));
-    if (items.count() > 1)
+    if (items.size() > 1)
         rpick(o, that->minSize) += spacing + extensionExtent;
 
     rpick(o, that->hint) += handleExtent;
@@ -431,7 +431,7 @@ bool QToolBarLayout::layoutActions(const QSize &size)
     int rows = 0;
     int rowPos = perp(o, rect.topLeft()) + perp(o, QSize(margins.top(), margins.left()));
     int i = 0;
-    while (i < items.count()) {
+    while (i < items.size()) {
         QList<QLayoutStruct> a = geomArray;
 
         int start = i;
@@ -441,7 +441,7 @@ bool QToolBarLayout::layoutActions(const QSize &size)
         int count = 0;
         int maximumSize = 0;
         bool expansiveRow = false;
-        for (; i < items.count(); ++i) {
+        for (; i < items.size(); ++i) {
             if (a[i].empty)
                 continue;
 
@@ -512,7 +512,7 @@ bool QToolBarLayout::layoutActions(const QSize &size)
         }
 
         if (!expanded) {
-            for (int j = i; j < items.count(); ++j) {
+            for (int j = i; j < items.size(); ++j) {
                 QToolBarItem *item = items.at(j);
                 if (!item->widget()->isHidden())
                     hideWidgets << item->widget();
@@ -537,9 +537,9 @@ bool QToolBarLayout::layoutActions(const QSize &size)
     extension->setEnabled(popupMenu == nullptr || !extensionMenuContainsOnlyWidgetActions);
 
     // we have to do the show/hide here, because it triggers more calls to setGeometry :(
-    for (int i = 0; i < showWidgets.count(); ++i)
+    for (int i = 0; i < showWidgets.size(); ++i)
         showWidgets.at(i)->show();
-    for (int i = 0; i < hideWidgets.count(); ++i)
+    for (int i = 0; i < hideWidgets.size(); ++i)
         hideWidgets.at(i)->hide();
 
     return ranOutOfSpace;
@@ -566,7 +566,7 @@ QSize QToolBarLayout::expandedSize(const QSize &size) const
 
     int total_w = 0;
     int count = 0;
-    for (int x = 0; x < items.count(); ++x) {
+    for (int x = 0; x < items.size(); ++x) {
         if (!geomArray[x].empty) {
             total_w += (count == 0 ? 0 : spacing) + geomArray[x].minimumSize;
             ++count;
@@ -587,12 +587,12 @@ QSize QToolBarLayout::expandedSize(const QSize &size) const
     int w = 0;
     int h = 0;
     int i = 0;
-    while (i < items.count()) {
+    while (i < items.size()) {
         int count = 0;
         int size = 0;
         int prev = -1;
         int rowHeight = 0;
-        for (; i < items.count(); ++i) {
+        for (; i < items.size(); ++i) {
             if (geomArray[i].empty)
                 continue;
 

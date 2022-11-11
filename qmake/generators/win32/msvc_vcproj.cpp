@@ -142,24 +142,24 @@ bool VcprojGenerator::writeProjectMakefile()
     // Generate project file
     if(project->first("TEMPLATE") == "vcapp" ||
        project->first("TEMPLATE") == "vclib") {
-        if (!mergedProjects.count()) {
+        if (!mergedProjects.size()) {
             warn_msg(WarnLogic, "Generator: MSVC.NET: no single configuration created, cannot output project!");
             return false;
         }
 
         debug_msg(1, "Generator: MSVC.NET: Writing project file");
         VCProject mergedProject;
-        for (int i = 0; i < mergedProjects.count(); ++i) {
+        for (int i = 0; i < mergedProjects.size(); ++i) {
             VCProjectSingleConfig *singleProject = &(mergedProjects.at(i)->vcProject);
             mergedProject.SingleProjects += *singleProject;
-            for (int j = 0; j < singleProject->ExtraCompilersFiles.count(); ++j) {
+            for (int j = 0; j < singleProject->ExtraCompilersFiles.size(); ++j) {
                 const QString &compilerName = singleProject->ExtraCompilersFiles.at(j).Name;
                 if (!mergedProject.ExtraCompilers.contains(compilerName))
                     mergedProject.ExtraCompilers += compilerName;
             }
         }
 
-        if(mergedProjects.count() > 1 &&
+        if(mergedProjects.size() > 1 &&
            mergedProjects.at(0)->vcProject.Name ==
            mergedProjects.at(1)->vcProject.Name)
             mergedProjects.at(0)->writePrlFile();
@@ -418,7 +418,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                     newDep->uuid = tmp_proj.isEmpty("QMAKE_UUID") ? getProjectUUID(Option::fixPathToLocalOS(vcprojDir + QDir::separator() + vcproj)).toString().toUpper(): tmp_proj.first("QMAKE_UUID").toQString();
                     // We want to store it as the .lib name.
                     if (newDep->target.endsWith(".dll"))
-                        newDep->target = newDep->target.left(newDep->target.length()-3) + "lib";
+                        newDep->target = newDep->target.left(newDep->target.size()-3) + "lib";
                     projGuids.insert(newDep->projectName, newDep->target);
 
                     if (tmpList.size()) {
@@ -634,10 +634,10 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
 bool VcprojGenerator::hasBuiltinCompiler(const QString &file)
 {
     // Source files
-    for (int i = 0; i < Option::cpp_ext.count(); ++i)
+    for (int i = 0; i < Option::cpp_ext.size(); ++i)
         if (file.endsWith(Option::cpp_ext.at(i)))
             return true;
-    for (int i = 0; i < Option::c_ext.count(); ++i)
+    for (int i = 0; i < Option::c_ext.size(); ++i)
         if (file.endsWith(Option::c_ext.at(i)))
             return true;
     if (file.endsWith(".rc")
@@ -767,8 +767,8 @@ void VcprojGenerator::init()
         if (autogenPrecompSource) {
             precompSource = precompH
                     + (pchIsCFile
-                       ? (Option::c_ext.count() ? Option::c_ext.at(0) : QLatin1String(".c"))
-                       : (Option::cpp_ext.count() ? Option::cpp_ext.at(0) : QLatin1String(".cpp")));
+                       ? (Option::c_ext.size() ? Option::c_ext.at(0) : QLatin1String(".c"))
+                       : (Option::cpp_ext.size() ? Option::cpp_ext.at(0) : QLatin1String(".cpp")));
             project->values("GENERATED_SOURCES") += precompSource;
         } else if (!precompSource.isEmpty()) {
             project->values("SOURCES") += precompSource;
@@ -1213,7 +1213,7 @@ void VcprojGenerator::initDeploymentTool()
                 continue;
             // We want to deploy .dlls not .libs
             if (dllName.endsWith(QLatin1String(".lib")))
-                dllName.replace(dllName.length() - 3, 3, QLatin1String("dll"));
+                dllName.replace(dllName.size() - 3, 3, QLatin1String("dll"));
             // Use only the file name and check in Qt's install path and LIBPATHs to check for existence
             dllName.remove(0, dllName.lastIndexOf(QLatin1Char('/')) + 1);
             QFileInfo info;
@@ -1553,7 +1553,7 @@ void VcprojGenerator::initExtraCompilerOutputs()
             } else if (!inputVars.isEmpty()) {
                 // One output file per input
                 const ProStringList &tmp_in = project->values(inputVars.first().toKey());
-                for (int i = 0; i < tmp_in.count(); ++i) {
+                for (int i = 0; i < tmp_in.size(); ++i) {
                     const QString &filename = tmp_in.at(i).toQString();
                     if (extraCompilerSources.contains(filename) && !otherFiltersContain(filename))
                         extraCompile.addFile(Option::fixPathToTargetOS(
@@ -1568,7 +1568,7 @@ void VcprojGenerator::initExtraCompilerOutputs()
             for (const ProString &inputVar : inputVars) {
                 if (!otherFilters.contains(inputVar)) {
                     const ProStringList &tmp_in = project->values(inputVar.toKey());
-                    for (int i = 0; i < tmp_in.count(); ++i) {
+                    for (int i = 0; i < tmp_in.size(); ++i) {
                         const QString &filename = tmp_in.at(i).toQString();
                         if (extraCompilerSources.contains(filename) && !otherFiltersContain(filename))
                             extraCompile.addFile(Option::fixPathToTargetOS(

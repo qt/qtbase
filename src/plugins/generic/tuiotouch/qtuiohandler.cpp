@@ -39,7 +39,7 @@ QTuioHandler::QTuioHandler(const QString &specification)
     bool invertx = false;
     bool inverty = false;
 
-    for (int i = 0; i < args.count(); ++i) {
+    for (int i = 0; i < args.size(); ++i) {
         if (args.at(i).startsWith("udp=")) {
             QString portString = args.at(i).section('=', 1, 1);
             portNumber = portString.toInt();
@@ -139,7 +139,7 @@ void QTuioHandler::processPackets()
         for (const QOscMessage &message : qAsConst(messages)) {
             if (message.addressPattern() == "/tuio/2Dcur") {
                 QList<QVariant> arguments = message.arguments();
-                if (arguments.count() == 0) {
+                if (arguments.size() == 0) {
                     qCWarning(lcTuioHandler, "Ignoring TUIO message with no arguments");
                     continue;
                 }
@@ -159,7 +159,7 @@ void QTuioHandler::processPackets()
                 }
             } else if (message.addressPattern() == "/tuio/2Dobj") {
                 QList<QVariant> arguments = message.arguments();
-                if (arguments.count() == 0) {
+                if (arguments.size() == 0) {
                     qCWarning(lcTuioHandler, "Ignoring TUIO message with no arguments");
                     continue;
                 }
@@ -188,8 +188,8 @@ void QTuioHandler::processPackets()
 void QTuioHandler::process2DCurSource(const QOscMessage &message)
 {
     QList<QVariant> arguments = message.arguments();
-    if (arguments.count() != 2) {
-        qCWarning(lcTuioSource) << "Ignoring malformed TUIO source message: " << arguments.count();
+    if (arguments.size() != 2) {
+        qCWarning(lcTuioSource) << "Ignoring malformed TUIO source message: " << arguments.size();
         return;
     }
 
@@ -214,7 +214,7 @@ void QTuioHandler::process2DCurAlive(const QOscMessage &message)
     QMap<int, QTuioCursor> oldActiveCursors = m_activeCursors;
     QMap<int, QTuioCursor> newActiveCursors;
 
-    for (int i = 1; i < arguments.count(); ++i) {
+    for (int i = 1; i < arguments.size(); ++i) {
         if (QMetaType::Type(arguments.at(i).userType()) != QMetaType::Int) {
             qCWarning(lcTuioHandler) << "Ignoring malformed TUIO alive message (bad argument on position" << i << arguments << ')';
             return;
@@ -255,8 +255,8 @@ void QTuioHandler::process2DCurAlive(const QOscMessage &message)
 void QTuioHandler::process2DCurSet(const QOscMessage &message)
 {
     QList<QVariant> arguments = message.arguments();
-    if (arguments.count() < 7) {
-        qCWarning(lcTuioSet) << "Ignoring malformed TUIO set message with too few arguments: " << arguments.count();
+    if (arguments.size() < 7) {
+        qCWarning(lcTuioSet) << "Ignoring malformed TUIO set message with too few arguments: " << arguments.size();
         return;
     }
 
@@ -326,7 +326,7 @@ void QTuioHandler::process2DCurFseq(const QOscMessage &message)
     Q_UNUSED(message); // TODO: do we need to do anything with the frame id?
 
     QWindow *win = QGuiApplication::focusWindow();
-    if (!win && QGuiApplication::topLevelWindows().length() > 0 && forceDelivery)
+    if (!win && QGuiApplication::topLevelWindows().size() > 0 && forceDelivery)
           win = QGuiApplication::topLevelWindows().at(0);
 
     if (!win)
@@ -353,8 +353,8 @@ void QTuioHandler::process2DCurFseq(const QOscMessage &message)
 void QTuioHandler::process2DObjSource(const QOscMessage &message)
 {
     QList<QVariant> arguments = message.arguments();
-    if (arguments.count() != 2) {
-        qCWarning(lcTuioSource, ) << "Ignoring malformed TUIO source message: " << arguments.count();
+    if (arguments.size() != 2) {
+        qCWarning(lcTuioSource ) << "Ignoring malformed TUIO source message: " << arguments.size();
         return;
     }
 
@@ -379,7 +379,7 @@ void QTuioHandler::process2DObjAlive(const QOscMessage &message)
     QMap<int, QTuioToken> oldActiveTokens = m_activeTokens;
     QMap<int, QTuioToken> newActiveTokens;
 
-    for (int i = 1; i < arguments.count(); ++i) {
+    for (int i = 1; i < arguments.size(); ++i) {
         if (QMetaType::Type(arguments.at(i).userType()) != QMetaType::Int) {
             qCWarning(lcTuioHandler) << "Ignoring malformed TUIO alive message (bad argument on position" << i << arguments << ')';
             return;
@@ -420,8 +420,8 @@ void QTuioHandler::process2DObjAlive(const QOscMessage &message)
 void QTuioHandler::process2DObjSet(const QOscMessage &message)
 {
     QList<QVariant> arguments = message.arguments();
-    if (arguments.count() < 7) {
-        qCWarning(lcTuioSet) << "Ignoring malformed TUIO set message with too few arguments: " << arguments.count();
+    if (arguments.size() < 7) {
+        qCWarning(lcTuioSet) << "Ignoring malformed TUIO set message with too few arguments: " << arguments.size();
         return;
     }
 
@@ -499,7 +499,7 @@ void QTuioHandler::process2DObjFseq(const QOscMessage &message)
     Q_UNUSED(message); // TODO: do we need to do anything with the frame id?
 
     QWindow *win = QGuiApplication::focusWindow();
-    if (!win && QGuiApplication::topLevelWindows().length() > 0 && forceDelivery)
+    if (!win && QGuiApplication::topLevelWindows().size() > 0 && forceDelivery)
           win = QGuiApplication::topLevelWindows().at(0);
 
     if (!win)
