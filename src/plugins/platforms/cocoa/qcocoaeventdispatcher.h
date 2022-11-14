@@ -55,10 +55,13 @@
 #include <QtCore/private/qabstracteventdispatcher_p.h>
 #include <QtCore/private/qcfsocketnotifier_p.h>
 #include <QtCore/private/qtimerinfo_unix_p.h>
+#include <QtCore/qloggingcategory.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcEventDispatcher);
 
 typedef struct _NSModalSession *NSModalSession;
 typedef struct _QCocoaModalSessionInfo {
@@ -126,6 +129,7 @@ public:
     QStack<QCocoaModalSessionInfo> cocoaModalSessionStack;
     bool currentExecIsNSAppRun;
     bool nsAppRunCalledByQt;
+    bool initializingNSApplication = false;
     bool cleanupModalSessionsNeeded;
     uint processEventsCalled;
     NSModalSession currentModalSessionCached;

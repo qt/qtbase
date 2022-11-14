@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcEventDispatcher, "qt.eventdispatcher");
+
 static inline CFRunLoopRef mainRunLoop()
 {
     return CFRunLoopGetMain();
@@ -87,6 +89,13 @@ void QCocoaEventDispatcherPrivate::runLoopTimerCallback(CFRunLoopTimerRef, void 
 void QCocoaEventDispatcherPrivate::activateTimersSourceCallback(void *info)
 {
     QCocoaEventDispatcherPrivate *d = static_cast<QCocoaEventDispatcherPrivate *>(info);
+    if (d->initializingNSApplication) {
+        qCDebug(lcEventDispatcher) << "Deferring" << __FUNCTION__ << "due to NSApp initialization";
+        // We don't want to process any sources during explicit NSApplication
+        // initialization, so defer the source until the actual event processing.
+        CFRunLoopSourceSignal(d->activateTimersSourceRef);
+        return;
+    }
     d->processTimers();
     d->maybeCancelWaitForMoreEvents();
 }
@@ -555,22 +564,41 @@ void QCocoaEventDispatcher::wakeUp()
 
 void QCocoaEventDispatcherPrivate::ensureNSAppInitialized()
 {
-    // Some elements in Cocoa require NSApplication to be running before
-    // they get fully initialized, in particular the menu bar. This
-    // function is intended for cases where a dialog is told to execute before
-    // QGuiApplication::exec is called, or the application spins the events loop
-    // manually rather than calling QGuiApplication:exec.
-    // The function makes sure that NSApplication starts running, but stops
-    // it again as soon as the send posted events callback is called. That way
-    // we let Cocoa finish the initialization it seems to need. We'll only
-    // apply this trick at most once for any application, and we avoid doing it
-    // for the common case where main just starts QGuiApplication::exec.
+    // Some elements in Cocoa require NSApplication to be initialized before
+    // use, for example the menu bar. Under normal circumstances this happens
+    // as part of [NSApp run], as a result of a call to QGuiApplication:exec(),
+    // but in the cases where a dialog is asked to execute before that happens,
+    // or the application spins the event loop manually via processEvents(),
+    // we need to explicitly ensure NSApplication initialization.
+
+    // We can unfortunately not do this via NSApplicationLoad(), as the function
+    // bails out early if there's already an NSApplication instance, which is
+    // the case if any code has called [NSApplication sharedApplication],
+    // or its short form 'NSApp'.
+
+    // Instead we do an actual [NSApp run], but stop the application as soon
+    // as possible, ensuring that AppKit will do the required initialization,
+    // including calling [NSApplication finishLaunching].
+
+    // We only apply this trick at most once for any application, and we avoid
+    // doing it for the common case where main just starts QGuiApplication::exec.
     if (nsAppRunCalledByQt || [NSApp isRunning])
         return;
+
+    qCDebug(lcEventDispatcher) << "Ensuring NSApplication is initialized";
     nsAppRunCalledByQt = true;
-    QBoolBlocker block1(interrupt, true);
-    QBoolBlocker block2(currentExecIsNSAppRun, true);
+
+    // Stopping the application will still process runloop sources before
+    // actually stopping, so we need to explicitly guard our sources from
+    // doing anything, deferring their actions until later.
+    QBoolBlocker initializationGuard(initializingNSApplication, true);
+
+    CFRunLoopPerformBlock(mainRunLoop(), kCFRunLoopCommonModes, ^{
+        qCDebug(lcEventDispatcher) << "NSApplication has been initialized; Stopping NSApp";
+        [NSApp stop:NSApp];
+    });
     [NSApp run];
+    qCDebug(lcEventDispatcher) << "Finished ensuring NSApplication is initialized";
 }
 
 void QCocoaEventDispatcherPrivate::temporarilyStopAllModalSessions()
@@ -875,12 +903,30 @@ void QCocoaEventDispatcherPrivate::firstLoopEntry(CFRunLoopObserverRef ref,
 {
     Q_UNUSED(ref);
     Q_UNUSED(activity);
+
+    QCocoaEventDispatcherPrivate *d = static_cast<QCocoaEventDispatcherPrivate *>(info);
+    if (d->initializingNSApplication) {
+        qCDebug(lcEventDispatcher) << "Deferring" << __FUNCTION__ << "due to NSApp initialization";
+        // We don't want to process any sources during explicit NSApplication
+        // initialization, so defer the source until the actual event processing.
+        CFRunLoopSourceSignal(d->postedEventsSource);
+        return;
+    }
+
     static_cast<QCocoaEventDispatcherPrivate *>(info)->processPostedEvents();
 }
 
 void QCocoaEventDispatcherPrivate::postedEventsSourceCallback(void *info)
 {
     QCocoaEventDispatcherPrivate *d = static_cast<QCocoaEventDispatcherPrivate *>(info);
+    if (d->initializingNSApplication) {
+        qCDebug(lcEventDispatcher) << "Deferring" << __FUNCTION__ << "due to NSApp initialization";
+        // We don't want to process any sources during explicit NSApplication
+        // initialization, so defer the source until the actual event processing.
+        CFRunLoopSourceSignal(d->postedEventsSource);
+        return;
+    }
+
     if (d->processEventsCalled && (d->processEventsFlags & QEventLoop::EventLoopExec) == 0) {
         // processEvents() was called "manually," ignore this source for now
         d->maybeCancelWaitForMoreEvents();
