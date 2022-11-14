@@ -505,6 +505,7 @@ class SyncScanner
 
     enum { Active, Stopped, IgnoreNext, Ignore } m_versionScriptGeneratorState = Active;
 
+    std::filesystem::path m_outputRootName;
     std::filesystem::path m_currentFile;
     std::string m_currentFilename;
     std::string m_currentFileString;
@@ -521,7 +522,9 @@ public:
     SyncScanner(CommandLineOptions *commandLineArgs)
         : m_commandLineArgs(commandLineArgs),
           m_masterHeaderContents(MasterHeaderIncludeComparator),
-          m_warningMessagePreamble(WarningMessagePreamble)
+          m_warningMessagePreamble(WarningMessagePreamble),
+          m_outputRootName(
+                  std::filesystem::weakly_canonical(m_commandLineArgs->includeDir()).root_name())
     {
     }
 
@@ -739,6 +742,7 @@ public:
         FileStamp originalStamp = std::filesystem::last_write_time(headerFile, ec);
         if (ec)
             originalStamp = FileStamp::clock::now();
+        ec.clear();
 
         bool isPrivate = m_currentFileType & PrivateHeader;
         bool isQpa = m_currentFileType & QpaHeader;
@@ -758,8 +762,14 @@ public:
             std::filesystem::create_directories(outputDir);
 
         bool headerFileExists = std::filesystem::exists(headerFile);
-        std::string aliasedFilepath =
-                std::filesystem::relative(headerFile, outputDir).generic_string();
+
+        std::filesystem::path headerFileRootName =
+                std::filesystem::weakly_canonical(headerFile, ec).root_name();
+        std::string aliasedFilepath = !ec && headerFileRootName == m_outputRootName
+                ? std::filesystem::relative(headerFile, outputDir).generic_string()
+                : headerFile.generic_string();
+        ec.clear();
+
         std::string aliasPath = outputDir + '/' + m_currentFilename;
 
         // If the '-copy' argument is passed, we copy the original file to a corresponding output
