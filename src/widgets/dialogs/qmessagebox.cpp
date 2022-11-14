@@ -28,6 +28,7 @@
 #include <QtGui/qfontmetrics.h>
 #include <QtGui/qclipboard.h>
 #include "private/qabstractbutton_p.h"
+#include <QtGui/qpa/qplatformtheme.h>
 
 #ifdef Q_OS_WIN
 #    include <QtCore/qt_windows.h>
@@ -203,6 +204,7 @@ public:
                 QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton);
 
     static QPixmap standardIcon(QMessageBox::Icon icon, QMessageBox *mb);
+    static QMessageBox::StandardButton standardButtonForRole(QMessageBox::ButtonRole role);
 
     QLabel *label;
     QMessageBox::Icon icon;
@@ -843,6 +845,19 @@ void QMessageBox::addButton(QAbstractButton *button, ButtonRole role)
     if (!button)
         return;
     removeButton(button);
+
+    if (button->text().isEmpty()) {
+        if (auto *platformTheme = QGuiApplicationPrivate::platformTheme()) {
+            if (auto standardButton = QMessageBoxPrivate::standardButtonForRole(role))
+                button->setText(platformTheme->standardButtonText(standardButton));
+        }
+
+        if (button->text().isEmpty()) {
+            qWarning() << "Cannot add" << button << "without title";
+            return;
+        }
+    }
+
     // Add button to native dialog helper, unless it's the details button,
     // since we don't do any plumbing for the button's action in that case.
     if (button != d->detailsButton) {
@@ -852,6 +867,21 @@ void QMessageBox::addButton(QAbstractButton *button, ButtonRole role)
     d->buttonBox->addButton(button, (QDialogButtonBox::ButtonRole)role);
     d->customButtonList.append(button);
     d->autoAddOkButton = false;
+}
+
+QMessageBox::StandardButton QMessageBoxPrivate::standardButtonForRole(QMessageBox::ButtonRole role)
+{
+    switch (role) {
+    case QMessageBox::AcceptRole: return QMessageBox::Ok;
+    case QMessageBox::RejectRole: return QMessageBox::Cancel;
+    case QMessageBox::DestructiveRole: return QMessageBox::Discard;
+    case QMessageBox::HelpRole: return QMessageBox::Help;
+    case QMessageBox::ApplyRole: return QMessageBox::Apply;
+    case QMessageBox::YesRole: return QMessageBox::Yes;
+    case QMessageBox::NoRole: return QMessageBox::No;
+    case QMessageBox::ResetRole: return QMessageBox::Reset;
+    default: return QMessageBox::NoButton;
+    }
 }
 
 /*!
