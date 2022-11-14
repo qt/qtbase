@@ -440,6 +440,8 @@ private slots:
     void operator_pluseq_qstringview_data()   { operator_pluseq_data(EmptyIsNoop); }
     void operator_pluseq_qlatin1string()      { operator_pluseq_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
     void operator_pluseq_qlatin1string_data() { operator_pluseq_data(Latin1Encoded); }
+    void operator_pluseq_qutf8stringview()    { operator_pluseq_impl<QUtf8StringView, QString &(QString::*)(QUtf8StringView)>(); }
+    void operator_pluseq_qutf8stringview_data() { operator_pluseq_data(); }
     void operator_pluseq_qchar()              { operator_pluseq_impl<QChar, QString &(QString::*)(QChar)>(); }
     void operator_pluseq_qchar_data()         { operator_pluseq_data(EmptyIsNoop); }
     void operator_pluseq_qbytearray()         { operator_pluseq_impl<QByteArray>(); }

@@ -6195,7 +6195,14 @@ QString& QString::fill(QChar ch, qsizetype size)
 
     \overload operator+=()
 
-    Appends the Latin-1 string \a str to this string.
+    Appends the Latin-1 string view \a str to this string.
+*/
+
+/*! \fn QString &QString::operator+=(QUtf8StringView str)
+    \since 6.5
+    \overload operator+=()
+
+    Appends the UTF-8 string view \a str to this string.
 */
 
 /*! \fn QString &QString::operator+=(const QByteArray &ba)

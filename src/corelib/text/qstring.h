@@ -706,6 +706,7 @@ public:
     inline QString &operator+=(const QString &s) { return append(s); }
     inline QString &operator+=(QStringView v) { return append(v); }
     inline QString &operator+=(QLatin1StringView s) { return append(s); }
+    QString &operator+=(QUtf8StringView s) { return append(s); }
 
     QString &remove(qsizetype i, qsizetype len);
     QString &remove(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive);
