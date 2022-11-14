@@ -85,58 +85,44 @@ QWasmIntegration::QWasmIntegration()
 {
     s_instance = this;
 
-   touchPoints = emscripten::val::global("navigator")["maxTouchPoints"].as<int>();
+    touchPoints = emscripten::val::global("navigator")["maxTouchPoints"].as<int>();
 
-    // Create screens for container elements. Each container element can be a div element (preferred),
-    // or a canvas element (legacy). Qt versions prior to 6.x read the "qtCanvasElements" module property,
-    // which we continue to do to preserve compatibility. The preferred property is now "qtContainerElements".
+    // Create screens for container elements. Each container element will ultimately become a
+    // div element. Qt historically supported supplying canvas for screen elements - these elements
+    // will be transformed into divs and warnings about deprecation will be printed. See
+    // QWasmScreen ctor.
     emscripten::val qtContainerElements = val::module_property("qtContainerElements");
-    emscripten::val qtCanvasElements = val::module_property("qtCanvasElements");
-    if (!qtContainerElements.isUndefined()) {
-        emscripten::val length = qtContainerElements["length"];
-        int count = length.as<int>();
-        if (length.isUndefined())
-            qWarning("qtContainerElements does not have the length property set. Qt expects an array of html elements (possibly containing one element only)");
-        for (int i = 0; i < count; ++i) {
+    if (qtContainerElements.isArray()) {
+        for (int i = 0; i < qtContainerElements["length"].as<int>(); ++i) {
             emscripten::val element = qtContainerElements[i].as<emscripten::val>();
-            if (element.isNull() ||element.isUndefined()) {
-                 qWarning() << "Skipping null or undefined element in qtContainerElements";
-            } else {
+            if (element.isNull() || element.isUndefined())
+                qWarning() << "Skipping null or undefined element in qtContainerElements";
+            else
                 addScreen(element);
-            }
         }
-    } else if (!qtCanvasElements.isUndefined()) {
-        qWarning() << "The qtCanvaseElements property is deprecated. Qt will stop reading"
-                   << "it in some future version, please use qtContainerElements instead";
-        emscripten::val length = qtCanvasElements["length"];
-        int count = length.as<int>();
-        for (int i = 0; i < count; ++i)
-            addScreen(qtCanvasElements[i].as<emscripten::val>());
     } else {
         // No screens, which may or may not be intended
-        qWarning() << "Note: The qtContainerElements module property was not set. Proceeding with no screens.";
+        qWarning() << "The qtContainerElements module property was not set or is invalid. "
+                      "Proceeding with no screens.";
     }
 
     // install browser window resize handler
-    auto onWindowResize = [](int eventType, const EmscriptenUiEvent *e, void *userData) -> int {
-        Q_UNUSED(eventType);
-        Q_UNUSED(e);
-        Q_UNUSED(userData);
-
-        // This resize event is called when the HTML window is resized. Depending
-        // on the page layout the canvas(es) might also have been resized, so we
-        // update the Qt screen sizes (and canvas render sizes).
-        if (QWasmIntegration *integration = QWasmIntegration::get())
-            integration->resizeAllScreens();
-        return 0;
-    };
-    emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, onWindowResize);
+    emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE,
+                                   [](int, const EmscriptenUiEvent *, void *) -> int {
+                                       // This resize event is called when the HTML window is
+                                       // resized. Depending on the page layout the elements might
+                                       // also have been resized, so we update the Qt screen sizes
+                                       // (and canvas render sizes).
+                                       if (QWasmIntegration *integration = QWasmIntegration::get())
+                                           integration->resizeAllScreens();
+                                       return 0;
+                                   });
 
     // install visualViewport resize handler which picks up size and scale change on mobile.
     emscripten::val visualViewport = emscripten::val::global("window")["visualViewport"];
     if (!visualViewport.isUndefined()) {
         visualViewport.call<void>("addEventListener", val("resize"),
-                          val::module_property("qtResizeAllScreens"));
+                                  val::module_property("qtResizeAllScreens"));
     }
     m_drag = new QWasmDrag();
 }

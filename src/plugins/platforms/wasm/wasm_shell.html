@@ -12,9 +12,8 @@
     <title>@APPNAME@</title>
     <style>
       /* Make the html body cover the entire (visual) viewport with no scroll bars. */
-      html, body { padding: 0; margin: 0; overflow:hidden; height: 100% }
-      /* Make the canvas cover the entire body */
-      canvas { height:100%; width:100%; }
+      html, body { padding: 0; margin: 0; overflow: hidden; height: 100% }
+      #screen { width: 100%; height: 100%; }
     </style>
   </head>
   <body onload="init()">
@@ -26,13 +25,13 @@
         <noscript>JavaScript is disabled. Please enable JavaScript to use this application.</noscript>
       </center>
     </figure>
-    <canvas id="qtcanvas"></canvas>
+    <div id="screen"></div>
 
     <script type='text/javascript'>
         let qtLoader = undefined;
         function init() {
           var spinner = document.querySelector('#qtspinner');
-          var canvas = document.querySelector('#qtcanvas');
+          var canvas = document.querySelector('#screen');
           var status = document.querySelector('#qtstatus')
 
           qtLoader = new QtLoader({

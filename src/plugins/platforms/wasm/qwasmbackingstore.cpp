@@ -5,20 +5,16 @@
 #include "qwasmwindow.h"
 #include "qwasmcompositor.h"
 
-#include <QtOpenGL/qopengltexture.h>
-#include <QtGui/qmatrix4x4.h>
 #include <QtGui/qpainter.h>
-#include <private/qguiapplication_p.h>
-#include <qpa/qplatformscreen.h>
-#include <QtGui/qoffscreensurface.h>
 #include <QtGui/qbackingstore.h>
+
+#include <emscripten.h>
+#include <emscripten/wire.h>
 
 QT_BEGIN_NAMESPACE
 
 QWasmBackingStore::QWasmBackingStore(QWasmCompositor *compositor, QWindow *window)
-    : QPlatformBackingStore(window)
-    , m_compositor(compositor)
-    , m_texture(new QOpenGLTexture(QOpenGLTexture::Target2D))
+    : QPlatformBackingStore(window), m_compositor(compositor)
 {
     QWasmWindow *wasmWindow = static_cast<QWasmWindow *>(window->handle());
     if (wasmWindow)
@@ -29,27 +25,9 @@ QWasmBackingStore::~QWasmBackingStore()
 {
     auto window = this->window();
     QWasmIntegration::get()->removeBackingStore(window);
-    destroy();
     QWasmWindow *wasmWindow = static_cast<QWasmWindow *>(window->handle());
     if (wasmWindow)
         wasmWindow->setBackingStore(nullptr);
-}
-
-void QWasmBackingStore::destroy()
-{
-    if (m_texture->isCreated()) {
-        auto context = m_compositor->context();
-        auto currentContext = QOpenGLContext::currentContext();
-        if (!currentContext || !QOpenGLContext::areSharing(context, currentContext)) {
-            QOffscreenSurface offScreenSurface(m_compositor->screen()->screen());
-            offScreenSurface.setFormat(context->format());
-            offScreenSurface.create();
-            context->makeCurrent(&offScreenSurface);
-            m_texture->destroy();
-        } else {
-            m_texture->destroy();
-        }
-    }
 }
 
 QPaintDevice *QWasmBackingStore::paintDevice()
@@ -64,33 +42,24 @@ void QWasmBackingStore::flush(QWindow *window, const QRegion &region, const QPoi
     Q_UNUSED(offset);
 
     m_dirty |= region;
-    m_compositor->handleBackingStoreFlush();
+    m_compositor->handleBackingStoreFlush(window);
 }
 
-void QWasmBackingStore::updateTexture()
+void QWasmBackingStore::updateTexture(QWasmWindow *window)
 {
     if (m_dirty.isNull())
         return;
 
-    if (m_recreateTexture) {
-        m_recreateTexture = false;
-        destroy();
+    if (m_webImageDataArray.isUndefined()) {
+        m_webImageDataArray = window->context2d().call<emscripten::val>(
+                "createImageData", emscripten::val(m_image.width()),
+                emscripten::val(m_image.height()));
     }
 
-    if (!m_texture->isCreated()) {
-        m_texture->setMinificationFilter(QOpenGLTexture::Nearest);
-        m_texture->setMagnificationFilter(QOpenGLTexture::Nearest);
-        m_texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-        m_texture->setData(m_image, QOpenGLTexture::DontGenerateMipMaps);
-        m_texture->create();
-    }
-    m_texture->bind();
-
-    QRegion fixed;
+    QRegion clippedDpiScaledRegion;
     QRect imageRect = m_image.rect();
 
     for (const QRect &rect : m_dirty) {
-
         // Convert device-independent dirty region to device region
         qreal dpr = m_image.devicePixelRatio();
         QRect deviceRect = QRect(rect.topLeft() * dpr, rect.size() * dpr);
@@ -103,21 +72,40 @@ void QWasmBackingStore::updateTexture()
             r.setWidth(imageRect.width());
         }
 
-        fixed |= r;
+        clippedDpiScaledRegion |= r;
     }
 
-    for (const QRect &rect : fixed) {
-        // if the sub-rect is full-width we can pass the image data directly to
-        // OpenGL instead of copying, since there is no gap between scanlines
-        if (rect.width() == imageRect.width()) {
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, rect.y(), rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE,
-                            m_image.constScanLine(rect.y()));
+    for (const QRect &dirtyRect : clippedDpiScaledRegion) {
+        constexpr int BytesPerColor = 4;
+        if (dirtyRect.width() == imageRect.width()) {
+            // Copy a contiguous chunk of memory
+            // ...............
+            // OOOOOOOOOOOOOOO
+            // OOOOOOOOOOOOOOO -> image data
+            // OOOOOOOOOOOOOOO
+            // ...............
+            auto imageMemory = emscripten::typed_memory_view(dirtyRect.width() * dirtyRect.height()
+                                                                     * BytesPerColor,
+                                                             m_image.constScanLine(dirtyRect.y()));
+            m_webImageDataArray["data"].call<void>("set", imageMemory);
         } else {
-            glTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE,
-                            m_image.copy(rect).constBits());
+            // Go through the scanlines manually to set the individual lines in bulk. This is
+            // marginally less performant than the above.
+            // ...............
+            // ...OOOOOOOOO... r = 0  -> image data
+            // ...OOOOOOOOO... r = 1  -> image data
+            // ...OOOOOOOOO... r = 2  -> image data
+            // ...............
+            for (int r = 0; r < dirtyRect.height(); ++r) {
+                auto scanlineMemory = emscripten::typed_memory_view(
+                        dirtyRect.width() * 4,
+                        m_image.constScanLine(r) + BytesPerColor * dirtyRect.x());
+                m_webImageDataArray["data"].call<void>("set", scanlineMemory,
+                                                       (r * dirtyRect.width() + dirtyRect.x())
+                                                               * BytesPerColor);
+            }
         }
     }
-    /* End of code taken from QEGLPlatformBackingStore */
 
     m_dirty = QRegion();
 }
@@ -143,12 +131,11 @@ void QWasmBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
     Q_UNUSED(staticContents);
 
-    QImage::Format format = window()->format().hasAlpha() ?
-        QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+    QImage::Format format = QImage::Format_RGBA8888;
     const auto platformScreenDPR = window()->handle()->devicePixelRatio();
     m_image = QImage(size * platformScreenDPR, format);
     m_image.setDevicePixelRatio(platformScreenDPR);
-    m_recreateTexture = true;
+    m_webImageDataArray = emscripten::val::undefined();
 }
 
 QImage QWasmBackingStore::toImage() const
@@ -162,10 +149,10 @@ const QImage &QWasmBackingStore::getImageRef() const
     return m_image;
 }
 
-const QOpenGLTexture *QWasmBackingStore::getUpdatedTexture()
+emscripten::val QWasmBackingStore::getUpdatedWebImage(QWasmWindow *window)
 {
-    updateTexture();
-    return m_texture.data();
+    updateTexture(window);
+    return m_webImageDataArray;
 }
 
 QT_END_NAMESPACE

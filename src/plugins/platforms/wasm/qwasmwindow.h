@@ -11,30 +11,30 @@
 #include "qwasmscreen.h"
 #include "qwasmcompositor.h"
 
+#include <QtCore/private/qstdweb_p.h>
+#include "QtGui/qopenglcontext.h"
+#include <QtOpenGL/qopengltextureblitter.h>
+
+#include <emscripten/val.h>
+
 QT_BEGIN_NAMESPACE
 
-class QWasmWindow : public QPlatformWindow
+class QWasmWindow final : public QPlatformWindow
 {
 public:
-    enum TitleBarControl {
-        SC_None = 0x00000000,
-        SC_TitleBarSysMenu = 0x00000001,
-        SC_TitleBarMaxButton = 0x00000002,
-        SC_TitleBarCloseButton = 0x00000004,
-        SC_TitleBarNormalButton = 0x00000008,
-        SC_TitleBarLabel = 0x00000010
-    };
-    Q_DECLARE_FLAGS(TitleBarControls, TitleBarControl);
-
     QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingStore *backingStore);
-    ~QWasmWindow();
+    ~QWasmWindow() final;
     void destroy();
 
     void initialize() override;
 
+    void paint();
+    void setZOrder(int order);
+    void onActivationChanged(bool active);
+
     void setGeometry(const QRect &) override;
     void setVisible(bool visible) override;
-    bool isVisible();
+    bool isVisible() const;
     QMargins frameMargins() const override;
 
     WId winId() const override;
@@ -52,10 +52,6 @@ public:
     QWasmBackingStore *backingStore() const { return m_backingStore; }
     QWindow *window() const { return m_window; }
 
-    void injectMousePressed(const QPoint &local, const QPoint &global,
-                            Qt::MouseButton button, Qt::KeyboardModifiers mods);
-    void injectMouseReleased(const QPoint &local, const QPoint &global,
-                            Qt::MouseButton button, Qt::KeyboardModifiers mods);
     bool startSystemResize(Qt::Edges edges) final;
 
     bool isPointOnTitle(QPoint point) const;
@@ -63,55 +59,59 @@ public:
 
     Qt::Edges resizeEdgesAtPoint(QPoint point) const;
 
+    void setWindowFlags(Qt::WindowFlags flags) override;
     void setWindowState(Qt::WindowStates state) override;
+    void setWindowTitle(const QString &title) override;
+    void setWindowIcon(const QIcon &icon) override;
     void applyWindowState();
     bool setKeyboardGrabEnabled(bool) override { return false; }
     bool setMouseGrabEnabled(bool grab) final;
+    bool windowEvent(QEvent *event) final;
 
-    void drawTitleBar(QPainter *painter) const;
-
-protected:
-    void invalidate();
-    bool hasTitleBar() const;
+    std::string canvasSelector() const;
+    emscripten::val context2d() { return m_context2d; }
 
 private:
     friend class QWasmScreen;
 
-    struct TitleBarOptions
-    {
-        bool hasControl(TitleBarControl control) const;
+    class WebImageButton;
 
-        QRect rect;
-        Qt::WindowFlags flags;
-        int state;
-        QPalette palette;
-        QString titleBarOptionsString;
-        TitleBarControls subControls;
-        QIcon windowIcon;
-    };
-
-    TitleBarOptions makeTitleBarOptions() const;
-    std::optional<QRect> getTitleBarControlRect(const TitleBarOptions &tb,
-                                                TitleBarControl control) const;
-    std::optional<QRect> getTitleBarControlRectLeftToRight(const TitleBarOptions &tb,
-                                                           TitleBarControl control) const;
-    QRegion titleControlRegion() const;
-    QRegion titleGeometry() const;
-    int borderWidth() const;
-    int titleHeight() const;
+    QMarginsF borderMargins() const;
     QRegion resizeRegion() const;
-    TitleBarControl activeTitleBarControl() const;
-    std::optional<TitleBarControl> titleBarHitTest(const QPoint &globalPoint) const;
+
+    void onRestoreClicked();
+    void onMaximizeClicked();
+    void onCloseClicked();
+    void onInteraction();
+
+    void invalidate();
+    bool hasTitleBar() const;
 
     QWindow *m_window = nullptr;
     QWasmCompositor *m_compositor = nullptr;
     QWasmBackingStore *m_backingStore = nullptr;
     QRect m_normalGeometry {0, 0, 0 ,0};
 
-    Qt::WindowStates m_windowState = Qt::WindowNoState;
+    emscripten::val m_document;
+    emscripten::val m_qtWindow;
+    emscripten::val m_windowContents;
+    emscripten::val m_titleBar;
+    emscripten::val m_label;
+    emscripten::val m_canvasContainer;
+    emscripten::val m_canvas;
+    emscripten::val m_context2d = emscripten::val::undefined();
+
+    std::unique_ptr<WebImageButton> m_close;
+    std::unique_ptr<WebImageButton> m_maximize;
+    std::unique_ptr<WebImageButton> m_restore;
+    std::unique_ptr<WebImageButton> m_icon;
+
+    Qt::WindowStates m_state = Qt::WindowNoState;
     Qt::WindowStates m_previousWindowState = Qt::WindowNoState;
-    TitleBarControl m_activeControl = SC_None;
-    WId m_winid = 0;
+
+    Qt::WindowFlags m_flags = Qt::Widget;
+
+    WId m_winId = 0;
     bool m_hasTitle = false;
     bool m_needsCompositor = false;
     long m_requestAnimationFrameId = -1;
@@ -120,6 +120,5 @@ private:
     bool windowIsPopupType(Qt::WindowFlags flags) const;
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QWasmWindow::TitleBarControls);
 QT_END_NAMESPACE
 #endif // QWASMWINDOW_H

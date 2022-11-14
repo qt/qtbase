@@ -38,7 +38,7 @@ emscripten::val QWasmAccessibility::getContainer(QAccessibleInterface *iface)
     QWasmScreen *screen = QWasmScreen::get(window->screen());
     if (!screen)
         return emscripten::val::undefined();
-    return screen->container();
+    return screen->element();
 }
 
 emscripten::val QWasmAccessibility::getDocument(const emscripten::val &container)
@@ -142,11 +142,12 @@ void QWasmAccessibility::setHtmlElementGeometry(QAccessibleInterface *iface)
 void QWasmAccessibility::setHtmlElementGeometry(QAccessibleInterface *iface, emscripten::val element)
 {
     // Position the element using "position: absolute" in order to place
-    // it under the corresponding Qt element on the canvas.
+    // it under the corresponding Qt element in the screen.
     QRect geometry = iface->rect();
     emscripten::val style = element["style"];
     style.set("position", std::string("absolute"));
-    style.set("z-index", std::string("-1")); // FIXME: "0" should be sufficient to order beheind the canvas, but isn't
+    style.set("z-index", std::string("-1")); // FIXME: "0" should be sufficient to order beheind the
+                                             // screen element, but isn't
     style.set("left", std::to_string(geometry.x()) + "px");
     style.set("top", std::to_string(geometry.y()) + "px");
     style.set("width", std::to_string(geometry.width()) + "px");

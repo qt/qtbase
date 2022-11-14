@@ -117,10 +117,7 @@ QByteArray QWasmCursor::cursorShapeToHtml(Qt::CursorShape shape)
 
 void QWasmCursor::setWasmCursor(QScreen *screen, const QByteArray &name)
 {
-    // Set cursor on the canvas
-    val canvas = QWasmScreen::get(screen)->canvas();
-    val canvasStyle = canvas["style"];
-    canvasStyle.set("cursor", val(name.constData()));
+    QWasmScreen::get(screen)->element()["style"].set("cursor", val(name.constData()));
 }
 
 void QWasmCursor::setOverrideWasmCursor(const QCursor &windowCursor, QScreen *screen)

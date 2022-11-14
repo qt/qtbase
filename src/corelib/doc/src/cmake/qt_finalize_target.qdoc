@@ -61,7 +61,7 @@ CMake version earlier than 3.21.
 \section2 WASM
 
 Create \c{${target}.html} (a target-specific \c{wasm_shell.html} file),
-\c{qtloader.js} and \c{qtlogo.svg} files in the \c{CMAKE_CURRENT_BINARY_DIR}.
+\c{qtloader.js}, and \c{qtlogo.svg} files in the \c{CMAKE_CURRENT_BINARY_DIR}.
 
 \section2 iOS
 

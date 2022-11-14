@@ -6,13 +6,9 @@
 
 #include "qwasmwindowstack.h"
 
-#include <QtGui/qregion.h>
 #include <qpa/qplatformwindow.h>
 #include <QMap>
 
-#include <QtOpenGL/qopengltextureblitter.h>
-#include <QtGui/qpalette.h>
-#include <QtGui/qpainter.h>
 #include <QtGui/qinputdevice.h>
 #include <QtCore/private/qstdweb_p.h>
 
@@ -61,7 +57,6 @@ public:
     QWindow *keyWindow() const;
 
     QWasmScreen *screen();
-    QOpenGLContext *context();
 
     enum UpdateRequestDeliveryType { ExposeEventDelivery, UpdateRequestDelivery };
     void requestUpdateAllWindows();
@@ -70,10 +65,7 @@ public:
     void setCapture(QWasmWindow *window);
     void releaseCapture();
 
-    void handleBackingStoreFlush();
-
-private slots:
-    void frame();
+    void handleBackingStoreFlush(QWindow *window);
 
 private:
     class WindowManipulation {
@@ -125,23 +117,16 @@ private:
         std::unique_ptr<OperationState> m_state;
     };
 
+    void frame(bool all, const QList<QWasmWindow *> &windows);
+
     void onTopWindowChanged();
+
     void deregisterEventHandlers();
     void destroy();
 
     void requestUpdate();
     void deliverUpdateRequests();
     void deliverUpdateRequest(QWasmWindow *window, UpdateRequestDeliveryType updateType);
-
-    void drawWindow(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, const QWasmWindow *window);
-    void drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScreen *screen,
-                           const QWasmWindow *window);
-    void blit(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, const QOpenGLTexture *texture, QRect targetGeometry);
-
-    void drawWindowDecorations(QOpenGLTextureBlitter *blitter, QWasmScreen *screen,
-                               const QWasmWindow *window);
-
-    void drawFrameWindow(QWasmFrameOptions options, QPainter *painter);
 
     static int keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData);
     static int focus_cb(int eventType, const EmscriptenFocusEvent *focusEvent, void *userData);
@@ -164,10 +149,6 @@ private:
     WindowManipulation m_windowManipulation;
     QWasmWindowStack m_windowStack;
 
-    QScopedPointer<QOpenGLContext> m_context;
-    QScopedPointer<QOpenGLTextureBlitter> m_blitter;
-
-    QHash<const QWasmWindow *, bool> m_windowVisibility;
     bool m_isEnabled = true;
     QSize m_targetSize;
     qreal m_targetDevicePixelRatio = 1;
@@ -176,7 +157,6 @@ private:
     int m_requestAnimationFrameId = -1;
     bool m_inDeliverUpdateRequest = false;
 
-    QPointer<QWindow> m_pressedWindow;
     QPointer<QWindow> m_lastMouseTargetWindow;
     QPointer<QWindow> m_mouseCaptureWindow;
 
@@ -194,7 +174,7 @@ private:
 
     std::unique_ptr<QWasmEventTranslator> m_eventTranslator;
 
-    bool m_mouseInCanvas = false;
+    bool m_mouseInScreen = false;
     QPointer<QWindow> m_windowUnderMouse;
 };
 

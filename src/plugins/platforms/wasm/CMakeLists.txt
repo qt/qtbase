@@ -17,6 +17,7 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
         qwasmaccessibility.cpp qwasmaccessibility.h
         qwasmclipboard.cpp qwasmclipboard.h
         qwasmcompositor.cpp qwasmcompositor.h
+        qwasmcssstyle.cpp qwasmcssstyle.h
         qwasmcursor.cpp qwasmcursor.h
         qwasmevent.cpp qwasmevent.h
         qwasmeventdispatcher.cpp qwasmeventdispatcher.h
@@ -60,6 +61,7 @@ qt_internal_add_resource(QWasmIntegrationPlugin "wasmfonts"
     FILES
         ${wasmfonts_resource_files}
 )
+
 qt_internal_extend_target(QWasmIntegrationPlugin CONDITION QT_FEATURE_opengl
     SOURCES
         qwasmbackingstore.cpp qwasmbackingstore.h
@@ -74,7 +76,23 @@ qt_internal_extend_target(QWasmIntegrationPlugin CONDITION QT_FEATURE_opengl
 set(wasm_support_files
     wasm_shell.html
     qtloader.js
-    qtlogo.svg
+    resources/qtlogo.svg
+)
+
+set(wasmwindow_resource_files
+    "resources/maximize.svg"
+    "resources/qtlogo.svg"
+    "resources/restore.svg"
+    "resources/x.svg"
+)
+
+qt_internal_add_resource(QWasmIntegrationPlugin "wasmwindow"
+    PREFIX
+        "/wasm-window"
+    BASE
+        "resources"
+    FILES
+        ${wasmwindow_resource_files}
 )
 
 qt_path_join(destination ${QT_INSTALL_DIR} "plugins/platforms")

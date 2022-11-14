@@ -89,14 +89,14 @@ void QWasmInputContext::focusWindowChanged(QWindow *focusWindow)
     m_focusWindow = focusWindow;
 }
 
-emscripten::val QWasmInputContext::focusCanvas()
+emscripten::val QWasmInputContext::focusScreenElement()
 {
     if (!m_focusWindow)
         return emscripten::val::undefined();
     QScreen *screen = m_focusWindow->screen();
     if (!screen)
         return emscripten::val::undefined();
-    return QWasmScreen::get(screen)->canvas();
+    return QWasmScreen::get(screen)->element();
 }
 
 void QWasmInputContext::update(Qt::InputMethodQueries queries)
@@ -111,20 +111,20 @@ void QWasmInputContext::showInputPanel()
         return;
     // this is called each time the keyboard is touched
 
-    // Add the input element as a child of the canvas for the
+    // Add the input element as a child of the screen for the
     // currently focused window and give it focus. The browser
     // will not display the input element, but mobile browsers
     // should display the virtual keyboard. Key events will be
     // captured by the keyboard event handler installed on the
-    // canvas.
+    // screen element.
 
     if (platform() == Platform::MacOS // keep for compatibility
      || platform() == Platform::iPhone
      || platform() == Platform::Windows) {
-        emscripten::val canvas = focusCanvas();
-        if (canvas == emscripten::val::undefined())
+        emscripten::val screenElement = focusScreenElement();
+        if (screenElement.isUndefined())
             return;
-        canvas.call<void>("appendChild", m_inputElement);
+        screenElement.call<void>("appendChild", m_inputElement);
     }
 
     m_inputElement.call<void>("focus");

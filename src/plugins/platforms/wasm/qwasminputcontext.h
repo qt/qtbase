@@ -29,10 +29,11 @@ public:
     bool isValid() const override { return true; }
 
     void focusWindowChanged(QWindow *focusWindow);
-    emscripten::val focusCanvas();
     void inputStringChanged(QString &, QWasmInputContext *context);
 
 private:
+    emscripten::val focusScreenElement();
+
     bool m_inputPanelVisible = false;
 
     QPointer<QWindow> m_focusWindow;

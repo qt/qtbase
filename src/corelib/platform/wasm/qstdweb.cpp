@@ -626,7 +626,11 @@ void EventCallback::activate(emscripten::val event)
 {
     emscripten::val target = event["target"];
     std::string eventName = event["type"].as<std::string>();
-    EventCallback *that = reinterpret_cast<EventCallback *>(target[contextPropertyName(eventName).c_str()].as<intptr_t>());
+    emscripten::val property = target[contextPropertyName(eventName)];
+    // This might happen when the event bubbles
+    if (property.isUndefined())
+        return;
+    EventCallback *that = reinterpret_cast<EventCallback *>(property.as<intptr_t>());
     that->m_fn(event);
 }
 

@@ -11,9 +11,6 @@ QWasmOffscrenSurface::QWasmOffscrenSurface(QOffscreenSurface *offscreenSurface)
 
 }
 
-QWasmOffscrenSurface::~QWasmOffscrenSurface()
-{
-
-}
+QWasmOffscrenSurface::~QWasmOffscrenSurface() = default;
 
 QT_END_NAMESPACE

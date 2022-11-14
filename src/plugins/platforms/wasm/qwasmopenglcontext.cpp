@@ -34,18 +34,19 @@ QWasmOpenGLContext::QWasmOpenGLContext(const QSurfaceFormat &format)
 
 QWasmOpenGLContext::~QWasmOpenGLContext()
 {
-    if (m_context) {
-        // Destroy GL context. Work around bug in emscripten_webgl_destroy_context
-        // which removes all event handlers on the canvas by temporarily replacing the function
-        // that does the removal with a function that does nothing.
-        emscripten::val jsEvents = emscripten::val::module_property("JSEvents");
-        emscripten::val savedRemoveAllHandlersOnTargetFunction =
-                jsEvents["removeAllHandlersOnTarget"];
-        jsEvents.set("removeAllHandlersOnTarget", emscripten::val::module_property("qtDoNothing"));
-        emscripten_webgl_destroy_context(m_context);
-        jsEvents.set("removeAllHandlersOnTarget", savedRemoveAllHandlersOnTargetFunction);
-        m_context = 0;
-    }
+    if (!m_context)
+        return;
+
+    // Destroy GL context. Work around bug in emscripten_webgl_destroy_context
+    // which removes all event handlers on the canvas by temporarily replacing the function
+    // that does the removal with a function that does nothing.
+    emscripten::val jsEvents = emscripten::val::module_property("JSEvents");
+    emscripten::val savedRemoveAllHandlersOnTargetFunction =
+            jsEvents["removeAllHandlersOnTarget"];
+    jsEvents.set("removeAllHandlersOnTarget", emscripten::val::module_property("qtDoNothing"));
+    emscripten_webgl_destroy_context(m_context);
+    jsEvents.set("removeAllHandlersOnTarget", savedRemoveAllHandlersOnTargetFunction);
+    m_context = 0;
 }
 
 bool QWasmOpenGLContext::isOpenGLVersionSupported(QSurfaceFormat format)
@@ -60,25 +61,23 @@ bool QWasmOpenGLContext::isOpenGLVersionSupported(QSurfaceFormat format)
 
 bool QWasmOpenGLContext::maybeCreateEmscriptenContext(QPlatformSurface *surface)
 {
-    // Native emscripten/WebGL contexts are tied to a single screen/canvas. The first
-    // call to this function creates a native canvas for the given screen, subsequent
-    // calls verify that the surface is on/off the same screen.
-    QPlatformScreen *screen = surface->screen();
-    if (m_context && !screen)
-        return false; // Alternative: return true to support makeCurrent on QOffScreenSurface with
-                      // no screen. However, Qt likes to substitute QGuiApplication::primaryScreen()
-                      // for null screens, which foils this plan.
-    if (!screen)
-        return false;
-    if (m_context)
-        return m_screen == screen;
+    if (m_context && m_surface == surface)
+        return true;
 
-    m_context = createEmscriptenContext(QWasmScreen::get(screen)->canvasTargetId(), m_requestedFormat);
-    m_screen = screen;
+    // TODO(mikolajboc): Use OffscreenCanvas if available.
+    if (surface->surface()->surfaceClass() == QSurface::Offscreen)
+        return false;
+
+    m_surface = surface;
+
+    auto *window = static_cast<QWasmWindow *>(surface);
+    m_context = createEmscriptenContext(window->canvasSelector(), m_requestedFormat);
     return true;
 }
 
-EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QWasmOpenGLContext::createEmscriptenContext(const QString &canvasTargetId, QSurfaceFormat format)
+EMSCRIPTEN_WEBGL_CONTEXT_HANDLE
+QWasmOpenGLContext::createEmscriptenContext(const std::string &canvasSelector,
+                                            QSurfaceFormat format)
 {
     EmscriptenWebGLContextAttributes attributes;
     emscripten_webgl_init_context_attributes(&attributes); // Populate with default attributes
@@ -92,17 +91,14 @@ EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QWasmOpenGLContext::createEmscriptenContext(cons
 
     // WebGL doesn't allow separate attach buffers to STENCIL_ATTACHMENT and DEPTH_ATTACHMENT
     // we need both or none
-    bool useDepthStencil = (format.depthBufferSize() > 0 || format.stencilBufferSize() > 0);
+    const bool useDepthStencil = (format.depthBufferSize() > 0 || format.stencilBufferSize() > 0);
 
     // WebGL offers enable/disable control but not size control for these
     attributes.alpha = format.alphaBufferSize() > 0;
     attributes.depth = useDepthStencil;
     attributes.stencil = useDepthStencil;
 
-    QByteArray convasSelector = canvasTargetId.toUtf8();
-    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_create_context(convasSelector.constData(), &attributes);
-
-    return context;
+    return emscripten_webgl_create_context(canvasSelector.c_str(), &attributes);
 }
 
 QSurfaceFormat QWasmOpenGLContext::format() const
@@ -117,8 +113,7 @@ GLuint QWasmOpenGLContext::defaultFramebufferObject(QPlatformSurface *surface) c
 
 bool QWasmOpenGLContext::makeCurrent(QPlatformSurface *surface)
 {
-    bool ok = maybeCreateEmscriptenContext(surface);
-    if (!ok)
+    if (!maybeCreateEmscriptenContext(surface))
         return false;
 
     return emscripten_webgl_make_context_current(m_context) == EMSCRIPTEN_RESULT_SUCCESS;
@@ -142,7 +137,7 @@ bool QWasmOpenGLContext::isSharing() const
 
 bool QWasmOpenGLContext::isValid() const
 {
-    if (!(isOpenGLVersionSupported(m_requestedFormat)))
+    if (!isOpenGLVersionSupported(m_requestedFormat))
         return false;
 
     // Note: we get isValid() calls before we see the surface and can

@@ -7,18 +7,20 @@
 #include <qpa/qplatformbackingstore.h>
 #include <QtGui/qimage.h>
 
+#include <emscripten/val.h>
+
 QT_BEGIN_NAMESPACE
 
 class QOpenGLTexture;
 class QRegion;
 class QWasmCompositor;
+class QWasmWindow;
 
 class QWasmBackingStore : public QPlatformBackingStore
 {
 public:
     QWasmBackingStore(QWasmCompositor *compositor, QWindow *window);
     ~QWasmBackingStore();
-    void destroy();
 
     QPaintDevice *paintDevice() override;
 
@@ -28,17 +30,16 @@ public:
     QImage toImage() const override;
     const QImage &getImageRef() const;
 
-    const QOpenGLTexture *getUpdatedTexture();
+    emscripten::val getUpdatedWebImage(QWasmWindow *window);
 
 protected:
-    void updateTexture();
+    void updateTexture(QWasmWindow *window);
 
 private:
     QWasmCompositor *m_compositor;
     QImage m_image;
-    QScopedPointer<QOpenGLTexture> m_texture;
     QRegion m_dirty;
-    bool m_recreateTexture = false;
+    emscripten::val m_webImageDataArray = emscripten::val::undefined();
 };
 
 QT_END_NAMESPACE

@@ -225,14 +225,14 @@ void QWasmClipboard::initClipboardPermissions()
                            })());
 }
 
-void QWasmClipboard::installEventHandlers(const emscripten::val &canvas)
+void QWasmClipboard::installEventHandlers(const emscripten::val &screenElement)
 {
     emscripten::val cContext = val::undefined();
     emscripten::val isChromium = val::global("window")["chrome"];
    if (!isChromium.isUndefined()) {
         cContext = val::global("document");
    } else {
-       cContext = canvas;
+       cContext = screenElement;
    }
     // Fallback path for browsers which do not support direct clipboard access
     cContext.call<void>("addEventListener", val("cut"),

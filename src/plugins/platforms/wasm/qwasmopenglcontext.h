@@ -27,10 +27,11 @@ public:
 private:
     static bool isOpenGLVersionSupported(QSurfaceFormat format);
     bool maybeCreateEmscriptenContext(QPlatformSurface *surface);
-    static EMSCRIPTEN_WEBGL_CONTEXT_HANDLE createEmscriptenContext(const QString &canvasId, QSurfaceFormat format);
+    static EMSCRIPTEN_WEBGL_CONTEXT_HANDLE
+    createEmscriptenContext(const std::string &canvasSelector, QSurfaceFormat format);
 
     QSurfaceFormat m_requestedFormat;
-    QPlatformScreen *m_screen = nullptr;
+    QPlatformSurface *m_surface = nullptr;
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE m_context = 0;
 };
 
