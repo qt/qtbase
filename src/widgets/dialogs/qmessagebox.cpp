@@ -780,13 +780,20 @@ void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button
 */
 
 /*!
-    Constructs a message box with no text and no buttons. \a parent is
-    passed to the QDialog constructor.
+    Constructs an \l{Qt::ApplicationModal} {application modal} message box with no text and no buttons.
+    \a parent is passed to the QDialog constructor.
+
+    The window modality can be overridden via setWindowModality() before calling show().
+
+    \note Using open() or exec() to show the message box affects the window modality.
+    Please see the detailed documentation for each function for more information.
 
     On \macos, if you want your message box to appear
     as a Qt::Sheet of its \a parent, set the message box's
     \l{setWindowModality()} {window modality} to Qt::WindowModal or use open().
     Otherwise, the message box will be a standard dialog.
+
+    \sa setWindowTitle(), setText(), setIcon(), setStandardButtons(), setWindowModality()
 
 */
 QMessageBox::QMessageBox(QWidget *parent)
@@ -797,20 +804,22 @@ QMessageBox::QMessageBox(QWidget *parent)
 }
 
 /*!
-    Constructs a message box with the given \a icon, \a title, \a
-    text, and standard \a buttons. Standard or custom buttons can be
+    Constructs an \l{Qt::ApplicationModal} {application modal} message box with the given \a icon,
+    \a title, \a text, and standard \a buttons. Standard or custom buttons can be
     added at any time using addButton(). The \a parent and \a f
     arguments are passed to the QDialog constructor.
 
-    The message box is an \l{Qt::ApplicationModal} {application modal}
-    dialog box.
+    The window modality can be overridden via setWindowModality() before calling show().
+
+    \note Using open() or exec() to show the message box affects the window modality.
+    Please see the detailed documentation for each function for more information.
 
     On \macos, if \a parent is not \nullptr and you want your message box
     to appear as a Qt::Sheet of that parent, set the message box's
     \l{setWindowModality()} {window modality} to Qt::WindowModal
     (default). Otherwise, the message box will be a standard dialog.
 
-    \sa setWindowTitle(), setText(), setIcon(), setStandardButtons()
+    \sa setWindowTitle(), setText(), setIcon(), setStandardButtons(), setWindowModality()
 */
 QMessageBox::QMessageBox(Icon icon, const QString &title, const QString &text,
                          StandardButtons buttons, QWidget *parent,
