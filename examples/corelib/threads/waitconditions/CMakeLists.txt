@@ -19,7 +19,7 @@ qt_add_executable(waitconditions
 )
 
 target_link_libraries(waitconditions PUBLIC
-    Qt::Core
+    Qt6::Core
 )
 
 install(TARGETS waitconditions

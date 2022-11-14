@@ -28,10 +28,10 @@ set_target_properties(drilldown PROPERTIES
 )
 
 target_link_libraries(drilldown PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Sql
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Sql
+    Qt6::Widgets
 )
 
 # Resources:

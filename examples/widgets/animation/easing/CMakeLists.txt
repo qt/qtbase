@@ -28,9 +28,9 @@ set_target_properties(easing PROPERTIES
 )
 
 target_link_libraries(easing PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 # Resources:

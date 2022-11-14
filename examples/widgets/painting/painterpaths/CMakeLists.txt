@@ -26,9 +26,9 @@ set_target_properties(painterpaths PROPERTIES
 )
 
 target_link_libraries(painterpaths PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 if(UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS)

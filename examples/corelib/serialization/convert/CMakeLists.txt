@@ -26,7 +26,7 @@ qt_add_executable(convert
 )
 
 target_link_libraries(convert PUBLIC
-    Qt::Core
+    Qt6::Core
 )
 
 install(TARGETS convert

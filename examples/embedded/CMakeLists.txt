@@ -1,7 +1,7 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-if(NOT TARGET Qt::Gui OR (NOT embedded AND NOT x11))
+if(NOT TARGET Qt6::Gui OR (NOT embedded AND NOT x11))
     return()
 endif()
 qt_internal_add_example(styleexample)

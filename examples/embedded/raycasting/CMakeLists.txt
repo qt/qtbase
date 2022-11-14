@@ -24,9 +24,9 @@ set_target_properties(raycasting PROPERTIES
 )
 
 target_link_libraries(raycasting PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 # Resources:

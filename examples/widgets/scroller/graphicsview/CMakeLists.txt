@@ -24,9 +24,9 @@ set_target_properties(graphicsview PROPERTIES
 )
 
 target_link_libraries(graphicsview PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS graphicsview

@@ -25,10 +25,10 @@ set_target_properties(tablemodel PROPERTIES
 )
 
 target_link_libraries(tablemodel PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Sql
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Sql
+    Qt6::Widgets
 )
 
 install(TARGETS tablemodel

@@ -25,8 +25,8 @@ set_target_properties(hellovulkantriangle PROPERTIES
 )
 
 target_link_libraries(hellovulkantriangle PUBLIC
-    Qt::Core
-    Qt::Gui
+    Qt6::Core
+    Qt6::Gui
 )
 
 # Resources:

@@ -25,10 +25,10 @@ set_target_properties(windows PROPERTIES
 )
 
 target_link_libraries(windows PUBLIC
-    Qt::Core
-    Qt::CorePrivate
-    Qt::Gui
-    Qt::GuiPrivate
+    Qt6::Core
+    Qt6::CorePrivate
+    Qt6::Gui
+    Qt6::GuiPrivate
 )
 
 install(TARGETS windows

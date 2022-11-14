@@ -26,9 +26,9 @@ set_target_properties(hellogles3 PROPERTIES
 )
 
 target_link_libraries(hellogles3 PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::OpenGL
+    Qt6::Core
+    Qt6::Gui
+    Qt6::OpenGL
 )
 
 # Resources:

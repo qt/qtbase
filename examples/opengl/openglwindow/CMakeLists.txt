@@ -25,9 +25,9 @@ set_target_properties(openglwindow PROPERTIES
 )
 
 target_link_libraries(openglwindow PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::OpenGL
+    Qt6::Core
+    Qt6::Gui
+    Qt6::OpenGL
 )
 
 install(TARGETS openglwindow

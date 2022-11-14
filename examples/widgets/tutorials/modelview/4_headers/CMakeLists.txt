@@ -25,9 +25,9 @@ set_target_properties(mv_headers PROPERTIES
 )
 
 target_link_libraries(mv_headers PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS mv_headers

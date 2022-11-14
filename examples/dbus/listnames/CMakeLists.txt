@@ -19,8 +19,8 @@ qt_add_executable(listnames
 )
 
 target_link_libraries(listnames PUBLIC
-    Qt::Core
-    Qt::DBus
+    Qt6::Core
+    Qt6::DBus
 )
 
 install(TARGETS listnames

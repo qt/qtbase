@@ -30,10 +30,10 @@ set_target_properties(network-chat PROPERTIES
 )
 
 target_link_libraries(network-chat PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Network
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Network
+    Qt6::Widgets
 )
 
 install(TARGETS network-chat

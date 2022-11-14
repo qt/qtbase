@@ -29,8 +29,8 @@ target_include_directories(gui_analogclock PUBLIC
 )
 
 target_link_libraries(gui_analogclock PUBLIC
-    Qt::Core
-    Qt::Gui
+    Qt6::Core
+    Qt6::Gui
 )
 
 install(TARGETS gui_analogclock

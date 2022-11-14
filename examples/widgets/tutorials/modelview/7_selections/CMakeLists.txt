@@ -25,9 +25,9 @@ set_target_properties(mv_selections PROPERTIES
 )
 
 target_link_libraries(mv_selections PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS mv_selections

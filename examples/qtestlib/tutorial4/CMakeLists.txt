@@ -24,10 +24,10 @@ set_target_properties(tutorial4 PROPERTIES
 )
 
 target_link_libraries(tutorial4 PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Test
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Test
+    Qt6::Widgets
 )
 
 install(TARGETS tutorial4

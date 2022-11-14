@@ -1,7 +1,7 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-if(NOT TARGET Qt::Widgets)
+if(NOT TARGET Qt6::Widgets)
     return()
 endif()
 if(QT_FEATURE_animation)
@@ -28,6 +28,6 @@ endif()
 if(QT_FEATURE_cursor)
     add_subdirectory(mainwindows)
 endif()
-if(QT_FEATURE_opengl AND TARGET Qt::Gui)
+if(QT_FEATURE_opengl AND TARGET Qt6::Gui)
     qt_internal_add_example(windowcontainer)
 endif()

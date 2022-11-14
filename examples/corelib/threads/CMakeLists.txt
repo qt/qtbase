@@ -3,7 +3,7 @@
 
 qt_internal_add_example(semaphores)
 qt_internal_add_example(waitconditions)
-if(TARGET Qt::Widgets)
+if(TARGET Qt6::Widgets)
     qt_internal_add_example(mandelbrot)
     qt_internal_add_example(queuedcustomtype)
 endif()

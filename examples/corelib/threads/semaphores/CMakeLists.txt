@@ -19,7 +19,7 @@ qt_add_executable(semaphores
 )
 
 target_link_libraries(semaphores PUBLIC
-    Qt::Core
+    Qt6::Core
 )
 
 install(TARGETS semaphores

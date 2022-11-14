@@ -26,9 +26,9 @@ set_target_properties(pinchzoom PROPERTIES
 )
 
 target_link_libraries(pinchzoom PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 # Resources:

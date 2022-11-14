@@ -27,11 +27,11 @@ set_target_properties(imagescaling PROPERTIES
 )
 
 target_link_libraries(imagescaling PUBLIC
-    Qt::Concurrent
-    Qt::Core
-    Qt::Gui
-    Qt::Network
-    Qt::Widgets
+    Qt6::Concurrent
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Network
+    Qt6::Widgets
 )
 
 install(TARGETS imagescaling

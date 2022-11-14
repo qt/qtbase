@@ -24,7 +24,7 @@ set_target_properties(htmlinfo PROPERTIES
 )
 
 target_link_libraries(htmlinfo PUBLIC
-    Qt::Core
+    Qt6::Core
 )
 
 # Resources:

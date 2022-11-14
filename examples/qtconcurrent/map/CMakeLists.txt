@@ -19,9 +19,9 @@ qt_add_executable(mapdemo
 )
 
 target_link_libraries(mapdemo PUBLIC
-    Qt::Concurrent
-    Qt::Core
-    Qt::Gui
+    Qt6::Concurrent
+    Qt6::Core
+    Qt6::Gui
 )
 
 install(TARGETS mapdemo

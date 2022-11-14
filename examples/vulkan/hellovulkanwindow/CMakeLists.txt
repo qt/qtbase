@@ -25,8 +25,8 @@ set_target_properties(hellovulkanwindow PROPERTIES
 )
 
 target_link_libraries(hellovulkanwindow PUBLIC
-    Qt::Core
-    Qt::Gui
+    Qt6::Core
+    Qt6::Gui
 )
 
 install(TARGETS hellovulkanwindow

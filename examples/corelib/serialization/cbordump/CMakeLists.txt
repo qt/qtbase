@@ -19,7 +19,7 @@ qt_add_executable(cbordump
 )
 
 target_link_libraries(cbordump PUBLIC
-    Qt::Core
+    Qt6::Core
 )
 
 install(TARGETS cbordump

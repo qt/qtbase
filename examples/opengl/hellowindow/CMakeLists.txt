@@ -25,11 +25,11 @@ set_target_properties(hellowindow PROPERTIES
 )
 
 target_link_libraries(hellowindow PUBLIC
-    Qt::Core
-    Qt::CorePrivate
-    Qt::Gui
-    Qt::GuiPrivate
-    Qt::OpenGL
+    Qt6::Core
+    Qt6::CorePrivate
+    Qt6::Gui
+    Qt6::GuiPrivate
+    Qt6::OpenGL
 )
 
 install(TARGETS hellowindow

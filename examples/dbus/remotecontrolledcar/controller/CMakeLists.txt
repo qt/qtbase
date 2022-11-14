@@ -35,10 +35,10 @@ set_target_properties(controller PROPERTIES
 )
 
 target_link_libraries(controller PUBLIC
-    Qt::Core
-    Qt::DBus
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::DBus
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS controller

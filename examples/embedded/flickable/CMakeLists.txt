@@ -25,9 +25,9 @@ set_target_properties(flickable PROPERTIES
 )
 
 target_link_libraries(flickable PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS flickable

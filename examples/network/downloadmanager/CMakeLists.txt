@@ -21,8 +21,8 @@ qt_add_executable(downloadmanager
 )
 
 target_link_libraries(downloadmanager PUBLIC
-    Qt::Core
-    Qt::Network
+    Qt6::Core
+    Qt6::Network
 )
 
 install(TARGETS downloadmanager

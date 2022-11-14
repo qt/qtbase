@@ -23,9 +23,9 @@ qt_add_executable(bindablesubscription
 )
 
 target_link_libraries(bindablesubscription PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 # Resources:

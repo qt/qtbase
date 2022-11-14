@@ -25,9 +25,9 @@ set_target_properties(dynamiclayouts PROPERTIES
 )
 
 target_link_libraries(dynamiclayouts PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS dynamiclayouts

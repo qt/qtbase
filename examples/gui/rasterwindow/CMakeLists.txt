@@ -25,8 +25,8 @@ set_target_properties(rasterwindow PROPERTIES
 )
 
 target_link_libraries(rasterwindow PUBLIC
-    Qt::Core
-    Qt::Gui
+    Qt6::Core
+    Qt6::Gui
 )
 
 install(TARGETS rasterwindow

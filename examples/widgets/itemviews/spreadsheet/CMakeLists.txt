@@ -31,13 +31,13 @@ set_target_properties(spreadsheet PROPERTIES
 )
 
 target_link_libraries(spreadsheet PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
-if (TARGET Qt::PrintSupport)
-    target_link_libraries(spreadsheet PUBLIC Qt::PrintSupport)
+if (TARGET Qt6::PrintSupport)
+    target_link_libraries(spreadsheet PUBLIC Qt6::PrintSupport)
 endif()
 
 # Resources:
@@ -52,9 +52,9 @@ qt_add_resources(spreadsheet "spreadsheet"
         ${spreadsheet_resource_files}
 )
 
-if(TARGET Qt::PrintSupport)
+if(TARGET Qt6::PrintSupport)
     target_link_libraries(spreadsheet PUBLIC
-        Qt::PrintSupport
+        Qt6::PrintSupport
     )
 endif()
 

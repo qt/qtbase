@@ -28,10 +28,10 @@ set_target_properties(securesocketclient PROPERTIES
 )
 
 target_link_libraries(securesocketclient PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Network
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Network
+    Qt6::Widgets
 )
 
 # Resources:

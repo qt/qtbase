@@ -25,11 +25,11 @@ set_target_properties(rsslisting PROPERTIES
 )
 
 target_link_libraries(rsslisting PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Network
-    Qt::Widgets
-    Qt::Xml
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Network
+    Qt6::Widgets
+    Qt6::Xml
 )
 
 install(TARGETS rsslisting

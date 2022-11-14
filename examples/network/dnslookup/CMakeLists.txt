@@ -19,8 +19,8 @@ qt_add_executable(dnslookup
 )
 
 target_link_libraries(dnslookup PUBLIC
-    Qt::Core
-    Qt::Network
+    Qt6::Core
+    Qt6::Network
 )
 
 install(TARGETS dnslookup

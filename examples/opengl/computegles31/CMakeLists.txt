@@ -25,9 +25,9 @@ set_target_properties(computegles31 PROPERTIES
 )
 
 target_link_libraries(computegles31 PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::OpenGL
+    Qt6::Core
+    Qt6::Gui
+    Qt6::OpenGL
 )
 
 # Resources:

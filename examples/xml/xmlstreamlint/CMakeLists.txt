@@ -24,8 +24,8 @@ set_target_properties(xmlstreamlint PROPERTIES
 )
 
 target_link_libraries(xmlstreamlint PUBLIC
-    Qt::Core
-    Qt::Xml
+    Qt6::Core
+    Qt6::Xml
 )
 
 install(TARGETS xmlstreamlint

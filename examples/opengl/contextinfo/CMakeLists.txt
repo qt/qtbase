@@ -26,10 +26,10 @@ set_target_properties(contextinfo PROPERTIES
 )
 
 target_link_libraries(contextinfo PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::OpenGL
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::OpenGL
+    Qt6::Widgets
 )
 
 install(TARGETS contextinfo

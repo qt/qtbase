@@ -29,18 +29,18 @@ set_target_properties(fingerpaint PROPERTIES
 )
 
 target_link_libraries(fingerpaint PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
-if (TARGET Qt::PrintSupport)
-    target_link_libraries(fingerpaint PUBLIC Qt::PrintSupport)
+if (TARGET Qt6::PrintSupport)
+    target_link_libraries(fingerpaint PUBLIC Qt6::PrintSupport)
 endif()
 
-if(TARGET Qt::PrintSupport)
+if(TARGET Qt6::PrintSupport)
     target_link_libraries(fingerpaint PUBLIC
-        Qt::PrintSupport
+        Qt6::PrintSupport
     )
 endif()
 

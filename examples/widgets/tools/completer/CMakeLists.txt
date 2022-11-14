@@ -26,9 +26,9 @@ set_target_properties(completer PROPERTIES
 )
 
 target_link_libraries(completer PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 # Resources:

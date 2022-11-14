@@ -26,10 +26,10 @@ set_target_properties(flightinfo PROPERTIES
 )
 
 target_link_libraries(flightinfo PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Network
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Network
+    Qt6::Widgets
 )
 
 # Resources:

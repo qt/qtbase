@@ -27,10 +27,10 @@ set_target_properties(simpledommodel PROPERTIES
 )
 
 target_link_libraries(simpledommodel PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
-    Qt::Xml
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
+    Qt6::Xml
 )
 
 install(TARGETS simpledommodel

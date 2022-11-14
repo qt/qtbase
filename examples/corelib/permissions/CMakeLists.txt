@@ -28,9 +28,9 @@ set_target_properties(permissions PROPERTIES
 qt_finalize_executable(permissions)
 
 target_link_libraries(permissions PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS permissions

@@ -19,8 +19,8 @@ qt_add_executable(download
 )
 
 target_link_libraries(download PUBLIC
-    Qt::Core
-    Qt::Network
+    Qt6::Core
+    Qt6::Network
 )
 
 install(TARGETS download

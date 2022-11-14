@@ -22,7 +22,7 @@ qt_add_executable(savegame
 )
 
 target_link_libraries(savegame PUBLIC
-    Qt::Core
+    Qt6::Core
 )
 
 install(TARGETS savegame

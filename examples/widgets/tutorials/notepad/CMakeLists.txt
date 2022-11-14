@@ -29,9 +29,9 @@ set_target_properties(notepad PROPERTIES
 )
 
 target_link_libraries(notepad PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 # Resources:
@@ -63,9 +63,9 @@ qt_add_resources(notepad "notepad"
         ${notepad_resource_files}
 )
 
-if(TARGET Qt::PrintSupport)
+if(TARGET Qt6::PrintSupport)
     target_link_libraries(notepad PUBLIC
-        Qt::PrintSupport
+        Qt6::PrintSupport
     )
 endif()
 

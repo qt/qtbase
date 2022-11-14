@@ -15,7 +15,7 @@ set_target_properties(plugandpaint PROPERTIES
 )
 
 target_link_libraries(plugandpaint PRIVATE
-    Qt::Widgets
+    Qt6::Widgets
     pnp_basictools
 )
 

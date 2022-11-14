@@ -31,10 +31,10 @@ set_target_properties(sqlbrowser PROPERTIES
 )
 
 target_link_libraries(sqlbrowser PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Sql
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Sql
+    Qt6::Widgets
 )
 
 install(TARGETS sqlbrowser

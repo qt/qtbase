@@ -26,9 +26,9 @@ set_target_properties(transformations PROPERTIES
 )
 
 target_link_libraries(transformations PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS transformations

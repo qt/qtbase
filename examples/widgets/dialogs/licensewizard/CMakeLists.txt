@@ -25,10 +25,10 @@ set_target_properties(licensewizard PROPERTIES
 )
 
 target_link_libraries(licensewizard PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::PrintSupport
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::PrintSupport
+    Qt6::Widgets
 )
 
 # Resources:

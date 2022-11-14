@@ -26,9 +26,9 @@ set_target_properties(part5 PROPERTIES
 )
 
 target_link_libraries(part5 PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS part5

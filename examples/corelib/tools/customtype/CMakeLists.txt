@@ -25,9 +25,9 @@ set_target_properties(customtype PROPERTIES
 )
 
 target_link_libraries(customtype PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS customtype

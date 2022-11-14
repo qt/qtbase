@@ -28,13 +28,13 @@ set_target_properties(textedit PROPERTIES
 )
 
 target_link_libraries(textedit PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
-if (TARGET Qt::PrintSupport)
-    target_link_libraries(textedit PUBLIC Qt::PrintSupport)
+if (TARGET Qt6::PrintSupport)
+    target_link_libraries(textedit PUBLIC Qt6::PrintSupport)
 endif()
 
 # Resources:
@@ -98,9 +98,9 @@ qt_add_resources(textedit "textedit"
         ${textedit_resource_files}
 )
 
-if(TARGET Qt::PrintSupport)
+if(TARGET Qt6::PrintSupport)
     target_link_libraries(textedit PUBLIC
-        Qt::PrintSupport
+        Qt6::PrintSupport
     )
 endif()
 

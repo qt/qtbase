@@ -19,10 +19,10 @@ qt_add_executable(wordcount
 )
 
 target_link_libraries(wordcount PUBLIC
-    Qt::Concurrent
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Concurrent
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS wordcount

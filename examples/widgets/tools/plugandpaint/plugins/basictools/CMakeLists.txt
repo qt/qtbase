@@ -12,7 +12,7 @@ target_include_directories(pnp_basictools PUBLIC
 )
 
 target_link_libraries(pnp_basictools PRIVATE
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )

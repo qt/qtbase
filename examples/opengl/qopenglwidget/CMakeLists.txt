@@ -27,11 +27,11 @@ set_target_properties(qopenglwidget PROPERTIES
 )
 
 target_link_libraries(qopenglwidget PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::OpenGL
-    Qt::OpenGLWidgets
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::OpenGL
+    Qt6::OpenGLWidgets
+    Qt6::Widgets
 )
 
 # Resources:

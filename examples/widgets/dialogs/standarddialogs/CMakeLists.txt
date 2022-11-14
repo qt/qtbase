@@ -25,9 +25,9 @@ set_target_properties(standarddialogs PROPERTIES
 )
 
 target_link_libraries(standarddialogs PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS standarddialogs

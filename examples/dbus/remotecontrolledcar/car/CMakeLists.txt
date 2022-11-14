@@ -36,10 +36,10 @@ set_target_properties(car PROPERTIES
 )
 
 target_link_libraries(car PUBLIC
-    Qt::Core
-    Qt::DBus
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::DBus
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS car

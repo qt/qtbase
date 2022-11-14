@@ -24,9 +24,9 @@ set_target_properties(getting_started_part3 PROPERTIES
 )
 
 target_link_libraries(getting_started_part3 PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS getting_started_part3

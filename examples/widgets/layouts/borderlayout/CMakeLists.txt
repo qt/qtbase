@@ -26,9 +26,9 @@ set_target_properties(borderlayout PROPERTIES
 )
 
 target_link_libraries(borderlayout PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS borderlayout

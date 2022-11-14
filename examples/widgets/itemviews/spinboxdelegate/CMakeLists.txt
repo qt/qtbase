@@ -25,9 +25,9 @@ set_target_properties(spinboxdelegate PROPERTIES
 )
 
 target_link_libraries(spinboxdelegate PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS spinboxdelegate

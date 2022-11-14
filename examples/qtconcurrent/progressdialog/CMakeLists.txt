@@ -24,10 +24,10 @@ set_target_properties(progressdialog PROPERTIES
 )
 
 target_link_libraries(progressdialog PUBLIC
-    Qt::Concurrent
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Concurrent
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 install(TARGETS progressdialog

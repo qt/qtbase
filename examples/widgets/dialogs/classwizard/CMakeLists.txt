@@ -25,9 +25,9 @@ set_target_properties(classwizard PROPERTIES
 )
 
 target_link_libraries(classwizard PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 # Resources:

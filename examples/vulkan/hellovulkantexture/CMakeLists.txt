@@ -25,8 +25,8 @@ set_target_properties(hellovulkantexture PROPERTIES
 )
 
 target_link_libraries(hellovulkantexture PUBLIC
-    Qt::Core
-    Qt::Gui
+    Qt6::Core
+    Qt6::Gui
 )
 
 # Resources:

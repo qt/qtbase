@@ -27,10 +27,10 @@ set_target_properties(streambookmarks PROPERTIES
 )
 
 target_link_libraries(streambookmarks PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
-    Qt::Xml
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
+    Qt6::Xml
 )
 
 install(TARGETS streambookmarks

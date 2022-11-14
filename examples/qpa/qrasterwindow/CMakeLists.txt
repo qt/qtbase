@@ -24,8 +24,8 @@ set_target_properties(qrasterwindow PROPERTIES
 )
 
 target_link_libraries(qrasterwindow PUBLIC
-    Qt::Core
-    Qt::Gui
+    Qt6::Core
+    Qt6::Gui
 )
 
 install(TARGETS qrasterwindow

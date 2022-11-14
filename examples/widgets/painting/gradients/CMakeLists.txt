@@ -37,9 +37,9 @@ if(NOT TARGET painting_shared::painting_shared)
 endif()
 
 target_link_libraries(gradients PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
     painting_shared::painting_shared
 )
 
@@ -110,7 +110,7 @@ qt_add_resources(gradients "gradients"
     #)
 
     #target_link_libraries(affine PUBLIC
-        #Qt::OpenGL
+        #Qt6::OpenGL
     #)
 #endif()
 

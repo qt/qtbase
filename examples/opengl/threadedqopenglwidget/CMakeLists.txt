@@ -27,11 +27,11 @@ set_target_properties(threadedqopenglwidget PROPERTIES
 )
 
 target_link_libraries(threadedqopenglwidget PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::OpenGL
-    Qt::OpenGLWidgets
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::OpenGL
+    Qt6::OpenGLWidgets
+    Qt6::Widgets
 )
 
 install(TARGETS threadedqopenglwidget

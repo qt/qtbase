@@ -23,9 +23,9 @@ qt_add_executable(subscription
 )
 
 target_link_libraries(subscription PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::Widgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
 )
 
 # Resources:
