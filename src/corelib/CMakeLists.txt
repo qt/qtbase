@@ -1250,7 +1250,21 @@ if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
         endif()
     endif()
 
-    if(QT_FEATURE_zstd)
+    if(DEFINED INPUT_mimetype_database_compression)
+        set(supported_compression_types zstd gzip none)
+        if(INPUT_mimetype_database_compression IN_LIST supported_compression_types)
+            set(compression_type ${INPUT_mimetype_database_compression})
+        else()
+            message(FATAL_ERROR "Unknown mime type database compression is set:"
+            " ${INPUT_mimetype_database_compression}\nSupported compression types:\n"
+            "    ${supported_compression_types}")
+        endif()
+        if(compression_type STREQUAL "zstd" AND NOT QT_FEATURE_zstd)
+            message(FATAL_ERROR
+                "zstd compression is selected for mime type database, but the 'zstd'"
+                " feature is disabled.")
+        endif()
+    elseif(QT_FEATURE_zstd)
         set(compression_type "zstd")
     else()
         set(compression_type "gzip")
