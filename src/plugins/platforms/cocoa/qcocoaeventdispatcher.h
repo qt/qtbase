@@ -148,7 +148,6 @@ public:
     QList<void *> queuedUserInputEvents; // NSEvent *
     CFRunLoopSourceRef postedEventsSource;
     CFRunLoopObserverRef waitingObserver;
-    CFRunLoopObserverRef firstTimeObserver;
     QAtomicInt serialNumber;
     int lastSerial;
     bool interrupt;
@@ -157,7 +156,6 @@ public:
     static void postedEventsSourceCallback(void *info);
     static void waitingObserverCallback(CFRunLoopObserverRef observer,
                                         CFRunLoopActivity activity, void *info);
-    static void firstLoopEntry(CFRunLoopObserverRef ref, CFRunLoopActivity activity, void *info);
     bool sendQueuedUserInputEvents();
     void processPostedEvents();
 };

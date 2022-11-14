@@ -818,21 +818,6 @@ QCocoaEventDispatcher::QCocoaEventDispatcher(QObject *parent)
                                                  QCocoaEventDispatcherPrivate::waitingObserverCallback,
                                                  &observerContext);
     CFRunLoopAddObserver(mainRunLoop(), d->waitingObserver, kCFRunLoopCommonModes);
-
-    /* The first cycle in the loop adds the source and the events of the source
-       are not processed.
-       We use an observer to process the posted events for the first
-       execution of the loop. */
-    CFRunLoopObserverContext firstTimeObserverContext;
-    bzero(&firstTimeObserverContext, sizeof(CFRunLoopObserverContext));
-    firstTimeObserverContext.info = d;
-    d->firstTimeObserver = CFRunLoopObserverCreate(kCFAllocatorDefault,
-                                                   kCFRunLoopEntry,
-                                                   /* repeats = */ false,
-                                                   0,
-                                                   QCocoaEventDispatcherPrivate::firstLoopEntry,
-                                                   &firstTimeObserverContext);
-    CFRunLoopAddObserver(mainRunLoop(), d->firstTimeObserver, kCFRunLoopCommonModes);
 }
 
 void QCocoaEventDispatcherPrivate::waitingObserverCallback(CFRunLoopObserverRef,
@@ -895,25 +880,6 @@ void QCocoaEventDispatcherPrivate::processPostedEvents()
         QCoreApplication::sendPostedEvents();
         QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
     }
-}
-
-void QCocoaEventDispatcherPrivate::firstLoopEntry(CFRunLoopObserverRef ref,
-                                                CFRunLoopActivity activity,
-                                                void *info)
-{
-    Q_UNUSED(ref);
-    Q_UNUSED(activity);
-
-    QCocoaEventDispatcherPrivate *d = static_cast<QCocoaEventDispatcherPrivate *>(info);
-    if (d->initializingNSApplication) {
-        qCDebug(lcEventDispatcher) << "Deferring" << __FUNCTION__ << "due to NSApp initialization";
-        // We don't want to process any sources during explicit NSApplication
-        // initialization, so defer the source until the actual event processing.
-        CFRunLoopSourceSignal(d->postedEventsSource);
-        return;
-    }
-
-    static_cast<QCocoaEventDispatcherPrivate *>(info)->processPostedEvents();
 }
 
 void QCocoaEventDispatcherPrivate::postedEventsSourceCallback(void *info)
@@ -1017,9 +983,6 @@ QCocoaEventDispatcher::~QCocoaEventDispatcher()
 
     CFRunLoopObserverInvalidate(d->waitingObserver);
     CFRelease(d->waitingObserver);
-
-    CFRunLoopObserverInvalidate(d->firstTimeObserver);
-    CFRelease(d->firstTimeObserver);
 }
 
 QtCocoaInterruptDispatcher* QtCocoaInterruptDispatcher::instance = nullptr;
