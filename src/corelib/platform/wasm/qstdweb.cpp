@@ -7,6 +7,7 @@
 #include <QtCore/qfile.h>
 #include <emscripten/bind.h>
 #include <emscripten/emscripten.h>
+#include <emscripten/html5.h>
 #include <cstdint>
 #include <iostream>
 
@@ -16,6 +17,21 @@ QT_BEGIN_NAMESPACE
 
 namespace qstdweb {
 
+static void usePotentialyUnusedSymbols()
+{
+    // Using this adds a reference on JSEvents and specialHTMLTargets which are always exported.
+    // This hack is needed as it is currently impossible to specify a dollar sign in
+    // target_link_options. The following is impossible:
+    // DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=$JSEvents
+    // TODO(mikolajboc): QTBUG-108444, review this when cmake gets fixed.
+    // Volatile is to make this unoptimizable, so that the function is referenced, but is not
+    // called at runtime.
+    volatile bool doIt = false;
+    if (doIt)
+        emscripten_set_wheel_callback(NULL, 0, 0, NULL);
+}
+
+Q_CONSTRUCTOR_FUNCTION(usePotentialyUnusedSymbols)
 typedef double uint53_t; // see Number.MAX_SAFE_INTEGER
 namespace {
 enum class CallbackType {

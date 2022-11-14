@@ -77,20 +77,11 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
         event.call<void>("preventDefault");
     });
 
-    // Create "specialHTMLTargets" mapping for the canvas. Normally, Emscripten
-    // uses the html element id when targeting elements, for example when registering
-    // event callbacks. However, this approach is limited to supporting single-document
-    // apps/ages only, since Emscripten uses the main document to look up the element.
-    // As a workaround for this, Emscripten supports registering custom mappings in the
-    // "specialHTMLTargets" object. Add a mapping for the canvas for this screen.
-    //
-    // This functionality is gated on "specialHTMLTargets" being available as a module
-    // property. One way to ensure this is the case is to add it to EXPORTED_RUNTIME_METHODS.
-    // Qt does not currently do this by default since if added it _must_ be used in order
-    // to avoid an undefined reference error at startup, and there are cases when Qt won't use
-    // it, for example if QGuiApplication is not usded.
-    if (hasSpecialHtmlTargets())
-         emscripten::val::module_property("specialHTMLTargets").set(canvasSpecialHtmlTargetId(), m_canvas);
+    // Create "specialHTMLTargets" mapping for the canvas - the element  might be unreachable based
+    // on its id only under some conditions, like the target being embedded in a shadow DOM or a
+    // subframe.
+    emscripten::val::module_property("specialHTMLTargets")
+            .set(canvasTargetId().toStdString(), m_canvas);
 
     // Install event handlers on the container/canvas. This must be
     // done after the canvas has been created above.
@@ -104,9 +95,8 @@ QWasmScreen::~QWasmScreen()
 {
     Q_ASSERT(!m_compositor); // deleteScreen should have been called to remove this screen
 
-    if (hasSpecialHtmlTargets())
-        emscripten::val::module_property("specialHTMLTargets")
-            .set(canvasSpecialHtmlTargetId(), emscripten::val::undefined());
+    emscripten::val::module_property("specialHTMLTargets")
+            .set(canvasTargetId().toStdString(), emscripten::val::undefined());
 
     m_canvas.set(m_canvasResizeObserverCallbackContextPropertyName, emscripten::val(intptr_t(0)));
 }
@@ -158,73 +148,11 @@ QString QWasmScreen::canvasId() const
     return QWasmString::toQString(m_canvas["id"]);
 }
 
-// Returns the canvas _target_ id, for use with Emscripten's event registration
-// functions. This either based on the id registered in specialHtmlTargets, or
-// on the canvas id.
 QString QWasmScreen::canvasTargetId() const
-{
-    if (hasSpecialHtmlTargets())
-        return QString::fromStdString(canvasSpecialHtmlTargetId());
-    else
-        return QStringLiteral("#") + canvasId();
-}
-
-std::string QWasmScreen::canvasSpecialHtmlTargetId() const
 {
     // Return a globally unique id for the canvas. We can choose any string,
     // as long as it starts with a "!".
-    return std::string("!qtcanvas_") + std::to_string(uintptr_t(this));
-}
-
-namespace {
-
-// Compare Emscripten versions, returns > 0 if a is greater than b.
-
-int compareVersionComponents(int a, int b)
-{
-    return a >= 0 && b >= 0 ? a - b : 0;
-}
-
-int compareEmscriptenVersions(std::tuple<int, int, int> a, std::tuple<int, int, int> b)
-{
-    if (std::get<0>(a) == std::get<0>(b)) {
-        if (std::get<1>(a) == std::get<1>(b)) {
-            return compareVersionComponents(std::get<2>(a), std::get<2>(b));
-        }
-        return compareVersionComponents(std::get<1>(a), std::get<1>(b));
-    }
-    return compareVersionComponents(std::get<0>(a), std::get<0>(b));
-}
-
-bool isEmsdkVersionGreaterThan(std::tuple<int, int, int> test)
-{
-    return compareEmscriptenVersions(
-        std::make_tuple(__EMSCRIPTEN_major__, __EMSCRIPTEN_minor__, __EMSCRIPTEN_tiny__), test) > 0;
-}
-
-} // namespace
-
-bool QWasmScreen::hasSpecialHtmlTargets() const
-{
-    static bool gotIt = []{
-        // Enable use of specialHTMLTargets, if available
-
-        // On Emscripten > 3.1.14 (exact version not known), emscripten::val::module_property()
-        // aborts instead of returning undefined when attempting to resolve the specialHTMLTargets
-        // property, in the case where it is not defined. Disable the availability test in this case.
-        // FIXME: Add alternative way to enable.
-        if (isEmsdkVersionGreaterThan(std::make_tuple(3, 1, 14)))
-            return false;
-
-        emscripten::val htmlTargets = emscripten::val::module_property("specialHTMLTargets");
-        if (htmlTargets.isUndefined())
-            return false;
-
-        // Check that the object has the expected type - it can also be
-        // defined as an abort() function which prints an error on usage.
-        return htmlTargets["constructor"]["name"].as<std::string>() == std::string("Array");
-    }();
-    return gotIt;
+    return QString("!qtcanvas_%1").arg(uintptr_t(this));
 }
 
 QRect QWasmScreen::geometry() const

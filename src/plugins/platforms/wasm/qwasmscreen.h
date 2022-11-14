@@ -64,9 +64,6 @@ public slots:
     void setGeometry(const QRect &rect);
 
 private:
-    std::string canvasSpecialHtmlTargetId() const;
-    bool hasSpecialHtmlTargets() const;
-
     emscripten::val m_container;
     emscripten::val m_canvas;
     std::unique_ptr<QWasmCompositor> m_compositor;
