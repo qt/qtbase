@@ -241,7 +241,13 @@ QShader::QShader(const QShader &other)
 QShader &QShader::operator=(const QShader &other)
 {
     if (d) {
-        qAtomicAssign(d, other.d);
+        if (other.d) {
+            qAtomicAssign(d, other.d);
+        } else {
+            if (!d->ref.deref())
+                delete d;
+            d = nullptr;
+        }
     } else if (other.d) {
         other.d->ref.ref();
         d = other.d;
