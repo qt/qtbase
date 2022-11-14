@@ -113,6 +113,8 @@ public:
     using QDialog::open;
     void open(QObject *receiver, const char *member);
 
+    void setVisible(bool visible) override;
+
     QList<QAbstractButton *> buttons() const;
     ButtonRole buttonRole(QAbstractButton *button) const;
 

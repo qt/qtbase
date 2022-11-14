@@ -1556,6 +1556,23 @@ void QMessageBox::open(QObject *receiver, const char *member)
     QDialog::open();
 }
 
+void QMessageBox::setVisible(bool visible)
+{
+    if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden) != visible)
+        return;
+
+    Q_D(QMessageBox);
+    if (d->canBeNativeDialog())
+        d->setNativeDialogVisible(visible);
+
+    // Update WA_DontShowOnScreen based on whether the native dialog was shown,
+    // so that QDialog::setVisible(visible) below updates the QWidget state correctly,
+    // but skips showing the non-native version.
+    setAttribute(Qt::WA_DontShowOnScreen, d->nativeDialogInUse);
+
+    QDialog::setVisible(visible);
+}
+
 /*!
     \since 4.5
 
