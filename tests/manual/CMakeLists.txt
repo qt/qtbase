@@ -18,7 +18,7 @@ add_subdirectory(filetest)
 # add_subdirectory(foreignwindows)
 # special case end
 add_subdirectory(gestures)
-# add_subdirectory(highdpi) special case broken in dev
+add_subdirectory(highdpi)
 add_subdirectory(inputmethodhints)
 add_subdirectory(keypadnavigation)
 #add_subdirectory(lance) # special case qgl.h missing

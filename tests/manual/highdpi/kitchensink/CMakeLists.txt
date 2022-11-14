@@ -1,6 +1,3 @@
-# Copyright (C) 2022 The Qt Company Ltd.
-# SPDX-License-Identifier: BSD-3-Clause
-
 # Generated from kitchensink.pro.
 
 #####################################################################
@@ -15,7 +12,7 @@ qt_internal_add_manual_test(kitchensink
         HAVE_SCREEN_BASE_DPI
     INCLUDE_DIRECTORIES
         .
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::Widgets
