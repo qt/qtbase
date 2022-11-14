@@ -7158,6 +7158,8 @@ QString QString::vasprintf(const char *cformat, va_list ap)
 }
 
 /*!
+    \fn QString::toLongLong(bool *ok, int base) const
+
     Returns the string converted to a \c{long long} using base \a
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
@@ -7184,11 +7186,6 @@ QString QString::vasprintf(const char *cformat, va_list ap)
     \sa number(), toULongLong(), toInt(), QLocale::toLongLong()
 */
 
-qint64 QString::toLongLong(bool *ok, int base) const
-{
-    return toIntegral_helper<qlonglong>(*this, ok, base);
-}
-
 qlonglong QString::toIntegral_helper(QStringView string, bool *ok, int base)
 {
 #if defined(QT_CHECK_RANGE)
@@ -7203,8 +7200,9 @@ qlonglong QString::toIntegral_helper(QStringView string, bool *ok, int base)
     return QLocaleData::bytearrayToLongLong(latin1, base, ok);
 }
 
-
 /*!
+    \fn QString::toULongLong(bool *ok, int base) const
+
     Returns the string converted to an \c{unsigned long long} using base \a
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
@@ -7230,11 +7228,6 @@ qlonglong QString::toIntegral_helper(QStringView string, bool *ok, int base)
 
     \sa number(), toLongLong(), QLocale::toULongLong()
 */
-
-quint64 QString::toULongLong(bool *ok, int base) const
-{
-    return toIntegral_helper<qulonglong>(*this, ok, base);
-}
 
 qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
 {

@@ -882,7 +882,9 @@ public:
     { return toIntegral_helper<long>(*this, ok, base); }
     ulong toULong(bool *ok=nullptr, int base=10) const
     { return toIntegral_helper<ulong>(*this, ok, base); }
+    QT_CORE_INLINE_SINCE(6, 5)
     qlonglong toLongLong(bool *ok=nullptr, int base=10) const;
+    QT_CORE_INLINE_SINCE(6, 5)
     qulonglong toULongLong(bool *ok=nullptr, int base=10) const;
     float toFloat(bool *ok=nullptr) const;
     double toDouble(bool *ok=nullptr) const;
@@ -1526,6 +1528,18 @@ inline int QString::localeAwareCompare(QStringView s1, QStringView s2)
 { return localeAwareCompare_helper(s1.constData(), s1.size(), s2.constData(), s2.size()); }
 inline int QStringView::localeAwareCompare(QStringView other) const
 { return QString::localeAwareCompare(*this, other); }
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 5)
+qint64 QString::toLongLong(bool *ok, int base) const
+{
+    return toIntegral_helper<qlonglong>(*this, ok, base);
+}
+
+quint64 QString::toULongLong(bool *ok, int base) const
+{
+    return toIntegral_helper<qulonglong>(*this, ok, base);
+}
+#endif
 
 namespace QtPrivate {
 // used by qPrintable() and qUtf8Printable() macros
