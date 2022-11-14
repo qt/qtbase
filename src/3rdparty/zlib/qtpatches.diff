@@ -5,13 +5,13 @@ diff -ruN orig/ChangeLog src/ChangeLog
  
                  ChangeLog file for zlib
  
-+Changes in 1.2.12 (Qt) (28 Mar 2022)
++Changes in 1.2.13 (Qt) (14 Nov 2022)
 +- This is a stripped down copy of zlib that contains patches to
 +  make it compile as part of Qt. See also "qtpatches.diff".
 +
- Changes in 1.2.12 (27 Mar 2022)
- - Cygwin does not have _wopen(), so do not create gzopen_w() there
- - Permit a deflateParams() parameter change as soon as possible
+ Changes in 1.2.13 (13 Oct 2022)
+ - Fix configure issue that discarded provided CC definition
+ - Correct incorrect inputs provided to the CRC functions
 diff -ruN orig/gzguts.h src/gzguts.h
 --- orig/gzguts.h
 +++ src/gzguts.h
@@ -109,8 +109,8 @@ diff -ruN orig/zlib.h src/zlib.h
  extern "C" {
  #endif
  
--#define ZLIB_VERSION "1.2.12"
-+#define ZLIB_VERSION "1.2.12 (Qt)"
+-#define ZLIB_VERSION "1.2.13"
++#define ZLIB_VERSION "1.2.13 (Qt)"
  #define ZLIB_VERNUM 0x12c0
  #define ZLIB_VER_MAJOR 1
  #define ZLIB_VER_MINOR 2
