@@ -6350,7 +6350,7 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
                      QIcon::Normal, QIcon::On);
         icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-hover-16.png", QSize(16, 16),
                      QIcon::Active, QIcon::Off);
-        icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-hover-16.png", QSize(32, 32),
+        icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-hover-32.png", QSize(32, 32),
                      QIcon::Active, QIcon::Off);
         break;
     default:
