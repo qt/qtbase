@@ -112,6 +112,8 @@ struct ElfMachineCheck
     static const Elf32_Half ExpectedMachine =
 #if 0
             // nothing
+#elif defined(Q_PROCESSOR_ALPHA)
+            EM_ALPHA
 #elif defined(Q_PROCESSOR_ARM_32)
             EM_ARM
 #elif defined(Q_PROCESSOR_ARM_64)
@@ -382,6 +384,7 @@ Q_DECL_UNUSED Q_DECL_COLD_FUNCTION static QDebug &operator<<(QDebug &d, ElfHeade
     switch (r.machine) {
     // list definitely not exhaustive!
     case EM_NONE:       d << ", no machine"; break;
+    case EM_ALPHA:      d << ", Alpha"; break;
     case EM_68K:        d << ", MC68000"; break;
     case EM_ARM:        d << ", ARM"; break;
     case EM_AARCH64:    d << ", AArch64"; break;
