@@ -873,6 +873,7 @@ static const PluginModuleMapping pluginModuleMappings[] =
     {"geometryloaders", Qt3DRendererModule},
     {"webview", QtWebViewModule},
     {"designer", QtUiToolsModule},
+    {"scxmldatamodel", QtScxmlModule}
 };
 
 static inline quint64 qtModuleForPlugin(const QString &subDirName)
