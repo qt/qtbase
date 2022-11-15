@@ -1439,7 +1439,8 @@ QColor Declaration::colorValue(const QPalette &pal) const
             return pal.color((QPalette::ColorRole)(d->parsed.toInt()));
         case qMetaTypeId<QList<QVariant>>():
             if (d->parsed.toList().size() == 1) {
-                const auto &value = d->parsed.toList().at(0);
+                auto parsedList = d->parsed.toList();
+                const auto &value = parsedList.at(0);
                 return qvariant_cast<QColor>(value);
             }
             break;
