@@ -77,8 +77,8 @@ msgBox.exec();
 
 //! [6]
 QMessageBox msgBox;
-msgBox.setText("The document has been modified.");
-msgBox.setInformativeText("Do you want to save your changes?");
+msgBox.setText("Do you want to save your changes?");
+msgBox.setInformativeText("The document has been modified. It was last saved 5 days ago.");
 msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 msgBox.setDefaultButton(QMessageBox::Save);
 int ret = msgBox.exec();

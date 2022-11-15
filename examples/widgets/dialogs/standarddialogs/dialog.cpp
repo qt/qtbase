@@ -5,17 +5,6 @@
 
 #include "dialog.h"
 
-#define MESSAGE \
-    Dialog::tr("<p>Message boxes have a caption, a text, " \
-               "and any number of buttons, each with standard or custom texts.")
-#define INFORMATIVE_TEXT \
-    Dialog::tr("<p>Click a button to close the message box. Pressing the Escape key " \
-               "will activate the detected escape button (if any).")
-#define MESSAGE_DETAILS \
-    Dialog::tr("Additional detailed text can be provided, which may require user " \
-               "action to be revealed.")
-
-
 class DialogOptionsWidget : public QGroupBox
 {
 public:
@@ -415,8 +404,9 @@ void Dialog::setSaveFileName()
 void Dialog::criticalMessage()
 {
     QMessageBox msgBox(QMessageBox::Critical, tr("QMessageBox::critical()"),
-                       MESSAGE, { }, this);
-    msgBox.setInformativeText(INFORMATIVE_TEXT);
+                              tr("Houston, we have a problem"), { }, this);
+    msgBox.setInformativeText(tr("Activating the liquid oxygen stirring fans caused an explosion in one of the tanks. " \
+                                 "Liquid oxygen levels are getting low. This may jeopardize the moon landing mission."));
     msgBox.addButton(QMessageBox::Abort);
     msgBox.addButton(QMessageBox::Retry);
     msgBox.addButton(QMessageBox::Ignore);
@@ -432,8 +422,10 @@ void Dialog::criticalMessage()
 void Dialog::informationMessage()
 {
     QMessageBox msgBox(QMessageBox::Information, tr("QMessageBox::information()"),
-                       MESSAGE, { }, this);
-    msgBox.setInformativeText(INFORMATIVE_TEXT);
+                              tr("Elvis has left the building."), { }, this);
+    msgBox.setInformativeText(tr("This phrase was often used by public address announcers at the conclusion " \
+                                 "of Elvis Presley concerts in order to disperse audiences who lingered in " \
+                                 "hopes of an encore. It has since become a catchphrase and punchline."));
     if (msgBox.exec() == QMessageBox::Ok)
         informationLabel->setText(tr("OK"));
     else
@@ -443,8 +435,10 @@ void Dialog::informationMessage()
 void Dialog::questionMessage()
 {
     QMessageBox msgBox(QMessageBox::Question, tr("QMessageBox::question()"),
-                       MESSAGE, { }, this);
-    msgBox.setInformativeText(INFORMATIVE_TEXT);
+                              tr("Would you like cheese with that?"), { }, this);
+    msgBox.setInformativeText(tr("A cheeseburger is a hamburger topped with cheese. Traditionally, the slice of " \
+                                 "cheese is placed on top of the meat patty. The cheese is usually added to the " \
+                                 "cooking hamburger patty shortly before serving, which allows the cheese to melt."));
     msgBox.addButton(QMessageBox::Yes);
     msgBox.addButton(QMessageBox::No);
     msgBox.addButton(QMessageBox::Cancel);
@@ -460,15 +454,15 @@ void Dialog::questionMessage()
 void Dialog::warningMessage()
 {
     QMessageBox msgBox(QMessageBox::Warning, tr("QMessageBox::warning()"),
-                       MESSAGE, { }, this);
-    msgBox.setInformativeText(INFORMATIVE_TEXT);
-    msgBox.setDetailedText(MESSAGE_DETAILS);
-    msgBox.addButton(tr("Save &Again"), QMessageBox::AcceptRole);
-    msgBox.addButton(tr("&Continue"), QMessageBox::RejectRole);
+                              tr("Delete the only copy of your movie manuscript?"), { }, this);
+    msgBox.setInformativeText(tr("You've been working on this manuscript for 738 days now. Hang in there!"));
+    msgBox.setDetailedText("\"A long time ago in a galaxy far, far away....\"");
+    msgBox.addButton(tr("&Keep"), QMessageBox::AcceptRole);
+    msgBox.addButton(tr("Delete"), QMessageBox::DestructiveRole);
     if (msgBox.exec() == QMessageBox::AcceptRole)
-        warningLabel->setText(tr("Save Again"));
+        warningLabel->setText(tr("Keep"));
     else
-        warningLabel->setText(tr("Continue"));
+        warningLabel->setText(tr("Delete"));
 
 }
 

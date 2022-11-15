@@ -516,10 +516,11 @@ void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button
 
     A message box displays a primary \l{QMessageBox::text}{text} to
     alert the user to a situation, an \l{QMessageBox::informativeText}
-    {informative text} to further explain the alert or to ask the user
-    a question, and an optional \l{QMessageBox::detailedText}
-    {detailed text} to provide even more data if the user requests
-    it. A message box can also display an \l{QMessageBox::icon} {icon}
+    {informative text} to further explain the situation, and an optional
+    \l{QMessageBox::detailedText} {detailed text} to provide even more data
+    if the user requests it.
+
+    A message box can also display an \l{QMessageBox::icon} {icon}
     and \l{QMessageBox::standardButtons} {standard buttons} for
     accepting a user response.
 
@@ -545,27 +546,21 @@ void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button
     \image msgbox1.png
 
     A better approach than just alerting the user to an event is to
-    also ask the user what to do about it. Store the question in the
-    \l{QMessageBox::informativeText} {informative text} property, and
-    set the \l{QMessageBox::standardButtons} {standard buttons}
+    also ask the user what to do about it.
+
+    Set the \l{QMessageBox::standardButtons} {standard buttons}
     property to the set of buttons you want as the set of user
     responses. The buttons are specified by combining values from
     StandardButtons using the bitwise OR operator. The display order
     for the buttons is platform-dependent. For example, on Windows,
     \uicontrol{Save} is displayed to the left of \uicontrol{Cancel}, whereas on
-    Mac OS, the order is reversed.
-
-    Mark one of your standard buttons to be your
+    \macos, the order is reversed. Mark one of your standard buttons to be your
     \l{QMessageBox::defaultButton()} {default button}.
 
-    \snippet code/src_gui_dialogs_qmessagebox.cpp 6
+    The \l{QMessageBox::informativeText} {informative text} property can
+    be used to add additional context to help the user choose the appropriate action.
 
-    This is the approach recommended in the
-    \l{http://developer.apple.com/library/mac/documentation/UserExperience/Conceptual/AppleHIGuidelines/Windows/Windows.html#//apple_ref/doc/uid/20000961-BABCAJID}
-    {\macos Guidelines}. Similar guidelines apply for the other
-    platforms, but note the different ways the
-    \l{QMessageBox::informativeText} {informative text} is handled for
-    different platforms.
+    \snippet code/src_gui_dialogs_qmessagebox.cpp 6
 
     \image msgbox2.png
 
@@ -574,10 +569,10 @@ void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button
 
     \snippet code/src_gui_dialogs_qmessagebox.cpp 7
 
-    To give the user more information to help him answer the question,
-    set the \l{QMessageBox::detailedText} {detailed text} property. If
-    the \l{QMessageBox::detailedText} {detailed text} property is set,
-    the \uicontrol{Show Details...} button will be shown.
+    To give the user more information to help them choose the appropriate,
+    action, set the \l{QMessageBox::detailedText} {detailed text} property.
+    Depending on the platform the \l{QMessageBox::detailedText} {detailed text},
+    may require the user to click a \uicontrol{Show Details...} button to be shown.
 
     \image msgbox3.png
 
@@ -1230,6 +1225,9 @@ QCheckBox* QMessageBox::checkBox() const
 /*!
   \property QMessageBox::text
   \brief the message box text to be displayed.
+
+  The text should be a brief sentence or phrase that describes the situation,
+  ideally formulated as a neutral statement, or a call-to-action question.
 
   The text will be interpreted either as a plain text or as rich text,
   depending on the text format setting (\l QMessageBox::textFormat).
@@ -2564,10 +2562,9 @@ void QMessageBox::setDetailedText(const QString &text)
 
   \since 4.2
 
-  Infromative text can be used to expand upon the text() to give more
-  information to the user. On the Mac, this text appears in small
-  system font below the text().  On other platforms, it is simply
-  appended to the existing text.
+  Informative text can be used to expand upon the text() to give more
+  information to the user, for example describing the consequences of
+  the situation, or suggestion alternative solutions.
 
   By default, this property contains an empty string.
 
