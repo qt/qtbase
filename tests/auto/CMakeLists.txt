@@ -27,6 +27,7 @@ endif()
 
 # Limit set of tests to run for Android multi-ABI Qt builds.
 if(QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS)
+    add_subdirectory(cmake)
     add_subdirectory(corelib/kernel/qmath)
     add_subdirectory(widgets/effects/qpixmapfilter)
     add_subdirectory(corelib/platform)

@@ -71,7 +71,8 @@ enable_testing()
 # flag. Notably -rpath is specified which should implicitly enable -rpath-link, but that
 # doesn't seem to be the case.
 # Until this is figured out, disable the tests when cross-compiling to Linux.
-if(UNIX AND NOT APPLE AND NOT WIN32 AND CMAKE_CROSSCOMPILING AND NOT QT_ENABLE_CMAKE_BOOT2QT_TESTS)
+if(UNIX AND NOT APPLE AND NOT WIN32 AND CMAKE_CROSSCOMPILING AND NOT QT_ENABLE_CMAKE_BOOT2QT_TESTS
+    AND NOT QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS)
     message(STATUS "Running CMake tests is disabled when cross-compiling to Linux / Boot2Qt.")
     return()
 endif()
@@ -112,6 +113,43 @@ if(NOT TARGET Qt::Widgets)
 endif()
 
 include("${_Qt6CTestMacros}")
+
+# Test only multi-abi specific functionality when QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS is ON.
+# Qt::Gui is the prerequisite for all Android tests.
+if(QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS AND NOT NO_GUI)
+    unset(multi_abi_vars)
+    foreach(abi IN_LISTS QT_ANDROID_ABIS)
+        list(APPEND multi_abi_vars "-DQT_PATH_ANDROID_ABI_${abi}=${QT_PATH_ANDROID_ABI_${abi}}")
+    endforeach()
+    if(QT_ANDROID_BUILD_ALL_ABIS)
+        list(APPEND multi_abi_vars "-DQT_ANDROID_BUILD_ALL_ABIS=${QT_ANDROID_BUILD_ALL_ABIS}")
+    endif()
+
+    list(APPEND multi_abi_vars "-DQT_HOST_PATH=${QT_HOST_PATH}")
+
+    set(multi_abi_forward_vars
+        TEST_SINGLE_VALUE_ARG
+        TEST_SPACES_VALUE_ARG
+        TEST_LIST_VALUE_ARG
+        TEST_ESCAPING_VALUE_ARG
+    )
+    string(REPLACE ";" "[[;]]" multi_abi_forward_vars "${multi_abi_forward_vars}")
+
+    set(single_value "TestValue")
+    set(list_value "TestValue[[;]]TestValue2[[;]]TestValue3")
+    set(escaping_value "TestValue\\\\[[;]]TestValue2\\\\[[;]]TestValue3")
+    set(spaces_value "TestValue TestValue2 TestValue3")
+    _qt_internal_test_expect_pass(test_android_multi_abi_forward_vars
+        BUILD_OPTIONS
+            ${multi_abi_vars}
+            "-DQT_ANDROID_MULTI_ABI_FORWARD_VARS=${multi_abi_forward_vars}"
+            "-DTEST_SINGLE_VALUE_ARG=${single_value}"
+            "-DTEST_LIST_VALUE_ARG=${list_value}"
+            "-DTEST_ESCAPING_VALUE_ARG=${escaping_value}"
+            "-DTEST_SPACES_VALUE_ARG=${spaces_value}"
+    )
+    return()
+endif()
 
 if(NOT NO_WIDGETS)
     _qt_internal_test_expect_pass(test_build_simple_widget_app)
