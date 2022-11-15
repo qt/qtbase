@@ -252,6 +252,10 @@ int main(int argc, char **argv)
         results << typesList.join('\n');
     }
 
+    QT_WARNING_PUSH
+#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 1300 && Q_CC_GNU < 1400
+    QT_WARNING_DISABLE_GCC("-Wdangling-reference")
+#endif
     if (parser.isSet(display)) {
         const StringEnum &location = parseLocationOrError(parser.value(display));
         QString text = QStandardPaths::displayName(location.enumvalue);
@@ -303,6 +307,7 @@ int main(int argc, char **argv)
         QStringList paths = QStandardPaths::locateAll(location.enumvalue, searchitem, QStandardPaths::LocateFile);
         results << location.mapName(paths.join(pathsep));
     }
+    QT_WARNING_POP
 
 #if !QT_CONFIG(settings)
     if (parser.isSet(query) || parser.isSet(qtconf) || parser.isSet(queryformat)) {
