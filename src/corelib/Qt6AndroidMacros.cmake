@@ -1002,6 +1002,12 @@ function(_qt_internal_configure_android_multiabi_target target)
             "-DCMAKE_CXX_COMPILER_LAUNCHER=${compiler_launcher}")
     endif()
 
+    unset(user_cmake_args)
+    foreach(var IN LISTS QT_ANDROID_MULTI_ABI_FORWARD_VARS)
+        string(REPLACE ";" "$<SEMICOLON>" var_value "${${var}}")
+        list(APPEND user_cmake_args "-D${var}=${var_value}")
+    endforeach()
+
     set(missing_qt_abi_toolchains "")
     set(previous_copy_apk_dependencies_target ${target})
     # Create external projects for each android ABI except the main one.
@@ -1034,6 +1040,7 @@ function(_qt_internal_configure_android_multiabi_target target)
                     "-DQT_INTERNAL_ANDROID_MULTI_ABI_BINARY_DIR=${CMAKE_BINARY_DIR}"
                     "${config_arg}"
                     "${extra_cmake_args}"
+                    "${user_cmake_args}"
                     "-B" "${android_abi_build_dir}"
                     "-S" "${CMAKE_SOURCE_DIR}"
                 EXCLUDE_FROM_ALL TRUE
