@@ -4,8 +4,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(tutorial3 LANGUAGES CXX)
 
-set(CMAKE_AUTOMOC ON)
-
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
@@ -13,6 +11,8 @@ endif()
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/qtestlib/tutorial3")
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Test Widgets)
+
+qt_standard_project_setup()
 
 qt_add_executable(tutorial3
     testgui.cpp

@@ -6,9 +6,6 @@ project(controller LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
@@ -16,6 +13,8 @@ endif()
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/remotecontrolledcar/controller")
 
 find_package(Qt6 REQUIRED COMPONENTS Core DBus Gui Widgets)
+
+qt_standard_project_setup()
 
 set(controller_SRCS)
 qt_add_dbus_interface(controller_SRCS

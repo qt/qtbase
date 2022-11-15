@@ -4,8 +4,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(simpledommodel LANGUAGES CXX)
 
-set(CMAKE_AUTOMOC ON)
-
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
@@ -13,6 +11,8 @@ endif()
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/itemviews/simpledommodel")
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Xml)
+
+qt_standard_project_setup()
 
 qt_add_executable(simpledommodel
     domitem.cpp domitem.h

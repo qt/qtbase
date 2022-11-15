@@ -4,9 +4,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(notepad LANGUAGES CXX)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
@@ -17,6 +14,8 @@ find_package(Qt6
     REQUIRED COMPONENTS Core Gui Widgets
     OPTIONAL_COMPONENTS PrintSupport
 )
+
+qt_standard_project_setup()
 
 qt_add_executable(notepad
     main.cpp

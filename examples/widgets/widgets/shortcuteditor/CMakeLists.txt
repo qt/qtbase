@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(shortcuteditor LANGUAGES CXX)
 
-set(CMAKE_AUTOMOC ON)
-
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
@@ -10,6 +8,8 @@ endif()
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/widgets/shortcuteditor")
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
+
+qt_standard_project_setup()
 
 qt_add_executable(shortcuteditor
     actionmanager.cpp actionmanager.h

@@ -4,9 +4,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(network-chat LANGUAGES CXX)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
@@ -14,6 +11,8 @@ endif()
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/network/network-chat")
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Network Widgets)
+
+qt_standard_project_setup()
 
 qt_add_executable(network-chat
     chatdialog.cpp chatdialog.h chatdialog.ui

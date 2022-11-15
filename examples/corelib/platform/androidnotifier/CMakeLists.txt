@@ -8,13 +8,13 @@ if(NOT ANDROID)
     message(FATAL_ERROR "Example only works on Android")
 endif()
 
-set(CMAKE_AUTOMOC ON)
-
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
+
+qt_standard_project_setup()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/corelib/platform/androidnotifier")
 

@@ -4,8 +4,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(hellovulkancubes LANGUAGES CXX)
 
-set(CMAKE_AUTOMOC ON)
-
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
@@ -13,6 +11,8 @@ endif()
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/vulkan/hellovulkancubes")
 
 find_package(Qt6 REQUIRED COMPONENTS Concurrent Core Gui Widgets)
+
+qt_standard_project_setup()
 
 qt_add_executable(hellovulkancubes
     camera.cpp camera.h
