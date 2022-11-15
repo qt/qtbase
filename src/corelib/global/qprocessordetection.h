@@ -51,8 +51,8 @@
 
     Alpha is bi-endian, use endianness auto-detection implemented below.
 */
-// #elif defined(__alpha__) || defined(_M_ALPHA)
-// #  define Q_PROCESSOR_ALPHA
+#if defined(__alpha__) || defined(_M_ALPHA)
+#  define Q_PROCESSOR_ALPHA
 // Q_BYTE_ORDER not defined, use endianness auto-detection
 
 /*
@@ -61,7 +61,7 @@
     ARM is bi-endian, detect using __ARMEL__ or __ARMEB__, falling back to
     auto-detection implemented below.
 */
-#if defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM) || defined(_M_ARM64) || defined(__aarch64__) || defined(__ARM64__)
+#elif defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM) || defined(_M_ARM64) || defined(__aarch64__) || defined(__ARM64__)
 #  if defined(__aarch64__) || defined(__ARM64__) || defined(_M_ARM64)
 #    define Q_PROCESSOR_ARM_64
 #    define Q_PROCESSOR_WORDSIZE 8
