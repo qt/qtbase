@@ -52,12 +52,6 @@ qt_add_resources(dockwidgets "dockwidgets"
         ${dockwidgets_resource_files}
 )
 
-if(TARGET Qt6::PrintSupport)
-    target_link_libraries(dockwidgets PUBLIC
-        Qt6::PrintSupport
-    )
-endif()
-
 install(TARGETS dockwidgets
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

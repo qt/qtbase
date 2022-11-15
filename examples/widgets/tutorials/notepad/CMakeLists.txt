@@ -33,6 +33,10 @@ target_link_libraries(notepad PUBLIC
     Qt6::Widgets
 )
 
+if(TARGET Qt6::PrintSupport)
+    target_link_libraries(notepad PUBLIC Qt6::PrintSupport)
+endif()
+
 # Resources:
 set(notepad_resource_files
     "images/bold.png"
@@ -61,12 +65,6 @@ qt_add_resources(notepad "notepad"
     FILES
         ${notepad_resource_files}
 )
-
-if(TARGET Qt6::PrintSupport)
-    target_link_libraries(notepad PUBLIC
-        Qt6::PrintSupport
-    )
-endif()
 
 install(TARGETS notepad
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

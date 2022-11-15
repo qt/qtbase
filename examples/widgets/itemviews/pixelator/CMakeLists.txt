@@ -35,6 +35,10 @@ target_link_libraries(pixelator PUBLIC
     Qt6::Widgets
 )
 
+if(TARGET Qt6::PrintSupport)
+    target_link_libraries(pixelator PUBLIC Qt6::PrintSupport)
+endif()
+
 # Resources:
 set(images_resource_files
     "images/qt.png"
@@ -46,12 +50,6 @@ qt_add_resources(pixelator "images"
     FILES
         ${images_resource_files}
 )
-
-if(TARGET Qt6::PrintSupport)
-    target_link_libraries(pixelator PUBLIC
-        Qt6::PrintSupport
-    )
-endif()
 
 install(TARGETS pixelator
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

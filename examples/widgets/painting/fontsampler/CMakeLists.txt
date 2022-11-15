@@ -35,9 +35,7 @@ target_link_libraries(fontsampler PUBLIC
 )
 
 if(TARGET Qt6::PrintSupport)
-    target_link_libraries(fontsampler PUBLIC
-        Qt6::PrintSupport
-    )
+    target_link_libraries(fontsampler PUBLIC Qt6::PrintSupport)
 endif()
 
 install(TARGETS fontsampler

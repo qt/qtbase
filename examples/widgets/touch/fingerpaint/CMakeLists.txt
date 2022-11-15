@@ -38,12 +38,6 @@ if (TARGET Qt6::PrintSupport)
     target_link_libraries(fingerpaint PUBLIC Qt6::PrintSupport)
 endif()
 
-if(TARGET Qt6::PrintSupport)
-    target_link_libraries(fingerpaint PUBLIC
-        Qt6::PrintSupport
-    )
-endif()
-
 install(TARGETS fingerpaint
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

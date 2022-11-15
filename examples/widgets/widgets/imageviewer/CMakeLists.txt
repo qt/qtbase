@@ -37,12 +37,6 @@ if (TARGET Qt6::PrintSupport)
     target_link_libraries(imageviewer PUBLIC Qt6::PrintSupport)
 endif()
 
-if(TARGET Qt6::PrintSupport)
-    target_link_libraries(imageviewer PUBLIC
-        Qt6::PrintSupport
-    )
-endif()
-
 install(TARGETS imageviewer
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

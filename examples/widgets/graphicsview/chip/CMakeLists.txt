@@ -53,9 +53,7 @@ qt_add_resources(chip "images"
 )
 
 if(TARGET Qt6::PrintSupport)
-    target_link_libraries(chip PUBLIC
-        Qt6::PrintSupport
-    )
+    target_link_libraries(chip PUBLIC Qt6::PrintSupport)
 endif()
 
 install(TARGETS chip

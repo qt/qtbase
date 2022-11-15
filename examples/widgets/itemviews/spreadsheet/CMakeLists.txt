@@ -52,12 +52,6 @@ qt_add_resources(spreadsheet "spreadsheet"
         ${spreadsheet_resource_files}
 )
 
-if(TARGET Qt6::PrintSupport)
-    target_link_libraries(spreadsheet PUBLIC
-        Qt6::PrintSupport
-    )
-endif()
-
 install(TARGETS spreadsheet
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

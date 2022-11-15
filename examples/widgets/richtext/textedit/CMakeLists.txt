@@ -98,12 +98,6 @@ qt_add_resources(textedit "textedit"
         ${textedit_resource_files}
 )
 
-if(TARGET Qt6::PrintSupport)
-    target_link_libraries(textedit PUBLIC
-        Qt6::PrintSupport
-    )
-endif()
-
 install(TARGETS textedit
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

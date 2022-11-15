@@ -32,9 +32,7 @@ target_link_libraries(orderform PUBLIC
 )
 
 if(TARGET Qt6::PrintSupport)
-    target_link_libraries(orderform PUBLIC
-        Qt6::PrintSupport
-    )
+    target_link_libraries(orderform PUBLIC Qt6::PrintSupport)
 endif()
 
 install(TARGETS orderform
