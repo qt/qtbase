@@ -25,7 +25,7 @@
 
 #include <QtGui/private/qcoretextfontdatabase_p.h>
 #include <QtGui/private/qmacmimeregistry_p.h>
-#include <QtGui/private/qmacmime_p.h>
+#include <QtGui/qutimimeconverter.h>
 #include <QDir>
 #include <QOperatingSystemVersion>
 

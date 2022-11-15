@@ -333,11 +333,12 @@ private:
 
 // ----------------- QNativeInterface -----------------
 
+class QWindowsMimeConverter;
+
 namespace QNativeInterface::Private {
 
 #if defined(Q_OS_WIN) || defined(Q_QDOC)
 
-class QWindowsMime;
 
 struct Q_GUI_EXPORT QWindowsApplication
 {
@@ -381,8 +382,8 @@ struct Q_GUI_EXPORT QWindowsApplication
     virtual DarkModeHandling darkModeHandling() const = 0;
     virtual void setDarkModeHandling(DarkModeHandling handling) = 0;
 
-    virtual void registerMime(QWindowsMime *mime) = 0;
-    virtual void unregisterMime(QWindowsMime *mime) = 0;
+    virtual void registerMime(QWindowsMimeConverter *mime) = 0;
+    virtual void unregisterMime(QWindowsMimeConverter *mime) = 0;
 
     virtual int registerMimeType(const QString &mime) = 0;
 

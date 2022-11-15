@@ -22,9 +22,9 @@
 
     The base class introduces new virtuals to obtain and release
     the instances IDataObject from the clipboard or Drag and Drop and
-    does conversion using QWindowsMime classes.
+    does conversion using QWindowsMimeConverter classes.
 
-    \sa QInternalMimeData, QWindowsMime, QWindowsMimeRegistry
+    \sa QInternalMimeData, QWindowsMimeConverter, QWindowsMimeRegistry
     \internal
 */
 

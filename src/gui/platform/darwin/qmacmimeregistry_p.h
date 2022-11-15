@@ -17,7 +17,7 @@
 
 
 #include <QtGui/private/qtguiglobal_p.h>
-#include <QtGui/private/qmacmime_p.h>
+#include <QtGui/qutimimeconverter.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -27,11 +27,11 @@ namespace QMacMimeRegistry {
     Q_GUI_EXPORT void initializeMimeTypes();
     Q_GUI_EXPORT void destroyMimeTypes();
 
-    Q_GUI_EXPORT void registerMimeConverter(QMacMime *);
-    Q_GUI_EXPORT void unregisterMimeConverter(QMacMime *);
+    Q_GUI_EXPORT void registerMimeConverter(QUtiMimeConverter *);
+    Q_GUI_EXPORT void unregisterMimeConverter(QUtiMimeConverter *);
 
-    Q_GUI_EXPORT QList<QMacMime *> all(QMacMime::HandlerScope scope);
-    Q_GUI_EXPORT QString flavorToMime(QMacMime::HandlerScope scope, const QString &flav);
+    Q_GUI_EXPORT QList<QUtiMimeConverter *> all(QUtiMimeConverter::HandlerScope scope);
+    Q_GUI_EXPORT QString flavorToMime(QUtiMimeConverter::HandlerScope scope, const QString &flav);
 
     Q_GUI_EXPORT void registerDraggedTypes(const QStringList &types);
     Q_GUI_EXPORT const QStringList& enabledDraggedTypes();

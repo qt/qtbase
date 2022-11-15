@@ -4,7 +4,7 @@
 #include <AppKit/AppKit.h>
 
 #include "qcocoamimetypes.h"
-#include <QtGui/private/qmacmime_p.h>
+#include <QtGui/qutimimeconverter.h>
 #include "qcocoahelpers.h"
 #include <QtGui/private/qcoregraphics_p.h>
 
@@ -12,7 +12,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-class QMacMimeTraditionalMacPlainText : public QMacMime {
+class QMacMimeTraditionalMacPlainText : public QUtiMimeConverter {
 public:
     QString utiForMime(const QString &mime) const override;
     QString mimeForUti(const QString &uti) const override;

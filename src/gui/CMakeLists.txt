@@ -390,7 +390,7 @@ qt_internal_extend_target(Gui CONDITION APPLE
         painting/qrasterbackingstore.cpp painting/qrasterbackingstore_p.h
         painting/qrhibackingstore.cpp painting/qrhibackingstore_p.h
         platform/darwin/qmacmimeregistry.mm platform/darwin/qmacmimeregistry_p.h
-        platform/darwin/qmacmime.mm platform/darwin/qmacmime_p.h
+        platform/darwin/qutimimeconverter.mm platform/darwin/qutimimeconverter.h
         platform/darwin/qapplekeymapper.mm platform/darwin/qapplekeymapper_p.h
         text/coretext/qcoretextfontdatabase.mm text/coretext/qcoretextfontdatabase_p.h
         text/coretext/qfontengine_coretext.mm text/coretext/qfontengine_coretext_p.h
@@ -413,7 +413,7 @@ qt_internal_extend_target(Gui CONDITION WIN32
         image/qpixmap_win.cpp
         kernel/qwindowdefs_win.h
         platform/windows/qwindowsguieventdispatcher.cpp platform/windows/qwindowsguieventdispatcher_p.h
-        platform/windows/qwindowsmime_p.h platform/windows/qwindowsmime.cpp
+        platform/windows/qwindowsmimeconverter.h platform/windows/qwindowsmimeconverter.cpp
         platform/windows/qwindowsnativeinterface.cpp
         rhi/cs_tdr_p.h
         rhi/qrhid3d11.cpp rhi/qrhid3d11_p.h

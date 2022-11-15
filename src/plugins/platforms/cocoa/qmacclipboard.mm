@@ -5,7 +5,7 @@
 
 #include "qmacclipboard.h"
 #include <QtGui/private/qmacmimeregistry_p.h>
-#include <QtGui/private/qmacmime_p.h>
+#include <QtGui/qutimimeconverter.h>
 #include <QtGui/qclipboard.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qbitmap.h>
@@ -54,7 +54,7 @@ private:
     QMacMimeData();
 };
 
-QMacPasteboard::Promise::Promise(int itemId, const QMacMime *c, const QString &m, QMimeData *md, int o, DataRequestType drt)
+QMacPasteboard::Promise::Promise(int itemId, const QUtiMimeConverter *c, const QString &m, QMimeData *md, int o, DataRequestType drt)
     : itemId(itemId), offset(o), converter(c), mime(m), dataRequestType(drt)
 {
     // Request the data from the application immediately for eager requests.
@@ -69,7 +69,7 @@ QMacPasteboard::Promise::Promise(int itemId, const QMacMime *c, const QString &m
     }
 }
 
-QMacPasteboard::QMacPasteboard(PasteboardRef p, QMacMime::HandlerScope scope)
+QMacPasteboard::QMacPasteboard(PasteboardRef p, QUtiMimeConverter::HandlerScope scope)
     : scope(scope)
 {
     mac_mime_source = false;
@@ -78,7 +78,7 @@ QMacPasteboard::QMacPasteboard(PasteboardRef p, QMacMime::HandlerScope scope)
     resolvingBeforeDestruction = false;
 }
 
-QMacPasteboard::QMacPasteboard(QMacMime::HandlerScope scope)
+QMacPasteboard::QMacPasteboard(QUtiMimeConverter::HandlerScope scope)
     : scope(scope)
 {
     mac_mime_source = false;
@@ -91,7 +91,7 @@ QMacPasteboard::QMacPasteboard(QMacMime::HandlerScope scope)
     resolvingBeforeDestruction = false;
 }
 
-QMacPasteboard::QMacPasteboard(CFStringRef name, QMacMime::HandlerScope scope)
+QMacPasteboard::QMacPasteboard(CFStringRef name, QUtiMimeConverter::HandlerScope scope)
     : scope(scope)
 {
     mac_mime_source = false;
@@ -111,7 +111,7 @@ QMacPasteboard::~QMacPasteboard()
         Commit all promises for paste when shutting down,
         unless we are the stack-allocated clipboard used by QCocoaDrag.
     */
-    if (scope == QMacMime::HandlerScope::DnD)
+    if (scope == QUtiMimeConverter::HandlerScope::DnD)
         resolvingBeforeDestruction = true;
     PasteboardResolvePromises(paste);
     if (paste)
@@ -130,16 +130,16 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
     const long promise_id = (long)id;
 
     // Find the kept promise
-    const QList<QMacMime*> availableConverters = QMacMimeRegistry::all(QMacMime::HandlerScope::All);
+    const QList<QUtiMimeConverter*> availableConverters = QMacMimeRegistry::all(QUtiMimeConverter::HandlerScope::All);
     const QString utiAsQString = QString::fromCFString(uti);
     QMacPasteboard::Promise promise;
     for (int i = 0; i < qpaste->promises.size(); i++){
         const QMacPasteboard::Promise tmp = qpaste->promises[i];
         if (!availableConverters.contains(tmp.converter)) {
             // promise.converter is a pointer initialized by the value found
-            // in QMacMime's global list of QMacMimes.
-            // We add pointers to this list in QMacMime's ctor;
-            // we remove these pointers in QMacMime's dtor.
+            // in QUtiMimeConverter's global list of QMacMimes.
+            // We add pointers to this list in QUtiMimeConverter's ctor;
+            // we remove these pointers in QUtiMimeConverter's dtor.
             // If tmp.converter was not found in this list, we probably have a
             // dangling pointer so let's skip it.
             continue;
@@ -258,7 +258,7 @@ void QMacPasteboard::setMimeData(QMimeData *mime_src, DataRequestType dataReques
     delete mime;
     mime = mime_src;
 
-    const QList<QMacMime*> availableConverters = QMacMimeRegistry::all(scope);
+    const QList<QUtiMimeConverter*> availableConverters = QMacMimeRegistry::all(scope);
     if (mime != nullptr) {
         clear_helper();
         QStringList formats = mime_src->formats();
@@ -386,7 +386,7 @@ QVariant QMacPasteboard::retrieveData(const QString &format) const
         return QByteArray();
 
     qCDebug(lcQpaClipboard, "Pasteboard: retrieveData [%s]", qPrintable(format));
-    const QList<QMacMime *> availableConverters = QMacMimeRegistry::all(scope);
+    const QList<QUtiMimeConverter *> availableConverters = QMacMimeRegistry::all(scope);
     for (const auto *c : availableConverters) {
         const QString c_uti = c->utiForMime(format);
         if (!c_uti.isEmpty()) {

@@ -21,7 +21,7 @@
 
 #ifdef Q_OS_WIN
 #  include <QtGui/private/qguiapplication_p.h>
-#  include <QtGui/private/qwindowsmime_p.h>
+#  include <QtGui/qwindowsmimeconverter.h>
 #  include <QtGui/qpa/qplatformintegration.h>
 #endif
 
@@ -426,10 +426,10 @@ void tst_QClipboard::clearBeforeSetText()
 
 #  ifdef Q_OS_WIN
 
-using QWindowsMime = QNativeInterface::Private::QWindowsMime;
+using QWindowsMimeConverter = QWindowsMimeConverter;
 using QWindowsApplication = QNativeInterface::Private::QWindowsApplication;
 
-class TestMime : public QWindowsMime
+class TestMime : public QWindowsMimeConverter
 {
 public:
     bool canConvertFromMime(const FORMATETC &, const QMimeData *) const override

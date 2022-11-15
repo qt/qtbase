@@ -28,8 +28,8 @@ public:
     DarkModeHandling darkModeHandling() const override;
     void setDarkModeHandling(DarkModeHandling handling) override;
 
-    void registerMime(QNativeInterface::Private::QWindowsMime *mime) override;
-    void unregisterMime(QNativeInterface::Private::QWindowsMime *mime) override;
+    void registerMime(QWindowsMimeConverter *mime) override;
+    void unregisterMime(QWindowsMimeConverter *mime) override;
 
     int registerMimeType(const QString &mime) override;
 

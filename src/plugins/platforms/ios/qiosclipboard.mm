@@ -7,7 +7,7 @@
 
 #include <QtCore/qurl.h>
 #include <QtGui/private/qmacmimeregistry_p.h>
-#include <QtGui/private/qmacmime_p.h>
+#include <QtGui/qutimimeconverter.h>
 #include <QtCore/QMimeData>
 #include <QtGui/QGuiApplication>
 
@@ -117,7 +117,7 @@ QStringList QIOSMimeData::formats() const
 
     for (NSUInteger i = 0; i < [pasteboardTypes count]; ++i) {
         const QString uti = QString::fromNSString([pasteboardTypes objectAtIndex:i]);
-        const QString mimeType = QMacMimeRegistry::flavorToMime(QMacMime::HandlerScope::All, uti);
+        const QString mimeType = QMacMimeRegistry::flavorToMime(QUtiMimeConverter::HandlerScope::All, uti);
         if (!mimeType.isEmpty() && !foundMimeTypes.contains(mimeType))
             foundMimeTypes << mimeType;
     }
@@ -130,8 +130,8 @@ QVariant QIOSMimeData::retrieveData(const QString &mimeType, QMetaType) const
     UIPasteboard *pb = [UIPasteboard pasteboardWithQClipboardMode:m_mode];
     NSArray<NSString *> *pasteboardTypes = [pb pasteboardTypes];
 
-    const auto converters = QMacMimeRegistry::all(QMacMime::HandlerScope::All);
-    for (QMacMime *converter : converters) {
+    const auto converters = QMacMimeRegistry::all(QUtiMimeConverter::HandlerScope::All);
+    for (QUtiMimeConverter *converter : converters) {
         for (NSUInteger i = 0; i < [pasteboardTypes count]; ++i) {
             NSString *availableUtiNSString = [pasteboardTypes objectAtIndex:i];
             const QString availableUti = QString::fromNSString(availableUtiNSString);
@@ -183,8 +183,8 @@ void QIOSClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
 
     const auto formats = mimeData->formats();
     for (const QString &mimeType : formats) {
-        const auto converters = QMacMimeRegistry::all(QMacMime::HandlerScope::All);
-        for (const QMacMime *converter : converters) {
+        const auto converters = QMacMimeRegistry::all(QUtiMimeConverter::HandlerScope::All);
+        for (const QUtiMimeConverter *converter : converters) {
             const QString uti = converter->utiForMime(mimeType);
             if (uti.isEmpty())
                 continue;

@@ -3,7 +3,7 @@
 
 #include <QtCore/qmimedata.h>
 
-#include "qmacmime_p.h"
+#include "qutimimeconverter.h"
 #include "qmacmimeregistry_p.h"
 #include "qguiapplication.h"
 #include "private/qcore_mac_p.h"
@@ -14,25 +14,25 @@ using namespace Qt::StringLiterals;
 
 namespace QMacMimeRegistry {
 
-typedef QList<QMacMime*> MimeList;
+typedef QList<QUtiMimeConverter*> MimeList;
 Q_GLOBAL_STATIC(MimeList, globalMimeList)
 Q_GLOBAL_STATIC(QStringList, globalDraggedTypesList)
 
-// implemented in qmacmime.mm
+// implemented in qutimimeconverter.mm
 void registerBuiltInTypes();
 
 /*!
     \fn void qRegisterDraggedTypes(const QStringList &types)
-    \relates QMacMime
+    \relates QUtiMimeConverter
 
     Registers the given \a types as custom pasteboard types.
 
     This function should be called to enable the Drag and Drop events
     for custom pasteboard types on Cocoa implementations. This is required
-    in addition to a QMacMime subclass implementation. By default
+    in addition to a QUtiMimeConverter subclass implementation. By default
     drag and drop is enabled for all standard pasteboard types.
 
-   \sa QMacMime
+   \sa QUtiMimeConverter
 */
 
 void registerDraggedTypes(const QStringList &types)
@@ -80,7 +80,7 @@ void destroyMimeTypes()
 /*
   Returns a MIME type of for scope \a scope for \a uti, or \nullptr if none exists.
 */
-QString flavorToMime(QMacMime::HandlerScope scope, const QString &uti)
+QString flavorToMime(QUtiMimeConverter::HandlerScope scope, const QString &uti)
 {
     MimeList *mimes = globalMimeList();
     for (MimeList::const_iterator it = mimes->constBegin(); it != mimes->constEnd(); ++it) {
@@ -98,7 +98,7 @@ QString flavorToMime(QMacMime::HandlerScope scope, const QString &uti)
     return QString();
 }
 
-void registerMimeConverter(QMacMime *macMime)
+void registerMimeConverter(QUtiMimeConverter *macMime)
 {
     // globalMimeList is in decreasing priority order. Recently added
     // converters take prioity over previously added converters: prepend
@@ -106,7 +106,7 @@ void registerMimeConverter(QMacMime *macMime)
     globalMimeList()->prepend(macMime);
 }
 
-void unregisterMimeConverter(QMacMime *macMime)
+void unregisterMimeConverter(QUtiMimeConverter *macMime)
 {
     if (!QGuiApplication::closingDown())
         globalMimeList()->removeAll(macMime);
@@ -114,9 +114,9 @@ void unregisterMimeConverter(QMacMime *macMime)
 
 
 /*
-  Returns a list of all currently defined QMacMime objects for scope \a scope.
+  Returns a list of all currently defined QUtiMimeConverter objects for scope \a scope.
 */
-QList<QMacMime *> all(QMacMime::HandlerScope scope)
+QList<QUtiMimeConverter *> all(QUtiMimeConverter::HandlerScope scope)
 {
     MimeList ret;
     MimeList *mimes = globalMimeList();

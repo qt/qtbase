@@ -379,7 +379,7 @@
     their clipboard formats.
 
     Custom classes for translating proprietary clipboard formats can be
-    registered by reimplementing QWinMime on Windows or
-    QMacMime on \macos.
+    registered by reimplementing QWindowsMimeConverter on Windows or
+    QUtiMimeConverter on \macos.
 
 */

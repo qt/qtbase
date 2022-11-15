@@ -5,13 +5,13 @@
 #define QMACCLIPBOARD_H
 
 #include <QtGui>
-#include <QtGui/private/qmacmime_p.h>
+#include <QtGui/qutimimeconverter.h>
 
 #include <ApplicationServices/ApplicationServices.h>
 
 QT_BEGIN_NAMESPACE
 
-class QMacMime;
+class QUtiMimeConverter;
 
 class QMacPasteboard
 {
@@ -21,12 +21,12 @@ private:
     struct Promise {
         Promise() : itemId(0), converter(nullptr) { }
 
-        static Promise eagerPromise(int itemId, const QMacMime *c, const QString &m, QMimeData *d, int o = 0);
-        static Promise lazyPromise(int itemId, const QMacMime *c, const QString &m, QMimeData *d, int o = 0);
-        Promise(int itemId, const QMacMime *c, const QString &m, QMimeData *md, int o, DataRequestType drt);
+        static Promise eagerPromise(int itemId, const QUtiMimeConverter *c, const QString &m, QMimeData *d, int o = 0);
+        static Promise lazyPromise(int itemId, const QUtiMimeConverter *c, const QString &m, QMimeData *d, int o = 0);
+        Promise(int itemId, const QUtiMimeConverter *c, const QString &m, QMimeData *md, int o, DataRequestType drt);
 
         int itemId, offset;
-        const QMacMime *converter;
+        const QUtiMimeConverter *converter;
         QString mime;
         QPointer<QMimeData> mimeData;
         QVariant variantData;
@@ -41,16 +41,16 @@ private:
     QList<Promise> promises;
 
     PasteboardRef paste;
-    const QMacMime::HandlerScope scope;
+    const QUtiMimeConverter::HandlerScope scope;
     mutable QPointer<QMimeData> mime;
     mutable bool mac_mime_source;
     bool resolvingBeforeDestruction;
     static OSStatus promiseKeeper(PasteboardRef, PasteboardItemID, CFStringRef, void *);
     void clear_helper();
 public:
-    QMacPasteboard(PasteboardRef p, QMacMime::HandlerScope scope = QMacMime::HandlerScope::All);
-    QMacPasteboard(QMacMime::HandlerScope scope);
-    QMacPasteboard(CFStringRef name=nullptr, QMacMime::HandlerScope scope = QMacMime::HandlerScope::All);
+    QMacPasteboard(PasteboardRef p, QUtiMimeConverter::HandlerScope scope = QUtiMimeConverter::HandlerScope::All);
+    QMacPasteboard(QUtiMimeConverter::HandlerScope scope);
+    QMacPasteboard(CFStringRef name=nullptr, QUtiMimeConverter::HandlerScope scope = QUtiMimeConverter::HandlerScope::All);
     ~QMacPasteboard();
 
     bool hasUti(const QString &uti) const;

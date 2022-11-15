@@ -7,7 +7,7 @@
 #include "qmacclipboard.h"
 #include "qcocoahelpers.h"
 #include <QtGui/private/qcoregraphics_p.h>
-#include <QtGui/private/qmacmime_p.h>
+#include <QtGui/qutimimeconverter.h>
 #include <QtCore/qsysinfo.h>
 #include <QtCore/private/qcore_mac_p.h>
 
@@ -98,7 +98,7 @@ Qt::DropAction QCocoaDrag::drag(QDrag *o)
     m_drag = o;
     m_executed_drop_action = Qt::IgnoreAction;
 
-    QMacPasteboard dragBoard(CFStringRef(NSPasteboardNameDrag), QMacMime::HandlerScope::DnD);
+    QMacPasteboard dragBoard(CFStringRef(NSPasteboardNameDrag), QUtiMimeConverter::HandlerScope::DnD);
     m_drag->mimeData()->setData("application/x-qt-mime-type-name"_L1, QByteArray("dummy"));
     dragBoard.setMimeData(m_drag->mimeData(), QMacPasteboard::LazyRequest);
 
@@ -305,7 +305,7 @@ QStringList QCocoaDropData::formats_sys() const
         qDebug("DnD: Cannot get PasteBoard!");
         return formats;
     }
-    formats = QMacPasteboard(board, QMacMime::HandlerScope::DnD).formats();
+    formats = QMacPasteboard(board, QUtiMimeConverter::HandlerScope::DnD).formats();
     return formats;
 }
 
@@ -317,7 +317,7 @@ QVariant QCocoaDropData::retrieveData_sys(const QString &mimeType, QMetaType) co
         qDebug("DnD: Cannot get PasteBoard!");
         return data;
     }
-    data = QMacPasteboard(board, QMacMime::HandlerScope::DnD).retrieveData(mimeType);
+    data = QMacPasteboard(board, QUtiMimeConverter::HandlerScope::DnD).retrieveData(mimeType);
     CFRelease(board);
     return data;
 }
@@ -330,7 +330,7 @@ bool QCocoaDropData::hasFormat_sys(const QString &mimeType) const
         qDebug("DnD: Cannot get PasteBoard!");
         return has;
     }
-    has = QMacPasteboard(board, QMacMime::HandlerScope::DnD).hasFormat(mimeType);
+    has = QMacPasteboard(board, QUtiMimeConverter::HandlerScope::DnD).hasFormat(mimeType);
     CFRelease(board);
     return has;
 }

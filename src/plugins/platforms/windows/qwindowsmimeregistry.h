@@ -4,10 +4,10 @@
 #ifndef QWINDOWSMIMEREGISTRY_H
 #define QWINDOWSMIMEREGISTRY_H
 
-#include <QtGui/private/qwindowsmime_p.h>
 
 #include <QtCore/qt_windows.h>
 
+#include <QtGui/qwindowsmimeconverter.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qvariant.h>
 
@@ -20,22 +20,22 @@ class QWindowsMimeRegistry
 {
     Q_DISABLE_COPY_MOVE(QWindowsMimeRegistry)
 public:
-    using QWindowsMime = QNativeInterface::Private::QWindowsMime;
+    using QWindowsMimeConverter = QWindowsMimeConverter;
 
     QWindowsMimeRegistry();
     ~QWindowsMimeRegistry();
 
-    QWindowsMime *converterToMime(const QString &mimeType, IDataObject *pDataObj) const;
+    QWindowsMimeConverter *converterToMime(const QString &mimeType, IDataObject *pDataObj) const;
     QStringList allMimesForFormats(IDataObject *pDataObj) const;
-    QWindowsMime *converterFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const;
+    QWindowsMimeConverter *converterFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const;
     QList<FORMATETC> allFormatsForMime(const QMimeData *mimeData) const;
 
     // Convenience.
     QVariant convertToMime(const QStringList &mimeTypes, IDataObject *pDataObj, QMetaType preferredType,
                            QString *format = nullptr) const;
 
-    void registerMime(QWindowsMime *mime);
-    void unregisterMime(QWindowsMime *mime) { m_mimes.removeOne(mime); }
+    void registerMime(QWindowsMimeConverter *mime);
+    void unregisterMime(QWindowsMimeConverter *mime) { m_mimes.removeOne(mime); }
 
     static int registerMimeType(const QString &mime);
 
@@ -44,7 +44,7 @@ public:
 private:
     void ensureInitialized() const;
 
-    mutable QList<QWindowsMime *> m_mimes;
+    mutable QList<QWindowsMimeConverter *> m_mimes;
     mutable int m_internalMimeCount = 0;
 };
 

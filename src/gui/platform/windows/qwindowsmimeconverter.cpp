@@ -1,19 +1,19 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qwindowsmime_p.h"
+#include "qwindowsmimeconverter.h"
+
+#include <QtCore/qt_windows.h>
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 
-using namespace QNativeInterface::Private;
-
 /*!
-    \class QWindowsMime
-    \brief The QWindowsMime class maps open-standard MIME to Window Clipboard formats.
-    \internal
+    \class QWindowsMimeConverter
+    \brief The QWindowsMimeConverter class maps open-standard MIME to Window Clipboard formats.
+    \inmodule QtGui
 
     Qt's drag-and-drop and clipboard facilities use the MIME standard.
     On X11, this maps trivially to the Xdnd protocol, but on Windows
@@ -21,8 +21,8 @@ using namespace QNativeInterface::Private;
     formats, others use arbitrary non-standardized naming conventions,
     or unnamed built-in formats of Windows.
 
-    By instantiating subclasses of QWindowsMime that provide conversions
-    between Windows Clipboard and MIME formats, you can convert
+    By instantiating subclasses of QWindowsMimeConverter that provide
+    conversions between Windows Clipboard and MIME formats, you can convert
     proprietary clipboard formats to MIME formats.
 
     Qt has predefined support for the following Windows Clipboard formats:
@@ -46,14 +46,11 @@ using namespace QNativeInterface::Private;
 
     You can check if a MIME type is convertible using canConvertFromMime() and
     can perform conversions with convertToMime() and convertFromMime().
-
-    \sa QWindowsMimeRegistry
 */
 
 
 /*!
-    \fn bool QWindowsMime::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
-    \internal
+    \fn bool QWindowsMimeConverter::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
 
     Returns \c true if the converter can convert from the \a mimeData to
     the format specified in \a formatetc.
@@ -62,8 +59,7 @@ using namespace QNativeInterface::Private;
 */
 
 /*!
-    \fn bool QWindowsMime::canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const
-    \internal
+    \fn bool QWindowsMimeConverter::canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const
 
     Returns \c true if the converter can convert to the \a mimeType from
     the available formats in \a pDataObj.
@@ -72,8 +68,7 @@ using namespace QNativeInterface::Private;
 */
 
 /*!
-    \fn QString QWindowsMime::mimeForFormat(const FORMATETC &formatetc) const
-    \internal
+    \fn QString QWindowsMimeConverter::mimeForFormat(const FORMATETC &formatetc) const
 
     Returns the mime type that will be created form the format specified
     in \a formatetc, or an empty string if this converter does not support
@@ -83,8 +78,7 @@ using namespace QNativeInterface::Private;
 */
 
 /*!
-    \fn QList<FORMATETC> QWindowsMime::formatsForMime(const QString &mimeType, const QMimeData *mimeData) const
-    \internal
+    \fn QList<FORMATETC> QWindowsMimeConverter::formatsForMime(const QString &mimeType, const QMimeData *mimeData) const
 
     Returns a QList of FORMATETC structures representing the different windows clipboard
     formats that can be provided for the \a mimeType from the \a mimeData.
@@ -93,9 +87,8 @@ using namespace QNativeInterface::Private;
 */
 
 /*!
-    \fn QVariant QWindowsMime::convertToMime(const QString &mimeType, IDataObject *pDataObj,
+    \fn QVariant QWindowsMimeConverter::convertToMime(const QString &mimeType, IDataObject *pDataObj,
                                              QMetaType preferredType) const
-    \internal
 
     Returns a QVariant containing the converted data for \a mimeType from \a pDataObj.
     If possible the QVariant should be of the \a preferredType to avoid needless conversions.
@@ -104,8 +97,7 @@ using namespace QNativeInterface::Private;
 */
 
 /*!
-    \fn bool QWindowsMime::convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM * pmedium) const
-    \internal
+    \fn bool QWindowsMimeConverter::convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM * pmedium) const
 
     Convert the \a mimeData to the format specified in \a formatetc.
     The converted data should then be placed in \a pmedium structure.
@@ -116,39 +108,42 @@ using namespace QNativeInterface::Private;
 */
 
 /*!
-    Constructs a QWindowsMime instance.
+    Constructs a QWindowsMimeConverter instance.
 
     The instance is automatically registered, and will be called to convert data during
     clipboard or drag'n'drop operations.
 */
-QWindowsMime::QWindowsMime()
+QWindowsMimeConverter::QWindowsMimeConverter()
 {
+    using QWindowsApplication = QNativeInterface::Private::QWindowsApplication;
     auto nativeWindowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration());
     Q_ASSERT(nativeWindowsApp);
     nativeWindowsApp->registerMime(this);
 }
 
 /*!
-    Constructs a QWindowsMime instance.
+    Constructs a QWindowsMimeConverter instance.
 
     The instance is automatically unregistered.
 */
-QWindowsMime::~QWindowsMime()
+QWindowsMimeConverter::~QWindowsMimeConverter()
 {
+    using QWindowsApplication = QNativeInterface::Private::QWindowsApplication;
     auto nativeWindowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration());
     Q_ASSERT(nativeWindowsApp);
     nativeWindowsApp->unregisterMime(this);
 }
 
 /*!
-    Registers the MIME type \a mime, and returns an ID number
+    Registers the MIME type \a mimeType, and returns an ID number
     identifying the format on Windows.
 
     A mime type \c {application/x-qt-windows-mime;value="WindowsType"} will be
     registered as the clipboard format for \c WindowsType.
 */
-int QWindowsMime::registerMimeType(const QString &mimeType)
+int QWindowsMimeConverter::registerMimeType(const QString &mimeType)
 {
+    using QWindowsApplication = QNativeInterface::Private::QWindowsApplication;
     auto nativeWindowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration());
     Q_ASSERT(nativeWindowsApp);
     return nativeWindowsApp->registerMimeType(mimeType);

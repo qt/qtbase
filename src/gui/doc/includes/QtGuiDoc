@@ -16,4 +16,3 @@
 #include <QtGui/qpa/qplatformscreen_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qkeymapper_p.h>
-#include <QtGui/private/qwindowsmime_p.h>

@@ -333,7 +333,7 @@ QDebug operator<<(QDebug d, IDataObject *dataObj)
 }
 #endif // !QT_NO_DEBUG_STREAM
 
-class QWindowsMimeText : public QNativeInterface::Private::QWindowsMime
+class QWindowsMimeText : public QWindowsMimeConverter
 {
 public:
     bool canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const override;
@@ -489,7 +489,7 @@ QVariant QWindowsMimeText::convertToMime(const QString &mime, LPDATAOBJECT pData
     return ret;
 }
 
-class QWindowsMimeURI : public QNativeInterface::Private::QWindowsMime
+class QWindowsMimeURI : public QWindowsMimeConverter
 {
 public:
     QWindowsMimeURI();
@@ -655,7 +655,7 @@ QVariant QWindowsMimeURI::convertToMime(const QString &mimeType, LPDATAOBJECT pD
     return QVariant();
 }
 
-class QWindowsMimeHtml : public QNativeInterface::Private::QWindowsMime
+class QWindowsMimeHtml : public QWindowsMimeConverter
 {
 public:
     QWindowsMimeHtml();
@@ -793,7 +793,7 @@ bool QWindowsMimeHtml::convertFromMime(const FORMATETC &formatetc, const QMimeDa
 
 
 #ifndef QT_NO_IMAGEFORMAT_BMP
-class QWindowsMimeImage : public QNativeInterface::Private::QWindowsMime
+class QWindowsMimeImage : public QWindowsMimeConverter
 {
 public:
     QWindowsMimeImage();
@@ -953,7 +953,7 @@ QVariant QWindowsMimeImage::convertToMime(const QString &mimeType, IDataObject *
 }
 #endif
 
-class QBuiltInMimes : public QNativeInterface::Private::QWindowsMime
+class QBuiltInMimes : public QWindowsMimeConverter
 {
 public:
     QBuiltInMimes();
@@ -974,7 +974,7 @@ private:
 };
 
 QBuiltInMimes::QBuiltInMimes()
-: QWindowsMime()
+: QWindowsMimeConverter()
 {
     outFormats.insert(registerMimeType(u"application/x-color"_s), u"application/x-color"_s);
     inFormats.insert(registerMimeType(u"application/x-color"_s), u"application/x-color"_s);
@@ -1074,7 +1074,7 @@ QString QBuiltInMimes::mimeForFormat(const FORMATETC &formatetc) const
 }
 
 
-class QLastResortMimes : public QNativeInterface::Private::QWindowsMime
+class QLastResortMimes : public QWindowsMimeConverter
 {
 public:
 
@@ -1265,9 +1265,9 @@ QString QLastResortMimes::mimeForFormat(const FORMATETC &formatetc) const
 
 /*!
     \class QWindowsMimeRegistry
-    \brief Manages the list of QWindowsMime instances.
+    \brief Manages the list of QWindowsMimeConverter instances.
     \internal
-    \sa QWindowsMime
+    \sa QWindowsMimeConverter
 */
 
 QWindowsMimeRegistry::QWindowsMimeRegistry() = default;
@@ -1277,7 +1277,7 @@ QWindowsMimeRegistry::~QWindowsMimeRegistry()
     qDeleteAll(m_mimes.begin(), m_mimes.begin() + m_internalMimeCount);
 }
 
-QWindowsMimeRegistry::QWindowsMime *QWindowsMimeRegistry::converterToMime(const QString &mimeType, IDataObject *pDataObj) const
+QWindowsMimeRegistry::QWindowsMimeConverter *QWindowsMimeRegistry::converterToMime(const QString &mimeType, IDataObject *pDataObj) const
 {
     ensureInitialized();
     for (int i = m_mimes.size()-1; i >= 0; --i) {
@@ -1289,7 +1289,7 @@ QWindowsMimeRegistry::QWindowsMime *QWindowsMimeRegistry::converterToMime(const 
 
 QStringList QWindowsMimeRegistry::allMimesForFormats(IDataObject *pDataObj) const
 {
-    qCDebug(lcQpaMime) << "QWindowsMime::allMimesForFormats()";
+    qCDebug(lcQpaMime) << "QWindowsMimeConverter::allMimesForFormats()";
     ensureInitialized();
     QStringList formats;
     LPENUMFORMATETC FAR fmtenum;
@@ -1316,7 +1316,7 @@ QStringList QWindowsMimeRegistry::allMimesForFormats(IDataObject *pDataObj) cons
     return formats;
 }
 
-QWindowsMimeRegistry::QWindowsMime *QWindowsMimeRegistry::converterFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
+QWindowsMimeRegistry::QWindowsMimeConverter *QWindowsMimeRegistry::converterFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
 {
     ensureInitialized();
     qCDebug(lcQpaMime) << __FUNCTION__ << formatetc;
@@ -1374,7 +1374,7 @@ QVariant QWindowsMimeRegistry::convertToMime(const QStringList &mimeTypes,
                                               QString *formatIn /* = 0 */) const
 {
     for (const QString &format : mimeTypes) {
-        if (const QWindowsMime *converter = converterToMime(format, pDataObj)) {
+        if (const QWindowsMimeConverter *converter = converterToMime(format, pDataObj)) {
             if (converter->canConvertToMime(format, pDataObj)) {
                 const QVariant dataV = converter->convertToMime(format, pDataObj, preferredType);
                 if (dataV.isValid()) {
@@ -1391,7 +1391,7 @@ QVariant QWindowsMimeRegistry::convertToMime(const QStringList &mimeTypes,
     return QVariant();
 }
 
-void QWindowsMimeRegistry::registerMime(QWindowsMime *mime)
+void QWindowsMimeRegistry::registerMime(QWindowsMimeConverter *mime)
 {
     ensureInitialized();
     m_mimes.append(mime);

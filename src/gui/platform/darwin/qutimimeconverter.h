@@ -1,28 +1,21 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QMACMIME_H
-#define QMACMIME_H
+#ifndef QUTIMIMECONVERTER_H
+#define QUTIMIMECONVERTER_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtGui/qtguiglobal.h>
 
-
-#include <QtGui/private/qtguiglobal_p.h>
-
-#include <CoreFoundation/CoreFoundation.h>
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QMacMime
+class QByteArray;
+class QString;
+class QVariant;
+class QMimeData;
+
+class Q_GUI_EXPORT QUtiMimeConverter
 {
 public:
     enum class HandlerScope : uchar
@@ -35,9 +28,9 @@ public:
         AllCompatible  = All|Qt_compatible
     };
 
-    QMacMime();
-    explicit QMacMime(HandlerScope scope); // internal
-    virtual ~QMacMime();
+    QUtiMimeConverter();
+    explicit QUtiMimeConverter(HandlerScope scope); // internal
+    virtual ~QUtiMimeConverter();
 
     HandlerScope scope() const { return m_scope; }
     bool canConvert(const QString &mime, const QString &uti) const { return mimeForUti(uti) == mime; }
