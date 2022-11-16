@@ -5500,8 +5500,11 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     QStaticTextPrivate *staticText_d =
             const_cast<QStaticTextPrivate *>(QStaticTextPrivate::get(&staticText));
 
-    if (font() != staticText_d->font) {
+    QFontPrivate *stfp = QFontPrivate::get(staticText_d->font);
+    if (font() != staticText_d->font || stfp == nullptr) {
         staticText_d->font = font();
+        staticText_d->needsRelayout = true;
+    } else if (stfp->engineData == nullptr || stfp->engineData->fontCacheId != QFontCache::instance()->id()) {
         staticText_d->needsRelayout = true;
     }
 
