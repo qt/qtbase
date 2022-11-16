@@ -3001,7 +3001,7 @@ QString &QString::operator=(QChar ch)
     \fn QString &QString::insert(qsizetype position, QLatin1StringView str)
     \overload insert()
 
-    Inserts the Latin-1 string \a str at the given index \a position.
+    Inserts the Latin-1 string view \a str at the given index \a position.
 
     \include qstring.cpp string-grow-at-insertion
 */
@@ -3024,6 +3024,24 @@ QString &QString::insert(qsizetype i, QLatin1StringView str)
     qt_from_latin1(d.data() + i, s, size_t(len));
     d.data()[d.size] = u'\0';
     return *this;
+}
+
+/*!
+    \fn QString &QString::insert(qsizetype position, QUtf8StringView str)
+    \overload insert()
+    \since 6.5
+
+    Inserts the UTF-8 string view \a str at the given index \a position.
+
+    \note Inserting variable-width UTF-8-encoded string data is conceptually slower
+    than inserting fixed-width string data such as UTF-16 (QStringView) or Latin-1
+    (QLatin1StringView) and should thus be used sparingly.
+
+    \include qstring.cpp string-grow-at-insertion
+*/
+QString &QString::insert(qsizetype i, QUtf8StringView s)
+{
+     return insert(i, s.toString()); // ### optimize (QTBUG-108546)
 }
 
 /*!

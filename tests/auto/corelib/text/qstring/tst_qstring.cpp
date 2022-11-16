@@ -463,6 +463,8 @@ private slots:
     void insert_qstringview_data()   { insert_data(EmptyIsNoop); }
     void insert_qlatin1string()      { insert_impl<QLatin1String, QString &(QString::*)(qsizetype, QLatin1String)>(); }
     void insert_qlatin1string_data() { insert_data({EmptyIsNoop, Latin1Encoded}); }
+    void insert_qutf8stringview()    { insert_impl<QUtf8StringView, QString &(QString::*)(qsizetype, QUtf8StringView)>(); }
+    void insert_qutf8stringview_data() { insert_data(EmptyIsNoop); }
     void insert_qcharstar_int()      { insert_impl<QPair<const QChar *, int>, QString &(QString::*)(qsizetype, const QChar*, qsizetype) >(); }
     void insert_qcharstar_int_data() { insert_data(EmptyIsNoop); }
     void insert_qchar()              { insert_impl<Reversed<QChar>, QString &(QString::*)(qsizetype, QChar)>(); }

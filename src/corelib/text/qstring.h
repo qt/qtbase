@@ -687,6 +687,7 @@ public:
     inline QString &insert(qsizetype i, const QString &s) { return insert(i, s.constData(), s.size()); }
     inline QString &insert(qsizetype i, QStringView v) { return insert(i, v.data(), v.size()); }
     QString &insert(qsizetype i, QLatin1StringView s);
+    QString &insert(qsizetype i, QUtf8StringView s);
 
     QString &append(QChar c);
     QString &append(const QChar *uc, qsizetype len);
