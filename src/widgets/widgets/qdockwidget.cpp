@@ -1006,7 +1006,7 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
                     - windowMarginOffset;
         } else {
             // Fallback in the unlikely case that source and target screens could not be established
-            qCWarning(lcQpaDockWidgets)
+            qCDebug(lcQpaDockWidgets)
                     << "QDockWidget failed to find relevant screen info. screenFrom:" << screenFrom
                     << "screenTo:" << screenTo << " wdgScreen:" << wdgScreen << "orgWdgScreen"
                     << orgWdgScreen;
