@@ -316,7 +316,8 @@ public:
 
 public:
     // static methods
-    static int findSlot(QObject *obj, const QByteArray &normalizedName, QList<QMetaType> &params);
+    static int findSlot(QObject *obj, const QByteArray &normalizedName, QList<QMetaType> &params,
+                        QString &errorMsg);
     static bool prepareHook(QDBusConnectionPrivate::SignalHook &hook, QString &key,
                             const QString &service,
                             const QString &path, const QString &interface, const QString &name,
