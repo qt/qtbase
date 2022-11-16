@@ -5454,6 +5454,8 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     if (font() != staticText_d->font || fp == nullptr || stfp == nullptr || fp->dpi != stfp->dpi) {
         staticText_d->font = font();
         staticText_d->needsRelayout = true;
+    } else if (stfp->engineData == nullptr || stfp->engineData->fontCacheId != QFontCache::instance()->id()) {
+        staticText_d->needsRelayout = true;
     }
 
     QFontEngine *fe = staticText_d->font.d->engineForScript(QChar::Script_Common);
