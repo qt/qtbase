@@ -95,11 +95,13 @@ public class QtLayout extends ViewGroup
              insetLeft = rootInsets.getStableInsetLeft();
              insetTop = rootInsets.getStableInsetTop();
 
-             int insetsWidth = rootInsets.getStableInsetRight() + rootInsets.getStableInsetLeft();
-             int insetsHeight = rootInsets.getStableInsetTop() + rootInsets.getStableInsetBottom();
+             appWidth = appMetrics.widthPixels - rootInsets.getStableInsetRight() + rootInsets.getStableInsetLeft();
 
-             appWidth = appMetrics.widthPixels - insetsWidth;
-             appHeight = appMetrics.heightPixels - insetsHeight;
+             if (android.os.Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+                appHeight = appMetrics.heightPixels - rootInsets.getStableInsetTop();
+             } else {
+                appHeight = appMetrics.heightPixels - rootInsets.getStableInsetTop() + rootInsets.getStableInsetBottom();
+             }
 
              final DisplayMetrics maxMetrics = new DisplayMetrics();
              display.getRealMetrics(maxMetrics);
@@ -123,21 +125,15 @@ public class QtLayout extends ViewGroup
             final WindowMetrics maxMetrics = windowManager.getMaximumWindowMetrics();
 
             final WindowInsets windowInsets = appMetrics.getWindowInsets();
-            Insets insets = windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.tappableElement());
+            Insets statusBarInsets = windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars());
+            Insets cutoutInsets = windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.displayCutout());
+            Insets imeInsets = windowInsets.getInsets(WindowInsets.Type.ime());
 
-            insetLeft = insets.left;
-            insetTop = insets.top;
+            insetLeft = cutoutInsets.left;
+            insetTop = statusBarInsets.top;
 
-            int insetsWidth = insets.right + insets.left;
-            int insetsHeight = insets.top + insets.bottom;
-
-            if (h == maxMetrics.getBounds().height()){
-                //when h == maxheight the system is ignoring insets
-                insetsWidth = insetsHeight = insetLeft = insetTop = 0;
-            }
-
-            appWidth = appMetrics.getBounds().width() - insetsWidth;
-            appHeight = appMetrics.getBounds().height() - insetsHeight;
+            appWidth = w;
+            appHeight = h - imeInsets.bottom;
 
             maxWidth = maxMetrics.getBounds().width();
             maxHeight = maxMetrics.getBounds().height();
@@ -169,10 +165,11 @@ public class QtLayout extends ViewGroup
         final int flag =
             activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN;
 
-        if (flag == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
+        if (flag == WindowManager.LayoutParams.FLAG_FULLSCREEN || h == maxHeight) {
             // immersive mode uses the whole screen
             appWidth = maxWidth;
             appHeight = maxHeight;
+            insetLeft = insetTop = 0;
         }
 
         QtNative.setApplicationDisplayMetrics(maxWidth, maxHeight, insetLeft,
