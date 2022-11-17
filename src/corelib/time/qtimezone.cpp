@@ -151,6 +151,10 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     Exchange EWS ID as well, but is different to the Time Zone Name (TZID) and
     COD code used by MS Exchange in versions before 2007.
 
+    \note When Qt is built with the ICU library, it is used in preference to the
+    Windows system APIs, bypassing all problems with those APIs using different
+    names.
+
     \section2 System Time Zone
 
     The method systemTimeZoneId() returns the current system IANA time zone
