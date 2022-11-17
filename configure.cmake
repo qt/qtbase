@@ -1086,10 +1086,12 @@ qt_feature_definition("openssl-linked" "QT_LINKED_OPENSSL")
 qt_feature("opensslv11" PUBLIC
     LABEL "OpenSSL 1.1"
     CONDITION TEST_opensslv11 OR TEST_opensslv11_headers
+    DISABLE INPUT_openssl STREQUAL 'no' OR INPUT_ssl STREQUAL 'no'
 )
 qt_feature("opensslv30" PUBLIC
     LABEL "OpenSSL 3.0"
     CONDITION TEST_opensslv30 OR TEST_opensslv30_headers
+    DISABLE INPUT_openssl STREQUAL 'no' OR INPUT_ssl STREQUAL 'no'
 )
 qt_feature("ccache"
     LABEL "Using ccache"
