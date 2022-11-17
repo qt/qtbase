@@ -2,3 +2,6 @@
 [zeroTimer] # QTBUG-108556
 ci ubuntu-20.04
 ci sles-15.4
+
+[singleShotToFunctors]
+ci ubuntu-20.04 # QTBUG-108554
