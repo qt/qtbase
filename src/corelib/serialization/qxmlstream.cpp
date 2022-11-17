@@ -20,6 +20,7 @@
 #include <iterator>
 #include "qxmlstream_p.h"
 #include "qxmlstreamparser_p.h"
+#include <private/qstringconverter_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -2807,11 +2808,9 @@ public:
             delete device;
     }
 
-    void write(const XmlStringRef &);
-    void write(const QString &);
+    void write(QAnyStringView s);
     void writeEscaped(const QString &, bool escapeWhitespace = false);
     void write(const char *s, qsizetype len);
-    template <int N> void write(const char (&s)[N]) { write(s, N - 1); }
     bool finishStartElement(bool contents = true);
     void writeStartElement(const QString &namespaceUri, const QString &name);
     QIODevice *device;
@@ -2827,7 +2826,6 @@ public:
     QByteArray autoFormattingIndent;
     NamespaceDeclaration emptyNamespace;
     qsizetype lastNamespaceDeclaration;
-    QStringEncoder toUtf8;
 
     NamespaceDeclaration &findNamespace(const QString &namespaceUri, bool writeDeclaration = false, bool noDefault = false);
     void writeNamespaceDeclaration(const NamespaceDeclaration &namespaceDeclaration);
@@ -2835,12 +2833,15 @@ public:
     int namespacePrefixCount;
 
     void indent(int level);
+private:
+    void doWriteToDevice(QStringView s);
+    void doWriteToDevice(QUtf8StringView s);
+    void doWriteToDevice(QLatin1StringView s);
 };
 
 
 QXmlStreamWriterPrivate::QXmlStreamWriterPrivate(QXmlStreamWriter *q)
-    : autoFormattingIndent(4, ' '),
-      toUtf8(QStringEncoder::Utf8, QStringEncoder::Flag::Stateless)
+    : autoFormattingIndent(4, ' ')
 {
     q_ptr = q;
     device = nullptr;
@@ -2856,42 +2857,18 @@ QXmlStreamWriterPrivate::QXmlStreamWriterPrivate(QXmlStreamWriter *q)
     namespacePrefixCount = 0;
 }
 
-void QXmlStreamWriterPrivate::write(const XmlStringRef &s)
+void QXmlStreamWriterPrivate::write(QAnyStringView s)
 {
     if (device) {
         if (hasIoError)
             return;
-        QByteArray bytes = toUtf8(s);
-        if (toUtf8.hasError()) {
-            hasEncodingError = true;
-            return;
-        }
-        if (device->write(bytes) != bytes.size())
-            hasIoError = true;
-    }
-    else if (stringDevice)
-        stringDevice->append(s);
-    else
-        qWarning("QXmlStreamWriter: No device");
-}
 
-void QXmlStreamWriterPrivate::write(const QString &s)
-{
-    if (device) {
-        if (hasIoError)
-            return;
-        QByteArray bytes = toUtf8(s);
-        if (toUtf8.hasError()) {
-            hasEncodingError = true;
-            return;
-        }
-        if (device->write(bytes) != bytes.size())
-            hasIoError = true;
-    }
-    else if (stringDevice)
-        stringDevice->append(s);
-    else
+        s.visit([&] (auto s) { doWriteToDevice(s); });
+    } else if (stringDevice) {
+        s.visit([&] (auto s) { stringDevice->append(s); });
+    } else {
         qWarning("QXmlStreamWriter: No device");
+    }
 }
 
 void QXmlStreamWriterPrivate::writeEscaped(const QString &s, bool escapeWhitespace)
@@ -2945,18 +2922,9 @@ void QXmlStreamWriterPrivate::writeEscaped(const QString &s, bool escapeWhitespa
     write(escaped);
 }
 
-// Writes utf8
 void QXmlStreamWriterPrivate::write(const char *s, qsizetype len)
 {
-    if (device) {
-        if (hasIoError)
-            return;
-        if (device->write(s, len) != len)
-            hasIoError = true;
-        return;
-    }
-
-    write(QString::fromUtf8(s, len));
+    write(QUtf8StringView(s, len));
 }
 
 void QXmlStreamWriterPrivate::writeNamespaceDeclaration(const NamespaceDeclaration &namespaceDeclaration) {
@@ -3034,6 +3002,31 @@ void QXmlStreamWriterPrivate::indent(int level)
         write(autoFormattingIndent.constData(), autoFormattingIndent.size());
 }
 
+void QXmlStreamWriterPrivate::doWriteToDevice(QStringView s)
+{
+    QStringEncoder toUtf8(QStringEncoder::Utf8, QStringEncoder::Flag::Stateless);
+    QByteArray bytes = toUtf8(s);
+    if (toUtf8.hasError()) {
+        hasEncodingError = true;
+        return;
+    }
+    doWriteToDevice(QUtf8StringView{bytes});
+}
+
+void QXmlStreamWriterPrivate::doWriteToDevice(QUtf8StringView s)
+{
+    QByteArrayView bytes = s;
+    if (device->write(bytes.data(), bytes.size()) != bytes.size())
+        hasIoError = true;
+}
+
+void QXmlStreamWriterPrivate::doWriteToDevice(QLatin1StringView s)
+{
+    QByteArray utf8(s.size() * 2, Qt::Uninitialized);
+    char *end = QUtf8::convertFromLatin1(utf8.data(), s);
+    utf8.truncate(end - utf8.data());
+    doWriteToDevice(QUtf8StringView{utf8});
+}
 
 /*!
   Constructs a stream writer.
