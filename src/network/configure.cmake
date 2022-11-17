@@ -237,7 +237,7 @@ qt_feature("ocsp" PUBLIC
     SECTION "Networking"
     LABEL "OCSP-stapling"
     PURPOSE "Provides OCSP stapling support"
-    CONDITION QT_FEATURE_opensslv11 AND TEST_ocsp
+    CONDITION QT_FEATURE_openssl AND TEST_ocsp
 )
 qt_feature("sctp" PUBLIC
     LABEL "SCTP"
