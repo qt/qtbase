@@ -399,6 +399,8 @@ private slots:
     void prepend_qstringview_data()   { prepend_data(EmptyIsNoop); }
     void prepend_qlatin1string()      { prepend_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
     void prepend_qlatin1string_data() { prepend_data({EmptyIsNoop, Latin1Encoded}); }
+    void prepend_qutf8stringview()    { prepend_impl<QUtf8StringView, QString &(QString::*)(QUtf8StringView)>(); }
+    void prepend_qutf8stringview_data() { prepend_data(EmptyIsNoop); }
     void prepend_qcharstar_int()      { prepend_impl<QPair<const QChar *, int>, QString &(QString::*)(const QChar *, qsizetype)>(); }
     void prepend_qcharstar_int_data() { prepend_data(EmptyIsNoop); }
     void prepend_qchar()              { prepend_impl<Reversed<QChar>, QString &(QString::*)(QChar)>(); }

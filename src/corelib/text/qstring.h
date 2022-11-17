@@ -701,6 +701,7 @@ public:
     inline QString &prepend(const QString &s) { return insert(0, s); }
     inline QString &prepend(QStringView v) { return prepend(v.data(), v.size()); }
     inline QString &prepend(QLatin1StringView s) { return insert(0, s); }
+    QString &prepend(QUtf8StringView s) { return insert(0, s); }
 
     inline QString &operator+=(QChar c) { return append(c); }
 

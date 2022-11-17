@@ -3254,7 +3254,14 @@ QString &QString::append(QChar ch)
 
     \overload prepend()
 
-    Prepends the Latin-1 string \a str to this string.
+    Prepends the Latin-1 string view \a str to this string.
+*/
+
+/*! \fn QString &QString::prepend(QUtf8StringView str)
+    \since 6.5
+    \overload prepend()
+
+    Prepends the UTF-8 string view \a str to this string.
 */
 
 /*! \fn QString &QString::prepend(const QChar *str, qsizetype len)
