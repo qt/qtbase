@@ -5,6 +5,7 @@
 
 #include <QtCore/qbytearrayalgorithms.h>
 #include <QtCore/qstringfwd.h>
+#include <QtCore/qarraydata.h>
 
 #include <string>
 
@@ -197,6 +198,18 @@ public:
     { Q_ASSERT(pos >= 0); Q_ASSERT(n >= 0); Q_ASSERT(size_t(pos) + size_t(n) <= size_t(size())); return QByteArrayView(data() + pos, n); }
     [[nodiscard]] constexpr QByteArrayView chopped(qsizetype len) const
     { Q_ASSERT(len >= 0); Q_ASSERT(len <= size()); return first(size() - len); }
+
+    [[nodiscard]] constexpr QByteArrayView left(qsizetype n) const
+    { if (n < 0 || n > size()) n = size(); return QByteArrayView(data(), n); }
+    [[nodiscard]] constexpr QByteArrayView right(qsizetype n) const
+    { if (n < 0 || n > size()) n = size(); if (n < 0) n = 0; return QByteArrayView(data() + size() - n, n); }
+    [[nodiscard]] constexpr QByteArrayView mid(qsizetype pos, qsizetype n = -1) const
+    {
+        using namespace QtPrivate;
+        auto result = QContainerImplHelper::mid(size(), &pos, &n);
+        return result == QContainerImplHelper::Null ? QByteArrayView()
+                                                    : QByteArrayView(m_data + pos, n);
+    }
 
     constexpr void truncate(qsizetype n)
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size = n; }

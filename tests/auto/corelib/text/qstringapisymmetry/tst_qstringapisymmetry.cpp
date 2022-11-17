@@ -730,6 +730,8 @@ private Q_SLOTS:
     void mid_QLatin1String() { mid_impl<QLatin1String>(); }
     void mid_QByteArray_data() { mid_data(); }
     void mid_QByteArray() { mid_impl<QByteArray>(); }
+    void mid_QByteArrayView_data() { mid_data(); }
+    void mid_QByteArrayView() { mid_impl<QByteArrayView>(); }
 
     void left_QString_data() { left_data(); }
     void left_QString() { left_impl<QString>(); }
@@ -741,6 +743,8 @@ private Q_SLOTS:
     void left_QLatin1String() { left_impl<QLatin1String>(); }
     void left_QByteArray_data();
     void left_QByteArray() { left_impl<QByteArray>(); }
+    void left_QByteArrayView_data() { left_data(); }
+    void left_QByteArrayView() { left_impl<QByteArrayView>(); }
 
     void right_QString_data() { right_data(); }
     void right_QString() { right_impl<QString>(); }
@@ -752,6 +756,8 @@ private Q_SLOTS:
     void right_QLatin1String() { right_impl<QLatin1String>(); }
     void right_QByteArray_data();
     void right_QByteArray() { right_impl<QByteArray>(); }
+    void right_QByteArrayView_data() { right_data(); }
+    void right_QByteArrayView() { right_impl<QByteArrayView>(); }
 
     void sliced_QString_data() { sliced_data(); }
     void sliced_QString() { sliced_impl<QString>(); }

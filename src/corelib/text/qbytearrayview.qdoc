@@ -618,6 +618,54 @@
 */
 
 /*!
+    \fn QByteArrayView QByteArrayView::mid(qsizetype start, qsizetype length) const
+    \since 6.5
+
+    \deprecated Use sliced() instead in new code.
+
+    Returns the subarray of length \a length starting at position
+    \a start in this object.
+
+    Returns an empty byte array view if \a start exceeds the
+    length of the byte array view. If there are less than \a length characters
+    available in the byte array view starting at \a start, or if
+    \a length is negative (default), the function returns all characters that
+    are available from \a start.
+
+    \sa first(), last(), sliced(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QByteArrayView QByteArrayView::left(qsizetype length) const
+    \since 6.5
+
+    \deprecated Use first() instead in new code.
+
+    Returns the subarray of length \a length starting at position
+    0 in this object.
+
+    The entire byte array view is returned if \a length is greater than or equal
+    to size(), or less than zero.
+
+    \sa first(), last(), sliced(), startsWith(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QByteArrayView QByteArrayView::right(qsizetype length) const
+    \since 6.5
+
+    \deprecated Use last() instead in new code.
+
+    Returns the subarray of length \a length starting at position
+    size() - \a length in this object.
+
+    The entire byte array view is returned if \a length is greater than or equal
+    to size(), or less than zero.
+
+    \sa first(), last(), sliced(), endsWith(), chopped(), chop(), truncate()
+*/
+
+/*!
     \fn QByteArrayView QByteArrayView::trimmed() const noexcept
     \since 6.3
 
