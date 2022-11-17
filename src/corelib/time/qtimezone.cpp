@@ -204,15 +204,15 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
 /*!
   \enum QTimeZone::anonymous
 
+  This enumeration provides constants bounding the range of plausible timezone
+  offsets from UTC, measured in seconds.
   Sane UTC offsets range from -14 to +14 hours.
-  No known zone > 12 hrs West of Greenwich (Baker Island, USA).
-  No known zone > 14 hrs East of Greenwich (Kiritimati, Christmas Island, Kiribati).
+  No known zone has offset > 12 hrs West of Greenwich (Baker Island, USA).
+  No known zone has offset > 14 hrs East of Greenwich (Kiritimati, Christmas Island, Kiribati).
+  Note that there are zones whose offsets differ by more than a day.
 
-  \value MinUtcOffsetSecs
-          -14 * 3600,
-
-  \value MaxUtcOffsetSecs
-          +14 * 3600
+  \value MinUtcOffsetSecs -14 * 3600,
+  \value MaxUtcOffsetSecs +14 * 3600
 */
 
 /*!
