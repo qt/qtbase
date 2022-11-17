@@ -80,6 +80,87 @@ out as part of the deployment settings for a target.
 */
 
 /*!
+\page cmake_variable-qt-android-multi-abi-forward-vars
+\ingroup cmake-variables-qtcore
+
+\title QT_ANDROID_MULTI_ABI_FORWARD_VARS
+\target cmake-variable-QT_ANDROID_MULTI_ABI_FORWARD_VARS
+
+\summary {Allows to share CMake variables in multi-ABI builds}
+
+\cmakevariablesince 6.4.2
+\preliminarycmakevariable
+\cmakevariableandroidonly
+
+The \c{QT_ANDROID_MULTI_ABI_FORWARD_VARS} variable allows specifying the list of
+CMake variables that need to be forwarded from the main ABI project to
+ABI-specific subprojects. Due to the specifics of the Multi-ABI project build
+process, there is no generic way to forward the CMake cache variables
+that are specified either in the command line or in another similar way.
+
+A typical use case for the variable is propagating CMake cache variables
+specified in the command line. For example, a project has two variables
+\c{PROJECT_WIDE_VARIABLE1} and \c{PROJECT_WIDE_VARIABLE2} that affect the
+project configuration:
+\badcode
+cmake_minimum_required(VERSION 3.18)
+
+project(MyProject LANGUAGES CXX)
+
+find_package(Qt6 REQUIRED COMPONENTS Core)
+
+qt_add_executable(MyApp main.cpp)
+
+if(PROJECT_WIDE_VARIABLE1)
+    target_sources(MyApp PRIVATE sourcefile1.cpp)
+endif()
+if(PROJECT_WIDE_VARIABLE2)
+    target_sources(MyApp PRIVATE sourcefile2.cpp)
+endif()
+\endcode
+
+The above contents of \c{CMakeLists.txt} enable you to control how
+\c{MyApp} is built by setting the corresponding CMake variables from the
+command line:
+\badcode
+qt-cmake -S<source directory> -B<build directory> \
+    -DPROJECT_WIDE_VARIABLE1=ON \
+    -DPROJECT_WIDE_VARIABLE2=ON \
+    -DQT_ANDROID_MULTI_ABI_FORWARD_VARS="PROJECT_WIDE_VARIABLE1;PROJECT_WIDE_VARIABLE2"
+\endcode
+
+When configuring the application for desktop, \c{PROJECT_WIDE_VARIABLE1} and
+\c{PROJECT_WIDE_VARIABLE2} are visible in CMake listings and scripts as global
+cache variables. This doesn't work for Android Multi-ABI builds because
+ABI-specific subprojects do not inherit the cache variables from the main-ABI
+project. This issue can be solved by passing the list of required variables to
+the \c{QT_ANDROID_MULTI_ABI_FORWARD_VARS} variable, so both
+\c{PROJECT_WIDE_VARIABLE1} and \c{PROJECT_WIDE_VARIABLE2} values will be
+propagated to the ABI-specific builds.
+
+The variable can be also defined in the project's CMakeLists.txt:
+\badcode
+...
+qt_add_executable(MyApp main.cpp)
+...
+if(ANDROID)
+    set(QT_ANDROID_MULTI_ABI_FORWARD_VARS "PROJECT_WIDE_VARIABLE1;PROJECT_WIDE_VARIABLE2")
+endif()
+...
+\endcode
+
+Setting the variable in this way allows you to have a predefined set of
+variables that will always be forwarded to abi-specific projects.
+
+\note The forwarding is done in the target finalizer, which is implicitly
+called when \l{qt6_add_executable}{qt_add_executable()} is used. The
+finalization occurs automatically when using CMake 3.19 or later.
+
+\sa {qt6_finalize_target}{qt_finalize_target()},
+    {qt6_add_executable}{qt_add_executable()}
+*/
+
+/*!
 \page cmake-variable-qt-android-build-all-abis.html
 \ingroup cmake-variables-qtcore
 
