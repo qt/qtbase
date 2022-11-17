@@ -1,0 +1,3 @@
+# See qtbase/src/testlib/qtestblacklist.cpp for format
+[zeroTimer]
+ci ubuntu-20.04 # QTBUG-108556
