@@ -118,26 +118,6 @@ static inline bool sessionManagerInteractionBlocked()
 static inline bool sessionManagerInteractionBlocked() { return false; }
 #endif
 
-static inline int windowDpiAwareness(HWND hwnd)
-{
-    return static_cast<int>(GetAwarenessFromDpiAwarenessContext(GetWindowDpiAwarenessContext(hwnd)));
-}
-
-// Note: This only works within WM_NCCREATE
-static bool enableNonClientDpiScaling(HWND hwnd)
-{
-    bool result = false;
-    if (windowDpiAwareness(hwnd) == 2) {
-        result = EnableNonClientDpiScaling(hwnd) != FALSE;
-        if (!result) {
-            const DWORD errorCode = GetLastError();
-            qErrnoWarning(int(errorCode), "EnableNonClientDpiScaling() failed for HWND %p (%lu)",
-                          hwnd, errorCode);
-        }
-    }
-    return result;
-}
-
 QWindowsContext *QWindowsContext::m_instance = nullptr;
 
 /*!
@@ -366,49 +346,117 @@ void QWindowsContext::setDetectAltGrModifier(bool a)
     d->m_keyMapper.setDetectAltGrModifier(a);
 }
 
-int QWindowsContext::processDpiAwareness()
+[[nodiscard]] static inline QtWindows::DpiAwareness
+    dpiAwarenessContextToQtDpiAwareness(DPI_AWARENESS_CONTEXT context)
 {
-    PROCESS_DPI_AWARENESS result;
-    if (SUCCEEDED(GetProcessDpiAwareness(nullptr, &result))) {
-        return static_cast<int>(result);
-    }
-    return -1;
+    // IsValidDpiAwarenessContext() will handle the NULL pointer case.
+    if (!IsValidDpiAwarenessContext(context))
+        return QtWindows::DpiAwareness::Invalid;
+    if (AreDpiAwarenessContextsEqual(context, DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED))
+        return QtWindows::DpiAwareness::Unaware_GdiScaled;
+    if (AreDpiAwarenessContextsEqual(context, DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
+        return QtWindows::DpiAwareness::PerMonitorVersion2;
+    if (AreDpiAwarenessContextsEqual(context, DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE))
+        return QtWindows::DpiAwareness::PerMonitor;
+    if (AreDpiAwarenessContextsEqual(context, DPI_AWARENESS_CONTEXT_SYSTEM_AWARE))
+        return QtWindows::DpiAwareness::System;
+    if (AreDpiAwarenessContextsEqual(context, DPI_AWARENESS_CONTEXT_UNAWARE))
+        return QtWindows::DpiAwareness::Unaware;
+    return QtWindows::DpiAwareness::Invalid;
 }
 
-void QWindowsContext::setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiAwareness)
+QtWindows::DpiAwareness QWindowsContext::windowDpiAwareness(HWND hwnd)
+{
+    if (!hwnd)
+        return QtWindows::DpiAwareness::Invalid;
+    const auto context = GetWindowDpiAwarenessContext(hwnd);
+    return dpiAwarenessContextToQtDpiAwareness(context);
+}
+
+QtWindows::DpiAwareness QWindowsContext::processDpiAwareness()
+{
+    // Although we have GetDpiAwarenessContextForProcess(), however,
+    // it's only available on Win10 1903+, which is a little higher
+    // than Qt's minimum supported version (1809), so we can't use it.
+    // Luckily, MS docs said GetThreadDpiAwarenessContext() will also
+    // return the default DPI_AWARENESS_CONTEXT for the process if
+    // SetThreadDpiAwarenessContext() was never called. So we can use
+    // it as an equivalent.
+    const auto context = GetThreadDpiAwarenessContext();
+    return dpiAwarenessContextToQtDpiAwareness(context);
+}
+
+[[nodiscard]] static inline DPI_AWARENESS_CONTEXT
+    qtDpiAwarenessToDpiAwarenessContext(QtWindows::DpiAwareness dpiAwareness)
+{
+    switch (dpiAwareness) {
+    case QtWindows::DpiAwareness::Invalid:
+        return nullptr;
+    case QtWindows::DpiAwareness::Unaware:
+        return DPI_AWARENESS_CONTEXT_UNAWARE;
+    case QtWindows::DpiAwareness::System:
+        return DPI_AWARENESS_CONTEXT_SYSTEM_AWARE;
+    case QtWindows::DpiAwareness::PerMonitor:
+        return DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE;
+    case QtWindows::DpiAwareness::PerMonitorVersion2:
+        return DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2;
+    case QtWindows::DpiAwareness::Unaware_GdiScaled:
+        return DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED;
+    }
+    return nullptr;
+}
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug d, QtWindows::DpiAwareness dpiAwareness)
+{
+    const QDebugStateSaver saver(d);
+    d.nospace().noquote() << "QtWindows::DpiAwareness::";
+    switch (dpiAwareness) {
+    case QtWindows::DpiAwareness::Invalid:
+        d.nospace().noquote() << "Invalid";
+        break;
+    case QtWindows::DpiAwareness::Unaware:
+        d.nospace().noquote() << "Unaware";
+        break;
+    case QtWindows::DpiAwareness::System:
+        d.nospace().noquote() << "System";
+        break;
+    case QtWindows::DpiAwareness::PerMonitor:
+        d.nospace().noquote() << "PerMonitor";
+        break;
+    case QtWindows::DpiAwareness::PerMonitorVersion2:
+        d.nospace().noquote() << "PerMonitorVersion2";
+        break;
+    case QtWindows::DpiAwareness::Unaware_GdiScaled:
+        d.nospace().noquote() << "Unaware_GdiScaled";
+        break;
+    }
+    return d;
+}
+#endif
+
+bool QWindowsContext::setProcessDpiAwareness(QtWindows::DpiAwareness dpiAwareness)
 {
     qCDebug(lcQpaWindow) << __FUNCTION__ << dpiAwareness;
-    if (processDpiAwareness() == int(dpiAwareness))
-        return;
-
-    const HRESULT hr = SetProcessDpiAwareness(static_cast<PROCESS_DPI_AWARENESS>(dpiAwareness));
-    if (FAILED(hr)) {
-        qCWarning(lcQpaWindow).noquote().nospace() << "SetProcessDpiAwareness("
-            << dpiAwareness << ") failed: " << QSystemError::windowsComString(hr) << ", using "
-            << QWindowsContext::processDpiAwareness() << "\nQt's fallback DPI awareness is "
-            << "PROCESS_DPI_AWARENESS. If you know what you are doing consider an override in qt.conf";
-    }
-}
-
-bool QWindowsContext::setProcessDpiV2Awareness()
-{
-    qCDebug(lcQpaWindow) << __FUNCTION__;
-    auto dpiContext = GetThreadDpiAwarenessContext();
-    if (AreDpiAwarenessContextsEqual(dpiContext, DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
+    if (processDpiAwareness() == dpiAwareness)
         return true;
-
-    const BOOL ok = SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-    if (!ok) {
-        const DWORD dwError = GetLastError();
-        qCWarning(lcQpaWindow).noquote().nospace()
-            << "SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) failed: "
-            << QSystemError::windowsComString(HRESULT(dwError)) << "\nQt's default DPI awareness "
-            << "context is DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2. If you know what you "
-            << "are doing you can overwrite this default using qt.conf "
-            << "(https://doc.qt.io/qt-6/highdpi.html#configuring-windows)";
+    const auto context = qtDpiAwarenessToDpiAwarenessContext(dpiAwareness);
+    if (!IsValidDpiAwarenessContext(context)) {
+        qCWarning(lcQpaWindow) << dpiAwareness << "is not supported by current system.";
         return false;
     }
-    QWindowsContextPrivate::m_v2DpiAware = true;
+    if (!SetProcessDpiAwarenessContext(context)) {
+        qCWarning(lcQpaWindow).noquote().nospace()
+            << "SetProcessDpiAwarenessContext() failed: "
+            << QSystemError::windowsString()
+            << "\nQt's default DPI awareness context is "
+            << "DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2. If you know what you "
+            << "are doing, you can overwrite this default using qt.conf "
+            << "(https://doc.qt.io/qt-6/highdpi.html#configuring-windows).";
+        return false;
+    }
+    QWindowsContextPrivate::m_v2DpiAware
+        = processDpiAwareness() == QtWindows::DpiAwareness::PerMonitorVersion2;
     return true;
 }
 
@@ -919,6 +967,21 @@ static inline bool isInputMessage(UINT m)
     return (m >= WM_MOUSEFIRST && m <= WM_MOUSELAST)
         || (m >= WM_NCMOUSEMOVE && m <= WM_NCXBUTTONDBLCLK)
         || (m >= WM_KEYFIRST && m <= WM_KEYLAST);
+}
+
+// Note: This only works within WM_NCCREATE
+static bool enableNonClientDpiScaling(HWND hwnd)
+{
+    bool result = false;
+    if (QWindowsContext::windowDpiAwareness(hwnd) == QtWindows::DpiAwareness::PerMonitor) {
+        result = EnableNonClientDpiScaling(hwnd) != FALSE;
+        if (!result) {
+            const DWORD errorCode = GetLastError();
+            qErrnoWarning(int(errorCode), "EnableNonClientDpiScaling() failed for HWND %p (%lu)",
+                          hwnd, errorCode);
+        }
+    }
+    return result;
 }
 
 /*!
