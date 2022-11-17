@@ -586,8 +586,9 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
 
         return targetWindow ? targetWindow : m_lastMouseTargetWindow.get();
     })();
-    if (targetWindow)
-        m_lastMouseTargetWindow = targetWindow;
+    if (!targetWindow)
+        return false;
+    m_lastMouseTargetWindow = targetWindow;
 
     const QPoint pointInTargetWindowCoords = targetWindow->mapFromGlobal(event.point);
     const bool pointerIsWithinTargetWindowBounds = targetWindow->geometry().contains(event.point);
