@@ -109,15 +109,19 @@ void QWasmWindow::initialize()
 {
     QRect rect = windowGeometry();
 
-    QPlatformWindow::setGeometry(rect);
+    constexpr int minSizeBoundForDialogsAndRegularWindows = 100;
+    const int windowType = window()->flags() & Qt::WindowType_Mask;
+    const int systemMinSizeLowerBound = windowType == Qt::Window || windowType == Qt::Dialog
+            ? minSizeBoundForDialogsAndRegularWindows
+            : 0;
 
-    const QSize minimumSize = windowMinimumSize();
-    if (rect.width() > 0 || rect.height() > 0) {
-        rect.setWidth(qBound(1, rect.width(), 2000));
-        rect.setHeight(qBound(1, rect.height(), 2000));
-    } else if (minimumSize.width() > 0 || minimumSize.height() > 0) {
-        rect.setSize(minimumSize);
-    }
+    const QSize minimumSize(std::max(windowMinimumSize().width(), systemMinSizeLowerBound),
+                            std::max(windowMinimumSize().height(), systemMinSizeLowerBound));
+    const QSize maximumSize = windowMaximumSize();
+    const QSize targetSize = !rect.isEmpty() ? rect.size() : minimumSize;
+
+    rect.setWidth(qBound(minimumSize.width(), targetSize.width(), maximumSize.width()));
+    rect.setHeight(qBound(minimumSize.width(), targetSize.height(), maximumSize.height()));
 
     setWindowState(window()->windowStates());
     setWindowFlags(window()->flags());
@@ -125,6 +129,7 @@ void QWasmWindow::initialize()
     if (window()->isTopLevel())
         setWindowIcon(window()->icon());
     m_normalGeometry = rect;
+    QPlatformWindow::setGeometry(m_normalGeometry);
 }
 
 QWasmScreen *QWasmWindow::platformScreen() const
