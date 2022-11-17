@@ -577,6 +577,10 @@ macro(qt_build_repo_impl_src)
             add_subdirectory(src)
         endif()
     endif()
+    if(QT_FEATURE_lttng AND NOT TARGET LTTng::UST)
+        qt_find_package(LTTngUST PROVIDED_TARGETS LTTng::UST
+                        MODULE_NAME global QMAKE_LIB lttng-ust)
+    endif()
 endmacro()
 
 macro(qt_build_repo_impl_tools)
