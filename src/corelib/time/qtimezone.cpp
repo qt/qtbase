@@ -256,8 +256,12 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     \class QTimeZone::OffsetData
     \inmodule QtCore
 
-    The time zone offset data for a given moment in time, i.e. the time zone
-    offsets and abbreviation to use at that moment in time.
+    The time zone offset data for a given moment in time.
+
+    This provides the time zone offsets and abbreviation to use at that moment
+    in time. When a function returns this type, it may use an invalid datetime
+    to indicate that the query it is answering has no valid answer, so check
+    \c{atUtc.isValid()} before using the results.
 
     \list
     \li OffsetData::atUtc  The datetime of the offset data in UTC time.
