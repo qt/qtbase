@@ -665,9 +665,13 @@ QVariant QSystemLocalePrivate::uiLanguages()
 #if QT_CONFIG(cpp_winrt)
     using namespace winrt;
     using namespace Windows::System::UserProfile;
-    auto languages = GlobalizationPreferences::Languages();
-    for (const auto &lang : languages)
-        result << QString::fromStdString(winrt::to_string(lang));
+    QT_TRY {
+        auto languages = GlobalizationPreferences::Languages();
+        for (const auto &lang : languages)
+            result << QString::fromStdString(winrt::to_string(lang));
+    } QT_CATCH(...) {
+        // pass, just fall back to WIN32 API implementation
+    }
     if (!result.isEmpty())
         return result; // else just fall back to WIN32 API implementation
 #endif // QT_CONFIG(cpp_winrt)
