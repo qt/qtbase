@@ -4145,20 +4145,20 @@ qulonglong QLocaleData::stringToUnsLongLong(QStringView str, int base, bool *ok,
 
 qlonglong QLocaleData::bytearrayToLongLong(QByteArrayView num, int base, bool *ok)
 {
-    auto [l, endptr] = qstrntoll(num.data(), num.size(), base);
-    if (!endptr) {
+    const qsizetype len = num.size();
+    auto [l, used] = qstrntoll(num.data(), len, base);
+    if (used <= 0) {
         if (ok != nullptr)
             *ok = false;
         return 0;
     }
 
-    const char *const stop = num.end();
-    if (endptr < stop && *endptr != '\0') {
-        while (endptr < stop && ascii_isspace(*endptr))
-            ++endptr;
+    if (used < len && num[used] != '\0') {
+        while (used < len && ascii_isspace(num[used]))
+            ++used;
     }
 
-    if (endptr < stop && *endptr != '\0') {
+    if (used < len && num[used] != '\0') {
         // we stopped at a non-digit character after converting some digits
         if (ok != nullptr)
             *ok = false;
@@ -4172,20 +4172,20 @@ qlonglong QLocaleData::bytearrayToLongLong(QByteArrayView num, int base, bool *o
 
 qulonglong QLocaleData::bytearrayToUnsLongLong(QByteArrayView num, int base, bool *ok)
 {
-    auto [l, endptr] = qstrntoull(num.data(), num.size(), base);
-    if (!endptr) {
+    const qsizetype len = num.size();
+    auto [l, used] = qstrntoull(num.data(), len, base);
+    if (used <= 0) {
         if (ok != nullptr)
             *ok = false;
         return 0;
     }
 
-    const char *const stop = num.end();
-    if (endptr < stop && *endptr != '\0') {
-        while (endptr < stop && ascii_isspace(*endptr))
-            ++endptr;
+    if (used < len && num[used] != '\0') {
+        while (used < len && ascii_isspace(num[used]))
+            ++used;
     }
 
-    if (endptr < stop && *endptr != '\0') {
+    if (used < len && num[used] != '\0') {
         if (ok != nullptr)
             *ok = false;
         return 0;

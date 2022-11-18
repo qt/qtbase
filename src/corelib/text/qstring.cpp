@@ -6901,9 +6901,9 @@ static int parse_field_width(const char *&c, qsizetype size)
 
     // can't be negative - started with a digit
     // contains at least one digit
-    auto [result, endp] = qstrntoull(c, size, 10);
-    c = endp;
-    if (!endp)
+    auto [result, used] = qstrntoull(c, size, 10);
+    c += used;
+    if (used <= 0)
         return false;
     // preserve Qt 5.5 behavior of consuming all digits, no matter how many
     while (c < stop && qIsDigit(*c))

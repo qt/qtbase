@@ -394,26 +394,26 @@ static int parsePosixTime(const char *begin, const char *end)
     const int maxHour = 137; // POSIX's extended range.
     auto r = qstrntoll(begin, end - begin, 10);
     hour = r.result;
-    if (!r.ok() || hour < -maxHour || hour > maxHour || r.endptr > begin + 2)
+    if (!r.ok() || hour < -maxHour || hour > maxHour || r.used > 2)
         return INT_MIN;
-    begin = r.endptr;
+    begin += r.used;
     if (begin < end && *begin == ':') {
         // minutes
         ++begin;
         r = qstrntoll(begin, end - begin, 10);
         min = r.result;
-        if (!r.ok() || min < 0 || min > 59 || r.endptr > begin + 2)
+        if (!r.ok() || min < 0 || min > 59 || r.used > 2)
             return INT_MIN;
 
-        begin = r.endptr;
+        begin += r.used;
         if (begin < end && *begin == ':') {
             // seconds
             ++begin;
             r = qstrntoll(begin, end - begin, 10);
             sec = r.result;
-            if (!r.ok() || sec < 0 || sec > 59 || r.endptr > begin + 2)
+            if (!r.ok() || sec < 0 || sec > 59 || r.used > 2)
                 return INT_MIN;
-            begin = r.endptr;
+            begin += r.used;
         }
     }
 

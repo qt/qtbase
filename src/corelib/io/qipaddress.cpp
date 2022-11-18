@@ -60,12 +60,12 @@ static bool parseIp4Internal(IPv4Address &address, const char *ptr, bool acceptL
                 ptr[1] != '.' && ptr[1] != '\0')
             return false;
 
-        auto [ll, endptr] = qstrntoull(ptr, stop - ptr, 0);
+        auto [ll, used] = qstrntoull(ptr, stop - ptr, 0);
         quint32 x = ll;
-        if (!endptr || endptr == ptr || ll != x)
+        if (used <= 0 || ll != x)
             return false;
 
-        if (*endptr == '.' || dotCount == 3) {
+        if (ptr[used] == '.' || dotCount == 3) {
             if (x & ~0xff)
                 return false;
             address <<= 8;
@@ -80,13 +80,13 @@ static bool parseIp4Internal(IPv4Address &address, const char *ptr, bool acceptL
         }
         address |= x;
 
-        if (dotCount == 3 || *endptr == '\0')
-            return *endptr == '\0';
-        if (*endptr != '.')
+        if (dotCount == 3 || ptr[used] == '\0')
+            return ptr[used] == '\0';
+        if (ptr[used] != '.')
             return false;
 
         ++dotCount;
-        ptr = endptr + 1;
+        ptr += used + 1;
     }
     return false;
 }
@@ -174,16 +174,16 @@ const QChar *parseIp6(IPv6Address &address, const QChar *begin, const QChar *end
             continue;
         }
 
-        auto [ll, endptr] = qstrntoull(ptr, stop - ptr, 16);
+        auto [ll, used] = qstrntoull(ptr, stop - ptr, 16);
         quint16 x = ll;
 
         // Reject malformed fields:
         // - failed to parse
         // - too many hex digits
-        if (!endptr || endptr > ptr + 4)
+        if (used <= 0 || used > 4)
             return begin + (ptr - buffer.data());
 
-        if (*endptr == '.') {
+        if (ptr[used] == '.') {
             // this could be an IPv4 address
             // it's only valid in the last element
             if (pos != 12)
@@ -203,11 +203,11 @@ const QChar *parseIp6(IPv6Address &address, const QChar *begin, const QChar *end
         address[pos++] = x >> 8;
         address[pos++] = x & 0xff;
 
-        if (*endptr == '\0')
+        if (ptr[used] == '\0')
             break;
-        if (*endptr != ':')
-            return begin + (endptr - buffer.data());
-        ptr = endptr + 1;
+        if (ptr[used] != ':')
+            return begin + (used + ptr - buffer.data());
+        ptr += used + 1;
     }
     return pos == 16 ? nullptr : end;
 }

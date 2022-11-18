@@ -1075,8 +1075,8 @@ static QString winIso639LangName(LCID id)
 
     if (!lang_code.isEmpty()) {
         const QByteArray latin1 = std::move(lang_code).toLatin1();
-        const auto [i, endptr] = qstrntoull(latin1.data(), latin1.size(), 16);
-        if (endptr && *endptr == '\0') {
+        const auto [i, used] = qstrntoull(latin1.data(), latin1.size(), 16);
+        if (used > 0 && latin1[used] == '\0') {
             switch (i) {
                 case 0x814:
                     result = u"nn"_s; // Nynorsk
@@ -1117,8 +1117,8 @@ static QByteArray getWinLocaleName(LCID id)
         if (result == "C"
             || (!result.isEmpty() && qt_splitLocaleName(QString::fromLocal8Bit(result)))) {
             // See if we have a Windows locale code instead of a locale name:
-            auto [id, ok] = qstrntoll(result.data(), result.size(), 0);
-            if (!ok || id == 0 || id < INT_MIN || id > INT_MAX) // Assume real locale name
+            auto [id, used] = qstrntoll(result.data(), result.size(), 0);
+            if (used <= 0 || id == 0 || id < INT_MIN || id > INT_MAX) // Assume real locale name
                 return result;
             return winLangCodeToIsoName(int(id));
         }

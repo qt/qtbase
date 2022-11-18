@@ -409,12 +409,12 @@ static QVersionNumber from_string(QLatin1StringView string, qsizetype *suffixInd
 
     do {
         // parsing as unsigned so a minus sign is rejected
-        auto [value, end] = qstrntoull(start, endOfString - start, 10);
-        if (!end || value > qulonglong(std::numeric_limits<int>::max()))
+        auto [value, used] = qstrntoull(start, endOfString - start, 10);
+        if (used <= 0 || value > qulonglong(std::numeric_limits<int>::max()))
             break;
         seg.append(int(value));
-        start = end + 1;
-        lastGoodEnd = end;
+        start += used + 1;
+        lastGoodEnd = start - 1;
     } while (start < endOfString && *lastGoodEnd == '.');
 
     if (suffixIndex)

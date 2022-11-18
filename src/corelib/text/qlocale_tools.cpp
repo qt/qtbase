@@ -194,7 +194,7 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision,
             auto r = qstrntoll(target.data() + eSign + 1, length - eSign - 1, 10);
             decpt = r.result + 1;
             Q_ASSERT(r.ok());
-            Q_ASSERT(r.endptr - target.data() <= length);
+            Q_ASSERT(r.used + eSign + 1 <= length);
         } else {
             // No 'e' found, so it's the 'f' form. Variants of snprintf generate numbers with
             // potentially multiple digits before the '.', but without decimal exponent then. So we
@@ -282,9 +282,9 @@ QSimpleParsedNumber<double> qt_asciiToDouble(const char *num, qsizetype numLen,
             char c2 = lowered(num[offset + 1]);
             char c3 = lowered(num[offset + 2]);
             if (c == 'i' && c2 == 'n' && c3 == 'f')
-                return { negative ? -qt_inf() : qt_inf(), num + offset + 3 };
+                return { negative ? -qt_inf() : qt_inf(), offset + 3 };
             else if (c == 'n' && c2 == 'a' && c3 == 'n' && !hasSign)
-                return { qt_qnan(), num + 3 };
+                return { qt_qnan(), 3 };
             return {};
         }
     }
@@ -313,7 +313,7 @@ QSimpleParsedNumber<double> qt_asciiToDouble(const char *num, qsizetype numLen,
             return {};
         } else {
             // Overflow. That's not OK, but we still return infinity.
-            return { d, nullptr };
+            return { d, -processed };
         }
     }
 #else
@@ -342,7 +342,7 @@ QSimpleParsedNumber<double> qt_asciiToDouble(const char *num, qsizetype numLen,
                 return {};
             }
         }
-        return { d, nullptr };
+        return { d, -processed };
     }
 #endif // !defined(QT_NO_DOUBLECONVERSION) && !defined(QT_BOOTSTRAPPED)
 
@@ -360,7 +360,7 @@ QSimpleParsedNumber<double> qt_asciiToDouble(const char *num, qsizetype numLen,
             }
         }
     }
-    return { d, num + processed };
+    return { d, processed };
 }
 
 /* Detect base if 0 and, if base is hex or bin, skip over 0x/0b prefixes */
@@ -430,7 +430,7 @@ QSimpleParsedNumber<qulonglong> qstrntoull(const char *begin, qsizetype size, in
     const auto res = std::from_chars(prefix.next, stop, result, prefix.base);
     if (res.ec != std::errc{})
         return { };
-    return { result, res.ptr == prefix.next ? begin : res.ptr };
+    return { result, res.ptr == prefix.next ? 0 : res.ptr - begin };
 }
 
 QSimpleParsedNumber<qlonglong> qstrntoll(const char *begin, qsizetype size, int base)
@@ -458,12 +458,12 @@ QSimpleParsedNumber<qlonglong> qstrntoll(const char *begin, qsizetype size, int 
         unsigned long long check = 0;
         res = std::from_chars(prefix.next, stop, check, prefix.base);
         if (res.ec == std::errc{} && check + std::numeric_limits<long long>::min() == 0)
-            return { std::numeric_limits<long long>::min(), res.ptr };
+            return { std::numeric_limits<long long>::min(), res.ptr - begin };
         return { };
     }
     if (res.ec != std::errc{})
         return { };
-    return { negate ? -result : result, res.ptr };
+    return { negate ? -result : result, res.ptr - begin };
 }
 
 template <typename Char>
@@ -558,7 +558,7 @@ double qstrntod(const char *s00, qsizetype len, const char **se, bool *ok)
 {
     auto r = qt_asciiToDouble(s00, len, TrailingJunkAllowed);
     if (se)
-        *se = r.endptr ? r.endptr : s00;
+        *se = s00 + (r.used < 0 ? -r.used : r.used);
     if (ok)
         *ok = r.ok();
     return r.result;

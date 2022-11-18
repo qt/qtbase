@@ -1246,6 +1246,10 @@ void tst_QLocale::strtod_data()
     QTest::newRow("12456789012")     << QString("12456789012")     << 12456789012.0 << 11 << true;
     QTest::newRow("1.2456789012e10") << QString("1.2456789012e10") << 12456789012.0 << 15 << true;
 
+    // Overflow - fails but reports right length:
+    QTest::newRow("1e2000")          << QString("1e2000")          << qInf()        << 6  << false;
+    QTest::newRow("-1e2000")         << QString("-1e2000")         << -qInf()       << 7  << false;
+
     // starts with junk, fails
     QTest::newRow("a0")               << QString("a0")               << 0.0 << 0 << false;
     QTest::newRow("a0.")              << QString("a0.")              << 0.0 << 0 << false;
@@ -1276,6 +1280,10 @@ void tst_QLocale::strtod_data()
     QTest::newRow("3.945e-6e")        << QString("3.945e-6e")        << 0.000003945   << 8  << true;
     QTest::newRow("12456789012f")     << QString("12456789012f")     << 12456789012.0 << 11 << true;
     QTest::newRow("1.2456789012e10g") << QString("1.2456789012e10g") << 12456789012.0 << 15 << true;
+
+    // Overflow, ends with cruft - fails but reports right length:
+    QTest::newRow("1e2000 cruft")     << QString("1e2000 cruft")     << qInf()        << 6  << false;
+    QTest::newRow("-1e2000 cruft")    << QString("-1e2000 cruft")    << -qInf()       << 7  << false;
 
     // "0x" prefix, success but only for the "0" before "x"
     QTest::newRow("0x0")               << QString("0x0")               << 0.0 << 1 << true;
@@ -1309,9 +1317,9 @@ void tst_QLocale::strtod()
     QCOMPARE(actualOk, ok);
     QCOMPARE(static_cast<int>(end - numData.constData()), processed);
 
-    // make sure neither QByteArray, QString or QLocale also work
-    // (but they don't support incomplete parsing)
-    if (processed == num_str.size() || processed == 0) {
+    // Make sure QByteArray, QString and QLocale also work.
+    // (They don't support incomplete parsing, and give 0 for overflow.)
+    if (ok && (processed == num_str.size() || processed == 0)) {
         actualOk = false;
         QCOMPARE(num_str.toDouble(&actualOk), num);
         QCOMPARE(actualOk, ok);

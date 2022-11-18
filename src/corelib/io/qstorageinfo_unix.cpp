@@ -459,27 +459,31 @@ inline bool QStorageIterator::next()
         return false;
     mnt.mount_id = r.result;
 
-    r = qstrntoll(r.endptr, stop - r.endptr, 10);
+    ptr += r.used;
+    r = qstrntoll(ptr, stop - ptr, 10);
     if (!r.ok())
         return false;
     int parent_id = r.result;
     Q_UNUSED(parent_id);
 
-    r = qstrntoll(r.endptr, stop - r.endptr, 10);
+    ptr += r.used;
+    r = qstrntoll(ptr, stop - ptr, 10);
     if (!r.ok())
         return false;
-    if (*r.endptr != ':')
+    ptr += r.used;
+    if (*ptr != ':')
         return false;
     int rdevmajor = r.result;
-    r = qstrntoll(r.endptr + 1, stop - r.endptr - 1, 10);
+    ++ptr; // Skip over the ':'
+    r = qstrntoll(ptr, stop - ptr, 10);
     if (!r.ok())
         return false;
     mnt.rdev = makedev(rdevmajor, r.result);
 
-    if (*r.endptr != ' ')
+    ptr += r.used;
+    if (*ptr != ' ')
         return false;
 
-    ptr = const_cast<char *>(r.endptr);
     mnt.subvolume = ++ptr;
     ptr = parseMangledPath(ptr);
     if (!ptr)

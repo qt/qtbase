@@ -113,7 +113,7 @@ private:
     const char *seedstr = getenv("QT_HASH_SEED");
     if (seedstr) {
         auto r = qstrntoll(seedstr, strlen(seedstr), 10);
-        if (r.endptr == seedstr + strlen(seedstr)) {
+        if (r.used > 0 && size_t(r.used) == strlen(seedstr)) {
             if (r.result) {
                 // can't use qWarning here (reentrancy)
                 fprintf(stderr, "QT_HASH_SEED: forced seed value is not 0; ignored.\n");
