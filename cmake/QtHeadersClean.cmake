@@ -241,12 +241,18 @@ function(qt_internal_add_headersclean_target module_target module_headers)
         get_filename_component(input_file_name ${input_path} NAME)
         set(artifact_path "${CMAKE_CURRENT_BINARY_DIR}/header_check/${input_file_name}.o")
 
+        unset(input_base_dir)
         if(input_path MATCHES "${CMAKE_BINARY_DIR}")
             set(input_base_dir "${CMAKE_BINARY_DIR}")
         elseif(input_path MATCHES "${CMAKE_SOURCE_DIR}")
             set(input_base_dir "${CMAKE_SOURCE_DIR}")
         endif()
-        file(RELATIVE_PATH comment_header_path "${input_base_dir}" "${input_path}")
+
+        if(input_base_dir AND IS_ABSOLUTE "${input_base_dir}" AND IS_ABSOLUTE "${input_path}")
+            file(RELATIVE_PATH comment_header_path "${input_base_dir}" "${input_path}")
+        else()
+            set(comment_header_path "${input_path}")
+        endif()
 
         add_custom_command(
             OUTPUT "${artifact_path}"
