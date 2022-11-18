@@ -13,6 +13,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// ensure QList of this is efficient
+static_assert(QTypeInfo<QUuid::Id128Bytes>::isRelocatable);
+
 // 16 bytes (a uint, two shorts and a uchar[8]), each represented by two hex
 // digits; plus four dashes and a pair of enclosing brace: 16*2 + 4 + 2 = 38.
 enum { MaxStringUuidLength = 38 };
@@ -287,6 +290,46 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
 */
 
 /*!
+    \class QUuid::Id128Bytes
+    \inmodule QtCore
+    \since 6.6
+
+    This trivial structure is 128 bits (16 bytes) in size and holds the binary
+    representation of a UUID. Applications can \c{memcpy()} its contents to and
+    from many other libraries' UUID or GUID structures that take 128-bit
+    values.
+*/
+
+/*!
+    \fn QUuid::QUuid(Id128Bytes id128) noexcept
+    \since 6.6
+
+    Creates a QUuid based on the integral \a id128 parameter.
+
+    \sa fromBytes(), toBytes(), toRfc4122()
+*/
+
+/*!
+    \fn QUuid::Id128Bytes QUuid::toBytes() const noexcept
+    \since 6.6
+
+    Returns an 128-bit ID created from this QUuid. The binary content of this
+    function is the same as toRfc4122(). See that function for more details.
+
+    \sa toRfc4122(), fromBytes(), QUuid()
+*/
+
+/*!
+    \fn QUuid QUuid::fromBytes(const void *bytes) noexcept
+    \since 6.6
+
+    Reads 128 bits (16 bytes) from \a bytes and returns the QUuid corresponding
+    to those bytes. This function does the same as fromRfc4122().
+
+    \sa fromRfc4122()
+*/
+
+/*!
     \fn QUuid::QUuid(const GUID &guid)
 
     Casts a Windows \a guid to a Qt QUuid.
@@ -468,32 +511,13 @@ QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData)
 
     \since 4.8
 
-    \sa toRfc4122(), QUuid()
+    \sa toRfc4122(), QUuid(), fromBytes()
 */
 QUuid QUuid::fromRfc4122(QByteArrayView bytes) noexcept
 {
     if (bytes.isEmpty() || bytes.size() != 16)
         return QUuid();
-
-    uint d1;
-    ushort d2, d3;
-    uchar d4[8];
-
-    const uchar *data = reinterpret_cast<const uchar *>(bytes.data());
-
-    d1 = qFromBigEndian<quint32>(data);
-    data += sizeof(quint32);
-    d2 = qFromBigEndian<quint16>(data);
-    data += sizeof(quint16);
-    d3 = qFromBigEndian<quint16>(data);
-    data += sizeof(quint16);
-
-    for (int i = 0; i < 8; ++i) {
-        d4[i] = *(data);
-        data++;
-    }
-
-    return QUuid(d1, d2, d3, d4[0], d4[1], d4[2], d4[3], d4[4], d4[5], d4[6], d4[7]);
+    return fromBytes(bytes.data());
 }
 
 /*!
@@ -623,27 +647,16 @@ QByteArray QUuid::toByteArray(QUuid::StringFormat mode) const
 
     \endtable
 
+    The bytes in the byte array returned by this function contains the same
+    binary content as toBytes().
+
+    \sa toBytes()
     \since 4.8
 */
 QByteArray QUuid::toRfc4122() const
 {
-    // we know how many bytes a UUID has, I hope :)
-    QByteArray bytes(16, Qt::Uninitialized);
-    uchar *data = reinterpret_cast<uchar *>(bytes.data());
-
-    qToBigEndian(data1, data);
-    data += sizeof(quint32);
-    qToBigEndian(data2, data);
-    data += sizeof(quint16);
-    qToBigEndian(data3, data);
-    data += sizeof(quint16);
-
-    for (int i = 0; i < 8; ++i) {
-        *(data) = data4[i];
-        data++;
-    }
-
-    return bytes;
+    Id128Bytes bytes = toBytes();
+    return QByteArrayView(bytes).toByteArray();
 }
 
 #ifndef QT_NO_DATASTREAM

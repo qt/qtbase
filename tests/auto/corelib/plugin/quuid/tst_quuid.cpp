@@ -25,6 +25,7 @@ private slots:
     void fromByteArray();
     void toRfc4122();
     void fromRfc4122();
+    void id128();
     void createUuidV3OrV5();
     void check_QDataStream();
     void isNull();
@@ -98,7 +99,7 @@ void tst_QUuid::fromChar()
     QCOMPARE(QUuid(), QUuid("fc69b59e-cc34-"));
     QCOMPARE(QUuid(), QUuid("fc69b59e-cc34"));
     QCOMPARE(QUuid(), QUuid("cc34"));
-    QCOMPARE(QUuid(), QUuid(NULL));
+    QCOMPARE(QUuid(), QUuid(nullptr));
 
     QCOMPARE(uuidB, QUuid(QString("{1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b}")));
 }
@@ -215,6 +216,27 @@ void tst_QUuid::fromRfc4122()
     QCOMPARE(uuidA, QUuid::fromRfc4122(QByteArray::fromHex("fc69b59ecc344436a43cee95d128b8c5")));
 
     QCOMPARE(uuidB, QUuid::fromRfc4122(QByteArray::fromHex("1ab6e93ab1cb4a87ba47ec7e99039a7b")));
+}
+
+void tst_QUuid::id128()
+{
+    constexpr QUuid::Id128Bytes bytesA = { {
+        0xfc, 0x69, 0xb5, 0x9e,
+        0xcc, 0x34,
+        0x44, 0x36,
+        0xa4, 0x3c, 0xee, 0x95, 0xd1, 0x28, 0xb8, 0xc5,
+    } };
+    constexpr QUuid::Id128Bytes bytesB = { {
+        0x1a, 0xb6, 0xe9, 0x3a,
+        0xb1, 0xcb,
+        0x4a, 0x87,
+        0xba, 0x47, 0xec, 0x7e, 0x99, 0x03, 0x9a, 0x7b,
+    } };
+
+    QCOMPARE(QUuid(bytesA), uuidA);
+    QCOMPARE(QUuid(bytesB), uuidB);
+    QVERIFY(memcmp(uuidA.toBytes().data, bytesA.data, sizeof(QUuid::Id128Bytes)) == 0);
+    QVERIFY(memcmp(uuidB.toBytes().data, bytesB.data, sizeof(QUuid::Id128Bytes)) == 0);
 }
 
 void tst_QUuid::createUuidV3OrV5()
