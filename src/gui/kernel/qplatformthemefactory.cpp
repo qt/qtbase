@@ -8,6 +8,8 @@
 #include "qmutex.h"
 
 #include "qguiapplication.h"
+#include "qplatformtheme.h"
+#include "qplatformtheme_p.h"
 #include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
@@ -22,7 +24,10 @@ QPlatformTheme *QPlatformThemeFactory::create(const QString& key, const QString 
     QStringList paramList = key.split(u':');
     const QString platform = paramList.takeFirst().toLower();
     loader->setExtraSearchPath(platformPluginPath);
-    return qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), platform, paramList);
+    QPlatformTheme *theme = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), platform, paramList);
+    if (theme)
+        theme->d_func()->name = key;
+    return theme;
 }
 
 /*!

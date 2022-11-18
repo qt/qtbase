@@ -317,10 +317,14 @@ public:
     static QVariant defaultThemeHint(ThemeHint hint);
     static QString defaultStandardButtonText(int button);
     static QString removeMnemonics(const QString &original);
+    QString name() const;
 
 protected:
     explicit QPlatformTheme(QPlatformThemePrivate *priv);
     QScopedPointer<QPlatformThemePrivate> d_ptr;
+
+private:
+    friend class QPlatformThemeFactory;
 };
 
 QT_END_NAMESPACE

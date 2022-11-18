@@ -41,6 +41,8 @@ public:
     static unsigned currentKeyPlatforms();
 
     QPalette *systemPalette;
+
+    QString name;
 };
 
 QT_END_NAMESPACE
