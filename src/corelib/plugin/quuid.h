@@ -55,7 +55,7 @@ public:
         Id128           = 3
     };
 
-    constexpr QUuid() noexcept : data1(0), data2(0), data3(0), data4{0,0,0,0,0,0,0,0} {}
+    constexpr QUuid() noexcept {}
 
     constexpr QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3,
                            uchar b4, uchar b5, uchar b6, uchar b7, uchar b8) noexcept
@@ -158,10 +158,10 @@ public:
     NSUUID *toNSUUID() const Q_DECL_NS_RETURNS_AUTORELEASED;
 #endif
 
-    uint    data1;
-    ushort  data2;
-    ushort  data3;
-    uchar   data4[8];
+    uint    data1 = 0;
+    ushort  data2 = 0;
+    ushort  data3 = 0;
+    uchar   data4[8] = {};
 };
 
 Q_DECLARE_TYPEINFO(QUuid, Q_PRIMITIVE_TYPE);
