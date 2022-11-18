@@ -65,9 +65,8 @@ goto doneargs
 
 :redo
     if not exist "%TOPQTDIR%\config.opt" goto redoerr
-    set rargs=
-    for /f "usebackq delims=" %%i in ("%TOPQTDIR%\config.opt") do set rargs=!rargs! "%%i"
-    call :doargs %rargs%
+    echo %ARGS% > %TOPQTDIR%\config.redo.in
+    set redoing=""
     goto nextarg
 :redoerr
     echo No config.opt present - cannot redo configuration. >&2
@@ -78,15 +77,22 @@ goto doneargs
 cd "%TOPQTDIR%"
 
 rem Write config.opt if we're not currently -redo'ing
+set OPT_FILE_PATH=%TOPQTDIR%\config.opt
+set OPT_TMP_FILE_PATH=%TOPQTDIR%\config.opt.in
+set REDO_FILE_PATH=%TOPQTDIR%\config.redo
+set REDO_TMP_FILE_PATH=%TOPQTDIR%\config.redo.in
 set FRESH_REQUESTED_ARG=
-if "!rargs!" == "" (
-    echo.%*>config.opt.in
-    cmake -DIN_FILE=config.opt.in -DOUT_FILE=config.opt -DIGNORE_ARGS=-top-level -P "%QTSRC%\cmake\QtWriteArgsFile.cmake"
-) else if NOT "!rargs!" == "" (
+if not defined redoing (
+    echo.%*>"%OPT_TMP_FILE_PATH%"
+    cmake -DIN_FILE="%OPT_TMP_FILE_PATH%" -DOUT_FILE="%OPT_FILE_PATH%" -DIGNORE_ARGS=-top-level -P "%QTSRC%\cmake\QtWriteArgsFile.cmake"
+) else (
+    cmake -DIN_FILE="%OPT_TMP_FILE_PATH%" -DREDO_FILE="%REDO_TMP_FILE_PATH%" -DOUT_FILE="%REDO_FILE_PATH%" -DIGNORE_ARGS="-top-level;-redo;--redo" -P "%QTSRC%\cmake\QtWriteArgsFile.cmake"
+
+    set OPT_FILE_PATH=%REDO_FILE_PATH%
     set FRESH_REQUESTED_ARG=-DFRESH_REQUESTED=TRUE
 )
 
 rem Launch CMake-based configure
 set TOP_LEVEL_ARG=
 if %TOPLEVEL% == true set TOP_LEVEL_ARG=-DTOP_LEVEL=TRUE
-cmake -DOPTFILE=config.opt %TOP_LEVEL_ARG% %FRESH_REQUESTED_ARG% -P "%QTSRC%\cmake\QtProcessConfigureArgs.cmake"
+cmake -DOPTFILE="%OPT_FILE_PATH%" %TOP_LEVEL_ARG% %FRESH_REQUESTED_ARG% -P "%QTSRC%\cmake\QtProcessConfigureArgs.cmake"
