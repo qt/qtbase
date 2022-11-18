@@ -149,8 +149,15 @@ static QString msgType2i18nString(QtMsgType t)
     return QCoreApplication::translate("QErrorMessage", messages[t]);
 }
 
+static QtMessageHandler originalMessageHandler = nullptr;
+
 static void jump(QtMsgType t, const QMessageLogContext &context, const QString &m)
 {
+    const auto forwardToOriginalHandler = qScopeGuard([&] {
+       if (originalMessageHandler)
+            originalMessageHandler(t, context, m);
+    });
+
     if (!qtMessageHandler)
         return;
 
@@ -224,10 +231,12 @@ QErrorMessage::~QErrorMessage()
 {
     if (this == qtMessageHandler) {
         qtMessageHandler = nullptr;
-        QtMessageHandler tmp = qInstallMessageHandler(nullptr);
-        // in case someone else has later stuck in another...
-        if (tmp != jump)
-            qInstallMessageHandler(tmp);
+        QtMessageHandler currentMessagHandler = qInstallMessageHandler(nullptr);
+        if (currentMessagHandler != jump)
+            qInstallMessageHandler(currentMessagHandler);
+        else
+            qInstallMessageHandler(originalMessageHandler);
+        originalMessageHandler = nullptr;
     }
 }
 
@@ -261,6 +270,10 @@ void QErrorMessage::done(int a)
     isn't one already.
 
     The object will only output log messages of QLoggingCategory::defaultCategory().
+
+    The object will forward all messages to the original message handler.
+
+    \sa qInstallMessageHandler
 */
 
 QErrorMessage * QErrorMessage::qtHandler()
@@ -269,7 +282,7 @@ QErrorMessage * QErrorMessage::qtHandler()
         qtMessageHandler = new QErrorMessage(nullptr);
         qAddPostRoutine(deleteStaticcQErrorMessage); // clean up
         qtMessageHandler->setWindowTitle(QCoreApplication::applicationName());
-        qInstallMessageHandler(jump);
+        originalMessageHandler = qInstallMessageHandler(jump);
     }
     return qtMessageHandler;
 }
