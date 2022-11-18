@@ -249,7 +249,11 @@ endfunction()
 # TESTNAME: a custom test name to use instead of the one derived from the source directory name
 #
 # BUILD_OPTIONS: a list of -D style CMake definitions to pass to ctest's --build-options (which
-#                are ultimately passed to the CMake invocation of the test project)
+#                are ultimately passed to the CMake invocation of the test project). You may
+#                escape semicolons inside the definitions using:
+#                https://cmake.org/cmake/help/latest/manual/cmake-language.7.html#bracket-argument
+#                so the argument containing list will look as following:
+#                    -DLIST_ARGUMENT=item1[[;]]item2[[;]]...itemN.
 macro(_qt_internal_test_expect_pass _dir)
     set(_test_option_args
       SIMULATE_IN_SOURCE
@@ -411,6 +415,8 @@ macro(_qt_internal_test_expect_pass _dir)
       )
     endif()
 
+    string(REPLACE "[[;]]" "\;" _ARGS_BUILD_OPTIONS "${_ARGS_BUILD_OPTIONS}")
+
     _qt_internal_get_cmake_test_configure_options(option_list)
     set(ctest_command_args
         --build-and-test
@@ -422,7 +428,7 @@ macro(_qt_internal_test_expect_pass _dir)
         --build-makeprogram "${make_program}"
         ${build_project}
         --build-options "${option_list}"
-                        ${_ARGS_BUILD_OPTIONS} ${additional_configure_args}
+                        "${_ARGS_BUILD_OPTIONS}" ${additional_configure_args}
         ${test_command}
     )
     add_test(${testname} ${CMAKE_CTEST_COMMAND} ${ctest_command_args})
