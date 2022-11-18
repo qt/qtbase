@@ -60,6 +60,9 @@ public:
         quint16 data16[8];
         quint32 data32[4];
         quint64 data64[2];
+#ifdef __SIZEOF_INT128__
+        quint128 data128[1];
+#endif
 
         constexpr explicit operator QByteArrayView() const noexcept
         {
@@ -72,7 +75,7 @@ public:
     constexpr QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3,
                            uchar b4, uchar b5, uchar b6, uchar b7, uchar b8) noexcept
         : data1(l), data2(w1), data3(w2), data4{b1, b2, b3, b4, b5, b6, b7, b8} {}
-    QUuid(Id128Bytes id128, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
+    explicit QUuid(Id128Bytes id128, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
 
     explicit QUuid(QAnyStringView string) noexcept
         : QUuid{fromString(string)} {}
@@ -96,6 +99,11 @@ public:
     static QUuid fromRfc4122(QByteArrayView) noexcept;
 
     bool isNull() const noexcept;
+
+#ifdef __SIZEOF_INT128__
+    constexpr QUuid(quint128 uuid, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
+    constexpr quint128 toUInt128(QSysInfo::Endian order = QSysInfo::BigEndian) const noexcept;
+#endif
 
     constexpr bool operator==(const QUuid &orig) const noexcept
     {
@@ -232,6 +240,33 @@ inline QUuid QUuid::fromBytes(const void *bytes, QSysInfo::Endian order) noexcep
     memcpy(result.data, bytes, sizeof(result));
     return QUuid(result, order);
 }
+
+#ifdef __SIZEOF_INT128__
+constexpr inline QUuid::QUuid(quint128 uuid, QSysInfo::Endian order) noexcept
+{
+    if (order == QSysInfo::LittleEndian)
+        uuid = qbswap(uuid);
+    data1 = uint(uuid >> 96);
+    data2 = ushort(uuid >> 80);
+    data3 = ushort(uuid >> 64);
+    for (int i = 0; i < 8; ++i)
+        data4[i] = uchar(uuid >> (56 - i * 8));
+}
+
+constexpr inline quint128 QUuid::toUInt128(QSysInfo::Endian order) const noexcept
+{
+    quint128 result = {};
+    result = data1;
+    result <<= 32;
+    result |= (data2 << 16) | uint(data3);
+    result <<= 64;
+    for (int i = 0; i < 8; ++i)
+        result |= quint64(data4[i]) << (56 - i * 8);
+    if (order == QSysInfo::LittleEndian)
+        return qbswap(result);
+    return result;
+}
+#endif
 
 inline bool operator<=(const QUuid &lhs, const QUuid &rhs) noexcept
 { return !(rhs < lhs); }

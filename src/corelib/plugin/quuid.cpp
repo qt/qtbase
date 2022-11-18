@@ -307,14 +307,42 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
     Creates a QUuid based on the integral \a id128 parameter and respecting the
     byte order \a order.
 
-    \sa fromBytes(), toBytes(), toRfc4122()
+    \sa fromBytes(), toBytes(), toRfc4122(), toUInt128()
+*/
+
+/*!
+    \fn QUuid::QUuid(quint128 uuid, QSysInfo::Endian order) noexcept
+    \since 6.6
+
+    Creates a QUuid based on the integral \a uuid parameter and respecting the
+    byte order \a order.
+
+    \note This function is only present on platforms that offer a 128-bit
+    integer type.
+
+    \sa toUInt128(), fromBytes(), toBytes(), toRfc4122()
+*/
+
+/*!
+    \fn quint128 QUuid::toUInt128(QSysInfo::Endian order) const noexcept
+    \since 6.6
+
+    Returns a 128-bit integer created from this QUuid on the byte order
+    specified by \a order. The binary content of this function is the same as
+    toRfc4122() if the order is QSysInfo::BigEndian. See that function for more
+    details.
+
+    \note This function is only present on platforms that offer a 128-bit
+    integer type.
+
+    \sa toRfc4122(), toBytes(), fromBytes(), QUuid()
 */
 
 /*!
     \fn QUuid::Id128Bytes QUuid::toBytes(QSysInfo::Endian order) const noexcept
     \since 6.6
 
-    Returns an 128-bit ID created from this QUuid on the byte order specified
+    Returns a 128-bit ID created from this QUuid on the byte order specified
     by \a order. The binary content of this function is the same as toRfc4122()
     if the order is QSysInfo::BigEndian. See that function for more details.
 

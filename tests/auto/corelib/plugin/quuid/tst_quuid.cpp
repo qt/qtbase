@@ -26,6 +26,7 @@ private slots:
     void toRfc4122();
     void fromRfc4122();
     void id128();
+    void uint128();
     void createUuidV3OrV5();
     void check_QDataStream();
     void isNull();
@@ -243,6 +244,31 @@ void tst_QUuid::id128()
         leBytesA.data[15 - i] = bytesA.data[i];
     QCOMPARE(QUuid(leBytesA, QSysInfo::LittleEndian), uuidA);
     QVERIFY(memcmp(uuidA.toBytes(QSysInfo::LittleEndian).data, leBytesA.data, sizeof(leBytesA)) == 0);
+}
+
+void tst_QUuid::uint128()
+{
+#ifdef __SIZEOF_INT128__
+    constexpr quint128 u = quint128(Q_UINT64_C(0xfc69b59ecc344436)) << 64
+                            | Q_UINT64_C(0xa43cee95d128b8c5);
+    constexpr QUuid uuid(u);
+    static_assert(uuid.toUInt128() == u, "Round-trip through QUuid failed");
+
+    QCOMPARE(uuid, uuidA);
+    QCOMPARE(quint64(uuid.toUInt128() >> 64), quint64(u >> 64));
+    QCOMPARE(quint64(uuid.toUInt128()), quint64(u));
+
+    quint128 le = qFromBigEndian(u);
+    QCOMPARE(quint64(uuid.toUInt128(QSysInfo::LittleEndian) >> 64), quint64(le >> 64));
+    QCOMPARE(quint64(uuid.toUInt128(QSysInfo::LittleEndian)), quint64(le));
+    QCOMPARE(QUuid(le, QSysInfo::LittleEndian), uuidA);
+
+    QUuid::Id128Bytes bytes = { .data128 = { qToBigEndian(u) } };
+    QUuid uuid2(bytes);
+    QCOMPARE(uuid2, uuid);
+#else
+    QSKIP("This platform has no support for 128-bit integer");
+#endif
 }
 
 void tst_QUuid::createUuidV3OrV5()
