@@ -149,9 +149,14 @@ static QString msgType2i18nString(QtMsgType t)
     return QCoreApplication::translate("QErrorMessage", messages[t]);
 }
 
-static void jump(QtMsgType t, const QMessageLogContext & /*context*/, const QString &m)
+static void jump(QtMsgType t, const QMessageLogContext &context, const QString &m)
 {
     if (!qtMessageHandler)
+        return;
+
+    auto *defaultCategory = QLoggingCategory::defaultCategory();
+    if (context.category && defaultCategory
+        && qstrcmp(context.category, defaultCategory->categoryName()) != 0)
         return;
 
     QString rich = "<p><b>"_L1 + msgType2i18nString(t) + "</b></p>"_L1
@@ -254,6 +259,8 @@ void QErrorMessage::done(int a)
     Returns a pointer to a QErrorMessage object that outputs the
     default Qt messages. This function creates such an object, if there
     isn't one already.
+
+    The object will only output log messages of QLoggingCategory::defaultCategory().
 */
 
 QErrorMessage * QErrorMessage::qtHandler()
