@@ -237,6 +237,12 @@ void tst_QUuid::id128()
     QCOMPARE(QUuid(bytesB), uuidB);
     QVERIFY(memcmp(uuidA.toBytes().data, bytesA.data, sizeof(QUuid::Id128Bytes)) == 0);
     QVERIFY(memcmp(uuidB.toBytes().data, bytesB.data, sizeof(QUuid::Id128Bytes)) == 0);
+
+    QUuid::Id128Bytes leBytesA = {};
+    for (int i = 0; i < 16; i++)
+        leBytesA.data[15 - i] = bytesA.data[i];
+    QCOMPARE(QUuid(leBytesA, QSysInfo::LittleEndian), uuidA);
+    QVERIFY(memcmp(uuidA.toBytes(QSysInfo::LittleEndian).data, leBytesA.data, sizeof(leBytesA)) == 0);
 }
 
 void tst_QUuid::createUuidV3OrV5()

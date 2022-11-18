@@ -301,30 +301,33 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
 */
 
 /*!
-    \fn QUuid::QUuid(Id128Bytes id128) noexcept
+    \fn QUuid::QUuid(Id128Bytes id128, QSysInfo::Endian order) noexcept
     \since 6.6
 
-    Creates a QUuid based on the integral \a id128 parameter.
+    Creates a QUuid based on the integral \a id128 parameter and respecting the
+    byte order \a order.
 
     \sa fromBytes(), toBytes(), toRfc4122()
 */
 
 /*!
-    \fn QUuid::Id128Bytes QUuid::toBytes() const noexcept
+    \fn QUuid::Id128Bytes QUuid::toBytes(QSysInfo::Endian order) const noexcept
     \since 6.6
 
-    Returns an 128-bit ID created from this QUuid. The binary content of this
-    function is the same as toRfc4122(). See that function for more details.
+    Returns an 128-bit ID created from this QUuid on the byte order specified
+    by \a order. The binary content of this function is the same as toRfc4122()
+    if the order is QSysInfo::BigEndian. See that function for more details.
 
     \sa toRfc4122(), fromBytes(), QUuid()
 */
 
 /*!
-    \fn QUuid QUuid::fromBytes(const void *bytes) noexcept
+    \fn QUuid QUuid::fromBytes(const void *bytes, QSysInfo::Endian order) noexcept
     \since 6.6
 
-    Reads 128 bits (16 bytes) from \a bytes and returns the QUuid corresponding
-    to those bytes. This function does the same as fromRfc4122().
+    Reads 128 bits (16 bytes) from \a bytes using byte order \a order and
+    returns the QUuid corresponding to those bytes. This function does the same
+    as fromRfc4122() if the byte order \a order is QSysInfo::BigEndian.
 
     \sa fromRfc4122()
 */
@@ -674,6 +677,9 @@ QDataStream &operator<<(QDataStream &s, const QUuid &id)
         bytes = QByteArray(16, Qt::Uninitialized);
         uchar *data = reinterpret_cast<uchar *>(bytes.data());
 
+        // for historical reasons, our little-endian serialization format
+        // stores each of the UUID fields in little endian, instead of storing
+        // a little endian Id128
         qToLittleEndian(id.data1, data);
         data += sizeof(quint32);
         qToLittleEndian(id.data2, data);
