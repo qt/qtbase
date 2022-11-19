@@ -23,12 +23,16 @@ constexpr std::underlying_type_t<Enum> qToUnderlying(Enum e) noexcept
     return static_cast<std::underlying_type_t<Enum>>(e);
 }
 
+#ifndef QT_NO_AS_CONST
+
 // this adds const to non-const objects (like std::as_const)
 template <typename T>
 constexpr typename std::add_const<T>::type &qAsConst(T &t) noexcept { return t; }
 // prevent rvalue arguments:
 template <typename T>
 void qAsConst(const T &&) = delete;
+
+#endif // QT_NO_AS_CONST
 
 // like std::exchange
 template <typename T, typename U = T>

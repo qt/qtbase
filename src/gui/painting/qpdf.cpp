@@ -1790,7 +1790,7 @@ void QPdfEnginePrivate::writeDestsRoot()
 
     QHash<QString, int> destObjects;
     QByteArray xs, ys;
-    for (const DestInfo &destInfo : qAsConst(destCache)) {
+    for (const DestInfo &destInfo : std::as_const(destCache)) {
         int destObj = addXrefEntry(-1);
         xs.setNum(static_cast<double>(destInfo.coords.x()), 'f');
         ys.setNum(static_cast<double>(destInfo.coords.y()), 'f');
@@ -1808,7 +1808,7 @@ void QPdfEnginePrivate::writeDestsRoot()
     xprintf(" ");
     printString(anchors.constLast());
     xprintf("]\n/Names [\n");
-    for (const QString &anchor : qAsConst(anchors)) {
+    for (const QString &anchor : std::as_const(anchors)) {
         printString(anchor);
         xprintf(" %d 0 R\n", destObjects[anchor]);
     }
