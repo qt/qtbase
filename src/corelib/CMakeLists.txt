@@ -38,6 +38,9 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/QtInstallPaths.cmake.in"
 ## Core Module:
 #####################################################################
 
+set(core_version_tagging_files
+    global/qversiontagging.cpp
+    global/qversiontagging.h)
 qt_internal_add_module(Core
     QMAKE_MODULE_CONFIG moc resources
     NO_GENERATE_METATYPES # metatypes are extracted manually below
@@ -94,6 +97,7 @@ qt_internal_add_module(Core
         global/qtversionchecks.h
         global/qtypeinfo.h
         global/qtypes.cpp global/qtypes.h
+        ${core_version_tagging_files}
         global/qvolatile_p.h
         global/q20algorithm.h
         global/q20functional.h
@@ -661,9 +665,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_journald
     LIBRARIES
         PkgConfig::Libsystemd
 )
-
-set(core_version_tagging_files global/qversiontagging.cpp global/qversiontagging.h)
-target_sources(Core PRIVATE ${core_version_tagging_files})
 
 # Disable LTO, as the symbols disappear somehow under GCC
 # (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=48200)
