@@ -376,7 +376,7 @@ set_source_files_properties(${qobject_moc_files} PROPERTIES HEADER_FILE_ONLY ON)
 set(core_metatype_args MANUAL_MOC_JSON_FILES ${core_qobject_metatypes_json_list})
 
 if(QT_WILL_INSTALL)
-    set(metatypes_install_dir ${INSTALL_LIBDIR}/metatypes)
+    set(metatypes_install_dir ${INSTALL_ARCHDATADIR}/metatypes)
     list(APPEND core_metatype_args
         __QT_INTERNAL_INSTALL __QT_INTERNAL_INSTALL_DIR "${metatypes_install_dir}")
 endif()

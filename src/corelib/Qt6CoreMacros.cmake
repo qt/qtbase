@@ -900,7 +900,7 @@ function(qt6_extract_metatypes target)
         # TODO: Move this into a separate internal function, so it doesn't pollute the public one.
         # Location where to install the metatypes file. Only used if
         # __QT_INTERNAL_INSTALL is given. It defaults to the
-        # ${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}/metatypes directory.
+        # ${CMAKE_INSTALL_PREFIX}/${INSTALL_ARCHDATADIR}/metatypes directory.
         # Executable metatypes files are never installed.
         __QT_INTERNAL_INSTALL_DIR
 
@@ -1140,10 +1140,11 @@ function(qt6_extract_metatypes target)
 
     # Automatically fill default install args when not specified.
     if(NOT arg___QT_INTERNAL_INSTALL_DIR)
-        # INSTALL_LIBDIR is not set when QtBuildInternals is not loaded (when not doing a Qt build).
-        # Default to a hardcoded location for user projects.
-        if(INSTALL_LIBDIR)
-            set(install_dir "${INSTALL_LIBDIR}/metatypes")
+        # INSTALL_ARCHDATADIR is not set when QtBuildInternals is not loaded
+        # (when not doing a Qt build). Default to a hardcoded location for user
+        # projects (will likely be wrong).
+        if(INSTALL_ARCHDATADIR)
+            set(install_dir "${INSTALL_ARCHDATADIR}/metatypes")
         else()
             set(install_dir "lib/metatypes")
         endif()

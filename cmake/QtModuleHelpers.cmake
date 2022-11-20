@@ -755,7 +755,7 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
         if (NOT target_type STREQUAL "INTERFACE_LIBRARY")
             set(args "")
             if(QT_WILL_INSTALL)
-                set(metatypes_install_dir "${INSTALL_LIBDIR}/metatypes")
+                set(metatypes_install_dir "${INSTALL_ARCHDATADIR}/metatypes")
                 list(APPEND args
                     __QT_INTERNAL_INSTALL __QT_INTERNAL_INSTALL_DIR "${metatypes_install_dir}")
             endif()

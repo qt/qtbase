@@ -46,7 +46,7 @@ moc_collect_json.name = Collect moc JSON output into central file
 
 install_metatypes {
     do_install_metatypes.CONFIG += no_check_exist
-    do_install_metatypes.path = $$[QT_INSTALL_LIBS]/metatypes
+    do_install_metatypes.path = $$[QT_INSTALL_ARCHDATA]/metatypes
     do_install_metatypes.files = $$OUT_PWD/$$MOC_COLLECT_JSON_OUTPUT
     prefix_build {
         load(qt_build_paths)
