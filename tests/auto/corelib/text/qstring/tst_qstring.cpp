@@ -764,7 +764,14 @@ void tst_QString::replace_qchar_qchar()
     QFETCH(Qt::CaseSensitivity, cs);
     QFETCH(QString, expected);
 
-    QCOMPARE(src.replace(before, after, cs), expected);
+    QString str = src;
+    // Test when string is shared
+    QCOMPARE(str.replace(before, after, cs), expected);
+
+    str = src;
+    // Test when it's not shared
+    str.detach();
+    QCOMPARE(str.replace(before, after, cs), expected);
 }
 
 void tst_QString::replace_qchar_qstring_data()

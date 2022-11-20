@@ -3793,27 +3793,39 @@ QString& QString::replace(QChar ch, const QString &after, Qt::CaseSensitivity cs
 */
 QString& QString::replace(QChar before, QChar after, Qt::CaseSensitivity cs)
 {
-    if (d.size) {
-        const qsizetype idx = indexOf(before, 0, cs);
-        if (idx != -1) {
-            detach();
-            const char16_t a = after.unicode();
-            char16_t *i = d.data();
-            char16_t *const e = i + d.size;
-            i += idx;
-            *i = a;
-            ++i;
-            if (cs == Qt::CaseSensitive) {
-                const char16_t toReplace = before.unicode();
-                std::replace(i, e, toReplace, a);
-            } else {
-                const char16_t toReplace = foldCase(before.unicode());
-                auto match = [toReplace](const char16_t c) {
-                    return foldAndCompare(c, toReplace);
-                };
-                std::replace_if(i, e, match, a);
-            }
+    const qsizetype idx = indexOf(before, 0, cs);
+    if (idx == -1)
+        return *this;
+
+    const char16_t achar = after.unicode();
+    char16_t bchar = before.unicode();
+
+    auto matchesCIS = [](char16_t beforeChar) {
+        return [beforeChar](char16_t ch) { return foldAndCompare(ch, beforeChar); };
+    };
+
+    auto hit = d.begin() + idx;
+    if (!d.needsDetach()) {
+        *hit++ = achar;
+        if (cs == Qt::CaseSensitive) {
+            std::replace(hit, d.end(), bchar, achar);
+        } else {
+            bchar = foldCase(bchar);
+            std::replace_if(hit, d.end(), matchesCIS(bchar), achar);
         }
+    } else {
+        QString other{ d.size, Qt::Uninitialized };
+        auto dest = std::copy(d.begin(), hit, other.d.begin());
+        *dest++ = achar;
+        ++hit;
+        if (cs == Qt::CaseSensitive) {
+            std::replace_copy(hit, d.end(), dest, bchar, achar);
+        } else {
+            bchar = foldCase(bchar);
+            std::replace_copy_if(hit, d.end(), dest, matchesCIS(bchar), achar);
+        }
+
+        swap(other);
     }
     return *this;
 }
