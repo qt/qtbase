@@ -16,6 +16,27 @@ private:
 };
 //! [0]
 
+//! [range_for]
+QList<QString> list = {"A", "B", "C", "D"};
+for (const auto &item : list) {
+   ...
+}
+//! [range_for]
+
+//! [range_for_as_const]
+QList<QString> list = {"A", "B", "C", "D"};
+for (const auto &item : std::as_const(list)) {
+    ...
+}
+//! [range_for_as_const]
+
+//! [index]
+QList<QString> list = {"A", "B", "C", "D"};
+for (qsizetype i = 0; i < list.size(); ++i) {
+    const auto &item = list.at(i);
+    ...
+}
+//! [index]
 
 //! [1]
 QList<QString> list = {"A", "B", "C", "D"};
