@@ -98,7 +98,7 @@ void tst_QStorageInfo::operatorNotEqual()
 {
     QStorageInfo storage1 = QStorageInfo::root();
     QStorageInfo storage2;
-    QVERIFY(storage1 != storage2);
+    QCOMPARE_NE(storage1, storage2);
 }
 
 void tst_QStorageInfo::root()
@@ -112,9 +112,9 @@ void tst_QStorageInfo::root()
     QVERIFY(!storage.device().isEmpty());
     QVERIFY(!storage.fileSystemType().isEmpty());
 #ifndef Q_OS_HAIKU
-    QVERIFY(storage.bytesTotal() >= 0);
-    QVERIFY(storage.bytesFree() >= 0);
-    QVERIFY(storage.bytesAvailable() >= 0);
+    QCOMPARE_GE(storage.bytesTotal(), 0);
+    QCOMPARE_GE(storage.bytesFree(), 0);
+    QCOMPARE_GE(storage.bytesAvailable(), 0);
 #endif
 }
 
@@ -127,9 +127,9 @@ void tst_QStorageInfo::currentStorage()
     QVERIFY(appPath.startsWith(storage.rootPath(), Qt::CaseInsensitive));
     QVERIFY(!storage.device().isEmpty());
     QVERIFY(!storage.fileSystemType().isEmpty());
-    QVERIFY(storage.bytesTotal() >= 0);
-    QVERIFY(storage.bytesFree() >= 0);
-    QVERIFY(storage.bytesAvailable() >= 0);
+    QCOMPARE_GE(storage.bytesTotal(), 0);
+    QCOMPARE_GE(storage.bytesFree(), 0);
+    QCOMPARE_GE(storage.bytesAvailable(), 0);
 }
 
 void tst_QStorageInfo::storageList()
@@ -168,7 +168,7 @@ void tst_QStorageInfo::tempFile()
 #endif
 
     qint64 free = storage1.bytesFree();
-    QVERIFY(free != -1);
+    QCOMPARE_NE(free, -1);
 
     file.write(QByteArray(1024*1024, '1'));
     file.flush();
@@ -179,7 +179,7 @@ void tst_QStorageInfo::tempFile()
         QEXPECT_FAIL("", "This test is likely to fail on APFS", Continue);
     }
 
-    QVERIFY(free != storage2.bytesFree());
+    QCOMPARE_NE(free, storage2.bytesFree());
 }
 
 void tst_QStorageInfo::caching()
@@ -196,7 +196,7 @@ void tst_QStorageInfo::caching()
     qint64 free = storage1.bytesFree();
     QStorageInfo storage2(storage1);
     QCOMPARE(free, storage2.bytesFree());
-    QVERIFY(free != -1);
+    QCOMPARE_NE(free, -1);
 
     file.write(QByteArray(1024*1024, '\0'));
     file.flush();
@@ -208,7 +208,7 @@ void tst_QStorageInfo::caching()
     if (free == storage2.bytesFree() && storage2.fileSystemType() == "apfs") {
         QEXPECT_FAIL("", "This test is likely to fail on APFS", Continue);
     }
-    QVERIFY(free != storage2.bytesFree());
+    QCOMPARE_NE(free, storage2.bytesFree());
 }
 
 QTEST_MAIN(tst_QStorageInfo)
