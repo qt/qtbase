@@ -7,9 +7,11 @@
 #include <QGuiApplication>
 #include <QtCore/qnativeinterface.h>
 #include <QtCore/qjniobject.h>
+#include <QtCore/qdiriterator.h>
 #include <QScreen>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <QtCore/qdiriterator.h>
 
 class tst_Android : public QObject
 {
@@ -17,6 +19,7 @@ Q_OBJECT
 private slots:
     void assetsRead();
     void assetsNotWritable();
+    void assetsIterating();
     void testAndroidSdkVersion();
     void testAndroidActivity();
     void testRunOnAndroidMainThread();
@@ -44,6 +47,27 @@ void tst_Android::assetsNotWritable()
     QVERIFY(!file.open(QIODevice::WriteOnly));
     QVERIFY(!file.open(QIODevice::ReadWrite));
     QVERIFY(!file.open(QIODevice::Append));
+}
+
+void tst_Android::assetsIterating()
+{
+    QStringList assets = {"assets:/top_level_dir/file_in_top_dir.txt",
+                          "assets:/top_level_dir/sub_dir",
+                          "assets:/top_level_dir/sub_dir/file_in_sub_dir.txt",
+                          "assets:/top_level_dir/sub_dir/sub_dir_2",
+                          "assets:/top_level_dir/sub_dir/sub_dir_2/sub_dir_3",
+                          "assets:/top_level_dir/sub_dir/sub_dir_2/sub_dir_3/file_in_sub_dir_3.txt"};
+
+    // Note that we have an "assets:/top_level_dir/sub_dir/empty_sub_dir" in the test's
+    // assets physical directory, but empty folders are not packaged in the built apk,
+    // so it's expected to not have such folder be listed in the assets on runtime
+
+    QDirIterator it("assets:/top_level_dir", QDirIterator::Subdirectories);
+    QStringList iteratorAssets;
+     while (it.hasNext())
+         iteratorAssets.append(it.next());
+
+     QVERIFY(assets == iteratorAssets);
 }
 
 void tst_Android::testAndroidSdkVersion()
