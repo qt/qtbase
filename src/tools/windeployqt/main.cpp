@@ -698,7 +698,8 @@ static inline QString helpText(const QCommandLineParser &p)
     moduleHelp +=
         "\n\nQt libraries can be added by passing their name (-xml) or removed by passing\n"
         "the name prepended by --no- (--no-xml). Available libraries:\n"_L1;
-    moduleHelp += lineBreak(QString::fromLatin1(formatQtModules(0xFFFFFFFFFFFFFFFFull, true)));
+    ModuleBitset mask;
+    moduleHelp += lineBreak(QString::fromLatin1(formatQtModules(mask.set(), true)));
     moduleHelp += u'\n';
     result.replace(moduleStart, argumentsStart - moduleStart, moduleHelp);
     return result;
@@ -1477,9 +1478,9 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     }
 
     if (optVerboseLevel >= 1) {
-        std::wcout << "Direct dependencies: " << formatQtModules(result.directlyUsedQtLibraries.to_ullong()).constData()
-                   << "\nAll dependencies   : " << formatQtModules(result.usedQtLibraries.to_ullong()).constData()
-                   << "\nTo be deployed     : " << formatQtModules(result.deployedQtLibraries.to_ullong()).constData() << '\n';
+        std::wcout << "Direct dependencies: " << formatQtModules(result.directlyUsedQtLibraries).constData()
+                   << "\nAll dependencies   : " << formatQtModules(result.usedQtLibraries).constData()
+                   << "\nTo be deployed     : " << formatQtModules(result.deployedQtLibraries).constData() << '\n';
     }
 
     if (optVerboseLevel > 1)
