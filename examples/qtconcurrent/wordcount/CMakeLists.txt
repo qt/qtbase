@@ -18,7 +18,7 @@ qt_add_executable(wordcount
     main.cpp
 )
 
-target_link_libraries(wordcount PUBLIC
+target_link_libraries(wordcount PRIVATE
     Qt6::Concurrent
     Qt6::Core
     Qt6::Gui

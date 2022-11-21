@@ -24,7 +24,7 @@ set_target_properties(lineedits PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(lineedits PUBLIC
+target_link_libraries(lineedits PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

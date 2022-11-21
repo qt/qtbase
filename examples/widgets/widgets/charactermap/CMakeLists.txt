@@ -25,7 +25,7 @@ set_target_properties(charactermap PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(charactermap PUBLIC
+target_link_libraries(charactermap PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

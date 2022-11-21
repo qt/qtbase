@@ -24,7 +24,7 @@ set_target_properties(rsslisting PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(rsslisting PUBLIC
+target_link_libraries(rsslisting PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network

@@ -24,7 +24,7 @@ set_target_properties(knobs PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(knobs PUBLIC
+target_link_libraries(knobs PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

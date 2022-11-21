@@ -25,7 +25,7 @@ set_target_properties(mv_edit PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(mv_edit PUBLIC
+target_link_libraries(mv_edit PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

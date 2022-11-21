@@ -25,7 +25,7 @@ set_target_properties(graphicsview_flowlayout PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(graphicsview_flowlayout PUBLIC
+target_link_libraries(graphicsview_flowlayout PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

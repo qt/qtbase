@@ -24,7 +24,7 @@ set_target_properties(tablemodel PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(tablemodel PUBLIC
+target_link_libraries(tablemodel PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Sql

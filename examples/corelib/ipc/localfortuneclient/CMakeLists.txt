@@ -24,7 +24,7 @@ set_target_properties(localfortuneclient PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(localfortuneclient PUBLIC
+target_link_libraries(localfortuneclient PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network

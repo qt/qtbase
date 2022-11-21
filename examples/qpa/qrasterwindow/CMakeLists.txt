@@ -23,7 +23,7 @@ set_target_properties(qrasterwindow PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(qrasterwindow PUBLIC
+target_link_libraries(qrasterwindow PRIVATE
     Qt6::Core
     Qt6::Gui
 )

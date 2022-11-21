@@ -24,7 +24,7 @@ set_target_properties(hellowindow PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(hellowindow PUBLIC
+target_link_libraries(hellowindow PRIVATE
     Qt6::Core
     Qt6::CorePrivate
     Qt6::Gui

@@ -24,7 +24,7 @@ set_target_properties(dynamiclayouts PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(dynamiclayouts PUBLIC
+target_link_libraries(dynamiclayouts PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

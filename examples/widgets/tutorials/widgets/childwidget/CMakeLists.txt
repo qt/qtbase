@@ -23,7 +23,7 @@ set_target_properties(childwidget PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(childwidget PUBLIC
+target_link_libraries(childwidget PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

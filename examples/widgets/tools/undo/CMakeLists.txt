@@ -28,7 +28,7 @@ set_target_properties(undo PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(undo PUBLIC
+target_link_libraries(undo PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

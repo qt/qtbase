@@ -23,7 +23,7 @@ set_target_properties(progressdialog PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(progressdialog PUBLIC
+target_link_libraries(progressdialog PRIVATE
     Qt6::Concurrent
     Qt6::Core
     Qt6::Gui

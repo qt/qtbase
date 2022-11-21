@@ -25,7 +25,7 @@ set_target_properties(chart PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(chart PUBLIC
+target_link_libraries(chart PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
@@ -44,7 +44,7 @@ qt_add_resources(chart "chart"
 )
 
 if(UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS)
-    target_link_libraries(chart PUBLIC
+    target_link_libraries(chart PRIVATE
         m
     )
 endif()

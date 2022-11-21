@@ -24,7 +24,7 @@ set_target_properties(mv_formatting PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(mv_formatting PUBLIC
+target_link_libraries(mv_formatting PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

@@ -25,7 +25,7 @@ set_target_properties(imagescaling PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(imagescaling PUBLIC
+target_link_libraries(imagescaling PRIVATE
     Qt6::Concurrent
     Qt6::Core
     Qt6::Gui

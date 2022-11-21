@@ -26,7 +26,7 @@ set_target_properties(books PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(books PUBLIC
+target_link_libraries(books PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Sql

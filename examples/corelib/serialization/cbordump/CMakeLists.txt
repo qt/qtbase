@@ -18,7 +18,7 @@ qt_add_executable(cbordump
     main.cpp
 )
 
-target_link_libraries(cbordump PUBLIC
+target_link_libraries(cbordump PRIVATE
     Qt6::Core
 )
 

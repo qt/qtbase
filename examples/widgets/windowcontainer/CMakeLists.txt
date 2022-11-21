@@ -24,11 +24,11 @@ set_target_properties(windowcontainer PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_include_directories(windowcontainer PUBLIC
+target_include_directories(windowcontainer PRIVATE
     ../../opengl/openglwindow
 )
 
-target_link_libraries(windowcontainer PUBLIC
+target_link_libraries(windowcontainer PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::OpenGL

@@ -24,7 +24,7 @@ set_target_properties(spinboxes PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(spinboxes PUBLIC
+target_link_libraries(spinboxes PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

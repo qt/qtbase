@@ -27,7 +27,7 @@ set_target_properties(2dpainting PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(2dpainting PUBLIC
+target_link_libraries(2dpainting PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::OpenGL

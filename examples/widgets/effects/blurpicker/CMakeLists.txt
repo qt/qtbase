@@ -25,7 +25,7 @@ set_target_properties(blurpicker PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(blurpicker PUBLIC
+target_link_libraries(blurpicker PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

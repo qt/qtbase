@@ -18,7 +18,7 @@ qt_add_executable(mapdemo
     main.cpp
 )
 
-target_link_libraries(mapdemo PUBLIC
+target_link_libraries(mapdemo PRIVATE
     Qt6::Concurrent
     Qt6::Core
     Qt6::Gui

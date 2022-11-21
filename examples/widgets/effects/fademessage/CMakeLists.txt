@@ -24,7 +24,7 @@ set_target_properties(fademessage PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(fademessage PUBLIC
+target_link_libraries(fademessage PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

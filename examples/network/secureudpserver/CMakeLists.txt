@@ -26,7 +26,7 @@ set_target_properties(secureudpserver PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(secureudpserver PUBLIC
+target_link_libraries(secureudpserver PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network

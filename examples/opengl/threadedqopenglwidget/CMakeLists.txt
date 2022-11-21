@@ -26,7 +26,7 @@ set_target_properties(threadedqopenglwidget PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(threadedqopenglwidget PUBLIC
+target_link_libraries(threadedqopenglwidget PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::OpenGL

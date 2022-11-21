@@ -24,7 +24,7 @@ set_target_properties(qopenglwindow PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(qopenglwindow PUBLIC
+target_link_libraries(qopenglwindow PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::OpenGL

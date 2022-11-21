@@ -25,7 +25,7 @@ set_target_properties(mimetypebrowser PROPERTIES
     MACOSX_BUNDLE FALSE
 )
 
-target_link_libraries(mimetypebrowser PUBLIC
+target_link_libraries(mimetypebrowser PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

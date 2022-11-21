@@ -24,7 +24,7 @@ set_target_properties(frozencolumn PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(frozencolumn PUBLIC
+target_link_libraries(frozencolumn PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

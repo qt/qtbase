@@ -24,7 +24,7 @@ set_target_properties(draggabletext PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(draggabletext PUBLIC
+target_link_libraries(draggabletext PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

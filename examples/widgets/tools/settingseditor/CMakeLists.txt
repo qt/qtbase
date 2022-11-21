@@ -27,7 +27,7 @@ set_target_properties(settingseditor PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(settingseditor PUBLIC
+target_link_libraries(settingseditor PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

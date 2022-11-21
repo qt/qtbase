@@ -25,7 +25,7 @@ set_target_properties(elidedlabel PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(elidedlabel PUBLIC
+target_link_libraries(elidedlabel PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

@@ -18,7 +18,7 @@ qt_add_executable(semaphores
     semaphores.cpp
 )
 
-target_link_libraries(semaphores PUBLIC
+target_link_libraries(semaphores PRIVATE
     Qt6::Core
 )
 

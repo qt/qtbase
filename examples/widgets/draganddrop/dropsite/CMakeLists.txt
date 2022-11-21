@@ -25,7 +25,7 @@ set_target_properties(dropsite PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(dropsite PUBLIC
+target_link_libraries(dropsite PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

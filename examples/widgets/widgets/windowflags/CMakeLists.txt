@@ -25,7 +25,7 @@ set_target_properties(windowflags PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(windowflags PUBLIC
+target_link_libraries(windowflags PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

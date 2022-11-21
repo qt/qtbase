@@ -24,7 +24,7 @@ set_target_properties(loopback PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(loopback PUBLIC
+target_link_libraries(loopback PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network

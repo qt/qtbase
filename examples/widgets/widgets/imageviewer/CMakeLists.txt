@@ -27,14 +27,14 @@ set_target_properties(imageviewer PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(imageviewer PUBLIC
+target_link_libraries(imageviewer PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
 )
 
 if (TARGET Qt6::PrintSupport)
-    target_link_libraries(imageviewer PUBLIC Qt6::PrintSupport)
+    target_link_libraries(imageviewer PRIVATE Qt6::PrintSupport)
 endif()
 
 install(TARGETS imageviewer

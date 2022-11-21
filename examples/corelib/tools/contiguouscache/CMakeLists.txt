@@ -24,7 +24,7 @@ set_target_properties(contiguouscache PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(contiguouscache PUBLIC
+target_link_libraries(contiguouscache PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

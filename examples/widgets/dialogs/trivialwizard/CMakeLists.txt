@@ -23,7 +23,7 @@ set_target_properties(trivialwizard PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(trivialwizard PUBLIC
+target_link_libraries(trivialwizard PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

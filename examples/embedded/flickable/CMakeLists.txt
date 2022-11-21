@@ -24,7 +24,7 @@ set_target_properties(flickable PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(flickable PUBLIC
+target_link_libraries(flickable PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

@@ -26,7 +26,7 @@ set_target_properties(streambookmarks PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(streambookmarks PUBLIC
+target_link_libraries(streambookmarks PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

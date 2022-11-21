@@ -24,7 +24,7 @@ set_target_properties(sharedmemory PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(sharedmemory PUBLIC
+target_link_libraries(sharedmemory PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

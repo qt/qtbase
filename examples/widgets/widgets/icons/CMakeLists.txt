@@ -27,11 +27,11 @@ set_target_properties(icons PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_compile_definitions(icons PUBLIC
+target_compile_definitions(icons PRIVATE
     SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-target_link_libraries(icons PUBLIC
+target_link_libraries(icons PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

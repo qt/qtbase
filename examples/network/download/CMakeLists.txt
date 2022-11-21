@@ -18,7 +18,7 @@ qt_add_executable(download
     main.cpp
 )
 
-target_link_libraries(download PUBLIC
+target_link_libraries(download PRIVATE
     Qt6::Core
     Qt6::Network
 )

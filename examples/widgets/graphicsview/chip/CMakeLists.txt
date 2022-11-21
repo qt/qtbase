@@ -29,7 +29,7 @@ set_target_properties(chip PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(chip PUBLIC
+target_link_libraries(chip PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
@@ -53,7 +53,7 @@ qt_add_resources(chip "images"
 )
 
 if(TARGET Qt6::PrintSupport)
-    target_link_libraries(chip PUBLIC Qt6::PrintSupport)
+    target_link_libraries(chip PRIVATE Qt6::PrintSupport)
 endif()
 
 install(TARGETS chip

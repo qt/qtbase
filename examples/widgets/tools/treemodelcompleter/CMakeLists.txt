@@ -25,7 +25,7 @@ set_target_properties(treemodelcompleter PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(treemodelcompleter PUBLIC
+target_link_libraries(treemodelcompleter PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

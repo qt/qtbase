@@ -25,7 +25,7 @@ set_target_properties(dombookmarks PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(dombookmarks PUBLIC
+target_link_libraries(dombookmarks PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

@@ -23,7 +23,7 @@ set_target_properties(raycasting PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(raycasting PUBLIC
+target_link_libraries(raycasting PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

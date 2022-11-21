@@ -23,7 +23,7 @@ set_target_properties(simpleanchorlayout PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(simpleanchorlayout PUBLIC
+target_link_libraries(simpleanchorlayout PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

@@ -24,7 +24,7 @@ set_target_properties(findfiles PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(findfiles PUBLIC
+target_link_libraries(findfiles PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

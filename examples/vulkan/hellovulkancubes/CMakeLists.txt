@@ -29,7 +29,7 @@ set_target_properties(hellovulkancubes PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(hellovulkancubes PUBLIC
+target_link_libraries(hellovulkancubes PRIVATE
     Qt6::Concurrent
     Qt6::Core
     Qt6::Gui

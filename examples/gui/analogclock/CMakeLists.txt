@@ -24,11 +24,11 @@ set_target_properties(gui_analogclock PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_include_directories(gui_analogclock PUBLIC
+target_include_directories(gui_analogclock PRIVATE
     ../rasterwindow
 )
 
-target_link_libraries(gui_analogclock PUBLIC
+target_link_libraries(gui_analogclock PRIVATE
     Qt6::Core
     Qt6::Gui
 )

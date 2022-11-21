@@ -30,14 +30,14 @@ set_target_properties(spreadsheet PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(spreadsheet PUBLIC
+target_link_libraries(spreadsheet PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
 )
 
 if (TARGET Qt6::PrintSupport)
-    target_link_libraries(spreadsheet PUBLIC Qt6::PrintSupport)
+    target_link_libraries(spreadsheet PRIVATE Qt6::PrintSupport)
 endif()
 
 # Resources:

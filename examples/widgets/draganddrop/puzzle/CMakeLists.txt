@@ -26,7 +26,7 @@ set_target_properties(draganddrop_puzzle PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(draganddrop_puzzle PUBLIC
+target_link_libraries(draganddrop_puzzle PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

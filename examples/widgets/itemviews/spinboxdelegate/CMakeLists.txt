@@ -24,7 +24,7 @@ set_target_properties(spinboxdelegate PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(spinboxdelegate PUBLIC
+target_link_libraries(spinboxdelegate PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

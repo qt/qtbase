@@ -25,14 +25,14 @@ set_target_properties(painterpaths PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(painterpaths PUBLIC
+target_link_libraries(painterpaths PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
 )
 
 if(UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS)
-    target_link_libraries(painterpaths PUBLIC
+    target_link_libraries(painterpaths PRIVATE
         m
     )
 endif()

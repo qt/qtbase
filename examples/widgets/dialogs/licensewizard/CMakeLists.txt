@@ -24,7 +24,7 @@ set_target_properties(licensewizard PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(licensewizard PUBLIC
+target_link_libraries(licensewizard PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::PrintSupport

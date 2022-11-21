@@ -26,7 +26,7 @@ set_target_properties(simpledommodel PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(simpledommodel PUBLIC
+target_link_libraries(simpledommodel PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

@@ -25,7 +25,7 @@ set_target_properties(pinchzoom PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(pinchzoom PUBLIC
+target_link_libraries(pinchzoom PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

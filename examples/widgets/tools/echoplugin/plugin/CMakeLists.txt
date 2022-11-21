@@ -10,11 +10,11 @@ set_target_properties(echoplugin PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/echowindow"
 )
 
-target_include_directories(echoplugin PUBLIC
+target_include_directories(echoplugin PRIVATE
     ../echowindow
 )
 
-target_link_libraries(echoplugin PUBLIC
+target_link_libraries(echoplugin PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

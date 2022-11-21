@@ -20,7 +20,7 @@ qt_add_executable(downloadmanager
     textprogressbar.cpp textprogressbar.h
 )
 
-target_link_libraries(downloadmanager PUBLIC
+target_link_libraries(downloadmanager PRIVATE
     Qt6::Core
     Qt6::Network
 )

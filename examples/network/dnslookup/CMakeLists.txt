@@ -18,7 +18,7 @@ qt_add_executable(dnslookup
     dnslookup.cpp dnslookup.h
 )
 
-target_link_libraries(dnslookup PUBLIC
+target_link_libraries(dnslookup PRIVATE
     Qt6::Core
     Qt6::Network
 )

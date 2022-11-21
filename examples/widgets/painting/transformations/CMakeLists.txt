@@ -25,7 +25,7 @@ set_target_properties(transformations PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(transformations PUBLIC
+target_link_libraries(transformations PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

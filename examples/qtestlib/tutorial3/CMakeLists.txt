@@ -23,7 +23,7 @@ set_target_properties(tutorial3 PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(tutorial3 PUBLIC
+target_link_libraries(tutorial3 PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Test

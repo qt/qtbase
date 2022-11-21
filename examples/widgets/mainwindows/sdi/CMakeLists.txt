@@ -24,7 +24,7 @@ set_target_properties(sdi PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(sdi PUBLIC
+target_link_libraries(sdi PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

@@ -24,7 +24,7 @@ set_target_properties(basiclayouts PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(basiclayouts PUBLIC
+target_link_libraries(basiclayouts PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

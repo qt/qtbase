@@ -24,7 +24,7 @@ set_target_properties(regularexpression PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(regularexpression PUBLIC
+target_link_libraries(regularexpression PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

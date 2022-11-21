@@ -21,7 +21,7 @@ qt_add_executable(subscription
     user.cpp user.h
 )
 
-target_link_libraries(subscription PUBLIC
+target_link_libraries(subscription PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

@@ -23,7 +23,7 @@ set_target_properties(htmlinfo PROPERTIES
     MACOSX_BUNDLE FALSE
 )
 
-target_link_libraries(htmlinfo PUBLIC
+target_link_libraries(htmlinfo PRIVATE
     Qt6::Core
 )
 

@@ -10,7 +10,7 @@ set_target_properties(pnp_extrafilters PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/app"
 )
 
-target_include_directories(pnp_extrafilters PUBLIC
+target_include_directories(pnp_extrafilters PRIVATE
     ../../app
 )
 

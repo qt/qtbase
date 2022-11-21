@@ -21,7 +21,7 @@ qt_add_executable(savegame
     main.cpp
 )
 
-target_link_libraries(savegame PUBLIC
+target_link_libraries(savegame PRIVATE
     Qt6::Core
 )
 

@@ -24,7 +24,7 @@ set_target_properties(customtype PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(customtype PUBLIC
+target_link_libraries(customtype PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

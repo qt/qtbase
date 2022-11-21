@@ -26,7 +26,7 @@ set_target_properties(elasticnodes PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(elasticnodes PUBLIC
+target_link_libraries(elasticnodes PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

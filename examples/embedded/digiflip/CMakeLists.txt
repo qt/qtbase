@@ -23,7 +23,7 @@ set_target_properties(digiflip PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(digiflip PUBLIC
+target_link_libraries(digiflip PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

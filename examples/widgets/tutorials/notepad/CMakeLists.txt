@@ -27,14 +27,14 @@ set_target_properties(notepad PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(notepad PUBLIC
+target_link_libraries(notepad PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
 )
 
 if(TARGET Qt6::PrintSupport)
-    target_link_libraries(notepad PUBLIC Qt6::PrintSupport)
+    target_link_libraries(notepad PRIVATE Qt6::PrintSupport)
 endif()
 
 # Resources:

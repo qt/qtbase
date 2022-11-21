@@ -25,7 +25,7 @@ set_target_properties(hellogles3 PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(hellogles3 PUBLIC
+target_link_libraries(hellogles3 PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::OpenGL

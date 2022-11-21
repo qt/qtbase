@@ -25,7 +25,7 @@ set_target_properties(borderlayout PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(borderlayout PUBLIC
+target_link_libraries(borderlayout PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

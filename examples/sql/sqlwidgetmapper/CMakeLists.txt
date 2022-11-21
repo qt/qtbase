@@ -24,7 +24,7 @@ set_target_properties(sqlwidgetmapper PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(sqlwidgetmapper PUBLIC
+target_link_libraries(sqlwidgetmapper PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Sql

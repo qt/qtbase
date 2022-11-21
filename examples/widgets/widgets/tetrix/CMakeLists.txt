@@ -26,7 +26,7 @@ set_target_properties(tetrix PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(tetrix PUBLIC
+target_link_libraries(tetrix PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

@@ -26,7 +26,7 @@ set_target_properties(easing PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(easing PUBLIC
+target_link_libraries(easing PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

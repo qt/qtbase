@@ -24,7 +24,7 @@ set_target_properties(computegles31 PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(computegles31 PUBLIC
+target_link_libraries(computegles31 PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::OpenGL

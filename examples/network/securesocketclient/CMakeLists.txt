@@ -26,7 +26,7 @@ set_target_properties(securesocketclient PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(securesocketclient PUBLIC
+target_link_libraries(securesocketclient PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network

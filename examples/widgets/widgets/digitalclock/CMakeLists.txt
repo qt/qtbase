@@ -24,7 +24,7 @@ set_target_properties(digitalclock PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(digitalclock PUBLIC
+target_link_libraries(digitalclock PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

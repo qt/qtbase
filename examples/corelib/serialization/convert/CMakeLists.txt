@@ -25,7 +25,7 @@ qt_add_executable(convert
     xmlconverter.cpp xmlconverter.h
 )
 
-target_link_libraries(convert PUBLIC
+target_link_libraries(convert PRIVATE
     Qt6::Core
 )
 

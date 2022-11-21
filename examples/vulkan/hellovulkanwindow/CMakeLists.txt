@@ -24,7 +24,7 @@ set_target_properties(hellovulkanwindow PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(hellovulkanwindow PUBLIC
+target_link_libraries(hellovulkanwindow PRIVATE
     Qt6::Core
     Qt6::Gui
 )

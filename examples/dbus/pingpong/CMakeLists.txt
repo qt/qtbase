@@ -19,7 +19,7 @@ qt_add_executable(ping
     ping-common.h
 )
 
-target_link_libraries(ping PUBLIC
+target_link_libraries(ping PRIVATE
     Qt6::Core
     Qt6::DBus
 )
@@ -29,7 +29,7 @@ qt_add_executable(pong
     pong.cpp pong.h
 )
 
-target_link_libraries(pong PUBLIC
+target_link_libraries(pong PRIVATE
     Qt6::Core
     Qt6::DBus
 )

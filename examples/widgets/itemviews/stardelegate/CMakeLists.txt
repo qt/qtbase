@@ -26,7 +26,7 @@ set_target_properties(stardelegate PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(stardelegate PUBLIC
+target_link_libraries(stardelegate PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

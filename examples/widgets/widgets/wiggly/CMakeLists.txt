@@ -25,7 +25,7 @@ set_target_properties(wiggly PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(wiggly PUBLIC
+target_link_libraries(wiggly PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

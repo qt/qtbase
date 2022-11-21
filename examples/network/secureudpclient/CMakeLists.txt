@@ -26,7 +26,7 @@ set_target_properties(secureudpclient PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(secureudpclient PUBLIC
+target_link_libraries(secureudpclient PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network

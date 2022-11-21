@@ -18,7 +18,7 @@ qt_add_executable(waitconditions
     waitconditions.cpp
 )
 
-target_link_libraries(waitconditions PUBLIC
+target_link_libraries(waitconditions PRIVATE
     Qt6::Core
 )
 

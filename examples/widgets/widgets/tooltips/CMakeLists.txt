@@ -25,7 +25,7 @@ set_target_properties(tooltips PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(tooltips PUBLIC
+target_link_libraries(tooltips PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

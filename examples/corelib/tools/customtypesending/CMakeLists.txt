@@ -25,7 +25,7 @@ set_target_properties(customtypesending PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(customtypesending PUBLIC
+target_link_libraries(customtypesending PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

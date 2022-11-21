@@ -25,7 +25,7 @@ set_target_properties(syntaxhighlighter PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(syntaxhighlighter PUBLIC
+target_link_libraries(syntaxhighlighter PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

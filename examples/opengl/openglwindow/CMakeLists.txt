@@ -24,7 +24,7 @@ set_target_properties(openglwindow PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(openglwindow PUBLIC
+target_link_libraries(openglwindow PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::OpenGL

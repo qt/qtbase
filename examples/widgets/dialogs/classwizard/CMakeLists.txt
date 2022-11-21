@@ -24,7 +24,7 @@ set_target_properties(classwizard PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(classwizard PUBLIC
+target_link_libraries(classwizard PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

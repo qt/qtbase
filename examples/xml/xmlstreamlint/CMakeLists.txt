@@ -23,7 +23,7 @@ set_target_properties(xmlstreamlint PROPERTIES
     MACOSX_BUNDLE FALSE
 )
 
-target_link_libraries(xmlstreamlint PUBLIC
+target_link_libraries(xmlstreamlint PRIVATE
     Qt6::Core
     Qt6::Xml
 )

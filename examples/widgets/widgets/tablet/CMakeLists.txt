@@ -26,7 +26,7 @@ set_target_properties(qttablet PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(qttablet PUBLIC
+target_link_libraries(qttablet PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

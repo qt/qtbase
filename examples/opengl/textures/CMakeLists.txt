@@ -25,7 +25,7 @@ set_target_properties(textures PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(textures PUBLIC
+target_link_libraries(textures PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::OpenGL

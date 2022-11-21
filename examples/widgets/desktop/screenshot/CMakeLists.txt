@@ -24,7 +24,7 @@ set_target_properties(screenshot PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(screenshot PUBLIC
+target_link_libraries(screenshot PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

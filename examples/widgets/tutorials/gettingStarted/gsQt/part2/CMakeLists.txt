@@ -23,7 +23,7 @@ set_target_properties(getting_started_part2 PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(getting_started_part2 PUBLIC
+target_link_libraries(getting_started_part2 PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

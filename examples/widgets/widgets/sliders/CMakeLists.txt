@@ -25,7 +25,7 @@ set_target_properties(sliders PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(sliders PUBLIC
+target_link_libraries(sliders PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

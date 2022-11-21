@@ -24,7 +24,7 @@ set_target_properties(flightinfo PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(flightinfo PUBLIC
+target_link_libraries(flightinfo PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network

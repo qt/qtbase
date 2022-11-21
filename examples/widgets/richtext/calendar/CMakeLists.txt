@@ -24,7 +24,7 @@ set_target_properties(calendar PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(calendar PUBLIC
+target_link_libraries(calendar PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

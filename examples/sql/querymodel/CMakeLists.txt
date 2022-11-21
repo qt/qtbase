@@ -26,7 +26,7 @@ set_target_properties(querymodel PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(querymodel PUBLIC
+target_link_libraries(querymodel PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Sql

@@ -26,7 +26,7 @@ set_target_properties(threadedfortuneserver PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(threadedfortuneserver PUBLIC
+target_link_libraries(threadedfortuneserver PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network

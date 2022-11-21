@@ -24,7 +24,7 @@ set_target_properties(multicastreceiver PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(multicastreceiver PUBLIC
+target_link_libraries(multicastreceiver PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network

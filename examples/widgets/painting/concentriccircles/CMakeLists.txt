@@ -25,7 +25,7 @@ set_target_properties(concentriccircles PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(concentriccircles PUBLIC
+target_link_libraries(concentriccircles PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

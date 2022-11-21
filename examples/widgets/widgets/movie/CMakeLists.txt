@@ -24,7 +24,7 @@ set_target_properties(movie PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(movie PUBLIC
+target_link_libraries(movie PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

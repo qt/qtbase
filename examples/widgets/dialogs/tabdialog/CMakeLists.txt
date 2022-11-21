@@ -24,7 +24,7 @@ set_target_properties(tabdialog PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(tabdialog PUBLIC
+target_link_libraries(tabdialog PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

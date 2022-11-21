@@ -29,14 +29,14 @@ set_target_properties(pixelator PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(pixelator PUBLIC
+target_link_libraries(pixelator PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
 )
 
 if(TARGET Qt6::PrintSupport)
-    target_link_libraries(pixelator PUBLIC Qt6::PrintSupport)
+    target_link_libraries(pixelator PRIVATE Qt6::PrintSupport)
 endif()
 
 # Resources:

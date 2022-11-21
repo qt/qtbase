@@ -23,7 +23,7 @@ set_target_properties(graphicsview PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(graphicsview PUBLIC
+target_link_libraries(graphicsview PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

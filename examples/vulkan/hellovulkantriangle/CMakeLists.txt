@@ -24,7 +24,7 @@ set_target_properties(hellovulkantriangle PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(hellovulkantriangle PUBLIC
+target_link_libraries(hellovulkantriangle PRIVATE
     Qt6::Core
     Qt6::Gui
 )

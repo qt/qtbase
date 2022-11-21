@@ -18,7 +18,7 @@ qt_add_executable(runfunction
     main.cpp
 )
 
-target_link_libraries(runfunction PUBLIC
+target_link_libraries(runfunction PRIVATE
     Qt6::Concurrent
     Qt6::Core
     Qt6::Gui

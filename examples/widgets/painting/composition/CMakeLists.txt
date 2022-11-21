@@ -28,7 +28,7 @@ set_target_properties(composition PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_include_directories(composition PUBLIC
+target_include_directories(composition PRIVATE
     ../shared
 )
 
@@ -36,7 +36,7 @@ if(NOT TARGET painting_shared::painting_shared)
     include(../shared/use_lib.cmake)
 endif()
 
-target_link_libraries(composition PUBLIC
+target_link_libraries(composition PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
@@ -107,11 +107,11 @@ qt_add_resources(composition "composition"
 
 # remove files from ../shared
 #if(QT_FEATURE_opengl)
-    #target_sources(affine PUBLIC
+    #target_sources(affine PRIVATE
         #../shared/fbopaintdevice.cpp ../shared/fbopaintdevice.h
     #)
 
-    #target_link_libraries(affine PUBLIC
+    #target_link_libraries(affine PRIVATE
         #Qt6::OpenGL
     #)
 #endif()

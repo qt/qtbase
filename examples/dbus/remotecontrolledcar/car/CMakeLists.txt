@@ -35,7 +35,7 @@ set_target_properties(car PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(car PUBLIC
+target_link_libraries(car PRIVATE
     Qt6::Core
     Qt6::DBus
     Qt6::Gui

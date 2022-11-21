@@ -25,7 +25,7 @@ set_target_properties(blockingfortuneclient PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(blockingfortuneclient PUBLIC
+target_link_libraries(blockingfortuneclient PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network

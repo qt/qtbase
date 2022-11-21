@@ -7,7 +7,7 @@ qt_add_plugin(pnp_basictools
     basictoolsplugin.cpp basictoolsplugin.h
 )
 
-target_include_directories(pnp_basictools PUBLIC
+target_include_directories(pnp_basictools PRIVATE
     ../../app
 )
 

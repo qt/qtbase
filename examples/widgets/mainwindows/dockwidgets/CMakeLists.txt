@@ -27,14 +27,14 @@ set_target_properties(dockwidgets PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(dockwidgets PUBLIC
+target_link_libraries(dockwidgets PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
 )
 
 if (TARGET Qt6::PrintSupport)
-    target_link_libraries(dockwidgets PUBLIC Qt6::PrintSupport)
+    target_link_libraries(dockwidgets PRIVATE Qt6::PrintSupport)
 endif()
 
 # Resources:

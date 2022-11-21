@@ -21,7 +21,7 @@ qt_add_executable(bindablesubscription
     bindableuser.cpp bindableuser.h
 )
 
-target_link_libraries(bindablesubscription PUBLIC
+target_link_libraries(bindablesubscription PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

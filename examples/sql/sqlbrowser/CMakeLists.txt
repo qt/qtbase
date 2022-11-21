@@ -29,7 +29,7 @@ set_target_properties(sqlbrowser PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(sqlbrowser PUBLIC
+target_link_libraries(sqlbrowser PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Sql

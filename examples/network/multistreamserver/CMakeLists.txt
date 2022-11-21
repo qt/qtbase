@@ -28,7 +28,7 @@ set_target_properties(multistreamserver PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(multistreamserver PUBLIC
+target_link_libraries(multistreamserver PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network

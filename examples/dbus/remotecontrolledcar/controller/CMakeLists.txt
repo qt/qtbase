@@ -33,7 +33,7 @@ set_target_properties(controller PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(controller PUBLIC
+target_link_libraries(controller PRIVATE
     Qt6::Core
     Qt6::DBus
     Qt6::Gui

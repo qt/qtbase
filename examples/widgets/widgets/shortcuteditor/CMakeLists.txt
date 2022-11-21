@@ -26,7 +26,7 @@ set_target_properties(shortcuteditor PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(shortcuteditor PUBLIC
+target_link_libraries(shortcuteditor PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

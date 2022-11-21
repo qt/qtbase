@@ -24,7 +24,7 @@ set_target_properties(systray PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(systray PUBLIC
+target_link_libraries(systray PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

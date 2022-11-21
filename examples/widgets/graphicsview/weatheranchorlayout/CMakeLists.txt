@@ -23,7 +23,7 @@ set_target_properties(weatheranchorlayout PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(weatheranchorlayout PUBLIC
+target_link_libraries(weatheranchorlayout PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

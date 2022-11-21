@@ -25,7 +25,7 @@ set_target_properties(calculator PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(calculator PUBLIC
+target_link_libraries(calculator PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

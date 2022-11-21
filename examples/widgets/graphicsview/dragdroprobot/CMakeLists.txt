@@ -25,7 +25,7 @@ set_target_properties(dragdroprobot PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(dragdroprobot PUBLIC
+target_link_libraries(dragdroprobot PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

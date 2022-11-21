@@ -24,7 +24,7 @@ set_target_properties(analogclock PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(analogclock PUBLIC
+target_link_libraries(analogclock PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

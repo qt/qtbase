@@ -35,7 +35,7 @@ set_target_properties(torrent PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(torrent PUBLIC
+target_link_libraries(torrent PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network

@@ -24,7 +24,7 @@ set_target_properties(groupbox PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(groupbox PUBLIC
+target_link_libraries(groupbox PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

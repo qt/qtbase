@@ -24,7 +24,7 @@ set_target_properties(broadcastsender PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(broadcastsender PUBLIC
+target_link_libraries(broadcastsender PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network

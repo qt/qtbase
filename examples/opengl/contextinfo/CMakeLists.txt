@@ -25,7 +25,7 @@ set_target_properties(contextinfo PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(contextinfo PUBLIC
+target_link_libraries(contextinfo PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::OpenGL

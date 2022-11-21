@@ -18,7 +18,7 @@ qt_add_executable(listnames
     listnames.cpp
 )
 
-target_link_libraries(listnames PUBLIC
+target_link_libraries(listnames PRIVATE
     Qt6::Core
     Qt6::DBus
 )

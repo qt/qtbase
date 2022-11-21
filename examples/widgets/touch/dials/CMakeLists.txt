@@ -24,7 +24,7 @@ set_target_properties(dials PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(dials PUBLIC
+target_link_libraries(dials PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

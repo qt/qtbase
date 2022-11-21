@@ -25,7 +25,7 @@ set_target_properties(stylesheet PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(stylesheet PUBLIC
+target_link_libraries(stylesheet PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

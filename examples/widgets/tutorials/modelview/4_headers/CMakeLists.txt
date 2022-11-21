@@ -24,7 +24,7 @@ set_target_properties(mv_headers PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(mv_headers PUBLIC
+target_link_libraries(mv_headers PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

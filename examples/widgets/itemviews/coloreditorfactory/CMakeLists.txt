@@ -25,7 +25,7 @@ set_target_properties(coloreditorfactory PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(coloreditorfactory PUBLIC
+target_link_libraries(coloreditorfactory PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
