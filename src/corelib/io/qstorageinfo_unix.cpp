@@ -463,8 +463,7 @@ inline bool QStorageIterator::next()
     r = qstrntoll(ptr, stop - ptr, 10);
     if (!r.ok())
         return false;
-    int parent_id = r.result;
-    Q_UNUSED(parent_id);
+    // parent_id = r.result; // member currently not in use
 
     ptr += r.used;
     r = qstrntoll(ptr, stop - ptr, 10);
