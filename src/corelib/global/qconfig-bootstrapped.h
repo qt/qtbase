@@ -63,6 +63,7 @@
 #define QT_FEATURE_jalalicalendar -1
 #define QT_FEATURE_journald -1
 #define QT_FEATURE_futimens -1
+#undef QT_FEATURE_future
 #define QT_FEATURE_future -1
 #define QT_FEATURE_itemmodel -1
 #define QT_FEATURE_library -1
@@ -81,7 +82,6 @@
 # define QT_FEATURE_renameat2 -1
 #endif
 #define QT_FEATURE_shortcut -1
-#define QT_FEATURE_signaling_nan -1
 #define QT_FEATURE_slog2 -1
 #ifdef __GLIBC_PREREQ
 # define QT_FEATURE_statx (__GLIBC_PREREQ(2, 28) ? 1 : -1)
@@ -92,6 +92,7 @@
 #define QT_NO_SYSTEMLOCALE
 #define QT_FEATURE_temporaryfile 1
 #define QT_FEATURE_textdate 1
+#undef QT_FEATURE_thread
 #define QT_FEATURE_thread -1
 #define QT_FEATURE_timezone -1
 #define QT_FEATURE_topleveldomain -1
