@@ -9,15 +9,7 @@
 #pragma qt_sync_stop_processing
 #endif
 
-#ifdef QT_BOOTSTRAPPED
-// qconfig-bootstrapped.h is not supposed to be a part of the synced header files. So we find it by
-// the include path specified for Bootstrap library in the source tree instead of the build tree as
-// it's done for regular header files.
-#include "qconfig-bootstrapped.h"
-#else
-#include <QtCore/qconfig.h>
-#include <QtCore/qtcore-config.h>
-#endif
+#include <QtCore/qtconfiginclude.h>
 
 /*
    QT_VERSION is (major << 16) | (minor << 8) | patch.
