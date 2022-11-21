@@ -191,7 +191,30 @@
     the C++ language doesn't specify any initialization; in those
     cases, Qt's containers automatically initialize the value to 0.
 
-    \section1 The Iterator Classes
+    \section1 Iterating over Containers
+
+    \section2 Range-based for
+
+    Range-based \c for should preferably be used for containers:
+
+    \snippet code/doc_src_containers.cpp range_for
+
+    Note that when using a Qt container in a non-const context,
+    \l{implicit sharing} may perform an undesired detach of the container.
+    To prevent this, use \c std::as_const():
+
+    \snippet code/doc_src_containers.cpp range_for_as_const
+
+    For associative containers, this will loop over the values.
+
+    \section2 Index-based
+
+    For sequential containers that store their items contiguously in memory
+    (for example, QList), index-based iteration can be used:
+
+    \snippet code/doc_src_containers.cpp index
+
+    \section2 The Iterator Classes
 
     Iterators provide a uniform means to access items in a container.
     Qt's container classes provide two types of iterators: STL-style
@@ -200,7 +223,7 @@
     from \l{Implicit Sharing}{implicitly shared copies} due to a call
     to a non-const member function.
 
-    \section2 STL-Style Iterators
+    \section3 STL-Style Iterators
 
     STL-style iterators have been available since the release of Qt
     2.0. They are compatible with Qt's and STL's \l{generic
@@ -315,7 +338,7 @@
     This problem doesn't occur with functions that return a const or
     non-const reference to a container.
 
-    \section3 Implicit sharing iterator problem
+    \section4 Implicit sharing iterator problem
 
     \l{Implicit sharing} has another consequence on STL-style
     iterators: you should avoid copying a container while
@@ -328,7 +351,7 @@
      The above example only shows a problem with QList, but
      the problem exists for all the implicitly shared Qt containers.
 
-    \section2 Java-Style Iterators
+    \section3 Java-Style Iterators
     \l{java-style-iterators}{Java-Style iterators} were introduced in Qt 4. Their API is modelled
     on Java's iterator classes.
     New code should should prefer \l{STL-Style Iterators}.
