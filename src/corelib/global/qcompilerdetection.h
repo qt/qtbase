@@ -445,14 +445,6 @@
 #  define __has_include_next(x)        0
 #endif
 
-// Kept around until all submodules have transitioned
-#define QT_HAS_BUILTIN(x)        __has_builtin(x)
-#define QT_HAS_FEATURE(x)        __has_feature(x)
-#define QT_HAS_ATTRIBUTE(x)      __has_attribute(x)
-#define QT_HAS_CPP_ATTRIBUTE(x)  __has_cpp_attribute(x)
-#define QT_HAS_INCLUDE(x)        __has_include(x)
-#define QT_HAS_INCLUDE_NEXT(x)   __has_include_next(x)
-
 #ifdef __cplusplus
 # if __has_include(<version>) /* remove this check once Integrity, QNX have caught up */
 #  include <version>
