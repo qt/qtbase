@@ -180,6 +180,8 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
             StandardButton::Ok, ButtonRole::AcceptRole);
     }
 
+    m_alert.showsSuppressionButton = options()->supressionCheckBoxEnabled();
+
     qCDebug(lcQpaDialogs) << "Showing" << m_alert;
 
     if (windowModality == Qt::WindowModal) {
@@ -230,6 +232,15 @@ void QCocoaMessageDialog::processResponse(NSModalResponse response)
 {
     qCDebug(lcQpaDialogs) << "Processing response" << response << "for" << m_alert;
 
+    // We can't re-use the same dialog for the next show() anyways,
+    // since the options may have changed, so get rid of it now,
+    // before we emit anything that might recurse back to hide/show/etc.
+    auto alert = std::exchange(m_alert, nil);
+    [alert autorelease];
+
+    if (alert.showsSuppressionButton)
+        emit supressionCheckBoxChanged(alert.suppressionButton.state == NSControlStateValueOn);
+
      if (response >= NSAlertFirstButtonReturn) {
         // Safe range for user-defined modal responses
         if (response == kModalResponseDialogHidden) {
@@ -270,11 +281,6 @@ void QCocoaMessageDialog::processResponse(NSModalResponse response)
 
     if (m_eventLoop)
         m_eventLoop->exit(response);
-
-    // We can't re-use the same dialog for the next show() anyways,
-    // since the options may have changed, so get rid of it now.
-    [m_alert release];
-    m_alert = nil;
 }
 
 void QCocoaMessageDialog::hide()

@@ -776,6 +776,7 @@ public:
     QList<QMessageDialogOptions::CustomButton> customButtons;
     int nextCustomButtonId;
     QPixmap iconPixmap;
+    bool enableSupressionCheckBox = false;
 };
 
 QMessageDialogOptions::QMessageDialogOptions(QMessageDialogOptionsPrivate *dd)
@@ -904,6 +905,16 @@ const QMessageDialogOptions::CustomButton *QMessageDialogOptions::customButton(i
 {
     int i = d->customButtons.indexOf(CustomButton(id));
     return (i < 0 ? nullptr : &d->customButtons.at(i));
+}
+
+void QMessageDialogOptions::setSupressionCheckBoxEnabled(bool enabled)
+{
+    d->enableSupressionCheckBox = enabled;
+}
+
+bool QMessageDialogOptions::supressionCheckBoxEnabled() const
+{
+    return d->enableSupressionCheckBox;
 }
 
 QPlatformDialogHelper::ButtonRole QPlatformDialogHelper::buttonRole(QPlatformDialogHelper::StandardButton button)

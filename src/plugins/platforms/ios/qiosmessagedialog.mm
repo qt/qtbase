@@ -92,6 +92,9 @@ bool QIOSMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality win
             || windowModality == Qt::NonModal) // We can only do modal dialogs
         return false;
 
+    if (options()->supressionCheckBoxEnabled())
+        return false; // Can't support
+
     m_alertController = [[UIAlertController
         alertControllerWithTitle:options()->windowTitle().toNSString()
         message:messageTextPlain().toNSString()

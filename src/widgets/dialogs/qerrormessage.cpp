@@ -52,7 +52,43 @@ public:
     bool isMessageToBeShown(const QString &message, const QString &type) const;
     bool nextPending();
     void retranslateStrings();
+
+private:
+    void initHelper(QPlatformDialogHelper *) override;
+    void helperPrepareShow(QPlatformDialogHelper *) override;
 };
+
+
+void QErrorMessagePrivate::initHelper(QPlatformDialogHelper *helper)
+{
+    Q_Q(QErrorMessage);
+    auto *messageDialogHelper = static_cast<QPlatformMessageDialogHelper *>(helper);
+    QObject::connect(messageDialogHelper, &QPlatformMessageDialogHelper::supressionCheckBoxChanged, q,
+        [this](bool supressionChecked) {
+            again->setChecked(!supressionChecked);
+        }
+    );
+    QObject::connect(messageDialogHelper, &QPlatformMessageDialogHelper::clicked, q,
+        [this](QPlatformDialogHelper::StandardButton, QPlatformDialogHelper::ButtonRole) {
+            Q_Q(QErrorMessage);
+            q->accept();
+        }
+    );
+}
+
+void QErrorMessagePrivate::helperPrepareShow(QPlatformDialogHelper *helper)
+{
+    Q_Q(QErrorMessage);
+    auto *messageDialogHelper = static_cast<QPlatformMessageDialogHelper *>(helper);
+    QSharedPointer<QMessageDialogOptions> options = QMessageDialogOptions::create();
+    options->setText(currentMessage);
+    options->setWindowTitle(q->windowTitle());
+    options->setText(QErrorMessage::tr("An error occurred"));
+    options->setInformativeText(currentMessage);
+    options->setIcon(QMessageDialogOptions::Critical);
+    options->setSupressionCheckBoxEnabled(true);
+    messageDialogHelper->setOptions(options);
+}
 
 namespace {
 class QErrorMessageTextView : public QTextEdit
@@ -190,12 +226,20 @@ static void jump(QtMsgType t, const QMessageLogContext &context, const QString &
 /*!
     Constructs and installs an error handler window with the given \a
     parent.
+
+    The default \l{Qt::WindowModality} {window modality} of the dialog
+    depends on the platform. The window modality can be overridden via
+    setWindowModality() before calling showMessage().
 */
 
 QErrorMessage::QErrorMessage(QWidget * parent)
     : QDialog(*new QErrorMessagePrivate, parent)
 {
     Q_D(QErrorMessage);
+
+#if defined(Q_OS_MACOS)
+    setWindowModality(parent ? Qt::WindowModal : Qt::ApplicationModal);
+#endif
 
     d->icon = new QLabel(this);
     d->errors = new QErrorMessageTextView(this);
@@ -256,8 +300,12 @@ void QErrorMessage::done(int a)
     }
     d->currentMessage.clear();
     d->currentType.clear();
-    if (!d->nextPending()) {
-        QDialog::done(a);
+
+    QDialog::done(a);
+
+    if (d->nextPending()) {
+        show();
+    } else {
         if (this == qtMessageHandler && metFatal)
             exit(1);
     }
@@ -353,6 +401,23 @@ void QErrorMessage::showMessage(const QString &message, const QString &type)
     d->pending.push({message, type});
     if (!isVisible() && d->nextPending())
         show();
+}
+
+void QErrorMessage::setVisible(bool visible)
+{
+    if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden) != visible)
+        return;
+
+    Q_D(QErrorMessage);
+    if (d->canBeNativeDialog())
+        d->setNativeDialogVisible(visible);
+
+    // Update WA_DontShowOnScreen based on whether the native dialog was shown,
+    // so that QDialog::setVisible(visible) below updates the QWidget state correctly,
+    // but skips showing the non-native version.
+    setAttribute(Qt::WA_DontShowOnScreen, d->nativeDialogInUse);
+
+    QDialog::setVisible(visible);
 }
 
 /*!
