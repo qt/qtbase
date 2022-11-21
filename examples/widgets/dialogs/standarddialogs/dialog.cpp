@@ -138,8 +138,6 @@ Dialog::Dialog(QWidget *parent)
     warningLabel->setFrameStyle(frameStyle);
     QPushButton *warningButton = new QPushButton(tr("QMessageBox::&warning()"));
 
-    errorLabel = new QLabel;
-    errorLabel->setFrameStyle(frameStyle);
     QPushButton *errorButton =
             new QPushButton(tr("QErrorMessage::showM&essage()"));
 
@@ -249,7 +247,6 @@ Dialog::Dialog(QWidget *parent)
     layout->addWidget(warningButton, 3, 0);
     layout->addWidget(warningLabel, 3, 1);
     layout->addWidget(errorButton, 4, 0);
-    layout->addWidget(errorLabel, 4, 1);
     layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 5, 0);
     toolbox->addItem(page, tr("Message Boxes"));
 
@@ -470,11 +467,13 @@ void Dialog::errorMessage()
 {
     errorMessageDialog->showMessage(
             tr("This dialog shows and remembers error messages. "
-               "If the checkbox is checked (as it is by default), "
-               "the shown message will be shown again, "
-               "but if the user unchecks the box the message "
+               "If the user chooses to not show the dialog again, the dialog "
                "will not appear again if QErrorMessage::showMessage() "
                "is called with the same message."));
-    errorLabel->setText(tr("If the box is unchecked, the message "
-                           "won't appear again."));
+    errorMessageDialog->showMessage(
+            tr("You can queue up error messages, and they will be "
+               "shown one after each other. Each message maintains "
+               "its own state for whether it will be shown again "
+               "the next time QErrorMessage::showMessage() is called "
+               "with the same message."));
 }

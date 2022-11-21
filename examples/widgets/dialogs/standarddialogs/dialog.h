@@ -55,7 +55,6 @@ private:
     QLabel *informationLabel;
     QLabel *questionLabel;
     QLabel *warningLabel;
-    QLabel *errorLabel;
     QErrorMessage *errorMessageDialog;
     DialogOptionsWidget *fileDialogOptionsWidget;
     DialogOptionsWidget *colorDialogOptionsWidget;
