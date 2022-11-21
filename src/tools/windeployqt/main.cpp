@@ -695,7 +695,8 @@ static inline QString helpText(const QCommandLineParser &p)
     QString moduleHelp =
         "\n\nQt libraries can be added by passing their name (-xml) or removed by passing\n"
         "the name prepended by --no- (--no-xml). Available libraries:\n"_L1;
-    moduleHelp += lineBreak(QString::fromLatin1(formatQtModules(0xFFFFFFFFFFFFFFFFull, true)));
+    ModuleBitset mask;
+    moduleHelp += lineBreak(QString::fromLatin1(formatQtModules(mask.set(), true)));
     moduleHelp += u'\n';
     result.replace(moduleStart, argumentsStart - moduleStart, moduleHelp);
     return result;
