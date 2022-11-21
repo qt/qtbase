@@ -69,24 +69,6 @@ Widget::Widget(QWidget *parent)
     fonts << "Courier" << "Verdana";
 //! [0b]
 
-//! [1]
-    for (int i = 0; i < fonts.size(); ++i)
-         cout << fonts.at(i).toLocal8Bit().constData() << Qt::endl;
-//! [1]
-
-//! [2]
-    QStringListIterator javaStyleIterator(fonts);
-    while (javaStyleIterator.hasNext())
-         cout << javaStyleIterator.next().toLocal8Bit().constData() << Qt::endl;
-//! [2]
-
-//! [3]
-    QStringList::const_iterator constIterator;
-    for (constIterator = fonts.constBegin(); constIterator != fonts.constEnd();
-           ++constIterator)
-        cout << (*constIterator).toLocal8Bit().constData() << Qt::endl;
-//! [3]
-
 //! [4]
     QString str = fonts.join(", ");
      // str == "Arial, Helvetica, Times, Courier"
