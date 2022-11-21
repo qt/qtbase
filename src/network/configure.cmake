@@ -166,6 +166,7 @@ qt_config_compile_test(networklistmanager
     LABEL "Network List Manager"
     CODE
 "#include <netlistmgr.h>
+#include <ocidl.h>
 #include <wrl/client.h>
 
 int main(void)

@@ -11,6 +11,7 @@
 #include <QtCore/qmutex.h>
 
 #include <objbase.h>
+#include <ocidl.h>
 #include <netlistmgr.h>
 #include <wrl/client.h>
 #include <wrl/wrappers/corewrappers.h>

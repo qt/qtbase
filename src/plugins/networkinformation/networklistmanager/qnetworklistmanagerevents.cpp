@@ -172,7 +172,7 @@ bool QNetworkListManagerEvents::checkBehindCaptivePortal()
             VariantInit(&variant);
             const auto scopedVariantClear = qScopeGuard([&variant]() { VariantClear(&variant); });
 
-            const wchar_t *versions[] = { NA_InternetConnectivityV6, NA_InternetConnectivityV4 };
+            const wchar_t *versions[] = { L"NA_InternetConnectivityV6", L"NA_InternetConnectivityV4" };
             for (const auto version : versions) {
                 hr = propertyBag->Read(version, &variant, nullptr);
                 if (SUCCEEDED(hr)
