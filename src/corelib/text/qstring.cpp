@@ -510,13 +510,6 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
 #endif
 
 #ifdef Q_CC_GNU
-#  if defined(__SANITIZE_ADDRESS__) && Q_CC_GNU < 800 && !defined(Q_CC_CLANG)
-#     warning "The __attribute__ on below will likely cause a build failure with your GCC version. Your choices are:"
-#     warning "1) disable ASan;"
-#     warning "2) disable the optimized code in qustrlen (change __SSE2__ to anything else);"
-#     warning "3) upgrade your compiler (preferred)."
-#  endif
-
 // We may overrun the buffer, but that's a false positive:
 // this won't crash nor produce incorrect results
 __attribute__((__no_sanitize_address__))
