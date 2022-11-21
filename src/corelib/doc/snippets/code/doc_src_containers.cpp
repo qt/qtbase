@@ -18,8 +18,7 @@ private:
 
 
 //! [1]
-QList<QString> list;
-list << "A" << "B" << "C" << "D";
+QList<QString> list = {"A", "B", "C", "D"};
 
 QListIterator<QString> i(list);
 while (i.hasNext())
@@ -71,11 +70,12 @@ while (i.hasNext())
 
 
 //! [7]
-QMap<QString, QString> map;
-map.insert("Paris", "France");
-map.insert("Guatemala City", "Guatemala");
-map.insert("Mexico City", "Mexico");
-map.insert("Moscow", "Russia");
+QMap<QString, QString> map = {
+    {"Paris", "France"},
+    {"Guatemala City", "Guatemala"},
+    {"Mexico City", "Mexico"},
+    {"Moscow", "Russia"}
+};
 ...
 
 QMutableMapIterator<QString, QString> i(map);
@@ -106,28 +106,23 @@ while (i.findNext(widget))
 
 
 //! [10]
-QList<QString> list;
-list << "A" << "B" << "C" << "D";
+QList<QString> list = {"A", "B", "C", "D"};
 
-QList<QString>::iterator i;
-for (i = list.begin(); i != list.end(); ++i)
+for (auto i = list.begin(), end = list.end(); i != end; ++i)
     *i = (*i).toLower();
 //! [10]
 
 
 //! [11]
-QList<QString> list;
-list << "A" << "B" << "C" << "D";
+QList<QString> list = {"A", "B", "C", "D"};
 
-QList<QString>::reverse_iterator i;
-for (i = list.rbegin(); i != list.rend(); ++i)
+for (auto i = list.rbegin(), rend = list.rend(); i != rend; ++i)
     *i = i->toLower();
 //! [11]
 
 
 //! [12]
-QList<QString>::const_iterator i;
-for (i = list.constBegin(); i != list.constEnd(); ++i)
+for (auto i = list.cbegin(), end = list.cend(); i != end; ++i)
     qDebug() << *i;
 //! [12]
 
@@ -135,8 +130,7 @@ for (i = list.constBegin(); i != list.constEnd(); ++i)
 //! [13]
 QMap<int, int> map;
 ...
-QMap<int, int>::const_iterator i;
-for (i = map.constBegin(); i != map.constEnd(); ++i)
+for (auto i = map.cbegin(), end = map.cend(); i != end; ++i)
     qDebug() << i.key() << ':' << i.value();
 //! [13]
 
@@ -144,13 +138,11 @@ for (i = map.constBegin(); i != map.constEnd(); ++i)
 //! [14]
 // RIGHT
 const QList<int> sizes = splitter->sizes();
-QList<int>::const_iterator i;
-for (i = sizes.begin(); i != sizes.end(); ++i)
+for (auto i = sizes.begin(), end = sizes.end(); i != end; ++i)
     ...
 
 // WRONG
-QList<int>::const_iterator i;
-for (i = splitter->sizes().begin();
+for (auto i = splitter->sizes().begin();
         i != splitter->sizes().end(); ++i)
     ...
 //! [14]
