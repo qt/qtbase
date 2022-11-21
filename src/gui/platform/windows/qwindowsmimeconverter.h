@@ -6,16 +6,17 @@
 
 #include <QtGui/qtguiglobal.h>
 
-QT_BEGIN_NAMESPACE
-
-class QMetaType;
-class QMimeData;
-class QVariant;
 struct tagFORMATETC;
 using FORMATETC = tagFORMATETC;
 struct tagSTGMEDIUM;
 using STGMEDIUM = tagSTGMEDIUM;
 struct IDataObject;
+
+QT_BEGIN_NAMESPACE
+
+class QMetaType;
+class QMimeData;
+class QVariant;
 
 class Q_GUI_EXPORT QWindowsMimeConverter
 {
