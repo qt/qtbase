@@ -15,6 +15,8 @@ find_package(Qt6
     OPTIONAL_COMPONENTS PrintSupport
 )
 
+qt_standard_project_setup()
+
 qt_add_executable(textedit
     main.cpp
     textedit.cpp textedit.h
