@@ -220,7 +220,7 @@ public:
         return m_currentIterator->currentFileName();
     }
 
-    virtual QString currentFilePath() const
+    QString currentFilePath() const override
     {
         if (!m_currentIterator)
             return {};

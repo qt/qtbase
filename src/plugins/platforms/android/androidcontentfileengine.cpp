@@ -213,3 +213,8 @@ QString AndroidContentFileEngineIterator::currentFileName() const
         return QString();
     return m_entries.at(m_index - 1);
 }
+
+QString AndroidContentFileEngineIterator::currentFilePath() const
+{
+    return currentFileName();
+}
