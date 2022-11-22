@@ -21,6 +21,7 @@
 #include "QtCore/qatomic.h"
 #include "QtCore/qdatetime.h"
 #include "QtCore/qshareddata.h"
+#include "QtCore/qtimezone.h"
 
 #if QT_CONFIG(timezone)
 #include "qtimezone.h"
@@ -88,12 +89,8 @@ public:
             : when(w), offset(o), dst(d), valid(v) {}
     };
 
-    static QDateTime::Data create(QDate toDate, QTime toTime, Qt::TimeSpec toSpec,
-                                  int offsetSeconds);
-
+    static QDateTime::Data create(QDate toDate, QTime toTime, const QTimeZone &timeZone);
 #if QT_CONFIG(timezone)
-    static QDateTime::Data create(QDate toDate, QTime toTime, const QTimeZone & timeZone);
-
     static ZoneState zoneStateAtMillis(const QTimeZone &zone, qint64 millis, DaylightStatus dst);
 #endif // timezone
 
@@ -105,9 +102,7 @@ public:
     StatusFlags m_status = StatusFlag(Qt::LocalTime << TimeSpecShift);
     qint64 m_msecs = 0;
     int m_offsetFromUtc = 0;
-#if QT_CONFIG(timezone)
     QTimeZone m_timeZone;
-#endif // timezone
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimePrivate::StatusFlags)

@@ -40,6 +40,8 @@ private Q_SLOTS:
     void setDate();
     void setTime_data();
     void setTime();
+    void setTimeZone_data();
+    void setTimeZone();
     void setTimeSpec_data();
     void setTimeSpec();
     void setSecsSinceEpoch();
@@ -518,6 +520,57 @@ void tst_QDateTime::setTime()
     QCOMPARE(dateTime.date(), expectedDate);
     QCOMPARE(dateTime.time(), newTime);
     QCOMPARE(dateTime.timeSpec(), expectedTimeSpec);
+}
+
+void tst_QDateTime::setTimeZone_data()
+{
+    QTest::addColumn<QDateTime>("dateTime");
+    QTest::addColumn<QTimeZone>("zone");
+    const QDate day(2004, 3, 25);
+    const QTime time(0, 45, 57);
+    struct {
+        const char *id;
+        QTimeZone zone;
+    } data[] = {
+        { nullptr, QTimeZone() }, // For time-zone, when supported.
+        { "UTC", QTimeZone::UTC },
+        { "LocalTime", QTimeZone() },
+        { "Offset", QTimeZone::fromSecondsAheadOfUtc(3600) }
+    };
+#if QT_CONFIG(timezone)
+    const QTimeZone cet("Europe/Oslo");
+    if (cet.isValid()) {
+        data[0].zone = cet;
+        data[0].id = "Zone";
+    }
+#endif
+    for (const auto &from : data) {
+        if (from.id) {
+            for (const auto &to : data) {
+                if (to.id) {
+                    QTest::addRow("%s => %s", from.id, to.id)
+                        << QDateTime(day, time, from.zone) << to.zone;
+                }
+            }
+        }
+    }
+}
+
+void tst_QDateTime::setTimeZone()
+{
+    QFETCH(QDateTime, dateTime);
+    QFETCH(QTimeZone, zone);
+
+    // QDateTime::setTimeZone() preserves the date and time rather than
+    // converting to the new time representation.
+    const QDate expectedDate(dateTime.date());
+    const QTime expectedTime(dateTime.time());
+
+    dateTime.setTimeZone(zone);
+
+    QCOMPARE(dateTime.date(), expectedDate);
+    QCOMPARE(dateTime.time(), expectedTime);
+    QCOMPARE(dateTime.timeRepresentation(), zone);
 }
 
 void tst_QDateTime::setTimeSpec_data()

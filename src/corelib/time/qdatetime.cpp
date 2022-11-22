@@ -755,6 +755,35 @@ int QDate::weekNumber(int *yearNumber) const
     return (thursday.dayOfYear() + 6) / 7;
 }
 
+static QTimeZone asTimeZone(Qt::TimeSpec spec, int offset, const char *warner)
+{
+    if (warner) {
+        switch (spec) {
+        case Qt::TimeZone:
+            qWarning("%s: Pass a QTimeZone instead of Qt::TimeZone.", warner);
+            break;
+        case Qt::LocalTime:
+            if (offset) {
+                qWarning("%s: Ignoring offset (%d seconds) passed with Qt::LocalTime",
+                         warner, offset);
+            }
+            break;
+        case Qt::UTC:
+            if (offset) {
+                qWarning("%s: Ignoring offset (%d seconds) passed with Qt::UTC",
+                         warner, offset);
+                offset = 0;
+            }
+            break;
+        case Qt::OffsetFromUTC:
+            break;
+        }
+    }
+    return QTimeZone::isUtcOrFixedOffset(spec)
+        ? QTimeZone::fromSecondsAheadOfUtc(offset)
+        : QTimeZone(QTimeZone::LocalTime);
+}
+
 static bool inDateTimeRange(qint64 jd, bool start)
 {
     using Bounds = std::numeric_limits<qint64>;
@@ -770,24 +799,10 @@ static bool inDateTimeRange(qint64 jd, bool start)
     return jd >= minDay && jd < maxDay;
 }
 
-static QDateTime toEarliest(QDate day, const QDateTime &form)
+static QDateTime toEarliest(QDate day, const QTimeZone &zone)
 {
-    const Qt::TimeSpec spec = form.timeSpec();
-    const int offset = (spec == Qt::OffsetFromUTC) ? form.offsetFromUtc() : 0;
-#if QT_CONFIG(timezone)
-    QTimeZone zone;
-    if (spec == Qt::TimeZone)
-        zone = form.timeZone();
-#endif
-    auto moment = [=](QTime time) {
-        switch (spec) {
-        case Qt::OffsetFromUTC: return QDateTime(day, time, spec, offset);
-#if QT_CONFIG(timezone)
-        case Qt::TimeZone: return QDateTime(day, time, zone);
-#endif
-        default: return QDateTime(day, time, spec);
-        }
-    };
+    Q_ASSERT(!zone.isUtcOrFixedOffset());
+    const auto moment = [=](QTime time) { return QDateTime(day, time, zone); };
     // Longest routine time-zone transition is 2 hours:
     QDateTime when = moment(QTime(2, 0));
     if (!when.isValid()) {
@@ -813,64 +828,36 @@ static QDateTime toEarliest(QDate day, const QDateTime &form)
             low = mid;
         }
     }
-    return when;
+    return when.isValid() ? when : QDateTime();
 }
 
 /*!
     \since 5.14
-    \fn QDateTime QDate::startOfDay(Qt::TimeSpec spec, int offsetSeconds) const
-    \fn QDateTime QDate::startOfDay(const QTimeZone &zone) const
 
-    Returns the start-moment of the day.  Usually, this shall be midnight at the
-    start of the day: however, if a time-zone transition causes the given date
-    to skip over that midnight (e.g. a DST spring-forward skipping from the end
-    of the previous day to 01:00 of the new day), the actual earliest time in
-    the day is returned.  This can only arise when the start-moment is specified
-    in terms of a time-zone (by passing its QTimeZone as \a zone) or in terms of
-    local time (by passing Qt::LocalTime as \a spec; this is its default).
+    Returns the start-moment of the day.
 
-    The \a offsetSeconds is ignored unless \a spec is Qt::OffsetFromUTC, when it
-    gives the implied zone's offset from UTC.  As UTC and such zones have no
-    transitions, the start of the day is QTime(0, 0) in these cases.
+    When a day starts depends on a how time is described: each day starts and
+    ends earlier for those in time-zones further west and later for those in
+    time-zones further east. The time representation to use can be specified by
+    an optional time \a zone. The default time representation is the system's
+    local time.
+
+    Usually, the start of the day is midnight, 00:00: however, if a time-zone
+    transition causes the given date to skip over that midnight (e.g. a DST
+    spring-forward skipping over the first hour of the day day), the actual
+    earliest time in the day is returned. This can only arise when the time
+    representation is a time-zone or local time.
+
+    When \a zone has a timeSpec() of is Qt::OffsetFromUTC or Qt::UTC, the time
+    representation has no transitions so the start of the day is QTime(0, 0).
 
     In the rare case of a date that was entirely skipped (this happens when a
     zone east of the international date-line switches to being west of it), the
-    return shall be invalid.  Passing Qt::TimeZone as \a spec (instead of
-    passing a QTimeZone) or passing an invalid time-zone as \a zone will also
+    return shall be invalid. Passing an invalid time-zone as \a zone will also
     produce an invalid result, as shall dates that start outside the range
     representable by QDateTime.
 
     \sa endOfDay()
-*/
-QDateTime QDate::startOfDay(Qt::TimeSpec spec, int offsetSeconds) const
-{
-    if (!inDateTimeRange(jd, true))
-        return QDateTime();
-
-    switch (spec) {
-    case Qt::TimeZone: // should pass a QTimeZone instead of Qt::TimeZone
-        qWarning() << "Called QDate::startOfDay(Qt::TimeZone) on" << *this;
-        return QDateTime();
-    case Qt::OffsetFromUTC:
-    case Qt::UTC:
-        return QDateTime(*this, QTime(0, 0), spec, offsetSeconds);
-
-    case Qt::LocalTime:
-        if (offsetSeconds)
-            qWarning("Ignoring offset (%d seconds) passed with Qt::LocalTime", offsetSeconds);
-        break;
-    }
-    QDateTime when(*this, QTime(0, 0), spec);
-    if (!when.isValid())
-        when = toEarliest(*this, when);
-
-    return when.isValid() ? when : QDateTime();
-}
-
-#if QT_CONFIG(timezone)
-/*!
-  \overload
-  \since 5.14
 */
 QDateTime QDate::startOfDay(const QTimeZone &zone) const
 {
@@ -881,8 +868,9 @@ QDateTime QDate::startOfDay(const QTimeZone &zone) const
     if (when.isValid())
         return when;
 
+#if QT_CONFIG(timezone)
     // The start of the day must have fallen in a spring-forward's gap; find the spring-forward:
-    if (zone.hasTransitions()) {
+    if (zone.timeSpec() == Qt::TimeZone && zone.hasTransitions()) {
         QTimeZone::OffsetData tran
             // There's unlikely to be another transition before noon tomorrow.
             // However, the whole of today may have been skipped !
@@ -891,30 +879,58 @@ QDateTime QDate::startOfDay(const QTimeZone &zone) const
         if (at.isValid() && at.date() == *this)
             return at;
     }
+#endif
 
-    when = toEarliest(*this, when);
-    return when.isValid() ? when : QDateTime();
+    return toEarliest(*this, zone);
 }
-#endif // timezone
 
-static QDateTime toLatest(QDate day, const QDateTime &form)
+/*!
+    \overload
+    \since 6.5
+*/
+QDateTime QDate::startOfDay() const
 {
-    const Qt::TimeSpec spec = form.timeSpec();
-    const int offset = (spec == Qt::OffsetFromUTC) ? form.offsetFromUtc() : 0;
-#if QT_CONFIG(timezone)
-    QTimeZone zone;
-    if (spec == Qt::TimeZone)
-        zone = form.timeZone();
-#endif
-    auto moment = [=](QTime time) {
-        switch (spec) {
-        case Qt::OffsetFromUTC: return QDateTime(day, time, spec, offset);
-#if QT_CONFIG(timezone)
-        case Qt::TimeZone: return QDateTime(day, time, zone);
-#endif
-        default: return QDateTime(day, time, spec);
-        }
-    };
+    return startOfDay(QTimeZone::LocalTime);
+}
+
+/*!
+    \overload
+    \since 5.14
+
+    Returns the start-moment of the day.
+
+    When a day starts depends on a how time is described: each day starts and
+    ends earlier for those with higher offsets from UTC and later for those with
+    lower offsets from UTC. The time representation to use can be specified
+    either by a \a spec and \a offsetSeconds (ignored unless \a spec is
+    Qt::OffsetSeconds) or by a time zone.
+
+    Usually, the start of the day is midnight, 00:00: however, if a local time
+    transition causes the given date to skip over that midnight (e.g. a DST
+    spring-forward skipping over the first hour of the day day), the actual
+    earliest time in the day is returned.
+
+    When \a spec is Qt::OffsetFromUTC, \a offsetSeconds gives an implied zone's
+    offset from UTC. As UTC and such zones have no transitions, the start of the
+    day is QTime(0, 0) in these cases.
+
+    In the rare case of a date that was entirely skipped (this happens when a
+    zone east of the international date-line switches to being west of it), the
+    return shall be invalid. Passing Qt::TimeZone as \a spec (instead of passing
+    a QTimeZone) will also produce an invalid result, as shall dates that start
+    outside the range representable by QDateTime.
+*/
+QDateTime QDate::startOfDay(Qt::TimeSpec spec, int offsetSeconds) const
+{
+    QTimeZone zone = asTimeZone(spec, offsetSeconds, "QDate::startOfDay");
+    // If spec was Qt::TimeZone, zone's is Qt::LocalTime.
+    return zone.timeSpec() == spec ? startOfDay(zone) :  QDateTime();
+}
+
+static QDateTime toLatest(QDate day, const QTimeZone &zone)
+{
+    Q_ASSERT(!zone.isUtcOrFixedOffset());
+    const auto moment = [=](QTime time) { return QDateTime(day, time, zone); };
     // Longest routine time-zone transition is 2 hours:
     QDateTime when = moment(QTime(21, 59, 59, 999));
     if (!when.isValid()) {
@@ -940,63 +956,37 @@ static QDateTime toLatest(QDate day, const QDateTime &form)
             high = mid;
         }
     }
-    return when;
+    return when.isValid() ? when : QDateTime();
 }
 
 /*!
     \since 5.14
-    \fn QDateTime QDate::endOfDay(Qt::TimeSpec spec, int offsetSeconds) const
-    \fn QDateTime QDate::endOfDay(const QTimeZone &zone) const
 
-    Returns the end-moment of the day.  Usually, this is one millisecond before
-    the midnight at the end of the day: however, if a time-zone transition
-    causes the given date to skip over that midnight (e.g. a DST spring-forward
-    skipping from just before 23:00 to the start of the next day), the actual
-    latest time in the day is returned.  This can only arise when the
-    start-moment is specified in terms of a time-zone (by passing its QTimeZone
-    as \a zone) or in terms of local time (by passing Qt::LocalTime as \a spec;
-    this is its default).
+    Returns the end-moment of the day.
 
-    The \a offsetSeconds is ignored unless \a spec is Qt::OffsetFromUTC, when it
-    gives the implied zone's offset from UTC.  As UTC and such zones have no
-    transitions, the end of the day is QTime(23, 59, 59, 999) in these cases.
+    When a day ends depends on a how time is described: each day starts and ends
+    earlier for those in time-zones further west and later for those in
+    time-zones further east. The time representation to use can be specified by
+    an optional time \a zone. The default time representation is the system's
+    local time.
+
+    Usually, the end of the day is one millisecond before the midnight, 24:00:
+    however, if a time-zone transition causes the given date to skip over that
+    moment (e.g. a DST spring-forward skipping over 23:00 and the following
+    hour), the actual latest time in the day is returned. This can only arise
+    when the time representation is a time-zone or local time.
+
+    When \a zone has a timeSpec() of Qt::OffsetFromUTC or Qt::UTC, the time
+    representation has no transitions so the end of the day is QTime(23, 59, 59,
+    999).
 
     In the rare case of a date that was entirely skipped (this happens when a
     zone east of the international date-line switches to being west of it), the
-    return shall be invalid.  Passing Qt::TimeZone as \a spec (instead of
-    passing a QTimeZone) will also produce an invalid result, as shall dates
-    that end outside the range representable by QDateTime.
+    return shall be invalid. Passing an invalid time-zone as \a zone will also
+    produce an invalid result, as shall dates that end outside the range
+    representable by QDateTime.
 
     \sa startOfDay()
-*/
-QDateTime QDate::endOfDay(Qt::TimeSpec spec, int offsetSeconds) const
-{
-    if (!inDateTimeRange(jd, false))
-        return QDateTime();
-
-    switch (spec) {
-    case Qt::TimeZone: // should pass a QTimeZone instead of Qt::TimeZone
-        qWarning() << "Called QDate::endOfDay(Qt::TimeZone) on" << *this;
-        return QDateTime();
-    case Qt::UTC:
-    case Qt::OffsetFromUTC:
-        return QDateTime(*this, QTime(23, 59, 59, 999), spec, offsetSeconds);
-
-    case Qt::LocalTime:
-        if (offsetSeconds)
-            qWarning("Ignoring offset (%d seconds) passed with Qt::LocalTime", offsetSeconds);
-        break;
-    }
-    QDateTime when(*this, QTime(23, 59, 59, 999), spec);
-    if (!when.isValid())
-        when = toLatest(*this, when);
-    return when.isValid() ? when : QDateTime();
-}
-
-#if QT_CONFIG(timezone)
-/*!
-  \overload
-  \since 5.14
 */
 QDateTime QDate::endOfDay(const QTimeZone &zone) const
 {
@@ -1007,8 +997,9 @@ QDateTime QDate::endOfDay(const QTimeZone &zone) const
     if (when.isValid())
         return when;
 
+#if QT_CONFIG(timezone)
     // The end of the day must have fallen in a spring-forward's gap; find the spring-forward:
-    if (zone.hasTransitions()) {
+    if (zone.timeSpec() == Qt::TimeZone && zone.hasTransitions()) {
         QTimeZone::OffsetData tran
             // It's unlikely there's been another transition since yesterday noon.
             // However, the whole of today may have been skipped !
@@ -1017,11 +1008,53 @@ QDateTime QDate::endOfDay(const QTimeZone &zone) const
         if (at.isValid() && at.date() == *this)
             return at;
     }
+#endif
 
-    when = toLatest(*this, when);
-    return when.isValid() ? when : QDateTime();
+    return toLatest(*this, zone);
 }
-#endif // timezone
+
+/*!
+    \overload
+    \since 6.5
+*/
+QDateTime QDate::endOfDay() const
+{
+    return endOfDay(QTimeZone::LocalTime);
+}
+
+/*!
+    \overload
+    \since 5.14
+
+    Returns the end-moment of the day.
+
+    When a day ends depends on a how time is described: each day starts and ends
+    earlier for those with higher offsets from UTC and later for those with
+    lower offsets from UTC. The time representation to use can be specified
+    either by a \a spec and \a offsetSeconds (ignored unless \a spec is
+    Qt::OffsetSeconds) or by a time zone.
+
+    Usually, the end of the day is one millisecond before the midnight, 24:00:
+    however, if a local time transition causes the given date to skip over that
+    moment (e.g. a DST spring-forward skipping over 23:00 and the following
+    hour), the actual latest time in the day is returned.
+
+    When \a spec is Qt::OffsetFromUTC, \a offsetSeconds gives the implied zone's
+    offset from UTC. As UTC and such zones have no transitions, the end of the
+    day is QTime(23, 59, 59, 999) in these cases.
+
+    In the rare case of a date that was entirely skipped (this happens when a
+    zone east of the international date-line switches to being west of it), the
+    return shall be invalid. Passing Qt::TimeZone as \a spec (instead of passing
+    a QTimeZone) will also produce an invalid result, as shall dates that end
+    outside the range representable by QDateTime.
+*/
+QDateTime QDate::endOfDay(Qt::TimeSpec spec, int offsetSeconds) const
+{
+    QTimeZone zone = asTimeZone(spec, offsetSeconds, "QDate::endOfDay");
+    // If spec was Qt::TimeZone, zone's is Qt::LocalTime.
+    return endOfDay(zone);
+}
 
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
 
@@ -2721,18 +2754,14 @@ QDateTimePrivate::ZoneState QDateTimePrivate::zoneStateAtMillis(const QTimeZone 
 }
 #endif // timezone
 
-static inline QDateTimePrivate::ZoneState stateAtMillis(Qt::TimeSpec spec,
-                                                        QDateTimeData &d,
-                                                        qint64 millis,
+static inline QDateTimePrivate::ZoneState stateAtMillis(QTimeZone zone, qint64 millis,
                                                         QDateTimePrivate::DaylightStatus dst)
 {
-    if (spec == Qt::LocalTime)
+    if (zone.timeSpec() == Qt::LocalTime)
         return QDateTimePrivate::localStateAtMillis(millis, dst);
 #if QT_CONFIG(timezone)
-    if (spec == Qt::TimeZone && d.d->m_timeZone.isValid())
-        return QDateTimePrivate::zoneStateAtMillis(d.d->m_timeZone, millis, dst);
-#else
-    Q_UNUSED(d);
+    if (zone.timeSpec() == Qt::TimeZone && zone.isValid())
+        return QDateTimePrivate::zoneStateAtMillis(zone, millis, dst);
 #endif
     return {millis};
 }
@@ -2845,11 +2874,11 @@ static inline bool usesSameOffset(const QDateTimeData &a, const QDateTimeData &b
 }
 
 // Refresh the LocalTime or TimeZone validity and offset
-static void refreshZonedDateTime(QDateTimeData &d, Qt::TimeSpec spec)
+static void refreshZonedDateTime(QDateTimeData &d, const QTimeZone &zone)
 {
-    Q_ASSERT(spec == Qt::TimeZone || spec == Qt::LocalTime);
+    Q_ASSERT(zone.timeSpec() == Qt::TimeZone || zone.timeSpec() == Qt::LocalTime);
     auto status = getStatus(d);
-    Q_ASSERT(extractSpec(status) == spec);
+    Q_ASSERT(extractSpec(status) == zone.timeSpec());
     int offsetFromUtc = 0;
 
     // If not valid date and time then is invalid
@@ -2860,7 +2889,7 @@ static void refreshZonedDateTime(QDateTimeData &d, Qt::TimeSpec spec)
         // LocalTime and TimeZone might fall into a "missing" DST transition hour
         // Calling toEpochMSecs will adjust the returned date/time if it does
         qint64 msecs = getMSecs(d);
-        QDateTimePrivate::ZoneState state = stateAtMillis(spec, d, msecs,
+        QDateTimePrivate::ZoneState state = stateAtMillis(zone, msecs,
                                                           extractDaylightStatus(status));
         // Save the offset to use in offsetFromUtc() &c., even if the next check
         // marks invalid; this lets fromMSecsSinceEpoch() give a useful fallback
@@ -2885,7 +2914,7 @@ static void refreshZonedDateTime(QDateTimeData &d, Qt::TimeSpec spec)
 static void refreshSimpleDateTime(QDateTimeData &d)
 {
     auto status = getStatus(d);
-    Q_ASSERT(extractSpec(status) == Qt::UTC || extractSpec(status) == Qt::OffsetFromUTC);
+    Q_ASSERT(QTimeZone::isUtcOrFixedOffset(extractSpec(status)));
     status.setFlag(QDateTimePrivate::ValidDateTime,
                    status.testFlags(QDateTimePrivate::ValidDate | QDateTimePrivate::ValidTime));
 
@@ -2907,46 +2936,53 @@ static void checkValidDateTime(QDateTimeData &d)
         break;
     case Qt::TimeZone:
     case Qt::LocalTime:
-        // for these, we need to check whether the timezone is valid and whether
-        // the time is valid in that timezone. Expensive, but no other option.
-        refreshZonedDateTime(d, spec);
+        // For these, we need to check whether (the zone is valid and) the time
+        // is valid for the zone. Expensive, but we have no other option.
+        refreshZonedDateTime(d, d.timeZone());
         break;
     }
 }
 
-// Caller needs to refresh after calling this
-static void setTimeSpec(QDateTimeData &d, Qt::TimeSpec spec, int offsetSeconds)
+static void reviseTimeZone(QDateTimeData &d, QTimeZone zone)
 {
-    auto status = getStatus(d);
-    status &= ~(QDateTimePrivate::ValidDateTime | QDateTimePrivate::DaylightMask |
-                QDateTimePrivate::TimeSpecMask);
+    Qt::TimeSpec spec = zone.timeSpec();
+    auto status = mergeSpec(getStatus(d), spec);
+    bool reuse = d.isShort();
+    int offset = 0;
 
     switch (spec) {
+    case Qt::UTC:
+        Q_ASSERT(zone.fixedSecondsAheadOfUtc() == 0);
+        break;
     case Qt::OffsetFromUTC:
-        if (offsetSeconds == 0)
-            spec = Qt::UTC;
+        reuse = false;
+        offset = zone.fixedSecondsAheadOfUtc();
+        Q_ASSERT(offset);
         break;
     case Qt::TimeZone:
-        qWarning("Using TimeZone in setTimeSpec() is unsupported"); // Use system time zone instead
-        spec = Qt::LocalTime;
-        Q_FALLTHROUGH();
-    case Qt::UTC:
+        reuse = false;
+        break;
     case Qt::LocalTime:
-        offsetSeconds = 0;
         break;
     }
 
-    status = mergeSpec(status, spec);
-    if (d.isShort() && offsetSeconds == 0) {
+    status &= ~(QDateTimePrivate::ValidDateTime | QDateTimePrivate::DaylightMask);
+    if (reuse) {
         d.data.status = status.toInt();
     } else {
         d.detach();
         d->m_status = status & ~QDateTimePrivate::ShortData;
-        d->m_offsetFromUtc = offsetSeconds;
+        d->m_offsetFromUtc = offset;
 #if QT_CONFIG(timezone)
-        d->m_timeZone = QTimeZone();
+        if (spec == Qt::TimeZone)
+            d->m_timeZone = zone;
 #endif // timezone
     }
+
+    if (QTimeZone::isUtcOrFixedOffset(spec))
+        refreshSimpleDateTime(d);
+    else
+        refreshZonedDateTime(d, zone);
 }
 
 static void setDateTime(QDateTimeData &d, QDate date, QTime time)
@@ -3030,15 +3066,23 @@ inline QDateTime::Data::Data() noexcept
     d = reinterpret_cast<QDateTimePrivate *>(value);
 }
 
-inline QDateTime::Data::Data(Qt::TimeSpec spec)
+inline QDateTime::Data::Data(const QTimeZone &zone)
 {
+    Qt::TimeSpec spec = zone.timeSpec();
     if (CanBeSmall && Q_LIKELY(specCanBeSmall(spec))) {
-        d = reinterpret_cast<QDateTimePrivate *>(quintptr(mergeSpec(QDateTimePrivate::ShortData, spec).toInt()));
+        quintptr value = mergeSpec(QDateTimePrivate::ShortData, spec).toInt();
+        d = reinterpret_cast<QDateTimePrivate *>(value);
+        Q_ASSERT(isShort());
     } else {
         // the structure is too small, we need to detach
         d = new QDateTimePrivate;
         d->ref.ref();
         d->m_status = mergeSpec({}, spec);
+        if (spec == Qt::OffsetFromUTC)
+            d->m_offsetFromUtc = zone.fixedSecondsAheadOfUtc();
+        else if (spec == Qt::TimeZone)
+            d->m_timeZone = zone;
+        Q_ASSERT(!isShort());
     }
 }
 
@@ -3135,6 +3179,25 @@ inline void QDateTime::Data::detach()
     d = x;
 }
 
+QTimeZone QDateTime::Data::timeZone() const
+{
+    switch (getSpec(*this)) {
+    case Qt::UTC:
+        return QTimeZone::UTC;
+    case Qt::OffsetFromUTC:
+        return QTimeZone::fromSecondsAheadOfUtc(d->m_offsetFromUtc);
+    case Qt::TimeZone:
+#if QT_CONFIG(timezone)
+        if (d->m_timeZone.isValid())
+            return d->m_timeZone;
+#endif
+        break;
+    case Qt::LocalTime:
+        return QTimeZone::LocalTime;
+    }
+    return QTimeZone();
+}
+
 inline const QDateTimePrivate *QDateTime::Data::operator->() const
 {
     Q_ASSERT(!isShort());
@@ -3154,34 +3217,16 @@ inline QDateTimePrivate *QDateTime::Data::operator->()
  *****************************************************************************/
 
 Q_NEVER_INLINE
-QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, Qt::TimeSpec toSpec,
-                                         int offsetSeconds)
+QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTimeZone &zone)
 {
-    QDateTime::Data result(toSpec);
-    setTimeSpec(result, toSpec, offsetSeconds);
+    QDateTime::Data result(zone);
     setDateTime(result, toDate, toTime);
-    if (toSpec == Qt::OffsetFromUTC || toSpec == Qt::UTC)
+    if (zone.isUtcOrFixedOffset())
         refreshSimpleDateTime(result);
     else
-        refreshZonedDateTime(result, Qt::LocalTime);
+        refreshZonedDateTime(result, zone);
     return result;
 }
-
-#if QT_CONFIG(timezone)
-inline QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime,
-                                                const QTimeZone &toTimeZone)
-{
-    Q_ASSERT(toTimeZone.timeSpec() == Qt::TimeZone);
-    QDateTime::Data result(Qt::TimeZone);
-    Q_ASSERT(!result.isShort());
-
-    result.d->m_status = mergeSpec(result.d->m_status, Qt::TimeZone);
-    result.d->m_timeZone = toTimeZone;
-    setDateTime(result, toDate, toTime);
-    refreshZonedDateTime(result, Qt::TimeZone);
-    return result;
-}
-#endif // timezone
 
 /*****************************************************************************
   QDateTime member functions
@@ -3194,33 +3239,34 @@ inline QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime,
     \reentrant
     \brief The QDateTime class provides date and time functions.
 
-
-    A QDateTime object encodes a calendar date and a clock time (a
-    "datetime"). It combines features of the QDate and QTime classes.
-    It can read the current datetime from the system clock. It
-    provides functions for comparing datetimes and for manipulating a
+    A QDateTime object encodes a calendar date and a clock time (a "datetime")
+    in accordance with a time representation. It combines features of the QDate
+    and QTime classes. It can read the current datetime from the system
+    clock. It provides functions for comparing datetimes and for manipulating a
     datetime by adding a number of seconds, days, months, or years.
 
     QDateTime can describe datetimes with respect to \l{Qt::LocalTime}{local
     time}, to \l{Qt::UTC}{UTC}, to a specified \l{Qt::OffsetFromUTC}{offset from
-    UTC} or to a specified \l{Qt::TimeZone}{time zone}, in conjunction with the
-    QTimeZone class. For example, a time zone of "Europe/Berlin" will apply the
-    daylight-saving rules as used in Germany. In contrast, an offset from UTC of
-    +3600 seconds is one hour ahead of UTC (usually written in ISO standard
-    notation as "UTC+01:00"), with no daylight-saving offset or changes. When
-    using either local time or a specified time zone, time-zone transitions such
-    as the starts and ends of daylight-saving time (DST; but see below) are
-    taken into account. The choice of system used to represent a datetime is
-    described as its "timespec".
+    UTC} or to a specified \l{Qt::TimeZone}{time zone}. Each of these time
+    representations can be encapsulated in a suitable instance of the QTimeZone
+    class. For example, a time zone of "Europe/Berlin" will apply the
+    daylight-saving rules as used in Germany. In contrast, a fixed offset from
+    UTC of +3600 seconds is one hour ahead of UTC (usually written in ISO
+    standard notation as "UTC+01:00"), with no daylight-saving
+    complications. When using either local time or a specified time zone,
+    time-zone transitions (see \l {Daylight-Saving Time (DST)}{below}) are taken
+    into account. A QDateTime's timeSpec() will tell you which of the four types
+    of time representation is in use; its timeRepresentation() provides a full
+    representation of that time representation, as a QTimeZone.
 
     A QDateTime object is typically created either by giving a date and time
     explicitly in the constructor, or by using a static function such as
     currentDateTime() or fromMSecsSinceEpoch(). The date and time can be changed
     with setDate() and setTime(). A datetime can also be set using the
     setMSecsSinceEpoch() function that takes the time, in milliseconds, since
-    00:00:00 on January 1, 1970. The fromString() function returns a QDateTime,
-    given a string and a date format used to interpret the date within the
-    string.
+    the start, in UTC of the year 1970. The fromString() function returns a
+    QDateTime, given a string and a date format used to interpret the date
+    within the string.
 
     QDateTime::currentDateTime() returns a QDateTime that expresses the current
     time with respect to local time. QDateTime::currentDateTimeUtc() returns a
@@ -3243,12 +3289,12 @@ inline QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime,
     daylight-saving time (DST) and other time-zone transitions, where
     applicable.
 
-    Use toTimeSpec() to express a datetime in local time or UTC,
-    toOffsetFromUtc() to express in terms of an offset from UTC, or toTimeZone()
-    to express it with respect to a general time zone. You can use timeSpec() to
-    find out what time-spec a QDateTime object stores its time relative to. When
-    that is Qt::TimeZone, you can use timeZone() to find out which zone it is
-    using.
+    Use toTimeZone() to re-express a datetime in terms of a different time
+    representation. By passing a lightweight QTimeZone that represents local
+    time, UTC or a fixed offset from UTC, you can convert the datetime to use
+    the corresponding time representation; or you can pass a full time zone
+    (whose \l {QTimeZone::timeSpec()}{timeSpec()} is \c {Qt::TimeZone}) to use
+    that instead.
 
     \note QDateTime does not account for leap seconds.
 
@@ -3269,7 +3315,7 @@ inline QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime,
     range to about +/- 292 million years, compared to the QDate range of +/- 2
     billion years. Care must be taken when creating a QDateTime with extreme
     values that you do not overflow the storage. The exact range of supported
-    values varies depending on the Qt::TimeSpec and time zone.
+    values varies depending on the time representation used.
 
     \section2 Use of Timezones
 
@@ -3351,7 +3397,7 @@ inline QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime,
 
     A null datetime is invalid, since its date and time are invalid.
 
-    \sa isValid()
+    \sa isValid(), setMSecsSinceEpoch(), setDate(), setTime(), setTimeZone()
 */
 QDateTime::QDateTime() noexcept
 {
@@ -3363,8 +3409,8 @@ QDateTime::QDateTime() noexcept
 }
 
 /*!
-    Constructs a datetime with the given \a date and \a time, using
-    the time specification defined by \a spec and \a offsetSeconds seconds.
+    Constructs a datetime with the given \a date and \a time, using the time
+    representation implied by \a spec and \a offsetSeconds seconds.
 
     If \a date is valid and \a time is not, the time will be set to midnight.
 
@@ -3381,30 +3427,37 @@ QDateTime::QDateTime() noexcept
     skipped over the given date and time, the result is invalid.
 */
 QDateTime::QDateTime(QDate date, QTime time, Qt::TimeSpec spec, int offsetSeconds)
-         : d(QDateTimePrivate::create(date, time, spec, offsetSeconds))
+    : d(QDateTimePrivate::create(date, time, asTimeZone(spec, offsetSeconds, "QDateTime")))
 {
 }
 
-#if QT_CONFIG(timezone)
 /*!
     \since 5.2
 
-    Constructs a datetime with the given \a date and \a time, using
-    the Time Zone specified by \a timeZone.
+    Constructs a datetime with the given \a date and \a time, using the time
+    representation described by \a timeZone.
 
-    If \a date is valid and \a time is not, the time will be set to 00:00:00.
-
+    If \a date is valid and \a time is not, the time will be set to midnight.
     If \a timeZone is invalid then the datetime will be invalid.
 */
 
 QDateTime::QDateTime(QDate date, QTime time, const QTimeZone &timeZone)
-    : d(timeZone.timeSpec() == Qt::TimeZone
-        ? QDateTimePrivate::create(date, time, timeZone)
-        : QDateTimePrivate::create(date, time, timeZone.timeSpec(),
-                                   timeZone.fixedSecondsAheadOfUtc()))
+    : d(QDateTimePrivate::create(date, time, timeZone))
 {
 }
-#endif // timezone
+
+/*!
+    \since 6.5
+
+    Constructs a datetime with the given \a date and \a time, using local time.
+
+    If \a date is valid and \a time is not, midnight will be used as the time.
+*/
+
+QDateTime::QDateTime(QDate date, QTime time)
+    : d(QDateTimePrivate::create(date, time, QTimeZone::LocalTime))
+{
+}
 
 /*!
     Constructs a copy of the \a other datetime.
@@ -3462,14 +3515,15 @@ bool QDateTime::isNull() const
 }
 
 /*!
-    Returns \c true if both the date and the time are valid and they are valid in
-    the current Qt::TimeSpec, otherwise returns \c false.
+    Returns \c true if this datetime represents a definite moment, otherwise \c false.
 
-    If the timeSpec() is Qt::LocalTime or Qt::TimeZone and this object
-    represents a time that was skipped by a forward transition, then it is
-    invalid.  For example, if DST ends at 2am with the clock advancing to 3am,
-    then date-times from 02:00:00 to 02:59:59.999 on that day are considered
-    invalid.
+    A datetime is valid if both its date and its time are valid and the time
+    representation used gives a valid meaning to their combination. When the
+    time representation is a specific time-zone or local time, there may be
+    times on some dates that the zone skips in its representation, as when a
+    daylight-saving transition skips an hour (typically during a night in
+    spring). For example, if DST ends at 2am with the clock advancing to 3am,
+    then datetimes from 02:00:00 to 02:59:59.999 on that day are invalid.
 
     \sa QDateTime::YearRange, QDate::isValid(), QTime::isValid()
 */
@@ -3482,7 +3536,7 @@ bool QDateTime::isValid() const
 /*!
     Returns the date part of the datetime.
 
-    \sa setDate(), time(), timeSpec()
+    \sa setDate(), time(), timeRepresentation()
 */
 
 QDate QDateTime::date() const
@@ -3493,7 +3547,7 @@ QDate QDateTime::date() const
 /*!
     Returns the time part of the datetime.
 
-    \sa setTime(), date(), timeSpec()
+    \sa setTime(), date(), timeRepresentation()
 */
 
 QTime QDateTime::time() const
@@ -3504,12 +3558,36 @@ QTime QDateTime::time() const
 /*!
     Returns the time specification of the datetime.
 
-    \sa setTimeSpec(), date(), time(), Qt::TimeSpec
+    This classifies its time representation as local time, UTC, a fixed offset
+    from UTC (without indicating the offset) or a time zone (without giving the
+    details of that time zone). Equivalent to
+    \c{timeRepresentation().timeSpec()}.
+
+    \sa setTimeSpec(), timeRepresentation(), date(), time()
 */
 
 Qt::TimeSpec QDateTime::timeSpec() const
 {
     return getSpec(d);
+}
+
+/*!
+    \since 6.5
+    Returns a QTimeZone identifying how this datetime represents time.
+
+    The timeSpec() of the returned QTimeZone will coincide with that of this
+    datetime; if it is not Qt::TimeZone then the returned QTimeZone is a time
+    representation. When their timeSpec() is Qt::OffsetFromUTC, the returned
+    QTimeZone's fixedSecondsAheadOfUtc() supplies the offset.  When timeSpec()
+    is Qt::TimeZone, the QTimeZone object itself is the full representation of
+    that time zone.
+
+    \sa timeZone(), setTimeZone(), QTimeZone::asBackendZone()
+*/
+
+QTimeZone QDateTime::timeRepresentation() const
+{
+    return d.timeZone();
 }
 
 #if QT_CONFIG(timezone)
@@ -3518,28 +3596,19 @@ Qt::TimeSpec QDateTime::timeSpec() const
 
     Returns the time zone of the datetime.
 
-    If the timeSpec() is Qt::LocalTime then an instance of the current system
-    time zone will be returned. Note however that if you copy this time zone
-    the instance will not remain in sync if the system time zone changes.
+    The result is the same as \c{timeRepresentation().asBackendZone()}. In all
+    cases, the result's \l {QTimeZone::timeSpec()}{timeSpec()} is Qt::TimeZone.
 
-    \sa setTimeZone(), Qt::TimeSpec
+    When timeSpec() is Qt::LocalTime, the result will describe local time at the
+    time this method was called. It will not reflect subsequent changes to the
+    system time zone, even when the QDateTime from which it was obtained does.
+
+    \sa timeRepresentation(), setTimeZone(), Qt::TimeSpec, QTimeZone::asBackendZone()
 */
 
 QTimeZone QDateTime::timeZone() const
 {
-    switch (getSpec(d)) {
-    case Qt::UTC:
-        return QTimeZone::utc();
-    case Qt::OffsetFromUTC:
-        return QTimeZone(d->m_offsetFromUtc);
-    case Qt::TimeZone:
-        if (d->m_timeZone.isValid())
-            return d->m_timeZone;
-        break;
-    case Qt::LocalTime:
-        return QTimeZone::systemTimeZone();
-    }
-    return QTimeZone();
+    return d.timeZone().asBackendZone();
 }
 #endif // timezone
 
@@ -3673,7 +3742,7 @@ bool QDateTime::isDaylightTime() const
     Sets the date part of this datetime to \a date. If no time is set yet, it
     is set to midnight. If \a date is invalid, this QDateTime becomes invalid.
 
-    \sa date(), setTime(), setTimeSpec()
+    \sa date(), setTime(), setTimeZone()
 */
 
 void QDateTime::setDate(QDate date)
@@ -3692,7 +3761,7 @@ void QDateTime::setDate(QDate date)
         dt.setTime(QTime());
     \endcode
 
-    \sa time(), setDate(), setTimeSpec()
+    \sa time(), setDate(), setTimeZone()
 */
 
 void QDateTime::setTime(QTime time)
@@ -3714,16 +3783,12 @@ void QDateTime::setTime(QTime time)
     Example:
     \snippet code/src_corelib_time_qdatetime.cpp 19
 
-    \sa timeSpec(), setDate(), setTime(), setTimeZone(), Qt::TimeSpec
+    \sa setTimeZone(), timeSpec(), toTimeSpec(), setDate(), setTime()
 */
 
 void QDateTime::setTimeSpec(Qt::TimeSpec spec)
 {
-    QT_PREPEND_NAMESPACE(setTimeSpec(d, spec, 0));
-    if (spec == Qt::OffsetFromUTC || spec == Qt::UTC)
-        refreshSimpleDateTime(d);
-    else
-        refreshZonedDateTime(d, Qt::LocalTime);
+    reviseTimeZone(d, asTimeZone(spec, 0, "QDateTime::setTimeSpec"));
 }
 
 /*!
@@ -3738,37 +3803,33 @@ void QDateTime::setTimeSpec(Qt::TimeSpec spec)
 
     If \a offsetSeconds is 0 then the timeSpec() will be set to Qt::UTC.
 
-    \sa isValid(), offsetFromUtc()
+    \sa setTimeZone(), isValid(), offsetFromUtc(), toOffsetFromUtc()
 */
 
 void QDateTime::setOffsetFromUtc(int offsetSeconds)
 {
-    QT_PREPEND_NAMESPACE(setTimeSpec(d, Qt::OffsetFromUTC, offsetSeconds));
-    refreshSimpleDateTime(d);
+    reviseTimeZone(d, QTimeZone::fromSecondsAheadOfUtc(offsetSeconds));
 }
 
-#if QT_CONFIG(timezone)
 /*!
     \since 5.2
 
     Sets the time zone used in this datetime to \a toZone.
-    The datetime may refer to a different point in time.
 
-    If \a toZone is invalid then the datetime will be invalid.
+    The datetime may refer to a different point in time. It uses the time
+    representation of \a toZone, which may change the meaning of its unchanged
+    date() and time().
 
-    \sa timeZone(), Qt::TimeSpec
+    If \a toZone is invalid then the datetime will be invalid. Otherwise, this
+    datetime's timeSpec() after the call will match \c{toZone.timeSpec()}.
+
+    \sa timeRepresentation(), timeZone(), Qt::TimeSpec
 */
 
 void QDateTime::setTimeZone(const QTimeZone &toZone)
 {
-    d.detach();         // always detach
-    d->m_status = mergeSpec(d->m_status, toZone.timeSpec());
-    d->m_offsetFromUtc = toZone.fixedSecondsAheadOfUtc();
-    if (toZone.timeSpec() == Qt::TimeZone)
-        d->m_timeZone = toZone;
-    checkValidDateTime(d);
+    reviseTimeZone(d, toZone);
 }
-#endif // timezone
 
 /*!
     \since 4.7
@@ -3860,11 +3921,11 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
 {
     auto status = getStatus(d);
     const auto spec = extractSpec(status);
-    Q_ASSERT(spec == Qt::UTC || spec == Qt::LocalTime || !d.isShort());
+    Q_ASSERT(specCanBeSmall(spec) || !d.isShort());
     QDateTimePrivate::ZoneState state(msecs);
 
     status &= ~QDateTimePrivate::ValidityMask;
-    if (spec == Qt::UTC || spec == Qt::OffsetFromUTC) {
+    if (QTimeZone::isUtcOrFixedOffset(spec)) {
         if (spec == Qt::OffsetFromUTC)
             state.offset = d->m_offsetFromUtc;
         if (!state.offset || !add_overflow(msecs, state.offset * MSECS_PER_SEC, &state.when))
@@ -4014,9 +4075,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
             buf += u'Z';
             break;
         case Qt::OffsetFromUTC:
-#if QT_CONFIG(timezone)
         case Qt::TimeZone:
-#endif
             buf += toOffsetString(Qt::ISODate, offsetFromUtc());
             break;
         default:
@@ -4091,14 +4150,14 @@ static inline void massageAdjustedDateTime(QDateTimeData &d, QDate date, QTime t
     Q_ASSERT(status.testFlags(QDateTimePrivate::ValidDate | QDateTimePrivate::ValidTime
                               | QDateTimePrivate::ValidDateTime));
     auto spec = extractSpec(status);
-    if (spec == Qt::OffsetFromUTC || spec == Qt::UTC) {
+    if (QTimeZone::isUtcOrFixedOffset(spec)) {
         setDateTime(d, date, time);
         refreshSimpleDateTime(d);
         return;
     }
     auto dst = extractDaylightStatus(status);
     qint64 local = timeToMSecs(date, time);
-    const QDateTimePrivate::ZoneState state = stateAtMillis(spec, d, local, dst);
+    const QDateTimePrivate::ZoneState state = stateAtMillis(d.timeZone(), local, dst);
     if (state.valid)
         status = mergeDaylightStatus(status | QDateTimePrivate::ValidDateTime, state.dst);
     else
@@ -4433,41 +4492,31 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
     Example:
     \snippet code/src_corelib_time_qdatetime.cpp 16
 
-    \sa timeSpec(), toUTC(), toLocalTime(), toOffsetFromUtc(), toTimeZone()
+    \sa setTimeSpec(), timeSpec(), toTimeZone()
 */
 
 QDateTime QDateTime::toTimeSpec(Qt::TimeSpec spec) const
 {
-    if (spec == Qt::TimeZone) // No zone supplied, so treating as LocalTime.
-        qWarning("Use toTimeZone() rather than toTimeSpec(Qt::TimeZone)");
-    return spec == Qt::UTC || spec == Qt::OffsetFromUTC ? toUTC() : toLocalTime();
+    return toTimeZone(asTimeZone(spec, 0, "toTimeSpec"));
 }
 
 /*!
     \since 5.2
 
     Returns a copy of this datetime converted to a spec of Qt::OffsetFromUTC
-    with the given \a offsetSeconds.
+    with the given \a offsetSeconds. Equivalent to
+    \c{toTimeZone(QTimeZone::fromSecondsAheadOfUtc(offsetSeconds))}.
 
     If the \a offsetSeconds equals 0 then a UTC datetime will be returned.
 
     The result represents the same moment in time as, and is equal to, this datetime.
 
-    \sa setOffsetFromUtc(), offsetFromUtc(), toUTC(), toLocalTime(), toTimeZone(), toTimeSpec()
+    \sa setOffsetFromUtc(), offsetFromUtc(), toTimeZone()
 */
 
 QDateTime QDateTime::toOffsetFromUtc(int offsetSeconds) const
 {
-    if (getSpec(d) == Qt::OffsetFromUTC && d->m_offsetFromUtc == offsetSeconds)
-        return *this;
-
-    if (!isValid()) {
-        QDateTime ret = *this;
-        ret.setOffsetFromUtc(offsetSeconds);
-        return ret;
-    }
-
-    return fromMSecsSinceEpoch(toMSecsSinceEpoch(), Qt::OffsetFromUTC, offsetSeconds);
+    return toTimeZone(QTimeZone::fromSecondsAheadOfUtc(offsetSeconds));
 }
 
 /*!
@@ -4479,20 +4528,11 @@ QDateTime QDateTime::toOffsetFromUtc(int offsetSeconds) const
 
     \snippet code/src_corelib_time_qdatetime.cpp 17
 
-    \sa toUTC(), toOffsetFromUtc(), toTimeZone(), toTimeSpec()
+    \sa toTimeZone(), toUTC(), toOffsetFromUtc()
 */
 QDateTime QDateTime::toLocalTime() const
 {
-    if (getSpec(d) == Qt::LocalTime)
-        return *this;
-
-    if (!isValid()) {
-        QDateTime ret = *this;
-        ret.setTimeSpec(Qt::LocalTime);
-        return ret;
-    }
-
-    return fromMSecsSinceEpoch(toMSecsSinceEpoch());
+    return toTimeZone(QTimeZone::LocalTime);
 }
 
 /*!
@@ -4504,23 +4544,13 @@ QDateTime QDateTime::toLocalTime() const
 
     \snippet code/src_corelib_time_qdatetime.cpp 18
 
-    \sa toLocalTime(), toOffsetFromUtc(), toTimeZone(), toTimeSpec()
+    \sa toTimeZone(), toLocalTime(), toOffsetFromUtc()
 */
 QDateTime QDateTime::toUTC() const
 {
-    if (getSpec(d) == Qt::UTC)
-        return *this;
-
-    if (!isValid()) {
-        QDateTime ret = *this;
-        ret.setTimeSpec(Qt::UTC);
-        return ret;
-    }
-
-    return fromMSecsSinceEpoch(toMSecsSinceEpoch(), Qt::UTC);
+    return toTimeZone(QTimeZone::UTC);
 }
 
-#if QT_CONFIG(timezone)
 /*!
     \since 5.2
 
@@ -4528,22 +4558,20 @@ QDateTime QDateTime::toUTC() const
 
     The result represents the same moment in time as, and is equal to, this datetime.
 
-    \sa timeZone(), toUTC(), toLocalTime(), toOffsetFromUtc(), toTimeSpec()
+    The result describes the moment in time in terms of \a timeZone's time
+    representation. For example:
+
+    \snippet code/src_corelib_time_qdatetime.cpp 23
+
+    If \a timeZone is invalid then the datetime will be invalid. Otherwise the
+    returned datetime's timeSpec() will match \c{timeZone.timeSpec()}.
+
+    \sa timeRepresentation(), toLocalTime(), toUTC(), toOffsetFromUtc()
 */
 
 QDateTime QDateTime::toTimeZone(const QTimeZone &timeZone) const
 {
-    switch (timeZone.timeSpec()) {
-    case Qt::OffsetFromUTC:
-        return toOffsetFromUtc(timeZone.fixedSecondsAheadOfUtc());
-    case Qt::LocalTime:
-        return toLocalTime();
-    case Qt::UTC:
-        return toUTC();
-    case Qt::TimeZone:
-        break;
-    }
-    if (getSpec(d) == Qt::TimeZone && d->m_timeZone == timeZone)
+    if (timeRepresentation() == timeZone)
         return *this;
 
     if (!isValid()) {
@@ -4554,7 +4582,6 @@ QDateTime QDateTime::toTimeZone(const QTimeZone &timeZone) const
 
     return fromMSecsSinceEpoch(toMSecsSinceEpoch(), timeZone);
 }
-#endif // timezone
 
 /*!
     \internal
@@ -4816,7 +4843,7 @@ QDateTime QDateTime::currentDateTimeUtc()
     GetSystemTime(&st);
     QDate d(st.wYear, st.wMonth, st.wDay);
     QTime t(msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds));
-    return QDateTime(d, t, Qt::UTC);
+    return QDateTime(d, t, QTimeZone::UTC);
 }
 
 qint64 QDateTime::currentMSecsSinceEpoch() noexcept
@@ -4852,12 +4879,12 @@ QTime QTime::currentTime()
 
 QDateTime QDateTime::currentDateTime()
 {
-    return fromMSecsSinceEpoch(currentMSecsSinceEpoch(), Qt::LocalTime);
+    return fromMSecsSinceEpoch(currentMSecsSinceEpoch(), QTimeZone::LocalTime);
 }
 
 QDateTime QDateTime::currentDateTimeUtc()
 {
-    return fromMSecsSinceEpoch(currentMSecsSinceEpoch(), Qt::UTC);
+    return fromMSecsSinceEpoch(currentMSecsSinceEpoch(), QTimeZone::UTC);
 }
 
 qint64 QDateTime::currentMSecsSinceEpoch() noexcept
@@ -4902,10 +4929,8 @@ qint64 QDateTime::currentSecsSinceEpoch() noexcept
 */
 QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int offsetSeconds)
 {
-    QDateTime dt;
-    QT_PREPEND_NAMESPACE(setTimeSpec(dt.d, spec, offsetSeconds));
-    dt.setMSecsSinceEpoch(msecs);
-    return dt;
+    return fromMSecsSinceEpoch(msecs,
+                               asTimeZone(spec, offsetSeconds, "QDateTime::fromMSecsSinceEpoch"));
 }
 
 /*!
@@ -4932,20 +4957,17 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int of
 */
 QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec, int offsetSeconds)
 {
-    QDateTime dt;
-    QT_PREPEND_NAMESPACE(setTimeSpec(dt.d, spec, offsetSeconds));
-    dt.setSecsSinceEpoch(secs);
-    return dt;
+    return fromSecsSinceEpoch(secs,
+                              asTimeZone(spec, offsetSeconds, "QDateTime::fromSecsSinceEpoch"));
 }
 
-#if QT_CONFIG(timezone)
 /*!
     \since 5.2
     \overload
 
     Returns a datetime representing a moment the given number \a msecs of
     milliseconds after the start, in UTC, of the year 1970, described as
-    specified by \a timeZone.
+    specified by \a timeZone. The default time representation is local time.
 
     Note that there are possible values for \a msecs that lie outside the valid
     range of QDateTime, both negative and positive. The behavior of this
@@ -4955,14 +4977,20 @@ QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec, int offs
 */
 QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone)
 {
-    if (timeZone.timeSpec() != Qt::TimeZone)
-        return fromMSecsSinceEpoch(msecs, timeZone.timeSpec(), timeZone.fixedSecondsAheadOfUtc());
-
     QDateTime dt;
-    dt.setTimeZone(timeZone);
+    reviseTimeZone(dt.d, timeZone);
     if (timeZone.isValid())
         dt.setMSecsSinceEpoch(msecs);
     return dt;
+}
+
+/*!
+    \since 6.5
+    \overload
+*/
+QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs)
+{
+    return fromMSecsSinceEpoch(msecs, QTimeZone::LocalTime);
 }
 
 /*!
@@ -4971,7 +4999,7 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone
 
     Returns a datetime representing a moment the given number \a secs of seconds
     after the start, in UTC, of the year 1970, described as specified by \a
-    timeZone.
+    timeZone. The default time representation is local time.
 
     Note that there are possible values for \a secs that lie outside the valid
     range of QDateTime, both negative and positive. The behavior of this
@@ -4981,16 +5009,21 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone
 */
 QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone)
 {
-    if (timeZone.timeSpec() != Qt::TimeZone)
-        return fromSecsSinceEpoch(secs, timeZone.timeSpec(), timeZone.fixedSecondsAheadOfUtc());
-
     QDateTime dt;
-    dt.setTimeZone(timeZone);
+    reviseTimeZone(dt.d, timeZone);
     if (timeZone.isValid())
         dt.setSecsSinceEpoch(secs);
     return dt;
 }
-#endif
+
+/*!
+    \since 6.5
+    \overload
+*/
+QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs)
+{
+    return fromSecsSinceEpoch(secs, QTimeZone::LocalTime);
+}
 
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
 
@@ -5022,8 +5055,8 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
         if (!rfc.date.isValid() || !rfc.time.isValid())
             return QDateTime();
 
-        QDateTime dateTime(rfc.date, rfc.time, Qt::UTC);
-        dateTime.setOffsetFromUtc(rfc.utcOffset);
+        QDateTime dateTime(rfc.date, rfc.time, QTimeZone::UTC);
+        dateTime.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(rfc.utcOffset));
         return dateTime;
     }
     case Qt::ISODate:
@@ -5038,7 +5071,7 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
         if (size == 10)
             return date.startOfDay();
 
-        Qt::TimeSpec spec = Qt::LocalTime;
+        QTimeZone zone = QTimeZone::LocalTime;
         QStringView isoString = string.sliced(10); // trim "yyyy-MM-dd"
 
         // Must be left with T (or space) and at least one digit for the hour:
@@ -5052,10 +5085,9 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
         }
         isoString = isoString.sliced(1); // trim 'T' (or space)
 
-        int offset = 0;
         // Check end of string for Time Zone definition, either Z for UTC or [+-]HH:mm for Offset
         if (isoString.endsWith(u'Z', Qt::CaseInsensitive)) {
-            spec = Qt::UTC;
+            zone = QTimeZone::UTC;
             isoString.chop(1); // trim 'Z'
         } else {
             // the loop below is faster but functionally equal to:
@@ -5070,11 +5102,11 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
 
             if (found) {
                 bool ok;
-                offset = fromOffsetString(isoString.sliced(signIndex), &ok);
+                int offset = fromOffsetString(isoString.sliced(signIndex), &ok);
                 if (!ok)
                     return QDateTime();
                 isoString = isoString.first(signIndex);
-                spec = Qt::OffsetFromUTC;
+                zone = QTimeZone::fromSecondsAheadOfUtc(offset);
             }
         }
 
@@ -5085,8 +5117,8 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
         if (!time.isValid())
             return QDateTime();
         if (isMidnight24) // time is 0:0, but we want the start of next day:
-            return date.addDays(1).startOfDay(spec, offset);
-        return QDateTime(date, time, spec, offset);
+            return date.addDays(1).startOfDay(zone);
+        return QDateTime(date, time, zone);
     }
     case Qt::TextDate: {
         QVarLengthArray<QStringView, 6> parts;
@@ -5128,7 +5160,7 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
             return QDateTime();
 
         if (parts.size() == 5)
-            return QDateTime(date, time, Qt::LocalTime);
+            return QDateTime(date, time);
 
         QStringView tz = parts.at(5);
         if (tz.startsWith("UTC"_L1)
@@ -5136,10 +5168,11 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
             || tz.startsWith("GMT"_L1, Qt::CaseInsensitive)) {
             tz = tz.sliced(3);
             if (tz.isEmpty())
-                return QDateTime(date, time, Qt::UTC);
+                return QDateTime(date, time, QTimeZone::UTC);
 
             int offset = fromOffsetString(tz, &ok);
-            return ok ? QDateTime(date, time, Qt::OffsetFromUTC, offset) : QDateTime();
+            return ok ? QDateTime(date, time, QTimeZone::fromSecondsAheadOfUtc(offset))
+                      : QDateTime();
         }
         return QDateTime();
     }
@@ -5357,6 +5390,7 @@ QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
 {
     QPair<QDate, QTime> dateAndTime;
 
+    // TODO: new version, route spec and details via QTimeZone
     if (out.version() >= QDataStream::Qt_5_2) {
 
         // In 5.2 we switched to using Qt::TimeSpec and added offset and zone support
@@ -5422,34 +5456,37 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
     QDate dt;
     QTime tm;
     qint8 ts = 0;
-    Qt::TimeSpec spec = Qt::LocalTime;
-    qint32 offset = 0;
+    QTimeZone zone(QTimeZone::LocalTime);
 
     if (in.version() >= QDataStream::Qt_5_2) {
 
         // In 5.2 we switched to using Qt::TimeSpec and added offset and zone support
         in >> dt >> tm >> ts;
-        spec = static_cast<Qt::TimeSpec>(ts);
-        if (spec == Qt::OffsetFromUTC) {
+        switch (static_cast<Qt::TimeSpec>(ts)) {
+        case Qt::UTC:
+            zone = QTimeZone::UTC;
+            break;
+        case Qt::OffsetFromUTC: {
+            qint32 offset = 0;
             in >> offset;
-            dateTime = QDateTime(dt, tm, spec, offset);
-#if QT_CONFIG(timezone)
-        } else if (spec == Qt::TimeZone) {
-            QTimeZone tz;
-            in >> tz;
-            dateTime = QDateTime(dt, tm, tz);
-#endif // timezone
-        } else {
-            dateTime = QDateTime(dt, tm, spec);
+            zone = QTimeZone::fromSecondsAheadOfUtc(offset);
+            break;
         }
+        case Qt::LocalTime:
+            break;
+        case Qt::TimeZone:
+            in >> zone;
+            break;
+        }
+        dateTime = QDateTime(dt, tm, zone);
 
     } else if (in.version() == QDataStream::Qt_5_0) {
 
         // In Qt 5.0 we incorrectly serialised all datetimes as UTC
         in >> dt >> tm >> ts;
-        spec = static_cast<Qt::TimeSpec>(ts);
-        dateTime = QDateTime(dt, tm, Qt::UTC);
-        dateTime = dateTime.toTimeSpec(spec);
+        dateTime = QDateTime(dt, tm, QTimeZone::UTC);
+        if (static_cast<Qt::TimeSpec>(ts) == Qt::LocalTime)
+            dateTime = dateTime.toTimeZone(zone);
 
     } else if (in.version() >= QDataStream::Qt_4_0) {
 
@@ -5458,7 +5495,7 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
         switch (static_cast<QDateTimePrivate::Spec>(ts)) {
         case QDateTimePrivate::OffsetFromUTC: // No offset was stored, so treat as UTC.
         case QDateTimePrivate::UTC:
-            spec = Qt::UTC;
+            zone = QTimeZone::UTC;
             break;
         case QDateTimePrivate::TimeZone: // No zone was stored, so treat as LocalTime:
         case QDateTimePrivate::LocalUnknown:
@@ -5466,7 +5503,7 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
         case QDateTimePrivate::LocalDST:
             break;
         }
-        dateTime = QDateTime(dt, tm, spec, offset);
+        dateTime = QDateTime(dt, tm, zone);
 
     } else { // version < QDataStream::Qt_4_0
 

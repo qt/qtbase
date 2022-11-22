@@ -5,10 +5,10 @@
 #ifndef QDATETIME_H
 #define QDATETIME_H
 
-#include <QtCore/qstring.h>
+#include <QtCore/qcalendar.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qshareddata.h>
-#include <QtCore/qcalendar.h>
+#include <QtCore/qstring.h>
 
 #include <limits>
 #include <chrono>
@@ -20,9 +20,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSDate);
 
 QT_BEGIN_NAMESPACE
 
-#if QT_CONFIG(timezone)
 class QTimeZone;
-#endif
 class QDateTime;
 
 class Q_CORE_EXPORT QDate
@@ -105,12 +103,12 @@ public:
     int daysInMonth(QCalendar cal) const;
     int daysInYear(QCalendar cal) const;
 
-    QDateTime startOfDay(Qt::TimeSpec spec = Qt::LocalTime, int offsetSeconds = 0) const;
-    QDateTime endOfDay(Qt::TimeSpec spec = Qt::LocalTime, int offsetSeconds = 0) const;
-#if QT_CONFIG(timezone)
+    QDateTime startOfDay(Qt::TimeSpec spec, int offsetSeconds = 0) const;
+    QDateTime endOfDay(Qt::TimeSpec spec, int offsetSeconds = 0) const;
     QDateTime startOfDay(const QTimeZone &zone) const;
     QDateTime endOfDay(const QTimeZone &zone) const;
-#endif
+    QDateTime startOfDay() const;
+    QDateTime endOfDay() const;
 
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat format = Qt::TextDate) const;
@@ -286,7 +284,7 @@ class Q_CORE_EXPORT QDateTime
         };
 
         Data() noexcept;
-        Data(Qt::TimeSpec);
+        Data(const QTimeZone &);
         Data(const Data &other) noexcept;
         Data(Data &&other) noexcept;
         Data &operator=(const Data &other) noexcept;
@@ -298,6 +296,7 @@ class Q_CORE_EXPORT QDateTime
 
         bool isShort() const;
         void detach();
+        QTimeZone timeZone() const;
 
         const QDateTimePrivate *operator->() const;
         QDateTimePrivate *operator->();
@@ -308,10 +307,9 @@ class Q_CORE_EXPORT QDateTime
 
 public:
     QDateTime() noexcept;
-    QDateTime(QDate date, QTime time, Qt::TimeSpec spec = Qt::LocalTime, int offsetSeconds = 0);
-#if QT_CONFIG(timezone)
+    QDateTime(QDate date, QTime time, Qt::TimeSpec spec, int offsetSeconds = 0);
     QDateTime(QDate date, QTime time, const QTimeZone &timeZone);
-#endif // timezone
+    QDateTime(QDate date, QTime time);
     QDateTime(const QDateTime &other) noexcept;
     QDateTime(QDateTime &&other) noexcept;
     ~QDateTime();
@@ -328,6 +326,7 @@ public:
     QTime time() const;
     Qt::TimeSpec timeSpec() const;
     int offsetFromUtc() const;
+    QTimeZone timeRepresentation() const;
 #if QT_CONFIG(timezone)
     QTimeZone timeZone() const;
 #endif // timezone
@@ -341,9 +340,7 @@ public:
     void setTime(QTime time);
     void setTimeSpec(Qt::TimeSpec spec);
     void setOffsetFromUtc(int offsetSeconds);
-#if QT_CONFIG(timezone)
     void setTimeZone(const QTimeZone &toZone);
-#endif // timezone
     void setMSecsSinceEpoch(qint64 msecs);
     void setSecsSinceEpoch(qint64 secs);
 
@@ -367,9 +364,7 @@ public:
     QDateTime toLocalTime() const;
     QDateTime toUTC() const;
     QDateTime toOffsetFromUtc(int offsetSeconds) const;
-#if QT_CONFIG(timezone)
     QDateTime toTimeZone(const QTimeZone &toZone) const;
-#endif // timezone
 
     qint64 daysTo(const QDateTime &) const;
     qint64 secsTo(const QDateTime &) const;
@@ -391,15 +386,13 @@ public:
     { return fromString(string, qToStringViewIgnoringNull(format), cal); }
 #endif
 
-    static QDateTime fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec = Qt::LocalTime,
-                                         int offsetFromUtc = 0);
-    static QDateTime fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec = Qt::LocalTime,
-                                        int offsetFromUtc = 0);
+    static QDateTime fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int offsetFromUtc = 0);
+    static QDateTime fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec, int offsetFromUtc = 0);
 
-#if QT_CONFIG(timezone)
     static QDateTime fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone);
     static QDateTime fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone);
-#endif
+    static QDateTime fromMSecsSinceEpoch(qint64 msecs);
+    static QDateTime fromSecsSinceEpoch(qint64 secs);
 
     static qint64 currentMSecsSinceEpoch() noexcept;
     static qint64 currentSecsSinceEpoch() noexcept;
