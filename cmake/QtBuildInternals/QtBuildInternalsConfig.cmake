@@ -15,8 +15,8 @@ cmake_minimum_required(VERSION 3.16...3.21)
 #
 # The returned dependencies are topologically sorted.
 #
-# Example output for qtimageformats:
-# qtbase;qtshadertools;qtsvg;qtdeclarative;qttools
+# Example output for qtdeclarative:
+# qtbase;qtimageformats;qtlanguageserver;qtshadertools;qtsvg
 #
 function(qt_internal_read_repo_dependencies out_var repo_dir)
     set(seen ${ARGN})
