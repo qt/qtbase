@@ -3502,20 +3502,22 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
   \sa remove()
 */
 
-static void do_replace_helper(QString &str, size_t *indices, qsizetype nIndices, qsizetype blen,
-                              const QChar *after, qsizetype alen)
+
+static void do_replace_helper(QString &str, size_t *indices, qsizetype nIndices,
+                              qsizetype blen, QStringView after)
 {
+    const qsizetype alen = after.size();
     if (blen == alen) {
         // replace in place
         str.detach();
         for (qsizetype i = 0; i < nIndices; ++i)
-            memcpy(str.data_ptr().data() + indices[i], after, alen * sizeof(QChar));
+            memcpy(str.data_ptr().data() + indices[i], after.begin(), alen * sizeof(QChar));
     } else if (alen < blen) {
         // replace from front
         str.detach();
         size_t to = indices[0];
         if (alen)
-            memcpy(str.data_ptr().data()+to, after, alen*sizeof(QChar));
+            memcpy(str.data_ptr().data()+to, after.begin(), alen*sizeof(QChar));
         to += alen;
         size_t movestart = indices[0] + blen;
         for (qsizetype i = 1; i < nIndices; ++i) {
@@ -3525,7 +3527,7 @@ static void do_replace_helper(QString &str, size_t *indices, qsizetype nIndices,
                 to += msize;
             }
             if (alen) {
-                memcpy(str.data_ptr().data() + to, after, alen * sizeof(QChar));
+                memcpy(str.data_ptr().data() + to, after.begin(), alen * sizeof(QChar));
                 to += alen;
             }
             movestart = indices[i] + blen;
@@ -3548,22 +3550,20 @@ static void do_replace_helper(QString &str, size_t *indices, qsizetype nIndices,
             qsizetype moveto = insertstart + alen;
             memmove(str.data_ptr().data() + moveto, str.data_ptr().data() + movestart,
                     (moveend - movestart)*sizeof(QChar));
-            memcpy(str.data_ptr().data() + insertstart, after, alen * sizeof(QChar));
+            memcpy(str.data_ptr().data() + insertstart, after.begin(), alen * sizeof(QChar));
             moveend = movestart-blen;
         }
     }
 }
 
-static void replace_helper(QString &str, size_t *indices, qsizetype nIndices, qsizetype blen, const QChar *after, qsizetype alen)
+static void replace_helper(QString &str, size_t *indices, qsizetype nIndices, qsizetype blen, QStringView after)
 {
     // Copy after if it lies inside our own d.b area (which we could
     // possibly invalidate via a realloc or modify by replacement).
-    if (QtPrivate::q_points_into_range(after, str)) {
-        const QVarLengthArray<QChar> after_copy{after, after+alen};
-        do_replace_helper(str, indices, nIndices, blen, after_copy.data(), after_copy.size());
-    } else {
-        do_replace_helper(str, indices, nIndices, blen, after, alen);
-    }
+    if (QtPrivate::q_points_into_range(after.begin(), str))
+        do_replace_helper(str, indices, nIndices, blen, QVarLengthArray(after.begin(), after.end()));
+    else
+        do_replace_helper(str, indices, nIndices, blen, after);
 }
 
 /*!
@@ -3602,7 +3602,7 @@ QString &QString::replace(qsizetype pos, qsizetype len, const QChar *after, qsiz
         len = this->size() - pos;
 
     size_t index = pos;
-    replace_helper(*this, &index, 1, len, after, alen);
+    replace_helper(*this, &index, 1, len, QStringView{after, alen});
     return *this;
 }
 
@@ -3681,7 +3681,7 @@ QString &QString::replace(const QChar *before, qsizetype blen,
     if (indices.isEmpty())
         return *this;
 
-    replace_helper(*this, indices.data(), indices.size(), blen, after, alen);
+    replace_helper(*this, indices.data(), indices.size(), blen, QStringView{after, alen});
     return *this;
 }
 
@@ -3715,11 +3715,10 @@ QString& QString::replace(QChar ch, const QString &after, Qt::CaseSensitivity cs
             if (QChar::toCaseFolded(d.data()[i]) == cc)
                 indices.push_back(i);
     }
-
     if (indices.isEmpty())
         return *this;
 
-    replace_helper(*this, indices.data(), indices.size(), 1, after.constData(), after.size());
+    replace_helper(*this, indices.data(), indices.size(), 1, after);
     return *this;
 }
 
