@@ -1158,7 +1158,7 @@ void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pl
     }
 
     static const std::map<QString, std::vector<QString>> map {
-        {QStringLiteral("Multimedia"), {QStringLiteral("mediaservice"), QStringLiteral("audio")}},
+        {QStringLiteral("Multimedia"), {QStringLiteral("multimedia")}},
         {QStringLiteral("3DRender"), {QStringLiteral("sceneparsers"), QStringLiteral("geometryloaders"), QStringLiteral("renderers")}},
         {QStringLiteral("3DQuickRender"), {QStringLiteral("renderplugins")}},
         {QStringLiteral("Positioning"), {QStringLiteral("position")}},
