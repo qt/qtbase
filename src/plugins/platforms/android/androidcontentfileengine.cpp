@@ -112,6 +112,15 @@ bool AndroidContentFileEngine::remove()
     return m_documentFile->remove();
 }
 
+bool AndroidContentFileEngine::rename(const QString &newName)
+{
+    if (m_documentFile->rename(newName)) {
+        m_initialFile = m_documentFile->uri().toString();
+        return true;
+    }
+    return false;
+}
+
 bool AndroidContentFileEngine::mkdir(const QString &dirName, bool createParentDirectories,
                                      std::optional<QFileDevice::Permissions> permissions) const
 {
@@ -433,6 +442,7 @@ const QLatin1String COLUMN_SIZE("_size");
 
 constexpr int FLAG_DIR_SUPPORTS_CREATE = 0x00000008;
 constexpr int FLAG_SUPPORTS_DELETE = 0x00000004;
+constexpr int FLAG_SUPPORTS_RENAME = 0x00000040;
 constexpr int FLAG_SUPPORTS_WRITE = 0x00000002;
 constexpr int FLAG_VIRTUAL_DOCUMENT = 0x00000200;
 
@@ -516,6 +526,19 @@ bool deleteDocument(const QJniObject &documentUri)
                                                   documentUri.object());
 }
 
+QJniObject renameDocument(const QJniObject &documentUri, const QString &displayName)
+{
+    const int flags = Cursor::queryColumn(documentUri, Document::COLUMN_FLAGS).toInt();
+    if (!(flags & Document::FLAG_SUPPORTS_RENAME))
+        return {};
+
+    return QJniObject::callStaticObjectMethod("android/provider/DocumentsContract",
+                                              "renameDocument",
+                                              "(Landroid/content/ContentResolver;Landroid/net/Uri;Ljava/lang/String;)Landroid/net/Uri;",
+                                              contentResolverInstance().object(),
+                                              documentUri.object(),
+                                              QJniObject::fromString(displayName).object());
+}
 } // End DocumentsContract namespace
 
 // Start of DocumentFile
@@ -733,6 +756,39 @@ std::vector<DocumentFilePtr> DocumentFile::listFiles()
         res.push_back(std::make_shared<MakeableDocumentFile>(uri, shared_from_this()));
     }
     return res;
+}
+
+bool DocumentFile::rename(const QString &newName)
+{
+    QJniObject uri;
+    if (newName.startsWith("content://"_L1)) {
+        auto lastSeparatorIndex = [](const QString &file) {
+            int posDecoded = file.lastIndexOf("/");
+            int posEncoded = file.lastIndexOf(QUrl::toPercentEncoding("/"));
+            return posEncoded > posDecoded ? posEncoded : posDecoded;
+        };
+
+        // first try to see if the new file is under the same tree and thus used rename only
+        const QString parent = m_uri.toString().left(lastSeparatorIndex(m_uri.toString()));
+        if (newName.contains(parent)) {
+            QString displayName = newName.mid(lastSeparatorIndex(newName));
+            if (displayName.startsWith('/'))
+                displayName.remove(0, 1);
+            else if (displayName.startsWith(QUrl::toPercentEncoding("/")))
+                displayName.remove(0, 3);
+
+            uri = renameDocument(m_uri, displayName);
+        }
+    } else {
+        uri = renameDocument(m_uri, newName);
+    }
+
+    if (uri.isValid()) {
+        m_uri = uri;
+        return true;
+    }
+
+    return false;
 }
 
 // End of DocumentFile
