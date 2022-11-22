@@ -324,6 +324,8 @@ function(qt_internal_add_plugin target)
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             ${private_includes}
+        SYSTEM_INCLUDE_DIRECTORIES
+            ${arg_SYSTEM_INCLUDE_DIRECTORIES}
         PUBLIC_INCLUDE_DIRECTORIES
             ${public_includes}
         LIBRARIES ${arg_LIBRARIES} Qt::PlatformPluginInternal

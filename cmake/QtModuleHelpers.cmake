@@ -620,6 +620,8 @@ function(qt_internal_add_module target)
             ${arg_EXTERNAL_HEADERS}
         INCLUDE_DIRECTORIES
             ${private_includes}
+        SYSTEM_INCLUDE_DIRECTORIES
+            ${arg_SYSTEM_INCLUDE_DIRECTORIES}
         PUBLIC_INCLUDE_DIRECTORIES
             ${public_includes}
         PUBLIC_DEFINES

@@ -132,6 +132,8 @@ function(qt_internal_extend_target target)
         target_include_directories("${target}"
                                    ${public_visibility_option} ${arg_PUBLIC_INCLUDE_DIRECTORIES}
                                    ${private_visibility_option} ${arg_INCLUDE_DIRECTORIES})
+        target_include_directories("${target}" SYSTEM
+                                   ${private_visibility_option} ${arg_SYSTEM_INCLUDE_DIRECTORIES})
         target_compile_definitions("${target}"
                                     ${public_visibility_option} ${arg_PUBLIC_DEFINES}
                                     ${private_visibility_option} ${arg_DEFINES})

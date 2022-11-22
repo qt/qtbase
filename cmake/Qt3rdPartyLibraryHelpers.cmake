@@ -102,6 +102,8 @@ function(qt_internal_add_cmake_library target)
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
+        SYSTEM_INCLUDE_DIRECTORIES
+            ${arg_SYSTEM_INCLUDE_DIRECTORIES}
         PUBLIC_INCLUDE_DIRECTORIES
             ${arg_PUBLIC_INCLUDE_DIRECTORIES}
         PUBLIC_DEFINES
