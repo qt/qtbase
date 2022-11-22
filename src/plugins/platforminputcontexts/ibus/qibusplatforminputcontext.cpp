@@ -573,15 +573,16 @@ void QIBusPlatformInputContext::connectToContextSignals()
     }
 }
 
-static inline bool checkRunningUnderFlatpak()
+static inline bool checkNeedPortalSupport()
 {
-    return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, "flatpak-info"_L1).isEmpty();
+    return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, "flatpak-info"_L1).isEmpty()
+        || qEnvironmentVariableIsSet("SNAP");
 }
 
 static bool shouldConnectIbusPortal()
 {
     // honor the same env as ibus-gtk
-    return (checkRunningUnderFlatpak() || !qgetenv("IBUS_USE_PORTAL").isNull());
+    return (checkNeedPortalSupport() || qEnvironmentVariableIsSet("IBUS_USE_PORTAL"));
 }
 
 QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
