@@ -276,8 +276,12 @@ struct QUtf8
         bool isValidAscii;
     };
     static ValidUtf8Result isValidUtf8(QByteArrayView in);
-    static int compareUtf8(QByteArrayView utf8, QStringView utf16) noexcept;
-    static int compareUtf8(QByteArrayView utf8, QLatin1StringView s);
+    static int compareUtf8(QByteArrayView utf8, QStringView utf16,
+                           Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
+    static int compareUtf8(QByteArrayView utf8, QLatin1StringView s,
+                           Qt::CaseSensitivity cs = Qt::CaseSensitive);
+    static int compareUtf8(QByteArrayView lhs, QByteArrayView rhs,
+                           Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
 };
 
 struct QUtf16

@@ -119,6 +119,12 @@ public:
     { return isEmpty() ? -1 : front() == c ? int(size() > 1) : uchar(m_data[0]) - c.unicode(); }
     [[nodiscard]] int compare(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::compareStrings(*this, QStringView(&c, 1), cs); }
+    template<bool UseChar8T>
+    [[nodiscard]] int compare(QBasicUtf8StringView<UseChar8T> other,
+                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    {
+        return QtPrivate::compareStrings(*this, other, cs);
+    }
 
     [[nodiscard]] bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::startsWith(*this, s, cs); }
@@ -1228,6 +1234,13 @@ template <bool UseChar8T>
 QString QBasicUtf8StringView<UseChar8T>::toString() const
 {
     return QString::fromUtf8(data(), size());
+}
+
+template<bool UseChar8T>
+[[nodiscard]] int QBasicUtf8StringView<UseChar8T>::compare(QLatin1StringView other,
+                                                           Qt::CaseSensitivity cs) const noexcept
+{
+    return QtPrivate::compareStrings(*this, other, cs);
 }
 
 //

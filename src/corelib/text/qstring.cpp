@@ -1482,8 +1482,7 @@ bool QtPrivate::equalStrings(QStringView lhs, QBasicUtf8StringView<false> rhs) n
 
 bool QtPrivate::equalStrings(QLatin1StringView lhs, QBasicUtf8StringView<false> rhs) noexcept
 {
-    QString r = rhs.toString();
-    return QtPrivate::equalStrings(lhs, r); // ### optimize!
+    return QUtf8::compareUtf8(QByteArrayView(rhs), lhs) == 0;
 }
 
 bool QtPrivate::equalStrings(QBasicUtf8StringView<false> lhs, QLatin1StringView rhs) noexcept
@@ -1612,7 +1611,7 @@ int QtPrivate::compareStrings(QLatin1StringView lhs, QLatin1StringView rhs, Qt::
 */
 int QtPrivate::compareStrings(QLatin1StringView lhs, QBasicUtf8StringView<false> rhs, Qt::CaseSensitivity cs) noexcept
 {
-    return compareStrings(lhs, rhs.toString(), cs); // ### optimize!
+    return -QUtf8::compareUtf8(QByteArrayView(rhs), lhs, cs);
 }
 
 /*!
@@ -1647,13 +1646,7 @@ int QtPrivate::compareStrings(QBasicUtf8StringView<false> lhs, QLatin1StringView
 */
 int QtPrivate::compareStrings(QBasicUtf8StringView<false> lhs, QBasicUtf8StringView<false> rhs, Qt::CaseSensitivity cs) noexcept
 {
-    if (lhs.isEmpty())
-        return lencmp(0, rhs.size());
-    if (cs == Qt::CaseInsensitive)
-        return compareStrings(lhs.toString(), rhs.toString(), cs); // ### optimize!
-    const auto l = std::min(lhs.size(), rhs.size());
-    int r = memcmp(lhs.data(), rhs.data(), l);
-    return r ? r : lencmp(lhs.size(), rhs.size());
+    return QUtf8::compareUtf8(QByteArrayView(lhs), QByteArrayView(rhs), cs);
 }
 
 int QAnyStringView::compare(QAnyStringView lhs, QAnyStringView rhs, Qt::CaseSensitivity cs) noexcept

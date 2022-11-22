@@ -406,6 +406,8 @@ private Q_SLOTS:
     void member_compare_QStringView_QStringView() { member_compare_impl<QStringView, QStringView>(); }
     void member_compare_QStringView_QLatin1String_data() { member_compare_data(); }
     void member_compare_QStringView_QLatin1String() { member_compare_impl<QStringView, QLatin1String>(); }
+    void member_compare_QStringView_QUtf8StringView_data() { member_compare_data(); }
+    void member_compare_QStringView_QUtf8StringView() { member_compare_impl<QStringView, QUtf8StringView>(); }
 #ifdef NOT_YET_IMPLEMENTED
     void member_compare_QStringView_QByteArray_data() { member_compare_data(); }
     void member_compare_QStringView_QByteArray() { member_compare_impl<QStringView, QByteArray>(); }
@@ -427,6 +429,8 @@ private Q_SLOTS:
     void member_compare_QLatin1String_QStringView() { member_compare_impl<QLatin1String, QStringView>(); }
     void member_compare_QLatin1String_QLatin1String_data() { member_compare_data(); }
     void member_compare_QLatin1String_QLatin1String() { member_compare_impl<QLatin1String, QLatin1String>(); }
+    void member_compare_QLatin1String_QUtf8StringView_data() { member_compare_data(); }
+    void member_compare_QLatin1String_QUtf8StringView() { member_compare_impl<QLatin1String, QUtf8StringView>(); }
 #ifdef NOT_YET_IMPLEMENTED
     void member_compare_QLatin1String_QByteArray_data() { member_compare_data(); }
     void member_compare_QLatin1String_QByteArray() { member_compare_impl<QLatin1String, QByteArray>(); }
@@ -469,6 +473,19 @@ private Q_SLOTS:
     void member_compare_QByteArrayView_QByteArrayView() { member_compare_impl<QByteArrayView, QByteArrayView>(); }
     void member_compare_QByteArrayView_const_char_star_data() { member_compare_data(); }
     void member_compare_QByteArrayView_const_char_star() { member_compare_impl<QByteArrayView, const char *>(); }
+
+#ifdef NOT_YET_IMPLEMENTED
+    void member_compare_QUtf8StringView_QChar_data() { member_compare_data(false); }
+    void member_compare_QUtf8StringView_QChar() { member_compare_impl<QUtf8StringView, QChar>(); }
+    void member_compare_QUtf8StringView_char16_t_data() { member_compare_data(false); }
+    void member_compare_QUtf8StringView_char16_t() { member_compare_impl<QUtf8StringView, char16_t>(); }
+#endif
+    void member_compare_QUtf8StringView_QString_data() { member_compare_data(); }
+    void member_compare_QUtf8StringView_QString() { member_compare_impl<QUtf8StringView, QString>(); }
+    void member_compare_QUtf8StringView_QLatin1String_data() { member_compare_data(); }
+    void member_compare_QUtf8StringView_QLatin1String() { member_compare_impl<QUtf8StringView, QLatin1String>(); }
+    void member_compare_QUtf8StringView_QUtf8StringView_data() { member_compare_data(); }
+    void member_compare_QUtf8StringView_QUtf8StringView() { member_compare_impl<QUtf8StringView, QUtf8StringView>(); }
 
 private:
     void localeAwareCompare_data();

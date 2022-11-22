@@ -280,6 +280,17 @@ public:
     [[nodiscard]] constexpr qsizetype length() const noexcept
     { return size(); }
 
+    [[nodiscard]] int compare(QBasicUtf8StringView other,
+                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    {
+        return QtPrivate::compareStrings(*this, other, cs);
+    }
+
+    [[nodiscard]] int compare(QStringView other,
+                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+    [[nodiscard]] int compare(QLatin1StringView other,
+                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+
 private:
     [[nodiscard]] static inline int compare(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
     {

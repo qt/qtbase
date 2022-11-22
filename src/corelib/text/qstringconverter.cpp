@@ -820,7 +820,7 @@ QUtf8::ValidUtf8Result QUtf8::isValidUtf8(QByteArrayView in)
     return { true, isValidAscii };
 }
 
-int QUtf8::compareUtf8(QByteArrayView utf8, QStringView utf16) noexcept
+int QUtf8::compareUtf8(QByteArrayView utf8, QStringView utf16, Qt::CaseSensitivity cs) noexcept
 {
     auto src1 = reinterpret_cast<const qchar8_t *>(utf8.data());
     auto end1 = src1 + utf8.size();
@@ -847,7 +847,10 @@ int QUtf8::compareUtf8(QByteArrayView utf8, QStringView utf16) noexcept
                 if (QChar::isHighSurrogate(uc2) && src2 < end2 && QChar::isLowSurrogate(*src2))
                     uc2 = QChar::surrogateToUcs4(uc2, *src2++);
             }
-
+            if (cs == Qt::CaseInsensitive) {
+                uc1 = QChar::toCaseFolded(uc1);
+                uc2 = QChar::toCaseFolded(uc2);
+            }
             if (uc1 != uc2)
                 return int(uc1) - int(uc2);
         }
@@ -857,7 +860,7 @@ int QUtf8::compareUtf8(QByteArrayView utf8, QStringView utf16) noexcept
     return (end1 > src1) - int(end2 > src2);
 }
 
-int QUtf8::compareUtf8(QByteArrayView utf8, QLatin1StringView s)
+int QUtf8::compareUtf8(QByteArrayView utf8, QLatin1StringView s, Qt::CaseSensitivity cs)
 {
     char32_t uc1 = QChar::Null;
     auto src1 = reinterpret_cast<const uchar *>(utf8.data());
@@ -875,6 +878,62 @@ int QUtf8::compareUtf8(QByteArrayView utf8, QLatin1StringView s)
         }
 
         char32_t uc2 = *src2++;
+        if (cs == Qt::CaseInsensitive) {
+            uc1 = QChar::toCaseFolded(uc1);
+            uc2 = QChar::toCaseFolded(uc2);
+        }
+        if (uc1 != uc2)
+            return int(uc1) - int(uc2);
+    }
+
+    // the shorter string sorts first
+    return (end1 > src1) - (end2 > src2);
+}
+
+static inline int lencmp(qsizetype lhs, qsizetype rhs) noexcept
+{
+    return lhs == rhs ? 0 :
+           lhs >  rhs ? 1 :
+           /* else */  -1 ;
+}
+
+int QUtf8::compareUtf8(QByteArrayView lhs, QByteArrayView rhs, Qt::CaseSensitivity cs) noexcept
+{
+    if (lhs.isEmpty())
+        return lencmp(0, rhs.size());
+
+    if (cs == Qt::CaseSensitive) {
+        const auto l = std::min(lhs.size(), rhs.size());
+        int r = memcmp(lhs.data(), rhs.data(), l);
+        return r ? r : lencmp(lhs.size(), rhs.size());
+    }
+
+    char32_t uc1 = QChar::Null;
+    auto src1 = reinterpret_cast<const uchar *>(lhs.data());
+    auto end1 = src1 + lhs.size();
+    char32_t uc2 = QChar::Null;
+    auto src2 = reinterpret_cast<const uchar *>(rhs.data());
+    auto end2 = src2 + rhs.size();
+
+    while (src1 < end1 && src2 < end2) {
+        uchar b = *src1++;
+        char32_t *output = &uc1;
+        int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, output, src1, end1);
+        if (res < 0) {
+            // decoding error
+            uc1 = QChar::ReplacementCharacter;
+        }
+
+        b = *src2++;
+        output = &uc2;
+        res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, output, src2, end2);
+        if (res < 0) {
+            // decoding error
+            uc2 = QChar::ReplacementCharacter;
+        }
+
+        uc1 = QChar::toCaseFolded(uc1);
+        uc2 = QChar::toCaseFolded(uc2);
         if (uc1 != uc2)
             return int(uc1) - int(uc2);
     }
