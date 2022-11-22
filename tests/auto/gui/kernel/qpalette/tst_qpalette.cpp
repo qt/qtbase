@@ -274,6 +274,14 @@ void tst_QPalette::cacheKey()
     const auto defaultSerNo = defaultCacheKey >> 32;
     const auto defaultDetachNo = defaultCacheKey & 0xffffffff;
 
+    QPalette changeTwicePalette(defaultPalette);
+    changeTwicePalette.setBrush(QPalette::All, QPalette::ButtonText, Qt::red);
+    const auto firstChangeCacheKey = changeTwicePalette.cacheKey();
+    QCOMPARE_NE(firstChangeCacheKey, defaultCacheKey);
+    changeTwicePalette.setBrush(QPalette::All, QPalette::ButtonText, Qt::green);
+    const auto secondChangeCacheKey = changeTwicePalette.cacheKey();
+    QCOMPARE_NE(firstChangeCacheKey, secondChangeCacheKey);
+
     QPalette copyDifferentData(defaultPalette);
     QPalette copyDifferentMask(defaultPalette);
     QPalette copyDifferentMaskAndData(defaultPalette);
