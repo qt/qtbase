@@ -206,7 +206,7 @@ public:
 
     virtual QString currentFileName() const = 0;
     virtual QFileInfo currentFileInfo() const;
-    QString currentFilePath() const;
+    virtual QString currentFilePath() const;
 
 protected:
     enum EntryInfoType {

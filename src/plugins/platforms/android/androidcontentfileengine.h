@@ -40,6 +40,7 @@ public:
     QString next() override;
     bool hasNext() const override;
     QString currentFileName() const override;
+    QString currentFilePath() const override;
 private:
     mutable QStringList m_entries;
     mutable int m_index = -1;
