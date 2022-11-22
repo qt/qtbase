@@ -310,6 +310,12 @@ function(qt_internal_add_3rdparty_library target)
         qt_enable_separate_debug_info(${target} "${debug_install_dir}")
         qt_internal_install_pdb_files(${target} "${INSTALL_LIBDIR}")
     endif()
+
+    if(BUILD_SHARED_LIBS AND MSVC)
+        set_target_properties(${target} PROPERTIES
+            INTERPROCEDURAL_OPTIMIZATION OFF
+        )
+    endif()
 endfunction()
 
 function(qt_install_3rdparty_library_wrap_config_extra_file target)
