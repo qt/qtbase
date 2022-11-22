@@ -270,7 +270,6 @@ public: // can't give friendship to a namespace, so it needs to be public
 };
 Q_DECLARE_TYPEINFO(QColor, Q_RELOCATABLE_TYPE);
 
-#if QT_DEPRECATED_SINCE(6, 6)
 inline QColor::QColor(QLatin1StringView aname)
     : QColor(fromString(aname)) {}
 
@@ -282,7 +281,6 @@ inline QColor::QColor(const QString& aname)
 
 inline QColor::QColor(const char *aname)
     : QColor(fromString(aname)) {}
-#endif
 
 inline bool QColor::isValid() const noexcept
 { return cspec != Invalid; }
