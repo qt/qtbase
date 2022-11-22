@@ -33,14 +33,33 @@ public:
     void initialShow()
     {
         show();
-        if (isWindow())
+        if (isWindow()) {
             QVERIFY(QTest::qWaitForWindowExposed(this));
+            QVERIFY(waitForPainted());
+        }
         paintedRegions = {};
     }
 
     bool waitForPainted(int timeout = 5000)
     {
-        return QTest::qWaitFor([this]{ return !paintedRegions.isEmpty(); }, timeout);
+        int remaining = timeout;
+        QDeadlineTimer deadline(remaining, Qt::PreciseTimer);
+        if (!QTest::qWaitFor([this]{ return !paintedRegions.isEmpty(); }, timeout))
+            return false;
+
+        // In case of multiple paint events:
+        // Process events and wait until all have been consumed,
+        // i.e. paintedRegions no longer changes.
+        QRegion reg;
+        while (remaining > 0 && reg != paintedRegions) {
+            reg = paintedRegions;
+            QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
+            if (reg == paintedRegions)
+                return true;
+
+            remaining = int(deadline.remainingTime());
+        }
+        return false;
     }
 
     QRegion takePaintedRegions()
@@ -353,6 +372,7 @@ void tst_QWidgetRepaintManager::children()
     TestWidget *child1 = new TestWidget(&widget);
     child1->move(20, 20);
     child1->show();
+    QVERIFY(QTest::qWaitForWindowExposed(child1));
     QVERIFY(child1->waitForPainted());
     QCOMPARE(widget.takePaintedRegions(), QRegion(child1->geometry()));
     QCOMPARE(child1->takePaintedRegions(), QRegion(child1->rect()));
