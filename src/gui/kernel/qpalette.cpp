@@ -62,7 +62,7 @@ public:
     QAtomicInt ref;
     QPalette::ResolveMask resolveMask = {0};
     static inline int qt_palette_private_count = 0;
-    const int detach_no = ++qt_palette_private_count;
+    int detach_no = ++qt_palette_private_count;
     QExplicitlySharedDataPointer<Data> data;
 };
 
@@ -864,6 +864,8 @@ void QPalette::detach()
         if (!d->ref.deref())
             delete d;
         d = x;
+    } else {
+        d->detach_no = ++QPalettePrivate::qt_palette_private_count;
     }
 }
 
