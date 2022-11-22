@@ -2653,13 +2653,15 @@ int QObject::receivers(const char *signal) const
 
     \snippet code/src_corelib_kernel_qobject.cpp 49
 
-    As the code snippet above illustrates, you can use this function
-    to avoid emitting a signal that nobody listens to.
+    As the code snippet above illustrates, you can use this function to avoid
+    expensive initialization or emitting a signal that nobody listens to.
+    However, in a multithreaded application, connections might change after
+    this function returns and before the signal gets emitted.
 
     \warning This function violates the object-oriented principle of
-    modularity. However, it might be useful when you need to perform
-    expensive initialization only if something is connected to a
-    signal.
+    modularity. In particular, this function must not be called from an
+    override of connectNotify() or disconnectNotify(), as those might get
+    called from any thread.
 */
 bool QObject::isSignalConnected(const QMetaMethod &signal) const
 {
@@ -3333,8 +3335,13 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
     signal.
 
     \warning This function is called from the thread which performs the
-    connection, which may be a different thread from the thread in
-    which this object lives.
+    connection, which may be a different thread from the thread in which
+    this object lives. This function may also be called with a QObject internal
+    mutex locked. It is therefore not allowed to re-enter any QObject
+    functions, including isSignalConnected(), from your reimplementation. If
+    you lock a mutex in your reimplementation, make sure that you don't call
+    QObject functions with that mutex held in other places or it will result in
+    a deadlock.
 
     \sa connect(), disconnectNotify()
 */
@@ -3363,12 +3370,12 @@ void QObject::connectNotify(const QMetaMethod &signal)
     expensive resources.
 
     \warning This function is called from the thread which performs the
-    disconnection, which may be a different thread from the thread in
-    which this object lives. This function may also be called with a QObject
-    internal mutex locked. It is therefore not allowed to re-enter any
-    of any QObject functions from your reimplementation and if you lock
-    a mutex in your reimplementation, make sure that you don't call QObject
-    functions with that mutex held in other places or it will result in
+    disconnection, which may be a different thread from the thread in which
+    this object lives. This function may also be called with a QObject internal
+    mutex locked. It is therefore not allowed to re-enter any QObject
+    functions, including isSignalConnected(), from your reimplementation. If
+    you lock a mutex in your reimplementation, make sure that you don't call
+    QObject functions with that mutex held in other places or it will result in
     a deadlock.
 
     \sa disconnect(), connectNotify()
