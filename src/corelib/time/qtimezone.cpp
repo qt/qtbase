@@ -786,6 +786,7 @@ QByteArray QTimeZone::systemTimeZoneId()
     auto zone = systemTimeZone();
     if (zone.isValid() && !zone.id().isEmpty())
         return zone.id();
+    // TODO: "-00:00", meaning "unspecified local zone" in some RFC, may be more apt.
     // If all else fails, guess UTC.
     return QTimeZonePrivate::utcQByteArray();
 }
