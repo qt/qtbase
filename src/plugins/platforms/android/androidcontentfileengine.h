@@ -56,6 +56,7 @@ public:
     bool close() override;
     qint64 size() const override;
     bool remove() override;
+    bool rename(const QString &newName) override;
     bool mkdir(const QString &dirName, bool createParentDirectories) const override;
     bool rmdir(const QString &dirName, bool recurseParentDirectories) const override;
     QByteArray id() const override;
@@ -127,6 +128,7 @@ public:
     bool remove();
     bool exists() const;
     std::vector<DocumentFilePtr> listFiles();
+    bool rename(const QString &newName);
 
 protected:
     DocumentFile(const QJNIObjectPrivate &uri, const std::shared_ptr<DocumentFile> &parent);
