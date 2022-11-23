@@ -439,8 +439,10 @@ macro(_qt_internal_test_expect_pass _dir)
     add_test(${testname} ${CMAKE_CTEST_COMMAND} ${ctest_command_args})
     if(_ARGS_SIMULATE_IN_SOURCE)
       set_tests_properties(${testname} PROPERTIES
-          FIXTURES_REQUIRED "${testname}SIMULATE_IN_SOURCE_FIXTURE")
+          FIXTURES_REQUIRED "${testname}SIMULATE_IN_SOURCE_FIXTURE"
+      )
     endif()
+    set_tests_properties(${testname} PROPERTIES ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
 
     if(_ARGS_BINARY)
         set(run_env_args "")
