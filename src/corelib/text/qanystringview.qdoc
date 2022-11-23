@@ -339,6 +339,72 @@
     \sa front(), {Sizes and Sub-Strings}
 */
 
+/*! \fn template <typename Visitor> decltype(auto) QAnyStringView::visit(Visitor &&v) const
+
+    Calls \a v with either a QUtf8StringView, QLatin1String, or QStringView, depending
+    on the encoding of the string data this string-view references.
+
+    This is how most functions taking QAnyStringView fork off into per-encoding
+    functions:
+
+    \code
+    void processImpl(QLatin1String s) { ~~~ }
+    void processImpl(QUtf8StringView s) { ~~~ }
+    void processImpl(QStringView s) { ~~~ }
+
+    void process(QAnyStringView s)
+    {
+        s.visit([](auto s) { processImpl(s); });
+    }
+    \endcode
+
+    Here, we're reusing the same name, \c s, for both the QAnyStringView
+    object, as well as the lambda's parameter. This is idiomatic code and helps
+    track the identity of the objects through visit() calls, for example in more
+    complex situations such as
+
+    \code
+    bool equal(QAnyStringView lhs, QAnyStringView rhs)
+    {
+        // assuming operator==(QAnyStringView, QAnyStringView) didn't, yet, exist:
+        return lhs.visit([rhs](auto lhs) {
+            rhs.visit([lhs](auto rhs) {
+                return lhs == rhs;
+            });
+        });
+    }
+    \endcode
+
+    visit() requires that all lambda instantiations have the same return type.
+    If they differ, you get a compile error, even if there is a common type. To
+    fix, you can use explicit return types on the lambda, or cast in the return
+    statements:
+
+    \code
+    // wrong:
+    QAnyStringView firstHalf(QAnyStringView input)
+    {
+        return input.visit([](auto input) {   // ERROR: lambdas return different types
+            return input.sliced(0, input.size() / 2);
+        });
+    }
+    // correct:
+    QAnyStringView firstHalf(QAnyStringView input)
+    {
+        return input.visit([](auto input) -> QAnyStringView { // OK, explicit return type
+            return input.sliced(0, input.size() / 2);
+        });
+    }
+    // also correct:
+    QAnyStringView firstHalf(QAnyStringView input)
+    {
+        return input.visit([](auto input) {
+            return QAnyStringView(input.sliced(0, input.size() / 2)); // OK, cast to common type
+        });
+    }
+    \endcode
+*/
+
 /*!
     \fn QAnyStringView::compare(QAnyStringView lhs, QAnyStringView rhs, Qt::CaseSensitivity cs)
 
