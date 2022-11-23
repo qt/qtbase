@@ -827,7 +827,14 @@ void tst_QString::replace_qchar_qstring()
     QFETCH(Qt::CaseSensitivity, cs);
     QFETCH(QString, expected);
 
-    QCOMPARE(src.replace(before, after, cs), expected);
+    // Test when string needs detach
+    QString s = src;
+    QCOMPARE(s.replace(before, after, cs), expected);
+
+    // Test when it's not shared
+    s = src;
+    s.detach();
+    QCOMPARE(s.replace(before, after, cs), expected);
 }
 
 void tst_QString::replace_uint_uint_data()
@@ -3498,18 +3505,46 @@ void tst_QString::replace_uint_uint()
     QFETCH( int, len );
     QFETCH( QString, after );
 
+    // Test when the string is shared
     QString s1 = string;
     s1.replace( (uint) index, (int) len, after );
     QTEST( s1, "result" );
+    // Test when it's not shared
+    s1 = string;
+    s1.detach();
+    s1.replace((uint)index, (int)len, after);
+    QTEST(s1, "result");
 
+    // Test when the string is shared
     QString s2 = string;
-    s2.replace( (uint) index, (uint) len, after.unicode(), after.size() );
-    QTEST( s2, "result" );
+    s2.replace((uint)index, (uint)len, after.unicode(), after.size());
+    QTEST(s2, "result");
+    // Test when it's not shared
+    s2 = string;
+    s2.detach();
+    s2.replace((uint)index, (uint)len, after.unicode(), after.size());
+    QTEST(s2, "result");
 
-    if ( after.size() == 1 ) {
+    if (after.size() == 1) {
+        // Test when the string is shared
         QString s3 = string;
-        s3.replace( (uint) index, (uint) len, QChar(after[0]) );
-        QTEST( s3, "result" );
+        s3.replace((uint)index, (uint)len, QChar(after[0]));
+        QTEST(s3, "result");
+        // Test when it's not shared
+        s3 = string;
+        s3.detach();
+        s3.replace((uint)index, (uint)len, QChar(after[0]));
+        QTEST(s3, "result");
+
+        // Test when the string is shared
+        QString s4 = string;
+        s4.replace((uint)index, (uint)len, QChar(after[0]).toLatin1());
+        QTEST(s4, "result");
+        // Test when it's not shared
+        s4 = string;
+        s4.detach();
+        s4.replace((uint)index, (uint)len, QChar(after[0]).toLatin1());
+        QTEST(s4, "result");
     }
 }
 
