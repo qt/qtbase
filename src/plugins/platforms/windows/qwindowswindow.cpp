@@ -1966,7 +1966,13 @@ void QWindowsWindow::handleDpiScaledSize(WPARAM wParam, LPARAM lParam, LRESULT *
     const qreal scale = QHighDpiScaling::roundScaleFactor(qreal(dpi) / QWindowsScreen::baseDpi) /
                         QHighDpiScaling::roundScaleFactor(qreal(savedDpi()) / QWindowsScreen::baseDpi);
     const QMargins margins = QWindowsGeometryHint::frame(window(), style(), exStyle(), dpi);
-    const QSize windowSize = (geometry().size() * scale).grownBy(margins);
+    // We need to update the custom margins to match the current DPI, because
+    // we don't want our users manually hook into this message just to set a
+    // new margin, but here we can't call setCustomMargins() directly, that
+    // function will change the window geometry which conflicts with what we
+    // are currently doing.
+    m_data.customMargins *= scale;
+    const QSize windowSize = (geometry().size() * scale).grownBy(margins + customMargins());
     SIZE *size = reinterpret_cast<SIZE *>(lParam);
     size->cx = windowSize.width();
     size->cy = windowSize.height();
