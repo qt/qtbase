@@ -17,7 +17,7 @@
 
 #include <QtCore/qglobal.h>
 
-#if !defined(QT_BOOTSTRAPPED) && defined(Q_OS_WIN) && !defined(Q_CC_CLANG) && QT_CONFIG(cpp_winrt)
+#if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(cpp_winrt)
 #    define QT_USE_FACTORY_CACHE_REGISTRATION
 #endif
 
