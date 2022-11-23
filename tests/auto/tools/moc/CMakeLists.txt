@@ -41,6 +41,7 @@ set(JSON_HEADERS
         related-metaobjects-in-gadget.h
         related-metaobjects-in-namespaces.h
         related-metaobjects-name-conflict.h
+        signal-with-default-arg.h
         single-quote-digit-separator-n3781.h
         single_function_keyword.h
         slots-with-void-template.h

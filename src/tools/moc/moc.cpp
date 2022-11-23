@@ -2020,6 +2020,9 @@ QJsonObject FunctionDef::toJson() const
     if (revision > 0)
         fdef["revision"_L1] = revision;
 
+    if (wasCloned)
+        fdef["isCloned"_L1] = true;
+
     return fdef;
 }
 

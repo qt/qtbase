@@ -56,6 +56,8 @@
 #include "fwdclass2.h"
 #include "fwdclass3.h"
 
+#include "signal-with-default-arg.h"
+
 #include "qmlmacro.h"
 
 #ifdef Q_MOC_RUN
@@ -767,6 +769,7 @@ signals:
     void constSignal2(int arg) const;
     void member4Changed();
     void member5Changed(const QString &newVal);
+    void sigWithDefaultArg(int i = 12);
 
 private:
     bool user1() { return true; };

@@ -2450,6 +2450,42 @@
     {
         "classes": [
             {
+                "className": "SignalWithDefaultArg",
+                "object": true,
+                "qualifiedClassName": "SignalWithDefaultArg",
+                "signals": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "i",
+                                "type": "int"
+                            }
+                        ],
+                        "name": "signalWithDefaultArg",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "isCloned": true,
+                        "name": "signalWithDefaultArg",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "signal-with-default-arg.h",
+        "outputRevision": 68
+    },
+    {
+        "classes": [
+            {
                 "className": "KDAB",
                 "enums": [
                     {
