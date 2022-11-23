@@ -150,6 +150,8 @@ VERS_1;
     endif()
 
     set(TEST_ld_version_script "${HAVE_LD_VERSION_SCRIPT}" CACHE INTERNAL "linker version script support")
+    list(APPEND QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT TEST_ld_version_script)
+    set(QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT ${QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT} CACHE INTERNAL "Test variables that should be exported")
 endfunction()
 
 function(qt_internal_ensure_latest_win_nt_api)
