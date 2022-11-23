@@ -39,7 +39,8 @@ private slots:
 //! [1]
 private:
 //! [1] //! [2]
-    Button *createButton(const QString &text, const char *member);
+    template<typename PointerToMemberFunction>
+    Button *createButton(const QString &text, const PointerToMemberFunction &member);
     void abortOperation();
     bool calculate(double rightOperand, const QString &pendingOperator);
 //! [2]

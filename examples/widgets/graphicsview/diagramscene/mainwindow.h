@@ -64,7 +64,9 @@ private:
                                         const QString &image);
     QWidget *createCellWidget(const QString &text,
                               DiagramItem::DiagramType type);
-    QMenu *createColorMenu(const char *slot, QColor defaultColor);
+
+    template<typename PointerToMemberFunction>
+    QMenu *createColorMenu(const PointerToMemberFunction &slot, QColor defaultColor);
     QIcon createColorToolButtonIcon(const QString &image, QColor color);
     QIcon createColorIcon(QColor color);
 

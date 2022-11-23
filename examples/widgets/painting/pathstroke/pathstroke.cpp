@@ -341,7 +341,7 @@ PathStrokeWidget::PathStrokeWidget(bool smallScreen)
 
     connect(m_renderer, &PathStrokeRenderer::clicked, this, &PathStrokeWidget::showControls);
     connect(m_controls, &PathStrokeControls::okPressed, this, &PathStrokeWidget::hideControls);
-    connect(m_controls, SIGNAL(quitPressed()), QApplication::instance(), SLOT(quit()));
+    connect(m_controls, &PathStrokeControls::quitPressed, QApplication::instance(), &QApplication::quit);
 }
 
 void PathStrokeWidget::showControls()

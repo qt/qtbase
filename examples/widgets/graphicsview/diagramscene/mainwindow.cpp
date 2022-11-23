@@ -432,7 +432,7 @@ void MainWindow::createToolbars()
 
     fontColorToolButton = new QToolButton;
     fontColorToolButton->setPopupMode(QToolButton::MenuButtonPopup);
-    fontColorToolButton->setMenu(createColorMenu(SLOT(textColorChanged()), Qt::black));
+    fontColorToolButton->setMenu(createColorMenu(&MainWindow::textColorChanged, Qt::black));
     textAction = fontColorToolButton->menu()->defaultAction();
     fontColorToolButton->setIcon(createColorToolButtonIcon(":/images/textpointer.png", Qt::black));
     fontColorToolButton->setAutoFillBackground(true);
@@ -442,7 +442,7 @@ void MainWindow::createToolbars()
 //! [26]
     fillColorToolButton = new QToolButton;
     fillColorToolButton->setPopupMode(QToolButton::MenuButtonPopup);
-    fillColorToolButton->setMenu(createColorMenu(SLOT(itemColorChanged()), Qt::white));
+    fillColorToolButton->setMenu(createColorMenu(&MainWindow::itemColorChanged, Qt::white));
     fillAction = fillColorToolButton->menu()->defaultAction();
     fillColorToolButton->setIcon(createColorToolButtonIcon(
                                      ":/images/floodfill.png", Qt::white));
@@ -452,7 +452,7 @@ void MainWindow::createToolbars()
 
     lineColorToolButton = new QToolButton;
     lineColorToolButton->setPopupMode(QToolButton::MenuButtonPopup);
-    lineColorToolButton->setMenu(createColorMenu(SLOT(lineColorChanged()), Qt::black));
+    lineColorToolButton->setMenu(createColorMenu(&MainWindow::lineColorChanged, Qt::black));
     lineAction = lineColorToolButton->menu()->defaultAction();
     lineColorToolButton->setIcon(createColorToolButtonIcon(
                                      ":/images/linecolor.png", Qt::black));
@@ -547,7 +547,8 @@ QWidget *MainWindow::createCellWidget(const QString &text, DiagramItem::DiagramT
 //! [29]
 
 //! [30]
-QMenu *MainWindow::createColorMenu(const char *slot, QColor defaultColor)
+template<typename PointerToMemberFunction>
+QMenu *MainWindow::createColorMenu(const PointerToMemberFunction &slot, QColor defaultColor)
 {
     QList<QColor> colors;
     colors << Qt::black << Qt::white << Qt::red << Qt::blue << Qt::yellow;
@@ -560,7 +561,7 @@ QMenu *MainWindow::createColorMenu(const char *slot, QColor defaultColor)
         QAction *action = new QAction(names.at(i), this);
         action->setData(colors.at(i));
         action->setIcon(createColorIcon(colors.at(i)));
-        connect(action, SIGNAL(triggered()), this, slot);
+        connect(action, &QAction::triggered, this, slot);
         colorMenu->addAction(action);
         if (colors.at(i) == defaultColor)
             colorMenu->setDefaultAction(action);

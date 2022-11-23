@@ -29,29 +29,29 @@ Calculator::Calculator(QWidget *parent)
 
 //! [4]
     for (int i = 0; i < NumDigitButtons; ++i)
-        digitButtons[i] = createButton(QString::number(i), SLOT(digitClicked()));
+        digitButtons[i] = createButton(QString::number(i), &Calculator::digitClicked);
 
-    Button *pointButton = createButton(tr("."), SLOT(pointClicked()));
-    Button *changeSignButton = createButton(tr("\302\261"), SLOT(changeSignClicked()));
+    Button *pointButton = createButton(tr("."), &Calculator::pointClicked);
+    Button *changeSignButton = createButton(tr("\302\261"), &Calculator::changeSignClicked);
 
-    Button *backspaceButton = createButton(tr("Backspace"), SLOT(backspaceClicked()));
-    Button *clearButton = createButton(tr("Clear"), SLOT(clear()));
-    Button *clearAllButton = createButton(tr("Clear All"), SLOT(clearAll()));
+    Button *backspaceButton = createButton(tr("Backspace"), &Calculator::backspaceClicked);
+    Button *clearButton = createButton(tr("Clear"), &Calculator::clear);
+    Button *clearAllButton = createButton(tr("Clear All"), &Calculator::clearAll);
 
-    Button *clearMemoryButton = createButton(tr("MC"), SLOT(clearMemory()));
-    Button *readMemoryButton = createButton(tr("MR"), SLOT(readMemory()));
-    Button *setMemoryButton = createButton(tr("MS"), SLOT(setMemory()));
-    Button *addToMemoryButton = createButton(tr("M+"), SLOT(addToMemory()));
+    Button *clearMemoryButton = createButton(tr("MC"), &Calculator::clearMemory);
+    Button *readMemoryButton = createButton(tr("MR"), &Calculator::readMemory);
+    Button *setMemoryButton = createButton(tr("MS"), &Calculator::setMemory);
+    Button *addToMemoryButton = createButton(tr("M+"), &Calculator::addToMemory);
 
-    Button *divisionButton = createButton(tr("\303\267"), SLOT(multiplicativeOperatorClicked()));
-    Button *timesButton = createButton(tr("\303\227"), SLOT(multiplicativeOperatorClicked()));
-    Button *minusButton = createButton(tr("-"), SLOT(additiveOperatorClicked()));
-    Button *plusButton = createButton(tr("+"), SLOT(additiveOperatorClicked()));
+    Button *divisionButton = createButton(tr("\303\267"), &Calculator::multiplicativeOperatorClicked);
+    Button *timesButton = createButton(tr("\303\227"), &Calculator::multiplicativeOperatorClicked);
+    Button *minusButton = createButton(tr("-"), &Calculator::additiveOperatorClicked);
+    Button *plusButton = createButton(tr("+"), &Calculator::additiveOperatorClicked);
 
-    Button *squareRootButton = createButton(tr("Sqrt"), SLOT(unaryOperatorClicked()));
-    Button *powerButton = createButton(tr("x\302\262"), SLOT(unaryOperatorClicked()));
-    Button *reciprocalButton = createButton(tr("1/x"), SLOT(unaryOperatorClicked()));
-    Button *equalButton = createButton(tr("="), SLOT(equalClicked()));
+    Button *squareRootButton = createButton(tr("Sqrt"), &Calculator::unaryOperatorClicked);
+    Button *powerButton = createButton(tr("x\302\262"), &Calculator::unaryOperatorClicked);
+    Button *reciprocalButton = createButton(tr("1/x"), &Calculator::unaryOperatorClicked);
+    Button *equalButton = createButton(tr("="), &Calculator::equalClicked);
 //! [4]
 
 //! [5]
@@ -324,10 +324,11 @@ void Calculator::addToMemory()
 }
 //! [32]
 //! [34]
-Button *Calculator::createButton(const QString &text, const char *member)
+template<typename PointerToMemberFunction>
+Button *Calculator::createButton(const QString &text, const PointerToMemberFunction &member)
 {
     Button *button = new Button(text);
-    connect(button, SIGNAL(clicked()), this, member);
+    connect(button, &Button::clicked, this, member);
     return button;
 }
 //! [34]
