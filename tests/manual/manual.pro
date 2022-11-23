@@ -58,6 +58,8 @@ unc \
 qtabbar \
 rhi
 
+android: SUBDIRS += android_content_uri
+
 !qtConfig(openssl): SUBDIRS -= qssloptions
 
 qtConfig(opengl) {
