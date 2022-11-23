@@ -275,14 +275,13 @@ void QStandardItemPrivate::setItemData(const QMap<int, QVariant> &roles)
 /*!
   \internal
 */
-const QMap<int, QVariant> QStandardItemPrivate::itemData() const
+QMap<int, QVariant> QStandardItemPrivate::itemData() const
 {
     QMap<int, QVariant> result;
-    QList<QStandardItemData>::const_iterator it;
-    for (it = values.cbegin(); it != values.cend(); ++it){
+    for (const auto &data : values) {
         // Qt::UserRole - 1 is used internally to store the flags
-        if (it->role != Qt::UserRole - 1)
-            result.insert(it->role, it->value);
+        if (data.role != Qt::UserRole - 1)
+            result.insert(data.role, data.value);
     }
     return result;
 }

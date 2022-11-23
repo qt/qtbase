@@ -144,7 +144,7 @@ public:
 
     void changeFlags(bool enable, Qt::ItemFlags f);
     void setItemData(const QMap<int, QVariant> &roles);
-    const QMap<int, QVariant> itemData() const;
+    QMap<int, QVariant> itemData() const;
 
     bool insertRows(int row, int count, const QList<QStandardItem*> &items);
     bool insertRows(int row, const QList<QStandardItem*> &items);
