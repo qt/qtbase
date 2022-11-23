@@ -81,3 +81,7 @@ endif()
 if(QT_FEATURE_vulkan)
     add_subdirectory(qvulkaninstance)
 endif()
+
+if(ANDROID)
+    add_subdirectory(android_content_uri)
+endif()
