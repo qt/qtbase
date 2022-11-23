@@ -8,6 +8,7 @@
 #include <qpa/qplatformaccessibility.h>
 
 #include <emscripten/val.h>
+#include <QLoggingCategory>
 
 Q_DECLARE_LOGGING_CATEGORY(lcQpaAccessibility)
 
