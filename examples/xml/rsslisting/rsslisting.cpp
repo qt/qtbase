@@ -44,18 +44,18 @@ RSSListing::RSSListing(QWidget *parent)
     fetchButton = new QPushButton(tr("Fetch"), this);
 
     treeWidget = new QTreeWidget(this);
-    connect(treeWidget, SIGNAL(itemActivated(QTreeWidgetItem*,int)),
-            this, SLOT(itemActivated(QTreeWidgetItem*)));
+    connect(treeWidget, &QTreeWidget::itemActivated,
+            this, &RSSListing::itemActivated);
     QStringList headerLabels;
     headerLabels << tr("Title") << tr("Link");
     treeWidget->setHeaderLabels(headerLabels);
     treeWidget->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    connect(&manager, SIGNAL(finished(QNetworkReply*)),
-             this, SLOT(finished(QNetworkReply*)));
+    connect(&manager, &QNetworkAccessManager::finished,
+             this, &RSSListing::finished);
 
-    connect(lineEdit, SIGNAL(returnPressed()), this, SLOT(fetch()));
-    connect(fetchButton, SIGNAL(clicked()), this, SLOT(fetch()));
+    connect(lineEdit, &QLineEdit::returnPressed, this, &RSSListing::fetch);
+    connect(fetchButton, &QPushButton::clicked, this, &RSSListing::fetch);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -82,9 +82,9 @@ void RSSListing::get(const QUrl &url)
         currentReply->deleteLater();
     }
     currentReply = manager.get(request);
-    connect(currentReply, SIGNAL(readyRead()), this, SLOT(readyRead()));
-    connect(currentReply, SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
-    connect(currentReply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(error(QNetworkReply::NetworkError)));
+    connect(currentReply, &QNetworkReply::readyRead, this, &RSSListing::readyRead);
+    connect(currentReply, &QNetworkReply::metaDataChanged, this, &RSSListing::metaDataChanged);
+    connect(currentReply, &QNetworkReply::errorOccurred, this, &RSSListing::error);
 }
 
 /*
