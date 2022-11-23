@@ -83,7 +83,7 @@ void MainWindow::on_connectButton_clicked()
         return startNewConnection(remoteAddress);
 
     addInfoMessage(tr("Looking up the host ..."));
-    lookupId = QHostInfo::lookupHost(hostName, this, SLOT(lookupFinished(QHostInfo)));
+    lookupId = QHostInfo::lookupHost(hostName, this, &MainWindow::lookupFinished);
     updateUi();
 }
 

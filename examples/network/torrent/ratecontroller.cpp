@@ -42,7 +42,7 @@ void RateController::scheduleTransfer()
     if (transferScheduled)
         return;
     transferScheduled = true;
-    QTimer::singleShot(50, this, SLOT(transfer()));
+    QTimer::singleShot(50, this, &RateController::transfer);
 }
 
 void RateController::transfer()

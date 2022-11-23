@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
 
     DnsManager manager;
     manager.setQuery(query);
-    QTimer::singleShot(0, &manager, SLOT(execute()));
+    QTimer::singleShot(0, &manager, &DnsManager::execute);
 
     return app.exec();
 }

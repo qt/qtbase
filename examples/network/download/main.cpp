@@ -158,7 +158,7 @@ int main(int argc, char **argv)
     QCoreApplication app(argc, argv);
 
     DownloadManager manager;
-    QTimer::singleShot(0, &manager, SLOT(execute()));
+    QTimer::singleShot(0, &manager, &DownloadManager::execute);
 
     app.exec();
 }
