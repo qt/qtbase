@@ -1076,7 +1076,7 @@ static QString winIso639LangName(LCID id)
     if (!lang_code.isEmpty()) {
         const QByteArray latin1 = std::move(lang_code).toLatin1();
         const auto [i, used] = qstrntoull(latin1.data(), latin1.size(), 16);
-        if (used > 0 && latin1[used] == '\0') {
+        if (used >= latin1.size() || (used > 0 && latin1[used] == '\0')) {
             switch (i) {
                 case 0x814:
                     result = u"nn"_s; // Nynorsk
