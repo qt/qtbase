@@ -139,7 +139,8 @@ static void qClipboardPasteTo(val dataTransfer)
             } // next item
         }
     }
-    qWasmClipboardPaste(mMimeData);
+    if (!mMimeData->formats().isEmpty())
+        qWasmClipboardPaste(mMimeData);
 }
 
 EMSCRIPTEN_BINDINGS(qtClipboardModule) {
