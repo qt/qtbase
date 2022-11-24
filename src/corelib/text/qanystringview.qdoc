@@ -339,6 +339,142 @@
     \sa front(), {Sizes and Sub-Strings}
 */
 
+/*!
+    \fn QAnyStringView::mid(qsizetype pos, qsizetype n) const
+    \since 6.5
+
+    Returns the substring of length \a n starting at position
+    \a pos in this object.
+
+    \deprecated Use sliced() instead in new code.
+
+    Returns an empty string view if \a n exceeds the
+    length of the string view. If there are less than \a n code points
+    available in the string view starting at \a pos, or if
+    \a n is negative (default), the function returns all code points that
+    are available from \a pos.
+
+    \sa first(), last(), sliced(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
+*/
+
+/*!
+    \fn QAnyStringView::left(qsizetype n) const
+    \since 6.5
+
+    \deprecated Use first() instead in new code.
+
+    Returns the substring of length \a n starting at position
+    0 in this object.
+
+    The entire string view is returned if \a n is greater than or equal
+    to size(), or less than zero.
+
+    \sa first(), last(), sliced(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
+*/
+
+/*!
+    \fn QAnyStringView::right(qsizetype n) const
+    \since 6.5
+
+    \deprecated Use last() instead in new code.
+
+    Returns the substring of length \a n starting at position
+    size() - \a n in this object.
+
+    The entire string view is returned if \a n is greater than or equal
+    to size(), or less than zero.
+
+    \sa first(), last(), sliced(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
+*/
+
+/*!
+    \fn QAnyStringView::first(qsizetype n) const
+    \since 6.5
+
+    Returns a string view that contains the first \a n code points
+    of this string view.
+
+    \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \sa last(), sliced(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
+*/
+
+/*!
+    \fn QAnyStringView::last(qsizetype n) const
+    \since 6.5
+
+    Returns a string view that contains the last \a n code points of this string view.
+
+    \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \sa first(), sliced(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
+*/
+
+/*!
+    \fn QAnyStringView::sliced(qsizetype pos, qsizetype n) const
+    \since 6.5
+
+    Returns a string view containing \a n code points of this string view,
+    starting at position \a pos.
+
+    \note The behavior is undefined when \a pos < 0, \a n < 0,
+    or \a pos + \a n > size().
+
+    \sa first(), last(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
+*/
+
+/*!
+    \fn QAnyStringView::sliced(qsizetype pos) const
+    \since 6.5
+
+    Returns a string view starting at position \a pos in this object,
+    and extending to its end.
+
+    \note The behavior is undefined when \a pos < 0 or \a pos > size().
+
+    \sa first(), last(), chopped(), chop(), truncate(), {Sizes and Sub-Strings}
+*/
+
+/*!
+    \fn QAnyStringView::chopped(qsizetype n) const
+    \since 6.5
+
+    Returns the substring of length size() - \a n starting at the
+    beginning of this object.
+
+    Same as \c{first(size() - n)}.
+
+    \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \sa sliced(), first(), last(), chop(), truncate(), {Sizes and Sub-Strings}
+*/
+
+/*!
+    \fn QAnyStringView::truncate(qsizetype n)
+    \since 6.5
+
+    Truncates this string view to \a n code points.
+
+    Same as \c{*this = first(n)}.
+
+    \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \sa sliced(), first(), last(), chopped(), chop(), {Sizes and Sub-Strings}
+*/
+
+/*!
+    \fn QAnyStringView::chop(qsizetype n)
+    \since 6.5
+
+    Truncates this string view by \a n code points.
+
+    Same as \c{*this = first(size() - n)}.
+
+    \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \sa sliced(), first(), last(), chopped(), truncate(), {Sizes and Sub-Strings}
+*/
+
 /*! \fn template <typename Visitor> decltype(auto) QAnyStringView::visit(Visitor &&v) const
 
     Calls \a v with either a QUtf8StringView, QLatin1String, or QStringView, depending

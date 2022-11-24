@@ -249,6 +249,45 @@ public:
     template <typename Visitor>
     inline constexpr decltype(auto) visit(Visitor &&v) const;
 
+    [[nodiscard]]
+    constexpr QAnyStringView mid(qsizetype pos, qsizetype n = -1) const
+    {
+        using namespace QtPrivate;
+        auto result = QContainerImplHelper::mid(size(), &pos, &n);
+        return result == QContainerImplHelper::Null ? QAnyStringView() : sliced(pos, n);
+    }
+    [[nodiscard]]
+    constexpr QAnyStringView left(qsizetype n) const
+    {
+        if (size_t(n) >= size_t(size()))
+            n = size();
+        return sliced(0, n);
+    }
+    [[nodiscard]]
+    constexpr QAnyStringView right(qsizetype n) const
+    {
+        if (size_t(n) >= size_t(size()))
+            n = size();
+        return sliced(size() - n, n);
+    }
+
+    [[nodiscard]] constexpr QAnyStringView sliced(qsizetype pos) const
+    { verify(pos); auto r = *this; r.advanceData(pos); r.setSize(size() - pos); return r; }
+    [[nodiscard]] constexpr QAnyStringView sliced(qsizetype pos, qsizetype n) const
+    { verify(pos, n); auto r = *this; r.advanceData(pos); r.setSize(n); return r; }
+    [[nodiscard]] constexpr QAnyStringView first(qsizetype n) const
+    { verify(n); return sliced(0, n); }
+    [[nodiscard]] constexpr QAnyStringView last(qsizetype n) const
+    { verify(n); return sliced(size() - n, n); }
+    [[nodiscard]] constexpr QAnyStringView chopped(qsizetype n) const
+    { verify(n); return sliced(0, size() - n); }
+
+    constexpr void truncate(qsizetype n)
+    { verify(n); setSize(n); }
+    constexpr void chop(qsizetype n)
+    { verify(n); setSize(size() - n); }
+
+
     [[nodiscard]] inline QString toString() const; // defined in qstring.h
 
     [[nodiscard]] constexpr qsizetype size() const noexcept
@@ -312,6 +351,9 @@ private:
     { return Q_ASSERT(isUtf8()), q_no_char8_t::QUtf8StringView{m_data_utf8, size()}; }
     [[nodiscard]] inline constexpr QLatin1StringView asLatin1StringView() const;
     [[nodiscard]] constexpr size_t charSize() const noexcept { return isUtf16() ? 2 : 1; }
+    constexpr void setSize(qsizetype sz) noexcept { m_size = size_t(sz) | tag(); }
+    constexpr void advanceData(qsizetype delta) noexcept
+    { m_data_utf8 += delta * charSize(); }
     Q_ALWAYS_INLINE constexpr void verify(qsizetype pos, qsizetype n = 0) const
     {
         Q_ASSERT(pos >= 0);

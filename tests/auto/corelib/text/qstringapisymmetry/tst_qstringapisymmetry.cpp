@@ -728,6 +728,12 @@ private Q_SLOTS:
     void mid_QUtf8StringView() { mid_impl<QUtf8StringView>(); }
     void mid_QLatin1String_data() { mid_data(); }
     void mid_QLatin1String() { mid_impl<QLatin1String>(); }
+    void mid_QAnyStringViewUsingL1_data() { mid_data(); }
+    void mid_QAnyStringViewUsingL1() { mid_impl<QAnyStringViewUsingL1>(); }
+    void mid_QAnyStringViewUsingU8_data() { mid_data(); }
+    void mid_QAnyStringViewUsingU8() { mid_impl<QAnyStringViewUsingU8>(); }
+    void mid_QAnyStringViewUsingU16_data() { mid_data(); }
+    void mid_QAnyStringViewUsingU16() { mid_impl<QAnyStringViewUsingU16>(); }
     void mid_QByteArray_data() { mid_data(); }
     void mid_QByteArray() { mid_impl<QByteArray>(); }
     void mid_QByteArrayView_data() { mid_data(); }
@@ -741,6 +747,12 @@ private Q_SLOTS:
     void left_QUtf8StringView() { left_impl<QUtf8StringView>(); }
     void left_QLatin1String_data() { left_data(); }
     void left_QLatin1String() { left_impl<QLatin1String>(); }
+    void left_QAnyStringViewUsingL1_data() { left_data(); }
+    void left_QAnyStringViewUsingL1() { left_impl<QAnyStringViewUsingL1>(); }
+    void left_QAnyStringViewUsingU8_data() { left_data(); }
+    void left_QAnyStringViewUsingU8() { left_impl<QAnyStringViewUsingU8>(); }
+    void left_QAnyStringViewUsingU16_data() { left_data(); }
+    void left_QAnyStringViewUsingU16() { left_impl<QAnyStringViewUsingU16>(); }
     void left_QByteArray_data();
     void left_QByteArray() { left_impl<QByteArray>(); }
     void left_QByteArrayView_data() { left_data(); }
@@ -754,6 +766,12 @@ private Q_SLOTS:
     void right_QUtf8StringView() { right_impl<QUtf8StringView>(); }
     void right_QLatin1String_data() { right_data(); }
     void right_QLatin1String() { right_impl<QLatin1String>(); }
+    void right_QAnyStringViewUsingL1_data() { right_data(); }
+    void right_QAnyStringViewUsingL1() { right_impl<QAnyStringViewUsingL1>(); }
+    void right_QAnyStringViewUsingU8_data() { right_data(); }
+    void right_QAnyStringViewUsingU8() { right_impl<QAnyStringViewUsingU8>(); }
+    void right_QAnyStringViewUsingU16_data() { right_data(); }
+    void right_QAnyStringViewUsingU16() { right_impl<QAnyStringViewUsingU16>(); }
     void right_QByteArray_data();
     void right_QByteArray() { right_impl<QByteArray>(); }
     void right_QByteArrayView_data() { right_data(); }
@@ -767,6 +785,12 @@ private Q_SLOTS:
     void sliced_QLatin1String() { sliced_impl<QLatin1String>(); }
     void sliced_QUtf8StringView_data() { sliced_data(); }
     void sliced_QUtf8StringView() { sliced_impl<QUtf8StringView>(); }
+    void sliced_QAnyStringViewUsingL1_data() { sliced_data(); }
+    void sliced_QAnyStringViewUsingL1() { sliced_impl<QAnyStringViewUsingL1>(); }
+    void sliced_QAnyStringViewUsingU8_data() { sliced_data(); }
+    void sliced_QAnyStringViewUsingU8() { sliced_impl<QAnyStringViewUsingU8>(); }
+    void sliced_QAnyStringViewUsingU16_data() { sliced_data(); }
+    void sliced_QAnyStringViewUsingU16() { sliced_impl<QAnyStringViewUsingU16>(); }
     void sliced_QByteArray_data() { sliced_data(); }
     void sliced_QByteArray() { sliced_impl<QByteArray>(); }
     void sliced_QByteArrayView_data() { sliced_data(); }
@@ -780,6 +804,12 @@ private Q_SLOTS:
     void first_truncate_QLatin1String() { first_impl<QLatin1String>(); }
     void first_truncate_QUtf8StringView_data() { first_data(); }
     void first_truncate_QUtf8StringView() { first_impl<QUtf8StringView>(); }
+    void first_truncate_QAnyStringViewUsingL1_data() { first_data(); }
+    void first_truncate_QAnyStringViewUsingL1() { first_impl<QAnyStringViewUsingL1>(); }
+    void first_truncate_QAnyStringViewUsingU8_data() { first_data(); }
+    void first_truncate_QAnyStringViewUsingU8() { first_impl<QAnyStringViewUsingU8>(); }
+    void first_truncate_QAnyStringViewUsingU16_data() { first_data(); }
+    void first_truncate_QAnyStringViewUsingU16() { first_impl<QAnyStringViewUsingU16>(); }
     void first_truncate_QByteArray_data() { first_data(); }
     void first_truncate_QByteArray() { first_impl<QByteArray>(); }
     void first_truncate_QByteArrayView_data() { first_data(); }
@@ -793,6 +823,12 @@ private Q_SLOTS:
     void last_QLatin1String() { last_impl<QLatin1String>(); }
     void last_QUtf8StringView_data() { last_data(); }
     void last_QUtf8StringView() { last_impl<QUtf8StringView>(); }
+    void last_QAnyStringViewUsingL1_data() { last_data(); }
+    void last_QAnyStringViewUsingL1() { last_impl<QAnyStringViewUsingL1>(); }
+    void last_QAnyStringViewUsingU8_data() { last_data(); }
+    void last_QAnyStringViewUsingU8() { last_impl<QAnyStringViewUsingU8>(); }
+    void last_QAnyStringViewUsingU16_data() { last_data(); }
+    void last_QAnyStringViewUsingU16() { last_impl<QAnyStringViewUsingU16>(); }
     void last_QByteArray_data() { last_data(); }
     void last_QByteArray() { last_impl<QByteArray>(); }
     void last_QByteArrayView_data() { last_data(); }
@@ -802,10 +838,16 @@ private Q_SLOTS:
     void chop_QString() { chop_impl<QString>(); }
     void chop_QStringView_data() { chop_data(); }
     void chop_QStringView() { chop_impl<QStringView>(); }
-    void chop_QUtf8StringView_data() { chop_data(); }
-    void chop_QUtf8StringView() { chop_impl<QUtf8StringView>(); }
     void chop_QLatin1String_data() { chop_data(); }
     void chop_QLatin1String() { chop_impl<QLatin1String>(); }
+    void chop_QUtf8StringView_data() { chop_data(); }
+    void chop_QUtf8StringView() { chop_impl<QUtf8StringView>(); }
+    void chop_QAnyStringViewUsingL1_data() { chop_data(); }
+    void chop_QAnyStringViewUsingL1() { chop_impl<QAnyStringViewUsingL1>(); }
+    void chop_QAnyStringViewUsingU8_data() { chop_data(); }
+    void chop_QAnyStringViewUsingU8() { chop_impl<QAnyStringViewUsingU8>(); }
+    void chop_QAnyStringViewUsingU16_data() { chop_data(); }
+    void chop_QAnyStringViewUsingU16() { chop_impl<QAnyStringViewUsingU16>(); }
     void chop_QByteArray_data() { chop_data(); }
     void chop_QByteArray() { chop_impl<QByteArray>(); }
     void chop_QByteArrayView_data() { chop_data(); }
