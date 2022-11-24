@@ -3503,6 +3503,87 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
   \sa remove()
 */
 
+namespace { // helpers for replace and its helper:
+QChar *textCopy(const QChar *start, qsizetype len)
+{
+    const size_t size = len * sizeof(QChar);
+    QChar *const copy = static_cast<QChar *>(::malloc(size));
+    Q_CHECK_PTR(copy);
+    ::memcpy(copy, start, size);
+    return copy;
+}
+
+static bool pointsIntoRange(const QChar *ptr, const char16_t *base, qsizetype len)
+{
+    const QChar *const start = reinterpret_cast<const QChar *>(base);
+    const std::less<const QChar *> less;
+    return !less(ptr, start) && less(ptr, start + len);
+}
+} // end namespace
+
+static void replace_helper(QString &str, size_t *indices, qsizetype nIndices, qsizetype blen, const QChar *after, qsizetype alen)
+{
+    // Copy after if it lies inside our own d.b area (which we could
+    // possibly invalidate via a realloc or modify by replacement).
+    QChar *afterBuffer = nullptr;
+    if (pointsIntoRange(after, str.data_ptr().data(), str.data_ptr().size)) // Use copy in place of vulnerable original:
+        after = afterBuffer = textCopy(after, alen);
+
+    QT_TRY {
+        if (blen == alen) {
+            // replace in place
+            str.detach();
+            for (qsizetype i = 0; i < nIndices; ++i)
+                memcpy(str.data_ptr().data() + indices[i], after, alen * sizeof(QChar));
+        } else if (alen < blen) {
+            // replace from front
+            str.detach();
+            size_t to = indices[0];
+            if (alen)
+                memcpy(str.data_ptr().data()+to, after, alen*sizeof(QChar));
+            to += alen;
+            size_t movestart = indices[0] + blen;
+            for (qsizetype i = 1; i < nIndices; ++i) {
+                qsizetype msize = indices[i] - movestart;
+                if (msize > 0) {
+                    memmove(str.data_ptr().data() + to, str.data_ptr().data() + movestart, msize * sizeof(QChar));
+                    to += msize;
+                }
+                if (alen) {
+                    memcpy(str.data_ptr().data() + to, after, alen * sizeof(QChar));
+                    to += alen;
+                }
+                movestart = indices[i] + blen;
+            }
+            qsizetype msize = str.data_ptr()->size - movestart;
+            if (msize > 0)
+                memmove(str.data_ptr().data() + to, str.data_ptr().data() + movestart, msize * sizeof(QChar));
+            str.resize(str.data_ptr()->size - nIndices*(blen-alen));
+        } else {
+            // replace from back
+            qsizetype adjust = nIndices*(alen-blen);
+            qsizetype newLen = str.data_ptr().size + adjust;
+            qsizetype moveend = str.data_ptr().size;
+            str.resize(newLen);
+
+            while (nIndices) {
+                --nIndices;
+                qsizetype movestart = indices[nIndices] + blen;
+                qsizetype insertstart = indices[nIndices] + nIndices*(alen-blen);
+                qsizetype moveto = insertstart + alen;
+                memmove(str.data_ptr().data() + moveto, str.data_ptr().data() + movestart,
+                        (moveend - movestart)*sizeof(QChar));
+                memcpy(str.data_ptr().data() + insertstart, after, alen * sizeof(QChar));
+                moveend = movestart-blen;
+            }
+        }
+    } QT_CATCH(const std::bad_alloc &) {
+        ::free(afterBuffer);
+        QT_RETHROW;
+    }
+    ::free(afterBuffer);
+}
+
 /*!
   \fn QString &QString::replace(qsizetype position, qsizetype n, const QString &after)
 
@@ -3539,7 +3620,7 @@ QString &QString::replace(qsizetype pos, qsizetype len, const QChar *unicode, qs
         len = this->size() - pos;
 
     size_t index = pos;
-    replace_helper(&index, 1, len, unicode, size);
+    replace_helper(*this, &index, 1, len, unicode, size);
     return *this;
 }
 
@@ -3575,90 +3656,6 @@ QString &QString::replace(qsizetype pos, qsizetype len, QChar after)
 QString &QString::replace(const QString &before, const QString &after, Qt::CaseSensitivity cs)
 {
     return replace(before.constData(), before.size(), after.constData(), after.size(), cs);
-}
-
-namespace { // helpers for replace and its helper:
-QChar *textCopy(const QChar *start, qsizetype len)
-{
-    const size_t size = len * sizeof(QChar);
-    QChar *const copy = static_cast<QChar *>(::malloc(size));
-    Q_CHECK_PTR(copy);
-    ::memcpy(copy, start, size);
-    return copy;
-}
-
-static bool pointsIntoRange(const QChar *ptr, const char16_t *base, qsizetype len)
-{
-    const QChar *const start = reinterpret_cast<const QChar *>(base);
-    const std::less<const QChar *> less;
-    return !less(ptr, start) && less(ptr, start + len);
-}
-} // end namespace
-
-/*!
-  \internal
- */
-void QString::replace_helper(size_t *indices, qsizetype nIndices, qsizetype blen, const QChar *after, qsizetype alen)
-{
-    // Copy after if it lies inside our own d.b area (which we could
-    // possibly invalidate via a realloc or modify by replacement).
-    QChar *afterBuffer = nullptr;
-    if (pointsIntoRange(after, d.data(), d.size)) // Use copy in place of vulnerable original:
-        after = afterBuffer = textCopy(after, alen);
-
-    QT_TRY {
-        if (blen == alen) {
-            // replace in place
-            detach();
-            for (qsizetype i = 0; i < nIndices; ++i)
-                memcpy(d.data() + indices[i], after, alen * sizeof(QChar));
-        } else if (alen < blen) {
-            // replace from front
-            detach();
-            size_t to = indices[0];
-            if (alen)
-                memcpy(d.data()+to, after, alen*sizeof(QChar));
-            to += alen;
-            size_t movestart = indices[0] + blen;
-            for (qsizetype i = 1; i < nIndices; ++i) {
-                qsizetype msize = indices[i] - movestart;
-                if (msize > 0) {
-                    memmove(d.data() + to, d.data() + movestart, msize * sizeof(QChar));
-                    to += msize;
-                }
-                if (alen) {
-                    memcpy(d.data() + to, after, alen * sizeof(QChar));
-                    to += alen;
-                }
-                movestart = indices[i] + blen;
-            }
-            qsizetype msize = d.size - movestart;
-            if (msize > 0)
-                memmove(d.data() + to, d.data() + movestart, msize * sizeof(QChar));
-            resize(d.size - nIndices*(blen-alen));
-        } else {
-            // replace from back
-            qsizetype adjust = nIndices*(alen-blen);
-            qsizetype newLen = d.size + adjust;
-            qsizetype moveend = d.size;
-            resize(newLen);
-
-            while (nIndices) {
-                --nIndices;
-                qsizetype movestart = indices[nIndices] + blen;
-                qsizetype insertstart = indices[nIndices] + nIndices*(alen-blen);
-                qsizetype moveto = insertstart + alen;
-                memmove(d.data() + moveto, d.data() + movestart,
-                        (moveend - movestart)*sizeof(QChar));
-                memcpy(d.data() + insertstart, after, alen * sizeof(QChar));
-                moveend = movestart-blen;
-            }
-        }
-    } QT_CATCH(const std::bad_alloc &) {
-        ::free(afterBuffer);
-        QT_RETHROW;
-    }
-    ::free(afterBuffer);
 }
 
 /*!
@@ -3721,7 +3718,7 @@ QString &QString::replace(const QChar *before, qsizetype blen,
             }
         }
 
-        replace_helper(indices, pos, blen, after, alen);
+        replace_helper(*this, indices, pos, blen, after, alen);
 
         if (Q_LIKELY(index == -1)) // Nothing left to replace
             break;
@@ -3774,7 +3771,7 @@ QString& QString::replace(QChar ch, const QString &after, Qt::CaseSensitivity cs
         if (!pos) // Nothing to replace
             break;
 
-        replace_helper(indices, pos, 1, after.constData(), after.size());
+        replace_helper(*this, indices, pos, 1, after.constData(), after.size());
 
         if (Q_LIKELY(index == size())) // Nothing left to replace
             break;

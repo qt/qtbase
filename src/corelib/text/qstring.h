@@ -865,7 +865,7 @@ private:
     static qsizetype toUcs4_helper(const char16_t *uc, qsizetype length, char32_t *out);
     static qlonglong toIntegral_helper(QStringView string, bool *ok, int base);
     static qulonglong toIntegral_helper(QStringView string, bool *ok, uint base);
-    void replace_helper(size_t *indices, qsizetype nIndices, qsizetype blen, const QChar *after, qsizetype alen);
+
     friend class QStringView;
     friend class QByteArray;
     friend struct QAbstractConcatenable;
