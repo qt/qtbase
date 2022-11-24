@@ -34,7 +34,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-using ModuleBitset = std::bitset<69>;
+using ModuleBitset = std::bitset<76>;
 
 enum QtModule
 #if defined(Q_COMPILER_CLASS_ENUM) || defined(Q_CC_MSVC)
@@ -109,7 +109,14 @@ enum QtModule
     QtPositioningQuickModule,
     QtSensorsQuickModule,
     QtWebEngineQuickModule,
-    QtWebViewQuickModule
+    QtWebViewQuickModule,
+    QtQuickControlsModule,
+    QtQuickDialogsModule,
+    QtQuickLayoutsModule,
+    QtQuickShapesModule,
+    QtQuickTestModule,
+    QtQuickTimelineModule,
+    QtQuick3DModule
 };
 
 struct QtModuleEntry {
@@ -188,7 +195,14 @@ static QtModuleEntry qtModuleEntries[] = {
     { QtPositioningQuickModule, "positioningquick", "Qt6PositioningQuick", nullptr },
     { QtSensorsQuickModule, "sensorsquick", "Qt6SensorsQuick", nullptr },
     { QtWebEngineQuickModule, "webenginequick", "Qt6WebEngineQuick", nullptr },
-    { QtWebViewQuickModule, "webviewquick", "Qt6WebViewQuick", nullptr }
+    { QtWebViewQuickModule, "webviewquick", "Qt6WebViewQuick", nullptr },
+    { QtQuickControlsModule, "quickcontrols", "Qt6QuickControls2", nullptr },
+    { QtQuickDialogsModule, "quickdialogs", "Qt6QuickDialogs2", nullptr },
+    { QtQuickLayoutsModule, "quicklayouts", "Qt6QuickLayouts", nullptr },
+    { QtQuickShapesModule, "quickshapes", "Qt6QuickShapes", nullptr },
+    { QtQuickTestModule, "quicktest", "Qt6QuickTest", nullptr },
+    { QtQuickTimelineModule, "quicktimeline", "Qt6QuickTimeline", nullptr },
+    { QtQuick3DModule, "quick3d", "Qt6Quick3D", nullptr }
 };
 
 enum QtPlugin {
