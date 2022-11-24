@@ -987,7 +987,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
             send(msg.createReply(outputArgs));
         } else {
             // generate internal error
-            qWarning("Internal error: Failed to deliver message");
+            qCWarning(dbusIntegration, "Internal error: Failed to deliver message");
             send(msg.createErrorReply(QDBusError::InternalError, "Failed to deliver message"_L1));
         }
     }
@@ -1044,9 +1044,10 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
 QDBusConnectionPrivate::~QDBusConnectionPrivate()
 {
     if (thread() && thread() != QThread::currentThread())
-        qWarning("QDBusConnection(name=\"%s\")'s last reference in not in its creation thread! "
-                 "Timer and socket errors will follow and the program will probably crash",
-                 qPrintable(name));
+        qCWarning(dbusIntegration,
+                  "QDBusConnection(name=\"%s\")'s last reference in not in its creation thread! "
+                  "Timer and socket errors will follow and the program will probably crash",
+                  qPrintable(name));
 
     auto lastMode = mode; // reset on connection close
     closeConnection();
@@ -1263,8 +1264,8 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
     DBusMessage *msg =
             QDBusMessagePrivate::toDBusMessage(message, connectionCapabilities(), &error);
     if (!msg) {
-        qWarning("QDBusConnection: Could not emit signal %s.%s: %s", qPrintable(interface), memberName.constData(),
-                 qPrintable(error.message()));
+        qCWarning(dbusIntegration, "QDBusConnection: Could not emit signal %s.%s: %s",
+                  qPrintable(interface), memberName.constData(), qPrintable(error.message()));
         lastError = error;
         return;
     }
@@ -1285,8 +1286,9 @@ void QDBusConnectionPrivate::serviceOwnerChangedNoLock(const QString &name,
     if (it == watchedServices.end())
         return;
     if (oldOwner != it->owner)
-        qWarning("QDBusConnection: name '%s' had owner '%s' but we thought it was '%s'",
-                 qPrintable(name), qPrintable(oldOwner), qPrintable(it->owner));
+        qCWarning(dbusIntegration,
+                  "QDBusConnection: name '%s' had owner '%s' but we thought it was '%s'",
+                  qPrintable(name), qPrintable(oldOwner), qPrintable(it->owner));
 
     qDBusDebug() << this << "Updating name" << name << "from" << oldOwner << "to" << newOwner;
     it->owner = newOwner;
@@ -1928,22 +1930,26 @@ bool QDBusConnectionPrivate::send(const QDBusMessage& message)
             QDBusMessagePrivate::toDBusMessage(message, connectionCapabilities(), &error);
     if (!msg) {
         if (message.type() == QDBusMessage::MethodCallMessage)
-            qWarning("QDBusConnection: error: could not send message to service \"%s\" path \"%s\" interface \"%s\" member \"%s\": %s",
-                     qPrintable(message.service()), qPrintable(message.path()),
-                     qPrintable(message.interface()), qPrintable(message.member()),
-                     qPrintable(error.message()));
+            qCWarning(dbusIntegration,
+                      "QDBusConnection: error: could not send message to service \"%s\" path "
+                      "\"%s\" interface \"%s\" member \"%s\": %s",
+                      qPrintable(message.service()), qPrintable(message.path()),
+                      qPrintable(message.interface()), qPrintable(message.member()),
+                      qPrintable(error.message()));
         else if (message.type() == QDBusMessage::SignalMessage)
-            qWarning("QDBusConnection: error: could not send signal to service \"%s\" path \"%s\" interface \"%s\" member \"%s\": %s",
-                     qPrintable(message.service()),
-                     qPrintable(message.path()), qPrintable(message.interface()),
-                     qPrintable(message.member()),
-                     qPrintable(error.message()));
+            qCWarning(dbusIntegration,
+                      "QDBusConnection: error: could not send signal to service \"%s\" path \"%s\" "
+                      "interface \"%s\" member \"%s\": %s",
+                      qPrintable(message.service()), qPrintable(message.path()),
+                      qPrintable(message.interface()), qPrintable(message.member()),
+                      qPrintable(error.message()));
         else
-            qWarning("QDBusConnection: error: could not send %s message to service \"%s\": %s",
-                     message.type() == QDBusMessage::ReplyMessage ? "reply" :
-                     message.type() == QDBusMessage::ErrorMessage ? "error" :
-                     "invalid", qPrintable(message.service()),
-                     qPrintable(error.message()));
+            qCWarning(dbusIntegration,
+                      "QDBusConnection: error: could not send %s message to service \"%s\": %s",
+                      message.type() == QDBusMessage::ReplyMessage           ? "reply"
+                              : message.type() == QDBusMessage::ErrorMessage ? "error"
+                                                                             : "invalid",
+                      qPrintable(message.service()), qPrintable(error.message()));
         lastError = error;
         return false;
     }
@@ -1990,7 +1996,10 @@ public:
                 if (ok)
                     mainThreadWarningAmount = tmp;
                 else
-                    qWarning("QDBusBlockingCallWatcher: Q_DBUS_BLOCKING_CALL_MAIN_THREAD_WARNING_MS must be an integer; value ignored");
+                    qCWarning(
+                            dbusIntegration,
+                            "QDBusBlockingCallWatcher: Q_DBUS_BLOCKING_CALL_MAIN_THREAD_WARNING_MS "
+                            "must be an integer; value ignored");
             }
 
             env = qgetenv("Q_DBUS_BLOCKING_CALL_OTHER_THREAD_WARNING_MS");
@@ -1999,7 +2008,10 @@ public:
                 if (ok)
                     otherThreadWarningAmount = tmp;
                 else
-                    qWarning("QDBusBlockingCallWatcher: Q_DBUS_BLOCKING_CALL_OTHER_THREAD_WARNING_MS must be an integer; value ignored");
+                    qCWarning(dbusIntegration,
+                              "QDBusBlockingCallWatcher: "
+                              "Q_DBUS_BLOCKING_CALL_OTHER_THREAD_WARNING_MS must be an integer; "
+                              "value ignored");
             }
 
             initializedAmounts = true;
@@ -2024,10 +2036,13 @@ public:
             return; // disabled
 
         if (m_callTimer.elapsed() >= m_maxCallTimeoutMs) {
-            qWarning("QDBusConnection: warning: blocking call took a long time (%d ms, max for this thread is %d ms) to service \"%s\" path \"%s\" interface \"%s\" member \"%s\"",
-                     int(m_callTimer.elapsed()), m_maxCallTimeoutMs,
-                     qPrintable(m_message.service()), qPrintable(m_message.path()),
-                     qPrintable(m_message.interface()), qPrintable(m_message.member()));
+            qCWarning(
+                    dbusIntegration,
+                    "QDBusConnection: warning: blocking call took a long time (%d ms, max for this "
+                    "thread is %d ms) to service \"%s\" path \"%s\" interface \"%s\" member \"%s\"",
+                    int(m_callTimer.elapsed()), m_maxCallTimeoutMs, qPrintable(m_message.service()),
+                    qPrintable(m_message.path()), qPrintable(m_message.interface()),
+                    qPrintable(m_message.member()));
         }
     }
 
@@ -2089,9 +2104,12 @@ QDBusMessage QDBusConnectionPrivate::sendWithReplyLocal(const QDBusMessage &mess
     // if the message was handled, there might be a reply
     QDBusMessage localReplyMsg = QDBusMessagePrivate::makeLocalReply(*this, localCallMsg);
     if (localReplyMsg.type() == QDBusMessage::InvalidMessage) {
-        qWarning("QDBusConnection: cannot call local method '%s' at object %s (with signature '%s') "
-                 "on blocking mode", qPrintable(message.member()), qPrintable(message.path()),
-                 qPrintable(message.signature()));
+        qCWarning(
+                dbusIntegration,
+                "QDBusConnection: cannot call local method '%s' at object %s (with signature '%s') "
+                "on blocking mode",
+                qPrintable(message.member()), qPrintable(message.path()),
+                qPrintable(message.signature()));
         return QDBusMessage::createError(
             QDBusError(QDBusError::InternalError,
                        "local-loop message cannot have delayed replies"_L1));
@@ -2142,10 +2160,12 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
     DBusMessage *msg =
             QDBusMessagePrivate::toDBusMessage(message, connectionCapabilities(), &error);
     if (!msg) {
-        qWarning("QDBusConnection: error: could not send message to service \"%s\" path \"%s\" interface \"%s\" member \"%s\": %s",
-                 qPrintable(message.service()), qPrintable(message.path()),
-                 qPrintable(message.interface()), qPrintable(message.member()),
-                 qPrintable(error.message()));
+        qCWarning(dbusIntegration,
+                  "QDBusConnection: error: could not send message to service \"%s\" path \"%s\" "
+                  "interface \"%s\" member \"%s\": %s",
+                  qPrintable(message.service()), qPrintable(message.path()),
+                  qPrintable(message.interface()), qPrintable(message.member()),
+                  qPrintable(error.message()));
         pcall->replyMessage = QDBusMessage::createError(error);
         lastError = error;
         processFinishedCall(pcall);
@@ -2351,7 +2371,9 @@ QDBusConnectionPrivate::removeSignalHookNoLock(SignalHookHash::Iterator it)
     bool erase = false;
     MatchRefCountHash::iterator i = matchRefCounts.find(hook.matchRule);
     if (i == matchRefCounts.end()) {
-        qWarning("QDBusConnectionPrivate::disconnectSignal: MatchRule not found in matchRefCounts!!");
+        qCWarning(dbusIntegration,
+                  "QDBusConnectionPrivate::disconnectSignal: MatchRule not found in "
+                  "matchRefCounts!!");
     } else {
         if (i.value() == 1) {
             erase = true;
