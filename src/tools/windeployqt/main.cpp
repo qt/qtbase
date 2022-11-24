@@ -34,7 +34,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-using ModuleBitset = std::bitset<65>;
+using ModuleBitset = std::bitset<69>;
 
 enum QtModule
 #if defined(Q_COMPILER_CLASS_ENUM) || defined(Q_CC_MSVC)
@@ -105,7 +105,11 @@ enum QtModule
     QtPdfWidgetsModule,
     QtDBusModule,
     QtStateMachineModule,
-    Qt3DLogicModule
+    Qt3DLogicModule,
+    QtPositioningQuickModule,
+    QtSensorsQuickModule,
+    QtWebEngineQuickModule,
+    QtWebViewQuickModule
 };
 
 struct QtModuleEntry {
@@ -180,7 +184,11 @@ static QtModuleEntry qtModuleEntries[] = {
     { QtPdfWidgetsModule, "pdfwidgets", "Qt6PdfWidgets", nullptr },
     { QtDBusModule, "dbus", "Qt6DBus", nullptr },
     { QtStateMachineModule, "statemachine", "Qt6StateMachine", nullptr },
-    { Qt3DLogicModule, "3dlogic", "Qt63DLogic", nullptr }
+    { Qt3DLogicModule, "3dlogic", "Qt63DLogic", nullptr },
+    { QtPositioningQuickModule, "positioningquick", "Qt6PositioningQuick", nullptr },
+    { QtSensorsQuickModule, "sensorsquick", "Qt6SensorsQuick", nullptr },
+    { QtWebEngineQuickModule, "webenginequick", "Qt6WebEngineQuick", nullptr },
+    { QtWebViewQuickModule, "webviewquick", "Qt6WebViewQuick", nullptr }
 };
 
 enum QtPlugin {
