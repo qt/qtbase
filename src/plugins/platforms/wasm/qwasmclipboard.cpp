@@ -250,7 +250,7 @@ bool QWasmClipboard::hasClipboardApi()
 
 void QWasmClipboard::writeToClipboardApi()
 {
-    Q_ASSERT(!m_hasClipboardApi);
+    Q_ASSERT(m_hasClipboardApi);
 
     // copy event
     // browser event handler detected ctrl c if clipboard API
