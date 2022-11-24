@@ -552,7 +552,7 @@ public:
 
     void destroyFbos();
 
-    void setCurrentTargetBuffer(QOpenGLWidget::TargetBuffer targetBuffer);
+    bool setCurrentTargetBuffer(QOpenGLWidget::TargetBuffer targetBuffer);
     QImage grabFramebuffer(QOpenGLWidget::TargetBuffer targetBuffer);
     QImage grabFramebuffer() override;
     void beginBackingStorePainting() override { inBackingStorePaint = true; }
@@ -560,8 +560,12 @@ public:
     void beginCompose() override;
     void endCompose() override;
     void initializeViewportFramebuffer() override;
+    bool isStereoEnabled() override;
+    bool toggleStereoTargetBuffer() override;
     void resizeViewportFramebuffer() override;
     void resolveSamples() override;
+
+    void resolveSamplesForBuffer(QOpenGLWidget::TargetBuffer targetBuffer);
 
     QOpenGLContext *context = nullptr;
     QRhiTexture *wrapperTextures[2] = {};
@@ -697,8 +701,6 @@ void QOpenGLWidgetPrivate::reset()
 
 void QOpenGLWidgetPrivate::resetRhiDependentResources()
 {
-    Q_Q(QOpenGLWidget);
-
     // QRhi resource created from the QRhi. These must be released whenever the
     // widget gets associated with a different QRhi, even when all OpenGL
     // contexts share resources.
@@ -706,7 +708,7 @@ void QOpenGLWidgetPrivate::resetRhiDependentResources()
     delete wrapperTextures[0];
     wrapperTextures[0] = nullptr;
 
-    if (q->format().stereo()) {
+    if (isStereoEnabled()) {
         delete wrapperTextures[1];
         wrapperTextures[1] = nullptr;
     }
@@ -738,9 +740,9 @@ void QOpenGLWidgetPrivate::recreateFbos()
     if (samples > 0)
         resolvedFbos[QOpenGLWidget::LeftBuffer] = new QOpenGLFramebufferObject(deviceSize);
 
-    const bool stereoEnabled = q->format().stereo();
+    const bool stereo = isStereoEnabled();
 
-    if (stereoEnabled) {
+    if (stereo) {
         fbos[QOpenGLWidget::RightBuffer] = new QOpenGLFramebufferObject(deviceSize, format);
         if (samples > 0)
             resolvedFbos[QOpenGLWidget::RightBuffer] = new QOpenGLFramebufferObject(deviceSize);
@@ -753,11 +755,12 @@ void QOpenGLWidgetPrivate::recreateFbos()
     context->functions()->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     ensureRhiDependentResources();
 
-    if (stereoEnabled) {
+    if (stereo) {
         currentTargetBuffer = QOpenGLWidget::RightBuffer;
         fbos[currentTargetBuffer]->bind();
         context->functions()->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         ensureRhiDependentResources();
+        currentTargetBuffer = QOpenGLWidget::LeftBuffer;
     }
 
     flushPending = true; // Make sure the FBO is initialized before use
@@ -895,11 +898,17 @@ void QOpenGLWidgetPrivate::initialize()
 
 void QOpenGLWidgetPrivate::resolveSamples()
 {
+    resolveSamplesForBuffer(QOpenGLWidget::LeftBuffer);
+    resolveSamplesForBuffer(QOpenGLWidget::RightBuffer);
+}
+
+void QOpenGLWidgetPrivate::resolveSamplesForBuffer(QOpenGLWidget::TargetBuffer targetBuffer)
+{
     Q_Q(QOpenGLWidget);
-    if (resolvedFbos[currentTargetBuffer]) {
-        q->makeCurrent();
-        QRect rect(QPoint(0, 0), fbos[currentTargetBuffer]->size());
-        QOpenGLFramebufferObject::blitFramebuffer(resolvedFbos[currentTargetBuffer], rect, fbos[currentTargetBuffer], rect);
+    if (resolvedFbos[targetBuffer]) {
+        q->makeCurrent(targetBuffer);
+        QRect rect(QPoint(0, 0), fbos[targetBuffer]->size());
+        QOpenGLFramebufferObject::blitFramebuffer(resolvedFbos[targetBuffer], rect, fbos[targetBuffer], rect);
         flushPending = true;
     }
 }
@@ -924,8 +933,8 @@ void QOpenGLWidgetPrivate::render()
         return;
     }
 
-    const bool stereoEnabled = q->format().stereo();
-    if (stereoEnabled) {
+    const bool stereo = isStereoEnabled();
+    if (stereo) {
         static bool warningGiven = false;
         if (!fbos[QOpenGLWidget::RightBuffer] && !warningGiven) {
             qWarning("QOpenGLWidget: Stereo is enabled, but no right buffer. Using only left buffer");
@@ -936,7 +945,7 @@ void QOpenGLWidgetPrivate::render()
     if (updateBehavior == QOpenGLWidget::NoPartialUpdate && hasBeenComposed) {
         invalidateFbo();
 
-        if (stereoEnabled && fbos[QOpenGLWidget::RightBuffer]) {
+        if (stereo && fbos[QOpenGLWidget::RightBuffer]) {
             setCurrentTargetBuffer(QOpenGLWidget::RightBuffer);
             invalidateFbo();
             setCurrentTargetBuffer(QOpenGLWidget::LeftBuffer);
@@ -952,7 +961,7 @@ void QOpenGLWidgetPrivate::render()
     QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbos[currentTargetBuffer]->handle();
     q->paintGL();
 
-    if (stereoEnabled && fbos[QOpenGLWidget::RightBuffer]) {
+    if (stereo && fbos[QOpenGLWidget::RightBuffer]) {
         setCurrentTargetBuffer(QOpenGLWidget::RightBuffer);
         QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbos[currentTargetBuffer]->handle();
         q->paintGL();
@@ -1017,7 +1026,7 @@ QImage QOpenGLWidgetPrivate::grabFramebuffer(QOpenGLWidget::TargetBuffer targetB
 
     // The second fbo is only created when stereoscopic rendering is enabled
     // Just use the default one if not.
-    if (targetBuffer == QOpenGLWidget::RightBuffer && !q->format().stereo())
+    if (targetBuffer == QOpenGLWidget::RightBuffer && !isStereoEnabled())
         targetBuffer = QOpenGLWidget::LeftBuffer;
 
     if (!fbos[targetBuffer]) // could be completely offscreen, without ever getting a resize event
@@ -1028,7 +1037,7 @@ QImage QOpenGLWidgetPrivate::grabFramebuffer(QOpenGLWidget::TargetBuffer targetB
 
     setCurrentTargetBuffer(targetBuffer);
     if (resolvedFbos[targetBuffer]) {
-        resolveSamples();
+        resolveSamplesForBuffer(targetBuffer);
         resolvedFbos[targetBuffer]->bind();
     }
 
@@ -1052,6 +1061,22 @@ void QOpenGLWidgetPrivate::initializeViewportFramebuffer()
     // Legacy behavior for compatibility with QGLWidget when used as a graphics view
     // viewport: enable clearing on each painter begin.
     q->setAutoFillBackground(true);
+}
+
+bool QOpenGLWidgetPrivate::isStereoEnabled()
+{
+    Q_Q(QOpenGLWidget);
+    // Note that because this internally might use the requested format,
+    // then this can return a false positive on hardware where
+    // steroscopic rendering is not supported.
+    return q->format().stereo();
+}
+
+bool QOpenGLWidgetPrivate::toggleStereoTargetBuffer()
+{
+    return setCurrentTargetBuffer(currentTargetBuffer == QOpenGLWidget::LeftBuffer ?
+                               QOpenGLWidget::RightBuffer :
+                               QOpenGLWidget::LeftBuffer);
 }
 
 void QOpenGLWidgetPrivate::resizeViewportFramebuffer()
@@ -1251,6 +1276,34 @@ void QOpenGLWidget::makeCurrent()
 
     if (d->fbos[d->currentTargetBuffer]) // there may not be one if we are in reset()
         d->fbos[d->currentTargetBuffer]->bind();
+}
+
+/*!
+  Prepares for rendering OpenGL content for this widget by making the
+  context for the passed in buffer current and binding the framebuffer object in that
+  context.
+
+  \note This only makes sense to call when stereoscopic rendering is enabled.
+  Nothing will happen if the right buffer is requested when it's disabled.
+
+  It is not necessary to call this function in most cases, because it
+  is called automatically before invoking paintGL().
+
+  \since 6.5
+
+  \sa context(), paintGL(), doneCurrent()
+ */
+void QOpenGLWidget::makeCurrent(TargetBuffer targetBuffer)
+{
+    Q_D(QOpenGLWidget);
+    if (!d->initialized)
+        return;
+
+    // The FBO for the right buffer is only initialized when stereo is set
+   if (targetBuffer == TargetBuffer::RightBuffer && !format().stereo())
+       return;
+
+    d->setCurrentTargetBuffer(targetBuffer); // calls makeCurrent
 }
 
 /*!
@@ -1585,11 +1638,18 @@ QPaintEngine *QOpenGLWidget::paintEngine() const
     return d->paintDevice->paintEngine();
 }
 
-void QOpenGLWidgetPrivate::setCurrentTargetBuffer(QOpenGLWidget::TargetBuffer targetBuffer)
+
+bool QOpenGLWidgetPrivate::setCurrentTargetBuffer(QOpenGLWidget::TargetBuffer targetBuffer)
 {
     Q_Q(QOpenGLWidget);
+
+    if (targetBuffer == QOpenGLWidget::RightBuffer && !isStereoEnabled())
+        return false;
+
     currentTargetBuffer = targetBuffer;
     q->makeCurrent();
+
+    return true;
 }
 
 /*!

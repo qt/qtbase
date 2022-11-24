@@ -85,6 +85,16 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     view coordinates and scene coordinates, and to find items on the scene
     using view coordinates.
 
+    When using a QOpenGLWidget as a viewport, stereoscopic rendering is
+    supported. This is done using the same pattern as QOpenGLWidget::paintGL.
+    To enable it, enable the QSurfaceFormat::StereoBuffers flag. Because of
+    how the flag is handled internally, set QSurfaceFormat::StereoBuffers flag
+    globally before the window is created using QSurfaceFormat::setDefaultFormat().
+    If the flag is enabled and there is hardware support for stereoscopic
+    rendering, then drawBackground() and drawForeground() will be triggered twice
+    each frame. Call QOpenGLWidget::currentTargetBuffer() to query which buffer
+    is currently being drawn to.
+
     \image graphicsview-view.png
 
     \note Using an OpenGL viewport limits the ability to use QGraphicsProxyWidget.
@@ -2724,6 +2734,9 @@ void QGraphicsView::setupViewport(QWidget *widget)
 
     widget->setFocusPolicy(Qt::StrongFocus);
 
+    if (isGLWidget)
+        d->stereoEnabled = QWidgetPrivate::get(widget)->isStereoEnabled();
+
     if (!isGLWidget) {
         // autoFillBackground enables scroll acceleration.
         widget->setAutoFillBackground(true);
@@ -3425,132 +3438,146 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
         painter.setWorldTransform(viewportTransform());
     const QTransform viewTransform = painter.worldTransform();
 
-    // Draw background
-    if (d->cacheMode & CacheBackground) {
-        // Recreate the background pixmap, and flag the whole background as
-        // exposed.
-        if (d->mustResizeBackgroundPixmap) {
-            const qreal dpr = d->viewport->devicePixelRatio();
-            d->backgroundPixmap = QPixmap(viewport()->size() * dpr);
-            d->backgroundPixmap.setDevicePixelRatio(dpr);
-            QBrush bgBrush = viewport()->palette().brush(viewport()->backgroundRole());
-            if (!bgBrush.isOpaque())
-                d->backgroundPixmap.fill(Qt::transparent);
-            QPainter p(&d->backgroundPixmap);
-            p.fillRect(0, 0, d->backgroundPixmap.width(), d->backgroundPixmap.height(), bgBrush);
-            d->backgroundPixmapExposed = QRegion(viewport()->rect());
-            d->mustResizeBackgroundPixmap = false;
+    const auto actuallyDraw = [&]() {
+        // Draw background
+        if (d->cacheMode & CacheBackground) {
+            // Recreate the background pixmap, and flag the whole background as
+            // exposed.
+            if (d->mustResizeBackgroundPixmap) {
+                const qreal dpr = d->viewport->devicePixelRatio();
+                d->backgroundPixmap = QPixmap(viewport()->size() * dpr);
+                d->backgroundPixmap.setDevicePixelRatio(dpr);
+                QBrush bgBrush = viewport()->palette().brush(viewport()->backgroundRole());
+                if (!bgBrush.isOpaque())
+                    d->backgroundPixmap.fill(Qt::transparent);
+                QPainter p(&d->backgroundPixmap);
+                p.fillRect(0, 0, d->backgroundPixmap.width(), d->backgroundPixmap.height(), bgBrush);
+                d->backgroundPixmapExposed = QRegion(viewport()->rect());
+                d->mustResizeBackgroundPixmap = false;
+            }
+
+            // Redraw exposed areas
+            if (!d->backgroundPixmapExposed.isEmpty()) {
+                QPainter backgroundPainter(&d->backgroundPixmap);
+                backgroundPainter.setClipRegion(d->backgroundPixmapExposed, Qt::ReplaceClip);
+                if (viewTransformed)
+                    backgroundPainter.setTransform(viewTransform);
+                QRectF backgroundExposedSceneRect = mapToScene(d->backgroundPixmapExposed.boundingRect()).boundingRect();
+                drawBackground(&backgroundPainter, backgroundExposedSceneRect);
+                d->backgroundPixmapExposed = QRegion();
+            }
+
+            // Blit the background from the background pixmap
+            if (viewTransformed) {
+                painter.setWorldTransform(QTransform());
+                painter.drawPixmap(QPoint(), d->backgroundPixmap);
+                painter.setWorldTransform(viewTransform);
+            } else {
+                painter.drawPixmap(QPoint(), d->backgroundPixmap);
+            }
+        } else {
+            if (!(d->optimizationFlags & DontSavePainterState))
+                painter.save();
+
+            drawBackground(&painter, exposedSceneRect);
+            if (!(d->optimizationFlags & DontSavePainterState))
+                painter.restore();
         }
 
-        // Redraw exposed areas
-        if (!d->backgroundPixmapExposed.isEmpty()) {
-            QPainter backgroundPainter(&d->backgroundPixmap);
-            backgroundPainter.setClipRegion(d->backgroundPixmapExposed, Qt::ReplaceClip);
-            if (viewTransformed)
-                backgroundPainter.setTransform(viewTransform);
-            QRectF backgroundExposedSceneRect = mapToScene(d->backgroundPixmapExposed.boundingRect()).boundingRect();
-            drawBackground(&backgroundPainter, backgroundExposedSceneRect);
-            d->backgroundPixmapExposed = QRegion();
-        }
-
-        // Blit the background from the background pixmap
-        if (viewTransformed) {
-            painter.setWorldTransform(QTransform());
-            painter.drawPixmap(QPoint(), d->backgroundPixmap);
+        // Items
+        if (!(d->optimizationFlags & IndirectPainting)) {
+            const quint32 oldRectAdjust = d->scene->d_func()->rectAdjust;
+            if (d->optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
+                d->scene->d_func()->rectAdjust = 1;
+            else
+                d->scene->d_func()->rectAdjust = 2;
+            d->scene->d_func()->drawItems(&painter, viewTransformed ? &viewTransform : nullptr,
+                                          &d->exposedRegion, viewport());
+            d->scene->d_func()->rectAdjust = oldRectAdjust;
+            // Make sure the painter's world transform is restored correctly when
+            // drawing without painter state protection (DontSavePainterState).
+            // We only change the worldTransform() so there's no need to do a full-blown
+            // save() and restore(). Also note that we don't have to do this in case of
+            // IndirectPainting (the else branch), because in that case we always save()
+            // and restore() in QGraphicsScene::drawItems().
+            if (!d->scene->d_func()->painterStateProtection)
+                painter.setOpacity(1.0);
             painter.setWorldTransform(viewTransform);
         } else {
-            painter.drawPixmap(QPoint(), d->backgroundPixmap);
-        }
-    } else {
-        if (!(d->optimizationFlags & DontSavePainterState))
-            painter.save();
-        drawBackground(&painter, exposedSceneRect);
-        if (!(d->optimizationFlags & DontSavePainterState))
-            painter.restore();
-    }
+            // Make sure we don't have unpolished items before we draw
+            if (!d->scene->d_func()->unpolishedItems.isEmpty())
+                d->scene->d_func()->_q_polishItems();
+            // We reset updateAll here (after we've issued polish events)
+            // so that we can discard update requests coming from polishEvent().
+            d->scene->d_func()->updateAll = false;
 
-    // Items
-    if (!(d->optimizationFlags & IndirectPainting)) {
-        const quint32 oldRectAdjust = d->scene->d_func()->rectAdjust;
-        if (d->optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
-            d->scene->d_func()->rectAdjust = 1;
-        else
-            d->scene->d_func()->rectAdjust = 2;
-        d->scene->d_func()->drawItems(&painter, viewTransformed ? &viewTransform : nullptr,
-                                      &d->exposedRegion, viewport());
-        d->scene->d_func()->rectAdjust = oldRectAdjust;
-        // Make sure the painter's world transform is restored correctly when
-        // drawing without painter state protection (DontSavePainterState).
-        // We only change the worldTransform() so there's no need to do a full-blown
-        // save() and restore(). Also note that we don't have to do this in case of
-        // IndirectPainting (the else branch), because in that case we always save()
-        // and restore() in QGraphicsScene::drawItems().
-        if (!d->scene->d_func()->painterStateProtection)
-            painter.setOpacity(1.0);
-        painter.setWorldTransform(viewTransform);
-    } else {
-        // Make sure we don't have unpolished items before we draw
-        if (!d->scene->d_func()->unpolishedItems.isEmpty())
-            d->scene->d_func()->_q_polishItems();
-        // We reset updateAll here (after we've issued polish events)
-        // so that we can discard update requests coming from polishEvent().
-        d->scene->d_func()->updateAll = false;
-
-        // Find all exposed items
-        bool allItems = false;
-        QList<QGraphicsItem *> itemList = d->findItems(d->exposedRegion, &allItems, viewTransform);
-        if (!itemList.isEmpty()) {
-            // Generate the style options.
-            const int numItems = itemList.size();
-            QGraphicsItem **itemArray = &itemList[0]; // Relies on QList internals, but is perfectly valid.
-            QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(numItems);
-            QTransform transform(Qt::Uninitialized);
-            for (int i = 0; i < numItems; ++i) {
-                QGraphicsItem *item = itemArray[i];
-                QGraphicsItemPrivate *itemd = item->d_ptr.data();
-                itemd->initStyleOption(&styleOptionArray[i], viewTransform, d->exposedRegion, allItems);
-                // Cache the item's area in view coordinates.
-                // Note that we have to do this here in case the base class implementation
-                // (QGraphicsScene::drawItems) is not called. If it is, we'll do this
-                // operation twice, but that's the price one has to pay for using indirect
-                // painting :-/.
-                const QRectF brect = adjustedItemEffectiveBoundingRect(item);
-                if (!itemd->itemIsUntransformable()) {
-                    transform = item->sceneTransform();
-                    if (viewTransformed)
-                        transform *= viewTransform;
-                } else {
-                    transform = item->deviceTransform(viewTransform);
+            // Find all exposed items
+            bool allItems = false;
+            QList<QGraphicsItem *> itemList = d->findItems(d->exposedRegion, &allItems, viewTransform);
+            if (!itemList.isEmpty()) {
+                // Generate the style options.
+                const int numItems = itemList.size();
+                QGraphicsItem **itemArray = &itemList[0]; // Relies on QList internals, but is perfectly valid.
+                QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(numItems);
+                QTransform transform(Qt::Uninitialized);
+                for (int i = 0; i < numItems; ++i) {
+                    QGraphicsItem *item = itemArray[i];
+                    QGraphicsItemPrivate *itemd = item->d_ptr.data();
+                    itemd->initStyleOption(&styleOptionArray[i], viewTransform, d->exposedRegion, allItems);
+                    // Cache the item's area in view coordinates.
+                    // Note that we have to do this here in case the base class implementation
+                    // (QGraphicsScene::drawItems) is not called. If it is, we'll do this
+                    // operation twice, but that's the price one has to pay for using indirect
+                    // painting :-/.
+                    const QRectF brect = adjustedItemEffectiveBoundingRect(item);
+                    if (!itemd->itemIsUntransformable()) {
+                        transform = item->sceneTransform();
+                        if (viewTransformed)
+                            transform *= viewTransform;
+                    } else {
+                        transform = item->deviceTransform(viewTransform);
+                    }
+                    itemd->paintedViewBoundingRects.insert(d->viewport, transform.mapRect(brect).toRect());
                 }
-                itemd->paintedViewBoundingRects.insert(d->viewport, transform.mapRect(brect).toRect());
+                // Draw the items.
+                drawItems(&painter, numItems, itemArray, styleOptionArray);
+                d->freeStyleOptionsArray(styleOptionArray);
             }
-            // Draw the items.
-            drawItems(&painter, numItems, itemArray, styleOptionArray);
-            d->freeStyleOptionsArray(styleOptionArray);
-        }
-    }
-
-    // Foreground
-    drawForeground(&painter, exposedSceneRect);
-
-#if QT_CONFIG(rubberband)
-    // Rubberband
-    if (d->rubberBanding && !d->rubberBandRect.isEmpty()) {
-        painter.restore();
-        QStyleOptionRubberBand option;
-        option.initFrom(viewport());
-        option.rect = d->rubberBandRect;
-        option.shape = QRubberBand::Rectangle;
-
-        QStyleHintReturnMask mask;
-        if (viewport()->style()->styleHint(QStyle::SH_RubberBand_Mask, &option, viewport(), &mask)) {
-            // painter clipping for masked rubberbands
-            painter.setClipRegion(mask.region, Qt::IntersectClip);
         }
 
-        viewport()->style()->drawControl(QStyle::CE_RubberBand, &option, &painter, viewport());
+        // Foreground
+        drawForeground(&painter, exposedSceneRect);
+
+    #if QT_CONFIG(rubberband)
+        // Rubberband
+        if (d->rubberBanding && !d->rubberBandRect.isEmpty()) {
+            painter.restore();
+            QStyleOptionRubberBand option;
+            option.initFrom(viewport());
+            option.rect = d->rubberBandRect;
+            option.shape = QRubberBand::Rectangle;
+
+            QStyleHintReturnMask mask;
+            if (viewport()->style()->styleHint(QStyle::SH_RubberBand_Mask, &option, viewport(), &mask)) {
+                // painter clipping for masked rubberbands
+                painter.setClipRegion(mask.region, Qt::IntersectClip);
+            }
+
+            viewport()->style()->drawControl(QStyle::CE_RubberBand, &option, &painter, viewport());
+        }
+    #endif
+    };
+
+    actuallyDraw();
+
+    // For stereo we want to draw everything twice, once to each buffer
+    if (d->stereoEnabled) {
+        QWidgetPrivate* w = QWidgetPrivate::get(viewport());
+        if (w->toggleStereoTargetBuffer()) {
+            actuallyDraw();
+            w->toggleStereoTargetBuffer();
+        }
     }
-#endif
 
     painter.end();
 

@@ -100,6 +100,8 @@ public:
     QGraphicsView::ViewportUpdateMode viewportUpdateMode;
     QGraphicsView::OptimizationFlags optimizationFlags;
 
+    bool stereoEnabled = false; // Set in setupViewport()
+
     QPointer<QGraphicsScene> scene;
 #if QT_CONFIG(rubberband)
     QRect rubberBandRect;

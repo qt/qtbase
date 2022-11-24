@@ -621,6 +621,11 @@ public:
     // Called after each paint event.
     virtual void resolveSamples() { }
 
+    // These two are used in QGraphicsView for supporting stereoscopic rendering with a
+    // QOpenGLWidget viewport.
+    virtual bool isStereoEnabled() { return false; } // Called in QGraphicsView::setupViewport
+    virtual bool toggleStereoTargetBuffer() { return false; } // Called in QGraphicsView::paintEvent
+
     static void setWidgetParentHelper(QObject *widgetAsObject, QObject *newParent);
 
     std::string flagsForDumping() const override;

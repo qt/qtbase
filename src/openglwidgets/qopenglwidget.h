@@ -45,6 +45,7 @@ public:
     bool isValid() const;
 
     void makeCurrent();
+    void makeCurrent(TargetBuffer targetBuffer);
     void doneCurrent();
 
     QOpenGLContext *context() const;
