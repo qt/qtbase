@@ -533,11 +533,7 @@ QT.${config_module_name}_private.disabled_features = ${disabled_private_features
                     -P "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
             VERBATIM)
         add_custom_target(${target}_lib_pri DEPENDS "${private_pri_file_path}")
-        if(arg_HEADER_MODULE)
-            add_dependencies(${target}_timestamp ${target}_lib_pri)
-        else()
-            add_dependencies(${target} ${target}_lib_pri)
-        endif()
+        add_dependencies(${target} ${target}_lib_pri)
     endif()
 
     qt_install(FILES "${pri_files}" DESTINATION ${INSTALL_MKSPECSDIR}/modules)
