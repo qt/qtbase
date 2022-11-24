@@ -545,16 +545,6 @@ function(qt_internal_add_module target)
     endif()
     list(APPEND ${public_headers_list} ${arg_PUBLIC_INCLUDE_DIRECTORIES})
 
-    if(arg_HEADER_MODULE)
-        # Provide a *_timestamp target that can be used to trigger the build of custom_commands.
-        set(timestamp_file "${CMAKE_CURRENT_BINARY_DIR}/timestamp")
-        add_custom_command(OUTPUT "${timestamp_file}"
-            COMMAND ${CMAKE_COMMAND} -E touch "${timestamp_file}"
-            DEPENDS "$<TARGET_PROPERTY:${target},_qt_module_timestamp_dependencies>"
-            VERBATIM)
-        add_custom_target(${target}_pri_dep_timestamp ALL DEPENDS "${timestamp_file}")
-    endif()
-
     set(defines_for_extend_target "")
 
     if(NOT arg_HEADER_MODULE)
