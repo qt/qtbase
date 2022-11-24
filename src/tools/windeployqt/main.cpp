@@ -32,7 +32,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-using ModuleBitset = std::bitset<62>;
+using ModuleBitset = std::bitset<65>;
 
 enum QtModule
 #if defined(Q_COMPILER_CLASS_ENUM) || defined(Q_CC_MSVC)
@@ -100,7 +100,10 @@ enum QtModule
     QtMqttModule,
     QtPdfModule,
     QtPdfQuickModule,
-    QtPdfWidgetsModule
+    QtPdfWidgetsModule,
+    QtDBusModule,
+    QtStateMachineModule,
+    Qt3DLogicModule
 };
 
 struct QtModuleEntry {
@@ -163,16 +166,19 @@ static QtModuleEntry qtModuleEntries[] = {
     { QtWebViewModule, "webview", "Qt6WebView", nullptr },
     { QtShaderToolsModule, "shadertools", "Qt6ShaderTools", nullptr },
     { QtUiToolsModule, "uitools", "Qt6UiTools", nullptr },
-    { QtCore5CompatModule, "core5compat", "Qt6Core5Compat", nullptr},
-    { QtChartsModule, "charts", "Qt6Charts", nullptr},
-    { QtDataVisualizationModule, "datavisualization", "Qt6DataVisualization", nullptr},
-    { QtRemoteObjectsModule, "remoteobjects", "Qt6RemoteObjects", nullptr},
-    { QtScxmlModule, "scxml", "Qt6Scxml", nullptr},
+    { QtCore5CompatModule, "core5compat", "Qt6Core5Compat", nullptr },
+    { QtChartsModule, "charts", "Qt6Charts", nullptr },
+    { QtDataVisualizationModule, "datavisualization", "Qt6DataVisualization", nullptr },
+    { QtRemoteObjectsModule, "remoteobjects", "Qt6RemoteObjects", nullptr },
+    { QtScxmlModule, "scxml", "Qt6Scxml", nullptr },
     { QtNetworkAuthorizationModule, "networkauthorization", "Qt6NetworkAuth", nullptr },
-    { QtMqttModule, "mqtt", "Qt6Mqtt", nullptr},
-    { QtPdfModule, "pdf", "Qt6Pdf", nullptr},
-    { QtPdfQuickModule, "pdfquick", "Qt6PdfQuick", nullptr},
-    { QtPdfWidgetsModule, "pdfwidgets", "Qt6PdfWidgets", nullptr}
+    { QtMqttModule, "mqtt", "Qt6Mqtt", nullptr },
+    { QtPdfModule, "pdf", "Qt6Pdf", nullptr },
+    { QtPdfQuickModule, "pdfquick", "Qt6PdfQuick", nullptr },
+    { QtPdfWidgetsModule, "pdfwidgets", "Qt6PdfWidgets", nullptr },
+    { QtDBusModule, "dbus", "Qt6DBus", nullptr },
+    { QtStateMachineModule, "statemachine", "Qt6StateMachine", nullptr },
+    { Qt3DLogicModule, "3dlogic", "Qt63DLogic", nullptr }
 };
 
 enum QtPlugin {
