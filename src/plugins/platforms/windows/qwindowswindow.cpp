@@ -851,8 +851,9 @@ static inline bool shouldApplyDarkFrame(const QWindow *w)
 {
     if (!w->isTopLevel() || w->flags().testFlag(Qt::FramelessWindowHint))
         return false;
-    if (QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle))
-        return true;
+    // the application has explicitly opted out of dark frames
+    if (!QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeWindowFrames))
+        return false;
     // if the application supports a dark border, and the palette is dark (window background color
     // is darker than the text), then turn dark-border support on, otherwise use a light border.
     const QPalette defaultPalette;
@@ -927,11 +928,8 @@ QWindowsWindowData
         return result;
     }
 
-    if (QWindowsContext::isDarkMode()
-        && QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeWindowFrames)
-        && shouldApplyDarkFrame(w)) {
-        QWindowsWindow::setDarkBorderToWindow(result.hwnd, true);
-    }
+    QWindowsWindow::setDarkBorderToWindow(result.hwnd, QWindowsContext::isDarkMode()
+                                                    && shouldApplyDarkFrame(w));
 
     if (mirrorParentWidth != 0) {
         context->obtainedPos.setX(mirrorParentWidth - context->obtainedSize.width()
@@ -2608,6 +2606,9 @@ void QWindowsWindow::setExStyle(unsigned s) const
 bool QWindowsWindow::windowEvent(QEvent *event)
 {
     switch (event->type()) {
+    case QEvent::ApplicationPaletteChange:
+        setDarkBorder(QWindowsContext::isDarkMode());
+        break;
     case QEvent::WindowBlocked: // Blocked by another modal window.
         setEnabled(false);
         setFlag(BlockedByModal);
@@ -3179,8 +3180,12 @@ bool QWindowsWindow::setDarkBorderToWindow(HWND hwnd, bool d)
 
 void QWindowsWindow::setDarkBorder(bool d)
 {
-    if (shouldApplyDarkFrame(window()) && queryDarkBorder(m_data.hwnd) != d)
-        setDarkBorderToWindow(m_data.hwnd, d);
+    // respect explicit opt-out and incompatible palettes or styles
+    d = d && shouldApplyDarkFrame(window());
+    if (queryDarkBorder(m_data.hwnd) == d)
+        return;
+
+    setDarkBorderToWindow(m_data.hwnd, d);
 }
 
 QWindowsMenuBar *QWindowsWindow::menuBar() const
