@@ -433,6 +433,7 @@ private:
     const bool m_windowsAnimationsEnabled;
     QPointingDevice *m_touchScreen;
     const int m_fuzz;
+    QPalette simplePalette();
 };
 
 // Testing get/set functions
@@ -4543,6 +4544,7 @@ void tst_QWidget::optimizedResizeMove()
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
     QWidget parent;
+    parent.setPalette(simplePalette());
     parent.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     parent.resize(400, 400);
 
@@ -4626,6 +4628,7 @@ void tst_QWidget::optimizedResize_topLevel()
     if (QHighDpiScaling::isActive())
         QSKIP("Skip due to rounding errors in the regions.");
     StaticWidget topLevel;
+    topLevel.setPalette(simplePalette());
     topLevel.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     topLevel.gotPaintEvent = false;
     topLevel.show();
@@ -5237,6 +5240,7 @@ void tst_QWidget::update()
     Q_CHECK_PAINTEVENTS
 
     UpdateWidget w;
+    w.setPalette(simplePalette());
     w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     w.resize(100, 100);
     centerOnScreen(&w);
@@ -5250,6 +5254,7 @@ void tst_QWidget::update()
     w.reset();
 
     UpdateWidget child(&w);
+    child.setPalette(simplePalette());
     child.setGeometry(10, 10, 80, 80);
     child.show();
 
@@ -5321,6 +5326,7 @@ void tst_QWidget::update()
 
     // overlapping sibling
     UpdateWidget sibling(&w);
+    sibling.setPalette(simplePalette());
     child.setGeometry(10, 10, 20, 20);
     sibling.setGeometry(15, 15, 20, 20);
     sibling.show();
@@ -5400,9 +5406,11 @@ void tst_QWidget::isOpaque()
 {
 #ifndef Q_OS_MACOS
     QWidget w;
+    w.setPalette(simplePalette());
     QVERIFY(::isOpaque(&w));
 
     QWidget child(&w);
+    child.setPalette(simplePalette());
     QVERIFY(!::isOpaque(&child));
 
     child.setAutoFillBackground(true);
@@ -5484,6 +5492,7 @@ void tst_QWidget::scroll()
     const int h = qMin(500, screen->availableGeometry().height() / 2);
 
     UpdateWidget updateWidget;
+    updateWidget.setPalette(simplePalette());
     updateWidget.resize(w, h);
     updateWidget.reset();
     updateWidget.move(m_availableTopLeft);
@@ -8585,6 +8594,7 @@ void tst_QWidget::updateWhileMinimized()
     QSKIP("Platform does not support showMinimized()");
 #endif
     UpdateWidget widget;
+    widget.setPalette(simplePalette());
     widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
    // Filter out activation change and focus events to avoid update() calls in QWidget.
     widget.updateOnActivationChangeAndFocusIn = false;
@@ -9158,6 +9168,7 @@ void tst_QWidget::doubleRepaint()
         QSKIP("Not having window server access causes the wrong number of repaints to be issues");
 #endif
    UpdateWidget widget;
+   widget.setPalette(simplePalette());
    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
    centerOnScreen(&widget);
    widget.setFocusPolicy(Qt::StrongFocus);
@@ -9189,6 +9200,7 @@ void tst_QWidget::resizeInPaintEvent()
     QWidget window;
     window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     UpdateWidget widget(&window);
+    widget.setPalette(simplePalette());
     window.resize(200, 200);
     window.show();
     QApplicationPrivate::setActiveWindow(&window);
@@ -9320,6 +9332,7 @@ public slots:
 void tst_QWidget::setMaskInResizeEvent()
 {
     UpdateWidget w;
+    w.setPalette(simplePalette());
     w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     w.reset();
     w.resize(200, 200);
@@ -9399,6 +9412,7 @@ void tst_QWidget::immediateRepaintAfterInvalidateBackingStore()
         QSKIP("We don't support immediate repaint right after show on other platforms.");
 
     QScopedPointer<UpdateWidget> widget(new UpdateWidget);
+    widget->setPalette(simplePalette());
     widget->setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     centerOnScreen(widget.data());
     widget->show();
@@ -9850,6 +9864,7 @@ void tst_QWidget::setClearAndResizeMask()
         QSKIP("Wayland: This fails. Figure out why.");
 
     UpdateWidget topLevel;
+    topLevel.setPalette(simplePalette());
     topLevel.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     topLevel.resize(160, 160);
     centerOnScreen(&topLevel);
@@ -9884,6 +9899,7 @@ void tst_QWidget::setClearAndResizeMask()
     }
 
     UpdateWidget child(&topLevel);
+    child.setPalette(simplePalette());
     child.setAutoFillBackground(true); // NB! Opaque child.
     child.setPalette(Qt::red);
     child.resize(100, 100);
@@ -10684,6 +10700,7 @@ void tst_QWidget::focusWidget_task254563()
 void tst_QWidget::destroyBackingStore()
 {
     UpdateWidget w;
+    w.setPalette(simplePalette());
     w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     centerOnScreen(&w);
     w.reset();
@@ -12390,6 +12407,7 @@ void tst_QWidget::resizeStaticContentsChildWidget_QTBUG35282()
     widget.resize(200,200);
 
     UpdateWidget childWidget(&widget);
+    childWidget.setPalette(simplePalette());
     childWidget.setAttribute(Qt::WA_StaticContents);
     childWidget.setAttribute(Qt::WA_OpaquePaintEvent);
     childWidget.setGeometry(250, 250, 500, 500);
@@ -12984,6 +13002,35 @@ void tst_QWidget::activateWhileModalHidden()
     QVERIFY(QTest::qWaitForWindowActive(&window));
     QVERIFY(window.isActiveWindow());
     QCOMPARE(QApplication::activeWindow(), &window);
+}
+
+// Create a simple palette to prevent multiple paint events
+QPalette tst_QWidget::simplePalette()
+{
+    static QPalette simplePalette = []{
+        const QColor windowText = Qt::black;
+        const QColor backGround = QColor(239, 239, 239);
+        const QColor light = backGround.lighter(150);
+        const QColor mid = (backGround.darker(130));
+        const QColor midLight = mid.lighter(110);
+        const QColor base = Qt::white;
+        const QColor dark = backGround.darker(150);
+        const QColor text = Qt::black;
+        const QColor highlight = QColor(48, 140, 198);
+        const QColor hightlightedText = Qt::white;
+        const QColor button = backGround;
+        const QColor shadow = dark.darker(135);
+
+        QPalette defaultPalette(windowText, backGround, light, dark, mid, text, base);
+        defaultPalette.setBrush(QPalette::Midlight, midLight);
+        defaultPalette.setBrush(QPalette::Button, button);
+        defaultPalette.setBrush(QPalette::Shadow, shadow);
+        defaultPalette.setBrush(QPalette::HighlightedText, hightlightedText);
+        defaultPalette.setBrush(QPalette::Active, QPalette::Highlight, highlight);
+        return defaultPalette;
+    }();
+
+    return simplePalette;
 }
 
 #ifdef Q_OS_ANDROID
