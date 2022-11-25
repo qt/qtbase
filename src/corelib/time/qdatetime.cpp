@@ -4799,22 +4799,22 @@ qint64 QDateTime::currentSecsSinceEpoch() noexcept
 #endif
 
 /*!
-  Returns a datetime whose date and time are the number of milliseconds \a msecs
-  that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
-  Time (Qt::UTC) and converted to the given \a spec.
+    Returns a datetime whose date and time are the number of milliseconds \a msecs
+    that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
+    Time (Qt::UTC) and converted to the given \a spec.
 
-  Note that there are possible values for \a msecs that lie outside the valid
-  range of QDateTime, both negative and positive. The behavior of this
-  function is undefined for those values.
+    Note that there are possible values for \a msecs that lie outside the valid
+    range of QDateTime, both negative and positive. The behavior of this
+    function is undefined for those values.
 
-  If the \a spec is not Qt::OffsetFromUTC then the \a offsetSeconds will be
-  ignored.  If the \a spec is Qt::OffsetFromUTC and the \a offsetSeconds is 0
-  then the spec will be set to Qt::UTC, i.e. an offset of 0 seconds.
+    If the \a spec is not Qt::OffsetFromUTC then the \a offsetSeconds will be
+    ignored.  If the \a spec is Qt::OffsetFromUTC and the \a offsetSeconds is 0
+    then the spec will be set to Qt::UTC, i.e. an offset of 0 seconds.
 
-  If \a spec is Qt::TimeZone then the spec will be set to Qt::LocalTime,
-  i.e. the current system time zone.
+    If \a spec is Qt::TimeZone then the spec will be set to Qt::LocalTime,
+    i.e. the current system time zone.
 
-  \sa fromSecsSinceEpoch(), toMSecsSinceEpoch(), setMSecsSinceEpoch()
+    \sa fromSecsSinceEpoch(), toMSecsSinceEpoch(), setMSecsSinceEpoch()
 */
 QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int offsetSeconds)
 {
@@ -4825,24 +4825,24 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int of
 }
 
 /*!
-  \since 5.8
+    \since 5.8
 
-  Returns a datetime whose date and time are the number of seconds \a secs
-  that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
-  Time (Qt::UTC) and converted to the given \a spec.
+    Returns a datetime whose date and time are the number of seconds \a secs
+    that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
+    Time (Qt::UTC) and converted to the given \a spec.
 
-  Note that there are possible values for \a secs that lie outside the valid
-  range of QDateTime, both negative and positive. The behavior of this
-  function is undefined for those values.
+    Note that there are possible values for \a secs that lie outside the valid
+    range of QDateTime, both negative and positive. The behavior of this
+    function is undefined for those values.
 
-  If the \a spec is not Qt::OffsetFromUTC then the \a offsetSeconds will be
-  ignored.  If the \a spec is Qt::OffsetFromUTC and the \a offsetSeconds is 0
-  then the spec will be set to Qt::UTC, i.e. an offset of 0 seconds.
+    If the \a spec is not Qt::OffsetFromUTC then the \a offsetSeconds will be
+    ignored.  If the \a spec is Qt::OffsetFromUTC and the \a offsetSeconds is 0
+    then the spec will be set to Qt::UTC, i.e. an offset of 0 seconds.
 
-  If \a spec is Qt::TimeZone then the spec will be set to Qt::LocalTime,
-  i.e. the current system time zone.
+    If \a spec is Qt::TimeZone then the spec will be set to Qt::LocalTime,
+    i.e. the current system time zone.
 
-  \sa fromMSecsSinceEpoch(), toSecsSinceEpoch(), setSecsSinceEpoch()
+    \sa fromMSecsSinceEpoch(), toSecsSinceEpoch(), setSecsSinceEpoch()
 */
 QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec, int offsetSeconds)
 {
