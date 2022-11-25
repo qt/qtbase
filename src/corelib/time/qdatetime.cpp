@@ -5331,7 +5331,7 @@ QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
 
     if (out.version() >= QDataStream::Qt_5_2) {
 
-        // In 5.2 we switched to using Qt::TimeSpec and added offset support
+        // In 5.2 we switched to using Qt::TimeSpec and added offset and zone support
         dateAndTime = getDateTime(dateTime.d);
         out << dateAndTime << qint8(dateTime.timeSpec());
         if (dateTime.timeSpec() == Qt::OffsetFromUTC)
@@ -5396,13 +5396,10 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
     qint8 ts = 0;
     Qt::TimeSpec spec = Qt::LocalTime;
     qint32 offset = 0;
-#if QT_CONFIG(timezone)
-    QTimeZone tz;
-#endif // timezone
 
     if (in.version() >= QDataStream::Qt_5_2) {
 
-        // In 5.2 we switched to using Qt::TimeSpec and added offset support
+        // In 5.2 we switched to using Qt::TimeSpec and added offset and zone support
         in >> dt >> tm >> ts;
         spec = static_cast<Qt::TimeSpec>(ts);
         if (spec == Qt::OffsetFromUTC) {
@@ -5410,6 +5407,7 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
             dateTime = QDateTime(dt, tm, spec, offset);
 #if QT_CONFIG(timezone)
         } else if (spec == Qt::TimeZone) {
+            QTimeZone tz;
             in >> tz;
             dateTime = QDateTime(dt, tm, tz);
 #endif // timezone
@@ -5429,23 +5427,15 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
 
         // From 4.0 to 5.1 (except 5.0) we used QDateTimePrivate::Spec
         in >> dt >> tm >> ts;
-        switch ((QDateTimePrivate::Spec)ts) {
+        switch (static_cast<QDateTimePrivate::Spec>(ts)) {
+        case QDateTimePrivate::OffsetFromUTC: // No offset was stored, so treat as UTC.
         case QDateTimePrivate::UTC:
             spec = Qt::UTC;
             break;
-        case QDateTimePrivate::OffsetFromUTC:
-            spec = Qt::OffsetFromUTC;
-            break;
-        case QDateTimePrivate::TimeZone:
-            spec = Qt::TimeZone;
-#if QT_CONFIG(timezone)
-            // FIXME: need to use a different constructor !
-#endif
-            break;
+        case QDateTimePrivate::TimeZone: // No zone was stored, so treat as LocalTime:
         case QDateTimePrivate::LocalUnknown:
         case QDateTimePrivate::LocalStandard:
         case QDateTimePrivate::LocalDST:
-            spec = Qt::LocalTime;
             break;
         }
         dateTime = QDateTime(dt, tm, spec, offset);
@@ -5454,7 +5444,7 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
 
         // Before 4.0 there was no TimeSpec, only Qt::LocalTime was supported
         in >> dt >> tm;
-        dateTime = QDateTime(dt, tm, spec, offset);
+        dateTime = QDateTime(dt, tm);
 
     }
 
