@@ -314,7 +314,7 @@ function(qt_auto_detect_darwin)
         if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
             if(NOT CMAKE_SYSTEM_NAME)
                 # macOS
-                set(version "10.15")
+                set(version "11.0")
             elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
                 set(version "14.0")
             endif()
