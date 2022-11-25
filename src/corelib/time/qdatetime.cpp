@@ -3759,8 +3759,8 @@ void QDateTime::setTimeZone(const QTimeZone &toZone)
 /*!
     \since 4.7
 
-    Returns the datetime as the number of milliseconds that have passed
-    since 1970-01-01T00:00:00.000, Coordinated Universal Time (Qt::UTC).
+    Returns the datetime as a number of milliseconds after the start, in UTC, of
+    the year 1970.
 
     On systems that do not support time zones, this function will
     behave as if local time were Qt::UTC.
@@ -3810,8 +3810,8 @@ qint64 QDateTime::toMSecsSinceEpoch() const
 /*!
     \since 5.8
 
-    Returns the datetime as the number of seconds that have passed since
-    1970-01-01T00:00:00.000, Coordinated Universal Time (Qt::UTC).
+    Returns the datetime as a number of seconds after the start, in UTC, of the
+    year 1970.
 
     On systems that do not support time zones, this function will
     behave as if local time were Qt::UTC.
@@ -3830,10 +3830,11 @@ qint64 QDateTime::toSecsSinceEpoch() const
 /*!
     \since 4.7
 
-    Sets the date and time given the number of milliseconds \a msecs that have
-    passed since 1970-01-01T00:00:00.000, Coordinated Universal Time
-    (Qt::UTC). On systems that do not support time zones this function
-    will behave as if local time were Qt::UTC.
+    Sets the datetime to represent a moment a given number, \a msecs, of
+    milliseconds after the start, in UTC, of the year 1970.
+
+    On systems that do not support time zones this function will behave as if
+    local time were Qt::UTC.
 
     Note that passing the minimum of \c qint64
     (\c{std::numeric_limits<qint64>::min()}) to \a msecs will result in
@@ -3895,10 +3896,11 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
 /*!
     \since 5.8
 
-    Sets the date and time given the number of seconds \a secs that have
-    passed since 1970-01-01T00:00:00.000, Coordinated Universal Time
-    (Qt::UTC). On systems that do not support time zones this function
-    will behave as if local time were Qt::UTC.
+    Sets the datetime to represent a moment a given number, \a secs, of seconds
+    after the start, in UTC, of the year 1970.
+
+    On systems that do not support time zones this function will behave as if
+    local time were Qt::UTC.
 
     \sa setMSecsSinceEpoch(), toSecsSinceEpoch(), fromSecsSinceEpoch()
 */
@@ -4799,9 +4801,9 @@ qint64 QDateTime::currentSecsSinceEpoch() noexcept
 #endif
 
 /*!
-    Returns a datetime whose date and time are the number of milliseconds \a msecs
-    that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
-    Time (Qt::UTC) and converted to the given \a spec.
+    Returns a datetime representing a moment the given number \a msecs of
+    milliseconds after the start, in UTC, of the year 1970, described as
+    specified by \a spec and \a offsetSeconds.
 
     Note that there are possible values for \a msecs that lie outside the valid
     range of QDateTime, both negative and positive. The behavior of this
@@ -4827,9 +4829,9 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int of
 /*!
     \since 5.8
 
-    Returns a datetime whose date and time are the number of seconds \a secs
-    that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
-    Time (Qt::UTC) and converted to the given \a spec.
+    Returns a datetime representing a moment the given number \a secs of seconds
+    after the start, in UTC, of the year 1970, described as specified by \a spec
+    and \a offsetSeconds.
 
     Note that there are possible values for \a secs that lie outside the valid
     range of QDateTime, both negative and positive. The behavior of this
@@ -4856,9 +4858,9 @@ QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec, int offs
 /*!
     \since 5.2
 
-    Returns a datetime whose date and time are the number of milliseconds \a msecs
-    that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
-    Time (Qt::UTC) and with the given \a timeZone.
+    Returns a datetime representing a moment the given number \a msecs of
+    milliseconds after the start, in UTC, of the year 1970, described as
+    specified by \a timeZone.
 
     \sa fromSecsSinceEpoch(), toMSecsSinceEpoch(), setMSecsSinceEpoch()
 */
@@ -4874,9 +4876,9 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone
 /*!
     \since 5.8
 
-    Returns a datetime whose date and time are the number of seconds \a secs
-    that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
-    Time (Qt::UTC) and with the given \a timeZone.
+    Returns a datetime representing a moment the given number \a secs of seconds
+    after the start, in UTC, of the year 1970, described as specified by \a
+    timeZone.
 
     \sa fromMSecsSinceEpoch(), toSecsSinceEpoch(), setSecsSinceEpoch()
 */
