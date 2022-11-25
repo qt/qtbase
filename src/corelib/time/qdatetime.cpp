@@ -4801,6 +4801,8 @@ qint64 QDateTime::currentSecsSinceEpoch() noexcept
 #endif
 
 /*!
+    \overload
+
     Returns a datetime representing a moment the given number \a msecs of
     milliseconds after the start, in UTC, of the year 1970, described as
     specified by \a spec and \a offsetSeconds.
@@ -4828,6 +4830,7 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int of
 
 /*!
     \since 5.8
+    \overload
 
     Returns a datetime representing a moment the given number \a secs of seconds
     after the start, in UTC, of the year 1970, described as specified by \a spec
@@ -4857,10 +4860,15 @@ QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec, int offs
 #if QT_CONFIG(timezone)
 /*!
     \since 5.2
+    \overload
 
     Returns a datetime representing a moment the given number \a msecs of
     milliseconds after the start, in UTC, of the year 1970, described as
     specified by \a timeZone.
+
+    Note that there are possible values for \a msecs that lie outside the valid
+    range of QDateTime, both negative and positive. The behavior of this
+    function is undefined for those values.
 
     \sa fromSecsSinceEpoch(), toMSecsSinceEpoch(), setMSecsSinceEpoch()
 */
@@ -4875,10 +4883,15 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone
 
 /*!
     \since 5.8
+    \overload
 
     Returns a datetime representing a moment the given number \a secs of seconds
     after the start, in UTC, of the year 1970, described as specified by \a
     timeZone.
+
+    Note that there are possible values for \a secs that lie outside the valid
+    range of QDateTime, both negative and positive. The behavior of this
+    function is undefined for those values.
 
     \sa fromMSecsSinceEpoch(), toSecsSinceEpoch(), setSecsSinceEpoch()
 */
