@@ -4,6 +4,8 @@
 #include "qwasmaccessibility.h"
 #include "qwasmscreen.h"
 #include "qwasmwindow.h"
+#include "qwasmintegration.h"
+#include <QtGui/private/qaccessiblebridgeutils_p.h>
 
 #include <QtGui/qwindow.h>
 
@@ -111,7 +113,17 @@ emscripten::val QWasmAccessibility::getContainer(QWindow *window)
 
 emscripten::val QWasmAccessibility::getContainer(QAccessibleInterface *iface)
 {
-    return getContainer(iface->window());
+    QWindow *window = iface->window();
+    if (!window) {
+        //this is needed to add tabs as the window is not available
+        if (iface->parent()->window()) {
+            window = iface->parent()->window();
+        } else {
+            return emscripten::val::undefined();
+        }
+    }
+
+    return getContainer(window);
 }
 
 emscripten::val QWasmAccessibility::getDocument(const emscripten::val &container)
@@ -148,10 +160,88 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
 
         case QAccessible::Button: {
             element = document.call<emscripten::val>("createElement", std::string("button"));
+            element.call<void>("addEventListener", emscripten::val("click"),
+                               emscripten::val::module_property("qtEventReceived"), true);
         } break;
         case QAccessible::CheckBox: {
             element = document.call<emscripten::val>("createElement", std::string("input"));
             element.call<void>("setAttribute", std::string("type"), std::string("checkbox"));
+            if (iface->state().checked) {
+                element.call<void>("setAttribute", std::string("checked"), std::string("true"));
+            }
+            element.call<void>("addEventListener", emscripten::val("change"),
+                               emscripten::val::module_property("qtEventReceived"), true);
+
+        } break;
+
+        case QAccessible::RadioButton: {
+            element = document.call<emscripten::val>("createElement", std::string("input"));
+            element.call<void>("setAttribute", std::string("type"), std::string("radio"));
+            if (iface->state().checked) {
+                element.call<void>("setAttribute", std::string("checked"), std::string("true"));
+            }
+            element.set(std::string("name"), std::string("buttonGroup"));
+            element.call<void>("addEventListener", emscripten::val("change"),
+                               emscripten::val::module_property("qtEventReceived"), true);
+        } break;
+
+        case QAccessible::SpinBox: {
+            element = document.call<emscripten::val>("createElement", std::string("input"));
+            element.call<void>("setAttribute", std::string("type"), std::string("number"));
+            std::string valueString = iface->valueInterface()->currentValue().toString().toStdString();
+            element.call<void>("setAttribute", std::string("value"), valueString);
+            element.call<void>("addEventListener", emscripten::val("change"),
+                               emscripten::val::module_property("qtEventReceived"), true);
+        } break;
+
+        case QAccessible::Slider: {
+            element = document.call<emscripten::val>("createElement", std::string("input"));
+            element.call<void>("setAttribute", std::string("type"), std::string("range"));
+            std::string valueString = iface->valueInterface()->currentValue().toString().toStdString();
+            element.call<void>("setAttribute", std::string("value"), valueString);
+            element.call<void>("addEventListener", emscripten::val("change"),
+                               emscripten::val::module_property("qtEventReceived"), true);
+        } break;
+
+        case QAccessible::PageTabList:{
+            element = document.call<emscripten::val>("createElement", std::string("div"));
+            element.call<void>("setAttribute", std::string("role"), std::string("tablist"));
+            QString idName = iface->text(QAccessible::Name).replace(" ", "_");
+            idName += "_tabList";
+            element.call<void>("setAttribute", std::string("id"), idName.toStdString());
+
+            for (int i = 0; i < iface->childCount();  ++i) {
+                if (iface->child(i)->role() == QAccessible::PageTab){
+                    emscripten::val elementTab = emscripten::val::undefined();
+                    elementTab = ensureHtmlElement(iface->child(i));
+                    elementTab.call<void>("setAttribute", std::string("aria-owns"), idName.toStdString());
+                    setHtmlElementGeometry(iface->child(i));
+                }
+            }
+        } break;
+
+        case QAccessible::PageTab:{
+            element =   document.call<emscripten::val>("createElement", std::string("button"));
+            element.call<void>("setAttribute", std::string("role"), std::string("tab"));
+            QString text = iface->text(QAccessible::Name);
+            element.call<void>("setAttribute", std::string("title"), text.toStdString());
+            element.call<void>("addEventListener", emscripten::val("click"),
+                               emscripten::val::module_property("qtEventReceived"), true);
+        } break;
+
+        case QAccessible::ScrollBar: {
+            element = document.call<emscripten::val>("createElement", std::string("div"));
+            element.call<void>("setAttribute", std::string("role"), std::string("scrollbar"));
+            std::string valueString = iface->valueInterface()->currentValue().toString().toStdString();
+            element.call<void>("setAttribute", std::string("aria-valuenow"), valueString);
+            element.call<void>("addEventListener", emscripten::val("change"),
+                               emscripten::val::module_property("qtEventReceived"), true);
+        } break;
+
+        case QAccessible::StaticText: {
+            element = document.call<emscripten::val>("createElement", std::string("textarea"));
+            element.call<void>("setAttribute", std::string("readonly"), std::string("true"));
+
         } break;
         case QAccessible::Dialog: {
             element = document.call<emscripten::val>("createElement", std::string("dialog"));
@@ -261,6 +351,14 @@ void QWasmAccessibility::setHtmlElementTextName(QAccessibleInterface *iface)
     element.set("innerHTML", text.toStdString()); // FIXME: use something else than innerHTML
 }
 
+void QWasmAccessibility::setHtmlElementTextNameLE(QAccessibleInterface *iface) {
+    emscripten::val element = ensureHtmlElement(iface);
+    QString text = iface->text(QAccessible::Name);
+    element.call<void>("setAttribute", std::string("name"), text.toStdString());
+    QString value = iface->text(QAccessible::Value);
+    element.set("innerHTML", value.toStdString());
+}
+
 void QWasmAccessibility::handleStaticTextUpdate(QAccessibleEvent *event)
 {
     switch (event->type()) {
@@ -271,14 +369,6 @@ void QWasmAccessibility::handleStaticTextUpdate(QAccessibleEvent *event)
         qCDebug(lcQpaAccessibility) << "TODO: implement handleStaticTextUpdate for event" << event->type();
     break;
     }
-}
-
-void QWasmAccessibility::setHtmlElementTextNameLE(QAccessibleInterface *iface) {
-    emscripten::val element = ensureHtmlElement(iface);
-    QString text = iface->text(QAccessible::Name);
-    element.call<void>("setAttribute", std::string("name"), text.toStdString());
-    QString value = iface->text(QAccessible::Value);
-    element.set("innerHTML", value.toStdString());
 }
 
 void QWasmAccessibility::handleLineEditUpdate(QAccessibleEvent *event) {
@@ -300,6 +390,41 @@ void QWasmAccessibility::handleLineEditUpdate(QAccessibleEvent *event) {
     }
 }
 
+void QWasmAccessibility::handleEventFromHtmlElement(const emscripten::val event)
+{
+
+    QAccessibleInterface *iface = m_elements.key(event["target"]);
+
+    if (iface == nullptr) {
+        return;
+    } else {
+        QString eventType = QString::fromStdString(event["type"].as<std::string>());
+        const auto& actionNames = QAccessibleBridgeUtils::effectiveActionNames(iface);
+
+        if (actionNames.contains(QAccessibleActionInterface::pressAction())) {
+
+            iface->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+
+        } else if (actionNames.contains(QAccessibleActionInterface::toggleAction())) {
+
+            iface->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+
+        } else if (actionNames.contains(QAccessibleActionInterface::increaseAction()) ||
+                   actionNames.contains(QAccessibleActionInterface::decreaseAction())) {
+
+            QString val = QString::fromStdString(event["target"]["value"].as<std::string>());
+
+            iface->valueInterface()->setCurrentValue(val.toInt());
+
+        } else if (eventType == "input") {
+
+            if (iface->editableTextInterface()) {
+                 std::string insertText = event["target"]["value"].as<std::string>();
+                iface->setText(QAccessible::Value, QString::fromStdString(insertText));
+            }
+        }
+    }
+}
 
 void QWasmAccessibility::handleButtonUpdate(QAccessibleEvent *event)
 {
@@ -309,8 +434,15 @@ void QWasmAccessibility::handleButtonUpdate(QAccessibleEvent *event)
 void QWasmAccessibility::handleCheckBoxUpdate(QAccessibleEvent *event)
 {
     switch (event->type()) {
+    case QAccessible::Focus:
     case QAccessible::NameChanged: {
         setHtmlElementTextName(event->accessibleInterface());
+    } break;
+    case QAccessible::StateChanged: {
+        QAccessibleInterface *accessible = event->accessibleInterface();
+        emscripten::val element = ensureHtmlElement(accessible);
+        bool checkedString = accessible->state().checked ? true : false;
+        element.call<void>("setAttribute", std::string("checked"), checkedString);
     } break;
     default:
         qCDebug(lcQpaAccessibility) << "TODO: implement handleCheckBoxUpdate for event" << event->type();
@@ -383,6 +515,113 @@ void QWasmAccessibility::populateAccessibilityTree(QAccessibleInterface *iface)
         populateAccessibilityTree(iface->child(i));
 }
 
+void QWasmAccessibility::handleRadioButtonUpdate(QAccessibleEvent *event)
+{
+    switch (event->type()) {
+    case QAccessible::Focus:
+    case QAccessible::NameChanged: {
+        setHtmlElementTextName(event->accessibleInterface());
+    } break;
+    case QAccessible::StateChanged: {
+        QAccessibleInterface *accessible = event->accessibleInterface();
+        emscripten::val element = ensureHtmlElement(accessible);
+        std::string checkedString = accessible->state().checked ? "true" : "false";
+        element.call<void>("setAttribute", std::string("checked"), checkedString);
+    } break;
+    default:
+        qDebug() << "TODO: implement handleRadioButtonUpdate for event" << event->type();
+    break;
+    }
+}
+
+void QWasmAccessibility::handleSpinBoxUpdate(QAccessibleEvent *event)
+{
+    switch (event->type()) {
+    case QAccessible::Focus:
+    case QAccessible::NameChanged: {
+        setHtmlElementTextName(event->accessibleInterface());
+    } break;
+    case QAccessible::ValueChanged: {
+        QAccessibleInterface *accessible = event->accessibleInterface();
+        emscripten::val element = ensureHtmlElement(accessible);
+        std::string valueString = accessible->valueInterface()->currentValue().toString().toStdString();
+        element.call<void>("setAttribute", std::string("value"), valueString);
+    } break;
+    default:
+        qDebug() << "TODO: implement handleSpinBoxUpdate for event" << event->type();
+    break;
+    }
+}
+
+void QWasmAccessibility::handleSliderUpdate(QAccessibleEvent *event)
+{
+    switch (event->type()) {
+    case QAccessible::Focus:
+    case QAccessible::NameChanged: {
+        setHtmlElementTextName(event->accessibleInterface());
+    } break;
+    case QAccessible::ValueChanged: {
+        QAccessibleInterface *accessible = event->accessibleInterface();
+        emscripten::val element = ensureHtmlElement(accessible);
+        std::string valueString = accessible->valueInterface()->currentValue().toString().toStdString();
+        element.call<void>("setAttribute", std::string("value"), valueString);
+    } break;
+    default:
+        qDebug() << "TODO: implement handleSliderUpdate for event" << event->type();
+    break;
+    }
+}
+
+void QWasmAccessibility::handleScrollBarUpdate(QAccessibleEvent *event)
+{
+    switch (event->type()) {
+    case QAccessible::Focus:
+    case QAccessible::NameChanged: {
+        setHtmlElementTextName(event->accessibleInterface());
+    } break;
+    case QAccessible::ValueChanged: {
+        QAccessibleInterface *accessible = event->accessibleInterface();
+        emscripten::val element = ensureHtmlElement(accessible);
+        std::string valueString = accessible->valueInterface()->currentValue().toString().toStdString();
+        element.call<void>("setAttribute", std::string("aria-valuenow"), valueString);
+    } break;
+    default:
+        qDebug() << "TODO: implement handleSliderUpdate for event" << event->type();
+    break;
+    }
+
+}
+
+void QWasmAccessibility::handlePageTabUpdate(QAccessibleEvent *event)
+{
+    switch (event->type()) {
+    case QAccessible::NameChanged: {
+        setHtmlElementTextName(event->accessibleInterface());
+    } break;
+    case QAccessible::Focus: {
+        setHtmlElementTextName(event->accessibleInterface());
+    } break;
+    default:
+        qDebug() << "TODO: implement handlePageTabUpdate for event" << event->type();
+    break;
+    }
+}
+
+void QWasmAccessibility::handlePageTabListUpdate(QAccessibleEvent *event)
+{
+    switch (event->type()) {
+    case QAccessible::NameChanged: {
+        setHtmlElementTextName(event->accessibleInterface());
+    } break;
+    case QAccessible::Focus: {
+        setHtmlElementTextName(event->accessibleInterface());
+    } break;
+    default:
+        qDebug() << "TODO: implement handlePageTabUpdate for event" << event->type();
+    break;
+    }
+}
+
 void QWasmAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
     if (!m_accessibilityEnabled)
@@ -442,6 +681,23 @@ void QWasmAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
     case QAccessible::ToolBar:
     case QAccessible::ButtonMenu:
        handleToolUpdate(event);
+    case QAccessible::RadioButton:
+        handleRadioButtonUpdate(event);
+    break;
+    case QAccessible::SpinBox:
+        handleSpinBoxUpdate(event);
+    break;
+    case QAccessible::Slider:
+        handleSliderUpdate(event);
+    break;
+    case QAccessible::PageTab:
+        handlePageTabUpdate(event);
+    break;
+    case QAccessible::PageTabList:
+        handlePageTabListUpdate(event);
+    break;
+    case QAccessible::ScrollBar:
+        handleScrollBarUpdate(event);
     break;
     default:
         qCDebug(lcQpaAccessibility) << "TODO: implement notifyAccessibilityUpdate for role" << iface->role();
@@ -461,4 +717,13 @@ void QWasmAccessibility::initialize()
 void QWasmAccessibility::cleanup()
 {
 
+}
+
+void QWasmAccessibility::onHtmlEventReceived(emscripten::val event)
+{
+    static_cast<QWasmAccessibility *>(QWasmIntegration::get()->accessibility())->handleEventFromHtmlElement(event);
+}
+
+EMSCRIPTEN_BINDINGS(qtButtonEvent) {
+    function("qtEventReceived", &QWasmAccessibility::onHtmlEventReceived);
 }

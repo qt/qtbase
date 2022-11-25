@@ -44,6 +44,7 @@ private:
     void setHtmlElementGeometry(QAccessibleInterface *iface);
     void setHtmlElementGeometry(emscripten::val element, QRect geometry);
     void setHtmlElementTextName(QAccessibleInterface *iface);
+    void setHtmlElementTextNameLE(QAccessibleInterface *iface);
 
     void handleStaticTextUpdate(QAccessibleEvent *event);
     void handleButtonUpdate(QAccessibleEvent *event);
@@ -52,8 +53,14 @@ private:
     void handleMenuUpdate(QAccessibleEvent *event);
     void handleToolUpdate(QAccessibleEvent *event);
     void handleLineEditUpdate(QAccessibleEvent *event);
-    void setHtmlElementTextNameLE(QAccessibleInterface *iface);
+    void handleRadioButtonUpdate(QAccessibleEvent *event);
+    void handleSpinBoxUpdate(QAccessibleEvent *event);
+    void handlePageTabUpdate(QAccessibleEvent *event);
+    void handleSliderUpdate(QAccessibleEvent *event);
+    void handleScrollBarUpdate(QAccessibleEvent *event);
+    void handlePageTabListUpdate(QAccessibleEvent *event);
 
+    void handleEventFromHtmlElement(const emscripten::val event);
 
     void populateAccessibilityTree(QAccessibleInterface *iface);
     void notifyAccessibilityUpdate(QAccessibleEvent *event) override;
@@ -61,6 +68,8 @@ private:
     void initialize() override;
     void cleanup() override;
 
+public: // public for EMSCRIPTEN_BINDINGS
+    static void onHtmlEventReceived(emscripten::val event);
 
 private:
     static QWasmAccessibility *s_instance;
