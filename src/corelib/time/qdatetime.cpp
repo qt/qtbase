@@ -3690,7 +3690,7 @@ void QDateTime::setTime(QTime time)
 
 /*!
     Sets the time specification used in this datetime to \a spec.
-    The datetime will refer to a different point in time.
+    The datetime may refer to a different point in time.
 
     If \a spec is Qt::OffsetFromUTC then the timeSpec() will be set
     to Qt::UTC, i.e. an effective offset of 0.
@@ -3717,7 +3717,7 @@ void QDateTime::setTimeSpec(Qt::TimeSpec spec)
     \since 5.2
 
     Sets the timeSpec() to Qt::OffsetFromUTC and the offset to \a offsetSeconds.
-    The datetime will refer to a different point in time.
+    The datetime may refer to a different point in time.
 
     The maximum and minimum offset is 14 positive or negative hours.  If
     \a offsetSeconds is larger or smaller than that, then the result is
@@ -3739,7 +3739,7 @@ void QDateTime::setOffsetFromUtc(int offsetSeconds)
     \since 5.2
 
     Sets the time zone used in this datetime to \a toZone.
-    The datetime will refer to a different point in time.
+    The datetime may refer to a different point in time.
 
     If \a toZone is invalid then the datetime will be invalid.
 
