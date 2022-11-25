@@ -6,13 +6,20 @@
 # special case skip regeneration
 # special case begin
 set(template_files
-    AndroidManifest.xml
-    build.gradle)
+    "${CMAKE_CURRENT_SOURCE_DIR}/AndroidManifest.xml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/build.gradle")
 
 set(template_directories
-    res)
+    "${CMAKE_CURRENT_SOURCE_DIR}/res")
+
+add_custom_target(Qt${QtBase_VERSION_MAJOR}AndroidTemplates
+    SOURCES
+        ${template_files}
+        "${CMAKE_CURRENT_SOURCE_DIR}/res/values/libs.xml"
+)
 
 qt_path_join(destination ${QT_INSTALL_DIR} "src/android/templates")
+
 qt_copy_or_install(FILES ${template_files}
                    DESTINATION "${destination}")
 
