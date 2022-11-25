@@ -3338,7 +3338,7 @@ inline QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime,
 */
 
 /*!
-    Constructs a null datetime.
+    Constructs a null datetime, nominally using local time.
 
     A null datetime is invalid, since its date and time are invalid.
 
@@ -3359,16 +3359,18 @@ QDateTime::QDateTime() noexcept
 
     If \a date is valid and \a time is not, the time will be set to midnight.
 
-    If the \a spec is not Qt::OffsetFromUTC then \a offsetSeconds will be ignored.
-
-    If the \a spec is Qt::OffsetFromUTC and \a offsetSeconds is 0 then the
+    If \a spec is not Qt::OffsetFromUTC then \a offsetSeconds will be
+    ignored. If \a spec is Qt::OffsetFromUTC and \a offsetSeconds is 0 then the
     timeSpec() will be set to Qt::UTC, i.e. an offset of 0 seconds.
 
     If \a spec is Qt::TimeZone then the spec will be set to Qt::LocalTime,
     i.e. the current system time zone.  To create a Qt::TimeZone datetime
     use the correct constructor.
-*/
 
+    If \a date lies outside the range of dates representable by QDateTime, the
+    result is invalid. If \a spec is Qt::LocalTime and the system's time-zone
+    skipped over the given date and time, the result is invalid.
+*/
 QDateTime::QDateTime(QDate date, QTime time, Qt::TimeSpec spec, int offsetSeconds)
          : d(QDateTimePrivate::create(date, time, spec, offsetSeconds))
 {
@@ -3833,8 +3835,8 @@ qint64 QDateTime::toSecsSinceEpoch() const
     Sets the datetime to represent a moment a given number, \a msecs, of
     milliseconds after the start, in UTC, of the year 1970.
 
-    On systems that do not support time zones this function will behave as if
-    local time were Qt::UTC.
+    On systems that do not support time zones, this function will
+    behave as if local time were Qt::UTC.
 
     Note that passing the minimum of \c qint64
     (\c{std::numeric_limits<qint64>::min()}) to \a msecs will result in
@@ -3899,8 +3901,8 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
     Sets the datetime to represent a moment a given number, \a secs, of seconds
     after the start, in UTC, of the year 1970.
 
-    On systems that do not support time zones this function will behave as if
-    local time were Qt::UTC.
+    On systems that do not support time zones, this function will
+    behave as if local time were Qt::UTC.
 
     \sa setMSecsSinceEpoch(), toSecsSinceEpoch(), fromSecsSinceEpoch()
 */
@@ -4406,14 +4408,13 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
 */
 
 /*!
-    Returns a copy of this datetime converted to the given time
-    \a spec.
+    Returns a copy of this datetime converted to the given time \a spec.
 
-    If \a spec is Qt::OffsetFromUTC then it is set to Qt::UTC.  To set to a
-    spec of Qt::OffsetFromUTC use toOffsetFromUtc().
+    If \a spec is Qt::OffsetFromUTC then it is set to Qt::UTC. To set to a fixed
+    offset from UTC, use toTimeZone() or toOffsetFromUtc().
 
-    If \a spec is Qt::TimeZone then it is set to Qt::LocalTime,
-    i.e. the local Time Zone.
+    If \a spec is Qt::TimeZone then it is set to Qt::LocalTime, i.e. the local
+    Time Zone. To set a specified time-zone, use toTimeZone().
 
     Example:
     \snippet code/src_corelib_time_qdatetime.cpp 16
@@ -4430,8 +4431,6 @@ QDateTime QDateTime::toTimeSpec(Qt::TimeSpec spec) const
 
 /*!
     \since 5.2
-
-    \fn QDateTime QDateTime::toOffsetFromUtc(int offsetSeconds) const
 
     Returns a copy of this datetime converted to a spec of Qt::OffsetFromUTC
     with the given \a offsetSeconds.
@@ -4604,9 +4603,10 @@ bool QDateTime::precedes(const QDateTime &other) const
     \fn qint64 QDateTime::currentMSecsSinceEpoch()
     \since 4.7
 
-    Returns the number of milliseconds since 1970-01-01T00:00:00 Universal
-    Coordinated Time. This number is like the POSIX time_t variable, but
-    expressed in milliseconds instead.
+    Returns the current number of milliseconds since the UTC start of 1970.
+
+    This number is like the POSIX time_t variable, but expressed in milliseconds
+    instead of seconds.
 
     \sa currentDateTime(), currentDateTimeUtc(), toTimeSpec()
 */
@@ -4615,8 +4615,9 @@ bool QDateTime::precedes(const QDateTime &other) const
     \fn qint64 QDateTime::currentSecsSinceEpoch()
     \since 5.8
 
-    Returns the number of seconds since 1970-01-01T00:00:00 Universal
-    Coordinated Time.
+    Returns the number of seconds since the UTC start of 1970.
+
+    This number is like the POSIX time_t variable.
 
     \sa currentMSecsSinceEpoch()
 */
@@ -4813,10 +4814,11 @@ qint64 QDateTime::currentSecsSinceEpoch() noexcept
 
     If the \a spec is not Qt::OffsetFromUTC then the \a offsetSeconds will be
     ignored.  If the \a spec is Qt::OffsetFromUTC and the \a offsetSeconds is 0
-    then the spec will be set to Qt::UTC, i.e. an offset of 0 seconds.
+    then Qt::UTC will be used as the \a spec, since UTC has zero offset.
 
-    If \a spec is Qt::TimeZone then the spec will be set to Qt::LocalTime,
-    i.e. the current system time zone.
+    If \a spec is Qt::TimeZone then Qt::LocalTime will be used in its place,
+    equivalent to using the current system time zone (but differently
+    represented).
 
     \sa fromSecsSinceEpoch(), toMSecsSinceEpoch(), setMSecsSinceEpoch()
 */
@@ -4842,10 +4844,11 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int of
 
     If the \a spec is not Qt::OffsetFromUTC then the \a offsetSeconds will be
     ignored.  If the \a spec is Qt::OffsetFromUTC and the \a offsetSeconds is 0
-    then the spec will be set to Qt::UTC, i.e. an offset of 0 seconds.
+    then Qt::UTC will be used as the \a spec, since UTC has zero offset.
 
-    If \a spec is Qt::TimeZone then the spec will be set to Qt::LocalTime,
-    i.e. the current system time zone.
+    If \a spec is Qt::TimeZone then Qt::LocalTime will be used in its place,
+    equivalent to using the current system time zone (but differently
+    represented).
 
     \sa fromMSecsSinceEpoch(), toSecsSinceEpoch(), setSecsSinceEpoch()
 */
