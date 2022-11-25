@@ -595,6 +595,17 @@ public class QtNative
         });
     }
 
+    public static Display getDisplay(int displayId)
+    {
+        Context context = getContext();
+        DisplayManager displayManager =
+                (DisplayManager)context.getSystemService(Context.DISPLAY_SERVICE);
+        if (displayManager != null) {
+            return displayManager.getDisplay(displayId);
+        }
+        return null;
+    }
+
     public static List<Display> getAvailableDisplays()
     {
         Context context = getContext();
@@ -1412,6 +1423,9 @@ public class QtNative
                                                 double density, float refreshRate);
     public static native void handleOrientationChanged(int newRotation, int nativeOrientation);
     public static native void handleRefreshRateChanged(float refreshRate);
+    public static native void handleScreenAdded(int displayId);
+    public static native void handleScreenChanged(int displayId);
+    public static native void handleScreenRemoved(int displayId);
     // screen methods
     public static native void handleUiDarkModeChanged(int newUiMode);
 
