@@ -335,10 +335,10 @@ void QGraphicsViewPrivate::recalculateContentSize()
 {
     Q_Q(QGraphicsView);
 
-    QSize maxSize = q->maximumViewportSize();
+    const QSize maxSize = q->maximumViewportSize();
     int width = maxSize.width();
     int height = maxSize.height();
-    QRectF viewRect = matrix.mapRect(q->sceneRect());
+    const QRectF viewRect = matrix.mapRect(q->sceneRect());
 
     bool frameOnlyAround = (q->style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents, nullptr, q));
     if (frameOnlyAround) {
@@ -350,9 +350,8 @@ void QGraphicsViewPrivate::recalculateContentSize()
 
     // Adjust the maximum width and height of the viewport based on the width
     // of visible scroll bars.
-    int scrollBarExtent = q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, nullptr, q);
-    if (frameOnlyAround)
-        scrollBarExtent += frameWidth * 2;
+    const int scrollBarExtent = q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, nullptr, q)
+                              + (frameOnlyAround ? frameWidth * 2 : 0);
 
     // We do not need to subtract the width scrollbars whose policy is
     // Qt::ScrollBarAlwaysOn, this was already done by maximumViewportSize().
@@ -374,62 +373,70 @@ void QGraphicsViewPrivate::recalculateContentSize()
     // Setting the ranges of these scroll bars can/will cause the values to
     // change, and scrollContentsBy() will be called correspondingly. This
     // will reset the last center point.
-    QPointF savedLastCenterPoint = lastCenterPoint;
+    const QPointF savedLastCenterPoint = lastCenterPoint;
 
     // Remember the former indent settings
-    qreal oldLeftIndent = leftIndent;
-    qreal oldTopIndent = topIndent;
+    const qreal oldLeftIndent = leftIndent;
+    const qreal oldTopIndent = topIndent;
 
     // If the whole scene fits horizontally, we center the scene horizontally,
     // and ignore the horizontal scroll bars.
-    int left =  q_round_bound(viewRect.left());
-    int right = q_round_bound(viewRect.right() - width);
+    const int left =  q_round_bound(viewRect.left());
+    const int right = q_round_bound(viewRect.right() - width);
     if (left >= right) {
-        hbar->setRange(0, 0);
-
         switch (alignment & Qt::AlignHorizontal_Mask) {
         case Qt::AlignLeft:
             leftIndent = -viewRect.left();
             break;
         case Qt::AlignRight:
-            leftIndent = width - viewRect.width() - viewRect.left() - 1;
+            leftIndent = maxSize.width() - viewRect.width() - viewRect.left() - 1;
             break;
         case Qt::AlignHCenter:
         default:
-            leftIndent = width / 2 - (viewRect.left() + viewRect.right()) / 2;
+            leftIndent = maxSize.width() / 2 - (viewRect.left() + viewRect.right()) / 2;
             break;
         }
+
+        hbar->setRange(0, 0);
     } else {
+        leftIndent = 0;
+
         hbar->setRange(left, right);
         hbar->setPageStep(width);
         hbar->setSingleStep(width / 20);
-        leftIndent = 0;
+
+        if (oldLeftIndent != 0)
+            hbar->setValue(-oldLeftIndent);
     }
 
     // If the whole scene fits vertically, we center the scene vertically, and
     // ignore the vertical scroll bars.
-    int top = q_round_bound(viewRect.top());
-    int bottom = q_round_bound(viewRect.bottom()  - height);
+    const int top = q_round_bound(viewRect.top());
+    const int bottom = q_round_bound(viewRect.bottom()  - height);
     if (top >= bottom) {
-        vbar->setRange(0, 0);
-
         switch (alignment & Qt::AlignVertical_Mask) {
         case Qt::AlignTop:
             topIndent = -viewRect.top();
             break;
         case Qt::AlignBottom:
-            topIndent = height - viewRect.height() - viewRect.top() - 1;
+            topIndent = maxSize.height() - viewRect.height() - viewRect.top() - 1;
             break;
         case Qt::AlignVCenter:
         default:
-            topIndent = height / 2 - (viewRect.top() + viewRect.bottom()) / 2;
+            topIndent = maxSize.height() / 2 - (viewRect.top() + viewRect.bottom()) / 2;
             break;
         }
+
+        vbar->setRange(0, 0);
     } else {
+        topIndent = 0;
+
         vbar->setRange(top, bottom);
         vbar->setPageStep(height);
         vbar->setSingleStep(height / 20);
-        topIndent = 0;
+
+        if (oldTopIndent != 0)
+            vbar->setValue(-oldTopIndent);
     }
 
     // Restorethe center point from before the ranges changed.
