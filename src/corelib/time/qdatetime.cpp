@@ -4410,6 +4410,8 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
 /*!
     Returns a copy of this datetime converted to the given time \a spec.
 
+    The result represents the same moment in time as, and is equal to, this datetime.
+
     If \a spec is Qt::OffsetFromUTC then it is set to Qt::UTC. To set to a fixed
     offset from UTC, use toTimeZone() or toOffsetFromUtc().
 
@@ -4435,7 +4437,9 @@ QDateTime QDateTime::toTimeSpec(Qt::TimeSpec spec) const
     Returns a copy of this datetime converted to a spec of Qt::OffsetFromUTC
     with the given \a offsetSeconds.
 
-    If the \a offsetSeconds equals 0 then a UTC datetime will be returned
+    If the \a offsetSeconds equals 0 then a UTC datetime will be returned.
+
+    The result represents the same moment in time as, and is equal to, this datetime.
 
     \sa setOffsetFromUtc(), offsetFromUtc(), toUTC(), toLocalTime(), toTimeZone(), toTimeSpec()
 */
@@ -4455,8 +4459,9 @@ QDateTime QDateTime::toOffsetFromUtc(int offsetSeconds) const
 }
 
 /*!
-    Returns a datetime containing the date and time information in
-    this datetime, but specified using the Qt::LocalTime definition.
+    Returns a copy of this datetime converted to local time.
+
+    The result represents the same moment in time as, and is equal to, this datetime.
 
     Example:
 
@@ -4479,8 +4484,9 @@ QDateTime QDateTime::toLocalTime() const
 }
 
 /*!
-    Returns a datetime containing the date and time information in
-    this datetime, but specified using the Qt::UTC definition.
+    Returns a copy of this datetime converted to UTC.
+
+    The result represents the same moment in time as, and is equal to, this datetime.
 
     Example:
 
@@ -4506,7 +4512,9 @@ QDateTime QDateTime::toUTC() const
 /*!
     \since 5.2
 
-    Returns a copy of this datetime converted to the given \a timeZone
+    Returns a copy of this datetime converted to the given \a timeZone.
+
+    The result represents the same moment in time as, and is equal to, this datetime.
 
     \sa timeZone(), toUTC(), toLocalTime(), toOffsetFromUtc(), toTimeSpec()
 */
