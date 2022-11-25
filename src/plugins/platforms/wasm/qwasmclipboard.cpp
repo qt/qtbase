@@ -80,67 +80,81 @@ static void qWasmClipboardPaste(QMimeData *mData)
 
 static void qClipboardPasteTo(val dataTransfer)
 {
-    val clipboardData = dataTransfer["clipboardData"];
-    val types = clipboardData["types"];
-    int typesCount = types["length"].as<int>();
-    std::string stdMimeFormat;
-    QMimeData *mMimeData = new QMimeData;
-    for (int i = 0; i < typesCount; i++) {
-        stdMimeFormat = types[i].as<std::string>();
-        QString mimeFormat =  QString::fromStdString(stdMimeFormat);
-        if (mimeFormat.contains("STRING", Qt::CaseSensitive) || mimeFormat.contains("TEXT", Qt::CaseSensitive))
-            continue;
+    enum class ItemKind {
+        File,
+        String,
+    };
 
-        if (mimeFormat.contains("text")) {
-// also "text/plain;charset=utf-8"
-// "UTF8_STRING" "MULTIPLE"
-            val mimeData = clipboardData.call<val>("getData", val(stdMimeFormat)); // as DataTransfer
+    struct Data
+    {
+        std::unique_ptr<QMimeData> data;
+        int fileCount = 0;
+        int doneCount = 0;
+    };
 
-            const QString qstr = QWasmString::toQString(mimeData);
+    auto sharedData = std::make_shared<Data>();
+    sharedData->data = std::make_unique<QMimeData>();
 
-            if (qstr.length() > 0) {
-                if (mimeFormat.contains("text/html")) {
-                    mMimeData->setHtml(qstr);
-                } else if (mimeFormat.isEmpty() || mimeFormat.contains("text/plain")) {
-                    mMimeData->setText(qstr); // the type can be empty
-                } else {
-                    mMimeData->setData(mimeFormat, qstr.toLocal8Bit());}
+    auto continuation = [sharedData]() {
+        Q_ASSERT(sharedData->doneCount <= sharedData->fileCount);
+        if (sharedData->doneCount < sharedData->fileCount)
+            return;
+
+        if (!sharedData->data->formats().isEmpty())
+            qWasmClipboardPaste(sharedData->data.release());
+    };
+
+    const val clipboardData = dataTransfer["clipboardData"];
+    const val items = clipboardData["items"];
+    for (int i = 0; i < items["length"].as<int>(); ++i) {
+        const val item = items[i];
+        const auto itemKind =
+                item["kind"].as<std::string>() == "string" ? ItemKind::String : ItemKind::File;
+        const auto itemMimeType = QString::fromStdString(item["type"].as<std::string>());
+
+        switch (itemKind) {
+        case ItemKind::File: {
+            ++sharedData->fileCount;
+
+            qstdweb::File file(item.call<emscripten::val>("getAsFile"));
+
+            QByteArray fileContent(file.size(), Qt::Uninitialized);
+            file.stream(fileContent.data(),
+                        [continuation, itemMimeType, fileContent, sharedData]() {
+                            if (!fileContent.isEmpty()) {
+                                if (itemMimeType.startsWith("image/")) {
+                                    QImage image;
+                                    image.loadFromData(fileContent, nullptr);
+                                    sharedData->data->setImageData(image);
+                                } else {
+                                    sharedData->data->setData(itemMimeType, fileContent.data());
+                                }
+                            }
+                            ++sharedData->doneCount;
+                            continuation();
+                        });
+            break;
+        }
+        case ItemKind::String:
+            if (itemMimeType.contains("STRING", Qt::CaseSensitive)
+                || itemMimeType.contains("TEXT", Qt::CaseSensitive)) {
+                break;
             }
-        } else {
-            val items = clipboardData["items"];
+            const QString data = QWasmString::toQString(
+                    clipboardData.call<val>("getData", val(itemMimeType.toStdString())));
 
-            int itemsCount = items["length"].as<int>();
-            // handle data
-            for (int i = 0; i < itemsCount; i++) {
-                val item = items[i];
-                val clipboardFile = item.call<emscripten::val>("getAsFile"); // string kind is handled above
-                if (clipboardFile.isUndefined() || item["kind"].as<std::string>() == "string" ) {
-                    continue;
-                }
-                qstdweb::File file(clipboardFile);
-
-                mimeFormat =  QString::fromStdString(file.type());
-                QByteArray fileContent;
-                fileContent.resize(file.size());
-
-                file.stream(fileContent.data(), [=]() {
-                    if (!fileContent.isEmpty()) {
-
-                        if (mimeFormat.contains("image")) {
-                            QImage image;
-                            image.loadFromData(fileContent, nullptr);
-                            mMimeData->setImageData(image);
-                        } else {
-                            mMimeData->setData(mimeFormat,fileContent.data());
-                        }
-                        qWasmClipboardPaste(mMimeData);
-                    }
-                });
-            } // next item
+            if (!data.isEmpty()) {
+                if (itemMimeType == "text/html")
+                    sharedData->data->setHtml(data);
+                else if (itemMimeType.isEmpty() || itemMimeType == "text/plain")
+                    sharedData->data->setText(data); // the type can be empty
+                else
+                    sharedData->data->setData(itemMimeType, data.toLocal8Bit());
+            }
+            break;
         }
     }
-    if (!mMimeData->formats().isEmpty())
-        qWasmClipboardPaste(mMimeData);
+    continuation();
 }
 
 EMSCRIPTEN_BINDINGS(qtClipboardModule) {
