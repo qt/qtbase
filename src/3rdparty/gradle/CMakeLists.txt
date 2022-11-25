@@ -42,3 +42,11 @@ qt_copy_or_install(
     DESTINATION
         "${destination}"
 )
+
+if(NOT QT_WILL_INSTALL)
+    qt_internal_copy_at_build_time(TARGET Qt${QtBase_VERSION_MAJOR}GradleScripts
+        FILES ${gradle_programs} ${gradle_files}
+        DIRECTORIES ${gradle_wrapper}
+        DESTINATION ${destination}
+    )
+endif()

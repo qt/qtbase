@@ -25,4 +25,13 @@ qt_copy_or_install(FILES ${template_files}
 
 qt_copy_or_install(DIRECTORY ${template_directories}
                    DESTINATION "${destination}")
+
+if(NOT QT_WILL_INSTALL)
+    qt_internal_copy_at_build_time(TARGET Qt${QtBase_VERSION_MAJOR}AndroidTemplates
+        FILES ${template_files}
+        DIRECTORIES ${template_directories}
+        DESTINATION ${destination}
+    )
+endif()
+
 # special case end

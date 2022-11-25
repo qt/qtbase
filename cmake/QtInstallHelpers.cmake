@@ -183,3 +183,67 @@ function(_qt_internal_create_versioned_link_or_copy install_dir base_name suffix
     list(JOIN code "\n" code)
     install(CODE "${code}")
 endfunction()
+
+# Use case is copying files or directories in a non-prefix build with each build, so that changes
+# are available each time, this is useful for some Android templates that are needed for building,
+# apks and need to sync changes each time a build is started
+function(qt_internal_copy_at_build_time)
+    set(flags)
+    set(options TARGET DESTINATION)
+    set(multiopts FILES DIRECTORIES)
+    cmake_parse_arguments(arg "${flags}" "${options}" "${multiopts}" ${ARGN})
+
+    file(MAKE_DIRECTORY "${arg_DESTINATION}")
+
+    unset(outputs)
+    foreach(dir_to_copy IN LISTS arg_DIRECTORIES)
+        get_filename_component(file_name "${dir_to_copy}" NAME)
+        set(destination_file_name "${arg_DESTINATION}/${file_name}")
+
+        file(GLOB_RECURSE all_files_in_dir RELATIVE "${dir_to_copy}" "${dir_to_copy}/*")
+        set(dir_outputs ${all_files_in_dir})
+        set(dir_deps ${all_files_in_dir})
+
+        list(TRANSFORM dir_outputs PREPEND "${destination_file_name}/")
+        list(TRANSFORM dir_deps PREPEND "${dir_to_copy}/")
+
+        add_custom_command(OUTPUT ${dir_outputs}
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${dir_to_copy} "${destination_file_name}"
+            DEPENDS ${dir_deps}
+            COMMENT "Copying directory ${dir_to_copy} to ${arg_DESTINATION}."
+        )
+        list(APPEND outputs ${dir_outputs})
+    endforeach()
+
+    unset(file_outputs)
+    unset(files_to_copy)
+    foreach(path_to_copy IN LISTS arg_FILES)
+        get_filename_component(file_name "${path_to_copy}" NAME)
+        set(destination_file_name "${arg_DESTINATION}/${file_name}")
+
+        list(APPEND file_outputs "${destination_file_name}")
+        list(APPEND files_to_copy "${path_to_copy}")
+    endforeach()
+
+    if(files_to_copy)
+        add_custom_command(OUTPUT ${file_outputs}
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${files_to_copy} ${arg_DESTINATION}
+            DEPENDS ${files_to_copy}
+            COMMENT "Copying files ${files_to_copy} to ${arg_DESTINATION}."
+        )
+        list(APPEND outputs ${file_outputs})
+    endif()
+
+    get_property(count GLOBAL PROPERTY _qt_internal_copy_at_build_time_count)
+    if(NOT count)
+        set(count 0)
+    endif()
+
+    add_custom_target(qt_internal_copy_at_build_time_${count} DEPENDS ${outputs})
+    if(arg_TARGET)
+        add_dependencies(${arg_TARGET} qt_internal_copy_at_build_time_${count})
+    endif()
+
+    math(EXPR count "${count} + 1")
+    set_property(GLOBAL PROPERTY _qt_internal_copy_at_build_time_count ${count})
+endfunction()
