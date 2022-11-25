@@ -2544,7 +2544,7 @@ static bool mergeGradleProperties(const QString &path, GradleProperties properti
                     continue;
                 }
             }
-            file.write(line);
+            file.write(line.trimmed() + '\n');
         }
         oldFile.close();
         QFile::remove(oldPathStr);
