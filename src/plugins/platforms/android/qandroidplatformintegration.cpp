@@ -61,6 +61,21 @@ Q_DECLARE_JNI_CLASS(Display, "android/view/Display")
 
 Q_DECLARE_JNI_TYPE(List, "Ljava/util/List;")
 
+namespace {
+
+QAndroidPlatformScreen* createScreenForDisplayId(int displayId)
+{
+    const QJniObject display = QJniObject::callStaticObjectMethod<QtJniTypes::Display>(
+        QtJniTypes::className<QtJniTypes::QtNative>(),
+        "getDisplay",
+        displayId);
+    if (!display.isValid())
+        return nullptr;
+    return new QAndroidPlatformScreen(display);
+}
+
+} // anonymous namespace
+
 void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
 {
     if (resource=="JavaVM")
@@ -168,7 +183,7 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     if (Q_UNLIKELY(!eglBindAPI(EGL_OPENGL_ES_API)))
         qFatal("Could not bind GL_ES API");
 
-    static const int primaryDisplayId = QJniObject::getStaticField<jint>(
+    m_primaryDisplayId = QJniObject::getStaticField<jint>(
         QtJniTypes::className<QtJniTypes::Display>(), "DEFAULT_DISPLAY");
 
     const QJniObject nativeDisplaysList = QJniObject::callStaticObjectMethod<QtJniTypes::List>(
@@ -179,14 +194,15 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     for (int i = 0; i < numberOfAvailableDisplays; ++i) {
         const QJniObject display =
                 nativeDisplaysList.callObjectMethod<jobject, jint>("get", jint(i));
-
-        const bool isPrimary = (primaryDisplayId == display.callMethod<jint>("getDisplayId"));
+        const int displayId = display.callMethod<jint>("getDisplayId");
+        const bool isPrimary = (m_primaryDisplayId == displayId);
         auto screen = new QAndroidPlatformScreen(display);
 
         if (isPrimary)
             m_primaryScreen = screen;
 
         QWindowSystemInterface::handleScreenAdded(screen, isPrimary);
+        m_screens[displayId] = screen;
     }
 
     if (numberOfAvailableDisplays == 0) {
@@ -545,6 +561,49 @@ void QAndroidPlatformIntegration::setRefreshRate(qreal refreshRate)
         QMetaObject::invokeMethod(m_primaryScreen, "setRefreshRate", Qt::AutoConnection,
                                   Q_ARG(qreal, refreshRate));
 }
+
+void QAndroidPlatformIntegration::handleScreenAdded(int displayId)
+{
+    auto result = m_screens.insert(displayId, nullptr);
+    if (result.first->second == nullptr) {
+        auto it = result.first;
+        it->second = createScreenForDisplayId(displayId);
+        if (it->second == nullptr)
+            return;
+        const bool isPrimary = (m_primaryDisplayId == displayId);
+        if (isPrimary)
+            m_primaryScreen = it->second;
+        QWindowSystemInterface::handleScreenAdded(it->second, isPrimary);
+    } else {
+        qWarning() << "Display with id" << displayId << "already exists.";
+    }
+}
+
+void QAndroidPlatformIntegration::handleScreenChanged(int displayId)
+{
+    auto it = m_screens.find(displayId);
+    if (it == m_screens.end() || it->second == nullptr) {
+        handleScreenAdded(displayId);
+    }
+    // We do not do anything more here as handling of change of
+    // rotation and refresh rate is done in QtActivityDelegate java class
+    // which calls QAndroidPlatformIntegration::setOrientation, and
+    // QAndroidPlatformIntegration::setRefreshRate accordingly.
+}
+
+void QAndroidPlatformIntegration::handleScreenRemoved(int displayId)
+{
+    auto it = m_screens.find(displayId);
+
+    if (it == m_screens.end())
+        return;
+
+    if (it->second != nullptr)
+        QWindowSystemInterface::handleScreenRemoved(it->second);
+
+    m_screens.erase(it);
+}
+
 #if QT_CONFIG(vulkan)
 
 QPlatformVulkanInstance *QAndroidPlatformIntegration::createPlatformVulkanInstance(QVulkanInstance *instance) const
