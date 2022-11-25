@@ -64,8 +64,6 @@ public:
     void disconnectBackButton();
     void hideBackButton() { if (backButton_) backButton_->hide(); }
     QColor basicWindowFrameColor();
-    enum VistaState { VistaAero, VistaBasic, Classic, Dirty };
-    static VistaState vistaState();
     static int titleBarSize() { return QVistaHelper::titleBarSizeDp() / QVistaHelper::m_devicePixelRatio; }
     static int titleBarSizeDp() { return QVistaHelper::frameSizeDp() + QVistaHelper::captionSizeDp(); }
     static int topPadding(const QPaintDevice *device) { // padding under text
@@ -77,8 +75,8 @@ public:
 
 private:
     HWND wizardHWND() const;
-    bool drawTitleText(QPainter *painter, const QString &text, const QRect &rect, HDC hdc);
-    static bool drawBlackRect(const QRect &rect, HDC hdc);
+    void drawTitleText(QPainter *painter, const QString &text, const QRect &rect, HDC hdc);
+    static void drawBlackRect(const QRect &rect, HDC hdc);
 
     static int frameSize() { return QVistaHelper::frameSizeDp() / QVistaHelper::m_devicePixelRatio; }
     static int frameSizeDp();
@@ -102,10 +100,6 @@ private:
     void mouseReleaseEvent(QMouseEvent *event);
     bool eventFilter(QObject *obj, QEvent *event) override;
 
-    static int instanceCount;
-    static VistaState cachedVistaState;
-    static bool isCompositionEnabled();
-    static bool isThemeActive();
     enum Changes { resizeTop, movePosition, noChange } change;
     QPoint pressedPos;
     bool pressed;
