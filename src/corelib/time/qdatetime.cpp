@@ -1964,8 +1964,8 @@ QString QTime::toString(Qt::DateFormat format) const
              minutes (for example "+02:00").
     \row \li tttt
          \li The timezone name (for example "Europe/Berlin"). Note that this
-             gives no indication of whether the date-time was in daylight-saving
-             time or standard time, which may lead to ambiguity if the date-time
+             gives no indication of whether the datetime was in daylight-saving
+             time or standard time, which may lead to ambiguity if the datetime
              falls in an hour repeated by a transition between the two. The name
              used is the one provided by \l QTimeZone::displayName() with the \l
              QTimeZone::LongName type. This may depend on the operating system
@@ -3296,10 +3296,10 @@ inline QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime,
     performed will take this missing hour into account and return a valid
     result. For example, adding one minute to 01:59:59 will get 03:00:00.
 
-    For date-times that the system \c time_t can represent (from 1901-12-14 to
+    For datetimes that the system \c time_t can represent (from 1901-12-14 to
     2038-01-18 on systems with 32-bit \c time_t; for the full range QDateTime
     can represent if the type is 64-bit), the standard system APIs are used to
-    determine local time's offset from UTC. For date-times not handled by these
+    determine local time's offset from UTC. For datetimes not handled by these
     system APIs, QTimeZone::systemTimeZone() is used. In either case, the offset
     information used depends on the system and may be incomplete or, for past
     times, historically inaccurate. In any case, for future dates, the local
@@ -3444,7 +3444,7 @@ QDateTime &QDateTime::operator=(const QDateTime &other) noexcept
 
 bool QDateTime::isNull() const
 {
-    // If date or time is invalid, we don't set date-time valid.
+    // If date or time is invalid, we don't set datetime valid.
     return !getStatus(d).testAnyFlag(QDateTimePrivate::ValidityMask);
 }
 
@@ -3533,7 +3533,7 @@ QTimeZone QDateTime::timeZone() const
 /*!
     \since 5.2
 
-    Returns this date-time's Offset From UTC in seconds.
+    Returns this datetime's Offset From UTC in seconds.
 
     The result depends on timeSpec():
     \list
@@ -5088,10 +5088,10 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
     \snippet code/src_corelib_time_qdatetime.cpp 12
 
     If the format is not satisfied, an invalid QDateTime is returned.  If the
-    format is satisfied but \a string represents an invalid date-time (e.g. in a
+    format is satisfied but \a string represents an invalid datetime (e.g. in a
     gap skipped by a time-zone transition), an invalid QDateTime is returned,
-    whose toMSecsSinceEpoch() represents a near-by date-time that is
-    valid. Passing that to fromMSecsSinceEpoch() will produce a valid date-time
+    whose toMSecsSinceEpoch() represents a near-by datetime that is
+    valid. Passing that to fromMSecsSinceEpoch() will produce a valid datetime
     that isn't faithfully represented by the string parsed.
 
     The expressions that don't have leading zeroes (d, M, h, m, s, z) will be
@@ -5126,8 +5126,8 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
     possibly repeated as many times as there are copies of it, ending with a
     residue that may be a shorter expression. Thus \c{'tttttt'} would match
     \c{"Europe/BerlinEurope/Berlin"} and set the zone to Berlin time; if the
-    date-time string contained "Europe/BerlinZ" it would "match" but produce an
-    inconsistent result, leading to an invalid date-time.
+    datetime string contained "Europe/BerlinZ" it would "match" but produce an
+    inconsistent result, leading to an invalid datetime.
 
     \sa toString(), QDate::fromString(), QTime::fromString(),
     QLocale::toDateTime()
