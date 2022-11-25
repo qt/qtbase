@@ -354,7 +354,7 @@ QSimpleParsedNumber<double> qt_asciiToDouble(const char *num, qsizetype numLen,
         for (int i = 0; i < processed; ++i) {
             if (num[i] >= '1' && num[i] <= '9') {
                 // if a digit before any 'e' is not 0, then a non-zero number was intended.
-                return {};
+                return {d, -processed};
             } else if (num[i] == 'e' || num[i] == 'E') {
                 break;
             }

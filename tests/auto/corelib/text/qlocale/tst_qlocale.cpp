@@ -1250,6 +1250,10 @@ void tst_QLocale::strtod_data()
     QTest::newRow("1e2000")          << QString("1e2000")          << qInf()        << 6  << false;
     QTest::newRow("-1e2000")         << QString("-1e2000")         << -qInf()       << 7  << false;
 
+    // Underflow - fails but reports right length:
+    QTest::newRow("1e-2000")         << QString("1e-2000")         << 0.0           << 7  << false;
+    QTest::newRow("-1e-2000")        << QString("-1e-2000")        << 0.0           << 8  << false;
+
     // starts with junk, fails
     QTest::newRow("a0")               << QString("a0")               << 0.0 << 0 << false;
     QTest::newRow("a0.")              << QString("a0.")              << 0.0 << 0 << false;
@@ -1284,6 +1288,10 @@ void tst_QLocale::strtod_data()
     // Overflow, ends with cruft - fails but reports right length:
     QTest::newRow("1e2000 cruft")     << QString("1e2000 cruft")     << qInf()        << 6  << false;
     QTest::newRow("-1e2000 cruft")    << QString("-1e2000 cruft")    << -qInf()       << 7  << false;
+
+    // Underflow, ends with cruft - fails but reports right length:
+    QTest::newRow("1e-2000 cruft")    << QString("1e-2000 cruft")    << 0.0           << 7  << false;
+    QTest::newRow("-1e-2000 cruft")   << QString("-1e-2000 cruft")   << 0.0           << 8  << false;
 
     // "0x" prefix, success but only for the "0" before "x"
     QTest::newRow("0x0")               << QString("0x0")               << 0.0 << 1 << true;
