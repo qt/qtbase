@@ -4454,6 +4454,54 @@ QDateTime QDateTime::toOffsetFromUtc(int offsetSeconds) const
     return fromMSecsSinceEpoch(toMSecsSinceEpoch(), Qt::OffsetFromUTC, offsetSeconds);
 }
 
+/*!
+    Returns a datetime containing the date and time information in
+    this datetime, but specified using the Qt::LocalTime definition.
+
+    Example:
+
+    \snippet code/src_corelib_time_qdatetime.cpp 17
+
+    \sa toUTC(), toOffsetFromUtc(), toTimeZone(), toTimeSpec()
+*/
+QDateTime QDateTime::toLocalTime() const
+{
+    if (getSpec(d) == Qt::LocalTime)
+        return *this;
+
+    if (!isValid()) {
+        QDateTime ret = *this;
+        ret.setTimeSpec(Qt::LocalTime);
+        return ret;
+    }
+
+    return fromMSecsSinceEpoch(toMSecsSinceEpoch());
+}
+
+/*!
+    Returns a datetime containing the date and time information in
+    this datetime, but specified using the Qt::UTC definition.
+
+    Example:
+
+    \snippet code/src_corelib_time_qdatetime.cpp 18
+
+    \sa toLocalTime(), toOffsetFromUtc(), toTimeZone(), toTimeSpec()
+*/
+QDateTime QDateTime::toUTC() const
+{
+    if (getSpec(d) == Qt::UTC)
+        return *this;
+
+    if (!isValid()) {
+        QDateTime ret = *this;
+        ret.setTimeSpec(Qt::UTC);
+        return ret;
+    }
+
+    return fromMSecsSinceEpoch(toMSecsSinceEpoch(), Qt::UTC);
+}
+
 #if QT_CONFIG(timezone)
 /*!
     \since 5.2
@@ -5179,57 +5227,6 @@ QDateTime QDateTime::fromString(const QString &string, QStringView format, QCale
 }
 
 #endif // datestring
-/*!
-    \fn QDateTime QDateTime::toLocalTime() const
-
-    Returns a datetime containing the date and time information in
-    this datetime, but specified using the Qt::LocalTime definition.
-
-    Example:
-
-    \snippet code/src_corelib_time_qdatetime.cpp 17
-
-    \sa toUTC(), toOffsetFromUtc(), toTimeZone(), toTimeSpec()
-*/
-QDateTime QDateTime::toLocalTime() const
-{
-    if (getSpec(d) == Qt::LocalTime)
-        return *this;
-
-    if (!isValid()) {
-        QDateTime ret = *this;
-        ret.setTimeSpec(Qt::LocalTime);
-        return ret;
-    }
-
-    return fromMSecsSinceEpoch(toMSecsSinceEpoch());
-}
-
-/*!
-    \fn QDateTime QDateTime::toUTC() const
-
-    Returns a datetime containing the date and time information in
-    this datetime, but specified using the Qt::UTC definition.
-
-    Example:
-
-    \snippet code/src_corelib_time_qdatetime.cpp 18
-
-    \sa toLocalTime(), toOffsetFromUtc(), toTimeZone(), toTimeSpec()
-*/
-QDateTime QDateTime::toUTC() const
-{
-    if (getSpec(d) == Qt::UTC)
-        return *this;
-
-    if (!isValid()) {
-        QDateTime ret = *this;
-        ret.setTimeSpec(Qt::UTC);
-        return ret;
-    }
-
-    return fromMSecsSinceEpoch(toMSecsSinceEpoch(), Qt::UTC);
-}
 
 /*****************************************************************************
   Date/time stream functions
