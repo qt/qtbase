@@ -2,14 +2,13 @@
 // Copyright (C) 2021 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qplatformdefs.h"
 #include "qdatetime.h"
 
 #include "qcalendar.h"
 #include "qdatastream.h"
 #include "qdebug.h"
-#include "qset.h"
 #include "qlocale.h"
+#include "qset.h"
 
 #include "private/qcalendarmath_p.h"
 #include "private/qdatetime_p.h"
