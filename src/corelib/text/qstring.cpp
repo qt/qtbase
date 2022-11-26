@@ -3037,7 +3037,7 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
         return *this;
     }
 
-    if (!d->needsDetach() && QtPrivate::q_points_into_range(s, d.data(), d.data() + d.size))
+    if (!d->needsDetach() && QtPrivate::q_points_into_range(s, d))
         return insert(i, QStringView{QVarLengthArray(s, s + size)});
 
     d->insert(i, s, size);
@@ -3366,7 +3366,7 @@ static void removeStringImpl(QString &s, const T &needle, Qt::CaseSensitivity cs
 QString &QString::remove(const QString &str, Qt::CaseSensitivity cs)
 {
     const auto s = str.d.data();
-    if (QtPrivate::q_points_into_range(s, d.data(), d.data() + d.size))
+    if (QtPrivate::q_points_into_range(s, d))
         removeStringImpl(*this, QStringView{QVarLengthArray(s, s + str.size())}, cs);
     else
         removeStringImpl(*this, qToStringViewIgnoringNull(str), cs);
@@ -3511,13 +3511,6 @@ QChar *textCopy(const QChar *start, qsizetype len)
     ::memcpy(copy, start, size);
     return copy;
 }
-
-static bool pointsIntoRange(const QChar *ptr, const char16_t *base, qsizetype len)
-{
-    const QChar *const start = reinterpret_cast<const QChar *>(base);
-    const std::less<const QChar *> less;
-    return !less(ptr, start) && less(ptr, start + len);
-}
 } // end namespace
 
 static void replace_helper(QString &str, size_t *indices, qsizetype nIndices, qsizetype blen, const QChar *after, qsizetype alen)
@@ -3525,7 +3518,7 @@ static void replace_helper(QString &str, size_t *indices, qsizetype nIndices, qs
     // Copy after if it lies inside our own d.b area (which we could
     // possibly invalidate via a realloc or modify by replacement).
     QChar *afterBuffer = nullptr;
-    if (pointsIntoRange(after, str.data_ptr().data(), str.data_ptr().size)) // Use copy in place of vulnerable original:
+    if (QtPrivate::q_points_into_range(after, str)) // Use copy in place of vulnerable original:
         after = afterBuffer = textCopy(after, alen);
 
     QT_TRY {
@@ -3708,10 +3701,10 @@ QString &QString::replace(const QChar *before, qsizetype blen,
               We're about to change data, that before and after might point
               into, and we'll need that data for our next batch of indices.
             */
-            if (!afterBuffer && pointsIntoRange(after, d.data(), d.size))
+            if (!afterBuffer && QtPrivate::q_points_into_range(after, *this))
                 after = afterBuffer = textCopy(after, alen);
 
-            if (!beforeBuffer && pointsIntoRange(before, d.data(), d.size)) {
+            if (!beforeBuffer && QtPrivate::q_points_into_range(before, *this)) {
                 beforeBuffer = textCopy(before, blen);
                 matcher = QStringMatcher(beforeBuffer, blen, cs);
             }
