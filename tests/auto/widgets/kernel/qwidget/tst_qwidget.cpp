@@ -4524,6 +4524,7 @@ void tst_QWidget::optimizedResizeMove()
     parent.resize(400, 400);
 
     StaticWidget staticWidget(&parent);
+    staticWidget.setPalette(simplePalette());
     staticWidget.gotPaintEvent = false;
     staticWidget.move(150, 150);
     staticWidget.resize(150, 150);
