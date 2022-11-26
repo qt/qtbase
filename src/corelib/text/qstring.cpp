@@ -3691,6 +3691,8 @@ QString &QString::replace(const QChar *before, qsizetype blen,
     }
     if (alen == 0 && blen == 0)
         return *this;
+    if (alen == 1 && blen == 1)
+        return replace(*before, *after, cs);
 
     QStringMatcher matcher(before, blen, cs);
     QChar *beforeBuffer = nullptr, *afterBuffer = nullptr;
@@ -3839,8 +3841,11 @@ QString& QString::replace(QChar before, QChar after, Qt::CaseSensitivity cs)
 */
 QString &QString::replace(QLatin1StringView before, QLatin1StringView after, Qt::CaseSensitivity cs)
 {
-    qsizetype alen = after.size();
-    qsizetype blen = before.size();
+    const qsizetype alen = after.size();
+    const qsizetype blen = before.size();
+    if (blen == 1 && alen == 1)
+        return replace(before.front(), after.front(), cs);
+
     QVarLengthArray<char16_t> a(alen);
     QVarLengthArray<char16_t> b(blen);
     qt_from_latin1(a.data(), after.latin1(), alen);
@@ -3862,7 +3867,10 @@ QString &QString::replace(QLatin1StringView before, QLatin1StringView after, Qt:
 */
 QString &QString::replace(QLatin1StringView before, const QString &after, Qt::CaseSensitivity cs)
 {
-    qsizetype blen = before.size();
+    const qsizetype blen = before.size();
+    if (blen == 1 && after.size() == 1)
+        return replace(before.front(), after.front(), cs);
+
     QVarLengthArray<char16_t> b(blen);
     qt_from_latin1(b.data(), before.latin1(), blen);
     return replace((const QChar *)b.data(), blen, after.constData(), after.d.size, cs);
@@ -3882,7 +3890,10 @@ QString &QString::replace(QLatin1StringView before, const QString &after, Qt::Ca
 */
 QString &QString::replace(const QString &before, QLatin1StringView after, Qt::CaseSensitivity cs)
 {
-    qsizetype alen = after.size();
+    const qsizetype alen = after.size();
+    if (before.size() == 1 && alen == 1)
+        return replace(before.front(), after.front(), cs);
+
     QVarLengthArray<char16_t> a(alen);
     qt_from_latin1(a.data(), after.latin1(), alen);
     return replace(before.constData(), before.d.size, (const QChar *)a.data(), alen, cs);
@@ -3902,7 +3913,10 @@ QString &QString::replace(const QString &before, QLatin1StringView after, Qt::Ca
 */
 QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity cs)
 {
-    qsizetype alen = after.size();
+    const qsizetype alen = after.size();
+    if (alen == 1)
+        return replace(c, after.front(), cs);
+
     QVarLengthArray<char16_t> a(alen);
     qt_from_latin1(a.data(), after.latin1(), alen);
     return replace(&c, 1, (const QChar *)a.data(), alen, cs);
