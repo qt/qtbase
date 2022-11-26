@@ -39,6 +39,23 @@ static constexpr bool q_points_into_range(const T *p, const T *b, const T *e,
     return !less(p, b) && less(p, e);
 }
 
+/*!
+  \internal
+
+  Returns whether \a p is within container \a c. In its simplest form equivalent to:
+  c.data() <= p < c.data() + c.size()
+*/
+template <typename C, typename T>
+static constexpr bool q_points_into_range(const T &p, const C &c) noexcept
+{
+    static_assert(std::is_same_v<decltype(std::data(c)), T>);
+
+    // std::distance because QArrayDataPointer has a "qsizetype size"
+    // member but no size() function
+    return q_points_into_range(p, std::data(c),
+                               std::data(c) + std::distance(std::begin(c), std::end(c)));
+}
+
 template <typename T, typename N>
 void q_uninitialized_move_if_noexcept_n(T* first, N n, T* out)
 {

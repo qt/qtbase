@@ -300,7 +300,7 @@ public:
         T *res = this->ptr + offset;
         QtPrivate::q_relocate_overlap_n(this->ptr, this->size, res);
         // first update data pointer, then this->ptr
-        if (data && QtPrivate::q_points_into_range(*data, this->begin(), this->end()))
+        if (data && QtPrivate::q_points_into_range(*data, *this))
             *data += offset;
         this->ptr = res;
     }

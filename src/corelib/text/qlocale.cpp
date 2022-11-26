@@ -821,7 +821,7 @@ static qsizetype defaultIndex()
 #endif
 
     using QtPrivate::q_points_into_range;
-    Q_ASSERT(q_points_into_range(data, locale_data, std::end(locale_data)));
+    Q_ASSERT(q_points_into_range(data, locale_data));
     return data - locale_data;
 }
 

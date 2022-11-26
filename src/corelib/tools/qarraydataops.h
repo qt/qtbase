@@ -916,11 +916,10 @@ public:
         DataPointer old;
 
         // points into range:
-        if (QtPrivate::q_points_into_range(b, this->begin(), this->end())) {
+        if (QtPrivate::q_points_into_range(b, *this))
             this->detachAndGrow(QArrayData::GrowsAtEnd, n, &b, &old);
-        } else {
+        else
             this->detachAndGrow(QArrayData::GrowsAtEnd, n, nullptr, nullptr);
-        }
         Q_ASSERT(this->freeSpaceAtEnd() >= n);
         // b might be updated so use [b, n)
         this->copyAppend(b, b + n);

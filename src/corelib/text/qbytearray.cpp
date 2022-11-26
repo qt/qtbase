@@ -2151,7 +2151,7 @@ QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
         return *this;
     }
 
-    if (!d->needsDetach() && QtPrivate::q_points_into_range(str, d.data(), d.data() + d.size)) {
+    if (!d->needsDetach() && QtPrivate::q_points_into_range(str, d)) {
         QVarLengthArray a(str, str + size);
         return insert(i, a);
     }
@@ -2327,7 +2327,7 @@ QByteArray &QByteArray::remove(qsizetype pos, qsizetype len)
 
 QByteArray &QByteArray::replace(qsizetype pos, qsizetype len, QByteArrayView after)
 {
-    if (QtPrivate::q_points_into_range(after.data(), d.data(), d.data() + d.size)) {
+    if (QtPrivate::q_points_into_range(after.data(), d)) {
         QVarLengthArray copy(after.data(), after.data() + after.size());
         return replace(pos, len, QByteArrayView{copy});
     }
@@ -2387,11 +2387,11 @@ QByteArray &QByteArray::replace(QByteArrayView before, QByteArrayView after)
         return *this;
 
     // protect against before or after being part of this
-    if (QtPrivate::q_points_into_range(a, d.data(), d.data() + d.size)) {
+    if (QtPrivate::q_points_into_range(a, d)) {
         QVarLengthArray copy(a, a + asize);
         return replace(before, QByteArrayView{copy});
     }
-    if (QtPrivate::q_points_into_range(b, d.data(), d.data() + d.size)) {
+    if (QtPrivate::q_points_into_range(b, d)) {
         QVarLengthArray copy(b, b + bsize);
         return replace(QByteArrayView{copy}, after);
     }
