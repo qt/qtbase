@@ -2627,6 +2627,12 @@ QString::QString(QChar ch)
     \internal
 */
 
+static bool needsReallocate(const QString &str, qsizetype newSize)
+{
+    const auto capacityAtEnd = str.capacity() - str.data_ptr().freeSpaceAtBegin();
+    return newSize > capacityAtEnd;
+}
+
 /*!
     Sets the size of the string to \a size characters.
 
@@ -2663,8 +2669,7 @@ void QString::resize(qsizetype size)
     if (size < 0)
         size = 0;
 
-    const auto capacityAtEnd = capacity() - d.freeSpaceAtBegin();
-    if (d->needsDetach() || size > capacityAtEnd)
+    if (d->needsDetach() || needsReallocate(*this, size))
         reallocData(size, QArrayData::Grow);
     d.size = size;
     if (d->allocatedCapacity())
