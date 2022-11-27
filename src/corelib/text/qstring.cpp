@@ -3677,49 +3677,21 @@ QString &QString::replace(const QChar *before, qsizetype blen,
         return replace(*before, *after, cs);
 
     QStringMatcher matcher(before, blen, cs);
-    QChar *beforeBuffer = nullptr, *afterBuffer = nullptr;
 
     qsizetype index = 0;
-    while (1) {
-        size_t indices[1024];
-        size_t pos = 0;
-        while (pos < 1024) {
-            index = matcher.indexIn(*this, index);
-            if (index == -1)
-                break;
-            indices[pos++] = index;
-            if (blen) // Step over before:
-                index += blen;
-            else // Only count one instance of empty between any two characters:
-                index++;
-        }
-        if (!pos) // Nothing to replace
-            break;
 
-        if (Q_UNLIKELY(index != -1)) {
-            /*
-              We're about to change data, that before and after might point
-              into, and we'll need that data for our next batch of indices.
-            */
-            if (!afterBuffer && QtPrivate::q_points_into_range(after, *this))
-                after = afterBuffer = textCopy(after, alen);
-
-            if (!beforeBuffer && QtPrivate::q_points_into_range(before, *this)) {
-                beforeBuffer = textCopy(before, blen);
-                matcher = QStringMatcher(beforeBuffer, blen, cs);
-            }
-        }
-
-        replace_helper(*this, indices, pos, blen, after, alen);
-
-        if (Q_LIKELY(index == -1)) // Nothing left to replace
-            break;
-        // The call to replace_helper just moved what index points at:
-        index += pos*(alen-blen);
+    QVarLengthArray<size_t> indices;
+    while ((index = matcher.indexIn(*this, index)) != -1) {
+        indices.push_back(index);
+        if (blen) // Step over before:
+            index += blen;
+        else // Only count one instance of empty between any two characters:
+            index++;
     }
-    ::free(afterBuffer);
-    ::free(beforeBuffer);
+    if (indices.isEmpty())
+        return *this;
 
+    replace_helper(*this, indices.data(), indices.size(), blen, after, alen);
     return *this;
 }
 
@@ -3741,35 +3713,23 @@ QString& QString::replace(QChar ch, const QString &after, Qt::CaseSensitivity cs
     if (size() == 0)
         return *this;
 
-    char16_t cc = (cs == Qt::CaseSensitive ? ch.unicode() : ch.toCaseFolded().unicode());
+    const char16_t cc = (cs == Qt::CaseSensitive ? ch.unicode() : ch.toCaseFolded().unicode());
 
-    qsizetype index = 0;
-    while (1) {
-        size_t indices[1024];
-        size_t pos = 0;
-        if (cs == Qt::CaseSensitive) {
-            while (pos < 1024 && index < size()) {
-                if (d.data()[index] == cc)
-                    indices[pos++] = index;
-                index++;
-            }
-        } else {
-            while (pos < 1024 && index < size()) {
-                if (QChar::toCaseFolded(d.data()[index]) == cc)
-                    indices[pos++] = index;
-                index++;
-            }
-        }
-        if (!pos) // Nothing to replace
-            break;
-
-        replace_helper(*this, indices, pos, 1, after.constData(), after.size());
-
-        if (Q_LIKELY(index == size())) // Nothing left to replace
-            break;
-        // The call to replace_helper just moved what index points at:
-        index += pos*(after.size() - 1);
+    QVarLengthArray<size_t> indices;
+    if (cs == Qt::CaseSensitive) {
+        for (qsizetype i = 0; i < d.size; ++i)
+            if (d.data()[i] == cc)
+                indices.push_back(i);
+    } else {
+        for (qsizetype i = 0; i < d.size; ++i)
+            if (QChar::toCaseFolded(d.data()[i]) == cc)
+                indices.push_back(i);
     }
+
+    if (indices.isEmpty())
+        return *this;
+
+    replace_helper(*this, indices.data(), indices.size(), 1, after.constData(), after.size());
     return *this;
 }
 
