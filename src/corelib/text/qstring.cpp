@@ -3598,13 +3598,13 @@ QString &QString::replace(qsizetype pos, qsizetype len, const QString &after)
 }
 
 /*!
-  \fn QString &QString::replace(qsizetype position, qsizetype n, const QChar *unicode, qsizetype size)
+  \fn QString &QString::replace(qsizetype position, qsizetype n, const QChar *after, qsizetype alen)
   \overload replace()
   Replaces \a n characters beginning at index \a position with the
-  first \a size characters of the QChar array \a unicode and returns a
+  first \a alen characters of the QChar array \a after and returns a
   reference to this string.
 */
-QString &QString::replace(qsizetype pos, qsizetype len, const QChar *unicode, qsizetype size)
+QString &QString::replace(qsizetype pos, qsizetype len, const QChar *after, qsizetype alen)
 {
     if (size_t(pos) > size_t(this->size()))
         return *this;
@@ -3612,7 +3612,7 @@ QString &QString::replace(qsizetype pos, qsizetype len, const QChar *unicode, qs
         len = this->size() - pos;
 
     size_t index = pos;
-    replace_helper(*this, &index, 1, len, unicode, size);
+    replace_helper(*this, &index, 1, len, after, alen);
     return *this;
 }
 
