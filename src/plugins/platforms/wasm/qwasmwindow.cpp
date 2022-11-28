@@ -232,8 +232,8 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
 
     compositor->screen()->element().call<void>("appendChild", m_qtWindow);
 
-    m_needsCompositor = w->surfaceType() != QSurface::OpenGLSurface;
-    if (m_needsCompositor)
+    const bool rendersTo2dContext = w->surfaceType() != QSurface::OpenGLSurface;
+    if (rendersTo2dContext)
         m_context2d = m_canvas.call<emscripten::val>("getContext", emscripten::val("2d"));
     static int serialNo = 0;
     m_winId = ++serialNo;
@@ -241,9 +241,6 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
     emscripten::val::module_property("specialHTMLTargets").set(canvasSelector(), m_canvas);
 
     m_compositor->addWindow(this);
-
-    // Pure OpenGL windows draw directly using egl, disable the compositor.
-    m_compositor->setEnabled(w->surfaceType() != QSurface::OpenGLSurface);
 }
 
 QWasmWindow::~QWasmWindow()

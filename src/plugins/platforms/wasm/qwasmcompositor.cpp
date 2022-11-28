@@ -149,11 +149,6 @@ void QWasmCompositor::initEventHandlers()
                       emscripten::val(quintptr(reinterpret_cast<void *>(screen()))));
 }
 
-void QWasmCompositor::setEnabled(bool enabled)
-{
-    m_isEnabled = enabled;
-}
-
 void QWasmCompositor::startResize(Qt::Edges edges)
 {
     m_windowManipulation.startResize(edges);
@@ -163,6 +158,8 @@ void QWasmCompositor::addWindow(QWasmWindow *window)
 {
     m_windowStack.pushWindow(window);
     m_windowStack.topWindow()->requestActivateWindow();
+
+    updateEnabledState();
 }
 
 void QWasmCompositor::removeWindow(QWasmWindow *window)
@@ -171,6 +168,15 @@ void QWasmCompositor::removeWindow(QWasmWindow *window)
     m_windowStack.removeWindow(window);
     if (m_windowStack.topWindow())
         m_windowStack.topWindow()->requestActivateWindow();
+
+    updateEnabledState();
+}
+
+void QWasmCompositor::updateEnabledState()
+{
+    m_isEnabled = std::any_of(m_windowStack.begin(), m_windowStack.end(), [](QWasmWindow *window) {
+        return !window->context2d().isUndefined();
+    });
 }
 
 void QWasmCompositor::raise(QWasmWindow *window)

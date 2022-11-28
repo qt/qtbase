@@ -43,7 +43,6 @@ public:
         QPalette palette;
     };
 
-    void setEnabled(bool enabled);
     void startResize(Qt::Edges edges);
 
     void addWindow(QWasmWindow *window);
@@ -145,6 +144,8 @@ private:
 
     void enterWindow(QWindow *window, const QPoint &localPoint, const QPoint &globalPoint);
     void leaveWindow(QWindow *window);
+
+    void updateEnabledState();
 
     WindowManipulation m_windowManipulation;
     QWasmWindowStack m_windowStack;
