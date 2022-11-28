@@ -10,6 +10,7 @@
 /*!
 \group cmake-variables-qtcore
 \title CMake Variables in Qt6 Core
+\brief Lists CMake variables defined in Qt6::Core.
 
 The following CMake variables are defined when Qt6::Core is loaded, for instance
 with

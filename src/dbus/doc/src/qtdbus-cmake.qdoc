@@ -4,6 +4,7 @@
 /*!
 \group cmake-commands-qtdbus
 \title CMake Commands in Qt6 DBus
+\brief Lists CMake commands defined in Qt6::DBus.
 
 The following CMake commands are defined when Qt6::DBus is loaded, for instance
 with
@@ -246,6 +247,7 @@ argument.
 /*!
 \group cmake-source-file-properties-qtdbus
 \title CMake Source File Properties in Qt6 DBus
+\brief Lists CMake file properties used in Qt6::DBus.
 
 \l{CMake Commands in Qt6 DBus}{CMake Commands} know about the following CMake
 source file properties:
