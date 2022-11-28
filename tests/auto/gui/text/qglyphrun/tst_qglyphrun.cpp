@@ -605,15 +605,39 @@ void tst_QGlyphRun::multiLineBoundingRect()
 
 void tst_QGlyphRun::defaultIgnorables()
 {
-    QTextLayout layout;
-    layout.setFont(QFont("QtsSpecialTestFont"));
-    layout.setText(QChar(0x200D));
-    layout.beginLayout();
-    layout.createLine();
-    layout.endLayout();
+    {
+        QTextLayout layout;
+        layout.setFont(QFont("QtsSpecialTestFont"));
+        layout.setText(QChar(0x200D));
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
 
-    QList<QGlyphRun> runs = layout.glyphRuns();
-    QCOMPARE(runs.size(), 0);
+        QList<QGlyphRun> runs = layout.glyphRuns();
+        QCOMPARE(runs.size(), 0);
+    }
+
+    {
+        QTextLayout layout;
+        layout.setFont(QFont("QtsSpecialTestFont"));
+        layout.setText(QStringLiteral("AAA") + QChar(0xFE0F) + QStringLiteral("111"));
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
+
+        QList<QGlyphRun> runs = layout.glyphRuns();
+        QVERIFY(!runs.isEmpty());
+
+        bool hasFullMainFontRun = false;
+        for (const QGlyphRun &run : runs) {
+            if (run.rawFont().familyName() == QStringLiteral("QtsSpecialTestFont")
+                    && run.glyphIndexes().size() == 6) {
+                hasFullMainFontRun = true;
+                break;
+            }
+        }
+        QVERIFY(hasFullMainFontRun);
+    }
 }
 
 #endif // QT_NO_RAWFONT
