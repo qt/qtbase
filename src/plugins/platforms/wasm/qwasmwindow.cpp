@@ -294,7 +294,7 @@ QWasmScreen *QWasmWindow::platformScreen() const
 
 void QWasmWindow::paint()
 {
-    if (!m_backingStore || !isVisible())
+    if (!m_backingStore || !isVisible() || m_context2d.isUndefined())
         return;
 
     auto image = m_backingStore->getUpdatedWebImage(this);
