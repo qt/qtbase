@@ -31,7 +31,7 @@ instructions:
     instructions:
     - type: EnvironmentVariable
       variableName: ASAN_OPTIONS
-      variableValue: "malloc_context_size=100"
+      variableValue: "malloc_context_size=100:detect_leaks=0"
     - type: EnvironmentVariable
       # Override qt-testrunner as we don't want to gather test statistics
       # because many tests FAIL when built with ASAN.
