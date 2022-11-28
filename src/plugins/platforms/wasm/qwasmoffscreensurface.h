@@ -9,11 +9,11 @@
 QT_BEGIN_NAMESPACE
 
 class QOffscreenSurface;
-class QWasmOffscrenSurface : public QPlatformOffscreenSurface
+class QWasmOffscreenSurface final : public QPlatformOffscreenSurface
 {
 public:
-    explicit QWasmOffscrenSurface(QOffscreenSurface *offscreenSurface);
-    ~QWasmOffscrenSurface();
+    explicit QWasmOffscreenSurface(QOffscreenSurface *offscreenSurface);
+    ~QWasmOffscreenSurface() final;
 private:
 
 };

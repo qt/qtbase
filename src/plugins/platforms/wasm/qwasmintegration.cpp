@@ -215,7 +215,7 @@ QPlatformInputContext *QWasmIntegration::inputContext() const
 
 QPlatformOffscreenSurface *QWasmIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
-    return new QWasmOffscrenSurface(surface);
+    return new QWasmOffscreenSurface(surface);
 }
 
 QPlatformFontDatabase *QWasmIntegration::fontDatabase() const

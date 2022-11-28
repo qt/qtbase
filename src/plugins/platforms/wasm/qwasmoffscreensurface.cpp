@@ -5,12 +5,11 @@
 
 QT_BEGIN_NAMESPACE
 
-QWasmOffscrenSurface::QWasmOffscrenSurface(QOffscreenSurface *offscreenSurface)
+QWasmOffscreenSurface::QWasmOffscreenSurface(QOffscreenSurface *offscreenSurface)
     :QPlatformOffscreenSurface(offscreenSurface)
 {
-
 }
 
-QWasmOffscrenSurface::~QWasmOffscrenSurface() = default;
+QWasmOffscreenSurface::~QWasmOffscreenSurface() = default;
 
 QT_END_NAMESPACE
