@@ -1529,6 +1529,7 @@ void QTextEngine::shapeText(int item) const
         QGlyphLayout g = availableGlyphs(&si);
         g.glyphs[0] = 0;
         g.attributes[0].clusterStart = true;
+        g.attributes[0].dontPrint = true;
 
         ushort *log_clusters = logClusters(&si);
         for (int i = 0; i < itemLength; ++i)
