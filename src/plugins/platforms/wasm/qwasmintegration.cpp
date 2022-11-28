@@ -14,9 +14,7 @@
 #include "qwasmstring.h"
 
 #include "qwasmwindow.h"
-#ifndef QT_NO_OPENGL
-# include "qwasmbackingstore.h"
-#endif
+#include "qwasmbackingstore.h"
 #include "qwasmfontdatabase.h"
 #if defined(Q_OS_UNIX)
 #include <QtGui/private/qgenericunixeventdispatcher_p.h>
@@ -174,14 +172,10 @@ QPlatformWindow *QWasmIntegration::createPlatformWindow(QWindow *window) const
 
 QPlatformBackingStore *QWasmIntegration::createPlatformBackingStore(QWindow *window) const
 {
-#ifndef QT_NO_OPENGL
     QWasmCompositor *compositor = QWasmScreen::get(window->screen())->compositor();
     QWasmBackingStore *backingStore = new QWasmBackingStore(compositor, window);
     m_backingStores.insert(window, backingStore);
     return backingStore;
-#else
-    return nullptr;
-#endif
 }
 
 void QWasmIntegration::removeBackingStore(QWindow* window)
