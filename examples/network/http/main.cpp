@@ -14,11 +14,7 @@ int main(int argc, char *argv[])
     const QRect availableSize = httpWin.screen()->availableGeometry();
     httpWin.resize(availableSize.width() / 5, availableSize.height() / 5);
     httpWin.move((availableSize.width() - httpWin.width()) / 2, (availableSize.height() - httpWin.height()) / 2);
-#ifdef Q_OS_ANDROID
-    httpWin.showMaximized();
-#else
     httpWin.show();
-#endif
 
     return app.exec();
 }
