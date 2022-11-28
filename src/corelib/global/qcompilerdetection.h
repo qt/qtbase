@@ -445,6 +445,16 @@
 #  define __has_include_next(x)        0
 #endif
 
+/*
+   detecting ASAN can be helpful to disable slow tests
+   clang uses feature, gcc  defines __SANITIZE_ADDRESS__
+   unconditionally check both in case other compilers mirror
+   either of those options
+ */
+#if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+#  define QT_ASAN_ENABLED
+#endif
+
 #ifdef __cplusplus
 # if __has_include(<version>) /* remove this check once Integrity, QNX have caught up */
 #  include <version>
