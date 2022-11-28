@@ -1528,7 +1528,6 @@ void QTextEngine::shapeText(int item) const
         QGlyphLayout g = availableGlyphs(&si);
         g.glyphs[0] = 0;
         g.attributes[0].clusterStart = true;
-        g.attributes[0].dontPrint = true;
 
         ushort *log_clusters = logClusters(&si);
         for (int i = 0; i < itemLength; ++i)
@@ -1675,9 +1674,14 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
                 hb_buffer_reverse(buffer);
         }
 
-        const uint num_glyphs = hb_buffer_get_length(buffer);
+        uint num_glyphs = hb_buffer_get_length(buffer);
+        const bool has_glyphs = num_glyphs > 0;
+        // If Harfbuzz returns zero glyphs, we have to manually add a missing glyph
+        if (Q_UNLIKELY(!has_glyphs))
+            num_glyphs = 1;
+
         // ensure we have enough space for shaped glyphs and metrics
-        if (Q_UNLIKELY(num_glyphs == 0 || !ensureSpace(glyphs_shaped + num_glyphs))) {
+        if (Q_UNLIKELY(!ensureSpace(glyphs_shaped + num_glyphs))) {
             hb_buffer_destroy(buffer);
             return 0;
         }
@@ -1685,35 +1689,44 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
         // fetch the shaped glyphs and metrics
         QGlyphLayout g = availableGlyphs(&si).mid(glyphs_shaped, num_glyphs);
         ushort *log_clusters = logClusters(&si) + item_pos;
+        if (Q_LIKELY(has_glyphs)) {
+            hb_glyph_info_t *infos = hb_buffer_get_glyph_infos(buffer, nullptr);
+            hb_glyph_position_t *positions = hb_buffer_get_glyph_positions(buffer, nullptr);
+            uint str_pos = 0;
+            uint last_cluster = ~0u;
+            uint last_glyph_pos = glyphs_shaped;
+            for (uint i = 0; i < num_glyphs; ++i, ++infos, ++positions) {
+                g.glyphs[i] = infos->codepoint;
 
-        hb_glyph_info_t *infos = hb_buffer_get_glyph_infos(buffer, nullptr);
-        hb_glyph_position_t *positions = hb_buffer_get_glyph_positions(buffer, nullptr);
-        uint str_pos = 0;
-        uint last_cluster = ~0u;
-        uint last_glyph_pos = glyphs_shaped;
-        for (uint i = 0; i < num_glyphs; ++i, ++infos, ++positions) {
-            g.glyphs[i] = infos->codepoint;
+                g.advances[i] = QFixed::fromFixed(positions->x_advance);
+                g.offsets[i].x = QFixed::fromFixed(positions->x_offset);
+                g.offsets[i].y = QFixed::fromFixed(positions->y_offset);
 
-            g.advances[i] = QFixed::fromFixed(positions->x_advance);
-            g.offsets[i].x = QFixed::fromFixed(positions->x_offset);
-            g.offsets[i].y = QFixed::fromFixed(positions->y_offset);
+                uint cluster = infos->cluster;
+                if (Q_LIKELY(last_cluster != cluster)) {
+                    g.attributes[i].clusterStart = true;
 
-            uint cluster = infos->cluster;
-            if (Q_LIKELY(last_cluster != cluster)) {
-                g.attributes[i].clusterStart = true;
+                    // fix up clusters so that the cluster indices will be monotonic
+                    // and thus we never return out-of-order indices
+                    while (last_cluster++ < cluster && str_pos < item_length)
+                        log_clusters[str_pos++] = last_glyph_pos;
+                    last_glyph_pos = i + glyphs_shaped;
+                    last_cluster = cluster;
 
-                // fix up clusters so that the cluster indices will be monotonic
-                // and thus we never return out-of-order indices
-                while (last_cluster++ < cluster && str_pos < item_length)
-                    log_clusters[str_pos++] = last_glyph_pos;
-                last_glyph_pos = i + glyphs_shaped;
-                last_cluster = cluster;
-
-                applyVisibilityRules(string[item_pos + str_pos], &g, i, actualFontEngine);
+                    applyVisibilityRules(string[item_pos + str_pos], &g, i, actualFontEngine);
+                }
             }
+            while (str_pos < item_length)
+                log_clusters[str_pos++] = last_glyph_pos;
+        } else { // Harfbuzz did not return a glyph for the character, so we add a placeholder
+            g.glyphs[0] = 0;
+            g.advances[0] = QFixed{};
+            g.offsets[0].x = QFixed{};
+            g.offsets[0].y = QFixed{};
+            g.attributes[0].clusterStart = true;
+            g.attributes[0].dontPrint = true;
+            log_clusters[0] = glyphs_shaped;
         }
-        while (str_pos < item_length)
-            log_clusters[str_pos++] = last_glyph_pos;
 
         if (Q_UNLIKELY(engineIdx != 0)) {
             for (quint32 i = 0; i < num_glyphs; ++i)
