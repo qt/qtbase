@@ -463,8 +463,6 @@ void tst_QRhi::nativeHandles()
             const QRhiVulkanNativeHandles *vkHandles = static_cast<const QRhiVulkanNativeHandles *>(rhiHandles);
             QVERIFY(vkHandles->physDev);
             QVERIFY(vkHandles->dev);
-            QVERIFY(vkHandles->gfxQueueFamilyIdx >= 0);
-            QVERIFY(vkHandles->gfxQueueIdx >= 0);
             QVERIFY(vkHandles->gfxQueue);
             QVERIFY(vkHandles->vmemAllocator);
         }

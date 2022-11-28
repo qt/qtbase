@@ -23,6 +23,7 @@ QT_WARNING_POP
 #include <qmath.h>
 #include <QVulkanFunctions>
 #include <QtGui/qwindow.h>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -433,25 +434,28 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         // We only support combined graphics+present queues. When it comes to
         // compute, only combined graphics+compute queue is used, compute gets
         // disabled otherwise.
-        gfxQueueFamilyIdx = -1;
-        int computelessGfxQueueCandidateIdx = -1;
+        std::optional<uint32_t> gfxQueueFamilyIdxOpt;
+        std::optional<uint32_t> computelessGfxQueueCandidateIdxOpt;
         queryQueueFamilyProps();
-        for (int i = 0; i < queueFamilyProps.size(); ++i) {
-            qCDebug(QRHI_LOG_INFO, "queue family %d: flags=0x%x count=%d",
+        const uint32_t queueFamilyCount = uint32_t(queueFamilyProps.size());
+        for (uint32_t i = 0; i < queueFamilyCount; ++i) {
+            qCDebug(QRHI_LOG_INFO, "queue family %u: flags=0x%x count=%u",
                     i, queueFamilyProps[i].queueFlags, queueFamilyProps[i].queueCount);
-            if (gfxQueueFamilyIdx == -1
+            if (!gfxQueueFamilyIdxOpt.has_value()
                     && (queueFamilyProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
-                    && (!maybeWindow || inst->supportsPresent(physDev, uint32_t(i), maybeWindow)))
+                    && (!maybeWindow || inst->supportsPresent(physDev, i, maybeWindow)))
             {
                 if (queueFamilyProps[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
-                    gfxQueueFamilyIdx = i;
-                else if (computelessGfxQueueCandidateIdx == -1)
-                    computelessGfxQueueCandidateIdx = i;
+                    gfxQueueFamilyIdxOpt = i;
+                else if (!computelessGfxQueueCandidateIdxOpt.has_value())
+                    computelessGfxQueueCandidateIdxOpt = i;
             }
         }
-        if (gfxQueueFamilyIdx == -1) {
-            if (computelessGfxQueueCandidateIdx != -1) {
-                gfxQueueFamilyIdx = computelessGfxQueueCandidateIdx;
+        if (gfxQueueFamilyIdxOpt.has_value()) {
+            gfxQueueFamilyIdx = gfxQueueFamilyIdxOpt.value();
+        } else {
+            if (computelessGfxQueueCandidateIdxOpt.has_value()) {
+                gfxQueueFamilyIdx = computelessGfxQueueCandidateIdxOpt.value();
             } else {
                 qWarning("No graphics (or no graphics+present) queue family found");
                 return false;
@@ -461,7 +465,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         VkDeviceQueueCreateInfo queueInfo = {};
         const float prio[] = { 0 };
         queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueInfo.queueFamilyIndex = uint32_t(gfxQueueFamilyIdx);
+        queueInfo.queueFamilyIndex = gfxQueueFamilyIdx;
         queueInfo.queueCount = 1;
         queueInfo.pQueuePriorities = prio;
 
@@ -619,7 +623,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 
     VkCommandPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.queueFamilyIndex = uint32_t(gfxQueueFamilyIdx);
+    poolInfo.queueFamilyIndex = gfxQueueFamilyIdx;
     for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i) {
         VkResult err = df->vkCreateCommandPool(dev, &poolInfo, nullptr, &cmdPool[i]);
         if (err != VK_SUCCESS) {
@@ -628,13 +632,10 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         }
     }
 
-    if (gfxQueueFamilyIdx < 0) {
-        // this is when importParams is faulty and did not specify the queue family index
-        qWarning("No queue family index provided");
-        return false;
-    }
+    qCDebug(QRHI_LOG_INFO, "Using queue family index %u and queue index %u",
+            gfxQueueFamilyIdx, gfxQueueIdx);
 
-    df->vkGetDeviceQueue(dev, uint32_t(gfxQueueFamilyIdx), gfxQueueIdx, &gfxQueue);
+    df->vkGetDeviceQueue(dev, gfxQueueFamilyIdx, gfxQueueIdx, &gfxQueue);
 
     if (queueFamilyProps.isEmpty())
         queryQueueFamilyProps();
@@ -7353,11 +7354,9 @@ bool QVkSwapChain::ensureSurface()
     surface = surf;
 
     QRHI_RES_RHI(QRhiVulkan);
-    if (rhiD->gfxQueueFamilyIdx != -1) {
-        if (!rhiD->inst->supportsPresent(rhiD->physDev, uint32_t(rhiD->gfxQueueFamilyIdx), m_window)) {
-            qWarning("Presenting not supported on this window");
-            return false;
-        }
+    if (!rhiD->inst->supportsPresent(rhiD->physDev, rhiD->gfxQueueFamilyIdx, m_window)) {
+        qWarning("Presenting not supported on this window");
+        return false;
     }
 
     quint32 formatCount = 0;
