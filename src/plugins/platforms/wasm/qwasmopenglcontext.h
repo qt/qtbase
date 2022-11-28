@@ -8,11 +8,12 @@
 
 QT_BEGIN_NAMESPACE
 
+class QOpenGLContext;
 class QPlatformScreen;
 class QWasmOpenGLContext : public QPlatformOpenGLContext
 {
 public:
-    QWasmOpenGLContext(const QSurfaceFormat &format);
+    explicit QWasmOpenGLContext(QOpenGLContext *context);
     ~QWasmOpenGLContext();
 
     QSurfaceFormat format() const override;
@@ -32,7 +33,8 @@ private:
 
     QSurfaceFormat m_requestedFormat;
     QPlatformSurface *m_surface = nullptr;
-    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE m_context = 0;
+    QOpenGLContext *m_qGlContext;
+    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE m_webGLContext = 0;
 };
 
 QT_END_NAMESPACE
