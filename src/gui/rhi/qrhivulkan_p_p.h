@@ -821,8 +821,8 @@ public:
     VkPhysicalDevice physDev = VK_NULL_HANDLE;
     VkDevice dev = VK_NULL_HANDLE;
     VkCommandPool cmdPool[QVK_FRAMES_IN_FLIGHT] = {};
-    int gfxQueueFamilyIdx = -1;
-    int gfxQueueIdx = 0;
+    quint32 gfxQueueFamilyIdx = 0;
+    quint32 gfxQueueIdx = 0;
     VkQueue gfxQueue = VK_NULL_HANDLE;
     quint32 timestampValidBits = 0;
     bool importedAllocator = false;
