@@ -451,11 +451,19 @@ void tst_QComboBox::setEditable()
 
 void tst_QComboBox::setPalette()
 {
-#ifdef Q_OS_MAC
-    if (QApplication::style()->inherits("QMacStyle")) {
-        QSKIP("This test doesn't make sense for pixmap-based styles");
-    }
-#endif
+    // If (a) Palettes are pixmap based and/or (b) contain color groups/roles which the
+    // resolve mask prevents from being copied, the direct comparison of the inherited
+    // palette and the parent palette will fail.
+    // To prevent that, set a simple gray system palette for QComboBox and QLineEdit
+    const QPalette comboBoxPalette = qApp->palette("QComboBox");
+    const QPalette lineEditPalette = qApp->palette("QLineEdit");
+    auto guard = qScopeGuard([&]{
+        qApp->setPalette(comboBoxPalette, "QComboBox");
+        qApp->setPalette(lineEditPalette, "QLineEdit");
+    });
+    qApp->setPalette(QPalette(Qt::gray), "QComboBox");
+    qApp->setPalette(QPalette(Qt::gray), "QLineEdit");
+
     TestWidget topLevel;
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
@@ -463,16 +471,15 @@ void tst_QComboBox::setPalette()
     QPalette pal = testWidget->palette();
     pal.setColor(QPalette::Base, Qt::red);
     testWidget->setPalette(pal);
-    testWidget->setEditable(!testWidget->isEditable());
+    testWidget->setEditable(true);
 
     pal.setColor(QPalette::Base, Qt::blue);
     testWidget->setPalette(pal);
 
-    const QObjectList comboChildren = testWidget->children();
-    for (int i = 0; i < comboChildren.size(); ++i) {
-        QObject *o = comboChildren.at(i);
-        if (o->isWidgetType()) {
-            QCOMPARE(((QWidget*)o)->palette(), pal);
+    const QObjectList &comboChildren = testWidget->children();
+    for (auto *child : comboChildren) {
+        if (auto *widget = qobject_cast<QWidget *>(child)) {
+            QCOMPARE(widget->palette(), pal);
         }
     }
 
