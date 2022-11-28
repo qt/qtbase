@@ -6,10 +6,25 @@
 QT_BEGIN_NAMESPACE
 
 QWasmOffscreenSurface::QWasmOffscreenSurface(QOffscreenSurface *offscreenSurface)
-    :QPlatformOffscreenSurface(offscreenSurface)
+    : QPlatformOffscreenSurface(offscreenSurface), m_offscreenCanvas(emscripten::val::undefined())
 {
+    const auto offscreenCanvasClass = emscripten::val::global("OffscreenCanvas");
+    // The OffscreenCanvas is not supported on some browsers, most notably on Safari.
+    if (!offscreenCanvasClass)
+        return;
+
+    m_offscreenCanvas = offscreenCanvasClass.new_(offscreenSurface->size().width(),
+                                                  offscreenSurface->size().height());
+
+    m_specialTargetId = std::string("!qtoffscreen_") + std::to_string(uintptr_t(this));
+
+    emscripten::val::module_property("specialHTMLTargets")
+            .set(m_specialTargetId, m_offscreenCanvas);
 }
 
-QWasmOffscreenSurface::~QWasmOffscreenSurface() = default;
+QWasmOffscreenSurface::~QWasmOffscreenSurface()
+{
+    emscripten::val::module_property("specialHTMLTargets").delete_(m_specialTargetId);
+}
 
 QT_END_NAMESPACE

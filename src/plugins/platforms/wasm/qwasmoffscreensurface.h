@@ -6,6 +6,10 @@
 
 #include <qpa/qplatformoffscreensurface.h>
 
+#include <emscripten/val.h>
+
+#include <string>
+
 QT_BEGIN_NAMESPACE
 
 class QOffscreenSurface;
@@ -14,8 +18,12 @@ class QWasmOffscreenSurface final : public QPlatformOffscreenSurface
 public:
     explicit QWasmOffscreenSurface(QOffscreenSurface *offscreenSurface);
     ~QWasmOffscreenSurface() final;
-private:
 
+    const std::string &id() const { return m_specialTargetId; }
+
+private:
+    std::string m_specialTargetId;
+    emscripten::val m_offscreenCanvas;
 };
 
 QT_END_NAMESPACE

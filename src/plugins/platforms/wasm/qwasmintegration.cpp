@@ -184,7 +184,7 @@ void QWasmIntegration::removeBackingStore(QWindow* window)
 #ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QWasmIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    return new QWasmOpenGLContext(context->format());
+    return new QWasmOpenGLContext(context);
 }
 #endif
 
