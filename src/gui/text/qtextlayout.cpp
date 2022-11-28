@@ -2534,19 +2534,23 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from,
                     if (start == 0 && startsInsideLigature)
                         subFlags |= QGlyphRun::SplitLigature;
 
-                    glyphRuns.append(glyphRunWithInfo(multiFontEngine->engine(which),
-                                                      eng->text,
-                                                      subLayout,
-                                                      pos,
-                                                      subFlags,
-                                                      retrievalFlags,
-                                                      x,
-                                                      width,
-                                                      glyphsStart + start,
-                                                      glyphsStart + end,
-                                                      logClusters + relativeFrom,
-                                                      relativeFrom + si.position,
-                                                      relativeTo - relativeFrom + 1));
+                    {
+                        QGlyphRun glyphRun = glyphRunWithInfo(multiFontEngine->engine(which),
+                                                              eng->text,
+                                                              subLayout,
+                                                              pos,
+                                                              subFlags,
+                                                              retrievalFlags,
+                                                              x,
+                                                              width,
+                                                              glyphsStart + start,
+                                                              glyphsStart + end,
+                                                              logClusters + relativeFrom,
+                                                              relativeFrom + si.position,
+                                                              relativeTo - relativeFrom + 1);
+                        if (!glyphRun.isEmpty())
+                            glyphRuns.append(glyphRun);
+                    }
                     for (int i = 0; i < subLayout.numGlyphs; ++i) {
                         QFixed justification = QFixed::fromFixed(subLayout.justifications[i].space_18d6);
                         pos.rx() += (subLayout.advances[i] + justification).toReal();
