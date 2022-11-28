@@ -64,6 +64,8 @@
 Q_DECLARE_METATYPE(QSharedPointer<char>)
 #endif
 
+#include <memory>
+
 #ifdef Q_OS_UNIX
 # include <sys/types.h>
 # include <unistd.h> // for getuid()
@@ -442,6 +444,8 @@ private Q_SLOTS:
     void closeClientSideConnectionEagerlyQtbug20726();
     void varyingCacheExpiry_data();
     void varyingCacheExpiry();
+
+    void amountOfHttp1ConnectionsQtbug25280();
 
     void dontInsertPartialContentIntoTheCache();
 
@@ -8100,6 +8104,48 @@ void tst_QNetworkReply::varyingCacheExpiry()
     bool success = QTest::qWaitFor(allServersDisconnected, lastExpiry * 1000 + 5000);
 
     QVERIFY(success);
+}
+
+class Qtbug25280Server : public MiniHttpServer
+{
+public:
+    Qtbug25280Server(QByteArray qba) : MiniHttpServer(qba, false) {}
+    QSet<QTcpSocket*> receivedSockets;
+    virtual void reply()
+    {
+        // Save sockets in a list
+        receivedSockets.insert((QTcpSocket*)sender());
+        qobject_cast<QTcpSocket*>(sender())->write(dataToTransmit);
+        //qDebug() << "count=" << receivedSockets.count();
+    }
+};
+
+// Also kind of QTBUG-8468
+void tst_QNetworkReply::amountOfHttp1ConnectionsQtbug25280()
+{
+    const int amount = 6;
+    QNetworkAccessManager manager; // function local instance
+    Qtbug25280Server server(tst_QNetworkReply::httpEmpty200Response);
+    server.doClose = false;
+    server.multiple = true;
+    QUrl url(QLatin1String("http://127.0.0.1")); // not "localhost" to prevent "Happy Eyeballs"
+                                                 // from skewing the counting
+    url.setPort(server.serverPort());
+    constexpr int NumRequests = 200; // send a lot more than we have sockets
+    int finished = 0;
+    std::array<std::unique_ptr<QNetworkReply>, NumRequests> replies;
+    for (auto &reply : replies) {
+        QNetworkRequest request(url);
+        reply.reset(manager.get(request));
+        QObject::connect(reply.get(), &QNetworkReply::finished,
+                         [&finished] { ++finished; });
+    }
+    QTRY_COMPARE_WITH_TIMEOUT(finished, NumRequests, 60'000);
+    for (const auto &reply : replies) {
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
+        QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    }
+    QCOMPARE(server.receivedSockets.size(), amount);
 }
 
 void tst_QNetworkReply::dontInsertPartialContentIntoTheCache()
