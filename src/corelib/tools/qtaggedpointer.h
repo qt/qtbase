@@ -104,8 +104,10 @@ public:
 
     void setTag(Tag tag)
     {
-        Q_ASSERT_X((static_cast<typename QtPrivate::TagInfo<T>::TagType>(tag) & pointerMask()) == 0,
-            "QTaggedPointer<T, Tag>::setTag", "Tag is larger than allowed by number of available tag bits");
+        Q_ASSERT_X(
+                (static_cast<quintptr>(tag) & pointerMask()) == 0,
+                "QTaggedPointer<T, Tag>::setTag",
+                "Tag is larger than allowed by number of available tag bits");
 
         d = (d & pointerMask()) | static_cast<quintptr>(tag);
     }
