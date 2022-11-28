@@ -15,6 +15,7 @@ class tst_QByteArrayLarge : public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
 #ifndef QT_NO_COMPRESS
     void qCompress_data();
     void qCompress();
@@ -25,6 +26,13 @@ private slots:
 #endif
     void base64_2GiB();
 };
+
+void tst_QByteArrayLarge::initTestCase()
+{
+#if defined(QT_ASAN_ENABLED)
+    QSKIP("Skipping QByteArray tests under ASAN as they are too slow");
+#endif
+}
 
 #ifndef QT_NO_COMPRESS
 void tst_QByteArrayLarge::qCompress_data()
