@@ -195,13 +195,13 @@ public:
     qsizetype initialTagStackStringStorageSize;
     bool tagsDone;
 
-    XmlStringRef addToStringStorage(QStringView s)
+    XmlStringRef addToStringStorage(QAnyStringView s)
     {
         qsizetype pos = tagStackStringStorageSize;
-        qsizetype sz = s.size();
         if (pos != tagStackStringStorage.size())
             tagStackStringStorage.resize(pos);
-        tagStackStringStorage.append(s.data(), sz);
+        s.visit([&](auto s) { tagStackStringStorage.append(s); });
+        qsizetype sz = (tagStackStringStorage.size() - pos);
         tagStackStringStorageSize += sz;
         return XmlStringRef(&tagStackStringStorage, pos, sz);
     }
