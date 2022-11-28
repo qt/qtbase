@@ -227,8 +227,10 @@ private Q_SLOTS:
     void compare_QStringView_QString() { compare_impl<QStringView, QString>(); }
     void compare_QStringView_QStringView_data() { compare_data(); }
     void compare_QStringView_QStringView() { compare_impl<QStringView, QStringView>(); }
+#ifdef NOT_YET_IMPLEMENTED
     void compare_QStringView_QUtf8StringView_data() { compare_data(); }
-    void compare_QStringView_QUtf8StringView() { compare_impl<QStringView, QStringView>(); }
+    void compare_QStringView_QUtf8StringView() { compare_impl<QStringView, QUtf8StringView>(); }
+#endif
     void compare_QStringView_QLatin1String_data() { compare_data(); }
     void compare_QStringView_QLatin1String() { compare_impl<QStringView, QLatin1String>(); }
 #ifdef NOT_YET_IMPLMENTED
