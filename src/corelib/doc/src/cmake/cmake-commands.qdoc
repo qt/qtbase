@@ -4,6 +4,7 @@
 /*!
 \group cmake-commands-qtcore
 \title CMake Commands in Qt6 Core
+\brief Lists CMake commands defined in Qt6::Core.
 
 The following CMake commands are defined when Qt6::Core is loaded, for instance
 with
