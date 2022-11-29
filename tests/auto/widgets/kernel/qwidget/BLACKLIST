@@ -28,6 +28,7 @@ sles-15
 # QTBUG-87668
 [showMinimizedKeepsFocus]
 android
+macos-13 ci
 [normalGeometry]
 android
 [saveRestoreGeometry]
