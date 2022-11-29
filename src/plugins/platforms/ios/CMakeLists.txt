@@ -59,6 +59,7 @@ qt_internal_extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
         qiosclipboard.h qiosclipboard.mm
         qiosdocumentpickercontroller.h qiosdocumentpickercontroller.mm
         qiosfiledialog.h qiosfiledialog.mm
+        qioscolordialog.h qioscolordialog.mm
         qiosmenu.h qiosmenu.mm
         qiosmessagedialog.h qiosmessagedialog.mm
         qiostextinputoverlay.h qiostextinputoverlay.mm
