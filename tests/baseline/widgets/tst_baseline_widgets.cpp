@@ -70,6 +70,18 @@ private slots:
     void tst_QLineEdit_data();
     void tst_QLineEdit();
 
+    void tst_QMenu_data();
+    void tst_QMenu();
+
+    void tst_QCombobox_data();
+    void tst_QCombobox();
+
+    void tst_QCommandLinkButton_data();
+    void tst_QCommandLinkButton();
+
+    void tst_QLCDNumber_data();
+    void tst_QLCDNumber();
+
 private:
 
     // Abstract SpinBox test for QSpinBox, QDoubleSpinBox, QDateTimeEdit, QDateEdit, QTimeEdit
@@ -1092,6 +1104,172 @@ void tst_Widgets::tst_QLineEdit()
 
     lineEdit.setSelection(0,text.size());
     QBASELINE_CHECK_DEFERRED(takeSnapshot(), "textSelected");
+}
+
+void tst_Widgets::tst_QMenu_data()
+{
+    QTest::addColumn<QStringList>("actions");
+
+    const QStringList menu1 = {"Text", "", "TextAndIcon", "", "SubMenu", "", "Checked"};
+    QTest::newRow("showMenuPopup") << menu1;
+}
+
+void tst_Widgets::tst_QMenu()
+{
+    QFETCH(const QStringList, actions);
+
+    testWindow()->resize(300, 200);
+
+    QBoxLayout layout(QBoxLayout::TopToBottom);
+    QMenu menu1;
+
+    for (const auto& menuItem : actions) {
+        if (!menuItem.isEmpty()) {
+            if (menuItem == "Text") {
+                menu1.addAction(QString("MenuItem"));
+                menu1.addAction(QString(""));
+            } else if (menuItem == "TextAndIcon") {
+                // Using pixmap icon
+                QPixmap pix(10, 10);
+                pix.fill(Qt::green);
+                menu1.addAction(QIcon(pix), QString("MenuWithIcon"));
+                menu1.addAction(QIcon(), QString("MenuNoIcon"));
+            } else if (menuItem == "SubMenu") {
+                QMenu* submenu = menu1.addMenu(QString("&Submenu1"));
+                submenu->addAction("SubMenuA");
+                submenu->addAction("SubMenuB");
+            } else if (menuItem == "Checked") {
+                auto checked = menu1.addAction(QString("MenuChecked"));
+                checked->setCheckable(true);
+                checked->setChecked(true);
+                auto notChecked = menu1.addAction(QString("MenuNotChecked"));
+                notChecked->setCheckable(true);
+                notChecked->setChecked(false);
+            }
+        } else {
+            menu1.addSeparator();
+        }
+    }
+
+    layout.addWidget(&menu1);
+    testWindow()->setLayout(&layout);
+
+    testWindow()->show();
+    QVERIFY(QTest::qWaitForWindowExposed(testWindow()));
+
+    QRect testWindowRect(testWindow()->geometry());
+    QBASELINE_CHECK_DEFERRED(takeScreenSnapshot(testWindowRect), "showitems");
+
+    // Normal menu item with text
+    QTest::keyClick(&menu1, Qt::Key_Down);
+    QBASELINE_CHECK_DEFERRED(takeScreenSnapshot(testWindowRect), "selectmenutext");
+    QTest::keyClick(&menu1, Qt::Key_Down);
+    QBASELINE_CHECK_DEFERRED(takeScreenSnapshot(testWindowRect), "selectmenunotext");
+
+    // Menu with icon and text
+    QTest::keyClick(&menu1, Qt::Key_Down);
+    QBASELINE_CHECK_DEFERRED(takeScreenSnapshot(testWindowRect), "selectmenuwithicon");
+    QTest::keyClick(&menu1, Qt::Key_Down);
+    QBASELINE_CHECK_DEFERRED(takeScreenSnapshot(testWindowRect), "selectmenuwithnullicon");
+
+    // Sub-menu items
+    QTest::keyClick(&menu1, Qt::Key_Down);
+    QTest::keyClick(&menu1, Qt::Key_Right);
+    QBASELINE_CHECK_DEFERRED(takeScreenSnapshot(testWindowRect), "selectsubmenu");
+    QTest::keyClick(&menu1, Qt::Key_Left);
+
+    // Checked menu
+    QTest::keyClick(&menu1, Qt::Key_Down);
+    QBASELINE_CHECK_DEFERRED(takeScreenSnapshot(testWindowRect), "selectmenuchecked");
+    QTest::keyClick(&menu1, Qt::Key_Down);
+    QBASELINE_CHECK_DEFERRED(takeScreenSnapshot(testWindowRect), "selectmenunotchecked");
+}
+
+void tst_Widgets::tst_QCombobox_data()
+{
+    QTest::addColumn<bool>("hasFrame");
+    QTest::addColumn<bool>("isEditable");
+
+    QTest::addRow("frameNonEditable") << true << false;
+    QTest::addRow("frameEditable") << true << true;
+    QTest::addRow("noFrameNonEditable") << false << false;
+    QTest::addRow("noFrameEditable") << false << true;
+}
+
+void tst_Widgets::tst_QCombobox()
+{
+    QFETCH(const bool, hasFrame);
+    QFETCH(const bool, isEditable);
+
+    testWindow()->resize(300, 300);
+
+    QScopedPointer<QComboBox> combobox(new QComboBox(testWindow()));
+    QStringList items;
+    items << tr("Item1") << tr("Item2") << tr("Item3");
+    QStringListModel* itemModel = new QStringListModel(items, this);
+    combobox->setModel(itemModel);
+    combobox->setFrame(hasFrame);
+    combobox->setEditable(isEditable);
+
+    QHBoxLayout layout;
+    layout.addWidget(combobox.get());
+    testWindow()->setLayout(&layout);
+    takeStandardSnapshots();
+
+    QTest::keyClick(combobox.get(), Qt::Key_Down, Qt::AltModifier);
+    QBASELINE_CHECK_DEFERRED(takeScreenSnapshot(testWindow()->rect()), "combobox");
+}
+
+void tst_Widgets::tst_QCommandLinkButton_data()
+{
+    QTest::addColumn<bool>("flat");
+    QTest::addColumn<QString>("description");
+
+    QTest::addRow("flatDescription") << true << QString("Command button very specific to windows vista");
+    QTest::addRow("flatNoDescription") << true << QString("");
+    QTest::addRow("noFlatNoDescription") << false << QString("");
+}
+
+void tst_Widgets::tst_QCommandLinkButton()
+{
+    QFETCH(const bool, flat);
+    QFETCH(const QString, description);
+
+    QScopedPointer<QCommandLinkButton> commandLink(new QCommandLinkButton(QString("CommandLink"), description, testWindow()));
+    commandLink->setFlat(flat);
+    commandLink->setDescription(description);
+
+    QHBoxLayout layout;
+    layout.addWidget(commandLink.get());
+    testWindow()->setLayout(&layout);
+    takeStandardSnapshots();
+}
+
+void tst_Widgets::tst_QLCDNumber_data()
+{
+    QTest::addColumn<int>("segmentstyle");
+
+    QTest::addRow("outline") << 0;
+    QTest::addRow("filled") << 1;
+    QTest::addRow("flat") << 2;
+}
+
+void tst_Widgets::tst_QLCDNumber()
+{
+    QFETCH(const int, segmentstyle);
+
+    testWindow()->resize(100, 100);
+
+    QScopedPointer<QLCDNumber> lcdNumber(new QLCDNumber(99, testWindow()));
+    lcdNumber->setHexMode();
+    lcdNumber->setSegmentStyle(static_cast<QLCDNumber::SegmentStyle>(segmentstyle));
+
+
+    QHBoxLayout layout;
+    layout.addWidget(lcdNumber.get());
+    testWindow()->setLayout(&layout);
+
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "lcdnumber");
 }
 
 #define main _realmain

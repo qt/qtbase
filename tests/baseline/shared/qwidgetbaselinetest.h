@@ -32,6 +32,7 @@ private slots:
 protected:
     void makeVisible();
     QImage takeSnapshot();
+    QImage takeScreenSnapshot(const QRect& rect = QRect());
 
 private:
     QWidget *window = nullptr;

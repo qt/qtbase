@@ -117,6 +117,19 @@ QImage QWidgetBaselineTest::takeSnapshot()
     return window->grab().toImage();
 }
 
+/*
+    Grabs the test window screen and returns the resulting QImage, without
+    compensating for DPR differences.
+    This can be used for popup windows.
+*/
+QImage QWidgetBaselineTest::takeScreenSnapshot(const QRect& windowRect)
+{
+    // make sure all effects are done
+    QTest::qWait(250);
+    return window->screen()->grabWindow(0, windowRect.x(), windowRect.y(),
+                                        windowRect.width(), windowRect.height()).toImage();
+}
+
 /*!
     Sets standard widget properties on the test window and its children,
     and uploads snapshots. The widgets are returned in the same state
