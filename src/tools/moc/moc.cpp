@@ -1072,7 +1072,9 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
     fprintf(out, "** WARNING! All changes made in this file will be lost!\n"
             "*****************************************************************************/\n\n");
 
-    fprintf(out, "#include <memory>\n");  // For std::addressof
+    // include header(s) of user class definitions at _first_ to allow
+    // for preprocessor definitions possibly affecting standard headers.
+    // see https://codereview.qt-project.org/c/qt/qtbase/+/445937
     if (!noInclude) {
         if (includePath.size() && !includePath.endsWith('/'))
             includePath += '/';
@@ -1107,6 +1109,8 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
             "", ""
 #endif
     );
+
+    fprintf(out, "\n#include <memory>\n\n");  // For std::addressof
 
     fprintf(out, "#if !defined(Q_MOC_OUTPUT_REVISION)\n"
             "#error \"The header file '%s' doesn't include <QObject>.\"\n", fn.constData());
