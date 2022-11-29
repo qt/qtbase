@@ -2518,8 +2518,10 @@ function(_qt_internal_setup_deploy_support)
         if(QT_DEPLOY_USE_PATCHELF)
             find_program(QT_DEPLOY_PATCHELF_EXECUTABLE patchelf)
             if(NOT QT_DEPLOY_PATCHELF_EXECUTABLE)
-                message(FATAL_ERROR "The patchelf executable could not be located. "
-                    "Please install patchelf or upgrade CMake to 3.21 or newer.")
+                set(QT_DEPLOY_PATCHELF_EXECUTABLE "patchelf")
+                message(WARNING "The patchelf executable could not be located. "
+                    "To use Qt's CMake deployment API, install patchelf or upgrade CMake to 3.21 "
+                    "or newer.")
             endif()
         endif()
     endif()
