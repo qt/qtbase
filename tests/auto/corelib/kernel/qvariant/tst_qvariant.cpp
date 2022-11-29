@@ -3,43 +3,44 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#include <QTest>
-#include <QQueue>
-#include <QStack>
-#include <QSet>
-
 #include <qvariant.h>
-#include <qbitarray.h>
-#include <qbytearraylist.h>
-#include <qdatetime.h>
-#include <qmap.h>
-#include <QHash>
-#include <qiodevice.h>
-#include <qurl.h>
-#include <qlocale.h>
-#include <qdebug.h>
-#include <qjsondocument.h>
-#include <quuid.h>
 
-#include <limits.h>
-#include <float.h>
-#include <cmath>
-#include <variant>
-#include <QRegularExpression>
-#include <QDir>
-#include <QBuffer>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QEasingCurve>
-#include <QSequentialIterable>
+#include <QTest>
+
+// Please stick to alphabetic order.
 #include <QAssociativeIterable>
+#include <QBitArray>
+#include <QBuffer>
+#include <QByteArrayList>
+#include <QDateTime>
+#include <QDebug>
+#include <QDir>
+#include <QEasingCurve>
+#include <QMap>
+#include <QIODevice>
+#include <QHash>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QLocale>
+#include <QQueue>
+#include <QRegularExpression>
 #include <QScopeGuard>
-#include "qnumeric.h"
+#include <QSequentialIterable>
+#include <QSet>
+#include <QStack>
+#include <QtNumeric>
+#include <QUrl>
+#include <QUuid>
 
 #include <private/qlocale_p.h>
 #include <private/qmetatype_p.h>
 #include "tst_qvariant_common.h"
 
+#include <limits>
+#include <float.h>
+#include <cmath>
+#include <variant>
 #include <unordered_map>
 
 class CustomNonQObject;
@@ -96,7 +97,6 @@ public:
     tst_QVariant(QObject *parent = nullptr)
       : QObject(parent), customNonQObjectPointer(0)
     {
-
     }
 
 
