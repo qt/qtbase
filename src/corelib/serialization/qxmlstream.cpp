@@ -2812,7 +2812,7 @@ public:
     void writeEscaped(const QString &, bool escapeWhitespace = false);
     void write(const char *s, qsizetype len);
     bool finishStartElement(bool contents = true);
-    void writeStartElement(const QString &namespaceUri, const QString &name);
+    void writeStartElement(QAnyStringView namespaceUri, QAnyStringView name);
     QIODevice *device;
     QString *stringDevice;
     uint deleteDevice :1;
@@ -3627,7 +3627,7 @@ void QXmlStreamWriter::writeStartElement(const QString &namespaceUri, const QStr
     d->writeStartElement(namespaceUri, name);
 }
 
-void QXmlStreamWriterPrivate::writeStartElement(const QString &namespaceUri, const QString &name)
+void QXmlStreamWriterPrivate::writeStartElement(QAnyStringView namespaceUri, QAnyStringView name)
 {
     if (!finishStartElement(false) && autoFormatting)
         indent(tagStack.size());
