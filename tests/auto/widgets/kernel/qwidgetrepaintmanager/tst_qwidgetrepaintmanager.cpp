@@ -51,6 +51,14 @@ public:
     }
     QRegion paintedRegions;
 
+    bool event(QEvent *event) override
+    {
+        const auto type = event->type();
+        if (type == QEvent::WindowActivate || type == QEvent::WindowDeactivate)
+            return true;
+        return QWidget::event(event);
+    }
+
 protected:
     void paintEvent(QPaintEvent *event) override
     {
@@ -69,6 +77,14 @@ public:
     : QWidget(parent), fillColor(col)
     {
         setAttribute(Qt::WA_OpaquePaintEvent);
+    }
+
+    bool event(QEvent *event) override
+    {
+        const auto type = event->type();
+        if (type == QEvent::WindowActivate || type == QEvent::WindowDeactivate)
+            return true;
+        return QWidget::event(event);
     }
 
 protected:
@@ -186,6 +202,14 @@ public:
 
     QSize sizeHint() const override { return QSize(400, 400); }
 
+    bool event(QEvent *event) override
+    {
+        const auto type = event->type();
+        if (type == QEvent::WindowActivate || type == QEvent::WindowDeactivate)
+            return true;
+        return QWidget::event(event);
+    }
+
 protected:
     void resizeEvent(QResizeEvent *) override
     {
@@ -226,13 +250,14 @@ protected:
     */
     bool compareWidget(QWidget *w)
     {
+        QBackingStore *backingStore = w->window()->backingStore();
+        Q_ASSERT(backingStore && backingStore->handle());
+        QPlatformBackingStore *platformBackingStore = backingStore->handle();
+
         if (!waitForFlush(w)) {
             qWarning() << "Widget" << w << "failed to flush";
             return false;
         }
-        QBackingStore *backingStore = w->window()->backingStore();
-        Q_ASSERT(backingStore && backingStore->handle());
-        QPlatformBackingStore *platformBackingStore = backingStore->handle();
 
         QImage backingstoreContent = platformBackingStore->toImage();
         if (!w->isWindow()) {
@@ -259,7 +284,14 @@ protected:
     }
     bool waitForFlush(QWidget *widget) const
     {
+        if (!widget)
+            return true;
+
         auto *repaintManager = QWidgetPrivate::get(widget->window())->maybeRepaintManager();
+
+        if (!repaintManager)
+            return true;
+
         return QTest::qWaitFor([repaintManager]{ return !repaintManager->isDirty(); } );
     };
 #endif // QT_BUILD_INTERNAL
@@ -282,7 +314,7 @@ void tst_QWidgetRepaintManager::initTestCase()
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
     m_implementsScroll = widget.backingStore()->handle()->scroll(QRegion(widget.rect()), 1, 1);
-    qDebug() << QGuiApplication::platformName() << "QPA backend implements scroll:" << m_implementsScroll;
+    qInfo() << QGuiApplication::platformName() << "QPA backend implements scroll:" << m_implementsScroll;
 }
 
 void tst_QWidgetRepaintManager::cleanup()
@@ -594,6 +626,7 @@ void tst_QWidgetRepaintManager::fastMove()
         QCOMPARE(dirtyRegion(scene.yellowChild), QRect(0, 0, 100, 100));
     }
     QCOMPARE(dirtyRegion(&scene), QRect(0, 0, 25, 100));
+    QTRY_VERIFY(dirtyRegion(&scene).isEmpty());
     QVERIFY(compareWidget(&scene));
 }
 
