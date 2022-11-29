@@ -54,13 +54,39 @@ public:
         d.size = m_size;
         return QXmlString(std::move(d));
     }
-    operator QStringView() const { return view(); }
 
     void clear() { m_string = nullptr; m_pos = 0; m_size= 0; }
     QStringView view() const { return m_string ? QStringView(m_string->data() + m_pos, m_size) : QStringView(); }
     bool isEmpty() const { return m_size == 0; }
     bool isNull() const { return !m_string; }
     QString toString() const { return view().toString(); }
+
+    using value_type = QStringView::value_type;
+    using size_type = QStringView::size_type;
+    using difference_type = QStringView::difference_type;
+    using pointer = QStringView::pointer;
+    using const_pointer = QStringView::const_pointer;
+    using reference = QStringView::reference;
+    using const_reference = QStringView::const_reference;
+    using iterator = QStringView::iterator;
+    using const_iterator = QStringView::const_iterator;
+    using reverse_iterator = QStringView::reverse_iterator;
+    using const_reverse_iterator = QStringView::const_reverse_iterator;
+
+#define MAKE_MEMBER(name) \
+    auto name () const noexcept { return view(). name (); }
+    MAKE_MEMBER(data)
+    MAKE_MEMBER(size)
+    MAKE_MEMBER(empty)
+    MAKE_MEMBER(begin)
+    MAKE_MEMBER(end)
+    MAKE_MEMBER(cbegin)
+    MAKE_MEMBER(cend)
+    MAKE_MEMBER(rbegin)
+    MAKE_MEMBER(rend)
+    MAKE_MEMBER(crbegin)
+    MAKE_MEMBER(crend)
+#undef MAKE_MEMBER
 
 #define MAKE_OP(op) \
     friend auto operator op(const XmlStringRef &lhs, const XmlStringRef &rhs) noexcept { return lhs.view() op rhs.view(); } \

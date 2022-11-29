@@ -7,6 +7,7 @@
 #include <QString>
 #include <QStringBuilder>
 #include <QVarLengthArray>
+#include <private/qxmlstream_p.h>
 
 #include <QTest>
 
@@ -164,6 +165,8 @@ static_assert(CanConvert<std::vector<char16_t>>);
 static_assert(CanConvert<std::array<char16_t, 123>>);
 static_assert(!CanConvert<std::deque<char16_t>>);
 static_assert(!CanConvert<std::list<char16_t>>);
+
+static_assert(CanConvert<QtPrivate::XmlStringRef>);
 
 //
 // char32_t

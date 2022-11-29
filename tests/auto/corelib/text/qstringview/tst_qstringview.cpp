@@ -7,6 +7,7 @@
 #include <QChar>
 #include <QVarLengthArray>
 #include <QList>
+#include <private/qxmlstream_p.h>
 
 #include <QTest>
 
@@ -89,6 +90,8 @@ static_assert(CanConvert<std::vector<char16_t>>::value);
 static_assert(CanConvert<std::array<char16_t, 123>>::value);
 static_assert(!CanConvert<std::deque<char16_t>>::value);
 static_assert(!CanConvert<std::list<char16_t>>::value);
+
+static_assert(CanConvert<QtPrivate::XmlStringRef>::value);
 
 //
 // wchar_t

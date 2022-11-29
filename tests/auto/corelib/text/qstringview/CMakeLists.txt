@@ -10,6 +10,8 @@
 qt_internal_add_test(tst_qstringview
     SOURCES
         tst_qstringview.cpp
+    LIBRARIES
+        Qt::CorePrivate
 )
 
 ## Scopes:
