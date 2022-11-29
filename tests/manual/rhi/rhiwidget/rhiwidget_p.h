@@ -13,7 +13,13 @@ class QRhiWidgetPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QRhiWidget)
 public:
-    QRhiTexture *texture() const override { return textureInvalid ? nullptr : t; }
+    TextureData texture() const override
+    {
+        TextureData td;
+        if (!textureInvalid)
+            td.textureLeft = t;
+        return td;
+    }
     QPlatformBackingStoreRhiConfig rhiConfig() const override;
 
     void ensureRhi();
