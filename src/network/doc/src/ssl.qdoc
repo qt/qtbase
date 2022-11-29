@@ -18,7 +18,7 @@
 
     \annotatedlist ssl
 
-    For Android applications see \l{Adding OpeSSL Support for Android}.
+    For Android applications see \l{Adding OpenSSL Support for Android}.
 
     \section1 Enabling and Disabling SSL Support when Building Qt from Source
 
