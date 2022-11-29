@@ -14,3 +14,5 @@ ubuntu
 osx
 [list:epsvNotSupported]
 *
+[initTestCase]
+ci ubuntu-20.04 # QTBUG-109022
