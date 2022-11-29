@@ -354,3 +354,8 @@ to ${FEATURE_${feature}}")
 Some features will be re-evaluated automatically.")
     endif()
 endif()
+
+if(NOT QT_BUILD_EXAMPLES)
+    # Disable deployment setup to avoid warnings about missing patchelf with CMake < 3.21.
+    set(QT_SKIP_SETUP_DEPLOYMENT ON)
+endif()

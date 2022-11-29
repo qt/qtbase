@@ -2410,6 +2410,10 @@ endfunction()
 
 # Sets up the commands for use at install/deploy time
 function(_qt_internal_setup_deploy_support)
+    if(QT_SKIP_SETUP_DEPLOYMENT)
+        return()
+    endif()
+
     get_property(cmake_role GLOBAL PROPERTY CMAKE_ROLE)
     if(NOT cmake_role STREQUAL "PROJECT")
         return()
