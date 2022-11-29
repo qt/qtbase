@@ -371,6 +371,16 @@ function(qt_internal_add_test_to_batch batch_name name)
                                         "BATCHED_TEST_NAME=\"${name}\"")
     endforeach()
     set(${batch_name} ${target} PARENT_SCOPE)
+
+    # Add a dummy target so that new tests don't have problems with a nonexistent
+    # target when calling cmake functions.
+    # The batch tests that include this target will compile, but may fail to work.
+    # Manual action is required then.
+    add_custom_target(${name})
+
+    # Add the dependency to the dummy target so that it is indirectly added to the test batch
+    # dependencies.
+    add_dependencies(${target} ${name})
 endfunction()
 
 # Checks whether the test 'name' is present in the test batch. See QT_BUILD_TESTS_BATCHED.
