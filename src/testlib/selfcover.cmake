@@ -28,7 +28,7 @@ function(qt_internal_apply_testlib_coverage_options target)
         --cs-mcc # enable Multiple Condition Coverage
         --cs-mcdc # enable Multiple Condition / Decision Coverage
     # (recommended for ISO 26262 ASIL A, B and C -- highly recommended for ASIL D)
-    # https://doc.froglogic.com/squish-coco/4.1/codecoverage.html#sec%3Amcdc
+    # https://doc.qt.io/coco/code-coverage-analysis.html#mc-dc
     )
     target_compile_options(${target} PRIVATE
         ${testlib_coverage_options}
