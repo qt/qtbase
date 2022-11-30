@@ -171,7 +171,7 @@
 
     \section2 Use Coverage Tools
 
-    Use a coverage tool such as \l {Froglogic Coco Code Coverage} or \l {gcov}
+    Use a coverage tool such as \l {Coco} or \l {gcov}
     to help write tests that cover as many statements, branches, and conditions
     as possible in the function or class being tested. The earlier this is done
     in the development cycle for a new feature, the easier it will be to catch
