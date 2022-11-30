@@ -560,10 +560,16 @@ inline int QByteArray::compare(QByteArrayView a, Qt::CaseSensitivity cs) const n
 #if !defined(QT_USE_QSTRINGBUILDER)
 inline QByteArray operator+(const QByteArray &a1, const QByteArray &a2)
 { return QByteArray(a1) += a2; }
+inline QByteArray operator+(QByteArray &&lhs, const QByteArray &rhs)
+{ return std::move(lhs += rhs); }
 inline QByteArray operator+(const QByteArray &a1, const char *a2)
 { return QByteArray(a1) += a2; }
+inline QByteArray operator+(QByteArray &&lhs, const char *rhs)
+{ return std::move(lhs += rhs); }
 inline QByteArray operator+(const QByteArray &a1, char a2)
 { return QByteArray(a1) += a2; }
+inline QByteArray operator+(QByteArray &&lhs, char rhs)
+{ return std::move(lhs += rhs); }
 inline QByteArray operator+(const char *a1, const QByteArray &a2)
 { return QByteArray(a1) += a2; }
 inline QByteArray operator+(char a1, const QByteArray &a2)

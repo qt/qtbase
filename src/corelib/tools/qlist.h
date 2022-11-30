@@ -669,10 +669,14 @@ public:
     // comfort
     QList<T> &operator+=(const QList<T> &l) { append(l); return *this; }
     QList<T> &operator+=(QList<T> &&l) { append(std::move(l)); return *this; }
-    inline QList<T> operator+(const QList<T> &l) const
+    inline QList<T> operator+(const QList<T> &l) const &
     { QList n = *this; n += l; return n; }
-    inline QList<T> operator+(QList<T> &&l) const
+    QList<T> operator+(const QList<T> &l) &&
+    { return std::move(*this += l); }
+    inline QList<T> operator+(QList<T> &&l) const &
     { QList n = *this; n += std::move(l); return n; }
+    QList<T> operator+(QList<T> &&l) &&
+    { return std::move(*this += std::move(l)); }
     inline QList<T> &operator+=(parameter_type t)
     { append(t); return *this; }
     inline QList<T> &operator<< (parameter_type t)

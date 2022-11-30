@@ -6386,6 +6386,7 @@ QString& QString::fill(QChar ch, qsizetype size)
 
 /*!
     \fn QString operator+(const QString &s1, const QString &s2)
+    \fn QString operator+(QString &&s1, const QString &s2)
     \relates QString
 
     Returns a string which is the result of concatenating \a s1 and \a

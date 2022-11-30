@@ -1490,19 +1490,27 @@ inline bool QByteArray::operator>=(const QString &s) const
 #if !defined(QT_USE_FAST_OPERATOR_PLUS) && !defined(QT_USE_QSTRINGBUILDER)
 inline QString operator+(const QString &s1, const QString &s2)
 { QString t(s1); t += s2; return t; }
+inline QString operator+(QString &&lhs, const QString &rhs)
+{ return std::move(lhs += rhs); }
 inline QString operator+(const QString &s1, QChar s2)
 { QString t(s1); t += s2; return t; }
+inline QString operator+(QString &&lhs, QChar rhs)
+{ return std::move(lhs += rhs); }
 inline QString operator+(QChar s1, const QString &s2)
 { QString t(s1); t += s2; return t; }
 #  if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 QT_ASCII_CAST_WARN inline QString operator+(const QString &s1, const char *s2)
 { QString t(s1); t += QString::fromUtf8(s2); return t; }
+QT_ASCII_CAST_WARN inline QString operator+(QString &&lhs, const char *rhs)
+{ QT_IGNORE_DEPRECATIONS(return std::move(lhs += rhs);) }
 QT_ASCII_CAST_WARN inline QString operator+(const char *s1, const QString &s2)
 { QString t = QString::fromUtf8(s1); t += s2; return t; }
 QT_ASCII_CAST_WARN inline QString operator+(const QByteArray &ba, const QString &s)
 { QString t = QString::fromUtf8(ba); t += s; return t; }
 QT_ASCII_CAST_WARN inline QString operator+(const QString &s, const QByteArray &ba)
 { QString t(s); t += QString::fromUtf8(ba); return t; }
+QT_ASCII_CAST_WARN inline QString operator+(QString &&lhs, const QByteArray &rhs)
+{ QT_IGNORE_DEPRECATIONS(return std::move(lhs += rhs);) }
 #  endif // QT_NO_CAST_FROM_ASCII
 #endif // QT_USE_QSTRINGBUILDER
 

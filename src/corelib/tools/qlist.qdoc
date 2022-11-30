@@ -1316,18 +1316,14 @@
     \sa append(), operator<<()
 */
 
-/*! \fn template <typename T> QList<T> QList<T>::operator+(const QList<T> &other) const
+/*!
+    \fn template <typename T> QList<T> QList<T>::operator+(const QList<T> &other) const &
+    \fn template <typename T> QList<T> QList<T>::operator+(const QList<T> &other) &&
+    \fn template <typename T> QList<T> QList<T>::operator+(QList<T> &&other) const &
+    \fn template <typename T> QList<T> QList<T>::operator+(QList<T> &&other) &&
 
     Returns a list that contains all the items in this list
     followed by all the items in the \a other list.
-
-    \sa operator+=()
-*/
-
-/*! \fn template <typename T> QList<T> QList<T>::operator+(QList<T> &&other) const
-    \since 6.0
-
-    \overload
 
     \sa operator+=()
 */
