@@ -2809,7 +2809,7 @@ public:
     }
 
     void write(QAnyStringView s);
-    void writeEscaped(const QString &, bool escapeWhitespace = false);
+    void writeEscaped(QAnyStringView, bool escapeWhitespace = false);
     void write(const char *s, qsizetype len);
     bool finishStartElement(bool contents = true);
     void writeStartElement(QAnyStringView namespaceUri, QAnyStringView name);
@@ -2871,54 +2871,65 @@ void QXmlStreamWriterPrivate::write(QAnyStringView s)
     }
 }
 
-void QXmlStreamWriterPrivate::writeEscaped(const QString &s, bool escapeWhitespace)
+void QXmlStreamWriterPrivate::writeEscaped(QAnyStringView s, bool escapeWhitespace)
 {
     QString escaped;
     escaped.reserve(s.size());
-    for (QChar c : s) {
-        switch (c.unicode()) {
-        case '<':
-            escaped.append("&lt;"_L1);
-            break;
-        case '>':
-            escaped.append("&gt;"_L1);
-            break;
-        case '&':
-            escaped.append("&amp;"_L1);
-            break;
-        case '\"':
-            escaped.append("&quot;"_L1);
-            break;
-        case '\t':
-            if (escapeWhitespace)
-                escaped.append("&#9;"_L1);
-            else
-                escaped += c;
-            break;
-        case '\n':
-            if (escapeWhitespace)
-                escaped.append("&#10;"_L1);
-            else
-                escaped += c;
-            break;
-        case '\v':
-        case '\f':
-            hasEncodingError = true;
-            break;
-        case '\r':
-            if (escapeWhitespace)
-                escaped.append("&#13;"_L1);
-            else
-                escaped += c;
-            break;
-        default:
-            if (c.unicode() > 0x1f && c.unicode() < 0xfffe)
-                escaped += c;
-            else
-                hasEncodingError = true;
-            break;
+    s.visit([&] (auto s) {
+        using View = decltype(s);
+
+        auto it = s.begin();
+        const auto end = s.end();
+
+        while (it != end) {
+            QLatin1StringView replacement;
+            auto mark = it;
+
+            while (it != end) {
+                if (*it == u'<') {
+                    replacement = "&lt;"_L1;
+                    break;
+                } else if (*it == u'>') {
+                    replacement = "&gt;"_L1;
+                    break;
+                } else if (*it == u'&') {
+                    replacement = "&amp;"_L1;
+                    break;
+                } else if (*it == u'\"') {
+                    replacement = "&quot;"_L1;
+                    break;
+                } else if (*it == u'\t') {
+                    if (escapeWhitespace) {
+                        replacement = "&#9;"_L1;
+                        break;
+                    }
+                } else if (*it == u'\n') {
+                    if (escapeWhitespace) {
+                        replacement = "&#10;"_L1;
+                        break;
+                    }
+                } else if (*it == u'\v' || *it == u'\f') {
+                    hasEncodingError = true;
+                    break;
+                } else if (*it == u'\r') {
+                    if (escapeWhitespace) {
+                        replacement = "&#13;"_L1;
+                        break;
+                    }
+                } else if (*it <= u'\x1F' || *it >= u'\uFFFE') {
+                    hasEncodingError = true;
+                    break;
+                }
+                ++it;
+            }
+
+            escaped.append(View{mark, it});
+            escaped.append(replacement);
+            if (it != end)
+                ++it;
         }
-    }
+    } );
+
     write(escaped);
 }
 
