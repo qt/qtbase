@@ -633,8 +633,12 @@ void tst_QGlyphRun::defaultIgnorables()
 
         bool hasFullMainFontRun = false;
         for (const QGlyphRun &run : runs) {
+            // QtsSpecialFont will be used for at least five characters: AA[...]111
+            // Depending on the font selected for the 0xFE0F variant selector, the
+            // third 'A' may be in QtsSpecialFont or in the fallback. This is platform-specific,
+            // so we accept either.
             if (run.rawFont().familyName() == QStringLiteral("QtsSpecialTestFont")
-                    && run.glyphIndexes().size() == 6) {
+                    && run.glyphIndexes().size() >= 5) {
                 hasFullMainFontRun = true;
                 break;
             }

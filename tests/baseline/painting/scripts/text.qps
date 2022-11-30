@@ -165,7 +165,7 @@ translate 0 75
 save
   setPen black
   setFont "sansserif" 16 normal
-  drawText 0 40 "e😃m😇o😍j😜i😸!"
+  drawText 0 40 "e😃m😇o😍j😜i😸!✈️"
 restore
 
 translate 0 75

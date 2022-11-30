@@ -1825,6 +1825,7 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
     QStringIterator it(str, str + len);
 
     int lastFallback = -1;
+    char32_t previousUcs4 = 0;
     while (it.hasNext()) {
         const char32_t ucs4 = it.peekNext();
 
@@ -1886,10 +1887,35 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
                     break;
                 }
             }
+
+            // For variant-selectors, they are modifiers to the previous character. If we
+            // end up with different font selections for the selector and the character it
+            // modifies, we try applying the selector font to the preceding character as well
+            const int variantSelectorBlock = 0xFE00;
+            if ((ucs4 & 0xFFF0) == variantSelectorBlock && glyph_pos > 0) {
+                int selectorFontEngine = glyphs->glyphs[glyph_pos] >> 24;
+                int precedingCharacterFontEngine = glyphs->glyphs[glyph_pos - 1] >> 24;
+
+                if (selectorFontEngine != precedingCharacterFontEngine) {
+                    QFontEngine *engine = m_engines.at(selectorFontEngine);
+                    glyph_t glyph = engine->glyphIndex(previousUcs4);
+                    if (glyph != 0) {
+                        glyphs->glyphs[glyph_pos - 1] = glyph;
+                        if (!(flags & GlyphIndicesOnly)) {
+                            QGlyphLayout g = glyphs->mid(glyph_pos - 1, 1);
+                            engine->recalcAdvances(&g, flags);
+                        }
+
+                        // set the high byte to indicate which engine the glyph came from
+                        glyphs->glyphs[glyph_pos - 1] |= (selectorFontEngine << 24);
+                    }
+                }
+            }
         }
 
         it.advance();
         ++glyph_pos;
+        previousUcs4 = ucs4;
     }
 
     *nglyphs = glyph_pos;
