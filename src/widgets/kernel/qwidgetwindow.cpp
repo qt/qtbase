@@ -1051,11 +1051,10 @@ void QWidgetWindow::handleTabletEvent(QTabletEvent *event)
 
     if (!widget) {
         widget = m_widget->childAt(event->position().toPoint());
-        if (event->type() == QEvent::TabletPress) {
-            if (!widget)
-                widget = m_widget;
+        if (!widget)
+            widget = m_widget;
+        if (event->type() == QEvent::TabletPress)
             qt_tablet_target = widget;
-        }
     }
 
     if (widget) {
