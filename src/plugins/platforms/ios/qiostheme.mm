@@ -22,6 +22,7 @@
 #include "qiosfiledialog.h"
 #include "qiosmessagedialog.h"
 #include "qioscolordialog.h"
+#include "qiosfontdialog.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -100,6 +101,7 @@ bool QIOSTheme::usePlatformNativeDialog(QPlatformTheme::DialogType type) const
     case FileDialog:
     case MessageDialog:
     case ColorDialog:
+    case FontDialog:
         return !qt_apple_isApplicationExtension();
     default:
         return false;
@@ -118,6 +120,9 @@ QPlatformDialogHelper *QIOSTheme::createPlatformDialogHelper(QPlatformTheme::Dia
         break;
     case ColorDialog:
         return new QIOSColorDialog();
+        break;
+    case FontDialog:
+        return new QIOSFontDialog();
         break;
 #endif
     default:
