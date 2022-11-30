@@ -28,7 +28,7 @@ QT_BEGIN_NAMESPACE
     QJUnitTestLogger implements logging in a JUnit-compatible XML format.
 
     The \l{JUnit XML} format was originally developed for Java testing.
-    It is supported by \l{Squish Test Center}.
+    It is supported by \l{Test Center}.
 */
 // QTBUG-95424 links to further useful documentation.
 
