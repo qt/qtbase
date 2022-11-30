@@ -547,15 +547,15 @@ inline int QByteArray::compare(QByteArrayView a, Qt::CaseSensitivity cs) const n
                                      qstrnicmp(data(), size(), a.data(), a.size());
 }
 #if !defined(QT_USE_QSTRINGBUILDER)
-inline const QByteArray operator+(const QByteArray &a1, const QByteArray &a2)
+inline QByteArray operator+(const QByteArray &a1, const QByteArray &a2)
 { return QByteArray(a1) += a2; }
-inline const QByteArray operator+(const QByteArray &a1, const char *a2)
+inline QByteArray operator+(const QByteArray &a1, const char *a2)
 { return QByteArray(a1) += a2; }
-inline const QByteArray operator+(const QByteArray &a1, char a2)
+inline QByteArray operator+(const QByteArray &a1, char a2)
 { return QByteArray(a1) += a2; }
-inline const QByteArray operator+(const char *a1, const QByteArray &a2)
+inline QByteArray operator+(const char *a1, const QByteArray &a2)
 { return QByteArray(a1) += a2; }
-inline const QByteArray operator+(char a1, const QByteArray &a2)
+inline QByteArray operator+(char a1, const QByteArray &a2)
 { return QByteArray(&a1, 1) += a2; }
 #endif // QT_USE_QSTRINGBUILDER
 

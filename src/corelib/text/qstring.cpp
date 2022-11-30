@@ -6276,7 +6276,7 @@ QString& QString::fill(QChar ch, qsizetype size)
 */
 
 /*!
-    \fn const QString operator+(const QString &s1, const QString &s2)
+    \fn QString operator+(const QString &s1, const QString &s2)
     \relates QString
 
     Returns a string which is the result of concatenating \a s1 and \a
@@ -6284,7 +6284,7 @@ QString& QString::fill(QChar ch, qsizetype size)
 */
 
 /*!
-    \fn const QString operator+(const QString &s1, const char *s2)
+    \fn QString operator+(const QString &s1, const char *s2)
     \relates QString
 
     Returns a string which is the result of concatenating \a s1 and \a
@@ -6295,7 +6295,7 @@ QString& QString::fill(QChar ch, qsizetype size)
 */
 
 /*!
-    \fn const QString operator+(const char *s1, const QString &s2)
+    \fn QString operator+(const char *s1, const QString &s2)
     \relates QString
 
     Returns a string which is the result of concatenating \a s1 and \a

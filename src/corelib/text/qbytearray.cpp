@@ -3485,7 +3485,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn const QByteArray operator+(const QByteArray &a1, const QByteArray &a2)
+/*! \fn QByteArray operator+(const QByteArray &a1, const QByteArray &a2)
     \relates QByteArray
 
     Returns a byte array that is the result of concatenating byte
@@ -3494,7 +3494,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::operator+=()
 */
 
-/*! \fn const QByteArray operator+(const QByteArray &a1, const char *a2)
+/*! \fn QByteArray operator+(const QByteArray &a1, const char *a2)
     \relates QByteArray
 
     \overload
@@ -3503,7 +3503,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     and '\\0'-terminated string \a a2.
 */
 
-/*! \fn const QByteArray operator+(const QByteArray &a1, char a2)
+/*! \fn QByteArray operator+(const QByteArray &a1, char a2)
     \relates QByteArray
 
     \overload
@@ -3512,7 +3512,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     array \a a1 and byte \a a2.
 */
 
-/*! \fn const QByteArray operator+(const char *a1, const QByteArray &a2)
+/*! \fn QByteArray operator+(const char *a1, const QByteArray &a2)
     \relates QByteArray
 
     \overload
@@ -3521,7 +3521,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     string \a a1 and byte array \a a2.
 */
 
-/*! \fn const QByteArray operator+(char a1, const QByteArray &a2)
+/*! \fn QByteArray operator+(char a1, const QByteArray &a2)
     \relates QByteArray
 
     \overload
