@@ -422,6 +422,33 @@ the property value overrides the runtime path where the resource file is found.
 */
 
 /*!
+\page cmake-source-file-property-qt-discard-file-contents.html
+\ingroup cmake-source-file-properties-qtcore
+
+\title QT_DISCARD_FILE_CONTENTS
+\target cmake-source-file-property-QT_DISCARD_FILE_CONTENTS
+
+\summary {Specifies that the given files should be empty in the resource file system}
+
+\cmakepropertysince 6.5
+\preliminarycmakeproperty
+
+When using the target-based variant of \l{qt6_add_resources}{qt_add_resources}
+or \l{qt_add_qml_module}, setting this property to \c TRUE causes the file
+contents to be omitted when creating the resource file system. The file name is
+retained.
+
+This is useful if you want to strip QML source code from the binary.
+
+\note If you omit the QML source code from the binary, the QML engine has to
+rely on the the compilation units created by \l{qmlcachegen} or \l{qmlsc}.
+Those are tied to the specific version of Qt they were built with. If you change
+the version of Qt your application uses, they can't be loaded anymore.
+
+\sa{The Qt Resource System}
+*/
+
+/*!
 \page cmake-target-property-qt-wasm-pthread-pool-size.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore

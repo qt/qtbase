@@ -31,6 +31,17 @@ qt_internal_add_test(tst_qresourceengine
     TESTDATA ${test_data}
 )
 
+set_source_files_properties("world.txt"
+    PROPERTIES QT_DISCARD_FILE_CONTENTS TRUE
+)
+
+qt_internal_add_resource(tst_qresourceengine "qt_resource_empty"
+    PREFIX
+        "/empty"
+    FILES
+        "world.txt"
+)
+
 qt_add_resources(additional_sources testqrc/test.qrc)
 target_sources(tst_qresourceengine PRIVATE ${additional_sources})
 

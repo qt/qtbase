@@ -1884,10 +1884,15 @@ function(_qt_internal_process_resource target resourceName)
             set(file "${CMAKE_CURRENT_SOURCE_DIR}/${file}")
         endif()
 
+        get_property(is_empty SOURCE ${file} PROPERTY QT_DISCARD_FILE_CONTENTS)
+
         ### FIXME: escape file paths to be XML conform
         # <file ...>...</file>
-        string(APPEND qrcContents "    <file alias=\"${file_resource_path}\">")
-        string(APPEND qrcContents "${file}</file>\n")
+        string(APPEND qrcContents "    <file alias=\"${file_resource_path}\"")
+        if(is_empty)
+            string(APPEND qrcContents " empty=\"true\"")
+        endif()
+        string(APPEND qrcContents ">${file}</file>\n")
         list(APPEND files "${file}")
 
         set(scope_args)

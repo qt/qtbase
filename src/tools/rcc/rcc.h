@@ -96,6 +96,7 @@ private:
         const QString ATTRIBUTE_LANG;
         const QString ATTRIBUTE_PREFIX;
         const QString ATTRIBUTE_ALIAS;
+        const QString ATTRIBUTE_EMPTY;
         const QString ATTRIBUTE_THRESHOLD;
         const QString ATTRIBUTE_COMPRESS;
         const QString ATTRIBUTE_COMPRESSALGO;

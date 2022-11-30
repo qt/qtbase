@@ -41,6 +41,7 @@ private slots:
     void setLocale();
     void lastModified();
     void resourcesInStaticPlugins();
+    void qtResourceEmpty();
 
 private:
     const QString m_runtimeResourceRcc;
@@ -168,6 +169,7 @@ void tst_QResourceEngine::checkStructure_data()
 #ifdef Q_OS_ANDROID
                  << QLatin1String("android_testdata")
 #endif
+                 << QLatin1String("empty")
                  << QLatin1String("otherdir")
                  << QLatin1String("runtime_resource")
                  << QLatin1String("searchpath1")
@@ -618,6 +620,14 @@ void tst_QResourceEngine::resourcesInStaticPlugins()
     // the plugin via moc generated Q_INIT_RESOURCE calls in a
     // Q_CONSTRUCTOR_FUNCTION.
     QVERIFY(QFile::exists(":/staticplugin/main.cpp"));
+}
+
+void tst_QResourceEngine::qtResourceEmpty()
+{
+    QFile f(":/empty/world.txt");
+    QVERIFY(f.exists());
+    QVERIFY(f.open(QIODevice::ReadOnly));
+    QVERIFY(f.readAll().isEmpty());
 }
 
 QTEST_MAIN(tst_QResourceEngine)

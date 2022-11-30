@@ -166,6 +166,25 @@
     The file is from the application then only accessible as \c :/cut-img.png
     or \c{qrc:/cut-img.png}.
 
+    \section2 Discarding the file contents
+
+    Sometimes you want to add a file node to the resource file system but
+    don't actually want to add the file contents. \c .qrc files allow this
+    by setting the \c empty attribute to \c{true}.
+
+    \snippet code/doc_src_resources.qdoc 4
+
+    The resulting file is then still accessible from the application, but
+    its contents are empty.
+
+    This is useful to strip QML source code from an application binary.
+
+    \note If you omit the QML source code from the binary, the QML engine has to
+    rely on the the compilation units created by \l{qmlcachegen} or \l{qmlsc}.
+    Those are tied to the specific version of Qt they were built with. If you
+    change the version of Qt your application uses, they can't be loaded
+    anymore.
+
     \section2 Language Selectors
 
     Some resources need to change based on the user's locale, such as

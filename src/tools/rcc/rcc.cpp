@@ -82,7 +82,8 @@ public:
                 RCCResourceLibrary::CompressionAlgorithm compressAlgo = RCCResourceLibrary::CompressionAlgorithm::Best,
                 int compressLevel = CONSTANT_COMPRESSLEVEL_DEFAULT,
                 int compressThreshold = CONSTANT_COMPRESSTHRESHOLD_DEFAULT,
-                bool noZstd = false);
+                bool noZstd = false,
+                bool isEmpty = false);
     ~RCCFileInfo();
 
     QString resourceName() const;
@@ -107,12 +108,13 @@ public:
     qint64 m_dataOffset;
     qint64 m_childOffset;
     bool m_noZstd;
+    bool m_isEmpty;
 };
 
 RCCFileInfo::RCCFileInfo(const QString &name, const QFileInfo &fileInfo,
     QLocale::Language language, QLocale::Territory territory, uint flags,
     RCCResourceLibrary::CompressionAlgorithm compressAlgo, int compressLevel, int compressThreshold,
-    bool noZstd)
+    bool noZstd, bool isEmpty)
 {
     m_name = name;
     m_fileInfo = fileInfo;
@@ -127,6 +129,7 @@ RCCFileInfo::RCCFileInfo(const QString &name, const QFileInfo &fileInfo,
     m_compressLevel = compressLevel;
     m_compressThreshold = compressThreshold;
     m_noZstd = noZstd;
+    m_isEmpty = isEmpty;
 }
 
 RCCFileInfo::~RCCFileInfo()
@@ -225,14 +228,18 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
 
     //capture the offset
     m_dataOffset = offset;
+    QByteArray data;
 
-    //find the data to be written
-    QFile file(m_fileInfo.absoluteFilePath());
-    if (!file.open(QFile::ReadOnly)) {
-        *errorMessage = msgOpenReadFailed(m_fileInfo.absoluteFilePath(), file.errorString());
-        return 0;
+    if (!m_isEmpty) {
+        //find the data to be written
+        QFile file(m_fileInfo.absoluteFilePath());
+        if (!file.open(QFile::ReadOnly)) {
+            *errorMessage = msgOpenReadFailed(m_fileInfo.absoluteFilePath(), file.errorString());
+            return 0;
+        }
+
+        data = file.readAll();
     }
-    QByteArray data = file.readAll();
 
     // Check if compression is useful for this file
     if (data.size() != 0) {
@@ -420,6 +427,7 @@ RCCResourceLibrary::Strings::Strings() :
    ATTRIBUTE_LANG("lang"_L1),
    ATTRIBUTE_PREFIX("prefix"_L1),
    ATTRIBUTE_ALIAS("alias"_L1),
+   ATTRIBUTE_EMPTY("empty"_L1),
    ATTRIBUTE_THRESHOLD("threshold"_L1),
    ATTRIBUTE_COMPRESS("compress"_L1),
    ATTRIBUTE_COMPRESSALGO(QStringLiteral("compression-algorithm"))
@@ -464,6 +472,17 @@ enum RCCXmlTag {
 };
 Q_DECLARE_TYPEINFO(RCCXmlTag, Q_PRIMITIVE_TYPE);
 
+static bool parseBoolean(QStringView value, QString *errorMsg)
+{
+    if (value.compare("true"_L1, Qt::CaseInsensitive) == 0)
+        return true;
+    if (value.compare("false"_L1, Qt::CaseInsensitive) == 0)
+        return false;
+
+    *errorMsg = QString::fromLatin1("Invalid value for boolean attribute: '%1'").arg(value);
+    return false;
+}
+
 bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
     const QString &fname, QString currentPath, bool listMode)
 {
@@ -479,6 +498,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
     QLocale::Language language = QLocale::c().language();
     QLocale::Territory territory = QLocale::c().territory();
     QString alias;
+    bool empty = false;
     auto compressAlgo = m_compressionAlgo;
     int compressLevel = m_compressLevel;
     int compressThreshold = m_compressThreshold;
@@ -538,6 +558,11 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                     compressThreshold = m_compressThreshold;
 
                     QString errorString;
+                    if (attributes.hasAttribute(m_strings.ATTRIBUTE_EMPTY))
+                        empty = parseBoolean(attributes.value(m_strings.ATTRIBUTE_EMPTY), &errorString);
+                    else
+                        empty = false;
+
                     if (attributes.hasAttribute(m_strings.ATTRIBUTE_COMPRESSALGO))
                         compressAlgo = parseCompressionAlgorithm(attributes.value(m_strings.ATTRIBUTE_COMPRESSALGO), &errorString);
                     if (errorString.isEmpty() && attributes.hasAttribute(m_strings.ATTRIBUTE_COMPRESS)) {
@@ -628,7 +653,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                                                     child.isDir() ? RCCFileInfo::Directory
                                                                   : RCCFileInfo::NoFlags,
                                                     compressAlgo, compressLevel, compressThreshold,
-                                                    m_noZstd));
+                                                    m_noZstd, empty));
                         if (!arc)
                             m_failedResources.push_back(child.fileName());
                     }
@@ -643,7 +668,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                                             compressAlgo,
                                             compressLevel,
                                             compressThreshold,
-                                            m_noZstd)
+                                            m_noZstd, empty)
                                 );
                     if (!arc)
                         m_failedResources.push_back(absFileName);
