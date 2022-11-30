@@ -12752,9 +12752,8 @@ int QWidget::metric(PaintDeviceMetric m) const
         // Note: keep in sync with QBackingStorePrivate::backingStoreDevicePixelRatio()!
         static bool downscale = qEnvironmentVariableIntValue("QT_WIDGETS_HIGHDPI_DOWNSCALE") > 0;
         QWindow *window = this->window()->windowHandle();
-        if (downscale && window)
-            return std::ceil(window->devicePixelRatio());
-
+        if (window)
+            return downscale ? std::ceil(window->devicePixelRatio()) : window->devicePixelRatio();
         return screen->devicePixelRatio();
     };
 
