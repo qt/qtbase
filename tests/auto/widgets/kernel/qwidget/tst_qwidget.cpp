@@ -12500,60 +12500,54 @@ void tst_QWidget::testForOutsideWSRangeFlag()
     }
 }
 
-class TabletWidget : public QWidget
-{
-public:
-    TabletWidget(QWidget *parent) : QWidget(parent) { }
-
-    int tabletEventCount = 0;
-    int pressEventCount = 0;
-    int moveEventCount = 0;
-    int releaseEventCount = 0;
-    int trackingChangeEventCount = 0;
-    qint64 uid = -1;
-
-protected:
-    void tabletEvent(QTabletEvent *event) override {
-        ++tabletEventCount;
-        uid = event->pointingDevice()->uniqueId().numericId();
-        switch (event->type()) {
-        case QEvent::TabletMove:
-            ++moveEventCount;
-            break;
-        case QEvent::TabletPress:
-            ++pressEventCount;
-            break;
-        case QEvent::TabletRelease:
-            ++releaseEventCount;
-            break;
-        default:
-            break;
-        }
-    }
-
-    bool event(QEvent *ev) override {
-        if (ev->type() == QEvent::TabletTrackingChange)
-            ++trackingChangeEventCount;
-        return QWidget::event(ev);
-    }
-};
-
 void tst_QWidget::tabletTracking()
 {
-    QWidget parent;
-    parent.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
-    parent.resize(200,200);
-    // QWidgetWindow::handleTabletEvent doesn't deliver tablet events to the window's widget, only to a child.
-    // So it doesn't do any good to show a TabletWidget directly: it needs a parent.
-    TabletWidget widget(&parent);
+    class TabletWidget : public QWidget
+    {
+    public:
+        using QWidget::QWidget;
+
+        int tabletEventCount = 0;
+        int pressEventCount = 0;
+        int moveEventCount = 0;
+        int releaseEventCount = 0;
+        int trackingChangeEventCount = 0;
+        qint64 uid = -1;
+
+    protected:
+        void tabletEvent(QTabletEvent *event) override {
+            ++tabletEventCount;
+            uid = event->pointingDevice()->uniqueId().numericId();
+            switch (event->type()) {
+            case QEvent::TabletMove:
+                ++moveEventCount;
+                break;
+            case QEvent::TabletPress:
+                ++pressEventCount;
+                break;
+            case QEvent::TabletRelease:
+                ++releaseEventCount;
+                break;
+            default:
+                break;
+            }
+        }
+
+        bool event(QEvent *ev) override {
+            if (ev->type() == QEvent::TabletTrackingChange)
+                ++trackingChangeEventCount;
+            return QWidget::event(ev);
+        }
+    } widget;
+    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     widget.resize(200,200);
-    parent.showNormal();
-    QVERIFY(QTest::qWaitForWindowExposed(&parent));
+    widget.showNormal();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     widget.setAttribute(Qt::WA_TabletTracking);
     QTRY_COMPARE(widget.trackingChangeEventCount, 1);
     QVERIFY(widget.hasTabletTracking());
 
-    QWindow *window = parent.windowHandle();
+    QWindow *window = widget.windowHandle();
     QPointF local(10, 10);
     QPointF global = window->mapToGlobal(local.toPoint());
     QPointF deviceLocal = QHighDpi::toNativeLocalPosition(local, window);
