@@ -112,19 +112,18 @@ private:
     void init()
     {
         EM_ASM({
-            const canvas = document.createElement("canvas");
-            canvas.id = "test-canvas-qwasmcompositor";
-            testSupport.canvas = canvas;
-            document.body.appendChild(canvas);
+            testSupport.screenElement = document.createElement("div");
+            testSupport.screenElement.id = "test-canvas-qwasmcompositor";
+            document.body.appendChild(testSupport.screenElement);
         });
         m_cleanup.emplace_back([]() mutable {
             EM_ASM({
-                testSupport.qtRemoveContainerElement(testSupport.canvas);
-                testSupport.canvas.parentElement.removeChild(testSupport.canvas);
+                testSupport.qtRemoveContainerElement(testSupport.screenElement);
+                testSupport.screenElement.parentElement.removeChild(testSupport.screenElement);
             });
         });
 
-        EM_ASM({ testSupport.qtAddContainerElement(testSupport.canvas); });
+        EM_ASM({ testSupport.qtAddContainerElement(testSupport.screenElement); });
     }
 
     template<class T>
@@ -158,7 +157,10 @@ void QWasmCompositorTest::testReceivingKeyboardEventsAfterOpenGLContextReset()
     QObject::connect(window, &Window::initFailed,
                      []() { QWASMFAIL("Cannot initialize test window"); });
     QObject::connect(window, &Window::exposed, []() {
-        EM_ASM({ testSupport.canvas.dispatchEvent(new KeyboardEvent('keydown', { key : 'a' })); });
+        EM_ASM({
+            testSupport.screenElement.shadowRoot.querySelector('.qt-window')
+                    .dispatchEvent(new KeyboardEvent('keydown', { key : 'a' }));
+        });
     });
 }
 
