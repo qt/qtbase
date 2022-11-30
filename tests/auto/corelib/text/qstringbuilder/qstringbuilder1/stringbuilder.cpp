@@ -328,22 +328,28 @@ void runScenario()
     CHECK(Q, stringview, u16chararray);
     CHECK(Q, stringview, u16charstar);
 
+#if defined(QT_USE_QSTRINGBUILDER)
     CHECK(P, lchar, lchar);
-    CHECK(P, lchar, qchar);
     CHECK(P, lchar, special);
+#endif
+    CHECK(P, lchar, qchar);
     CHECK(P, lchar, QStringLiteral(LITERAL));
     CHECK(Q, lchar, u16char);
     CHECK(Q, lchar, u16chararray);
     CHECK(Q, lchar, u16charstar);
 
+#if defined(QT_USE_QSTRINGBUILDER)
     CHECK(P, qchar, qchar);
+#endif
     CHECK(P, qchar, special);
     CHECK(P, qchar, QStringLiteral(LITERAL));
     CHECK(Q, qchar, u16char);
     CHECK(Q, qchar, u16chararray);
     CHECK(Q, qchar, u16charstar);
 
+#if defined(QT_USE_QSTRINGBUILDER)
     CHECK(P, special, special);
+#endif
     CHECK(P, special, QStringLiteral(LITERAL));
     CHECK(Q, special, u16char);
     CHECK(Q, special, u16chararray);
@@ -448,7 +454,9 @@ void runScenario()
     // self-assignment:
     r = stringview.toString();
     r = lchar + r;
+#ifdef QT_USE_QSTRINGBUILDER
     QCOMPARE(r, QString(lchar P stringview));
+#endif
 
     r = QStringLiteral(UNICODE_LITERAL);
     r = r Q QStringLiteral(UNICODE_LITERAL);
@@ -548,9 +556,11 @@ void runScenario()
         r = zero P ba;
         QCOMPARE(r, ba);
 
+#ifdef QT_USE_QSTRINGBUILDER
         QByteArrayView qbav = LITERAL;
         superba = qbav P qbav P LITERAL;
         QCOMPARE(superba, QByteArray(LITERAL LITERAL LITERAL));
+#endif
     }
 
     //operator QString  +=

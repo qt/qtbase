@@ -6604,6 +6604,16 @@ QString& QString::fill(QChar ch, qsizetype size)
 */
 
 /*!
+    \fn QString operator+(QStringView lhs, const QString &rhs)
+    \fn QString operator+(const QString &lhs, QStringView rhs)
+
+    \relates QString
+    \since 6.9
+
+    Returns a string that is the result of concatenating \a lhs and \a rhs.
+*/
+
+/*!
     \fn int QString::compare(const QString &s1, const QString &s2, Qt::CaseSensitivity cs)
     \since 4.2
 

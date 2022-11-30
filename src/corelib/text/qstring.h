@@ -1417,6 +1417,7 @@ bool QByteArray::operator>=(const QString &s) const
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
 #if !defined(QT_USE_FAST_OPERATOR_PLUS) && !defined(QT_USE_QSTRINGBUILDER)
+// QString + QString
 inline QString operator+(const QString &s1, const QString &s2)
 { QString t(s1); t += s2; return t; }
 inline QString operator+(QString &&lhs, const QString &rhs)
@@ -1427,6 +1428,17 @@ inline QString operator+(QString &&lhs, QChar rhs)
 { return std::move(lhs += rhs); }
 inline QString operator+(QChar s1, const QString &s2)
 { QString t(s1); t += s2; return t; }
+inline QString operator+(const QString &lhs, QStringView rhs)
+{
+    QString ret{lhs.size() + rhs.size(), Qt::Uninitialized};
+    return ret.assign(lhs).append(rhs);
+}
+inline QString operator+(QStringView lhs, const QString &rhs)
+{
+    QString ret{lhs.size() + rhs.size(), Qt::Uninitialized};
+    return ret.assign(lhs).append(rhs);
+}
+
 #  if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 QT_ASCII_CAST_WARN inline QString operator+(const QString &s1, const char *s2)
 { QString t(s1); t += QUtf8StringView(s2); return t; }
