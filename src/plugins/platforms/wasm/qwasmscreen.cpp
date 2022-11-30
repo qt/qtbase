@@ -40,7 +40,7 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
         qWarning() << "Support for canvas elements as an element backing screen is deprecated. The "
                       "canvas provided for the screen will be transformed into a div.";
         auto container = document.call<emscripten::val>("createElement", emscripten::val("div"));
-        m_container["parentNode"].call<void>("replaceChild", m_container, container);
+        m_container["parentNode"].call<void>("replaceChild", container, m_container);
         m_container = container;
     }
     auto shadowOptions = emscripten::val::object();
