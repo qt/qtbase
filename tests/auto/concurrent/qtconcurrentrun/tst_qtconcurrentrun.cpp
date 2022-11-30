@@ -10,6 +10,8 @@
 #include <QTimer>
 #include <QFutureSynchronizer>
 
+#include <QtTest/private/qemulationdetector_p.h>
+
 using namespace QtConcurrent;
 
 class tst_QtConcurrentRun: public QObject
@@ -699,6 +701,9 @@ static void runFunction()
 
 void tst_QtConcurrentRun::pollForIsFinished()
 {
+    // proxy check for QEMU; catches slightyl more though
+    if (QTestPrivate::isRunningArmOnX86())
+        QSKIP("Runs into spurious crashes on QEMU -- QTBUG-106906");
     const int numThreads = std::max(4, 2 * QThread::idealThreadCount());
     QThreadPool::globalInstance()->setMaxThreadCount(numThreads);
 

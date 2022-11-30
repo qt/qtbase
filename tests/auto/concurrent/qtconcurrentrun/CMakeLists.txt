@@ -12,6 +12,7 @@ qt_internal_add_test(tst_qtconcurrentrun
         tst_qtconcurrentrun.cpp
     LIBRARIES
         Qt::Concurrent
+        Qt::TestPrivate
 )
 
 ## Scopes:
