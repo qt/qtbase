@@ -1,5 +1,5 @@
 # Configuration for testlib and its tests, to instrument with
-# FrogLogic's Squish CoCo (cf. testcocoon.prf, which handles similar
+# Coco (cf. testcocoon.prf, which handles similar
 # for general code; but testlib needs special handling).
 
 # Only for use when feature testlib_selfcover is enabled:
@@ -13,7 +13,7 @@ COVERAGE_OPTIONS += --cs-include-file-abs-wildcard=*/src/testlib/*
 COVERAGE_OPTIONS += --cs-mcc # enable Multiple Condition Coverage
 COVERAGE_OPTIONS += --cs-mcdc # enable Multiple Condition / Decision Coverage
 # (recommended for ISO 26262 ASIL A, B and C -- highly recommended for ASIL D)
-# https://doc.froglogic.com/squish-coco/4.1/codecoverage.html#sec%3Amcdc
+# https://doc.qt.io/coco/code-coverage-analysis.html#mc-dc
 
 QMAKE_CFLAGS += $$COVERAGE_OPTIONS
 QMAKE_CXXFLAGS += $$COVERAGE_OPTIONS
