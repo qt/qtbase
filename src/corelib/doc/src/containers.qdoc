@@ -39,7 +39,8 @@
 
     \note Since Qt 5.14, range constructors are available for most of the
     container classes. QMultiMap is a notable exception. Their use is
-    encouraged in place of the various from/to methods. For example:
+    encouraged to replace of the various deprecated from/to methods of Qt 5.
+    For example:
 
     \snippet code/doc_src_containers.cpp 25
 
@@ -285,12 +286,10 @@
 
     In the code snippets so far, we used the unary \c * operator to
     retrieve the item (of type QString) stored at a certain iterator
-    position, and we then called QString::toLower() on it. Most C++
-    compilers also allow us to write \c{i->toLower()}, but some
-    don't.
+    position, and we then called QString::toLower() on it.
 
-    For read-only access, you can use const_iterator, \l{QList::constBegin}{constBegin()},
-    and \l{QList::constEnd()}{constEnd()}. For example:
+    For read-only access, you can use const_iterator, \l{QList::cbegin}{cbegin()},
+    and \l{QList::cend()}{cend()}. For example:
 
     \snippet code/doc_src_containers.cpp 12
 
@@ -384,7 +383,7 @@
     \li Similar to std::queue<T>, inherits from \l{QList}.
 
     \row \li \l{QSet}<T>
-    \li Similar to std::set<T>. Internally, \l{QSet} is implemented with a
+    \li Similar to std::unordered_set<T>. Internally, \l{QSet} is implemented with a
     \l{QHash}.
 
     \row \li \l{QMap}<Key, T>
@@ -394,10 +393,10 @@
     \li Similar to std::multimap<T>.
 
     \row \li \l{QHash}<Key, T>
-    \li Most similar to std::map<T>.
+    \li Most similar to std::unordered_map<T>.
 
     \row \li \l{QMultiHash}<Key, T>
-    \li Most similar to std::multimap<T>.
+    \li Most similar to std::unordered_multimap<T>.
 
     \endtable
 
