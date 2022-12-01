@@ -247,9 +247,9 @@ target_compile_definitions(my_app PRIVATE QT_NO_KEYWORDS)
 QString onlyLetters(const QString &in)
 {
     QString out;
-    for (int j = 0; j < in.size(); ++j) {
-        if (in[j].isLetter())
-            out += in[j];
+    for (qsizetype j = 0; j < in.size(); ++j) {
+        if (in.at(j).isLetter())
+            out += in.at(j);
     }
     return out;
 }
@@ -286,15 +286,15 @@ int j = *i; // Undefined behavior!
 //! [24]
 
 //! [25]
-QList<int> list { 1, 2, 3, 4, 4, 5 };
-QSet<int> set(list.begin(), list.end());
+QList<int> list = {1, 2, 3, 4, 4, 5};
+QSet<int> set(list.cbegin(), list.cend());
 /*
     Will generate a QSet containing 1, 2, 3, 4, 5.
 */
 //! [25]
 
 //! [26]
-QList<int> list { 2, 3, 1 };
+QList<int> list = {2, 3, 1};
 
 std::sort(list.begin(), list.end());
 /*
