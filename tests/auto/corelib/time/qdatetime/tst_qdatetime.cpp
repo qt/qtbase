@@ -1167,17 +1167,30 @@ void tst_QDateTime::toString_strformat()
 
 void tst_QDateTime::addDays()
 {
-    for (int pass = 0; pass < 2; ++pass) {
-        QDateTime dt(QDate(2004, 1, 1), QTime(12, 34, 56), pass == 0 ? Qt::LocalTime : Qt::UTC);
-        dt = dt.addDays(185);
+    const QTimeZone zones[] = {
+        QTimeZone(QTimeZone::LocalTime),
+        QTimeZone(QTimeZone::UTC),
+#if QT_CONFIG(timezone)
+        QTimeZone("Europe/Oslo"),
+#endif
+        QTimeZone::fromSecondsAheadOfUtc(3600)
+    };
+    for (const auto &zone : zones) {
+        QDateTime dt = QDateTime(QDate(2004, 1, 1), QTime(12, 34, 56), zone).addDays(185);
         QVERIFY(dt.date().year() == 2004 && dt.date().month() == 7 && dt.date().day() == 4);
         QVERIFY(dt.time().hour() == 12 && dt.time().minute() == 34 && dt.time().second() == 56
                && dt.time().msec() == 0);
-        QCOMPARE(dt.timeSpec(), (pass == 0 ? Qt::LocalTime : Qt::UTC));
+        QCOMPARE(dt.timeRepresentation(), zone);
 
         dt = dt.addDays(-185);
         QCOMPARE(dt.date(), QDate(2004, 1, 1));
         QCOMPARE(dt.time(), QTime(12, 34, 56));
+
+        // Test we can do this before time-zones existed:
+        dt = QDateTime(QDate(1704, 1, 1), QTime(12, 0), zone).addDays(185);
+        QCOMPARE(dt.date(), QDate(1704, 7, 4));
+        QCOMPARE(dt.time(),  QTime(12, 0));
+        QCOMPARE(dt.timeRepresentation(), zone);
     }
 
     QDateTime dt(QDate(1752, 9, 14), QTime(12, 34, 56));
@@ -1204,7 +1217,7 @@ void tst_QDateTime::addDays()
     QCOMPARE(dt2.time(), QTime(0, 0));
     QCOMPARE(dt2.timeSpec(), Qt::LocalTime);
 
-    dt1 = QDateTime(QDate(2013, 1, 1), QTime(0, 0), Qt::OffsetFromUTC, 60*60);
+    dt1 = QDateTime(QDate(2013, 1, 1), QTime(0, 0), QTimeZone::fromSecondsAheadOfUtc(60 * 60));
     dt2 = dt1.addDays(2);
     QCOMPARE(dt2.date(), QDate(2013, 1, 3));
     QCOMPARE(dt2.time(), QTime(0, 0));
@@ -2078,6 +2091,7 @@ void tst_QDateTime::daylightSavingsTimeChange()
 
 void tst_QDateTime::springForward_data()
 {
+    QTest::addColumn<QTimeZone>("zone");
     QTest::addColumn<QDate>("day"); // day of DST transition
     QTest::addColumn<QTime>("time"); // in the "missing hour"
     QTest::addColumn<int>("step"); // days to step; +ve from before, -ve from after
@@ -2094,44 +2108,90 @@ void tst_QDateTime::springForward_data()
       test.
      */
 
-    uint winter = QDate(2015, 1, 1).startOfDay().toSecsSinceEpoch();
-    uint summer = QDate(2015, 7, 1).startOfDay().toSecsSinceEpoch();
+    QTimeZone local(QTimeZone::LocalTime);
+    uint winter = QDate(2015, 1, 1).startOfDay(local).toSecsSinceEpoch();
+    uint summer = QDate(2015, 7, 1).startOfDay(local).toSecsSinceEpoch();
 
     if (winter == 1420066800 && summer == 1435701600) {
-        QTest::newRow("CET from day before") << QDate(2015, 3, 29) << QTime(2, 30) << 1 << 60;
-        QTest::newRow("CET from day after") << QDate(2015, 3, 29) << QTime(2, 30) << -1 << 120;
+        QTest::newRow("Local (CET) from day before")
+            << local << QDate(2015, 3, 29) << QTime(2, 30) << 1 << 60;
+        QTest::newRow("Local (CET) from day after")
+            << local << QDate(2015, 3, 29) << QTime(2, 30) << -1 << 120;
     } else if (winter == 1420063200 && summer == 1435698000) {
         // e.g. Finland, where our CI runs ...
-        QTest::newRow("EET from day before") << QDate(2015, 3, 29) << QTime(3, 30) << 1 << 120;
-        QTest::newRow("EET from day after") << QDate(2015, 3, 29) << QTime(3, 30) << -1 << 180;
+        QTest::newRow("Local (EET) from day before")
+            << local << QDate(2015, 3, 29) << QTime(3, 30) << 1 << 120;
+        QTest::newRow("Local (EET) from day after")
+            << local << QDate(2015, 3, 29) << QTime(3, 30) << -1 << 180;
     } else if (winter == 1420070400 && summer == 1435705200) {
         // Western European Time, WET/WEST; a.k.a. GMT/BST
-        QTest::newRow("WET from day before") << QDate(2015, 3, 29) << QTime(1, 30) << 1 << 0;
-        QTest::newRow("WET from day after") << QDate(2015, 3, 29) << QTime(1, 30) << -1 << 60;
+        QTest::newRow("Local (WET) from day before")
+            << local << QDate(2015, 3, 29) << QTime(1, 30) << 1 << 0;
+        QTest::newRow("Local (WET) from day after")
+            << local << QDate(2015, 3, 29) << QTime(1, 30) << -1 << 60;
     } else if (winter == 1420099200 && summer == 1435734000) {
         // Western USA, Canada: Pacific Time (e.g. US/Pacific)
-        QTest::newRow("PT from day before") << QDate(2015, 3, 8) << QTime(2, 30) << 1 << -480;
-        QTest::newRow("PT from day after") << QDate(2015, 3, 8) << QTime(2, 30) << -1 << -420;
+        QTest::newRow("Local (PT) from day before")
+            << local << QDate(2015, 3, 8) << QTime(2, 30) << 1 << -480;
+        QTest::newRow("Local (PT) from day after")
+            << local << QDate(2015, 3, 8) << QTime(2, 30) << -1 << -420;
     } else if (winter == 1420088400 && summer == 1435723200) {
         // Eastern USA, Canada: Eastern Time (e.g. US/Eastern)
-        QTest::newRow("ET from day before") << QDate(2015, 3, 8) << QTime(2, 30) << 1 << -300;
-        QTest::newRow("ET from day after") << QDate(2015, 3, 8) << QTime(2, 30) << -1 << -240;
+        QTest::newRow("Local(ET) from day before")
+            << local << QDate(2015, 3, 8) << QTime(2, 30) << 1 << -300;
+        QTest::newRow("Local(ET) from day after")
+            << local << QDate(2015, 3, 8) << QTime(2, 30) << -1 << -240;
+#if !QT_CONFIG(timezone)
     } else {
         // Includes the numbers you need to test for your zone, as above:
         QString msg(QString::fromLatin1("No spring forward test data for this TZ (%1, %2)"
                         ).arg(winter).arg(summer));
         QSKIP(qPrintable(msg));
+#endif
     }
+#if QT_CONFIG(timezone)
+    if (const QTimeZone cet("Europe/Oslo"); cet.isValid()) {
+        QTest::newRow("CET from day before")
+            << cet << QDate(2015, 3, 29) << QTime(2, 30) << 1 << 60;
+        QTest::newRow("CET from day after")
+            << cet << QDate(2015, 3, 29) << QTime(2, 30) << -1 << 120;
+    }
+    if (const QTimeZone eet("Europe/Helsinki"); eet.isValid()) {
+        QTest::newRow("EET from day before")
+            << eet << QDate(2015, 3, 29) << QTime(3, 30) << 1 << 120;
+        QTest::newRow("EET from day after")
+            << eet << QDate(2015, 3, 29) << QTime(3, 30) << -1 << 180;
+    }
+    if (const QTimeZone wet("Europe/Lisbon"); wet.isValid()) {
+        QTest::newRow("WET from day before")
+            << wet << QDate(2015, 3, 29) << QTime(1, 30) << 1 << 0;
+        QTest::newRow("WET from day after")
+            << wet << QDate(2015, 3, 29) << QTime(1, 30) << -1 << 60;
+    }
+    if (const QTimeZone pacific("America/Vancouver"); pacific.isValid()) {
+        QTest::newRow("PT from day before")
+            << pacific << QDate(2015, 3, 8) << QTime(2, 30) << 1 << -480;
+        QTest::newRow("PT from day after")
+            << pacific << QDate(2015, 3, 8) << QTime(2, 30) << -1 << -420;
+    }
+    if (const QTimeZone eastern("America/Ottawa"); eastern.isValid()) {
+        QTest::newRow("ET from day before")
+            << eastern << QDate(2015, 3, 8) << QTime(2, 30) << 1 << -300;
+        QTest::newRow("ET from day after")
+            << eastern << QDate(2015, 3, 8) << QTime(2, 30) << -1 << -240;
+    }
+#endif
 }
 
 void tst_QDateTime::springForward()
 {
+    QFETCH(QTimeZone, zone);
     QFETCH(QDate, day);
     QFETCH(QTime, time);
     QFETCH(int, step);
     QFETCH(int, adjust);
 
-    QDateTime direct = QDateTime(day.addDays(-step), time).addDays(step);
+    QDateTime direct = QDateTime(day.addDays(-step), time, zone).addDays(step);
     if (direct.isValid()) { // mktime() may deem a time in the gap invalid
         QCOMPARE(direct.date(), day);
         QCOMPARE(direct.time().minute(), time.minute());
@@ -2141,10 +2201,10 @@ void tst_QDateTime::springForward()
         // Note: function doc claims always +1, but this should be reviewed !
     }
 
-    // Repeat, but getting there via .toLocalTime():
+    // Repeat, but getting there via .toTimeZone():
     QDateTime detour = QDateTime(day.addDays(-step),
                                  time.addSecs(-60 * adjust),
-                                 Qt::UTC).toLocalTime();
+                                 QTimeZone::UTC).toTimeZone(zone);
     QCOMPARE(detour.time(), time);
     detour = detour.addDays(step);
     // Insist on consistency:
