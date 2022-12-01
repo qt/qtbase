@@ -794,15 +794,8 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
         style = WS_CHILD;
     }
 
-    // if (!testAttribute(Qt::WA_PaintUnclipped))
-    // ### Commented out for now as it causes some problems, but
-    // this should be correct anyway, so dig some more into this
-#ifdef Q_FLATTEN_EXPOSE
-    if (windowIsOpenGL(w)) // a bit incorrect since the is-opengl status may change from false to true at any time later on
-        style |= WS_CLIPSIBLINGS | WS_CLIPCHILDREN; // see SetPixelFormat
-#else
     style |= WS_CLIPSIBLINGS | WS_CLIPCHILDREN ;
-#endif
+
     if (topLevel) {
         if ((type == Qt::Window || dialog || tool)) {
             if (!(flags & Qt::FramelessWindowHint)) {
@@ -2473,11 +2466,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowStates newState)
 
     if (stateChange & Qt::WindowFullScreen) {
         if (newState & Qt::WindowFullScreen) {
-#ifndef Q_FLATTEN_EXPOSE
             UINT newStyle = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP;
-#else
-            UINT newStyle = WS_POPUP;
-#endif
             // Save geometry and style to be restored when fullscreen
             // is turned off again, since on Windows, it is not a real
             // Window state but emulated by changing geometry and style.
