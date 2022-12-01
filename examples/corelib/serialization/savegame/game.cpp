@@ -155,6 +155,6 @@ void Game::print(int indentation) const
     mPlayer.print(indentation + 1);
 
     QTextStream(stdout) << indent << "Levels\n";
-    for (Level level : mLevels)
+    for (const Level &level : mLevels)
         level.print(indentation + 1);
 }
