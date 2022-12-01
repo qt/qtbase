@@ -2260,7 +2260,8 @@ void tst_QDateTime::operator_insert_extract()
     // Ensure that a change in timezone between serialisation and deserialisation
     // still results in identical UTC-converted datetimes.
     useZone.reset(deserialiseAs);
-    QDateTime expectedLocalTime(dateTimeAsUTC.toLocalTime());
+    QDateTime expectedLocalTime(dateTimeAsUTC.toLocalTime()); // *After* resetting zone.
+    QCOMPARE(expectedLocalTime, dateTimeAsUTC); // Different description, same moment in time.
     {
         // Deserialise whole QDateTime at once.
         QDataStream dataStream(&byteArray, QIODevice::ReadOnly);
@@ -2295,6 +2296,7 @@ void tst_QDateTime::operator_insert_extract()
         if (dataStreamVersion >= QDataStream::Qt_4_0)
             dataStream >> deserialisedSpec;
         deserialised = QDateTime(deserialisedDate, deserialisedTime, Qt::UTC);
+        QCOMPARE(deserialised.toLocalTime(), deserialised);
         if (dataStreamVersion >= QDataStream::Qt_4_0)
             deserialised = deserialised.toTimeSpec(static_cast<Qt::TimeSpec>(deserialisedSpec));
         // Ensure local time is still correct.
@@ -3424,6 +3426,7 @@ void tst_QDateTime::daylightTransitions() const
 
     QDateTime before(QDate(2012, 3, 25), QTime(1, 59, 59, 999));
     QVERIFY(before.isValid());
+    QVERIFY(!before.isDaylightTime());
     QCOMPARE(before.date(), QDate(2012, 3, 25));
     QCOMPARE(before.time(), QTime(1, 59, 59, 999));
     QCOMPARE(before.toMSecsSinceEpoch(), spring2012 - 1);
@@ -3437,6 +3440,7 @@ void tst_QDateTime::daylightTransitions() const
 
     QDateTime after(QDate(2012, 3, 25), QTime(3, 0));
     QVERIFY(after.isValid());
+    QVERIFY(after.isDaylightTime());
     QCOMPARE(after.date(), QDate(2012, 3, 25));
     QCOMPARE(after.time(), QTime(3, 0));
     QCOMPARE(after.toMSecsSinceEpoch(), spring2012);
