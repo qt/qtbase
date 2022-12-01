@@ -48,6 +48,7 @@ qt_disable_apple_app_extension_api_only(QIOSIntegrationPlugin)
 
 ## Scopes:
 #####################################################################
+qt_internal_find_apple_system_framework(FWUniformTypeIdentifiers UniformTypeIdentifiers)
 
 qt_internal_extend_target(QIOSIntegrationPlugin CONDITION QT_FEATURE_opengl
     LIBRARIES
@@ -66,6 +67,7 @@ qt_internal_extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
         qiostextinputoverlay.h qiostextinputoverlay.mm
     LIBRARIES
         ${FWAssetsLibrary}
+        ${FWUniformTypeIdentifiers}
 )
 
 #### Keys ignored in scope 6:.:.:kernel.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:

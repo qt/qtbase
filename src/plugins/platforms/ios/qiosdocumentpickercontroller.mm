@@ -12,27 +12,24 @@
 
 - (instancetype)initWithQIOSFileDialog:(QIOSFileDialog *)fileDialog
 {
-    NSMutableArray <NSString *> *docTypes = [[[NSMutableArray alloc] init] autorelease];
-    UIDocumentPickerMode importMode;
+    NSMutableArray <UTType *> *docTypes = [[[NSMutableArray alloc] init] autorelease];
+
     switch (fileDialog->options()->fileMode()) {
     case QFileDialogOptions::AnyFile:
     case QFileDialogOptions::ExistingFile:
     case QFileDialogOptions::ExistingFiles:
-        [docTypes addObject:(__bridge NSString *)kUTTypeContent];
-        [docTypes addObject:(__bridge NSString *)kUTTypeItem];
-        [docTypes addObject:(__bridge NSString *)kUTTypeData];
-        importMode = UIDocumentPickerModeImport;
+        [docTypes addObject:[UTType typeWithIdentifier:(__bridge NSString *)kUTTypeContent]];
+        [docTypes addObject:[UTType typeWithIdentifier:(__bridge NSString *)kUTTypeItem]];
+        [docTypes addObject:[UTType typeWithIdentifier:(__bridge NSString *)kUTTypeData]];
         break;
+    // Showing files is not supported in Directory mode in iOS
     case QFileDialogOptions::Directory:
     case QFileDialogOptions::DirectoryOnly:
-        // Directory picking is not supported because it requires
-        // special handling not possible with the current QFilePicker
-        // implementation.
-
-        Q_UNREACHABLE();
+        [docTypes addObject:[UTType typeWithIdentifier:(__bridge NSString *)kUTTypeFolder]];
+        break;
     }
 
-    if (self = [super initWithDocumentTypes:docTypes inMode:importMode]) {
+    if (self = [super initForOpeningContentTypes:docTypes]) {
         m_fileDialog = fileDialog;
         self.modalPresentationStyle = UIModalPresentationFormSheet;
         self.delegate = self;

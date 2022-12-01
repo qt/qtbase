@@ -77,10 +77,6 @@ bool QIOSFileDialog::showImagePickerDialog(QWindow *parent)
 bool QIOSFileDialog::showNativeDocumentPickerDialog(QWindow *parent)
 {
 #ifndef Q_OS_TVOS
-    if (options()->fileMode() == QFileDialogOptions::Directory ||
-        options()->fileMode() == QFileDialogOptions::DirectoryOnly)
-        return false;
-
     m_viewController = [[QIOSDocumentPickerController alloc] initWithQIOSFileDialog:this];
 
     UIWindow *window = parent ? reinterpret_cast<UIView *>(parent->winId()).window
