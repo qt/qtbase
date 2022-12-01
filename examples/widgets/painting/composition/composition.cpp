@@ -219,6 +219,7 @@ CompositionRenderer::CompositionRenderer(QWidget *parent)
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 #if QT_CONFIG(opengl)
     m_pbuffer_size = 1024;
+    m_base_tex = 0;
 #endif
 }
 
@@ -314,6 +315,7 @@ void CompositionRenderer::paint(QPainter *painter)
 {
 #if QT_CONFIG(opengl)
     if (usesOpenGL() && glWindow()->isValid()) {
+        auto *funcs = QOpenGLContext::currentContext()->functions();
 
         if (!m_blitter.isCreated())
             m_blitter.create();
@@ -338,10 +340,13 @@ void CompositionRenderer::paint(QPainter *painter)
             p.setCompositionMode(QPainter::CompositionMode_SourceOver);
             drawBase(p);
             p.end();
+            if (m_base_tex)
+                funcs->glDeleteTextures(1, &m_base_tex);
             m_base_tex = m_fbo->takeTexture();
         }
 
         painter->beginNativePainting();
+        uint compositingTex;
         {
             QPainter p(m_fbo.get());
             p.beginNativePainting();
@@ -353,19 +358,18 @@ void CompositionRenderer::paint(QPainter *painter)
             p.endNativePainting();
             drawSource(p);
             p.end();
-            m_compositing_tex = m_fbo->takeTexture();
+            compositingTex = m_fbo->texture();
         }
         painter->endNativePainting();
 
         painter->beginNativePainting();
-        auto *funcs = QOpenGLContext::currentContext()->functions();
         funcs->glEnable(GL_BLEND);
         funcs->glBlendEquation(GL_FUNC_ADD);
         funcs->glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         m_blitter.bind();
         const QRect targetRect(QPoint(0, 0), m_fbo->size());
         const QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, QRect(QPoint(0, 0), size()));
-        m_blitter.blit(m_compositing_tex, target, QOpenGLTextureBlitter::OriginBottomLeft);
+        m_blitter.blit(compositingTex, target, QOpenGLTextureBlitter::OriginBottomLeft);
         m_blitter.release();
         painter->endNativePainting();
     } else
