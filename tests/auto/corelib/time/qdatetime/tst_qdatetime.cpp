@@ -2297,8 +2297,15 @@ void tst_QDateTime::operator_insert_extract()
             dataStream >> deserialisedSpec;
         deserialised = QDateTime(deserialisedDate, deserialisedTime, Qt::UTC);
         QCOMPARE(deserialised.toLocalTime(), deserialised);
-        if (dataStreamVersion >= QDataStream::Qt_4_0)
-            deserialised = deserialised.toTimeSpec(static_cast<Qt::TimeSpec>(deserialisedSpec));
+        const auto isLocalTime = [](qint8 spec) -> bool {
+            // The spec is in fact a QDateTimePrivate::Spec, not Qt::TimeSpec;
+            // and no offset or zone is stored, so only UTC and LocalTime are
+            // really supported. Fortunately this test only uses those.
+            const auto decoded = static_cast<QDateTimePrivate::Spec>(spec);
+            return decoded != QDateTimePrivate::UTC && decoded != QDateTimePrivate::OffsetFromUTC;
+        };
+        if (dataStreamVersion >= QDataStream::Qt_4_0 && isLocalTime(deserialisedSpec))
+            deserialised = deserialised.toLocalTime();
         // Ensure local time is still correct.
         QCOMPARE(deserialised, expectedLocalTime);
         // Sanity check UTC times.
