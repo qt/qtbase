@@ -2899,8 +2899,12 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTimeZone southBrazil("America/Sao_Paulo");
     if (southBrazil.isValid()) {
         QTest::newRow("spring-forward-midnight")
-            << QString("2008-10-19 23:45.678 America/Sao_Paulo") << QString("yyyy-MM-dd mm:ss.zzz t")
-            // That's in the hour skipped - expect the matching time after the spring-forward, in DST:
+            // NB: no hour field, so hour takes its default, so that default can
+            // be over-ridden:
+            << QString("2008-10-19 23:45.678 America/Sao_Paulo")
+            << QString("yyyy-MM-dd mm:ss.zzz t")
+            // That's in the hour skipped - expect the matching time after the
+            // spring-forward, in DST:
             << QDateTime(QDate(2008, 10, 19), QTime(1, 23, 45, 678), southBrazil);
     }
 
