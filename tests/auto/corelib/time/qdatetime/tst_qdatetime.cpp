@@ -2766,6 +2766,9 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("zulu-time-with-zzz-centisec")
         << QString("2005-06-28T07:57:30.01Z") << QString("yyyy-MM-ddThh:mm:ss.zzzt")
         << QDateTime(); // Invalid because too few digits for zzz
+    QTest::newRow("zulu-time-with-z-millisec")
+        << QString("2005-06-28T07:57:30.001Z") << QString("yyyy-MM-ddThh:mm:ss.zt")
+        << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 1), Qt::UTC);
     QTest::newRow("utc-time-spec-as:UTC+0")
         << QString("2005-06-28T07:57:30.001UTC+0") << QString("yyyy-MM-ddThh:mm:ss.zt")
         << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 1), Qt::UTC);
@@ -2817,6 +2820,9 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("offset-from-utc:3-digit-with-colon")
         << QString("2008-10-13 -4:30 11.50") << QString("yyyy-MM-dd t hh.mm")
         << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, -16200);
+    QTest::newRow("offset-from-utc:merged-with-time")
+        << QString("2008-10-13 UTC+010011.50") << QString("yyyy-MM-dd thh.mm")
+        << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, 3600);
     QTest::newRow("offset-from-utc:with-colon-merged-with-time")
         << QString("2008-10-13 UTC+01:0011.50") << QString("yyyy-MM-dd thh.mm")
         << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, 3600);
