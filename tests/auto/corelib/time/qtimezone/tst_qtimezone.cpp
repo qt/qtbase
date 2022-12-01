@@ -939,6 +939,7 @@ void tst_QTimeZone::serialize()
 {
     int parts = 0;
 #ifndef QT_NO_DEBUG_STREAM
+    QTest::ignoreMessage(QtDebugMsg, "QTimeZone(\"\")");
     qDebug() << QTimeZone(); // to verify no crash
     parts++;
 #endif
