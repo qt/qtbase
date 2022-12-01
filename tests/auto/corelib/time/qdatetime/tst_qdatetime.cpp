@@ -1550,13 +1550,13 @@ void tst_QDateTime::toTimeSpec_data()
     // Test mktime boundaries (1970 - 2038) and adjustDate().
     QTest::newRow("1969/12/31 23:00 UTC")
         << QDateTime(QDate(1969, 12, 31), QTime(23, 0), Qt::UTC)
-        << QDateTime(QDate(1970, 1, 1), QTime(0, 0), Qt::LocalTime);
+        << QDate(1970, 1, 1).startOfDay();
     QTest::newRow("1969/12/31 23:59:59 UTC")
         << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59), Qt::UTC)
         << QDateTime(QDate(1970, 1, 1), QTime(0, 59, 59), Qt::LocalTime);
     QTest::newRow("2037/12/31 23:00 UTC")
         << QDateTime(QDate(2037, 12, 31), QTime(23, 0), Qt::UTC)
-        << QDateTime(QDate(2038, 1, 1), QTime(0, 0), Qt::LocalTime);
+        << QDate(2038, 1, 1).startOfDay();
 
     QTest::newRow("-271821/4/20 00:00 UTC (JavaScript min date, start of day)")
         << QDateTime(QDate(-271821, 4, 20), QTime(0, 0), Qt::UTC)
@@ -1577,12 +1577,12 @@ void tst_QDateTime::toTimeSpec_data()
             << QDateTime(QDate(4000, 6, 30), localDaylightTime, Qt::LocalTime);
 
         QTest::newRow("275760/9/23 00:00 UTC (JavaScript max date, start of day)")
-            << QDateTime(QDate(275760, 9, 23), QTime(0, 0), Qt::UTC)
+            << QDate(275760, 9, 23).startOfDay(Qt::UTC)
             << QDateTime(QDate(275760, 9, 23), QTime(2, 0), Qt::LocalTime);
 
         QTest::newRow("275760/9/23 22:00 UTC (JavaScript max date, end of day)")
             << QDateTime(QDate(275760, 9, 23), QTime(22, 0), Qt::UTC)
-            << QDateTime(QDate(275760, 9, 24), QTime(0, 0), Qt::LocalTime);
+            << QDate(275760, 9, 24).startOfDay();
     }
 
     QTest::newRow("msec")
@@ -1949,7 +1949,7 @@ void tst_QDateTime::daylightSavingsTimeChange()
     QFETCH(int, months);
 
     // First with simple construction
-    QDateTime dt = QDateTime(outDST, QTime(0, 0, 0), Qt::LocalTime);
+    QDateTime dt = outDST.startOfDay();
     int outDSTsecs = dt.toSecsSinceEpoch();
 
     dt.setDate(inDST);
@@ -1974,7 +1974,7 @@ void tst_QDateTime::daylightSavingsTimeChange()
 
     // now using fromSecsSinceEpoch
     dt = QDateTime::fromSecsSinceEpoch(outDSTsecs);
-    QCOMPARE(dt, QDateTime(outDST, QTime(0, 0, 0)));
+    QCOMPARE(dt, outDST.startOfDay());
 
     dt.setDate(inDST);
     dt = dt.addSecs(60);
@@ -1995,7 +1995,7 @@ void tst_QDateTime::daylightSavingsTimeChange()
     QCOMPARE(dt, QDateTime(inDST, QTime(0, 5, 0)));
 
     // Now use the result of a UTC -> LocalTime conversion
-    dt = QDateTime(outDST, QTime(0, 0), Qt::LocalTime).toUTC();
+    dt = outDST.startOfDay().toUTC();
     dt = QDateTime(dt.date(), dt.time(), Qt::UTC).toLocalTime();
     QCOMPARE(dt, QDateTime(outDST, QTime(0, 0)));
 
@@ -2328,7 +2328,7 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::TextDate << QDateTime(QDate(-4712, 1, 1), QTime(0, 1, 2, 0), Qt::LocalTime);
     QTest::newRow("text epoch")
         << QString::fromLatin1("Thu Jan 1 00:00:00 1970") << Qt::TextDate
-        << QDateTime(QDate(1970, 1, 1), QTime(0, 0), Qt::LocalTime);
+        << QDate(1970, 1, 1).startOfDay();
     QTest::newRow("text data1") << QString::fromLatin1("Thu Jan 2 12:34 1970")
         << Qt::TextDate << QDateTime(QDate(1970, 1, 2), QTime(12, 34, 0), Qt::LocalTime);
     QTest::newRow("text epoch terse")
@@ -2337,11 +2337,11 @@ void tst_QDateTime::fromStringDateFormat_data()
         << QString::fromLatin1("Thu Jan 1 00:00:00:00 1970") << Qt::TextDate << QDateTime();
     QTest::newRow("text epoch spaced")
         << QString::fromLatin1(" Thu   Jan   1    00:00:00    1970  ")
-        << Qt::TextDate << QDateTime(QDate(1970, 1, 1), QTime(0, 0), Qt::LocalTime);
+        << Qt::TextDate << QDate(1970, 1, 1).startOfDay();
     QTest::newRow("text data6") << QString::fromLatin1("Thu Jan 1 00:00:00")
         << Qt::TextDate << QDateTime();
     QTest::newRow("text data7") << QString::fromLatin1("Thu Jan 1 1970 00:00:00")
-        << Qt::TextDate << QDateTime(QDate(1970, 1, 1), QTime(0, 0), Qt::LocalTime);
+                                << Qt::TextDate << QDate(1970, 1, 1).startOfDay();
     QTest::newRow("text bad offset") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 UTC+foo")
         << Qt::TextDate << QDateTime();
     QTest::newRow("text UTC early") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 UTC")
@@ -2481,7 +2481,7 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 2), Qt::UTC);
     // No time specified - defaults to Qt::LocalTime.
     QTest::newRow("ISO data3") << QString::fromLatin1("2002-10-01")
-        << Qt::ISODate << QDateTime(QDate(2002, 10, 1), QTime(0, 0), Qt::LocalTime);
+                               << Qt::ISODate << QDate(2002, 10, 1).startOfDay();
     // Excess digits in milliseconds, round correctly:
     QTest::newRow("ISO") << QString::fromLatin1("2005-06-28T07:57:30.0010000000Z")
         << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 1), Qt::UTC);
@@ -2500,7 +2500,7 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 110), Qt::LocalTime);
     // 24:00:00 Should be next day according to ISO 8601 section 4.2.3.
     QTest::newRow("ISO 24:00") << QString::fromLatin1("2012-06-04T24:00:00")
-        << Qt::ISODate << QDateTime(QDate(2012, 6, 5), QTime(0, 0), Qt::LocalTime);
+                               << Qt::ISODate << QDate(2012, 6, 5).startOfDay();
 #if QT_CONFIG(timezone)
     QTest::newRow("ISO 24:00 in DST") // Only special if TZ=America/Sao_Paulo
         << QString::fromLatin1("2008-10-18T24:00") << Qt::ISODate
@@ -2510,16 +2510,16 @@ void tst_QDateTime::fromStringDateFormat_data()
 #endif
     QTest::newRow("ISO 24:00 end of month")
         << QString::fromLatin1("2012-06-30T24:00:00")
-        << Qt::ISODate << QDateTime(QDate(2012, 7, 1), QTime(0, 0), Qt::LocalTime);
+        << Qt::ISODate << QDate(2012, 7, 1).startOfDay();
     QTest::newRow("ISO 24:00 end of year")
         << QString::fromLatin1("2012-12-31T24:00:00")
-        << Qt::ISODate << QDateTime(QDate(2013, 1, 1), QTime(0, 0), Qt::LocalTime);
+        << Qt::ISODate << QDate(2013, 1, 1).startOfDay();
     QTest::newRow("ISO 24:00, fract ms")
         << QString::fromLatin1("2012-01-01T24:00:00.000")
-        << Qt::ISODate << QDateTime(QDate(2012, 1, 2), QTime(0, 0), Qt::LocalTime);
+        << Qt::ISODate << QDate(2012, 1, 2).startOfDay();
     QTest::newRow("ISO 24:00 end of year, fract ms")
         << QString::fromLatin1("2012-12-31T24:00:00.000")
-        << Qt::ISODate << QDateTime(QDate(2013, 1, 1), QTime(0, 0), Qt::LocalTime);
+        << Qt::ISODate << QDate(2013, 1, 1).startOfDay();
     // Test fractional seconds.
     QTest::newRow("ISO .0 of a second (period)")
         << QString::fromLatin1("2012-01-01T08:00:00.0")
@@ -3062,10 +3062,10 @@ void tst_QDateTime::offsetFromUtc()
     // LocalTime should vary
     if (zoneIsCET) {
         // Time definitely in Standard Time so 1 hour ahead
-        QDateTime dt3(QDate(2013, 1, 1), QTime(0, 0), Qt::LocalTime);
+        QDateTime dt3 = QDate(2013, 1, 1).startOfDay();
         QCOMPARE(dt3.offsetFromUtc(), 1 * 60 * 60);
         // Time definitely in Daylight Time so 2 hours ahead
-        QDateTime dt4(QDate(2013, 6, 1), QTime(0, 0), Qt::LocalTime);
+        QDateTime dt4 = QDate(2013, 6, 1).startOfDay();
         QCOMPARE(dt4.offsetFromUtc(), 2 * 60 * 60);
     } else {
         qDebug("Skipped some tests specific to Central European Time "
@@ -3262,13 +3262,13 @@ void tst_QDateTime::timeZoneAbbreviation()
     // LocalTime should vary
     if (zoneIsCET) {
         // Time definitely in Standard Time
-        QDateTime dt4(QDate(2013, 1, 1), QTime(0, 0), Qt::LocalTime);
+        QDateTime dt4 = QDate(2013, 1, 1).startOfDay();
 #ifdef Q_OS_WIN
         QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
 #endif
         QCOMPARE(dt4.timeZoneAbbreviation(), QStringLiteral("CET"));
         // Time definitely in Daylight Time
-        QDateTime dt5(QDate(2013, 6, 1), QTime(0, 0), Qt::LocalTime);
+        QDateTime dt5 = QDate(2013, 6, 1).startOfDay();
 #ifdef Q_OS_WIN
         QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
 #endif
