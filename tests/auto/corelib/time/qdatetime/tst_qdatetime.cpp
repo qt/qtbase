@@ -783,8 +783,6 @@ void tst_QDateTime::fromMSecsSinceEpoch()
     QFETCH(QDateTime, utc);
     QFETCH(QDateTime, cet);
     using Bound = std::numeric_limits<qint64>;
-    if (msecs == Bound::min())
-        qDebug() << "Local overflow:" << preZoneFix << Qt::hex;
 
     QDateTime dtLocal = QDateTime::fromMSecsSinceEpoch(msecs, Qt::LocalTime);
     QDateTime dtUtc = QDateTime::fromMSecsSinceEpoch(msecs, Qt::UTC);
