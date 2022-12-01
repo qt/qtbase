@@ -37,12 +37,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qglobal.h>
 
-// TODO: these 'helpers' later to include OpenSSL resolver/sumbols
-// required by some auto-tests.
-
 QT_BEGIN_NAMESPACE
-
-
 
 namespace TlsAux {
 

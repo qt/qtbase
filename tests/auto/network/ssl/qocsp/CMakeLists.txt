@@ -12,6 +12,12 @@ qt_internal_add_test(tst_qocsp
         Qt::NetworkPrivate
 )
 
+qt_internal_extend_target(tst_qocsp CONDITION QT_FEATURE_openssl_linked
+    LIBRARIES
+        WrapOpenSSL::WrapOpenSSL
+)
+
+
 ## Scopes:
 #####################################################################
 

@@ -22,6 +22,11 @@ qt_internal_add_test(tst_qsslsocket
     QT_TEST_SERVER_LIST "squid" "danted" "cyrus" "apache2" "echo" # special case
 )
 
+qt_internal_extend_target(tst_qsslsocket CONDITION QT_FEATURE_private_tests AND QT_FEATURE_openssl_linked
+    LIBRARIES
+        WrapOpenSSL::WrapOpenSSL
+)
+
 #### Keys ignored in scope 1:.:.:qsslsocket.pro:<TRUE>:
 # _REQUIREMENTS = "qtConfig(private_tests)"
 
