@@ -3087,8 +3087,8 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 continue;
             }
             memcpy(static_cast<uchar *>(p) + u.offset, u.data.constData(), u.data.size());
-            vmaUnmapMemory(toVmaAllocator(allocator), a);
             vmaFlushAllocation(toVmaAllocator(allocator), a, u.offset, u.data.size());
+            vmaUnmapMemory(toVmaAllocator(allocator), a);
 
             trackedBufferBarrier(cbD, bufD, 0,
                                  VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
@@ -3237,8 +3237,8 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                     }
                 }
             }
-            vmaUnmapMemory(toVmaAllocator(allocator), a);
             vmaFlushAllocation(toVmaAllocator(allocator), a, 0, stagingSize);
+            vmaUnmapMemory(toVmaAllocator(allocator), a);
 
             trackedImageBarrier(cbD, utexD, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                 VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
@@ -3541,9 +3541,9 @@ void QRhiVulkan::executeBufferHostWritesForSlot(QVkBuffer *bufD, int slot)
         if (u.offset + u.data.size() > changeEnd)
             changeEnd = u.offset + u.data.size();
     }
-    vmaUnmapMemory(toVmaAllocator(allocator), a);
     if (changeBegin < UINT32_MAX && changeBegin < changeEnd)
         vmaFlushAllocation(toVmaAllocator(allocator), a, changeBegin, changeEnd - changeBegin);
+    vmaUnmapMemory(toVmaAllocator(allocator), a);
 
     bufD->pendingDynamicUpdates[slot].clear();
 }
@@ -5699,8 +5699,8 @@ void QVkBuffer::endFullDynamicBufferUpdateForCurrentFrame()
     QRHI_RES_RHI(QRhiVulkan);
     const int slot = rhiD->currentFrameSlot;
     VmaAllocation a = toVmaAllocation(allocations[slot]);
-    vmaUnmapMemory(toVmaAllocator(rhiD->allocator), a);
     vmaFlushAllocation(toVmaAllocator(rhiD->allocator), a, 0, m_size);
+    vmaUnmapMemory(toVmaAllocator(rhiD->allocator), a);
 }
 
 QVkRenderBuffer::QVkRenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,
