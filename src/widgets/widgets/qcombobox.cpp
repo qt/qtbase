@@ -728,7 +728,8 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         default:
 #if QT_CONFIG(shortcut)
             if (keyEvent->matches(QKeySequence::Cancel)) {
-                combo->hidePopup();
+                closeOnCancel = true;
+                keyEvent->accept();
                 return true;
             }
 #endif
@@ -775,6 +776,7 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
 
 void QComboBoxPrivateContainer::showEvent(QShowEvent *)
 {
+    closeOnCancel = true;
     combo->update();
 }
 
@@ -3216,6 +3218,12 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
         break;
 #endif
     default:
+        if (e->matches(QKeySequence::Cancel) && (!d->container || d->container->closeOnCancel)) {
+            hidePopup();
+            e->accept();
+            d->container->closeOnCancel = false;
+        }
+
         if (!d->lineEdit) {
             if (!e->text().isEmpty())
                 d->keyboardSearchString(e->text());
