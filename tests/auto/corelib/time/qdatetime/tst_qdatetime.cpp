@@ -46,7 +46,7 @@ private Q_SLOTS:
     void setMSecsSinceEpoch_data();
     void setMSecsSinceEpoch();
     void fromSecsSinceEpoch();
-    void fromMSecsSinceEpoch_data();
+    void fromMSecsSinceEpoch_data() { setMSecsSinceEpoch_data(); }
     void fromMSecsSinceEpoch();
 #if QT_CONFIG(datestring)
     void toString_isoDate_data();
@@ -72,15 +72,15 @@ private Q_SLOTS:
     void addMSecs();
     void toTimeSpec_data();
     void toTimeSpec();
-    void toLocalTime_data();
+    void toLocalTime_data() { toTimeSpec_data(); }
     void toLocalTime();
-    void toUTC_data();
+    void toUTC_data() { toTimeSpec_data(); }
     void toUTC();
     void toUTC_extra();
     void daysTo();
     void secsTo_data();
     void secsTo();
-    void msecsTo_data();
+    void msecsTo_data() { addMSecs_data(); }
     void msecsTo();
     void operator_eqeq_data();
     void operator_eqeq();
@@ -766,11 +766,6 @@ void tst_QDateTime::setMSecsSinceEpoch()
         curt.setMSecsSinceEpoch(msecs); // Overflows due to offset
         QVERIFY(!curt.isValid());
     }
-}
-
-void tst_QDateTime::fromMSecsSinceEpoch_data()
-{
-    setMSecsSinceEpoch_data();
 }
 
 void tst_QDateTime::fromMSecsSinceEpoch()
@@ -1640,11 +1635,6 @@ void tst_QDateTime::toTimeSpec()
     QCOMPARE(localToOffset.toTimeSpec(Qt::LocalTime), fromLocal);
 }
 
-void tst_QDateTime::toLocalTime_data()
-{
-    toTimeSpec_data();
-}
-
 void tst_QDateTime::toLocalTime()
 {
     QFETCH(QDateTime, fromUtc);
@@ -1653,11 +1643,6 @@ void tst_QDateTime::toLocalTime()
     QCOMPARE(fromLocal.toLocalTime(), fromLocal);
     QCOMPARE(fromUtc.toLocalTime(), fromLocal);
     QCOMPARE(fromUtc.toLocalTime(), fromLocal.toLocalTime());
-}
-
-void tst_QDateTime::toUTC_data()
-{
-    toTimeSpec_data();
 }
 
 void tst_QDateTime::toUTC()
@@ -1737,11 +1722,6 @@ void tst_QDateTime::secsTo()
         QVERIFY(dt.secsTo(result) == 0);
         QVERIFY(result.secsTo(dt) == 0);
     }
-}
-
-void tst_QDateTime::msecsTo_data()
-{
-    addMSecs_data();
 }
 
 void tst_QDateTime::msecsTo()
