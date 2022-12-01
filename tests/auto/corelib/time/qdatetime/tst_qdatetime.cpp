@@ -1781,30 +1781,32 @@ void tst_QDateTime::currentDateTime()
     // 1 second difference from the more accurate method used by QDateTime::currentDateTime()
     upperBound = upperBound.addSecs(2);
 
-    QString details = QString("\n"
-        "lowerBound: %1\n"
-        "dt1:        %2\n"
-        "dt2:        %3\n"
-        "dt3:        %4\n"
-        "upperBound: %5\n")
-        .arg(lowerBound.toSecsSinceEpoch())
-        .arg(dt1.toSecsSinceEpoch())
-        .arg(dt2.toSecsSinceEpoch())
-        .arg(dt3.toSecsSinceEpoch())
-        .arg(upperBound.toSecsSinceEpoch());
+    auto reporter = qScopeGuard([=]() {
+        qInfo("\n"
+              "lowerBound: %lld\n"
+              "dt1:        %lld\n"
+              "dt2:        %lld\n"
+              "dt3:        %lld\n"
+              "upperBound: %lld\n",
+              lowerBound.toSecsSinceEpoch(),
+              dt1.toSecsSinceEpoch(),
+              dt2.toSecsSinceEpoch(),
+              dt3.toSecsSinceEpoch(),
+              upperBound.toSecsSinceEpoch());
+    });
 
-    QVERIFY2(lowerBound < upperBound, qPrintable(details));
+    QCOMPARE_LT(lowerBound, upperBound);
+    QCOMPARE_LE(lowerBound, dt1);
+    QCOMPARE_LT(dt1, upperBound);
+    QCOMPARE_LE(lowerBound, dt2);
+    QCOMPARE_LT(dt2, upperBound);
+    QCOMPARE_LE(lowerBound, dt3);
+    QCOMPARE_LT(dt3, upperBound);
+    reporter.dismiss();
 
-    QVERIFY2(lowerBound <= dt1, qPrintable(details));
-    QVERIFY2(dt1 < upperBound, qPrintable(details));
-    QVERIFY2(lowerBound <= dt2, qPrintable(details));
-    QVERIFY2(dt2 < upperBound, qPrintable(details));
-    QVERIFY2(lowerBound <= dt3, qPrintable(details));
-    QVERIFY2(dt3 < upperBound, qPrintable(details));
-
-    QVERIFY(dt1.timeSpec() == Qt::LocalTime);
-    QVERIFY(dt2.timeSpec() == Qt::LocalTime);
-    QVERIFY(dt3.timeSpec() == Qt::UTC);
+    QCOMPARE(dt1.timeSpec(), Qt::LocalTime);
+    QCOMPARE(dt2.timeSpec(), Qt::LocalTime);
+    QCOMPARE(dt3.timeSpec(), Qt::UTC);
 }
 
 void tst_QDateTime::currentDateTimeUtc()
@@ -1827,30 +1829,32 @@ void tst_QDateTime::currentDateTimeUtc()
     // 1 second difference from the more accurate method used by QDateTime::currentDateTime()
     upperBound = upperBound.addSecs(2);
 
-    QString details = QString("\n"
-        "lowerBound: %1\n"
-        "dt1:        %2\n"
-        "dt2:        %3\n"
-        "dt3:        %4\n"
-        "upperBound: %5\n")
-        .arg(lowerBound.toSecsSinceEpoch())
-        .arg(dt1.toSecsSinceEpoch())
-        .arg(dt2.toSecsSinceEpoch())
-        .arg(dt3.toSecsSinceEpoch())
-        .arg(upperBound.toSecsSinceEpoch());
+    auto reporter = qScopeGuard([=]() {
+        qInfo("\n"
+              "lowerBound: %lld\n"
+              "dt1:        %lld\n"
+              "dt2:        %lld\n"
+              "dt3:        %lld\n"
+              "upperBound: %lld\n",
+              lowerBound.toSecsSinceEpoch(),
+              dt1.toSecsSinceEpoch(),
+              dt2.toSecsSinceEpoch(),
+              dt3.toSecsSinceEpoch(),
+              upperBound.toSecsSinceEpoch());
+    });
 
-    QVERIFY2(lowerBound < upperBound, qPrintable(details));
+    QCOMPARE_LT(lowerBound, upperBound);
+    QCOMPARE_LE(lowerBound, dt1);
+    QCOMPARE_LT(dt1, upperBound);
+    QCOMPARE_LE(lowerBound, dt2);
+    QCOMPARE_LT(dt2, upperBound);
+    QCOMPARE_LE(lowerBound, dt3);
+    QCOMPARE_LT(dt3, upperBound);
+    reporter.dismiss();
 
-    QVERIFY2(lowerBound <= dt1, qPrintable(details));
-    QVERIFY2(dt1 < upperBound, qPrintable(details));
-    QVERIFY2(lowerBound <= dt2, qPrintable(details));
-    QVERIFY2(dt2 < upperBound, qPrintable(details));
-    QVERIFY2(lowerBound <= dt3, qPrintable(details));
-    QVERIFY2(dt3 < upperBound, qPrintable(details));
-
-    QVERIFY(dt1.timeSpec() == Qt::UTC);
-    QVERIFY(dt2.timeSpec() == Qt::LocalTime);
-    QVERIFY(dt3.timeSpec() == Qt::UTC);
+    QCOMPARE(dt1.timeSpec(), Qt::UTC);
+    QCOMPARE(dt2.timeSpec(), Qt::LocalTime);
+    QCOMPARE(dt3.timeSpec(), Qt::UTC);
 }
 
 void tst_QDateTime::currentDateTimeUtc2()
