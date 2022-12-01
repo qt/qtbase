@@ -1270,6 +1270,12 @@ if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
         set(compression_type "gzip")
     endif()
 
+    if(QT_INTERNAL_ENABLE_VERBOSE_MIME_DATABASE_COMPRESSION)
+        set(extra_mime_db_compressor_flags "--log-level=STATUS")
+    else()
+        set(extra_mime_db_compressor_flags "--log-level=NOTICE")
+    endif()
+
     # Generate qmimeprovider_database.cpp
     set(qmimeprovider_db_output "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qmimeprovider_database.cpp")
     add_custom_command(OUTPUT "${qmimeprovider_db_output}"
@@ -1279,6 +1285,7 @@ if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
             -DARCHIVING_API=${archiving_api}
             -DCOMPRESSION_TYPE=${compression_type}
             -P "${CMAKE_CURRENT_SOURCE_DIR}/QtCompressMimeDatabase.cmake"
+            ${extra_mime_db_compressor_flags}
         DEPENDS
             "${CMAKE_CURRENT_SOURCE_DIR}/QtCompressMimeDatabase.cmake"
             "${corelib_mimetypes_resource_file}"
