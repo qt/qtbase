@@ -1144,9 +1144,9 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
         \li \c offscreen
         \li \c qnx
         \li \c windows
-        \li \c wayland is a platform plugin for modern Linux desktops and some
-            embedded systems.
-        \li \c xcb is the X11 plugin used on regular desktop Linux platforms.
+        \li \c wayland is a platform plugin for the Wayland display server protocol,
+            used on some Linux desktops and embedded systems.
+        \li \c xcb is a plugin for the X11 window system, used on some desktop Linux platforms.
     \endlist
 
     For more information about the platform plugins for embedded Linux devices,
