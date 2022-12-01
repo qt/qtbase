@@ -195,7 +195,6 @@ private:
     std::unique_ptr<QFboPaintDevice> m_fbo;
     int m_pbuffer_size; // width==height==size of pbuffer
     uint m_base_tex;
-    uint m_compositing_tex;
     QSize m_previous_size;
     QOpenGLTextureBlitter m_blitter;
 #endif

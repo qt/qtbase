@@ -71,11 +71,13 @@ QFboPaintDevice::QFboPaintDevice(const QSize &size, bool flipped, bool clearOnIn
         context()->functions()->glClearColor(0, 0, 0, 0);
         context()->functions()->glClear(GL_COLOR_BUFFER_BIT);
     }
+    m_resolvedFbo = new QOpenGLFramebufferObject(m_framebufferObject->size(), m_framebufferObject->attachment());
 }
 
 QFboPaintDevice::~QFboPaintDevice()
 {
     delete m_framebufferObject;
+    delete m_resolvedFbo;
     delete m_surface;
 }
 
@@ -87,12 +89,19 @@ void QFboPaintDevice::ensureActiveTarget()
     m_framebufferObject->bind();
 }
 
+GLuint QFboPaintDevice::texture()
+{
+    m_resolvedFbo->bind(); // to get the backing texture recreated if it was taken (in takeTexture) previously
+    QOpenGLFramebufferObject::blitFramebuffer(m_resolvedFbo, m_framebufferObject);
+    return m_resolvedFbo->texture();
+}
+
 GLuint QFboPaintDevice::takeTexture()
 {
-    // We have multisamples so we can't just forward takeTexture().
-    QOpenGLFramebufferObject resolvedFbo(m_framebufferObject->size(), m_framebufferObject->attachment());
-    QOpenGLFramebufferObject::blitFramebuffer(&resolvedFbo, m_framebufferObject);
-    return resolvedFbo.takeTexture();
+    m_resolvedFbo->bind(); // to get the backing texture recreated if it was taken (in takeTexture) previously
+    // We have multisamples so we can't just forward takeTexture(), have to resolve first.
+    QOpenGLFramebufferObject::blitFramebuffer(m_resolvedFbo, m_framebufferObject);
+    return m_resolvedFbo->takeTexture();
 }
 
 QImage QFboPaintDevice::toImage() const
