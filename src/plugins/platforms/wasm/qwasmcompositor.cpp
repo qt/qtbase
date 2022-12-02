@@ -161,6 +161,8 @@ void QWasmCompositor::removeWindow(QWasmWindow *window)
 {
     m_requestUpdateWindows.remove(window);
     m_windowStack.removeWindow(window);
+    if (m_lastMouseTargetWindow == window->window())
+        m_lastMouseTargetWindow = nullptr;
     if (m_windowStack.topWindow())
         m_windowStack.topWindow()->requestActivateWindow();
 
