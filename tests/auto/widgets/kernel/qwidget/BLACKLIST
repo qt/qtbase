@@ -1,12 +1,5 @@
-# OSX QTBUG-25300 QTBUG-45502
-[normalGeometry]
-ubuntu-16.04
-[restoreVersion1Geometry]
-ubuntu-16.04
 [raise]
 opensuse-leap
-# QTBUG-68175
-opensuse-42.3
 [renderInvisible]
 macos
 [optimizedResizeMove]
@@ -17,10 +10,7 @@ osx
 macos arm
 [render_systemClip]
 osx
-[moveInResizeEvent]
-ubuntu-16.04
 [multipleToplevelFocusCheck]
-rhel-7.6
 centos
 opensuse-leap
 ubuntu
