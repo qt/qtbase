@@ -3,6 +3,33 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
+/*
+    Determines if the text represents one of the "special keys" on macOS
+
+    As a legacy from OpenStep, macOS reserves the range 0xF700-0xF8FF of the
+    Unicode private use area for representing function keys on the keyboard:
+
+      http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/CORPCHAR.TXT
+
+      https://developer.apple.com/documentation/appkit/nsevent/specialkey
+
+    These code points are not supposed to have any glyphs associated with them,
+    but since we can't guarantee that the system doesn't have a font that does
+    provide glyphs for this range (Arial Unicode MS e.g.) we need to filter
+    the text of our key events up front.
+*/
+static bool isSpecialKey(const QString &text)
+{
+    if (text.length() != 1)
+        return false;
+
+    const char16_t unicode = text.at(0).unicode();
+    if (unicode >= 0xF700 && unicode <= 0xF8FF)
+        return true;
+
+    return false;
+}
+
 @implementation QNSView (Keys)
 
 - (bool)handleKeyEvent:(NSEvent *)nsevent
@@ -19,6 +46,8 @@
     // Assume we should send key events with text, unless told
     // otherwise by doCommandBySelector.
     m_sendKeyEventWithoutText = false;
+
+    bool didInterpretKeyEvent = false;
 
     if (keyEvent.type == QEvent::KeyPress) {
 
@@ -67,6 +96,7 @@
                     m_currentlyInterpretedKeyEvent = nsevent;
                     [self interpretKeyEvents:@[nsevent]];
                     m_currentlyInterpretedKeyEvent = 0;
+                    didInterpretKeyEvent = true;
 
                     // If the last key we sent was dead, then pass the next
                     // key to the IM as well to complete composition.
@@ -80,7 +110,9 @@
     bool accepted = true;
     if (m_sendKeyEvent && m_composingText.isEmpty()) {
         KeyEvent keyEvent(nsevent);
-        if (m_sendKeyEventWithoutText)
+        // Trust text input system on whether to send the event with text or not,
+        // or otherwise apply heuristics to filter out private use symbols.
+        if (didInterpretKeyEvent ? m_sendKeyEventWithoutText : isSpecialKey(keyEvent.text))
             keyEvent.text = {};
         qCDebug(lcQpaKeys) << "Sending as" << keyEvent;
         accepted = keyEvent.sendWindowSystemEvent(window);
