@@ -1440,12 +1440,13 @@ Q_IMPL_EVENT_COMMON(QKeyEvent)
 
     Returns the Unicode text that this key generated.
 
-    Return values when modifier keys such as
-    Shift, Control, Alt, and Meta are pressed
-    differ among platforms and could return an empty string.
+    The text is not limited to the printable range of Unicode
+    code points, and may include control characters or characters
+    from other Unicode categories, including QChar::Other_PrivateUse.
 
-    \note \l key() will always return a valid value,
-    independent of modifier keys.
+    The text may also be empty, for example when modifier keys such as
+    Shift, Control, Alt, and Meta are pressed (depending on the platform).
+    The key() function will always return a valid value.
 
     \sa Qt::WA_KeyCompression
 */
