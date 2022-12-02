@@ -862,6 +862,56 @@ QDebug QMessageLogger::critical(QMessageLogger::CategoryFunction catFunc) const
 #endif
 
 #undef qFatal
+
+/*!
+    Logs a fatal message specified with format \a msg for the context \a cat.
+    Additional parameters, specified by \a msg, may be used.
+
+    \since 6.5
+    \sa qCFatal()
+*/
+void QMessageLogger::fatal(const QLoggingCategory &cat, const char *msg, ...) const noexcept
+{
+    QMessageLogContext ctxt;
+    ctxt.copyContextFrom(context);
+    ctxt.category = cat.categoryName();
+
+    QString message;
+
+    va_list ap;
+    va_start(ap, msg); // use variable arg list
+    QT_TERMINATE_ON_EXCEPTION(message = qt_message(QtFatalMsg, ctxt, msg, ap));
+    va_end(ap);
+
+    qt_message_fatal(QtCriticalMsg, ctxt, message);
+}
+
+/*!
+    Logs a fatal message specified with format \a msg for the context returned
+    by \a catFunc. Additional parameters, specified by \a msg, may be used.
+
+    \since 6.5
+    \sa qCFatal()
+*/
+void QMessageLogger::fatal(QMessageLogger::CategoryFunction catFunc,
+                           const char *msg, ...) const noexcept
+{
+    const QLoggingCategory &cat = (*catFunc)();
+
+    QMessageLogContext ctxt;
+    ctxt.copyContextFrom(context);
+    ctxt.category = cat.categoryName();
+
+    QString message;
+
+    va_list ap;
+    va_start(ap, msg); // use variable arg list
+    QT_TERMINATE_ON_EXCEPTION(message = qt_message(QtFatalMsg, ctxt, msg, ap));
+    va_end(ap);
+
+    qt_message_fatal(QtFatalMsg, ctxt, message);
+}
+
 /*!
     Logs a fatal message specified with format \a msg. Additional
     parameters, specified by \a msg, may be used.
@@ -879,6 +929,51 @@ void QMessageLogger::fatal(const char *msg, ...) const noexcept
 
     qt_message_fatal(QtFatalMsg, context, message);
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+/*!
+    Logs a fatal message using a QDebug stream.
+
+    \since 6.5
+
+    \sa qFatal(), QDebug
+*/
+QDebug QMessageLogger::fatal() const
+{
+    QDebug dbg = QDebug(QtFatalMsg);
+    QMessageLogContext &ctxt = dbg.stream->context;
+    ctxt.copyContextFrom(context);
+    return dbg;
+}
+
+/*!
+    Logs a fatal message into category \a cat using a QDebug stream.
+
+    \since 6.5
+    \sa qCFatal(), QDebug
+*/
+QDebug QMessageLogger::fatal(const QLoggingCategory &cat) const
+{
+    QDebug dbg = QDebug(QtFatalMsg);
+
+    QMessageLogContext &ctxt = dbg.stream->context;
+    ctxt.copyContextFrom(context);
+    ctxt.category = cat.categoryName();
+
+    return dbg;
+}
+
+/*!
+    Logs a fatal message into category returned by \a catFunc using a QDebug stream.
+
+    \since 6.5
+    \sa qCFatal(), QDebug
+*/
+QDebug QMessageLogger::fatal(QMessageLogger::CategoryFunction catFunc) const
+{
+    return fatal((*catFunc)());
+}
+#endif // QT_NO_DEBUG_STREAM
 
 /*!
     \internal
