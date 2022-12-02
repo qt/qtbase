@@ -109,7 +109,6 @@ static bool isSpecialKey(const QString &text)
 
     bool accepted = true;
     if (m_sendKeyEvent && m_composingText.isEmpty()) {
-        KeyEvent keyEvent(nsevent);
         // Trust text input system on whether to send the event with text or not,
         // or otherwise apply heuristics to filter out private use symbols.
         if (didInterpretKeyEvent ? m_sendKeyEventWithoutText : isSpecialKey(keyEvent.text))
