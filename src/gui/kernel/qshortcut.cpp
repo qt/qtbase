@@ -536,6 +536,8 @@ QString QShortcut::whatsThis() const
 /*!
     Returns the primary key binding's ID.
 
+    \deprecated
+
     \sa QShortcutEvent::shortcutId()
 */
 int QShortcut::id() const

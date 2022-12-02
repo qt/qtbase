@@ -22,6 +22,10 @@
 #include <private/qdnd_p.h>
 #endif
 
+#if QT_CONFIG(shortcut)
+#include <private/qshortcut_p.h>
+#endif
+
 #include <private/qdebug_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -3682,12 +3686,35 @@ Q_IMPL_EVENT_COMMON(QToolBarChangeEvent)
     Constructs a shortcut event for the given \a key press,
     associated with the QShortcut ID \a id.
 
+    \deprecated use the other constructor
+
     \a ambiguous specifies whether there is more than one QShortcut
     for the same key sequence.
 */
 QShortcutEvent::QShortcutEvent(const QKeySequence &key, int id, bool ambiguous)
     : QEvent(Shortcut), m_sequence(key), m_shortcutId(id), m_ambiguous(ambiguous)
 {
+}
+
+/*!
+    Constructs a shortcut event for the given \a key press,
+    associated with the QShortcut \a shortcut.
+
+    \a ambiguous specifies whether there is more than one QShortcut
+    for the same key sequence.
+*/
+QShortcutEvent::QShortcutEvent(const QKeySequence &key, const QShortcut *shortcut, bool ambiguous)
+    : QEvent(Shortcut), m_sequence(key), m_shortcutId(0), m_ambiguous(ambiguous)
+{
+    if (shortcut) {
+        auto priv = static_cast<const QShortcutPrivate *>(QShortcutPrivate::get(shortcut));
+        auto index = priv->sc_sequences.indexOf(key);
+        if (index < 0) {
+            qWarning() << "Given QShortcut does not contain key-sequence " << key;
+            return;
+        }
+        m_shortcutId = priv->sc_ids[index];
+    }
 }
 
 Q_IMPL_EVENT_COMMON(QShortcutEvent)
@@ -4232,6 +4259,8 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
 
 /*!
     \fn int QShortcutEvent::shortcutId() const
+
+    \deprecated
 
     Returns the ID of the QShortcut object for which this event was
     generated.
