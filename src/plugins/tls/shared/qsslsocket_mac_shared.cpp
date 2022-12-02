@@ -6,6 +6,7 @@
 
 #include <QtNetwork/qsslcertificate.h>
 
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qdebug.h>
 
@@ -20,6 +21,8 @@
 #endif // Q_OS_MACOS
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcX509, "qt.mac.shared.x509");
 
 #ifdef Q_OS_MACOS
 namespace {
@@ -74,6 +77,52 @@ bool isCaCertificateTrusted(SecCertificateRef cfCert, int domain)
     return false;
 }
 
+bool canDERBeParsed(CFDataRef derData, const QSslCertificate &qtCert)
+{
+    // We are observing certificates, that while accepted when we copy them
+    // from the keychain(s), later give us 'Failed to create SslCertificate
+    // from QSslCertificate'. It's interesting to know at what step the failure
+    // occurred. Let's check it and skip it below if it's not valid.
+
+    auto checkDer = [](CFDataRef derData, const char *source)
+    {
+        Q_ASSERT(source);
+        Q_ASSERT(derData);
+
+        const auto cfLength = CFDataGetLength(derData);
+        if (cfLength <= 0) {
+            qCWarning(lcX509) << source << "returned faulty DER data with invalid length.";
+            return false;
+        }
+
+        QCFType<SecCertificateRef> secRef = SecCertificateCreateWithData(nullptr, derData);
+        if (!secRef) {
+            qCWarning(lcX509) << source << "returned faulty DER data which cannot be parsed back.";
+            return false;
+        }
+        return true;
+    };
+
+    if (!checkDer(derData, "SecCertificateCopyData")) {
+        qCDebug(lcX509) << "Faulty QSslCertificate is:" << qtCert;// Just in case we managed to parse something.
+        return false;
+    }
+
+    // Generic parser failed?
+    if (qtCert.isNull()) {
+        qCWarning(lcX509, "QSslCertificate failed to parse DER");
+        return false;
+    }
+
+    const QCFType<CFDataRef> qtDerData = qtCert.toDer().toCFData();
+    if (!checkDer(qtDerData, "QSslCertificate")) {
+        qCWarning(lcX509) << "Faulty QSslCertificate is:" << qtCert;
+        return false;
+    }
+
+    return true;
+}
+
 } // unnamed namespace
 #endif // Q_OS_MACOS
 
@@ -94,8 +143,19 @@ QList<QSslCertificate> systemCaCertificates()
                 SecCertificateRef cfCert = (SecCertificateRef)CFArrayGetValueAtIndex(cfCerts, i);
                 QCFType<CFDataRef> derData = SecCertificateCopyData(cfCert);
                 if (isCaCertificateTrusted(cfCert, dom)) {
-                    if (derData)
-                        systemCerts << QSslCertificate(QByteArray::fromCFData(derData), QSsl::Der);
+                    if (derData) {
+                        const auto newCert = QSslCertificate(QByteArray::fromCFData(derData), QSsl::Der);
+                        if (!canDERBeParsed(derData, newCert)) {
+                            // Last attempt to get some information about the certificate:
+                            CFShow(cfCert);
+                            continue;
+                        }
+                        systemCerts << newCert;
+                    } else {
+                        // "Returns NULL if the data passed in the certificate parameter
+                        // is not a valid certificate object."
+                        qCWarning(lcX509, "SecCertificateCopyData returned invalid DER data (nullptr).");
+                    }
                 }
             }
         }
