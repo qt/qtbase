@@ -2,393 +2,393 @@
 Config: Using QtTest library
 PASS   : tst_ExtendedCompare::initTestCase()
 PASS   : tst_ExtendedCompare::compareInts(EQ:left == right)
-FAIL!  : tst_ExtendedCompare::compareInts(EQ:left < right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 2
+FAIL!  : tst_ExtendedCompare::compareInts(EQ:left < right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 2
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareInts(EQ:left > right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): 2
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareInts(EQ:left > right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 2
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareInts(NE:left == right) Left value is expected to be different from right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareInts(NE:left == right) The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareInts(NE:left < right)
 PASS   : tst_ExtendedCompare::compareInts(NE:left > right)
-FAIL!  : tst_ExtendedCompare::compareInts(LT:left == right) Left value is expected to be less than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareInts(LT:left == right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareInts(LT:left < right)
-FAIL!  : tst_ExtendedCompare::compareInts(LT:left > right) Left value is expected to be less than right value, but is not
-   Left   (lhs): 2
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareInts(LT:left > right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 2
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareInts(LE:left == right)
 PASS   : tst_ExtendedCompare::compareInts(LE:left < right)
-FAIL!  : tst_ExtendedCompare::compareInts(LE:left > right) Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): 2
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareInts(LE:left > right) The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): 2
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareInts(GT:left == right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareInts(GT:left == right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareInts(GT:left < right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 2
+FAIL!  : tst_ExtendedCompare::compareInts(GT:left < right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 2
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareInts(GT:left > right)
 PASS   : tst_ExtendedCompare::compareInts(GE:left == right)
-FAIL!  : tst_ExtendedCompare::compareInts(GE:left < right) Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 2
+FAIL!  : tst_ExtendedCompare::compareInts(GE:left < right) The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 2
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareInts(GE:left > right)
 PASS   : tst_ExtendedCompare::compareFloats(EQ:left == right)
-FAIL!  : tst_ExtendedCompare::compareFloats(EQ:left < right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1.1
+FAIL!  : tst_ExtendedCompare::compareFloats(EQ:left < right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1.1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareFloats(EQ:left > right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): 1.1
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareFloats(EQ:left > right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 1.1
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareFloats(NE:left == right) Left value is expected to be different from right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareFloats(NE:left == right) The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareFloats(NE:left < right)
 PASS   : tst_ExtendedCompare::compareFloats(NE:left > right)
-FAIL!  : tst_ExtendedCompare::compareFloats(LT:left == right) Left value is expected to be less than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareFloats(LT:left == right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareFloats(LT:left < right)
-FAIL!  : tst_ExtendedCompare::compareFloats(LT:left > right) Left value is expected to be less than right value, but is not
-   Left   (lhs): 1.1
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareFloats(LT:left > right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 1.1
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareFloats(LE:left == right)
 PASS   : tst_ExtendedCompare::compareFloats(LE:left < right)
-FAIL!  : tst_ExtendedCompare::compareFloats(LE:left > right) Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): 1.1
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareFloats(LE:left > right) The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): 1.1
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareFloats(GT:left == right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareFloats(GT:left == right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareFloats(GT:left < right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1.1
+FAIL!  : tst_ExtendedCompare::compareFloats(GT:left < right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1.1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareFloats(GT:left > right)
 PASS   : tst_ExtendedCompare::compareFloats(GE:left == right)
-FAIL!  : tst_ExtendedCompare::compareFloats(GE:left < right) Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1.1
+FAIL!  : tst_ExtendedCompare::compareFloats(GE:left < right) The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1.1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareFloats(GE:left > right)
 PASS   : tst_ExtendedCompare::compareDoubles(EQ:left == right)
-FAIL!  : tst_ExtendedCompare::compareDoubles(EQ:left < right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0.1
+FAIL!  : tst_ExtendedCompare::compareDoubles(EQ:left < right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0.1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareDoubles(EQ:left > right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): 0.1
-   Right  (rhs): 0
+FAIL!  : tst_ExtendedCompare::compareDoubles(EQ:left > right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 0.1
+   Baseline (rhs): 0
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareDoubles(NE:left == right) Left value is expected to be different from right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0
+FAIL!  : tst_ExtendedCompare::compareDoubles(NE:left == right) The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareDoubles(NE:left < right)
 PASS   : tst_ExtendedCompare::compareDoubles(NE:left > right)
-FAIL!  : tst_ExtendedCompare::compareDoubles(LT:left == right) Left value is expected to be less than right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0
+FAIL!  : tst_ExtendedCompare::compareDoubles(LT:left == right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareDoubles(LT:left < right)
-FAIL!  : tst_ExtendedCompare::compareDoubles(LT:left > right) Left value is expected to be less than right value, but is not
-   Left   (lhs): 0.1
-   Right  (rhs): 0
+FAIL!  : tst_ExtendedCompare::compareDoubles(LT:left > right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 0.1
+   Baseline (rhs): 0
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareDoubles(LE:left == right)
 PASS   : tst_ExtendedCompare::compareDoubles(LE:left < right)
-FAIL!  : tst_ExtendedCompare::compareDoubles(LE:left > right) Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): 0.1
-   Right  (rhs): 0
+FAIL!  : tst_ExtendedCompare::compareDoubles(LE:left > right) The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): 0.1
+   Baseline (rhs): 0
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareDoubles(GT:left == right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0
+FAIL!  : tst_ExtendedCompare::compareDoubles(GT:left == right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareDoubles(GT:left < right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0.1
+FAIL!  : tst_ExtendedCompare::compareDoubles(GT:left < right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0.1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareDoubles(GT:left > right)
 PASS   : tst_ExtendedCompare::compareDoubles(GE:left == right)
-FAIL!  : tst_ExtendedCompare::compareDoubles(GE:left < right) Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0.1
+FAIL!  : tst_ExtendedCompare::compareDoubles(GE:left < right) The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0.1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareDoubles(GE:left > right)
 PASS   : tst_ExtendedCompare::comparePointers(EQ:left == right)
-FAIL!  : tst_ExtendedCompare::comparePointers(EQ:left < right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 2
+FAIL!  : tst_ExtendedCompare::comparePointers(EQ:left < right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 2
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::comparePointers(EQ:left > right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): 2
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::comparePointers(EQ:left > right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 2
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::comparePointers(NE:left == right) Left value is expected to be different from right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::comparePointers(NE:left == right) The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::comparePointers(NE:left < right)
 PASS   : tst_ExtendedCompare::comparePointers(NE:left > right)
-FAIL!  : tst_ExtendedCompare::comparePointers(LT:left == right) Left value is expected to be less than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::comparePointers(LT:left == right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::comparePointers(LT:left < right)
-FAIL!  : tst_ExtendedCompare::comparePointers(LT:left > right) Left value is expected to be less than right value, but is not
-   Left   (lhs): 2
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::comparePointers(LT:left > right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 2
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::comparePointers(LE:left == right)
 PASS   : tst_ExtendedCompare::comparePointers(LE:left < right)
-FAIL!  : tst_ExtendedCompare::comparePointers(LE:left > right) Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): 2
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::comparePointers(LE:left > right) The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): 2
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::comparePointers(GT:left == right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::comparePointers(GT:left == right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::comparePointers(GT:left < right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 2
+FAIL!  : tst_ExtendedCompare::comparePointers(GT:left < right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 2
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::comparePointers(GT:left > right)
 PASS   : tst_ExtendedCompare::comparePointers(GE:left == right)
-FAIL!  : tst_ExtendedCompare::comparePointers(GE:left < right) Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 2
+FAIL!  : tst_ExtendedCompare::comparePointers(GE:left < right) The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 2
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::comparePointers(GE:left > right)
 PASS   : tst_ExtendedCompare::compareToNullptr(EQ:left == right)
-FAIL!  : tst_ExtendedCompare::compareToNullptr(EQ:left < right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): "nullptr"
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareToNullptr(EQ:left < right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): "nullptr"
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareToNullptr(EQ:left > right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): "nullptr"
+FAIL!  : tst_ExtendedCompare::compareToNullptr(EQ:left > right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): "nullptr"
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareToNullptr(NE:left == right) Left value is expected to be different from right value, but is not
-   Left   (lhs): "nullptr"
-   Right  (rhs): "nullptr"
+FAIL!  : tst_ExtendedCompare::compareToNullptr(NE:left == right) The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): "nullptr"
+   Baseline (rhs): "nullptr"
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareToNullptr(NE:left < right)
 PASS   : tst_ExtendedCompare::compareToNullptr(NE:left > right)
-FAIL!  : tst_ExtendedCompare::compareToNullptr(LT:left == right) Left value is expected to be less than right value, but is not
-   Left   (lhs): "nullptr"
-   Right  (rhs): "nullptr"
+FAIL!  : tst_ExtendedCompare::compareToNullptr(LT:left == right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): "nullptr"
+   Baseline (rhs): "nullptr"
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareToNullptr(LT:left < right)
-FAIL!  : tst_ExtendedCompare::compareToNullptr(LT:left > right) Left value is expected to be less than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): "nullptr"
+FAIL!  : tst_ExtendedCompare::compareToNullptr(LT:left > right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): "nullptr"
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareToNullptr(LE:left == right)
 PASS   : tst_ExtendedCompare::compareToNullptr(LE:left < right)
-FAIL!  : tst_ExtendedCompare::compareToNullptr(LE:left > right) Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): "nullptr"
+FAIL!  : tst_ExtendedCompare::compareToNullptr(LE:left > right) The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): "nullptr"
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareToNullptr(GT:left == right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): "nullptr"
-   Right  (rhs): "nullptr"
+FAIL!  : tst_ExtendedCompare::compareToNullptr(GT:left == right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): "nullptr"
+   Baseline (rhs): "nullptr"
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareToNullptr(GT:left < right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): "nullptr"
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareToNullptr(GT:left < right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): "nullptr"
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareToNullptr(GT:left > right)
 PASS   : tst_ExtendedCompare::compareToNullptr(GE:left == right)
-FAIL!  : tst_ExtendedCompare::compareToNullptr(GE:left < right) Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): "nullptr"
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareToNullptr(GE:left < right) The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): "nullptr"
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareToNullptr(GE:left > right)
 PASS   : tst_ExtendedCompare::compareUnregistereEnum(EQ:left == right)
-FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(EQ:left < right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(EQ:left < right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(EQ:left > right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 0
+FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(EQ:left > right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 0
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(NE:left == right) Left value is expected to be different from right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0
+FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(NE:left == right) The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareUnregistereEnum(NE:left < right)
 PASS   : tst_ExtendedCompare::compareUnregistereEnum(NE:left > right)
-FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(LT:left == right) Left value is expected to be less than right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0
+FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(LT:left == right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareUnregistereEnum(LT:left < right)
-FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(LT:left > right) Left value is expected to be less than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 0
+FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(LT:left > right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 0
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareUnregistereEnum(LE:left == right)
 PASS   : tst_ExtendedCompare::compareUnregistereEnum(LE:left < right)
-FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(LE:left > right) Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 0
+FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(LE:left > right) The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 0
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(GT:left == right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0
+FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(GT:left == right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(GT:left < right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(GT:left < right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareUnregistereEnum(GT:left > right)
 PASS   : tst_ExtendedCompare::compareUnregistereEnum(GE:left == right)
-FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(GE:left < right) Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 1
+FAIL!  : tst_ExtendedCompare::compareUnregistereEnum(GE:left < right) The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareUnregistereEnum(GE:left > right)
 PASS   : tst_ExtendedCompare::compareRegistereEnum(EQ:left == right)
-FAIL!  : tst_ExtendedCompare::compareRegistereEnum(EQ:left < right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): Monday
-   Right  (rhs): Sunday
+FAIL!  : tst_ExtendedCompare::compareRegistereEnum(EQ:left < right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): Monday
+   Baseline (rhs): Sunday
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareRegistereEnum(EQ:left > right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): Sunday
-   Right  (rhs): Monday
+FAIL!  : tst_ExtendedCompare::compareRegistereEnum(EQ:left > right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): Sunday
+   Baseline (rhs): Monday
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareRegistereEnum(NE:left == right) Left value is expected to be different from right value, but is not
-   Left   (lhs): Monday
-   Right  (rhs): Monday
+FAIL!  : tst_ExtendedCompare::compareRegistereEnum(NE:left == right) The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): Monday
+   Baseline (rhs): Monday
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareRegistereEnum(NE:left < right)
 PASS   : tst_ExtendedCompare::compareRegistereEnum(NE:left > right)
-FAIL!  : tst_ExtendedCompare::compareRegistereEnum(LT:left == right) Left value is expected to be less than right value, but is not
-   Left   (lhs): Monday
-   Right  (rhs): Monday
+FAIL!  : tst_ExtendedCompare::compareRegistereEnum(LT:left == right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): Monday
+   Baseline (rhs): Monday
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareRegistereEnum(LT:left < right)
-FAIL!  : tst_ExtendedCompare::compareRegistereEnum(LT:left > right) Left value is expected to be less than right value, but is not
-   Left   (lhs): Sunday
-   Right  (rhs): Monday
+FAIL!  : tst_ExtendedCompare::compareRegistereEnum(LT:left > right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): Sunday
+   Baseline (rhs): Monday
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareRegistereEnum(LE:left == right)
 PASS   : tst_ExtendedCompare::compareRegistereEnum(LE:left < right)
-FAIL!  : tst_ExtendedCompare::compareRegistereEnum(LE:left > right) Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): Sunday
-   Right  (rhs): Monday
+FAIL!  : tst_ExtendedCompare::compareRegistereEnum(LE:left > right) The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): Sunday
+   Baseline (rhs): Monday
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareRegistereEnum(GT:left == right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): Monday
-   Right  (rhs): Monday
+FAIL!  : tst_ExtendedCompare::compareRegistereEnum(GT:left == right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): Monday
+   Baseline (rhs): Monday
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareRegistereEnum(GT:left < right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): Monday
-   Right  (rhs): Sunday
+FAIL!  : tst_ExtendedCompare::compareRegistereEnum(GT:left < right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): Monday
+   Baseline (rhs): Sunday
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareRegistereEnum(GT:left > right)
 PASS   : tst_ExtendedCompare::compareRegistereEnum(GE:left == right)
-FAIL!  : tst_ExtendedCompare::compareRegistereEnum(GE:left < right) Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): Monday
-   Right  (rhs): Sunday
+FAIL!  : tst_ExtendedCompare::compareRegistereEnum(GE:left < right) The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): Monday
+   Baseline (rhs): Sunday
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareRegistereEnum(GE:left > right)
 PASS   : tst_ExtendedCompare::compareCustomTypes(EQ:left == right)
-FAIL!  : tst_ExtendedCompare::compareCustomTypes(EQ:left < right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): MyClass(1)
-   Right  (rhs): MyClass(2)
+FAIL!  : tst_ExtendedCompare::compareCustomTypes(EQ:left < right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): MyClass(1)
+   Baseline (rhs): MyClass(2)
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareCustomTypes(EQ:left > right) Left value is expected to be equal to right value, but is not
-   Left   (lhs): MyClass(2)
-   Right  (rhs): MyClass(1)
+FAIL!  : tst_ExtendedCompare::compareCustomTypes(EQ:left > right) The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): MyClass(2)
+   Baseline (rhs): MyClass(1)
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareCustomTypes(NE:left == right) Left value is expected to be different from right value, but is not
-   Left   (lhs): MyClass(1)
-   Right  (rhs): MyClass(1)
+FAIL!  : tst_ExtendedCompare::compareCustomTypes(NE:left == right) The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): MyClass(1)
+   Baseline (rhs): MyClass(1)
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareCustomTypes(NE:left < right)
 PASS   : tst_ExtendedCompare::compareCustomTypes(NE:left > right)
-FAIL!  : tst_ExtendedCompare::compareCustomTypes(LT:left == right) Left value is expected to be less than right value, but is not
-   Left   (lhs): MyClass(1)
-   Right  (rhs): MyClass(1)
+FAIL!  : tst_ExtendedCompare::compareCustomTypes(LT:left == right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): MyClass(1)
+   Baseline (rhs): MyClass(1)
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareCustomTypes(LT:left < right)
-FAIL!  : tst_ExtendedCompare::compareCustomTypes(LT:left > right) Left value is expected to be less than right value, but is not
-   Left   (lhs): MyClass(2)
-   Right  (rhs): MyClass(1)
+FAIL!  : tst_ExtendedCompare::compareCustomTypes(LT:left > right) The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): MyClass(2)
+   Baseline (rhs): MyClass(1)
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareCustomTypes(LE:left == right)
 PASS   : tst_ExtendedCompare::compareCustomTypes(LE:left < right)
-FAIL!  : tst_ExtendedCompare::compareCustomTypes(LE:left > right) Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): MyClass(2)
-   Right  (rhs): MyClass(1)
+FAIL!  : tst_ExtendedCompare::compareCustomTypes(LE:left > right) The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): MyClass(2)
+   Baseline (rhs): MyClass(1)
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareCustomTypes(GT:left == right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): MyClass(1)
-   Right  (rhs): MyClass(1)
+FAIL!  : tst_ExtendedCompare::compareCustomTypes(GT:left == right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): MyClass(1)
+   Baseline (rhs): MyClass(1)
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::compareCustomTypes(GT:left < right) Left value is expected to be greater than right value, but is not
-   Left   (lhs): MyClass(1)
-   Right  (rhs): MyClass(2)
+FAIL!  : tst_ExtendedCompare::compareCustomTypes(GT:left < right) The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): MyClass(1)
+   Baseline (rhs): MyClass(2)
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareCustomTypes(GT:left > right)
 PASS   : tst_ExtendedCompare::compareCustomTypes(GE:left == right)
-FAIL!  : tst_ExtendedCompare::compareCustomTypes(GE:left < right) Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): MyClass(1)
-   Right  (rhs): MyClass(2)
+FAIL!  : tst_ExtendedCompare::compareCustomTypes(GE:left < right) The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): MyClass(1)
+   Baseline (rhs): MyClass(2)
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::compareCustomTypes(GE:left > right)
-FAIL!  : tst_ExtendedCompare::checkComparisonForTemporaryObjects(EQ) Left value is expected to be equal to right value, but is not
-   Left   (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
-   Right  (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1
+FAIL!  : tst_ExtendedCompare::checkComparisonForTemporaryObjects(EQ) The computed value is expected to be equal to the baseline, but is not
+   Computed (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
+   Baseline (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::checkComparisonForTemporaryObjects(NE)
 PASS   : tst_ExtendedCompare::checkComparisonForTemporaryObjects(LT)
 PASS   : tst_ExtendedCompare::checkComparisonForTemporaryObjects(LE)
-FAIL!  : tst_ExtendedCompare::checkComparisonForTemporaryObjects(GT) Left value is expected to be greater than right value, but is not
-   Left   (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
-   Right  (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1
+FAIL!  : tst_ExtendedCompare::checkComparisonForTemporaryObjects(GT) The computed value is expected to be greater than the baseline, but is not
+   Computed (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
+   Baseline (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::checkComparisonForTemporaryObjects(GE) Left value is expected to be greater than or equal to right value, but is not
-   Left   (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
-   Right  (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1
+FAIL!  : tst_ExtendedCompare::checkComparisonForTemporaryObjects(GE) The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
+   Baseline (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::checkComparisonWithTimeout(EQ)
 PASS   : tst_ExtendedCompare::checkComparisonWithTimeout(NE)
-FAIL!  : tst_ExtendedCompare::checkComparisonWithTimeout(LT) Left value is expected to be less than right value, but is not
-   Left   (c)                         : ClassWithDeferredSetter(1)
-   Right  (ClassWithDeferredSetter(0)): ClassWithDeferredSetter(0)
+FAIL!  : tst_ExtendedCompare::checkComparisonWithTimeout(LT) The computed value is expected to be less than the baseline, but is not
+   Computed (c)                         : ClassWithDeferredSetter(1)
+   Baseline (ClassWithDeferredSetter(0)): ClassWithDeferredSetter(0)
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::checkComparisonWithTimeout(LE) Left value is expected to be less than or equal to right value, but is not
-   Left   (c)                          : ClassWithDeferredSetter(1)
-   Right  (ClassWithDeferredSetter(-1)): ClassWithDeferredSetter(-1)
+FAIL!  : tst_ExtendedCompare::checkComparisonWithTimeout(LE) The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (c)                          : ClassWithDeferredSetter(1)
+   Baseline (ClassWithDeferredSetter(-1)): ClassWithDeferredSetter(-1)
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
-FAIL!  : tst_ExtendedCompare::checkComparisonWithTimeout(GT) Left value is expected to be greater than right value, but is not
-   Left   (c)                         : ClassWithDeferredSetter(1)
-   Right  (ClassWithDeferredSetter(1)): ClassWithDeferredSetter(1)
+FAIL!  : tst_ExtendedCompare::checkComparisonWithTimeout(GT) The computed value is expected to be greater than the baseline, but is not
+   Computed (c)                         : ClassWithDeferredSetter(1)
+   Baseline (ClassWithDeferredSetter(1)): ClassWithDeferredSetter(1)
    Loc: [qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp(0)]
 PASS   : tst_ExtendedCompare::checkComparisonWithTimeout(GE)
 PASS   : tst_ExtendedCompare::cleanupTestCase()

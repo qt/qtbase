@@ -5,7 +5,7 @@ ok 2 - compareInts(EQ:left == right)
 not ok 3 - compareInts(EQ:left < right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == 2 (rhs)
   found: 1 (lhs)
   expected: == 2 (rhs)
@@ -17,7 +17,7 @@ not ok 3 - compareInts(EQ:left < right)
 not ok 4 - compareInts(EQ:left > right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == 1 (rhs)
   found: 2 (lhs)
   expected: == 1 (rhs)
@@ -29,7 +29,7 @@ not ok 4 - compareInts(EQ:left > right)
 not ok 5 - compareInts(NE:left == right)
   ---
   type: QCOMPARE_NE
-  message: Left value is expected to be different from right value, but is not
+  message: The computed value is expected to be different from the baseline, but is not
   wanted: != 1 (rhs)
   found: 1 (lhs)
   expected: != 1 (rhs)
@@ -43,7 +43,7 @@ ok 7 - compareInts(NE:left > right)
 not ok 8 - compareInts(LT:left == right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < 1 (rhs)
   found: 1 (lhs)
   expected: < 1 (rhs)
@@ -56,7 +56,7 @@ ok 9 - compareInts(LT:left < right)
 not ok 10 - compareInts(LT:left > right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < 1 (rhs)
   found: 2 (lhs)
   expected: < 1 (rhs)
@@ -70,7 +70,7 @@ ok 12 - compareInts(LE:left < right)
 not ok 13 - compareInts(LE:left > right)
   ---
   type: QCOMPARE_LE
-  message: Left value is expected to be less than or equal to right value, but is not
+  message: The computed value is expected to be less than or equal to the baseline, but is not
   wanted: <= 1 (rhs)
   found: 2 (lhs)
   expected: <= 1 (rhs)
@@ -82,7 +82,7 @@ not ok 13 - compareInts(LE:left > right)
 not ok 14 - compareInts(GT:left == right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > 1 (rhs)
   found: 1 (lhs)
   expected: > 1 (rhs)
@@ -94,7 +94,7 @@ not ok 14 - compareInts(GT:left == right)
 not ok 15 - compareInts(GT:left < right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > 2 (rhs)
   found: 1 (lhs)
   expected: > 2 (rhs)
@@ -108,7 +108,7 @@ ok 17 - compareInts(GE:left == right)
 not ok 18 - compareInts(GE:left < right)
   ---
   type: QCOMPARE_GE
-  message: Left value is expected to be greater than or equal to right value, but is not
+  message: The computed value is expected to be greater than or equal to the baseline, but is not
   wanted: >= 2 (rhs)
   found: 1 (lhs)
   expected: >= 2 (rhs)
@@ -122,7 +122,7 @@ ok 20 - compareFloats(EQ:left == right)
 not ok 21 - compareFloats(EQ:left < right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == 1.1 (rhs)
   found: 1 (lhs)
   expected: == 1.1 (rhs)
@@ -134,7 +134,7 @@ not ok 21 - compareFloats(EQ:left < right)
 not ok 22 - compareFloats(EQ:left > right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == 1 (rhs)
   found: 1.1 (lhs)
   expected: == 1 (rhs)
@@ -146,7 +146,7 @@ not ok 22 - compareFloats(EQ:left > right)
 not ok 23 - compareFloats(NE:left == right)
   ---
   type: QCOMPARE_NE
-  message: Left value is expected to be different from right value, but is not
+  message: The computed value is expected to be different from the baseline, but is not
   wanted: != 1 (rhs)
   found: 1 (lhs)
   expected: != 1 (rhs)
@@ -160,7 +160,7 @@ ok 25 - compareFloats(NE:left > right)
 not ok 26 - compareFloats(LT:left == right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < 1 (rhs)
   found: 1 (lhs)
   expected: < 1 (rhs)
@@ -173,7 +173,7 @@ ok 27 - compareFloats(LT:left < right)
 not ok 28 - compareFloats(LT:left > right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < 1 (rhs)
   found: 1.1 (lhs)
   expected: < 1 (rhs)
@@ -187,7 +187,7 @@ ok 30 - compareFloats(LE:left < right)
 not ok 31 - compareFloats(LE:left > right)
   ---
   type: QCOMPARE_LE
-  message: Left value is expected to be less than or equal to right value, but is not
+  message: The computed value is expected to be less than or equal to the baseline, but is not
   wanted: <= 1 (rhs)
   found: 1.1 (lhs)
   expected: <= 1 (rhs)
@@ -199,7 +199,7 @@ not ok 31 - compareFloats(LE:left > right)
 not ok 32 - compareFloats(GT:left == right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > 1 (rhs)
   found: 1 (lhs)
   expected: > 1 (rhs)
@@ -211,7 +211,7 @@ not ok 32 - compareFloats(GT:left == right)
 not ok 33 - compareFloats(GT:left < right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > 1.1 (rhs)
   found: 1 (lhs)
   expected: > 1.1 (rhs)
@@ -225,7 +225,7 @@ ok 35 - compareFloats(GE:left == right)
 not ok 36 - compareFloats(GE:left < right)
   ---
   type: QCOMPARE_GE
-  message: Left value is expected to be greater than or equal to right value, but is not
+  message: The computed value is expected to be greater than or equal to the baseline, but is not
   wanted: >= 1.1 (rhs)
   found: 1 (lhs)
   expected: >= 1.1 (rhs)
@@ -239,7 +239,7 @@ ok 38 - compareDoubles(EQ:left == right)
 not ok 39 - compareDoubles(EQ:left < right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == 0.1 (rhs)
   found: 0 (lhs)
   expected: == 0.1 (rhs)
@@ -251,7 +251,7 @@ not ok 39 - compareDoubles(EQ:left < right)
 not ok 40 - compareDoubles(EQ:left > right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == 0 (rhs)
   found: 0.1 (lhs)
   expected: == 0 (rhs)
@@ -263,7 +263,7 @@ not ok 40 - compareDoubles(EQ:left > right)
 not ok 41 - compareDoubles(NE:left == right)
   ---
   type: QCOMPARE_NE
-  message: Left value is expected to be different from right value, but is not
+  message: The computed value is expected to be different from the baseline, but is not
   wanted: != 0 (rhs)
   found: 0 (lhs)
   expected: != 0 (rhs)
@@ -277,7 +277,7 @@ ok 43 - compareDoubles(NE:left > right)
 not ok 44 - compareDoubles(LT:left == right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < 0 (rhs)
   found: 0 (lhs)
   expected: < 0 (rhs)
@@ -290,7 +290,7 @@ ok 45 - compareDoubles(LT:left < right)
 not ok 46 - compareDoubles(LT:left > right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < 0 (rhs)
   found: 0.1 (lhs)
   expected: < 0 (rhs)
@@ -304,7 +304,7 @@ ok 48 - compareDoubles(LE:left < right)
 not ok 49 - compareDoubles(LE:left > right)
   ---
   type: QCOMPARE_LE
-  message: Left value is expected to be less than or equal to right value, but is not
+  message: The computed value is expected to be less than or equal to the baseline, but is not
   wanted: <= 0 (rhs)
   found: 0.1 (lhs)
   expected: <= 0 (rhs)
@@ -316,7 +316,7 @@ not ok 49 - compareDoubles(LE:left > right)
 not ok 50 - compareDoubles(GT:left == right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > 0 (rhs)
   found: 0 (lhs)
   expected: > 0 (rhs)
@@ -328,7 +328,7 @@ not ok 50 - compareDoubles(GT:left == right)
 not ok 51 - compareDoubles(GT:left < right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > 0.1 (rhs)
   found: 0 (lhs)
   expected: > 0.1 (rhs)
@@ -342,7 +342,7 @@ ok 53 - compareDoubles(GE:left == right)
 not ok 54 - compareDoubles(GE:left < right)
   ---
   type: QCOMPARE_GE
-  message: Left value is expected to be greater than or equal to right value, but is not
+  message: The computed value is expected to be greater than or equal to the baseline, but is not
   wanted: >= 0.1 (rhs)
   found: 0 (lhs)
   expected: >= 0.1 (rhs)
@@ -356,7 +356,7 @@ ok 56 - comparePointers(EQ:left == right)
 not ok 57 - comparePointers(EQ:left < right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == 2 (rhs)
   found: 1 (lhs)
   expected: == 2 (rhs)
@@ -368,7 +368,7 @@ not ok 57 - comparePointers(EQ:left < right)
 not ok 58 - comparePointers(EQ:left > right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == 1 (rhs)
   found: 2 (lhs)
   expected: == 1 (rhs)
@@ -380,7 +380,7 @@ not ok 58 - comparePointers(EQ:left > right)
 not ok 59 - comparePointers(NE:left == right)
   ---
   type: QCOMPARE_NE
-  message: Left value is expected to be different from right value, but is not
+  message: The computed value is expected to be different from the baseline, but is not
   wanted: != 1 (rhs)
   found: 1 (lhs)
   expected: != 1 (rhs)
@@ -394,7 +394,7 @@ ok 61 - comparePointers(NE:left > right)
 not ok 62 - comparePointers(LT:left == right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < 1 (rhs)
   found: 1 (lhs)
   expected: < 1 (rhs)
@@ -407,7 +407,7 @@ ok 63 - comparePointers(LT:left < right)
 not ok 64 - comparePointers(LT:left > right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < 1 (rhs)
   found: 2 (lhs)
   expected: < 1 (rhs)
@@ -421,7 +421,7 @@ ok 66 - comparePointers(LE:left < right)
 not ok 67 - comparePointers(LE:left > right)
   ---
   type: QCOMPARE_LE
-  message: Left value is expected to be less than or equal to right value, but is not
+  message: The computed value is expected to be less than or equal to the baseline, but is not
   wanted: <= 1 (rhs)
   found: 2 (lhs)
   expected: <= 1 (rhs)
@@ -433,7 +433,7 @@ not ok 67 - comparePointers(LE:left > right)
 not ok 68 - comparePointers(GT:left == right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > 1 (rhs)
   found: 1 (lhs)
   expected: > 1 (rhs)
@@ -445,7 +445,7 @@ not ok 68 - comparePointers(GT:left == right)
 not ok 69 - comparePointers(GT:left < right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > 2 (rhs)
   found: 1 (lhs)
   expected: > 2 (rhs)
@@ -459,7 +459,7 @@ ok 71 - comparePointers(GE:left == right)
 not ok 72 - comparePointers(GE:left < right)
   ---
   type: QCOMPARE_GE
-  message: Left value is expected to be greater than or equal to right value, but is not
+  message: The computed value is expected to be greater than or equal to the baseline, but is not
   wanted: >= 2 (rhs)
   found: 1 (lhs)
   expected: >= 2 (rhs)
@@ -473,7 +473,7 @@ ok 74 - compareToNullptr(EQ:left == right)
 not ok 75 - compareToNullptr(EQ:left < right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == 1 (rhs)
   found: "nullptr" (lhs)
   expected: == 1 (rhs)
@@ -485,7 +485,7 @@ not ok 75 - compareToNullptr(EQ:left < right)
 not ok 76 - compareToNullptr(EQ:left > right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == "nullptr" (rhs)
   found: 1 (lhs)
   expected: == "nullptr" (rhs)
@@ -497,7 +497,7 @@ not ok 76 - compareToNullptr(EQ:left > right)
 not ok 77 - compareToNullptr(NE:left == right)
   ---
   type: QCOMPARE_NE
-  message: Left value is expected to be different from right value, but is not
+  message: The computed value is expected to be different from the baseline, but is not
   wanted: != "nullptr" (rhs)
   found: "nullptr" (lhs)
   expected: != "nullptr" (rhs)
@@ -511,7 +511,7 @@ ok 79 - compareToNullptr(NE:left > right)
 not ok 80 - compareToNullptr(LT:left == right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < "nullptr" (rhs)
   found: "nullptr" (lhs)
   expected: < "nullptr" (rhs)
@@ -524,7 +524,7 @@ ok 81 - compareToNullptr(LT:left < right)
 not ok 82 - compareToNullptr(LT:left > right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < "nullptr" (rhs)
   found: 1 (lhs)
   expected: < "nullptr" (rhs)
@@ -538,7 +538,7 @@ ok 84 - compareToNullptr(LE:left < right)
 not ok 85 - compareToNullptr(LE:left > right)
   ---
   type: QCOMPARE_LE
-  message: Left value is expected to be less than or equal to right value, but is not
+  message: The computed value is expected to be less than or equal to the baseline, but is not
   wanted: <= "nullptr" (rhs)
   found: 1 (lhs)
   expected: <= "nullptr" (rhs)
@@ -550,7 +550,7 @@ not ok 85 - compareToNullptr(LE:left > right)
 not ok 86 - compareToNullptr(GT:left == right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > "nullptr" (rhs)
   found: "nullptr" (lhs)
   expected: > "nullptr" (rhs)
@@ -562,7 +562,7 @@ not ok 86 - compareToNullptr(GT:left == right)
 not ok 87 - compareToNullptr(GT:left < right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > 1 (rhs)
   found: "nullptr" (lhs)
   expected: > 1 (rhs)
@@ -576,7 +576,7 @@ ok 89 - compareToNullptr(GE:left == right)
 not ok 90 - compareToNullptr(GE:left < right)
   ---
   type: QCOMPARE_GE
-  message: Left value is expected to be greater than or equal to right value, but is not
+  message: The computed value is expected to be greater than or equal to the baseline, but is not
   wanted: >= 1 (rhs)
   found: "nullptr" (lhs)
   expected: >= 1 (rhs)
@@ -590,7 +590,7 @@ ok 92 - compareUnregistereEnum(EQ:left == right)
 not ok 93 - compareUnregistereEnum(EQ:left < right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == 1 (rhs)
   found: 0 (lhs)
   expected: == 1 (rhs)
@@ -602,7 +602,7 @@ not ok 93 - compareUnregistereEnum(EQ:left < right)
 not ok 94 - compareUnregistereEnum(EQ:left > right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == 0 (rhs)
   found: 1 (lhs)
   expected: == 0 (rhs)
@@ -614,7 +614,7 @@ not ok 94 - compareUnregistereEnum(EQ:left > right)
 not ok 95 - compareUnregistereEnum(NE:left == right)
   ---
   type: QCOMPARE_NE
-  message: Left value is expected to be different from right value, but is not
+  message: The computed value is expected to be different from the baseline, but is not
   wanted: != 0 (rhs)
   found: 0 (lhs)
   expected: != 0 (rhs)
@@ -628,7 +628,7 @@ ok 97 - compareUnregistereEnum(NE:left > right)
 not ok 98 - compareUnregistereEnum(LT:left == right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < 0 (rhs)
   found: 0 (lhs)
   expected: < 0 (rhs)
@@ -641,7 +641,7 @@ ok 99 - compareUnregistereEnum(LT:left < right)
 not ok 100 - compareUnregistereEnum(LT:left > right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < 0 (rhs)
   found: 1 (lhs)
   expected: < 0 (rhs)
@@ -655,7 +655,7 @@ ok 102 - compareUnregistereEnum(LE:left < right)
 not ok 103 - compareUnregistereEnum(LE:left > right)
   ---
   type: QCOMPARE_LE
-  message: Left value is expected to be less than or equal to right value, but is not
+  message: The computed value is expected to be less than or equal to the baseline, but is not
   wanted: <= 0 (rhs)
   found: 1 (lhs)
   expected: <= 0 (rhs)
@@ -667,7 +667,7 @@ not ok 103 - compareUnregistereEnum(LE:left > right)
 not ok 104 - compareUnregistereEnum(GT:left == right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > 0 (rhs)
   found: 0 (lhs)
   expected: > 0 (rhs)
@@ -679,7 +679,7 @@ not ok 104 - compareUnregistereEnum(GT:left == right)
 not ok 105 - compareUnregistereEnum(GT:left < right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > 1 (rhs)
   found: 0 (lhs)
   expected: > 1 (rhs)
@@ -693,7 +693,7 @@ ok 107 - compareUnregistereEnum(GE:left == right)
 not ok 108 - compareUnregistereEnum(GE:left < right)
   ---
   type: QCOMPARE_GE
-  message: Left value is expected to be greater than or equal to right value, but is not
+  message: The computed value is expected to be greater than or equal to the baseline, but is not
   wanted: >= 1 (rhs)
   found: 0 (lhs)
   expected: >= 1 (rhs)
@@ -707,7 +707,7 @@ ok 110 - compareRegistereEnum(EQ:left == right)
 not ok 111 - compareRegistereEnum(EQ:left < right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == Sunday (rhs)
   found: Monday (lhs)
   expected: == Sunday (rhs)
@@ -719,7 +719,7 @@ not ok 111 - compareRegistereEnum(EQ:left < right)
 not ok 112 - compareRegistereEnum(EQ:left > right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == Monday (rhs)
   found: Sunday (lhs)
   expected: == Monday (rhs)
@@ -731,7 +731,7 @@ not ok 112 - compareRegistereEnum(EQ:left > right)
 not ok 113 - compareRegistereEnum(NE:left == right)
   ---
   type: QCOMPARE_NE
-  message: Left value is expected to be different from right value, but is not
+  message: The computed value is expected to be different from the baseline, but is not
   wanted: != Monday (rhs)
   found: Monday (lhs)
   expected: != Monday (rhs)
@@ -745,7 +745,7 @@ ok 115 - compareRegistereEnum(NE:left > right)
 not ok 116 - compareRegistereEnum(LT:left == right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < Monday (rhs)
   found: Monday (lhs)
   expected: < Monday (rhs)
@@ -758,7 +758,7 @@ ok 117 - compareRegistereEnum(LT:left < right)
 not ok 118 - compareRegistereEnum(LT:left > right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < Monday (rhs)
   found: Sunday (lhs)
   expected: < Monday (rhs)
@@ -772,7 +772,7 @@ ok 120 - compareRegistereEnum(LE:left < right)
 not ok 121 - compareRegistereEnum(LE:left > right)
   ---
   type: QCOMPARE_LE
-  message: Left value is expected to be less than or equal to right value, but is not
+  message: The computed value is expected to be less than or equal to the baseline, but is not
   wanted: <= Monday (rhs)
   found: Sunday (lhs)
   expected: <= Monday (rhs)
@@ -784,7 +784,7 @@ not ok 121 - compareRegistereEnum(LE:left > right)
 not ok 122 - compareRegistereEnum(GT:left == right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > Monday (rhs)
   found: Monday (lhs)
   expected: > Monday (rhs)
@@ -796,7 +796,7 @@ not ok 122 - compareRegistereEnum(GT:left == right)
 not ok 123 - compareRegistereEnum(GT:left < right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > Sunday (rhs)
   found: Monday (lhs)
   expected: > Sunday (rhs)
@@ -810,7 +810,7 @@ ok 125 - compareRegistereEnum(GE:left == right)
 not ok 126 - compareRegistereEnum(GE:left < right)
   ---
   type: QCOMPARE_GE
-  message: Left value is expected to be greater than or equal to right value, but is not
+  message: The computed value is expected to be greater than or equal to the baseline, but is not
   wanted: >= Sunday (rhs)
   found: Monday (lhs)
   expected: >= Sunday (rhs)
@@ -824,7 +824,7 @@ ok 128 - compareCustomTypes(EQ:left == right)
 not ok 129 - compareCustomTypes(EQ:left < right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == MyClass(2) (rhs)
   found: MyClass(1) (lhs)
   expected: == MyClass(2) (rhs)
@@ -836,7 +836,7 @@ not ok 129 - compareCustomTypes(EQ:left < right)
 not ok 130 - compareCustomTypes(EQ:left > right)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == MyClass(1) (rhs)
   found: MyClass(2) (lhs)
   expected: == MyClass(1) (rhs)
@@ -848,7 +848,7 @@ not ok 130 - compareCustomTypes(EQ:left > right)
 not ok 131 - compareCustomTypes(NE:left == right)
   ---
   type: QCOMPARE_NE
-  message: Left value is expected to be different from right value, but is not
+  message: The computed value is expected to be different from the baseline, but is not
   wanted: != MyClass(1) (rhs)
   found: MyClass(1) (lhs)
   expected: != MyClass(1) (rhs)
@@ -862,7 +862,7 @@ ok 133 - compareCustomTypes(NE:left > right)
 not ok 134 - compareCustomTypes(LT:left == right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < MyClass(1) (rhs)
   found: MyClass(1) (lhs)
   expected: < MyClass(1) (rhs)
@@ -875,7 +875,7 @@ ok 135 - compareCustomTypes(LT:left < right)
 not ok 136 - compareCustomTypes(LT:left > right)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < MyClass(1) (rhs)
   found: MyClass(2) (lhs)
   expected: < MyClass(1) (rhs)
@@ -889,7 +889,7 @@ ok 138 - compareCustomTypes(LE:left < right)
 not ok 139 - compareCustomTypes(LE:left > right)
   ---
   type: QCOMPARE_LE
-  message: Left value is expected to be less than or equal to right value, but is not
+  message: The computed value is expected to be less than or equal to the baseline, but is not
   wanted: <= MyClass(1) (rhs)
   found: MyClass(2) (lhs)
   expected: <= MyClass(1) (rhs)
@@ -901,7 +901,7 @@ not ok 139 - compareCustomTypes(LE:left > right)
 not ok 140 - compareCustomTypes(GT:left == right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > MyClass(1) (rhs)
   found: MyClass(1) (lhs)
   expected: > MyClass(1) (rhs)
@@ -913,7 +913,7 @@ not ok 140 - compareCustomTypes(GT:left == right)
 not ok 141 - compareCustomTypes(GT:left < right)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > MyClass(2) (rhs)
   found: MyClass(1) (lhs)
   expected: > MyClass(2) (rhs)
@@ -927,7 +927,7 @@ ok 143 - compareCustomTypes(GE:left == right)
 not ok 144 - compareCustomTypes(GE:left < right)
   ---
   type: QCOMPARE_GE
-  message: Left value is expected to be greater than or equal to right value, but is not
+  message: The computed value is expected to be greater than or equal to the baseline, but is not
   wanted: >= MyClass(2) (rhs)
   found: MyClass(1) (lhs)
   expected: >= MyClass(2) (rhs)
@@ -940,7 +940,7 @@ ok 145 - compareCustomTypes(GE:left > right)
 not ok 146 - checkComparisonForTemporaryObjects(EQ)
   ---
   type: QCOMPARE_EQ
-  message: Left value is expected to be equal to right value, but is not
+  message: The computed value is expected to be equal to the baseline, but is not
   wanted: == MyClass(1) on memory address with index 1 (getClassForValue(1).getValuePointer())
   found: MyClass(2) on memory address with index 0 (getClassForValue(0).getValuePointer())
   expected: == MyClass(1) on memory address with index 1 (getClassForValue(1).getValuePointer())
@@ -955,7 +955,7 @@ ok 149 - checkComparisonForTemporaryObjects(LE)
 not ok 150 - checkComparisonForTemporaryObjects(GT)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > MyClass(1) on memory address with index 1 (getClassForValue(1).getValuePointer())
   found: MyClass(2) on memory address with index 0 (getClassForValue(0).getValuePointer())
   expected: > MyClass(1) on memory address with index 1 (getClassForValue(1).getValuePointer())
@@ -967,7 +967,7 @@ not ok 150 - checkComparisonForTemporaryObjects(GT)
 not ok 151 - checkComparisonForTemporaryObjects(GE)
   ---
   type: QCOMPARE_GE
-  message: Left value is expected to be greater than or equal to right value, but is not
+  message: The computed value is expected to be greater than or equal to the baseline, but is not
   wanted: >= MyClass(1) on memory address with index 1 (getClassForValue(1).getValuePointer())
   found: MyClass(2) on memory address with index 0 (getClassForValue(0).getValuePointer())
   expected: >= MyClass(1) on memory address with index 1 (getClassForValue(1).getValuePointer())
@@ -981,7 +981,7 @@ ok 153 - checkComparisonWithTimeout(NE)
 not ok 154 - checkComparisonWithTimeout(LT)
   ---
   type: QCOMPARE_LT
-  message: Left value is expected to be less than right value, but is not
+  message: The computed value is expected to be less than the baseline, but is not
   wanted: < ClassWithDeferredSetter(0) (ClassWithDeferredSetter(0))
   found: ClassWithDeferredSetter(1) (c)
   expected: < ClassWithDeferredSetter(0) (ClassWithDeferredSetter(0))
@@ -993,7 +993,7 @@ not ok 154 - checkComparisonWithTimeout(LT)
 not ok 155 - checkComparisonWithTimeout(LE)
   ---
   type: QCOMPARE_LE
-  message: Left value is expected to be less than or equal to right value, but is not
+  message: The computed value is expected to be less than or equal to the baseline, but is not
   wanted: <= ClassWithDeferredSetter(-1) (ClassWithDeferredSetter(-1))
   found: ClassWithDeferredSetter(1) (c)
   expected: <= ClassWithDeferredSetter(-1) (ClassWithDeferredSetter(-1))
@@ -1005,7 +1005,7 @@ not ok 155 - checkComparisonWithTimeout(LE)
 not ok 156 - checkComparisonWithTimeout(GT)
   ---
   type: QCOMPARE_GT
-  message: Left value is expected to be greater than right value, but is not
+  message: The computed value is expected to be greater than the baseline, but is not
   wanted: > ClassWithDeferredSetter(1) (ClassWithDeferredSetter(1))
   found: ClassWithDeferredSetter(1) (c)
   expected: > ClassWithDeferredSetter(1) (ClassWithDeferredSetter(1))

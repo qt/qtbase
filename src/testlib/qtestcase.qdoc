@@ -137,18 +137,18 @@
        QCOMPARE_GT(), QCOMPARE_GE()
 */
 
-/*! \macro QCOMPARE_EQ(left, right)
+/*! \macro QCOMPARE_EQ(computed, baseline)
     \since 6.4
 
     \relates QTest
 
-    The QCOMPARE_EQ() macro checks that \a left is equal to \a right using
+    The QCOMPARE_EQ() macro checks that \a computed is equal to \a baseline using
     the equality operator. If that is true, execution continues. If not, a
     failure is recorded in the test log and the test function returns without
     attempting any later checks.
 
-    It is generally similar to calling \c {QVERIFY(left == right);}
-    but prints a formatted error message reporting \a left and \a right argument
+    It is generally similar to calling \c {QVERIFY(computed == baseline);}
+    but prints a formatted error message reporting \a computed and \a baseline argument
     expressions and values in case of failure.
 
     \include qtestcase.qdoc macro-usage-limitation
@@ -164,18 +164,18 @@
         QCOMPARE_GE()
 */
 
-/*! \macro QCOMPARE_NE(left, right)
+/*! \macro QCOMPARE_NE(computed, baseline)
     \since 6.4
 
     \relates QTest
 
-    The QCOMPARE_NE() macro checks that \a left is not equal to \a right using
+    The QCOMPARE_NE() macro checks that \a computed is not equal to \a baseline using
     the inequality operator. If that is true, execution continues. If not, a
     failure is recorded in the test log and the test function returns without
     attempting any later checks.
 
-    It is generally similar to calling \c {QVERIFY(left != right);}
-    but prints a formatted error message reporting \a left and \a right argument
+    It is generally similar to calling \c {QVERIFY(computed != baseline);}
+    but prints a formatted error message reporting \a computed and \a baseline argument
     expressions and values in case of failure.
 
     \include qtestcase.qdoc macro-usage-limitation
@@ -185,18 +185,18 @@
     \sa QCOMPARE_EQ(), QCOMPARE_LT(), QCOMPARE_LE(), QCOMPARE_GT(), QCOMPARE_GE()
 */
 
-/*! \macro QCOMPARE_LT(left, right)
+/*! \macro QCOMPARE_LT(computed, baseline)
     \since 6.4
 
     \relates QTest
 
-    The QCOMPARE_LT() macro checks that \a left is less than \a right using the
+    The QCOMPARE_LT() macro checks that \a computed is less than \a baseline using the
     less-than operator. If that is true, execution continues. If not, a failure
     is recorded in the test log and the test function returns without attempting
     any later checks.
 
-    It is generally similar to calling \c {QVERIFY(left < right);}
-    but prints a formatted error message reporting \a left and \a right argument
+    It is generally similar to calling \c {QVERIFY(computed < baseline);}
+    but prints a formatted error message reporting \a computed and \a baseline argument
     expressions and values in case of failure.
 
     \include qtestcase.qdoc macro-usage-limitation
@@ -206,18 +206,18 @@
     \sa QCOMPARE_EQ(), QCOMPARE_NE(), QCOMPARE_LE(), QCOMPARE_GT(), QCOMPARE_GE()
 */
 
-/*! \macro QCOMPARE_LE(left, right)
+/*! \macro QCOMPARE_LE(computed, baseline)
     \since 6.4
 
     \relates QTest
 
-    The QCOMPARE_LE() macro checks that \a left is at most \a right using the
+    The QCOMPARE_LE() macro checks that \a computed is at most \a baseline using the
     less-than-or-equal-to operator. If that is true, execution continues. If
     not, a failure is recorded in the test log and the test function returns
     without attempting any later checks.
 
-    It is generally similar to calling \c {QVERIFY(left <= right);}
-    but prints a formatted error message reporting \a left and \a right argument
+    It is generally similar to calling \c {QVERIFY(computed <= baseline);}
+    but prints a formatted error message reporting \a computed and \a baseline argument
     expressions and values in case of failure.
 
     \include qtestcase.qdoc macro-usage-limitation
@@ -227,18 +227,18 @@
     \sa QCOMPARE_EQ(), QCOMPARE_NE(), QCOMPARE_LT(), QCOMPARE_GT(), QCOMPARE_GE()
 */
 
-/*! \macro QCOMPARE_GT(left, right)
+/*! \macro QCOMPARE_GT(computed, baseline)
     \since 6.4
 
     \relates QTest
 
-    The QCOMPARE_GT() macro checks that \a left is greater than \a right using
+    The QCOMPARE_GT() macro checks that \a computed is greater than \a baseline using
     the greater-than operator. If that is true, execution continues. If not, a
     failure is recorded in the test log and the test function returns without
     attempting any later checks.
 
-    It is generally similar to calling \c {QVERIFY(left > right);}
-    but prints a formatted error message reporting \a left and \a right argument
+    It is generally similar to calling \c {QVERIFY(computed > baseline);}
+    but prints a formatted error message reporting \a computed and \a baseline argument
     expressions and values in case of failure.
 
     \include qtestcase.qdoc macro-usage-limitation
@@ -248,18 +248,18 @@
     \sa QCOMPARE_EQ(), QCOMPARE_NE(), QCOMPARE_LT(), QCOMPARE_LE(), QCOMPARE_GE()
 */
 
-/*! \macro QCOMPARE_GE(left, right)
+/*! \macro QCOMPARE_GE(computed, baseline)
     \since 6.4
 
     \relates QTest
 
-    The QCOMPARE_GE() macro checks that \a left is at least \a right using the
+    The QCOMPARE_GE() macro checks that \a computed is at least \a baseline using the
     greater-than-or-equal-to operator. If that is true, execution continues. If
     not, a failure is recorded in the test log and the test function returns
     without attempting any later checks.
 
-    It is generally similar to calling \c {QVERIFY(left >= right);}
-    but prints a formatted error message reporting \a left and \a right argument
+    It is generally similar to calling \c {QVERIFY(computed >= baseline);}
+    but prints a formatted error message reporting \a computed and \a baseline argument
     expressions and values in case of failure.
 
     \include qtestcase.qdoc macro-usage-limitation
@@ -455,12 +455,12 @@
    QEXPECT_FAIL()
 */
 
-/*! \macro QTRY_COMPARE_EQ_WITH_TIMEOUT(left, right, timeout)
+/*! \macro QTRY_COMPARE_EQ_WITH_TIMEOUT(computed, baseline, timeout)
     \since 6.4
     \relates QTest
 
     This macro is similar to QCOMPARE_EQ(), but performs the comparison of the
-    \a left and \a right values repeatedly, until either the comparison returns
+    \a computed and \a baseline values repeatedly, until either the comparison returns
     \c true or the \a timeout (in milliseconds) is reached. Between each
     comparison, events will be processed. If the timeout is reached, a failure
     is recorded in the test log and the test won't be executed further.
@@ -470,11 +470,11 @@
     \sa QCOMPARE_EQ(), QTRY_COMPARE_EQ()
 */
 
-/*! \macro QTRY_COMPARE_EQ(left, right)
+/*! \macro QTRY_COMPARE_EQ(computed, baseline)
     \since 6.4
     \relates QTest
 
-    Performs comparison of \a left and \a right values by invoking
+    Performs comparison of \a computed and \a baseline values by invoking
     QTRY_COMPARE_EQ_WITH_TIMEOUT with a timeout of five seconds.
 
     \include qtestcase.qdoc macro-usage-limitation
@@ -482,12 +482,12 @@
     \sa QCOMPARE_EQ(), QTRY_COMPARE_EQ_WITH_TIMEOUT()
 */
 
-/*! \macro QTRY_COMPARE_NE_WITH_TIMEOUT(left, right, timeout)
+/*! \macro QTRY_COMPARE_NE_WITH_TIMEOUT(computed, baseline, timeout)
     \since 6.4
     \relates QTest
 
     This macro is similar to QCOMPARE_NE(), but performs the comparison of the
-    \a left and \a right values repeatedly, until either the comparison returns
+    \a computed and \a baseline values repeatedly, until either the comparison returns
     \c true or the \a timeout (in milliseconds) is reached. Between each
     comparison, events will be processed. If the timeout is reached, a failure
     is recorded in the test log and the test won't be executed further.
@@ -497,11 +497,11 @@
     \sa QCOMPARE_NE(), QTRY_COMPARE_NE()
 */
 
-/*! \macro QTRY_COMPARE_NE(left, right)
+/*! \macro QTRY_COMPARE_NE(computed, baseline)
     \since 6.4
     \relates QTest
 
-    Performs comparison of \a left and \a right values by invoking
+    Performs comparison of \a computed and \a baseline values by invoking
     QTRY_COMPARE_NE_WITH_TIMEOUT with a timeout of five seconds.
 
     \include qtestcase.qdoc macro-usage-limitation
@@ -509,12 +509,12 @@
     \sa QCOMPARE_NE(), QTRY_COMPARE_NE_WITH_TIMEOUT()
 */
 
-/*! \macro QTRY_COMPARE_LT_WITH_TIMEOUT(left, right, timeout)
+/*! \macro QTRY_COMPARE_LT_WITH_TIMEOUT(computed, baseline, timeout)
     \since 6.4
     \relates QTest
 
     This macro is similar to QCOMPARE_LT(), but performs the comparison of the
-    \a left and \a right values repeatedly, until either the comparison returns
+    \a computed and \a baseline values repeatedly, until either the comparison returns
     \c true or the \a timeout (in milliseconds) is reached. Between each
     comparison, events will be processed. If the timeout is reached, a failure
     is recorded in the test log and the test won't be executed further.
@@ -524,11 +524,11 @@
     \sa QCOMPARE_LT(), QTRY_COMPARE_LT()
 */
 
-/*! \macro QTRY_COMPARE_LT(left, right)
+/*! \macro QTRY_COMPARE_LT(computed, baseline)
     \since 6.4
     \relates QTest
 
-    Performs comparison of \a left and \a right values by invoking
+    Performs comparison of \a computed and \a baseline values by invoking
     QTRY_COMPARE_LT_WITH_TIMEOUT with a timeout of five seconds.
 
     \include qtestcase.qdoc macro-usage-limitation
@@ -536,12 +536,12 @@
     \sa QCOMPARE_LT(), QTRY_COMPARE_LT_WITH_TIMEOUT()
 */
 
-/*! \macro QTRY_COMPARE_LE_WITH_TIMEOUT(left, right, timeout)
+/*! \macro QTRY_COMPARE_LE_WITH_TIMEOUT(computed, baseline, timeout)
     \since 6.4
     \relates QTest
 
     This macro is similar to QCOMPARE_LE(), but performs the comparison of the
-    \a left and \a right values repeatedly, until either the comparison returns
+    \a computed and \a baseline values repeatedly, until either the comparison returns
     \c true or the \a timeout (in milliseconds) is reached. Between each
     comparison, events will be processed. If the timeout is reached, a failure
     is recorded in the test log and the test won't be executed further.
@@ -551,11 +551,11 @@
     \sa QCOMPARE_LE(), QTRY_COMPARE_LE()
 */
 
-/*! \macro QTRY_COMPARE_LE(left, right)
+/*! \macro QTRY_COMPARE_LE(computed, baseline)
     \since 6.4
     \relates QTest
 
-    Performs comparison of \a left and \a right values by invoking
+    Performs comparison of \a computed and \a baseline values by invoking
     QTRY_COMPARE_LE_WITH_TIMEOUT with a timeout of five seconds.
 
     \include qtestcase.qdoc macro-usage-limitation
@@ -563,12 +563,12 @@
     \sa QCOMPARE_LE(), QTRY_COMPARE_LE_WITH_TIMEOUT()
 */
 
-/*! \macro QTRY_COMPARE_GT_WITH_TIMEOUT(left, right, timeout)
+/*! \macro QTRY_COMPARE_GT_WITH_TIMEOUT(computed, baseline, timeout)
     \since 6.4
     \relates QTest
 
     This macro is similar to QCOMPARE_GT(), but performs the comparison of the
-    \a left and \a right values repeatedly, until either the comparison returns
+    \a computed and \a baseline values repeatedly, until either the comparison returns
     \c true or the \a timeout (in milliseconds) is reached. Between each
     comparison, events will be processed. If the timeout is reached, a failure
     is recorded in the test log and the test won't be executed further.
@@ -578,11 +578,11 @@
     \sa QCOMPARE_GT(), QTRY_COMPARE_GT()
 */
 
-/*! \macro QTRY_COMPARE_GT(left, right)
+/*! \macro QTRY_COMPARE_GT(computed, baseline)
     \since 6.4
     \relates QTest
 
-    Performs comparison of \a left and \a right values by invoking
+    Performs comparison of \a computed and \a baseline values by invoking
     QTRY_COMPARE_GT_WITH_TIMEOUT with a timeout of five seconds.
 
     \include qtestcase.qdoc macro-usage-limitation
@@ -590,12 +590,12 @@
     \sa QCOMPARE_GT(), QTRY_COMPARE_GT_WITH_TIMEOUT()
 */
 
-/*! \macro QTRY_COMPARE_GE_WITH_TIMEOUT(left, right, timeout)
+/*! \macro QTRY_COMPARE_GE_WITH_TIMEOUT(computed, baseline, timeout)
     \since 6.4
     \relates QTest
 
     This macro is similar to QCOMPARE_GE(), but performs the comparison of the
-    \a left and \a right values repeatedly, until either the comparison returns
+    \a computed and \a baseline values repeatedly, until either the comparison returns
     \c true or the \a timeout (in milliseconds) is reached. Between each
     comparison, events will be processed. If the timeout is reached, a failure
     is recorded in the test log and the test won't be executed further.
@@ -605,11 +605,11 @@
     \sa QCOMPARE_GE(), QTRY_COMPARE_GE()
 */
 
-/*! \macro QTRY_COMPARE_GE(left, right)
+/*! \macro QTRY_COMPARE_GE(computed, baseline)
     \since 6.4
     \relates QTest
 
-    Performs comparison of \a left and \a right values by invoking
+    Performs comparison of \a computed and \a baseline values by invoking
     QTRY_COMPARE_GE_WITH_TIMEOUT with a timeout of five seconds.
 
     \include qtestcase.qdoc macro-usage-limitation

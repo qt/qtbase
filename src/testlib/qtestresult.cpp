@@ -313,12 +313,12 @@ bool QTestResult::verify(bool statement, const char *statementStr,
 
 static const char *leftArgNameForOp(QTest::ComparisonOperation op)
 {
-    return op == QTest::ComparisonOperation::CustomCompare ? "Actual   " : "Left   ";
+    return op == QTest::ComparisonOperation::CustomCompare ? "Actual   " : "Computed ";
 }
 
 static const char *rightArgNameForOp(QTest::ComparisonOperation op)
 {
-    return op == QTest::ComparisonOperation::CustomCompare ? "Expected " : "Right  ";
+    return op == QTest::ComparisonOperation::CustomCompare ? "Expected " : "Baseline ";
 }
 
 // Overload to format failures for "const char *" - no need to strdup().
@@ -609,17 +609,17 @@ static const char *failureMessageForOp(QTest::ComparisonOperation op)
     case ComparisonOperation::CustomCompare:
         return "Compared values are not the same"; /* not used */
     case ComparisonOperation::Equal:
-        return "Left value is expected to be equal to right value, but is not";
+        return "The computed value is expected to be equal to the baseline, but is not";
     case ComparisonOperation::NotEqual:
-        return "Left value is expected to be different from right value, but is not";
+        return "The computed value is expected to be different from the baseline, but is not";
     case ComparisonOperation::LessThan:
-        return "Left value is expected to be less than right value, but is not";
+        return "The computed value is expected to be less than the baseline, but is not";
     case ComparisonOperation::LessThanOrEqual:
-        return "Left value is expected to be less than or equal to right value, but is not";
+        return "The computed value is expected to be less than or equal to the baseline, but is not";
     case ComparisonOperation::GreaterThan:
-        return "Left value is expected to be greater than right value, but is not";
+        return "The computed value is expected to be greater than the baseline, but is not";
     case ComparisonOperation::GreaterThanOrEqual:
-        return "Left value is expected to be greater than or equal to right value, but is not";
+        return "The computed value is expected to be greater than or equal to the baseline, but is not";
     }
     Q_UNREACHABLE_RETURN("");
 }

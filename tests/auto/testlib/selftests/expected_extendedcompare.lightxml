@@ -13,21 +13,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 2]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 2]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): 2
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 2
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[NE:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be different from right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[NE:left < right]]></DataTag>
@@ -37,18 +37,18 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LT:left < right]]></DataTag>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): 2
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 2
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LE:left == right]]></DataTag>
@@ -58,21 +58,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LE:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): 2
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): 2
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 2]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 2]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GT:left > right]]></DataTag>
@@ -82,9 +82,9 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GE:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 2]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 2]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GE:left > right]]></DataTag>
@@ -97,21 +97,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1.1]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1.1]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): 1.1
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 1.1
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[NE:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be different from right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[NE:left < right]]></DataTag>
@@ -121,18 +121,18 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LT:left < right]]></DataTag>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): 1.1
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 1.1
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LE:left == right]]></DataTag>
@@ -142,21 +142,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LE:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): 1.1
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): 1.1
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1.1]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1.1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GT:left > right]]></DataTag>
@@ -166,9 +166,9 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GE:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1.1]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1.1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GE:left > right]]></DataTag>
@@ -181,21 +181,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0.1]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0.1]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): 0.1
-   Right  (rhs): 0]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 0.1
+   Baseline (rhs): 0]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[NE:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be different from right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0]]></Description>
+      <Description><![CDATA[The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[NE:left < right]]></DataTag>
@@ -205,18 +205,18 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LT:left < right]]></DataTag>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): 0.1
-   Right  (rhs): 0]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 0.1
+   Baseline (rhs): 0]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LE:left == right]]></DataTag>
@@ -226,21 +226,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LE:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): 0.1
-   Right  (rhs): 0]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): 0.1
+   Baseline (rhs): 0]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0.1]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0.1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GT:left > right]]></DataTag>
@@ -250,9 +250,9 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GE:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0.1]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0.1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GE:left > right]]></DataTag>
@@ -265,21 +265,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 2]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 2]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): 2
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 2
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[NE:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be different from right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[NE:left < right]]></DataTag>
@@ -289,18 +289,18 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LT:left < right]]></DataTag>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): 2
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 2
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LE:left == right]]></DataTag>
@@ -310,21 +310,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LE:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): 2
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): 2
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 2]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 2]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GT:left > right]]></DataTag>
@@ -334,9 +334,9 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GE:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 2]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 2]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GE:left > right]]></DataTag>
@@ -349,21 +349,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): "nullptr"
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): "nullptr"
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): "nullptr"]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): "nullptr"]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[NE:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be different from right value, but is not
-   Left   (lhs): "nullptr"
-   Right  (rhs): "nullptr"]]></Description>
+      <Description><![CDATA[The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): "nullptr"
+   Baseline (rhs): "nullptr"]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[NE:left < right]]></DataTag>
@@ -373,18 +373,18 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): "nullptr"
-   Right  (rhs): "nullptr"]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): "nullptr"
+   Baseline (rhs): "nullptr"]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LT:left < right]]></DataTag>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): "nullptr"]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): "nullptr"]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LE:left == right]]></DataTag>
@@ -394,21 +394,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LE:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): "nullptr"]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): "nullptr"]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): "nullptr"
-   Right  (rhs): "nullptr"]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): "nullptr"
+   Baseline (rhs): "nullptr"]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): "nullptr"
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): "nullptr"
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GT:left > right]]></DataTag>
@@ -418,9 +418,9 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GE:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): "nullptr"
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): "nullptr"
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GE:left > right]]></DataTag>
@@ -433,21 +433,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 0]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 0]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[NE:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be different from right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0]]></Description>
+      <Description><![CDATA[The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[NE:left < right]]></DataTag>
@@ -457,18 +457,18 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LT:left < right]]></DataTag>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 0]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 0]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LE:left == right]]></DataTag>
@@ -478,21 +478,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LE:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): 1
-   Right  (rhs): 0]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): 1
+   Baseline (rhs): 0]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 0]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 0]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GT:left > right]]></DataTag>
@@ -502,9 +502,9 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GE:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): 0
-   Right  (rhs): 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): 0
+   Baseline (rhs): 1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GE:left > right]]></DataTag>
@@ -517,21 +517,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): Monday
-   Right  (rhs): Sunday]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): Monday
+   Baseline (rhs): Sunday]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): Sunday
-   Right  (rhs): Monday]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): Sunday
+   Baseline (rhs): Monday]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[NE:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be different from right value, but is not
-   Left   (lhs): Monday
-   Right  (rhs): Monday]]></Description>
+      <Description><![CDATA[The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): Monday
+   Baseline (rhs): Monday]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[NE:left < right]]></DataTag>
@@ -541,18 +541,18 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): Monday
-   Right  (rhs): Monday]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): Monday
+   Baseline (rhs): Monday]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LT:left < right]]></DataTag>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): Sunday
-   Right  (rhs): Monday]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): Sunday
+   Baseline (rhs): Monday]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LE:left == right]]></DataTag>
@@ -562,21 +562,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LE:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): Sunday
-   Right  (rhs): Monday]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): Sunday
+   Baseline (rhs): Monday]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): Monday
-   Right  (rhs): Monday]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): Monday
+   Baseline (rhs): Monday]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): Monday
-   Right  (rhs): Sunday]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): Monday
+   Baseline (rhs): Sunday]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GT:left > right]]></DataTag>
@@ -586,9 +586,9 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GE:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): Monday
-   Right  (rhs): Sunday]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): Monday
+   Baseline (rhs): Sunday]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GE:left > right]]></DataTag>
@@ -601,21 +601,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): MyClass(1)
-   Right  (rhs): MyClass(2)]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): MyClass(1)
+   Baseline (rhs): MyClass(2)]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (lhs): MyClass(2)
-   Right  (rhs): MyClass(1)]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (lhs): MyClass(2)
+   Baseline (rhs): MyClass(1)]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[NE:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be different from right value, but is not
-   Left   (lhs): MyClass(1)
-   Right  (rhs): MyClass(1)]]></Description>
+      <Description><![CDATA[The computed value is expected to be different from the baseline, but is not
+   Computed (lhs): MyClass(1)
+   Baseline (rhs): MyClass(1)]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[NE:left < right]]></DataTag>
@@ -625,18 +625,18 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): MyClass(1)
-   Right  (rhs): MyClass(1)]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): MyClass(1)
+   Baseline (rhs): MyClass(1)]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LT:left < right]]></DataTag>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (lhs): MyClass(2)
-   Right  (rhs): MyClass(1)]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (lhs): MyClass(2)
+   Baseline (rhs): MyClass(1)]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[LE:left == right]]></DataTag>
@@ -646,21 +646,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LE:left > right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
-   Left   (lhs): MyClass(2)
-   Right  (rhs): MyClass(1)]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (lhs): MyClass(2)
+   Baseline (rhs): MyClass(1)]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left == right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): MyClass(1)
-   Right  (rhs): MyClass(1)]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): MyClass(1)
+   Baseline (rhs): MyClass(1)]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (lhs): MyClass(1)
-   Right  (rhs): MyClass(2)]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (lhs): MyClass(1)
+   Baseline (rhs): MyClass(2)]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GT:left > right]]></DataTag>
@@ -670,9 +670,9 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GE:left < right]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
-   Left   (lhs): MyClass(1)
-   Right  (rhs): MyClass(2)]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (lhs): MyClass(1)
+   Baseline (rhs): MyClass(2)]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GE:left > right]]></DataTag>
@@ -682,9 +682,9 @@
   <TestFunction name="checkComparisonForTemporaryObjects">
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[EQ]]></DataTag>
-      <Description><![CDATA[Left value is expected to be equal to right value, but is not
-   Left   (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
-   Right  (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be equal to the baseline, but is not
+   Computed (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
+   Baseline (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[NE]]></DataTag>
@@ -697,15 +697,15 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
-   Right  (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
+   Baseline (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GE]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than or equal to right value, but is not
-   Left   (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
-   Right  (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than or equal to the baseline, but is not
+   Computed (getClassForValue(0).getValuePointer()): MyClass(2) on memory address with index 0
+   Baseline (getClassForValue(1).getValuePointer()): MyClass(1) on memory address with index 1]]></Description>
     </Incident>
     <Duration msecs="0"/>
   </TestFunction>
@@ -718,21 +718,21 @@
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LT]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than right value, but is not
-   Left   (c)                         : ClassWithDeferredSetter(1)
-   Right  (ClassWithDeferredSetter(0)): ClassWithDeferredSetter(0)]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than the baseline, but is not
+   Computed (c)                         : ClassWithDeferredSetter(1)
+   Baseline (ClassWithDeferredSetter(0)): ClassWithDeferredSetter(0)]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[LE]]></DataTag>
-      <Description><![CDATA[Left value is expected to be less than or equal to right value, but is not
-   Left   (c)                          : ClassWithDeferredSetter(1)
-   Right  (ClassWithDeferredSetter(-1)): ClassWithDeferredSetter(-1)]]></Description>
+      <Description><![CDATA[The computed value is expected to be less than or equal to the baseline, but is not
+   Computed (c)                          : ClassWithDeferredSetter(1)
+   Baseline (ClassWithDeferredSetter(-1)): ClassWithDeferredSetter(-1)]]></Description>
     </Incident>
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/extendedcompare/tst_extendedcompare.cpp" line="0">
       <DataTag><![CDATA[GT]]></DataTag>
-      <Description><![CDATA[Left value is expected to be greater than right value, but is not
-   Left   (c)                         : ClassWithDeferredSetter(1)
-   Right  (ClassWithDeferredSetter(1)): ClassWithDeferredSetter(1)]]></Description>
+      <Description><![CDATA[The computed value is expected to be greater than the baseline, but is not
+   Computed (c)                         : ClassWithDeferredSetter(1)
+   Baseline (ClassWithDeferredSetter(1)): ClassWithDeferredSetter(1)]]></Description>
     </Incident>
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[GE]]></DataTag>
