@@ -392,6 +392,7 @@ static_assert(std::numeric_limits<float>::radix == 2,
 static_assert(sizeof(size_t) == sizeof(void *), "size_t and a pointer don't have the same size");
 static_assert(sizeof(size_t) == sizeof(qsizetype)); // implied by the definition
 static_assert((std::is_same<qsizetype, qptrdiff>::value));
+static_assert(std::is_same_v<std::size_t, size_t>);
 
 // Check that our own typedefs are not broken.
 static_assert(sizeof(qint8) == 1, "Internal error, qint8 is misdefined");

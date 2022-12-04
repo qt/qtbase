@@ -33,8 +33,6 @@ public:
     typedef qptrdiff difference_type;
     typedef qsizetype size_type;
 private:
-    static_assert(std::is_same_v<std::size_t, size_t>);
-    static_assert(sizeof(size_t) == sizeof(qsizetype));
     static constexpr size_t SizeMask = (std::numeric_limits<size_t>::max)() / 4;
 #if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
     static constexpr int SizeShift = 2;
