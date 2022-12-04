@@ -33,20 +33,25 @@ public:
     typedef qptrdiff difference_type;
     typedef qsizetype size_type;
 private:
-    // TODO: Optimize by inverting and storing the flags in the low bits and
-    //       the size in the high.
     static_assert(std::is_same_v<std::size_t, size_t>);
     static_assert(sizeof(size_t) == sizeof(qsizetype));
     static constexpr size_t SizeMask = (std::numeric_limits<size_t>::max)() / 4;
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
+    static constexpr int SizeShift = 2;
+    static constexpr size_t Latin1Flag = 1;
+#else
+    static constexpr int SizeShift = 0;
     static constexpr size_t Latin1Flag = SizeMask + 1;
+#endif
     static constexpr size_t TwoByteCodePointFlag = Latin1Flag << 1;
-    static constexpr size_t TypeMask = (std::numeric_limits<size_t>::max)() & ~SizeMask;
+    static constexpr size_t TypeMask = ~(SizeMask << SizeShift);
     static_assert(TypeMask == (Latin1Flag|TwoByteCodePointFlag));
-    // HI HI LO LO ...
-    //  0  0 SZ SZ  Utf8
-    //  0  1 SZ SZ  Latin1
-    //  1  0 SZ SZ  Utf16
-    //  1  1 SZ SZ  Unused
+
+    // Tag bits
+    //  0  0   Utf8
+    //  0  1   Latin1
+    //  1  0   Utf16
+    //  1  1   Unused
     //  ^  ^ latin1
     //  | sizeof code-point == 2
     enum Tag : size_t {
@@ -130,7 +135,8 @@ private:
         Q_ASSERT(sz >= 0);
         Q_ASSERT(sz <= qsizetype(SizeMask));
         Q_ASSERT(str || !sz);
-        return std::size_t(sz) | uint(sizeof(Char) == sizeof(char16_t)) * Tag::Utf16
+        return (std::size_t(sz) << SizeShift)
+                | uint(sizeof(Char) == sizeof(char16_t)) * Tag::Utf16
                 | uint(isAsciiOnlyCharsAtCompileTime(str, sz)) * Tag::Latin1;
     }
 
@@ -247,7 +253,8 @@ public:
 
     [[nodiscard]] inline QString toString() const; // defined in qstring.h
 
-    [[nodiscard]] constexpr qsizetype size() const noexcept { return qsizetype(m_size & SizeMask); }
+    [[nodiscard]] constexpr qsizetype size() const noexcept
+    { return qsizetype((m_size >> SizeShift) & SizeMask); }
     [[nodiscard]] constexpr const void *data() const noexcept { return m_data; }
 
     [[nodiscard]] Q_CORE_EXPORT static int compare(QAnyStringView lhs, QAnyStringView rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
