@@ -1012,5 +1012,5 @@ qt_configure_add_report_entry(
 qt_configure_add_report_entry(
     TYPE WARNING
     MESSAGE "Basic cpp/winrt support missing. Some features might not be available."
-    CONDITION NOT QT_FEATURE_cpp_winrt
+    CONDITION WIN32 AND NOT QT_FEATURE_cpp_winrt
 )
