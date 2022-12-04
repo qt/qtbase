@@ -137,15 +137,20 @@ private:
     { return str; }
 
 public:
-    constexpr QStringView() noexcept
-        : m_size(0), m_data(nullptr) {}
+    constexpr QStringView() noexcept {}
     constexpr QStringView(std::nullptr_t) noexcept
         : QStringView() {}
 
     template <typename Char, if_compatible_char<Char> = true>
     constexpr QStringView(const Char *str, qsizetype len)
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
+        : m_data(castHelper(str)),
+          m_size((Q_ASSERT(len >= 0), Q_ASSERT(str || !len), len))
+#else
         : m_size((Q_ASSERT(len >= 0), Q_ASSERT(str || !len), len)),
-          m_data(castHelper(str)) {}
+          m_data(castHelper(str))
+#endif
+    {}
 
     template <typename Char, if_compatible_char<Char> = true>
     constexpr QStringView(const Char *f, const Char *l)
@@ -426,8 +431,13 @@ public:
     [[nodiscard]] constexpr QChar first() const { return front(); }
     [[nodiscard]] constexpr QChar last()  const { return back(); }
 private:
-    qsizetype m_size;
-    const storage_type *m_data;
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
+    const storage_type *m_data = nullptr;
+    qsizetype m_size = 0;
+#else
+    qsizetype m_size = 0;
+    const storage_type *m_data = nullptr;
+#endif
 
     constexpr int compare_single_char_helper(int diff) const noexcept
     { return diff ? diff : size() > 1 ? 1 : 0; }

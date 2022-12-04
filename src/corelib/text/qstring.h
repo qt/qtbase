@@ -60,15 +60,17 @@ class QLatin1String
 {
 public:
 #ifdef Q_L1S_VIEW_IS_PRIMARY
-    constexpr inline QLatin1StringView() noexcept : m_size(0), m_data(nullptr) {}
+    constexpr inline QLatin1StringView() noexcept {}
     constexpr QLatin1StringView(std::nullptr_t) noexcept : QLatin1StringView() {}
     constexpr inline explicit QLatin1StringView(const char *s) noexcept
-        : m_size(s ? qsizetype(QtPrivate::lengthHelperPointer(s)) : 0), m_data(s) {}
+        : QLatin1StringView(s, s ? qsizetype(QtPrivate::lengthHelperPointer(s)) : 0) {}
     constexpr QLatin1StringView(const char *f, const char *l)
         : QLatin1StringView(f, qsizetype(l - f)) {}
-    constexpr inline QLatin1StringView(const char *s, qsizetype sz) noexcept : m_size(sz), m_data(s) {}
-    explicit QLatin1StringView(const QByteArray &s) noexcept : m_size(s.size()), m_data(s.constData()) {}
-    constexpr explicit QLatin1StringView(QByteArrayView s) noexcept : m_size(s.size()), m_data(s.data()) {}
+    constexpr inline QLatin1StringView(const char *s, qsizetype sz) noexcept : m_data(s), m_size(sz) {}
+    explicit QLatin1StringView(const QByteArray &s) noexcept
+        : QLatin1StringView(s.constData(), s.size()) {}
+    constexpr explicit QLatin1StringView(QByteArrayView s) noexcept
+        : QLatin1StringView(s.constData(), s.size()) {}
 #else
     constexpr inline QLatin1String() noexcept : m_size(0), m_data(nullptr) {}
     Q_WEAK_OVERLOAD
@@ -362,8 +364,13 @@ private:
     Q_CORE_EXPORT static int compare_helper(const QChar *data1, qsizetype length1,
                                             QLatin1StringView s2,
                                             Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
+    const char *m_data = nullptr;
+    qsizetype m_size = 0;
+#else
     qsizetype m_size;
     const char *m_data;
+#endif
 };
 #ifdef Q_L1S_VIEW_IS_PRIMARY
 Q_DECLARE_TYPEINFO(QLatin1StringView, Q_RELOCATABLE_TYPE);
