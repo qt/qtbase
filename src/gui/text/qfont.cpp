@@ -31,6 +31,8 @@
 #include <QtCore/QMutexLocker>
 #include <QtCore/QMutex>
 
+#include <array>
+
 // #define QFONTCACHE_DEBUG
 #ifdef QFONTCACHE_DEBUG
 #  define FC_DEBUG qDebug
@@ -140,7 +142,7 @@ Q_GUI_EXPORT int qt_defaultDpi()
 /* Helper function to convert between legacy Qt and OpenType font weights. */
 static int convertWeights(int weight, bool inverted)
 {
-    static const QVarLengthArray<QPair<int, int>, 9> legacyToOpenTypeMap = {
+    static constexpr std::array<int, 2> legacyToOpenTypeMap[] = {
         { 0, QFont::Thin },    { 12, QFont::ExtraLight }, { 25, QFont::Light },
         { 50, QFont::Normal }, { 57, QFont::Medium },     { 63, QFont::DemiBold },
         { 75, QFont::Bold },   { 81, QFont::ExtraBold },  { 87, QFont::Black },
@@ -151,8 +153,8 @@ static int convertWeights(int weight, bool inverted)
 
     // Go through and find the closest mapped value
     for (auto mapping : legacyToOpenTypeMap) {
-        const int weightOld = inverted ? mapping.second : mapping.first;
-        const int weightNew = inverted ? mapping.first : mapping.second;
+        const int weightOld = mapping[ inverted];
+        const int weightNew = mapping[!inverted];
         const int dist = qAbs(weightOld - weight);
         if (dist < closestDist) {
             result = weightNew;
