@@ -773,6 +773,8 @@ void QWindowsIntegration::setApplicationBadge(const QImage &image)
     // the other windows will take over in showing the badge.
     const auto topLevelWindows = QGuiApplication::topLevelWindows();
     for (auto *topLevelWindow : topLevelWindows) {
+        if (!topLevelWindow->handle())
+            continue;
         auto hwnd = reinterpret_cast<HWND>(topLevelWindow->winId());
         taskbarList->SetOverlayIcon(hwnd, hIcon, L"");
     }
