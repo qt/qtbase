@@ -119,7 +119,7 @@ bool QDockWidgetTitleButton::event(QEvent *event)
 {
     switch (event->type()) {
     case QEvent::StyleChange:
-    case QEvent::ScreenChangeInternal:
+    case QEvent::DevicePixelRatioChange:
         m_iconSize = -1;
         break;
     default:

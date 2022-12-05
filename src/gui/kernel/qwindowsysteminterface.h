@@ -191,6 +191,9 @@ public:
     static void handleWindowScreenChanged(QWindow *window, QScreen *newScreen);
 
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
+    static void handleWindowDevicePixelRatioChanged(QWindow *window);
+
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleSafeAreaMarginsChanged(QWindow *window);
 
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>

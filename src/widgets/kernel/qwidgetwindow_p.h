@@ -81,9 +81,10 @@ protected:
 
 private slots:
     void updateObjectName();
-    void handleScreenChange();
 
 private:
+    void handleScreenChange();
+    void handleDevicePixelRatioChange();
     void repaintWindow();
     bool updateSize();
     void updateMargins();

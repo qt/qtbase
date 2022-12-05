@@ -85,6 +85,7 @@ Q_TRACE_POINT(qtcore, QEvent_dtor, QEvent *event, QEvent::Type type);
     \value ContextMenu                      Context popup menu (QContextMenuEvent).
     \value CursorChange                     The widget's cursor has changed.
     \value DeferredDelete                   The object will be deleted after it has cleaned up (QDeferredDeleteEvent)
+    \value DevicePixelRatioChange           The devicePixelRatio has changed for this widget's or window's underlying backing store
     \value DragEnter                        The cursor enters a widget during a drag and drop operation (QDragEnterEvent).
     \value DragLeave                        The cursor leaves a widget during a drag and drop operation (QDragLeaveEvent).
     \value DragMove                         A drag and drop operation is in progress (QDragMoveEvent).

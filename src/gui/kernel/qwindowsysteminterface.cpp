@@ -259,6 +259,12 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleWindowScreenChanged, QWindow *window, QS
     handleWindowSystemEvent<QWindowSystemInterfacePrivate::WindowScreenChangedEvent, Delivery>(window, screen);
 }
 
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleWindowDevicePixelRatioChanged, QWindow *window)
+{
+    handleWindowSystemEvent<QWindowSystemInterfacePrivate::WindowDevicePixelRatioChangedEvent, Delivery>(window);
+}
+
+
 QT_DEFINE_QPA_EVENT_HANDLER(void, handleSafeAreaMarginsChanged, QWindow *window)
 {
     handleWindowSystemEvent<QWindowSystemInterfacePrivate::SafeAreaMarginsChangedEvent, Delivery>(window);

@@ -505,6 +505,8 @@ void QWindowPrivate::create(bool recursive, WId nativeHandle)
     // the platformWindow, if there was one, is now gone, so make this flag reflect reality now
     updateRequestPending = false;
 
+    const qreal currentDevicePixelRatio = q->devicePixelRatio();
+
     if (q->parent())
         q->parent()->create();
 
@@ -549,6 +551,11 @@ void QWindowPrivate::create(bool recursive, WId nativeHandle)
 
     QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceCreated);
     QGuiApplication::sendEvent(q, &e);
+
+    if (!qFuzzyCompare(currentDevicePixelRatio, q->devicePixelRatio())) {
+        QEvent dprChangeEvent(QEvent::DevicePixelRatioChange);
+        QGuiApplication::sendEvent(q, &dprChangeEvent);
+    }
 
     if (needsUpdate)
         q->requestUpdate();
