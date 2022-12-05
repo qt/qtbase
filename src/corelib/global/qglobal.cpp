@@ -100,7 +100,8 @@ using namespace Qt::StringLiterals;
     \row    \li \l <QtTranslation>          \li Qt translation helpers
     \row    \li \l <QtTypeTraits>           \li Qt type traits
     \row    \li \l <QtTypes>                \li Qt fundamental type declarations
-    \row    \li \l <QtVersionChecks>        \li Qt Version related checks
+    \row    \li \l <QtVersionChecks>        \li QT_VERSION_CHECK and related checks
+    \row    \li \l <QtVersion>              \li QT_VERSION_STR and qVersion()
     \endtable
 */
 

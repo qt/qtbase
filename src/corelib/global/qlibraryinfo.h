@@ -69,19 +69,6 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() noexcept;
 
 #endif // __cplusplus
 
-/*
- * If we're compiling C++ code:
- *  - and this is a non-namespace build, declare qVersion as extern "C"
- *  - and this is a namespace build, declare it as a regular function
- *    (we're already inside QT_BEGIN_NAMESPACE / QT_END_NAMESPACE)
- * If we're compiling C code, simply declare the function. If Qt was compiled
- * in a namespace, qVersion isn't callable anyway.
- */
-#if !defined(QT_NAMESPACE) && defined(__cplusplus) && !defined(Q_QDOC)
-extern "C"
-#endif
-Q_CORE_EXPORT Q_DECL_CONST_FUNCTION const char *qVersion(void) Q_DECL_NOEXCEPT;
-
 QT_END_NAMESPACE
 
 #endif // QLIBRARYINFO_H

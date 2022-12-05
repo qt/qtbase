@@ -95,6 +95,7 @@ qt_internal_add_module(Core
         global/qttranslation.h
         global/qttypetraits.h
         global/qtversionchecks.h
+        global/qtversion.h
         global/qtypeinfo.h
         global/qtypes.cpp global/qtypes.h
         ${core_version_tagging_files}

@@ -37,6 +37,7 @@
 #include <QtCore/qtypes.h>
 #include <QtCore/qtclasshelpermacros.h>
 
+#include <QtCore/qtversion.h>
 
 #ifndef __ASSEMBLER__
 #if defined(__cplusplus)
