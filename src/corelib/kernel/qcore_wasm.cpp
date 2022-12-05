@@ -6,7 +6,7 @@
 #include <emscripten/val.h>
 
 #if !defined(Q_OS_WASM)
-static_assert(false, "This is a wasm-only file.");
+#error This is a wasm-only file.
 #endif // !defined(Q_OS_WASM)
 
 QT_BEGIN_NAMESPACE
