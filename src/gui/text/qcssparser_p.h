@@ -19,7 +19,6 @@
 #include <QtCore/QStringList>
 #include <QtCore/QList>
 #include <QtCore/QVariant>
-#include <QtCore/QPair>
 #include <QtCore/QSize>
 #include <QtCore/QMultiHash>
 #include <QtGui/QFont>
