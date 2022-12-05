@@ -84,8 +84,12 @@ template <QtMsgType Which> struct QLoggingCategoryMacroHolder
             control = cat.isInfoEnabled();
         } else if constexpr (Which == QtWarningMsg) {
             control = cat.isWarningEnabled();
-        } else {
+        } else if constexpr (Which == QtCriticalMsg) {
             control = cat.isCriticalEnabled();
+        } else if constexpr (Which == QtFatalMsg) {
+            control = true;
+        } else {
+            static_assert(QtPrivate::value_dependent_false<Which>(), "Unknown Qt message type");
         }
     }
     const char *name() const { return category->categoryName(); }
