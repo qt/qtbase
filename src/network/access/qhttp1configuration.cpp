@@ -3,9 +3,15 @@
 
 #include "qhttp1configuration.h"
 
-#include "qdebug.h"
+#include <QtCore/private/qnumeric_p.h>
+#include <QtCore/qhashfunctions.h>
 
 QT_BEGIN_NAMESPACE
+
+// QHttp1ConfigurationPrivate is unused until we need it:
+static_assert(sizeof(QHttp1Configuration) == sizeof(void*),
+              "You have added too many members to QHttp1Configuration::ShortData. "
+              "Decrease their size or switch to using a d-pointer.");
 
 /*!
     \class QHttp1Configuration
@@ -26,42 +32,45 @@ QT_BEGIN_NAMESPACE
     \sa QNetworkRequest::setHttp1Configuration(), QNetworkRequest::http1Configuration(), QNetworkAccessManager
 */
 
-class QHttp1ConfigurationPrivate : public QSharedData
-{
-public:
-    unsigned numberOfConnectionsPerHost = 6; // QHttpNetworkConnectionPrivate::defaultHttpChannelCount
-};
-
 /*!
     Default constructs a QHttp1Configuration object.
 */
 QHttp1Configuration::QHttp1Configuration()
-    : d(new QHttp1ConfigurationPrivate)
+    : data{6, {}} // QHttpNetworkConnectionPrivate::defaultHttpChannelCount
 {
 }
 
 /*!
     Copy-constructs this QHttp1Configuration.
 */
-QHttp1Configuration::QHttp1Configuration(const QHttp1Configuration &) = default;
+QHttp1Configuration::QHttp1Configuration(const QHttp1Configuration &)
+    = default;
 
 /*!
-    Move-constructs this QHttp1Configuration from \a other
+    \fn QHttp1Configuration::QHttp1Configuration(QHttp1Configuration &&other)
+
+    Move-constructs this QHttp1Configuration from \a other.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
 */
-QHttp1Configuration::QHttp1Configuration(QHttp1Configuration &&other) noexcept
-{
-    swap(other);
-}
 
 /*!
     Copy-assigns \a other to this QHttp1Configuration.
 */
-QHttp1Configuration &QHttp1Configuration::operator=(const QHttp1Configuration &) = default;
+QHttp1Configuration &QHttp1Configuration::operator=(const QHttp1Configuration &)
+    = default;
 
 /*!
+    \fn QHttp1Configuration &QHttp1Configuration::operator=(QHttp1Configuration &&)
+
     Move-assigns \a other to this QHttp1Configuration.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
 */
-QHttp1Configuration &QHttp1Configuration::operator=(QHttp1Configuration &&) noexcept = default;
 
 /*!
     Destructor.
@@ -70,35 +79,42 @@ QHttp1Configuration::~QHttp1Configuration()
     = default;
 
 /*!
-    Sets number of connections (default 6) to a http(s)://host:port
+    Sets the number of connections (minimum: 1; maximum: 255)
+    used per http(s) \e{host}:\e{port} combination to \a number.
+
+    If \a number is ≤ 0, does nothing. If \a number is > 255, 255 is used.
+
     \sa numberOfConnectionsPerHost
 */
-void QHttp1Configuration::setNumberOfConnectionsPerHost(unsigned number)
+void QHttp1Configuration::setNumberOfConnectionsPerHost(qsizetype number)
 {
-    if (number == 0) {
+    auto n = qt_saturate<std::uint8_t>(number);
+    if (n == 0)
         return;
-    }
-    d->numberOfConnectionsPerHost = number;
-}
-/*!
-    Returns the number of connections (default 6) to a http(s)://host:port
-    \sa setNumberOfConnectionsPerHost
-*/
-unsigned QHttp1Configuration::numberOfConnectionsPerHost() const
-{
-    return d->numberOfConnectionsPerHost;
+    data.numConnectionsPerHost = n;
 }
 
 /*!
-    Swaps this configuration with the \a other configuration.
+    Returns the number of connections used per http(s) \c{host}:\e{port}
+    combination. The default is six (6).
+
+    \sa setNumberOfConnectionsPerHost
 */
-void QHttp1Configuration::swap(QHttp1Configuration &other) noexcept
+qsizetype QHttp1Configuration::numberOfConnectionsPerHost() const
 {
-    d.swap(other.d);
+    return data.numConnectionsPerHost;
 }
+
+/*!
+    \fn void QHttp1Configuration::swap(QHttp1Configuration &other)
+
+    Swaps this HTTP/1 configuration with \a other. This operation is very fast
+    and never fails.
+*/
 
 /*!
     \fn bool QHttp1Configuration::operator==(const QHttp1Configuration &lhs, const QHttp1Configuration &rhs) noexcept
+    \since 6.5
 
     Returns \c true if \a lhs and \a rhs represent the same set of HTTP/1
     parameters.
@@ -106,20 +122,33 @@ void QHttp1Configuration::swap(QHttp1Configuration &other) noexcept
 
 /*!
     \fn bool QHttp1Configuration::operator!=(const QHttp1Configuration &lhs, const QHttp1Configuration &rhs) noexcept
+    \since 6.5
 
     Returns \c true if \a lhs and \a rhs do not represent the same set of
     HTTP/1 parameters.
 */
 
 /*!
+    \fn size_t QHttp1Configuration::qHash(const QHttp1Configuration &key, size_t seed)
+    \since 6.5
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*!
     \internal
 */
-bool QHttp1Configuration::isEqual(const QHttp1Configuration &other) const noexcept
+bool QHttp1Configuration::equals(const QHttp1Configuration &other) const noexcept
 {
-    if (d == other.d)
-        return true;
+    return data.numConnectionsPerHost == other.data.numConnectionsPerHost;
+}
 
-    return d->numberOfConnectionsPerHost == other.d->numberOfConnectionsPerHost;
+/*!
+    \internal
+*/
+size_t QHttp1Configuration::hash(size_t seed) const noexcept
+{
+    return qHash(data.numConnectionsPerHost, seed);
 }
 
 QT_END_NAMESPACE
