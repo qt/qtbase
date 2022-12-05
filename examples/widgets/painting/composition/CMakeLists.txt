@@ -15,10 +15,6 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 qt_standard_project_setup()
 
 qt_add_executable(composition
-    # remove files from ../shared
-    #../shared/arthurstyle.cpp ../shared/arthurstyle.h
-    #../shared/arthurwidgets.cpp ../shared/arthurwidgets.h
-    #../shared/hoverpoints.cpp ../shared/hoverpoints.h
     composition.cpp composition.h
     main.cpp
 )
@@ -26,10 +22,6 @@ qt_add_executable(composition
 set_target_properties(composition PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
-)
-
-target_include_directories(composition PRIVATE
-    ../shared
 )
 
 if(NOT TARGET painting_shared::painting_shared)
@@ -104,17 +96,6 @@ qt_add_resources(composition "composition"
     FILES
         ${composition_resource_files}
 )
-
-# remove files from ../shared
-#if(QT_FEATURE_opengl)
-    #target_sources(affine PRIVATE
-        #../shared/fbopaintdevice.cpp ../shared/fbopaintdevice.h
-    #)
-
-    #target_link_libraries(affine PRIVATE
-        #Qt6::OpenGL
-    #)
-#endif()
 
 install(TARGETS composition
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

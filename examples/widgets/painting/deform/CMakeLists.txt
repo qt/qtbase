@@ -15,10 +15,6 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 qt_standard_project_setup()
 
 qt_add_executable(deform
-    # remove files from ../shared
-    #../shared/arthurstyle.cpp ../shared/arthurstyle.h
-    #../shared/arthurwidgets.cpp ../shared/arthurwidgets.h
-    #../shared/hoverpoints.cpp ../shared/hoverpoints.h
     main.cpp
     pathdeform.cpp pathdeform.h
 )
@@ -26,10 +22,6 @@ qt_add_executable(deform
 set_target_properties(deform PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
-)
-
-target_include_directories(deform PRIVATE
-    ../shared
 )
 
 if(NOT TARGET painting_shared::painting_shared)
@@ -102,17 +94,6 @@ qt_add_resources(deform "deform"
     FILES
         ${deform_resource_files}
 )
-
-# remove files from ../shared
-#if(QT_FEATURE_opengl)
-    #target_sources(affine PRIVATE
-        #../shared/fbopaintdevice.cpp ../shared/fbopaintdevice.h
-    #)
-
-    #target_link_libraries(affine PRIVATE
-        #Qt6::OpenGL
-    #)
-#endif()
 
 install(TARGETS deform
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

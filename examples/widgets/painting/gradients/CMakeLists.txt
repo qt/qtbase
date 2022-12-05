@@ -15,10 +15,6 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 qt_standard_project_setup()
 
 qt_add_executable(gradients
-    # remove files from ../shared
-    #../shared/arthurstyle.cpp ../shared/arthurstyle.h
-    #../shared/arthurwidgets.cpp ../shared/arthurwidgets.h
-    #../shared/hoverpoints.cpp ../shared/hoverpoints.h
     gradients.cpp gradients.h
     main.cpp
 )
@@ -26,10 +22,6 @@ qt_add_executable(gradients
 set_target_properties(gradients PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
-)
-
-target_include_directories(gradients PRIVATE
-    ../shared
 )
 
 if(NOT TARGET painting_shared::painting_shared)
@@ -102,17 +94,6 @@ qt_add_resources(gradients "gradients"
     FILES
         ${gradients_resource_files}
 )
-
-# remove files from ../shared
-#if(QT_FEATURE_opengl)
-    #target_sources(affine PRIVATE
-        #../shared/fbopaintdevice.cpp ../shared/fbopaintdevice.h
-    #)
-
-    #target_link_libraries(affine PRIVATE
-        #Qt6::OpenGL
-    #)
-#endif()
 
 install(TARGETS gradients
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
