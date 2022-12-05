@@ -45,6 +45,13 @@ noexcept(std::conjunction_v<std::is_nothrow_move_constructible<T>,
     return old;
 }
 
+namespace QtPrivate {
+// helper to be used to trigger a "dependent static_assert(false)"
+// (for instance, in a final `else` branch of a `if constexpr`.)
+template <typename T> struct type_dependent_false : std::false_type {};
+template <auto T> struct value_dependent_false : std::false_type {};
+}
+
 QT_END_NAMESPACE
 
 #endif // QTTYPETRAITS_H
