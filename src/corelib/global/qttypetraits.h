@@ -34,6 +34,8 @@ void qAsConst(const T &&) = delete;
 
 #endif // QT_NO_AS_CONST
 
+#ifndef QT_NO_QEXCHANGE
+
 // like std::exchange
 template <typename T, typename U = T>
 constexpr T qExchange(T &t, U &&newValue)
@@ -44,6 +46,8 @@ noexcept(std::conjunction_v<std::is_nothrow_move_constructible<T>,
     t = std::forward<U>(newValue);
     return old;
 }
+
+#endif // QT_NO_QEXCHANGE
 
 namespace QtPrivate {
 // helper to be used to trigger a "dependent static_assert(false)"
