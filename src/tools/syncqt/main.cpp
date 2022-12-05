@@ -972,7 +972,7 @@ public:
 
         // This regex checks if header contains 'We mean it' disclaimer. All private headers should
         // contain them.
-        static const std::regex WeMeantItRegex("\\s*// We mean it\\.");
+        static const std::string_view WeMeantItString("We mean it.");
 
         // The regex's check if the content of header files is wrapped with the Qt namespace macros.
         static const std::regex BeginNamespaceRegex("^QT_BEGIN_NAMESPACE(_[A-Z_]+)?$");
@@ -1050,7 +1050,7 @@ public:
                                 continue;
                             } else if (line[i + 1] == '/') { // Single line comment
                                 if (!(skipChecks & WeMeantItChecks)
-                                    && std::regex_match(line, WeMeantItRegex)) {
+                                    && line.find(WeMeantItString) != std::string::npos) {
                                     hasWeMeantIt = true;
                                     continue;
                                 }
@@ -1074,7 +1074,8 @@ public:
                 }
 
                 if (isMultiLineComment) {
-                    if (!(skipChecks & WeMeantItChecks) && std::regex_match(line, WeMeantItRegex)) {
+                    if (!(skipChecks & WeMeantItChecks) &&
+                        line.find(WeMeantItString) != std::string::npos) {
                         hasWeMeantIt = true;
                         continue;
                     }
