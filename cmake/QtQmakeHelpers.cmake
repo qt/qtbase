@@ -160,6 +160,10 @@ HostSpec=${QT_QMAKE_HOST_MKSPEC}
 
     set(host_qt_bindir "${host_prefix}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}")
 
+    if(QT_CREATE_VERSIONED_HARD_LINK)
+        set(tool_version "${PROJECT_VERSION_MAJOR}")
+    endif()
+
     foreach(host_type ${hosts})
         foreach(tool_name qmake qtpaths)
             set(wrapper_extension)
@@ -177,6 +181,14 @@ HostSpec=${QT_QMAKE_HOST_MKSPEC}
             configure_file("${wrapper_in_file}" "${wrapper}" @ONLY NEWLINE_STYLE ${newline_style})
             qt_copy_or_install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/${wrapper}"
                 DESTINATION "${INSTALL_BINDIR}")
+
+            # Configuring a new wrapper file, this type setting the tool_version
+            if(QT_CREATE_VERSIONED_HARD_LINK)
+                set(versioned_wrapper "preliminary/${wrapper_prefix}${tool_name}${tool_version}${wrapper_extension}")
+                configure_file("${wrapper_in_file}" "${versioned_wrapper}" @ONLY NEWLINE_STYLE ${newline_style})
+                qt_copy_or_install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/${versioned_wrapper}"
+                    DESTINATION "${INSTALL_BINDIR}")
+            endif()
         endforeach()
     endforeach()
 endfunction()

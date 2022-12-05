@@ -4,4 +4,4 @@
 script_dir_path=`dirname $0`
 script_dir_path=`(cd "$script_dir_path"; /bin/pwd)`
 
-@host_qt_bindir@/@tool_name@ -qtconf "$script_dir_path/target_qt.conf" $*
+@host_qt_bindir@/@tool_name@@tool_version@ -qtconf "$script_dir_path/target_qt.conf" $*

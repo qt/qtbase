@@ -194,7 +194,8 @@ function(qt_internal_add_tool target_name)
         endforeach()
 
         if(arg_INSTALL_VERSIONED_LINK)
-            qt_internal_install_versioned_link("${install_dir}" "${target_name}")
+            qt_internal_install_versioned_link(WORKING_DIRECTORY "${install_dir}"
+            TARGETS "${target_name}")
         endif()
 
         qt_apply_rpaths(TARGET "${target_name}" INSTALL_PATH "${install_dir}" RELATIVE_RPATH)

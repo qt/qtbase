@@ -95,12 +95,27 @@ function(qt_copy_or_install)
     qt_non_prefix_copy(COPY ${argv_copy} ${copy_arguments})
 endfunction()
 
-# Create a versioned hard-link for the given target.
+# Create a versioned hard-link for the given target, or a program
 # E.g. "bin/qmake6" -> "bin/qmake".
-# If no hard link can be created, make a copy instead.
+#
+# One-value Arguments:
+#     WORKING_DIRECTORY
+#         The directory where the original file is already placed.
+#     SUFFIX
+#         The program file extension, only used for PROGRAMS
+# Multi-value Arguments:
+#     TARGETS
+#         List of targets for which the versioned link will be created.
+#         If targets are given, BASE_NAME and SUFFIX will be derived from it.
+#     PROGRAMS
+#         List of program file names for which the versioned link will be created.
+#
+#
+# NOTE: This assumes that TARGETS, or PROGRAMS are already installed in the
+#       WORKING_DIRECTORY.
 #
 # In a multi-config build, create the link for the main config only.
-function(qt_internal_install_versioned_link install_dir target)
+function(qt_internal_install_versioned_link)
     if(NOT QT_WILL_INSTALL)
         return()
     endif()
@@ -109,13 +124,41 @@ function(qt_internal_install_versioned_link install_dir target)
         return()
     endif()
 
+    set(options)
+    set(oneValueArgs "WORKING_DIRECTORY;SUFFIX")
+    set(multiValueArgs "TARGETS;PROGRAMS")
+    cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(arg_TARGETS)
+        foreach(target "${arg_TARGETS}")
+            _qt_internal_create_versioned_link_or_copy("${arg_WORKING_DIRECTORY}"
+                $<TARGET_FILE_BASE_NAME:${target}>
+                $<TARGET_FILE_SUFFIX:${target}>)
+        endforeach()
+    endif()
+
+    if(arg_PROGRAMS)
+        foreach(program "${arg_PROGRAMS}")
+            _qt_internal_create_versioned_link_or_copy("${arg_WORKING_DIRECTORY}"
+                "${program}"
+                "${arg_SUFFIX}")
+        endforeach()
+    endif()
+endfunction()
+
+# Generate a script for creating a hard-link between the base_name, and
+# base_name${PROJECT_VERSION_MAJOR}.
+#
+# If no hard link can be created, make a copy instead.
+function(_qt_internal_create_versioned_link_or_copy install_dir base_name suffix)
     qt_path_join(install_base_file_path "$\{qt_full_install_prefix}"
-        "${install_dir}" "$<TARGET_FILE_BASE_NAME:${target}>")
-    set(original "${install_base_file_path}$<TARGET_FILE_SUFFIX:${target}>")
-    set(linkname "${install_base_file_path}${PROJECT_VERSION_MAJOR}$<TARGET_FILE_SUFFIX:${target}>")
+        "${install_dir}" "${base_name}")
+    set(original "${install_base_file_path}${suffix}")
+    set(linkname "${install_base_file_path}${PROJECT_VERSION_MAJOR}${suffix}")
     set(code "set(qt_full_install_prefix \"$\{CMAKE_INSTALL_PREFIX}\")"
         "  if(NOT \"$ENV\{DESTDIR}\" STREQUAL \"\")"
         )
+
     if(CMAKE_HOST_WIN32)
         list(APPEND code
             "    if(qt_full_install_prefix MATCHES \"^[a-zA-Z]:\")"

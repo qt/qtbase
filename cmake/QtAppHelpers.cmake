@@ -83,7 +83,8 @@ function(qt_internal_add_app target)
 
     # Install versioned link if requested.
     if(NOT arg_NO_INSTALL AND arg_INSTALL_VERSIONED_LINK)
-        qt_internal_install_versioned_link("${arg_INSTALL_DIR}" ${target})
+        qt_internal_install_versioned_link(WORKING_DIRECTORY "${arg_INSTALL_DIR}"
+        TARGETS ${target})
     endif()
 
     qt_add_list_file_finalizer(qt_internal_finalize_app ${target})

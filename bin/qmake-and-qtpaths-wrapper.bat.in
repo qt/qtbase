@@ -1,2 +1,2 @@
 @echo off
-@host_qt_bindir@\@tool_name@.exe -qtconf "%~dp0\target_qt.conf" %*
+@host_qt_bindir@\@tool_name@@tool_version@.exe -qtconf "%~dp0\target_qt.conf" %*
