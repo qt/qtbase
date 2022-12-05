@@ -11,15 +11,15 @@ target_sources(painting_shared PRIVATE
     ${moc_files}
 )
 
-target_link_libraries(painting_shared PRIVATE Qt6::Widgets)
-target_include_directories(painting_shared PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(painting_shared PUBLIC Qt6::Widgets)
+target_include_directories(painting_shared PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 ## Scopes:
 #####################################################################
 
 if (TARGET Qt6::OpenGL OR QT_FEATURE_opengles2)
     target_compile_definitions(painting_shared PRIVATE QT_OPENGL_SUPPORT)
-    target_link_libraries(painting_shared PRIVATE
+    target_link_libraries(painting_shared PUBLIC
         Qt6::OpenGL
     )
     qt6_wrap_cpp(moc_files_gl fbopaintdevice.h) # no automoc for OBJECT libs
