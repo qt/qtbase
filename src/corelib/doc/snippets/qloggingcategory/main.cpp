@@ -131,6 +131,20 @@ oldCategoryFilter = QLoggingCategory::installFilter(myCategoryFilter);
 //![15]
     }
 
+    {
+//![16]
+    QLoggingCategory category("driver.usb");
+    qCFatal(category) << "a fatal message. Program will be terminated!";
+//![16]
+    }
+
+    {
+//![17]
+    QLoggingCategory category("driver.usb");
+    qCFatal(category, "a fatal message. Program will be terminated!");
+//![17]
+    }
+
     return 0;
 }
 
