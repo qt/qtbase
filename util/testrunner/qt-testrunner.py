@@ -251,12 +251,16 @@ def run_full_test(test_basename, testargs: List[str], output_dir: str,
     # and text to stdout.
     if not no_extra_args:
         filename_base = unique_filename(test_basename)
-        xml_output_file = os.path.join(output_dir, f"{filename_base}.xml")
+        pathname_stem = os.path.join(output_dir, filename_base)
+        xml_output_file = f"{pathname_stem}.xml"
+
         results_files.append(xml_output_file)
         output_testargs.extend([
-            "-o", xml_output_file + ",xml",
-            "-o", os.path.join(output_dir, f"{filename_base}.junit.xml") + ",junitxml",
-            "-o", "-,txt"])
+            "-o", f"{xml_output_file},xml",
+            "-o", f"{pathname_stem}.junit.xml,junitxml",
+            "-o", f"{pathname_stem}.txt,txt",
+            "-o", "-,txt"
+            ])
 
     proc = run_test(testargs + specific_extra_args + output_testargs,
                     timeout=timeout)
@@ -284,9 +288,12 @@ def rerun_failed_testcase(test_basename, testargs: List[str], output_dir: str,
         # For the individual testcase re-runs, we log to file since Coin needs
         # to parse it. That is the reason we use unique filename every time.
         filename_base = unique_filename(test_basename)
+        pathname_stem = os.path.join(output_dir, filename_base)
+
         output_args = [
-            "-o", os.path.join(output_dir, f"{filename_base}.xml") + ",xml",
-            "-o", os.path.join(output_dir, f"{filename_base}.junit.xml") + ",junitxml",
+            "-o", f"{pathname_stem}.xml,xml",
+            "-o", f"{pathname_stem}.junit.xml,junitxml",
+            "-o", f"{pathname_stem}.txt,txt",
             "-o", "-,txt"]
         L.info("Re-running testcase: %s", failed_arg)
         if i < max_repeats - 1:
