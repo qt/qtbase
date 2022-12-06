@@ -67,6 +67,8 @@ public:
 
     std::string canvasSelector() const;
     emscripten::val context2d() { return m_context2d; }
+    emscripten::val a11yContainer() { return m_a11yContainer; }
+
 
 private:
     friend class QWasmScreen;
@@ -95,6 +97,7 @@ private:
     emscripten::val m_titleBar;
     emscripten::val m_label;
     emscripten::val m_canvasContainer;
+    emscripten::val m_a11yContainer;
     emscripten::val m_canvas;
     emscripten::val m_context2d = emscripten::val::undefined();
 
