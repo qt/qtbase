@@ -362,10 +362,6 @@ bool QOpenGLContext::create()
 
 QOpenGLContextPrivate::~QOpenGLContextPrivate()
 {
-    //do not delete the QOpenGLContext handle here as it is deleted in
-    //QWidgetPrivate::deleteTLSysExtra()
-
-    delete versionFunctions;
 }
 
 void QOpenGLContextPrivate::adopt(QPlatformOpenGLContext *context)
@@ -415,6 +411,9 @@ void QOpenGLContext::destroy()
         d->textureFunctionsDestroyCallback = nullptr;
     }
     d->textureFunctions = nullptr;
+
+    delete d->versionFunctions;
+    d->versionFunctions = nullptr;
 
     if (d->vaoHelperDestroyCallback) {
         Q_ASSERT(d->vaoHelper);
