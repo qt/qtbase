@@ -20,7 +20,7 @@ trap removeServer EXIT
 
 script_dir=`dirname ${BASH_SOURCE[0]}`
 cd "$script_dir/../../../../"
-python3 -m http.server 8001 &
+python3 util/wasm/qtwasmserver/qtwasmserver.py -p 8001 &
 cleanupPid=$!
 cd -
 
