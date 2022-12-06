@@ -881,7 +881,6 @@ macro(qt_examples_build_begin)
     # annotate where each example is installed to, to be able to derive a relative rpath, and it
     # seems there's no way to query such information from CMake itself.
     set(CMAKE_INSTALL_RPATH "${_default_install_rpath}")
-    set(QT_DISABLE_QT_ADD_PLUGIN_COMPATIBILITY TRUE)
 
     install(CODE "
 # Backup CMAKE_INSTALL_PREFIX because we're going to change it in each example subdirectory

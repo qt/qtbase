@@ -1999,10 +1999,6 @@ macro(_qt_internal_get_add_plugin_keywords option_args single_args multi_args)
         __QT_INTERNAL_NO_PROPAGATE_PLUGIN_INITIALIZER
     )
     set(${single_args}
-        # TODO: For backward compatibility / transitional use only, remove once all repos no longer
-        # use it
-        TYPE
-
         PLUGIN_TYPE   # Internal use only, may be changed or removed
         CLASS_NAME
         OUTPUT_NAME   # Internal use only, may be changed or removed
@@ -2016,20 +2012,6 @@ function(qt6_add_plugin target)
     list(APPEND opt_args MANUAL_FINALIZATION)
 
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
-
-    # Handle the inconsistent TYPE/PLUGIN_TYPE keyword naming between commands
-    if(arg_TYPE)
-        if(arg_PLUGIN_TYPE AND NOT arg_TYPE STREQUAL arg_PLUGIN_TYPE)
-            message(FATAL_ERROR
-                "Both TYPE and PLUGIN_TYPE were given and were different. "
-                "Only one of the two should be used."
-            )
-        endif()
-        message(AUTHOR_WARNING
-            "The TYPE keyword is deprecated and will be removed soon. Please use PLUGIN_TYPE instead.")
-        set(arg_PLUGIN_TYPE "${arg_TYPE}")
-        unset(arg_TYPE)
-    endif()
 
     if(arg_STATIC AND arg_SHARED)
         message(FATAL_ERROR
