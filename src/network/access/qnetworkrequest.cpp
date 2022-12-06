@@ -49,6 +49,7 @@
 #include "QtCore/qshareddata.h"
 #include "QtCore/qlocale.h"
 #include "QtCore/qdatetime.h"
+#include "QtCore/private/qtools_p.h"
 
 #include <ctype.h>
 #if QT_CONFIG(datestring)
@@ -1092,7 +1093,7 @@ static int parseHeaderName(const QByteArray &headerName)
     if (headerName.isEmpty())
         return -1;
 
-    switch (tolower(headerName.at(0))) {
+    switch (QtMiscUtils::toAsciiLower(headerName.front())) {
     case 'c':
         if (headerName.compare("content-type", Qt::CaseInsensitive) == 0)
             return QNetworkRequest::ContentTypeHeader;
