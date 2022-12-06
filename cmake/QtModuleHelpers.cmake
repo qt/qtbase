@@ -39,6 +39,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         EXTRA_CMAKE_INCLUDES
         NO_PCH_SOURCES
         EXTERNAL_HEADERS
+        POLICIES
         ${__default_private_args}
         ${__default_public_args}
         ${__default_private_module_args}
@@ -673,6 +674,21 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
     list(APPEND extra_cmake_includes ${arg_EXTRA_CMAKE_INCLUDES})
 
     set(extra_cmake_code "")
+
+    if(arg_POLICIES)
+        set(policies "")
+        foreach(policy IN LISTS arg_POLICIES)
+            list(APPEND policies "set(QT_KNOWN_POLICY_${policy} TRUE)")
+
+            # When building Qt, tests and examples might expect a policy to be known, but they
+            # won't be known depending on which scope or when a find_package(Module) with the
+            # respective policy is called. Check the global list of known policies to accommodate
+            # that.
+            set_property(GLOBAL APPEND PROPERTY _qt_global_known_policies "${policy}")
+        endforeach()
+        list(JOIN policies "\n" policies_str)
+        string(APPEND extra_cmake_code "${policies_str}\n")
+    endif()
 
     # Generate metatypes
     if(${arg_GENERATE_METATYPES})

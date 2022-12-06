@@ -2617,6 +2617,64 @@ unset(__qt_deploy_support_files)
 ")
 endfunction()
 
+# We basically mirror CMake's policy setup
+# A policy can be set to OLD, set to NEW or unset
+# unset is the default state
+#
+function(qt6_policy mode policy behaviorOrVariable)
+    # When building Qt, tests and examples might expect a policy to be known, but they won't be
+    # known depending on which scope or when a find_package(Module) with the respective policy
+    # is called. Check the global list of known policies to accommodate that.
+    if(QT_BUILDING_QT AND NOT DEFINED QT_KNOWN_POLICY_${policy})
+        get_property(global_known_policies GLOBAL PROPERTY _qt_global_known_policies)
+        if(policy IN_LIST global_known_policies)
+            set(QT_KNOWN_POLICY_${policy} TRUE)
+        endif()
+    endif()
+
+    if (NOT DEFINED QT_KNOWN_POLICY_${policy})
+        message(FATAL_ERROR
+            "${policy} is not a known Qt policy. Did you include the necessary Qt module?"
+        )
+    endif()
+    if (${mode} STREQUAL "SET")
+        set(behavior ${behaviorOrVariable})
+        if (${behavior} STREQUAL "NEW" OR ${behavior} STREQUAL "OLD")
+            set(__QT_INTERNAL_POLICY_${policy} ${behavior} PARENT_SCOPE)
+        else()
+            message(FATAL_ERROR "Qt policies must be either set to NEW or OLD, but got ${behavior}")
+        endif()
+    else(${mode} STREQUAL "GET")
+        set(variable "${behaviorOrVariable}")
+        set("${variable}" "${__QT_INTERNAL_POLICY_${policy}}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+# Internal helper function; can be used in any module before doing a policy check
+function(__qt_internal_setup_policy policy sinceversion policyexplanation)
+    if(DEFINED __QT_INTERNAL_POLICY_${policy})
+        if (__QT_INTERNAL_POLICY_${policy} STREQUAL "OLD")
+            # policy is explicitly disabled
+            message(DEPRECATION
+                "Qt policy ${policy} is set to OLD. "
+                "Support for the old behavior will be removed in a future major version of Qt."
+            )
+        endif()
+        #else: policy is already enabled, nothing to do
+    elseif (${sinceversion} VERSION_LESS_EQUAL __qt_policy_check_version)
+        # we cannot use the public function here as we want to set it in parent scope
+        set(__QT_INTERNAL_POLICY_${policy} "NEW" PARENT_SCOPE)
+    elseif(NOT "${QT_NO_SHOW_OLD_POLICY_WARNINGS}")
+        message(AUTHOR_WARNING
+            "Qt policy ${policy} is not set. "
+            "Use the qt6_set_policy command to set it and suppress this warning. "
+            "You can also silence all policy warnings by setting QT_NO_SHOW_OLD_POLICY_WARNINGS "
+            "to true.\n"
+            "${policyexplanation}"
+        )
+    endif()
+endfunction()
+
 # Note this needs to be a macro because it sets variables intended for the
 # calling scope.
 macro(qt6_standard_project_setup)
@@ -2624,6 +2682,46 @@ macro(qt6_standard_project_setup)
     # add_subdirectory() from changing the parent's preferred arrangement.
     # They can set this variable to true to effectively disable this function.
     if(NOT QT_NO_STANDARD_PROJECT_SETUP)
+
+        set(__qt_sps_args_option)
+        set(__qt_sps_args_single
+            MIN_VERSION
+            MAX_VERSION
+        )
+        set(__qt_sps_args_multi)
+        cmake_parse_arguments(__qt_sps_arg
+            "${__qt_sps_args_option}"
+            "${__qt_sps_args_single}"
+            "${__qt_sps_args_multi}"
+            ${ARGN}
+        )
+
+        if(__qt_sps_arg_UNPARSED_ARGUMENTS)
+            message(FATAL_ERROR "Unexpected arguments: ${arg_UNPARSED_ARGUMENTS}")
+        endif()
+
+        set(__qt_policy_check_version "6.0.0")
+        if(Qt6_VERSION_MAJOR)
+            set(__qt_current_version
+                "${Qt6_VERSION_MAJOR}.${Qt6_VERSION_MINOR}.${Qt6_VERSION_PATCH}")
+        elseif(QT_BUILDING_QT)
+            set(__qt_current_version
+                "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+        else()
+            message(FATAL_ERROR "Can not determine Qt version.")
+        endif()
+        if (__qt_sps_arg_MIN_VERSION)
+            if ("${__qt_current_version}" VERSION_LESS "${__qt_sps_arg_MIN_VERSION}")
+                message(FATAL_ERROR "Project required a Qt minimum version of ${__qt_sps_arg_MIN_VERSION}, but current version is only ${__qt_current_version}")
+            endif()
+            set(__qt_policy_check_version "${__qt_sps_arg_MIN_VERSION}")
+        endif()
+        if (__qt_sps_arg_MAX_VERSION)
+            if (${__qt_sps_arg_MAX_VERSION} VERSION_LESS ${__qt_sps_arg_MIN_VERSION})
+                message(FATAL_ERROR "MAX_VERSION must be larger or equal than MIN_VERSION")
+            endif()
+            set(__qt_policy_check_version "${__qt_sps_arg_MAX_VERSION}")
+        endif()
 
         # All changes below this point should not result in a change to an
         # existing value, except for CMAKE_INSTALL_RPATH which may append new
@@ -2688,6 +2786,9 @@ endmacro()
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     macro(qt_standard_project_setup)
         qt6_standard_project_setup(${ARGV})
+    endmacro()
+    macro(qt_policy)
+        qt6_policy(${ARGV})
     endmacro()
 endif()
 

@@ -131,3 +131,8 @@
     \externalpage https://cmake.org/cmake/help/latest/prop_tgt/FOLDER.html
     \title FOLDER
 */
+
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/command/cmake_policy.html
+    \title cmake_policy
+*/
