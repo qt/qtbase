@@ -222,10 +222,31 @@ void QIBusPlatformInputContext::cursorRectChanged()
     QWindow *inputWindow = qApp->focusWindow();
     if (!inputWindow)
         return;
-    r.moveTopLeft(inputWindow->mapToGlobal(r.topLeft()));
+    if (!inputWindow->screen())
+        return;
+
+    if (QGuiApplication::platformName().startsWith("wayland"_L1)) {
+        auto margins = inputWindow->frameMargins();
+        r.translate(margins.left(), margins.top());
+        qreal scale = inputWindow->devicePixelRatio();
+        QRect newRect = QRect(r.x() * scale, r.y() * scale, r.width() * scale, r.height() * scale);
+        if (debug)
+            qDebug() << "microFocus" << newRect;
+        d->context->SetCursorLocationRelative(newRect.x(), newRect.y(),
+                                              newRect.width(), newRect.height());
+        return;
+    }
+
+    // x11/xcb
+    auto screenGeometry = inputWindow->screen()->geometry();
+    auto point = inputWindow->mapToGlobal(r.topLeft());
+    qreal scale = inputWindow->devicePixelRatio();
+    auto native = (point - screenGeometry.topLeft()) * scale + screenGeometry.topLeft();
+    QRect newRect(native, r.size() * scale);
     if (debug)
-        qDebug() << "microFocus" << r;
-    d->context->SetCursorLocation(r.x(), r.y(), r.width(), r.height());
+        qDebug() << "microFocus" << newRect;
+    d->context->SetCursorLocation(newRect.x(), newRect.y(),
+                                  newRect.width(), newRect.height());
 }
 
 void QIBusPlatformInputContext::setFocusObject(QObject *object)
