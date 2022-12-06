@@ -19,7 +19,7 @@
     "Name": "DejaVu Fonts",
     "QDocModule": "qtgui",
     "QtUsage": "Used for WebAssembly platform.",
-    "Files": "DejaVuSans.ttf, DejaVuSansMono.ttf",
+    "Files": "DejaVuSans.ttf DejaVuSansMono.ttf",
     "Description": "The DejaVu fonts are a font family based on the Vera Fonts.",
 
     "Homepage": "https://dejavu-fonts.github.io/",
