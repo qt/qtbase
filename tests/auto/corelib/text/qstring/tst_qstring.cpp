@@ -637,7 +637,7 @@ QString verifyZeroTermination(const QString &str)
     if (!strDataPtr->isMutable())
         return str;
 
-    int strSize = str.size();
+    qsizetype strSize = str.size();
     QChar strTerminator = str.constData()[strSize];
     if (QChar('\0') != strTerminator)
         return QString::fromLatin1(
