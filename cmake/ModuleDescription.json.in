@@ -1,7 +1,7 @@
 {
     "module_name": "${target}",
     "version": "${PROJECT_VERSION}",
-    "built_with": {
+    "built_with": {${extra_build_information}
         "compiler_id": "${CMAKE_CXX_COMPILER_ID}",
         "compiler_target": "${CMAKE_CXX_COMPILER_TARGET}",
         "compiler_version": "${CMAKE_CXX_COMPILER_VERSION}",

@@ -1021,6 +1021,16 @@ function(qt_describe_module target)
     if(CMAKE_CROSSCOMPILING)
         set(cross_compilation "true")
     endif()
+    set(extra_build_information "")
+    if(ANDROID)
+        string(APPEND extra_build_information "
+        \"android\": {
+            \"api_version\": \"${QT_ANDROID_API_VERSION}\",
+            \"ndk\": {
+                \"version\": \"${ANDROID_NDK_REVISION}\"
+            }
+        },")
+    endif()
     configure_file("${descfile_in}" "${descfile_out}")
 
     qt_install(FILES "${descfile_out}" DESTINATION "${install_dir}")
