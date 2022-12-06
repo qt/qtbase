@@ -36,7 +36,6 @@ public:
 class Consumer : public QThread
 //! [3] //! [4]
 {
-    Q_OBJECT
 public:
     void run() override
     {
@@ -64,5 +63,3 @@ int main(int argc, char *argv[])
     return 0;
 }
 //! [6]
-
-#include "semaphores.moc"
