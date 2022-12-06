@@ -3308,6 +3308,12 @@ inline QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime,
 
     \section2 Offsets From UTC
 
+    Offsets from UTC are measured in seconds east of Greenwich. The moment
+    described by a particular date and time, such as noon on a particular day,
+    depends on the time representation used. Those with a higher offset from UTC
+    describe an earlier moment, and those with a lower offset a later moment, by
+    any given combination of date and time.
+
     There is no explicit size restriction on an offset from UTC, but there is an
     implicit limit imposed when using the toString() and fromString() methods
     which use a [+|-]hh:mm format, effectively limiting the range to +/- 99
