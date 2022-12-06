@@ -20,8 +20,7 @@
 #include <wrl/wrappers/corewrappers.h>
 
 #if QT_CONFIG(cpp_winrt)
-#include <winrt/base.h>
-#include <QtCore/private/qfactorycacheregistration_p.h>
+#include <QtCore/private/qt_winrtbase_p.h>
 #endif
 
 using namespace Microsoft::WRL;
