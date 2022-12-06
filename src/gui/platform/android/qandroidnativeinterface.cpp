@@ -7,6 +7,8 @@
 #include <QtGui/qoffscreensurface_platform.h>
 #include <QtGui/private/qguiapplication_p.h>
 
+#include <QtGui/qpa/qplatformscreen_p.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QNativeInterface::Private;
@@ -32,5 +34,7 @@ QOffscreenSurface  *QNativeInterface::QAndroidOffscreenSurface::fromNative(ANati
     return QGuiApplicationPrivate::platformIntegration()->call<
             &QAndroidOffScreenIntegration::createOffscreenSurface>(nativeSurface);
 }
+
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QAndroidScreen);
 
 QT_END_NAMESPACE

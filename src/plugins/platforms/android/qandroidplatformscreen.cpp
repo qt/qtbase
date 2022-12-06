@@ -82,6 +82,7 @@ QAndroidPlatformScreen::QAndroidPlatformScreen(const QJniObject &displayObject)
     m_size = QSize(displayObject.callMethod<jint>("getWidth"), displayObject.callMethod<jint>("getHeight"));
     m_name = displayObject.callObjectMethod<jstring>("getName").toString();
     m_refreshRate = displayObject.callMethod<jfloat>("getRefreshRate");
+    m_displayId = displayObject.callMethod<jint>("getDisplayId");
 
     if (QNativeInterface::QAndroidApplication::sdkVersion() >= 23) {
         const QJniObject currentMode = displayObject.callObjectMethod<QtJniTypes::DisplayMode>("getMode");
@@ -269,6 +270,11 @@ void QAndroidPlatformScreen::setSizeParameters(const QSize &physicalSize, const 
         QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(),
                                                            this->availableGeometry());
     }
+}
+
+int QAndroidPlatformScreen::displayId() const
+{
+    return m_displayId;
 }
 
 void QAndroidPlatformScreen::setRefreshRate(qreal refreshRate)

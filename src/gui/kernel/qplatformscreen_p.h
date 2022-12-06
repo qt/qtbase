@@ -92,6 +92,14 @@ struct Q_GUI_EXPORT QWaylandScreen
 };
 #endif
 
+#if defined(Q_OS_ANDROID) || defined(Q_QDOC)
+struct Q_GUI_EXPORT QAndroidScreen
+{
+    QT_DECLARE_NATIVE_INTERFACE(QAndroidScreen, 1, QScreen)
+    virtual int displayId() const = 0;
+};
+#endif
+
 } // QNativeInterface::Private
 
 QT_END_NAMESPACE

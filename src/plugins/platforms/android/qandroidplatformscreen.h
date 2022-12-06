@@ -13,6 +13,7 @@
 #include <QWaitCondition>
 #include <QtCore/QJniObject>
 #include <qpa/qplatformscreen.h>
+#include <qpa/qplatformscreen_p.h>
 
 #include <android/native_window.h>
 
@@ -20,7 +21,9 @@ QT_BEGIN_NAMESPACE
 
 class QAndroidPlatformWindow;
 
-class QAndroidPlatformScreen: public QObject, public QPlatformScreen, public AndroidSurfaceClient
+class QAndroidPlatformScreen: public QObject,
+                              public QPlatformScreen, public AndroidSurfaceClient,
+                              public QNativeInterface::Private::QAndroidScreen
 {
     Q_OBJECT
 public:
@@ -50,6 +53,7 @@ public:
     void scheduleUpdate();
     void topWindowChanged(QWindow *w);
     int rasterSurfaces();
+    int displayId() const override;
 
 public slots:
     void setDirty(const QRect &rect);
@@ -77,6 +81,7 @@ protected:
     QString m_name;
     QList<Mode> m_modes;
     int m_currentMode = 0;
+    int m_displayId = -1;
 
 private:
     QDpi logicalDpi() const override;
