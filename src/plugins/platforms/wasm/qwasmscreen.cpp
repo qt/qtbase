@@ -223,6 +223,11 @@ QWindow *QWasmScreen::topLevelAt(const QPoint &p) const
     return m_compositor->windowAt(p);
 }
 
+QPoint QWasmScreen::mapFromLocal(const QPoint &p) const
+{
+    return geometry().topLeft() + p;
+}
+
 QPoint QWasmScreen::clipPoint(const QPoint &p) const
 {
     return QPoint(

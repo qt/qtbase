@@ -133,7 +133,7 @@ public:
             m_element.call<void>("setPointerCapture", event.pointerId);
             m_capturedPointerId = event.pointerId;
 
-            m_resizer->startResize(m_edges, event.pointInViewport);
+            m_resizer->startResize(m_edges, event.pointInPage);
             return true;
         }
 
@@ -142,7 +142,7 @@ public:
             if (m_capturedPointerId != event.pointerId)
                 return false;
 
-            m_resizer->continueResize(event.pointInViewport);
+            m_resizer->continueResize(event.pointInPage);
             return true;
         }
 

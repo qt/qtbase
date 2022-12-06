@@ -369,10 +369,12 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
     if (event.pointerType != PointerType::Mouse)
         return false;
 
-    QWindow *const targetWindow = ([this, &event]() -> QWindow * {
+    const auto pointInScreen = screen()->mapFromLocal(event.localPoint);
+
+    QWindow *const targetWindow = ([this, pointInScreen]() -> QWindow * {
         auto *targetWindow = m_mouseCaptureWindow != nullptr ? m_mouseCaptureWindow.get()
                 : m_windowManipulation.operation() == WindowManipulation::Operation::None
-                ? screen()->compositor()->windowAt(event.point, 5)
+                ? screen()->compositor()->windowAt(pointInScreen, 5)
                 : nullptr;
 
         return targetWindow ? targetWindow : m_lastMouseTargetWindow.get();
@@ -381,13 +383,13 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
         return false;
     m_lastMouseTargetWindow = targetWindow;
 
-    const QPoint pointInTargetWindowCoords = targetWindow->mapFromGlobal(event.point);
-    const bool pointerIsWithinTargetWindowBounds = targetWindow->geometry().contains(event.point);
+    const QPoint pointInTargetWindowCoords = targetWindow->mapFromGlobal(pointInScreen);
+    const bool pointerIsWithinTargetWindowBounds = targetWindow->geometry().contains(pointInScreen);
 
     if (m_mouseInScreen && m_windowUnderMouse != targetWindow
         && pointerIsWithinTargetWindowBounds) {
         // delayed mouse enter
-        enterWindow(targetWindow, pointInTargetWindowCoords, event.point);
+        enterWindow(targetWindow, pointInTargetWindowCoords, pointInScreen);
         m_windowUnderMouse = targetWindow;
     }
 
@@ -439,11 +441,13 @@ bool QWasmCompositor::deliverEventToTarget(const PointerEvent &event, QWindow *e
 {
     Q_ASSERT(!m_mouseCaptureWindow || m_mouseCaptureWindow.get() == eventTarget);
 
+    const auto pointInScreen = screen()->mapFromLocal(event.localPoint);
+
     const QPoint targetPointClippedToScreen(
             std::max(screen()->geometry().left(),
-                     std::min(screen()->geometry().right(), event.point.x())),
+                     std::min(screen()->geometry().right(), pointInScreen.x())),
             std::max(screen()->geometry().top(),
-                     std::min(screen()->geometry().bottom(), event.point.y())));
+                     std::min(screen()->geometry().bottom(), pointInScreen.y())));
 
     bool deliveringToPreviouslyClickedWindow = false;
 
@@ -509,12 +513,13 @@ void QWasmCompositor::WindowManipulation::onPointerDown(
     if (isTargetWindowBlocked)
         return;
 
-    if (!asWasmWindow(windowAtPoint)->isPointOnTitle(event.point))
+    if (!asWasmWindow(windowAtPoint)->isPointOnTitle(event.pointInViewport))
         return;
 
     m_state.reset(new OperationState{ .pointerId = event.pointerId,
                                       .window = windowAtPoint,
-                                      .lastPointInScreenCoords = event.point });
+                                      .lastPointInScreenCoords =
+                                              m_screen->mapFromLocal(event.localPoint) });
 }
 
 void QWasmCompositor::WindowManipulation::onPointerMove(
@@ -525,7 +530,8 @@ void QWasmCompositor::WindowManipulation::onPointerMove(
 
     switch (operation()) {
         case Operation::Move: {
-            const QPoint targetPointClippedToScreen = m_screen->clipPoint(event.point);
+            const QPoint targetPointClippedToScreen =
+                    m_screen->clipPoint(m_screen->mapFromLocal(event.localPoint));
             const QPoint difference = targetPointClippedToScreen - m_state->lastPointInScreenCoords;
 
             m_state->lastPointInScreenCoords = targetPointClippedToScreen;

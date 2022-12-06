@@ -52,6 +52,7 @@ public:
     QWindow *topWindow() const;
     QWindow *topLevelAt(const QPoint &p) const override;
 
+    QPoint mapFromLocal(const QPoint &p) const;
     QPoint clipPoint(const QPoint &p) const;
 
     void invalidateSize();

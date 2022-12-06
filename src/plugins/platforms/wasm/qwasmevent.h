@@ -114,7 +114,8 @@ struct Q_CORE_EXPORT Event
 
 struct Q_CORE_EXPORT MouseEvent : public Event
 {
-    QPoint point;
+    QPoint localPoint;
+    QPoint pointInPage;
     QPoint pointInViewport;
     Qt::MouseButton mouseButton;
     Qt::MouseButtons mouseButtons;
