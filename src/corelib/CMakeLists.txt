@@ -1031,6 +1031,7 @@ qt_internal_extend_target(Core CONDITION WIN32
     SOURCES
         platform/windows/qfactorycacheregistration_p.h
         platform/windows/qfactorycacheregistration.cpp
+        platform/windows/qt_winrtbase_p.h
 )
 
 qt_internal_extend_target(Core CONDITION HAIKU AND NOT ANDROID
