@@ -717,6 +717,17 @@ public:
     inline QString &operator+=(QLatin1StringView s) { return append(s); }
     QString &operator+=(QUtf8StringView s) { return append(s); }
 
+#if defined(QT_RESTRICTED_CAST_FROM_ASCII)
+    template <qsizetype N>
+    QString &insert(qsizetype i, const char (&ch)[N]) { return insert(i, QUtf8StringView(ch)); }
+    template <qsizetype N>
+    QString &append(const char (&ch)[N]) { return append(QUtf8StringView(ch)); }
+    template <qsizetype N>
+    QString &prepend(const char (&ch)[N]) { return prepend(QUtf8StringView(ch)); }
+    template <qsizetype N>
+    QString &operator+=(const char (&ch)[N]) { return append(QUtf8StringView(ch)); }
+#endif
+
     QString &remove(qsizetype i, qsizetype len);
     QString &remove(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive);
     QString &remove(QLatin1StringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive);
