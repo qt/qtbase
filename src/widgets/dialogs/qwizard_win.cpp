@@ -589,7 +589,7 @@ void QVistaHelper::drawBlackRect(const QRect &rect, HDC hdc)
 
 int QVistaHelper::frameSizeDp()
 {
-    return GetSystemMetrics(SM_CYSIZEFRAME);
+    return GetSystemMetrics(SM_CXSIZEFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
 }
 
 int QVistaHelper::captionSizeDp()
