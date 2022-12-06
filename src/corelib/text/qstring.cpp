@@ -400,6 +400,7 @@ static constexpr bool UseSse4_1 = bool(qCompilerCpuFeatures & CpuFeatureSSE4_1);
 static constexpr bool UseAvx2 = UseSse4_1 &&
         (qCompilerCpuFeatures & CpuFeatureArchHaswell) == CpuFeatureArchHaswell;
 
+[[maybe_unused]]
 static Q_ALWAYS_INLINE __m128i mm_load8_zero_extend(const void *ptr)
 {
     const __m128i *dataptr = static_cast<const __m128i *>(ptr);
