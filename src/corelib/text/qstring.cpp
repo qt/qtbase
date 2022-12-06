@@ -2954,18 +2954,22 @@ QString &QString::insert(qsizetype i, QLatin1StringView str)
     if (i < 0 || !s || !(*s))
         return *this;
 
-    qsizetype len = str.size();
+    const qsizetype len = str.size();
     qsizetype difference = 0;
     if (Q_UNLIKELY(i > size()))
         difference = i - size();
+    const qsizetype oldSize = d.size;
     d.detachAndGrow(Data::GrowsAtEnd, difference + len, nullptr, nullptr);
     Q_CHECK_PTR(d.data());
-    d->copyAppend(difference, u' ');
-    d.size += len;
+    resize(d.size + difference + len);
 
-    ::memmove(d.data() + i + len, d.data() + i, (d.size - i - len) * sizeof(QChar));
-    qt_from_latin1(d.data() + i, s, size_t(len));
-    d.data()[d.size] = u'\0';
+    auto begin = d.data();
+    auto old_end = std::next(begin, oldSize);
+    std::fill_n(old_end, difference, u' ');
+    auto insert_start = std::next(begin, i);
+    if (difference == 0)
+        std::move_backward(insert_start, old_end, d.end());
+    qt_from_latin1(insert_start, s, len);
     return *this;
 }
 
@@ -3006,26 +3010,26 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
 
     const char16_t *s = reinterpret_cast<const char16_t *>(unicode);
 
-    // handle this specially, as QArrayDataOps::insert() doesn't handle out of
-    // bounds positions
-    if (i >= d->size) {
-        // In case when data points into the range or is == *this, we need to
-        // defer a call to free() so that it comes after we copied the data from
-        // the old memory:
-        DataPointer detached{};  // construction is free
-        d.detachAndGrow(Data::GrowsAtEnd, (i - d.size) + size, &s, &detached);
-        Q_CHECK_PTR(d.data());
-        d->copyAppend(i - d->size, u' ');
-        d->copyAppend(s, s + size);
-        d.data()[d.size] = u'\0';
-        return *this;
-    }
-
+    // In case when data points into "this"
     if (!d->needsDetach() && QtPrivate::q_points_into_range(s, d))
         return insert(i, QStringView{QVarLengthArray(s, s + size)});
 
-    d->insert(i, s, size);
-    d.data()[d.size] = u'\0';
+    const qsizetype difference = i > d.size ? i - d.size : 0;
+    const qsizetype oldSize = d.size;
+    const qsizetype newSize = d.size + difference + size;
+    const auto side = i == 0 ? Data::GrowsAtBeginning : Data::GrowsAtEnd;
+    d.detachAndGrow(side, difference + size, nullptr, nullptr);
+    Q_CHECK_PTR(d.data());
+    resize(newSize);
+
+    auto begin = d.begin();
+    auto old_end = std::next(begin, oldSize);
+    std::fill_n(old_end, difference, u' ');
+    auto insert_start = std::next(begin, i);
+    if (difference == 0)
+        std::move_backward(insert_start, old_end, d.end());
+    std::copy_n(s, size, insert_start);
+
     return *this;
 }
 
