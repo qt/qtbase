@@ -11,7 +11,7 @@
 #include <qclipboard.h>
 
 #include <QtCore/qloggingcategory.h>
-#include <QtCore/qlibraryinfo.h>
+#include <QtCore/qtversion.h>
 
 #if QT_CONFIG(accessibility)
 #include "socket_interface.h"

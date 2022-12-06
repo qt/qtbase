@@ -8,7 +8,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QDebug>
-#include <QLibraryInfo>
+#include <QtVersion>
 
 class ShortcutTester : public QWidget
 {

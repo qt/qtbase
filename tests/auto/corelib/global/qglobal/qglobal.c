@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QtCore/qglobal.h>
-#include <QtCore/qlibraryinfo.h>
+#include <QtCore/qtversion.h>
 
 #ifdef Q_COMPILER_THREAD_LOCAL
 #  include <threads.h>

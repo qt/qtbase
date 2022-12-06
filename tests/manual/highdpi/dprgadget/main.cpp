@@ -1,7 +1,7 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#include <QtCore/qlibraryinfo.h>
+#include <QtCore/qtversion.h>
 #include <QtGui/qpa/qplatformscreen.h>
 #include <QtGui/qpa/qplatformwindow.h>
 #include <QtGui/private/qhighdpiscaling_p.h>

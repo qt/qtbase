@@ -10,7 +10,7 @@
 #include <qfile.h>
 #include <qdir.h>
 #include <qdebug.h>
-#include <qlibraryinfo.h>
+#include <qtversion.h>
 #include <time.h>
 
 #include <tuple>
