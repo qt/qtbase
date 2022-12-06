@@ -143,9 +143,6 @@ public:
     std::function<void(const QFutureInterfaceBase &)> continuation;
     QFutureInterfaceBasePrivate *continuationData = nullptr;
 
-    enum ContinuationState : quint8 { Default, Canceled, Cleaned };
-    std::atomic<ContinuationState> continuationState { Default };
-
     RefCount refCount = 1;
     QAtomicInt state; // reads and writes can happen unprotected, both must be atomic
 
@@ -162,6 +159,9 @@ public:
     bool launchAsync = false;
     bool isValid = false;
     bool hasException = false;
+
+    enum ContinuationState : quint8 { Default, Canceled, Cleaned };
+    std::atomic<ContinuationState> continuationState { Default };
 
     inline QThreadPool *pool() const
     { return m_pool ? m_pool : QThreadPool::globalInstance(); }
