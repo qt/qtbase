@@ -3810,7 +3810,7 @@ bool QGraphicsView::isTransformed() const
     a view coordinate to a floating point scene coordinate, or mapFromScene()
     to map from floating point scene coordinates to view coordinates.
 
-    \sa transform(), rotate(), scale(), shear(), translate()
+    \sa transform(), resetTransform(), rotate(), scale(), shear(), translate()
 */
 void QGraphicsView::setTransform(const QTransform &matrix, bool combine )
 {
