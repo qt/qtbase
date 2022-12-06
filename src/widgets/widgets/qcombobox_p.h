@@ -221,7 +221,6 @@ private:
     QComboBoxPrivateScroller *bottom = nullptr;
     QElapsedTimer popupTimer;
     bool maybeIgnoreMouseButtonRelease = false;
-    bool closeOnCancel = false;
 
     friend class QComboBox;
     friend class QComboBoxPrivate;
