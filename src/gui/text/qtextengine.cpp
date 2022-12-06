@@ -1734,8 +1734,10 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
         }
 
         if (!actualFontEngine->supportsHorizontalSubPixelPositions()) {
-            for (uint i = 0; i < num_glyphs; ++i)
+            for (uint i = 0; i < num_glyphs; ++i) {
                 g.advances[i] = g.advances[i].round();
+                g.offsets[i].x = g.offsets[i].x.round();
+            }
         }
 
         glyphs_shaped += num_glyphs;
