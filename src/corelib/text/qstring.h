@@ -525,14 +525,11 @@ public:
                 QChar fillChar = u' ') const;
 private:
     template <typename T>
-    struct is_convertible_to_view_or_qstring_helper
-        : std::integral_constant<bool,
-            std::is_convertible<T, QString>::value ||
-            std::is_convertible<T, QStringView>::value ||
-            std::is_convertible<T, QLatin1StringView>::value> {};
-    template <typename T>
-    struct is_convertible_to_view_or_qstring
-        : is_convertible_to_view_or_qstring_helper<typename std::decay<T>::type> {};
+    using is_convertible_to_view_or_qstring = std::disjunction<
+            std::is_convertible<T, QString>,
+            std::is_convertible<T, QStringView>,
+            std::is_convertible<T, QLatin1StringView>
+        >;
 public:
     template <typename...Args>
     [[nodiscard]]
