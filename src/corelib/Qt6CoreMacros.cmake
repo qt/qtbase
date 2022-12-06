@@ -1413,6 +1413,49 @@ END
     endif()
 endfunction()
 
+# Generate Win32 longPathAware RC and Manifest files for a target.
+# MSVC needs the manifest file as part of target_sources. MinGW the RC file.
+#
+function(_qt_internal_generate_longpath_win32_rc_file_and_manifest target)
+    set(prohibited_target_types INTERFACE_LIBRARY STATIC_LIBRARY OBJECT_LIBRARY)
+    get_target_property(target_type ${target} TYPE)
+    if(target_type IN_LIST prohibited_target_types)
+        return()
+    endif()
+
+    get_target_property(target_binary_dir ${target} BINARY_DIR)
+
+    # Generate manifest
+    set(target_mn_filename "${target}_longpath.manifest")
+    set(mn_file_output "${target_binary_dir}/${target_mn_filename}")
+
+    set(mn_contents [=[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+<application  xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings">
+        <ws2:longPathAware>true</ws2:longPathAware>
+    </windowsSettings>
+</application>
+</assembly>]=])
+    file(GENERATE OUTPUT "${mn_file_output}" CONTENT "${mn_contents}")
+
+    # Generate RC File
+    set(rc_file_output "${target_binary_dir}/${target}_longpath.rc")
+    set(rc_contents "1 /* CREATEPROCESS_MANIFEST_RESOURCE_ID */ 24 /* RT_MANIFEST */ ${target_mn_filename}")
+    file(GENERATE OUTPUT "${rc_file_output}" CONTENT "${rc_contents}")
+
+    if (MINGW)
+        set(outputs "${rc_file_output}")
+    endif()
+    list(APPEND outputs "${mn_file_output}")
+
+    foreach(output IN LISTS outputs)
+        # Needed for CMake versions < 3.19
+        set_source_files_properties(${output} PROPERTIES GENERATED TRUE)
+        target_sources(${target} PRIVATE "${output}")
+    endforeach()
+endfunction()
+
 function(__qt_get_relative_resource_path_for_file output_alias file)
     get_property(alias SOURCE ${file} PROPERTY QT_RESOURCE_ALIAS)
     if (NOT alias)

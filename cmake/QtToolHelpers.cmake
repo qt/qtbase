@@ -115,6 +115,10 @@ function(qt_internal_add_tool target_name)
     _qt_internal_apply_strict_cpp("${target_name}")
     qt_internal_adjust_main_config_runtime_output_dir("${target_name}" "${output_dir}")
 
+    if (WIN32)
+        _qt_internal_generate_longpath_win32_rc_file_and_manifest("${target_name}")
+    endif()
+
     set_target_properties(${target_name} PROPERTIES
         _qt_package_version "${PROJECT_VERSION}"
     )
