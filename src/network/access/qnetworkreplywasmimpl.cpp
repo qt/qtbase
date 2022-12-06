@@ -45,6 +45,7 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qthread.h>
+#include <QtCore/private/qtools_p.h>
 
 #include <private/qnetworkaccessmanager_p.h>
 #include <private/qnetworkfile_p.h>
@@ -320,7 +321,7 @@ static int parseHeaderName(const QByteArray &headerName)
     if (headerName.isEmpty())
         return -1;
 
-    switch (tolower(headerName.at(0))) {
+    switch (QtMiscUtils::toAsciiLower(headerName.front())) {
     case 'c':
         if (qstricmp(headerName.constData(), "content-type") == 0)
             return QNetworkRequest::ContentTypeHeader;
