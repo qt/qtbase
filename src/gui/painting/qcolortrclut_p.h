@@ -118,6 +118,7 @@ public:
         return QRgba64::fromRgba64(r, g, b, qAlpha(rgb32) * 257);
 #endif
     }
+    QRgba64 toLinear64(QRgba64) const = delete;
 
     QRgb toLinear(QRgb rgb32) const
     {
