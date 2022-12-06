@@ -4,17 +4,11 @@
 #ifndef QLIBRARYINFO_H
 #define QLIBRARYINFO_H
 
-#if defined(__cplusplus)
 #include <QtCore/qstring.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qversionnumber.h>
-#else
-#include <QtCore/qglobal.h>
-#endif
 
 QT_BEGIN_NAMESPACE
-
-#if defined(__cplusplus)
 
 class Q_CORE_EXPORT QLibraryInfo
 {
@@ -66,8 +60,6 @@ QT_DEPRECATED_VERSION_X_6_9("Use QLibraryInfo::isSharedBuild() instead.")
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() noexcept;
 
 #endif
-
-#endif // __cplusplus
 
 QT_END_NAMESPACE
 
