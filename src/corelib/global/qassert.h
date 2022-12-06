@@ -7,6 +7,7 @@
 #include <QtCore/qcompilerdetection.h>
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qtcoreexports.h>
+#include <QtCore/qtnoop.h>
 
 #if 0
 #pragma qt_class(QtAssert)

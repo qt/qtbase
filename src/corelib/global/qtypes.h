@@ -19,8 +19,6 @@
 #pragma qt_sync_stop_processing
 #endif
 
-#ifndef __ASSEMBLER__
-
 /*
    Useful type definitions for Qt
 */
@@ -157,7 +155,5 @@ using qsizetype = QIntegerForSizeof<std::size_t>::Signed;
 #endif // __cplusplus
 
 QT_END_NAMESPACE
-
-#endif // __ASSEMBLER__
 
 #endif // QTYPES_H
