@@ -39,7 +39,6 @@
 
 #include <QtCore/qtversion.h>
 
-#ifndef __ASSEMBLER__
 #if defined(__cplusplus)
 
 // We need to keep QTypeInfo, QSysInfo, QFlags, qDebug & family in qglobal.h for compatibility with Qt 4.
@@ -70,6 +69,5 @@
 #include <QtCore/qversiontagging.h>
 
 #endif /* __cplusplus */
-#endif /* !__ASSEMBLER__ */
 
 #endif /* QGLOBAL_H */
