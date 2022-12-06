@@ -146,6 +146,11 @@ const char *Style = R"css(
     pointer-events: none;
 }
 
+.qt-window-a11y-container {
+    position: absolute;
+    z-index: -1;
+}
+
 .title-bar .image-button {
     width: 18px;
     height: 18px;

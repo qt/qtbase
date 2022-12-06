@@ -40,6 +40,7 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
       m_qtWindow(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_windowContents(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_canvasContainer(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
+      m_a11yContainer(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_canvas(m_document.call<emscripten::val>("createElement", emscripten::val("canvas")))
 {
     m_qtWindow.set("className", "qt-window");
@@ -58,6 +59,9 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
 
     m_canvasContainer["classList"].call<void>("add", emscripten::val("qt-window-canvas-container"));
     m_canvasContainer.call<void>("appendChild", m_canvas);
+
+    m_canvasContainer.call<void>("appendChild", m_a11yContainer);
+    m_a11yContainer["classList"].call<void>("add", emscripten::val("qt-window-a11y-container"));
 
     compositor->screen()->element().call<void>("appendChild", m_qtWindow);
 
@@ -224,6 +228,8 @@ void QWasmWindow::setGeometry(const QRect &rect)
     m_qtWindow["style"].set("top", std::to_string(frameRect.top()) + "px");
     m_canvasContainer["style"].set("width", std::to_string(clientAreaRect.width()) + "px");
     m_canvasContainer["style"].set("height", std::to_string(clientAreaRect.height()) + "px");
+    m_a11yContainer["style"].set("width", std::to_string(clientAreaRect.width()) + "px");
+    m_a11yContainer["style"].set("height", std::to_string(clientAreaRect.height()) + "px");
 
     // Important for the title flexbox to shrink correctly
     m_windowContents["style"].set("width", std::to_string(clientAreaRect.width()) + "px");
