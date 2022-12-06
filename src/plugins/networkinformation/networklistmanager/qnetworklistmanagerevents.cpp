@@ -8,15 +8,7 @@
 #include <mutex>
 
 #ifdef SUPPORTS_WINRT
-#include <winrt/base.h>
-#include <QtCore/private/qfactorycacheregistration_p.h>
-// Workaround for Windows SDK bug.
-// See https://github.com/microsoft/Windows.UI.Composition-Win32-Samples/issues/47
-namespace winrt::impl
-{
-    template <typename Async>
-    auto wait_for(Async const& async, Windows::Foundation::TimeSpan const& timeout);
-}
+#include <QtCore/private/qt_winrtbase_p.h>
 
 #include <winrt/Windows.Networking.Connectivity.h>
 #endif

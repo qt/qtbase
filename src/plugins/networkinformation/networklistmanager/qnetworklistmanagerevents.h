@@ -24,8 +24,7 @@
 #endif
 
 #ifdef SUPPORTS_WINRT
-#include <winrt/base.h>
-#include <QtCore/private/qfactorycacheregistration_p.h>
+#include <QtCore/private/qt_winrtbase_p.h>
 #endif
 
 using namespace Microsoft::WRL;

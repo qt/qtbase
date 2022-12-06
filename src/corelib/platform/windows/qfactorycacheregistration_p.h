@@ -23,7 +23,7 @@
 
 #ifdef QT_USE_FACTORY_CACHE_REGISTRATION
 
-#include <winrt/base.h>
+#include "qt_winrtbase_p.h"
 
 QT_BEGIN_NAMESPACE
 
