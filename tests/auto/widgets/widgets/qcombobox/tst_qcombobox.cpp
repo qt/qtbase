@@ -24,6 +24,7 @@
 #include <qtablewidget.h>
 #include <qscrollbar.h>
 #include <qboxlayout.h>
+#include <qshortcut.h>
 #include <qstackedwidget.h>
 
 #include <qstandarditemmodel.h>
@@ -147,6 +148,7 @@ private slots:
     void propagateStyleChanges();
     void buttonPressKeys();
     void clearModel();
+    void cancelClosesPopupNotDialog();
 
 private:
     PlatformInputContext m_platformInputContext;
@@ -3624,6 +3626,56 @@ void tst_QComboBox::clearModel()
 
     QCOMPARE(combo.currentIndex(), -1);
     QCOMPARE(combo.currentText(), QString());
+}
+
+void tst_QComboBox::cancelClosesPopupNotDialog()
+{
+    if (QGuiApplication::platformName() == "offscreen")
+        QSKIP("The offscreen platform plugin doesn't activate popups.");
+
+    QDialog dialog;
+    QComboBox combobox;
+    combobox.addItems({"A", "B", "C"});
+
+    std::unique_ptr<QShortcut> shortcut(new QShortcut(QKeySequence::Cancel, &dialog));
+    bool shortcutTriggered = false;
+    connect(shortcut.get(), &QShortcut::activated, [&shortcutTriggered]{
+        shortcutTriggered = true;
+    });
+
+    QVBoxLayout vbox;
+    vbox.addWidget(&combobox);
+    dialog.setLayout(&vbox);
+
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowActive(&dialog));
+
+    // while the combobox is closed, escape key triggers the shortcut
+    QTest::keyClick(dialog.window()->windowHandle(), Qt::Key_Escape);
+    QVERIFY(shortcutTriggered);
+    shortcutTriggered = false;
+
+    combobox.showPopup();
+    QTRY_VERIFY(combobox.view()->isVisible());
+
+    // an open combobox overrides and accepts the escape key to close
+    QTest::keyClick(dialog.window()->windowHandle(), Qt::Key_Escape);
+    QVERIFY(!shortcutTriggered);
+    shortcutTriggered = false;
+    QTRY_VERIFY(!combobox.view()->isVisible());
+    QVERIFY(dialog.isVisible());
+
+    // once closed, escape key triggers the shortcut again
+    QTest::keyClick(dialog.window()->windowHandle(), Qt::Key_Escape);
+    QVERIFY(shortcutTriggered);
+    shortcutTriggered = false;
+    QVERIFY(dialog.isVisible());
+
+    shortcut.reset();
+
+    // without shortcut, escape key propagates to the parent
+    QTest::keyClick(dialog.window()->windowHandle(), Qt::Key_Escape);
+    QVERIFY(!dialog.isVisible());
 }
 
 QTEST_MAIN(tst_QComboBox)
