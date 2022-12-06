@@ -3284,7 +3284,9 @@ inline QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime,
     information about historical transitions (including DST, see below) whenever
     possible. On Windows, where the system doesn't support historical timezone
     data, historical accuracy is not maintained with respect to timezone
-    transitions, notably including DST.
+    transitions, notably including DST. However, building Qt with the ICU
+    library will equipe QTimeZone with the same timezone database as is used on
+    Unix.
 
     \section2 Daylight-Saving Time (DST)
 
@@ -3293,7 +3295,7 @@ inline QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime,
     goes forward to 3am, then there is a "missing" hour from 02:00:00 to
     02:59:59.999 which QDateTime considers to be invalid. Any date arithmetic
     performed will take this missing hour into account and return a valid
-    result. For example, adding one minute to 01:59:59 will get 03:00:00.
+    result. For example, adding one second to 01:59:59 will get 03:00:00.
 
     For datetimes that the system \c time_t can represent (from 1901-12-14 to
     2038-01-18 on systems with 32-bit \c time_t; for the full range QDateTime
@@ -3419,8 +3421,7 @@ QDateTime::~QDateTime()
 }
 
 /*!
-    Makes a copy of the \a other datetime and returns a reference to the
-    copy.
+    Copies the \a other datetime into this and returns this copy.
 */
 
 QDateTime &QDateTime::operator=(const QDateTime &other) noexcept
@@ -4658,7 +4659,7 @@ bool QDateTime::precedes(const QDateTime &other) const
     \fn qint64 QDateTime::currentMSecsSinceEpoch()
     \since 4.7
 
-    Returns the current number of milliseconds since the UTC start of 1970.
+    Returns the current number of milliseconds since the start, in UTC, of the year 1970.
 
     This number is like the POSIX time_t variable, but expressed in milliseconds
     instead of seconds.
@@ -4670,7 +4671,7 @@ bool QDateTime::precedes(const QDateTime &other) const
     \fn qint64 QDateTime::currentSecsSinceEpoch()
     \since 5.8
 
-    Returns the number of seconds since the UTC start of 1970.
+    Returns the number of seconds since the start, in UTC, of the year 1970.
 
     This number is like the POSIX time_t variable.
 
