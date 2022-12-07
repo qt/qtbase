@@ -245,7 +245,14 @@ void tst_QDBusMetaType::initTestCase()
     qDBusRegisterMetaType<QList<Struct3> >();
     qDBusRegisterMetaType<QList<Struct4> >();
 
+#ifdef Q_CC_GNU_ONLY
+    // GCC has a defect/extension (depending on your point of view) that allows
+    // a template class with defaulted template parameters to match a Template
+    // Template Parameter (TTP) with fewer template arguments. The call below
+    // tries to use the template<template <typename> class Container, ...>
+    // template functions qdbusargument.h
     qDBusRegisterMetaType<std::vector<Struct1> >();
+#endif
 
     qDBusRegisterMetaType<Invalid0>();
     qDBusRegisterMetaType<Invalid1>();
@@ -307,7 +314,9 @@ void tst_QDBusMetaType::dynamicTypes_data()
 
     QTest::newRow("Struct1") << qMetaTypeId<Struct1>() << "(s)";
     QTest::newRow("QList<Struct1>") << qMetaTypeId<QList<Struct1> >() << "a(s)";
+#ifdef Q_CC_GNU_ONLY
     QTest::newRow("std::vector<Struct1>") << qMetaTypeId<std::vector<Struct1> >() << "a(s)";
+#endif
 
     QTest::newRow("Struct2") << qMetaTypeId<Struct2>() << "(sos)";
     QTest::newRow("QList<Struct2>") << qMetaTypeId<QList<Struct2>>() << "a(sos)";
