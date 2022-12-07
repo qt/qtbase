@@ -1,6 +1,3 @@
-# Temporary fix for QTBUG-106244, QTBUG-104496
-opensuse-leap
-
 [panelPropagation]
 ubuntu-20.04
 ubuntu-22.04 ci
