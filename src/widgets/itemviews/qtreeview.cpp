@@ -2192,9 +2192,8 @@ QModelIndex QTreeView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
         }
         return QModelIndex();
     }
-    int vi = -1;
-    if (vi < 0)
-        vi = qMax(0, d->viewIndex(current));
+
+    const int vi = qMax(0, d->viewIndex(current));
 
     if (isRightToLeft()) {
         if (cursorAction == MoveRight)

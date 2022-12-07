@@ -1914,20 +1914,16 @@ QPalette QMdiSubWindowPrivate::desktopPalette() const
     Q_Q(const QMdiSubWindow);
     QPalette newPalette = q->palette();
 
-    bool colorsInitialized = false;
-
-    if (!colorsInitialized) {
-        newPalette.setColor(QPalette::Active, QPalette::Highlight,
-                            newPalette.color(QPalette::Active, QPalette::Highlight));
-        newPalette.setColor(QPalette::Active, QPalette::Base,
-                            newPalette.color(QPalette::Active, QPalette::Highlight));
-        newPalette.setColor(QPalette::Inactive, QPalette::Highlight,
-                            newPalette.color(QPalette::Inactive, QPalette::Dark));
-        newPalette.setColor(QPalette::Inactive, QPalette::Base,
-                            newPalette.color(QPalette::Inactive, QPalette::Dark));
-        newPalette.setColor(QPalette::Inactive, QPalette::HighlightedText,
-                            newPalette.color(QPalette::Inactive, QPalette::Window));
-    }
+    newPalette.setColor(QPalette::Active, QPalette::Highlight,
+                        newPalette.color(QPalette::Active, QPalette::Highlight));
+    newPalette.setColor(QPalette::Active, QPalette::Base,
+                        newPalette.color(QPalette::Active, QPalette::Highlight));
+    newPalette.setColor(QPalette::Inactive, QPalette::Highlight,
+                        newPalette.color(QPalette::Inactive, QPalette::Dark));
+    newPalette.setColor(QPalette::Inactive, QPalette::Base,
+                        newPalette.color(QPalette::Inactive, QPalette::Dark));
+    newPalette.setColor(QPalette::Inactive, QPalette::HighlightedText,
+                        newPalette.color(QPalette::Inactive, QPalette::Window));
 
     return newPalette;
 }
