@@ -129,10 +129,6 @@ set(XCB_known_components
     XVMC
 )
 
-# XINPUT is unstable; do not include it by default
-set(XCB_default_components ${XCB_known_components})
-list(REMOVE_ITEM XCB_default_components "XINPUT")
-
 # default component info: xcb components have fairly predictable
 # header files, library names and pkg-config names
 foreach(_comp ${XCB_known_components})
@@ -175,11 +171,6 @@ ecm_find_package_parse_components(XCB
     DEFAULT_COMPONENTS ${XCB_default_components}
 )
 
-list(FIND XCB_components "XINPUT" _XCB_XINPUT_index)
-if (NOT _XCB_XINPUT_index EQUAL -1)
-    message(AUTHOR_WARNING "XINPUT from XCB was requested: this is EXPERIMENTAL and is likely to unavailable on many systems!")
-endif()
-
 ecm_find_package_handle_library_components(XCB
     COMPONENTS ${XCB_components}
 )
@@ -196,6 +187,6 @@ find_package_handle_standard_args(XCB
 
 include(FeatureSummary)
 set_package_properties(XCB PROPERTIES
-    URL "http://xcb.freedesktop.org"
+    URL "https://xcb.freedesktop.org/"
     DESCRIPTION "X protocol C-language Binding"
 )
