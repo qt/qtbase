@@ -52,7 +52,7 @@
     {QLineEdit::textChanged()}{textChanged()} signal to the wiggly
     widget's \c setText() slot to obtain the real time interaction
     with the wiggly widget. The widget's default text is "Hello
-    world!".
+    world!", with an emoji thrown in for fun.
 
     \section1 WigglyWidget Class Definition
 
@@ -115,13 +115,16 @@
 
     Each time the \c paintEvent() function is called, we create a
     QPainter object \c painter to draw the contents of the widget.
-    For each character in \c text, we determine the color and the
-    position on the wiggly line based on \c step. In addition, \c x
-    is incremented by the character's width.
+    Since we are going to paint the character symbols individually, we
+    extract the unique unicode code point for each character from \c
+    text, and convert it to a string \c symbol. For each \c symbol, we
+    determine the color and the position on the wiggly line based on
+    \c step and its \c offset from the start of the text. In addition,
+    \c x is incremented by the symbol's width.
 
     For simplicity, we assume that QFontMetrics::horizontalAdvance(\c text)
     returns the sum of the individual character advances
-    (QFontMetrics::horizontalAdvance(\c text[i])). In practice, this is not
+    (QFontMetrics::horizontalAdvance(\c symbol)). In practice, this is not
     always the case because QFontMetrics::horizontalAdvance(\c text) also takes
     into account the kerning between certain letters (e.g., 'A' and
     'V'). The result is that the text isn't perfectly centered. You

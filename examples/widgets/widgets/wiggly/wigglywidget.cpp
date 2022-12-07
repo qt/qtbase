@@ -39,13 +39,14 @@ void WigglyWidget::paintEvent(QPaintEvent * /* event */)
 //! [3]
     QPainter painter(this);
 //! [3] //! [4]
-    for (int i = 0; i < text.size(); ++i) {
-        int index = (step + i) % 16;
+    int offset = 0;
+    for (char32_t codePoint : text.toUcs4()) {
+        int index = (step + offset++) % 16;
         color.setHsv((15 - index) * 16, 255, 191);
         painter.setPen(color);
-        painter.drawText(x, y - ((sineTable[index] * metrics.height()) / 400),
-                         QString(text[i]));
-        x += metrics.horizontalAdvance(text[i]);
+        QString symbol = QString::fromUcs4(&codePoint, 1);
+        painter.drawText(x, y - ((sineTable[index] * metrics.height()) / 400), symbol);
+        x += metrics.horizontalAdvance(symbol);
     }
 }
 //! [4]

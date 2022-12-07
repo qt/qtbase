@@ -19,7 +19,7 @@ Dialog::Dialog(QWidget *parent)
     layout->addWidget(lineEdit);
 
     connect(lineEdit, &QLineEdit::textChanged, wigglyWidget, &WigglyWidget::setText);
-    lineEdit->setText(tr("Hello world!"));
+    lineEdit->setText(u8"🖖 " + tr("Hello world!"));
 
     setWindowTitle(tr("Wiggly"));
     resize(360, 145);
