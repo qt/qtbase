@@ -277,6 +277,12 @@ function(qt6_android_generate_deployment_settings target)
     string(APPEND file_contents
         "   \"extraPrefixDirs\" : [ ${extra_prefix_list} ],\n")
 
+    # Create an empty target for the cases when we need to generate deployment setting but
+    # qt_finalize_project is never called.
+    if(NOT TARGET _qt_internal_apk_dependencies AND NOT QT_NO_COLLECT_BUILD_TREE_APK_DEPS)
+        add_custom_target(_qt_internal_apk_dependencies)
+    endif()
+
     # Extra library paths that could be used as a dependency lookup path by androiddeployqt.
     #
     # Unlike 'extraPrefixDirs', the 'extraLibraryDirs' key doesn't expect the 'lib' subfolder
