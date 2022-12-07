@@ -539,9 +539,6 @@ endfunction()
 
 set(_Qt6_COMPONENT_PATH "${CMAKE_CURRENT_LIST_DIR}/..")
 
-# This function is currently in Technical Preview.
-# It's signature and behavior might change.
-#
 # Wrapper function that adds an executable with some Qt specific behavior.
 # Some scenarios require steps to be deferred to the end of the current
 # directory scope so that the caller has an opportunity to modify certain
