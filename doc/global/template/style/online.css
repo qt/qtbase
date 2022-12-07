@@ -1569,3 +1569,9 @@ a.plink {
 a.plink::before {
   content:'\00B6'
 }
+
+/* Add margin for all anchor tags in a translated page */
+html.translated-ltr .mainContent p a,
+html.translated-rtl .mainContent p a {
+  margin:0 2px 0 2px;
+}
