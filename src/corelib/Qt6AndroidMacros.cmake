@@ -73,6 +73,17 @@ function(qt6_android_generate_deployment_settings target)
         _qt_is_android_generate_deployment_settings_called TRUE
     )
 
+    get_target_property(android_executable_finalizer_called
+        ${target} _qt_android_executable_finalizer_called)
+
+    if(android_executable_finalizer_called)
+        # Don't show deprecation when called by our own function implementations.
+    else()
+        message(DEPRECATION
+            "Calling qt_android_generate_deployment_settings directly is deprecated since Qt 6.5. "
+            "Use qt_add_executable instead.")
+    endif()
+
     get_target_property(target_type ${target} TYPE)
 
     if (NOT "${target_type}" STREQUAL "MODULE_LIBRARY")
@@ -327,6 +338,16 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
 endif()
 
 function(qt6_android_apply_arch_suffix target)
+    get_target_property(called_from_qt_impl
+        ${target} _qt_android_apply_arch_suffix_called_from_qt_impl)
+    if(called_from_qt_impl)
+        # Don't show deprecation when called by our own function implementations.
+    else()
+        message(DEPRECATION
+            "Calling qt_android_apply_arch_suffix directly is deprecated since Qt 6.5. "
+            "Use qt_add_executable or qt_add_library instead.")
+    endif()
+
     get_target_property(target_type ${target} TYPE)
     if (target_type STREQUAL "SHARED_LIBRARY" OR target_type STREQUAL "MODULE_LIBRARY")
         set_property(TARGET "${target}" PROPERTY SUFFIX "_${CMAKE_ANDROID_ARCH_ABI}.so")
@@ -347,6 +368,17 @@ function(qt6_android_add_apk_target target)
     get_property(apk_targets GLOBAL PROPERTY _qt_apk_targets)
     if("${target}" IN_LIST apk_targets)
         return()
+    endif()
+
+    get_target_property(android_executable_finalizer_called
+        ${target} _qt_android_executable_finalizer_called)
+
+    if(android_executable_finalizer_called)
+        # Don't show deprecation when called by our own function implementations.
+    else()
+        message(DEPRECATION
+            "Calling qt_android_add_apk_target directly is deprecated since Qt 6.5. "
+            "Use qt_add_executable instead.")
     endif()
 
     get_target_property(deployment_file ${target} QT_ANDROID_DEPLOYMENT_SETTINGS_FILE)
@@ -1198,6 +1230,8 @@ endfunction()
 # package for the executable 'target'. The function is added to the finalizer list of the Core
 # module and is executed implicitly when configuring user projects.
 function(_qt_internal_android_executable_finalizer target)
+    set_property(TARGET ${target} PROPERTY _qt_android_executable_finalizer_called TRUE)
+
     _qt_internal_configure_android_multiabi_target("${target}")
     qt6_android_generate_deployment_settings("${target}")
     qt6_android_add_apk_target("${target}")

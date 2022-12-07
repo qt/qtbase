@@ -13,7 +13,7 @@
 \include cmake-find-package-core.qdocinc
 
 \cmakecommandsince 6.0
-\preliminarycmakecommand
+\warning This command is deprecated since Qt 6.5. Use \l qt_add_executable instead.
 \cmakecommandandroidonly
 
 \section1 Synopsis
