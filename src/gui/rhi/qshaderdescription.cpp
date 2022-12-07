@@ -403,6 +403,7 @@ QList<QShaderDescription::PushConstantBlock> QShaderDescription::pushConstantBlo
             "blockName": "StuffSsbo",
             "instanceName": "buf",
             "knownSize": 16,
+            "runtimeArrayStride": 16
             "members": [
                 {
                     "name": "whatever",
@@ -440,7 +441,10 @@ QList<QShaderDescription::PushConstantBlock> QShaderDescription::pushConstantBlo
 
     \note The size of the last member in the storage block is undefined. This shows
     up as \c size 0 and an array dimension of \c{[0]}. The storage block's \c knownSize
-    excludes the size of the last member since that will only be known at run time.
+    excludes the size of the last member since that will only be known at run time. The
+    stride in bytes between array items for a last member with undefined array size is
+    \c runtimeArrayStride.  This value is determined according to the specified buffer
+    memory layout standard (std140, std430) rules.
 
     \note SSBOs are not available with some graphics APIs, such as, OpenGL 2.x or
     OpenGL ES older than 3.1.
@@ -984,6 +988,10 @@ QDebug operator<<(QDebug dbg, const QShaderDescription::StorageBlock &blk)
         dbg.nospace() << " binding=" << blk.binding;
     if (blk.descriptorSet >= 0)
         dbg.nospace() << " set=" << blk.descriptorSet;
+    if (blk.runtimeArrayStride)
+        dbg.nospace() << " runtimeArrayStride=" << blk.runtimeArrayStride;
+    if (blk.qualifierFlags)
+        dbg.nospace() << " qualifierFlags=" << blk.qualifierFlags;
     dbg.nospace() << ' ' << blk.members << ')';
     return dbg;
 }
@@ -1033,6 +1041,8 @@ JSON_KEY(tessellationWindingOrder)
 JSON_KEY(tessellationPartitioning)
 JSON_KEY(separateImages)
 JSON_KEY(separateSamplers)
+JSON_KEY(runtimeArrayStride)
+JSON_KEY(qualifierFlags)
 #undef JSON_KEY
 
 static void addDeco(QJsonObject *obj, const QShaderDescription::InOutVariable &v)
@@ -1190,6 +1200,10 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
             jstorageBlock[bindingKey()] = b.binding;
         if (b.descriptorSet >= 0)
             jstorageBlock[setKey()] = b.descriptorSet;
+        if (b.runtimeArrayStride)
+            jstorageBlock[runtimeArrayStrideKey()] = b.runtimeArrayStride;
+        if (b.qualifierFlags)
+            jstorageBlock[qualifierFlagsKey()] = int(b.qualifierFlags);
         QJsonArray members;
         for (const QShaderDescription::BlockVariable &v : b.members)
             members.append(blockMemberObject(v));
@@ -1324,6 +1338,8 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
         (*stream) << int(b.members.size());
         for (const QShaderDescription::BlockVariable &v : b.members)
             serializeBlockMemberVar(stream, v);
+        (*stream) << b.runtimeArrayStride;
+        (*stream) << b.qualifierFlags;
     }
 
     (*stream) << int(combinedImageSamplers.size());
@@ -1498,6 +1514,11 @@ void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream, int version)
         storageBlocks[i].members.resize(memberCount);
         for (int memberIdx = 0; memberIdx < memberCount; ++memberIdx)
             storageBlocks[i].members[memberIdx] = deserializeBlockMemberVar(stream, version);
+
+        if (version > QShaderPrivate::QSB_VERSION_WITHOUT_EXTENDED_STORAGE_BUFFER_INFO) {
+            (*stream) >> storageBlocks[i].runtimeArrayStride;
+            (*stream) >> storageBlocks[i].qualifierFlags;
+        }
     }
 
     (*stream) >> count;
@@ -1694,6 +1715,8 @@ bool operator==(const QShaderDescription::StorageBlock &lhs, const QShaderDescri
             && lhs.knownSize == rhs.knownSize
             && lhs.binding == rhs.binding
             && lhs.descriptorSet == rhs.descriptorSet
+            && lhs.runtimeArrayStride == rhs.runtimeArrayStride
+            && lhs.qualifierFlags == rhs.qualifierFlags
             && lhs.members == rhs.members;
 }
 

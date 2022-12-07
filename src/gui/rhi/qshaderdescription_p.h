@@ -170,6 +170,15 @@ public:
     };
     Q_DECLARE_FLAGS(ImageFlags, ImageFlag)
 
+    enum QualifierFlag {
+        QualifierReadOnly = 1 << 0,
+        QualifierWriteOnly = 1 << 1,
+        QualifierCoherent = 1 << 2,
+        QualifierVolatile = 1 << 3,
+        QualifierRestrict = 1 << 4,
+    };
+    Q_DECLARE_FLAGS(QualifierFlags, QualifierFlag)
+
     // Optional data (like decorations) usually default to an otherwise invalid value (-1 or 0). This is intentional.
 
     struct InOutVariable {
@@ -218,6 +227,8 @@ public:
         int binding = -1;
         int descriptorSet = -1;
         QList<BlockVariable> members;
+        int runtimeArrayStride = 0;
+        QualifierFlags qualifierFlags;
     };
 
     QList<InOutVariable> inputVariables() const;
@@ -310,6 +321,7 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QShaderDescription::ImageFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QShaderDescription::QualifierFlags)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QShaderDescription &);

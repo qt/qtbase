@@ -24,7 +24,8 @@ QT_BEGIN_NAMESPACE
 
 struct Q_GUI_EXPORT QShaderPrivate
 {
-    static const int QSB_VERSION = 7;
+    static const int QSB_VERSION = 8;
+    static const int QSB_VERSION_WITHOUT_EXTENDED_STORAGE_BUFFER_INFO = 7;
     static const int QSB_VERSION_WITHOUT_NATIVE_SHADER_INFO = 6;
     static const int QSB_VERSION_WITHOUT_SEPARATE_IMAGES_AND_SAMPLERS = 5;
     static const int QSB_VERSION_WITHOUT_VAR_ARRAYDIMS = 4;

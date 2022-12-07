@@ -26,6 +26,7 @@ private slots:
     void manualShaderPackCreation();
     void loadV6WithSeparateImagesAndSamplers();
     void loadV7();
+    void loadV8();
 };
 
 static QShader getShader(const QString &name)
@@ -671,6 +672,28 @@ void tst_QShader::loadV7()
     QShader frag = getShader(QLatin1String(":/data/metal_enabled_tessellation_v7.frag.qsb"));
     QVERIFY(frag.isValid());
     QCOMPARE(QShaderPrivate::get(&frag)->qsbVersion, 7);
+}
+
+void tst_QShader::loadV8()
+{
+    QShader s = getShader(QLatin1String(":/data/storage_buffer_info_v8.comp.qsb"));
+    QVERIFY(s.isValid());
+    QCOMPARE(QShaderPrivate::get(&s)->qsbVersion, 8);
+
+    const QList<QShaderKey> availableShaders = s.availableShaders();
+    QCOMPARE(availableShaders.size(), 5);
+    QVERIFY(availableShaders.contains(QShaderKey(QShader::SpirvShader, QShaderVersion(100))));
+    QVERIFY(availableShaders.contains(QShaderKey(QShader::MslShader, QShaderVersion(12))));
+    QVERIFY(availableShaders.contains(QShaderKey(QShader::HlslShader, QShaderVersion(50))));
+    QVERIFY(availableShaders.contains(
+            QShaderKey(QShader::GlslShader, QShaderVersion(310, QShaderVersion::GlslEs))));
+    QVERIFY(availableShaders.contains(QShaderKey(QShader::GlslShader, QShaderVersion(430))));
+
+    QCOMPARE(s.description().storageBlocks().size(), 1);
+    QCOMPARE(s.description().storageBlocks().last().runtimeArrayStride, 4);
+    QCOMPARE(s.description().storageBlocks().last().qualifierFlags,
+             QShaderDescription::QualifierFlags(QShaderDescription::QualifierWriteOnly
+                                                | QShaderDescription::QualifierRestrict));
 }
 
 #include <tst_qshader.moc>
