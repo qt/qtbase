@@ -783,7 +783,9 @@ QString QFileInfo::baseName() const
     Q_D(const QFileInfo);
     if (d->isDefaultConstructed)
         return ""_L1;
-    return d->fileEntry.baseName();
+    if (!d_ptr->fileEngine)
+        return d->fileEntry.baseName();
+    return QFileSystemEntry(d->fileEngine->fileName(QAbstractFileEngine::BaseName)).baseName();
 }
 
 /*!
