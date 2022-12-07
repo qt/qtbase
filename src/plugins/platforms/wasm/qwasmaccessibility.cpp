@@ -3,6 +3,7 @@
 
 #include "qwasmaccessibility.h"
 #include "qwasmscreen.h"
+#include "qwasmwindow.h"
 
 #include <QtGui/qwindow.h>
 
@@ -18,33 +19,105 @@ Q_LOGGING_CATEGORY(lcQpaAccessibility, "qt.qpa.accessibility")
 // events. In addition or alternatively, we could also walk the accessibility tree
 // from setRootObject().
 
+namespace {
+QWasmWindow *asWasmWindow(QWindow *window)
+{
+    return static_cast<QWasmWindow*>(window->handle());
+}
+}  // namespace
 
 QWasmAccessibility::QWasmAccessibility()
 {
 
+    s_instance = this;
 }
 
 QWasmAccessibility::~QWasmAccessibility()
 {
+    s_instance = nullptr;
+}
 
+QWasmAccessibility *QWasmAccessibility::s_instance = nullptr;
+
+QWasmAccessibility* QWasmAccessibility::get()
+{
+    return s_instance;
+}
+
+void QWasmAccessibility::addAccessibilityEnableButton(QWindow *window)
+{
+    get()->addAccessibilityEnableButtonImpl(window);
+}
+
+void QWasmAccessibility::removeAccessibilityEnableButton(QWindow *window)
+{
+    get()->removeAccessibilityEnableButtonImpl(window);
+}
+
+void QWasmAccessibility::addAccessibilityEnableButtonImpl(QWindow *window)
+{
+    if (m_accessibilityEnabled)
+        return;
+
+    emscripten::val container = getContainer(window);
+    emscripten::val document = getDocument(container);
+    emscripten::val button = document.call<emscripten::val>("createElement", std::string("button"));
+    button.set("innerText", std::string("Enable Screen Reader"));
+    container.call<void>("appendChild", button);
+
+    emscripten::val style = button["style"];
+    style.set("width", "100%");
+    style.set("height", "100%");
+
+    auto enableContext = std::make_tuple(button, std::make_unique<qstdweb::EventCallback>
+        (button, std::string("click"), [this](emscripten::val) { enableAccessibility(); }));
+    m_enableButtons.insert(std::make_pair(window, std::move(enableContext)));
+}
+
+void QWasmAccessibility::removeAccessibilityEnableButtonImpl(QWindow *window)
+{
+    auto it = m_enableButtons.find(window);
+    if (it == m_enableButtons.end())
+        return;
+
+    // Remove button
+    auto [element, callback] = it->second;
+    Q_UNUSED(callback);
+    element["parentElement"].call<void>("removeChild", element);
+    m_enableButtons.erase(it);
+}
+
+void QWasmAccessibility::enableAccessibility()
+{
+    // Enable accessibility globally for the applicaton. Remove all "enable"
+    // buttons and populate the accessibility tree, starting from the root object.
+
+    Q_ASSERT(!m_accessibilityEnabled);
+    m_accessibilityEnabled = true;
+    for (const auto& [key, value] : m_enableButtons) {
+        const auto &[element, callback] = value;
+        Q_UNUSED(key);
+        Q_UNUSED(callback);
+        element["parentElement"].call<void>("removeChild", element);
+    }
+    m_enableButtons.clear();
+    populateAccessibilityTree(QAccessible::queryAccessibleInterface(m_rootObject));
+}
+
+emscripten::val QWasmAccessibility::getContainer(QWindow *window)
+{
+    return window ? asWasmWindow(window)->a11yContainer() : emscripten::val::undefined();
 }
 
 emscripten::val QWasmAccessibility::getContainer(QAccessibleInterface *iface)
 {
-    // Get to QWasmScreen::container(), return undefined element if unable to
-    QWindow *window = iface->window();
-    if (!window)
-        return emscripten::val::undefined();
-    QWasmScreen *screen = QWasmScreen::get(window->screen());
-    if (!screen)
-        return emscripten::val::undefined();
-    return screen->element();
+    return getContainer(iface->window());
 }
 
 emscripten::val QWasmAccessibility::getDocument(const emscripten::val &container)
 {
     if (container.isUndefined())
-        return emscripten::val::undefined();
+        return emscripten::val::global("document");
     return container["ownerDocument"];
 }
 
@@ -62,7 +135,7 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
 
     // Get the correct html document for the container, or fall back
     // to the global document. TODO: Does using the correct document actually matter?
-    emscripten::val document = container.isUndefined() ? emscripten::val::global("document") : getDocument(container);
+    emscripten::val document = getDocument(container);
 
     // Translate the Qt a11y elemen role into html element type + ARIA role.
     // Here we can either create <div> elements with a spesific ARIA role,
@@ -136,14 +209,13 @@ void QWasmAccessibility::setHtmlElementVisibility(QAccessibleInterface *iface, b
 void QWasmAccessibility::setHtmlElementGeometry(QAccessibleInterface *iface)
 {
     emscripten::val element = ensureHtmlElement(iface);
-    setHtmlElementGeometry(iface, element);
+    setHtmlElementGeometry(element, iface->rect());
 }
 
-void QWasmAccessibility::setHtmlElementGeometry(QAccessibleInterface *iface, emscripten::val element)
+void QWasmAccessibility::setHtmlElementGeometry(emscripten::val element, QRect geometry)
 {
     // Position the element using "position: absolute" in order to place
     // it under the corresponding Qt element in the screen.
-    QRect geometry = iface->rect();
     emscripten::val style = element["style"];
     style.set("position", std::string("absolute"));
     style.set("z-index", std::string("-1")); // FIXME: "0" should be sufficient to order beheind the
@@ -190,8 +262,27 @@ void QWasmAccessibility::handleCheckBoxUpdate(QAccessibleEvent *event)
     }
 }
 
+void QWasmAccessibility::populateAccessibilityTree(QAccessibleInterface *iface)
+{
+    if (!iface)
+        return;
+
+    // Create html element for the interface, sync up properties.
+    ensureHtmlElement(iface);
+    const bool visible = !iface->state().invisible;
+    setHtmlElementVisibility(iface, visible);
+    setHtmlElementGeometry(iface);
+    setHtmlElementTextName(iface);
+
+    for (int i = 0; i < iface->childCount(); ++i)
+        populateAccessibilityTree(iface->child(i));
+}
+
 void QWasmAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
+    if (!m_accessibilityEnabled)
+        return;
+
     QAccessibleInterface *iface = event->accessibleInterface();
     if (!iface) {
         qWarning() << "notifyAccessibilityUpdate with null a11y interface" ;
@@ -237,11 +328,9 @@ void QWasmAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
     };
 }
 
-void QWasmAccessibility::setRootObject(QObject *o)
+void QWasmAccessibility::setRootObject(QObject *root)
 {
-    qCDebug(lcQpaAccessibility) << "setRootObject" << o;
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(o);
-    Q_UNUSED(iface)
+    m_rootObject = root;
 }
 
 void QWasmAccessibility::initialize()

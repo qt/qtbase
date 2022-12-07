@@ -16,6 +16,7 @@
 #include "qwasmevent.h"
 #include "qwasmeventdispatcher.h"
 #include "qwasmstring.h"
+#include "qwasmaccessibility.h"
 
 #include <iostream>
 #include <emscripten/val.h>
@@ -470,6 +471,7 @@ QWasmWindow::~QWasmWindow()
     m_compositor->removeWindow(this);
     if (m_requestAnimationFrameId > -1)
         emscripten_cancel_animation_frame(m_requestAnimationFrameId);
+    QWasmAccessibility::removeAccessibilityEnableButton(window());
 }
 
 void QWasmWindow::destroy()
@@ -505,6 +507,11 @@ void QWasmWindow::initialize()
         setWindowIcon(window()->icon());
     m_normalGeometry = rect;
     QPlatformWindow::setGeometry(m_normalGeometry);
+
+    // Add accessibility-enable button. The user can activate this
+    // button to opt-in to accessibility.
+     if (window()->isTopLevel())
+        QWasmAccessibility::addAccessibilityEnableButton(window());
 }
 
 QWasmScreen *QWasmWindow::platformScreen() const
