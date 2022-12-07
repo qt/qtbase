@@ -6,6 +6,7 @@
 #include "qwindowsvistaanimation_p.h"
 #include <qoperatingsystemversion.h>
 #include <qscreen.h>
+#include <qstylehints.h>
 #include <qwindow.h>
 #include <private/qstyleanimation_p.h>
 #include <private/qstylehelper_p.h>
@@ -172,10 +173,8 @@ static QRegion scaleRegion(const QRegion &region, qreal factor)
 */
 bool QWindowsVistaStylePrivate::useVista(bool update)
 {
-    if (update) {
-        useVistaTheme = IsThemeActive() && (IsAppThemed() || !QCoreApplication::instance())
-                && !QWindowsStylePrivate::isDarkMode();
-    }
+    if (update)
+        useVistaTheme = IsThemeActive() && (IsAppThemed() || !QCoreApplication::instance());
     return useVistaTheme;
 }
 
@@ -4790,6 +4789,14 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
 void QWindowsVistaStyle::polish(QPalette &pal)
 {
     Q_D(QWindowsVistaStyle);
+
+    if (qApp->styleHints()->appearance() == Qt::Appearance::Dark) {
+        // System runs in dark mode, but the Vista style cannot use a dark palette.
+        // Overwrite with the light system palette.
+        using QWindowsApplication = QNativeInterface::Private::QWindowsApplication;
+        if (auto nativeWindowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration()))
+            nativeWindowsApp->lightSystemPalette(pal);
+    }
 
     QPixmapCache::clear();
     d->alphaCache.clear();
