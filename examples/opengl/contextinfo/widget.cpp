@@ -81,7 +81,9 @@ struct Renderable {
 
 static struct Renderable renderables[] = {
     { "default", QSurfaceFormat::DefaultRenderableType },
+#ifndef Q_OS_ANDROID
     { "OpenGL", QSurfaceFormat::OpenGL },
+#endif
     { "OpenGL ES", QSurfaceFormat::OpenGLES }
 };
 
