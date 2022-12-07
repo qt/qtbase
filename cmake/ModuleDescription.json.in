@@ -1,5 +1,5 @@
 {
-    "module_name": "${target}",
+    "name": "${target}",
     "version": "${PROJECT_VERSION}",
     "built_with": {${extra_build_information}
         "compiler_id": "${CMAKE_CXX_COMPILER_ID}",
