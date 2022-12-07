@@ -93,21 +93,6 @@ qreal QWindowsStylePrivate::appDevicePixelRatio()
     return qApp->devicePixelRatio();
 }
 
-bool QWindowsStylePrivate::isDarkMode()
-{
-    bool result = false;
-#ifdef Q_OS_WIN
-    using QWindowsApplication = QNativeInterface::Private::QWindowsApplication;
-    // Windows only: Return whether dark mode style support is desired and
-    // dark mode is in effect.
-    if (auto windowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration())) {
-        result = windowsApp->isDarkMode()
-            && windowsApp->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle);
-    }
-#endif
-    return result;
-}
-
 // Returns \c true if the toplevel parent of \a widget has seen the Alt-key
 bool QWindowsStylePrivate::hasSeenAlt(const QWidget *widget) const
 {
@@ -514,9 +499,14 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
     int ret = 0;
 
     switch (hint) {
-    case SH_EtchDisabledText:
-        ret = d_func()->isDarkMode() ? 0 : 1;
+    case SH_EtchDisabledText: {
+        const QPalette pal = opt ? opt->palette
+                                 : widget ? widget->palette()
+                                          : QPalette();
+        ret = pal.window().color().lightness() > pal.text().color().lightness()
+            ? 1 : 0;
         break;
+    }
     case SH_Slider_SnapToValue:
     case SH_PrintDialog_RightAlignButtons:
     case SH_FontDialog_SelectAssociatedText:
