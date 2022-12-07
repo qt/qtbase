@@ -140,7 +140,7 @@ qt_configure_process_path(INSTALL_SYSCONFDIR
 qt_configure_process_path(INSTALL_EXAMPLESDIR "examples" "Examples [PREFIX/examples]")
 qt_configure_process_path(INSTALL_TESTSDIR "tests" "Tests [PREFIX/tests]")
 qt_configure_process_path(INSTALL_DESCRIPTIONSDIR
-                         "${INSTALL_DATADIR}/modules"
+                         "${INSTALL_ARCHDATADIR}/modules"
                           "Module description files directory")
 
 if(NOT "${CMAKE_STAGING_PREFIX}" STREQUAL "")
