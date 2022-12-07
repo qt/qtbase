@@ -776,35 +776,49 @@ QWidget *QApplication::widgetAt(const QPoint &p)
 */
 bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventList *postedEvents)
 {
-    if ((event->type() == QEvent::UpdateRequest
-          || event->type() == QEvent::LayoutRequest
-          || event->type() == QEvent::Resize
-          || event->type() == QEvent::Move
-          || event->type() == QEvent::LanguageChange)) {
-        for (QPostEventList::const_iterator it = postedEvents->constBegin(); it != postedEvents->constEnd(); ++it) {
-            const QPostEvent &cur = *it;
-            if (cur.receiver != receiver || cur.event == nullptr || cur.event->type() != event->type())
-                continue;
-            if (cur.event->type() == QEvent::LayoutRequest
-                 || cur.event->type() == QEvent::UpdateRequest) {
-                ;
-            } else if (cur.event->type() == QEvent::Resize) {
-                static_cast<QResizeEvent *>(cur.event)->m_size =
-                    static_cast<const QResizeEvent *>(event)->size();
-            } else if (cur.event->type() == QEvent::Move) {
-                static_cast<QMoveEvent *>(cur.event)->m_pos =
-                    static_cast<const QMoveEvent *>(event)->pos();
-            } else if (cur.event->type() == QEvent::LanguageChange) {
-                ;
-            } else {
-                continue;
-            }
-            delete event;
-            return true;
-        }
-        return false;
+    // Only compress the following events:
+    const QEvent::Type type = event->type();
+    switch (type) {
+    case QEvent::UpdateRequest:
+    case QEvent::LayoutRequest:
+    case QEvent::Resize:
+    case QEvent::Move:
+    case QEvent::LanguageChange:
+        break;
+    default:
+        return QGuiApplication::compressEvent(event, receiver, postedEvents);
     }
-    return QGuiApplication::compressEvent(event, receiver, postedEvents);
+
+    for (const auto &postedEvent : std::as_const(*postedEvents)) {
+
+        // Continue, unless a valid event of the same type exists for the same receiver
+        if (postedEvent.receiver != receiver
+            || !postedEvent.event
+            || postedEvent.event->type() != type) {
+            continue;
+        }
+
+        // Handle type specific compression
+        switch (type) {
+        case QEvent::Resize:
+            static_cast<QResizeEvent *>(postedEvent.event)->m_size =
+                static_cast<const QResizeEvent *>(event)->size();
+            break;
+        case QEvent::Move:
+            static_cast<QMoveEvent *>(postedEvent.event)->m_pos =
+                static_cast<const QMoveEvent *>(event)->pos();
+            break;
+        case QEvent::UpdateRequest:
+        case QEvent::LanguageChange:
+        case QEvent::LayoutRequest:
+            break;
+        default:
+            continue;
+        }
+        delete event;
+        return true;
+    }
+    return false;
 }
 
 /*!
