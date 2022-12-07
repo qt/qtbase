@@ -147,7 +147,9 @@ function(qt_internal_setup_docker_test_fixture name)
     if (NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
       return()
     endif()
-    if (QT_SKIP_DOCKER_COMPOSE)
+
+    option(QT_SKIP_DOCKER_COMPOSE "Skip setting up docker on Linux." OFF)
+    if(QT_SKIP_DOCKER_COMPOSE)
       return()
     endif()
 
