@@ -5,10 +5,13 @@
 #define QWASMACCESIBILITY_H
 
 #include <QtCore/qhash.h>
+#include <private/qstdweb_p.h>
 #include <qpa/qplatformaccessibility.h>
 
 #include <emscripten/val.h>
 #include <QLoggingCategory>
+
+#include <map>
 
 Q_DECLARE_LOGGING_CATEGORY(lcQpaAccessibility)
 
@@ -18,6 +21,17 @@ public:
     QWasmAccessibility();
     ~QWasmAccessibility();
 
+    static QWasmAccessibility* get();
+
+    static void addAccessibilityEnableButton(QWindow *window);
+    static void removeAccessibilityEnableButton(QWindow *window);
+
+private:
+    void addAccessibilityEnableButtonImpl(QWindow *window);
+    void removeAccessibilityEnableButtonImpl(QWindow *window);
+    void enableAccessibility();
+
+    static emscripten::val getContainer(QWindow *window);
     static emscripten::val getContainer(QAccessibleInterface *iface);
     static emscripten::val getDocument(const emscripten::val &container);
     static emscripten::val getDocument(QAccessibleInterface *iface);
@@ -27,19 +41,24 @@ public:
     emscripten::val ensureHtmlElement(QAccessibleInterface *iface);
     void setHtmlElementVisibility(QAccessibleInterface *iface, bool visible);
     void setHtmlElementGeometry(QAccessibleInterface *iface);
-    void setHtmlElementGeometry(QAccessibleInterface *iface, emscripten::val element);
+    void setHtmlElementGeometry(emscripten::val element, QRect geometry);
     void setHtmlElementTextName(QAccessibleInterface *iface);
 
     void handleStaticTextUpdate(QAccessibleEvent *event);
     void handleButtonUpdate(QAccessibleEvent *event);
     void handleCheckBoxUpdate(QAccessibleEvent *event);
 
+    void populateAccessibilityTree(QAccessibleInterface *iface);
     void notifyAccessibilityUpdate(QAccessibleEvent *event) override;
     void setRootObject(QObject *o) override;
     void initialize() override;
     void cleanup() override;
 
 private:
+    static QWasmAccessibility *s_instance;
+    QObject *m_rootObject = nullptr;
+    bool m_accessibilityEnabled = false;
+    std::map<QWindow *, std::tuple<emscripten::val, std::shared_ptr<qstdweb::EventCallback>>> m_enableButtons;
     QHash<QAccessibleInterface *, emscripten::val> m_elements;
 
 };
