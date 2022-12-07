@@ -699,7 +699,9 @@ QString QDir::canonicalPath() const
 QString QDir::dirName() const
 {
     const QDirPrivate* d = d_ptr.constData();
-    return d->dirEntry.fileName();
+    if (!d_ptr->fileEngine)
+        return d->dirEntry.fileName();
+    return d->fileEngine->fileName(QAbstractFileEngine::BaseName);
 }
 
 
