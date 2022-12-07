@@ -31,7 +31,13 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(lcTlsBackend, "qt.tlsbackend.ossl");
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
+constexpr auto DefaultWarningLevel = QtCriticalMsg;
+#else
+constexpr auto DefaultWarningLevel = QtDebugMsg;
+#endif
+
+Q_LOGGING_CATEGORY(lcTlsBackend, "qt.tlsbackend.ossl", DefaultWarningLevel);
 
 static void q_loadCiphersForConnection(SSL *connection, QList<QSslCipher> &ciphers,
                                        QList<QSslCipher> &defaultCiphers)
