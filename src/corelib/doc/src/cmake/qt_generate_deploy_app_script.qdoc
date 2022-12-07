@@ -13,7 +13,6 @@
 \include cmake-find-package-core.qdocinc
 
 \cmakecommandsince 6.3
-\preliminarycmakecommand
 \note This command is currently only supported on Windows and macOS.
 
 \section1 Synopsis

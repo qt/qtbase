@@ -17,7 +17,6 @@ can only be called from a deployment script. It cannot be called directly by the
 project during the configure stage.
 
 \cmakecommandsince 6.3
-\preliminarycmakecommand
 \note This command does not usually need to be called directly. It is used
       internally by other higher level commands, but projects wishing to
       implement more customized deployment logic may find it useful.

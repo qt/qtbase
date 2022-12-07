@@ -19,7 +19,6 @@
 \include cmake-deploy-var-usage.qdocinc
 
 \cmakevariablesince 6.3
-\preliminarycmakevariable
 
 \c{QT_DEPLOY_PREFIX} provides the base deployment directory. The other
 \c{QT_DEPLOY_..._DIR} variables should be treated as relative to this location.
@@ -64,7 +63,6 @@ variables.
 \include cmake-deploy-var-usage.qdocinc
 
 \cmakevariablesince 6.3
-\preliminarycmakevariable
 
 Projects should use \c QT_DEPLOY_BIN_DIR in their deploy scripts to avoid
 hard-coding a particular directory in which to deploy the following types of
@@ -105,7 +103,6 @@ should not be used for that scenario.
 \include cmake-deploy-var-usage.qdocinc
 
 \cmakevariablesince 6.3
-\preliminarycmakevariable
 
 Projects should use \c QT_DEPLOY_LIB_DIR in their deploy scripts to avoid
 hard-coding a particular directory in which to deploy the following types of
@@ -147,7 +144,6 @@ should not be used for that scenario.
 \include cmake-deploy-var-usage.qdocinc
 
 \cmakevariablesince 6.3
-\preliminarycmakevariable
 
 Projects should use \c QT_DEPLOY_PLUGINS_DIR in their deploy scripts to avoid
 hard-coding a particular directory under which to deploy plugins.
@@ -183,7 +179,6 @@ bundle contents.
 \include cmake-deploy-var-usage.qdocinc
 
 \cmakevariablesince 6.3
-\preliminarycmakevariable
 
 Projects should use \c QT_DEPLOY_QML_DIR in their deploy scripts to avoid
 hard-coding a particular directory under which to deploy QML modules.
@@ -221,7 +216,6 @@ to be deployed to different locations within the app bundle.
 \include cmake-deploy-var-usage.qdocinc
 
 \cmakevariablesince 6.5
-\preliminarycmakevariable
 
 Projects should use \c QT_DEPLOY_TRANSLATIONS_DIR in their deploy scripts to
 avoid hard-coding a particular directory under which to deploy translations.
@@ -254,7 +248,6 @@ This variable is not meaningful when deploying on macOS or Windows.
 \include cmake-deploy-var-usage.qdocinc
 
 \cmakevariablesince 6.5
-\preliminarycmakevariable
 
 This variable contains a list of directories that are not taken into account
 when searching for runtime dependencies with \l{qt_deploy_runtime_dependencies}.

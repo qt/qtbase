@@ -13,7 +13,6 @@
 \include cmake-find-package-core.qdocinc
 
 \cmakecommandsince 6.5
-\preliminarycmakecommand
 
 \section1 Synopsis
 

@@ -2694,8 +2694,6 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endmacro()
 endif()
 
-# This function is currently in Technical Preview.
-# Its signature and behavior might change.
 function(qt6_generate_deploy_script)
     set(no_value_options "")
     set(single_value_options
@@ -2775,8 +2773,6 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endmacro()
 endif()
 
-# This function is currently in Technical Preview.
-# Its signature and behavior might change.
 function(qt6_generate_deploy_app_script)
     # We use a TARGET keyword option instead of taking the target as the first
     # positional argument. This is to keep open the possibility of deploying
