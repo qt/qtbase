@@ -414,7 +414,6 @@ source file properties:
 \summary {Specifies the Qt resource alias for a file in a resource.}
 
 \cmakepropertysince 6.0
-\preliminarycmakeproperty
 
 When using the target-based variant of \l{qt6_add_resources}{qt_add_resources}
 the property value overrides the runtime path where the resource file is found.
