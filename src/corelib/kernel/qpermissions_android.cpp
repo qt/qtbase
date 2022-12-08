@@ -10,9 +10,9 @@
 
 #include "private/qandroidextras_p.h"
 
-using namespace Qt::StringLiterals;
-
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::StringLiterals;
 
 static QStringList nativeLocationPermission(const QLocationPermission &permission)
 {
