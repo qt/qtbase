@@ -63,6 +63,15 @@ public:
 
     constexpr int count() const { return int(m_offsets.size()) - 1; }
 
+    bool contains(QByteArrayView needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    {
+        for (qsizetype i = 0; i < count(); ++i) {
+            if (viewAt(i).compare(needle, cs) == 0)
+                return true;
+        }
+        return false;
+    }
+
 private:
     StaticString m_string;
     OffsetList m_offsets;

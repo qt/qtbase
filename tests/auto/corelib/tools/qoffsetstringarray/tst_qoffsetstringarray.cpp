@@ -13,6 +13,7 @@ class tst_QOffsetStringArray : public QObject
 private slots:
     void init();
     void access();
+    void contains();
 };
 
 
@@ -89,6 +90,16 @@ void tst_QOffsetStringArray::access()
     QCOMPARE(messages[6], "");
 }
 
+void tst_QOffsetStringArray::contains()
+{
+    QVERIFY(!messages.contains(""));
+    QVERIFY( messages.contains("level - 0"));
+    std::string l2 = "level - 2"; // make sure we don't compare pointer values
+    QVERIFY( messages.contains(l2));
+    QByteArray L4 = "Level - 4";
+    QVERIFY( messages.contains(L4, Qt::CaseInsensitive));
+    QVERIFY(!messages.contains(L4, Qt::CaseSensitive));
+}
 
 QTEST_APPLESS_MAIN(tst_QOffsetStringArray)
 #include "tst_qoffsetstringarray.moc"

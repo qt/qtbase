@@ -9,6 +9,7 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qthread.h>
+#include <QtCore/private/qoffsetstringarray_p.h>
 #include <QtCore/private/qtools_p.h>
 
 #include <private/qnetworkaccessmanager_p.h>
@@ -18,8 +19,12 @@
 #include <emscripten/fetch.h>
 
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::StringLiterals;
+
 namespace {
-constexpr const char *BannedHeaders[] = {
+
+static constexpr auto BannedHeaders = qOffsetStringArray(
     "accept-charset",
     "accept-encoding",
     "access-control-request-headers",
@@ -39,19 +44,14 @@ constexpr const char *BannedHeaders[] = {
     "trailer",
     "transfer-encoding",
     "upgrade",
-    "via",
-};
+    "via"
+);
 
-bool isUnsafeHeader(QLatin1StringView header)
+bool isUnsafeHeader(QLatin1StringView header) noexcept
 {
-    return header.startsWith(QStringLiteral("proxy-"), Qt::CaseInsensitive)
-            || header.startsWith(QStringLiteral("sec-"), Qt::CaseInsensitive)
-            || std::any_of(std::begin(BannedHeaders), std::end(BannedHeaders),
-                           [&header](const char *bannedHeader) {
-                               return 0
-                                       == header.compare(QLatin1StringView(bannedHeader),
-                                                         Qt::CaseInsensitive);
-                           });
+    return header.startsWith("proxy-"_L1, Qt::CaseInsensitive)
+        || header.startsWith("sec-"_L1, Qt::CaseInsensitive)
+        || BannedHeaders.contains(header, Qt::CaseInsensitive);
 }
 } // namespace
 
