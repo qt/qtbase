@@ -748,7 +748,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_freetype
         WrapFreetype::WrapFreetype
 )
 
-qt_internal_extend_target(Gui CONDITION QT_FEATURE_freetype AND UNIX AND NOT APPLE
+qt_internal_extend_target(Gui CONDITION UNIX AND NOT APPLE
     SOURCES
         text/unix/qgenericunixfontdatabase_p.h
 )

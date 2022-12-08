@@ -20,9 +20,12 @@
 #if QT_CONFIG(fontconfig)
 #include <QtGui/private/qfontconfigdatabase_p.h>
 using QGenericUnixFontDatabase = QFontconfigDatabase;
-#else
+#elif QT_CONFIG(freetype)
 #include <QtGui/private/qfreetypefontdatabase_p.h>
 using QGenericUnixFontDatabase = QFreeTypeFontDatabase;
-#endif //Q_FONTCONFIGDATABASE
+#else
+#include <qpa/qplatformfontdatabase.h>
+using QGenericUnixFontDatabase = QPlatformFontDatabase;
+#endif
 
 #endif // QGENERICUNIXFONTDATABASE_H

@@ -6,11 +6,11 @@
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qplatformfontdatabase.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 
-#include <QtGui/private/qfreetypefontdatabase_p.h>
 #if defined(Q_OS_WIN)
 #  include <QtGui/private/qwindowsfontdatabase_p.h>
 #  if QT_CONFIG(freetype)
@@ -22,11 +22,11 @@
 
 #if QT_CONFIG(fontconfig)
 #  include <QtGui/private/qgenericunixfontdatabase_p.h>
-#  include <qpa/qplatformfontdatabase.h>
 #endif
 
 #if QT_CONFIG(freetype)
 #include <QtGui/private/qfontengine_ft_p.h>
+#include <QtGui/private/qfreetypefontdatabase_p.h>
 #endif
 
 #if !defined(Q_OS_WIN)
