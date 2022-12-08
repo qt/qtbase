@@ -702,7 +702,6 @@ public:
         SH_TabBar_AllowWheelScrolling,
         SH_Table_AlwaysDrawLeftTopGridLines,
         SH_SpinBox_SelectOnStep,
-        SH_SupportsDarkAppearance,
         // Add new style hint values here
 
         SH_CustomBase = 0xf0000000

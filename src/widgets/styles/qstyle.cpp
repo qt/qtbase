@@ -1987,13 +1987,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
            not when the header is hidden. Defaults to false.
            This enum value has been introduced in Qt 6.3.
 
-    \value SH_SupportsDarkAppearance
-           Determines whether the style is able to render a UI correctly with
-           a dark palette. Defaults to false. Style implementors should return true
-           if they have tested the style with a palette where the background colors
-           are darker than the foreground colors.
-           This enum value has been introduced in Qt 6.5.
-
     \sa styleHint()
 */
 

@@ -2892,9 +2892,6 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     case SH_TabBar_AllowWheelScrolling:
         ret = false;
         break;
-    case SH_SupportsDarkAppearance:
-        ret = true;
-        break;
     default:
         ret = QCommonStyle::styleHint(sh, opt, w, hret);
         break;

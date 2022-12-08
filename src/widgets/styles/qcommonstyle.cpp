@@ -5407,7 +5407,6 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_ItemView_PaintAlternatingRowColorsForEmptyArea:
     case SH_ComboBox_UseNativePopup:
     case SH_Table_AlwaysDrawLeftTopGridLines:
-    case SH_SupportsDarkAppearance:
         ret = false;
         break;
     case SH_MenuBar_AltKeyNavigation:

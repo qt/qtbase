@@ -3630,7 +3630,6 @@ int QFusionStyle::styleHint(StyleHint hint, const QStyleOption *option, const QW
     case SH_MenuBar_MouseTracking:
     case SH_Menu_MouseTracking:
     case SH_Menu_SupportsSections:
-    case SH_SupportsDarkAppearance:
         return 1;
 
 #if defined(QT_PLATFORM_UIKIT)

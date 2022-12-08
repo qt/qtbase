@@ -2316,10 +2316,6 @@ int QWindowsVistaStyle::styleHint(StyleHint hint, const QStyleOption *option, co
         ret = 1;
         break;
 
-    case SH_SupportsDarkAppearance:
-        ret = 0;
-        break;
-
     default:
         ret = QWindowsStyle::styleHint(hint, option, widget, returnData);
         break;
