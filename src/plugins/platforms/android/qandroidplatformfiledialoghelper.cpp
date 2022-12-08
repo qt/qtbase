@@ -97,6 +97,22 @@ void QAndroidPlatformFileDialogHelper::setInitialFileName(const QString &title)
                               extraTitle.object(), QJniObject::fromString(title).object());
 }
 
+void QAndroidPlatformFileDialogHelper::setInitialDirectoryUri(const QString &directory)
+{
+    if (directory.isEmpty())
+        return;
+
+    if (QNativeInterface::QAndroidApplication::sdkVersion() < 26)
+        return;
+
+    const auto extraInitialUri = QJniObject::getStaticObjectField(
+            "android/provider/DocumentsContract", "EXTRA_INITIAL_URI", "Ljava/lang/String;");
+    m_intent.callObjectMethod("putExtra",
+                              "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;",
+                              extraInitialUri.object(),
+                              QJniObject::fromString(directory).object());
+}
+
 void QAndroidPlatformFileDialogHelper::setOpenableCategory()
 {
     const QJniObject CATEGORY_OPENABLE = QJniObject::getStaticObjectField(
@@ -179,11 +195,8 @@ bool QAndroidPlatformFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::Win
     if (options()->acceptMode() == QFileDialogOptions::AcceptSave) {
         m_intent = getFileDialogIntent("ACTION_CREATE_DOCUMENT");
         const QList<QUrl> selectedFiles = options()->initiallySelectedFiles();
-        if (selectedFiles.size() > 0) {
-            // TODO: The initial folder to show at the start should be handled by EXTRA_INITIAL_URI
-            // Take only the file name.
+        if (selectedFiles.size() > 0)
             setInitialFileName(selectedFiles.first().fileName());
-        }
     } else if (options()->acceptMode() == QFileDialogOptions::AcceptOpen) {
         switch (options()->fileMode()) {
         case QFileDialogOptions::FileMode::DirectoryOnly:
@@ -207,6 +220,8 @@ bool QAndroidPlatformFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::Win
         setMimeTypes();
     }
 
+    setInitialDirectoryUri(m_directory.toString());
+
     QtAndroidPrivate::registerActivityResultListener(this);
     m_activity.callMethod<void>("startActivityForResult", "(Landroid/content/Intent;I)V",
                               m_intent.object(), REQUEST_CODE);
@@ -218,6 +233,11 @@ void QAndroidPlatformFileDialogHelper::hide()
     if (m_eventLoop.isRunning())
         m_eventLoop.exit();
     QtAndroidPrivate::unregisterActivityResultListener(this);
+}
+
+void QAndroidPlatformFileDialogHelper::setDirectory(const QUrl &directory)
+{
+    m_directory = directory;
 }
 
 void QAndroidPlatformFileDialogHelper::exec()
