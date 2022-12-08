@@ -159,6 +159,7 @@ HostSpec=${QT_QMAKE_HOST_MKSPEC}
     endif()
 
     set(host_qt_bindir "${host_prefix}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}")
+    file(TO_NATIVE_PATH "${host_qt_bindir}" host_qt_bindir)
 
     if(QT_CREATE_VERSIONED_HARD_LINK)
         set(tool_version "${PROJECT_VERSION_MAJOR}")
