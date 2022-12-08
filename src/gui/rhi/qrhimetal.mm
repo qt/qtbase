@@ -5483,10 +5483,11 @@ QSize QMetalSwapChain::surfacePixelSize()
     if (!layer)
         layer = layerForWindow(m_window);
 
-    CGSize layerSize = layer.bounds.size;
-    layerSize.width *= layer.contentsScale;
-    layerSize.height *= layer.contentsScale;
-    return QSizeF::fromCGSize(layerSize).toSize();
+    int height = (int)layer.bounds.size.height;
+    int width = (int)layer.bounds.size.width;
+    width *= layer.contentsScale;
+    height *= layer.contentsScale;
+    return QSize(width, height);
 }
 
 bool QMetalSwapChain::isFormatSupported(Format f)
@@ -5592,7 +5593,9 @@ bool QMetalSwapChain::createOrResize()
     // Now set the layer's drawableSize which will stay set to the same value
     // until the next createOrResize(), thus ensuring atomicity with regards to
     // the drawable size in frames.
-    CGSize layerSize = d->layer.bounds.size;
+    int width = (int)d->layer.bounds.size.width;
+    int height = (int)d->layer.bounds.size.height;
+    CGSize layerSize = CGSizeMake(width, height);
     layerSize.width *= d->layer.contentsScale;
     layerSize.height *= d->layer.contentsScale;
     d->layer.drawableSize = layerSize;
