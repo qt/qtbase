@@ -1,6 +1,7 @@
 {
     "name": "${target}",
-    "version": "${PROJECT_VERSION}",
+    "repository": "${lower_case_project_name}",
+    "version": "${PROJECT_VERSION}",${extra_module_information}
     "built_with": {${extra_build_information}
         "compiler_id": "${CMAKE_CXX_COMPILER_ID}",
         "compiler_target": "${CMAKE_CXX_COMPILER_TARGET}",
