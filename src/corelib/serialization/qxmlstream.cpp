@@ -3063,13 +3063,19 @@ void QXmlStreamWriterPrivate::indent(int level)
 
 void QXmlStreamWriterPrivate::doWriteToDevice(QStringView s)
 {
-    QStringEncoder toUtf8(QStringEncoder::Utf8, QStringEncoder::Flag::Stateless);
-    QByteArray bytes = toUtf8(s);
-    if (toUtf8.hasError()) {
-        hasEncodingError = true;
-        return;
+    constexpr qsizetype MaxChunkSize = 512;
+    char buffer [3 * MaxChunkSize];
+    QStringEncoder::State state;
+    while (!s.isEmpty()) {
+        const qsizetype chunkSize = std::min(s.size(), MaxChunkSize);
+        char *end = QUtf8::convertFromUnicode(buffer, s.first(chunkSize), &state);
+        if (state.remainingChars > 0) {
+            hasEncodingError = true;
+            return;
+        }
+        doWriteToDevice(QUtf8StringView{buffer, end});
+        s = s.sliced(chunkSize);
     }
-    doWriteToDevice(QUtf8StringView{bytes});
 }
 
 void QXmlStreamWriterPrivate::doWriteToDevice(QUtf8StringView s)
