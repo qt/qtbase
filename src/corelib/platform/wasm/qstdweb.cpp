@@ -642,7 +642,7 @@ EventCallback::EventCallback(emscripten::val element, const std::string &name, c
 
 void EventCallback::activate(emscripten::val event)
 {
-    emscripten::val target = event["target"];
+    emscripten::val target = event["currentTarget"];
     std::string eventName = event["type"].as<std::string>();
     emscripten::val property = target[contextPropertyName(eventName)];
     // This might happen when the event bubbles
