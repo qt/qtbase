@@ -3085,10 +3085,14 @@ void QXmlStreamWriterPrivate::doWriteToDevice(QUtf8StringView s)
 
 void QXmlStreamWriterPrivate::doWriteToDevice(QLatin1StringView s)
 {
-    QByteArray utf8(s.size() * 2, Qt::Uninitialized);
-    char *end = QUtf8::convertFromLatin1(utf8.data(), s);
-    utf8.truncate(end - utf8.data());
-    doWriteToDevice(QUtf8StringView{utf8});
+    constexpr qsizetype MaxChunkSize = 512;
+    char buffer [2 * MaxChunkSize];
+    while (!s.isEmpty()) {
+        const qsizetype chunkSize = std::min(s.size(), MaxChunkSize);
+        char *end = QUtf8::convertFromLatin1(buffer, s.first(chunkSize));
+        doWriteToDevice(QUtf8StringView{buffer, end});
+        s = s.sliced(chunkSize);
+    }
 }
 
 /*!
