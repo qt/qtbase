@@ -368,6 +368,17 @@ void QXmlStreamReader::addData(const char *data)
 
 #endif // QT_CONFIG(xmlstreamreader)
 
+#if QT_CONFIG(xmlstreamwriter)
+
+#include "qxmlstream.h"
+
+void QXmlStreamWriter::writeCDATA(const QString &text)
+{
+    writeCDATA(qToAnyStringViewIgnoringNull(text));
+}
+
+#endif // QT_CONFIG(xmlstreamwriter)
+
 // inlined API
 #include "qfloat16.h"
 #include "qstring.h"

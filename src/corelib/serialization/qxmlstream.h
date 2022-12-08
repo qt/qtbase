@@ -344,7 +344,9 @@ public:
     void writeAttribute(const QXmlStreamAttribute& attribute);
     void writeAttributes(const QXmlStreamAttributes& attributes);
 
+#if QT_CORE_REMOVED_SINCE(6,5)
     void writeCDATA(const QString &text);
+#endif
     void writeCharacters(const QString &text);
     void writeComment(const QString &text);
 
@@ -355,6 +357,7 @@ public:
 
     void writeTextElement(const QString &qualifiedName, const QString &text);
     void writeTextElement(const QString &namespaceUri, const QString &name, const QString &text);
+    void writeCDATA(QAnyStringView text);
 
     void writeEndDocument();
     void writeEndElement();

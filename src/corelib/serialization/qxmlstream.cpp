@@ -44,7 +44,64 @@ auto reversed(Range &r)
 
 template <typename Range>
 void reversed(const Range &&) = delete;
+
+// implementation of missing QUtf8StringView methods for ASCII-only needles:
+auto transform(QLatin1StringView haystack, char needle)
+{
+    struct R { QLatin1StringView haystack; char16_t needle; };
+    return R{haystack, uchar(needle)};
 }
+
+auto transform(QStringView haystack, char needle)
+{
+    struct R { QStringView haystack; char16_t needle; };
+    return R{haystack, uchar(needle)};
+}
+
+auto transform(QUtf8StringView haystack, char needle)
+{
+    struct R { QByteArrayView haystack; char needle; };
+    return R{haystack, needle};
+}
+
+[[maybe_unused]]
+auto transform(QLatin1StringView haystack, QLatin1StringView needle)
+{
+    struct R { QLatin1StringView haystack; QLatin1StringView needle; };
+    return R{haystack, needle};
+}
+
+[[maybe_unused]]
+auto transform(QStringView haystack, QLatin1StringView needle)
+{
+    struct R { QStringView haystack; QLatin1StringView needle; };
+    return R{haystack, needle};
+}
+
+[[maybe_unused]]
+auto transform(QUtf8StringView haystack, QLatin1StringView needle)
+{
+    struct R { QLatin1StringView haystack; QLatin1StringView needle; };
+    return R{QLatin1StringView{QByteArrayView{haystack}}, needle};
+}
+
+#define WRAP(method, Needle)                               \
+    auto method (QAnyStringView s, Needle needle) noexcept \
+    {                                                      \
+        return s.visit([needle](auto s) {                  \
+            auto r = transform(s, needle);                 \
+            return r.haystack. method (r.needle);          \
+        });                                                \
+    }                                                      \
+    /*end*/
+
+WRAP(count, char)
+WRAP(contains, char)
+WRAP(contains, QLatin1StringView)
+WRAP(endsWith, char)
+WRAP(indexOf, QLatin1StringView)
+
+} // unnamed namespace
 
 /*!
     \enum QXmlStreamReader::TokenType
@@ -3216,7 +3273,7 @@ void QXmlStreamWriter::writeAttribute(const QString &qualifiedName, const QStrin
 {
     Q_D(QXmlStreamWriter);
     Q_ASSERT(d->inStartElement);
-    Q_ASSERT(qualifiedName.count(u':') <= 1);
+    Q_ASSERT(count(qualifiedName, ':') <= 1);
     d->write(" ");
     d->write(qualifiedName);
     d->write("=\"");
@@ -3236,7 +3293,7 @@ void QXmlStreamWriter::writeAttribute(const QString &namespaceUri, const QString
 {
     Q_D(QXmlStreamWriter);
     Q_ASSERT(d->inStartElement);
-    Q_ASSERT(!name.contains(u':'));
+    Q_ASSERT(!contains(name, ':'));
     QXmlStreamWriterPrivate::NamespaceDeclaration &namespaceDeclaration = d->findNamespace(namespaceUri, true, true);
     d->write(" ");
     if (!namespaceDeclaration.prefix.isEmpty()) {
@@ -3295,15 +3352,26 @@ void QXmlStreamWriter::writeAttributes(const QXmlStreamAttributes& attributes)
   This function mainly exists for completeness. Normally you should
   not need use it, because writeCharacters() automatically escapes all
   non-content characters.
+
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
  */
-void QXmlStreamWriter::writeCDATA(const QString &text)
+void QXmlStreamWriter::writeCDATA(QAnyStringView text)
 {
     Q_D(QXmlStreamWriter);
     d->finishStartElement();
-    QString copy(text);
-    copy.replace("]]>"_L1, "]]]]><![CDATA[>"_L1);
     d->write("<![CDATA[");
-    d->write(copy);
+    while (!text.isEmpty()) {
+        const auto idx = indexOf(text, "]]>"_L1);
+        if (idx < 0)
+            break;                   // no forbidden sequence found
+        d->write(text.first(idx));
+        d->write("]]"                // text[idx, idx + 2)
+                 "]]><![CDATA["      // escape sequence to separate ]] and >
+                 ">");               // text[idx + 2, idx + 3)
+        text = text.sliced(idx + 3); // skip over "]]>"
+    }
+    d->write(text); // write remainder
     d->write("]]>");
 }
 
@@ -3329,7 +3397,7 @@ void QXmlStreamWriter::writeCharacters(const QString &text)
 void QXmlStreamWriter::writeComment(const QString &text)
 {
     Q_D(QXmlStreamWriter);
-    Q_ASSERT(!text.contains("--"_L1) && !text.endsWith(u'-'));
+    Q_ASSERT(!contains(text, "--"_L1) && !endsWith(text, '-'));
     if (!d->finishStartElement(false) && d->autoFormatting)
         d->indent(d->tagStack.size());
     d->write("<!--");
@@ -3362,7 +3430,7 @@ void QXmlStreamWriter::writeDTD(const QString &dtd)
 void QXmlStreamWriter::writeEmptyElement(const QString &qualifiedName)
 {
     Q_D(QXmlStreamWriter);
-    Q_ASSERT(qualifiedName.count(u':') <= 1);
+    Q_ASSERT(count(qualifiedName, ':') <= 1);
     d->writeStartElement(QString(), qualifiedName);
     d->inEmptyElement = true;
 }
@@ -3378,7 +3446,7 @@ void QXmlStreamWriter::writeEmptyElement(const QString &qualifiedName)
 void QXmlStreamWriter::writeEmptyElement(const QString &namespaceUri, const QString &name)
 {
     Q_D(QXmlStreamWriter);
-    Q_ASSERT(!name.contains(u':'));
+    Q_ASSERT(!contains(name, ':'));
     d->writeStartElement(namespaceUri, name);
     d->inEmptyElement = true;
 }
@@ -3544,7 +3612,7 @@ void QXmlStreamWriter::writeDefaultNamespace(const QString &namespaceUri)
 void QXmlStreamWriter::writeProcessingInstruction(const QString &target, const QString &data)
 {
     Q_D(QXmlStreamWriter);
-    Q_ASSERT(!data.contains("?>"_L1));
+    Q_ASSERT(!contains(data, "?>"_L1));
     if (!d->finishStartElement(false) && d->autoFormatting)
         d->indent(d->tagStack.size());
     d->write("<?");
@@ -3618,7 +3686,7 @@ void QXmlStreamWriter::writeStartDocument(const QString &version, bool standalon
 void QXmlStreamWriter::writeStartElement(const QString &qualifiedName)
 {
     Q_D(QXmlStreamWriter);
-    Q_ASSERT(qualifiedName.count(u':') <= 1);
+    Q_ASSERT(count(qualifiedName, ':') <= 1);
     d->writeStartElement(QString(), qualifiedName);
 }
 
@@ -3634,7 +3702,7 @@ void QXmlStreamWriter::writeStartElement(const QString &qualifiedName)
 void QXmlStreamWriter::writeStartElement(const QString &namespaceUri, const QString &name)
 {
     Q_D(QXmlStreamWriter);
-    Q_ASSERT(!name.contains(u':'));
+    Q_ASSERT(!contains(name, ':'));
     d->writeStartElement(namespaceUri, name);
 }
 
