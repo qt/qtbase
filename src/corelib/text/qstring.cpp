@@ -2924,7 +2924,6 @@ QString &QString::operator=(QChar ch)
     defined.
 */
 
-
 /*!
     \fn QString& QString::insert(qsizetype position, const QByteArray &str)
     \since 5.5
@@ -2940,6 +2939,38 @@ QString &QString::operator=(QChar ch)
     defined.
 */
 
+
+template <typename T>
+static void insert_helper(QString &str, qsizetype i, T toInsert)
+{
+    auto &str_d = str.data_ptr();
+    qsizetype difference = 0;
+    if (Q_UNLIKELY(i > str_d.size))
+        difference = i - str_d.size;
+    const qsizetype oldSize = str_d.size;
+    const qsizetype insert_size = toInsert.size();
+    const qsizetype newSize = str_d.size + difference + insert_size;
+    const auto side = i == 0 ? QArrayData::GrowsAtBeginning : QArrayData::GrowsAtEnd;
+    str_d.detachAndGrow(side, difference + insert_size, nullptr, nullptr);
+    Q_CHECK_PTR(str_d.data());
+    str.resize(newSize);
+
+    auto begin = str_d.begin();
+    auto old_end = std::next(begin, oldSize);
+    std::fill_n(old_end, difference, u' ');
+    auto insert_start = std::next(begin, i);
+    if (difference == 0)
+        std::move_backward(insert_start, old_end, str_d.end());
+
+    using Char = std::remove_cv_t<typename T::value_type>;
+    if constexpr(std::is_same_v<Char, QChar>)
+        std::copy_n(reinterpret_cast<const char16_t *>(toInsert.data()), insert_size, insert_start);
+    else if constexpr (std::is_same_v<Char, char16_t>)
+        std::copy_n(toInsert.data(), insert_size, insert_start);
+    else if constexpr (std::is_same_v<Char, char>)
+        qt_from_latin1(insert_start, toInsert.data(), insert_size);
+}
+
 /*!
     \fn QString &QString::insert(qsizetype position, QLatin1StringView str)
     \overload insert()
@@ -2954,22 +2985,7 @@ QString &QString::insert(qsizetype i, QLatin1StringView str)
     if (i < 0 || !s || !(*s))
         return *this;
 
-    const qsizetype len = str.size();
-    qsizetype difference = 0;
-    if (Q_UNLIKELY(i > size()))
-        difference = i - size();
-    const qsizetype oldSize = d.size;
-    d.detachAndGrow(Data::GrowsAtEnd, difference + len, nullptr, nullptr);
-    Q_CHECK_PTR(d.data());
-    resize(d.size + difference + len);
-
-    auto begin = d.data();
-    auto old_end = std::next(begin, oldSize);
-    std::fill_n(old_end, difference, u' ');
-    auto insert_start = std::next(begin, i);
-    if (difference == 0)
-        std::move_backward(insert_start, old_end, d.end());
-    qt_from_latin1(insert_start, s, len);
+    insert_helper(*this, i, str);
     return *this;
 }
 
@@ -3008,27 +3024,12 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
     if (i < 0 || size <= 0)
         return *this;
 
-    const char16_t *s = reinterpret_cast<const char16_t *>(unicode);
-
     // In case when data points into "this"
-    if (!d->needsDetach() && QtPrivate::q_points_into_range(s, d))
-        return insert(i, QStringView{QVarLengthArray(s, s + size)});
-
-    const qsizetype difference = i > d.size ? i - d.size : 0;
-    const qsizetype oldSize = d.size;
-    const qsizetype newSize = d.size + difference + size;
-    const auto side = i == 0 ? Data::GrowsAtBeginning : Data::GrowsAtEnd;
-    d.detachAndGrow(side, difference + size, nullptr, nullptr);
-    Q_CHECK_PTR(d.data());
-    resize(newSize);
-
-    auto begin = d.begin();
-    auto old_end = std::next(begin, oldSize);
-    std::fill_n(old_end, difference, u' ');
-    auto insert_start = std::next(begin, i);
-    if (difference == 0)
-        std::move_backward(insert_start, old_end, d.end());
-    std::copy_n(s, size, insert_start);
+    if (!d->needsDetach() && QtPrivate::q_points_into_range(unicode, *this)) {
+        insert_helper(*this, i, QVarLengthArray<QChar>(unicode, unicode + size));
+    } else {
+        insert_helper(*this, i, QStringView(unicode, size));
+    }
 
     return *this;
 }
