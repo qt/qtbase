@@ -996,6 +996,14 @@ Q_CORE_EXPORT void qt_from_latin1(char16_t *dst, const char *str, size_t size) n
 #endif
 }
 
+static QVarLengthArray<char16_t> qt_from_latin1_to_qvla(QLatin1StringView str) noexcept
+{
+    const qsizetype len = str.size();
+    QVarLengthArray<char16_t> arr(len);
+    qt_from_latin1(arr.data(), str.data(), len);
+    return arr;
+}
+
 template <bool Checked>
 static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype length)
 {
@@ -3840,10 +3848,8 @@ QString &QString::replace(QLatin1StringView before, QLatin1StringView after, Qt:
     if (blen == 1 && alen == 1)
         return replace(before.front(), after.front(), cs);
 
-    QVarLengthArray<char16_t> a(alen);
-    QVarLengthArray<char16_t> b(blen);
-    qt_from_latin1(a.data(), after.latin1(), alen);
-    qt_from_latin1(b.data(), before.latin1(), blen);
+    QVarLengthArray<char16_t> a = qt_from_latin1_to_qvla(after);
+    QVarLengthArray<char16_t> b = qt_from_latin1_to_qvla(before);
     return replace((const QChar *)b.data(), blen, (const QChar *)a.data(), alen, cs);
 }
 
@@ -3865,8 +3871,7 @@ QString &QString::replace(QLatin1StringView before, const QString &after, Qt::Ca
     if (blen == 1 && after.size() == 1)
         return replace(before.front(), after.front(), cs);
 
-    QVarLengthArray<char16_t> b(blen);
-    qt_from_latin1(b.data(), before.latin1(), blen);
+    QVarLengthArray<char16_t> b = qt_from_latin1_to_qvla(before);
     return replace((const QChar *)b.data(), blen, after.constData(), after.d.size, cs);
 }
 
@@ -3888,8 +3893,7 @@ QString &QString::replace(const QString &before, QLatin1StringView after, Qt::Ca
     if (before.size() == 1 && alen == 1)
         return replace(before.front(), after.front(), cs);
 
-    QVarLengthArray<char16_t> a(alen);
-    qt_from_latin1(a.data(), after.latin1(), alen);
+    QVarLengthArray<char16_t> a = qt_from_latin1_to_qvla(after);
     return replace(before.constData(), before.d.size, (const QChar *)a.data(), alen, cs);
 }
 
@@ -3911,11 +3915,9 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     if (alen == 1)
         return replace(c, after.front(), cs);
 
-    QVarLengthArray<char16_t> a(alen);
-    qt_from_latin1(a.data(), after.latin1(), alen);
+    QVarLengthArray<char16_t> a = qt_from_latin1_to_qvla(after);
     return replace(&c, 1, (const QChar *)a.data(), alen, cs);
 }
-
 
 /*!
     \fn bool QString::operator==(const QString &s1, const QString &s2)
@@ -8383,8 +8385,7 @@ QString QString::arg(QStringView a, int fieldWidth, QChar fillChar) const
 */
 QString QString::arg(QLatin1StringView a, int fieldWidth, QChar fillChar) const
 {
-    QVarLengthArray<char16_t> utf16(a.size());
-    qt_from_latin1(utf16.data(), a.data(), a.size());
+    QVarLengthArray<char16_t> utf16 = qt_from_latin1_to_qvla(a);
     return arg(QStringView(utf16.data(), utf16.size()), fieldWidth, fillChar);
 }
 
@@ -10655,9 +10656,7 @@ qsizetype QtPrivate::count(QStringView haystack, QLatin1StringView needle, Qt::C
     if (haystack.size() < needle.size())
         return -1;
 
-    QVarLengthArray<char16_t> s(needle.size());
-    qt_from_latin1(s.data(), needle.latin1(), size_t(needle.size()));
-
+    QVarLengthArray<char16_t> s = qt_from_latin1_to_qvla(needle);
     return QtPrivate::count(haystack, QStringView(s.data(), s.size()), cs);
 }
 
@@ -10840,8 +10839,7 @@ qsizetype QtPrivate::findString(QStringView haystack, qsizetype from, QLatin1Str
     if (haystack.size() < needle.size())
         return -1;
 
-    QVarLengthArray<char16_t> s(needle.size());
-    qt_from_latin1(s.data(), needle.latin1(), needle.size());
+    QVarLengthArray<char16_t> s = qt_from_latin1_to_qvla(needle);
     return QtPrivate::findString(haystack, from, QStringView(reinterpret_cast<const QChar*>(s.constData()), s.size()), cs);
 }
 
