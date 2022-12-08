@@ -25,20 +25,23 @@
     class. Style plugins are loaded by Qt and made available through
     QStyleFactory; we will look at this later. We have implemented \c
     SimpleStylePlugin, which provides \c SimpleStyle. The new style
-    contributes to widget styling by drawing button backgrounds in
-    red - not a major contribution, but it still makes a new style.
+    contributes to widget styling by changing the text color of the
+    text edit widget to red - not a major contribution, but it still
+    makes a new style.
 
     The new style is platform agnostic in the sense that it is not
     based on any specific style implementation, but uses QProxyStyle
     to merely tweak the looks in the current application style that
     defaults to the native system style.
 
-    \note On some platforms, the native style will prevent the button
-    from having a red background. In this case, try to run the example
-    in another style (e.g., fusion).
+    \note On some platforms, the native style may overwrite some custom
+    stylings, e.g., button background color. In that case, try to run
+    your application in another style (e.g., fusion). You may do this
+    by passing \c{-style fusion} as a command line argument to your
+    application.
 
     We test the plugin with \c StyleWindow, in which we display a
-    QPushButton. The \c SimpleStyle and \c StyleWindow classes do not
+    QTextEdit. The \c SimpleStyle and \c StyleWindow classes do not
     contain any plugin specific functionality and their implementations
     are trivial; we will therefore leap past them and head on to the \c
     SimpleStylePlugin and the \c main() function. After we have looked
@@ -96,8 +99,30 @@
     In the plugin profile we need to set the lib template as we are
     building a shared library instead of an executable. We must also
     set the config to plugin. We set the library to be stored in the
-    styles folder under stylewindow because this is a path in which Qt
-    will search for style plugins.
+    \c{styles} folder next to the main executable because this is a path
+    in which Qt will search for style plugins.
+
+    \section2 Using CMake to Set up the Simple Style Plugin
+
+    When using CMake, we use \l{qt6_add_plugin}{qt_add_plugin}
+    to create the \c simplestyleplugin plugin:
+
+    \snippet tools/styleplugin/plugin/CMakeLists.txt 0
+
+    On Windows and Linux, we place the plugin into the \c{styles} folder
+    next to the main executable, i.e., \c{styleplugin.exe}:
+
+    \snippet tools/styleplugin/plugin/CMakeLists.txt 2
+
+    And on macOS, we store the \c simplestyleplugin into the
+    \c{Contents/PlugIns/styles} folder of the App Bundle.
+
+    \snippet tools/styleplugin/plugin/CMakeLists.txt 1
+
+    \note On macOS, when creating an App Bundle, store the plugins in
+    the \c PlugIns folder and not next to the main executable in
+    the \c MacOS folder as the latter will cause issues during signing
+    and distribution of the app.
 
     \section1 Related Articles and Examples
 

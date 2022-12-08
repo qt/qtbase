@@ -3,18 +3,18 @@
 
 #include <QGridLayout>
 #include <QGroupBox>
-#include <QPushButton>
+#include <QTextEdit>
 
 #include "stylewindow.h"
 
 StyleWindow::StyleWindow()
 {
-    QPushButton *styledButton = new QPushButton(tr("Big Red Button"));
+    QTextEdit *styledTextEdit = new QTextEdit(tr("The quick brown fox jumps over the lazy dog"));
 
     QGridLayout *layout = new QGridLayout;
-    layout->addWidget(styledButton);
+    layout->addWidget(styledTextEdit);
 
-    QGroupBox *styleBox = new QGroupBox(tr("A simple style button"));
+    QGroupBox *styleBox = new QGroupBox(tr("A simple styled text edit"));
     styleBox->setLayout(layout);
 
     QGridLayout *outerLayout = new QGridLayout;
