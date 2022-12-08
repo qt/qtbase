@@ -477,6 +477,10 @@ void QWasmWindow::requestActivateWindow()
 
     if (window()->isTopLevel())
         raise();
+
+    if (!QWasmIntegration::get()->inputContext())
+        m_canvas.call<void>("focus");
+
     QPlatformWindow::requestActivateWindow();
 }
 
