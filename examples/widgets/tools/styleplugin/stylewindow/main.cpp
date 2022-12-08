@@ -10,10 +10,15 @@
 int main(int argv, char *args[])
 {
     QApplication app(argv, args);
-    QApplication::setStyle(QStyleFactory::create("simplestyle"));
+
+    QStyle *style = QStyleFactory::create("simplestyle");
+    if (!style)
+        qFatal("Cannot load the 'simplestyle' plugin.");
+
+    QApplication::setStyle(style);
 
     StyleWindow window;
-    window.resize(200, 50);
+    window.resize(350, 50);
     window.show();
 
     return app.exec();

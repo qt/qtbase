@@ -5,5 +5,5 @@
 
 void SimpleStyle::polish(QPalette &palette)
 {
-    palette.setBrush(QPalette::Button, Qt::red);
+    palette.setBrush(QPalette::Text, Qt::red);
 }

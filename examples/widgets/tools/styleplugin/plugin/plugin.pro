@@ -12,7 +12,17 @@ win32 {
     CONFIG(debug, release|debug):DESTDIR = ../debug/styles/
     CONFIG(release, release|debug):DESTDIR = ../release/styles/
 } else {
-    DESTDIR = ../styles/
+    macos {
+        # The non-app-bundle case is not supported with qmake, because
+        # the plugin project cannot know whether the app is built
+        # as a bundle or not.
+        DESTDIR = ../styleplugin.app/Contents/PlugIns/styles/
+        contains(QT_CONFIG, debug) {
+            TARGET = $$join(TARGET,,,_debug)
+        }
+    } else {
+        DESTDIR = ../styles/
+    }
 }
 
 EXAMPLE_FILES += simplestyle.json
