@@ -3268,8 +3268,11 @@ bool QXmlStreamWriter::hasError() const
 
   This function can only be called after writeStartElement() before
   any content is written, or after writeEmptyElement().
+
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
  */
-void QXmlStreamWriter::writeAttribute(const QString &qualifiedName, const QString &value)
+void QXmlStreamWriter::writeAttribute(QAnyStringView qualifiedName, QAnyStringView value)
 {
     Q_D(QXmlStreamWriter);
     Q_ASSERT(d->inStartElement);
@@ -3288,8 +3291,11 @@ void QXmlStreamWriter::writeAttribute(const QString &qualifiedName, const QStrin
 
   This function can only be called after writeStartElement() before
   any content is written, or after writeEmptyElement().
+
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
  */
-void QXmlStreamWriter::writeAttribute(const QString &namespaceUri, const QString &name, const QString &value)
+void QXmlStreamWriter::writeAttribute(QAnyStringView namespaceUri, QAnyStringView name, QAnyStringView value)
 {
     Q_D(QXmlStreamWriter);
     Q_ASSERT(d->inStartElement);
@@ -3381,8 +3387,11 @@ void QXmlStreamWriter::writeCDATA(QAnyStringView text)
   "]]>", ">" is also escaped as "&gt;".
 
   \sa writeEntityReference()
+
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
  */
-void QXmlStreamWriter::writeCharacters(const QString &text)
+void QXmlStreamWriter::writeCharacters(QAnyStringView text)
 {
     Q_D(QXmlStreamWriter);
     d->finishStartElement();
@@ -3393,8 +3402,11 @@ void QXmlStreamWriter::writeCharacters(const QString &text)
 /*!  Writes \a text as XML comment, where \a text must not contain the
      forbidden sequence \c{--} or end with \c{-}. Note that XML does not
      provide any way to escape \c{-} in a comment.
+
+     \note In Qt versions prior to 6.5, this function took QString, not
+     QAnyStringView.
  */
-void QXmlStreamWriter::writeComment(const QString &text)
+void QXmlStreamWriter::writeComment(QAnyStringView text)
 {
     Q_D(QXmlStreamWriter);
     Q_ASSERT(!contains(text, "--"_L1) && !endsWith(text, '-'));
@@ -3409,8 +3421,11 @@ void QXmlStreamWriter::writeComment(const QString &text)
 
 /*!  Writes a DTD section. The \a dtd represents the entire
   doctypedecl production from the XML 1.0 specification.
+
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
  */
-void QXmlStreamWriter::writeDTD(const QString &dtd)
+void QXmlStreamWriter::writeDTD(QAnyStringView dtd)
 {
     Q_D(QXmlStreamWriter);
     d->finishStartElement();
@@ -3426,12 +3441,15 @@ void QXmlStreamWriter::writeDTD(const QString &dtd)
 /*!  \overload
   Writes an empty element with qualified name \a qualifiedName.
   Subsequent calls to writeAttribute() will add attributes to this element.
+
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
 */
-void QXmlStreamWriter::writeEmptyElement(const QString &qualifiedName)
+void QXmlStreamWriter::writeEmptyElement(QAnyStringView qualifiedName)
 {
     Q_D(QXmlStreamWriter);
     Q_ASSERT(count(qualifiedName, ':') <= 1);
-    d->writeStartElement(QString(), qualifiedName);
+    d->writeStartElement({}, qualifiedName);
     d->inEmptyElement = true;
 }
 
@@ -3442,8 +3460,11 @@ void QXmlStreamWriter::writeEmptyElement(const QString &qualifiedName)
   Subsequent calls to writeAttribute() will add attributes to this element.
 
   \sa writeNamespace()
+
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
  */
-void QXmlStreamWriter::writeEmptyElement(const QString &namespaceUri, const QString &name)
+void QXmlStreamWriter::writeEmptyElement(QAnyStringView namespaceUri, QAnyStringView name)
 {
     Q_D(QXmlStreamWriter);
     Q_ASSERT(!contains(name, ':'));
@@ -3459,8 +3480,10 @@ void QXmlStreamWriter::writeEmptyElement(const QString &namespaceUri, const QStr
   This is a convenience function equivalent to:
   \snippet code/src_corelib_xml_qxmlstream.cpp 1
 
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
 */
-void QXmlStreamWriter::writeTextElement(const QString &qualifiedName, const QString &text)
+void QXmlStreamWriter::writeTextElement(QAnyStringView qualifiedName, QAnyStringView text)
 {
     writeStartElement(qualifiedName);
     writeCharacters(text);
@@ -3476,8 +3499,10 @@ void QXmlStreamWriter::writeTextElement(const QString &qualifiedName, const QStr
   This is a convenience function equivalent to:
   \snippet code/src_corelib_xml_qxmlstream.cpp 2
 
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
 */
-void QXmlStreamWriter::writeTextElement(const QString &namespaceUri, const QString &name, const QString &text)
+void QXmlStreamWriter::writeTextElement(QAnyStringView namespaceUri, QAnyStringView name, QAnyStringView text)
 {
     writeStartElement(namespaceUri, name);
     writeCharacters(text);
@@ -3538,8 +3563,11 @@ void QXmlStreamWriter::writeEndElement()
 
 /*!
   Writes the entity reference \a name to the stream, as "&\a{name};".
+
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
  */
-void QXmlStreamWriter::writeEntityReference(const QString &name)
+void QXmlStreamWriter::writeEntityReference(QAnyStringView name)
 {
     Q_D(QXmlStreamWriter);
     d->finishStartElement();
@@ -3563,8 +3591,10 @@ void QXmlStreamWriter::writeEntityReference(const QString &name)
   \e http://www.w3.org/2000/xmlns/ are used for the namespace mechanism
   itself and thus completely forbidden in declarations.
 
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
  */
-void QXmlStreamWriter::writeNamespace(const QString &namespaceUri, const QString &prefix)
+void QXmlStreamWriter::writeNamespace(QAnyStringView namespaceUri, QAnyStringView prefix)
 {
     Q_D(QXmlStreamWriter);
     Q_ASSERT(prefix != "xmlns"_L1);
@@ -3591,8 +3621,11 @@ void QXmlStreamWriter::writeNamespace(const QString &namespaceUri, const QString
   Note that the namespaces \e http://www.w3.org/XML/1998/namespace
   (bound to \e xmlns) and \e http://www.w3.org/2000/xmlns/ (bound to
   \e xml) by definition cannot be declared as default.
+
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
  */
-void QXmlStreamWriter::writeDefaultNamespace(const QString &namespaceUri)
+void QXmlStreamWriter::writeDefaultNamespace(QAnyStringView namespaceUri)
 {
     Q_D(QXmlStreamWriter);
     Q_ASSERT(namespaceUri != "http://www.w3.org/XML/1998/namespace"_L1);
@@ -3608,8 +3641,11 @@ void QXmlStreamWriter::writeDefaultNamespace(const QString &namespaceUri)
 /*!
   Writes an XML processing instruction with \a target and \a data,
   where \a data must not contain the sequence "?>".
+
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
  */
-void QXmlStreamWriter::writeProcessingInstruction(const QString &target, const QString &data)
+void QXmlStreamWriter::writeProcessingInstruction(QAnyStringView target, QAnyStringView data)
 {
     Q_D(QXmlStreamWriter);
     Q_ASSERT(!contains(data, "?>"_L1));
@@ -3643,8 +3679,11 @@ void QXmlStreamWriter::writeStartDocument()
   Writes a document start with the XML version number \a version.
 
   \sa writeEndDocument()
+
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
  */
-void QXmlStreamWriter::writeStartDocument(const QString &version)
+void QXmlStreamWriter::writeStartDocument(QAnyStringView version)
 {
     Q_D(QXmlStreamWriter);
     d->finishStartElement(false);
@@ -3660,8 +3699,11 @@ void QXmlStreamWriter::writeStartDocument(const QString &version)
 
   \sa writeEndDocument()
   \since 4.5
+
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
  */
-void QXmlStreamWriter::writeStartDocument(const QString &version, bool standalone)
+void QXmlStreamWriter::writeStartDocument(QAnyStringView version, bool standalone)
 {
     Q_D(QXmlStreamWriter);
     d->finishStartElement(false);
@@ -3682,12 +3724,15 @@ void QXmlStreamWriter::writeStartDocument(const QString &version, bool standalon
    writeAttribute() will add attributes to this element.
 
    \sa writeEndElement(), writeEmptyElement()
+
+   \note In Qt versions prior to 6.5, this function took QString, not
+   QAnyStringView.
  */
-void QXmlStreamWriter::writeStartElement(const QString &qualifiedName)
+void QXmlStreamWriter::writeStartElement(QAnyStringView qualifiedName)
 {
     Q_D(QXmlStreamWriter);
     Q_ASSERT(count(qualifiedName, ':') <= 1);
-    d->writeStartElement(QString(), qualifiedName);
+    d->writeStartElement({}, qualifiedName);
 }
 
 
@@ -3698,8 +3743,11 @@ void QXmlStreamWriter::writeStartElement(const QString &qualifiedName)
   element.
 
   \sa writeNamespace(), writeEndElement(), writeEmptyElement()
+
+  \note In Qt versions prior to 6.5, this function took QString, not
+  QAnyStringView.
  */
-void QXmlStreamWriter::writeStartElement(const QString &namespaceUri, const QString &name)
+void QXmlStreamWriter::writeStartElement(QAnyStringView namespaceUri, QAnyStringView name)
 {
     Q_D(QXmlStreamWriter);
     Q_ASSERT(!contains(name, ':'));

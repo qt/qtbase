@@ -339,14 +339,18 @@ public:
     void setAutoFormattingIndent(int spacesOrTabs);
     int autoFormattingIndent() const;
 
+#if QT_CORE_REMOVED_SINCE(6,5)
     void writeAttribute(const QString &qualifiedName, const QString &value);
     void writeAttribute(const QString &namespaceUri, const QString &name, const QString &value);
+#endif
+    void writeAttribute(QAnyStringView qualifiedName, QAnyStringView value);
+    void writeAttribute(QAnyStringView namespaceUri, QAnyStringView name, QAnyStringView value);
+
     void writeAttribute(const QXmlStreamAttribute& attribute);
     void writeAttributes(const QXmlStreamAttributes& attributes);
 
 #if QT_CORE_REMOVED_SINCE(6,5)
     void writeCDATA(const QString &text);
-#endif
     void writeCharacters(const QString &text);
     void writeComment(const QString &text);
 
@@ -357,21 +361,45 @@ public:
 
     void writeTextElement(const QString &qualifiedName, const QString &text);
     void writeTextElement(const QString &namespaceUri, const QString &name, const QString &text);
+#endif
     void writeCDATA(QAnyStringView text);
+    void writeCharacters(QAnyStringView text);
+    void writeComment(QAnyStringView text);
+
+    void writeDTD(QAnyStringView dtd);
+
+    void writeEmptyElement(QAnyStringView qualifiedName);
+    void writeEmptyElement(QAnyStringView namespaceUri, QAnyStringView name);
+
+    void writeTextElement(QAnyStringView qualifiedName, QAnyStringView text);
+    void writeTextElement(QAnyStringView namespaceUri, QAnyStringView name, QAnyStringView text);
+
 
     void writeEndDocument();
     void writeEndElement();
 
+#if QT_CORE_REMOVED_SINCE(6,5)
     void writeEntityReference(const QString &name);
-    void writeNamespace(const QString &namespaceUri, const QString &prefix = QString());
+    void writeNamespace(const QString &namespaceUri, const QString &prefix);
     void writeDefaultNamespace(const QString &namespaceUri);
-    void writeProcessingInstruction(const QString &target, const QString &data = QString());
+    void writeProcessingInstruction(const QString &target, const QString &data);
+#endif
+    void writeEntityReference(QAnyStringView name);
+    void writeNamespace(QAnyStringView namespaceUri, QAnyStringView prefix = {});
+    void writeDefaultNamespace(QAnyStringView namespaceUri);
+    void writeProcessingInstruction(QAnyStringView target, QAnyStringView data = {});
 
     void writeStartDocument();
+#if QT_CORE_REMOVED_SINCE(6,5)
     void writeStartDocument(const QString &version);
     void writeStartDocument(const QString &version, bool standalone);
     void writeStartElement(const QString &qualifiedName);
     void writeStartElement(const QString &namespaceUri, const QString &name);
+#endif
+    void writeStartDocument(QAnyStringView version);
+    void writeStartDocument(QAnyStringView version, bool standalone);
+    void writeStartElement(QAnyStringView qualifiedName);
+    void writeStartElement(QAnyStringView namespaceUri, QAnyStringView name);
 
 #ifndef QT_NO_XMLSTREAMREADER
     void writeCurrentToken(const QXmlStreamReader &reader);

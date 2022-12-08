@@ -372,9 +372,105 @@ void QXmlStreamReader::addData(const char *data)
 
 #include "qxmlstream.h"
 
+void QXmlStreamWriter::writeAttribute(const QString &qualifiedName, const QString &value)
+{
+    writeAttribute(qToAnyStringViewIgnoringNull(qualifiedName),
+                   qToAnyStringViewIgnoringNull(value));
+}
+
+void QXmlStreamWriter::writeAttribute(const QString &namespaceUri, const QString &name, const QString &value)
+{
+    writeAttribute(qToAnyStringViewIgnoringNull(namespaceUri),
+                   qToAnyStringViewIgnoringNull(name),
+                   qToAnyStringViewIgnoringNull(value));
+}
+
 void QXmlStreamWriter::writeCDATA(const QString &text)
 {
     writeCDATA(qToAnyStringViewIgnoringNull(text));
+}
+
+void QXmlStreamWriter::writeCharacters(const QString &text)
+{
+    writeCharacters(qToAnyStringViewIgnoringNull(text));
+}
+
+void QXmlStreamWriter::writeComment(const QString &text)
+{
+    writeComment(qToAnyStringViewIgnoringNull(text));
+}
+
+void QXmlStreamWriter::writeDTD(const QString &dtd)
+{
+    writeDTD(qToAnyStringViewIgnoringNull(dtd));
+}
+
+void QXmlStreamWriter::writeEmptyElement(const QString &qualifiedName)
+{
+    writeEmptyElement(qToAnyStringViewIgnoringNull(qualifiedName));
+}
+
+void QXmlStreamWriter::writeEmptyElement(const QString &namespaceUri, const QString &name)
+{
+    writeEmptyElement(qToAnyStringViewIgnoringNull(namespaceUri),
+                      qToAnyStringViewIgnoringNull(name));
+}
+
+void QXmlStreamWriter::writeTextElement(const QString &qualifiedName, const QString &text)
+{
+    writeTextElement(qToAnyStringViewIgnoringNull(qualifiedName),
+                     qToAnyStringViewIgnoringNull(text));
+}
+
+void QXmlStreamWriter::writeTextElement(const QString &namespaceUri, const QString &name, const QString &text)
+{
+    writeTextElement(qToAnyStringViewIgnoringNull(namespaceUri),
+                     qToAnyStringViewIgnoringNull(name),
+                     qToAnyStringViewIgnoringNull(text));
+}
+
+void QXmlStreamWriter::writeEntityReference(const QString &name)
+{
+    writeEntityReference(qToAnyStringViewIgnoringNull(name));
+}
+
+void QXmlStreamWriter::writeNamespace(const QString &namespaceUri, const QString &prefix)
+{
+    writeNamespace(qToAnyStringViewIgnoringNull(namespaceUri),
+                   qToAnyStringViewIgnoringNull(prefix));
+}
+
+void QXmlStreamWriter::writeDefaultNamespace(const QString &namespaceUri)
+{
+    writeDefaultNamespace(qToAnyStringViewIgnoringNull(namespaceUri));
+}
+
+void QXmlStreamWriter::writeProcessingInstruction(const QString &target, const QString &data)
+{
+    writeProcessingInstruction(qToAnyStringViewIgnoringNull(target),
+                               qToAnyStringViewIgnoringNull(data));
+}
+
+void QXmlStreamWriter::writeStartDocument(const QString &version)
+{
+    writeStartDocument(qToAnyStringViewIgnoringNull(version));
+}
+
+void QXmlStreamWriter::writeStartDocument(const QString &version, bool standalone)
+{
+    writeStartDocument(qToAnyStringViewIgnoringNull(version),
+                       standalone);
+}
+
+void QXmlStreamWriter::writeStartElement(const QString &qualifiedName)
+{
+    writeStartElement(qToAnyStringViewIgnoringNull(qualifiedName));
+}
+
+void QXmlStreamWriter::writeStartElement(const QString &namespaceUri, const QString &name)
+{
+    writeStartElement(qToAnyStringViewIgnoringNull(namespaceUri),
+                      qToAnyStringViewIgnoringNull(name));
 }
 
 #endif // QT_CONFIG(xmlstreamwriter)
