@@ -161,7 +161,7 @@ HostSpec=${QT_QMAKE_HOST_MKSPEC}
     set(host_qt_bindir "${host_prefix}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}")
     file(TO_NATIVE_PATH "${host_qt_bindir}" host_qt_bindir)
 
-    if(QT_CREATE_VERSIONED_HARD_LINK)
+    if(QT_CREATE_VERSIONED_HARD_LINK AND QT_WILL_INSTALL)
         set(tool_version "${PROJECT_VERSION_MAJOR}")
     endif()
 
@@ -184,7 +184,7 @@ HostSpec=${QT_QMAKE_HOST_MKSPEC}
                 DESTINATION "${INSTALL_BINDIR}")
 
             # Configuring a new wrapper file, this type setting the tool_version
-            if(QT_CREATE_VERSIONED_HARD_LINK)
+            if(QT_CREATE_VERSIONED_HARD_LINK AND QT_WILL_INSTALL)
                 set(versioned_wrapper "preliminary/${wrapper_prefix}${tool_name}${tool_version}${wrapper_extension}")
                 configure_file("${wrapper_in_file}" "${versioned_wrapper}" @ONLY NEWLINE_STYLE ${newline_style})
                 qt_copy_or_install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/${versioned_wrapper}"
