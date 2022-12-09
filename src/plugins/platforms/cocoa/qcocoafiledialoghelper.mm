@@ -18,6 +18,7 @@
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qregularexpression.h>
+#include <QtCore/qpointer.h>
 #include <QtCore/private/qcore_mac_p.h>
 
 #include <QtGui/qguiapplication.h>
@@ -53,7 +54,7 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     NSView *m_accessoryView;
     NSPopUpButton *m_popupButton;
     NSTextField *m_textField;
-    QCocoaFileDialogHelper *m_helper;
+    QPointer<QCocoaFileDialogHelper> m_helper;
     NSString *m_currentDirectory;
 
     SharedPointerFileDialogOptions m_options;
@@ -160,6 +161,8 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     // QEventLoop has been interrupted, and the second-most event loop has not
     // yet been reactivated (regardless if [NSApp run] is still on the stack)),
     // showing a native modal dialog will fail.
+    if (!m_helper)
+        return;
 
     QMacAutoReleasePool pool;
 
@@ -285,6 +288,8 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 {
     // This m_delegate function is called when the _name_ filter changes.
     Q_UNUSED(sender);
+    if (!m_helper)
+        return;
     QString selection = m_nameFilterDropDownList->value([m_popupButton indexOfSelectedItem]);
     *m_selectedNameFilter = [self findStrippedFilterWithVisualFilterName:selection];
     [m_panel validateVisibleColumns];
@@ -369,6 +374,10 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 - (void)panelSelectionDidChange:(id)sender
 {
     Q_UNUSED(sender);
+
+    if (!m_helper)
+        return;
+
     if (m_panel.visible) {
         QString selection = QString::fromNSString(m_panel.URL.path);
         if (selection != *m_currentSelection) {
@@ -381,6 +390,9 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 - (void)panel:(id)sender directoryDidChange:(NSString *)path
 {
     Q_UNUSED(sender);
+
+    if (!m_helper)
+        return;
 
     if (!(path && path.length) || [path isEqualToString:m_currentDirectory])
         return;
