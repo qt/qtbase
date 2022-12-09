@@ -2867,7 +2867,6 @@ public:
 
     void write(QAnyStringView s);
     void writeEscaped(QAnyStringView, bool escapeWhitespace = false);
-    void write(const char *s, qsizetype len);
     bool finishStartElement(bool contents = true);
     void writeStartElement(QAnyStringView namespaceUri, QAnyStringView name);
     QIODevice *device;
@@ -2990,11 +2989,6 @@ void QXmlStreamWriterPrivate::writeEscaped(QAnyStringView s, bool escapeWhitespa
     write(escaped);
 }
 
-void QXmlStreamWriterPrivate::write(const char *s, qsizetype len)
-{
-    write(QUtf8StringView(s, len));
-}
-
 void QXmlStreamWriterPrivate::writeNamespaceDeclaration(const NamespaceDeclaration &namespaceDeclaration) {
     if (namespaceDeclaration.prefix.isEmpty()) {
         write(" xmlns=\"");
@@ -3066,8 +3060,8 @@ QXmlStreamPrivateTagStack::NamespaceDeclaration &QXmlStreamWriterPrivate::findNa
 void QXmlStreamWriterPrivate::indent(int level)
 {
     write("\n");
-    for (int i = level; i > 0; --i)
-        write(autoFormattingIndent.constData(), autoFormattingIndent.size());
+    for (int i = 0; i < level; ++i)
+        write(autoFormattingIndent);
 }
 
 void QXmlStreamWriterPrivate::doWriteToDevice(QStringView s)
