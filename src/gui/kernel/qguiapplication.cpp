@@ -572,6 +572,9 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
                experimental pending the introduction of new style that
                properly adapts to dark mode.
 
+               As of Qt 6.5, the default value is 2; to disable dark mode
+               support, set the value to 0 or 1.
+
         \li \c {dialogs=[xp|none]}, \c xp uses XP-style native dialogs and
             \c none disables them.
 

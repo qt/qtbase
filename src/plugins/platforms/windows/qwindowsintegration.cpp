@@ -233,7 +233,8 @@ void QWindowsIntegrationPrivate::parseOptions(QWindowsIntegration *q, const QStr
     QtWindows::ProcessDpiAwareness dpiAwareness = QtWindows::ProcessPerMonitorV2DpiAware;
 
     int tabletAbsoluteRange = -1;
-    DarkModeHandling darkModeHandling = DarkModeHandlingFlag::DarkModeWindowFrames;
+    DarkModeHandling darkModeHandling = DarkModeHandlingFlag::DarkModeWindowFrames
+                                      | DarkModeHandlingFlag::DarkModeStyle;
     m_options = ::parseOptions(paramList, &tabletAbsoluteRange, &dpiAwareness, &darkModeHandling);
     q->setDarkModeHandling(darkModeHandling);
     QWindowsFontDatabase::setFontOptions(m_options);
