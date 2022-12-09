@@ -1070,6 +1070,11 @@ function(qt_describe_module target)
         endif()
     endif()
 
+    get_target_property(is_internal ${target} _qt_is_internal_module)
+    if(is_internal)
+        string(APPEND extra_module_information "\n    \"internal\": true,")
+    endif()
+
     set(extra_build_information "")
     if(ANDROID)
         string(APPEND extra_build_information "
