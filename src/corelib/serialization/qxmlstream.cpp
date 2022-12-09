@@ -64,21 +64,18 @@ auto transform(QUtf8StringView haystack, char needle)
     return R{haystack, needle};
 }
 
-[[maybe_unused]]
 auto transform(QLatin1StringView haystack, QLatin1StringView needle)
 {
     struct R { QLatin1StringView haystack; QLatin1StringView needle; };
     return R{haystack, needle};
 }
 
-[[maybe_unused]]
 auto transform(QStringView haystack, QLatin1StringView needle)
 {
     struct R { QStringView haystack; QLatin1StringView needle; };
     return R{haystack, needle};
 }
 
-[[maybe_unused]]
 auto transform(QUtf8StringView haystack, QLatin1StringView needle)
 {
     struct R { QLatin1StringView haystack; QLatin1StringView needle; };
