@@ -3314,12 +3314,9 @@ void QXmlStreamWriter::writeAttribute(QAnyStringView namespaceUri, QAnyStringVie
 void QXmlStreamWriter::writeAttribute(const QXmlStreamAttribute& attribute)
 {
     if (attribute.namespaceUri().isEmpty())
-        writeAttribute(attribute.qualifiedName().toString(),
-                       attribute.value().toString());
+        writeAttribute(attribute.qualifiedName(), attribute.value());
     else
-        writeAttribute(attribute.namespaceUri().toString(),
-                       attribute.name().toString(),
-                       attribute.value().toString());
+        writeAttribute(attribute.namespaceUri(), attribute.name(), attribute.value());
 }
 
 
@@ -3786,11 +3783,11 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
         writeEndDocument();
         break;
     case QXmlStreamReader::StartElement: {
-        writeStartElement(reader.namespaceUri().toString(), reader.name().toString());
+        writeStartElement(reader.namespaceUri(), reader.name());
         const QXmlStreamNamespaceDeclarations decls = reader.namespaceDeclarations();
         for (const auto &namespaceDeclaration : decls) {
-            writeNamespace(namespaceDeclaration.namespaceUri().toString(),
-                           namespaceDeclaration.prefix().toString());
+            writeNamespace(namespaceDeclaration.namespaceUri(),
+                           namespaceDeclaration.prefix());
         }
         writeAttributes(reader.attributes());
              } break;
@@ -3799,22 +3796,22 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
         break;
     case QXmlStreamReader::Characters:
         if (reader.isCDATA())
-            writeCDATA(reader.text().toString());
+            writeCDATA(reader.text());
         else
-            writeCharacters(reader.text().toString());
+            writeCharacters(reader.text());
         break;
     case QXmlStreamReader::Comment:
-        writeComment(reader.text().toString());
+        writeComment(reader.text());
         break;
     case QXmlStreamReader::DTD:
-        writeDTD(reader.text().toString());
+        writeDTD(reader.text());
         break;
     case QXmlStreamReader::EntityReference:
-        writeEntityReference(reader.name().toString());
+        writeEntityReference(reader.name());
         break;
     case QXmlStreamReader::ProcessingInstruction:
-        writeProcessingInstruction(reader.processingInstructionTarget().toString(),
-                                   reader.processingInstructionData().toString());
+        writeProcessingInstruction(reader.processingInstructionTarget(),
+                                   reader.processingInstructionData());
         break;
     default:
         Q_ASSERT(reader.tokenType() != QXmlStreamReader::Invalid);
