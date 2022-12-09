@@ -15,3 +15,5 @@ qsb --glsl 320es,410 --msl 12 --msltess simpletess.vert -o simpletess.vert.qsb
 qsb --glsl 320es,410 --msl 12 --tess-mode triangles simpletess.tesc -o simpletess.tesc.qsb
 qsb --glsl 320es,410 --msl 12  --tess-vertex-count 3 simpletess.tese -o simpletess.tese.qsb
 qsb --glsl 320es,410 --msl 12 simpletess.frag -o simpletess.frag.qsb
+qsb --glsl 310es,430 --msl 12 --hlsl 50 storagebuffer.comp -o storagebuffer.comp.qsb
+

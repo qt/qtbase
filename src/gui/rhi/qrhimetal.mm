@@ -208,6 +208,17 @@ struct QRhiMetalData
     };
     QVarLengthArray<TextureReadback, 2> activeTextureReadbacks;
 
+    struct BufferReadback
+    {
+        int activeFrameSlot = -1;
+        QRhiBufferReadbackResult *result;
+        quint32 offset;
+        quint32 readSize;
+        id<MTLBuffer> buf;
+    };
+
+    QVarLengthArray<BufferReadback, 2> activeBufferReadbacks;
+
     MTLCaptureManager *captureMgr;
     id<MTLCaptureScope> captureScope = nil;
 
@@ -2430,13 +2441,23 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, u.buf);
             executeBufferHostWritesForCurrentFrame(bufD);
             const int idx = bufD->d->slotted ? currentFrameSlot : 0;
-            char *p = reinterpret_cast<char *>([bufD->d->buf[idx] contents]);
-            if (p) {
-                u.result->data.resize(u.readSize);
-                memcpy(u.result->data.data(), p + u.offset, size_t(u.readSize));
+            if (bufD->m_type == QRhiBuffer::Dynamic) {
+                char *p = reinterpret_cast<char *>([bufD->d->buf[idx] contents]);
+                if (p) {
+                    u.result->data.resize(u.readSize);
+                    memcpy(u.result->data.data(), p + u.offset, size_t(u.readSize));
+                }
+                if (u.result->completed)
+                    u.result->completed();
+            } else {
+                QRhiMetalData::BufferReadback readback;
+                readback.activeFrameSlot = idx;
+                readback.buf = bufD->d->buf[idx];
+                readback.offset = u.offset;
+                readback.readSize = u.readSize;
+                readback.result = u.result;
+                d->activeBufferReadbacks.append(readback);
             }
-            if (u.result->completed)
-                u.result->completed();
         }
     }
 
@@ -2867,7 +2888,23 @@ void QRhiMetal::finishActiveReadbacks(bool forced)
             if (readback.result->completed)
                 completedCallbacks.append(readback.result->completed);
 
-            d->activeTextureReadbacks.removeLast();
+            d->activeTextureReadbacks.remove(i);
+        }
+    }
+
+    for (int i = d->activeBufferReadbacks.count() - 1; i >= 0; --i) {
+        const QRhiMetalData::BufferReadback &readback(d->activeBufferReadbacks[i]);
+        if (forced || currentFrameSlot == readback.activeFrameSlot
+                || readback.activeFrameSlot < 0) {
+            readback.result->data.resize(readback.readSize);
+            char *p = reinterpret_cast<char *>([readback.buf contents]);
+            Q_ASSERT(p);
+            memcpy(readback.result->data.data(), p + readback.offset, size_t(readback.readSize));
+
+            if (readback.result->completed)
+                completedCallbacks.append(readback.result->completed);
+
+            d->activeBufferReadbacks.remove(i);
         }
     }
 

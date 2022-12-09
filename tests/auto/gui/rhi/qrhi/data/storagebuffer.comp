@@ -1,0 +1,28 @@
+#version 430
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+
+layout (binding = 0, std430) buffer toGpu
+{
+    float _float;
+    vec2 _vec2;
+    vec3 _vec3;
+    vec4 _vec4;
+};
+
+layout (binding = 1, std140) buffer fromGpu
+{
+    int _int;
+    ivec2 _ivec2;
+    ivec3 _ivec3;
+    ivec4 _ivec4;
+};
+
+void main()
+{
+    _int = int(_float);
+    _ivec2 = ivec2(_vec2);
+    _ivec3 = ivec3(_vec3);
+    _ivec4 = ivec4(_vec4);
+}
+

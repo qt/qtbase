@@ -1631,6 +1631,8 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             if (bufD->m_type == QRhiBuffer::Dynamic) {
                 u.result->data.resize(u.readSize);
                 memcpy(u.result->data.data(), bufD->dynBuf + u.offset, size_t(u.readSize));
+                if (u.result->completed)
+                    u.result->completed();
             } else {
                 BufferReadback readback;
                 readback.result = u.result;
@@ -1666,8 +1668,6 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 
                 activeBufferReadbacks.append(readback);
             }
-            if (u.result->completed)
-                u.result->completed();
         }
     }
     for (int opIdx = 0; opIdx < ud->activeTextureOpCount; ++opIdx) {

@@ -141,6 +141,9 @@ private slots:
     void tessellation_data();
     void tessellation();
 
+    void storageBuffer_data();
+    void storageBuffer();
+
 private:
     void setWindowType(QWindow *window, QRhi::Implementation impl);
 
@@ -5570,6 +5573,126 @@ void tst_QRhi::tessellation()
     QVERIFY(redCount > 50);
     QVERIFY(blueCount > 50);
     QVERIFY(greenCount > 50);
+}
+
+void tst_QRhi::storageBuffer_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::storageBuffer()
+{
+    // Use a compute shader to copy from one storage buffer of float types to
+    // another of int types. We fill the "toGpu" buffer with known float type
+    // data generated and uploaded from the CPU, then dispatch a compute shader
+    // to copy from the "toGpu" buffer to the "fromGpu" buffer. We then
+    // readback the "fromGpu" buffer and verify that the results are as
+    // expected.
+
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    // we can't test with Null as there is no compute
+    if (impl == QRhi::Null)
+        return;
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing");
+
+    if (!rhi->isFeatureSupported(QRhi::Feature::Compute))
+        QSKIP("Compute is not supported with this graphics API, skipping test");
+
+    QShader s = loadShader(":/data/storagebuffer.comp.qsb");
+    QVERIFY(s.isValid());
+    QCOMPARE(s.description().storageBlocks().size(), 2);
+
+    QMap<QByteArray, QShaderDescription::StorageBlock> blocks;
+    for (const QShaderDescription::StorageBlock &block : s.description().storageBlocks())
+        blocks[block.blockName] = block;
+
+    QMap<QByteArray, QShaderDescription::BlockVariable> toGpuMembers;
+    for (const QShaderDescription::BlockVariable &member: blocks["toGpu"].members)
+        toGpuMembers[member.name] = member;
+
+    QMap<QByteArray, QShaderDescription::BlockVariable> fromGpuMembers;
+    for (const QShaderDescription::BlockVariable &member: blocks["fromGpu"].members)
+        fromGpuMembers[member.name] = member;
+
+    for (QRhiBuffer::Type type : {QRhiBuffer::Type::Immutable, QRhiBuffer::Type::Static}) {
+
+        QRhiCommandBuffer *cb = nullptr;
+        rhi->beginOffscreenFrame(&cb);
+        QVERIFY(cb);
+
+        QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+        QVERIFY(u);
+
+        QScopedPointer<QRhiBuffer> toGpuBuffer(rhi->newBuffer(type, QRhiBuffer::UsageFlag::StorageBuffer, blocks["toGpu"].knownSize));
+        QVERIFY(toGpuBuffer->create());
+
+        QScopedPointer<QRhiBuffer> fromGpuBuffer(rhi->newBuffer(type, QRhiBuffer::UsageFlag::StorageBuffer, blocks["fromGpu"].knownSize));
+        QVERIFY(fromGpuBuffer->create());
+
+        QByteArray toGpuData(blocks["toGpu"].knownSize, 0);
+        reinterpret_cast<float *>(&toGpuData.data()[toGpuMembers["_float"].offset])[0] = 1.0f;
+        reinterpret_cast<float *>(&toGpuData.data()[toGpuMembers["_vec2"].offset])[0] = 2.0f;
+        reinterpret_cast<float *>(&toGpuData.data()[toGpuMembers["_vec2"].offset])[1] = 3.0f;
+        reinterpret_cast<float *>(&toGpuData.data()[toGpuMembers["_vec3"].offset])[0] = 4.0f;
+        reinterpret_cast<float *>(&toGpuData.data()[toGpuMembers["_vec3"].offset])[1] = 5.0f;
+        reinterpret_cast<float *>(&toGpuData.data()[toGpuMembers["_vec3"].offset])[2] = 6.0f;
+        reinterpret_cast<float *>(&toGpuData.data()[toGpuMembers["_vec4"].offset])[0] = 7.0f;
+        reinterpret_cast<float *>(&toGpuData.data()[toGpuMembers["_vec4"].offset])[1] = 8.0f;
+        reinterpret_cast<float *>(&toGpuData.data()[toGpuMembers["_vec4"].offset])[2] = 9.0f;
+        reinterpret_cast<float *>(&toGpuData.data()[toGpuMembers["_vec4"].offset])[3] = 10.0f;
+
+        u->uploadStaticBuffer(toGpuBuffer.data(), 0, toGpuData.size(), toGpuData.constData());
+        u->uploadStaticBuffer(fromGpuBuffer.data(), 0, blocks["fromGpu"].knownSize, QByteArray(blocks["fromGpu"].knownSize, 0).constData());
+
+        QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+        srb->setBindings({QRhiShaderResourceBinding::bufferLoadStore(blocks["toGpu"].binding, QRhiShaderResourceBinding::ComputeStage, toGpuBuffer.data()),
+                          QRhiShaderResourceBinding::bufferLoadStore(blocks["fromGpu"].binding, QRhiShaderResourceBinding::ComputeStage, fromGpuBuffer.data())});
+
+        QVERIFY(srb->create());
+
+        QScopedPointer<QRhiComputePipeline> pipeline(rhi->newComputePipeline());
+        pipeline->setShaderStage({QRhiShaderStage::Compute, s});
+        pipeline->setShaderResourceBindings(srb.data());
+        QVERIFY(pipeline->create());
+
+        cb->beginComputePass(u);
+
+        cb->setComputePipeline(pipeline.data());
+        cb->setShaderResources();
+        cb->dispatch(1, 1, 1);
+
+        u = rhi->nextResourceUpdateBatch();
+        QVERIFY(u);
+
+        int readCompletedNotifications = 0;
+        QRhiBufferReadbackResult result;
+        result.completed = [&readCompletedNotifications]() { readCompletedNotifications++; };
+        u->readBackBuffer(fromGpuBuffer.data(), 0, blocks["fromGpu"].knownSize, &result);
+
+        cb->endComputePass(u);
+
+        rhi->endOffscreenFrame();
+
+        QCOMPARE(readCompletedNotifications, 1);
+
+        QCOMPARE(result.data.size(), blocks["fromGpu"].knownSize);
+        QCOMPARE(reinterpret_cast<const int *>(&result.data.constData()[fromGpuMembers["_int"].offset])[0], 1);
+        QCOMPARE(reinterpret_cast<const int *>(&result.data.constData()[fromGpuMembers["_ivec2"].offset])[0], 2);
+        QCOMPARE(reinterpret_cast<const int *>(&result.data.constData()[fromGpuMembers["_ivec2"].offset])[1], 3);
+        QCOMPARE(reinterpret_cast<const int *>(&result.data.constData()[fromGpuMembers["_ivec3"].offset])[0], 4);
+        QCOMPARE(reinterpret_cast<const int *>(&result.data.constData()[fromGpuMembers["_ivec3"].offset])[1], 5);
+        QCOMPARE(reinterpret_cast<const int *>(&result.data.constData()[fromGpuMembers["_ivec3"].offset])[2], 6);
+        QCOMPARE(reinterpret_cast<const int *>(&result.data.constData()[fromGpuMembers["_ivec4"].offset])[0], 7);
+        QCOMPARE(reinterpret_cast<const int *>(&result.data.constData()[fromGpuMembers["_ivec4"].offset])[1], 8);
+        QCOMPARE(reinterpret_cast<const int *>(&result.data.constData()[fromGpuMembers["_ivec4"].offset])[2], 9);
+        QCOMPARE(reinterpret_cast<const int *>(&result.data.constData()[fromGpuMembers["_ivec4"].offset])[3], 10);
+
+    }
 }
 
 #include <tst_qrhi.moc>
