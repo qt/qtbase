@@ -2876,7 +2876,7 @@ public:
     uint hasIoError :1;
     uint hasEncodingError :1;
     uint autoFormatting :1;
-    QByteArray autoFormattingIndent;
+    std::string autoFormattingIndent;
     NamespaceDeclaration emptyNamespace;
     qsizetype lastNamespaceDeclaration;
 
@@ -3236,13 +3236,14 @@ bool QXmlStreamWriter::autoFormatting() const
 void QXmlStreamWriter::setAutoFormattingIndent(int spacesOrTabs)
 {
     Q_D(QXmlStreamWriter);
-    d->autoFormattingIndent = QByteArray(qAbs(spacesOrTabs), spacesOrTabs >= 0 ? ' ' : '\t');
+    d->autoFormattingIndent.assign(size_t(qAbs(spacesOrTabs)), spacesOrTabs >= 0 ? ' ' : '\t');
 }
 
 int QXmlStreamWriter::autoFormattingIndent() const
 {
     Q_D(const QXmlStreamWriter);
-    return d->autoFormattingIndent.count(' ') - d->autoFormattingIndent.count('\t');
+    const QLatin1StringView indent(d->autoFormattingIndent);
+    return indent.count(u' ') - indent.count(u'\t');
 }
 
 /*!
