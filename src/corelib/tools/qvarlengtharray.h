@@ -241,8 +241,13 @@ protected:
 // Prealloc = 256 by default, specified in qcontainerfwd.h
 template<class T, qsizetype Prealloc>
 class QVarLengthArray
-    : public QVLABase<T>, // ### Qt 7: swap base class order
+#if QT_VERSION >= QT_VERSION_CHECK(7,0,0) || defined(QT_BOOTSTRAPPED)
+    : public QVLAStorage<sizeof(T), alignof(T), Prealloc>,
+      public QVLABase<T>
+#else
+    : public QVLABase<T>,
       public QVLAStorage<sizeof(T), alignof(T), Prealloc>
+#endif
 {
     template <class S, qsizetype Prealloc2>
     friend class QVarLengthArray;
