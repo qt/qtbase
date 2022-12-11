@@ -3031,6 +3031,22 @@ QString &QString::insert(qsizetype i, QUtf8StringView s)
     if (Q_UNLIKELY(i > d.size))
         difference = i - d.size;
 
+    const qsizetype newSize = d.size + difference + insert_size;
+
+    if (d.needsDetach() || needsReallocate(*this, newSize)) {
+        const auto cbegin = this->cbegin();
+        const auto insert_start = difference == 0 ? std::next(cbegin, i) : cend();
+        QString other;
+        other.reserve(newSize);
+        other.append(QStringView(cbegin, insert_start));
+        if (difference > 0)
+            other.resize(i, u' ');
+        other.append(s);
+        other.append(QStringView(insert_start, cend()));
+        swap(other);
+        return *this;
+    }
+
     if (i >= d.size) {
         d.detachAndGrow(QArrayData::GrowsAtEnd, difference + insert_size, nullptr, nullptr);
         Q_CHECK_PTR(d.data());
