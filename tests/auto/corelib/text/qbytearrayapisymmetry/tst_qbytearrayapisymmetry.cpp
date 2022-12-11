@@ -1171,8 +1171,13 @@ void tst_QByteArrayApiSymmetry::toLong_data() const
     QTest::newRow("int32 max dec") << QByteArray("2147483647") << 10 << long(B32::max()) << true;
 
     if constexpr (sizeof(long) < sizeof(qlonglong)) {
+        QT_WARNING_PUSH
+        // See: https://github.com/llvm/llvm-project/issues/59448
+        QT_WARNING_DISABLE_CLANG("-Winteger-overflow")
         const qlonglong longMaxPlusOne = static_cast<qlonglong>(Bounds::max()) + 1;
         const qlonglong longMinMinusOne = static_cast<qlonglong>(Bounds::min()) - 1;
+        QT_WARNING_POP
+
         QTest::newRow("long max + 1") << QByteArray::number(longMaxPlusOne) << 10 << 0L << false;
         QTest::newRow("long min - 1") << QByteArray::number(longMinMinusOne) << 10 << 0L << false;
     }
