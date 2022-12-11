@@ -996,7 +996,7 @@ Q_CORE_EXPORT void qt_from_latin1(char16_t *dst, const char *str, size_t size) n
 #endif
 }
 
-static QVarLengthArray<char16_t> qt_from_latin1_to_qvla(QLatin1StringView str) noexcept
+static QVarLengthArray<char16_t> qt_from_latin1_to_qvla(QLatin1StringView str)
 {
     const qsizetype len = str.size();
     QVarLengthArray<char16_t> arr(len);
