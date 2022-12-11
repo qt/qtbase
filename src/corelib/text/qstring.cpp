@@ -2939,7 +2939,9 @@ QString &QString::operator=(QChar ch)
     defined.
 */
 
-
+/*! \internal
+    T is a view or a container on/of QChar, char16_t, or char
+*/
 template <typename T>
 static void insert_helper(QString &str, qsizetype i, T toInsert)
 {
@@ -3021,7 +3023,32 @@ QString &QString::insert(qsizetype i, QLatin1StringView str)
 */
 QString &QString::insert(qsizetype i, QUtf8StringView s)
 {
-     return insert(i, s.toString()); // ### optimize (QTBUG-108546)
+    auto insert_size = s.size();
+    if (i < 0 || insert_size <= 0)
+        return *this;
+
+    qsizetype difference = 0;
+    if (Q_UNLIKELY(i > d.size))
+        difference = i - d.size;
+
+    if (i >= d.size) {
+        d.detachAndGrow(QArrayData::GrowsAtEnd, difference + insert_size, nullptr, nullptr);
+        Q_CHECK_PTR(d.data());
+
+        if (difference > 0)
+            resize(i, u' ');
+        append(s);
+    } else {
+        // Optimal insertion of Utf8 data is at the end, anywhere else could
+        // potentially lead to moving characters twice if Utf8 data size
+        // (variable-width) is less than the equiavalent Utf16 data size
+        QVarLengthArray<char16_t> buffer(insert_size); // ### optimize (QTBUG-108546)
+        char16_t *b = QUtf8::convertToUnicode(buffer.data(), s);
+        buffer.resize(std::distance(buffer.begin(), b));
+        insert_helper(*this, i, buffer);
+    }
+
+    return *this;
 }
 
 /*!

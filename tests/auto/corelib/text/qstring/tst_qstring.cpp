@@ -2803,6 +2803,7 @@ void tst_QString::insert_data(DataOptions options)
     QTest::newRow("a.insert(1, ba)") << a << baC << 1 << (a + ba);
     QTest::newRow("ba.insert(1, a)") << ba << aC << 1 << (ba + a);
     QTest::newRow("ba.insert(2, b)") << ba << bC << 2 << (ba + b);
+    QTest::newRow("ba.insert(10, b)") << ba << bC << 10 << (ba + QString(10 - ba.size(), u' ') + b);
 
     QTest::newRow("null-insert-0-yumlaut") << null << yumlautC << 0 << yumlaut;
     QTest::newRow("empty-insert-0-yumlaut") << empty << yumlautC << 0 << yumlaut;
