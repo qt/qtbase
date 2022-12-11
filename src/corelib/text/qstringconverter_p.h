@@ -263,10 +263,26 @@ enum DataEndianness
 
 struct QUtf8
 {
-    Q_CORE_EXPORT static QChar *convertToUnicode(QChar *buffer, QByteArrayView in) noexcept;
+    static QChar *convertToUnicode(QChar *buffer, QByteArrayView in) noexcept
+    {
+        char16_t *dst = reinterpret_cast<char16_t *>(buffer);
+        dst = QUtf8::convertToUnicode(dst, in);
+        return reinterpret_cast<QChar *>(dst);
+    }
+
+    Q_CORE_EXPORT static char16_t* convertToUnicode(char16_t *dst, QByteArrayView in) noexcept;
     static QString convertToUnicode(QByteArrayView in);
     Q_CORE_EXPORT static QString convertToUnicode(QByteArrayView in, QStringConverter::State *state);
-    static QChar *convertToUnicode(QChar *out, QByteArrayView in, QStringConverter::State *state);
+
+    static QChar *convertToUnicode(QChar *out, QByteArrayView in, QStringConverter::State *state)
+    {
+        char16_t *buffer = reinterpret_cast<char16_t *>(out);
+        buffer = convertToUnicode(buffer, in, state);
+        return reinterpret_cast<QChar *>(buffer);
+    }
+
+    static char16_t *convertToUnicode(char16_t *dst, QByteArrayView in, QStringConverter::State *state);
+
     Q_CORE_EXPORT static QByteArray convertFromUnicode(QStringView in);
     Q_CORE_EXPORT static QByteArray convertFromUnicode(QStringView in, QStringConverterBase::State *state);
     static char *convertFromUnicode(char *out, QStringView in, QStringConverter::State *state);
