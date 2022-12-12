@@ -4080,10 +4080,11 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
                 && ((!value->ownerNode || value->ownerNode->prefix != value->prefix)
                     && !outputtedPrefixes.hasSeen(value->prefix)))
             {
-                attr.prefix = QStringLiteral("xmlns");
-                attr.name = value->prefix;
-                attr.encodedValue = encodeText(value->namespaceURI, true, true);
-                attributesToSave.push_back(std::move(attr));
+                SavedAttribute nsAttr;
+                nsAttr.prefix = QStringLiteral("xmlns");
+                nsAttr.name = value->prefix;
+                nsAttr.encodedValue = encodeText(value->namespaceURI, true, true);
+                attributesToSave.push_back(std::move(nsAttr));
             }
         }
 
