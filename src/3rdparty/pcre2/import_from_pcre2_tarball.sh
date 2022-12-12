@@ -129,9 +129,10 @@ FILES="
     src/sljit/sljitNativePPC_32.c
     src/sljit/sljitNativePPC_64.c
     src/sljit/sljitNativePPC_common.c
+    src/sljit/sljitNativeRISCV_32.c
+    src/sljit/sljitNativeRISCV_64.c
+    src/sljit/sljitNativeRISCV_common.c
     src/sljit/sljitNativeS390X.c
-    src/sljit/sljitNativeSPARC_32.c
-    src/sljit/sljitNativeSPARC_common.c
     src/sljit/sljitNativeX86_32.c
     src/sljit/sljitNativeX86_64.c
     src/sljit/sljitNativeX86_common.c

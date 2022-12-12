@@ -7,13 +7,13 @@
 
     "Description": "The PCRE library is a set of functions that implement regular expression pattern matching using the same syntax and semantics as Perl 5.",
     "Homepage": "http://www.pcre.org/",
-    "Version": "10.40",
-    "DownloadLocation": "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.40/pcre2-10.40.tar.bz2",
+    "Version": "10.42",
+    "DownloadLocation": "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.42/pcre2-10.42.tar.bz2",
     "License": "BSD 3-clause \"New\" or \"Revised\" License",
     "LicenseId": "BSD-3-Clause",
     "LicenseFile": "LICENCE",
     "Copyright": "Copyright (c) 1997-2022 University of Cambridge
-Copyright (c) 2010-2020 Zoltan Herczeg"
+Copyright (c) 2010-2022 Zoltan Herczeg"
 },
 {
     "Id": "pcre2-sljit",
@@ -24,8 +24,8 @@ Copyright (c) 2010-2020 Zoltan Herczeg"
     "Path": "src/sljit",
     "Description": "The PCRE library is a set of functions that implement regular expression pattern matching using the same syntax and semantics as Perl 5.",
     "Homepage": "http://www.pcre.org/",
-    "Version": "10.40",
-    "DownloadLocation": "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.40/pcre2-10.40.tar.bz2",
+    "Version": "10.42",
+    "DownloadLocation": "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.42/pcre2-10.42.tar.bz2",
     "License": "BSD 2-clause \"Simplified\" License",
     "LicenseId": "BSD-2-Clause",
     "LicenseFile": "LICENCE-SLJIT",
