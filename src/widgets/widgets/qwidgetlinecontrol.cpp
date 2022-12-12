@@ -85,8 +85,7 @@ void QWidgetLineControl::updateDisplayText(bool forceUpdate)
     for (int i = 0; i < (int)str.size(); ++i) {
         if ((uc[i].unicode() < 0x20 && uc[i].unicode() != 0x09)
             || uc[i] == QChar::LineSeparator
-            || uc[i] == QChar::ParagraphSeparator
-            || uc[i] == QChar::ObjectReplacementCharacter)
+            || uc[i] == QChar::ParagraphSeparator)
             uc[i] = QChar(0x0020);
     }
 

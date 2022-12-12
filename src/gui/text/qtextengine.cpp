@@ -7,6 +7,7 @@
 #include "qtextformat_p.h"
 #include "qtextengine_p.h"
 #include "qabstracttextdocumentlayout.h"
+#include "qabstracttextdocumentlayout_p.h"
 #include "qtextlayout.h"
 #include "qtextboundaryfinder.h"
 #include <QtCore/private/qunicodetables_p.h>
@@ -1933,7 +1934,17 @@ void QTextEngine::itemize() const
     while (uc < e) {
         switch (*uc) {
         case QChar::ObjectReplacementCharacter:
-            analysis->flags = QScriptAnalysis::Object;
+            {
+                const QTextDocumentPrivate *doc_p = QTextDocumentPrivate::get(block);
+                if (doc_p != nullptr
+                        && doc_p->layout() != nullptr
+                        && QAbstractTextDocumentLayoutPrivate::get(doc_p->layout()) != nullptr
+                        && QAbstractTextDocumentLayoutPrivate::get(doc_p->layout())->hasHandlers()) {
+                    analysis->flags = QScriptAnalysis::Object;
+                } else {
+                    analysis->flags = QScriptAnalysis::None;
+                }
+            }
             break;
         case QChar::LineSeparator:
             analysis->flags = QScriptAnalysis::LineOrParagraphSeparator;

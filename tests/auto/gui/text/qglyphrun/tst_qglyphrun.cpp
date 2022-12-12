@@ -42,6 +42,7 @@ private slots:
     void stringIndexes();
     void retrievalFlags_data();
     void retrievalFlags();
+    void objectReplacementCharacter();
 
 private:
     int m_testFontId;
@@ -952,6 +953,21 @@ void tst_QGlyphRun::retrievalFlags()
     QCOMPARE(firstGlyphRun.stringIndexes().isEmpty(), !expectedStringIndexes);
     QCOMPARE(firstGlyphRun.sourceString().isEmpty(), !expectedString);
     QCOMPARE(firstGlyphRun.positions().isEmpty(), !expectedGlyphPositions);
+}
+
+void tst_QGlyphRun::objectReplacementCharacter()
+{
+    QTextLayout layout;
+    layout.setFont(m_testFont);
+    layout.setText(QStringLiteral("\uFFFC"));
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QList<QGlyphRun> glyphRuns = layout.glyphRuns();
+    QCOMPARE(glyphRuns.size(), 1);
+    QCOMPARE(glyphRuns.first().glyphIndexes().size(), 1);
+    QCOMPARE(glyphRuns.first().glyphIndexes().first(), 5);
 }
 
 #endif // QT_NO_RAWFONT
