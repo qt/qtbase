@@ -1259,11 +1259,10 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 QIcon::Mode mode = dis ? QIcon::Disabled : QIcon::Normal;
                 if (act && !dis)
                     mode = QIcon::Active;
-                QPixmap pixmap;
-                if (checked)
-                    pixmap = menuitem->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize, option, widget), mode, QIcon::On);
-                else
-                    pixmap = menuitem->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize, option, widget), mode);
+                const auto size = proxy()->pixelMetric(PM_SmallIconSize, option, widget);
+                const auto dpr = painter->device()->devicePixelRatio();
+                const auto pixmap = menuitem->icon.pixmap({size, size}, dpr, mode,
+                                                          checked ? QIcon::On : QIcon::Off);
                 QRect pmr(QPoint(0, 0), pixmap.deviceIndependentSize().toSize());
                 pmr.moveCenter(vCheckRect.center());
                 painter->setPen(menuitem->palette.text().color());
