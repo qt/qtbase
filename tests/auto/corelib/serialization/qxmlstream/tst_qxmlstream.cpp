@@ -581,6 +581,7 @@ private slots:
     void invalidStringCharacters_data() const;
     void invalidStringCharacters() const;
     void hasError() const;
+    void readBack_data() const;
     void readBack() const;
     void roundTrip() const;
     void roundTrip_data() const;
@@ -1660,35 +1661,50 @@ void tst_QXmlStream::invalidStringCharacters_data() const
     //
 }
 
-static bool isValidSingleTextChar(const ushort c)
+static bool isValidSingleTextChar(char32_t c)
 {
-    // Conforms to https://www.w3.org/TR/REC-xml/#NT-Char - except for the high range, which is done
-    // with surrogates.
+    // Conforms to https://www.w3.org/TR/REC-xml/#NT-Char
     // Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
-    static const QPair<ushort, ushort> validRanges[] = {
-        QPair<ushort, ushort>(0x9, 0xb),
-        QPair<ushort, ushort>(0xd, 0xe),
-        QPair<ushort, ushort>(0x20, 0xd800),
-        QPair<ushort, ushort>(0xe000, 0xfffe)
+    constexpr struct { char32_t lo, hi; } validRanges[] = {
+        {0x9, 0xA},
+        {0xD, 0xD},
+        {0x20, 0xD7ff},
+        {0xE000, 0xFFFD},
+        {0x1'0000, 0x10'FFFF},
     };
 
-    for (const QPair<ushort, ushort> &range : validRanges) {
-        if (c >= range.first && c < range.second)
+    for (const auto range : validRanges) {
+        if (c >= range.lo && c <= range.hi)
             return true;
     }
     return false;
 }
 
+void tst_QXmlStream::readBack_data() const
+{
+    QTest::addColumn<int>("plane");
+
+    // Check all 17 Unicode planes. Split into separate executions lest the
+    // test function times out in asan builds.
+
+    for (int i = 0; i < 17; ++i)
+        QTest::addRow("plane-%02d", i) << i;
+}
+
 void tst_QXmlStream::readBack() const
 {
+    QFETCH(const int, plane);
+
     QBuffer buffer;
 
-    for (ushort c = 0; c < std::numeric_limits<ushort>::max(); ++c) {
+    for (char16_t i = 0; i < (std::numeric_limits<char16_t>::max)(); ++i) {
+
+        const char32_t c = (plane << 16) + i;
 
         QVERIFY(buffer.open(QIODevice::WriteOnly|QIODevice::Truncate));
         QXmlStreamWriter writer(&buffer);
         writer.writeStartDocument();
-        writer.writeTextElement("a", QString(QChar(c)));
+        writer.writeTextElement("a", c);
         writer.writeEndDocument();
         buffer.close();
 
