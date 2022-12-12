@@ -1401,7 +1401,7 @@ void QGraphicsProxyWidget::focusOutEvent(QFocusEvent *event)
         if (QWidget *focusWidget = d->widget->focusWidget()) {
             // QTBUG-88016 proxyWidget set QTextEdit(QLineEdit etc.) when input preview text,
             // inputMethod should be reset when proxyWidget lost focus
-            if (focusWidget && focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
+            if (focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
                 QApplication::inputMethod()->reset();
 
             d->removeSubFocusHelper(focusWidget, event->reason());
