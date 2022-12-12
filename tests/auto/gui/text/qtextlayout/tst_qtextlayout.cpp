@@ -512,18 +512,24 @@ void tst_QTextLayout::noWrap()
 
 void tst_QTextLayout::cursorToXForInlineObjects()
 {
-    QChar ch(QChar::ObjectReplacementCharacter);
-    QString text(ch);
-    QTextLayout layout(text, testFont);
-    layout.beginLayout();
+    QString text = QStringLiteral("<html><body><img src=\"\" width=\"32\" height=\"32\" /></body></html>");
 
-    QTextEngine *engine = layout.engine();
-    const int item = engine->findItem(0);
-    engine->layoutData->items[item].width = 32;
+    QTextDocument document;
+    document.setHtml(text);
+    QCOMPARE(document.blockCount(), 1);
 
-    QTextLine line = layout.createLine();
-    line.setLineWidth(0x10000);
+    // Trigger layout
+    {
+        QImage img(1, 1, QImage::Format_ARGB32_Premultiplied);
+        QPainter p(&img);
+        document.drawContents(&p);
+    }
 
+    QTextLayout *layout = document.firstBlock().layout();
+    QVERIFY(layout != nullptr);
+    QCOMPARE(layout->lineCount(), 1);
+
+    QTextLine line = layout->lineAt(0);
     QCOMPARE(line.cursorToX(0), qreal(0));
     QCOMPARE(line.cursorToX(1), qreal(32));
 }

@@ -18,6 +18,7 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include "private/qobject_p.h"
 #include "qtextdocument_p.h"
+#include "qabstracttextdocumentlayout.h"
 #include "QtCore/qhash.h"
 
 QT_BEGIN_NAMESPACE
@@ -44,6 +45,16 @@ public:
         docPrivate = nullptr;
         if (doc)
             docPrivate = QTextDocumentPrivate::get(doc);
+    }
+
+    static QAbstractTextDocumentLayoutPrivate *get(QAbstractTextDocumentLayout *layout)
+    {
+        return layout->d_func();
+    }
+
+    bool hasHandlers() const
+    {
+        return !handlers.isEmpty();
     }
 
     inline int _q_dynamicPageCountSlot() const
