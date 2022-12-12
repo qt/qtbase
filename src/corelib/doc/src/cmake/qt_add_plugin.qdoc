@@ -26,6 +26,9 @@ qt_add_plugin(target
 )
 \endcode
 
+The \c MANUAL_FINALIZATION option and the ability to set sources
+were introduced in Qt 6.5.
+
 \versionlessCMakeCommandsNote qt6_add_plugin()
 
 \section1 Description
