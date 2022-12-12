@@ -390,7 +390,7 @@ bool QFontDialog::eventFilter(QObject *o , QEvent *e)
 {
     Q_D(QFontDialog);
     if (e->type() == QEvent::KeyPress) {
-        QKeyEvent *k = (QKeyEvent *)e;
+        QKeyEvent *k = static_cast<QKeyEvent *>(e);
         if (o == d->sizeEdit &&
         (k->key() == Qt::Key_Up ||
              k->key() == Qt::Key_Down ||

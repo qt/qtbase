@@ -428,7 +428,7 @@ bool QWhatsThisPrivate::eventFilter(QObject *o, QEvent *e)
         break;
     case QEvent::KeyPress:
     {
-        QKeyEvent* kev = (QKeyEvent*)e;
+        QKeyEvent *kev = static_cast<QKeyEvent *>(e);
 #if QT_CONFIG(shortcut)
         if (kev->matches(QKeySequence::Cancel)) {
             QWhatsThis::leaveWhatsThisMode();

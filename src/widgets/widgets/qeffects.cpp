@@ -171,7 +171,7 @@ bool QAlphaWidget::eventFilter(QObject *o, QEvent *e)
         break;
     case QEvent::KeyPress: {
 #ifndef QT_NO_SHORTCUT
-       QKeyEvent *ke = (QKeyEvent*)e;
+       QKeyEvent *ke = static_cast<QKeyEvent *>(e);
        if (ke->matches(QKeySequence::Cancel)) {
            showWidget = false;
        } else

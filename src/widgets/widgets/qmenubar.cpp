@@ -1356,7 +1356,7 @@ bool QMenuBar::event(QEvent *e)
     Q_D(QMenuBar);
     switch (e->type()) {
     case QEvent::KeyPress: {
-        QKeyEvent *ke = (QKeyEvent*)e;
+        QKeyEvent *ke = static_cast<QKeyEvent *>(e);
 #if 0
         if (!d->keyboardState) { //all keypresses..
             d->setCurrentAction(0);
@@ -1384,7 +1384,7 @@ bool QMenuBar::event(QEvent *e)
     break;
 #ifndef QT_NO_SHORTCUT
     case QEvent::ShortcutOverride: {
-        QKeyEvent *kev = static_cast<QKeyEvent*>(e);
+        QKeyEvent *kev = static_cast<QKeyEvent *>(e);
         //we only filter out escape if there is a current action
         if (kev->matches(QKeySequence::Cancel) && d->currentAction) {
             e->accept();
