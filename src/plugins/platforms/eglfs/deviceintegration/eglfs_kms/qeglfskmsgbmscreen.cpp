@@ -387,7 +387,17 @@ void QEglFSKmsGbmScreen::flip()
         return;
     }
 
+    auto gbmRelease = qScopeGuard([this]{
+        m_flipPending = false;
+        gbm_surface_release_buffer(m_gbm_surface, m_gbm_bo_next);
+        m_gbm_bo_next = nullptr;
+    });
+
     FrameBuffer *fb = framebufferForBufferObject(m_gbm_bo_next);
+    if (!fb) {
+        qWarning("FrameBuffer not available. Cannot flip");
+        return;
+    }
     ensureModeSet(fb->fb);
 
     const QKmsOutput &thisOutput(output());
@@ -419,9 +429,6 @@ void QEglFSKmsGbmScreen::flip()
                                   this);
         if (ret) {
             qErrnoWarning("Could not queue DRM page flip on screen %s", qPrintable(name()));
-            m_flipPending = false;
-            gbm_surface_release_buffer(m_gbm_surface, m_gbm_bo_next);
-            m_gbm_bo_next = nullptr;
             return;
         }
     }
@@ -464,6 +471,8 @@ void QEglFSKmsGbmScreen::flip()
 #if QT_CONFIG(drm_atomic)
     device()->threadLocalAtomicCommit(this);
 #endif
+
+    gbmRelease.dismiss();
 }
 
 void QEglFSKmsGbmScreen::flipFinished()
