@@ -14,6 +14,7 @@ qt_internal_add_tool(${target_name}
     SOURCES
         elfreader.cpp elfreader.h
         qmlutils.cpp qmlutils.h
+        qtmoduleinfo.cpp qtmoduleinfo.h
         utils.cpp utils.h
         main.cpp
     DEFINES

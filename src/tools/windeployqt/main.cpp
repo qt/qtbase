@@ -3,6 +3,7 @@
 
 #include "utils.h"
 #include "qmlutils.h"
+#include "qtmoduleinfo.h"
 
 #include <QtCore/QCommandLineOption>
 #include <QtCore/QCommandLineParser>
@@ -24,183 +25,59 @@
 
 #include <QtCore/private/qconfig_p.h>
 
-#include <bitset>
 #include <algorithm>
+#include <cstdio>
 #include <iostream>
 #include <iterator>
-#include <cstdio>
+#include <unordered_map>
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-using ModuleBitset = std::bitset<77>;
+static QtModuleInfoStore qtModuleEntries;
 
-enum QtModule
+#define DECLARE_KNOWN_MODULE(name) \
+    static size_t Qt##name ## ModuleId = QtModule::InvalidId
+
+DECLARE_KNOWN_MODULE(3DQuick);
+DECLARE_KNOWN_MODULE(Core);
+DECLARE_KNOWN_MODULE(Designer);
+DECLARE_KNOWN_MODULE(DesignerComponents);
+DECLARE_KNOWN_MODULE(Gui);
+DECLARE_KNOWN_MODULE(Qml);
+DECLARE_KNOWN_MODULE(QmlTooling);
+DECLARE_KNOWN_MODULE(Quick);
+DECLARE_KNOWN_MODULE(WebEngineCore);
+DECLARE_KNOWN_MODULE(Widgets);
+
+#define DEFINE_KNOWN_MODULE(name) \
+    m[QLatin1String("Qt6" #name)] = &Qt##name ## ModuleId
+
+static void assignKnownModuleIds()
 {
-    QtBluetoothModule,
-    QtConcurrentModule,
-    QtCoreModule,
-    QtDesignerComponents,
-    QtDesignerModule,
-    QtGuiModule,
-    QtHelpModule,
-    QtMultimediaModule,
-    QtMultimediaWidgetsModule,
-    QtMultimediaQuickModule,
-    QtNetworkModule,
-    QtNfcModule,
-    QtOpenGLModule,
-    QtOpenGLWidgetsModule,
-    QtPositioningModule,
-    QtPrintSupportModule,
-    QtQmlModule,
-    QtQuickModule,
-    QtQuickParticlesModule,
-    QtScriptModule,
-    QtScriptToolsModule,
-    QtSensorsModule,
-    QtSerialPortModule,
-    QtSqlModule,
-    QtSvgModule,
-    QtSvgWidgetsModule,
-    QtTestModule,
-    QtWidgetsModule,
-    QtWinExtrasModule,
-    QtXmlModule,
-    QtQuickWidgetsModule,
-    QtWebSocketsModule,
-    QtWebEngineCoreModule,
-    QtWebEngineModule,
-    QtWebEngineWidgetsModule,
-    QtQmlToolingModule,
-    Qt3DCoreModule,
-    Qt3DRendererModule,
-    Qt3DQuickModule,
-    Qt3DQuickRendererModule,
-    Qt3DInputModule,
-    QtLocationModule,
-    QtWebChannelModule,
-    QtTextToSpeechModule,
-    QtSerialBusModule,
-    QtGamePadModule,
-    Qt3DAnimationModule,
-    QtWebViewModule,
-    Qt3DExtrasModule,
-    QtShaderToolsModule,
-    QtUiToolsModule,
-    QtCore5CompatModule,
-    QtChartsModule,
-    QtDataVisualizationModule,
-    QtRemoteObjectsModule,
-    QtScxmlModule,
-    QtNetworkAuthorizationModule,
-    QtMqttModule,
-    QtPdfModule,
-    QtPdfQuickModule,
-    QtPdfWidgetsModule,
-    QtDBusModule,
-    QtStateMachineModule,
-    Qt3DLogicModule,
-    QtPositioningQuickModule,
-    QtSensorsQuickModule,
-    QtWebEngineQuickModule,
-    QtWebViewQuickModule,
-    QtQuickControlsModule,
-    QtQuickDialogsModule,
-    QtQuickLayoutsModule,
-    QtQuickShapesModule,
-    QtQuickTestModule,
-    QtQuickTimelineModule,
-    QtQuick3DModule,
-    QtOpcUaModule
-};
+    std::unordered_map<QString, size_t *> m;
+    DEFINE_KNOWN_MODULE(3DQuick);
+    DEFINE_KNOWN_MODULE(Core);
+    DEFINE_KNOWN_MODULE(Designer);
+    DEFINE_KNOWN_MODULE(DesignerComponents);
+    DEFINE_KNOWN_MODULE(Gui);
+    DEFINE_KNOWN_MODULE(Qml);
+    DEFINE_KNOWN_MODULE(QmlTooling);
+    DEFINE_KNOWN_MODULE(Quick);
+    DEFINE_KNOWN_MODULE(WebEngineCore);
+    DEFINE_KNOWN_MODULE(Widgets);
+    for (size_t i = 0; i < qtModuleEntries.size(); ++i) {
+        const QtModule &module = qtModuleEntries.moduleById(i);
+        auto it = m.find(module.name);
+        if (it == m.end())
+            continue;
+        *(it->second) = i;
+    }
+}
 
-struct QtModuleEntry {
-    quint64 module;
-    const char *option;
-    const char *libraryName;
-    const char *translation;
-};
-
-static QtModuleEntry qtModuleEntries[] = {
-    { QtBluetoothModule, "bluetooth", "Qt6Bluetooth", nullptr },
-    { QtConcurrentModule, "concurrent", "Qt6Concurrent", "qtbase" },
-    { QtCoreModule, "core", "Qt6Core", "qtbase" },
-    { QtDesignerModule, "designer", "Qt6Designer", nullptr },
-    { QtDesignerComponents, "designercomponents", "Qt6DesignerComponents", nullptr },
-    { QtGamePadModule, "gamepad", "Qt6Gamepad", nullptr },
-    { QtGuiModule, "gui", "Qt6Gui", "qtbase" },
-    { QtHelpModule, "qthelp", "Qt6Help", "qt_help" },
-    { QtMultimediaModule, "multimedia", "Qt6Multimedia", "qtmultimedia" },
-    { QtMultimediaWidgetsModule, "multimediawidgets", "Qt6MultimediaWidgets", "qtmultimedia" },
-    { QtMultimediaQuickModule, "multimediaquick", "Qt6MultimediaQuick_p", "qtmultimedia" },
-    { QtNetworkModule, "network", "Qt6Network", "qtbase" },
-    { QtNfcModule, "nfc", "Qt6Nfc", nullptr },
-    { QtOpenGLModule, "opengl", "Qt6OpenGL", nullptr },
-    { QtOpenGLWidgetsModule, "openglwidgets", "Qt6OpenGLWidgets", nullptr },
-    { QtPositioningModule, "positioning", "Qt6Positioning", nullptr },
-    { QtPrintSupportModule, "printsupport", "Qt6PrintSupport", nullptr },
-    { QtQmlModule, "qml", "Qt6Qml", "qtdeclarative" },
-    { QtQmlToolingModule, "qmltooling", "qmltooling", nullptr },
-    { QtQuickModule, "quick", "Qt6Quick", "qtdeclarative" },
-    { QtQuickParticlesModule, "quickparticles", "Qt6QuickParticles", nullptr },
-    { QtQuickWidgetsModule, "quickwidgets", "Qt6QuickWidgets", nullptr },
-    { QtScriptModule, "script", "Qt6Script", "qtscript" },
-    { QtScriptToolsModule, "scripttools", "Qt6ScriptTools", "qtscript" },
-    { QtSensorsModule, "sensors", "Qt6Sensors", nullptr },
-    { QtSerialPortModule, "serialport", "Qt6SerialPort", "qtserialport" },
-    { QtSqlModule, "sql", "Qt6Sql", "qtbase" },
-    { QtSvgModule, "svg", "Qt6Svg", nullptr },
-    { QtSvgWidgetsModule, "svgwidgets", "Qt6SvgWidgets", nullptr },
-    { QtTestModule, "test", "Qt6Test", "qtbase" },
-    { QtWebSocketsModule, "websockets", "Qt6WebSockets", nullptr },
-    { QtWidgetsModule, "widgets", "Qt6Widgets", "qtbase" },
-    { QtWinExtrasModule, "winextras", "Qt6WinExtras", nullptr },
-    { QtXmlModule, "xml", "Qt6Xml", "qtbase" },
-    { QtWebEngineCoreModule, "webenginecore", "Qt6WebEngineCore", nullptr },
-    { QtWebEngineModule, "webengine", "Qt6WebEngine", "qtwebengine" },
-    { QtWebEngineWidgetsModule, "webenginewidgets", "Qt6WebEngineWidgets", nullptr },
-    { Qt3DCoreModule, "3dcore", "Qt63DCore", nullptr },
-    { Qt3DRendererModule, "3drenderer", "Qt63DRender", nullptr },
-    { Qt3DQuickModule, "3dquick", "Qt63DQuick", nullptr },
-    { Qt3DQuickRendererModule, "3dquickrenderer", "Qt63DQuickRender", nullptr },
-    { Qt3DInputModule, "3dinput", "Qt63DInput", nullptr },
-    { Qt3DAnimationModule, "3danimation", "Qt63DAnimation", nullptr },
-    { Qt3DExtrasModule, "3dextras", "Qt63DExtras", nullptr },
-    { QtLocationModule, "geoservices", "Qt6Location", nullptr },
-    { QtWebChannelModule, "webchannel", "Qt6WebChannel", nullptr },
-    { QtTextToSpeechModule, "texttospeech", "Qt6TextToSpeech", nullptr },
-    { QtSerialBusModule, "serialbus", "Qt6SerialBus", nullptr },
-    { QtWebViewModule, "webview", "Qt6WebView", nullptr },
-    { QtShaderToolsModule, "shadertools", "Qt6ShaderTools", nullptr },
-    { QtUiToolsModule, "uitools", "Qt6UiTools", nullptr },
-    { QtCore5CompatModule, "core5compat", "Qt6Core5Compat", nullptr },
-    { QtChartsModule, "charts", "Qt6Charts", nullptr },
-    { QtDataVisualizationModule, "datavisualization", "Qt6DataVisualization", nullptr },
-    { QtRemoteObjectsModule, "remoteobjects", "Qt6RemoteObjects", nullptr },
-    { QtScxmlModule, "scxml", "Qt6Scxml", nullptr },
-    { QtNetworkAuthorizationModule, "networkauthorization", "Qt6NetworkAuth", nullptr },
-    { QtMqttModule, "mqtt", "Qt6Mqtt", nullptr },
-    { QtPdfModule, "pdf", "Qt6Pdf", nullptr },
-    { QtPdfQuickModule, "pdfquick", "Qt6PdfQuick", nullptr },
-    { QtPdfWidgetsModule, "pdfwidgets", "Qt6PdfWidgets", nullptr },
-    { QtDBusModule, "dbus", "Qt6DBus", nullptr },
-    { QtStateMachineModule, "statemachine", "Qt6StateMachine", nullptr },
-    { Qt3DLogicModule, "3dlogic", "Qt63DLogic", nullptr },
-    { QtPositioningQuickModule, "positioningquick", "Qt6PositioningQuick", nullptr },
-    { QtSensorsQuickModule, "sensorsquick", "Qt6SensorsQuick", nullptr },
-    { QtWebEngineQuickModule, "webenginequick", "Qt6WebEngineQuick", nullptr },
-    { QtWebViewQuickModule, "webviewquick", "Qt6WebViewQuick", nullptr },
-    { QtQuickControlsModule, "quickcontrols", "Qt6QuickControls2", nullptr },
-    { QtQuickDialogsModule, "quickdialogs", "Qt6QuickDialogs2", nullptr },
-    { QtQuickLayoutsModule, "quicklayouts", "Qt6QuickLayouts", nullptr },
-    { QtQuickShapesModule, "quickshapes", "Qt6QuickShapes", nullptr },
-    { QtQuickTestModule, "quicktest", "Qt6QuickTest", nullptr },
-    { QtQuickTimelineModule, "quicktimeline", "Qt6QuickTimeline", nullptr },
-    { QtQuick3DModule, "quick3d", "Qt6Quick3D", nullptr },
-    { QtOpcUaModule, "opcua", "Qt6OpcUa", nullptr }
-};
+#undef DECLARE_KNOWN_MODULE
+#undef DEFINE_KNOWN_MODULE
 
 enum QtPlugin {
     QtVirtualKeyboardPlugin = 0x1
@@ -214,14 +91,26 @@ static inline QString webProcessBinary(const char *binaryName, Platform p)
     return (p & WindowsBased) ? webProcess + QStringLiteral(".exe") : webProcess;
 }
 
+static QString moduleNameToOptionName(const QString &moduleName)
+{
+    QString result = moduleName
+            .mid(3)                    // strip the "Qt6" prefix
+            .toLower();
+    if (result == u"help"_s)
+        result.prepend("qt"_L1);
+    return result;
+}
+
 static QByteArray formatQtModules(const ModuleBitset &mask, bool option = false)
 {
     QByteArray result;
     for (const auto &qtModule : qtModuleEntries) {
-        if (mask.test(qtModule.module)) {
+        if (mask.test(qtModule.id)) {
             if (!result.isEmpty())
                 result.append(' ');
-            result.append(option ? qtModule.option : qtModule.libraryName);
+            result.append(option
+                          ? moduleNameToOptionName(qtModule.name).toUtf8()
+                          : qtModule.name.toUtf8());
         }
     }
     return result;
@@ -328,6 +217,92 @@ enum CommandLineParseFlag {
     CommandLineParseHelpRequested = 0x2
 };
 
+static QCommandLineOption createQMakeOption()
+{
+    return {
+        u"qmake"_s,
+        u"Use specified qmake instead of qmake from PATH. Deprecated, use qtpaths instead."_s,
+        u"path"_s
+    };
+}
+
+static QCommandLineOption createQtPathsOption()
+{
+    return {
+            u"qtpaths"_s,
+            u"Use specified qtpaths.exe instead of qtpaths.exe from PATH."_s,
+            u"path"_s
+    };
+}
+
+static QCommandLineOption createVerboseOption()
+{
+    return {
+            u"verbose"_s,
+            u"Verbose level (0-2)."_s,
+            u"level"_s
+    };
+}
+
+static int parseEarlyArguments(const QStringList &arguments, Options *options,
+                               QString *errorMessage)
+{
+    QCommandLineParser parser;
+    parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
+
+    QCommandLineOption qmakeOption = createQMakeOption();
+    parser.addOption(qmakeOption);
+
+    QCommandLineOption qtpathsOption = createQtPathsOption();
+    parser.addOption(qtpathsOption);
+
+    QCommandLineOption verboseOption = createVerboseOption();
+    parser.addOption(verboseOption);
+
+    // Deliberately don't check for errors. We want to ignore options we don't know about.
+    parser.parse(arguments);
+
+    if (parser.isSet(qmakeOption) && parser.isSet(qtpathsOption)) {
+        *errorMessage = QStringLiteral("-qmake and -qtpaths are mutually exclusive.");
+        return CommandLineParseError;
+    }
+
+    if (parser.isSet(qmakeOption) && optVerboseLevel >= 1)
+        std::wcerr << "Warning: -qmake option is deprecated. Use -qpaths instead.\n";
+
+    if (parser.isSet(qtpathsOption) || parser.isSet(qmakeOption)) {
+        const QString qtpathsArg = parser.isSet(qtpathsOption) ? parser.value(qtpathsOption)
+                                                                : parser.value(qmakeOption);
+
+        const QString qtpathsBinary = QDir::cleanPath(qtpathsArg);
+        const QFileInfo fi(qtpathsBinary);
+        if (!fi.exists()) {
+            *errorMessage = msgFileDoesNotExist(qtpathsBinary);
+            return CommandLineParseError;
+        }
+
+        if (!fi.isExecutable()) {
+            *errorMessage = u'"' + QDir::toNativeSeparators(qtpathsBinary)
+                    + QStringLiteral("\" is not an executable.");
+            return CommandLineParseError;
+        }
+        options->qtpathsBinary = qtpathsBinary;
+    }
+
+    if (parser.isSet(verboseOption)) {
+        bool ok;
+        const QString value = parser.value(verboseOption);
+        optVerboseLevel = value.toInt(&ok);
+        if (!ok || optVerboseLevel < 0) {
+            *errorMessage = QStringLiteral("Invalid value \"%1\" passed for verbose level.")
+                    .arg(value);
+            return CommandLineParseError;
+        }
+    }
+
+    return 0;
+}
+
 static inline int parseArguments(const QStringList &arguments, QCommandLineParser *parser,
                                  Options *options, QString *errorMessage)
 {
@@ -347,17 +322,9 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
                                  QStringLiteral("directory"));
     parser->addOption(dirOption);
 
-    QCommandLineOption qmakeOption(QStringLiteral("qmake"),
-                                   QStringLiteral("Use specified qmake instead of qmake from PATH. "
-                                                  "Deprecated, use qtpaths instead."),
-                                   QStringLiteral("path"));
-    parser->addOption(qmakeOption);
-
-    QCommandLineOption qtpathsOption(
-            QStringLiteral("qtpaths"),
-            QStringLiteral("Use specified qtpaths.exe instead of qtpaths.exe from PATH."),
-            QStringLiteral("path"));
-    parser->addOption(qtpathsOption);
+    // Add early options to have them available in the help text.
+    parser->addOption(createQMakeOption());
+    parser->addOption(createQtPathsOption());
 
     QCommandLineOption libDirOption(QStringLiteral("libdir"),
                                     QStringLiteral("Copy libraries to path."),
@@ -470,22 +437,20 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
                                   QStringLiteral("option"));
     parser->addOption(listOption);
 
-    QCommandLineOption verboseOption(QStringLiteral("verbose"),
-                                     QStringLiteral("Verbose level (0-2)."),
-                                     QStringLiteral("level"));
-    parser->addOption(verboseOption);
+    // Add early option to have it available in the help text.
+    parser->addOption(createVerboseOption());
 
     parser->addPositionalArgument(QStringLiteral("[files]"),
                                   QStringLiteral("Binaries or directory containing the binary."));
 
     OptionPtrVector enabledModuleOptions;
     OptionPtrVector disabledModuleOptions;
-    const int qtModulesCount = int(sizeof(qtModuleEntries) / sizeof(QtModuleEntry));
+    const size_t qtModulesCount = qtModuleEntries.size();
     enabledModuleOptions.reserve(qtModulesCount);
     disabledModuleOptions.reserve(qtModulesCount);
-    for (int i = 0; i < qtModulesCount; ++i) {
-        const QString option = QLatin1StringView(qtModuleEntries[i].option);
-        const QString name = QLatin1StringView(qtModuleEntries[i].libraryName);
+    for (const QtModule &module : qtModuleEntries) {
+        const QString option = moduleNameToOptionName(module.name);
+        const QString name = module.name;
         const QString enabledDescription = QStringLiteral("Add ") + name + QStringLiteral(" module.");
         CommandLineOptionPtr enabledOption(new QCommandLineOption(option, enabledDescription));
         parser->addOption(*enabledOption.data());
@@ -564,18 +529,18 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     options->patchQt = !parser->isSet(noPatchQtOption);
     options->ignoreLibraryErrors = parser->isSet(ignoreErrorOption);
 
-    for (int i = 0; i < qtModulesCount; ++i) {
-        if (parser->isSet(*enabledModuleOptions.at(i)))
-            options->additionalLibraries[qtModuleEntries[i].module] = 1;
-        if (parser->isSet(*disabledModuleOptions.at(i)))
-            options->disabledLibraries[qtModuleEntries[i].module] = 1;
+    for (const QtModule &module : qtModuleEntries) {
+        if (parser->isSet(*enabledModuleOptions.at(module.id)))
+            options->additionalLibraries[module.id] = 1;
+        if (parser->isSet(*disabledModuleOptions.at(module.id)))
+            options->disabledLibraries[module.id] = 1;
     }
 
     // Add some dependencies
-    if (options->additionalLibraries.test(QtQuickModule))
-        options->additionalLibraries[QtQmlModule] = 1;
-    if (options->additionalLibraries.test(QtDesignerComponents))
-        options->additionalLibraries[QtDesignerModule] = 1;
+    if (options->additionalLibraries.test(QtQuickModuleId))
+        options->additionalLibraries[QtQmlModuleId] = 1;
+    if (options->additionalLibraries.test(QtDesignerComponentsModuleId))
+        options->additionalLibraries[QtDesignerModuleId] = 1;
 
     if (parser->isSet(listOption)) {
         const QString value = parser->value(listOption);
@@ -596,16 +561,6 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     if (parser->isSet(jsonOption) || options->list) {
         optVerboseLevel = 0;
         options->json = new JsonOutput;
-    } else {
-        if (parser->isSet(verboseOption)) {
-            bool ok;
-            const QString value = parser->value(verboseOption);
-            optVerboseLevel = value.toInt(&ok);
-            if (!ok || optVerboseLevel < 0) {
-                *errorMessage = QStringLiteral("Invalid value \"%1\" passed for verbose level.").arg(value);
-                return CommandLineParseError;
-            }
-        }
     }
 
     const QStringList posArgs = parser->positionalArguments();
@@ -616,33 +571,6 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
 
     if (parser->isSet(dirOption))
         options->directory = parser->value(dirOption);
-
-    if (parser->isSet(qmakeOption) && parser->isSet(qtpathsOption)) {
-        *errorMessage = QStringLiteral("-qmake and -qtpaths are mutually exclusive.");
-        return CommandLineParseError;
-    }
-
-    if (parser->isSet(qmakeOption) && optVerboseLevel >= 1)
-        std::wcerr << "Warning: -qmake option is deprecated. Use -qpaths instead.\n";
-
-    if (parser->isSet(qtpathsOption) || parser->isSet(qmakeOption)) {
-        const QString qtpathsArg = parser->isSet(qtpathsOption) ? parser->value(qtpathsOption)
-                                                                : parser->value(qmakeOption);
-
-        const QString qtpathsBinary = QDir::cleanPath(qtpathsArg);
-        const QFileInfo fi(qtpathsBinary);
-        if (!fi.exists()) {
-            *errorMessage = msgFileDoesNotExist(qtpathsBinary);
-            return CommandLineParseError;
-        }
-
-        if (!fi.isExecutable()) {
-            *errorMessage = u'"' + QDir::toNativeSeparators(qtpathsBinary)
-                    + QStringLiteral("\" is not an executable.");
-            return CommandLineParseError;
-        }
-        options->qtpathsBinary = qtpathsBinary;
-    }
 
     if (parser->isSet(qmlDirOption))
         options->qmlDirectories = parser->values(qmlDirOption);
@@ -720,7 +648,11 @@ static inline QString helpText(const QCommandLineParser &p)
     QString result = p.helpText();
     // Replace the default-generated text which is too long by a short summary
     // explaining how to enable single libraries.
-    const qsizetype moduleStart = result.indexOf("\n  --bluetooth"_L1);
+    if (qtModuleEntries.size() == 0)
+        return result;
+    const QtModule &firstModule = qtModuleEntries.moduleById(0);
+    const QString firstModuleOption = moduleNameToOptionName(firstModule.name);
+    const qsizetype moduleStart = result.indexOf("\n  --"_L1 + firstModuleOption);
     const qsizetype argumentsStart = result.lastIndexOf("\nArguments:"_L1);
     if (moduleStart >= argumentsStart)
         return result;
@@ -859,63 +791,6 @@ private:
     DllDirectoryFileEntryFunction m_dllFilter;
 };
 
-struct PluginModuleMapping
-{
-    const char *directoryName;
-    quint64 module;
-};
-
-static const PluginModuleMapping pluginModuleMappings[] =
-{
-#if QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
-    {"gamepads", QtGamePadModule},
-#endif
-    {"accessible", QtGuiModule},
-    {"iconengines", QtGuiModule},
-    {"imageformats", QtGuiModule},
-    {"platforms", QtGuiModule},
-    {"platforminputcontexts", QtGuiModule},
-    {"virtualkeyboard", QtGuiModule},
-    {"geoservices", QtLocationModule},
-    {"audio", QtMultimediaModule},
-    {"mediaservice", QtMultimediaModule},
-    {"multimedia", QtMultimediaModule},
-    {"playlistformats", QtMultimediaModule},
-    {"networkaccess", QtNetworkModule},
-    {"networkinformation", QtNetworkModule},
-    {"tls", QtNetworkModule},
-    {"position", QtPositioningModule},
-    {"printsupport", QtPrintSupportModule},
-    {"scenegraph", QtQuickModule},
-    {"qmltooling", QtQuickModule | QtQmlToolingModule},
-    {"sensors", QtSensorsModule},
-    {"sensorgestures", QtSensorsModule},
-    {"canbus", QtSerialBusModule},
-    {"sqldrivers", QtSqlModule},
-#if QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
-    {"texttospeech", QtTextToSpeechModule},
-#endif
-    {"qtwebengine", QtWebEngineModule | QtWebEngineCoreModule | QtWebEngineWidgetsModule},
-    {"styles", QtWidgetsModule},
-    {"sceneparsers", Qt3DRendererModule},
-    {"renderers", Qt3DRendererModule | QtShaderToolsModule},
-    {"renderplugins", Qt3DRendererModule},
-    {"geometryloaders", Qt3DRendererModule},
-    {"webview", QtWebViewModule},
-    {"designer", QtUiToolsModule},
-    {"scxmldatamodel", QtScxmlModule},
-    {"opcua", QtOpcUaModule}
-};
-
-static inline quint64 qtModuleForPlugin(const QString &subDirName)
-{
-    const auto end = std::end(pluginModuleMappings);
-    const auto result =
-        std::find_if(std::begin(pluginModuleMappings), end,
-                     [&subDirName] (const PluginModuleMapping &m) { return subDirName == QLatin1StringView(m.directoryName); });
-    return result != end ? result->module : 0; // "designer"
-}
-
 static quint64 qtModule(QString module, const QString &infix)
 {
     // Match needle 'path/Qt6Core<infix><d>.dll' or 'path/libQt6Core<infix>.so.5.0'
@@ -931,10 +806,10 @@ static quint64 qtModule(QString module, const QString &infix)
         module.truncate(endPos);
     // That should leave us with 'Qt6Core<d>'.
     for (const auto &qtModule : qtModuleEntries) {
-        const QLatin1StringView libraryName(qtModule.libraryName);
+        const QString &libraryName = qtModule.name;
         if (module == libraryName
             || (module.size() == libraryName.size() + 1 && module.startsWith(libraryName))) {
-            return qtModule.module;
+            return qtModule.id;
         }
     }
     return 0;
@@ -1007,16 +882,22 @@ QStringList findQtPlugins(ModuleBitset *usedQtModules, const ModuleBitset &disab
     const QFileInfoList &pluginDirs = pluginsDir.entryInfoList(QStringList(u"*"_s), QDir::Dirs | QDir::NoDotAndDotDot);
     for (const QFileInfo &subDirFi : pluginDirs) {
         const QString subDirName = subDirFi.fileName();
-        const quint64 module = qtModuleForPlugin(subDirName);
+        const size_t module = qtModuleEntries.moduleIdForPluginType(subDirName);
+        if (module == QtModule::InvalidId) {
+            if (optVerboseLevel > 1) {
+                std::wcerr << "No Qt module found for plugin type \"" << subDirName << "\".\n";
+            }
+            continue;
+        }
         if (usedQtModules->test(module)) {
-            const DebugMatchMode debugMatchMode = (module & QtWebEngineCoreModule)
+            const DebugMatchMode debugMatchMode = (module == QtWebEngineCoreModuleId)
                 ? MatchDebugOrRelease // QTBUG-44331: Debug detection does not work for webengine, deploy all.
                 : debugMatchModeIn;
             QDir subDir(subDirFi.absoluteFilePath());
             // Filter out disabled plugins
             if ((disabledPlugins & QtVirtualKeyboardPlugin) && subDirName == "virtualkeyboard"_L1)
                 continue;
-            if (disabledQtModules.test(QtQmlToolingModule) && subDirName == "qmltooling"_L1)
+            if (disabledQtModules.test(QtQmlToolingModuleId) && subDirName == "qmltooling"_L1)
                 continue;
             // Filter for platform or any.
             QString filter;
@@ -1058,9 +939,8 @@ static QStringList translationNameFilters(const ModuleBitset &modules, const QSt
 {
     QStringList result;
     for (const auto &qtModule : qtModuleEntries) {
-        if (modules.test(qtModule.module) && qtModule.translation) {
-            const QString name = QLatin1StringView(qtModule.translation) +
-                                 u'_' +  prefix + ".qm"_L1;
+        if (modules.test(qtModule.id) && !qtModule.translationCatalog.isEmpty()) {
+            const QString name = qtModule.translationCatalog + u'_' + prefix + ".qm"_L1;
             if (!result.contains(name))
                 result.push_back(name);
         }
@@ -1366,15 +1246,15 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     for (int m = 0; m < dependentQtLibs.size(); ++m) {
         const quint64 module = qtModule(dependentQtLibs.at(m), infix);
         result.directlyUsedQtLibraries[module] = 1;
-        if (module == QtCoreModule)
+        if (module == QtCoreModuleId)
             qtLibInfix = qtlibInfixFromCoreLibName(dependentQtLibs.at(m), detectedDebug, options.platform);
     }
 
-    const bool usesQml = result.directlyUsedQtLibraries.test(QtQmlModule);
-    const bool usesQuick = result.directlyUsedQtLibraries.test(QtQuickModule);
-    const bool uses3DQuick = result.directlyUsedQtLibraries.test(Qt3DQuickModule);
-    const bool usesQml2 = !(options.disabledLibraries.test(QtQmlModule))
-        && (usesQml || usesQuick || uses3DQuick || (options.additionalLibraries.test(QtQmlModule)));
+    const bool usesQml = result.directlyUsedQtLibraries.test(QtQmlModuleId);
+    const bool usesQuick = result.directlyUsedQtLibraries.test(QtQuickModuleId);
+    const bool uses3DQuick = result.directlyUsedQtLibraries.test(Qt3DQuickModuleId);
+    const bool usesQml2 = !(options.disabledLibraries.test(QtQmlModuleId))
+        && (usesQml || usesQuick || uses3DQuick || (options.additionalLibraries.test(QtQmlModuleId)));
 
     if (optVerboseLevel) {
         std::wcout << QDir::toNativeSeparators(options.binaries.first()) << ' '
@@ -1448,7 +1328,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
                 std::wcout << "Scanning " << QDir::toNativeSeparators(qmlDirectory) << ":\n";
             const QmlImportScanResult scanResult =
                 runQmlImportScanner(qmlDirectory, qmlImportPaths,
-                                    result.directlyUsedQtLibraries.test(QtWidgetsModule),
+                                    result.directlyUsedQtLibraries.test(QtWidgetsModuleId),
                                     options.platform, debugMatchMode, errorMessage);
             if (!scanResult.ok)
                 return result;
@@ -1487,8 +1367,8 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
 
     ModuleBitset disabled = options.disabledLibraries;
     if (!usesQml2) {
-        disabled[QtQmlModule] = 1;
-        disabled[QtQuickModule] = 1;
+        disabled[QtQmlModuleId] = 1;
+        disabled[QtQuickModuleId] = 1;
     }
     const QStringList plugins = findQtPlugins(
             &result.deployedQtLibraries,
@@ -1501,10 +1381,11 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     // Apply options flags and re-add library names.
     QString qtGuiLibrary;
     for (const auto &qtModule : qtModuleEntries) {
-        if (result.deployedQtLibraries.test(qtModule.module)) {
-            const QString library = libraryPath(libraryLocation, qtModule.libraryName, qtLibInfix, options.platform, result.isDebug);
+        if (result.deployedQtLibraries.test(qtModule.id)) {
+            const QString library = libraryPath(libraryLocation, qtModule.name.toUtf8(), qtLibInfix,
+                                                options.platform, result.isDebug);
             deployedQtLibraries.append(library);
-            if (qtModule.module == QtGuiModule)
+            if (qtModule.id == QtGuiModuleId)
                 qtGuiLibrary = library;
         }
     }
@@ -1518,7 +1399,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     if (optVerboseLevel > 1)
         std::wcout << "Plugins: " << plugins.join(u',') << '\n';
 
-    if ((result.deployedQtLibraries.test(QtGuiModule)) && platformPlugin.isEmpty()) {
+    if (result.deployedQtLibraries.test(QtGuiModuleId) && platformPlugin.isEmpty()) {
         *errorMessage =QStringLiteral("Unable to find the platform plugin.");
         return result;
     }
@@ -1722,7 +1603,46 @@ int main(int argc, char **argv)
     Options options;
     QString errorMessage;
 
-    {   // Command line
+    // Early parse the --qmake and --qtpaths options, because they are needed to determine the
+    // options that select/deselect Qt modules.
+    {
+        int result = parseEarlyArguments(QCoreApplication::arguments(), &options, &errorMessage);
+        if (result & CommandLineParseError) {
+            std::wcerr << "Error: " << errorMessage << "\n";
+            return 1;
+        }
+    }
+
+    const QMap<QString, QString> qtpathsVariables =
+            queryQtPaths(options.qtpathsBinary, &errorMessage);
+    const QString xSpec = qtpathsVariables.value(QStringLiteral("QMAKE_XSPEC"));
+    options.platform = platformFromMkSpec(xSpec);
+    if (options.platform == UnknownPlatform) {
+        std::wcerr << "Unsupported platform " << xSpec << '\n';
+        return 1;
+    }
+
+    if (qtpathsVariables.isEmpty() || xSpec.isEmpty()
+        || !qtpathsVariables.contains(QStringLiteral("QT_INSTALL_BINS"))) {
+        std::wcerr << "Unable to query qtpaths: " << errorMessage << '\n';
+        return 1;
+    }
+
+    // Read the Qt module information from the Qt installation directory.
+    const QString modulesDir
+            = qtpathsVariables.value(QLatin1String("QT_INSTALL_ARCHDATA"))
+            + QLatin1String("/modules");
+    const QString translationsDir
+            = qtpathsVariables.value(QLatin1String("QT_INSTALL_TRANSLATIONS"));
+    if (!qtModuleEntries.populate(modulesDir, translationsDir, optVerboseLevel > 1,
+                                  &errorMessage)) {
+        std::wcerr << "Error: " << errorMessage << "\n";
+        return 1;
+    }
+    assignKnownModuleIds();
+
+    // Parse the full command line.
+    {
         QCommandLineParser parser;
         QString errorMessage;
         const int result = parseArguments(QCoreApplication::arguments(), &parser, &options, &errorMessage);
@@ -1734,22 +1654,6 @@ int main(int argc, char **argv)
             return 1;
         if (result & CommandLineParseHelpRequested)
             return 0;
-    }
-
-    const QMap<QString, QString> qtpathsVariables =
-            queryQtPaths(options.qtpathsBinary, &errorMessage);
-    const QString xSpec = qtpathsVariables.value(QStringLiteral("QMAKE_XSPEC"));
-    options.platform = platformFromMkSpec(xSpec);
-
-    if (qtpathsVariables.isEmpty() || xSpec.isEmpty()
-        || !qtpathsVariables.contains(QStringLiteral("QT_INSTALL_BINS"))) {
-        std::wcerr << "Unable to query qtpaths: " << errorMessage << '\n';
-        return 1;
-    }
-
-    if (options.platform == UnknownPlatform) {
-        std::wcerr << "Unsupported platform " << xSpec << '\n';
-        return 1;
     }
 
     // Create directories
@@ -1769,7 +1673,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (result.deployedQtLibraries.test(QtWebEngineCoreModule)) {
+    if (result.deployedQtLibraries.test(QtWebEngineCoreModuleId)) {
         if (!deployWebEngineCore(qtpathsVariables, options, result.isDebug, &errorMessage)) {
             std::wcerr << errorMessage << '\n';
             return 1;
