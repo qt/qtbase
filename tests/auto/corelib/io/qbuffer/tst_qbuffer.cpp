@@ -40,6 +40,7 @@ class tst_QBuffer : public QObject
     Q_OBJECT
 private slots:
     void open();
+    void openWriteOnlyDoesNotTruncate();
     void getSetCheck();
     void readBlock();
     void readBlockPastEnd();
@@ -134,6 +135,29 @@ void tst_QBuffer::open()
     QVERIFY(b.isReadable());
     QVERIFY(b.isWritable());
     b.close();
+}
+
+void tst_QBuffer::openWriteOnlyDoesNotTruncate()
+{
+    QBuffer b;
+    const auto data = QByteArrayLiteral("Hey, presto!");
+
+    {
+        QVERIFY(b.open(QIODevice::WriteOnly));
+        b.write(data);
+        b.close();
+    }
+    {
+        QVERIFY(b.open(QIODevice::ReadOnly));
+        QCOMPARE(b.readAll(), data);
+        b.close();
+    }
+    {
+        QVERIFY(b.open(QIODevice::WriteOnly));
+        QCOMPARE(b.size(), data.size());
+        QCOMPARE(b.pos(), 0);
+        b.close();
+    }
 }
 
 // some status() tests, too
