@@ -43,15 +43,13 @@ class PaintCommands
 {
 public:
     // construction / initialization
-    PaintCommands(const QStringList &cmds, int w, int h, QImage::Format format)
+    PaintCommands(const QStringList &cmds, int /*w*/, int /*h*/, QImage::Format format)
         : m_painter(0)
         , m_surface_painter(0)
         , m_format(format)
         , m_commands(cmds)
         , m_gradientSpread(QGradient::PadSpread)
         , m_gradientCoordinate(QGradient::LogicalMode)
-        , m_width(w)
-        , m_height(h)
         , m_verboseMode(false)
         , m_type(WidgetType)
         , m_checkers_background(true)
@@ -62,7 +60,9 @@ public:
         , m_surface_glbuffer(0)
         , m_surface_glpaintdevice(0)
 #endif
-    { staticInit(); }
+    {
+        staticInit();
+    }
 
 public:
     void setCheckersBackground(bool b) { staticInit(); m_checkers_background = b; }
@@ -251,8 +251,6 @@ private:
     QGradient::Spread m_gradientSpread;
     QGradient::CoordinateMode m_gradientCoordinate;
     bool m_abort;
-    int m_width;
-    int m_height;
 
     bool m_verboseMode;
     DeviceType m_type;
