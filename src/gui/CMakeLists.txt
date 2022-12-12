@@ -39,6 +39,12 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}
     set_source_files_properties(../3rdparty/md4c/md4c.c PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter -Wno-sign-compare -Wno-missing-field-initializers -Wno-missing-braces")
 endif()
 
+# Silence AUTOMOC warning 'No relevant classes found. No output generated.'
+if (NOT UNIX)
+    set_source_files_properties(kernel/qplatformwindow_p.h
+                                PROPERTIES SKIP_AUTOMOC TRUE)
+endif()
+
 unset(qmake_module_config)
 if(QT_FEATURE_opengl)
     list(APPEND qmake_module_config opengl)
