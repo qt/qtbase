@@ -22,7 +22,7 @@
 {
     UIFontPickerViewControllerConfiguration *configuration = [[UIFontPickerViewControllerConfiguration alloc] init];
     if (dialog->options()->testOption(QFontDialogOptions::MonospacedFonts)) {
-        UIFontDescriptorSymbolicTraits traits;
+        UIFontDescriptorSymbolicTraits traits = {};
         traits |= UIFontDescriptorTraitMonoSpace;
         configuration.filteredTraits = traits;
     }
