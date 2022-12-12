@@ -470,7 +470,7 @@ void QSidebar::focusInEvent(QFocusEvent *event)
 bool QSidebar::event(QEvent * event)
 {
     if (event->type() == QEvent::KeyRelease) {
-        QKeyEvent* ke = (QKeyEvent*) event;
+        QKeyEvent *ke = static_cast<QKeyEvent *>(event);
         if (ke->key() == Qt::Key_Delete) {
             removeEntry();
             return true;

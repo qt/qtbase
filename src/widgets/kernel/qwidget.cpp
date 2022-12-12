@@ -8867,7 +8867,7 @@ bool QWidget::event(QEvent *event)
         break;
 #endif
     case QEvent::KeyPress: {
-        QKeyEvent *k = (QKeyEvent *)event;
+        QKeyEvent *k = static_cast<QKeyEvent *>(event);
         bool res = false;
         if (!(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) {  //### Add MetaModifier?
             if (k->key() == Qt::Key_Backtab
