@@ -1669,10 +1669,10 @@ void tst_QXmlStream::readBack() const
         writer.writeEndDocument();
         buffer.close();
 
-        if (writer.hasError()) {
-            QVERIFY2(!isValidSingleTextChar(c), QByteArray::number(c));
+        if (!isValidSingleTextChar(c)) {
+            QVERIFY2(writer.hasError(), QByteArray::number(c));
         } else {
-            QVERIFY2(isValidSingleTextChar(c), QByteArray::number(c));
+            QVERIFY2(!writer.hasError(), QByteArray::number(c));
             QVERIFY(buffer.open(QIODevice::ReadOnly));
             QXmlStreamReader reader(&buffer);
             do {
