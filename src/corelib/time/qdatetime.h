@@ -458,7 +458,7 @@ public:
         return result.addMSecs(time.time_since_epoch().count());
     }
 
-#if QT_CONFIG(timezone)
+#if QT_CONFIG(timezone) && (__cpp_lib_chrono >= 201907L || defined(Q_QDOC))
     // zoned_time. defined in qtimezone.h
     QT_POST_CXX17_API_IN_EXPORTED_CLASS
     static QDateTime fromStdZonedTime(const std::chrono::zoned_time<
