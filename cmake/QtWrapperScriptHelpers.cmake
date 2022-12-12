@@ -76,10 +76,10 @@ function(qt_internal_create_wrapper_scripts)
         __relative_path_to_cmake_scripts_dir)
     if(generate_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-configure-module.in"
-            "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-configure-module" @ONLY
+            "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module" @ONLY
             NEWLINE_STYLE LF)
-        qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-configure-module"
-            DESTINATION "${INSTALL_LIBEXECDIR}")
+        qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module"
+            DESTINATION "${INSTALL_BINDIR}")
     endif()
     if(generate_non_unix)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-configure-module.bat.in"
