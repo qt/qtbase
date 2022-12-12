@@ -1809,10 +1809,10 @@ void QCocoaWindow::setWindowCursor(NSCursor *cursor)
     // there's an override cursor active (for example when hovering over the
     // window frame), will not result in a cursorUpdate: callback. To work around
     // this we synthesize a cursor update event and call the callback ourselves,
-    // if we detect that the mouse is currently over the view.
+    // if we detect that the mouse is currently over the view, and the window key.
     auto locationInWindow = m_view.window.mouseLocationOutsideOfEventStream;
     auto locationInSuperview = [m_view.superview convertPoint:locationInWindow fromView:nil];
-    if ([m_view hitTest:locationInSuperview] == m_view) {
+    if (m_view.window.keyWindow && [m_view hitTest:locationInSuperview] == m_view) {
         [m_view cursorUpdate:[NSEvent enterExitEventWithType:NSEventTypeCursorUpdate
             location:locationInWindow modifierFlags:0 timestamp:0
             windowNumber:m_view.window.windowNumber context:nil
