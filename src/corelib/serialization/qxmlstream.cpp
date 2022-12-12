@@ -3069,13 +3069,11 @@ void QXmlStreamWriterPrivate::doWriteToDevice(QStringView s)
     while (!s.isEmpty()) {
         const qsizetype chunkSize = std::min(s.size(), MaxChunkSize);
         char *end = QUtf8::convertFromUnicode(buffer, s.first(chunkSize), &state);
-        if (state.remainingChars > 0) {
-            hasEncodingError = true;
-            return;
-        }
         doWriteToDevice(QUtf8StringView{buffer, end});
         s = s.sliced(chunkSize);
     }
+    if (state.remainingChars > 0)
+        hasEncodingError = true;
 }
 
 void QXmlStreamWriterPrivate::doWriteToDevice(QUtf8StringView s)
