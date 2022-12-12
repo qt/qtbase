@@ -5637,6 +5637,49 @@ bool QRhi::probe(QRhi::Implementation impl, QRhiInitParams *params)
 }
 
 /*!
+    \struct QRhiSwapChainProxyData
+    \internal
+    \inmodule QtGui
+ */
+
+/*!
+    Generates and returns a QRhiSwapChainProxyData struct containing opaque
+    data specific to the backend and graphics API specified by \a impl. \a
+    window is the QWindow a swapchain is targeting.
+
+    The returned struct can be passed to QRhiSwapChain::setProxyData(). This
+    makes sense in threaded rendering systems: this static function is expected
+    to be called on the \b{main (gui) thread}, unlike all QRhi operations, then
+    transferred to the thread working with the QRhi and QRhiSwapChain and passed
+    on to the swapchain. This allows doing native platform queries that are
+    only safe to be called on the main thread, for example to query the
+    CAMetalLayer from a NSView, and then passing on the data to the
+    QRhiSwapChain living on the rendering thread. With the Metal example, doing
+    the view.layer access on a dedicated rendering thread causes a warning in
+    the Xcode Thread Checker. With the data proxy mechanism, this is avoided.
+
+    When threads are not involved, generating and passing on the
+    QRhiSwapChainProxyData is not required: backends are guaranteed to be able
+    to query whatever is needed on their own, and if everything lives on the
+    main (gui) thread, that should be sufficient.
+
+    \note \a impl should match what the QRhi is created with. For example,
+    calling with QRhi::Metal on a non-Apple platform will not generate any
+    useful data.
+ */
+QRhiSwapChainProxyData QRhi::updateSwapChainProxyData(QRhi::Implementation impl, QWindow *window)
+{
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+    if (impl == Metal)
+        return QRhiMetal::updateSwapChainProxyData(window);
+#else
+    Q_UNUSED(impl);
+    Q_UNUSED(window);
+#endif
+    return {};
+}
+
+/*!
     \return the backend type for this QRhi.
  */
 QRhi::Implementation QRhi::backend() const

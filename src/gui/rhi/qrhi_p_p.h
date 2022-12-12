@@ -789,6 +789,15 @@ bool QRhiRenderTargetAttachmentTracker::isUpToDate(const QRhiTextureRenderTarget
     return resIdList == currentResIdList;
 }
 
+template<typename T>
+inline T *qrhi_objectFromProxyData(QRhiSwapChainProxyData *pd, QWindow *window, QRhi::Implementation impl, uint objectIndex)
+{
+    Q_ASSERT(objectIndex < std::size(pd->reserved));
+    if (!pd->reserved[objectIndex]) // // was not set, no other choice, do it here, whatever thread this is
+        *pd = QRhi::updateSwapChainProxyData(impl, window);
+    return static_cast<T *>(pd->reserved[objectIndex]);
+}
+
 QT_END_NAMESPACE
 
 #endif

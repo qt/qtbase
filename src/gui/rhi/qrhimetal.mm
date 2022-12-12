@@ -5501,6 +5501,9 @@ QRhiRenderTarget *QMetalSwapChain::currentFrameRenderTarget()
     return &rtWrapper;
 }
 
+// view.layer should ideally be called on the main thread, otherwise the UI
+// Thread Checker in Xcode drops a warning. Hence trying to proxy it through
+// QRhiSwapChainProxyData instead of just calling this function directly.
 static inline CAMetalLayer *layerForWindow(QWindow *window)
 {
     Q_ASSERT(window);
@@ -5513,13 +5516,24 @@ static inline CAMetalLayer *layerForWindow(QWindow *window)
     return static_cast<CAMetalLayer *>(view.layer);
 }
 
+// If someone calls this, it is hopefully from the main thread, and they will
+// then set the returned data on the QRhiSwapChain, so it won't need to query
+// the layer on its own later on.
+QRhiSwapChainProxyData QRhiMetal::updateSwapChainProxyData(QWindow *window)
+{
+    QRhiSwapChainProxyData d;
+    d.reserved[0] = layerForWindow(window);
+    return d;
+}
+
 QSize QMetalSwapChain::surfacePixelSize()
 {
     Q_ASSERT(m_window);
     CAMetalLayer *layer = d->layer;
     if (!layer)
-        layer = layerForWindow(m_window);
+        layer = qrhi_objectFromProxyData<CAMetalLayer>(&m_proxyData, m_window, QRhi::Metal, 0);
 
+    Q_ASSERT(layer);
     int height = (int)layer.bounds.size.height;
     int width = (int)layer.bounds.size.width;
     width *= layer.contentsScale;
@@ -5593,7 +5607,7 @@ bool QMetalSwapChain::createOrResize()
         return false;
     }
 
-    d->layer = layerForWindow(window);
+    d->layer = qrhi_objectFromProxyData<CAMetalLayer>(&m_proxyData, window, QRhi::Metal, 0);
     Q_ASSERT(d->layer);
 
     chooseFormats();
