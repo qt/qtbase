@@ -1695,16 +1695,23 @@ void tst_QXmlStream::readBack() const
 {
     QFETCH(const int, plane);
 
+    constexpr qsizetype MaxChunkSizeWhenEncoding = 512; // from qxmlstream.cpp
     QBuffer buffer;
+    QString text = QString(513, 'a'); // one longer than the internal conversion buffer
 
     for (char16_t i = 0; i < (std::numeric_limits<char16_t>::max)(); ++i) {
 
         const char32_t c = (plane << 16) + i;
 
+        // end chunk in invalid character, split surrogates:
+        const auto pair = QChar::fromUcs4(c);
+        text.resize(MaxChunkSizeWhenEncoding + 1 - pair.size());
+        text += pair;
+
         QVERIFY(buffer.open(QIODevice::WriteOnly|QIODevice::Truncate));
         QXmlStreamWriter writer(&buffer);
         writer.writeStartDocument();
-        writer.writeTextElement("a", c);
+        writer.writeTextElement("a", text);
         writer.writeEndDocument();
         buffer.close();
 
