@@ -336,6 +336,11 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_localserver AND WIN32
         socket/qlocalsocket_win.cpp
 )
 
+qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl_linked AND QT_FEATURE_opensslv30
+    LIBRARIES
+        WrapOpenSSL::WrapOpenSSL
+)
+
 qt_internal_extend_target(Network CONDITION QT_FEATURE_system_proxies
     DEFINES
         QT_USE_SYSTEM_PROXIES

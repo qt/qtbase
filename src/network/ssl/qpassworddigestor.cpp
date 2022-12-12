@@ -6,8 +6,19 @@
 #include <QtCore/QDebug>
 #include <QtCore/QMessageAuthenticationCode>
 #include <QtCore/QtEndian>
+#include <QtCore/QList>
+
+#include "qtcore-config_p.h"
 
 #include <limits>
+
+#if QT_CONFIG(opensslv30) && QT_CONFIG(openssl_linked)
+#define USING_OPENSSL30
+#include <openssl/core_names.h>
+#include <openssl/kdf.h>
+#include <openssl/params.h>
+#include <openssl/provider.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 namespace QPasswordDigestor {
@@ -86,6 +97,85 @@ Q_NETWORK_EXPORT QByteArray deriveKeyPbkdf1(QCryptographicHash::Algorithm algori
     return key.left(dkLen);
 }
 
+#ifdef USING_OPENSSL30
+// Copied from QCryptographicHashPrivate
+static constexpr const char * methodToName(QCryptographicHash::Algorithm method) noexcept
+{
+    switch (method) {
+#define CASE(Enum, Name) \
+    case QCryptographicHash:: Enum : \
+        return Name \
+    /*end*/
+    CASE(Sha1, "SHA1");
+    CASE(Md4, "MD4");
+    CASE(Md5, "MD5");
+    CASE(Sha224, "SHA224");
+    CASE(Sha256, "SHA256");
+    CASE(Sha384, "SHA384");
+    CASE(Sha512, "SHA512");
+    CASE(RealSha3_224, "SHA3-224");
+    CASE(RealSha3_256, "SHA3-256");
+    CASE(RealSha3_384, "SHA3-384");
+    CASE(RealSha3_512, "SHA3-512");
+    CASE(Keccak_224, "SHA3-224");
+    CASE(Keccak_256, "SHA3-256");
+    CASE(Keccak_384, "SHA3-384");
+    CASE(Keccak_512, "SHA3-512");
+    CASE(Blake2b_512, "BLAKE2B512");
+    CASE(Blake2s_256, "BLAKE2S256");
+#undef CASE
+    default: return nullptr;
+    }
+}
+
+static QByteArray opensslDeriveKeyPbkdf2(QCryptographicHash::Algorithm algorithm,
+                                         const QByteArray &data, const QByteArray &salt,
+                                         uint64_t iterations, quint64 dkLen)
+{
+    EVP_KDF *kdf = EVP_KDF_fetch(nullptr, "PBKDF2", nullptr);
+
+    if (!kdf)
+        return QByteArray();
+
+    auto cleanUpKdf = qScopeGuard([kdf] {
+        EVP_KDF_free(kdf);
+    });
+
+    EVP_KDF_CTX *ctx = EVP_KDF_CTX_new(kdf);
+
+    if (!ctx)
+        return QByteArray();
+
+    auto cleanUpCtx = qScopeGuard([ctx] {
+        EVP_KDF_CTX_free(ctx);
+    });
+
+    // Do not enable SP800-132 compliance check, otherwise we will require:
+    // - the iteration count is at least 1000
+    // - the salt length is at least 128 bits
+    // - the derived key length is at least 112 bits
+    // This would be a different behavior from the original implementation.
+    int checkDisabled = 1;
+    QList<OSSL_PARAM> params;
+    params.append(OSSL_PARAM_construct_utf8_string(OSSL_KDF_PARAM_DIGEST, const_cast<char*>(methodToName(algorithm)), 0));
+    params.append(OSSL_PARAM_construct_octet_string(OSSL_KDF_PARAM_SALT, const_cast<char*>(salt.data()), salt.size()));
+    params.append(OSSL_PARAM_construct_octet_string(OSSL_KDF_PARAM_PASSWORD, const_cast<char*>(data.data()), data.size()));
+    params.append(OSSL_PARAM_construct_uint64(OSSL_KDF_PARAM_ITER, &iterations));
+    params.append(OSSL_PARAM_construct_int(OSSL_KDF_PARAM_PKCS5, &checkDisabled));
+    params.append(OSSL_PARAM_construct_end());
+
+    if (EVP_KDF_CTX_set_params(ctx, params.data()) <= 0)
+        return QByteArray();
+
+    QByteArray derived(dkLen, '\0');
+
+    if (!EVP_KDF_derive(ctx, reinterpret_cast<unsigned char*>(derived.data()), derived.size(), nullptr))
+        return QByteArray();
+
+    return derived;
+}
+#endif
+
 /*!
     \since 5.12
 
@@ -107,8 +197,6 @@ Q_NETWORK_EXPORT QByteArray deriveKeyPbkdf2(QCryptographicHash::Algorithm algori
                                             const QByteArray &data, const QByteArray &salt,
                                             int iterations, quint64 dkLen)
 {
-    // https://tools.ietf.org/html/rfc8018#section-5.2
-
     // The RFC recommends checking that 'dkLen' is not greater than '(2^32 - 1) * hLen'
     int hashLen = QCryptographicHash::hashLength(algorithm);
     const quint64 maxLen = quint64(std::numeric_limits<quint32>::max() - 1) * hashLen;
@@ -122,6 +210,12 @@ Q_NETWORK_EXPORT QByteArray deriveKeyPbkdf2(QCryptographicHash::Algorithm algori
     if (iterations < 1 || dkLen < 1)
         return QByteArray();
 
+#ifdef USING_OPENSSL30
+    if (methodToName(algorithm))
+        return opensslDeriveKeyPbkdf2(algorithm, data, salt, iterations, dkLen);
+#endif
+
+    // https://tools.ietf.org/html/rfc8018#section-5.2
     QByteArray key;
     quint32 currentIteration = 1;
     QMessageAuthenticationCode hmac(algorithm, data);
