@@ -705,12 +705,14 @@ void tst_QAccessibilityMac::tableViewTest()
 
     // here start actual tableview tests
     // Should have 2 columns
+    const unsigned int columnCount = 2;
     NSArray *columnArray = [tv tableColumns];
-    QCOMPARE([columnArray count], 2);
+    QCOMPARE([columnArray count], columnCount);
 
     // should have 3 rows
+    const unsigned int rowCount = 3;
     NSArray *rowArray = [tv tableRows];
-    QCOMPARE([rowArray count], 3);
+    QCOMPARE([rowArray count], rowCount);
 
     // The individual cells are children of the rows
     TestAXObject *row = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)rowArray[0]];
@@ -722,7 +724,7 @@ void tst_QAccessibilityMac::tableViewTest()
 
     // both rows and columns are direct children of the table
     NSArray *childList = [tv childList];
-    QCOMPARE([childList count], 5); // 3 rows + 2 columns
+    QCOMPARE([childList count], columnCount + rowCount);
     for (id child in childList) {
         TestAXObject *childObject = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)child];
         QVERIFY([childObject.role isEqualToString:NSAccessibilityRowRole] ||
