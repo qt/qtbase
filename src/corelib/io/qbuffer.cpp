@@ -277,6 +277,10 @@ void QBuffer::setData(const QByteArray &data)
 
 /*!
    \reimp
+
+   Unlike QFile, opening a QBuffer QIODevice::WriteOnly does not truncate it.
+   However, pos() is set to 0. Use QIODevice::Append or QIODevice::Truncate to
+   change either behavior.
 */
 bool QBuffer::open(OpenMode flags)
 {
