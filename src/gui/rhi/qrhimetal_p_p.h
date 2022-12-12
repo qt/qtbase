@@ -329,6 +329,7 @@ public:
     ~QRhiMetal();
 
     static bool probe(QRhiMetalInitParams *params);
+    static QRhiSwapChainProxyData updateSwapChainProxyData(QWindow *window);
 
     bool create(QRhi::Flags flags) override;
     void destroy() override;

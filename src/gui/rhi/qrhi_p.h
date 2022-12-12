@@ -1361,6 +1361,11 @@ Q_DECLARE_TYPEINFO(QRhiSwapChainHdrInfo, Q_RELOCATABLE_TYPE);
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiSwapChainHdrInfo &);
 #endif
 
+struct QRhiSwapChainProxyData
+{
+    void *reserved[2] = {};
+};
+
 class Q_GUI_EXPORT QRhiSwapChain : public QRhiResource
 {
 public:
@@ -1389,6 +1394,9 @@ public:
 
     QWindow *window() const { return m_window; }
     void setWindow(QWindow *window) { m_window = window; }
+
+    QRhiSwapChainProxyData proxyData() const { return m_proxyData; }
+    void setProxyData(const QRhiSwapChainProxyData &d) { m_proxyData = d; }
 
     Flags flags() const { return m_flags; }
     void setFlags(Flags f) { m_flags = f; }
@@ -1425,6 +1433,7 @@ protected:
     int m_sampleCount = 1;
     QRhiRenderPassDescriptor *m_renderPassDesc = nullptr;
     QSize m_currentPixelSize;
+    QRhiSwapChainProxyData m_proxyData;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiSwapChain::Flags)
@@ -1809,6 +1818,8 @@ public:
     void setPipelineCacheData(const QByteArray &data);
 
     QRhiStats statistics() const;
+
+    static QRhiSwapChainProxyData updateSwapChainProxyData(Implementation impl, QWindow *window);
 
 protected:
     QRhi();
