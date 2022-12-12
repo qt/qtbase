@@ -12,7 +12,7 @@ instructions:
     instructions:
       - type: EnvironmentVariable
         variableName: CONFIGURE_EXECUTABLE
-        variableValue: "{{.InstallDir}}{{.Env.INSTALL_DIR_SUFFIX}}{{.Env.CI_PATH_SEP}}libexec{{.Env.CI_PATH_SEP}}qt-configure-module"
+        variableValue: "{{.InstallDir}}{{.Env.INSTALL_DIR_SUFFIX}}{{.Env.CI_PATH_SEP}}bin{{.Env.CI_PATH_SEP}}qt-configure-module"
         disable_if:
           condition: property
           property: host.os
