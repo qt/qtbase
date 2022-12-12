@@ -45,12 +45,11 @@ public:
     bool isSystemTrayAvailable() const override;
     bool supportsMessages() const override;
 
-    void statusItemClicked();
+    void emitActivated();
 
 private:
     NSStatusItem *m_statusItem = nullptr;
     QStatusItemDelegate *m_delegate = nullptr;
-    QCocoaMenu *m_menu = nullptr;
 };
 
 QT_END_NAMESPACE
