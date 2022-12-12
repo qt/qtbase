@@ -34,7 +34,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-using ModuleBitset = std::bitset<76>;
+using ModuleBitset = std::bitset<77>;
 
 enum QtModule
 #if defined(Q_COMPILER_CLASS_ENUM) || defined(Q_CC_MSVC)
@@ -116,7 +116,8 @@ enum QtModule
     QtQuickShapesModule,
     QtQuickTestModule,
     QtQuickTimelineModule,
-    QtQuick3DModule
+    QtQuick3DModule,
+    QtOpcUaModule
 };
 
 struct QtModuleEntry {
@@ -202,7 +203,8 @@ static QtModuleEntry qtModuleEntries[] = {
     { QtQuickShapesModule, "quickshapes", "Qt6QuickShapes", nullptr },
     { QtQuickTestModule, "quicktest", "Qt6QuickTest", nullptr },
     { QtQuickTimelineModule, "quicktimeline", "Qt6QuickTimeline", nullptr },
-    { QtQuick3DModule, "quick3d", "Qt6Quick3D", nullptr }
+    { QtQuick3DModule, "quick3d", "Qt6Quick3D", nullptr },
+    { QtOpcUaModule, "opcua", "Qt6OpcUa", nullptr }
 };
 
 enum QtPlugin {
@@ -902,7 +904,8 @@ static const PluginModuleMapping pluginModuleMappings[] =
     {"geometryloaders", Qt3DRendererModule},
     {"webview", QtWebViewModule},
     {"designer", QtUiToolsModule},
-    {"scxmldatamodel", QtScxmlModule}
+    {"scxmldatamodel", QtScxmlModule},
+    {"opcua", QtOpcUaModule}
 };
 
 static inline quint64 qtModuleForPlugin(const QString &subDirName)
