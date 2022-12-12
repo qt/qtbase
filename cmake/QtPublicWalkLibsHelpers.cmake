@@ -277,6 +277,18 @@ ${target}, but not declared.")
     set(${rcc_objects_out_var} ${rcc_objects} PARENT_SCOPE)
 endfunction()
 
+function(__qt_internal_print_missing_dependency_target_warning target dep)
+    if(QT_SILENCE_MISSING_DEPENDENCY_TARGET_WARNING)
+        return()
+    endif()
+    message(WARNING
+        "When trying to collect dependencies of target '${target}', "
+        "the non-existent target '${dep}' was encountered. "
+        "This can likely be fixed by moving the find_package call that pulls in "
+        "'${dep}' to the scope of directory '${CMAKE_CURRENT_LIST_DIR}' or higher. "
+        "This warning can be silenced by setting QT_SILENCE_MISSING_DEPENDENCY_TARGET_WARNING to "
+        "ON.")
+endfunction()
 
 # Given ${target}, collect all its private dependencies that are CMake targets.
 #
@@ -303,9 +315,14 @@ function(__qt_internal_collect_all_target_dependencies target out_var)
                         "qt_private_link_library_targets"
                         "collect_targets")
 
-                    if(lib_walked_targets)
-                        list(APPEND dep_targets ${lib_walked_targets})
-                    endif()
+                    foreach(lib_target IN LISTS lib_walked_targets)
+                        if(NOT TARGET "${lib_target}")
+                            __qt_internal_print_missing_dependency_target_warning(${target}
+                                ${lib_target})
+                            continue()
+                        endif()
+                        list(APPEND dep_targets ${lib_target})
+                    endforeach()
                 endif()
             endforeach()
         endif()
