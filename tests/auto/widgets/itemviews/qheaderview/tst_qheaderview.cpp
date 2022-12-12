@@ -2842,10 +2842,6 @@ void tst_QHeaderView::calculateAndCheck(int cppline, const int precalced_compare
 
     int sum_visual = 0;
     int sum_logical = 0;
-    int sum_size = 0;
-    int sum_hidden_size = 0;
-    int sum_lookup_visual = 0;
-    int sum_lookup_logical = 0;
 
     int chk_visual = 1;
     int chk_logical = 1;
@@ -2865,7 +2861,6 @@ void tst_QHeaderView::calculateAndCheck(int cppline, const int precalced_compare
 
         sum_visual += visual;
         sum_logical += logical;
-        sum_size += ssize;
 
         if (visual >= 0) {
             chk_visual %= p2;
@@ -2885,7 +2880,6 @@ void tst_QHeaderView::calculateAndCheck(int cppline, const int precalced_compare
         if (view->isSectionHidden(i)) {
             view->showSection(i);
             int hiddensize = view->sectionSize(i);
-            sum_hidden_size += hiddensize;
             chk_hidden_size %= p2;
             chk_hidden_size += ( (hiddensize + 1) * (i + 1) * p1);
             // (hiddensize + 1) in the above to differ between hidden and size 0
@@ -2904,8 +2898,6 @@ void tst_QHeaderView::calculateAndCheck(int cppline, const int precalced_compare
     for (int u = 0; u < max_lookup_count; ++u) {
         int visu = view->visualIndexAt(u);
         int logi = view->logicalIndexAt(u);
-        sum_lookup_visual += logi;
-        sum_lookup_logical += visu;
         chk_lookup_visual %= p2;
         chk_lookup_visual *= ( (u + 1) * p1 * (visu + 2));
         chk_lookup_logical %= p2;
