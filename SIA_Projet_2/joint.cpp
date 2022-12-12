@@ -9,10 +9,58 @@ Joint* Joint::createFromFile(std::string fileName) {
 
 	ifstream inputfile(fileName.data());
 	if(inputfile.good()) {
+
 		while(!inputfile.eof()) {
 			string buf;	
 			inputfile >> buf;
-			// TODO : construire la structure de données root à partir du fichier
+			// TODO : construire la structure de donnï¿½es root ï¿½ partir du fichier
+			double offX = 0;
+			double offY = 0;
+			double offZ = 0;
+			string name;
+
+			replace(begin(buf), end(buf), '    ', ' ');
+			if (!motion) {
+				if(buf.find("HIERARCHY") != string::npos) {
+					continue;
+				}
+
+				if (buf.find("ROOT") != string::npos) {
+					name = buf.substr(5);
+				}
+				
+				if (buf.find("OFFSET") != string::npos) {
+
+				}
+
+				if (buf.find("JOINT") != string::npos) {
+					MStringArray jnt;
+					newLine.split(' ', jnt);
+					myParent = new TinyDAG(jnt[jnt.length() - 1], myParent);
+				}
+
+				if (buf.find("End Site") != string::npos) {
+					safeClose = true;
+				}
+
+				if (buf.find("}") != string::npos) {
+					if (safeClose) {
+						safeClose = false;
+						continue;
+					}
+
+					if (myParent != NULL) {
+						myParent = myParent->pObj;
+						if (myParent != NULL) {
+							//mc.select(myParent._fullPath())
+						}
+					}
+				}
+				size_t foundChannels = buf.find("CHANNELS");
+				if (foundChannels != std::string::npos) {
+					
+				}
+			}
 		}
 		inputfile.close();
 	} else {

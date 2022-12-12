@@ -36,6 +36,7 @@ public :
 	double _curRz;						// current value of rotation about Z (deg)
 	int _rorder;						// order of euler angles to reconstruct rotation
 	std::vector<Joint*> _children;	// children of the current joint
+	bool motion = false;
 
 
 public :
