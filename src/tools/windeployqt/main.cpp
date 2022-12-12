@@ -1358,7 +1358,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     // Determine application type, check Quick2 is used by looking at the
     // direct dependencies (do not be fooled by QtWebKit depending on it).
     QString qtLibInfix;
-    for (int m = 0; m < directDependencyCount; ++m) {
+    for (int m = 0; m < dependentQtLibs.size(); ++m) {
         const quint64 module = qtModule(dependentQtLibs.at(m), infix);
         result.directlyUsedQtLibraries[module] = 1;
         if (module == QtCoreModule)
