@@ -5596,8 +5596,9 @@ bool QMetalSwapChain::createOrResize()
     int width = (int)d->layer.bounds.size.width;
     int height = (int)d->layer.bounds.size.height;
     CGSize layerSize = CGSizeMake(width, height);
-    layerSize.width *= d->layer.contentsScale;
-    layerSize.height *= d->layer.contentsScale;
+    const float scaleFactor = d->layer.contentsScale;
+    layerSize.width *= scaleFactor;
+    layerSize.height *= scaleFactor;
     d->layer.drawableSize = layerSize;
 
     m_currentPixelSize = QSizeF::fromCGSize(layerSize).toSize();
@@ -5636,12 +5637,13 @@ bool QMetalSwapChain::createOrResize()
 
     rtWrapper.setRenderPassDescriptor(m_renderPassDesc); // for the public getter in QRhiRenderTarget
     rtWrapper.d->pixelSize = pixelSize;
-    rtWrapper.d->dpr = float(window->devicePixelRatio());
+    rtWrapper.d->dpr = scaleFactor;
     rtWrapper.d->sampleCount = samples;
     rtWrapper.d->colorAttCount = 1;
     rtWrapper.d->dsAttCount = ds ? 1 : 0;
 
-    qCDebug(QRHI_LOG_INFO, "got CAMetalLayer, size %dx%d", pixelSize.width(), pixelSize.height());
+    qCDebug(QRHI_LOG_INFO, "got CAMetalLayer, pixel size %dx%d (scale %.2f)",
+            pixelSize.width(), pixelSize.height(), scaleFactor);
 
     if (samples > 1) {
         MTLTextureDescriptor *desc = [[MTLTextureDescriptor alloc] init];
