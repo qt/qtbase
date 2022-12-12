@@ -121,6 +121,7 @@ public:
         QGraphicsEffect::ChangeFlags flags;
         if (source) {
             flags |= QGraphicsEffect::SourceDetached;
+            source->d_func()->effectBoundingRectChanged();
             source->d_func()->invalidateCache();
             source->d_func()->detach();
             delete source;
