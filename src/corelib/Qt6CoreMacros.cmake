@@ -1842,6 +1842,10 @@ function(qt6_add_plugin target)
 
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
 
+    if (arg_UNPARSED_ARGUMENTS)
+        message(AUTHOR_WARNING "Unexpected arguments: ${arg_UNPARSED_ARGUMENTS}. If these are source files, consider using target_sources() instead.")
+    endif()
+
     # Handle the inconsistent CLASSNAME/CLASS_NAME keyword naming between commands
     if(arg_CLASSNAME)
         if(arg_CLASS_NAME AND NOT arg_CLASSNAME STREQUAL arg_CLASS_NAME)
