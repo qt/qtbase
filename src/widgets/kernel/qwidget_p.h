@@ -210,6 +210,9 @@ public:
     static QWidgetPrivate *get(QWidget *w) { return w->d_func(); }
     static const QWidgetPrivate *get(const QWidget *w) { return w->d_func(); }
 
+    static void checkRestoredGeometry(const QRect &availableGeometry, QRect *restoredGeometry,
+                                      int frameHeight);
+
     QWExtra *extraData() const;
     QTLWExtra *topData() const;
     QTLWExtra *maybeTopData() const;
