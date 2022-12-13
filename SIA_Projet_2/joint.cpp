@@ -1,7 +1,16 @@
 #include "joint.h"
+#include <algorithm> 
+#include <cctype>
+#include <locale>
 //#include <QtGui/QMatrix4x4>
 
 using namespace std;
+
+static inline void ltrim(std::string &s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }));
+}
 
 Joint* Joint::createFromFile(std::string fileName) {
 	Joint* root = NULL;
@@ -11,42 +20,40 @@ Joint* Joint::createFromFile(std::string fileName) {
 	if(inputfile.good()) {
 
 		bool isRoot = false;
+		bool backtracking = false;
+		double offY = 0;
+		double offZ = 0;
+		string name;
+		Joint *parent = NULL;
+		Joint *currentJoint = NULL;
 
 		while(!inputfile.eof()) {
 			string buf;	
 			std::getline(inputfile, buf);
+			ltrim(buf);
 			double offX = 0;
-			double offY = 0;
-			double offZ = 0;
-			string name;
-			Joint *parent = NULL;
-			Joint *currentJoint = NULL;
 
-			buf.replace(0, string::npos, '	', ' ');
+			//buf.replace(0, string::npos, '	', ' ');
 			if(buf.find("HIERARCHY") != string::npos) {
-				cout<<"FOUND HIERARCHY"<<endl;
 				continue;
 			}
 
 			if (buf.find("ROOT") != string::npos) {
-				cout<<"FOUND ROOT"<<endl;
 				name = buf.substr(5, string::npos);
 				isRoot = true;
 			}
 
 			if (buf.find("JOINT") != string::npos) {
-				cout<<"FOUND JOINT"<<endl;
 				name = buf.substr(6, string::npos);
 				isRoot = false;
 			}
 
 			if (buf.find("End") != string::npos) {
-				cout<<"FOUND END"<<endl;
 				name = buf.substr(4, string::npos);
+				isRoot = false;
 			}
 			
 			if (buf.find("OFFSET") != string::npos) {
-				cout<<"FOUND OFFSET"<<endl;
 				buf = buf.substr(buf.find(" ") + 1, string::npos);
 				int index = buf.find(" ");
 				offX = stod(buf.substr(0, index));
@@ -57,22 +64,29 @@ Joint* Joint::createFromFile(std::string fileName) {
 				index = buf.find(" ");
 				offZ = stod(buf.substr(0, index));
 				currentJoint = Joint::create(name, offX, offY, offZ, parent);
+				//cout << name << endl;
+				if(isRoot){
+					root = currentJoint;
+				}
+				// else{
+				// 	cout << "-> " << parent->_name << endl;
+				// }
+				parent = currentJoint;
 			}			
 
 			if (buf.find("}") != string::npos) {
-				cout<<"FOUND }"<<endl;
-				currentJoint = currentJoint->parent;
-				parent = currentJoint->parent;
+				if(backtracking){
+					currentJoint = currentJoint->parent;
+					if(currentJoint != NULL) parent = currentJoint->parent;
+				}
+				backtracking = true;
+			}else{
+				backtracking = false;
 			}
 
 			size_t foundChannels = buf.find("CHANNELS");
 			if (foundChannels != std::string::npos) {
 				
-			}
-
-			if(isRoot){
-				cout<<"CHANGING ROOT"<<endl;
-				*root = *currentJoint;
 			}
 		}
 		inputfile.close();
