@@ -31,7 +31,7 @@ static void writeEtwMacro(QTextStream &stream, const Tracepoint::Field &field)
         return;
     }
 
-    switch (field.backendType) {
+    switch (field.backendType.backendType) {
     case Tracepoint::Field::QtString:
         stream << "TraceLoggingCountedWideString(reinterpret_cast<LPCWSTR>("
                << name << ".utf16()), static_cast<ULONG>(" << name << ".size()), \""
@@ -63,6 +63,10 @@ static void writeEtwMacro(QTextStream &stream, const Tracepoint::Field &field)
         // Variable name is name##Str.
         stream << "TraceLoggingCountedWideString(reinterpret_cast<LPCWSTR>(" << name
                << "Str.utf16()), static_cast<ULONG>(" << name << "Str.size()), \"" << name << "\")";
+        return;
+    case Tracepoint::Field::EnumeratedType:
+    case Tracepoint::Field::FlagType:
+        stream << "TraceLoggingString(trace_convert_" << typeToName(field.paramType) << "(" << name << ").toUtf8().constData(), \"" << name << "\")";
         return;
     default:
         break;
@@ -156,14 +160,14 @@ static void writeEpilogue(QTextStream &stream, const QString &fileName)
            << "#include <private/qtrace_p.h>\n";
 }
 
-static void writeWrapper(QTextStream &stream, const Tracepoint &tracepoint,
+static void writeWrapper(QTextStream &stream, const Provider &provider, const Tracepoint &tracepoint,
                          const QString &providerName)
 {
     const QString argList = formatFunctionSignature(tracepoint.args);
-    const QString paramList = formatParameterList(tracepoint.args, ETW);
+    const QString paramList = formatParameterList(provider, tracepoint.args, tracepoint.fields, ETW);
     const QString &name = tracepoint.name;
     const QString includeGuard = QStringLiteral("TP_%1_%2").arg(providerName).arg(name).toUpper();
-    const QString provider = providerVar(providerName);
+    const QString provar = providerVar(providerName);
 
     stream << "\n";
 
@@ -173,12 +177,12 @@ static void writeWrapper(QTextStream &stream, const Tracepoint &tracepoint,
     // Convert all unknown types to QString's using QDebug.
     // Note the naming convention: it's field.name##Str
     for (const Tracepoint::Field &field : tracepoint.fields) {
-        if (field.backendType == Tracepoint::Field::Unknown) {
+        if (field.backendType.backendType == Tracepoint::Field::Unknown) {
             stream << "    const QString " << field.name << "Str = QDebug::toString(" << field.name
                    << ");\n";
         }
     }
-    stream << "    TraceLoggingWrite(" << provider << ", \"" << name << "\"";
+    stream << "    TraceLoggingWrite(" << provar << ", \"" << name << "\"";
 
     for (const Tracepoint::Field &field : tracepoint.fields) {
         stream << ",\n";
@@ -196,8 +200,44 @@ static void writeWrapper(QTextStream &stream, const Tracepoint &tracepoint,
 
     stream << "inline bool trace_" << name << "_enabled()\n"
            << "{\n"
-           << "    return TraceLoggingProviderEnabled(" << provider << ", 0, 0);\n"
+           << "    return TraceLoggingProviderEnabled(" << provar << ", 0, 0);\n"
            << "}\n";
+}
+
+static void writeEnumConverter(QTextStream &stream, const TraceEnum &enumeration)
+{
+    stream << "inline QString trace_convert_" << typeToName(enumeration.name) << "(" << enumeration.name << " val)\n";
+    stream << "{\n";
+    for (const auto &v : enumeration.values) {
+        if (v.range != 0) {
+            stream << "    if (val >= " << v.value << " && val <= " << v.range << ")\n"
+                   << "        return QStringLiteral(\"" << v.name << " + \") + QString::number((int)val - " << v.value << ");\n";
+        }
+    }
+    stream << "\n    QString ret;\n    switch (val) {\n";
+    for (const auto &v : enumeration.values) {
+        if (v.range == 0)
+            stream << "    case " << v.value << ": ret = QStringLiteral(\"" << v.name << "\"); break;\n";
+    }
+
+    stream << "    }\n    return ret;\n}\n";
+}
+
+static void writeFlagConverter(QTextStream &stream, const TraceFlags &flag)
+{
+    stream << "inline QString trace_convert_" << typeToName(flag.name) << "(" << flag.name << " val)\n";
+    stream << "{\n    QString ret;\n";
+    for (const auto &v : flag.values) {
+        if (v.value == 0) {
+            stream << "    if (val == 0)\n        return QStringLiteral(\"" << v.name << "\");\n";
+            break;
+        }
+    }
+    for (const auto &v : flag.values) {
+        if (v.value != 0)
+            stream << "    if (val & " << (1 << (v.value - 1)) << ") { if (ret.length()) ret += QLatin1Char(\'|\'); ret += QStringLiteral(\"" << v.name << "\"); }\n";
+    }
+    stream << "    return ret;\n}\n";
 }
 
 static void writeTracepoints(QTextStream &stream, const Provider &provider)
@@ -212,8 +252,14 @@ static void writeTracepoints(QTextStream &stream, const Provider &provider)
            << "QT_BEGIN_NAMESPACE\n"
            << "namespace QtPrivate {\n";
 
+    for (const auto &enumeration : provider.enumerations)
+        writeEnumConverter(stream, enumeration);
+
+    for (const auto &flag : provider.flags)
+        writeFlagConverter(stream, flag);
+
     for (const Tracepoint &t : provider.tracepoints)
-        writeWrapper(stream, t, provider.name);
+        writeWrapper(stream, provider, t, provider.name);
 
     stream << "} // namespace QtPrivate\n"
            << "QT_END_NAMESPACE\n"

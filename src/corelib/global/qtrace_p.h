@@ -88,6 +88,37 @@
  *    class QEvent;
  *    QT_END_NAMESPACE
  * }
+ *
+ *  Metadata
+ *
+ * Metadata is used to add textual information for different types such
+ * as enums and flags. How this data is handled depends on the used backend.
+ * For ETW, the values are converted to text, for CTF and LTTNG they are used to add
+ * CTF enumerations, which are converted to text after tracing.
+ *
+ * Enumererations are specified using ENUM:
+ *
+ * ENUM {
+ *    Enum0 = 0,
+ *    Enum1 = 1,
+ *    Enum2,
+ *    RANGE(RangeEnum, 3 ... 10),
+ * } Name;
+ *
+ * Name must match to one of the enumerations used in the tracepoints. Range of values
+ * can be provided using RANGE(name, first ... last). All values must be unique.
+ *
+ * Flags are specified using FLAGS:
+ *
+ * FLAGS {
+ *    Default = 0,
+ *    Flag0 = 1,
+ *    Flag1 = 2,
+ *    Flag2 = 4,
+ * } Name;
+ *
+ * Name must match to one of the flags used in the tracepoints. Each value must be
+ * power of two and unique.
  */
 
 #include <QtCore/private/qglobal_p.h>
@@ -174,11 +205,25 @@ QT_BEGIN_NAMESPACE
  *                      "QT_BEGIN_NAMESPACE" \
  *                      "class QEvent;"      \
  *                      "QT_END_NAMESPACE")
+ *
+ *     - Q_TRACE_METADATA(provider, metadata)
+ *       Provides metadata for the tracepoint provider.
+ *
+ *       Q_TRACE_METADATA(qtgui,
+ *                       "ENUM {" \
+ *                       "Format_Invalid," \
+ *                       "Format_Mono," \
+ *                       "Format_MonoLSB," \
+ *                       "Format_Indexed8," \
+ *                        ...
+ *                       "} QImage::Format;" \
+ *                       );
  */
 #define Q_TRACE_INSTRUMENT(provider)
 #define Q_TRACE_PARAM_REPLACE(in, out)
 #define Q_TRACE_POINT(provider, tracepoint, ...)
 #define Q_TRACE_PREFIX(provider, prefix)
+#define Q_TRACE_METADATA(provider, metadata)
 
 QT_END_NAMESPACE
 

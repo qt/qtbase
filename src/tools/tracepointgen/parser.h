@@ -41,10 +41,12 @@ struct Parser
     {
 
     }
+
     void parseParamReplace(const QString &data, qsizetype offset, const QString &name);
     void parseInstrument(const QString &data, qsizetype offset);
     void parsePoint(const QString &data, qsizetype offset);
     void parsePrefix(const QString &data, qsizetype offset);
+    void parseMetadata(const QString &data, qsizetype offset);
     int lineNumber(qsizetype offset) const;
 
     void parse(QIODevice &input, const QString &name);
@@ -58,8 +60,9 @@ struct Parser
     QList<Point> m_points;
     QList<Replace> m_replaces;
     QList<QString> m_prefixes;
-    QString m_provider;
+    QList<QString> m_metadata;
     QList<LineNumber> m_offsets;
+    QString m_provider;
 };
 
 #endif // PARSER_H

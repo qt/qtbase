@@ -78,14 +78,14 @@ static void simplifyData(QString &data, QList<LineNumber> &offsets)
     }
 }
 
-static QString preprocessPrefix(const QString &in)
+static QString preprocessMetadata(const QString &in)
 {
-    DEBUGPRINTF(printf("prefix: %s\n", qPrintable(in)));
+    DEBUGPRINTF(printf("in: %s\n", qPrintable(in)));
     QList<QString> lines = in.split(QLatin1Char('\\'));
     QString out;
     for (int i = 0; i < lines.size(); i++) {
         QString l = lines.at(i).simplified();
-        DEBUGPRINTF(printf("prefix line: %s\n", qPrintable(l)));
+        DEBUGPRINTF(printf("line: %s\n", qPrintable(l)));
         if (l.length() < 2)
             continue;
         if (l.startsWith(QStringLiteral("\"")))
@@ -100,7 +100,7 @@ static QString preprocessPrefix(const QString &in)
             out.append(l);
         }
     }
-    DEBUGPRINTF(printf("prefix out: %s\n", qPrintable(out)));
+    DEBUGPRINTF(printf("out: %s\n", qPrintable(out)));
     return out;
 }
 
@@ -207,7 +207,25 @@ void Parser::parsePrefix(const QString &data, qsizetype offset)
     DEBUGPRINTF(printf("tracepointgen: prefix: %s\n", qPrintable(prefix)));
 
     if (!m_prefixes.contains(prefix))
-        m_prefixes.push_back(preprocessPrefix(prefix));
+        m_prefixes.push_back(preprocessMetadata(prefix));
+}
+
+void Parser::parseMetadata(const QString &data, qsizetype offset)
+{
+    qsizetype beginOfProvider = data.indexOf(QLatin1Char('('), offset);
+    qsizetype endOfProvider = data.indexOf(QLatin1Char(','), beginOfProvider);
+    QString metadata;
+    QString provider = data.mid(beginOfProvider + 1, endOfProvider - beginOfProvider - 1).simplified();
+    if (provider != m_provider)
+        return;
+
+    qsizetype endOfPoint = data.indexOf(QLatin1Char(')'), endOfProvider + 1);
+    metadata = data.mid(endOfProvider + 1, endOfPoint - endOfProvider - 1).simplified();
+
+    DEBUGPRINTF(printf("tracepointgen: metadata: %s", qPrintable(metadata)));
+
+    if (!m_metadata.contains(metadata))
+        m_metadata.push_back(preprocessMetadata(metadata));
 }
 
 void Parser::parse(QIODevice &input, const QString &name)
@@ -239,6 +257,8 @@ void Parser::parse(QIODevice &input, const QString &name)
             parsePoint(data, match.capturedEnd());
         else if (macroType == QStringLiteral("PREFIX"))
             parsePrefix(data, match.capturedEnd());
+        else if (macroType == QStringLiteral("METADATA"))
+            parseMetadata(data, match.capturedEnd());
     }
 
     for (auto &func : m_functions) {
@@ -256,6 +276,8 @@ void Parser::write(QIODevice &input) const
             out << prefix << "\n";
         out << QStringLiteral("}\n");
     }
+    for (auto m : m_metadata)
+        out << m << "\n";
     for (auto func : m_functions) {
         out << func.className << "_" << func.functionName << "_entry(" << func.functionParameters << ")\n";
         out << func.className << "_" << func.functionName << "_exit()\n";
