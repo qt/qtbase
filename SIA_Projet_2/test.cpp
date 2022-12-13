@@ -2,7 +2,13 @@
 
 void printChildren(Joint *jnt){
     if(jnt != NULL){
-        std::cout<<jnt->_name<<std::endl;
+        Joint *parent = jnt->parent;
+        std::cout<<"=========="<<std::endl;
+        while(parent != NULL){
+            std::cout << parent->_name << std::endl;
+            parent = parent->parent;
+        }
+        std::cout << jnt->_name << std::endl;
         for(Joint *child : jnt->_children){
             printChildren(child);
         }

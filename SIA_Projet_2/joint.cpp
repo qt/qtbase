@@ -21,6 +21,7 @@ Joint* Joint::createFromFile(std::string fileName) {
 
 		bool isRoot = false;
 		bool backtracking = false;
+		double offX = 0;
 		double offY = 0;
 		double offZ = 0;
 		string name;
@@ -31,7 +32,6 @@ Joint* Joint::createFromFile(std::string fileName) {
 			string buf;	
 			std::getline(inputfile, buf);
 			ltrim(buf);
-			double offX = 0;
 
 			//buf.replace(0, string::npos, '	', ' ');
 			if(buf.find("HIERARCHY") != string::npos) {
