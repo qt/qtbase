@@ -15,7 +15,6 @@ class QStackedWidgetPrivate : public QFramePrivate
 public:
     QStackedWidgetPrivate():layout(nullptr){}
     QStackedLayout *layout;
-    bool blockChildAdd;
 };
 
 /*!
