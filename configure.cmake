@@ -1276,6 +1276,16 @@ All x86 intrinsics and SIMD support were disabled. If this was in error, check
 the result of the build in config.tests/x86intrin and report at https://bugreports.qt.io.
 ]=]
         )
+    elseif (MSVC AND CLANG)
+        # Warn only
+        qt_configure_add_report_entry(
+            TYPE WARNING
+            CONDITION (NOT QT_FEATURE_x86intrin)
+            MESSAGE [=[
+x86 intrinsics support is disabled for clang-cl build. This might be necessary due to
+https://github.com/llvm/llvm-project/issues/53520
+]=]
+        )
     else()
         qt_configure_add_report_entry(
             TYPE ERROR

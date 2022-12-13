@@ -180,7 +180,7 @@ static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgr
     // correct, but Clang, ICC and MSVC don't realize that it's a constant and
     // the math call stays in the compiled code.
 
-#ifdef Q_PROCESSOR_X86_64
+#if defined(Q_PROCESSOR_X86_64) && defined(__SSE2__)
     // Of course, UB doesn't apply if we use intrinsics, in which case we are
     // allowed to dpeend on exactly the processor's behavior. This
     // implementation uses the truncating conversions from Scalar Double to

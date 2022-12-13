@@ -55,7 +55,7 @@
 
 #if defined(Q_PROCESSOR_X86) && defined(Q_CC_MSVC)
 // MSVC doesn't define __SSE2__, so do it ourselves
-#  if (defined(_M_X64) || _M_IX86_FP >= 2)
+#  if (defined(_M_X64) || _M_IX86_FP >= 2) && defined(QT_COMPILER_SUPPORTS_SSE2)
 #    define __SSE__ 1
 #    define __SSE2__ 1
 #  endif
