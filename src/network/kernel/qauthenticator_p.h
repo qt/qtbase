@@ -32,7 +32,7 @@ class QSSPIWindowsHandles;
 class QGssApiHandles;
 #endif
 
-class Q_AUTOTEST_EXPORT QAuthenticatorPrivate
+class Q_NETWORK_EXPORT QAuthenticatorPrivate
 {
 public:
     enum Method { None, Basic, Negotiate, Ntlm, DigestMd5, };
