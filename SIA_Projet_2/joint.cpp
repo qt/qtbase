@@ -1,5 +1,5 @@
 #include "joint.h"
-#include <QtGui/QMatrix4x4>
+//#include <QtGui/QMatrix4x4>
 
 using namespace std;
 
@@ -10,56 +10,69 @@ Joint* Joint::createFromFile(std::string fileName) {
 	ifstream inputfile(fileName.data());
 	if(inputfile.good()) {
 
+		bool isRoot = false;
+
 		while(!inputfile.eof()) {
 			string buf;	
-			inputfile >> buf;
-			// TODO : construire la structure de donn�es root � partir du fichier
+			std::getline(inputfile, buf);
 			double offX = 0;
 			double offY = 0;
 			double offZ = 0;
 			string name;
+			Joint *parent = NULL;
+			Joint *currentJoint = NULL;
 
-			replace(begin(buf), end(buf), '    ', ' ');
-			if (!motion) {
-				if(buf.find("HIERARCHY") != string::npos) {
-					continue;
-				}
+			buf.replace(0, string::npos, '	', ' ');
+			if(buf.find("HIERARCHY") != string::npos) {
+				cout<<"FOUND HIERARCHY"<<endl;
+				continue;
+			}
 
-				if (buf.find("ROOT") != string::npos) {
-					name = buf.substr(5);
-				}
+			if (buf.find("ROOT") != string::npos) {
+				cout<<"FOUND ROOT"<<endl;
+				name = buf.substr(5, string::npos);
+				isRoot = true;
+			}
+
+			if (buf.find("JOINT") != string::npos) {
+				cout<<"FOUND JOINT"<<endl;
+				name = buf.substr(6, string::npos);
+				isRoot = false;
+			}
+
+			if (buf.find("End") != string::npos) {
+				cout<<"FOUND END"<<endl;
+				name = buf.substr(4, string::npos);
+			}
+			
+			if (buf.find("OFFSET") != string::npos) {
+				cout<<"FOUND OFFSET"<<endl;
+				buf = buf.substr(buf.find(" ") + 1, string::npos);
+				int index = buf.find(" ");
+				offX = stod(buf.substr(0, index));
+				buf = buf.substr(index + 1, string::npos);
+				index = buf.find(" ");
+				offY = stod(buf.substr(0, index));
+				buf = buf.substr(index + 1, string::npos);
+				index = buf.find(" ");
+				offZ = stod(buf.substr(0, index));
+				currentJoint = Joint::create(name, offX, offY, offZ, parent);
+			}			
+
+			if (buf.find("}") != string::npos) {
+				cout<<"FOUND }"<<endl;
+				currentJoint = currentJoint->parent;
+				parent = currentJoint->parent;
+			}
+
+			size_t foundChannels = buf.find("CHANNELS");
+			if (foundChannels != std::string::npos) {
 				
-				if (buf.find("OFFSET") != string::npos) {
+			}
 
-				}
-
-				if (buf.find("JOINT") != string::npos) {
-					MStringArray jnt;
-					newLine.split(' ', jnt);
-					myParent = new TinyDAG(jnt[jnt.length() - 1], myParent);
-				}
-
-				if (buf.find("End Site") != string::npos) {
-					safeClose = true;
-				}
-
-				if (buf.find("}") != string::npos) {
-					if (safeClose) {
-						safeClose = false;
-						continue;
-					}
-
-					if (myParent != NULL) {
-						myParent = myParent->pObj;
-						if (myParent != NULL) {
-							//mc.select(myParent._fullPath())
-						}
-					}
-				}
-				size_t foundChannels = buf.find("CHANNELS");
-				if (foundChannels != std::string::npos) {
-					
-				}
+			if(isRoot){
+				cout<<"CHANGING ROOT"<<endl;
+				*root = *currentJoint;
 			}
 		}
 		inputfile.close();
@@ -92,7 +105,6 @@ void Joint::animate(int iframe)
 	}
 }
 
-
 void Joint::nbDofs() {
 	if (_dofs.empty()) return;
 
@@ -109,3 +121,4 @@ void Joint::nbDofs() {
 	}
 
 }
+

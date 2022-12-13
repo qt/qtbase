@@ -37,6 +37,7 @@ public :
 	int _rorder;						// order of euler angles to reconstruct rotation
 	std::vector<Joint*> _children;	// children of the current joint
 	bool motion = false;
+	Joint *parent = NULL;
 
 
 public :
@@ -64,6 +65,7 @@ public :
 		if(parent != NULL) {
 			parent->_children.push_back(child);
 		}
+		child->parent = parent;
 		return child;
 	}
 
