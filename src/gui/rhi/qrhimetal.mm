@@ -393,6 +393,9 @@ struct QMetalGraphicsPipelineData
     } tess;
     void setupVertexInputDescriptor(MTLVertexDescriptor *desc);
     void setupStageInputDescriptor(MTLStageInputOutputDescriptor *desc);
+
+    // SPIRV-Cross buffer size buffers
+    QMetalBuffer *bufferSizeBuffer = nullptr;
 };
 
 struct QMetalComputePipelineData
@@ -400,6 +403,9 @@ struct QMetalComputePipelineData
     id<MTLComputePipelineState> ps = nil;
     QMetalShader cs;
     MTLSize localSize;
+
+    // SPIRV-Cross buffer size buffers
+    QMetalBuffer *bufferSizeBuffer = nullptr;
 };
 
 struct QMetalSwapChainData
@@ -1457,6 +1463,12 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
     bool hasDynamicOffsetInSrb = false;
     bool resNeedsRebind = false;
 
+    // SPIRV-Cross buffer size buffers
+    // Need to determine storage buffer sizes here as this is the last opportunity for storage
+    // buffer bindings (offset, size) to be specified before draw / dispatch call
+    const bool needsBufferSizeBuffer = (compPsD && compPsD->d->bufferSizeBuffer) || (gfxPsD && gfxPsD->d->bufferSizeBuffer);
+    QMap<QRhiShaderResourceBinding::StageFlag, QMap<int, quint32>> storageBufferSizes;
+
     // do buffer writes, figure out if we need to rebind, and mark as in-use
     for (int i = 0, ie = srbD->sortedBindings.count(); i != ie; ++i) {
         const QRhiShaderResourceBinding::Data *b = srbD->sortedBindings.at(i).data();
@@ -1533,6 +1545,17 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.sbuf.buf);
             Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::StorageBuffer));
+
+            if (needsBufferSizeBuffer) {
+                for (int i = 0; i < 6; ++i) {
+                    const QRhiShaderResourceBinding::StageFlag stage =
+                            QRhiShaderResourceBinding::StageFlag(1 << i);
+                    if (b->stage.testFlag(stage)) {
+                        storageBufferSizes[stage][b->binding] = b->u.sbuf.maybeSize ? b->u.sbuf.maybeSize : bufD->size();
+                    }
+                }
+            }
+
             executeBufferHostWritesForCurrentFrame(bufD);
             if (bufD->generation != bd.sbuf.generation || bufD->m_id != bd.sbuf.id) {
                 resNeedsRebind = true;
@@ -1546,6 +1569,111 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
             Q_UNREACHABLE();
             break;
         }
+    }
+
+    if (needsBufferSizeBuffer) {
+        QMetalBuffer *bufD = nullptr;
+        QVarLengthArray<QPair<QMetalShader *, QRhiShaderResourceBinding::StageFlag>, 4> shaders;
+
+        if (compPsD) {
+            bufD = compPsD->d->bufferSizeBuffer;
+            Q_ASSERT(compPsD->d->cs.nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding));
+            shaders.append(qMakePair(&compPsD->d->cs, QRhiShaderResourceBinding::StageFlag::ComputeStage));
+        } else {
+            bufD = gfxPsD->d->bufferSizeBuffer;
+            if (gfxPsD->d->tess.enabled) {
+
+                // Assumptions
+                // * We only use one of the compute vertex shader variants in a pipeline at any one time
+                // * The vertex shader variants all have the same storage block bindings
+                // * The vertex shader variants all have the same native resource binding map
+                // * The vertex shader variants all have the same MslBufferSizeBufferBinding requirement
+                // * The vertex shader variants all have the same MslBufferSizeBufferBinding binding
+                // => We only need to use one vertex shader variant to generate the identical shader
+                // resource bindings
+                Q_ASSERT(gfxPsD->d->tess.compVs[0].desc.storageBlocks() == gfxPsD->d->tess.compVs[1].desc.storageBlocks());
+                Q_ASSERT(gfxPsD->d->tess.compVs[0].desc.storageBlocks() == gfxPsD->d->tess.compVs[2].desc.storageBlocks());
+                Q_ASSERT(gfxPsD->d->tess.compVs[0].nativeResourceBindingMap == gfxPsD->d->tess.compVs[1].nativeResourceBindingMap);
+                Q_ASSERT(gfxPsD->d->tess.compVs[0].nativeResourceBindingMap == gfxPsD->d->tess.compVs[2].nativeResourceBindingMap);
+                Q_ASSERT(gfxPsD->d->tess.compVs[0].nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding)
+                         == gfxPsD->d->tess.compVs[1].nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding));
+                Q_ASSERT(gfxPsD->d->tess.compVs[0].nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding)
+                         == gfxPsD->d->tess.compVs[2].nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding));
+                Q_ASSERT(gfxPsD->d->tess.compVs[0].nativeShaderInfo.extraBufferBindings[QShaderPrivate::MslBufferSizeBufferBinding]
+                         == gfxPsD->d->tess.compVs[1].nativeShaderInfo.extraBufferBindings[QShaderPrivate::MslBufferSizeBufferBinding]);
+                Q_ASSERT(gfxPsD->d->tess.compVs[0].nativeShaderInfo.extraBufferBindings[QShaderPrivate::MslBufferSizeBufferBinding]
+                         == gfxPsD->d->tess.compVs[2].nativeShaderInfo.extraBufferBindings[QShaderPrivate::MslBufferSizeBufferBinding]);
+
+                if (gfxPsD->d->tess.compVs[0].nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding))
+                    shaders.append(qMakePair(&gfxPsD->d->tess.compVs[0], QRhiShaderResourceBinding::StageFlag::VertexStage));
+
+                if (gfxPsD->d->tess.compTesc.nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding))
+                    shaders.append(qMakePair(&gfxPsD->d->tess.compTesc, QRhiShaderResourceBinding::StageFlag::TessellationControlStage));
+
+                if (gfxPsD->d->tess.vertTese.nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding))
+                    shaders.append(qMakePair(&gfxPsD->d->tess.vertTese, QRhiShaderResourceBinding::StageFlag::TessellationEvaluationStage));
+
+            } else {
+                if (gfxPsD->d->vs.nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding))
+                    shaders.append(qMakePair(&gfxPsD->d->vs, QRhiShaderResourceBinding::StageFlag::VertexStage));
+            }
+            if (gfxPsD->d->fs.nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding))
+                shaders.append(qMakePair(&gfxPsD->d->fs, QRhiShaderResourceBinding::StageFlag::FragmentStage));
+        }
+
+        quint32 offset = 0;
+        for (const QPair<QMetalShader *, QRhiShaderResourceBinding::StageFlag> &shader : shaders) {
+
+            const int binding = shader.first->nativeShaderInfo.extraBufferBindings[QShaderPrivate::MslBufferSizeBufferBinding];
+
+            // if we don't have a srb entry for the buffer size buffer
+            if (!(storageBufferSizes.contains(shader.second) && storageBufferSizes[shader.second].contains(binding))) {
+
+                int maxNativeBinding = 0;
+                for (const QShaderDescription::StorageBlock &block : shader.first->desc.storageBlocks())
+                    maxNativeBinding = qMax(maxNativeBinding, shader.first->nativeResourceBindingMap[block.binding].first);
+
+                const int size = (maxNativeBinding + 1) * sizeof(int);
+
+                Q_ASSERT(offset + size <= bufD->size());
+                srbD->sortedBindings.append(QRhiShaderResourceBinding::bufferLoad(binding, shader.second, bufD, offset, size));
+
+                QMetalShaderResourceBindings::BoundResourceData bd;
+                bd.sbuf.id = bufD->m_id;
+                bd.sbuf.generation = bufD->generation;
+                srbD->boundResourceData.append(bd);
+            }
+
+            // create the buffer size buffer data
+            QVarLengthArray<int, 8> bufferSizeBufferData;
+            Q_ASSERT(storageBufferSizes.contains(shader.second));
+            const QMap<int, quint32> &sizes(storageBufferSizes[shader.second]);
+            for (const QShaderDescription::StorageBlock &block : shader.first->desc.storageBlocks()) {
+                const int index = shader.first->nativeResourceBindingMap[block.binding].first;
+
+                // if the native binding is -1, the buffer is present but not accessed in the shader
+                if (index < 0)
+                    continue;
+
+                if (bufferSizeBufferData.size() <= index)
+                    bufferSizeBufferData.resize(index + 1);
+
+                Q_ASSERT(sizes.contains(block.binding));
+                bufferSizeBufferData[index] = sizes[block.binding];
+            }
+
+            QRhiBufferData data;
+            const quint32 size = bufferSizeBufferData.size() * sizeof(int);
+            data.assign(reinterpret_cast<const char *>(bufferSizeBufferData.constData()), size);
+            Q_ASSERT(offset + size <= bufD->size());
+            bufD->d->pendingUpdates[bufD->d->slotted ? currentFrameSlot : 0].append({ offset, data });
+
+            // buffer offsets must be 32byte aligned
+            offset += ((size + 31) / 32) * 32;
+        }
+
+        executeBufferHostWritesForCurrentFrame(bufD);
+        bufD->lastActiveFrameSlot = currentFrameSlot;
     }
 
     // make sure the resources for the correct slot get bound
@@ -4117,6 +4245,9 @@ void QMetalGraphicsPipeline::destroy()
     qDeleteAll(d->tess.hostVisibleWorkBuffers);
     d->tess.hostVisibleWorkBuffers.clear();
 
+    delete d->bufferSizeBuffer;
+    d->bufferSizeBuffer = nullptr;
+
     if (!d->ps && !d->ds
             && !d->tess.vertexComputeState[0] && !d->tess.vertexComputeState[1] && !d->tess.vertexComputeState[2]
             && !d->tess.tessControlComputeState)
@@ -4726,6 +4857,8 @@ bool QMetalGraphicsPipeline::createVertexFragmentPipeline()
                 d->vs.lib = lib;
                 d->vs.func = func;
                 d->vs.nativeResourceBindingMap = shader.nativeResourceBindingMap(activeKey);
+                d->vs.desc = shader.description();
+                d->vs.nativeShaderInfo = shader.nativeShaderInfo(activeKey);
                 rhiD->d->shaderCache.insert(shaderStage, d->vs);
                 [d->vs.lib retain];
                 [d->vs.func retain];
@@ -4735,6 +4868,8 @@ bool QMetalGraphicsPipeline::createVertexFragmentPipeline()
                 d->fs.lib = lib;
                 d->fs.func = func;
                 d->fs.nativeResourceBindingMap = shader.nativeResourceBindingMap(activeKey);
+                d->fs.desc = shader.description();
+                d->fs.nativeShaderInfo = shader.nativeShaderInfo(activeKey);
                 rhiD->d->shaderCache.insert(shaderStage, d->fs);
                 [d->fs.lib retain];
                 [d->fs.func retain];
@@ -5283,7 +5418,9 @@ bool QMetalGraphicsPipeline::createTessellationPipelines(const QShader &tessVert
     }
     d->fs.lib = fragLib;
     d->fs.func = fragFunc;
-    d->fs.nativeResourceBindingMap = tese.nativeResourceBindingMap(activeKey);
+    d->fs.desc = tessFrag.description();
+    d->fs.nativeShaderInfo = tessFrag.nativeShaderInfo(activeKey);
+    d->fs.nativeResourceBindingMap = tessFrag.nativeResourceBindingMap(activeKey);
 
     if (!d->tess.teseFragRenderPipeline(rhiD, this)) {
         qWarning("Failed to pre-generate render pipeline for tessellation evaluation + fragment shader");
@@ -5342,6 +5479,42 @@ bool QMetalGraphicsPipeline::create()
     if (!ok)
         return false;
 
+    // SPIRV-Cross buffer size buffers
+    int buffers = 0;
+    QVarLengthArray<QMetalShader *, 6> shaders;
+    if (d->tess.enabled) {
+        shaders.append(&d->tess.compVs[0]);
+        shaders.append(&d->tess.compVs[1]);
+        shaders.append(&d->tess.compVs[2]);
+        shaders.append(&d->tess.compTesc);
+        shaders.append(&d->tess.vertTese);
+    } else {
+        shaders.append(&d->vs);
+    }
+    shaders.append(&d->fs);
+
+    for (QMetalShader *shader : shaders) {
+        if (shader->nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding)) {
+            const int binding = shader->nativeShaderInfo.extraBufferBindings[QShaderPrivate::MslBufferSizeBufferBinding];
+            shader->nativeResourceBindingMap[binding] = qMakePair(binding, -1);
+            int maxNativeBinding = 0;
+            for (const QShaderDescription::StorageBlock &block : shader->desc.storageBlocks())
+                maxNativeBinding = qMax(maxNativeBinding, shader->nativeResourceBindingMap[block.binding].first);
+
+            // we use one buffer to hold data for all graphics shader stages, each with a different offset.
+            // buffer offsets must be 32byte aligned - adjust buffer count accordingly
+            buffers += ((maxNativeBinding + 1 + 7) / 8) * 8;
+        }
+    }
+
+    if (buffers) {
+        if (!d->bufferSizeBuffer)
+            d->bufferSizeBuffer = new QMetalBuffer(rhiD, QRhiBuffer::Static, QRhiBuffer::StorageBuffer, buffers * sizeof(int));
+
+        d->bufferSizeBuffer->setSize(buffers * sizeof(int));
+        d->bufferSizeBuffer->create();
+    }
+
     rhiD->pipelineCreationEnd();
     lastActiveFrameSlot = -1;
     generation += 1;
@@ -5367,6 +5540,9 @@ void QMetalComputePipeline::destroy()
 
     if (!d->ps)
         return;
+
+    delete d->bufferSizeBuffer;
+    d->bufferSizeBuffer = nullptr;
 
     QRhiMetalData::DeferredReleaseEntry e;
     e.type = QRhiMetalData::DeferredReleaseEntry::ComputePipeline;
@@ -5436,6 +5612,14 @@ bool QMetalComputePipeline::create()
         d->cs.func = func;
         d->cs.localSize = shader.description().computeShaderLocalSize();
         d->cs.nativeResourceBindingMap = shader.nativeResourceBindingMap(activeKey);
+        d->cs.desc = shader.description();
+        d->cs.nativeShaderInfo = shader.nativeShaderInfo(activeKey);
+
+        // SPIRV-Cross buffer size buffers
+        if (d->cs.nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding)) {
+            const int binding = d->cs.nativeShaderInfo.extraBufferBindings[QShaderPrivate::MslBufferSizeBufferBinding];
+            d->cs.nativeResourceBindingMap[binding] = qMakePair(binding, -1);
+        }
 
         if (rhiD->d->shaderCache.count() >= QRhiMetal::MAX_SHADER_CACHE_ENTRIES) {
             for (QMetalShader &s : rhiD->d->shaderCache)
@@ -5468,6 +5652,21 @@ bool QMetalComputePipeline::create()
         const QString msg = QString::fromNSString(err.localizedDescription);
         qWarning("Failed to create compute pipeline state: %s", qPrintable(msg));
         return false;
+    }
+
+    // SPIRV-Cross buffer size buffers
+    if (d->cs.nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding)) {
+        int buffers = 0;
+        for (const QShaderDescription::StorageBlock &block : d->cs.desc.storageBlocks())
+            buffers = qMax(buffers, d->cs.nativeResourceBindingMap[block.binding].first);
+
+        buffers += 1;
+
+        if (!d->bufferSizeBuffer)
+            d->bufferSizeBuffer = new QMetalBuffer(rhiD, QRhiBuffer::Static, QRhiBuffer::StorageBuffer, buffers * sizeof(int));
+
+        d->bufferSizeBuffer->setSize(buffers * sizeof(int));
+        d->bufferSizeBuffer->create();
     }
 
     rhiD->pipelineCreationEnd();

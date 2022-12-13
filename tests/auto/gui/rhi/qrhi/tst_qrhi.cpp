@@ -147,6 +147,10 @@ private slots:
 
     void storageBuffer_data();
     void storageBuffer();
+    void storageBufferRuntimeSizeCompute_data();
+    void storageBufferRuntimeSizeCompute();
+    void storageBufferRuntimeSizeGraphics_data();
+    void storageBufferRuntimeSizeGraphics();
 
 private:
     void setWindowType(QWindow *window, QRhi::Implementation impl);
@@ -5887,6 +5891,299 @@ void tst_QRhi::storageBuffer()
         QCOMPARE(reinterpret_cast<const int *>(&result.data.constData()[fromGpuMembers["_ivec4"].offset])[3], 10);
 
     }
+}
+
+ void tst_QRhi::storageBufferRuntimeSizeCompute_data()
+{
+     rhiTestData();
+}
+
+ void tst_QRhi::storageBufferRuntimeSizeCompute()
+{
+    // Use a compute shader to copy from one storage buffer with std430 runtime
+    // float array to another with std140 runtime int array. We fill the
+    // "toGpu" buffer with known float data generated and uploaded from the
+    // CPU, then dispatch a compute shader to copy from the "toGpu" buffer to
+    // the "fromGpu" buffer. We then readback the "fromGpu" buffer and verify
+    // that the results are as expected.  This is primarily to test Metal
+    // SPIRV-Cross buffer size buffers.
+
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    // we can't test with Null as there is no compute
+    if (impl == QRhi::Null)
+        return;
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing");
+
+    if (!rhi->isFeatureSupported(QRhi::Feature::Compute))
+        QSKIP("Compute is not supported with this graphics API, skipping test");
+
+    QShader s = loadShader(":/data/storagebuffer_runtime.comp.qsb");
+    QVERIFY(s.isValid());
+    QCOMPARE(s.description().storageBlocks().size(), 2);
+
+    QMap<QByteArray, QShaderDescription::StorageBlock> blocks;
+    for (const QShaderDescription::StorageBlock &block : s.description().storageBlocks())
+        blocks[block.blockName] = block;
+
+    QMap<QByteArray, QShaderDescription::BlockVariable> toGpuMembers;
+    for (const QShaderDescription::BlockVariable &member : blocks["toGpu"].members)
+        toGpuMembers[member.name] = member;
+
+    QMap<QByteArray, QShaderDescription::BlockVariable> fromGpuMembers;
+    for (const QShaderDescription::BlockVariable &member : blocks["fromGpu"].members)
+        fromGpuMembers[member.name] = member;
+
+    for (QRhiBuffer::Type type : { QRhiBuffer::Type::Immutable, QRhiBuffer::Type::Static }) {
+        QRhiCommandBuffer *cb = nullptr;
+
+        rhi->beginOffscreenFrame(&cb);
+        QVERIFY(cb);
+
+        QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+        QVERIFY(u);
+
+        const int stride430 = sizeof(float);
+        const int stride140 = 4 * sizeof(float);
+        const int length = 32;
+
+        QScopedPointer<QRhiBuffer> toGpuBuffer(
+                    rhi->newBuffer(type, QRhiBuffer::UsageFlag::StorageBuffer,
+                                   blocks["toGpu"].knownSize + length * stride430));
+        QVERIFY(toGpuBuffer->create());
+
+        QScopedPointer<QRhiBuffer> fromGpuBuffer(
+                    rhi->newBuffer(type, QRhiBuffer::UsageFlag::StorageBuffer,
+                                   blocks["fromGpu"].knownSize + length * stride140));
+        QVERIFY(fromGpuBuffer->create());
+
+        QByteArray toGpuData(toGpuBuffer->size(), 0);
+        for (int i = 0; i < length; ++i)
+            reinterpret_cast<float &>(toGpuData.data()[toGpuMembers["_float"].offset + i * stride430]) = float(i);
+
+        u->uploadStaticBuffer(toGpuBuffer.data(), 0, toGpuData.size(), toGpuData.constData());
+        u->uploadStaticBuffer(fromGpuBuffer.data(), 0, blocks["fromGpu"].knownSize,
+                QByteArray(fromGpuBuffer->size(), 0).constData());
+
+        QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+        srb->setBindings(
+                    { QRhiShaderResourceBinding::bufferLoadStore(
+                      blocks["toGpu"].binding, QRhiShaderResourceBinding::ComputeStage,
+                      toGpuBuffer.data()),
+                      QRhiShaderResourceBinding::bufferLoadStore(
+                      blocks["fromGpu"].binding, QRhiShaderResourceBinding::ComputeStage,
+                      fromGpuBuffer.data()) });
+        QVERIFY(srb->create());
+
+        QScopedPointer<QRhiComputePipeline> pipeline(rhi->newComputePipeline());
+        pipeline->setShaderStage({ QRhiShaderStage::Compute, s });
+        pipeline->setShaderResourceBindings(srb.data());
+        QVERIFY(pipeline->create());
+
+        cb->beginComputePass(u);
+
+        cb->setComputePipeline(pipeline.data());
+        cb->setShaderResources();
+        cb->dispatch(1, 1, 1);
+
+        u = rhi->nextResourceUpdateBatch();
+        QVERIFY(u);
+        int readbackCompleted = 0;
+        QRhiBufferReadbackResult result;
+        result.completed = [&readbackCompleted]() { readbackCompleted++; };
+        u->readBackBuffer(fromGpuBuffer.data(), 0, fromGpuBuffer->size(), &result);
+
+        cb->endComputePass(u);
+
+        rhi->endOffscreenFrame();
+
+        QVERIFY(readbackCompleted > 0);
+        QCOMPARE(result.data.size(), fromGpuBuffer->size());
+
+        for (int i = 0; i < length; ++i)
+            QCOMPARE(reinterpret_cast<const int &>(result.data.constData()[fromGpuMembers["_int"].offset + i * stride140]), i);
+
+        QCOMPARE(readbackCompleted, 1);
+
+    }
+
+}
+
+void tst_QRhi::storageBufferRuntimeSizeGraphics_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::storageBufferRuntimeSizeGraphics()
+{
+    // Draws a tessellated triangle with color determined by the length of
+    // buffers bound to shader stages. This is primarily to test Metal
+    // SPIRV-Cross buffer size buffers.
+
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (!rhi->isFeatureSupported(QRhi::Tessellation)) {
+        // From a Vulkan or Metal implementation we expect tessellation to work,
+        // even though it is optional (as per spec) for Vulkan.
+        QVERIFY(rhi->backend() != QRhi::Vulkan);
+        QVERIFY(rhi->backend() != QRhi::Metal);
+        QSKIP("Tessellation is not supported with this graphics API, skipping test");
+    }
+
+    if (rhi->backend() == QRhi::D3D11)
+        QSKIP("Skipping tessellation test on D3D for now, test assets not prepared for HLSL yet");
+
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, QSize(64, 64), 1,
+                                                        QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    static const float triangleVertices[] = {
+        0.0f, 0.5f, 0.0f,
+        -0.5f, -0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+    };
+
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(triangleVertices)));
+    QVERIFY(vbuf->create());
+    u->uploadStaticBuffer(vbuf.data(), triangleVertices);
+
+    QScopedPointer<QRhiBuffer> ubuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64));
+    QVERIFY(ubuf->create());
+
+    QMatrix4x4 mvp = rhi->clipSpaceCorrMatrix();
+    u->updateDynamicBuffer(ubuf.data(), 0, 64, mvp.constData());
+
+    QScopedPointer<QRhiBuffer> ssbo5(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer, 256));
+    QVERIFY(ssbo5->create());
+
+    QScopedPointer<QRhiBuffer> ssbo3(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer, 16));
+    QVERIFY(ssbo3->create());
+
+    u->uploadStaticBuffer(ssbo3.data(), QVector<float>({ 1.0f, 1.0f, 1.0f, 1.0f }).constData());
+
+    QScopedPointer<QRhiBuffer> ssbo4(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer, 128));
+    QVERIFY(ssbo4->create());
+
+    const int red = 79;
+    const int green = 43;
+    const int blue = 251;
+
+    QScopedPointer<QRhiBuffer> ssboR(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer, red * sizeof(float)));
+    QVERIFY(ssboR->create());
+
+    QScopedPointer<QRhiBuffer> ssboG(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer, green * sizeof(float)));
+    QVERIFY(ssboG->create());
+
+    QScopedPointer<QRhiBuffer> ssboB(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer, blue * sizeof(float)));
+    QVERIFY(ssboB->create());
+
+    const int tessOuter0 = 1;
+    const int tessOuter1 = 2;
+    const int tessOuter2 = 3;
+    const int tessInner0 = 4;
+
+    QScopedPointer<QRhiBuffer> ssboTessOuter0(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer, tessOuter0 * sizeof(float)));
+    QVERIFY(ssboTessOuter0->create());
+
+    QScopedPointer<QRhiBuffer> ssboTessOuter1(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer, tessOuter1 * sizeof(float)));
+    QVERIFY(ssboTessOuter1->create());
+
+    QScopedPointer<QRhiBuffer> ssboTessOuter2(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer, tessOuter2 * sizeof(float)));
+    QVERIFY(ssboTessOuter2->create());
+
+    QScopedPointer<QRhiBuffer> ssboTessInner0(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer, tessInner0 * sizeof(float)));
+    QVERIFY(ssboTessInner0->create());
+
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({ QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::TessellationEvaluationStage, ubuf.data()),
+                       QRhiShaderResourceBinding::bufferLoad(5, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::TessellationEvaluationStage, ssbo5.data()),
+                       QRhiShaderResourceBinding::bufferLoad(3, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::TessellationEvaluationStage | QRhiShaderResourceBinding::FragmentStage, ssbo3.data()),
+                       QRhiShaderResourceBinding::bufferLoad(4, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::TessellationEvaluationStage, ssbo4.data()),
+                       QRhiShaderResourceBinding::bufferLoad(7, QRhiShaderResourceBinding::TessellationControlStage, ssboTessOuter0.data()),
+                       QRhiShaderResourceBinding::bufferLoad(8, QRhiShaderResourceBinding::TessellationControlStage | QRhiShaderResourceBinding::TessellationEvaluationStage, ssboTessOuter1.data()),
+                       QRhiShaderResourceBinding::bufferLoad(9, QRhiShaderResourceBinding::TessellationControlStage, ssboTessOuter2.data()),
+                       QRhiShaderResourceBinding::bufferLoad(10, QRhiShaderResourceBinding::TessellationControlStage, ssboTessInner0.data()),
+                       QRhiShaderResourceBinding::bufferLoad(1, QRhiShaderResourceBinding::FragmentStage, ssboG.data()),
+                       QRhiShaderResourceBinding::bufferLoad(2, QRhiShaderResourceBinding::FragmentStage, ssboB.data()),
+                       QRhiShaderResourceBinding::bufferLoad(6, QRhiShaderResourceBinding::FragmentStage, ssboR.data()) });
+
+    QVERIFY(srb->create());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+
+    pipeline->setTopology(QRhiGraphicsPipeline::Patches);
+    pipeline->setPatchControlPointCount(3);
+
+    pipeline->setShaderStages({
+        { QRhiShaderStage::Vertex, loadShader(":/data/storagebuffer_runtime.vert.qsb") },
+        { QRhiShaderStage::TessellationControl, loadShader(":/data/storagebuffer_runtime.tesc.qsb") },
+        { QRhiShaderStage::TessellationEvaluation, loadShader(":/data/storagebuffer_runtime.tese.qsb") },
+        { QRhiShaderStage::Fragment, loadShader(":/data/storagebuffer_runtime.frag.qsb") }
+    });
+
+    pipeline->setCullMode(QRhiGraphicsPipeline::None);
+
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({
+        { 3 * sizeof(float) }
+    });
+    inputLayout.setAttributes({
+        { 0, 0, QRhiVertexInputAttribute::Float3, 0 },
+    });
+
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+
+    QVERIFY(pipeline->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QCOMPARE(rhi->beginOffscreenFrame(&cb), QRhi::FrameOpSuccess);
+
+    cb->beginPass(rt.data(), Qt::black, { 1.0f, 0 }, u);
+    cb->setGraphicsPipeline(pipeline.data());
+    cb->setViewport({ 0, 0, float(rt->pixelSize().width()), float(rt->pixelSize().height()) });
+    cb->setShaderResources();
+    QRhiCommandBuffer::VertexInput vbufBinding(vbuf.data(), 0);
+    cb->setVertexInput(0, 1, &vbufBinding);
+    cb->draw(3);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888);
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.data() }, &readResult);
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+
+    QCOMPARE(result.size(), rt->pixelSize());
+
+    // cannot check rendering results with Null, because there is no rendering there
+    if (impl == QRhi::Null)
+        return;
+
+    QCOMPARE(result.pixel(32, 32), qRgb(red, green, blue));
 }
 
 #include <tst_qrhi.moc>

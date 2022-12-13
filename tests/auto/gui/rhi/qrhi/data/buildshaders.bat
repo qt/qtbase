@@ -16,4 +16,8 @@ qsb --glsl 320es,410 --msl 12 --tess-mode triangles simpletess.tesc -o simpletes
 qsb --glsl 320es,410 --msl 12  --tess-vertex-count 3 simpletess.tese -o simpletess.tese.qsb
 qsb --glsl 320es,410 --msl 12 simpletess.frag -o simpletess.frag.qsb
 qsb --glsl 310es,430 --msl 12 --hlsl 50 storagebuffer.comp -o storagebuffer.comp.qsb
-
+qsb --glsl 320es,430 --msl 12 --msltess storagebuffer_runtime.vert -o storagebuffer_runtime.vert.qsb
+qsb --glsl 320es,430 --msl 12 --tess-mode triangles storagebuffer_runtime.tesc -o storagebuffer_runtime.tesc.qsb
+qsb --glsl 320es,430 --msl 12 --tess-vertex-count 3 storagebuffer_runtime.tese -o storagebuffer_runtime.tese.qsb
+qsb --glsl 320es,430 --msl 12 storagebuffer_runtime.frag -o storagebuffer_runtime.frag.qsb
+qsb --glsl 320es,430 --hlsl 50 -c --msl 12 storagebuffer_runtime.comp -o storagebuffer_runtime.comp.qsb
