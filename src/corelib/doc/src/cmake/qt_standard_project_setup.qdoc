@@ -80,7 +80,7 @@ The \c{qt_standard_project_setup()} command can effectively be disabled by
 setting the \l{QT_NO_STANDARD_PROJECT_SETUP} variable to true.
 
 \sa {qt6_generate_deploy_app_script}{qt_generate_deploy_app_script()}
-\sa {qt6_policy}
+\sa qt_policy
 
 \section1 Example
 
