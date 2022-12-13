@@ -1459,6 +1459,13 @@ function(__qt_get_relative_resource_path_for_file output_alias file)
     get_property(alias SOURCE ${file} PROPERTY QT_RESOURCE_ALIAS)
     if (NOT alias)
         set(alias "${file}")
+        if(IS_ABSOLUTE "${file}")
+            message(FATAL_ERROR
+                "The source file '${file}' was specified with an absolute path and is used in a Qt "
+                "resource. Please set the QT_RESOURCE_ALIAS property on that source file to a "
+                "relative path to make the file properly accessible via the resource system."
+            )
+        endif()
     endif()
     set(${output_alias} ${alias} PARENT_SCOPE)
 endfunction()
