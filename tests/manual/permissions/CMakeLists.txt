@@ -11,7 +11,6 @@ qt_internal_add_test(tst_qpermissions
 if(ANDROID)
     set_property(TARGET tst_qpermissions
         PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
-    qt_android_generate_deployment_settings(tst_qpermissions)
 elseif(APPLE)
     # Test an app bundle, but without any usage descriptions
 
