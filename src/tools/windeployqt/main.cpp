@@ -677,6 +677,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     } // directory.
 
     // Remaining files or plugin directories
+    bool multipleDirs = false;
     for (int i = 1; i < posArgs.size(); ++i) {
         const QFileInfo fi(QDir::cleanPath(posArgs.at(i)));
         const QString path = fi.absoluteFilePath();
@@ -690,9 +691,13 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
             for (const QString &library : libraries)
                 options->binaries.append(path + u'/' + library);
         } else {
+            if (fi.absolutePath() != options->directory)
+                multipleDirs = true;
             options->binaries.append(path);
         }
     }
+    if (multipleDirs)
+        std::wcerr << "Warning: using binaries from different directories\n";
     options->translationsDirectory = options->directory + "/translations"_L1;
     return 0;
 }
