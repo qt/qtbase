@@ -1040,21 +1040,21 @@ public:
 
     // these are needed, so it compiles with STL support enabled
     QT_ASCII_CAST_WARN inline QString &prepend(const char *s)
-    { return prepend(QString::fromUtf8(s)); }
+    { return prepend(QUtf8StringView(s)); }
     QT_ASCII_CAST_WARN inline QString &prepend(const QByteArray &s)
-    { return prepend(QString::fromUtf8(s)); }
+    { return prepend(QUtf8StringView(s)); }
     QT_ASCII_CAST_WARN inline QString &append(const char *s)
-    { return append(QString::fromUtf8(s)); }
+    { return append(QUtf8StringView(s)); }
     QT_ASCII_CAST_WARN inline QString &append(const QByteArray &s)
-    { return append(QString::fromUtf8(s)); }
+    { return append(QUtf8StringView(s)); }
     QT_ASCII_CAST_WARN inline QString &insert(qsizetype i, const char *s)
-    { return insert(i, QString::fromUtf8(s)); }
+    { return insert(i, QUtf8StringView(s)); }
     QT_ASCII_CAST_WARN inline QString &insert(qsizetype i, const QByteArray &s)
-    { return insert(i, QString::fromUtf8(s)); }
+    { return insert(i, QUtf8StringView(s)); }
     QT_ASCII_CAST_WARN inline QString &operator+=(const char *s)
-    { return append(QString::fromUtf8(s)); }
+    { return append(QUtf8StringView(s)); }
     QT_ASCII_CAST_WARN inline QString &operator+=(const QByteArray &s)
-    { return append(QString::fromUtf8(s)); }
+    { return append(QUtf8StringView(s)); }
 
     QT_ASCII_CAST_WARN inline bool operator==(const char *s) const;
     QT_ASCII_CAST_WARN inline bool operator!=(const char *s) const;
@@ -1508,7 +1508,7 @@ inline QString operator+(QChar s1, const QString &s2)
 { QString t(s1); t += s2; return t; }
 #  if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 QT_ASCII_CAST_WARN inline QString operator+(const QString &s1, const char *s2)
-{ QString t(s1); t += QString::fromUtf8(s2); return t; }
+{ QString t(s1); t += QUtf8StringView(s2); return t; }
 QT_ASCII_CAST_WARN inline QString operator+(QString &&lhs, const char *rhs)
 { QT_IGNORE_DEPRECATIONS(return std::move(lhs += rhs);) }
 QT_ASCII_CAST_WARN inline QString operator+(const char *s1, const QString &s2)
@@ -1516,7 +1516,7 @@ QT_ASCII_CAST_WARN inline QString operator+(const char *s1, const QString &s2)
 QT_ASCII_CAST_WARN inline QString operator+(const QByteArray &ba, const QString &s)
 { QString t = QString::fromUtf8(ba); t += s; return t; }
 QT_ASCII_CAST_WARN inline QString operator+(const QString &s, const QByteArray &ba)
-{ QString t(s); t += QString::fromUtf8(ba); return t; }
+{ QString t(s); t += QUtf8StringView(ba); return t; }
 QT_ASCII_CAST_WARN inline QString operator+(QString &&lhs, const QByteArray &rhs)
 { QT_IGNORE_DEPRECATIONS(return std::move(lhs += rhs);) }
 #  endif // QT_NO_CAST_FROM_ASCII
