@@ -16,10 +16,12 @@
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
-#include "private/qabstractsocketengine_p.h"
+
+#include <QtNetwork/qnetworkproxy.h>
+
 #include "qabstractsocket.h"
-#include "qnetworkproxy.h"
 #include "private/qauthenticator_p.h"
+#include "private/qabstractsocketengine_p.h"
 
 QT_REQUIRE_CONFIG(http);
 

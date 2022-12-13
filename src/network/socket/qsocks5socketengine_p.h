@@ -16,8 +16,10 @@
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
+
+#include <QtNetwork/qnetworkproxy.h>
+
 #include "qabstractsocketengine_p.h"
-#include "qnetworkproxy.h"
 
 QT_REQUIRE_CONFIG(socks5);
 

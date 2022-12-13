@@ -159,7 +159,7 @@ using namespace Qt::StringLiterals;
     \snippet code/src_corelib_global_qglobal.cpp 4
 */
 
-#if !defined(Q_CC_MSVC)
+#if !defined(Q_CC_MSVC) || defined(Q_CC_CLANG)
 Q_NORETURN
 #endif
 static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const QString &message);

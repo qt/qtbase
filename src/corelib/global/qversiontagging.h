@@ -86,7 +86,7 @@ struct QVersionTag
 //   Calling convention on other architectures does not prepend a _
 #    define QT_MANGLE_IMPORT_PREFIX     __imp_
 #  endif
-#  ifdef Q_CC_MSVC
+#  if defined(Q_CC_MSVC_ONLY)
 #    pragma section(".qtversion",read,shared)
 #    define QT_VERSION_TAG_SECTION      __declspec(allocate(".qtversion"))
 #    define QT_VERSION_TAG_ATTRIBUTE    __declspec(selectany) extern const
