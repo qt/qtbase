@@ -264,7 +264,7 @@ QEvent::QEvent(Type type)
     : t(type), m_reserved(0),
       m_inputEvent(false), m_pointerEvent(false), m_singlePointEvent(false)
 {
-    Q_TRACE(QEvent_ctor, this, t);
+    Q_TRACE(QEvent_ctor, this, type);
 }
 
 /*!
