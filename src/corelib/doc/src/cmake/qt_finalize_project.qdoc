@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_finalize_project
-\target qt6_finalize_project
+\keyword qt6_finalize_project
 
 \summary {Handles various common platform-specific tasks associated with a Qt project.}
 \preliminarycmakecommand

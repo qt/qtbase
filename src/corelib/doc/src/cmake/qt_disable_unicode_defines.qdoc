@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_disable_unicode_defines
-\target qt6_disable_unicode_defines
+\keyword qt6_disable_unicode_defines
 
 \summary {Prevents some unicode-related compiler definitions being set automatically on a target.}
 

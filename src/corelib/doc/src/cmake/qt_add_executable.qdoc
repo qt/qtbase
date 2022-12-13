@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_add_executable
-\target qt6_add_executable
+\keyword qt6_add_executable
 
 \summary {Creates and finalizes an application target of a platform-specific type.}
 

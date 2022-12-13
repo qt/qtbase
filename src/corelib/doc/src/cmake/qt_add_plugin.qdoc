@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_add_plugin
-\target qt6_add_plugin
+\keyword qt6_add_plugin
 
 \summary {Creates a Qt plugin target.}
 

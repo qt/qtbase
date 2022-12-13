@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_wrap_cpp
-\target qt6_wrap_cpp
+\keyword qt6_wrap_cpp
 
 \summary {Creates .moc files from sources.}
 

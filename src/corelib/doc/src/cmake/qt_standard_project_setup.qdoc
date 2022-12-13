@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_standard_project_setup
-\target qt6_standard_project_setup
+\keyword qt6_standard_project_setup
 
 \summary {Setup project-wide defaults to a standard arrangement.}
 

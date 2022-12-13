@@ -21,7 +21,7 @@ find_package(Qt6 REQUIRED COMPONENTS DBus)
 \ingroup cmake-commands-qtdbus
 
 \title qt_add_dbus_interface
-\target qt6_add_dbus_interface
+\keyword qt6_add_dbus_interface
 
 \summary {Generates C++ sources implementing an interface for a D-Bus interface
 description file.}
@@ -89,7 +89,7 @@ Options can be set using \c set_source_files_properties on the \c dbus_spec:
 \ingroup cmake-commands-qtdbus
 
 \title qt_add_dbus_interfaces
-\target qt6_add_dbus_interfaces
+\keyword qt6_add_dbus_interfaces
 
 \summary {Generates C++ sources implementing interfaces for D-Bus interface
 description files.}
@@ -150,7 +150,7 @@ arguments:
 \ingroup cmake-commands-qtdbus
 
 \title qt_generate_dbus_interface
-\target qt6_generate_dbus_interface
+\keyword qt6_generate_dbus_interface
 
 \summary {Generates a D-Bus interface from a header file.}
 
@@ -189,7 +189,7 @@ arguments to the tool can be set after \c{OPTIONS}.
 \ingroup cmake-commands-qtdbus
 
 \title qt_add_dbus_adaptor
-\target qt6_add_dbus_adaptor
+\keyword qt6_add_dbus_adaptor
 
 \summary {Generates an adaptor class for a D-Bus interface.}
 
