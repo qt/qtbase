@@ -195,6 +195,8 @@ private slots:
     void saveRestoreGeometry();
     void restoreVersion1Geometry_data();
     void restoreVersion1Geometry();
+    void restoreGeometryAfterScreenChange_data();
+    void restoreGeometryAfterScreenChange();
 
     void widgetAt();
 #ifdef Q_OS_MACOS
@@ -434,6 +436,15 @@ private:
     QPointingDevice *m_touchScreen;
     const int m_fuzz;
     QPalette simplePalette();
+
+private:
+    enum class ScreenPosition {
+        OffAbove,
+        OffLeft,
+        OffBelow,
+        OffRight,
+        Contained
+    };
 };
 
 // Testing get/set functions
@@ -4243,6 +4254,68 @@ void tst_QWidget::restoreVersion1Geometry()
         f.close();
     }
 #endif
+}
+
+void tst_QWidget::restoreGeometryAfterScreenChange_data()
+{
+    QTest::addColumn<ScreenPosition>("screenPosition");
+    QTest::addColumn<int>("deltaWidth");
+    QTest::addColumn<int>("deltaHeight");
+    QTest::addColumn<int>("frameMargin");
+    QTest::addColumn<bool>("outside");
+
+    QTest::newRow("offAboveLarge") << ScreenPosition::OffAbove << 200 << 250 << 20 << true;
+    QTest::newRow("fitting") << ScreenPosition::Contained << 80 << 80 << 20 << false;
+    QTest::newRow("offRightWide") << ScreenPosition::OffRight << 150 << 80 << 20 << false;
+    QTest::newRow("offLeftFitting") << ScreenPosition::OffLeft << 70 << 70 << 20 << true;
+    QTest::newRow("offBelowHigh") << ScreenPosition::OffBelow << 80 << 200 << 20 << false;
+}
+
+void tst_QWidget::restoreGeometryAfterScreenChange()
+{
+    const QList<QScreen *> &screens = QApplication::screens();
+    QVERIFY2(!screens.isEmpty(), "No screens found.");
+    const QRect screenGeometry = screens.at(0)->geometry();
+
+    QFETCH(ScreenPosition, screenPosition);
+    QFETCH(int, deltaWidth);
+    QFETCH(int, deltaHeight);
+    QFETCH(int, frameMargin);
+    QFETCH(bool, outside);
+
+    QRect restoredGeometry = screenGeometry;
+    restoredGeometry.setHeight(screenGeometry.height() * deltaHeight / 100);
+    restoredGeometry.setWidth(screenGeometry.width() * deltaWidth / 100);
+    const float moveMargin = outside ? 1.2 : 0.75;
+
+    switch (screenPosition) {
+    case ScreenPosition::OffLeft:
+        restoredGeometry.setLeft(restoredGeometry.width() * (-moveMargin));
+        break;
+    case ScreenPosition::OffAbove:
+        restoredGeometry.setTop(restoredGeometry.height() * (-moveMargin));
+        break;
+    case ScreenPosition::OffRight:
+        restoredGeometry.setRight(restoredGeometry.width() * moveMargin);
+        break;
+    case ScreenPosition::OffBelow:
+        restoredGeometry.setBottom(restoredGeometry.height() * moveMargin);
+        break;
+    case ScreenPosition::Contained:
+        break;
+    }
+
+    // If restored geometry fits into screen and has not been moved,
+    // it is changed only by frame margin plus one pixel at each edge
+    const QRect originalGeometry = restoredGeometry.adjusted(1, frameMargin + 1, 1, frameMargin + 1);
+
+    QWidgetPrivate::checkRestoredGeometry(screenGeometry, &restoredGeometry, frameMargin);
+
+    if (deltaHeight < 100 && deltaWidth < 100 && screenPosition == ScreenPosition::Contained)
+        QCOMPARE(originalGeometry, restoredGeometry);
+
+    // new geometry has to fit on the screen
+    QVERIFY(screenGeometry.contains(restoredGeometry));
 }
 
 void tst_QWidget::widgetAt()

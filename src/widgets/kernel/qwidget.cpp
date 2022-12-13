@@ -7382,15 +7382,65 @@ QByteArray QWidget::saveGeometry() const
     return array;
 }
 
-static void checkRestoredGeometry(const QRect &availableGeometry, QRect *restoredGeometry,
+/*!
+   \internal Check a if \a restoredGeometry fits into \a availableGeometry
+   This method is used to verify that a widget is restored to a geometry, which
+   fits into the target screen.
+
+   \param frameHeight represents the height of the widget's title bar, which is expected
+   to be on its top.
+
+   If the size of \a restoredGeometry exceeds \a availableGeometry, its height and width
+   will be resized to be two pixels smaller than \a availableGeometry. An exact match would
+   be full screen.
+
+   If at least one edge of \a restoredGeometry is outside \a availableGeometry,
+   \a restoredGeometry will be moved
+   \list
+   \li down if its top is off screen
+   \li up if its bottom is off screen
+   \li right if its left edge is off screen
+   \li left if its right edge is off screen
+   \endlist
+ */
+void QWidgetPrivate::checkRestoredGeometry(const QRect &availableGeometry, QRect *restoredGeometry,
                                   int frameHeight)
 {
-    if (!restoredGeometry->intersects(availableGeometry)) {
-        restoredGeometry->moveBottom(qMin(restoredGeometry->bottom(), availableGeometry.bottom()));
-        restoredGeometry->moveLeft(qMax(restoredGeometry->left(), availableGeometry.left()));
-        restoredGeometry->moveRight(qMin(restoredGeometry->right(), availableGeometry.right()));
+    // compare with restored geometry's height increased by frameHeight
+    const int height = restoredGeometry->height() + frameHeight;
+
+    // Step 1: Resize if necessary:
+    // make height / width 2px smaller than screen, because an exact match would be fullscreen
+    if (availableGeometry.height() <= height)
+        restoredGeometry->setHeight(availableGeometry.height() - 2 - frameHeight);
+    if (availableGeometry.width() <= restoredGeometry->width())
+        restoredGeometry->setWidth(availableGeometry.width() - 2);
+
+    // Step 2: Move if necessary:
+    // Construct a rectangle from restored Geometry adjusted by frameHeight
+    const QRect restored = restoredGeometry->adjusted(0, -frameHeight, 0, 0);
+
+    // Return if restoredGeometry (including frame) fits into screen
+    if (availableGeometry.contains(restored))
+        return;
+
+    // (size is correct, but at least one edge is off screen)
+
+    // Top out of bounds => move down
+    if (restored.top() <= availableGeometry.top()) {
+        restoredGeometry->moveTop(availableGeometry.top() + 1 + frameHeight);
+    } else if (restored.bottom() >= availableGeometry.bottom()) {
+        // Bottom out of bounds => move up
+        restoredGeometry->moveBottom(availableGeometry.bottom() - 1);
     }
-    restoredGeometry->moveTop(qMax(restoredGeometry->top(), availableGeometry.top() + frameHeight));
+
+    // Left edge out of bounds => move right
+    if (restored.left() <= availableGeometry.left()) {
+        restoredGeometry->moveLeft(availableGeometry.left() + 1);
+    } else if (restored.right() >= availableGeometry.right()) {
+        // Right edge out of bounds => move left
+        restoredGeometry->moveRight(availableGeometry.right() - 1);
+    }
 }
 
 /*!
@@ -7477,7 +7527,9 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
             return false;
     }
 
-    const int frameHeight = 20;
+    const int frameHeight = QApplication::style()
+                          ? QApplication::style()->pixelMetric(QStyle::PM_TitleBarHeight)
+                          : 20;
 
     if (!restoredNormalGeometry.isValid())
         restoredNormalGeometry = QRect(QPoint(0, frameHeight), sizeHint());
@@ -7493,11 +7545,11 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
 
     // Modify the restored geometry if we are about to restore to coordinates
     // that would make the window "lost". This happens if:
-    // - The restored geometry is completely oustside the available geometry
+    // - The restored geometry is completely or partly oustside the available geometry
     // - The title bar is outside the available geometry.
 
-    checkRestoredGeometry(availableGeometry, &restoredGeometry, frameHeight);
-    checkRestoredGeometry(availableGeometry, &restoredNormalGeometry, frameHeight);
+    QWidgetPrivate::checkRestoredGeometry(availableGeometry, &restoredGeometry, frameHeight);
+    QWidgetPrivate::checkRestoredGeometry(availableGeometry, &restoredNormalGeometry, frameHeight);
 
     if (maximized || fullScreen) {
         // set geometry before setting the window state to make
@@ -7529,6 +7581,8 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
        d_func()->topData()->normalGeometry = restoredNormalGeometry;
     } else {
         setWindowState(windowState() & ~(Qt::WindowMaximized | Qt::WindowFullScreen));
+
+        // FIXME: Why fall back to restoredNormalGeometry if majorVersion <= 2?
         if (majorVersion > 2)
             setGeometry(restoredGeometry);
         else
