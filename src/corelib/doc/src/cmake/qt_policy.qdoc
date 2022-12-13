@@ -5,6 +5,9 @@
 \page qt-policy.html
 \ingroup cmake-commands-qtcore
 
+\title qt_policy
+\keyword qt6_policy
+
 \summary {Modify the default behavior of Qt's CMake API.}
 
 \include cmake-find-package-core.qdocinc
