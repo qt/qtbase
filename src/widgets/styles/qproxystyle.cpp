@@ -348,7 +348,18 @@ void QProxyStyle::unpolish(QApplication *app)
  */
 bool QProxyStyle::event(QEvent *e)
 {
-    // ### Qt 7: remove this override
+    Q_D (QProxyStyle);
+
+    switch (e->type()) {
+    // The Mac style relies on these events in order to set the focus frame
+    case QEvent::FocusIn:
+    case QEvent::FocusOut:
+        d->ensureBaseStyle();
+        return QApplication::sendEvent(d->baseStyle, e);
+    default:
+        break;
+    }
+
     return QCommonStyle::event(e);
 }
 
