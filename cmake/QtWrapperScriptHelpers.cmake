@@ -118,7 +118,7 @@ function(qt_internal_create_wrapper_scripts)
         endif()
         if(generate_non_unix)
             set(__qt_cmake_private_path
-                "${QT_STAGING_PREFIX}/${INSTALL_BINDIR}/qt-cmake-private.bat")
+                "${QT_STAGING_PREFIX}/${INSTALL_BINDIR}/qt-cmake-private")
         endif()
     endif()
 
