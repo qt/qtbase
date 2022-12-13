@@ -6,7 +6,7 @@
 \ingroup cmake-macros-qtwidgets
 
 \title qt_wrap_ui
-\target qt6_wrap_ui
+\keyword qt6_wrap_ui
 
 \summary {Creates sources for .ui files.}
 

@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_android_apply_arch_suffix
-\target qt6_android_apply_arch_suffix
+\keyword qt6_android_apply_arch_suffix
 
 \summary {Configures the target binary's name to include an architecture-specific suffix.}
 

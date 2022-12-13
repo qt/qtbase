@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_android_add_apk_target
-\target qt6_android_add_apk_target
+\keyword qt6_android_add_apk_target
 
 \summary {Defines a build target that runs androiddeployqt to produce an APK.}
 

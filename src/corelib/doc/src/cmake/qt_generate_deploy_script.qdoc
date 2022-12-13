@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_generate_deploy_script
-\target qt6_generate_deploy_script
+\keyword qt6_generate_deploy_script
 
 \summary {Generate a custom deployment script.}
 

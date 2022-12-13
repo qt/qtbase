@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_allow_non_utf8_sources
-\target qt6_allow_non_utf8_sources
+\keyword qt6_allow_non_utf8_sources
 
 \summary {Prevents forcing source files to be treated as UTF-8 for Windows.}
 

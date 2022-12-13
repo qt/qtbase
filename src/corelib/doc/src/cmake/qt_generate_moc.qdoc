@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_generate_moc
-\target qt6_generate_moc
+\keyword qt6_generate_moc
 
 \summary {Calls moc on an input file.}
 

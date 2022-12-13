@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_add_binary_resources
-\target qt6_add_binary_resources
+\keyword qt6_add_binary_resources
 
 \summary {Creates an RCC file from a list of Qt resource files.}
 

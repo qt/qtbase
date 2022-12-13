@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_android_generate_deployment_settings
-\target qt6_android_generate_deployment_settings
+\keyword qt6_android_generate_deployment_settings
 
 \summary {Generates the deployment settings file needed by androiddeployqt.}
 

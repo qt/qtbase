@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_add_resources
-\target qt6_add_resources
+\keyword qt6_add_resources
 
 \summary {Compiles binary resources into source code.}
 

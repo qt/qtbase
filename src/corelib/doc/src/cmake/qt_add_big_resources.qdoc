@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_add_big_resources
-\target qt6_add_big_resources
+\keyword qt6_add_big_resources
 
 \summary {Compiles big binary resources into object code.}
 
