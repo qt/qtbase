@@ -560,8 +560,8 @@ void QCryptographicHashPrivate::reset() noexcept
         break;
 #endif
     }
-    result.clear();
 #endif // !QT_CONFIG(opensslv30)
+    result.clear();
 }
 
 #if QT_DEPRECATED_SINCE(6, 4)
