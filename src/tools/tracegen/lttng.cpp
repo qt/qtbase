@@ -19,11 +19,13 @@ static void writeCtfMacro(QTextStream &stream, const Tracepoint::Field &field)
     const QString &seqLen = field.seqLen;
     const int arrayLen = field.arrayLen;
 
-    switch (field.backendType) {
-    case Tracepoint::Field::Array:
+    if (arrayLen > 0) {
         stream << "ctf_array(" <<paramType << ", "
                << name << ", " << name << ", " << arrayLen << ")";
         return;
+    }
+
+    switch (field.backendType) {
     case Tracepoint::Field::Sequence:
         stream << "ctf_sequence(" << paramType
             << ", " << name << ", " << name

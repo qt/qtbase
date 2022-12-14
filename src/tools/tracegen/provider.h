@@ -21,7 +21,6 @@ struct Tracepoint
     struct Field
     {
         enum BackendType {
-            Array,
             Sequence,
             Integer,
             IntegerHex,
