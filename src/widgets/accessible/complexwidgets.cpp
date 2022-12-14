@@ -366,6 +366,7 @@ QAccessible::State QAccessibleComboBox::state() const
 
     s.expandable = true;
     s.expanded = isValid() && comboBox()->view()->isVisible();
+    s.editable = comboBox()->isEditable();
 
     return s;
 }

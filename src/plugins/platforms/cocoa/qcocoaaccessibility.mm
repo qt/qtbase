@@ -155,6 +155,8 @@ NSString *macRole(QAccessibleInterface *interface)
 
     if (roleMap.contains(qtRole)) {
        // MAC_ACCESSIBILTY_DEBUG() << "return" <<  roleMap[qtRole];
+        if (roleMap[qtRole] == NSAccessibilityComboBoxRole && !interface->state().editable)
+            return NSAccessibilityMenuButtonRole;
         if (roleMap[qtRole] == NSAccessibilityTextFieldRole && interface->state().multiLine)
             return NSAccessibilityTextAreaRole;
         return roleMap[qtRole];
