@@ -69,11 +69,13 @@ public:
 
     QSurfaceFormat format() const override;
     bool isSharing() const override { return m_shareContext != EGL_NO_CONTEXT; }
-    bool isValid() const override { return m_eglContext != EGL_NO_CONTEXT; }
+    bool isValid() const override { return m_eglContext != EGL_NO_CONTEXT && !m_markedInvalid; }
 
     EGLContext nativeContext() const override { return eglContext(); }
     EGLConfig config() const override { return eglConfig(); }
     EGLDisplay display() const override { return eglDisplay(); }
+
+    virtual void invalidateContext() override { m_markedInvalid = true; }
 
     EGLContext eglContext() const;
     EGLDisplay eglDisplay() const;
@@ -102,6 +104,8 @@ private:
     Flags m_flags;
     bool m_ownsContext = false;
     QList<EGLint> m_contextAttrs;
+
+    bool m_markedInvalid = false;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QEGLPlatformContext::Flags)

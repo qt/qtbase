@@ -79,6 +79,8 @@ struct Q_GUI_EXPORT QEGLContext
     virtual EGLContext nativeContext() const = 0;
     virtual EGLConfig config() const = 0;
     virtual EGLDisplay display() const = 0;
+
+    virtual void invalidateContext() = 0;
 };
 #endif
 

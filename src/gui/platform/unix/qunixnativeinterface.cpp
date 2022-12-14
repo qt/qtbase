@@ -123,6 +123,22 @@ QOpenGLContext *QNativeInterface::QGLXContext::fromNative(GLXContext visualBased
     \return the EGLDisplay associated with the underlying EGLContext.
 */
 
+
+/*!
+    \fn void QNativeInterface::QEGLContext::invalidateContext()
+    \since 6.5
+    \brief Marks the context as invalid
+
+    If this context is used by the Qt Quick scenegraph, this will trigger the
+    SceneGraph to destroy this context and create a new one.
+
+    Similarly to QPlatformWindow::invalidateSurface(),
+    this function can only be expected to have an effect on certain platforms,
+    such as eglfs.
+
+    \sa QOpenGLContext::isValid(), QPlatformWindow::invalidateSurface()
+*/
+
 QT_DEFINE_NATIVE_INTERFACE(QEGLContext);
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QEGLIntegration);
 
