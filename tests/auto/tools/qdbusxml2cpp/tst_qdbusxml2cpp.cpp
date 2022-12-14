@@ -384,6 +384,10 @@ void tst_qdbusxml2cpp::includeMoc_data()
     QTest::newRow("cpp-only") << ":foo.cpp" << QByteArray("#include \"moc_foo.cpp\"")
                               << QByteArray("warning: no header name is provided, assuming it to be \"foo.h\"");
     QTest::newRow("header-and-cpp") << "foo_h.h:foo.cpp" << QByteArray("#include \"moc_foo_h.cpp\"") << QByteArray("");
+
+    QTest::newRow("combined-cpp with dots") << "foo.bar.cpp" << QByteArray("#include \"foo.bar.moc\"") << QByteArray("");
+    QTest::newRow("without extension with dots") << "foo.bar" << QByteArray("#include \"moc_foo.bar.cpp\"") << QByteArray("");
+    QTest::newRow("header-and-cpp with dots") << "foo.bar_h.h:foo.bar.cpp" << QByteArray("#include \"moc_foo.bar_h.cpp\"") << QByteArray("");
 }
 
 void tst_qdbusxml2cpp::includeMoc()
@@ -402,9 +406,11 @@ void tst_qdbusxml2cpp::includeMoc()
     QStringList parts = filenames.split(u':');
     QFileInfo first{parts.first()};
 
-    if ((parts.size() == 1) && (!first.suffix().isEmpty())) {
+    const bool firstHasSuffix = QStringList({"h", "cpp", "cc"}).contains(first.suffix());
+
+    if ((parts.size() == 1) && firstHasSuffix) {
         checkOneFile(parts.first(), expected);
-    } else if ((parts.size() == 1) && (first.suffix().isEmpty())) {
+    } else if ((parts.size() == 1) && (!firstHasSuffix)) {
         QString headerName{parts.first()};
         headerName += ".h";
         QString sourceName{parts.first()};
