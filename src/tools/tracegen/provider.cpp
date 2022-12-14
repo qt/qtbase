@@ -150,8 +150,9 @@ static Tracepoint::Field::BackendType backendType(QString rawType)
         return Tracepoint::Field::Unknown;
     };
 
-    if (arrayLength(rawType) > 0)
-        return Tracepoint::Field::Array;
+    int arrayLen = arrayLength(rawType);
+    if (arrayLen > 0)
+        rawType = removeBraces(rawType);
 
     if (!sequenceLength(rawType).isNull())
         return Tracepoint::Field::Sequence;

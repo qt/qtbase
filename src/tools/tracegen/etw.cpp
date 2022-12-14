@@ -22,6 +22,15 @@ static void writeEtwMacro(QTextStream &stream, const Tracepoint::Field &field)
 {
     const QString &name = field.name;
 
+    if (field.arrayLen > 0) {
+        for (int i = 0; i < field.arrayLen; i++) {
+            stream << "TraceLoggingValue(" << name << "[" << i << "], \"" << name << "[" << i << "]\")";
+            if (i + 1 < field.arrayLen)
+                stream << ",\n        ";
+        }
+        return;
+    }
+
     switch (field.backendType) {
     case Tracepoint::Field::QtString:
         stream << "TraceLoggingCountedWideString(reinterpret_cast<LPCWSTR>("
