@@ -416,6 +416,12 @@ void QFontEngine::initializeHeightMetrics() const
 
         // Allow OS/2 metrics to override if present
         processOS2Table();
+
+        if (!supportsSubPixelPositions()) {
+            m_ascent = m_ascent.round();
+            m_descent = m_descent.round();
+            m_leading = m_leading.round();
+        }
     }
 
     m_heightMetricsQueried = true;
@@ -448,6 +454,7 @@ bool QFontEngine::processOS2Table() const
                 return false;
             m_ascent = QFixed::fromReal(winAscent * fontDef.pixelSize) / unitsPerEm;
             m_descent = QFixed::fromReal(winDescent * fontDef.pixelSize) / unitsPerEm;
+            m_leading = QFixed{};
         }
 
         return true;
