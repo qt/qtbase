@@ -839,7 +839,11 @@
     \section1 Supported Tags
 
     The following table lists the HTML tags supported by Qt's
-    \l{Rich Text Processing}{rich text} engine:
+    \l{Rich Text Processing}{rich text} engine.
+
+    \note The functionality implemented for tags listed below is a subset of
+          the full HTML 4 specification. Not all attributes are supported,
+          see comments for each tag.
 
     \table 70%
     \header \li Tag
