@@ -22,10 +22,19 @@ QEglFSContext::QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContex
 
 EGLSurface QEglFSContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
 {
-    if (surface->surface()->surfaceClass() == QSurface::Window)
-        return static_cast<QEglFSWindow *>(surface)->surface();
-    else
+    if (surface->surface()->surfaceClass() == QSurface::Window) {
+
+        QEglFSWindow *w = static_cast<QEglFSWindow *>(surface);
+        EGLSurface s = w->surface();
+        if (s == EGL_NO_SURFACE) {
+            w->resetSurface();
+            s = w->surface();
+        }
+        return s;
+
+    } else {
         return static_cast<QEGLPbuffer *>(surface)->pbuffer();
+    }
 }
 
 EGLSurface QEglFSContext::createTemporaryOffscreenSurface()

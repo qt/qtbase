@@ -22,6 +22,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_LOGGING_CATEGORY(qLcEglDevDebug)
+
 QEglFSWindow::QEglFSWindow(QWindow *w)
     : QPlatformWindow(w),
 #ifndef QT_NO_OPENGL
@@ -162,8 +164,29 @@ void QEglFSWindow::destroy()
 void QEglFSWindow::invalidateSurface()
 {
     if (m_surface != EGL_NO_SURFACE) {
-        eglDestroySurface(screen()->display(), m_surface);
+        qCDebug(qLcEglDevDebug) << Q_FUNC_INFO << " about to destroy EGLSurface: " << m_surface;
+
+        bool ok = eglDestroySurface(screen()->display(), m_surface);
+
+        if (!ok) {
+            qCWarning(qLcEglDevDebug, "QEglFSWindow::invalidateSurface() eglDestroySurface failed!"
+                                      " Follow-up errors or memory leaks are possible."
+                                      " eglGetError(): %x", eglGetError());
+        }
+
+        if (eglGetCurrentSurface(EGL_READ) == m_surface ||
+                eglGetCurrentSurface(EGL_DRAW) == m_surface) {
+            bool ok = eglMakeCurrent(eglGetCurrentDisplay(), EGL_NO_DISPLAY, EGL_NO_DISPLAY, EGL_NO_CONTEXT);
+            qCDebug(qLcEglDevDebug) << Q_FUNC_INFO << " due to eglDestroySurface on *currently* bound surface"
+                                    << "we just called eglMakeCurrent(..,0,0,0)! It returned: " << ok;
+        }
+
+        if (screen()->primarySurface() == m_surface)
+            screen()->setPrimarySurface(EGL_NO_SURFACE);
+
+
         m_surface = EGL_NO_SURFACE;
+        m_flags = m_flags & ~Created;
     }
     qt_egl_device_integration()->destroyNativeWindow(m_window);
     m_window = 0;
