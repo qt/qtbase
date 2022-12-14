@@ -14,6 +14,12 @@
       <arg name="w" direction="in" type="i"/>
       <arg name="h" direction="in" type="i"/>
     </method>
+    <method name='SetCursorLocationRelative'>
+      <arg name="x" direction="in" type="i"/>
+      <arg name="y" direction="in" type="i"/>
+      <arg name="w" direction="in" type="i"/>
+      <arg name="h" direction="in" type="i"/>
+    </method>
     <method name="FocusIn"/>
     <method name="FocusOut"/>
     <method name="Reset"/>
