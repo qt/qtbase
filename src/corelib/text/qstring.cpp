@@ -2951,6 +2951,23 @@ static void insert_helper(QString &str, qsizetype i, T toInsert)
     const qsizetype insert_size = toInsert.size();
     const qsizetype newSize = str_d.size + difference + insert_size;
     const auto side = i == 0 ? QArrayData::GrowsAtBeginning : QArrayData::GrowsAtEnd;
+
+    if (str_d.needsDetach() || needsReallocate(str, newSize)) {
+        const auto cbegin = str.cbegin();
+        const auto cend = str.cend();
+        const auto insert_start = difference == 0 ? std::next(cbegin, i) : cend;
+        QString other;
+        // Using detachAndGrow() so that prepend optimization works and QStringBuilder
+        // unittests pass
+        other.data_ptr().detachAndGrow(side, newSize, nullptr, nullptr);
+        other.append(QStringView(cbegin, insert_start));
+        other.resize(i, u' ');
+        other.append(toInsert);
+        other.append(QStringView(insert_start, cend));
+        str.swap(other);
+        return;
+    }
+
     str_d.detachAndGrow(side, difference + insert_size, nullptr, nullptr);
     Q_CHECK_PTR(str_d.data());
     str.resize(newSize);

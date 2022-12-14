@@ -282,11 +282,22 @@ static void do_apply1(MemFun mf)
     QFETCH(A1, a1);
     QFETCH(QString, expected);
 
-    Arg<ArgType>(arg).apply1(s, mf, a1);
+    // Test when the string is shared
+    QString str = s;
+    Arg<ArgType>(arg).apply1(str, mf, a1);
 
-    QCOMPARE(s, expected);
-    QCOMPARE(s.isEmpty(), expected.isEmpty());
-    QCOMPARE(s.isNull(), expected.isNull());
+    QCOMPARE(str, expected);
+    QCOMPARE(str.isEmpty(), expected.isEmpty());
+    QCOMPARE(str.isNull(), expected.isNull());
+
+    // Test when the string is not shared
+    str = s;
+    str.detach();
+    Arg<ArgType>(arg).apply1(str, mf, a1);
+    QCOMPARE(str, expected);
+    QCOMPARE(str.isEmpty(), expected.isEmpty());
+    // A detached string is not null
+    // QCOMPARE(str.isNull(), expected.isNull());
 }
 
 class tst_QString : public QObject
@@ -2870,49 +2881,139 @@ void tst_QString::insert_data(DataOptions options)
 void tst_QString::insert_special_cases()
 {
     QString a;
+    QString dummy_share;
 
-    a = "Ys";
-    QCOMPARE(a.insert(1,'e'), QString("Yes"));
-    QCOMPARE(a.insert(3,'!'), QString("Yes!"));
-    QCOMPARE(a.insert(5,'?'), QString("Yes! ?"));
-    QCOMPARE(a.insert(-1,'a'), QString("Yes! a?"));
+    {
+        // Test when string is not shared
+        a = "Ys";
+        QCOMPARE(a.insert(1,'e'), QString("Yes"));
+        QCOMPARE(a.insert(3,'!'), QString("Yes!"));
+        QCOMPARE(a.insert(5,'?'), QString("Yes! ?"));
+        QCOMPARE(a.insert(-1,'a'), QString("Yes! a?"));
+    }
+    {
+        // Test when string is shared
+        a = "Ys";
+        dummy_share = a;
+        QCOMPARE(a.insert(1,'e'), QString("Yes"));
+        dummy_share = a;
+        QCOMPARE(a.insert(3,'!'), QString("Yes!"));
+        dummy_share = a;
+        QCOMPARE(a.insert(5,'?'), QString("Yes! ?"));
+        dummy_share = a;
+        QCOMPARE(a.insert(-1,'a'), QString("Yes! a?"));
+    }
 
     a = "ABC";
-    QCOMPARE(a.insert(5,"DEF"), QString("ABC  DEF"));
+    dummy_share = a;
+    QCOMPARE(dummy_share.insert(5,"DEF"), QString("ABC  DEF")); // Shared
+    QCOMPARE(a.insert(5,"DEF"), QString("ABC  DEF")); // Not shared after dummy_shared.insert()
 
-    a = "ABC";
-    QCOMPARE(a.insert(2, QString()), QString("ABC"));
-    QCOMPARE(a.insert(0,"ABC"), QString("ABCABC"));
-    QCOMPARE(a, QString("ABCABC"));
-    QCOMPARE(a.insert(0,a), QString("ABCABCABCABC"));
+    {
+        // Test when string is not shared
+        a = "ABC";
+        QCOMPARE(a.insert(2, QString()), QString("ABC"));
+        QCOMPARE(a.insert(0,"ABC"), QString("ABCABC"));
+        QCOMPARE(a, QString("ABCABC"));
+        QCOMPARE(a.insert(0,a), QString("ABCABCABCABC"));
 
-    QCOMPARE(a, QString("ABCABCABCABC"));
-    QCOMPARE(a.insert(0,'<'), QString("<ABCABCABCABC"));
-    QCOMPARE(a.insert(1,'>'), QString("<>ABCABCABCABC"));
+        QCOMPARE(a, QString("ABCABCABCABC"));
+        QCOMPARE(a.insert(0,'<'), QString("<ABCABCABCABC"));
+        QCOMPARE(a.insert(1,'>'), QString("<>ABCABCABCABC"));
+    }
+    {
+        // Test when string is shared
+        a = "ABC";
+        dummy_share = a;
+        QCOMPARE(a.insert(2, QString()), QString("ABC"));
+        dummy_share = a;
+        QCOMPARE(a.insert(0,"ABC"), QString("ABCABC"));
+        dummy_share = a;
+        QCOMPARE(a, QString("ABCABC"));
+        dummy_share = a;
+        QCOMPARE(a.insert(0,a), QString("ABCABCABCABC"));
 
-    a = "Meal";
+        QCOMPARE(a, QString("ABCABCABCABC"));
+        dummy_share = a;
+        QCOMPARE(a.insert(0,'<'), QString("<ABCABCABCABC"));
+        dummy_share = a;
+        QCOMPARE(a.insert(1,'>'), QString("<>ABCABCABCABC"));
+    }
+
     const QString montreal = QStringLiteral("Montreal");
-    QCOMPARE(a.insert(1, QLatin1String("ontr")), montreal);
-    QCOMPARE(a.insert(4, ""), montreal);
-    QCOMPARE(a.insert(3, QLatin1String("")), montreal);
-    QCOMPARE(a.insert(3, QLatin1String(nullptr)), montreal);
-    QCOMPARE(a.insert(3, static_cast<const char *>(0)), montreal);
-    QCOMPARE(a.insert(0, QLatin1String("a")), QLatin1String("aMontreal"));
+    {
+        // Test when string is not shared
+        a = "Meal";
+        QCOMPARE(a.insert(1, QLatin1String("ontr")), montreal);
+        QCOMPARE(a.insert(4, ""), montreal);
+        QCOMPARE(a.insert(3, QLatin1String("")), montreal);
+        QCOMPARE(a.insert(3, QLatin1String(nullptr)), montreal);
+        QCOMPARE(a.insert(3, static_cast<const char *>(0)), montreal);
+        QCOMPARE(a.insert(0, QLatin1String("a")), QLatin1String("aMontreal"));
+    }
+    {
+        // Test when string is shared
+        a = "Meal";
+        dummy_share = a;
+        QCOMPARE(a.insert(1, QLatin1String("ontr")), montreal);
+        dummy_share = a;
+        QCOMPARE(a.insert(4, ""), montreal);
+        dummy_share = a;
+        QCOMPARE(a.insert(3, QLatin1String("")), montreal);
+        dummy_share = a;
+        QCOMPARE(a.insert(3, QLatin1String(nullptr)), montreal);
+        dummy_share = a;
+        QCOMPARE(a.insert(3, static_cast<const char *>(0)), montreal);
+        dummy_share = a;
+        QCOMPARE(a.insert(0, QLatin1String("a")), QLatin1String("aMontreal"));
+    }
 
-    a = "Mont";
-    QCOMPARE(a.insert(a.size(), QLatin1String("real")), montreal);
-    QCOMPARE(a.insert(a.size() + 1, QLatin1String("ABC")), QString("Montreal ABC"));
+    {
+        // Test when string is not shared
+        a = "Mont";
+        QCOMPARE(a.insert(a.size(), QLatin1String("real")), montreal);
+        QCOMPARE(a.insert(a.size() + 1, QLatin1String("ABC")), QString("Montreal ABC"));
+    }
+    {
+        // Test when string is shared
+        a = "Mont";
+        dummy_share = a;
+        QCOMPARE(a.insert(a.size(), QLatin1String("real")), montreal);
+        dummy_share = a;
+        QCOMPARE(a.insert(a.size() + 1, QLatin1String("ABC")), QString("Montreal ABC"));
+    }
 
-    a = "AEF";
-    QCOMPARE(a.insert(1, QLatin1String("BCD")), QString("ABCDEF"));
-    QCOMPARE(a.insert(3, QLatin1String("-")), QString("ABC-DEF"));
-    QCOMPARE(a.insert(a.size() + 1, QLatin1String("XYZ")), QString("ABC-DEF XYZ"));
+    {
+        // Test when string is not shared
+        a = "AEF";
+        QCOMPARE(a.insert(1, QLatin1String("BCD")), QString("ABCDEF"));
+        QCOMPARE(a.insert(3, QLatin1String("-")), QString("ABC-DEF"));
+        QCOMPARE(a.insert(a.size() + 1, QLatin1String("XYZ")), QString("ABC-DEF XYZ"));
+    }
+
+    {
+        // Test when string is shared
+        a = "AEF";
+        dummy_share = a ;
+        QCOMPARE(a.insert(1, QLatin1String("BCD")), QString("ABCDEF"));
+        dummy_share = a ;
+        QCOMPARE(a.insert(3, QLatin1String("-")), QString("ABC-DEF"));
+        dummy_share = a ;
+        QCOMPARE(a.insert(a.size() + 1, QLatin1String("XYZ")), QString("ABC-DEF XYZ"));
+    }
+
 
     {
         a = "one";
         a.prepend(u'a');
         QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
         QCOMPARE(a.insert(a.size() + 1, QLatin1String(b.toLatin1())), QString("aone ") + b);
+    }
+    {
+        a = "one";
+        a.prepend(u'a');
+        QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
+        QCOMPARE(a.insert(a.size() + 1, b), QString("aone ") + b);
     }
 
     {
@@ -2922,14 +3023,6 @@ void tst_QString::insert_special_cases()
         QString b(a.data_ptr()->freeSpaceAtEnd() + 1, u'b');
         QCOMPARE(a.insert(a.size() + 1, QLatin1String(b.toLatin1())), QString("e ") + b);
     }
-
-    {
-        a = "one";
-        a.prepend(u'a');
-        QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
-        QCOMPARE(a.insert(a.size() + 1, b), QString("aone ") + b);
-    }
-
     {
         a = "onetwothree";
         while (a.size() - 1)
