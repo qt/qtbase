@@ -154,6 +154,9 @@ private:
 
 void tst_QProcess::initTestCase()
 {
+#if defined(QT_ASAN_ENABLED)
+    QSKIP("Skipping QProcess tests under ASAN as they are flaky (QTBUG-109329)");
+#endif
     QVERIFY2(m_temporaryDir.isValid(), qPrintable(m_temporaryDir.errorString()));
     // chdir to our testdata path and execute helper apps relative to that.
     QString testdata_dir = QFileInfo(QFINDTESTDATA("testProcessNormal")).absolutePath();
