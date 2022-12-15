@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 #include "qxcbconnection_basic.h"
 #include "qxcbbackingstore.h" // for createSystemVShmSegment()
+#include "private/qoffsetstringarray_p.h"
 
 #include <xcb/randr.h>
 #include <xcb/shm.h>
@@ -27,7 +28,7 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcQpaXcb, "qt.qpa.xcb")
 
 #if QT_CONFIG(xcb_xlib)
-static const char * const xcbConnectionErrors[] = {
+static constexpr auto xcbConnectionErrors = qOffsetStringArray(
     "No error", /* Error 0 */
     "I/O error", /* XCB_CONN_ERROR */
     "Unsupported extension used", /* XCB_CONN_CLOSED_EXT_NOTSUPPORTED */
@@ -36,7 +37,7 @@ static const char * const xcbConnectionErrors[] = {
     "Failed to parse display string", /* XCB_CONN_CLOSED_PARSE_ERR */
     "No such screen on display", /* XCB_CONN_CLOSED_INVALID_SCREEN */
     "Error during FD passing" /* XCB_CONN_CLOSED_FDPASSING_FAILED */
-};
+);
 
 static int nullErrorHandler(Display *dpy, XErrorEvent *err)
 {
@@ -60,8 +61,7 @@ static int ioErrorHandler(Display *dpy)
         /* Print a message with a textual description of the error */
         int code = xcb_connection_has_error(conn);
         const char *str = "Unknown error";
-        int arrayLength = sizeof(xcbConnectionErrors) / sizeof(xcbConnectionErrors[0]);
-        if (code >= 0 && code < arrayLength)
+        if (code >= 0 && code < xcbConnectionErrors.count())
             str = xcbConnectionErrors[code];
 
         qWarning("The X11 connection broke: %s (code %d)", str, code);
