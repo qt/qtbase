@@ -393,8 +393,13 @@ void QJniObject::callVoidMethodV(JNIEnv *env, jmethodID id, ...) const
 {
     va_list args;
     va_start(args, id);
-    env->CallVoidMethodV(d->m_jobject, id, args);
+    callVoidMethodV(env, id, args);
     va_end(args);
+}
+
+void QJniObject::callVoidMethodV(JNIEnv *env, jmethodID id, va_list args) const
+{
+    env->CallVoidMethodV(d->m_jobject, id, args);
 }
 
 jmethodID QJniObject::getCachedMethodID(JNIEnv *env,

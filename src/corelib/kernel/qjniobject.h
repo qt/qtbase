@@ -434,6 +434,8 @@ private:
                                  const char *signature, bool isStatic = false);
 
     void callVoidMethodV(JNIEnv *env, jmethodID id, ...) const;
+    // ### Qt 7: merge into ... overload
+    void callVoidMethodV(JNIEnv *env, jmethodID id, va_list args) const;
     QJniObject callObjectMethodV(const char *methodName, const char *signature,
                                  va_list args) const;
 
