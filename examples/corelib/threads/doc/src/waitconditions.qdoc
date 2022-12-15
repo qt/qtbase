@@ -75,15 +75,12 @@
     that the condition \c bufferNotEmpty is true, since \c
     numUsedBytes is necessarily greater than 0.
 
-    The QWaitCondition::wait() function accepts a
+    We guard all accesses to the \c numUsedBytes variable with a
+    mutex. In addition, the QWaitCondition::wait() function accepts a
     mutex as its argument. This mutex is unlocked before the thread
     is put to sleep and locked when the thread wakes up. Furthermore,
     the transition from the locked state to the wait state is atomic,
     to prevent race conditions from occurring.
-
-    Accesses to the \c numUsedBytes variable do not need mutex
-    protection, as that variable is a QAtomicInt; atomic variables
-    do not participate in data races.
 
     \section1 Consumer Class
 

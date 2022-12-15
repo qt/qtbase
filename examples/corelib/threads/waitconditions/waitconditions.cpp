@@ -2,7 +2,6 @@
 // Copyright (C) 2022 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QAtomicInt>
 #include <QCoreApplication>
 #include <QMutex>
 #include <QMutexLocker>
@@ -18,13 +17,12 @@
 constexpr int DataSize = 100000;
 constexpr int BufferSize = 8192;
 
-QMutex mutex; // protects the buffer
+QMutex mutex; // protects the buffer and the counter
 char buffer[BufferSize];
+int numUsedBytes;
 
 QWaitCondition bufferNotEmpty;
 QWaitCondition bufferNotFull;
-
-QAtomicInt numUsedBytes;
 //! [0]
 
 //! [1]
@@ -43,14 +41,17 @@ private:
         for (int i = 0; i < DataSize; ++i) {
             {
                 const QMutexLocker locker(&mutex);
-                while (numUsedBytes.loadAcquire() == BufferSize)
+                while (numUsedBytes == BufferSize)
                     bufferNotFull.wait(&mutex);
             }
 
             buffer[i % BufferSize] = "ACGT"[QRandomGenerator::global()->bounded(4)];
 
-            numUsedBytes.fetchAndAddRelease(1);
-            bufferNotEmpty.wakeAll();
+            {
+                const QMutexLocker locker(&mutex);
+                ++numUsedBytes;
+                bufferNotEmpty.wakeAll();
+            }
         }
     }
 };
@@ -72,14 +73,17 @@ private:
         for (int i = 0; i < DataSize; ++i) {
             {
                 const QMutexLocker locker(&mutex);
-                while (numUsedBytes.loadAcquire() == 0)
+                while (numUsedBytes == 0)
                     bufferNotEmpty.wait(&mutex);
             }
 
             fprintf(stderr, "%c", buffer[i % BufferSize]);
 
-            numUsedBytes.fetchAndAddRelease(-1);
-            bufferNotFull.wakeAll();
+            {
+                const QMutexLocker locker(&mutex);
+                --numUsedBytes;
+                bufferNotFull.wakeAll();
+            }
         }
         fprintf(stderr, "\n");
     }
