@@ -72,8 +72,8 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 
 + (void)screenConnected:(NSNotification*)notification
 {
-    Q_ASSERT_X(QIOSIntegration::instance(), Q_FUNC_INFO,
-        "Screen connected before QIOSIntegration creation");
+    if (!QIOSIntegration::instance())
+        return; // Will be added when QIOSIntegration is created
 
     QWindowSystemInterface::handleScreenAdded(new QIOSScreen([notification object]));
 }
