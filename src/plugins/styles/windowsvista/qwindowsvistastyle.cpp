@@ -68,14 +68,6 @@ HTHEME QWindowsVistaStylePrivate::m_themes[NThemes];
 bool QWindowsVistaStylePrivate::useVistaTheme = false;
 Q_CONSTINIT QBasicAtomicInt QWindowsVistaStylePrivate::ref = Q_BASIC_ATOMIC_INITIALIZER(-1); // -1 based refcounting
 
-namespace QOSWorkaround {
-    // Due to a mingw bug being confused by static constexpr variables in an exported class,
-    // we cannot use QOperatingSystemVersion::Windows11 in libraries outside of QtCore.
-    // ### TODO Remove this when that problem is fixed.
-    static constexpr QOperatingSystemVersionBase Windows11 { QOperatingSystemVersionBase::Windows,
-                                                             10, 0, 22000 };
-}
-
 static void qt_add_rect(HRGN &winRegion, QRect r)
 {
     HRGN rgn = CreateRectRgn(r.left(), r.top(), r.x() + r.width(), r.y() + r.height());
@@ -2939,7 +2931,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                     else
                         theme.stateId = bullet ? MC_BULLETNORMAL: MC_CHECKMARKNORMAL;
                     d->drawBackground(theme);
-                } else if (QOperatingSystemVersion::current() >= QOSWorkaround::Windows11
+                } else if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11
                            && !act) {
                     painter->fillRect(checkRect, menuitem->palette.highlight().color().lighter(200));
                 }
@@ -3024,7 +3016,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                             partId, stateId, option->rect);
             d->drawBackground(theme);
         }
-        return;    
+        return;
 
     case CE_MenuBarEmptyArea: {
         stateId = MBI_NORMAL;
