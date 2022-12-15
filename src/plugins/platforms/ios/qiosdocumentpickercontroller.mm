@@ -23,7 +23,9 @@
             results.append(QPlatformFileDialogHelper::cleanFilterList(filter));
 
         docTypes = [self computeAllowedFileTypes:results];
-    } else {
+    }
+
+    if (!docTypes.count) {
         switch (fileDialog->options()->fileMode()) {
         case QFileDialogOptions::AnyFile:
         case QFileDialogOptions::ExistingFile:
@@ -90,6 +92,9 @@
 {
     QStringList fileTypes;
     for (const QString &filter : filters) {
+        if (filter == (QLatin1String("*")))
+            continue;
+
         if (filter.contains(u'?'))
             continue;
 
