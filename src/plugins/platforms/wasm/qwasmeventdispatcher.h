@@ -12,6 +12,7 @@ class QWasmEventDispatcher : public QEventDispatcherWasm
 {
 protected:
     void processWindowSystemEvents(QEventLoop::ProcessEventsFlags flags) override;
+    bool hasWindowSystemEvents() override;
 };
 
 QT_END_NAMESPACE

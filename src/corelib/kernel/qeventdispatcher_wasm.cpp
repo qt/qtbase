@@ -41,9 +41,12 @@ static bool useAsyncify()
 }
 
 EM_JS(void, qt_asyncify_suspend_js, (), {
+    if (Module.qtSuspendId === undefined)
+        Module.qtSuspendId = 0;
     let sleepFn = (wakeUp) => {
         Module.qtAsyncifyWakeUp = wakeUp;
     };
+    ++Module.qtSuspendId;
     return Asyncify.handleSleep(sleepFn);
 });
 
@@ -52,10 +55,16 @@ EM_JS(void, qt_asyncify_resume_js, (), {
     if (wakeUp == undefined)
         return;
     Module.qtAsyncifyWakeUp = undefined;
+    const suspendId = Module.qtSuspendId;
 
     // Delayed wakeup with zero-timer. Workaround/fix for
     // https://github.com/emscripten-core/emscripten/issues/10515
-    setTimeout(wakeUp);
+    setTimeout(() => {
+        // Another suspend occurred while the timeout was in queue.
+        if (Module.qtSuspendId !== suspendId)
+            return;
+        wakeUp();
+    });
 });
 
 #else
@@ -200,7 +209,7 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     emit awake();
 
-    bool hasPendingEvents = qGlobalPostedEventsCount() > 0;
+    bool hasPendingEvents = hasWindowSystemEvents();
 
     qCDebug(lcEventDispatcher) << "QEventDispatcherWasm::processEvents flags" << flags
                                << "pending events" << hasPendingEvents;
@@ -211,8 +220,6 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
         else if (flags & QEventLoop::ApplicationExec)
             handleApplicationExec();
     }
-
-    hasPendingEvents = qGlobalPostedEventsCount() > 0;
 
     if (!hasPendingEvents && (flags & QEventLoop::WaitForMoreEvents))
         wait();
@@ -227,7 +234,7 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
         processTimers();
     }
 
-    hasPendingEvents = qGlobalPostedEventsCount() > 0;
+    hasPendingEvents = hasWindowSystemEvents();
     QCoreApplication::sendPostedEvents();
     processWindowSystemEvents(flags);
     return hasPendingEvents;
@@ -236,6 +243,10 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
 void QEventDispatcherWasm::processWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_UNUSED(flags);
+}
+
+bool QEventDispatcherWasm::hasWindowSystemEvents() {
+    return false;
 }
 
 void QEventDispatcherWasm::registerSocketNotifier(QSocketNotifier *notifier)
