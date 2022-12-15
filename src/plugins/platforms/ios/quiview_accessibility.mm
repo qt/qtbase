@@ -23,9 +23,11 @@
     if (!iface || iface->state().invisible)
         return;
 
-    [self createAccessibleElement: iface];
     for (int i = 0; i < iface->childCount(); ++i)
         [self createAccessibleContainer: iface->child(i)];
+
+    // The container element must go last, so that it underlays all its children
+    [self createAccessibleElement:iface];
 }
 
 - (void)initAccessibility
