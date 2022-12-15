@@ -23,6 +23,7 @@
 #include "qdebug.h"
 #include "qendian.h"
 #include "qcollator.h"
+#include "qttypetraits.h"
 
 #ifdef Q_OS_MAC
 #include <private/qcore_mac_p.h>
@@ -290,8 +291,8 @@ bool qt_ends_with_impl(Haystack haystack, Needle needle, Qt::CaseSensitivity cs)
     return QtPrivate::compareStrings(haystack.right(needleLen), needle, cs) == 0;
 }
 
-template <typename T, typename F>
-static void append_helper(QString &self, T view, F appendToUtf16)
+template <typename T>
+static void append_helper(QString &self, T view)
 {
     const auto strData = view.data();
     const qsizetype strSize = view.size();
@@ -302,8 +303,18 @@ static void append_helper(QString &self, T view, F appendToUtf16)
         d.detachAndGrow(QArrayData::GrowsAtEnd, strSize, nullptr, nullptr);
         Q_CHECK_PTR(d.data());
         Q_ASSERT(strSize <= d.freeSpaceAtEnd());
-        const auto newEnd = appendToUtf16(self.data() + self.size(), view);
-        self.resize(newEnd - std::as_const(self).data());
+
+        auto dst = std::next(d.data(), d.size);
+        if constexpr (std::is_same_v<T, QUtf8StringView>) {
+            dst = QUtf8::convertToUnicode(dst, view);
+        } else if constexpr (std::is_same_v<T, QLatin1StringView>) {
+            QLatin1::convertToUnicode(dst, view);
+            dst += strSize;
+        } else {
+            static_assert(QtPrivate::type_dependent_false<T>(),
+                          "Can only operate on UTF-8 and Latin-1");
+        }
+        self.resize(std::distance(d.begin(), dst));
     } else if (d.isNull() && !view.isNull()) { // special case
         self = QLatin1StringView("");
     }
@@ -3115,15 +3126,7 @@ QString &QString::append(const QChar *str, qsizetype len)
 */
 QString &QString::append(QLatin1StringView str)
 {
-    auto appendUtf16 = [](QChar *dst, QLatin1StringView str) {
-        const qsizetype len = str.size();
-        const char *s = str.latin1();
-        char16_t *i = reinterpret_cast<char16_t *>(dst);
-        qt_from_latin1(i, s, size_t(len));
-        return dst + len;
-    };
-
-    append_helper(*this, str, appendUtf16);
+    append_helper(*this, str);
     return *this;
 }
 
@@ -3135,11 +3138,7 @@ QString &QString::append(QLatin1StringView str)
 */
 QString &QString::append(QUtf8StringView str)
 {
-    auto appendUtf16 = [](QChar *dst, QUtf8StringView str) {
-        return QUtf8::convertToUnicode(dst, str);
-    };
-
-    append_helper(*this, str, appendUtf16);
+    append_helper(*this, str);
     return *this;
 }
 
