@@ -108,7 +108,7 @@ QGtk3Theme::QGtk3Theme()
         if (qEnvironmentVariableIsEmpty("XCURSOR_SIZE")) {
             const int cursorSize = gtkSetting<gint>("gtk-cursor-theme-size");
             if (cursorSize > 0)
-                qputenv("XCURSOR_SIZE", QString::number(cursorSize).toUtf8());
+                qputenv("XCURSOR_SIZE", QByteArray::number(cursorSize));
         }
         if (qEnvironmentVariableIsEmpty("XCURSOR_THEME")) {
             const QString cursorTheme = gtkSetting("gtk-cursor-theme-name");
