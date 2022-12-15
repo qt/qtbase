@@ -2550,7 +2550,7 @@ QString::QString(qsizetype size, Qt::Initialization)
 
 /*! \fn QString::QString(QLatin1StringView str)
 
-    Constructs a copy of the Latin-1 string \a str.
+    Constructs a copy of the Latin-1 string viewed by \a str.
 
     \sa fromLatin1()
 */
@@ -2825,7 +2825,7 @@ QString &QString::operator=(const QString &other) noexcept
 
     \overload operator=()
 
-    Assigns the Latin-1 string \a str to this string.
+    Assigns the Latin-1 string viewed by \a str to this string.
 */
 QString &QString::operator=(QLatin1StringView other)
 {
@@ -2950,7 +2950,7 @@ QString &QString::operator=(QChar ch)
     \fn QString &QString::insert(qsizetype position, QLatin1StringView str)
     \overload insert()
 
-    Inserts the Latin-1 string view \a str at the given index \a position.
+    Inserts the Latin-1 string viewed by \a str at the given index \a position.
 
     \include qstring.cpp string-grow-at-insertion
 */
@@ -3112,7 +3112,7 @@ QString &QString::append(const QChar *str, qsizetype len)
 /*!
   \overload append()
 
-  Appends the Latin-1 string view \a str to this string.
+  Appends the Latin-1 string viewed by \a str to this string.
 */
 QString &QString::append(QLatin1StringView str)
 {
@@ -3203,7 +3203,7 @@ QString &QString::append(QChar ch)
 
     \overload prepend()
 
-    Prepends the Latin-1 string view \a str to this string.
+    Prepends the Latin-1 string viewed by \a str to this string.
 */
 
 /*! \fn QString &QString::prepend(QUtf8StringView str)
@@ -3379,8 +3379,8 @@ QString &QString::remove(const QString &str, Qt::CaseSensitivity cs)
   \since 5.11
   \overload
 
-  Removes every occurrence of the given \a str string in this
-  string, and returns a reference to this string.
+  Removes every occurrence of the given Latin-1 string viewed by \a str
+  from this string, and returns a reference to this string.
 
   \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -3823,8 +3823,9 @@ QString& QString::replace(QChar before, QChar after, Qt::CaseSensitivity cs)
   \since 4.5
   \overload replace()
 
-  Replaces every occurrence of the string \a before with the string \a
-  after and returns a reference to this string.
+  Replaces every occurrence in this string of the Latin-1 string viewed
+  by \a before with the Latin-1 string viewed by \a after, and returns a
+  reference to this string.
 
   \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -3846,8 +3847,9 @@ QString &QString::replace(QLatin1StringView before, QLatin1StringView after, Qt:
   \since 4.5
   \overload replace()
 
-  Replaces every occurrence of the string \a before with the string \a
-  after and returns a reference to this string.
+  Replaces every occurrence in this string of the Latin-1 string viewed
+  by \a before with the string \a after, and returns a reference to this
+  string.
 
   \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -4258,7 +4260,7 @@ qsizetype QString::indexOf(const QString &str, qsizetype from, Qt::CaseSensitivi
 /*!
   \since 4.5
 
-  \include {qstring.qdocinc} {qstring-first-index-of} {string} {str}
+  \include {qstring.qdocinc} {qstring-first-index-of} {Latin-1 string viewed by} {str}
 
   \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -4335,7 +4337,7 @@ qsizetype QString::lastIndexOf(const QString &str, qsizetype from, Qt::CaseSensi
   \since 4.5
   \overload lastIndexOf()
 
-  \include qstring.qdocinc {qstring-last-index-of} {string} {str}
+  \include qstring.qdocinc {qstring-last-index-of} {Latin-1 string viewed by} {str}
 
   \include qstring.qdocinc negative-index-start-search-from-end
 
@@ -6125,7 +6127,7 @@ QString& QString::fill(QChar ch, qsizetype size)
 
     \overload operator+=()
 
-    Appends the Latin-1 string view \a str to this string.
+    Appends the Latin-1 string viewed by \a str to this string.
 */
 
 /*! \fn QString &QString::operator+=(QUtf8StringView str)
@@ -8322,7 +8324,7 @@ QString QString::arg(QStringView a, int fieldWidth, QChar fillChar) const
     \since 5.10
 
     Returns a copy of this string with the lowest-numbered place-marker
-    replaced by string \a a, i.e., \c %1, \c %2, ..., \c %99.
+    replaced by the Latin-1 string viewed by \a a, i.e., \c %1, \c %2, ..., \c %99.
 
     \a fieldWidth specifies the minimum amount of space that \a a
     shall occupy. If \a a requires less space than \a fieldWidth, it
@@ -9140,7 +9142,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 
 /*! \class QLatin1StringView
     \inmodule QtCore
-    \brief The QLatin1StringView class provides a thin wrapper around an US-ASCII/Latin-1 encoded string literal.
+    \brief The QLatin1StringView class provides a thin wrapper around
+    a US-ASCII/Latin-1 encoded string literal.
 
     \ingroup string-processing
     \reentrant
@@ -9346,7 +9349,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 
 /*! \fn QLatin1StringView::QLatin1StringView(const QByteArray &str)
 
-    Constructs a QLatin1StringView object that stores \a str.
+    Constructs a QLatin1StringView object as a view on \a str.
 
     The string data is \e not copied. The caller must be able to
     guarantee that \a str will not be deleted or modified as long as
@@ -9358,7 +9361,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 /*! \fn QLatin1StringView::QLatin1StringView(QByteArrayView str)
     \since 6.3
 
-    Constructs a QLatin1StringView object that stores \a str.
+    Constructs a QLatin1StringView object as a view on \a str.
 
     The string data is \e not copied. The caller must be able to
     guarantee that the data which \a str is pointing to will not
@@ -9538,8 +9541,9 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn int QLatin1StringView::compare(QChar ch, Qt::CaseSensitivity cs) const
     \since 5.14
 
-    Returns an integer that compares to zero as this Latin-1 string compares to the
-    string-view \a str, Latin-1 string \a l1, or character \a ch, respectively.
+    Returns an integer that compares to zero as this string view compares
+    to the UTF-16 string viewed by \a str, the Latin-1 string viewed by \a l1,
+    or the character \a ch, respectively.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -9557,9 +9561,9 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn bool QLatin1StringView::startsWith(QChar ch, Qt::CaseSensitivity cs) const
     \since 5.10
 
-    Returns \c true if this Latin-1 string starts with string-view \a str,
-    Latin-1 string \a l1, or character \a ch, respectively;
-    otherwise returns \c false.
+    Returns \c true if this Latin-1 string view starts with the UTF-16
+    string viewed by \a str, the Latin-1 string viewed by \a l1, or the
+    character \a ch, respectively; otherwise returns \c false.
 
    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -9576,9 +9580,9 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn bool QLatin1StringView::endsWith(QChar ch, Qt::CaseSensitivity cs) const
     \since 5.10
 
-    Returns \c true if this Latin-1 string ends with string-view \a str,
-    Latin-1 string \a l1, or character \a ch, respectively;
-    otherwise returns \c false.
+    Returns \c true if this Latin-1 string view ends with the UTF-16 string
+    viewed \a str, the Latin-1 string viewed by \a l1, or the character \a ch,
+    respectively; otherwise returns \c false.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -9591,10 +9595,11 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn qsizetype QLatin1StringView::indexOf(QChar c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \since 5.14
 
-    Returns the index position of the first occurrence of the string-view
-    \a str, Latin-1 string \a l1, or character \a ch, respectively, in this
-    Latin-1 string, searching forward from index position \a from.
-    Returns -1 if \a str is not found.
+    Returns the index position in this Latin-1 string view of the first
+    occurrence of the UTF-16 string viewed by \a str, the Latin-1 string
+    viewed by \a l1, or the character \a ch, respectively, searching forward
+    from index position \a from. Returns -1 if \a str, \a l1 or \a c is not
+    found, respectively.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -9609,9 +9614,9 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn bool QLatin1StringView::contains(QChar c, Qt::CaseSensitivity cs) const
     \since 5.14
 
-    Returns \c true if this Latin-1 string contains an occurrence of the
-    string-view \a str, Latin-1 string \a l1, or character \a ch;
-    otherwise returns \c false.
+    Returns \c true if this Latin-1 string view contains an occurrence of the
+    UTF-16 string viewed by \a str, the Latin-1 string viewed by \a l1, or the
+    character \a ch, respectively; otherwise returns \c false.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -9625,10 +9630,11 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn qsizetype QLatin1StringView::lastIndexOf(QChar c, qsizetype from, Qt::CaseSensitivity cs) const
     \since 5.14
 
-    Returns the index position of the last occurrence of the string-view \a str,
-    Latin-1 string \a l1, or character \a ch, respectively, in this Latin-1
-    string, searching backward from index position \a from.
-    Returns -1 if \a str is not found.
+    Returns the index position in this Latin-1 string view of the last
+    occurrence of the UTF-16 string viewed by \a str, the Latin-1 string
+    viewed by \a l1, or the character \a ch, respectively, searching backward
+    from index position \a from; returns -1 if \a str, \a l1 or \a ch is not
+    found, respectively.
 
     \include qstring.qdocinc negative-index-start-search-from-end
 
@@ -9652,9 +9658,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \since 6.2
     \overload lastIndexOf()
 
-    Returns the index position of the last occurrence of the
-    string-view \a str or Latin-1 string \a l1, respectively, in this
-    Latin-1 string. Returns -1 if \a str is not found.
+    Returns the index position in this Latin-1 string view of the last
+    occurrence of the UTF-16 string viewed by \a str or the Latin-1 string
+    viewed by \a l1, respectively. Returns -1 if \a str or \a l1 is not found,
+    respectively.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 */
@@ -9672,8 +9679,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \since 6.4
 
     Returns the number of (potentially overlapping) occurrences of the
-    string-view \a str, Latin-1 string \a l1, or character \a ch,
-    respectively, in this Latin-1 string.
+    UTF-16 string viewed by \a str, the Latin-1 string viewed by \a l1,
+    or the character \a ch, respectively, in this string view.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -9797,16 +9804,16 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \since 5.8
 
     Returns the substring of length \a length starting at position
-    \a start in this Latin-1 string.
+    \a start in this Latin-1 string view.
 
     If you know that \a start and \a length cannot be out of bounds, use
     sliced() instead in new code, because it is faster.
 
-    Returns an empty Latin-1 string if \a start exceeds the
-    length of this Latin-1 string. If there are less than \a length characters
-    available in this Latin-1 string starting at \a start, or if
-    \a length is negative (default), the function returns all characters that
-    are available from \a start.
+    Returns an empty Latin-1 string view if \a start exceeds the length
+    of this string view. If there are less than \a length characters available
+    in this string view starting at \a start, or if \a length is negative
+    (default), the function returns all characters that are available from
+    \a start.
 
     \sa first(), last(), sliced(), chopped(), chop(), truncate()
 */
@@ -9819,10 +9826,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     new code, because it is faster.
 
     Returns the substring of length \a length starting at position
-    0 in this Latin-1 string.
+    0 in this Latin-1 string view.
 
-    The entire Latin-1 string is returned if \a length is greater than or equal
-    to size(), or less than zero.
+    The entire Latin-1 string view is returned if \a length is greater
+    than or equal to size(), or less than zero.
 
     \sa first(), last(), sliced(), startsWith(), chopped(), chop(), truncate()
 */
@@ -9835,10 +9842,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     new code, because it is faster.
 
     Returns the substring of length \a length starting at position
-    size() - \a length in this Latin-1 string.
+    size() - \a length in this Latin-1 string view.
 
-    The entire Latin-1 string is returned if \a length is greater than or equal
-    to size(), or less than zero.
+    The entire Latin-1 string view is returned if \a length is greater
+    than or equal to size(), or less than zero.
 
     \sa first(), last(), sliced(), endsWith(), chopped(), chop(), truncate()
 */
@@ -9847,8 +9854,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn QLatin1StringView QLatin1StringView::first(qsizetype n) const
     \since 6.0
 
-    Returns a Latin-1 string that contains the first \a n characters
-    of this Latin-1 string.
+    Returns a Latin-1 string view that contains the first \a n characters
+    of this string view.
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
@@ -9859,8 +9866,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn QLatin1StringView QLatin1StringView::last(qsizetype n) const
     \since 6.0
 
-    Returns a Latin-1 string that contains the last \a n characters
-    of this Latin-1 string.
+    Returns a Latin-1 string view that contains the last \a n characters
+    of this string view.
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
@@ -9871,8 +9878,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn QLatin1StringView QLatin1StringView::sliced(qsizetype pos, qsizetype n) const
     \since 6.0
 
-    Returns a Latin-1 string that points to \a n characters of this
-    Latin-1 string, starting at position \a pos.
+    Returns a Latin-1 string view that points to \a n characters of this
+    string view, starting at position \a pos.
 
     \note The behavior is undefined when \a pos < 0, \a n < 0,
     or \c{pos + n > size()}.
@@ -9884,8 +9891,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn QLatin1StringView QLatin1StringView::sliced(qsizetype pos) const
     \since 6.0
 
-    Returns a Latin-1 string starting at position \a pos in this
-    Latin-1 string, and extending to its end.
+    Returns a Latin-1 string view starting at position \a pos in this
+    string view, and extending to its end.
 
     \note The behavior is undefined when \a pos < 0 or \a pos > size().
 
@@ -10337,10 +10344,14 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     using letters for digits beyond 9; A is ten, B is eleven and so on.
 
     If \a base is 0, the base is determined automatically using the following
-    rules: if the Latin-1 string begins with "0x", the rest of it is read as
-    hexadecimal (base 16); otherwise, if it begins with "0b", the rest of it is
-    read as binary (base 2); otherwise, if it begins with "0", the rest of it is
-    read as octal (base 8); otherwise it is read as decimal.
+    rules (in this order), if the Latin-1 string view begins with:
+
+    \list
+        \li \c "0x", the rest of it is read as hexadecimal (base 16)
+        \li \c "0b", the rest of it is read as binary (base 2)
+        \li \c "0", the rest of it is read as octal (base 8)
+        \li otherwise it is read as decimal
+    \endlist
 
     Returns 0 if the conversion fails.
 

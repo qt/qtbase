@@ -299,9 +299,9 @@ bool QtPrivate::QStringList_contains(const QStringList *that, QStringView str,
     \overload
     \since 5.10
 
-    Returns \c true if the list contains the string \a str; otherwise
-    returns \c false. The search is case insensitive if \a cs is
-    Qt::CaseInsensitive; the search is case sensitive by default.
+    Returns \c true if the list contains the Latin-1 string viewed by \a str; otherwise
+    returns \c false. The search is case insensitive if \a cs is Qt::CaseInsensitive;
+    the search is case sensitive by default.
 
     \sa indexOf(), lastIndexOf(), QString::contains()
  */

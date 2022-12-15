@@ -1743,8 +1743,8 @@ QCborValue::QCborValue(QStringView s)
 /*!
     \overload
 
-    Creates a QCborValue with string value \a s. The value can later be
-    retrieved using toString().
+    Creates a QCborValue with the Latin-1 string viewed by \a s.
+    The value can later be retrieved using toString().
 
     \sa toString(), isString(), isByteArray()
  */
