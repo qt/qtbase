@@ -16,8 +16,9 @@
 #  define Q_@module_define_infix@_EXPORT
 #endif
 
-#if !defined(QT_BUILD_@module_define_infix@_LIB) || defined(QT_STATIC)
+#if !defined(QT_BUILD_@module_define_infix@_LIB) && !defined(QT_STATIC)
 /* outside library → inline decl + defi */
+/* static builds treat everything as part of the library, so they never inline */
 #  define QT_@module_define_infix@_INLINE_SINCE(major, minor) inline
 #  define QT_@module_define_infix@_INLINE_IMPL_SINCE(major, minor) 1
 #elif defined(QT_@module_define_infix@_BUILD_REMOVED_API)
