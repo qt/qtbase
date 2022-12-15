@@ -64,7 +64,7 @@ as shown in the example below. This helps avoid hard-coding an absolute path.
 \badcode
 # The following script must only be executed at install time
 qt_generate_deploy_script(
-    FILENAME_VARIABLE deploy_script
+    OUTPUT_SCRIPT deploy_script
     CONTENT "
 qt_deploy_qt_conf(\"\${QT_DEPLOY_PREFIX}/\${QT_DEPLOY_BIN_DIR}/qt.conf\"
     DATA_DIR \"./custom_data_dir\"

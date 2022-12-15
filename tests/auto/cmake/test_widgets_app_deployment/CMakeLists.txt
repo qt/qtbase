@@ -33,7 +33,7 @@ function(create_test_executable target)
 
     qt_generate_deploy_app_script(
         TARGET ${target}
-        FILENAME_VARIABLE deploy_script
+        OUTPUT_SCRIPT deploy_script
         # Don't fail at configure time on unsupported platforms
         NO_UNSUPPORTED_PLATFORM_ERROR
     )

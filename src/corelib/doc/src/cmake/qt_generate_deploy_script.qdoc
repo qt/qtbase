@@ -18,7 +18,7 @@
 
 \badcode
 qt_generate_deploy_script(
-    FILENAME_VARIABLE var_name
+    OUTPUT_SCRIPT <var>
     [TARGET target]
     [NAME script_name]
     [CONTENT content]
@@ -30,7 +30,7 @@ qt_generate_deploy_script(
 \section1 Description
 
 The command generates a script whose full file path will be stored in the
-variable named by the \c{FILENAME_VARIABLE} option. That script is only written
+variable named by the \c{OUTPUT_SCRIPT} option. That script is only written
 at CMake generation time. It is intended to be used with the \l{install(SCRIPT)}
 command, which should come after the application's target has been installed
 using \l{install(TARGETS)}.

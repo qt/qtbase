@@ -26,7 +26,7 @@ set(helper_app_path "\${QT_DEPLOY_BIN_DIR}/$<TARGET_FILE_NAME:HelperApp>")
 # Generate a deployment script to be executed at install time
 qt_generate_deploy_script(
     TARGET MyApp
-    FILENAME_VARIABLE deploy_script
+    OUTPUT_SCRIPT deploy_script
     CONTENT "
 qt_deploy_runtime_dependencies(
     EXECUTABLE \"${executable_path}\"
