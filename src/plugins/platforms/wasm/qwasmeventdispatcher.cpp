@@ -14,4 +14,8 @@ void QWasmEventDispatcher::processWindowSystemEvents(QEventLoop::ProcessEventsFl
     QWindowSystemInterface::sendWindowSystemEvents(flags);
 }
 
+bool QWasmEventDispatcher::hasWindowSystemEvents() {
+    return QWindowSystemInterface::windowSystemEventsQueued();
+}
+
 QT_END_NAMESPACE
