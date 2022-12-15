@@ -22,7 +22,8 @@
 #include <qstringbuilder.h>
 
 #ifndef QT_BOOTSTRAPPED
-# include "qreadwritelock.h"
+#  include "qreadwritelock.h"
+#  include "qmutex.h"
 #endif
 
 #include <algorithm>
@@ -77,12 +78,9 @@ static qsizetype rootLength(QStringView name, bool allowUncPaths)
 }
 
 //************* QDirPrivate
-QDirPrivate::QDirPrivate(const QString &path, const QStringList &nameFilters_, QDir::SortFlags sort_, QDir::Filters filters_)
-    : QSharedData()
-    , fileListsInitialized(false)
-    , nameFilters(nameFilters_)
-    , sort(sort_)
-    , filters(filters_)
+QDirPrivate::QDirPrivate(const QString &path, const QStringList &nameFilters_,
+                         QDir::SortFlags sort_, QDir::Filters filters_)
+    : QSharedData(), nameFilters(nameFilters_), sort(sort_), filters(filters_)
 {
     setPath(path.isEmpty() ? QString::fromLatin1(".") : path);
 
@@ -93,22 +91,31 @@ QDirPrivate::QDirPrivate(const QString &path, const QStringList &nameFilters_, Q
 }
 
 QDirPrivate::QDirPrivate(const QDirPrivate &copy)
-    : QSharedData(copy)
-    , fileListsInitialized(false)
-    , nameFilters(copy.nameFilters)
-    , sort(copy.sort)
-    , filters(copy.filters)
-    , dirEntry(copy.dirEntry)
-    , metaData(copy.metaData)
+    : QSharedData(copy),
+      // mutex is not copied
+      nameFilters(copy.nameFilters),
+      sort(copy.sort),
+      filters(copy.filters),
+      // fileEngine is not copied
+      dirEntry(copy.dirEntry)
 {
+    QMutexLocker locker(&copy.fileCache.mutex);
+    fileCache.fileListsInitialized = copy.fileCache.fileListsInitialized;
+    fileCache.files = copy.fileCache.files;
+    fileCache.fileInfos = copy.fileCache.fileInfos;
+    fileCache.absoluteDirEntry = copy.fileCache.absoluteDirEntry;
+    fileCache.metaData = copy.fileCache.metaData;
 }
 
 bool QDirPrivate::exists() const
 {
     if (!fileEngine) {
-        QFileSystemEngine::fillMetaData(dirEntry, metaData,
-                QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType); // always stat
-        return metaData.exists() && metaData.isDirectory();
+        QMutexLocker locker(&fileCache.mutex);
+        QFileSystemEngine::fillMetaData(
+                dirEntry, fileCache.metaData,
+                QFileSystemMetaData::ExistsAttribute
+                        | QFileSystemMetaData::DirectoryType); // always stat
+        return fileCache.metaData.exists() && fileCache.metaData.isDirectory();
     }
     const QAbstractFileEngine::FileFlags info =
         fileEngine->fileFlags(QAbstractFileEngine::DirectoryType
@@ -151,30 +158,35 @@ inline void QDirPrivate::setPath(const QString &path)
     ) {
             p.truncate(p.size() - 1);
     }
-
     dirEntry = QFileSystemEntry(p, QFileSystemEntry::FromInternalPath());
     clearCache(IncludingMetaData);
-    absoluteDirEntry = QFileSystemEntry();
+    fileCache.absoluteDirEntry = QFileSystemEntry();
 }
 
-inline void QDirPrivate::resolveAbsoluteEntry() const
+inline QString QDirPrivate::resolveAbsoluteEntry() const
 {
-    if (!absoluteDirEntry.isEmpty() || dirEntry.isEmpty())
-        return;
+    QMutexLocker locker(&fileCache.mutex);
+    if (!fileCache.absoluteDirEntry.isEmpty())
+        return fileCache.absoluteDirEntry.filePath();
+
+    if (dirEntry.isEmpty())
+        return dirEntry.filePath();
 
     QString absoluteName;
     if (!fileEngine) {
         if (!dirEntry.isRelative() && dirEntry.isClean()) {
-            absoluteDirEntry = dirEntry;
-            return;
+            fileCache.absoluteDirEntry = dirEntry;
+            return dirEntry.filePath();
         }
 
         absoluteName = QFileSystemEngine::absoluteName(dirEntry).filePath();
     } else {
         absoluteName = fileEngine->fileName(QAbstractFileEngine::AbsoluteName);
     }
-
-    absoluteDirEntry = QFileSystemEntry(QDir::cleanPath(absoluteName), QFileSystemEntry::FromInternalPath());
+    auto absoluteFileSystemEntry =
+            QFileSystemEntry(QDir::cleanPath(absoluteName), QFileSystemEntry::FromInternalPath());
+    fileCache.absoluteDirEntry = absoluteFileSystemEntry;
+    return absoluteFileSystemEntry.filePath();
 }
 
 /* For sorting */
@@ -297,24 +309,28 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, const QFileInfoList 
 }
 inline void QDirPrivate::initFileLists(const QDir &dir) const
 {
-    if (!fileListsInitialized) {
+    QMutexLocker locker(&fileCache.mutex);
+    if (!fileCache.fileListsInitialized) {
         QFileInfoList l;
         QDirIterator it(dir);
         while (it.hasNext())
             l.append(it.nextFileInfo());
-        sortFileList(sort, l, &files, &fileInfos);
-        fileListsInitialized = true;
+
+        sortFileList(sort, l, &fileCache.files, &fileCache.fileInfos);
+        fileCache.fileListsInitialized = true;
     }
 }
 
 inline void QDirPrivate::clearCache(MetaDataClearing mode)
 {
+    QMutexLocker locker(&fileCache.mutex);
     if (mode == IncludingMetaData)
-        metaData.clear();
-    fileListsInitialized = false;
-    files.clear();
-    fileInfos.clear();
-    fileEngine.reset(QFileSystemEngine::resolveEntryAndCreateLegacyEngine(dirEntry, metaData));
+        fileCache.metaData.clear();
+    fileCache.fileListsInitialized = false;
+    fileCache.files.clear();
+    fileCache.fileInfos.clear();
+    fileEngine.reset(
+            QFileSystemEngine::resolveEntryAndCreateLegacyEngine(dirEntry, fileCache.metaData));
 }
 
 /*!
@@ -612,8 +628,7 @@ QString QDir::path() const
 QString QDir::absolutePath() const
 {
     Q_D(const QDir);
-    d->resolveAbsoluteEntry();
-    return d->absoluteDirEntry.filePath();
+    return d->resolveAbsoluteEntry();
 }
 
 /*!
@@ -636,7 +651,9 @@ QString QDir::canonicalPath() const
 {
     Q_D(const QDir);
     if (!d->fileEngine) {
-        QFileSystemEntry answer = QFileSystemEngine::canonicalName(d->dirEntry, d->metaData);
+        QMutexLocker locker(&d->fileCache.mutex);
+        QFileSystemEntry answer =
+                QFileSystemEngine::canonicalName(d->dirEntry, d->fileCache.metaData);
         return answer.filePath();
     }
     return d->fileEngine->fileName(QAbstractFileEngine::CanonicalName);
@@ -753,8 +770,7 @@ QString QDir::absoluteFilePath(const QString &fileName) const
         return fileName;
 
     Q_D(const QDir);
-    d->resolveAbsoluteEntry();
-    const QString absoluteDirPath = d->absoluteDirEntry.filePath();
+    QString absoluteDirPath = d->resolveAbsoluteEntry();
     if (fileName.isEmpty())
         return absoluteDirPath;
 #ifdef Q_OS_WIN
@@ -1262,7 +1278,7 @@ qsizetype QDir::count(QT6_IMPL_NEW_OVERLOAD) const
 {
     Q_D(const QDir);
     d->initFileLists(*this);
-    return d->files.size();
+    return d->fileCache.files.size();
 }
 
 /*!
@@ -1278,7 +1294,7 @@ QString QDir::operator[](qsizetype pos) const
 {
     Q_D(const QDir);
     d->initFileLists(*this);
-    return d->files[pos];
+    return d->fileCache.files[pos];
 }
 
 /*!
@@ -1357,7 +1373,7 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
 
     if (filters == d->filters && sort == d->sort && nameFilters == d->nameFilters) {
         d->initFileLists(*this);
-        return d->files;
+        return d->fileCache.files;
     }
 
     QFileInfoList l;
@@ -1397,7 +1413,7 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
 
     if (filters == d->filters && sort == d->sort && nameFilters == d->nameFilters) {
         d->initFileLists(*this);
-        return d->fileInfos;
+        return d->fileCache.fileInfos;
     }
 
     QFileInfoList l;
@@ -1612,10 +1628,12 @@ bool QDir::isReadable() const
     Q_D(const QDir);
 
     if (!d->fileEngine) {
-        if (!d->metaData.hasFlags(QFileSystemMetaData::UserReadPermission))
-            QFileSystemEngine::fillMetaData(d->dirEntry, d->metaData, QFileSystemMetaData::UserReadPermission);
-
-        return d->metaData.permissions().testAnyFlag(QFile::ReadUser);
+        QMutexLocker locker(&d->fileCache.mutex);
+        if (!d->fileCache.metaData.hasFlags(QFileSystemMetaData::UserReadPermission)) {
+            QFileSystemEngine::fillMetaData(d->dirEntry, d->fileCache.metaData,
+                                            QFileSystemMetaData::UserReadPermission);
+        }
+        return d->fileCache.metaData.permissions().testAnyFlag(QFile::ReadUser);
     }
 
     const QAbstractFileEngine::FileFlags info =
@@ -1722,9 +1740,9 @@ bool QDir::makeAbsolute()
         dir.reset(new QDirPrivate(*d_ptr.constData()));
         dir->setPath(absolutePath);
     } else { // native FS
-        d->resolveAbsoluteEntry();
+        QString absoluteFilePath = d->resolveAbsoluteEntry();
         dir.reset(new QDirPrivate(*d_ptr.constData()));
-        dir->setPath(d->absoluteDirEntry.filePath());
+        dir->setPath(absoluteFilePath);
     }
     d_ptr = dir.release(); // actually detach
     return true;
@@ -1775,9 +1793,9 @@ bool QDir::operator==(const QDir &dir) const
             if (dir.exists())
                 return false; //can't be equal if only one exists
             // Neither exists, compare absolute paths rather than canonical (which would be empty strings)
-            d->resolveAbsoluteEntry();
-            other->resolveAbsoluteEntry();
-            return d->absoluteDirEntry.filePath().compare(other->absoluteDirEntry.filePath(), sensitive) == 0;
+            QString thisFilePath = d->resolveAbsoluteEntry();
+            QString otherFilePath = other->resolveAbsoluteEntry();
+            return thisFilePath.compare(otherFilePath, sensitive) == 0;
         }
     }
     return false;
