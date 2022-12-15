@@ -739,7 +739,7 @@ QT_BEGIN_NAMESPACE
     \since 5.15
 
     Returns an integer that compares to zero as this string view compares to the
-    Latin-1 string \a l1, or character \a ch, respectively.
+    Latin-1 string viewed by \a l1, or the character \a ch, respectively.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
 
@@ -774,15 +774,22 @@ QT_BEGIN_NAMESPACE
     \sa {Comparing Strings}
 */
 
+/*
+//! [utf16-or-latin1-or-ch]
+the UTF-16 string viewed by \a str, the Latin-1 string viewed by \a l1,
+or the character \a ch
+//! [utf16-or-latin1-or-ch]
+*/
+
 /*!
     \fn bool QStringView::startsWith(QStringView str, Qt::CaseSensitivity cs) const
     \fn bool QStringView::startsWith(QLatin1StringView l1, Qt::CaseSensitivity cs) const
     \fn bool QStringView::startsWith(QChar ch) const
     \fn bool QStringView::startsWith(QChar ch, Qt::CaseSensitivity cs) const
 
-    Returns \c true if this string view starts with string view \a str,
-    Latin-1 string \a l1, or character \a ch, respectively;
-    otherwise returns \c false.
+    Returns \c true if this string view starts with
+    \include qstringview.cpp utf16-or-latin1-or-ch
+    respectively; otherwise returns \c false.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -795,9 +802,9 @@ QT_BEGIN_NAMESPACE
     \fn bool QStringView::endsWith(QChar ch) const
     \fn bool QStringView::endsWith(QChar ch, Qt::CaseSensitivity cs) const
 
-    Returns \c true if this string view ends with string view \a str,
-    Latin-1 string \a l1, or character \a ch, respectively;
-    otherwise returns \c false.
+    Returns \c true if this string view ends with
+    \include qstringview.cpp utf16-or-latin1-or-ch
+    respectively; otherwise returns \c false.
 
      \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -810,9 +817,10 @@ QT_BEGIN_NAMESPACE
     \fn qsizetype QStringView::indexOf(QChar c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \since 5.14
 
-    Returns the index position of the first occurrence of the string view \a str,
-    Latin-1 string \a l1, or character \a ch, respectively, in this string view,
-    searching forward from index position \a from. Returns -1 if \a str is not found.
+    Returns the index position of the first occurrence of
+    \include qstringview.cpp utf16-or-latin1-or-ch
+    respectively, in this string view, searching forward from index position
+    \a from. Returns -1 if \a str, \a l1 or \a ch is not found, respectively.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -827,8 +835,9 @@ QT_BEGIN_NAMESPACE
     \fn bool QStringView::contains(QChar c, Qt::CaseSensitivity cs) const
     \since 5.14
 
-    Returns \c true if this string view contains an occurrence of the string view
-    \a str, Latin-1 string \a l1, or character \a ch; otherwise returns \c false.
+    Returns \c true if this string view contains an occurrence of
+    \include qstringview.cpp utf16-or-latin1-or-ch
+    respectively; otherwise returns \c false.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -841,13 +850,14 @@ QT_BEGIN_NAMESPACE
     \fn qsizetype QStringView::lastIndexOf(QChar c, qsizetype from, Qt::CaseSensitivity cs) const
     \since 5.14
 
-    Returns the index position of the last occurrence of the string view \a str,
-    Latin-1 string \a l1, or character \a ch, respectively, in this string view,
-    searching backward from index position \a from.
+    Returns the index position of the last occurrence of
+    \include qstringview.cpp utf16-or-latin1-or-ch
+    respectively, in this string view, searching backward from index
+    position \a from.
 
     \include qstring.qdocinc negative-index-start-search-from-end
 
-    Returns -1 if \a str is not found.
+    Returns -1 if \a str, \a l1 or \a c is not found, respectively.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -868,10 +878,10 @@ QT_BEGIN_NAMESPACE
     \since 6.2
     \overload lastIndexOf()
 
-    Returns the index position of the last occurrence of the string view \a str
-    or Latin-1 string \a l1, respectively, in this string view,
-    searching backward from the last character of this string view.
-    Returns -1 if \a str is not found.
+    Returns the index position of the last occurrence of the UTF-16 string viewed
+    by \a str or the Latin-1 string viewed by \a l1 respectively, in this string
+    view searching backward from the last character of this string view. Returns
+    -1 if \a str or \a l1 is not found, respectively.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -1122,7 +1132,7 @@ QT_BEGIN_NAMESPACE
     \overload count()
 
     Returns the number of (potentially overlapping) occurrences of the
-    Latin-1 string \a l1 in this string view.
+    Latin-1 string viewed by \a l1 in this string view.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 

@@ -109,7 +109,7 @@ void QDBusSignature::doCheck()
 /*!
     \fn QDBusObjectPath::QDBusObjectPath(QLatin1StringView path)
 
-    Constructs a new object path from the given \a path.
+    Constructs a new object path from the Latin-1 string viewed by \a path.
 */
 
 /*!
@@ -170,7 +170,7 @@ QDBusObjectPath::operator QVariant() const { return QVariant::fromValue(*this); 
 /*!
     \fn QDBusSignature::QDBusSignature(QLatin1StringView signature)
 
-    Constructs a new signature from the given \a signature.
+    Constructs a new signature from the Latin-1 string viewed by \a signature.
 */
 
 /*!

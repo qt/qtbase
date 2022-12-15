@@ -413,11 +413,11 @@ void QCborStreamWriter::append(QCborNegativeInteger n)
 /*!
    \overload
 
-   Appends the text string \a str to the stream, creating a CBOR Text String
-   value. QCborStreamWriter will attempt to write the entire string in one
-   chunk.
+   Appends the Latin-1 string viewed by \a str to the stream, creating a CBOR
+   Text String value. QCborStreamWriter will attempt to write the entire string
+   in one chunk.
 
-   The following example appends a simple string to the stream:
+   The following example appends a simple Latin-1 string literal to the stream:
 
    \snippet code/src_corelib_serialization_qcborstream.cpp 8
 

@@ -600,7 +600,8 @@ QVariant::QVariant(const QVariant &p)
 /*!
     \fn QVariant::QVariant(QLatin1StringView val)
 
-    Constructs a new variant with a string value, \a val.
+    Constructs a new variant with a QString value from the Latin-1
+    string viewed by \a val.
 */
 
 /*!

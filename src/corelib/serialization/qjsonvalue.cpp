@@ -198,7 +198,7 @@ QJsonValue::QJsonValue(const QString &s)
  */
 
 /*!
-    Creates a value of type String, with value \a s.
+    Creates a value of type String, with the Latin-1 string viewed by \a s.
  */
 QJsonValue::QJsonValue(QLatin1StringView s)
     : value(s)
