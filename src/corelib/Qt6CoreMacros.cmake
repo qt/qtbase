@@ -2804,9 +2804,13 @@ function(qt6_generate_deploy_script)
     set(no_value_options "")
     set(single_value_options
         CONTENT
-        FILENAME_VARIABLE
+        OUTPUT_SCRIPT
         NAME
         TARGET
+
+        # TODO: For backward compatibility / transitional use only,
+        # remove at some point
+        FILENAME_VARIABLE
     )
     set(multi_value_options "")
     cmake_parse_arguments(PARSE_ARGV 0 arg
@@ -2815,9 +2819,26 @@ function(qt6_generate_deploy_script)
     if(arg_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unexpected arguments: ${arg_UNPARSED_ARGUMENTS}")
     endif()
-    if(NOT arg_FILENAME_VARIABLE)
-        message(FATAL_ERROR "FILENAME_VARIABLE must be specified")
+
+    # TODO: Remove when FILENAME_VARIABLE is fully removed
+    # Handle the slow deprecation of FILENAME_VARIABLE
+    if(arg_FILENAME_VARIABLE)
+        if(arg_OUTPUT_SCRIPT AND NOT arg_FILENAME_VARIABLE STREQUAL arg_OUTPUT_SCRIPT)
+            message(FATAL_ERROR
+                "Both FILENAME_VARIABLE and OUTPUT_SCRIPT were given and were different. "
+                "Only one of the two should be used."
+            )
+        endif()
+        message(AUTHOR_WARNING
+            "The FILENAME_VARIABLE keyword is deprecated and will be removed soon. Please use OUTPUT_SCRIPT instead.")
+        set(arg_OUTPUT_SCRIPT "${arg_FILENAME_VARIABLE}")
+        unset(arg_FILENAME_VARIABLE)
     endif()
+
+    if(NOT arg_OUTPUT_SCRIPT)
+        message(FATAL_ERROR "OUTPUT_SCRIPT must be specified")
+    endif()
+
     if("${arg_CONTENT}" STREQUAL "")
         message(FATAL_ERROR "CONTENT must be specified")
     endif()
@@ -2851,22 +2872,22 @@ function(qt6_generate_deploy_script)
     string(SHA1 args_hash "${ARGV}")
     string(SUBSTRING "${args_hash}" 0 10 short_hash)
     _qt_internal_get_deploy_impl_dir(deploy_impl_dir)
-    set(file_name "${deploy_impl_dir}/deploy_${target_id}_${short_hash}")
+    set(deploy_script "${deploy_impl_dir}/deploy_${target_id}_${short_hash}")
     get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
     if(is_multi_config)
         set(config_infix "-$<CONFIG>")
     else()
         set(config_infix "")
     endif()
-    string(APPEND file_name "${config_infix}.cmake")
-    set(${arg_FILENAME_VARIABLE} "${file_name}" PARENT_SCOPE)
+    string(APPEND deploy_script "${config_infix}.cmake")
+    set(${arg_OUTPUT_SCRIPT} "${deploy_script}" PARENT_SCOPE)
 
     set(boiler_plate "include(${QT_DEPLOY_SUPPORT})
 include(\"\${CMAKE_CURRENT_LIST_DIR}/${arg_TARGET}-plugins${config_infix}.cmake\" OPTIONAL)
 set(__QT_DEPLOY_ALL_MODULES_FOUND_VIA_FIND_PACKAGE \"${QT_ALL_MODULES_FOUND_VIA_FIND_PACKAGE}\")
 ")
     list(TRANSFORM arg_CONTENT REPLACE "\\$" "\$")
-    file(GENERATE OUTPUT ${file_name} CONTENT "${boiler_plate}${arg_CONTENT}")
+    file(GENERATE OUTPUT ${deploy_script} CONTENT "${boiler_plate}${arg_CONTENT}")
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
@@ -2892,6 +2913,10 @@ function(qt6_generate_deploy_app_script)
     )
     set(single_value_options
         TARGET
+        OUTPUT_SCRIPT
+
+        # TODO: For backward compatibility / transitional use only,
+        # remove at some point
         FILENAME_VARIABLE
     )
     set(qt_deploy_runtime_dependencies_options
@@ -2915,8 +2940,24 @@ function(qt6_generate_deploy_app_script)
     if(NOT arg_TARGET)
         message(FATAL_ERROR "TARGET must be specified")
     endif()
-    if(NOT arg_FILENAME_VARIABLE)
-        message(FATAL_ERROR "FILENAME_VARIABLE must be specified")
+
+    # TODO: Remove when FILENAME_VARIABLE is fully removed
+    # Handle the slow deprecation of FILENAME_VARIABLE
+    if(arg_FILENAME_VARIABLE)
+        if(arg_OUTPUT_SCRIPT AND NOT arg_FILENAME_VARIABLE STREQUAL arg_OUTPUT_SCRIPT)
+            message(FATAL_ERROR
+                "Both FILENAME_VARIABLE and OUTPUT_SCRIPT were given and were different. "
+                "Only one of the two should be used."
+            )
+        endif()
+        message(AUTHOR_WARNING
+            "The FILENAME_VARIABLE keyword is deprecated and will be removed soon. Please use OUTPUT_SCRIPT instead.")
+        set(arg_OUTPUT_SCRIPT "${arg_FILENAME_VARIABLE}")
+        unset(arg_FILENAME_VARIABLE)
+    endif()
+
+    if(NOT arg_OUTPUT_SCRIPT)
+        message(FATAL_ERROR "OUTPUT_SCRIPT must be specified")
     endif()
 
     if(QT6_IS_SHARED_LIBS_BUILD)
@@ -2927,7 +2968,7 @@ function(qt6_generate_deploy_app_script)
 
     set(generate_args
         TARGET ${arg_TARGET}
-        FILENAME_VARIABLE file_name
+        OUTPUT_SCRIPT deploy_script
     )
 
     set(common_deploy_args "")
@@ -2993,7 +3034,7 @@ _qt_internal_show_skip_runtime_deploy_message(\"${qt_build_type_string}\")
 ")
     endif()
 
-    set(${arg_FILENAME_VARIABLE} "${file_name}" PARENT_SCOPE)
+    set(${arg_OUTPUT_SCRIPT} "${deploy_script}" PARENT_SCOPE)
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)

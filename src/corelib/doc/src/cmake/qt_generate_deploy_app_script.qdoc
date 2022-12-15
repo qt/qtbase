@@ -20,7 +20,7 @@
 \badcode
 qt_generate_deploy_app_script(
     TARGET target
-    FILENAME_VARIABLE var_name
+    OUTPUT_SCRIPT <var>
     [NO_TRANSLATIONS]
     [NO_UNSUPPORTED_PLATFORM_ERROR]
     [PRE_INCLUDE_REGEXES regexes...]
@@ -47,7 +47,7 @@ determined by \l{GNUInstallDirs} (except for macOS app bundles, which follow
 Apple's requirements instead).
 
 The command generates a script whose name will be stored in the variable named
-by the \c{FILENAME_VARIABLE} option. That script is only written at CMake
+by the \c{OUTPUT_SCRIPT} option. That script is only written at CMake
 generation time. It is intended to be used with the \l{install(SCRIPT)} command,
 which should come after the application's target has been installed using
 \l{install(TARGETS)}.
@@ -105,7 +105,7 @@ install(TARGETS MyApp
 
 qt_generate_deploy_app_script(
     TARGET MyApp
-    FILENAME_VARIABLE deploy_script
+    OUTPUT_SCRIPT deploy_script
     NO_UNSUPPORTED_PLATFORM_ERROR
 )
 install(SCRIPT ${deploy_script})
