@@ -1659,8 +1659,6 @@ void TlsCryptographSchannel::transmit()
             } else if (status == SEC_I_CONTEXT_EXPIRED) {
                 // 'remote' has initiated a shutdown
                 disconnectFromHost();
-                setErrorAndEmit(d, QAbstractSocket::RemoteHostClosedError,
-                                schannelErrorToString(status));
                 break;
             } else if (status == SEC_I_RENEGOTIATE) {
                 // 'remote' wants to renegotiate
