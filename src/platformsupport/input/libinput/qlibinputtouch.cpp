@@ -14,6 +14,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(qLcLibInput)
+Q_LOGGING_CATEGORY(qLcLibInputEvents, "qt.qpa.input.events")
 
 QWindowSystemInterface::TouchPoint *QLibInputTouch::DeviceState::point(int32_t slot)
 {
@@ -113,6 +114,7 @@ void QLibInputTouch::processTouchDown(libinput_event_touch *e)
         newTp.area = QRect(0, 0, 8, 8);
         newTp.area.moveCenter(getPos(e));
         state->m_points.append(newTp);
+        qCDebug(qLcLibInputEvents) << "touch down" << newTp;
     }
 }
 
@@ -132,6 +134,7 @@ void QLibInputTouch::processTouchMotion(libinput_event_touch *e)
         // Handle this by compressing and keeping the Pressed state until the 'frame'.
         if (tp->state != QEventPoint::State::Pressed && tp->state != QEventPoint::State::Released)
             tp->state = tmpState;
+        qCDebug(qLcLibInputEvents) << "touch move" << tp;
     } else {
         qWarning("Inconsistent touch state (got 'motion' without 'down')");
     }
@@ -148,8 +151,11 @@ void QLibInputTouch::processTouchUp(libinput_event_touch *e)
         QEventPoint::States s;
         for (int i = 0; i < state->m_points.size(); ++i)
             s |= state->m_points.at(i).state;
+        qCDebug(qLcLibInputEvents) << "touch up" << s << tp;
         if (s == QEventPoint::State::Released)
             processTouchFrame(e);
+        else
+            qCDebug(qLcLibInputEvents, "waiting for all points to be released");
     } else {
         qWarning("Inconsistent touch state (got 'up' without 'down')");
     }
@@ -158,6 +164,7 @@ void QLibInputTouch::processTouchUp(libinput_event_touch *e)
 void QLibInputTouch::processTouchCancel(libinput_event_touch *e)
 {
     DeviceState *state = deviceState(e);
+    qCDebug(qLcLibInputEvents) << "touch cancel" << state->m_points;
     if (state->m_touchDevice)
         QWindowSystemInterface::handleTouchCancelEvent(nullptr, state->m_touchDevice, QGuiApplication::keyboardModifiers());
     else
@@ -171,6 +178,7 @@ void QLibInputTouch::processTouchFrame(libinput_event_touch *e)
         qWarning("TouchFrame without registered device");
         return;
     }
+    qCDebug(qLcLibInputEvents) << "touch frame" << state->m_points;
     if (state->m_points.isEmpty())
         return;
 
