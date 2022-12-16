@@ -3707,9 +3707,14 @@ QString& QString::replace(QChar ch, const QString &after, Qt::CaseSensitivity cs
 
     QVarLengthArray<size_t> indices;
     if (cs == Qt::CaseSensitive) {
-        for (qsizetype i = 0; i < d.size; ++i)
-            if (d.data()[i] == cc)
-                indices.push_back(i);
+        const char16_t *begin = d.begin();
+        const char16_t *end = d.end();
+        QStringView view(begin, end);
+        const char16_t *hit = nullptr;
+        while ((hit = QtPrivate::qustrchr(view, cc)) != end) {
+            indices.push_back(std::distance(begin, hit));
+            view = QStringView(std::next(hit), end);
+        }
     } else {
         for (qsizetype i = 0; i < d.size; ++i)
             if (QChar::toCaseFolded(d.data()[i]) == cc)
