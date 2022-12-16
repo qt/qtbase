@@ -40,6 +40,8 @@
 //
 // Config keys
 //
+//  moduleConfig : {}
+//      Emscripten module configuration
 //  containerElements : [container-element, ...]
 //      One or more HTML elements. QtLoader will display loader elements
 //      on these while loading the application, and replace the loader with a
@@ -131,7 +133,7 @@ function _QtLoader(config)
     // The Emscripten module and module configuration object. The module
     // object is created in completeLoadEmscriptenModule().
     self.module = undefined;
-    self.moduleConfig = {};
+    self.moduleConfig = config.moduleConfig || {};
 
     // Qt properties. These are propagated to the Emscripten module after
     // it has been created.
