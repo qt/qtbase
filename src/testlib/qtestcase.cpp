@@ -1007,17 +1007,30 @@ void TestMethods::invokeTestOnData(int index) const
 
 class WatchDog : public QThread
 {
-    enum Expectation {
+    enum Expectation : std::size_t {
+        // bits 0..1: state
         ThreadStart,
         TestFunctionStart,
         TestFunctionEnd,
         ThreadEnd,
+        ExpectationMask = ThreadStart | TestFunctionStart | TestFunctionEnd | ThreadEnd,
+
+        // bits 2..: generation
     };
+    Q_STATIC_ASSERT(size_t(ExpectationMask) == 0x3);
+    // static constexpr size_t GenerationShift = 2; // C++17-ism, so inline in combine and generation.
+
+    static constexpr Expectation state(Expectation e) noexcept
+    { return static_cast<Expectation>(e & ExpectationMask); }
+    static constexpr size_t generation(Expectation e) noexcept
+    { return e >> 2; }
+    static constexpr Expectation combine(Expectation e, size_t gen) noexcept
+    { return static_cast<Expectation>(e | (gen << 2)); }
 
     bool waitFor(std::unique_lock<QtPrivate::mutex> &m, Expectation e)
     {
         auto expectationChanged = [this, e] { return expecting.load(std::memory_order_relaxed) != e; };
-        switch (e) {
+        switch (state(e)) {
         case TestFunctionEnd:
             return waitCondition.wait_for(m, defaultTimeout(), expectationChanged);
         case ThreadStart:
@@ -1032,7 +1045,13 @@ class WatchDog : public QThread
 
     void setExpectation(Expectation e)
     {
+        Q_ASSERT(generation(e) == 0); // no embedded generation allowed
         const auto locker = qt_scoped_lock(mutex);
+        auto cur = expecting.load(std::memory_order_relaxed);
+        auto gen = generation(cur);
+        if (e == TestFunctionStart)
+            ++gen;
+        e = combine(e, gen);
         expecting.store(e, std::memory_order_relaxed);
         waitCondition.notify_all();
     }
@@ -1069,7 +1088,7 @@ public:
         waitCondition.notify_all();
         while (true) {
             Expectation e = expecting.load(std::memory_order_acquire);
-            switch (e) {
+            switch (state(e)) {
             case ThreadEnd:
                 return;
             case ThreadStart:
