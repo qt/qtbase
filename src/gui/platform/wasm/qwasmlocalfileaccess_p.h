@@ -25,17 +25,18 @@ namespace QWasmLocalFileAccess {
 
 enum class FileSelectMode { SingleFile, MultipleFiles };
 
-Q_CORE_EXPORT void openFiles(const QStringList &accept, FileSelectMode fileSelectMode,
+Q_CORE_EXPORT void openFiles(const std::string &accept, FileSelectMode fileSelectMode,
     const std::function<void (int fileCount)> &fileDialogClosed,
     const std::function<char *(uint64_t size, const std::string& name)> &acceptFile,
     const std::function<void()> &fileDataReady);
 
-Q_CORE_EXPORT void openFile(const QStringList &accept,
+Q_CORE_EXPORT void openFile(const std::string &accept,
     const std::function<void (bool fileSelected)> &fileDialogClosed,
     const std::function<char *(uint64_t size, const std::string& name)> &acceptFile,
     const std::function<void()> &fileDataReady);
 
 Q_CORE_EXPORT void saveFile(const QByteArray &data, const std::string &fileNameHint);
+Q_CORE_EXPORT void saveFile(const char *content, size_t size, const std::string &fileNameHint);
 
 } // namespace QWasmLocalFileAccess
 

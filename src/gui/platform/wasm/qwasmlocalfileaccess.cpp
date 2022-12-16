@@ -9,6 +9,8 @@
 #include <emscripten/html5.h>
 #include <emscripten/val.h>
 
+#include <QtCore/qregularexpression.h>
+
 QT_BEGIN_NAMESPACE
 
 namespace QWasmLocalFileAccess {
@@ -132,15 +134,76 @@ void readFiles(const qstdweb::FileList &fileList,
 
     (*readFile)(0);
 }
+
+QStringList acceptListFromQtFormat(const std::string &qtAcceptList)
+{
+    // copy of qt_make_filter_list() from qfiledialog.cpp
+    auto make_filter_list = [](const QString &filter) -> QStringList
+    {
+        if (filter.isEmpty())
+            return QStringList();
+
+        QString sep(";;");
+        if (!filter.contains(sep) && filter.contains(u'\n'))
+            sep = u'\n';
+
+        return filter.split(sep);
+    };
+
+    const QStringList fileFilter = make_filter_list(QString::fromStdString(qtAcceptList));
+    QStringList transformed;
+    for (const auto &element : fileFilter) {
+        // Accepts either a string in format:
+        // GROUP3
+        // or in this format:
+        // GROUP1 (GROUP2)
+        // Group 1 is treated as the description, whereas group 2 or 3 are treated as the filter
+        // list.
+        static QRegularExpression regex(
+                QString(QStringLiteral("(?:([^(]*)\\(([^()]+)\\)[^)]*)|([^()]+)")));
+        static QRegularExpression wordCharacterRegex(QString(QStringLiteral("\\w")));
+        const auto match = regex.match(element);
+
+        if (!match.hasMatch())
+            continue;
+
+        constexpr size_t FilterListFromParensIndex = 2;
+        constexpr size_t PlainFilterListIndex = 3;
+        QString filterList = match.captured(match.hasCaptured(FilterListFromParensIndex)
+                                                    ? FilterListFromParensIndex
+                                                    : PlainFilterListIndex);
+        for (auto singleExtension : filterList.split(QStringLiteral(" "), Qt::SkipEmptyParts)) {
+            // Checks for a filter that matches everything:
+            // Any number of asterisks or any number of asterisks with a '.' between them.
+            // The web filter does not support wildcards.
+            static QRegularExpression qtAcceptAllRegex(QRegularExpression::anchoredPattern(
+                    QString(QStringLiteral("[*]+|[*]+\\.[*]+"))));
+            if (qtAcceptAllRegex.match(singleExtension).hasMatch())
+                continue;
+
+            // Checks for correctness. The web filter only allows filename extensions and does not
+            // filter the actual filenames, therefore we check whether the filter provided only
+            // filters for the extension.
+            static QRegularExpression qtFilenameMatcherRegex(QRegularExpression::anchoredPattern(
+                    QString(QStringLiteral("(\\*?)(\\.[^*]+)"))));
+
+            auto extensionMatch = qtFilenameMatcherRegex.match(singleExtension);
+            if (extensionMatch.hasMatch())
+                transformed.append(extensionMatch.captured(2));
+        }
+    }
+    return transformed;
 }
 
-void downloadDataAsFile(const QByteArray &data, const std::string &fileNameHint)
+}
+
+void downloadDataAsFile(const char *content, size_t size, const std::string &fileNameHint)
 {
     // Save a file by creating programmatically clicking a download
     // link to an object url to a Blob containing a copy of the file
     // content. The copy is made so that the passed in content buffer
     // can be released as soon as this function returns.
-    qstdweb::Blob contentBlob = qstdweb::Blob::copyFrom(data.constData(), data.size());
+    qstdweb::Blob contentBlob = qstdweb::Blob::copyFrom(content, size);
     emscripten::val document = emscripten::val::global("document");
     emscripten::val window = qstdweb::window();
     emscripten::val contentUrl = window["URL"].call<emscripten::val>("createObjectURL", contentBlob.val());
@@ -157,12 +220,12 @@ void downloadDataAsFile(const QByteArray &data, const std::string &fileNameHint)
     window["URL"].call<emscripten::val>("revokeObjectURL", contentUrl);
 }
 
-void openFiles(const QStringList &accept, FileSelectMode fileSelectMode,
+void openFiles(const std::string &accept, FileSelectMode fileSelectMode,
     const std::function<void (int fileCount)> &fileDialogClosed,
     const std::function<char *(uint64_t size, const std::string& name)> &acceptFile,
     const std::function<void()> &fileDataReady)
 {
-    FileDialog::showOpen(accept, fileSelectMode, {
+    FileDialog::showOpen(acceptListFromQtFormat(accept), fileSelectMode, {
         .thenFunc = [=](emscripten::val result) {
             auto files = qstdweb::FileList(result);
             fileDialogClosed(files.length());
@@ -174,7 +237,7 @@ void openFiles(const QStringList &accept, FileSelectMode fileSelectMode,
     });
 }
 
-void openFile(const QStringList &accept,
+void openFile(const std::string &accept,
     const std::function<void (bool fileSelected)> &fileDialogClosed,
     const std::function<char *(uint64_t size, const std::string& name)> &acceptFile,
     const std::function<void()> &fileDataReady)
@@ -220,13 +283,27 @@ void saveDataToFileInChunks(emscripten::val fileHandle, const QByteArray &data)
 void saveFile(const QByteArray &data, const std::string &fileNameHint)
 {
     if (!FileDialog::canShowSave()) {
-        downloadDataAsFile(data, fileNameHint);
+        downloadDataAsFile(data.constData(), data.size(), fileNameHint);
         return;
     }
 
     FileDialog::showSave(fileNameHint, {
         .thenFunc = [=](emscripten::val result) {
             saveDataToFileInChunks(result, data);
+        },
+    });
+}
+
+void saveFile(const char *content, size_t size, const std::string &fileNameHint)
+{
+    if (!FileDialog::canShowSave()) {
+        downloadDataAsFile(content, size, fileNameHint);
+        return;
+    }
+
+    FileDialog::showSave(fileNameHint, {
+        .thenFunc = [=](emscripten::val result) {
+            saveDataToFileInChunks(result, QByteArray(content, size));
         },
     });
 }

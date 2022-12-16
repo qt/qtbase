@@ -2296,7 +2296,7 @@ void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::funct
             openFileImpl.reset();
         };
 
-        QWasmLocalFileAccess::openFile(qt_make_filter_list(nameFilter), fileDialogClosed, acceptFile, fileContentReady);
+        QWasmLocalFileAccess::openFile(nameFilter.toStdString(), fileDialogClosed, acceptFile, fileContentReady);
     };
 
     (*openFileImpl)();
