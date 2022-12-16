@@ -327,7 +327,10 @@ function(qt_internal_add_module target)
                      EXPORT_PROPERTIES "${export_properties}")
     endif()
 
-    if(WASM AND BUILD_SHARED_LIBS)
+    # FIXME: This workaround is needed because the deployment logic
+    # for iOS and WASM just copies/embeds the directly linked library,
+    # which will just be a versioned symlink to the actual library.
+    if((UIKIT OR WASM) AND BUILD_SHARED_LIBS)
         set(version_args "")
     else()
         set(version_args

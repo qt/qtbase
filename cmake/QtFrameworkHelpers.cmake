@@ -57,7 +57,7 @@ function(qt_internal_find_apple_system_framework out_var framework_name)
     endif()
 endfunction()
 
-# Copy header files to QtXYZ.framework/Versions/A/Headers/
+# Copy header files to the framework's Headers directory
 # Use this function for header files that
 #   - are not added as source files to the target
 #   - are not marked as PUBLIC_HEADER
@@ -163,7 +163,12 @@ function(qt_internal_get_framework_info out_var target)
     set(${out_var}_name "${module}")
     set(${out_var}_dir "${${out_var}_name}.framework")
     set(${out_var}_header_dir "${${out_var}_dir}/Headers")
-    set(${out_var}_versioned_header_dir "${${out_var}_dir}/Versions/${${out_var}_version}/Headers")
+    if(UIKIT)
+        # iOS frameworks do not version their headers
+        set(${out_var}_versioned_header_dir "${${out_var}_header_dir}")
+    else()
+        set(${out_var}_versioned_header_dir "${${out_var}_dir}/Versions/${${out_var}_version}/Headers")
+    endif()
     set(${out_var}_private_header_dir "${${out_var}_header_dir}/${${out_var}_bundle_version}")
     set(${out_var}_private_module_header_dir "${${out_var}_private_header_dir}/${module}")
 

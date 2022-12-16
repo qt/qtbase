@@ -9,6 +9,7 @@
 
 qt_internal_add_plugin(QIosOptionalPlugin_NSPhotoLibraryPlugin
     OUTPUT_NAME qiosnsphotolibrarysupport
+    STATIC # Force static, even in shared builds
     PLUGIN_TYPE platforms/darwin
     CLASS_NAME QIosOptionalPlugin_NSPhotoLibrary
     DEFAULT_IF FALSE
