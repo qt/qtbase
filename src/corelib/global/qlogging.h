@@ -54,7 +54,7 @@ private:
 
 class QLoggingCategory;
 
-#ifdef Q_CC_MSVC
+#if defined(Q_CC_MSVC_ONLY)
 #  define QT_MESSAGE_LOGGER_NORETURN
 #else
 #  define QT_MESSAGE_LOGGER_NORETURN Q_NORETURN

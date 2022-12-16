@@ -163,7 +163,7 @@ Q_TRACE_POINT(qtcore, qt_message_print, int type, const char *category, const ch
     \snippet code/src_corelib_global_qglobal.cpp 4
 */
 
-#if !defined(Q_CC_MSVC) || defined(Q_CC_CLANG)
+#if !defined(Q_CC_MSVC_ONLY)
 Q_NORETURN
 #endif
 static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const QString &message);
@@ -342,7 +342,7 @@ using namespace QtPrivate;
     \sa QMessageLogContext, qDebug(), qInfo(), qWarning(), qCritical(), qFatal()
 */
 
-#if defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
+#if defined(Q_CC_MSVC_ONLY) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
 static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const char *s) noexcept
 {
     size_t len = qstrlen(s);
@@ -2023,7 +2023,7 @@ static void qt_message_print(const QString &message)
 
 static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const QString &message)
 {
-#if defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
+#if defined(Q_CC_MSVC_ONLY) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
     wchar_t contextFileL[256];
     // we probably should let the compiler do this for us, by declaring QMessageLogContext::file to
     // be const wchar_t * in the first place, but the #ifdefery above is very complex  and we
