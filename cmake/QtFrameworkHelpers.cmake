@@ -169,7 +169,7 @@ function(qt_internal_get_framework_info out_var target)
     else()
         set(${out_var}_versioned_header_dir "${${out_var}_dir}/Versions/${${out_var}_version}/Headers")
     endif()
-    set(${out_var}_private_header_dir "${${out_var}_header_dir}/${${out_var}_bundle_version}")
+    set(${out_var}_private_header_dir "${${out_var}_versioned_header_dir}/${${out_var}_bundle_version}")
     set(${out_var}_private_module_header_dir "${${out_var}_private_header_dir}/${module}")
 
     set(${out_var}_name "${${out_var}_name}" PARENT_SCOPE)
