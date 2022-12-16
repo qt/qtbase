@@ -544,11 +544,14 @@ static int choosePixelFormat(HDC hdc,
         iAttributes[i++] = WGL_NUMBER_OVERLAYS_ARB;
         iAttributes[i++] = 1;
     }
+    // must be the one before the last one
     const int samples = format.samples();
     const bool sampleBuffersRequested = samples > 1
             && testFlag(staticContext.extensions, QOpenGLStaticContext::SampleBuffers);
+    int sampleBuffersKeyPosition = 0;
     int samplesValuePosition = 0;
     if (sampleBuffersRequested) {
+        sampleBuffersKeyPosition = i;
         iAttributes[i++] = WGL_SAMPLE_BUFFERS_ARB;
         iAttributes[i++] = TRUE;
         iAttributes[i++] = WGL_SAMPLES_ARB;
@@ -560,9 +563,9 @@ static int choosePixelFormat(HDC hdc,
     }
     // must be the last
     bool srgbRequested = format.colorSpace() == QColorSpace::SRgb;
-    int srgbValuePosition = 0;
+    int srgbCapableKeyPosition = 0;
     if (srgbRequested) {
-        srgbValuePosition = i;
+        srgbCapableKeyPosition = i;
         iAttributes[i++] = WGL_FRAMEBUFFER_SRGB_CAPABLE_EXT;
         iAttributes[i++] = TRUE;
     }
@@ -576,8 +579,9 @@ static int choosePixelFormat(HDC hdc,
                 && numFormats >= 1;
         if (valid || (!sampleBuffersRequested && !srgbRequested))
             break;
+        // NB reductions must be done in reverse order (disable the last first, then move on to the one before that, etc.)
         if (srgbRequested) {
-            iAttributes[srgbValuePosition] = 0;
+            iAttributes[srgbCapableKeyPosition] = 0;
             srgbRequested = false;
         } else if (sampleBuffersRequested) {
             if (iAttributes[samplesValuePosition] > 1) {
@@ -585,11 +589,8 @@ static int choosePixelFormat(HDC hdc,
             } else if (iAttributes[samplesValuePosition] == 1) {
                 // Fallback in case it is unable to initialize with any
                 // samples to avoid falling back to the GDI path
-                // NB: The sample attributes needs to be at the end for this
-                // to work correctly
-                iAttributes[samplesValuePosition - 1] = FALSE;
+                iAttributes[sampleBuffersKeyPosition] = 0;
                 iAttributes[samplesValuePosition] = 0;
-                iAttributes[samplesValuePosition + 1] = 0;
             } else {
                 break;
             }
