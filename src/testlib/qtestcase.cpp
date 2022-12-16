@@ -1030,6 +1030,13 @@ class WatchDog : public QThread
         return false;
     }
 
+    void setExpectation(Expectation e)
+    {
+        const auto locker = qt_scoped_lock(mutex);
+        expecting.store(e, std::memory_order_relaxed);
+        waitCondition.notify_all();
+    }
+
 public:
     WatchDog()
     {
@@ -1041,26 +1048,18 @@ public:
 
     ~WatchDog()
     {
-        {
-            const auto locker = qt_scoped_lock(mutex);
-            expecting.store(ThreadEnd, std::memory_order_relaxed);
-            waitCondition.notify_all();
-        }
+        setExpectation(ThreadEnd);
         wait();
     }
 
     void beginTest()
     {
-        const auto locker = qt_scoped_lock(mutex);
-        expecting.store(TestFunctionEnd, std::memory_order_relaxed);
-        waitCondition.notify_all();
+        setExpectation(TestFunctionEnd);
     }
 
     void testFinished()
     {
-        const auto locker = qt_scoped_lock(mutex);
-        expecting.store(TestFunctionStart, std::memory_order_relaxed);
-        waitCondition.notify_all();
+        setExpectation(TestFunctionStart);
     }
 
     void run() override
