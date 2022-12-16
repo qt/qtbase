@@ -530,7 +530,6 @@ void QGtk3Storage::createMapping()
     ADD(Normal, Button);
     ADD(Normal, Base);
     ADD(Inactive, Base);
-    ADD(Normal, Window); // redundant
     ADD(Inactive, Window);
     LIGHTER(Normal, Window, 125);
     ADD(Normal, Light);
@@ -544,7 +543,6 @@ void QGtk3Storage::createMapping()
     LIGHTER(Normal, WindowText, 50);
     ADD(Disabled, Text);
     ADD(Disabled, WindowText);
-    //ADD(Normal, ButtonText);
     ADD(Inactive, ButtonText);
     GTK(button, Text, NORMAL);
     ADD(Disabled, ButtonText);
@@ -580,6 +578,8 @@ void QGtk3Storage::createMapping()
     // Checkbox and Radio Button
     GTK(button, Text, ACTIVE);
     ADD(Normal, Base, Dark);
+    GTK(Default, Background, NORMAL);
+    ADD(All, Base);
     GTK(button, Text, NORMAL);
     ADD(Normal, Base, Light);
     SAVE(CheckBoxPalette);
