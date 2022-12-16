@@ -211,7 +211,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
         if (permission.status() != Qt::PermissionStatus:Granted)
             return;
         auto locationPermission = permission.data<QLocationPermission>();
-        if (locationPermission.accuracy() != QLocationPerission::Precise)
+        if (locationPermission.accuracy() != QLocationPermission::Precise)
             return;
         updatePreciseLocation();
     }
