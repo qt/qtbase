@@ -290,7 +290,7 @@ struct QMetalShaderResourceBindingsData {
         QRhiBatchedBindings<id<MTLTexture> > textureBatches;
         QRhiBatchedBindings<id<MTLSamplerState> > samplerBatches;
     } res[QRhiMetal::SUPPORTED_STAGES];
-    enum { VERTEX = 0, FRAGMENT = 1, COMPUTE = 2 };
+    enum { VERTEX = 0, FRAGMENT = 1, COMPUTE = 2, TESSCTRL = 3, TESSEVAL = 4 };
 };
 
 struct QMetalCommandBufferData
@@ -391,7 +391,8 @@ struct QMetalGraphicsPipelineData
         QVector<QMetalBuffer *> deviceLocalWorkBuffers;
         QVector<QMetalBuffer *> hostVisibleWorkBuffers;
     } tess;
-    template<typename T> void setupVertexOrStageInputDescriptor(T *desc);
+    void setupVertexInputDescriptor(MTLVertexDescriptor *desc);
+    void setupStageInputDescriptor(MTLStageInputOutputDescriptor *desc);
 };
 
 struct QMetalComputePipelineData
@@ -1082,6 +1083,10 @@ static inline void bindStageBuffers(QMetalCommandBuffer *cbD,
           offsets: offsetBatch.resources.constData()
           withRange: NSMakeRange(bufferBatch.startBinding, NSUInteger(bufferBatch.resources.count()))];
         break;
+    case QMetalShaderResourceBindingsData::TESSCTRL:
+    case QMetalShaderResourceBindingsData::TESSEVAL:
+        // do nothing.  These are used later for tessellation
+        break;
     default:
         Q_UNREACHABLE();
         break;
@@ -1105,6 +1110,10 @@ static inline void bindStageTextures(QMetalCommandBuffer *cbD,
         [cbD->d->currentComputePassEncoder setTextures: textureBatch.resources.constData()
           withRange: NSMakeRange(textureBatch.startBinding, NSUInteger(textureBatch.resources.count()))];
         break;
+    case QMetalShaderResourceBindingsData::TESSCTRL:
+    case QMetalShaderResourceBindingsData::TESSEVAL:
+        // do nothing.  These are used later for tessellation
+        break;
     default:
         Q_UNREACHABLE();
         break;
@@ -1127,6 +1136,10 @@ static inline void bindStageSamplers(QMetalCommandBuffer *cbD,
     case QMetalShaderResourceBindingsData::COMPUTE:
         [cbD->d->currentComputePassEncoder setSamplerStates: samplerBatch.resources.constData()
           withRange: NSMakeRange(samplerBatch.startBinding, NSUInteger(samplerBatch.resources.count()))];
+        break;
+    case QMetalShaderResourceBindingsData::TESSCTRL:
+    case QMetalShaderResourceBindingsData::TESSEVAL:
+        // do nothing.  These are used later for tessellation
         break;
     default:
         Q_UNREACHABLE();
@@ -1161,17 +1174,22 @@ static inline void rebindShaderResources(QMetalCommandBuffer *cbD, int resourceS
     }
 }
 
-// Resources marked for the tess.control and/or eval. stages are treated as if
-// they were for the vertex stage. For tess.eval. this is trivial because
-// that's translated to a Metal a vertex function, but tess.control (and the
-// GLSL vertex) shader becomes compute. Yet dumping them under the vertex
-// category still works, because rebindShaderResources(VERTEX, COMPUTE) can
-// then be used to set them active on the compute encoder.
-static inline bool isVertexishResource(QRhiShaderResourceBinding::StageFlags stages)
+static inline QRhiShaderResourceBinding::StageFlag toRhiSrbStage(int stage)
 {
-    return stages.testAnyFlags(QRhiShaderResourceBinding::VertexStage
-                               | QRhiShaderResourceBinding::TessellationControlStage
-                               | QRhiShaderResourceBinding::TessellationEvaluationStage);
+    switch (stage) {
+    case QMetalShaderResourceBindingsData::VERTEX:
+        return QRhiShaderResourceBinding::StageFlag::VertexStage;
+    case QMetalShaderResourceBindingsData::TESSCTRL:
+        return QRhiShaderResourceBinding::StageFlag::TessellationControlStage;
+    case QMetalShaderResourceBindingsData::TESSEVAL:
+        return QRhiShaderResourceBinding::StageFlag::TessellationEvaluationStage;
+    case QMetalShaderResourceBindingsData::FRAGMENT:
+        return QRhiShaderResourceBinding::StageFlag::FragmentStage;
+    case QMetalShaderResourceBindingsData::COMPUTE:
+        return QRhiShaderResourceBinding::StageFlag::ComputeStage;
+    }
+
+    Q_UNREACHABLE_RETURN(QRhiShaderResourceBinding::StageFlag::VertexStage);
 }
 
 void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD,
@@ -1198,20 +1216,13 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
                     break;
                 }
             }
-            if (isVertexishResource(b->stage)) {
-                const int nativeBinding = mapBinding(b->binding, QMetalShaderResourceBindingsData::VERTEX, nativeResourceBindingMaps, BindingType::Buffer);
-                if (nativeBinding >= 0)
-                    bindingData.res[QMetalShaderResourceBindingsData::VERTEX].buffers.append({ nativeBinding, mtlbuf, offset });
-            }
-            if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                const int nativeBinding = mapBinding(b->binding, QMetalShaderResourceBindingsData::FRAGMENT, nativeResourceBindingMaps, BindingType::Buffer);
-                if (nativeBinding >= 0)
-                    bindingData.res[QMetalShaderResourceBindingsData::FRAGMENT].buffers.append({ nativeBinding, mtlbuf, offset });
-            }
-            if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                const int nativeBinding = mapBinding(b->binding, QMetalShaderResourceBindingsData::COMPUTE, nativeResourceBindingMaps, BindingType::Buffer);
-                if (nativeBinding >= 0)
-                    bindingData.res[QMetalShaderResourceBindingsData::COMPUTE].buffers.append({ nativeBinding, mtlbuf, offset });
+
+            for (int stage = 0; stage < SUPPORTED_STAGES; ++stage) {
+                if (b->stage.testFlag(toRhiSrbStage(stage))) {
+                    const int nativeBinding = mapBinding(b->binding, stage, nativeResourceBindingMaps, BindingType::Buffer);
+                    if (nativeBinding >= 0)
+                        bindingData.res[stage].buffers.append({ nativeBinding, mtlbuf, offset });
+                }
             }
         }
             break;
@@ -1223,36 +1234,21 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             for (int elem = 0; elem < data->count; ++elem) {
                 QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.stex.texSamplers[elem].tex);
                 QMetalSampler *samplerD = QRHI_RES(QMetalSampler, b->u.stex.texSamplers[elem].sampler);
-                if (isVertexishResource(b->stage)) {
-                    // Must handle all three cases (combined, separate, separate):
-                    //   first = texture binding, second = sampler binding
-                    //   first = texture binding
-                    //   first = sampler binding (i.e. BindingType::Texture...)
-                    const int textureBinding = mapBinding(b->binding, QMetalShaderResourceBindingsData::VERTEX, nativeResourceBindingMaps, BindingType::Texture);
-                    const int samplerBinding = texD && samplerD ? mapBinding(b->binding, QMetalShaderResourceBindingsData::VERTEX, nativeResourceBindingMaps, BindingType::Sampler)
-                                                                : (samplerD ? mapBinding(b->binding, QMetalShaderResourceBindingsData::VERTEX, nativeResourceBindingMaps, BindingType::Texture) : -1);
-                    if (textureBinding >= 0 && texD)
-                        bindingData.res[QMetalShaderResourceBindingsData::VERTEX].textures.append({ textureBinding + elem, texD->d->tex });
-                    if (samplerBinding >= 0)
-                        bindingData.res[QMetalShaderResourceBindingsData::VERTEX].samplers.append({ samplerBinding + elem, samplerD->d->samplerState });
-                }
-                if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                    const int textureBinding = mapBinding(b->binding, QMetalShaderResourceBindingsData::FRAGMENT, nativeResourceBindingMaps, BindingType::Texture);
-                    const int samplerBinding = texD && samplerD ? mapBinding(b->binding, QMetalShaderResourceBindingsData::FRAGMENT, nativeResourceBindingMaps, BindingType::Sampler)
-                                                                : (samplerD ? mapBinding(b->binding, QMetalShaderResourceBindingsData::FRAGMENT, nativeResourceBindingMaps, BindingType::Texture) : -1);
-                    if (textureBinding >= 0 && texD)
-                        bindingData.res[QMetalShaderResourceBindingsData::FRAGMENT].textures.append({ textureBinding + elem, texD->d->tex });
-                    if (samplerBinding >= 0)
-                        bindingData.res[QMetalShaderResourceBindingsData::FRAGMENT].samplers.append({ samplerBinding + elem, samplerD->d->samplerState });
-                }
-                if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                    const int textureBinding = mapBinding(b->binding, QMetalShaderResourceBindingsData::COMPUTE, nativeResourceBindingMaps, BindingType::Texture);
-                    const int samplerBinding = texD && samplerD ? mapBinding(b->binding, QMetalShaderResourceBindingsData::COMPUTE, nativeResourceBindingMaps, BindingType::Sampler)
-                                                                : (samplerD ? mapBinding(b->binding, QMetalShaderResourceBindingsData::COMPUTE, nativeResourceBindingMaps, BindingType::Texture) : -1);
-                    if (textureBinding >= 0 && texD)
-                        bindingData.res[QMetalShaderResourceBindingsData::COMPUTE].textures.append({ textureBinding + elem, texD->d->tex });
-                    if (samplerBinding >= 0)
-                        bindingData.res[QMetalShaderResourceBindingsData::COMPUTE].samplers.append({ samplerBinding + elem, samplerD->d->samplerState });
+
+                for (int stage = 0; stage < SUPPORTED_STAGES; ++stage) {
+                    if (b->stage.testFlag(toRhiSrbStage(stage))) {
+                        // Must handle all three cases (combined, separate, separate):
+                        //   first = texture binding, second = sampler binding
+                        //   first = texture binding
+                        //   first = sampler binding (i.e. BindingType::Texture...)
+                        const int textureBinding = mapBinding(b->binding, stage, nativeResourceBindingMaps, BindingType::Texture);
+                        const int samplerBinding = texD && samplerD ? mapBinding(b->binding, stage, nativeResourceBindingMaps, BindingType::Sampler)
+                                                                    : (samplerD ? mapBinding(b->binding, stage, nativeResourceBindingMaps, BindingType::Texture) : -1);
+                        if (textureBinding >= 0 && texD)
+                            bindingData.res[stage].textures.append({ textureBinding + elem, texD->d->tex });
+                        if (samplerBinding >= 0)
+                            bindingData.res[stage].samplers.append({ samplerBinding + elem, samplerD->d->samplerState });
+                    }
                 }
             }
         }
@@ -1263,20 +1259,13 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         {
             QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.simage.tex);
             id<MTLTexture> t = texD->d->viewForLevel(b->u.simage.level);
-            if (isVertexishResource(b->stage)) {
-                const int nativeBinding = mapBinding(b->binding, QMetalShaderResourceBindingsData::VERTEX, nativeResourceBindingMaps, BindingType::Texture);
-                if (nativeBinding >= 0)
-                    bindingData.res[QMetalShaderResourceBindingsData::VERTEX].textures.append({ nativeBinding, t });
-            }
-            if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                const int nativeBinding = mapBinding(b->binding, QMetalShaderResourceBindingsData::FRAGMENT, nativeResourceBindingMaps, BindingType::Texture);
-                if (nativeBinding >= 0)
-                    bindingData.res[QMetalShaderResourceBindingsData::FRAGMENT].textures.append({ nativeBinding, t });
-            }
-            if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                const int nativeBinding = mapBinding(b->binding, QMetalShaderResourceBindingsData::COMPUTE, nativeResourceBindingMaps, BindingType::Texture);
-                if (nativeBinding >= 0)
-                    bindingData.res[QMetalShaderResourceBindingsData::COMPUTE].textures.append({ nativeBinding, t });
+
+            for (int stage = 0; stage < SUPPORTED_STAGES; ++stage) {
+                if (b->stage.testFlag(toRhiSrbStage(stage))) {
+                    const int nativeBinding = mapBinding(b->binding, stage, nativeResourceBindingMaps, BindingType::Texture);
+                    if (nativeBinding >= 0)
+                        bindingData.res[stage].textures.append({ nativeBinding, t });
+                }
             }
         }
             break;
@@ -1287,20 +1276,12 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.sbuf.buf);
             id<MTLBuffer> mtlbuf = bufD->d->buf[0];
             quint32 offset = b->u.sbuf.offset;
-            if (isVertexishResource(b->stage)) {
-                const int nativeBinding = mapBinding(b->binding, QMetalShaderResourceBindingsData::VERTEX, nativeResourceBindingMaps, BindingType::Buffer);
-                if (nativeBinding >= 0)
-                    bindingData.res[QMetalShaderResourceBindingsData::VERTEX].buffers.append({ nativeBinding, mtlbuf, offset });
-            }
-            if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                const int nativeBinding = mapBinding(b->binding, QMetalShaderResourceBindingsData::FRAGMENT, nativeResourceBindingMaps, BindingType::Buffer);
-                if (nativeBinding >= 0)
-                    bindingData.res[QMetalShaderResourceBindingsData::FRAGMENT].buffers.append({ nativeBinding, mtlbuf, offset });
-            }
-            if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                const int nativeBinding = mapBinding(b->binding, QMetalShaderResourceBindingsData::COMPUTE, nativeResourceBindingMaps, BindingType::Buffer);
-                if (nativeBinding >= 0)
-                    bindingData.res[QMetalShaderResourceBindingsData::COMPUTE].buffers.append({ nativeBinding, mtlbuf, offset });
+            for (int stage = 0; stage < SUPPORTED_STAGES; ++stage) {
+                if (b->stage.testFlag(toRhiSrbStage(stage))) {
+                    const int nativeBinding = mapBinding(b->binding, stage, nativeResourceBindingMaps, BindingType::Buffer);
+                    if (nativeBinding >= 0)
+                        bindingData.res[stage].buffers.append({ nativeBinding, mtlbuf, offset });
+                }
             }
         }
             break;
@@ -1311,9 +1292,10 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
     }
 
     for (int stage = 0; stage < SUPPORTED_STAGES; ++stage) {
-        if (cbD->recordingPass != QMetalCommandBuffer::RenderPass && (stage == QMetalShaderResourceBindingsData::VERTEX || stage == QMetalShaderResourceBindingsData::FRAGMENT))
+        if (cbD->recordingPass != QMetalCommandBuffer::RenderPass && (stage == QMetalShaderResourceBindingsData::VERTEX || stage == QMetalShaderResourceBindingsData::FRAGMENT
+                || stage == QMetalShaderResourceBindingsData::TESSCTRL || stage == QMetalShaderResourceBindingsData::TESSEVAL))
             continue;
-        if (cbD->recordingPass != QMetalCommandBuffer::ComputePass && stage == QMetalShaderResourceBindingsData::COMPUTE)
+        if (cbD->recordingPass != QMetalCommandBuffer::ComputePass && (stage == QMetalShaderResourceBindingsData::COMPUTE))
             continue;
 
         // QRhiBatchedBindings works with the native bindings and expects
@@ -1576,16 +1558,26 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
 
     // dynamic uniform buffer offsets always trigger a rebind
     if (hasDynamicOffsetInSrb || resNeedsRebind || srbChanged || srbRebuilt) {
-        const QShader::NativeResourceBindingMap *resBindMaps[SUPPORTED_STAGES] = { nullptr, nullptr, nullptr };
+        const QShader::NativeResourceBindingMap *resBindMaps[SUPPORTED_STAGES] = { nullptr, nullptr, nullptr, nullptr, nullptr };
         if (gfxPsD) {
             cbD->currentGraphicsSrb = srbD;
             cbD->currentComputeSrb = nullptr;
-            resBindMaps[0] = &gfxPsD->d->vs.nativeResourceBindingMap;
-            resBindMaps[1] = &gfxPsD->d->fs.nativeResourceBindingMap;
+            if (gfxPsD->d->tess.enabled) {
+                // If tessellating, we don't know which compVs shader to use until the draw call is
+                // made. They should all have the same native resource binding map, so pick one.
+                Q_ASSERT(gfxPsD->d->tess.compVs[0].nativeResourceBindingMap == gfxPsD->d->tess.compVs[1].nativeResourceBindingMap);
+                Q_ASSERT(gfxPsD->d->tess.compVs[0].nativeResourceBindingMap == gfxPsD->d->tess.compVs[2].nativeResourceBindingMap);
+                resBindMaps[QMetalShaderResourceBindingsData::VERTEX] = &gfxPsD->d->tess.compVs[0].nativeResourceBindingMap;
+                resBindMaps[QMetalShaderResourceBindingsData::TESSCTRL] = &gfxPsD->d->tess.compTesc.nativeResourceBindingMap;
+                resBindMaps[QMetalShaderResourceBindingsData::TESSEVAL] = &gfxPsD->d->tess.vertTese.nativeResourceBindingMap;
+            } else {
+                resBindMaps[QMetalShaderResourceBindingsData::VERTEX] = &gfxPsD->d->vs.nativeResourceBindingMap;
+            }
+            resBindMaps[QMetalShaderResourceBindingsData::FRAGMENT] = &gfxPsD->d->fs.nativeResourceBindingMap;
         } else {
             cbD->currentGraphicsSrb = nullptr;
             cbD->currentComputeSrb = srbD;
-            resBindMaps[2] = &compPsD->d->cs.nativeResourceBindingMap;
+            resBindMaps[QMetalShaderResourceBindingsData::COMPUTE] = &compPsD->d->cs.nativeResourceBindingMap;
         }
         cbD->currentSrbGeneration = srbD->generation;
         cbD->currentResSlot = resSlot;
@@ -1745,8 +1737,52 @@ static void endTessellationComputeEncoding(QMetalCommandBuffer *cbD)
         cbD->d->tessellationComputeEncoder = nil;
     }
 
+    QMetalRenderTargetData * rtD = nullptr;
+
+    switch (cbD->currentTarget->resourceType()) {
+    case QRhiResource::SwapChainRenderTarget:
+        rtD = QRHI_RES(QMetalSwapChainRenderTarget, cbD->currentTarget)->d;
+        break;
+    case QRhiResource::TextureRenderTarget:
+        rtD = QRHI_RES(QMetalTextureRenderTarget, cbD->currentTarget)->d;
+        break;
+    default:
+        break;
+    }
+
+    Q_ASSERT(rtD);
+
+    QVarLengthArray<MTLLoadAction, 4> oldColorLoad;
+    for (uint i = 0; i < uint(rtD->colorAttCount); ++i) {
+        oldColorLoad.append(cbD->d->currentPassRpDesc.colorAttachments[i].loadAction);
+        if (cbD->d->currentPassRpDesc.colorAttachments[i].storeAction != MTLStoreActionDontCare)
+            cbD->d->currentPassRpDesc.colorAttachments[i].loadAction = MTLLoadActionLoad;
+    }
+
+    MTLLoadAction oldDepthLoad;
+    MTLLoadAction oldStencilLoad;
+    if (rtD->dsAttCount) {
+        oldDepthLoad = cbD->d->currentPassRpDesc.depthAttachment.loadAction;
+        if (cbD->d->currentPassRpDesc.depthAttachment.storeAction != MTLStoreActionDontCare)
+            cbD->d->currentPassRpDesc.depthAttachment.loadAction = MTLLoadActionLoad;
+
+        oldStencilLoad = cbD->d->currentPassRpDesc.stencilAttachment.loadAction;
+        if (cbD->d->currentPassRpDesc.stencilAttachment.storeAction != MTLStoreActionDontCare)
+            cbD->d->currentPassRpDesc.stencilAttachment.loadAction = MTLLoadActionLoad;
+    }
+
     cbD->d->currentRenderPassEncoder = [cbD->d->cb renderCommandEncoderWithDescriptor: cbD->d->currentPassRpDesc];
     cbD->resetPerPassCachedState();
+
+    for (uint i = 0; i < uint(rtD->colorAttCount); ++i) {
+        cbD->d->currentPassRpDesc.colorAttachments[i].loadAction = oldColorLoad[i];
+    }
+
+    if (rtD->dsAttCount) {
+        cbD->d->currentPassRpDesc.depthAttachment.loadAction = oldDepthLoad;
+        cbD->d->currentPassRpDesc.stencilAttachment.loadAction = oldStencilLoad;
+    }
+
 }
 
 void QRhiMetal::tessellatedDraw(const TessDrawArgs &args)
@@ -1783,7 +1819,7 @@ void QRhiMetal::tessellatedDraw(const TessDrawArgs &args)
 
         // Make uniform buffers, textures, and samplers (meant for the
         // vertex stage from the client's point of view) visible in the
-        // compute shaders (both vertex and tess.control).
+        // "vertex as compute" shader
         cbD->d->currentComputePassEncoder = computeEncoder;
         rebindShaderResources(cbD, QMetalShaderResourceBindingsData::VERTEX, QMetalShaderResourceBindingsData::COMPUTE);
         cbD->d->currentComputePassEncoder = nil;
@@ -1829,9 +1865,9 @@ void QRhiMetal::tessellatedDraw(const TessDrawArgs &args)
         id<MTLComputePipelineState> computePipelineState = tess.tescCompPipeline(this);
         [computeEncoder setComputePipelineState: computePipelineState];
 
-        // Shader resources are set already in step 1. (because srb stage
-        // flags for tesc and tese visibility are treated as if they were
-        // specified as vertex visibility -> QMSRBD::VERTEX includes those too)
+        cbD->d->currentComputePassEncoder = computeEncoder;
+        rebindShaderResources(cbD, QMetalShaderResourceBindingsData::TESSCTRL, QMetalShaderResourceBindingsData::COMPUTE);
+        cbD->d->currentComputePassEncoder = nil;
 
         const QMap<int, int> &ebb(tess.compTesc.nativeShaderInfo.extraBufferBindings);
         const int outputBufferBinding = ebb.value(QShaderPrivate::MslTessVertTescOutputBufferBinding, -1);
@@ -1906,7 +1942,7 @@ void QRhiMetal::tessellatedDraw(const TessDrawArgs &args)
         graphicsPipeline->makeActiveForCurrentRenderPassEncoder(cbD);
         id<MTLRenderCommandEncoder> renderEncoder = cbD->d->currentRenderPassEncoder;
 
-        rebindShaderResources(cbD, QMetalShaderResourceBindingsData::VERTEX, QMetalShaderResourceBindingsData::VERTEX, &resourceBindings);
+        rebindShaderResources(cbD, QMetalShaderResourceBindingsData::TESSEVAL, QMetalShaderResourceBindingsData::VERTEX, &resourceBindings);
         rebindShaderResources(cbD, QMetalShaderResourceBindingsData::FRAGMENT, QMetalShaderResourceBindingsData::FRAGMENT, &resourceBindings);
 
         const QMap<int, int> &ebb(tess.compTesc.nativeShaderInfo.extraBufferBindings);
@@ -4497,10 +4533,10 @@ void QMetalGraphicsPipeline::mapStates()
     d->slopeScaledDepthBias = m_slopeScaledDepthBias;
 }
 
-template<typename T>
-void QMetalGraphicsPipelineData::setupVertexOrStageInputDescriptor(T *desc)
+void QMetalGraphicsPipelineData::setupVertexInputDescriptor(MTLVertexDescriptor *desc)
 {
     // same binding space for vertex and constant buffers - work it around
+    // should be in native resource binding not SPIR-V, but this will work anyway
     const int firstVertexBinding = QRHI_RES(QMetalShaderResourceBindings, q->shaderResourceBindings())->maxBinding + 1;
 
     QRhiVertexInputLayout vertexInputLayout = q->vertexInputLayout();
@@ -4508,7 +4544,6 @@ void QMetalGraphicsPipelineData::setupVertexOrStageInputDescriptor(T *desc)
          it != itEnd; ++it)
     {
         const uint loc = uint(it->location());
-        // either MTLVertexFormat or MTLAttributeFormat, the values are the same
         desc.attributes[loc].format = decltype(desc.attributes[loc].format)(toMetalAttributeFormat(it->format()));
         desc.attributes[loc].offset = NSUInteger(it->offset());
         desc.attributes[loc].bufferIndex = NSUInteger(firstVertexBinding + it->binding());
@@ -4518,15 +4553,42 @@ void QMetalGraphicsPipelineData::setupVertexOrStageInputDescriptor(T *desc)
          it != itEnd; ++it, ++bindingIndex)
     {
         const uint layoutIdx = uint(firstVertexBinding + bindingIndex);
-        using StepT = decltype(desc.layouts[layoutIdx].stepFunction);
-        if (std::is_same_v<StepT, MTLStepFunction>) {
-            desc.layouts[layoutIdx].stepFunction = StepT(
+        desc.layouts[layoutIdx].stepFunction =
                     it->classification() == QRhiVertexInputBinding::PerInstance
-                    ? MTLStepFunctionThreadPositionInGridY : MTLStepFunctionThreadPositionInGridX);
+                    ? MTLVertexStepFunctionPerInstance : MTLVertexStepFunctionPerVertex;
+        desc.layouts[layoutIdx].stepRate = NSUInteger(it->instanceStepRate());
+        desc.layouts[layoutIdx].stride = it->stride();
+    }
+}
+
+void QMetalGraphicsPipelineData::setupStageInputDescriptor(MTLStageInputOutputDescriptor *desc)
+{
+    // same binding space for vertex and constant buffers - work it around
+    // should be in native resource binding not SPIR-V, but this will work anyway
+    const int firstVertexBinding = QRHI_RES(QMetalShaderResourceBindings, q->shaderResourceBindings())->maxBinding + 1;
+
+    QRhiVertexInputLayout vertexInputLayout = q->vertexInputLayout();
+    for (auto it = vertexInputLayout.cbeginAttributes(), itEnd = vertexInputLayout.cendAttributes();
+         it != itEnd; ++it)
+    {
+        const uint loc = uint(it->location());
+        desc.attributes[loc].format = decltype(desc.attributes[loc].format)(toMetalAttributeFormat(it->format()));
+        desc.attributes[loc].offset = NSUInteger(it->offset());
+        desc.attributes[loc].bufferIndex = NSUInteger(firstVertexBinding + it->binding());
+    }
+    int bindingIndex = 0;
+    for (auto it = vertexInputLayout.cbeginBindings(), itEnd = vertexInputLayout.cendBindings();
+         it != itEnd; ++it, ++bindingIndex)
+    {
+        const uint layoutIdx = uint(firstVertexBinding + bindingIndex);
+        if (desc.indexBufferIndex) {
+            desc.layouts[layoutIdx].stepFunction =
+                    it->classification() == QRhiVertexInputBinding::PerInstance
+                    ? MTLStepFunctionThreadPositionInGridY : MTLStepFunctionThreadPositionInGridXIndexed;
         } else {
-            desc.layouts[layoutIdx].stepFunction = StepT(
+            desc.layouts[layoutIdx].stepFunction =
                     it->classification() == QRhiVertexInputBinding::PerInstance
-                    ? MTLVertexStepFunctionPerInstance : MTLVertexStepFunctionPerVertex);
+                    ? MTLStepFunctionThreadPositionInGridY : MTLStepFunctionThreadPositionInGridX;
         }
         desc.layouts[layoutIdx].stepRate = NSUInteger(it->instanceStepRate());
         desc.layouts[layoutIdx].stride = it->stride();
@@ -4584,7 +4646,7 @@ bool QMetalGraphicsPipeline::createVertexFragmentPipeline()
     QRHI_RES_RHI(QRhiMetal);
 
     MTLVertexDescriptor *vertexDesc = [MTLVertexDescriptor vertexDescriptor];
-    d->setupVertexOrStageInputDescriptor(vertexDesc);
+    d->setupVertexInputDescriptor(vertexDesc);
 
     MTLRenderPipelineDescriptor *rpDesc = [[MTLRenderPipelineDescriptor alloc] init];
     rpDesc.vertexDescriptor = vertexDesc;
@@ -4738,7 +4800,7 @@ id<MTLComputePipelineState> QMetalGraphicsPipelineData::Tessellation::vsCompPipe
             cpDesc.stageInputDescriptor.indexBufferIndex = indexBufferBinding;
         }
     }
-    q->setupVertexOrStageInputDescriptor(cpDesc.stageInputDescriptor);
+    q->setupStageInputDescriptor(cpDesc.stageInputDescriptor);
 
     rhiD->d->trySeedingComputePipelineFromBinaryArchive(cpDesc);
 
@@ -4796,6 +4858,13 @@ static inline bool hasBuiltin(const QVector<QShaderDescription::BuiltinVariable>
                         [builtin](const QShaderDescription::BuiltinVariable &b) { return b.type == builtin; }) != builtinList.cend();
 }
 
+static inline bool matches(const QShaderDescription::InOutVariable &a, const QShaderDescription::InOutVariable &b)
+{
+    return a.location == b.location
+            && a.type == b.type
+            && a.perPatch == b.perPatch;
+}
+
 id<MTLRenderPipelineState> QMetalGraphicsPipelineData::Tessellation::teseFragRenderPipeline(QRhiMetal *rhiD, QMetalGraphicsPipeline *pipeline)
 {
     if (pipeline->d->ps)
@@ -4810,19 +4879,28 @@ id<MTLRenderPipelineState> QMetalGraphicsPipelineData::Tessellation::teseFragRen
     const int tescPatchOutputBufferBinding = ebb.value(QShaderPrivate::MslTessTescPatchOutputBufferBinding, -1);
     const int tessFactorBufferBinding = ebb.value(QShaderPrivate::MslTessTescTessLevelBufferBinding, -1);
 
-    QVarLengthArray<int, 16> teseInputLocations;
-    for (const QShaderDescription::InOutVariable &v : vertTese.desc.inputVariables())
-        teseInputLocations.append(v.location);
+    QMap<int, QShaderDescription::InOutVariable> teseInVars;
+    for (const QShaderDescription::InOutVariable &teseInVar : vertTese.desc.inputVariables())
+        teseInVars[teseInVar.location] = teseInVar;
 
     quint32 offsetInTescOutput = 0;
     quint32 offsetInTescPatchOutput = 0;
     int lastLocation = -1;
 
-    for (const QShaderDescription::InOutVariable &tescOutVar : compTesc.desc.outputVariables()) {
+    // these need to be sorted in location order so that lastLocation is calculated correctly - use QMap.
+    QMap<int, QShaderDescription::InOutVariable> tescOutVars;
+    for (const QShaderDescription::InOutVariable &tescOutVar : compTesc.desc.outputVariables())
+        tescOutVars[tescOutVar.location] = tescOutVar;
+
+    for (const QShaderDescription::InOutVariable &tescOutVar : tescOutVars) {
         const int location = tescOutVar.location;
         lastLocation = location;
         const QRhiVertexInputAttribute::Format format = rhiD->shaderDescVariableFormatToVertexInputFormat(tescOutVar.type);
-        if (teseInputLocations.contains(location)) {
+        if (teseInVars.contains(location)) {
+            if (!matches(teseInVars[location], tescOutVar)) {
+                qWarning() << "mismatched tessellation control output -> tesssellation evaluation input at location" << location;
+                qWarning() << "tesc out:" << tescOutVar << "tese in:" << teseInVars[location];
+            }
             if (tescOutVar.perPatch) {
                 if (tescPatchOutputBufferBinding >= 0) {
                     vertexDesc.attributes[location].bufferIndex = tescPatchOutputBufferBinding;
@@ -4836,6 +4914,8 @@ id<MTLRenderPipelineState> QMetalGraphicsPipelineData::Tessellation::teseFragRen
                     vertexDesc.attributes[location].offset = offsetInTescOutput;
                 }
             }
+        } else {
+            qWarning() << "missing tessellation evaluation input for tessellation control output:" << tescOutVar;
         }
         if (tescOutVar.perPatch)
             offsetInTescPatchOutput += rhiD->byteSizePerVertexForVertexInputFormat(format);
