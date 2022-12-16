@@ -24,6 +24,7 @@
 #include <qtimer.h>
 #include <private/qwidgetaction_p.h>
 #include <private/qmainwindowlayout_p.h>
+#include <private/qhighdpiscaling_p.h>
 
 #ifdef Q_OS_MACOS
 #include <qpa/qplatformnativeinterface.h>
@@ -309,7 +310,12 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
         const QPoint globalPressPos = q->mapToGlobal(q->isRightToLeft() ? rtl : state->pressPos);
         int pos = 0;
 
-        QPoint delta = event->globalPosition().toPoint() - globalPressPos;
+        const QWindow *handle = q->window() ? q->window()->windowHandle() : nullptr;
+        const QPoint delta = handle
+                ? QHighDpi::fromNativePixels(event->globalPosition(), handle).toPoint()
+                  - QHighDpi::fromNativePixels(globalPressPos, handle)
+                : event->globalPosition().toPoint() - globalPressPos;
+
         if (orientation == Qt::Vertical) {
             pos = q->y() + delta.y();
         } else {
