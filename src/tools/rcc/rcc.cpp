@@ -202,7 +202,7 @@ void RCCFileInfo::writeDataInfo(RCCResourceLibrary &lib)
 
     if (lib.formatVersion() >= 2) {
         // last modified time stamp
-        const QDateTime lastModified = m_fileInfo.lastModified();
+        const QDateTime lastModified = m_fileInfo.lastModified(QTimeZone::UTC);
         quint64 lastmod = quint64(lastModified.isValid() ? lastModified.toMSecsSinceEpoch() : 0);
         static const quint64 sourceDate = 1000 * qgetenv("QT_RCC_SOURCE_DATE_OVERRIDE").toULongLong();
         if (sourceDate != 0)

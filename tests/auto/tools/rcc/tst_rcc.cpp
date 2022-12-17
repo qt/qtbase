@@ -114,7 +114,7 @@ static QString doCompare(const QStringList &actual, const QStringList &expected,
                 ba.append("File " + fi.absoluteFilePath().toUtf8() + " does not exist!");
                 break;
             }
-            const quint64 timeStamp = quint64(fi.lastModified().toMSecsSinceEpoch());
+            const quint64 timeStamp = quint64(fi.lastModified(QTimeZone::UTC).toMSecsSinceEpoch());
             expectedLine.clear();
             for (int shift = 56; shift >= 0; shift -= 8) {
                 expectedLine.append(QLatin1String("0x"));
