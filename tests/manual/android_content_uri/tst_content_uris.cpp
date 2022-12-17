@@ -194,31 +194,58 @@ void tst_ContentUris::fileOperations()
     QVERIFY(file.exists());
 
     // Rename
-    const QString renamedFileName = "renamed_new_file.txt";
-    QVERIFY(file.rename(renamedFileName));
-    const auto renamedUrl = url.replace(fileName, renamedFileName);
-    QVERIFY(file.fileName() == renamedUrl);
+    {
+        const QString renamedFileName = "renamed_new_file.txt";
+        QVERIFY(file.rename(renamedFileName));
+        const auto renamedUrl = url.replace(fileName, renamedFileName);
+        QVERIFY(file.fileName() == renamedUrl);
 
-    // NOTE: The uri doesn't seem to stay usable after a rename and it needs to get
-    // permission again via the SAF picker.
-    showInstructionsDialog("Choose the file that was renamed");
-    QFileDialog::getOpenFileName(nullptr, tr("Open File"));
-    QVERIFY(file.exists());
+        // NOTE: The uri doesn't seem to stay usable after a rename and it needs to get
+        // permission again via the SAF picker.
+        showInstructionsDialog("Choose the file that was renamed");
+        QFileDialog::getOpenFileName(nullptr, tr("Open File"));
+        QVERIFY(file.exists());
 
-    // rename now with full content uri
-    const auto secondRenamedUrl = url.replace(renamedFileName, "second_nenamed_file.txt");
-    QVERIFY(file.rename(secondRenamedUrl));
-    QVERIFY(file.fileName() == secondRenamedUrl);
+        // rename now with full content uri
+        const auto secondRenamedUrl = url.replace(renamedFileName, "second_nenamed_file.txt");
+        QVERIFY(file.rename(secondRenamedUrl));
+        QVERIFY(file.fileName() == secondRenamedUrl);
 
-    // NOTE: The uri doesn't seem to stay usable after a rename and it needs to get
-    // permission again via the SAF picker.
-    showInstructionsDialog("Choose the file that was renamed");
-    QFileDialog::getOpenFileName(nullptr, tr("Open File"));
-    QVERIFY(file.exists());
+        // NOTE: The uri doesn't seem to stay usable after a rename and it needs to get
+        // permission again via the SAF picker.
+        showInstructionsDialog("Choose the file that was renamed");
+        QFileDialog::getOpenFileName(nullptr, tr("Open File"));
+        QVERIFY(file.exists());
+    }
 
     // Remove
     QVERIFY(file.remove());
     QVERIFY(!file.exists());
+
+    // Move
+    {
+        showInstructionsDialog("Choose source directory of file to move");
+        const QString srcDir = QFileDialog::getExistingDirectory(nullptr, tr("Choose Directory"));
+
+        const QString fileName = QLatin1String("file_to_move.txt");
+
+        // Create a file
+        QFile file(srcDir + u'/' + fileName);
+        QVERIFY(file.open(QFile::WriteOnly));
+        QVERIFY(file.exists());
+
+        showInstructionsDialog("Choose target directory to where to move the file");
+        const QString destDir = QFileDialog::getExistingDirectory(nullptr, tr("Choose Directory"));
+
+        QVERIFY(file.rename(destDir  + u'/' + fileName));
+
+        // NOTE: The uri doesn't seem to stay usable after a rename and it needs to get
+        // permission again via the SAF picker.
+        showInstructionsDialog("Choose the file that was moved");
+        QFileDialog::getOpenFileName(nullptr, tr("Open File"));
+
+        QVERIFY(file.remove());
+    }
 }
 
 QTEST_MAIN(tst_ContentUris)
