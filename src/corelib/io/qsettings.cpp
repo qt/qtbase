@@ -1318,7 +1318,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
     */
     if (readOnly && confFile->size > 0) {
         QFileInfo fileInfo(confFile->name);
-        if (confFile->size == fileInfo.size() && confFile->timeStamp == fileInfo.lastModified())
+        if (confFile->size == fileInfo.size() && confFile->timeStamp == fileInfo.lastModified(QTimeZone::UTC))
             return;
     }
 
@@ -1361,7 +1361,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
 
     if (!readOnly)
         mustReadFile = (confFile->size != fileInfo.size()
-                        || (confFile->size != 0 && confFile->timeStamp != fileInfo.lastModified()));
+                        || (confFile->size != 0 && confFile->timeStamp != fileInfo.lastModified(QTimeZone::UTC)));
 
     if (mustReadFile) {
         confFile->unparsedIniSections.clear();
@@ -1407,7 +1407,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
         }
 
         confFile->size = fileInfo.size();
-        confFile->timeStamp = fileInfo.lastModified();
+        confFile->timeStamp = fileInfo.lastModified(QTimeZone::UTC);
     }
 
     /*
@@ -1466,7 +1466,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
 
             QFileInfo fileInfo(confFile->name);
             confFile->size = fileInfo.size();
-            confFile->timeStamp = fileInfo.lastModified();
+            confFile->timeStamp = fileInfo.lastModified(QTimeZone::UTC);
 
             // If we have created the file, apply the file perms
             if (createFile) {
