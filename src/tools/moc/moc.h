@@ -37,7 +37,8 @@
 #include <qjsonarray.h>
 #include <qjsonobject.h>
 #include <stdio.h>
-#include <ctype.h>
+
+#include <private/qtools_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -125,7 +126,7 @@ struct PropertyDef
 {
     bool stdCppSet() const {
         QByteArray s("set");
-        s += toupper(name[0]);
+        s += QtMiscUtils::toAsciiUpper(name[0]);
         s += name.mid(1);
         return (s == write);
     }
