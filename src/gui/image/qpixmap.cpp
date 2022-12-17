@@ -714,7 +714,7 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
 
             QString key = "qt_pixmap"_L1
                     % info.absoluteFilePath()
-                    % HexString<uint>(info.lastModified().toSecsSinceEpoch())
+                    % HexString<uint>(info.lastModified(QTimeZone::UTC).toSecsSinceEpoch())
                     % HexString<quint64>(info.size())
                     % HexString<uint>(data ? data->pixelType() : QPlatformPixmap::PixmapType);
 

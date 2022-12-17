@@ -46,7 +46,7 @@ class QPollingFileSystemWatcherEngine : public QFileSystemWatcherEngine
             : ownerId(fileInfo.ownerId()),
               groupId(fileInfo.groupId()),
               permissions(fileInfo.permissions()),
-              lastModified(fileInfo.lastModified())
+              lastModified(fileInfo.lastModified(QTimeZone::UTC))
         {
             if (fileInfo.isDir()) {
                 entries = fileInfo.absoluteDir().entryList(QDir::AllEntries);
@@ -65,7 +65,7 @@ class QPollingFileSystemWatcherEngine : public QFileSystemWatcherEngine
             return (ownerId != fileInfo.ownerId()
                     || groupId != fileInfo.groupId()
                     || permissions != fileInfo.permissions()
-                    || lastModified != fileInfo.lastModified());
+                    || lastModified != fileInfo.lastModified(QTimeZone::UTC));
         }
     };
 

@@ -110,7 +110,7 @@ bool QMimeBinaryProvider::CacheFile::load()
         const int minor = getUint16(2);
         m_valid = (major == 1 && minor >= 1 && minor <= 2);
     }
-    m_mtime = QFileInfo(file).lastModified();
+    m_mtime = QFileInfo(file).lastModified(QTimeZone::UTC);
     return m_valid;
 }
 
@@ -155,7 +155,7 @@ enum {
 bool QMimeBinaryProvider::checkCacheChanged()
 {
     QFileInfo fileInfo(m_cacheFile->file);
-    if (fileInfo.lastModified() > m_cacheFile->m_mtime) {
+    if (fileInfo.lastModified(QTimeZone::UTC) > m_cacheFile->m_mtime) {
         // Deletion can't happen by just running update-mime-database.
         // But the user could use rm -rf :-)
         m_cacheFile->reload(); // will mark itself as invalid on failure

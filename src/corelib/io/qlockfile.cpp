@@ -255,7 +255,7 @@ bool QLockFile::tryLock(int timeout)
             return false;
         case LockFailedError:
             if (!d->isLocked && d->isApparentlyStale()) {
-                if (Q_UNLIKELY(QFileInfo(d->fileName).lastModified() > QDateTime::currentDateTimeUtc()))
+                if (Q_UNLIKELY(QFileInfo(d->fileName).lastModified(QTimeZone::UTC) > QDateTime::currentDateTimeUtc()))
                     qInfo("QLockFile: Lock file '%ls' has a modification time in the future", qUtf16Printable(d->fileName));
                 // Stale lock from another thread/process
                 // Ensure two processes don't remove it at the same time
@@ -413,7 +413,7 @@ bool QLockFilePrivate::isApparentlyStale() const
         }
     }
 
-    const qint64 age = QFileInfo(fileName).lastModified().msecsTo(QDateTime::currentDateTimeUtc());
+    const qint64 age = QFileInfo(fileName).lastModified(QTimeZone::UTC).msecsTo(QDateTime::currentDateTimeUtc());
     return staleLockTime > 0 && qAbs(age) > staleLockTime;
 }
 

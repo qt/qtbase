@@ -493,9 +493,9 @@ qint64 QNetworkDiskCache::expire()
         QString path = info.filePath();
         QString fileName = info.fileName();
         if (fileName.endsWith(CACHE_POSTFIX)) {
-            const QDateTime birthTime = info.fileTime(QFile::FileBirthTime);
+            const QDateTime birthTime = info.birthTime(QTimeZone::UTC);
             cacheItems.insert(birthTime.isValid() ? birthTime
-                              : info.fileTime(QFile::FileMetadataChangeTime), path);
+                              : info.metadataChangeTime(QTimeZone::UTC), path);
             totalSize += info.size();
         }
     }

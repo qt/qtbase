@@ -785,7 +785,7 @@ void tst_QIcon::fromThemeCache()
     QTest::qWait(1000); // wait enough to have a different modification time in seconds
     QVERIFY(QFile(QStringLiteral(":/styles/commonstyle/images/standardbutton-save-16.png"))
         .copy(dir.path() + QLatin1String("/testcache/16x16/actions/button-save.png")));
-    QVERIFY(QFileInfo(cacheName).lastModified() < QFileInfo(dir.path() + QLatin1String("/testcache/16x16/actions")).lastModified());
+    QVERIFY(QFileInfo(cacheName).lastModified(QTimeZone::UTC) < QFileInfo(dir.path() + QLatin1String("/testcache/16x16/actions")).lastModified(QTimeZone::UTC));
     QIcon::setThemeSearchPaths(QStringList() << dir.path()); // reload themes
     QVERIFY(!QIcon::fromTheme("button-open").isNull());
 
@@ -806,7 +806,7 @@ void tst_QIcon::fromThemeCache()
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
 #endif // QT_CONFIG(process)
-    QVERIFY(QFileInfo(cacheName).lastModified() >= QFileInfo(dir.path() + QLatin1String("/testcache/16x16/actions")).lastModified());
+    QVERIFY(QFileInfo(cacheName).lastModified(QTimeZone::UTC) >= QFileInfo(dir.path() + QLatin1String("/testcache/16x16/actions")).lastModified(QTimeZone::UTC));
     QIcon::setThemeSearchPaths(QStringList() << dir.path()); // reload themes
     QVERIFY(!QIcon::fromTheme("button-open").isNull());
     QVERIFY(!QIcon::fromTheme("button-open-fallback").isNull());

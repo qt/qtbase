@@ -1109,8 +1109,8 @@ void tst_QFileInfo::fileTimes()
     {
         // try to guess if file times on this filesystem round to the second
         QFileInfo cwd(".");
-        if (cwd.lastModified().toMSecsSinceEpoch() % 1000 == 0
-                && cwd.lastRead().toMSecsSinceEpoch() % 1000 == 0) {
+        if (cwd.lastModified(QTimeZone::UTC).toMSecsSinceEpoch() % 1000 == 0
+                && cwd.lastRead(QTimeZone::UTC).toMSecsSinceEpoch() % 1000 == 0) {
             fsClockSkew = sleepTime = 1000;
 
             noAccessTime = qIsLikelyToBeFat(fileName);
@@ -1130,12 +1130,12 @@ void tst_QFileInfo::fileTimes()
     QDateTime birthTime, writeTime, metadataChangeTime, readTime;
 
     // --- Create file and write to it
-    beforeBirth = QDateTime::currentDateTime().addMSecs(-fsClockSkew);
+    beforeBirth = QDateTime::currentDateTime(QTimeZone::UTC).addMSecs(-fsClockSkew);
     {
         QFile file(fileName);
         QVERIFY(file.open(QFile::WriteOnly | QFile::Text));
         QFileInfo fileInfo(fileName);
-        birthTime = fileInfo.birthTime();
+        birthTime = fileInfo.birthTime(QTimeZone::UTC);
         QVERIFY2(!birthTime.isValid() || birthTime > beforeBirth,
                  datePairString(birthTime, beforeBirth));
 
@@ -1146,30 +1146,30 @@ void tst_QFileInfo::fileTimes()
     }
     {
         QFileInfo fileInfo(fileName);
-        writeTime = fileInfo.lastModified();
+        writeTime = fileInfo.lastModified(QTimeZone::UTC);
         QVERIFY2(writeTime > beforeWrite, datePairString(writeTime, beforeWrite));
-        QCOMPARE(fileInfo.birthTime(), birthTime); // mustn't have changed
+        QCOMPARE(fileInfo.birthTime(QTimeZone::UTC), birthTime); // mustn't have changed
     }
 
     // --- Change the file's metadata
     QTest::qSleep(sleepTime);
-    beforeMetadataChange = QDateTime::currentDateTime().addMSecs(-fsClockSkew);
+    beforeMetadataChange = QDateTime::currentDateTime(QTimeZone::UTC).addMSecs(-fsClockSkew);
     {
         QFile file(fileName);
         file.setPermissions(file.permissions());
     }
     {
         QFileInfo fileInfo(fileName);
-        metadataChangeTime = fileInfo.metadataChangeTime();
+        metadataChangeTime = fileInfo.metadataChangeTime(QTimeZone::UTC);
         QVERIFY2(metadataChangeTime > beforeMetadataChange,
                  datePairString(metadataChangeTime, beforeMetadataChange));
         QVERIFY(metadataChangeTime >= writeTime); // not all filesystems can store both times
-        QCOMPARE(fileInfo.birthTime(), birthTime); // mustn't have changed
+        QCOMPARE(fileInfo.birthTime(QTimeZone::UTC), birthTime); // mustn't have changed
     }
 
     // --- Read the file
     QTest::qSleep(sleepTime);
-    beforeRead = QDateTime::currentDateTime().addMSecs(-fsClockSkew);
+    beforeRead = QDateTime::currentDateTime(QTimeZone::UTC).addMSecs(-fsClockSkew);
     {
         QFile file(fileName);
         QVERIFY(file.open(QFile::ReadOnly | QFile::Text));
@@ -1179,9 +1179,9 @@ void tst_QFileInfo::fileTimes()
     }
 
     QFileInfo fileInfo(fileName);
-    readTime = fileInfo.lastRead();
-    QCOMPARE(fileInfo.lastModified(), writeTime); // mustn't have changed
-    QCOMPARE(fileInfo.birthTime(), birthTime); // mustn't have changed
+    readTime = fileInfo.lastRead(QTimeZone::UTC);
+    QCOMPARE(fileInfo.lastModified(QTimeZone::UTC), writeTime); // mustn't have changed
+    QCOMPARE(fileInfo.birthTime(QTimeZone::UTC), birthTime); // mustn't have changed
     QVERIFY(readTime.isValid());
 
 #if defined(Q_OS_QNX) || defined(Q_OS_ANDROID)
@@ -1251,7 +1251,7 @@ void tst_QFileInfo::fakeFileTimes()
     file.close();
 
     if (ok)
-        QCOMPARE(QFileInfo(file.fileName()).lastModified(), when);
+        QCOMPARE(QFileInfo(file.fileName()).lastModified(QTimeZone::UTC), when);
     else
         QSKIP("Unable to set file metadata to contrived values");
 }
@@ -1642,14 +1642,14 @@ void tst_QFileInfo::refresh()
     file.flush();
 
     QFileInfo info(file);
-    QDateTime lastModified = info.lastModified();
+    QDateTime lastModified = info.lastModified(QTimeZone::UTC);
     QCOMPARE(info.size(), qint64(7));
 
     QTest::qSleep(sleepTime);
 
     QCOMPARE(file.write("JOJOJO"), qint64(6));
     file.flush();
-    QCOMPARE(info.lastModified(), lastModified);
+    QCOMPARE(info.lastModified(QTimeZone::UTC), lastModified);
 
     QCOMPARE(info.size(), qint64(7));
 #if defined(Q_OS_WIN)
@@ -1657,7 +1657,7 @@ void tst_QFileInfo::refresh()
 #endif
     info.refresh();
     QCOMPARE(info.size(), qint64(13));
-    QVERIFY(info.lastModified() > lastModified);
+    QVERIFY(info.lastModified(QTimeZone::UTC) > lastModified);
 
     QFileInfo info2 = info;
     QCOMPARE(info2.size(), info.size());
@@ -2259,10 +2259,10 @@ static void stateCheck(const QFileInfo &info, const QString &dirname, const QStr
 
     QCOMPARE(info.permissions(), QFile::Permissions());
 
-    QVERIFY(!info.birthTime().isValid());
-    QVERIFY(!info.metadataChangeTime().isValid());
-    QVERIFY(!info.lastRead().isValid());
-    QVERIFY(!info.lastModified().isValid());
+    QVERIFY(!info.birthTime(QTimeZone::UTC).isValid());
+    QVERIFY(!info.metadataChangeTime(QTimeZone::UTC).isValid());
+    QVERIFY(!info.lastRead(QTimeZone::UTC).isValid());
+    QVERIFY(!info.lastModified(QTimeZone::UTC).isValid());
 };
 
 void tst_QFileInfo::invalidState_data()

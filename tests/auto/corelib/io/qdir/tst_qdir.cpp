@@ -999,7 +999,7 @@ void tst_QDir::entryListTimedSort()
 
     QFileInfo aFileInfo(aFile);
     QFileInfo bFileInfo(bFile);
-    QVERIFY(bFileInfo.lastModified().msecsTo(aFileInfo.lastModified()) < 0);
+    QVERIFY(bFileInfo.lastModified(QTimeZone::UTC).msecsTo(aFileInfo.lastModified(QTimeZone::UTC)) < 0);
 
     QCOMPARE(actual.size(), 2);
     QCOMPARE(actual.first(), bFileInfo.fileName());

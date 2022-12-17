@@ -195,7 +195,7 @@ static bool writeJsonFiles(const QList<QString> &fileList, const QString &fileLi
     // processed by cmake_automoc parser
     for (const auto &jsonFile : fileList) {
         const qint64 jsonFileLastModified =
-                QFileInfo(jsonFile).lastModified().toMSecsSinceEpoch();
+                QFileInfo(jsonFile).lastModified(QTimeZone::UTC).toMSecsSinceEpoch();
         if (jsonFileLastModified > timestamp) {
             timestamp = jsonFileLastModified;
         }
