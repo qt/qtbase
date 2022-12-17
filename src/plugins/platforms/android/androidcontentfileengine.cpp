@@ -500,6 +500,7 @@ const QLatin1String COLUMN_SIZE("_size");
 
 constexpr int FLAG_DIR_SUPPORTS_CREATE = 0x00000008;
 constexpr int FLAG_SUPPORTS_DELETE = 0x00000004;
+constexpr int FLAG_SUPPORTS_MOVE = 0x00000100;
 constexpr int FLAG_SUPPORTS_RENAME = 0x00000040;
 constexpr int FLAG_SUPPORTS_WRITE = 0x00000002;
 constexpr int FLAG_VIRTUAL_DOCUMENT = 0x00000200;
@@ -590,6 +591,24 @@ bool deleteDocument(const QJNIObjectPrivate &documentUri)
                                                   "(Landroid/content/ContentResolver;Landroid/net/Uri;)Z",
                                                   contentResolverInstance().object(),
                                                   documentUri.object());
+}
+
+QJNIObjectPrivate moveDocument(const QJNIObjectPrivate &sourceDocumentUri,
+                      const QJNIObjectPrivate &sourceParentDocumentUri,
+                      const QJNIObjectPrivate &targetParentDocumentUri)
+{
+    const int flags = Cursor::queryColumn(sourceDocumentUri, Document::COLUMN_FLAGS).toInt();
+    if (!(flags & Document::FLAG_SUPPORTS_MOVE))
+        return {};
+
+    JniExceptionCleaner cleaner;
+    return QJNIObjectPrivate::callStaticObjectMethod("android/provider/DocumentsContract",
+                                              "moveDocument",
+                                              "(Landroid/content/ContentResolver;Landroid/net/Uri;Landroid/net/Uri;Landroid/net/Uri;)Landroid/net/Uri;",
+                                              contentResolverInstance().object(),
+                                              sourceDocumentUri.object(),
+                                              sourceParentDocumentUri.object(),
+                                              targetParentDocumentUri.object());
 }
 
 QJNIObjectPrivate renameDocument(const QJNIObjectPrivate &documentUri, const QString &displayName)
@@ -848,6 +867,12 @@ bool DocumentFile::rename(const QString &newName)
                 displayName.remove(0, 3);
 
             uri = renameDocument(m_uri, displayName);
+        } else {
+            // Move
+            QJNIObjectPrivate srcParentUri = fromTreeUri(parseUri(parent))->uri();
+            const QString destParent = newName.left(lastSeparatorIndex(newName));
+            QJNIObjectPrivate targetParentUri = fromTreeUri(parseUri(destParent))->uri();
+            uri = moveDocument(m_uri, srcParentUri, targetParentUri);
         }
     } else {
         uri = renameDocument(m_uri, newName);
