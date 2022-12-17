@@ -103,7 +103,7 @@ private:
     };
     friend class RCCFileInfo;
     void reset();
-    bool addFile(const QString &alias, const RCCFileInfo &file);
+    bool addFile(const QString &alias, RCCFileInfo file);
     bool interpretResourceFile(QIODevice *inputDevice, const QString &file,
         QString currentPath = QString(), bool listMode = false);
     bool writeHeader();

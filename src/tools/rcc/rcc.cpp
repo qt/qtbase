@@ -75,16 +75,18 @@ public:
         CompressedZstd = 0x04
     };
 
-    RCCFileInfo(const QString &name = QString(), const QFileInfo &fileInfo = QFileInfo(),
-                QLocale::Language language = QLocale::C,
-                QLocale::Territory territory = QLocale::AnyTerritory,
-                uint flags = NoFlags,
-                RCCResourceLibrary::CompressionAlgorithm compressAlgo = RCCResourceLibrary::CompressionAlgorithm::Best,
-                int compressLevel = CONSTANT_COMPRESSLEVEL_DEFAULT,
-                int compressThreshold = CONSTANT_COMPRESSTHRESHOLD_DEFAULT,
-                bool noZstd = false,
-                bool isEmpty = false);
+
+    RCCFileInfo() = default;
+    RCCFileInfo(const QString &name, const QFileInfo &fileInfo, QLocale::Language language,
+                QLocale::Territory territory, uint flags,
+                RCCResourceLibrary::CompressionAlgorithm compressAlgo, int compressLevel,
+                int compressThreshold, bool noZstd, bool isEmpty);
+
     ~RCCFileInfo();
+    RCCFileInfo(const RCCFileInfo &) = delete;
+    RCCFileInfo &operator=(const RCCFileInfo &) = delete;
+    RCCFileInfo(RCCFileInfo &&) = default;
+    RCCFileInfo &operator=(RCCFileInfo &&other) = delete;
 
     QString resourceName() const;
 
@@ -93,43 +95,40 @@ public:
     qint64 writeDataName(RCCResourceLibrary &, qint64 offset);
     void writeDataInfo(RCCResourceLibrary &lib);
 
-    int m_flags;
+    int m_flags = NoFlags;
+    QLocale::Language m_language = QLocale::C;
+    QLocale::Territory m_territory = QLocale::AnyTerritory;
     QString m_name;
-    QLocale::Language m_language;
-    QLocale::Territory m_territory;
     QFileInfo m_fileInfo;
-    RCCFileInfo *m_parent;
+    RCCFileInfo *m_parent = nullptr;
     QMultiHash<QString, RCCFileInfo *> m_children;
-    RCCResourceLibrary::CompressionAlgorithm m_compressAlgo;
-    int m_compressLevel;
-    int m_compressThreshold;
 
-    qint64 m_nameOffset;
-    qint64 m_dataOffset;
-    qint64 m_childOffset;
-    bool m_noZstd;
-    bool m_isEmpty;
+    RCCResourceLibrary::CompressionAlgorithm m_compressAlgo = RCCResourceLibrary::CompressionAlgorithm::Best;
+    int m_compressLevel = CONSTANT_COMPRESSLEVEL_DEFAULT;
+    int m_compressThreshold = CONSTANT_COMPRESSTHRESHOLD_DEFAULT;
+    bool m_noZstd = false;
+    bool m_isEmpty = false;
+
+    qint64 m_nameOffset = 0;
+    qint64 m_dataOffset = 0;
+    qint64 m_childOffset = 0;
 };
 
-RCCFileInfo::RCCFileInfo(const QString &name, const QFileInfo &fileInfo,
-    QLocale::Language language, QLocale::Territory territory, uint flags,
-    RCCResourceLibrary::CompressionAlgorithm compressAlgo, int compressLevel, int compressThreshold,
-    bool noZstd, bool isEmpty)
+RCCFileInfo::RCCFileInfo(const QString &name, const QFileInfo &fileInfo, QLocale::Language language,
+                         QLocale::Territory territory, uint flags,
+                         RCCResourceLibrary::CompressionAlgorithm compressAlgo, int compressLevel,
+                         int compressThreshold, bool noZstd, bool isEmpty)
+    : m_flags(flags),
+      m_language(language),
+      m_territory(territory),
+      m_name(name),
+      m_fileInfo(fileInfo),
+      m_compressAlgo(compressAlgo),
+      m_compressLevel(compressLevel),
+      m_compressThreshold(compressThreshold),
+      m_noZstd(noZstd),
+      m_isEmpty(isEmpty)
 {
-    m_name = name;
-    m_fileInfo = fileInfo;
-    m_language = language;
-    m_territory = territory;
-    m_flags = flags;
-    m_parent = nullptr;
-    m_nameOffset = 0;
-    m_dataOffset = 0;
-    m_childOffset = 0;
-    m_compressAlgo = compressAlgo;
-    m_compressLevel = compressLevel;
-    m_compressThreshold = compressThreshold;
-    m_noZstd = noZstd;
-    m_isEmpty = isEmpty;
 }
 
 RCCFileInfo::~RCCFileInfo()
@@ -708,15 +707,15 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
         m_errorDevice->write(msg.toUtf8());
         if (!listMode && m_format == Binary) {
             // create dummy entry, otherwise loading with QResource will crash
-            m_root = new RCCFileInfo(QString(), QFileInfo(),
-                    QLocale::C, QLocale::AnyTerritory, RCCFileInfo::Directory);
+            m_root = new RCCFileInfo{};
+            m_root->m_flags = RCCFileInfo::Directory;
         }
     }
 
     return true;
 }
 
-bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
+bool RCCResourceLibrary::addFile(const QString &alias, RCCFileInfo file)
 {
     Q_ASSERT(m_errorDevice);
     if (file.m_fileInfo.size() > 0xffffffff) {
@@ -724,8 +723,10 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
         m_errorDevice->write(msg.toUtf8());
         return false;
     }
-    if (!m_root)
-        m_root = new RCCFileInfo(QString(), QFileInfo(), QLocale::C, QLocale::AnyTerritory, RCCFileInfo::Directory);
+    if (!m_root) {
+        m_root = new RCCFileInfo{};
+        m_root->m_flags = RCCFileInfo::Directory;
+    }
 
     RCCFileInfo *parent = m_root;
     const QStringList nodes = alias.split(u'/');
@@ -734,7 +735,9 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
         if (node.isEmpty())
             continue;
         if (!parent->m_children.contains(node)) {
-            RCCFileInfo *s = new RCCFileInfo(node, QFileInfo(), QLocale::C, QLocale::AnyTerritory, RCCFileInfo::Directory);
+            RCCFileInfo *s = new RCCFileInfo{};
+            s->m_name = node;
+            s->m_flags = RCCFileInfo::Directory;
             s->m_parent = parent;
             parent->m_children.insert(node, s);
             parent = s;
@@ -744,7 +747,7 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
     }
 
     const QString filename = nodes.at(nodes.size()-1);
-    RCCFileInfo *s = new RCCFileInfo(file);
+    RCCFileInfo *s = new RCCFileInfo(std::move(file));
     s->m_parent = parent;
     auto cbegin = parent->m_children.constFind(filename);
     auto cend = parent->m_children.constEnd();
