@@ -54,6 +54,11 @@ constexpr inline char toAsciiLower(char ch) noexcept
     return (ch >= 'A' && ch <= 'Z') ? ch - 'A' + 'a' : ch;
 }
 
+constexpr inline char toAsciiUpper(char ch) noexcept
+{
+    return (ch >= 'a' && ch <= 'z') ? ch - 'a' + 'A' : ch;
+}
+
 constexpr inline int caseCompareAscii(char lhs, char rhs) noexcept
 {
     const char lhsLower = QtMiscUtils::toAsciiLower(lhs);
