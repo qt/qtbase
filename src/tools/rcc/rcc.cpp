@@ -142,7 +142,8 @@ QString RCCFileInfo::resourceName() const
     QString resource = m_name;
     for (RCCFileInfo *p = m_parent; p; p = p->m_parent)
         resource = resource.prepend(p->m_name + u'/');
-    return u':' + resource;
+    resource.prepend(u':');
+    return resource;
 }
 
 void RCCFileInfo::writeDataInfo(RCCResourceLibrary &lib)
