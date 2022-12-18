@@ -170,7 +170,7 @@ QDateTime QOCIDateTime::fromOCIDateTime(OCIEnv *env, OCIError *err, OCIDateTime 
         secondsOffset = -secondsOffset;
     // OCIDateTimeGetTime gives "fractions of second" as nanoseconds
     return QDateTime(QDate(year, month, day), QTime(hour, minute, second, nsec / 1000000),
-                     Qt::OffsetFromUTC, secondsOffset);
+                     QTimeZone::fromSecondsAheadOfUtc(secondsOffset));
 }
 
 struct TempStorage {
