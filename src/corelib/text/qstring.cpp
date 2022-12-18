@@ -5413,6 +5413,15 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
     return QByteArray(std::move(ba_d));
 }
 
+// QLatin1 methods that use helpers from qstring.cpp
+char16_t *QLatin1::convertToUnicode(char16_t *out, QLatin1StringView in) noexcept
+{
+    const qsizetype len = in.size();
+    qt_from_latin1(out, in.data(), len);
+    return std::next(out, len);
+}
+
+
 /*!
     \fn QByteArray QString::toLatin1() const
 

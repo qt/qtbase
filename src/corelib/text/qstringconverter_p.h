@@ -29,6 +29,29 @@ enum qchar8_t : uchar {};
 using qchar8_t = char8_t;
 #endif
 
+struct QLatin1
+{
+    // Defined in qstring.cpp
+    static char16_t *convertToUnicode(char16_t *dst, QLatin1StringView in) noexcept;
+
+    static QChar *convertToUnicode(QChar *buffer, QLatin1StringView in) noexcept
+    {
+        char16_t *dst = reinterpret_cast<char16_t *>(buffer);
+        dst = convertToUnicode(dst, in);
+        return reinterpret_cast<QChar *>(dst);
+    }
+
+    static QChar *convertToUnicode(QChar *dst, QByteArrayView in,
+                                   [[maybe_unused]] QStringConverterBase::State *state) noexcept
+    {
+        Q_ASSERT(state);
+
+        return convertToUnicode(dst, QLatin1StringView(in.data(), in.size()));
+    }
+
+    static char *convertFromUnicode(char *out, QStringView in, QStringConverter::State *state) noexcept;
+};
+
 struct QUtf8BaseTraits
 {
     static const bool isTrusted = false;

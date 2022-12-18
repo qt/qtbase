@@ -1527,19 +1527,7 @@ static char *toUtf32LE(char *out, QStringView in, QStringConverter::State *state
     return QUtf32::convertFromUnicode(out, in, state, LittleEndianness);
 }
 
-void qt_from_latin1(char16_t *dst, const char *str, size_t size) noexcept;
-
-static QChar *fromLatin1(QChar *out, QByteArrayView in, QStringConverter::State *state)
-{
-    Q_ASSERT(state);
-    Q_UNUSED(state);
-
-    qt_from_latin1(reinterpret_cast<char16_t *>(out), in.data(), size_t(in.size()));
-    return out + in.size();
-}
-
-
-static char *toLatin1(char *out, QStringView in, QStringConverter::State *state)
+char *QLatin1::convertFromUnicode(char *out, QStringView in, QStringConverter::State *state) noexcept
 {
     Q_ASSERT(state);
     if (state->flags & QStringConverter::Flag::Stateless) // temporary
@@ -1725,7 +1713,7 @@ const QStringConverter::Interface QStringConverter::encodingInterfaces[QStringCo
     { "UTF-32", fromUtf32, fromUtf32Len, toUtf32, toUtf32Len },
     { "UTF-32LE", fromUtf32LE, fromUtf32Len, toUtf32LE, toUtf32Len },
     { "UTF-32BE", fromUtf32BE, fromUtf32Len, toUtf32BE, toUtf32Len },
-    { "ISO-8859-1", fromLatin1, fromLatin1Len, toLatin1, toLatin1Len },
+    { "ISO-8859-1", QLatin1::convertToUnicode, fromLatin1Len, QLatin1::convertFromUnicode, toLatin1Len },
     { "Locale", fromLocal8Bit, fromUtf8Len, toLocal8Bit, toUtf8Len }
 };
 
