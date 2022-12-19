@@ -81,6 +81,12 @@ QWasmIntegration::QWasmIntegration()
       m_clipboard(new QWasmClipboard),
       m_accessibility(new QWasmAccessibility)
 {
+    // Temporary measure to make dropEvent appear in the library. EMSCRIPTEN_KEEPALIVE does not
+    // work, nor does a Q_CONSTRUCTOR_FUNCTION in qwasmdrag.cpp.
+    volatile bool foolEmcc = false;
+    if (foolEmcc)
+        dropEvent(emscripten::val::undefined());
+
     s_instance = this;
 
     touchPoints = emscripten::val::global("navigator")["maxTouchPoints"].as<int>();
@@ -122,7 +128,7 @@ QWasmIntegration::QWasmIntegration()
         visualViewport.call<void>("addEventListener", val("resize"),
                                   val::module_property("qtResizeAllScreens"));
     }
-    m_drag = new QWasmDrag();
+    m_drag = std::make_unique<QSimpleDrag>();
 }
 
 QWasmIntegration::~QWasmIntegration()
@@ -139,7 +145,6 @@ QWasmIntegration::~QWasmIntegration()
     delete m_desktopServices;
     if (m_platformInputContext)
         delete m_platformInputContext;
-    delete m_drag;
     delete m_accessibility;
 
     for (const auto &elementAndScreen : m_screens)
@@ -328,7 +333,7 @@ quint64 QWasmIntegration::getTimestamp()
 #if QT_CONFIG(draganddrop)
 QPlatformDrag *QWasmIntegration::drag() const
 {
-    return m_drag;
+    return m_drag.get();
 }
 #endif // QT_CONFIG(draganddrop)
 

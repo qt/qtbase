@@ -8,6 +8,8 @@
 
 #include <emscripten/val.h>
 
+#include <functional>
+#include <memory>
 #include <string>
 
 QT_BEGIN_NAMESPACE

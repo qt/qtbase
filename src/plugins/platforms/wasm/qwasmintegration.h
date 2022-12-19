@@ -6,22 +6,24 @@
 
 #include "qwasmwindow.h"
 
+#include "qwasminputcontext.h"
+
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatforminputcontext.h>
 
+#if QT_CONFIG(draganddrop)
+#  include "qwasmdrag.h"
+#endif
+
 #include <QtCore/qhash.h>
+
+#include <private/qsimpledrag_p.h>
+#include <private/qstdweb_p.h>
 
 #include <emscripten.h>
 #include <emscripten/html5.h>
 #include <emscripten/val.h>
-
-#include "qwasminputcontext.h"
-#include <private/qstdweb_p.h>
-
-#if QT_CONFIG(draganddrop)
-#include "qwasmdrag.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -97,7 +99,7 @@ private:
     mutable QWasmInputContext *m_platformInputContext = nullptr;
 
 #if QT_CONFIG(draganddrop)
-    QWasmDrag *m_drag;
+    std::unique_ptr<QSimpleDrag> m_drag;
 #endif
 
 };

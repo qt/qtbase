@@ -16,14 +16,21 @@
 //
 
 #include <private/qglobal_p.h>
-#include <emscripten/val.h>
-#include <cstdint>
-#include <functional>
-#include "initializer_list"
 #include <QtCore/qglobal.h>
 #include "QtCore/qhash.h"
 
+#include <emscripten/val.h>
+
+#include <cstdint>
+#include <functional>
+#include <initializer_list>
+#include <memory>
+#include <string>
+#include <utility>
+
 QT_BEGIN_NAMESPACE
+
+class QMimeData;
 
 namespace qstdweb {
     extern const char makeContextfulPromiseFunctionName[];
@@ -195,6 +202,14 @@ namespace qstdweb {
     }
 
     bool haveAsyncify();
+
+    struct CancellationFlag
+    {
+    };
+
+    std::shared_ptr<CancellationFlag>
+    readDataTransfer(emscripten::val webObject, std::function<QVariant(QByteArray)> imageReader,
+                     std::function<void(std::unique_ptr<QMimeData>)> onDone);
 }
 
 QT_END_NAMESPACE
