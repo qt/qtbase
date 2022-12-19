@@ -1027,18 +1027,18 @@ struct DeployResult
 };
 
 static QString libraryPath(const QString &libraryLocation, const char *name,
-                           const QString &qtLibInfix, Platform platform, bool debug)
+                           const QString &infix, Platform platform, bool debug)
 {
     QString result = libraryLocation + u'/';
     if (platform & WindowsBased) {
         result += QLatin1StringView(name);
-        result += qtLibInfix;
+        result += infix;
         if (debug && platformHasDebugSuffix(platform))
             result += u'd';
     } else if (platform.testFlag(UnixBased)) {
         result += QStringLiteral("lib");
         result += QLatin1StringView(name);
-        result += qtLibInfix;
+        result += infix;
     }
     result += sharedLibrarySuffix(platform);
     return result;
@@ -1159,16 +1159,6 @@ static inline int qtVersion(const QMap<QString, QString> &qtpathsVariables)
     return (majorVersion << 16) | (minorVersion << 8) | patchVersion;
 }
 
-// Determine the Qt lib infix from the library path of "Qt6Core<qtblibinfix>[d].dll".
-static inline QString qtlibInfixFromCoreLibName(const QString &path, bool isDebug, Platform platform)
-{
-    const qsizetype startPos = path.lastIndexOf(u'/') + 8;
-    qsizetype endPos = path.lastIndexOf(u'.');
-    if (isDebug && (platform & WindowsBased))
-        endPos--;
-    return endPos > startPos ? path.mid(startPos, endPos - startPos) : QString();
-}
-
 // Deploy a library along with its .pdb debug info file (MSVC) should it exist.
 static bool updateLibrary(const QString &sourceFileName, const QString &targetDirectory,
                           const Options &options, QString *errorMessage)
@@ -1257,12 +1247,9 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
 
     // Determine application type, check Quick2 is used by looking at the
     // direct dependencies (do not be fooled by QtWebKit depending on it).
-    QString qtLibInfix;
     for (int m = 0; m < dependentQtLibs.size(); ++m) {
         const quint64 module = qtModule(dependentQtLibs.at(m), infix);
         result.directlyUsedQtLibraries[module] = 1;
-        if (module == QtCoreModuleId)
-            qtLibInfix = qtlibInfixFromCoreLibName(dependentQtLibs.at(m), detectedDebug, options.platform);
     }
 
     const bool usesQml = result.directlyUsedQtLibraries.test(QtQmlModuleId);
@@ -1397,7 +1384,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     QString qtGuiLibrary;
     for (const auto &qtModule : qtModuleEntries) {
         if (result.deployedQtLibraries.test(qtModule.id)) {
-            const QString library = libraryPath(libraryLocation, qtModule.name.toUtf8(), qtLibInfix,
+            const QString library = libraryPath(libraryLocation, qtModule.name.toUtf8(), infix,
                                                 options.platform, result.isDebug);
             deployedQtLibraries.append(library);
             if (qtModule.id == QtGuiModuleId)
@@ -1451,7 +1438,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
 
 #if !QT_CONFIG(relocatable)
         if (options.patchQt  && !options.dryRun) {
-            const QString qt6CoreName = QFileInfo(libraryPath(libraryLocation, "Qt6Core", qtLibInfix,
+            const QString qt6CoreName = QFileInfo(libraryPath(libraryLocation, "Qt6Core", infix,
                                                               options.platform, result.isDebug)).fileName();
             if (!patchQtCore(targetPath + u'/' + qt6CoreName, errorMessage)) {
                 std::wcerr << "Warning: " << *errorMessage << '\n';
