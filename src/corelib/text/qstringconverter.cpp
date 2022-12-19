@@ -503,7 +503,6 @@ QByteArray QUtf8::convertFromUnicode(QStringView in, QStringConverterBase::State
 char *QUtf8::convertFromUnicode(char *out, QStringView in, QStringConverter::State *state)
 {
     Q_ASSERT(state);
-    const QChar *uc = in.data();
     qsizetype len = in.size();
     if (!len)
         return out;
@@ -521,7 +520,7 @@ char *QUtf8::convertFromUnicode(char *out, QStringView in, QStringConverter::Sta
     };
 
     uchar *cursor = reinterpret_cast<uchar *>(out);
-    const char16_t *src = reinterpret_cast<const char16_t *>(uc);
+    const char16_t *src = in.utf16();
     const char16_t *const end = src + len;
 
     if (!(state->flags & QStringDecoder::Flag::Stateless)) {
