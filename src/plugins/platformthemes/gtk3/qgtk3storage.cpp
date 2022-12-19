@@ -222,7 +222,7 @@ void QGtk3Storage::populateMap()
 
     // Derive appearance from theme name
     m_appearance = newThemeName.contains("dark"_L1, Qt::CaseInsensitive)
-                   ? Qt::Appearance::Dark : Qt::Appearance::Light;
+                   ? Qt::Appearance::Dark : m_interface->appearanceByColors();
 
     if (m_themeName.isEmpty()) {
         qCDebug(lcQGtk3Interface) << "GTK theme initialized:" << newThemeName << m_appearance;

@@ -400,6 +400,22 @@ const QString QGtk3Interface::themeName() const
     return QLatin1StringView(theme_name);
 }
 
+Qt::Appearance QGtk3Interface::appearanceByColors() const
+{
+    const QColor background = color(widget(QGtkWidget::gtk_Default),
+                                    QGtkColorSource::Background,
+                                    GTK_STATE_FLAG_ACTIVE);
+    const QColor foreground = color(widget(QGtkWidget::gtk_Default),
+                                    QGtkColorSource::Foreground,
+                                    GTK_STATE_FLAG_ACTIVE);
+
+    if (foreground.lightness() > background.lightness())
+        return Qt::Appearance::Dark;
+    if (foreground.lightness() < background.lightness())
+        return Qt::Appearance::Light;
+    return Qt::Appearance::Unknown;
+}
+
 inline constexpr QGtk3Interface::QGtkWidget QGtk3Interface::toWidgetType(QPlatformTheme::Font type)
 {
     switch (type) {
