@@ -1797,6 +1797,8 @@ void QCocoaWindow::setWindowCursor(NSCursor *cursor)
     if (isForeignWindow())
         return;
 
+    qCInfo(lcQpaMouse) << "Setting" << this << "cursor to" << cursor;
+
     QNSView *view = qnsview_cast(m_view);
     if (cursor == view.cursor)
         return;
@@ -1808,11 +1810,15 @@ void QCocoaWindow::setWindowCursor(NSCursor *cursor)
     // There's a bug in AppKit where calling invalidateCursorRectsForView when
     // there's an override cursor active (for example when hovering over the
     // window frame), will not result in a cursorUpdate: callback. To work around
-    // this we synthesize a cursor update event and call the callback ourselves,
-    // if we detect that the mouse is currently over the view, and the window key.
+    // this we synthesize a cursor update event and call the callback ourselves.
+    // We only do this is if the window would normally receive cursor updates.
     auto locationInWindow = m_view.window.mouseLocationOutsideOfEventStream;
     auto locationInSuperview = [m_view.superview convertPoint:locationInWindow fromView:nil];
-    if (m_view.window.keyWindow && [m_view hitTest:locationInSuperview] == m_view) {
+    bool mouseIsOverView = [m_view hitTest:locationInSuperview] == m_view;
+    auto utilityMask = NSWindowStyleMaskUtilityWindow | NSWindowStyleMaskTitled;
+    bool isUtilityWindow = (m_view.window.styleMask & utilityMask) == utilityMask;
+    if (mouseIsOverView && (m_view.window.keyWindow || isUtilityWindow)) {
+        qCDebug(lcQpaMouse) << "Synthesizing cursor update";
         [m_view cursorUpdate:[NSEvent enterExitEventWithType:NSEventTypeCursorUpdate
             location:locationInWindow modifierFlags:0 timestamp:0
             windowNumber:m_view.window.windowNumber context:nil
