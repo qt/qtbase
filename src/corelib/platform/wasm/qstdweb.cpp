@@ -34,6 +34,53 @@ static void usePotentialyUnusedSymbols()
 Q_CONSTRUCTOR_FUNCTION(usePotentialyUnusedSymbols)
 typedef double uint53_t; // see Number.MAX_SAFE_INTEGER
 namespace {
+// Reads file in chunks in order to avoid holding two copies in memory at the same time
+struct ChunkedFileReader
+{
+public:
+    static void read(File file, char *buffer, uint32_t offset, uint32_t end,
+                     std::function<void()> onCompleted)
+    {
+        (new ChunkedFileReader(end, std::move(onCompleted), std::move(file)))
+                ->readNextChunk(offset, buffer);
+    }
+
+private:
+    ChunkedFileReader(uint32_t end, std::function<void()> onCompleted, File file)
+        : end(end), onCompleted(std::move(onCompleted)), file(std::move(file))
+    {
+    }
+
+    void readNextChunk(uint32_t chunkBegin, char *chunkBuffer)
+    {
+        // Copy current chunk from JS memory to Wasm memory
+        qstdweb::ArrayBuffer result = fileReader.result();
+        qstdweb::Uint8Array(result).copyTo(chunkBuffer);
+
+        // Read next chunk if not at buffer end
+        const uint32_t nextChunkBegin = std::min(chunkBegin + result.byteLength(), end);
+        if (nextChunkBegin == end) {
+            onCompleted();
+            delete this;
+            return;
+        }
+        char *nextChunkBuffer = chunkBuffer + result.byteLength();
+        fileReader.onLoad([this, nextChunkBegin, nextChunkBuffer](emscripten::val) {
+            readNextChunk(nextChunkBegin, nextChunkBuffer);
+        });
+        const uint32_t nextChunkEnd = std::min(nextChunkBegin + chunkSize, end);
+        qstdweb::Blob blob = file.slice(nextChunkBegin, nextChunkEnd);
+        fileReader.readAsArrayBuffer(blob);
+    }
+
+    static constexpr uint32_t chunkSize = 256 * 1024;
+
+    qstdweb::FileReader fileReader;
+    uint32_t end;
+    std::function<void()> onCompleted;
+    File file;
+};
+
 enum class CallbackType {
         Then,
         Catch,
@@ -403,47 +450,17 @@ std::string Blob::type() const
 
 // Streams partial file content into the given buffer asynchronously. The completed
 // callback is called on completion.
-void File::stream(uint32_t offset, uint32_t length, char *buffer, const std::function<void ()> &completed) const
+void File::stream(uint32_t offset, uint32_t length, char *buffer,
+                  std::function<void()> completed) const
 {
-    // Read file in chunks in order to avoid holding two copies in memory at the same time
-    const uint32_t chunkSize = 256 * 1024;
-    const uint32_t end = offset + length;
-    // assert end < file.size
-    auto fileReader = std::make_shared<qstdweb::FileReader>();
-
-    // "this" is valid now, but may not be by the time the chunkCompleted callback
-    // below is made. Make a copy of the file handle.
-    const File fileHandle = *this;
-    auto chunkCompleted = std::make_shared<std::function<void (uint32_t, char *buffer)>>();
-    *chunkCompleted = [=](uint32_t chunkBegin, char *chunkBuffer) mutable {
-
-        // Copy current chunk from JS memory to Wasm memory
-        qstdweb::ArrayBuffer result = fileReader->result();
-        qstdweb::Uint8Array(result).copyTo(chunkBuffer);
-
-        // Read next chunk if not at buffer end
-        uint32_t nextChunkBegin = std::min(chunkBegin + result.byteLength(), end);
-        uint32_t nextChunkEnd = std::min(nextChunkBegin + chunkSize, end);
-        if (nextChunkBegin == end) {
-            completed();
-            chunkCompleted.reset();
-            return;
-        }
-        char *nextChunkBuffer = chunkBuffer + result.byteLength();
-        fileReader->onLoad([=](emscripten::val) { (*chunkCompleted)(nextChunkBegin, nextChunkBuffer); });
-        qstdweb::Blob blob = fileHandle.slice(nextChunkBegin, nextChunkEnd);
-        fileReader->readAsArrayBuffer(blob);
-    };
-
-    // Read first chunk. First iteration is a dummy iteration with no available data.
-    (*chunkCompleted)(offset, buffer);
+    ChunkedFileReader::read(*this, buffer, offset, offset + length, std::move(completed));
 }
 
 // Streams file content into the given buffer asynchronously. The completed
 // callback is called on completion.
-void File::stream(char *buffer, const std::function<void ()> &completed) const
+void File::stream(char *buffer, std::function<void()> completed) const
 {
-    stream(0, size(), buffer, completed);
+    stream(0, size(), buffer, std::move(completed));
 }
 
 std::string File::type() const

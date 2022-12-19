@@ -75,8 +75,9 @@ namespace qstdweb {
         std::string name() const;
         uint64_t size() const;
         std::string type() const;
-        void stream(uint32_t offset, uint32_t length, char *buffer, const std::function<void ()> &completed) const;
-        void stream(char *buffer, const std::function<void ()> &completed) const;
+        void stream(uint32_t offset, uint32_t length, char *buffer,
+                    std::function<void()> completed) const;
+        void stream(char *buffer, std::function<void()> completed) const;
         emscripten::val val();
 
     private:

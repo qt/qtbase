@@ -124,7 +124,7 @@ void readFiles(const qstdweb::FileList &fileList,
         }
 
         // Read file data into caller-provided buffer
-        file.stream(buffer, [=]() {
+        file.stream(buffer, [readFile = readFile.get(), fileIndex, fileDataReady]() {
             fileDataReady();
             (*readFile)(fileIndex + 1);
         });
