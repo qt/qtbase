@@ -111,9 +111,9 @@ static void dropEvent(val event)
             QByteArray fileContent;
             fileContent.resize(file.size());
 
-            file.stream(fileContent.data(), [=]() {
+            file.stream(fileContent.data(), [mimeFormat, fileContent]() {
                 if (!fileContent.isEmpty()) {
-
+                    QWasmDrag *wasmDrag = static_cast<QWasmDrag *>(QWasmIntegration::get()->drag());
                     if (mimeFormat.contains("image")) {
                         QImage image;
                         image.loadFromData(fileContent, nullptr);
@@ -121,7 +121,7 @@ static void dropEvent(val event)
                     } else {
                         wasmDrag->m_mimeData->setData(mimeFormat, fileContent.data());
                     }
-                     wasmDrag->qWasmDrop();
+                    wasmDrag->qWasmDrop();
                 }
             });
 
