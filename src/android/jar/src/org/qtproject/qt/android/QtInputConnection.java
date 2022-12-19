@@ -252,6 +252,9 @@ public class QtInputConnection extends BaseInputConnection
                                             KeyEvent.META_SHIFT_ON);
                     return super.sendKeyEvent(fakeEvent);
 
+                case android.view.inputmethod.EditorInfo.IME_FLAG_NO_ENTER_ACTION:
+                    break;
+
                 default:
                    QtNative.activityDelegate().hideSoftwareKeyboard();
                    break;
