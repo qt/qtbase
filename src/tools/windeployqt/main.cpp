@@ -37,9 +37,6 @@ using namespace Qt::StringLiterals;
 using ModuleBitset = std::bitset<77>;
 
 enum QtModule
-#if defined(Q_COMPILER_CLASS_ENUM) || defined(Q_CC_MSVC)
-    : quint64
-#endif
 {
     QtBluetoothModule,
     QtConcurrentModule,
