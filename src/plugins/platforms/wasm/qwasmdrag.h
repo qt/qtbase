@@ -30,7 +30,7 @@ public:
     Qt::DropActions m_dropActions;
     QWasmScreen *m_wasmScreen = nullptr;
     int m_mimeTypesCount = 0;
-    QMimeData *m_mimeData = nullptr;
+    std::unique_ptr<QMimeData> m_mimeData;
     void qWasmDrop();
 
 private:

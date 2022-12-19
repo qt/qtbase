@@ -61,9 +61,7 @@ static void dropEvent(val event)
             reinterpret_cast<QWasmScreen*>(event["target"]["data-qtdropcontext"].as<quintptr>());
 
     wasmDrag->m_mouseDropPoint = QPoint(event["x"].as<int>(), event["y"].as<int>());
-    if (wasmDrag->m_mimeData)
-        delete wasmDrag->m_mimeData;
-    wasmDrag->m_mimeData = new QMimeData;
+    wasmDrag->m_mimeData = std::make_unique<QMimeData>();
     wasmDrag->m_qButton = MouseEvent::buttonFromWeb(event["button"].as<int>());
 
     wasmDrag->m_keyModifiers = Qt::NoModifier;
@@ -152,11 +150,7 @@ QWasmDrag::QWasmDrag()
     init();
 }
 
-QWasmDrag::~QWasmDrag()
-{
-    if (m_mimeData)
-        delete m_mimeData;
-}
+QWasmDrag::~QWasmDrag() = default;
 
 void QWasmDrag::init()
 {
@@ -182,7 +176,7 @@ void QWasmDrag::qWasmDrop()
 
     // start drag enter
     QWindowSystemInterface::handleDrag(thisDrag->m_wasmScreen->topLevelAt(thisDrag->m_mouseDropPoint),
-                                       thisDrag->m_mimeData,
+                                       thisDrag->m_mimeData.get(),
                                        thisDrag->m_mouseDropPoint,
                                        thisDrag->m_dropActions,
                                        thisDrag->m_qButton,
@@ -190,7 +184,7 @@ void QWasmDrag::qWasmDrop()
 
     // drag drop
     QWindowSystemInterface::handleDrop(thisDrag->m_wasmScreen->topLevelAt(thisDrag->m_mouseDropPoint),
-                                       thisDrag->m_mimeData,
+                                       thisDrag->m_mimeData.get(),
                                        thisDrag->m_mouseDropPoint,
                                        thisDrag->m_dropActions,
                                        thisDrag->m_qButton,
