@@ -1312,12 +1312,12 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
 {
     bool readOnly = confFile->addedKeys.isEmpty() && confFile->removedKeys.isEmpty();
 
+    QFileInfo fileInfo(confFile->name);
     /*
         We can often optimize the read-only case, if the file on disk
         hasn't changed.
     */
     if (readOnly && confFile->size > 0) {
-        QFileInfo fileInfo(confFile->name);
         if (confFile->size == fileInfo.size() && confFile->timeStamp == fileInfo.lastModified(QTimeZone::UTC))
             return;
     }
@@ -1355,7 +1355,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
         We hold the lock. Let's reread the file if it has changed
         since last time we read it.
     */
-    QFileInfo fileInfo(confFile->name);
+    fileInfo.refresh();
     bool mustReadFile = true;
     bool createFile = !fileInfo.exists();
 
@@ -1464,7 +1464,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
             confFile->addedKeys.clear();
             confFile->removedKeys.clear();
 
-            QFileInfo fileInfo(confFile->name);
+            fileInfo.refresh();
             confFile->size = fileInfo.size();
             confFile->timeStamp = fileInfo.lastModified(QTimeZone::UTC);
 
