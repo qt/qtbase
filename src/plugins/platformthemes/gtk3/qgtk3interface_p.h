@@ -99,6 +99,9 @@ public:
     // Return current GTK theme name
     const QString themeName() const;
 
+    // Derive appearance from default colors
+    Qt::Appearance appearanceByColors() const;
+
     // Convert GTK state to/from string
     static int toGtkState(const QString &state);
     static const QLatin1String fromGtkState(GtkStateFlags state);
