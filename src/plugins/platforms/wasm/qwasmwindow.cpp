@@ -12,6 +12,7 @@
 #include "qwasmbase64iconstore.h"
 #include "qwasmdom.h"
 #include "qwasmwindow.h"
+#include "qwasmwindowclientarea.h"
 #include "qwasmscreen.h"
 #include "qwasmstylepixmaps_p.h"
 #include "qwasmcompositor.h"
@@ -24,6 +25,8 @@
 #include <emscripten/val.h>
 
 #include <GL/gl.h>
+
+#include <QtCore/private/qstdweb_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -46,6 +49,8 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
 
     m_nonClientArea = std::make_unique<NonClientArea>(this, m_qtWindow);
     m_nonClientArea->titleBar()->setTitle(window()->title());
+
+    m_clientArea = std::make_unique<ClientArea>(this, compositor->screen(), m_canvas);
 
     m_qtWindow.call<void>("appendChild", m_windowContents);
 
@@ -70,6 +75,16 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
     emscripten::val::module_property("specialHTMLTargets").set(canvasSelector(), m_canvas);
 
     m_compositor->addWindow(this);
+
+    const auto callback = std::function([this](emscripten::val event) {
+        if (processPointer(*PointerEvent::fromWeb(event)))
+            event.call<void>("preventDefault");
+    });
+
+    m_pointerEnterCallback =
+            std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerenter", callback);
+    m_pointerLeaveCallback =
+            std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerleave", callback);
 }
 
 QWasmWindow::~QWasmWindow()
@@ -112,8 +127,8 @@ void QWasmWindow::onNonClientAreaInteraction()
 bool QWasmWindow::onNonClientEvent(const PointerEvent &event)
 {
     QPoint pointInScreen = platformScreen()->mapFromLocal(
-            dom::mapPoint(event.currentTarget, platformScreen()->element(), event.localPoint));
-    return QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(
+            dom::mapPoint(event.target, platformScreen()->element(), event.localPoint));
+    return QWindowSystemInterface::handleMouseEvent(
             window(), QWasmIntegration::getTimestamp(), window()->mapFromGlobal(pointInScreen),
             pointInScreen, event.mouseButtons, event.mouseButton, ([event]() {
                 switch (event.type) {
@@ -300,12 +315,6 @@ void QWasmWindow::propagateSizeHints()
     }
 }
 
-bool QWasmWindow::startSystemResize(Qt::Edges)
-{
-    // TODO(mikolajboc): This can only be implemented if per-window events are up and running
-    return false;
-}
-
 void QWasmWindow::invalidate()
 {
     m_compositor->requestUpdateWindow(this);
@@ -387,6 +396,29 @@ void QWasmWindow::applyWindowState()
     setGeometry(newGeom);
 }
 
+bool QWasmWindow::processPointer(const PointerEvent &event)
+{
+    if (event.pointerType != PointerType::Mouse)
+        return false;
+
+    switch (event.type) {
+    case EventType::PointerEnter: {
+        const auto pointInScreen = platformScreen()->mapFromLocal(
+                dom::mapPoint(event.target, platformScreen()->element(), event.localPoint));
+        QWindowSystemInterface::handleEnterEvent(
+                window(), m_window->mapFromGlobal(pointInScreen), pointInScreen);
+        break;
+    }
+    case EventType::PointerLeave:
+        QWindowSystemInterface::handleLeaveEvent(window());
+        break;
+    default:
+        break;
+    }
+
+    return false;
+}
+
 QRect QWasmWindow::normalGeometry() const
 {
     return m_normalGeometry;
@@ -431,11 +463,8 @@ void QWasmWindow::requestActivateWindow()
 
 bool QWasmWindow::setMouseGrabEnabled(bool grab)
 {
-    if (grab)
-        m_compositor->setCapture(this);
-    else
-        m_compositor->releaseCapture();
-    return true;
+    Q_UNUSED(grab);
+    return false;
 }
 
 bool QWasmWindow::windowEvent(QEvent *event)

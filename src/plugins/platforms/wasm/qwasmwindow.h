@@ -20,6 +20,12 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace qstdweb {
+class EventCallback;
+}
+
+class ClientArea;
+
 class QWasmWindow final : public QPlatformWindow
 {
 public:
@@ -59,7 +65,6 @@ public:
     bool setKeyboardGrabEnabled(bool) override { return false; }
     bool setMouseGrabEnabled(bool grab) final;
     bool windowEvent(QEvent *event) final;
-    bool startSystemResize(Qt::Edges edges) final;
 
     QWasmScreen *platformScreen() const;
     void setBackingStore(QWasmBackingStore *store) { m_backingStore = store; }
@@ -78,6 +83,8 @@ private:
     bool hasTitleBar() const;
     void applyWindowState();
 
+    bool processPointer(const PointerEvent &event);
+
     QWindow *m_window = nullptr;
     QWasmCompositor *m_compositor = nullptr;
     QWasmBackingStore *m_backingStore = nullptr;
@@ -92,13 +99,21 @@ private:
     emscripten::val m_context2d = emscripten::val::undefined();
 
     std::unique_ptr<NonClientArea> m_nonClientArea;
+    std::unique_ptr<ClientArea> m_clientArea;
+
+    std::unique_ptr<qstdweb::EventCallback> m_pointerLeaveCallback;
+    std::unique_ptr<qstdweb::EventCallback> m_pointerEnterCallback;
+    std::unique_ptr<qstdweb::EventCallback> m_pointerMoveCallback;
 
     Qt::WindowStates m_state = Qt::WindowNoState;
     Qt::WindowStates m_previousWindowState = Qt::WindowNoState;
 
     Qt::WindowFlags m_flags = Qt::Widget;
 
+    QPoint m_lastPointerMovePoint;
+
     WId m_winId = 0;
+    bool m_wantCapture = false;
     bool m_hasTitle = false;
     bool m_needsCompositor = false;
     long m_requestAnimationFrameId = -1;

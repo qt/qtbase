@@ -82,15 +82,10 @@ private:
     static int focus_cb(int eventType, const EmscriptenFocusEvent *focusEvent, void *userData);
     static int wheel_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData);
 
-    bool processPointer(const PointerEvent& event);
-    bool deliverEventToTarget(const PointerEvent& event, QWindow *eventTarget);
-
     static int touchCallback(int eventType, const EmscriptenTouchEvent *ev, void *userData);
 
     bool processKeyboard(int eventType, const EmscriptenKeyboardEvent *keyEvent);
     bool processWheel(int eventType, const EmscriptenWheelEvent *wheelEvent);
-    bool processMouseEnter(const EmscriptenMouseEvent *mouseEvent);
-    bool processMouseLeave();
     bool processTouch(int eventType, const EmscriptenTouchEvent *touchEvent);
 
     void enterWindow(QWindow *window, const QPoint &localPoint, const QPoint &globalPoint);
@@ -108,25 +103,11 @@ private:
     int m_requestAnimationFrameId = -1;
     bool m_inDeliverUpdateRequest = false;
 
-    QPointer<QWindow> m_lastMouseTargetWindow;
-    QPointer<QWindow> m_mouseCaptureWindow;
-
-    std::unique_ptr<qstdweb::EventCallback> m_pointerDownCallback;
-    std::unique_ptr<qstdweb::EventCallback> m_pointerMoveCallback;
-    std::unique_ptr<qstdweb::EventCallback> m_pointerUpCallback;
-    std::unique_ptr<qstdweb::EventCallback> m_pointerLeaveCallback;
-    std::unique_ptr<qstdweb::EventCallback> m_pointerEnterCallback;
-
     std::unique_ptr<QPointingDevice> m_touchDevice;
 
     QMap <int, QPointF> m_pressedTouchIds;
 
-    bool m_isResizeCursorDisplayed = false;
-
     std::unique_ptr<QWasmEventTranslator> m_eventTranslator;
-
-    bool m_mouseInScreen = false;
-    QPointer<QWindow> m_windowUnderMouse;
 };
 
 QT_END_NAMESPACE

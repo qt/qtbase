@@ -35,6 +35,7 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
         qwasmstylepixmaps_p.h
         qwasmtheme.cpp qwasmtheme.h
         qwasmwindow.cpp qwasmwindow.h
+        qwasmwindowclientarea.cpp qwasmwindowclientarea.h
         qwasmwindownonclientarea.cpp qwasmwindownonclientarea.h
         qwasminputcontext.cpp qwasminputcontext.h
         qwasmdrag.cpp qwasmdrag.h
