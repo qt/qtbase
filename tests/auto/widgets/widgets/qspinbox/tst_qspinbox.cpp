@@ -1154,6 +1154,7 @@ void tst_QSpinBox::sizeHint()
 {
     QWidget *widget = new QWidget;
     QHBoxLayout *layout = new QHBoxLayout(widget);
+    widget->setLayout(layout);
     sizeHint_SpinBox *spinBox = new sizeHint_SpinBox;
     layout->addWidget(spinBox);
     widget->show();
