@@ -137,7 +137,7 @@ public:
         Resizer *m_resizer;
 
         std::unique_ptr<qstdweb::EventCallback> m_mouseDownEvent;
-        std::unique_ptr<qstdweb::EventCallback> m_mouseDragEvent;
+        std::unique_ptr<qstdweb::EventCallback> m_mouseMoveEvent;
         std::unique_ptr<qstdweb::EventCallback> m_mouseUpEvent;
     };
 
@@ -203,7 +203,7 @@ private:
     QPoint m_lastMovePoint;
 
     std::unique_ptr<qstdweb::EventCallback> m_mouseDownEvent;
-    std::unique_ptr<qstdweb::EventCallback> m_mouseDragEvent;
+    std::unique_ptr<qstdweb::EventCallback> m_mouseMoveEvent;
     std::unique_ptr<qstdweb::EventCallback> m_mouseUpEvent;
     std::unique_ptr<qstdweb::EventCallback> m_doubleClickEvent;
 };

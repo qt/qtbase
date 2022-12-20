@@ -60,8 +60,6 @@ QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
 
 QWasmCompositor::~QWasmCompositor()
 {
-    m_windowUnderMouse.clear();
-
     if (m_requestAnimationFrameId != -1)
         emscripten_cancel_animation_frame(m_requestAnimationFrameId);
 
@@ -74,8 +72,6 @@ void QWasmCompositor::deregisterEventHandlers()
     QByteArray screenElementSelector = screen()->eventTargetId().toUtf8();
     emscripten_set_keydown_callback(screenElementSelector.constData(), 0, 0, NULL);
     emscripten_set_keyup_callback(screenElementSelector.constData(), 0, 0, NULL);
-
-    emscripten_set_focus_callback(screenElementSelector.constData(), 0, 0, NULL);
 
     emscripten_set_wheel_callback(screenElementSelector.constData(), 0, 0, NULL);
 
@@ -112,26 +108,6 @@ void QWasmCompositor::initEventHandlers()
     emscripten_set_keyup_callback(screenElementSelector.constData(), (void *)this, UseCapture,
                                   &keyboard_cb);
 
-    val screenElement = screen()->element();
-    const auto callback = std::function([this](emscripten::val event) {
-        if (processPointer(*PointerEvent::fromWeb(event)))
-            event.call<void>("preventDefault");
-    });
-
-    m_pointerDownCallback =
-            std::make_unique<qstdweb::EventCallback>(screenElement, "pointerdown", callback);
-    m_pointerMoveCallback =
-            std::make_unique<qstdweb::EventCallback>(screenElement, "pointermove", callback);
-    m_pointerUpCallback =
-            std::make_unique<qstdweb::EventCallback>(screenElement, "pointerup", callback);
-    m_pointerEnterCallback =
-            std::make_unique<qstdweb::EventCallback>(screenElement, "pointerenter", callback);
-    m_pointerLeaveCallback =
-            std::make_unique<qstdweb::EventCallback>(screenElement, "pointerleave", callback);
-
-    emscripten_set_focus_callback(screenElementSelector.constData(), (void *)this, UseCapture,
-                                  &focus_cb);
-
     emscripten_set_wheel_callback(screenElementSelector.constData(), (void *)this, UseCapture,
                                   &wheel_cb);
 
@@ -144,10 +120,10 @@ void QWasmCompositor::initEventHandlers()
     emscripten_set_touchcancel_callback(screenElementSelector.constData(), (void *)this, UseCapture,
                                         &touchCallback);
 
-    screenElement.call<void>("addEventListener", std::string("drop"),
-                             val::module_property("qtDrop"), val(true));
-    screenElement.set("data-qtdropcontext", // ? unique
-                      emscripten::val(quintptr(reinterpret_cast<void *>(screen()))));
+    screen()->element().call<void>("addEventListener", std::string("drop"),
+                                   val::module_property("qtDrop"), val(true));
+    screen()->element().set("data-qtdropcontext", // ? unique
+                            emscripten::val(quintptr(reinterpret_cast<void *>(screen()))));
 }
 
 void QWasmCompositor::addWindow(QWasmWindow *window)
@@ -162,8 +138,6 @@ void QWasmCompositor::removeWindow(QWasmWindow *window)
 {
     m_requestUpdateWindows.remove(window);
     m_windowStack.removeWindow(window);
-    if (m_lastMouseTargetWindow == window->window())
-        m_lastMouseTargetWindow = nullptr;
     if (m_windowStack.topWindow())
         m_windowStack.topWindow()->requestActivateWindow();
 
@@ -344,15 +318,6 @@ int QWasmCompositor::keyboard_cb(int eventType, const EmscriptenKeyboardEvent *k
     return static_cast<int>(wasmCompositor->processKeyboard(eventType, keyEvent));
 }
 
-int QWasmCompositor::focus_cb(int eventType, const EmscriptenFocusEvent *focusEvent, void *userData)
-{
-    Q_UNUSED(eventType)
-    Q_UNUSED(focusEvent)
-    Q_UNUSED(userData)
-
-    return 0;
-}
-
 int QWasmCompositor::wheel_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
 {
     QWasmCompositor *compositor = (QWasmCompositor *) userData;
@@ -363,112 +328,6 @@ int QWasmCompositor::touchCallback(int eventType, const EmscriptenTouchEvent *to
 {
     auto compositor = reinterpret_cast<QWasmCompositor*>(userData);
     return static_cast<int>(compositor->processTouch(eventType, touchEvent));
-}
-
-bool QWasmCompositor::processPointer(const PointerEvent& event)
-{
-    if (event.pointerType != PointerType::Mouse)
-        return false;
-
-    const auto pointInScreen = screen()->mapFromLocal(event.localPoint);
-
-    QWindow *const targetWindow = ([this, pointInScreen]() -> QWindow * {
-        auto *targetWindow = m_mouseCaptureWindow != nullptr
-                ? m_mouseCaptureWindow.get()
-                : windowAt(pointInScreen, 5);
-
-        return targetWindow ? targetWindow : m_lastMouseTargetWindow.get();
-    })();
-    if (!targetWindow)
-        return false;
-    m_lastMouseTargetWindow = targetWindow;
-
-    const QPoint pointInTargetWindowCoords = targetWindow->mapFromGlobal(pointInScreen);
-    const bool pointerIsWithinTargetWindowBounds = targetWindow->geometry().contains(pointInScreen);
-
-    if (m_mouseInScreen && m_windowUnderMouse != targetWindow
-        && pointerIsWithinTargetWindowBounds) {
-        // delayed mouse enter
-        enterWindow(targetWindow, pointInTargetWindowCoords, pointInScreen);
-        m_windowUnderMouse = targetWindow;
-    }
-
-    switch (event.type) {
-    case EventType::PointerDown:
-    {
-        screen()->element().call<void>("setPointerCapture", event.pointerId);
-
-        if (targetWindow)
-            targetWindow->requestActivate();
-
-        break;
-    }
-    case EventType::PointerUp:
-    {
-        screen()->element().call<void>("releasePointerCapture", event.pointerId);
-
-        break;
-    }
-    case EventType::PointerEnter:
-        processMouseEnter(nullptr);
-        break;
-    case EventType::PointerLeave:
-        processMouseLeave();
-        break;
-    default:
-        break;
-    };
-
-    if (!pointerIsWithinTargetWindowBounds && event.mouseButtons.testFlag(Qt::NoButton)) {
-        leaveWindow(m_lastMouseTargetWindow);
-    }
-
-    const bool eventAccepted = deliverEventToTarget(event, targetWindow);
-    if (!eventAccepted && event.type == EventType::PointerDown)
-        QGuiApplicationPrivate::instance()->closeAllPopups();
-    return eventAccepted;
-}
-
-bool QWasmCompositor::deliverEventToTarget(const PointerEvent &event, QWindow *eventTarget)
-{
-    Q_ASSERT(!m_mouseCaptureWindow || m_mouseCaptureWindow.get() == eventTarget);
-
-    const auto pointInScreen = screen()->mapFromLocal(event.localPoint);
-
-    const QPoint targetPointClippedToScreen(
-            std::max(screen()->geometry().left(),
-                     std::min(screen()->geometry().right(), pointInScreen.x())),
-            std::max(screen()->geometry().top(),
-                     std::min(screen()->geometry().bottom(), pointInScreen.y())));
-
-    bool deliveringToPreviouslyClickedWindow = false;
-
-    if (!eventTarget) {
-        if (event.type != EventType::PointerUp || !m_lastMouseTargetWindow)
-            return false;
-
-        eventTarget = m_lastMouseTargetWindow;
-        m_lastMouseTargetWindow = nullptr;
-        deliveringToPreviouslyClickedWindow = true;
-    }
-
-    WindowArea windowArea = WindowArea::Client;
-    if (!deliveringToPreviouslyClickedWindow && !m_mouseCaptureWindow
-        && !eventTarget->geometry().contains(targetPointClippedToScreen)) {
-        if (!eventTarget->frameGeometry().contains(targetPointClippedToScreen))
-            return false;
-        windowArea = WindowArea::NonClient;
-    }
-
-    const QEvent::Type eventType =
-        MouseEvent::mouseEventTypeFromEventType(event.type, windowArea);
-
-    return eventType != QEvent::None &&
-           QWindowSystemInterface::handleMouseEvent(
-               eventTarget, QWasmIntegration::getTimestamp(),
-               eventTarget->mapFromGlobal(targetPointClippedToScreen),
-               targetPointClippedToScreen, event.mouseButtons, event.mouseButton,
-               eventType, event.modifiers);
 }
 
 bool QWasmCompositor::processKeyboard(int eventType, const EmscriptenKeyboardEvent *emKeyEvent)
@@ -521,9 +380,8 @@ bool QWasmCompositor::processWheel(int eventType, const EmscriptenWheelEvent *wh
     scrollFactor = -scrollFactor; // Web scroll deltas are inverted from Qt deltas.
 
     Qt::KeyboardModifiers modifiers = KeyboardModifier::getForEvent(*mouseEvent);
-    QPoint targetPointInScreenElementCoords(mouseEvent->targetX, mouseEvent->targetY);
     QPoint targetPointInScreenCoords =
-            screen()->geometry().topLeft() + targetPointInScreenElementCoords;
+            screen()->mapFromLocal(QPoint(mouseEvent->targetX, mouseEvent->targetY));
 
     QWindow *targetWindow = screen()->compositor()->windowAt(targetPointInScreenCoords, 5);
     if (!targetWindow)
@@ -555,9 +413,8 @@ bool QWasmCompositor::processTouch(int eventType, const EmscriptenTouchEvent *to
 
         const EmscriptenTouchPoint *touches = &touchEvent->touches[i];
 
-        QPoint targetPointInScreenElementCoords(touches->targetX, touches->targetY);
         QPoint targetPointInScreenCoords =
-                screen()->geometry().topLeft() + targetPointInScreenElementCoords;
+                screen()->mapFromLocal(QPoint(touches->targetX, touches->targetY));
 
         targetWindow = screen()->compositor()->windowAt(targetPointInScreenCoords, 5);
         if (targetWindow == nullptr)
@@ -623,40 +480,4 @@ bool QWasmCompositor::processTouch(int eventType, const EmscriptenTouchEvent *to
                 targetWindow, QWasmIntegration::getTimestamp(), m_touchDevice.get(), touchPointList, keyModifier);
 
     return static_cast<int>(accepted);
-}
-
-void QWasmCompositor::setCapture(QWasmWindow *window)
-{
-    Q_ASSERT(std::find(m_windowStack.begin(), m_windowStack.end(), window) != m_windowStack.end());
-    m_mouseCaptureWindow = window->window();
-}
-
-void QWasmCompositor::releaseCapture()
-{
-    m_mouseCaptureWindow = nullptr;
-}
-
-void QWasmCompositor::leaveWindow(QWindow *window)
-{
-    m_windowUnderMouse = nullptr;
-    QWindowSystemInterface::handleLeaveEvent(window);
-}
-
-void QWasmCompositor::enterWindow(QWindow *window, const QPoint &pointInTargetWindowCoords, const QPoint &targetPointInScreenCoords)
-{
-    QWindowSystemInterface::handleEnterEvent(window, pointInTargetWindowCoords, targetPointInScreenCoords);
-}
-
-bool QWasmCompositor::processMouseEnter(const EmscriptenMouseEvent *mouseEvent)
-{
-    Q_UNUSED(mouseEvent)
-    // mouse has entered the screen area
-    m_mouseInScreen = true;
-    return true;
-}
-
-bool QWasmCompositor::processMouseLeave()
-{
-    m_mouseInScreen = false;
-    return true;
 }

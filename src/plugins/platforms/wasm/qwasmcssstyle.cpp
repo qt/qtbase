@@ -29,7 +29,6 @@ const char *Style = R"css(
 
 .qt-window {
     box-shadow: rgb(0 0 0 / 20%) 0px 10px 16px 0px, rgb(0 0 0 / 19%) 0px 6px 20px 0px;
-    pointer-events: none;
     position: absolute;
     background-color: lightgray;
 }
@@ -41,7 +40,6 @@ const char *Style = R"css(
 
 .resize-outline {
     position: absolute;
-    pointer-events: all;
     display: none;
 }
 
@@ -119,7 +117,6 @@ const char *Style = R"css(
     overflow: hidden;
     height: 18px;
     padding-bottom: 4px;
-    pointer-events: all;
 }
 
 .qt-window.has-title-bar .title-bar {
@@ -184,7 +181,6 @@ const char *Style = R"css(
 }
 .title-bar .action-button {
     pointer-events: all;
-    align-self: end;
 }
 
 .qt-window.blocked div {
