@@ -1505,9 +1505,9 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     }
 
     if (optVerboseLevel >= 1) {
-        std::wcout << "Direct dependencies: " << formatQtModules(result.directlyUsedQtLibraries.to_ullong()).constData()
-                   << "\nAll dependencies   : " << formatQtModules(result.usedQtLibraries.to_ullong()).constData()
-                   << "\nTo be deployed     : " << formatQtModules(result.deployedQtLibraries.to_ullong()).constData() << '\n';
+        std::wcout << "Direct dependencies: " << formatQtModules(result.directlyUsedQtLibraries).constData()
+                   << "\nAll dependencies   : " << formatQtModules(result.usedQtLibraries).constData()
+                   << "\nTo be deployed     : " << formatQtModules(result.deployedQtLibraries).constData() << '\n';
     }
 
     if (optVerboseLevel > 1)
