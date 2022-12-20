@@ -6,8 +6,6 @@
 #include <QtNetwork>
 #include <QtCore>
 
-QT_BEGIN_NAMESPACE
-
 //! [0]
 class DtlsAssociation : public QObject
 {
@@ -44,7 +42,5 @@ private:
     Q_DISABLE_COPY(DtlsAssociation)
 };
 //! [0]
-
-QT_END_NAMESPACE
 
 #endif // ASSOCIATION_H
