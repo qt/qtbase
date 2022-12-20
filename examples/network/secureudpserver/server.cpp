@@ -5,8 +5,6 @@
 
 #include <algorithm>
 
-QT_BEGIN_NAMESPACE
-
 namespace {
 
 QString peer_info(const QHostAddress &address, quint16 port)
@@ -219,5 +217,3 @@ void DtlsServer::shutdown()
     serverSocket.close();
 }
 //! [14]
-
-QT_END_NAMESPACE

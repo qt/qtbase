@@ -9,8 +9,6 @@
 #include <vector>
 #include <memory>
 
-QT_BEGIN_NAMESPACE
-
 //! [0]
 class DtlsServer : public QObject
 {
@@ -54,7 +52,5 @@ private:
     Q_DISABLE_COPY(DtlsServer)
 };
 //! [0]
-
-QT_END_NAMESPACE
 
 #endif // SERVER_H

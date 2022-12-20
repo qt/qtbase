@@ -3,8 +3,6 @@
 
 #include "association.h"
 
-QT_BEGIN_NAMESPACE
-
 DtlsAssociation::DtlsAssociation(const QHostAddress &address, quint16 port,
                                  const QString &connectionName)
     : name(connectionName),
@@ -151,5 +149,3 @@ void DtlsAssociation::pingTimeout()
     ++ping;
 }
 //! [10]
-
-QT_END_NAMESPACE

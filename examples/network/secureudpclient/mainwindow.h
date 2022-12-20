@@ -8,21 +8,15 @@
 #include <QList>
 
 QT_BEGIN_NAMESPACE
-
 namespace Ui {
-
 class MainWindow;
-
 }
 
 class QHostAddress;
 class QHostInfo;
-
-class DtlsAssociation;
-
 QT_END_NAMESPACE
 
-QT_USE_NAMESPACE
+class DtlsAssociation;
 
 class MainWindow : public QMainWindow
 {
