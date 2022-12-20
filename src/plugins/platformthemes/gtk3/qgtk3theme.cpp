@@ -5,7 +5,6 @@
 #include "qgtk3dialoghelpers.h"
 #include "qgtk3menu.h"
 #include <QVariant>
-#include <QtCore/qregularexpression.h>
 #include <QGuiApplication>
 #include <qpa/qwindowsysteminterface.h>
 
@@ -177,46 +176,8 @@ QString QGtk3Theme::gtkFontName() const
 
 Qt::Appearance QGtk3Theme::appearance() const
 {
-    if (m_storage)
-        return m_storage->appearance();
-    /*
-        https://docs.gtk.org/gtk3/running.html
-
-        It's possible to set a theme variant after the theme name when using GTK_THEME:
-
-            GTK_THEME=Adwaita:dark
-
-        Some themes also have "-dark" as part of their name.
-
-        We test this environment variable first because the documentation says
-        it's mainly used for easy debugging, so it should be possible to use it
-        to override any other settings.
-    */
-    QString themeName = qEnvironmentVariable("GTK_THEME");
-    if (!themeName.isEmpty())
-        return themeName.contains("dark"_L1, Qt::CaseInsensitive)
-                ? Qt::Appearance::Dark : Qt::Appearance::Light;
-
-    /*
-        https://docs.gtk.org/gtk3/property.Settings.gtk-application-prefer-dark-theme.html
-
-        This setting controls which theme is used when the theme specified by
-        gtk-theme-name provides both light and dark variants. We can save a
-        regex check by testing this property first.
-    */
-    const auto preferDark = gtkSetting<gboolean>("gtk-application-prefer-dark-theme");
-    if (preferDark)
-        return Qt::Appearance::Dark;
-
-    /*
-        https://docs.gtk.org/gtk3/property.Settings.gtk-theme-name.html
-    */
-    themeName = gtkSetting("gtk-theme-name");
-    if (!themeName.isEmpty())
-        return themeName.contains("dark"_L1, Qt::CaseInsensitive)
-                ? Qt::Appearance::Dark : Qt::Appearance::Light;
-
-    return Qt::Appearance::Unknown;
+    Q_ASSERT(m_storage);
+    return m_storage->appearance();
 }
 
 bool QGtk3Theme::usePlatformNativeDialog(DialogType type) const
@@ -274,23 +235,27 @@ bool QGtk3Theme::useNativeFileDialog()
 
 const QPalette *QGtk3Theme::palette(Palette type) const
 {
-    return m_storage ? m_storage->palette(type) : QPlatformTheme::palette(type);
+    Q_ASSERT(m_storage);
+    return m_storage->palette(type);
 }
 
 QPixmap QGtk3Theme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
 {
-    return m_storage ? m_storage->standardPixmap(sp, size) : QPlatformTheme::standardPixmap(sp, size);
+    Q_ASSERT(m_storage);
+    return m_storage->standardPixmap(sp, size);
 }
 
 const QFont *QGtk3Theme::font(Font type) const
 {
-    return m_storage ? m_storage->font(type) : QGnomeTheme::font(type);
+    Q_ASSERT(m_storage);
+    return m_storage->font(type);
 }
 
 QIcon QGtk3Theme::fileIcon(const QFileInfo &fileInfo,
                            QPlatformTheme::IconOptions iconOptions) const
 {
-    return m_storage ? m_storage->fileIcon(fileInfo) : QGnomeTheme::fileIcon(fileInfo, iconOptions);
+    Q_ASSERT(m_storage);
+    return m_storage->fileIcon(fileInfo);
 }
 
 QT_END_NAMESPACE
