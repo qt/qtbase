@@ -40,8 +40,9 @@ public:
     int m_mouseDoubleClickDistance = -1;
     int m_touchDoubleTapDistance = -1;
 
-    Qt::Appearance appearance() const { return m_appearance; };
+    Qt::Appearance appearance() const { return m_appearance; }
     void setAppearance(Qt::Appearance appearance);
+
     static QStyleHintsPrivate *get(QStyleHints *q);
 
 private:
