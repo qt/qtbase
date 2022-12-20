@@ -10,9 +10,9 @@
 #include <qiodevice.h>
 #include <qloggingcategory.h>
 #include <qvariant.h>
+#include <private/qtools_p.h>
 
 #include <stdio.h>
-#include <ctype.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -24,8 +24,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcImageIo)
 
 static inline int hex2byte(char *p)
 {
-    return ((isdigit((uchar) *p) ? *p - '0' : toupper((uchar) *p) - 'A' + 10) << 4) |
-           (isdigit((uchar) *(p+1)) ? *(p+1) - '0' : toupper((uchar) *(p+1)) - 'A' + 10);
+    return QtMiscUtils::fromHex(p[0]) * 16 | QtMiscUtils::fromHex(p[1]);
 }
 
 static bool read_xbm_header(QIODevice *device, int& w, int& h)
@@ -129,9 +128,10 @@ static bool read_xbm_body(QIODevice *device, int w, int h, QImage *outImage)
 
     while (y < h) {                                // for all encoded bytes...
         if (p && p < (buf + readBytes - 3)) {      // p = "0x.."
-            if (!isxdigit(p[2]) || !isxdigit(p[3]))
+            const int byte = hex2byte(p + 2);
+            if (byte < 0) // non-hex char encountered
                 return false;
-            *b++ = hex2byte(p+2);
+            *b++ = byte;
             p += 2;
             if (++x == w && ++y < h) {
                 b = outImage->scanLine(y);
