@@ -443,6 +443,46 @@
 */
 
 /*!
+    \fn template <class T> QSharedPointer<T>::QSharedPointer(QSharedPointer &&other)
+
+    Move-constructs a QSharedPointer instance, making it point at the same
+    object that \a other was pointing to.
+
+    \since 5.4
+*/
+
+/*!
+    \fn template <class T> QSharedPointer<T>::operator=(QSharedPointer &&other)
+
+    Move-assigns \a other to this QSharedPointer instance.
+
+    \since 5.0
+*/
+
+/*!
+    \fn template <class T> template <class X> QSharedPointer<T>::QSharedPointer(QSharedPointer<X> &&other)
+
+    Move-constructs a QSharedPointer instance, making it point at the same
+    object that \a other was pointing to.
+
+    This constructor participates in overload resolution only if \c{X*}
+    implicitly converts to \c{T*}.
+
+    \since 5.6
+*/
+
+/*!
+    \fn template <class T> template <class X> QSharedPointer<T>::operator=(QSharedPointer<X> &&other)
+
+    Move-assigns \a other to this QSharedPointer instance.
+
+    This assignment operator participates in overload resolution only if \c{X*}
+    implicitly converts to \c{T*}.
+
+    \since 5.6
+*/
+
+/*!
     \fn template <class T> QSharedPointer<T>::QSharedPointer(const QWeakPointer<T> &other)
 
     Creates a QSharedPointer by promoting the weak reference \a other
@@ -893,6 +933,15 @@
     \since 5.4
 
     Const overload of sharedFromThis().
+*/
+
+/*!
+    \fn template <class T> qHash(const QSharedPointer<T> &key, size_t seed)
+    \relates QSharedPointer
+
+    Returns the hash value for \a key, using \a seed to seed the calculation.
+
+    \since 5.0
 */
 
 /*!
