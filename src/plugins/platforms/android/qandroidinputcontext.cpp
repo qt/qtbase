@@ -896,9 +896,11 @@ void QAndroidInputContext::showInputPanel()
         return;
 
     disconnect(m_updateCursorPosConnection);
+    m_updateCursorPosConnection = {};
+
     if (qGuiApp->focusObject()->metaObject()->indexOfSignal("cursorPositionChanged(int,int)") >= 0) // QLineEdit breaks the pattern
         m_updateCursorPosConnection = connect(qGuiApp->focusObject(), SIGNAL(cursorPositionChanged(int,int)), this, SLOT(updateCursorPosition()));
-    else
+    else if (qGuiApp->focusObject()->metaObject()->indexOfSignal("cursorPositionChanged()") >= 0)
         m_updateCursorPosConnection = connect(qGuiApp->focusObject(), SIGNAL(cursorPositionChanged()), this, SLOT(updateCursorPosition()));
 
     QRect rect = screenInputItemRectangle();
