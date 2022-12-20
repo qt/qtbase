@@ -1256,7 +1256,7 @@ void tst_QByteArray::number_double_data()
         QTest::addRow("%s, format '%c', precision %d", title, datum.f, datum.p)
                 << datum.d << datum.f << datum.p << ba;
         if (datum.f != 'f') { // Also test uppercase format
-            datum.f = toupper(datum.f);
+            datum.f = QtMiscUtils::toAsciiUpper(datum.f);
             QByteArray upper = ba.toUpper();
             QByteArray upperTitle = QByteArray(title);
             if (!datum.optTitle.isEmpty())

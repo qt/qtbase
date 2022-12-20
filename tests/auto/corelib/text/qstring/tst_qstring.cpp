@@ -28,11 +28,11 @@
 #include <qlocale.h>
 #include <locale.h>
 #include <qhash.h>
+#include <private/qtools_p.h>
 
 #include <string>
 #include <algorithm>
 #include <limits>
-#include <ctype.h>
 
 #include "../shared/test_number_shared.h"
 #include "../../../../shared/localechange.h"
@@ -5778,7 +5778,7 @@ void tst_QString::number_double_data()
         QTest::addRow("%s, format '%c', precision %d", title, datum.f, datum.p)
                 << datum.d << datum.f << datum.p << datum.expected.toString();
         if (datum.f != 'f') { // Also test uppercase format
-            datum.f = toupper(datum.f);
+            datum.f = QtMiscUtils::toAsciiUpper(datum.f);
             QString upper = datum.expected.toString().toUpper();
             QString upperTitle = QString::fromLatin1(title);
             if (!datum.optTitle.isEmpty())
