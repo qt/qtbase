@@ -129,7 +129,8 @@ int QStyleHints::touchDoubleTapDistance() const
 */
 Qt::Appearance QStyleHints::appearance() const
 {
-    return d_func()->appearance();
+    Q_D(const QStyleHints);
+    return d->appearance();
 }
 
 /*!
@@ -597,10 +598,11 @@ int QStyleHints::mouseQuickSelectionThreshold() const
  */
 void QStyleHintsPrivate::setAppearance(Qt::Appearance appearance)
 {
-    if (m_appearance != appearance) {
-        m_appearance = appearance;
-        emit q_func()->appearanceChanged(appearance);
-    }
+    if (m_appearance == appearance)
+        return;
+    m_appearance = appearance;
+    Q_Q(QStyleHints);
+    emit q->appearanceChanged(appearance);
 }
 
 QStyleHintsPrivate *QStyleHintsPrivate::get(QStyleHints *q)
