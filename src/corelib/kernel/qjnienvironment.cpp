@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qjnienvironment.h"
-#include "qjniobject.h"
 #include "qjnihelpers_p.h"
 
 #include <QtCore/QThread>
@@ -444,16 +443,57 @@ bool QJniEnvironment::registerNativeMethods(jclass clazz, const JNINativeMethod 
 */
 bool QJniEnvironment::checkAndClearExceptions(QJniEnvironment::OutputMode outputMode)
 {
-    if (Q_UNLIKELY(d->jniEnv->ExceptionCheck())) {
-        if (outputMode != OutputMode::Silent)
-            d->jniEnv->ExceptionDescribe();
-        d->jniEnv->ExceptionClear();
-
-        return true;
-    }
-
-    return false;
+    return checkAndClearExceptions(d->jniEnv, outputMode);
 }
+
+namespace {
+    // Any pending exception need to be cleared before calling this
+    QString exceptionMessage(JNIEnv *env, const jthrowable &exception)
+    {
+        if (!exception)
+            return {};
+
+        auto logError = []() {
+            qWarning() << "QJniEnvironment: a null object returned or an exception occurred while "
+                          "fetching a prior exception message";
+        };
+
+        auto checkAndClear = [env]() {
+            if (Q_UNLIKELY(env->ExceptionCheck())) {
+                env->ExceptionClear();
+                return true;
+            }
+            return false;
+        };
+
+        const jclass logClazz = env->FindClass("android/util/Log");
+        if (checkAndClear() || !logClazz) {
+            logError();
+            return {};
+        }
+
+        const jmethodID methodId = env->GetStaticMethodID(logClazz, "getStackTraceString",
+                                            "(Ljava/lang/Throwable;)Ljava/lang/String;");
+        if (checkAndClear() || !methodId) {
+            logError();
+            return {};
+        }
+
+        jvalue value;
+        value.l = static_cast<jobject>(exception);
+        const jobject messageObj = env->CallStaticObjectMethodA(logClazz, methodId, &value);
+        const jstring jmessage = static_cast<jstring>(messageObj);
+        if (checkAndClear())
+            return {};
+
+        char const *utfMessage = env->GetStringUTFChars(jmessage, 0);
+        const QString message = QString::fromUtf8(utfMessage);
+
+        env->ReleaseStringUTFChars(jmessage, utfMessage);
+
+        return message;
+    }
+} // end namespace
 
 /*!
     \fn QJniEnvironment::checkAndClearExceptions(JNIEnv *env, OutputMode outputMode = OutputMode::Verbose)
@@ -472,9 +512,22 @@ bool QJniEnvironment::checkAndClearExceptions(QJniEnvironment::OutputMode output
 bool QJniEnvironment::checkAndClearExceptions(JNIEnv *env, QJniEnvironment::OutputMode outputMode)
 {
     if (Q_UNLIKELY(env->ExceptionCheck())) {
-        if (outputMode != OutputMode::Silent)
-            env->ExceptionDescribe();
-        env->ExceptionClear();
+        if (outputMode == OutputMode::Verbose) {
+            if (jthrowable exception = env->ExceptionOccurred()) {
+                env->ExceptionClear();
+                const QString message = exceptionMessage(env, exception);
+                // Print to QWARN since env->ExceptionDescribe() does the same
+                if (!message.isEmpty())
+                    qWarning().noquote() << message;
+                env->DeleteLocalRef(exception);
+            } else {
+                // if the exception object is null for some reason just
+                env->ExceptionDescribe();
+                env->ExceptionClear();
+            }
+        } else {
+            env->ExceptionClear();
+        }
 
         return true;
     }
