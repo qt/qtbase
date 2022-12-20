@@ -18,9 +18,17 @@
 /*!
     \module QtCorePrivate
     \title Qt Core Private C++ Classes
-    \qtcmakepackage CorePrivate
     \qtvariable core-private
-
-    \brief Provides private core functionality.
     \preliminary
+    \brief Provides private core functionality.
+
+//! [qtcoreprivate-usage]
+    When building with CMake, use the following commands to use
+    private Qt Core APIs:
+
+    \badcode
+    find_package(Qt6 REQUIRED COMPONENTS Core)
+    target_link_libraries(mytarget PRIVATE Qt6::CorePrivate)
+    \endcode
+//! [qtcoreprivate-usage]
 */
