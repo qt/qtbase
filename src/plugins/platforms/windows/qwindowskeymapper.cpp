@@ -15,6 +15,7 @@
 #include <QtGui/qevent.h>
 #include <QtGui/private/qwindowsguieventdispatcher_p.h>
 #include <QtCore/private/qdebug_p.h>
+#include <QtCore/private/qtools_p.h>
 
 #if defined(WM_APPCOMMAND)
 #  ifndef FAPPCOMMAND_MOUSE
@@ -599,8 +600,7 @@ static inline quint32 toKeyOrUnicode(quint32 vk, quint32 scancode, unsigned char
 
 static inline int asciiToKeycode(char a, int state)
 {
-    if (a >= 'a' && a <= 'z')
-        a = toupper(a);
+    a = QtMiscUtils::toAsciiUpper(a);
     if ((state & Qt::ControlModifier) != 0) {
         if (a >= 0 && a <= 31)              // Ctrl+@..Ctrl+A..CTRL+Z..Ctrl+_
             a += '@';                       // to @..A..Z.._
