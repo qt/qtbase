@@ -226,21 +226,6 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     isSymLink(). The symLinkTarget() function provides the name of the file
     the symlink points to.
 
-    On Unix (including \macos and iOS), the property getter functions in this
-    class return the properties such as times and size of the target file, not
-    the symlink, because Unix handles symlinks transparently. Opening a symlink
-    using QFile effectively opens the link's target. For example:
-
-    \snippet code/src_corelib_io_qfileinfo.cpp 0
-
-    On Windows, shortcuts (\c .lnk files) are currently treated as symlinks. As
-    on Unix systems, the property getters return the size of the targeted file,
-    not the \c .lnk file itself.  This behavior is deprecated and will likely be
-    removed in a future version of Qt, after which \c .lnk files will be treated
-    as regular files.
-
-    \snippet code/src_corelib_io_qfileinfo.cpp 1
-
     Elements of the file's name can be extracted with path() and
     fileName(). The fileName()'s parts can be extracted with
     baseName(), suffix() or completeSuffix(). QFileInfo objects to
@@ -258,8 +243,26 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     permissions and ownership in a single statement using the permission()
     function.
 
-    \target NTFS permissions
-    \note On NTFS file systems, ownership and permissions checking is
+    \section1 Symbolic Links and Shortcuts
+
+    On Unix (including \macos and iOS), the property getter functions in this
+    class return the properties such as times and size of the target file, not
+    the symlink, because Unix handles symlinks transparently. Opening a symlink
+    using QFile effectively opens the link's target. For example:
+
+    \snippet code/src_corelib_io_qfileinfo.cpp 0
+
+    On Windows, shortcuts (\c .lnk files) are currently treated as symlinks. As
+    on Unix systems, the property getters return the size of the targeted file,
+    not the \c .lnk file itself.  This behavior is deprecated and will likely be
+    removed in a future version of Qt, after which \c .lnk files will be treated
+    as regular files.
+
+    \snippet code/src_corelib_io_qfileinfo.cpp 1
+
+    \section1 NTFS permissions
+
+    On NTFS file systems, ownership and permissions checking is
     disabled by default for performance reasons. To enable it,
     include the following line:
 
@@ -270,7 +273,7 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
 
     \snippet ntfsp.cpp 1
 
-    \section1 Performance Issues
+    \section1 Performance Considerations
 
     Some of QFileInfo's functions query the file system, but for
     performance reasons, some functions only operate on the
@@ -279,10 +282,8 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     The path() function, however, can work on the file name directly,
     and so it is faster.
 
-    \note To speed up performance, QFileInfo caches information about
-    the file.
-
-    Because files can be changed by other users or programs, or
+    To speed up performance, QFileInfo also caches information about
+    the file. Because files can be changed by other users or programs, or
     even by other parts of the same program, there is a function that
     refreshes the file information: refresh(). If you want to switch
     off a QFileInfo's caching and force it to access the file system
