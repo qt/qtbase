@@ -25,23 +25,23 @@ using namespace emscripten;
 
 static void getTextPlainCallback(val m_string)
 {
-    QWasmDrag *thisDrag = static_cast<QWasmDrag*>(QWasmIntegration::get()->drag());
+    QWasmDrag *thisDrag = static_cast<QWasmDrag *>(QWasmIntegration::get()->drag());
     thisDrag->m_mimeData->setText(QString::fromStdString(m_string.as<std::string>()));
     thisDrag->qWasmDrop();
 }
 
 static void getTextUrlCallback(val m_string)
 {
-    QWasmDrag *thisDrag = static_cast<QWasmDrag*>(QWasmIntegration::get()->drag());
+    QWasmDrag *thisDrag = static_cast<QWasmDrag *>(QWasmIntegration::get()->drag());
     thisDrag->m_mimeData->setData(QStringLiteral("text/uri-list"),
-                                          QByteArray::fromStdString(m_string.as<std::string>()));
+                                  QByteArray::fromStdString(m_string.as<std::string>()));
 
     thisDrag->qWasmDrop();
 }
 
 static void getTextHtmlCallback(val m_string)
 {
-    QWasmDrag *thisDrag = static_cast<QWasmDrag*>(QWasmIntegration::get()->drag());
+    QWasmDrag *thisDrag = static_cast<QWasmDrag *>(QWasmIntegration::get()->drag());
     thisDrag->m_mimeData->setHtml(QString::fromStdString(m_string.as<std::string>()));
 
     thisDrag->qWasmDrop();
@@ -55,10 +55,10 @@ static void dropEvent(val event)
     // after the drop event
 
     // data-context thing was not working here :(
-    QWasmDrag *wasmDrag = static_cast<QWasmDrag*>(QWasmIntegration::get()->drag());
+    QWasmDrag *wasmDrag = static_cast<QWasmDrag *>(QWasmIntegration::get()->drag());
 
     wasmDrag->m_wasmScreen =
-            reinterpret_cast<QWasmScreen*>(event["target"]["data-qtdropcontext"].as<quintptr>());
+            reinterpret_cast<QWasmScreen *>(event["target"]["data-qtdropcontext"].as<quintptr>());
 
     wasmDrag->m_mouseDropPoint = QPoint(event["x"].as<int>(), event["y"].as<int>());
     wasmDrag->m_mimeData = std::make_unique<QMimeData>();
@@ -78,11 +78,11 @@ static void dropEvent(val event)
 
     wasmDrag->m_dropActions = Qt::IgnoreAction;
     if (dEffect == "copy")
-         wasmDrag->m_dropActions = Qt::CopyAction;
+        wasmDrag->m_dropActions = Qt::CopyAction;
     if (dEffect == "move")
-         wasmDrag->m_dropActions = Qt::MoveAction;
+        wasmDrag->m_dropActions = Qt::MoveAction;
     if (dEffect == "link")
-         wasmDrag->m_dropActions = Qt::LinkAction;
+        wasmDrag->m_dropActions = Qt::LinkAction;
 
     val dt = event["dataTransfer"]["items"]["length"];
 
@@ -92,7 +92,7 @@ static void dropEvent(val event)
     int count = dt.as<int>();
     wasmDrag->m_mimeTypesCount = count;
     // kind is file type: file or string
-    for (int i=0; i < count; i++) {
+    for (int i = 0; i < count; i++) {
         val item = event["dataTransfer"]["items"][i];
         val kind = item["kind"];
         val fileType = item["type"];
@@ -126,7 +126,7 @@ static void dropEvent(val event)
         } else { // string
 
             if (fileType.as<std::string>() == "text/uri-list"
-                    || fileType.as<std::string>() == "text/x-moz-url") {
+                || fileType.as<std::string>() == "text/x-moz-url") {
                 item.call<val>("getAsString", val::module_property("qtgetTextUrl"));
             } else if (fileType.as<std::string>() == "text/html") {
                 item.call<val>("getAsString", val::module_property("qtgetTextHtml"));
@@ -137,13 +137,13 @@ static void dropEvent(val event)
     }
 }
 
-EMSCRIPTEN_BINDINGS(drop_module) {
+EMSCRIPTEN_BINDINGS(drop_module)
+{
     function("qtDrop", &dropEvent);
     function("qtgetTextPlain", &getTextPlainCallback);
     function("qtgetTextUrl", &getTextUrlCallback);
     function("qtgetTextHtml", &getTextHtmlCallback);
 }
-
 
 QWasmDrag::QWasmDrag()
 {
@@ -152,9 +152,7 @@ QWasmDrag::QWasmDrag()
 
 QWasmDrag::~QWasmDrag() = default;
 
-void QWasmDrag::init()
-{
-}
+void QWasmDrag::init() { }
 
 void QWasmDrag::drop(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardModifiers mods)
 {
@@ -169,32 +167,27 @@ void QWasmDrag::move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardMo
 void QWasmDrag::qWasmDrop()
 {
     // collect mime
-    QWasmDrag *thisDrag = static_cast<QWasmDrag*>(QWasmIntegration::get()->drag());
+    QWasmDrag *thisDrag = static_cast<QWasmDrag *>(QWasmIntegration::get()->drag());
 
     if (thisDrag->m_mimeTypesCount != thisDrag->m_mimeData->formats().size())
         return; // keep collecting mimetypes
 
     // start drag enter
-    QWindowSystemInterface::handleDrag(thisDrag->m_wasmScreen->topLevelAt(thisDrag->m_mouseDropPoint),
-                                       thisDrag->m_mimeData.get(),
-                                       thisDrag->m_mouseDropPoint,
-                                       thisDrag->m_dropActions,
-                                       thisDrag->m_qButton,
-                                       thisDrag->m_keyModifiers);
+    QWindowSystemInterface::handleDrag(
+            thisDrag->m_wasmScreen->topLevelAt(thisDrag->m_mouseDropPoint),
+            thisDrag->m_mimeData.get(), thisDrag->m_mouseDropPoint, thisDrag->m_dropActions,
+            thisDrag->m_qButton, thisDrag->m_keyModifiers);
 
     // drag drop
-    QWindowSystemInterface::handleDrop(thisDrag->m_wasmScreen->topLevelAt(thisDrag->m_mouseDropPoint),
-                                       thisDrag->m_mimeData.get(),
-                                       thisDrag->m_mouseDropPoint,
-                                       thisDrag->m_dropActions,
-                                       thisDrag->m_qButton,
-                                       thisDrag->m_keyModifiers);
+    QWindowSystemInterface::handleDrop(
+            thisDrag->m_wasmScreen->topLevelAt(thisDrag->m_mouseDropPoint),
+            thisDrag->m_mimeData.get(), thisDrag->m_mouseDropPoint, thisDrag->m_dropActions,
+            thisDrag->m_qButton, thisDrag->m_keyModifiers);
 
     // drag leave
-    QWindowSystemInterface::handleDrag(thisDrag->m_wasmScreen->topLevelAt(thisDrag->m_mouseDropPoint),
-                                       nullptr,
-                                       QPoint(),
-                                       Qt::IgnoreAction, { }, { });
+    QWindowSystemInterface::handleDrag(
+            thisDrag->m_wasmScreen->topLevelAt(thisDrag->m_mouseDropPoint), nullptr, QPoint(),
+            Qt::IgnoreAction, {}, {});
 
     thisDrag->m_mimeData->clear();
     thisDrag->m_mimeTypesCount = 0;

@@ -17,7 +17,6 @@ QT_BEGIN_NAMESPACE
 class QWasmDrag : public QSimpleDrag
 {
 public:
-
     QWasmDrag();
     ~QWasmDrag();
 
@@ -36,7 +35,6 @@ public:
 private:
     void init();
 };
-
 
 QT_END_NAMESPACE
 
