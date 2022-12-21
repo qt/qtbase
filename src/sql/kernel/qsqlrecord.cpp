@@ -15,35 +15,20 @@ QT_BEGIN_NAMESPACE
 class QSqlRecordPrivate
 {
 public:
-    QSqlRecordPrivate();
-    QSqlRecordPrivate(const QSqlRecordPrivate &other);
+    QSqlRecordPrivate() = default;
+    QSqlRecordPrivate(const QSqlRecordPrivate &other)
+        : fields(other.fields)
+    {
+    }
 
-    inline bool contains(int index) { return index >= 0 && index < fields.size(); }
-    QString createField(int index, const QString &prefix) const;
+    inline bool contains(qsizetype index) const
+    {
+      return index >= 0 && index < fields.size();
+    }
 
     QList<QSqlField> fields;
-    QAtomicInt ref;
+    QAtomicInt ref{1};
 };
-
-QSqlRecordPrivate::QSqlRecordPrivate() : ref(1)
-{
-}
-
-QSqlRecordPrivate::QSqlRecordPrivate(const QSqlRecordPrivate &other): fields(other.fields), ref(1)
-{
-}
-
-/*! \internal
-    Just for compat
-*/
-QString QSqlRecordPrivate::createField(int index, const QString &prefix) const
-{
-    QString f;
-    if (!prefix.isEmpty())
-        f = prefix + u'.';
-    f += fields.at(index).name();
-    return f;
-}
 
 /*!
     \class QSqlRecord
@@ -86,8 +71,8 @@ QString QSqlRecordPrivate::createField(int index, const QString &prefix) const
 */
 
 QSqlRecord::QSqlRecord()
+  : d(new QSqlRecordPrivate)
 {
-    d = new QSqlRecordPrivate();
 }
 
 /*!
@@ -98,8 +83,8 @@ QSqlRecord::QSqlRecord()
 */
 
 QSqlRecord::QSqlRecord(const QSqlRecord& other)
+  : d(other.d)
 {
-    d = other.d;
     d->ref.ref();
 }
 
@@ -337,9 +322,8 @@ bool QSqlRecord::contains(const QString& name) const
 void QSqlRecord::clearValues()
 {
     detach();
-    int count = d->fields.size();
-    for (int i = 0; i < count; ++i)
-        d->fields[i].clear();
+    for (QSqlField &f : d->fields)
+        f.clear();
 }
 
 /*!

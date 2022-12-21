@@ -141,20 +141,20 @@ public:
         setGenerated(), setReadOnly()
 */
 QSqlField::QSqlField(const QString &fieldName, QMetaType type, const QString &table)
+    : val(QVariant(type, nullptr)),
+      d(new QSqlFieldPrivate(fieldName, type, table))
 {
-    d = new QSqlFieldPrivate(fieldName, type, table);
-    val = QVariant(QMetaType(type), nullptr);
 }
 
 /*!
     Constructs a copy of \a other.
 */
 
-QSqlField::QSqlField(const QSqlField& other)
+QSqlField::QSqlField(const QSqlField &other)
+    : val(other.val),
+      d(other.d)
 {
-    d = other.d;
     d->ref.ref();
-    val = other.val;
 }
 
 /*!
