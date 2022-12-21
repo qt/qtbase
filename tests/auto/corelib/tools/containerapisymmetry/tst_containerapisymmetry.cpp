@@ -332,6 +332,16 @@ private Q_SLOTS:
     void resize_QByteArray() { resize_impl<QByteArray>(); }
 
 private:
+    template<typename Container>
+    void assign_impl() const;
+
+private Q_SLOTS:
+    void assign_std_vector()
+    { assign_impl<std::vector<int>>(); };
+    void assign_QVarLengthArray()
+    { assign_impl<QVarLengthArray<int, 4>>(); };
+
+private:
     template <typename Container>
     void front_back_impl() const;
 
@@ -760,6 +770,71 @@ void tst_ContainerApiSymmetry::resize_impl() const
 }
 
 template <typename Container>
+void tst_ContainerApiSymmetry::assign_impl() const
+{
+#define CHECK(Arr, ComparisonData, Sz_n, Sz_e, Cap_n, Cap_e) \
+    QCOMPARE(Sz_n, Sz_e);                                    \
+    QCOMPARE(Cap_n, Cap_e);                                  \
+    for (const auto &e : Arr)                                \
+        QCOMPARE(e, ComparisonData)                          \
+    /*end*/
+    using V = typename Container::value_type;
+    using S = typename Container::size_type;
+    auto tData = V(9);
+    {
+        // fill version
+        auto c = make<Container>(4);
+        c.assign(4, tData);
+        CHECK(c, tData, c.size(), S(4), c.capacity(), S(4));
+
+        c.assign(8, tData);
+        CHECK(c, tData, c.size(), S(8), c.capacity(), S(8));
+
+        c.assign(0, tData);
+        CHECK(c, tData, c.size(), S(0), c.capacity(), S(8));
+    }
+    {
+        // range version for non input iterator
+        auto c = make<Container>(4);
+        auto iter = make<Container>(1);
+
+        iter.assign(8, tData);
+        c.assign(iter.begin(), iter.end());
+        CHECK(c, tData, c.size(), S(8), c.capacity(), S(8));
+    }
+    {
+        // range version for input iterator
+        auto c = make<Container>(4);
+
+        std::stringstream ss("9 9 ");
+        c.assign(std::istream_iterator<V>{ss}, std::istream_iterator<V>{});
+        CHECK(c, tData, c.size(), S(2), c.capacity(), S(4));
+
+        ss.str("");
+        ss.clear();
+        ss << "9 9 9 9 ";
+        c.assign(std::istream_iterator<V>{ss}, std::istream_iterator<V>{});
+        CHECK(c, tData, c.size(), S(4), c.capacity(), S(4));
+
+        ss.str("");
+        ss.clear();
+        ss << "9 9 9 9 9 9 9 ";
+        c.assign(std::istream_iterator<V>{ss}, std::istream_iterator<V>{});
+        // We cannot check the capacity here because growth rates differ between implementations.
+        CHECK(c, tData, c.size(), S(7), 8, S(8));
+    }
+    {
+        // initializer-list version
+        auto c = make<Container>(4);
+        std::initializer_list<V> list = {tData, tData, tData};
+        c.assign(list);
+        CHECK(c, tData, c.size(), S(3), c.capacity(), S(4));
+    }
+
+#undef CHECK
+}
+
+template<typename Container>
 void tst_ContainerApiSymmetry::front_back_impl() const
 {
     using V = typename Container::value_type;

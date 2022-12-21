@@ -231,6 +231,10 @@ protected:
         }
     }
 
+    void assign_impl(qsizetype prealloc, void *array, qsizetype n, const T &t);
+    template <typename Iterator>
+    void assign_impl(qsizetype prealloc, void *array, Iterator first, Iterator last);
+
     bool isValidIterator(const const_iterator &i) const
     {
         const std::less<const T *> less = {};
@@ -258,6 +262,8 @@ class QVarLengthArray
 
     template <typename U>
     using if_copyable = std::enable_if_t<std::is_copy_constructible_v<U>, bool>;
+    template <typename InputIterator>
+    using if_input_iterator = QtPrivate::IfIsInputIterator<InputIterator>;
 public:
     using size_type = typename Base::size_type;
     using value_type = typename Base::value_type;
@@ -319,7 +325,7 @@ public:
     {
     }
 
-    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
+    template <typename InputIterator, if_input_iterator<InputIterator> = true>
     inline QVarLengthArray(InputIterator first, InputIterator last)
         : QVarLengthArray()
     {
@@ -480,6 +486,15 @@ public:
     void insert(qsizetype i, T &&t);
     void insert(qsizetype i, const T &t);
     void insert(qsizetype i, qsizetype n, const T &t);
+
+    void assign(qsizetype n, const T &t)
+    { Base::assign_impl(Prealloc, this->array, n, t); }
+    template <typename InputIterator, if_input_iterator<InputIterator> = true>
+    void assign(InputIterator first, InputIterator last)
+    { Base::assign_impl(Prealloc, this->array, first, last); }
+    void assign(std::initializer_list<T> list)
+    { assign(list.begin(), list.end()); }
+
 #ifdef Q_QDOC
     void replace(qsizetype i, const T &t);
     void remove(qsizetype i, qsizetype n = 1);
@@ -729,6 +744,51 @@ Q_OUTOFLINE_TEMPLATE void QVLABase<T>::append_impl(qsizetype prealloc, void *arr
         memcpy(static_cast<void *>(end()), static_cast<const void *>(abuf), increment * sizeof(T));
 
     this->s = asize;
+}
+
+template <class T>
+Q_OUTOFLINE_TEMPLATE void QVLABase<T>::assign_impl(qsizetype prealloc, void *array, qsizetype n, const T &t)
+{
+    Q_ASSERT(n >= 0);
+    if (n > capacity()) {
+        reallocate_impl(prealloc, array, 0, capacity()); // clear
+        resize_impl(prealloc, array, n, t);
+    } else {
+        auto mid = (std::min)(n, size());
+        std::fill(data(), data() + mid, t);
+        std::uninitialized_fill(data() + mid, data() + n, t);
+        s = n;
+        erase(data() + n, data() + size());
+    }
+}
+
+template <class T>
+template <typename Iterator>
+Q_OUTOFLINE_TEMPLATE void QVLABase<T>::assign_impl(qsizetype prealloc, void *array, Iterator first, Iterator last)
+{
+    // This function only provides the basic exception guarantee.
+    if constexpr (std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category, std::forward_iterator_tag>) {
+        const qsizetype n = std::distance(first, last);
+        if (n > capacity()) {
+            reallocate_impl(prealloc, array, 0, capacity()); // clear
+            reallocate_impl(prealloc, array, 0, n); // reserve n
+        }
+    }
+
+    auto dst = begin();
+    while (first != last && dst != end()) {
+        *dst = *first; // reuse initialized buffer
+        ++dst;
+        ++first;
+    }
+
+    qsizetype n = dst - begin();
+    while (first != last) {
+        emplace_back_impl(prealloc, array, *first);
+        ++first;
+        ++n;
+    }
+    erase(data() + n, data() + size());
 }
 
 template <class T>

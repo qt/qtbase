@@ -103,10 +103,13 @@
     lists.
 */
 
-/*! \fn template<class T, qsizetype Prealloc> template<typename InputIterator> QVarLengthArray<T, Prealloc>::QVarLengthArray(InputIterator first, InputIterator last)
+/*! \fn template<class T, qsizetype Prealloc> template<typename InputIterator, if_input_iterator<InputIterator>> QVarLengthArray<T, Prealloc>::QVarLengthArray(InputIterator first, InputIterator last)
     \since 5.14
 
     Constructs an array with the contents in the iterator range [\a first, \a last).
+
+    This constructor only participates in overload resolution if
+    \c InputIterator models the \c std::input_iterator concept.
 
     The value type of \c InputIterator must be convertible to \c T.
 */
@@ -991,4 +994,39 @@
     any.
 
     \sa erase()
+*/
+
+/*! \fn template <class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::assign(qsizetype n, const T &t)
+    \since 6.6
+
+    Replaces the contents of this container with \a n copies of \a t.
+
+    The size of this container will be equal to \a n. This function will only
+    allocate memory if \a n exceeds the capacity of the container.
+*/
+
+/*! \fn template <class T, qsizetype Prealloc> template <typename InputIterator, if_input_iterator<InputIterator>> void QVarLengthArray<T, Prealloc>::assign(InputIterator first, InputIterator last)
+    \since 6.6
+
+    Replaces the contents of this container with a copy of the elements in the
+    iterator range [\a first, \a last).
+
+    The size of this container will be equal to the number of elements in the
+    range [\a first, \a last). This function will only allocate memory if the
+    number of elements in the range exceeds the capacity of the container.
+
+    This function overload only participates in overload resolution if
+    \c InputIterator models the \c std::input_iterator concept.
+    The behavior is undefined if either argument is an iterator into *this.
+*/
+
+/*! \fn template <class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::assign(std::initializer_list<T> list)
+    \since 6.6
+
+    Replaces the contents of this container with a copy of the elements of \a list.
+
+    The size of this container will be equal to the number of elements in \a list.
+
+    This function only allocates memory if the number of elements in \a list
+    exceeds the capacity of the container.
 */
