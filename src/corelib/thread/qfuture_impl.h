@@ -17,6 +17,8 @@
 #include <QtCore/qpointer.h>
 #include <QtCore/qpromise.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 //
@@ -1058,7 +1060,7 @@ struct WhenAnyContext
 };
 
 template<qsizetype Index, typename ContextType, typename... Ts>
-void addCompletionHandlersImpl(const QSharedPointer<ContextType> &context,
+void addCompletionHandlersImpl(const std::shared_ptr<ContextType> &context,
                                const std::tuple<Ts...> &t)
 {
     auto future = std::get<Index>(t);
@@ -1074,7 +1076,7 @@ void addCompletionHandlersImpl(const QSharedPointer<ContextType> &context,
 }
 
 template<typename ContextType, typename... Ts>
-void addCompletionHandlers(const QSharedPointer<ContextType> &context, const std::tuple<Ts...> &t)
+void addCompletionHandlers(const std::shared_ptr<ContextType> &context, const std::tuple<Ts...> &t)
 {
     constexpr qsizetype size = std::tuple_size<std::tuple<Ts...>>::value;
     addCompletionHandlersImpl<size - 1, ContextType, Ts...>(context, t);
@@ -1087,7 +1089,7 @@ QFuture<OutputSequence> whenAllImpl(InputIt first, InputIt last)
     if (size == 0)
         return QtFuture::makeReadyFuture(OutputSequence());
 
-    auto context = QSharedPointer<QtPrivate::WhenAllContext<OutputSequence>>::create(size);
+    const auto context = std::make_shared<QtPrivate::WhenAllContext<OutputSequence>>(size);
     context->futures.resize(size);
     context->promise.start();
 
@@ -1106,7 +1108,7 @@ template<typename OutputSequence, typename... Futures>
 QFuture<OutputSequence> whenAllImpl(Futures &&... futures)
 {
     constexpr qsizetype size = sizeof...(Futures);
-    auto context = QSharedPointer<QtPrivate::WhenAllContext<OutputSequence>>::create(size);
+    const auto context = std::make_shared<QtPrivate::WhenAllContext<OutputSequence>>(size);
     context->futures.resize(size);
     context->promise.start();
 
@@ -1128,7 +1130,7 @@ QFuture<QtFuture::WhenAnyResult<typename Future<ValueType>::type>> whenAnyImpl(I
                 QtFuture::WhenAnyResult { qsizetype(-1), QFuture<PackagedType>() });
     }
 
-    auto context = QSharedPointer<QtPrivate::WhenAnyContext<ResultType>>::create();
+    const auto context = std::make_shared<QtPrivate::WhenAnyContext<ResultType>>();
     context->promise.start();
 
     qsizetype idx = 0;
@@ -1147,7 +1149,7 @@ QFuture<std::variant<std::decay_t<Futures>...>> whenAnyImpl(Futures &&... future
 {
     using ResultType = std::variant<std::decay_t<Futures>...>;
 
-    auto context = QSharedPointer<QtPrivate::WhenAnyContext<ResultType>>::create();
+    const auto context = std::make_shared<QtPrivate::WhenAnyContext<ResultType>>();
     context->promise.start();
 
     QtPrivate::addCompletionHandlers(context, std::make_tuple(std::forward<Futures>(futures)...));
