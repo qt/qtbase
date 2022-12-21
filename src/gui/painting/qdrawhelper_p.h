@@ -29,7 +29,7 @@
 #include "private/qrasterdefs_p.h"
 #include <private/qsimd_p.h>
 
-#include <QtCore/qsharedpointer.h>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -330,11 +330,7 @@ struct QSpanData
         QGradientData gradient;
         QTextureData texture;
     };
-    class Pinnable {
-    protected:
-        ~Pinnable() {}
-    }; // QSharedPointer<const void> is not supported
-    QSharedPointer<const Pinnable> cachedGradient;
+    std::shared_ptr<const void> cachedGradient;
 
 
     void init(QRasterBuffer *rb, const QRasterPaintEngine *pe);
