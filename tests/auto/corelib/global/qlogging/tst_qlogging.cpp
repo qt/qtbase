@@ -724,7 +724,7 @@ void tst_qmessagehandler::qMessagePattern_data()
 
 #ifdef __GLIBC__
 #  if QT_CONFIG(static)
-    QSKIP("These test cases don't work with static Qt builds");
+    // These test cases don't work with static Qt builds
 #  else
 #    ifndef QT_NO_DEBUG
     QList<QByteArray> expectedBacktrace = {
