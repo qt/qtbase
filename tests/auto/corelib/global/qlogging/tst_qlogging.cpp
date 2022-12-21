@@ -725,6 +725,8 @@ void tst_qmessagehandler::qMessagePattern_data()
 #ifdef __GLIBC__
 #  if QT_CONFIG(static)
     // These test cases don't work with static Qt builds
+#  elif defined(QT_ASAN_ENABLED)
+    // These tests produce far more call frames under ASan
 #  else
 #    ifndef QT_NO_DEBUG
     QList<QByteArray> expectedBacktrace = {
