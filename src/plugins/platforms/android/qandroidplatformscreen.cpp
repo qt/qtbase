@@ -466,7 +466,7 @@ static const int androidLogicalDpi = 72;
 
 QDpi QAndroidPlatformScreen::logicalDpi() const
 {
-    qreal lDpi = QtAndroid::scaledDensity() * androidLogicalDpi;
+    qreal lDpi = QtAndroid::pixelDensity() * androidLogicalDpi;
     return QDpi(lDpi, lDpi);
 }
 
