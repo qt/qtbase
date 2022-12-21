@@ -716,17 +716,17 @@ void tst_qmessagehandler::qMessagePattern_data()
 
 #define BACKTRACE_HELPER_NAME "qlogging_helper"
 
-#ifdef __GLIBC__
 #ifdef QT_NAMESPACE
 #define QT_NAMESPACE_STR QT_STRINGIFY(QT_NAMESPACE::)
 #else
 #define QT_NAMESPACE_STR ""
 #endif
 
-#if QT_CONFIG(static)
+#ifdef __GLIBC__
+#  if QT_CONFIG(static)
     QSKIP("These test cases don't work with static Qt builds");
-#else
-#ifndef QT_NO_DEBUG
+#  else
+#    ifndef QT_NO_DEBUG
     QList<QByteArray> expectedBacktrace = {
         // MyClass::qt_static_metacall is explicitly marked as hidden in the
         // Q_OBJECT macro hence the ?helper? frame
@@ -740,14 +740,13 @@ void tst_qmessagehandler::qMessagePattern_data()
         "|" QT_NAMESPACE_STR "QMetaObject::invokeMethodImpl] from_a_function 34"
     };
     QTest::newRow("backtrace") << "[%{backtrace}] %{message}" << true << expectedBacktrace;
-#endif
+#    endif
 
     QTest::newRow("backtrace depth,separator") << "[%{backtrace depth=2 separator=\"\n\"}] %{message}" << true << (QList<QByteArray>()
             << "[MyClass::myFunction\nMyClass::mySlot1] from_a_function 34"
             << "[T::T\n");
-#endif // #if !QT_CONFIG(process)
+#  endif // #if !QT_CONFIG(static)
 #endif // #ifdef __GLIBC__
-
 }
 
 
