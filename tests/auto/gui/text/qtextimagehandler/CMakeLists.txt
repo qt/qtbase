@@ -14,3 +14,10 @@ qt_internal_add_test(tst_qtextimagehandler
     TESTDATA
         ${test_data}
 )
+
+qt_internal_add_resource(tst_qtextimagehandler "qtextimagehandler"
+    PREFIX
+        "/"
+    FILES
+        ${test_data}
+)
