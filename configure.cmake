@@ -929,23 +929,26 @@ qt_feature("arm_crypto" PRIVATE
 qt_feature_definition("arm_crypto" "QT_COMPILER_SUPPORTS_AES" VALUE "1")
 qt_feature_config("arm_crypto" QMAKE_PRIVATE_CONFIG)
 
-qt_feature("wasm_simd128" PRIVATE
+qt_feature("wasm-simd128" PUBLIC
     LABEL "WebAssembly SIMD128"
+    PURPOSE "Enables WebAssembly SIMD"
     AUTODETECT OFF
 )
-qt_feature_definition("wasm_simd128" "QT_COMPILER_SUPPORTS_WASM_SIMD128" VALUE "1")
-qt_feature_config("wasm_simd128" QMAKE_PRIVATE_CONFIG)
+qt_feature_definition("wasm-simd128" "QT_COMPILER_SUPPORTS_WASM_SIMD128" VALUE "1")
+qt_feature_config("wasm-simd128" QMAKE_PRIVATE_CONFIG)
+
+qt_feature("wasm-exceptions" PUBLIC
+    LABEL "WebAssembly Exceptions"
+    PURPOSE "Enables WebAssembly Exceptions"
+    AUTODETECT OFF
+)
+qt_feature_definition("wasm-exceptions" "QT_WASM_EXCEPTIONS" VALUE "1")
+qt_feature_config("wasm-exceptions" QMAKE_PRIVATE_CONFIG)
 
 qt_feature("posix_fallocate" PRIVATE
     LABEL "POSIX fallocate()"
     CONDITION TEST_posix_fallocate
 )
-qt_feature("wasm_exceptions" PRIVATE
-    LABEL "WebAssembly exception handling"
-    AUTODETECT OFF
-)
-qt_feature_definition("wasm_exceptions" "QT_WASM_EXCEPTIONS" VALUE "1")
-qt_feature_config("wasm_exceptions" QMAKE_PRIVATE_CONFIG)
 qt_feature("alloca_h" PRIVATE
     LABEL "alloca.h"
     CONDITION TEST_alloca_h
@@ -1172,7 +1175,11 @@ qt_configure_add_summary_entry(ARGS "precompile_header")
 qt_configure_add_summary_entry(ARGS "ltcg")
 qt_configure_add_summary_entry(ARGS "intelcet")
 qt_configure_add_summary_entry(
-    ARGS "wasm_simd128"
+    ARGS "wasm-simd128"
+    CONDITION ( TEST_architecture_arch STREQUAL wasm )
+)
+qt_configure_add_summary_entry(
+    ARGS "wasm-exceptions"
     CONDITION ( TEST_architecture_arch STREQUAL wasm )
 )
 qt_configure_add_summary_section(NAME "Target compiler supports")

@@ -35,12 +35,12 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     endif()
 
     # wasm exceptions
-    if (QT_FEATURE_wasm_exception)
+    if (QT_FEATURE_wasm_exceptions)
         target_compile_options("${wasmTarget}" INTERFACE -fwasm-exceptions)
         target_link_options("${wasmTarget}" INTERFACE -fwasm-exceptions)
+    else()
+        target_link_options("${wasmTarget}" INTERFACE "SHELL:-s DISABLE_EXCEPTION_CATCHING=1")
     endif()
-
-    target_link_options("${wasmTarget}" INTERFACE "SHELL:-s DISABLE_EXCEPTION_CATCHING=1")
 
     if (QT_FEATURE_thread)
         target_compile_options("${wasmTarget}" INTERFACE "SHELL:-pthread")
