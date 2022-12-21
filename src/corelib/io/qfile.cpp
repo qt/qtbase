@@ -150,6 +150,15 @@ QAbstractFileEngine *QFilePrivate::engine() const
     data and operator>>() to read it back. See the class
     documentation for details.
 
+    \section1 Signals
+
+    Unlike other QIODevice implementations, such as QTcpSocket, QFile does not
+    emit the aboutToClose(), bytesWritten(), or readyRead() signals. This
+    implementation detail means that QFile is not suitable for reading and
+    writing certain types of files, such as device files on Unix platforms.
+
+    \section1 Platform Specific Issues
+
     \l{Input/Output and Networking}{Qt APIs related to I/O} use UTF-16 based
     QStrings to represent file paths. Standard C++ APIs (\c <cstdio> or
     \c <iostream>) or platform-specific APIs however often need a 8-bit encoded
@@ -166,15 +175,6 @@ QAbstractFileEngine *QFilePrivate::engine() const
     example uses QTextStream to read \c /proc/modules line by line:
 
     \snippet file/file.cpp 3
-
-    \section1 Signals
-
-    Unlike other QIODevice implementations, such as QTcpSocket, QFile does not
-    emit the aboutToClose(), bytesWritten(), or readyRead() signals. This
-    implementation detail means that QFile is not suitable for reading and
-    writing certain types of files, such as device files on Unix platforms.
-
-    \section1 Platform Specific Issues
 
     File permissions are handled differently on Unix-like systems and
     Windows.  In a non \l{QIODevice::isWritable()}{writable}
