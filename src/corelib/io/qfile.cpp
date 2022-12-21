@@ -150,13 +150,11 @@ QAbstractFileEngine *QFilePrivate::engine() const
     data and operator>>() to read it back. See the class
     documentation for details.
 
-    When you use QFile, QFileInfo, and QDir to access the file system
-    with Qt, you can use Unicode file names. On Unix, these file
-    names are converted to an 8-bit encoding. If you want to use
-    standard C++ APIs (\c <cstdio> or \c <iostream>) or
-    platform-specific APIs to access files instead of QFile, you can
-    use the encodeName() and decodeName() functions to convert
-    between Unicode file names and 8-bit file names.
+    \l{Input/Output and Networking}{Qt APIs related to I/O} use UTF-16 based
+    QStrings to represent file paths. Standard C++ APIs (\c <cstdio> or
+    \c <iostream>) or platform-specific APIs however often need a 8-bit encoded
+    path. You can use encodeName() and decodeName() to convert between both
+    representations.
 
     On Unix, there are some special system files (e.g. in \c /proc) for which
     size() will always return 0, yet you may still be able to read more data
@@ -322,10 +320,10 @@ QFile::setFileName(const QString &name)
 /*!
     \fn QByteArray QFile::encodeName(const QString &fileName)
 
-    Converts \a fileName to the local 8-bit
-    encoding determined by the user's locale. This is sufficient for
-    file names that the user chooses. File names hard-coded into the
-    application should only use 7-bit ASCII filename characters.
+    Converts \a fileName to an 8-bit encoding that you can use in native
+    APIs. On Windows, the encoding is the one from active Windows (ANSI)
+    codepage. On other platforms, this is UTF-8, for \macos in decomposed
+    form (NFD).
 
     \sa decodeName()
 */
