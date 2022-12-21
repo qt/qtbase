@@ -143,11 +143,6 @@ public class QtLayout extends ViewGroup
 
              maxWidth = maxMetrics.widthPixels;
              maxHeight = maxMetrics.heightPixels;
-
-             density = appMetrics.density;
-             xdpi = appMetrics.xdpi;
-             ydpi = appMetrics.ydpi;
-             scaledDensity = appMetrics.scaledDensity;
         } else {
             // after API 30 use getCurrentWindowMetrics for application metrics
             // getMaximumWindowMetrics for the screen metrics
@@ -171,17 +166,13 @@ public class QtLayout extends ViewGroup
 
             maxWidth = maxMetrics.getBounds().width();
             maxHeight = maxMetrics.getBounds().height();
-
-            final Resources resources = activity.getResources();
-            final Configuration configuration = resources.getConfiguration();
-            density = configuration.densityDpi / (float) DisplayMetrics.DENSITY_DEFAULT;
-
-            final DisplayMetrics displayMetrics = resources.getDisplayMetrics();
-            xdpi = displayMetrics.xdpi;
-            ydpi = displayMetrics.ydpi;
-            density = displayMetrics.density;
-            scaledDensity = displayMetrics.scaledDensity;
         }
+
+        final DisplayMetrics displayMetrics = activity.getResources().getDisplayMetrics();
+        xdpi = displayMetrics.xdpi;
+        ydpi = displayMetrics.ydpi;
+        density = displayMetrics.density;
+        scaledDensity = displayMetrics.scaledDensity;
 
         float refreshRate = display.getRefreshRate();
 
