@@ -78,8 +78,8 @@ public:
     explicit qfloat16(Qt::Initialization) noexcept { }
 
 #if QFLOAT16_IS_NATIVE
-    constexpr inline qfloat16(NativeType f) : f(f) {}
-    constexpr operator NativeType() const noexcept { return f; }
+    constexpr inline qfloat16(NativeType f) : nf(f) {}
+    constexpr operator NativeType() const noexcept { return nf; }
 #else
     inline qfloat16(float f) noexcept;
     inline operator float() const noexcept;
@@ -118,7 +118,7 @@ private:
     union {
         quint16 b16;
 #if QFLOAT16_IS_NATIVE
-        NativeType f;
+        NativeType nf;
 #endif
     };
     constexpr inline explicit qfloat16(Wrap nibble) noexcept : b16(nibble.b16) {}
