@@ -4206,7 +4206,7 @@ static void qt_span_clip(int count, const QT_FT_Span *spans, void *userData)
 class QGradientCache
 {
 public:
-    struct CacheInfo : QSpanData::Pinnable
+    struct CacheInfo
     {
         inline CacheInfo(QGradientStops s, int op, QGradient::InterpolationMode mode) :
             stops(std::move(s)), opacity(op), interpolationMode(mode) {}
@@ -4217,9 +4217,9 @@ public:
         QGradient::InterpolationMode interpolationMode;
     };
 
-    typedef QMultiHash<quint64, QSharedPointer<const CacheInfo>> QGradientColorTableHash;
+    using QGradientColorTableHash = QMultiHash<quint64, std::shared_ptr<const CacheInfo>>;
 
-    inline QSharedPointer<const CacheInfo> getBuffer(const QGradient &gradient, int opacity) {
+    std::shared_ptr<const CacheInfo> getBuffer(const QGradient &gradient, int opacity) {
         quint64 hash_val = 0;
 
         const QGradientStops stops = gradient.stops();
@@ -4249,16 +4249,16 @@ protected:
     inline void generateGradientColorTable(const QGradient& g,
                                            QRgba64 *colorTable,
                                            int size, int opacity) const;
-    QSharedPointer<const CacheInfo> addCacheElement(quint64 hash_val, const QGradient &gradient, int opacity) {
+    std::shared_ptr<const CacheInfo> addCacheElement(quint64 hash_val, const QGradient &gradient, int opacity) {
         if (cache.size() == maxCacheSize()) {
             // may remove more than 1, but OK
             cache.erase(std::next(cache.begin(), QRandomGenerator::global()->bounded(maxCacheSize())));
         }
-        auto cache_entry = QSharedPointer<CacheInfo>::create(gradient.stops(), opacity, gradient.interpolationMode());
+        auto cache_entry = std::make_shared<CacheInfo>(gradient.stops(), opacity, gradient.interpolationMode());
         generateGradientColorTable(gradient, cache_entry->buffer64, paletteSize(), opacity);
         for (int i = 0; i < GRADIENT_STOPTABLE_SIZE; ++i)
             cache_entry->buffer32[i] = cache_entry->buffer64[i].toArgb32();
-        return cache.insert(hash_val, cache_entry).value();
+        return cache.insert(hash_val, std::move(cache_entry)).value();
     }
 
     QGradientColorTableHash cache;
