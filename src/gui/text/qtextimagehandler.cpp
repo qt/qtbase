@@ -17,20 +17,34 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-extern QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRatio,
-                               qreal *sourceDevicePixelRatio);
+static inline QString findAtNxFileOrResource(const QString &baseFileName,
+                                             qreal targetDevicePixelRatio,
+                                             qreal *sourceDevicePixelRatio)
+{
+    // qt_findAtNxFile expects a file name that can be tested with QFile::exists.
+    // so if the format.name() is a file:/ or qrc:/ URL, then we need to strip away the schema.
+    QString localFile = baseFileName;
+    if (localFile.startsWith("file:/"_L1))
+        localFile = localFile.sliced(6);
+    else if (localFile.startsWith("qrc:/"_L1))
+        localFile = localFile.sliced(3);
+
+    extern QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRatio,
+                                   qreal *sourceDevicePixelRatio);
+    return qt_findAtNxFile(localFile, targetDevicePixelRatio, sourceDevicePixelRatio);
+}
 
 static inline QUrl fromLocalfileOrResources(QString path)
 {
     if (path.startsWith(":/"_L1)) // auto-detect resources and convert them to url
-        path.prepend("qrc"_L1);
+        path = path.prepend("qrc"_L1);
     return QUrl(path);
 }
 
 static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format, const qreal devicePixelRatio = 1.0)
 {
     qreal sourcePixelRatio = 1.0;
-    const QString name = qt_findAtNxFile(format.name(), devicePixelRatio, &sourcePixelRatio);
+    const QString name = findAtNxFileOrResource(format.name(), devicePixelRatio, &sourcePixelRatio);
     const QUrl url = fromLocalfileOrResources(name);
 
     QPixmap pm;
@@ -100,7 +114,7 @@ static QSize getPixmapSize(QTextDocument *doc, const QTextImageFormat &format)
 static QImage getImage(QTextDocument *doc, const QTextImageFormat &format, const qreal devicePixelRatio = 1.0)
 {
     qreal sourcePixelRatio = 1.0;
-    const QString name = qt_findAtNxFile(format.name(), devicePixelRatio, &sourcePixelRatio);
+    const QString name = findAtNxFileOrResource(format.name(), devicePixelRatio, &sourcePixelRatio);
     const QUrl url = fromLocalfileOrResources(name);
 
     QImage image;
