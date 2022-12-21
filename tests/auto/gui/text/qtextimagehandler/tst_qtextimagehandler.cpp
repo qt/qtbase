@@ -42,6 +42,9 @@ void tst_QTextImageHandler::loadAtNImages_data()
     QTest::addColumn<QString>("imageFile");
 
     QTest::addRow("file") << QFINDTESTDATA("data/image.png");
+    QTest::addRow("file_url") << QString("file:/") + QFINDTESTDATA("data/image.png");
+    QTest::addRow("resource") << ":/data/image.png";
+    QTest::addRow("qrc_url") << "qrc:/data/image.png";
 }
 
 void tst_QTextImageHandler::loadAtNImages()
@@ -68,6 +71,13 @@ void tst_QTextImageHandler::loadAtNImages()
         p.end();
         QVERIFY(!img.isNull());
         const auto expectedColor = dpr == 1 ? Qt::red : Qt::green;
+#ifdef Q_OS_ANDROID // On Android, file:/ fails completely
+        QEXPECT_FAIL("file_url", "file:/ schema not handled - QTBUG-109212", Continue);
+#else
+        if (dpr != 1)
+            QEXPECT_FAIL("file_url", "Nx images not resolved for file:/ schema - QTBUG-109212", Continue);
+#endif
+        QEXPECT_FAIL("qrc_url", "qrc:/ schema not handled - QTBUG-109212", Continue);
         QCOMPARE(img.pixelColor(0, 0), expectedColor);
     }
 }
