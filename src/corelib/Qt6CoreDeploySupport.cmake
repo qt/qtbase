@@ -239,7 +239,7 @@ function(_qt_internal_generic_deployqt)
 
     # Deploy the Qt libraries.
     file(INSTALL ${resolved}
-        DESTINATION "${QT_DEPLOY_PREFIX}/${arg_LIB_DIR}"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/${arg_LIB_DIR}"
         FOLLOW_SYMLINK_CHAIN
     )
 
@@ -255,7 +255,7 @@ function(_qt_internal_generic_deployqt)
             "${file_path}"
         )
         get_filename_component(destination "${destination}" DIRECTORY)
-        string(PREPEND destination "${QT_DEPLOY_PREFIX}/${arg_PLUGINS_DIR}/")
+        string(PREPEND destination "${CMAKE_INSTALL_PREFIX}/${arg_PLUGINS_DIR}/")
         file(INSTALL ${file_path} DESTINATION ${destination})
 
         if(__QT_DEPLOY_MUST_ADJUST_PLUGINS_RPATH)
