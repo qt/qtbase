@@ -13,6 +13,7 @@ add_subdirectory(qtextcursor)
 add_subdirectory(qtextdocumentfragment)
 add_subdirectory(qtextdocumentlayout)
 add_subdirectory(qtextformat)
+add_subdirectory(qtextimagehandler)
 add_subdirectory(qtextlist)
 add_subdirectory(qtextobject)
 # add_subdirectory(qtextscriptengine) # disable until system_harfbuzz feature is available # special case
