@@ -300,13 +300,11 @@ void tst_QSqlDatabase::createTestTables(QSqlDatabase db)
                " (id integer not null, t_varchar varchar(40) not null, "
                "t_char char(40), t_numeric numeric(6, 3), primary key (id, t_varchar))"));
     }
-    if (testWhiteSpaceNames(db.driverName())) {
-        QString qry = "create table " + qTableName("qtest test", __FILE__, db)
-            + '('
-            + db.driver()->escapeIdentifier(QLatin1String("test test"), QSqlDriver::FieldName)
-            + " int not null primary key)";
-        QVERIFY_SQL(q, exec(qry));
-    }
+    QString qry = "create table " + qTableName("qtest test", __FILE__, db)
+        + '('
+        + db.driver()->escapeIdentifier(QLatin1String("test test"), QSqlDriver::FieldName)
+        + " int not null primary key)";
+    QVERIFY_SQL(q, exec(qry));
 }
 
 void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
@@ -353,11 +351,8 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
         q.exec("drop schema " + qTableName("qtestScHeMa", __FILE__, db) + " cascade");
     }
 
-    if (testWhiteSpaceNames(db.driverName())) {
-        tableNames <<  db.driver()->escapeIdentifier(qTableName("qtest test", __FILE__, db),
-                                                     QSqlDriver::TableName);
-    }
-
+    tableNames << db.driver()->escapeIdentifier(qTableName("qtest test", __FILE__, db),
+                                                QSqlDriver::TableName);
     tst_Databases::safeDropTables(db, tableNames);
 
     if (dbType == QSqlDriver::Oracle) {
@@ -562,34 +557,25 @@ void tst_QSqlDatabase::whitespaceInIdentifiers()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+    const auto metaTypeToCheck = dbType == QSqlDriver::Oracle
+        ? QMetaType(QMetaType::Double) : QMetaType(QMetaType::Int);
 
-    if (testWhiteSpaceNames(db.driverName())) {
-        const bool isCaseSensitive = driverQuotedCaseSensitive(db);
-        const auto tableName(qTableName("qtest test", __FILE__, db, isCaseSensitive));
-        if (isCaseSensitive) {
-            QVERIFY(db.tables().contains(db.driver()->stripDelimiters(tableName, QSqlDriver::TableName)));
-        } else {
-            QVERIFY(db.tables().contains(tableName, Qt::CaseInsensitive));
-        }
+    const bool isCaseSensitive = driverQuotedCaseSensitive(db);
+    const auto tableName(qTableName("qtest test", __FILE__, db, isCaseSensitive));
+    if (isCaseSensitive)
+        QVERIFY(db.tables().contains(db.driver()->stripDelimiters(tableName, QSqlDriver::TableName)));
+    else
+        QVERIFY(db.tables().contains(tableName, Qt::CaseInsensitive));
 
-        QSqlRecord rec = db.record(tableName);
-        QCOMPARE(rec.count(), 1);
-        QCOMPARE(rec.fieldName(0), QString("test test"));
-        if (dbType == QSqlDriver::Oracle)
-            QCOMPARE(rec.field(0).metaType(), QMetaType(QMetaType::Double));
-        else
-            QCOMPARE(rec.field(0).metaType(), QMetaType(QMetaType::Int));
+    QSqlRecord rec = db.record(tableName);
+    QCOMPARE(rec.count(), 1);
+    QCOMPARE(rec.fieldName(0), QString("test test"));
+    QCOMPARE(rec.field(0).metaType(), metaTypeToCheck);
 
-        QSqlIndex idx = db.primaryIndex(tableName);
-        QCOMPARE(idx.count(), 1);
-        QCOMPARE(idx.fieldName(0), QString("test test"));
-        if (dbType == QSqlDriver::Oracle)
-            QCOMPARE(idx.field(0).metaType(), QMetaType(QMetaType::Double));
-        else
-            QCOMPARE(idx.field(0).metaType(), QMetaType(QMetaType::Int));
-    } else {
-        QSKIP("DBMS does not support whitespaces in identifiers");
-    }
+    QSqlIndex idx = db.primaryIndex(tableName);
+    QCOMPARE(idx.count(), 1);
+    QCOMPARE(idx.fieldName(0), QString("test test"));
+    QCOMPARE(idx.field(0).metaType(), metaTypeToCheck);
 }
 
 void tst_QSqlDatabase::alterTable()
@@ -870,22 +856,6 @@ void tst_QSqlDatabase::recordMySQL()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-
-    FieldDef bin10, varbin10;
-    int major = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt();
-    int minor = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 1, 1 ).toInt();
-    int revision = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 2, 2 ).toInt();
-    int vernum = (major << 16) + (minor << 8) + revision;
-
-    /* The below is broken in mysql below 5.0.15
-        see http://dev.mysql.com/doc/refman/5.0/en/binary-varbinary.html
-        specifically: Before MySQL 5.0.15, the pad value is space. Values are right-padded
-        with space on insert, and trailing spaces are removed on select.
-    */
-    if( vernum >= ((5 << 16) + 15) ) {
-        bin10 = FieldDef("binary(10)", QMetaType::QByteArray, QString("123abc    "));
-        varbin10 = FieldDef("varbinary(10)", QMetaType::QByteArray, QString("123abcv   "));
-    }
 
     static QDateTime dt(QDate::currentDate(), QTime(1, 2, 3, 0));
     static const FieldDef fieldDefs[] = {

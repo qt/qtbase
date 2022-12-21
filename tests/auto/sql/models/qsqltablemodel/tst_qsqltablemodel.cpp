@@ -163,9 +163,8 @@ void tst_QSqlTableModel::dropTestTables()
                    << qTableName("emptytable", __FILE__, db)
                    << qTableName("bigtable", __FILE__, db)
                    << qTableName("foo", __FILE__, db)
-                   << qTableName("pktest", __FILE__, db);
-        if (testWhiteSpaceNames(db.driverName()))
-            tableNames << qTableName("qtestw hitespace", db);
+                   << qTableName("pktest", __FILE__, db)
+                   << qTableName("qtestw hitespace", db);
 
         tst_Databases::safeDropTables(db, tableNames);
 
@@ -196,10 +195,8 @@ void tst_QSqlTableModel::createTestTables()
 
         QVERIFY_SQL(q, exec("create table " + qTableName("emptytable", __FILE__, db) + "(id int)"));
 
-        if (testWhiteSpaceNames(db.driverName())) {
-            QString qry = "create table " + qTableName("qtestw hitespace", db) + " ("+ db.driver()->escapeIdentifier("a field", QSqlDriver::FieldName) + " int)";
-            QVERIFY_SQL( q, exec(qry));
-        }
+        const auto fieldStr = db.driver()->escapeIdentifier("a field", QSqlDriver::FieldName);
+        QVERIFY_SQL(q, exec("create table " + qTableName("qtestw hitespace", db) + " ("+ fieldStr + " int)"));
 
         QVERIFY_SQL(q, exec("create table " + qTableName("pktest", __FILE__, db) + "(id int not null primary key, a varchar(20))"));
     }
@@ -1699,9 +1696,6 @@ void tst_QSqlTableModel::whitespaceInIdentifiers()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-
-    if (!testWhiteSpaceNames(db.driverName()))
-        QSKIP("DBMS doesn't support whitespaces in identifiers");
 
     QString tableName = qTableName("qtestw hitespace", db);
 

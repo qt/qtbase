@@ -114,18 +114,21 @@ void tst_QSqlRelationalTableModel::recreateTestTables(QSqlDatabase db)
     QVERIFY_SQL( q, exec("insert into " + reltest5 + " values('herr', 'Hr')"));
     QVERIFY_SQL( q, exec("insert into " + reltest5 + " values('mister', 'Mr')"));
 
-    if (testWhiteSpaceNames(db.driverName())) {
-        const auto reltest6 = qTableName("rel test6", __FILE__, db);
-        QVERIFY_SQL( q, exec("create table " + reltest6 + " (id int not null primary key, " + db.driver()->escapeIdentifier("city key", QSqlDriver::FieldName) +
-                    " int, " + db.driver()->escapeIdentifier("extra field", QSqlDriver::FieldName) + " int)"));
-        QVERIFY_SQL( q, exec("insert into " + reltest6 + " values(1, 1,9)"));
-        QVERIFY_SQL( q, exec("insert into " + reltest6 + " values(2, 2,8)"));
+    const auto reltest6 = qTableName("rel test6", __FILE__, db);
+    const auto cityKeyStr = db.driver()->escapeIdentifier("city key", QSqlDriver::FieldName);
+    const auto extraFieldStr = db.driver()->escapeIdentifier("extra field", QSqlDriver::FieldName);
+    QVERIFY_SQL( q, exec("create table " + reltest6 + " (id int not null primary key, " + cityKeyStr +
+                " int, " + extraFieldStr + " int)"));
+    QVERIFY_SQL( q, exec("insert into " + reltest6 + " values(1, 1,9)"));
+    QVERIFY_SQL( q, exec("insert into " + reltest6 + " values(2, 2,8)"));
 
-        const auto reltest7 = qTableName("rel test7", __FILE__, db);
-        QVERIFY_SQL( q, exec("create table " + reltest7 + " (" + db.driver()->escapeIdentifier("city id", QSqlDriver::TableName) + " int not null primary key, " + db.driver()->escapeIdentifier("city name", QSqlDriver::FieldName) + " varchar(20))"));
-        QVERIFY_SQL( q, exec("insert into " + reltest7 + " values(1, 'New York')"));
-        QVERIFY_SQL( q, exec("insert into " + reltest7 + " values(2, 'Washington')"));
-    }
+    const auto reltest7 = qTableName("rel test7", __FILE__, db);
+    const auto cityIdStr = db.driver()->escapeIdentifier("city id", QSqlDriver::TableName);
+    const auto cityNameStr = db.driver()->escapeIdentifier("city name", QSqlDriver::FieldName);
+    QVERIFY_SQL( q, exec("create table " + reltest7 + " (" + cityIdStr + " int not null primary key, " +
+                         cityNameStr + " varchar(20))"));
+    QVERIFY_SQL( q, exec("insert into " + reltest7 + " values(1, 'New York')"));
+    QVERIFY_SQL( q, exec("insert into " + reltest7 + " values(2, 'Washington')"));
 }
 
 void tst_QSqlRelationalTableModel::initTestCase()
@@ -1369,8 +1372,6 @@ void tst_QSqlRelationalTableModel::whiteSpaceInIdentifiers()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    if (!testWhiteSpaceNames(db.driverName()))
-        QSKIP("White space test irrelevant for driver");
     QSqlRelationalTableModel model(0, db);
     model.setTable(qTableName("rel test6", __FILE__, db));
     model.setSort(0, Qt::DescendingOrder);

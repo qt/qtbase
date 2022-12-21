@@ -79,15 +79,6 @@ inline static QString qTableName(const QString& prefix, QSqlDatabase db)
                           qGetHostName(), QSqlDriver::TableName)),db);
 }
 
-inline static bool testWhiteSpaceNames( const QString &name )
-{
-/*    return name.startsWith( "QPSQL" )
-           || name.startsWith( "QODBC" )
-           || name.startsWith( "QSQLITE" )
-           || name.startsWith( "QMYSQL" );*/
-    return name != QLatin1String("QSQLITE2");
-}
-
 inline static QString toHex( const QString& binary )
 {
     QString str;
@@ -397,11 +388,6 @@ public:
         }
     }
 
-    static void safeDropView( QSqlDatabase db, const QString& tableName )
-    {
-        safeDropViews(db, QStringList() << tableName);
-    }
-
     // returns the type name of the blob datatype for the database db.
     // blobSize is only used if the db doesn't have a generic blob type
     static QString blobTypeName( QSqlDatabase db, int blobSize = 10000 )
@@ -476,34 +462,26 @@ public:
         return QString();
     }
 
-    static QByteArray printError( const QSqlError& err )
+    static QByteArray printError(const QSqlError &err)
     {
         QString result;
         if (!err.nativeErrorCode().isEmpty())
-            result += '(' + err.nativeErrorCode() + ") ";
-        result += '\'';
-        if(!err.driverText().isEmpty())
+            result += u'(' + err.nativeErrorCode() + ") ";
+        result += u'\'';
+        if (!err.driverText().isEmpty())
             result += err.driverText() + "' || '";
-        result += err.databaseText() + QLatin1Char('\'');
+        result += err.databaseText() + u'\'';
         return result.toLocal8Bit();
     }
 
-    static QByteArray printError( const QSqlError& err, const QSqlDatabase& db )
+    static QByteArray printError(const QSqlError &err, const QSqlDatabase &db)
     {
-        QString result(dbToString(db) + ": ");
-        if (!err.nativeErrorCode().isEmpty())
-            result += '(' + err.nativeErrorCode() + ") ";
-        result += '\'';
-        if(!err.driverText().isEmpty())
-            result += err.driverText() + "' || '";
-        result += err.databaseText() + QLatin1Char('\'');
-        return result.toLocal8Bit();
+        return dbToString(db).toLocal8Bit() + ": " + printError(err);
     }
 
     static QSqlDriver::DbmsType getDatabaseType(QSqlDatabase db)
     {
-        QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
-        return d->dbmsType;
+        return db.driver()->dbmsType();
     }
 
     static bool isMSAccess( QSqlDatabase db )
@@ -529,26 +507,6 @@ public:
         }
 
         return ver;
-    }
-
-    static QString getMySqlVersion( const QSqlDatabase &db )
-    {
-        QSqlQuery q(db);
-        q.exec( "select version()" );
-        if(q.next())
-            return q.value( 0 ).toString();
-        else
-            return QString();
-    }
-
-    static QString getPSQLVersion( const QSqlDatabase &db )
-    {
-        QSqlQuery q(db);
-        q.exec( "select version()" );
-        if(q.next())
-            return q.value( 0 ).toString();
-        else
-            return QString();
     }
 
     QStringList     dbNames;
