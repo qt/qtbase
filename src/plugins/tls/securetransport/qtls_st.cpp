@@ -407,6 +407,7 @@ void TlsCryptographSecureTransport::disconnectFromHost()
     if (context) {
         if (!shutdown) {
             SSLClose(context);
+            context.reset(nullptr);
             shutdown = true;
         }
     }
