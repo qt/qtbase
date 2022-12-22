@@ -159,8 +159,8 @@ QFuture<QVariant> QNativeInterface::QAndroidApplication::runOnAndroidMainThread(
     QFuture<QVariant> future = promise->future();
     promise->start();
 
-    (void) QtConcurrent::run([=, &future]() {
-        if (!timeout.isForever()) {
+    if (!timeout.isForever()) {
+        (void) QtConcurrent::run([=, &future]() {
             QEventLoop loop;
             QTimer::singleShot(timeout.remainingTime(), &loop, [&]() {
                 future.cancel();
@@ -177,8 +177,8 @@ QFuture<QVariant> QNativeInterface::QAndroidApplication::runOnAndroidMainThread(
             });
             watcher.setFuture(future);
             loop.exec();
-        }
-    });
+        });
+    }
 
     QMutexLocker locker(&g_pendingRunnablesMutex);
     g_pendingRunnables->push_back(std::pair(runnable, promise));
