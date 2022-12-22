@@ -7,8 +7,10 @@
 #include <QtCore/private/qjnihelpers_p.h>
 #include <QtCore/qjniobject.h>
 #if QT_CONFIG(future) && !defined(QT_NO_QOBJECT)
-#include <QtConcurrent/QtConcurrent>
+#include <QtCore/qfuture.h>
+#include <QtCore/qfuturewatcher.h>
 #include <QtCore/qpromise.h>
+#include <QtCore/qthreadpool.h>
 #include <deque>
 #endif
 
@@ -160,7 +162,7 @@ QFuture<QVariant> QNativeInterface::QAndroidApplication::runOnAndroidMainThread(
     promise->start();
 
     if (!timeout.isForever()) {
-        (void) QtConcurrent::run([=, &future]() {
+        QThreadPool::globalInstance()->start([=, &future]() {
             QEventLoop loop;
             QTimer::singleShot(timeout.remainingTime(), &loop, [&]() {
                 future.cancel();
