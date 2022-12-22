@@ -150,6 +150,10 @@ QPlatformScreen *QScreen::handle() const
 
   For example, on X11 these correspond to the XRandr screen names,
   typically "VGA1", "HDMI1", etc.
+
+  \note The user presentable string is not guaranteed to match the
+  result of any native APIs, and should not be used to uniquely identify
+  a screen.
 */
 QString QScreen::name() const
 {
