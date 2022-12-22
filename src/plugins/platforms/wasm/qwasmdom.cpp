@@ -3,14 +3,18 @@
 
 #include "qwasmdom.h"
 
+#include <QMimeData>
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
+#include <QtGui/qimage.h>
+#include <private/qstdweb_p.h>
 
 #include <utility>
 
 QT_BEGIN_NAMESPACE
 
 namespace dom {
+
 void syncCSSClassWith(emscripten::val element, std::string cssClassName, bool flag)
 {
     if (flag) {
@@ -31,6 +35,7 @@ QPoint mapPoint(emscripten::val source, emscripten::val target, const QPoint &po
     auto offset = sourceBoundingRect.topLeft() - targetBoundingRect.topLeft();
     return (point + offset).toPoint();
 }
+
 } // namespace dom
 
 QT_END_NAMESPACE

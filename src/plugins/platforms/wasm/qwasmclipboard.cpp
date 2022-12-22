@@ -2,19 +2,17 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "qwasmclipboard.h"
+#include "qwasmdom.h"
 #include "qwasmwindow.h"
 
 #include <private/qstdweb_p.h>
-
-#include <emscripten.h>
-#include <emscripten/html5.h>
-#include <emscripten/bind.h>
-#include <emscripten/val.h>
 
 #include <QCoreApplication>
 #include <qpa/qwindowsysteminterface.h>
 #include <QBuffer>
 #include <QString>
+
+#include <emscripten/val.h>
 
 QT_BEGIN_NAMESPACE
 using namespace emscripten;
@@ -67,93 +65,29 @@ static void qClipboardCopyTo(val event)
     commonCopyEvent(event);
 }
 
-static void qWasmClipboardPaste(QMimeData *mData)
+static void qClipboardPasteTo(val event)
 {
-    // Persist clipboard data so that the app can read it when handling the CTRL+V
-    QWasmIntegration::get()->clipboard()->
-        QPlatformClipboard::setMimeData(mData, QClipboard::Clipboard);
+    event.call<void>("preventDefault"); // prevent browser from handling drop event
 
-    QWindowSystemInterface::handleKeyEvent(
-                0, QEvent::KeyPress, Qt::Key_V, Qt::ControlModifier, "V");
-}
+    static std::shared_ptr<qstdweb::CancellationFlag> readDataCancellation = nullptr;
+    readDataCancellation = qstdweb::readDataTransfer(
+            event["clipboardData"],
+            [](QByteArray fileContent) {
+                QImage image;
+                image.loadFromData(fileContent, nullptr);
+                return image;
+            },
+            [event](std::unique_ptr<QMimeData> data) {
+                if (data->formats().isEmpty())
+                    return;
 
-static void qClipboardPasteTo(val dataTransfer)
-{
-    enum class ItemKind {
-        File,
-        String,
-    };
+                // Persist clipboard data so that the app can read it when handling the CTRL+V
+                QWasmIntegration::get()->clipboard()->QPlatformClipboard::setMimeData(
+                        data.release(), QClipboard::Clipboard);
 
-    struct Data
-    {
-        std::unique_ptr<QMimeData> data;
-        int fileCount = 0;
-        int doneCount = 0;
-    };
-
-    auto sharedData = std::make_shared<Data>();
-    sharedData->data = std::make_unique<QMimeData>();
-
-    auto continuation = [sharedData]() {
-        Q_ASSERT(sharedData->doneCount <= sharedData->fileCount);
-        if (sharedData->doneCount < sharedData->fileCount)
-            return;
-
-        if (!sharedData->data->formats().isEmpty())
-            qWasmClipboardPaste(sharedData->data.release());
-    };
-
-    const val clipboardData = dataTransfer["clipboardData"];
-    const val items = clipboardData["items"];
-    for (int i = 0; i < items["length"].as<int>(); ++i) {
-        const val item = items[i];
-        const auto itemKind =
-                item["kind"].as<std::string>() == "string" ? ItemKind::String : ItemKind::File;
-        const auto itemMimeType = QString::fromStdString(item["type"].as<std::string>());
-
-        switch (itemKind) {
-        case ItemKind::File: {
-            ++sharedData->fileCount;
-
-            qstdweb::File file(item.call<emscripten::val>("getAsFile"));
-
-            QByteArray fileContent(file.size(), Qt::Uninitialized);
-            file.stream(fileContent.data(),
-                        [continuation, itemMimeType, fileContent, sharedData]() {
-                            if (!fileContent.isEmpty()) {
-                                if (itemMimeType.startsWith("image/")) {
-                                    QImage image;
-                                    image.loadFromData(fileContent, nullptr);
-                                    sharedData->data->setImageData(image);
-                                } else {
-                                    sharedData->data->setData(itemMimeType, fileContent.data());
-                                }
-                            }
-                            ++sharedData->doneCount;
-                            continuation();
-                        });
-            break;
-        }
-        case ItemKind::String:
-            if (itemMimeType.contains("STRING", Qt::CaseSensitive)
-                || itemMimeType.contains("TEXT", Qt::CaseSensitive)) {
-                break;
-            }
-            const QString data = QString::fromJsString(
-                    clipboardData.call<val>("getData", val(itemMimeType.toStdString())));
-
-            if (!data.isEmpty()) {
-                if (itemMimeType == "text/html")
-                    sharedData->data->setHtml(data);
-                else if (itemMimeType.isEmpty() || itemMimeType == "text/plain")
-                    sharedData->data->setText(data); // the type can be empty
-                else
-                    sharedData->data->setData(itemMimeType, data.toLocal8Bit());
-            }
-            break;
-        }
-    }
-    continuation();
+                QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyPress, Qt::Key_V,
+                                                       Qt::ControlModifier, "V");
+            });
 }
 
 EMSCRIPTEN_BINDINGS(qtClipboardModule) {
