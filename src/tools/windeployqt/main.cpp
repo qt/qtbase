@@ -181,6 +181,7 @@ struct Options {
     QStringList languages;
     QString libraryDirectory;
     QString pluginDirectory;
+    QString qmlDirectory;
     QStringList binaries;
     JsonOutput *json = nullptr;
     ListOption list = ListNone;
@@ -336,6 +337,11 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
                                        QStringLiteral("path"));
     parser->addOption(pluginDirOption);
 
+    QCommandLineOption qmlDeployDirOption(QStringLiteral("qml-deploy-dir"),
+                                          QStringLiteral("Copy qml files to path."),
+                                          QStringLiteral("path"));
+    parser->addOption(qmlDeployDirOption);
+
     QCommandLineOption debugOption(QStringLiteral("debug"),
                                    QStringLiteral("Assume debug binaries."));
     parser->addOption(debugOption);
@@ -472,6 +478,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
 
     options->libraryDirectory = parser->value(libDirOption);
     options->pluginDirectory = parser->value(pluginDirOption);
+    options->qmlDirectory = parser->value(qmlDeployDirOption);
     options->plugins = !parser->isSet(noPluginsOption);
     options->libraries = !parser->isSet(noLibraryOption);
     options->translations = !parser->isSet(noTranslationOption);
@@ -1476,13 +1483,18 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     // Do not be fooled by QtWebKit.dll depending on Quick into always installing Quick imports
     // for WebKit1-applications. Check direct dependency only.
     if (options.quickImports && usesQml2) {
+        const QString targetPath = options.qmlDirectory.isEmpty()
+                ? options.directory + QStringLiteral("/qml")
+                : options.qmlDirectory;
+        if (!createDirectory(targetPath, errorMessage))
+            return result;
         for (const QmlImportScanResult::Module &module : std::as_const(qmlScanResult.modules)) {
-            const QString installPath = module.installPath(options.directory);
+            const QString installPath = module.installPath(targetPath);
             if (optVerboseLevel > 1)
                 std::wcout << "Installing: '" << module.name
                            << "' from " << module.sourcePath << " to "
                            << QDir::toNativeSeparators(installPath) << '\n';
-            if (installPath != options.directory && !createDirectory(installPath, errorMessage))
+            if (installPath != targetPath && !createDirectory(installPath, errorMessage))
                 return result;
             unsigned updateFileFlags = options.updateFileFlags
                     | SkipQmlDesignerSpecificsDirectories;
