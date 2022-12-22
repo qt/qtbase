@@ -47,6 +47,17 @@ exists($$QMAKE_QT_CONFIG) {
         QMAKE_LFLAGS_DEBUG += -msimd128 -msse -msse2
     }
 
+    qtConfig(shared) {
+        contains(TEMPLATE, .*app) {
+            EMCC_MODULE_FLAGS = -s MAIN_MODULE=1
+        }
+        contains(TEMPLATE, .*lib):!static: {
+            EMCC_MODULE_FLAGS = -s SIDE_MODULE=1
+        }
+        EMCC_CFLAGS += $$EMCC_MODULE_FLAGS
+        EMCC_LFLAGS += $$EMCC_MODULE_FLAGS
+    }
+
     QMAKE_LFLAGS       += $$EMCC_LFLAGS
     QMAKE_LFLAGS_DEBUG += $$EMCC_LFLAGS
     QMAKE_CFLAGS += $$EMCC_CFLAGS

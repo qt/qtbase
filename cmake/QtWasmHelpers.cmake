@@ -93,17 +93,19 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
 
         set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
 
-        # plugins are SIDE_MODULE
-        target_compile_options("${wasmTarget}" INTERFACE
-        "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:" -s SIDE_MODULE=1>)
-        target_link_options("${wasmTarget}" INTERFACE
-        "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,MODULE_LIBRARY>:" -s SIDE_MODULE=1>)
+        set(side_modules
+            MODULE_LIBRARY SHARED_LIBRARY)
+        set(enable_side_module_if_needed
+            "$<$<IN_LIST:$<TARGET_PROPERTY:TYPE>,${side_modules}>:SHELL:-s SIDE_MODULE=1>")
+        set(enable_main_module_if_needed
+            "$<$<IN_LIST:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:SHELL:-s MAIN_MODULE=1>")
+        set(set_shared_module_type_if_needed
+            "${enable_side_module_if_needed}"
+            "${enable_main_module_if_needed}"
+        )
 
-        # shared libs are SIDE_MODULE
-        target_compile_options("${wasmTarget}" INTERFACE
-        "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:" -s SIDE_MODULE=1>)
-        target_link_options("${wasmTarget}" INTERFACE
-        "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:" -s SIDE_MODULE=1>)
+        target_compile_options("${wasmTarget}" INTERFACE "${set_shared_module_type_if_needed}")
+        target_link_options("${wasmTarget}" INTERFACE "${set_shared_module_type_if_needed}")
 
     else()
         target_link_options("${wasmTarget}" INTERFACE "SHELL:-s ERROR_ON_UNDEFINED_SYMBOLS=1")
