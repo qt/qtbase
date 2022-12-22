@@ -254,6 +254,7 @@ const QFont *QGtk3Theme::font(Font type) const
 QIcon QGtk3Theme::fileIcon(const QFileInfo &fileInfo,
                            QPlatformTheme::IconOptions iconOptions) const
 {
+    Q_UNUSED(iconOptions);
     Q_ASSERT(m_storage);
     return m_storage->fileIcon(fileInfo);
 }
