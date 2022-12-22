@@ -127,10 +127,10 @@ void QFileDevicePrivate::setError(QFileDevice::FileError err, int errNum)
     QFileDevice is the base class for I/O devices that can read and write text and binary files
     and \l{The Qt Resource System}{resources}. QFile offers the main functionality,
     QFileDevice serves as a base class for sharing functionality with other file devices such
-    as QTemporaryFile, by providing all the operations that can be done on files that have
-    been opened by QFile or QTemporaryFile.
+    as QSaveFile, by providing all the operations that can be done on files that have
+    been opened by QFile or QSaveFile.
 
-    \sa QFile, QTemporaryFile
+    \sa QFile, QSaveFile
 */
 
 /*!
