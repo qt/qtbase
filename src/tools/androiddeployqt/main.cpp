@@ -297,7 +297,6 @@ QString fileArchitecture(const Options &options, const QString &path)
     char buffer[512];
     while (fgets(buffer, sizeof(buffer), readElfCommand) != nullptr) {
         QByteArray line = QByteArray::fromRawData(buffer, qstrlen(buffer));
-        QString library;
         line = line.trimmed();
         if (line.startsWith("Arch: ")) {
             auto it = elfArchitectures.find(line.mid(6));
@@ -1451,7 +1450,6 @@ bool updateLibsXml(Options *options)
     for (auto it = options->architectures.constBegin(); it != options->architectures.constEnd(); ++it) {
         if (!it->enabled)
             continue;
-        QString libsPath = "libs/"_L1 + it.key() + u'/';
 
         qtLibs += "        <item>%1;%2</item>\n"_L1.arg(it.key(), options->stdCppName);
         for (const Options::BundledFile &bundledFile : options->bundledFiles[it.key()]) {
@@ -2312,7 +2310,6 @@ bool containsApplicationBinary(Options *options)
     if (options->verbose)
         fprintf(stdout, "Checking if application binary is in package.\n");
 
-    QFileInfo applicationBinary(options->applicationBinary);
     QString applicationFileName = "lib%1_%2.so"_L1.arg(options->applicationBinary,
                                                        options->currentArchitecture);
 
