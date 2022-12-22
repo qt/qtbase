@@ -2420,6 +2420,8 @@ void QTest::qCleanup()
     The \a name will be listed when running the batch test binary with no
     parameters. Running the test binary with the argv[1] of \a name will result
     in \a entryFunction being called.
+
+    \since 6.5
 */
 void QTest::qRegisterTestCase(const QString &name, TestEntryFunction entryFunction)
 {
@@ -3040,7 +3042,7 @@ bool QTest::currentTestFailed()
 
     This applies if the test has failed or exercised a skip. When it is true,
     the test function should return early. In particular, the \c{QTRY_*} macros
-    and \l QTestEventLoop terminate their loops early if executed during the
+    and the test event loop terminate their loops early if executed during the
     test function (but not its cleanup()). After a test has called a helper
     function that uses this module's macros, it can use this function to test
     whether to return early.
