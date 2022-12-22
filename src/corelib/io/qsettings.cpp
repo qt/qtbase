@@ -211,9 +211,7 @@ namespace {
     }
     QChar *write(QChar *out, QLatin1StringView v)
     {
-        for (char ch : v)
-            *out++ = QLatin1Char(ch);
-        return out;
+        return QLatin1::convertToUnicode(out, v);
     }
     QChar *write(QChar *out, QStringView v)
     {
