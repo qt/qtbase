@@ -212,6 +212,14 @@ QFuture<QVariant> QNativeInterface::QAndroidApplication::runOnAndroidMainThread(
                 loop.quit();
             });
             watcher.setFuture(future);
+
+            // we're going to sleep, make sure we don't block
+            // QThreadPool::globalInstance():
+
+            QThreadPool::globalInstance()->releaseThread();
+            const auto sg = qScopeGuard([] {
+               QThreadPool::globalInstance()->reserveThread();
+            });
             loop.exec();
         });
     }
