@@ -2553,8 +2553,9 @@ recalc_minmax_widths:
                 const QFixed allottedPercentage = QFixed::fromReal(columnWidthConstraints.at(i).rawValue());
 
                 const QFixed percentWidth = totalPercentagedWidth * allottedPercentage / totalPercentage;
-                if (percentWidth >= td->minWidths.at(i)) {
-                    td->widths[i] = qBound(td->minWidths.at(i), percentWidth, remainingWidth - remainingMinWidths);
+                QFixed maxWidth = remainingWidth - remainingMinWidths;
+                if (percentWidth >= td->minWidths.at(i) && maxWidth > td->minWidths.at(i)) {
+                    td->widths[i] = qBound(td->minWidths.at(i), percentWidth, maxWidth);
                 } else {
                     td->widths[i] = td->minWidths.at(i);
                 }
