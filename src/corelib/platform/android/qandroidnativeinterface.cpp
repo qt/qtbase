@@ -202,7 +202,7 @@ QFuture<QVariant> QNativeInterface::QAndroidApplication::runOnAndroidMainThread(
     promise->start();
 
     if (!timeout.isForever()) {
-        QThreadPool::globalInstance()->start([=, &future]() {
+        QThreadPool::globalInstance()->start([=]() mutable {
             QEventLoop loop;
             QTimer::singleShot(timeout.remainingTime(), &loop, [&]() {
                 future.cancel();
