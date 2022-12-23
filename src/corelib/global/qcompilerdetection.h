@@ -508,8 +508,7 @@
  * For library features, we assume <version> is present (this header includes it).
  *
  * For a full listing of feature test macros, see
- *  https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations (by macro)
- *  https://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros       (by C++ version)
+ *  https://en.cppreference.com/w/cpp/feature_test
  *
  * C++ extensions:
  *  Q_COMPILER_RESTRICTED_VLA       variable-length arrays, prior to __cpp_runtime_arrays
