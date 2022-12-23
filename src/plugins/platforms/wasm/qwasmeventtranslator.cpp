@@ -177,12 +177,15 @@ bool isDeadKeyEvent(const EmscriptenKeyboardEvent *emKeyEvent)
 
 Qt::Key translateEmscriptKey(const EmscriptenKeyboardEvent *emscriptKey)
 {
-    if (isDeadKeyEvent(emscriptKey)) {
+    const bool deadKeyEvent = isDeadKeyEvent(emscriptKey);
+    if (deadKeyEvent) {
         if (auto mapping = findMappingByBisection(emscriptKey->code))
             return *mapping;
     }
     if (auto mapping = findMappingByBisection(emscriptKey->key))
         return *mapping;
+    if (deadKeyEvent)
+        return Qt::Key_unknown;
 
     // cast to unicode key
     QString str = QString::fromUtf8(emscriptKey->key).toUpper();
@@ -306,11 +309,9 @@ QWasmEventTranslator::translateKeyEvent(int emEventType, const EmscriptenKeyboar
         if (keyEvent->shiftKey && ret.key == Qt::Key_QuoteLeft)
             ret.key = Qt::Key_AsciiTilde;
         m_emDeadKey = ret.key;
-    }
-
-    if (m_emDeadKey != Qt::Key_unknown
-        && (m_keyModifiedByDeadKeyOnPress == Qt::Key_unknown
-            || ret.key == m_keyModifiedByDeadKeyOnPress)) {
+    } else if (m_emDeadKey != Qt::Key_unknown
+               && (m_keyModifiedByDeadKeyOnPress == Qt::Key_unknown
+                   || ret.key == m_keyModifiedByDeadKeyOnPress)) {
         const Qt::Key baseKey = ret.key;
         const Qt::Key translatedKey = translateBaseKeyUsingDeadKey(baseKey, m_emDeadKey);
         if (translatedKey != Qt::Key_unknown)
