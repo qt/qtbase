@@ -181,7 +181,7 @@
       \li TRUE or 1: Automatically reconnect after connection loss\br
           FALSE or 0: No automatic reconnect after connection loss (default)\br
           See \l {https://dev.mysql.com/doc/c-api/8.0/en/c-api-auto-reconnect.html}
-          {Automatic Reconnection Control}^
+          {Automatic Reconnection Control}
     \row
       \li MYSQL_OPT_CONNECT_TIMEOUT
       \li The connect timeout in seconds
@@ -194,7 +194,8 @@
     \row
       \li MYSQL_OPT_LOCAL_INFILE
       \li Set to 1 to enable the support for local
-          \l {https://dev.mysql.com/doc/refman/8.0/en/load-data.html} {LOAD_DATA}
+          \l {https://dev.mysql.com/doc/refman/8.0/en/load-data.html} {LOAD_DATA},
+          disabled if not set or 0
     \row
       \li MYSQL_OPT_SSL_KEY / SSL_KEY (deprecated)
       \li The path name of the client private key file
@@ -452,8 +453,8 @@
     \header \li Attribute \li Possible value
     \row
       \li SQL_ATTR_ACCESS_MODE
-      \li Set to SQL_MODE_READ_ONLY to open the database in read-only
-          mode, or SQL_MODE_READ_WRITE to open it in read-write mode
+      \li SQL_MODE_READ_ONLY: open the database in read-only mode\br
+          SQL_MODE_READ_WRITE: open the database in read-write mode (default)
     \row
       \li SQL_ATTR_LOGIN_TIMEOUT
       \li Number of seconds to wait for the database connection
@@ -464,7 +465,7 @@
           (a value of 0 will wait forever)
     \row
       \li SQL_ATTR_CURRENT_CATALOG
-      \li The catalog (database) to use for this connection.
+      \li The catalog (database) to use for this connection
     \row
       \li SQL_ATTR_METADATA_ID
       \li SQL_TRUE: the string argument of catalog functions are treated
@@ -480,10 +481,10 @@
     \row
       \li SQL_ATTR_TRACE
       \li SQL_OPT_TRACE_ON: Enable database query tracing\br
-          SQL_OPT_TRACE_ON: Disable database query tracing (default)
+          SQL_OPT_TRACE_OFF: Disable database query tracing (default)
     \row
       \li SQL_ATTR_CONNECTION_POOLING
-      \li Enable or disable connection pooling at the environment level.
+      \li Enable or disable connection pooling at the environment level.\br
           SQL_CP_DEFAULT, SQL_CP_OFF: Connection pooling is turned off (default)\br
           SQL_CP_ONE_PER_DRIVER: A single connection pool is supported for each driver\br
           SQL_CP_ONE_PER_HENV: A single connection pool is supported for each environment
@@ -643,8 +644,8 @@
     \header \li Attribute \li Possible value
     \row
       \li SQL_ATTR_ACCESS_MODE
-      \li Set to SQL_MODE_READ_ONLY to open the database in read-only
-          mode, or SQL_MODE_READ_WRITE to open it in read-write mode
+      \li SQL_MODE_READ_ONLY: open the database in read-only mode\br
+          SQL_MODE_READ_WRITE: open the database in read-write mode (default)
     \row
       \li SQL_ATTR_LOGIN_TIMEOUT
       \li Number of seconds to wait for the database connection
@@ -704,16 +705,17 @@
       \li QSQLITE_BUSY_TIMEOUT
       \li Busy handler timeout in milliseconds (val <= 0: disabled),
           see \l {https://www.sqlite.org/c3ref/busy_timeout.html}
-          {SQLite documentation} for more information.
+          {SQLite documentation} for more information
     \row
       \li QSQLITE_OPEN_READONLY
       \li If set, the database is open in read-only mode which will fail
           if no database exists. Otherwise the database will be opened in
-          read-write mode and created if the database file does not yet exist.
+          read-write mode and created if the database file does not yet
+          exist (default)
     \row
       \li QSQLITE_OPEN_URI
-      \li The given filename is interpreted as an uri
-          (\l {https://www.sqlite.org/c3ref/open.html} {SQLITE_OPEN_URI})
+      \li The given filename is interpreted as an uri, see
+          \l {https://www.sqlite.org/c3ref/open.html} {SQLITE_OPEN_URI}
     \row
       \li QSQLITE_ENABLE_SHARED_CACHE
       \li If set, the database is opened in
@@ -722,11 +724,11 @@
     \row
       \li QSQLITE_ENABLE_REGEXP
       \li If set, the plugin defines a function 'regex' which can be used
-          in queries. QRegularExpression is used for evaluation of the regex query.
+          in queries, QRegularExpression is used for evaluation of the regex query
     \row
       \li QSQLITE_NO_USE_EXTENDED_RESULT_CODES
       \li Disables the usage of the \l {https://www.sqlite.org/c3ref/extended_result_codes.html}
-          {extended result code} feature in SQLite
+          {extended result code} feature in SQLite (for backwards compatibility)
     \endtable
 
     \section3 How to Build the QSQLITE Plugin
