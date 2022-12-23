@@ -79,13 +79,10 @@ private:
     void deliverUpdateRequest(QWasmWindow *window, UpdateRequestDeliveryType updateType);
 
     static int keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData);
-    static int focus_cb(int eventType, const EmscriptenFocusEvent *focusEvent, void *userData);
-    static int wheel_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData);
 
     static int touchCallback(int eventType, const EmscriptenTouchEvent *ev, void *userData);
 
     bool processKeyboard(int eventType, const EmscriptenKeyboardEvent *keyEvent);
-    bool processWheel(int eventType, const EmscriptenWheelEvent *wheelEvent);
     bool processTouch(int eventType, const EmscriptenTouchEvent *touchEvent);
 
     void enterWindow(QWindow *window, const QPoint &localPoint, const QPoint &globalPoint);

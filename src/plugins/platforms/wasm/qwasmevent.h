@@ -24,6 +24,7 @@ enum class EventType {
     PointerUp,
     PointerEnter,
     PointerLeave,
+    Wheel,
 };
 
 enum class PointerType {
@@ -35,6 +36,8 @@ enum class WindowArea {
     NonClient,
     Client,
 };
+
+enum class DeltaMode { Pixel, Line, Page };
 
 namespace KeyboardModifier {
 namespace internal
@@ -201,6 +204,22 @@ struct DragEvent : public MouseEvent
 
     Qt::DropAction dropAction;
     emscripten::val dataTransfer;
+};
+
+struct WheelEvent : public MouseEvent
+{
+    static std::optional<WheelEvent> fromWeb(emscripten::val webEvent);
+
+    WheelEvent(EventType type, emscripten::val webEvent);
+    ~WheelEvent();
+    WheelEvent(const WheelEvent &other);
+    WheelEvent(WheelEvent &&other);
+    WheelEvent &operator=(const WheelEvent &other);
+    WheelEvent &operator=(WheelEvent &&other);
+
+    DeltaMode deltaMode;
+    bool webkitDirectionInvertedFromDevice;
+    QPoint delta;
 };
 
 QT_END_NAMESPACE
