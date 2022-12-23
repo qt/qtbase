@@ -529,14 +529,38 @@ QString QFileSystemModel::type(const QModelIndex &index) const
 }
 
 /*!
-    Returns the date and time when \a index was last modified.
+    Returns the date and time (in local time) when \a index was last modified.
+
+    This is an overloaded function, equivalent to calling:
+    \code
+    lastModified(index, QTimeZone::LocalTime);
+    \endcode
+
+    If \a index is invalid, a default constructed QDateTime is returned.
  */
 QDateTime QFileSystemModel::lastModified(const QModelIndex &index) const
+{
+    return lastModified(index, QTimeZone::LocalTime);
+}
+
+/*!
+    \since 6.6
+    Returns the date and time, in the time zone \a tz, when
+    \a index was last modified.
+
+    Typical arguments for \a tz are \c QTimeZone::UTC or \c QTimeZone::LocalTime.
+    UTC does not require any conversion from the time returned by the native file
+    system API, therefore getting the time in UTC is potentially faster. LocalTime
+    is typically chosen if the time is shown to the user.
+
+    If \a index is invalid, a default constructed QDateTime is returned.
+ */
+QDateTime QFileSystemModel::lastModified(const QModelIndex &index, const QTimeZone &tz) const
 {
     Q_D(const QFileSystemModel);
     if (!index.isValid())
         return QDateTime();
-    return d->node(index)->lastModified();
+    return d->node(index)->lastModified(tz);
 }
 
 /*!
@@ -765,7 +789,7 @@ QString QFileSystemModelPrivate::time(const QModelIndex &index) const
     if (!index.isValid())
         return QString();
 #if QT_CONFIG(datestring)
-    return QLocale::system().toString(node(index)->lastModified(), QLocale::ShortFormat);
+    return QLocale::system().toString(node(index)->lastModified(QTimeZone::LocalTime), QLocale::ShortFormat);
 #else
     Q_UNUSED(index);
     return QString();
@@ -1027,10 +1051,12 @@ public:
         }
         case 3:
         {
-            if (l->lastModified() == r->lastModified())
+            const QDateTime left = l->lastModified(QTimeZone::UTC);
+            const QDateTime right = r->lastModified(QTimeZone::UTC);
+            if (left == right)
                 return naturalCompare.compare(l->fileName, r->fileName) < 0;
 
-            return l->lastModified() < r->lastModified();
+            return left < right;
         }
         }
         Q_ASSERT(false);

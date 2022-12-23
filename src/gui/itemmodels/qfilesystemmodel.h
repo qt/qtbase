@@ -113,7 +113,10 @@ public:
     bool isDir(const QModelIndex &index) const;
     qint64 size(const QModelIndex &index) const;
     QString type(const QModelIndex &index) const;
+
+    // ### Qt7 merge the two overloads, with tz QTimeZone::LocalTime
     QDateTime lastModified(const QModelIndex &index) const;
+    QDateTime lastModified(const QModelIndex &index, const QTimeZone &tz) const;
 
     QModelIndex mkdir(const QModelIndex &parent, const QString &name);
     bool rmdir(const QModelIndex &index);

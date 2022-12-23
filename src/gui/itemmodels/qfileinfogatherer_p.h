@@ -51,7 +51,7 @@ public:
        return mFileInfo == fileInfo.mFileInfo
        && displayType == fileInfo.displayType
        && permissions() == fileInfo.permissions()
-       && lastModified() == fileInfo.lastModified();
+       && lastModified(QTimeZone::UTC) == fileInfo.lastModified(QTimeZone::UTC);
     }
 
 #ifndef QT_NO_FSFILEENGINE
@@ -95,8 +95,8 @@ public:
         return mFileInfo;
     }
 
-    QDateTime lastModified() const {
-        return mFileInfo.lastModified();
+    QDateTime lastModified(const QTimeZone &tz) const {
+        return mFileInfo.lastModified(tz);
     }
 
     qint64 size() const {
