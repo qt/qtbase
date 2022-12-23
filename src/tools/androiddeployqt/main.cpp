@@ -423,6 +423,7 @@ Options parseOptions()
                 const QString storeAlias = qEnvironmentVariable("QT_ANDROID_KEYSTORE_ALIAS");
                 if (keyStore.isEmpty() || storeAlias.isEmpty()) {
                     options.helpRequested = true;
+                    fprintf(stderr, "Package signing path and alias values are not specified.\n");
                 } else {
                     fprintf(stdout,
                             "Using package signing path and alias values found from the "
@@ -431,10 +432,15 @@ Options parseOptions()
                     options.keyStore = keyStore;
                     options.keyStoreAlias = storeAlias;
                 }
-            } else {
+            } else if (!arguments.at(i + 1).startsWith("--"_L1) &&
+                       !arguments.at(i + 2).startsWith("--"_L1)) {
                 options.releasePackage = true;
                 options.keyStore = arguments.at(++i);
                 options.keyStoreAlias = arguments.at(++i);
+            } else {
+                options.helpRequested = true;
+                fprintf(stderr, "Package signing path and alias values are not "
+                                "specified.\n");
             }
 
             // Do not override if the passwords are provided through arguments

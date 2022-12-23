@@ -440,8 +440,8 @@ function(qt6_android_add_apk_target target)
                 --apk "${apk_final_file_path}"
                 --depfile "${dep_file_path}"
                 --builddir "${relative_to_dir}"
-                ${sign_apk}
                 ${extra_args}
+                ${sign_apk}
             COMMENT "Creating APK for ${target}"
             DEPENDS "${target}" "${deployment_file}" ${extra_deps}
             DEPFILE "${dep_file_path}"
@@ -458,9 +458,10 @@ function(qt6_android_add_apk_target target)
                 --input ${deployment_file}
                 --output ${apk_final_dir}
                 --apk ${apk_final_file_path}
-                ${sign_apk}
                 ${extra_args}
+                ${sign_apk}
             COMMENT "Creating APK for ${target}"
+            VERBATIM
         )
     endif()
 
