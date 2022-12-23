@@ -54,7 +54,7 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_neon(quint32 *dst, cons
 
     // align dst on 128 bits
     const int offsetToAlignOn16Bytes = (reinterpret_cast<quintptr>(dst) >> 2) & 0x3;
-    for (int i = 0; i < offsetToAlignOn16Bytes; ++i) {
+    for (int i = 0; i < qMin(len, offsetToAlignOn16Bytes); ++i) {
         *dst++ = qRgb(src[0], src[1], src[2]);
         src += 3;
     }
