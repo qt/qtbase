@@ -8,9 +8,7 @@
 
 #include <QtCore/qshareddata.h>
 
-#ifndef Q_QDOC
 QT_REQUIRE_CONFIG(http);
-#endif
 
 QT_BEGIN_NAMESPACE
 

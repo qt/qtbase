@@ -144,7 +144,7 @@ public:
 
     QString peerVerifyName() const;
     void setPeerVerifyName(const QString &peerName);
-#if QT_CONFIG(http) || defined(Q_QDOC)
+#if QT_CONFIG(http)
     QHttp1Configuration http1Configuration() const;
     void setHttp1Configuration(const QHttp1Configuration &configuration);
 
@@ -153,12 +153,12 @@ public:
 
     qint64 decompressedSafetyCheckThreshold() const;
     void setDecompressedSafetyCheckThreshold(qint64 threshold);
-#endif // QT_CONFIG(http) || defined(Q_QDOC)
+#endif // QT_CONFIG(http)
 
-#if QT_CONFIG(http) || defined(Q_QDOC) || defined (Q_OS_WASM)
+#if QT_CONFIG(http) || defined (Q_OS_WASM)
     int transferTimeout() const;
     void setTransferTimeout(int timeout = DefaultTransferTimeoutConstant);
-#endif // QT_CONFIG(http) || defined(Q_QDOC) || defined (Q_OS_WASM)
+#endif // QT_CONFIG(http) || defined (Q_OS_WASM)
 private:
     QSharedDataPointer<QNetworkRequestPrivate> d;
     friend class QNetworkRequestPrivate;
