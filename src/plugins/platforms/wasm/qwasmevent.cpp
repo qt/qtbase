@@ -134,4 +134,45 @@ std::optional<DragEvent> DragEvent::fromWeb(emscripten::val event)
     return DragEvent(*eventType, event);
 }
 
+WheelEvent::WheelEvent(EventType type, emscripten::val event) : MouseEvent(type, event)
+{
+    deltaMode = ([event]() {
+        const int deltaMode = event["deltaMode"].as<int>();
+        const auto jsWheelEventType = emscripten::val::global("WheelEvent");
+        if (deltaMode == jsWheelEventType["DOM_DELTA_PIXEL"].as<int>())
+            return DeltaMode::Pixel;
+        else if (deltaMode == jsWheelEventType["DOM_DELTA_LINE"].as<int>())
+            return DeltaMode::Line;
+        return DeltaMode::Page;
+    })();
+
+    delta = QPoint(event["deltaX"].as<int>(), event["deltaY"].as<int>());
+
+    webkitDirectionInvertedFromDevice = event["webkitDirectionInvertedFromDevice"].as<bool>();
+}
+
+WheelEvent::~WheelEvent() = default;
+
+WheelEvent::WheelEvent(const WheelEvent &other) = default;
+
+WheelEvent::WheelEvent(WheelEvent &&other) = default;
+
+WheelEvent &WheelEvent::operator=(const WheelEvent &other) = default;
+
+WheelEvent &WheelEvent::operator=(WheelEvent &&other) = default;
+
+std::optional<WheelEvent> WheelEvent::fromWeb(emscripten::val event)
+{
+    const auto eventType = ([&event]() -> std::optional<EventType> {
+        const auto eventTypeString = event["type"].as<std::string>();
+
+        if (eventTypeString == "wheel")
+            return EventType::Wheel;
+        return std::nullopt;
+    })();
+    if (!eventType)
+        return std::nullopt;
+    return WheelEvent(*eventType, event);
+}
+
 QT_END_NAMESPACE

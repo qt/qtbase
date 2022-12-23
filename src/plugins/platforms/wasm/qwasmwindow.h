@@ -33,6 +33,7 @@ class EventCallback;
 class ClientArea;
 struct DragEvent;
 struct PointerEvent;
+struct WheelEvent;
 
 class QWasmWindow final : public QPlatformWindow
 {
@@ -93,6 +94,7 @@ private:
 
     bool processPointer(const PointerEvent &event);
     bool processDrop(const DragEvent &event);
+    bool processWheel(const WheelEvent &event);
 
     QWindow *m_window = nullptr;
     QWasmCompositor *m_compositor = nullptr;
@@ -115,6 +117,8 @@ private:
     std::unique_ptr<qstdweb::EventCallback> m_pointerMoveCallback;
 
     std::unique_ptr<qstdweb::EventCallback> m_dropCallback;
+
+    std::unique_ptr<qstdweb::EventCallback> m_wheelEventCallback;
 
     Qt::WindowStates m_state = Qt::WindowNoState;
     Qt::WindowStates m_previousWindowState = Qt::WindowNoState;

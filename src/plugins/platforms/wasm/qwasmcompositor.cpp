@@ -29,19 +29,6 @@ using namespace emscripten;
 
 Q_GUI_EXPORT int qt_defaultDpiX();
 
-bool g_scrollingInvertedFromDevice = false;
-
-static void mouseWheelEvent(emscripten::val event)
-{
-    emscripten::val wheelInverted = event["webkitDirectionInvertedFromDevice"];
-    if (wheelInverted.as<bool>())
-        g_scrollingInvertedFromDevice = true;
-}
-
-EMSCRIPTEN_BINDINGS(qtMouseModule) {
-    function("qtMouseWheelEvent", &mouseWheelEvent);
-}
-
 QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
     : QObject(screen),
       m_windowStack(std::bind(&QWasmCompositor::onTopWindowChanged, this)),
@@ -77,8 +64,6 @@ void QWasmCompositor::deregisterEventHandlers()
     emscripten_set_keydown_callback(screenElementSelector.constData(), 0, 0, NULL);
     emscripten_set_keyup_callback(screenElementSelector.constData(), 0, 0, NULL);
 
-    emscripten_set_wheel_callback(screenElementSelector.constData(), 0, 0, NULL);
-
     emscripten_set_touchstart_callback(screenElementSelector.constData(), 0, 0, NULL);
     emscripten_set_touchend_callback(screenElementSelector.constData(), 0, 0, NULL);
     emscripten_set_touchmove_callback(screenElementSelector.constData(), 0, 0, NULL);
@@ -94,13 +79,6 @@ void QWasmCompositor::destroy()
 
 void QWasmCompositor::initEventHandlers()
 {
-    if (platform() == Platform::MacOS) {
-        if (!emscripten::val::global("window")["safari"].isUndefined()) {
-            screen()->element().call<void>("addEventListener", val("wheel"),
-                                           val::module_property("qtMouseWheelEvent"));
-        }
-    }
-
     constexpr EM_BOOL UseCapture = 1;
 
     const QByteArray screenElementSelector = screen()->eventTargetId().toUtf8();
@@ -108,9 +86,6 @@ void QWasmCompositor::initEventHandlers()
                                     &keyboard_cb);
     emscripten_set_keyup_callback(screenElementSelector.constData(), (void *)this, UseCapture,
                                   &keyboard_cb);
-
-    emscripten_set_wheel_callback(screenElementSelector.constData(), (void *)this, UseCapture,
-                                  &wheel_cb);
 
     emscripten_set_touchstart_callback(screenElementSelector.constData(), (void *)this, UseCapture,
                                        &touchCallback);
@@ -314,12 +289,6 @@ int QWasmCompositor::keyboard_cb(int eventType, const EmscriptenKeyboardEvent *k
     return static_cast<int>(wasmCompositor->processKeyboard(eventType, keyEvent));
 }
 
-int QWasmCompositor::wheel_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
-{
-    QWasmCompositor *compositor = (QWasmCompositor *) userData;
-    return static_cast<int>(compositor->processWheel(eventType, wheelEvent));
-}
-
 int QWasmCompositor::touchCallback(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
 {
     auto compositor = reinterpret_cast<QWasmCompositor*>(userData);
@@ -352,51 +321,6 @@ bool QWasmCompositor::processKeyboard(int eventType, const EmscriptenKeyboardEve
     return clipboardResult == ProcessKeyboardResult::NativeClipboardEventAndCopiedDataNeeded
             ? ProceedToNativeEvent
             : result;
-}
-
-bool QWasmCompositor::processWheel(int eventType, const EmscriptenWheelEvent *wheelEvent)
-{
-    Q_UNUSED(eventType);
-
-    const EmscriptenMouseEvent* mouseEvent = &wheelEvent->mouse;
-
-    int scrollFactor = 0;
-    switch (wheelEvent->deltaMode) {
-        case DOM_DELTA_PIXEL:
-            scrollFactor = 1;
-            break;
-        case DOM_DELTA_LINE:
-            scrollFactor = 12;
-            break;
-        case DOM_DELTA_PAGE:
-            scrollFactor = 20;
-            break;
-    };
-
-    scrollFactor = -scrollFactor; // Web scroll deltas are inverted from Qt deltas.
-
-    Qt::KeyboardModifiers modifiers = KeyboardModifier::getForEvent(*mouseEvent);
-    QPoint targetPointInScreenCoords =
-            screen()->mapFromLocal(QPoint(mouseEvent->targetX, mouseEvent->targetY));
-
-    QWindow *targetWindow = screen()->compositor()->windowAt(targetPointInScreenCoords, 5);
-    if (!targetWindow)
-        return 0;
-    QPoint pointInTargetWindowCoords = targetWindow->mapFromGlobal(targetPointInScreenCoords);
-
-    QPoint pixelDelta;
-
-    if (wheelEvent->deltaY != 0) pixelDelta.setY(wheelEvent->deltaY * scrollFactor);
-    if (wheelEvent->deltaX != 0) pixelDelta.setX(wheelEvent->deltaX * scrollFactor);
-
-    QPoint angleDelta = pixelDelta; // FIXME: convert from pixels?
-
-    bool accepted = QWindowSystemInterface::handleWheelEvent(
-            targetWindow, QWasmIntegration::getTimestamp(), pointInTargetWindowCoords,
-            targetPointInScreenCoords, pixelDelta, angleDelta, modifiers,
-            Qt::NoScrollPhase, Qt::MouseEventNotSynthesized,
-            g_scrollingInvertedFromDevice);
-    return accepted;
 }
 
 bool QWasmCompositor::processTouch(int eventType, const EmscriptenTouchEvent *touchEvent)

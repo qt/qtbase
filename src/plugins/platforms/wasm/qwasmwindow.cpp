@@ -105,6 +105,12 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
                 if (processDrop(*DragEvent::fromWeb(event)))
                     event.call<void>("preventDefault");
             });
+
+    m_wheelEventCallback = std::make_unique<qstdweb::EventCallback>(
+            m_qtWindow, "wheel", [this](emscripten::val event) {
+                if (processWheel(*WheelEvent::fromWeb(event)))
+                    event.call<void>("preventDefault");
+            });
 }
 
 QWasmWindow::~QWasmWindow()
@@ -465,6 +471,30 @@ bool QWasmWindow::processDrop(const DragEvent &event)
                                                    {}, {});
             });
     return true;
+}
+
+bool QWasmWindow::processWheel(const WheelEvent &event)
+{
+    // Web scroll deltas are inverted from Qt deltas - negate.
+    const int scrollFactor = -([&event]() {
+        switch (event.deltaMode) {
+        case DeltaMode::Pixel:
+            return 1;
+        case DeltaMode::Line:
+            return 12;
+        case DeltaMode::Page:
+            return 20;
+        };
+    })();
+
+    const auto pointInScreen = platformScreen()->mapFromLocal(
+            dom::mapPoint(event.target, platformScreen()->element(), event.localPoint));
+
+    return QWindowSystemInterface::handleWheelEvent(
+            window(), QWasmIntegration::getTimestamp(), mapFromGlobal(pointInScreen), pointInScreen,
+            event.delta * scrollFactor, event.delta * scrollFactor, event.modifiers,
+            Qt::NoScrollPhase, Qt::MouseEventNotSynthesized,
+            event.webkitDirectionInvertedFromDevice);
 }
 
 QRect QWasmWindow::normalGeometry() const
