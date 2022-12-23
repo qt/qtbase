@@ -19,6 +19,11 @@
 #include <QtCore/QDeadlineTimer>
 #include <QtCore/private/qglobal_p.h>
 
+// This header always defines a class called "mutex" and one called
+// "condition_variable", so those mustn't be used to mark ELF symbol
+// visibility. Don't add more classes to this header!
+// ELFVERSION:stop
+
 #include <condition_variable>
 #include <mutex>
 

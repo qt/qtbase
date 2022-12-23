@@ -39,7 +39,7 @@ class QMouseEvent;
 
 namespace QMdi {
 template<typename T>
-class ControlElement : public T
+class ControlElement : public T             // ELFVERSION:ignore
 {
 public:
     ControlElement(QMdiSubWindow *child) : T(child, nullptr)
@@ -58,7 +58,7 @@ public:
     QPointer<QMdiSubWindow> mdiChild;
 };
 
-class ControlContainer : public QObject
+class ControlContainer : public QObject     // ELFVERSION:ignore
 {
 public:
     ControlContainer(QMdiSubWindow *mdiChild);
