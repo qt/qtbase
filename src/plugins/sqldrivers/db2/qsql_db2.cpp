@@ -875,7 +875,7 @@ bool QDB2Result::exec()
                 break; }
             case QMetaType::Int:
             case QMetaType::Double:
-            case QMetaType::ByteArray:
+            case QMetaType::QByteArray:
                 break;
             case QMetaType::QString:
                 if (bindValueType(i) & QSql::Out)
