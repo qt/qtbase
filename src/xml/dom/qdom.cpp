@@ -6104,6 +6104,7 @@ bool QDomDocument::setContent(const QString& text, bool namespaceProcessing,
 
 /*!
     \deprecated [6.8] Use the overload taking ParseOptions instead.
+    \overload
 
     This function parses the XML document from the byte array \a
     data and sets it as the content of the document. It tries to
