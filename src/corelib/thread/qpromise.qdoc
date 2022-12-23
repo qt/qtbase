@@ -38,6 +38,8 @@
     \snippet snippet_qpromise.cpp multithread_init
     \codeline
     \snippet snippet_qpromise.cpp multithread_main
+    \codeline
+    \snippet snippet_qpromise.cpp multithread_cleanup
 
     \sa QFuture
 */
