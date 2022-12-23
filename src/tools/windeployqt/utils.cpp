@@ -737,7 +737,11 @@ inline void determineDebugAndDependentLibs(const ImageNtHeader *nth, const void 
         } else {
             // When an MSVC debug entry is present, check whether the debug runtime
             // is actually used to detect -release / -force-debug-info builds.
-            *isDebugIn = hasDebugEntry && checkMsvcDebugRuntime(dependentLibraries) != MsvcReleaseRuntime;
+            const MsvcDebugRuntimeResult msvcrt = checkMsvcDebugRuntime(dependentLibraries);
+            if (msvcrt == NoMsvcRuntime)
+                *isDebugIn = hasDebugEntry;
+            else
+                *isDebugIn = hasDebugEntry && msvcrt == MsvcDebugRuntime;
         }
     }
 }
