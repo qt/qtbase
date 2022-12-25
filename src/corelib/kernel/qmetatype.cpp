@@ -460,7 +460,7 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
     \value IsPointer This type is a pointer to another type.
     \omitvalue WeakPointerToQObject
     \omitvalue TrackingPointerToQObject
-    \omitvalue IsGadget \omit This type is a Q_GADGET and it's corresponding QMetaObject can be accessed with QMetaType::metaObject Since 5.5. \endomit
+    \omitvalue IsGadget \omit (since Qt 5.5) This type is a Q_GADGET and its corresponding QMetaObject can be accessed with QMetaType::metaObject. \endomit
     \omitvalue PointerToGadget
     \omitvalue IsQmlList
     \value IsConst Indicates that values of this types are immutable; for instance because they are pointers to const objects.
