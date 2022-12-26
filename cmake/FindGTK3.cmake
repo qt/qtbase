@@ -7,7 +7,7 @@ set(__gtk3_required_version "${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION}")
 if(__gtk3_required_version)
     set(__gtk3_required_version " >= ${__gtk3_required_version}")
 endif()
-pkg_check_modules(GTK3 "gtk+-3.0${__gtk3_required_version}" IMPORTED_TARGET)
+pkg_check_modules(GTK3 IMPORTED_TARGET "gtk+-3.0${__gtk3_required_version}")
 
 if (NOT TARGET PkgConfig::GTK3)
     set(GTK3_FOUND 0)

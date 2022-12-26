@@ -3,7 +3,7 @@
 
 find_package(PkgConfig QUIET)
 
-pkg_check_modules(ATSPI2 atspi-2 IMPORTED_TARGET)
+pkg_check_modules(ATSPI2 IMPORTED_TARGET "atspi-2")
 
 if (NOT TARGET PkgConfig::ATSPI2)
     set(ATSPI2_FOUND 0)
