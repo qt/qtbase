@@ -3187,6 +3187,15 @@ void tst_QFuture::cancelContinuations()
         QVERIFY(watcher2.isFinished());
         QVERIFY(watcher2.isCanceled());
     }
+
+    // Cancel continuations with context (QTBUG-108790)
+    {
+        // This test should pass with ASan
+        auto future = QtConcurrent::run([] {});
+        future.then(this, [] {});
+        future.waitForFinished();
+        future.cancel();
+    }
 }
 
 void tst_QFuture::continuationsWithContext()
