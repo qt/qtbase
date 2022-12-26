@@ -3,7 +3,7 @@
 
 find_package(PkgConfig QUIET)
 
-pkg_check_modules(Tslib tslib IMPORTED_TARGET)
+pkg_check_modules(Tslib IMPORTED_TARGET "tslib")
 
 if (NOT TARGET PkgConfig::Tslib)
     set(Tslib_FOUND 0)

@@ -22,7 +22,7 @@ if(NOT __pcre2_found)
   list(PREPEND WrapSystemPCRE2_REQUIRED_VARS PCRE2_LIBRARIES PCRE2_INCLUDE_DIRS)
 
   find_package(PkgConfig QUIET)
-  pkg_check_modules(PC_PCRE2 QUIET libpcre2-16)
+  pkg_check_modules(PC_PCRE2 QUIET "libpcre2-16")
 
   find_path(PCRE2_INCLUDE_DIRS
             NAMES pcre2.h

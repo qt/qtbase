@@ -3,7 +3,7 @@
 
 find_package(PkgConfig QUIET)
 
-pkg_check_modules(Libproxy libproxy-1.0 IMPORTED_TARGET)
+pkg_check_modules(Libproxy IMPORTED_TARGET "libproxy-1.0")
 
 if (NOT TARGET PkgConfig::Libproxy)
     set(Libproxy_FOUND 0)

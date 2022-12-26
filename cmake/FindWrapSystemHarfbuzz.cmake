@@ -32,7 +32,7 @@ endif()
 
 if(__harfbuzz_broken_config_file OR NOT __harfbuzz_found)
     find_package(PkgConfig QUIET)
-    pkg_check_modules(PC_HARFBUZZ harfbuzz IMPORTED_TARGET)
+    pkg_check_modules(PC_HARFBUZZ IMPORTED_TARGET "harfbuzz")
     if(PC_HARFBUZZ_FOUND)
         set(__harfbuzz_target_name "PkgConfig::PC_HARFBUZZ")
         set(__harfbuzz_find_include_dirs_hints

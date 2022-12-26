@@ -3,7 +3,7 @@
 
 find_package(PkgConfig QUIET)
 
-pkg_check_modules(DirectFB directfb IMPORTED_TARGET)
+pkg_check_modules(DirectFB IMPORTED_TARGET "directfb")
 
 if (NOT TARGET PkgConfig::DirectFB)
     set(DirectFB_FOUND 0)

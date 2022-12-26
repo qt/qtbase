@@ -40,7 +40,7 @@ if(TARGET zstd::libzstd_static OR TARGET zstd::libzstd_shared)
     endif()
 else()
     find_package(PkgConfig QUIET)
-    pkg_check_modules(PC_ZSTD QUIET libzstd)
+    pkg_check_modules(PC_ZSTD QUIET "libzstd")
 
     find_path(ZSTD_INCLUDE_DIRS
               NAMES zstd.h

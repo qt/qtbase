@@ -3,7 +3,7 @@
 
 find_package(PkgConfig QUIET)
 
-pkg_check_modules(Mtdev mtdev IMPORTED_TARGET)
+pkg_check_modules(Mtdev IMPORTED_TARGET "mtdev")
 
 if (NOT TARGET PkgConfig::Mtdev)
     set(Mtdev_FOUND 0)

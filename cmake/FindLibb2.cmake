@@ -13,7 +13,7 @@ endif()
 find_package(PkgConfig QUIET)
 
 if(PkgConfig_FOUND)
-    pkg_check_modules(Libb2 libb2 IMPORTED_TARGET)
+    pkg_check_modules(Libb2 IMPORTED_TARGET "libb2")
 
     if (TARGET PkgConfig::Libb2)
         add_library(Libb2::Libb2 INTERFACE IMPORTED)
