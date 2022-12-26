@@ -1419,6 +1419,16 @@ QTextFrame *QTextDocumentPrivate::rootFrame() const
     return rtFrame;
 }
 
+void QTextDocumentPrivate::addCursor(QTextCursorPrivate *c)
+{
+    cursors.insert(c);
+}
+
+void QTextDocumentPrivate::removeCursor(QTextCursorPrivate *c)
+{
+    cursors.remove(c);
+}
+
 QTextFrame *QTextDocumentPrivate::frameAt(int pos) const
 {
     QTextFrame *f = rootFrame();
