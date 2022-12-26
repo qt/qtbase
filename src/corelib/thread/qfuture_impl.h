@@ -590,14 +590,14 @@ void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
 {
     Q_ASSERT(f);
 
-    auto continuation = [func = std::forward<F>(func), promise = QPromise(fi),
+    auto continuation = [func = std::forward<F>(func), fi,
                          context = QPointer<QObject>(context)](
                                 const QFutureInterfaceBase &parentData) mutable {
         Q_ASSERT(context);
         const auto parent = QFutureInterface<ParentResultType>(parentData).future();
         QMetaObject::invokeMethod(
                 context,
-                [func = std::forward<F>(func), promise = std::move(promise), parent]() mutable {
+                [func = std::forward<F>(func), promise = QPromise(fi), parent]() mutable {
                     SyncContinuation<Function, ResultType, ParentResultType> continuationJob(
                             std::forward<Function>(func), parent, std::move(promise));
                     continuationJob.execute();
@@ -689,13 +689,13 @@ void FailureHandler<Function, ResultType>::create(F &&function, QFuture<ResultTy
     Q_ASSERT(future);
 
     auto failureContinuation =
-            [function = std::forward<F>(function), promise = QPromise(fi),
+            [function = std::forward<F>(function), fi,
              context = QPointer<QObject>(context)](const QFutureInterfaceBase &parentData) mutable {
                 Q_ASSERT(context);
                 const auto parent = QFutureInterface<ResultType>(parentData).future();
                 QMetaObject::invokeMethod(context,
                                           [function = std::forward<F>(function),
-                                          promise = std::move(promise), parent]() mutable {
+                                          promise = QPromise(fi), parent]() mutable {
                     FailureHandler<Function, ResultType> failureHandler(
                                 std::forward<Function>(function), parent, std::move(promise));
                     failureHandler.run();
@@ -788,13 +788,13 @@ public:
                        QObject *context)
     {
         Q_ASSERT(future);
-        auto canceledContinuation = [promise = QPromise(fi), handler = std::forward<F>(handler),
+        auto canceledContinuation = [fi, handler = std::forward<F>(handler),
                                      context = QPointer<QObject>(context)](
                                             const QFutureInterfaceBase &parentData) mutable {
             Q_ASSERT(context);
             auto parentFuture = QFutureInterface<ResultType>(parentData).future();
             QMetaObject::invokeMethod(context,
-                                      [promise = std::move(promise), parentFuture,
+                                      [promise = QPromise(fi), parentFuture,
                                       handler = std::forward<F>(handler)]() mutable {
                 run(std::forward<F>(handler), parentFuture, std::move(promise));
             });
