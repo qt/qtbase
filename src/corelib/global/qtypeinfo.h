@@ -22,6 +22,16 @@ class QDebug;
 template <typename T>
 inline constexpr bool qIsRelocatable =  std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>;
 
+// Denotes types that are trivially default constructible, and for which
+// value-initialization can be achieved by filling their storage with 0 bits.
+// There is no type trait we can use for this, so we hardcode a list of
+// possibilities that we know are OK on the architectures that we support.
+// The most notable exception are pointers to data members, which for instance
+// on the Itanium ABI are initialized to -1.
+template <typename T>
+inline constexpr bool qIsValueInitializationBitwiseZero =
+        std::is_scalar_v<T> && !std::is_member_object_pointer_v<T>;
+
 /*
   The catch-all template.
 */
@@ -35,6 +45,7 @@ public:
         isIntegral = std::is_integral_v<T>,
         isComplex = !std::is_trivial_v<T>,
         isRelocatable = qIsRelocatable<T>,
+        isValueInitializationBitwiseZero = qIsValueInitializationBitwiseZero<T>,
     };
 };
 
@@ -47,6 +58,7 @@ public:
         isIntegral = false,
         isComplex = false,
         isRelocatable = false,
+        isValueInitializationBitwiseZero = false,
     };
 };
 
@@ -79,6 +91,7 @@ public:
     static constexpr bool isRelocatable = ((QTypeInfo<Ts>::isRelocatable) && ...);
     static constexpr bool isPointer = false;
     static constexpr bool isIntegral = false;
+    static constexpr bool isValueInitializationBitwiseZero = false;
 };
 
 #define Q_DECLARE_MOVABLE_CONTAINER(CONTAINER) \
@@ -91,6 +104,7 @@ public: \
         isIntegral = false, \
         isComplex = true, \
         isRelocatable = true, \
+        isValueInitializationBitwiseZero = false, \
     }; \
 }
 
@@ -131,6 +145,7 @@ public: \
         isRelocatable = !isComplex || ((FLAGS) & Q_RELOCATABLE_TYPE) || qIsRelocatable<TYPE>, \
         isPointer = false, \
         isIntegral = std::is_integral< TYPE >::value, \
+        isValueInitializationBitwiseZero = qIsValueInitializationBitwiseZero<TYPE>, \
     }; \
 }
 
