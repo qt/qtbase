@@ -30,7 +30,7 @@ public:
     typedef T Type;
     typedef QAtomicOps<T> Ops;
     // static check that this is a valid integer
-    static_assert(QTypeInfo<T>::isIntegral, "template parameter is not an integral type");
+    static_assert(std::is_integral_v<T>, "template parameter is not an integral type");
     static_assert(QAtomicOpsSupport<sizeof(T)>::IsSupported, "template parameter is an integral of a size not supported on this platform");
 
     typename Ops::Type _q_value;

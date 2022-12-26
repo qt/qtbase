@@ -264,7 +264,7 @@ QT_WARNING_POP
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndAndRelaxed(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) noexcept
+    T fetchAndAndRelaxed(T &_q_value, typename std::enable_if<std::is_integral_v<T>, T>::type operand) noexcept
     {
         // implement fetchAndAnd on top of testAndSet
         T tmp = BaseClass::loadRelaxed(_q_value);
@@ -275,7 +275,7 @@ QT_WARNING_POP
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndAndAcquire(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) noexcept
+    T fetchAndAndAcquire(T &_q_value, typename std::enable_if<std::is_integral_v<T>, T>::type operand) noexcept
     {
         T tmp = BaseClass::fetchAndAndRelaxed(_q_value, operand);
         BaseClass::acquireMemoryFence(_q_value);
@@ -283,21 +283,21 @@ QT_WARNING_POP
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndAndRelease(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) noexcept
+    T fetchAndAndRelease(T &_q_value, typename std::enable_if<std::is_integral_v<T>, T>::type operand) noexcept
     {
         BaseClass::releaseMemoryFence(_q_value);
         return BaseClass::fetchAndAndRelaxed(_q_value, operand);
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndAndOrdered(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) noexcept
+    T fetchAndAndOrdered(T &_q_value, typename std::enable_if<std::is_integral_v<T>, T>::type operand) noexcept
     {
         BaseClass::orderedMemoryFence(_q_value);
         return BaseClass::fetchAndAndRelaxed(_q_value, operand);
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndOrRelaxed(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) noexcept
+    T fetchAndOrRelaxed(T &_q_value, typename std::enable_if<std::is_integral_v<T>, T>::type operand) noexcept
     {
         // implement fetchAndOr on top of testAndSet
         T tmp = BaseClass::loadRelaxed(_q_value);
@@ -308,7 +308,7 @@ QT_WARNING_POP
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndOrAcquire(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) noexcept
+    T fetchAndOrAcquire(T &_q_value, typename std::enable_if<std::is_integral_v<T>, T>::type operand) noexcept
     {
         T tmp = BaseClass::fetchAndOrRelaxed(_q_value, operand);
         BaseClass::acquireMemoryFence(_q_value);
@@ -316,21 +316,21 @@ QT_WARNING_POP
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndOrRelease(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) noexcept
+    T fetchAndOrRelease(T &_q_value, typename std::enable_if<std::is_integral_v<T>, T>::type operand) noexcept
     {
         BaseClass::releaseMemoryFence(_q_value);
         return BaseClass::fetchAndOrRelaxed(_q_value, operand);
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndOrOrdered(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) noexcept
+    T fetchAndOrOrdered(T &_q_value, typename std::enable_if<std::is_integral_v<T>, T>::type operand) noexcept
     {
         BaseClass::orderedMemoryFence(_q_value);
         return BaseClass::fetchAndOrRelaxed(_q_value, operand);
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndXorRelaxed(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) noexcept
+    T fetchAndXorRelaxed(T &_q_value, typename std::enable_if<std::is_integral_v<T>, T>::type operand) noexcept
     {
         // implement fetchAndXor on top of testAndSet
         T tmp = BaseClass::loadRelaxed(_q_value);
@@ -341,7 +341,7 @@ QT_WARNING_POP
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndXorAcquire(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) noexcept
+    T fetchAndXorAcquire(T &_q_value, typename std::enable_if<std::is_integral_v<T>, T>::type operand) noexcept
     {
         T tmp = BaseClass::fetchAndXorRelaxed(_q_value, operand);
         BaseClass::acquireMemoryFence(_q_value);
@@ -349,14 +349,14 @@ QT_WARNING_POP
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndXorRelease(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) noexcept
+    T fetchAndXorRelease(T &_q_value, typename std::enable_if<std::is_integral_v<T>, T>::type operand) noexcept
     {
         BaseClass::releaseMemoryFence(_q_value);
         return BaseClass::fetchAndXorRelaxed(_q_value, operand);
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndXorOrdered(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) noexcept
+    T fetchAndXorOrdered(T &_q_value, typename std::enable_if<std::is_integral_v<T>, T>::type operand) noexcept
     {
         BaseClass::orderedMemoryFence(_q_value);
         return BaseClass::fetchAndXorRelaxed(_q_value, operand);

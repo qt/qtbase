@@ -1262,7 +1262,7 @@ namespace QtPrivate {
                      | (IsEnumOrFlags<T>::value ? QMetaType::IsEnumeration : 0)
                      | (IsGadgetHelper<T>::IsGadgetOrDerivedFrom ? QMetaType::IsGadget : 0)
                      | (IsPointerToGadgetHelper<T>::IsGadgetOrDerivedFrom ? QMetaType::PointerToGadget : 0)
-                     | (QTypeInfo<T>::isPointer ? QMetaType::IsPointer : 0)
+                     | (std::is_pointer_v<T> ? QMetaType::IsPointer : 0)
                      | (IsUnsignedEnum<T> ? QMetaType::IsUnsignedEnumeration : 0)
                      | (IsQmlListType<T> ? QMetaType::IsQmlList : 0)
                      | (std::is_const_v<std::remove_pointer_t<T>> ? QMetaType::IsConst : 0)
