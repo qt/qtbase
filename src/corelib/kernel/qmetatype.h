@@ -1251,7 +1251,7 @@ namespace QtPrivate {
     struct QMetaTypeTypeFlags
     {
         enum { Flags = (QTypeInfo<T>::isRelocatable ? QMetaType::RelocatableType : 0)
-                     | (!std::is_trivially_default_constructible_v<T> ? QMetaType::NeedsConstruction : 0)
+                     | ((!std::is_default_constructible_v<T> || !QTypeInfo<T>::isValueInitializationBitwiseZero) ? QMetaType::NeedsConstruction : 0)
                      | (!std::is_trivially_destructible_v<T> ? QMetaType::NeedsDestruction : 0)
                      | (!std::is_trivially_copy_constructible_v<T> ? QMetaType::NeedsCopyConstruction : 0)
                      | (!std::is_trivially_move_constructible_v<T> ? QMetaType::NeedsMoveConstruction : 0)
@@ -2394,7 +2394,7 @@ public:
 
     static constexpr QMetaTypeInterface::DefaultCtrFn getDefaultCtr()
     {
-        if constexpr (std::is_default_constructible_v<S> && !std::is_trivially_default_constructible_v<S>) {
+        if constexpr (std::is_default_constructible_v<S> && !QTypeInfo<S>::isValueInitializationBitwiseZero) {
             return [](const QMetaTypeInterface *, void *addr) { new (addr) S(); };
         } else {
             return nullptr;

@@ -1025,7 +1025,7 @@ template <typename T> void addFlagsRow(const char *name, int id = qMetaTypeId<T>
     QTest::newRow(name)
             << id
             << bool(QTypeInfo<T>::isRelocatable)
-            << bool(!std::is_trivially_default_constructible_v<T>)
+            << bool(!std::is_default_constructible_v<T> || !QTypeInfo<T>::isValueInitializationBitwiseZero)
             << bool(!std::is_trivially_copy_constructible_v<T>)
             << bool(!std::is_trivially_destructible_v<T>)
             << bool(QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value)
@@ -1320,6 +1320,132 @@ FOR_EACH_CORE_METATYPE(RETURN_CONSTRUCT_FUNCTION)
 
     QFETCH(int, type);
     TypeTestFunctionGetter::get(type)();
+}
+
+
+namespace TriviallyConstructibleTests {
+
+enum Enum0 {};
+enum class Enum1 {};
+
+static_assert(QTypeInfo<int>::isValueInitializationBitwiseZero);
+static_assert(QTypeInfo<double>::isValueInitializationBitwiseZero);
+static_assert(QTypeInfo<Enum0>::isValueInitializationBitwiseZero);
+static_assert(QTypeInfo<Enum1>::isValueInitializationBitwiseZero);
+static_assert(QTypeInfo<int *>::isValueInitializationBitwiseZero);
+static_assert(QTypeInfo<void *>::isValueInitializationBitwiseZero);
+static_assert(QTypeInfo<std::nullptr_t>::isValueInitializationBitwiseZero);
+
+struct A {};
+struct B { B() {} };
+struct C { ~C() {} };
+struct D { D(int) {} };
+struct E { E() {} ~E() {} };
+struct F { int i; };
+struct G { G() : i(0) {} int i; };
+struct H { constexpr H() : i(0) {} int i; };
+struct I { I() : i(42) {} int i; };
+struct J { constexpr J() : i(42) {} int i; };
+struct K { K() : i(0) {} ~K() {} int i; };
+
+static_assert(!QTypeInfo<A>::isValueInitializationBitwiseZero);
+static_assert(!QTypeInfo<B>::isValueInitializationBitwiseZero);
+static_assert(!QTypeInfo<C>::isValueInitializationBitwiseZero);
+static_assert(!QTypeInfo<D>::isValueInitializationBitwiseZero);
+static_assert(!QTypeInfo<E>::isValueInitializationBitwiseZero);
+static_assert(!QTypeInfo<F>::isValueInitializationBitwiseZero);
+static_assert(!QTypeInfo<G>::isValueInitializationBitwiseZero);
+static_assert(!QTypeInfo<H>::isValueInitializationBitwiseZero);
+static_assert(!QTypeInfo<I>::isValueInitializationBitwiseZero);
+static_assert(!QTypeInfo<J>::isValueInitializationBitwiseZero);
+static_assert(!QTypeInfo<K>::isValueInitializationBitwiseZero);
+
+} // namespace TriviallyConstructibleTests
+
+// Value-initializing these trivially constructible types cannot be achieved by
+// memset(0) into their storage. For instance, on Itanium, a pointer to a data
+// member needs to be value-initialized by setting it to -1.
+
+// Fits into QVariant
+struct TrivialTypeNotZeroInitableSmall {
+    int TrivialTypeNotZeroInitableSmall::*pdm;
+};
+
+static_assert(std::is_trivially_default_constructible_v<TrivialTypeNotZeroInitableSmall>);
+static_assert(!QTypeInfo<TrivialTypeNotZeroInitableSmall>::isValueInitializationBitwiseZero);
+static_assert(sizeof(TrivialTypeNotZeroInitableSmall) < sizeof(QVariant)); // also checked more thoroughly below
+
+// Does not fit into QVariant internal storage
+struct TrivialTypeNotZeroInitableBig {
+    int a;
+    double b;
+    char c;
+    int array[42];
+    void (TrivialTypeNotZeroInitableBig::*pmf)();
+    int TrivialTypeNotZeroInitableBig::*pdm;
+};
+
+static_assert(std::is_trivially_default_constructible_v<TrivialTypeNotZeroInitableBig>);
+static_assert(!QTypeInfo<TrivialTypeNotZeroInitableSmall>::isValueInitializationBitwiseZero);
+static_assert(sizeof(TrivialTypeNotZeroInitableBig) > sizeof(QVariant)); // also checked more thoroughly below
+
+void tst_QMetaType::defaultConstructTrivial_QTBUG_109594()
+{
+    // MSVC miscompiles value-initialization of pointers to data members,
+    // https://developercommunity.visualstudio.com/t/Pointer-to-data-member-is-not-initialize/10238905
+    {
+        QMetaType mt = QMetaType::fromType<TrivialTypeNotZeroInitableSmall>();
+        QVERIFY(mt.isDefaultConstructible());
+        auto ptr = static_cast<TrivialTypeNotZeroInitableSmall *>(mt.create());
+        const auto cleanup = qScopeGuard([=] {
+            mt.destroy(ptr);
+        });
+#ifdef Q_CC_MSVC_ONLY
+        QEXPECT_FAIL("", "MSVC compiler bug", Continue);
+#endif
+        QCOMPARE(ptr->pdm, nullptr);
+
+        QVariant v(mt);
+        QVERIFY(QVariant::Private::canUseInternalSpace(mt.iface()));
+        auto obj = v.value<TrivialTypeNotZeroInitableSmall>();
+#ifdef Q_CC_MSVC_ONLY
+        QEXPECT_FAIL("", "MSVC compiler bug", Continue);
+#endif
+        QCOMPARE(obj.pdm, nullptr);
+    }
+
+    {
+        QMetaType mt = QMetaType::fromType<TrivialTypeNotZeroInitableBig>();
+        QVERIFY(mt.isDefaultConstructible());
+        auto ptr = static_cast<TrivialTypeNotZeroInitableBig *>(mt.create());
+        const auto cleanup = qScopeGuard([=] {
+            mt.destroy(ptr);
+        });
+        QCOMPARE(ptr->a, 0);
+        QCOMPARE(ptr->b, 0.0);
+        QCOMPARE(ptr->c, '\0');
+        QCOMPARE(ptr->pmf, nullptr);
+        for (int i : ptr->array)
+            QCOMPARE(i, 0);
+#ifdef Q_CC_MSVC_ONLY
+        QEXPECT_FAIL("", "MSVC compiler bug", Continue);
+#endif
+        QCOMPARE(ptr->pdm, nullptr);
+
+        QVariant v(mt);
+        QVERIFY(!QVariant::Private::canUseInternalSpace(mt.iface()));
+        auto obj = v.value<TrivialTypeNotZeroInitableBig>();
+        QCOMPARE(obj.a, 0);
+        QCOMPARE(obj.b, 0.0);
+        QCOMPARE(obj.c, '\0');
+        QCOMPARE(obj.pmf, nullptr);
+        for (int i : obj.array)
+            QCOMPARE(i, 0);
+#ifdef Q_CC_MSVC_ONLY
+        QEXPECT_FAIL("", "MSVC compiler bug", Continue);
+#endif
+        QCOMPARE(obj.pdm, nullptr);
+    }
 }
 
 void tst_QMetaType::typedConstruct()

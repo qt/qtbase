@@ -433,7 +433,7 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
 
     The enum describes attributes of a type supported by QMetaType.
 
-    \value NeedsConstruction This type has a non-trivial default constructor. If the flag is not set, instances can be safely initialized with memset to 0.
+    \value NeedsConstruction This type has a default constructor. If the flag is not set, instances can be safely initialized with memset to 0.
     \value NeedsCopyConstruction (since 6.5) This type has a non-trivial copy construtcor. If the flag is not set, instances can be copied with memcpy.
     \value NeedsMoveConstruction (since 6.5) This type has a non-trivial move constructor. If the flag is not set, instances can be moved with memcpy.
     \value NeedsDestruction This type has a non-trivial destructor. If the flag is not set calls to the destructor are not necessary before discarding objects.

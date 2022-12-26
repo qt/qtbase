@@ -77,6 +77,7 @@ private slots:
     void flagsBinaryCompatibility6_0();
     void construct_data();
     void construct();
+    void defaultConstructTrivial_QTBUG_109594();
     void typedConstruct();
     void constructCopy_data();
     void constructCopy();

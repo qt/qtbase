@@ -266,7 +266,7 @@ static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant
     if (QVariant::Private::canUseInternalSpace(iface)) {
         d->is_shared = false;
         if (!copy && !iface->defaultCtr)
-            return;     // trivial default constructor, we've already memset
+            return;     // default constructor and it's OK to build in 0-filled storage, which we've already done
         construct(iface, d->data.data, copy);
     } else {
         d->data.shared = customConstructShared(iface->size, iface->alignment, [=](void *where) {
