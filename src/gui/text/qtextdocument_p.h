@@ -243,8 +243,8 @@ private:
 public:
     void documentChange(int from, int length);
 
-    inline void addCursor(QTextCursorPrivate *c) { cursors.insert(c); }
-    inline void removeCursor(QTextCursorPrivate *c) { cursors.remove(c); }
+    void addCursor(QTextCursorPrivate *c);
+    void removeCursor(QTextCursorPrivate *c);
 
     QTextFrame *frameAt(int pos) const;
     QTextFrame *rootFrame() const;
