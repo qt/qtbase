@@ -57,36 +57,57 @@ QT_BEGIN_NAMESPACE
     if there are three or more of them, and performs equally well in other
     cases.
 
+    \note Definnig \c QT_USE_STRINGBUILDER at build time (this is the default
+    when building Qt libraries and tools), will make using \c {'+'} when
+    concatenating strings work the same way as \c operator%().
+
     \sa QLatin1StringView, QString
 */
 
-/*! \fn template <typename A, typename B> QStringBuilder<A, B>::QStringBuilder(const A &a, const B &b)
-  Constructs a QStringBuilder from \a a and \a b.
+/*!
+    \internal
+    \fn template <typename A, typename B> QStringBuilder<A, B>::QStringBuilder(const A &a, const B &b)
+
+    Constructs a QStringBuilder from \a a and \a b.
  */
 
-/* \fn template <typename A, typename B> QStringBuilder<A, B>::operator%(const A &a, const B &b)
+/*!
+    \internal
+    \fn template <typename A, typename B> QStringBuilder<A, B>::operator%(const A &a, const B &b)
 
     Returns a \c QStringBuilder object that is converted to a QString object
     when assigned to a variable of QString type or passed to a function that
     takes a QString parameter.
 
-    This function is usable with arguments of type \c QString,
-    \c QLatin1StringView,
-    \c QChar, \c QLatin1Char, and \c char.
+    This function is usable with arguments of any of the following types:
+    \list
+    \li \c QAnyStringView,
+    \li \c QString, \c QStringView
+    \li \c QByteArray, \c QByteArrayView, \c QLatin1StringView
+    \li \c QChar, \c QLatin1Char, \c char, (since 5.10:) \c char16_t
+    \li (since 5.10:) \c{const char16_t[]} (\c{u"foo"}),
+    \endlist
 */
-
-/* \fn template <typename A, typename B> QByteArray QStringBuilder<A, B>::toLatin1() const
-  Returns a Latin-1 representation of the string as a QByteArray.  The
-  returned byte array is undefined if the string contains non-Latin1
-  characters.
- */
-/* \fn template <typename A, typename B> QByteArray QStringBuilder<A, B>::toUtf8() const
-  Returns a UTF-8 representation of the string as a QByteArray.
- */
-
 
 /*!
     \internal
+    \fn template <typename A, typename B> QByteArray QStringBuilder<A, B>::toLatin1() const
+
+    Returns a Latin-1 representation of the string as a QByteArray. It
+    is undefined behavior if the string contains non-Latin1 characters.
+ */
+
+/*!
+    \internal
+    \fn template <typename A, typename B> QByteArray QStringBuilder<A, B>::toUtf8() const
+
+    Returns a UTF-8 representation of the string as a QByteArray.
+ */
+
+/*!
+    \internal
+    Converts the UTF-8 string viewed by \a in to UTF-16 and writes the result
+    to the buffer starting at \a out.
  */
 void QAbstractConcatenable::convertFromUtf8(QByteArrayView in, QChar *&out) noexcept
 {

@@ -2039,7 +2039,7 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
 
     Many strings are known at compile time. But the trivial
     constructor QString("Hello"), will copy the contents of the string,
-    treating the contents as Latin-1. To avoid this one can use the
+    treating the contents as Latin-1. To avoid this, one can use the
     QStringLiteral macro to directly create the required data at compile
     time. Constructing a QString out of the literal does then not cause
     any overhead at runtime.
@@ -2093,14 +2093,21 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
 
     \snippet qstring/stringbuilder.cpp 5
 
-    A more global approach which is the most convenient but
-    not entirely source compatible, is to this define in your
-    .pro file:
+    A more global approach, which is more convenient but not entirely source
+    compatible, is to define \c QT_USE_QSTRINGBUILDER (by adding it to the compiler
+    flags) at build time. This will make concatenating strings with \c{'+'} work the
+    same way as \c{QStringBuilder} \c{'%'}.
 
-    \snippet qstring/stringbuilder.cpp 3
+    \note Take care when using the \c auto keyword with the result of
+    string concatenation using QStringBuilder:
+    \snippet qstring/stringbuilder.cpp 6
 
-    and the \c{'+'} will automatically be performed as the
-    \c{QStringBuilder} \c{'%'} everywhere.
+    Typically this is not what is expected (and can result in undefined behavior).
+    This issue can be fixed by specifying the return type:
+    \snippet qstring/stringbuilder.cpp 7
+
+    \note \l {https://invent.kde.org/sdk/clazy} {Clazy} has a check, auto-unexpected-qstringbuilder,
+    that catches this issue.
 
     \section1 Maximum Size and Out-of-memory Conditions
 
