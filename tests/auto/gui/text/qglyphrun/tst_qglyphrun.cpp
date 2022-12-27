@@ -967,7 +967,7 @@ void tst_QGlyphRun::objectReplacementCharacter()
     QList<QGlyphRun> glyphRuns = layout.glyphRuns();
     QCOMPARE(glyphRuns.size(), 1);
     QCOMPARE(glyphRuns.first().glyphIndexes().size(), 1);
-    QCOMPARE(glyphRuns.first().glyphIndexes().first(), 5);
+    QCOMPARE(glyphRuns.first().glyphIndexes().first(), uint(5));
 }
 
 #endif // QT_NO_RAWFONT
