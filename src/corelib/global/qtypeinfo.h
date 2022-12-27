@@ -165,7 +165,7 @@ public: \
     enum { \
         isComplex = (((FLAGS) & Q_PRIMITIVE_TYPE) == 0) && !std::is_trivial_v<TYPE>, \
         isRelocatable = !isComplex || ((FLAGS) & Q_RELOCATABLE_TYPE) || qIsRelocatable<TYPE>, \
-        isPointer = false, \
+        isPointer = std::is_pointer_v< TYPE >, \
         isIntegral = std::is_integral< TYPE >::value, \
     }; \
 }
