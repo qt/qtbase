@@ -294,8 +294,8 @@ constexpr inline bool has_prepend_v<QVarLengthArray<T,N>> = false; // deprecated
 
 void tst_Collections::typeinfo()
 {
-    QVERIFY(QTypeInfo<int*>::isPointer);
-    QVERIFY(!QTypeInfo<int>::isPointer);
+    QVERIFY(std::is_pointer_v<int*>);
+    QVERIFY(!std::is_pointer_v<int>);
     QVERIFY(QTypeInfo<QString>::isComplex);
     QVERIFY(!QTypeInfo<int>::isComplex);
 }

@@ -65,7 +65,7 @@ static_assert( QTypeInfo<QPairPM>::isRelocatable );
 static_assert(!QTypeInfo<QPairPP>::isComplex);
 static_assert( QTypeInfo<QPairPP>::isRelocatable );
 
-static_assert(!QTypeInfo<QPairPP>::isPointer);
+static_assert(!std::is_pointer_v<QPairPP>);
 
 
 void tst_QPair::pairOfReferences()
