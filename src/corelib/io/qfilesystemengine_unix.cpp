@@ -7,6 +7,7 @@
 #include "qfilesystemengine_p.h"
 #include "qfile.h"
 #include "qstorageinfo.h"
+#include "qurl.h"
 
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/private/qcore_unix_p.h>
@@ -1332,6 +1333,16 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     const QString targetPath = trashDir.filePath(filesDir) + uniqueTrashedName;
     const QFileSystemEntry target(targetPath);
 
+    QString infoPath;
+    const QStorageInfo storageInfo(sourcePath);
+    if (storageInfo.isValid() && storageInfo.rootPath() != rootPath() && storageInfo != QStorageInfo(QDir::home())) {
+        infoPath = sourcePath.mid(storageInfo.rootPath().length());
+        if (infoPath.front() == u'/')
+            infoPath = infoPath.mid(1);
+    } else {
+        infoPath = sourcePath;
+    }
+
     /*
         We might fail to rename if source and target are on different file systems.
         In that case, we don't try further, i.e. copying and removing the original
@@ -1345,7 +1356,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
 
     QByteArray info =
             "[Trash Info]\n"
-            "Path=" + sourcePath.toUtf8() + "\n"
+            "Path=" + QUrl::toPercentEncoding(infoPath, "/") + "\n"
             "DeletionDate=" + QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss"_L1).toUtf8()
             + "\n";
     infoFile.write(info);
