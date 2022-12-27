@@ -39,9 +39,9 @@ class QDebug;
 // QCocoaWindow
 //
 // QCocoaWindow is an NSView (not an NSWindow!) in the sense
-// that it relies on a NSView for all event handling and
-// graphics output and does not require a NSWindow, except for
-// for the window-related functions like setWindowTitle.
+// that it relies on an NSView for all event handling and
+// graphics output and does not require an NSWindow, except for
+// the window-related functions like setWindowTitle.
 //
 // As a consequence of this it is possible to embed the QCocoaWindow
 // in an NSView hierarchy by getting a pointer to the "backing"
