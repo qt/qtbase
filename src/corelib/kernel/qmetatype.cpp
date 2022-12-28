@@ -450,20 +450,20 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
     \value NeedsConstruction This type has a default constructor. If the flag is not set, instances can be safely initialized with memset to 0.
     \value NeedsCopyConstruction (since 6.5) This type has a non-trivial copy construtcor. If the flag is not set, instances can be copied with memcpy.
     \value NeedsMoveConstruction (since 6.5) This type has a non-trivial move constructor. If the flag is not set, instances can be moved with memcpy.
-    \value NeedsDestruction This type has a non-trivial destructor. If the flag is not set calls to the destructor are not necessary before discarding objects.
+    \value NeedsDestruction This type has a non-trivial destructor. If the flag is not set, calls to the destructor are not necessary before discarding objects.
     \value RelocatableType An instance of a type having this attribute can be safely moved to a different memory location using memcpy.
     \omitvalue MovableType
     \omitvalue SharedPointerToQObject
     \value IsEnumeration This type is an enumeration.
     \value IsUnsignedEnumeration If the type is an Enumeration, its underlying type is unsigned.
-    \value PointerToQObject This type is a pointer to a derived of QObject.
+    \value PointerToQObject This type is a pointer to a class derived from QObject.
     \value IsPointer This type is a pointer to another type.
     \omitvalue WeakPointerToQObject
     \omitvalue TrackingPointerToQObject
     \omitvalue IsGadget \omit This type is a Q_GADGET and it's corresponding QMetaObject can be accessed with QMetaType::metaObject Since 5.5. \endomit
     \omitvalue PointerToGadget
     \omitvalue IsQmlList
-    \value IsConst Indicates that values of this types are immutable; for instance because they are pointers to const objects.
+    \value IsConst Indicates that values of this type are immutable; for instance, because they are pointers to const objects.
 
     \note Before Qt 6.5, both the NeedsConstruction and NeedsDestruction flags
     were incorrectly set if the either copy construtor or destructor were
