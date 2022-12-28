@@ -1145,15 +1145,9 @@ QFuture<QtAndroidPrivate::PermissionResult>
 QtAndroidPrivate::requestPermissions(const QStringList &permissions)
 {
     // avoid the uneccessary call and response to an empty permission string
-    if (permissions.size() > 0)
-        return requestPermissionsInternal(permissions);
-
-    QPromise<QtAndroidPrivate::PermissionResult> promise;
-    QFuture<QtAndroidPrivate::PermissionResult> future = promise.future();
-    promise.start();
-    promise.addResult(QtAndroidPrivate::Denied);
-    promise.finish();
-    return future;
+    if (permissions.isEmpty())
+        return QtFuture::makeReadyFuture(QtAndroidPrivate::Denied);
+    return requestPermissionsInternal(permissions);
 }
 
 /*!
@@ -1167,22 +1161,15 @@ QtAndroidPrivate::requestPermissions(const QStringList &permissions)
 QFuture<QtAndroidPrivate::PermissionResult>
 QtAndroidPrivate::checkPermission(const QString &permission)
 {
-    QPromise<QtAndroidPrivate::PermissionResult> promise;
-    QFuture<QtAndroidPrivate::PermissionResult> future = promise.future();
-    promise.start();
-
-    if (permission.size() > 0) {
+    QtAndroidPrivate::PermissionResult result = Denied;
+    if (!permission.isEmpty()) {
         auto res = QJniObject::callStaticMethod<jint>(qtNativeClassName,
                                                       "checkSelfPermission",
                                                       "(Ljava/lang/String;)I",
                                                       QJniObject::fromString(permission).object());
-        promise.addResult(resultFromAndroid(res));
-    } else {
-        promise.addResult(QtAndroidPrivate::Denied);
+        result = resultFromAndroid(res);
     }
-
-    promise.finish();
-    return future;
+    return QtFuture::makeReadyFuture(result);
 }
 
 bool QtAndroidPrivate::registerPermissionNatives()
