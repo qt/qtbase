@@ -134,34 +134,33 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
     list(FILTER module_headers EXCLUDE REGEX
         "(.+/(ui_)[^/]+\\.h|${CMAKE_CURRENT_SOURCE_DIR}(/.+)?/doc/+\\.h)")
 
-    set(module_headers_rsp "${binary_dir_real}/${target}_module_headers")
-    list(JOIN module_headers "\n" module_headers_string)
-    qt_configure_file_v2(OUTPUT "${module_headers_rsp}" CONTENT "${module_headers_string}")
-
-    set(module_headers_generated_rsp "${binary_dir_real}/${target}_module_headers_generated")
-    list(JOIN module_headers_generated "\n" module_headers_generated_string)
-    qt_configure_file_v2(OUTPUT "${module_headers_generated_rsp}" CONTENT
-        "${module_headers_generated_string}")
-
     set(syncqt_staging_dir "${module_build_interface_include_dir}/.syncqt_staging")
+
+    set(syncqt_args "${common_syncqt_arguments}")
+    list(APPEND syncqt_args
+        ${common_syncqt_arguments}
+        -headers ${module_headers}
+        -generatedHeaders ${module_headers_generated}
+        -stagingDir "${syncqt_staging_dir}"
+        -knownModules ${known_modules}
+        ${framework_args}
+        ${version_script_args}
+    )
+    list(JOIN syncqt_args "\n" syncqt_args_string)
+    set(syncqt_args_rsp "${binary_dir_real}/${target}_syncqt_args")
+    qt_configure_file_v2(OUTPUT "${syncqt_args_rsp}" CONTENT "${syncqt_args_string}")
+
     add_custom_command(
         OUTPUT
             ${syncqt_outputs}
         COMMAND
             ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
-            ${common_syncqt_arguments}
+            "@${syncqt_args_rsp}"
             ${build_time_syncqt_arguments}
-            -headers "@${module_headers_rsp}"
-            -generatedHeaders "@${module_headers_generated_rsp}"
-            -stagingDir "${syncqt_staging_dir}"
-            -knownModules ${known_modules}
-            ${framework_args}
-            ${version_script_args}
         COMMAND
             ${CMAKE_COMMAND} -E touch "${syncqt_timestamp}"
         DEPENDS
-            ${module_headers_rsp}
-            ${module_headers_generated_rsp}
+            ${syncqt_args_rsp}
             ${module_headers}
             ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
         COMMENT
@@ -178,13 +177,17 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
     # available for qdoc.
     # ${target}_sync_headers is added as dependency to make sure that
     # ${target}_sync_all_public_headers is running after ${target}_sync_headers, when building docs.
+    set(syncqt_all_args "${common_syncqt_arguments};-all")
+    list(JOIN syncqt_all_args "\n" syncqt_all_args_string)
+    set(syncqt_all_args_rsp "${binary_dir_real}/${target}_syncqt_all_args")
+    qt_configure_file_v2(OUTPUT "${syncqt_all_args_rsp}" CONTENT "${syncqt_all_args_string}")
     add_custom_target(${target}_sync_all_public_headers
         COMMAND
             ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
-            ${common_syncqt_arguments}
-            -all
+            "@${syncqt_all_args_rsp}"
         DEPENDS
             ${module_headers}
+            ${syncqt_all_args_rsp}
             ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
             ${target}_sync_headers
         VERBATIM
@@ -223,12 +226,7 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
         execute_process(
             COMMAND
                 ${syncqt_location}
-                ${common_syncqt_arguments}
-                -headers "@${module_headers_rsp}"
-                -generatedHeaders "@${module_headers_generated_rsp}"
-                -stagingDir "${syncqt_staging_dir}"
-                -knownModules ${known_modules}
-                ${framework_args}
+                "@${syncqt_args_rsp}"
             RESULT_VARIABLE syncqt_result
             OUTPUT_VARIABLE syncqt_output
             ERROR_VARIABLE syncqt_output

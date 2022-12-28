@@ -264,7 +264,6 @@ private:
         std::string qpaHeadersFilter;
         std::string privateHeadersFilter;
         std::string publicNamespaceFilter;
-        std::set<std::string> generatedHeaders;
         static std::unordered_map<std::string, CommandLineOption<std::string>> stringArgumentMap = {
             { "-module", { &m_moduleName } },
             { "-sourceDir", { &m_sourceDir } },
@@ -283,7 +282,7 @@ private:
         static const std::unordered_map<std::string, CommandLineOption<std::set<std::string>>>
                 listArgumentMap = {
                     { "-headers", { &m_headers, true } },
-                    { "-generatedHeaders", { &generatedHeaders, true } },
+                    { "-generatedHeaders", { &m_generatedHeaders, true } },
                     { "-knownModules", { &m_knownModules, true } },
                 };
 
@@ -298,11 +297,8 @@ private:
 
         std::string *currentValue = nullptr;
         std::set<std::string> *currentListValue = nullptr;
-        for (int i = 1; i < argc; ++i) {
-            std::string arg(argv[i]);
-            if (arg.empty())
-                continue;
 
+        auto parseArgument = [&currentValue, &currentListValue](const std::string &arg) -> bool {
             if (arg[0] == '-') {
                 currentValue = nullptr;
                 currentListValue = nullptr;
@@ -314,7 +310,7 @@ private:
                             return false;
                         }
                         currentValue = it->second.value;
-                        continue;
+                        return true;
                     }
                 }
 
@@ -326,7 +322,7 @@ private:
                             return false;
                         }
                         *(it->second.value) = true;
-                        continue;
+                        return true;
                     }
                 }
 
@@ -338,22 +334,50 @@ private:
                             return false;
                         }
                         currentListValue = it->second.value;
-                        continue;
+                        currentListValue->insert(""); // Indicate that argument is provided
+                        return true;
                     }
                 }
 
                 std::cerr << "Unknown argument: " << arg << std::endl;
                 return false;
-            } else {
-                if (currentValue != nullptr) {
-                    *currentValue = arg;
-                    currentValue = nullptr;
-                } else if (currentListValue != nullptr) {
-                    currentListValue->insert(arg);
-                } else {
-                    std::cerr << "Unknown argument: " << arg << std::endl;
-                }
             }
+
+            if (currentValue != nullptr) {
+                *currentValue = arg;
+                currentValue = nullptr;
+            } else if (currentListValue != nullptr) {
+                currentListValue->insert(arg);
+            } else {
+                std::cerr << "Unknown argument: " << arg << std::endl;
+                return false;
+            }
+            return true;
+        };
+
+        for (int i = 1; i < argc; ++i) {
+            std::string arg(argv[i]);
+            if (arg.empty())
+                continue;
+
+            if (arg[0] == '@') {
+                std::ifstream ifs(arg.substr(1), std::ifstream::in);
+                if (!ifs.is_open()) {
+                    std::cerr << "Unable to open rsp file: " << arg[0] << std::endl;
+                    return false;
+                }
+                std::string argFromFile;
+                while (std::getline(ifs, argFromFile)) {
+                    if (argFromFile.empty())
+                        continue;
+                    if (!parseArgument(argFromFile))
+                        return false;
+                }
+                continue;
+            }
+
+            if (!parseArgument(arg))
+                return false;
         }
 
         if (m_printHelpOnly)
@@ -369,32 +393,18 @@ private:
             m_publicNamespaceRegex = std::regex(publicNamespaceFilter);
 
         if (m_headers.empty() && !m_scanAllMode) {
-            std::cerr << "You need to specify either -headers or -all option.";
+            std::cerr << "You need to specify either -headers or -all option." << std::endl;
             return false;
         }
 
         if (!m_headers.empty() && m_scanAllMode) {
             std::cerr << "Both -headers and -all are specified. Need to choose only one"
-                         "operational mode.";
+                         "operational mode." << std::endl;
             return false;
         }
 
-        for (const auto &header : generatedHeaders) {
-            if (header.empty())
-                continue;
-            if (header[0] == '@') {
-                std::ifstream ifs(header.substr(1), std::ifstream::in);
-                if (ifs.is_open()) {
-                    std::string headerFromFile;
-                    while (std::getline(ifs, headerFromFile)) {
-                        if (!headerFromFile.empty())
-                            m_generatedHeaders.insert(headerFromFile);
-                    }
-                }
-            } else {
-                m_generatedHeaders.insert(header);
-            }
-        }
+        for (const auto &argument : listArgumentMap)
+            argument.second.value->erase("");
 
         bool ret = true;
         ret &= checkRequiredArguments(stringArgumentMap);
@@ -566,16 +576,7 @@ public:
             const auto &headers = m_commandLineArgs->headers();
             for (auto it = headers.begin(); it != headers.end(); ++it) {
                 const auto &header = *it;
-                if (!header.empty() && header[0] == '@') {
-                    std::ifstream ifs(header.substr(1), std::ifstream::in);
-                    if (ifs.is_open()) {
-                        std::string headerFromFile;
-                        while (std::getline(ifs, headerFromFile)) {
-                            if (!headerFromFile.empty())
-                                rspHeaders.insert(headerFromFile);
-                        }
-                    }
-                } else if (!processHeader(makeHeaderAbsolute(header))) {
+                if (!processHeader(makeHeaderAbsolute(header))) {
                     error = SyncFailed;
                 }
             }
@@ -734,7 +735,7 @@ public:
 
         // Check if a directory is passed as argument. That shouldn't happen, print error and exit.
         if (m_currentFilename.empty()) {
-            std::cerr << "Header file name of " << m_currentFileString << "is empty";
+            std::cerr << "Header file name of " << m_currentFileString << "is empty" << std::endl;
             return false;
         }
 
