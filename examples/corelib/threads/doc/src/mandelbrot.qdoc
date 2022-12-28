@@ -13,11 +13,11 @@
 
     \image mandelbrot-example.png Screenshot of the Mandelbrot example
 
-    The heavy computation here is the Mandelbrot set, probably the
-    world's most famous fractal. These days, while sophisticated
-    programs such as \l{http://matek.hu/xaos/doku.php}{XaoS} that provide real-time zooming in the
-    Mandelbrot set, the standard Mandelbrot algorithm is just slow
-    enough for our purposes.
+    The heavy computation here is the Mandelbrot set, probably the world's most
+    famous fractal. These days, while sophisticated programs, such as
+    \l{https://xaos-project.github.io/}{XaoS}, provide real-time zooming in
+    the Mandelbrot set, the standard Mandelbrot algorithm is just slow enough
+    for our purposes.
 
     In real life, the approach described here is applicable to a
     large set of problems, including synchronous network I/O and
