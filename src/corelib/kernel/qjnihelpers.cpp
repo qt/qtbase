@@ -10,6 +10,7 @@
 #include "qsemaphore.h"
 #include "qreadwritelock.h"
 #include <QtCore/private/qcoreapplication_p.h>
+#include <QtCore/private/qlocking_p.h>
 
 #include <android/log.h>
 #include <deque>
@@ -34,10 +35,10 @@ static jobject g_jActivity = nullptr;
 static jobject g_jService = nullptr;
 static jobject g_jClassLoader = nullptr;
 
-Q_GLOBAL_STATIC(QtAndroidPrivate::OnBindListener *, g_onBindListener, nullptr);
-Q_GLOBAL_STATIC(QMutex, g_onBindListenerMutex);
+Q_CONSTINIT static QtAndroidPrivate::OnBindListener *g_onBindListener;
+Q_CONSTINIT static QBasicMutex g_onBindListenerMutex;
 Q_GLOBAL_STATIC(QSemaphore, g_waitForServiceSetupSemaphore);
-Q_GLOBAL_STATIC(QAtomicInt, g_serviceSetupLockers);
+Q_CONSTINIT static QBasicAtomicInt g_serviceSetupLockers = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 Q_GLOBAL_STATIC(QReadWriteLock, g_updateMutex);
 
@@ -361,36 +362,36 @@ void QtAndroidPrivate::waitForServiceSetup()
 
 int QtAndroidPrivate::acuqireServiceSetup(int flags)
 {
-    g_serviceSetupLockers->ref();
+    g_serviceSetupLockers.ref();
     return flags;
 }
 
 void QtAndroidPrivate::setOnBindListener(QtAndroidPrivate::OnBindListener *listener)
 {
-    QMutexLocker lock(g_onBindListenerMutex());
-    *g_onBindListener = listener;
-    if (!g_serviceSetupLockers->deref())
+    const auto lock = qt_scoped_lock(g_onBindListenerMutex);
+    g_onBindListener = listener;
+    if (!g_serviceSetupLockers.deref())
         g_waitForServiceSetupSemaphore->release();
 }
 
 jobject QtAndroidPrivate::callOnBindListener(jobject intent)
 {
-    QMutexLocker lock(g_onBindListenerMutex());
-    if (*g_onBindListener)
-        return (*g_onBindListener)->onBind(intent);
+    const auto lock = qt_scoped_lock(g_onBindListenerMutex);
+    if (g_onBindListener)
+        return g_onBindListener->onBind(intent);
     return nullptr;
 }
 
-Q_GLOBAL_STATIC(QAtomicInt, g_androidDeadlockProtector);
+Q_CONSTINIT static QBasicAtomicInt g_androidDeadlockProtector = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 bool QtAndroidPrivate::acquireAndroidDeadlockProtector()
 {
-    return g_androidDeadlockProtector->testAndSetAcquire(0, 1);
+    return g_androidDeadlockProtector.testAndSetAcquire(0, 1);
 }
 
 void QtAndroidPrivate::releaseAndroidDeadlockProtector()
 {
-    g_androidDeadlockProtector->storeRelease(0);
+    g_androidDeadlockProtector.storeRelease(0);
 }
 
 QT_END_NAMESPACE
