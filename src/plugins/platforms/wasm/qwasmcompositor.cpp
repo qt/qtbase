@@ -63,8 +63,12 @@ QWasmCompositor::~QWasmCompositor()
     if (m_requestAnimationFrameId != -1)
         emscripten_cancel_animation_frame(m_requestAnimationFrameId);
 
-    deregisterEventHandlers();
     destroy();
+}
+
+void QWasmCompositor::onScreenDeleting()
+{
+    deregisterEventHandlers();
 }
 
 void QWasmCompositor::deregisterEventHandlers()

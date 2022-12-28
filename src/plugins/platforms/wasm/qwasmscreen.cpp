@@ -92,8 +92,6 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
 
 QWasmScreen::~QWasmScreen()
 {
-    Q_ASSERT(!m_compositor); // deleteScreen should have been called to remove this screen
-
     emscripten::val::module_property("specialHTMLTargets")
             .set(eventTargetId().toStdString(), emscripten::val::undefined());
 
@@ -103,9 +101,7 @@ QWasmScreen::~QWasmScreen()
 
 void QWasmScreen::deleteScreen()
 {
-    // Delete the compositor before removing the screen, since its destruction routine needs to use
-    // the fully operational screen.
-    m_compositor.reset();
+    m_compositor->onScreenDeleting();
     // Deletes |this|!
     QWindowSystemInterface::handleScreenRemoved(this);
 }
