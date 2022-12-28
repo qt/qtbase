@@ -1106,6 +1106,7 @@ requestPermissionsInternal(const QStringList &permissions)
     const int requestCode = nextRequestCode();
     QMutexLocker locker(&g_pendingPermissionRequestsMutex);
     g_pendingPermissionRequests->insert(requestCode, promise);
+    locker.unlock();
 
     QNativeInterface::QAndroidApplication::runOnAndroidMainThread([permissions, requestCode] {
         QJniEnvironment env;
