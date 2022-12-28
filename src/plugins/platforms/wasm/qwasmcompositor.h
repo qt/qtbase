@@ -50,6 +50,8 @@ public:
     void raise(QWasmWindow *window);
     void lower(QWasmWindow *window);
 
+    void onScreenDeleting();
+
     QWindow *windowAt(QPoint globalPoint, int padding = 0) const;
     QWindow *keyWindow() const;
 
