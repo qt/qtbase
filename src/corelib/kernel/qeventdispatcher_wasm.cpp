@@ -209,7 +209,7 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     emit awake();
 
-    bool hasPendingEvents = hasWindowSystemEvents();
+    bool hasPendingEvents = qGlobalPostedEventsCount() > 0;
 
     qCDebug(lcEventDispatcher) << "QEventDispatcherWasm::processEvents flags" << flags
                                << "pending events" << hasPendingEvents;
@@ -234,19 +234,15 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
         processTimers();
     }
 
-    hasPendingEvents = hasWindowSystemEvents();
     QCoreApplication::sendPostedEvents();
     processWindowSystemEvents(flags);
-    return hasPendingEvents;
+
+    return qGlobalPostedEventsCount() > 0;
 }
 
 void QEventDispatcherWasm::processWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_UNUSED(flags);
-}
-
-bool QEventDispatcherWasm::hasWindowSystemEvents() {
-    return false;
 }
 
 void QEventDispatcherWasm::registerSocketNotifier(QSocketNotifier *notifier)

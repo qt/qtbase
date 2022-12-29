@@ -53,7 +53,6 @@ public:
     static void socketSelect(int timeout, int socket, bool waitForRead, bool waitForWrite,
                             bool *selectForRead, bool *selectForWrite, bool *socketDisconnect);
 protected:
-    virtual bool hasWindowSystemEvents();
     virtual void processWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);
 
 private:
