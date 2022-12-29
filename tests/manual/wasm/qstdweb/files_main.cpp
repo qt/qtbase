@@ -320,8 +320,8 @@ void FilesTest::selectOneFileWithFileDialog()
         QWASMSUCCESS();
     });
 
-    QWasmLocalFileAccess::openFile(
-        {QStringLiteral("*")}, fileSelectedCallback->get(), acceptFileCallback->get(), fileDataReadyCallback->get());
+    QWasmLocalFileAccess::openFile("*", fileSelectedCallback->get(), acceptFileCallback->get(),
+                                   fileDataReadyCallback->get());
 }
 
 void FilesTest::selectMultipleFilesWithFileDialog()
@@ -377,9 +377,9 @@ void FilesTest::selectMultipleFilesWithFileDialog()
         }
     });
 
-    QWasmLocalFileAccess::openFiles(
-        {QStringLiteral("*")}, QWasmLocalFileAccess::FileSelectMode::MultipleFiles,
-        fileSelectedCallback->get(), acceptFileCallback->get(), fileDataReadyCallback->get());
+    QWasmLocalFileAccess::openFiles("*", QWasmLocalFileAccess::FileSelectMode::MultipleFiles,
+                                    fileSelectedCallback->get(), acceptFileCallback->get(),
+                                    fileDataReadyCallback->get());
 }
 
 void FilesTest::cancelFileDialog()
@@ -398,8 +398,8 @@ void FilesTest::cancelFileDialog()
     auto* acceptFileCallback = Own(new MockCallback<char*, uint64_t, const std::string&>());
     auto* fileDataReadyCallback = Own(new MockCallback<void>());
 
-    QWasmLocalFileAccess::openFile(
-        {QStringLiteral("*")}, fileSelectedCallback->get(), acceptFileCallback->get(), fileDataReadyCallback->get());
+    QWasmLocalFileAccess::openFile("*", fileSelectedCallback->get(), acceptFileCallback->get(),
+                                   fileDataReadyCallback->get());
 }
 
 void FilesTest::rejectFile()
@@ -430,8 +430,8 @@ void FilesTest::rejectFile()
             return nullptr;
         });
 
-    QWasmLocalFileAccess::openFile(
-        {QStringLiteral("*")}, fileSelectedCallback->get(), acceptFileCallback->get(), fileDataReadyCallback->get());
+    QWasmLocalFileAccess::openFile("*", fileSelectedCallback->get(), acceptFileCallback->get(),
+                                   fileDataReadyCallback->get());
 }
 
 void FilesTest::saveFileWithFileDialog()
