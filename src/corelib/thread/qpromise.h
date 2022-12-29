@@ -51,6 +51,8 @@ public:
     {
         return d.reportResult(std::forward<U>(result), index);
     }
+    bool addResults(const QList<T> &result)
+    { return d.reportResults(result); }
 #ifndef QT_NO_EXCEPTIONS
     void setException(const QException &e) { d.reportException(e); }
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)

@@ -105,6 +105,29 @@
     For instance, iterative approaches that use QFuture::resultCount() or
     QFuture::const_iterator. In order to get all available results without
     thinking if there are index gaps or not, use QFuture::results().
+
+    \sa addResults()
+*/
+
+/*!
+    \fn template <typename T> bool QPromise<T>::addResults(const QList<T> &results)
+    \since 6.6
+
+    Adds \a results at the end of the internal result collection.
+
+    Returns \c true when \a results are added to the collection.
+
+    Returns \c false when this promise is in canceled or finished state.
+
+    This is more efficient than looping over addResult(), because associated
+    futures will be notified only once per addResults() call, instead of once
+    per element contained in \a results, as would be the case with individual
+    addResult() calls. But if the calculation of each element takes time, then
+    the code on the receiving end (future) cannot make progress until all
+    results are reported, so use this function only if the calculation of
+    consecutive elements is relatively fast.
+
+    \sa addResult()
 */
 
 /*! \fn template<typename T> void QPromise<T>::setException(const QException &e)

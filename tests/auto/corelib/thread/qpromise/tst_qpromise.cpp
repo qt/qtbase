@@ -168,6 +168,15 @@ void tst_QPromise::addResult()
         QCOMPARE(f.resultCount(), 3);
         QCOMPARE(f.resultAt(2), result);
     }
+    // add multiple results in one go:
+    {
+        QList results = {42, 4242, 424242};
+        QVERIFY(promise.addResults(results));
+        QCOMPARE(f.resultCount(), 6);
+        QCOMPARE(f.resultAt(3), 42);
+        QCOMPARE(f.resultAt(4), 4242);
+        QCOMPARE(f.resultAt(5), 424242);
+    }
     // add as lvalue at position and overwrite
     {
         int result = -1;
