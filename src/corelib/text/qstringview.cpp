@@ -310,9 +310,11 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn const QChar *QStringView::data() const
 
+//! [const-pointer-to-first-ch]
     Returns a const pointer to the first character in the string view.
 
     \note The character array represented by the return value is \e not null-terminated.
+//! [const-pointer-to-first-ch]
 
     \sa begin(), end(), utf16()
 */
@@ -321,9 +323,7 @@ QT_BEGIN_NAMESPACE
     \fn const QChar *QStringView::constData() const
     \since 6.0
 
-    Returns a const pointer to the first character in the string view.
-
-    \note The character array represented by the return value is \e not null-terminated.
+    \include qstringview.cpp const-pointer-to-first-ch
 
     \sa data(), begin(), end(), utf16()
 */
@@ -331,11 +331,9 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn const storage_type *QStringView::utf16() const
 
-    Returns a const pointer to the first character in the string view.
+    \include qstringview.cpp const-pointer-to-first-ch
 
     \c{storage_type} is \c{char16_t}.
-
-    \note The character array represented by the return value is \e not null-terminated.
 
     \sa begin(), end(), data()
 */
@@ -536,8 +534,10 @@ QT_BEGIN_NAMESPACE
 
     This function is provided for STL compatibility.
 
+//! [calling-on-empty-is-UB]
     \warning Calling this function on an empty string view constitutes
     undefined behavior.
+//! [calling-on-empty-is-UB]
 
     \sa back(), first(), last()
 */
@@ -549,8 +549,7 @@ QT_BEGIN_NAMESPACE
 
     This function is provided for STL compatibility.
 
-    \warning Calling this function on an empty string view constitutes
-    undefined behavior.
+    \include qstringview.cpp calling-on-empty-is-UB
 
     \sa front(), first(), last()
 */
@@ -562,8 +561,7 @@ QT_BEGIN_NAMESPACE
 
     This function is provided for compatibility with other Qt containers.
 
-    \warning Calling this function on an empty string view constitutes
-    undefined behavior.
+    \include qstringview.cpp calling-on-empty-is-UB
 
     \sa front(), back(), last()
 */
@@ -575,8 +573,7 @@ QT_BEGIN_NAMESPACE
 
     This function is provided for compatibility with other Qt containers.
 
-    \warning Calling this function on an empty string view constitutes
-    undefined behavior.
+    \include qstringview.cpp calling-on-empty-is-UB
 
     \sa back(), front(), first()
 */
@@ -730,8 +727,7 @@ QT_BEGIN_NAMESPACE
     Returns an integer that compares to zero as this string view compares to the
     string view \a str.
 
-    If \a cs is Qt::CaseSensitive (the default), the comparison is case sensitive;
-    otherwise the comparison is case-insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
 
     \sa operator==(), operator<(), operator>()
 */
@@ -745,8 +741,7 @@ QT_BEGIN_NAMESPACE
     Returns an integer that compares to zero as this string view compares to the
     Latin-1 string \a l1, or character \a ch, respectively.
 
-    If \a cs is Qt::CaseSensitive (the default), the comparison is case sensitive;
-    otherwise the comparison is case-insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
 
     \sa operator==(), operator<(), operator>()
 */
@@ -789,8 +784,7 @@ QT_BEGIN_NAMESPACE
     Latin-1 string \a l1, or character \a ch, respectively;
     otherwise returns \c false.
 
-    If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
-    otherwise the search is case-insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa endsWith()
 */
@@ -805,8 +799,7 @@ QT_BEGIN_NAMESPACE
     Latin-1 string \a l1, or character \a ch, respectively;
     otherwise returns \c false.
 
-    If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
-    otherwise the search is case-insensitive.
+     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa startsWith()
 */
@@ -821,11 +814,9 @@ QT_BEGIN_NAMESPACE
     Latin-1 string \a l1, or character \a ch, respectively, in this string view,
     searching forward from index position \a from. Returns -1 if \a str is not found.
 
-    If \a cs is Qt::CaseSensitive (default), the search is case
-    sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
-    If \a from is -1, the search starts at the last character; if it is
-    -2, at the next to last character and so on.
+    \include qstring.qdocinc negative-index-start-search-from-end
 
     \sa QString::indexOf()
 */
@@ -839,8 +830,7 @@ QT_BEGIN_NAMESPACE
     Returns \c true if this string view contains an occurrence of the string view
     \a str, Latin-1 string \a l1, or character \a ch; otherwise returns \c false.
 
-    If \a cs is Qt::CaseSensitive (the default), the search is
-    case-sensitive; otherwise the search is case-insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa indexOf()
 */
@@ -853,12 +843,13 @@ QT_BEGIN_NAMESPACE
 
     Returns the index position of the last occurrence of the string view \a str,
     Latin-1 string \a l1, or character \a ch, respectively, in this string view,
-    searching backward from index position \a from. If \a from is -1,
-    the search starts at the last character; if \a from is -2, at the next to last
-    character and so on. Returns -1 if \a str is not found.
+    searching backward from index position \a from.
 
-    If \a cs is Qt::CaseSensitive (default), the search is case
-    sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc negative-index-start-search-from-end
+
+    Returns -1 if \a str is not found.
+
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \note When searching for a 0-length \a str or \a l1, the match at
     the end of the data is excluded from the search by a negative \a
@@ -882,8 +873,7 @@ QT_BEGIN_NAMESPACE
     searching backward from the last character of this string view.
     Returns -1 if \a str is not found.
 
-    If \a cs is Qt::CaseSensitive (default), the search is case
-    sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa QString::lastIndexOf()
 */
@@ -918,9 +908,11 @@ QT_BEGIN_NAMESPACE
 
     Returns the index position of the last match of the regular
     expression \a re in the string view, which starts before the index
-    position \a from. If \a from is -1, the search starts at the last
-    character; if \a from is -2, at the next to last character and so
-    on. Returns -1 if \a re didn't match anywhere.
+    position \a from.
+
+    \include qstring.qdocinc negative-index-start-search-from-end
+
+    Returns -1 if \a re didn't match anywhere.
 
     If the match is successful and \a rmatch is not \nullptr, it also
     writes the results of the match into the QRegularExpressionMatch object
@@ -1104,8 +1096,7 @@ QT_BEGIN_NAMESPACE
     Returns the number of occurrences of the character \a ch in the
     string view.
 
-    If \a cs is Qt::CaseSensitive (default), the search is
-    case sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa QString::count(), contains(), indexOf()
 */
@@ -1119,8 +1110,7 @@ QT_BEGIN_NAMESPACE
     Returns the number of (potentially overlapping) occurrences of the
     string view \a str in this string view.
 
-    If \a cs is Qt::CaseSensitive (default), the search is
-    case sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa QString::count(), contains(), indexOf()
 */
@@ -1134,8 +1124,7 @@ QT_BEGIN_NAMESPACE
     Returns the number of (potentially overlapping) occurrences of the
     Latin-1 string \a l1 in this string view.
 
-    If \a cs is Qt::CaseSensitive (default), the search is
-    case sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa QString::count(), contains(), indexOf()
 */

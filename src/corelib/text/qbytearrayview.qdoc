@@ -949,8 +949,7 @@
     respectively, in this byte array view, searching forward from index position
     \a from.Returns -1 if no match is found.
 
-    If \a from is -1, the search starts at the last character; if it is
-    -2, at the next to last character and so on.
+    \include qstring.qdocinc negative-index-start-search-from-end
 
     \sa lastIndexOf(), contains()
 */
@@ -973,8 +972,10 @@
     Returns the index position of either the start of the last occurrence of
     the sequence of bytes viewed by \a bv or the last occurrence of byte \a ch,
     respectively, in this byte array view, searching backward from index position
-    \a from. If \a from is -1, the search starts at the last character;
-    if \a from is -2, at the next to last character and so on.
+    \a from.
+
+    \include qstring.qdocinc negative-index-start-search-from-end
+
     Returns -1 if no match is found.
 
     \note When searching for a 0-length \a bv, the match at the end of

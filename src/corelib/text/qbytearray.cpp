@@ -2717,9 +2717,11 @@ qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, QByteA
 
     Returns the index position of the start of the last occurrence of the
     sequence of bytes viewed by \a bv in this byte array, searching backward
-    from index position \a from. If \a from is -1, the search starts at
-    the last character; if \a from is -2, at the next to last character
-    and so on. Returns -1 if no match is found.
+    from index position \a from.
+
+    \include qstring.qdocinc negative-index-start-search-from-end
+
+    Returns -1 if no match is found.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 23

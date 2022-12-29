@@ -1,0 +1,24 @@
+// Copyright (C) 2022 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+// \1 is either "search" or "comparison"
+//! [search-comparison-case-sensitivity]
+If \a cs is Qt::CaseSensitive (the default), the \1 is case-sensitive;
+otherwise the \1 is case-insensitive.
+//! [search-comparison-case-sensitivity]
+
+//! [negative-index-start-search-from-end]
+If \a from is -1, the search starts at the last character; if it is
+-2, at the next to last character and so on.
+//! [negative-index-start-search-from-end]
+
+//! [qstring-first-index-of]
+Returns the index position of the first occurrence of the \1 \a \2
+in this string, searching forward from index position \a from.
+Returns -1 if \a \2 is not found.
+//! [qstring-first-index-of]
+
+//! [qstring-last-index-of]
+Returns the index position of the last occurrence of the \1 \a \2
+in this string, searching backward from index position \a from.
+//! [qstring-last-index-of]

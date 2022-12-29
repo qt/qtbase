@@ -1466,8 +1466,7 @@ bool QAnyStringView::equal(QAnyStringView lhs, QAnyStringView rhs) noexcept
 
     Returns an integer that compares to 0 as \a lhs compares to \a rhs.
 
-    If \a cs is Qt::CaseSensitive (the default), the comparison is case-sensitive;
-    otherwise the comparison is case-insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
 
     Case-sensitive comparison is based exclusively on the numeric Unicode values
     of the characters and is very fast, but is not what a human would expect.
@@ -1490,8 +1489,7 @@ int QtPrivate::compareStrings(QStringView lhs, QStringView rhs, Qt::CaseSensitiv
 
     Returns an integer that compares to 0 as \a lhs compares to \a rhs.
 
-    If \a cs is Qt::CaseSensitive (the default), the comparison is case-sensitive;
-    otherwise the comparison is case-insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
 
     Case-sensitive comparison is based exclusively on the numeric Unicode values
     of the characters and is very fast, but is not what a human would expect.
@@ -1536,8 +1534,7 @@ int QtPrivate::compareStrings(QLatin1StringView lhs, QStringView rhs, Qt::CaseSe
 
     Returns an integer that compares to 0 as \a lhs compares to \a rhs.
 
-    If \a cs is Qt::CaseSensitive (the default), the comparison is case-sensitive;
-    otherwise the comparison is case-insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
 
     Case-sensitive comparison is based exclusively on the numeric Latin-1 values
     of the characters and is very fast, but is not what a human would expect.
@@ -3346,8 +3343,7 @@ static void removeStringImpl(QString &s, const T &needle, Qt::CaseSensitivity cs
   Removes every occurrence of the given \a str string in this
   string, and returns a reference to this string.
 
-  If \a cs is Qt::CaseSensitive (default), the search is
-  case sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   This is the same as \c replace(str, "", cs).
 
@@ -3372,8 +3368,7 @@ QString &QString::remove(const QString &str, Qt::CaseSensitivity cs)
   Removes every occurrence of the given \a str string in this
   string, and returns a reference to this string.
 
-  If \a cs is Qt::CaseSensitive (default), the search is
-  case sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   This is the same as \c replace(str, "", cs).
 
@@ -3424,8 +3419,7 @@ QString &QString::remove(QLatin1StringView str, Qt::CaseSensitivity cs)
   Removes every occurrence of the character \a ch in this string, and
   returns a reference to this string.
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   Example:
 
@@ -3553,8 +3547,7 @@ QString &QString::replace(qsizetype pos, qsizetype len, QChar after)
   Replaces every occurrence of the string \a before with the string \a
   after and returns a reference to this string.
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   Example:
 
@@ -3663,8 +3656,7 @@ void QString::replace_helper(size_t *indices, qsizetype nIndices, qsizetype blen
   characters of \a before with the first \a alen characters of \a
   after and returns a reference to this string.
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 */
 QString &QString::replace(const QChar *before, qsizetype blen,
                           const QChar *after, qsizetype alen,
@@ -3734,8 +3726,7 @@ QString &QString::replace(const QChar *before, qsizetype blen,
   Replaces every occurrence of the character \a ch in the string with
   \a after and returns a reference to this string.
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 */
 QString& QString::replace(QChar ch, const QString &after, Qt::CaseSensitivity cs)
 {
@@ -3785,8 +3776,7 @@ QString& QString::replace(QChar ch, const QString &after, Qt::CaseSensitivity cs
   Replaces every occurrence of the character \a before with the
   character \a after and returns a reference to this string.
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 */
 QString& QString::replace(QChar before, QChar after, Qt::CaseSensitivity cs)
 {
@@ -3822,8 +3812,7 @@ QString& QString::replace(QChar before, QChar after, Qt::CaseSensitivity cs)
   Replaces every occurrence of the string \a before with the string \a
   after and returns a reference to this string.
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   \note The text is not rescanned after a replacement.
 */
@@ -3846,8 +3835,7 @@ QString &QString::replace(QLatin1StringView before, QLatin1StringView after, Qt:
   Replaces every occurrence of the string \a before with the string \a
   after and returns a reference to this string.
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   \note The text is not rescanned after a replacement.
 */
@@ -3868,8 +3856,7 @@ QString &QString::replace(QLatin1StringView before, const QString &after, Qt::Ca
   Replaces every occurrence of the string \a before with the string \a
   after and returns a reference to this string.
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   \note The text is not rescanned after a replacement.
 */
@@ -3890,8 +3877,7 @@ QString &QString::replace(const QString &before, QLatin1StringView after, Qt::Ca
   Replaces every occurrence of the character \a c with the string \a
   after and returns a reference to this string.
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   \note The text is not rescanned after a replacement.
 */
@@ -4224,19 +4210,15 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
 */
 
 /*!
-  Returns the index position of the first occurrence of the string \a
-  str in this string, searching forward from index position \a
-  from. Returns -1 if \a str is not found.
+  \include qstring.qdocinc {qstring-first-index-of} {string} {str}
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   Example:
 
   \snippet qstring/main.cpp 24
 
-  If \a from is -1, the search starts at the last character; if it is
-  -2, at the next to last character and so on.
+  \include qstring.qdocinc negative-index-start-search-from-end
 
   \sa lastIndexOf(), contains(), count()
 */
@@ -4250,34 +4232,27 @@ qsizetype QString::indexOf(const QString &str, qsizetype from, Qt::CaseSensitivi
     \since 5.14
     \overload indexOf()
 
-    Returns the index position of the first occurrence of the string view \a str
-    in this string, searching forward from index position \a from.
-    Returns -1 if \a str is not found.
+    \include qstring.qdocinc {qstring-first-index-of} {string view} {str}
 
-    If \a cs is Qt::CaseSensitive (default), the search is case
-    sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
-    If \a from is -1, the search starts at the last character; if it is
-    -2, at the next to last character and so on.
+    \include qstring.qdocinc negative-index-start-search-from-end
 
     \sa QStringView::indexOf(), lastIndexOf(), contains(), count()
 */
 
 /*!
   \since 4.5
-  Returns the index position of the first occurrence of the string \a
-  str in this string, searching forward from index position \a
-  from. Returns -1 if \a str is not found.
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include {qstring.qdocinc} {qstring-first-index-of} {string} {str}
+
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   Example:
 
   \snippet qstring/main.cpp 24
 
-  If \a from is -1, the search starts at the last character; if it is
-  -2, at the next to last character and so on.
+  \include qstring.qdocinc negative-index-start-search-from-end
 
   \sa lastIndexOf(), contains(), count()
 */
@@ -4290,9 +4265,7 @@ qsizetype QString::indexOf(QLatin1StringView str, qsizetype from, Qt::CaseSensit
 /*!
     \overload indexOf()
 
-    Returns the index position of the first occurrence of the
-    character \a ch in the string, searching forward from index
-    position \a from. Returns -1 if \a ch could not be found.
+    \include qstring.qdocinc {qstring-first-index-of} {character} {ch}
 */
 qsizetype QString::indexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) const
 {
@@ -4300,14 +4273,13 @@ qsizetype QString::indexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) con
 }
 
 /*!
-  Returns the index position of the last occurrence of the string \a
-  str in this string, searching backward from index position \a
-  from. If \a from is -1, the search starts at the last
-  character; if \a from is -2, at the next to last character and so
-  on. Returns -1 if \a str is not found.
+  \include qstring.qdocinc {qstring-last-index-of} {string} {str}
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc negative-index-start-search-from-end
+
+  Returns -1 if \a str is not found.
+
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   Example:
 
@@ -4335,8 +4307,7 @@ qsizetype QString::lastIndexOf(const QString &str, qsizetype from, Qt::CaseSensi
   Returns the index position of the last occurrence of the string \a
   str in this string. Returns -1 if \a str is not found.
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   Example:
 
@@ -4350,14 +4321,13 @@ qsizetype QString::lastIndexOf(const QString &str, qsizetype from, Qt::CaseSensi
   \since 4.5
   \overload lastIndexOf()
 
-  Returns the index position of the last occurrence of the string \a
-  str in this string, searching backward from index position \a
-  from. If \a from is -1, the search starts at the last
-  character; if \a from is -2, at the next to last character and so
-  on. Returns -1 if \a str is not found.
+  \include qstring.qdocinc {qstring-last-index-of} {string} {str}
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc negative-index-start-search-from-end
+
+  Returns -1 if \a str is not found.
+
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   Example:
 
@@ -4385,8 +4355,7 @@ qsizetype QString::lastIndexOf(QLatin1StringView str, qsizetype from, Qt::CaseSe
   Returns the index position of the last occurrence of the string \a
   str in this string. Returns -1 if \a str is not found.
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   Example:
 
@@ -4398,8 +4367,7 @@ qsizetype QString::lastIndexOf(QLatin1StringView str, qsizetype from, Qt::CaseSe
 /*!
   \overload lastIndexOf()
 
-  Returns the index position of the last occurrence of the character
-  \a ch, searching backward from position \a from.
+  \include qstring.qdocinc {qstring-last-index-of} {character} {ch}
 */
 qsizetype QString::lastIndexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) const
 {
@@ -4417,14 +4385,13 @@ qsizetype QString::lastIndexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs)
   \since 5.14
   \overload lastIndexOf()
 
-  Returns the index position of the last occurrence of the string view \a
-  str in this string, searching backward from index position \a
-  from. If \a from is -1, the search starts at the last
-  character; if \a from is -2, at the next to last character and so
-  on. Returns -1 if \a str is not found.
+  \include qstring.qdocinc {qstring-last-index-of} {string view} {str}
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc negative-index-start-search-from-end
+
+  Returns -1 if \a str is not found.
+
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   \note When searching for a 0-length \a str, the match at the end of
   the data is excluded from the search by a negative \a from, even
@@ -4444,8 +4411,7 @@ qsizetype QString::lastIndexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs)
   Returns the index position of the last occurrence of the string view \a
   str in this string. Returns -1 if \a str is not found.
 
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
+  \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
   \sa indexOf(), contains(), count()
 */
@@ -4593,8 +4559,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
     Returns the number of (potentially overlapping) occurrences of
     the string \a str in this string.
 
-    If \a cs is Qt::CaseSensitive (default), the search is
-    case sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa contains(), indexOf()
 */
@@ -4609,8 +4574,7 @@ qsizetype QString::count(const QString &str, Qt::CaseSensitivity cs) const
 
     Returns the number of occurrences of character \a ch in the string.
 
-    If \a cs is Qt::CaseSensitive (default), the search is
-    case sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa contains(), indexOf()
 */
@@ -4626,8 +4590,7 @@ qsizetype QString::count(QChar ch, Qt::CaseSensitivity cs) const
     Returns the number of (potentially overlapping) occurrences of the
     string view \a str in this string.
 
-    If \a cs is Qt::CaseSensitive (default), the search is
-    case sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa contains(), indexOf()
 */
@@ -4641,8 +4604,7 @@ qsizetype QString::count(QStringView str, Qt::CaseSensitivity cs) const
     Returns \c true if this string contains an occurrence of the string
     \a str; otherwise returns \c false.
 
-    If \a cs is Qt::CaseSensitive (default), the search is
-    case sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     Example:
     \snippet qstring/main.cpp 17
@@ -4674,8 +4636,7 @@ qsizetype QString::count(QStringView str, Qt::CaseSensitivity cs) const
     Returns \c true if this string contains an occurrence of the string view
     \a str; otherwise returns \c false.
 
-    If \a cs is Qt::CaseSensitive (default), the search is
-    case sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa indexOf(), count()
 */
@@ -4706,9 +4667,11 @@ qsizetype QString::indexOf(const QRegularExpression &re, qsizetype from, QRegula
 
     Returns the index position of the last match of the regular
     expression \a re in the string, which starts before the index
-    position \a from. If \a from is -1, the search starts at the last
-    character; if \a from is -2, at the next to last character and so
-    on. Returns -1 if \a re didn't match anywhere.
+    position \a from.
+
+    \include qstring.qdocinc negative-index-start-search-from-end
+
+    Returns -1 if \a re didn't match anywhere.
 
     If the match is successful and \a rmatch is not \nullptr, it also
     writes the results of the match into the QRegularExpressionMatch object
@@ -5177,8 +5140,7 @@ QString QString::mid(qsizetype position, qsizetype n) const
     Returns \c true if the string starts with \a s; otherwise returns
     \c false.
 
-    If \a cs is Qt::CaseSensitive (default), the search is
-    case sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \snippet qstring/main.cpp 65
 
@@ -5220,8 +5182,7 @@ bool QString::startsWith(QChar c, Qt::CaseSensitivity cs) const
     Returns \c true if the string starts with the string view \a str;
     otherwise returns \c false.
 
-    If \a cs is Qt::CaseSensitive (default), the search is case-sensitive;
-    otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa endsWith()
 */
@@ -5230,8 +5191,7 @@ bool QString::startsWith(QChar c, Qt::CaseSensitivity cs) const
     Returns \c true if the string ends with \a s; otherwise returns
     \c false.
 
-    If \a cs is Qt::CaseSensitive (default), the search is case
-    sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \snippet qstring/main.cpp 20
 
@@ -5249,8 +5209,7 @@ bool QString::endsWith(const QString &s, Qt::CaseSensitivity cs) const
     Returns \c true if the string ends with the string view \a str;
     otherwise returns \c false.
 
-    If \a cs is Qt::CaseSensitive (default), the search is case
-    sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa startsWith()
 */
@@ -6312,8 +6271,7 @@ QString& QString::fill(QChar ch, qsizetype size)
     to, or greater than zero if \a s1 is less than, equal to, or
     greater than \a s2.
 
-    If \a cs is Qt::CaseSensitive, the comparison is case sensitive;
-    otherwise the comparison is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
 
     Case sensitive comparison is based exclusively on the numeric
     Unicode values of the characters and is very fast, but is not what
@@ -9578,8 +9536,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     Returns an integer that compares to zero as this Latin-1 string compares to the
     string-view \a str, Latin-1 string \a l1, or character \a ch, respectively.
 
-    If \a cs is Qt::CaseSensitive (the default), the comparison is case sensitive;
-    otherwise the comparison is case-insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa operator==(), operator<(), operator>()
 */
@@ -9599,8 +9556,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     Latin-1 string \a l1, or character \a ch, respectively;
     otherwise returns \c false.
 
-    If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
-    otherwise the search is case-insensitive.
+   \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa endsWith()
 */
@@ -9619,8 +9575,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     Latin-1 string \a l1, or character \a ch, respectively;
     otherwise returns \c false.
 
-    If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
-    otherwise the search is case-insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa startsWith()
 */
@@ -9636,11 +9591,9 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     Latin-1 string, searching forward from index position \a from.
     Returns -1 if \a str is not found.
 
-    If \a cs is Qt::CaseSensitive (default), the search is case
-    sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
-    If \a from is -1, the search starts at the last character; if it is
-    -2, at the next to last character and so on.
+    \include qstring.qdocinc negative-index-start-search-from-end
 
     \sa QString::indexOf()
 */
@@ -9655,8 +9608,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     string-view \a str, Latin-1 string \a l1, or character \a ch;
     otherwise returns \c false.
 
-    If \a cs is Qt::CaseSensitive (the default), the search is
-    case-sensitive; otherwise the search is case-insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa indexOf(), QStringView::contains(), QStringView::indexOf(),
     QString::indexOf()
@@ -9673,11 +9625,9 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     string, searching backward from index position \a from.
     Returns -1 if \a str is not found.
 
-    If \a from is -1, the search starts at the last character;
-    if \a from is -2, at the next to last character and so on.
+    \include qstring.qdocinc negative-index-start-search-from-end
 
-    If \a cs is Qt::CaseSensitive (default), the search is case
-    sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \note When searching for a 0-length \a str or \a l1, the match at
     the end of the data is excluded from the search by a negative \a
@@ -9701,8 +9651,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     string-view \a str or Latin-1 string \a l1, respectively, in this
     Latin-1 string. Returns -1 if \a str is not found.
 
-    If \a cs is Qt::CaseSensitive (default), the search is case
-    sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 */
 
 /*!
@@ -9721,8 +9670,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     string-view \a str, Latin-1 string \a l1, or character \a ch,
     respectively, in this Latin-1 string.
 
-    If \a cs is Qt::CaseSensitive (default), the search is
-    case sensitive; otherwise the search is case insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa contains(), indexOf()
 */
@@ -10684,8 +10632,7 @@ qsizetype QtPrivate::count(QLatin1StringView haystack, QChar needle, Qt::CaseSen
     Returns \c true if \a haystack starts with \a needle,
     otherwise returns \c false.
 
-    If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
-    otherwise the search is case-insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa QtPrivate::endsWith(), QString::endsWith(), QStringView::endsWith(), QLatin1StringView::endsWith()
 */
@@ -10725,8 +10672,7 @@ bool QtPrivate::startsWith(QLatin1StringView haystack, QLatin1StringView needle,
     Returns \c true if \a haystack ends with \a needle,
     otherwise returns \c false.
 
-    If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
-    otherwise the search is case-insensitive.
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
     \sa QtPrivate::startsWith(), QString::endsWith(), QStringView::endsWith(), QLatin1StringView::endsWith()
 */
