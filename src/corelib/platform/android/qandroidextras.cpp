@@ -1083,25 +1083,24 @@ static void sendRequestPermissionsResult(JNIEnv *env, jobject *obj, jint request
 QFuture<QtAndroidPrivate::PermissionResult>
 requestPermissionsInternal(const QStringList &permissions)
 {
+    // No mechanism to request permission for SDK version below 23, because
+    // permissions defined in the manifest are granted at install time.
+    if (QtAndroidPrivate::androidSdkVersion() < 23) {
+        QList<QtAndroidPrivate::PermissionResult> result;
+        result.reserve(permissions.size());
+        // ### can we kick off all checkPermission()s, and whenAll() collect results?
+        for (const QString &permission : permissions)
+            result.push_back(QtAndroidPrivate::checkPermission(permission).result());
+        return QtFuture::makeReadyFuture(std::as_const(result)); // as_const d/t QTBUG-109677
+    }
+
+    if (!QtAndroidPrivate::acquireAndroidDeadlockProtector())
+        return QtFuture::makeReadyFuture(QtAndroidPrivate::Denied);
+
     QSharedPointer<QPromise<QtAndroidPrivate::PermissionResult>> promise;
     promise.reset(new QPromise<QtAndroidPrivate::PermissionResult>());
     QFuture<QtAndroidPrivate::PermissionResult> future = promise->future();
     promise->start();
-
-    // No mechanism to request permission for SDK version below 23, because
-    // permissions defined in the manifest are granted at install time.
-    if (QtAndroidPrivate::androidSdkVersion() < 23) {
-        for (int i = 0; i < permissions.size(); ++i)
-            promise->addResult(QtAndroidPrivate::checkPermission(permissions.at(i)).result(), i);
-        promise->finish();
-        return future;
-    }
-
-    if (!QtAndroidPrivate::acquireAndroidDeadlockProtector()) {
-        promise->addResult(QtAndroidPrivate::Denied);
-        promise->finish();
-        return future;
-    }
 
     const int requestCode = nextRequestCode();
     QMutexLocker locker(&g_pendingPermissionRequestsMutex);
