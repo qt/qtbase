@@ -109,18 +109,18 @@ export class CompiledModule {
         this.#resourceLocator = resourceLocator;
     }
 
-    static make(js, wasm, resourceLocator
+    static make(js, wasm, entryFunctionName, resourceLocator
     ) {
         const exports = {};
         eval(js);
-        if (!exports.createQtAppInstance) {
+        if (!exports[entryFunctionName]) {
             throw new Error(
-                'createQtAppInstance has not been exported by the main script'
+                '${entryFunctionName} has not been exported by the main script'
             );
         }
 
         return new CompiledModule(
-            exports.createQtAppInstance, js, wasm, resourceLocator
+            exports[entryFunctionName], js, wasm, resourceLocator
         );
     }
 
@@ -218,6 +218,6 @@ export class ModuleLoader {
         );
 
         const [js, wasm] = await Promise.all([jsLoadPromise, wasmLoadPromise]);
-        return CompiledModule.make(js, wasm, this.#resourceLocator);
+        return CompiledModule.make(js, wasm, `${moduleName}_entry`, this.#resourceLocator);
     }
 }

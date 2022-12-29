@@ -49,7 +49,7 @@ async function qtLoad(config)
     if (typeof config.qt !== 'object')
         throw new Error('config.qt is required, expected an object');
     if (typeof config.qt.entryFunction !== 'function')
-        config.qt.entryFunction = window.createQtAppInstance;
+        throw new Error('config.qt.entryFunction is required, expected a function');
 
     config.qtContainerElements = config.qt.containerElements;
     delete config.qt.containerElements;

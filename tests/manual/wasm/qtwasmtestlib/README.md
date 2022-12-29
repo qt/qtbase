@@ -48,7 +48,7 @@ Finally provide an html file which hosts the test runner and calls runTestCase()
     <script type="text/javascript" src="test_case.js"></script>
     <script>
         window.onload = async () => {
-            runTestCase(document.getElementById("log"));
+            runTestCase(entryFunction, document.getElementById("log"));
         };
     </script>
     <p>Running Foo auto test.</p>
@@ -67,7 +67,7 @@ html file provides container elements which becomes QScreens for the test code.
         window.onload = async () => {
             let log = document.getElementById("log")
             let containers = [document.getElementById("container")];
-            runTestCase(log, containers);
+            runTestCase(entryFunction, log, containers);
         };
     </script>
     <p>Running Foo auto test.</p>

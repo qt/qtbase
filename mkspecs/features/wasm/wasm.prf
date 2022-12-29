@@ -15,6 +15,13 @@ exists($$QMAKE_QT_CONFIG) {
     }
     EMCC_LFLAGS += -s EXPORTED_RUNTIME_METHODS=$$EXPORTED_METHODS
 
+    !isEmpty(QT_WASM_EXPORT_NAME): {
+        EXPORT_NAME = $$QT_WASM_EXPORT_NAME
+    } else {
+        EXPORT_NAME = $${TARGET}_entry
+    }
+    EMCC_LFLAGS += -s EXPORT_NAME=$$EXPORT_NAME
+
     qtConfig(thread) {
 
         EMCC_LFLAGS += -pthread

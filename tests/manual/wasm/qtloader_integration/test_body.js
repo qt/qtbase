@@ -48,10 +48,32 @@ export class QtLoaderIntegrationTests
             'config.qt is required, expected an object', caughtException.message);
     }
 
-    async useDefaultOnMissingEntryFunction()
+    async missingEntryFunction()
     {
-        const instance = await qtLoad({ arguments: ['--no-gui'], qt: {}});
-        assert.isNotUndefined(instance);
+        let caughtException;
+        try {
+            await qtLoad({ qt: {}});
+        } catch (e) {
+            caughtException = e;
+        }
+
+        assert.isNotUndefined(caughtException);
+        assert.equal(
+            'config.qt.entryFunction is required, expected a function', caughtException.message);
+    }
+
+    async badEntryFunction()
+    {
+        let caughtException;
+        try {
+            await qtLoad({ qt: { entryFunction: 'invalid' }});
+        } catch (e) {
+            caughtException = e;
+        }
+
+        assert.isNotUndefined(caughtException);
+        assert.equal(
+            'config.qt.entryFunction is required, expected a function', caughtException.message);
     }
 
     async environmentVariables()
@@ -62,7 +84,7 @@ export class QtLoaderIntegrationTests
                     variable1: 'value1',
                     variable2: 'value2'
                 },
-                entryFunction: createQtAppInstance,
+                entryFunction: tst_qtloader_integration_entry,
                 containerElements: [this.#testScreenContainers[0]]
             }
         });
@@ -79,7 +101,7 @@ export class QtLoaderIntegrationTests
 
         const instance = await qtLoad({
             qt: {
-                entryFunction: createQtAppInstance,
+                entryFunction: tst_qtloader_integration_entry,
                 containerElements: this.#testScreenContainers
             }
         });
@@ -125,7 +147,7 @@ export class QtLoaderIntegrationTests
     {
         const instance = await qtLoad({
             qt: {
-                entryFunction: createQtAppInstance,
+                entryFunction: tst_qtloader_integration_entry,
                 containerElements: this.#testScreenContainers,
             }
         });
@@ -181,7 +203,7 @@ export class QtLoaderIntegrationTests
 
         const instances = await Promise.all([1, 2, 3].map(i => qtLoad({
             qt: {
-                entryFunction: createQtAppInstance,
+                entryFunction: tst_qtloader_integration_entry,
                 containerElements: [this.#addScreenContainer(`screen-container-${i}`, {
                     width: `${i * 10}px`,
                     height: `${i * 10}px`,
@@ -222,7 +244,7 @@ export class QtLoaderIntegrationTests
                 accumulatedStdout += output;
             },
             qt: {
-                entryFunction: createQtAppInstance,
+                entryFunction: tst_qtloader_integration_entry,
             }
         });
 
@@ -246,7 +268,7 @@ export class QtLoaderIntegrationTests
     {
         await qtLoad({
             qt: {
-                entryFunction: createQtAppInstance,
+                entryFunction: tst_qtloader_integration_entry,
                 containerElements: [this.#testScreenContainers[0]],
                 module: await WebAssembly.compileStreaming(
                     fetch('tst_qtloader_integration.wasm'))
@@ -259,7 +281,7 @@ export class QtLoaderIntegrationTests
         const instance = await qtLoad({
             arguments: ['--no-gui', 'arg1', 'other', 'yetanotherarg'],
             qt: {
-                entryFunction: createQtAppInstance,
+                entryFunction: tst_qtloader_integration_entry,
             }
         });
         const args = this.#callTestInstanceApi(instance, 'retrieveArguments');
@@ -275,7 +297,7 @@ export class QtLoaderIntegrationTests
         try {
             await qtLoad({
                 qt: {
-                    entryFunction: createQtAppInstance,
+                    entryFunction: tst_qtloader_integration_entry,
                     containerElements: [this.#testScreenContainers[0]],
                     module: Promise.reject(new Error('Failed to load')),
                 }
@@ -294,7 +316,7 @@ export class QtLoaderIntegrationTests
             arguments: ['--no-gui'],
             qt: {
                 onExit: onExitMock,
-                entryFunction: createQtAppInstance,
+                entryFunction: tst_qtloader_integration_entry,
             }
         });
         try {
@@ -316,7 +338,7 @@ export class QtLoaderIntegrationTests
                 arguments: ['--no-gui', '--crash-immediately'],
                 qt: {
                     onExit: onExitMock,
-                    entryFunction: createQtAppInstance,
+                    entryFunction: tst_qtloader_integration_entry,
                 }
             });
         } catch (e) {
@@ -340,7 +362,7 @@ export class QtLoaderIntegrationTests
             arguments: ['--no-gui'],
             onAbort: onAbortMock,
             qt: {
-                entryFunction: createQtAppInstance,
+                entryFunction: tst_qtloader_integration_entry,
             }
         });
         try {
@@ -358,7 +380,7 @@ export class QtLoaderIntegrationTests
             arguments: ['--no-gui'],
             qt: {
                 onExit: onExitMock,
-                entryFunction: createQtAppInstance,
+                entryFunction: tst_qtloader_integration_entry,
             }
         });
         // The module is running. onExit should not have been called.
@@ -383,7 +405,7 @@ export class QtLoaderIntegrationTests
             arguments: ['--no-gui', '--exit-immediately'],
             qt: {
                 onExit: onExitMock,
-                entryFunction: createQtAppInstance,
+                entryFunction: tst_qtloader_integration_entry,
             }
         });
         assert.equal(1, onExitMock.calls.length);
@@ -402,7 +424,7 @@ export class QtLoaderIntegrationTests
             arguments: ['--no-gui'],
             quit: quitMock,
             qt: {
-                entryFunction: createQtAppInstance,
+                entryFunction: tst_qtloader_integration_entry,
             }
         });
         try {

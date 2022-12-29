@@ -18,14 +18,9 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
         target_compile_options("${wasmTarget}" INTERFACE "SHELL:-s MEMORY64=1" )
         target_link_options("${wasmTarget}" INTERFACE   "SHELL:-s MEMORY64=1" -mwasm64)
     endif()
-    # Enable MODULARIZE and set EXPORT_NAME, which makes it possible to
-    # create application instances using a global constructor function,
-    # e.g. let app_instance = await createQtAppInstance().
-    # (as opposed to MODULARIZE=0, where Emscripten creates a global app
-    # instance object at Javascript eval time)
-    target_link_options("${wasmTarget}" INTERFACE
-    "SHELL:-s MODULARIZE=1"
-    "SHELL:-s EXPORT_NAME=createQtAppInstance")
+    # Enable MODULARIZE so that we are able to set EXPORT_NAME later and instantiate on demand (with
+    # MODULARIZE=0, emscripten creates a global app instance object at Javascript eval time)
+    target_link_options("${wasmTarget}" INTERFACE "SHELL:-s MODULARIZE=1")
 
     #simd
     if (QT_FEATURE_wasm_simd128)
@@ -126,6 +121,7 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
 endfunction()
 
 function(qt_internal_wasm_add_finalizers target)
+    qt_add_list_file_finalizer(_qt_internal_set_wasm_export_name ${target})
     qt_add_list_file_finalizer(_qt_internal_add_wasm_extra_exported_methods ${target})
     qt_add_list_file_finalizer(_qt_internal_wasm_add_target_helpers ${target})
 endfunction()
