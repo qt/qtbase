@@ -41,8 +41,8 @@ class QTypeInfo
 {
 public:
     enum {
-        isPointer = std::is_pointer_v<T>,
-        isIntegral = std::is_integral_v<T>,
+        isPointer [[deprecated("Use std::is_pointer instead")]] = std::is_pointer_v<T>,
+        isIntegral [[deprecated("Use std::is_integral instead")]] = std::is_integral_v<T>,
         isComplex = !std::is_trivial_v<T>,
         isRelocatable = qIsRelocatable<T>,
         isValueInitializationBitwiseZero = qIsValueInitializationBitwiseZero<T>,
@@ -54,8 +54,8 @@ class QTypeInfo<void>
 {
 public:
     enum {
-        isPointer = false,
-        isIntegral = false,
+        isPointer [[deprecated("Use std::is_pointer instead")]] = false,
+        isIntegral [[deprecated("Use std::is_integral instead")]] = false,
         isComplex = false,
         isRelocatable = false,
         isValueInitializationBitwiseZero = false,
@@ -89,8 +89,8 @@ class QTypeInfoMerger
 public:
     static constexpr bool isComplex = ((QTypeInfo<Ts>::isComplex) || ...);
     static constexpr bool isRelocatable = ((QTypeInfo<Ts>::isRelocatable) && ...);
-    static constexpr bool isPointer = false;
-    static constexpr bool isIntegral = false;
+    [[deprecated("Use std::is_pointer instead")]] static constexpr bool isPointer = false;
+    [[deprecated("Use std::is_integral instead")]] static constexpr bool isIntegral = false;
     static constexpr bool isValueInitializationBitwiseZero = false;
 };
 
@@ -106,8 +106,8 @@ class QTypeInfo<CONTAINER<T...>> \
 { \
 public: \
     enum { \
-        isPointer = false, \
-        isIntegral = false, \
+        isPointer [[deprecated("Use std::is_pointer instead")]] = false, \
+        isIntegral [[deprecated("Use std::is_integral instead")]] = false, \
         isComplex = true, \
         isRelocatable = true, \
         isValueInitializationBitwiseZero = false, \
@@ -149,8 +149,8 @@ public: \
     enum { \
         isComplex = (((FLAGS) & Q_PRIMITIVE_TYPE) == 0) && !std::is_trivial_v<TYPE>, \
         isRelocatable = !isComplex || ((FLAGS) & Q_RELOCATABLE_TYPE) || qIsRelocatable<TYPE>, \
-        isPointer = std::is_pointer_v< TYPE >, \
-        isIntegral = std::is_integral< TYPE >::value, \
+        isPointer [[deprecated("Use std::is_pointer instead")]] = std::is_pointer_v< TYPE >, \
+        isIntegral [[deprecated("Use std::is_integral instead")]] = std::is_integral< TYPE >::value, \
         isValueInitializationBitwiseZero = qIsValueInitializationBitwiseZero<TYPE>, \
     }; \
 }
