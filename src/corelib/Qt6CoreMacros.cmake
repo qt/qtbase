@@ -1864,7 +1864,6 @@ function(_qt_internal_process_resource target resourceName)
         return()
     endif()
     set(generatedResourceFile "${CMAKE_CURRENT_BINARY_DIR}/.rcc/${resourceName}.qrc")
-    _qt_internal_expose_source_file_to_ide(${target} ${generatedResourceFile})
 
     # Generate .qrc file:
 
