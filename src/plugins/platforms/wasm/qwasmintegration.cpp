@@ -11,7 +11,6 @@
 #include "qwasmaccessibility.h"
 #include "qwasmservices.h"
 #include "qwasmoffscreensurface.h"
-#include "qwasmstring.h"
 
 #include "qwasmwindow.h"
 #include "qwasmbackingstore.h"
@@ -287,7 +286,8 @@ void QWasmIntegration::removeScreen(const emscripten::val &element)
     auto it = std::find_if(m_screens.begin(), m_screens.end(),
         [&] (const QPair<emscripten::val, QWasmScreen *> &candidate) { return candidate.first.equals(element); });
     if (it == m_screens.end()) {
-        qWarning() << "Attempting to remove non-existing screen for element" << QWasmString::toQString(element["id"]);;
+        qWarning() << "Attempting to remove non-existing screen for element"
+                   << QString::fromJsString(element["id"]);
         return;
     }
     it->second->deleteScreen();
@@ -299,7 +299,8 @@ void QWasmIntegration::resizeScreen(const emscripten::val &element)
     auto it = std::find_if(m_screens.begin(), m_screens.end(),
         [&] (const QPair<emscripten::val, QWasmScreen *> &candidate) { return candidate.first.equals(element); });
     if (it == m_screens.end()) {
-        qWarning() << "Attempting to resize non-existing screen for element" << QWasmString::toQString(element["id"]);;
+        qWarning() << "Attempting to resize non-existing screen for element"
+                   << QString::fromJsString(element["id"]);
         return;
     }
     it->second->updateQScreenAndCanvasRenderSize();

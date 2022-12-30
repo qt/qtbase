@@ -541,6 +541,7 @@ private slots:
 #endif
     void STL();
     void macTypes();
+    void wasmTypes();
     void isEmpty();
     void isNull();
     void nullness();
@@ -1341,6 +1342,16 @@ void tst_QString::macTypes()
 #else
     extern void tst_QString_macTypes(); // in qcore_foundation.mm
     tst_QString_macTypes();
+#endif
+}
+
+void tst_QString::wasmTypes()
+{
+#ifndef Q_OS_WASM
+    QSKIP("This is a WASM-only test");
+#else
+    extern void tst_QString_wasmTypes(); // in qcore_wasm.cpp
+    tst_QString_wasmTypes();
 #endif
 }
 

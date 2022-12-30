@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "qwasmservices.h"
-#include "qwasmstring.h"
 
 #include <QtCore/QUrl>
 #include <QtCore/QDebug>
@@ -13,8 +12,8 @@ QT_BEGIN_NAMESPACE
 
 bool QWasmServices::openUrl(const QUrl &url)
 {
-    emscripten::val jsUrl = QWasmString::fromQString(url.toString());
-    emscripten::val::global("window").call<void>("open", jsUrl, emscripten::val("_blank"));
+    emscripten::val::global("window").call<void>("open", url.toString().toJsString(),
+                                                 emscripten::val("_blank"));
     return true;
 }
 

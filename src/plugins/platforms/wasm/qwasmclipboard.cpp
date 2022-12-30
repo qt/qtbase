@@ -3,7 +3,7 @@
 
 #include "qwasmclipboard.h"
 #include "qwasmwindow.h"
-#include "qwasmstring.h"
+
 #include <private/qstdweb_p.h>
 
 #include <emscripten.h>
@@ -27,12 +27,11 @@ static void commonCopyEvent(val event)
 
     // doing it this way seems to sanitize the text better that calling data() like down below
     if (_mimes->hasText()) {
-        event["clipboardData"].call<void>("setData", val("text/plain")
-                                          ,  QWasmString::fromQString(_mimes->text()));
+        event["clipboardData"].call<void>("setData", val("text/plain"),
+                                          _mimes->text().toJsString());
     }
     if (_mimes->hasHtml()) {
-        event["clipboardData"].call<void>("setData", val("text/html")
-                                          ,   QWasmString::fromQString(_mimes->html()));
+        event["clipboardData"].call<void>("setData", val("text/html"), _mimes->html().toJsString());
     }
 
     for (auto mimetype : _mimes->formats()) {
@@ -40,8 +39,8 @@ static void commonCopyEvent(val event)
             continue;
         QByteArray ba = _mimes->data(mimetype);
         if (!ba.isEmpty())
-            event["clipboardData"].call<void>("setData", QWasmString::fromQString(mimetype)
-                                              , val(ba.constData()));
+            event["clipboardData"].call<void>("setData", mimetype.toJsString(),
+                                              val(ba.constData()));
     }
 
     event.call<void>("preventDefault");
@@ -140,7 +139,7 @@ static void qClipboardPasteTo(val dataTransfer)
                 || itemMimeType.contains("TEXT", Qt::CaseSensitive)) {
                 break;
             }
-            const QString data = QWasmString::toQString(
+            const QString data = QString::fromJsString(
                     clipboardData.call<val>("getData", val(itemMimeType.toStdString())));
 
             if (!data.isEmpty()) {
@@ -329,12 +328,12 @@ void QWasmClipboard::writeToClipboardApi()
 
         // we have a blob, now create a ClipboardItem
         emscripten::val type = emscripten::val::array();
-        type.set("type", val(QWasmString::fromQString(mimetype)));
+        type.set("type", mimetype.toJsString());
 
         emscripten::val contentBlob = emscripten::val::global("Blob").new_(contentArray, type);
 
         emscripten::val clipboardItemObject = emscripten::val::object();
-        clipboardItemObject.set(val(QWasmString::fromQString(mimetype)), contentBlob);
+        clipboardItemObject.set(mimetype.toJsString(), contentBlob);
 
         val clipboardItemData = val::global("ClipboardItem").new_(clipboardItemObject);
 

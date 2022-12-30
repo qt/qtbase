@@ -42,4 +42,56 @@ emscripten::val QRectF::toDOMRect() const
     return emscripten::val::global("DOMRect").new_(left(), top(), width(), height());
 }
 
+/*!
+    Converts the \l {https://262.ecma-international.org/#sec-string-object}{ECMAScript string} \a
+    jsString to QString. Behavior is undefined if the provided parameter is not a string.
+
+    \since 6.6
+    \ingroup platform-type-conversions
+
+    \sa toJsString()
+*/
+QString QString::fromJsString(emscripten::val jsString)
+{
+    Q_ASSERT_X(jsString.isString(), Q_FUNC_INFO, "Passed object is not a string");
+
+    const double length = jsString["length"].as<double>();
+
+    Q_ASSERT_X((double(uint64_t(length)) != double(uint64_t(length) - 1)
+                && double(uint64_t(length)) != double(uint64_t(length) + 1))
+                       || !std::numeric_limits<double>::is_iec559,
+               Q_FUNC_INFO, "The floating-point length cannot precisely represent an integer");
+
+    constexpr int zeroTerminatorLength = 1;
+    const auto lengthOfUtf16 = (length + zeroTerminatorLength) * 2;
+
+    Q_ASSERT_X((double(uint64_t(lengthOfUtf16)) != double(uint64_t(lengthOfUtf16) - 1)
+                && double(uint64_t(lengthOfUtf16)) != double(uint64_t(lengthOfUtf16) + 1))
+                       || !std::numeric_limits<double>::is_iec559,
+               Q_FUNC_INFO,
+               "The floating-point lengthOfUtf16 cannot precisely represent an integer");
+
+    const QString result(uint64_t(length), Qt::Uninitialized);
+
+    static const emscripten::val stringToUTF16(emscripten::val::module_property("stringToUTF16"));
+    stringToUTF16(jsString, emscripten::val(quintptr(result.data())),
+                  emscripten::val(lengthOfUtf16));
+    return result;
+}
+
+/*!
+    Converts this object to an
+    \l {https://262.ecma-international.org/#sec-string-object}{ECMAScript string}.
+
+    \since 6.6
+    \ingroup platform-type-conversions
+
+    \sa fromJsString()
+*/
+emscripten::val QString::toJsString() const
+{
+    static const emscripten::val UTF16ToString(emscripten::val::module_property("UTF16ToString"));
+    return UTF16ToString(emscripten::val(quintptr(utf16())));
+}
+
 QT_END_NAMESPACE

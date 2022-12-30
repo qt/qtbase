@@ -3,7 +3,6 @@
 
 #include "qwasmcursor.h"
 #include "qwasmscreen.h"
-#include "qwasmstring.h"
 
 #include <QtCore/qdebug.h>
 #include <QtGui/qwindow.h>

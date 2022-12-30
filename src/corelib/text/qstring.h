@@ -806,6 +806,11 @@ public:
     NSString *toNSString() const Q_DECL_NS_RETURNS_AUTORELEASED;
 #endif
 
+#if defined(Q_OS_WASM) || defined(Q_QDOC)
+    static QString fromJsString(emscripten::val jsString);
+    emscripten::val toJsString() const;
+#endif
+
     inline bool isNull() const { return d->isNull(); }
 
 

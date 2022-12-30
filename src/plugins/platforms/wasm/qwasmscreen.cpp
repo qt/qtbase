@@ -6,7 +6,6 @@
 #include "qwasmeventtranslator.h"
 #include "qwasmcompositor.h"
 #include "qwasmintegration.h"
-#include "qwasmstring.h"
 #include "qwasmcssstyle.h"
 
 #include <emscripten/bind.h>
@@ -194,7 +193,7 @@ qreal QWasmScreen::devicePixelRatio() const
 
 QString QWasmScreen::name() const
 {
-    return QWasmString::toQString(m_shadowContainer["id"]);
+    return QString::fromJsString(m_shadowContainer["id"]);
 }
 
 QPlatformCursor *QWasmScreen::cursor() const

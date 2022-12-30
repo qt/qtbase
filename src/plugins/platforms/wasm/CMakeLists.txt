@@ -31,7 +31,6 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
         qwasmplatform.cpp qwasmplatform.h
         qwasmscreen.cpp qwasmscreen.h
         qwasmservices.cpp qwasmservices.h
-        qwasmstring.cpp qwasmstring.h
         qwasmstylepixmaps_p.h
         qwasmtheme.cpp qwasmtheme.h
         qwasmwindow.cpp qwasmwindow.h

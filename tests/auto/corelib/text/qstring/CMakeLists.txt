@@ -9,6 +9,9 @@ if(APPLE)
     list(APPEND tst_qstring_extra_libraries ${FWFoundation})
     list(APPEND tst_qstring_extra_sources tst_qstring_mac.mm)
 endif()
+if(WASM)
+    list(APPEND tst_qstring_extra_sources tst_qstring_wasm.cpp)
+endif()
 
 foreach(test tst_qstring tst_qstring_restricted_ascii)
     qt_internal_add_test(${test}

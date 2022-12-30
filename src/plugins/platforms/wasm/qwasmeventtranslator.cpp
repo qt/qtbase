@@ -6,7 +6,6 @@
 #include "qwasmcompositor.h"
 #include "qwasmintegration.h"
 #include "qwasmclipboard.h"
-#include "qwasmstring.h"
 #include "qwasmcursor.h"
 #include <QtGui/qevent.h>
 #include <qpa/qwindowsysteminterface.h>

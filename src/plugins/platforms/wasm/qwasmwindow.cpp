@@ -18,7 +18,6 @@
 #include "qwasmcompositor.h"
 #include "qwasmevent.h"
 #include "qwasmeventdispatcher.h"
-#include "qwasmstring.h"
 #include "qwasmaccessibility.h"
 
 #include <iostream>
