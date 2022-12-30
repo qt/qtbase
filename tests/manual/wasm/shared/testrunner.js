@@ -1,6 +1,19 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+function parseQuery()
+{
+    const trimmed = window.location.search.substring(1);
+    return new Map(
+        trimmed.length === 0 ?
+            [] :
+            trimmed.split('&').map(paramNameAndValue =>
+            {
+                const [name, value] = paramNameAndValue.split('=');
+                return [decodeURIComponent(name), value ? decodeURIComponent(value) : ''];
+            }));
+}
+
 export class assert
 {
     static isFalse(value)
@@ -128,12 +141,15 @@ export class TestRunner
 
     async runAll()
     {
+        const query = parseQuery();
+        const testFilter = query.has('testfilter') ? new RegExp(query.get('testfilter')) : undefined;
+
         const SPECIAL_FUNCTIONS =
             ['beforeEach', 'afterEach', 'beforeAll', 'afterAll', 'constructor'];
         const prototype = Object.getPrototypeOf(this.#testClassInstance);
         const testFunctions =
             Object.getOwnPropertyNames(prototype).filter(
-                entry => SPECIAL_FUNCTIONS.indexOf(entry) === -1);
+                entry => SPECIAL_FUNCTIONS.indexOf(entry) === -1 && (!testFilter || entry.match(testFilter)));
 
         if (prototype.beforeAll)
             await prototype.beforeAll.apply(this.#testClassInstance);
