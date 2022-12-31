@@ -137,8 +137,6 @@ private slots:
     void ibase_numericFields(); // For task 125053
     void ibase_fetchBlobs_data() { generic_data("QIBASE"); }
     void ibase_fetchBlobs(); // For task 143471
-    void ibase_useCustomCharset_data() { generic_data("QIBASE"); }
-    void ibase_useCustomCharset(); // For task 134608
     void ibase_procWithoutReturnValues_data() { generic_data("QIBASE"); } // For task 165423
     void ibase_procWithoutReturnValues();
     void ibase_procWithReturnValues_data() { generic_data("QIBASE"); } // For task 177530
@@ -1904,31 +1902,6 @@ void tst_QSqlDatabase::mysql_multiselect()
     QVERIFY_SQL(q, exec("SELECT * FROM " + qtest + "; SELECT * FROM " + qtest));
     QVERIFY_SQL(q, next());
     QVERIFY_SQL(q, exec("SELECT * FROM " + qtest));
-}
-
-void tst_QSqlDatabase::ibase_useCustomCharset()
-{
-    QFETCH(QString, dbName);
-    QSqlDatabase db = QSqlDatabase::database(dbName);
-    CHECK_DATABASE(db);
-    QString nonlatin1string("��");
-
-    db.close();
-    db.setConnectOptions("ISC_DPB_LC_CTYPE=Latin1");
-    db.open();
-
-    const QString tableName(qTableName("latin1table", __FILE__, db));
-
-    QSqlQuery q(db);
-    QEXPECT_FAIL("", "Currently fails, potentially due to invalid test - needs further "
-                     "investigation - QTBUG-85828", Abort);
-    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1(text VARCHAR(6) CHARACTER SET Latin1)").arg(tableName)));
-    QVERIFY_SQL(q, prepare(QString("INSERT INTO %1 VALUES(?)").arg(tableName)));
-    q.addBindValue(nonlatin1string);
-    QVERIFY_SQL(q, exec());
-    QVERIFY_SQL(q, exec(QString("SELECT text FROM %1").arg(tableName)));
-    QVERIFY_SQL(q, next());
-    QCOMPARE(toHex(q.value(0).toString()), toHex(nonlatin1string));
 }
 
 void tst_QSqlDatabase::oci_serverDetach()

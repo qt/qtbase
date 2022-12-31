@@ -125,7 +125,7 @@
 
     \section3 QMYSQL Stored Procedure Support
 
-    MySQL 5 has stored procedure support at the SQL level, but no
+    MySQL has stored procedure support at the SQL level, but no
     API to control IN, OUT, and INOUT parameters. Therefore, parameters
     have to be set and read using SQL commands instead of QSqlQuery::bindValue().
 
@@ -239,8 +239,8 @@
     \section3 How to Build the QMYSQL Plugin on Windows
 
     You need to get the MySQL installation files (e.g.
-    \l {https://dev.mysql.com/downloads/installer/}{mysql-installer-web-community-8.0.22.0.msi} or
-    \l {https://downloads.mariadb.com/Connectors/c/connector-c-3.1.11/}{mariadb-connector-c-3.1.11-win64.msi}).
+    \l {https://dev.mysql.com/downloads/installer/}{MySQL web installer} or
+    \l {https://downloads.mariadb.com/Connectors/c/}{MariaDB C Connector}).
     Run the installer,
     select custom installation and install the MySQL C Connector
     which matches your Qt installation (x86 or x64).
@@ -362,7 +362,7 @@
 
     \snippet code/doc_src_sql-driver.qdoc 8
 
-    When you run your application, you will also need to add the \c oci.lib
+    When you run your application, you will also need to add the \c oci.dll
     path to your \c PATH environment variable:
 
     \snippet code/doc_src_sql-driver.qdoc 9
@@ -413,17 +413,11 @@
     e.g., the SQLSTATEs.  Before setting this connect option, consult
     your ODBC documentation about behavior differences you can expect.
 
-    When using the SAP HANA database, the connection has to be
-    established using the option "SCROLLABLERESULT=TRUE", as the
-    HANA ODBC driver does not provide scrollable results by default, e.g.:
-
-    \snippet code/doc_src_sql-driver.cpp 39
-
     If you experience very slow access of the ODBC datasource, make sure
     that ODBC call tracing is turned off in the ODBC datasource manager.
 
     Some drivers do not support scrollable cursors. In that case, only
-    queries in forwardOnly mode can be used successfully.
+    queries in \l QSqlQuery::setForwardOnly() mode can be used successfully.
 
     \section3 ODBC Stored Procedure Support
 
@@ -440,12 +434,12 @@
     \section3 ODBC Unicode Support
 
     The QODBC Plugin will use the Unicode API if UNICODE is defined. On
-    Windows NT based systems, this is the default. Note that the ODBC
+    Windows based systems, this is the default. Note that the ODBC
     driver and the DBMS must also support Unicode.
 
     For the Oracle 9 ODBC driver (Windows), it is necessary to check
     "SQL_WCHAR support" in the ODBC driver manager otherwise Oracle
-    will convert all Unicode strings to local 8-bit.
+    will convert all Unicode strings to local 8-bit representation.
 
     \section3 Connection options
     The Qt ODBC plugin honors the following connection options:
@@ -491,7 +485,7 @@
     \row
       \li SQL_ATTR_ODBC_VERSION
       \li SQL_OV_ODBC3: The driver should act as a ODBC 3.x driver\br
-          SQL_OV_ODBC2: The driver should act as a ODBC 2.x driver
+          SQL_OV_ODBC2: The driver should act as a ODBC 2.x driver (default)
     \endtable
     For more detailed information about the connect options please refer
     to the \l {https://learn.microsoft.com/en-us/sql/odbc/reference/syntax/sqlsetconnectattr-function}
@@ -517,7 +511,7 @@
     \snippet code/doc_src_sql-driver.qdoc 12
 
     \target QPSQL
-    \section2 QPSQL for PostgreSQL (Version 7.3 and Above)
+    \section2 QPSQL for PostgreSQL (Version 7.3 and above)
 
     The QPSQL driver supports version 7.3 and higher of the PostgreSQL server.
 
@@ -625,7 +619,7 @@
     as the application executable.
 
     \target QDB2
-    \section2 QDB2 for IBM DB2 (Version 7.1 and Above)
+    \section2 QDB2 for IBM DB2 (Version 7.1 and above)
 
     The Qt DB2 plugin makes it possible to access IBM DB2 databases. It
     has been tested with IBM DB2 v7.1 and 7.2. You must install the IBM
@@ -664,7 +658,7 @@
     \snippet code/doc_src_sql-driver.qdoc 20
 
     \target QSQLITE
-    \section2 QSQLITE for SQLite (Version 3 and Above)
+    \section2 QSQLITE for SQLite (Version 3 and above)
 
     The Qt SQLite plugin makes it possible to access SQLite
     databases. SQLite is an in-process database, which means that it
@@ -819,20 +813,6 @@
     Edition are not allowed to link this plugin to the commercial editions of
     InterBase. Please use Firebird or the free edition of InterBase.
 
-    \section3 QIBASE Unicode Support and Text Encoding
-
-    By default the driver connects to the database using UNICODE_FSS. This can
-    be overridden by setting the ISC_DPB_LC_CTYPE parameter with
-    QSqlDatabase::setConnectOptions() before opening the connection.
-
-    \snippet code/doc_src_sql-driver.cpp 25
-
-    If Qt does not support the given text encoding the driver will issue a
-    warning message and connect to the database using UNICODE_FSS.
-
-    Note that if the text encoding set when connecting to the database is
-    not the same as in the database, problems with transliteration might arise.
-
     \section3 QIBASE Stored procedures
 
     InterBase/Firebird return OUT values as result set, so when calling stored
@@ -895,7 +875,7 @@
         Qt Creator, you can update the \c PATH environment variable in the
         \gui Run section of the \gui Project panel to include the path to
         the folder containing the client libraries.
-    \li Compile Qt with \c{QT_DEBUG_COMPONENT} defined to get very verbose
+    \li Compile Qt with \c{QT_DEBUG_PLUGINS} defined to get very verbose
         debug output when loading plugins.
     \endlist
 

@@ -35,14 +35,6 @@ QSqlDatabase db;
 db.setHostName("MyServer");
 db.setDatabaseName("C:\\test.gdb");
 //! [24]
-
-
-//! [25]
-// connect to database using the Latin-1 character set
-db.setConnectOptions("ISC_DPB_LC_CTYPE=Latin1");
-if (db.open())
-    qDebug("The database connection is open.");
-//! [25]
 }
 
 void exProc()
@@ -86,19 +78,4 @@ while (query1.next()) {
     }                                            // query1, and cause the loop to quit
 }
 //! [37]
-}
-
-
-void setConnString()
-{
-//! [39]
-QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
-QString connectString = QStringLiteral(
-    "DRIVER=/path/to/installation/libodbcHDB.so;"
-    "SERVERNODE=hostname:port;"
-    "UID=USER;"
-    "PWD=PASSWORD;"
-    "SCROLLABLERESULT=true");
-db.setDatabaseName(connectString);
-//! [39]
 }
