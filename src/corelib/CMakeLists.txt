@@ -218,6 +218,7 @@ qt_internal_add_module(Core
         text/qcollator.cpp text/qcollator.h text/qcollator_p.h
         text/qdoublescanprint_p.h
         text/qlatin1stringmatcher.cpp text/qlatin1stringmatcher.h
+        text/qlatin1stringview.h
         text/qlocale.cpp text/qlocale.h text/qlocale_p.h
         text/qlocale_data_p.h
         text/qlocale_tools.cpp text/qlocale_tools_p.h

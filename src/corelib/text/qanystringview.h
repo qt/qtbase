@@ -4,6 +4,7 @@
 #ifndef QANYSTRINGVIEW_H
 #define QANYSTRINGVIEW_H
 
+#include <QtCore/qlatin1stringview.h>
 #include <QtCore/qstringview.h>
 #include <QtCore/qutf8stringview.h>
 
