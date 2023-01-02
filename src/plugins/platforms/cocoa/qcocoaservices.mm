@@ -12,18 +12,12 @@ QT_BEGIN_NAMESPACE
 
 bool QCocoaServices::openUrl(const QUrl &url)
 {
-    const QString scheme = url.scheme();
-    if (scheme.isEmpty())
-        return openDocument(url);
     return [[NSWorkspace sharedWorkspace] openURL:url.toNSURL()];
 }
 
 bool QCocoaServices::openDocument(const QUrl &url)
 {
-    if (!url.isValid())
-        return false;
-
-    return [[NSWorkspace sharedWorkspace] openFile:url.toLocalFile().toNSString()];
+    return openUrl(url);
 }
 
 QT_END_NAMESPACE
