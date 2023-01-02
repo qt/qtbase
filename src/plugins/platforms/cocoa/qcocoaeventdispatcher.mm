@@ -596,6 +596,7 @@ void QCocoaEventDispatcherPrivate::ensureNSAppInitialized()
     CFRunLoopPerformBlock(mainRunLoop(), kCFRunLoopCommonModes, ^{
         qCDebug(lcEventDispatcher) << "NSApplication has been initialized; Stopping NSApp";
         [NSApp stop:NSApp];
+        cancelWaitForMoreEvents(); // Post event that wakes up the runloop
     });
     [NSApp run];
     qCDebug(lcEventDispatcher) << "Finished ensuring NSApplication is initialized";
