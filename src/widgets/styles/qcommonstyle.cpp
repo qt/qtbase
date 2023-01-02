@@ -941,12 +941,21 @@ QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItem *option, int 
                 break;
             }
             case QStyleOptionViewItem::Top:
-            case QStyleOptionViewItem::Bottom:
-                if (wrapText)
-                    bounds.setWidth(bounds.isValid() ? bounds.width() - 2 * textMargin : option->decorationSize.width());
-                else
-                    bounds.setWidth(QFIXED_MAX);
+            case QStyleOptionViewItem::Bottom: {
+                int width;
+                if (wrapText) {
+                    if (bounds.isValid())
+                        width = bounds.width() - 2 * textMargin;
+                    else if (option->features & QStyleOptionViewItem::HasDecoration)
+                        width = option->decorationSize.width();
+                    else
+                        width = 0;
+                } else {
+                    width = QFIXED_MAX;
+                }
+                bounds.setWidth(width);
                 break;
+            }
             default:
                 break;
             }

@@ -156,6 +156,7 @@ private slots:
     void spacingWithWordWrap();
     void scrollOnRemove_data();
     void scrollOnRemove();
+    void wordWrapNullIcon();
 };
 
 // Testing get/set functions
@@ -3172,6 +3173,22 @@ void tst_QListView::scrollOnRemove()
     // if nothing is selected now, then the view should not have scrolled
     if (!view.selectionModel()->selectedIndexes().size())
         QTRY_COMPARE(view.verticalScrollBar()->value(), item25Position);
+}
+
+void tst_QListView::wordWrapNullIcon()
+{
+    QListView listView;
+    listView.setViewMode(QListView::IconMode);
+    listView.setWrapping(true);
+    listView.setWordWrap(true);
+    listView.setFixedSize(QSize(100, 500));
+
+    QStandardItemModel model;
+    QStandardItem *item = new QStandardItem(QIcon(), "This is a long text for word wrapping Item_");
+    model.appendRow(item);
+    listView.setModel(&model);
+
+    listView.indexAt(QPoint(0, 0));
 }
 
 
