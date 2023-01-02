@@ -626,7 +626,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     For example:
 
     \code
-    Q_DECLARE_EXPORTED_LOGGING_CATEGORY("lib.core", LIB_EXPORT_MACRO)
+    Q_DECLARE_EXPORTED_LOGGING_CATEGORY(lcCore, LIB_EXPORT_MACRO)
     \endcode
 
     This macro must be used outside of a class or function.
