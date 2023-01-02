@@ -602,8 +602,12 @@ bool QThreadPool::tryStart(std::function<void()> functionToRun)
         return false;
 
     QRunnable *runnable = QRunnable::create(std::move(functionToRun));
+    Q_ASSERT(runnable->ref == 0);
+    ++runnable->ref;
     if (d->tryStart(runnable))
         return true;
+    --runnable->ref;
+    Q_ASSERT(runnable->ref == 0);
     delete runnable;
     return false;
 }
