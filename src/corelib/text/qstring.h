@@ -361,11 +361,11 @@ public:
 #endif
 private:
     template <typename T>
-    using is_convertible_to_view_or_qstring = std::integral_constant<bool,
+    struct is_convertible_to_view_or_qstring
+        : std::integral_constant<bool,
             std::is_convertible<T, QString>::value ||
             std::is_convertible<T, QStringView>::value ||
-            std::is_convertible<T, QLatin1String>::value
-        >;
+            std::is_convertible<T, QLatin1String>::value> {};
 public:
     template <typename...Args>
     Q_REQUIRED_RESULT
