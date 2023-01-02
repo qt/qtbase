@@ -18,10 +18,10 @@
 #     Skip the specified source files by PRECOMPILE_HEADERS feature.
 function(qt_internal_extend_target target)
     if(NOT TARGET "${target}")
-        qt_internal_is_in_test_batch(in_batch ${target})
-        if(NOT in_batch)
-            message(FATAL_ERROR "Trying to extend a non-existing target \"${target}\".")
-        endif()
+        message(FATAL_ERROR "${target} is not a target.")
+    endif()
+    qt_internal_is_in_test_batch(in_batch ${target})
+    if(in_batch)
         _qt_internal_test_batch_target_name(target)
     endif()
 
@@ -1054,11 +1054,11 @@ endfunction()
 # The function disables one or multiple internal global definitions that are defined by the
 # qt_internal_add_global_definition function for a specific 'target'.
 function(qt_internal_undefine_global_definition target)
-    if(NOT TARGET ${target})
-        qt_internal_is_in_test_batch(in_batch ${target})
-        if(NOT ${in_batch})
-            message(FATAL_ERROR "${target} is not a target.")
-        endif()
+    if(NOT TARGET "${target}")
+        message(FATAL_ERROR "${target} is not a target.")
+    endif()
+    qt_internal_is_in_test_batch(in_batch ${target})
+    if(in_batch)
         _qt_internal_test_batch_target_name(target)
     endif()
 
