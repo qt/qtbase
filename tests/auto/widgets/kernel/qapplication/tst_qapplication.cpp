@@ -886,6 +886,7 @@ void tst_QApplication::closeAllWindows()
 {
     int argc = 0;
     QApplication app(argc, nullptr);
+    app.setAttribute(Qt::AA_DontUseNativeDialogs, true);
 
     // create some windows
     new QWidget;
