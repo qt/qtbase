@@ -118,7 +118,7 @@ QT_USE_NAMESPACE
             // happen synchronously after the dialog is accepted, so we can defer
             // the opening of the file to the next runloop pass.
             dispatch_async(dispatch_get_main_queue(), ^{
-                [NSWorkspace.sharedWorkspace openFile:fileName.toNSString()];
+                [NSWorkspace.sharedWorkspace openURL:[NSURL fileURLWithPath:fileName.toNSString()]];
             });
         } else if (dest == kPMDestinationProcessPDF) {
             qWarning("Printing workflows are not supported");
