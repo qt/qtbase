@@ -8,6 +8,7 @@
 #include "qcombobox.h"
 #include <private/qcombobox_p.h>
 #include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 #include <qpa/qplatformtheme.h>
 
 #include <qfontcombobox.h>
@@ -3632,6 +3633,9 @@ void tst_QComboBox::cancelClosesPopupNotDialog()
 {
     if (QGuiApplication::platformName() == "offscreen")
         QSKIP("The offscreen platform plugin doesn't activate popups.");
+
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
 
     QDialog dialog;
     QComboBox combobox;
