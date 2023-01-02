@@ -863,7 +863,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
             const int absMax = absoluteMax(sectionIndex);
             const int absMin = absoluteMin(sectionIndex);
 
-            int last = -1;
+            int lastVal = -1;
 
             for (; digitsStr.size(); digitsStr.chop(1)) {
                 bool ok = false;
@@ -879,52 +879,52 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
                 }
 
                 QDTPDEBUG << digitsStr << value << digitsStr.size();
-                last = value;
+                lastVal = value;
                 used += digitsStr.size();
                 break;
             }
 
-            if (last == -1) {
+            if (lastVal == -1) {
                 const auto &sep = separators.at(sectionIndex + 1);
                 if (sep.startsWith(sectionTextRef[0])
                     || (negate && sep.startsWith(m_text.at(offset))))
                     result = ParsedSection(Intermediate, 0, 0);
                 else
                     QDTPDEBUG << "invalid because" << sectionTextRef << "can't become a uint"
-                              << last;
+                              << lastVal;
             } else {
                 if (negate)
-                    last = -last;
+                    lastVal = -lastVal;
                 const FieldInfo fi = fieldInfo(sectionIndex);
                 const bool unfilled = used - negativeYearOffset < sectionmaxsize;
                 if (unfilled && fi & Fraction) { // typing 2 in a zzz field should be .200, not .002
                     for (int i = used; i < sectionmaxsize; ++i)
-                        last *= 10;
+                        lastVal *= 10;
                 }
                 // Even those *= 10s can't take last above absMax:
-                Q_ASSERT(negate ? last >= absMin : last <= absMax);
-                if (negate ? last > absMax : last < absMin) {
+                Q_ASSERT(negate ? lastVal >= absMin : lastVal <= absMax);
+                if (negate ? lastVal > absMax : lastVal < absMin) {
                     if (unfilled) {
-                        result = ParsedSection(Intermediate, last, used);
+                        result = ParsedSection(Intermediate, lastVal, used);
                     } else if (negate) {
-                        QDTPDEBUG << "invalid because" << last << "is greater than absoluteMax"
+                        QDTPDEBUG << "invalid because" << lastVal << "is greater than absoluteMax"
                                   << absMax;
                     } else {
-                        QDTPDEBUG << "invalid because" << last << "is less than absoluteMin"
+                        QDTPDEBUG << "invalid because" << lastVal << "is less than absoluteMin"
                                   << absMin;
                     }
 
                 } else if (unfilled && (fi & (FixedWidth | Numeric)) == (FixedWidth | Numeric)) {
                     if (skipToNextSection(sectionIndex, defaultValue, digitsStr)) {
                         const int missingZeroes = sectionmaxsize - digitsStr.size();
-                        result = ParsedSection(Acceptable, last, sectionmaxsize, missingZeroes);
+                        result = ParsedSection(Acceptable, lastVal, sectionmaxsize, missingZeroes);
                         m_text.insert(offset, QString(missingZeroes, u'0'));
                         ++(const_cast<QDateTimeParser*>(this)->sectionNodes[sectionIndex].zeroesAdded);
                     } else {
-                        result = ParsedSection(Intermediate, last, used);;
+                        result = ParsedSection(Intermediate, lastVal, used);;
                     }
                 } else {
-                    result = ParsedSection(Acceptable, last, used);
+                    result = ParsedSection(Acceptable, lastVal, used);
                 }
             }
         }
