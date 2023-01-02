@@ -285,6 +285,10 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
         switch (value->userType()) {
         case QMetaType::QIcon: {
             option->icon = qvariant_cast<QIcon>(*value);
+            if (option->icon.isNull()) {
+                option->features &= ~QStyleOptionViewItem::HasDecoration;
+                break;
+            }
             QIcon::Mode mode;
             if (!(option->state & QStyle::State_Enabled))
                 mode = QIcon::Disabled;
