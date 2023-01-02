@@ -1876,20 +1876,21 @@ QDateTimeParser::AmPmFinder QDateTimeParser::findAmPm(QString &str, int sectionI
 
     bool broken[2] = {false, false};
     for (int i=0; i<size; ++i) {
-        if (str.at(i) != space) {
+        const QChar ch = str.at(i);
+        if (ch != space) {
             for (int j=0; j<2; ++j) {
                 if (!broken[j]) {
-                    int index = ampm[j].indexOf(str.at(i));
-                    QDTPDEBUG << "looking for" << str.at(i)
+                    int index = ampm[j].indexOf(ch);
+                    QDTPDEBUG << "looking for" << ch
                               << "in" << ampm[j] << "and got" << index;
                     if (index == -1) {
-                        if (str.at(i).category() == QChar::Letter_Uppercase) {
-                            index = ampm[j].indexOf(str.at(i).toLower());
-                            QDTPDEBUG << "trying with" << str.at(i).toLower()
+                        if (ch.category() == QChar::Letter_Uppercase) {
+                            index = ampm[j].indexOf(ch.toLower());
+                            QDTPDEBUG << "trying with" << ch.toLower()
                                       << "in" << ampm[j] << "and got" << index;
-                        } else if (str.at(i).category() == QChar::Letter_Lowercase) {
-                            index = ampm[j].indexOf(str.at(i).toUpper());
-                            QDTPDEBUG << "trying with" << str.at(i).toUpper()
+                        } else if (ch.category() == QChar::Letter_Lowercase) {
+                            index = ampm[j].indexOf(ch.toUpper());
+                            QDTPDEBUG << "trying with" << ch.toUpper()
                                       << "in" << ampm[j] << "and got" << index;
                         }
                         if (index == -1) {
