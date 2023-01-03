@@ -646,6 +646,10 @@ function(qt_internal_add_configure_time_tool target_name)
         ${unparsed_arguments}
     )
 
+    if(TARGET host_tools)
+        add_dependencies(host_tools "${target_name}_build")
+    endif()
+
     if(NOT arg_NO_INSTALL AND arg_TOOLS_TARGET)
         qt_internal_add_targets_to_additional_targets_export_file(
             TARGETS ${target_name}
