@@ -649,7 +649,7 @@ public:
                 error = SyncFailed;
         }
 
-        if (!m_commandLineArgs->scanAllMode()) {
+        if (!m_commandLineArgs->scanAllMode() && !m_commandLineArgs->stagingDir().empty()) {
             // Copy the generated files to a spearate staging directory to make the installation
             // process eaiser.
             if (!copyGeneratedHeadersToStagingDirectory(m_commandLineArgs->stagingDir()))
