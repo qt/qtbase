@@ -874,7 +874,8 @@ void deployRPaths(const QString &bundlePath, const QList<QString> &rpaths, const
             continue;
         }
         if (rpaths.contains(resolveDyldPrefix(rpath, binaryPath, binaryPath))) {
-            args << "-delete_rpath" << rpath;
+            if (!args.contains(rpath))
+                args << "-delete_rpath" << rpath;
         }
     }
     if (!args.length()) {
