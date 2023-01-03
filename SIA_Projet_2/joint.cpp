@@ -12,10 +12,99 @@ static inline void ltrim(std::string &s) {
     }));
 }
 
+void vectorPrint2(vector<double> v){
+    for (double n : v) {
+        cout << n << " , ";
+    }
+    cout << endl;
+}
+
+vector<double> getValuesFromLine(string line, char delimiter) {
+	/**
+	 * Parses a line with a given delimiter
+	*/
+	vector<double> values;
+	while (line.find(delimiter)!=string::npos){
+		size_t index = line.find(delimiter);
+		values.push_back(stod(line.substr(0,index)));
+		line.erase(0,index+1);
+	}
+	if (line.size()>0){
+		values.push_back(stod(line));
+	}
+	return values;
+}
+
+vector<string> getChannels(string line, char delimiter) {
+	vector<string> chans;
+	while (line.find(delimiter)!=string::npos) {
+		size_t index = line.find(delimiter);
+		chans.push_back(line.substr(0,index));
+		line.erase(0,index+1);
+	}
+	if (line.size()>0) {
+		chans.push_back(line);
+	}
+	return chans;
+}
+
+vector<double> addValuesToJoints(Joint* jnt, vector<double> values) {
+	/**
+	 * Takes the values from the vector, pop them and send them to the corresponding places
+	 * Deletes from vector
+	*/
+	for (AnimCurve ac : jnt->_dofs){
+		//cout << "Ancienne valeur de tête : " << values[0] << endl;
+		double newValue = values[0];
+		ac._values.push_back(newValue);
+		values.erase(values.begin());
+		//cout << "Nouvelle valeur de tête : " << values[0] << endl;
+		vectorPrint2(ac._values);
+	}
+	//cout << "Apres le joint " << jnt->_name << " : " << values.size() << "valeurs restantes" << endl;
+	if (jnt->_children.size()==0) {
+		return values;
+	} else {
+		for (Joint* j : jnt->_children){
+			values = addValuesToJoints(j, values);
+		}
+		return values;
+	}
+}
+
+vector<vector<double>> reverse2DVec(vector<vector<double>> v) {
+	vector<vector<double>> v2;
+	size_t lenfirst = v[0].size();
+	for (int i = 0; i<lenfirst; ++i) {
+		vector<double> vec;
+		v2.push_back(vec);
+	}
+	for (vector<double> wallah : v) {
+		for (int i = 0; i< wallah.size(); i++) {
+			v2[i].push_back(wallah[i]);
+		}
+	}
+	return v2;
+}
+
+size_t addValuesToJoints2(Joint* jnt, vector<vector<double>> vec, size_t pos) {
+	for (AnimCurve ac : jnt->_dofs) {
+		ac._values = vec[pos];
+		++pos;
+	}
+	if (jnt->_children.size()>0) {
+		for (Joint* j : jnt->_children) {
+			pos = addValuesToJoints2(j, vec, pos);
+		}
+	}
+	return pos;
+
+}
+
 Joint* Joint::createFromFile(std::string fileName) {
 	Joint* root = NULL;
 	cout << "Loading from " << fileName << endl;
-
+	vector<vector<double>> motionValues;
 	ifstream inputfile(fileName.data());
 	if(inputfile.good()) {
 
@@ -27,6 +116,8 @@ Joint* Joint::createFromFile(std::string fileName) {
 		string name;
 		Joint *parent = NULL;
 		Joint *currentJoint = NULL;
+		bool motionPart = false;
+		vector<double> values;
 
 		while(!inputfile.eof()) {
 			string buf;	
@@ -84,10 +175,30 @@ Joint* Joint::createFromFile(std::string fileName) {
 				backtracking = false;
 			}
 
-			size_t foundChannels = buf.find("CHANNELS");
-			if (foundChannels != std::string::npos) {
-				
+			if (buf.find("CHANNELS")!=string::npos) {
+				buf = buf.substr(buf.find(' ')+3,string::npos);
+				vector<string> channels = getChannels(buf, ' ');
+				int azert = 0;
+				for (string c : channels) {
+					//cout << "Ajout de channel " << azert << endl;
+					AnimCurve ac;
+					ac.name = c;
+					currentJoint->_dofs.push_back(ac);
+				}
+
 			}
+				
+			if (buf.find("MOTION")!=string::npos) {
+				motionPart = true;
+			}
+
+			string motions = "1234567890-";
+			if (motionPart && motions.find(buf[0])!=string::npos) {
+				// Checking if in motion part and starting by a number
+				values = getValuesFromLine(buf, (char) 9);
+				motionValues.push_back(values);
+			}
+
 		}
 		inputfile.close();
 	} else {
@@ -96,6 +207,12 @@ Joint* Joint::createFromFile(std::string fileName) {
 	}
 
 	cout << "file loaded" << endl;
+	cout << "Nombre frames : " << motionValues.size() << endl;
+	cout << "Taille premier : " << motionValues[0].size() << endl;
+	cout << "Taille dernier : " << motionValues[motionValues.size()-1].size() << endl;
+	motionValues = reverse2DVec(motionValues);
+	size_t ent = motionValues.size();
+	ent = addValuesToJoints2(root, motionValues, ent);
 
 	return root;
 }

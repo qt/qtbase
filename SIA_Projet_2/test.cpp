@@ -1,5 +1,14 @@
 #include "joint.h"
 
+using namespace std;
+
+void vectorPrint(vector<double> v){
+    for (double n : v) {
+        cout << n << " , ";
+    }
+    cout << endl;
+}
+
 void printChildren(Joint *jnt){
     if(jnt != NULL){
         Joint *parent = jnt->parent;
@@ -15,7 +24,16 @@ void printChildren(Joint *jnt){
     }
 }
 
+void printMotion(Joint *jnt){
+    vectorPrint(jnt->_dofs[0]._values);
+}
+
 int main(){
-    Joint *root = Joint::createFromFile("run1.bvh");
-    printChildren(root);
+    Joint *root = Joint::createFromFile("walk1.bvh");
+    // printChildren(root);
+    cout << "Alors : " << root->_dofs.size() << endl;
+    for (AnimCurve ac : root->_dofs) {
+        cout << ac._values.size() << endl;
+    }
+    printMotion(root);
 }
