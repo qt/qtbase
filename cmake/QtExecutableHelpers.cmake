@@ -374,8 +374,14 @@ function(qt_internal_add_configure_time_executable target)
         set(configure_time_target "${arg_OUTPUT_NAME}")
     endif()
     set(target_binary "${configure_time_target}${CMAKE_EXECUTABLE_SUFFIX}")
+
+    set(install_dir "${INSTALL_BINDIR}")
+    if(arg_INSTALL_DIRECTORY)
+        set(install_dir "${arg_INSTALL_DIRECTORY}")
+    endif()
+    set(output_directory "${QT_BUILD_DIR}/${install_dir}")
     set(target_binary_path
-        "${target_binary_dir}/${configuration_path}${target_binary}")
+        "${output_directory}/${configuration_path}${target_binary}")
     get_filename_component(target_binary_path "${target_binary_path}" ABSOLUTE)
 
     if(NOT DEFINED arg_SOURCES)
@@ -385,7 +391,7 @@ function(qt_internal_add_configure_time_executable target)
 
     # Timestamp file is required because CMake ignores 'add_custom_command' if we use only the
     # binary file as the OUTPUT.
-    set(timestamp_file "${target_binary_path}_timestamp")
+    set(timestamp_file "${target_binary_dir}/${target_binary}_timestamp")
     add_custom_command(OUTPUT "${target_binary_path}" "${timestamp_file}"
         COMMAND
             ${CMAKE_COMMAND} --build "${target_binary_dir}" ${config_build_arg}
@@ -468,15 +474,11 @@ function(qt_internal_add_configure_time_executable target)
         IMPORTED_LOCATION "${target_binary_path}")
 
     if(NOT arg_NO_INSTALL)
-        set(install_dir "${INSTALL_BINDIR}")
-        if(arg_INSTALL_DIRECTORY)
-            set(install_dir "${arg_INSTALL_DIRECTORY}")
-        endif()
         set_target_properties(${target} PROPERTIES
             _qt_internal_configure_time_target_install_location
                 "${install_dir}/${target_binary}"
         )
         qt_path_join(target_install_dir ${QT_INSTALL_DIR} ${install_dir})
-        qt_copy_or_install(PROGRAMS "${target_binary_path}" DESTINATION "${target_install_dir}")
+        qt_install(PROGRAMS "${target_binary_path}" DESTINATION "${target_install_dir}")
     endif()
 endfunction()
