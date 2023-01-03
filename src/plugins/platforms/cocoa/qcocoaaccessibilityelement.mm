@@ -434,6 +434,30 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return QCocoaAccessible::unignoredChildren(iface);
 }
 
+- (NSArray *) accessibilitySelectedChildren {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return nil;
+
+    QAccessibleSelectionInterface *selection = iface->selectionInterface();
+    if (!selection)
+        return nil;
+
+    const QList<QAccessibleInterface *> selectedList = selection->selectedItems();
+    const qsizetype numSelected = selectedList.size();
+    NSMutableArray<QMacAccessibilityElement *> *selectedChildren =
+            [NSMutableArray<QMacAccessibilityElement *> arrayWithCapacity:numSelected];
+    for (QAccessibleInterface *selectedChild : selectedList) {
+        if (selectedChild && selectedChild->isValid()) {
+            QAccessible::Id id = QAccessible::uniqueId(selectedChild);
+            QMacAccessibilityElement *element = [QMacAccessibilityElement elementWithId:id];
+            if (element)
+                [selectedChildren addObject:element];
+        }
+    }
+    return NSAccessibilityUnignoredChildren(selectedChildren);
+}
+
 - (id) accessibilityWindow {
     // We're in the same window as our parent.
     return [self.accessibilityParent accessibilityWindow];
