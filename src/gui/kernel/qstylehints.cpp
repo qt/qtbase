@@ -376,6 +376,8 @@ bool QStyleHints::showIsMaximized() const
 
     Since Qt 5.13, the setShowShortcutsInContextMenus() function can be used to
     override the platform default.
+
+    \sa Qt::AA_DontShowShortcutsInContextMenus
 */
 bool QStyleHints::showShortcutsInContextMenus() const
 {
