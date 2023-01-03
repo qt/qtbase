@@ -871,6 +871,7 @@ public:
 
         switch (m_versionScriptGeneratorState) {
         case Ignore:
+            scannerDebug() << "line ignored: " << buffer << std::endl;
             m_versionScriptGeneratorState = Active;
             return;
         case Stopped:
@@ -1003,8 +1004,8 @@ public:
         // This regex looks for the ELFVERSION tag this is control key-word for the version script
         // content processing.
         // ELFVERSION tag accepts the following values:
-        //    - stop - stops the symbols lookup for a versino script starting from this line.
-        //    - ignore-next - ignores the line followed but the current one.
+        //    - stop - stops the symbols lookup for a version script starting from this line.
+        //    - ignore-next - ignores the line followed by the current one.
         //    - ignore - ignores the current line.
         static const std::regex ElfVersionTagRegex(".*ELFVERSION:(stop|ignore-next|ignore).*");
 
