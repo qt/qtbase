@@ -44,7 +44,6 @@ enum QtModule
     QtBluetoothModule,
     QtConcurrentModule,
     QtCoreModule,
-    QtDeclarativeModule,
     QtDesignerComponents,
     QtDesignerModule,
     QtGuiModule,
@@ -130,7 +129,6 @@ static QtModuleEntry qtModuleEntries[] = {
     { QtBluetoothModule, "bluetooth", "Qt6Bluetooth", nullptr },
     { QtConcurrentModule, "concurrent", "Qt6Concurrent", "qtbase" },
     { QtCoreModule, "core", "Qt6Core", "qtbase" },
-    { QtDeclarativeModule, "declarative", "Qt6Declarative", "qtquick1" },
     { QtDesignerModule, "designer", "Qt6Designer", nullptr },
     { QtDesignerComponents, "designercomponents", "Qt6DesignerComponents", nullptr },
     { QtGamePadModule, "gamepad", "Qt6Gamepad", nullptr },
@@ -865,7 +863,6 @@ struct PluginModuleMapping
 
 static const PluginModuleMapping pluginModuleMappings[] =
 {
-    {"qml1tooling", QtDeclarativeModule},
 #if QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
     {"gamepads", QtGamePadModule},
 #endif
@@ -1590,40 +1587,29 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     } // optPlugins
 
     // Update Quick imports
-    const bool usesQuick1 = result.deployedQtLibraries.test(QtDeclarativeModule);
     // Do not be fooled by QtWebKit.dll depending on Quick into always installing Quick imports
     // for WebKit1-applications. Check direct dependency only.
-    if (options.quickImports && (usesQuick1 || usesQml2)) {
-        if (usesQml2) {
-            for (const QmlImportScanResult::Module &module : std::as_const(qmlScanResult.modules)) {
-                const QString installPath = module.installPath(options.directory);
-                if (optVerboseLevel > 1)
-                    std::wcout << "Installing: '" << module.name
-                               << "' from " << module.sourcePath << " to "
-                               << QDir::toNativeSeparators(installPath) << '\n';
-                if (installPath != options.directory && !createDirectory(installPath, errorMessage))
-                    return result;
-                unsigned updateFileFlags = options.updateFileFlags | SkipQmlDesignerSpecificsDirectories;
-                unsigned qmlDirectoryFileFlags = 0;
-                if (options.deployPdb)
-                    qmlDirectoryFileFlags |= QmlDirectoryFileEntryFunction::DeployPdb;
-                if (!updateFile(module.sourcePath, QmlDirectoryFileEntryFunction(options.platform, debugMatchMode, qmlDirectoryFileFlags),
-                                installPath, updateFileFlags, options.json, errorMessage)) {
-                    return result;
-                }
+    if (options.quickImports && usesQml2) {
+        for (const QmlImportScanResult::Module &module : std::as_const(qmlScanResult.modules)) {
+            const QString installPath = module.installPath(options.directory);
+            if (optVerboseLevel > 1)
+                std::wcout << "Installing: '" << module.name
+                           << "' from " << module.sourcePath << " to "
+                           << QDir::toNativeSeparators(installPath) << '\n';
+            if (installPath != options.directory && !createDirectory(installPath, errorMessage))
+                return result;
+            unsigned updateFileFlags = options.updateFileFlags
+                    | SkipQmlDesignerSpecificsDirectories;
+            unsigned qmlDirectoryFileFlags = 0;
+            if (options.deployPdb)
+                qmlDirectoryFileFlags |= QmlDirectoryFileEntryFunction::DeployPdb;
+            if (!updateFile(module.sourcePath, QmlDirectoryFileEntryFunction(options.platform,
+                                                                             debugMatchMode,
+                                                                             qmlDirectoryFileFlags),
+                            installPath, updateFileFlags, options.json, errorMessage)) {
+                return result;
             }
-        } // Quick 2
-        if (usesQuick1) {
-            const QString quick1ImportPath =
-                    qtpathsVariables.value(QStringLiteral("QT_INSTALL_IMPORTS"));
-            const QmlDirectoryFileEntryFunction qmlFileEntryFunction(options.platform, debugMatchMode, options.deployPdb ? QmlDirectoryFileEntryFunction::DeployPdb : 0);
-            QStringList quick1Imports(QStringLiteral("Qt"));
-            for (const QString &quick1Import : std::as_const(quick1Imports)) {
-                const QString sourceFile = quick1ImportPath + slash + quick1Import;
-                if (!updateFile(sourceFile, qmlFileEntryFunction, options.directory, options.updateFileFlags, options.json, errorMessage))
-                    return result;
-            }
-        } // Quick 1
+        }
     } // optQuickImports
 
     if (options.translations) {
