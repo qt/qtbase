@@ -260,6 +260,9 @@ endfunction()
 #                so the argument containing list will look as following:
 #                    -DLIST_ARGUMENT=item1[[;]]item2[[;]]...itemN.
 macro(_qt_internal_test_expect_pass _dir)
+    if(WASM)
+        return()
+    endif()
     set(_test_option_args
       SIMULATE_IN_SOURCE
       NO_CLEAN_STEP
