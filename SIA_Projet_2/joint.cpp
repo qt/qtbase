@@ -211,7 +211,7 @@ Joint* Joint::createFromFile(std::string fileName) {
 	cout << "Taille premier : " << motionValues[0].size() << endl;
 	cout << "Taille dernier : " << motionValues[motionValues.size()-1].size() << endl;
 	motionValues = reverse2DVec(motionValues);
-	size_t ent = motionValues.size();
+	size_t ent = 0;
 	ent = addValuesToJoints2(root, motionValues, ent);
 
 	return root;
