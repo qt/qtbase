@@ -398,6 +398,34 @@ function(qt_internal_is_in_test_batch out name)
     endif()
 endfunction()
 
+function(qt_internal_is_skipped_test out name)
+    get_target_property(is_skipped_test ${name} _qt_is_skipped_test)
+    set(${out} ${is_skipped_test} PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_set_skipped_test name)
+    set_target_properties(${name} PROPERTIES _qt_is_skipped_test TRUE)
+endfunction()
+
+function(qt_internal_is_qtbase_test out)
+    get_filename_component(dir "${CMAKE_CURRENT_BINARY_DIR}" ABSOLUTE)
+    set(${out} FALSE PARENT_SCOPE)
+
+    while(TRUE)
+        get_filename_component(filename "${dir}" NAME)
+        if("${filename}" STREQUAL "qtbase")
+            set(${out} TRUE PARENT_SCOPE)
+            break()
+        endif()
+
+        set(prev_dir "${dir}")
+        get_filename_component(dir "${dir}" DIRECTORY)
+        if("${dir}" STREQUAL "${prev_dir}")
+            break()
+        endif()
+    endwhile()
+endfunction()
+
 function(qt_internal_get_batched_test_arguments out testname)
     if(WASM)
         # Add a query string to the runner document, so that the script therein
@@ -433,6 +461,18 @@ function(qt_internal_add_test name)
         "${multi_value_args}"
     )
     _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(QT_BUILD_TESTS_BATCHED AND QT_SUPERBUILD AND NOT arg_NO_BATCH AND NOT arg_QMLTEST)
+        qt_internal_is_qtbase_test(is_qtbase_test)
+        if(NOT is_qtbase_test)
+            file(GENERATE OUTPUT "dummy${name}.cpp" CONTENT "int main() { return 0; }")
+            # Add a dummy target to tackle some potential problems
+            qt_internal_add_executable(${name} SOURCES "dummy${name}.cpp")
+            # Batched tests outside of qtbase are unsupported and skipped
+            qt_internal_set_skipped_test(${name})
+            return()
+        endif()
+    endif()
 
     if (NOT arg_OUTPUT_DIRECTORY)
         set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
