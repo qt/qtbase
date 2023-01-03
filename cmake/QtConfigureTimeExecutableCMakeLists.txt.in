@@ -6,6 +6,7 @@ set(packages "@packages@")
 set(defines @defines@)
 set(compile_options @compile_options@)
 set(link_options @link_options@)
+set(output_directory @output_directory@)
 
 foreach(package IN LISTS packages)
     find_package(${package} REQUIRED)
@@ -14,6 +15,7 @@ endforeach()
 add_executable(@configure_time_target@ @win32@ @macosx_bundle@ @sources@)
 set_target_properties(@configure_time_target@ PROPERTIES
     INCLUDE_DIRECTORIES "@include_directories@"
+    RUNTIME_OUTPUT_DIRECTORY "${output_directory}"
 )
 
 target_compile_options(@configure_time_target@ PRIVATE ${compile_options})

@@ -20,6 +20,8 @@ if(CMAKE_OSX_ARCHITECTURES)
     set(osx_architectures "-DCMAKE_OSX_ARCHITECTURES:STRING=${CMAKE_OSX_ARCHITECTURES}")
 endif()
 qt_get_tool_target_name(target_name syncqt)
+# Note: configure-time tools reserve the original tool name for the imported executable.
+# To re-build syncqt use 'syncqt_build' target.
 qt_internal_add_configure_time_tool(${target_name}
     DEFINES ${compile_definitions}
     COMPILE_OPTIONS ${optimize_full_flags}
