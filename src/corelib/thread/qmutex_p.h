@@ -36,6 +36,8 @@ struct timespec;
 
 QT_BEGIN_NAMESPACE
 
+// We manipulate the pointer to this class in inline, atomic code,
+// so syncqt mustn't mark them as private, so ELFVERSION:ignore-next
 class QMutexPrivate
 {
 public:
