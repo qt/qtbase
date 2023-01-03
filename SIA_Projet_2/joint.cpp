@@ -88,8 +88,8 @@ vector<vector<double>> reverse2DVec(vector<vector<double>> v) {
 }
 
 size_t addValuesToJoints2(Joint* jnt, vector<vector<double>> vec, size_t pos) {
-	for (AnimCurve ac : jnt->_dofs) {
-		ac._values = vec[pos];
+	for (auto it = jnt->_dofs.begin(); it != jnt->_dofs.end(); it++) {
+		it->_values.insert(it->_values.end(), vec[pos].begin(), vec[pos].end());
 		++pos;
 	}
 	if (jnt->_children.size()>0) {
@@ -211,9 +211,7 @@ Joint* Joint::createFromFile(std::string fileName) {
 	cout << "Taille premier : " << motionValues[0].size() << endl;
 	cout << "Taille dernier : " << motionValues[motionValues.size()-1].size() << endl;
 	motionValues = reverse2DVec(motionValues);
-	size_t ent = 0;
-	ent = addValuesToJoints2(root, motionValues, ent);
-
+	addValuesToJoints2(root, motionValues, 0);
 	return root;
 }
 
