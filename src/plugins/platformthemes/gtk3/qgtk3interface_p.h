@@ -38,6 +38,18 @@ Q_DECLARE_LOGGING_CATEGORY(lcQGtk3Interface);
 using namespace Qt::StringLiterals;
 
 class QGtk3Storage;
+
+/*!
+    \internal
+    \brief The QGtk3Interface class centralizes communication with the GTK3 library.
+
+    By encapsulating all GTK version specific syntax and conversions, it makes Qt's GTK theme
+    independent from GTK versions.
+
+    \note
+    Including GTK3 headers requires #undef signals, which disables Qt signal/slot handling.
+ */
+
 class QGtk3Interface
 {
     Q_GADGET
@@ -45,7 +57,13 @@ public:
     QGtk3Interface(QGtk3Storage *);
     ~QGtk3Interface();
 
-    // Enum representing GTK widget types
+    /*!
+     *  \internal
+        \enum QGtk3Interface::QGtkWidget
+        \brief Represents GTK widget types used to obtain color information.
+
+        \note The enum value gtk_Default refers to the GTK default style, rather than to a specific widget.
+     */
     enum class QGtkWidget {
         gtk_menu_bar,
         gtk_menu,
@@ -70,7 +88,15 @@ public:
     };
     Q_ENUM(QGtkWidget)
 
-    // Enum representing color sources of a GTK theme
+    /*!
+        \internal
+        \enum QGtk3Interface::QGtkColorSource
+        \brief The QGtkColorSource enum represents the source of a color within a GTK widgets style context.
+
+        If the current GTK theme provides such a color for a given widget, the color can be read
+        from the style context by passing the enum's key as a property name to the GTK method
+        gtk_style_context_lookup_color. The method will return false, if no color has been found.
+     */
     enum class QGtkColorSource {
         Foreground,
         Background,
@@ -80,7 +106,18 @@ public:
     };
     Q_ENUM(QGtkColorSource)
 
-    // Enum for default color getter
+    /*!
+        \internal
+        \enum QGtk3Interface::QGtkColorDefault
+        \brief The QGtkColorDefault enum represents generic GTK colors.
+
+        The GTK3 methods gtk_style_context_get_color, gtk_style_context_get_background_color, and
+        gtk_style_context_get_foreground_color always return the respective colors with a widget's
+        style context. Unless set as a property by the current GTK theme, GTK's default colors will
+        be returned.
+        These generic default colors, represented by the GtkColorDefault enum, are used as a
+        back, if a specific color property is requested but not defined in the current GTK theme.
+     */
     enum class QGtkColorDefault {
         Foreground,
         Background,
