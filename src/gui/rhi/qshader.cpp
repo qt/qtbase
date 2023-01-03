@@ -365,9 +365,12 @@ static void writeShaderKey(QDataStream *ds, const QShaderKey &k)
     \return a serialized binary version of all the data held by the
     QShader, suitable for writing to files or other I/O devices.
 
+    By default the latest serialization format is used. Use \a version
+    parameter to serialize for a compatibility Qt version.
+
     \sa fromSerialized()
  */
-QByteArray QShader::serialized() const
+QByteArray QShader::serialized(SerializedFormatVersion version) const
 {
     static QShaderPrivate sd;
     QShaderPrivate *dd = d ? d : &sd;
@@ -378,9 +381,11 @@ QByteArray QShader::serialized() const
     if (!buf.open(QIODevice::WriteOnly))
         return QByteArray();
 
-    ds << QShaderPrivate::QSB_VERSION;
+    const int qsbVersion = QShaderPrivate::qtQsbVersion(version);
+    ds << qsbVersion;
+
     ds << int(dd->stage);
-    dd->desc.serialize(&ds);
+    dd->desc.serialize(&ds, qsbVersion);
     ds << int(dd->shaders.size());
     for (auto it = dd->shaders.cbegin(), itEnd = dd->shaders.cend(); it != itEnd; ++it) {
         const QShaderKey &k(it.key());
@@ -413,17 +418,19 @@ QByteArray QShader::serialized() const
             ds << listIt->samplerBinding;
         }
     }
-    ds << int(dd->nativeShaderInfoMap.size());
-    for (auto it = dd->nativeShaderInfoMap.cbegin(), itEnd = dd->nativeShaderInfoMap.cend(); it != itEnd; ++it) {
-        const QShaderKey &k(it.key());
-        writeShaderKey(&ds, k);
-        ds << it->flags;
-        ds << int(it->extraBufferBindings.size());
-        for (auto mapIt = it->extraBufferBindings.cbegin(), mapItEnd = it->extraBufferBindings.cend();
-             mapIt != mapItEnd; ++mapIt)
-        {
-            ds << mapIt.key();
-            ds << mapIt.value();
+    if (qsbVersion > QShaderPrivate::QSB_VERSION_WITHOUT_NATIVE_SHADER_INFO) {
+        ds << int(dd->nativeShaderInfoMap.size());
+        for (auto it = dd->nativeShaderInfoMap.cbegin(), itEnd = dd->nativeShaderInfoMap.cend(); it != itEnd; ++it) {
+            const QShaderKey &k(it.key());
+            writeShaderKey(&ds, k);
+            ds << it->flags;
+            ds << int(it->extraBufferBindings.size());
+            for (auto mapIt = it->extraBufferBindings.cbegin(), mapItEnd = it->extraBufferBindings.cend();
+                 mapIt != mapItEnd; ++mapIt)
+            {
+                ds << mapIt.key();
+                ds << mapIt.value();
+            }
         }
     }
 

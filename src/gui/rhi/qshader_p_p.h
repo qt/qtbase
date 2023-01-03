@@ -61,6 +61,16 @@ struct Q_GUI_EXPORT QShaderPrivate
 
     static QShaderPrivate *get(QShader *s) { return s->d; }
     static const QShaderPrivate *get(const QShader *s) { return s->d; }
+    static int qtQsbVersion(QShader::SerializedFormatVersion qtVersion) {
+        switch (qtVersion) {
+        case QShader::SerializedFormatVersion::Qt_6_4:
+            return (QShaderPrivate::QSB_VERSION_WITHOUT_SEPARATE_IMAGES_AND_SAMPLERS + 1);
+        case QShader::SerializedFormatVersion::Qt_6_5:
+            return (QShaderPrivate::QSB_VERSION_WITHOUT_EXTENDED_STORAGE_BUFFER_INFO + 1);
+        default:
+            return QShaderPrivate::QSB_VERSION;
+        }
+    }
 
     QAtomicInt ref;
     int qsbVersion = QSB_VERSION;

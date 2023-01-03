@@ -37,7 +37,7 @@ public:
 
     bool isValid() const;
 
-    void serialize(QDataStream *stream) const;
+    void serialize(QDataStream *stream, int version) const;
     QByteArray toJson() const;
 
     static QShaderDescription deserialize(QDataStream *stream, int version);
