@@ -882,6 +882,9 @@ public:
             break;
         }
 
+        if (buffer.empty())
+            return;
+
         std::smatch match;
         std::string symbol;
         if (std::regex_match(buffer, match, VersionScriptSymbolRegex) && match[2].str().empty())
@@ -1103,13 +1106,14 @@ public:
             }
             line.clear();
 
-            if (buffer.empty())
-                continue;
             scannerDebug() << m_currentFilename << ": " << buffer << std::endl;
 
             if (m_currentFileType & PrivateHeader) {
                 parseVersionScriptContent(buffer, result);
             }
+
+            if (buffer.empty())
+                continue;
 
             ++linesProcessed;
 
