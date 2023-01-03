@@ -1,5 +1,7 @@
 # The tool should be optimized for maximum performance when working.
-qt_internal_get_optimize_full_flags(optimize_full_flags)
+if(NOT QT_USE_DEFAULT_CMAKE_OPTIMIZATION_FLAGS)
+    qt_internal_get_optimize_full_flags(optimize_full_flags)
+endif()
 
 set(compile_definitions
     QT_VERSION_STR="${PROJECT_VERSION}"
