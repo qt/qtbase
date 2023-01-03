@@ -12,13 +12,6 @@ static inline void ltrim(std::string &s) {
     }));
 }
 
-void vectorPrint2(vector<double> v){
-    for (double n : v) {
-        cout << n << " , ";
-    }
-    cout << endl;
-}
-
 vector<double> getValuesFromLine(string line, char delimiter) {
 	/**
 	 * Parses a line with a given delimiter
@@ -48,30 +41,6 @@ vector<string> getChannels(string line, char delimiter) {
 	return chans;
 }
 
-vector<double> addValuesToJoints(Joint* jnt, vector<double> values) {
-	/**
-	 * Takes the values from the vector, pop them and send them to the corresponding places
-	 * Deletes from vector
-	*/
-	for (AnimCurve ac : jnt->_dofs){
-		//cout << "Ancienne valeur de tête : " << values[0] << endl;
-		double newValue = values[0];
-		ac._values.push_back(newValue);
-		values.erase(values.begin());
-		//cout << "Nouvelle valeur de tête : " << values[0] << endl;
-		vectorPrint2(ac._values);
-	}
-	//cout << "Apres le joint " << jnt->_name << " : " << values.size() << "valeurs restantes" << endl;
-	if (jnt->_children.size()==0) {
-		return values;
-	} else {
-		for (Joint* j : jnt->_children){
-			values = addValuesToJoints(j, values);
-		}
-		return values;
-	}
-}
-
 vector<vector<double>> reverse2DVec(vector<vector<double>> v) {
 	vector<vector<double>> v2;
 	size_t lenfirst = v[0].size();
@@ -87,14 +56,14 @@ vector<vector<double>> reverse2DVec(vector<vector<double>> v) {
 	return v2;
 }
 
-size_t addValuesToJoints2(Joint* jnt, vector<vector<double>> vec, size_t pos) {
+size_t addValuesToJoints(Joint* jnt, vector<vector<double>> vec, size_t pos) {
 	for (auto it = jnt->_dofs.begin(); it != jnt->_dofs.end(); it++) {
 		it->_values.insert(it->_values.end(), vec[pos].begin(), vec[pos].end());
 		++pos;
 	}
 	if (jnt->_children.size()>0) {
 		for (Joint* j : jnt->_children) {
-			pos = addValuesToJoints2(j, vec, pos);
+			pos = addValuesToJoints(j, vec, pos);
 		}
 	}
 	return pos;
@@ -205,13 +174,9 @@ Joint* Joint::createFromFile(std::string fileName) {
 		std::cerr << "Failed to load the file " << fileName.data() << std::endl;
 		fflush(stdout);
 	}
-
-	cout << "file loaded" << endl;
-	cout << "Nombre frames : " << motionValues.size() << endl;
-	cout << "Taille premier : " << motionValues[0].size() << endl;
-	cout << "Taille dernier : " << motionValues[motionValues.size()-1].size() << endl;
 	motionValues = reverse2DVec(motionValues);
-	addValuesToJoints2(root, motionValues, 0);
+	addValuesToJoints(root, motionValues, 0);
+	cout << "file loaded" << endl;
 	return root;
 }
 
