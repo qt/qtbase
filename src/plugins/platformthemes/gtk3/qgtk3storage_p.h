@@ -33,6 +33,7 @@ class QGtk3Storage
 public:
     QGtk3Storage();
 
+    // Enum documented in cpp file. Please keep it in line with updates made here.
     enum class SourceType {
         Gtk,
         Fixed,
