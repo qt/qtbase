@@ -294,7 +294,7 @@ void tst_QShader::serializeShaderDesc()
             QBuffer buf(&data);
             QDataStream ds(&buf);
             QVERIFY(buf.open(QIODevice::WriteOnly));
-            desc.serialize(&ds);
+            desc.serialize(&ds, QShaderPrivate::QSB_VERSION);
         }
         QVERIFY(!data.isEmpty());
 
@@ -319,7 +319,7 @@ void tst_QShader::serializeShaderDesc()
             QBuffer buf(&data);
             QDataStream ds(&buf);
             QVERIFY(buf.open(QIODevice::WriteOnly));
-            desc.serialize(&ds);
+            desc.serialize(&ds, QShaderPrivate::QSB_VERSION);
         }
         QVERIFY(!data.isEmpty());
 

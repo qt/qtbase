@@ -110,6 +110,12 @@ public:
         NonIndexedVertexAsComputeShader
     };
 
+    enum class SerializedFormatVersion {
+        Latest = 0,
+        Qt_6_5,
+        Qt_6_4
+    };
+
     QShader();
     QShader(const QShader &other);
     QShader &operator=(const QShader &other);
@@ -129,7 +135,7 @@ public:
     void setShader(const QShaderKey &key, const QShaderCode &shader);
     void removeShader(const QShaderKey &key);
 
-    QByteArray serialized() const;
+    QByteArray serialized(SerializedFormatVersion version = SerializedFormatVersion::Latest) const;
     static QShader fromSerialized(const QByteArray &data);
 
     using NativeResourceBindingMap = QMap<int, QPair<int, int> >; // binding -> native_binding[, native_binding]

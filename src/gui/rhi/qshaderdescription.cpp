@@ -319,13 +319,14 @@ QByteArray QShaderDescription::toJson() const
 }
 
 /*!
-    Serializes this QShaderDescription to \a stream.
+    Serializes this QShaderDescription to \a stream. \a version specifies
+    the qsb version.
 
     \sa deserialize(), toJson()
  */
-void QShaderDescription::serialize(QDataStream *stream) const
+void QShaderDescription::serialize(QDataStream *stream, int version) const
 {
-    d->writeToStream(stream);
+    d->writeToStream(stream, version);
 }
 
 /*!
@@ -1067,7 +1068,7 @@ static void addDeco(QJsonObject *obj, const QShaderDescription::InOutVariable &v
     }
 }
 
-static void serializeDecorations(QDataStream *stream, const QShaderDescription::InOutVariable &v)
+static void serializeDecorations(QDataStream *stream, const QShaderDescription::InOutVariable &v, int version)
 {
     (*stream) << v.location;
     (*stream) << v.binding;
@@ -1077,7 +1078,8 @@ static void serializeDecorations(QDataStream *stream, const QShaderDescription::
     (*stream) << int(v.arrayDims.size());
     for (int dim : v.arrayDims)
         (*stream) << dim;
-    (*stream) << quint8(v.perPatch);
+    if (version > QShaderPrivate::QSB_VERSION_WITHOUT_NATIVE_SHADER_INFO)
+        (*stream) << quint8(v.perPatch);
 }
 
 static QJsonObject inOutObject(const QShaderDescription::InOutVariable &v)
@@ -1089,11 +1091,11 @@ static QJsonObject inOutObject(const QShaderDescription::InOutVariable &v)
     return obj;
 }
 
-static void serializeInOutVar(QDataStream *stream, const QShaderDescription::InOutVariable &v)
+static void serializeInOutVar(QDataStream *stream, const QShaderDescription::InOutVariable &v, int version)
 {
     (*stream) << QString::fromUtf8(v.name);
     (*stream) << int(v.type);
-    serializeDecorations(stream, v);
+    serializeDecorations(stream, v, version);
 }
 
 static QJsonObject blockMemberObject(const QShaderDescription::BlockVariable &v)
@@ -1297,15 +1299,15 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
     return QJsonDocument(root);
 }
 
-void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
+void QShaderDescriptionPrivate::writeToStream(QDataStream *stream, int version)
 {
     (*stream) << int(inVars.size());
     for (const QShaderDescription::InOutVariable &v : std::as_const(inVars))
-        serializeInOutVar(stream, v);
+        serializeInOutVar(stream, v, version);
 
     (*stream) << int(outVars.size());
     for (const QShaderDescription::InOutVariable &v : std::as_const(outVars))
-        serializeInOutVar(stream, v);
+        serializeInOutVar(stream, v, version);
 
     (*stream) << int(uniformBlocks.size());
     for (const QShaderDescription::UniformBlock &b : uniformBlocks) {
@@ -1338,22 +1340,24 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
         (*stream) << int(b.members.size());
         for (const QShaderDescription::BlockVariable &v : b.members)
             serializeBlockMemberVar(stream, v);
-        (*stream) << b.runtimeArrayStride;
-        (*stream) << b.qualifierFlags;
+        if (version > QShaderPrivate::QSB_VERSION_WITHOUT_EXTENDED_STORAGE_BUFFER_INFO) {
+            (*stream) << b.runtimeArrayStride;
+            (*stream) << b.qualifierFlags;
+        }
     }
 
     (*stream) << int(combinedImageSamplers.size());
     for (const QShaderDescription::InOutVariable &v : std::as_const(combinedImageSamplers)) {
         (*stream) << QString::fromUtf8(v.name);
         (*stream) << int(v.type);
-        serializeDecorations(stream, v);
+        serializeDecorations(stream, v, version);
     }
 
     (*stream) << int(storageImages.size());
     for (const QShaderDescription::InOutVariable &v : std::as_const(storageImages)) {
         (*stream) << QString::fromUtf8(v.name);
         (*stream) << int(v.type);
-        serializeDecorations(stream, v);
+        serializeDecorations(stream, v, version);
     }
 
     for (size_t i = 0; i < 3; ++i)
@@ -1363,28 +1367,30 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
     for (const QShaderDescription::InOutVariable &v : std::as_const(separateImages)) {
         (*stream) << QString::fromUtf8(v.name);
         (*stream) << int(v.type);
-        serializeDecorations(stream, v);
+        serializeDecorations(stream, v, version);
     }
 
     (*stream) << int(separateSamplers.size());
     for (const QShaderDescription::InOutVariable &v : std::as_const(separateSamplers)) {
         (*stream) << QString::fromUtf8(v.name);
         (*stream) << int(v.type);
-        serializeDecorations(stream, v);
+        serializeDecorations(stream, v, version);
     }
 
-    (*stream) << quint32(tessOutVertCount);
-    (*stream) << quint32(tessMode);
-    (*stream) << quint32(tessWind);
-    (*stream) << quint32(tessPart);
+    if (version > QShaderPrivate::QSB_VERSION_WITHOUT_NATIVE_SHADER_INFO) {
+        (*stream) << quint32(tessOutVertCount);
+        (*stream) << quint32(tessMode);
+        (*stream) << quint32(tessWind);
+        (*stream) << quint32(tessPart);
 
-    (*stream) << int(inBuiltins.size());
-    for (const QShaderDescription::BuiltinVariable &v : std::as_const(inBuiltins))
-        (*stream) << int(v.type);
+        (*stream) << int(inBuiltins.size());
+        for (const QShaderDescription::BuiltinVariable &v : std::as_const(inBuiltins))
+            (*stream) << int(v.type);
 
-    (*stream) << int(outBuiltins.size());
-    for (const QShaderDescription::BuiltinVariable &v : std::as_const(outBuiltins))
-        (*stream) << int(v.type);
+        (*stream) << int(outBuiltins.size());
+        for (const QShaderDescription::BuiltinVariable &v : std::as_const(outBuiltins))
+            (*stream) << int(v.type);
+    }
 }
 
 static void deserializeDecorations(QDataStream *stream, int version, QShaderDescription::InOutVariable *v)
