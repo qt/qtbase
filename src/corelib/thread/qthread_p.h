@@ -58,6 +58,7 @@ inline bool operator<(const QPostEvent &first, const QPostEvent &second)
 
 // This class holds the list of posted events.
 //  The list has to be kept sorted by priority
+// It's used in a virtual in QCoreApplication, so ELFVERSION:ignore-next
 class QPostEventList : public QList<QPostEvent>
 {
 public:
