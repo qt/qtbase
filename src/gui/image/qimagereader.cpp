@@ -484,9 +484,9 @@ QImageReaderPrivate::QImageReaderPrivate(QImageReader *qq)
 */
 QImageReaderPrivate::~QImageReaderPrivate()
 {
+    delete handler;
     if (deleteDevice)
         delete device;
-    delete handler;
 }
 
 /*!
