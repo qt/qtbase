@@ -4634,6 +4634,8 @@ private:
 */
 void tst_QWidget::optimizedResizeMove()
 {
+    const bool wayland = QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive);
+
     QWidget parent;
     parent.setPalette(simplePalette());
     parent.setWindowTitle(QTest::currentTestFunction());
@@ -4647,7 +4649,12 @@ void tst_QWidget::optimizedResizeMove()
     QVERIFY(staticWidget.waitForPaintEvent());
 
     staticWidget.move(staticWidget.pos() + QPoint(10, 10));
-    QVERIFY(!staticWidget.waitForPaintEvent());
+    if (!wayland) {
+        QVERIFY(!staticWidget.waitForPaintEvent());
+    } else {
+        if (staticWidget.waitForPaintEvent())
+            QSKIP("Wayland is not optimising paint events. Skipping test.");
+    }
 
     staticWidget.move(staticWidget.pos() + QPoint(-10, -10));
     QVERIFY(!staticWidget.waitForPaintEvent());
@@ -4694,6 +4701,8 @@ void tst_QWidget::optimizedResizeMove()
 
 void tst_QWidget::optimizedResize_topLevel()
 {
+    const bool wayland = QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive);
+
     if (QHighDpiScaling::isActive())
         QSKIP("Skip due to rounding errors in the regions.");
     StaticWidget topLevel(simplePalette());
@@ -4730,7 +4739,12 @@ void tst_QWidget::optimizedResize_topLevel()
     QVERIFY(topLevel.waitForPaintEvent());
     if (m_platform == QStringLiteral("xcb") || m_platform == QStringLiteral("offscreen"))
         QSKIP("QTBUG-26424");
-    QCOMPARE(topLevel.partial, true);
+    if (!wayland) {
+        QCOMPARE(topLevel.partial, true);
+    } else {
+        if (!topLevel.partial)
+            QSKIP("Wayland does repaint partially. Skipping test.");
+    }
     QCOMPARE(topLevel.paintedRegion, expectedUpdateRegion);
 }
 
