@@ -297,6 +297,11 @@ function(qt_internal_add_test_to_batch batch_name name)
             LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Core
                     ${QT_CMAKE_EXPORT_NAMESPACE}::Test
                     ${QT_CMAKE_EXPORT_NAMESPACE}::TestPrivate
+                    # Add GUI by default so that the plugins link properly with non-standalone
+                    # build of tests. Plugin handling is currently only done in
+                    # qt_internal_add_executable if Gui is present. This should be reevaluated with
+                    # multiple batches.
+                    ${QT_CMAKE_EXPORT_NAMESPACE}::Gui
         )
 
         set_property(TARGET ${target} PROPERTY _qt_has_exceptions ${arg_EXCEPTIONS})
