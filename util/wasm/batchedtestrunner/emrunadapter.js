@@ -5,8 +5,13 @@ import { RunnerStatus, TestStatus } from './batchedtestrunner.js';
 
 // Sends messages to the running emrun instance via POST requests.
 export class EmrunCommunication {
+    static #BATCHING_DELAY = 300;
+
     #indexOfMessage = 0;
-    #postOutputPromises = [];
+    #postOutputPromise;
+    // Accumulate output in a batch that gets sent with a delay so that the emrun http server
+    // does not get pounded with requests.
+    #nextOutputBatch = null;
 
     #post(body) {
         return fetch('stdio.html', {
@@ -15,10 +20,11 @@ export class EmrunCommunication {
         });
     }
 
-    // Returns a promise whose resolution signals that all outstanding traffic to the emrun instance
-    // has been completed.
-    waitUntilAllSent() {
-        return Promise.all(this.#postOutputPromises);
+    // Waits for the output sending to finish, if any output transfer is still in progress.
+    async waitUntilAllSent()
+    {
+        if (this.#postOutputPromise)
+            await this.#postOutputPromise;
     }
 
     // Posts the exit status to the running emrun instance. Emrun will drop connection unless it is
@@ -29,13 +35,25 @@ export class EmrunCommunication {
 
     // Posts an indexed output chunk to the running emrun instance. Each consecutive call to this
     // method increments the output index by 1.
-    postOutput(output) {
-        const newPromise = this.#post(`^out^${this.#indexOfMessage++}^${output}`);
-        this.#postOutputPromises.push(newPromise);
-        newPromise.finally(() => {
-            this.#postOutputPromises.splice(this.#postOutputPromises.indexOf(newPromise), 1);
-        });
-        return newPromise;
+    postOutput(output)
+    {
+        if (this.#nextOutputBatch) {
+            this.#nextOutputBatch += output;
+        } else {
+            this.#nextOutputBatch = output;
+            this.#postOutputPromise = new Promise(resolve =>
+            {
+                window.setTimeout(() =>
+                {
+                    const toSend = this.#nextOutputBatch;
+                    this.#nextOutputBatch = null;
+                    this.#post(`^out^${this.#indexOfMessage++}^${toSend}$`)
+                        .finally(resolve);
+                }, EmrunCommunication.#BATCHING_DELAY);
+            });
+        }
+
+        return this.#postOutputPromise;
     }
 }
 
