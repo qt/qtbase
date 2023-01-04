@@ -37,6 +37,7 @@
 **
 ****************************************************************************/
 
+#include "androiddeadlockprotector.h"
 #include "androidjniaccessibility.h"
 #include "androidjnimain.h"
 #include "qandroidplatformintegration.h"
@@ -94,6 +95,14 @@ namespace QtAndroidAccessibility
     template <typename Func, typename Ret>
     void runInObjectContext(QObject *context, Func &&func, Ret *retVal)
     {
+        AndroidDeadlockProtector protector;
+        if (!protector.acquire()) {
+            __android_log_print(ANDROID_LOG_WARN, m_qtTag,
+                                "Could not run accessibility call in object context, accessing "
+                                "main thread could lead to deadlock");
+            return;
+        }
+
         if (!QtAndroid::blockEventLoopsWhenSuspended()
             || QGuiApplication::applicationState() != Qt::ApplicationSuspended) {
             QMetaObject::invokeMethod(context, func, Qt::BlockingQueuedConnection, retVal);
