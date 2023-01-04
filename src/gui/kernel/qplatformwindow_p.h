@@ -112,7 +112,7 @@ public:
         auto role = std::any_cast<T *>(&anyRole);
         return role ? *role : nullptr;
     }
-signals:
+Q_SIGNALS:
     void surfaceCreated();
     void surfaceDestroyed();
     void xdgActivationTokenCreated(const QString &token);
