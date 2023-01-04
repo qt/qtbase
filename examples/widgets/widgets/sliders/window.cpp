@@ -116,6 +116,7 @@ void Window::createControls(const QString &title)
 
 void Window::resizeEvent(QResizeEvent *e)
 {
+    Q_UNUSED(e);
     if (width() == 0 || height() == 0)
         return;
 
