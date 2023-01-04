@@ -26,7 +26,7 @@ public:
         const bool res = QPainter::begin(pd);
         setRenderHint(QPainter::SmoothPixmapTransform);
         return res;
-    };
+    }
     inline void drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOption &opt);
     inline void drawControl(QStyle::ControlElement ce, const QStyleOption &opt);
     inline void drawComplexControl(QStyle::ComplexControl cc, const QStyleOptionComplex &opt);
