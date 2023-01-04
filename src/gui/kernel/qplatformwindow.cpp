@@ -727,20 +727,29 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w, const QRect &initialGeo
     should be delivered using QPlatformWindow::deliverUpdateRequest()
     to not get out of sync with the internal state of QWindow.
 
-    The default implementation posts an UpdateRequest event to the
-    window after 5 ms. The additional time is there to give the event
-    loop a bit of idle time to gather system events.
+    The default implementation posts an UpdateRequest event to the window after
+    an interval that is at most 5 ms. If the window's associated screen reports
+    a \l{QPlatformScreen::refreshRate()}{refresh rate} higher than 60 Hz, the
+    interval is scaled down to a valid smaller than 5. The additional time is
+    there to give the event loop a bit of idle time to gather system events.
 
 */
 void QPlatformWindow::requestUpdate()
 {
     Q_D(QPlatformWindow);
 
-    static int updateInterval = []() {
-        bool ok = false;
-        int customUpdateInterval = qEnvironmentVariableIntValue("QT_QPA_UPDATE_IDLE_TIME", &ok);
-        return ok ? customUpdateInterval : 5;
-    }();
+    static bool customUpdateIntervalValid = false;
+    static int customUpdateInterval = qEnvironmentVariableIntValue("QT_QPA_UPDATE_IDLE_TIME",
+                                                                   &customUpdateIntervalValid);
+    int updateInterval = customUpdateInterval;
+    if (!customUpdateIntervalValid) {
+        updateInterval = 5;
+        if (QPlatformScreen *currentScreen = screen()) {
+            const qreal refreshRate = currentScreen->refreshRate();
+            if (refreshRate > 60.0)
+                updateInterval /= refreshRate / 60.0;
+        }
+    }
 
     Q_ASSERT(!d->updateTimer.isActive());
     d->updateTimer.start(updateInterval, Qt::PreciseTimer, window());
