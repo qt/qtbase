@@ -115,7 +115,6 @@ private:
 
     std::unique_ptr<qstdweb::EventCallback> m_pointerLeaveCallback;
     std::unique_ptr<qstdweb::EventCallback> m_pointerEnterCallback;
-    std::unique_ptr<qstdweb::EventCallback> m_pointerMoveCallback;
 
     std::unique_ptr<qstdweb::EventCallback> m_dropCallback;
 
