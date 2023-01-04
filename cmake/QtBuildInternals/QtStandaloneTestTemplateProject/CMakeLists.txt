@@ -15,5 +15,14 @@ else()
     set(absolute_project_path "${QT_STANDALONE_TEST_PATH}")
 endif()
 
+if(NOT IS_DIRECTORY "${absolute_project_path}")
+    get_filename_component(filename "${absolute_project_path}" NAME)
+    get_filename_component(directory "${absolute_project_path}" DIRECTORY)
+
+    if(filename STREQUAL "CMakeLists.txt")
+        set(absolute_project_path "${directory}")
+    endif()
+endif()
+
 # Add the test project path as a subdirectory project.
 add_subdirectory("${absolute_project_path}" "build_dir")
