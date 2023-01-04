@@ -177,12 +177,8 @@ bool QKeySequenceEdit::isClearButtonEnabled() const
     \property QKeySequenceEdit::maximumSequenceLength
     \brief The maximum sequence length.
 
-    The value is clamped to [1-4] inclusive, i.e. the maximum value of the
-    maximum sequence length is 4 driven by QKeySequence. The minimum value is
-    1, which can be useful for single sequence, like a typical shortcut.
-
-    The QKeySequence stored in QKeySequenceEdit is truncated if longer than the
-    value of this property.
+    The maximum number of key sequences a user can enter. The value needs to
+    be between 1 and 4, with 4 being the default.
 
     \since 6.5
 */
