@@ -1,6 +1,7 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
+#include "androiddeadlockprotector.h"
 #include "androidjniaccessibility.h"
 #include "androidjnimain.h"
 #include "qandroidplatformintegration.h"
@@ -61,6 +62,14 @@ namespace QtAndroidAccessibility
     template <typename Func, typename Ret>
     void runInObjectContext(QObject *context, Func &&func, Ret *retVal)
     {
+        AndroidDeadlockProtector protector;
+        if (!protector.acquire()) {
+            __android_log_print(ANDROID_LOG_WARN, m_qtTag,
+                                "Could not run accessibility call in object context, accessing "
+                                "main thread could lead to deadlock");
+            return;
+        }
+
         if (!QtAndroid::blockEventLoopsWhenSuspended()
             || QGuiApplication::applicationState() != Qt::ApplicationSuspended) {
             QMetaObject::invokeMethod(context, func, Qt::BlockingQueuedConnection, retVal);
