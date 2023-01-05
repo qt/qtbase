@@ -131,9 +131,7 @@
     shortcuts for each of its pages, so the user can press e.g. \uicontrol
     Alt+P to step to the \underline{P}rinting page. It is easy to
     overdo this: there are only a few keys, and it's also important
-    to provide keyboard shortcuts for commands. \uicontrol Alt+P is also
-    used for Paste, Play, Print, and Print Here in the \l{Standard
-    Accelerator Keys} list, for example.
+    to provide keyboard shortcuts for commands.
 
     \section2 The User Rotates the Mouse Wheel
 
