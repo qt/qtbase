@@ -11,6 +11,7 @@
 #include "qset.h"
 #include "qtimezone.h"
 #include "qvarlengtharray.h"
+#include "private/qlocale_p.h"
 
 #include "private/qstringiterator_p.h"
 #include "private/qtenvironmentvariables_p.h"
@@ -398,14 +399,10 @@ static QString unquote(QStringView str)
 static inline int countRepeat(QStringView str, int index, int maxCount)
 {
     str = str.sliced(index);
-    if (maxCount > str.size())
-        maxCount = str.size();
+    if (maxCount < str.size())
+        str = str.first(maxCount);
 
-    const QChar ch(str[0]);
-    int count = 1;
-    while (count < maxCount && str[count] == ch)
-        ++count;
-    return count;
+    return qt_repeatCount(str);
 }
 
 static inline void appendSeparator(QStringList *list, QStringView string,
