@@ -169,7 +169,7 @@ void tst_QUrlQuery::constructing()
     other.addQueryItem("a", "b");
     QVERIFY(!other.isEmpty());
     QVERIFY(other.isDetached());
-    QVERIFY(other != empty);
+    QCOMPARE_NE(other, empty);
     QVERIFY(!(other == empty));
 
     // copy-construct
@@ -178,7 +178,7 @@ void tst_QUrlQuery::constructing()
 
     copy.clear();
     QVERIFY(copy.isEmpty());
-    QVERIFY(copy != other);
+    QCOMPARE_NE(copy, other);
 
     // copy-assign
     copy = other;
@@ -269,7 +269,7 @@ void tst_QUrlQuery::addRemove()
         QVERIFY(allItems.contains(qItem("a", "b")));
         QVERIFY(allItems.contains(qItem("c", "d")));
 
-        QVERIFY(query != original);
+        QCOMPARE_NE(query, original);
         QVERIFY(!(query == original));
     }
 
@@ -316,7 +316,7 @@ void tst_QUrlQuery::addRemove()
         QVERIFY(allItems.contains(qItem("a", "b")));
         QVERIFY(allItems.contains(qItem("e", emptyButNotNull)));
 
-        QVERIFY(query != original);
+        QCOMPARE_NE(query, original);
         QVERIFY(!(query == original));
     }
 
