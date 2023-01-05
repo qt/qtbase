@@ -298,8 +298,8 @@ static void populateDarkSystemBasePalette(QPalette &result)
     result.setColor(QPalette::All, QPalette::Link, linkColor);
     result.setColor(QPalette::All, QPalette::LinkVisited, accentDarkest);
     result.setColor(QPalette::All, QPalette::AlternateBase, accentDarkest);
-    result.setColor(QPalette::All, QPalette::ToolTipBase, accentDarkest);
-    result.setColor(QPalette::All, QPalette::ToolTipText, accentLightest);
+    result.setColor(QPalette::All, QPalette::ToolTipBase, buttonColor);
+    result.setColor(QPalette::All, QPalette::ToolTipText, foreground.darker(120));
     result.setColor(QPalette::All, QPalette::PlaceholderText, placeHolderColor(foreground));
 }
 
@@ -335,12 +335,11 @@ static QPalette systemPalette(bool light)
 
 static inline QPalette toolTipPalette(const QPalette &systemPalette, bool light)
 {
-    if (!light)
-        return systemPalette;
-
     QPalette result(systemPalette);
-    const QColor tipBgColor = getSysColor(COLOR_INFOBK);
-    const QColor tipTextColor = getSysColor(COLOR_INFOTEXT);
+    const QColor tipBgColor = light ? getSysColor(COLOR_INFOBK)
+                                    : systemPalette.button().color();
+    const QColor tipTextColor = light ? getSysColor(COLOR_INFOTEXT)
+                                      : systemPalette.buttonText().color().darker(120);
 
     result.setColor(QPalette::All, QPalette::Button, tipBgColor);
     result.setColor(QPalette::All, QPalette::Window, tipBgColor);
