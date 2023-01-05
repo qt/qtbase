@@ -2536,21 +2536,18 @@ static char qToLower(char c)
     The \a format defaults to \c{'g'}. It can be any of the following:
 
     \table
-    \header \li Format \li Meaning
-    \row \li \c 'e' \li format as [-]9.9e[+|-]999
-    \row \li \c 'E' \li format as [-]9.9E[+|-]999
-    \row \li \c 'f' \li format as [-]9.9
-    \row \li \c 'g' \li use \c 'e' or \c 'f' format, whichever is more concise
-    \row \li \c 'G' \li use \c 'E' or \c 'f' format, whichever is more concise
+    \header \li Format \li Meaning \li Meaning of \a precision
+    \row \li \c 'e' \li format as [-]9.9e[+|-]999 \li number of digits \e after the decimal point
+    \row \li \c 'E' \li format as [-]9.9E[+|-]999 \li "
+    \row \li \c 'f' \li format as [-]9.9 \li "
+    \row \li \c 'g' \li use \c 'e' or \c 'f' format, whichever is more concise \li maximum number of significant digits (trailing zeroes are omitted)
+    \row \li \c 'G' \li use \c 'E' or \c 'f' format, whichever is more concise \li "
     \endtable
 
-    For the \c 'e', \c 'E', and \c 'f' formats, the \a precision represents the
-    number of digits \e after the decimal point. For the \c 'g' and \c 'G'
-    formats, the \a precision represents the maximum number of significant
-    digits (trailing zeroes are omitted). The special \a precision value
-    QLocale::FloatingPointShortest selects the shortest representation that,
-    when read as a number, gets back the original floating-point value. Aside
-    from that, any negative \a precision is ignored in favor of the default, 6.
+    The special \a precision value QLocale::FloatingPointShortest selects the
+    shortest representation that, when read as a number, gets back the original floating-point
+    value. Aside from that, any negative \a precision is ignored in favor of the
+    default, 6.
 
     For the \c 'e', \c 'f' and \c 'g' formats, positive infinity is represented
     as "inf", negative infinity as "-inf" and floating-point NaN (not-a-number)
