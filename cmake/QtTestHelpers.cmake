@@ -352,8 +352,6 @@ function(qt_internal_add_test_to_batch batch_name name)
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
         LIBRARIES ${arg_LIBRARIES}
         SOURCES ${arg_SOURCES}
-        DEFINES
-            ${arg_DEFINES}
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         COMPILE_FLAGS ${arg_COMPILE_FLAGS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
@@ -368,7 +366,7 @@ function(qt_internal_add_test_to_batch batch_name name)
         set_source_files_properties(${source}
                                     TARGET_DIRECTORY ${target}
                                     PROPERTIES COMPILE_DEFINITIONS
-                                        "BATCHED_TEST_NAME=\"${name}\"")
+                                        "BATCHED_TEST_NAME=\"${name}\";${arg_DEFINES}" )
     endforeach()
     set(${batch_name} ${target} PARENT_SCOPE)
 
