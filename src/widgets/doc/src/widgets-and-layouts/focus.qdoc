@@ -126,12 +126,17 @@
     explicitly using focus accelerators such as those provided by
     QLabel::setBuddy(), QGroupBox, and QTabBar.
 
-    We advise supporting shortcut focus for all widgets that the user
+    Your application can support shortcut focus for all widgets that the user
     may want to jump to. For example, a tab dialog can have keyboard
     shortcuts for each of its pages, so the user can press e.g. \uicontrol
-    Alt+P to step to the \underline{P}rinting page. It is easy to
-    overdo this: there are only a few keys, and it's also important
-    to provide keyboard shortcuts for commands.
+    Alt+P to step to the \underline{P}rinting page. Keep in mind that it's easy
+    to overdo this, as there are only a few keys, and also important to provide
+    keyboard shortcuts for commands. Refer to the design guidelines for the
+    platform you target, for example Microsoft's \l
+    {https://learn.microsoft.com/en-us/previous-versions/windows/desktop/dnacc/guidelines-for-keyboard-user-interface-design}
+    {guidelines for keyboard user interface design} or Apple's \l
+    {https://developer.apple.com/design/human-interface-guidelines/inputs/focus-and-selection/}
+    {focus and selection} guidelines.
 
     \section2 The User Rotates the Mouse Wheel
 
