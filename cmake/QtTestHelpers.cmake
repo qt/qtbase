@@ -284,6 +284,7 @@ function(qt_internal_add_test_to_batch batch_name name)
 
     # Lazy-init the test batch
     if(NOT TARGET ${target})
+        qt_internal_library_deprecation_level(deprecation_define)
         qt_internal_add_executable(${target}
             ${exceptions_text}
             ${gui_text}
@@ -291,7 +292,7 @@ function(qt_internal_add_test_to_batch batch_name name)
             NO_INSTALL
             OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build_dir"
             SOURCES "${QT_CMAKE_DIR}/qbatchedtestrunner.in.cpp"
-            DEFINES QTEST_BATCH_TESTS
+            DEFINES QTEST_BATCH_TESTS ${deprecation_define}
             INCLUDE_DIRECTORIES ${private_includes}
             LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Core
                     ${QT_CMAKE_EXPORT_NAMESPACE}::Test
@@ -345,8 +346,6 @@ function(qt_internal_add_test_to_batch batch_name name)
     list(PREPEND batched_test_list ${name})
     set_property(GLOBAL PROPERTY _qt_batched_test_list_property ${batched_test_list})
 
-    qt_internal_library_deprecation_level(deprecation_define)
-
     # Merge the current test with the rest of the batch
     qt_internal_extend_target(${target}
         INCLUDE_DIRECTORIES ${arg_INCLUDE_DIRECTORIES}
@@ -355,7 +354,6 @@ function(qt_internal_add_test_to_batch batch_name name)
         SOURCES ${arg_SOURCES}
         DEFINES
             ${arg_DEFINES}
-            ${deprecation_define}
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         COMPILE_FLAGS ${arg_COMPILE_FLAGS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
