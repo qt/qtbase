@@ -982,7 +982,7 @@ public class QtActivityDelegate
     private void handleUiModeChange(int uiMode)
     {
         // QTBUG-108365
-        if (Build.VERSION.SDK_INT >= 29) {
+        if (Build.VERSION.SDK_INT >= 30) {
             // Since 29 version we are using Theme_DeviceDefault_DayNight
             Window window = m_activity.getWindow();
             WindowInsetsController controller = window.getInsetsController();
