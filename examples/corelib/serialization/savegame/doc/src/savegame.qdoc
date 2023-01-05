@@ -158,5 +158,5 @@
     human-readable JSON files, but you also have the option to use a binary
     format if it's required, \e without rewriting any code.
 
-    \sa {JSON Support in Qt}, {CBOR Support in Qt}, {Data Storage}
+    \sa {JSON Support in Qt}, {CBOR Support in Qt}, {Data Input Output}
 */
