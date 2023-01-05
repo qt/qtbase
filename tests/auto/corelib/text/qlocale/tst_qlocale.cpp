@@ -2789,7 +2789,11 @@ void tst_QLocale::dateFormat()
     // And, indeed, one for a negative year:
     old = sys.toString(QDate(-1173, 5, 1), QLocale::LongFormat);
     QVERIFY(!old.isEmpty());
-    QVERIFY2(old.contains(u"-1173"), qPrintable(old + QLatin1String(" for locale ") + sys.name()));
+    qsizetype yearDigitStart = old.indexOf(u"1173");
+    QVERIFY2(yearDigitStart != -1, qPrintable(old + QLatin1String(" for locale ") + sys.name()));
+    QStringView before = QStringView(old).first(yearDigitStart);
+    QVERIFY2(before.endsWith(QChar('-')) || before.endsWith(QChar(0x2212)),
+             qPrintable(old + QLatin1String(" has no minus sign for locale ") + sys.name()));
 }
 
 void tst_QLocale::timeFormat()
