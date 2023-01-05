@@ -1611,10 +1611,7 @@ void QTextLine::setLineWidth(qreal width)
         return;
     }
 
-    if (width > QFIXED_MAX)
-        width = QFIXED_MAX;
-
-    line.width = QFixed::fromReal(width);
+    line.width = QFixed::fromReal(qBound(0.0, width, qreal(QFIXED_MAX)));
     if (line.length
         && line.textWidth <= line.width
         && line.from + line.length == eng->layoutData->string.size())

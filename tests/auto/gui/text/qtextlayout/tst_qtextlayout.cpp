@@ -126,6 +126,7 @@ private slots:
     void softHyphens();
     void min_maximumWidth_data();
     void min_maximumWidth();
+    void negativeLineWidth();
 
 private:
     QFont testFont;
@@ -2713,6 +2714,17 @@ void tst_QTextLayout::min_maximumWidth()
             width -= stepSize;
         }
     }
+}
+
+void tst_QTextLayout::negativeLineWidth()
+{
+    QTextLayout layout;
+    layout.setText("Foo bar");
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    line.setLineWidth(-1);
+    QVERIFY(line.textLength() > 0);
+    layout.endLayout();
 }
 
 QTEST_MAIN(tst_QTextLayout)
