@@ -1,6 +1,14 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+//! [constructor-url-reference]
+QUrl url("example.com");
+//! [constructor-url-reference]
+
+//! [constructor-url]
+QUrl url("https://example.com");
+//! [constructor-url]
+
 //! [0]
 QUrl url("http://www.example.com/List of holidays.xml");
 // url.toEncoded() == "http://www.example.com/List%20of%20holidays.xml"
