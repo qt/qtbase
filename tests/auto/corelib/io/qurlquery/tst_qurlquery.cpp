@@ -172,6 +172,7 @@ void tst_QUrlQuery::constructing()
     QVERIFY(other != empty);
     QVERIFY(!(other == empty));
 
+    // copy-construct
     QUrlQuery copy(other);
     QCOMPARE(copy, other);
 
@@ -179,10 +180,33 @@ void tst_QUrlQuery::constructing()
     QVERIFY(copy.isEmpty());
     QVERIFY(copy != other);
 
+    // copy-assign
     copy = other;
     QVERIFY(!copy.isEmpty());
     QCOMPARE(copy, other);
 
+    // move-construct
+    QUrlQuery moved(std::move(other));
+    QCOMPARE(moved, copy);
+
+    // self move-assign
+    moved = std::move(moved);
+    QCOMPARE(moved, copy);
+
+    // self move-assign of moved-from (Hinnant Criterion)
+    other = std::move(other);
+    // shouldn't crash; here, or further down
+
+    // copy-assign to moved-from object
+    other = copy;
+    QCOMPARE(other, copy);
+    QCOMPARE(other, moved);
+
+    // move-assign
+    moved = std::move(other);
+    QCOMPARE(moved, copy);
+
+    // (move-)assign default-constructed
     copy = QUrlQuery();
     QVERIFY(copy.isEmpty());
 

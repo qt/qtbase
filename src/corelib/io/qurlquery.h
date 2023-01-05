@@ -30,6 +30,7 @@ public:
     }
 
     QUrlQuery(const QUrlQuery &other);
+    QUrlQuery(QUrlQuery &&other) noexcept;
     QUrlQuery &operator=(const QUrlQuery &other);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QUrlQuery)
     ~QUrlQuery();
