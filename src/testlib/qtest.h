@@ -628,7 +628,7 @@ void qRegister##TestObject() \
         QTEST_SET_MAIN_SOURCE_PATH \
         return QTest::qExec(&tc, argc, argv); \
     }; \
-    QTest::qRegisterTestCase(BATCHED_TEST_NAME, runTest); \
+    QTest::qRegisterTestCase(QStringLiteral(BATCHED_TEST_NAME), runTest); \
 } \
 \
 Q_CONSTRUCTOR_FUNCTION(qRegister##TestObject)
