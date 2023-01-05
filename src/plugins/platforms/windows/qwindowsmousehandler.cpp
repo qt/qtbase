@@ -16,7 +16,8 @@
 #include <QtGui/qcursor.h>
 
 #include <QtCore/qdebug.h>
-#include <QtCore/qscopedpointer.h>
+
+#include <memory>
 
 #include <windowsx.h>
 
@@ -577,15 +578,14 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
     const QRect screenGeometry = screen->geometry();
 
     const int winTouchPointCount = int(msg.wParam);
-    QScopedArrayPointer<TOUCHINPUT> winTouchInputs(new TOUCHINPUT[winTouchPointCount]);
-    memset(winTouchInputs.data(), 0, sizeof(TOUCHINPUT) * size_t(winTouchPointCount));
+    const auto winTouchInputs = std::make_unique<TOUCHINPUT[]>(winTouchPointCount);
 
     QTouchPointList touchPoints;
     touchPoints.reserve(winTouchPointCount);
     QEventPoint::States allStates;
 
     GetTouchInputInfo(reinterpret_cast<HTOUCHINPUT>(msg.lParam),
-                      UINT(msg.wParam), winTouchInputs.data(), sizeof(TOUCHINPUT));
+                      UINT(msg.wParam), winTouchInputs.get(), sizeof(TOUCHINPUT));
     for (int i = 0; i < winTouchPointCount; ++i) {
         const TOUCHINPUT &winTouchInput = winTouchInputs[i];
         int id = m_touchInputIDToTouchPointID.value(winTouchInput.dwID, -1);
