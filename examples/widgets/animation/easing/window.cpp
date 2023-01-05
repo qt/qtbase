@@ -42,7 +42,7 @@ Window::Window(QWidget *parent)
     startAnimation();
 }
 
-QEasingCurve createEasingCurve(QEasingCurve::Type curveType)
+static QEasingCurve createEasingCurve(QEasingCurve::Type curveType)
 {
     QEasingCurve curve(curveType);
 
@@ -72,12 +72,12 @@ void Window::createCurveIcons()
     // Skip QEasingCurve::Custom
     for (int i = 0; i < QEasingCurve::NCurveTypes - 1; ++i) {
         painter.fillRect(QRect(QPoint(0, 0), m_iconSize), brush);
-        QEasingCurve curve = createEasingCurve((QEasingCurve::Type) i);
+        QEasingCurve curve = createEasingCurve(static_cast<QEasingCurve::Type>(i));
         painter.setPen(QColor(0, 0, 255, 64));
         qreal xAxis = m_iconSize.height()/1.5;
         qreal yAxis = m_iconSize.width()/3;
-        painter.drawLine(0, xAxis, m_iconSize.width(),  xAxis);
-        painter.drawLine(yAxis, 0, yAxis, m_iconSize.height());
+        painter.drawLine(QLineF(0, xAxis, m_iconSize.width(), xAxis));
+        painter.drawLine(QLineF(yAxis, 0, yAxis, m_iconSize.height()));
 
         qreal curveScale = m_iconSize.height()/2;
 
@@ -85,18 +85,18 @@ void Window::createCurveIcons()
 
         // start point
         painter.setBrush(Qt::red);
-        QPoint start(yAxis, xAxis - curveScale * curve.valueForProgress(0));
+        QPoint start(qRound(yAxis), qRound(xAxis - curveScale * curve.valueForProgress(0)));
         painter.drawRect(start.x() - 1, start.y() - 1, 3, 3);
 
         // end point
         painter.setBrush(Qt::blue);
-        QPoint end(yAxis + curveScale, xAxis - curveScale * curve.valueForProgress(1));
+        QPoint end(qRound(yAxis + curveScale), qRound(xAxis - curveScale * curve.valueForProgress(1)));
         painter.drawRect(end.x() - 1, end.y() - 1, 3, 3);
 
         QPainterPath curvePath;
         curvePath.moveTo(start);
         for (qreal t = 0; t <= 1.0; t+=1.0/curveScale) {
-            QPoint to;
+            QPointF to;
             to.setX(yAxis + curveScale * t);
             to.setY(xAxis - curveScale * curve.valueForProgress(t));
             curvePath.lineTo(to);
@@ -122,7 +122,7 @@ void Window::startAnimation()
 
 void Window::curveChanged(int row)
 {
-    QEasingCurve::Type curveType = (QEasingCurve::Type)row;
+    QEasingCurve::Type curveType = static_cast<QEasingCurve::Type>(row);
     m_anim->setEasingCurve(createEasingCurve(curveType));
     m_anim->setCurrentTime(0);
 
