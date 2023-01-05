@@ -60,6 +60,7 @@ The following table describes the mapping of configure options to CMake argument
 | -R <string>                           | -DQT_EXTRA_RPATHS=path1;path2                     |                                                                 |
 | -rpath                                | negative CMAKE_SKIP_BUILD_RPATH                   |                                                                 |
 |                                       | negative CMAKE_SKIP_INSTALL_RPATH                 |                                                                 |
+|                                       | negative CMAKE_MACOSX_RPATH                       |                                                                 |
 | -reduce-exports                       | -DFEATURE_reduce_exports=ON                       |                                                                 |
 | -reduce-relocations                   | -DFEATURE_reduce_relocations=ON                   |                                                                 |
 | -plugin-manifests                     |                                                   |                                                                 |
