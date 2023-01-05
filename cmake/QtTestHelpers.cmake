@@ -574,6 +574,7 @@ function(qt_internal_add_test name)
         # TODO: Add functionality to specify browser
         list(APPEND extra_test_args "--browser=chrome")
         list(APPEND extra_test_args "--browser_args=\"--password-store=basic\"")
+        list(APPEND extra_test_args "--kill_exit")
 
         # We always want to enable asyncify for tests, as some of them use exec
         # Optimize for size (-Os), since asyncify tends to make the resulting
