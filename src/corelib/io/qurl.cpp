@@ -14,14 +14,16 @@
     \ingroup network
     \ingroup shared
 
-
     It can parse and construct URLs in both encoded and unencoded
     form. QUrl also has support for internationalized domain names
     (IDNs).
 
-    The most common way to use QUrl is to initialize it via the
-    constructor by passing a QString. Otherwise, setUrl() can also
-    be used.
+    The most common way to use QUrl is to initialize it via the constructor by
+    passing a QString containing a full URL. QUrl objects can also be created
+    from a QByteArray containing a full URL using QUrl::fromEncoded(), or
+    heuristically from incomplete URLs using QUrl::fromUserInput(). The URL
+    representation can be obtained from a QUrl using either QUrl::toString() or
+    QUrl::toEncoded().
 
     URLs can be represented in two forms: encoded or unencoded. The
     unencoded representation is suitable for showing to users, but
@@ -1792,7 +1794,20 @@ inline void QUrlPrivate::validate() const
 
 
 /*!
-    Constructs a URL by parsing \a url. QUrl will automatically percent encode
+    Constructs a URL by parsing \a url. Note this constructor expects a proper
+    URL or URL-Reference and will not attempt to guess intent. For example, the
+    following declaration:
+
+    \snippet code/src_corelib_io_qurl.cpp constructor-url-reference
+
+    Will construct a valid URL but it may not be what one expects, as the
+    scheme() part of the input is missing. For a string like the above,
+    applications may want to use fromUserInput(). For this constructor or
+    setUrl(), the following is probably what was intended:
+
+    \snippet code/src_corelib_io_qurl.cpp constructor-url
+
+    QUrl will automatically percent encode
     all characters that are not allowed in a URL and decode the percent-encoded
     sequences that represent an unreserved character (letters, digits, hyphens,
     underscores, dots and tildes). All other characters are left in their
