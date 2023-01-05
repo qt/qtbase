@@ -4519,7 +4519,7 @@ QLocale QLocale::collation() const
     \since 4.8
 
     Returns a native name of the language for the locale. For example
-    "Schwiizertüütsch" for Swiss-German locale.
+    "Schweizer Hochdeutsch" for the Swiss-German locale.
 
     \sa nativeTerritoryName(), languageToString()
 */
