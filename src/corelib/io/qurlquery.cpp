@@ -401,7 +401,11 @@ bool QUrlQuery::operator ==(const QUrlQuery &other) const
         return d->valueDelimiter == other.d->valueDelimiter &&
                 d->pairDelimiter == other.d->pairDelimiter &&
                 d->itemList == other.d->itemList;
-    return false;
+
+    const QUrlQueryPrivate *x = d ? d.data() : other.d.data();
+    return x->valueDelimiter == defaultQueryValueDelimiter() &&
+            x->pairDelimiter == defaultQueryPairDelimiter() &&
+            x->itemList.isEmpty();
 }
 
 /*!

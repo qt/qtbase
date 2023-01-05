@@ -210,12 +210,14 @@ void tst_QUrlQuery::constructing()
 void tst_QUrlQuery::addRemove()
 {
     QUrlQuery query;
+    QCOMPARE(query, query);
 
     {
         // one item
         query.addQueryItem("a", "b");
         QVERIFY(!query.isEmpty());
         QVERIFY(query.hasQueryItem("a"));
+        QCOMPARE_NE(query, QUrlQuery());
         QCOMPARE(query.queryItemValue("a"), QString("b"));
         QCOMPARE(query.allQueryItemValues("a"), QStringList() << "b");
 
@@ -226,6 +228,7 @@ void tst_QUrlQuery::addRemove()
     }
 
     QUrlQuery original = query;
+    QCOMPARE(query, original);
 
     {
         // two items
@@ -298,6 +301,9 @@ void tst_QUrlQuery::addRemove()
         query.removeQueryItem("a");
         query.removeQueryItem("e");
         QVERIFY(query.isEmpty());
+        QVERIFY(query.isDetached());
+        QCOMPARE_NE(query, original);
+        QCOMPARE(query, QUrlQuery());
     }
 }
 
