@@ -203,8 +203,8 @@ void tst_QLocale::ctor()
 
     {
         QLocale l;
-        QVERIFY(l.language() == default_lang);
-        QVERIFY(l.territory() == default_country);
+        QCOMPARE(l.language(), default_lang);
+        QCOMPARE(l.territory(), default_country);
     }
 
 #define TEST_CTOR(req_lang, req_script, req_country, exp_lang, exp_script, exp_country) \
@@ -259,7 +259,42 @@ void tst_QLocale::ctor()
     TEST_CTOR(Chinese, LatinScript, UnitedStates,
               Chinese, SimplifiedHanScript, China);
 
+    // Incompletely specified; find what likely subtags imply:
+    TEST_CTOR(AnyLanguage, AnyScript, Canada,
+              English, LatinScript, Canada);
+
 #undef TEST_CTOR
+
+    // QTBUG-64940: QLocale(Any, Any, land).territory() should normally be land:
+    constexpr QLocale::Territory exceptions[] = {
+        // There are, however, some exceptions:
+        QLocale::AmericanSamoa,
+        QLocale::Antarctica,
+        QLocale::AscensionIsland,
+        QLocale::BouvetIsland,
+        QLocale::CaribbeanNetherlands,
+        QLocale::ClippertonIsland,
+        QLocale::Curacao,
+        QLocale::Europe,
+        QLocale::EuropeanUnion,
+        QLocale::FrenchSouthernTerritories,
+        QLocale::Haiti,
+        QLocale::HeardAndMcDonaldIslands,
+        QLocale::OutlyingOceania,
+        QLocale::Palau,
+        QLocale::Samoa,
+        QLocale::SouthGeorgiaAndSouthSandwichIslands,
+        QLocale::TokelauTerritory,
+        QLocale::TristanDaCunha,
+        QLocale::TuvaluTerritory,
+        QLocale::Vanuatu
+    };
+    for (int i = int(QLocale::AnyTerritory) + 1; i <= int(QLocale::LastTerritory); ++i) {
+        const auto land = QLocale::Territory(i);
+        if (std::find(std::begin(exceptions), std::end(exceptions), land) != std::end(exceptions))
+            continue;
+        QCOMPARE(QLocale(QLocale::AnyLanguage, QLocale::AnyScript, land).territory(), land);
+    }
 }
 
 void tst_QLocale::defaulted_ctor()
