@@ -669,6 +669,11 @@ set(QT_VISIBILITY_AVAILABLE TRUE)")
 set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
             endif()
 
+            # Store whether find_package(Qt6Foo) should succeed if Qt6FooTools is missing.
+            if(QT_ALLOW_MISSING_TOOLS_PACKAGES)
+                string(APPEND qtcore_extra_cmake_code "
+set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
+            endif()
         endif()
 
         configure_file("${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake.in"

@@ -67,7 +67,7 @@ macro(_qt_internal_find_tool_dependencies target target_dep_list)
                 "${_qt_cmake_dir}"
                 ${_qt_additional_packages_prefix_paths}
         )
-        if (NOT ${__qt_${target}_pkg}_FOUND)
+        if (NOT ${__qt_${target}_pkg}_FOUND AND NOT QT_ALLOW_MISSING_TOOLS_PACKAGES)
             set(${CMAKE_FIND_PACKAGE_NAME}_FOUND FALSE)
             set(${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE
 "${CMAKE_FIND_PACKAGE_NAME} could not be found because dependency \
