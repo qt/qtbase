@@ -636,9 +636,13 @@ QString QTimeZonePrivate::isoOffsetFormat(int offsetFromUtc, QTimeZone::NameType
 
 QByteArray QTimeZonePrivate::ianaIdToWindowsId(const QByteArray &id)
 {
+    // We don't have a Latin1/UTF-8 mixed comparator (QTBUG-100234),
+    // so we have to allocate here...
+    const auto idUtf8 = QString::fromUtf8(id);
+
     for (const QZoneData &data : zoneDataTable) {
         for (auto l1 : data.ids()) {
-            if (l1 == QByteArrayView(id))
+            if (l1 == idUtf8)
                 return toWindowsIdLiteral(data.windowsIdKey);
         }
     }
