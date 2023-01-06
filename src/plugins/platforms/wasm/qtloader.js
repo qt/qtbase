@@ -413,6 +413,8 @@ function _QtLoader(config)
             } else {
                 publicAPI.exitText = exception.toString();
                 publicAPI.crashed = true;
+                // Print stack trace to console
+                console.log(exception);
             }
             setStatus("Exited");
         };
