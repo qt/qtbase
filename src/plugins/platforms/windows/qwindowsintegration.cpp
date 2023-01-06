@@ -329,10 +329,12 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
     requested.geometry = window->isTopLevel()
         ? QHighDpi::toNativePixels(window->geometry(), window)
         : QHighDpi::toNativeLocalPosition(window->geometry(), window);
-    // Apply custom margins (see  QWindowsWindow::setCustomMargins())).
-    const QVariant customMarginsV = window->property("_q_windowsCustomMargins");
-    if (customMarginsV.isValid())
-        requested.customMargins = qvariant_cast<QMargins>(customMarginsV);
+    if (!(requested.flags & Qt::FramelessWindowHint)) {
+        // Apply custom margins (see  QWindowsWindow::setCustomMargins())).
+        const QVariant customMarginsV = window->property("_q_windowsCustomMargins");
+        if (customMarginsV.isValid())
+            requested.customMargins = qvariant_cast<QMargins>(customMarginsV);
+    }
 
     QWindowsWindowData obtained =
         QWindowsWindowData::create(window, requested,

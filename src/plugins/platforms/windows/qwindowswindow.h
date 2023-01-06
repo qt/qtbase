@@ -272,7 +272,7 @@ public:
     QWindowsMenuBar *menuBar() const;
     void setMenuBar(QWindowsMenuBar *mb);
 
-    QMargins customMargins() const override { return m_data.customMargins; }
+    QMargins customMargins() const override;
     void setCustomMargins(const QMargins &m) override;
 
     void setStyle(unsigned s) const;
