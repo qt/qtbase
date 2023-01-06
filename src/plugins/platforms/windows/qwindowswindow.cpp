@@ -880,7 +880,8 @@ QWindowsWindowData
                                                                        style, exStyle));
     QWindowsContext::instance()->setWindowCreationContext(context);
 
-    const bool hasFrame = (style & (WS_DLGFRAME | WS_THICKFRAME));
+    const bool hasFrame = (style & (WS_DLGFRAME | WS_THICKFRAME))
+            && !(result.flags & Qt::FramelessWindowHint);
     QMargins invMargins = topLevel && hasFrame && QWindowsGeometryHint::positionIncludesFrame(w)
             ? invisibleMargins(QPoint(context->frameX, context->frameY)) : QMargins();
 
@@ -1398,13 +1399,16 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w, const QScreen *
     requestedGeometry(geometry),
     obtainedPos(geometryIn.topLeft()),
     obtainedSize(geometryIn.size()),
-    margins(QWindowsGeometryHint::frame(w, geometry, style, exStyle)),
-    customMargins(cm)
+    margins(QWindowsGeometryHint::frame(w, geometry, style, exStyle))
 {
     // Geometry of toplevels does not consider window frames.
     // TODO: No concept of WA_wasMoved yet that would indicate a
     // CW_USEDEFAULT unless set. For now, assume that 0,0 means 'default'
     // for toplevels.
+
+    if (!(w->flags() & Qt::FramelessWindowHint))
+        customMargins = cm;
+
     if (geometry.isValid()
         || !qt_window_private(const_cast<QWindow *>(w))->resizeAutomatic) {
         frameX = geometry.x();
@@ -1959,12 +1963,14 @@ void QWindowsWindow::handleDpiScaledSize(WPARAM wParam, LPARAM lParam, LRESULT *
     const qreal scale = QHighDpiScaling::roundScaleFactor(qreal(dpi) / QWindowsScreen::baseDpi) /
                         QHighDpiScaling::roundScaleFactor(qreal(savedDpi()) / QWindowsScreen::baseDpi);
     const QMargins margins = QWindowsGeometryHint::frame(window(), style(), exStyle(), dpi);
-    // We need to update the custom margins to match the current DPI, because
-    // we don't want our users manually hook into this message just to set a
-    // new margin, but here we can't call setCustomMargins() directly, that
-    // function will change the window geometry which conflicts with what we
-    // are currently doing.
-    m_data.customMargins *= scale;
+    if (!(m_data.flags & Qt::FramelessWindowHint)) {
+        // We need to update the custom margins to match the current DPI, because
+        // we don't want our users manually hook into this message just to set a
+        // new margin, but here we can't call setCustomMargins() directly, that
+        // function will change the window geometry which conflicts with what we
+        // are currently doing.
+        m_data.customMargins *= scale;
+    }
     const QSize windowSize = (geometry().size() * scale).grownBy(margins + customMargins());
     SIZE *size = reinterpret_cast<SIZE *>(lParam);
     size->cx = windowSize.width();
@@ -2115,7 +2121,7 @@ void QWindowsWindow::setGeometry(const QRect &rectIn)
         if (m_data.geometry != rect && (isVisible() || QLibraryInfo::isDebugBuild())) {
             const auto warning =
                 msgUnableToSetGeometry(this, rectIn, m_data.geometry,
-                                       m_data.fullFrameMargins, m_data.customMargins);
+                                       fullFrameMargins(), customMargins());
             qWarning("%s: %s", __FUNCTION__, qPrintable(warning));
         }
     } else {
@@ -2385,7 +2391,8 @@ QWindowsWindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt,
     QWindowsWindowData result = m_data;
     result.flags = creationData.flags;
     result.embedded = creationData.embedded;
-    result.hasFrame = (creationData.style & (WS_DLGFRAME | WS_THICKFRAME));
+    result.hasFrame = (creationData.style & (WS_DLGFRAME | WS_THICKFRAME))
+            && !(creationData.flags & Qt::FramelessWindowHint);
     return result;
 }
 
@@ -2671,6 +2678,8 @@ bool QWindowsWindow::handleGeometryChanging(MSG *message) const
 
 void QWindowsWindow::setFullFrameMargins(const QMargins &newMargins)
 {
+    if (m_data.flags & Qt::FramelessWindowHint)
+        return;
     if (m_data.fullFrameMargins != newMargins) {
         qCDebug(lcQpaWindow) << __FUNCTION__ << window() <<  m_data.fullFrameMargins  << "->" << newMargins;
         m_data.fullFrameMargins = newMargins;
@@ -2688,12 +2697,14 @@ void QWindowsWindow::updateFullFrameMargins()
 
 void QWindowsWindow::calculateFullFrameMargins()
 {
+    if (m_data.flags & Qt::FramelessWindowHint)
+        return;
     // Normally obtained from WM_NCCALCSIZE. This calculation only works
     // when no native menu is present.
     const auto systemMargins = testFlag(DisableNonClientScaling)
         ? QWindowsGeometryHint::frameOnPrimaryScreen(window(), m_data.hwnd)
         : frameMargins_sys();
-    setFullFrameMargins(systemMargins + m_data.customMargins);
+    setFullFrameMargins(systemMargins + customMargins());
 }
 
 QMargins QWindowsWindow::frameMargins() const
@@ -2706,6 +2717,8 @@ QMargins QWindowsWindow::frameMargins() const
 
 QMargins QWindowsWindow::fullFrameMargins() const
 {
+    if (m_data.flags & Qt::FramelessWindowHint)
+        return {};
     return m_data.fullFrameMargins;
 }
 
@@ -3192,6 +3205,13 @@ void QWindowsWindow::setMenuBar(QWindowsMenuBar *mb)
     m_menuBar = mb;
 }
 
+QMargins QWindowsWindow::customMargins() const
+{
+    if (m_data.flags & Qt::FramelessWindowHint)
+        return {};
+    return m_data.customMargins;
+}
+
 /*!
     \brief Sets custom margins to be added to the default margins determined by
     the windows style in the handling of the WM_NCCALCSIZE message.
@@ -3204,6 +3224,10 @@ void QWindowsWindow::setMenuBar(QWindowsMenuBar *mb)
 
 void QWindowsWindow::setCustomMargins(const QMargins &newCustomMargins)
 {
+    if (m_data.flags & Qt::FramelessWindowHint) {
+        qCWarning(lcQpaWindow) << "You should not set custom margins for a frameless window.";
+        return;
+    }
     if (newCustomMargins != m_data.customMargins) {
         const QMargins oldCustomMargins = m_data.customMargins;
         m_data.customMargins = newCustomMargins;
