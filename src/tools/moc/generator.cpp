@@ -210,6 +210,22 @@ static bool qualifiedNameEquals(const QByteArray &qualifiedName, const QByteArra
     return qualifiedNameEquals(qualifiedName.mid(index+2), name);
 }
 
+static QByteArray generateQualifiedClassNameIdentifier(const QByteArray &identifier)
+{
+    QByteArray qualifiedClassNameIdentifier = identifier;
+
+    // Remove ':'s in the name, but be sure not to create any illegal
+    // identifiers in the process. (Don't replace with '_', because
+    // that will create problems with things like NS_::_class.)
+    qualifiedClassNameIdentifier.replace("::", "SCOPE");
+
+    // Also, avoid any leading/trailing underscores (we'll concatenate
+    // the generated name with other prefixes/suffixes, and these latter
+    // may already include an underscore, leading to two underscores)
+    qualifiedClassNameIdentifier = "CLASS" + qualifiedClassNameIdentifier + "ENDCLASS";
+    return qualifiedClassNameIdentifier;
+}
+
 void Generator::generateCode()
 {
     bool isQObject = (cdef->classname == "QObject");
@@ -250,8 +266,7 @@ void Generator::generateCode()
             (cdef->hasQObject || !cdef->methodList.isEmpty()
              || !cdef->propertyList.isEmpty() || !cdef->constructorList.isEmpty());
 
-    QByteArray qualifiedClassNameIdentifier = cdef->qualified;
-    qualifiedClassNameIdentifier.replace(':', '_');
+    const QByteArray qualifiedClassNameIdentifier = generateQualifiedClassNameIdentifier(cdef->qualified);
 
     // ensure the qt_meta_stringdata_XXXX_t type is local
     fprintf(out, "namespace {\n");
