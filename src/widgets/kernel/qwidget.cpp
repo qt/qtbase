@@ -515,7 +515,7 @@ void QWidget::setAutoFillBackground(bool enabled)
             button is held down. This can be useful during drag and drop
             operations. If you call \l{setMouseTracking()}{setMouseTracking}(true),
             you get mouse move events even when no buttons are held down.
-            (See also the \l{Drag and Drop} guide.)
+            (See also the \l{Drag and Drop in Qt}{Drag and Drop} guide.)
         \li  keyReleaseEvent() is called whenever a key is released and while it
             is held down (if the key is auto-repeating). In that case, the
             widget will receive a pair of key release and key press event for
@@ -3431,7 +3431,7 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 
     By default, this property is \c false.
 
-    \sa {Drag and Drop}
+    \sa {Drag and Drop in Qt}{Drag and Drop}
 */
 bool QWidget::acceptDrops() const
 {
