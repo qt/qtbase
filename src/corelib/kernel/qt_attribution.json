@@ -3,7 +3,7 @@
     "Name": "QEventDispatcher on macOS",
     "QDocModule": "qtcore",
     "QtUsage": "Used in Qt Core on macOS.",
-    "Path": "qeventdispatcher_cf_p.h",
+    "Files": "qeventdispatcher_cf_p.h",
 
     "Description": "Treat as final version; no upstream known",
     "Description": "Implementation of QAbstractEventDispatcher for macOS.",
