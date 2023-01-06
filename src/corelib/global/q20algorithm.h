@@ -147,7 +147,7 @@ using std::ranges::none_of;
 [[maybe_unused]] inline constexpr struct { // Niebloid
     template <typename InputIterator, typename Sentinel,
               typename Predicate, typename Projection = q20::identity>
-    constexpr bool operator()(InputIterator first, Sentinel last, Predicate pred, Projection proj = {}) const
+    [[maybe_unused]] constexpr bool operator()(InputIterator first, Sentinel last, Predicate pred, Projection proj = {}) const
     {
         while (first != last) {
             if (std::invoke(pred, std::invoke(proj, *first)))
@@ -160,7 +160,7 @@ using std::ranges::none_of;
 [[maybe_unused]] inline constexpr struct { // Niebloid
     template <typename InputIterator, typename Sentinel,
               typename Predicate, typename Projection = q20::identity>
-    constexpr bool operator()(InputIterator first, Sentinel last, Predicate pred, Projection proj = {}) const
+    [[maybe_unused]] constexpr bool operator()(InputIterator first, Sentinel last, Predicate pred, Projection proj = {}) const
     {
         while (first != last) {
             if (!std::invoke(pred, std::invoke(proj, *first)))
@@ -173,7 +173,7 @@ using std::ranges::none_of;
 [[maybe_unused]] inline constexpr struct { // Niebloid
     template <typename InputIterator, typename Sentinel,
               typename Predicate, typename Projection = q20::identity>
-    constexpr bool operator()(InputIterator first, Sentinel last, Predicate pred, Projection proj = {}) const
+    [[maybe_unused]] constexpr bool operator()(InputIterator first, Sentinel last, Predicate pred, Projection proj = {}) const
     {
         while (first != last) {
             if (std::invoke(pred, std::invoke(proj, *first)))
