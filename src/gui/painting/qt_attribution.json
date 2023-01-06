@@ -4,7 +4,7 @@
         "Name": "Anti-aliasing rasterizer from FreeType 2",
         "QDocModule": "qtgui",
         "QtUsage": "Used in Qt GUI.",
-        "Path": "qgrayraster.c",
+        "Files": "qgrayraster.c",
 
         "Description": "FreeType is a freely available software library to render fonts.",
         "Homepage": "http://www.freetype.org",

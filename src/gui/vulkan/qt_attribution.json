@@ -5,7 +5,7 @@
         "QDocModule": "qtgui",
         "Description": "Vulkan XML API Registry.",
         "QtUsage": "Used to dynamically generate the sources for the QVulkan(Device)Functions classes.",
-        "Path": "vk.xml",
+        "Files": "vk.xml",
 
         "Homepage": "https://www.khronos.org/",
         "Version": "1.2.166",

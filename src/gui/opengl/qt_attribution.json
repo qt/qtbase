@@ -5,7 +5,7 @@
         "QDocModule": "qtgui",
         "Description": "OpenGL header generated from the Khronos OpenGL / OpenGL ES XML API Registry.",
         "QtUsage": "Used on Windows and Linux in the OpenGL related headers of Qt GUI.",
-        "Path": "qopenglext.h",
+        "Files": "qopenglext.h",
 
         "Homepage": "https://www.khronos.org/",
         "Version": "Revision 27684",
@@ -20,7 +20,7 @@
         "QDocModule": "qtgui",
         "Description": "OpenGL ES 2 header generated from the Khronos OpenGL / OpenGL ES XML API Registry.",
         "QtUsage": "Used on Windows and Linux in the OpenGL related headers of Qt GUI.",
-        "Path": "qopengles2ext.h",
+        "Files": "qopengles2ext.h",
 
         "Homepage": "https://www.khronos.org/",
         "Version": "Revision 27673",
