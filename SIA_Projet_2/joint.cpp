@@ -93,6 +93,8 @@ Joint* Joint::createFromFile(std::string fileName) {
 			std::getline(inputfile, buf);
 			ltrim(buf);
 
+			//cout << buf << endl;
+
 			//buf.replace(0, string::npos, '	', ' ');
 			if(buf.find("HIERARCHY") != string::npos) {
 				continue;
@@ -124,13 +126,18 @@ Joint* Joint::createFromFile(std::string fileName) {
 				index = buf.find(" ");
 				offZ = stod(buf.substr(0, index));
 				currentJoint = Joint::create(name, offX, offY, offZ, parent);
-				//cout << name << endl;
+				if(parent != NULL){
+					currentJoint->_curTx = parent->_curTx + offX;
+					currentJoint->_curTy = parent->_curTy + offY;
+					currentJoint->_curTz = parent->_curTz + offZ;
+				}else{
+					currentJoint->_curTx = offX;
+					currentJoint->_curTy = offY;
+					currentJoint->_curTz = offZ;
+				}
 				if(isRoot){
 					root = currentJoint;
 				}
-				// else{
-				// 	cout << "-> " << parent->_name << endl;
-				// }
 				parent = currentJoint;
 			}			
 
