@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
+    \keyword Drag and Drop in Qt
     \page dnd.html
     \title Drag and Drop
     \brief An overview of the drag and drop system provided by Qt.
