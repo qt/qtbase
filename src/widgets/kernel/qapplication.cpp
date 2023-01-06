@@ -2476,7 +2476,7 @@ void QApplication::setStartDragTime(int ms)
 
     The default value is 500 ms.
 
-    \sa startDragDistance(), {Drag and Drop}
+    \sa startDragDistance(), {Drag and Drop in Qt}{Drag and Drop}
 */
 
 int QApplication::startDragTime()
@@ -2515,7 +2515,7 @@ void QApplication::setStartDragDistance(int l)
     The default value (if the platform doesn't provide a different default)
     is 10 pixels.
 
-    \sa startDragTime(), QPoint::manhattanLength(), {Drag and Drop}
+    \sa startDragTime(), QPoint::manhattanLength(), {Drag and Drop in Qt}{Drag and Drop}
 */
 
 int QApplication::startDragDistance()
