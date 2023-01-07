@@ -256,7 +256,7 @@ public:
     Q_DECLARE_SQLDRIVER_PRIVATE(QPSQLDriver)
     using QSqlResultPrivate::QSqlResultPrivate;
 
-    QString fieldSerial(int i) const override { return u'$' + QString::number(i + 1); }
+    QString fieldSerial(qsizetype i) const override { return u'$' + QString::number(i + 1); }
     void deallocatePreparedStmt();
 
     std::queue<PGresult*> nextResultSets;

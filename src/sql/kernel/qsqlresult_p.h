@@ -30,11 +30,11 @@ QT_BEGIN_NAMESPACE
     inline Class##Private* drv_d_func()  { return !sqldriver ? nullptr : reinterpret_cast<Class *>(static_cast<QSqlDriver*>(sqldriver))->d_func(); }
 
 struct QHolder {
-    QHolder(const QString &hldr = QString(), int index = -1): holderName(hldr), holderPos(index) { }
+    QHolder(const QString &hldr = QString(), qsizetype index = -1): holderName(hldr), holderPos(index) { }
     bool operator==(const QHolder &h) const { return h.holderPos == holderPos && h.holderName == holderName; }
     bool operator!=(const QHolder &h) const { return h.holderPos != holderPos || h.holderName != holderName; }
     QString holderName;
-    int holderPos;
+    qsizetype holderPos;
 };
 
 class Q_SQL_EXPORT QSqlResultPrivate
@@ -72,7 +72,7 @@ public:
         clearIndex();
     }
 
-    virtual QString fieldSerial(int) const;
+    virtual QString fieldSerial(qsizetype) const;
     QString positionalToNamedBinding(const QString &query) const;
     QString namedToPositionalBinding(const QString &query);
     QString holderAt(int index) const;

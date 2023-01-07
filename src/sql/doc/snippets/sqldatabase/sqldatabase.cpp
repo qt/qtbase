@@ -156,9 +156,9 @@ void QSqlQuery_snippets()
     {
     // examine with named or positional binding
 //! [14]
-    QVariantList list = query.boundValues();
-    for (int i = 0; i < list.size(); ++i)
-        cout << i << ": " << list.at(i).toString().toUtf8().data() << "\n";
+    const QVariantList list = query.boundValues();
+    for (qsizetype i = 0; i < list.size(); ++i)
+        qDebug() << i << ":" << list.at(i).toString();
 //! [14]
     }
 }

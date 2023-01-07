@@ -336,7 +336,7 @@ bool QSqlQuery::isNull(int field) const
 
 bool QSqlQuery::isNull(const QString &name) const
 {
-    int index = d->sqlResult->record().indexOf(name);
+    qsizetype index = d->sqlResult->record().indexOf(name);
     if (index > -1)
         return isNull(index);
     qWarning("QSqlQuery::isNull: unknown field name '%s'", qPrintable(name));
@@ -447,7 +447,7 @@ QVariant QSqlQuery::value(int index) const
 
 QVariant QSqlQuery::value(const QString& name) const
 {
-    int index = d->sqlResult->record().indexOf(name);
+    qsizetype index = d->sqlResult->record().indexOf(name);
     if (index > -1)
         return value(index);
     qWarning("QSqlQuery::value: unknown field name '%s'", qPrintable(name));
@@ -920,7 +920,7 @@ QSqlRecord QSqlQuery::record() const
     QSqlRecord rec = d->sqlResult->record();
 
     if (isValid()) {
-        for (int i = 0; i < rec.count(); ++i)
+        for (qsizetype i = 0; i < rec.count(); ++i)
             rec.setValue(i, value(i));
     }
     return rec;

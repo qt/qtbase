@@ -499,19 +499,18 @@ QStringList QSqlDatabase::drivers()
 
     if (QFactoryLoader *fl = loader()) {
         typedef QMultiMap<int, QString> PluginKeyMap;
-        typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
 
         const PluginKeyMap keyMap = fl->keyMap();
-        const PluginKeyMapConstIterator cend = keyMap.constEnd();
-        for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it)
-            if (!list.contains(it.value()))
-                list << it.value();
+        for (const QString &val : keyMap) {
+            if (!list.contains(val))
+                list << val;
+        }
     }
 
-    DriverDict dict = QSqlDatabasePrivate::driverDict();
-    for (DriverDict::const_iterator i = dict.constBegin(); i != dict.constEnd(); ++i) {
-        if (!list.contains(i.key()))
-            list << i.key();
+    const DriverDict dict = QSqlDatabasePrivate::driverDict();
+    for (const auto &[k, _] : dict.asKeyValueRange()) {
+        if (!list.contains(k))
+            list << k;
     }
 
     return list;
