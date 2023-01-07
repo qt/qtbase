@@ -407,7 +407,7 @@ void tst_QSqlQuery::createTestTables(QSqlDatabase db)
     if (dbType == QSqlDriver::PostgreSQL) {
         QVERIFY_SQL(q, exec(QLatin1String(
                                 "create table %1 (id serial NOT NULL, t_varchar varchar(20), "
-                                "t_char char(20), primary key(id)) WITH OIDS").arg(qtest)));
+                                "t_char char(20), primary key(id))").arg(qtest)));
     } else {
         QVERIFY_SQL(q, exec(QLatin1String(
                                 "create table %1 (id int %2 NOT NULL, t_varchar varchar(20), "
