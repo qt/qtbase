@@ -1354,11 +1354,23 @@ void tst_QDate::fromStringFormat_data()
     QTest::newRow("lateMarch") << QString("9999-03-06") << QString("yyyy-MM-dd") << QDate(9999, 3, 6);
     QTest::newRow("late") << QString("9999-12-31") << QString("yyyy-MM-dd") << QDate(9999, 12, 31);
 
+    QTest::newRow("quoted-dd") << QString("21dd-05-2006") << QString("dd'dd'-MM-yyyy")
+                               << QDate(2006, 5, 21);
+    QTest::newRow("quoted-MM") << QString("21-MM05-2006") << QString("dd-'MM'MM-yyyy")
+                               << QDate(2006, 5, 21);
+    QTest::newRow("quotes-empty") << QString("21-'05-2006") << QString("dd-MM-''yy")
+                                  << QDate(2006, 5, 21);
+
     // Test unicode handling.
     QTest::newRow("Unicode in format string")
         << QString(u8"2020🤣09🤣21") << QString(u8"yyyy🤣MM🤣dd") << QDate(2020, 9, 21);
-    QTest::newRow("Unicode in quoted format string")
+    QTest::newRow("Unicode-in-format-string-quoted-emoji")
         << QString(u8"🤣🤣2020👍09🤣21") << QString(u8"'🤣🤣'yyyy👍MM🤣dd") << QDate(2020, 9, 21);
+    QTest::newRow("Unicode-in-quoted-dd-format-string")
+            << QString(u8"🤣🤣2020👍09🤣21dd") << QString(u8"🤣🤣yyyy👍MM🤣dd'dd'") << QDate(2020, 9, 21);
+    QTest::newRow("Unicode-in-all-formats-quoted-string")
+            << QString(u8"🤣🤣yyyy2020👍MM09🤣21dd") << QString(u8"🤣🤣'yyyy'yyyy👍'MM'MM🤣dd'dd'")
+            << QDate(2020, 9, 21);
 
     // QTBUG-84334
     QTest::newRow("-ve year: front, nosep")
@@ -1441,6 +1453,8 @@ void tst_QDate::fromStringFormat()
     QFETCH(QDate, expected);
 
     QDate dt = QDate::fromString(string, format);
+    QEXPECT_FAIL("quotes-empty", "QTBUG-110669: doubled single-quotes in format mishandled",
+                 Continue);
     QCOMPARE(dt, expected);
 }
 #endif // datetimeparser

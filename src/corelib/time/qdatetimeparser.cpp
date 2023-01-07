@@ -371,9 +371,9 @@ static qsizetype digitCount(QStringView str)
   not escaped and removes the escaping on those that are escaped
 
 */
-
 static QString unquote(QStringView str)
 {
+    // ### Align unquoting format strings for both from/toString(), QTBUG-110669
     const QLatin1Char quote('\'');
     const QLatin1Char slash('\\');
     const QLatin1Char zero('0');
