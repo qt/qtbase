@@ -4,8 +4,8 @@
 // Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QLATIN1STRINGVIEW
-#define QLATIN1STRINGVIEW
+#ifndef QLATIN1STRINGVIEW_H
+#define QLATIN1STRINGVIEW_H
 
 #include <QtCore/qchar.h>
 #include <QtCore/qnamespace.h>
@@ -368,4 +368,4 @@ QT_END_NAMESPACE
 #    undef Q_L1S_VIEW_IS_PRIMARY
 #endif
 
-#endif // QLATIN1STRINGVIEW
+#endif // QLATIN1STRINGVIEW_H
