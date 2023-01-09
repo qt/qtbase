@@ -8,7 +8,10 @@
 #include <QtWidgets/qlayout.h>
 #include <QtWidgets/qmessagebox.h>
 
-QT_REQUIRE_CONFIG(permissions);
+#if !QT_CONFIG(permissions)
+#error "This example requires the permissions feature, which is not enabled on this platform"
+#endif
+
 #include <QtCore/qpermissions.h>
 
 class PermissionWidget : public QWidget
