@@ -1402,11 +1402,19 @@ struct thcell_t {
     unsigned char hilo;      /**< upper/lower vowel/diacritic */
     unsigned char top;       /**< top-level mark */
 };
-typedef int (*th_brk_def) (const unsigned char*, int*, size_t);
+typedef struct _ThBrk ThBrk;
+typedef ThBrk *(*th_brk_new_def)(const char *);
+typedef int (*th_brk_find_breaks_def)(ThBrk *, const unsigned char *, int *, size_t);
 typedef size_t (*th_next_cell_def) (const unsigned char *, size_t, struct thcell_t *, int);
 
+// Global state for th_brk_find_breaks().
+// Note: even if signature for th_brk_find_breaks() suggests otherwise, the
+// state is read-only, and so it is safe to use it from multiple threads after
+// initialization. This is also stated in the libthai documentation.
+Q_CONSTINIT static ThBrk *th_state = nullptr;
+
 /* libthai related function handles */
-Q_CONSTINIT static th_brk_def th_brk = nullptr;
+Q_CONSTINIT static th_brk_find_breaks_def th_brk_find_breaks = nullptr;
 Q_CONSTINIT static th_next_cell_def th_next_cell = nullptr;
 
 static int init_libthai() {
@@ -1416,12 +1424,19 @@ static int init_libthai() {
     if (!initialized.loadAcquire()) {
         const auto locker = std::scoped_lock(mutex);
         if (!initialized.loadAcquire()) {
-            th_brk = reinterpret_cast<th_brk_def>(QLibrary::resolve("thai"_L1, LIBTHAI_MAJOR, "th_brk"));
+            th_brk_find_breaks = reinterpret_cast<th_brk_find_breaks_def>(
+                    QLibrary::resolve("thai"_L1, LIBTHAI_MAJOR, "th_brk_find_breaks"));
             th_next_cell = (th_next_cell_def)QLibrary::resolve("thai"_L1, LIBTHAI_MAJOR, "th_next_cell");
+
+            auto th_brk_new = reinterpret_cast<th_brk_new_def>(
+                    QLibrary::resolve("thai"_L1, LIBTHAI_MAJOR, "th_brk_new"));
+            if (th_brk_new)
+                th_state = th_brk_new(nullptr);
+
             initialized.storeRelease(true);
         }
     }
-    if (th_brk && th_next_cell)
+    if (th_brk_find_breaks && th_next_cell && th_state)
         return 1;
     else
 #endif
@@ -1487,7 +1502,8 @@ static void thaiAssignAttributes(const char16_t *string, qsizetype len, QCharAtt
         attributes[0].wordBreak = true;
         attributes[0].wordStart = true;
         attributes[0].wordEnd = false;
-        numbreaks = th_brk(reinterpret_cast<const unsigned char *>(cstr), break_positions, brp_size);
+        numbreaks = th_brk_find_breaks(th_state, reinterpret_cast<const unsigned char *>(cstr),
+                                       break_positions, brp_size);
         for (i = 0; i < numbreaks; ++i) {
             attributes[break_positions[i]].wordBreak = true;
             attributes[break_positions[i]].wordStart = true;
