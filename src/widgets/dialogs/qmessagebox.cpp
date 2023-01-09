@@ -188,6 +188,8 @@ public:
     int layoutMinimumWidth();
     void retranslateStrings();
 
+    void setVisible(bool visible) override;
+
     static int showOldMessageBox(QWidget *parent, QMessageBox::Icon icon,
                                  const QString &title, const QString &text,
                                  int button0, int button1, int button2);
@@ -1563,21 +1565,21 @@ void QMessageBox::open(QObject *receiver, const char *member)
     QDialog::open();
 }
 
-void QMessageBox::setVisible(bool visible)
+void QMessageBoxPrivate::setVisible(bool visible)
 {
-    if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden) != visible)
+    Q_Q(QMessageBox);
+    if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && q->testAttribute(Qt::WA_WState_Hidden) != visible)
         return;
 
-    Q_D(QMessageBox);
-    if (d->canBeNativeDialog())
-        d->setNativeDialogVisible(visible);
+    if (canBeNativeDialog())
+        setNativeDialogVisible(visible);
 
     // Update WA_DontShowOnScreen based on whether the native dialog was shown,
     // so that QDialog::setVisible(visible) below updates the QWidget state correctly,
     // but skips showing the non-native version.
-    setAttribute(Qt::WA_DontShowOnScreen, d->nativeDialogInUse);
+    q->setAttribute(Qt::WA_DontShowOnScreen, nativeDialogInUse);
 
-    QDialog::setVisible(visible);
+    QDialogPrivate::setVisible(visible);
 }
 
 /*!
