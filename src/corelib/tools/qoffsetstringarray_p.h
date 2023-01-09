@@ -72,9 +72,11 @@ private:
 namespace QtPrivate {
 template <size_t Highest> constexpr auto minifyValue()
 {
-    if constexpr (Highest <= (std::numeric_limits<quint8>::max)()) {
+    constexpr size_t max8 = (std::numeric_limits<quint8>::max)();
+    constexpr size_t max16 = (std::numeric_limits<quint16>::max)();
+    if constexpr (Highest <= max8) {
         return quint8(Highest);
-    } else if constexpr (Highest <= (std::numeric_limits<quint16>::max)()) {
+    } else if constexpr (Highest <= max16) {
         return quint16(Highest);
     } else {
         // int is probably enough for everyone
