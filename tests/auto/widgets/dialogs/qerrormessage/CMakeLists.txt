@@ -12,6 +12,7 @@ qt_internal_add_test(tst_qerrormessage
         tst_qerrormessage.cpp
     LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
 )
 
