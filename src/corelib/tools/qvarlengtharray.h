@@ -180,11 +180,13 @@ public:
         return qHashRange(begin(), end(), seed);
     }
 protected:
+    void growBy(qsizetype prealloc, void *array, qsizetype increment)
+    { reallocate_impl(prealloc, array, size(), (std::max)(size() * 2, increment)); }
     template <typename...Args>
     reference emplace_back_impl(qsizetype prealloc, void *array, Args&&...args)
     {
         if (size() == capacity()) // ie. size() != 0
-            reallocate_impl(prealloc, array, size(), size() << 1);
+            growBy(prealloc, array, 1);
         reference r = *new (end()) T(std::forward<Args>(args)...);
         ++s;
         return r;
@@ -701,7 +703,7 @@ Q_OUTOFLINE_TEMPLATE void QVLABase<T>::append_impl(qsizetype prealloc, void *arr
     const qsizetype asize = size() + increment;
 
     if (asize >= capacity())
-        reallocate_impl(prealloc, array, size(), qMax(size() * 2, asize));
+        growBy(prealloc, array, increment);
 
     if constexpr (QTypeInfo<T>::isComplex)
         std::uninitialized_copy_n(abuf, increment, end());
@@ -842,7 +844,7 @@ Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::emplace_impl(qsizetype prealloc, void *ar
 
     qsizetype offset = qsizetype(before - cbegin());
     if (size() == capacity())
-        reallocate_impl(prealloc, array, size(), size() * 2);
+        growBy(prealloc, array, 1);
     if constexpr (!QTypeInfo<T>::isRelocatable) {
         T *b = begin() + offset;
         T *i = end();
