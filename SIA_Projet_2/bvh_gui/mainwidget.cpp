@@ -183,6 +183,7 @@ void MainWidget::motionEvent(QTimerEvent* e) {
     if (currFrame<nFrames) {
         root->animate(currFrame);
         currFrame++;
+        update();
     }
 
     
