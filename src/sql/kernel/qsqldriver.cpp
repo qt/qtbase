@@ -7,7 +7,6 @@
 #include "qsqlerror.h"
 #include "qsqlfield.h"
 #include "qsqlindex.h"
-#include "private/qobject_p.h"
 #include "private/qsqldriver_p.h"
 
 #include <limits.h>

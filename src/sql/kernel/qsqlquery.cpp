@@ -7,13 +7,15 @@
 
 #include "qatomic.h"
 #include "qdebug.h"
-#include "qelapsedtimer.h"
-#include "qmap.h"
 #include "qsqlrecord.h"
 #include "qsqlresult.h"
 #include "qsqldriver.h"
 #include "qsqldatabase.h"
 #include "private/qsqlnulldriver_p.h"
+
+#ifdef QT_DEBUG_SQL
+#include "qelapsedtimer.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 

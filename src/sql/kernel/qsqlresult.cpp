@@ -3,9 +3,7 @@
 
 #include "qsqlresult.h"
 
-#include "qhash.h"
 #include "qlist.h"
-#include "qpointer.h"
 #include "qsqldriver.h"
 #include "qsqlerror.h"
 #include "qsqlfield.h"
@@ -15,7 +13,6 @@
 #include "qvariant.h"
 #include "qdatetime.h"
 #include "private/qsqldriver_p.h"
-#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 

@@ -6,16 +6,13 @@
 #include "qdebug.h"
 #include "qcoreapplication.h"
 #include "qreadwritelock.h"
-#include "qsqlresult.h"
 #include "qsqldriver.h"
 #include "qsqldriverplugin.h"
 #include "qsqlindex.h"
 #include "private/qfactoryloader_p.h"
 #include "private/qsqlnulldriver_p.h"
-#include "qmutex.h"
 #include "qhash.h"
 #include "qthread.h"
-#include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
 

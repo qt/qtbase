@@ -3,7 +3,6 @@
 
 #include "private/qsqlcachedresult_p.h"
 
-#include <qdatetime.h>
 #include <qvariant.h>
 #include <QtSql/private/qsqldriver_p.h>
 

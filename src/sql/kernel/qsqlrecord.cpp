@@ -8,7 +8,6 @@
 #include "qlist.h"
 #include "qsqlfield.h"
 #include "qstring.h"
-#include "qstringlist.h"
 
 QT_BEGIN_NAMESPACE
 
