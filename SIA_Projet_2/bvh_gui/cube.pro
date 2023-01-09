@@ -1,6 +1,6 @@
 QT += core gui widgets opengl
 
-TARGET = cube
+TARGET = tpose
 TEMPLATE = app
 
 SOURCES += main.cpp
@@ -20,5 +20,5 @@ RESOURCES += \
     textures.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/opengl/cube
+target.path = $$[QT_INSTALL_EXAMPLES]/opengl/tpose
 INSTALLS += target
