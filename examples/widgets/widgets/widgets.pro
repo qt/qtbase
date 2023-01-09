@@ -11,7 +11,6 @@ SUBDIRS       = analogclock \
                 imageviewer \
                 lineedits \
                 movie \
-                mousebuttons \
                 scribble \
                 shapedclock \
                 sliders \
