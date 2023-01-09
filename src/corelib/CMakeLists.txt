@@ -104,6 +104,7 @@ qt_internal_add_module(Core
         global/q20algorithm.h
         global/q20functional.h
         global/q20iterator.h
+        global/q20type_traits.h
         global/q23functional.h
         global/qxpfunctional.h
         global/qxptype_traits.h

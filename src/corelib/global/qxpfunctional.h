@@ -22,7 +22,7 @@
 //
 
 #include <QtCore/q23functional.h>
-#include <type_traits>
+#include <QtCore/q20type_traits.h>
 #include <utility>
 
 QT_BEGIN_NAMESPACE

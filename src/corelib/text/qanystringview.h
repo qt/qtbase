@@ -11,7 +11,7 @@
 #ifdef __cpp_impl_three_way_comparison
 #include <compare>
 #endif
-#include <QtCore/q20functional.h>
+#include <QtCore/q20type_traits.h>
 #include <limits>
 
 class tst_QAnyStringView;

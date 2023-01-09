@@ -1,11 +1,9 @@
 // Copyright (C) 2021 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
-#ifndef Q20FUNCTIONAL_H
-#define Q20FUNCTIONAL_H
+#ifndef Q20TYPE_TRAITS_H
+#define Q20TYPE_TRAITS_H
 
-#include <QtCore/qglobal.h>
-
-#include <functional>
+#include <QtCore/qtconfigmacros.h>
 
 //
 //  W A R N I N G
@@ -23,24 +21,23 @@
 // We mean it.
 //
 
-#include <functional>
+#include <type_traits>
 
 QT_BEGIN_NAMESPACE
 
 namespace q20 {
-// like std::identity
-#ifdef __cpp_lib_ranges
-using std::identity;
+// like std::remove_cvref(_t)
+#ifdef __cpp_lib_remove_cvref
+using std::remove_cvref;
+using std::remove_cvref_t;
 #else
-struct identity
-{
-    struct is_transparent {};
-    template <typename T>
-    constexpr T &&operator()(T&& t) const noexcept { return std::forward<T>(t); }
-};
-#endif // __cpp_lib_ranges
-} // namespace q20
+template <typename T>
+using remove_cvref = std::remove_cv<std::remove_reference_t<T>>;
+template <typename T>
+using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+#endif // __cpp_lib_remove_cvref
+}
 
 QT_END_NAMESPACE
 
-#endif /* Q20FUNCTIONAL_H */
+#endif /* Q20TYPE_TRAITS_H */
