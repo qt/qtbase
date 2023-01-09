@@ -5,15 +5,37 @@
 #include <QDebug>
 #include <QCheckBox>
 
+#include <qpa/qplatformtheme.h>
+#include <private/qguiapplication_p.h>
+
 class tst_QErrorMessage : public QObject
 {
     Q_OBJECT
 
 private slots:
+    void initTestCase_data();
+    void init();
+
     void dontShowAgain();
     void dontShowCategoryAgain();
 
 };
+
+void tst_QErrorMessage::initTestCase_data()
+{
+    QTest::addColumn<bool>("useNativeDialog");
+    QTest::newRow("widget") << false;
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+        if (theme->usePlatformNativeDialog(QPlatformTheme::MessageDialog))
+            QTest::newRow("native") << true;
+    }
+}
+
+void tst_QErrorMessage::init()
+{
+    QFETCH_GLOBAL(bool, useNativeDialog);
+    qApp->setAttribute(Qt::AA_DontUseNativeDialogs, !useNativeDialog);
+}
 
 void tst_QErrorMessage::dontShowAgain()
 {

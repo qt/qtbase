@@ -307,6 +307,8 @@ void QCocoaMessageDialog::hide()
         }
     } else {
         qCDebug(lcQpaDialogs) << "No need to hide already hidden" << m_alert;
+        auto alert = std::exchange(m_alert, nil);
+        [alert autorelease];
     }
 }
 
