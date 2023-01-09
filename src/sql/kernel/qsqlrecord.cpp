@@ -89,6 +89,37 @@ QSqlRecord::QSqlRecord(const QSqlRecord& other)
 }
 
 /*!
+    \fn QSqlRecord::QSqlRecord(QSqlRecord &&other)
+    \since 6.6
+
+    Move-constructs a new QSqlRecord from \a other.
+
+    \note The moved-from object \a other is placed in a partially-formed state,
+    in which the only valid operations are destruction and assignment of a new
+    value.
+*/
+
+/*!
+    \fn QSqlRecord &QSqlRecord::operator=(QSqlRecord &&other)
+    \since 6.6
+
+    Move-assigns \a other to this QSqlRecord instance.
+
+    \note The moved-from object \a other is placed in a partially-formed state,
+    in which the only valid operations are destruction and assignment of a new
+    value.
+*/
+
+/*!
+    \fn void QSqlRecord::swap(QSqlRecord &other)
+    \since 6.6
+
+    Swaps SQL record \a other with this SQL record. This operation is very fast
+    and never fails.
+*/
+
+
+/*!
     Sets the record equal to \a other.
 
     QSqlRecord is \l{implicitly shared}. This means you can make copies
@@ -97,7 +128,7 @@ QSqlRecord::QSqlRecord(const QSqlRecord& other)
 
 QSqlRecord& QSqlRecord::operator=(const QSqlRecord& other)
 {
-    qAtomicAssign(d, other.d);
+    QSqlRecord(other).swap(*this);
     return *this;
 }
 
@@ -107,7 +138,7 @@ QSqlRecord& QSqlRecord::operator=(const QSqlRecord& other)
 
 QSqlRecord::~QSqlRecord()
 {
-    if (!d->ref.deref())
+    if (d && !d->ref.deref())
         delete d;
 }
 

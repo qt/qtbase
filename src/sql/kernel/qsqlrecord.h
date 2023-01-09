@@ -19,8 +19,13 @@ class Q_SQL_EXPORT QSqlRecord
 public:
     QSqlRecord();
     QSqlRecord(const QSqlRecord& other);
+    QSqlRecord(QSqlRecord &&other) noexcept
+        : d{std::exchange(other.d, nullptr)} {}
     QSqlRecord& operator=(const QSqlRecord& other);
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QSqlRecord)
     ~QSqlRecord();
+
+    void swap(QSqlRecord &other) noexcept { qt_ptr_swap(d, other.d); }
 
     bool operator==(const QSqlRecord &other) const;
     inline bool operator!=(const QSqlRecord &other) const { return !operator==(other); }

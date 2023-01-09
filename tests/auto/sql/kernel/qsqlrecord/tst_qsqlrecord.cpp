@@ -40,6 +40,7 @@ private slots:
     void clearValues();
     void clear();
     void append();
+    void moveSemantics();
 
 private:
     std::unique_ptr<QSqlRecord> rec;
@@ -447,6 +448,25 @@ void tst_QSqlRecord::value()
     rec2.append( QSqlField( "string", QMetaType(QMetaType::QString) ) );
     rec2.setValue( "string", "Harry" );
     QCOMPARE(rec2.value("string").toString(), QLatin1String("Harry"));
+}
+
+void tst_QSqlRecord::moveSemantics()
+{
+    QSqlRecord rec, empty;
+    rec.append(QSqlField("string", QMetaType(QMetaType::QString)));
+    rec.setValue("string", "Harry");
+    auto moved = std::move(rec);
+    // `rec` is not partially-formed
+
+    // moving transfers state:
+    QCOMPARE(moved.value("string").toString(), QLatin1String("Harry"));
+
+    // moved-from objects can be assigned-to:
+    rec = empty;
+    QVERIFY(rec.value("string").isNull());
+
+    // moved-from object can be destroyed:
+    moved = std::move(rec);
 }
 
 QTEST_MAIN(tst_QSqlRecord)
