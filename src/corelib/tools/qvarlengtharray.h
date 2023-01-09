@@ -207,8 +207,14 @@ protected:
 
     void append_impl(qsizetype prealloc, void *array, const T *buf, qsizetype n);
     void reallocate_impl(qsizetype prealloc, void *array, qsizetype size, qsizetype alloc, const T *v = nullptr);
-    void resize_impl(qsizetype prealloc, void *array, qsizetype sz, const T *v = nullptr)
-    { reallocate_impl(prealloc, array, sz, qMax(sz, capacity()), v); }
+    void resize_impl(qsizetype prealloc, void *array, qsizetype sz, const T &v)
+    {
+        reallocate_impl(prealloc, array, sz, qMax(sz, capacity()), &v);
+    }
+    void resize_impl(qsizetype prealloc, void *array, qsizetype sz)
+    {
+        reallocate_impl(prealloc, array, sz, qMax(sz, capacity()));
+    }
 
     bool isValidIterator(const const_iterator &i) const
     {
@@ -378,7 +384,7 @@ public:
     template <typename U = T, if_copyable<U> = true>
 #endif
     void resize(qsizetype sz, const T &v)
-    { Base::resize_impl(Prealloc, this->array, sz, &v); }
+    { Base::resize_impl(Prealloc, this->array, sz, v); }
     inline void clear() { resize(0); }
     void squeeze() { reallocate(size(), size()); }
 
