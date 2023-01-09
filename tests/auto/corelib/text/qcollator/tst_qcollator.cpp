@@ -52,7 +52,7 @@ void tst_QCollator::basics()
 
     // posix implementation supports only C and default locale,
     // so update it for Android and INTEGRITY builds
-#if defined(Q_OS_ANDROID) || defined(Q_OS_INTEGRITY)
+#if !QT_CONFIG(icu) && !defined(Q_OS_WIN) && !defined(Q_OS_MACOS)
     c3.setLocale(QLocale());
 #endif
     QCollatorSortKey key1 = c3.sortKey("test");
@@ -87,7 +87,7 @@ void tst_QCollator::moveSemantics()
     // test QCollatorSortKey move assignment
     // posix implementation supports only C and default locale,
     // so update it for Android and INTEGRITY builds
-#if defined(Q_OS_ANDROID) || defined(Q_OS_INTEGRITY)
+#if !QT_CONFIG(icu) && !defined(Q_OS_WIN) && !defined(Q_OS_MACOS)
     c1.setLocale(QLocale());
 #endif
     QCollatorSortKey key1 = c1.sortKey("1");
@@ -264,7 +264,7 @@ void tst_QCollator::compare()
         return compared < 0 ? -1 : compared > 0 ? 1 : 0;
     };
 
-#if defined(Q_OS_ANDROID) || defined(Q_OS_INTEGRITY)
+#if !QT_CONFIG(icu) && !defined(Q_OS_WIN) && !defined(Q_OS_MACOS)
     if (collator.locale() != QLocale::c() && collator.locale() != QLocale::system().collation())
         QSKIP("POSIX implementation of collation only supports C and system collation locales");
 #endif
