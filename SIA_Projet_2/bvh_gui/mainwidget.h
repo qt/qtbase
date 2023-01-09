@@ -14,6 +14,9 @@
 #include <QBasicTimer>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
+#include <QTimer>
+#include <string>
+#include <utility>
 
 class GeometryEngine;
 
@@ -24,13 +27,19 @@ class MainWidget : public QOpenGLWidget, protected QOpenGLFunctions
 public:
     using QOpenGLWidget::QOpenGLWidget;
     ~MainWidget();
+    MainWidget(std::string filename);
 
     Joint *root;
+    int nFrames;
+    int currFrame;
+    double interval;
+    QTimer* motionTimer;
 
 protected:
     void mousePressEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     void timerEvent(QTimerEvent *e) override;
+    void motionEvent(QTimerEvent* e);
 
     void initializeGL() override;
     void resizeGL(int w, int h) override;

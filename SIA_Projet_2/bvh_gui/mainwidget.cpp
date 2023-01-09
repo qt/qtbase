@@ -3,10 +3,21 @@
 
 #include "mainwidget.h"
 #include "../joint.h"
-
 #include <QMouseEvent>
 
+
 #include <cmath>
+
+MainWidget::MainWidget(std::string filename) {
+    std::pair<Joint*, std::pair<int, double>> data = Joint::createFromFile(filename);
+    root = data.first;
+    nFrames = data.second.first;
+    interval = data.second.second;
+    currFrame = 0;
+    motionTimer = new QTimer(this);
+    motionTimer->setInterval(interval);
+    connect(motionTimer, &QTimer::timeout, this, [&](){MainWidget::motionEvent(nullptr);});
+}
 
 MainWidget::~MainWidget()
 {
@@ -166,4 +177,13 @@ void MainWidget::paintGL()
     // Draw cube geometry
     //geometries->drawCubeGeometry(&program);
     geometries->drawLineGeometry(&program);
+}
+
+void MainWidget::motionEvent(QTimerEvent* e) {
+    if (currFrame<nFrames) {
+        root->animate(currFrame);
+        currFrame++;
+    }
+
+    
 }

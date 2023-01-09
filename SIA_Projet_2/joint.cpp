@@ -70,11 +70,13 @@ size_t addValuesToJoints(Joint* jnt, vector<vector<double>> vec, size_t pos) {
 
 }
 
-Joint* Joint::createFromFile(std::string fileName) {
+pair<Joint*, pair<int, double>> Joint::createFromFile(std::string fileName) {
 	Joint* root = NULL;
 	cout << "Loading from " << fileName << endl;
 	vector<vector<double>> motionValues;
 	ifstream inputfile(fileName.data());
+	int nFrames;
+	double frameInterval;
 	if(inputfile.good()) {
 
 		bool isRoot = false;
@@ -168,6 +170,16 @@ Joint* Joint::createFromFile(std::string fileName) {
 				motionPart = true;
 			}
 
+			if (motionPart && buf.find("Frames")!=string::npos) {
+				size_t index = buf.find(' ');
+				nFrames = stoi(buf.substr(index+1,  string::npos));
+			}
+
+			if (motionPart && buf.find("Frame Time")!=string::npos) {
+				size_t index = buf.find(':');
+				frameInterval = stod(buf.substr(index+2,string::npos));
+			}
+
 			string motions = "1234567890-";
 			if (motionPart && motions.find(buf[0])!=string::npos) {
 				// Checking if in motion part and starting by a number
@@ -184,7 +196,9 @@ Joint* Joint::createFromFile(std::string fileName) {
 	motionValues = reverse2DVec(motionValues);
 	addValuesToJoints(root, motionValues, 0);
 	cout << "file loaded" << endl;
-	return root;
+	pair<int, double> p{nFrames, frameInterval};
+	pair<Joint*, pair<int, double>> data{root, p};
+	return data;
 }
 
 void Joint::animate(int iframe) 
@@ -222,4 +236,3 @@ void Joint::nbDofs() {
 	}
 
 }
-

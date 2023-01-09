@@ -4,6 +4,7 @@
 #include <QApplication>
 #include <QLabel>
 #include <QSurfaceFormat>
+#include <utility>
 
 #include "../joint.h"
 
@@ -22,10 +23,9 @@ int main(int argc, char *argv[])
     app.setApplicationName("cube");
     app.setApplicationVersion("0.1");
 #ifndef QT_NO_OPENGL
-    MainWidget widget;
     std::string fileName = "walk1.bvh";
-    widget.root = Joint::createFromFile(fileName);
-    widget.show();
+    MainWidget* widget = new MainWidget(fileName);
+    widget->show();
 #else
     QLabel note("OpenGL Support required");
     note.show();

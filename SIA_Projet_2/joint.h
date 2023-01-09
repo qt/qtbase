@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
+#include <utility>
 
 class AnimCurve {
 public :
@@ -70,7 +71,7 @@ public :
 	}
 
 	// Load from file (.bvh) :	
-	static Joint* createFromFile(std::string fileName);
+	static std::pair<Joint*, std::pair<int, double>> createFromFile(std::string fileName);
 
 	void animate(int iframe=0);
 
