@@ -1,4 +1,5 @@
 // Copyright (C) 2023 The Qt Company Ltd.
+// Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef Q20MEMORY_H
@@ -7,9 +8,9 @@
 #include <QtCore/qtconfigmacros.h>
 
 #include <memory>
-#include <utility>
 
 #include <type_traits>
+#include <utility>
 
 //
 //  W A R N I N G
@@ -43,6 +44,48 @@ T *construct_at(T *ptr, Args && ... args)
                                                                 T(std::forward<Args>(args)...);
 }
 #endif // __cpp_lib_constexpr_dynamic_alloc
+} // namespace q20
+
+
+namespace q20 {
+// like std::to_address
+#ifdef __cpp_lib_to_address
+using std::to_address;
+#else
+// http://eel.is/c++draft/pointer.conversion
+template <typename T>
+constexpr T *to_address(T *p) noexcept {
+    // http://eel.is/c++draft/pointer.conversion#1:
+    //    Mandates: T is not a function type.
+    static_assert(!std::is_function_v<T>, "to_address must not be used on function types");
+    return p;
+}
+
+template <typename Ptr, typename std::enable_if_t<!std::is_pointer_v<Ptr>, bool> = true>
+constexpr auto to_address(const Ptr &ptr) noexcept; // fwd declared
+
+namespace detail {
+    // http://eel.is/c++draft/pointer.conversion#3
+    template <typename Ptr, typename = void>
+    struct to_address_helper {
+        static auto get(const Ptr &ptr) noexcept
+        { return q20::to_address(ptr.operator->()); }
+    };
+    template <typename Ptr>
+    struct to_address_helper<Ptr, std::void_t<
+            decltype(std::pointer_traits<Ptr>::to_address(std::declval<const Ptr&>()))
+        >>
+    {
+        static auto get(const Ptr &ptr) noexcept
+        { return std::pointer_traits<Ptr>::to_address(ptr); }
+    };
+} // namespace detail
+
+template <typename Ptr, typename std::enable_if_t<!std::is_pointer_v<Ptr>, bool>>
+constexpr auto to_address(const Ptr &ptr) noexcept
+{ return detail::to_address_helper<Ptr>::get(ptr); }
+
+#endif // __cpp_lib_to_address
 } // namespace q20
 
 QT_END_NAMESPACE
