@@ -563,11 +563,6 @@ endif()
 _qt_internal_determine_if_host_info_package_needed(__qt_build_requires_host_info_package)
 _qt_internal_find_host_info_package("${__qt_build_requires_host_info_package}")
 
-# Create tool script wrapper if necessary.
-# TODO: Remove once all direct usages of QT_TOOL_COMMAND_WRAPPER_PATH are replaced with function
-# calls.
-_qt_internal_generate_tool_command_wrapper()
-
 # This sets up the poor man's scope finalizer mechanism.
 # For newer CMake versions, we use cmake_language(DEFER CALL) instead.
 if(CMAKE_VERSION VERSION_LESS "3.19.0")
