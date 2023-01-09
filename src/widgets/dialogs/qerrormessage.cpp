@@ -53,6 +53,8 @@ public:
     bool nextPending();
     void retranslateStrings();
 
+    void setVisible(bool) override;
+
 private:
     void initHelper(QPlatformDialogHelper *) override;
     void helperPrepareShow(QPlatformDialogHelper *) override;
@@ -403,21 +405,21 @@ void QErrorMessage::showMessage(const QString &message, const QString &type)
         show();
 }
 
-void QErrorMessage::setVisible(bool visible)
+void QErrorMessagePrivate::setVisible(bool visible)
 {
-    if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden) != visible)
+    Q_Q(QErrorMessage);
+    if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && q->testAttribute(Qt::WA_WState_Hidden) != visible)
         return;
 
-    Q_D(QErrorMessage);
-    if (d->canBeNativeDialog())
-        d->setNativeDialogVisible(visible);
+    if (canBeNativeDialog())
+        setNativeDialogVisible(visible);
 
     // Update WA_DontShowOnScreen based on whether the native dialog was shown,
     // so that QDialog::setVisible(visible) below updates the QWidget state correctly,
     // but skips showing the non-native version.
-    setAttribute(Qt::WA_DontShowOnScreen, d->nativeDialogInUse);
+    q->setAttribute(Qt::WA_DontShowOnScreen, nativeDialogInUse);
 
-    QDialog::setVisible(visible);
+    QDialogPrivate::setVisible(visible);
 }
 
 /*!

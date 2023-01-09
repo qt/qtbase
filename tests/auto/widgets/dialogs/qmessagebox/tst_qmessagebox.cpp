@@ -27,6 +27,7 @@ private slots:
     void init();
 
     void sanityTest();
+    void baseClassSetVisible();
     void defaultButton();
     void escapeButton();
     void clickedButton();
@@ -172,6 +173,15 @@ void tst_QMessageBox::sanityTest()
     ExecCloseHelper closeHelper;
     closeHelper.start(ExecCloseHelper::CloseWindow, &msgBox);
     msgBox.exec();
+}
+
+void tst_QMessageBox::baseClassSetVisible()
+{
+    QMessageBox msgBox;
+    msgBox.setText("Hello World");
+    msgBox.QDialog::setVisible(true);
+    QCOMPARE(msgBox.isVisible(), true);
+    msgBox.close();
 }
 
 void tst_QMessageBox::button()

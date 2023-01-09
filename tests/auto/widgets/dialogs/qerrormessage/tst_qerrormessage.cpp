@@ -18,6 +18,7 @@ private slots:
 
     void dontShowAgain();
     void dontShowCategoryAgain();
+    void baseClassSetVisible();
 
 };
 
@@ -136,6 +137,14 @@ void tst_QErrorMessage::dontShowCategoryAgain()
 
     errorMessageDialog.showMessage(htmlString,"Cat 2");
     QVERIFY(errorMessageDialog.isVisible());
+}
+
+void tst_QErrorMessage::baseClassSetVisible()
+{
+    QErrorMessage errorMessage;
+    errorMessage.QDialog::setVisible(true);
+    QCOMPARE(errorMessage.isVisible(), true);
+    errorMessage.close();
 }
 
 QTEST_MAIN(tst_QErrorMessage)

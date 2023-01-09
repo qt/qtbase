@@ -742,35 +742,41 @@ void QDialog::closeEvent(QCloseEvent *e)
 void QDialog::setVisible(bool visible)
 {
     Q_D(QDialog);
-    if (!testAttribute(Qt::WA_DontShowOnScreen) && d->canBeNativeDialog() && d->setNativeDialogVisible(visible))
+    d->setVisible(visible);
+}
+
+void QDialogPrivate::setVisible(bool visible)
+{
+    Q_Q(QDialog);
+    if (!q->testAttribute(Qt::WA_DontShowOnScreen) && canBeNativeDialog() && setNativeDialogVisible(visible))
         return;
 
     // We should not block windows by the invisible modal dialog
     // if a platform-specific dialog is implemented as an in-process
     // Qt window, because in this case it will also be blocked.
-    const bool dontBlockWindows = testAttribute(Qt::WA_DontShowOnScreen)
-            && d->styleHint(QPlatformDialogHelper::DialogIsQtWindow).toBool();
+    const bool dontBlockWindows = q->testAttribute(Qt::WA_DontShowOnScreen)
+            && styleHint(QPlatformDialogHelper::DialogIsQtWindow).toBool();
     Qt::WindowModality oldModality;
     bool wasModalitySet;
 
     if (dontBlockWindows) {
-        oldModality = windowModality();
-        wasModalitySet = testAttribute(Qt::WA_SetWindowModality);
-        setWindowModality(Qt::NonModal);
+        oldModality = q->windowModality();
+        wasModalitySet = q->testAttribute(Qt::WA_SetWindowModality);
+        q->setWindowModality(Qt::NonModal);
     }
 
     if (visible) {
-        if (testAttribute(Qt::WA_WState_ExplicitShowHide) && !testAttribute(Qt::WA_WState_Hidden))
+        if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && !q->testAttribute(Qt::WA_WState_Hidden))
             return;
 
-        QWidget::setVisible(visible);
+        q->QWidget::setVisible(visible);
 
         // Window activation might be prevented. We can't test isActiveWindow here,
         // as the window will be activated asynchronously by the window manager.
-        if (!testAttribute(Qt::WA_ShowWithoutActivating)) {
-            QWidget *fw = window()->focusWidget();
+        if (!q->testAttribute(Qt::WA_ShowWithoutActivating)) {
+            QWidget *fw = q->window()->focusWidget();
             if (!fw)
-                fw = this;
+                fw = q;
 
             /*
             The following block is to handle a special case, and does not
@@ -783,14 +789,14 @@ void QDialog::setVisible(bool visible)
             have to use [widget*]->setFocus() themselves...
             */
 #if QT_CONFIG(pushbutton)
-            if (d->mainDef && fw->focusPolicy() == Qt::NoFocus) {
+            if (mainDef && fw->focusPolicy() == Qt::NoFocus) {
                 QWidget *first = fw;
                 while ((first = first->nextInFocusChain()) != fw && first->focusPolicy() == Qt::NoFocus)
                     ;
-                if (first != d->mainDef && qobject_cast<QPushButton*>(first))
-                    d->mainDef->setFocus();
+                if (first != mainDef && qobject_cast<QPushButton*>(first))
+                    mainDef->setFocus();
             }
-            if (!d->mainDef && isWindow()) {
+            if (!mainDef && q->isWindow()) {
                 QWidget *w = fw;
                 while ((w = w->nextInFocusChain()) != fw) {
                     QPushButton *pb = qobject_cast<QPushButton *>(w);
@@ -808,37 +814,37 @@ void QDialog::setVisible(bool visible)
         }
 
 #if QT_CONFIG(accessibility)
-        QAccessibleEvent event(this, QAccessible::DialogStart);
+        QAccessibleEvent event(q, QAccessible::DialogStart);
         QAccessible::updateAccessibility(&event);
 #endif
 
     } else {
-        if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden))
+        if (q->testAttribute(Qt::WA_WState_ExplicitShowHide) && q->testAttribute(Qt::WA_WState_Hidden))
             return;
 
 #if QT_CONFIG(accessibility)
-        if (isVisible()) {
-            QAccessibleEvent event(this, QAccessible::DialogEnd);
+        if (q->isVisible()) {
+            QAccessibleEvent event(q, QAccessible::DialogEnd);
             QAccessible::updateAccessibility(&event);
         }
 #endif
 
         // Reimplemented to exit a modal event loop when the dialog is hidden.
-        QWidget::setVisible(visible);
-        if (d->eventLoop)
-            d->eventLoop->exit();
+        q->QWidget::setVisible(visible);
+        if (eventLoop)
+            eventLoop->exit();
     }
 
     if (dontBlockWindows) {
-        setWindowModality(oldModality);
-        setAttribute(Qt::WA_SetWindowModality, wasModalitySet);
+        q->setWindowModality(oldModality);
+        q->setAttribute(Qt::WA_SetWindowModality, wasModalitySet);
     }
 
 #if QT_CONFIG(pushbutton)
     const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
-    if (d->mainDef && isActiveWindow()
+    if (mainDef && q->isActiveWindow()
         && theme->themeHint(QPlatformTheme::DialogSnapToDefaultButton).toBool())
-        QCursor::setPos(d->mainDef->mapToGlobal(d->mainDef->rect().center()));
+        QCursor::setPos(mainDef->mapToGlobal(mainDef->rect().center()));
 #endif
 }
 

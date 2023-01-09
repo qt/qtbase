@@ -28,8 +28,6 @@ public Q_SLOTS:
     void showMessage(const QString &message);
     void showMessage(const QString &message, const QString &type);
 
-    void setVisible(bool) override;
-
 protected:
     void done(int) override;
     void changeEvent(QEvent *e) override;
