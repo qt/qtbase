@@ -1,6 +1,10 @@
 <!DOCTYPE RCC><RCC version="1.0">
     <qresource>
-        <file>images/cross.png</file>
+        <file>icons/cross.png</file>
+        <file>icons/rectangle.png</file>
+        <file>icons/redo.png</file>
+        <file>icons/remove.png</file>
+        <file>icons/triangle.png</file>
+        <file>icons/undo.png</file>
     </qresource>
     </RCC>
-

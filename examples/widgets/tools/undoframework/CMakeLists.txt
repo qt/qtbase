@@ -35,7 +35,12 @@ target_link_libraries(undoframework PRIVATE
 
 # Resources:
 set(undoframework_resource_files
-    "images/cross.png"
+    "icons/cross.png"
+    "icons/rectangle.png"
+    "icons/redo.png"
+    "icons/remove.png"
+    "icons/triangle.png"
+    "icons/undo.png"
 )
 
 qt_add_resources(undoframework "undoframework"
