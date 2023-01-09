@@ -8,7 +8,6 @@ SUBDIRS       = \
                 settingseditor \
                 styleplugin \
                 treemodelcompleter \
-                undo \
                 undoframework
 
 !qtConfig(library) {

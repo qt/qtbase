@@ -32,12 +32,12 @@ private slots:
     void addBox();
     void addTriangle();
     void about();
-    void itemMenuAboutToShow();
-    void itemMenuAboutToHide();
+    void updateActions();
 
 private:
     void createActions();
     void createMenus();
+    void createToolBars();
     void createUndoView();
 
     QAction *deleteAction = nullptr;
