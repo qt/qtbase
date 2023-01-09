@@ -70,6 +70,18 @@ private:
     void countLeading_impl();
 };
 
+template <typename T> struct PrintIfFailed
+{
+    T value;
+    PrintIfFailed(T v) : value(v) {}
+    ~PrintIfFailed()
+    {
+        if (!QTest::currentTestFailed())
+            return;
+        qWarning() << "Original value was" << Qt::hex << Qt::showbase << T(value);
+    }
+};
+
 void tst_QAlgorithms::swap()
 {
     {
@@ -249,22 +261,22 @@ void tst_QAlgorithms::popCount_data_impl(size_t sizeof_T_Int)
         const uint bits = bitsSetInByte(byte);
         const quint64 value = static_cast<quint64>(byte);
         const quint64 input = value << ((i % sizeof_T_Int) * 8U);
-        QTest::addRow("0x%016llx", input) << input << bits;
+        QTest::addRow("%u-bits", i) << input << bits;
     }
 
     // and some random ones:
     if (sizeof_T_Int >= 8) {
         for (size_t i = 0; i < 1000; ++i) {
             const quint64 input = QRandomGenerator::global()->generate64();
-            QTest::addRow("0x%016llx", input) << input << bitsSetInInt64(input);
+            QTest::addRow("random-%zu", i) << input << bitsSetInInt64(input);
         }
     } else if (sizeof_T_Int >= 2) {
         for (size_t i = 0; i < 1000 ; ++i) {
             const quint32 input = QRandomGenerator::global()->generate();
             if (sizeof_T_Int >= 4) {
-                QTest::addRow("0x%08x", input) << quint64(input) << bitsSetInInt(input);
+                QTest::addRow("random-%zu", i) << quint64(input) << bitsSetInInt(input);
             } else {
-                QTest::addRow("0x%04x", quint16(input & 0xFFFF))
+                QTest::addRow("random-%zu", i)
                     << quint64(input & 0xFFFF) << bitsSetInShort(input & 0xFFFF);
             }
         }
@@ -278,7 +290,7 @@ void tst_QAlgorithms::popCount_impl()
     QFETCH(uint, expected);
 
     const T_Int value = static_cast<T_Int>(input);
-
+    PrintIfFailed pf(value);
     QCOMPARE(qPopulationCount(value), expected);
 }
 
@@ -291,12 +303,10 @@ void tst_QAlgorithms::countTrailing_data_impl(size_t sizeof_T_Int)
     addColumn<quint64>("input");
     addColumn<uint>("expected");
 
-    int nibs = sizeof_T_Int*2;
-
-    addRow("0x%0*llx", nibs, Q_UINT64_C(0)) << Q_UINT64_C(0) << uint(sizeof_T_Int*8);
+    addRow("0") << Q_UINT64_C(0) << uint(sizeof_T_Int*8);
     for (uint i = 0; i < sizeof_T_Int*8; ++i) {
         const quint64 input = Q_UINT64_C(1) << i;
-        addRow("0x%0*llx", nibs, input) << input << i;
+        addRow("bit-%u", i) << input << i;
     }
 
     quint64 type_mask;
@@ -312,7 +322,7 @@ void tst_QAlgorithms::countTrailing_data_impl(size_t sizeof_T_Int)
         for (uint j = 0; j < sizeof_T_Int * casesPerOffset; ++j) {
             const quint64 r = QRandomGenerator::global()->generate64();
             const quint64 input = (r&mask) | b;
-            addRow("0x%0*llx", nibs, input) << input << i;
+            addRow("%u-bits-random-%u", i, j) << input << i;
         }
     }
 }
@@ -324,7 +334,7 @@ void tst_QAlgorithms::countTrailing_impl()
     QFETCH(uint, expected);
 
     const T_Int value = static_cast<T_Int>(input);
-
+    PrintIfFailed pf(value);
     QCOMPARE(qCountTrailingZeroBits(value), expected);
 }
 
@@ -334,12 +344,10 @@ void tst_QAlgorithms::countLeading_data_impl(size_t sizeof_T_Int)
     addColumn<quint64>("input");
     addColumn<uint>("expected");
 
-    int nibs = sizeof_T_Int*2;
-
-    addRow("0x%0*llx", nibs, Q_UINT64_C(0)) << Q_UINT64_C(0) << uint(sizeof_T_Int*8);
+    addRow("0") << Q_UINT64_C(0) << uint(sizeof_T_Int*8);
     for (uint i = 0; i < sizeof_T_Int*8; ++i) {
         const quint64 input = Q_UINT64_C(1) << i;
-        addRow("0x%0*llx", nibs, input) << input << uint(sizeof_T_Int*8-i-1);
+        addRow("bit-%u", i) << input << uint(sizeof_T_Int*8-i-1);
     }
 
     // and some random ones:
@@ -349,7 +357,7 @@ void tst_QAlgorithms::countLeading_data_impl(size_t sizeof_T_Int)
         for (uint j = 0; j < sizeof_T_Int * casesPerOffset; ++j) {
             const quint64 r = QRandomGenerator::global()->generate64();
             const quint64 input = (r&mask) | b;
-            addRow("0x%0*llx", nibs, input) << input << uint(sizeof_T_Int*8-i-1);
+            addRow("%u-bits-random-%u", i, j) << input << uint(sizeof_T_Int*8-i-1);
         }
     }
 }
@@ -361,7 +369,7 @@ void tst_QAlgorithms::countLeading_impl()
     QFETCH(uint, expected);
 
     const T_Int value = static_cast<T_Int>(input);
-
+    PrintIfFailed pf(value);
     QCOMPARE(qCountLeadingZeroBits(value), expected);
 }
 
