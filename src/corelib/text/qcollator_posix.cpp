@@ -69,13 +69,19 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     if (d->isC()) {
         std::copy(original.cbegin(), original.cend(), result.begin());
     } else {
-        size_t size = std::wcsxfrm(result.data(), original.constData(), string.size());
-        if (size > size_t(result.size())) {
-            result.resize(size+1);
-            size = std::wcsxfrm(result.data(), original.constData(), string.size());
+        auto availableSizeIncludingNullTerminator = result.size();
+        size_t neededSizeExcludingNullTerminator = std::wcsxfrm(
+                result.data(), original.constData(), availableSizeIncludingNullTerminator);
+        if (neededSizeExcludingNullTerminator > size_t(availableSizeIncludingNullTerminator - 1)) {
+            result.resize(neededSizeExcludingNullTerminator + 1);
+            availableSizeIncludingNullTerminator = result.size();
+            neededSizeExcludingNullTerminator = std::wcsxfrm(result.data(), original.constData(),
+                                                             availableSizeIncludingNullTerminator);
+            Q_ASSERT(neededSizeExcludingNullTerminator
+                     == size_t(availableSizeIncludingNullTerminator - 1));
         }
-        result.resize(size+1);
-        result[size] = 0;
+        result.resize(neededSizeExcludingNullTerminator + 1);
+        result[neededSizeExcludingNullTerminator] = 0;
     }
     return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(result)));
 }
