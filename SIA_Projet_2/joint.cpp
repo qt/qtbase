@@ -4,6 +4,9 @@
 #include <locale>
 //#include <QtGui/QMatrix4x4>
 
+#include <QMatrix4x4>
+#include <cmath>
+
 using namespace std;
 
 static inline void ltrim(std::string &s) {
@@ -128,15 +131,6 @@ pair<Joint*, pair<int, double>> Joint::createFromFile(std::string fileName) {
 				index = buf.find(" ");
 				offZ = stod(buf.substr(0, index));
 				currentJoint = Joint::create(name, offX, offY, offZ, parent);
-				if(parent != NULL){
-					currentJoint->_curTx = parent->_curTx + offX;
-					currentJoint->_curTy = parent->_curTy + offY;
-					currentJoint->_curTz = parent->_curTz + offZ;
-				}else{
-					currentJoint->_curTx = offX;
-					currentJoint->_curTy = offY;
-					currentJoint->_curTz = offZ;
-				}
 				if(isRoot){
 					root = currentJoint;
 				}
@@ -201,6 +195,10 @@ pair<Joint*, pair<int, double>> Joint::createFromFile(std::string fileName) {
 	return data;
 }
 
+float dTR(float angle){
+	return angle * M_PI / 180;
+}
+
 void Joint::animate(int iframe) 
 {
 	// Update dofs :
@@ -214,6 +212,11 @@ void Joint::animate(int iframe)
 		if(!_dofs[idof].name.compare("Yrotation")) _curRy = _dofs[idof]._values[iframe];
 		if(!_dofs[idof].name.compare("Xrotation")) _curRx = _dofs[idof]._values[iframe];
 	}	
+	QMatrix4x4 rotX = new QMatrix4x4(1, 0, 0, 0, 0, cos(dTR(_curRx)), -sin(dTR(_curRx)), 0, 0, sin(dTR(_curRx)), cos(dTR(_curRx)), 0, 0, 0, 0, 1);
+	QMatrix4x4 rotY = new QMatrix4x4(cos(dTR(_curRy)), 0, sin(dTR(_curRy)), 0, 0, 1, 0, 0, -sin(dTR(_curRy)), 0, cos(dTR(_curRy)), 0, 0, 0, 0, 1);
+	QMatrix4x4 rotZ = new QMatrix4x4(cos(dTR(_curRz)), -sin(dTR(_curRz)), 0, 0, sin(dTR(_curRz)), cos(dTR(_curRz)), 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+	QMatrix4x4 translationMatrix = new QMatrix4x4(1, 0, 0, _curTx, 0, 1, 0, _curTy, 0, 0, 1, _curTz, 0, 0, 0, 1);
+	_transform = rotZ * rotY * rotX * translationMatrix;
 	// Animate children :
 	for (unsigned int ichild = 0 ; ichild < _children.size() ; ichild++) {
 		_children[ichild]->animate(iframe);

@@ -111,8 +111,8 @@ void getPos(Joint *jnt, std::vector<VertexData> *vec){
     if(jnt->_children.empty() == false){
         for(Joint *child : jnt->_children){
             getPos(child, vec);
-            vec->push_back({QVector3D(jnt->_curTx/divider, jnt->_curTy/divider,  jnt->_curTz/divider), QVector2D(0.0f, 0.0f)});
-            vec->push_back({QVector3D(child->_curTx/divider, child->_curTy/divider,  child->_curTz/divider), QVector2D(0.0f, 0.0f)});
+            vec->push_back({QVector3D(jnt->_offX/divider, jnt->_offY/divider,  jnt->_offZ/divider), QVector2D(0.0f, 0.0f)});
+            vec->push_back({QVector3D(child->_offX/divider, child->_offY/divider,  child->_offZ/divider), QVector2D(0.0f, 0.0f)});
         }
     }
 }

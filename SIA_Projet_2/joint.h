@@ -8,6 +8,8 @@
 #include <fstream>
 #include <utility>
 
+#include <QMatrix4x4>
+
 class AnimCurve {
 public :
 	AnimCurve() {};
@@ -28,6 +30,7 @@ public :
 	double _offX;						// initial offset in X
 	double _offY;						// initial offset in Y
 	double _offZ;						// initial offset in Z
+	QMatrix4x4 _transform;
 	std::vector<AnimCurve> _dofs;		// keyframes : _animCurves[i][f] = i-th dof at frame f;
 	double _curTx;						// current value of translation on X
 	double _curTy;						// current value of translation on Y
@@ -54,9 +57,16 @@ public :
 	static Joint* create(std::string name, double offX, double offY, double offZ, Joint* parent) {
 		Joint* child = new Joint();
 		child->_name = name;
-		child->_offX = offX;
-		child->_offY = offY;
-		child->_offZ = offZ;
+		if(parent != NULL){
+			child->_offX = parent->_offX + offX;
+			child->_offY = parent->_offY + offY;
+			child->_offZ = parent->_offZ + offZ;
+		}else{
+			child->_offX = offX;
+			child->_offY = offY;
+			child->_offZ = offZ;
+		}
+		child->_transform = new QMatrix4x4();
 		child->_curTx = 0;
 		child->_curTy = 0;
 		child->_curTz = 0;
