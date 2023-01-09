@@ -117,6 +117,12 @@ public:
     static constexpr bool isIntegral = false;
 };
 
+// QTypeInfo for std::pair:
+//   std::pair is spec'ed to be struct { T1 first; T2 second; }, so, unlike tuple<>,
+//   we _can_ specialize QTypeInfo for pair<>:
+template <class T1, class T2>
+class QTypeInfo<std::pair<T1, T2>> : public QTypeInfoMerger<std::pair<T1, T2>, T1, T2> {};
+
 #define Q_DECLARE_MOVABLE_CONTAINER(CONTAINER) \
 template <typename ...T> \
 class QTypeInfo<CONTAINER<T...>> \
