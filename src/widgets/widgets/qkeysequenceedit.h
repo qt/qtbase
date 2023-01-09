@@ -33,7 +33,7 @@ public:
     void setClearButtonEnabled(bool enable);
     bool isClearButtonEnabled() const;
 
-    void setFinishingKeyCombinations(const QList<QKeyCombination> &inishingKeyCombinations);
+    void setFinishingKeyCombinations(const QList<QKeyCombination> &finishingKeyCombinations);
     QList<QKeyCombination> finishingKeyCombinations() const;
 
 public Q_SLOTS:
