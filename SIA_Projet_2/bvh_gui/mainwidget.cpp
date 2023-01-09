@@ -15,8 +15,10 @@ MainWidget::MainWidget(std::string filename) {
     interval = data.second.second;
     currFrame = 0;
     motionTimer = new QTimer(this);
-    motionTimer->setInterval(interval);
+    //std::cout<<"INTERVALLE : "<<interval<<std::endl;
+    motionTimer->setInterval(1000);
     connect(motionTimer, &QTimer::timeout, this, [&](){MainWidget::motionEvent(nullptr);});
+    motionTimer->start();
 }
 
 MainWidget::~MainWidget()
@@ -181,10 +183,10 @@ void MainWidget::paintGL()
 
 void MainWidget::motionEvent(QTimerEvent* e) {
     if (currFrame<nFrames) {
+        std::cout << currFrame << std::endl;
         root->animate(currFrame);
+        geometries->updatePos(root);
         currFrame++;
         update();
-    }
-
-    
+    } 
 }

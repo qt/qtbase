@@ -30,7 +30,7 @@ public :
 	double _offX;						// initial offset in X
 	double _offY;						// initial offset in Y
 	double _offZ;						// initial offset in Z
-	QMatrix4x4 _transform;
+	QMatrix4x4 *_transform;
 	std::vector<AnimCurve> _dofs;		// keyframes : _animCurves[i][f] = i-th dof at frame f;
 	double _curTx;						// current value of translation on X
 	double _curTy;						// current value of translation on Y
@@ -67,6 +67,7 @@ public :
 			child->_offZ = offZ;
 		}
 		child->_transform = new QMatrix4x4();
+		child->_transform->setToIdentity();
 		child->_curTx = 0;
 		child->_curTy = 0;
 		child->_curTz = 0;

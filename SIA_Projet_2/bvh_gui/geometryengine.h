@@ -18,6 +18,7 @@ public:
 
     void drawCubeGeometry(QOpenGLShaderProgram *program);
     void drawLineGeometry(QOpenGLShaderProgram *program);
+    void updatePos(Joint *root);
 
     int lenPts;
 
