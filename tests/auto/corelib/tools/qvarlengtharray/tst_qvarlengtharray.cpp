@@ -92,6 +92,8 @@ private slots:
     void remove();
     void erase();
 
+    // special cases:
+    void copesWithCopyabilityOfMoveOnlyVector(); // QTBUG-109745
 private:
     template <typename T>
     void defaultConstructor();
@@ -1638,6 +1640,27 @@ void tst_QVarLengthArray::erase()
     it = arr.erase(arr.cend() - 1);
     QCOMPARE(it, arr.cend());
     QCOMPARE(arr, QVarLengthArray<QString>({ "val0" }));
+}
+
+void tst_QVarLengthArray::copesWithCopyabilityOfMoveOnlyVector()
+{
+    // std::vector<move-only-type> is_copyable
+    // (https://quuxplusone.github.io/blog/2020/02/05/vector-is-copyable-except-when-its-not/)
+
+    QVarLengthArray<std::vector<std::unique_ptr<int>>, 2> vla;
+    vla.emplace_back(42);
+    vla.emplace_back(43);
+    vla.emplace_back(44); // goes to the heap
+    QCOMPARE_EQ(vla.size(), 3);
+    QCOMPARE_EQ(vla.front().size(), 42U);
+    QCOMPARE_EQ(vla.front().front(), nullptr);
+    QCOMPARE_EQ(vla.back().size(), 44U);
+
+    auto moved = std::move(vla);
+    QCOMPARE_EQ(moved.size(), 3);
+    QCOMPARE_EQ(moved.front().size(), 42U);
+    QCOMPARE_EQ(moved.front().front(), nullptr);
+    QCOMPARE_EQ(moved.back().size(), 44U);
 }
 
 QTEST_APPLESS_MAIN(tst_QVarLengthArray)

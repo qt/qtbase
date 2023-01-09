@@ -208,14 +208,27 @@ protected:
     }
 
     void append_impl(qsizetype prealloc, void *array, const T *buf, qsizetype n);
-    void reallocate_impl(qsizetype prealloc, void *array, qsizetype size, qsizetype alloc, const T *v = nullptr);
+    void reallocate_impl(qsizetype prealloc, void *array, qsizetype size, qsizetype alloc);
     void resize_impl(qsizetype prealloc, void *array, qsizetype sz, const T &v)
     {
-        reallocate_impl(prealloc, array, sz, qMax(sz, capacity()), &v);
+        reallocate_impl(prealloc, array, sz, qMax(sz, capacity()));
+        while (size() < sz) {
+            new (data() + size()) T(v);
+            ++s;
+        }
     }
     void resize_impl(qsizetype prealloc, void *array, qsizetype sz)
     {
         reallocate_impl(prealloc, array, sz, qMax(sz, capacity()));
+        if constexpr (QTypeInfo<T>::isComplex) {
+            // call default constructor for new objects (which can throw)
+            while (size() < sz) {
+                new (data() + size()) T;
+                ++s;
+            }
+        } else {
+            s = sz;
+        }
     }
 
     bool isValidIterator(const const_iterator &i) const
@@ -714,7 +727,7 @@ Q_OUTOFLINE_TEMPLATE void QVLABase<T>::append_impl(qsizetype prealloc, void *arr
 }
 
 template <class T>
-Q_OUTOFLINE_TEMPLATE void QVLABase<T>::reallocate_impl(qsizetype prealloc, void *array, qsizetype asize, qsizetype aalloc, const T *v)
+Q_OUTOFLINE_TEMPLATE void QVLABase<T>::reallocate_impl(qsizetype prealloc, void *array, qsizetype asize, qsizetype aalloc)
 {
     Q_ASSERT(aalloc >= asize);
     Q_ASSERT(data());
@@ -755,26 +768,6 @@ Q_OUTOFLINE_TEMPLATE void QVLABase<T>::reallocate_impl(qsizetype prealloc, void 
 
     if (oldPtr != reinterpret_cast<T *>(array) && oldPtr != data())
         free(oldPtr);
-
-    if (v) {
-        if constexpr (std::is_copy_constructible_v<T>) {
-            while (size() < asize) {
-                new (data() + size()) T(*v);
-                ++s;
-            }
-        } else {
-            Q_UNREACHABLE();
-        }
-    } else if constexpr (QTypeInfo<T>::isComplex) {
-        // call default constructor for new objects (which can throw)
-        while (size() < asize) {
-            new (data() + size()) T;
-            ++s;
-        }
-    } else {
-        s = asize;
-    }
-
 }
 
 template <class T>
