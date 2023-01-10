@@ -821,7 +821,12 @@ void QVulkanInstance::presentQueued(QWindow *window)
 /*!
     \typedef QVulkanInstance::DebugFilter
 
-    Typedef for debug filtering callback functions.
+    Typedef for debug filtering callback functions, with the following signature:
+
+    \code
+    bool myDebugFilter(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object,
+                       size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage)
+    \endcode
 
     Returning \c true suppresses the printing of the message.
 
@@ -878,7 +883,13 @@ void QVulkanInstance::removeDebugOutputFilter(DebugFilter filter)
 /*!
     \typedef QVulkanInstance::DebugUtilsFilter
 
-    Typedef for debug filtering callback functions. The \c callbackData
+    Typedef for debug filtering callback functions, with the following signature:
+
+    \code
+    bool myDebugUtilsFilter(DebugMessageSeverityFlags severity, DebugMessageTypeFlags type, const void *callbackData);
+    \endcode
+
+    The \c callbackData
     argument is a pointer to the VkDebugUtilsMessengerCallbackDataEXT
     structure.
 
