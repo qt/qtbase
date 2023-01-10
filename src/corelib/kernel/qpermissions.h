@@ -93,13 +93,19 @@ class QLocationPermission
 {
     QT_PERMISSION(QLocationPermission)
 public:
-    enum Accuracy { Approximate, Precise };
+    enum Accuracy : quint8 {
+        Approximate,
+        Precise,
+    };
     Q_ENUM(Accuracy)
 
     Q_CORE_EXPORT void setAccuracy(Accuracy accuracy);
     Q_CORE_EXPORT Accuracy accuracy() const;
 
-    enum Availability { WhenInUse, Always };
+    enum Availability : quint8 {
+        WhenInUse,
+        Always,
+    };
     Q_ENUM(Availability)
 
     Q_CORE_EXPORT void setAvailability(Availability availability);
