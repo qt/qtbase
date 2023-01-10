@@ -1274,6 +1274,11 @@ QColor QAccessibleInterface::backgroundColor() const
 */
 
 /*!
+    \fn QAccessibleSelectionInterface *QAccessibleInterface::selectionInterface()
+    \since 6.5
+*/
+
+/*!
     \class QAccessibleEvent
     \ingroup accessibility
     \inmodule QtGui
