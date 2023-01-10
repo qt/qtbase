@@ -3,7 +3,7 @@
 
 /*!
     \example itemviews/addressbook
-    \title Address Book Example
+    \title Address Book
     \ingroup examples-itemviews
     \brief The address book example shows how to use proxy models to display
     different views onto data from a single model.
@@ -24,7 +24,7 @@
     \c AddDialog. The \c MainWindow class uses \c AddressWidget as
     its central widget and provides \uicontrol File and \uicontrol Tools menus.
 
-    \image addressbook-classes.png Diagram for Address Book Example
+    \image addressbook-classes.png Diagram for Address Book example
 
     The \c AddressWidget class is a QTabWidget subclass that is used
     to manipulate the 10 tabs displayed in the example: the 9
