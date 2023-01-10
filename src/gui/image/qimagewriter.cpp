@@ -396,13 +396,13 @@ QByteArray QImageWriter::format() const
 */
 void QImageWriter::setDevice(QIODevice *device)
 {
+    delete d->handler;
+    d->handler = nullptr;
     if (d->device && d->deleteDevice)
         delete d->device;
 
     d->device = device;
     d->deleteDevice = false;
-    delete d->handler;
-    d->handler = nullptr;
 }
 
 /*!
