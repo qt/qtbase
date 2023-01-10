@@ -216,12 +216,12 @@ void Joint::animate(int iframe)
 		if(!_dofs[idof].name.compare("Xrotation\r")) _curRx = _dofs[idof]._values[iframe];
 	}	
 	//std::cout<<_curTx<<" "<<_curTy<<" "<<_curTz<<" "<<_curRz<<" "<<_curRy<<" "<<_curRx<<std::endl;
-	QMatrix4x4 *rotX = new QMatrix4x4(1, 0, 0, 0, 0, cos(dTR(_curRx)), -sin(dTR(_curRx)), 0, 0, sin(dTR(_curRx)), cos(dTR(_curRx)), 0, 0, 0, 0, 1);
-	QMatrix4x4 *rotY = new QMatrix4x4(cos(dTR(_curRy)), 0, sin(dTR(_curRy)), 0, 0, 1, 0, 0, -sin(dTR(_curRy)), 0, cos(dTR(_curRy)), 0, 0, 0, 0, 1);
-	QMatrix4x4 *rotZ = new QMatrix4x4(cos(dTR(_curRz)), -sin(dTR(_curRz)), 0, 0, sin(dTR(_curRz)), cos(dTR(_curRz)), 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-	QVector4D *trans = new QVector4D(_curTx, _curTy, _curTz, 1);
-	*_transform = *rotZ * *rotY * *rotX;
-	_transform->setColumn(3, *trans);
+	QMatrix4x4 rotX(1, 0, 0, 0, 0, cos(dTR(_curRx)), -sin(dTR(_curRx)), 0, 0, sin(dTR(_curRx)), cos(dTR(_curRx)), 0, 0, 0, 0, 1);
+	QMatrix4x4 rotY(cos(dTR(_curRy)), 0, sin(dTR(_curRy)), 0, 0, 1, 0, 0, -sin(dTR(_curRy)), 0, cos(dTR(_curRy)), 0, 0, 0, 0, 1);
+	QMatrix4x4 rotZ(cos(dTR(_curRz)), -sin(dTR(_curRz)), 0, 0, sin(dTR(_curRz)), cos(dTR(_curRz)), 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+	QVector4D trans(_curTx, _curTy, _curTz, 1);
+	*_transform = rotZ * rotY * rotX;
+	_transform->setColumn(3, trans);
 	
 	for(int i = 0 ; i < 4 ; i++){
 		//qDebug()<<_transform->row(i).x()<<_transform->row(i).y()<<_transform->row(i).z()<<_transform->row(i).w();
