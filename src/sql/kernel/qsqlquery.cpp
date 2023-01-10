@@ -1119,7 +1119,7 @@ bool QSqlQuery::execBatch(BatchExecutionMode mode)
   the result into.
 
   To bind a NULL value, use a null QVariant; for example, use
-  \c {QVariant(QMetaType::QString)} if you are binding a string.
+  \c {QVariant(QMetaType::fromType<QString>())} if you are binding a string.
 
   \sa addBindValue(), prepare(), exec(), boundValue(), boundValues()
 */
@@ -1149,7 +1149,7 @@ void QSqlQuery::bindValue(int pos, const QVariant& val, QSql::ParamType paramTyp
   overwritten with data from the database after the exec() call.
 
   To bind a NULL value, use a null QVariant; for example, use \c
-  {QVariant(QMetaType::QString)} if you are binding a string.
+  {QVariant(QMetaType::fromType<QString>())} if you are binding a string.
 
   \sa bindValue(), prepare(), exec(), boundValue(), boundValues()
 */
