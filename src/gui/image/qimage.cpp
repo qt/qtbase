@@ -1912,7 +1912,7 @@ void QImage::fill(const QColor &color)
         if (!hasAlphaChannel())
             a = 1.0f;
         if (depth() == 64) {
-            QRgbaFloat16 c16{r, g, b, a};
+            QRgbaFloat16 c16{qfloat16(r), qfloat16(g), qfloat16(b), qfloat16(a)};
             if (d->format == Format_RGBA16FPx4_Premultiplied)
                 c16 = c16.premultiplied();
             qt_rectfill<QRgbaFloat16>(reinterpret_cast<QRgbaFloat16 *>(d->data), c16,
@@ -1998,11 +1998,11 @@ void QImage::invertPixels(InvertMode mode)
         qfloat16 *p = reinterpret_cast<qfloat16 *>(d->data);
         qfloat16 *end = reinterpret_cast<qfloat16 *>(d->data + d->nbytes);
         while (p < end) {
-            p[0] = 1.0f - p[0];
-            p[1] = 1.0f - p[1];
-            p[2] = 1.0f - p[2];
+            p[0] = qfloat16(1) - p[0];
+            p[1] = qfloat16(1) - p[1];
+            p[2] = qfloat16(1) - p[2];
             if (mode == InvertRgba)
-                p[3] = 1.0f - p[3];
+                p[3] = qfloat16(1) - p[3];
             p += 4;
         }
     } else if (format() >= QImage::Format_RGBX32FPx4 && format() <= QImage::Format_RGBA32FPx4_Premultiplied) {
@@ -2805,7 +2805,7 @@ void QImage::setPixelColor(int x, int y, const QColor &color)
         color.getRgbF(&r, &g, &b, &a);
         if (d->format == Format_RGBX16FPx4)
             a = 1.0f;
-        QRgbaFloat16 c16f{r, g, b, a};
+        QRgbaFloat16 c16f{qfloat16(r), qfloat16(g), qfloat16(b), qfloat16(a)};
         if (d->format == Format_RGBA16FPx4_Premultiplied)
             c16f = c16f.premultiplied();
         ((QRgbaFloat16 *)s)[x] = c16f;
