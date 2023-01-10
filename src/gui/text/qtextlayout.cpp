@@ -283,6 +283,7 @@ Qt::LayoutDirection QTextInlineObject::textDirection() const
 
 /*!
     \enum QTextLayout::GlyphRunRetrievalFlag
+    \since 6.5
 
     GlyphRunRetrievalFlag specifies flags passed to the glyphRuns() functions to determine
     which properties of the layout are returned in the QGlyphRun objects. Since each property
