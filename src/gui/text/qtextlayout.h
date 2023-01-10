@@ -69,7 +69,7 @@ class QTextOption;
 class Q_GUI_EXPORT QTextLayout
 {
 public:
-    enum GlyphRunRetrievalFlag {
+    enum GlyphRunRetrievalFlag : quint16 {
         RetrieveGlyphIndexes    = 0x1,
         RetrieveGlyphPositions  = 0x2,
         RetrieveStringIndexes   = 0x4,
