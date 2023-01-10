@@ -114,7 +114,7 @@ public:
     void setAvailability(Availability availability);
     Availability availability() const;
 };
-Q_DECLARE_SHARED(QLocationPermission);
+Q_DECLARE_SHARED(QLocationPermission)
 
 class QCalendarPermissionPrivate;
 class Q_CORE_EXPORT QCalendarPermission
@@ -124,7 +124,7 @@ public:
     void setReadOnly(bool enable);
     bool isReadOnly() const;
 };
-Q_DECLARE_SHARED(QCalendarPermission);
+Q_DECLARE_SHARED(QCalendarPermission)
 
 class QContactsPermissionPrivate;
 class Q_CORE_EXPORT QContactsPermission
@@ -134,7 +134,7 @@ public:
     void setReadOnly(bool enable);
     bool isReadOnly() const;
 };
-Q_DECLARE_SHARED(QContactsPermission);
+Q_DECLARE_SHARED(QContactsPermission)
 
 #define Q_DECLARE_MINIMAL_PERMISSION(ClassName) \
     class ClassName##Private; \
@@ -142,11 +142,11 @@ Q_DECLARE_SHARED(QContactsPermission);
     { \
         QT_PERMISSION(ClassName) \
     }; \
-    Q_DECLARE_SHARED(ClassName);
+    Q_DECLARE_SHARED(ClassName)
 
-Q_DECLARE_MINIMAL_PERMISSION(QCameraPermission);
-Q_DECLARE_MINIMAL_PERMISSION(QMicrophonePermission);
-Q_DECLARE_MINIMAL_PERMISSION(QBluetoothPermission);
+Q_DECLARE_MINIMAL_PERMISSION(QCameraPermission)
+Q_DECLARE_MINIMAL_PERMISSION(QMicrophonePermission)
+Q_DECLARE_MINIMAL_PERMISSION(QBluetoothPermission)
 
 #undef QT_PERMISSION
 #undef Q_DECLARE_MINIMAL_PERMISSION
