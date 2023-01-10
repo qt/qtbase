@@ -19,8 +19,8 @@ ignorewords += \
     WebSockets \
     OpenGL
 
-# Omit \since information for items introduced before Qt 5
-ignoresince = 5.0
+# Omit \since information for items introduced before Qt 6
+ignoresince = 6.0
 
 sourcedirs += includes $$BUILDDIR
 exampledirs += snippets
