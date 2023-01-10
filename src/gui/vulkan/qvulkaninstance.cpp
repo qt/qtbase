@@ -206,7 +206,7 @@ QT_BEGIN_NAMESPACE
     the behavior of create().
 
     \value NoDebugOutputRedirect Disables Vulkan debug output (\c{VK_EXT_debug_utils}) redirection to qDebug.
-    \value NoPortabilityDrivers Disables enumerating physical devices marked as Vulkan Portability.
+    \value [since 6.5] NoPortabilityDrivers Disables enumerating physical devices marked as Vulkan Portability.
 */
 
 bool QVulkanInstancePrivate::ensureVulkan()
