@@ -113,12 +113,12 @@ void getPos(Joint *jnt, std::vector<VertexData> *vec){
         for(Joint *child : jnt->_children){
             getPos(child, vec);
             //Add parent
-            QVector4D *pos = new QVector4D(jnt->_offX/divider, jnt->_offY/divider,  jnt->_offZ/divider, 1);
+            QVector4D *pos = new QVector4D(jnt->_offX, jnt->_offY,  jnt->_offZ, 1);
             QVector4D *globalPos = new QVector4D();
             *globalPos = *(jnt->_transform) * *pos;
             vec->push_back({QVector3D(globalPos->x(), globalPos->y(), globalPos->z()), QVector2D(0.0f, 0.0f)});
             //Add child
-            pos = new QVector4D(child->_offX/divider, child->_offY/divider,  child->_offZ/divider, 1);
+            pos = new QVector4D(child->_offX, child->_offY,  child->_offZ, 1);
             *globalPos = *(child->_transform) * *pos;
             vec->push_back({QVector3D(globalPos->x(), globalPos->y(), globalPos->z()), QVector2D(0.0f, 0.0f)});
         }
@@ -132,7 +132,7 @@ void GeometryEngine::initLineGeometry(Joint *root)
     VertexData *vertices = &vec[0];
     int lenVec = vec.size();
 
-    std::cout << lenVec << std::endl;
+    //std::cout << lenVec << std::endl;
 
     std::vector<GLushort> indVec;
     for(int i = 0 ; i < lenVec-1 ; i++){
@@ -142,7 +142,7 @@ void GeometryEngine::initLineGeometry(Joint *root)
     GLushort *indices = &indVec[0];
 
     for(VertexData v : vec){
-        std::cout << v.position.x() << " " << v.position.y() << " " << v.position.z() << std::endl;
+        //std::cout << v.position.x() << " " << v.position.y() << " " << v.position.z() << std::endl;
     }
 
     // Transfer vertex data to VBO 0
@@ -164,6 +164,9 @@ void GeometryEngine::updatePos(Joint *root){
      // Transfer vertex data to VBO 0
     arrayBuf.bind();
     arrayBuf.allocate(vertices, lenVec * sizeof(VertexData));
+    for(VertexData v : vec){
+        //std::cout << v.position.x() << " " << v.position.y() << " " << v.position.z() << std::endl;
+    }
 }
 
 //! [2]
