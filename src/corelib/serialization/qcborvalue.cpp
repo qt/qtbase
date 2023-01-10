@@ -889,7 +889,7 @@ static void writeDoubleToCbor(QCborStreamWriter &writer, double d, QCborValue::E
             // no data loss, we could use float
 #ifndef QT_BOOTSTRAPPED
             if ((opt & QCborValue::UseFloat16) == QCborValue::UseFloat16) {
-                qfloat16 f16 = f;
+                qfloat16 f16 = qfloat16(f);
                 if (f16 == f)
                     return writer.append(f16);
             }
