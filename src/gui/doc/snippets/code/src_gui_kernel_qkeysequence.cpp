@@ -32,7 +32,7 @@ void Wrapper::wrapper() {
 //! [2]
 QMenu *file = new QMenu(this);
 file->addAction(tr("&Open..."), QKeySequence(tr("Ctrl+O", "File|Open")),
-                this, SLOT(open()));
+                this, &MainWindow::open);
 //! [2]
 
 } // Wrapper::wrapper
