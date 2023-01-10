@@ -9,8 +9,6 @@
 #include "qsimd_p.h"
 #include "qalgorithms.h"
 
-#include <array>            // for std::size
-
 #include <stdio.h>
 #include <string.h>
 
@@ -63,6 +61,14 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+template <typename T, uint N> QT_FUNCTION_TARGET_BASELINE
+uint arraysize(T (&)[N])
+{
+    // Same as std::size, but with QT_FUNCTION_TARGET_BASELIE,
+    // otherwise some versions of GCC fail to compile.
+    return N;
+}
 
 #if defined(Q_PROCESSOR_ARM)
 /* Data:
@@ -364,7 +370,7 @@ static quint64 detectProcessorFeatures()
         cpuidFeatures07_00(results[Leaf07_00EBX], results[Leaf07_00ECX], results[Leaf07_00EDX]);
 
     // populate our feature list
-    for (uint i = 0; i < std::size(x86_locators); ++i) {
+    for (uint i = 0; i < arraysize(x86_locators); ++i) {
         uint word = x86_locators[i] / 32;
         uint bit = 1U << (x86_locators[i] % 32);
         quint64 feature = Q_UINT64_C(1) << i;
@@ -583,7 +589,7 @@ uint64_t QT_MANGLE_NAMESPACE(qDetectCpuFeatures)()
 #endif
         while (char *token = strtok(disable, " ")) {
             disable = nullptr;
-            for (uint i = 0; i < std::size(features_indices); ++i) {
+            for (uint i = 0; i < arraysize(features_indices); ++i) {
                 if (strcmp(token, features_string + features_indices[i]) == 0)
                     f &= ~(Q_UINT64_C(1) << i);
             }
@@ -598,7 +604,7 @@ uint64_t QT_MANGLE_NAMESPACE(qDetectCpuFeatures)()
     if (Q_UNLIKELY(!runningOnValgrind && minFeatureTest != 0 && (f & minFeatureTest) != minFeatureTest)) {
         quint64 missing = minFeatureTest & ~quint64(f);
         fprintf(stderr, "Incompatible processor. This Qt build requires the following features:\n   ");
-        for (uint i = 0; i < std::size(features_indices); ++i) {
+        for (uint i = 0; i < arraysize(features_indices); ++i) {
             if (missing & (Q_UINT64_C(1) << i))
                 fprintf(stderr, "%s", features_string + features_indices[i]);
         }
@@ -618,14 +624,14 @@ void qDumpCPUFeatures()
 {
     quint64 features = detectProcessorFeatures() & ~SimdInitialized;
     printf("Processor features: ");
-    for (uint i = 0; i < std::size(features_indices); ++i) {
+    for (uint i = 0; i < arraysize(features_indices); ++i) {
         if (features & (Q_UINT64_C(1) << i))
             printf("%s%s", features_string + features_indices[i],
                    minFeature & (Q_UINT64_C(1) << i) ? "[required]" : "");
     }
     if ((features = (qCompilerCpuFeatures & ~features))) {
         printf("\n!!!!!!!!!!!!!!!!!!!!\n!!! Missing required features:");
-        for (uint i = 0; i < std::size(features_indices); ++i) {
+        for (uint i = 0; i < arraysize(features_indices); ++i) {
             if (features & (Q_UINT64_C(1) << i))
                 printf("%s", features_string + features_indices[i]);
         }
