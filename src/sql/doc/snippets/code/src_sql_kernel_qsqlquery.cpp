@@ -26,7 +26,7 @@ ints << 1 << 2 << 3 << 4;
 q.addBindValue(ints);
 
 QVariantList names;
-names << "Harald" << "Boris" << "Trond" << QVariant(QMetaType::QString);
+names << "Harald" << "Boris" << "Trond" << QVariant(QMetaType::fromType<QString>());
 q.addBindValue(names);
 
 if (!q.execBatch())
