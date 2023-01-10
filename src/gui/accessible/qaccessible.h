@@ -103,9 +103,6 @@ public:
     inline QAccessibleHyperlinkInterface *hyperlinkInterface()
     { return reinterpret_cast<QAccessibleHyperlinkInterface *>(interface_cast(QAccessible::HyperlinkInterface)); }
 
-    /*!
-        \since 6.5
-     */
     inline QAccessibleSelectionInterface *selectionInterface()
     { return reinterpret_cast<QAccessibleSelectionInterface *>(interface_cast(QAccessible::SelectionInterface)); }
 
