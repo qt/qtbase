@@ -50,7 +50,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
         QMicrophonePermission microphonePermission;
         switch (qApp->checkPermission(microphonePermission)) {
         case Qt::PermissionStatus::Undetermined:
-            qApp->requestPermission(microphonePermission, this
+            qApp->requestPermission(microphonePermission, this,
                         &VoiceMemoWidget::onRecordingInitiated);
             return;
         case Qt::PermissionStatus::Denied:
