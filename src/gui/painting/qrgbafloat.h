@@ -28,21 +28,23 @@ public:
     static constexpr
     QRgbaFloat fromRgba64(quint16 red, quint16 green, quint16 blue, quint16 alpha)
     {
+        constexpr FastType scale = 1.0f / 65535.0f;
         return QRgbaFloat{
-            red   * (1.0f / 65535.0f),
-            green * (1.0f / 65535.0f),
-            blue  * (1.0f / 65535.0f),
-            alpha * (1.0f / 65535.0f) };
+            F(red    * scale),
+            F(green  * scale),
+            F(blue   * scale),
+            F(alpha  * scale) };
     }
 
     static constexpr
     QRgbaFloat fromRgba(quint8 red, quint8 green, quint8 blue, quint8 alpha)
     {
+        constexpr FastType scale = 1.0f / 255.0f;
         return QRgbaFloat{
-            red   * (1.0f / 255.0f),
-            green * (1.0f / 255.0f),
-            blue  * (1.0f / 255.0f),
-            alpha * (1.0f / 255.0f) };
+            F(red    * scale),
+            F(green  * scale),
+            F(blue   * scale),
+            F(alpha  * scale) };
     }
     static constexpr
     QRgbaFloat fromArgb32(uint rgb)
@@ -57,10 +59,10 @@ public:
     constexpr FastType green() const { return g; }
     constexpr FastType blue()  const { return b; }
     constexpr FastType alpha() const { return a; }
-    void setRed(FastType _red)     { r = _red; }
-    void setGreen(FastType _green) { g = _green; }
-    void setBlue(FastType _blue)   { b = _blue; }
-    void setAlpha(FastType _alpha) { a = _alpha; }
+    void setRed(FastType _red)     { r = F(_red); }
+    void setGreen(FastType _green) { g = F(_green); }
+    void setBlue(FastType _blue)   { b = F(_blue); }
+    void setAlpha(FastType _alpha) { a = F(_alpha); }
 
     constexpr FastType redNormalized()   const { return std::clamp(static_cast<FastType>(r), 0.0f, 1.0f); }
     constexpr FastType greenNormalized() const { return std::clamp(static_cast<FastType>(g), 0.0f, 1.0f); }
@@ -87,12 +89,12 @@ public:
     }
     constexpr Q_ALWAYS_INLINE QRgbaFloat unpremultiplied() const
     {
-        if (a <= 0.0f)
-            return QRgbaFloat{0.0f, 0.0f, 0.0f, 0.0f};
-        if (a >= 1.0f)
+        if (a <= F{0.0f})
+            return QRgbaFloat{};    // default-initialization: zeroes
+        if (a >= F{1.0f})
             return *this;
         const FastType ia = 1.0f / a;
-        return QRgbaFloat{r * ia, g * ia, b * ia, a};
+        return QRgbaFloat{F(r * ia), F(g * ia), F(b * ia), F(a)};
     }
     constexpr bool operator==(QRgbaFloat f) const
     {

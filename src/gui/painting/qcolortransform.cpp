@@ -237,9 +237,9 @@ QRgbaFloat16 QColorTransform::map(QRgbaFloat16 rgbafp16) const
     c.y = d->colorSpaceIn->trc[1].applyExtended(rgbafp16.g);
     c.z = d->colorSpaceIn->trc[2].applyExtended(rgbafp16.b);
     c = d->colorMatrix.map(c);
-    rgbafp16.r = d->colorSpaceOut->trc[0].applyInverseExtended(c.x);
-    rgbafp16.g = d->colorSpaceOut->trc[1].applyInverseExtended(c.y);
-    rgbafp16.b = d->colorSpaceOut->trc[2].applyInverseExtended(c.z);
+    rgbafp16.r = qfloat16(d->colorSpaceOut->trc[0].applyInverseExtended(c.x));
+    rgbafp16.g = qfloat16(d->colorSpaceOut->trc[1].applyInverseExtended(c.y));
+    rgbafp16.b = qfloat16(d->colorSpaceOut->trc[2].applyInverseExtended(c.z));
     return rgbafp16;
 }
 

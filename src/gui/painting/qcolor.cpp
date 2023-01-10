@@ -1483,7 +1483,7 @@ void QColor::setAlpha(int alpha)
     QCOLOR_INT_RANGE_CHECK("QColor::setAlpha", alpha);
     if (cspec == ExtendedRgb) {
         constexpr float f = 1.0f / 255;
-        castF16(ct.argbExtended.alphaF16) = alpha * f;
+        castF16(ct.argbExtended.alphaF16) = qfloat16(alpha * f);
         return;
     }
     ct.argb.alpha = alpha * 0x101;
@@ -1512,7 +1512,7 @@ void QColor::setAlphaF(float alpha)
 {
     QCOLOR_REAL_RANGE_CHECK("QColor::setAlphaF", alpha);
     if (cspec == ExtendedRgb) {
-        castF16(ct.argbExtended.alphaF16) = alpha;
+        castF16(ct.argbExtended.alphaF16) = qfloat16(alpha);
         return;
     }
     float tmp = alpha * USHRT_MAX;
@@ -1630,7 +1630,7 @@ void QColor::setRedF(float red)
     if (cspec == Rgb && red >= 0.0f && red <= 1.0f)
         ct.argb.red = qRound(red * USHRT_MAX);
     else if (cspec == ExtendedRgb)
-        castF16(ct.argbExtended.redF16) = red;
+        castF16(ct.argbExtended.redF16) = qfloat16(red);
     else
         setRgbF(red, greenF(), blueF(), alphaF());
 }
@@ -1662,7 +1662,7 @@ void QColor::setGreenF(float green)
     if (cspec == Rgb && green >= 0.0f && green <= 1.0f)
         ct.argb.green = qRound(green * USHRT_MAX);
     else if (cspec == ExtendedRgb)
-        castF16(ct.argbExtended.greenF16) = green;
+        castF16(ct.argbExtended.greenF16) = qfloat16(green);
     else
         setRgbF(redF(), green, blueF(), alphaF());
 }
@@ -1692,7 +1692,7 @@ void QColor::setBlueF(float blue)
     if (cspec == Rgb && blue >= 0.0f && blue <= 1.0f)
         ct.argb.blue = qRound(blue * USHRT_MAX);
     else if (cspec == ExtendedRgb)
-        castF16(ct.argbExtended.blueF16) = blue;
+        castF16(ct.argbExtended.blueF16) = qfloat16(blue);
     else
         setRgbF(redF(), greenF(), blue, alphaF());
 }
