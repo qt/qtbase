@@ -166,7 +166,7 @@ public:
 #  else
     QList<QGlyphRun> glyphRuns(int from = -1,
                                int length = -1,
-                               GlyphRunRetrievalFlags flags = GlyphRunRetrievalFlag::DefaultRetrievalFlags) const;
+                               GlyphRunRetrievalFlags flags = DefaultRetrievalFlags) const;
 #  endif
 #endif
 
@@ -244,7 +244,7 @@ public:
 #  else
     QList<QGlyphRun> glyphRuns(int from = -1,
                                int length = -1,
-                               QTextLayout::GlyphRunRetrievalFlags flags = QTextLayout::GlyphRunRetrievalFlag::Default) const;
+                               QTextLayout::GlyphRunRetrievalFlags flags = QTextLayout::DefaultRetrievalFlags) const;
 #  endif
 #endif
 
