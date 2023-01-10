@@ -5389,6 +5389,12 @@ char16_t *QLatin1::convertToUnicode(char16_t *out, QLatin1StringView in) noexcep
     return std::next(out, len);
 }
 
+char *QLatin1::convertFromUnicode(char *out, QStringView in) noexcept
+{
+    const qsizetype len = in.size();
+    qt_to_latin1(reinterpret_cast<uchar *>(out), in.utf16(), len);
+    return out + len;
+}
 
 /*!
     \fn QByteArray QString::toLatin1() const
