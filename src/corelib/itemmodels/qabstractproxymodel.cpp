@@ -165,13 +165,15 @@ void QAbstractProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
         const char *signalName;
         const char *slotName;
     } connectionTable[] = {
+        // clang-format off
         { SIGNAL(destroyed()), SLOT(_q_sourceModelDestroyed()) },
-        { SIGNAL(rowsAboutToBeInserted(QModelIndex, int, int)), SLOT(_q_sourceModelRowsAboutToBeInserted(QModelIndex, int, int)) },
-        { SIGNAL(rowsInserted(QModelIndex, int, int)), SLOT(_q_sourceModelRowsInserted(QModelIndex, int, int)) },
-        { SIGNAL(rowsRemoved(QModelIndex, int, int)), SLOT(_q_sourceModelRowsRemoved(QModelIndex, int, int)) },
-        { SIGNAL(columnsAboutToBeInserted(QModelIndex, int, int)), SLOT(_q_sourceModelColumnsAboutToBeInserted(QModelIndex, int, int)) },
-        { SIGNAL(columnsInserted(QModelIndex, int, int)), SLOT(_q_sourceModelColumnsInserted(QModelIndex, int, int)) },
-        { SIGNAL(columnsRemoved(QModelIndex, int, int)), SLOT(_q_sourceModelColumnsRemoved(QModelIndex, int, int)) }
+        { SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)), SLOT(_q_sourceModelRowsAboutToBeInserted(QModelIndex,int,int)) },
+        { SIGNAL(rowsInserted(QModelIndex,int,int)), SLOT(_q_sourceModelRowsInserted(QModelIndex,int,int)) },
+        { SIGNAL(rowsRemoved(QModelIndex,int,int)), SLOT(_q_sourceModelRowsRemoved(QModelIndex,int,int)) },
+        { SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)), SLOT(_q_sourceModelColumnsAboutToBeInserted(QModelIndex,int,int)) },
+        { SIGNAL(columnsInserted(QModelIndex,int,int)), SLOT(_q_sourceModelColumnsInserted(QModelIndex,int,int)) },
+        { SIGNAL(columnsRemoved(QModelIndex,int,int)), SLOT(_q_sourceModelColumnsRemoved(QModelIndex,int,int)) }
+        // clang-format on
     };
 
     if (sourceModel != d->model) {
