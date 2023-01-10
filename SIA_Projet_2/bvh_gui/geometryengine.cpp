@@ -106,20 +106,22 @@ void GeometryEngine::initCubeGeometry()
 //! [1]
 }
 
-double divider = 300.0;
+double divider = 1/300.0;
 
 void getPos(Joint *jnt, std::vector<VertexData> *vec){
     if(jnt->_children.empty() == false){
         for(Joint *child : jnt->_children){
             getPos(child, vec);
+            //Scale
+            QMatrix4x4 *scale = new QMatrix4x4(divider, 0, 0, 0, 0, divider, 0, 0, 0, 0, divider, 0, 0, 0, 0, 1);
             //Add parent
             QVector4D *pos = new QVector4D(jnt->_offX, jnt->_offY,  jnt->_offZ, 1);
             QVector4D *globalPos = new QVector4D();
-            *globalPos = *(jnt->_transform) * *pos;
+            *globalPos = *scale * *(jnt->_transform) * *pos;
             vec->push_back({QVector3D(globalPos->x(), globalPos->y(), globalPos->z()), QVector2D(0.0f, 0.0f)});
             //Add child
             pos = new QVector4D(child->_offX, child->_offY,  child->_offZ, 1);
-            *globalPos = *(child->_transform) * *pos;
+            *globalPos = *scale * *(child->_transform) * *pos;
             vec->push_back({QVector3D(globalPos->x(), globalPos->y(), globalPos->z()), QVector2D(0.0f, 0.0f)});
         }
     }
@@ -161,7 +163,9 @@ void GeometryEngine::updatePos(Joint *root){
     getPos(root, &vec);
     VertexData *vertices = &vec[0];
     int lenVec = vec.size();
-     // Transfer vertex data to VBO 0
+    // Transfer vertex data to VBO 0
+    arrayBuf.destroy();
+    arrayBuf.create(); 
     arrayBuf.bind();
     arrayBuf.allocate(vertices, lenVec * sizeof(VertexData));
     for(VertexData v : vec){
