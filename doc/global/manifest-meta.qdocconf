@@ -138,7 +138,7 @@ manifestmeta.ios.names              =  "QtCore/Contiguous Cache Example" \
                                        "QtWidgets/Graphics View Flow Layout Example" \
                                        "QtWidgets/Simple Anchor Layout Example" \
                                        "QtWidgets/Weather Anchor Layout Example" \
-                                       "QtWidgets/Address Book Example" \
+                                       "QtWidgets/Address Book" \
                                        "QtWidgets/Basic Sort/Filter Model Example" \
                                        "QtWidgets/Chart Example" \
                                        "QtWidgets/Custom Sort/Filter Model Example" \
