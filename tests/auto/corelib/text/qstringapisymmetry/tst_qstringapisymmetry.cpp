@@ -1482,8 +1482,9 @@ void tst_QStringApiSymmetry::localeAwareCompare_data()
         return false;
     };
 #else
-    // Otherwise, trust that setlocale() reconfigures QString::localeAwareCompare():
-    const auto canTest = [](const char *) { return true; };
+    const auto canTest = [](const char *wanted) {
+        return QLocale(wanted) == QLocale::c() || QLocale(wanted) == QLocale::system().collation();
+    };
 #endif
     // Update tailpiece's max-value for this if you add a new locale group
     int countGroups = 0;
