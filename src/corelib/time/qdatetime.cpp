@@ -19,8 +19,10 @@
 #include "private/qcore_mac_p.h"
 #endif
 #include "private/qgregoriancalendar_p.h"
+#include "private/qlocale_tools_p.h"
 #include "private/qlocaltime_p.h"
 #include "private/qnumeric_p.h"
+#include "private/qstringconverter_p.h"
 #include "private/qstringiterator_p.h"
 #if QT_CONFIG(timezone)
 #include "private/qtimezoneprivate_p.h"
@@ -31,10 +33,13 @@
 #  include <qt_windows.h>
 #endif
 
+#include <private/qtools_p.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 using namespace QtPrivate::DateTimeConstants;
+using namespace QtMiscUtils;
 
 /*****************************************************************************
   Date/Time Constants
@@ -86,6 +91,42 @@ static int fromShortMonthName(QStringView monthName)
 #endif // textdate
 
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
+namespace {
+using ParsedInt = QSimpleParsedNumber<qulonglong>;
+
+/*
+    Reads a whole number that must be the whole text.
+*/
+ParsedInt readInt(QLatin1StringView text)
+{
+    // Various date formats' fields (e.g. all in ISO) should not accept spaces
+    // or signs, so check that the string starts with a digit and that qstrntoull()
+    // converted the whole string.
+
+    if (text.isEmpty() || !isAsciiDigit(text.front().toLatin1()))
+        return {};
+
+    QSimpleParsedNumber res = qstrntoull(text.data(), text.size(), 10);
+    return res.used == text.size() ? res : ParsedInt{};
+}
+
+ParsedInt readInt(QStringView text)
+{
+    if (text.isEmpty())
+        return {};
+
+    // Converting to Latin-1 because QStringView::toULongLong() works with
+    // US-ASCII only by design anyway.
+    // Also QStringView::toULongLong() can't be used here as it will happily ignore
+    // spaces and accept signs; but various date formats' fields (e.g. all in ISO)
+    // should not.
+    QVarLengthArray<char> latin1(text.size());
+    QLatin1::convertFromUnicode(latin1.data(), text);
+    return readInt(QLatin1StringView{latin1.data(), latin1.size()});
+}
+
+} // namespace
+
 struct ParsedRfcDateTime {
     QDate date;
     QTime time;
@@ -1511,29 +1552,6 @@ qint64 QDate::daysTo(QDate d) const
 */
 
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
-namespace {
-
-struct ParsedInt { qulonglong value = 0; bool ok = false; };
-
-/*
-    /internal
-
-    Read a whole number that must be the whole text.  QStringView::toULongLong()
-    will happily ignore spaces and accept signs; but various date formats'
-    fields (e.g. all in ISO) should not.
-*/
-ParsedInt readInt(QStringView text)
-{
-    ParsedInt result;
-    for (QStringIterator it(text); it.hasNext();) {
-        if (!QChar::isDigit(it.next()))
-            return result;
-    }
-    result.value = text.toULongLong(&result.ok);
-    return result;
-}
-
-}
 
 /*!
     \fn QDate QDate::fromString(const QString &string, Qt::DateFormat format)
@@ -1591,8 +1609,8 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
             const ParsedInt year = readInt(string.first(4));
             const ParsedInt month = readInt(string.sliced(5, 2));
             const ParsedInt day = readInt(string.sliced(8, 2));
-            if (year.ok && year.value > 0 && year.value <= 9999 && month.ok && day.ok)
-                return QDate(year.value, month.value, day.value);
+            if (year.ok() && year.result > 0 && year.result <= 9999 && month.ok() && day.ok())
+                return QDate(year.result, month.result, day.result);
         }
         break;
     }
@@ -2264,63 +2282,63 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
 
     const ParsedInt frac = readInt(tail);
     // There must be *some* digits in a fractional part; and it must be all digits:
-    if (tail.isEmpty() ? dot != -1 || comma != -1 : !frac.ok)
+    if (tail.isEmpty() ? dot != -1 || comma != -1 : !frac.ok())
         return QTime();
-    Q_ASSERT(frac.ok ^ tail.isEmpty());
-    double fraction = frac.ok ? frac.value * std::pow(0.1, tail.size()) : 0.0;
+    Q_ASSERT(frac.ok() ^ tail.isEmpty());
+    double fraction = frac.ok() ? frac.result * std::pow(0.1, tail.size()) : 0.0;
 
     const int size = string.size();
     if (size < 2 || size > 8)
         return QTime();
 
     ParsedInt hour = readInt(string.first(2));
-    if (!hour.ok || hour.value > (format == Qt::TextDate ? 23 : 24))
+    if (!hour.ok() || hour.result > (format == Qt::TextDate ? 23 : 24))
         return QTime();
 
-    ParsedInt minute;
+    ParsedInt minute{};
     if (string.size() > 2) {
         if (string[2] == u':' && string.size() > 4)
             minute = readInt(string.sliced(3, 2));
-        if (!minute.ok || minute.value >= MINS_PER_HOUR)
+        if (!minute.ok() || minute.result >= MINS_PER_HOUR)
             return QTime();
     } else if (format == Qt::TextDate) { // Requires minutes
         return QTime();
-    } else if (frac.ok) {
+    } else if (frac.ok()) {
         Q_ASSERT(!(fraction < 0.0) && fraction < 1.0);
         fraction *= MINS_PER_HOUR;
-        minute.value = qulonglong(fraction);
-        fraction -= minute.value;
+        minute.result = qulonglong(fraction);
+        fraction -= minute.result;
     }
 
-    ParsedInt second;
+    ParsedInt second{};
     if (string.size() > 5) {
         if (string[5] == u':' && string.size() == 8)
             second = readInt(string.sliced(6, 2));
-        if (!second.ok || second.value >= SECS_PER_MIN)
+        if (!second.ok() || second.result >= SECS_PER_MIN)
             return QTime();
-    } else if (frac.ok) {
+    } else if (frac.ok()) {
         if (format == Qt::TextDate) // Doesn't allow fraction of minutes
             return QTime();
         Q_ASSERT(!(fraction < 0.0) && fraction < 1.0);
         fraction *= SECS_PER_MIN;
-        second.value = qulonglong(fraction);
-        fraction -= second.value;
+        second.result = qulonglong(fraction);
+        fraction -= second.result;
     }
 
     Q_ASSERT(!(fraction < 0.0) && fraction < 1.0);
     // Round millis to nearest (unlike minutes and seconds, rounded down):
-    int msec = frac.ok ? qRound(MSECS_PER_SEC * fraction) : 0;
+    int msec = frac.ok() ? qRound(MSECS_PER_SEC * fraction) : 0;
     // But handle overflow gracefully:
     if (msec == MSECS_PER_SEC) {
         // If we can (when data were otherwise valid) validly propagate overflow
         // into other fields, do so:
-        if (isMidnight24 || hour.value < 23 || minute.value < 59 || second.value < 59) {
+        if (isMidnight24 || hour.result < 23 || minute.result < 59 || second.result < 59) {
             msec = 0;
-            if (++second.value == SECS_PER_MIN) {
-                second.value = 0;
-                if (++minute.value == MINS_PER_HOUR) {
-                    minute.value = 0;
-                    ++hour.value;
+            if (++second.result == SECS_PER_MIN) {
+                second.result = 0;
+                if (++minute.result == MINS_PER_HOUR) {
+                    minute.result = 0;
+                    ++hour.result;
                     // May need to propagate further via isMidnight24, see below
                 }
             }
@@ -2332,14 +2350,14 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
     }
 
     // For ISO date format, 24:0:0 means 0:0:0 on the next day:
-    if (hour.value == 24 && minute.value == 0 && second.value == 0 && msec == 0) {
+    if (hour.result == 24 && minute.result == 0 && second.result == 0 && msec == 0) {
         Q_ASSERT(format != Qt::TextDate); // It clipped hour at 23, above.
         if (isMidnight24)
             *isMidnight24 = true;
-        hour.value = 0;
+        hour.result = 0;
     }
 
-    return QTime(hour.value, minute.value, second.value, msec);
+    return QTime(hour.result, minute.result, second.result, msec);
 }
 
 /*!
