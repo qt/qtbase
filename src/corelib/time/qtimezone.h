@@ -56,7 +56,7 @@ class Q_CORE_EXPORT QTimeZone
     union Data
     {
         Data() noexcept;
-        Data(ShortData &&sd) : s(std::move(sd)) {}
+        Data(ShortData sd) : s(sd) {}
         Data(const Data &other) noexcept;
         Data(Data &&other) noexcept;
         Data &operator=(const Data &other) noexcept;
@@ -79,7 +79,7 @@ class Q_CORE_EXPORT QTimeZone
         QTimeZonePrivate *d = nullptr;
         ShortData s;
     };
-    QTimeZone(ShortData &&sd) : d(std::move(sd)) {}
+    QTimeZone(ShortData sd) : d(sd) {}
 
 public:
     // Sane UTC offsets range from -14 to +14 hours:
