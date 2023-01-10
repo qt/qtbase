@@ -5,7 +5,7 @@ using namespace Qt::StringLiterals;
 
 //! [0]
 QSslSocket *socket = new QSslSocket(this);
-connect(socket, SIGNAL(encrypted()), this, SLOT(ready()));
+connect(socket, &QSslSocket::encrypted, this, &Receiver::ready);
 
 socket->connectToHostEncrypted("imap.example.com", 993);
 //! [0]
@@ -42,7 +42,7 @@ while (socket.waitForReadyRead())
 
 //! [3]
 QSslSocket socket;
-connect(&socket, SIGNAL(encrypted()), receiver, SLOT(socketEncrypted()));
+connect(&socket, &QSslSocket::encrypted, receiver, &Receiver::socketEncrypted);
 
 socket.connectToHostEncrypted("imap", 993);
 socket->write("1 CAPABILITY\r\n");
