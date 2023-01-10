@@ -85,7 +85,7 @@ public:
     inline operator float() const noexcept;
 #endif
     template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T> && !std::is_same_v<T, NearestFloat>>>
-    explicit qfloat16(T value) noexcept : qfloat16(NearestFloat(value)) {}
+    constexpr explicit qfloat16(T value) noexcept : qfloat16(NearestFloat(value)) {}
 
     // Support for qIs{Inf,NaN,Finite}:
     bool isInf() const noexcept { return (b16 & 0x7fff) == 0x7c00; }

@@ -19,7 +19,13 @@ class alignas(sizeof(F) * 4) QRgbaFloat
     static_assert(std::is_same<F, qfloat16>::value || std::is_same<F, float>::value);
 public:
     using Type = F;
+#if defined(__AVX512FP16__) && QFLOAT16_IS_NATIVE
+    // AVX512FP16 has multiplication instructions
+    using FastType = F;
+#else
+    // use FP32 for multiplications
     using FastType = float;
+#endif
     F r;
     F g;
     F b;
@@ -28,7 +34,7 @@ public:
     static constexpr
     QRgbaFloat fromRgba64(quint16 red, quint16 green, quint16 blue, quint16 alpha)
     {
-        constexpr FastType scale = 1.0f / 65535.0f;
+        constexpr FastType scale = FastType(1.0f / 65535.0f);
         return QRgbaFloat{
             F(red    * scale),
             F(green  * scale),
@@ -39,7 +45,7 @@ public:
     static constexpr
     QRgbaFloat fromRgba(quint8 red, quint8 green, quint8 blue, quint8 alpha)
     {
-        constexpr FastType scale = 1.0f / 255.0f;
+        constexpr FastType scale = FastType(1.0f / 255.0f);
         return QRgbaFloat{
             F(red    * scale),
             F(green  * scale),
@@ -52,8 +58,8 @@ public:
         return fromRgba(quint8(rgb >> 16), quint8(rgb >> 8), quint8(rgb), quint8(rgb >> 24));
     }
 
-    constexpr bool isOpaque() const { return a >= 1.0f; }
-    constexpr bool isTransparent() const { return a <= 0.0f; }
+    constexpr bool isOpaque() const { return a >= FastType(1.0f); }
+    constexpr bool isTransparent() const { return a <= FastType(0.0f); }
 
     constexpr FastType red()   const { return r; }
     constexpr FastType green() const { return g; }
@@ -64,24 +70,24 @@ public:
     void setBlue(FastType _blue)   { b = F(_blue); }
     void setAlpha(FastType _alpha) { a = F(_alpha); }
 
-    constexpr FastType redNormalized()   const { return std::clamp(static_cast<FastType>(r), 0.0f, 1.0f); }
-    constexpr FastType greenNormalized() const { return std::clamp(static_cast<FastType>(g), 0.0f, 1.0f); }
-    constexpr FastType blueNormalized()  const { return std::clamp(static_cast<FastType>(b), 0.0f, 1.0f); }
-    constexpr FastType alphaNormalized() const { return std::clamp(static_cast<FastType>(a), 0.0f, 1.0f); }
+    constexpr FastType redNormalized()   const { return clamp01(r); }
+    constexpr FastType greenNormalized() const { return clamp01(g); }
+    constexpr FastType blueNormalized()  const { return clamp01(b); }
+    constexpr FastType alphaNormalized() const { return clamp01(a); }
 
-    constexpr quint8 red8()   const { return std::lround(redNormalized()   * 255.0f); }
-    constexpr quint8 green8() const { return std::lround(greenNormalized() * 255.0f); }
-    constexpr quint8 blue8()  const { return std::lround(blueNormalized()  * 255.0f); }
-    constexpr quint8 alpha8() const { return std::lround(alphaNormalized() * 255.0f); }
+    constexpr quint8 red8()   const { return qRound(redNormalized()   * FastType(255.0f)); }
+    constexpr quint8 green8() const { return qRound(greenNormalized() * FastType(255.0f)); }
+    constexpr quint8 blue8()  const { return qRound(blueNormalized()  * FastType(255.0f)); }
+    constexpr quint8 alpha8() const { return qRound(alphaNormalized() * FastType(255.0f)); }
     constexpr uint toArgb32() const
     {
        return uint((alpha8() << 24) | (red8() << 16) | (green8() << 8) | blue8());
     }
 
-    constexpr quint16 red16()   const { return std::lround(redNormalized()   * 65535.0f); }
-    constexpr quint16 green16() const { return std::lround(greenNormalized() * 65535.0f); }
-    constexpr quint16 blue16()  const { return std::lround(blueNormalized()  * 65535.0f); }
-    constexpr quint16 alpha16() const { return std::lround(alphaNormalized() * 65535.0f); }
+    constexpr quint16 red16()   const { return qRound(redNormalized()   * FastType(65535.0f)); }
+    constexpr quint16 green16() const { return qRound(greenNormalized() * FastType(65535.0f)); }
+    constexpr quint16 blue16()  const { return qRound(blueNormalized()  * FastType(65535.0f)); }
+    constexpr quint16 alpha16() const { return qRound(alphaNormalized() * FastType(65535.0f)); }
 
     constexpr Q_ALWAYS_INLINE QRgbaFloat premultiplied() const
     {
@@ -103,6 +109,12 @@ public:
     constexpr bool operator!=(QRgbaFloat f) const
     {
         return !(*this == f);
+    }
+
+private:
+    constexpr static FastType clamp01(Type f)
+    {
+        return std::clamp(FastType(f), FastType(0.0f), FastType(1.0f));
     }
 };
 
