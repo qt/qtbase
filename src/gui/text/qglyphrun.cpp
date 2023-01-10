@@ -472,6 +472,8 @@ bool QGlyphRun::isEmpty() const
 }
 
 /*!
+    \since 6.5
+
     Returns the string indexes corresponding to each glyph index, if the glyph run has been
     constructed from a string and string indexes have been requested from the layout. In this case,
     the length of the returned vector will correspond to the length of glyphIndexes(). In other
@@ -498,6 +500,8 @@ QList<qsizetype> QGlyphRun::stringIndexes() const
 }
 
 /*!
+   \since 6.5
+
    Sets the list of string indexes corresponding to the glyph indexes to \a stringIndexes
 
    See stringIndexes() for more details on the conventions of this list.
@@ -511,6 +515,8 @@ void QGlyphRun::setStringIndexes(const QList<qsizetype> &stringIndexes)
 }
 
 /*!
+    \since 6.5
+
     Returns the string corresponding to the glyph run, if the glyph run has been created from
     a string and the string has been requested from the layout.
 
@@ -522,6 +528,8 @@ QString QGlyphRun::sourceString() const
 }
 
 /*!
+    \since 6.5
+
     Set the string corresponding to the glyph run to \a sourceString. If set, the indexes returned
     by stringIndexes() should be indexes into this string.
 
