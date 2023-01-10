@@ -50,6 +50,11 @@ struct QLatin1
     }
 
     static char *convertFromUnicode(char *out, QStringView in, QStringConverter::State *state) noexcept;
+    static char *convertFromUnicode(char *out, QStringView in) noexcept
+    {
+        QStringConverter::State state{QStringConverter::Flag::Stateless};
+        return convertFromUnicode(out, in, &state);
+    }
 };
 
 struct QUtf8BaseTraits
