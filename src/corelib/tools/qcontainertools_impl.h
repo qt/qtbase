@@ -56,6 +56,9 @@ static constexpr bool q_points_into_range(const T &p, const C &c) noexcept
                                std::data(c) + std::distance(std::begin(c), std::end(c)));
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wmaybe-uninitialized")
+
 template <typename T, typename N>
 void q_uninitialized_move_if_noexcept_n(T* first, N n, T* out)
 {
@@ -80,6 +83,8 @@ void q_uninitialized_relocate_n(T* first, N n, T* out)
             std::destroy_n(first, n);
     }
 }
+
+QT_WARNING_POP
 
 template<typename iterator, typename N>
 void q_relocate_overlap_n_left_move(iterator first, N n, iterator d_first)
