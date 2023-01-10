@@ -20,6 +20,7 @@ vector<double> getValuesFromLine(string line, char delimiter) {
 	 * Parses a line with a given delimiter
 	*/
 	vector<double> values;
+	std::setlocale(LC_ALL, "en_US.UTF-8");
 	while (line.find(delimiter)!=string::npos){
 		size_t index = line.find(delimiter);
 		values.push_back(stod(line.substr(0,index)));
@@ -94,6 +95,8 @@ pair<Joint*, pair<int, double>> Joint::createFromFile(std::string fileName) {
 		vector<double> values;
 
 		while(!inputfile.eof()) {
+			std::setlocale(LC_ALL, "en_US.UTF-8");
+			
 			string buf;	
 			std::getline(inputfile, buf);
 			ltrim(buf);
