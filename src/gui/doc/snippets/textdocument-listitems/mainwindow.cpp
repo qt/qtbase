@@ -13,17 +13,17 @@ MainWindow::MainWindow()
     QMenu *fileMenu = new QMenu(tr("&File"));
 
     fileMenu->addAction(tr("E&xit"), QKeySequence(tr("Ctrl+Q", "File|Exit")),
-                        this, SLOT(close()));
+                        this, &QWidget::close);
 
     QMenu *actionsMenu = new QMenu(tr("&Actions"));
     actionsMenu->addAction(tr("&Highlight List Items"),
-                        this, SLOT(highlightListItems()));
-    actionsMenu->addAction(tr("&Show Current List"), this, SLOT(showList()));
+                        this, &MainWindow::highlightListItems);
+    actionsMenu->addAction(tr("&Show Current List"), this, &MainWindow::showList);
 
     QMenu *insertMenu = new QMenu(tr("&Insert"));
 
     insertMenu->addAction(tr("&List"), QKeySequence(tr("Ctrl+L", "Insert|List")),
-                          this, SLOT(insertList()));
+                          this, &MainWindow::insertList);
 
     menuBar()->addMenu(fileMenu);
     menuBar()->addMenu(insertMenu);
