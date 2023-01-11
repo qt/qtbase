@@ -244,8 +244,14 @@ int getCurrentStandardUtcOffset()
 {
 #ifdef Q_OS_WIN
     TIME_ZONE_INFORMATION tzInfo;
-    GetTimeZoneInformation(&tzInfo);
-    return -tzInfo.Bias * SECS_PER_MIN;
+    if (GetTimeZoneInformation(&tzInfo) != TIME_ZONE_ID_INVALID) {
+        int bias = tzInfo.Bias; // In minutes.
+        // StandardBias is usually zero, but include it if given:
+        if (tzInfo.StandardDate.wMonth) // Zero month means ignore StandardBias.
+            bias += tzInfo.StandardBias;
+        // MS's bias is +ve in the USA, so minutes *behind* UTC - we want seconds *ahead*:
+        return -bias * SECS_PER_MIN;
+    }
 #else
     qTzSet();
     const time_t curr = time(nullptr);
@@ -270,9 +276,10 @@ int getCurrentStandardUtcOffset()
         return curr - qMkTime(&t);
     }
 #  endif
+#endif // Platform choice
+    qDebug("Unable to determine current standard time offset from UTC");
     // We can't tell, presume UTC.
     return 0;
-#endif // Platform choice
 }
 
 // This is local time's offset (in seconds), at the specified time, including
