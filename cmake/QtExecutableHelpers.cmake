@@ -12,11 +12,11 @@
 #         Qt::Core or Qt::Bootstrap libraries. Otherwise the Qt::Core library will be publicly
 #         linked to the executable target by default.
 function(qt_internal_add_executable name)
-    qt_parse_all_arguments(arg "qt_internal_add_executable"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         "${__qt_internal_add_executable_optional_args}"
         "${__qt_internal_add_executable_single_args}"
-        "${__qt_internal_add_executable_multi_args}"
-        ${ARGN})
+        "${__qt_internal_add_executable_multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     if ("x${arg_OUTPUT_DIRECTORY}" STREQUAL "x")
         set(arg_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}")

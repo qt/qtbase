@@ -51,12 +51,23 @@ endfunction()
 
 # A version of cmake_parse_arguments that makes sure all arguments are processed and errors out
 # with a message about ${type} having received unknown arguments.
+#
+# TODO: Remove when all usage of qt_parse_all_arguments were replaced by
+# cmake_parse_all_arguments(PARSEARGV) instances
 macro(qt_parse_all_arguments result type flags options multiopts)
     cmake_parse_arguments(${result} "${flags}" "${options}" "${multiopts}" ${ARGN})
     if(DEFINED ${result}_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unknown arguments were passed to ${type} (${${result}_UNPARSED_ARGUMENTS}).")
     endif()
 endmacro()
+
+# Checks whether any unparsed arguments have been passed to the function at the call site.
+# Use this right after `cmake_parse_arguments`.
+function(_qt_internal_validate_all_args_are_parsed prefix)
+    if(DEFINED ${prefix}_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "Unknown arguments: (${${prefix}_UNPARSED_ARGUMENTS})")
+    endif()
+endfunction()
 
 # Print all variables defined in the current scope.
 macro(qt_debug_print_variables)
@@ -114,8 +125,7 @@ endfunction()
 # Parameters:
 #   out_var: result of remove all arguments specified by ARGS_TO_REMOVE from ALL_ARGS
 #   ARGS_TO_REMOVE: Arguments to remove.
-#   ALL_ARGS: All arguments supplied to cmake_parse_arguments or
-#   qt_parse_all_arguments
+#   ALL_ARGS: All arguments supplied to cmake_parse_arguments
 #   from which ARGS_TO_REMOVE should be removed from. We require all the
 #   arguments or we can't properly identify the range of the arguments detailed
 #   in ARGS_TO_REMOVE.
@@ -129,7 +139,7 @@ endfunction()
 #   bar(target BAR.... WWW...)
 #
 #   function(foo target)
-#       qt_parse_all_arguments(arg "" "" "BAR;ZZZ;WWW ${ARGV})
+#       cmake_parse_arguments(PARSE_ARGV 1 arg "" "" "BAR;ZZZ;WWW")
 #       qt_remove_args(forward_args
 #           ARGS_TO_REMOVE ${target} ZZZ
 #           ALL_ARGS ${target} BAR ZZZ WWW

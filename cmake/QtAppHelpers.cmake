@@ -4,12 +4,12 @@
 # This function creates a CMake target for a Qt internal app.
 # Such projects had a load(qt_app) command.
 function(qt_internal_add_app target)
-    qt_parse_all_arguments(arg
-        "qt_internal_add_app"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         "NO_INSTALL;INSTALL_VERSIONED_LINK;EXCEPTIONS"
         "${__default_target_info_args};INSTALL_DIR"
         "${__default_private_args};PUBLIC_LIBRARIES"
-        ${ARGN})
+    )
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     set(exceptions "")
     if(arg_EXCEPTIONS)

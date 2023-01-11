@@ -127,12 +127,12 @@ function(qt_internal_add_module target)
         module_multi_args
     )
 
-    qt_parse_all_arguments(arg "qt_internal_add_module"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         "${module_option_args}"
         "${module_single_args}"
         "${module_multi_args}"
-        ${ARGN}
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     set(is_internal_module FALSE)
     if(arg_INTERNAL_MODULE)

@@ -313,9 +313,11 @@ function(qt_configure_add_summary_entry)
 endfunction()
 
 function(qt_configure_process_add_summary_entry)
-    qt_parse_all_arguments(arg "qt_configure_add_summary_entry"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
         ""
-        "ARGS;TYPE;MESSAGE" "CONDITION" ${ARGN})
+        "ARGS;TYPE;MESSAGE"
+        "CONDITION")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     if(NOT arg_TYPE)
         set(arg_TYPE "feature")
@@ -472,8 +474,11 @@ function(qt_configure_add_summary_section)
 endfunction()
 
 function(qt_configure_process_add_summary_section)
-    qt_parse_all_arguments(arg "qt_configure_add_summary_section"
-        "" "NAME" "" ${ARGN})
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        ""
+        "NAME"
+        "")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     qt_configure_add_report("${__qt_configure_indent}${arg_NAME}:")
     if(NOT DEFINED __qt_configure_indent)
@@ -505,9 +510,11 @@ function(qt_configure_add_report_error error)
 endfunction()
 
 function(qt_configure_process_add_report_entry)
-    qt_parse_all_arguments(arg "qt_configure_add_report_entry"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
         ""
-        "TYPE;MESSAGE" "CONDITION" ${ARGN})
+        "TYPE;MESSAGE"
+        "CONDITION")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     set(possible_types NOTE WARNING ERROR FATAL_ERROR)
     if(NOT "${arg_TYPE}" IN_LIST possible_types)

@@ -15,12 +15,12 @@ endmacro()
 # Everything else is just prepation for option validating.
 function(qt_internal_add_common_qt_library_helper target)
     qt_internal_get_add_library_option_args(option_args)
-    qt_parse_all_arguments(arg "qt_internal_add_common_qt_library_helper"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         "${option_args}"
         ""
         ""
-        ${ARGN}
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     if(arg_SHARED)
         set(arg_SHARED SHARED)
@@ -79,12 +79,12 @@ function(qt_internal_add_cmake_library target)
         ${__default_public_args}
     )
 
-    qt_parse_all_arguments(arg "qt_add_cmake_library"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         "${option_args}"
         "${single_args}"
         "${multi_args}"
-        ${ARGN}
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     qt_remove_args(library_helper_args
         ARGS_TO_REMOVE
@@ -161,12 +161,12 @@ function(qt_internal_add_3rdparty_library target)
         ${__default_public_args}
     )
 
-    qt_parse_all_arguments(arg "qt_internal_add_3rdparty_library"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         "${library_option_args};${option_args}"
         "${single_args}"
         "${multi_args}"
-        ${ARGN}
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     qt_remove_args(library_helper_args
         ARGS_TO_REMOVE
@@ -370,12 +370,13 @@ function(qt_internal_add_3rdparty_header_module target)
     set(multi_args
         EXTERNAL_HEADERS
     )
-    qt_parse_all_arguments(arg "qt_internal_add_header_module"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         "${option_args}"
         "${single_args}"
         "${multi_args}"
-        ${ARGN}
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
+
     qt_internal_add_module(${target}
         INTERNAL_MODULE
         HEADER_MODULE

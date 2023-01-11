@@ -5,9 +5,11 @@ include(QtFeatureCommon)
 include(CheckCXXCompilerFlag)
 
 function(qt_feature_module_begin)
-    qt_parse_all_arguments(arg "qt_feature_module_begin"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
         "NO_MODULE;ONLY_EVALUATE_FEATURES"
-        "LIBRARY;PRIVATE_FILE;PUBLIC_FILE" "PUBLIC_DEPENDENCIES;PRIVATE_DEPENDENCIES" ${ARGN})
+        "LIBRARY;PRIVATE_FILE;PUBLIC_FILE"
+        "PUBLIC_DEPENDENCIES;PRIVATE_DEPENDENCIES")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     if(NOT arg_ONLY_EVALUATE_FEATURES)
         if ("${arg_LIBRARY}" STREQUAL "" AND (NOT ${arg_NO_MODULE}))
@@ -46,9 +48,11 @@ function(qt_feature feature)
     qt_feature_normalize_name("${feature}" feature)
     set_property(GLOBAL PROPERTY QT_FEATURE_ORIGINAL_NAME_${feature} "${original_name}")
 
-    qt_parse_all_arguments(arg "qt_feature"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         "PRIVATE;PUBLIC"
-        "LABEL;PURPOSE;SECTION;" "AUTODETECT;CONDITION;ENABLE;DISABLE;EMIT_IF" ${ARGN})
+        "LABEL;PURPOSE;SECTION"
+        "AUTODETECT;CONDITION;ENABLE;DISABLE;EMIT_IF")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     set(_QT_FEATURE_DEFINITION_${feature} ${ARGN} PARENT_SCOPE)
 
@@ -412,7 +416,11 @@ endfunction()
 
 function(qt_feature_config feature config_var_name)
     qt_feature_normalize_name("${feature}" feature)
-    qt_parse_all_arguments(arg "qt_feature_config" "NEGATE" "NAME" "" ${ARGN})
+    cmake_parse_arguments(PARSE_ARGV 2 arg
+        "NEGATE"
+        "NAME"
+        "")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     # Store all the config related info in a unique variable key.
     set(key_name "_QT_FEATURE_CONFIG_DEFINITION_${feature}_${config_var_name}")
@@ -472,7 +480,11 @@ endfunction()
 
 function(qt_feature_definition feature name)
     qt_feature_normalize_name("${feature}" feature)
-    qt_parse_all_arguments(arg "qt_feature_definition" "NEGATE" "VALUE;PREREQUISITE" "" ${ARGN})
+    cmake_parse_arguments(PARSE_ARGV 2 arg
+        "NEGATE"
+        "VALUE;PREREQUISITE"
+        "")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     # Store all the define related info in a unique variable key.
     set(key_name "_QT_FEATURE_DEFINE_DEFINITION_${feature}_${name}")
@@ -528,7 +540,11 @@ function(qt_evaluate_feature_definition key)
 endfunction()
 
 function(qt_extra_definition name value)
-    qt_parse_all_arguments(arg "qt_extra_definition" "PUBLIC;PRIVATE" "" "" ${ARGN})
+    cmake_parse_arguments(PARSE_ARGV 2 arg
+        "PUBLIC;PRIVATE"
+        ""
+        "")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     if (arg_PUBLIC)
         string(APPEND __QtFeature_public_extra "\n#define ${name} ${value}\n")

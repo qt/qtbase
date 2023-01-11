@@ -11,12 +11,12 @@ function(qt_internal_add_linker_version_script target)
         return()
     endif()
 
-    qt_parse_all_arguments(arg "qt_internal_add_linker_version_script"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         ""
         "PRIVATE_CONTENT_FILE"
         "PRIVATE_HEADERS"
-        ${ARGN}
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     if(arg_PRIVATE_CONTENT_FILE AND arg_PRIVATE_HEADERS)
         message(FATAL_ERROR "Both PRIVATE_CONTENT_FILE and PRIVATE_HEADERS are specified.")
@@ -526,13 +526,11 @@ endfunction()
 # LANGUAGES - optional list of languages like 'C', 'CXX', for which to remove the flags
 #             if not provided, defaults to the list of enabled C-like languages
 function(qt_internal_remove_known_optimization_flags)
-    qt_parse_all_arguments(
-        arg
-        "qt_internal_remove_known_optimization_flags"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
         "IN_CACHE"
         ""
-        "CONFIGS;LANGUAGES"
-        ${ARGN})
+        "CONFIGS;LANGUAGES")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     if(NOT arg_CONFIGS)
         message(FATAL_ERROR
@@ -566,13 +564,12 @@ endfunction()
 # specified.
 # REGEX enables the flag processing as a regular expression.
 function(qt_internal_remove_compiler_flags flags)
-    qt_parse_all_arguments(arg
-        "qt_internal_remove_compiler_flags"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         "IN_CACHE;REGEX"
         ""
         "CONFIGS;LANGUAGES"
-        ${ARGN}
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     if("${flags}" STREQUAL "")
         message(WARNING "qt_internal_remove_compiler_flags was called without any flags specified.")
@@ -627,13 +624,11 @@ endfunction()
 # LANGUAGES - optional list of languages like 'C', 'CXX', for which to add the flags
 #             if not provided, defaults to the list of enabled C-like languages
 function(qt_internal_add_compiler_flags)
-    qt_parse_all_arguments(
-        arg
-        "qt_internal_add_compiler_flags"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
         "IN_CACHE"
         "FLAGS"
-        "CONFIGS;LANGUAGES"
-        ${ARGN})
+        "CONFIGS;LANGUAGES")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     if(NOT arg_CONFIGS)
         message(FATAL_ERROR
@@ -670,13 +665,11 @@ endfunction()
 # LANGUAGES - optional list of languages like 'C', 'CXX', for which to add the flags
 #             if not provided, defaults to the list of enabled C-like languages
 function(qt_internal_add_compiler_flags_for_release_configs)
-    qt_parse_all_arguments(
-        arg
-        "qt_internal_add_compiler_flags_for_release_configs"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
         "IN_CACHE"
         "FLAGS"
-        "LANGUAGES"
-        ${ARGN})
+        "LANGUAGES")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     set(args "")
 
@@ -716,13 +709,11 @@ endfunction()
 # It is meant to be called in a subdirectory scope to enable full optimizations for a particular
 # Qt module, like Core or Gui.
 function(qt_internal_add_optimize_full_flags)
-    qt_parse_all_arguments(
-        arg
-        "qt_internal_add_optimize_full_flags"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
         "IN_CACHE"
         ""
-        ""
-        ${ARGN})
+        "")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     # QT_USE_DEFAULT_CMAKE_OPTIMIZATION_FLAGS disables forced full optimization.
     if(QT_USE_DEFAULT_CMAKE_OPTIMIZATION_FLAGS)
@@ -778,13 +769,11 @@ endfunction()
 # LANGUAGES      - optional list of languages like 'C', 'CXX', for which to replace the flags
 #                  if not provided, defaults to the list of enabled C-like languages
 function(qt_internal_replace_compiler_flags match_string replace_string)
-    qt_parse_all_arguments(
-        arg
-        "qt_internal_replace_compiler_flags"
+    cmake_parse_arguments(PARSE_ARGV 2 arg
         "IN_CACHE"
         ""
-        "CONFIGS;LANGUAGES"
-        ${ARGN})
+        "CONFIGS;LANGUAGES")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     if(NOT arg_CONFIGS)
         message(FATAL_ERROR
@@ -819,13 +808,11 @@ endfunction()
 #            CMAKE_<LINKER_TYPE>_LINKER_FLAGS_<CONFIG> cache variable.
 #            e.g EXE, MODULE, SHARED, STATIC.
 function(qt_internal_add_linker_flags)
-    qt_parse_all_arguments(
-        arg
-        "qt_internal_add_linker_flags"
+    cmake_parse_arguments(PARSE_ARGV 0 arg
         "IN_CACHE"
         "FLAGS"
-        "CONFIGS;TYPES"
-        ${ARGN})
+        "CONFIGS;TYPES")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     if(NOT arg_TYPES)
         message(FATAL_ERROR
@@ -866,13 +853,11 @@ endfunction()
 #                  CMAKE_<LINKER_TYPE>_LINKER_FLAGS_<CONFIG> cache variable.
 #                  e.g EXE, MODULE, SHARED, STATIC.
 function(qt_internal_replace_linker_flags match_string replace_string)
-    qt_parse_all_arguments(
-        arg
-        "qt_internal_replace_compiler_flags"
+    cmake_parse_arguments(PARSE_ARGV 2 arg
         "IN_CACHE"
         ""
-        "CONFIGS;TYPES"
-        ${ARGN})
+        "CONFIGS;TYPES")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     if(NOT arg_TYPES)
         message(FATAL_ERROR
