@@ -23,7 +23,6 @@ ProgressDialog::ProgressDialog(const QUrl &url, QWidget *parent)
   : QProgressDialog(parent)
 {
     setWindowTitle(tr("Download Progress"));
-    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     setLabelText(tr("Downloading %1.").arg(url.toDisplayString()));
     setMinimum(0);
     setValue(0);
@@ -46,7 +45,6 @@ HttpWindow::HttpWindow(QWidget *parent)
     , defaultFileLineEdit(new QLineEdit(defaultFileName))
     , downloadDirectoryLineEdit(new QLineEdit)
 {
-    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     setWindowTitle(tr("HTTP Client"));
 
     //! [qnam-auth-required-1]
