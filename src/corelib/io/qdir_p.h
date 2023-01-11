@@ -41,7 +41,6 @@ public:
 
     bool exists() const;
 
-    void initFileEngine();
     void initFileLists(const QDir &dir) const;
 
     static void sortFileList(QDir::SortFlags, const QFileInfoList &, QStringList *, QFileInfoList *);
@@ -52,7 +51,8 @@ public:
 
     void setPath(const QString &path);
 
-    void clearFileLists();
+    enum MetaDataClearing { KeepMetaData, IncludingMetaData };
+    void clearCache(MetaDataClearing mode);
 
     void resolveAbsoluteEntry() const;
 

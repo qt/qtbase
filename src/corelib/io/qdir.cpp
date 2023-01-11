@@ -153,17 +153,8 @@ inline void QDirPrivate::setPath(const QString &path)
     }
 
     dirEntry = QFileSystemEntry(p, QFileSystemEntry::FromInternalPath());
-    metaData.clear();
-    initFileEngine();
-    clearFileLists();
+    clearCache(IncludingMetaData);
     absoluteDirEntry = QFileSystemEntry();
-}
-
-inline void QDirPrivate::clearFileLists()
-{
-    fileListsInitialized = false;
-    files.clear();
-    fileInfos.clear();
 }
 
 inline void QDirPrivate::resolveAbsoluteEntry() const
@@ -316,8 +307,13 @@ inline void QDirPrivate::initFileLists(const QDir &dir) const
     }
 }
 
-inline void QDirPrivate::initFileEngine()
+inline void QDirPrivate::clearCache(MetaDataClearing mode)
 {
+    if (mode == IncludingMetaData)
+        metaData.clear();
+    fileListsInitialized = false;
+    files.clear();
+    fileInfos.clear();
     fileEngine.reset(QFileSystemEngine::resolveEntryAndCreateLegacyEngine(dirEntry, metaData));
 }
 
@@ -1014,9 +1010,7 @@ QStringList QDir::nameFilters() const
 void QDir::setNameFilters(const QStringList &nameFilters)
 {
     Q_D(QDir);
-    d->initFileEngine();
-    d->clearFileLists();
-
+    d->clearCache(QDirPrivate::KeepMetaData);
     d->nameFilters = nameFilters;
 }
 
@@ -1195,9 +1189,7 @@ QDir::Filters QDir::filter() const
 void QDir::setFilter(Filters filters)
 {
     Q_D(QDir);
-    d->initFileEngine();
-    d->clearFileLists();
-
+    d->clearCache(QDirPrivate::KeepMetaData);
     d->filters = filters;
 }
 
@@ -1252,9 +1244,7 @@ QDir::SortFlags QDir::sorting() const
 void QDir::setSorting(SortFlags sort)
 {
     Q_D(QDir);
-    d->initFileEngine();
-    d->clearFileLists();
-
+    d->clearCache(QDirPrivate::KeepMetaData);
     d->sort = sort;
 }
 
@@ -2352,9 +2342,7 @@ bool QDir::isRelativePath(const QString &path)
 void QDir::refresh() const
 {
     QDirPrivate *d = const_cast<QDir *>(this)->d_func();
-    d->metaData.clear();
-    d->initFileEngine();
-    d->clearFileLists();
+    d->clearCache(QDirPrivate::IncludingMetaData);
 }
 
 /*!
