@@ -1505,7 +1505,8 @@ bool VCLinkerTool::parseOption(const char* option)
             EnableUAC = _True;
         break;
     case 0x3389797: // /DEBUG[:{FASTLINK|FULL|NONE}]
-        if (config->CompilerVersion >= NET2015) {
+        DebugInfoOption = linkerDebugOptionEnabled;
+        if (config->CompilerVersion >= NET2015 && *(option + 6) == ':') {
             const char *str = option + 7;
             if (qstricmp(str, "fastlink") == 0)
                 DebugInfoOption = linkerDebugOptionFastLink;
