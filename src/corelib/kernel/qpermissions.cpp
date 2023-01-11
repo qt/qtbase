@@ -432,8 +432,8 @@ QLocationPermission::Availability QLocationPermission::availability() const
     \class QContactsPermission
     \brief Access the user's contacts.
 
-    By default the request is for both read and write access.
-    Use setReadOnly() to override the default.
+    By default the request is for read-only access.
+    Use setReadOnly(false) to override the default.
 
     \section1 Requirements
 
@@ -454,7 +454,7 @@ QLocationPermission::Availability QLocationPermission::availability() const
 class QContactsPermissionPrivate : public QSharedData
 {
 public:
-    bool isReadOnly = false;
+    bool isReadOnly = true;
 };
 
 QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QContactsPermission)
@@ -480,8 +480,8 @@ bool QContactsPermission::isReadOnly() const
     \class QCalendarPermission
     \brief Access the user's calendar.
 
-    By default the request is for both read and write access.
-    Use setReadOnly() to override the default.
+    By default the request is for read-only access.
+    Use setReadOnly(false) to override the default.
 
     \section1 Requirements
 
@@ -502,7 +502,7 @@ bool QContactsPermission::isReadOnly() const
 class QCalendarPermissionPrivate : public QSharedData
 {
 public:
-    bool isReadOnly = false;
+    bool isReadOnly = true;
 };
 
 QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QCalendarPermission)
