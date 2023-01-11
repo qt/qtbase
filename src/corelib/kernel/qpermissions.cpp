@@ -187,7 +187,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     \endcode
 
     When requesting permissions, the given functor will
-    be passed an instance of a QPermissions, which can be used
+    be passed an instance of a QPermission, which can be used
     to check the result of the request:
 
     \code
@@ -197,7 +197,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     });
     \endcode
 
-    To inspect the properties of the original typed permission,
+    To inspect the properties of the original, typed permission,
     use the data() function:
 
     \code
