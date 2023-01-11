@@ -1,7 +1,7 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-qt_internal_add_test(tst_qpermissions
+qt_internal_add_test(tst_manual_qpermissions
     SOURCES
         tst_qpermissions.cpp
     LIBRARIES
@@ -9,7 +9,7 @@ qt_internal_add_test(tst_qpermissions
 )
 
 if(ANDROID)
-    set_property(TARGET tst_qpermissions
+    set_property(TARGET tst_manual_qpermissions
         PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
 elseif(APPLE)
     # Test an app bundle, but without any usage descriptions
