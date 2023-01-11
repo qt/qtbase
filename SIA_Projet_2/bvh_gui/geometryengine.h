@@ -10,6 +10,13 @@
 
 #include "../joint.h"
 
+struct VertexData
+{
+    QVector3D position;
+    QVector2D texCoord;
+};
+
+
 class GeometryEngine : protected QOpenGLFunctions
 {
 public:
@@ -21,8 +28,12 @@ public:
     void updatePos(Joint *root);
 
     int lenPts;
+    int lenIndexes;
 
 private:
+    void getPos(Joint *jnt, std::vector<VertexData> *vec);
+    void setIndexes(Joint *jnt, std::vector<GLushort> *vec);
+    void setJointIndexes(Joint *jnt, int &vertexIndex);
     void initCubeGeometry();
     void initLineGeometry(Joint *root);
 

@@ -42,7 +42,7 @@ public :
 	std::vector<Joint*> _children;	// children of the current joint
 	bool motion = false;
 	Joint *parent = NULL;
-
+	int index;
 
 public :
 	// Constructor :

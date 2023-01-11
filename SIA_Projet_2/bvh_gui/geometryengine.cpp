@@ -8,12 +8,6 @@
 #include <QVector3D>
 #include <QVector4D>
 
-struct VertexData
-{
-    QVector3D position;
-    QVector2D texCoord;
-};
-
 //! [0]
 GeometryEngine::GeometryEngine(Joint *root)
     : indexBuf(QOpenGLBuffer::IndexBuffer)
@@ -108,21 +102,41 @@ void GeometryEngine::initCubeGeometry()
 
 double divider = 1/300.0;
 
-void getPos(Joint *jnt, std::vector<VertexData> *vec){
-    if(jnt->_children.empty() == false){
+void GeometryEngine::getPos(Joint *jnt, std::vector<VertexData> *vec){
+    QMatrix4x4 *scale = new QMatrix4x4(divider, 0, 0, 0, 0, divider, 0, 0, 0, 0, divider, 0, 0, 0, 0, 1);
+    //Add parent
+    QVector4D *pos = new QVector4D(jnt->_offX, jnt->_offY,  jnt->_offZ, 1);
+    QVector4D *globalPos = new QVector4D();
+    *globalPos = *scale * *(jnt->_transform) * *pos;
+    vec->push_back({QVector3D(globalPos->x(), globalPos->y(), globalPos->z()), QVector2D(0.0f, 0.0f)});
+    if(!(jnt->_children.empty())){
         for(Joint *child : jnt->_children){
             getPos(child, vec);
             //Scale
-            QMatrix4x4 *scale = new QMatrix4x4(divider, 0, 0, 0, 0, divider, 0, 0, 0, 0, divider, 0, 0, 0, 0, 1);
-            //Add parent
-            QVector4D *pos = new QVector4D(jnt->_offX, jnt->_offY,  jnt->_offZ, 1);
-            QVector4D *globalPos = new QVector4D();
-            *globalPos = *scale * *(jnt->_transform) * *pos;
-            vec->push_back({QVector3D(globalPos->x(), globalPos->y(), globalPos->z()), QVector2D(0.0f, 0.0f)});
             //Add child
-            pos = new QVector4D(child->_offX, child->_offY,  child->_offZ, 1);
-            *globalPos = *scale * *(child->_transform) * *pos;
-            vec->push_back({QVector3D(globalPos->x(), globalPos->y(), globalPos->z()), QVector2D(0.0f, 0.0f)});
+            // pos = new QVector4D(child->_offX, child->_offY,  child->_offZ, 1);
+            // *globalPos = *scale * *(child->_transform) * *pos;
+            // child->index = vertexIndex++;
+            // vec->push_back({QVector3D(globalPos->x(), globalPos->y(), globalPos->z()), QVector2D(0.0f, 0.0f)});
+        }
+    }
+}
+
+void GeometryEngine::setJointIndexes(Joint *jnt, int &vertexIndex){
+    jnt->index = vertexIndex++;
+    if(!(jnt->_children.empty())){
+        for(Joint *child : jnt->_children){
+            setJointIndexes(child, vertexIndex);
+        }
+    }
+}
+
+void GeometryEngine::setIndexes(Joint *jnt, std::vector<GLushort> *vec){
+    if(!(jnt->_children.empty())){
+        for(Joint *child : jnt->_children){
+            vec->push_back(jnt->index);
+            vec->push_back(child->index);
+            setIndexes(child, vec);
         }
     }
 }
@@ -134,18 +148,18 @@ void GeometryEngine::initLineGeometry(Joint *root)
     VertexData *vertices = &vec[0];
     int lenVec = vec.size();
 
-    //std::cout << lenVec << std::endl;
+    int vertexIndex = 0;
 
+    setJointIndexes(root, vertexIndex);
     std::vector<GLushort> indVec;
-    for(int i = 0 ; i < lenVec-1 ; i++){
-        indVec.push_back(i);
-        indVec.push_back(i+1);
-    }
+    setIndexes(root, &indVec);
+    int lenIdx = indVec.size();
+
     GLushort *indices = &indVec[0];
 
-    for(VertexData v : vec){
+    // for(VertexData v : vec){
         //std::cout << v.position.x() << " " << v.position.y() << " " << v.position.z() << std::endl;
-    }
+    // }
 
     // Transfer vertex data to VBO 0
     arrayBuf.bind();
@@ -153,9 +167,10 @@ void GeometryEngine::initLineGeometry(Joint *root)
 
     // Transfer index data to VBO 1
     indexBuf.bind();
-    indexBuf.allocate(indices, 2 * (lenVec-1) * sizeof(GLushort));
+    indexBuf.allocate(indices, lenIdx * sizeof(GLushort));
 
     lenPts = lenVec;
+    lenIndexes = lenIdx;
 }
 
 void GeometryEngine::updatePos(Joint *root){
@@ -224,5 +239,5 @@ void GeometryEngine::drawLineGeometry(QOpenGLShaderProgram *program)
     program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
 
     // Draw cube geometry using indices from VBO 1
-    glDrawElements(GL_LINE_STRIP, (lenPts-1) * 2, GL_UNSIGNED_SHORT, nullptr);
+    glDrawElements(GL_LINES, lenIndexes, GL_UNSIGNED_SHORT, nullptr);
 }
