@@ -47,7 +47,7 @@ HttpWindow::HttpWindow(QWidget *parent)
     , downloadDirectoryLineEdit(new QLineEdit)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    setWindowTitle(tr("HTTP"));
+    setWindowTitle(tr("HTTP Client"));
 
     //! [qnam-auth-required-1]
     connect(&qnam, &QNetworkAccessManager::authenticationRequired,

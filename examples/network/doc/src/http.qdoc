@@ -3,7 +3,9 @@
 
 /*!
     \example http
-    \title HTTP Example
+    \meta category {Networking}
+    \meta tags {http,network,https,proxy}
+    \title HTTP Client
     \ingroup examples-network
     \brief Demonstrates a simple HTTP client.
 
