@@ -258,6 +258,7 @@ enum inlineExpansionOption {
 };
 enum linkerDebugOption {
     linkerDebugOptionNone,
+    linkerDebugOptionEnabled,     // represents /DEBUG without further options
     linkerDebugOptionFastLink,
     linkerDebugOptionFull
 };
