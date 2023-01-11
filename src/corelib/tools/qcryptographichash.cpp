@@ -4,6 +4,7 @@
 
 #include <qcryptographichash.h>
 #include <qiodevice.h>
+#include <qmutex.h>
 
 #include "../../3rdparty/sha1/sha1.cpp"
 
@@ -182,14 +183,7 @@ public:
         blake2s_state blake2sContext;
 #endif
     };
-#ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-    enum class Sha3Variant
-    {
-        Sha3,
-        Keccak
-    };
-    void sha3Finish(int bitCount, Sha3Variant sha3Variant);
-#endif
+
     class SmallByteArray {
         std::array<quint8, MaxHashLength> m_data;
         static_assert(MaxHashLength <= std::numeric_limits<std::uint8_t>::max());
@@ -207,11 +201,24 @@ public:
         QByteArrayView toByteArrayView() const noexcept
         { return QByteArrayView{m_data.data(), size()}; }
     };
+
+    // Only write to the result under this mutex
+    QBasicMutex finalizeMutex;
     SmallByteArray result;
+
+#if !defined(QT_CRYPTOGRAPHICHASH_ONLY_SHA1) && !defined(USING_OPENSSL30)
+    enum class Sha3Variant
+    {
+        Sha3,
+        Keccak
+    };
+    void sha3Finish(SmallByteArray *tmpresult, int bitCount, Sha3Variant sha3Variant);
+#endif
 };
 
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-void QCryptographicHashPrivate::sha3Finish(int bitCount, Sha3Variant sha3Variant)
+void QCryptographicHashPrivate::sha3Finish(SmallByteArray *tmpresult, int bitCount,
+                                           Sha3Variant sha3Variant)
 {
     /*
         FIPS 202 §6.1 defines SHA-3 in terms of calculating the Keccak function
@@ -235,7 +242,7 @@ void QCryptographicHashPrivate::sha3Finish(int bitCount, Sha3Variant sha3Variant
     */
     static const unsigned char sha3FinalSuffix = 0x80;
 
-    result.resizeForOverwrite(bitCount / 8);
+    tmpresult->resizeForOverwrite(bitCount / 8);
 
     SHA3Context copy = sha3Context;
 
@@ -247,7 +254,7 @@ void QCryptographicHashPrivate::sha3Finish(int bitCount, Sha3Variant sha3Variant
         break;
     }
 
-    sha3Final(&copy, reinterpret_cast<BitSequence *>(result.data()));
+    sha3Final(&copy, tmpresult->data());
 }
 #endif
 
@@ -547,12 +554,13 @@ void QCryptographicHashPrivate::finalize() noexcept
     if (!result.isEmpty())
         return;
 
+    SmallByteArray tmpresult;
     switch (method) {
     case QCryptographicHash::Sha1: {
         Sha1State copy = sha1Context;
-        result.resizeForOverwrite(20);
+        tmpresult.resizeForOverwrite(20);
         sha1FinalizeState(&copy);
-        sha1ToHash(&copy, (unsigned char *)result.data());
+        sha1ToHash(&copy, tmpresult.data());
         break;
     }
 #ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
@@ -563,52 +571,52 @@ void QCryptographicHashPrivate::finalize() noexcept
 #else
     case QCryptographicHash::Md4: {
         md4_context copy = md4Context;
-        result.resizeForOverwrite(MD4_RESULTLEN);
-        md4_final(&copy, (unsigned char *)result.data());
+        tmpresult.resizeForOverwrite(MD4_RESULTLEN);
+        md4_final(&copy, tmpresult.data());
         break;
     }
     case QCryptographicHash::Md5: {
         MD5Context copy = md5Context;
-        result.resizeForOverwrite(16);
-        MD5Final(&copy, (unsigned char *)result.data());
+        tmpresult.resizeForOverwrite(16);
+        MD5Final(&copy, tmpresult.data());
         break;
     }
     case QCryptographicHash::Sha224: {
         SHA224Context copy = sha224Context;
-        result.resizeForOverwrite(SHA224HashSize);
-        SHA224Result(&copy, reinterpret_cast<unsigned char *>(result.data()));
+        tmpresult.resizeForOverwrite(SHA224HashSize);
+        SHA224Result(&copy, tmpresult.data());
         break;
     }
     case QCryptographicHash::Sha256: {
         SHA256Context copy = sha256Context;
-        result.resizeForOverwrite(SHA256HashSize);
-        SHA256Result(&copy, reinterpret_cast<unsigned char *>(result.data()));
+        tmpresult.resizeForOverwrite(SHA256HashSize);
+        SHA256Result(&copy, tmpresult.data());
         break;
     }
     case QCryptographicHash::Sha384: {
         SHA384Context copy = sha384Context;
-        result.resizeForOverwrite(SHA384HashSize);
-        SHA384Result(&copy, reinterpret_cast<unsigned char *>(result.data()));
+        tmpresult.resizeForOverwrite(SHA384HashSize);
+        SHA384Result(&copy, tmpresult.data());
         break;
     }
     case QCryptographicHash::Sha512: {
         SHA512Context copy = sha512Context;
-        result.resizeForOverwrite(SHA512HashSize);
-        SHA512Result(&copy, reinterpret_cast<unsigned char *>(result.data()));
+        tmpresult.resizeForOverwrite(SHA512HashSize);
+        SHA512Result(&copy, tmpresult.data());
         break;
     }
     case QCryptographicHash::RealSha3_224:
     case QCryptographicHash::RealSha3_256:
     case QCryptographicHash::RealSha3_384:
     case QCryptographicHash::RealSha3_512: {
-        sha3Finish(8 * hashLengthInternal(method), Sha3Variant::Sha3);
+        sha3Finish(&tmpresult, 8 * hashLengthInternal(method), Sha3Variant::Sha3);
         break;
     }
     case QCryptographicHash::Keccak_224:
     case QCryptographicHash::Keccak_256:
     case QCryptographicHash::Keccak_384:
     case QCryptographicHash::Keccak_512: {
-        sha3Finish(8 * hashLengthInternal(method), Sha3Variant::Keccak);
+        sha3Finish(&tmpresult, 8 * hashLengthInternal(method), Sha3Variant::Keccak);
         break;
     }
     case QCryptographicHash::Blake2b_160:
@@ -617,8 +625,8 @@ void QCryptographicHashPrivate::finalize() noexcept
     case QCryptographicHash::Blake2b_512: {
         const auto length = hashLengthInternal(method);
         blake2b_state copy = blake2bContext;
-        result.resizeForOverwrite(length);
-        blake2b_final(&copy, reinterpret_cast<uint8_t *>(result.data()), length);
+        tmpresult.resizeForOverwrite(length);
+        blake2b_final(&copy, tmpresult.data(), length);
         break;
     }
     case QCryptographicHash::Blake2s_128:
@@ -627,12 +635,17 @@ void QCryptographicHashPrivate::finalize() noexcept
     case QCryptographicHash::Blake2s_256: {
         const auto length = hashLengthInternal(method);
         blake2s_state copy = blake2sContext;
-        result.resizeForOverwrite(length);
-        blake2s_final(&copy, reinterpret_cast<uint8_t *>(result.data()), length);
+        tmpresult.resizeForOverwrite(length);
+        blake2s_final(&copy, tmpresult.data(), length);
         break;
     }
 #endif
     }
+
+    // we're called from a const function, so only write to this->result under
+    // a mutex
+    QMutexLocker locker(&finalizeMutex);
+    result = std::move(tmpresult);
 }
 
 /*!
