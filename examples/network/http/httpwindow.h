@@ -19,6 +19,9 @@ class QSslError;
 class QAuthenticator;
 class QNetworkReply;
 class QCheckBox;
+#if QT_CONFIG(networkproxy)
+class QNetworkProxy;
+#endif
 
 QT_END_NAMESPACE
 
@@ -51,6 +54,9 @@ private slots:
     void slotAuthenticationRequired(QNetworkReply *, QAuthenticator *authenticator);
 #if QT_CONFIG(ssl)
     void sslErrors(const QList<QSslError> &errors);
+#endif
+#if QT_CONFIG(networkproxy)
+    void slotProxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator);
 #endif
 
 private:

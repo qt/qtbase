@@ -51,6 +51,10 @@ HttpWindow::HttpWindow(QWidget *parent)
     connect(&qnam, &QNetworkAccessManager::authenticationRequired,
             this, &HttpWindow::slotAuthenticationRequired);
     //! [qnam-auth-required-1]
+#if QT_CONFIG(networkproxy)
+    connect(&qnam, &QNetworkAccessManager::proxyAuthenticationRequired,
+            this, &HttpWindow::slotProxyAuthenticationRequired);
+#endif
 
     QFormLayout *formLayout = new QFormLayout;
     urlLineEdit->setClearButtonEnabled(true);
@@ -276,4 +280,26 @@ void HttpWindow::sslErrors(const QList<QSslError> &errors)
     }
 }
 //! [sslerrors-2]
+#endif
+
+#if QT_CONFIG(networkproxy)
+void HttpWindow::slotProxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator)
+{
+    QDialog authenticationDialog;
+    Ui::Dialog ui;
+    ui.setupUi(&authenticationDialog);
+    authenticationDialog.adjustSize();
+    ui.siteDescription->setText(tr("A network proxy at %1 is requesting credentials for realm: %2")
+                                        .arg(proxy.hostName(), authenticator->realm()));
+
+    // If the user passed credentials in the URL to http_proxy or similar they may be available to
+    // us. Otherwise this will just leave the fields empty
+    ui.userEdit->setText(proxy.user());
+    ui.passwordEdit->setText(proxy.password());
+
+    if (authenticationDialog.exec() == QDialog::Accepted) {
+        authenticator->setUser(ui.userEdit->text());
+        authenticator->setPassword(ui.passwordEdit->text());
+    }
+}
 #endif
