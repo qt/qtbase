@@ -434,7 +434,7 @@ QLocationPermission::Availability QLocationPermission::availability() const
     \brief Access the user's contacts.
 
     By default the request is for read-only access.
-    Use setReadOnly(false) to override the default.
+    Use setReadWrite() to override the default.
 
     \section1 Requirements
 
@@ -447,7 +447,7 @@ QLocationPermission::Availability QLocationPermission::availability() const
         \li Android
         \li \l{android-uses-permission}{\c{uses-permission}}
         \li \c android.permission.READ_CONTACTS. \c android.permission.WRITE_CONTACTS if
-            QContactsPermission::isReadOnly() is set to \c false.
+            QContactsPermission::isReadWrite() is set to \c true.
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
@@ -455,26 +455,28 @@ QLocationPermission::Availability QLocationPermission::availability() const
 class QContactsPermissionPrivate : public QSharedData
 {
 public:
-    bool isReadOnly = true;
+    bool isReadWrite = false;
 };
 
 QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QContactsPermission)
 
 /*!
-    Sets whether to \a enable read-only access to the contacts.
+    Sets whether the request is for read-write (\a enable == \c true) or
+    read-only (\a enable == \c false) access to the contacts.
 */
-void QContactsPermission::setReadOnly(bool enable)
+void QContactsPermission::setReadWrite(bool enable)
 {
     d.detach();
-    d->isReadOnly = enable;
+    d->isReadWrite = enable;
 }
 
 /*!
-    Returns whether the request is for read-only access to the contacts.
+    Returns \c true when the request is for read-write and \c false when it is
+    for read-only access to the contacts.
 */
-bool QContactsPermission::isReadOnly() const
+bool QContactsPermission::isReadWrite() const
 {
-    return d->isReadOnly;
+    return d->isReadWrite;
 }
 
 /*!
@@ -482,7 +484,7 @@ bool QContactsPermission::isReadOnly() const
     \brief Access the user's calendar.
 
     By default the request is for read-only access.
-    Use setReadOnly(false) to override the default.
+    Use setReadWrite() to override the default.
 
     \section1 Requirements
 
@@ -495,7 +497,7 @@ bool QContactsPermission::isReadOnly() const
         \li Android
         \li \l{android-uses-permission}{\c{uses-permission}}
         \li \c android.permission.READ_CALENDAR. \c android.permission.WRITE_CALENDAR if
-            QContactsPermission::isReadOnly() is set to \c false.
+            QContactsPermission::isReadWrite() is set to \c true.
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
@@ -503,26 +505,28 @@ bool QContactsPermission::isReadOnly() const
 class QCalendarPermissionPrivate : public QSharedData
 {
 public:
-    bool isReadOnly = true;
+    bool isReadWrite = false;
 };
 
 QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QCalendarPermission)
 
 /*!
-    Sets whether to \a enable read-only access to the calendar.
+    Sets whether the request is for read-write (\a enable == \c true) or
+    read-only (\a enable == \c false) access to the calendar.
 */
-void QCalendarPermission::setReadOnly(bool enable)
+void QCalendarPermission::setReadWrite(bool enable)
 {
     d.detach();
-    d->isReadOnly = enable;
+    d->isReadWrite = enable;
 }
 
 /*!
-    Returns whether the request is for read-only access to the calendar.
+    Returns \c true when the request is for read-write and \c false when it is
+    for read-only access to the calendar.
 */
-bool QCalendarPermission::isReadOnly() const
+bool QCalendarPermission::isReadWrite() const
 {
-    return d->isReadOnly;
+    return d->isReadWrite;
 }
 
 /*!

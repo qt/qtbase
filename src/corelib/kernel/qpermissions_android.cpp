@@ -63,12 +63,12 @@ static QStringList nativeStringsFromPermission(const QPermission &permission)
         return { u"android.permission.BLUETOOTH"_s };
     } else if (id == qMetaTypeId<QContactsPermission>()) {
         const auto readContactsString = u"android.permission.READ_CONTACTS"_s;
-        if (permission.data<QContactsPermission>().isReadOnly())
+        if (!permission.data<QContactsPermission>().isReadWrite())
             return { readContactsString };
         return { readContactsString, u"android.permission.WRITE_CONTACTS"_s };
     } else if (id == qMetaTypeId<QCalendarPermission>()) {
         const auto readContactsString = u"android.permission.READ_CALENDAR"_s;
-        if (permission.data<QCalendarPermission>().isReadOnly())
+        if (!permission.data<QCalendarPermission>().isReadWrite())
             return { readContactsString };
         return { readContactsString, u"android.permission.WRITE_CALENDAR"_s };
     }

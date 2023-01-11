@@ -121,8 +121,8 @@ class QCalendarPermission
 {
     QT_PERMISSION(QCalendarPermission)
 public:
-    Q_CORE_EXPORT void setReadOnly(bool enable);
-    Q_CORE_EXPORT bool isReadOnly() const;
+    Q_CORE_EXPORT void setReadWrite(bool enable);
+    Q_CORE_EXPORT bool isReadWrite() const;
 };
 Q_DECLARE_SHARED(QCalendarPermission)
 
@@ -131,8 +131,8 @@ class QContactsPermission
 {
     QT_PERMISSION(QContactsPermission)
 public:
-    Q_CORE_EXPORT void setReadOnly(bool enable);
-    Q_CORE_EXPORT bool isReadOnly() const;
+    Q_CORE_EXPORT void setReadWrite(bool enable);
+    Q_CORE_EXPORT bool isReadWrite() const;
 };
 Q_DECLARE_SHARED(QContactsPermission)
 
