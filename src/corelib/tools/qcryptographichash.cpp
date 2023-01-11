@@ -752,9 +752,11 @@ void QCryptographicHashPrivate::finalize() noexcept
         tmpresult.resizeForOverwrite(length);
         blake2s_final(&copy, tmpresult.data(), length);
     } else if (!initializationFailed) {
+        EVP_MD_CTX_ptr copy = EVP_MD_CTX_ptr(EVP_MD_CTX_new());
+        EVP_MD_CTX_copy_ex(copy.get(), context.get());
         tmpresult.resizeForOverwrite(EVP_MD_get_size(algorithm.get()));
-        const int ret = EVP_DigestFinal_ex(context.get(), tmpresult.data(), nullptr);
-        Q_UNUSED(ret);
+        const int ret = EVP_DigestFinal_ex(copy.get(), tmpresult.data(), nullptr);
+        Q_UNUSED(ret)
     }
 #else
     switch (method) {
