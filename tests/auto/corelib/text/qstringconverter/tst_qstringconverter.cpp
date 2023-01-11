@@ -2456,6 +2456,10 @@ void tst_QStringConverter::initTestCase()
 
 void tst_QStringConverter::threadSafety()
 {
+#if defined(Q_OS_WASM)
+    QSKIP("This test misbehaves on WASM. Investigation needed (QTBUG-110067)");
+#endif
+
     QThreadPool::globalInstance()->setMaxThreadCount(12);
 
     QList<QString> res;
