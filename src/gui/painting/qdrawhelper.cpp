@@ -6230,7 +6230,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     },
 };
 
-#if !defined(__SSE2__)
+#if !defined(Q_PROCESSOR_X86)
 void qt_memfill64(quint64 *dest, quint64 color, qsizetype count)
 {
     qt_memfill_template<quint64>(dest, color, count);
@@ -6297,15 +6297,14 @@ void qt_memfill16(quint16 *dest, quint16 value, qsizetype count)
     qt_memfill32(reinterpret_cast<quint32*>(dest), value32, count / 2);
 }
 
-#if !defined(__SSE2__) && !defined(__ARM_NEON__) && !defined(__MIPS_DSP__)
+#if defined(Q_PROCESSOR_X86)
+void (*qt_memfill32)(quint32 *dest, quint32 value, qsizetype count) = nullptr;
+void (*qt_memfill64)(quint64 *dest, quint64 value, qsizetype count) = nullptr;
+#elif !defined(__ARM_NEON__) && !defined(__MIPS_DSP__)
 void qt_memfill32(quint32 *dest, quint32 color, qsizetype count)
 {
     qt_memfill_template<quint32>(dest, color, count);
 }
-#endif
-#ifdef __SSE2__
-decltype(qt_memfill32_sse2) *qt_memfill32 = nullptr;
-decltype(qt_memfill64_sse2) *qt_memfill64 = nullptr;
 #endif
 
 #ifdef QT_COMPILER_SUPPORTS_SSE4_1
@@ -6319,7 +6318,10 @@ static void qInitDrawhelperFunctions()
     // Set up basic blend function tables.
     qInitBlendFunctions();
 
-#ifdef __SSE2__
+#if defined(Q_PROCESSOR_X86) && !defined(__SSE2__)
+    qt_memfill32 = qt_memfill_template<quint32>;
+    qt_memfill64 = qt_memfill_template<quint64>;
+#elif defined(__SSE2__)
 #  ifndef __AVX2__
     qt_memfill32 = qt_memfill32_sse2;
     qt_memfill64 = qt_memfill64_sse2;
