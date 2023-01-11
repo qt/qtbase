@@ -29,9 +29,9 @@ class QDebug;
 struct QMetaObject;
 class QCoreApplication;
 
-class Q_CORE_EXPORT QPermission
+class QPermission
 {
-    Q_GADGET
+    Q_GADGET_EXPORT(Q_CORE_EXPORT)
 
     template <typename T, typename Enable = void>
     struct is_permission : public std::false_type {};
@@ -50,9 +50,9 @@ public:
     QPermission(const T &t) : m_data(QVariant::fromValue(t)) {}
 #endif
 
-    Qt::PermissionStatus status() const;
+    Qt::PermissionStatus status() const { return m_status; }
 
-    QMetaType type() const;
+    QMetaType type() const { return m_data.metaType(); }
 
 #ifdef Q_QDOC
     template <typename Type>
