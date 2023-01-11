@@ -220,8 +220,6 @@ public:
     QByteArrayView resultView() const noexcept { return result.toByteArrayView(); }
     static bool supportsAlgorithm(QCryptographicHash::Algorithm method);
 
-    const QCryptographicHash::Algorithm method;
-
 #ifdef USING_OPENSSL30
     struct EVP_MD_CTX_deleter {
         void operator()(EVP_MD_CTX *ctx) const noexcept {
@@ -278,6 +276,8 @@ public:
     // Only write to the result under this mutex
     QBasicMutex finalizeMutex;
     SmallByteArray result;
+
+    const QCryptographicHash::Algorithm method;
 
 #if !defined(QT_CRYPTOGRAPHICHASH_ONLY_SHA1) && !defined(USING_OPENSSL30)
     enum class Sha3Variant
