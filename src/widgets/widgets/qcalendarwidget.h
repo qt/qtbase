@@ -21,8 +21,8 @@ class Q_WIDGETS_EXPORT QCalendarWidget : public QWidget
     Q_OBJECT
     Q_ENUMS(Qt::DayOfWeek)
     Q_PROPERTY(QDate selectedDate READ selectedDate WRITE setSelectedDate)
-    Q_PROPERTY(QDate minimumDate READ minimumDate WRITE setMinimumDate)
-    Q_PROPERTY(QDate maximumDate READ maximumDate WRITE setMaximumDate)
+    Q_PROPERTY(QDate minimumDate READ minimumDate WRITE setMinimumDate RESET clearMinimumDate)
+    Q_PROPERTY(QDate maximumDate READ maximumDate WRITE setMaximumDate RESET clearMaximumDate)
     Q_PROPERTY(Qt::DayOfWeek firstDayOfWeek READ firstDayOfWeek WRITE setFirstDayOfWeek)
     Q_PROPERTY(bool gridVisible READ isGridVisible WRITE setGridVisible)
     Q_PROPERTY(SelectionMode selectionMode READ selectionMode WRITE setSelectionMode)
@@ -68,9 +68,11 @@ public:
 
     QDate minimumDate() const;
     void setMinimumDate(QDate date);
+    void clearMinimumDate();
 
     QDate maximumDate() const;
     void setMaximumDate(QDate date);
+    void clearMaximumDate();
 
     Qt::DayOfWeek firstDayOfWeek() const;
     void setFirstDayOfWeek(Qt::DayOfWeek dayOfWeek);

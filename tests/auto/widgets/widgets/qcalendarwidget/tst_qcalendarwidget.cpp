@@ -110,11 +110,19 @@ void tst_QCalendarWidget::getSetCheck()
     object.setSelectedDate(selectedDate);
     QCOMPARE(minDate, object.selectedDate());
     QVERIFY(selectedDate != object.selectedDate());
+    object.clearMinimumDate();
+    object.setSelectedDate(selectedDate);
+    QCOMPARE(selectedDate, object.selectedDate());
+
     //date should not go beyond the maximum.
     selectedDate = maxDate.addDays(10);
     object.setSelectedDate(selectedDate);
     QCOMPARE(maxDate, object.selectedDate());
     QVERIFY(selectedDate != object.selectedDate());
+    object.clearMaximumDate();
+    object.setSelectedDate(selectedDate);
+    QCOMPARE(selectedDate, object.selectedDate());
+
     //show today
     QDate today = QDate::currentDate();
     object.showToday();
