@@ -616,7 +616,7 @@ endfunction()
 #         Specifies the module this tool belongs to. The Qt6${TOOLS_TARGET}Tools module
 #         will then expose targets for this tool. Ignored if NO_INSTALL is set.
 function(qt_internal_add_configure_time_tool target_name)
-    set(one_value_args INSTALL_DIRECTORY TOOLS_TARGET)
+    set(one_value_args INSTALL_DIRECTORY TOOLS_TARGET CONFIG)
     set(multi_value_args)
     set(option_args NO_INSTALL)
     cmake_parse_arguments(PARSE_ARGV 1 arg
@@ -639,9 +639,18 @@ function(qt_internal_add_configure_time_tool target_name)
         set(extra_args "INSTALL_DIRECTORY" "${install_dir}")
     endif()
 
+    if(arg_CONFIG)
+        set(tool_config "${arg_CONFIG}")
+    elseif(QT_MULTI_CONFIG_FIRST_CONFIG)
+        set(tool_config "${arg_QT_MULTI_CONFIG_FIRST_CONFIG}")
+    else()
+        set(tool_config "${CMAKE_BUILD_TYPE}")
+    endif()
+
     string(REPLACE "\\\;" "\\\\\\\;" unparsed_arguments "${arg_UNPARSED_ARGUMENTS}")
     qt_internal_add_configure_time_executable(${target_name}
         OUTPUT_NAME ${name}
+        CONFIG ${tool_config}
         ${extra_args}
         ${unparsed_arguments}
     )
