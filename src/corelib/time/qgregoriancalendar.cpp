@@ -9,6 +9,25 @@ QT_BEGIN_NAMESPACE
 
 using namespace QRoundingDown;
 
+// Verification that QRoundingDown::qDivMod() works correctly:
+static_assert(qDivMod<2>(-86400).quotient == -43200);
+static_assert(qDivMod<2>(-86400).remainder == 0);
+static_assert(qDivMod<86400>(-86400).quotient == -1);
+static_assert(qDivMod<86400>(-86400).remainder == 0);
+static_assert(qDivMod<86400>(-86401).quotient == -2);
+static_assert(qDivMod<86400>(-86401).remainder == 86399);
+static_assert(qDivMod<86400>(-100000).quotient == -2);
+static_assert(qDivMod<86400>(-100000).remainder == 72800);
+static_assert(qDivMod<86400>(-172799).quotient == -2);
+static_assert(qDivMod<86400>(-172799).remainder == 1);
+static_assert(qDivMod<86400>(-172800).quotient == -2);
+static_assert(qDivMod<86400>(-172800).remainder == 0);
+
+// Uncomment to verify error on bad denominator is clear and intelligible:
+// static_assert(qDivMod<1>(17).remainder == 0);
+// static_assert(qDivMod<0>(17).remainder == 0);
+// static_assert(qDivMod<std::numeric_limits<unsigned>::max()>(17).remainder == 0);
+
 /*!
     \since 5.14
 

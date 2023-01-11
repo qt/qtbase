@@ -16,10 +16,27 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
+#include <QtCore/QtAlgorithms>
 
 QT_BEGIN_NAMESPACE
 
 namespace QRoundingDown {
+// Note: qgregoriancalendar.cpp contains some static asserts to verify this all works.
+namespace QRoundingDownPrivate {
+#ifdef Q_CC_MSVC
+// MSVC 2019 doesn't believe in the constexpr-ness of the #else clause's version :-(
+#define QCALMATH_ISPOW2(b) ((b > 0) && !(b & (b - 1))) // See #else's comment.
+#else
+// Subtracting one toggles the least significant set bit and any unset bits less
+// significant than it, leaving other bits unchanged. Thus the & of this with
+// the original number preserves all more significant bits, clearing the least
+// significant. If there are no such bits, either our number was 0 or it only
+// had one bit set, hence is a power of two.
+template <typename Int>
+inline constexpr bool isPowerOfTwo(Int b) { return b > 0 && (b & (b - 1)) == 0; }
+#define QCALMATH_ISPOW2(b) QRoundingDownPrivate::isPowerOfTwo(b)
+#endif
+}
 /*
   Division, rounding down (rather than towards zero).
 
@@ -33,13 +50,59 @@ namespace QRoundingDown {
   doesn't change the result of dividing by b; and we want one less than that
   result. This is equivalent to subtracting b - 1 and simply dividing, except
   when that subtraction would underflow.
+
+  For the remainder, with negative a, aside from having to add one and subtract
+  it later to deal with the exact multiples, we can simply use the truncating
+  remainder and then add b. When b is a power of two we can, of course, get the
+  remainder correctly by the same masking that works for positive a.
 */
 
-template<unsigned b, typename Int> constexpr Int qDiv(Int a)
-{ return a < 0 ? (a + 1) / int(b) - 1 : a / int(b); }
+// Fall-back, to ensure intelligible error messages on mis-use:
+template <unsigned b, typename Int, std::enable_if_t<(int(b) < 2), bool> = true>
+constexpr auto qDivMod(Int)
+{
+    static_assert(b, "Division by 0 is undefined");
+    // Use complement of earlier cases || new check, to ensure only one error:
+    static_assert(!b || int(b) > 0, "Denominator is too big");
+    static_assert(int(b) < 1 || b > 1, "Division by 1 is fautous");
+    struct R { Int quotient; Int remainder; };
+    return R { 0, 0 };
+}
 
-template<unsigned b, typename Int> constexpr Int qMod(Int a)
-{ return a - qDiv<b>(a) * b; }
+template <unsigned b, typename Int,
+          std::enable_if_t<(b > 1) && !QCALMATH_ISPOW2(b) && (int(b) > 0),
+                           bool> = true>
+constexpr auto qDivMod(Int a)
+{
+    struct R { Int quotient; Int remainder; };
+    if constexpr (std::is_signed_v<Int>) {
+        if (a < 0) {
+            ++a;    // can't overflow, it's negative
+            return R { Int(a / int(b) - 1), Int(a % int(b) - 1 + int(b)) };
+        }
+    }
+    return R { Int(a / int(b)), Int(a % int(b)) };
+}
+
+template <unsigned b, typename Int,
+          std::enable_if_t<(b > 1) && QCALMATH_ISPOW2(b) && (int(b) > 0),
+                           bool> = true>
+constexpr auto qDivMod(Int a)
+{
+    constexpr unsigned w = QtPrivate::qConstexprCountTrailingZeroBits(b);
+    struct R { Int quotient; Int remainder; };
+    if constexpr (std::is_signed_v<Int>) {
+        if (a < 0)
+            return R { Int((a + 1) / int(b) - 1), Int(a & int(b - 1)) };
+    }
+    return R { Int(a >> w), Int(a & int(b - 1)) };
+}
+
+#undef QCALMATH_ISPOW2
+// </kludge>
+
+template <unsigned b, typename Int> constexpr Int qDiv(Int a) { return qDivMod<b>(a).quotient; }
+template <unsigned b, typename Int> constexpr Int qMod(Int a) { return qDivMod<b>(a).remainder; }
 
 } // QRoundingDown
 
