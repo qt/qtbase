@@ -1,4 +1,4 @@
-// Copyright (C) 2020 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include "httpwindow.h"
@@ -41,7 +41,7 @@ HttpWindow::HttpWindow(QWidget *parent)
     , statusLabel(new QLabel(tr("Please enter the URL of a file you want to download.\n\n"), this))
     , urlLineEdit(new QLineEdit(defaultUrl))
     , downloadButton(new QPushButton(tr("Download")))
-    , launchCheckBox(new QCheckBox("Launch file"))
+    , launchCheckBox(new QCheckBox(tr("Launch file")))
     , defaultFileLineEdit(new QLineEdit(defaultFileName))
     , downloadDirectoryLineEdit(new QLineEdit)
 {
@@ -140,19 +140,18 @@ void HttpWindow::downloadFile()
     bool useDirectory = !downloadDirectory.isEmpty() && QFileInfo(downloadDirectory).isDir();
     if (useDirectory)
         fileName.prepend(downloadDirectory + '/');
+
     if (QFile::exists(fileName)) {
-        if (QMessageBox::question(this, tr("Overwrite Existing File"),
-                                  tr("There already exists a file called %1%2."
-                                     " Overwrite?")
-                                     .arg(fileName,
-                                          useDirectory
-                                           ? QString()
-                                           : QStringLiteral(" in the current directory")),
-                                     QMessageBox::Yes | QMessageBox::No,
-                                     QMessageBox::No)
-            == QMessageBox::No) {
+        QString alreadyExists = useDirectory
+                ? tr("There already exists a file called %1. Overwrite?")
+                : tr("There already exists a file called %1 in the current directory. "
+                     "Overwrite?");
+        QMessageBox::StandardButton response = QMessageBox::question(this,
+                tr("Overwrite Existing File"),
+                alreadyExists.arg(QDir::toNativeSeparators(fileName)),
+                QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (response == QMessageBox::No)
             return;
-        }
         QFile::remove(fileName);
     }
 
