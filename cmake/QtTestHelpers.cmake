@@ -9,12 +9,12 @@ function(qt_internal_add_benchmark target)
         message(WARNING "Benchmarks won't be batched - unsupported (yet)")
     endif()
 
-    qt_parse_all_arguments(arg "qt_add_benchmark"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         "${__qt_internal_add_executable_optional_args}"
         "${__qt_internal_add_executable_single_args}"
         "${__qt_internal_add_executable_multi_args}"
-        ${ARGN}
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     qt_remove_args(exec_args
         ARGS_TO_REMOVE
@@ -93,12 +93,12 @@ endfunction()
 # See qt_internal_add_executable() for more details.
 function(qt_internal_add_manual_test target)
 
-    qt_parse_all_arguments(arg "qt_add_manual_test"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         "${__qt_internal_add_executable_optional_args}"
         "${__qt_internal_add_executable_single_args}"
         "${__qt_internal_add_executable_multi_args}"
-        ${ARGN}
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     qt_remove_args(exec_args
         ARGS_TO_REMOVE
@@ -427,12 +427,12 @@ endfunction()
 function(qt_internal_add_test name)
     qt_internal_get_test_arg_definitions(optional_args single_value_args multi_value_args)
 
-    qt_parse_all_arguments(arg "qt_add_test"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         "${optional_args};NO_BATCH"
         "${single_value_args}"
         "${multi_value_args}"
-        ${ARGN}
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     if (NOT arg_OUTPUT_DIRECTORY)
         set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
@@ -836,11 +836,12 @@ function(qt_internal_add_test_helper name)
         "OVERRIDE_OUTPUT_DIRECTORY"
     )
 
-    qt_parse_all_arguments(arg "qt_add_test_helper"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         "${qt_add_test_helper_optional_args};${__qt_internal_add_executable_optional_args}"
         "${__qt_internal_add_executable_single_args}"
         "${__qt_internal_add_executable_multi_args}"
-         ${ARGN})
+    )
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     qt_remove_args(forward_args
         ARGS_TO_REMOVE

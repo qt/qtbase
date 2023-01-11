@@ -82,7 +82,12 @@ function(qt_apply_rpaths)
         return()
     endif()
 
-    qt_parse_all_arguments(arg "qt_apply_rpaths" "RELATIVE_RPATH" "TARGET;INSTALL_PATH" "" ${ARGN})
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "RELATIVE_RPATH"
+        "TARGET;INSTALL_PATH"
+        "")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
     if(NOT arg_TARGET)
         message(FATAL_ERROR "No target given to qt_apply_rpaths.")
     else()

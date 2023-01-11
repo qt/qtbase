@@ -45,12 +45,12 @@ function(qt_internal_extend_target target)
         NO_PCH_SOURCES
     )
 
-    qt_parse_all_arguments(arg "qt_extend_target"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         "${option_args}"
         "${single_args}"
         "${multi_args}"
-        ${ARGN}
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     if("x${arg_CONDITION}" STREQUAL "x")
         set(arg_CONDITION ON)

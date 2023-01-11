@@ -3,7 +3,12 @@
 
 # helper to set up a qdbusxml2cpp rule
 function(qt_create_qdbusxml2cpp_command target infile)
-    qt_parse_all_arguments(arg "qt_create_qdbusxml2cpp_command" "ADAPTOR;INTERFACE" "BASENAME" "FLAGS" ${ARGN})
+    cmake_parse_arguments(PARSE_ARGV 2 arg
+        "ADAPTOR;INTERFACE"
+        "BASENAME"
+        "FLAGS")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
     if((arg_ADAPTOR AND arg_INTERFACE) OR (NOT arg_ADAPTOR AND NOT arg_INTERFACE))
         message(FATAL_ERROR "qt_create_dbusxml2cpp_command needs either ADAPTOR or INTERFACE.")
     endif()
@@ -55,6 +60,7 @@ function(qt_create_qdbusxml2cpp_command target infile)
                                "${header_file}:${source_file}" "${absolute_in_file_path}"
                        DEPENDS "${absolute_in_file_path}" ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp
                        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+                       COMMAND_EXPAND_LISTS
                        VERBATIM)
 
     target_sources("${target}" PRIVATE

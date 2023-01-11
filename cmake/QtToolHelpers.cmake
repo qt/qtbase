@@ -48,9 +48,12 @@ function(qt_internal_add_tool target_name)
         EXTRA_CMAKE_INCLUDES
         PUBLIC_LIBRARIES
         ${__default_private_args})
-    qt_parse_all_arguments(arg "qt_internal_add_tool" "${option_keywords}"
-                               "${one_value_keywords}"
-                               "${multi_value_keywords}" ${ARGN})
+
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "${option_keywords}"
+        "${one_value_keywords}"
+        "${multi_value_keywords}")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     qt_internal_find_tool(will_build_tools ${target_name} "${arg_TOOLS_TARGET}")
 

@@ -60,9 +60,11 @@ endif()
 # to each destination, and sets the computed install target destination arguments in OUT_VAR.
 # Defaults used for each of the destination types, and can be configured per destination type.
 function(qt_get_install_target_default_args)
-    qt_parse_all_arguments(arg "qt_get_install_target_default_args"
-                               "" "OUT_VAR;CMAKE_CONFIG;RUNTIME;LIBRARY;ARCHIVE;INCLUDES;BUNDLE"
-                                  "ALL_CMAKE_CONFIGS" ${ARGN})
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+       ""
+       "OUT_VAR;CMAKE_CONFIG;RUNTIME;LIBRARY;ARCHIVE;INCLUDES;BUNDLE"
+       "ALL_CMAKE_CONFIGS")
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     if(NOT arg_CMAKE_CONFIG)
         message(FATAL_ERROR "No value given for CMAKE_CONFIG.")

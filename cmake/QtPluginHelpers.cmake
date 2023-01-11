@@ -43,12 +43,12 @@ function(qt_internal_add_plugin target)
     set(single_args ${public_single_args} ${internal_single_args})
     set(multi_args  ${public_multi_args}  ${internal_multi_args})
 
-    qt_parse_all_arguments(arg "qt_internal_add_plugin"
+    cmake_parse_arguments(PARSE_ARGV 1 arg
         "${option_args}"
         "${single_args}"
         "${multi_args}"
-        "${ARGN}"
     )
+    _qt_internal_validate_all_args_are_parsed(arg)
 
     # Put this behind a cache option for now. It's too noisy for general use
     # until most repos are updated.

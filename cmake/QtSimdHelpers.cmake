@@ -16,8 +16,12 @@
 #                            SIMD compiler flags. This is mostly relevant for fat / universal builds
 #
 function(qt_internal_add_simd_part target)
-    qt_parse_all_arguments(arg "qt_add_simd_part" "" "NAME;SIMD"
-       "${__default_private_args};COMPILE_FLAGS;EXCLUDE_OSX_ARCHITECTURES" ${ARGN})
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        ""
+        "NAME;SIMD"
+        "${__default_private_args};COMPILE_FLAGS;EXCLUDE_OSX_ARCHITECTURES")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
     if ("x${arg_SIMD}" STREQUAL x)
         message(FATAL_ERROR "qt_add_simd_part needs a SIMD type to be set.")
     endif()
