@@ -616,7 +616,6 @@ void QCryptographicHashPrivate::addData(QByteArrayView bytes) noexcept
                 method == QCryptographicHash::Blake2s_224) {
             blake2s_update(&blake2sContext, reinterpret_cast<const uint8_t *>(data), length);
         } else if (!initializationFailed) {
-            result.resizeForOverwrite(EVP_MD_get_size(algorithm.get()));
             const int ret = EVP_DigestUpdate(context.get(), (const unsigned char *)data, length);
             Q_UNUSED(ret);
         }
