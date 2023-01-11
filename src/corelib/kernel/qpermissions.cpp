@@ -247,20 +247,14 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
 */
 
 /*!
+    \fn Qt::PermissionStatus QPermission::status() const
     Returns the status of the permission.
 */
-Qt::PermissionStatus QPermission::status() const
-{
-    return m_status;
-}
 
 /*!
+    \fn QMetaType QPermission::type() const
     Returns the type of the permission.
 */
-QMetaType QPermission::type() const
-{
-    return m_data.metaType();
-}
 
 #define QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(ClassName) \
     ClassName::ClassName() : d(new ClassName##Private) {} \
