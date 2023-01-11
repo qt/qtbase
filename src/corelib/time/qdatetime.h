@@ -281,12 +281,10 @@ class Q_CORE_EXPORT QDateTime
     };
 
     union Data {
-        enum {
-            // To be of any use, we need at least 60 years around 1970, which
-            // is 1,893,456,000,000 ms. That requires 41 bits to store, plus
-            // the sign bit. With the status byte, the minimum size is 50 bits.
-            CanBeSmall = sizeof(ShortData) * 8 > 50
-        };
+        // To be of any use, we need at least 60 years around 1970, which
+        // is 1,893,456,000,000 ms. That requires 41 bits to store, plus
+        // the sign bit. With the status byte, the minimum size is 50 bits.
+        static constexpr bool CanBeSmall = sizeof(ShortData) * 8 > 50;
 
         Data() noexcept;
         Data(const QTimeZone &);

@@ -2782,7 +2782,7 @@ static inline bool specCanBeSmall(Qt::TimeSpec spec)
 
 static inline bool msecsCanBeSmall(qint64 msecs)
 {
-    if (!QDateTimeData::CanBeSmall)
+    if constexpr (!QDateTimeData::CanBeSmall)
         return false;
 
     ShortData sd;
@@ -3161,7 +3161,7 @@ inline bool QDateTime::Data::isShort() const
 
     // even if CanBeSmall = false, we have short data for a default-constructed
     // QDateTime object. But it's unlikely.
-    if (CanBeSmall)
+    if constexpr (CanBeSmall)
         return Q_LIKELY(b);
     return Q_UNLIKELY(b);
 }
