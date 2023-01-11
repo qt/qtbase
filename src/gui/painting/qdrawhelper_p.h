@@ -142,7 +142,7 @@ struct quint24 {
 
 void qBlendGradient(int count, const QT_FT_Span *spans, void *userData);
 void qBlendTexture(int count, const QT_FT_Span *spans, void *userData);
-#ifdef __SSE2__
+#ifdef Q_PROCESSOR_X86
 extern void (*qt_memfill64)(quint64 *dest, quint64 value, qsizetype count);
 extern void (*qt_memfill32)(quint32 *dest, quint32 value, qsizetype count);
 #else
