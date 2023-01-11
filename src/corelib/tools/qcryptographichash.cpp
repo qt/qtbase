@@ -266,12 +266,11 @@ public:
 #endif
 #endif
     class SmallByteArray {
-        std::array<char, MaxHashLength> m_data;
+        std::array<quint8, MaxHashLength> m_data;
         static_assert(MaxHashLength <= std::numeric_limits<std::uint8_t>::max());
-        std::uint8_t m_size;
+        quint8 m_size;
     public:
-        char *data() noexcept { return m_data.data(); }
-        const char *data() const noexcept { return m_data.data(); }
+        quint8 *data() noexcept { return m_data.data(); }
         qsizetype size() const noexcept { return qsizetype{m_size}; }
         bool isEmpty() const noexcept { return size() == 0; }
         void clear() noexcept { m_size = 0; }
@@ -281,7 +280,7 @@ public:
             m_size = std::uint8_t(s);
         }
         QByteArrayView toByteArrayView() const noexcept
-        { return QByteArrayView{data(), size()}; }
+        { return QByteArrayView{m_data.data(), size()}; }
     };
     SmallByteArray result;
 };
