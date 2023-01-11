@@ -38,19 +38,13 @@ endmacro()
 # output-file is relative to ${CMAKE_CURRENT_BINARY_DIR}
 #
 # This function is similar to file(GENERATE OUTPUT) except it writes the content
-# to the file at configure time, rather than at generate time. Once CMake 3.18 is released, it can
-# use file(CONFIGURE) in its implementation. Until then, it  uses configure_file() with a generic
-# input file as source, when used with the CONTENT signature.
+# to the file at configure time, rather than at generate time.
+#
+# TODO: Once we require 3.18+, this can use file(CONFIGURE) in its implementation,
+# or maybe its usage can be replaced by file(CONFIGURE). Until then, it  uses
+# configure_file() with a generic input file as source, when used with the CONTENT
+# signature.
 function(qt_configure_file)
-    qt_parse_all_arguments(arg "qt_configure_file" "" "OUTPUT;INPUT;CONTENT" "" ${ARGN})
-    qt_configure_file_impl()
-endfunction()
-
-# The fixed version of qt_configure_file that uses the cmake_parse_arguments variant with PARSE_ARGV
-# to handle arguments with semicolons correctly.
-# TODO: This implementation should replace the previous one, but first need to fix all places where
-# the previous imlementation is used.
-function(qt_configure_file_v2)
     cmake_parse_arguments(PARSE_ARGV 0 arg "" "OUTPUT;INPUT;CONTENT" "")
     qt_configure_file_impl()
 endfunction()

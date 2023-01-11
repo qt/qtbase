@@ -148,7 +148,7 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
     )
     list(JOIN syncqt_args "\n" syncqt_args_string)
     set(syncqt_args_rsp "${binary_dir_real}/${target}_syncqt_args")
-    qt_configure_file_v2(OUTPUT "${syncqt_args_rsp}" CONTENT "${syncqt_args_string}")
+    qt_configure_file(OUTPUT "${syncqt_args_rsp}" CONTENT "${syncqt_args_string}")
 
     add_custom_command(
         OUTPUT
@@ -180,7 +180,7 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
     set(syncqt_all_args "${common_syncqt_arguments};-all")
     list(JOIN syncqt_all_args "\n" syncqt_all_args_string)
     set(syncqt_all_args_rsp "${binary_dir_real}/${target}_syncqt_all_args")
-    qt_configure_file_v2(OUTPUT "${syncqt_all_args_rsp}" CONTENT "${syncqt_all_args_string}")
+    qt_configure_file(OUTPUT "${syncqt_all_args_rsp}" CONTENT "${syncqt_all_args_string}")
     add_custom_target(${target}_sync_all_public_headers
         COMMAND
             ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
