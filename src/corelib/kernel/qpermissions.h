@@ -83,62 +83,62 @@ private:
 };
 
 #define QT_PERMISSION(ClassName) \
-    Q_GADGET \
+    Q_GADGET_EXPORT(Q_CORE_EXPORT) \
     using QtPermissionHelper = void; \
     friend class QPermission; \
 public: \
-    ClassName(); \
-    ClassName(const ClassName &other) noexcept; \
-    ClassName(ClassName &&other) noexcept; \
-    ~ClassName() noexcept; \
-    ClassName &operator=(const ClassName &other) noexcept; \
+    Q_CORE_EXPORT ClassName(); \
+    Q_CORE_EXPORT ClassName(const ClassName &other) noexcept; \
+    Q_CORE_EXPORT ClassName(ClassName &&other) noexcept; \
+    Q_CORE_EXPORT ~ClassName() noexcept; \
+    Q_CORE_EXPORT ClassName &operator=(const ClassName &other) noexcept; \
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(ClassName) \
     void swap(ClassName &other) noexcept { d.swap(other.d); } \
 private: \
     QtPrivate::QExplicitlySharedDataPointerV2<ClassName##Private> d;
 
 class QLocationPermissionPrivate;
-class Q_CORE_EXPORT QLocationPermission
+class QLocationPermission
 {
     QT_PERMISSION(QLocationPermission)
 public:
     enum Accuracy { Approximate, Precise };
     Q_ENUM(Accuracy)
 
-    void setAccuracy(Accuracy accuracy);
-    Accuracy accuracy() const;
+    Q_CORE_EXPORT void setAccuracy(Accuracy accuracy);
+    Q_CORE_EXPORT Accuracy accuracy() const;
 
     enum Availability { WhenInUse, Always };
     Q_ENUM(Availability)
 
-    void setAvailability(Availability availability);
-    Availability availability() const;
+    Q_CORE_EXPORT void setAvailability(Availability availability);
+    Q_CORE_EXPORT Availability availability() const;
 };
 Q_DECLARE_SHARED(QLocationPermission)
 
 class QCalendarPermissionPrivate;
-class Q_CORE_EXPORT QCalendarPermission
+class QCalendarPermission
 {
     QT_PERMISSION(QCalendarPermission)
 public:
-    void setReadOnly(bool enable);
-    bool isReadOnly() const;
+    Q_CORE_EXPORT void setReadOnly(bool enable);
+    Q_CORE_EXPORT bool isReadOnly() const;
 };
 Q_DECLARE_SHARED(QCalendarPermission)
 
 class QContactsPermissionPrivate;
-class Q_CORE_EXPORT QContactsPermission
+class QContactsPermission
 {
     QT_PERMISSION(QContactsPermission)
 public:
-    void setReadOnly(bool enable);
-    bool isReadOnly() const;
+    Q_CORE_EXPORT void setReadOnly(bool enable);
+    Q_CORE_EXPORT bool isReadOnly() const;
 };
 Q_DECLARE_SHARED(QContactsPermission)
 
 #define Q_DECLARE_MINIMAL_PERMISSION(ClassName) \
     class ClassName##Private; \
-    class Q_CORE_EXPORT ClassName \
+    class ClassName \
     { \
         QT_PERMISSION(ClassName) \
     }; \
