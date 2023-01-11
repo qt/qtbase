@@ -11,6 +11,11 @@ set(compile_definitions
     QT_NAMESPACE="${QT_NAMESPACE}"
 )
 
+set(config_type "")
+if(NOT QT_INTERNAL_AVOID_OVERRIDING_SYNCQT_CONFIG)
+    set(config_type CONFIG RelWithDebInfo)
+endif()
+
 if(CMAKE_OSX_ARCHITECTURES)
     set(osx_architectures "-DCMAKE_OSX_ARCHITECTURES:STRING=${CMAKE_OSX_ARCHITECTURES}")
 endif()
@@ -28,5 +33,5 @@ qt_internal_add_configure_time_tool(${target_name}
         "${osx_architectures}"
     SOURCES
         "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
-    CONFIG RelWithDebInfo
+    ${config_type}
 )
