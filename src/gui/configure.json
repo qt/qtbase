@@ -1363,6 +1363,7 @@
         "vkgen": {
             "label": "vkgen",
             "condition": "features.xmlstreamreader",
+            "disable": "input.vulkan == 'no'",
             "output": [ "privateFeature" ]
         },
         "vulkan": {
