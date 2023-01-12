@@ -211,8 +211,8 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     {
         if (permission.status() != Qt::PermissionStatus:Granted)
             return;
-        auto locationPermission = permission.data<QLocationPermission>();
-        if (locationPermission.accuracy() != QLocationPermission::Precise)
+        auto locationPermission = permission.value<QLocationPermission>();
+        if (!locationPermission || locationPermission->accuracy() != QLocationPermission::Precise)
             return;
         updatePreciseLocation();
     }
@@ -243,13 +243,12 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
 */
 
 /*!
-    \fn template <typename T, if_permission<T>> T QPermission::data() const
+    \fn template <typename T, if_permission<T>> std::optional<T> QPermission::value() const
 
-    Returns the \l{typed permission} of type \c T.
+    Returns the \l{typed permission} of type \c T, or \c{std::nullopt} if this
+    QPermission object doesn't contain one.
 
-    If the type doesn't match the type that was originally used to request the
-    permission, returns a default-constructed \c T. Use type() for dynamically
-    choosing which typed permission to request.
+    Use type() for dynamically choosing which typed permission to request.
 
     This function participates in overload resolution only if \c T is one of
     the \l{typed permission} classes:
@@ -273,11 +272,8 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
 const void *QPermission::data(QMetaType requestedType) const
 {
     const auto actualType = type();
-    if (requestedType != actualType) {
-        qCWarning(lcPermissions, "Cannot convert from %s to %s",
-                  actualType.name(), requestedType.name());
+    if (requestedType != actualType)
         return nullptr;
-    }
     return m_data.data();
 }
 

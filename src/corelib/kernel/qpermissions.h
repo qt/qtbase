@@ -16,6 +16,8 @@
 #include <QtCore/qtypeinfo.h>
 #include <QtCore/qmetatype.h>
 
+#include <optional>
+
 #if !defined(Q_QDOC)
 QT_REQUIRE_CONFIG(permissions);
 #endif
@@ -52,12 +54,11 @@ public:
     QMetaType type() const { return m_data.metaType(); }
 
     template <typename T, if_permission<T> = true>
-    T data() const
+    std::optional<T> value() const
     {
         if (auto p = data(QMetaType::fromType<T>()))
             return *static_cast<const T *>(p);
-        else
-            return T{};
+        return std::nullopt;
     }
 
 #ifndef QT_NO_DEBUG_STREAM

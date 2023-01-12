@@ -216,7 +216,7 @@ namespace
         Q_ASSERT(!geolocation.isNull());
 
         const auto &permission = geolocationRequestQueue->front().first;
-        const auto &locationPermission = permission.data<QLocationPermission>();
+        const auto locationPermission = *permission.value<QLocationPermission>();
         const bool highAccuracy = locationPermission.accuracy() == QLocationPermission::Precise;
 
         val options = val::object();
