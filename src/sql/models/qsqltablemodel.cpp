@@ -19,7 +19,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-typedef QSqlTableModelSql Sql;
+using SqlTm = QSqlTableModelSql;
 
 QSqlTableModelPrivate::~QSqlTableModelPrivate()
 {
@@ -380,7 +380,7 @@ bool QSqlTableModel::selectRow(int row)
                                               d->tableName,
                                               primaryValues(row),
                                               false);
-    static const QString wh = Sql::where() + Sql::sp();
+    static const QString wh = SqlTm::where() + SqlTm::sp();
     if (d->filter.startsWith(wh, Qt::CaseInsensitive))
         d->filter.remove(0, wh.size());
 
@@ -627,7 +627,7 @@ bool QSqlTableModel::updateRowInTable(int row, const QSqlRecord &values)
         return false;
     }
 
-    return d->exec(Sql::concat(stmt, where), prepStatement, rec, whereValues);
+    return d->exec(SqlTm::concat(stmt, where), prepStatement, rec, whereValues);
 }
 
 
@@ -695,7 +695,7 @@ bool QSqlTableModel::deleteRowFromTable(int row)
         return false;
     }
 
-    return d->exec(Sql::concat(stmt, where), prepStatement, QSqlRecord() /* no new values */, whereValues);
+    return d->exec(SqlTm::concat(stmt, where), prepStatement, QSqlRecord() /* no new values */, whereValues);
 }
 
 /*!
@@ -967,8 +967,8 @@ QString QSqlTableModel::orderByClause() const
     QString field = d->db.driver()->escapeIdentifier(d->tableName, QSqlDriver::TableName)
             + u'.'
             + d->db.driver()->escapeIdentifier(f.name(), QSqlDriver::FieldName);
-    field = d->sortOrder == Qt::AscendingOrder ? Sql::asc(field) : Sql::desc(field);
-    return Sql::orderBy(field);
+    field = d->sortOrder == Qt::AscendingOrder ? SqlTm::asc(field) : SqlTm::desc(field);
+    return SqlTm::orderBy(field);
 }
 
 /*!
@@ -1010,7 +1010,7 @@ QString QSqlTableModel::selectStatement() const
                              QString(), QSqlError::StatementError);
         return stmt;
     }
-    return Sql::concat(Sql::concat(stmt, Sql::where(d->filter)), orderByClause());
+    return SqlTm::concat(SqlTm::concat(stmt, SqlTm::where(d->filter)), orderByClause());
 }
 
 /*!
