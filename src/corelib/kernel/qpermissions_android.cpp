@@ -53,7 +53,7 @@ static QStringList nativeStringsFromPermission(const QPermission &permission)
 {
     const auto id = permission.type().id();
     if (id == qMetaTypeId<QLocationPermission>()) {
-        return nativeLocationPermission(permission.data<QLocationPermission>());
+        return nativeLocationPermission(*permission.value<QLocationPermission>());
     } else if (id == qMetaTypeId<QCameraPermission>()) {
         return { u"android.permission.CAMERA"_s };
     } else if (id == qMetaTypeId<QMicrophonePermission>()) {
@@ -63,12 +63,12 @@ static QStringList nativeStringsFromPermission(const QPermission &permission)
         return { u"android.permission.BLUETOOTH"_s };
     } else if (id == qMetaTypeId<QContactsPermission>()) {
         const auto readContactsString = u"android.permission.READ_CONTACTS"_s;
-        if (!permission.data<QContactsPermission>().isReadWrite())
+        if (!permission.value<QContactsPermission>()->isReadWrite())
             return { readContactsString };
         return { readContactsString, u"android.permission.WRITE_CONTACTS"_s };
     } else if (id == qMetaTypeId<QCalendarPermission>()) {
         const auto readContactsString = u"android.permission.READ_CALENDAR"_s;
-        if (!permission.data<QCalendarPermission>().isReadWrite())
+        if (!permission.value<QCalendarPermission>()->isReadWrite())
             return { readContactsString };
         return { readContactsString, u"android.permission.WRITE_CALENDAR"_s };
     }

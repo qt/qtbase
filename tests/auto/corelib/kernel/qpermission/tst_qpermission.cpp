@@ -54,11 +54,12 @@ void tst_QPermission::converting_impl() const
         QCOMPARE_EQ(p.type(), metaType);
     }
 
-    // data<>() compiles:
+    // value<>() compiles:
     {
         const QPermission p = concrete;
-        [[maybe_unused]] auto r = p.data<T>();
-        static_assert(std::is_same_v<decltype(r), T>);
+        auto v = p.value<T>();
+        static_assert(std::is_same_v<decltype(v), std::optional<T>>);
+        QCOMPARE_NE(v, std::nullopt);
     }
 }
 
@@ -100,35 +101,43 @@ void tst_QPermission::conversionMaintainsState() const
 
     {
         p = dummy;
-        auto r = p.data<DummyPermission>();
+        auto v = p.value<DummyPermission>();
+        QCOMPARE_NE(v, std::nullopt);
+        auto &r = *v;
         QCOMPARE_EQ(r.state, dummy.state);
-        // check mismatched returns default-constructed value:
-        QCOMPARE_EQ(p.data<QCalendarPermission>().isReadWrite(), cal_default.isReadWrite());
+        // check mismatched returns nullopt:
+        QCOMPARE_EQ(p.value<QCalendarPermission>(), std::nullopt);
     }
 
     {
         p = loc;
-        auto r = p.data<QLocationPermission>();
+        auto v = p.value<QLocationPermission>();
+        QCOMPARE_NE(v, std::nullopt);
+        auto &r = *v;
         QCOMPARE_EQ(r.accuracy(), loc.accuracy());
         QCOMPARE_EQ(r.availability(), loc.availability());
-        // check mismatched returns default-constructed value:
-        QCOMPARE_EQ(p.data<DummyPermission>().state, dummy_default.state);
+        // check mismatched returns nullopt:
+        QCOMPARE_EQ(p.value<DummyPermission>(), std::nullopt);
     }
 
     {
         p = con;
-        auto r = p.data<QContactsPermission>();
+        auto v = p.value<QContactsPermission>();
+        QCOMPARE_NE(v, std::nullopt);
+        auto &r = *v;
         QCOMPARE_EQ(r.isReadWrite(), con.isReadWrite());
-        // check mismatched returns default-constructed value:
-        QCOMPARE_EQ(p.data<QLocationPermission>().accuracy(), loc_default.accuracy());
+        // check mismatched returns nullopt:
+        QCOMPARE_EQ(p.value<QLocationPermission>(), std::nullopt);
     }
 
     {
         p = cal;
-        auto r = p.data<QCalendarPermission>();
+        auto v = p.value<QCalendarPermission>();
+        QCOMPARE_NE(v, std::nullopt);
+        auto &r = *v;
         QCOMPARE_EQ(r.isReadWrite(), cal.isReadWrite());
-        // check mismatched returns default-constructed value:
-        QCOMPARE_EQ(p.data<QContactsPermission>().isReadWrite(), con_default.isReadWrite());
+        // check mismatched returns nullopt:
+        QCOMPARE_EQ(p.value<QContactsPermission>(), std::nullopt);
     }
 }
 

@@ -55,7 +55,7 @@ struct PermissionRequest
 
 - (Qt::PermissionStatus)checkPermission:(QPermission)permission
 {
-    const auto locationPermission = permission.data<QLocationPermission>();
+    const auto locationPermission = *permission.value<QLocationPermission>();
 
     auto status = [self authorizationStatus:locationPermission];
     if (status != Qt::PermissionStatus::Granted)
@@ -118,7 +118,7 @@ struct PermissionRequest
 - (QStringList)usageDescriptionsFor:(QPermission)permission
 {
     QStringList usageDescriptions = { "NSLocationWhenInUseUsageDescription" };
-    const auto locationPermission = permission.data<QLocationPermission>();
+    const auto locationPermission = *permission.value<QLocationPermission>();
     if (locationPermission.availability() == QLocationPermission::Always)
         usageDescriptions << "NSLocationAlwaysUsageDescription";
     return usageDescriptions;
@@ -150,7 +150,7 @@ struct PermissionRequest
         self.manager.delegate = self;
     }
 
-    const auto locationPermission = permission.data<QLocationPermission>();
+    const auto locationPermission = *permission.value<QLocationPermission>();
     switch (locationPermission.availability()) {
     case QLocationPermission::WhenInUse:
         // The documentation specifies that requestWhenInUseAuthorization can
