@@ -34,31 +34,24 @@ class QPermission
     Q_GADGET_EXPORT(Q_CORE_EXPORT)
 
     template <typename T, typename Enable = void>
-    struct is_permission : public std::false_type {};
+    static constexpr inline bool is_permission_v = false;
 
     template <typename T>
-    struct is_permission<T, typename T::QtPermissionHelper> : public std::true_type {};
+    static constexpr inline bool is_permission_v<T, typename T::QtPermissionHelper> = true;
 
+    template <typename T>
+    using if_permission = std::enable_if_t<is_permission_v<T>, bool>;
 public:
     explicit QPermission() = default;
 
-#ifdef Q_QDOC
-    template <typename Type>
-    QPermission(const Type &type);
-#else
-    template <typename T, std::enable_if_t<is_permission<T>::value, bool> = true>
+    template <typename T, if_permission<T> = true>
     QPermission(const T &t) : m_data(QVariant::fromValue(t)) {}
-#endif
 
     Qt::PermissionStatus status() const { return m_status; }
 
     QMetaType type() const { return m_data.metaType(); }
 
-#ifdef Q_QDOC
-    template <typename Type>
-    Type data() const;
-#else
-    template <typename T, std::enable_if_t<is_permission<T>::value, bool> = true>
+    template <typename T, if_permission<T> = true>
     T data() const
     {
         if (auto p = data(QMetaType::fromType<T>()))
@@ -66,7 +59,6 @@ public:
         else
             return T{};
     }
-#endif
 
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QPermission &);

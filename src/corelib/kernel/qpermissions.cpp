@@ -229,22 +229,32 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
 */
 
 /*!
-    \fn template <typename Type> QPermission::QPermission(const Type &type)
+    \fn template <typename T, if_permission<T>> QPermission::QPermission(const T &type)
 
     Constructs a permission from the given \l{typed permission} \a type.
 
     You do not need to construct this type explicitly, as the type is automatically
     used when checking or requesting permissions.
+
+    This constructor participates in overload resolution only if \c T is one of
+    the \l{typed permission} classes:
+
+    \annotatedlist permissions
 */
 
 /*!
-    \fn template <typename Type> Type QPermission::data() const
+    \fn template <typename T, if_permission<T>> T QPermission::data() const
 
-    Returns the \l{typed permission} of type \c Type.
+    Returns the \l{typed permission} of type \c T.
 
-    The type must match the type that was originally used to request
-    the permission. Use type() for dynamically choosing which typed
-    permission to request.
+    If the type doesn't match the type that was originally used to request the
+    permission, returns a default-constructed \c T. Use type() for dynamically
+    choosing which typed permission to request.
+
+    This function participates in overload resolution only if \c T is one of
+    the \l{typed permission} classes:
+
+    \annotatedlist permissions
 */
 
 /*!
