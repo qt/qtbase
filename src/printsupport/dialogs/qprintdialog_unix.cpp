@@ -83,7 +83,7 @@ Print dialog class declarations
                              Layout in qprintpropertieswidget.ui
 */
 
-static void initResources()
+static void _q_pdu_initResources()
 {
     Q_INIT_RESOURCE(qprintdialog);
 }
@@ -584,7 +584,7 @@ QPrintDialogPrivate::QPrintDialogPrivate()
     : top(nullptr), bottom(nullptr), buttons(nullptr), collapseButton(nullptr),
       explicitDuplexMode(QPrint::DuplexAuto)
 {
-    initResources();
+    _q_pdu_initResources();
 }
 
 QPrintDialogPrivate::~QPrintDialogPrivate()

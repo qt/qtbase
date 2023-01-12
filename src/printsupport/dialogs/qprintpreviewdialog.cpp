@@ -28,7 +28,7 @@
 #include <QtWidgets/qformlayout.h>
 #include <QtWidgets/qlabel.h>
 
-static void initResources()
+static void _q_ppd_initResources()
 {
     static bool resourcesInitialized = false;
     if (!resourcesInitialized) {
@@ -192,7 +192,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
 {
     Q_Q(QPrintPreviewDialog);
 
-    initResources();
+    _q_ppd_initResources();
 
     if (_printer) {
         preview = new QPrintPreviewWidget(_printer, q);
