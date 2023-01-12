@@ -110,7 +110,7 @@ template <int N> struct FixedBufString
 
 namespace QTest {
 
-    static const char *incidentType2String(QAbstractTestLogger::IncidentTypes type)
+    static const char *ptIncidentType2String(QAbstractTestLogger::IncidentTypes type)
     {
         switch (type) {
         case QAbstractTestLogger::Skip:
@@ -140,7 +140,7 @@ namespace QTest {
         return "RESULT ";
     }
 
-    static const char *messageType2String(QAbstractTestLogger::MessageTypes type)
+    static const char *ptMessageType2String(QAbstractTestLogger::MessageTypes type)
     {
         switch (type) {
         case QAbstractTestLogger::QDebug:
@@ -456,7 +456,7 @@ void QPlainTestLogger::stopLogging()
 void QPlainTestLogger::enterTestFunction(const char * /*function*/)
 {
     if (QTestLog::verboseLevel() >= 1)
-        printMessage(MessageSource::Other, QTest::messageType2String(Info), "entering");
+        printMessage(MessageSource::Other, QTest::ptMessageType2String(Info), "entering");
 }
 
 void QPlainTestLogger::leaveTestFunction()
@@ -471,7 +471,7 @@ void QPlainTestLogger::addIncident(IncidentTypes type, const char *description,
         && QTestLog::verboseLevel() < 0)
         return;
 
-    printMessage(MessageSource::Incident, QTest::incidentType2String(type), description, file, line);
+    printMessage(MessageSource::Incident, QTest::ptIncidentType2String(type), description, file, line);
 }
 
 void QPlainTestLogger::addBenchmarkResults(const QList<QBenchmarkResult> &results)
@@ -496,7 +496,7 @@ void QPlainTestLogger::addMessage(MessageTypes type, const QString &message,
     if (type != QFatal && QTestLog::verboseLevel() < 0)
         return;
 
-    printMessage(MessageSource::Other, QTest::messageType2String(type), qPrintable(message), file, line);
+    printMessage(MessageSource::Other, QTest::ptMessageType2String(type), qPrintable(message), file, line);
 }
 
 QT_END_NAMESPACE
