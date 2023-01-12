@@ -81,6 +81,8 @@ private Q_SLOTS:
     void taskQTBUG_48157_dprMovie();
 
     void resourceProvider();
+    void mouseEventPropagation_data();
+    void mouseEventPropagation();
 
 private:
     QLabel *testWidget;
@@ -596,6 +598,86 @@ void tst_QLabel::resourceProvider()
     label.show();
     QCOMPARE(providerUrl, url);
     QVERIFY(providerCalled > 0);
+}
+
+// Test if mouse events are correctly propagated to the parent widget,
+// even if a label contains rich text (QTBUG-110055)
+void tst_QLabel::mouseEventPropagation_data()
+{
+    QTest::addColumn<const QString>("text");
+    QTest::addColumn<const Qt::TextInteractionFlag>("interaction");
+    QTest::addColumn<const bool>("expectPropagation");
+
+
+    QTest::newRow("RichText")
+            << QString("<b>This is a rich text propagating mouse events</b>")
+            << Qt::LinksAccessibleByMouse
+            << true;
+    QTest::newRow("PlainText")
+            << QString("This is a plain text propagating mouse events")
+            << Qt::LinksAccessibleByMouse
+            << true;
+    QTest::newRow("PlainTextConsume")
+            << QString("This is a plain text consuming mouse events")
+            << Qt::TextSelectableByMouse
+            << false;
+    QTest::newRow("RichTextConsume")
+            << QString("<b>This is a rich text consuming mouse events</b>")
+            << Qt::TextSelectableByMouse
+            << false;
+    QTest::newRow("PlainTextNoInteraction")
+            << QString("This is a text not interacting with mouse")
+            << Qt::NoTextInteraction
+            << true;
+    QTest::newRow("RichTextNoInteraction")
+            << QString("<b>This is a rich text not interacting with mouse</b>")
+            << Qt::NoTextInteraction
+            << true;
+}
+
+void tst_QLabel::mouseEventPropagation()
+{
+    class MouseEventWidget : public QWidget
+    {
+    public:
+        uint pressed() const { return m_pressed; }
+        uint released() const { return m_released; }
+
+    private:
+        uint m_pressed = 0;
+        uint m_released = 0;
+        void mousePressEvent(QMouseEvent *event) override
+        {
+            ++m_pressed;
+            return QWidget::mousePressEvent(event);
+        }
+
+        void mouseReleaseEvent(QMouseEvent *event) override
+        {
+            ++m_released;
+            return QWidget::mouseReleaseEvent(event);
+        }
+    };
+
+    QFETCH(const QString, text);
+    QFETCH(const Qt::TextInteractionFlag, interaction);
+    QFETCH(const bool, expectPropagation);
+
+    MouseEventWidget widget;
+    auto *layout = new QVBoxLayout(&widget);
+    auto *label = new QLabel(text);
+    label->setTextInteractionFlags(interaction);
+    const uint count = expectPropagation ? 1 : 0;
+
+    layout->addWidget(label);
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    const QPoint labelCenter = label->rect().center();
+    QTest::mouseClick(label, Qt::LeftButton, Qt::KeyboardModifiers(), labelCenter);
+
+    QTRY_COMPARE(widget.pressed(), count);
+    QTRY_COMPARE(widget.released(), count);
 }
 
 QTEST_MAIN(tst_QLabel)
