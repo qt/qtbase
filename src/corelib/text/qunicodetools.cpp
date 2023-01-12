@@ -3,14 +3,11 @@
 
 #include "qunicodetools_p.h"
 
-#include "qmutex.h"
 #include "qunicodetables_p.h"
 #include "qvarlengtharray.h"
 #if QT_CONFIG(library)
 #include "qlibrary.h"
 #endif
-
-#include <mutex>
 
 #include <limits.h>
 
@@ -1392,6 +1389,8 @@ static void indicAttributes(QChar::Script script, const char16_t *text, qsizetyp
 
 }
 
+#if QT_CONFIG(library)
+
 #define LIBTHAI_MAJOR   0
 
 /*
@@ -1402,46 +1401,74 @@ struct thcell_t {
     unsigned char hilo;      /**< upper/lower vowel/diacritic */
     unsigned char top;       /**< top-level mark */
 };
-typedef struct _ThBrk ThBrk;
-typedef ThBrk *(*th_brk_new_def)(const char *);
-typedef int (*th_brk_find_breaks_def)(ThBrk *, const unsigned char *, int *, size_t);
-typedef size_t (*th_next_cell_def) (const unsigned char *, size_t, struct thcell_t *, int);
 
-// Global state for th_brk_find_breaks().
-// Note: even if signature for th_brk_find_breaks() suggests otherwise, the
-// state is read-only, and so it is safe to use it from multiple threads after
-// initialization. This is also stated in the libthai documentation.
-Q_CONSTINIT static ThBrk *th_state = nullptr;
+using ThBrk = struct _ThBrk;
 
-/* libthai related function handles */
-Q_CONSTINIT static th_brk_find_breaks_def th_brk_find_breaks = nullptr;
-Q_CONSTINIT static th_next_cell_def th_next_cell = nullptr;
+namespace {
 
-static int init_libthai() {
-#if QT_CONFIG(library)
-    Q_CONSTINIT static QBasicAtomicInt initialized = Q_BASIC_ATOMIC_INITIALIZER(false);
-    Q_CONSTINIT static QBasicMutex mutex;
-    if (!initialized.loadAcquire()) {
-        const auto locker = std::scoped_lock(mutex);
-        if (!initialized.loadAcquire()) {
-            th_brk_find_breaks = reinterpret_cast<th_brk_find_breaks_def>(
-                    QLibrary::resolve("thai"_L1, LIBTHAI_MAJOR, "th_brk_find_breaks"));
-            th_next_cell = (th_next_cell_def)QLibrary::resolve("thai"_L1, LIBTHAI_MAJOR, "th_next_cell");
+class LibThai final
+{
+    Q_DISABLE_COPY_MOVE(LibThai)
 
-            auto th_brk_new = reinterpret_cast<th_brk_new_def>(
-                    QLibrary::resolve("thai"_L1, LIBTHAI_MAJOR, "th_brk_new"));
-            if (th_brk_new)
-                th_state = th_brk_new(nullptr);
+    using th_brk_new_def = ThBrk *(*)(const char *);
+    using th_brk_delete_def = void (*)(ThBrk *);
+    using th_brk_find_breaks_def = int (*)(ThBrk *, const unsigned char *, int *, size_t);
+    using th_next_cell_def = size_t (*)(const unsigned char *, size_t, struct thcell_t *, int);
 
-            initialized.storeRelease(true);
+public:
+    LibThai() : m_library("thai"_L1, LIBTHAI_MAJOR)
+    {
+        m_th_brk_find_breaks =
+                reinterpret_cast<th_brk_find_breaks_def>(m_library.resolve("th_brk_find_breaks"));
+        m_th_next_cell = reinterpret_cast<th_next_cell_def>(m_library.resolve("th_next_cell"));
+
+        auto th_brk_new = reinterpret_cast<th_brk_new_def>(m_library.resolve("th_brk_new"));
+        if (th_brk_new) {
+            m_state = th_brk_new(nullptr);
+            m_th_brk_delete =
+                    reinterpret_cast<th_brk_delete_def>(m_library.resolve("th_brk_delete"));
         }
     }
-    if (th_brk_find_breaks && th_next_cell && th_state)
-        return 1;
-    else
-#endif
-        return 0;
-}
+
+    ~LibThai()
+    {
+        if (m_state && m_th_brk_delete)
+            m_th_brk_delete(m_state);
+        m_library.unload();
+    }
+
+    bool isInitialized() const { return m_th_brk_find_breaks && m_th_next_cell && m_state; }
+
+    int brk_find_breaks(const unsigned char *s, int *pos, size_t pos_sz) const
+    {
+        Q_ASSERT(m_state);
+        Q_ASSERT(m_th_brk_find_breaks);
+        return m_th_brk_find_breaks(m_state, s, pos, pos_sz);
+    }
+
+    size_t next_cell(const unsigned char *s, size_t len, struct thcell_t *cell, int is_decomp_am)
+    {
+        Q_ASSERT(m_th_next_cell);
+        return m_th_next_cell(s, len, cell, is_decomp_am);
+    }
+
+private:
+    QLibrary m_library;
+
+    // Global state for th_brk_find_breaks().
+    // Note: even if signature for th_brk_find_breaks() suggests otherwise, the
+    // state is read-only, and so it is safe to use it from multiple threads after
+    // initialization. This is also stated in the libthai documentation.
+    ThBrk *m_state = nullptr;
+
+    th_brk_find_breaks_def m_th_brk_find_breaks = nullptr;
+    th_next_cell_def m_th_next_cell = nullptr;
+    th_brk_delete_def m_th_brk_delete = nullptr;
+};
+
+} // unnamed namespace
+
+Q_GLOBAL_STATIC(LibThai, g_libThai)
 
 static void to_tis620(const char16_t *string, qsizetype len, char *cstr)
 {
@@ -1473,8 +1500,9 @@ static void thaiAssignAttributes(const char16_t *string, qsizetype len, QCharAtt
     qsizetype numbreaks, i;
     struct thcell_t tis_cell;
 
-    if (!init_libthai())
-        return ;
+    LibThai *libThai = g_libThai;
+    if (!libThai || !libThai->isInitialized())
+        return;
 
     if (len >= 128)
         cstr = static_cast<char *>(malloc (len * sizeof(char) + 1));
@@ -1502,8 +1530,8 @@ static void thaiAssignAttributes(const char16_t *string, qsizetype len, QCharAtt
         attributes[0].wordBreak = true;
         attributes[0].wordStart = true;
         attributes[0].wordEnd = false;
-        numbreaks = th_brk_find_breaks(th_state, reinterpret_cast<const unsigned char *>(cstr),
-                                       break_positions, brp_size);
+        numbreaks = libThai->brk_find_breaks(reinterpret_cast<const unsigned char *>(cstr),
+                                             break_positions, brp_size);
         for (i = 0; i < numbreaks; ++i) {
             attributes[break_positions[i]].wordBreak = true;
             attributes[break_positions[i]].wordStart = true;
@@ -1520,9 +1548,8 @@ static void thaiAssignAttributes(const char16_t *string, qsizetype len, QCharAtt
     /* manage grapheme boundaries */
     i = 0;
     while (i < len) {
-        size_t cell_length = th_next_cell(reinterpret_cast<const unsigned char *>(cstr) + i,
-                                          size_t(len - i), &tis_cell, true);
-
+        size_t cell_length = libThai->next_cell(reinterpret_cast<const unsigned char *>(cstr) + i,
+                                                size_t(len - i), &tis_cell, true);
 
         attributes[i].graphemeBoundary = true;
         for (size_t j = 1; j < cell_length; ++j)
@@ -1535,13 +1562,23 @@ static void thaiAssignAttributes(const char16_t *string, qsizetype len, QCharAtt
         free(cstr);
 }
 
+#endif // QT_CONFIG(library)
+
 static void thaiAttributes(QChar::Script script, const char16_t *text, qsizetype from, qsizetype len, QCharAttributes *attributes)
 {
     assert(script == QChar::Script_Thai);
+#if QT_CONFIG(library)
     const char16_t *uc = text + from;
     attributes += from;
     Q_UNUSED(script);
     thaiAssignAttributes(uc, len, attributes);
+#else
+    Q_UNUSED(script);
+    Q_UNUSED(text);
+    Q_UNUSED(from);
+    Q_UNUSED(len);
+    Q_UNUSED(attributes);
+#endif
 }
 
 /*
