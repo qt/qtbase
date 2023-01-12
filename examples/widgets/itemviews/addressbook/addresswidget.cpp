@@ -146,7 +146,7 @@ void AddressWidget::setupTabs()
 //! [1]
 
 //! [7]
-void AddressWidget::readFromFile(const QString &fileName)
+void AddressWidget::readFromFile()
 {
     QFile file(fileName);
 
@@ -171,7 +171,7 @@ void AddressWidget::readFromFile(const QString &fileName)
 //! [7]
 
 //! [6]
-void AddressWidget::writeToFile(const QString &fileName)
+void AddressWidget::writeToFile()
 {
     QFile file(fileName);
 
