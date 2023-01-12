@@ -273,9 +273,10 @@ void HttpWindow::sslErrors(const QList<QSslError> &errors)
         errorString += error.errorString();
     }
 
-    if (QMessageBox::warning(this, tr("SSL Errors"),
-                             tr("One or more SSL errors has occurred:\n%1").arg(errorString),
-                             QMessageBox::Ignore | QMessageBox::Abort) == QMessageBox::Ignore) {
+    if (QMessageBox::warning(this, tr("TLS Errors"),
+                             tr("One or more TLS errors has occurred:\n%1").arg(errorString),
+                             QMessageBox::Ignore | QMessageBox::Abort)
+        == QMessageBox::Ignore) {
         reply->ignoreSslErrors();
     }
 }
