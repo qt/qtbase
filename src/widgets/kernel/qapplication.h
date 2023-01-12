@@ -129,12 +129,12 @@ Q_SIGNALS:
 
 public:
     QString styleSheet() const;
+    bool autoSipEnabled() const;
 public Q_SLOTS:
 #ifndef QT_NO_STYLE_STYLESHEET
     void setStyleSheet(const QString& sheet);
 #endif
     void setAutoSipEnabled(const bool enabled);
-    bool autoSipEnabled() const;
     static void closeAllWindows();
     static void aboutQt();
 
