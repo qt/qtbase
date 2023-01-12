@@ -620,8 +620,7 @@ void QCryptographicHashPrivate::addData(QByteArrayView bytes) noexcept
                 method == QCryptographicHash::Blake2s_224) {
             blake2s_update(&blake2sContext, reinterpret_cast<const uint8_t *>(data), length);
         } else if (!initializationFailed) {
-            const int ret = EVP_DigestUpdate(context.get(), (const unsigned char *)data, length);
-            Q_UNUSED(ret);
+            EVP_DigestUpdate(context.get(), (const unsigned char *)data, length);
         }
 #else
         switch (method) {
@@ -755,8 +754,7 @@ void QCryptographicHashPrivate::finalize() noexcept
         EVP_MD_CTX_ptr copy = EVP_MD_CTX_ptr(EVP_MD_CTX_new());
         EVP_MD_CTX_copy_ex(copy.get(), context.get());
         tmpresult.resizeForOverwrite(EVP_MD_get_size(algorithm.get()));
-        const int ret = EVP_DigestFinal_ex(copy.get(), tmpresult.data(), nullptr);
-        Q_UNUSED(ret)
+        EVP_DigestFinal_ex(copy.get(), tmpresult.data(), nullptr);
     }
 #else
     switch (method) {
