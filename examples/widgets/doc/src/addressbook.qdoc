@@ -381,17 +381,15 @@
     respective slots, we also connect \c AddressWidget's
     \c selectionChanged() signal to its \c updateActions() slot.
 
-    The \c openFile() function allows the user to choose a file with
-    the \l{QFileDialog::getOpenFileName()}{open file dialog}. The chosen
-    file has to be a custom \c{.dat} file that contains address book
-    contacts. This function is a slot connected to \c openAct in the
-    \uicontrol File menu.
+    The \c openFile() function opens a custom \c{addressbook.dat} file that
+    contains address book contacts. This function is a slot connected to
+    \c openAct in the \uicontrol File menu.
 
     \snippet itemviews/addressbook/mainwindow.cpp 2
 
-    The \c saveFile() function allows the user to save a file with
-    the \l{QFileDialog::getSaveFileName()}{save file dialog}. This function
-    is a slot connected to \c saveAct in the \uicontrol File menu.
+    The \c saveFile() function saves a custom \c{addressbook.dat} file that
+    will contain the address book contacts. This function is a slot connected
+    to \c saveAct in the \uicontrol File menu.
 
     \snippet itemviews/addressbook/mainwindow.cpp 3
 

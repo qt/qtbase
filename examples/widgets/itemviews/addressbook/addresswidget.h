@@ -9,6 +9,7 @@
 
 #include <QItemSelection>
 #include <QTabWidget>
+#include <QStandardPaths>
 
 QT_BEGIN_NAMESPACE
 class QSortFilterProxyModel;
@@ -22,8 +23,8 @@ class AddressWidget : public QTabWidget
 
 public:
     AddressWidget(QWidget *parent = nullptr);
-    void readFromFile(const QString &fileName);
-    void writeToFile(const QString &fileName);
+    void readFromFile();
+    void writeToFile();
 
 public slots:
     void showAddEntryDialog();
@@ -37,6 +38,9 @@ signals:
 private:
     void setupTabs();
 
+    inline static QString fileName =
+        QStandardPaths::standardLocations(QStandardPaths::TempLocation).value(0)
+        + QStringLiteral("/addressbook.dat");
     TableModel *table;
     NewAddressTab *newAddressTab;
 };

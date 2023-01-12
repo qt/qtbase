@@ -28,7 +28,7 @@ void MainWindow::createMenus()
     connect(openAct, &QAction::triggered, this, &MainWindow::openFile);
 //! [1a]
 
-    QAction *saveAct = new QAction(tr("&Save As..."), this);
+    QAction *saveAct = new QAction(tr("&Save"), this);
     fileMenu->addAction(saveAct);
     connect(saveAct, &QAction::triggered, this, &MainWindow::saveFile);
 
@@ -66,18 +66,14 @@ void MainWindow::createMenus()
 //! [2]
 void MainWindow::openFile()
 {
-    QString fileName = QFileDialog::getOpenFileName(this);
-    if (!fileName.isEmpty())
-        addressWidget->readFromFile(fileName);
+    addressWidget->readFromFile();
 }
 //! [2]
 
 //! [3]
 void MainWindow::saveFile()
 {
-    QString fileName = QFileDialog::getSaveFileName(this);
-    if (!fileName.isEmpty())
-        addressWidget->writeToFile(fileName);
+    addressWidget->writeToFile();
 }
 //! [3]
 
