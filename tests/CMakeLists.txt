@@ -18,7 +18,7 @@ if(QT_BUILD_STANDALONE_TESTS)
     qt_internal_set_up_config_optimizations_like_in_qmake()
 
     qt_find_package(WrapDBus1 PROVIDED_TARGETS dbus-1)
-    qt_find_package(ICU COMPONENTS i18n uc data PROVIDED_TARGETS ICU::i18n ICU::uc ICU::data)
+    qt_find_package(ICU 50.1 COMPONENTS i18n uc data PROVIDED_TARGETS ICU::i18n ICU::uc ICU::data)
     qt_find_package(WrapOpenSSL PROVIDED_TARGETS WrapOpenSSL::WrapOpenSSL)
     qt_find_package(WrapOpenSSLHeaders PROVIDED_TARGETS WrapOpenSSLHeaders::WrapOpenSSLHeaders)
     # special case end
