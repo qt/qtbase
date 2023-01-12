@@ -3319,6 +3319,18 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
         day = parts.day;
     }
 
+    auto appendToResult = [&](int t, int repeat) {
+        auto data = locale.d->m_data;
+        if (repeat > 1)
+            result.append(data->longLongToString(t, -1, 10, repeat, QLocaleData::ZeroPadded));
+        else
+            result.append(data->longLongToString(t));
+    };
+
+    auto formatType = [](int repeat) {
+        return repeat == 3 ? QLocale::ShortFormat : QLocale::LongFormat;
+    };
+
     qsizetype i = 0;
     while (i < format.size()) {
         if (format.at(i).unicode() == '\'') {
@@ -3339,15 +3351,11 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
                     repeat = 2;
 
                 switch (repeat) {
-                case 4: {
-                    const int len = (year < 0) ? 5 : 4;
-                    result.append(locale.d->m_data->longLongToString(year, -1, 10, len,
-                                                                     QLocaleData::ZeroPadded));
+                case 4:
+                    appendToResult(year, (year < 0) ? 5 : 4);
                     break;
-                }
                 case 2:
-                    result.append(locale.d->m_data->longLongToString(year % 100, -1, 10, 2,
-                                                                     QLocaleData::ZeroPadded));
+                    appendToResult(year % 100, 2);
                     break;
                 default:
                     repeat = 1;
@@ -3359,43 +3367,20 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
             case 'M':
                 used = true;
                 repeat = qMin(repeat, 4);
-                switch (repeat) {
-                case 1:
-                    result.append(locale.d->m_data->longLongToString(month));
-                    break;
-                case 2:
-                    result.append(locale.d->m_data->longLongToString(month, -1, 10, 2,
-                                                                     QLocaleData::ZeroPadded));
-                    break;
-                case 3:
-                    result.append(monthName(locale, month, year, QLocale::ShortFormat));
-                    break;
-                case 4:
-                    result.append(monthName(locale, month, year, QLocale::LongFormat));
-                    break;
-                }
+                if (repeat <= 2)
+                    appendToResult(month, repeat);
+                else
+                    result.append(monthName(locale, month, year, formatType(repeat)));
                 break;
 
             case 'd':
                 used = true;
                 repeat = qMin(repeat, 4);
-                switch (repeat) {
-                case 1:
-                    result.append(locale.d->m_data->longLongToString(day));
-                    break;
-                case 2:
-                    result.append(locale.d->m_data->longLongToString(day, -1, 10, 2,
-                                                                     QLocaleData::ZeroPadded));
-                    break;
-                case 3:
-                    result.append(locale.dayName(
-                                      dayOfWeek(date.toJulianDay()), QLocale::ShortFormat));
-                    break;
-                case 4:
-                    result.append(locale.dayName(
-                                      dayOfWeek(date.toJulianDay()), QLocale::LongFormat));
-                    break;
-                }
+                if (repeat <= 2)
+                    appendToResult(day, repeat);
+                else
+                    result.append(
+                            locale.dayName(dayOfWeek(date.toJulianDay()), formatType(repeat)));
                 break;
 
             default:
@@ -3414,58 +3399,25 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
                     else if (hour == 0)
                         hour = 12;
                 }
-
-                switch (repeat) {
-                case 1:
-                    result.append(locale.d->m_data->longLongToString(hour));
-                    break;
-                case 2:
-                    result.append(locale.d->m_data->longLongToString(hour, -1, 10, 2,
-                                                                     QLocaleData::ZeroPadded));
-                    break;
-                }
+                appendToResult(hour, repeat);
                 break;
             }
             case 'H':
                 used = true;
                 repeat = qMin(repeat, 2);
-                switch (repeat) {
-                case 1:
-                    result.append(locale.d->m_data->longLongToString(time.hour()));
-                    break;
-                case 2:
-                    result.append(locale.d->m_data->longLongToString(time.hour(), -1, 10, 2,
-                                                                     QLocaleData::ZeroPadded));
-                    break;
-                }
+                appendToResult(time.hour(), repeat);
                 break;
 
             case 'm':
                 used = true;
                 repeat = qMin(repeat, 2);
-                switch (repeat) {
-                case 1:
-                    result.append(locale.d->m_data->longLongToString(time.minute()));
-                    break;
-                case 2:
-                    result.append(locale.d->m_data->longLongToString(time.minute(), -1, 10, 2,
-                                                                     QLocaleData::ZeroPadded));
-                    break;
-                }
+                appendToResult(time.minute(), repeat);
                 break;
 
             case 's':
                 used = true;
                 repeat = qMin(repeat, 2);
-                switch (repeat) {
-                case 1:
-                    result.append(locale.d->m_data->longLongToString(time.second()));
-                    break;
-                case 2:
-                    result.append(locale.d->m_data->longLongToString(time.second(), -1, 10, 2,
-                                                                     QLocaleData::ZeroPadded));
-                    break;
-                }
+                appendToResult(time.second(), repeat);
                 break;
 
             case 'A':
@@ -3490,8 +3442,7 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
 
                 // note: the millisecond component is treated like the decimal part of the seconds
                 // so ms == 2 is always printed as "002", but ms == 200 can be either "2" or "200"
-                result.append(locale.d->m_data->longLongToString(time.msec(), -1, 10, 3,
-                                                                 QLocaleData::ZeroPadded));
+                appendToResult(time.msec(), 3);
                 if (repeat != 3) {
                     if (result.endsWith(locale.zeroDigit()))
                         result.chop(1);
