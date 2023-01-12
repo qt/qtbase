@@ -1818,25 +1818,36 @@ void QWidgetTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton but
     }
 
     if (interactionFlags & Qt::LinksAccessibleByMouse) {
-        if (!(button & Qt::LeftButton))
+
+        // Ignore event unless left button has been pressed
+        if (!(button & Qt::LeftButton)) {
+            e->ignore();
             return;
+        }
 
         const QString anchor = q->anchorAt(pos);
 
-        if (anchor.isEmpty())
+        // Ignore event without selection anchor
+        if (anchor.isEmpty()) {
+            e->ignore();
             return;
+        }
 
         if (!cursor.hasSelection()
             || (anchor == anchorOnMousePress && hadSelectionOnMousePress)) {
 
             const int anchorPos = q->hitTest(pos, Qt::ExactHit);
-            if (anchorPos != -1) {
-                cursor.setPosition(anchorPos);
 
-                QString anchor = anchorOnMousePress;
-                anchorOnMousePress = QString();
-                activateLinkUnderCursor(anchor);
+            // Ignore event without valid anchor position
+            if (anchorPos < 0) {
+                e->ignore();
+                return;
             }
+
+            cursor.setPosition(anchorPos);
+            QString anchor = anchorOnMousePress;
+            anchorOnMousePress = QString();
+            activateLinkUnderCursor(anchor);
         }
     }
 }
