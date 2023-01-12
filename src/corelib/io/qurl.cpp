@@ -834,14 +834,16 @@ recodeFromUser(const QString &input, const ushort *actions, int from, int to)
 static inline void appendToUser(QString &appendTo, QStringView value, QUrl::FormattingOptions options,
                                 const ushort *actions)
 {
-    // Test ComponentFormattingOptions, ignore FormattingOptions.
-    if ((options & 0xFFFF0000) == QUrl::PrettyDecoded) {
+    // The stored value is already QUrl::PrettyDecoded, so there's nothing to
+    // do if that's what the user asked for (test only
+    // ComponentFormattingOptions, ignore FormattingOptions).
+    if ((options & 0xFFFF0000) == QUrl::PrettyDecoded ||
+            !qt_urlRecode(appendTo, value, options, actions))
         appendTo += value;
-        return;
-    }
 
-    if (!qt_urlRecode(appendTo, value, options, actions))
-        appendTo += value;
+    // copy nullness, if necessary, because QString::operator+=(QStringView) doesn't
+    if (appendTo.isNull() && !value.isNull())
+        appendTo.detach();
 }
 
 inline void QUrlPrivate::appendAuthority(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
