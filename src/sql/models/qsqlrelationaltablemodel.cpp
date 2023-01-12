@@ -27,7 +27,7 @@ public:
     inline const static QString relTablePrefix(int i) { return QString::number(i).prepend("relTblAl_"_L1); }
 };
 
-typedef QSqlRelationalTableModelSql Sql;
+using SqlrTm = QSqlRelationalTableModelSql;
 
 /*!
     \class QSqlRelation
@@ -540,12 +540,12 @@ QString QSqlRelationalTableModel::selectStatement() const
 
     QString fList;
     QString conditions;
-    QString from = Sql::from(tableName());
+    QString from = SqlrTm::from(tableName());
     for (int i = 0; i < d->baseRec.count(); ++i) {
         QSqlRelation relation = d->relations.value(i).rel;
         const QString tableField = d->fullyQualifiedFieldName(tableName(), d->db.driver()->escapeIdentifier(d->baseRec.fieldName(i), QSqlDriver::FieldName));
         if (relation.isValid()) {
-            const QString relTableAlias = Sql::relTablePrefix(i);
+            const QString relTableAlias = SqlrTm::relTablePrefix(i);
             QString displayTableField = d->fullyQualifiedFieldName(relTableAlias, relation.displayColumn());
 
             // Duplicate field names must be aliased
@@ -559,36 +559,36 @@ QString QSqlRelationalTableModel::selectStatement() const
                 QString alias = QString::fromLatin1("%1_%2_%3")
                                       .arg(relTableName, displayColumn, QString::number(fieldNames.value(fieldList[i])));
                 alias.truncate(d->db.driver()->maximumIdentifierLength(QSqlDriver::FieldName));
-                displayTableField = Sql::as(displayTableField, alias);
+                displayTableField = SqlrTm::as(displayTableField, alias);
                 --fieldNames[fieldList[i]];
             }
 
-            fList = Sql::comma(fList, displayTableField);
+            fList = SqlrTm::comma(fList, displayTableField);
 
             // Join related table
-            const QString tblexpr = Sql::concat(relation.tableName(), relTableAlias);
+            const QString tblexpr = SqlrTm::concat(relation.tableName(), relTableAlias);
             const QString relTableField = d->fullyQualifiedFieldName(relTableAlias, relation.indexColumn());
-            const QString cond = Sql::eq(tableField, relTableField);
+            const QString cond = SqlrTm::eq(tableField, relTableField);
             if (d->joinMode == QSqlRelationalTableModel::InnerJoin) {
                 // FIXME: InnerJoin code is known to be broken.
                 // Use LeftJoin mode if you want correct behavior.
-                from = Sql::comma(from, tblexpr);
-                conditions = Sql::et(conditions, cond);
+                from = SqlrTm::comma(from, tblexpr);
+                conditions = SqlrTm::et(conditions, cond);
             } else {
-                from = Sql::concat(from, Sql::leftJoin(tblexpr));
-                from = Sql::concat(from, Sql::on(cond));
+                from = SqlrTm::concat(from, SqlrTm::leftJoin(tblexpr));
+                from = SqlrTm::concat(from, SqlrTm::on(cond));
             }
         } else {
-            fList = Sql::comma(fList, tableField);
+            fList = SqlrTm::comma(fList, tableField);
         }
     }
 
     if (fList.isEmpty())
         return QString();
 
-    const QString stmt = Sql::concat(Sql::select(fList), from);
-    const QString where = Sql::where(Sql::et(Sql::paren(conditions), Sql::paren(filter())));
-    return Sql::concat(Sql::concat(stmt, where), orderByClause());
+    const QString stmt = SqlrTm::concat(SqlrTm::select(fList), from);
+    const QString where = SqlrTm::where(SqlrTm::et(SqlrTm::paren(conditions), SqlrTm::paren(filter())));
+    return SqlrTm::concat(SqlrTm::concat(stmt, where), orderByClause());
 }
 
 /*!
@@ -732,9 +732,9 @@ QString QSqlRelationalTableModel::orderByClause() const
     if (!rel.isValid())
         return QSqlTableModel::orderByClause();
 
-    QString f = d->fullyQualifiedFieldName(Sql::relTablePrefix(d->sortColumn), rel.displayColumn());
-    f = d->sortOrder == Qt::AscendingOrder ? Sql::asc(f) : Sql::desc(f);
-    return Sql::orderBy(f);
+    QString f = d->fullyQualifiedFieldName(SqlrTm::relTablePrefix(d->sortColumn), rel.displayColumn());
+    f = d->sortOrder == Qt::AscendingOrder ? SqlrTm::asc(f) : SqlrTm::desc(f);
+    return SqlrTm::orderBy(f);
 }
 
 /*!
