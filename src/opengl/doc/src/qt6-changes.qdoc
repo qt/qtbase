@@ -5,7 +5,7 @@
     \page opengl-changes-qt6.html
     \title Changes to Qt OpenGL
     \ingroup changes-qt-5-to-6
-    \brief Migrate Qt OpenGL to Qt 6.
+    \brief QOpenGL classes migrated, QOpenGLWidget class has been moved to Qt OpenGL Widgets.
 
     Qt 6 is a result of the conscious effort to make the framework more
     efficient and easy to use.

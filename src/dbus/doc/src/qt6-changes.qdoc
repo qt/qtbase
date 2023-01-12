@@ -5,7 +5,7 @@
     \page dbus-changes-qt6.html
     \title Changes to Qt D-Bus
     \ingroup changes-qt-5-to-6
-    \brief Migrate Qt DBus to Qt 6.
+    \brief Minimal porting effort to be able to switch to Qt 6.
 
     Qt 6 is a result of the conscious effort to make the framework more
     efficient and easy to use.

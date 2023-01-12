@@ -5,7 +5,7 @@
     \page qtcore-changes-qt6.html
     \title Changes to Qt Core
     \ingroup changes-qt-5-to-6
-    \brief Migrate Qt Core to Qt 6.
+    \brief Changes to containers, strings, serialization and I/O classes.
 
     Qt 6 is a result of the conscious effort to make the framework more
     efficient and easy to use.
