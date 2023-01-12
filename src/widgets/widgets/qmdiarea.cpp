@@ -220,7 +220,7 @@ static inline QMdiArea *mdiAreaParent(QWidget *widget)
 }
 
 #if QT_CONFIG(tabwidget)
-static inline QTabBar::Shape tabBarShapeFrom(QTabWidget::TabShape shape, QTabWidget::TabPosition position)
+QTabBar::Shape _q_tb_tabBarShapeFrom(QTabWidget::TabShape shape, QTabWidget::TabPosition position)
 {
     const bool rounded = (shape == QTabWidget::Rounded);
     if (position == QTabWidget::North)
@@ -1533,7 +1533,7 @@ void QMdiAreaPrivate::setViewMode(QMdiArea::ViewMode mode)
         tabBar->setTabsClosable(tabsClosable);
         tabBar->setMovable(tabsMovable);
 #if QT_CONFIG(tabwidget)
-        tabBar->setShape(tabBarShapeFrom(tabShape, tabPosition));
+        tabBar->setShape(_q_tb_tabBarShapeFrom(tabShape, tabPosition));
 #endif
 
         isSubWindowsTiled = false;
@@ -1597,7 +1597,7 @@ void QMdiAreaPrivate::updateTabBarGeometry()
 
     Q_Q(QMdiArea);
 #if QT_CONFIG(tabwidget)
-    Q_ASSERT(tabBarShapeFrom(tabShape, tabPosition) == tabBar->shape());
+    Q_ASSERT(_q_tb_tabBarShapeFrom(tabShape, tabPosition) == tabBar->shape());
 #endif
     const QSize tabBarSizeHint = tabBar->sizeHint();
 
@@ -1654,7 +1654,7 @@ void QMdiAreaPrivate::refreshTabBar()
     tabBar->setTabsClosable(tabsClosable);
     tabBar->setMovable(tabsMovable);
 #if QT_CONFIG(tabwidget)
-    tabBar->setShape(tabBarShapeFrom(tabShape, tabPosition));
+    tabBar->setShape(_q_tb_tabBarShapeFrom(tabShape, tabPosition));
 #endif
     updateTabBarGeometry();
 }

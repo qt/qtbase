@@ -65,7 +65,7 @@ using namespace Qt::StringLiterals;
 QString qt_accStripAmp(const QString &text);
 QString qt_accHotKey(const QString &text);
 
-QList<QWidget*> childWidgets(const QWidget *widget)
+QWidgetList _q_ac_childWidgets(const QWidget *widget)
 {
     QList<QWidget*> widgets;
     if (!widget)
@@ -80,8 +80,10 @@ QList<QWidget*> childWidgets(const QWidget *widget)
 #if QT_CONFIG(menu)
               && !qobject_cast<QMenu*>(w)
 #endif
+              // Exclude widgets used as implementation details
               && objectName != "qt_rubberband"_L1
-              && objectName != "qt_qmainwindow_extended_splitter"_L1) {
+              && objectName != "qt_qmainwindow_extended_splitter"_L1
+              && objectName != "qt_spinbox_lineedit"_L1) {
             widgets.append(w);
         }
     }
@@ -1071,7 +1073,7 @@ QAccessibleMainWindow::QAccessibleMainWindow(QWidget *widget)
 
 QAccessibleInterface *QAccessibleMainWindow::child(int index) const
 {
-    QList<QWidget*> kids = childWidgets(mainWindow());
+    QList<QWidget*> kids = _q_ac_childWidgets(mainWindow());
     if (index >= 0 && index < kids.size()) {
         return QAccessible::queryAccessibleInterface(kids.at(index));
     }
@@ -1080,13 +1082,13 @@ QAccessibleInterface *QAccessibleMainWindow::child(int index) const
 
 int QAccessibleMainWindow::childCount() const
 {
-    QList<QWidget*> kids = childWidgets(mainWindow());
+    QList<QWidget*> kids = _q_ac_childWidgets(mainWindow());
     return kids.size();
 }
 
 int QAccessibleMainWindow::indexOfChild(const QAccessibleInterface *iface) const
 {
-    QList<QWidget*> kids = childWidgets(mainWindow());
+    QList<QWidget*> kids = _q_ac_childWidgets(mainWindow());
     return kids.indexOf(static_cast<QWidget*>(iface->object()));
 }
 
@@ -1099,7 +1101,7 @@ QAccessibleInterface *QAccessibleMainWindow::childAt(int x, int y) const
     if (!QRect(gp.x(), gp.y(), w->width(), w->height()).contains(x, y))
         return nullptr;
 
-    const QWidgetList kids = childWidgets(mainWindow());
+    const QWidgetList kids = _q_ac_childWidgets(mainWindow());
     QPoint rp = mainWindow()->mapFromGlobal(QPoint(x, y));
     for (QWidget *child : kids) {
         if (!child->isWindow() && !child->isHidden() && child->geometry().contains(rp)) {

@@ -69,7 +69,7 @@ QFontListView::QFontListView(QWidget *parent)
     setEditTriggers(NoEditTriggers);
 }
 
-static const Qt::WindowFlags DefaultWindowFlags =
+static const Qt::WindowFlags qfd_DefaultWindowFlags =
         Qt::Dialog | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
 
 QFontDialogPrivate::QFontDialogPrivate()
@@ -119,7 +119,7 @@ QFontDialogPrivate::~QFontDialogPrivate()
     \sa getFont()
 */
 QFontDialog::QFontDialog(QWidget *parent)
-    : QDialog(*new QFontDialogPrivate, parent, DefaultWindowFlags)
+    : QDialog(*new QFontDialogPrivate, parent, qfd_DefaultWindowFlags)
 {
     Q_D(QFontDialog);
     d->init();

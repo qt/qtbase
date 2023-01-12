@@ -1890,7 +1890,7 @@ bool QColorDialogPrivate::canBeNativeDialog() const
     return strcmp(QColorDialog::staticMetaObject.className(), q->metaObject()->className()) == 0;
 }
 
-static const Qt::WindowFlags DefaultWindowFlags =
+static const Qt::WindowFlags qcd_DefaultWindowFlags =
         Qt::Dialog | Qt::WindowTitleHint
         | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
 
@@ -1950,7 +1950,7 @@ QColorDialog::QColorDialog(QWidget *parent)
     \a initial color.
 */
 QColorDialog::QColorDialog(const QColor &initial, QWidget *parent)
-    : QDialog(*new QColorDialogPrivate, parent, DefaultWindowFlags)
+    : QDialog(*new QColorDialogPrivate, parent, qcd_DefaultWindowFlags)
 {
     Q_D(QColorDialog);
     d->init(initial);

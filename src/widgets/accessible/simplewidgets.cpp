@@ -63,7 +63,7 @@ using namespace Qt::StringLiterals;
 
 #if QT_CONFIG(accessibility)
 
-extern QList<QWidget*> childWidgets(const QWidget *widget);
+QWidgetList _q_ac_childWidgets(const QWidget *widget);
 
 QString qt_accStripAmp(const QString &text);
 QString qt_accHotKey(const QString &text);
@@ -606,7 +606,7 @@ QAccessibleGroupBox::relations(QAccessible::Relation match /* = QAccessible::All
             QAccessibleWidget::relations(match);
 
     if ((match & QAccessible::Labelled) && (!groupBox()->title().isEmpty())) {
-        const QList<QWidget*> kids = childWidgets(widget());
+        const QList<QWidget*> kids = _q_ac_childWidgets(widget());
         for (QWidget *kid : kids) {
             QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(kid);
             if (iface)
