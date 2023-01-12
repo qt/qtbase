@@ -24,6 +24,7 @@ private Q_SLOTS:
     void converting_Microphone() const { return converting_impl<QMicrophonePermission>(); }
     void converting_Bluetooth() const { return converting_impl<QBluetoothPermission>(); }
 
+    void conversionMaintainsState() const;
 private:
     template <typename T>
     void converting_impl() const;
@@ -58,6 +59,76 @@ void tst_QPermission::converting_impl() const
         const QPermission p = concrete;
         [[maybe_unused]] auto r = p.data<T>();
         static_assert(std::is_same_v<decltype(r), T>);
+    }
+}
+
+void tst_QPermission::conversionMaintainsState() const
+{
+    DummyPermission dummy{42}, dummy_default;
+    QCOMPARE_NE(dummy.state, dummy_default.state);
+
+    QLocationPermission loc, loc_default;
+    QCOMPARE_EQ(loc_default.accuracy(), QLocationPermission::Accuracy::Approximate);
+    QCOMPARE_EQ(loc_default.availability(), QLocationPermission::Availability::WhenInUse);
+
+    loc.setAccuracy(QLocationPermission::Accuracy::Precise);
+    loc.setAvailability(QLocationPermission::Availability::Always);
+
+    QCOMPARE_EQ(loc.accuracy(), QLocationPermission::Accuracy::Precise);
+    QCOMPARE_EQ(loc.availability(), QLocationPermission::Availability::Always);
+
+    QCalendarPermission cal, cal_default;
+    QCOMPARE_EQ(cal_default.isReadWrite(), false);
+
+    cal.setReadWrite(true);
+
+    QCOMPARE_EQ(cal.isReadWrite(), true);
+
+    QContactsPermission con, con_default;
+    QCOMPARE_EQ(con_default.isReadWrite(), false);
+
+    con.setReadWrite(true);
+
+    QCOMPARE_EQ(con.isReadWrite(), true);
+
+    //
+    // QCameraPermission, QMicrophonePermission, QBluetoothPermission don't have
+    // state at the time of writing
+    //
+
+    QPermission p; // maintain state between the blocks below to test reset behavior
+
+    {
+        p = dummy;
+        auto r = p.data<DummyPermission>();
+        QCOMPARE_EQ(r.state, dummy.state);
+        // check mismatched returns default-constructed value:
+        QCOMPARE_EQ(p.data<QCalendarPermission>().isReadWrite(), cal_default.isReadWrite());
+    }
+
+    {
+        p = loc;
+        auto r = p.data<QLocationPermission>();
+        QCOMPARE_EQ(r.accuracy(), loc.accuracy());
+        QCOMPARE_EQ(r.availability(), loc.availability());
+        // check mismatched returns default-constructed value:
+        QCOMPARE_EQ(p.data<DummyPermission>().state, dummy_default.state);
+    }
+
+    {
+        p = con;
+        auto r = p.data<QContactsPermission>();
+        QCOMPARE_EQ(r.isReadWrite(), con.isReadWrite());
+        // check mismatched returns default-constructed value:
+        QCOMPARE_EQ(p.data<QLocationPermission>().accuracy(), loc_default.accuracy());
+    }
+
+    {
+        p = cal;
+        auto r = p.data<QCalendarPermission>();
+        QCOMPARE_EQ(r.isReadWrite(), cal.isReadWrite());
+        // check mismatched returns default-constructed value:
+        QCOMPARE_EQ(p.data<QContactsPermission>().isReadWrite(), con_default.isReadWrite());
     }
 }
 
