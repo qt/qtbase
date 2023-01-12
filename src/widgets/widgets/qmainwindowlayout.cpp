@@ -1651,19 +1651,7 @@ void QMainWindowLayout::setTabPosition(Qt::DockWidgetAreas areas, QTabWidget::Ta
     updateTabBarShapes();
 }
 
-static inline QTabBar::Shape tabBarShapeFrom(QTabWidget::TabShape shape, QTabWidget::TabPosition position)
-{
-    const bool rounded = (shape == QTabWidget::Rounded);
-    if (position == QTabWidget::North)
-        return rounded ? QTabBar::RoundedNorth : QTabBar::TriangularNorth;
-    if (position == QTabWidget::South)
-        return rounded ? QTabBar::RoundedSouth : QTabBar::TriangularSouth;
-    if (position == QTabWidget::East)
-        return rounded ? QTabBar::RoundedEast : QTabBar::TriangularEast;
-    if (position == QTabWidget::West)
-        return rounded ? QTabBar::RoundedWest : QTabBar::TriangularWest;
-    return QTabBar::RoundedNorth;
-}
+QTabBar::Shape _q_tb_tabBarShapeFrom(QTabWidget::TabShape shape, QTabWidget::TabPosition position);
 #endif // QT_CONFIG(tabwidget)
 
 void QMainWindowLayout::updateTabBarShapes()
@@ -1689,7 +1677,7 @@ void QMainWindowLayout::updateTabBarShapes()
     for (int i = 0; i < QInternal::DockCount; ++i) {
 #if QT_CONFIG(tabwidget)
         QTabWidget::TabPosition pos = verticalTabsEnabled ? vertical[i] : tabPositions[i];
-        QTabBar::Shape shape = tabBarShapeFrom(_tabShape, pos);
+        QTabBar::Shape shape = _q_tb_tabBarShapeFrom(_tabShape, pos);
 #else
         QTabBar::Shape shape = verticalTabsEnabled ? vertical[i] : QTabBar::RoundedSouth;
 #endif

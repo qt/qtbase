@@ -3760,6 +3760,8 @@ void QFileDialogPrivate::_q_enterDirectory(const QModelIndex &index)
 */
 void QFileDialogPrivate::_q_goToDirectory(const QString &path)
 {
+    enum { UrlRole = Qt::UserRole + 1 };
+
  #if QT_CONFIG(messagebox)
     Q_Q(QFileDialog);
 #endif

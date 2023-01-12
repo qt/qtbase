@@ -34,22 +34,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-static QList<QWidget*> childWidgets(const QWidget *widget)
-{
-    QList<QWidget*> widgets;
-    for (QObject *o : widget->children()) {
-        QWidget *w = qobject_cast<QWidget *>(o);
-        if (w && !w->isWindow()
-            && !qobject_cast<QFocusFrame*>(w)
-#if QT_CONFIG(menu)
-            && !qobject_cast<QMenu*>(w)
-#endif
-            && w->objectName() != "qt_rubberband"_L1
-            && w->objectName() != "qt_spinbox_lineedit"_L1)
-            widgets.append(w);
-    }
-    return widgets;
-}
+QWidgetList _q_ac_childWidgets(const QWidget *widget);
 
 static QString buddyString(const QWidget *widget)
 {
@@ -276,7 +261,7 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
             // first check for all siblings that are labels to us
             // ideally we would go through all objects and check, but that
             // will be too expensive
-            const QList<QWidget*> kids = childWidgets(parent);
+            const QList<QWidget*> kids = _q_ac_childWidgets(parent);
             for (QWidget *kid : kids) {
                 if (QLabel *labelSibling = qobject_cast<QLabel*>(kid)) {
                     if (labelSibling->buddy() == widget()) {
@@ -327,7 +312,7 @@ QAccessibleInterface *QAccessibleWidget::parent() const
 QAccessibleInterface *QAccessibleWidget::child(int index) const
 {
     Q_ASSERT(widget());
-    QWidgetList childList = childWidgets(widget());
+    QWidgetList childList = _q_ac_childWidgets(widget());
     if (index >= 0 && index < childList.size())
         return QAccessible::queryAccessibleInterface(childList.at(index));
     return nullptr;
@@ -355,7 +340,7 @@ QAccessibleInterface *QAccessibleWidget::focusChild() const
 /*! \reimp */
 int QAccessibleWidget::childCount() const
 {
-    QWidgetList cl = childWidgets(widget());
+    QWidgetList cl = _q_ac_childWidgets(widget());
     return cl.size();
 }
 
@@ -364,7 +349,7 @@ int QAccessibleWidget::indexOfChild(const QAccessibleInterface *child) const
 {
     if (!child)
         return -1;
-    QWidgetList cl = childWidgets(widget());
+    QWidgetList cl = _q_ac_childWidgets(widget());
     return cl.indexOf(qobject_cast<QWidget *>(child->object()));
 }
 
