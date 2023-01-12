@@ -174,6 +174,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     \class QPermission
     \inmodule QtCore
     \inheaderfile QPermissions
+    \since 6.5
     \brief An opaque wrapper of a typed permission.
 
     The QPermission class is an opaque wrapper of a \l{typed permission},
