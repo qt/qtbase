@@ -169,14 +169,14 @@ static const GLfloat texture_buffer_data[] = {
         1, 1
 };
 
-class TextureBinder
+class QBlitterTextureBinder
 {
 public:
-    TextureBinder(GLenum target, GLuint textureId) : m_target(target)
+    explicit QBlitterTextureBinder(GLenum target, GLuint textureId) : m_target(target)
     {
         QOpenGLContext::currentContext()->functions()->glBindTexture(m_target, textureId);
     }
-    ~TextureBinder()
+    ~QBlitterTextureBinder()
     {
         QOpenGLContext::currentContext()->functions()->glBindTexture(m_target, 0);
     }
@@ -319,7 +319,7 @@ void QOpenGLTextureBlitterPrivate::blit(GLuint texture,
                                         const QMatrix4x4 &targetTransform,
                                         const QMatrix3x3 &sourceTransform)
 {
-    TextureBinder binder(currentTarget, texture);
+    QBlitterTextureBinder binder(currentTarget, texture);
     if (!prepareProgram(targetTransform))
         return;
 
@@ -336,7 +336,7 @@ void QOpenGLTextureBlitterPrivate::blit(GLuint texture,
                                         const QMatrix4x4 &targetTransform,
                                         QOpenGLTextureBlitter::Origin origin)
 {
-    TextureBinder binder(currentTarget, texture);
+    QBlitterTextureBinder binder(currentTarget, texture);
     if (!prepareProgram(targetTransform))
         return;
 
