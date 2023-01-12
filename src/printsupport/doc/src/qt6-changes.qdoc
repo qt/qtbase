@@ -5,7 +5,7 @@
     \page printsupport-changes-qt6.html
     \title Changes to Qt Print Support
     \ingroup changes-qt-5-to-6
-    \brief Migrate Qt Print Support to Qt 6.
+    \brief General API consolidation.
 
     Qt 6 is a result of the conscious effort to make the framework more
     efficient and easy to use.
