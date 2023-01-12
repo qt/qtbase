@@ -112,6 +112,7 @@ private slots:
     void setLayout();
     void hideShowRow();
     void showWithHiddenRow();
+    void hiddenRowAndStretch();
 
 /*
     QLayoutItem *itemAt(int row, ItemRole role) const;
@@ -1250,6 +1251,49 @@ void tst_QFormLayout::showWithHiddenRow()
     layout.setRowVisible(1, false);
 
     topLevel.setLayout(&layout);
+    topLevel.show();
+}
+
+/*
+    Test that hiding rows does not leave outdated layout data behind
+    in hidden items that results in out-of-bounds array access. See
+    QTBUG-109237.
+*/
+void tst_QFormLayout::hiddenRowAndStretch()
+{
+    QWidget topLevel;
+    QFormLayout layout;
+    layout.setRowWrapPolicy(QFormLayout::WrapAllRows);
+
+    // We need our own stretcher item so that QFormLayout doesn't insert
+    // it's own, as that would grow the size of the layout data array again.
+    QSpacerItem *stretch = new QSpacerItem(100, 100, QSizePolicy::Expanding, QSizePolicy::Expanding);
+    layout.setItem(0, QFormLayout::FieldRole, stretch);
+
+    QLabel *lastLabel = nullptr;
+    QLineEdit *lastField = nullptr;
+    for (int row = 1; row < 4; ++row) {
+        QLabel *label = new QLabel(QString("Label %1").arg(row));
+        label->setWordWrap(true);
+        QLineEdit *field = new QLineEdit;
+        layout.setWidget(row, QFormLayout::LabelRole, label);
+        layout.setWidget(row, QFormLayout::FieldRole, field);
+        if (row == 3) {
+            lastLabel = label;
+            lastField = field;
+        }
+    }
+
+    Q_ASSERT(lastLabel);
+    Q_ASSERT(lastField);
+
+    topLevel.setLayout(&layout);
+    topLevel.sizeHint();
+
+    lastLabel->setVisible(false);
+    lastField->setVisible(false);
+
+    // should not assert here
     topLevel.show();
 }
 

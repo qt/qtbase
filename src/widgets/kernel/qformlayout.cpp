@@ -480,6 +480,7 @@ void QFormLayoutPrivate::recalcHFW(int w)
 
 void QFormLayoutPrivate::setupHfwLayoutData()
 {
+    Q_Q(QFormLayout);
     // setupVerticalLayoutData must be called before this
     // setupHorizontalLayoutData must also be called before this
     // copies non hfw data into hfw
@@ -503,6 +504,10 @@ void QFormLayoutPrivate::setupHfwLayoutData()
     for (i = 0; i < rr; ++i) {
         QFormLayoutItem *label = m_matrix(i, 0);
         QFormLayoutItem *field = m_matrix(i, 1);
+
+        // ignore rows with only hidden items
+        if (!q->isRowVisible(i))
+            continue;
 
         if (label && label->vLayoutIndex > -1) {
             if (label->isHfw) {
@@ -681,9 +686,15 @@ void QFormLayoutPrivate::setupVerticalLayoutData(int width)
         QFormLayoutItem *label = m_matrix(i, 0);
         QFormLayoutItem *field = m_matrix(i, 1);
 
-        // Totally ignore empty rows or rows with only hidden items
-        if (!q->isRowVisible(i))
+        // Ignore empty rows or rows with only hidden items,
+        // and invalidate their position in the layout.
+        if (!q->isRowVisible(i)) {
+            if (label)
+                label->vLayoutIndex = -1;
+            if (field)
+                field->vLayoutIndex = -1;
             continue;
+        }
 
         QSize min1;
         QSize min2;
@@ -2189,6 +2200,9 @@ void QFormLayoutPrivate::arrangeWidgets(const QList<QLayoutStruct> &layouts, QRe
     for (i = 0; i < rr; ++i) {
         QFormLayoutItem *label = m_matrix(i, 0);
         QFormLayoutItem *field = m_matrix(i, 1);
+
+        if (!q->isRowVisible(i))
+            continue;
 
         if (label && label->vLayoutIndex > -1) {
             int height = layouts.at(label->vLayoutIndex).size;
