@@ -2699,7 +2699,8 @@ void QWidgetTextControl::insertFromMimeData(const QMimeData *source)
     bool hasData = false;
     QTextDocumentFragment fragment;
 #if QT_CONFIG(textmarkdownreader)
-    if (source->formats().first() == "text/markdown"_L1) {
+    const auto formats = source->formats();
+    if (formats.size() && formats.first() == "text/markdown"_L1) {
         auto s = QString::fromUtf8(source->data("text/markdown"_L1));
         fragment = QTextDocumentFragment::fromMarkdown(s);
         hasData = true;
