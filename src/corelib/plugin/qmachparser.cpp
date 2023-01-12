@@ -56,6 +56,23 @@ static QLibraryScanResult notfound(const QString &reason, QString *errorString)
     return {};
 }
 
+static bool isEncrypted(const my_mach_header *header)
+{
+    auto commandCursor = uintptr_t(header) + sizeof(my_mach_header);
+    for (uint32_t i = 0; i < header->ncmds; ++i) {
+        load_command *loadCommand = reinterpret_cast<load_command *>(commandCursor);
+        if (loadCommand->cmd == LC_ENCRYPTION_INFO || loadCommand->cmd == LC_ENCRYPTION_INFO_64) {
+            // The layout of encryption_info_command and encryption_info_command_64 is the same
+            // up until and including cryptid, so we can treat it as encryption_info_command.
+            auto encryptionInfoCommand = reinterpret_cast<encryption_info_command*>(loadCommand);
+            return encryptionInfoCommand->cryptid != 0;
+        }
+        commandCursor += loadCommand->cmdsize;
+    }
+
+    return false;
+}
+
 QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *errorString)
 {
     // The minimum size of a Mach-O binary we're interested in.
@@ -166,8 +183,12 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
                 if (sect[j].size < sizeof(QPluginMetaData::MagicHeader))
                     return notfound(QLibrary::tr(".qtmetadata section is too small"), errorString);
 
+                const bool binaryIsEncrypted = isEncrypted(header);
                 qsizetype pos = reinterpret_cast<const char *>(header) - m_s + sect[j].offset;
-                if (IncludeValidityChecks) {
+
+                // We can not read the section data of encrypted libraries until they
+                // have been dlopened(), so skip validity check if that's the case.
+                if (IncludeValidityChecks && !binaryIsEncrypted) {
                     QByteArrayView expectedMagic = QByteArrayView::fromArray(QPluginMetaData::MagicString);
                     QByteArrayView actualMagic = QByteArrayView(m_s + pos, expectedMagic.size());
                     if (expectedMagic != actualMagic)
@@ -175,7 +196,7 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
                 }
 
                 pos += sizeof(QPluginMetaData::MagicString);
-                return { pos, qsizetype(sect[j].size - sizeof(QPluginMetaData::MagicString)) };
+                return { pos, qsizetype(sect[j].size - sizeof(QPluginMetaData::MagicString)), binaryIsEncrypted };
             }
         }
 

@@ -207,7 +207,7 @@ static QLibraryScanResult qt_find_pattern(const char *s, qsizetype s_len, QStrin
                 information could not be read.
   Returns  true if version information is present and successfully read.
 */
-static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
+static QLibraryScanResult findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
 {
     QFile file(library);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -215,7 +215,7 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
             lib->errorString = file.errorString();
         qCWarning(qt_lcDebugPlugins, "%ls: cannot open: %ls", qUtf16Printable(library),
                   qUtf16Printable(file.errorString()));
-        return false;
+        return {};
     }
 
     // Files can be bigger than the virtual memory size on 32-bit systems, so
@@ -232,7 +232,7 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
         // This can't be used as a plugin.
         qCWarning(qt_lcDebugPlugins, "%ls: failed to map to memory: %ls",
                   qUtf16Printable(library), qUtf16Printable(file.errorString()));
-        return false;
+        return {};
     }
 #else
     QByteArray data;
@@ -249,6 +249,10 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
     QString errMsg = library;
     QLibraryScanResult r = qt_find_pattern(filedata, fdlen, &errMsg);
     if (r.length) {
+#if defined(Q_OF_MACH_O)
+        if (r.isEncrypted)
+            return r;
+#endif
         if (!lib->metaData.parse(QByteArrayView(filedata + r.pos, r.length))) {
             errMsg = lib->metaData.errorString();
             qCWarning(qt_lcDebugPlugins, "Found invalid metadata in lib %ls: %ls",
@@ -257,7 +261,7 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
             qCDebug(qt_lcDebugPlugins, "Found metadata in lib %ls, metadata=\n%s\n",
                     qUtf16Printable(library),
                     QJsonDocument(lib->metaData.toJson()).toJson().constData());
-            return true;
+            return r;
         }
     } else {
         qCDebug(qt_lcDebugPlugins, "Failed to find metadata in lib %ls: %ls",
@@ -266,7 +270,7 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
 
     lib->errorString = QLibrary::tr("Failed to extract plugin meta data from '%1': %2")
             .arg(library, errMsg);
-    return false;
+    return {};
 }
 
 static void installCoverageTool(QLibraryPrivate *libPrivate)
@@ -722,7 +726,22 @@ void QLibraryPrivate::updatePluginState()
 
     if (!pHnd.loadRelaxed()) {
         // scan for the plugin metadata without loading
-        success = findPatternUnloaded(fileName, this);
+        QLibraryScanResult result = findPatternUnloaded(fileName, this);
+#if defined(Q_OF_MACH_O)
+        if (result.length && result.isEncrypted) {
+            // We found the .qtmetadata section, but since the library is encrypted
+            // we need to dlopen() it before we can parse the metadata for further
+            // validation.
+            qCDebug(qt_lcDebugPlugins, "Library is encrypted. Doing prospective load before parsing metadata");
+            locker.unlock();
+            load();
+            locker.relock();
+            success = qt_get_metadata(this, &errorString);
+        } else
+#endif
+        {
+            success = result.length != 0;
+        }
     } else {
         // library is already loaded (probably via QLibrary)
         // simply get the target function and call it.

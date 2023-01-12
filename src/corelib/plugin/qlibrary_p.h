@@ -38,6 +38,9 @@ struct QLibraryScanResult
 {
     qsizetype pos;
     qsizetype length;
+#if defined(Q_OF_MACH_O)
+    bool isEncrypted = false;
+#endif
 };
 
 class QLibraryStore;
