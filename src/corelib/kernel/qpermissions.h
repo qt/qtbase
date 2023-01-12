@@ -61,13 +61,10 @@ public:
     template <typename T, std::enable_if_t<is_permission<T>::value, bool> = true>
     T data() const
     {
-        auto requestedType = QMetaType::fromType<T>();
-        if (type() != requestedType) {
-            qWarning() << "Can not convert from" << type().name()
-                       << "to" << requestedType.name();
+        if (auto p = data(QMetaType::fromType<T>()))
+            return *static_cast<const T *>(p);
+        else
             return T{};
-        }
-        return m_data.value<T>();
     }
 #endif
 
@@ -76,6 +73,8 @@ public:
 #endif
 
 private:
+    Q_CORE_EXPORT const void *data(QMetaType id) const;
+
     Qt::PermissionStatus m_status = Qt::PermissionStatus::Undetermined;
     QVariant m_data;
 

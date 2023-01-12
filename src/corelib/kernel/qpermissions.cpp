@@ -257,6 +257,22 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     Returns the type of the permission.
 */
 
+/*
+    \internal
+*/
+const void *QPermission::data(QMetaType requestedType) const
+{
+    const auto actualType = type();
+    if (requestedType != actualType) {
+        qCWarning(lcPermissions, "Cannot convert from %s to %s",
+                  actualType.name(), requestedType.name());
+        return nullptr;
+    }
+    return m_data.data();
+}
+
+
+
 #define QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(ClassName) \
     ClassName::ClassName() : d(new ClassName##Private) {} \
     ClassName::ClassName(const ClassName &other) noexcept = default; \
