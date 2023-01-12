@@ -21,7 +21,7 @@ using namespace Qt::StringLiterals;
 
 namespace QTest {
 
-    static const char *incidentType2String(QAbstractTestLogger::IncidentTypes type)
+    static const char *tcIncidentType2String(QAbstractTestLogger::IncidentTypes type)
     {
         switch (type) {
         case QAbstractTestLogger::Skip:
@@ -46,7 +46,7 @@ namespace QTest {
         return "??????";
     }
 
-    static const char *messageType2String(QAbstractTestLogger::MessageTypes type)
+    static const char *tcMessageType2String(QAbstractTestLogger::MessageTypes type)
     {
         switch (type) {
         case QAbstractTestLogger::QDebug:
@@ -135,7 +135,7 @@ void QTeamCityLogger::addIncident(IncidentTypes type, const char *description,
     }
 
     if (type == QAbstractTestLogger::XFail) {
-        addPendingMessage(QTest::incidentType2String(type), description, file, line);
+        addPendingMessage(QTest::tcIncidentType2String(type), description, file, line);
         return;
     }
 
@@ -197,7 +197,7 @@ void QTeamCityLogger::addMessage(MessageTypes type, const QString &message,
 
     QTestCharBuffer escapedMessage;
     tcEscapedString(&escapedMessage, qUtf8Printable(message));
-    addPendingMessage(QTest::messageType2String(type), escapedMessage.constData(), file, line);
+    addPendingMessage(QTest::tcMessageType2String(type), escapedMessage.constData(), file, line);
 }
 
 void QTeamCityLogger::tcEscapedString(QTestCharBuffer *buf, const char *str) const
