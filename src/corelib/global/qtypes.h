@@ -58,6 +58,11 @@ typedef unsigned long long quint64; /* 64 bit unsigned */
 typedef qint64 qlonglong;
 typedef quint64 qulonglong;
 
+#if defined(__SIZEOF_INT128__)
+__extension__ typedef __int128_t qint128;
+__extension__ typedef __uint128_t quint128;
+#endif
+
 #ifndef __cplusplus
 // In C++ mode, we define below using QIntegerForSize template
 static_assert(sizeof(ptrdiff_t) == sizeof(size_t), "Weird ptrdiff_t and size_t definitions");
@@ -103,7 +108,7 @@ template <>    struct QIntegerForSize<2> { typedef quint16 Unsigned; typedef qin
 template <>    struct QIntegerForSize<4> { typedef quint32 Unsigned; typedef qint32 Signed; };
 template <>    struct QIntegerForSize<8> { typedef quint64 Unsigned; typedef qint64 Signed; };
 #if defined(Q_CC_GNU) && defined(__SIZEOF_INT128__)
-template <>    struct QIntegerForSize<16> { __extension__ typedef unsigned __int128 Unsigned; __extension__ typedef __int128 Signed; };
+template <>    struct QIntegerForSize<16> { typedef quint128 Unsigned; typedef qint128 Signed; };
 #endif
 template <class T> struct QIntegerForSizeof: QIntegerForSize<sizeof(T)> { };
 typedef QIntegerForSize<Q_PROCESSOR_WORDSIZE>::Signed qregisterint;

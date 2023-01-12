@@ -105,6 +105,23 @@ inline constexpr T qbswap(T source)
     return T(qbswap_helper(typename QIntegerForSizeof<T>::Unsigned(source)));
 }
 
+#ifdef __SIZEOF_INT128__
+// extra definitions for q(u)int128, in case std::is_integral_v<~~> == false
+inline constexpr quint128 qbswap(quint128 source)
+{
+    quint128 result = {};
+    result = qbswap_helper(quint64(source));
+    result <<= 64;
+    result |= qbswap_helper(quint64(source >> 64));
+    return result;
+}
+
+inline constexpr quint128 qbswap(qint128 source)
+{
+    return qint128(qbswap(quint128(source)));
+}
+#endif
+
 // floating specializations
 template<typename Float>
 Float qbswapFloatHelper(Float source)
