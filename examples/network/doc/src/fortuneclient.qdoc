@@ -3,7 +3,9 @@
 
 /*!
     \example fortuneclient
-    \title Fortune Client Example
+    \title Fortune Client
+    \meta category {Networking}
+    \meta tags {tcp,network}
     \ingroup examples-network
     \brief Demonstrates how to create a client for a network service.
 
