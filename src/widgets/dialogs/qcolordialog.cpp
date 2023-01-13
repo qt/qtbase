@@ -49,13 +49,21 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-namespace {
+namespace QtPrivate {
 class QColorLuminancePicker;
 class QColorPicker;
 class QColorShower;
 class QWellArray;
+class QColorWell;
 class QColorPickingEventFilter;
-} // unnamed namespace
+} // namespace QtPrivate
+
+using QColorLuminancePicker = QtPrivate::QColorLuminancePicker;
+using QColorPicker = QtPrivate::QColorPicker;
+using QColorShower = QtPrivate::QColorShower;
+using QWellArray = QtPrivate::QWellArray;
+using QColorWell = QtPrivate::QColorWell;
+using QColorPickingEventFilter = QtPrivate::QColorPickingEventFilter;
 
 class QColorDialogPrivate : public QDialogPrivate
 {
@@ -150,7 +158,7 @@ private:
 
 //////////// QWellArray BEGIN
 
-namespace {
+namespace QtPrivate {
 
 class QWellArray : public QWidget
 {
@@ -465,7 +473,7 @@ void QWellArray::keyPressEvent(QKeyEvent* e)
         return;
     }
 
-}
+} // namespace QtPrivate
 
 //////////// QWellArray END
 
@@ -555,7 +563,7 @@ static inline void rgb2hsv(QRgb rgb, int &h, int &s, int &v)
     c.getHsv(&h, &s, &v);
 }
 
-namespace {
+namespace QtPrivate {
 
 class QColorWell : public QWellArray
 {
@@ -705,8 +713,12 @@ private:
     bool crossVisible;
 };
 
+} // namespace QtPrivate
+
 static int pWidth = 220;
 static int pHeight = 200;
+
+namespace QtPrivate {
 
 class QColorLuminancePicker : public QWidget
 {
@@ -1308,7 +1320,7 @@ QColorShower::QColorShower(QColorDialog *parent)
     retranslateStrings();
 }
 
-} // unnamed namespace
+} // namespace QtPrivate
 
 inline QRgb QColorDialogPrivate::currentColor() const { return cs->currentColor(); }
 inline int QColorDialogPrivate::currentAlpha() const { return cs->currentAlpha(); }

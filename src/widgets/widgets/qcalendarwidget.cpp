@@ -37,12 +37,12 @@ enum {
     MinimumDayOffset = 1
 };
 
-namespace {
-
 static QString formatNumber(int number, int fieldWidth)
 {
     return QString::number(number).rightJustified(fieldWidth, u'0');
 }
+
+namespace QtPrivate {
 
 class QCalendarDateSectionValidator
 {
@@ -398,9 +398,11 @@ struct SectionToken {
     QCalendarDateSectionValidator *validator;
     int repeat;
 };
-} // unnamed namespace
-Q_DECLARE_TYPEINFO(SectionToken, Q_PRIMITIVE_TYPE);
-namespace {
+} // namespace QtPrivate
+
+Q_DECLARE_TYPEINFO(QtPrivate::SectionToken, Q_PRIMITIVE_TYPE);
+
+namespace QtPrivate {
 
 class QCalendarDateValidator
 {
@@ -1606,7 +1608,20 @@ protected:
     }
 };
 
-} // unnamed namespace
+} // namespace QtPrivate
+
+using QCalendarDateSectionValidator = QtPrivate::QCalendarDateSectionValidator;
+using QCalendarDayValidator = QtPrivate::QCalendarDayValidator;
+using QCalendarMonthValidator = QtPrivate::QCalendarMonthValidator;
+using QCalendarYearValidator = QtPrivate::QCalendarYearValidator;
+using QCalendarDateValidator = QtPrivate::QCalendarDateValidator;
+using QPrevNextCalButton = QtPrivate::QPrevNextCalButton;
+using QCalendarDelegate = QtPrivate::QCalendarDelegate;
+using QCalToolButton = QtPrivate::QCalToolButton;
+using QCalendarDelegate = QtPrivate::QCalendarDelegate;
+using QCalendarModel = QtPrivate::QCalendarModel;
+using QCalendarView = QtPrivate::QCalendarView;
+using QCalendarTextNavigator = QtPrivate::QCalendarTextNavigator;
 
 class QCalendarWidgetPrivate : public QWidgetPrivate
 {
