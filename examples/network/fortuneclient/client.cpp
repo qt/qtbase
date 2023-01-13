@@ -14,7 +14,6 @@ Client::Client(QWidget *parent)
     , getFortuneButton(new QPushButton(tr("Get Fortune")))
     , tcpSocket(new QTcpSocket(this))
 {
-    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 //! [0]
     hostCombo->setEditable(true);
     // find out name of this machine

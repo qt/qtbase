@@ -11,7 +11,6 @@ Server::Server(QWidget *parent)
     : QDialog(parent)
     , statusLabel(new QLabel)
 {
-    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     statusLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
 
     initServer();
