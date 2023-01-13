@@ -240,9 +240,11 @@ protected:
 
         const uint *d;
     };
+private:
     constexpr QMetaMethod(const QMetaObject *metaObject, const Data &data_)
         : mobj(metaObject), data(data_)
     {}
+protected:
 
     const QMetaObject *mobj;
     Data data;
