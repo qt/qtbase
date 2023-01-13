@@ -61,7 +61,7 @@ Client::Client(QWidget *parent)
 
 //! [1]
     in.setDevice(tcpSocket);
-    in.setVersion(QDataStream::Qt_4_0);
+    in.setVersion(QDataStream::Qt_6_5);
 //! [1]
 
     connect(hostCombo, &QComboBox::editTextChanged,

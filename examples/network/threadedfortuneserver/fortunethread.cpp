@@ -25,7 +25,7 @@ void FortuneThread::run()
 
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_4_0);
+    out.setVersion(QDataStream::Qt_6_5);
     out << text;
 //! [3] //! [4]
 

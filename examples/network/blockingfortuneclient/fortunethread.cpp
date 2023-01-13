@@ -62,7 +62,7 @@ void FortuneThread::run()
 //! [8] //! [11]
 
         QDataStream in(&socket);
-        in.setVersion(QDataStream::Qt_4_0);
+        in.setVersion(QDataStream::Qt_6_5);
         QString fortune;
 //! [11] //! [12]
 
