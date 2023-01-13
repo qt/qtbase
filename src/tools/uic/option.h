@@ -11,6 +11,12 @@ QT_BEGIN_NAMESPACE
 
 struct Option
 {
+    enum class PythonResourceImport {
+        Default, // "import rc_file"
+        FromDot, // "from . import rc_file"
+        Absolute // "import path.rc_file"
+    };
+
     unsigned int headerProtection : 1;
     unsigned int copyrightHeader : 1;
     unsigned int generateImplemetation : 1;
@@ -20,7 +26,6 @@ struct Option
     unsigned int limitXPM_LineLength : 1;
     unsigned int implicitIncludes: 1;
     unsigned int idBased: 1;
-    unsigned int fromImports: 1;
     unsigned int forceMemberFnPtrConnectionSyntax: 1;
     unsigned int forceStringConnectionSyntax: 1;
     unsigned int useStarImports: 1;
@@ -34,6 +39,9 @@ struct Option
     QString postfix;
     QString translateFunction;
     QString includeFile;
+    QString pythonRoot;
+
+    PythonResourceImport pythonResourceImport = PythonResourceImport::Default;
 
     Option()
         : headerProtection(1),
@@ -45,7 +53,6 @@ struct Option
           limitXPM_LineLength(0),
           implicitIncludes(1),
           idBased(0),
-          fromImports(0),
           forceMemberFnPtrConnectionSyntax(0),
           forceStringConnectionSyntax(0),
           useStarImports(0),

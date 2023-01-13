@@ -31,7 +31,8 @@ private:
     void addPythonCustomWidget(const QString &className, const DomCustomWidget *dcw);
     bool addQtClass(const QString &className);
     void addEnumBaseClass(const QString &v);
-    void writeImport(const QString &module);
+    void writeResourceImport(const QString &module);
+    QString resourceAbsolutePath(QString resource) const;
 
     QHash<QString, QString> m_classToModule;
     // Module->class (modules sorted)

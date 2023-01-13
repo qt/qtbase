@@ -13,10 +13,41 @@
 #include <qcoreapplication.h>
 #include <qcommandlineoption.h>
 #include <qcommandlineparser.h>
+#include <qfileinfo.h>
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+
+static const char pythonPathVar[] = "PYTHONPATH";
+
+// From the Python paths, find the component the UI file is under
+static QString pythonRoot(const QString &pythonPath, const QString &uiFileIn)
+{
+#ifdef Q_OS_WIN
+    static const Qt::CaseSensitivity fsSensitivity = Qt::CaseInsensitive;
+#else
+    static const Qt::CaseSensitivity fsSensitivity = Qt::CaseSensitive;
+#endif
+
+    if (pythonPath.isEmpty() || uiFileIn.isEmpty())
+        return {};
+    const QString uiFile = QFileInfo(uiFileIn).canonicalFilePath();
+    if (uiFile.isEmpty())
+        return {};
+    const auto uiFileSize = uiFile.size();
+    const auto paths = pythonPath.split(QDir::listSeparator(), Qt::SkipEmptyParts);
+    for (const auto &path : paths) {
+        const QString canonicalPath = QFileInfo(path).canonicalFilePath();
+        const auto canonicalPathSize = canonicalPath.size();
+        if (uiFileSize > canonicalPathSize
+            && uiFile.at(canonicalPathSize) == u'/'
+            && uiFile.startsWith(canonicalPath, fsSensitivity)) {
+            return canonicalPath;
+        }
+    }
+    return {};
+}
 
 int runUic(int argc, char *argv[])
 {
@@ -90,6 +121,10 @@ int runUic(int argc, char *argv[])
     fromImportsOption.setDescription(u"Python: generate imports relative to '.'"_s);
     parser.addOption(fromImportsOption);
 
+    QCommandLineOption absoluteImportsOption(u"absolute-imports"_s);
+    absoluteImportsOption.setDescription(u"Python: generate absolute imports"_s);
+    parser.addOption(absoluteImportsOption);
+
     // FIXME Qt 7: Flip the default?
     QCommandLineOption rcPrefixOption(u"rc-prefix"_s);
     rcPrefixOption.setDescription(uR"(Python: Generate "rc_file" instead of "file_rc" import)"_s);
@@ -99,6 +134,11 @@ int runUic(int argc, char *argv[])
     QCommandLineOption useStarImportsOption(u"star-imports"_s);
     useStarImportsOption.setDescription(u"Python: Use * imports"_s);
     parser.addOption(useStarImportsOption);
+
+    QCommandLineOption pythonPathOption(u"python-paths"_s);
+    pythonPathOption.setDescription(u"Python paths for --absolute-imports."_s);
+    pythonPathOption.setValueName(u"pathlist"_s);
+    parser.addOption(pythonPathOption);
 
     parser.addPositionalArgument(u"[uifile]"_s, u"Input file (*.ui), otherwise stdin."_s);
 
@@ -130,10 +170,19 @@ int runUic(int argc, char *argv[])
     }
     language::setLanguage(language);
     if (language == Language::Python) {
-        driver.option().fromImports = parser.isSet(fromImportsOption);
+        if (parser.isSet(fromImportsOption))
+            driver.option().pythonResourceImport = Option::PythonResourceImport::FromDot;
+        else if (parser.isSet(absoluteImportsOption))
+            driver.option().pythonResourceImport = Option::PythonResourceImport::Absolute;
         driver.option().useStarImports = parser.isSet(useStarImportsOption);
         if (parser.isSet(rcPrefixOption))
             driver.option().rcPrefix = 1;
+        QString pythonPaths;
+        if (parser.isSet(pythonPathOption))
+            pythonPaths = parser.value(pythonPathOption);
+        else if (qEnvironmentVariableIsSet(pythonPathVar))
+            pythonPaths = QString::fromUtf8(qgetenv(pythonPathVar));
+        driver.option().pythonRoot = pythonRoot(pythonPaths, inputFile);
     }
 
     if (inputFile.isEmpty()) // reading from stdin
