@@ -6,7 +6,7 @@
 #include <QtNetwork>
 
 //! [0]
-FortuneThread::FortuneThread(int socketDescriptor, const QString &fortune, QObject *parent)
+FortuneThread::FortuneThread(qintptr socketDescriptor, const QString &fortune, QObject *parent)
     : QThread(parent), socketDescriptor(socketDescriptor), text(fortune)
 {
 }
