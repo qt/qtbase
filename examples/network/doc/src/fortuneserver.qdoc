@@ -3,7 +3,9 @@
 
 /*!
     \example fortuneserver
-    \title Fortune Server Example
+    \title Fortune Server
+    \meta category {Networking}
+    \meta tags {tcp,network,server}
     \ingroup examples-network
     \brief Demonstrates how to create a server for a network service.
 

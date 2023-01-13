@@ -3,7 +3,9 @@
 
 /*!
     \example threadedfortuneserver
-    \title Threaded Fortune Server Example
+    \title Threaded Fortune Server
+    \meta category {Networking}
+    \meta tags {tcp,network,threading,server,synchronous-io}
     \ingroup examples-network
 
     \brief The Threaded Fortune Server example shows how to create a server for a
