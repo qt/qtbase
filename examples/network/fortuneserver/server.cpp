@@ -94,7 +94,7 @@ void Server::sendFortune()
 //! [5]
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_10);
+    out.setVersion(QDataStream::Qt_6_5);
 
     out << fortunes[QRandomGenerator::global()->bounded(fortunes.size())];
 //! [4] //! [7]
