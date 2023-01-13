@@ -228,7 +228,7 @@ int main(int argc, char **argv)
 
     QStringList results;
     if (parser.isSet(qtversion)) {
-        QString qtversionstring = QString::fromLatin1(qVersion());
+        QString qtversionstring = QString::fromLatin1(QT_VERSION_STR);
         results << qtversionstring;
     }
 
