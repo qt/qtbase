@@ -1,0 +1,98 @@
+analysis_instructions_axivion: &analysis_instructions_axivion
+  type: Group
+  instructions:
+    - type: Group
+      instructions:
+      - type: EnvironmentVariable
+        variableName: AXIVION_CHAINLOAD_TOOLCHAIN_FILE
+        variableValue: "{{.AgentWorkingDir}}/install/lib/cmake/Qt6/qt.toolchain.cmake"
+      - type: EnvironmentVariable
+        variableName: CMAKE_PREFIX_PATH
+        variableValue: "{{.AgentWorkingDir}}/install/lib/cmake"
+        enable_if:
+          condition: runtime
+          env_var: TESTED_MODULE_COIN
+          not_equals_value: "qtbase"
+    - type: Group
+      instructions:
+      - type: Rename
+        sourcePath: "{{.SourceDir}}/coin/axivion/ci_config_{{.Env.TARGET_OS_COIN}}.json"
+        targetPath: "{{.Env.HOME}}/axivion/ci_config.json"
+        userMessageOnFailure: "Moving ci_config.json failed. Make sure you have included the file in coin/axivion/ -folder"
+      - type: SetBuildDirectory
+        directory: "{{.SourceDir}}"
+      - type: ChangeDirectory
+        directory: "{{.BuildDir}}"
+      - type: ExecuteCommand
+        command: ["../../../axivion/start_analysis.sh"]
+        maxTimeInSeconds: 28800
+        maxTimeBetweenOutput: 28800
+        userMessageOnFailure: "Failed to run analysis"
+
+build_environment_axivion: &build_environment_axivion
+  type: Group
+  instructions:
+    - type: ExecuteCommand
+      command: ["sudo", "mkdir", "-p","/data/axivion"]
+      maxTimeInSeconds: 100
+      maxTimeBetweenOutput: 100
+      userMessageOnFailure: "Create mount point for results failed"
+    - type: ExecuteCommand
+      command: ["sudo", "mount", "-o", "rw", "10.212.0.93:/data/axivion", "/data/axivion"]
+      maxTimeInSeconds: 100
+      maxTimeBetweenOutput: 100
+      userMessageOnFailure: "Mount failed"
+    - type: ExecuteCommand
+      command: ["rm","-rf","{{.SourceDir}}"]
+      maxTimeInSeconds: 100
+      maxTimeBetweenOutput: 100
+      userMessageOnFailure: "Failed to remove source directory"
+    - type: MakeDirectory
+      directory: "{{.SourceDir}}"
+    - type: ChangeDirectory
+      directory: "{{.SourceDir}}"
+    - type: ExecuteCommand
+      command: ["git", "clone", "--jobs={{.NumCPU}}", "-n","--depth=50", "git://{{.Env.QT_COIN_GIT_DAEMON}}/qt-project/qt/{{.Env.TESTED_MODULE_COIN}}","."]
+      maxTimeInSeconds: 900
+      maxTimeBetweenOutput: 900
+      userMessageOnFailure: "Failed to clone repository"
+    - type: ExecuteCommand
+      command: ["git", "fetch", "--recurse-submodules", "origin", "{{.Env.TESTED_MODULE_REVISION_COIN}}"]
+      maxTimeInSeconds: 900
+      maxTimeBetweenOutput: 900
+      userMessageOnFailure: "Failed to fetch sources"
+    - type: ExecuteCommand
+      command: ["git", "checkout", "--force", "{{.Env.TESTED_MODULE_REVISION_COIN}}"]
+      maxTimeInSeconds: 900
+      maxTimeBetweenOutput: 900
+      userMessageOnFailure: "Failed to checkout sources"
+    - type: ExecuteCommand
+      command: ["git", "submodule", "update", "--init", "--recursive"]
+      maxTimeInSeconds: 1800
+      maxTimeBetweenOutput: 900
+      userMessageOnFailure: "Failed to initialize git submodules"
+    - type: Group
+      instructions:
+      - !include "{{qt/qtbase}}/cmake_module_build_instructions.yaml"
+      enable_if:
+        condition: runtime
+        env_var: TESTED_MODULE_COIN
+        not_equals_value: "qtbase"
+    - type: Group
+      instructions:
+      - !include "{{qt/qtbase}}/cmake_qtbase_build_instructions.yaml"
+      enable_if:
+        condition: runtime
+        env_var: TESTED_MODULE_COIN
+        equals_value: "qtbase"
+
+type: Group
+instructions:
+  - !include "{{qt/qtbase}}/prepare_building_env.yaml"
+  - *build_environment_axivion
+  - *analysis_instructions_axivion
+enable_if:
+  condition: property
+  property: features
+  contains_value: Axivion
+

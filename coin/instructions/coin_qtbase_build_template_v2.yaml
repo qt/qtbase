@@ -20,7 +20,16 @@ instructions:
         - condition: property
           property: features
           not_contains_value: "DebianPackaging"
-
+        - condition: property
+          property: features
+          not_contains_value: Axivion
+  - type: Group
+    instructions:
+       - !include "{{qt/qtbase}}/coin_module_axivion_template_v2.yaml"
+    enable_if:
+      condition: property
+      property: features
+      contains_value: Axivion
   - type: Group
     instructions:
       - type: Group

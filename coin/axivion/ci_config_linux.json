@@ -1,0 +1,65 @@
+{
+    "Project": {
+        "Git": {
+            "_active": true,
+            "sourceserver_gitdir": "/data/axivion/databases/$(env:TESTED_MODULE_COIN).git"
+        },
+        "BuildSystemIntegration": {
+            "child_order": [
+                "GCCSetup",
+                "CMake",
+                "LinkLibraries"
+            ]
+        },
+        "CMake": {
+            "_active": true,
+            "_copy_from": "CMakeIntegration",
+            "build_environment": {},
+            "build_options": "-j4",
+            "generate_options": "--fresh",
+            "generator": "Ninja"
+        },
+        "GCCSetup": {
+            "_active": true,
+            "_copy_from": "Command",
+            "build_command": "gccsetup --cc gcc --cxx g++ --config ../../../axivion/"
+        },
+        "LinkLibraries": {
+            "_active": true,
+            "_copy_from": "AxivionLinker",
+            "input_files": [
+                "build/lib/lib*.so*.ir"
+            ],
+            "ir": "build/$(env:TESTED_MODULE_COIN).ir",
+            "plugin_files": [
+                "build/plugins/*/lib*.so*.ir"
+            ]
+        },
+        "Project-GlobalOptions": {
+            "ci_mode": {
+                "clean_before": false
+            },
+            "directory": "../work/qt/$(env:TESTED_MODULE_COIN)",
+            "ir": "build/$(env:TESTED_MODULE_COIN).ir",
+            "name": "qt_$(env:TESTED_MODULE_COIN)_dev_$(env:TARGET_OS_COIN)"
+        }
+    },
+    "Results": {
+        "Dashboard": {
+            "dashboard_url": "https://axivion-srv.ci.qt.io/axivion/"
+        },
+        "Database": {
+            "ci_mode": {
+                "directory": "/data/axivion/databases"
+            }
+        }
+    },
+    "_Format": "1.0",
+    "_Version": "trunk-9e0ef9c5818",
+    "_VersionNum": [
+        7,
+        6,
+        9999,
+        11489
+    ]
+}
