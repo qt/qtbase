@@ -241,10 +241,10 @@ endif()
 
 option(QT_BUILD_TESTS_BATCHED "Link all tests into a single binary." ${_qt_batch_tests})
 
-if(QT_BUILD_TESTS AND QT_BUILD_TESTS_BATCHED AND CMAKE_VERSION VERSION_LESS "3.18")
+if(QT_BUILD_TESTS AND QT_BUILD_TESTS_BATCHED AND CMAKE_VERSION VERSION_LESS "3.19")
     message(FATAL_ERROR
-        "Test batching requires at least CMake 3.18, due to requiring per-source "
-        "TARGET_DIRECTORY assignments.")
+        "Test batching requires at least CMake 3.19, due to requiring per-source "
+        "TARGET_DIRECTORY assignments and DEFER calls.")
 endif()
 
 # QT_BUILD_TOOLS_WHEN_CROSSCOMPILING -> QT_FORCE_BUILD_TOOLS

@@ -670,6 +670,26 @@ function(_qt_internal_finalize_executable target)
     set_target_properties(${target} PROPERTIES _qt_executable_is_finalized TRUE)
 endfunction()
 
+function(_cat IN_FILE OUT_FILE)
+  file(READ ${IN_FILE} CONTENTS)
+  file(APPEND ${OUT_FILE} "${CONTENTS}\n")
+endfunction()
+
+function(_qt_internal_finalize_batch name)
+    find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Core)
+
+    set(generated_blacklist_file "${CMAKE_CURRENT_BINARY_DIR}/BLACKLIST")
+    get_target_property(blacklist_files "${name}" _qt_blacklist_files)
+    file(WRITE "${generated_blacklist_file}" "")
+    foreach(blacklist_file ${blacklist_files})
+        _cat("${blacklist_file}" "${generated_blacklist_file}")
+    endforeach()
+    qt_internal_add_resource(${name} "batch_blacklist"
+        PREFIX "/"
+        FILES "${CMAKE_CURRENT_BINARY_DIR}/BLACKLIST"
+        BASE ${CMAKE_CURRENT_BINARY_DIR})
+endfunction()
+
 # If a task needs to run before any targets are finalized in the current directory
 # scope, call this function and pass the ID of that task as the argument.
 function(_qt_internal_delay_finalization_until_after defer_id)
