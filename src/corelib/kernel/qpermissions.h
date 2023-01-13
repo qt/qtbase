@@ -77,21 +77,28 @@ private:
     Q_GADGET_EXPORT(Q_CORE_EXPORT) \
     using QtPermissionHelper = void; \
     friend class QPermission; \
+    union U { \
+        U() : d(nullptr) {} \
+        U(ShortData _data) : data(_data) {} \
+        U(ClassName##Private *_d) : d(_d) {} \
+        ShortData data; \
+        ClassName##Private *d; \
+    } u; \
 public: \
     Q_CORE_EXPORT ClassName(); \
     Q_CORE_EXPORT ClassName(const ClassName &other) noexcept; \
-    Q_CORE_EXPORT ClassName(ClassName &&other) noexcept; \
-    Q_CORE_EXPORT ~ClassName() noexcept; \
+    ClassName(ClassName &&other) noexcept \
+        : u{other.u} { other.u.d = nullptr; } \
+    Q_CORE_EXPORT ~ClassName(); \
     Q_CORE_EXPORT ClassName &operator=(const ClassName &other) noexcept; \
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(ClassName) \
-    void swap(ClassName &other) noexcept { d.swap(other.d); } \
+    void swap(ClassName &other) noexcept { std::swap(u, other.u); } \
 private: \
-    QtPrivate::QExplicitlySharedDataPointerV2<ClassName##Private> d;
+    /*end*/
 
 class QLocationPermissionPrivate;
 class QLocationPermission
 {
-    QT_PERMISSION(QLocationPermission)
 public:
     enum Accuracy : quint8 {
         Approximate,
@@ -110,26 +117,46 @@ public:
 
     Q_CORE_EXPORT void setAvailability(Availability availability);
     Q_CORE_EXPORT Availability availability() const;
+
+private:
+    struct ShortData {
+        Accuracy accuracy;
+        Availability availability;
+        char reserved[sizeof(void*) - sizeof(accuracy) - sizeof(availability)];
+    };
+    QT_PERMISSION(QLocationPermission)
 };
 Q_DECLARE_SHARED(QLocationPermission)
 
 class QCalendarPermissionPrivate;
 class QCalendarPermission
 {
-    QT_PERMISSION(QCalendarPermission)
 public:
     Q_CORE_EXPORT void setReadWrite(bool enable);
     Q_CORE_EXPORT bool isReadWrite() const;
+
+private:
+    struct ShortData {
+        bool readWrite;
+        char reserved[sizeof(void*) - sizeof(readWrite)];
+    };
+    QT_PERMISSION(QCalendarPermission)
 };
 Q_DECLARE_SHARED(QCalendarPermission)
 
 class QContactsPermissionPrivate;
 class QContactsPermission
 {
-    QT_PERMISSION(QContactsPermission)
 public:
     Q_CORE_EXPORT void setReadWrite(bool enable);
     Q_CORE_EXPORT bool isReadWrite() const;
+
+private:
+    struct ShortData {
+        bool readWrite;
+        char reserved[sizeof(void*) - sizeof(readWrite)];
+    };
+    QT_PERMISSION(QContactsPermission)
 };
 Q_DECLARE_SHARED(QContactsPermission)
 
@@ -137,6 +164,7 @@ Q_DECLARE_SHARED(QContactsPermission)
     class ClassName##Private; \
     class ClassName \
     { \
+        struct ShortData { char reserved[sizeof(void*)]; }; \
         QT_PERMISSION(ClassName) \
     }; \
     Q_DECLARE_SHARED(ClassName)
