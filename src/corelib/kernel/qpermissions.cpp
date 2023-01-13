@@ -277,14 +277,17 @@ const void *QPermission::data(QMetaType requestedType) const
     return m_data.data();
 }
 
-
-
-#define QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(ClassName) \
-    ClassName::ClassName() : d(new ClassName##Private) {} \
+#define QT_PERMISSION_IMPL_COMMON(ClassName) \
+    /* Class##Private is unused until we need it: */ \
+    static_assert(sizeof(ClassName) == sizeof(void*), \
+                  "You have added too many members to " #ClassName "::ShortData. " \
+                  "Decrease their size or switch to using a d-pointer."); \
     ClassName::ClassName(const ClassName &other) noexcept = default; \
-    ClassName::ClassName(ClassName &&other) noexcept = default; \
-    ClassName::~ClassName() noexcept = default; \
-    ClassName &ClassName::operator=(const ClassName &other) noexcept = default;
+    ClassName::~ClassName() = default; \
+    ClassName &ClassName::operator=(const ClassName &other) noexcept = default; \
+    ClassName::ClassName() \
+    /* impl supplied by caller */
+
 
 /*!
     \class QCameraPermission
@@ -305,8 +308,10 @@ const void *QPermission::data(QMetaType requestedType) const
 
     \include permissions.qdocinc permission-metadata
 */
-class QCameraPermissionPrivate : public QSharedData {};
-QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QCameraPermission)
+
+QT_PERMISSION_IMPL_COMMON(QCameraPermission)
+    : u{} // stateless, atm
+{}
 
 /*!
     \class QMicrophonePermission
@@ -327,8 +332,10 @@ QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QCameraPermission)
 
     \include permissions.qdocinc permission-metadata
 */
-class QMicrophonePermissionPrivate : public QSharedData {};
-QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QMicrophonePermission)
+
+QT_PERMISSION_IMPL_COMMON(QMicrophonePermission)
+    : u{} // stateless, atm
+{}
 
 /*!
     \class QBluetoothPermission
@@ -349,8 +356,10 @@ QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QMicrophonePermission)
 
     \include permissions.qdocinc permission-metadata
 */
-class QBluetoothPermissionPrivate : public QSharedData {};
-QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QBluetoothPermission)
+
+QT_PERMISSION_IMPL_COMMON(QBluetoothPermission)
+    : u{} // stateless, atm
+{}
 
 /*!
     \class QLocationPermission
@@ -385,17 +394,10 @@ QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QBluetoothPermission)
 
     \include permissions.qdocinc permission-metadata
 */
-class QLocationPermissionPrivate : public QSharedData
-{
-public:
-    using Accuracy = QLocationPermission::Accuracy;
-    Accuracy accuracy = Accuracy::Approximate;
 
-    using Availability = QLocationPermission::Availability;
-    Availability availability = Availability::WhenInUse;
-};
-
-QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QLocationPermission)
+QT_PERMISSION_IMPL_COMMON(QLocationPermission)
+    : u{ShortData{Accuracy::Approximate, Availability::WhenInUse, {}}}
+{}
 
 /*!
     \enum QLocationPermission::Accuracy
@@ -422,8 +424,7 @@ QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QLocationPermission)
 */
 void QLocationPermission::setAccuracy(Accuracy accuracy)
 {
-    d.detach();
-    d->accuracy = accuracy;
+    u.data.accuracy = accuracy;
 }
 
 /*!
@@ -431,7 +432,7 @@ void QLocationPermission::setAccuracy(Accuracy accuracy)
 */
 QLocationPermission::Accuracy QLocationPermission::accuracy() const
 {
-    return d->accuracy;
+    return u.data.accuracy;
 }
 
 /*!
@@ -439,8 +440,7 @@ QLocationPermission::Accuracy QLocationPermission::accuracy() const
 */
 void QLocationPermission::setAvailability(Availability availability)
 {
-    d.detach();
-    d->availability = availability;
+    u.data.availability = availability;
 }
 
 /*!
@@ -448,7 +448,7 @@ void QLocationPermission::setAvailability(Availability availability)
 */
 QLocationPermission::Availability QLocationPermission::availability() const
 {
-    return d->availability;
+    return u.data.availability;
 }
 
 /*!
@@ -474,13 +474,10 @@ QLocationPermission::Availability QLocationPermission::availability() const
 
     \include permissions.qdocinc permission-metadata
 */
-class QContactsPermissionPrivate : public QSharedData
-{
-public:
-    bool isReadWrite = false;
-};
 
-QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QContactsPermission)
+QT_PERMISSION_IMPL_COMMON(QContactsPermission)
+    : u{ShortData{false, {}}}
+{}
 
 /*!
     Sets whether the request is for read-write (\a enable == \c true) or
@@ -488,8 +485,7 @@ QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QContactsPermission)
 */
 void QContactsPermission::setReadWrite(bool enable)
 {
-    d.detach();
-    d->isReadWrite = enable;
+    u.data.readWrite = enable;
 }
 
 /*!
@@ -498,7 +494,7 @@ void QContactsPermission::setReadWrite(bool enable)
 */
 bool QContactsPermission::isReadWrite() const
 {
-    return d->isReadWrite;
+    return u.data.readWrite;
 }
 
 /*!
@@ -524,13 +520,10 @@ bool QContactsPermission::isReadWrite() const
 
     \include permissions.qdocinc permission-metadata
 */
-class QCalendarPermissionPrivate : public QSharedData
-{
-public:
-    bool isReadWrite = false;
-};
 
-QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QCalendarPermission)
+QT_PERMISSION_IMPL_COMMON(QCalendarPermission)
+    : u{ShortData{false, {}}}
+{}
 
 /*!
     Sets whether the request is for read-write (\a enable == \c true) or
@@ -538,8 +531,7 @@ QT_DEFINE_PERMISSION_SPECIAL_FUNCTIONS(QCalendarPermission)
 */
 void QCalendarPermission::setReadWrite(bool enable)
 {
-    d.detach();
-    d->isReadWrite = enable;
+    u.data.readWrite = enable;
 }
 
 /*!
@@ -548,7 +540,7 @@ void QCalendarPermission::setReadWrite(bool enable)
 */
 bool QCalendarPermission::isReadWrite() const
 {
-    return d->isReadWrite;
+    return u.data.readWrite;
 }
 
 /*!
@@ -571,6 +563,8 @@ QDebug operator<<(QDebug debug, const QPermission &permission)
     return debug;
 }
 #endif
+
+#undef QT_PERMISSION_IMPL_COMMON
 
 QT_END_NAMESPACE
 
