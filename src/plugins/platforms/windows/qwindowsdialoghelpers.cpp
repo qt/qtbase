@@ -236,7 +236,7 @@ QWindowsNativeDialogBase *QWindowsDialogHelperBase<BaseClass>::ensureNativeDialo
     // Create dialog and apply common settings. Check "executed" flag as well
     // since for example IFileDialog::Show() works only once.
     if (m_nativeDialog.isNull() || m_nativeDialog->executed())
-        m_nativeDialog = QWindowsNativeDialogBasePtr(createNativeDialog());
+        m_nativeDialog = QWindowsNativeDialogBasePtr(createNativeDialog(), &QObject::deleteLater);
     return m_nativeDialog.data();
 }
 
@@ -321,12 +321,13 @@ void QWindowsDialogHelperBase<BaseClass>::stopTimer()
     }
 }
 
-
 template <class BaseClass>
 void QWindowsDialogHelperBase<BaseClass>::hide()
 {
-    if (m_nativeDialog)
+    if (m_nativeDialog) {
         m_nativeDialog->close();
+        m_nativeDialog.clear();
+    }
     m_ownerWindow = nullptr;
 }
 
