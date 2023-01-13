@@ -10,6 +10,8 @@
 
 #include <ui4.h>
 
+#include <QtCore/qdir.h>
+#include <QtCore/qfileinfo.h>
 #include <QtCore/qtextstream.h>
 
 #include <algorithm>
@@ -52,23 +54,6 @@ static WriteImports::ClassesPerModule defaultClasses()
           {QStringLiteral("QSizePolicy"), QStringLiteral("QWidget")}
         }
     };
-}
-
-// Change the name of a qrc file "dir/foo.qrc" file to the Python
-// module name "foo_rc" according to project conventions.
-static QString pythonResource(QString resource, bool prefix)
-{
-    const qsizetype lastSlash = resource.lastIndexOf(u'/');
-    if (lastSlash != -1)
-        resource.remove(0, lastSlash + 1);
-    if (resource.endsWith(".qrc"_L1)) {
-        resource.chop(4);
-        if (prefix)
-            resource.prepend("rc_"_L1);
-        else
-            resource.append("_rc"_L1);
-    }
-    return resource;
 }
 
 // Helpers for WriteImports::ClassesPerModule maps
@@ -143,18 +128,57 @@ void WriteImports::acceptUI(DomUI *node)
         const auto includes = resources->elementInclude();
         for (auto include : includes) {
             if (include->hasAttributeLocation())
-                writeImport(pythonResource(include->attributeLocation(),
-                            uic()->option().rcPrefix));
+                writeResourceImport(include->attributeLocation());
         }
         output << '\n';
     }
 }
 
-void WriteImports::writeImport(const QString &module)
+QString WriteImports::resourceAbsolutePath(QString resource) const
 {
-    if (uic()->option().fromImports)
-        uic()->output() << "from  . ";
-    uic()->output() << "import " << module << '\n';
+    // If we know the project root, generate an absolute Python import
+    // to the resource. options. pythonRoot is the Python path component
+    // under which the UI file is.
+    const auto &options = uic()->option();
+    if (!options.inputFile.isEmpty() && !options.pythonRoot.isEmpty()) {
+        resource = QDir::cleanPath(QFileInfo(options.inputFile).canonicalPath() + u'/' + resource);
+        if (resource.size() > options.pythonRoot.size())
+            resource.remove(0, options.pythonRoot.size() + 1);
+    }
+    // If nothing is known, we assume the directory pointed by "../" is the root
+    while (resource.startsWith(u"../"))
+        resource.remove(0, 3);
+    resource.replace(u'/', u'.');
+    return resource;
+}
+
+void WriteImports::writeResourceImport(const QString &module)
+{
+    const auto &options = uic()->option();
+    auto &str = uic()->output();
+
+    QString resource = QDir::cleanPath(module);
+    if (resource.endsWith(u".qrc"))
+        resource.chop(4);
+    const qsizetype basePos = resource.lastIndexOf(u'/') + 1;
+    // Change the name of a qrc file "dir/foo.qrc" file to the Python
+    // module name "foo_rc" according to project conventions.
+    if (options.rcPrefix)
+        resource.insert(basePos, u"rc_");
+    else
+        resource.append(u"_rc");
+
+    switch (options.pythonResourceImport) {
+    case Option::PythonResourceImport::Default:
+        str << "import " << QStringView{resource}.sliced(basePos) << '\n';
+        break;
+    case Option::PythonResourceImport::FromDot:
+        str << "from . import " << QStringView{resource}.sliced(basePos) << '\n';
+        break;
+    case Option::PythonResourceImport::Absolute:
+        str << "import " << resourceAbsolutePath(resource) << '\n';
+        break;
+    }
 }
 
 void WriteImports::doAdd(const QString &className, const DomCustomWidget *dcw)
