@@ -65,34 +65,6 @@ public:
     void handleBackingStoreFlush(QWindow *window);
 
 private:
-    class WindowManipulation {
-    public:
-        enum class Operation {
-            None,
-            Move,
-        };
-
-        WindowManipulation(QWasmScreen* screen);
-
-        void onPointerDown(const PointerEvent& event, QWindow* windowAtPoint);
-        void onPointerMove(const PointerEvent& event);
-        void onPointerUp(const PointerEvent &event);
-
-        Operation operation() const;
-
-    private:
-        struct OperationState
-        {
-            int pointerId;
-            QPointer<QWindow> window;
-            QPoint lastPointInScreenCoords;
-        };
-
-        QWasmScreen *m_screen;
-
-        std::unique_ptr<OperationState> m_state;
-    };
-
     void frame(bool all, const QList<QWasmWindow *> &windows);
 
     void onTopWindowChanged();
@@ -124,7 +96,6 @@ private:
 
     void updateEnabledState();
 
-    WindowManipulation m_windowManipulation;
     QWasmWindowStack m_windowStack;
 
     bool m_isEnabled = true;

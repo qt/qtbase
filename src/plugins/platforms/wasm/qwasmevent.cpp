@@ -39,6 +39,7 @@ std::optional<PointerEvent> PointerEvent::fromWeb(emscripten::val event)
         return std::nullopt;
 
     ret.type = *eventType;
+    ret.currentTarget = event["currentTarget"];
     ret.pointerType = event["pointerType"].as<std::string>() == "mouse" ?
         PointerType::Mouse : PointerType::Other;
     ret.mouseButton = MouseEvent::buttonFromWeb(event["button"].as<int>());

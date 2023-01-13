@@ -5,6 +5,7 @@
 #define QWASMCURSOR_H
 
 #include <qpa/qplatformcursor.h>
+
 QT_BEGIN_NAMESPACE
 
 class QWasmCursor : public QPlatformCursor

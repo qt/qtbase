@@ -44,7 +44,6 @@ EMSCRIPTEN_BINDINGS(qtMouseModule) {
 
 QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
     : QObject(screen),
-      m_windowManipulation(screen),
       m_windowStack(std::bind(&QWasmCompositor::onTopWindowChanged, this)),
       m_eventTranslator(std::make_unique<QWasmEventTranslator>())
 {
@@ -374,10 +373,9 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
     const auto pointInScreen = screen()->mapFromLocal(event.localPoint);
 
     QWindow *const targetWindow = ([this, pointInScreen]() -> QWindow * {
-        auto *targetWindow = m_mouseCaptureWindow != nullptr ? m_mouseCaptureWindow.get()
-                : m_windowManipulation.operation() == WindowManipulation::Operation::None
-                ? screen()->compositor()->windowAt(pointInScreen, 5)
-                : nullptr;
+        auto *targetWindow = m_mouseCaptureWindow != nullptr
+                ? m_mouseCaptureWindow.get()
+                : windowAt(pointInScreen, 5);
 
         return targetWindow ? targetWindow : m_lastMouseTargetWindow.get();
     })();
@@ -403,20 +401,12 @@ bool QWasmCompositor::processPointer(const PointerEvent& event)
         if (targetWindow)
             targetWindow->requestActivate();
 
-        m_windowManipulation.onPointerDown(event, targetWindow);
         break;
     }
     case EventType::PointerUp:
     {
         screen()->element().call<void>("releasePointerCapture", event.pointerId);
 
-        m_windowManipulation.onPointerUp(event);
-        break;
-    }
-    case EventType::PointerMove: {
-        m_windowManipulation.onPointerMove(event);
-        if (m_windowManipulation.operation() != WindowManipulation::Operation::None)
-            requestUpdate();
         break;
     }
     case EventType::PointerEnter:
@@ -479,80 +469,6 @@ bool QWasmCompositor::deliverEventToTarget(const PointerEvent &event, QWindow *e
                eventTarget->mapFromGlobal(targetPointClippedToScreen),
                targetPointClippedToScreen, event.mouseButtons, event.mouseButton,
                eventType, event.modifiers);
-}
-
-QWasmCompositor::WindowManipulation::WindowManipulation(QWasmScreen *screen)
-    : m_screen(screen)
-{
-    Q_ASSERT(!!screen);
-}
-
-QWasmCompositor::WindowManipulation::Operation QWasmCompositor::WindowManipulation::operation() const
-{
-    if (!m_state)
-        return Operation::None;
-    return Operation::Move;
-}
-
-void QWasmCompositor::WindowManipulation::onPointerDown(
-    const PointerEvent& event, QWindow* windowAtPoint)
-{
-    // Only one operation at a time.
-    if (operation() != Operation::None)
-        return;
-
-    if (event.mouseButton != Qt::MouseButton::LeftButton)
-        return;
-
-    const bool isTargetWindowResizable =
-        !windowAtPoint->windowStates().testFlag(Qt::WindowMaximized) &&
-        !windowAtPoint->windowStates().testFlag(Qt::WindowFullScreen);
-    if (!isTargetWindowResizable)
-        return;
-
-    const bool isTargetWindowBlocked =
-        QGuiApplicationPrivate::instance()->isWindowBlocked(windowAtPoint);
-    if (isTargetWindowBlocked)
-        return;
-
-    if (!asWasmWindow(windowAtPoint)->isPointOnTitle(event.pointInViewport))
-        return;
-
-    m_state.reset(new OperationState{ .pointerId = event.pointerId,
-                                      .window = windowAtPoint,
-                                      .lastPointInScreenCoords =
-                                              m_screen->mapFromLocal(event.localPoint) });
-}
-
-void QWasmCompositor::WindowManipulation::onPointerMove(
-    const PointerEvent& event)
-{
-    if (operation() == Operation::None || event.pointerId != m_state->pointerId)
-        return;
-
-    switch (operation()) {
-        case Operation::Move: {
-            const QPoint targetPointClippedToScreen =
-                    m_screen->clipPoint(m_screen->mapFromLocal(event.localPoint));
-            const QPoint difference = targetPointClippedToScreen - m_state->lastPointInScreenCoords;
-
-            m_state->lastPointInScreenCoords = targetPointClippedToScreen;
-
-            m_state->window->setPosition(m_state->window->position() + difference);
-            break;
-        }
-        case Operation::None:
-            Q_ASSERT(0);
-            break;
-    }
-}
-
-void QWasmCompositor::WindowManipulation::onPointerUp(const PointerEvent& event)
-{
-    if (operation() == Operation::None || event.mouseButtons != 0 || event.pointerId != m_state->pointerId)
-        return;
-
-    m_state.reset();
 }
 
 bool QWasmCompositor::processKeyboard(int eventType, const EmscriptenKeyboardEvent *emKeyEvent)

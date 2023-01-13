@@ -15,10 +15,12 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
     SOURCES
         main.cpp
         qwasmaccessibility.cpp qwasmaccessibility.h
+        qwasmbase64iconstore.cpp qwasmbase64iconstore.h
         qwasmclipboard.cpp qwasmclipboard.h
         qwasmcompositor.cpp qwasmcompositor.h
         qwasmcssstyle.cpp qwasmcssstyle.h
         qwasmcursor.cpp qwasmcursor.h
+        qwasmdom.cpp qwasmdom.h
         qwasmevent.cpp qwasmevent.h
         qwasmeventdispatcher.cpp qwasmeventdispatcher.h
         qwasmeventtranslator.cpp qwasmeventtranslator.h
@@ -33,6 +35,7 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
         qwasmstylepixmaps_p.h
         qwasmtheme.cpp qwasmtheme.h
         qwasmwindow.cpp qwasmwindow.h
+        qwasmwindownonclientarea.cpp qwasmwindownonclientarea.h
         qwasminputcontext.cpp qwasminputcontext.h
         qwasmdrag.cpp qwasmdrag.h
         qwasmwindowstack.cpp qwasmwindowstack.h
