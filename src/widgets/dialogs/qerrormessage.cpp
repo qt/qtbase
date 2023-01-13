@@ -28,17 +28,15 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-namespace {
-struct Message {
-    QString content;
-    QString type;
-};
-}
-
 class QErrorMessagePrivate : public QDialogPrivate
 {
     Q_DECLARE_PUBLIC(QErrorMessage)
 public:
+    struct Message {
+        QString content;
+        QString type;
+    };
+
     QPushButton * ok;
     QCheckBox * again;
     QTextEdit * errors;

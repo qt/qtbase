@@ -14,7 +14,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace {
+namespace QtPrivate {
 class PageItem : public QGraphicsItem
 {
 public:
@@ -136,7 +136,10 @@ protected:
     }
 };
 
-} // anonymous namespace
+} // namespace QtPrivate
+
+using GraphicsView = QtPrivate::GraphicsView;
+using PageItem = QtPrivate::PageItem;
 
 class QPrintPreviewWidgetPrivate : public QWidgetPrivate
 {
