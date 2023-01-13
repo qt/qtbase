@@ -171,6 +171,7 @@ private slots:
 #ifdef Q_OS_WIN
     void permissionsNtfs_data();
     void permissionsNtfs();
+    void deprecatedNtfsPermissionCheck();
 #endif
     void setPermissions_data();
     void setPermissions();
@@ -1267,8 +1268,7 @@ void tst_QFile::createFilePermissions()
     QFETCH(QFile::Permissions, permissions);
 
 #ifdef Q_OS_WIN
-    QScopedValueRollback<int> ntfsMode(qt_ntfs_permission_lookup);
-    ++qt_ntfs_permission_lookup;
+    QNtfsPermissionCheckGuard permissionGuard;
 #endif
 #ifdef Q_OS_UNIX
     auto restoreMask = qScopeGuard([oldMask = umask(0)] { umask(oldMask); });
@@ -1392,7 +1392,7 @@ void tst_QFile::permissions()
     }
 
 #if defined(Q_OS_WIN)
-    if (qt_ntfs_permission_lookup)
+    if (qAreNtfsPermissionChecksEnabled())
         QEXPECT_FAIL("readonly", "QTBUG-25630", Abort);
 #endif
 #ifdef Q_OS_UNIX
@@ -1414,10 +1414,21 @@ void tst_QFile::permissionsNtfs_data()
 
 void tst_QFile::permissionsNtfs()
 {
-    QScopedValueRollback<int> ntfsMode(qt_ntfs_permission_lookup);
-    qt_ntfs_permission_lookup++;
+    QNtfsPermissionCheckGuard permissionGuard;
     permissions();
 }
+
+void tst_QFile::deprecatedNtfsPermissionCheck()
+{
+    QScopedValueRollback<int> guard(qt_ntfs_permission_lookup);
+
+    QCOMPARE(qAreNtfsPermissionChecksEnabled(), false);
+    qt_ntfs_permission_lookup++;
+    QCOMPARE(qAreNtfsPermissionChecksEnabled(), true);
+    qt_ntfs_permission_lookup--;
+    QCOMPARE(qAreNtfsPermissionChecksEnabled(), false);
+}
+
 #endif
 
 void tst_QFile::setPermissions_data()

@@ -12,7 +12,6 @@
 #include <qdebug.h>
 #include <qdir.h>
 #include <qfileinfo.h>
-#include <qscopedvaluerollback.h>
 #include <qstringlist.h>
 
 #if defined(Q_OS_WIN)
@@ -40,7 +39,6 @@
 
 #ifdef Q_OS_WIN
 #define DRIVE "Q:"
-extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
 #else
 #define DRIVE
 #endif
@@ -453,8 +451,7 @@ void tst_QDir::mkdirWithPermissions()
     QFETCH(QFile::Permissions, permissions);
 
 #ifdef Q_OS_WIN
-    QScopedValueRollback<int> ntfsMode(qt_ntfs_permission_lookup);
-    ++qt_ntfs_permission_lookup;
+    QNtfsPermissionCheckGuard permissionGuard;
 #endif
 #ifdef Q_OS_UNIX
     auto restoreMask = qScopeGuard([oldMask = umask(0)] { umask(oldMask); });

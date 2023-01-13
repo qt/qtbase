@@ -384,6 +384,46 @@ constexpr QFileDevice::Permissions toSpecificPermissions(PermissionTag tag,
 
 Q_CORE_EXPORT int qt_ntfs_permission_lookup = 0;
 
+static QBasicAtomicInt qt_ntfs_permission_lookup_v2 = Q_BASIC_ATOMIC_INITIALIZER(0);
+
+/*!
+    \internal
+
+    Returns true if the check was previously enabled.
+*/
+
+bool qEnableNtfsPermissionChecks() noexcept
+{
+    return qt_ntfs_permission_lookup_v2.fetchAndAddRelaxed(1)
+        + qt_ntfs_permission_lookup
+        != 0;
+}
+
+/*!
+    \internal
+
+    Returns true if the check is disabled, i.e. there are no more users.
+*/
+
+bool qDisableNtfsPermissionChecks() noexcept
+{
+    return qt_ntfs_permission_lookup_v2.fetchAndSubRelaxed(1)
+        + qt_ntfs_permission_lookup
+        == 1;
+}
+
+/*!
+    \internal
+
+    Returns true if the check is enabled.
+*/
+
+bool qAreNtfsPermissionChecksEnabled() noexcept
+{
+    return qt_ntfs_permission_lookup_v2.loadRelaxed()
+        + qt_ntfs_permission_lookup;
+}
+
 /*!
     \class QNativeFilePermissions
     \internal
@@ -1078,8 +1118,7 @@ QString QFileSystemEngine::owner(const QFileSystemEntry &entry, QAbstractFileEng
 {
     QString name;
 #if QT_CONFIG(fslibs)
-    extern int qt_ntfs_permission_lookup;
-    if (qt_ntfs_permission_lookup > 0) {
+    if (qAreNtfsPermissionChecksEnabled()) {
         initGlobalSid();
         {
             PSID pOwner = 0;
@@ -1133,7 +1172,7 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                                         QFileSystemMetaData::MetaDataFlags what)
 {
 #if QT_CONFIG(fslibs)
-    if (qt_ntfs_permission_lookup > 0) {
+    if (qAreNtfsPermissionChecksEnabled()) {
         initGlobalSid();
 
         QString fname = entry.nativeFilePath();

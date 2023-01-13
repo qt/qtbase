@@ -26,6 +26,27 @@ namespace std {
 
 QT_BEGIN_NAMESPACE
 
+#ifdef Q_OS_WIN
+Q_CORE_EXPORT bool qEnableNtfsPermissionChecks() noexcept;
+Q_CORE_EXPORT bool qDisableNtfsPermissionChecks() noexcept;
+Q_CORE_EXPORT bool qAreNtfsPermissionChecksEnabled() noexcept;
+
+class [[nodiscard]] QNtfsPermissionCheckGuard
+{
+    Q_DISABLE_COPY_MOVE(QNtfsPermissionCheckGuard)
+public:
+    QNtfsPermissionCheckGuard()
+    {
+        qEnableNtfsPermissionChecks();
+    }
+
+    ~QNtfsPermissionCheckGuard()
+    {
+        qDisableNtfsPermissionChecks();
+    }
+};
+#endif // Q_OS_WIN
+
 #if QT_CONFIG(cxx17_filesystem)
 namespace QtPrivate {
 inline QString fromFilesystemPath(const std::filesystem::path &path)

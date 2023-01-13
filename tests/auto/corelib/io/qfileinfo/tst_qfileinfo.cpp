@@ -4,7 +4,6 @@
 #include <QTest>
 #include <QStandardPaths>
 #include <QScopeGuard>
-#include <QScopedValueRollback>
 
 #include <qfile.h>
 #include <qdir.h>
@@ -43,9 +42,6 @@
 #endif
 
 #if defined(Q_OS_WIN)
-QT_BEGIN_NAMESPACE
-extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
-QT_END_NAMESPACE
 bool IsUserAdmin();
 #endif
 
@@ -1905,8 +1901,7 @@ void tst_QFileInfo::isWritable()
 #endif
 
 #if defined (Q_OS_WIN)
-    QScopedValueRollback<int> ntfsMode(qt_ntfs_permission_lookup);
-    qt_ntfs_permission_lookup = 1;
+    QNtfsPermissionCheckGuard permissionGuard;
     QFileInfo fi2(QFile::decodeName(qgetenv("SystemRoot") + "/system.ini"));
     QVERIFY(fi2.exists());
     QCOMPARE(fi2.isWritable(), IsUserAdmin());
@@ -2156,7 +2151,7 @@ void tst_QFileInfo::owner()
                 NetApiBufferFree(pBuf);
         }
     }
-    qt_ntfs_permission_lookup = 1;
+    QNtfsPermissionCheckGuard permissionGuard;
 #endif
     if (userName.isEmpty())
         QSKIP("Can't retrieve the user name");
@@ -2173,9 +2168,6 @@ void tst_QFileInfo::owner()
     QCOMPARE(fi.owner(), userName);
 
     QFile::remove(fileName);
-#if defined(Q_OS_WIN)
-    qt_ntfs_permission_lookup = 0;
-#endif
 }
 
 void tst_QFileInfo::group()

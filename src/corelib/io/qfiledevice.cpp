@@ -114,6 +114,20 @@ void QFileDevicePrivate::setError(QFileDevice::FileError err, int errNum)
     to increment or decrement \c qt_ntfs_permission_lookup before any
     threads other than the main thread have started or after every thread
     other than the main thread has ended.
+
+    \note From Qt 6.6 the variable \c qt_ntfs_permission_lookup is
+    deprecated. Please use the following alternatives.
+
+    The safe and easy way to manage permission checks is to use the RAII class
+    \c QNtfsPermissionCheckGuard.
+
+    \snippet ntfsp.cpp raii
+
+    If you need more fine-grained control, it is possible to manage the permission
+    with the following functions instead:
+
+    \snippet ntfsp.cpp free-funcs
+
 */
 
 //************* QFileDevice
