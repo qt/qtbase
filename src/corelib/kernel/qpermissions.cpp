@@ -523,7 +523,7 @@ bool QContactsPermission::isReadWrite() const
         \li Android
         \li \l{android-uses-permission}{\c{uses-permission}}
         \li \c android.permission.READ_CALENDAR. \c android.permission.WRITE_CALENDAR if
-            QContactsPermission::isReadWrite() is set to \c true.
+            QCalendarPermission::isReadWrite() is set to \c true.
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
