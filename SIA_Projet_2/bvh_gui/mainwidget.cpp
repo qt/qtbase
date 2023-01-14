@@ -16,9 +16,10 @@ MainWidget::MainWidget(std::string filename) {
     currFrame = 0;
     motionTimer = new QTimer(this);
     //std::cout<<"INTERVALLE : "<<interval<<std::endl;
-    motionTimer->setInterval(1000);
+    motionTimer->setInterval(1);
     connect(motionTimer, &QTimer::timeout, this, [&](){MainWidget::motionEvent(nullptr);});
     motionTimer->start();
+    startTime = std::chrono::high_resolution_clock::now();
 }
 
 MainWidget::~MainWidget()
@@ -182,11 +183,17 @@ void MainWidget::paintGL()
 }
 
 void MainWidget::motionEvent(QTimerEvent* e) {
-    if (currFrame<nFrames) {
+    auto time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(time - startTime);
+    if (elapsed.count()/interval >= currFrame + 1){
         std::cout << currFrame << std::endl;
         root->animate(currFrame);
         geometries->updatePos(root);
         currFrame++;
         update();
-    } 
+        if (currFrame>=nFrames) {
+            currFrame = 0;
+            startTime = std::chrono::high_resolution_clock::now();
+        }
+    }
 }

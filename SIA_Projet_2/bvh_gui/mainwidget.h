@@ -17,6 +17,7 @@
 #include <QTimer>
 #include <string>
 #include <utility>
+#include <chrono>
 
 class GeometryEngine;
 
@@ -33,6 +34,7 @@ public:
     int nFrames;
     int currFrame;
     double interval;
+    std::chrono::high_resolution_clock::time_point startTime;
     QTimer* motionTimer;
 
 protected:
