@@ -9,6 +9,7 @@
 #include <utility>
 
 #include <QMatrix4x4>
+#include <QQuaternion>
 
 class AnimCurve {
 public :
@@ -43,6 +44,7 @@ public :
 	bool motion = false;
 	Joint *parent = NULL;
 	int index;
+	double divider;
 
 public :
 	// Constructor :
@@ -50,17 +52,25 @@ public :
 	// Destructor :
 	~Joint() {
 		_dofs.clear();
+		for (int i = 0; i< _children.size(); i++){
+			delete _children[i];
+		}
+		delete _transform;
 		_children.clear();
 	}
 
 	// Create from data :
 	static Joint* create(std::string name, double offX, double offY, double offZ, Joint* parent) {
 		Joint* child = new Joint();
+		child->divider = 1;
+		if(parent == NULL){
+			child->divider = 1/1.0;
+		}
 		child->_name = name;
 		if(parent != NULL){
-			child->_offX = parent->_offX + offX;
-			child->_offY = parent->_offY + offY;
-			child->_offZ = parent->_offZ + offZ;
+			child->_offX = offX;
+			child->_offY = offY;
+			child->_offZ = offZ;
 		}else{
 			child->_offX = offX;
 			child->_offY = offY;
@@ -68,13 +78,15 @@ public :
 		}
 		child->_transform = new QMatrix4x4();
 		child->_transform->setToIdentity();
+		QMatrix4x4 scale(child->divider, 0, 0, offX * child->divider, 0, child->divider, 0, offY * child->divider, 0, 0, child->divider, offZ * child->divider, 0, 0, 0, 1);
+		*(child->_transform) = scale * *(child->_transform);
 		child->_curTx = 0;
 		child->_curTy = 0;
 		child->_curTz = 0;
 		child->_curRx = 0;
 		child->_curRy = 0;
 		child->_curRz = 0;
-		if(parent != NULL) {
+		if(parent != nullptr) {
 			parent->_children.push_back(child);
 		}
 		child->parent = parent;

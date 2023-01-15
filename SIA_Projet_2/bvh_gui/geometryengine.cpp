@@ -100,15 +100,29 @@ void GeometryEngine::initCubeGeometry()
 //! [1]
 }
 
-double divider = 1/300.0;
-
 void GeometryEngine::getPos(Joint *jnt, std::vector<VertexData> *vec){
-    QMatrix4x4 *scale = new QMatrix4x4(divider, 0, 0, 0, 0, divider, 0, 0, 0, 0, divider, 0, 0, 0, 0, 1);
     //Add parent
-    QVector4D *pos = new QVector4D(jnt->_offX, jnt->_offY,  jnt->_offZ, 1);
-    QVector4D *globalPos = new QVector4D();
-    *globalPos = *scale * *(jnt->_transform) * *pos;
-    vec->push_back({QVector3D(globalPos->x(), globalPos->y(), globalPos->z()), QVector2D(0.0f, 0.0f)});
+    // QVector4D globalPos;
+    // QVector4D pos(jnt->_offX, jnt->_offY,  jnt->_offZ, 1);
+    // globalPos = *(jnt->_transform) * pos;
+    // vec->push_back({QVector3D(globalPos.x(), globalPos.y(), globalPos.z()), QVector2D(0.0f, 0.0f)});
+    
+    QVector4D globalPos;
+    QVector4D pos(jnt->_offX, jnt->_offY, jnt->_offZ, 1);
+    QMatrix4x4 transform = *(jnt->_transform);
+    Joint * parent = jnt->parent;
+    while (parent != nullptr){
+        transform = *(parent->_transform) * transform;
+        parent = parent->parent;
+    }
+    
+    for(int i = 0 ; i < 4 ; i++){
+		qDebug()<<transform.row(i).x()<<transform.row(i).y()<<transform.row(i).z()<<transform.row(i).w();
+	}
+
+    globalPos = transform * pos;
+    vec->push_back({QVector3D(transform.column(3).x(), transform.column(3).y(), transform.column(3).z()), QVector2D(0.0f, 0.0f)});
+
     if(!(jnt->_children.empty())){
         for(Joint *child : jnt->_children){
             getPos(child, vec);

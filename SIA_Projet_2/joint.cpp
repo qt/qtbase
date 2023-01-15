@@ -39,7 +39,10 @@ vector<string> getChannels(string line, char delimiter) {
 		chans.push_back(line.substr(0,index));
 		line.erase(0,index+1);
 	}
-	if (line.size()>0) {
+	int size = line.size();
+	if (size>0) {
+		// erase \r
+		line.erase(size-1,1);
 		chans.push_back(line);
 	}
 	return chans;
@@ -89,7 +92,7 @@ pair<Joint*, pair<int, double>> Joint::createFromFile(std::string fileName) {
 		double offY = 0;
 		double offZ = 0;
 		string name;
-		Joint *parent = NULL;
+		Joint *parent = nullptr;
 		Joint *currentJoint = NULL;
 		bool motionPart = false;
 		vector<double> values;
@@ -213,23 +216,28 @@ void Joint::animate(int iframe)
 		if(!_dofs[idof].name.compare("Zposition")) _curTz = _dofs[idof]._values[iframe];
 		if(!_dofs[idof].name.compare("Zrotation")) _curRz = _dofs[idof]._values[iframe];
 		if(!_dofs[idof].name.compare("Yrotation")) _curRy = _dofs[idof]._values[iframe];
-		if(!_dofs[idof].name.compare("Xrotation\r")) _curRx = _dofs[idof]._values[iframe];
-	}	
-	//std::cout<<_curTx<<" "<<_curTy<<" "<<_curTz<<" "<<_curRz<<" "<<_curRy<<" "<<_curRx<<std::endl;
-	QMatrix4x4 rotX(1, 0, 0, 0, 0, cos(dTR(_curRx)), sin(dTR(_curRx)), 0, 0, -sin(dTR(_curRx)), cos(dTR(_curRx)), 0, 0, 0, 0, 1);
-	QMatrix4x4 rotY(cos(dTR(_curRy)), 0, -sin(dTR(_curRy)), 0, 0, 1, 0, 0, sin(dTR(_curRy)), 0, cos(dTR(_curRy)), 0, 0, 0, 0, 1);
+		if(!_dofs[idof].name.compare("Xrotation")) _curRx = _dofs[idof]._values[iframe];
+	}
+	// std::cout<<_curTx<<" "<<_curTy<<" "<<_curTz<<" "<<_curRz<<" "<<_curRy<<" "<<_curRx<<std::endl;
+	QMatrix4x4 scale;
+	if (parent == nullptr){
+		scale = QMatrix4x4(divider, 0, 0, 0, 0, divider, 0, 0, 0, 0, divider, 0, 0, 0, 0, 1);
+	}
+	QMatrix4x4 rotX(1, 0, 0, 0, 0, cos(dTR(_curRx)), -sin(dTR(_curRx)), 0, 0, sin(dTR(_curRx)), cos(dTR(_curRx)), 0, 0, 0, 0, 1);
+	QMatrix4x4 rotY(cos(dTR(_curRy)), 0, sin(dTR(_curRy)), 0, 0, 1, 0, 0, -sin(dTR(_curRy)), 0, cos(dTR(_curRy)), 0, 0, 0, 0, 1);
 	QMatrix4x4 rotZ(cos(dTR(_curRz)), -sin(dTR(_curRz)), 0, 0, sin(dTR(_curRz)), cos(dTR(_curRz)), 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-	QVector4D trans(_curTx, _curTy, _curTz, 1);
-	*_transform = rotZ * rotY * rotX;
+	QVector4D trans(_offX + _curTx, _offY + _curTy, _offZ + _curTz, 1/divider);
+	trans = trans * divider;
+	*_transform = scale * rotZ * rotY * rotX;
 	_transform->setColumn(3, trans);
 	
-	for(int i = 0 ; i < 4 ; i++){
-		//qDebug()<<_transform->row(i).x()<<_transform->row(i).y()<<_transform->row(i).z()<<_transform->row(i).w();
-	}
+	// for(int i = 0 ; i < 4 ; i++){
+	// 	qDebug()<<_transform->row(i).x()<<_transform->row(i).y()<<_transform->row(i).z()<<_transform->row(i).w();
+	// }
 
-	if(parent != NULL){
-		*_transform = *(parent->_transform) * *_transform;
-	}
+	// if(parent != NULL){
+	// 	*_transform = *(parent->_transform) * *_transform;
+	// }
 	// Animate children :
 	for (unsigned int ichild = 0 ; ichild < _children.size() ; ichild++) {
 		_children[ichild]->animate(iframe);
