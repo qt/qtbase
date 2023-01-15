@@ -64,6 +64,7 @@ QAction *QToolBar::addAction(const QIcon &icon, const QString &text,
 }
 #endif
 
+#if QT_CONFIG(menubar)
 #include "qmenubar.h"
 
 QAction *QMenuBar::addAction(const QString &text)
@@ -75,6 +76,7 @@ QAction *QMenuBar::addAction(const QString &text, const QObject *receiver, const
 {
     return QWidget::addAction(text, receiver, member);
 }
+#endif
 
 // #include <qotherheader.h>
 // // implement removed functions from qotherheader.h
