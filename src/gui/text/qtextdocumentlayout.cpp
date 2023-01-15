@@ -7,7 +7,9 @@
 #include "qtexttable.h"
 #include "qtextlist.h"
 #include "qtextengine_p.h"
+#if QT_CONFIG(cssparser)
 #include "private/qcssutil_p.h"
+#endif
 #include "private/qguiapplication_p.h"
 
 #include "qabstracttextdocumentlayout_p.h"
