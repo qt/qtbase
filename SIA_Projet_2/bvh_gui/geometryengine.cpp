@@ -101,12 +101,6 @@ void GeometryEngine::initCubeGeometry()
 }
 
 void GeometryEngine::getPos(Joint *jnt, std::vector<VertexData> *vec){
-    //Add parent
-    // QVector4D globalPos;
-    // QVector4D pos(jnt->_offX, jnt->_offY,  jnt->_offZ, 1);
-    // globalPos = *(jnt->_transform) * pos;
-    // vec->push_back({QVector3D(globalPos.x(), globalPos.y(), globalPos.z()), QVector2D(0.0f, 0.0f)});
-    
     QVector4D globalPos;
     QVector4D pos(jnt->_offX, jnt->_offY, jnt->_offZ, 1);
     QMatrix4x4 transform = *(jnt->_transform);
@@ -122,12 +116,6 @@ void GeometryEngine::getPos(Joint *jnt, std::vector<VertexData> *vec){
     if(!(jnt->_children.empty())){
         for(Joint *child : jnt->_children){
             getPos(child, vec);
-            //Scale
-            //Add child
-            // pos = new QVector4D(child->_offX, child->_offY,  child->_offZ, 1);
-            // *globalPos = *scale * *(child->_transform) * *pos;
-            // child->index = vertexIndex++;
-            // vec->push_back({QVector3D(globalPos->x(), globalPos->y(), globalPos->z()), QVector2D(0.0f, 0.0f)});
         }
     }
 }

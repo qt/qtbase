@@ -64,18 +64,13 @@ public :
 		Joint* child = new Joint();
 		child->divider = 1;
 		if(parent == NULL){
+			// a voir si on veut le scale
 			child->divider = 1/1.0;
 		}
 		child->_name = name;
-		if(parent != NULL){
-			child->_offX = offX;
-			child->_offY = offY;
-			child->_offZ = offZ;
-		}else{
-			child->_offX = offX;
-			child->_offY = offY;
-			child->_offZ = offZ;
-		}
+		child->_offX = offX;
+		child->_offY = offY;
+		child->_offZ = offZ;
 		child->_transform = new QMatrix4x4();
 		child->_transform->setToIdentity();
 		QMatrix4x4 scale(child->divider, 0, 0, offX * child->divider, 0, child->divider, 0, offY * child->divider, 0, 0, child->divider, offZ * child->divider, 0, 0, 0, 1);
