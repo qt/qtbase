@@ -29,7 +29,9 @@
 #include "QtCore/qurl.h"
 #include "QtCore/qvariant.h"
 
+#if QT_CONFIG(cssparser)
 #include "private/qcssparser_p.h"
+#endif
 #include "private/qfragmentmap_p.h"
 #include "private/qobject_p.h"
 #include "private/qtextformat_p.h"

@@ -11,8 +11,10 @@
    avoid parsing overhead.
 */
 
-#include "private/qcssparser_p.h"
 #include "qstylesheetstyle_p.h"
+#if QT_CONFIG(cssparser)
+#include "private/qcssparser_p.h"
+#endif
 
 #ifndef QT_NO_STYLE_STYLESHEET
 
