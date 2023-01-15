@@ -190,6 +190,7 @@ private:
     QWindowContainer *container() const;
 };
 
+#if QT_CONFIG(messagebox)
 class QAccessibleMessageBox : public QAccessibleWidget
 {
 public:
@@ -199,6 +200,7 @@ public:
 
     QMessageBox *messageBox() const;
 };
+#endif
 
 #endif // QT_CONFIG(accessibility)
 
