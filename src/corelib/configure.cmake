@@ -531,7 +531,7 @@ qt_feature("clock-monotonic" PUBLIC
     CONDITION QT_FEATURE_clock_gettime AND TEST_clock_monotonic
 )
 qt_feature_definition("clock-monotonic" "QT_NO_CLOCK_MONOTONIC" NEGATE VALUE "1")
-qt_feature("doubleconversion" PUBLIC PRIVATE
+qt_feature("doubleconversion" PRIVATE
     LABEL "DoubleConversion"
 )
 qt_feature_definition("doubleconversion" "QT_NO_DOUBLECONVERSION" NEGATE VALUE "1")
