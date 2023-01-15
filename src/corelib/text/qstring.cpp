@@ -2373,10 +2373,16 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     \sa fromLatin1(), fromLocal8Bit(), fromUtf8()
 */
 
+/*
+//! [from-std-string]
+Returns a copy of the \a str string. The given string is assumed to be
+encoded in \1, and is converted to QString using the \2 function.
+//! [from-std-string]
+*/
+
 /*! \fn QString QString::fromStdString(const std::string &str)
 
-    Returns a copy of the \a str string. The given string is converted
-    to Unicode using the fromUtf8() function.
+    \include qstring.cpp {from-std-string} {UTF-8} {fromUtf8()}
 
     \sa fromLatin1(), fromLocal8Bit(), fromUtf8(), QByteArray::fromStdString()
 */
@@ -9118,8 +9124,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 /*! \fn QString QString::fromStdU16String(const std::u16string &str)
     \since 5.5
 
-    Returns a copy of the \a str string. The given string is assumed
-    to be encoded in UTF-16.
+    \include qstring.cpp {from-std-string} {UTF-16} {fromUtf16()}
 
     \sa fromUtf16(), fromStdWString(), fromStdU32String()
 */
@@ -9138,8 +9143,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 /*! \fn QString QString::fromStdU32String(const std::u32string &str)
     \since 5.5
 
-    Returns a copy of the \a str string. The given string is assumed
-    to be encoded in UCS-4.
+    \include qstring.cpp {from-std-string} {UCS-4} {fromUcs4()}
 
     \sa fromUcs4(), fromStdWString(), fromStdU16String()
 */
