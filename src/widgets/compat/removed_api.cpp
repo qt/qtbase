@@ -9,6 +9,7 @@ QT_USE_NAMESPACE
 
 #if QT_WIDGETS_REMOVED_SINCE(6, 3)
 
+#if QT_CONFIG(menu)
 #include "qmenu.h"
 
 QAction *QMenu::addAction(const QString &text)
@@ -20,6 +21,7 @@ QAction *QMenu::addAction(const QIcon &icon, const QString &text)
 {
     return QWidget::addAction(icon, text);
 }
+#endif
 
 #if !QT_CONFIG(shortcut)
 // the overloads taking QKeySequence as a trailing argument are deprecated, not removed,
