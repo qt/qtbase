@@ -115,10 +115,6 @@ void GeometryEngine::getPos(Joint *jnt, std::vector<VertexData> *vec){
         transform = *(parent->_transform) * transform;
         parent = parent->parent;
     }
-    
-    for(int i = 0 ; i < 4 ; i++){
-		qDebug()<<transform.row(i).x()<<transform.row(i).y()<<transform.row(i).z()<<transform.row(i).w();
-	}
 
     globalPos = transform * pos;
     vec->push_back({QVector3D(transform.column(3).x(), transform.column(3).y(), transform.column(3).z()), QVector2D(0.0f, 0.0f)});
