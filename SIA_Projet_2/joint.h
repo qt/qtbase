@@ -52,7 +52,7 @@ public :
 	// Destructor :
 	~Joint() {
 		_dofs.clear();
-		for (int i = 0; i< _children.size(); i++){
+		for (int i = 0; i < (int)_children.size(); i++){
 			delete _children[i];
 		}
 		delete _transform;

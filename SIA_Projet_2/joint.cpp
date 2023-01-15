@@ -50,14 +50,14 @@ vector<string> getChannels(string line, char delimiter) {
 
 vector<vector<double>> reverse2DVec(vector<vector<double>> v) {
 	vector<vector<double>> v2;
-	size_t lenfirst = v[0].size();
+	int lenfirst = v[0].size();
 	for (int i = 0; i<lenfirst; ++i) {
 		vector<double> vec;
 		v2.push_back(vec);
 	}
-	for (vector<double> wallah : v) {
-		for (int i = 0; i< wallah.size(); i++) {
-			v2[i].push_back(wallah[i]);
+	for (vector<double> vec : v) {
+		for (int i = 0; i< (int)vec.size(); i++) {
+			v2[i].push_back(vec[i]);
 		}
 	}
 	return v2;
@@ -156,9 +156,7 @@ pair<Joint*, pair<int, double>> Joint::createFromFile(std::string fileName) {
 			if (buf.find("CHANNELS")!=string::npos) {
 				buf = buf.substr(buf.find(' ')+3,string::npos);
 				vector<string> channels = getChannels(buf, ' ');
-				int azert = 0;
 				for (string c : channels) {
-					//cout << "Ajout de channel " << azert << endl;
 					AnimCurve ac;
 					ac.name = c;
 					currentJoint->_dofs.push_back(ac);
@@ -247,15 +245,13 @@ void Joint::animate(int iframe)
 void Joint::nbDofs() {
 	if (_dofs.empty()) return;
 
-	double tol = 1e-4;
-
 	int nbDofsR = -1;
 
 	// TODO :
 	cout << _name << " : " << nbDofsR << " degree(s) of freedom in rotation\n";
 
 	// Propagate to children :
-	for (unsigned int ichild = 0 ; ichild < _children.size() ; ichild++) {
+	for (int ichild = 0 ; ichild < (int)_children.size() ; ichild++) {
 		_children[ichild]->nbDofs();
 	}
 

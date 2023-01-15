@@ -181,9 +181,6 @@ void GeometryEngine::updatePos(Joint *root){
     arrayBuf.create(); 
     arrayBuf.bind();
     arrayBuf.allocate(vertices, lenVec * sizeof(VertexData));
-    for(VertexData v : vec){
-        //std::cout << v.position.x() << " " << v.position.y() << " " << v.position.z() << std::endl;
-    }
 }
 
 //! [2]
