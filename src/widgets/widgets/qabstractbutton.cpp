@@ -8,9 +8,9 @@
 #endif
 #if QT_CONFIG(buttongroup)
 #include "qbuttongroup.h"
-#include "private/qapplication_p.h"
 #include "private/qbuttongroup_p.h"
 #endif
+#include "private/qapplication_p.h"
 #include "qabstractbutton_p.h"
 #include "qevent.h"
 #include "qpainter.h"
