@@ -46,7 +46,6 @@
 #if QT_CONFIG(messagebox)
 #include <qmessagebox.h>
 #endif
-#include <qdialogbuttonbox.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qtextdocument.h>
