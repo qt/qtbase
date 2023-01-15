@@ -252,12 +252,14 @@ public:
     inline bool isIndexEnabled(const QModelIndex &index) const {
         return (model->flags(index) & Qt::ItemIsEnabled);
     }
+#if QT_CONFIG(draganddrop)
     inline bool isIndexDropEnabled(const QModelIndex &index) const {
         return (model->flags(index) & Qt::ItemIsDropEnabled);
     }
     inline bool isIndexDragEnabled(const QModelIndex &index) const {
         return (model->flags(index) & Qt::ItemIsDragEnabled);
     }
+#endif
 
     virtual bool selectionAllowed(const QModelIndex &index) const {
         // in some views we want to go ahead with selections, even if the index is invalid
@@ -304,7 +306,9 @@ public:
         return static_cast<QAbstractItemModelPrivate *>(model->d_ptr.data())->persistent.indexes.contains(index);
     }
 
+#if QT_CONFIG(draganddrop)
     QModelIndexList selectedDraggableIndexes() const;
+#endif
 
     void doDelayedReset()
     {

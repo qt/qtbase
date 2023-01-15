@@ -3045,8 +3045,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 )
                 QDragManager::self()->setCurrentTarget(nullptr, e->type() == QEvent::Drop);
             break;
-#endif
         }
+#endif // QT_CONFIG(draganddrop)
         case QEvent::TouchBegin: {
             // Note: TouchUpdate and TouchEnd events are never propagated
             QMutableTouchEvent *touchEvent = QMutableTouchEvent::from(static_cast<QTouchEvent *>(e));
