@@ -43,7 +43,9 @@
 #ifndef QT_NO_PICTURE
 #include <QtGui/qpicture.h>
 #endif
+#if QT_CONFIG(messagebox)
 #include <qmessagebox.h>
+#endif
 #include <qdialogbuttonbox.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
@@ -953,6 +955,7 @@ QWindowContainer *QAccessibleWindowContainer::container() const
     return static_cast<QWindowContainer *>(widget());
 }
 
+#if QT_CONFIG(messagebox)
 /*!
     \internal
     Implements QAccessibleWidget for QMessageBox
@@ -993,6 +996,7 @@ QString QAccessibleMessageBox::text(QAccessible::Text t) const
 
     return str;
 }
+#endif
 
 #endif // QT_CONFIG(accessibility)
 
