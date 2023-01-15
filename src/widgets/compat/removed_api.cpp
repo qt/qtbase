@@ -36,6 +36,7 @@ QAction *QMenu::addAction(const QIcon &icon, const QString &text,
 }
 #endif
 
+#if QT_CONFIG(toolbar)
 #include "qtoolbar.h"
 
 QAction *QToolBar::addAction(const QString &text)
@@ -59,6 +60,7 @@ QAction *QToolBar::addAction(const QIcon &icon, const QString &text,
 {
     return QWidget::addAction(icon, text, receiver, member);
 }
+#endif
 
 #include "qmenubar.h"
 
