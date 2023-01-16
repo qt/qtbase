@@ -16,6 +16,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcDebugTrace, "qt.core.ctf");
 
 static const size_t packetHeaderSize = 24 + 6 * 8 + 4;
@@ -27,8 +29,9 @@ static const char traceMetadataTemplate[] =
 static const size_t traceMetadataSize = sizeof(traceMetadataTemplate);
 
 template <typename T>
-QByteArray &operator << (QByteArray &arr, T val)
+QByteArray &operator<<(QByteArray &arr, T val)
 {
+    static_assert(std::is_arithmetic_v<T>);
     arr.append((char *)&val, sizeof(val));
     return arr;
 }
@@ -55,19 +58,28 @@ QCtfLibImpl::QCtfLibImpl()
         qCWarning (lcDebugTrace) << "QTRACE_LOCATION not set";
         return;
     }
+
+    // Check if the location is writable
     FILE *file = nullptr;
-    file = fopen(qPrintable(location + QStringLiteral("/session.json")), "rb");
+    file = fopen(qPrintable(location + "/metadata"_L1), "w+b");
     if (!file) {
-        qCWarning (lcDebugTrace) << "unable to open session file: " << (location + QStringLiteral("/session.json"));
+        qCWarning (lcDebugTrace) << "Unable to write to location";
+        return;
+    }
+    fclose(file);
+
+    const QString filename = location + QStringLiteral("/session.json");
+    file = fopen(qPrintable(filename), "rb");
+    if (!file) {
+        qCWarning (lcDebugTrace) << "unable to open session file: " << filename;
         m_location = location;
         m_session.tracepoints.append(QStringLiteral("all"));
         m_session.name = QStringLiteral("default");
     } else {
-        QByteArray data;
         fseek(file, 0, SEEK_END);
         long pos = ftell(file);
         fseek(file, 0, SEEK_SET);
-        data.resize(pos);
+        QByteArray data(pos, Qt::Uninitialized);
         long size = (long)fread(data.data(), pos, 1, file);
         fclose(file);
         if (size != 1)
@@ -104,20 +116,23 @@ QCtfLibImpl::QCtfLibImpl()
 #else
     metadata.replace(QStringLiteral("$ENDIANNESS"), QStringLiteral("le"));
 #endif
-    writeMetadata(metadata.toUtf8(), true);
+    writeMetadata(metadata, true);
 
     m_timer.start();
 }
 
-void QCtfLibImpl::writeMetadata(const QByteArray &data, bool overwrite)
+void QCtfLibImpl::writeMetadata(const QString &metadata, bool overwrite)
 {
     FILE *file = nullptr;
-    file = fopen(qPrintable(m_location + QStringLiteral("/metadata")), overwrite ? "w+b": "ab");
+    file = fopen(qPrintable(m_location + "/metadata"_L1), overwrite ? "w+b": "ab");
     if (!file)
         return;
 
     if (!overwrite)
         fputs("\n", file);
+
+    // data contains zero at the end, hence size - 1.
+    const QByteArray data = metadata.toUtf8();
     fwrite(data.data(), data.size() - 1, 1, file);
     fclose(file);
 }
@@ -154,8 +169,8 @@ void QCtfLibImpl::writeCtfPacket(QCtfLibImpl::Channel &ch)
         fwrite(packet.data(), packet.size(), 1, file);
         ch.data.resize(packetSize - packet.size(), 0);
         fwrite(ch.data.data(), ch.data.size(), 1, file);
+        fclose(file);
     }
-    fclose(file);
 }
 
 QCtfLibImpl::~QCtfLibImpl()
@@ -229,10 +244,10 @@ void QCtfLibImpl::doTracepoint(const QCtfTracePointEvent &point, const QByteArra
             }
             if (m_newAdditionalMetadata.size()) {
                 for (const QString &name : m_newAdditionalMetadata)
-                    writeMetadata(m_additionalMetadata[name]->metadata.toUtf8());
+                    writeMetadata(m_additionalMetadata[name]->metadata);
                 m_newAdditionalMetadata.clear();
             }
-            writeMetadata(priv->metadata.toUtf8());
+            writeMetadata(priv->metadata);
         }
         timestamp = m_timer.nsecsElapsed();
     }
@@ -254,7 +269,8 @@ void QCtfLibImpl::doTracepoint(const QCtfTracePointEvent &point, const QByteArra
         sprintf(ch.channelName, "%s/channel_%d", qPrintable(m_location), m_threadIndices[thread]);
         FILE *f = nullptr;
         f = fopen(ch.channelName, "wb");
-        fclose(f);
+        if (f)
+            fclose(f);
         ch.minTimestamp = ch.maxTimestamp = timestamp;
         ch.thread = thread;
         ch.threadIndex = m_threadIndices[thread];
