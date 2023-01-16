@@ -3216,10 +3216,12 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
         break;
 #endif
     default:
+#if QT_CONFIG(shortcut)
         if (d->container && d->container->isVisible() && e->matches(QKeySequence::Cancel)) {
             hidePopup();
             e->accept();
         }
+#endif
 
         if (!d->lineEdit) {
             if (!e->text().isEmpty())

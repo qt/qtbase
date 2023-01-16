@@ -3247,6 +3247,7 @@ QAction *QWidget::addAction(const QIcon &icon, const QString &text)
     return ret;
 }
 
+#if QT_CONFIG(shortcut)
 QAction *QWidget::addAction(const QString &text, const QKeySequence &shortcut)
 {
     QAction *ret = addAction(text);
@@ -3260,6 +3261,7 @@ QAction *QWidget::addAction(const QIcon &icon, const QString &text, const QKeySe
     ret->setShortcut(shortcut);
     return ret;
 }
+#endif
 
 /*!
     \fn QAction *QWidget::addAction(const QString &text, const QObject *receiver, const char* member, Qt::ConnectionType type)

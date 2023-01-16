@@ -22,7 +22,9 @@
 #include <QtGui/qcolor.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qimage.h>
+#if QT_CONFIG(shortcut)
 #include <QtGui/qkeysequence.h>
+#endif
 #include <QtGui/qregion.h>
 #include <QtGui/qvector2d.h>
 #include <QtGui/qvector3d.h>
@@ -104,10 +106,12 @@ template<> inline char *toString(const QVector4D &v)
 }
 #endif // !QT_NO_VECTOR4D
 
+#if QT_CONFIG(shortcut)
 template<> inline char *toString(const QKeySequence &keySequence)
 {
     return toString(keySequence.toString());
 }
+#endif
 
 inline bool qCompare(QIcon const &t1, QIcon const &t2, const char *actual, const char *expected,
                     const char *file, int line)
