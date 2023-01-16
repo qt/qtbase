@@ -90,11 +90,6 @@ manifestmeta.android.names          =   "Qt3D/Qt 3D: Basic Shapes C++ Example" \
                                         "QtQuick/TabWidget Example" \
                                         "QtQuick/UI Components*" \
                                         "QtQuickControls/*" \
-                                        "QtQuickControls1/Qt Quick Controls 1 - Calendar Example" \
-                                        "QtQuickControls1/Qt Quick Controls 1 - Gallery" \
-                                        "QtQuickControls1/Qt Quick Controls 1 - Styles Example" \
-                                        "QtQuickControls1/Qt Quick Controls 1 - Table View Example" \
-                                        "QtQuickControls1/Qt Quick Controls 1 - Touch Gallery" \
                                         "QtQuickDialogs/*" \
                                         "QtQuickExtras/*" \
                                         "QtSCXML/Qt SCXML Calculator QML Example" \
