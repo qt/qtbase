@@ -80,6 +80,7 @@ public:
     int eventId();
 
     static QCtfLib *instance();
+    static void cleanup();
 private:
     static QCtfLibImpl *s_instance;
     QHash<QString, QCtfTracePointPrivate *> m_eventPrivs;

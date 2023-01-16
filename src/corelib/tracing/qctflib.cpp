@@ -42,6 +42,12 @@ QCtfLib *QCtfLibImpl::instance()
     return s_instance;
 }
 
+void QCtfLibImpl::cleanup()
+{
+    if (s_instance)
+        delete s_instance;
+}
+
 QCtfLibImpl::QCtfLibImpl()
 {
     QString location = QString::fromUtf8(qgetenv("QTRACE_LOCATION"));
