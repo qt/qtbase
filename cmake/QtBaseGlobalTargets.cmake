@@ -357,7 +357,6 @@ if(QT_WILL_INSTALL)
     endforeach()
 endif()
 
-# TODO: Check whether this is the right place to install these
 qt_copy_or_install(DIRECTORY "cmake/3rdparty" DESTINATION "${__GlobalConfig_install_dir}")
 
 # In prefix builds we also need to copy the files into the build config directory, so that the
