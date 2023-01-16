@@ -773,7 +773,9 @@ QString QFileInfo::fileName() const
     Q_D(const QFileInfo);
     if (d->isDefaultConstructed)
         return ""_L1;
-    return d->fileEntry.fileName();
+    if (!d->fileEngine)
+        return d->fileEntry.fileName();
+    return d->fileEngine->fileName(QAbstractFileEngine::BaseName);
 }
 
 /*!
@@ -817,7 +819,7 @@ QString QFileInfo::baseName() const
     Q_D(const QFileInfo);
     if (d->isDefaultConstructed)
         return ""_L1;
-    if (!d_ptr->fileEngine)
+    if (!d->fileEngine)
         return d->fileEntry.baseName();
     return QFileSystemEntry(d->fileEngine->fileName(QAbstractFileEngine::BaseName)).baseName();
 }
@@ -838,7 +840,10 @@ QString QFileInfo::completeBaseName() const
     Q_D(const QFileInfo);
     if (d->isDefaultConstructed)
         return ""_L1;
-    return d->fileEntry.completeBaseName();
+    if (!d->fileEngine)
+        return d->fileEntry.completeBaseName();
+    const QString fileEngineBaseName = d->fileEngine->fileName(QAbstractFileEngine::BaseName);
+    return QFileSystemEntry(fileEngineBaseName).completeBaseName();
 }
 
 /*!
