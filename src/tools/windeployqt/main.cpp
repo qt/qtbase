@@ -1494,7 +1494,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
         const QString targetPath = options.qmlDirectory.isEmpty()
                 ? options.directory + QStringLiteral("/qml")
                 : options.qmlDirectory;
-        if (!createDirectory(targetPath, errorMessage))
+        if (!createDirectory(targetPath, errorMessage, options.dryRun))
             return result;
         for (const QmlImportScanResult::Module &module : std::as_const(qmlScanResult.modules)) {
             const QString installPath = module.installPath(targetPath);
@@ -1502,7 +1502,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
                 std::wcout << "Installing: '" << module.name
                            << "' from " << module.sourcePath << " to "
                            << QDir::toNativeSeparators(installPath) << '\n';
-            if (installPath != targetPath && !createDirectory(installPath, errorMessage))
+            if (installPath != targetPath && !createDirectory(installPath, errorMessage, options.dryRun))
                 return result;
             unsigned updateFileFlags = options.updateFileFlags
                     | SkipQmlDesignerSpecificsDirectories;
@@ -1519,7 +1519,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     } // optQuickImports
 
     if (options.translations) {
-        if (!options.dryRun && !createDirectory(options.translationsDirectory, errorMessage))
+        if (!createDirectory(options.translationsDirectory, errorMessage, options.dryRun))
             return result;
         if (!deployTranslations(qtpathsVariables.value(QStringLiteral("QT_INSTALL_TRANSLATIONS")),
                                 result.deployedQtLibraries, options.translationsDirectory, options,
@@ -1567,7 +1567,7 @@ static bool deployWebEngineCore(const QMap<QString, QString> &qtpathsVariables,
     const QString resourcesSourceDir = qtpathsVariables.value(QStringLiteral("QT_INSTALL_DATA"))
             + resourcesSubDir + u'/';
     const QString resourcesTargetDir(options.directory + resourcesSubDir);
-    if (!createDirectory(resourcesTargetDir, errorMessage))
+    if (!createDirectory(resourcesTargetDir, errorMessage, options.dryRun))
         return false;
     for (auto installDataFile : installDataFiles) {
         if (!updateFile(resourcesSourceDir + QLatin1StringView(installDataFile),
@@ -1584,7 +1584,7 @@ static bool deployWebEngineCore(const QMap<QString, QString> &qtpathsVariables,
     }
     if (options.translations) {
         // Copy the whole translations directory.
-        return createDirectory(options.translationsDirectory, errorMessage)
+        return createDirectory(options.translationsDirectory, errorMessage, options.dryRun)
                 && updateFile(translations.absoluteFilePath(), options.translationsDirectory,
                               options.updateFileFlags, options.json, errorMessage);
     }
@@ -1597,7 +1597,7 @@ static bool deployWebEngineCore(const QMap<QString, QString> &qtpathsVariables,
     }
     const QString webEngineTranslationsDir = options.translationsDirectory + u'/'
             + translations.fileName();
-    if (!createDirectory(webEngineTranslationsDir, errorMessage))
+    if (!createDirectory(webEngineTranslationsDir, errorMessage, options.dryRun))
         return false;
     return updateFile(enUSpak.absoluteFilePath(), webEngineTranslationsDir,
                       options.updateFileFlags, options.json, errorMessage);
@@ -1677,12 +1677,12 @@ int main(int argc, char **argv)
     }
 
     // Create directories
-    if (!createDirectory(options.directory, &errorMessage)) {
+    if (!createDirectory(options.directory, &errorMessage, options.dryRun)) {
         std::wcerr << errorMessage << '\n';
         return 1;
     }
     if (!options.libraryDirectory.isEmpty() && options.libraryDirectory != options.directory
-        && !createDirectory(options.libraryDirectory, &errorMessage)) {
+        && !createDirectory(options.libraryDirectory, &errorMessage, options.dryRun)) {
         std::wcerr << errorMessage << '\n';
         return 1;
     }

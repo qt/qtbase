@@ -143,7 +143,7 @@ inline QString sharedLibrarySuffix(Platform platform) { return QLatin1StringView
 bool isBuildDirectory(Platform platform, const QString &dirName);
 
 bool createSymbolicLink(const QFileInfo &source, const QString &target, QString *errorMessage);
-bool createDirectory(const QString &directory, QString *errorMessage);
+bool createDirectory(const QString &directory, QString *errorMessage, bool dryRun);
 QString findInPath(const QString &file);
 
 extern const char *qmakeInfixKey; // Fake key containing the libinfix
