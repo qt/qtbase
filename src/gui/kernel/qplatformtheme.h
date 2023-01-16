@@ -14,6 +14,7 @@
 //
 
 #include <QtGui/qtguiglobal.h>
+#include <QtCore/QObject>
 #include <QtCore/QScopedPointer>
 #if QT_CONFIG(shortcut)
 #  include <QtGui/QKeySequence>
