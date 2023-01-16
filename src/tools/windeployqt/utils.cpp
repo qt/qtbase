@@ -62,7 +62,7 @@ bool createSymbolicLink(const QFileInfo &source, const QString &target, QString 
     return true;
 }
 
-bool createDirectory(const QString &directory, QString *errorMessage)
+bool createDirectory(const QString &directory, QString *errorMessage, bool dryRun)
 {
     const QFileInfo fi(directory);
     if (fi.isDir())
@@ -74,11 +74,13 @@ bool createDirectory(const QString &directory, QString *errorMessage)
     }
     if (optVerboseLevel)
         std::wcout << "Creating " << QDir::toNativeSeparators(directory) << "...\n";
-    QDir dir;
-    if (!dir.mkpath(directory)) {
-        *errorMessage = QString::fromLatin1("Could not create directory %1.").
-                        arg(QDir::toNativeSeparators(directory));
-        return false;
+    if (!dryRun) {
+        QDir dir;
+        if (!dir.mkpath(directory)) {
+            *errorMessage = QString::fromLatin1("Could not create directory %1.")
+                                    .arg(QDir::toNativeSeparators(directory));
+            return false;
+        }
     }
     return true;
 }
