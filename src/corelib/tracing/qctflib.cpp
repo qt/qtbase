@@ -18,13 +18,13 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcDebugTrace, "qt.core.ctf");
 
-#define PACKET_SIZE (4096)
-#define PACKET_HEADER_SIZE (24 + 6 * 8 + 4)
+static const size_t packetHeaderSize = 24 + 6 * 8 + 4;
+static const size_t packetSize = 4096;
 
-static const char s_trace_metadata_template[] =
+static const char traceMetadataTemplate[] =
 #include "metadata_template.h"
 ;
-static const int s_trace_metadata_size = sizeof(s_trace_metadata_template);
+static const size_t traceMetadataSize = sizeof(traceMetadataTemplate);
 
 template <typename T>
 QByteArray &operator << (QByteArray &arr, T val)
@@ -83,7 +83,7 @@ QCtfLibImpl::QCtfLibImpl()
 
     auto datetime = QDateTime::currentDateTime();
     QString mhn = QSysInfo::machineHostName();
-    QString metadata = QString::fromUtf8(s_trace_metadata_template, s_trace_metadata_size);
+    QString metadata = QString::fromUtf8(traceMetadataTemplate, traceMetadataSize);
     metadata.replace(QStringLiteral("$TRACE_UUID"), s_TraceUuid.toString(QUuid::WithoutBraces));
     metadata.replace(QStringLiteral("$ARC_BIT_WIDTH"), QString::number(Q_PROCESSOR_WORDSIZE * 8));
     metadata.replace(QStringLiteral("$SESSION_NAME"), m_session.name);
@@ -134,8 +134,8 @@ void QCtfLibImpl::writeCtfPacket(QCtfLibImpl::Channel &ch)
         packet << quint32(0);
         packet << ch.minTimestamp;
         packet << ch.maxTimestamp;
-        packet << quint64(ch.data.size() + PACKET_HEADER_SIZE + ch.threadNameLength) * 8u;
-        packet << quint64(PACKET_SIZE) * 8u;
+        packet << quint64(ch.data.size() + packetHeaderSize + ch.threadNameLength) * 8u;
+        packet << quint64(packetSize) * 8u;
         packet << ch.seqnumber++;
         packet << quint64(0);
         packet << ch.threadIndex;
@@ -143,10 +143,10 @@ void QCtfLibImpl::writeCtfPacket(QCtfLibImpl::Channel &ch)
             packet.append(ch.threadName);
         packet << (char)0;
 
-        Q_ASSERT(ch.data.size() + PACKET_HEADER_SIZE + ch.threadNameLength <= PACKET_SIZE);
-        Q_ASSERT(packet.size() == PACKET_HEADER_SIZE + ch.threadNameLength);
+        Q_ASSERT(ch.data.size() + packetHeaderSize + ch.threadNameLength <= packetSize);
+        Q_ASSERT(packet.size() == packetHeaderSize + ch.threadNameLength);
         fwrite(packet.data(), packet.size(), 1, file);
-        ch.data.resize(PACKET_SIZE - packet.size(), 0);
+        ch.data.resize(packetSize - packet.size(), 0);
         fwrite(ch.data.data(), ch.data.size(), 1, file);
     }
     fclose(file);
@@ -269,7 +269,7 @@ void QCtfLibImpl::doTracepoint(const QCtfTracePointEvent &point, const QByteArra
     if (!point.metadata.isEmpty())
         event.append(arr);
 
-    if (ch.threadNameLength + ch.data.size() + event.size() + PACKET_HEADER_SIZE >= PACKET_SIZE) {
+    if (ch.threadNameLength + ch.data.size() + event.size() + packetHeaderSize >= packetSize) {
         writeCtfPacket(ch);
         ch.data = event;
         ch.minTimestamp = ch.maxTimestamp = timestamp;
