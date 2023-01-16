@@ -76,9 +76,14 @@ instructions:
   - !include "{{qt/qtbase}}/call_host_install.yaml"
   - type: SignPackage
     enable_if:
-      condition: property
-      property: host.os
-      equals_value: Windows
+      condition: and
+      conditions:
+        - condition: property
+          property: host.os
+          equals_value: Windows
+        - condition: property
+          property: features
+          contains_value: Packaging
     directory: "{{.InstallRoot}}/{{.AgentWorkingDir}}"
     maxTimeInSeconds: 1200
     maxTimeBetweenOutput: 1200
