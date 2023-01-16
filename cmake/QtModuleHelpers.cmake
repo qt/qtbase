@@ -16,7 +16,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         NO_ADDITIONAL_TARGET_INFO
         NO_GENERATE_METATYPES
         NO_HEADERSCLEAN_CHECK
-        GENERATE_CPP_EXPORTS # TODO: Rename to NO_GENERATE_CPP_EXPORTS once migration is done
+        GENERATE_CPP_EXPORTS
         GENERATE_METATYPES          # TODO: Remove once it is not used anymore
         GENERATE_PRIVATE_CPP_EXPORTS
     )
