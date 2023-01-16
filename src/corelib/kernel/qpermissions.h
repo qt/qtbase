@@ -132,13 +132,19 @@ class QCalendarPermission
 {
     Q_GADGET_EXPORT(Q_CORE_EXPORT)
 public:
-    Q_CORE_EXPORT void setReadWrite(bool enable);
-    Q_CORE_EXPORT bool isReadWrite() const;
+    enum AccessMode : quint8 {
+        ReadOnly,
+        ReadWrite,
+    };
+    Q_ENUM(AccessMode)
+
+    Q_CORE_EXPORT void setAccessMode(AccessMode mode);
+    Q_CORE_EXPORT AccessMode accessMode() const;
 
 private:
     struct ShortData {
-        bool readWrite;
-        char reserved[sizeof(void*) - sizeof(readWrite)];
+        AccessMode mode;
+        char reserved[sizeof(void*) - sizeof(mode)];
     };
     QT_PERMISSION(QCalendarPermission)
 };
@@ -149,13 +155,19 @@ class QContactsPermission
 {
     Q_GADGET_EXPORT(Q_CORE_EXPORT)
 public:
-    Q_CORE_EXPORT void setReadWrite(bool enable);
-    Q_CORE_EXPORT bool isReadWrite() const;
+    enum AccessMode : quint8 {
+        ReadOnly,
+        ReadWrite,
+    };
+    Q_ENUM(AccessMode)
+
+    Q_CORE_EXPORT void setAccessMode(AccessMode mode);
+    Q_CORE_EXPORT AccessMode accessMode() const;
 
 private:
     struct ShortData {
-        bool readWrite;
-        char reserved[sizeof(void*) - sizeof(readWrite)];
+        AccessMode mode;
+        char reserved[sizeof(void*) - sizeof(mode)];
     };
     QT_PERMISSION(QContactsPermission)
 };

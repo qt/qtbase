@@ -463,7 +463,7 @@ QLocationPermission::Availability QLocationPermission::availability() const
     \brief Access the user's contacts.
 
     By default the request is for read-only access.
-    Use setReadWrite() to override the default.
+    Use setAccessMode() to override the default.
 
     \section1 Requirements
 
@@ -476,32 +476,43 @@ QLocationPermission::Availability QLocationPermission::availability() const
         \li Android
         \li \l{android-uses-permission}{\c{uses-permission}}
         \li \c android.permission.READ_CONTACTS. \c android.permission.WRITE_CONTACTS if
-            QContactsPermission::isReadWrite() is set to \c true.
+            QContactsPermission::accessMode() is set to AccessMode::ReadWrite.
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
 */
 
+/*!
+    \enum QContactsPermission::AccessMode
+
+    This enum is used to control access to the contacts data.
+
+    \value ReadOnly Read-only access to the contacts data (the default).
+    \value ReadWrite Read and write access to the contacts data.
+
+    \sa setAccessMode, accessMode
+*/
+
 QT_PERMISSION_IMPL_COMMON(QContactsPermission)
-    : u{ShortData{false, {}}}
+    : u{ShortData{AccessMode::ReadOnly, {}}}
 {}
 
 /*!
-    Sets whether the request is for read-write (\a enable == \c true) or
-    read-only (\a enable == \c false) access to the contacts.
+    Sets whether the request is for read-write (\a mode == AccessMode::ReadOnly) or
+    read-only (\a mode == AccessMode::ReadOnly) access to the contacts.
 */
-void QContactsPermission::setReadWrite(bool enable)
+void QContactsPermission::setAccessMode(AccessMode mode)
 {
-    u.data.readWrite = enable;
+    u.data.mode = mode;
 }
 
 /*!
-    Returns \c true when the request is for read-write and \c false when it is
-    for read-only access to the contacts.
+    Returns AccessMode::ReadWrite when the request is for read-write and
+    AccessMode::ReadOnly when it is for read-only access to the contacts.
 */
-bool QContactsPermission::isReadWrite() const
+QContactsPermission::AccessMode QContactsPermission::accessMode() const
 {
-    return u.data.readWrite;
+    return u.data.mode;
 }
 
 /*!
@@ -509,7 +520,7 @@ bool QContactsPermission::isReadWrite() const
     \brief Access the user's calendar.
 
     By default the request is for read-only access.
-    Use setReadWrite() to override the default.
+    Use setAccessMode() to override the default.
 
     \section1 Requirements
 
@@ -522,32 +533,43 @@ bool QContactsPermission::isReadWrite() const
         \li Android
         \li \l{android-uses-permission}{\c{uses-permission}}
         \li \c android.permission.READ_CALENDAR. \c android.permission.WRITE_CALENDAR if
-            QCalendarPermission::isReadWrite() is set to \c true.
+            QCalendarPermission::accessMode() is set to AccessMode::ReadWrite.
     \include permissions.qdocinc end-usage-declarations
 
     \include permissions.qdocinc permission-metadata
 */
 
+/*!
+    \enum QCalendarPermission::AccessMode
+
+    This enum is used to control access to the calendar data.
+
+    \value ReadOnly Read-only access to the calendar data (the default).
+    \value ReadWrite Read and write access to the calendar data.
+
+    \sa setAccessMode, accessMode
+*/
+
 QT_PERMISSION_IMPL_COMMON(QCalendarPermission)
-    : u{ShortData{false, {}}}
+    : u{ShortData{AccessMode::ReadOnly, {}}}
 {}
 
 /*!
-    Sets whether the request is for read-write (\a enable == \c true) or
-    read-only (\a enable == \c false) access to the calendar.
+    Sets whether the request is for read-write (\a mode == AccessMode::ReadOnly) or
+    read-only (\a mode == AccessMode::ReadOnly) access to the calendar.
 */
-void QCalendarPermission::setReadWrite(bool enable)
+void QCalendarPermission::setAccessMode(AccessMode mode)
 {
-    u.data.readWrite = enable;
+    u.data.mode = mode;
 }
 
 /*!
-    Returns \c true when the request is for read-write and \c false when it is
-    for read-only access to the calendar.
+    Returns AccessMode::ReadWrite when the request is for read-write and
+    AccessMode::ReadOnly when it is for read-only access to the calendar.
 */
-bool QCalendarPermission::isReadWrite() const
+QCalendarPermission::AccessMode QCalendarPermission::accessMode() const
 {
-    return u.data.readWrite;
+    return u.data.mode;
 }
 
 /*!
