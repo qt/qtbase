@@ -89,7 +89,7 @@ public :
 	}
 
 	// Load from file (.bvh) :	
-	static std::pair<Joint*, std::pair<int, double>> createFromFile(std::string fileName);
+	static std::pair<std::pair<Joint*, std::vector<Joint*>>, std::pair<int, double>> createFromFile(std::string fileName);
 
 	void animate(int iframe=0);
 

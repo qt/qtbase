@@ -20,18 +20,20 @@ struct VertexData
 class GeometryEngine : protected QOpenGLFunctions
 {
 public:
-    GeometryEngine(Joint *root);
+    GeometryEngine(Joint *root, std::vector<Joint*> jntVec);
     virtual ~GeometryEngine();
 
     void drawCubeGeometry(QOpenGLShaderProgram *program);
     void drawLineGeometry(QOpenGLShaderProgram *program);
     void updatePos(Joint *root);
 
+    std::vector<Joint*> jntVec;
     int lenPts;
     int lenIndexes;
 
 private:
     void getPos(Joint *jnt, std::vector<VertexData> *vec);
+    void setWeights(std::vector<VertexData> *vec);
     void setIndexes(Joint *jnt, std::vector<GLushort> *vec);
     void setJointIndexes(Joint *jnt, int &vertexIndex);
     void initCubeGeometry();

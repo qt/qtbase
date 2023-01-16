@@ -31,6 +31,7 @@ public:
     MainWidget(std::string filename);
 
     Joint *root;
+    std::vector<Joint*> jntVec;
     int nFrames;
     int currFrame;
     double interval;
