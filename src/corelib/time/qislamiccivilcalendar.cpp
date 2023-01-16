@@ -77,11 +77,11 @@ bool QIslamicCivilCalendar::dateToJulianDay(int year, int month, int day, qint64
 QCalendar::YearMonthDay QIslamicCivilCalendar::julianDayToDate(qint64 jd) const
 {
     constexpr qint64 epoch = 1948440;
-    const int32_t k2 = 30 * (jd - epoch) + 15;
-    const int32_t k1 = 11 * qDiv<30>(qMod<10631>(k2)) + 5;
-    int y = qDiv<10631>(k2) + 1;
-    const int month = qDiv<325>(k1) + 1;
-    const int day = qDiv<11>(qMod<325>(k1)) + 1;
+    const auto k2dm = qDivMod<10631>(30 * (jd - epoch) + 15);
+    int y = k2dm.quotient + 1;
+    const auto k1dm = qDivMod<325>(11 * qDiv<30>(k2dm.remainder) + 5);
+    const int month = k1dm.quotient + 1;
+    const int day = qDiv<11>(k1dm.remainder) + 1;
     return QCalendar::YearMonthDay(y > 0 ? y : y - 1, month, day);
 }
 

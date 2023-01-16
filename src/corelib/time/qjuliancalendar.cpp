@@ -75,14 +75,12 @@ bool QJulianCalendar::dateToJulianDay(int year, int month, int day, qint64 *jd) 
 
 QCalendar::YearMonthDay QJulianCalendar::julianDayToDate(qint64 jd) const
 {
-    const qint64 y2 = jd - 1721118;
-    const qint64 k2 = 4 * y2 + 3;
-    const qint64 k1 = 5 * qDiv<4>(qMod<1461>(k2)) + 2;
-    const qint64 x1 = qDiv<153>(k1);
-    const qint64 c0 = qDiv<12>(x1 + 2);
-    const int y = qint16(qDiv<1461>(k2) + c0);
-    const int month = quint8(x1 - 12 * c0 + 3);
-    const int day = qDiv<5>(qMod<153>(k1)) + 1;
+    const auto k2dm = qDivMod<1461>(4 * (jd - 1721118) + 3);
+    const auto k1dm = qDivMod<153>(5 * qDiv<4>(k2dm.remainder) + 2);
+    const auto c0dm = qDivMod<12>(k1dm.quotient + 2);
+    const int y = qint16(k2dm.quotient + c0dm.quotient);
+    const int month = quint8(c0dm.remainder + 1);
+    const int day = qDiv<5>(k1dm.remainder) + 1;
     return QCalendar::YearMonthDay(y > 0 ? y : y - 1, month, day);
 }
 

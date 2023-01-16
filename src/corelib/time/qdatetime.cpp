@@ -3053,12 +3053,12 @@ static QPair<QDate, QTime> getDateTime(const QDateTimeData &d)
 {
     auto status = getStatus(d);
     const qint64 msecs = getMSecs(d);
-    const qint64 days = QRoundingDown::qDiv<MSECS_PER_DAY>(msecs);
+    const auto dayMilli = QRoundingDown::qDivMod<MSECS_PER_DAY>(msecs);
     return { status.testFlag(QDateTimePrivate::ValidDate)
-            ? QDate::fromJulianDay(JULIAN_DAY_FOR_EPOCH + days)
+            ? QDate::fromJulianDay(JULIAN_DAY_FOR_EPOCH + dayMilli.quotient)
             : QDate(),
             status.testFlag(QDateTimePrivate::ValidTime)
-            ? QTime::fromMSecsSinceStartOfDay(msecs - days * MSECS_PER_DAY)
+            ? QTime::fromMSecsSinceStartOfDay(dayMilli.remainder)
             : QTime() };
 }
 

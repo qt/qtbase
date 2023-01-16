@@ -312,8 +312,9 @@ inline bool secondsAndMillisOverflow(qint64 epochSeconds, qint64 millis, qint64 
 // returns the local milliseconds, offset from UTC and DST status.
 QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
 {
-    const time_t epochSeconds = QRoundingDown::qDiv<MSECS_PER_SEC>(utcMillis);
-    const int msec = utcMillis - epochSeconds * MSECS_PER_SEC;
+    const auto epoch = QRoundingDown::qDivMod<MSECS_PER_SEC>(utcMillis);
+    const time_t epochSeconds = epoch.quotient;
+    const int msec = epoch.remainder;
     Q_ASSERT(msec >= 0 && msec < MSECS_PER_SEC);
     if (qint64(epochSeconds) * MSECS_PER_SEC + msec != utcMillis) // time_t range too narrow
         return {utcMillis};
@@ -341,10 +342,10 @@ QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
 
 QString localTimeAbbbreviationAt(qint64 local, QDateTimePrivate::DaylightStatus dst)
 {
-    const qint64 localDays = QRoundingDown::qDiv<MSECS_PER_DAY>(local);
-    qint64 millis = local - localDays * MSECS_PER_DAY;
+    const auto localDayMilli = QRoundingDown::qDivMod<MSECS_PER_DAY>(local);
+    qint64 millis = localDayMilli.remainder;
     Q_ASSERT(0 <= millis && millis < MSECS_PER_DAY); // Definition of QRD::qDiv.
-    struct tm tmLocal = timeToTm(localDays, int(millis / MSECS_PER_SEC), dst);
+    struct tm tmLocal = timeToTm(localDayMilli.quotient, int(millis / MSECS_PER_SEC), dst);
     time_t utcSecs;
     if (!callMkTime(&tmLocal, &utcSecs))
         return {};
@@ -356,11 +357,11 @@ QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::Dayligh
 {
     qint64 localSecs = local / MSECS_PER_SEC;
     qint64 millis = local - localSecs * MSECS_PER_SEC; // 0 or with same sign as local
-    const qint64 localDays = QRoundingDown::qDiv<SECS_PER_DAY>(localSecs);
-    qint64 daySecs = localSecs - localDays * SECS_PER_DAY;
+    const auto localDaySec = QRoundingDown::qDivMod<SECS_PER_DAY>(localSecs);
+    qint64 daySecs = localDaySec.remainder;
     Q_ASSERT(0 <= daySecs && daySecs < SECS_PER_DAY); // Definition of QRD::qDiv.
 
-    struct tm tmLocal = timeToTm(localDays, daySecs, dst);
+    struct tm tmLocal = timeToTm(localDaySec.quotient, daySecs, dst);
     time_t utcSecs;
     if (!callMkTime(&tmLocal, &utcSecs))
         return {local};
