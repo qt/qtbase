@@ -99,47 +99,7 @@ manifestmeta.android.names          =   "Qt3D/Qt 3D: Basic Shapes C++ Example" \
                                         "QtSQL/Master Detail Example" \
                                         "QtSVG/Text Object Example" \
                                         "QtUiTools/Text Finder Example" \
-                                        "QtWebView/Qt WebView Examples - Minibrowser" \
-                                        "QtWidgets/Address Book Example" \
-                                        "QtWidgets/Affine Transformations" \
-                                        "QtWidgets/Analog Clock Example" \
-                                        "QtWidgets/Animated Tiles Example" \
-                                        "QtWidgets/Application Chooser Example" \
-                                        "QtWidgets/Basic Layouts Example" \
-                                        "QtWidgets/Border Layout Example" \
-                                        "QtWidgets/Code Editor Example" \
-                                        "QtWidgets/Colliding Mice Example" \
-                                        "QtWidgets/Concentric Circles Example" \
-                                        "QtWidgets/Digital Clock Example" \
-                                        "QtWidgets/Dynamic Layouts Example" \
-                                        "QtWidgets/Easing Curves Example" \
-                                        "QtWidgets/Editable Tree Model Example" \
-                                        "QtWidgets/Elided Label Example" \
-                                        "QtWidgets/Fade Message Effect Example" \
-                                        "QtWidgets/Flow Layout Example" \
-                                        "QtWidgets/Font Sampler Example" \
-                                        "QtWidgets/Frozen Column Example" \
-                                        "QtWidgets/Gradients" \
-                                        "QtWidgets/Group Box Example" \
-                                        "QtWidgets/Image Composition Example" \
-                                        "QtWidgets/Line Edits Example" \
-                                        "QtWidgets/Mouse Button Tester" \
-                                        "QtWidgets/Move Blocks Example" \
-                                        "QtWidgets/Painter Paths Example" \
-                                        "QtWidgets/Painter Paths Example" \
-                                        "QtWidgets/Path Stroking" \
-                                        "QtWidgets/Pixelator Example" \
-                                        "QtWidgets/Recent Files Example" \
-                                        "QtWidgets/SDI Example" \
-                                        "QtWidgets/Scribble Example" \
-                                        "QtWidgets/Simple Tree Model Example" \
-                                        "QtWidgets/Sliders Example" \
-                                        "QtWidgets/Spreadsheet" \
-                                        "QtWidgets/Touch Dials Example" \
-                                        "QtWidgets/Transformations Example" \
-                                        "QtWidgets/Undo Framework" \
-                                        "QtWidgets/Vector Deformation" \
-                                        "QtWidgets/Wiggly Example"
+                                        "QtWebView/Qt WebView Examples - Minibrowser"
 
 manifestmeta.android.tags              =   android
 
