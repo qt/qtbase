@@ -8,13 +8,9 @@
 #include <QQuaternion>
 #include <QVector3D>
 #include <locale>
+#include <algorithm>
 
 // To parse all Xsens data files, use the extractData function
-
-struct jointData {
-    std::string joint_name;
-    std::vector<std::string> related_files;
-};
 
 struct fileInfo {
     std::string filename;
@@ -205,7 +201,10 @@ std::vector<JointData*> extractData(std::string directory) {
         }
     }
     for (JointData* jd : output) {
+        std::sort(jd->filenames.begin(),jd->filenames.end());
+        std::cout << jd->name << std::endl;
         for (std::string fn : jd->filenames) {
+            std::cout << fn << std::endl;
             parseXsensFilename(fn, jd);
         }
     }
