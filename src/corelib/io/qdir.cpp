@@ -630,8 +630,12 @@ QString QDir::path() const
 QString QDir::absolutePath() const
 {
     Q_D(const QDir);
-    d->resolveAbsoluteEntry();
-    return d->absoluteDirEntry.filePath();
+    if (!d->fileEngine) {
+        d->resolveAbsoluteEntry();
+        return d->absoluteDirEntry.filePath();
+    }
+
+    return d->fileEngine->fileName(QAbstractFileEngine::AbsoluteName);
 }
 
 /*!
