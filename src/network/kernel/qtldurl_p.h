@@ -16,7 +16,6 @@
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
-#include "QtCore/qurl.h"
 #include "QtCore/qstring.h"
 
 QT_REQUIRE_CONFIG(topleveldomain);
@@ -31,4 +30,4 @@ inline bool qIsEffectiveTLD(const QString &domain)
 
 QT_END_NAMESPACE
 
-#endif // QDATAURL_P_H
+#endif // QTLDURL_P_H

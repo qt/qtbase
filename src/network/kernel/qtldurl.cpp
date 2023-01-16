@@ -7,9 +7,7 @@
 
 #if QT_CONFIG(topleveldomain)
 
-#include "qurl.h"
 #include "QtCore/qfile.h"
-#include "QtCore/qfileinfo.h"
 #include "QtCore/qloggingcategory.h"
 #include "QtCore/qstandardpaths.h"
 #include "QtCore/qstring.h"
@@ -214,4 +212,4 @@ Q_NETWORK_EXPORT bool qIsEffectiveTLD(QStringView domain)
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QT_CONFIG(topleveldomain)
