@@ -35,11 +35,11 @@ namespace QRoundingDown {
   when that subtraction would underflow.
 */
 
-template<typename Int> constexpr Int qDiv(Int a, unsigned b)
+template<unsigned b, typename Int> constexpr Int qDiv(Int a)
 { return a < 0 ? (a + 1) / int(b) - 1 : a / int(b); }
 
-template<typename Int> constexpr Int qMod(Int a, unsigned b)
-{ return a - qDiv(a, b) * b; }
+template<unsigned b, typename Int> constexpr Int qMod(Int a)
+{ return a - qDiv<b>(a) * b; }
 
 } // QRoundingDown
 

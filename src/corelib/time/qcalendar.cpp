@@ -867,7 +867,7 @@ int QCalendarBackend::maximumMonthsInYear() const
  */
 int QCalendarBackend::dayOfWeek(qint64 jd) const
 {
-    return QRoundingDown::qMod(jd, 7) + 1;
+    return QRoundingDown::qMod<7>(jd) + 1;
 }
 
 // Month and week-day name look-ups (implemented in qlocale.cpp):

@@ -54,7 +54,7 @@ bool QJulianCalendar::isLeapYear(int year) const
     if (year == QCalendar::Unspecified || !year)
         return false;
 
-    return qMod(year < 0 ? year + 1 : year, 4) == 0;
+    return qMod<4>(year < 0 ? year + 1 : year) == 0;
 }
 
 // Julian Day 0 was January the first in the proleptic Julian calendar's 4713 BC
@@ -67,8 +67,8 @@ bool QJulianCalendar::dateToJulianDay(int year, int month, int day, qint64 *jd) 
     if (year < 0)
         ++year;
     const qint64 c0 = month < 3 ? -1 : 0;
-    const qint64 j1 = qDiv(1461 * (year + c0), 4);
-    const qint64 j2 = qDiv(153 * month - 1836 * c0 - 457, 5);
+    const qint64 j1 = qDiv<4>(1461 * (year + c0));
+    const qint64 j2 = qDiv<5>(153 * month - 1836 * c0 - 457);
     *jd = j1 + j2 + day + 1721117;
     return true;
 }
@@ -77,12 +77,12 @@ QCalendar::YearMonthDay QJulianCalendar::julianDayToDate(qint64 jd) const
 {
     const qint64 y2 = jd - 1721118;
     const qint64 k2 = 4 * y2 + 3;
-    const qint64 k1 = 5 * qDiv(qMod(k2, 1461), 4) + 2;
-    const qint64 x1 = qDiv(k1, 153);
-    const qint64 c0 = qDiv(x1 + 2, 12);
-    const int y = qint16(qDiv(k2, 1461) + c0);
+    const qint64 k1 = 5 * qDiv<4>(qMod<1461>(k2)) + 2;
+    const qint64 x1 = qDiv<153>(k1);
+    const qint64 c0 = qDiv<12>(x1 + 2);
+    const int y = qint16(qDiv<1461>(k2) + c0);
     const int month = quint8(x1 - 12 * c0 + 3);
-    const int day = qDiv(qMod(k1, 153), 5) + 1;
+    const int day = qDiv<5>(qMod<153>(k1)) + 1;
     return QCalendar::YearMonthDay(y > 0 ? y : y - 1, month, day);
 }
 

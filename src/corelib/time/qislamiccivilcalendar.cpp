@@ -58,7 +58,7 @@ bool QIslamicCivilCalendar::isLeapYear(int year) const
         return false;
     if (year < 0)
         ++year;
-    return qMod(year * 11 + 14, 30) < 11;
+    return qMod<30>(year * 11 + 14) < 11;
 }
 
 bool QIslamicCivilCalendar::dateToJulianDay(int year, int month, int day, qint64 *jd) const
@@ -68,20 +68,20 @@ bool QIslamicCivilCalendar::dateToJulianDay(int year, int month, int day, qint64
         return false;
     if (year <= 0)
         ++year;
-    *jd = qDiv(10631 * year - 10617, 30)
-            + qDiv(325 * month - 320, 11)
+    *jd = qDiv<30>(10631 * year - 10617)
+            + qDiv<11>(325 * month - 320)
             + day + 1948439;
     return true;
 }
 
 QCalendar::YearMonthDay QIslamicCivilCalendar::julianDayToDate(qint64 jd) const
 {
-    const qint64 epoch = 1948440;
+    constexpr qint64 epoch = 1948440;
     const int32_t k2 = 30 * (jd - epoch) + 15;
-    const int32_t k1 = 11 * qDiv(qMod(k2, 10631), 30) + 5;
-    int y = qDiv(k2, 10631) + 1;
-    const int month = qDiv(k1, 325) + 1;
-    const int day = qDiv(qMod(k1, 325), 11) + 1;
+    const int32_t k1 = 11 * qDiv<30>(qMod<10631>(k2)) + 5;
+    int y = qDiv<10631>(k2) + 1;
+    const int month = qDiv<325>(k1) + 1;
+    const int day = qDiv<11>(qMod<325>(k1)) + 1;
     return QCalendar::YearMonthDay(y > 0 ? y : y - 1, month, day);
 }
 

@@ -2139,7 +2139,7 @@ QTime QTime::addMSecs(int ms) const
 {
     QTime t;
     if (isValid())
-        t.mds = QRoundingDown::qMod(ds() + ms, MSECS_PER_DAY);
+        t.mds = QRoundingDown::qMod<MSECS_PER_DAY>(ds() + ms);
     return t;
 }
 
@@ -2507,7 +2507,7 @@ typedef QDateTimePrivate::QDateTimeData QDateTimeData;
 // Converts milliseconds since the start of 1970 into a date and/or time:
 static qint64 msecsToJulianDay(qint64 msecs)
 {
-    return JULIAN_DAY_FOR_EPOCH + QRoundingDown::qDiv(msecs, MSECS_PER_DAY);
+    return JULIAN_DAY_FOR_EPOCH + QRoundingDown::qDiv<MSECS_PER_DAY>(msecs);
 }
 
 static QDate msecsToDate(qint64 msecs)
@@ -2517,7 +2517,7 @@ static QDate msecsToDate(qint64 msecs)
 
 static QTime msecsToTime(qint64 msecs)
 {
-    return QTime::fromMSecsSinceStartOfDay(QRoundingDown::qMod(msecs, MSECS_PER_DAY));
+    return QTime::fromMSecsSinceStartOfDay(QRoundingDown::qMod<MSECS_PER_DAY>(msecs));
 }
 
 // True if combining days with millis overflows; otherwise, stores result in *sumMillis
@@ -3053,7 +3053,7 @@ static QPair<QDate, QTime> getDateTime(const QDateTimeData &d)
 {
     auto status = getStatus(d);
     const qint64 msecs = getMSecs(d);
-    const qint64 days = QRoundingDown::qDiv(msecs, MSECS_PER_DAY);
+    const qint64 days = QRoundingDown::qDiv<MSECS_PER_DAY>(msecs);
     return { status.testFlag(QDateTimePrivate::ValidDate)
             ? QDate::fromJulianDay(JULIAN_DAY_FOR_EPOCH + days)
             : QDate(),

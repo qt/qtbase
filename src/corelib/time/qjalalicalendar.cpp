@@ -13,16 +13,16 @@ using namespace QRoundingDown;
 
 // Constants
 
-static const qint64 cycleDays = 1029983;
-static const int cycleYears = 2820;
-static const double yearLength = 365.24219858156028368; // 365 + leapRatio;
-static const qint64 jalaliEpoch = 2121446; // 475/01/01 AP, start of 2820 cycle
+constexpr qint64 cycleDays = 1029983;
+constexpr int cycleYears = 2820;
+constexpr double yearLength = 365.24219858156028368; // 365 + leapRatio;
+constexpr qint64 jalaliEpoch = 2121446; // 475/01/01 AP, start of 2820 cycle
 
 // Calendar implementation
 
 static inline int cycle(qint64 jdn)
 {
-    return qDiv(jdn - jalaliEpoch, cycleDays);
+    return qDiv<cycleDays>(jdn - jalaliEpoch);
 }
 
 qint64 cycleStart(int cycleNo)
@@ -96,7 +96,7 @@ bool QJalaliCalendar::isLeapYear(int year) const
         return false;
     if (year < 0)
         year++;
-    return qMod((year + 2346) * 683, 2820) < 683;
+    return qMod<2820>((year + 2346) * 683) < 683;
 }
 
 bool QJalaliCalendar::isLunar() const
@@ -121,7 +121,7 @@ bool QJalaliCalendar::dateToJulianDay(int year, int month, int day, qint64 *jd) 
         return false;
 
     const int y = year - (year < 0 ? 474 : 475);
-    const int c = qDiv(y, cycleYears);
+    const int c = qDiv<cycleYears>(y);
     const int yearInCycle = y - c * cycleYears;
     int dayInYear = day;
     for (int i = 1; i < month; ++i)

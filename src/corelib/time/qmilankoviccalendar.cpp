@@ -53,10 +53,10 @@ bool QMilankovicCalendar::isLeapYear(int year) const
         return false;
     if (year <= 0)
         ++year;
-    if (qMod(year, 4))
+    if (qMod<4>(year))
         return false;
-    if (qMod(year, 100) == 0) {
-        const qint16 century = qMod(qDiv(year, 100), 9);
+    if (qMod<100>(year) == 0) {
+        const qint16 century = qMod<9>(qDiv<100>(year));
         if (century != 2 && century != 6)
             return false;
     }
@@ -73,11 +73,11 @@ bool QMilankovicCalendar::dateToJulianDay(int year, int month, int day, qint64 *
     const qint16 c0 = month < 3 ? -1 : 0;
     const qint16 x1 = month - 12 * c0 - 3;
     const qint16 x4 = year + c0;
-    const qint16 x3 = qDiv(x4, 100);
-    const qint16 x2 = qMod(x4, 100);
-    *jd = qDiv(328718 * x3 + 6, 9)
-        + qDiv(36525 * x2 , 100)
-        + qDiv(153 * x1 + 2 , 5)
+    const qint16 x3 = qDiv<100>(x4);
+    const qint16 x2 = qMod<100>(x4);
+    *jd = qDiv<9>(328718 * x3 + 6)
+        + qDiv<100>(36525 * x2)
+        + qDiv<5>(153 * x1 + 2)
         + day + 1721119;
     return true;
 }
@@ -85,15 +85,15 @@ bool QMilankovicCalendar::dateToJulianDay(int year, int month, int day, qint64 *
 QCalendar::YearMonthDay  QMilankovicCalendar::julianDayToDate(qint64 jd) const
 {
     const qint64 k3 = 9 * (jd - 1721120) + 2;
-    const qint64 x3 = qDiv(k3, 328718);
-    const qint64 k2 = 100 * qDiv(qMod(k3, 328718), 9) + 99;
-    const qint64 k1 = qDiv(qMod(k2, 36525), 100) * 5 + 2;
-    const qint64 x2 = qDiv(k2, 36525);
-    const qint64 x1 = qDiv(5 * qDiv(qMod(k2, 36525), 100) + 2, 153);
-    const qint64 c0 = qDiv(x1 + 2, 12);
+    const qint64 x3 = qDiv<328718>(k3);
+    const qint64 k2 = 100 * qDiv<9>(qMod<328718>(k3)) + 99;
+    const qint64 k1 = qDiv<100>(qMod<36525>(k2)) * 5 + 2;
+    const qint64 x2 = qDiv<36525>(k2);
+    const qint64 x1 = qDiv<153>(5 * qDiv<100>(qMod<36525>(k2)) + 2);
+    const qint64 c0 = qDiv<12>(x1 + 2);
     const int y = 100 * x3 + x2 + c0;
     const int month = x1 - 12 * c0 + 3;
-    const int day = qDiv(qMod(k1, 153), 5) + 1;
+    const int day = qDiv<5>(qMod<153>(k1)) + 1;
     return QCalendar::YearMonthDay(y > 0 ? y : y - 1, month, day);
 }
 

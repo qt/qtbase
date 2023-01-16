@@ -73,7 +73,7 @@ bool QGregorianCalendar::validParts(int year, int month, int day)
 
 int QGregorianCalendar::weekDayOfJulian(qint64 jd)
 {
-    return qMod(jd, 7) + 1;
+    return qMod<7>(jd) + 1;
 }
 
 bool QGregorianCalendar::dateToJulianDay(int year, int month, int day, qint64 *jd) const
@@ -98,8 +98,8 @@ bool QGregorianCalendar::julianFromParts(int year, int month, int day, qint64 *j
     int    a = month < 3 ? 1 : 0;
     qint64 y = qint64(year) + 4800 - a;
     int    m = month + 12 * a - 3;
-    *jd = day + qDiv(153 * m + 2, 5) - 32045
-        + 365 * y + qDiv(y, 4) - qDiv(y, 100) + qDiv(y, 400);
+    *jd = day + qDiv<5>(153 * m + 2) - 32045
+        + 365 * y + qDiv<4>(y) - qDiv<100>(y) + qDiv<400>(y);
     return true;
 }
 
@@ -107,7 +107,7 @@ int QGregorianCalendar::yearStartWeekDay(int year)
 {
     // Equivalent to weekDayOfJulian(julianForParts({year, 1, 1})
     const int y = year - (year < 0 ? 800 : 801);
-    return qMod(y + qDiv(y, 4) - qDiv(y, 100) + qDiv(y, 400), 7) + 1;
+    return qMod<7>(y + qDiv<4>(y) - qDiv<100>(y) + qDiv<400>(y)) + 1;
 }
 
 int QGregorianCalendar::yearSharingWeekDays(QDate date)
@@ -169,19 +169,19 @@ QCalendar::YearMonthDay QGregorianCalendar::partsFromJulian(qint64 jd)
      * division (round to negative infinity), not c++11 integer division (round to zero)
      */
     qint64 a = jd + 32044;
-    qint64 b = qDiv(4 * a + 3, 146097);
-    int    c = a - qDiv(146097 * b, 4);
+    qint64 b = qDiv<146097>(4 * a + 3);
+    int    c = a - qDiv<4>(146097 * b);
 
-    int    d = qDiv(4 * c + 3, 1461);
-    int    e = c - qDiv(1461 * d, 4);
-    int    m = qDiv(5 * e + 2, 153);
+    int    d = qDiv<1461>(4 * c + 3);
+    int    e = c - qDiv<4>(1461 * d);
+    int    m = qDiv<153>(5 * e + 2);
 
-    int y = 100 * b + d - 4800 + qDiv(m, 10);
+    int y = 100 * b + d - 4800 + qDiv<10>(m);
 
     // Adjust for no year 0
     int year = y > 0 ? y : y - 1;
-    int month = m + 3 - 12 * qDiv(m, 10);
-    int day = e - qDiv(153 * m + 2, 5) + 1;
+    int month = m + 3 - 12 * qDiv<10>(m);
+    int day = e - qDiv<5>(153 * m + 2) + 1;
 
     return QCalendar::YearMonthDay(year, month, day);
 }
