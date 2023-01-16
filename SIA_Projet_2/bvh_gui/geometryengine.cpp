@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include "geometryengine.h"
-#include "../joint.h"
 
 #include <QVector2D>
 #include <QVector3D>
@@ -101,8 +100,6 @@ void GeometryEngine::initCubeGeometry()
 }
 
 void GeometryEngine::getPos(Joint *jnt, std::vector<VertexData> *vec){
-    QVector4D globalPos;
-    QVector4D pos(jnt->_offX, jnt->_offY, jnt->_offZ, 1);
     QMatrix4x4 transform = *(jnt->_transform);
     Joint * parent = jnt->parent;
     while (parent != nullptr){
@@ -110,7 +107,6 @@ void GeometryEngine::getPos(Joint *jnt, std::vector<VertexData> *vec){
         parent = parent->parent;
     }
 
-    globalPos = transform * pos;
     vec->push_back({QVector3D(transform.column(3).x(), transform.column(3).y(), transform.column(3).z()), QVector2D(0.0f, 0.0f)});
 
     if(!(jnt->_children.empty())){
