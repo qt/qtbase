@@ -53,7 +53,6 @@ void tst_ContentUris::dirFacilities()
     const QDir subDir = dirList.first();
 
     QVERIFY(subDir.dirName() == "Sub"_L1);
-    QEXPECT_FAIL("", "absolutePath() is returning wrong path, cutting from 'primary' onward", Continue);
     qWarning() << "subDir.absolutePath()" << subDir.absolutePath() << dirList.first();
     QVERIFY(subDir.absolutePath() == dirList.first());
     QVERIFY(subDir.path() == dirList.first());
@@ -67,7 +66,6 @@ void tst_ContentUris::dirFacilities()
     QVERIFY(listFiles(dir, QDirIterator::Subdirectories).size() == 3);
     QVERIFY(dir.mkpath("Sub/Sub2/Sub3"));  // Create an existing dir hierarchy
     QVERIFY(dir.rmdir("Sub"));
-
 }
 
 void tst_ContentUris::readWriteFile()
@@ -83,7 +81,7 @@ void tst_ContentUris::readWriteFile()
         QVERIFY(file.exists());
         QVERIFY(file.size() == 0);
         QVERIFY(file.fileName() == url);
-        QVERIFY(QFileInfo(url).baseName() == fileName);
+        QVERIFY(QFileInfo(url).completeBaseName() == fileName);
 
         QVERIFY(file.open(QFile::WriteOnly));
         QVERIFY(file.isOpen());
