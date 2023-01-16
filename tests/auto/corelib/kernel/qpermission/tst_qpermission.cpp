@@ -79,18 +79,18 @@ void tst_QPermission::conversionMaintainsState() const
     QCOMPARE_EQ(loc.availability(), QLocationPermission::Availability::Always);
 
     QCalendarPermission cal, cal_default;
-    QCOMPARE_EQ(cal_default.isReadWrite(), false);
+    QCOMPARE_EQ(cal_default.accessMode(), QCalendarPermission::AccessMode::ReadOnly);
 
-    cal.setReadWrite(true);
+    cal.setAccessMode(QCalendarPermission::AccessMode::ReadWrite);
 
-    QCOMPARE_EQ(cal.isReadWrite(), true);
+    QCOMPARE_EQ(cal.accessMode(), QCalendarPermission::AccessMode::ReadWrite);
 
     QContactsPermission con, con_default;
-    QCOMPARE_EQ(con_default.isReadWrite(), false);
+    QCOMPARE_EQ(con_default.accessMode(), QContactsPermission::AccessMode::ReadOnly);
 
-    con.setReadWrite(true);
+    con.setAccessMode(QContactsPermission::AccessMode::ReadWrite);
 
-    QCOMPARE_EQ(con.isReadWrite(), true);
+    QCOMPARE_EQ(con.accessMode(), QContactsPermission::AccessMode::ReadWrite);
 
     //
     // QCameraPermission, QMicrophonePermission, QBluetoothPermission don't have
@@ -125,7 +125,7 @@ void tst_QPermission::conversionMaintainsState() const
         auto v = p.value<QContactsPermission>();
         QCOMPARE_NE(v, std::nullopt);
         auto &r = *v;
-        QCOMPARE_EQ(r.isReadWrite(), con.isReadWrite());
+        QCOMPARE_EQ(r.accessMode(), con.accessMode());
         // check mismatched returns nullopt:
         QCOMPARE_EQ(p.value<QLocationPermission>(), std::nullopt);
     }
@@ -135,7 +135,7 @@ void tst_QPermission::conversionMaintainsState() const
         auto v = p.value<QCalendarPermission>();
         QCOMPARE_NE(v, std::nullopt);
         auto &r = *v;
-        QCOMPARE_EQ(r.isReadWrite(), cal.isReadWrite());
+        QCOMPARE_EQ(r.accessMode(), cal.accessMode());
         // check mismatched returns nullopt:
         QCOMPARE_EQ(p.value<QContactsPermission>(), std::nullopt);
     }

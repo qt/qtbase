@@ -63,14 +63,22 @@ static QStringList nativeStringsFromPermission(const QPermission &permission)
         return { u"android.permission.BLUETOOTH"_s };
     } else if (id == qMetaTypeId<QContactsPermission>()) {
         const auto readContactsString = u"android.permission.READ_CONTACTS"_s;
-        if (!permission.value<QContactsPermission>()->isReadWrite())
+        switch (permission.value<QContactsPermission>()->accessMode()) {
+        case QContactsPermission::AccessMode::ReadOnly:
             return { readContactsString };
-        return { readContactsString, u"android.permission.WRITE_CONTACTS"_s };
+        case QContactsPermission::AccessMode::ReadWrite:
+            return { readContactsString, u"android.permission.WRITE_CONTACTS"_s };
+        }
+        Q_UNREACHABLE_RETURN({});
     } else if (id == qMetaTypeId<QCalendarPermission>()) {
         const auto readContactsString = u"android.permission.READ_CALENDAR"_s;
-        if (!permission.value<QCalendarPermission>()->isReadWrite())
+        switch (permission.value<QCalendarPermission>()->accessMode()) {
+        case QCalendarPermission::AccessMode::ReadOnly:
             return { readContactsString };
-        return { readContactsString, u"android.permission.WRITE_CALENDAR"_s };
+        case QCalendarPermission::AccessMode::ReadWrite:
+            return { readContactsString, u"android.permission.WRITE_CALENDAR"_s };
+        }
+        Q_UNREACHABLE_RETURN({});
     }
 
     return {};
