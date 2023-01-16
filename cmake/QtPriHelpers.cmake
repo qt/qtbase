@@ -323,7 +323,9 @@ function(qt_generate_module_pri_file target)
        list(APPEND module_internal_config staticlib)
     endif()
 
-    # TODO: Add the value 'ltcg' to module_internal_config if LTCG is turned on.
+    if(QT_FEATURE_ltcg)
+        list(APPEND module_internal_config ltcg)
+    endif()
 
     list(JOIN module_internal_config " " joined_module_internal_config)
 
