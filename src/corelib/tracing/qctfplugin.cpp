@@ -19,24 +19,38 @@ public:
     {
 
     }
-    ~QCtfTracePlugin() = default;
+    ~QCtfTracePlugin()
+    {
+        m_cleanup = true;
+        QCtfLibImpl::cleanup();
+    }
 
     bool tracepointEnabled(const QCtfTracePointEvent &point) override
     {
+        if (m_cleanup)
+            return false;
         return QCtfLibImpl::instance()->tracepointEnabled(point);
     }
     void doTracepoint(const QCtfTracePointEvent &point, const QByteArray &arr) override
     {
+        if (m_cleanup)
+            return;
         QCtfLibImpl::instance()->doTracepoint(point, arr);
     }
     bool sessionEnabled() override
     {
+        if (m_cleanup)
+            return false;
         return QCtfLibImpl::instance()->sessionEnabled();
     }
     QCtfTracePointPrivate *initializeTracepoint(const QCtfTracePointEvent &point) override
     {
+        if (m_cleanup)
+            return nullptr;
         return QCtfLibImpl::instance()->initializeTracepoint(point);
     }
+private:
+    bool m_cleanup = false;
 };
 
 #include "qctfplugin.moc"
