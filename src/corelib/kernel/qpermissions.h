@@ -33,8 +33,6 @@ class QCoreApplication;
 
 class QPermission
 {
-    Q_GADGET_EXPORT(Q_CORE_EXPORT)
-
     template <typename T, typename Enable = void>
     static constexpr inline bool is_permission_v = false;
 
@@ -75,7 +73,6 @@ private:
 };
 
 #define QT_PERMISSION(ClassName) \
-    Q_GADGET_EXPORT(Q_CORE_EXPORT) \
     using QtPermissionHelper = void; \
     friend class QPermission; \
     union U { \
@@ -100,6 +97,7 @@ private: \
 class QLocationPermissionPrivate;
 class QLocationPermission
 {
+    Q_GADGET_EXPORT(Q_CORE_EXPORT)
 public:
     enum Accuracy : quint8 {
         Approximate,
@@ -132,6 +130,7 @@ Q_DECLARE_SHARED(QLocationPermission)
 class QCalendarPermissionPrivate;
 class QCalendarPermission
 {
+    Q_GADGET_EXPORT(Q_CORE_EXPORT)
 public:
     enum AccessMode : quint8 {
         ReadOnly,
@@ -154,6 +153,7 @@ Q_DECLARE_SHARED(QCalendarPermission)
 class QContactsPermissionPrivate;
 class QContactsPermission
 {
+    Q_GADGET_EXPORT(Q_CORE_EXPORT)
 public:
     enum AccessMode : quint8 {
         ReadOnly,
