@@ -96,7 +96,7 @@ function(_qt_internal_create_moc_command infile outfile moc_flags moc_options
     string (REPLACE ";" "\n" _moc_parameters "${_moc_parameters}")
 
     if(moc_target)
-        set(_moc_parameters_file ${_moc_parameters_file}$<$<BOOL:$<CONFIGURATION>>:_$<CONFIGURATION>>)
+        set(_moc_parameters_file ${_moc_parameters_file}$<$<BOOL:$<CONFIG>>:_$<CONFIG>>)
         set(targetincludes "$<TARGET_PROPERTY:${moc_target},INCLUDE_DIRECTORIES>")
         set(targetdefines "$<TARGET_PROPERTY:${moc_target},COMPILE_DEFINITIONS>")
 

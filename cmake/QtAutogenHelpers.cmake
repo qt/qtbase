@@ -94,7 +94,7 @@ function(qt_manual_moc result)
             "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" outfile)
         list(APPEND moc_files "${outfile}")
 
-        set(moc_parameters_file "${outfile}_parameters$<$<BOOL:$<CONFIGURATION>>:_$<CONFIGURATION>>")
+        set(moc_parameters_file "${outfile}_parameters$<$<BOOL:$<CONFIG>>:_$<CONFIG>>")
         set(moc_parameters ${arg_FLAGS} -o "${outfile}" "${infile}")
 
         foreach(dir IN ITEMS ${arg_INCLUDE_DIRECTORIES})
