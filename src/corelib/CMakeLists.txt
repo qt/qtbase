@@ -388,7 +388,8 @@ if(QT_WILL_INSTALL)
     list(APPEND core_metatype_args
         __QT_INTERNAL_INSTALL __QT_INTERNAL_INSTALL_DIR "${metatypes_install_dir}")
 endif()
-# Use qt6_extract_metatypes instead of GENERATE_METATYPES so that we can manually pass the
+
+# Use qt6_extract_metatypes instead so that we can manually pass the
 # additional json files.
 qt6_extract_metatypes(Core ${core_metatype_args})
 

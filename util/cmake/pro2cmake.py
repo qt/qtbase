@@ -3569,8 +3569,8 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
         scope._has_private_module = True
     if "header_module" in scope.get("CONFIG"):
         extra.append("HEADER_MODULE")
-    if "metatypes" in scope.get("CONFIG") or "qmltypes" in scope.get("CONFIG"):
-        extra.append("GENERATE_METATYPES")
+    if not("metatypes" in scope.get("CONFIG") or "qmltypes" in scope.get("CONFIG")):
+        extra.append("NO_GENERATE_METATYPES")
 
     module_config = scope.get("MODULE_CONFIG")
     if len(module_config):

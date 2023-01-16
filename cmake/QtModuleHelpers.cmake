@@ -17,7 +17,6 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         NO_GENERATE_METATYPES
         NO_HEADERSCLEAN_CHECK
         GENERATE_CPP_EXPORTS
-        GENERATE_METATYPES          # TODO: Remove once it is not used anymore
         GENERATE_PRIVATE_CPP_EXPORTS
     )
     set(${single_args}
@@ -696,23 +695,16 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
     endif()
 
     # Generate metatypes
-    if(${arg_GENERATE_METATYPES})
-        # No mention of NO_GENERATE_METATYPES. You should not use it.
-        message(WARNING "GENERATE_METATYPES is on by default for Qt modules. Please remove the manual specification.")
-    endif()
-    if (NOT ${arg_NO_GENERATE_METATYPES})
-        if (NOT target_type STREQUAL "INTERFACE_LIBRARY")
-            set(args "")
-            if(QT_WILL_INSTALL)
-                set(metatypes_install_dir "${INSTALL_ARCHDATADIR}/metatypes")
-                list(APPEND args
-                    __QT_INTERNAL_INSTALL __QT_INTERNAL_INSTALL_DIR "${metatypes_install_dir}")
-            endif()
-            qt6_extract_metatypes(${target} ${args})
-        elseif(${arg_GENERATE_METATYPES})
-            message(FATAL_ERROR "Meta types generation does not work on interface libraries")
+    if (NOT ${arg_NO_GENERATE_METATYPES} AND NOT target_type STREQUAL "INTERFACE_LIBRARY")
+        set(args "")
+        if(QT_WILL_INSTALL)
+            set(metatypes_install_dir "${INSTALL_ARCHDATADIR}/metatypes")
+            list(APPEND args
+                __QT_INTERNAL_INSTALL __QT_INTERNAL_INSTALL_DIR "${metatypes_install_dir}")
         endif()
+        qt6_extract_metatypes(${target} ${args})
     endif()
+
     qt_internal_get_min_new_policy_cmake_version(min_new_policy_version)
     qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)
     configure_package_config_file(
