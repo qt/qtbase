@@ -23,7 +23,8 @@ int runUic(int argc, char *argv[])
     QHashSeed::setDeterministicGlobalSeed();
 
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationVersion(QString::fromLatin1(QT_VERSION_STR));
+    const QString version = QString::fromLatin1(qVersion());
+    QCoreApplication::setApplicationVersion(version);
 
     Driver driver;
 
@@ -31,75 +32,75 @@ int runUic(int argc, char *argv[])
     // If you use this code as an example for a translated app, make sure to translate the strings.
     QCommandLineParser parser;
     parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
-    parser.setApplicationDescription(QStringLiteral("Qt User Interface Compiler version %1").arg(QString::fromLatin1(QT_VERSION_STR)));
+    parser.setApplicationDescription(u"Qt User Interface Compiler version %1"_s.arg(version));
     parser.addHelpOption();
     parser.addVersionOption();
 
-    QCommandLineOption dependenciesOption(QStringList() << QStringLiteral("d") << QStringLiteral("dependencies"));
-    dependenciesOption.setDescription(QStringLiteral("Display the dependencies."));
+    QCommandLineOption dependenciesOption(QStringList{u"d"_s, u"dependencies"_s});
+    dependenciesOption.setDescription(u"Display the dependencies."_s);
     parser.addOption(dependenciesOption);
 
-    QCommandLineOption outputOption(QStringList() << QStringLiteral("o") << QStringLiteral("output"));
-    outputOption.setDescription(QStringLiteral("Place the output into <file>"));
-    outputOption.setValueName(QStringLiteral("file"));
+    QCommandLineOption outputOption(QStringList{u"o"_s, u"output"_s});
+    outputOption.setDescription(u"Place the output into <file>"_s);
+    outputOption.setValueName(u"file"_s);
     parser.addOption(outputOption);
 
-    QCommandLineOption noAutoConnectionOption(QStringList() << QStringLiteral("a") << QStringLiteral("no-autoconnection"));
-    noAutoConnectionOption.setDescription(QStringLiteral("Do not generate a call to QObject::connectSlotsByName()."));
+    QCommandLineOption noAutoConnectionOption(QStringList{u"a"_s, u"no-autoconnection"_s});
+    noAutoConnectionOption.setDescription(u"Do not generate a call to QObject::connectSlotsByName()."_s);
     parser.addOption(noAutoConnectionOption);
 
-    QCommandLineOption noProtOption(QStringList() << QStringLiteral("p") << QStringLiteral("no-protection"));
-    noProtOption.setDescription(QStringLiteral("Disable header protection."));
+    QCommandLineOption noProtOption(QStringList{u"p"_s, u"no-protection"_s});
+    noProtOption.setDescription(u"Disable header protection."_s);
     parser.addOption(noProtOption);
 
-    QCommandLineOption noImplicitIncludesOption(QStringList() << QStringLiteral("n") << QStringLiteral("no-implicit-includes"));
-    noImplicitIncludesOption.setDescription(QStringLiteral("Disable generation of #include-directives."));
+    QCommandLineOption noImplicitIncludesOption(QStringList{u"n"_s, u"no-implicit-includes"_s});
+    noImplicitIncludesOption.setDescription(u"Disable generation of #include-directives."_s);
     parser.addOption(noImplicitIncludesOption);
 
-    QCommandLineOption postfixOption(QStringLiteral("postfix"));
-    postfixOption.setDescription(QStringLiteral("Postfix to add to all generated classnames."));
-    postfixOption.setValueName(QStringLiteral("postfix"));
+    QCommandLineOption postfixOption(u"postfix"_s);
+    postfixOption.setDescription(u"Postfix to add to all generated classnames."_s);
+    postfixOption.setValueName(u"postfix"_s);
     parser.addOption(postfixOption);
 
-    QCommandLineOption translateOption(QStringList() << QStringLiteral("tr") << QStringLiteral("translate"));
-    translateOption.setDescription(QStringLiteral("Use <function> for i18n."));
-    translateOption.setValueName(QStringLiteral("function"));
+    QCommandLineOption translateOption(QStringList{u"tr"_s, u"translate"_s});
+    translateOption.setDescription(u"Use <function> for i18n."_s);
+    translateOption.setValueName(u"function"_s);
     parser.addOption(translateOption);
 
-    QCommandLineOption includeOption(QStringList() << QStringLiteral("include"));
-    includeOption.setDescription(QStringLiteral("Add #include <include-file> to <file>."));
-    includeOption.setValueName(QStringLiteral("include-file"));
+    QCommandLineOption includeOption(QStringList{u"include"_s});
+    includeOption.setDescription(u"Add #include <include-file> to <file>."_s);
+    includeOption.setValueName(u"include-file"_s);
     parser.addOption(includeOption);
 
-    QCommandLineOption generatorOption(QStringList() << QStringLiteral("g") << QStringLiteral("generator"));
-    generatorOption.setDescription(QStringLiteral("Select generator."));
-    generatorOption.setValueName(QStringLiteral("python|cpp"));
+    QCommandLineOption generatorOption(QStringList{u"g"_s, u"generator"_s});
+    generatorOption.setDescription(u"Select generator."_s);
+    generatorOption.setValueName(u"python|cpp"_s);
     parser.addOption(generatorOption);
 
-    QCommandLineOption connectionsOption(QStringList{QStringLiteral("c"), QStringLiteral("connections")});
-    connectionsOption.setDescription(QStringLiteral("Connection syntax."));
-    connectionsOption.setValueName(QStringLiteral("pmf|string"));
+    QCommandLineOption connectionsOption(QStringList{u"c"_s, u"connections"_s});
+    connectionsOption.setDescription(u"Connection syntax."_s);
+    connectionsOption.setValueName(u"pmf|string"_s);
     parser.addOption(connectionsOption);
 
-    QCommandLineOption idBasedOption(QStringLiteral("idbased"));
-    idBasedOption.setDescription(QStringLiteral("Use id based function for i18n"));
+    QCommandLineOption idBasedOption(u"idbased"_s);
+    idBasedOption.setDescription(u"Use id based function for i18n"_s);
     parser.addOption(idBasedOption);
 
-    QCommandLineOption fromImportsOption(QStringLiteral("from-imports"));
-    fromImportsOption.setDescription(QStringLiteral("Python: generate imports relative to '.'"));
+    QCommandLineOption fromImportsOption(u"from-imports"_s);
+    fromImportsOption.setDescription(u"Python: generate imports relative to '.'"_s);
     parser.addOption(fromImportsOption);
 
     // FIXME Qt 7: Flip the default?
-    QCommandLineOption rcPrefixOption(QStringLiteral("rc-prefix"));
-    rcPrefixOption.setDescription(QStringLiteral("Python: Generate \"rc_file\" instead of \"file_rc\" import"));
+    QCommandLineOption rcPrefixOption(u"rc-prefix"_s);
+    rcPrefixOption.setDescription(uR"(Python: Generate "rc_file" instead of "file_rc" import)"_s);
     parser.addOption(rcPrefixOption);
 
     // FIXME Qt 7: Remove?
-    QCommandLineOption useStarImportsOption(QStringLiteral("star-imports"));
-    useStarImportsOption.setDescription(QStringLiteral("Python: Use * imports"));
+    QCommandLineOption useStarImportsOption(u"star-imports"_s);
+    useStarImportsOption.setDescription(u"Python: Use * imports"_s);
     parser.addOption(useStarImportsOption);
 
-    parser.addPositionalArgument(QStringLiteral("[uifile]"), QStringLiteral("Input file (*.ui), otherwise stdin."));
+    parser.addPositionalArgument(u"[uifile]"_s, u"Input file (*.ui), otherwise stdin."_s);
 
     parser.process(app);
 
@@ -109,8 +110,6 @@ int runUic(int argc, char *argv[])
     driver.option().headerProtection = !parser.isSet(noProtOption);
     driver.option().implicitIncludes = !parser.isSet(noImplicitIncludesOption);
     driver.option().idBased = parser.isSet(idBasedOption);
-    driver.option().fromImports = parser.isSet(fromImportsOption);
-    driver.option().useStarImports = parser.isSet(useStarImportsOption);
     driver.option().postfix = parser.value(postfixOption);
     driver.option().translateFunction = parser.value(translateOption);
     driver.option().includeFile = parser.value(includeOption);
@@ -122,8 +121,7 @@ int runUic(int argc, char *argv[])
             driver.option().forceStringConnectionSyntax = 1;
     }
 
-    if (parser.isSet(rcPrefixOption))
-        driver.option().rcPrefix = 1;
+    const QString inputFile = parser.positionalArguments().value(0);
 
     Language language = Language::Cpp;
     if (parser.isSet(generatorOption)) {
@@ -131,11 +129,14 @@ int runUic(int argc, char *argv[])
             language = Language::Python;
     }
     language::setLanguage(language);
+    if (language == Language::Python) {
+        driver.option().fromImports = parser.isSet(fromImportsOption);
+        driver.option().useStarImports = parser.isSet(useStarImportsOption);
+        if (parser.isSet(rcPrefixOption))
+            driver.option().rcPrefix = 1;
+    }
 
-    QString inputFile;
-    if (!parser.positionalArguments().isEmpty())
-        inputFile = parser.positionalArguments().at(0);
-    else // reading from stdin
+    if (inputFile.isEmpty()) // reading from stdin
         driver.option().headerProtection = false;
 
     if (driver.option().dependencies) {
