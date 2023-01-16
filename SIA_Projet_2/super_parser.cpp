@@ -189,12 +189,53 @@ void parseFiletest() {
     }
 }
 
+std::pair<std::vector<vertexData>, std::vector<int>> parseVertex(std::string filename) {
+    std::setlocale(LC_ALL, "en_US.UTF-8");
+    std::vector<vertexData> vvd;
+    std::vector<int> vindvec;
+    std::ifstream inputfile(filename.data());
+    bool amounts = true;
+    if (inputfile.good()) {
+        while (!inputfile.eof()) {
+            std::string buf;
+            std::getline(inputfile, buf);
+            std::vector<std::string> parsedLine = multiParser(buf, " \r\t\n");
+            if (parsedLine.size()==3) {
+                if (amounts){
+                    amounts = false;
+                    continue;
+                }
+                // case adding to VertexData vec
+                vertexData vd;
+                QVector3D pos = QVector3D(std::stof(parsedLine[0]),std::stof(parsedLine[1]),std::stof(parsedLine[2]));
+                vd.position = pos;
+                QVector2D tc = QVector2D(0.0,0.0);
+                vd.texCoord = tc;
+                vvd.push_back(vd);
+            }
+            else if (parsedLine.size()==4) {
+                // case adding indexes vec
+                vindvec.push_back(std::stof(parsedLine[1]));
+                vindvec.push_back(std::stof(parsedLine[2]));
+                vindvec.push_back(std::stof(parsedLine[3]));
+            }
+        }
+        inputfile.close();
+    }
+    std::pair<std::vector<vertexData>,std::vector<int>> p(vvd,vindvec);
+    return p;
+}
+
 int main(){
     //mapPrintTest();
     //printFiles();
     //parseDirectoryTest();
     //parseFiletest();
-    extractData("xsens_data/");
+    //extractData("xsens_data/");
+    std::pair<std::vector<vertexData>, std::vector<int>> p = parseVertex("skin.off");
+    for (int i : p.second) {
+        std::cout << i << std::endl;
+    }
     return EXIT_SUCCESS;
 }
 

@@ -7,6 +7,7 @@
 #include <map>
 #include <QQuaternion>
 #include <QVector3D>
+#include <QVector2D>
 #include <locale>
 #include <algorithm>
 
@@ -14,6 +15,11 @@ struct fileInfo {
     std::string filename;
     std::string jointCode;
     int id;
+};
+
+struct vertexData {
+    QVector3D position;
+    QVector2D texCoord;
 };
 
 class JointData {
@@ -58,3 +64,5 @@ void parseXsensFilename(std::string filename, JointData* jd);
 std::vector<JointData*> extractData(std::string directory);
 
 void parseFiletest();
+
+std::pair<std::vector<vertexData>, std::vector<int>> parseVertex(std::string filename);
