@@ -8,7 +8,7 @@
 #include <QtCore/qstringview.h>
 #include <QtCore/qutf8stringview.h>
 
-#ifdef __cpp_impl_three_way_comparison
+#ifdef __cpp_lib_three_way_comparison
 #include <compare>
 #endif
 #include <QtCore/q20type_traits.h>
