@@ -6394,7 +6394,6 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         addIconFiles(iconResourcePrefix() + QStringLiteral("toolbar-ext-v-"),
                      toolBarExtVSizes, sizeof(toolBarExtVSizes)/sizeof(toolBarExtVSizes[0]), icon);
         break;
-#endif // QT_NO_IMAGEFORMAT_PNG
     case SP_TabCloseButton:
         icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-16.png", QSize(16, 16),
                      QIcon::Normal, QIcon::Off);
@@ -6409,6 +6408,7 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-hover-32.png", QSize(32, 32),
                      QIcon::Active, QIcon::Off);
         break;
+#endif // QT_NO_IMAGEFORMAT_PNG
     default:
         icon.addPixmap(proxy()->standardPixmap(standardIcon, option, widget));
         break;
