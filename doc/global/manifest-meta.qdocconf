@@ -59,9 +59,7 @@ manifestmeta.android.names          =   "Qt3D/Qt 3D: Basic Shapes C++ Example" \
                                         "QtMultimedia/QML Video Shader Effects Example" \
                                         "QtNFC/Annotated URL Example" \
                                         "QtNFC/QML Poster Example" \
-                                        "QtOpenGL/2D Painting Example" \
                                         "QtOpenGL/Hello GLES3 Example" \
-                                        "QtOpenGL/Textures Example" \
                                         "QtPositioning/SatelliteInfo (C++/QML)" \
                                         "QtPositioning/Weather Info (C++/QML)" \
                                         "QtPurchasing/Qt Purchasing Examples - QtHangman" \
