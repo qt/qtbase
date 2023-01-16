@@ -1,39 +1,7 @@
-#include <iostream>
-#include <string>
-#include <filesystem>
-#include <vector>
-#include <typeinfo>
-#include <fstream>
-#include <map>
-#include <QQuaternion>
-#include <QVector3D>
-#include <locale>
-#include <algorithm>
+#include "super_parser.h"
 
 // To parse all Xsens data files, use the extractData function
 
-struct fileInfo {
-    std::string filename;
-    std::string jointCode;
-    int id;
-};
-
-class JointData {
-    public:
-        JointData(){};
-        ~JointData(){
-            rotations.clear();
-            accelerations.clear();
-            filenames.clear();
-        }
-
-    public:
-        std::string name;
-        std::vector<QQuaternion> rotations;
-        std::vector<QVector3D> accelerations;
-        std::vector<std::string> filenames;
-        
-};
 
 std::vector<std::string> multiParser(std::string line, std::string delimiters) {
     std::vector<std::string> tokens;
