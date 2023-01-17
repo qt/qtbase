@@ -7,6 +7,7 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
+#include <unordered_map>
 
 #include "../joint.h"
 #include "../super_parser.h"
@@ -21,19 +22,23 @@ public:
     void drawLineGeometry(QOpenGLShaderProgram *program);
     void drawSkinGeometry(QOpenGLShaderProgram *program);
     void updatePos(Joint *root);
+    void updateSkinPos(Joint *root);
 
     std::vector<Joint*> jntVec;
+    std::vector<std::unordered_map<std::string, float>> weightList;
+    std::vector<VertexData> skinPos;
     int lenPts;
     int lenIndexes;
 
 private:
     void getPos(Joint *jnt, std::vector<VertexData> *vec);
-    void setWeights(std::vector<VertexData> *vec);
+    void getSkinPos(Joint *jnt, std::vector<VertexData> &vec);
     void setIndexes(Joint *jnt, std::vector<GLushort> *vec);
     void setJointIndexes(Joint *jnt, int &vertexIndex);
     void initCubeGeometry();
     void initLineGeometry(Joint *root);
     void initSkinGeometry();
+    void setWeights(std::vector<VertexData> vec);
 
     QOpenGLBuffer arrayBuf;
     QOpenGLBuffer indexBuf;

@@ -88,6 +88,7 @@ pair<pair<Joint*, vector<Joint*>>, pair<int, double>> Joint::createFromFile(std:
 			string buf;	
 			std::getline(inputfile, buf);
 			ltrim(buf);
+			int size = buf.size();
 
 			//cout << buf << endl;
 
@@ -97,16 +98,19 @@ pair<pair<Joint*, vector<Joint*>>, pair<int, double>> Joint::createFromFile(std:
 			}
 
 			if (buf.find("ROOT") != string::npos) {
+				buf.erase(size-1,1);
 				name = buf.substr(5, string::npos);
 				isRoot = true;
 			}
 
 			if (buf.find("JOINT") != string::npos) {
+				buf.erase(size-1,1);
 				name = buf.substr(6, string::npos);
 				isRoot = false;
 			}
 
 			if (buf.find("End") != string::npos) {
+				buf.erase(size-1,1);
 				name = buf.substr(4, string::npos);
 				isRoot = false;
 			}

@@ -20,7 +20,7 @@ GeometryEngine::GeometryEngine(Joint *root, std::vector<Joint*> jntVec)
     // Initializes cube geometry and transfers it to VBOs
     //initCubeGeometry();
     // initLineGeometry(root);
-    // this->jntVec = jntVec;
+    this->jntVec = jntVec;
     initSkinGeometry();
 }
 
@@ -118,24 +118,53 @@ void GeometryEngine::getPos(Joint *jnt, std::vector<VertexData> *vec){
     }
 }
 
-void GeometryEngine::setWeights(std::vector<VertexData> *vec){
-    std::vector<std::vector<int>> weightList;
-    for(VertexData vData : *vec){
+void GeometryEngine::getSkinPos(Joint *jnt, std::vector<VertexData> &vec){
+    QMatrix4x4 transform = *(jnt->_transform);
+    Joint * parent = jnt->parent;
+    while (parent != nullptr){
+        transform = *(parent->_transform) * transform;
+        parent = parent->parent;
+    }
+
+    for (int i = 0; i < vec.size(); i++){
+        vec[i].position += weightList[i][jnt->_name] * transform * vec[i].position;
+    }
+
+    if(!(jnt->_children.empty())){
+        for(Joint *child : jnt->_children){
+            getSkinPos(child, vec);
+        }
+    }
+}
+
+void GeometryEngine::setWeights(std::vector<VertexData> vec){
+    std::vector<QVector3D> jntPos;
+    for (int i = 0; i < jntVec.size(); i++){
+        Joint* jnt = jntVec[i];
+        Joint * parent = jnt->parent;
+        QMatrix4x4 transform = *(jnt->_transform);
+        while (parent != nullptr){
+            transform = *(parent->_transform) * transform;
+            parent = parent->parent;
+        }
+        jntPos.push_back(QVector3D(transform.column(3).x(), transform.column(3).y(), transform.column(3).z()));
+    }
+    for(VertexData vData : vec){
         QVector3D vertexPos = vData.position;
-        int closestIndex = -1;
+        std::string closestJoint = "";
         double closestDist = 999999999.0;
-        std::vector<int> weights;
+        std::unordered_map<std::string, float> weights;
         for(int i = 0; i < jntVec.size(); i++){
             Joint* jnt = jntVec[i];
-            weights.push_back(0);
-            QVector3D jointPos = QVector3D(jnt->_transform->column(3).x(), jnt->_transform->column(3).y(), jnt->_transform->column(3).z());
+            weights[jnt->_name] = 0.0;
+            QVector3D jointPos = jntPos[i];
             double dist = (double) vertexPos.distanceToPoint(jointPos);
             if (dist < closestDist){
                 closestDist = dist;
-                closestIndex = i;
+                closestJoint = jnt->_name;
             }
         }
-        weights[closestIndex] = 1;
+        weights[closestJoint] = 1.0;
         weightList.push_back(weights);
     }
 }
@@ -198,7 +227,10 @@ void GeometryEngine::initSkinGeometry()
     int lenVec = p.first.size();
     int lenIdx = p.second.size();
 
+    skinPos = p.first;
+    
     VertexData *vertices = &(p.first[0]);
+    setWeights(p.first);
     GLushort *indices = &(p.second[0]);
 
     // Transfer vertex data to VBO 0
@@ -218,6 +250,18 @@ void GeometryEngine::updatePos(Joint *root){
     getPos(root, &vec);
     VertexData *vertices = &vec[0];
     int lenVec = vec.size();
+    // Transfer vertex data to VBO 0
+    arrayBuf.destroy();
+    arrayBuf.create(); 
+    arrayBuf.bind();
+    arrayBuf.allocate(vertices, lenVec * sizeof(VertexData));
+}
+
+void GeometryEngine::updateSkinPos(Joint *root){
+    getSkinPos(root, skinPos);
+    std::cout << skinPos[0].position.x() << std::endl;
+    VertexData *vertices = &skinPos[0];
+    int lenVec = skinPos.size();
     // Transfer vertex data to VBO 0
     arrayBuf.destroy();
     arrayBuf.create(); 
