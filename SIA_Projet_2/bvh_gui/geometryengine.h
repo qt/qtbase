@@ -27,6 +27,7 @@ public:
     std::vector<Joint*> jntVec;
     std::vector<std::unordered_map<std::string, float>> weightList;
     std::vector<VertexData> skinPos;
+    std::vector<VertexData> skinPosCopy;
     int lenPts;
     int lenIndexes;
 

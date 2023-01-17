@@ -228,6 +228,7 @@ void GeometryEngine::initSkinGeometry()
     int lenIdx = p.second.size();
 
     skinPos = p.first;
+    skinPosCopy = p.first;
     
     VertexData *vertices = &(p.first[0]);
     setWeights(p.first);
