@@ -663,8 +663,8 @@ protected:
         : data(d), iface(i)
     {}
 
-    Q_CORE_EXPORT QUntypedBindable(QObject* obj, const QMetaProperty &property, const QtPrivate::QBindableInterface *i);
-    Q_CORE_EXPORT QUntypedBindable(QObject* obj, const char* property, const QtPrivate::QBindableInterface *i);
+    Q_CORE_EXPORT explicit QUntypedBindable(QObject* obj, const QMetaProperty &property, const QtPrivate::QBindableInterface *i);
+    Q_CORE_EXPORT explicit QUntypedBindable(QObject* obj, const char* property, const QtPrivate::QBindableInterface *i);
 
 public:
     constexpr QUntypedBindable() = default;
@@ -802,10 +802,10 @@ public:
         }
     }
 
-    QBindable(QObject *obj, const QMetaProperty &property)
+    explicit QBindable(QObject *obj, const QMetaProperty &property)
         : QUntypedBindable(obj, property, &QtPrivate::PropertyAdaptorSlotObjectHelpers::iface<T>) {}
 
-    QBindable(QObject *obj, const char *property)
+    explicit QBindable(QObject *obj, const char *property)
         : QUntypedBindable(obj, property, &QtPrivate::PropertyAdaptorSlotObjectHelpers::iface<T>) {}
 
     QPropertyBinding<T> makeBinding(const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION) const
