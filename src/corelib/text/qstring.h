@@ -903,10 +903,24 @@ public:
 };
 
 //
+// QLatin1StringView inline members that require QUtf8StringView:
+//
+
+int QLatin1StringView::compare(QUtf8StringView other, Qt::CaseSensitivity cs) const noexcept
+{ return QtPrivate::compareStrings(*this, other, cs); }
+
+//
 // QLatin1StringView inline members that require QString:
 //
 
 QString QLatin1StringView::toString() const { return *this; }
+
+//
+// QStringView inline members that require QUtf8StringView:
+//
+
+int QStringView::compare(QUtf8StringView other, Qt::CaseSensitivity cs) const noexcept
+{ return QtPrivate::compareStrings(*this, other, cs); }
 
 //
 // QStringView inline members that require QString:
@@ -931,6 +945,17 @@ short QStringView::toShort(bool *ok, int base) const
 { return QString::toIntegral_helper<short>(*this, ok, base); }
 ushort QStringView::toUShort(bool *ok, int base) const
 { return QString::toIntegral_helper<ushort>(*this, ok, base); }
+
+//
+// QUtf8StringView inline members that require QStringView:
+//
+
+template <bool UseChar8T>
+int QBasicUtf8StringView<UseChar8T>::compare(QStringView other, Qt::CaseSensitivity cs) const noexcept
+{
+    return QtPrivate::compareStrings(*this, other, cs);
+}
+
 
 //
 // QUtf8StringView inline members that require QString:
