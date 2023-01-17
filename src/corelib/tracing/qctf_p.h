@@ -181,9 +181,9 @@ inline QByteArray toByteArrayFromFlags(QFlags<T> value)
 } // trace
 
 #define _DEFINE_EVENT(provider, event, metadata, size, varSize) \
-    static QCtfTracePointEvent _ctf_ ## event = QCtfTracePointEvent(_ctf_provider_ ## provider, QStringLiteral(QT_STRINGIFY(event)), QStringLiteral(metadata), size, varSize);
+    static QCtfTracePointEvent _ctf_ ## event = QCtfTracePointEvent(_ctf_provider_ ## provider, QStringLiteral(QT_STRINGIFY(event)), metadata, size, varSize);
 #define _DEFINE_METADATA(provider, name, metadata) \
-    static QCtfTraceMetadata _ctf_metadata_ ## name = QCtfTraceMetadata(_ctf_provider_ ## provider, QStringLiteral(QT_STRINGIFY(name)), QStringLiteral(metadata));
+    static QCtfTraceMetadata _ctf_metadata_ ## name = QCtfTraceMetadata(_ctf_provider_ ## provider, QStringLiteral(QT_STRINGIFY(name)), metadata);
 #define _DEFINE_TRACEPOINT_PROVIDER(provider) \
     static QCtfTracePointProvider _ctf_provider_ ## provider = QCtfTracePointProvider(QStringLiteral(QT_STRINGIFY(provider)));
 

@@ -31,7 +31,7 @@ static void writeEtwMacro(QTextStream &stream, const Tracepoint::Field &field)
         return;
     }
 
-    switch (field.backendType.backendType) {
+    switch (field.backendType) {
     case Tracepoint::Field::QtString:
         stream << "TraceLoggingCountedWideString(reinterpret_cast<LPCWSTR>("
                << name << ".utf16()), static_cast<ULONG>(" << name << ".size()), \""
@@ -66,7 +66,7 @@ static void writeEtwMacro(QTextStream &stream, const Tracepoint::Field &field)
         return;
     case Tracepoint::Field::EnumeratedType:
     case Tracepoint::Field::FlagType:
-        stream << "TraceLoggingString(trace_convert_" << typeToName(field.paramType) << "(" << name << ").toUtf8().constData(), \"" << name << "\")";
+        stream << "TraceLoggingString(trace_convert_" << typeToTypeName(field.paramType) << "(" << name << ").toUtf8().constData(), \"" << name << "\")";
         return;
     default:
         break;
@@ -177,7 +177,7 @@ static void writeWrapper(QTextStream &stream, const Provider &provider, const Tr
     // Convert all unknown types to QString's using QDebug.
     // Note the naming convention: it's field.name##Str
     for (const Tracepoint::Field &field : tracepoint.fields) {
-        if (field.backendType.backendType == Tracepoint::Field::Unknown) {
+        if (field.backendType == Tracepoint::Field::Unknown) {
             stream << "    const QString " << field.name << "Str = QDebug::toString(" << field.name
                    << ");\n";
         }
@@ -206,7 +206,7 @@ static void writeWrapper(QTextStream &stream, const Provider &provider, const Tr
 
 static void writeEnumConverter(QTextStream &stream, const TraceEnum &enumeration)
 {
-    stream << "inline QString trace_convert_" << typeToName(enumeration.name) << "(" << enumeration.name << " val)\n";
+    stream << "inline QString trace_convert_" << typeToTypeName(enumeration.name) << "(" << enumeration.name << " val)\n";
     stream << "{\n";
     for (const auto &v : enumeration.values) {
         if (v.range != 0) {
@@ -225,7 +225,7 @@ static void writeEnumConverter(QTextStream &stream, const TraceEnum &enumeration
 
 static void writeFlagConverter(QTextStream &stream, const TraceFlags &flag)
 {
-    stream << "inline QString trace_convert_" << typeToName(flag.name) << "(" << flag.name << " val)\n";
+    stream << "inline QString trace_convert_" << typeToTypeName(flag.name) << "(" << flag.name << " val)\n";
     stream << "{\n    QString ret;\n";
     for (const auto &v : flag.values) {
         if (v.value == 0) {

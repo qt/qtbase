@@ -15,7 +15,7 @@ enum ParamType {
     CTF
 };
 
-QString typeToName(const QString &name);
+QString typeToTypeName(const QString &type);
 QString includeGuard(const QString &filename);
 QString formatFunctionSignature(const QList<Tracepoint::Argument> &args);
 QString formatParameterList(const Provider &provider, const QList<Tracepoint::Argument> &args, const QList<Tracepoint::Field> &fields, ParamType type);

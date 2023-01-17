@@ -25,7 +25,7 @@ static void writeCtfMacro(QTextStream &stream, const Provider &provider, const T
         return;
     }
 
-    switch (field.backendType.backendType) {
+    switch (field.backendType) {
     case Tracepoint::Field::Sequence:
         stream << "ctf_sequence(" << paramType
             << ", " << name << ", " << name
@@ -66,7 +66,7 @@ static void writeCtfMacro(QTextStream &stream, const Provider &provider, const T
                << "ctf_integer(int, height, " << name << ".height()) ";
         return;
     case Tracepoint::Field::EnumeratedType:
-        stream << "ctf_enum(" << provider.name << ", " << typeToName(paramType) << ", int, " << name << ", " << name << ") ";
+        stream << "ctf_enum(" << provider.name << ", " << typeToTypeName(paramType) << ", int, " << name << ", " << name << ") ";
         return;
     case Tracepoint::Field::FlagType:
         stream << "ctf_sequence(const char , " << name << ", "
@@ -170,7 +170,7 @@ static void writeTracepoint(QTextStream &stream, const Provider &provider,
     for (int i = 0; i < tracepoint.args.size(); i++) {
         const auto &arg = tracepoint.args[i];
         const auto &field = tracepoint.fields[i];
-        if (field.backendType.backendType == Tracepoint::Field::FlagType)
+        if (field.backendType == Tracepoint::Field::FlagType)
             stream << comma << "QByteArray, " << arg.name;
         else
             stream << comma << arg.type << ", " << arg.name;
@@ -196,7 +196,7 @@ static void writeEnums(QTextStream &stream, const Provider &provider)
     for (const auto &e : provider.enumerations) {
         stream << "TRACEPOINT_ENUM(\n"
                << "    " << provider.name << ",\n"
-               << "    " << typeToName(e.name) << ",\n"
+               << "    " << typeToTypeName(e.name) << ",\n"
                << "    TP_ENUM_VALUES(\n";
         for (const auto &v : e.values) {
             if (v.range > 0)
@@ -213,7 +213,7 @@ static void writeFlags(QTextStream &stream, const Provider &provider)
     for (const auto &f : provider.flags) {
         stream << "TRACEPOINT_ENUM(\n"
                << "    " << provider.name << ",\n"
-               << "    " << typeToName(f.name) << ",\n"
+               << "    " << typeToTypeName(f.name) << ",\n"
                << "    TP_ENUM_VALUES(\n";
         for (const auto &v : f.values)
             stream << "        ctf_enum_value(\"" << v.name << "\", " << v.value << ")\n";
@@ -228,7 +228,7 @@ static void writeFlags(QTextStream &stream, const Provider &provider)
     stream << "QT_BEGIN_NAMESPACE\n";
     stream << "namespace QtPrivate {\n";
     for (const auto &f : provider.flags) {
-        stream << "inline QByteArray trace_convert_" << typeToName(f.name) << "(" << f.name << " val)\n";
+        stream << "inline QByteArray trace_convert_" << typeToTypeName(f.name) << "(" << f.name << " val)\n";
         stream << "{\n";
         stream << "    QByteArray ret;\n";
         stream << "    if (val == 0) { ret.append((char)0); return ret; }\n";
