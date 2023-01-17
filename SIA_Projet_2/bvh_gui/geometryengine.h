@@ -9,13 +9,7 @@
 #include <QOpenGLBuffer>
 
 #include "../joint.h"
-
-struct VertexData
-{
-    QVector3D position;
-    QVector2D texCoord;
-};
-
+#include "../super_parser.h"
 
 class GeometryEngine : protected QOpenGLFunctions
 {
@@ -25,6 +19,7 @@ public:
 
     void drawCubeGeometry(QOpenGLShaderProgram *program);
     void drawLineGeometry(QOpenGLShaderProgram *program);
+    void drawSkinGeometry(QOpenGLShaderProgram *program);
     void updatePos(Joint *root);
 
     int lenPts;
@@ -36,6 +31,7 @@ private:
     void setJointIndexes(Joint *jnt, int &vertexIndex);
     void initCubeGeometry();
     void initLineGeometry(Joint *root);
+    void initSkinGeometry();
 
     QOpenGLBuffer arrayBuf;
     QOpenGLBuffer indexBuf;

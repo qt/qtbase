@@ -179,21 +179,22 @@ void MainWidget::paintGL()
 
     // Draw cube geometry
     //geometries->drawCubeGeometry(&program);
-    geometries->drawLineGeometry(&program);
+    // geometries->drawLineGeometry(&program);
+    geometries->drawSkinGeometry(&program);
 }
 
 void MainWidget::motionEvent(QTimerEvent* e) {
     auto time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(time - startTime);
-    if (elapsed.count()/interval >= currFrame + 1){
-        std::cout << currFrame << std::endl;
-        root->animate(currFrame);
-        geometries->updatePos(root);
-        currFrame++;
-        update();
-        if (currFrame>=nFrames) {
-            currFrame = 0;
-            startTime = std::chrono::high_resolution_clock::now();
-        }
-    }
+    // if (elapsed.count()/interval >= currFrame + 1){
+    //     std::cout << currFrame << std::endl;
+    //     root->animate(currFrame);
+    //     geometries->updatePos(root);
+    //     currFrame++;
+    //     update();
+    //     if (currFrame>=nFrames) {
+    //         currFrame = 0;
+    //         startTime = std::chrono::high_resolution_clock::now();
+    //     }
+    // }
 }

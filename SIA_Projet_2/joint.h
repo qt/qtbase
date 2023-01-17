@@ -11,6 +11,8 @@
 #include <QMatrix4x4>
 #include <QQuaternion>
 
+#include "super_parser.h"
+
 class AnimCurve {
 public :
 	AnimCurve() {};

@@ -32,22 +32,6 @@ vector<double> getValuesFromLine(string line, char delimiter) {
 	return values;
 }
 
-vector<string> getChannels(string line, char delimiter) {
-	vector<string> chans;
-	while (line.find(delimiter)!=string::npos) {
-		size_t index = line.find(delimiter);
-		chans.push_back(line.substr(0,index));
-		line.erase(0,index+1);
-	}
-	int size = line.size();
-	if (size>0) {
-		// erase \r
-		line.erase(size-1,1);
-		chans.push_back(line);
-	}
-	return chans;
-}
-
 vector<vector<double>> reverse2DVec(vector<vector<double>> v) {
 	vector<vector<double>> v2;
 	int lenfirst = v[0].size();

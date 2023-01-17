@@ -1,3 +1,6 @@
+#ifndef SUPERPARSER_H
+#define SUPERPARSER_H
+
 #include <iostream>
 #include <string>
 #include <filesystem>
@@ -17,7 +20,7 @@ struct fileInfo {
     int id;
 };
 
-struct vertexData {
+struct VertexData {
     QVector3D position;
     QVector2D texCoord;
 };
@@ -65,4 +68,6 @@ std::vector<JointData*> extractData(std::string directory);
 
 void parseFiletest();
 
-std::pair<std::vector<vertexData>, std::vector<int>> parseVertex(std::string filename);
+std::pair<std::vector<VertexData>, std::vector<unsigned short>> parseVertex(std::string filename);
+
+#endif

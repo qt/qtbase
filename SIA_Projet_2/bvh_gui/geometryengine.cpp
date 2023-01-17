@@ -19,7 +19,8 @@ GeometryEngine::GeometryEngine(Joint *root)
 
     // Initializes cube geometry and transfers it to VBOs
     //initCubeGeometry();
-    initLineGeometry(root);
+    // initLineGeometry(root);
+    initSkinGeometry();
 }
 
 GeometryEngine::~GeometryEngine()
@@ -167,6 +168,28 @@ void GeometryEngine::initLineGeometry(Joint *root)
     lenIndexes = lenIdx;
 }
 
+void GeometryEngine::initSkinGeometry()
+{
+    std::string filename = "../skin.off";
+    std::pair<std::vector<VertexData>, std::vector<unsigned short>> p = parseVertex(filename);
+    int lenVec = p.first.size();
+    int lenIdx = p.second.size();
+
+    VertexData *vertices = &(p.first[0]);
+    GLushort *indices = &(p.second[0]);
+
+    // Transfer vertex data to VBO 0
+    arrayBuf.bind();
+    arrayBuf.allocate(vertices, lenVec * sizeof(VertexData));
+
+    // Transfer index data to VBO 1
+    indexBuf.bind();
+    indexBuf.allocate(indices, lenIdx * sizeof(GLushort));
+
+    lenPts = lenVec;
+    lenIndexes = lenIdx;
+}
+
 void GeometryEngine::updatePos(Joint *root){
     std::vector<VertexData> vec; 
     getPos(root, &vec);
@@ -231,4 +254,29 @@ void GeometryEngine::drawLineGeometry(QOpenGLShaderProgram *program)
 
     // Draw cube geometry using indices from VBO 1
     glDrawElements(GL_LINES, lenIndexes, GL_UNSIGNED_SHORT, nullptr);
+}
+
+void GeometryEngine::drawSkinGeometry(QOpenGLShaderProgram *program){
+    // Tell OpenGL which VBOs to use
+    arrayBuf.bind();
+    indexBuf.bind();
+
+    // Offset for position
+    quintptr offset = 0;
+
+    // Tell OpenGL programmable pipeline how to locate vertex position data
+    int vertexLocation = program->attributeLocation("a_position");
+    program->enableAttributeArray(vertexLocation);
+    program->setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+
+    // Offset for texture coordinate
+    offset += sizeof(QVector3D);
+
+    // Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
+    int texcoordLocation = program->attributeLocation("a_texcoord");
+    program->enableAttributeArray(texcoordLocation);
+    program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
+
+    // Draw cube geometry using indices from VBO 1
+    glDrawElements(GL_TRIANGLES, lenIndexes, GL_UNSIGNED_SHORT, nullptr);
 }

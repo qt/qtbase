@@ -64,7 +64,10 @@ std::vector<std::string> getChannels(std::string line, char delimiter) {
 		chans.push_back(line.substr(0,index));
 		line.erase(0,index+1);
 	}
-	if (line.size()>0) {
+    int size = line.size();
+	if (size>0) {
+		// erase \r
+		line.erase(size-1,1);
 		chans.push_back(line);
 	}
 	return chans;
@@ -189,10 +192,10 @@ void parseFiletest() {
     }
 }
 
-std::pair<std::vector<vertexData>, std::vector<int>> parseVertex(std::string filename) {
+std::pair<std::vector<VertexData>, std::vector<unsigned short>> parseVertex(std::string filename) {
     std::setlocale(LC_ALL, "en_US.UTF-8");
-    std::vector<vertexData> vvd;
-    std::vector<int> vindvec;
+    std::vector<VertexData> vvd;
+    std::vector<unsigned short> vindvec;
     std::ifstream inputfile(filename.data());
     bool amounts = true;
     if (inputfile.good()) {
@@ -206,7 +209,7 @@ std::pair<std::vector<vertexData>, std::vector<int>> parseVertex(std::string fil
                     continue;
                 }
                 // case adding to VertexData vec
-                vertexData vd;
+                VertexData vd;
                 QVector3D pos = QVector3D(std::stof(parsedLine[0]),std::stof(parsedLine[1]),std::stof(parsedLine[2]));
                 vd.position = pos;
                 QVector2D tc = QVector2D(0.0,0.0);
@@ -222,21 +225,19 @@ std::pair<std::vector<vertexData>, std::vector<int>> parseVertex(std::string fil
         }
         inputfile.close();
     }
-    std::pair<std::vector<vertexData>,std::vector<int>> p(vvd,vindvec);
+    std::pair<std::vector<VertexData>,std::vector<unsigned short>> p(vvd,vindvec);
     return p;
 }
 
-int main(){
-    //mapPrintTest();
-    //printFiles();
-    //parseDirectoryTest();
-    //parseFiletest();
-    //extractData("xsens_data/");
-    std::pair<std::vector<vertexData>, std::vector<int>> p = parseVertex("skin.off");
-    for (int i : p.second) {
-        std::cout << i << std::endl;
-    }
-    return EXIT_SUCCESS;
-}
-
-
+// int main(){
+//     //mapPrintTest();
+//     //printFiles();
+//     //parseDirectoryTest();
+//     //parseFiletest();
+//     //extractData("xsens_data/");
+//     std::pair<std::vector<VertexData>, std::vector<unsigned short>> p = parseVertex("skin.off");
+//     for (int i : p.second) {
+//         std::cout << i << std::endl;
+//     }
+//     return EXIT_SUCCESS;
+// }
