@@ -3907,6 +3907,8 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     Returns \c true if string \a s1 is equal to string \a s2; otherwise
     returns \c false.
 
+    \include qstring.cpp compare-isNull-vs-isEmpty
+
     \sa {Comparing Strings}
 */
 
@@ -6294,6 +6296,11 @@ QString& QString::fill(QChar ch, qsizetype size)
     localeAwareCompare().
 
     \snippet qstring/main.cpp 16
+
+//! [compare-isNull-vs-isEmpty]
+    \note This function treats null strings the same as empty strings,
+    for more details see \l {Distinction Between Null and Empty Strings}.
+//! [compare-isNull-vs-isEmpty]
 
     \sa operator==(), operator<(), operator>(), {Comparing Strings}
 */
