@@ -1189,7 +1189,7 @@ QString QLatin1StringView::toString() const { return *this; }
 //
 
 QString QStringView::toString() const
-{ return Q_ASSERT(size() == size()), QString(data(), size()); }
+{ return QString(data(), size()); }
 
 qint64 QStringView::toLongLong(bool *ok, int base) const
 { return QString::toIntegral_helper<qint64>(*this, ok, base); }
