@@ -11,6 +11,7 @@
 #include "private/qstringconverter_p.h"
 #include "private/qcborvalue_p.h"
 #include "private/qnumeric_p.h"
+#include <private/qtools_p.h>
 
 //#define PARSER_DEBUG
 #ifdef PARSER_DEBUG
@@ -27,6 +28,8 @@ Q_CONSTINIT static int indent = 0;
 static const int nestingLimit = 1024;
 
 QT_BEGIN_NAMESPACE
+
+using namespace QtMiscUtils;
 
 // error strings for the JSON parser
 #define JSONERR_OK          QT_TRANSLATE_NOOP("QJsonParseError", "no error occurred")
@@ -693,14 +696,14 @@ bool Parser::parseNumber()
     if (json < end && *json == '0') {
         ++json;
     } else {
-        while (json < end && *json >= '0' && *json <= '9')
+        while (json < end && isAsciiDigit(*json))
             ++json;
     }
 
     // frac = decimal-point 1*DIGIT
     if (json < end && *json == '.') {
         ++json;
-        while (json < end && *json >= '0' && *json <= '9') {
+        while (json < end && isAsciiDigit(*json)) {
             isInt = isInt && *json == '0';
             ++json;
         }
@@ -712,7 +715,7 @@ bool Parser::parseNumber()
         ++json;
         if (json < end && (*json == '-' || *json == '+'))
             ++json;
-        while (json < end && *json >= '0' && *json <= '9')
+        while (json < end && isAsciiDigit(*json))
             ++json;
     }
 

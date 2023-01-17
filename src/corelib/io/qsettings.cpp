@@ -66,6 +66,7 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace QtMiscUtils;
 
 struct QConfFileCustomFormat
 {
@@ -515,8 +516,7 @@ void QSettingsPrivate::iniEscapedKey(const QString &key, QByteArray &result)
 
         if (ch == '/') {
             result += '\\';
-        } else if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9')
-                || ch == '_' || ch == '-' || ch == '.') {
+        } else if (isAsciiLetterOrNumber(ch) || ch == '_' || ch == '-' || ch == '.') {
             result += (char)ch;
         } else if (ch <= 0xFF) {
             result += '%';
@@ -608,10 +608,7 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result)
         if (ch == ';' || ch == ',' || ch == '=')
             needsQuotes = true;
 
-        if (escapeNextIfDigit
-                && ((ch >= '0' && ch <= '9')
-                    || (ch >= 'a' && ch <= 'f')
-                    || (ch >= 'A' && ch <= 'F'))) {
+        if (escapeNextIfDigit && isHexDigit(ch)) {
             result += "\\x" + QByteArray::number(ch, 16);
             continue;
         }
@@ -754,9 +751,9 @@ StNormal:
                     goto end;
 
                 ch = str.at(i);
-                if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'F') || (ch >= 'a' && ch <= 'f'))
+                if (isHexDigit(ch))
                     goto StHexEscape;
-            } else if (ch >= '0' && ch <= '7') {
+            } else if (isOctalDigit(ch)) {
                 escapeVal = ch - '0';
                 goto StOctEscape;
             } else if (ch == '\n' || ch == '\r') {

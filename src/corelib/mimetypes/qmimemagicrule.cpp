@@ -13,10 +13,12 @@
 #include <qendian.h>
 
 #include <private/qoffsetstringarray_p.h>
+#include <private/qtools_p.h>
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace QtMiscUtils;
 
 // in the same order as Type!
 static constexpr auto magicRuleTypes = qOffsetStringArray(
@@ -156,11 +158,11 @@ static inline QByteArray makePattern(const QByteArray &value)
                         continue;
                 }
                 *data++ = c;
-            } else if (*p >= '0' && *p <= '7') { // oct (\\7, or \\77, or \\377)
+            } else if (isOctalDigit(*p)) { // oct (\\7, or \\77, or \\377)
                 char c = *p - '0';
-                if (p + 1 < e && p[1] >= '0' && p[1] <= '7') {
+                if (p + 1 < e && isOctalDigit(p[1])) {
                     c = (c << 3) + *(++p) - '0';
-                    if (p + 1 < e && p[1] >= '0' && p[1] <= '7' && p[-1] <= '3')
+                    if (p + 1 < e && isOctalDigit(p[1]) && p[-1] <= '3')
                         c = (c << 3) + *(++p) - '0';
                 }
                 *data++ = c;

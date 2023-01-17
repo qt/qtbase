@@ -23,10 +23,13 @@
 #ifndef QT_NO_QOBJECT
 #include <private/qobject_p.h> // For QObjectPrivate::Connection
 #endif
+#include <private/qtools_p.h>
 #include <QtCore/qvarlengtharray.h>
 
 QT_BEGIN_NAMESPACE
 // ### TODO - QTBUG-87869: wrap in a proper Q_NAMESPACE and use scoped enums, to avoid name clashes
+
+using namespace QtMiscUtils;
 
 enum PropertyFlags {
     Invalid = 0x00000000,
@@ -265,11 +268,7 @@ enum { MetaObjectPrivateFieldCount = sizeof(QMetaObjectPrivate) / sizeof(int) };
 // mirrored in moc's utils.h
 static inline bool is_ident_char(char s)
 {
-    return ((s >= 'a' && s <= 'z')
-            || (s >= 'A' && s <= 'Z')
-            || (s >= '0' && s <= '9')
-            || s == '_'
-       );
+    return isAsciiLetterOrNumber(s) || s == '_';
 }
 
 static inline bool is_space(char s)

@@ -31,6 +31,13 @@ constexpr inline char toHexLower(uint value) noexcept
     return "0123456789abcdef"[value & 0xF];
 }
 
+[[nodiscard]] constexpr inline int isHexDigit(char32_t c) noexcept
+{
+    return (c >= '0' && c <= '9')
+           || (c >= 'A' && c <= 'F')
+           || (c >= 'a' && c <= 'f');
+}
+
 constexpr inline int fromHex(uint c) noexcept
 {
     return ((c >= '0') && (c <= '9')) ? int(c - '0') :
@@ -44,19 +51,44 @@ constexpr inline char toOct(uint value) noexcept
     return char('0' + (value & 0x7));
 }
 
+[[nodiscard]] constexpr inline int isOctalDigit(char32_t c) noexcept
+{
+    return c >= '0' && c <= '7';
+}
+
 constexpr inline int fromOct(uint c) noexcept
 {
-    return ((c >= '0') && (c <= '7')) ? int(c - '0') : -1;
+    return isOctalDigit(c) ? int(c - '0') : -1;
+}
+
+[[nodiscard]] constexpr inline bool isAsciiDigit(char32_t c) noexcept
+{
+    return c >= '0' && c <= '9';
+}
+
+constexpr inline bool isAsciiUpper(char32_t c) noexcept
+{
+    return c >= 'A' && c <= 'Z';
+}
+
+constexpr inline bool isAsciiLower(char32_t c) noexcept
+{
+    return c >= 'a' && c <= 'z';
+}
+
+constexpr inline bool isAsciiLetterOrNumber(char32_t c) noexcept
+{
+    return  isAsciiDigit(c) || isAsciiLower(c) || isAsciiUpper(c);
 }
 
 constexpr inline char toAsciiLower(char ch) noexcept
 {
-    return (ch >= 'A' && ch <= 'Z') ? ch - 'A' + 'a' : ch;
+    return isAsciiUpper(ch) ? ch - 'A' + 'a' : ch;
 }
 
 constexpr inline char toAsciiUpper(char ch) noexcept
 {
-    return (ch >= 'a' && ch <= 'z') ? ch - 'a' + 'A' : ch;
+    return isAsciiLower(ch) ? ch - 'a' + 'A' : ch;
 }
 
 constexpr inline int caseCompareAscii(char lhs, char rhs) noexcept
@@ -66,7 +98,12 @@ constexpr inline int caseCompareAscii(char lhs, char rhs) noexcept
     return int(uchar(lhsLower)) - int(uchar(rhsLower));
 }
 
-
+constexpr inline int qt_lencmp(qsizetype lhs, qsizetype rhs) noexcept
+{
+    return lhs == rhs ? 0 :
+           lhs >  rhs ? 1 :
+           /* else */  -1 ;
+}
 }
 
 // We typically need an extra bit for qNextPowerOfTwo when determining the next allocation size.

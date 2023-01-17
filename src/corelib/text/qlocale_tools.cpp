@@ -7,6 +7,7 @@
 #include "qlocale_p.h"
 #include "qstring.h"
 
+#include <private/qtools_p.h>
 #include <private/qnumeric_p.h>
 
 #include <ctype.h>
@@ -36,6 +37,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+using namespace QtMiscUtils;
 
 QT_CLOCALE_HOLDER
 
@@ -371,7 +374,7 @@ static auto scanPrefix(const char *p, const char *stop, int base)
         const char *next;
         int base;
     };
-    if (p < stop && *p >= '0' && *p <= '9') {
+    if (p < stop && isAsciiDigit(*p)) {
         if (*p == '0') {
             const char *x_or_b = p + 1;
             if (x_or_b < stop) {

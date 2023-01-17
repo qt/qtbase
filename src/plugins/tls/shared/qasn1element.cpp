@@ -8,10 +8,13 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qlist.h>
 #include <QDebug>
+#include <private/qtools_p.h>
 
 #include <limits>
 
 QT_BEGIN_NAMESPACE
+
+using namespace QtMiscUtils;
 
 typedef QMap<QByteArray, QByteArray> OidNameMap;
 static OidNameMap createOidMap()
@@ -213,11 +216,6 @@ QDateTime QAsn1Element::toDateTime() const
 
     // QDateTime::fromString is lenient and accepts +- signs in front
     // of the year; but ASN.1 doesn't allow them.
-    const auto isAsciiDigit = [](char c)
-    {
-        return c >= '0' && c <= '9';
-    };
-
     if (!isAsciiDigit(mValue[0]))
         return result;
 

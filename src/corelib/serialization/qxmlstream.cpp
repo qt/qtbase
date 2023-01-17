@@ -16,6 +16,7 @@
 #include <qcoreapplication.h>
 
 #include <private/qoffsetstringarray_p.h>
+#include <private/qtools_p.h>
 
 #include <iterator>
 #include "qxmlstream_p.h"
@@ -26,6 +27,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace QtPrivate;
 using namespace Qt::StringLiterals;
+using namespace QtMiscUtils;
 
 enum { StreamEOF = ~0U };
 
@@ -1731,9 +1733,7 @@ void QXmlStreamReaderPrivate::checkPublicLiteral(QStringView publicId)
             case '$': case '_': case '%': case '\'': case '\"':
                 continue;
             default:
-                if ((c >= 'a' && c <= 'z')
-                    || (c >= 'A' && c <= 'Z')
-                    || (c >= '0' && c <= '9'))
+                if (isAsciiLetterOrNumber(c))
                     continue;
             }
         break;

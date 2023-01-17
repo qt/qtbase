@@ -8,12 +8,15 @@
 #include "qtimezoneprivate_data_p.h"
 
 #include <private/qnumeric_p.h>
+#include <private/qtools_p.h>
 #include <qdatastream.h>
 #include <qdebug.h>
 
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
+
+using namespace QtMiscUtils;
 
 /*
     Static utilities for looking up Windows ID tables
@@ -597,12 +600,12 @@ bool QTimeZonePrivate::isValidId(const QByteArray &ianaId)
         } else if (ch == '-') {
             if (sectionLength == 0)
                 return false; // violates (4)
-        } else if (!(ch >= 'a' && ch <= 'z')
-                && !(ch >= 'A' && ch <= 'Z')
+        } else if (!isAsciiLower(ch)
+                && !isAsciiUpper(ch)
                 && !(ch == '_')
                 && !(ch == '.')
                    // Should ideally check these only happen as an offset:
-                && !(ch >= '0' && ch <= '9')
+                && !isAsciiDigit(ch)
                 && !(ch == '+')
                 && !(ch == ':')) {
             return false; // violates (2)
