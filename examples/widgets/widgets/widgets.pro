@@ -21,5 +21,4 @@ SUBDIRS       = analogclock \
                 tetrix \
                 tooltips \
                 validators \
-                wiggly \
                 windowflags

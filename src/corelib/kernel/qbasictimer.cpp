@@ -36,7 +36,7 @@ QT_BEGIN_NAMESPACE
     The \l{widgets/wiggly}{Wiggly} example uses QBasicTimer to repaint
     a widget at regular intervals.
 
-    \sa QTimer, QTimerEvent, QObject::timerEvent(), Timers, {Wiggly Example}
+    \sa QTimer, QTimerEvent, QObject::timerEvent(), Timers, {Affine Transformations}
 */
 
 
