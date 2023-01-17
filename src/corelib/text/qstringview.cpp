@@ -733,6 +733,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn int QStringView::compare(QUtf8StringView str, Qt::CaseSensitivity cs) const
+    \since 6.5
+
+    Returns an integer that compares to zero as this string view compares to the
+    string view \a str.
+
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
+
+    \sa operator==(), operator<(), operator>()
+*/
+
+/*!
     \fn int QStringView::compare(QLatin1StringView l1, Qt::CaseSensitivity cs) const
     \fn int QStringView::compare(QChar ch) const
     \fn int QStringView::compare(QChar ch, Qt::CaseSensitivity cs) const
@@ -1357,6 +1369,17 @@ or the character \a ch
     \since 6.0
 */
 
+/*!
+    \fn int QLatin1StringView::compare(QUtf8StringView str, Qt::CaseSensitivity cs) const
+    \since 6.5
+
+    Returns an integer that compares to zero as this string view compares to the
+    string view \a str.
+
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
+
+    \sa operator==(), operator<(), operator>()
+*/
 
 /*!
     \fn template <typename Needle, typename...Flags> auto QStringView::tokenize(Needle &&sep, Flags...flags) const

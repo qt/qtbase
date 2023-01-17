@@ -204,6 +204,11 @@
 */
 
 /*!
+    \fn QUtf8StringView::QUtf8StringView(const storage_type *d, qsizetype n)
+    \internal
+*/
+
+/*!
     \fn QUtf8StringView::QUtf8StringView(std::nullptr_t)
 
     Constructs a null string view.
@@ -653,6 +658,19 @@
 
     \sa sliced(), first(), last(), chopped(), truncate()
 */
+
+/*!
+    \fn int QUtf8StringView::compare(QLatin1StringView str, Qt::CaseSensitivity cs) const
+    \fn int QUtf8StringView::compare(QUtf8StringView str, Qt::CaseSensitivity cs) const
+    \fn int QUtf8StringView::compare(QStringView str, Qt::CaseSensitivity cs) const
+    \since 6.5
+
+    Returns an integer that compares to zero as this string view compares to the
+    string view \a str.
+
+    \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
+*/
+
 
 /*!
     \fn QUtf8StringView::isValidUtf8() const

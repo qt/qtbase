@@ -8,7 +8,6 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstringliteral.h>
 #include <QtCore/qstringalgorithms.h>
-#include <QtCore/qutf8stringview.h>
 
 #include <string>
 #include <QtCore/q20type_traits.h>
@@ -24,6 +23,9 @@ class QString;
 class QStringView;
 class QRegularExpression;
 class QRegularExpressionMatch;
+#ifdef Q_QDOC
+class QUtf8StringView;
+#endif
 
 namespace QtPrivate {
 template <typename Char>
@@ -261,12 +263,7 @@ public:
     [[nodiscard]] int compare(QStringView other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::compareStrings(*this, other, cs); }
     [[nodiscard]] inline int compare(QLatin1StringView other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
-    template<bool UseChar8T>
-    [[nodiscard]] int compare(QBasicUtf8StringView<UseChar8T> other,
-                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    {
-        return QtPrivate::compareStrings(*this, other, cs);
-    }
+    [[nodiscard]] inline int compare(QUtf8StringView other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
     [[nodiscard]] constexpr int compare(QChar c) const noexcept
     { return size() >= 1 ? compare_single_char_helper(*utf16() - c.unicode()) : -1; }
     [[nodiscard]] int compare(QChar c, Qt::CaseSensitivity cs) const noexcept
@@ -465,15 +462,6 @@ inline QStringView qToStringViewIgnoringNull(const QStringLike &s) noexcept
     return requiresSurrogates(c) ? R{{QChar::highSurrogate(c),
                                       QChar::lowSurrogate(c)}} :
                                    R{{char16_t(c), u'\0'}} ;
-}
-
-// QBasicUtf8StringView functions:
-
-template<bool UseChar8T>
-[[nodiscard]] int QBasicUtf8StringView<UseChar8T>::compare(QStringView other,
-                                                           Qt::CaseSensitivity cs) const noexcept
-{
-    return QtPrivate::compareStrings(*this, other, cs);
 }
 
 QT_END_NAMESPACE
