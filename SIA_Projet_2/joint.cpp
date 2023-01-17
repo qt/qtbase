@@ -61,13 +61,14 @@ size_t addValuesToJoints(Joint* jnt, vector<vector<double>> vec, size_t pos) {
 
 }
 
-pair<Joint*, pair<int, double>> Joint::createFromFile(std::string fileName) {
+pair<pair<Joint*, vector<Joint*>>, pair<int, double>> Joint::createFromFile(std::string fileName) {
 	Joint* root = NULL;
 	cout << "Loading from " << fileName << endl;
 	vector<vector<double>> motionValues;
 	ifstream inputfile(fileName.data());
 	int nFrames;
 	double frameInterval;
+	vector<Joint*> jntVec;
 	if(inputfile.good()) {
 
 		bool isRoot = false;
@@ -121,6 +122,7 @@ pair<Joint*, pair<int, double>> Joint::createFromFile(std::string fileName) {
 				index = buf.find(" ");
 				offZ = stod(buf.substr(0, index));
 				currentJoint = Joint::create(name, offX, offY, offZ, parent);
+				jntVec.push_back(currentJoint);
 				if(isRoot){
 					root = currentJoint;
 				}
@@ -179,7 +181,8 @@ pair<Joint*, pair<int, double>> Joint::createFromFile(std::string fileName) {
 	addValuesToJoints(root, motionValues, 0);
 	cout << "file loaded" << endl;
 	pair<int, double> p{nFrames, frameInterval};
-	pair<Joint*, pair<int, double>> data{root, p};
+	pair<Joint*, vector<Joint*>> p2{root, jntVec};
+	pair<pair<Joint*, vector<Joint*>>, pair<int, double>> data{p2, p};
 	return data;
 }
 

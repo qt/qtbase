@@ -8,7 +8,7 @@
 #include <QVector4D>
 
 //! [0]
-GeometryEngine::GeometryEngine(Joint *root)
+GeometryEngine::GeometryEngine(Joint *root, std::vector<Joint*> jntVec)
     : indexBuf(QOpenGLBuffer::IndexBuffer)
 {
     initializeOpenGLFunctions();
@@ -20,6 +20,7 @@ GeometryEngine::GeometryEngine(Joint *root)
     // Initializes cube geometry and transfers it to VBOs
     //initCubeGeometry();
     // initLineGeometry(root);
+    // this->jntVec = jntVec;
     initSkinGeometry();
 }
 
@@ -114,6 +115,28 @@ void GeometryEngine::getPos(Joint *jnt, std::vector<VertexData> *vec){
         for(Joint *child : jnt->_children){
             getPos(child, vec);
         }
+    }
+}
+
+void GeometryEngine::setWeights(std::vector<VertexData> *vec){
+    std::vector<std::vector<int>> weightList;
+    for(VertexData vData : *vec){
+        QVector3D vertexPos = vData.position;
+        int closestIndex = -1;
+        double closestDist = 999999999.0;
+        std::vector<int> weights;
+        for(int i = 0; i < jntVec.size(); i++){
+            Joint* jnt = jntVec[i];
+            weights.push_back(0);
+            QVector3D jointPos = QVector3D(jnt->_transform->column(3).x(), jnt->_transform->column(3).y(), jnt->_transform->column(3).z());
+            double dist = (double) vertexPos.distanceToPoint(jointPos);
+            if (dist < closestDist){
+                closestDist = dist;
+                closestIndex = i;
+            }
+        }
+        weights[closestIndex] = 1;
+        weightList.push_back(weights);
     }
 }
 

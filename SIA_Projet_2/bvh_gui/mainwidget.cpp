@@ -9,8 +9,9 @@
 #include <cmath>
 
 MainWidget::MainWidget(std::string filename) {
-    std::pair<Joint*, std::pair<int, double>> data = Joint::createFromFile(filename);
-    root = data.first;
+    std::pair<std::pair<Joint*, std::vector<Joint*>>, std::pair<int, double>> data = Joint::createFromFile(filename);
+    root = data.first.first;
+    jntVec = data.first.second;
     nFrames = data.second.first;
     interval = data.second.second;
     currFrame = 0;
@@ -95,10 +96,10 @@ void MainWidget::initializeGL()
     glEnable(GL_CULL_FACE);
 //! [2]
 
-    geometries = new GeometryEngine(root);
+    geometries = new GeometryEngine(root, jntVec);
 
     // Use QBasicTimer because its faster than QTimer
-    timer.start(12, this);
+    timer.start(0, this);
 }
 
 //! [3]
