@@ -61,7 +61,6 @@ static void writeWrapper(QTextStream &stream,
     const QString includeGuard = QStringLiteral("TP_%1_%2").arg(provider.name).arg(name).toUpper();
 
     /* prevents the redefinion of the inline wrapper functions
-     * once LTTNG recursively includes this header file
      */
     stream << "\n"
            << "#ifndef " << includeGuard << "\n"
