@@ -58,7 +58,7 @@ class Q_CORE_EXPORT QTimeZone
         Data() noexcept;
         Data(ShortData &&sd) : s(std::move(sd)) {}
         Data(const Data &other) noexcept;
-        Data(Data &&other) noexcept;
+        Data(Data &&other) noexcept : d(std::exchange(other.d, nullptr)) {}
         Data &operator=(const Data &other) noexcept;
         Data &operator=(Data &&other) noexcept { swap(other); return *this; }
         ~Data();
@@ -105,7 +105,7 @@ public:
 #endif // timezone backends
 
     QTimeZone(const QTimeZone &other) noexcept;
-    QTimeZone(QTimeZone &&other) noexcept;
+    QTimeZone(QTimeZone &&other) noexcept : d(std::move(other.d)) {}
     ~QTimeZone();
 
     QTimeZone &operator=(const QTimeZone &other);
