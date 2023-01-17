@@ -1326,15 +1326,6 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename T> QProperty<T> &QProperty<T>::operator=(const QPropertyBinding<T> &newBinding)
-
-  Associates the value of this property with the provided \a newBinding
-  expression and returns a reference to this property. The property's value is
-  set to the result of evaluating the new binding. Whenever a dependency of the
-  binding changes, the binding will be re-evaluated.
-*/
-
-/*!
   \fn template <typename T> QPropertyBinding<T> QProperty<T>::setBinding(const QPropertyBinding<T> &newBinding)
 
   Associates the value of this property with the provided \a newBinding
@@ -1996,26 +1987,6 @@ QString QPropertyBindingError::description() const
 
   Assigns \a newValue to the aliased property and returns a reference to this
   QPropertyAlias.
-*/
-
-/*!
-  \fn template <typename T> QPropertyAlias<T> &QPropertyAlias<T>::operator=(T &&newValue)
-  \overload
-
-  Assigns \a newValue to the aliased property and returns a reference to this
-  QPropertyAlias.
-*/
-
-/*!
-  \fn template <typename T> QPropertyAlias<T> &QPropertyAlias<T>::operator=(const QPropertyBinding<T> &newBinding)
-  \overload
-
-  Associates the value of the aliased property with the provided \a newBinding
-  expression and returns a reference to this alias. The property's value is set
-  to the result of evaluating the new binding. Whenever a dependency of the
-  binding changes, the binding will be re-evaluated, and the property's value
-  gets updated accordingly.
-
 */
 
 /*!
