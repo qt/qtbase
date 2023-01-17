@@ -215,7 +215,7 @@ public:
 
     struct Span { T *begin; T *end; };
 
-    void copyRanges(const std::initializer_list<Span> &ranges)
+    void copyRanges(std::initializer_list<Span> ranges)
     {
         auto it = this->begin();
         std::for_each(ranges.begin(), ranges.end(), [&it](const auto &span) {
