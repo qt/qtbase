@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <qtest.h>
 #include <QTest>
+#include <QtTest/qtesteventloop.h>
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkaccessmanager.h>

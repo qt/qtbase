@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include <QtWidgets>
+#include <QtOpenGL/QOpenGLShaderProgram>
 
 class GLWindow : public QWindow
 {

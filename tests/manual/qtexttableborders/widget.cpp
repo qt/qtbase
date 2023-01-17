@@ -68,7 +68,7 @@ void Widget::onPrint()
     QPrinter printer(QPrinter::HighResolution);
     QPrintDialog dlg(&printer, this);
     if (ui->htmlEdit->textCursor().hasSelection())
-        dlg.addEnabledOption(QAbstractPrintDialog::PrintSelection);
+        dlg.setOption(QAbstractPrintDialog::PrintSelection, true);
     dlg.setWindowTitle(tr("Print Document"));
     if (dlg.exec() == QDialog::Accepted) {
         ui->htmlEdit->print(&printer);
