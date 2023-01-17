@@ -86,6 +86,41 @@ void q_uninitialized_relocate_n(T* first, N n, T* out)
 
 QT_WARNING_POP
 
+/*!
+    \internal
+    Copies all elements, except the ones for which \a pred returns \c true, from
+    range [first, last), to the uninitialized memory buffer starting at \a out.
+
+    It's undefined behavior if \a out points into [first, last).
+
+    Returns a pointer one past the last copied element.
+
+    If an exception is thrown, all the already copied elements in the destination
+    buffer are destroyed.
+*/
+template <typename T, typename Predicate>
+T *q_uninitialized_remove_copy_if(T *first, T *last, T *out, Predicate &pred)
+{
+    static_assert(std::is_nothrow_destructible_v<T>,
+                  "This algorithm requires that T has a non-throwing destructor");
+    Q_ASSERT(!q_points_into_range(out, first, last));
+
+    T *dest_begin = out;
+    QT_TRY {
+        while (first != last) {
+            if (!pred(*first)) {
+                new (std::addressof(*out)) T(*first);
+                ++out;
+            }
+            ++first;
+        }
+    } QT_CATCH (...) {
+        std::destroy(std::reverse_iterator(out), std::reverse_iterator(dest_begin));
+        QT_RETHROW;
+    }
+    return out;
+}
+
 template<typename iterator, typename N>
 void q_relocate_overlap_n_left_move(iterator first, N n, iterator d_first)
 {

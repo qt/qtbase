@@ -406,9 +406,10 @@ public:
     template <typename Predicate>
     QString &removeIf(Predicate pred)
     {
-        QtPrivate::sequential_erase_if(*this, pred);
+        removeIf_helper(pred);
         return *this;
     }
+
     QString &replace(qsizetype i, qsizetype len, QChar after);
     QString &replace(qsizetype i, qsizetype len, const QChar *s, qsizetype slen);
     QString &replace(qsizetype i, qsizetype len, const QString &after);
@@ -865,10 +866,20 @@ private:
     static qsizetype toUcs4_helper(const char16_t *uc, qsizetype length, char32_t *out);
     static qlonglong toIntegral_helper(QStringView string, bool *ok, int base);
     static qulonglong toIntegral_helper(QStringView string, bool *ok, uint base);
+    template <typename Predicate>
+    qsizetype removeIf_helper(Predicate pred)
+    {
+        const qsizetype result = d->eraseIf(pred);
+        if (result > 0)
+            d.data()[d.size] = u'\0';
+        return result;
+    }
 
     friend class QStringView;
     friend class QByteArray;
     friend struct QAbstractConcatenable;
+    template <typename T> friend qsizetype erase(QString &s, const T &t);
+    template <typename Predicate> friend qsizetype erase_if(QString &s, Predicate pred);
 
     template <typename T> static
     T toIntegral_helper(QStringView string, bool *ok, int base)
@@ -1345,13 +1356,13 @@ QString QLatin1StringView::arg(Args &&...args) const
 template <typename T>
 qsizetype erase(QString &s, const T &t)
 {
-    return QtPrivate::sequential_erase(s, t);
+    return s.removeIf_helper([&t](const auto &e) { return t == e; });
 }
 
 template <typename Predicate>
 qsizetype erase_if(QString &s, Predicate pred)
 {
-    return QtPrivate::sequential_erase_if(s, pred);
+    return s.removeIf_helper(pred);
 }
 
 namespace Qt {

@@ -1096,7 +1096,15 @@ void tst_QByteArray::removeIf()
     QVERIFY(!a.isDetached());
 
     a = QByteArray("aBcAbC");
+    // Test when it's not shared
+    QVERIFY(a.isDetached());
     QCOMPARE(a.removeIf(removeA), QByteArray("BcbC"));
+
+    a = QByteArray("aBcAbC");
+    QByteArray b = a;
+    // Test when it's shared
+    QVERIFY(!b.isDetached());
+    QCOMPARE(b.removeIf(removeA), QByteArray("BcbC"));
 }
 
 void tst_QByteArray::erase()

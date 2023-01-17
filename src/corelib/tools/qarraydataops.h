@@ -35,6 +35,8 @@ protected:
 public:
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
 
+    using QArrayDataPointer<T>::QArrayDataPointer;
+
     void appendInitialize(qsizetype newSize) noexcept
     {
         Q_ASSERT(this->isMutable());
@@ -211,6 +213,40 @@ public:
         Q_ASSERT(this->isMutable());
         Q_ASSERT(this->size);
         --this->size;
+    }
+
+    template <typename Predicate>
+    qsizetype eraseIf(Predicate pred)
+    {
+        qsizetype result = 0;
+        if (this->size == 0)
+            return result;
+
+        if (!this->needsDetach()) {
+            auto end = this->end();
+            auto it = std::remove_if(this->begin(), end, pred);
+            if (it != end) {
+                result = std::distance(it, end);
+                erase(it, result);
+            }
+        } else {
+            const auto begin = this->begin();
+            const auto end = this->end();
+            auto it = std::find_if(begin, end, pred);
+            if (it == end)
+                return result;
+
+            QPodArrayOps<T> other{ Data::allocate(this->size), this->size };
+            Q_CHECK_PTR(other.data());
+            auto dest = other.begin();
+            // std::uninitialized_copy will fallback to ::memcpy/memmove()
+            dest = std::uninitialized_copy(begin, it, dest);
+            dest = q_uninitialized_remove_copy_if(std::next(it), end, dest, pred);
+            other.size = std::distance(other.data(), dest);
+            result = this->size - other.size;
+            this->swap(other);
+        }
+        return result;
     }
 
     struct Span { T *begin; T *end; };

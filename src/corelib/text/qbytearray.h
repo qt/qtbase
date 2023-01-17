@@ -247,7 +247,7 @@ public:
     template <typename Predicate>
     QByteArray &removeIf(Predicate pred)
     {
-        QtPrivate::sequential_erase_if(*this, pred);
+        removeIf_helper(pred);
         return *this;
     }
 
@@ -478,9 +478,20 @@ private:
     static QByteArray trimmed_helper(QByteArray &a);
     static QByteArray simplified_helper(const QByteArray &a);
     static QByteArray simplified_helper(QByteArray &a);
+    template <typename Predicate>
+    qsizetype removeIf_helper(Predicate pred)
+    {
+        const qsizetype result = d->eraseIf(pred);
+        if (result > 0)
+            d.data()[d.size] = '\0';
+        return result;
+    }
 
     friend class QString;
     friend Q_CORE_EXPORT QByteArray qUncompress(const uchar *data, qsizetype nbytes);
+
+    template <typename T> friend qsizetype erase(QByteArray &ba, const T &t);
+    template <typename Predicate> friend qsizetype erase_if(QByteArray &ba, Predicate pred);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QByteArray::Base64Options)
@@ -662,13 +673,13 @@ Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(const QByteArray::FromBase64Resu
 template <typename T>
 qsizetype erase(QByteArray &ba, const T &t)
 {
-    return QtPrivate::sequential_erase(ba, t);
+    return ba.removeIf_helper([&t](const auto &e) { return t == e; });
 }
 
 template <typename Predicate>
 qsizetype erase_if(QByteArray &ba, Predicate pred)
 {
-    return QtPrivate::sequential_erase_if(ba, pred);
+    return ba.removeIf_helper(pred);
 }
 
 //

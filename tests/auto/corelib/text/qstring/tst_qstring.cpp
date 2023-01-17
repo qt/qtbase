@@ -8136,17 +8136,36 @@ void tst_QString::chopped()
 
 void tst_QString::removeIf()
 {
+    const char str[] = "aABbcCDd";
     QString a;
 
     auto pred = [](const QChar &c) { return c.isLower(); };
-
     a.removeIf(pred);
     QVERIFY(a.isEmpty());
     QVERIFY(!a.isDetached());
 
-    a = "aABbcCDd";
+    // Test when the string is not shared
+    a = str;
+    QVERIFY(!a.data_ptr()->needsDetach());
     a.removeIf(pred);
     QCOMPARE(a, u"ABCD");
+
+    // Test when the string is shared
+    a = str;
+    QString b = a;
+    QVERIFY(a.data_ptr()->needsDetach());
+    a.removeIf(pred);
+    QCOMPARE(a, u"ABCD");
+    QCOMPARE(b, str);
+
+    auto removeA = [](const char c) { return c == 'a' || c == 'A'; };
+
+    a = "aBcAbCa"; // Not shared
+    QCOMPARE(a.removeIf(removeA), QString("BcbC"));
+
+    a = "aBcAbCa";
+    b = a; // Shared
+    QCOMPARE(a.removeIf(removeA), QString("BcbC"));
 }
 
 // QString's collation order is only supported during the lifetime as QCoreApplication
