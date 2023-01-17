@@ -178,7 +178,6 @@ manifestmeta.ios.names              =  "QtCore/Contiguous Cache Example" \
                                        "QtWidgets/Sliders Example" \
                                        "QtWidgets/Validators Example" \
                                        "QtWidgets/Window Flags Example" \
-                                       "QtWidgets/Wiggly Example" \
                                        "QtQuick/Qt Quick Examples - Animation" \
                                        "QtQuick/Qt Quick Examples - Canvas" \
                                        "QtQuick/Qt Quick Examples - Drag and Drop" \
