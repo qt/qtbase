@@ -178,6 +178,7 @@ public:
 
 #ifdef Q_QDOC
     QBasicUtf8StringView(const QByteArray &str) noexcept;
+    constexpr QBasicUtf8StringView(const storage_type *d, qsizetype n) noexcept {};
 #else
     template <typename String, if_compatible_qstring_like<String> = true>
     QBasicUtf8StringView(const String &str) noexcept
@@ -188,7 +189,7 @@ public:
     constexpr QBasicUtf8StringView(const Container &c) noexcept
         : QBasicUtf8StringView(std::data(c), lengthHelperContainer(c)) {}
 
-#ifdef __cpp_char8_t
+#if defined(__cpp_char8_t) && !defined(Q_QDOC)
     constexpr QBasicUtf8StringView(QBasicUtf8StringView<!UseChar8T> other)
         : QBasicUtf8StringView(other.data(), other.size()) {}
 #endif
@@ -201,7 +202,7 @@ public:
 
     [[nodiscard]] constexpr qsizetype size() const noexcept { return m_size; }
     [[nodiscard]] const_pointer data() const noexcept { return reinterpret_cast<const_pointer>(m_data); }
-#if defined(__cpp_char8_t) || defined(Q_QDOC)
+#ifdef __cpp_char8_t
     [[nodiscard]] const char8_t *utf8() const noexcept { return reinterpret_cast<const char8_t*>(m_data); }
 #endif
 
@@ -338,11 +339,11 @@ private:
 #else
 template <bool UseChar8T>
 Q_DECLARE_TYPEINFO_BODY(QBasicUtf8StringView<UseChar8T>, Q_PRIMITIVE_TYPE);
-#endif // Q_QDOC
 
 template <typename QStringLike, std::enable_if_t<std::is_same_v<QStringLike, QByteArray>, bool> = true>
 [[nodiscard]] inline q_no_char8_t::QUtf8StringView qToUtf8StringViewIgnoringNull(const QStringLike &s) noexcept
 { return q_no_char8_t::QUtf8StringView(s.data(), s.size()); }
+#endif // Q_QDOC
 
 QT_END_NAMESPACE
 
