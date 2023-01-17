@@ -36,7 +36,7 @@ static_assert(sizeof(QHttp1Configuration) == sizeof(void*),
     Default constructs a QHttp1Configuration object.
 */
 QHttp1Configuration::QHttp1Configuration()
-    : data{6, {}} // QHttpNetworkConnectionPrivate::defaultHttpChannelCount
+    : u(ShortData{6, {}}) // QHttpNetworkConnectionPrivate::defaultHttpChannelCount
 {
 }
 
@@ -91,7 +91,7 @@ void QHttp1Configuration::setNumberOfConnectionsPerHost(qsizetype number)
     auto n = qt_saturate<std::uint8_t>(number);
     if (n == 0)
         return;
-    data.numConnectionsPerHost = n;
+    u.data.numConnectionsPerHost = n;
 }
 
 /*!
@@ -102,7 +102,7 @@ void QHttp1Configuration::setNumberOfConnectionsPerHost(qsizetype number)
 */
 qsizetype QHttp1Configuration::numberOfConnectionsPerHost() const
 {
-    return data.numConnectionsPerHost;
+    return u.data.numConnectionsPerHost;
 }
 
 /*!
@@ -140,7 +140,7 @@ qsizetype QHttp1Configuration::numberOfConnectionsPerHost() const
 */
 bool QHttp1Configuration::equals(const QHttp1Configuration &other) const noexcept
 {
-    return data.numConnectionsPerHost == other.data.numConnectionsPerHost;
+    return u.data.numConnectionsPerHost == other.u.data.numConnectionsPerHost;
 }
 
 /*!
@@ -148,7 +148,7 @@ bool QHttp1Configuration::equals(const QHttp1Configuration &other) const noexcep
 */
 size_t QHttp1Configuration::hash(size_t seed) const noexcept
 {
-    return qHash(data.numConnectionsPerHost, seed);
+    return qHash(u.data.numConnectionsPerHost, seed);
 }
 
 QT_END_NAMESPACE
