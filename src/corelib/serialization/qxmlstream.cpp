@@ -463,7 +463,7 @@ QXmlStreamReader::QXmlStreamReader(QAnyStringView data)
     Creates a new stream reader that reads from \a data.
     Used by the weak constructor taking a QByteArray.
 */
-QXmlStreamReader::QXmlStreamReader(const QByteArray &data, PrivateConsructorTag)
+QXmlStreamReader::QXmlStreamReader(const QByteArray &data, PrivateConstructorTag)
     : d_ptr(new QXmlStreamReaderPrivate(this))
 {
     Q_D(QXmlStreamReader);
