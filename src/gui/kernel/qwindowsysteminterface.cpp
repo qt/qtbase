@@ -98,7 +98,12 @@ bool QWindowSystemHelper<QWindowSystemInterface::SynchronousDelivery>::handleEve
     if (QThread::currentThread() == QGuiApplication::instance()->thread()) {
         EventType event(args...);
         // Process the event immediately on the Gui thread and return the accepted state
-        QGuiApplicationPrivate::processWindowSystemEvent(&event);
+        if (QWindowSystemInterfacePrivate::eventHandler) {
+            if (!QWindowSystemInterfacePrivate::eventHandler->sendEvent(&event))
+                return false;
+        } else {
+            QGuiApplicationPrivate::processWindowSystemEvent(&event);
+        }
         return event.eventAccepted;
     } else {
         // Post the event on the Qt main thread queue and flush the queue.
