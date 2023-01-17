@@ -7650,66 +7650,6 @@ void QGraphicsObject::updateMicroFocus()
     QGraphicsItem::updateMicroFocus();
 }
 
-void QGraphicsItemPrivate::children_append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item)
-{
-    if (item) {
-        QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(list->object);
-        if (QGraphicsItemPrivate::get(graphicsObject)->sendParentChangeNotification) {
-            item->setParentItem(graphicsObject);
-        } else {
-            QGraphicsItemPrivate::get(item)->setParentItemHelper(graphicsObject, nullptr, nullptr);
-        }
-    }
-}
-
-int QGraphicsItemPrivate::children_count(QDeclarativeListProperty<QGraphicsObject> *list)
-{
-    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(list->object));
-    return d->children.size();
-}
-
-QGraphicsObject *QGraphicsItemPrivate::children_at(QDeclarativeListProperty<QGraphicsObject> *list, int index)
-{
-    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(list->object));
-    if (index >= 0 && index < d->children.size())
-        return d->children.at(index)->toGraphicsObject();
-    else
-        return nullptr;
-}
-
-void QGraphicsItemPrivate::children_clear(QDeclarativeListProperty<QGraphicsObject> *list)
-{
-    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(list->object));
-    int childCount = d->children.size();
-    if (d->sendParentChangeNotification) {
-        for (int index = 0; index < childCount; index++)
-            d->children.at(0)->setParentItem(nullptr);
-    } else {
-        for (int index = 0; index < childCount; index++)
-            QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(nullptr, nullptr, nullptr);
-    }
-}
-
-/*!
-    Returns a list of this item's children.
-
-    The items are sorted by stacking order. This takes into account both the
-    items' insertion order and their Z-values.
-
-*/
-QDeclarativeListProperty<QGraphicsObject> QGraphicsItemPrivate::childrenList()
-{
-    Q_Q(QGraphicsItem);
-    if (isObject) {
-        QGraphicsObject *that = static_cast<QGraphicsObject *>(q);
-        return QDeclarativeListProperty<QGraphicsObject>(that, &children, children_append,
-                                                         children_count, children_at, children_clear);
-    } else {
-        //QGraphicsItem is not supported for this property
-        return QDeclarativeListProperty<QGraphicsObject>();
-    }
-}
-
 /*!
   \internal
   Returns the width of the item

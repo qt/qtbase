@@ -500,13 +500,10 @@ class Q_WIDGETS_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
 #if QT_CONFIG(graphicseffect)
     Q_PROPERTY(QGraphicsEffect *effect READ graphicsEffect WRITE setGraphicsEffect)
 #endif
-    Q_PRIVATE_PROPERTY(QGraphicsItem::d_func(), QDeclarativeListProperty<QGraphicsObject> children
-                       READ childrenList DESIGNABLE false NOTIFY childrenChanged)
     Q_PRIVATE_PROPERTY(QGraphicsItem::d_func(), qreal width READ width WRITE setWidth
                        NOTIFY widthChanged RESET resetWidth FINAL)
     Q_PRIVATE_PROPERTY(QGraphicsItem::d_func(), qreal height READ height WRITE setHeight
                        NOTIFY heightChanged RESET resetHeight FINAL)
-    Q_CLASSINFO("DefaultProperty", "children")
     Q_INTERFACES(QGraphicsItem)
 public:
     explicit QGraphicsObject(QGraphicsItem *parent = nullptr);
