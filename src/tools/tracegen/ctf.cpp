@@ -88,17 +88,94 @@ static void writeWrapper(QTextStream &stream,
            << "#endif // " << includeGuard << "\n\n";
 }
 
+
+static void writeMetadataGenerators(QTextStream &stream)
+{
+    stream << R"CPP(
+template <typename T>
+inline QString integerToMetadata(const QString &name)
+{
+    QString ret;
+    if (!std::is_signed<T>().value)
+        ret += QLatin1Char('u');
+    if (sizeof(T) == 8)
+        ret += QStringLiteral("int64_t ");
+    else if (sizeof(T) == 4)
+        ret += QStringLiteral("int32_t ");
+    else if (sizeof(T) == 2)
+        ret += QStringLiteral("int16_t ");
+    else if (sizeof(T) == 1)
+        ret += QStringLiteral("int8_t ");
+    ret += name + QLatin1Char(';');
+    return ret;
+}
+
+template <typename T>
+inline QString integerArrayToMetadata(const QString &size, const QString &name)
+{
+    QString ret;
+    if (!std::is_signed<T>().value)
+        ret += QLatin1Char('u');
+    if (sizeof(T) == 8)
+        ret += QStringLiteral("int64_t ");
+    else if (sizeof(T) == 4)
+        ret += QStringLiteral("int32_t ");
+    else if (sizeof(T) == 2)
+        ret += QStringLiteral("int16_t ");
+    else if (sizeof(T) == 1)
+        ret += QStringLiteral("int8_t ");
+    ret += name + QLatin1Char('[') + size + QStringLiteral("];");
+    return ret;
+}
+
+template <typename T>
+inline QString floatToMetadata(const QString &name)
+{
+    QString ret;
+    if (sizeof(T) == 8)
+        ret += QStringLiteral("double ");
+    else if (sizeof(T) == 4)
+        ret += QStringLiteral("float ");
+    ret += name + QLatin1Char(';');
+    return ret;
+}
+
+template <typename T>
+inline QString floatArrayToMetadata(const QString &size, const QString &name)
+{
+    QString ret;
+    if (sizeof(T) == 8)
+        ret += QStringLiteral("double ");
+    else if (sizeof(T) == 4)
+        ret += QStringLiteral("float ");
+    ret += name + QLatin1Char('[') + size + QStringLiteral("];");
+    return ret + QLatin1Char(';');
+}
+
+inline QString pointerToMetadata(const QString &name)
+{
+    QString ret;
+    if (QT_POINTER_SIZE == 8)
+        ret += QStringLiteral("intptr64_t ");
+    else if (QT_POINTER_SIZE == 4)
+        ret += QStringLiteral("intptr32_t ");
+    ret += name + QLatin1Char(';');
+    return ret;
+}
+
+)CPP";
+}
+
 static void writeTracepoint(QTextStream &stream,
                             const Tracepoint &tracepoint, const QString &providerName)
 {
     stream  << "TRACEPOINT_EVENT(\n"
             << "    " << providerName << ",\n"
             << "    " << tracepoint.name << ",\n";
-    stream << "\"";
 
     const auto checkUnknownArgs = [](const Tracepoint &tracepoint) {
         for (auto &field : tracepoint.fields) {
-            if (field.backendType.backendType == Tracepoint::Field::Unknown)
+            if (field.backendType == Tracepoint::Field::Unknown)
                 return true;
         }
         return false;
@@ -110,114 +187,105 @@ static void writeTracepoint(QTextStream &stream,
             ret = type.left(type.length() - 1).simplified();
         if (ret.startsWith(QStringLiteral("const")))
             ret = ret.right(ret.length() - 6).simplified();
-        return typeToName(ret);
+        return typeToTypeName(ret);
     };
-    int eventSize = 0;
+    QString eventSize;
     bool variableSize = false;
-    if (!checkUnknownArgs(tracepoint)) {
+    const bool emptyMetadata = checkUnknownArgs(tracepoint) || tracepoint.args.size() == 0;
+    if (!emptyMetadata) {
         for (int i = 0; i < tracepoint.args.size(); i++) {
             auto &arg = tracepoint.args[i];
             auto &field = tracepoint.fields[i];
             if (i > 0) {
-                stream << " \\n\\\n";
-                stream << "        ";
+                stream << " + QStringLiteral(\"\\n\\\n        \") + ";
+                eventSize += QStringLiteral(" + ");
             }
             const bool array = field.arrayLen > 0;
-            switch (field.backendType.backendType) {
+            switch (field.backendType) {
             case Tracepoint::Field::Boolean: {
-                stream << "Boolean " << arg.name << ";";
-                eventSize += 8;
+                stream << "QStringLiteral(\"Boolean " << arg.name << ";\")";
+                eventSize += QStringLiteral("sizeof(bool)");
             } break;
             case Tracepoint::Field::Integer: {
-                if (!field.backendType.isSigned)
-                    stream << "u";
-                stream << "int" << field.backendType.bits << "_t ";
+                if (array) {
+                    stream << "integerArrayToMetadata<" << formatType(arg.type)
+                           << ">(QStringLiteral(\"" << field.arrayLen << "\"), QStringLiteral(\""
+                           << arg.name << "\"))";
+                } else {
+                    stream << "integerToMetadata<" << formatType(arg.type) << ">(QStringLiteral(\""
+                           << arg.name << "\"))";
+                }
+                eventSize += QStringLiteral("sizeof(") + formatType(arg.type) + QStringLiteral(")");
                 if (array)
-                    stream << arg.name << "[" << field.arrayLen << "];";
-                else
-                    stream << arg.name << ";";
-                eventSize += field.backendType.bits * qMax(1, field.arrayLen);
+                    eventSize += QStringLiteral(" * ") + QString::number(field.arrayLen);
             } break;
-            case Tracepoint::Field::Pointer: {
-                if (QT_POINTER_SIZE == 8)
-                    stream << "intptr64_t " << formatType(arg.type) << "_" << arg.name << ";";
-                else
-                    stream << "intptr32_t " << formatType(arg.type) << "_" << arg.name << ";";
-                eventSize += QT_POINTER_SIZE * 8;
-            } break;
+            case Tracepoint::Field::Pointer:
             case Tracepoint::Field::IntegerHex: {
-                if (field.backendType.bits == 64)
-                    stream << "intptr64_t " << formatType(arg.name) << ";";
-                else
-                    stream << "intptr32_t " << formatType(arg.name) << ";";
-                eventSize += field.backendType.bits;
+                stream << "pointerToMetadata(QStringLiteral(\"" << formatType(arg.type) << "_"
+                       << arg.name << "\"))";
+                eventSize += QStringLiteral("QT_POINTER_SIZE");
             } break;
             case Tracepoint::Field::Float: {
-                if (field.backendType.bits == 32)
-                    stream << "float " << arg.name;
-                else
-                    stream << "double " << arg.name;
                 if (array) {
-                    stream << "[" << field.arrayLen << "];";
+                    stream << "floatArrayToMetadata<" << formatType(arg.type)
+                           << ">(QStringLiteral(\"" << field.arrayLen << "\"), QStringLiteral(\""
+                           << arg.name << "\"))";
                 } else {
-                    stream << ";";
+                    stream << "floatToMetadata<" << formatType(arg.type) << ">(QStringLiteral(\""
+                           << arg.name << "\"))";
                 }
-                eventSize += field.backendType.bits * qMax(1, field.arrayLen);
+                eventSize += QStringLiteral("sizeof(") + formatType(arg.type) + QStringLiteral(")");
+                if (array)
+                    eventSize += QStringLiteral(" * ") + QString::number(field.arrayLen);
             } break;
+            case Tracepoint::Field::QtUrl:
+            case Tracepoint::Field::QtString:
             case Tracepoint::Field::String: {
-                stream << "string " << arg.name << ";";
-                eventSize += 8;
-                variableSize = true;
-            } break;
-            case Tracepoint::Field::QtString: {
-                stream << "string " << arg.name << ";";
-                eventSize += 8;
-                variableSize = true;
-            } break;
-            case Tracepoint::Field::QtByteArray:
-                break;
-            case Tracepoint::Field::QtUrl: {
-                stream << "string " << arg.name << ";";
-                eventSize += 8;
+                stream << "QStringLiteral(\"string " << arg.name << ";\")";
+                eventSize += QStringLiteral("1");
                 variableSize = true;
             } break;
             case Tracepoint::Field::QtRect: {
-                stream << "int32_t QRect_" << arg.name << "_x;\\n\\\n        ";
-                stream << "int32_t QRect_" << arg.name << "_y;\\n\\\n        ";
-                stream << "int32_t QRect_" << arg.name << "_width;\\n\\\n        ";
-                stream << "int32_t QRect_" << arg.name << "_height;";
-                eventSize += 32 * 4;
+                stream << "QStringLiteral(\"int32_t QRect_" << arg.name << "_x;\\n\\\n        \")";
+                stream << " + QStringLiteral(\"int32_t QRect_" << arg.name << "_y;\\n\\\n        \")";
+                stream << " + QStringLiteral(\"int32_t QRect_" << arg.name << "_width;\\n\\\n        \")";
+                stream << " + QStringLiteral(\"int32_t QRect_" << arg.name << "_height;\\n\\\n        \")";
+                eventSize += QStringLiteral("16");
             } break;
             case Tracepoint::Field::QtSize: {
-                stream << "int32_t QSize_" << arg.name << "_width;\\n\\\n        ";
-                stream << "int32_t QSize_" << arg.name << "_height;";
-                eventSize += 32 * 2;
+                stream << "QStringLiteral(\"int32_t QSize_" << arg.name << "_width;\\n\\\n        \")";
+                stream << " + QStringLiteral(\"int32_t QSize_" << arg.name << "_height;\\n\\\n        \")";
+                eventSize += QStringLiteral("8");
             } break;
             case Tracepoint::Field::Unknown:
                 break;
             case Tracepoint::Field::EnumeratedType: {
-                QString type = arg.type;
-                type.replace(QStringLiteral("::"), QStringLiteral("_"));
-                stream << type << " " << arg.name << ";";
-                eventSize += field.backendType.bits;
+                stream << "QStringLiteral(\"" << typeToTypeName(arg.type) << " " << arg.name << ";\")";
+                eventSize += QString::number(field.enumValueSize / 8);
                 variableSize = true;
             } break;
             case Tracepoint::Field::FlagType: {
-                QString type = arg.type;
-                type.replace(QStringLiteral("::"), QStringLiteral("_"));
-                stream << "uint8_t " << arg.name << "_length;\\n\\\n        ";
-                stream << type << " " << arg.name << "[" << arg.name << "_length];";
-                eventSize += 16;
+                stream << "QStringLiteral(\"uint8_t " << arg.name << "_length;\\n\\\n        ";
+                stream << typeToTypeName(arg.type) << " " << arg.name << "[" << arg.name << "_length];\")";
+                eventSize += QStringLiteral("2");
+                variableSize = true;
             } break;
+            case Tracepoint::Field::QtByteArray:
             case Tracepoint::Field::Sequence:
-                panic("Unhandled sequence '%s %s", qPrintable(arg.type), qPrintable(arg.name));
+                panic("Unhandled type '%s %s", qPrintable(arg.type), qPrintable(arg.name));
                 break;
             }
         }
     }
 
-    stream << "\",\n";
-    stream << eventSize / 8 << ", \n";
+    if (emptyMetadata)
+        stream << "{},\n";
+    else
+        stream << ",\n";
+    if (eventSize.length())
+        stream << eventSize << ", \n";
+    else
+        stream << "0, \n";
     stream << (variableSize ? "true" : "false") << "\n";
     stream << ")\n\n";
 }
@@ -236,14 +304,14 @@ static void writeEnums(QTextStream &stream, const Provider &provider)
         QString name = e.name;
         name.replace(QStringLiteral("::"), QStringLiteral("_"));
         stream << "TRACEPOINT_METADATA(" << provider.name << ", " << name << ", \n";
-        stream << "\"typealias enum : integer { size = " << e.valueSize << "; } {\\n\\\n";
+        stream << "QStringLiteral(\"typealias enum : integer { size = " << e.valueSize << "; } {\\n\\\n";
         for (const auto &v : e.values) {
             if (v.range)
                 stream << v.name << " = " << v.value << " ... "  << v.range << ", \\n\\\n";
             else
                 stream << v.name << " = " << v.value << ", \\n\\\n";
         }
-        stream << "} := " << name << ";\\n\\n\");\n\n";
+        stream << "} := " << name << ";\\n\\n\"));\n\n";
     }
     stream << "\n";
 }
@@ -254,11 +322,11 @@ static void writeFlags(QTextStream &stream, const Provider &provider)
         QString name = e.name;
         name.replace(QStringLiteral("::"), QStringLiteral("_"));
         stream << "TRACEPOINT_METADATA(" << provider.name << ", " << name << ", \n";
-        stream << "\"typealias enum : integer { size = 8; } {\\n\\\n";
+        stream << "QStringLiteral(\"typealias enum : integer { size = 8; } {\\n\\\n";
         for (const auto &v : e.values) {
             stream << v.name << " = " << v.value << ", \\n\\\n";
         }
-        stream << "} := " << name << ";\\n\\n\");\n\n";
+        stream << "} := " << name << ";\\n\\n\"));\n\n";
     }
     stream << "\n";
 }
@@ -270,6 +338,7 @@ void writeCtf(QFile &file, const Provider &provider)
     const QString fileName = QFileInfo(file.fileName()).fileName();
 
     writePrologue(stream, fileName, provider);
+    writeMetadataGenerators(stream);
     writeEnums(stream, provider);
     writeFlags(stream, provider);
     writeTracepoints(stream, provider);

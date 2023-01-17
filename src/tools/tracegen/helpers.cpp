@@ -6,7 +6,7 @@
 
 using namespace Qt::StringLiterals;
 
-QString typeToName(const QString &name)
+QString typeToTypeName(const QString &name)
 {
     QString ret = name;
     return ret.replace(QStringLiteral("::"), QStringLiteral("_"));
@@ -57,8 +57,8 @@ QString formatParameterList(const Provider &provider, const QList<Tracepoint::Ar
         for (int i = 0; i < args.size(); i++) {
             const Tracepoint::Argument &arg = args[i];
             const Tracepoint::Field &field = fields[i];
-            if (field.backendType.backendType == Tracepoint::Field::FlagType)
-                ret += ", trace_convert_"_L1 + typeToName(arg.type) + "("_L1 + arg.name + ")"_L1;
+            if (field.backendType == Tracepoint::Field::FlagType)
+                ret += ", trace_convert_"_L1 + typeToTypeName(arg.type) + "("_L1 + arg.name + ")"_L1;
             else
                 ret += ", "_L1 + arg.name;
         }
@@ -81,7 +81,7 @@ QString formatParameterList(const Provider &provider, const QList<Tracepoint::Ar
             const Tracepoint::Field &field = fields[i];
             if (arg.arrayLen > 1) {
                 ret += ", trace::toByteArrayFromArray("_L1 + arg.name + ", "_L1 + QString::number(arg.arrayLen) + ") "_L1;
-            } else if (field.backendType.backendType == Tracepoint::Field::EnumeratedType) {
+            } else if (field.backendType == Tracepoint::Field::EnumeratedType) {
                 const TraceEnum &e = findEnumeration(provider.enumerations, arg.type);
                 QString integerType;
                 if (e.valueSize == 8)
@@ -91,9 +91,9 @@ QString formatParameterList(const Provider &provider, const QList<Tracepoint::Ar
                 else
                     integerType = QStringLiteral("quint32");
                 ret += ", trace::toByteArrayFromEnum<"_L1 + integerType + ">("_L1 + arg.name + ")"_L1;
-            } else if (field.backendType.backendType == Tracepoint::Field::FlagType) {
+            } else if (field.backendType == Tracepoint::Field::FlagType) {
                 ret += ", trace::toByteArrayFromFlags("_L1 + arg.name + ")"_L1;
-            } else if (field.backendType.backendType == Tracepoint::Field::String) {
+            } else if (field.backendType == Tracepoint::Field::String) {
                 ret += ", trace::toByteArrayFromCString("_L1 + arg.name + ")"_L1;
             } else {
                 ret += ", "_L1 + arg.name;

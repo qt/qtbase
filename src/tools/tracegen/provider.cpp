@@ -97,17 +97,14 @@ static QString removeBraces(QString type)
 }
 
 #define TYPEDATA_ENTRY(type, backendType) \
-{ QT_STRINGIFY(type), backendType, sizeof(type) * 8, std::is_signed<type>::value }
+{ QT_STRINGIFY(type), backendType }
 
-static Tracepoint::Field::BackendType backendType(QString rawType)
+static Tracepoint::Field::Type backendType(QString rawType)
 {
     static const struct TypeData {
         const char *type;
         Tracepoint::Field::Type backendType;
-        int bits;
-        bool isSigned;
     } typeTable[] = {
-#ifdef UNDERSCORE_TYPES_DEFINED
         TYPEDATA_ENTRY(short_int, Tracepoint::Field::Integer),
         TYPEDATA_ENTRY(signed_short, Tracepoint::Field::Integer),
         TYPEDATA_ENTRY(signed_short_int, Tracepoint::Field::Integer),
@@ -125,7 +122,6 @@ static Tracepoint::Field::BackendType backendType(QString rawType)
         TYPEDATA_ENTRY(signed_long_long, Tracepoint::Field::Integer),
         TYPEDATA_ENTRY(signed_long_long_int, Tracepoint::Field::Integer),
         TYPEDATA_ENTRY(unsigned_long_long, Tracepoint::Field::Integer),
-#endif
         TYPEDATA_ENTRY(bool, Tracepoint::Field::Boolean),
         TYPEDATA_ENTRY(int, Tracepoint::Field::Integer),
         TYPEDATA_ENTRY(signed, Tracepoint::Field::Integer),
@@ -140,11 +136,11 @@ static Tracepoint::Field::BackendType backendType(QString rawType)
         TYPEDATA_ENTRY(float, Tracepoint::Field::Float),
         TYPEDATA_ENTRY(double, Tracepoint::Field::Float),
         TYPEDATA_ENTRY(long double, Tracepoint::Field::Float),
-        { "QString",                Tracepoint::Field::QtString , 0,    false},
-        { "QByteArray",             Tracepoint::Field::QtByteArray , 0,    false},
-        { "QUrl",                   Tracepoint::Field::QtUrl , 0,    false},
-        { "QRect",                  Tracepoint::Field::QtRect , 0,    false},
-        { "QSize",                  Tracepoint::Field::QtSize , 0,    false}
+        TYPEDATA_ENTRY(QString, Tracepoint::Field::QtString),
+        TYPEDATA_ENTRY(QByteArray, Tracepoint::Field::QtByteArray),
+        TYPEDATA_ENTRY(QUrl, Tracepoint::Field::QtUrl),
+        TYPEDATA_ENTRY(QRect, Tracepoint::Field::QtRect),
+        TYPEDATA_ENTRY(QSize, Tracepoint::Field::QtSize)
     };
 
     auto backendType = [](const QString &rawType) {
@@ -155,7 +151,7 @@ static Tracepoint::Field::BackendType backendType(QString rawType)
                 return typeTable[i];
         }
 
-        TypeData unknown = { nullptr, Tracepoint::Field::Unknown, 0, false };
+        TypeData unknown = { nullptr, Tracepoint::Field::Unknown };
         return unknown;
     };
 
@@ -164,7 +160,7 @@ static Tracepoint::Field::BackendType backendType(QString rawType)
         rawType = removeBraces(rawType);
 
     if (!sequenceLength(rawType).isNull())
-        return { Tracepoint::Field::Sequence, 0, false };
+        return Tracepoint::Field::Sequence;
 
     static const QRegularExpression constMatch(QStringLiteral("\\bconst\\b"));
     rawType.remove(constMatch);
@@ -176,13 +172,13 @@ static Tracepoint::Field::BackendType backendType(QString rawType)
     rawType.replace(QStringLiteral(" "), QStringLiteral("_"));
 
     if (rawType == "char_ptr"_L1)
-        return { Tracepoint::Field::String, 0, false };
+        return Tracepoint::Field::String;
 
     if (rawType.endsWith("_ptr"_L1))
-        return {Tracepoint::Field::Pointer, QT_POINTER_SIZE, false };
+        return Tracepoint::Field::Pointer;
 
     TypeData d = backendType(rawType);
-    return { d.backendType, d.bits, d.isSigned };
+    return d.backendType;
 }
 
 static Tracepoint parseTracepoint(const Provider &provider, const QString &name, const QStringList &args,
@@ -246,9 +242,10 @@ static Tracepoint parseTracepoint(const Provider &provider, const QString &name,
         const TraceEnum &e = findEnumeration(provider.enumerations, type);
         const TraceFlags &f = findFlags(provider.flags, type);
         if (!e.name.isEmpty()) {
-            field.backendType = { Tracepoint::Field::EnumeratedType, e.valueSize, false };
+            field.backendType = Tracepoint::Field::EnumeratedType;
+            field.enumValueSize = e.valueSize;
         } else if (!f.name.isEmpty()) {
-            field.backendType = { Tracepoint::Field::FlagType, 0, false };
+            field.backendType = Tracepoint::Field::FlagType;
         } else {
             field.backendType = backendType(type);
         }

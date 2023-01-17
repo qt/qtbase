@@ -37,15 +37,11 @@ struct Tracepoint
             FlagType,
             Unknown
         };
-        struct BackendType {
-            Type backendType;
-            int bits;
-            bool isSigned;
-        };
-        BackendType backendType;
+        Type backendType;
         QString paramType;
         QString name;
         int arrayLen;
+        int enumValueSize;
         QString seqLen;
     };
 
@@ -77,7 +73,6 @@ struct TraceFlags {
 Q_DECLARE_TYPEINFO(TraceEnum, Q_RELOCATABLE_TYPE);
 Q_DECLARE_TYPEINFO(TraceFlags, Q_RELOCATABLE_TYPE);
 Q_DECLARE_TYPEINFO(Tracepoint::Argument, Q_RELOCATABLE_TYPE);
-Q_DECLARE_TYPEINFO(Tracepoint::Field::BackendType, Q_RELOCATABLE_TYPE);
 Q_DECLARE_TYPEINFO(Tracepoint::Field, Q_RELOCATABLE_TYPE);
 Q_DECLARE_TYPEINFO(Tracepoint, Q_RELOCATABLE_TYPE);
 
