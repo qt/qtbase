@@ -12,7 +12,7 @@
 
 #include <chrono>
 
-#if (defined(Q_OS_DARWIN) || defined(Q_QDOC)) && !defined(QT_NO_SYSTEMLOCALE)
+#if QT_CONFIG(timezone) && (defined(Q_OS_DARWIN) || defined(Q_QDOC)) && !defined(QT_NO_SYSTEMLOCALE)
 Q_FORWARD_DECLARE_CF_TYPE(CFTimeZone);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSTimeZone);
 #endif
