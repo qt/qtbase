@@ -373,11 +373,6 @@ QTimeZone::Data::Data(const Data &other) noexcept
     d = other.d;
 }
 
-QTimeZone::Data::Data(Data &&other) noexcept
-    : d(std::exchange(other.d, nullptr))
-{
-}
-
 QTimeZone::Data::Data(QTimeZonePrivate *dptr) noexcept
     : d(dptr)
 {
@@ -674,13 +669,10 @@ QTimeZone::QTimeZone(const QTimeZone &other) noexcept
 }
 
 /*!
+    \fn QTimeZone::QTimeZone(QTimeZone &&other) noexcept
+
     Move constructor of this from \a other.
 */
-
-QTimeZone::QTimeZone(QTimeZone &&other) noexcept
-    : d(std::move(other.d))
-{
-}
 
 /*!
     Destroys the time zone.
