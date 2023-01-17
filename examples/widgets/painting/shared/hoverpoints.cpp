@@ -163,7 +163,7 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
             case QEventPoint::Released:
             {
                 // move the point and release
-                const auto it = m_fingerPointMapping.find(id);
+                const auto it = m_fingerPointMapping.constFind(id);
                 movePoint(it.value(), point.position());
                 m_fingerPointMapping.erase(it);
             }
