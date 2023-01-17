@@ -567,6 +567,9 @@ function(qt_internal_add_darwin_permission_plugin permission)
         "
         CONDITION "${separate_request_genex}"
     )
+    if(CMAKE_VERSION VERSION_LESS "3.18")
+        set_property(SOURCE "${separate_request_source_file}" PROPERTY GENERATED TRUE)
+    endif()
     target_sources(${plugin_target} PRIVATE
         "$<${separate_request_genex}:${separate_request_source_file}>"
     )
