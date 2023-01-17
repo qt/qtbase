@@ -6,7 +6,7 @@
 
 #include <QLineEdit>
 #include <QMetaProperty>
-#include <QTime>
+#include <QElapsedTimer>
 
 /*!
     A QLineEdit for viewing the text form of a property on an object.
@@ -31,7 +31,7 @@ private:
     QObject* m_subject;
     QString m_lastText;
     QString m_lastTextShowing;
-    QTime m_lastChangeTime;
+    QElapsedTimer m_lastChangeTime;
     const QMetaProperty m_prop;
     QBrush m_defaultBrush;
 };

@@ -13,4 +13,5 @@ qt_internal_add_manual_test(windowtransparency
     LIBRARIES
         Qt::Gui
         Qt::Widgets
+        Qt::OpenGL
 )

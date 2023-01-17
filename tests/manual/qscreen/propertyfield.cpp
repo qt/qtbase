@@ -5,7 +5,7 @@
 #include <QDebug>
 
 PropertyField::PropertyField(QObject* subject, const QMetaProperty& prop, QWidget *parent)
-  : QLineEdit(parent), m_subject(subject), m_lastChangeTime(QTime::currentTime()), m_prop(prop)
+  : QLineEdit(parent), m_subject(subject), m_lastChangeTime(), m_prop(prop)
   , m_defaultBrush(palette().brush(QPalette::Active, QPalette::Text))
 {
     setReadOnly(true);
@@ -57,7 +57,6 @@ void PropertyField::propertyChanged()
         if (m_lastText.isEmpty()) {
             m_lastText = text;
             m_lastTextShowing = text;
-            m_lastChangeTime = QTime::currentTime().addSecs(-5);
         }
 
         qDebug() << "  " << QString::fromUtf8(m_prop.name()) << ':' << val;

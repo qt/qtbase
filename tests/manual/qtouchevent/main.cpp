@@ -3,6 +3,7 @@
 
 #include <QApplication>
 #include <QTest>
+#include <QTimer>
 
 #include "ui_form.h"
 #include "touchwidget.h"
