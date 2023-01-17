@@ -564,7 +564,7 @@ void QCoreApplicationPrivate::initLocale()
 
     const char *locale = setlocale(LC_ALL, "");
     const char *codec = nl_langinfo(CODESET);
-    if (Q_UNLIKELY(strcmp(codec, "UTF-8") != 0 && strcmp(codec, "utf8") != 0)) {
+    if (Q_UNLIKELY(qstricmp(codec, "UTF-8") != 0 && qstricmp(codec, "utf8") != 0)) {
         QByteArray oldLocale = locale;
         QByteArray newLocale = setlocale(LC_CTYPE, nullptr);
         if (qsizetype dot = newLocale.indexOf('.'); dot != -1)
