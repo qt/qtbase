@@ -904,7 +904,6 @@ QGraphicsItemPrivate::QGraphicsItemPrivate()
       scenePosDescendants(false),
       pendingPolish(false),
       mayHaveChildWithGraphicsEffect(false),
-      isDeclarativeItem(false),
       sendParentChangeNotification(false),
       dirtyChildrenBoundingRect(true),
       globalStackingOrder(-1),

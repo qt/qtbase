@@ -415,10 +415,9 @@ public:
     quint32 scenePosDescendants : 1;
     quint32 pendingPolish : 1;
     quint32 mayHaveChildWithGraphicsEffect : 1;
-    quint32 isDeclarativeItem : 1;
     quint32 sendParentChangeNotification : 1;
     quint32 dirtyChildrenBoundingRect : 1;
-    quint32 padding : 19;
+    quint32 padding : 20;
 
     // Optional stacking order
     int globalStackingOrder;
