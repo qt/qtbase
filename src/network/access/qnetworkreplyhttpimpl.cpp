@@ -21,6 +21,7 @@
 #include "QtCore/qcoreapplication.h"
 
 #include <QtCore/private/qthread_p.h>
+#include <QtCore/private/qtools_p.h>
 
 #include "qnetworkcookiejar.h"
 #include "qnetconmonitor_p.h"
@@ -32,6 +33,7 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace QtMiscUtils;
 
 class QNetworkProxy;
 
@@ -1720,8 +1722,8 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
             QByteArray v = q->rawHeader(header);
             if (v.size() == 3
                 && v[0] == '1'
-                && v[1] >= '0' && v[1] <= '9'
-                && v[2] >= '0' && v[2] <= '9')
+                && isAsciiDigit(v[1])
+                && isAsciiDigit(v[2]))
                 continue;
         }
 

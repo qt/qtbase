@@ -7,6 +7,7 @@
 
 #include <QtCore/qlist.h>
 #include <QtCore/qstringlist.h>
+#include <private/qtools_p.h>
 
 #include "qdbusargument.h"
 #include "qdbusunixfiledescriptor.h"
@@ -16,29 +17,24 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace QtMiscUtils;
 
 static inline bool isValidCharacterNoDash(QChar c)
 {
     ushort u = c.unicode();
-    return (u >= 'a' && u <= 'z')
-            || (u >= 'A' && u <= 'Z')
-            || (u >= '0' && u <= '9')
-            || (u == '_');
+    return isAsciiLetterOrNumber(u) || (u == '_');
 }
 
 static inline bool isValidCharacter(QChar c)
 {
     ushort u = c.unicode();
-    return (u >= 'a' && u <= 'z')
-            || (u >= 'A' && u <= 'Z')
-            || (u >= '0' && u <= '9')
+    return isAsciiLetterOrNumber(u)
             || (u == '_') || (u == '-');
 }
 
 static inline bool isValidNumber(QChar c)
 {
-    ushort u = c.unicode();
-    return (u >= '0' && u <= '9');
+    return (isAsciiDigit(c.toLatin1()));
 }
 
 #ifndef QT_BOOTSTRAPPED

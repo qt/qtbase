@@ -15,11 +15,14 @@
 
 #include <private/qcolor_p.h>
 #include <private/qduplicatetracker_p.h> // for easier std::pmr detection
+#include <private/qtools_p.h>
 
 #include <algorithm>
 #include <array>
 
 QT_BEGIN_NAMESPACE
+
+using namespace QtMiscUtils;
 
 Q_DECLARE_LOGGING_CATEGORY(lcImageIo)
 
@@ -736,15 +739,13 @@ static QString fbname(const QString &fileName) // get file basename (sort of)
         int i = qMax(s.lastIndexOf(u'/'), s.lastIndexOf(u'\\'));
         if (i < 0)
             i = 0;
-        auto isAsciiLetterOrNumber = [](QChar ch) -> bool {
-            return (ch.unicode() >= '0' && ch.unicode() <= '9') ||
-                    (ch.unicode() >= 'A' && ch.unicode() <= 'Z') ||
-                    (ch.unicode() >= 'a' && ch.unicode() <= 'z') ||
-                    ch.unicode() == '_';
+        auto checkChar = [](QChar ch) -> bool {
+            uchar uc = ch.unicode();
+            return isAsciiLetterOrNumber(uc) || uc == '_';
         };
         int start = -1;
         for (; i < s.size(); ++i) {
-            if (isAsciiLetterOrNumber(s.at(i))) {
+            if (checkChar(s.at(i))) {
                 start = i;
             } else if (start > 0)
                 break;

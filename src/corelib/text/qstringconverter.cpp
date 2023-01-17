@@ -31,6 +31,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace QtMiscUtils;
+
 static_assert(std::is_nothrow_move_constructible_v<QStringEncoder>);
 static_assert(std::is_nothrow_move_assignable_v<QStringEncoder>);
 static_assert(std::is_nothrow_move_constructible_v<QStringDecoder>);
@@ -889,22 +891,15 @@ int QUtf8::compareUtf8(QByteArrayView utf8, QLatin1StringView s, Qt::CaseSensiti
     return (end1 > src1) - (end2 > src2);
 }
 
-static inline int lencmp(qsizetype lhs, qsizetype rhs) noexcept
-{
-    return lhs == rhs ? 0 :
-           lhs >  rhs ? 1 :
-           /* else */  -1 ;
-}
-
 int QUtf8::compareUtf8(QByteArrayView lhs, QByteArrayView rhs, Qt::CaseSensitivity cs) noexcept
 {
     if (lhs.isEmpty())
-        return lencmp(0, rhs.size());
+        return qt_lencmp(0, rhs.size());
 
     if (cs == Qt::CaseSensitive) {
         const auto l = std::min(lhs.size(), rhs.size());
         int r = memcmp(lhs.data(), rhs.data(), l);
-        return r ? r : lencmp(lhs.size(), rhs.size());
+        return r ? r : qt_lencmp(lhs.size(), rhs.size());
     }
 
     char32_t uc1 = QChar::Null;

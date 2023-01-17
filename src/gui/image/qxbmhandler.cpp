@@ -16,6 +16,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace QtMiscUtils;
+
 Q_DECLARE_LOGGING_CATEGORY(lcImageIo)
 
 /*****************************************************************************
@@ -54,11 +56,9 @@ static bool read_xbm_header(QIODevice *device, int& w, int& h)
     }
 
     auto parseDefine = [] (const char *buf, int len) -> int {
-        auto isAsciiLetterOrNumber = [] (char ch) -> bool {
-            return (ch >= '0' && ch <= '9') ||
-                    (ch >= 'A' && ch <= 'Z') ||
-                    (ch >= 'a' && ch <= 'z') ||
-                    ch == '_' || ch == '.';
+        auto checkChar = [] (char ch) -> bool {
+            return isAsciiLetterOrNumber(ch)
+                || ch == '_' || ch == '.';
         };
         auto isAsciiSpace = [] (char ch) -> bool {
             return ch == ' ' || ch == '\t';
@@ -70,7 +70,7 @@ static bool read_xbm_header(QIODevice *device, int& w, int& h)
         int index = defineLen;
         while (buf[index] && isAsciiSpace(buf[index]))
             ++index;
-        while (buf[index] && isAsciiLetterOrNumber(buf[index]))
+        while (buf[index] && checkChar(buf[index]))
             ++index;
         while (buf[index] && isAsciiSpace(buf[index]))
             ++index;

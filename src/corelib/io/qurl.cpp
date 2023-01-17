@@ -402,15 +402,17 @@
 #include "private/qipaddress_p.h"
 #include "qurlquery.h"
 #include "private/qdir_p.h"
+#include <private/qtools_p.h>
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace QtMiscUtils;
 
 inline static bool isHex(char c)
 {
     c |= 0x20;
-    return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
+    return isAsciiDigit(c) || (c >= 'a' && c <= 'f');
 }
 
 static inline QString ftpScheme()
@@ -961,14 +963,14 @@ inline bool QUrlPrivate::setScheme(const QString &value, qsizetype len, bool doS
     qsizetype needsLowercasing = -1;
     const ushort *p = reinterpret_cast<const ushort *>(value.data());
     for (qsizetype i = 0; i < len; ++i) {
-        if (p[i] >= 'a' && p[i] <= 'z')
+        if (isAsciiLower(p[i]))
             continue;
-        if (p[i] >= 'A' && p[i] <= 'Z') {
+        if (isAsciiUpper(p[i])) {
             needsLowercasing = i;
             continue;
         }
         if (i) {
-            if (p[i] >= '0' && p[i] <= '9')
+            if (isAsciiDigit(p[i]))
                 continue;
             if (p[i] == '+' || p[i] == '-' || p[i] == '.')
                 continue;
@@ -989,7 +991,7 @@ inline bool QUrlPrivate::setScheme(const QString &value, qsizetype len, bool doS
         QChar *schemeData = scheme.data(); // force detaching here
         for (qsizetype i = needsLowercasing; i >= 0; --i) {
             ushort c = schemeData[i].unicode();
-            if (c >= 'A' && c <= 'Z')
+            if (isAsciiUpper(c))
                 schemeData[i] = QChar(c + 0x20);
         }
     }
@@ -1041,7 +1043,7 @@ inline void QUrlPrivate::setAuthority(const QString &auth, qsizetype from, qsize
             unsigned long x = 0;
             for (qsizetype i = colonIndex + 1; i < end; ++i) {
                 ushort c = auth.at(i).unicode();
-                if (c >= '0' && c <= '9') {
+                if (isAsciiDigit(c)) {
                     x *= 10;
                     x += c - '0';
                 } else {
@@ -1183,9 +1185,7 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
     const QChar *const origBegin = begin;
     if (begin[3].unicode() != '.')
         return &begin[3];
-    if ((begin[2].unicode() >= 'A' && begin[2].unicode() <= 'F') ||
-            (begin[2].unicode() >= 'a' && begin[2].unicode() <= 'f') ||
-            (begin[2].unicode() >= '0' && begin[2].unicode() <= '9')) {
+    if (isHexDigit(begin[2].unicode())) {
         // this is so unlikely that we'll just go down the slow path
         // decode the whole string, skipping the "[vH." and "]" which we already know to be there
         host += QStringView(begin, 4);
@@ -1204,11 +1204,7 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
         }
 
         for ( ; begin != end; ++begin) {
-            if (begin->unicode() >= 'A' && begin->unicode() <= 'Z')
-                host += *begin;
-            else if (begin->unicode() >= 'a' && begin->unicode() <= 'z')
-                host += *begin;
-            else if (begin->unicode() >= '0' && begin->unicode() <= '9')
+            if (isAsciiLetterOrNumber(begin->unicode()))
                 host += *begin;
             else if (begin->unicode() < 0x80 && strchr(acceptable, begin->unicode()) != nullptr)
                 host += *begin;

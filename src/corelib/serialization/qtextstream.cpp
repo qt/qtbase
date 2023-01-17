@@ -196,6 +196,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 #include "qnumeric.h"
 #include "qvarlengtharray.h"
 #include <private/qdebug_p.h>
+#include <private/qtools_p.h>
 
 #include <locale.h>
 #include "private/qlocale_p.h"
@@ -245,6 +246,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace QtMiscUtils;
 
 //-------------------------------------------------------------------
 
@@ -1686,7 +1688,7 @@ QTextStreamPrivate::NumberParsingStatus QTextStreamPrivate::getNumber(qulonglong
         int ndigits = 0;
         while (getChar(&dig)) {
             int n = dig.toLower().unicode();
-            if (n >= '0' && n <= '7') {
+            if (isOctalDigit(n)) {
                 val *= 8;
                 val += n - '0';
             } else {

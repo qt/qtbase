@@ -5,7 +5,11 @@
 
 #include "qxmlutils_p.h"
 
+#include <private/qtools_p.h>
+
 QT_BEGIN_NAMESPACE
+
+using namespace QtMiscUtils;
 
 /* TODO:
  * - isNameChar() doesn't have to be public, it's only needed in
@@ -197,16 +201,12 @@ bool QXmlUtils::isEncName(QStringView encName)
     if (encName.isEmpty())
         return false;
     const auto first = encName.front().unicode();
-    if (!((first >= 'a' && first <= 'z') || (first >= 'A' && first <= 'Z')))
+    if (!(isAsciiLower(first) || isAsciiUpper(first)))
         return false;
     for (QChar ch : encName.mid(1)) {
         const auto cp = ch.unicode();
-        if ((cp >= 'a' && cp <= 'z')
-            || (cp >= 'A' && cp <= 'Z')
-            || (cp >= '0' && cp <= '9')
-            || cp == '.' || cp == '_' || cp == '-') {
+        if (isAsciiLetterOrNumber(cp) || cp == '.' || cp == '_' || cp == '-')
             continue;
-        }
         return false;
     }
     return true;
@@ -285,12 +285,8 @@ bool QXmlUtils::isPublicID(QStringView candidate)
     for (QChar ch : candidate) {
         const ushort cp = ch.unicode();
 
-        if ((cp >= 'a' && cp <= 'z')
-            || (cp >= 'A' && cp <= 'Z')
-            || (cp >= '0' && cp <= '9'))
-        {
+        if (isAsciiLetterOrNumber(cp))
             continue;
-        }
 
         switch (cp)
         {

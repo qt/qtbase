@@ -75,6 +75,7 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace QtMiscUtils;
 
 const char16_t QString::_empty = 0;
 
@@ -86,16 +87,6 @@ enum StringComparisonMode {
     CompareStringsForEquality,
     CompareStringsForOrdering
 };
-
-inline bool qIsUpper(char ch)
-{
-    return ch >= 'A' && ch <= 'Z';
-}
-
-inline bool qIsDigit(char ch)
-{
-    return ch >= '0' && ch <= '9';
-}
 
 template <typename Pointer>
 char32_t foldCaseHelper(Pointer ch, Pointer start) = delete;
@@ -1361,13 +1352,6 @@ static int ucstrncmp(const char16_t *a, const char *b, size_t l)
     return 0;
 }
 
-constexpr int lencmp(qsizetype lhs, qsizetype rhs) noexcept
-{
-    return lhs == rhs ? 0 :
-           lhs >  rhs ? 1 :
-           /* else */  -1 ;
-}
-
 // Unicode case-sensitive equality
 template <typename Char2>
 static bool ucstreq(const char16_t *a, size_t alen, const Char2 *b, size_t blen)
@@ -1391,7 +1375,7 @@ static int ucstrcmp(const char16_t *a, size_t alen, const Char2 *b, size_t blen)
     }
     const size_t l = qMin(alen, blen);
     int cmp = ucstrncmp<CompareStringsForOrdering>(a, b, l);
-    return cmp ? cmp : lencmp(alen, blen);
+    return cmp ? cmp : qt_lencmp(alen, blen);
 }
 
 using CaseInsensitiveL1 = QtPrivate::QCaseInsensitiveLatin1Hash;
@@ -1411,7 +1395,7 @@ static int latin1nicmp(const char *lhsChar, qsizetype lSize, const char *rhsChar
         if (int res = CaseInsensitiveL1::difference(lhsChar[i], rhsChar[i]))
             return res;
     }
-    return lencmp(lSize, rSize);
+    return qt_lencmp(lSize, rSize);
 }
 
 bool QtPrivate::equalStrings(QStringView lhs, QStringView rhs) noexcept
@@ -1556,12 +1540,12 @@ int QtPrivate::compareStrings(QLatin1StringView lhs, QStringView rhs, Qt::CaseSe
 int QtPrivate::compareStrings(QLatin1StringView lhs, QLatin1StringView rhs, Qt::CaseSensitivity cs) noexcept
 {
     if (lhs.isEmpty())
-        return lencmp(qsizetype(0), rhs.size());
+        return qt_lencmp(qsizetype(0), rhs.size());
     if (cs == Qt::CaseInsensitive)
         return latin1nicmp(lhs.data(), lhs.size(), rhs.data(), rhs.size());
     const auto l = std::min(lhs.size(), rhs.size());
     int r = memcmp(lhs.data(), rhs.data(), l);
-    return r ? r : lencmp(lhs.size(), rhs.size());
+    return r ? r : qt_lencmp(lhs.size(), rhs.size());
 }
 
 /*!
@@ -6850,7 +6834,7 @@ static uint parse_flag_characters(const char * &c) noexcept
 
 static int parse_field_width(const char *&c, qsizetype size)
 {
-    Q_ASSERT(qIsDigit(*c));
+    Q_ASSERT(isAsciiDigit(*c));
     const char *const stop = c + size;
 
     // can't be negative - started with a digit
@@ -6860,7 +6844,7 @@ static int parse_field_width(const char *&c, qsizetype size)
     if (used <= 0)
         return false;
     // preserve Qt 5.5 behavior of consuming all digits, no matter how many
-    while (c < stop && qIsDigit(*c))
+    while (c < stop && isAsciiDigit(*c))
         ++c;
     return result < qulonglong(std::numeric_limits<int>::max()) ? int(result) : 0;
 }
@@ -6950,7 +6934,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
 
         // Parse field width
         int width = -1; // -1 means unspecified
-        if (qIsDigit(*c)) {
+        if (isAsciiDigit(*c)) {
             width = parse_field_width(c, formatEnd - c);
         } else if (*c == '*') { // can't parse this in another function, not portably, at least
             width = va_arg(ap, int);
@@ -6969,7 +6953,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
         if (*c == '.') {
             ++c;
             precision = 0;
-            if (qIsDigit(*c)) {
+            if (isAsciiDigit(*c)) {
                 precision = parse_field_width(c, formatEnd - c);
             } else if (*c == '*') { // can't parse this in another function, not portably, at least
                 precision = va_arg(ap, int);
@@ -7030,7 +7014,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
                     default: u = 0; break;
                 }
 
-                if (qIsUpper(*c))
+                if (isAsciiUpper(*c))
                     flags |= QLocaleData::CapitalEorX;
 
                 int base = 10;
@@ -7061,7 +7045,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
                 else
                     d = va_arg(ap, double);
 
-                if (qIsUpper(*c))
+                if (isAsciiUpper(*c))
                     flags |= QLocaleData::CapitalEorX;
 
                 QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
@@ -7707,7 +7691,7 @@ QString QString::number(double n, char format, int precision)
             break;
     }
 
-    return qdtoBasicLatin(n, form, precision, qIsUpper(format));
+    return qdtoBasicLatin(n, form, precision, isAsciiUpper(format));
 }
 
 namespace {
@@ -8574,7 +8558,7 @@ QString QString::arg(double a, int fieldWidth, char format, int precision, QChar
     if (fillChar == u'0')
         flags |= QLocaleData::ZeroPadded;
 
-    if (qIsUpper(format))
+    if (isAsciiUpper(format))
         flags |= QLocaleData::CapitalEorX;
 
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;

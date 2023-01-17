@@ -22,6 +22,7 @@ QT_WARNING_DISABLE_GCC("-Wfree-nonheap-object") // false positive tracking
 #include "qlocale.h"
 #include "qlocale_p.h"
 #include "qlocale_tools_p.h"
+#include <private/qtools_p.h>
 #if QT_CONFIG(datetimeparser)
 #include "private/qdatetimeparser_p.h"
 #endif
@@ -60,6 +61,7 @@ QT_IMPL_METATYPE_EXTERN_TAGGED(QSystemLocale::CurrencyToStringArgument,
 #endif
 
 using namespace Qt::StringLiterals;
+using namespace QtMiscUtils;
 
 #ifndef QT_NO_SYSTEMLOCALE
 Q_CONSTINIT static QSystemLocale *_systemLocale = nullptr;
@@ -542,7 +544,7 @@ static bool validTag(QStringView tag)
     // Is tag is a non-empty sequence of ASCII letters and/or digits ?
     for (QChar uc : tag) {
         const char16_t ch = uc.unicode();
-        if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9')))
+        if (!isAsciiLetterOrNumber(ch))
             return false;
     }
     return tag.size() > 0;
@@ -2603,11 +2605,6 @@ QString QLocale::exponential() const
     return d->m_data->exponentSeparator();
 }
 
-static bool qIsUpper(char c)
-{
-    return c >= 'A' && c <= 'Z';
-}
-
 /*!
     \overload
     Returns a string representing the floating-point number \a f.
@@ -2645,7 +2642,7 @@ static bool qIsUpper(char c)
 QString QLocale::toString(double f, char format, int precision) const
 {
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
-    uint flags = qIsUpper(format) ? QLocaleData::CapitalEorX : 0;
+    uint flags = isAsciiUpper(format) ? QLocaleData::CapitalEorX : 0;
 
     switch (QtMiscUtils::toAsciiLower(format)) {
         case 'f':
@@ -3983,7 +3980,7 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
         const QStringView in = str.mid(i, str.at(i).isHighSurrogate() ? 2 : 1);
         char c = numericToCLocale(in);
 
-        if (c >= '0' && c <= '9') {
+        if (isAsciiDigit(c)) {
             switch (state) {
             case Whole:
                 // Nothing special to do (unless we want to check grouping sizes).
