@@ -204,7 +204,7 @@ public:
 #endif // QT_CORE_REMOVED_SINCE(6, 5)
     Q_WEAK_OVERLOAD
     explicit QXmlStreamReader(const QByteArray &data)
-        : QXmlStreamReader(data, PrivateConsructorTag{}) { }
+        : QXmlStreamReader(data, PrivateConstructorTag{}) { }
     explicit QXmlStreamReader(QAnyStringView data);
     ~QXmlStreamReader();
 
@@ -304,8 +304,8 @@ public:
     QXmlStreamEntityResolver *entityResolver() const;
 
 private:
-    struct PrivateConsructorTag { };
-    QXmlStreamReader(const QByteArray &data, PrivateConsructorTag);
+    struct PrivateConstructorTag { };
+    QXmlStreamReader(const QByteArray &data, PrivateConstructorTag);
     void addDataImpl(const QByteArray &data);
 
     Q_DISABLE_COPY(QXmlStreamReader)

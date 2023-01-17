@@ -338,7 +338,7 @@ QVariant::QVariant(const QSizeF &s) : QVariant(QVariant::fromValue(s)) {}
 #include "qxmlstream.h"
 
 QXmlStreamReader::QXmlStreamReader(const QByteArray &data)
-    : QXmlStreamReader(data, PrivateConsructorTag{})
+    : QXmlStreamReader(data, PrivateConstructorTag{})
 {
 }
 
