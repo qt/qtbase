@@ -373,7 +373,7 @@ static QStringList reverseLookupHelper(const QString &ip)
     QList<QByteArray> lines;
     QProcess python;
     python.setProcessChannelMode(QProcess::ForwardedErrorChannel);
-    python.start("python", QStringList() << QString("-c") << pythonCode << ip);
+    python.start("python3", QStringList() << QString("-c") << pythonCode << ip);
     if (python.waitForFinished()) {
         if (python.exitStatus() == QProcess::NormalExit && python.exitCode() == 0)
             lines = python.readAllStandardOutput().split('\n');

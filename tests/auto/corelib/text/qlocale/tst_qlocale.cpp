@@ -1322,6 +1322,10 @@ void tst_QLocale::strtod_data()
     QTest::newRow("1e2000 cruft")     << QString("1e2000 cruft")     << qInf()        << 6  << false;
     QTest::newRow("-1e2000 cruft")    << QString("-1e2000 cruft")    << -qInf()       << 7  << false;
 
+    // NaN and nan
+    QTest::newRow("NaN") << QString("NaN") << qQNaN() << 3 << true;
+    QTest::newRow("nan") << QString("nan") << qQNaN() << 3 << true;
+
     // Underflow, ends with cruft - fails but reports right length:
     QTest::newRow("1e-2000 cruft")    << QString("1e-2000 cruft")    << 0.0           << 7  << false;
     QTest::newRow("-1e-2000 cruft")   << QString("-1e-2000 cruft")   << 0.0           << 8  << false;
