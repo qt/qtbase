@@ -11,6 +11,7 @@ if(NOT ANDROID AND NOT IOS)
     endif()
     add_subdirectory(moc)
     add_subdirectory(rcc)
+    add_subdirectory(qt_cmake_create)
 endif()
 # QTBUG-88538 # special case
 if(TARGET Qt::Widgets AND NOT ANDROID AND NOT IOS)

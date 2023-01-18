@@ -39,6 +39,20 @@ function(qt_internal_create_wrapper_scripts)
                    DESTINATION "${INSTALL_BINDIR}")
     endif()
 
+    if(generate_unix)
+        configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake-create.in"
+                    "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-create" @ONLY
+                    NEWLINE_STYLE LF)
+        qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-create"
+                DESTINATION "${INSTALL_BINDIR}")
+    endif()
+    if(generate_non_unix)
+        configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake-create.bat.in"
+                    "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-create.bat" @ONLY
+                    NEWLINE_STYLE CRLF)
+        qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-create.bat"
+                DESTINATION "${INSTALL_BINDIR}")
+    endif()
     # Provide a private convenience wrapper with options which should not be propagated via the
     # public qt-cmake wrapper e.g. CMAKE_GENERATOR.
     # These options can not be set in a toolchain file, but only on the command line.

@@ -313,3 +313,16 @@ $ cd some/empty/directory
 $ ~/Qt/6.0.0/bin/qt-cmake-standalone-test ~/source/of/qtbase/test/auto/corelib/io/qprocess
 $ cmake --build .
 ```
+
+## qt-cmake-create
+
+Generates a simple CMakeLists.txt based on source files in specified project directory.
+
+Example:
+
+```
+$ cd some/source/directory/
+$ qt-cmake-create
+$ qt-cmake -S . -B /build/directory
+$ cmake --build /build/directory
+```
