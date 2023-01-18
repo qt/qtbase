@@ -6,7 +6,7 @@ accept_configuration:
 
 machine_type:
   Build:
-    cores: 4
+    cores: 8
   Test:
     cores: 4
 
