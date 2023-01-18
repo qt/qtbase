@@ -93,6 +93,11 @@ int runUic(int argc, char *argv[])
     postfixOption.setValueName(u"postfix"_s);
     parser.addOption(postfixOption);
 
+    QCommandLineOption noQtNamespaceOption(u"no-qt-namespace"_s);
+    noQtNamespaceOption.setDescription(
+        u"Disable wrapping the definition of the generated class in QT_{BEGIN,END}_NAMESPACE."_s);
+    parser.addOption(noQtNamespaceOption);
+
     QCommandLineOption translateOption(QStringList{u"tr"_s, u"translate"_s});
     translateOption.setDescription(u"Use <function> for i18n."_s);
     translateOption.setValueName(u"function"_s);
@@ -149,6 +154,7 @@ int runUic(int argc, char *argv[])
     driver.option().autoConnection = !parser.isSet(noAutoConnectionOption);
     driver.option().headerProtection = !parser.isSet(noProtOption);
     driver.option().implicitIncludes = !parser.isSet(noImplicitIncludesOption);
+    driver.option().qtNamespace = !parser.isSet(noQtNamespaceOption);
     driver.option().idBased = parser.isSet(idBasedOption);
     driver.option().postfix = parser.value(postfixOption);
     driver.option().translateFunction = parser.value(translateOption);

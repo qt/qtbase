@@ -30,6 +30,7 @@ struct Option
     unsigned int forceStringConnectionSyntax: 1;
     unsigned int useStarImports: 1;
     unsigned int rcPrefix: 1; // Python: Generate "rc_file" instead of "file_rc" import
+    unsigned int qtNamespace: 1;
 
     QString inputFile;
     QString outputFile;
@@ -57,6 +58,7 @@ struct Option
           forceStringConnectionSyntax(0),
           useStarImports(0),
           rcPrefix(0),
+          qtNamespace(1),
           prefix(QLatin1StringView("Ui_"))
     { indent.fill(u' ', 4); }
 
