@@ -14,6 +14,7 @@
 #include <QtCore/QUrl>
 #include <QtCore/qendian.h>
 #include <QtCore/qstringlist.h>
+#include <QtCore/qsystemdetection.h>
 #include "private/qcore_mac_p.h"
 
 /*
@@ -32,11 +33,11 @@
  *   \li Bypass list (by default: *.local, 169.254/16)
  * \endlist
  *
- * The matching configuration can be obtained by calling SCDynamicStoreCopyProxies
- * (from <SystemConfiguration/SCDynamicStoreCopySpecific.h>). See
+ * The matching configuration can be obtained by calling CFNetworkCopySystemProxySettings()
+ * (from <CFNetwork/CFProxySupport.h>). See
  * Apple's documentation:
  *
- * http://developer.apple.com/DOCUMENTATION/Networking/Reference/SysConfig/SCDynamicStoreCopySpecific/CompositePage.html#//apple_ref/c/func/SCDynamicStoreCopyProxies
+ * https://developer.apple.com/documentation/cfnetwork/1426754-cfnetworkcopysystemproxysettings?language=objc
  *
  */
 
@@ -46,13 +47,19 @@ using namespace Qt::StringLiterals;
 
 static bool isHostExcluded(CFDictionaryRef dict, const QString &host)
 {
+    Q_ASSERT(dict);
+
     if (host.isEmpty())
         return true;
 
+#ifndef Q_OS_IOS
+    // On iOS all those keys are not available, and worse so - entries
+    // for HTTPS are not in the dictionary, but instead in some nested dictionary
+    // with undocumented keys/object types.
     bool isSimple = !host.contains(u'.') && !host.contains(u':');
     CFNumberRef excludeSimples;
     if (isSimple &&
-        (excludeSimples = (CFNumberRef)CFDictionaryGetValue(dict, kSCPropNetProxiesExcludeSimpleHostnames))) {
+        (excludeSimples = (CFNumberRef)CFDictionaryGetValue(dict, kCFNetworkProxiesExcludeSimpleHostnames))) {
         int enabled;
         if (CFNumberGetValue(excludeSimples, kCFNumberIntType, &enabled) && enabled)
             return true;
@@ -63,7 +70,7 @@ static bool isHostExcluded(CFDictionaryRef dict, const QString &host)
 
     // not a simple host name
     // does it match the list of exclusions?
-    CFArrayRef exclusionList = (CFArrayRef)CFDictionaryGetValue(dict, kSCPropNetProxiesExceptionsList);
+    CFArrayRef exclusionList = (CFArrayRef)CFDictionaryGetValue(dict, kCFNetworkProxiesExceptionsList);
     if (!exclusionList)
         return false;
 
@@ -81,7 +88,9 @@ static bool isHostExcluded(CFDictionaryRef dict, const QString &host)
                 return true;
         }
     }
-
+#else
+    Q_UNUSED(dict);
+#endif // Q_OS_IOS
     // host was not excluded
     return false;
 }
@@ -111,7 +120,6 @@ static QNetworkProxy proxyFromDictionary(CFDictionaryRef dict, QNetworkProxy::Pr
     // proxy not enabled
     return QNetworkProxy();
 }
-
 
 static QNetworkProxy proxyFromDictionary(CFDictionaryRef dict)
 {
@@ -178,16 +186,43 @@ QCFType<CFStringRef> stringByAddingPercentEscapes(CFStringRef originalPath)
     return escaped.toCFString();
 }
 
-} // anon namespace
+#ifdef Q_OS_IOS
+QList<QNetworkProxy> proxiesForQueryUrl(CFDictionaryRef dict, const QUrl &url)
+{
+    Q_ASSERT(dict);
+
+    const QCFType<CFURLRef> cfUrl = url.toCFURL();
+    const QCFType<CFArrayRef> proxies = CFNetworkCopyProxiesForURL(cfUrl, dict);
+    Q_ASSERT(proxies);
+
+    QList<QNetworkProxy> result;
+    const auto count = CFArrayGetCount(proxies);
+    if (!count) // Could be no proper proxy or host excluded.
+        return result;
+
+    for (CFIndex i = 0; i < count; ++i) {
+        const void *obj = CFArrayGetValueAtIndex(proxies, i);
+        if (CFGetTypeID(obj) != CFDictionaryGetTypeID())
+            continue;
+        const QNetworkProxy proxy = proxyFromDictionary(static_cast<CFDictionaryRef>(obj));
+        if (proxy.type() == QNetworkProxy::NoProxy || proxy.type() == QNetworkProxy::DefaultProxy)
+            continue;
+        result << proxy;
+    }
+
+    return result;
+}
+#endif // Q_OS_IOS
+} // unnamed namespace.
 
 QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
 {
     QList<QNetworkProxy> result;
 
     // obtain a dictionary to the proxy settings:
-    const QCFType<CFDictionaryRef> dict = SCDynamicStoreCopyProxies(NULL);
+    const QCFType<CFDictionaryRef> dict = CFNetworkCopySystemProxySettings();
     if (!dict) {
-        qWarning("QNetworkProxyFactory::systemProxyForQuery: SCDynamicStoreCopyProxies returned NULL");
+        qWarning("QNetworkProxyFactory::systemProxyForQuery: CFNetworkCopySystemProxySettings returned nullptr");
         return result;          // failed
     }
 
@@ -196,13 +231,13 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
 
     // is there a PAC enabled? If so, use it first.
     CFNumberRef pacEnabled;
-    if ((pacEnabled = (CFNumberRef)CFDictionaryGetValue(dict, kSCPropNetProxiesProxyAutoConfigEnable))) {
+    if ((pacEnabled = (CFNumberRef)CFDictionaryGetValue(dict, kCFNetworkProxiesProxyAutoConfigEnable))) {
         int enabled;
         if (CFNumberGetValue(pacEnabled, kCFNumberIntType, &enabled) && enabled) {
             // PAC is enabled
             // kSCPropNetProxiesProxyAutoConfigURLString returns the URL string
             // as entered in the system proxy configuration dialog
-            CFStringRef pacLocationSetting = (CFStringRef)CFDictionaryGetValue(dict, kSCPropNetProxiesProxyAutoConfigURLString);
+            CFStringRef pacLocationSetting = (CFStringRef)CFDictionaryGetValue(dict, kCFNetworkProxiesProxyAutoConfigURLString);
             auto cfPacLocation = stringByAddingPercentEscapes(pacLocationSetting);
             QCFType<CFDataRef> pacData;
             QCFType<CFURLRef> pacUrl = CFURLCreateWithString(kCFAllocatorDefault, cfPacLocation, NULL);
@@ -252,53 +287,77 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
         }
     }
 
-    // no PAC, decide which proxy we're looking for based on the query
-    bool isHttps = false;
-    QString protocol = query.protocolTag().toLower();
-
+    // No PAC, decide which proxy we're looking for based on the query
     // try the protocol-specific proxy
+    QString protocol = query.protocolTag().toLower();
     QNetworkProxy protocolSpecificProxy;
+    if (protocol == "http"_L1) {
+        protocolSpecificProxy =
+            proxyFromDictionary(dict, QNetworkProxy::HttpProxy,
+                                kCFNetworkProxiesHTTPEnable,
+                                kCFNetworkProxiesHTTPProxy,
+                                kCFNetworkProxiesHTTPPort);
+    }
+
+
+#ifdef Q_OS_IOS
+    if (protocolSpecificProxy.type() != QNetworkProxy::DefaultProxy
+        && protocolSpecificProxy.type() != QNetworkProxy::DefaultProxy) {
+        // HTTP proxy is enabled (on iOS there is no separate HTTPS, though
+        // 'dict' contains deeply buried entries which are the same as HTTP.
+        result << protocolSpecificProxy;
+    }
+
+    // TODO: check query.queryType()? It's possible, the exclude list
+    // did exclude it but above we added a proxy because HTTP proxy
+    // is found. We'll deal with such a situation later, since now NMI.
+    const auto proxiesForUrl = proxiesForQueryUrl(dict, query.url());
+    for (const auto &proxy : proxiesForUrl) {
+        if (!result.contains(proxy))
+            result << proxy;
+    }
+#else
+    bool isHttps = false;
     if (protocol == "ftp"_L1) {
         protocolSpecificProxy =
             proxyFromDictionary(dict, QNetworkProxy::FtpCachingProxy,
-                                kSCPropNetProxiesFTPEnable,
-                                kSCPropNetProxiesFTPProxy,
-                                kSCPropNetProxiesFTPPort);
-    } else if (protocol == "http"_L1) {
-        protocolSpecificProxy =
-            proxyFromDictionary(dict, QNetworkProxy::HttpProxy,
-                                kSCPropNetProxiesHTTPEnable,
-                                kSCPropNetProxiesHTTPProxy,
-                                kSCPropNetProxiesHTTPPort);
+                                kCFNetworkProxiesFTPEnable,
+                                kCFNetworkProxiesFTPProxy,
+                                kCFNetworkProxiesFTPPort);
     } else if (protocol == "https"_L1) {
         isHttps = true;
         protocolSpecificProxy =
             proxyFromDictionary(dict, QNetworkProxy::HttpProxy,
-                                kSCPropNetProxiesHTTPSEnable,
-                                kSCPropNetProxiesHTTPSProxy,
-                                kSCPropNetProxiesHTTPSPort);
+                                kCFNetworkProxiesHTTPSEnable,
+                                kCFNetworkProxiesHTTPSProxy,
+                                kCFNetworkProxiesHTTPSPort);
     }
+
     if (protocolSpecificProxy.type() != QNetworkProxy::DefaultProxy)
         result << protocolSpecificProxy;
 
     // let's add SOCKSv5 if present too
     QNetworkProxy socks5 = proxyFromDictionary(dict, QNetworkProxy::Socks5Proxy,
-                                               kSCPropNetProxiesSOCKSEnable,
-                                               kSCPropNetProxiesSOCKSProxy,
-                                               kSCPropNetProxiesSOCKSPort);
+                                               kCFNetworkProxiesSOCKSEnable,
+                                               kCFNetworkProxiesSOCKSProxy,
+                                               kCFNetworkProxiesSOCKSPort);
     if (socks5.type() != QNetworkProxy::DefaultProxy)
         result << socks5;
 
     // let's add the HTTPS proxy if present (and if we haven't added
     // yet)
     if (!isHttps) {
-        QNetworkProxy https = proxyFromDictionary(dict, QNetworkProxy::HttpProxy,
-                                                  kSCPropNetProxiesHTTPSEnable,
-                                                  kSCPropNetProxiesHTTPSProxy,
-                                                  kSCPropNetProxiesHTTPSPort);
+        QNetworkProxy https;
+        https = proxyFromDictionary(dict, QNetworkProxy::HttpProxy,
+                                    kCFNetworkProxiesHTTPSEnable,
+                                    kCFNetworkProxiesHTTPSProxy,
+                                    kCFNetworkProxiesHTTPSPort);
+
+
         if (https.type() != QNetworkProxy::DefaultProxy && https != protocolSpecificProxy)
             result << https;
     }
+#endif // !Q_OS_IOS
 
     return result;
 }

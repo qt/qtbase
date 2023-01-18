@@ -4,6 +4,7 @@
 macro(qt_find_apple_system_frameworks)
     if(APPLE)
         qt_internal_find_apple_system_framework(FWAppKit AppKit)
+        qt_internal_find_apple_system_framework(FWCFNetwork CFNetwork)
         qt_internal_find_apple_system_framework(FWAssetsLibrary AssetsLibrary)
         qt_internal_find_apple_system_framework(FWAudioToolbox AudioToolbox)
         qt_internal_find_apple_system_framework(FWApplicationServices ApplicationServices)

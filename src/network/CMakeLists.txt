@@ -226,6 +226,18 @@ qt_internal_extend_target(Network CONDITION APPLE AND NOT UIKIT
         ${FWSystemConfiguration}
 )
 
+qt_internal_extend_target(Network CONDITION APPLE AND NOT UIKIT
+    LIBRARIES
+        ${FWCoreServices}
+        ${FWSystemConfiguration}
+)
+
+qt_internal_extend_target(Network CONDITION APPLE
+    LIBRARIES
+        ${FWCFNetwork}
+)
+
+
 qt_internal_extend_target(Network CONDITION IOS OR MACOS
     SOURCES
         kernel/qnetconmonitor_darwin.mm
@@ -253,9 +265,9 @@ qt_internal_extend_target(Network CONDITION UIKIT
         kernel/qnetworkinterface_uikit_p.h
 )
 
-qt_internal_extend_target(Network CONDITION MACOS
+qt_internal_extend_target(Network CONDITION APPLE
     SOURCES
-        kernel/qnetworkproxy_mac.cpp
+        kernel/qnetworkproxy_darwin.cpp
 )
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_libproxy AND UNIX AND NOT MACOS
