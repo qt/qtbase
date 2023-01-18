@@ -71,6 +71,7 @@
 #  endif
 #  define Q_OUTOFLINE_TEMPLATE inline
 #  define Q_COMPILER_MANGLES_RETURN_TYPE
+#  define Q_COMPILER_MANGLES_ACCESS_SPECIFIER
 #  define Q_FUNC_INFO __FUNCSIG__
 #  define Q_ASSUME_IMPL(expr) __assume(expr)
 #  define Q_UNREACHABLE_IMPL() __assume(0)
