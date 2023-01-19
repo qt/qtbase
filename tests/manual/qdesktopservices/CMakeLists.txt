@@ -11,7 +11,7 @@ qt_internal_add_manual_test(tst_manual_qdesktopservices
     SOURCES
         tst_qdesktopservices.cpp
     DEFINES
-        SRCDIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}/\\\"
+        SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}/"
     LIBRARIES
         Qt::Gui
         Qt::Test
