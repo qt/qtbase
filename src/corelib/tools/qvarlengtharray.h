@@ -181,7 +181,7 @@ public:
     }
 protected:
     void growBy(qsizetype prealloc, void *array, qsizetype increment)
-    { reallocate_impl(prealloc, array, size(), (std::max)(size() * 2, increment)); }
+    { reallocate_impl(prealloc, array, size(), (std::max)(size() * 2, size() + increment)); }
     template <typename...Args>
     reference emplace_back_impl(qsizetype prealloc, void *array, Args&&...args)
     {
