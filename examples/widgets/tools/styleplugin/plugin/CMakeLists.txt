@@ -10,7 +10,7 @@ qt_add_plugin(simplestyleplugin
 #! [0]
 
 if(QT_FEATURE_debug AND APPLE)
-    set_property(simplestyleplugin
+    set_property(TARGET simplestyleplugin
        APPEND_STRING PROPERTY OUTPUT_NAME "_debug")
 endif()
 
