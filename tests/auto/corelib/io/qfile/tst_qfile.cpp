@@ -171,7 +171,9 @@ private slots:
 #ifdef Q_OS_WIN
     void permissionsNtfs_data();
     void permissionsNtfs();
+#if QT_DEPRECATED_SINCE(6,6)
     void deprecatedNtfsPermissionCheck();
+#endif
 #endif
     void setPermissions_data();
     void setPermissions();
@@ -1418,6 +1420,9 @@ void tst_QFile::permissionsNtfs()
     permissions();
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+#if QT_DEPRECATED_SINCE(6,6)
 void tst_QFile::deprecatedNtfsPermissionCheck()
 {
     QScopedValueRollback<int> guard(qt_ntfs_permission_lookup);
@@ -1428,6 +1433,8 @@ void tst_QFile::deprecatedNtfsPermissionCheck()
     qt_ntfs_permission_lookup--;
     QCOMPARE(qAreNtfsPermissionChecksEnabled(), false);
 }
+#endif
+QT_WARNING_POP
 
 #endif
 

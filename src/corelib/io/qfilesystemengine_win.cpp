@@ -381,10 +381,14 @@ constexpr QFileDevice::Permissions toSpecificPermissions(PermissionTag tag,
 } // anonymous namespace
 #endif // QT_CONFIG(fslibs)
 
-
-Q_CORE_EXPORT int qt_ntfs_permission_lookup = 0;
+#if QT_DEPRECATED_SINCE(6,6)
+int qt_ntfs_permission_lookup = 0;
+#endif
 
 static QBasicAtomicInt qt_ntfs_permission_lookup_v2 = Q_BASIC_ATOMIC_INITIALIZER(0);
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 
 /*!
     \internal
@@ -395,7 +399,7 @@ static QBasicAtomicInt qt_ntfs_permission_lookup_v2 = Q_BASIC_ATOMIC_INITIALIZER
 bool qEnableNtfsPermissionChecks() noexcept
 {
     return qt_ntfs_permission_lookup_v2.fetchAndAddRelaxed(1)
-        + qt_ntfs_permission_lookup
+QT_IF_DEPRECATED_SINCE(6, 6, /*nothing*/, + qt_ntfs_permission_lookup)
         != 0;
 }
 
@@ -408,7 +412,7 @@ bool qEnableNtfsPermissionChecks() noexcept
 bool qDisableNtfsPermissionChecks() noexcept
 {
     return qt_ntfs_permission_lookup_v2.fetchAndSubRelaxed(1)
-        + qt_ntfs_permission_lookup
+QT_IF_DEPRECATED_SINCE(6, 6, /*nothing*/, + qt_ntfs_permission_lookup)
         == 1;
 }
 
@@ -421,8 +425,10 @@ bool qDisableNtfsPermissionChecks() noexcept
 bool qAreNtfsPermissionChecksEnabled() noexcept
 {
     return qt_ntfs_permission_lookup_v2.loadRelaxed()
-        + qt_ntfs_permission_lookup;
+QT_IF_DEPRECATED_SINCE(6, 6, /*nothing*/, + qt_ntfs_permission_lookup)
+        ;
 }
+QT_WARNING_POP
 
 /*!
     \class QNativeFilePermissions
