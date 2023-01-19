@@ -287,7 +287,27 @@ function(qt_build_internals_add_toplevel_targets)
                 COMMENT "Building everything in ${qt_repo_targets_name}/${qt_repo_target_basename}")
             add_dependencies("${qt_repo_target_name}" ${qt_repo_targets})
             list(APPEND qt_repo_target_all "${qt_repo_target_name}")
+
+            # Create special dependency target for External Project examples excluding targets
+            # marked as skipped.
+            set(qt_repo_target_name
+                "${qt_repo_targets_name}_${qt_repo_target_basename}_for_examples")
+            add_custom_target("${qt_repo_target_name}")
+
+            set(unskipped_targets "")
+            foreach(target IN LISTS qt_repo_targets)
+                if(TARGET "${target}")
+                    qt_internal_is_target_skipped_for_examples("${target}" is_skipped)
+                    if(NOT is_skipped)
+                        list(APPEND unskipped_targets "${target}")
+                    endif()
+                endif()
+            endforeach()
+            if(unskipped_targets)
+                add_dependencies("${qt_repo_target_name}" ${unskipped_targets})
+            endif()
         endif()
+
     endforeach()
     if (qt_repo_target_all)
         # Note qt_repo_targets_name is different from qt_repo_target_name that is used above.
@@ -813,7 +833,7 @@ macro(qt_examples_build_begin)
         set(QT_EXAMPLE_DEPENDENCIES qt_plugins ${arg_DEPENDS})
 
         if(TARGET ${qt_repo_targets_name}_src)
-            list(APPEND QT_EXAMPLE_DEPENDENCIES ${qt_repo_targets_name}_src)
+            list(APPEND QT_EXAMPLE_DEPENDENCIES ${qt_repo_targets_name}_src_for_examples)
         endif()
 
         if(TARGET ${qt_repo_targets_name}_tools)

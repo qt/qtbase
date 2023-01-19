@@ -992,6 +992,24 @@ function(qt_internal_mark_as_internal_library target)
     set_target_properties(${target} PROPERTIES _qt_is_internal_library TRUE)
 endfunction()
 
+# Marks a target with a property to skip it adding it as a dependency when building examples as
+# ExternalProjects.
+# Needed to create a ${repo}_src global target that examples can depend on in multi-config builds
+# due to a bug in AUTOUIC.
+#
+# See QTBUG-110369.
+function(qt_internal_skip_dependency_for_examples target)
+    set_target_properties(${target} PROPERTIES _qt_skip_dependency_for_examples TRUE)
+endfunction()
+
+function(qt_internal_is_target_skipped_for_examples target out_var)
+    get_property(is_skipped TARGET ${target} PROPERTY _qt_skip_dependency_for_examples)
+    if(NOT is_skipped)
+        set(is_skipped FALSE)
+    endif()
+    set(${out_var} "${is_skipped}" PARENT_SCOPE)
+endfunction()
+
 function(qt_internal_link_internal_platform_for_object_library target)
     # We need to apply iOS bitcode flags to object libraries that are associated with internal
     # modules or plugins (e.g. object libraries added by qt_internal_add_resource,
