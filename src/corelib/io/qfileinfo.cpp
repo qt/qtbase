@@ -1008,7 +1008,8 @@ bool QFileInfo::isNativePath() const
 /*!
     Returns \c true if this object points to a file or to a symbolic
     link to a file. Returns \c false if the
-    object points to something which isn't a file, such as a directory.
+    object points to something that is not a file (such as a directory)
+    or that does not exist.
 
     If the file is a symlink, this function returns true if the target is a
     regular file (not the symlink).
@@ -1026,7 +1027,9 @@ bool QFileInfo::isFile() const
 
 /*!
     Returns \c true if this object points to a directory or to a symbolic
-    link to a directory; otherwise returns \c false.
+    link to a directory. Returns \c false if the
+    object points to something that is not a directory (such as a file)
+    or that does not exist.
 
     If the file is a symlink, this function returns true if the target is a
     directory (not the symlink).
