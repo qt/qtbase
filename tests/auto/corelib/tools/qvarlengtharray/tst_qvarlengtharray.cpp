@@ -7,6 +7,8 @@
 #include <qscopeguard.h>
 #include <qscopedvaluerollback.h>
 
+#include <algorithm>
+#include <q20iterator.h>
 #include <memory>
 
 struct Tracker
@@ -386,6 +388,17 @@ void tst_QVarLengthArray::appendCausingRealloc()
     QVarLengthArray<float, 1> d(1);
     for (int i=0; i<30; i++)
         d.append(i);
+
+    // Regression test for QTBUG-110412:
+    constexpr qsizetype InitialCapacity = 10;
+    QVarLengthArray<float, InitialCapacity> d2(InitialCapacity);
+    std::iota(d2.begin(), d2.end(), 0.0f);
+    QCOMPARE_EQ(d2.size(), d2.capacity()); // by construction
+    float floats[1000];
+    std::iota(std::begin(floats), std::end(floats), InitialCapacity + 0.0f);
+    d2.append(floats, q20::ssize(floats));
+    QCOMPARE_EQ(d2.size(), q20::ssize(floats) + InitialCapacity);
+    QCOMPARE_GE(d2.capacity(), d2.size());
 }
 
 void tst_QVarLengthArray::appendIsStronglyExceptionSafe()
