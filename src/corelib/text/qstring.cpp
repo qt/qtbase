@@ -2419,7 +2419,7 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
         toStdU32String()
 */
 
-qsizetype QString::toUcs4_helper(const ushort *uc, qsizetype length, uint *out)
+qsizetype QString::toUcs4_helper(const char16_t *uc, qsizetype length, char32_t *out)
 {
     qsizetype count = 0;
 

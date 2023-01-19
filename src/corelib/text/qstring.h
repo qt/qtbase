@@ -859,7 +859,10 @@ private:
     static QByteArray toLatin1_helper_inplace(QString &);
     static QByteArray toUtf8_helper(const QString &);
     static QByteArray toLocal8Bit_helper(const QChar *data, qsizetype size);
-    static qsizetype toUcs4_helper(const ushort *uc, qsizetype length, uint *out); // ### Qt 7 char16_t
+#if QT_CORE_REMOVED_SINCE(6, 6)
+    static qsizetype toUcs4_helper(const ushort *uc, qsizetype length, uint *out);
+#endif
+    static qsizetype toUcs4_helper(const char16_t *uc, qsizetype length, char32_t *out);
     static qlonglong toIntegral_helper(QStringView string, bool *ok, int base);
     static qulonglong toIntegral_helper(QStringView string, bool *ok, uint base);
     void replace_helper(size_t *indices, qsizetype nIndices, qsizetype blen, const QChar *after, qsizetype alen);
@@ -1031,8 +1034,7 @@ qsizetype QStringView::toWCharArray(wchar_t *array) const
             memcpy(array, src, sizeof(QChar) * size());
         return size();
     } else {
-        return QString::toUcs4_helper(reinterpret_cast<const ushort *>(data()), size(),
-                                      reinterpret_cast<uint *>(array));
+        return QString::toUcs4_helper(utf16(), size(), reinterpret_cast<char32_t *>(array));
     }
 }
 
@@ -1228,8 +1230,8 @@ inline QString QString::fromStdU32String(const std::u32string &s)
 inline std::u32string QString::toStdU32String() const
 {
     std::u32string u32str(size(), char32_t(0));
-    qsizetype len = toUcs4_helper(reinterpret_cast<const ushort *>(constData()),
-                                  size(), reinterpret_cast<uint*>(&u32str[0]));
+    const qsizetype len = toUcs4_helper(reinterpret_cast<const char16_t *>(data()),
+                                        size(), u32str.data());
     u32str.resize(len);
     return u32str;
 }

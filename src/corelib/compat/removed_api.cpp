@@ -493,3 +493,19 @@ void QXmlStreamWriter::writeStartElement(const QString &namespaceUri, const QStr
 // order sections alphabetically to reduce chances of merge conflicts
 
 #endif // QT_CORE_REMOVED_SINCE(6, 5)
+
+#if QT_CORE_REMOVED_SINCE(6, 6)
+
+#include "qstring.h"
+
+qsizetype QString::toUcs4_helper(const ushort *uc, qsizetype length, uint *out)
+{
+    return toUcs4_helper(reinterpret_cast<const char16_t *>(uc), length,
+                         reinterpret_cast<char32_t *>(out));
+}
+
+// #include "qotherheader.h"
+// // implement removed functions from qotherheader.h
+// order sections alphabetically to reduce chances of merge conflicts
+
+#endif // QT_CORE_REMOVED_SINCE(6, 6)
