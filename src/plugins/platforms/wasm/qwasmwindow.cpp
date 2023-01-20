@@ -14,7 +14,6 @@
 #include "qwasmwindow.h"
 #include "qwasmwindowclientarea.h"
 #include "qwasmscreen.h"
-#include "qwasmstylepixmaps_p.h"
 #include "qwasmcompositor.h"
 #include "qwasmevent.h"
 #include "qwasmeventdispatcher.h"
