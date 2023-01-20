@@ -190,11 +190,17 @@ void tst_QUrlQuery::constructing()
     QCOMPARE(moved, copy);
 
     // self move-assign
-    moved = std::move(moved);
+    {
+        auto &self = moved; // prevent -Wself-move
+        moved = std::move(self);
+    }
     QCOMPARE(moved, copy);
 
     // self move-assign of moved-from (Hinnant Criterion)
-    other = std::move(other);
+    {
+        auto &self = other; // prevent -Wself-move
+        other = std::move(self);
+    }
     // shouldn't crash; here, or further down
 
     // copy-assign to moved-from object
