@@ -436,12 +436,13 @@ private:
     void callVoidMethodV(JNIEnv *env, jmethodID id, ...) const;
     // ### Qt 7: merge into ... overload
     void callVoidMethodV(JNIEnv *env, jmethodID id, va_list args) const;
+    // ### Qt 7: remove unused
     QJniObject callObjectMethodV(const char *methodName, const char *signature,
                                  va_list args) const;
-
+    // ### Qt 7: remove unused
     static QJniObject callStaticObjectMethodV(const char *className, const char *methodName,
                                               const char *signature, va_list args);
-
+    // ### Qt 7: remove unused
     static QJniObject callStaticObjectMethodV(jclass clazz, const char *methodName,
                                               const char *signature, va_list args);
 
