@@ -479,4 +479,8 @@ void QXmlStreamWriter::writeStartElement(const QString &namespaceUri, const QStr
 #include "qfloat16.h"
 #include "qstring.h"
 
+// #include "qotherheader.h"
+// // implement removed functions from qotherheader.h
+// order sections alphabetically to reduce chances of merge conflicts
+
 #endif // QT_CORE_REMOVED_SINCE(6, 5)
