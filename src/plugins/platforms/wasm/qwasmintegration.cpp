@@ -81,12 +81,6 @@ QWasmIntegration::QWasmIntegration()
       m_clipboard(new QWasmClipboard),
       m_accessibility(new QWasmAccessibility)
 {
-    // Temporary measure to make dropEvent appear in the library. EMSCRIPTEN_KEEPALIVE does not
-    // work, nor does a Q_CONSTRUCTOR_FUNCTION in qwasmdrag.cpp.
-    volatile bool foolEmcc = false;
-    if (foolEmcc)
-        dropEvent(emscripten::val::undefined());
-
     s_instance = this;
 
     touchPoints = emscripten::val::global("navigator")["maxTouchPoints"].as<int>();

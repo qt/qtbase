@@ -35,7 +35,6 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
         qwasmwindowclientarea.cpp qwasmwindowclientarea.h
         qwasmwindownonclientarea.cpp qwasmwindownonclientarea.h
         qwasminputcontext.cpp qwasminputcontext.h
-        qwasmdrag.cpp qwasmdrag.h
         qwasmwindowstack.cpp qwasmwindowstack.h
     DEFINES
         QT_EGL_NO_X11
