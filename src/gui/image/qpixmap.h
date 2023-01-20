@@ -8,8 +8,8 @@
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qcolor.h>
 #include <QtCore/qnamespace.h>
+#include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h> // char*->QString conversion
-#include <QtCore/qsharedpointer.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qtransform.h>
 

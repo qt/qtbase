@@ -6,8 +6,8 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qiodevice.h>
+#include <QtCore/qshareddata.h>
 #include <QtCore/qstringlist.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtGui/qpaintdevice.h>
 
 QT_BEGIN_NAMESPACE

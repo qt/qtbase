@@ -19,7 +19,6 @@
 #include <atspi/atspi-constants.h>
 
 #include <QtGui/private/qtguiglobal_p.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtDBus/qdbusvirtualobject.h>
 #include <QtGui/qaccessible.h>
 

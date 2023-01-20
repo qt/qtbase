@@ -14,7 +14,6 @@
 #include <qpoint.h>
 #include <qpointer.h>
 #include <qrect.h>
-#include <qsharedpointer.h>
 #include <qxcbobject.h>
 
 #include <QtCore/QDebug>

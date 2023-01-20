@@ -6,7 +6,6 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qfont.h>
-#include <QtCore/qsharedpointer.h>
 #ifndef QT_INCLUDE_COMPAT
 #include <QtCore/qrect.h>
 #endif

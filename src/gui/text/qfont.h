@@ -4,10 +4,10 @@
 #ifndef QFONT_H
 #define QFONT_H
 
+#include <QtCore/qshareddata.h>
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/qstring.h>
-#include <QtCore/qsharedpointer.h>
 
 
 QT_BEGIN_NAMESPACE

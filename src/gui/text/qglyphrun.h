@@ -7,8 +7,8 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qpoint.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtGui/qrawfont.h>
+#include <QtCore/qshareddata.h>
 
 #if !defined(QT_NO_RAWFONT)
 

@@ -15,7 +15,7 @@
 // We mean it.
 //
 
-
+#include <QtCore/qshareddata.h>
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtCore/qatomic.h"
 #include <QtCore/qvarlengtharray.h>

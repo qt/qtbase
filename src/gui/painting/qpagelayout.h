@@ -5,7 +5,7 @@
 #define QPAGELAYOUT_H
 
 #include <QtGui/qtguiglobal.h>
-#include <QtCore/qsharedpointer.h>
+#include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qmargins.h>
 

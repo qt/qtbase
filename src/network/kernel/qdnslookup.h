@@ -8,7 +8,6 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qshareddata.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qproperty.h>
 

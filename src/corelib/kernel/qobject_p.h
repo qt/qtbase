@@ -21,9 +21,9 @@
 #include "QtCore/qlist.h"
 #include "QtCore/qobject.h"
 #include "QtCore/qpointer.h"
-#include "QtCore/qsharedpointer.h"
 #include "QtCore/qvariant.h"
 #include "QtCore/qproperty.h"
+#include <QtCore/qshareddata.h>
 #include "QtCore/private/qproperty_p.h"
 
 #include <string>

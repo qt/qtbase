@@ -14,8 +14,8 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtCore/qdatetime.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtCore/qmap.h>
+#include <QtCore/qshareddata.h>
 #include <QtNetwork/qssl.h>
 
 QT_BEGIN_NAMESPACE

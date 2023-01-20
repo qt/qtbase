@@ -18,7 +18,6 @@
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "QtCore/qmutex.h"
 #include "QtCore/qrunnable.h"
-#include "QtCore/qsharedpointer.h"
 #if QT_CONFIG(thread)
 #include "QtCore/qthreadpool.h"
 #endif

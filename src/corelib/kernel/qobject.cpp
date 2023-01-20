@@ -28,7 +28,6 @@
 #if QT_CONFIG(thread)
 #include <qsemaphore.h>
 #endif
-#include <qsharedpointer.h>
 
 #include <private/qorderedmutexlocker_p.h>
 #include <private/qhooks_p.h>
