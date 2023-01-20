@@ -36,11 +36,15 @@ bool QIOSFileDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality window
     Q_UNUSED(windowFlags);
     Q_UNUSED(windowModality);
 
-    bool acceptOpen = options()->acceptMode() == QFileDialogOptions::AcceptOpen;
-    QString directory = options()->initialDirectory().toLocalFile();
+    const bool acceptOpen = options()->acceptMode() == QFileDialogOptions::AcceptOpen;
+    const auto initialDir = options()->initialDirectory();
+    const QString directory = initialDir.toLocalFile();
+    // We manually add assets-library:// to the list of paths,
+    // when converted to QUrl, it becames a scheme.
+    const QString scheme = initialDir.scheme();
 
     if (acceptOpen) {
-        if (directory.startsWith("assets-library:"_L1))
+        if (directory.startsWith("assets-library:"_L1) || scheme == "assets-library"_L1)
             return showImagePickerDialog(parent);
         else
             return showNativeDocumentPickerDialog(parent);
