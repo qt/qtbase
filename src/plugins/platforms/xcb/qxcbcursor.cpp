@@ -258,14 +258,14 @@ QXcbCursor::QXcbCursor(QXcbConnection *conn, QXcbScreen *screen)
     m_bitmapCache.setMaxCost(8);
 #endif
 
+    updateContext();
+
     if (cursorCount++)
         return;
 
     cursorFont = xcb_generate_id(xcb_connection());
     const char *cursorStr = "cursor";
     xcb_open_font(xcb_connection(), cursorFont, strlen(cursorStr), cursorStr);
-
-    updateContext();
 }
 
 QXcbCursor::~QXcbCursor()
