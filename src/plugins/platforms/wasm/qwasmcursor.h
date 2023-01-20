@@ -12,13 +12,6 @@ class QWasmCursor : public QPlatformCursor
 {
 public:
     void changeCursor(QCursor *windowCursor, QWindow *window) override;
-
-    QByteArray cursorShapeToHtml(Qt::CursorShape shape);
-    static void setOverrideWasmCursor(const QCursor &windowCursor, QScreen *screen);
-    static void clearOverrideWasmCursor(QScreen *screen);
-private:
-    QByteArray htmlCursorName = "default";
-    void setWasmCursor(QScreen *screen, const QByteArray &name);
 };
 
 QT_END_NAMESPACE

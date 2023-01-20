@@ -44,6 +44,7 @@ public:
     void destroy();
     void paint();
     void setZOrder(int order);
+    void setWindowCursor(QByteArray cssCursorName);
     void onActivationChanged(bool active);
     bool isVisible() const;
 

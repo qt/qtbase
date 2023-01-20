@@ -233,6 +233,11 @@ void QWasmWindow::setZOrder(int z)
     m_qtWindow["style"].set("zIndex", std::to_string(z));
 }
 
+void QWasmWindow::setWindowCursor(QByteArray cssCursorName)
+{
+    m_canvas["style"].set("cursor", emscripten::val(cssCursorName.constData()));
+}
+
 void QWasmWindow::setGeometry(const QRect &rect)
 {
     const auto margins = frameMargins();
