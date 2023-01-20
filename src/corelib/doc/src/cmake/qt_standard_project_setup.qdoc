@@ -18,8 +18,8 @@
 
 \badcode
 qt_standard_project_setup(
-    [MIN_VERSION policy_min]
-    [MAX_VERSION policy_max]
+    [MIN_VERSION <version>]
+    [MAX_VERSION <version>]
 )
 \endcode
 
@@ -50,15 +50,14 @@ have been defined. It does the following things:
     Qt-internal targets in this folder.
 \endlist
 
-Moreover, since Qt 6.5 it can be used to change the default behavior of Qt's CMake
-API, by opting in to changes from newer Qt versions. If \c{MIN_VERSION} is
+Since Qt 6.5, it is possible to change the default behavior of Qt's CMake
+API by opting in to changes from newer Qt versions. If \c{MIN_VERSION} is
 specified, all suggested changes introduced in Qt up to \c{MIN_VERSION} are enabled,
 and using an older Qt version will result in an error.
 If additionally \c{MAX_VERSION} has been specified, any new changes introduced
 in versions up to \c{MAX_VERSION} are also enabled (but using an older Qt
-version is not an error).
-This is similar to CMake's policy concept (compare \l{cmake_policy}).
-
+version is not an error). This is similar to CMake's policy concept
+(compare \l{cmake_policy}).
 
 On platforms that support \c{RPATH} (other than Apple platforms), two values
 are appended to the \c{CMAKE_INSTALL_RPATH} variable by this command.

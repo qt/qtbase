@@ -2707,11 +2707,9 @@ function(__qt_internal_setup_policy policy sinceversion policyexplanation)
         set(__QT_INTERNAL_POLICY_${policy} "NEW" PARENT_SCOPE)
     elseif(NOT "${QT_NO_SHOW_OLD_POLICY_WARNINGS}")
         message(AUTHOR_WARNING
-            "Qt policy ${policy} is not set. "
-            "Use the qt6_set_policy command to set it and suppress this warning. "
-            "You can also silence all policy warnings by setting QT_NO_SHOW_OLD_POLICY_WARNINGS "
-            "to true.\n"
-            "${policyexplanation}"
+            "Qt policy ${policy} is not set: "
+            "${policyexplanation} "
+            "Use the qt_policy command to set the policy and suppress this warning.\n"
         )
     endif()
 endfunction()
@@ -2741,6 +2739,7 @@ macro(qt6_standard_project_setup)
             message(FATAL_ERROR "Unexpected arguments: ${arg_UNPARSED_ARGUMENTS}")
         endif()
 
+        # Set the Qt CMake policy based on the requested version(s)
         set(__qt_policy_check_version "6.0.0")
         if(Qt6_VERSION_MAJOR)
             set(__qt_current_version
@@ -2751,17 +2750,23 @@ macro(qt6_standard_project_setup)
         else()
             message(FATAL_ERROR "Can not determine Qt version.")
         endif()
-        if (__qt_sps_arg_MIN_VERSION)
-            if ("${__qt_current_version}" VERSION_LESS "${__qt_sps_arg_MIN_VERSION}")
-                message(FATAL_ERROR "Project required a Qt minimum version of ${__qt_sps_arg_MIN_VERSION}, but current version is only ${__qt_current_version}")
+        if(__qt_sps_arg_MIN_VERSION)
+            if("${__qt_current_version}" VERSION_LESS "${__qt_sps_arg_MIN_VERSION}")
+                message(FATAL_ERROR
+                    "Project required a Qt minimum version of ${__qt_sps_arg_MIN_VERSION}, "
+                    "but current version is only ${__qt_current_version}.")
             endif()
             set(__qt_policy_check_version "${__qt_sps_arg_MIN_VERSION}")
         endif()
-        if (__qt_sps_arg_MAX_VERSION)
-            if (${__qt_sps_arg_MAX_VERSION} VERSION_LESS ${__qt_sps_arg_MIN_VERSION})
-                message(FATAL_ERROR "MAX_VERSION must be larger or equal than MIN_VERSION")
+        if(__qt_sps_arg_MAX_VERSION)
+            if(__qt_sps_arg_MIN_VERSION)
+                if(${__qt_sps_arg_MAX_VERSION} VERSION_LESS ${__qt_sps_arg_MIN_VERSION})
+                    message(FATAL_ERROR "MAX_VERSION must be larger than or equal to MIN_VERSION.")
+                endif()
+                set(__qt_policy_check_version "${__qt_sps_arg_MAX_VERSION}")
+            else()
+                message(FATAL_ERROR "Please specify the MIN_VERSION as well.")
             endif()
-            set(__qt_policy_check_version "${__qt_sps_arg_MAX_VERSION}")
         endif()
 
         # All changes below this point should not result in a change to an
