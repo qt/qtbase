@@ -8,7 +8,9 @@ if(QT_NO_PACKAGE_VERSION_CHECK)
     set(__qt_disable_package_version_check TRUE)
 endif()
 
+# Extra CMake code begin
 @extra_code@
+# Extra CMake code end
 
 if((NOT PACKAGE_VERSION_COMPATIBLE) OR PACKAGE_VERSION_UNSUITABLE)
     set(__qt_package_version_incompatible TRUE)

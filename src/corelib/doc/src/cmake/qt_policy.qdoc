@@ -18,34 +18,48 @@
 
 \badcode
 qt_policy(
-    [SET policy behavior]
-    [GET policy variable]
+    [SET <policy_name> behavior]
+    [GET <policy_name> <variable>]
 )
 \endcode
 
 \versionlessCMakeCommandsNote qt6_policy()
 
 \section1 Description
+
 This command has two modes:
+
 \list
 \li When the \c{SET} keyword is used, this command can be used to opt in to
     behavior changes in Qt's CMake API, or to explicitly opt out of them.
-\li When the \c{GET} keyword is used, \c{variable} is set to the current
-    value for the policy.
+\li When the \c{GET} keyword is used, \c{<variable>} is set to the current
+    behavior for the policy, i.e. \c OLD or \c NEW.
 \endlist
-\c{policyname} must be the name of a Qt cmake policy. Using an unknown policy
-is an error; code supporting older Qt versions should check with
+
+\c{<policy_name>} must be the name of one of the \l{Qt CMake policies}.
+Policy names have the form of \c{QTP<NNNN>} where <NNNN> is
+an integer specifying the index of the policy. Using an invalid policy
+name results in an error.
+
+Code supporting older Qt versions can check the existence of a policy by
+checking the value of the \c{QT_KNOWN_POLICY_<policy_name>} variable before
+getting the value of \c <policy_name> or setting its behavior.
+
 \badcode
 if(QT_KNOWN_POLICY_<policy_name>)
+    qt_policy(SET <policy_name> NEW)
+endif()
 \endcode
-whether the policy exists before querying or setting it.
 
-\c{behavior} can
-either be
+You can set \c behavior to one of the following options:
+
 \list
-\li \c{NEW} to opt into the new behavior, or
-\li \c{OLD} to explicitly opt-out of it.
+\li \c{NEW} to opt into the new behavior
+\li \c{OLD} to explicitly opt-out of it
 \endlist
+
+\note The \c{OLD} behavior of a policy is deprecated, and may
+be removed in the future.
 
 \sa qt_standard_project_setup
 
