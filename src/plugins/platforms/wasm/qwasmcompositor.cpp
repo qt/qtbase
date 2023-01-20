@@ -83,9 +83,6 @@ void QWasmCompositor::deregisterEventHandlers()
     emscripten_set_touchend_callback(screenElementSelector.constData(), 0, 0, NULL);
     emscripten_set_touchmove_callback(screenElementSelector.constData(), 0, 0, NULL);
     emscripten_set_touchcancel_callback(screenElementSelector.constData(), 0, 0, NULL);
-
-    screen()->element().call<void>("removeEventListener", std::string("drop"),
-                                   val::module_property("qtDrop"), val(true));
 }
 
 void QWasmCompositor::destroy()
@@ -123,11 +120,6 @@ void QWasmCompositor::initEventHandlers()
                                       &touchCallback);
     emscripten_set_touchcancel_callback(screenElementSelector.constData(), (void *)this, UseCapture,
                                         &touchCallback);
-
-    screen()->element().call<void>("addEventListener", std::string("drop"),
-                                   val::module_property("qtDrop"), val(true));
-    screen()->element().set("data-qtdropcontext", // ? unique
-                            emscripten::val(quintptr(reinterpret_cast<void *>(screen()))));
 }
 
 void QWasmCompositor::addWindow(QWasmWindow *window)

@@ -16,10 +16,63 @@ QFlags<Qt::KeyboardModifier> getForEvent<EmscriptenKeyboardEvent>(
 }
 }  // namespace KeyboardModifier
 
+Event::Event(EventType type, emscripten::val target) : type(type), target(target) { }
+
+Event::~Event() = default;
+
+Event::Event(const Event &other) = default;
+
+Event::Event(Event &&other) = default;
+
+Event &Event::operator=(const Event &other) = default;
+
+Event &Event::operator=(Event &&other) = default;
+
+MouseEvent::MouseEvent(EventType type, emscripten::val event) : Event(type, event["target"])
+{
+    mouseButton = MouseEvent::buttonFromWeb(event["button"].as<int>());
+    mouseButtons = MouseEvent::buttonsFromWeb(event["buttons"].as<unsigned short>());
+    // The current button state (event.buttons) may be out of sync for some PointerDown
+    // events where the "down" state is very brief, for example taps on Apple trackpads.
+    // Qt expects that the current button state is in sync with the event, so we sync
+    // it up here.
+    if (type == EventType::PointerDown)
+        mouseButtons |= mouseButton;
+    localPoint = QPoint(event["offsetX"].as<int>(), event["offsetY"].as<int>());
+    pointInPage = QPoint(event["pageX"].as<int>(), event["pageY"].as<int>());
+    pointInViewport = QPoint(event["clientX"].as<int>(), event["clientY"].as<int>());
+    modifiers = KeyboardModifier::getForEvent(event);
+}
+
+MouseEvent::~MouseEvent() = default;
+
+MouseEvent::MouseEvent(const MouseEvent &other) = default;
+
+MouseEvent::MouseEvent(MouseEvent &&other) = default;
+
+MouseEvent &MouseEvent::operator=(const MouseEvent &other) = default;
+
+MouseEvent &MouseEvent::operator=(MouseEvent &&other) = default;
+
+PointerEvent::PointerEvent(EventType type, emscripten::val event) : MouseEvent(type, event)
+{
+    pointerId = event["pointerId"].as<int>();
+    pointerType = event["pointerType"].as<std::string>() == "mouse" ? PointerType::Mouse
+                                                                    : PointerType::Other;
+}
+
+PointerEvent::~PointerEvent() = default;
+
+PointerEvent::PointerEvent(const PointerEvent &other) = default;
+
+PointerEvent::PointerEvent(PointerEvent &&other) = default;
+
+PointerEvent &PointerEvent::operator=(const PointerEvent &other) = default;
+
+PointerEvent &PointerEvent::operator=(PointerEvent &&other) = default;
+
 std::optional<PointerEvent> PointerEvent::fromWeb(emscripten::val event)
 {
-    PointerEvent ret;
-
     const auto eventType = ([&event]() -> std::optional<EventType> {
         const auto eventTypeString = event["type"].as<std::string>();
 
@@ -38,27 +91,47 @@ std::optional<PointerEvent> PointerEvent::fromWeb(emscripten::val event)
     if (!eventType)
         return std::nullopt;
 
-    ret.type = *eventType;
-    ret.target = event["target"];
-    ret.pointerType = event["pointerType"].as<std::string>() == "mouse" ?
-        PointerType::Mouse : PointerType::Other;
-    ret.mouseButton = MouseEvent::buttonFromWeb(event["button"].as<int>());
-    ret.mouseButtons = MouseEvent::buttonsFromWeb(event["buttons"].as<unsigned short>());
+    return PointerEvent(*eventType, event);
+}
 
-    // The current button state (event.buttons) may be out of sync for some PointerDown
-    // events where the "down" state is very brief, for example taps on Apple trackpads.
-    // Qt expects that the current button state is in sync with the event, so we sync
-    // it up here.
-    if (*eventType == EventType::PointerDown)
-        ret.mouseButtons |= ret.mouseButton;
+DragEvent::DragEvent(EventType type, emscripten::val event)
+    : MouseEvent(type, event), dataTransfer(event["dataTransfer"])
+{
+    dropAction = ([event]() {
+        const std::string effect = event["dataTransfer"]["dropEffect"].as<std::string>();
 
-    ret.localPoint = QPoint(event["offsetX"].as<int>(), event["offsetY"].as<int>());
-    ret.pointInPage = QPoint(event["pageX"].as<int>(), event["pageY"].as<int>());
-    ret.pointInViewport = QPoint(event["clientX"].as<int>(), event["clientY"].as<int>());
-    ret.pointerId = event["pointerId"].as<int>();
-    ret.modifiers = KeyboardModifier::getForEvent(event);
+        if (effect == "copy")
+            return Qt::CopyAction;
+        else if (effect == "move")
+            return Qt::MoveAction;
+        else if (effect == "link")
+            return Qt::LinkAction;
+        return Qt::IgnoreAction;
+    })();
+}
 
-    return ret;
+DragEvent::~DragEvent() = default;
+
+DragEvent::DragEvent(const DragEvent &other) = default;
+
+DragEvent::DragEvent(DragEvent &&other) = default;
+
+DragEvent &DragEvent::operator=(const DragEvent &other) = default;
+
+DragEvent &DragEvent::operator=(DragEvent &&other) = default;
+
+std::optional<DragEvent> DragEvent::fromWeb(emscripten::val event)
+{
+    const auto eventType = ([&event]() -> std::optional<EventType> {
+        const auto eventTypeString = event["type"].as<std::string>();
+
+        if (eventTypeString == "drop")
+            return EventType::Drop;
+        return std::nullopt;
+    })();
+    if (!eventType)
+        return std::nullopt;
+    return DragEvent(*eventType, event);
 }
 
 QT_END_NAMESPACE

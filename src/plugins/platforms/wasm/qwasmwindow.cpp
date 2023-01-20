@@ -84,6 +84,12 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
             std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerenter", callback);
     m_pointerLeaveCallback =
             std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerleave", callback);
+
+    m_dropCallback = std::make_unique<qstdweb::EventCallback>(
+            m_qtWindow, "drop", [this](emscripten::val event) {
+                if (processDrop(*DragEvent::fromWeb(event)))
+                    event.call<void>("preventDefault");
+            });
 }
 
 QWasmWindow::~QWasmWindow()
@@ -416,6 +422,30 @@ bool QWasmWindow::processPointer(const PointerEvent &event)
     }
 
     return false;
+}
+
+bool QWasmWindow::processDrop(const DragEvent &event)
+{
+    m_dropDataReadCancellationFlag = qstdweb::readDataTransfer(
+            event.dataTransfer,
+            [](QByteArray fileContent) {
+                QImage image;
+                image.loadFromData(fileContent, nullptr);
+                return image;
+            },
+            [this, event](std::unique_ptr<QMimeData> data) {
+                QWindowSystemInterface::handleDrag(window(), data.get(), event.pointInPage,
+                                                   event.dropAction, event.mouseButton,
+                                                   event.modifiers);
+
+                QWindowSystemInterface::handleDrop(window(), data.get(), event.pointInPage,
+                                                   event.dropAction, event.mouseButton,
+                                                   event.modifiers);
+
+                QWindowSystemInterface::handleDrag(window(), nullptr, QPoint(), Qt::IgnoreAction,
+                                                   {}, {});
+            });
+    return true;
 }
 
 QRect QWasmWindow::normalGeometry() const

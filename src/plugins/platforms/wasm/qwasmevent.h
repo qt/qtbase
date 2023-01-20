@@ -18,6 +18,7 @@
 QT_BEGIN_NAMESPACE
 
 enum class EventType {
+    Drop,
     PointerDown,
     PointerMove,
     PointerUp,
@@ -107,13 +108,20 @@ QFlags<Qt::KeyboardModifier> getForEvent<EmscriptenKeyboardEvent>(
 
 }  // namespace KeyboardModifier
 
-struct Q_CORE_EXPORT Event
+struct Event
 {
     EventType type;
     emscripten::val target = emscripten::val::undefined();
+
+    Event(EventType type, emscripten::val target);
+    ~Event();
+    Event(const Event &other);
+    Event(Event &&other);
+    Event &operator=(const Event &other);
+    Event &operator=(Event &&other);
 };
 
-struct Q_CORE_EXPORT MouseEvent : public Event
+struct MouseEvent : public Event
 {
     QPoint localPoint;
     QPoint pointInPage;
@@ -121,6 +129,13 @@ struct Q_CORE_EXPORT MouseEvent : public Event
     Qt::MouseButton mouseButton;
     Qt::MouseButtons mouseButtons;
     QFlags<Qt::KeyboardModifier> modifiers;
+
+    MouseEvent(EventType type, emscripten::val webEvent);
+    ~MouseEvent();
+    MouseEvent(const MouseEvent &other);
+    MouseEvent(MouseEvent &&other);
+    MouseEvent &operator=(const MouseEvent &other);
+    MouseEvent &operator=(MouseEvent &&other);
 
     static constexpr Qt::MouseButton buttonFromWeb(int webButton) {
         switch (webButton) {
@@ -158,12 +173,34 @@ struct Q_CORE_EXPORT MouseEvent : public Event
     }
 };
 
-struct Q_CORE_EXPORT PointerEvent : public MouseEvent
+struct PointerEvent : public MouseEvent
 {
     static std::optional<PointerEvent> fromWeb(emscripten::val webEvent);
 
+    PointerEvent(EventType type, emscripten::val webEvent);
+    ~PointerEvent();
+    PointerEvent(const PointerEvent &other);
+    PointerEvent(PointerEvent &&other);
+    PointerEvent &operator=(const PointerEvent &other);
+    PointerEvent &operator=(PointerEvent &&other);
+
     PointerType pointerType;
     int pointerId;
+};
+
+struct DragEvent : public MouseEvent
+{
+    static std::optional<DragEvent> fromWeb(emscripten::val webEvent);
+
+    DragEvent(EventType type, emscripten::val webEvent);
+    ~DragEvent();
+    DragEvent(const DragEvent &other);
+    DragEvent(DragEvent &&other);
+    DragEvent &operator=(const DragEvent &other);
+    DragEvent &operator=(DragEvent &&other);
+
+    Qt::DropAction dropAction;
+    emscripten::val dataTransfer;
 };
 
 QT_END_NAMESPACE

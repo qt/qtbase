@@ -18,13 +18,21 @@
 
 #include <emscripten/val.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
+
+namespace qstdweb {
+struct CancellationFlag;
+}
 
 namespace qstdweb {
 class EventCallback;
 }
 
 class ClientArea;
+struct DragEvent;
+struct PointerEvent;
 
 class QWasmWindow final : public QPlatformWindow
 {
@@ -84,6 +92,7 @@ private:
     void applyWindowState();
 
     bool processPointer(const PointerEvent &event);
+    bool processDrop(const DragEvent &event);
 
     QWindow *m_window = nullptr;
     QWasmCompositor *m_compositor = nullptr;
@@ -105,6 +114,8 @@ private:
     std::unique_ptr<qstdweb::EventCallback> m_pointerEnterCallback;
     std::unique_ptr<qstdweb::EventCallback> m_pointerMoveCallback;
 
+    std::unique_ptr<qstdweb::EventCallback> m_dropCallback;
+
     Qt::WindowStates m_state = Qt::WindowNoState;
     Qt::WindowStates m_previousWindowState = Qt::WindowNoState;
 
@@ -120,6 +131,8 @@ private:
     friend class QWasmCompositor;
     friend class QWasmEventTranslator;
     bool windowIsPopupType(Qt::WindowFlags flags) const;
+
+    std::shared_ptr<qstdweb::CancellationFlag> m_dropDataReadCancellationFlag;
 };
 
 QT_END_NAMESPACE

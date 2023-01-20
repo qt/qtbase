@@ -12,10 +12,6 @@
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatforminputcontext.h>
 
-#if QT_CONFIG(draganddrop)
-#  include "qwasmdrag.h"
-#endif
-
 #include <QtCore/qhash.h>
 
 #include <private/qsimpledrag_p.h>
