@@ -36,11 +36,10 @@ using namespace Qt::StringLiterals;
 
 /*!
     \class QUtiMimeConverter
-    \internal
     \brief The QUtiMimeConverter class converts between a MIME type and a
     \l{https://developer.apple.com/documentation/uniformtypeidentifiers}
         {Uniform Type Identifier (UTI)} format.
-    \since 4.2
+    \since 6.5
 
     \ingroup draganddrop
     \inmodule QtGui
@@ -82,6 +81,7 @@ using namespace Qt::StringLiterals;
 */
 
 /*!
+    \internal
     Constructs a new conversion object of type \a scope, adding it to the
     globally accessed list of available converters.
 */
@@ -126,7 +126,7 @@ int QUtiMimeConverter::count(const QMimeData *mimeData) const
 */
 
 /*!
-    \fn QString QUtiMimeConverter::mimeForUti(QString uti)
+    \fn QString QUtiMimeConverter::mimeForUti(const QString &uti) const
 
     Returns the MIME type used for Mac UTI \a uti, or an empty string if
     this converter does not support converting from \a uti.
@@ -135,7 +135,7 @@ int QUtiMimeConverter::count(const QMimeData *mimeData) const
 */
 
 /*!
-    \fn QString QUtiMimeConverter::utiForMime(const QString &mime)
+    \fn QString QUtiMimeConverter::utiForMime(const QString &mime) const
 
     Returns the Mac UTI used for MIME type \a mime, or an empty string if
     this converter does not support converting from \a mime.
@@ -145,7 +145,7 @@ int QUtiMimeConverter::count(const QMimeData *mimeData) const
 
 /*!
     \fn QVariant QUtiMimeConverter::convertToMime(const QString &mime,
-                                         const QList<QByteArray> &data, const QString &uti)
+                                         const QList<QByteArray> &data, const QString &uti) const
 
     Returns \a data converted from Mac UTI \a uti to MIME type \a mime.
 
@@ -157,7 +157,7 @@ int QUtiMimeConverter::count(const QMimeData *mimeData) const
 
 /*!
     \fn QList<QByteArray> QUtiMimeConverter::convertFromMime(const QString &mime,
-                                                    const QVariant &data, const QString & uti)
+                                                    const QVariant &data, const QString & uti) const
 
     Returns \a data converted from MIME type \a mime to Mac UTI \a uti.
 
