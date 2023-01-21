@@ -2324,7 +2324,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
                 QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0) {
-                    ID3D11UnorderedAccessView *uav = bufD->unorderedAccessView();
+                    ID3D11UnorderedAccessView *uav = bufD->unorderedAccessView(b->u.sbuf.offset);
                     if (uav)
                         res[RBM_COMPUTE].uavs.append({ nativeBinding.first, uav });
                 }
@@ -2808,10 +2808,9 @@ void QD3D11Buffer::destroy()
     delete[] dynBuf;
     dynBuf = nullptr;
 
-    if (uav) {
-        uav->Release();
-        uav = nullptr;
-    }
+    for (auto it = uavs.begin(), end = uavs.end(); it != end; ++it)
+        it.value()->Release();
+    uavs.clear();
 
     QRHI_RES_RHI(QRhiD3D11);
     if (rhiD)
@@ -2913,20 +2912,22 @@ void QD3D11Buffer::endFullDynamicBufferUpdateForCurrentFrame()
     rhiD->context->Unmap(buffer, 0);
 }
 
-ID3D11UnorderedAccessView *QD3D11Buffer::unorderedAccessView()
+ID3D11UnorderedAccessView *QD3D11Buffer::unorderedAccessView(quint32 offset)
 {
-    if (uav)
-        return uav;
+    auto it = uavs.find(offset);
+    if (it != uavs.end())
+        return it.value();
 
     // SPIRV-Cross generated HLSL uses RWByteAddressBuffer
     D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
     desc.Format = DXGI_FORMAT_R32_TYPELESS;
     desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-    desc.Buffer.FirstElement = 0;
-    desc.Buffer.NumElements = aligned(m_size, 4u) / 4;
+    desc.Buffer.FirstElement = offset / 4u;
+    desc.Buffer.NumElements = aligned(m_size - offset, 4u) / 4u;
     desc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
 
     QRHI_RES_RHI(QRhiD3D11);
+    ID3D11UnorderedAccessView *uav = nullptr;
     HRESULT hr = rhiD->dev->CreateUnorderedAccessView(buffer, &desc, &uav);
     if (FAILED(hr)) {
         qWarning("Failed to create UAV: %s",
@@ -2934,6 +2935,7 @@ ID3D11UnorderedAccessView *QD3D11Buffer::unorderedAccessView()
         return nullptr;
     }
 
+    uavs[offset] = uav;
     return uav;
 }
 
