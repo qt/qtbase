@@ -36,12 +36,12 @@ struct QD3D11Buffer : public QRhiBuffer
     char *beginFullDynamicBufferUpdateForCurrentFrame() override;
     void endFullDynamicBufferUpdateForCurrentFrame() override;
 
-    ID3D11UnorderedAccessView *unorderedAccessView();
+    ID3D11UnorderedAccessView *unorderedAccessView(quint32 offset);
 
     ID3D11Buffer *buffer = nullptr;
     char *dynBuf = nullptr;
     bool hasPendingDynamicUpdates = false;
-    ID3D11UnorderedAccessView *uav = nullptr;
+    QHash<quint32, ID3D11UnorderedAccessView *> uavs;
     uint generation = 0;
     friend class QRhiD3D11;
 };
