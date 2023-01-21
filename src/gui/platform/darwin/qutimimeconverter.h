@@ -17,6 +17,7 @@ class QMimeData;
 
 class Q_GUI_EXPORT QUtiMimeConverter
 {
+    Q_DISABLE_COPY(QUtiMimeConverter)
 public:
     enum class HandlerScope : uchar
     {

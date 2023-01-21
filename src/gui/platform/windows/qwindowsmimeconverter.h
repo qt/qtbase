@@ -20,6 +20,7 @@ class QVariant;
 
 class Q_GUI_EXPORT QWindowsMimeConverter
 {
+    Q_DISABLE_COPY(QWindowsMimeConverter)
 public:
     QWindowsMimeConverter();
     virtual ~QWindowsMimeConverter();
