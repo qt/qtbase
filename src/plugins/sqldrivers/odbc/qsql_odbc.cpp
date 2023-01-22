@@ -31,10 +31,10 @@ using namespace Qt::StringLiterals;
 // undefine this to prevent initial check of the ODBC driver
 #define ODBC_CHECK_DRIVER
 
-static const int COLNAMESIZE = 256;
-static const SQLSMALLINT TABLENAMESIZE = 128;
+static constexpr int COLNAMESIZE = 256;
+static constexpr SQLSMALLINT TABLENAMESIZE = 128;
 //Map Qt parameter types to ODBC types
-static const SQLSMALLINT qParamType[4] = { SQL_PARAM_INPUT, SQL_PARAM_INPUT, SQL_PARAM_OUTPUT, SQL_PARAM_INPUT_OUTPUT };
+static constexpr SQLSMALLINT qParamType[4] = { SQL_PARAM_INPUT, SQL_PARAM_INPUT, SQL_PARAM_OUTPUT, SQL_PARAM_INPUT_OUTPUT };
 
 template<typename C, int SIZE = sizeof(SQLTCHAR)>
 inline static QString fromSQLTCHAR(const C &input, qsizetype size = -1)
@@ -199,7 +199,7 @@ static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode
     SQLSMALLINT msgLen = 0;
     SQLRETURN r = SQL_NO_DATA;
     SQLTCHAR state_[SQL_SQLSTATE_SIZE+1];
-    QVarLengthArray<SQLTCHAR> description_(SQL_MAX_MESSAGE_LENGTH);
+    QVarLengthArray<SQLTCHAR, SQL_MAX_MESSAGE_LENGTH> description_(SQL_MAX_MESSAGE_LENGTH);
     QString result;
     int i = 1;
 
@@ -394,7 +394,6 @@ static QVariant qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool un
         if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && lengthIndicator > 0)
             colSize = int(lengthIndicator / sizeof(SQLTCHAR) + 1);
         QVarLengthArray<SQLTCHAR> buf(colSize);
-        memset(buf.data(), 0, colSize*sizeof(SQLTCHAR));
         while (true) {
             r = SQLGetData(hStmt,
                             column+1,
@@ -490,12 +489,11 @@ static QVariant qGetBinaryData(SQLHANDLE hStmt, int column)
     SQLLEN lengthIndicator = 0;
     SQLRETURN r = SQL_ERROR;
 
-    QVarLengthArray<SQLTCHAR> colName(COLNAMESIZE);
+    QVarLengthArray<SQLTCHAR, COLNAMESIZE> colName(COLNAMESIZE);
 
     r = SQLDescribeCol(hStmt,
                        column + 1,
-                       colName.data(),
-                       COLNAMESIZE,
+                       colName.data(), SQLSMALLINT(colName.size()),
                        &colNameLen,
                        &colType,
                        &colSize,
@@ -651,12 +649,11 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, int i, QString *errorMess
     SQLSMALLINT colScale;
     SQLSMALLINT nullable;
     SQLRETURN r = SQL_ERROR;
-    QVarLengthArray<SQLTCHAR> colName(COLNAMESIZE);
+    QVarLengthArray<SQLTCHAR, COLNAMESIZE> colName(COLNAMESIZE);
     errorMessage->clear();
     r = SQLDescribeCol(hStmt,
                         i+1,
-                        colName.data(),
-                        (SQLSMALLINT)COLNAMESIZE,
+                        colName.data(), SQLSMALLINT(colName.size()),
                         &colNameLen,
                         &colType,
                         &colSize,
@@ -694,7 +691,7 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, int i, QString *errorMess
         f.setRequired(false);
     // else we don't know
     f.setAutoValue(isAutoValue(hStmt, i));
-    QVarLengthArray<SQLTCHAR> tableName(TABLENAMESIZE);
+    QVarLengthArray<SQLTCHAR, TABLENAMESIZE> tableName(TABLENAMESIZE);
     SQLSMALLINT tableNameLen;
     r = SQLColAttribute(hStmt,
                         i + 1,
@@ -1376,8 +1373,7 @@ bool QODBCResult::exec()
 
     QVariantList &values = boundValues();
     QByteArrayList tmpStorage(values.count(), QByteArray()); // targets for SQLBindParameter()
-    QVarLengthArray<SQLLEN, 32> indicators(values.count());
-    memset(indicators.data(), 0, indicators.size() * sizeof(SQLLEN));
+    QVarLengthArray<SQLLEN, 32> indicators(values.count(), 0);
 
     // bind parameters - only positional binding allowed
     SQLRETURN r;
@@ -1978,15 +1974,13 @@ bool QODBCDriver::open(const QString & db,
         connQStr += ";PWD="_L1 + password;
 
     SQLSMALLINT cb;
-    QVarLengthArray<SQLTCHAR> connOut(1024);
-    memset(connOut.data(), 0, connOut.size() * sizeof(SQLTCHAR));
+    QVarLengthArray<SQLTCHAR, 1024> connOut(1024);
     {
         auto encoded = toSQLTCHAR(connQStr);
         r = SQLDriverConnect(d->hDbc,
                              nullptr,
                              encoded.data(), SQLSMALLINT(encoded.size()),
-                             connOut.data(),
-                             1024,
+                             connOut.data(), SQLSMALLINT(connOut.size()),
                              &cb,
                              /*SQL_DRIVER_NOPROMPT*/0);
     }
@@ -2103,7 +2097,7 @@ void QODBCDriverPrivate::checkUnicode()
     if (r == SQL_SUCCESS) {
         r = SQLFetch(hStmt);
         if (r == SQL_SUCCESS) {
-            QVarLengthArray<SQLWCHAR> buffer(10);
+            QVarLengthArray<SQLWCHAR, 10> buffer(10);
             r = SQLGetData(hStmt, 1, SQL_C_WCHAR, buffer.data(), buffer.size() * sizeof(SQLWCHAR), NULL);
             if (r == SQL_SUCCESS && fromSQLTCHAR(buffer) == "test"_L1) {
                 unicode = true;
@@ -2184,9 +2178,8 @@ void QODBCDriverPrivate::checkSchemaUsage()
 void QODBCDriverPrivate::checkDBMS()
 {
     SQLRETURN   r;
-    QVarLengthArray<SQLTCHAR> serverString(200);
+    QVarLengthArray<SQLTCHAR, 200> serverString(200);
     SQLSMALLINT t;
-    memset(serverString.data(), 0, serverString.size() * sizeof(SQLTCHAR));
 
     r = SQLGetInfo(hDbc,
                    SQL_DBMS_NAME,
@@ -2230,7 +2223,7 @@ void QODBCDriverPrivate::checkHasSQLFetchScroll()
 
 void QODBCDriverPrivate::checkHasMultiResults()
 {
-    QVarLengthArray<SQLTCHAR> driverResponse(2);
+    QVarLengthArray<SQLTCHAR, 2> driverResponse(2);
     SQLSMALLINT length;
     SQLRETURN r = SQLGetInfo(hDbc,
                              SQL_MULT_RESULT_SETS,
@@ -2238,7 +2231,7 @@ void QODBCDriverPrivate::checkHasMultiResults()
                              SQLSMALLINT(driverResponse.size() * sizeof(SQLTCHAR)),
                              &length);
     if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
-        hasMultiResultSets = fromSQLTCHAR(driverResponse, length/sizeof(SQLTCHAR)).startsWith(u'Y');
+        hasMultiResultSets = fromSQLTCHAR(driverResponse, length / sizeof(SQLTCHAR)).startsWith(u'Y');
 }
 
 void QODBCDriverPrivate::checkDateTimePrecision()
