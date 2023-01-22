@@ -563,7 +563,7 @@ void tst_QTcpSocket::bind()
 
     std::unique_ptr<QTcpSocket> socket(newSocket());
     quint16 boundPort;
-    qintptr fd;
+    qintptr fd = 0;
 
     if (successExpected) {
         bool randomPort = port == -1;
