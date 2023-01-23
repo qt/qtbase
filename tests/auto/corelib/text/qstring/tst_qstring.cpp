@@ -4372,14 +4372,14 @@ void tst_QString::toLong_data()
     QTest::addColumn<bool>("ok" );
 
     QTest::newRow( "default" ) << QString() << 10 << 0L << false;
-    QTest::newRow( "empty" ) << QString("") << 10 << 0L << false;
-    QTest::newRow( "normal" ) << QString("7fFFfFFf") << 16 << 0x7fFFfFFfL << true;
-    QTest::newRow( "long_max" ) << QString("2147483647") << 10 << 2147483647L << true;
+    QTest::newRow("empty") << u""_s << 10 << 0L << false;
+    QTest::newRow("normal") << u"7fFFfFFf"_s << 16 << 0x7fFFfFFfL << true;
+    QTest::newRow("long_max") << u"2147483647"_s << 10 << 2147483647L << true;
     if (sizeof(long) == 4) {
-        QTest::newRow( "long_max+1" ) << QString("2147483648") << 10 << 0L << false;
-        QTest::newRow( "long_min-1" ) << QString("-80000001") << 16 << 0L << false;
+        QTest::newRow("long_max+1") << u"2147483648"_s << 10 << 0L << false;
+        QTest::newRow("long_min-1") << u"-80000001"_s << 16 << 0L << false;
     }
-    QTest::newRow( "negative" ) << QString("-7fffffff") << 16 << -0x7fffffffL << true;
+    QTest::newRow("negative") << u"-7fffffff"_s << 16 << -0x7fffffffL << true;
 //    QTest::newRow( "long_min" ) << QString("-80000000") << 16 << 0x80000000uL << true;
 }
 
@@ -4573,35 +4573,35 @@ void tst_QString::toDouble_data()
     QTest::addColumn<bool>("result_ok" );
 
     QTest::newRow("null") << QString() << 0.0 << false;
-    QTest::newRow("empty") << QString("") << 0.0 << false;
+    QTest::newRow("empty") << u""_s << 0.0 << false;
 
-    QTest::newRow( "ok00" ) << QString("0.000000000931322574615478515625") << 0.000000000931322574615478515625 << true;
-    QTest::newRow( "ok01" ) << QString(" 123.45") << 123.45 << true;
+    QTest::newRow("ok00") << u"0.000000000931322574615478515625"_s << 0.000000000931322574615478515625 << true;
+    QTest::newRow("ok01") << u" 123.45"_s << 123.45 << true;
 
-    QTest::newRow( "ok02" ) << QString("0.1e10") << 0.1e10 << true;
-    QTest::newRow( "ok03" ) << QString("0.1e-10") << 0.1e-10 << true;
+    QTest::newRow("ok02") << u"0.1e10"_s << 0.1e10 << true;
+    QTest::newRow("ok03") << u"0.1e-10"_s << 0.1e-10 << true;
 
-    QTest::newRow( "ok04" ) << QString("1e10") << 1.0e10 << true;
-    QTest::newRow( "ok05" ) << QString("1e+10") << 1.0e10 << true;
-    QTest::newRow( "ok06" ) << QString("1e-10") << 1.0e-10 << true;
+    QTest::newRow("ok04") << u"1e10"_s << 1.0e10 << true;
+    QTest::newRow("ok05") << u"1e+10"_s << 1.0e10 << true;
+    QTest::newRow("ok06") << u"1e-10"_s << 1.0e-10 << true;
 
-    QTest::newRow( "ok07" ) << QString(" 1e10") << 1.0e10 << true;
-    QTest::newRow( "ok08" ) << QString("  1e+10") << 1.0e10 << true;
-    QTest::newRow( "ok09" ) << QString("   1e-10") << 1.0e-10 << true;
+    QTest::newRow("ok07") << u" 1e10"_s << 1.0e10 << true;
+    QTest::newRow("ok08") << u"  1e+10"_s << 1.0e10 << true;
+    QTest::newRow("ok09") << u"   1e-10"_s << 1.0e-10 << true;
 
-    QTest::newRow( "ok10" ) << QString("1.") << 1.0 << true;
-    QTest::newRow( "ok11" ) << QString(".1") << 0.1 << true;
+    QTest::newRow("ok10") << u"1."_s << 1.0 << true;
+    QTest::newRow("ok11") << u".1"_s << 0.1 << true;
 
-    QTest::newRow( "wrong00" ) << QString("123.45 ") << 123.45 << true;
-    QTest::newRow( "wrong01" ) << QString(" 123.45 ") << 123.45 << true;
+    QTest::newRow("wrong00") << u"123.45 "_s << 123.45 << true;
+    QTest::newRow("wrong01") << u" 123.45 "_s << 123.45 << true;
 
-    QTest::newRow( "wrong02" ) << QString("aa123.45aa") << 0.0 << false;
-    QTest::newRow( "wrong03" ) << QString("123.45aa") << 0.0 << false;
-    QTest::newRow( "wrong04" ) << QString("123erf") << 0.0 << false;
+    QTest::newRow("wrong02") << u"aa123.45aa"_s << 0.0 << false;
+    QTest::newRow("wrong03") << u"123.45aa"_s << 0.0 << false;
+    QTest::newRow("wrong04") << u"123erf"_s << 0.0 << false;
 
-    QTest::newRow( "wrong05" ) << QString("abc") << 0.0 << false;
+    QTest::newRow("wrong05") << u"abc"_s << 0.0 << false;
     QTest::newRow( "wrong06" ) << QString() << 0.0 << false;
-    QTest::newRow( "wrong07" ) << QString("") << 0.0 << false;
+    QTest::newRow("wrong07") << u""_s << 0.0 << false;
 }
 
 void tst_QString::toDouble()
@@ -5073,8 +5073,8 @@ void tst_QString::fromUtf8_data()
     QTest::addColumn<int>("len");
     QString str;
 
-    QTest::newRow("str0") << QByteArray("abcdefgh") << QString("abcdefgh") << -1;
-    QTest::newRow("str0-len") << QByteArray("abcdefgh") << QString("abc") << 3;
+    QTest::newRow("str0") << QByteArray("abcdefgh") << u"abcdefgh"_s << -1;
+    QTest::newRow("str0-len") << QByteArray("abcdefgh") << u"abc"_s << 3;
     QTest::newRow("str1") << QByteArray("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205")
                           << QString::fromLatin1("\366\344\374\326\304\334\370\346\345\330\306\305") << -1;
     QTest::newRow("str1-len") << QByteArray("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205")
@@ -5089,22 +5089,22 @@ void tst_QString::fromUtf8_data()
     QTest::newRow("str2-len") << QByteArray("\327\251\327\223\327\222") << str << 2;
 
     str = QChar(0x20ac);
-    str += " some text";
+    str += u" some text"_s;
     QTest::newRow("str3") << QByteArray("\342\202\254 some text") << str << -1;
 
     str = QChar(0x20ac);
-    str += " some ";
+    str += u" some "_s;
     QTest::newRow("str3-len") << QByteArray("\342\202\254 some text") << str << 9;
 
     // test that QString::fromUtf8 suppresses an initial BOM, but not a ZWNBSP
-    str = "hello";
+    str = u"hello"_s;
     QByteArray bom("\357\273\277");
     QTest::newRow("bom0") << bom << QString() << 3;
     QTest::newRow("bom1") << bom + "hello" << str << -1;
     QTest::newRow("bom+zwnbsp0") << bom + bom << QString(QChar(0xfeff)) << -1;
     QTest::newRow("bom+zwnbsp1") << bom + "hello" + bom << str + QChar(0xfeff) << -1;
 
-    str = "hello";
+    str = u"hello"_s;
     str += QChar::ReplacementCharacter;
     str += QChar(0x68);
     str += QChar::ReplacementCharacter;
@@ -5114,19 +5114,19 @@ void tst_QString::fromUtf8_data()
     str += QChar(0x61);
     str += QChar::ReplacementCharacter;
     QTest::newRow("invalid utf8") << QByteArray("hello\344h\344\344\366\344a\304") << str << -1;
-    QTest::newRow("invalid utf8-len") << QByteArray("hello\344h\344\344\366\344a\304") << QString("hello") << 5;
+    QTest::newRow("invalid utf8-len") << QByteArray("hello\344h\344\344\366\344a\304") << u"hello"_s << 5;
 
-    str = "Prohl";
+    str = u"Prohl"_s;
     str += QChar::ReplacementCharacter;
     str += QChar::ReplacementCharacter;
-    str += "e";
+    str += u"e"_s;
     str += QChar::ReplacementCharacter;
-    str += " plugin";
+    str += u" plugin"_s;
     str += QChar::ReplacementCharacter;
-    str += " Netscape";
+    str += u" Netscape"_s;
 
     QTest::newRow("invalid utf8 2") << QByteArray("Prohl\355\276e\350 plugin\371 Netscape") << str << -1;
-    QTest::newRow("invalid utf8-len 2") << QByteArray("Prohl\355\276e\350 plugin\371 Netscape") << QString("") << 0;
+    QTest::newRow("invalid utf8-len 2") << QByteArray("Prohl\355\276e\350 plugin\371 Netscape") << u""_s << 0;
 
     QTest::newRow("null-1") << QByteArray() << QString() << -1;
     QTest::newRow("null0") << QByteArray() << QString() << 0;
@@ -5135,7 +5135,7 @@ void tst_QString::fromUtf8_data()
     QTest::newRow("other-1") << QByteArray("ab\0cd", 5) << QString::fromLatin1("ab") << -1;
     QTest::newRow("other5") << QByteArray("ab\0cd", 5) << QString::fromLatin1("ab\0cd", 5) << 5;
 
-    str = "Old Italic: ";
+    str = u"Old Italic: "_s;
     str += QChar(0xd800);
     str += QChar(0xdf00);
     str += QChar(0xd800);
@@ -5237,19 +5237,19 @@ void tst_QString::local8Bit_data()
     QTest::addColumn<QByteArray>("result");
 
     QTest::newRow("nullString") << QString() << QByteArray();
-    QTest::newRow("emptyString") << QString("") << QByteArray("");
-    QTest::newRow("string") << QString("test") << QByteArray("test");
+    QTest::newRow("emptyString") << u""_s << QByteArray("");
+    QTest::newRow("string") << u"test"_s << QByteArray("test");
 
     QByteArray longQByteArray;
     QString longQString;
 
     for (int l=0;l<111;l++) {
         longQByteArray = longQByteArray + "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-        longQString += "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        longQString += u"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"_s;
     }
 
     QTest::newRow("longString") << longQString << longQByteArray;
-    QTest::newRow("someNonAlphaChars") << QString("d:/this/is/a/test.h") << QByteArray("d:/this/is/a/test.h");
+    QTest::newRow("someNonAlphaChars") << u"d:/this/is/a/test.h"_s << QByteArray("d:/this/is/a/test.h");
 }
 
 void tst_QString::local8Bit()
@@ -5266,7 +5266,7 @@ void tst_QString::invalidToLocal8Bit_data()
     QTest::addColumn<QByteArray>("expect"); // Initial validly-converted prefix
 
     {
-        const QChar malformed[] = { 'A', QChar(0xd800), 'B', '\0' };
+        const QChar malformed[] = { u'A', QChar(0xd800), u'B', u'\0' };
         const char expected[] = "A";
         QTest::newRow("LoneHighSurrogate")
             << QString(malformed, sizeof(malformed) / sizeof(QChar))
@@ -5274,28 +5274,28 @@ void tst_QString::invalidToLocal8Bit_data()
             << QByteArray(expected, sizeof(expected) / sizeof(char) - 1);
     }
     {
-        const QChar malformed[] = { 'A', QChar(0xdc00), 'B', '\0' };
+        const QChar malformed[] = { u'A', QChar(0xdc00), u'B', u'\0' };
         const char expected[] = "A";
         QTest::newRow("LoneLowSurrogate")
             << QString(malformed, sizeof(malformed) / sizeof(QChar))
             << QByteArray(expected, sizeof(expected) / sizeof(char) - 1);
     }
     {
-        const QChar malformed[] = { 'A', QChar(0xd800), QChar(0xd801), 'B', '\0' };
+        const QChar malformed[] = { u'A', QChar(0xd800), QChar(0xd801), u'B', u'\0' };
         const char expected[] = "A";
         QTest::newRow("DoubleHighSurrogate")
             << QString(malformed, sizeof(malformed) / sizeof(QChar))
             << QByteArray(expected, sizeof(expected) / sizeof(char) - 1);
     }
     {
-        const QChar malformed[] = { 'A', QChar(0xdc00), QChar(0xdc01), 'B', '\0' };
+        const QChar malformed[] = { u'A', QChar(0xdc00), QChar(0xdc01), u'B', u'\0' };
         const char expected[] = "A";
         QTest::newRow("DoubleLowSurrogate")
             << QString(malformed, sizeof(malformed) / sizeof(QChar))
             << QByteArray(expected, sizeof(expected) / sizeof(char) - 1);
     }
     {
-        const QChar malformed[] = { 'A', QChar(0xdc00), QChar(0xd800), 'B', '\0' };
+        const QChar malformed[] = { u'A', QChar(0xdc00), QChar(0xd800), u'B', u'\0' };
         const char expected[] = "A";
         QTest::newRow("ReversedSurrogates") // low before high
             << QString(malformed, sizeof(malformed) / sizeof(QChar))
@@ -5854,7 +5854,7 @@ void tst_QString::number_double_data()
             QString upper = datum.expected.toString().toUpper();
             QString upperTitle = QString::fromLatin1(title);
             if (!datum.optTitle.isEmpty())
-                upperTitle += ", uppercase";
+                upperTitle += u", uppercase"_s;
             else
                 upperTitle = upperTitle.toUpper();
             QTest::addRow("%s, format '%c', precision %d", qPrintable(upper), datum.f, datum.p)
@@ -5882,43 +5882,43 @@ void tst_QString::number_base_data()
     QTest::addColumn<int>("base");
     QTest::addColumn<QString>("expected");
 
-    QTest::newRow("base 10, positive") << 12346LL << 10 << QString("12346");
-    QTest::newRow("base  2, positive") << 12346LL <<  2 << QString("11000000111010");
-    QTest::newRow("base  8, positive") << 12346LL <<  8 << QString("30072");
-    QTest::newRow("base 16, positive") << 12346LL << 16 << QString("303a");
-    QTest::newRow("base 17, positive") << 12346LL << 17 << QString("28c4");
-    QTest::newRow("base 36, positive") << 2181789482LL << 36 << QString("102zbje");
+    QTest::newRow("base 10, positive") << 12346LL << 10 << u"12346"_s;
+    QTest::newRow("base  2, positive") << 12346LL <<  2 << u"11000000111010"_s;
+    QTest::newRow("base  8, positive") << 12346LL <<  8 << u"30072"_s;
+    QTest::newRow("base 16, positive") << 12346LL << 16 << u"303a"_s;
+    QTest::newRow("base 17, positive") << 12346LL << 17 << u"28c4"_s;
+    QTest::newRow("base 36, positive") << 2181789482LL << 36 << u"102zbje"_s;
 
-    QTest::newRow("base 10, negative") << -12346LL << 10 << QString("-12346");
-    QTest::newRow("base  2, negative") << -12346LL <<  2 << QString("-11000000111010");
-    QTest::newRow("base  8, negative") << -12346LL <<  8 << QString("-30072");
-    QTest::newRow("base 16, negative") << -12346LL << 16 << QString("-303a");
-    QTest::newRow("base 17, negative") << -12346LL << 17 << QString("-28c4");
-    QTest::newRow("base 36, negative") << -2181789482LL << 36 << QString("-102zbje");
+    QTest::newRow("base 10, negative") << -12346LL << 10 << u"-12346"_s;
+    QTest::newRow("base  2, negative") << -12346LL <<  2 << u"-11000000111010"_s;
+    QTest::newRow("base  8, negative") << -12346LL <<  8 << u"-30072"_s;
+    QTest::newRow("base 16, negative") << -12346LL << 16 << u"-303a"_s;
+    QTest::newRow("base 17, negative") << -12346LL << 17 << u"-28c4"_s;
+    QTest::newRow("base 36, negative") << -2181789482LL << 36 << u"-102zbje"_s;
 
-    QTest::newRow("base  2, minus 1") << -1LL << 2 << QString("-1");
+    QTest::newRow("base  2, minus 1") << -1LL << 2 << u"-1"_s;
 
     QTest::newRow("largeint, base 10, positive")
-            << 123456789012LL << 10 << QString("123456789012");
+            << 123456789012LL << 10 << u"123456789012"_s;
     QTest::newRow("largeint, base  2, positive")
-            << 123456789012LL <<  2 << QString("1110010111110100110010001101000010100");
+            << 123456789012LL <<  2 << u"1110010111110100110010001101000010100"_s;
     QTest::newRow("largeint, base  8, positive")
-            << 123456789012LL <<  8 << QString("1627646215024");
+            << 123456789012LL <<  8 << u"1627646215024"_s;
     QTest::newRow("largeint, base 16, positive")
-            << 123456789012LL << 16 << QString("1cbe991a14");
+            << 123456789012LL << 16 << u"1cbe991a14"_s;
     QTest::newRow("largeint, base 17, positive")
-            << 123456789012LL << 17 << QString("10bec2b629");
+            << 123456789012LL << 17 << u"10bec2b629"_s;
 
     QTest::newRow("largeint, base 10, negative")
-            << -123456789012LL << 10 << QString("-123456789012");
+            << -123456789012LL << 10 << u"-123456789012"_s;
     QTest::newRow("largeint, base  2, negative")
-            << -123456789012LL <<  2 << QString("-1110010111110100110010001101000010100");
+            << -123456789012LL <<  2 << u"-1110010111110100110010001101000010100"_s;
     QTest::newRow("largeint, base  8, negative")
-            << -123456789012LL <<  8 << QString("-1627646215024");
+            << -123456789012LL <<  8 << u"-1627646215024"_s;
     QTest::newRow("largeint, base 16, negative")
-            << -123456789012LL << 16 << QString("-1cbe991a14");
+            << -123456789012LL << 16 << u"-1cbe991a14"_s;
     QTest::newRow("largeint, base 17, negative")
-            << -123456789012LL << 17 << QString("-10bec2b629");
+            << -123456789012LL << 17 << u"-10bec2b629"_s;
 }
 
 void tst_QString::number_base()
@@ -6003,121 +6003,139 @@ void tst_QString::section_data()
     QTest::addColumn<QString>("sectionString" );
     QTest::addColumn<bool>("regexp" );
 
-    QTest::newRow("null") << QString() << QString(",") << 0 << -1 << int(QString::SectionDefault) << QString() << false;
-    QTest::newRow("empty") << QString("") << QString(",") << 0 << -1 << int(QString::SectionDefault) << QString("") << false;
-    QTest::newRow( "data0" ) << QString("forename,middlename,surname,phone") << QString(",") << 2 << 2 << int(QString::SectionDefault) << QString("surname") << false;
-    QTest::newRow( "data1" ) << QString("/usr/local/bin/myapp") << QString("/") << 3 << 4 << int(QString::SectionDefault) << QString("bin/myapp") << false;
-    QTest::newRow( "data2" ) << QString("/usr/local/bin/myapp") << QString("/") << 3 << 3 << int(QString::SectionSkipEmpty) << QString("myapp") << false;
-    QTest::newRow( "data3" ) << QString("forename**middlename**surname**phone") << QString("**") << 2 << 2 << int(QString::SectionDefault) << QString("surname") << false;
-    QTest::newRow( "data4" ) << QString("forename**middlename**surname**phone") << QString("**") << -3 << -2 << int(QString::SectionDefault) << QString("middlename**surname") << false;
-    QTest::newRow( "data5" ) << QString("##Datt######wollen######wir######mal######sehen##") << QString("#") << 0 << 0 << int(QString::SectionSkipEmpty) << QString("Datt") << false;
-    QTest::newRow( "data6" ) << QString("##Datt######wollen######wir######mal######sehen##") << QString("#") << 1 << 1 << int(QString::SectionSkipEmpty) << QString("wollen") << false;
-    QTest::newRow( "data7" ) << QString("##Datt######wollen######wir######mal######sehen##") << QString("#") << 2 << 2 << int(QString::SectionSkipEmpty) << QString("wir") << false;
-    QTest::newRow( "data8" ) << QString("##Datt######wollen######wir######mal######sehen##") << QString("#") << 3 << 3 << int(QString::SectionSkipEmpty) << QString("mal") << false;
-    QTest::newRow( "data9" ) << QString("##Datt######wollen######wir######mal######sehen##") << QString("#") << 4 << 4 << int(QString::SectionSkipEmpty) << QString("sehen") << false;
+    QTest::newRow("null") << QString() << u","_s << 0 << -1 << int(QString::SectionDefault)
+                          << QString() << false;
+    QTest::newRow("empty") << u""_s << u","_s << 0 << -1 << int(QString::SectionDefault) << u""_s
+                           << false;
+    QTest::newRow("data0") << u"forename,middlename,surname,phone"_s << u","_s << 2 << 2
+                           << int(QString::SectionDefault) << u"surname"_s << false;
+    QTest::newRow("data1") << u"/usr/local/bin/myapp"_s << u"/"_s << 3 << 4
+                           << int(QString::SectionDefault) << u"bin/myapp"_s << false;
+    QTest::newRow("data2") << u"/usr/local/bin/myapp"_s << u"/"_s << 3 << 3
+                           << int(QString::SectionSkipEmpty) << u"myapp"_s << false;
+    QTest::newRow("data3") << u"forename**middlename**surname**phone"_s << u"**"_s << 2 << 2
+                           << int(QString::SectionDefault) << u"surname"_s << false;
+    QTest::newRow("data4") << u"forename**middlename**surname**phone"_s << u"**"_s << -3 << -2
+                           << int(QString::SectionDefault) << u"middlename**surname"_s << false;
+    QTest::newRow("data5") << u"##Datt######wollen######wir######mal######sehen##"_s << u"#"_s << 0
+                           << 0 << int(QString::SectionSkipEmpty) << u"Datt"_s << false;
+    QTest::newRow("data6") << u"##Datt######wollen######wir######mal######sehen##"_s << u"#"_s << 1
+                           << 1 << int(QString::SectionSkipEmpty) << u"wollen"_s << false;
+    QTest::newRow("data7") << u"##Datt######wollen######wir######mal######sehen##"_s << u"#"_s << 2
+                           << 2 << int(QString::SectionSkipEmpty) << u"wir"_s << false;
+    QTest::newRow("data8") << u"##Datt######wollen######wir######mal######sehen##"_s << u"#"_s << 3
+                           << 3 << int(QString::SectionSkipEmpty) << u"mal"_s << false;
+    QTest::newRow("data9") << u"##Datt######wollen######wir######mal######sehen##"_s << u"#"_s << 4
+                           << 4 << int(QString::SectionSkipEmpty) << u"sehen"_s << false;
     // not fixed for 3.1
-    QTest::newRow( "data10" ) << QString("a/b/c/d") << QString("/") << 1 << -1 << int(QString::SectionIncludeLeadingSep | QString::SectionIncludeTrailingSep) << QString("/b/c/d") << false;
-    QTest::newRow( "data11" ) << QString("aoLoboLocolod") << QString("olo") << -1 << -1 << int(QString::SectionCaseInsensitiveSeps) << QString("d") << false;
-    QTest::newRow( "data12" ) << QString("F0") << QString("F") << 0 << 0 << int(QString::SectionSkipEmpty) << QString("0") << false;
-    QTest::newRow( "foo1" ) << QString("foo;foo;") << QString(";") << 0 << 0
-                         << int(QString::SectionIncludeLeadingSep) << QString("foo") << false;
-    QTest::newRow( "foo2" ) << QString("foo;foo;") << QString(";") << 1 << 1
-                         << int(QString::SectionIncludeLeadingSep) << QString(";foo") << false;
-    QTest::newRow( "foo3" ) << QString("foo;foo;") << QString(";") << 2 << 2
-                         << int(QString::SectionIncludeLeadingSep) << QString(";") << false;
-    QTest::newRow( "foo1rx" ) << QString("foo;foo;") << QString(";") << 0 << 0
-                           << int(QString::SectionIncludeLeadingSep) << QString("foo") << true;
-    QTest::newRow( "foo2rx" ) << QString("foo;foo;") << QString(";") << 1 << 1
-                           << int(QString::SectionIncludeLeadingSep) << QString(";foo") << true;
-    QTest::newRow( "foo3rx" ) << QString("foo;foo;") << QString(";") << 2 << 2
-                           << int(QString::SectionIncludeLeadingSep) << QString(";") << true;
+    QTest::newRow("data10") << u"a/b/c/d"_s << u"/"_s << 1 << -1
+                            << int(QString::SectionIncludeLeadingSep | QString::SectionIncludeTrailingSep)
+                            << u"/b/c/d"_s << false;
+    QTest::newRow("data11") << u"aoLoboLocolod"_s << u"olo"_s << -1 << -1
+                            << int(QString::SectionCaseInsensitiveSeps) << u"d"_s << false;
+    QTest::newRow("data12") << u"F0"_s << u"F"_s << 0 << 0 << int(QString::SectionSkipEmpty)
+                            << u"0"_s << false;
+    QTest::newRow("foo1") << u"foo;foo;"_s << u";"_s << 0 << 0
+                          << int(QString::SectionIncludeLeadingSep) << u"foo"_s << false;
+    QTest::newRow("foo2") << u"foo;foo;"_s << u";"_s << 1 << 1
+                          << int(QString::SectionIncludeLeadingSep) << u";foo"_s << false;
+    QTest::newRow("foo3") << u"foo;foo;"_s << u";"_s << 2 << 2
+                          << int(QString::SectionIncludeLeadingSep) << u";"_s << false;
+    QTest::newRow("foo1rx") << u"foo;foo;"_s << u";"_s << 0 << 0
+                            << int(QString::SectionIncludeLeadingSep) << u"foo"_s << true;
+    QTest::newRow("foo2rx") << u"foo;foo;"_s << u";"_s << 1 << 1
+                            << int(QString::SectionIncludeLeadingSep) << u";foo"_s << true;
+    QTest::newRow("foo3rx") << u"foo;foo;"_s << u";"_s << 2 << 2
+                            << int(QString::SectionIncludeLeadingSep) << u";"_s << true;
 
-    QTest::newRow( "qmake_path" ) << QString("/Users/sam/troll/qt4.0/src/corelib/QtCore_debug.xcode/")
-                               << QString("/") << 0 << -2 << int(QString::SectionDefault)
-                               << QString("/Users/sam/troll/qt4.0/src/corelib/QtCore_debug.xcode") << false;
-    QTest::newRow( "qmake_pathrx" ) << QString("/Users/sam/troll/qt4.0/src/corelib/QtCore_debug.xcode/")
-                                 << QString("/") << 0 << -2 << int(QString::SectionDefault)
-                                 << QString("/Users/sam/troll/qt4.0/src/corelib/QtCore_debug.xcode") << true;
-    QTest::newRow( "data13" ) << QString("||2|3|||")
-                              << QString("|") << 0 << 1 << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
-                              << QString("||") << false;
-    QTest::newRow( "data14" ) << QString("||2|3|||")
-                                << QString("\\|") << 0 << 1 << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
-                                << QString("||") << true;
-    QTest::newRow( "data15" ) << QString("|1|2|")
-                                << QString("|") << 0 << 1 << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
-                                << QString("|1|") << false;
-    QTest::newRow( "data16" ) << QString("|1|2|")
-                                << QString("\\|") << 0 << 1 << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
-                                << QString("|1|") << true;
-    QTest::newRow( "normal1" ) << QString("o1o2o")
-                            << QString("o") << 0 << 0
+    QTest::newRow("qmake_path") << u"/Users/sam/troll/qt4.0/src/corelib/QtCore_debug.xcode/"_s
+                                << u"/"_s << 0 << -2 << int(QString::SectionDefault)
+                                << u"/Users/sam/troll/qt4.0/src/corelib/QtCore_debug.xcode"_s
+                                << false;
+    QTest::newRow("qmake_pathrx") << u"/Users/sam/troll/qt4.0/src/corelib/QtCore_debug.xcode/"_s
+                                  << u"/"_s << 0 << -2 << int(QString::SectionDefault)
+                                  << u"/Users/sam/troll/qt4.0/src/corelib/QtCore_debug.xcode"_s
+                                  << true;
+    QTest::newRow("data13") << u"||2|3|||"_s << u"|"_s << 0 << 1
+                            << int(QString::SectionIncludeLeadingSep | QString::SectionIncludeTrailingSep)
+                            << u"||"_s << false;
+    QTest::newRow("data14") << u"||2|3|||"_s << u"\\|"_s << 0 << 1
+                            << int(QString::SectionIncludeLeadingSep | QString::SectionIncludeTrailingSep)
+                            << u"||"_s << true;
+    QTest::newRow("data15") << u"|1|2|"_s << u"|"_s << 0 << 1
+                            << int(QString::SectionIncludeLeadingSep | QString::SectionIncludeTrailingSep)
+                            << u"|1|"_s << false;
+    QTest::newRow("data16") << u"|1|2|"_s << u"\\|"_s << 0 << 1
+                            << int(QString::SectionIncludeLeadingSep | QString::SectionIncludeTrailingSep)
+                            << u"|1|"_s << true;
+    QTest::newRow("normal1") << u"o1o2o"_s
+                            << u"o"_s << 0 << 0
                             << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
-                            << QString("o") << false;
-    QTest::newRow( "normal2" ) << QString("o1o2o")
-                            << QString("o") << 1 << 1
+                            << u"o"_s << false;
+    QTest::newRow("normal2") << u"o1o2o"_s
+                            << u"o"_s << 1 << 1
                             << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
-                            << QString("o1o") << false;
-    QTest::newRow( "normal3" ) << QString("o1o2o")
-                            << QString("o") << 2 << 2
+                            << u"o1o"_s << false;
+    QTest::newRow("normal3") << u"o1o2o"_s
+                            << u"o"_s << 2 << 2
                             << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
-                            << QString("o2o") << false;
-    QTest::newRow( "normal4" ) << QString("o1o2o")
-                            << QString("o") << 2 << 3
+                            << u"o2o"_s << false;
+    QTest::newRow("normal4") << u"o1o2o"_s
+                            << u"o"_s << 2 << 3
                             << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
-                            << QString("o2o") << false;
-    QTest::newRow( "normal5" ) << QString("o1o2o")
-                            << QString("o") << 1 << 2
+                            << u"o2o"_s << false;
+    QTest::newRow("normal5") << u"o1o2o"_s
+                            << u"o"_s << 1 << 2
                             << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
-                            << QString("o1o2o") << false;
-    QTest::newRow( "range1" ) << QString("o1o2o")
-                            << QString("o") << -5 << -5
+                            << u"o1o2o"_s << false;
+    QTest::newRow("range1") << u"o1o2o"_s
+                            << u"o"_s << -5 << -5
                             << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
                             << QString() << false;
-    QTest::newRow( "range2" ) << QString("oo1o2o")
-                            << QString("o") << -5 << 1
+    QTest::newRow("range2") << u"oo1o2o"_s
+                            << u"o"_s << -5 << 1
                             << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep
                                    |QString::SectionSkipEmpty)
-                            << QString("oo1o2o") << false;
-    QTest::newRow( "range3" ) << QString("o1o2o")
-                            << QString("o") << 2 << 1
+                            << u"oo1o2o"_s << false;
+    QTest::newRow("range3") << u"o1o2o"_s
+                            << u"o"_s << 2 << 1
                             << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
                             << QString() << false;
-    QTest::newRow( "range4" ) << QString("o1o2o")
-                            << QString("o") << 4 << 4
+    QTest::newRow("range4") << u"o1o2o"_s
+                            << u"o"_s << 4 << 4
                             << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
                             << QString() << false;
-    QTest::newRow( "range5" ) << QString("o1oo2o")
-                            << QString("o") << -2 << -1
+    QTest::newRow("range5") << u"o1oo2o"_s
+                            << u"o"_s << -2 << -1
                             << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep
                                    |QString::SectionSkipEmpty)
-                            << QString("o1oo2o") << false;
-    QTest::newRow( "rx1" ) << QString("o1o2o")
-                        << QString("[a-z]") << 0 << 0
+                            << u"o1oo2o"_s << false;
+    QTest::newRow("rx1") << u"o1o2o"_s
+                        << u"[a-z]"_s << 0 << 0
                         << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
-                        << QString("o") << true;
-    QTest::newRow( "rx2" ) << QString("o1o2o")
-                        << QString("[a-z]") << 1 << 1
+                        << u"o"_s << true;
+    QTest::newRow("rx2") << u"o1o2o"_s
+                        << u"[a-z]"_s << 1 << 1
                         << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
-                        << QString("o1o") << true;
-    QTest::newRow( "rx3" ) << QString("o1o2o")
-                        << QString("[a-z]") << 2 << 2
+                        << u"o1o"_s << true;
+    QTest::newRow("rx3") << u"o1o2o"_s
+                        << u"[a-z]"_s << 2 << 2
                         << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
-                        << QString("o2o") << true;
-    QTest::newRow( "rx4" ) << QString("o1o2o")
-                        << QString("[a-z]") << 2 << 3
+                        << u"o2o"_s << true;
+    QTest::newRow("rx4") << u"o1o2o"_s
+                        << u"[a-z]"_s << 2 << 3
                         << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
-                        << QString("o2o") << true;
-    QTest::newRow( "rx5" ) << QString("o1o2o")
-                        << QString("[a-z]") << 1 << 2
+                        << u"o2o"_s << true;
+    QTest::newRow("rx5") << u"o1o2o"_s
+                        << u"[a-z]"_s << 1 << 2
                         << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
-                        << QString("o1o2o") << true;
-    QTest::newRow( "data17" ) << QString("This is a story, a small story")
-                        << QString("\\b") << 3 << 3
+                        << u"o1o2o"_s << true;
+    QTest::newRow("data17") << u"This is a story, a small story"_s
+                        << u"\\b"_s << 3 << 3
                         << int(QString::SectionDefault)
-                        << QString("is") << true;
-    QTest::newRow( "data18" ) << QString("99.0 42.3")
-                        << QString("\\s*[AaBb]\\s*") << 1 << 1
+                        << u"is"_s << true;
+    QTest::newRow("data18") << u"99.0 42.3"_s
+                        << u"\\s*[AaBb]\\s*"_s << 1 << 1
                         << int(QString::SectionIncludeLeadingSep)
                         << QString() << true;
 }
