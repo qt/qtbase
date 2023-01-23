@@ -616,6 +616,10 @@ private slots:
 
     void fromUtf16_char16();
     void latin1String();
+    void isInf_data();
+    void isInf();
+    void isNan_data();
+    void isNan();
     void nanAndInf();
     void compare_data();
     void compare();
@@ -7003,57 +7007,83 @@ void tst_QString::latin1String()
     QVERIFY(!(s < QLatin1String("Hell")));
 }
 
+void tst_QString::isInf_data()
+{
+    QTest::addColumn<QString>("str");
+    QTest::addColumn<bool>("expected_ok");
+    QTest::addColumn<bool>("expected_is_inf");
+
+    QTest::newRow("inf") << u"inf"_s << true << true;
+    QTest::newRow("INF") << u"INF"_s << true << true;
+    QTest::newRow("inf  ") << u"inf  "_s << true << true;
+    QTest::newRow("+inf") << u"+inf"_s << true << true;
+    QTest::newRow("\t +INF") << u"\t +INF"_s << true << true;
+    QTest::newRow("\t INF") << u"\t INF"_s << true << true;
+    QTest::newRow("inF  ") << u"inF  "_s << true << true;
+    QTest::newRow("+iNf") << u"+iNf"_s << true << true;
+    QTest::newRow("INFe-10") << u"INFe-10"_s << false << false;
+    QTest::newRow("0xINF") << u"0xINF"_s << false << false;
+    QTest::newRow("- INF") << u"- INF"_s << false << false;
+    QTest::newRow("+ INF") << u"+ INF"_s << false << false;
+    QTest::newRow("-- INF") << u"-- INF"_s << false << false;
+    QTest::newRow("inf0") << u"inf0"_s << false << false;
+    QTest::newRow("--INF") << u"--INF"_s << false << false;
+    QTest::newRow("++INF") << u"++INF"_s << false << false;
+    QTest::newRow("INF++") << u"INF++"_s << false << false;
+    QTest::newRow("INF--") << u"INF--"_s << false << false;
+    QTest::newRow("INF +") << u"INF +"_s << false << false;
+    QTest::newRow("INF -") << u"INF -"_s << false << false;
+    QTest::newRow("0INF") << u"0INF"_s << false << false;
+}
+
+void tst_QString::isInf()
+{
+    QFETCH(QString, str);
+    QFETCH(bool, expected_ok);
+    QFETCH(bool, expected_is_inf);
+
+    bool ok = false;
+    double dbl = str.toDouble(&ok);
+    QVERIFY(ok == expected_ok);
+    QVERIFY(qIsInf(dbl) == expected_is_inf);
+}
+
+void tst_QString::isNan_data()
+{
+    QTest::addColumn<QString>("str");
+    QTest::addColumn<bool>("expected_ok");
+    QTest::addColumn<bool>("expected_is_nan");
+
+    QTest::newRow("nan") << u"nan"_s << true << true;
+    QTest::newRow("NAN") << u"NAN"_s << true << true;
+    QTest::newRow("nan  ") << u"nan  "_s << true << true;
+    QTest::newRow("\t NAN") << u"\t NAN"_s << true << true;
+    QTest::newRow("\t NAN  ") << u"\t NAN  "_s << true << true;
+    QTest::newRow("-nan") << u"-nan"_s << false << false;
+    QTest::newRow("+NAN") << u"+NAN"_s << false << false;
+    QTest::newRow("NaN") << u"NaN"_s << true << true;
+    QTest::newRow("nAn") << u"nAn"_s << true << true;
+    QTest::newRow("NANe-10") << u"NANe-10"_s << false << false;
+    QTest::newRow("0xNAN") << u"0xNAN"_s << false << false;
+    QTest::newRow("0NAN") << u"0NAN"_s << false << false;
+}
+
+void tst_QString::isNan()
+{
+    QFETCH(QString, str);
+    QFETCH(bool, expected_ok);
+    QFETCH(bool, expected_is_nan);
+
+    bool ok = false;
+    double dbl = str.toDouble(&ok);
+    QVERIFY(ok == expected_ok);
+    QVERIFY(qIsNaN(dbl) == expected_is_nan);
+}
+
 void tst_QString::nanAndInf()
 {
     bool ok;
     double d;
-
-#define CHECK_DOUBLE(str, expected_ok, expected_inf) \
-    d = QString(str).toDouble(&ok); \
-    QVERIFY(ok == expected_ok); \
-    QVERIFY(qIsInf(d) == expected_inf);
-
-    CHECK_DOUBLE("inf", true, true)
-    CHECK_DOUBLE("INF", true, true)
-    CHECK_DOUBLE("inf  ", true, true)
-    CHECK_DOUBLE("+inf", true, true)
-    CHECK_DOUBLE("\t +INF", true, true)
-    CHECK_DOUBLE("\t INF", true, true)
-    CHECK_DOUBLE("inF  ", true, true)
-    CHECK_DOUBLE("+iNf", true, true)
-    CHECK_DOUBLE("INFe-10", false, false)
-    CHECK_DOUBLE("0xINF", false, false)
-    CHECK_DOUBLE("- INF", false, false)
-    CHECK_DOUBLE("+ INF", false, false)
-    CHECK_DOUBLE("-- INF", false, false)
-    CHECK_DOUBLE("inf0", false, false)
-    CHECK_DOUBLE("--INF", false, false)
-    CHECK_DOUBLE("++INF", false, false)
-    CHECK_DOUBLE("INF++", false, false)
-    CHECK_DOUBLE("INF--", false, false)
-    CHECK_DOUBLE("INF +", false, false)
-    CHECK_DOUBLE("INF -", false, false)
-    CHECK_DOUBLE("0INF", false, false)
-#undef CHECK_INF
-
-#define CHECK_NAN(str, expected_ok, expected_nan) \
-    d = QString(str).toDouble(&ok); \
-    QVERIFY(ok == expected_ok); \
-    QVERIFY(qIsNaN(d) == expected_nan);
-
-    CHECK_NAN("nan", true, true)
-    CHECK_NAN("NAN", true, true)
-    CHECK_NAN("nan  ", true, true)
-    CHECK_NAN("\t NAN", true, true)
-    CHECK_NAN("\t NAN  ", true, true)
-    CHECK_NAN("-nan", false, false)
-    CHECK_NAN("+NAN", false, false)
-    CHECK_NAN("NaN", true, true)
-    CHECK_NAN("nAn", true, true)
-    CHECK_NAN("NANe-10", false, false)
-    CHECK_NAN("0xNAN", false, false)
-    CHECK_NAN("0NAN", false, false)
-#undef CHECK_NAN
 
     d = QString("-INF").toDouble(&ok);
     QVERIFY(ok);
