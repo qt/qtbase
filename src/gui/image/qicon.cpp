@@ -515,12 +515,12 @@ bool QPixmapIconEngine::write(QDataStream &out) const
     return true;
 }
 
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, iceLoader,
     (QIconEngineFactoryInterface_iid, "/iconengines"_L1, Qt::CaseInsensitive))
 
 QFactoryLoader *qt_iconEngineFactoryLoader()
 {
-    return loader();
+    return iceLoader();
 }
 
 
@@ -1019,9 +1019,9 @@ void QIcon::addPixmap(const QPixmap &pixmap, Mode mode, State state)
 static QIconEngine *iconEngineFromSuffix(const QString &fileName, const QString &suffix)
 {
     if (!suffix.isEmpty()) {
-        const int index = loader()->indexOf(suffix);
+        const int index = iceLoader()->indexOf(suffix);
         if (index != -1) {
-            if (QIconEnginePlugin *factory = qobject_cast<QIconEnginePlugin*>(loader()->instance(index))) {
+            if (QIconEnginePlugin *factory = qobject_cast<QIconEnginePlugin*>(iceLoader()->instance(index))) {
                 return factory->create(fileName);
             }
         }
@@ -1434,9 +1434,9 @@ QDataStream &operator>>(QDataStream &s, QIcon &icon)
             icon.d = new QIconPrivate(new QIconLoaderEngine());
             icon.d->engine->read(s);
         } else {
-            const int index = loader()->indexOf(key);
+            const int index = iceLoader()->indexOf(key);
             if (index != -1) {
-                if (QIconEnginePlugin *factory = qobject_cast<QIconEnginePlugin*>(loader()->instance(index))) {
+                if (QIconEnginePlugin *factory = qobject_cast<QIconEnginePlugin*>(iceLoader()->instance(index))) {
                     if (QIconEngine *engine= factory->create()) {
                         icon.d = new QIconPrivate(engine);
                         engine->read(s);

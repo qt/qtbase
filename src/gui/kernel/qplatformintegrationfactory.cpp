@@ -14,13 +14,13 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, piLoader,
     (QPlatformIntegrationFactoryInterface_iid, "/platforms"_L1, Qt::CaseInsensitive))
 
 QPlatformIntegration *QPlatformIntegrationFactory::create(const QString &platform, const QStringList &paramList, int &argc, char **argv, const QString &platformPluginPath)
 {
-    loader->setExtraSearchPath(platformPluginPath);
-    return qLoadPlugin<QPlatformIntegration, QPlatformIntegrationPlugin>(loader(), platform, paramList, argc, argv);
+    piLoader->setExtraSearchPath(platformPluginPath);
+    return qLoadPlugin<QPlatformIntegration, QPlatformIntegrationPlugin>(piLoader(), platform, paramList, argc, argv);
 }
 
 /*!
@@ -32,8 +32,8 @@ QPlatformIntegration *QPlatformIntegrationFactory::create(const QString &platfor
 
 QStringList QPlatformIntegrationFactory::keys(const QString &platformPluginPath)
 {
-    loader->setExtraSearchPath(platformPluginPath);
-    return loader->keyMap().values();
+    piLoader->setExtraSearchPath(platformPluginPath);
+    return piLoader->keyMap().values();
 }
 
 QT_END_NAMESPACE

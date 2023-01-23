@@ -15,9 +15,9 @@ namespace QImageReaderWriterHelpers {
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
 
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, irhLoader,
                           (QImageIOHandlerFactoryInterface_iid, "/imageformats"_L1))
-Q_GLOBAL_STATIC(QMutex, loaderMutex)
+Q_GLOBAL_STATIC(QMutex, irhLoaderMutex)
 
 static void appendImagePluginFormats(QFactoryLoader *loader,
                                      QImageIOPlugin::Capability cap,
@@ -68,9 +68,9 @@ static void appendImagePluginMimeTypes(QFactoryLoader *loader,
 
 QSharedPointer<QFactoryLoader> pluginLoader()
 {
-    loaderMutex()->lock();
-    return QSharedPointer<QFactoryLoader>(loader(), [](QFactoryLoader *) {
-        loaderMutex()->unlock();
+    irhLoaderMutex()->lock();
+    return QSharedPointer<QFactoryLoader>(irhLoader(), [](QFactoryLoader *) {
+        irhLoaderMutex()->unlock();
     });
 }
 
@@ -89,7 +89,7 @@ QList<QByteArray> supportedImageFormats(Capability cap)
         formats << _qt_BuiltInFormats[i].extension;
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
-    appendImagePluginFormats(loader(), pluginCapability(cap), &formats);
+    appendImagePluginFormats(irhLoader(), pluginCapability(cap), &formats);
 #endif // QT_NO_IMAGEFORMATPLUGIN
 
     std::sort(formats.begin(), formats.end());
@@ -105,7 +105,7 @@ QList<QByteArray> supportedMimeTypes(Capability cap)
         mimeTypes.append(QByteArrayLiteral("image/") + fmt.mimeType);
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
-    appendImagePluginMimeTypes(loader(), pluginCapability(cap), &mimeTypes);
+    appendImagePluginMimeTypes(irhLoader(), pluginCapability(cap), &mimeTypes);
 #endif // QT_NO_IMAGEFORMATPLUGIN
 
     std::sort(mimeTypes.begin(), mimeTypes.end());
@@ -127,7 +127,7 @@ QList<QByteArray> imageFormatsForMimeType(const QByteArray &mimeType, Capability
 #ifndef QT_NO_IMAGEFORMATPLUGIN
     QList<QByteArray> mimeTypes;
     QList<QByteArray> keys;
-    appendImagePluginMimeTypes(loader(), pluginCapability(cap), &mimeTypes, &keys);
+    appendImagePluginMimeTypes(irhLoader(), pluginCapability(cap), &mimeTypes, &keys);
     for (int i = 0; i < mimeTypes.size(); ++i) {
         if (mimeTypes.at(i) == mimeType) {
             const auto &key = keys.at(i);

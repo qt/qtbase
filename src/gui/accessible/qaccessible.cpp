@@ -437,7 +437,7 @@ QAccessibleInterface::~QAccessibleInterface()
 
 
 /* accessible widgets plugin discovery stuff */
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, acLoader,
     (QAccessibleFactoryInterface_iid, "/accessible"_L1))
 typedef QHash<QString, QAccessiblePlugin*> QAccessiblePluginsHash;
 Q_GLOBAL_STATIC(QAccessiblePluginsHash, qAccessiblePlugins)
@@ -683,9 +683,9 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         // no entry in the cache try to create it using the plugin loader.
         if (!qAccessiblePlugins()->contains(cn)) {
             QAccessiblePlugin *factory = nullptr; // 0 means "no plugin found". This is cached as well.
-            const int index = loader()->indexOf(cn);
+            const int index = acLoader()->indexOf(cn);
             if (index != -1)
-                factory = qobject_cast<QAccessiblePlugin *>(loader()->instance(index));
+                factory = qobject_cast<QAccessiblePlugin *>(acLoader()->instance(index));
             qAccessiblePlugins()->insert(cn, factory);
         }
 

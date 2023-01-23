@@ -16,15 +16,15 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, ptLoader,
     (QPlatformThemeFactoryInterface_iid, "/platformthemes"_L1, Qt::CaseInsensitive))
 
 QPlatformTheme *QPlatformThemeFactory::create(const QString& key, const QString &platformPluginPath)
 {
     QStringList paramList = key.split(u':');
     const QString platform = paramList.takeFirst().toLower();
-    loader->setExtraSearchPath(platformPluginPath);
-    QPlatformTheme *theme = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(loader(), platform, paramList);
+    ptLoader->setExtraSearchPath(platformPluginPath);
+    QPlatformTheme *theme = qLoadPlugin<QPlatformTheme, QPlatformThemePlugin>(ptLoader(), platform, paramList);
     if (theme)
         theme->d_func()->name = key;
     return theme;
@@ -38,8 +38,8 @@ QPlatformTheme *QPlatformThemeFactory::create(const QString& key, const QString 
 */
 QStringList QPlatformThemeFactory::keys(const QString &platformPluginPath)
 {
-    loader->setExtraSearchPath(platformPluginPath);
-    return loader->keyMap().values();
+    ptLoader->setExtraSearchPath(platformPluginPath);
+    return ptLoader->keyMap().values();
 }
 
 QT_END_NAMESPACE

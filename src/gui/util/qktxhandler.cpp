@@ -41,7 +41,7 @@ struct KTXHeader {
     quint32 bytesOfKeyValueData;
 };
 
-static const quint32 headerSize = sizeof(KTXHeader);
+static const quint32 qktxh_headerSize = sizeof(KTXHeader);
 
 // Currently unused, declared for future reference
 struct KTXKeyValuePairItem {
@@ -94,7 +94,7 @@ QTextureFileData QKtxHandler::read()
 
     const QByteArray buf = device()->readAll();
     const quint32 dataSize = quint32(buf.size());
-    if (dataSize < headerSize || !canRead(QByteArray(), buf)) {
+    if (dataSize < qktxh_headerSize || !canRead(QByteArray(), buf)) {
         qCDebug(lcQtGuiTextureIO, "Invalid KTX file %s", logName().constData());
         return QTextureFileData();
     }
@@ -117,10 +117,10 @@ QTextureFileData QKtxHandler::read()
     texData.setNumFaces(decode(header->numberOfFaces));
 
     const quint32 bytesOfKeyValueData = decode(header->bytesOfKeyValueData);
-    if (headerSize + bytesOfKeyValueData < quint64(buf.size())) // oob check
-        texData.setKeyValueMetadata(
-                decodeKeyValues(QByteArrayView(buf.data() + headerSize, bytesOfKeyValueData)));
-    quint32 offset = headerSize + bytesOfKeyValueData;
+    if (qktxh_headerSize + bytesOfKeyValueData < quint64(buf.size())) // oob check
+        texData.setKeyValueMetadata(decodeKeyValues(
+                QByteArrayView(buf.data() + qktxh_headerSize, bytesOfKeyValueData)));
+    quint32 offset = qktxh_headerSize + bytesOfKeyValueData;
 
     constexpr int MAX_ITERATIONS = 32; // cap iterations in case of corrupt data
 
