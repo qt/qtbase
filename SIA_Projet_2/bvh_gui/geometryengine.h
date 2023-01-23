@@ -38,8 +38,9 @@ private:
     void setJointIndexes(Joint *jnt, int &vertexIndex);
     void initCubeGeometry();
     void initLineGeometry(Joint *root);
-    void initSkinGeometry();
+    void initSkinGeometry(Joint *root);
     void setWeights(std::vector<VertexData> vec);
+    void resetSkinPos();
 
     QOpenGLBuffer arrayBuf;
     QOpenGLBuffer indexBuf;
