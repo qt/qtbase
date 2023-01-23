@@ -5,8 +5,7 @@
 #include "qjuliancalendar_p.h"
 #include "qromancalendar_data_p.h"
 #include "qcalendarmath_p.h"
-#include <QtCore/qmath.h>
-#include <QtCore/qlocale.h>
+
 #include <QtCore/qdatetime.h>
 
 QT_BEGIN_NAMESPACE
@@ -57,31 +56,29 @@ bool QJulianCalendar::isLeapYear(int year) const
     return qMod<4>(year < 0 ? year + 1 : year) == 0;
 }
 
-// Julian Day 0 was January the first in the proleptic Julian calendar's 4713 BC
+// Julian Day 0 was January the first in the proleptic Julian calendar's 4713 BC.
+using namespace QRomanCalendrical;
+// End a Julian four-year cycle on 1 BC's leap day (Gregorian Feb 27th):
+constexpr qint64 BaseJd = LeapDayGregorian1Bce - 2;
 
 bool QJulianCalendar::dateToJulianDay(int year, int month, int day, qint64 *jd) const
 {
     Q_ASSERT(jd);
     if (!isDateValid(year, month, day))
         return false;
-    if (year < 0)
-        ++year;
-    const qint64 c0 = month < 3 ? -1 : 0;
-    const qint64 j1 = qDiv<4>(1461 * (year + c0));
-    const qint64 j2 = qDiv<5>(153 * month - 1836 * c0 - 457);
-    *jd = j1 + j2 + day + 1721117;
+
+    const auto yearDays = yearMonthToYearDays(year, month);
+    *jd = qDiv<4>(FourYears * yearDays.year) + yearDays.days + day + BaseJd;
     return true;
 }
 
 QCalendar::YearMonthDay QJulianCalendar::julianDayToDate(qint64 jd) const
 {
-    const auto k2dm = qDivMod<1461>(4 * (jd - 1721118) + 3);
-    const auto k1dm = qDivMod<153>(5 * qDiv<4>(k2dm.remainder) + 2);
-    const auto c0dm = qDivMod<12>(k1dm.quotient + 2);
-    const int y = qint16(k2dm.quotient + c0dm.quotient);
-    const int month = quint8(c0dm.remainder + 1);
-    const int day = qDiv<5>(k1dm.remainder) + 1;
-    return QCalendar::YearMonthDay(y > 0 ? y : y - 1, month, day);
+    const auto year4Day = qDivMod<FourYears>(4 * (jd - BaseJd) - 1);
+    // Its remainder changes by 4 per day, except at roughly yearly quotient steps.
+    const auto ymd = dayInYearToYmd(qDiv<4>(year4Day.remainder));
+    const int y = year4Day.quotient + ymd.year;
+    return QCalendar::YearMonthDay(y > 0 ? y : y - 1, ymd.month, ymd.day);
 }
 
 QT_END_NAMESPACE

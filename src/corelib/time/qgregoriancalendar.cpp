@@ -3,6 +3,7 @@
 
 #include "qgregoriancalendar_p.h"
 #include "qcalendarmath_p.h"
+
 #include <QtCore/qdatetime.h>
 
 QT_BEGIN_NAMESPACE
@@ -168,41 +169,44 @@ int QGregorianCalendar::yearSharingWeekDays(QDate date)
  * do for Milankovic).
  */
 
+using namespace QRomanCalendrical;
+// End a Gregorian four-century cycle on 1 BC's leap day:
+constexpr qint64 BaseJd = LeapDayGregorian1Bce;
+// Every four centures there are 97 leap years:
+constexpr unsigned FourCenturies = 400 * 365 + 97;
+
 bool QGregorianCalendar::julianFromParts(int year, int month, int day, qint64 *jd)
 {
     Q_ASSERT(jd);
     if (!validParts(year, month, day))
         return false;
 
-    if (year < 0)
-        ++year;
-
-    int    a = month < 3 ? 1 : 0;
-    qint64 y = qint64(year) - a;
-    int    m = month + 12 * a - 3;
-    *jd = day + qDiv<5>(153 * m + 2) + 1721119
-        + 365 * y + qDiv<4>(y) - qDiv<100>(y) + qDiv<400>(y);
+    const auto yearDays = yearMonthToYearDays(year, month);
+    const qint64 y = yearDays.year;
+    const qint64 fromYear = 365 * y + qDiv<4>(y) - qDiv<100>(y) + qDiv<400>(y);
+    *jd = fromYear + yearDays.days + day + BaseJd ;
     return true;
 }
 
 QCalendar::YearMonthDay QGregorianCalendar::partsFromJulian(qint64 jd)
 {
-    qint64 a = jd - 1721120;
-    qint64 b = qDiv<146097>(4 * a + 3);
-    int    c = a - qDiv<4>(146097 * b);
+    const qint64 dayNumber = jd - BaseJd;
+    const qint64 century = qDiv<FourCenturies>(4 * dayNumber - 1);
+    const int dayInCentury = dayNumber - qDiv<4>(FourCenturies * century);
 
-    int    d = qDiv<1461>(4 * c + 3);
-    int    e = c - qDiv<4>(1461 * d);
-    int    m = qDiv<153>(5 * e + 2);
+    const int yearInCentury = qDiv<FourYears>(4 * dayInCentury - 1);
+    const int dayInYear = dayInCentury - qDiv<4>(FourYears * yearInCentury);
+    const int m = qDiv<FiveMonths>(5 * dayInYear - 3);
+    Q_ASSERT(m < 12 && m >= 0);
+    // That m is a month adjusted to March = 0, with Jan = 10, Feb = 11 in the previous year.
+    const int yearOffset = m < 10 ? 0 : 1;
 
-    int y = 100 * b + d + qDiv<10>(m);
+    const int y = 100 * century + yearInCentury + yearOffset;
+    const int month = m + 3 - 12 * yearOffset;
+    const int day = dayInYear - qDiv<5>(FiveMonths * m + 2);
 
     // Adjust for no year 0
-    int year = y > 0 ? y : y - 1;
-    int month = m + 3 - 12 * qDiv<10>(m);
-    int day = e - qDiv<5>(153 * m + 2) + 1;
-
-    return QCalendar::YearMonthDay(year, month, day);
+    return QCalendar::YearMonthDay(y > 0 ? y : y - 1, month, day);
 }
 
 QT_END_NAMESPACE

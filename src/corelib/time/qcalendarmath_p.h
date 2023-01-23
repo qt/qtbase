@@ -106,6 +106,40 @@ template <unsigned b, typename Int> constexpr Int qMod(Int a) { return qDivMod<b
 
 } // QRoundingDown
 
+namespace QRomanCalendrical {
+// Julian Day number of Gregorian 1 BCE, February 29th:
+constexpr qint64 LeapDayGregorian1Bce = 1721119;
+// Aside from (maybe) some turns of centuries, one year in four is leap:
+constexpr unsigned FourYears = 4 * 365 + 1;
+constexpr unsigned FiveMonths = 31 + 30 + 31 + 30 + 31; // Mar-Jul or Aug-Dec.
+
+constexpr auto yearMonthToYearDays(int year, int month)
+{
+    // Pre-digests year and month to (possibly denormal) year count and day-within-year.
+    struct R { qint64 year; qint64 days; };
+    if (year < 0) // Represent -N BCE as 1-N so year numbering is contiguous.
+        ++year;
+    month -= 3; // Adjust month numbering so March = 0, ...
+    if (month < 0) { // and Jan = 10, Feb = 11, in the previous year.
+        --year;
+        month += 12;
+    }
+    return R { year, QRoundingDown::qDiv<5>(FiveMonths * month + 2) };
+}
+
+constexpr auto dayInYearToYmd(int dayInYear)
+{
+    // The year is an adjustment to the year for which dayInYear may be denormal.
+    struct R { int year; int month; int day; };
+    // Shared code for Julian and Milankovic (at least).
+    using namespace QRoundingDown;
+    const auto month5Day = qDivMod<FiveMonths>(5 * dayInYear + 2);
+    // Its remainder changes by 5 per day, except at roughly monthly quotient steps.
+    const auto yearMonth = qDivMod<12>(month5Day.quotient + 2);
+    return R { yearMonth.quotient, yearMonth.remainder + 1, qDiv<5>(month5Day.remainder) + 1 };
+}
+}
+
 QT_END_NAMESPACE
 
 #endif // QCALENDARMATH_P_H

@@ -4,7 +4,6 @@
 #include "qglobal.h"
 #include "qislamiccivilcalendar_p.h"
 #include "qcalendarmath_p.h"
-#include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,27 +60,34 @@ bool QIslamicCivilCalendar::isLeapYear(int year) const
     return qMod<30>(year * 11 + 14) < 11;
 }
 
+// First day of first year (Gregorian 622 CE July 19th) is the base date here:
+constexpr qint64 EpochJd = 1948440;
+// Each 30 years has 11 leap years of 355 days and 19 ordinary years of 354:
+constexpr unsigned ThirtyYears = 11 * 355 + 19 * 354;
+// The first eleven months of the year alternate 30, 29, ..., 29, 30 days in length.
+constexpr unsigned ElevenMonths = 6 * 30 + 5 * 29;
+
 bool QIslamicCivilCalendar::dateToJulianDay(int year, int month, int day, qint64 *jd) const
 {
     Q_ASSERT(jd);
     if (!isDateValid(year, month, day))
         return false;
-    if (year <= 0)
-        ++year;
-    *jd = qDiv<30>(10631 * year - 10617)
-            + qDiv<11>(325 * month - 320)
-            + day + 1948439;
+
+    *jd = qDiv<30>(qint64(ThirtyYears) * (year > 0 ? year - 1 : year) + 14)
+        + qDiv<11>(ElevenMonths * (month - 1) + 5)
+        + day + EpochJd - 1;
     return true;
 }
 
 QCalendar::YearMonthDay QIslamicCivilCalendar::julianDayToDate(qint64 jd) const
 {
-    constexpr qint64 epoch = 1948440;
-    const auto k2dm = qDivMod<10631>(30 * (jd - epoch) + 15);
-    int y = k2dm.quotient + 1;
-    const auto k1dm = qDivMod<325>(11 * qDiv<30>(k2dm.remainder) + 5);
-    const int month = k1dm.quotient + 1;
-    const int day = qDiv<11>(k1dm.remainder) + 1;
+    const auto year30Day = qDivMod<ThirtyYears>(30 * (jd - EpochJd) + 15);
+    // Its remainder changes by 30 per day, except roughly yearly.
+    const auto month11Day = qDivMod<ElevenMonths>(11 * qDiv<30>(year30Day.remainder) + 5);
+    // Its remainder changes by 11 per day except roughly monthly.
+    const int month = month11Day.quotient + 1;
+    const int day = qDiv<11>(month11Day.remainder) + 1;
+    const int y = year30Day.quotient + 1;
     return QCalendar::YearMonthDay(y > 0 ? y : y - 1, month, day);
 }
 
