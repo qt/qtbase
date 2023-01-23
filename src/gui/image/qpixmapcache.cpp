@@ -1,7 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#define Q_TEST_QPIXMAPCACHE
 #include "qpixmapcache.h"
 #include "qobject.h"
 #include "qdebug.h"
@@ -642,14 +641,14 @@ void QPixmapCache::clear()
     }
 }
 
-void QPixmapCache::flushDetachedPixmaps()
+Q_AUTOTEST_EXPORT void qt_qpixmapcache_flush_detached_pixmaps() // for tst_qpixmapcache
 {
     if (!qt_pixmapcache_thread_test())
         return;
     pm_cache()->flushDetachedPixmaps(true);
 }
 
-int QPixmapCache::totalUsed()
+Q_AUTOTEST_EXPORT int qt_qpixmapcache_qpixmapcache_total_used() // for tst_qpixmapcache
 {
     if (!qt_pixmapcache_thread_test())
         return 0;

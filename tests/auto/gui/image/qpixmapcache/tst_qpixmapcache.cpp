@@ -1,13 +1,17 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-#define Q_TEST_QPIXMAPCACHE
-
 #include <QTest>
 
 
 #include <qpixmapcache.h>
 #include "private/qpixmapcache_p.h"
+
+QT_BEGIN_NAMESPACE // The test requires QT_BUILD_INTERNAL
+Q_AUTOTEST_EXPORT void qt_qpixmapcache_flush_detached_pixmaps();
+Q_AUTOTEST_EXPORT int qt_qpixmapcache_qpixmapcache_total_used();
+Q_AUTOTEST_EXPORT int q_QPixmapCache_keyHashSize();
+QT_END_NAMESPACE
 
 class tst_QPixmapCache : public QObject
 {
@@ -160,7 +164,7 @@ void tst_QPixmapCache::setCacheLimit()
     p1->detach();
     QPixmapCache::Key key3 = QPixmapCache::insert(*p1);
     p1->detach();
-    QPixmapCache::flushDetachedPixmaps();
+    qt_qpixmapcache_flush_detached_pixmaps();
     key2 = QPixmapCache::insert(*p1);
     QCOMPARE(getPrivate(key2)->key, 1);
     //This old key is not valid anymore after the flush
@@ -458,10 +462,6 @@ void tst_QPixmapCache::pixmapKey()
     QVERIFY(!getPrivate(key8));
 }
 
-QT_BEGIN_NAMESPACE
-extern int q_QPixmapCache_keyHashSize();
-QT_END_NAMESPACE
-
 void tst_QPixmapCache::noLeak()
 {
     QPixmapCache::Key key;
@@ -499,7 +499,7 @@ void tst_QPixmapCache::strictCacheLimit()
         QPixmapCache::insert(id + "-b", pixmap);
     }
 
-    QVERIFY(QPixmapCache::totalUsed() <= limit);
+    QVERIFY(qt_qpixmapcache_qpixmapcache_total_used() <= limit);
 }
 
 void tst_QPixmapCache::noCrashOnLargeInsert()
