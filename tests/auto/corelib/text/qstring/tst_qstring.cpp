@@ -920,32 +920,32 @@ void tst_QString::replace_regexp_data()
     QTest::newRow("empty-in-null") << QString() << "" << "after" << "after";
     QTest::newRow("empty-in-empty") << "" << "" << "after" << "after";
 
-    QTest::newRow( "rep00" ) << QString("A <i>bon mot</i>.") << QString("<i>([^<]*)</i>") << QString("\\emph{\\1}") << QString("A \\emph{bon mot}.");
-    QTest::newRow( "rep01" ) << QString("banana") << QString("^.a()") << QString("\\1") << QString("nana");
-    QTest::newRow( "rep02" ) << QString("banana") << QString("(ba)") << QString("\\1X\\1") << QString("baXbanana");
-    QTest::newRow( "rep03" ) << QString("banana") << QString("(ba)(na)na") << QString("\\2X\\1") << QString("naXba");
-    QTest::newRow("rep04") << QString() << QString("(ba)") << QString("\\1X\\1") << QString();
+    QTest::newRow( "rep00" ) << u"A <i>bon mot</i>."_s << u"<i>([^<]*)</i>"_s << u"\\emph{\\1}"_s << u"A \\emph{bon mot}."_s;
+    QTest::newRow( "rep01" ) << u"banana"_s << u"^.a()"_s << u"\\1"_s << u"nana"_s;
+    QTest::newRow( "rep02" ) << u"banana"_s << u"(ba)"_s << u"\\1X\\1"_s << u"baXbanana"_s;
+    QTest::newRow( "rep03" ) << u"banana"_s << u"(ba)(na)na"_s << u"\\2X\\1"_s << u"naXba"_s;
+    QTest::newRow("rep04") << QString() << u"(ba)"_s << u"\\1X\\1"_s << QString();
 
-    QTest::newRow("backref00") << QString("\\1\\2\\3\\4\\5\\6\\7\\8\\9\\A\\10\\11") << QString("\\\\[34]")
-                               << QString("X") << QString("\\1\\2XX\\5\\6\\7\\8\\9\\A\\10\\11");
-    QTest::newRow("backref01") << QString("foo") << QString("[fo]") << QString("\\1") << QString("\\1\\1\\1");
-    QTest::newRow("backref02") << QString("foo") << QString("([fo])") << QString("(\\1)") << QString("(f)(o)(o)");
-    QTest::newRow("backref03") << QString("foo") << QString("([fo])") << QString("\\2") << QString("\\2\\2\\2");
-    QTest::newRow("backref04") << QString("foo") << QString("([fo])") << QString("\\10") << QString("f0o0o0");
-    QTest::newRow("backref05") << QString("foo") << QString("([fo])") << QString("\\11") << QString("f1o1o1");
-    QTest::newRow("backref06") << QString("foo") << QString("([fo])") << QString("\\19") << QString("f9o9o9");
-    QTest::newRow("backref07") << QString("foo") << QString("(f)(o+)")
-                               << QString("\\2\\1\\10\\20\\11\\22\\19\\29\\3")
-                               << QString("ooff0oo0f1oo2f9oo9\\3");
-    QTest::newRow("backref08") << QString("abc") << QString("(((((((((((((([abc]))))))))))))))")
-                               << QString("{\\14}") << QString("{a}{b}{c}");
-    QTest::newRow("backref09") << QString("abcdefghijklmn")
-                               << QString("(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)")
-                               << QString("\\19\\18\\17\\16\\15\\14\\13\\12\\11\\10"
-                                          "\\9\\90\\8\\80\\7\\70\\6\\60\\5\\50\\4\\40\\3\\30\\2\\20\\1")
-                               << QString("a9a8a7a6a5nmlkjii0hh0gg0ff0ee0dd0cc0bb0a");
-    QTest::newRow("backref10") << QString("abc") << QString("((((((((((((((abc))))))))))))))")
-                               << QString("\\0\\01\\011") << QString("\\0\\01\\011");
+    QTest::newRow("backref00") << u"\\1\\2\\3\\4\\5\\6\\7\\8\\9\\A\\10\\11"_s << u"\\\\[34]"_s
+                               << u"X"_s << u"\\1\\2XX\\5\\6\\7\\8\\9\\A\\10\\11"_s;
+    QTest::newRow("backref01") << u"foo"_s << u"[fo]"_s << u"\\1"_s << u"\\1\\1\\1"_s;
+    QTest::newRow("backref02") << u"foo"_s << u"([fo])"_s << u"(\\1)"_s << u"(f)(o)(o)"_s;
+    QTest::newRow("backref03") << u"foo"_s << u"([fo])"_s << u"\\2"_s << u"\\2\\2\\2"_s;
+    QTest::newRow("backref04") << u"foo"_s << u"([fo])"_s << u"\\10"_s << u"f0o0o0"_s;
+    QTest::newRow("backref05") << u"foo"_s << u"([fo])"_s << u"\\11"_s << u"f1o1o1"_s;
+    QTest::newRow("backref06") << u"foo"_s << u"([fo])"_s << u"\\19"_s << u"f9o9o9"_s;
+    QTest::newRow("backref07") << u"foo"_s << u"(f)(o+)"_s
+                               << u"\\2\\1\\10\\20\\11\\22\\19\\29\\3"_s
+                               << u"ooff0oo0f1oo2f9oo9\\3"_s;
+    QTest::newRow("backref08") << u"abc"_s << u"(((((((((((((([abc]))))))))))))))"_s
+                               << u"{\\14}"_s << u"{a}{b}{c}"_s;
+    QTest::newRow("backref09") << u"abcdefghijklmn"_s
+                               << u"(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)"_s
+                               << u"\\19\\18\\17\\16\\15\\14\\13\\12\\11\\10"
+                                   "\\9\\90\\8\\80\\7\\70\\6\\60\\5\\50\\4\\40\\3\\30\\2\\20\\1"_s
+                               << u"a9a8a7a6a5nmlkjii0hh0gg0ff0ee0dd0cc0bb0a"_s;
+    QTest::newRow("backref10") << u"abc"_s << u"((((((((((((((abc))))))))))))))"_s
+                               << u"\\0\\01\\011"_s << u"\\0\\01\\011"_s;
 }
 #endif
 
@@ -956,10 +956,10 @@ void tst_QString::utf8_data()
     QTest::addColumn<QString>("res" );
 
     QTest::newRow("null") << QByteArray() << QString();
-    QTest::newRow("empty") << QByteArray("") << QString("");
+    QTest::newRow("empty") << QByteArray("") << u""_s;
 
-    QTest::newRow( "str0" ) << QByteArray("abcdefgh")
-                          << QString("abcdefgh");
+    QTest::newRow("str0") << QByteArray("abcdefgh") << u"abcdefgh"_s;
+
     QTest::newRow( "str1" ) << QByteArray("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205")
                           << QString::fromLatin1("\366\344\374\326\304\334\370\346\345\330\306\305") ;
     str += QChar( 0x05e9 );
@@ -969,11 +969,11 @@ void tst_QString::utf8_data()
                           << str;
 
     str = QChar( 0x20ac );
-    str += " some text";
+    str += u" some text"_s;
     QTest::newRow( "str3" ) << QByteArray("\342\202\254 some text")
                           << str;
 
-    str = "Old Italic: ";
+    str = u"Old Italic: "_s;
     str += QChar(0xd800);
     str += QChar(0xdf00);
     str += QChar(0xd800);
@@ -993,20 +993,20 @@ void tst_QString::length_data()
     QTest::addColumn<qsizetype>("res");
 
     QTest::newRow("null") << QString() << qsizetype(0);
-    QTest::newRow("empty") << QString("") << qsizetype(0);
-    QTest::newRow("data0") << QString("Test") << qsizetype(4);
-    QTest::newRow("data1") << QString("The quick brown fox jumps over the lazy dog")
+    QTest::newRow("empty") << u""_s << qsizetype(0);
+    QTest::newRow("data0") << u"Test"_s << qsizetype(4);
+    QTest::newRow("data1") << u"The quick brown fox jumps over the lazy dog"_s
                            << qsizetype(43);
-    QTest::newRow("data3") << QString("A") << qsizetype(1);
-    QTest::newRow("data4") << QString("AB") << qsizetype(2);
-    QTest::newRow("data5") << QString("AB\n") << qsizetype(3);
-    QTest::newRow("data6") << QString("AB\nC") << qsizetype(4);
-    QTest::newRow("data7") << QString("\n") << qsizetype(1);
-    QTest::newRow("data8") << QString("\nA") << qsizetype(2);
-    QTest::newRow("data9") << QString("\nAB") << qsizetype(3);
-    QTest::newRow("data10") << QString("\nAB\nCDE") << qsizetype(7);
-    QTest::newRow("data11") << QString("shdnftrheid fhgnt gjvnfmd chfugkh bnfhg thgjf vnghturkf "
-                                       "chfnguh bjgnfhvygh hnbhgutjfv dhdnjds dcjs d")
+    QTest::newRow("data3") << u"A"_s << qsizetype(1);
+    QTest::newRow("data4") << u"AB"_s << qsizetype(2);
+    QTest::newRow("data5") << u"AB\n"_s << qsizetype(3);
+    QTest::newRow("data6") << u"AB\nC"_s << qsizetype(4);
+    QTest::newRow("data7") << u"\n"_s << qsizetype(1);
+    QTest::newRow("data8") << u"\nA"_s << qsizetype(2);
+    QTest::newRow("data9") << u"\nAB"_s << qsizetype(3);
+    QTest::newRow("data10") << u"\nAB\nCDE"_s << qsizetype(7);
+    QTest::newRow("data11") << u"shdnftrheid fhgnt gjvnfmd chfugkh bnfhg thgjf vnghturkf "
+                                "chfnguh bjgnfhvygh hnbhgutjfv dhdnjds dcjs d"_s
                             << qsizetype(100);
 }
 
@@ -1244,7 +1244,7 @@ void tst_QString::constructorQByteArray_data()
     ba[2] = 'M';
     ba[3] = 'P';
 
-    QTest::newRow( "1" ) << ba << QString("COMP");
+    QTest::newRow( "1" ) << ba << u"COMP"_s;
 
     QByteArray ba1( 7, 0 );
     ba1[0] = 'a';
@@ -1257,8 +1257,8 @@ void tst_QString::constructorQByteArray_data()
 
     QTest::newRow( "2" ) << ba1 << QString::fromUtf16(u"abc\0def", 7);
 
-    QTest::newRow( "3" ) << QByteArray::fromRawData("abcd", 3) << QString("abc");
-    QTest::newRow( "4" ) << QByteArray("\xc3\xa9") << QString("\xc3\xa9");
+    QTest::newRow( "3" ) << QByteArray::fromRawData("abcd", 3) << u"abc"_s;
+    QTest::newRow( "4" ) << QByteArray("\xc3\xa9") << QString::fromUtf8("\xc3\xa9");
     QTest::newRow( "4-bis" ) << QByteArray("\xc3\xa9") << QString::fromUtf8("\xc3\xa9");
     QTest::newRow( "4-tre" ) << QByteArray("\xc3\xa9") << QString::fromLatin1("\xe9");
 }
@@ -1381,13 +1381,13 @@ void tst_QString::chop_data()
     QTest::addColumn<int>("count" );
     QTest::addColumn<QString>("result");
 
-    const QString original("abcd");
+    const QString original(u"abcd"_s);
 
     QTest::newRow("null chop 1") << QString() << 1 << QString();
     QTest::newRow("null chop -1") << QString() << -1 << QString();
-    QTest::newRow("empty chop 1") << QString("") << 1 << QString("");
-    QTest::newRow("empty chop -1") << QString("") << -1 << QString("");
-    QTest::newRow("data0") << original << 1 << QString("abc");
+    QTest::newRow("empty chop 1") << u""_s << 1 << u""_s;
+    QTest::newRow("empty chop -1") << u""_s << -1 << u""_s;
+    QTest::newRow("data0") << original << 1 << u"abc"_s;
     QTest::newRow("data1") << original << 0 << original;
     QTest::newRow("data2") << original << -1 << original;
     QTest::newRow("data3") << original << int(original.size()) << QString();
@@ -1580,73 +1580,73 @@ void tst_QString::indexOf_data()
     QTest::addColumn<bool>("bcs" );
     QTest::addColumn<int>("resultpos" );
 
-    QTest::newRow( "data0" ) << QString("abc") << QString("a") << 0 << true << 0;
-    QTest::newRow( "data1" ) << QString("abc") << QString("a") << 0 << false << 0;
-    QTest::newRow( "data2" ) << QString("abc") << QString("A") << 0 << true << -1;
-    QTest::newRow( "data3" ) << QString("abc") << QString("A") << 0 << false << 0;
-    QTest::newRow( "data4" ) << QString("abc") << QString("a") << 1 << true << -1;
-    QTest::newRow( "data5" ) << QString("abc") << QString("a") << 1 << false << -1;
-    QTest::newRow( "data6" ) << QString("abc") << QString("A") << 1 << true << -1;
-    QTest::newRow( "data7" ) << QString("abc") << QString("A") << 1 << false << -1;
-    QTest::newRow( "data8" ) << QString("abc") << QString("b") << 0 << true << 1;
-    QTest::newRow( "data9" ) << QString("abc") << QString("b") << 0 << false << 1;
-    QTest::newRow( "data10" ) << QString("abc") << QString("B") << 0 << true << -1;
-    QTest::newRow( "data11" ) << QString("abc") << QString("B") << 0 << false << 1;
-    QTest::newRow( "data12" ) << QString("abc") << QString("b") << 1 << true << 1;
-    QTest::newRow( "data13" ) << QString("abc") << QString("b") << 1 << false << 1;
-    QTest::newRow( "data14" ) << QString("abc") << QString("B") << 1 << true << -1;
-    QTest::newRow( "data15" ) << QString("abc") << QString("B") << 1 << false << 1;
-    QTest::newRow( "data16" ) << QString("abc") << QString("b") << 2 << true << -1;
-    QTest::newRow( "data17" ) << QString("abc") << QString("b") << 2 << false << -1;
+    QTest::newRow( "data0" ) << u"abc"_s << u"a"_s << 0 << true << 0;
+    QTest::newRow( "data1" ) << u"abc"_s << u"a"_s << 0 << false << 0;
+    QTest::newRow( "data2" ) << u"abc"_s << u"A"_s << 0 << true << -1;
+    QTest::newRow( "data3" ) << u"abc"_s << u"A"_s << 0 << false << 0;
+    QTest::newRow( "data4" ) << u"abc"_s << u"a"_s << 1 << true << -1;
+    QTest::newRow( "data5" ) << u"abc"_s << u"a"_s << 1 << false << -1;
+    QTest::newRow( "data6" ) << u"abc"_s << u"A"_s << 1 << true << -1;
+    QTest::newRow( "data7" ) << u"abc"_s << u"A"_s << 1 << false << -1;
+    QTest::newRow( "data8" ) << u"abc"_s << u"b"_s << 0 << true << 1;
+    QTest::newRow( "data9" ) << u"abc"_s << u"b"_s << 0 << false << 1;
+    QTest::newRow( "data10" ) << u"abc"_s << u"B"_s << 0 << true << -1;
+    QTest::newRow( "data11" ) << u"abc"_s << u"B"_s << 0 << false << 1;
+    QTest::newRow( "data12" ) << u"abc"_s << u"b"_s << 1 << true << 1;
+    QTest::newRow( "data13" ) << u"abc"_s << u"b"_s << 1 << false << 1;
+    QTest::newRow( "data14" ) << u"abc"_s << u"B"_s << 1 << true << -1;
+    QTest::newRow( "data15" ) << u"abc"_s << u"B"_s << 1 << false << 1;
+    QTest::newRow( "data16" ) << u"abc"_s << u"b"_s << 2 << true << -1;
+    QTest::newRow( "data17" ) << u"abc"_s << u"b"_s << 2 << false << -1;
 
-    QTest::newRow( "data20" ) << QString("ABC") << QString("A") << 0 << true << 0;
-    QTest::newRow( "data21" ) << QString("ABC") << QString("A") << 0 << false << 0;
-    QTest::newRow( "data22" ) << QString("ABC") << QString("a") << 0 << true << -1;
-    QTest::newRow( "data23" ) << QString("ABC") << QString("a") << 0 << false << 0;
-    QTest::newRow( "data24" ) << QString("ABC") << QString("A") << 1 << true << -1;
-    QTest::newRow( "data25" ) << QString("ABC") << QString("A") << 1 << false << -1;
-    QTest::newRow( "data26" ) << QString("ABC") << QString("a") << 1 << true << -1;
-    QTest::newRow( "data27" ) << QString("ABC") << QString("a") << 1 << false << -1;
-    QTest::newRow( "data28" ) << QString("ABC") << QString("B") << 0 << true << 1;
-    QTest::newRow( "data29" ) << QString("ABC") << QString("B") << 0 << false << 1;
-    QTest::newRow( "data30" ) << QString("ABC") << QString("b") << 0 << true << -1;
-    QTest::newRow( "data31" ) << QString("ABC") << QString("b") << 0 << false << 1;
-    QTest::newRow( "data32" ) << QString("ABC") << QString("B") << 1 << true << 1;
-    QTest::newRow( "data33" ) << QString("ABC") << QString("B") << 1 << false << 1;
-    QTest::newRow( "data34" ) << QString("ABC") << QString("b") << 1 << true << -1;
-    QTest::newRow( "data35" ) << QString("ABC") << QString("b") << 1 << false << 1;
-    QTest::newRow( "data36" ) << QString("ABC") << QString("B") << 2 << true << -1;
-    QTest::newRow( "data37" ) << QString("ABC") << QString("B") << 2 << false << -1;
+    QTest::newRow( "data20" ) << u"ABC"_s << u"A"_s << 0 << true << 0;
+    QTest::newRow( "data21" ) << u"ABC"_s << u"A"_s << 0 << false << 0;
+    QTest::newRow( "data22" ) << u"ABC"_s << u"a"_s << 0 << true << -1;
+    QTest::newRow( "data23" ) << u"ABC"_s << u"a"_s << 0 << false << 0;
+    QTest::newRow( "data24" ) << u"ABC"_s << u"A"_s << 1 << true << -1;
+    QTest::newRow( "data25" ) << u"ABC"_s << u"A"_s << 1 << false << -1;
+    QTest::newRow( "data26" ) << u"ABC"_s << u"a"_s << 1 << true << -1;
+    QTest::newRow( "data27" ) << u"ABC"_s << u"a"_s << 1 << false << -1;
+    QTest::newRow( "data28" ) << u"ABC"_s << u"B"_s << 0 << true << 1;
+    QTest::newRow( "data29" ) << u"ABC"_s << u"B"_s << 0 << false << 1;
+    QTest::newRow( "data30" ) << u"ABC"_s << u"b"_s << 0 << true << -1;
+    QTest::newRow( "data31" ) << u"ABC"_s << u"b"_s << 0 << false << 1;
+    QTest::newRow( "data32" ) << u"ABC"_s << u"B"_s << 1 << true << 1;
+    QTest::newRow( "data33" ) << u"ABC"_s << u"B"_s << 1 << false << 1;
+    QTest::newRow( "data34" ) << u"ABC"_s << u"b"_s << 1 << true << -1;
+    QTest::newRow( "data35" ) << u"ABC"_s << u"b"_s << 1 << false << 1;
+    QTest::newRow( "data36" ) << u"ABC"_s << u"B"_s << 2 << true << -1;
+    QTest::newRow( "data37" ) << u"ABC"_s << u"B"_s << 2 << false << -1;
 
-    QTest::newRow( "data40" ) << QString("aBc") << QString("bc") << 0 << true << -1;
-    QTest::newRow( "data41" ) << QString("aBc") << QString("Bc") << 0 << true << 1;
-    QTest::newRow( "data42" ) << QString("aBc") << QString("bC") << 0 << true << -1;
-    QTest::newRow( "data43" ) << QString("aBc") << QString("BC") << 0 << true << -1;
-    QTest::newRow( "data44" ) << QString("aBc") << QString("bc") << 0 << false << 1;
-    QTest::newRow( "data45" ) << QString("aBc") << QString("Bc") << 0 << false << 1;
-    QTest::newRow( "data46" ) << QString("aBc") << QString("bC") << 0 << false << 1;
-    QTest::newRow( "data47" ) << QString("aBc") << QString("BC") << 0 << false << 1;
-    QTest::newRow( "data48" ) << QString("AbC") << QString("bc") << 0 << true << -1;
-    QTest::newRow( "data49" ) << QString("AbC") << QString("Bc") << 0 << true << -1;
-    QTest::newRow( "data50" ) << QString("AbC") << QString("bC") << 0 << true << 1;
-    QTest::newRow( "data51" ) << QString("AbC") << QString("BC") << 0 << true << -1;
-    QTest::newRow( "data52" ) << QString("AbC") << QString("bc") << 0 << false << 1;
-    QTest::newRow( "data53" ) << QString("AbC") << QString("Bc") << 0 << false << 1;
+    QTest::newRow( "data40" ) << u"aBc"_s << u"bc"_s << 0 << true << -1;
+    QTest::newRow( "data41" ) << u"aBc"_s << u"Bc"_s << 0 << true << 1;
+    QTest::newRow( "data42" ) << u"aBc"_s << u"bC"_s << 0 << true << -1;
+    QTest::newRow( "data43" ) << u"aBc"_s << u"BC"_s << 0 << true << -1;
+    QTest::newRow( "data44" ) << u"aBc"_s << u"bc"_s << 0 << false << 1;
+    QTest::newRow( "data45" ) << u"aBc"_s << u"Bc"_s << 0 << false << 1;
+    QTest::newRow( "data46" ) << u"aBc"_s << u"bC"_s << 0 << false << 1;
+    QTest::newRow( "data47" ) << u"aBc"_s << u"BC"_s << 0 << false << 1;
+    QTest::newRow( "data48" ) << u"AbC"_s << u"bc"_s << 0 << true << -1;
+    QTest::newRow( "data49" ) << u"AbC"_s << u"Bc"_s << 0 << true << -1;
+    QTest::newRow( "data50" ) << u"AbC"_s << u"bC"_s << 0 << true << 1;
+    QTest::newRow( "data51" ) << u"AbC"_s << u"BC"_s << 0 << true << -1;
+    QTest::newRow( "data52" ) << u"AbC"_s << u"bc"_s << 0 << false << 1;
+    QTest::newRow( "data53" ) << u"AbC"_s << u"Bc"_s << 0 << false << 1;
 
-    QTest::newRow( "data54" ) << QString("AbC") << QString("bC") << 0 << false << 1;
-    QTest::newRow( "data55" ) << QString("AbC") << QString("BC") << 0 << false << 1;
-    QTest::newRow( "data56" ) << QString("AbC") << QString("BC") << 1 << false << 1;
-    QTest::newRow( "data57" ) << QString("AbC") << QString("BC") << 2 << false << -1;
+    QTest::newRow( "data54" ) << u"AbC"_s << u"bC"_s << 0 << false << 1;
+    QTest::newRow( "data55" ) << u"AbC"_s << u"BC"_s << 0 << false << 1;
+    QTest::newRow( "data56" ) << u"AbC"_s << u"BC"_s << 1 << false << 1;
+    QTest::newRow( "data57" ) << u"AbC"_s << u"BC"_s << 2 << false << -1;
 
     QTest::newRow( "null-in-null") << QString() << QString() << 0 << false << 0;
-    QTest::newRow( "empty-in-null") << QString() << QString("") << 0 << false << 0;
-    QTest::newRow( "null-in-empty") << QString("") << QString() << 0 << false << 0;
-    QTest::newRow( "empty-in-empty") << QString("") << QString("") << 0 << false << 0;
-    QTest::newRow( "data-in-null") << QString() << QString("a") << 0 << false << -1;
-    QTest::newRow( "data-in-empty") << QString("") << QString("a") << 0 << false << -1;
+    QTest::newRow( "empty-in-null") << QString() << u""_s << 0 << false << 0;
+    QTest::newRow( "null-in-empty") << u""_s << QString() << 0 << false << 0;
+    QTest::newRow( "empty-in-empty") << u""_s << u""_s << 0 << false << 0;
+    QTest::newRow( "data-in-null") << QString() << u"a"_s << 0 << false << -1;
+    QTest::newRow( "data-in-empty") << u""_s << u"a"_s << 0 << false << -1;
 
 
-    QString s1 = "abc";
+    QString s1 = u"abc"_s;
     s1 += QChar(0xb5);
     QString s2;
     s2 += QChar(0x3bc);
@@ -1654,15 +1654,15 @@ void tst_QString::indexOf_data()
     s2.prepend(QLatin1Char('C'));
     QTest::newRow( "data59" ) << s1 << s2 << 0 << false << 2;
 
-    QString veryBigHaystack(500, 'a');
-    veryBigHaystack += 'B';
+    QString veryBigHaystack(500, u'a');
+    veryBigHaystack += u'B';
     QTest::newRow("BoyerMooreStressTest") << veryBigHaystack << veryBigHaystack << 0 << true << 0;
-    QTest::newRow("BoyerMooreStressTest2") << QString(veryBigHaystack + 'c') << veryBigHaystack << 0 << true << 0;
-    QTest::newRow("BoyerMooreStressTest3") << QString('c' + veryBigHaystack) << veryBigHaystack << 0 << true << 1;
-    QTest::newRow("BoyerMooreStressTest4") << veryBigHaystack << QString(veryBigHaystack + 'c') << 0 << true << -1;
-    QTest::newRow("BoyerMooreStressTest5") << veryBigHaystack << QString('c' + veryBigHaystack) << 0 << true << -1;
-    QTest::newRow("BoyerMooreStressTest6") << QString('d' + veryBigHaystack) << QString('c' + veryBigHaystack) << 0 << true << -1;
-    QTest::newRow("BoyerMooreStressTest7") << QString(veryBigHaystack + 'c') << QString('c' + veryBigHaystack) << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest2") << QString(veryBigHaystack + u'c') << veryBigHaystack << 0 << true << 0;
+    QTest::newRow("BoyerMooreStressTest3") << QString(u'c' + veryBigHaystack) << veryBigHaystack << 0 << true << 1;
+    QTest::newRow("BoyerMooreStressTest4") << veryBigHaystack << QString(veryBigHaystack + u'c') << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest5") << veryBigHaystack << QString(u'c' + veryBigHaystack) << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest6") << QString(u'd' + veryBigHaystack) << QString(u'c' + veryBigHaystack) << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest7") << QString(veryBigHaystack + u'c') << QString(u'c' + veryBigHaystack) << 0 << true << -1;
 
     QTest::newRow("BoyerMooreInsensitiveStressTest") << veryBigHaystack << veryBigHaystack << 0 << false << 0;
 
