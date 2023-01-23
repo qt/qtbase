@@ -608,32 +608,39 @@ void tst_QLabel::mouseEventPropagation_data()
 {
     QTest::addColumn<const QString>("text");
     QTest::addColumn<const Qt::TextInteractionFlag>("interaction");
+    QTest::addColumn<const QList<Qt::MouseButton>>("buttons");
     QTest::addColumn<const bool>("expectPropagation");
 
 
     QTest::newRow("RichText")
             << QString("<b>This is a rich text propagating mouse events</b>")
             << Qt::LinksAccessibleByMouse
+            << QList<Qt::MouseButton>{Qt::LeftButton, Qt::RightButton, Qt::MiddleButton}
             << true;
     QTest::newRow("PlainText")
             << QString("This is a plain text propagating mouse events")
             << Qt::LinksAccessibleByMouse
+            << QList<Qt::MouseButton>{Qt::LeftButton, Qt::RightButton, Qt::MiddleButton}
             << true;
     QTest::newRow("PlainTextConsume")
             << QString("This is a plain text consuming mouse events")
             << Qt::TextSelectableByMouse
+            << QList<Qt::MouseButton>{Qt::LeftButton}
             << false;
     QTest::newRow("RichTextConsume")
             << QString("<b>This is a rich text consuming mouse events</b>")
             << Qt::TextSelectableByMouse
+            << QList<Qt::MouseButton>{Qt::LeftButton}
             << false;
     QTest::newRow("PlainTextNoInteraction")
             << QString("This is a text not interacting with mouse")
             << Qt::NoTextInteraction
+            << QList<Qt::MouseButton>{Qt::LeftButton, Qt::RightButton, Qt::MiddleButton}
             << true;
     QTest::newRow("RichTextNoInteraction")
             << QString("<b>This is a rich text not interacting with mouse</b>")
             << Qt::NoTextInteraction
+            << QList<Qt::MouseButton>{Qt::LeftButton, Qt::RightButton, Qt::MiddleButton}
             << true;
 }
 
@@ -663,21 +670,23 @@ void tst_QLabel::mouseEventPropagation()
 
     QFETCH(const QString, text);
     QFETCH(const Qt::TextInteractionFlag, interaction);
+    QFETCH(const QList<Qt::MouseButton>, buttons);
     QFETCH(const bool, expectPropagation);
 
     MouseEventWidget widget;
     auto *layout = new QVBoxLayout(&widget);
     auto *label = new QLabel(text);
     label->setTextInteractionFlags(interaction);
-    const uint count = expectPropagation ? 1 : 0;
 
     layout->addWidget(label);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
     const QPoint labelCenter = label->rect().center();
-    QTest::mouseClick(label, Qt::LeftButton, Qt::KeyboardModifiers(), labelCenter);
+    for (Qt::MouseButton mouseButton : buttons)
+        QTest::mouseClick(label, mouseButton, Qt::KeyboardModifiers(), labelCenter);
 
+    const uint count = expectPropagation ? buttons.count() : 0;
     QTRY_COMPARE(widget.pressed(), count);
     QTRY_COMPARE(widget.released(), count);
 }
