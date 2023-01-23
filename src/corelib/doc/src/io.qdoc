@@ -34,7 +34,7 @@
     network handling.
 
     These \l{Qt Core} classes are used to handle input and output to and from
-    external devices, processes, files etc. as well as manipulating files and
+    external devices, processes, files etc., as well as manipulating files and
     directories.
 
 */
