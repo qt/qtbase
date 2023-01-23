@@ -2943,72 +2943,60 @@ void tst_QString::insert_data(DataOptions options)
 void tst_QString::insert_special_cases()
 {
     QString a;
+    a = u"Ys"_s;
+    QCOMPARE(a.insert(1, u'e'), u"Yes");
+    QCOMPARE(a.insert(3, u'!'), u"Yes!");
+    QCOMPARE(a.insert(5, u'?'), u"Yes! ?");
+    QCOMPARE(a.insert(-1, u'a'), u"Yes! a?");
 
-    a = "Ys";
-    QCOMPARE(a.insert(1,'e'), QString("Yes"));
-    QCOMPARE(a.insert(3,'!'), QString("Yes!"));
-    QCOMPARE(a.insert(5,'?'), QString("Yes! ?"));
-    QCOMPARE(a.insert(-1,'a'), QString("Yes! a?"));
+    a = u"ABC"_s;
+    QCOMPARE(a.insert(5, u"DEF"_s), u"ABC  DEF"_s);
 
-    a = "ABC";
-    QCOMPARE(a.insert(5,"DEF"), QString("ABC  DEF"));
+    a = u"ABC"_s;
+    QCOMPARE(a.insert(2, QString()), u"ABC");
+    QCOMPARE(a.insert(0, u"ABC"_s), u"ABCABC");
+    QCOMPARE(a, u"ABCABC");
+    QCOMPARE(a.insert(0, a), u"ABCABCABCABC");
+    QCOMPARE(a, u"ABCABCABCABC");
+    QCOMPARE(a.insert(0, u'<'), u"<ABCABCABCABC");
+    QCOMPARE(a.insert(1, u'>'), u"<>ABCABCABCABC");
 
-    a = "ABC";
-    QCOMPARE(a.insert(2, QString()), QString("ABC"));
-    QCOMPARE(a.insert(0,"ABC"), QString("ABCABC"));
-    QCOMPARE(a, QString("ABCABC"));
-    QCOMPARE(a.insert(0,a), QString("ABCABCABCABC"));
-
-    QCOMPARE(a, QString("ABCABCABCABC"));
-    QCOMPARE(a.insert(0,'<'), QString("<ABCABCABCABC"));
-    QCOMPARE(a.insert(1,'>'), QString("<>ABCABCABCABC"));
-
-    a = "Meal";
+    a = u"Meal"_s;
     const QString montreal = QStringLiteral("Montreal");
-    QCOMPARE(a.insert(1, QLatin1String("ontr")), montreal);
-    QCOMPARE(a.insert(4, ""), montreal);
-    QCOMPARE(a.insert(3, QLatin1String("")), montreal);
+    QCOMPARE(a.insert(1, "ontr"_L1), montreal);
+    QCOMPARE(a.insert(4, ""_L1), montreal);
+    QCOMPARE(a.insert(3, ""_L1), montreal);
     QCOMPARE(a.insert(3, QLatin1String(nullptr)), montreal);
     QCOMPARE(a.insert(3, static_cast<const char *>(0)), montreal);
-    QCOMPARE(a.insert(0, QLatin1String("a")), QLatin1String("aMontreal"));
+    QCOMPARE(a.insert(0, u"a"_s), "aMontreal"_L1);
 
-    a = "Mont";
-    QCOMPARE(a.insert(a.size(), QLatin1String("real")), montreal);
-    QCOMPARE(a.insert(a.size() + 1, QLatin1String("ABC")), QString("Montreal ABC"));
+    a = u"Mont"_s;
+    QCOMPARE(a.insert(a.size(), "real"_L1), montreal);
+    QCOMPARE(a.insert(a.size() + 1, "ABC"_L1), u"Montreal ABC");
 
-    a = "AEF";
-    QCOMPARE(a.insert(1, QLatin1String("BCD")), QString("ABCDEF"));
-    QCOMPARE(a.insert(3, QLatin1String("-")), QString("ABC-DEF"));
-    QCOMPARE(a.insert(a.size() + 1, QLatin1String("XYZ")), QString("ABC-DEF XYZ"));
+    a = u"AEF"_s;
+    QCOMPARE(a.insert(1, "BCD"_L1), u"ABCDEF");
+    QCOMPARE(a.insert(3, "-"_L1), u"ABC-DEF");
+    QCOMPARE(a.insert(a.size() + 1, "XYZ"_L1), u"ABC-DEF XYZ");
 
     {
-        a = "one";
+        a = u"one"_s;
         a.prepend(u'a');
         QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
-        QCOMPARE(a.insert(a.size() + 1, QLatin1String(b.toLatin1())), QString("aone ") + b);
+        QCOMPARE(a.insert(a.size() + 1, QLatin1String(b.toLatin1())), u"aone "_s + b);
     }
-
     {
-        a = "onetwothree";
+        a = u"one"_s;
+        a.prepend(u'a');
+        QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
+        QCOMPARE(a.insert(a.size() + 1, b), u"aone "_s + b);
+    }
+    {
+        a = u"onetwothree"_s;
         while (a.size() - 1)
             a.remove(0, 1);
         QString b(a.data_ptr()->freeSpaceAtEnd() + 1, u'b');
-        QCOMPARE(a.insert(a.size() + 1, QLatin1String(b.toLatin1())), QString("e ") + b);
-    }
-
-    {
-        a = "one";
-        a.prepend(u'a');
-        QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
-        QCOMPARE(a.insert(a.size() + 1, b), QString("aone ") + b);
-    }
-
-    {
-        a = "onetwothree";
-        while (a.size() - 1)
-            a.remove(0, 1);
-        QString b(a.data_ptr()->freeSpaceAtEnd() + 1, u'b');
-        QCOMPARE(a.insert(a.size() + 1, b), QString("e ") + b);
+        QCOMPARE(a.insert(a.size() + 1, QLatin1String(b.toLatin1())), u"e "_s + b);
     }
 }
 
@@ -3114,7 +3102,7 @@ void tst_QString::append_special_cases()
         QString a;
         a.append(unicode, len);
         QCOMPARE(a, QLatin1String("Hello, World!"));
-        static const QChar nl('\n');
+        static const QChar nl(u'\n');
         a.append(&nl, 1);
         QCOMPARE(a, QLatin1String("Hello, World!\n"));
         a.append(unicode, len);
@@ -3137,45 +3125,45 @@ void tst_QString::append_special_cases()
     }
 
     {
-        QString a = "one";
+        QString a = u"one"_s;
         a.prepend(u'a');
         QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
-        QCOMPARE(a.append(QLatin1String(b.toLatin1())), QString("aone") + b);
+        QCOMPARE(a.append(QLatin1String(b.toLatin1())), u"aone"_s + b);
     }
 
     {
-        QString a = "onetwothree";
+        QString a = u"onetwothree"_s;
         while (a.size() - 1)
             a.remove(0, 1);
         QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
-        QCOMPARE(a.append(QLatin1String(b.toLatin1())), QString("e") + b);
+        QCOMPARE(a.append(QLatin1String(b.toLatin1())), u'e' + b);
     }
 
     {
-        QString a = "one";
+        QString a = u"one"_s;
         a.prepend(u'a');
         QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
-        QCOMPARE(a.append(b), QString("aone") + b);
+        QCOMPARE(a.append(b), u"aone"_s + b);
     }
 
     {
-        QString a = "onetwothree";
+        QString a = u"onetwothree"_s;
         while (a.size() - 1)
             a.remove(0, 1);
         QString b(a.data_ptr()->freeSpaceAtEnd() + 1, u'b');
-        QCOMPARE(a.append(b), QString("e") + b);
+        QCOMPARE(a.append(b), u'e' + b);
     }
 
     {
-        QString a = "one";
+        QString a = u"one"_s;
         a.prepend(u'a');
-        QCOMPARE(a.append(u'b'), QString("aoneb"));
+        QCOMPARE(a.append(u'b'), u"aoneb");
     }
 
     {
-        QString a = "onetwothree";
+        QString a = u"onetwothree"_s;
         a.erase(a.cbegin(), std::prev(a.cend()));
-        QCOMPARE(a.append(u'b'), QString("eb"));
+        QCOMPARE(a.append(u'b'), u"eb");
     }
 }
 
@@ -3315,9 +3303,8 @@ void tst_QString::operator_eqeq_bytearray()
 
 void tst_QString::swap()
 {
-    QString s1, s2;
-    s1 = "s1";
-    s2 = "s2";
+    QString s1 = QString::fromUtf8("s1");
+    QString s2 = QString::fromUtf8("s2");
     s1.swap(s2);
     QCOMPARE(s1,QLatin1String("s2"));
     QCOMPARE(s2,QLatin1String("s1"));
@@ -3502,9 +3489,9 @@ void tst_QString::replace_uint_uint_extra()
 {
     {
         QString s;
-        s.insert(0, QChar('A'));
+        s.insert(0, QChar(u'A'));
 
-        auto bigReplacement = QString("B").repeated(s.capacity() * 3);
+        auto bigReplacement = QString(u'B').repeated(s.capacity() * 3);
 
         s.replace( 0, 1, bigReplacement );
         QCOMPARE( s, bigReplacement );
@@ -3514,7 +3501,7 @@ void tst_QString::replace_uint_uint_extra()
         QString s;
         s.insert(0, QLatin1String("BBB"));
 
-        auto smallReplacement = QString("C");
+        auto smallReplacement = QString(u'C');
 
         s.replace( 0, 3, smallReplacement );
         QCOMPARE( s, smallReplacement );
@@ -3524,7 +3511,7 @@ void tst_QString::replace_uint_uint_extra()
         QString s;
         s.insert(0, QLatin1String("BBB"));
 
-        auto smallReplacement = QString("C");
+        auto smallReplacement = QString(u'C');
 
         s.replace( 5, 3, smallReplacement );
         QCOMPARE( s, QLatin1String("BBB") );
@@ -3537,11 +3524,11 @@ void tst_QString::replace_extra()
         This test is designed to be extremely slow if QString::replace() doesn't optimize the case
         len == after.size().
     */
-    QString str("dsfkljfdsjklsdjsfjklfsdjkldfjslkjsdfkllkjdsfjklsfdkjsdflkjlsdfjklsdfkjldsflkjsddlkj");
+    QString str(u"dsfkljfdsjklsdjsfjklfsdjkldfjslkjsdfkllkjdsfjklsfdkjsdflkjlsdfjklsdfkjldsflkjsddlkj"_s);
     for (int j = 1; j < 12; ++j)
         str += str;
 
-    QString str2("aaaaaaaaaaaaaaaaaaaa");
+    QString str2(u"aaaaaaaaaaaaaaaaaaaa"_s);
     for (int i = 0; i < 2000000; ++i) {
         str.replace(10, 20, str2);
     }
@@ -3557,26 +3544,26 @@ void tst_QString::replace_extra()
     /*
         Make sure that replacing a part of oneself with itself works.
     */
-    QString str3("abcdefghij");
+    QString str3(u"abcdefghij"_s);
     str3.replace(0, 1, str3);
-    QCOMPARE(str3, QString("abcdefghijbcdefghij"));
+    QCOMPARE(str3, u"abcdefghijbcdefghij");
 
-    QString str4("abcdefghij");
+    QString str4(u"abcdefghij"_s);
     str4.replace(1, 3, str4);
-    QCOMPARE(str4, QString("aabcdefghijefghij"));
+    QCOMPARE(str4, u"aabcdefghijefghij");
 
-    QString str5("abcdefghij");
+    QString str5(u"abcdefghij"_s);
     str5.replace(8, 10, str5);
-    QCOMPARE(str5, QString("abcdefghabcdefghij"));
+    QCOMPARE(str5, u"abcdefghabcdefghij");
 
     // Replacements using only part of the string modified:
-    QString str6("abcdefghij");
+    QString str6(u"abcdefghij"_s);
     str6.replace(1, 8, str6.constData() + 3, 3);
-    QCOMPARE(str6, QString("adefj"));
+    QCOMPARE(str6, u"adefj");
 
-    QString str7("abcdefghibcdefghij");
+    QString str7(u"abcdefghibcdefghij"_s);
     str7.replace(str7.constData() + 1, 6, str7.constData() + 2, 3);
-    QCOMPARE(str7, QString("acdehicdehij"));
+    QCOMPARE(str7, u"acdehicdehij");
 
     const int many = 1024;
     /*
@@ -3585,7 +3572,8 @@ void tst_QString::replace_extra()
       changes to batch size), which lead to misbehaviour if ether QChar * array
       was part of the data being modified.
     */
-    QString str8("abcdefg"), ans8("acdeg");
+    QString str8(u"abcdefg"_s);
+    QString ans8(u"acdeg"_s);
     {
         // Make str8 and ans8 repeat themselves many + 1 times:
         int i = many;
@@ -3649,11 +3637,11 @@ void tst_QString::replace_string_extra()
 {
     {
         QString s;
-        s.insert(0, QChar('A'));
+        s.insert(0, u'A');
 
-        auto bigReplacement = QString("B").repeated(s.capacity() * 3);
+        auto bigReplacement = QString(u'B').repeated(s.capacity() * 3);
 
-        s.replace( QString("A"), bigReplacement );
+        s.replace( u"A"_s, bigReplacement );
         QCOMPARE( s, bigReplacement );
     }
 
@@ -3661,9 +3649,9 @@ void tst_QString::replace_string_extra()
         QString s;
         s.insert(0, QLatin1String("BBB"));
 
-        auto smallReplacement = QString("C");
+        auto smallReplacement = QString(u'C');
 
-        s.replace( QString("BBB"), smallReplacement );
+        s.replace( u"BBB"_s, smallReplacement );
         QCOMPARE( s, smallReplacement );
     }
 
@@ -3671,10 +3659,10 @@ void tst_QString::replace_string_extra()
         QString s(QLatin1String("BBB"));
         QString expected(QLatin1String("BBB"));
         for (int i = 0; i < 1028; ++i) {
-            s.append("X");
-            expected.append("GXU");
+            s.append(u'X');
+            expected.append(u"GXU"_s);
         }
-        s.replace(QChar('X'), "GXU");
+        s.replace(QChar(u'X'), u"GXU"_s);
         QCOMPARE(s, expected);
     }
 }
@@ -3701,11 +3689,11 @@ void tst_QString::replace_regexp_extra()
 {
     {
         QString s;
-        s.insert(0, QChar('A'));
+        s.insert(0, QChar(u'A'));
 
-        auto bigReplacement = QString("B").repeated(s.capacity() * 3);
+        auto bigReplacement = QString(u'B').repeated(s.capacity() * 3);
 
-        QRegularExpression regularExpression(QString("A"));
+        QRegularExpression regularExpression(u"A"_s);
         QVERIFY(regularExpression.isValid());
 
         s.replace( regularExpression, bigReplacement );
@@ -3716,9 +3704,9 @@ void tst_QString::replace_regexp_extra()
         QString s;
         s.insert(0, QLatin1String("BBB"));
 
-        auto smallReplacement = QString("C");
+        auto smallReplacement = QString(u'C');
 
-        QRegularExpression regularExpression(QString("BBB"));
+        QRegularExpression regularExpression(u"BBB"_s);
         QVERIFY(regularExpression.isValid());
 
         s.replace( regularExpression, smallReplacement );
@@ -3832,7 +3820,7 @@ void tst_QString::remove_regexp_data()
 void tst_QString::remove_regexp()
 {
     static const QRegularExpression ignoreMessagePattern(
-        "^QString::replace\\(\\): called on an invalid QRegularExpression object"
+        u"^QString::replace\\(\\): called on an invalid QRegularExpression object"_s
     );
 
     QFETCH( QString, string );
@@ -3852,7 +3840,7 @@ void tst_QString::remove_extra()
 {
     {
         QString quickFox = "The quick brown fox jumps over the lazy dog. "
-                           "The lazy dog jumps over the quick brown fox.";
+                           "The lazy dog jumps over the quick brown fox."_L1;
         QString s1 = quickFox;
         QVERIFY(s1.data_ptr().needsDetach());
         s1.remove(s1);
@@ -3865,7 +3853,7 @@ void tst_QString::remove_extra()
     }
 
     {
-        QString s = "BCDEFGHJK";
+        QString s = u"BCDEFGHJK"_s;
         QString s1 = s;
         s1.insert(0, u'A');  // detaches
         s1.erase(s1.cbegin());
@@ -3873,13 +3861,13 @@ void tst_QString::remove_extra()
     }
 
     {
-        QString s = "Clock";
+        QString s = u"Clock"_s;
         s.removeFirst();
-        QCOMPARE(s, "lock");
+        QCOMPARE(s, u"lock");
         s.removeLast();
-        QCOMPARE(s, "loc");
-        s.removeAt(s.indexOf('o'));
-        QCOMPARE(s, "lc");
+        QCOMPARE(s, u"loc");
+        s.removeAt(s.indexOf(u'o'));
+        QCOMPARE(s, u"lc");
         s.clear();
         // No crash on empty strings
         s.removeFirst();
@@ -3890,39 +3878,39 @@ void tst_QString::remove_extra()
 
 void tst_QString::erase_single_arg()
 {
-    QString s = "abcdefg";
+    QString s = u"abcdefg"_s;
     auto it = s.erase(s.cbegin());
-    QCOMPARE_EQ(s, "bcdefg");
+    QCOMPARE_EQ(s, u"bcdefg");
     QCOMPARE(it, s.cbegin());
 
     it = s.erase(std::prev(s.end()));
-    QCOMPARE_EQ(s, "bcdef");
+    QCOMPARE_EQ(s, u"bcdef");
     QCOMPARE(it, s.cend());
 
-    it = s.erase(std::find(s.begin(), s.end(), QChar('d')));
+    it = s.erase(std::find(s.begin(), s.end(), QChar(u'd')));
     QCOMPARE(it, s.begin() + 2);
 }
 
 void tst_QString::erase()
 {
-    QString str = "abcdefg";
+    QString str = u"abcdefg"_s;
 
     QString s = str;
     auto it = s.erase(s.begin(), s.end());
-    QCOMPARE_EQ(s, "");
+    QCOMPARE_EQ(s, u"");
     QCOMPARE(it, s.end());
 
     s = str;
     it = s.erase(std::prev(s.end()));
-    QCOMPARE_EQ(s, "abcdef");
+    QCOMPARE_EQ(s, u"abcdef");
     QCOMPARE(it, s.end());
 
     it = s.erase(s.begin() + 2, s.end());
-    QCOMPARE_EQ(s, "ab");
+    QCOMPARE_EQ(s, u"ab");
     QCOMPARE(it, s.end());
 
     it = s.erase(s.begin(), s.begin() + 1);
-    QCOMPARE_EQ(s, "b");
+    QCOMPARE_EQ(s, u"b");
     QCOMPARE(it, s.begin());
 
     {
@@ -3931,8 +3919,8 @@ void tst_QString::erase()
         // erase() should return an iterator, not const_iterator
         auto it = s1.erase(s1.cbegin(), s1.cbegin());
         *it = QLatin1Char('m');
-        QCOMPARE(s1, "mouse");
-        QCOMPARE(copy, "house");
+        QCOMPARE(s1, u"mouse");
+        QCOMPARE(copy, u"house");
     }
 }
 
@@ -4145,11 +4133,11 @@ void tst_QString::toNum()
 {
 #if defined (Q_OS_WIN) && defined (Q_CC_MSVC)
 #define TEST_TO_INT(num, func) \
-    a = #num; \
+    a = QLatin1StringView(#num); \
     QVERIFY2(a.func(&ok) == num ## i64 && ok, "Failed: num=" #num ", func=" #func);
 #else
 #define TEST_TO_INT(num, func) \
-    a = #num; \
+    a = QLatin1StringView(#num); \
     QVERIFY2(a.func(&ok) == num ## LL && ok, "Failed: num=" #num ", func=" #func);
 #endif
 
@@ -4183,11 +4171,11 @@ void tst_QString::toNum()
 
 #if defined (Q_OS_WIN) && defined (Q_CC_MSVC)
 #define TEST_TO_UINT(num, func) \
-    a = #num; \
+    a = QLatin1StringView(#num); \
     QVERIFY2(a.func(&ok) == num ## i64 && ok, "Failed: num=" #num ", func=" #func);
 #else
 #define TEST_TO_UINT(num, func) \
-    a = #num; \
+    a = QLatin1StringView(#num); \
     QVERIFY2(a.func(&ok) == num ## ULL && ok, "Failed: num=" #num ", func=" #func);
 #endif
 
@@ -4212,7 +4200,7 @@ void tst_QString::toNum()
     a.toULongLong(&ok, 10);
     QVERIFY(!ok);
 
-    a = "FF";
+    a = u"FF"_s;
     a.toULongLong(&ok, 0);
     QVERIFY(!ok);
 
