@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
   improperly-encoded strings are passed to the setter or query methods,
   QUrlQuery will attempt to recover instead of failing. That is to say, all
   functions in this class parse their string arguments as if the
-  {{QUrl::TolerantMode}} decoding mode was specified.
+  QUrl::TolerantMode decoding mode was specified.
 
   Application code should strive to always ensure proper encoding and not rely
   on TolerantMode parsing fixing the strings. Notably, all user input must be
