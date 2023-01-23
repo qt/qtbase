@@ -15,14 +15,14 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 #if QT_CONFIG(settings)
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, icLoader,
     (QPlatformInputContextFactoryInterface_iid, "/platforminputcontexts"_L1, Qt::CaseInsensitive))
 #endif
 
 QStringList QPlatformInputContextFactory::keys()
 {
 #if QT_CONFIG(settings)
-    return loader()->keyMap().values();
+    return icLoader()->keyMap().values();
 #else
     return QStringList();
 #endif
@@ -42,7 +42,7 @@ QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)
         const QString platform = paramList.takeFirst().toLower();
 
         QPlatformInputContext *ic = qLoadPlugin<QPlatformInputContext, QPlatformInputContextPlugin>
-                                                 (loader(), platform, paramList);
+                                                 (icLoader(), platform, paramList);
         if (ic && ic->isValid())
             return ic;
 

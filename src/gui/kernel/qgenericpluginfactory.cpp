@@ -12,7 +12,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, gpLoader,
     (QGenericPluginFactoryInterface_iid, "/generic"_L1, Qt::CaseInsensitive))
 
 /*!
@@ -34,7 +34,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 */
 QObject *QGenericPluginFactory::create(const QString& key, const QString &specification)
 {
-    return qLoadPlugin<QObject, QGenericPlugin>(loader(), key.toLower(), specification);
+    return qLoadPlugin<QObject, QGenericPlugin>(gpLoader(), key.toLower(), specification);
 }
 
 /*!
@@ -49,7 +49,7 @@ QStringList QGenericPluginFactory::keys()
     typedef QMultiMap<int, QString> PluginKeyMap;
     typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
 
-    const PluginKeyMap keyMap = loader()->keyMap();
+    const PluginKeyMap keyMap = gpLoader()->keyMap();
     const PluginKeyMapConstIterator cend = keyMap.constEnd();
     for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it)
         if (!list.contains(it.value()))

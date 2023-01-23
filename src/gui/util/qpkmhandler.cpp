@@ -13,7 +13,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static const int headerSize = 16;
+static const int qpkmh_headerSize = 16;
 
 struct PkmType
 {
@@ -46,7 +46,7 @@ QTextureFileData QPkmHandler::read()
         return texData;
 
     QByteArray fileData = device()->readAll();
-    if (fileData.size() < headerSize || !canRead(QByteArray(), fileData)) {
+    if (fileData.size() < qpkmh_headerSize || !canRead(QByteArray(), fileData)) {
         qCDebug(lcQtGuiTextureIO, "Invalid PKM file %s", logName().constData());
         return QTextureFileData();
     }
@@ -75,7 +75,7 @@ QTextureFileData QPkmHandler::read()
     QSize texSize(qFromBigEndian<quint16>(rawData + 12), qFromBigEndian<quint16>(rawData + 14));
     texData.setSize(texSize);
 
-    texData.setDataOffset(headerSize);
+    texData.setDataOffset(qpkmh_headerSize);
 
     if (!texData.isValid()) {
         qCDebug(lcQtGuiTextureIO, "Invalid values in header of PKM file %s", logName().constData());
