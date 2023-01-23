@@ -6340,65 +6340,65 @@ void tst_QString::integer_conversion_data()
     QTest::addColumn<bool>("good");
     QTest::addColumn<qlonglong>("num");
 
-    QTest::newRow("C empty 0")      << QString("")         << 0  << false << (qlonglong)0;
-    QTest::newRow("C empty 8")      << QString("")         << 8  << false << (qlonglong)0;
-    QTest::newRow("C empty 10")     << QString("")         << 10 << false << (qlonglong)0;
-    QTest::newRow("C empty 16")     << QString("")         << 16 << false << (qlonglong)0;
+    QTest::newRow("C empty 0")      << u""_s         << 0  << false << qlonglong(0);
+    QTest::newRow("C empty 8")      << u""_s         << 8  << false << qlonglong(0);
+    QTest::newRow("C empty 10")     << u""_s         << 10 << false << qlonglong(0);
+    QTest::newRow("C empty 16")     << u""_s         << 16 << false << qlonglong(0);
 
     QTest::newRow("C null 0")       << QString()           << 0  << false << (qlonglong)0;
     QTest::newRow("C null 8")       << QString()           << 8  << false << (qlonglong)0;
     QTest::newRow("C null 10")      << QString()           << 10 << false << (qlonglong)0;
     QTest::newRow("C null 16")      << QString()           << 16 << false << (qlonglong)0;
 
-    QTest::newRow("C   -0xf 0")     << QString("  -0xf")   << 0  << true  << (qlonglong)-15;
-    QTest::newRow("C -0xf   0")     << QString("-0xf  ")   << 0  << true  << (qlonglong)-15;
-    QTest::newRow("C \t0xf\t 0")    << QString("\t0xf\t")  << 0  << true  << (qlonglong)15;
-    QTest::newRow("C   -010 0")     << QString("  -010")   << 0  << true  << (qlonglong)-8;
-    QTest::newRow("C 010   0")      << QString("010  ")    << 0  << true  << (qlonglong)8;
-    QTest::newRow("C \t-010\t 0")   << QString("\t-010\t") << 0  << true  << (qlonglong)-8;
-    QTest::newRow("C   123 10")     << QString("  123")    << 10 << true  << (qlonglong)123;
-    QTest::newRow("C 123   10")     << QString("123  ")    << 10 << true  << (qlonglong)123;
-    QTest::newRow("C \t123\t 10")   << QString("\t123\t")  << 10 << true  << (qlonglong)123;
-    QTest::newRow("C   -0xf 16")    << QString("  -0xf")   << 16 << true  << (qlonglong)-15;
-    QTest::newRow("C -0xf   16")    << QString("-0xf  ")   << 16 << true  << (qlonglong)-15;
-    QTest::newRow("C \t0xf\t 16")   << QString("\t0xf\t")  << 16 << true  << (qlonglong)15;
+    QTest::newRow("C   -0xf 0")     << u"  -0xf"_s   << 0  << true  << qlonglong(-15);
+    QTest::newRow("C -0xf   0")     << u"-0xf  "_s   << 0  << true  << qlonglong(-15);
+    QTest::newRow("C \t0xf\t 0")    << u"\t0xf\t"_s  << 0  << true  << qlonglong(15);
+    QTest::newRow("C   -010 0")     << u"  -010"_s   << 0  << true  << qlonglong(-8);
+    QTest::newRow("C 010   0")      << u"010  "_s    << 0  << true  << qlonglong(8);
+    QTest::newRow("C \t-010\t 0")   << u"\t-010\t"_s << 0  << true  << qlonglong(-8);
+    QTest::newRow("C   123 10")     << u"  123"_s    << 10 << true  << qlonglong(123);
+    QTest::newRow("C 123   10")     << u"123  "_s    << 10 << true  << qlonglong(123);
+    QTest::newRow("C \t123\t 10")   << u"\t123\t"_s  << 10 << true  << qlonglong(123);
+    QTest::newRow("C   -0xf 16")    << u"  -0xf"_s   << 16 << true  << qlonglong(-15);
+    QTest::newRow("C -0xf   16")    << u"-0xf  "_s   << 16 << true  << qlonglong(-15);
+    QTest::newRow("C \t0xf\t 16")   << u"\t0xf\t"_s  << 16 << true  << qlonglong(15);
 
-    QTest::newRow("C -0 0")         << QString("-0")       << 0   << true << (qlonglong)0;
-    QTest::newRow("C -0 8")         << QString("-0")       << 8   << true << (qlonglong)0;
-    QTest::newRow("C -0 10")        << QString("-0")       << 10  << true << (qlonglong)0;
-    QTest::newRow("C -0 16")        << QString("-0")       << 16  << true << (qlonglong)0;
+    QTest::newRow("C -0 0")         << u"-0"_s       << 0   << true << qlonglong(0);
+    QTest::newRow("C -0 8")         << u"-0"_s       << 8   << true << qlonglong(0);
+    QTest::newRow("C -0 10")        << u"-0"_s       << 10  << true << qlonglong(0);
+    QTest::newRow("C -0 16")        << u"-0"_s       << 16  << true << qlonglong(0);
 
-    QTest::newRow("C 1.234 10")     << QString("1.234")    << 10 << false << (qlonglong)0;
-    QTest::newRow("C 1,234 10")     << QString("1,234")    << 10 << false << (qlonglong)0;
+    QTest::newRow("C 1.234 10")     << u"1.234"_s    << 10 << false << qlonglong(0);
+    QTest::newRow("C 1,234 10")     << u"1,234"_s    << 10 << false << qlonglong(0);
 
-    QTest::newRow("C 0x 0")         << QString("0x")       << 0  << false << (qlonglong)0;
-    QTest::newRow("C 0x 16")        << QString("0x")       << 16 << false << (qlonglong)0;
+    QTest::newRow("C 0x 0")         << u"0x"_s       << 0  << false << qlonglong(0);
+    QTest::newRow("C 0x 16")        << u"0x"_s       << 16 << false << qlonglong(0);
 
-    QTest::newRow("C 10 0")         << QString("10")       << 0  << true  << (qlonglong)10;
-    QTest::newRow("C 010 0")        << QString("010")      << 0  << true  << (qlonglong)8;
-    QTest::newRow("C 0x10 0")       << QString("0x10")     << 0  << true  << (qlonglong)16;
-    QTest::newRow("C 10 8")         << QString("10")       << 8  << true  << (qlonglong)8;
-    QTest::newRow("C 010 8")        << QString("010")      << 8  << true  << (qlonglong)8;
-    QTest::newRow("C 0x10 8")       << QString("0x10")     << 8  << false << (qlonglong)0;
-    QTest::newRow("C 10 10")        << QString("10")       << 10 << true  << (qlonglong)10;
-    QTest::newRow("C 010 10")       << QString("010")      << 10 << true  << (qlonglong)10;
-    QTest::newRow("C 0x10 10")      << QString("0x10")     << 10 << false << (qlonglong)0;
-    QTest::newRow("C 10 16")        << QString("10")       << 16 << true  << (qlonglong)16;
-    QTest::newRow("C 010 16")       << QString("010")      << 16 << true  << (qlonglong)16;
-    QTest::newRow("C 0x10 16")      << QString("0x10")     << 16 << true  << (qlonglong)16;
+    QTest::newRow("C 10 0")         << u"10"_s       << 0  << true  << qlonglong(10);
+    QTest::newRow("C 010 0")        << u"010"_s      << 0  << true  << qlonglong(8);
+    QTest::newRow("C 0x10 0")       << u"0x10"_s     << 0  << true  << qlonglong(16);
+    QTest::newRow("C 10 8")         << u"10"_s       << 8  << true  << qlonglong(8);
+    QTest::newRow("C 010 8")        << u"010"_s      << 8  << true  << qlonglong(8);
+    QTest::newRow("C 0x10 8")       << u"0x10"_s     << 8  << false << qlonglong(0);
+    QTest::newRow("C 10 10")        << u"10"_s       << 10 << true  << qlonglong(10);
+    QTest::newRow("C 010 10")       << u"010"_s      << 10 << true  << qlonglong(10);
+    QTest::newRow("C 0x10 10")      << u"0x10"_s     << 10 << false << qlonglong(0);
+    QTest::newRow("C 10 16")        << u"10"_s       << 16 << true  << qlonglong(16);
+    QTest::newRow("C 010 16")       << u"010"_s      << 16 << true  << qlonglong(16);
+    QTest::newRow("C 0x10 16")      << u"0x10"_s     << 16 << true  << qlonglong(16);
 
-    QTest::newRow("C -10 0")        << QString("-10")      << 0  << true  << (qlonglong)-10;
-    QTest::newRow("C -010 0")       << QString("-010")     << 0  << true  << (qlonglong)-8;
-    QTest::newRow("C -0x10 0")      << QString("-0x10")    << 0  << true  << (qlonglong)-16;
-    QTest::newRow("C -10 8")        << QString("-10")      << 8  << true  << (qlonglong)-8;
-    QTest::newRow("C -010 8")       << QString("-010")     << 8  << true  << (qlonglong)-8;
-    QTest::newRow("C -0x10 8")      << QString("-0x10")    << 8  << false << (qlonglong)0;
-    QTest::newRow("C -10 10")       << QString("-10")      << 10 << true  << (qlonglong)-10;
-    QTest::newRow("C -010 10")      << QString("-010")     << 10 << true  << (qlonglong)-10;
-    QTest::newRow("C -0x10 10")     << QString("-0x10")    << 10 << false << (qlonglong)0;
-    QTest::newRow("C -10 16")       << QString("-10")      << 16 << true  << (qlonglong)-16;
-    QTest::newRow("C -010 16")      << QString("-010")     << 16 << true  << (qlonglong)-16;
-    QTest::newRow("C -0x10 16")     << QString("-0x10")    << 16 << true  << (qlonglong)-16;
+    QTest::newRow("C -10 0")        << u"-10"_s      << 0  << true  << qlonglong(-10);
+    QTest::newRow("C -010 0")       << u"-010"_s     << 0  << true  << qlonglong(-8);
+    QTest::newRow("C -0x10 0")      << u"-0x10"_s    << 0  << true  << qlonglong(-16);
+    QTest::newRow("C -10 8")        << u"-10"_s      << 8  << true  << qlonglong(-8);
+    QTest::newRow("C -010 8")       << u"-010"_s     << 8  << true  << qlonglong(-8);
+    QTest::newRow("C -0x10 8")      << u"-0x10"_s    << 8  << false << qlonglong(0);
+    QTest::newRow("C -10 10")       << u"-10"_s      << 10 << true  << qlonglong(-10);
+    QTest::newRow("C -010 10")      << u"-010"_s     << 10 << true  << qlonglong(-10);
+    QTest::newRow("C -0x10 10")     << u"-0x10"_s    << 10 << false << qlonglong(0);
+    QTest::newRow("C -10 16")       << u"-10"_s      << 16 << true  << qlonglong(-16);
+    QTest::newRow("C -010 16")      << u"-010"_s     << 16 << true  << qlonglong(-16);
+    QTest::newRow("C -0x10 16")     << u"-0x10"_s    << 16 << true  << qlonglong(-16);
 
     // Let's try some Arabic
     const char16_t arabic_str[] = { 0x0661, 0x0662, 0x0663, 0x0664, 0x0000 }; // "1234"
@@ -6429,39 +6429,39 @@ void tst_QString::double_conversion_data()
 
     // The good...
 
-    QTest::newRow("C 1")             << QString("1")          << true  << 1.0;
-    QTest::newRow("C 1.0")           << QString("1.0")        << true  << 1.0;
-    QTest::newRow("C 1.234")         << QString("1.234")      << true  << 1.234;
-    QTest::newRow("C 1.234e-10")     << QString("1.234e-10")  << true  << 1.234e-10;
-    QTest::newRow("C 1.234E10")      << QString("1.234E10")   << true  << 1.234e10;
-    QTest::newRow("C 1e10")          << QString("1e10")       << true  << 1.0e10;
+    QTest::newRow("C 1")             << u"1"_s          << true  << 1.0;
+    QTest::newRow("C 1.0")           << u"1.0"_s        << true  << 1.0;
+    QTest::newRow("C 1.234")         << u"1.234"_s      << true  << 1.234;
+    QTest::newRow("C 1.234e-10")     << u"1.234e-10"_s  << true  << 1.234e-10;
+    QTest::newRow("C 1.234E10")      << u"1.234E10"_s   << true  << 1.234e10;
+    QTest::newRow("C 1e10")          << u"1e10"_s       << true  << 1.0e10;
 
     // The bad...
 
-    QTest::newRow("C empty")         << QString("")           << false << 0.0;
+    QTest::newRow("C empty")         << u""_s           << false << 0.0;
     QTest::newRow("C null")          << QString()             << false << 0.0;
-    QTest::newRow("C .")             << QString(".")          << false << 0.0;
-    QTest::newRow("C 1e")            << QString("1e")         << false << 0.0;
-    QTest::newRow("C 1,")            << QString("1,")         << false << 0.0;
-    QTest::newRow("C 1,0")           << QString("1,0")        << false << 0.0;
-    QTest::newRow("C 1,000")         << QString("1,000")      << false << 0.0;
-    QTest::newRow("C 1e1.0")         << QString("1e1.0")      << false << 0.0;
-    QTest::newRow("C 1e+")           << QString("1e+")        << false << 0.0;
-    QTest::newRow("C 1e-")           << QString("1e-")        << false << 0.0;
-    QTest::newRow("de_DE 1,0")       << QString("1,0")        << false << 0.0;
-    QTest::newRow("de_DE 1,234")     << QString("1,234")      << false << 0.0;
-    QTest::newRow("de_DE 1,234e-10") << QString("1,234e-10")  << false << 0.0;
-    QTest::newRow("de_DE 1,234E10")  << QString("1,234E10")   << false << 0.0;
+    QTest::newRow("C .")             << u"."_s          << false << 0.0;
+    QTest::newRow("C 1e")            << u"1e"_s         << false << 0.0;
+    QTest::newRow("C 1,")            << u"1,"_s         << false << 0.0;
+    QTest::newRow("C 1,0")           << u"1,0"_s        << false << 0.0;
+    QTest::newRow("C 1,000")         << u"1,000"_s      << false << 0.0;
+    QTest::newRow("C 1e1.0")         << u"1e1.0"_s      << false << 0.0;
+    QTest::newRow("C 1e+")           << u"1e+"_s        << false << 0.0;
+    QTest::newRow("C 1e-")           << u"1e-"_s        << false << 0.0;
+    QTest::newRow("de_DE 1,0")       << u"1,0"_s        << false << 0.0;
+    QTest::newRow("de_DE 1,234")     << u"1,234"_s      << false << 0.0;
+    QTest::newRow("de_DE 1,234e-10") << u"1,234e-10"_s  << false << 0.0;
+    QTest::newRow("de_DE 1,234E10")  << u"1,234E10"_s   << false << 0.0;
 
     // And the ugly...
 
-    QTest::newRow("C .1")            << QString(".1")         << true  << 0.1;
-    QTest::newRow("C -.1")           << QString("-.1")        << true  << -0.1;
-    QTest::newRow("C 1.")            << QString("1.")         << true  << 1.0;
-    QTest::newRow("C 1.E10")         << QString("1.E10")      << true  << 1.0e10;
-    QTest::newRow("C 1e+10")         << QString("1e+10")      << true  << 1.0e+10;
-    QTest::newRow("C   1")           << QString("  1")        << true  << 1.0;
-    QTest::newRow("C 1  ")           << QString("1  ")        << true  << 1.0;
+    QTest::newRow("C .1")            << u".1"_s         << true  << 0.1;
+    QTest::newRow("C -.1")           << u"-.1"_s        << true  << -0.1;
+    QTest::newRow("C 1.")            << u"1."_s         << true  << 1.0;
+    QTest::newRow("C 1.E10")         << u"1.E10"_s      << true  << 1.0e10;
+    QTest::newRow("C 1e+10")         << u"1e+10"_s      << true  << 1.0e+10;
+    QTest::newRow("C   1")           << u"  1"_s        << true  << 1.0;
+    QTest::newRow("C 1  ")           << u"1  "_s        << true  << 1.0;
 
     // Let's try some Arabic
     const char16_t arabic_str[] = { 0x0660, 0x066B, 0x0661, 0x0662,
@@ -6590,18 +6590,18 @@ void tst_QString::split_data()
     QTest::addColumn<QString>("sep");
     QTest::addColumn<QStringList>("result");
 
-    QTest::newRow("1") << "a,b,c" << "," << (QStringList() << "a" << "b" << "c");
-    QTest::newRow("2") << QString("-rw-r--r--  1 0  0  519240 Jul  9  2002 bigfile")
-                    << " "
-                    << (QStringList() << "-rw-r--r--" << "" << "1" << "0" << "" << "0" << ""
-                                      << "519240" << "Jul" << "" << "9" << "" << "2002" << "bigfile");
-    QTest::newRow("one-empty") << "" << " " << (QStringList() << "");
-    QTest::newRow("two-empty") << " " << " " << (QStringList() << "" << "");
-    QTest::newRow("three-empty") << "  " << " " << (QStringList() << "" << "" << "");
+    QTest::newRow("1") << u"a,b,c"_s << u","_s << QStringList{u"a"_s, u"b"_s, u"c"_s};
+    QTest::newRow("2") << u"-rw-r--r--  1 0  0  519240 Jul  9  2002 bigfile"_s << u" "_s
+                       << QStringList{ u"-rw-r--r--"_s, u""_s, u"1"_s,      u"0"_s,      u""_s,
+                                       u"0"_s,          u""_s, u"519240"_s, u"Jul"_s,    u""_s,
+                                       u"9"_s,          u""_s, u"2002"_s,   u"bigfile"_s };
+    QTest::newRow("one-empty") << u""_s << u" "_s << QStringList{u""_s};
+    QTest::newRow("two-empty") << u" "_s << u" "_s << QStringList{u""_s, u""_s};
+    QTest::newRow("three-empty") << u"  "_s << u" "_s << QStringList{u""_s, u""_s, u""_s};
 
-    QTest::newRow("all-empty") << "" << "" << (QStringList() << "" << "");
-    QTest::newRow("sep-empty") << "abc" << "" << (QStringList() << "" << "a" << "b" << "c" << "");
-    QTest::newRow("null-empty") << QString() << " " << QStringList { "" };
+    QTest::newRow("all-empty") << u""_s << u""_s << QStringList{u""_s, u""_s};
+    QTest::newRow("sep-empty") << u"abc"_s << u""_s << QStringList{u""_s, u"a"_s, u"b"_s, u"c"_s, u""_s};
+    QTest::newRow("null-empty") << QString() << u" "_s << QStringList{u""_s};
 }
 
 template<class> struct StringSplitWrapper;
@@ -6705,15 +6705,15 @@ void tst_QString::split_regularexpression_data()
 
     QTest::newRow("data01") << "Some  text\n\twith  strange whitespace."
                             << "\\s+"
-                            << (QStringList() << "Some" << "text" << "with" << "strange" << "whitespace." );
+                            << QStringList{u"Some"_s, u"text"_s, u"with"_s, u"strange"_s, u"whitespace."_s };
 
     QTest::newRow("data02") << "This time, a normal English sentence."
                             << "\\W+"
-                            << (QStringList() << "This" << "time" << "a" << "normal" << "English" << "sentence" << "");
+                            << QStringList{u"This"_s, u"time"_s, u"a"_s, u"normal"_s, u"English"_s, u"sentence"_s, u""_s};
 
     QTest::newRow("data03") << "Now: this sentence fragment."
                             << "\\b"
-                            << (QStringList() << "" << "Now" << ": " << "this" << " " << "sentence" << " " << "fragment" << ".");
+                            << QStringList{u""_s, u"Now"_s, u": "_s, u"this"_s, u" "_s, u"sentence"_s, u" "_s, u"fragment"_s, u"."_s};
 }
 
 template<class List, class RegExp>
