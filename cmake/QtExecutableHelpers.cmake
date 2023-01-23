@@ -125,10 +125,10 @@ function(qt_internal_add_executable name)
             ${arg_PUBLIC_LIBRARIES}
             Qt::PlatformCommonInternal
             ${extra_libraries}
-        DBUS_ADAPTOR_SOURCES "${arg_DBUS_ADAPTOR_SOURCES}"
-        DBUS_ADAPTOR_FLAGS "${arg_DBUS_ADAPTOR_FLAGS}"
-        DBUS_INTERFACE_SOURCES "${arg_DBUS_INTERFACE_SOURCES}"
-        DBUS_INTERFACE_FLAGS "${arg_DBUS_INTERFACE_FLAGS}"
+        DBUS_ADAPTOR_SOURCES ${arg_DBUS_ADAPTOR_SOURCES}
+        DBUS_ADAPTOR_FLAGS ${arg_DBUS_ADAPTOR_FLAGS}
+        DBUS_INTERFACE_SOURCES ${arg_DBUS_INTERFACE_SOURCES}
+        DBUS_INTERFACE_FLAGS ${arg_DBUS_INTERFACE_FLAGS}
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}
