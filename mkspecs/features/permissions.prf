@@ -1,4 +1,4 @@
-isEmpty(QMAKE_INFO_PLIST): \
+isEmpty(QMAKE_INFO_PLIST)|!exists($$QMAKE_INFO_PLIST): \
     return()
 
 for(plugin, QT_PLUGINS) {
