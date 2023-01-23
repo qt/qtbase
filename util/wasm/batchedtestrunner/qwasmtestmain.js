@@ -11,6 +11,22 @@ import {
 import { parseQuery } from './util.js';
 import { VisualOutputProducer, UI, ScannerFactory } from './qtestoutputreporter.js'
 
+const StandardArg = {
+    qVisualOutput: 'qvisualoutput',
+    qTestName: 'qtestname',
+    qBatchedTest: 'qbatchedtest',
+    qUseEmrun: 'quseemrun',
+    qTestOutputFormat: 'qtestoutputformat',
+}
+
+const allArgs = new Set(Object.getOwnPropertyNames(StandardArg).map(arg => StandardArg[arg]));
+Object.defineProperty(StandardArg, 'isKnown', {
+    get()
+    {
+        return name => allArgs.has(name);
+    },
+});
+
 (() => {
     const setPageTitle = (useEmrun, testName, isBatch) => {
         document.title = 'Qt WASM test runner';
@@ -24,10 +40,11 @@ import { VisualOutputProducer, UI, ScannerFactory } from './qtestoutputreporter.
     }
 
     const parsed = parseQuery(location.search);
-    const outputInPage = parsed.get('qvisualoutput') !== undefined;
-    const testName = parsed.get('qtestname');
-    const isBatch = parsed.get('qbatchedtest') !== undefined;
-    const useEmrun = parsed.get('quseemrun') !== undefined;
+    const outputInPage = parsed.has(StandardArg.qVisualOutput);
+    const testName = parsed.get(StandardArg.qTestName);
+    const isBatch = parsed.has(StandardArg.qBatchedTest);
+    const useEmrun = parsed.has(StandardArg.qUseEmrun);
+    const functions = [...parsed.keys()].filter(arg => !StandardArg.isKnown(arg));
 
     if (testName === undefined) {
         if (!isBatch)
@@ -37,7 +54,7 @@ import { VisualOutputProducer, UI, ScannerFactory } from './qtestoutputreporter.
     }
 
     const testOutputFormat = (() => {
-        const format = parsed.get('qtestoutputformat') ?? 'txt';
+        const format = parsed.get(StandardArg.qTestOutputFormat) ?? 'txt';
         if (-1 === ['txt', 'xml', 'lightxml', 'junitxml', 'tap'].indexOf(format))
             throw new Error(`Bad file format: ${format}`);
         return format;
@@ -65,5 +82,5 @@ import { VisualOutputProducer, UI, ScannerFactory } from './qtestoutputreporter.
     }
     setPageTitle(useEmrun, testName, isBatch);
 
-    testRunner.run(isBatch, testName, testOutputFormat);
+    testRunner.run(isBatch, testName, functions, testOutputFormat);
 })();
