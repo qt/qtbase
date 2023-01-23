@@ -46,11 +46,6 @@ public:
     static void remove(const QString &key);
     static void remove(const Key &key);
     static void clear();
-
-#ifdef Q_TEST_QPIXMAPCACHE
-    static void flushDetachedPixmaps();
-    static int totalUsed();
-#endif
 };
 Q_DECLARE_SHARED(QPixmapCache::Key)
 
