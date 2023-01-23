@@ -100,26 +100,9 @@ bool QGregorianCalendar::dateToJulianDay(int year, int month, int day, qint64 *j
     return julianFromParts(year, month, day, jd);
 }
 
-bool QGregorianCalendar::julianFromParts(int year, int month, int day, qint64 *jd)
+QCalendar::YearMonthDay QGregorianCalendar::julianDayToDate(qint64 jd) const
 {
-    Q_ASSERT(jd);
-    if (!validParts(year, month, day))
-        return false;
-
-    if (year < 0)
-        ++year;
-
-    /*
-     * Math from The Calendar FAQ at http://www.tondering.dk/claus/cal/julperiod.php
-     * This formula is correct for all julian days, when using mathematical integer
-     * division (round to negative infinity), not c++11 integer division (round to zero)
-     */
-    int    a = month < 3 ? 1 : 0;
-    qint64 y = qint64(year) + 4800 - a;
-    int    m = month + 12 * a - 3;
-    *jd = day + qDiv<5>(153 * m + 2) - 32045
-        + 365 * y + qDiv<4>(y) - qDiv<100>(y) + qDiv<400>(y);
-    return true;
+    return partsFromJulian(jd);
 }
 
 int QGregorianCalendar::yearStartWeekDay(int year)
@@ -175,18 +158,31 @@ int QGregorianCalendar::yearSharingWeekDays(QDate date)
     return res;
 }
 
-QCalendar::YearMonthDay QGregorianCalendar::julianDayToDate(qint64 jd) const
+/*
+ * Math from The Calendar FAQ at http://www.tondering.dk/claus/cal/julperiod.php
+ * This formula is correct for all julian days, when using mathematical integer
+ * division (round to negative infinity), not c++11 integer division (round to zero).
+ */
+
+bool QGregorianCalendar::julianFromParts(int year, int month, int day, qint64 *jd)
 {
-    return partsFromJulian(jd);
+    Q_ASSERT(jd);
+    if (!validParts(year, month, day))
+        return false;
+
+    if (year < 0)
+        ++year;
+
+    int    a = month < 3 ? 1 : 0;
+    qint64 y = qint64(year) + 4800 - a;
+    int    m = month + 12 * a - 3;
+    *jd = day + qDiv<5>(153 * m + 2) - 32045
+        + 365 * y + qDiv<4>(y) - qDiv<100>(y) + qDiv<400>(y);
+    return true;
 }
 
 QCalendar::YearMonthDay QGregorianCalendar::partsFromJulian(qint64 jd)
 {
-    /*
-     * Math from The Calendar FAQ at http://www.tondering.dk/claus/cal/julperiod.php
-     * This formula is correct for all julian days, when using mathematical integer
-     * division (round to negative infinity), not c++11 integer division (round to zero)
-     */
     qint64 a = jd + 32044;
     qint64 b = qDiv<146097>(4 * a + 3);
     int    c = a - qDiv<4>(146097 * b);
