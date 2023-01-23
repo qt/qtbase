@@ -24,11 +24,12 @@ using namespace Qt::StringLiterals;
 
 Q_LOGGING_CATEGORY(lcMD, "qt.text.markdown")
 
-static const QChar Newline = u'\n';
-static const QChar Space = u' ';
+static const QChar qtmi_Newline = u'\n';
+static const QChar qtmi_Space = u' ';
 
 // TODO maybe eliminate the margins after all views recognize BlockQuoteLevel, CSS can format it, etc.
-static const int BlockQuoteIndent = 40; // pixels, same as in QTextHtmlParserNode::initializeProperties
+static const int qtmi_BlockQuoteIndent =
+        40; // pixels, same as in QTextHtmlParserNode::initializeProperties
 
 static_assert(int(QTextMarkdownImporter::FeatureCollapseWhitespace) == MD_FLAG_COLLAPSEWHITESPACE);
 static_assert(int(QTextMarkdownImporter::FeaturePermissiveATXHeaders) == MD_FLAG_PERMISSIVEATXHEADERS);
@@ -447,10 +448,10 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
         s = QString(QChar(u'\xFFFD')); // CommonMark-required replacement for null
         break;
     case MD_TEXT_BR:
-        s = QString(Newline);
+        s = QString(qtmi_Newline);
         break;
     case MD_TEXT_SOFTBR:
-        s = QString(Space);
+        s = QString(qtmi_Space);
         break;
     case MD_TEXT_CODE:
         // We'll see MD_SPAN_CODE too, which will set the char format, and that's enough.
@@ -499,7 +500,7 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
         m_nonEmptyTableCells.append(m_tableCol);
         break;
     case MD_BLOCK_CODE:
-        if (s == Newline) {
+        if (s == qtmi_Newline) {
             // defer a blank line until we see something else in the code block,
             // to avoid ending every code block with a gratuitous blank line
             m_needsInsertBlock = true;
@@ -572,8 +573,8 @@ void QTextMarkdownImporter::insertBlock()
     }
     if (m_blockQuoteDepth) {
         blockFormat.setProperty(QTextFormat::BlockQuoteLevel, m_blockQuoteDepth);
-        blockFormat.setLeftMargin(BlockQuoteIndent * m_blockQuoteDepth);
-        blockFormat.setRightMargin(BlockQuoteIndent);
+        blockFormat.setLeftMargin(qtmi_BlockQuoteIndent * m_blockQuoteDepth);
+        blockFormat.setRightMargin(qtmi_BlockQuoteIndent);
     }
     if (m_codeBlock) {
         blockFormat.setProperty(QTextFormat::BlockCodeLanguage, m_blockCodeLanguage);
