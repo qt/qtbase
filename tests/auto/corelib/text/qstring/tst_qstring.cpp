@@ -4214,68 +4214,68 @@ void tst_QString::toUShort()
     QCOMPARE(a.toUShort(&ok),(ushort)0);
     QVERIFY(!ok);
 
-    a="";
+    a = u""_s;
     QCOMPARE(a.toUShort(),(ushort)0);
     QCOMPARE(a.toUShort(&ok),(ushort)0);
     QVERIFY(!ok);
 
-    a="COMPARE";
+    a = u"COMPARE"_s;
     QCOMPARE(a.toUShort(),(ushort)0);
     QCOMPARE(a.toUShort(&ok),(ushort)0);
     QVERIFY(!ok);
 
-    a="123";
+    a = u"123"_s;
     QCOMPARE(a.toUShort(),(ushort)123);
     QCOMPARE(a.toUShort(&ok),(ushort)123);
     QVERIFY(ok);
 
-    a="123A";
+    a = u"123A"_s;
     QCOMPARE(a.toUShort(),(ushort)0);
     QCOMPARE(a.toUShort(&ok),(ushort)0);
     QVERIFY(!ok);
 
-    a="1234567";
+    a = u"1234567"_s;
     QCOMPARE(a.toUShort(),(ushort)0);
     QCOMPARE(a.toUShort(&ok),(ushort)0);
     QVERIFY(!ok);
 
-    a = "aaa123aaa";
+    a = u"aaa123aaa"_s;
     QCOMPARE(a.toUShort(),(ushort)0);
     QCOMPARE(a.toUShort(&ok),(ushort)0);
     QVERIFY(!ok);
 
-    a = "aaa123";
+    a = u"aaa123"_s;
     QCOMPARE(a.toUShort(),(ushort)0);
     QCOMPARE(a.toUShort(&ok),(ushort)0);
     QVERIFY(!ok);
 
-    a = "123aaa";
+    a = u"123aaa"_s;
     QCOMPARE(a.toUShort(),(ushort)0);
     QCOMPARE(a.toUShort(&ok),(ushort)0);
     QVERIFY(!ok);
 
-    a = "32767";
+    a = u"32767"_s;
     QCOMPARE(a.toUShort(),(ushort)32767);
     QCOMPARE(a.toUShort(&ok),(ushort)32767);
     QVERIFY(ok);
 
-    a = "-32767";
+    a = u"-32767"_s;
     QCOMPARE(a.toUShort(),(ushort)0);
     QCOMPARE(a.toUShort(&ok),(ushort)0);
     QVERIFY(!ok);
 
-    a = "65535";
+    a = u"65535"_s;
     QCOMPARE(a.toUShort(),(ushort)65535);
     QCOMPARE(a.toUShort(&ok),(ushort)65535);
     QVERIFY(ok);
 
     if (sizeof(short) == 2) {
-        a = "65536";
+        a = u"65536"_s;
         QCOMPARE(a.toUShort(),(ushort)0);
         QCOMPARE(a.toUShort(&ok),(ushort)0);
         QVERIFY(!ok);
 
-        a = "123456";
+        a = u"123456"_s;
         QCOMPARE(a.toUShort(),(ushort)0);
         QCOMPARE(a.toUShort(&ok),(ushort)0);
         QVERIFY(!ok);
@@ -4290,68 +4290,68 @@ void tst_QString::toShort()
     QCOMPARE(a.toShort(&ok),(short)0);
     QVERIFY(!ok);
 
-    a="";
+    a = u""_s;
     QCOMPARE(a.toShort(),(short)0);
     QCOMPARE(a.toShort(&ok),(short)0);
     QVERIFY(!ok);
 
-    a="COMPARE";
+    a = u"COMPARE"_s;
     QCOMPARE(a.toShort(),(short)0);
     QCOMPARE(a.toShort(&ok),(short)0);
     QVERIFY(!ok);
 
-    a="123";
+    a = u"123"_s;
     QCOMPARE(a.toShort(),(short)123);
     QCOMPARE(a.toShort(&ok),(short)123);
     QVERIFY(ok);
 
-    a="123A";
+    a = u"123A"_s;
     QCOMPARE(a.toShort(),(short)0);
     QCOMPARE(a.toShort(&ok),(short)0);
     QVERIFY(!ok);
 
-    a="1234567";
+    a = u"1234567"_s;
     QCOMPARE(a.toShort(),(short)0);
     QCOMPARE(a.toShort(&ok),(short)0);
     QVERIFY(!ok);
 
-    a = "aaa123aaa";
+    a = u"aaa123aaa"_s;
     QCOMPARE(a.toShort(),(short)0);
     QCOMPARE(a.toShort(&ok),(short)0);
     QVERIFY(!ok);
 
-    a = "aaa123";
+    a = u"aaa123"_s;
     QCOMPARE(a.toShort(),(short)0);
     QCOMPARE(a.toShort(&ok),(short)0);
     QVERIFY(!ok);
 
-    a = "123aaa";
+    a = u"123aaa"_s;
     QCOMPARE(a.toShort(),(short)0);
     QCOMPARE(a.toShort(&ok),(short)0);
     QVERIFY(!ok);
 
-    a = "32767";
+    a = u"32767"_s;
     QCOMPARE(a.toShort(),(short)32767);
     QCOMPARE(a.toShort(&ok),(short)32767);
     QVERIFY(ok);
 
-    a = "-32767";
+    a = u"-32767"_s;
     QCOMPARE(a.toShort(),(short)-32767);
     QCOMPARE(a.toShort(&ok),(short)-32767);
     QVERIFY(ok);
 
-    a = "-32768";
+    a = u"-32768"_s;
     QCOMPARE(a.toShort(),(short)-32768);
     QCOMPARE(a.toShort(&ok),(short)-32768);
     QVERIFY(ok);
 
     if (sizeof(short) == 2) {
-        a = "32768";
+        a = u"32768"_s;
         QCOMPARE(a.toShort(),(short)0);
         QCOMPARE(a.toShort(&ok),(short)0);
         QVERIFY(!ok);
 
-        a = "-32769";
+        a = u"-32769"_s;
         QCOMPARE(a.toShort(),(short)0);
         QCOMPARE(a.toShort(&ok),(short)0);
         QVERIFY(!ok);
@@ -4366,78 +4366,78 @@ void tst_QString::toInt()
     QCOMPARE(a.toInt(&ok),0);
     QVERIFY(!ok);
 
-    a = "";
+    a = u""_s;
     QCOMPARE(a.toInt(),0);
     QCOMPARE(a.toInt(&ok),0);
     QVERIFY(!ok);
 
-    a="COMPARE";
+    a = u"COMPARE"_s;
     QCOMPARE(a.toInt(),0);
     QCOMPARE(a.toInt(&ok),0);
     QVERIFY(!ok);
 
-    a="123";
+    a = u"123"_s;
     QCOMPARE(a.toInt(),123);
     QCOMPARE(a.toInt(&ok),123);
     QVERIFY(ok);
 
-    a="123A";
+    a = u"123A"_s;
     QCOMPARE(a.toInt(),0);
     QCOMPARE(a.toInt(&ok),0);
     QVERIFY(!ok);
 
-    a="1234567";
+    a = u"1234567"_s;
     QCOMPARE(a.toInt(),1234567);
     QCOMPARE(a.toInt(&ok),1234567);
     QVERIFY(ok);
 
-    a="12345678901234";
+    a = u"12345678901234"_s;
     QCOMPARE(a.toInt(),0);
     QCOMPARE(a.toInt(&ok),0);
     QVERIFY(!ok);
 
-    a="3234567890";
+    a = u"3234567890"_s;
     QCOMPARE(a.toInt(),0);
     QCOMPARE(a.toInt(&ok),0);
     QVERIFY(!ok);
 
-    a = "aaa12345aaa";
+    a = u"aaa12345aaa"_s;
     QCOMPARE(a.toInt(),0);
     QCOMPARE(a.toInt(&ok),0);
     QVERIFY(!ok);
 
-    a = "aaa12345";
+    a = u"aaa12345"_s;
     QCOMPARE(a.toInt(),0);
     QCOMPARE(a.toInt(&ok),0);
     QVERIFY(!ok);
 
-    a = "12345aaa";
+    a = u"12345aaa"_s;
     QCOMPARE(a.toInt(),0);
     QCOMPARE(a.toInt(&ok),0);
     QVERIFY(!ok);
 
-    a = "2147483647"; // 2**31 - 1
+    a = u"2147483647"_s; // 2**31 - 1
     QCOMPARE(a.toInt(),2147483647);
     QCOMPARE(a.toInt(&ok),2147483647);
     QVERIFY(ok);
 
     if (sizeof(int) == 4) {
-        a = "-2147483647"; // -(2**31 - 1)
+        a = u"-2147483647"_s; // -(2**31 - 1)
         QCOMPARE(a.toInt(),-2147483647);
         QCOMPARE(a.toInt(&ok),-2147483647);
         QVERIFY(ok);
 
-        a = "2147483648"; // 2**31
+        a = u"2147483648"_s; // 2**31
         QCOMPARE(a.toInt(),0);
         QCOMPARE(a.toInt(&ok),0);
         QVERIFY(!ok);
 
-        a = "-2147483648"; // -2**31
+        a = u"-2147483648"_s; // -2**31
         QCOMPARE(a.toInt(),-2147483647 - 1);
         QCOMPARE(a.toInt(&ok),-2147483647 - 1);
         QVERIFY(ok);
 
-        a = "2147483649"; // 2**31 + 1
+        a = u"2147483649"_s; // 2**31 + 1
         QCOMPARE(a.toInt(),0);
         QCOMPARE(a.toInt(&ok),0);
         QVERIFY(!ok);
@@ -4453,22 +4453,22 @@ void tst_QString::toUInt()
     QCOMPARE(a.toUInt(&ok), 0u);
     QVERIFY(!ok);
 
-    a="3234567890";
+    a = u"3234567890"_s;
     QCOMPARE(a.toUInt(&ok),3234567890u);
     QVERIFY(ok);
 
-    a = "-50";
+    a = u"-50"_s;
     QCOMPARE(a.toUInt(),0u);
     QCOMPARE(a.toUInt(&ok),0u);
     QVERIFY(!ok);
 
-    a = "4294967295"; // 2**32 - 1
+    a = u"4294967295"_s; // 2**32 - 1
     QCOMPARE(a.toUInt(),4294967295u);
     QCOMPARE(a.toUInt(&ok),4294967295u);
     QVERIFY(ok);
 
     if (sizeof(int) == 4) {
-        a = "4294967296"; // 2**32
+        a = u"4294967296"_s; // 2**32
         QCOMPARE(a.toUInt(),0u);
         QCOMPARE(a.toUInt(&ok),0u);
         QVERIFY(!ok);
@@ -4547,17 +4547,17 @@ void tst_QString::toULongLong()
     QCOMPARE(str.toULongLong(&ok), Q_UINT64_C(0));
     QVERIFY(!ok);
 
-    str = "18446744073709551615"; // ULLONG_MAX
+    str = u"18446744073709551615"_s; // ULLONG_MAX
     QCOMPARE( str.toULongLong( 0 ), Q_UINT64_C(18446744073709551615) );
     QCOMPARE( str.toULongLong( &ok ), Q_UINT64_C(18446744073709551615) );
     QVERIFY( ok );
 
-    str = "18446744073709551616"; // ULLONG_MAX + 1
+    str = u"18446744073709551616"_s; // ULLONG_MAX + 1
     QCOMPARE( str.toULongLong( 0 ), Q_UINT64_C(0) );
     QCOMPARE( str.toULongLong( &ok ), Q_UINT64_C(0) );
     QVERIFY( !ok );
 
-    str = "-150";
+    str = u"-150"_s;
     QCOMPARE( str.toULongLong( 0 ), Q_UINT64_C(0) );
     QCOMPARE( str.toULongLong( &ok ), Q_UINT64_C(0) );
     QVERIFY( !ok );
@@ -4581,29 +4581,29 @@ void tst_QString::toLongLong()
     QCOMPARE(str.toLongLong(&ok), Q_INT64_C(0));
     QVERIFY(!ok);
 
-    str = "9223372036854775807"; // LLONG_MAX
+    str = u"9223372036854775807"_s; // LLONG_MAX
     QCOMPARE( str.toLongLong( 0 ), Q_INT64_C(9223372036854775807) );
     QCOMPARE( str.toLongLong( &ok ), Q_INT64_C(9223372036854775807) );
     QVERIFY( ok );
 
-    str = "-9223372036854775808"; // LLONG_MIN
+    str = u"-9223372036854775808"_s; // LLONG_MIN
     QCOMPARE( str.toLongLong( 0 ),
              -Q_INT64_C(9223372036854775807) - Q_INT64_C(1) );
     QCOMPARE( str.toLongLong( &ok ),
              -Q_INT64_C(9223372036854775807) - Q_INT64_C(1) );
     QVERIFY( ok );
 
-    str = "aaaa9223372036854775807aaaa";
+    str = u"aaaa9223372036854775807aaaa"_s;
     QCOMPARE( str.toLongLong( 0 ), Q_INT64_C(0) );
     QCOMPARE( str.toLongLong( &ok ), Q_INT64_C(0) );
     QVERIFY( !ok );
 
-    str = "9223372036854775807aaaa";
+    str = u"9223372036854775807aaaa"_s;
     QCOMPARE( str.toLongLong( 0 ), Q_INT64_C(0) );
     QCOMPARE( str.toLongLong( &ok ), Q_INT64_C(0) );
     QVERIFY( !ok );
 
-    str = "aaaa9223372036854775807";
+    str = u"aaaa9223372036854775807"_s;
     QCOMPARE( str.toLongLong( 0 ), Q_INT64_C(0) );
     QCOMPARE( str.toLongLong( &ok ), Q_INT64_C(0) );
     QVERIFY( !ok );
@@ -4614,9 +4614,9 @@ void tst_QString::toLongLong()
         for (int j = 0; j < 36; ++j) {
             for (int k = 0; k < 36; ++k) {
                 QString str;
-                str += QChar(digits[i]);
-                str += QChar(digits[j]);
-                str += QChar(digits[k]);
+                str += QLatin1Char(digits[i]);
+                str += QLatin1Char(digits[j]);
+                str += QLatin1Char(digits[k]);
                 qlonglong value = (((i * 36) + j) * 36) + k;
                 QVERIFY(str.toLongLong(0, 36) == value);
             }
@@ -4700,7 +4700,7 @@ void tst_QString::toFloat()
     QCOMPARE(a.toFloat(&ok), 0.0f);
     QVERIFY(!ok);
 
-    a="0.000000000931322574615478515625";
+    a = u"0.000000000931322574615478515625"_s;
     QCOMPARE(a.toFloat(&ok),(float)(0.000000000931322574615478515625));
     QVERIFY(ok);
 }
@@ -4766,28 +4766,28 @@ void tst_QString::setNum()
     QCOMPARE(a.setNum((short)123), QLatin1String("123"));
     QCOMPARE(a.setNum(123L), QLatin1String("123"));
     QCOMPARE(a.setNum(123UL), QLatin1String("123"));
-    QCOMPARE(a.setNum(2147483647L), QString("2147483647")); // 32 bit LONG_MAX
-    QCOMPARE(a.setNum(-2147483647L), QString("-2147483647")); // LONG_MIN + 1
-    QCOMPARE(a.setNum(-2147483647L-1L), QString("-2147483648")); // LONG_MIN
-    QCOMPARE(a.setNum(1.23), QString("1.23"));
-    QCOMPARE(a.setNum(1.234567), QString("1.23457"));
+    QCOMPARE(a.setNum(2147483647L), u"2147483647"); // 32 bit LONG_MAX
+    QCOMPARE(a.setNum(-2147483647L), u"-2147483647"); // LONG_MIN + 1
+    QCOMPARE(a.setNum(-2147483647L-1L), u"-2147483648"); // LONG_MIN
+    QCOMPARE(a.setNum(1.23), u"1.23");
+    QCOMPARE(a.setNum(1.234567), u"1.23457");
 #if defined(LONG_MAX) && defined(LLONG_MAX) && LONG_MAX == LLONG_MAX
     // LONG_MAX and LONG_MIN on 64 bit systems
-    QCOMPARE(a.setNum(9223372036854775807L), QString("9223372036854775807"));
-    QCOMPARE(a.setNum(-9223372036854775807L-1L), QString("-9223372036854775808"));
-    QCOMPARE(a.setNum(18446744073709551615UL), QString("18446744073709551615"));
+    QCOMPARE(a.setNum(9223372036854775807L), u"9223372036854775807");
+    QCOMPARE(a.setNum(-9223372036854775807L-1L), u"-9223372036854775808");
+    QCOMPARE(a.setNum(18446744073709551615UL), u"18446744073709551615");
 #endif
-    QCOMPARE(a.setNum(Q_INT64_C(123)), QString("123"));
+    QCOMPARE(a.setNum(Q_INT64_C(123)), u"123");
     // 2^40 == 1099511627776
-    QCOMPARE(a.setNum(Q_INT64_C(-1099511627776)), QString("-1099511627776"));
-    QCOMPARE(a.setNum(Q_UINT64_C(1099511627776)), QString("1099511627776"));
+    QCOMPARE(a.setNum(Q_INT64_C(-1099511627776)), u"-1099511627776");
+    QCOMPARE(a.setNum(Q_UINT64_C(1099511627776)), u"1099511627776");
     QCOMPARE(a.setNum(Q_INT64_C(9223372036854775807)), // LLONG_MAX
-            QString("9223372036854775807"));
+            u"9223372036854775807");
     QCOMPARE(a.setNum(-Q_INT64_C(9223372036854775807) - Q_INT64_C(1)),
-            QString("-9223372036854775808"));
+            u"-9223372036854775808");
     QCOMPARE(a.setNum(Q_UINT64_C(18446744073709551615)), // ULLONG_MAX
-            QString("18446744073709551615"));
-    QCOMPARE(a.setNum(0.000000000931322574615478515625),QString("9.31323e-10"));
+            u"18446744073709551615");
+    QCOMPARE(a.setNum(0.000000000931322574615478515625), u"9.31323e-10");
 
 //  QCOMPARE(a.setNum(0.000000000931322574615478515625,'g',30),(QString)"9.31322574615478515625e-010");
 //  QCOMPARE(a.setNum(0.000000000931322574615478515625,'f',30),(QString)"0.00000000093132257461547852");
@@ -4797,25 +4797,25 @@ void tst_QString::startsWith()
 {
     QString a;
 
-    QVERIFY(!a.startsWith('A'));
-    QVERIFY(!a.startsWith("AB"));
+    QVERIFY(!a.startsWith(u'A'));
+    QVERIFY(!a.startsWith(u"AB"_s));
     {
-        CREATE_VIEW("AB");
+        CREATE_VIEW(u"AB"_s);
         QVERIFY(!a.startsWith(view));
     }
     QVERIFY(!a.isDetached());
 
-    a = "AB";
-    QVERIFY( a.startsWith("A") );
-    QVERIFY( a.startsWith("AB") );
-    QVERIFY( !a.startsWith("C") );
-    QVERIFY( !a.startsWith("ABCDEF") );
-    QVERIFY( a.startsWith("") );
+    a = u"AB"_s;
+    QVERIFY(a.startsWith(u"A"));
+    QVERIFY(a.startsWith(u"AB"_s));
+    QVERIFY(!a.startsWith(u"C"));
+    QVERIFY(!a.startsWith(u"ABCDEF"_s));
+    QVERIFY(a.startsWith(u""_s));
     QVERIFY( a.startsWith(QString()) );
-    QVERIFY( a.startsWith('A') );
-    QVERIFY( a.startsWith(QLatin1Char('A')) );
-    QVERIFY( a.startsWith(QChar('A')) );
-    QVERIFY( !a.startsWith('C') );
+    QVERIFY(a.startsWith(u'A'));
+    QVERIFY(a.startsWith(QLatin1Char('A')));
+    QVERIFY(a.startsWith(QChar(u'A')));
+    QVERIFY(!a.startsWith(u'C'));
     QVERIFY( !a.startsWith(QChar()) );
     QVERIFY( !a.startsWith(QLatin1Char(0)) );
 
@@ -4826,24 +4826,24 @@ void tst_QString::startsWith()
     QVERIFY( a.startsWith(QLatin1String("")) );
     QVERIFY( a.startsWith(QLatin1String(nullptr)) );
 
-    QVERIFY( a.startsWith("A", Qt::CaseSensitive) );
-    QVERIFY( a.startsWith("A", Qt::CaseInsensitive) );
-    QVERIFY( !a.startsWith("a", Qt::CaseSensitive) );
-    QVERIFY( a.startsWith("a", Qt::CaseInsensitive) );
-    QVERIFY( !a.startsWith("aB", Qt::CaseSensitive) );
-    QVERIFY( a.startsWith("aB", Qt::CaseInsensitive) );
-    QVERIFY( !a.startsWith("C", Qt::CaseSensitive) );
-    QVERIFY( !a.startsWith("C", Qt::CaseInsensitive) );
-    QVERIFY( !a.startsWith("c", Qt::CaseSensitive) );
-    QVERIFY( !a.startsWith("c", Qt::CaseInsensitive) );
-    QVERIFY( !a.startsWith("abcdef", Qt::CaseInsensitive) );
-    QVERIFY( a.startsWith("", Qt::CaseInsensitive) );
+    QVERIFY(a.startsWith(u"A"_s, Qt::CaseSensitive));
+    QVERIFY(a.startsWith(u"A"_s, Qt::CaseInsensitive));
+    QVERIFY(!a.startsWith(u"a"_s, Qt::CaseSensitive));
+    QVERIFY(a.startsWith(u"a"_s, Qt::CaseInsensitive));
+    QVERIFY(!a.startsWith(u"aB"_s, Qt::CaseSensitive));
+    QVERIFY(a.startsWith(u"aB"_s, Qt::CaseInsensitive));
+    QVERIFY(!a.startsWith(u"C"_s, Qt::CaseSensitive));
+    QVERIFY(!a.startsWith(u"C"_s, Qt::CaseInsensitive));
+    QVERIFY(!a.startsWith(u"c"_s, Qt::CaseSensitive));
+    QVERIFY(!a.startsWith(u"c"_s, Qt::CaseInsensitive));
+    QVERIFY(!a.startsWith(u"abcdef"_s, Qt::CaseInsensitive));
+    QVERIFY(a.startsWith(u""_s, Qt::CaseInsensitive));
     QVERIFY( a.startsWith(QString(), Qt::CaseInsensitive) );
-    QVERIFY( a.startsWith('a', Qt::CaseInsensitive) );
-    QVERIFY( a.startsWith('A', Qt::CaseInsensitive) );
+    QVERIFY(a.startsWith(u'a', Qt::CaseInsensitive));
+    QVERIFY(a.startsWith(u'A', Qt::CaseInsensitive));
     QVERIFY( a.startsWith(QLatin1Char('a'), Qt::CaseInsensitive) );
-    QVERIFY( a.startsWith(QChar('a'), Qt::CaseInsensitive) );
-    QVERIFY( !a.startsWith('c', Qt::CaseInsensitive) );
+    QVERIFY(a.startsWith(QChar(u'a'), Qt::CaseInsensitive));
+    QVERIFY(!a.startsWith(u'c', Qt::CaseInsensitive));
     QVERIFY( !a.startsWith(QChar(), Qt::CaseInsensitive) );
     QVERIFY( !a.startsWith(QLatin1Char(0), Qt::CaseInsensitive) );
 
@@ -4860,24 +4860,24 @@ void tst_QString::startsWith()
     QVERIFY( !a.startsWith(QLatin1String("abcdef"), Qt::CaseInsensitive) );
     QVERIFY( a.startsWith(QLatin1String(""), Qt::CaseInsensitive) );
     QVERIFY( a.startsWith(QLatin1String(nullptr), Qt::CaseInsensitive) );
-    QVERIFY( a.startsWith('A', Qt::CaseSensitive) );
-    QVERIFY( a.startsWith(QLatin1Char('A'), Qt::CaseSensitive) );
-    QVERIFY( a.startsWith(QChar('A'), Qt::CaseSensitive) );
-    QVERIFY( !a.startsWith('a', Qt::CaseSensitive) );
+    QVERIFY(a.startsWith(u'A', Qt::CaseSensitive));
+    QVERIFY(a.startsWith(QLatin1Char('A'), Qt::CaseSensitive));
+    QVERIFY(a.startsWith(QChar(u'A'), Qt::CaseSensitive));
+    QVERIFY(!a.startsWith(u'a', Qt::CaseSensitive));
     QVERIFY( !a.startsWith(QChar(), Qt::CaseSensitive) );
     QVERIFY( !a.startsWith(QLatin1Char(0), Qt::CaseSensitive) );
 
 #define TEST_VIEW_STARTS_WITH(string, yes) { CREATE_VIEW(string); QCOMPARE(a.startsWith(view), yes); }
-    TEST_VIEW_STARTS_WITH("A", true);
-    TEST_VIEW_STARTS_WITH("AB", true);
-    TEST_VIEW_STARTS_WITH("C", false);
-    TEST_VIEW_STARTS_WITH("ABCDEF", false);
+    TEST_VIEW_STARTS_WITH(u"A"_s, true);
+    TEST_VIEW_STARTS_WITH(u"AB"_s, true);
+    TEST_VIEW_STARTS_WITH(u"C"_s, false);
+    TEST_VIEW_STARTS_WITH(u"ABCDEF"_s, false);
 #undef TEST_VIEW_STARTS_WITH
 
-    a = "";
-    QVERIFY( a.startsWith("") );
+    a = u""_s;
+    QVERIFY(a.startsWith(u""_s));
     QVERIFY( a.startsWith(QString()) );
-    QVERIFY( !a.startsWith("ABC") );
+    QVERIFY(!a.startsWith(u"ABC"_s));
 
     QVERIFY( a.startsWith(QLatin1String("")) );
     QVERIFY( a.startsWith(QLatin1String(nullptr)) );
@@ -4888,9 +4888,9 @@ void tst_QString::startsWith()
     QVERIFY( !a.startsWith(QChar()) );
 
     a = QString();
-    QVERIFY( !a.startsWith("") );
+    QVERIFY( !a.startsWith(u""_s) );
     QVERIFY( a.startsWith(QString()) );
-    QVERIFY( !a.startsWith("ABC") );
+    QVERIFY(!a.startsWith(u"ABC"_s));
 
     QVERIFY( !a.startsWith(QLatin1String("")) );
     QVERIFY( a.startsWith(QLatin1String(nullptr)) );
@@ -4901,12 +4901,12 @@ void tst_QString::startsWith()
     QVERIFY( !a.startsWith(QChar()) );
 
     // this test is independent of encoding
-    a = "\xc3\xa9";
-    QVERIFY( a.startsWith("\xc3\xa9") );
-    QVERIFY( !a.startsWith("\xc3\xa1") );
+    a = u'é';
+    QVERIFY(a.startsWith(u"é"_s));
+    QVERIFY(!a.startsWith(u"á"_s));
 
     // this one is dependent of encoding
-    QVERIFY( a.startsWith("\xc3\x89", Qt::CaseInsensitive) );
+    QVERIFY(a.startsWith(u"É"_s, Qt::CaseInsensitive));
 }
 
 void tst_QString::endsWith()
