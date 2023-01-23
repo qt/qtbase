@@ -37,12 +37,6 @@ public:
 
     void initEventHandlers();
 
-    struct QWasmFrameOptions {
-        QRect rect;
-        int lineWidth;
-        QPalette palette;
-    };
-
     void addWindow(QWasmWindow *window);
     void removeWindow(QWasmWindow *window);
 
@@ -60,9 +54,6 @@ public:
     enum UpdateRequestDeliveryType { ExposeEventDelivery, UpdateRequestDelivery };
     void requestUpdateAllWindows();
     void requestUpdateWindow(QWasmWindow *window, UpdateRequestDeliveryType updateType = ExposeEventDelivery);
-
-    void setCapture(QWasmWindow *window);
-    void releaseCapture();
 
     void handleBackingStoreFlush(QWindow *window);
 
@@ -85,16 +76,11 @@ private:
     bool processKeyboard(int eventType, const EmscriptenKeyboardEvent *keyEvent);
     bool processTouch(int eventType, const EmscriptenTouchEvent *touchEvent);
 
-    void enterWindow(QWindow *window, const QPoint &localPoint, const QPoint &globalPoint);
-    void leaveWindow(QWindow *window);
-
     void updateEnabledState();
 
     QWasmWindowStack m_windowStack;
 
     bool m_isEnabled = true;
-    QSize m_targetSize;
-    qreal m_targetDevicePixelRatio = 1;
     QMap<QWasmWindow *, UpdateRequestDeliveryType> m_requestUpdateWindows;
     bool m_requestUpdateAllWindows = false;
     int m_requestAnimationFrameId = -1;
