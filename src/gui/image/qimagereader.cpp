@@ -47,7 +47,6 @@
     \inmodule QtGui
     \reentrant
     \ingroup painting
-    \ingroup io
 
     The most common way to read images is through QImage and QPixmap's
     constructors, or by calling QImage::load() and

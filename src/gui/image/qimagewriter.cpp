@@ -45,7 +45,6 @@
     \inmodule QtGui
     \reentrant
     \ingroup painting
-    \ingroup io
 
     QImageWriter supports setting format specific options, such as
     compression level and quality, prior to storing the
