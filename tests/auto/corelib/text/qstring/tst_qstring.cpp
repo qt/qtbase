@@ -6943,8 +6943,8 @@ void tst_QString::fromUtf16_data()
     QTest::addColumn<QString>("res");
     QTest::addColumn<int>("len");
 
-    QTest::newRow("str0") << QString("abcdefgh") << QString("abcdefgh") << -1;
-    QTest::newRow("str0-len") << QString("abcdefgh") << QString("abc") << 3;
+    QTest::newRow("str0") << u"abcdefgh"_s << u"abcdefgh"_s << -1;
+    QTest::newRow("str0-len") << u"abcdefgh"_s << u"abc"_s << 3;
 }
 
 #if QT_DEPRECATED_SINCE(6, 0)
@@ -7162,19 +7162,19 @@ void tst_QString::arg_fillChar_data()
 
     QTest::newRow("str0")
         << QStringLiteral("%1%2%3")
-        << DataList{QVariant(int(5)), QVariant(QString("f")), QVariant(int(0))}
-        << IntList{3, 2, 5} << QString("abc") << QString("aa5bfcccc0");
+        << DataList{QVariant(int(5)), QVariant(u"f"_s), QVariant(int(0))}
+        << IntList{3, 2, 5} << u"abc"_s << u"aa5bfcccc0"_s;
 
     QTest::newRow("str1")
         << QStringLiteral("%3.%1.%3.%2")
-        << DataList{QVariant(int(5)), QVariant(QString("foo")), QVariant(qulonglong(INT_MAX))}
-        << IntList{10, 2, 5} << QString("0 c") << QString("2147483647.0000000005.2147483647.foo");
+        << DataList{QVariant(int(5)), QVariant(u"foo"_s), QVariant(qulonglong(INT_MAX))}
+        << IntList{10, 2, 5} << u"0 c"_s << u"2147483647.0000000005.2147483647.foo"_s;
 
     QTest::newRow("str2")
         << QStringLiteral("%9 og poteter")
-        << DataList{QVariant(QString("fisk"))} << IntList{100} << QString("f")
-        << QString("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-                   "fffffffffffffffffffffffffffffffffffffisk og poteter");
+        << DataList{QVariant(u"fisk"_s)} << IntList{100} << u"f"_s
+        << u"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+           "fffffffffffffffffffffffffffffffffffffisk og poteter"_s;
 
     // Left-padding with zeros fits them before the minus sign:
     QTest::newRow("zero-left")
@@ -7249,25 +7249,25 @@ void tst_QString::compare_data()
 
     // null strings
     QTest::newRow("null-null") << QString() << QString() << 0 << 0;
-    QTest::newRow("text-null") << QString("a") << QString() << 1 << 1;
-    QTest::newRow("null-text") << QString() << QString("a") << -1 << -1;
-    QTest::newRow("null-empty") << QString() << QString("") << 0 << 0;
-    QTest::newRow("empty-null") << QString("") << QString() << 0 << 0;
+    QTest::newRow("text-null") << u"a"_s << QString() << 1 << 1;
+    QTest::newRow("null-text") << QString() << u"a"_s << -1 << -1;
+    QTest::newRow("null-empty") << QString() << u""_s << 0 << 0;
+    QTest::newRow("empty-null") << u""_s << QString() << 0 << 0;
 
     // empty strings
-    QTest::newRow("data0") << QString("") << QString("") << 0 << 0;
-    QTest::newRow("data1") << QString("a") << QString("") << 1 << 1;
-    QTest::newRow("data2") << QString("") << QString("a") << -1 << -1;
+    QTest::newRow("data0") << u""_s << u""_s << 0 << 0;
+    QTest::newRow("data1") << u"a"_s << u""_s << 1 << 1;
+    QTest::newRow("data2") << u""_s << u"a"_s << -1 << -1;
 
     // equal length
-    QTest::newRow("data3") << QString("abc") << QString("abc") << 0 << 0;
-    QTest::newRow("data4") << QString("abC") << QString("abc") << -1 << 0;
-    QTest::newRow("data5") << QString("abc") << QString("abC") << 1 << 0;
+    QTest::newRow("data3") << u"abc"_s << u"abc"_s << 0 << 0;
+    QTest::newRow("data4") << u"abC"_s << u"abc"_s << -1 << 0;
+    QTest::newRow("data5") << u"abc"_s << u"abC"_s << 1 << 0;
 
     // different length
-    QTest::newRow("data6") << QString("abcdef") << QString("abc") << 1 << 1;
-    QTest::newRow("data7") << QString("abCdef") << QString("abc") << -1 << 1;
-    QTest::newRow("data8") << QString("abc") << QString("abcdef") << -1 << -1;
+    QTest::newRow("data6") << u"abcdef"_s << u"abc"_s << 1 << 1;
+    QTest::newRow("data7") << u"abCdef"_s << u"abc"_s << -1 << 1;
+    QTest::newRow("data8") << u"abc"_s << u"abcdef"_s << -1 << -1;
 
     QString upper;
     upper += QChar(QChar::highSurrogate(0x10400));
@@ -7280,12 +7280,12 @@ void tst_QString::compare_data()
     // embedded nulls
     QLatin1String onenull("", 1);
     QTest::newRow("data10") << QString(onenull) << QString(onenull) << 0 << 0;
-    QTest::newRow("data11") << QString(onenull) << QString("") << 1 << 1;
-    QTest::newRow("data12") << QString("") << QString(onenull) << -1 << -1;
+    QTest::newRow("data11") << QString(onenull) << u""_s << 1 << 1;
+    QTest::newRow("data12") << u""_s << QString(onenull) << -1 << -1;
     QTest::newRow("data13") << QString::fromLatin1("ab\0c", 4) << QString(QLatin1String("ab\0c", 4)) << 0 << 0;
-    QTest::newRow("data14") << QString(QLatin1String("ab\0c", 4)) << QString("abc") << -1 << -1;
-    QTest::newRow("data15") << QString("abc") << QString(QLatin1String("ab\0c", 4)) << 1 << 1;
-    QTest::newRow("data16") << QString("abc") << QString(QLatin1String("abc", 4)) << -1 << -1;
+    QTest::newRow("data14") << QString(QLatin1String("ab\0c", 4)) << u"abc"_s << -1 << -1;
+    QTest::newRow("data15") << u"abc"_s << QString(QLatin1String("ab\0c", 4)) << 1 << 1;
+    QTest::newRow("data16") << u"abc"_s << QString(QLatin1String("abc", 4)) << -1 << -1;
 
     // All tests below (generated by the 3 for-loops) are meant to exercise the vectorized versions
     // of ucstrncmp.
@@ -7309,7 +7309,7 @@ void tst_QString::compare_data()
     }
 
     for (int i = 1; i <= 65; ++i) {
-        QString start(i - 1, 'a');
+        QString start(i - 1, u'a');
 
         QString in = start + QLatin1Char('a');
         QTest::addRow("all-same-%d", i) << in << in << 0 << 0;
@@ -7319,9 +7319,9 @@ void tst_QString::compare_data()
     }
 
     for (int i = 0; i < 16; ++i) {
-        QString in1(16, 'a');
+        QString in1(16, u'a');
         QString in2 = in1;
-        in2[i] = 'b';
+        in2[i] = u'b';
         QTest::addRow("all-same-except-char-%d", i) << in1 << in2 << -1 << -1;
     }
 
@@ -7331,7 +7331,7 @@ void tst_QString::compare_data()
     QChar capitalAWithAcute = u'Á';
     QChar nbsp = u'\u00a0';
     for (int i = 1; i <= 65; ++i) {
-        QString padding(i - 1, ' ');
+        QString padding(i - 1, u' ');
         QTest::addRow("ascii-nonascii-%d", i)
                 << (padding + smallA) << (padding + smallAWithAcute) << -1 << -1;
         QTest::addRow("nonascii-nonascii-equal-%d", i)
@@ -7662,7 +7662,7 @@ void tst_QString::repeated_data() const
 void tst_QString::arg_locale()
 {
     QLocale l(QLocale::English, QLocale::UnitedKingdom);
-    QString str("*%L1*%L2*");
+    QString str(u"*%L1*%L2*"_s);
 
     TransientDefaultLocale transient(l);
     QCOMPARE(str.arg(123456).arg(1234.56), QString::fromLatin1("*123,456*1,234.56*"));
@@ -7909,7 +7909,7 @@ void tst_QString::toHtmlEscaped_data()
     QTest::addColumn<QString>("expected");
 
     QTest::newRow("null") << QString() << QString();
-    QTest::newRow("empty") << QString("") << QString("");
+    QTest::newRow("empty") << u""_s << u""_s;
     QTest::newRow("1") << "Hello World\n" << "Hello World\n";
     QTest::newRow("2") << "#include <QtCore>" << "#include &lt;QtCore&gt;";
     QTest::newRow("3") << "<p class=\"cool\"><a href=\"http://example.com/?foo=bar&amp;bar=foo\">plop --&gt; </a></p>"
@@ -8118,17 +8118,17 @@ void tst_QString::isRightToLeft_data()
     QTest::addColumn<bool>("rtl");
 
     QTest::newRow("null") << QString() << false;
-    QTest::newRow("empty") << QString("") << false;
+    QTest::newRow("empty") << u""_s << false;
 
-    QTest::newRow("numbers-only") << QString("12345") << false;
-    QTest::newRow("latin1-only") << QString("hello") << false;
-    QTest::newRow("numbers-latin1") << (QString("12345") + QString("hello")) << false;
+    QTest::newRow("numbers-only") << u"12345"_s << false;
+    QTest::newRow("latin1-only") << u"hello"_s << false;
+    QTest::newRow("numbers-latin1") << (u"12345"_s + u"hello"_s) << false;
 
     static const char16_t unicode1[] = { 0x627, 0x627 };
     QTest::newRow("arabic-only") << QString::fromUtf16(unicode1, 2) << true;
-    QTest::newRow("numbers-arabic") << (QString("12345") + QString::fromUtf16(unicode1, 2)) << true;
-    QTest::newRow("numbers-latin1-arabic") << (QString("12345") + QString("hello") + QString::fromUtf16(unicode1, 2)) << false;
-    QTest::newRow("numbers-arabic-latin1") << (QString("12345") + QString::fromUtf16(unicode1, 2) + QString("hello")) << true;
+    QTest::newRow("numbers-arabic") << (u"12345"_s + QString::fromUtf16(unicode1, 2)) << true;
+    QTest::newRow("numbers-latin1-arabic") << (u"12345"_s + u"hello"_s + QString::fromUtf16(unicode1, 2)) << false;
+    QTest::newRow("numbers-arabic-latin1") << (u"12345"_s + QString::fromUtf16(unicode1, 2) + u"hello"_s) << true;
 
     static const char16_t unicode2[] = { QChar::highSurrogate(0xE01DAu), QChar::lowSurrogate(0xE01DAu), QChar::highSurrogate(0x2F800u), QChar::lowSurrogate(0x2F800u) };
     QTest::newRow("surrogates-VS-CJK") << QString::fromUtf16(unicode2, 4) << false;
@@ -8136,24 +8136,24 @@ void tst_QString::isRightToLeft_data()
     static const char16_t unicode3[] = { QChar::highSurrogate(0x10800u), QChar::lowSurrogate(0x10800u), QChar::highSurrogate(0x10805u), QChar::lowSurrogate(0x10805u) };
     QTest::newRow("surrogates-cypriot") << QString::fromUtf16(unicode3, 4) << true;
 
-    QTest::newRow("lre") << (QString("12345") + QChar(0x202a) + QString("9") + QChar(0x202c)) << false;
-    QTest::newRow("rle") << (QString("12345") + QChar(0x202b) + QString("9") + QChar(0x202c)) << false;
-    QTest::newRow("r in lre") << (QString("12345") + QChar(0x202a) + QString::fromUtf16(unicode1, 2) + QChar(0x202c) + QString("a")) << true;
-    QTest::newRow("l in lre") << (QString("12345") + QChar(0x202a) + QString("a") + QChar(0x202c) + QString::fromUtf16(unicode1, 2)) << false;
-    QTest::newRow("r in rle") << (QString("12345") + QChar(0x202b) + QString::fromUtf16(unicode1, 2) + QChar(0x202c) + QString("a")) << true;
-    QTest::newRow("l in rle") << (QString("12345") + QChar(0x202b) + QString("a") + QChar(0x202c) + QString::fromUtf16(unicode1, 2)) << false;
+    QTest::newRow("lre") << (u"12345"_s + QChar(0x202a) + u"9"_s + QChar(0x202c)) << false;
+    QTest::newRow("rle") << (u"12345"_s + QChar(0x202b) + u"9"_s + QChar(0x202c)) << false;
+    QTest::newRow("r in lre") << (u"12345"_s + QChar(0x202a) + QString::fromUtf16(unicode1, 2) + QChar(0x202c) + u"a"_s) << true;
+    QTest::newRow("l in lre") << (u"12345"_s + QChar(0x202a) + u"a"_s + QChar(0x202c) + QString::fromUtf16(unicode1, 2)) << false;
+    QTest::newRow("r in rle") << (u"12345"_s + QChar(0x202b) + QString::fromUtf16(unicode1, 2) + QChar(0x202c) + u"a"_s) << true;
+    QTest::newRow("l in rle") << (u"12345"_s + QChar(0x202b) + u"a"_s + QChar(0x202c) + QString::fromUtf16(unicode1, 2)) << false;
 
-    QTest::newRow("lro") << (QString("12345") + QChar(0x202d) + QString("9") + QChar(0x202c)) << false;
-    QTest::newRow("rlo") << (QString("12345") + QChar(0x202e) + QString("9") + QChar(0x202c)) << false;
-    QTest::newRow("r in lro") << (QString("12345") + QChar(0x202d) + QString::fromUtf16(unicode1, 2) + QChar(0x202c) + QString("a")) << true;
-    QTest::newRow("l in lro") << (QString("12345") + QChar(0x202d) + QString("a") + QChar(0x202c) + QString::fromUtf16(unicode1, 2)) << false;
-    QTest::newRow("r in rlo") << (QString("12345") + QChar(0x202e) + QString::fromUtf16(unicode1, 2) + QChar(0x202c) + QString("a")) << true;
-    QTest::newRow("l in rlo") << (QString("12345") + QChar(0x202e) + QString("a") + QChar(0x202c) + QString::fromUtf16(unicode1, 2)) << false;
+    QTest::newRow("lro") << (u"12345"_s + QChar(0x202d) + u"9"_s + QChar(0x202c)) << false;
+    QTest::newRow("rlo") << (u"12345"_s + QChar(0x202e) + u"9"_s + QChar(0x202c)) << false;
+    QTest::newRow("r in lro") << (u"12345"_s + QChar(0x202d) + QString::fromUtf16(unicode1, 2) + QChar(0x202c) + u"a"_s) << true;
+    QTest::newRow("l in lro") << (u"12345"_s + QChar(0x202d) + u"a"_s + QChar(0x202c) + QString::fromUtf16(unicode1, 2)) << false;
+    QTest::newRow("r in rlo") << (u"12345"_s + QChar(0x202e) + QString::fromUtf16(unicode1, 2) + QChar(0x202c) + u"a"_s) << true;
+    QTest::newRow("l in rlo") << (u"12345"_s + QChar(0x202e) + u"a"_s + QChar(0x202c) + QString::fromUtf16(unicode1, 2)) << false;
 
-    QTest::newRow("lri") << (QString("12345") + QChar(0x2066) + QString("a") + QChar(0x2069) + QString::fromUtf16(unicode1, 2)) << true;
-    QTest::newRow("rli") << (QString("12345") + QChar(0x2067) + QString::fromUtf16(unicode1, 2) + QChar(0x2069) + QString("a")) << false;
-    QTest::newRow("fsi1") << (QString("12345") + QChar(0x2068) + QString("a") + QChar(0x2069) + QString::fromUtf16(unicode1, 2)) << true;
-    QTest::newRow("fsi2") << (QString("12345") + QChar(0x2068) + QString::fromUtf16(unicode1, 2) + QChar(0x2069) + QString("a")) << false;
+    QTest::newRow("lri") << (u"12345"_s + QChar(0x2066) + u"a"_s + QChar(0x2069) + QString::fromUtf16(unicode1, 2)) << true;
+    QTest::newRow("rli") << (u"12345"_s + QChar(0x2067) + QString::fromUtf16(unicode1, 2) + QChar(0x2069) + u"a"_s) << false;
+    QTest::newRow("fsi1") << (u"12345"_s + QChar(0x2068) + u"a"_s + QChar(0x2069) + QString::fromUtf16(unicode1, 2)) << true;
+    QTest::newRow("fsi2") << (u"12345"_s + QChar(0x2068) + QString::fromUtf16(unicode1, 2) + QChar(0x2069) + u"a"_s) << false;
 }
 
 void tst_QString::isRightToLeft()
@@ -8171,37 +8171,37 @@ void tst_QString::isValidUtf16_data()
 
     int row = 0;
     QTest::addRow("valid-%02d", row++) << QString() << true;
-    QTest::addRow("valid-%02d", row++) << QString("") << true;
-    QTest::addRow("valid-%02d", row++) << QString("abc def") << true;
-    QTest::addRow("valid-%02d", row++) << QString("àbç") << true;
-    QTest::addRow("valid-%02d", row++) << QString("ßẞ") << true;
-    QTest::addRow("valid-%02d", row++) << QString("𝐀𝐁𝐂abc𝐃𝐄𝐅def") << true;
-    QTest::addRow("valid-%02d", row++) << QString("abc𝐀𝐁𝐂def𝐃𝐄𝐅") << true;
-    QTest::addRow("valid-%02d", row++) << (QString("abc") + QChar(0x0000) + QString("def")) << true;
-    QTest::addRow("valid-%02d", row++) << (QString("abc") + QChar(0xFFFF) + QString("def")) << true;
+    QTest::addRow("valid-%02d", row++) << u""_s << true;
+    QTest::addRow("valid-%02d", row++) << u"abc def"_s << true;
+    QTest::addRow("valid-%02d", row++) << u"àbç"_s << true;
+    QTest::addRow("valid-%02d", row++) << u"ßẞ"_s << true;
+    QTest::addRow("valid-%02d", row++) << u"𝐀𝐁𝐂abc𝐃𝐄𝐅def"_s << true;
+    QTest::addRow("valid-%02d", row++) << u"abc𝐀𝐁𝐂def𝐃𝐄𝐅"_s << true;
+    QTest::addRow("valid-%02d", row++) << QString(u"abc"_s + QChar(0x0000) + u"def"_s) << true;
+    QTest::addRow("valid-%02d", row++) << QString(u"abc"_s + QChar(0xFFFF) + u"def"_s) << true;
     // check that BOM presence doesn't make any difference
-    QTest::addRow("valid-%02d", row++) << (QString() + QChar(0xFEFF) + QString("abc𝐀𝐁𝐂def𝐃𝐄𝐅")) << true;
-    QTest::addRow("valid-%02d", row++) << (QString() + QChar(0xFFFE) + QString("abc𝐀𝐁𝐂def𝐃𝐄𝐅")) << true;
+    QTest::addRow("valid-%02d", row++) << (QString() + QChar(0xFEFF) + u"abc𝐀𝐁𝐂def𝐃𝐄𝐅"_s) << true;
+    QTest::addRow("valid-%02d", row++) << (QString() + QChar(0xFFFE) + u"abc𝐀𝐁𝐂def𝐃𝐄𝐅"_s) << true;
 
     row = 0;
     QTest::addRow("stray-high-%02d", row++) << (QString() + QChar(0xD800)) << false;
-    QTest::addRow("stray-high-%02d", row++) << (QString() + QString("abc") + QChar(0xD800)) << false;
-    QTest::addRow("stray-high-%02d", row++) << (QString() + QChar(0xD800) + QString("def")) << false;
-    QTest::addRow("stray-high-%02d", row++) << (QString() + QString("abc") + QChar(0xD800) + QString("def")) << false;
+    QTest::addRow("stray-high-%02d", row++) << (QString() + u"abc"_s + QChar(0xD800)) << false;
+    QTest::addRow("stray-high-%02d", row++) << (QString() + QChar(0xD800) + u"def"_s) << false;
+    QTest::addRow("stray-high-%02d", row++) << (QString() + u"abc"_s + QChar(0xD800) + u"def"_s) << false;
     QTest::addRow("stray-high-%02d", row++) << (QString() + QChar(0xD800) + QChar(0xD800)) << false;
-    QTest::addRow("stray-high-%02d", row++) << (QString() + QString("abc") + QChar(0xD800) + QChar(0xD800)) << false;
-    QTest::addRow("stray-high-%02d", row++) << (QString() + QChar(0xD800) + QChar(0xD800) + QString("def")) << false;
-    QTest::addRow("stray-high-%02d", row++) << (QString() + QString("abc") + QChar(0xD800) + QChar(0xD800) + QString("def")) << false;
+    QTest::addRow("stray-high-%02d", row++) << (QString() + u"abc"_s + QChar(0xD800) + QChar(0xD800)) << false;
+    QTest::addRow("stray-high-%02d", row++) << (QString() + QChar(0xD800) + QChar(0xD800) + u"def"_s) << false;
+    QTest::addRow("stray-high-%02d", row++) << (QString() + u"abc"_s + QChar(0xD800) + QChar(0xD800) + u"def"_s) << false;
 
     row = 0;
     QTest::addRow("stray-low-%02d", row++) << (QString() + QChar(0xDC00)) << false;
-    QTest::addRow("stray-low-%02d", row++) << (QString() + QString("abc") + QChar(0xDC00)) << false;
-    QTest::addRow("stray-low-%02d", row++) << (QString() + QChar(0xDC00) + QString("def")) << false;
-    QTest::addRow("stray-low-%02d", row++) << (QString() + QString("abc") + QChar(0xDC00) + QString("def")) << false;
+    QTest::addRow("stray-low-%02d", row++) << (QString() + u"abc"_s + QChar(0xDC00)) << false;
+    QTest::addRow("stray-low-%02d", row++) << (QString() + QChar(0xDC00) + u"def"_s) << false;
+    QTest::addRow("stray-low-%02d", row++) << (QString() + u"abc"_s + QChar(0xDC00) + u"def"_s) << false;
     QTest::addRow("stray-low-%02d", row++) << (QString() + QChar(0xDC00) + QChar(0xDC00)) << false;
-    QTest::addRow("stray-low-%02d", row++) << (QString() + QString("abc") + QChar(0xDC00) + QChar(0xDC00)) << false;
-    QTest::addRow("stray-low-%02d", row++) << (QString() + QChar(0xDC00) + QChar(0xDC00) + QString("def")) << false;
-    QTest::addRow("stray-low-%02d", row++) << (QString() + QString("abc") + QChar(0xDC00) + QChar(0xDC00) + QString("def")) << false;
+    QTest::addRow("stray-low-%02d", row++) << (QString() + u"abc"_s + QChar(0xDC00) + QChar(0xDC00)) << false;
+    QTest::addRow("stray-low-%02d", row++) << (QString() + QChar(0xDC00) + QChar(0xDC00) + u"def"_s) << false;
+    QTest::addRow("stray-low-%02d", row++) << (QString() + u"abc"_s + QChar(0xDC00) + QChar(0xDC00) + u"def"_s) << false;
 }
 
 void tst_QString::isValidUtf16()
