@@ -6,6 +6,7 @@
 #include <QVector3D>
 #include <QQuaternion>
 #include <QMatrix3x3>
+#include <cmath>
 
 #include "super_parser.h"
 
