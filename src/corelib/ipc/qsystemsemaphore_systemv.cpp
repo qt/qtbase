@@ -40,7 +40,7 @@ bool QSystemSemaphoreSystemV::runtimeSupportCheck()
         return false;
 #endif
     static const bool result = []() {
-        semget(IPC_PRIVATE, -1, 0);     // this will fail
+        (void)semget(IPC_PRIVATE, -1, 0);     // this will fail
         return errno != ENOSYS;
     }();
     return result;

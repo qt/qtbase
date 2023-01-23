@@ -36,7 +36,7 @@ bool QSharedMemorySystemV::runtimeSupportCheck()
         return false;
 #endif
     static const bool result = []() {
-        shmget(IPC_PRIVATE, ~size_t(0), 0);     // this will fail
+        (void)shmget(IPC_PRIVATE, ~size_t(0), 0);     // this will fail
         return errno != ENOSYS;
     }();
     return result;

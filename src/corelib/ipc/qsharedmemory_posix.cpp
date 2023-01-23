@@ -27,7 +27,7 @@ using namespace QtIpcCommon;
 bool QSharedMemoryPosix::runtimeSupportCheck()
 {
     static const bool result = []() {
-        shm_open("", 0, 0);         // this WILL fail
+        (void)shm_open("", 0, 0);         // this WILL fail
         return errno != ENOSYS;
     }();
     return result;
