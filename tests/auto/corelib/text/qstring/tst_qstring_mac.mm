@@ -9,17 +9,20 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <Foundation/Foundation.h>
 
+using namespace Qt::StringLiterals;
+
 void tst_QString_macTypes()
 {
+    const QLatin1StringView testString("test string");
     // QString <-> CFString
     {
-        QString qtString("test string");
+        QString qtString = testString;
         const CFStringRef cfString = qtString.toCFString();
         QCOMPARE(QString::fromCFString(cfString), qtString);
         CFRelease(cfString);
     }
     {
-        QString qtString("test string");
+        QString qtString = testString;
         const CFStringRef cfString = qtString.toCFString();
         QString qtStringCopy(qtString);
         qtString = qtString.toUpper(); // modify
@@ -29,14 +32,14 @@ void tst_QString_macTypes()
     {
         QMacAutoReleasePool pool;
 
-        QString qtString("test string");
+        QString qtString = testString;
         const NSString *nsString = qtString.toNSString();
         QCOMPARE(QString::fromNSString(nsString), qtString);
     }
     {
         QMacAutoReleasePool pool;
 
-        QString qtString("test string");
+        QString qtString = testString;
         const NSString *nsString = qtString.toNSString();
         QString qtStringCopy(qtString);
         qtString = qtString.toUpper(); // modify
