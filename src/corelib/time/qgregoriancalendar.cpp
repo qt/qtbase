@@ -162,6 +162,10 @@ int QGregorianCalendar::yearSharingWeekDays(QDate date)
  * Math from The Calendar FAQ at http://www.tondering.dk/claus/cal/julperiod.php
  * This formula is correct for all julian days, when using mathematical integer
  * division (round to negative infinity), not c++11 integer division (round to zero).
+ *
+ * The source given uses 4801 BCE as base date; the following adjusts that by
+ * 4800 years to simplify part of the arithmetic (and match more closely what we
+ * do for Milankovic).
  */
 
 bool QGregorianCalendar::julianFromParts(int year, int month, int day, qint64 *jd)
@@ -174,16 +178,16 @@ bool QGregorianCalendar::julianFromParts(int year, int month, int day, qint64 *j
         ++year;
 
     int    a = month < 3 ? 1 : 0;
-    qint64 y = qint64(year) + 4800 - a;
+    qint64 y = qint64(year) - a;
     int    m = month + 12 * a - 3;
-    *jd = day + qDiv<5>(153 * m + 2) - 32045
+    *jd = day + qDiv<5>(153 * m + 2) + 1721119
         + 365 * y + qDiv<4>(y) - qDiv<100>(y) + qDiv<400>(y);
     return true;
 }
 
 QCalendar::YearMonthDay QGregorianCalendar::partsFromJulian(qint64 jd)
 {
-    qint64 a = jd + 32044;
+    qint64 a = jd - 1721120;
     qint64 b = qDiv<146097>(4 * a + 3);
     int    c = a - qDiv<4>(146097 * b);
 
@@ -191,7 +195,7 @@ QCalendar::YearMonthDay QGregorianCalendar::partsFromJulian(qint64 jd)
     int    e = c - qDiv<4>(1461 * d);
     int    m = qDiv<153>(5 * e + 2);
 
-    int y = 100 * b + d - 4800 + qDiv<10>(m);
+    int y = 100 * b + d + qDiv<10>(m);
 
     // Adjust for no year 0
     int year = y > 0 ? y : y - 1;
