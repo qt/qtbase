@@ -78,7 +78,7 @@ struct QMethodRawArguments
     void **arguments;
 };
 
-#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 class Q_CORE_EXPORT QGenericArgument
 {
 public:
@@ -485,7 +485,7 @@ struct Q_CORE_EXPORT QMetaObject
 
 #endif
 
-#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     QObject *newInstance(QGenericArgument val0,
                          QGenericArgument val1 = QGenericArgument(),
                          QGenericArgument val2 = QGenericArgument(),

@@ -199,6 +199,7 @@ private:
 
 enum { MaximumParamCount = 11 }; // up to 10 arguments + 1 return value
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 /*!
     \since 4.5
     \obsolete [6.5] Please use the variadic overload of this function
@@ -244,6 +245,7 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
 
     return newInstanceImpl(this, paramCount, parameters, typeNames, nullptr);
 }
+#endif
 
 /*!
     \fn template <typename... Args> QObject *QMetaObject::newInstance(Args &&... arguments) const
