@@ -13,7 +13,7 @@ if(WASM)
     list(APPEND tst_qstring_extra_sources tst_qstring_wasm.cpp)
 endif()
 
-foreach(test tst_qstring tst_qstring_restricted_ascii)
+foreach(test tst_qstring tst_qstring_restricted_ascii tst_qstring_no_cast_from_ascii)
     qt_internal_add_test(${test}
         SOURCES
             tst_qstring.cpp
@@ -30,4 +30,10 @@ qt_internal_extend_target(tst_qstring_restricted_ascii
     DEFINES
         QT_RESTRICTED_CAST_FROM_ASCII
         tst_QString=tst_QString_restricted_ascii
+)
+
+qt_internal_extend_target(tst_qstring_no_cast_from_ascii
+    DEFINES
+        QT_NO_CAST_FROM_ASCII
+        tst_QString=tst_QString_no_cast_from_ascii
 )
