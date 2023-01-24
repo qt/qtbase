@@ -43,7 +43,8 @@ exampledirs += \
                ../../../examples/corelib \
                ../../../examples/network/dnslookup \
                ../../../examples/widgets/tools \
-               ../../../tests/auto/corelib/thread/qpromise/
+               ../../../tests/auto/corelib/thread/qpromise \
+               ../../tools/androiddeployqt
 
 imagedirs   += images
 
