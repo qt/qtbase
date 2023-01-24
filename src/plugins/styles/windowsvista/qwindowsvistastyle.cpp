@@ -4822,6 +4822,41 @@ void QWindowsVistaStyle::polish(QPalette &pal)
 /*!
  \internal
  */
+void QWindowsVistaStyle::polish(QApplication *app)
+{
+    // Override windows theme palettes to light
+    if (qApp->styleHints()->appearance() == Qt::Appearance::Dark) {
+        static const char* themedWidgets[] = {
+            "QToolButton",
+            "QAbstractButton",
+            "QCheckBox",
+            "QRadioButton",
+            "QHeaderView",
+            "QAbstractItemView",
+            "QMessageBoxLabel",
+            "QTabBar",
+            "QLabel",
+            "QGroupBox",
+            "QMenu",
+            "QMenuBar",
+            "QTextEdit",
+            "QTextControl",
+            "QLineEdit"
+        };
+        for (const auto& themedWidget : std::as_const(themedWidgets)) {
+            auto defaultResolveMask = QApplication::palette().resolveMask();
+            auto widgetResolveMask = QApplication::palette(themedWidget).resolveMask();
+            if (widgetResolveMask != defaultResolveMask)
+                QApplication::setPalette(QApplication::palette(), themedWidget);
+        }
+    }
+
+    QWindowsStyle::polish(app);
+}
+
+/*!
+ \internal
+ */
 QPixmap QWindowsVistaStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *option,
                                            const QWidget *widget) const
 {
