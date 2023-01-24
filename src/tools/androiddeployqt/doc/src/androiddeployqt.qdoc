@@ -47,106 +47,12 @@
     \section1 Command Line Arguments
 
     The only required command line argument when running the tool is \c{--output}.
-    Other command line arguments are optional but useful. Here's a quick overview.
-    More information is available by passing the \c{--help} argument to androiddeployqt.
+    Other command line arguments are optional but useful. The list below is available
+    by passing the \c{--help} argument to androiddeployqt.
 
-    \table
-        \header
-            \li Argument
-            \li Brief Description
-        \row
-            \li \c{--output <destination>}
-            \li Specifies the destination of the final package. Set this to
-                \c{$ANDROID_BUILD_DIR}, that is the build directory where you installed
-                your application binaries.
-        \row
-            \li \c{--input <file name>}
-            \li This allows you to specify the generated \c JSON settings file.
-                \c androiddeployqt will try to guess the file name based on the
-                current working directory.
-        \row
-            \li \c{--aab}
-            \li Generate an Android Application Bundle, rather than an APK. Note
-                that this invalidates some of the other arguments, such as \c{--install}.
-        \row
-            \li \c{--deployment <mechanism>}
-            \li Specify this to pick a different deployment mechanism than the
-                default.
-                \list
-                    \li \c Bundled: includes all the app's dependencies inside
-                        the APK.
-                    \li \c Unbundled: excludes native libraries from the APK.
-                        The libraries are expected to be present on the target
-                        device. The location can be provided either by setting
-                        the property
-                        \l{cmake-target-property-QT_ANDROID_SYSTEM_LIBS_PREFIX}{QT_ANDROID_SYSTEM_LIBS_PREFIX}
-                        in your CMake project file, or by defining the path as
-                        meta-data in
-                        \l {Qt Android Manifest File Configuration}{AndroidManifest.xml}:
-                        \badcode
-                        <application>
-                            <meta-data
-                                android:name="system_libs_prefix"
-                                android:value="path/to/libraries/"/>
-                        </application>
-                        \endcode
-                        If no path is provided, \c /system/lib/ is used as the
-                        default path.
-                        \note \c Unbundled deployment does not support
-                            incremental builds.
-                        \note \c Unbundled deployment not supported when
-                            deploying as AAB.
-                \endlist
-                Default is \c Bundled deployment.
-        \row
-            \li \c{--install}
-            \li Specify this to install the finished package on the target device
-                or emulator. Note that if a previous version of the package is
-                already installed, it will be uninstalled first, removing any
-                data it might have stored locally.
-        \row
-            \li \c{--device <ID>}
-            \li Specify the ID of the target device or emulator as reported by
-                the \c adb tool. If an ID is specified, it will be passed to all
-                calls to \c adb. If it is unspecified, no particular device or
-                emulator will be requested by \c adb, causing it to pick a default
-                instead.
-        \row
-            \li \c{--android-platform <platform>}
-            \li The SDK platform used for building the Java code of the application.
-                By default, the latest available platform is used.
-        \row
-            \li \c{--release}
-            \li Specify this to create a release package instead of a debug package.
-                With no other arguments, release packages are unsigned and cannot
-                be installed to any device before they have been signed by a private
-                key.
-        \row
-            \li \c{--sign <url> <alias>}
-            \li Sign the resulting package. Specifying this also implies
-                \c{--release}. The URL of the keystore file and the alias of the
-                key have to be specified. Optionally, set the following environment
-                variables to conceal the signing information
-                \c QT_ANDROID_KEYSTORE_PATH, \c QT_ANDROID_KEYSTORE_ALIAS,
-                \c QT_ANDROID_KEYSTORE_STORE_PASS, and \c QT_ANDROID_KEYSTORE_KEY_PASS.
-                In addition, there are a number of options that can be specified
-                which are passed through to the \c jarsigner tool.
-                Pass \c{--help} to \c androiddeployqt for more information.
-        \row
-            \li \c{--jdk <path>}
-            \li Specify the path to the Java Development Kit. This is only
-                required for signing packages, as it is only used for finding
-                the \c jarsigner tool. If it is unspecified, then \c androiddeployqt
-                will attempt to detect \c jarsigner, either using the \c{JAVA_HOME}
-                environment variable, or on the \c PATH.
-        \row
-            \li \c{--verbose}
-            \li Specify this to output more information about what \c androiddeployqt is
-                doing.
-        \row
-            \li \c{--help}
-            \li Prints the help for the tool.
-    \endtable
+    \quotefromfile main.cpp
+    \skipto Syntax: androiddeployqt --output <destination> [options]
+    \printuntil --help: Displays this information.
 
     With a project named \c project, to directly build the application package
     with \c androiddeployqt without deploying it the device, run the following:
