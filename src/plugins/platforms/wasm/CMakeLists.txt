@@ -21,9 +21,9 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
         qwasmdom.cpp qwasmdom.h
         qwasmevent.cpp qwasmevent.h
         qwasmeventdispatcher.cpp qwasmeventdispatcher.h
-        qwasmeventtranslator.cpp qwasmeventtranslator.h
         qwasmfontdatabase.cpp qwasmfontdatabase.h
         qwasmintegration.cpp qwasmintegration.h
+        qwasmkeytranslator.cpp qwasmkeytranslator.h
         qwasmoffscreensurface.cpp qwasmoffscreensurface.h
         qwasmopenglcontext.cpp qwasmopenglcontext.h
         qwasmplatform.cpp qwasmplatform.h

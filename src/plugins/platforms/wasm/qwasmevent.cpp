@@ -3,7 +3,38 @@
 
 #include "qwasmevent.h"
 
+#include "qwasmkeytranslator.h"
+
+#include <QtCore/private/qmakearray_p.h>
+#include <QtCore/private/qstringiterator_p.h>
+
 QT_BEGIN_NAMESPACE
+
+namespace {
+constexpr std::string_view WebDeadKeyValue = "Dead";
+
+bool isDeadKeyEvent(const char *key)
+{
+    return qstrncmp(key, WebDeadKeyValue.data(), WebDeadKeyValue.size()) == 0;
+}
+
+Qt::Key webKeyToQtKey(const std::string &code, const std::string &key, bool isDeadKey)
+{
+    if (isDeadKey) {
+        if (auto mapping = QWasmKeyTranslator::mapWebKeyTextToQtKey(code.c_str()))
+            return *mapping;
+    }
+    if (auto mapping = QWasmKeyTranslator::mapWebKeyTextToQtKey(key.c_str()))
+        return *mapping;
+    if (isDeadKey)
+        return Qt::Key_unknown;
+
+    // cast to unicode key
+    QString str = QString::fromUtf8(key.c_str()).toUpper();
+    QStringIterator i(str);
+    return static_cast<Qt::Key>(i.next(0));
+}
+} // namespace
 
 namespace KeyboardModifier
 {
@@ -27,6 +58,51 @@ Event::Event(Event &&other) = default;
 Event &Event::operator=(const Event &other) = default;
 
 Event &Event::operator=(Event &&other) = default;
+
+KeyEvent::KeyEvent(EventType type, emscripten::val event) : Event(type, event["target"])
+{
+    const auto code = event["code"].as<std::string>();
+    const auto webKey = event["key"].as<std::string>();
+    deadKey = isDeadKeyEvent(webKey.c_str());
+
+    key = webKeyToQtKey(code, webKey, deadKey);
+
+    modifiers = KeyboardModifier::getForEvent(event);
+    text = QString::fromUtf8(webKey);
+    if (text.size() > 1)
+        text.clear();
+}
+
+KeyEvent::~KeyEvent() = default;
+
+KeyEvent::KeyEvent(const KeyEvent &other) = default;
+
+KeyEvent::KeyEvent(KeyEvent &&other) = default;
+
+KeyEvent &KeyEvent::operator=(const KeyEvent &other) = default;
+
+KeyEvent &KeyEvent::operator=(KeyEvent &&other) = default;
+
+std::optional<KeyEvent> KeyEvent::fromWebWithDeadKeyTranslation(emscripten::val event,
+                                                                QWasmDeadKeySupport *deadKeySupport)
+{
+    const auto eventType = ([&event]() -> std::optional<EventType> {
+        const auto eventTypeString = event["type"].as<std::string>();
+
+        if (eventTypeString == "keydown")
+            return EventType::KeyDown;
+        else if (eventTypeString == "keyup")
+            return EventType::KeyUp;
+        return std::nullopt;
+    })();
+    if (!eventType)
+        return std::nullopt;
+
+    auto result = KeyEvent(*eventType, event);
+    deadKeySupport->applyDeadKeyTranslations(&result);
+
+    return result;
+}
 
 MouseEvent::MouseEvent(EventType type, emscripten::val event) : Event(type, event["target"])
 {

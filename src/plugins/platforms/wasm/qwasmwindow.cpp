@@ -11,6 +11,9 @@
 
 #include "qwasmbase64iconstore.h"
 #include "qwasmdom.h"
+#include "qwasmclipboard.h"
+#include "qwasmintegration.h"
+#include "qwasmkeytranslator.h"
 #include "qwasmwindow.h"
 #include "qwasmwindowclientarea.h"
 #include "qwasmscreen.h"
@@ -32,11 +35,13 @@ QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT int qt_defaultDpiX();
 
-QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingStore *backingStore)
+QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
+                         QWasmCompositor *compositor, QWasmBackingStore *backingStore)
     : QPlatformWindow(w),
       m_window(w),
       m_compositor(compositor),
       m_backingStore(backingStore),
+      m_deadKeySupport(deadKeySupport),
       m_document(dom::document()),
       m_qtWindow(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_windowContents(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
@@ -90,15 +95,15 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
 
     m_compositor->addWindow(this);
 
-    const auto callback = std::function([this](emscripten::val event) {
+    const auto pointerCallback = std::function([this](emscripten::val event) {
         if (processPointer(*PointerEvent::fromWeb(event)))
             event.call<void>("preventDefault");
     });
 
     m_pointerEnterCallback =
-            std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerenter", callback);
+            std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerenter", pointerCallback);
     m_pointerLeaveCallback =
-            std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerleave", callback);
+            std::make_unique<qstdweb::EventCallback>(m_qtWindow, "pointerleave", pointerCallback);
 
     m_dropCallback = std::make_unique<qstdweb::EventCallback>(
             m_qtWindow, "drop", [this](emscripten::val event) {
@@ -111,6 +116,15 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
                 if (processWheel(*WheelEvent::fromWeb(event)))
                     event.call<void>("preventDefault");
             });
+
+    const auto keyCallback = std::function([this](emscripten::val event) {
+        if (processKey(*KeyEvent::fromWebWithDeadKeyTranslation(event, m_deadKeySupport)))
+            event.call<void>("preventDefault");
+    });
+
+    m_keyDownCallback =
+            std::make_unique<qstdweb::EventCallback>(m_qtWindow, "keydown", keyCallback);
+    m_keyUpCallback = std::make_unique<qstdweb::EventCallback>(m_qtWindow, "keyup", keyCallback);
 }
 
 QWasmWindow::~QWasmWindow()
@@ -438,6 +452,26 @@ void QWasmWindow::applyWindowState()
     setGeometry(newGeom);
 }
 
+bool QWasmWindow::processKey(const KeyEvent &event)
+{
+    constexpr bool ProceedToNativeEvent = false;
+    Q_ASSERT(event.type == EventType::KeyDown || event.type == EventType::KeyUp);
+
+    const auto clipboardResult =
+            QWasmIntegration::get()->getWasmClipboard()->processKeyboard(event);
+
+    using ProcessKeyboardResult = QWasmClipboard::ProcessKeyboardResult;
+    if (clipboardResult == ProcessKeyboardResult::NativeClipboardEventNeeded)
+        return ProceedToNativeEvent;
+
+    const auto result = QWindowSystemInterface::handleKeyEvent(
+            0, event.type == EventType::KeyDown ? QEvent::KeyPress : QEvent::KeyRelease, event.key,
+            event.modifiers, event.text);
+    return clipboardResult == ProcessKeyboardResult::NativeClipboardEventAndCopiedDataNeeded
+            ? ProceedToNativeEvent
+            : result;
+}
+
 bool QWasmWindow::processPointer(const PointerEvent &event)
 {
     if (event.pointerType != PointerType::Mouse)
@@ -553,6 +587,9 @@ void QWasmWindow::requestActivateWindow()
 
     if (window()->isTopLevel())
         raise();
+
+    m_canvas.call<void>("focus");
+
     QPlatformWindow::requestActivateWindow();
 }
 

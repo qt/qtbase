@@ -3,7 +3,6 @@
 
 #include "qwasmcompositor.h"
 #include "qwasmwindow.h"
-#include "qwasmeventtranslator.h"
 #include "qwasmeventdispatcher.h"
 #include "qwasmclipboard.h"
 #include "qwasmevent.h"
@@ -30,9 +29,7 @@ using namespace emscripten;
 Q_GUI_EXPORT int qt_defaultDpiX();
 
 QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
-    : QObject(screen),
-      m_windowStack(std::bind(&QWasmCompositor::onTopWindowChanged, this)),
-      m_eventTranslator(std::make_unique<QWasmEventTranslator>())
+    : QObject(screen), m_windowStack(std::bind(&QWasmCompositor::onTopWindowChanged, this))
 {
     m_touchDevice = std::make_unique<QPointingDevice>(
             "touchscreen", 1, QInputDevice::DeviceType::TouchScreen,
@@ -61,12 +58,11 @@ void QWasmCompositor::onScreenDeleting()
 void QWasmCompositor::deregisterEventHandlers()
 {
     QByteArray screenElementSelector = screen()->eventTargetId().toUtf8();
-    emscripten_set_keydown_callback(screenElementSelector.constData(), 0, 0, NULL);
-    emscripten_set_keyup_callback(screenElementSelector.constData(), 0, 0, NULL);
 
     emscripten_set_touchstart_callback(screenElementSelector.constData(), 0, 0, NULL);
     emscripten_set_touchend_callback(screenElementSelector.constData(), 0, 0, NULL);
     emscripten_set_touchmove_callback(screenElementSelector.constData(), 0, 0, NULL);
+
     emscripten_set_touchcancel_callback(screenElementSelector.constData(), 0, 0, NULL);
 }
 
@@ -82,11 +78,6 @@ void QWasmCompositor::initEventHandlers()
     constexpr EM_BOOL UseCapture = 1;
 
     const QByteArray screenElementSelector = screen()->eventTargetId().toUtf8();
-    emscripten_set_keydown_callback(screenElementSelector.constData(), (void *)this, UseCapture,
-                                    &keyboard_cb);
-    emscripten_set_keyup_callback(screenElementSelector.constData(), (void *)this, UseCapture,
-                                  &keyboard_cb);
-
     emscripten_set_touchstart_callback(screenElementSelector.constData(), (void *)this, UseCapture,
                                        &touchCallback);
     emscripten_set_touchend_callback(screenElementSelector.constData(), (void *)this, UseCapture,
@@ -283,44 +274,10 @@ QWasmScreen *QWasmCompositor::screen()
     return static_cast<QWasmScreen *>(parent());
 }
 
-int QWasmCompositor::keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
-{
-    QWasmCompositor *wasmCompositor = reinterpret_cast<QWasmCompositor *>(userData);
-    return static_cast<int>(wasmCompositor->processKeyboard(eventType, keyEvent));
-}
-
 int QWasmCompositor::touchCallback(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
 {
     auto compositor = reinterpret_cast<QWasmCompositor*>(userData);
     return static_cast<int>(compositor->processTouch(eventType, touchEvent));
-}
-
-bool QWasmCompositor::processKeyboard(int eventType, const EmscriptenKeyboardEvent *emKeyEvent)
-{
-    constexpr bool ProceedToNativeEvent = false;
-    Q_ASSERT(eventType == EMSCRIPTEN_EVENT_KEYDOWN || eventType == EMSCRIPTEN_EVENT_KEYUP);
-
-    auto translatedEvent = m_eventTranslator->translateKeyEvent(eventType, emKeyEvent);
-
-    const QFlags<Qt::KeyboardModifier> modifiers = KeyboardModifier::getForEvent(*emKeyEvent);
-
-    const auto clipboardResult = QWasmIntegration::get()->getWasmClipboard()->processKeyboard(
-            translatedEvent, modifiers);
-
-    using ProcessKeyboardResult = QWasmClipboard::ProcessKeyboardResult;
-    if (clipboardResult == ProcessKeyboardResult::NativeClipboardEventNeeded)
-        return ProceedToNativeEvent;
-
-    if (translatedEvent.text.isEmpty())
-        translatedEvent.text = QString(emKeyEvent->key);
-    if (translatedEvent.text.size() > 1)
-        translatedEvent.text.clear();
-    const auto result =
-            QWindowSystemInterface::handleKeyEvent(
-                    0, translatedEvent.type, translatedEvent.key, modifiers, translatedEvent.text);
-    return clipboardResult == ProcessKeyboardResult::NativeClipboardEventAndCopiedDataNeeded
-            ? ProceedToNativeEvent
-            : result;
 }
 
 bool QWasmCompositor::processTouch(int eventType, const EmscriptenTouchEvent *touchEvent)

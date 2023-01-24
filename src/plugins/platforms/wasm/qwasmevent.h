@@ -17,8 +17,12 @@
 
 QT_BEGIN_NAMESPACE
 
+class QWasmDeadKeySupport;
+
 enum class EventType {
     Drop,
+    KeyDown,
+    KeyUp,
     PointerDown,
     PointerMove,
     PointerUp,
@@ -113,26 +117,37 @@ QFlags<Qt::KeyboardModifier> getForEvent<EmscriptenKeyboardEvent>(
 
 struct Event
 {
-    EventType type;
-    emscripten::val target = emscripten::val::undefined();
-
     Event(EventType type, emscripten::val target);
     ~Event();
     Event(const Event &other);
     Event(Event &&other);
     Event &operator=(const Event &other);
     Event &operator=(Event &&other);
+
+    EventType type;
+    emscripten::val target = emscripten::val::undefined();
+};
+
+struct KeyEvent : public Event
+{
+    static std::optional<KeyEvent>
+    fromWebWithDeadKeyTranslation(emscripten::val webEvent, QWasmDeadKeySupport *deadKeySupport);
+
+    KeyEvent(EventType type, emscripten::val webEvent);
+    ~KeyEvent();
+    KeyEvent(const KeyEvent &other);
+    KeyEvent(KeyEvent &&other);
+    KeyEvent &operator=(const KeyEvent &other);
+    KeyEvent &operator=(KeyEvent &&other);
+
+    Qt::Key key;
+    QFlags<Qt::KeyboardModifier> modifiers;
+    bool deadKey;
+    QString text;
 };
 
 struct MouseEvent : public Event
 {
-    QPoint localPoint;
-    QPoint pointInPage;
-    QPoint pointInViewport;
-    Qt::MouseButton mouseButton;
-    Qt::MouseButtons mouseButtons;
-    QFlags<Qt::KeyboardModifier> modifiers;
-
     MouseEvent(EventType type, emscripten::val webEvent);
     ~MouseEvent();
     MouseEvent(const MouseEvent &other);
@@ -174,6 +189,13 @@ struct MouseEvent : public Event
                 return QEvent::None;
         }
     }
+
+    QPoint localPoint;
+    QPoint pointInPage;
+    QPoint pointInViewport;
+    Qt::MouseButton mouseButton;
+    Qt::MouseButtons mouseButtons;
+    QFlags<Qt::KeyboardModifier> modifiers;
 };
 
 struct PointerEvent : public MouseEvent

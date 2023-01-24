@@ -26,7 +26,6 @@ class QWasmWindow;
 class QWasmScreen;
 class QOpenGLContext;
 class QOpenGLTexture;
-class QWasmEventTranslator;
 
 class QWasmCompositor final : public QObject
 {
@@ -69,11 +68,8 @@ private:
     void deliverUpdateRequests();
     void deliverUpdateRequest(QWasmWindow *window, UpdateRequestDeliveryType updateType);
 
-    static int keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData);
-
     static int touchCallback(int eventType, const EmscriptenTouchEvent *ev, void *userData);
 
-    bool processKeyboard(int eventType, const EmscriptenKeyboardEvent *keyEvent);
     bool processTouch(int eventType, const EmscriptenTouchEvent *touchEvent);
 
     void updateEnabledState();
@@ -88,9 +84,7 @@ private:
 
     std::unique_ptr<QPointingDevice> m_touchDevice;
 
-    QMap <int, QPointF> m_pressedTouchIds;
-
-    std::unique_ptr<QWasmEventTranslator> m_eventTranslator;
+    QMap<int, QPointF> m_pressedTouchIds;
 };
 
 QT_END_NAMESPACE

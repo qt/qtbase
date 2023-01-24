@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "qwasmintegration.h"
-#include "qwasmeventtranslator.h"
 #include "qwasmeventdispatcher.h"
 #include "qwasmcompositor.h"
 #include "qwasmopenglcontext.h"
@@ -165,8 +164,10 @@ bool QWasmIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 
 QPlatformWindow *QWasmIntegration::createPlatformWindow(QWindow *window) const
 {
-    QWasmCompositor *compositor = QWasmScreen::get(window->screen())->compositor();
-    return new QWasmWindow(window, compositor, m_backingStores.value(window));
+    auto *wasmScreen = QWasmScreen::get(window->screen());
+    QWasmCompositor *compositor = wasmScreen->compositor();
+    return new QWasmWindow(window, wasmScreen->deadKeySupport(), compositor,
+                           m_backingStores.value(window));
 }
 
 QPlatformBackingStore *QWasmIntegration::createPlatformBackingStore(QWindow *window) const

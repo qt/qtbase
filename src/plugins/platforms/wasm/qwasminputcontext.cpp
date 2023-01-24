@@ -5,9 +5,9 @@
 
 #include "qwasminputcontext.h"
 #include "qwasmintegration.h"
+#include "qwasmplatform.h"
 #include <QRectF>
 #include <qpa/qplatforminputcontext.h>
-#include "qwasmeventtranslator.h"
 #include "qwasmscreen.h"
 #include <qguiapplication.h>
 #include <qwindow.h>

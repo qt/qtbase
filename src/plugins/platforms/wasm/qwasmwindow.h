@@ -32,13 +32,16 @@ class EventCallback;
 
 class ClientArea;
 struct DragEvent;
+struct KeyEvent;
 struct PointerEvent;
+class QWasmDeadKeySupport;
 struct WheelEvent;
 
 class QWasmWindow final : public QPlatformWindow
 {
 public:
-    QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingStore *backingStore);
+    QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport, QWasmCompositor *compositor,
+                QWasmBackingStore *backingStore);
     ~QWasmWindow() final;
 
     void destroy();
@@ -95,6 +98,7 @@ private:
     bool hasMaximizeButton() const;
     void applyWindowState();
 
+    bool processKey(const KeyEvent &event);
     bool processPointer(const PointerEvent &event);
     bool processDrop(const DragEvent &event);
     bool processWheel(const WheelEvent &event);
@@ -102,6 +106,7 @@ private:
     QWindow *m_window = nullptr;
     QWasmCompositor *m_compositor = nullptr;
     QWasmBackingStore *m_backingStore = nullptr;
+    QWasmDeadKeySupport *m_deadKeySupport;
     QRect m_normalGeometry {0, 0, 0 ,0};
 
     emscripten::val m_document;
@@ -114,6 +119,9 @@ private:
 
     std::unique_ptr<NonClientArea> m_nonClientArea;
     std::unique_ptr<ClientArea> m_clientArea;
+
+    std::unique_ptr<qstdweb::EventCallback> m_keyDownCallback;
+    std::unique_ptr<qstdweb::EventCallback> m_keyUpCallback;
 
     std::unique_ptr<qstdweb::EventCallback> m_pointerLeaveCallback;
     std::unique_ptr<qstdweb::EventCallback> m_pointerEnterCallback;

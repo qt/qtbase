@@ -3,6 +3,7 @@
 
 #include "qwasmclipboard.h"
 #include "qwasmdom.h"
+#include "qwasmevent.h"
 #include "qwasmwindow.h"
 #include "qwasmstring.h"
 #include <private/qstdweb_p.h>
@@ -130,11 +131,9 @@ void QWasmClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
         writeToClipboard();
 }
 
-QWasmClipboard::ProcessKeyboardResult
-QWasmClipboard::processKeyboard(const QWasmEventTranslator::TranslatedEvent &event,
-                                const QFlags<Qt::KeyboardModifier> &modifiers)
+QWasmClipboard::ProcessKeyboardResult QWasmClipboard::processKeyboard(const KeyEvent &event)
 {
-    if (event.type != QEvent::KeyPress || !modifiers.testFlag(Qt::ControlModifier))
+    if (event.type != EventType::KeyDown || !event.modifiers.testFlag(Qt::ControlModifier))
         return ProcessKeyboardResult::Ignored;
 
     if (event.key != Qt::Key_C && event.key != Qt::Key_V && event.key != Qt::Key_X)
