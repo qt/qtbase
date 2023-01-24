@@ -170,23 +170,23 @@ public:
 
     bool handle()
     {
-        return visit([=](auto p) { return !!p->handle(this); });
+        return visit([&](auto p) { return !!p->handle(this); });
     }
     bool cleanHandle()
     {
-        return visit([=](auto p) { return p->cleanHandle(this); });
+        return visit([&](auto p) { return p->cleanHandle(this); });
     }
     bool create(qsizetype size)
     {
-        return visit([=](auto p) { return p->create(this, size); });
+        return visit([&](auto p) { return p->create(this, size); });
     }
     bool attach(QSharedMemory::AccessMode mode)
     {
-        return visit([=](auto p) { return p->attach(this, mode); });
+        return visit([&](auto p) { return p->attach(this, mode); });
     }
     bool detach()
     {
-        return visit([=](auto p) { return p->detach(this); });
+        return visit([&](auto p) { return p->detach(this); });
     }
 
     inline void setError(QSharedMemory::SharedMemoryError e, const QString &message)
