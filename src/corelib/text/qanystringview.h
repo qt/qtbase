@@ -72,8 +72,8 @@ private:
                 if (uchar(str[i]) > 0x7f)
                     return false;
             }
+            return true;
         }
-        return true;
 #endif
     }
 
