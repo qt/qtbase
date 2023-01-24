@@ -94,21 +94,6 @@ function(qt_apply_rpaths)
         set(target "${arg_TARGET}")
     endif()
 
-    # Rpaths explicitly disabled (like for uikit), equivalent to qmake's no_qt_rpath.
-    # Or feature was turned OFF.
-    if(QT_DISABLE_RPATH OR NOT QT_FEATURE_rpath)
-        set_target_properties(${target} PROPERTIES
-            SKIP_BUILD_RPATH ON
-            SKIP_INSTALL_RPATH ON
-        )
-        if(APPLE)
-            set_target_properties(${target} PROPERTIES
-                MACOSX_RPATH OFF
-            )
-        endif()
-        return()
-    endif()
-
     # If a target is not built (which can happen for tools when crosscompiling, we shouldn't try
     # to apply properties.
     if(NOT TARGET "${target}")
@@ -123,6 +108,21 @@ function(qt_apply_rpaths)
 
     if(NOT arg_INSTALL_PATH)
         message(FATAL_ERROR "No INSTALL_PATH given to qt_apply_rpaths.")
+    endif()
+
+    # Rpaths explicitly disabled (like for uikit), equivalent to qmake's no_qt_rpath.
+    # Or feature was turned OFF.
+    if(QT_DISABLE_RPATH OR NOT QT_FEATURE_rpath)
+        set_target_properties(${target} PROPERTIES
+            SKIP_BUILD_RPATH ON
+            SKIP_INSTALL_RPATH ON
+        )
+        if(APPLE)
+            set_target_properties(${target} PROPERTIES
+                MACOSX_RPATH OFF
+            )
+        endif()
+        return()
     endif()
 
     set(rpaths "")
