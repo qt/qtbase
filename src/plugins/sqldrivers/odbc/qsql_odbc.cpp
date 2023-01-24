@@ -92,23 +92,39 @@ inline static QString fromSQLTCHAR(const QVarLengthArray<SQLTCHAR>& input, qsize
     return result;
 }
 
+template <size_t SizeOfChar = sizeof(SQLTCHAR)>
+void toSQLTCHARImpl(QVarLengthArray<SQLTCHAR> &result, const QString &input); // primary template undefined
+
+template <typename Container>
+void do_append(QVarLengthArray<SQLTCHAR> &result, const Container &c)
+{
+    result.append(reinterpret_cast<const SQLTCHAR *>(c.data()), c.size());
+}
+
+template <>
+void toSQLTCHARImpl<1>(QVarLengthArray<SQLTCHAR> &result, const QString &input)
+{
+    const auto u8 = input.toUtf8();
+    do_append(result, u8);
+}
+
+template <>
+void toSQLTCHARImpl<2>(QVarLengthArray<SQLTCHAR> &result, const QString &input)
+{
+    do_append(result, input);
+}
+
+template <>
+void toSQLTCHARImpl<4>(QVarLengthArray<SQLTCHAR> &result, const QString &input)
+{
+    const auto u32 = input.toUcs4();
+    do_append(result, u32);
+}
+
 inline static QVarLengthArray<SQLTCHAR> toSQLTCHAR(const QString &input)
 {
     QVarLengthArray<SQLTCHAR> result;
-    result.resize(input.size());
-    switch(sizeof(SQLTCHAR)) {
-        case 1:
-            memcpy(result.data(), input.toUtf8().data(), input.size());
-            break;
-        case 2:
-            memcpy(result.data(), input.unicode(), input.size() * 2);
-            break;
-        case 4:
-            memcpy(result.data(), input.toUcs4().data(), input.size() * 4);
-            break;
-        default:
-            qCritical("sizeof(SQLTCHAR) is %d. Don't know how to handle this.", int(sizeof(SQLTCHAR)));
-    }
+    toSQLTCHARImpl(result, input);
     result.append(0); // make sure it's null terminated, doesn't matter if it already is, it does if it isn't.
     return result;
 }
