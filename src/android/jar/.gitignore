@@ -1,6 +1,9 @@
 .gradle/
+.settings/
+.project
 build/
 gradle/
 gradlew
 gradlew.bat
 local.properties
+
