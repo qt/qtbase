@@ -1239,38 +1239,51 @@ void tst_QString::isEmpty()
 
 void tst_QString::constructor()
 {
-    QString a;
-    QString b; //b(10);
-    QString c("String C");
-    QChar tmp[10];
-    tmp[0] = 'S';
-    tmp[1] = 't';
-    tmp[2] = 'r';
-    tmp[3] = 'i';
-    tmp[4] = 'n';
-    tmp[5] = 'g';
-    tmp[6] = ' ';
-    tmp[7] = 'D';
-    tmp[8] = 'X';
-    tmp[9] = '\0';
-    QString d(tmp,8);
-    QString ca(a);
-    QString cb(b);
-    QString cc(c);
+    // String literal with explicit \0 character
+    static constexpr char16_t utf16[] = u"String DX\u0000";
+    const int size_minus_null_terminator = std::size(utf16) - 1;
+    const auto *qchar = reinterpret_cast<const QChar *>(utf16);
 
-    QCOMPARE(a,ca);
+    // Up to but not including the explicit \0 in utf16[]
+    QString b1(qchar);
+    QCOMPARE(b1, u"String DX");
+    // Up to and including the explicit \0 in utf16[]
+    QString b2(qchar, size_minus_null_terminator);
+    QCOMPARE(b2, QStringView(utf16, size_minus_null_terminator));
+
+    QString a;
+    QString a_copy(a);
+    QCOMPARE(a, a_copy);
     QVERIFY(a.isNull());
-    QVERIFY(a == (QString)"");
-    QCOMPARE(b,cb);
-    QCOMPARE(c,cc);
-    QCOMPARE(d, QLatin1String("String D"));
+    QCOMPARE(a, u""_s);
+
+    QString c(u"String C"_s);
+    QString c_copy(c);
+    QCOMPARE(c, c_copy);
+
+    QString e(QLatin1StringView("String E"));
+    QString e_copy(e);
+    QCOMPARE(e, e_copy);
+    QCOMPARE(e, "String E"_L1);
+
+    QString d(qchar, 8);
+    QCOMPARE(d, "String D"_L1);
 
     QString nullStr;
     QVERIFY( nullStr.isNull() );
     QVERIFY( nullStr.isEmpty() );
-    QString empty("");
+
+    QString empty(u""_s);
     QVERIFY( !empty.isNull() );
     QVERIFY( empty.isEmpty() );
+
+    empty = QString::fromLatin1("");
+    QVERIFY(!empty.isNull());
+    QVERIFY(empty.isEmpty());
+
+    empty = QString::fromUtf8("");
+    QVERIFY(!empty.isNull());
+    QVERIFY(empty.isEmpty());
 }
 
 #ifndef QT_RESTRICTED_CAST_FROM_ASCII
