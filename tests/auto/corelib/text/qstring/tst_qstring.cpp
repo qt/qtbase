@@ -3416,10 +3416,6 @@ void tst_QString::replace_uint_uint()
         QString s3 = string;
         s3.replace( (uint) index, (uint) len, QChar(after[0]) );
         QTEST( s3, "result" );
-
-        QString s4 = string;
-        s4.replace( (uint) index, (uint) len, QChar(after[0]).toLatin1() );
-        QTEST( s4, "result" );
     }
 }
 
@@ -3555,14 +3551,6 @@ void tst_QString::replace_string()
         s4.begin(); // Test when isShared() is false
         s4.replace(ch, after, cs);
         QCOMPARE(s4, result);
-
-        // What is this one testing? it calls the same replace() overload
-        // as the previous two
-        if ( QChar(ch.toLatin1()) == ch ) {
-            QString s2 = string;
-            s2.replace( ch.toLatin1(), after, cs );
-            QCOMPARE(s2, result);
-        }
     }
 
     QString s3 = string;
