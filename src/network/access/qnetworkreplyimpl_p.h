@@ -157,7 +157,4 @@ Q_DECLARE_TYPEINFO(QNetworkReplyImplPrivate::InternalNotifications, Q_PRIMITIVE_
 
 QT_END_NAMESPACE
 
-// ### move to qsharedpointer_impl.h
-QT_DECL_METATYPE_EXTERN_TAGGED(QSharedPointer<char>, QSharedPointer_char, Q_NETWORK_EXPORT)
-
 #endif
