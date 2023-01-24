@@ -2022,26 +2022,38 @@ void tst_QString::lastIndexOfInvalidRegex()
 void tst_QString::count()
 {
     static const QRegularExpression ignoreMessagePattern(
-        "^QString\\(View\\)::count\\(\\): called on an invalid QRegularExpression object"
+        u"^QString\\(View\\)::count\\(\\): called on an invalid QRegularExpression object"_s
     );
 
-    QString a;
-    a="ABCDEFGHIEfGEFG"; // 15 chars
-    QCOMPARE(a.count('A'),1);
-    QCOMPARE(a.count('Z'),0);
-    QCOMPARE(a.count('E'),3);
-    QCOMPARE(a.count('F'),2);
-    QCOMPARE(a.count('F',Qt::CaseInsensitive),3);
-    QCOMPARE(a.count("FG"),2);
-    QCOMPARE(a.count("FG",Qt::CaseInsensitive),3);
+    QString a(u"ABCDEFGHIEfGEFG"_s);
+    QCOMPARE(a.size(), 15);
+
+    QCOMPARE(a.count(QChar(u'A')), 1);
+    QCOMPARE(a.count(QChar(u'Z')), 0);
+    QCOMPARE(a.count(QChar(u'E')), 3);
+    QCOMPARE(a.count(QChar(u'F')), 2);
+    QCOMPARE(a.count(QChar(u'F'), Qt::CaseInsensitive), 3);
+
+    QCOMPARE(a.count(QString(u"FG"_s)), 2);
+    QCOMPARE(a.count(QString(u"FG"_s), Qt::CaseInsensitive), 3);
+
+    QCOMPARE(a.count(QStringView(u"FG")), 2);
+    QCOMPARE(a.count(QStringView(u"FG"), Qt::CaseInsensitive), 3);
+
+    QCOMPARE(a.count(QLatin1StringView("FG")), 2);
+    QCOMPARE(a.count(QLatin1StringView("FG"), Qt::CaseInsensitive), 3);
+
     QCOMPARE(a.count( QString(), Qt::CaseInsensitive), 16);
-    QCOMPARE(a.count( "", Qt::CaseInsensitive), 16);
+    QCOMPARE(a.count(QString(u""_s), Qt::CaseInsensitive), 16);
+    QCOMPARE(a.count(QStringView(u""), Qt::CaseInsensitive), 16);
+    QCOMPARE(a.count(QLatin1StringView(""), Qt::CaseInsensitive), 16);
+
 #if QT_CONFIG(regularexpression)
-    QCOMPARE(a.count(QRegularExpression("")), 16);
-    QCOMPARE(a.count(QRegularExpression("[FG][HI]")), 1);
-    QCOMPARE(a.count(QRegularExpression("[G][HE]")), 2);
+    QCOMPARE(a.count(QRegularExpression(u""_s)), 16);
+    QCOMPARE(a.count(QRegularExpression(u"[FG][HI]"_s)), 1);
+    QCOMPARE(a.count(QRegularExpression(u"[G][HE]"_s)), 2);
     QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
-    QCOMPARE(a.count(QRegularExpression("invalid regex\\")), 0);
+    QCOMPARE(a.count(QRegularExpression(u"invalid regex\\"_s)), 0);
 #endif
 
     CREATE_VIEW(QLatin1String("FG"));
@@ -2053,32 +2065,42 @@ void tst_QString::count()
 #if QT_DEPRECATED_SINCE(6, 4)
     QT_IGNORE_DEPRECATIONS(QCOMPARE(nullStr.size(), 0);)
 #endif
-    QCOMPARE(nullStr.count('A'), 0);
-    QCOMPARE(nullStr.count("AB"), 0);
+    QCOMPARE(nullStr.count(QChar(u'A')), 0);
+    QCOMPARE(nullStr.count(QString(u"AB"_s)), 0);
     QCOMPARE(nullStr.count(view), 0);
+    QCOMPARE(nullStr.count(QLatin1StringView("AB")), 0);
+
     QCOMPARE(nullStr.count(QString()), 1);
-    QCOMPARE(nullStr.count(""), 1);
+    QCOMPARE(nullStr.count(QString(u""_s)), 1);
+    QCOMPARE(nullStr.count(QStringView(u"")), 1);
+    QCOMPARE(nullStr.count(QLatin1StringView("")), 1);
+
 #if QT_CONFIG(regularexpression)
-    QCOMPARE(nullStr.count(QRegularExpression("")), 1);
-    QCOMPARE(nullStr.count(QRegularExpression("[FG][HI]")), 0);
+    QCOMPARE(nullStr.count(QRegularExpression(u""_s)), 1);
+    QCOMPARE(nullStr.count(QRegularExpression(u"[FG][HI]"_s)), 0);
     QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
-    QCOMPARE(nullStr.count(QRegularExpression("invalid regex\\")), 0);
+    QCOMPARE(nullStr.count(QRegularExpression(u"invalid regex\\"_s)), 0);
 #endif
 
-    QString emptyStr("");
+    QString emptyStr(u""_s);
 #if QT_DEPRECATED_SINCE(6, 4)
     QT_IGNORE_DEPRECATIONS(QCOMPARE(emptyStr.size(), 0);)
 #endif
-    QCOMPARE(emptyStr.count('A'), 0);
-    QCOMPARE(emptyStr.count("AB"), 0);
+    QCOMPARE(emptyStr.count(u'A'), 0);
+    QCOMPARE(emptyStr.count(QString(u"AB"_s)), 0);
     QCOMPARE(emptyStr.count(view), 0);
     QCOMPARE(emptyStr.count(QString()), 1);
-    QCOMPARE(emptyStr.count(""), 1);
+    QCOMPARE(emptyStr.count(QStringView()), 1);
+    QCOMPARE(emptyStr.count(QLatin1StringView()), 1);
+    QCOMPARE(emptyStr.count(QString(u""_s)), 1);
+    QCOMPARE(emptyStr.count(QStringView(u"")), 1);
+    QCOMPARE(emptyStr.count(QLatin1StringView("")), 1);
+
 #if QT_CONFIG(regularexpression)
-    QCOMPARE(emptyStr.count(QRegularExpression("")), 1);
-    QCOMPARE(emptyStr.count(QRegularExpression("[FG][HI]")), 0);
+    QCOMPARE(emptyStr.count(QRegularExpression(u""_s)), 1);
+    QCOMPARE(emptyStr.count(QRegularExpression(u"[FG][HI]"_s)), 0);
     QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
-    QCOMPARE(emptyStr.count(QRegularExpression("invalid regex\\")), 0);
+    QCOMPARE(emptyStr.count(QRegularExpression(u"invalid regex\\"_s)), 0);
 #endif
 
     QString nonBmpString = u8"\U00010000\U00010000abc\U00010000";
@@ -2100,61 +2122,72 @@ void tst_QString::count()
 void tst_QString::contains()
 {
     static const QRegularExpression ignoreMessagePattern(
-        "^QString\\(View\\)::contains\\(\\): called on an invalid QRegularExpression object"
+        u"^QString\\(View\\)::contains\\(\\): called on an invalid QRegularExpression object"_s
     );
 
-    QString a;
-    a="ABCDEFGHIEfGEFG"; // 15 chars
-    QVERIFY(a.contains('A'));
-    QVERIFY(!a.contains('Z'));
-    QVERIFY(a.contains('E'));
-    QVERIFY(a.contains('F'));
-    QVERIFY(a.contains('F',Qt::CaseInsensitive));
-    QVERIFY(a.contains("FG"));
-    QVERIFY(a.contains("FG",Qt::CaseInsensitive));
+    QString a(u"ABCDEFGHIEfGEFG"_s);
+    QCOMPARE(a.size(), 15);
+
+    QVERIFY(a.contains(QChar(u'A')));
+    QVERIFY(!a.contains(QChar(u'Z')));
+    QVERIFY(a.contains(QChar(u'E')));
+    QVERIFY(a.contains(QChar(u'F')));
+    QVERIFY(a.contains(QChar(u'f'), Qt::CaseInsensitive));
+
+    QVERIFY(a.contains(QString(u"FG"_s)));
+    QVERIFY(a.contains(QString(u"FG"_s), Qt::CaseInsensitive));
+    QVERIFY(a.contains(QStringView(u"FG")));
+    QVERIFY(a.contains(QStringView(u"fg"), Qt::CaseInsensitive));
+
     QVERIFY(a.contains(QLatin1String("FG")));
     QVERIFY(a.contains(QLatin1String("fg"),Qt::CaseInsensitive));
-    QVERIFY(a.contains( QString(), Qt::CaseInsensitive));
-    QVERIFY(a.contains( "", Qt::CaseInsensitive));
+
+    QVERIFY(a.contains(QString(), Qt::CaseInsensitive));
+    QVERIFY(a.contains(QString(u""_s), Qt::CaseInsensitive));
+    QVERIFY(a.contains(QStringView(), Qt::CaseInsensitive));
+    QVERIFY(a.contains(QStringView(u""), Qt::CaseInsensitive));
+    QVERIFY(a.contains(QLatin1StringView(), Qt::CaseInsensitive));
+    QVERIFY(a.contains(QLatin1StringView(""), Qt::CaseInsensitive));
+
 #if QT_CONFIG(regularexpression)
-    QVERIFY(a.contains(QRegularExpression("[FG][HI]")));
-    QVERIFY(a.contains(QRegularExpression("[G][HE]")));
+    QVERIFY(a.contains(QRegularExpression(u"[FG][HI]"_s)));
+    QVERIFY(a.contains(QRegularExpression(u"[G][HE]"_s)));
 
     {
         QRegularExpressionMatch match;
         QVERIFY(!match.hasMatch());
 
-        QVERIFY(a.contains(QRegularExpression("[FG][HI]"), &match));
+        QVERIFY(a.contains(QRegularExpression(u"[FG][HI]"_s), &match));
         QVERIFY(match.hasMatch());
         QCOMPARE(match.capturedStart(), 6);
         QCOMPARE(match.capturedEnd(), 8);
         QCOMPARE(match.captured(), QStringLiteral("GH"));
 
-        QVERIFY(a.contains(QRegularExpression("[G][HE]"), &match));
+        QVERIFY(a.contains(QRegularExpression(u"[G][HE]"_s), &match));
         QVERIFY(match.hasMatch());
         QCOMPARE(match.capturedStart(), 6);
         QCOMPARE(match.capturedEnd(), 8);
         QCOMPARE(match.captured(), QStringLiteral("GH"));
 
-        QVERIFY(a.contains(QRegularExpression("[f](.*)[FG]"), &match));
+        QVERIFY(a.contains(QRegularExpression(u"[f](.*)[FG]"_s), &match));
         QVERIFY(match.hasMatch());
         QCOMPARE(match.capturedStart(), 10);
         QCOMPARE(match.capturedEnd(), 15);
-        QCOMPARE(match.captured(), QString("fGEFG"));
+        QCOMPARE(match.captured(), u"fGEFG");
         QCOMPARE(match.capturedStart(1), 11);
         QCOMPARE(match.capturedEnd(1), 14);
         QCOMPARE(match.captured(1), QStringLiteral("GEF"));
 
-        QVERIFY(a.contains(QRegularExpression("[f](.*)[F]"), &match));
+        QVERIFY(a.contains(QRegularExpression(u"[f](.*)[F]"_s), &match));
         QVERIFY(match.hasMatch());
         QCOMPARE(match.capturedStart(), 10);
         QCOMPARE(match.capturedEnd(), 14);
-        QCOMPARE(match.captured(), QString("fGEF"));
+        QCOMPARE(match.captured(), u"fGEF");
         QCOMPARE(match.capturedStart(1), 11);
         QCOMPARE(match.capturedEnd(1), 13);
         QCOMPARE(match.captured(1), QStringLiteral("GE"));
 
-        QVERIFY(!a.contains(QRegularExpression("ZZZ"), &match));
+        QVERIFY(!a.contains(QRegularExpression(u"ZZZ"_s), &match));
         // doesn't match, but ensure match didn't change
         QVERIFY(match.hasMatch());
         QCOMPARE(match.capturedStart(), 10);
@@ -2165,12 +2198,12 @@ void tst_QString::contains()
         QCOMPARE(match.captured(1), QStringLiteral("GE"));
 
         // don't crash with a null pointer
-        QVERIFY(a.contains(QRegularExpression("[FG][HI]"), 0));
-        QVERIFY(!a.contains(QRegularExpression("ZZZ"), 0));
+        QVERIFY(a.contains(QRegularExpression(u"[FG][HI]"_s), 0));
+        QVERIFY(!a.contains(QRegularExpression(u"ZZZ"_s), 0));
     }
 
     QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
-    QVERIFY(!a.contains(QRegularExpression("invalid regex\\")));
+    QVERIFY(!a.contains(QRegularExpression(u"invalid regex\\"_s)));
 #endif
 
     CREATE_VIEW(QLatin1String("FG"));
@@ -2179,30 +2212,32 @@ void tst_QString::contains()
     QVERIFY(a.contains( QStringView(), Qt::CaseInsensitive));
 
     QString nullStr;
-    QVERIFY(!nullStr.contains('A'));
-    QVERIFY(!nullStr.contains("AB"));
+    QVERIFY(!nullStr.contains(u'A'));
+    QVERIFY(!nullStr.contains(QString(u"AB"_s)));
+    QVERIFY(!nullStr.contains(QLatin1StringView("AB")));
     QVERIFY(!nullStr.contains(view));
 #if QT_CONFIG(regularexpression)
-    QVERIFY(!nullStr.contains(QRegularExpression("[FG][HI]")));
+    QVERIFY(!nullStr.contains(QRegularExpression(u"[FG][HI]"_s)));
     QRegularExpressionMatch nullMatch;
-    QVERIFY(nullStr.contains(QRegularExpression(""), &nullMatch));
+    QVERIFY(nullStr.contains(QRegularExpression(u""_s), &nullMatch));
     QVERIFY(nullMatch.hasMatch());
-    QCOMPARE(nullMatch.captured(), "");
+    QCOMPARE(nullMatch.captured(), u"");
     QCOMPARE(nullMatch.capturedStart(), 0);
     QCOMPARE(nullMatch.capturedEnd(), 0);
 #endif
     QVERIFY(!nullStr.isDetached());
 
-    QString emptyStr("");
-    QVERIFY(!emptyStr.contains('A'));
-    QVERIFY(!emptyStr.contains("AB"));
+    QString emptyStr(u""_s);
+    QVERIFY(!emptyStr.contains(u'A'));
+    QVERIFY(!emptyStr.contains(QString(u"AB"_s)));
+    QVERIFY(!emptyStr.contains(QLatin1StringView("AB")));
     QVERIFY(!emptyStr.contains(view));
 #if QT_CONFIG(regularexpression)
-    QVERIFY(!emptyStr.contains(QRegularExpression("[FG][HI]")));
+    QVERIFY(!emptyStr.contains(QRegularExpression(u"[FG][HI]"_s)));
     QRegularExpressionMatch emptyMatch;
-    QVERIFY(emptyStr.contains(QRegularExpression(""), &emptyMatch));
+    QVERIFY(emptyStr.contains(QRegularExpression(u""_s), &emptyMatch));
     QVERIFY(emptyMatch.hasMatch());
-    QCOMPARE(emptyMatch.captured(), "");
+    QCOMPARE(emptyMatch.captured(), u"");
     QCOMPARE(emptyMatch.capturedStart(), 0);
     QCOMPARE(emptyMatch.capturedEnd(), 0);
 #endif
