@@ -10908,8 +10908,14 @@ qsizetype QtPrivate::count(QStringView haystack, const QRegularExpression &re)
         QRegularExpressionMatch match = re.match(haystack, index + 1);
         if (!match.hasMatch())
             break;
-        index = match.capturedStart();
         count++;
+
+        // Search again, from the next character after the beginning of this
+        // capture. If the capture starts with a surrogate pair, both together
+        // count as "one character".
+        index = match.capturedStart();
+        if (index < len && haystack[index].isHighSurrogate())
+            ++index;
     }
     return count;
 }
