@@ -216,11 +216,9 @@ QStringList QAccessibleButton::actionNames() const
             names << toggleAction();
             break;
         default:
-            if (button()->isCheckable()) {
+            if (button()->isCheckable())
                 names <<  toggleAction();
-            } else {
-                names << pressAction();
-            }
+            names << pressAction();
             break;
         }
     }

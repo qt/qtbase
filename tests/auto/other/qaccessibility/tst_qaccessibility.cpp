@@ -1118,7 +1118,10 @@ void tst_QAccessibility::buttonTest()
     interface = QAccessible::queryAccessibleInterface(&toggleButton);
     actionInterface = interface->actionInterface();
     QCOMPARE(interface->role(), QAccessible::CheckBox);
-    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::toggleAction() << QAccessibleActionInterface::setFocusAction());
+    QCOMPARE(actionInterface->actionNames(),
+             QStringList() << QAccessibleActionInterface::toggleAction()
+                           << QAccessibleActionInterface::pressAction()
+                           << QAccessibleActionInterface::setFocusAction());
     QCOMPARE(actionInterface->localizedActionDescription(QAccessibleActionInterface::toggleAction()), QString("Toggles the state"));
     QVERIFY(!toggleButton.isChecked());
     QVERIFY(!interface->state().checked);
@@ -1154,12 +1157,18 @@ void tst_QAccessibility::buttonTest()
     interface = QAccessible::queryAccessibleInterface(&checkBox);
     actionInterface = interface->actionInterface();
     QCOMPARE(interface->role(), QAccessible::CheckBox);
-    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::toggleAction() << QAccessibleActionInterface::setFocusAction());
+    QCOMPARE(actionInterface->actionNames(),
+             QStringList() << QAccessibleActionInterface::toggleAction()
+                           << QAccessibleActionInterface::pressAction()
+                           << QAccessibleActionInterface::setFocusAction());
     QVERIFY(!interface->state().checked);
     actionInterface->doAction(QAccessibleActionInterface::toggleAction());
 
     QTest::qWait(500);
-    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::toggleAction() << QAccessibleActionInterface::setFocusAction());
+    QCOMPARE(actionInterface->actionNames(),
+             QStringList() << QAccessibleActionInterface::toggleAction()
+                           << QAccessibleActionInterface::pressAction()
+                           << QAccessibleActionInterface::setFocusAction());
     QVERIFY(interface->state().checked);
     QVERIFY(checkBox.isChecked());
     QAccessible::State st;
