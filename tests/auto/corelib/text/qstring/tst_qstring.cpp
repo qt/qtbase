@@ -3020,14 +3020,16 @@ void tst_QString::append_data(DataOptions options)
 void tst_QString::append_special_cases()
 {
     {
+        static constexpr char16_t utf16[] = u"Hello, World!";
+        constexpr int len = std::char_traits<char16_t>::length(utf16);
+        const auto *unicode = reinterpret_cast<const QChar *>(utf16);
         QString a;
-        static const QChar unicode[] = { 'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!' };
-        a.append(unicode, sizeof unicode / sizeof *unicode);
+        a.append(unicode, len);
         QCOMPARE(a, QLatin1String("Hello, World!"));
         static const QChar nl('\n');
         a.append(&nl, 1);
         QCOMPARE(a, QLatin1String("Hello, World!\n"));
-        a.append(unicode, sizeof unicode / sizeof *unicode);
+        a.append(unicode, len);
         QCOMPARE(a, QLatin1String("Hello, World!\nHello, World!"));
         a.append(unicode, 0); // no-op
         QCOMPARE(a, QLatin1String("Hello, World!\nHello, World!"));
