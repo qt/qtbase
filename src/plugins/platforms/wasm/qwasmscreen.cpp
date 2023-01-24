@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "qwasmscreen.h"
-#include "qwasmwindow.h"
-#include "qwasmeventtranslator.h"
+
 #include "qwasmcompositor.h"
-#include "qwasmintegration.h"
 #include "qwasmcssstyle.h"
+#include "qwasmintegration.h"
+#include "qwasmkeytranslator.h"
+#include "qwasmwindow.h"
 
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
@@ -29,7 +30,7 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
     : m_container(containerOrCanvas),
       m_shadowContainer(emscripten::val::undefined()),
       m_compositor(new QWasmCompositor(this)),
-      m_eventTranslator(new QWasmEventTranslator())
+      m_deadKeySupport(std::make_unique<QWasmDeadKeySupport>())
 {
     auto document = m_container["ownerDocument"];
     // Each screen is represented by a div container. All of the windows exist therein as
@@ -109,11 +110,6 @@ QWasmScreen *QWasmScreen::get(QScreen *screen)
 QWasmCompositor *QWasmScreen::compositor()
 {
     return m_compositor.get();
-}
-
-QWasmEventTranslator *QWasmScreen::eventTranslator()
-{
-    return m_eventTranslator.get();
 }
 
 emscripten::val QWasmScreen::element() const

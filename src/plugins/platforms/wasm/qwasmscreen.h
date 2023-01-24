@@ -20,7 +20,7 @@ class QPlatformOpenGLContext;
 class QWasmWindow;
 class QWasmBackingStore;
 class QWasmCompositor;
-class QWasmEventTranslator;
+class QWasmDeadKeySupport;
 class QOpenGLContext;
 
 class QWasmScreen : public QObject, public QPlatformScreen
@@ -38,7 +38,7 @@ public:
     QString outerScreenId() const;
 
     QWasmCompositor *compositor();
-    QWasmEventTranslator *eventTranslator();
+    QWasmDeadKeySupport *deadKeySupport() { return m_deadKeySupport.get(); }
 
     QRect geometry() const override;
     int depth() const override;
@@ -67,7 +67,7 @@ private:
     emscripten::val m_container;
     emscripten::val m_shadowContainer;
     std::unique_ptr<QWasmCompositor> m_compositor;
-    std::unique_ptr<QWasmEventTranslator> m_eventTranslator;
+    std::unique_ptr<QWasmDeadKeySupport> m_deadKeySupport;
     QRect m_geometry = QRect(0, 0, 100, 100);
     int m_depth = 32;
     QImage::Format m_format = QImage::Format_RGB32;
