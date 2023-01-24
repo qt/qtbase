@@ -2059,6 +2059,21 @@ void tst_QString::count()
     QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
     QCOMPARE(emptyStr.count(QRegularExpression("invalid regex\\")), 0);
 #endif
+
+    QString nonBmpString = u8"\U00010000\U00010000abc\U00010000";
+    QCOMPARE(nonBmpString.count(u"\U00010000"), 3);
+#if QT_CONFIG(regularexpression)
+    QCOMPARE(nonBmpString.count(QRegularExpression(u8"\U00010000")), 3);
+    QCOMPARE(nonBmpString.count(QRegularExpression(u8"\U00010000a?")), 3);
+    QCOMPARE(nonBmpString.count(QRegularExpression(u8"\U00010000a")), 1);
+    QCOMPARE(nonBmpString.count(QRegularExpression(".")), 6);
+
+    // can't search for unpaired surrogates
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
+    QCOMPARE(nonBmpString.count(QRegularExpression(QChar(0xd800))), 0);
+    QTest::ignoreMessage(QtWarningMsg, ignoreMessagePattern);
+    QCOMPARE(nonBmpString.count(QRegularExpression(QChar(0xdc00))), 0);
+#endif
 }
 
 void tst_QString::contains()
