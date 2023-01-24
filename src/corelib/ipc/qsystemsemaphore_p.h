@@ -132,15 +132,15 @@ public:
 
     void handle(QSystemSemaphore::AccessMode mode)
     {
-        visit([=](auto p) { p->handle(this, mode); });
+        visit([&](auto p) { p->handle(this, mode); });
     }
     void cleanHandle()
     {
-        visit([=](auto p) { p->cleanHandle(this); });
+        visit([&](auto p) { p->cleanHandle(this); });
     }
     bool modifySemaphore(int count)
     {
-        return visit([=](auto p) { return p->modifySemaphore(this, count); });
+        return visit([&](auto p) { return p->modifySemaphore(this, count); });
     }
 
     QString legacyKey;  // deprecated
