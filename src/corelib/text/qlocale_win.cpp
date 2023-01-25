@@ -482,11 +482,13 @@ QVariant QSystemLocalePrivate::toString(QTime time, QLocale::FormatType type)
 
     DWORD flags = 0;
     // keep the same conditional as timeFormat() above
-    if (type == QLocale::ShortFormat)
-        flags = TIME_NOSECONDS;
+    const QString format = type == QLocale::ShortFormat
+        ? getLocaleInfo(LOCALE_SSHORTTIME).toString()
+        : QString();
+    auto formatStr = reinterpret_cast<const wchar_t *>(format.isEmpty() ? nullptr : format.utf16());
 
     wchar_t buf[255];
-    if (getTimeFormat(flags, &st, NULL, buf, 255)) {
+    if (getTimeFormat(flags, &st, formatStr, buf, int(std::size(buf)))) {
         QString text = QString::fromWCharArray(buf);
         if (substitution() == SAlways)
             text = substituteDigits(std::move(text));
