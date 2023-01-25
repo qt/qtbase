@@ -68,6 +68,8 @@ public:
     bool event(QEvent *event) override;
     int loopLevel() const;
 
+    bool isCurrentThread() const;
+
     template <typename Function, typename... Args>
     [[nodiscard]] static QThread *create(Function &&f, Args &&... args);
 

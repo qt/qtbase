@@ -913,6 +913,36 @@ int QThread::loopLevel() const
     return d->data->eventLoops.size();
 }
 
+/*!
+    \internal
+    Returns the thread handle of this thread.
+    It can be compared with the return value of currentThreadId().
+
+    This is used to implement isCurrentThread, and might be useful
+    for debugging (e.g. by comparing the value in gdb with info threads).
+
+    \note Thread handles of destroyed threads might be reused by the
+    operating system. Storing the return value of this function can
+    therefore give surprising results if it outlives the QThread object
+    (threads claimed to be the same even if they aren't).
+*/
+Qt::HANDLE QThreadPrivate::threadId() const
+{
+    return data->threadId.loadRelaxed();
+}
+
+/*!
+    \since 6.8
+    Returns true if this thread is QThread::currentThread.
+
+    \sa currentThreadId()
+*/
+bool QThread::isCurrentThread() const
+{
+    Q_D(const QThread);
+    return QThread::currentThreadId() == d->threadId();
+}
+
 #else // QT_CONFIG(thread)
 
 QThread::QThread(QObject *parent)
@@ -983,6 +1013,11 @@ Qt::HANDLE QThread::currentThreadIdImpl() noexcept
 QThread *QThread::currentThread()
 {
     return QThreadData::current()->thread.loadAcquire();
+}
+
+bool QThread::isCurrentThread() const
+{
+    return true;
 }
 
 int QThread::idealThreadCount() noexcept

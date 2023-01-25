@@ -137,11 +137,13 @@ class Current_Thread : public QThread
 public:
     Qt::HANDLE id;
     QThread *thread;
+    bool runCalledInCurrentThread = false;
 
     void run() override
     {
         id = QThread::currentThreadId();
         thread = QThread::currentThread();
+        runCalledInCurrentThread = thread->isCurrentThread();
     }
 };
 
@@ -276,6 +278,11 @@ void tst_QThread::currentThreadId()
     QVERIFY(thread.wait(five_minutes));
     QVERIFY(thread.id != nullptr);
     QVERIFY(thread.id != QThread::currentThreadId());
+    QVERIFY(!thread.isCurrentThread());
+    QVERIFY(!thread.thread->isCurrentThread());
+    QVERIFY(thread.QThread::thread()->isCurrentThread());
+    QVERIFY(thread.runCalledInCurrentThread);
+    QVERIFY(qApp->thread()->isCurrentThread());
 }
 
 void tst_QThread::currentThread()
