@@ -2108,8 +2108,7 @@ void tst_QLocale::windowsDefaultLocale()
     QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::NarrowFormat),
              locale.toString(QDate(1974, 12, 1), QLocale::ShortFormat));
     QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::LongFormat), QString("1@12@1974"));
-    const QString expectedFormattedShortTimeSeconds = QStringLiteral("1^2^3");
-    const QString expectedFormattedShortTime = QStringLiteral("1^2");
+    const QString expectedFormattedShortTime = QStringLiteral("1^2^3");
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::ShortFormat), expectedFormattedShortTime);
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::NarrowFormat),
              locale.toString(QTime(1,2,3), QLocale::ShortFormat));
