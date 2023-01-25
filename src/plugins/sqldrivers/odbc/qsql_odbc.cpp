@@ -36,28 +36,22 @@ static const SQLSMALLINT TABLENAMESIZE = 128;
 //Map Qt parameter types to ODBC types
 static const SQLSMALLINT qParamType[4] = { SQL_PARAM_INPUT, SQL_PARAM_INPUT, SQL_PARAM_OUTPUT, SQL_PARAM_INPUT_OUTPUT };
 
-inline static QString fromSQLTCHAR(const QVarLengthArray<SQLTCHAR>& input, qsizetype size=-1)
+template<typename C, int SIZE = sizeof(SQLTCHAR)>
+inline static QString fromSQLTCHAR(const C &input, qsizetype size = -1)
 {
-    QString result;
-
     // Remove any trailing \0 as some drivers misguidedly append one
-    int realsize = qMin(size, input.size());
-    if (realsize > 0 && input[realsize-1] == 0)
+    qsizetype realsize = qMin(size, input.size());
+    if (realsize > 0 && input[realsize - 1] == 0)
         realsize--;
-    switch(sizeof(SQLTCHAR)) {
-        case 1:
-            result=QString::fromUtf8((const char *)input.constData(), realsize);
-            break;
-        case 2:
-            result = QString::fromUtf16(reinterpret_cast<const char16_t *>(input.constData()), realsize);
-            break;
-        case 4:
-            result = QString::fromUcs4(reinterpret_cast<const char32_t *>(input.constData()), realsize);
-            break;
-        default:
-            qCritical("sizeof(SQLTCHAR) is %d. Don't know how to handle this.", int(sizeof(SQLTCHAR)));
-    }
-    return result;
+    if constexpr (SIZE == 1)
+        return QString::fromUtf8(reinterpret_cast<const char *>(input.constData()), realsize);
+    else if constexpr (SIZE == 2)
+        return QString::fromUtf16(reinterpret_cast<const char16_t *>(input.constData()), realsize);
+    else if constexpr (SIZE == 4)
+        return QString::fromUcs4(reinterpret_cast<const char32_t *>(input.constData()), realsize);
+    else
+        static_assert(QtPrivate::value_dependent_false<SIZE>(),
+                      "Don't know how to handle sizeof(SQLTCHAR) != 1/2/4");
 }
 
 template<int SIZE = sizeof(SQLTCHAR)>
