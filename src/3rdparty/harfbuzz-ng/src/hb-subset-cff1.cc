@@ -167,9 +167,10 @@ struct cff1_top_dict_op_serializer_t : cff_top_dict_op_serializer_t<cff1_top_dic
 	   * for supplement, the original byte string is copied along with the op code */
 	  op_str_t supp_op;
 	  supp_op.op = op;
-	  if ( unlikely (!(opstr.str.length >= opstr.last_arg_offset + 3)))
+	  if ( unlikely (!(opstr.length >= opstr.last_arg_offset + 3)))
 	    return_trace (false);
-	  supp_op.str = byte_str_t (&opstr.str + opstr.last_arg_offset, opstr.str.length - opstr.last_arg_offset);
+	  supp_op.ptr = opstr.ptr + opstr.last_arg_offset;
+	  supp_op.length = opstr.length - opstr.last_arg_offset;
 	  return_trace (UnsizedByteStr::serialize_int2 (c, mod.nameSIDs[name_dict_values_t::registry]) &&
 			UnsizedByteStr::serialize_int2 (c, mod.nameSIDs[name_dict_values_t::ordering]) &&
 			copy_opstr (c, supp_op));
@@ -270,13 +271,13 @@ struct range_list_t : hb_vector_t<code_pair_t>
   /* replace the first glyph ID in the "glyph" field each range with a nLeft value */
   bool complete (unsigned int last_glyph)
   {
-    bool  two_byte = false;
-    for (unsigned int i = (*this).length; i > 0; i--)
+    bool two_byte = false;
+    unsigned count = this->length;
+    for (unsigned int i = count; i; i--)
     {
-      code_pair_t &pair = (*this)[i - 1];
-      unsigned int  nLeft = last_glyph - pair.glyph - 1;
-      if (nLeft >= 0x100)
-	two_byte = true;
+      code_pair_t &pair = arrayZ[i - 1];
+      unsigned int nLeft = last_glyph - pair.glyph - 1;
+      two_byte |= nLeft >= 0x100;
       last_glyph = pair.glyph;
       pair.glyph = nLeft;
     }
@@ -442,6 +443,18 @@ struct cff_subset_plan {
       return;
     }
 
+    hb_map_t *glyph_to_sid_map = (plan->accelerator && plan->accelerator->cff_accelerator) ?
+				  plan->accelerator->cff_accelerator->glyph_to_sid_map :
+				  nullptr;
+    bool created_map = false;
+    if (!glyph_to_sid_map &&
+	((plan->accelerator && plan->accelerator->cff_accelerator) ||
+	 plan->num_output_glyphs () > plan->source->get_num_glyphs () / 8.))
+    {
+      created_map = true;
+      glyph_to_sid_map = acc.create_glyph_to_sid_map ();
+    }
+
     unsigned int glyph;
     for (glyph = 1; glyph < plan->num_output_glyphs (); glyph++)
     {
@@ -451,7 +464,7 @@ struct cff_subset_plan {
 	/* Retain the SID for the old missing glyph ID */
 	old_glyph = glyph;
       }
-      sid = acc.glyph_to_sid (old_glyph);
+      sid = glyph_to_sid_map ? glyph_to_sid_map->get (old_glyph) : acc.glyph_to_sid (old_glyph);
 
       if (!acc.is_CID ())
 	sid = sidmap.add (sid);
@@ -462,6 +475,13 @@ struct cff_subset_plan {
 	subset_charset_ranges.push (pair);
       }
       last_sid = sid;
+    }
+
+    if (created_map)
+    {
+      if (!(plan->accelerator && plan->accelerator->cff_accelerator) ||
+	  !plan->accelerator->cff_accelerator->glyph_to_sid_map.cmpexch (nullptr, glyph_to_sid_map))
+	hb_map_destroy (glyph_to_sid_map);
     }
 
     bool two_byte = subset_charset_ranges.complete (glyph);
@@ -722,11 +742,17 @@ static bool _serialize_cff1 (hb_serialize_context_t *c,
 
   /* CharStrings */
   {
+    c->push<CFF1CharStrings> ();
+
+    unsigned total_size = CFF1CharStrings::total_size (plan.subset_charstrings);
+    if (unlikely (!c->start_zerocopy (total_size)))
+       return false;
+
     CFF1CharStrings  *cs = c->start_embed<CFF1CharStrings> ();
     if (unlikely (!cs)) return false;
-    c->push ();
+
     if (likely (cs->serialize (c, plan.subset_charstrings)))
-      plan.info.char_strings_link = c->pop_pack ();
+      plan.info.char_strings_link = c->pop_pack (false);
     else
     {
       c->pop_discard ();
@@ -809,7 +835,7 @@ static bool _serialize_cff1 (hb_serialize_context_t *c,
     CFF1Subrs *dest = c->start_embed <CFF1Subrs> ();
     if (unlikely (!dest)) return false;
     if (likely (dest->serialize (c, plan.subset_globalsubrs)))
-      c->pop_pack ();
+      c->pop_pack (false);
     else
     {
       c->pop_discard ();

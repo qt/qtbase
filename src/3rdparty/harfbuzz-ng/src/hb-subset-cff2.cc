@@ -67,9 +67,9 @@ struct cff2_top_dict_op_serializer_t : cff_top_dict_op_serializer_t<>
   }
 };
 
-struct cff2_cs_opset_flatten_t : cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatten_param_t>
+struct cff2_cs_opset_flatten_t : cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatten_param_t, blend_arg_t>
 {
-  static void flush_args_and_op (op_code_t op, cff2_cs_interp_env_t &env, flatten_param_t& param)
+  static void flush_args_and_op (op_code_t op, cff2_cs_interp_env_t<blend_arg_t> &env, flatten_param_t& param)
   {
     switch (op)
     {
@@ -97,7 +97,7 @@ struct cff2_cs_opset_flatten_t : cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatte
     }
   }
 
-  static void flush_args (cff2_cs_interp_env_t &env, flatten_param_t& param)
+  static void flush_args (cff2_cs_interp_env_t<blend_arg_t> &env, flatten_param_t& param)
   {
     for (unsigned int i = 0; i < env.argStack.get_count ();)
     {
@@ -122,7 +122,7 @@ struct cff2_cs_opset_flatten_t : cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatte
     SUPER::flush_args (env, param);
   }
 
-  static void flatten_blends (const blend_arg_t &arg, unsigned int i, cff2_cs_interp_env_t &env, flatten_param_t& param)
+  static void flatten_blends (const blend_arg_t &arg, unsigned int i, cff2_cs_interp_env_t<blend_arg_t> &env, flatten_param_t& param)
   {
     /* flatten the default values */
     str_encoder_t  encoder (param.flatStr);
@@ -149,7 +149,7 @@ struct cff2_cs_opset_flatten_t : cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatte
     encoder.encode_op (OpCode_blendcs);
   }
 
-  static void flush_op (op_code_t op, cff2_cs_interp_env_t &env, flatten_param_t& param)
+  static void flush_op (op_code_t op, cff2_cs_interp_env_t<blend_arg_t> &env, flatten_param_t& param)
   {
     switch (op)
     {
@@ -163,13 +163,13 @@ struct cff2_cs_opset_flatten_t : cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatte
   }
 
   private:
-  typedef cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatten_param_t> SUPER;
-  typedef cs_opset_t<blend_arg_t, cff2_cs_opset_flatten_t, cff2_cs_opset_flatten_t, cff2_cs_interp_env_t, flatten_param_t> CSOPSET;
+  typedef cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatten_param_t, blend_arg_t> SUPER;
+  typedef cs_opset_t<blend_arg_t, cff2_cs_opset_flatten_t, cff2_cs_opset_flatten_t, cff2_cs_interp_env_t<blend_arg_t>, flatten_param_t> CSOPSET;
 };
 
-struct cff2_cs_opset_subr_subset_t : cff2_cs_opset_t<cff2_cs_opset_subr_subset_t, subr_subset_param_t>
+struct cff2_cs_opset_subr_subset_t : cff2_cs_opset_t<cff2_cs_opset_subr_subset_t, subr_subset_param_t, blend_arg_t>
 {
-  static void process_op (op_code_t op, cff2_cs_interp_env_t &env, subr_subset_param_t& param)
+  static void process_op (op_code_t op, cff2_cs_interp_env_t<blend_arg_t> &env, subr_subset_param_t& param)
   {
     switch (op) {
 
@@ -201,7 +201,7 @@ struct cff2_cs_opset_subr_subset_t : cff2_cs_opset_t<cff2_cs_opset_subr_subset_t
 
   protected:
   static void process_call_subr (op_code_t op, cs_type_t type,
-				 cff2_cs_interp_env_t &env, subr_subset_param_t& param,
+				 cff2_cs_interp_env_t<blend_arg_t> &env, subr_subset_param_t& param,
 				 cff2_biased_subrs_t& subrs, hb_set_t *closure)
   {
     byte_str_ref_t    str_ref = env.str_ref;
@@ -212,15 +212,15 @@ struct cff2_cs_opset_subr_subset_t : cff2_cs_opset_t<cff2_cs_opset_subr_subset_t
   }
 
   private:
-  typedef cff2_cs_opset_t<cff2_cs_opset_subr_subset_t, subr_subset_param_t> SUPER;
+  typedef cff2_cs_opset_t<cff2_cs_opset_subr_subset_t, subr_subset_param_t, blend_arg_t> SUPER;
 };
 
-struct cff2_subr_subsetter_t : subr_subsetter_t<cff2_subr_subsetter_t, CFF2Subrs, const OT::cff2::accelerator_subset_t, cff2_cs_interp_env_t, cff2_cs_opset_subr_subset_t>
+struct cff2_subr_subsetter_t : subr_subsetter_t<cff2_subr_subsetter_t, CFF2Subrs, const OT::cff2::accelerator_subset_t, cff2_cs_interp_env_t<blend_arg_t>, cff2_cs_opset_subr_subset_t>
 {
   cff2_subr_subsetter_t (const OT::cff2::accelerator_subset_t &acc_, const hb_subset_plan_t *plan_)
     : subr_subsetter_t (acc_, plan_) {}
 
-  static void complete_parsed_str (cff2_cs_interp_env_t &env, subr_subset_param_t& param, parsed_cs_str_t &charstring)
+  static void complete_parsed_str (cff2_cs_interp_env_t<blend_arg_t> &env, subr_subset_param_t& param, parsed_cs_str_t &charstring)
   {
     /* vsindex is inserted at the beginning of the charstring as necessary */
     if (env.seen_vsindex ())
@@ -245,7 +245,7 @@ struct cff2_subset_plan {
     if (desubroutinize)
     {
       /* Flatten global & local subrs */
-      subr_flattener_t<const OT::cff2::accelerator_subset_t, cff2_cs_interp_env_t, cff2_cs_opset_flatten_t>
+      subr_flattener_t<const OT::cff2::accelerator_subset_t, cff2_cs_interp_env_t<blend_arg_t>, cff2_cs_opset_flatten_t>
 		    flattener(acc, plan);
       if (!flattener.flatten (subset_charstrings))
 	return false;
@@ -334,7 +334,7 @@ static bool _serialize_cff2 (hb_serialize_context_t *c,
 	if (unlikely (!dest)) return false;
 	c->push ();
 	if (likely (dest->serialize (c, plan.subset_localsubrs[i])))
-	  subrs_link = c->pop_pack ();
+	  subrs_link = c->pop_pack (false);
 	else
 	{
 	  c->pop_discard ();
@@ -361,11 +361,17 @@ static bool _serialize_cff2 (hb_serialize_context_t *c,
 
   /* CharStrings */
   {
+    c->push ();
+
+    unsigned total_size = CFF2CharStrings::total_size (plan.subset_charstrings);
+    if (unlikely (!c->start_zerocopy (total_size)))
+       return false;
+
     CFF2CharStrings  *cs = c->start_embed<CFF2CharStrings> ();
     if (unlikely (!cs)) return false;
-    c->push ();
+
     if (likely (cs->serialize (c, plan.subset_charstrings)))
-      plan.info.char_strings_link = c->pop_pack ();
+      plan.info.char_strings_link = c->pop_pack (false);
     else
     {
       c->pop_discard ();
@@ -377,9 +383,10 @@ static bool _serialize_cff2 (hb_serialize_context_t *c,
   if (acc.fdSelect != &Null (CFF2FDSelect))
   {
     c->push ();
-    if (likely (hb_serialize_cff_fdselect (c, num_glyphs, *(const FDSelect *)acc.fdSelect, 					      plan.orig_fdcount,
-					    plan.subset_fdselect_format, plan.subset_fdselect_size,
-					    plan.subset_fdselect_ranges)))
+    if (likely (hb_serialize_cff_fdselect (c, num_glyphs, *(const FDSelect *)acc.fdSelect,
+					   plan.orig_fdcount,
+					   plan.subset_fdselect_format, plan.subset_fdselect_size,
+					   plan.subset_fdselect_ranges)))
       plan.info.fd_select.link = c->pop_pack ();
     else
     {
@@ -401,7 +408,7 @@ static bool _serialize_cff2 (hb_serialize_context_t *c,
 	      hb_iter (private_dict_infos))
     ;
     if (unlikely (!fda->serialize (c, it, fontSzr))) return false;
-    plan.info.fd_array_link = c->pop_pack ();
+    plan.info.fd_array_link = c->pop_pack (false);
   }
 
   /* variation store */
@@ -410,7 +417,7 @@ static bool _serialize_cff2 (hb_serialize_context_t *c,
     c->push ();
     CFF2VariationStore *dest = c->start_embed<CFF2VariationStore> ();
     if (unlikely (!dest || !dest->serialize (c, acc.varStore))) return false;
-    plan.info.var_store_link = c->pop_pack ();
+    plan.info.var_store_link = c->pop_pack (false);
   }
 
   OT::cff2 *cff2 = c->allocate_min<OT::cff2> ();

@@ -20,12 +20,10 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
  * ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
- *
  */
 
 #include "hb.hh"
 #include "hb-set.hh"
-
 
 int
 main (int argc, char **argv)
@@ -36,27 +34,34 @@ main (int argc, char **argv)
     hb_set_t v1 {1, 2};
     hb_set_t v2 {v1};
     assert (v1.get_population () == 2);
+    assert (hb_len (hb_iter (v1)) == 2);
     assert (v2.get_population () == 2);
   }
 
   /* Test copy assignment. */
   {
     hb_set_t v1 {1, 2};
-    hb_set_t v2 = v1;
+    hb_set_t v2;
+    v2 = v1;
     assert (v1.get_population () == 2);
     assert (v2.get_population () == 2);
   }
 
   /* Test move constructor. */
   {
-    hb_set_t v {hb_set_t {1, 2}};
+    hb_set_t s {1, 2};
+    hb_set_t v (std::move (s));
+    assert (s.get_population () == 0);
+    assert (hb_len (hb_iter (s)) == 0);
     assert (v.get_population () == 2);
   }
 
   /* Test move assignment. */
   {
+    hb_set_t s = hb_set_t {1, 2};
     hb_set_t v;
-    v = hb_set_t {1, 2};
+    v = std::move (s);
+    assert (s.get_population () == 0);
     assert (v.get_population () == 2);
   }
 
@@ -67,9 +72,15 @@ main (int argc, char **argv)
     s.add (18);
     s.add (12);
 
-    hb_set_t v (s);
+    hb_vector_t<hb_codepoint_t> v (s);
+    hb_set_t v0 (v);
+    hb_set_t v1 (s);
+    hb_set_t v2 (std::move (s));
 
-    assert (v.get_population () == 2);
+    assert (s.get_population () == 0);
+    assert (v0.get_population () == 2);
+    assert (v1.get_population () == 2);
+    assert (v2.get_population () == 2);
   }
 
   /* Test initializing from iterator. */
@@ -77,11 +88,14 @@ main (int argc, char **argv)
     hb_set_t s;
 
     s.add (18);
-    s.add (12);
+    s << 12;
+
+    /* Sink a range. */
+    s << hb_pair_t<hb_codepoint_t, hb_codepoint_t> {1, 3};
 
     hb_set_t v (hb_iter (s));
 
-    assert (v.get_population () == 2);
+    assert (v.get_population () == 5);
   }
 
   /* Test initializing from initializer list and swapping. */

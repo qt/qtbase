@@ -36,6 +36,48 @@
 
 #include "hb-font.hh"
 
+struct hb_ot_name_record_ids_t
+{
+  hb_ot_name_record_ids_t () = default;
+  hb_ot_name_record_ids_t (unsigned platform_id_,
+                           unsigned encoding_id_,
+                           unsigned language_id_,
+                           unsigned name_id_)
+      :platform_id (platform_id_),
+      encoding_id (encoding_id_),
+      language_id (language_id_),
+      name_id (name_id_) {}
+
+  bool operator != (const hb_ot_name_record_ids_t o) const
+  { return !(*this == o); }
+
+  inline bool operator == (const hb_ot_name_record_ids_t& o) const
+  {
+    return platform_id == o.platform_id &&
+           encoding_id == o.encoding_id &&
+           language_id == o.language_id &&
+           name_id == o.name_id;
+  }
+
+  inline uint32_t hash () const
+  {
+    uint32_t current = 0;
+    current = current * 31 + hb_hash (platform_id);
+    current = current * 31 + hb_hash (encoding_id);
+    current = current * 31 + hb_hash (language_id);
+    current = current * 31 + hb_hash (name_id);
+    return current;
+  }
+
+  unsigned platform_id;
+  unsigned encoding_id;
+  unsigned language_id;
+  unsigned name_id;
+};
+
+typedef struct hb_ot_name_record_ids_t hb_ot_name_record_ids_t;
+
+
 HB_MARK_AS_FLAG_T (hb_subset_flags_t);
 
 struct hb_subset_input_t
@@ -50,6 +92,7 @@ struct hb_subset_input_t
     hb_set_t *name_ids;
     hb_set_t *name_languages;
     hb_set_t *layout_features;
+    hb_set_t *layout_scripts;
   };
 
   union {
@@ -58,6 +101,15 @@ struct hb_subset_input_t
   };
 
   unsigned flags;
+  bool attach_accelerator_data = false;
+
+  // If set loca format will always be the long version.
+  bool force_long_loca = false;
+
+  hb_hashmap_t<hb_tag_t, float> *axes_location;
+#ifdef HB_EXPERIMENTAL_API
+  hb_hashmap_t<hb_ot_name_record_ids_t, hb_bytes_t> *name_table_overrides;
+#endif
 
   inline unsigned num_sets () const
   {
@@ -76,7 +128,12 @@ struct hb_subset_input_t
       if (unlikely (set_ptrs[i]->in_error ()))
         return true;
     }
-    return false;
+
+    return axes_location->in_error ()
+#ifdef HB_EXPERIMENTAL_API
+	|| name_table_overrides->in_error ()
+#endif
+	;
   }
 };
 

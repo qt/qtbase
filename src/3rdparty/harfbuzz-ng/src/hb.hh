@@ -29,7 +29,6 @@
 #ifndef HB_HH
 #define HB_HH
 
-
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC
 #ifdef _MSC_VER
 #pragma warning( disable: 4068 ) /* Unknown pragma */
@@ -65,6 +64,7 @@
 #pragma GCC diagnostic error   "-Wbitwise-instead-of-logical"
 #pragma GCC diagnostic error   "-Wcast-align"
 #pragma GCC diagnostic error   "-Wcast-function-type"
+#pragma GCC diagnostic error   "-Wcomma"
 #pragma GCC diagnostic error   "-Wdelete-non-virtual-dtor"
 #pragma GCC diagnostic error   "-Wembedded-directive"
 #pragma GCC diagnostic error   "-Wextra-semi-stmt"
@@ -126,6 +126,7 @@
 /* Ignored intentionally. */
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
 #pragma GCC diagnostic ignored "-Wclass-memaccess"
+#pragma GCC diagnostic ignored "-Wcast-function-type-strict" // https://github.com/harfbuzz/harfbuzz/pull/3859#issuecomment-1295409126
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -183,7 +184,7 @@
 #include <cassert>
 #include <cfloat>
 #include <climits>
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(_USE_MATH_DEFINES)
 # define _USE_MATH_DEFINES
 #endif
 #include <cmath>
@@ -470,6 +471,7 @@ static_assert ((sizeof (hb_var_int_t) == 4), "");
 /* Headers we include for everyone.  Keep topologically sorted by dependency.
  * They express dependency amongst themselves, but no other file should include
  * them directly.*/
+#include "hb-cplusplus.hh"
 #include "hb-meta.hh"
 #include "hb-mutex.hh"
 #include "hb-number.hh"

@@ -137,27 +137,32 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE # special case
         src/hb-ot-post-table.hh
         src/hb-ot-post-table-v2subset.hh
         src/hb-ot-shape.cc src/hb-ot-shape.h src/hb-ot-shape.hh
-        src/hb-ot-shape-complex-arabic.cc src/hb-ot-shape-complex-arabic.hh
-        src/hb-ot-shape-complex-arabic-fallback.hh
-        src/hb-ot-shape-complex-arabic-joining-list.hh
-        src/hb-ot-shape-complex-arabic-table.hh
-        src/hb-ot-shape-complex-default.cc
-        src/hb-ot-shape-complex-hangul.cc
-        src/hb-ot-shape-complex-hebrew.cc
-        src/hb-ot-shape-complex-indic.cc src/hb-ot-shape-complex-indic.hh
-        src/hb-ot-shape-complex-indic-machine.hh
-        src/hb-ot-shape-complex-indic-table.cc
-        src/hb-ot-shape-complex-khmer.cc
-        src/hb-ot-shape-complex-myanmar.cc
-        src/hb-ot-shape-complex-myanmar-machine.hh
-        src/hb-ot-shape-complex-syllabic.cc src/hb-ot-shape-complex-syllabic.hh
-        src/hb-ot-shape-complex-thai.cc
-        src/hb-ot-shape-complex-use.cc
-        src/hb-ot-shape-complex-use-machine.hh
-        src/hb-ot-shape-complex-use-table.hh
-        src/hb-ot-shape-complex-vowel-constraints.cc
         src/hb-ot-shape-fallback.cc src/hb-ot-shape-fallback.hh
         src/hb-ot-shape-normalize.cc src/hb-ot-shape-normalize.hh
+        src/hb-ot-shaper-arabic-fallback.hh
+        src/hb-ot-shaper-arabic-joining-list.hh
+        src/hb-ot-shaper-arabic-pua.hh
+        src/hb-ot-shaper-arabic-table.hh
+        src/hb-ot-shaper-arabic.cc src/hb-ot-shaper-arabic.hh
+        src/hb-ot-shaper-default.cc
+        src/hb-ot-shaper-hangul.cc
+        src/hb-ot-shaper-hebrew.cc
+        src/hb-ot-shaper-indic-machine.hh
+        src/hb-ot-shaper-indic-table.cc
+        src/hb-ot-shaper-indic.cc src/hb-ot-shaper-indic.hh
+        src/hb-ot-shaper-khmer-machine.hh
+        src/hb-ot-shaper-khmer.cc
+        src/hb-ot-shaper-myanmar-machine.hh
+        src/hb-ot-shaper-myanmar.cc
+        src/hb-ot-shaper-syllabic.cc src/hb-ot-shaper-syllabic.hh
+        src/hb-ot-shaper-thai.cc
+        src/hb-ot-shaper-use-machine.hh
+        src/hb-ot-shaper-use-table.hh
+        src/hb-ot-shaper-use.cc
+        src/hb-ot-shaper-vowel-constraints.cc
+        src/hb-ot-shaper-vowel-constraints.hh
+        src/hb-ot-shaper.hh
+        src/hb-subset-accelerator.hh
         src/hb-ot-tag.cc
         src/hb-ot-var.cc src/hb-ot-var.h
         src/hb-ot-var-common.hh
