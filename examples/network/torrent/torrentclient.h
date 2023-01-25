@@ -69,9 +69,6 @@ public:
     bool setTorrent(const QByteArray &torrentData);
     MetaInfo metaInfo() const;
 
-    void setMaxConnections(int connections);
-    int maxConnections() const;
-
     void setDestinationFolder(const QString &directory);
     QString destinationFolder() const;
 
