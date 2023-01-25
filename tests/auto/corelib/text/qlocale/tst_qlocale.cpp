@@ -2314,7 +2314,7 @@ void tst_QLocale::windowsDefaultLocale()
              locale.toString(QDate(1974, 12, 1), QLocale::ShortFormat));
     QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::LongFormat),
              QStringView(u"\u3021@\u3021\u3022@\u3021\u3029\u3027\u3024"));
-    const QString expectedFormattedShortTime = QStringView(u"\u3021^\u3022").toString();
+    const QString expectedFormattedShortTime = QStringView(u"\u3021^\u3022^\u3023").toString();
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::ShortFormat), expectedFormattedShortTime);
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::NarrowFormat),
              locale.toString(QTime(1,2,3), QLocale::ShortFormat));
