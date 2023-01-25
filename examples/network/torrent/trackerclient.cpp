@@ -62,12 +62,8 @@ void TrackerClient::fetchPeerList()
     QUrlQuery query(url);
 
     // Percent encode the hash
-    QByteArray infoHash = torrentDownloader->infoHash();
-    QByteArray encodedSum;
-    for (int i = 0; i < infoHash.size(); ++i) {
-        encodedSum += '%';
-        encodedSum += QByteArray::number(infoHash[i], 16).right(2).rightJustified(2, '0');
-    }
+    const QByteArray infoHash = torrentDownloader->infoHash();
+    const QByteArray encodedSum = infoHash.toPercentEncoding();
 
     bool seeding = (torrentDownloader->state() == TorrentClient::Seeding);
 
