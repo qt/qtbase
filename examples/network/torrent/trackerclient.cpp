@@ -54,6 +54,8 @@ void TrackerClient::timerEvent(QTimerEvent *event)
 
 void TrackerClient::fetchPeerList()
 {
+    if (metaInfo.announceUrl().isEmpty())
+        return;
     QUrl url(metaInfo.announceUrl());
 
     // Base the query on announce url to include a passkey (if any)
