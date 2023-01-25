@@ -24,11 +24,13 @@ public:
         NoPartialUpdate,
         PartialUpdate
     };
+    Q_ENUM(UpdateBehavior)
 
-    enum TargetBuffer {
+    enum TargetBuffer : uint8_t {
         LeftBuffer = 0,   // Default
         RightBuffer       // Only used when QSurfaceFormat::StereoBuffers is enabled
     };
+    Q_ENUM(TargetBuffer)
 
     explicit QOpenGLWidget(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~QOpenGLWidget();
