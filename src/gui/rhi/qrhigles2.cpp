@@ -5500,9 +5500,12 @@ bool QGles2GraphicsPipeline::create()
     };
     QShaderDescription desc[LastIdx];
     QShader::SeparateToCombinedImageSamplerMappingList samplerMappingList[LastIdx];
+    bool vertexFragmentOnly = true;
     for (const QRhiShaderStage &shaderStage : std::as_const(m_shaderStages)) {
         if (isGraphicsStage(shaderStage)) {
             const int idx = descIdxForStage(shaderStage);
+            if (idx != VtxIdx && idx != FragIdx)
+                vertexFragmentOnly = false;
             QShader shader = shaderStage.shader();
             QShaderVersion shaderVersion;
             desc[idx] = shader.description();
@@ -5534,7 +5537,8 @@ bool QGles2GraphicsPipeline::create()
         for (const QShaderDescription::InOutVariable &inVar : desc[VtxIdx].inputVariables())
             rhiD->f->glBindAttribLocation(program, GLuint(inVar.location), inVar.name);
 
-        rhiD->sanityCheckVertexFragmentInterface(desc[VtxIdx], desc[FragIdx]);
+        if (vertexFragmentOnly)
+            rhiD->sanityCheckVertexFragmentInterface(desc[VtxIdx], desc[FragIdx]);
 
         if (!rhiD->linkProgram(program))
             return false;
