@@ -745,29 +745,29 @@ void tst_QTextLayout::cursorToXForBidiBoundaries_data()
     QTest::addColumn<Qt::LayoutDirection>("textDirection");
     QTest::addColumn<QString>("text");
     QTest::addColumn<int>("cursorPosition");
-    QTest::addColumn<int>("expectedX");
+    QTest::addColumn<int>("runsToInclude");
 
     QTest::addRow("LTR, abcشزذabc, 0") << Qt::LeftToRight << "abcشزذabc"
         << 0 << 0;
     QTest::addRow("RTL, abcشزذabc, 9") << Qt::RightToLeft << "abcشزذabc"
-        << 9 << TESTFONT_SIZE * 3;
+        << 9 << 1;
     QTest::addRow("LTR, abcشزذabc, 3") << Qt::LeftToRight << "abcشزذabc"
         << 0 << 0;
     QTest::addRow("RTL, abcشزذabc, 6") << Qt::RightToLeft << "abcشزذabc"
-        << 9 << TESTFONT_SIZE * 3;
+        << 9 << 1;
 
     QTest::addRow("LTR, شزذabcشزذ, 0") << Qt::LeftToRight << "شزذabcشزذ"
-        << 0 << TESTFONT_SIZE * 2;
+        << 0 << 1;
     QTest::addRow("RTL, شزذabcشزذ, 9") << Qt::RightToLeft << "شزذabcشزذ"
         << 9 << 0;
     QTest::addRow("LTR, شزذabcشزذ, 3") << Qt::LeftToRight << "شزذabcشزذ"
-        << 3 << TESTFONT_SIZE * 2;
+        << 3 << 1;
     QTest::addRow("RTL, شزذabcشزذ, 3") << Qt::RightToLeft << "شزذabcشزذ"
-        << 3 << TESTFONT_SIZE * 5;
+        << 3 << 2;
     QTest::addRow("LTR, شزذabcشزذ, 6") << Qt::LeftToRight << "شزذabcشزذ"
-        << 6 << TESTFONT_SIZE * 5;
+        << 6 << 2;
     QTest::addRow("RTL, شزذabcشزذ, 6") << Qt::RightToLeft << "شزذabcشزذ"
-        << 6 << TESTFONT_SIZE * 2;
+        << 6 << 1;
 }
 
 void tst_QTextLayout::cursorToXForBidiBoundaries()
@@ -775,7 +775,7 @@ void tst_QTextLayout::cursorToXForBidiBoundaries()
     QFETCH(Qt::LayoutDirection, textDirection);
     QFETCH(QString, text);
     QFETCH(int, cursorPosition);
-    QFETCH(int, expectedX);
+    QFETCH(int, runsToInclude);
 
     QTextOption option;
     option.setTextDirection(textDirection);
@@ -784,12 +784,27 @@ void tst_QTextLayout::cursorToXForBidiBoundaries()
     layout.setTextOption(option);
     layout.beginLayout();
 
-    QTextLine line = layout.createLine();
-    line.setLineWidth(0x10000);
+    {
+        QTextLine line = layout.createLine();
+        line.setLineWidth(0x10000);
+    }
+    layout.endLayout();
+
+    QTextLine line = layout.lineAt(0);
+    QList<QGlyphRun> glyphRuns = line.glyphRuns();
+    QVERIFY(runsToInclude <= glyphRuns.size());
+
+    std::sort(glyphRuns.begin(), glyphRuns.end(),
+              [](const QGlyphRun &first, const QGlyphRun &second) {
+                    return first.positions().first().x() < second.positions().first().x();
+                 });
+
+    qreal expectedX = 0.0;
+    for (int i = 0; i < runsToInclude; ++i) {
+        expectedX += glyphRuns.at(i).boundingRect().width();
+    }
 
     QCOMPARE(line.cursorToX(cursorPosition), expectedX);
-
-    layout.endLayout();
 }
 
 void tst_QTextLayout::horizontalAlignment_data()

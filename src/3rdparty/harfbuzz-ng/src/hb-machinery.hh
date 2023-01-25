@@ -136,6 +136,13 @@ static inline Type& StructAfter(TObject &X)
 
 /*
  * Lazy loaders.
+ *
+ * The lazy-loaders are thread-safe pointer-like objects that create their
+ * instead on-demand.  They also support access to a "data" object that is
+ * necessary for creating their instance.  The data object, if specified,
+ * is accessed via pointer math, located at a location before the position
+ * of the loader itself.  This avoids having to store a pointer to data
+ * for every lazy-loader.  Multiple lazy-loaders can access the same data.
  */
 
 template <typename Data, unsigned int WheresData>
@@ -176,12 +183,12 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
 
   void init0 () {} /* Init, when memory is already set to 0. No-op for us. */
   void init ()  { instance.set_relaxed (nullptr); }
-  void fini ()  { do_destroy (instance.get ()); }
+  void fini ()  { do_destroy (instance.get_acquire ()); init (); }
 
   void free_instance ()
   {
   retry:
-    Stored *p = instance.get ();
+    Stored *p = instance.get_acquire ();
     if (unlikely (p && !cmpexch (p, nullptr)))
       goto retry;
     do_destroy (p);
@@ -194,7 +201,8 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
   }
 
   const Returned * operator -> () const { return get (); }
-  const Returned & operator * () const  { return *get (); }
+  template <typename U = Returned, hb_enable_if (!hb_is_same (U, void))>
+  const U & operator * () const  { return *get (); }
   explicit operator bool () const
   { return get_stored () != Funcs::get_null (); }
   template <typename C> operator const C * () const { return get (); }
@@ -202,7 +210,7 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
   Stored * get_stored () const
   {
   retry:
-    Stored *p = this->instance.get ();
+    Stored *p = this->instance.get_acquire ();
     if (unlikely (!p))
     {
       if (unlikely (this->is_inert ()))
@@ -227,7 +235,8 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
 
   bool cmpexch (Stored *current, Stored *value) const
   {
-    /* This *must* be called when there are no other threads accessing. */
+    /* This function can only be safely called directly if no
+     * other thread is accessing. */
     return this->instance.cmpexch (current, value);
   }
 
@@ -244,23 +253,23 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
   {
     Stored *p = (Stored *) hb_calloc (1, sizeof (Stored));
     if (likely (p))
-      p->init (data);
+      p = new (p) Stored (data);
     return p;
   }
   static Stored *create ()
   {
     Stored *p = (Stored *) hb_calloc (1, sizeof (Stored));
     if (likely (p))
-      p->init ();
+      p = new (p) Stored ();
     return p;
   }
   static void destroy (Stored *p)
   {
-    p->fini ();
+    p->~Stored ();
     hb_free (p);
   }
 
-//  private:
+  private:
   /* Must only have one pointer. */
   hb_atomic_ptr_t<Stored *> instance;
 };
@@ -272,14 +281,19 @@ struct hb_face_lazy_loader_t : hb_lazy_loader_t<T,
 						hb_face_lazy_loader_t<T, WheresFace>,
 						hb_face_t, WheresFace> {};
 
-template <typename T, unsigned int WheresFace>
+template <typename T, unsigned int WheresFace, bool core=false>
 struct hb_table_lazy_loader_t : hb_lazy_loader_t<T,
-						 hb_table_lazy_loader_t<T, WheresFace>,
+						 hb_table_lazy_loader_t<T, WheresFace, core>,
 						 hb_face_t, WheresFace,
 						 hb_blob_t>
 {
   static hb_blob_t *create (hb_face_t *face)
-  { return hb_sanitize_context_t ().reference_table<T> (face); }
+  {
+    auto c = hb_sanitize_context_t ();
+    if (core)
+      c.set_num_glyphs (0); // So we don't recurse ad infinitum, or doesn't need num_glyphs
+    return c.reference_table<T> (face);
+  }
   static void destroy (hb_blob_t *p) { hb_blob_destroy (p); }
 
   static const hb_blob_t *get_null ()
