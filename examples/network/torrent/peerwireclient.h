@@ -16,7 +16,7 @@ class TorrentPeer;
 
 struct TorrentBlock
 {
-    inline TorrentBlock(int p, int o, int l)
+    inline TorrentBlock(qint32 p, qint32 o, qint32 l)
         : pieceIndex(p), offset(o), length(l)
     {
     }
@@ -27,9 +27,9 @@ struct TorrentBlock
                 && length == other.length;
     }
 
-    int pieceIndex;
-    int offset;
-    int length;
+    qint32 pieceIndex;
+    qint32 offset;
+    qint32 length;
 };
 
 class PeerWireClient : public QTcpSocket
