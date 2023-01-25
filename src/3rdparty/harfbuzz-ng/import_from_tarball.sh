@@ -90,16 +90,4 @@ for i in ${FILES[*]}; do
     copy_file_or_dir "$i"
 done
 
-CODEFILES=($HB_DIR/src/*.cc
-           $HB_DIR/src/*.hh
-           $HB_DIR/src/*.h)
-
-for i in ${CODEFILES[*]}; do
-    cp $i $TARGET_DIR/src/
-done
-
-GSUBFILES=($HB_DIR/src/OT/Layout/GSUB/*.hh)
-
-for i in ${GSUBFILES[*]}; do
-    cp $i $TARGET_DIR/src/OT/Layout/GSUB/
-done
+cp -R $HB_DIR/src $TARGET_DIR
