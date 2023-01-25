@@ -567,6 +567,7 @@ bool QVulkanInstance::create()
         d_ptr->errorCode = VK_SUCCESS;
         d_ptr->funcs.reset(new QVulkanFunctions(this));
         d_ptr->platformInst->setDebugFilters(d_ptr->debugFilters);
+        d_ptr->platformInst->setDebugUtilsFilters(d_ptr->debugUtilsFilters);
         return true;
     }
 
@@ -886,12 +887,13 @@ void QVulkanInstance::removeDebugOutputFilter(DebugFilter filter)
     Typedef for debug filtering callback functions, with the following signature:
 
     \code
-    bool myDebugUtilsFilter(DebugMessageSeverityFlags severity, DebugMessageTypeFlags type, const void *callbackData);
+    std::function<bool(DebugMessageSeverityFlags severity, DebugMessageTypeFlags type, const void *message)>;
     \endcode
 
-    The \c callbackData
-    argument is a pointer to the VkDebugUtilsMessengerCallbackDataEXT
-    structure.
+    The \c message argument is a pointer to the
+    VkDebugUtilsMessengerCallbackDataEXT structure. Refer to the documentation
+    of \c{VK_EXT_debug_utils} for details. The Qt headers do not use the real
+    type in order to avoid introducing a dependency on post-1.0 Vulkan headers.
 
     Returning \c true suppresses the printing of the message.
 
@@ -928,20 +930,18 @@ void QVulkanInstance::removeDebugOutputFilter(DebugFilter filter)
 
     \note This function can be called before create().
 
-    \sa removeDebugOutputFilter()
+    \sa clearDebugOutputFilters()
     \since 6.5
  */
 void QVulkanInstance::installDebugOutputFilter(DebugUtilsFilter filter)
 {
-    if (!d_ptr->debugUtilsFilters.contains(filter)) {
-        d_ptr->debugUtilsFilters.append(filter);
-        if (d_ptr->platformInst)
-            d_ptr->platformInst->setDebugUtilsFilters(d_ptr->debugUtilsFilters);
-    }
+    d_ptr->debugUtilsFilters.append(filter);
+    if (d_ptr->platformInst)
+        d_ptr->platformInst->setDebugUtilsFilters(d_ptr->debugUtilsFilters);
 }
 
 /*!
-    Removes a \a filter function previously installed by
+    Removes all filter functions installed previously by
     installDebugOutputFilter().
 
     \note This function can be called before create().
@@ -949,11 +949,14 @@ void QVulkanInstance::installDebugOutputFilter(DebugUtilsFilter filter)
     \sa installDebugOutputFilter()
     \since 6.5
  */
-void QVulkanInstance::removeDebugOutputFilter(DebugUtilsFilter filter)
+void QVulkanInstance::clearDebugOutputFilters()
 {
-    d_ptr->debugUtilsFilters.removeOne(filter);
-    if (d_ptr->platformInst)
+    d_ptr->debugFilters.clear();
+    d_ptr->debugUtilsFilters.clear();
+    if (d_ptr->platformInst) {
+        d_ptr->platformInst->setDebugFilters(d_ptr->debugFilters);
         d_ptr->platformInst->setDebugUtilsFilters(d_ptr->debugUtilsFilters);
+    }
 }
 
 #ifndef QT_NO_DEBUG_STREAM

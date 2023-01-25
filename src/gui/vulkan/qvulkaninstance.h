@@ -203,9 +203,9 @@ public:
     };
     Q_DECLARE_FLAGS(DebugMessageTypeFlags, DebugMessageTypeFlag)
 
-    typedef bool (*DebugUtilsFilter)(DebugMessageSeverityFlags severity, DebugMessageTypeFlags type, const void *callbackData);
+    using DebugUtilsFilter = std::function<bool(DebugMessageSeverityFlags severity, DebugMessageTypeFlags type, const void *message)>;
     void installDebugOutputFilter(DebugUtilsFilter filter);
-    void removeDebugOutputFilter(DebugUtilsFilter filter);
+    void clearDebugOutputFilters();
 
 private:
     friend class QVulkanInstancePrivate;
