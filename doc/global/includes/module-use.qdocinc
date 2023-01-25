@@ -18,9 +18,10 @@
 //! [using qt module]
 
 //! [using the c++ api]
-    Using a Qt module requires linking against the module library, either
-    directly or through other dependencies. Several build tools have dedicated
-    support for this, including \l{CMake Documentation}{CMake} and \l{qmake}.
+    Using a Qt module's C++ API requires linking against the module library,
+    either directly or through other dependencies. Several build tools have
+    dedicated support for this, including \l{CMake Documentation}{CMake} and
+    \l{qmake}.
 //! [using the c++ api]
 
 //! [using the qml api]
