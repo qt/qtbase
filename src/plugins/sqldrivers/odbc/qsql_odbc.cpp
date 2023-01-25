@@ -22,6 +22,7 @@
 #include <QSqlQuery>
 #include <QtSql/private/qsqldriver_p.h>
 #include <QtSql/private/qsqlresult_p.h>
+#include "private/qtools_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -112,7 +113,7 @@ public:
     void checkDateTimePrecision();
     bool setConnectionOptions(const QString& connOpts);
     void splitTableQualifier(const QString &qualifier, QString &catalog,
-                             QString &schema, QString &table);
+                             QString &schema, QString &table) const;
     DefaultCase defaultCase() const;
     QString adjustCase(const QString&) const;
     QChar quoteChar();
@@ -842,38 +843,31 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
     return true;
 }
 
-void QODBCDriverPrivate::splitTableQualifier(const QString & qualifier, QString &catalog,
-                                       QString &schema, QString &table)
+void QODBCDriverPrivate::splitTableQualifier(const QString &qualifier, QString &catalog,
+                                             QString &schema, QString &table) const
 {
     if (!useSchema) {
         table = qualifier;
         return;
     }
-    QStringList l = qualifier.split(u'.');
-    if (l.count() > 3)
-        return; // can't possibly be a valid table qualifier
-    int i = 0, n = l.count();
-    if (n == 1) {
-        table = qualifier;
-    } else {
-        for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
-            if (n == 3) {
-                if (i == 0) {
-                    catalog = *it;
-                } else if (i == 1) {
-                    schema = *it;
-                } else if (i == 2) {
-                    table = *it;
-                }
-            } else if (n == 2) {
-                if (i == 0) {
-                    schema = *it;
-                } else if (i == 1) {
-                    table = *it;
-                }
-            }
-            i++;
-        }
+    const QList<QStringView> l = QStringView(qualifier).split(u'.');
+    switch (l.count()) {
+        case 1:
+            table = qualifier;
+            break;
+        case 2:
+            schema = l.at(0).toString();
+            table = l.at(1).toString();
+            break;
+        case 3:
+            catalog = l.at(0).toString();
+            schema = l.at(1).toString();
+            table = l.at(2).toString();
+            break;
+        default:
+            qSqlWarning(QString::fromLatin1("QODBCDriver::splitTableQualifier: Unable to split table qualifier '%1'")
+                        .arg(qualifier), this);
+            break;
     }
 }
 
@@ -1016,7 +1010,7 @@ bool QODBCResult::reset (const QString& query)
     SQLNumResultCols(d->hStmt, &count);
     if (count) {
         setSelect(true);
-        for (int i = 0; i < count; ++i) {
+        for (SQLSMALLINT i = 0; i < count; ++i) {
             d->rInf.append(qMakeFieldInfo(d, i));
         }
         d->fieldCache.resize(count);
@@ -1387,9 +1381,8 @@ bool QODBCResult::exec()
     memset(indicators.data(), 0, indicators.size() * sizeof(SQLLEN));
 
     // bind parameters - only positional binding allowed
-    int i;
     SQLRETURN r;
-    for (i = 0; i < values.count(); ++i) {
+    for (qsizetype i = 0; i < values.count(); ++i) {
         if (bindValueType(i) & QSql::Out)
             values[i].detach();
         const QVariant &val = values.at(i);
@@ -1692,7 +1685,7 @@ bool QODBCResult::exec()
     SQLNumResultCols(d->hStmt, &count);
     if (count) {
         setSelect(true);
-        for (int i = 0; i < count; ++i) {
+        for (SQLSMALLINT i = 0; i < count; ++i) {
             d->rInf.append(qMakeFieldInfo(d, i));
         }
         d->fieldCache.resize(count);
@@ -1706,7 +1699,7 @@ bool QODBCResult::exec()
     if (!hasOutValues())
         return true;
 
-    for (i = 0; i < values.count(); ++i) {
+    for (qsizetype i = 0; i < values.count(); ++i) {
         switch (values.at(i).typeId()) {
             case QMetaType::QDate: {
                 DATE_STRUCT ds = *((DATE_STRUCT *)const_cast<char *>(tmpStorage.at(i).constData()));
@@ -1832,7 +1825,7 @@ bool QODBCResult::nextResult()
     SQLNumResultCols(d->hStmt, &count);
     if (count) {
         setSelect(true);
-        for (int i = 0; i < count; ++i) {
+        for (SQLSMALLINT i = 0; i < count; ++i) {
             d->rInf.append(qMakeFieldInfo(d, i));
         }
         d->fieldCache.resize(count);
@@ -2124,48 +2117,49 @@ void QODBCDriverPrivate::checkUnicode()
 bool QODBCDriverPrivate::checkDriver() const
 {
 #ifdef ODBC_CHECK_DRIVER
-    static const SQLUSMALLINT reqFunc[] = {
+    static constexpr SQLUSMALLINT reqFunc[] = {
                 SQL_API_SQLDESCRIBECOL, SQL_API_SQLGETDATA, SQL_API_SQLCOLUMNS,
                 SQL_API_SQLGETSTMTATTR, SQL_API_SQLGETDIAGREC, SQL_API_SQLEXECDIRECT,
-                SQL_API_SQLGETINFO, SQL_API_SQLTABLES, 0
+                SQL_API_SQLGETINFO, SQL_API_SQLTABLES
     };
 
     // these functions are optional
-    static const SQLUSMALLINT optFunc[] = {
-        SQL_API_SQLNUMRESULTCOLS, SQL_API_SQLROWCOUNT, 0
+    static constexpr SQLUSMALLINT optFunc[] = {
+        SQL_API_SQLNUMRESULTCOLS, SQL_API_SQLROWCOUNT
     };
 
     SQLRETURN r;
     SQLUSMALLINT sup;
 
-    int i;
     // check the required functions
-    for (i = 0; reqFunc[i] != 0; ++i) {
+    for (const SQLUSMALLINT func : reqFunc) {
 
-        r = SQLGetFunctions(hDbc, reqFunc[i], &sup);
+        r = SQLGetFunctions(hDbc, func, &sup);
 
         if (r != SQL_SUCCESS) {
             qSqlWarning("QODBCDriver::checkDriver: Cannot get list of supported functions"_L1, this);
             return false;
         }
         if (sup == SQL_FALSE) {
-            qWarning () << "QODBCDriver::open: Warning - Driver doesn't support all needed functionality (" << reqFunc[i] <<
-                    ").\nPlease look at the Qt SQL Module Driver documentation for more information.";
+            qWarning () << "QODBCDriver::open: Warning - Driver doesn't support all needed functionality ("
+                        << func
+                        << ").\nPlease look at the Qt SQL Module Driver documentation for more information.";
             return false;
         }
     }
 
     // these functions are optional and just generate a warning
-    for (i = 0; optFunc[i] != 0; ++i) {
+    for (const SQLUSMALLINT func : optFunc) {
 
-        r = SQLGetFunctions(hDbc, optFunc[i], &sup);
+        r = SQLGetFunctions(hDbc, func, &sup);
 
         if (r != SQL_SUCCESS) {
             qSqlWarning("QODBCDriver::checkDriver: Cannot get list of supported functions"_L1, this);
             return false;
         }
         if (sup == SQL_FALSE) {
-            qWarning() << "QODBCDriver::checkDriver: Warning - Driver doesn't support some non-critical functions (" << optFunc[i] << ')';
+            qWarning() << "QODBCDriver::checkDriver: Warning - Driver doesn't support some non-critical functions ("
+                       << func << ')';
             return true;
         }
     }
@@ -2436,7 +2430,7 @@ QSqlIndex QODBCDriver::primaryIndex(const QString& tablename) const
         return index;
     }
     QString catalog, schema, table;
-    const_cast<QODBCDriverPrivate*>(d)->splitTableQualifier(tablename, catalog, schema, table);
+    d->splitTableQualifier(tablename, catalog, schema, table);
 
     if (isIdentifierEscaped(catalog, QSqlDriver::TableName))
         catalog = stripDelimiters(catalog, QSqlDriver::TableName);
@@ -2533,7 +2527,7 @@ QSqlRecord QODBCDriver::record(const QString& tablename) const
 
     SQLHANDLE hStmt;
     QString catalog, schema, table;
-    const_cast<QODBCDriverPrivate*>(d)->splitTableQualifier(tablename, catalog, schema, table);
+    d->splitTableQualifier(tablename, catalog, schema, table);
 
     if (isIdentifierEscaped(catalog, QSqlDriver::TableName))
         catalog = stripDelimiters(catalog, QSqlDriver::TableName);
@@ -2625,15 +2619,14 @@ QString QODBCDriver::formatValue(const QSqlField &field,
         } else
             r = "NULL"_L1;
     } else if (field.metaType().id() == QMetaType::QByteArray) {
-        QByteArray ba = field.value().toByteArray();
-        QString res;
-        static const char hexchars[] = "0123456789abcdef";
-        for (int i = 0; i < ba.size(); ++i) {
-            uchar s = (uchar) ba[i];
-            res += QLatin1Char(hexchars[s >> 4]);
-            res += QLatin1Char(hexchars[s & 0x0f]);
+        const QByteArray ba = field.value().toByteArray();
+        r.reserve((ba.size() + 1) * 2);
+        r = "0x"_L1;
+        for (const char c : ba) {
+            const uchar s = uchar(c);
+            r += QLatin1Char(QtMiscUtils::toHexLower(s >> 4));
+            r += QLatin1Char(QtMiscUtils::toHexLower(s & 0x0f));
         }
-        r = "0x"_L1 + res;
     } else {
         r = QSqlDriver::formatValue(field, trimStrings);
     }
