@@ -410,27 +410,28 @@ QtWindows::DpiAwareness QWindowsContext::processDpiAwareness()
 QDebug operator<<(QDebug d, QtWindows::DpiAwareness dpiAwareness)
 {
     const QDebugStateSaver saver(d);
-    d.nospace().noquote() << "QtWindows::DpiAwareness::";
+    QString message = u"QtWindows::DpiAwareness::"_s;
     switch (dpiAwareness) {
     case QtWindows::DpiAwareness::Invalid:
-        d.nospace().noquote() << "Invalid";
+        message += u"Invalid"_s;
         break;
     case QtWindows::DpiAwareness::Unaware:
-        d.nospace().noquote() << "Unaware";
+        message += u"Unaware"_s;
         break;
     case QtWindows::DpiAwareness::System:
-        d.nospace().noquote() << "System";
+        message += u"System"_s;
         break;
     case QtWindows::DpiAwareness::PerMonitor:
-        d.nospace().noquote() << "PerMonitor";
+        message += u"PerMonitor"_s;
         break;
     case QtWindows::DpiAwareness::PerMonitorVersion2:
-        d.nospace().noquote() << "PerMonitorVersion2";
+        message += u"PerMonitorVersion2"_s;
         break;
     case QtWindows::DpiAwareness::Unaware_GdiScaled:
-        d.nospace().noquote() << "Unaware_GdiScaled";
+        message += u"Unaware_GdiScaled"_s;
         break;
     }
+    d.nospace().noquote() << message;
     return d;
 }
 #endif
