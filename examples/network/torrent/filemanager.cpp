@@ -36,7 +36,7 @@ FileManager::~FileManager()
     }
 }
 
-int FileManager::read(int pieceIndex, int offset, int length)
+qint32 FileManager::read(qint32 pieceIndex, qint32 offset, qint32 length)
 {
     ReadRequest request;
     request.pieceIndex = pieceIndex;
@@ -55,7 +55,7 @@ int FileManager::read(int pieceIndex, int offset, int length)
     return request.id;
 }
 
-void FileManager::write(int pieceIndex, int offset, const QByteArray &data)
+void FileManager::write(qint32 pieceIndex, qint32 offset, const QByteArray &data)
 {
     WriteRequest request;
     request.pieceIndex = pieceIndex;
@@ -71,7 +71,7 @@ void FileManager::write(int pieceIndex, int offset, const QByteArray &data)
     }
 }
 
-void FileManager::verifyPiece(int pieceIndex)
+void FileManager::verifyPiece(qint32 pieceIndex)
 {
     QMutexLocker locker(&mutex);
     pendingVerificationRequests << pieceIndex;
@@ -83,7 +83,7 @@ void FileManager::verifyPiece(int pieceIndex)
     }
 }
 
-int FileManager::pieceLengthAt(int pieceIndex) const
+qint32 FileManager::pieceLengthAt(qint32 pieceIndex) const
 {
     QMutexLocker locker(&mutex);
     return (sha1s.size() == pieceIndex + 1)
@@ -282,7 +282,7 @@ bool FileManager::generateFiles()
     return true;
 }
 
-QByteArray FileManager::readBlock(int pieceIndex, int offset, int length)
+QByteArray FileManager::readBlock(qint32 pieceIndex, qint32 offset, qint32 length)
 {
     QByteArray block;
     qint64 startReadIndex = (quint64(pieceIndex) * pieceLength) + offset;
@@ -320,7 +320,7 @@ QByteArray FileManager::readBlock(int pieceIndex, int offset, int length)
     return block;
 }
 
-bool FileManager::writeBlock(int pieceIndex, int offset, const QByteArray &data)
+bool FileManager::writeBlock(qint32 pieceIndex, qint32 offset, const QByteArray &data)
 {
     qint64 startWriteIndex = (qint64(pieceIndex) * pieceLength) + offset;
     qint64 currentIndex = 0;
@@ -373,9 +373,9 @@ void FileManager::verifyFileContents()
 
             int oldPercent = 0;
             if (!newFile) {
-                int numPieces = sha1s.size();
+                qint32 numPieces = sha1s.size();
 
-                for (int index = 0; index < numPieces; ++index) {
+                for (qint32 index = 0; index < numPieces; ++index) {
                     verifySinglePiece(index);
 
                     int percent = ((index + 1) * 100) / numPieces;
@@ -395,7 +395,7 @@ void FileManager::verifyFileContents()
         emit pieceVerified(index, verifySinglePiece(index));
 }
 
-bool FileManager::verifySinglePiece(int pieceIndex)
+bool FileManager::verifySinglePiece(qint32 pieceIndex)
 {
     QByteArray block = readBlock(pieceIndex, 0, pieceLength);
     QByteArray sha1Sum = QCryptographicHash::hash(block, QCryptographicHash::Sha1);

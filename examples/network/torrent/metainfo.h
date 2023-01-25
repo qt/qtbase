@@ -17,7 +17,7 @@ struct MetaInfoSingleFile
     qint64 length;
     QByteArray md5sum;
     QString name;
-    int pieceLength;
+    qint32 pieceLength;
     QList<QByteArray> sha1Sums;
 };
 

@@ -29,13 +29,13 @@ public:
     inline void setMetaInfo(const MetaInfo &info) { metaInfo = info; }
     inline void setDestinationFolder(const QString &directory) { destinationPath = directory; }
 
-    int read(int pieceIndex, int offset, int length);
-    void write(int pieceIndex, int offset, const QByteArray &data);
-    void verifyPiece(int pieceIndex);
+    qint32 read(qint32 pieceIndex, qint32 offset, qint32 length);
+    void write(qint32 pieceIndex, qint32 offset, const QByteArray &data);
+    void verifyPiece(qint32 pieceIndex);
     inline qint64 totalSize() const { return totalLength; }
 
-    inline int pieceCount() const { return numPieces; }
-    int pieceLengthAt(int pieceIndex) const;
+    inline qint32 pieceCount() const { return numPieces; }
+    qint32 pieceLengthAt(qint32 pieceIndex) const;
 
     QBitArray completedPieces() const;
     void setCompletedPieces(const QBitArray &pieces);
@@ -46,35 +46,35 @@ public slots:
     void startDataVerification();
 
 signals:
-    void dataRead(int id, int pieceIndex, int offset, const QByteArray &data);
+    void dataRead(qint32 id, qint32 pieceIndex, qint32 offset, const QByteArray &data);
     void error();
     void verificationProgress(int percent);
     void verificationDone();
-    void pieceVerified(int pieceIndex, bool verified);
+    void pieceVerified(qint32 pieceIndex, bool verified);
 
 protected:
     void run() override;
 
 private slots:
-    bool verifySinglePiece(int pieceIndex);
+    bool verifySinglePiece(qint32 pieceIndex);
     void wakeUp();
 
 private:
     bool generateFiles();
-    QByteArray readBlock(int pieceIndex, int offset, int length);
-    bool writeBlock(int pieceIndex, int offset, const QByteArray &data);
+    QByteArray readBlock(qint32 pieceIndex, qint32 offset, qint32 length);
+    bool writeBlock(qint32 pieceIndex, qint32 offset, const QByteArray &data);
     void verifyFileContents();
 
     struct WriteRequest {
-        int pieceIndex;
-        int offset;
+        qint32 pieceIndex;
+        qint32 offset;
         QByteArray data;
     };
     struct ReadRequest {
-        int pieceIndex;
-        int offset;
-        int length;
-        int id;
+        qint32 pieceIndex;
+        qint32 offset;
+        qint32 length;
+        qint32 id;
     };
 
     QString errString;
