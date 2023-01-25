@@ -395,14 +395,19 @@ QGLXContext::QGLXContext(Display *display, GLXContext context, void *visualInfo,
         int numConfigs = 0;
         static const int attribs[] = { GLX_FBCONFIG_ID, configId, None };
         configs = glXChooseFBConfig(m_display, screenNumber, attribs, &numConfigs);
-        if (!configs || numConfigs < 1) {
+        if (!configs) {
+            qWarning("QGLXContext: Failed to find config(invalid arguments for glXChooseFBConfig)");
+            return;
+        } else if (numConfigs < 1) {
             qWarning("QGLXContext: Failed to find config");
+            XFree(configs);
             return;
         }
         if (configs && numConfigs > 1) // this is suspicious so warn but let it continue
             qWarning("QGLXContext: Multiple configs for FBConfig ID %d", configId);
 
         m_config = configs[0];
+        XFree(configs);
     }
 
     Q_ASSERT(vinfo || m_config);
