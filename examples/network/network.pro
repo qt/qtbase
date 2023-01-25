@@ -14,7 +14,6 @@ qtHaveModule(widgets) {
                 http \
                 loopback \
                 threadedfortuneserver \
-                googlesuggest \
                 torrent \
                 multicastreceiver \
                 multicastsender
