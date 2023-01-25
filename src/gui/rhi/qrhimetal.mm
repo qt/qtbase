@@ -4412,10 +4412,7 @@ id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Var
 
 id<MTLFunction> QRhiMetalData::createMSLShaderFunction(id<MTLLibrary> lib, const QByteArray &entryPoint)
 {
-    NSString *name = [NSString stringWithUTF8String: entryPoint.constData()];
-    id<MTLFunction> f = [lib newFunctionWithName: name];
-    [name release];
-    return f;
+    return [lib newFunctionWithName:[NSString stringWithUTF8String:entryPoint.constData()]];
 }
 
 void QMetalGraphicsPipeline::setupAttachmentsInMetalRenderPassDescriptor(void *metalRpDesc, QMetalRenderPassDescriptor *rpD)
