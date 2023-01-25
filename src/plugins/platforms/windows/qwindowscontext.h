@@ -116,7 +116,7 @@ public:
 
     static void setTabletAbsoluteRange(int a);
 
-    bool setProcessDpiAwareness(QtWindows::DpiAwareness dpiAwareness);
+    static bool setProcessDpiAwareness(QtWindows::DpiAwareness dpiAwareness);
     static QtWindows::DpiAwareness processDpiAwareness();
     static QtWindows::DpiAwareness windowDpiAwareness(HWND hwnd);
 
