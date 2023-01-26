@@ -46,7 +46,6 @@ void AnalogClock::paintEvent(QPaintEvent *)
     QColor minuteColor(0, 127, 127, 191);
 
     int side = qMin(width(), height());
-    QTime time = QTime::currentTime();
 //! [10]
 
 //! [11]
@@ -64,8 +63,9 @@ void AnalogClock::paintEvent(QPaintEvent *)
 //! [15] //! [16]
     painter.setBrush(hourColor);
 //! [16]
-
-//! [17] //! [18]
+//! [18]
+    QTime time = QTime::currentTime();
+//! [17]
     painter.save();
 //! [17] //! [19]
     painter.rotate(30.0 * ((time.hour() + time.minute() / 60.0)));

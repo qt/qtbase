@@ -213,11 +213,11 @@
     \row
     \li {2,1}
 
-    \snippet analogclock/main.cpp 1
+    \snippet ../widgets/widgets/analogclock/analogclock.cpp 9
 
     We translate the coordinate system so that point (0, 0) is in the
     widget's center, instead of being at the top-left corner. We also
-    scale the system by \c side / 100, where \c side is either the
+    scale the system by \c side / 200, where \c side is either the
     widget's width or the height, whichever is shortest. We want the
     clock to be square, even if the device isn't.
 
@@ -227,7 +227,7 @@
 
     See also the \l {Window-Viewport Conversion} section.
 
-    \snippet analogclock/main.cpp 2
+    \snippet ../widgets/widgets/analogclock/analogclock.cpp 18
 
     We draw the clock's hour hand by rotating the coordinate system
     and calling QPainter::drawConvexPolygon(). Thank's to the
@@ -235,26 +235,35 @@
 
     The polygon is specified as an array of alternating \e x, \e y
     values, stored in the \c hourHand static variable (defined at the
-    beginning of the function), which corresponds to the four points
-    (2, 0), (0, 2), (-2, 0), and (0, -25).
+    beginning of the function), which corresponds to the three points
+    (7, 8), (-7, 8), (0, -40).
 
     The calls to QPainter::save() and QPainter::restore() surrounding
     the code guarantees that the code that follows won't be disturbed
     by the transformations we've used.
 
-    \snippet analogclock/main.cpp 3
+    \snippet ../widgets/widgets/analogclock/analogclock.cpp 21
+
+    After that, we draw the hour markers for the clock face, which
+    consists of twelve short lines at 30-degree intervals. When that
+    loop is done, the painter has been rotated a full circle back to
+    its original state, so we don't need to save and restore the state.
+
+    \snippet ../widgets/widgets/analogclock/analogclock.cpp 24
 
     We do the same for the clock's minute hand, which is defined by
-    the four points (1, 0), (0, 1), (-1, 0), and (0, -40). These
+    the three points (7, 8), (-7, 8), (0, -70). These
     coordinates specify a hand that is thinner and longer than the
     minute hand.
 
-    \snippet analogclock/main.cpp 4
+    \snippet ../widgets/widgets/analogclock/analogclock.cpp 27
 
-    Finally, we draw the clock face, which consists of twelve short
-    lines at 30-degree intervals. At the end of that, the painter is
-    rotated in a way which isn't very useful, but we're done with
-    painting so that doesn't matter.
+    Finally, we draw the minute markers for the clock face, which
+    consists of sixty short lines at 6-degree intervals. We skip every
+    fifth minute marker because we don't want to draw over the hour
+    markers. At the end of that, the painter is rotated in a way which
+    isn't very useful, but we're done with painting so that doesn't
+    matter.
     \endtable
 
     For more information about the transformation matrix, see the
@@ -422,5 +431,5 @@
     \endtable
     \endomit
 
-    \sa {Analog Clock Window Example}
+    \sa {Analog Clock}
 */
