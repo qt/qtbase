@@ -9757,7 +9757,7 @@ void QWidget::leaveEvent(QEvent *)
     never be called; the backingstore will be used instead.
 
     \sa event(), repaint(), update(), QPainter, QPixmap, QPaintEvent,
-    {Analog Clock Example}
+    {Analog Clock}
 */
 
 void QWidget::paintEvent(QPaintEvent *)
@@ -11069,7 +11069,7 @@ void QWidgetPrivate::repaint(T r)
     If the Qt::WA_OpaquePaintEvent widget attribute is set, the widget is
     responsible for painting all its pixels with an opaque color.
 
-    \sa repaint(), paintEvent(), setUpdatesEnabled(), {Analog Clock Example}
+    \sa repaint(), paintEvent(), setUpdatesEnabled(), {Analog Clock}
 */
 void QWidget::update()
 {

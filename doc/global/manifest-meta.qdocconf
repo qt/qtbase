@@ -19,7 +19,7 @@
 # manifestmeta.filters                = highlighted sql global
 #
 # manifestmeta.highlighted.names      = "QtGui/Analog Clock Window Example" \
-#                                       "QtWidgets/Analog Clock Example"
+#                                       "QtWidgets/Analog Clock"
 # manifestmeta.highlighted.attributes = isHighlighted:true
 #
 # manifestmeta.sql.names              = "QtSql/*"
@@ -212,7 +212,7 @@ manifestmeta.ios.names              =  "QtCore/Contiguous Cache Example" \
                                        "QtWidgets/Completer Example" \
                                        "QtWidgets/Custom Completer Example" \
                                        "QtWidgets/Undo Framework" \
-                                       "QtWidgets/Analog Clock Example" \
+                                       "QtWidgets/Analog Clock" \
                                        "QtWidgets/Calculator Example" \
                                        "QtWidgets/Calendar Widget Example" \
                                        "QtWidgets/Character Map Example" \

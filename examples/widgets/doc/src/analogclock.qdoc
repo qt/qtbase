@@ -3,7 +3,10 @@
 
 /*!
     \example widgets/analogclock
-    \title Analog Clock Example
+    \meta category {Graphics}
+    \meta tags {widgets}
+
+    \title Analog Clock
     \ingroup examples-widgets
     \brief The Analog Clock example shows how to draw the contents of a
     custom widget.
