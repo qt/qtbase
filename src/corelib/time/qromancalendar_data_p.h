@@ -20,6 +20,8 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtPrivate::Roman {
+
 // GENERATED PART STARTS HERE
 
 /*
@@ -2742,6 +2744,8 @@ static constexpr char16_t months_data[] = {
 0x49, 0x3b, 0x50, 0x3b, 0x50, 0x3b, 0x50, 0x3b, 0x50, 0x3b, 0x50, 0x3b, 0x59, 0x3b, 0x59, 0x3b, 0x59
 };
 // GENERATED PART ENDS HERE
+
+} // namespace QtPrivate::Roman
 
 QT_END_NAMESPACE
 

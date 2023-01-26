@@ -57,12 +57,12 @@ bool QRomanCalendar::isSolar() const
 
 const QCalendarLocale *QRomanCalendar::localeMonthIndexData() const
 {
-    return locale_data;
+    return QtPrivate::Roman::locale_data;
 }
 
 const char16_t *QRomanCalendar::localeMonthData() const
 {
-    return months_data;
+    return QtPrivate::Roman::months_data;
 }
 
 QT_END_NAMESPACE

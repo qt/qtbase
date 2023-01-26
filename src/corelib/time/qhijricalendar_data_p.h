@@ -20,6 +20,8 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtPrivate::Hijri {
+
 // GENERATED PART STARTS HERE
 
 /*
@@ -1253,6 +1255,8 @@ static constexpr char16_t months_data[] = {
 0x3b, 0x417, 0x438, 0x43b, 0x2d, 0x4b3, 0x438, 0x436, 0x436, 0x430
 };
 // GENERATED PART ENDS HERE
+
+} // namespace QtPrivate::Hijri
 
 QT_END_NAMESPACE
 

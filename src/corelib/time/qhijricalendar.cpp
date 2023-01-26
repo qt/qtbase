@@ -79,12 +79,12 @@ int QHijriCalendar::daysInYear(int year) const
 
 const QCalendarLocale *QHijriCalendar::localeMonthIndexData() const
 {
-    return locale_data;
+    return QtPrivate::Hijri::locale_data;
 }
 
 const char16_t *QHijriCalendar::localeMonthData() const
 {
-    return months_data;
+    return QtPrivate::Hijri::months_data;
 }
 
 QT_END_NAMESPACE
