@@ -277,11 +277,18 @@ const void *QPermission::data(QMetaType requestedType) const
     return m_data.data();
 }
 
+// check alignof(AlignmentCheck) instead of alignof(void*), in case
+// pointers have different alignment inside structs:
+struct AlignmentCheck { void *p; };
+
 #define QT_PERMISSION_IMPL_COMMON(ClassName) \
     /* Class##Private is unused until we need it: */ \
     static_assert(sizeof(ClassName) == sizeof(void*), \
                   "You have added too many members to " #ClassName "::ShortData. " \
                   "Decrease their size or switch to using a d-pointer."); \
+    static_assert(alignof(ClassName) == alignof(AlignmentCheck), \
+                  "You have added members to " #ClassName "::ShortData that are overaligned. " \
+                  "Decrease their alignment or switch to using a d-pointer."); \
     ClassName::ClassName(const ClassName &other) noexcept = default; \
     ClassName::~ClassName() = default; \
     ClassName &ClassName::operator=(const ClassName &other) noexcept = default; \
