@@ -89,7 +89,7 @@ public: \
         : u{other.u} { other.u.d = nullptr; } \
     Q_CORE_EXPORT ~ClassName(); \
     Q_CORE_EXPORT ClassName &operator=(const ClassName &other) noexcept; \
-    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(ClassName) \
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(ClassName) \
     void swap(ClassName &other) noexcept { std::swap(u, other.u); } \
 private: \
     /*end*/
