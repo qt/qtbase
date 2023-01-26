@@ -331,8 +331,11 @@ void QDBusTrayIcon::notificationClosed(uint id, uint reason)
 bool QDBusTrayIcon::isSystemTrayAvailable() const
 {
     QDBusMenuConnection * conn = const_cast<QDBusTrayIcon *>(this)->dBusConnection();
-    qCDebug(qLcTray) << conn->isStatusNotifierHostRegistered();
-    return conn->isStatusNotifierHostRegistered();
+
+    // If the KDE watcher service is registered, we must be on a desktop
+    // where a StatusNotifier-conforming system tray exists.
+    qCDebug(qLcTray) << conn->isWatcherRegistered();
+    return conn->isWatcherRegistered();
 }
 
 QT_END_NAMESPACE
