@@ -162,12 +162,12 @@ int QJalaliCalendar::daysInMonth(int month, int year) const
 
 const QCalendarLocale *QJalaliCalendar::localeMonthIndexData() const
 {
-    return locale_data;
+    return QtPrivate::Jalali::locale_data;
 }
 
 const char16_t *QJalaliCalendar::localeMonthData() const
 {
-    return months_data;
+    return QtPrivate::Jalali::months_data;
 }
 
 QT_END_NAMESPACE

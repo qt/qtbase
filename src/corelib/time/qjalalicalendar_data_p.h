@@ -20,6 +20,8 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtPrivate::Jalali {
+
 // GENERATED PART STARTS HERE
 
 /*
@@ -904,6 +906,8 @@ static constexpr char16_t months_data[] = {
 0x6c1, 0x645, 0x646, 0x3b, 0x627, 0x633, 0x641, 0x646, 0x62f
 };
 // GENERATED PART ENDS HERE
+
+} // namespace QtPrivate::Jalali
 
 QT_END_NAMESPACE
 
