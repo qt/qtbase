@@ -25,7 +25,7 @@
     \section1 ShapedClock Class Definition
 
     The \c ShapedClock class is based on the \c AnalogClock class defined in the
-    \l{Analog Clock Example}{Analog Clock} example. The whole class definition is
+    \l{Analog Clock} example. The whole class definition is
     presented below:
 
     \snippet widgets/shapedclock/shapedclock.h 0
@@ -77,7 +77,7 @@
     cursor position in global coordinates. If we drag the widget, we also accept the event.
 
     The \c paintEvent() function is mainly the same as described in the
-    \l{Analog Clock Example}{Analog Clock} example. The one addition is that we
+    \l{Analog Clock} example. The one addition is that we
     use QPainter::drawEllipse() to draw a round clock face with the current
     palette's default background color. We make the clock face a bit smaller
     than the widget mask, so that the anti-aliased, semi-transparent pixels on

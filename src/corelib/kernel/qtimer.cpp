@@ -105,7 +105,7 @@ QT_BEGIN_NAMESPACE
     used; Qt tries to work around these limitations.
 
     \sa QBasicTimer, QTimerEvent, QObject::timerEvent(), Timers,
-        {Analog Clock Example}, {Tetrix Example}
+        {Analog Clock}, {Tetrix Example}
 */
 
 /*!
