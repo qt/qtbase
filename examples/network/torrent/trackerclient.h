@@ -51,7 +51,6 @@ private slots:
 private:
     TorrentClient *torrentDownloader;
 
-    int requestInterval = 5 * 60;
     int requestIntervalTimer = -1;
     QNetworkAccessManager http;
     MetaInfo metaInfo;

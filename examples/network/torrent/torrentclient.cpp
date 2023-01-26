@@ -14,6 +14,7 @@
 #include <QNetworkInterface>
 
 #include <algorithm>
+#include <chrono>
 
 // These constants could also be configurable by the user.
 static const int ServerMinPort = 6881;
@@ -23,10 +24,10 @@ static const int MaxBlocksInProgress = 5;
 static const int MaxBlocksInMultiMode = 2;
 static const int MaxConnectionPerPeer = 1;
 static const int RateControlWindowLength = 10;
-static const int RateControlTimerDelay = 1000;
+static const std::chrono::seconds RateControlTimerDelay(1);
 static const int MinimumTimeBeforeRevisit = 30;
 static const int MaxUploads = 4;
-static const int UploadScheduleInterval = 10000;
+static const std::chrono::seconds UploadScheduleInterval(10);
 
 struct TorrentPiece {
     QBitArray completedBlocks;

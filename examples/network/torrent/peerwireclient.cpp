@@ -7,11 +7,13 @@
 #include <QTimerEvent>
 #include <QtEndian>
 
-static const int PendingRequestTimeout = 60 * 1000;
-static const int ClientTimeout = 120 * 1000;
-static const int ConnectTimeout = 60 * 1000;
-static const int KeepAliveInterval = 30 * 1000;
-static const int PeerRateControlTimerDelay = 2000;
+#include <chrono>
+
+static constexpr std::chrono::seconds PendingRequestTimeout(60);
+static constexpr std::chrono::seconds ClientTimeout(120);
+static constexpr std::chrono::seconds ConnectTimeout(60);
+static constexpr std::chrono::seconds KeepAliveInterval(30);
+static constexpr std::chrono::seconds PeerRateControlTimerDelay(2);
 static const int MinimalHeaderSize = 48;
 static const char ProtocolId[] = "BitTorrent protocol";
 static const char ProtocolIdSize = 19;
