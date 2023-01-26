@@ -700,6 +700,13 @@ qt_internal_extend_target(Core CONDITION UNIX
         thread/qthread_unix.cpp
 )
 
+# Necessary for defining DT_* macros, otherwise they cause
+# error during UNITY_BUILD.
+qt_internal_extend_target(Core CONDITION APPLE
+    DEFINES
+        _DEFAULT_SOURCE
+)
+
 qt_internal_extend_target(Core CONDITION QT_FEATURE_thread
     SOURCES
         thread/qatomic.cpp
@@ -1348,12 +1355,29 @@ set_source_files_properties(
     thread/qmutex_unix.cpp
     PROPERTIES HEADER_FILE_ONLY ON)  # special case: These files are included by qmutex.cpp!
 
+set_source_files_properties(serialization/qcborstreamwriter.cpp # CBOR macro clashes
+                            io/forkfd_qt.cpp # EINTR_LOOP macro clashes
+                            global/qglobal.cpp  # undef qFatal
+                            global/qlogging.cpp # undef qFatal
+                            ${corelib_no_pch_sources} # NO_PCH_SOURCES
+                            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 
 # Remove QT_NO_CAST_TO_ASCII to ensure that the symbols are included in the library.
 if(WIN32)
     get_target_property(defines Core COMPILE_DEFINITIONS)
     list(REMOVE_ITEM defines QT_NO_CAST_TO_ASCII)
     set_target_properties(Core PROPERTIES COMPILE_DEFINITIONS "${defines}")
+
+    set_source_files_properties(global/qsimd.cpp # Q_DECL_INIT_PRIORITY
+                                serialization/qcborvalue.cpp # various windows.h clashes
+                                serialization/qjsoncbor.cpp
+                                serialization/qjsonvalue.cpp
+                                serialization/qxmlstream.cpp
+                                text/qbytearray.cpp
+                                text/qlatin1stringmatcher.cpp
+                                text/qunicodetools.cpp
+                                tools/qhash.cpp # Q_DECL_INIT_PRIORITY
+                                PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 endif()
 
 qt_internal_apply_gc_binaries_conditional(Core PUBLIC)
