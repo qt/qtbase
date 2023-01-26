@@ -22,6 +22,16 @@ QWasmWindow *asWasmWindow(QWindow *window)
 {
     return static_cast<QWasmWindow*>(window->handle());
 }
+
+QWasmWindowStack::PositionPreference positionPreferenceFromWindowFlags(Qt::WindowFlags flags)
+{
+    if (flags.testFlag(Qt::WindowStaysOnTopHint))
+        return QWasmWindowStack::PositionPreference::StayOnTop;
+    if (flags.testFlag(Qt::WindowStaysOnBottomHint))
+        return QWasmWindowStack::PositionPreference::StayOnBottom;
+    return QWasmWindowStack::PositionPreference::Regular;
+}
+
 }  // namespace
 
 using namespace emscripten;
@@ -67,8 +77,11 @@ void QWasmCompositor::destroy()
 
 void QWasmCompositor::addWindow(QWasmWindow *window)
 {
-    m_windowStack.pushWindow(window);
-    m_windowStack.topWindow()->requestActivateWindow();
+    if (m_windowStack.empty())
+        window->window()->setFlag(Qt::WindowStaysOnBottomHint);
+    m_windowStack.pushWindow(window, positionPreferenceFromWindowFlags(window->window()->flags()));
+    window->requestActivateWindow();
+    setActive(window);
 
     updateEnabledState();
 }
@@ -77,10 +90,25 @@ void QWasmCompositor::removeWindow(QWasmWindow *window)
 {
     m_requestUpdateWindows.remove(window);
     m_windowStack.removeWindow(window);
-    if (m_windowStack.topWindow())
+    if (m_windowStack.topWindow()) {
         m_windowStack.topWindow()->requestActivateWindow();
+        setActive(m_windowStack.topWindow());
+    }
 
     updateEnabledState();
+}
+
+void QWasmCompositor::setActive(QWasmWindow *window)
+{
+    m_activeWindow = window;
+
+    auto it = m_windowStack.begin();
+    if (it == m_windowStack.end()) {
+        return;
+    }
+    for (; it != m_windowStack.end(); ++it) {
+        (*it)->onActivationChanged(*it == m_activeWindow);
+    }
 }
 
 void QWasmCompositor::updateEnabledState()
@@ -100,6 +128,11 @@ void QWasmCompositor::lower(QWasmWindow *window)
     m_windowStack.lower(window);
 }
 
+void QWasmCompositor::windowPositionPreferenceChanged(QWasmWindow *window, Qt::WindowFlags flags)
+{
+    m_windowStack.windowPositionPreferenceChanged(window, positionPreferenceFromWindowFlags(flags));
+}
+
 QWindow *QWasmCompositor::windowAt(QPoint targetPointInScreenCoords, int padding) const
 {
     const auto found = std::find_if(
@@ -115,7 +148,7 @@ QWindow *QWasmCompositor::windowAt(QPoint targetPointInScreenCoords, int padding
 
 QWindow *QWasmCompositor::keyWindow() const
 {
-    return m_windowStack.topWindow() ? m_windowStack.topWindow()->window() : nullptr;
+    return m_activeWindow ? m_activeWindow->window() : nullptr;
 }
 
 void QWasmCompositor::requestUpdateAllWindows()
@@ -234,16 +267,6 @@ void QWasmCompositor::onTopWindowChanged()
     int z = zOrderForElementInFrontOfScreen;
     std::for_each(m_windowStack.rbegin(), m_windowStack.rend(),
                   [&z](QWasmWindow *window) { window->setZOrder(z++); });
-
-    auto it = m_windowStack.begin();
-    if (it == m_windowStack.end()) {
-        return;
-    }
-    (*it)->onActivationChanged(true);
-    ++it;
-    for (; it != m_windowStack.end(); ++it) {
-        (*it)->onActivationChanged(false);
-    }
 }
 
 QWasmScreen *QWasmCompositor::screen()

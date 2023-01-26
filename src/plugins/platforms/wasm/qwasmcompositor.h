@@ -34,8 +34,10 @@ public:
     void removeWindow(QWasmWindow *window);
 
     void setVisible(QWasmWindow *window, bool visible);
+    void setActive(QWasmWindow *window);
     void raise(QWasmWindow *window);
     void lower(QWasmWindow *window);
+    void windowPositionPreferenceChanged(QWasmWindow *window, Qt::WindowFlags flags);
 
     void onScreenDeleting();
 
@@ -69,6 +71,7 @@ private:
     void updateEnabledState();
 
     QWasmWindowStack m_windowStack;
+    QWasmWindow *m_activeWindow = nullptr;
 
     bool m_isEnabled = true;
     QMap<QWasmWindow *, UpdateRequestDeliveryType> m_requestUpdateWindows;

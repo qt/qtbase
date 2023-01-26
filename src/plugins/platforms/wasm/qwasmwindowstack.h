@@ -24,7 +24,7 @@ class QWasmWindow;
 class Q_AUTOTEST_EXPORT QWasmWindowStack
 {
 public:
-    using TopWindowChangedCallbackType = std::function<void()>;
+    using WindowOrderChangedCallbackType = std::function<void()>;
 
     using StorageType = QList<QWasmWindow *>;
 
@@ -32,13 +32,20 @@ public:
     using const_iterator = StorageType::const_reverse_iterator;
     using const_reverse_iterator = StorageType::const_iterator;
 
-    explicit QWasmWindowStack(TopWindowChangedCallbackType topWindowChangedCallback);
+    enum class PositionPreference {
+        StayOnBottom,
+        Regular,
+        StayOnTop,
+    };
+
+    explicit QWasmWindowStack(WindowOrderChangedCallbackType topWindowChangedCallback);
     ~QWasmWindowStack();
 
-    void pushWindow(QWasmWindow *window);
+    void pushWindow(QWasmWindow *window, PositionPreference position);
     void removeWindow(QWasmWindow *window);
     void raise(QWasmWindow *window);
     void lower(QWasmWindow *window);
+    void windowPositionPreferenceChanged(QWasmWindow *window, PositionPreference position);
 
     // Iterates top-to-bottom
     iterator begin();
@@ -55,14 +62,12 @@ public:
     QWasmWindow *topWindow() const;
 
 private:
-    enum class FirstWindowTreatment { AlwaysAtBottom, Regular };
+    PositionPreference getWindowPositionPreference(StorageType::iterator windowIt) const;
 
-    QWasmWindow *rootWindow() const;
-    StorageType::iterator regularWindowsBegin();
-
-    TopWindowChangedCallbackType m_topWindowChangedCallback;
+    WindowOrderChangedCallbackType m_windowOrderChangedCallback;
     QList<QWasmWindow *> m_windowStack;
-    FirstWindowTreatment m_firstWindowTreatment = FirstWindowTreatment::AlwaysAtBottom;
+    StorageType::iterator m_regularWindowsBegin;
+    StorageType::iterator m_alwaysOnTopWindowsBegin;
 };
 
 QT_END_NAMESPACE

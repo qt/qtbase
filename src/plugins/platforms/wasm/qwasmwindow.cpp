@@ -93,6 +93,7 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
     emscripten::val::module_property("specialHTMLTargets").set(canvasSelector(), m_canvas);
 
     m_compositor->addWindow(this);
+    m_flags = window()->flags();
 
     const auto pointerCallback = std::function([this](emscripten::val event) {
         if (processPointer(*PointerEvent::fromWeb(event)))
@@ -360,6 +361,8 @@ void QWasmWindow::onActivationChanged(bool active)
 
 void QWasmWindow::setWindowFlags(Qt::WindowFlags flags)
 {
+    if (flags.testFlag(Qt::WindowStaysOnTopHint) != m_flags.testFlag(Qt::WindowStaysOnTopHint))
+        m_compositor->windowPositionPreferenceChanged(this, flags);
     m_flags = flags;
     dom::syncCSSClassWith(m_qtWindow, "has-frame", hasFrame());
     dom::syncCSSClassWith(m_qtWindow, "has-shadow", !flags.testFlag(Qt::NoDropShadowWindowHint));
@@ -573,8 +576,10 @@ void QWasmWindow::requestActivateWindow()
         return;
     }
 
-    if (window()->isTopLevel())
+    if (window()->isTopLevel()) {
         raise();
+        m_compositor->setActive(this);
+    }
 
     if (!QWasmIntegration::get()->inputContext())
         m_canvas.call<void>("focus");
