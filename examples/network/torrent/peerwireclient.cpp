@@ -5,6 +5,7 @@
 
 #include <QHostAddress>
 #include <QTimerEvent>
+#include <QtEndian>
 
 static const int PendingRequestTimeout = 60 * 1000;
 static const int ClientTimeout = 120 * 1000;
@@ -14,26 +15,6 @@ static const int PeerRateControlTimerDelay = 2000;
 static const int MinimalHeaderSize = 48;
 static const char ProtocolId[] = "BitTorrent protocol";
 static const char ProtocolIdSize = 19;
-
-// Reads a 32bit unsigned int from data in network order.
-static inline quint32 fromNetworkData(const char *data)
-{
-    const unsigned char *udata = (const unsigned char *)data;
-    return (quint32(udata[0]) << 24)
-        | (quint32(udata[1]) << 16)
-        | (quint32(udata[2]) << 8)
-        | (quint32(udata[3]));
-}
-
-// Writes a 32bit unsigned int from num to data in network order.
-static inline void toNetworkData(quint32 num, char *data)
-{
-    unsigned char *udata = (unsigned char *)data;
-    udata[3] = (num & 0xff);
-    udata[2] = (num & 0xff00) >> 8;
-    udata[1] = (num & 0xff0000) >> 16;
-    udata[0] = (num & 0xff000000) >> 24;
-}
 
 // Constructs an unconnected PeerWire client and starts the connect timer.
 PeerWireClient::PeerWireClient(const QByteArray &peerId, QObject *parent)
@@ -165,7 +146,7 @@ void PeerWireClient::sendPieceNotification(int piece)
         sendHandShake();
 
     char message[] = {0, 0, 0, 5, 4, 0, 0, 0, 0};
-    toNetworkData(piece, &message[5]);
+    qToBigEndian(piece, &message[5]);
     write(message, sizeof(message));
 }
 
@@ -194,7 +175,7 @@ void PeerWireClient::sendPieceList(const QBitArray &bitField)
     }
 
     char message[] = {0, 0, 0, 1, 5};
-    toNetworkData(bits.size() + 1, &message[0]);
+    qToBigEndian(bits.size() + 1, &message[0]);
     write(message, sizeof(message));
     write(bits);
 }
@@ -203,13 +184,13 @@ void PeerWireClient::sendPieceList(const QBitArray &bitField)
 void PeerWireClient::requestBlock(int piece, int offset, int length)
 {
     char message[] = {0, 0, 0, 1, 6};
-    toNetworkData(13, &message[0]);
+    qToBigEndian(13, &message[0]);
     write(message, sizeof(message));
 
     char numbers[4 * 3];
-    toNetworkData(piece, &numbers[0]);
-    toNetworkData(offset, &numbers[4]);
-    toNetworkData(length, &numbers[8]);
+    qToBigEndian(piece, &numbers[0]);
+    qToBigEndian(offset, &numbers[4]);
+    qToBigEndian(length, &numbers[8]);
     write(numbers, sizeof(numbers));
 
     incoming << TorrentBlock(piece, offset, length);
@@ -226,13 +207,13 @@ void PeerWireClient::requestBlock(int piece, int offset, int length)
 void PeerWireClient::cancelRequest(int piece, int offset, int length)
 {
     char message[] = {0, 0, 0, 1, 8};
-    toNetworkData(13, &message[0]);
+    qToBigEndian(13, &message[0]);
     write(message, sizeof(message));
 
     char numbers[4 * 3];
-    toNetworkData(piece, &numbers[0]);
-    toNetworkData(offset, &numbers[4]);
-    toNetworkData(length, &numbers[8]);
+    qToBigEndian(piece, &numbers[0]);
+    qToBigEndian(offset, &numbers[4]);
+    qToBigEndian(length, &numbers[8]);
     write(numbers, sizeof(numbers));
 
     incoming.removeAll(TorrentBlock(piece, offset, length));
@@ -244,12 +225,12 @@ void PeerWireClient::sendBlock(int piece, int offset, const QByteArray &data)
     QByteArray block;
 
     char message[] = {0, 0, 0, 1, 7};
-    toNetworkData(9 + data.size(), &message[0]);
+    qToBigEndian(9 + data.size(), &message[0]);
     block += QByteArray(message, sizeof(message));
 
     char numbers[4 * 2];
-    toNetworkData(piece, &numbers[0]);
-    toNetworkData(offset, &numbers[4]);
+    qToBigEndian(piece, &numbers[0]);
+    qToBigEndian(offset, &numbers[4]);
     block += QByteArray(numbers, sizeof(numbers));
     block += data;
 
@@ -468,7 +449,7 @@ void PeerWireClient::processIncomingData()
 
             char tmp[4];
             read(tmp, sizeof(tmp));
-            nextPacketLength = fromNetworkData(tmp);
+            nextPacketLength = qFromBigEndian<qint32>(tmp);
 
             if (nextPacketLength < 0 || nextPacketLength > 200000) {
                 // Prevent DoS
@@ -520,7 +501,7 @@ void PeerWireClient::processIncomingData()
             break;
         case HavePacket: {
             // The peer has a new piece available.
-            quint32 index = fromNetworkData(&packet.data()[1]);
+            quint32 index = qFromBigEndian<quint32>(&packet.data()[1]);
             if (index < quint32(peerPieces.size())) {
                 // Only accept indexes within the valid range.
                 peerPieces.setBit(int(index));
@@ -548,15 +529,15 @@ void PeerWireClient::processIncomingData()
             break;
         case RequestPacket: {
             // The peer requests a block.
-            quint32 index = fromNetworkData(&packet.data()[1]);
-            quint32 begin = fromNetworkData(&packet.data()[5]);
-            quint32 length = fromNetworkData(&packet.data()[9]);
+            quint32 index = qFromBigEndian<quint32>(&packet.data()[1]);
+            quint32 begin = qFromBigEndian<quint32>(&packet.data()[5]);
+            quint32 length = qFromBigEndian<quint32>(&packet.data()[9]);
             emit blockRequested(int(index), int(begin), int(length));
             break;
         }
         case PiecePacket: {
-            int index = int(fromNetworkData(&packet.data()[1]));
-            int begin = int(fromNetworkData(&packet.data()[5]));
+            int index = int(qFromBigEndian<quint32>(&packet.data()[1]));
+            int begin = int(qFromBigEndian<quint32>(&packet.data()[5]));
 
             incoming.removeAll(TorrentBlock(index, begin, packet.size() - 9));
 
@@ -572,9 +553,9 @@ void PeerWireClient::processIncomingData()
         }
         case CancelPacket: {
             // The peer cancels a block request.
-            quint32 index = fromNetworkData(&packet.data()[1]);
-            quint32 begin = fromNetworkData(&packet.data()[5]);
-            quint32 length = fromNetworkData(&packet.data()[9]);
+            quint32 index = qFromBigEndian<quint32>(&packet.data()[1]);
+            quint32 begin = qFromBigEndian<quint32>(&packet.data()[5]);
+            quint32 length = qFromBigEndian<quint32>(&packet.data()[9]);
             for (int i = 0; i < pendingBlocks.size(); ++i) {
                 const BlockInfo &blockInfo = pendingBlocks.at(i);
                 if (blockInfo.pieceIndex == int(index)
