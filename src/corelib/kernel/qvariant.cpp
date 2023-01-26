@@ -2312,7 +2312,7 @@ static QPartialOrdering numericCompare(const QVariant::Private *d1, const QVaria
 }
 
 #ifndef QT_BOOTSTRAPPED
-static bool canConvertMetaObject(QMetaType fromType, QMetaType toType)
+static bool qvCanConvertMetaObject(QMetaType fromType, QMetaType toType)
 {
     if ((fromType.flags() & QMetaType::PointerToQObject)
             && (toType.flags() & QMetaType::PointerToQObject)) {
@@ -2342,7 +2342,7 @@ bool QVariant::equals(const QVariant &v) const
             return numericCompare(&d, &v.d) == QPartialOrdering::Equivalent;
 #ifndef QT_BOOTSTRAPPED
         // if both types are related pointers to QObjects, check if they point to the same object
-        if (canConvertMetaObject(metatype, v.metaType()))
+        if (qvCanConvertMetaObject(metatype, v.metaType()))
             return pointerCompare(&d, &v.d) == QPartialOrdering::Equivalent;
 #endif
         return false;
@@ -2385,7 +2385,7 @@ QPartialOrdering QVariant::compare(const QVariant &lhs, const QVariant &rhs)
         if (canBeNumericallyCompared(lhs.d.type().iface(), rhs.d.type().iface()))
             return numericCompare(&lhs.d, &rhs.d);
 #ifndef QT_BOOTSTRAPPED
-        if (canConvertMetaObject(lhs.metaType(), rhs.metaType()))
+        if (qvCanConvertMetaObject(lhs.metaType(), rhs.metaType()))
             return pointerCompare(&lhs.d, &rhs.d);
 #endif
         return QPartialOrdering::Unordered;

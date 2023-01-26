@@ -65,7 +65,7 @@ bool QMilankovicCalendar::isLeapYear(int year) const
 
 using namespace QRomanCalendrical;
 // End a Milankovic nine-century cycle on 1 BC, Feb 28 (Gregorian Feb 29):
-constexpr qint64 BaseJd = LeapDayGregorian1Bce;
+constexpr qint64 MilankovicBaseJd = LeapDayGregorian1Bce;
 // Leap years every 4 years, except for 7 turn-of-century years per nine centuries:
 constexpr unsigned NineCenturies = 365 * 900 + 900 / 4 - 7;
 // When the turn-of-century is a leap year, the century has 25 leap years in it:
@@ -81,13 +81,13 @@ bool QMilankovicCalendar::dateToJulianDay(int year, int month, int day, qint64 *
     const auto centuryYear = qDivMod<100>(yearDays.year);
     const qint64 fromYear = qDiv<9>(NineCenturies * centuryYear.quotient + 6)
                           + qDiv<100>(LeapCentury * centuryYear.remainder);
-    *jd = fromYear + yearDays.days + day + BaseJd;
+    *jd = fromYear + yearDays.days + day + MilankovicBaseJd;
     return true;
 }
 
 QCalendar::YearMonthDay  QMilankovicCalendar::julianDayToDate(qint64 jd) const
 {
-    const auto century9Day = qDivMod<NineCenturies>(9 * (jd - BaseJd) - 7);
+    const auto century9Day = qDivMod<NineCenturies>(9 * (jd - MilankovicBaseJd) - 7);
     // Its remainder changes by 9 per day, except roughly once per century.
     const auto year100Day = qDivMod<LeapCentury>(100 * qDiv<9>(century9Day.remainder) + 99);
     // Its remainder changes by 100 per day, except roughly once per year.

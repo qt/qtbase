@@ -44,7 +44,7 @@ public:
         ENTITY = 32,
         ENTITY_DONE = 45,
         EQ = 14,
-        ERROR = 43,
+        XML_ERROR = 43,
         FIXED = 39,
         HASH = 6,
         ID = 48,

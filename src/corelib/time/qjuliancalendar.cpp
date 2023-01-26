@@ -59,7 +59,7 @@ bool QJulianCalendar::isLeapYear(int year) const
 // Julian Day 0 was January the first in the proleptic Julian calendar's 4713 BC.
 using namespace QRomanCalendrical;
 // End a Julian four-year cycle on 1 BC's leap day (Gregorian Feb 27th):
-constexpr qint64 BaseJd = LeapDayGregorian1Bce - 2;
+constexpr qint64 JulianBaseJd = LeapDayGregorian1Bce - 2;
 
 bool QJulianCalendar::dateToJulianDay(int year, int month, int day, qint64 *jd) const
 {
@@ -68,13 +68,13 @@ bool QJulianCalendar::dateToJulianDay(int year, int month, int day, qint64 *jd) 
         return false;
 
     const auto yearDays = yearMonthToYearDays(year, month);
-    *jd = qDiv<4>(FourYears * yearDays.year) + yearDays.days + day + BaseJd;
+    *jd = qDiv<4>(FourYears * yearDays.year) + yearDays.days + day + JulianBaseJd;
     return true;
 }
 
 QCalendar::YearMonthDay QJulianCalendar::julianDayToDate(qint64 jd) const
 {
-    const auto year4Day = qDivMod<FourYears>(4 * (jd - BaseJd) - 1);
+    const auto year4Day = qDivMod<FourYears>(4 * (jd - JulianBaseJd) - 1);
     // Its remainder changes by 4 per day, except at roughly yearly quotient steps.
     const auto ymd = dayInYearToYmd(qDiv<4>(year4Day.remainder));
     const int y = year4Day.quotient + ymd.year;
