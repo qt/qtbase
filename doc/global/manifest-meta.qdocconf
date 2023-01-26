@@ -44,7 +44,6 @@ manifestmeta.android.names          =   "Qt3D/Qt 3D: Basic Shapes C++ Example" \
                                         "QtDataVisualization/Audiolevels Example" \
                                         "QtDataVisualization/Qt Quick 2 Scatter Example" \
                                         "QtDataVisualization/Qt Quick 2 Surface Multiseries Example" \
-                                        "QtGui/Analog Clock Window Example" \
                                         "QtGui/OpenGL Window Example" \
                                         "QtGui/Raster Window Example" \
                                         "QtLinguist/Arrow Pad Example" \
@@ -151,7 +150,6 @@ manifestmeta.android.tags              =   android
 manifestmeta.ios.names              =  "QtCore/Contiguous Cache Example" \
                                        "QtCore/Mandelbrot Example" \
                                        "QtCore/Queued Custom Type Example" \
-                                       "QtGui/Analog Clock Window Example" \
                                        "QtGui/OpenGL Window Example" \
                                        "QtGui/Raster Window Example" \
                                        "QtNetwork/Loopback Example" \
