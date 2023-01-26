@@ -153,7 +153,7 @@ void TrackerClient::httpRequestDone(QNetworkReply *reply)
         // Mandatory item
         if (requestIntervalTimer != -1)
             killTimer(requestIntervalTimer);
-        requestIntervalTimer = startTimer(dict.value("interval").toInt() * 1000);
+        requestIntervalTimer = startTimer(std::chrono::seconds(dict.value("interval").toInt()));
     }
 
     if (dict.contains("peers")) {
