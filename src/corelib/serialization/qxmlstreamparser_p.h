@@ -140,7 +140,7 @@ bool QXmlStreamReaderPrivate::parse()
             } else switch (token_char) {
             case 0xfffe:
             case 0xffff:
-                token = ERROR;
+                token = XML_ERROR;
                 break;
             case '\r':
                 token = SPACE;

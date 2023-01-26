@@ -53,7 +53,7 @@ Q_CORE_EXPORT bool isBuiltinType(const QByteArray &type)
 } // namespace QtPrivate
 
 // copied from qmetaobject.cpp
-[[maybe_unused]] static inline const QMetaObjectPrivate *priv(const uint* data)
+[[maybe_unused]] static inline const QMetaObjectPrivate *qmobPriv(const uint* data)
 { return reinterpret_cast<const QMetaObjectPrivate*>(data); }
 
 class QMetaMethodBuilderPrivate
@@ -704,7 +704,7 @@ void QMetaObjectBuilder::addMetaObject(const QMetaObject *prototype,
     }
 
     if ((members & RelatedMetaObjects) != 0) {
-        Q_ASSERT(priv(prototype->d.data)->revision >= 2);
+        Q_ASSERT(qmobPriv(prototype->d.data)->revision >= 2);
         const auto *objects = prototype->d.relatedMetaObjects;
         if (objects) {
             while (*objects != nullptr) {
@@ -715,7 +715,7 @@ void QMetaObjectBuilder::addMetaObject(const QMetaObject *prototype,
     }
 
     if ((members & StaticMetacall) != 0) {
-        Q_ASSERT(priv(prototype->d.data)->revision >= 6);
+        Q_ASSERT(qmobPriv(prototype->d.data)->revision >= 6);
         if (prototype->d.static_metacall)
             setStaticMetacallFunction(prototype->d.static_metacall);
     }

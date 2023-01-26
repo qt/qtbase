@@ -458,6 +458,8 @@ Q_CORE_EXPORT quint64 qFloatDistance(double a, double b)
     Returns true if the absolute value of \a f is within 0.00001f of 0.0.
 */
 
+namespace QtNumericTests {
+
 template <typename T> static constexpr T max = std::numeric_limits<T>::max();
 template <typename T> static constexpr T min = std::numeric_limits<T>::min();
 
@@ -488,5 +490,7 @@ static_assert(qt_saturate<short>(min<qint64>) == min<short>);
 static_assert(qt_saturate<int>(min<qint64>) == min<int>);
 static_assert(qt_saturate<unsigned>(min<qint64>) == 0);
 static_assert(qt_saturate<quint64>(min<qint64>) == 0);
+
+} // namespace QtNumericTests
 
 QT_END_NAMESPACE

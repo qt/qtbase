@@ -1853,7 +1853,7 @@ void QXmlStreamReaderPrivate::parseError()
     int ers = state_stack[tos];
     int nexpected = 0;
     int expected[nmax];
-    if (token != ERROR)
+    if (token != XML_ERROR)
         for (int tk = 0; tk < TERMINAL_COUNT; ++tk) {
             int k = t_action(ers, tk);
             if (k <= 0)
