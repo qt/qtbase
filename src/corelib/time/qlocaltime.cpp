@@ -171,9 +171,10 @@ bool qtLocalTime(time_t utc, struct tm *local)
     // be to move this whole function there (and replace its qTzSet() with a
     // naked tzset(), since it'd already be mutex-protected).
 #if defined(Q_OS_WIN)
-    // The doc of localtime_s() doesn't explicitly say that it calls _tzset(),
-    // but does say that localtime_s() corrects for the same things _tzset()
-    // sets the globals for, so presumably localtime_s() behaves as if it did.
+    // The doc of localtime_s() says that localtime_s() corrects for the same
+    // things _tzset() sets the globals for, but doesn't explicitly say that it
+    // calls _tzset(), and QTBUG-109974 reveals the need for a _tzset() call.
+    qTzSet();
     return !localtime_s(local, &utc);
 #elif QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // Use the reentrant version of localtime() where available, as it is
@@ -188,8 +189,9 @@ bool qtLocalTime(time_t utc, struct tm *local)
     }
     return false;
 #else
+    // POSIX mandates that localtime() behaves as if it called tzset().
     // Returns shared static data which may be overwritten at any time
-    // So copy the result asap
+    // So copy the result asap:
     if (tm *res = localtime(&utc)) {
         *local = *res;
         return true;
