@@ -25,17 +25,14 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace {
-
-struct CaseInsensitiveAnyStringViewLessThan {
+struct QCalendarRegistryCaseInsensitiveAnyStringViewLessThan
+{
     struct is_transparent {};
     bool operator()(QAnyStringView lhs, QAnyStringView rhs) const
     {
         return QAnyStringView::compare(lhs, rhs, Qt::CaseInsensitive) < 0;
     }
 };
-
-} // unnamed namespace
 
 namespace QtPrivate {
 
@@ -70,7 +67,7 @@ class QCalendarRegistry
     */
     QFlatMap<
         QString, QCalendarBackend *,
-        CaseInsensitiveAnyStringViewLessThan,
+        QCalendarRegistryCaseInsensitiveAnyStringViewLessThan,
         QStringList,
         std::vector<QCalendarBackend *>
     > byName;
