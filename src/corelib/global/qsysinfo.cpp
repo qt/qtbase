@@ -938,13 +938,26 @@ QString QSysInfo::machineHostName()
 #  ifdef Q_OS_WIN
     // Important: QtNetwork depends on machineHostName() initializing ws2_32.dll
     winsockInit();
-#  endif
+    QString hostName;
+    hostName.resize(512);
+    unsigned long len = hostName.size();
+    BOOL res = GetComputerNameEx(ComputerNameDnsHostname,
+            reinterpret_cast<wchar_t *>(const_cast<quint16 *>(hostName.utf16())), &len);
+    if (!res && len > 512) {
+        hostName.resize(len - 1);
+        GetComputerNameEx(ComputerNameDnsHostname,
+                reinterpret_cast<wchar_t *>(const_cast<quint16 *>(hostName.utf16())), &len);
+    }
+    hostName.truncate(len);
+    return hostName;
+#  else // !Q_OS_WIN
 
     char hostName[512];
     if (gethostname(hostName, sizeof(hostName)) == -1)
         return QString();
     hostName[sizeof(hostName) - 1] = '\0';
     return QString::fromLocal8Bit(hostName);
+#  endif
 #endif
 }
 #endif // QT_BOOTSTRAPPED
