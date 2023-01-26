@@ -49,6 +49,11 @@ constexpr inline int fromOct(uint c) noexcept
     return ((c >= '0') && (c <= '7')) ? int(c - '0') : -1;
 }
 
+[[nodiscard]] constexpr inline bool isAsciiDigit(uchar c) noexcept
+{
+    return c >= '0' && c <= '9';
+}
+
 constexpr inline char toAsciiLower(char ch) noexcept
 {
     return (ch >= 'A' && ch <= 'Z') ? ch - 'A' + 'a' : ch;
