@@ -5145,3 +5145,6 @@ size_t qHash(const QByteArray::FromBase64Result &key, size_t seed) noexcept
 */
 
 QT_END_NAMESPACE
+
+#undef IS_RAW_DATA
+#undef REHASH

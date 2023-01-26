@@ -11243,3 +11243,6 @@ void QAbstractConcatenable::appendLatin1To(QLatin1StringView in, QChar *out) noe
 */
 
 QT_END_NAMESPACE
+
+#undef IS_RAW_DATA
+#undef REHASH

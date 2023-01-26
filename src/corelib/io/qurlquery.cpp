@@ -817,3 +817,7 @@ void QUrlQuery::removeAllQueryItems(const QString &key)
     \sa operator==()
 */
 QT_END_NAMESPACE
+
+#undef decode
+#undef leave
+#undef encode

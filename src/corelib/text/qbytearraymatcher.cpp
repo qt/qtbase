@@ -411,3 +411,5 @@ qsizetype QStaticByteArrayMatcherBase::indexOfIn(const char *needle, size_t nlen
 
 
 QT_END_NAMESPACE
+
+#undef REHASH
