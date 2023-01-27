@@ -39,6 +39,11 @@ int main(int argc, char *argv[])
     Parser parser(provider);
 
     for (const QString &inputFile : inputFiles) {
+        if (inputFile.startsWith(QLatin1Char('I'))) {
+            QStringList includeDirs = inputFile.right(inputFile.length() - 1).split(QLatin1Char(';'));
+            parser.addIncludeDirs(includeDirs);
+            continue;
+        }
         QFile in(inputFile);
         if (!in.open(QIODevice::ReadOnly | QIODevice::Text)) {
             panic("Cannot open '%s' for reading: %s\n",
