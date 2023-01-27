@@ -838,7 +838,11 @@ qt_internal_extend_target(Widgets CONDITION NOT QT_FEATURE_xcb
 )
 
 
-qt_internal_create_tracepoints(Widgets qtwidgets.tracepoints)
+qt_internal_generate_tracepoints(Widgets widgets
+    SOURCES
+        kernel/qapplication.cpp
+)
+
 qt_internal_add_docs(Widgets
     doc/qtwidgets.qdocconf
 )
