@@ -592,14 +592,6 @@ function(_qt_internal_create_executable target)
 endfunction()
 
 function(_qt_internal_finalize_executable target)
-    get_target_property(is_finalized "${target}" _qt_executable_is_finalized)
-    if(is_finalized)
-        message(AUTHOR_WARNING
-                "Tried to call qt6_finalize_target twice on executable: '${target}'. \
-                 Did you forget to specify MANUAL_FINALIZATION to qt6_add_executable?")
-        return()
-    endif()
-
     # We can't evaluate generator expressions at configure time, so we can't
     # ask for any transitive properties or even the full library dependency
     # chain.
@@ -666,8 +658,6 @@ function(_qt_internal_finalize_executable target)
         __qt_internal_apply_plugin_imports_finalizer_mode("${target}")
         __qt_internal_process_dependency_object_libraries("${target}")
     endif()
-
-    set_target_properties(${target} PROPERTIES _qt_executable_is_finalized TRUE)
 endfunction()
 
 function(_cat IN_FILE OUT_FILE)
@@ -722,6 +712,15 @@ function(qt6_finalize_target target)
         message(FATAL_ERROR "No target '${target}' found in current scope.")
     endif()
 
+    get_target_property(is_finalized "${target}" _qt_is_finalized)
+    if(is_finalized)
+        message(AUTHOR_WARNING
+            "Tried to call qt6_finalize_target twice on target '${target}'. "
+            "Did you forget to specify MANUAL_FINALIZATION to qt6_add_executable, "
+            "qt6_add_library or qt6_add_plugin?")
+        return()
+    endif()
+
     _qt_internal_expose_deferred_files_to_ide(${target})
     get_target_property(target_type ${target} TYPE)
     get_target_property(is_android_executable "${target}" _qt_is_android_executable)
@@ -729,6 +728,8 @@ function(qt6_finalize_target target)
     if(target_type STREQUAL "EXECUTABLE" OR is_android_executable)
         _qt_internal_finalize_executable(${ARGV})
     endif()
+
+    set_target_properties(${target} PROPERTIES _qt_is_finalized TRUE)
 endfunction()
 
 function(_qt_internal_darwin_permission_finalizer target)
