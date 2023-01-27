@@ -606,18 +606,10 @@ static inline void setCoords(GLfloat *coords, const QOpenGLRect &rect)
     coords[7] = rect.bottom;
 }
 
-void QOpenGL2PaintEngineExPrivate::drawTexture(const QOpenGLRect& dest, const QOpenGLRect& src, const QSize &textureSize, bool opaque, bool pattern)
+void Q_TRACE_INSTRUMENT(qtopengl) QOpenGL2PaintEngineExPrivate::drawTexture(const QOpenGLRect& dest, const QOpenGLRect& src, const QSize &textureSize, bool opaque, bool pattern)
 {
-    Q_TRACE_SCOPE(QOpenGL2PaintEngineExPrivate_drawTexture,
-            dest.left,
-            dest.top,
-            dest.right,
-            dest.bottom,
-            src.left,
-            src.top,
-            src.right,
-            src.bottom,
-            textureSize, opaque);
+    Q_TRACE_PARAM_REPLACE(QOpenGLRect, QRectF);
+    Q_TRACE_SCOPE(QOpenGL2PaintEngineExPrivate_drawTexture, dest, src, textureSize, opaque, pattern);
 
     // Setup for texture drawing
     currentBrush = noBrush;
