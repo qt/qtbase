@@ -2321,3 +2321,5 @@ QPolylineSet qPolyline(const QPainterPath &path,
 }
 
 QT_END_NAMESPACE
+
+#undef Q_FIXED_POINT_SCALE
