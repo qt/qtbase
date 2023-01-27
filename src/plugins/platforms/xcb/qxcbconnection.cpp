@@ -815,7 +815,8 @@ xcb_timestamp_t QXcbConnection::getTimestamp()
             if (type != XCB_PROPERTY_NOTIFY)
                 return false;
             auto propertyNotify = reinterpret_cast<xcb_property_notify_event_t *>(event);
-            return propertyNotify->window == window && propertyNotify->atom == dummyAtom;
+            return propertyNotify->window == window && propertyNotify->atom == dummyAtom &&
+                propertyNotify->state == 0;
         });
     }
 
