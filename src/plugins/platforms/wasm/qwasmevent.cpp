@@ -133,8 +133,17 @@ MouseEvent &MouseEvent::operator=(MouseEvent &&other) = default;
 PointerEvent::PointerEvent(EventType type, emscripten::val event) : MouseEvent(type, event)
 {
     pointerId = event["pointerId"].as<int>();
-    pointerType = event["pointerType"].as<std::string>() == "mouse" ? PointerType::Mouse
-                                                                    : PointerType::Other;
+    pointerType = ([type = event["pointerType"].as<std::string>()]() {
+        if (type == "mouse")
+            return PointerType::Mouse;
+        if (type == "touch")
+            return PointerType::Touch;
+        return PointerType::Other;
+    })();
+    width = event["width"].as<qreal>();
+    height = event["height"].as<qreal>();
+    pressure = event["pressure"].as<qreal>();
+    isPrimary = event["isPrimary"].as<bool>();
 }
 
 PointerEvent::~PointerEvent() = default;

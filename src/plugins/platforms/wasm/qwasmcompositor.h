@@ -12,16 +12,12 @@
 #include <QtGui/qinputdevice.h>
 #include <QtCore/private/qstdweb_p.h>
 
-#include <QPointer>
-#include <QPointingDevice>
-
 #include <emscripten/html5.h>
 #include <emscripten/emscripten.h>
 #include <emscripten/bind.h>
 
 QT_BEGIN_NAMESPACE
 
-struct PointerEvent;
 class QWasmWindow;
 class QWasmScreen;
 class QOpenGLContext;
@@ -33,8 +29,6 @@ class QWasmCompositor final : public QObject
 public:
     QWasmCompositor(QWasmScreen *screen);
     ~QWasmCompositor() final;
-
-    void initEventHandlers();
 
     void addWindow(QWasmWindow *window);
     void removeWindow(QWasmWindow *window);
@@ -81,10 +75,6 @@ private:
     bool m_requestUpdateAllWindows = false;
     int m_requestAnimationFrameId = -1;
     bool m_inDeliverUpdateRequest = false;
-
-    std::unique_ptr<QPointingDevice> m_touchDevice;
-
-    QMap<int, QPointF> m_pressedTouchIds;
 };
 
 QT_END_NAMESPACE

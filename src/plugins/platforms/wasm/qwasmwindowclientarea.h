@@ -5,6 +5,7 @@
 #define QWASMWINDOWCLIENTAREA_H
 
 #include <QtCore/qnamespace.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <emscripten/val.h>
 
@@ -32,6 +33,9 @@ private:
     std::unique_ptr<qstdweb::EventCallback> m_pointerDownCallback;
     std::unique_ptr<qstdweb::EventCallback> m_pointerMoveCallback;
     std::unique_ptr<qstdweb::EventCallback> m_pointerUpCallback;
+    std::unique_ptr<qstdweb::EventCallback> m_pointerCancelCallback;
+
+    QMap<int, QWindowSystemInterface::TouchPoint> m_pointerIdToTouchPoints;
 
     QWasmScreen *m_screen;
     QWasmWindow *m_window;

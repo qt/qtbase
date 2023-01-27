@@ -26,6 +26,10 @@ const char *Style = R"css(
     overflow: hidden;
 }
 
+.qt-screen div {
+    touch-action: none;
+}
+
 .qt-window {
     position: absolute;
     background-color: lightgray;
@@ -152,6 +156,7 @@ const char *Style = R"css(
 
 .qt-window-canvas-container {
     display: flex;
+    pointer-events: none;
 }
 
 .title-bar div {

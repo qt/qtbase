@@ -31,14 +31,6 @@ Q_GUI_EXPORT int qt_defaultDpiX();
 QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
     : QObject(screen), m_windowStack(std::bind(&QWasmCompositor::onTopWindowChanged, this))
 {
-    m_touchDevice = std::make_unique<QPointingDevice>(
-            "touchscreen", 1, QInputDevice::DeviceType::TouchScreen,
-            QPointingDevice::PointerType::Finger,
-            QPointingDevice::Capability::Position | QPointingDevice::Capability::Area
-                | QPointingDevice::Capability::NormalizedPosition,
-            10, 0);
-
-    QWindowSystemInterface::registerInputDevice(m_touchDevice.get());
     QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
 }
 
@@ -71,21 +63,6 @@ void QWasmCompositor::destroy()
     // TODO(mikolaj.boc): Investigate if m_isEnabled is needed at all. It seems like a frame should
     // not be generated after this instead.
     m_isEnabled = false; // prevent frame() from creating a new m_context
-}
-
-void QWasmCompositor::initEventHandlers()
-{
-    constexpr EM_BOOL UseCapture = 1;
-
-    const QByteArray screenElementSelector = screen()->eventTargetId().toUtf8();
-    emscripten_set_touchstart_callback(screenElementSelector.constData(), (void *)this, UseCapture,
-                                       &touchCallback);
-    emscripten_set_touchend_callback(screenElementSelector.constData(), (void *)this, UseCapture,
-                                     &touchCallback);
-    emscripten_set_touchmove_callback(screenElementSelector.constData(), (void *)this, UseCapture,
-                                      &touchCallback);
-    emscripten_set_touchcancel_callback(screenElementSelector.constData(), (void *)this, UseCapture,
-                                        &touchCallback);
 }
 
 void QWasmCompositor::addWindow(QWasmWindow *window)
@@ -272,96 +249,4 @@ void QWasmCompositor::onTopWindowChanged()
 QWasmScreen *QWasmCompositor::screen()
 {
     return static_cast<QWasmScreen *>(parent());
-}
-
-int QWasmCompositor::touchCallback(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
-{
-    auto compositor = reinterpret_cast<QWasmCompositor*>(userData);
-    return static_cast<int>(compositor->processTouch(eventType, touchEvent));
-}
-
-bool QWasmCompositor::processTouch(int eventType, const EmscriptenTouchEvent *touchEvent)
-{
-    QList<QWindowSystemInterface::TouchPoint> touchPointList;
-    touchPointList.reserve(touchEvent->numTouches);
-    QWindow *targetWindow = nullptr;
-
-    qWarning() << Q_FUNC_INFO << "number emTouchPoint:" << touchEvent->numTouches;
-
-    for (int i = 0; i < touchEvent->numTouches; i++) {
-
-        const EmscriptenTouchPoint *emTouchPoint = &touchEvent->touches[i];
-
-        QPointF targetPointInScreenCoords =
-                screen()->mapFromLocal(QPoint(emTouchPoint->targetX, emTouchPoint->targetY));
-
-        targetWindow = screen()->compositor()->windowAt(targetPointInScreenCoords.toPoint(), 5);
-        if (targetWindow == nullptr)
-            continue;
-
-        QWindowSystemInterface::TouchPoint touchPoint;
-
-        touchPoint.area = QRect(0, 0, 8, 8);
-        touchPoint.id = emTouchPoint->identifier;
-        touchPoint.pressure = 1.0;
-
-        touchPoint.area.moveCenter(targetPointInScreenCoords);
-
-        const auto tp = m_pressedTouchIds.constFind(touchPoint.id);
-        if (tp != m_pressedTouchIds.constEnd())
-            touchPoint.normalPosition = tp.value();
-
-        QPointF pointInTargetWindowCoords = targetWindow->mapFromGlobal(targetPointInScreenCoords);
-        QPointF normalPosition(pointInTargetWindowCoords.x() / targetWindow->width(),
-                               pointInTargetWindowCoords.y() / targetWindow->height());
-
-        const bool stationaryTouchPoint = (normalPosition == touchPoint.normalPosition);
-        touchPoint.normalPosition = normalPosition;
-
-        switch (eventType) {
-            case EMSCRIPTEN_EVENT_TOUCHSTART:
-                if (emTouchPoint->isChanged) {
-                    if (tp != m_pressedTouchIds.constEnd()) {
-                        touchPoint.state = (stationaryTouchPoint
-                                            ? QEventPoint::State::Stationary
-                                            : QEventPoint::State::Updated);
-                    } else {
-                        touchPoint.state = QEventPoint::State::Pressed;
-                    }
-                    m_pressedTouchIds.insert(touchPoint.id, touchPoint.normalPosition);
-                }
-            break;
-            case EMSCRIPTEN_EVENT_TOUCHEND:
-                if (emTouchPoint->isChanged) {
-                    touchPoint.state = QEventPoint::State::Released;
-                    m_pressedTouchIds.remove(touchPoint.id);
-                }
-                break;
-            case EMSCRIPTEN_EVENT_TOUCHMOVE:
-                if (emTouchPoint->isChanged) {
-                        touchPoint.state = (stationaryTouchPoint
-                                            ? QEventPoint::State::Stationary
-                                            : QEventPoint::State::Updated);
-
-                        m_pressedTouchIds.insert(touchPoint.id, touchPoint.normalPosition);
-                }
-                break;
-            default:
-                break;
-        }
-
-        touchPointList.append(touchPoint);
-    }
-
-    QFlags<Qt::KeyboardModifier> keyModifier = KeyboardModifier::getForEvent(*touchEvent);
-
-    bool accepted = false;
-
-    if (eventType == EMSCRIPTEN_EVENT_TOUCHCANCEL)
-        accepted = QWindowSystemInterface::handleTouchCancelEvent(targetWindow, QWasmIntegration::getTimestamp(), m_touchDevice.get(), keyModifier);
-    else
-        accepted = QWindowSystemInterface::handleTouchEvent(
-                targetWindow, QWasmIntegration::getTimestamp(), m_touchDevice.get(), touchPointList, keyModifier);
-
-    return static_cast<int>(accepted);
 }

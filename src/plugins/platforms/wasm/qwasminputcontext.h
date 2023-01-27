@@ -32,7 +32,7 @@ public:
     void inputStringChanged(QString &, QWasmInputContext *context);
 
 private:
-    emscripten::val focusScreenElement();
+    emscripten::val inputHandlerElementForFocusedWindow();
 
     bool m_inputPanelVisible = false;
 

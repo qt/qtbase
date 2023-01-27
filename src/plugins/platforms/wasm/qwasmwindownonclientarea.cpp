@@ -129,9 +129,6 @@ Resizer::ResizerElement::ResizerElement(ResizerElement &&other) = default;
 
 bool Resizer::ResizerElement::onPointerDown(const PointerEvent &event)
 {
-    if (event.pointerType != PointerType::Mouse)
-        return false;
-
     m_element.call<void>("setPointerCapture", event.pointerId);
     m_capturedPointerId = event.pointerId;
 
@@ -371,9 +368,6 @@ QRectF TitleBar::geometry() const
 
 bool TitleBar::onPointerDown(const PointerEvent &event)
 {
-    if (event.pointerType != PointerType::Mouse)
-        return false;
-
     m_element.call<void>("setPointerCapture", event.pointerId);
     m_capturedPointerId = event.pointerId;
 
