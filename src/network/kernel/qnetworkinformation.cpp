@@ -26,7 +26,7 @@ struct QNetworkInformationDeleter
     void operator()(QNetworkInformation *information) { delete information; }
 };
 
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, qniLoader,
                           (QNetworkInformationBackendFactory_iid,
                            QStringLiteral("/networkinformation")))
 
@@ -84,7 +84,7 @@ private:
 
 bool QNetworkInformationPrivate::initializeList()
 {
-    if (!loader())
+    if (!qniLoader())
         return false;
     if (!dataHolder())
         return false;
@@ -92,11 +92,11 @@ bool QNetworkInformationPrivate::initializeList()
     QMutexLocker initLocker(&mutex);
 
 #if QT_CONFIG(library)
-    loader->update();
+    qniLoader->update();
 #endif
     // Instantiates the plugins (and registers the factories)
     int index = 0;
-    while (loader->instance(index))
+    while (qniLoader->instance(index))
         ++index;
     initLocker.unlock();
 

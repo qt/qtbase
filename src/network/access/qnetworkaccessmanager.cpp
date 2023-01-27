@@ -77,7 +77,7 @@ Q_APPLICATION_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
 Q_GLOBAL_STATIC(QNetworkAccessDebugPipeBackendFactory, debugpipeBackend)
 #endif
 
-Q_APPLICATION_STATIC(QFactoryLoader, loader, QNetworkAccessBackendFactory_iid, "/networkaccess"_L1)
+Q_APPLICATION_STATIC(QFactoryLoader, qnabfLoader, QNetworkAccessBackendFactory_iid, "/networkaccess"_L1)
 
 #if defined(Q_OS_MACOS)
 bool getProxyAuth(const QString& proxyHostname, const QString &scheme, QString& username, QString& password)
@@ -1703,13 +1703,13 @@ void QNetworkAccessManagerPrivate::ensureBackendPluginsLoaded()
 {
     Q_CONSTINIT static QBasicMutex mutex;
     std::unique_lock locker(mutex);
-    if (!loader())
+    if (!qnabfLoader())
         return;
 #if QT_CONFIG(library)
-    loader->update();
+    qnabfLoader->update();
 #endif
     int index = 0;
-    while (loader->instance(index))
+    while (qnabfLoader->instance(index))
         ++index;
 }
 
