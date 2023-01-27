@@ -2877,6 +2877,13 @@ function(qt6_generate_deploy_script)
     # Mark the target as "to be deployed".
     set_property(TARGET ${arg_TARGET} PROPERTY _qt_marked_for_deployment ON)
 
+    # If the target already was finalized, maybe because it was defined in a subdirectory, generate
+    # the plugin deployment information here.
+    get_target_property(is_finalized "${arg_TARGET}" _qt_is_finalized)
+    if(is_finalized)
+        __qt_internal_generate_plugin_deployment_info(${arg_TARGET})
+    endif()
+
     # Create a file name that will be unique for this target and the combination
     # of arguments passed to this command. This allows the project to call us
     # multiple times with different arguments for the same target (e.g. to

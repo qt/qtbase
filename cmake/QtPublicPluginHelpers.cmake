@@ -416,7 +416,24 @@ function(__qt_internal_collect_plugin_targets_from_dependencies_of_plugins targe
     set("${out_var}" "${plugin_targets}" PARENT_SCOPE)
 endfunction()
 
-function(__qt_internal_generate_plugin_deployment_info target plugin_targets)
+# Generate plugin information files for deployment
+#
+# Arguments:
+# OUT_PLUGIN_TARGETS - Variable name to store the plugin targets that were collected with
+#                      __qt_internal_collect_plugin_targets_from_dependencies.
+function(__qt_internal_generate_plugin_deployment_info target)
+    set(no_value_options "")
+    set(single_value_options "OUT_PLUGIN_TARGETS")
+    set(multi_value_options "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+
+    __qt_internal_collect_plugin_targets_from_dependencies("${target}" plugin_targets)
+    if(NOT "${arg_OUT_PLUGIN_TARGETS}" STREQUAL "")
+        set("${arg_OUT_PLUGIN_TARGETS}" "${plugin_targets}" PARENT_SCOPE)
+    endif()
+
     get_target_property(marked_for_deployment ${target} _qt_marked_for_deployment)
     if(NOT marked_for_deployment)
         return()
@@ -447,8 +464,8 @@ function(__qt_internal_apply_plugin_imports_finalizer_mode target)
         return()
     endif()
 
-    __qt_internal_collect_plugin_targets_from_dependencies("${target}" plugin_targets)
-    __qt_internal_generate_plugin_deployment_info(${target} "${plugin_targets}")
+    __qt_internal_generate_plugin_deployment_info(${target}
+        OUT_PLUGIN_TARGETS plugin_targets)
 
     # By default if the project hasn't explicitly opted in or out, use finalizer mode.
     # The precondition for this is that qt_finalize_target was called (either explicitly by the user
