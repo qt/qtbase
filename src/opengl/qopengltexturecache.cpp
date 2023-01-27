@@ -121,6 +121,9 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QImage &i
     return id;
 }
 
+Q_TRACE_POINT(qtopengl, QOpenGLTextureCache_bindTexture_entry, QOpenGLContext *context, qint64 key, const unsigned char *image, int options);
+Q_TRACE_POINT(qtopengl, QOpenGLTextureCache_bindTexture_exit);
+
 GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, qint64 key, const QImage &image, QOpenGLTextureUploader::BindOptions options)
 {
     Q_TRACE_SCOPE(QOpenGLTextureCache_bindTexture, context, key, image.bits(), options);

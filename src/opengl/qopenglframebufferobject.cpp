@@ -18,6 +18,15 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_TRACE_PREFIX(qtopengl,
+   "#include <private/qopengl2pexvertexarray_p.h>" \
+   "#include <private/qopengltextureuploader_p.h>" \
+   "#include <qopenglframebufferobject.h>"
+);
+Q_TRACE_PARAM_REPLACE(GLenum, int);
+Q_TRACE_PARAM_REPLACE(GLint, int);
+Q_TRACE_METADATA(qtopengl, "ENUM { } QOpenGLFramebufferObject::Attachment; ");
+
 #ifndef QT_NO_DEBUG
 #define QT_RESET_GLERROR()                                \
 {                                                         \
@@ -452,10 +461,11 @@ namespace
     }
 }
 
-void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *qfbo, const QSize &size,
-                                           QOpenGLFramebufferObject::Attachment attachment,
-                                           GLenum texture_target, GLenum internal_format,
-                                           GLint samples, bool mipmap)
+void Q_TRACE_INSTRUMENT(qtopengl) QOpenGLFramebufferObjectPrivate::init(
+        QOpenGLFramebufferObject *qfbo, const QSize &size,
+        QOpenGLFramebufferObject::Attachment attachment,
+        GLenum texture_target, GLenum internal_format,
+        GLint samples, bool mipmap)
 {
     Q_TRACE_SCOPE(QOpenGLFramebufferObjectPrivate_init, qfbo, size, attachment, texture_target, internal_format, samples, mipmap);
     Q_UNUSED(qfbo);

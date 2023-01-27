@@ -105,8 +105,12 @@ qt_internal_extend_target(OpenGL CONDITION QT_FEATURE_egl
         qopenglcompositorbackingstore.cpp qopenglcompositorbackingstore_p.h
 )
 
-
-qt_internal_create_tracepoints(OpenGL qtopengl.tracepoints)
+qt_internal_generate_tracepoints(OpenGL opengl
+    SOURCES
+        qopenglframebufferobject.cpp
+        qopenglpaintengine.cpp
+        qopengltexturecache.cpp
+)
 qt_internal_add_docs(OpenGL
     doc/qtopengl.qdocconf
 )
