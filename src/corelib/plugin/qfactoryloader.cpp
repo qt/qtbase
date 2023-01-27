@@ -36,6 +36,8 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+Q_TRACE_POINT(qtcore, QFactoryLoader_update, const QString &fileName);
+
 bool QPluginParsedMetaData::parse(QByteArrayView raw)
 {
     QPluginMetaData::Header header;

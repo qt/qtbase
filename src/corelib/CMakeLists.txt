@@ -1406,7 +1406,15 @@ if(APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
 endif()
 # special case end
 
-qt_internal_create_tracepoints(Core qtcore.tracepoints)
+qt_internal_generate_tracepoints(Core core
+    SOURCES
+        kernel/qcoreapplication.cpp
+        kernel/qcoreevent.cpp
+        kernel/qobject.cpp
+        plugin/qfactoryloader.cpp
+        plugin/qlibrary.cpp
+        global/qlogging.cpp
+)
 qt_internal_add_docs(Core
     doc/qtcore.qdocconf
 )

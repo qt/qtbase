@@ -34,6 +34,9 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+Q_TRACE_POINT(qtcore, QLibraryPrivate_load_entry, const QString &fileName);
+Q_TRACE_POINT(qtcore, QLibraryPrivate_load_exit, bool success);
+
 // On Unix systema and on Windows with MinGW, we can mix and match debug and
 // release plugins without problems. (unless compiled in debug-and-release mode
 // - why?)
