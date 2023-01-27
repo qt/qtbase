@@ -1192,8 +1192,8 @@ Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int 
 
 namespace QTest
 {
-    Q_GUI_EXPORT QPointingDevice * createTouchDevice(QInputDevice::DeviceType devType = QInputDevice::DeviceType::TouchScreen,
-                                                     QInputDevice::Capabilities caps = QInputDevice::Capability::Position)
+    Q_GUI_EXPORT QPointingDevice * createTouchDevice(QInputDevice::DeviceType devType,
+                                                     QInputDevice::Capabilities caps)
     {
         static qint64 nextId = 0x100000000;
         QPointingDevice *ret = new QPointingDevice("test touch device"_L1, nextId++,
@@ -1206,7 +1206,7 @@ namespace QTest
 
 Q_GUI_EXPORT bool qt_handleTouchEventv2(QWindow *window, const QPointingDevice *device,
                                 const QList<QEventPoint> &points,
-                                Qt::KeyboardModifiers mods = Qt::NoModifier)
+                                Qt::KeyboardModifiers mods)
 {
     return QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(window, device,
         QWindowSystemInterfacePrivate::toNativeTouchPoints(points, window), mods);
@@ -1214,7 +1214,7 @@ Q_GUI_EXPORT bool qt_handleTouchEventv2(QWindow *window, const QPointingDevice *
 
 Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *window, const QPointingDevice *device,
                                 const QList<QEventPoint> &points,
-                                Qt::KeyboardModifiers mods = Qt::NoModifier)
+                                Qt::KeyboardModifiers mods)
 {
     qt_handleTouchEventv2(window, device, points, mods);
 }
