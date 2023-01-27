@@ -25,3 +25,5 @@ qt_internal_add_plugin(QEglFSX11IntegrationPlugin
         X11::XCB
         XCB::XCB
 )
+
+set_target_properties(QEglFSX11IntegrationPlugin PROPERTIES UNITY_BUILD OFF) # X11 define clashes

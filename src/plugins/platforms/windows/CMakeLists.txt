@@ -66,6 +66,10 @@ qt_internal_add_plugin(QWindowsIntegrationPlugin
         runtimeobject
 )
 
+# Duplicated symbols
+set_source_files_properties(qwindowspointerhandler.cpp qwindowsmousehandler.cpp
+                            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
+
 # Resources:
 set_source_files_properties("openglblacklists/default.json"
     PROPERTIES QT_RESOURCE_ALIAS "default.json"

@@ -48,6 +48,14 @@ qt_internal_add_module(OpenGL
     GENERATE_CPP_EXPORTS
 )
 
+# qDebug()<< ambiguities
+set_source_files_properties(qopengltextureblitter.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
+
+if(APPLE)
+    set_source_files_properties(qopenglversionfunctionsfactory.cpp
+                                PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
+endif()
+
 ## Scopes:
 #####################################################################
 
