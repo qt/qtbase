@@ -68,8 +68,6 @@ void FixedColumnMatrix<T, NumColumns>::storageIndexToPosition(int idx, int *rowP
 const uint DefaultFieldGrowthPolicy = 255;
 const uint DefaultRowWrapPolicy = 255;
 
-enum { ColumnCount = 2 };
-
 // -- our data structure for our items
 // This owns the QLayoutItem
 struct QFormLayoutItem
@@ -152,7 +150,7 @@ class QFormLayoutPrivate : public QLayoutPrivate
     Q_DECLARE_PUBLIC(QFormLayout)
 
 public:
-    typedef QtPrivate::FixedColumnMatrix<QFormLayoutItem *, ColumnCount> ItemMatrix;
+    using ItemMatrix = QtPrivate::FixedColumnMatrix<QFormLayoutItem *, 2>;
 
     QFormLayoutPrivate();
     ~QFormLayoutPrivate() { }

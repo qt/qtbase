@@ -12,3 +12,5 @@ target_link_libraries(widgets_customviewstyle_snippets PRIVATE
     Qt::Gui
     Qt::Widgets
 )
+
+set_target_properties(widgets_customviewstyle_snippets PROPERTIES UNITY_BUILD OFF)

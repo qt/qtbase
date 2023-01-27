@@ -70,6 +70,11 @@ qt_internal_add_module(Widgets
     GENERATE_CPP_EXPORTS
 )
 
+if(APPLE)
+    set_source_files_properties(kernel/qapplication.cpp
+                                PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
+endif()
+
 # Resources:
 set(qstyle_resource_files
     "styles/images/cdr-128.png"
