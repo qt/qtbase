@@ -54,6 +54,8 @@ static const char *xcb_atomnames = {
 
     "_QT_CLOSE_CONNECTION\0"
 
+    "_QT_GET_TIMESTAMP\0"
+
     "_MOTIF_WM_HINTS\0"
 
     "DTWM_IS_RUNNING\0"
