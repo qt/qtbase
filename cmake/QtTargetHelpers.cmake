@@ -796,7 +796,7 @@ function(qt_internal_generate_tracepoints name provider)
         endif()
 
         add_custom_command(OUTPUT "${tracepoints_path}"
-            COMMAND ${tracepointgen} ${provider_name} "${tracepoints_path}" ${absolute_file_paths}
+            COMMAND ${tracepointgen} ${provider_name} "${tracepoints_path}"  "I$<JOIN:$<TARGET_PROPERTY:${name},INCLUDE_DIRECTORIES>,;>" ${absolute_file_paths}
             DEPENDS ${absolute_file_paths}
             VERBATIM)
         add_custom_target(${name}_${provider_name}_tracepoints_file DEPENDS "${tracepoints_path}")

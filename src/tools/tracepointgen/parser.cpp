@@ -5,7 +5,7 @@
 #include "parser.h"
 #include <qtextstream.h>
 #include <qregularexpression.h>
-
+#include <qfileinfo.h>
 
 static void removeOffsetRange(qsizetype begin, qsizetype end, QList<LineNumber> &offsets)
 {
@@ -76,6 +76,30 @@ static void simplifyData(QString &data, QList<LineNumber> &offsets)
         removeOffsetRange(offset, end, offsets);
         data.remove(offset, end - offset);
     }
+}
+
+static void simplifyData(QString &data)
+{
+    qsizetype offset = data.indexOf(QStringLiteral("//"));
+    while (offset >= 0) {
+        qsizetype endOfLine = data.indexOf(QLatin1Char('\n'), offset);
+        if (endOfLine == -1)
+            endOfLine = data.length();
+        data.remove(offset, endOfLine - offset);
+        offset = data.indexOf(QStringLiteral("//"), offset);
+    }
+    offset = data.indexOf(QStringLiteral("/*"));
+    while (offset >= 0) {
+        qsizetype endOfComment = data.indexOf(QStringLiteral("*/"), offset);
+        if (endOfComment == -1)
+            break;
+        data.remove(offset, endOfComment - offset + 2);
+        offset = data.indexOf(QStringLiteral("/*"), offset);
+    }
+    offset = 0;
+    qsizetype end = 0;
+    while (findSpaceRange(data, offset, end))
+        data.remove(offset, end - offset);
 }
 
 static QString preprocessMetadata(const QString &in)
@@ -210,7 +234,135 @@ void Parser::parsePrefix(const QString &data, qsizetype offset)
         m_prefixes.push_back(preprocessMetadata(prefix));
 }
 
-void Parser::parseMetadata(const QString &data, qsizetype offset)
+QStringList Parser::findEnumValues(const QString &name, const QStringList &includes)
+{
+    QStringList split = name.split(QStringLiteral("::"));
+    QString enumName = split.last();
+    DEBUGPRINTF(printf("searching for %s\n", qPrintable(name)));
+    QStringList ret;
+    for (auto filename : includes) {
+        QFile input(filename);
+        if (!input.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            DEBUGPRINTF(printf("Cannot open '%s' for reading: %s\n",
+                                qPrintable(filename), qPrintable(input.errorString())));
+            return ret;
+        }
+        QString data;
+        QTextStream stream(&input);
+        while (!stream.atEnd()) {
+            QString line = stream.readLine().trimmed();
+            data += line + QLatin1Char('\n');
+        }
+        simplifyData(data);
+
+        int pos = 0;
+        bool valid = true;
+        for (int i = 0; i < split.size() - 1; i++) {
+            QRegularExpression macro(QStringLiteral("(struct|class|namespace) +([A-Za-z0-9_]*)? +([A-Za-z0-9]*;?)"));
+            QRegularExpressionMatchIterator m = macro.globalMatch(data);
+            bool found = false;
+            while (m.hasNext() && !found) {
+                QRegularExpressionMatch match = m.next();
+                QString n = match.captured(2);
+                if (!n.endsWith(QLatin1Char(';')) && n == split[i] && match.capturedStart(2) > pos) {
+                    pos = match.capturedStart(2);
+                    found = true;
+                    break;
+                }
+                if (match.hasCaptured(3)) {
+                    n = match.captured(3);
+                    if (!n.endsWith(QLatin1Char(';')) && n == split[i] && match.capturedStart(3) > pos) {
+                        pos = match.capturedStart(3);
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found) {
+                valid = false;
+                break;
+            }
+        }
+
+        if (valid) {
+            QRegularExpression macro(QStringLiteral("enum +([A-Za-z0-9_]*)"));
+            QRegularExpressionMatchIterator m = macro.globalMatch(data);
+            while (m.hasNext()) {
+                QRegularExpressionMatch match = m.next();
+
+                if (match.capturedStart() < pos)
+                    continue;
+
+                QString n = match.captured(1);
+
+                if (n == enumName) {
+                    DEBUGPRINTF(printf("Found enum: %s\n", qPrintable(n)));
+                    int begin = data.indexOf(QLatin1Char('{'), match.capturedEnd());
+                    int end = data.indexOf(QLatin1Char('}'), begin);
+                    QString block = data.mid(begin + 1, end - begin - 1);
+                    QStringList enums = block.split(QLatin1Char('\n'));
+                    for (auto e : enums) {
+                        const auto trimmed = e.trimmed();
+                        if (!trimmed.isEmpty() && !trimmed.startsWith(QLatin1Char('#')))
+                            ret << trimmed;
+                    }
+
+                    break;
+                }
+            }
+            return ret;
+        }
+    }
+    return ret;
+}
+
+struct EnumNameValue
+{
+    QString name;
+    QString valueStr;
+    int value;
+};
+
+static QList<EnumNameValue> enumsToValues(const QStringList &values)
+{
+    int cur = 0;
+    QList<EnumNameValue> ret;
+    for (auto value : values) {
+        EnumNameValue r;
+        if (value.contains(QLatin1Char('='))) {
+            size_t offset = value.indexOf(QLatin1Char('='));
+            r.name = value.left(offset).trimmed();
+            QString val = value.right(value.length() - offset - 1).trimmed();
+            if (val.endsWith(QLatin1Char(',')))
+                val = val.left(val.length() - 1);
+            bool valid = false;
+            int integer = val.toInt(&valid);
+            if (!valid)
+                integer = val.toInt(&valid, 16);
+            if (valid) {
+                cur = r.value = integer;
+                ret << r;
+            } else {
+                auto iter = std::find_if(ret.begin(), ret.end(), [&val](const EnumNameValue &elem){
+                    return elem.name == val;
+                });
+                if (iter != ret.end()) {
+                    cur = r.value = iter->value;
+                    ret << r;
+                } else {
+                    DEBUGPRINTF(printf("Invalid value: %s %s\n", qPrintable(r.name), qPrintable(value)));
+                }
+            }
+        } else {
+            r.name = value;
+            r.value = cur++;
+            ret << r;
+        }
+    }
+    return ret;
+}
+
+void Parser::parseMetadata(const QString &data, qsizetype offset, const QStringList &includes)
 {
     qsizetype beginOfProvider = data.indexOf(QLatin1Char('('), offset);
     qsizetype endOfProvider = data.indexOf(QLatin1Char(','), beginOfProvider);
@@ -224,8 +376,152 @@ void Parser::parseMetadata(const QString &data, qsizetype offset)
 
     DEBUGPRINTF(printf("tracepointgen: metadata: %s", qPrintable(metadata)));
 
-    if (!m_metadata.contains(metadata))
-        m_metadata.push_back(preprocessMetadata(metadata));
+    QString preprocessed = preprocessMetadata(metadata);
+
+    DEBUGPRINTF2(printf("preprocessed %s\n", qPrintable(preprocessed)));
+
+    QRegularExpression macro(QStringLiteral("([A-Z]*) ?{ ?([A-Za-z0-9=_,. ]*) ?} ?([A-Za-z0-9_:]*) ?;"));
+    QRegularExpressionMatchIterator i = macro.globalMatch(preprocessed);
+    qsizetype prev = 0;
+    while (i.hasNext()) {
+        QRegularExpressionMatch match = i.next();
+        const QString values = match.captured(2).trimmed();
+        int cur = match.capturedStart();
+        if (cur > prev)
+            m_metadata.append(preprocessed.mid(prev, cur - prev));
+
+        prev = match.capturedEnd() + 1;
+        DEBUGPRINTF2(printf("values: %s\n", qPrintable(values)));
+        if (values.isEmpty() || values.startsWith(QStringLiteral("AUTO"))) {
+
+            QStringList ranges;
+            if (values.contains(QStringLiteral("RANGE"))) {
+                QRegularExpression rangeMacro(QStringLiteral("RANGE +([A-Za-z0-9_]*) +... +([A-Za-z0-9_]*)"));
+                QRegularExpressionMatchIterator r = rangeMacro.globalMatch(values);
+                while (r.hasNext()) {
+                    QRegularExpressionMatch rm = r.next();
+                    ranges << rm.captured(1);
+                    ranges << rm.captured(2);
+                    DEBUGPRINTF2(printf("range: %s ... %s\n", qPrintable(rm.captured(1)), qPrintable(rm.captured(2))));
+                }
+            }
+
+            const auto enumOrFlag = match.captured(1);
+            const auto name = match.captured(3);
+            const bool flags = enumOrFlag == QStringLiteral("FLAGS");
+
+            QStringList values = findEnumValues(name, includes);
+            if (values.isEmpty()) {
+                if (flags && name.endsWith(QLatin1Char('s')))
+                    values = findEnumValues(name.left(name.length() - 1), includes);
+                if (values.isEmpty()) {
+                    DEBUGPRINTF(printf("Unable to find values for %s\n", qPrintable(name)));
+                }
+            }
+            if (!values.isEmpty()) {
+                auto moreValues = enumsToValues(values);
+                if (ranges.size()) {
+                    for (int i = 0; i < ranges.size() / 2; i++) {
+                        for (auto &v : moreValues) {
+                            if (v.name == ranges[2 * i]) {
+                                QString rangeEnd = ranges[2 * i + 1];
+                                auto iter = std::find_if(moreValues.begin(), moreValues.end(), [&rangeEnd](const EnumNameValue &elem){
+                                    return elem.name == rangeEnd;
+                                });
+                                if (iter != moreValues.end())
+                                    v.valueStr = QStringLiteral("RANGE(%1, %2 ... %3)").arg(v.name).arg(v.value).arg(iter->value);
+                            }
+                        }
+                    }
+                }
+                std::sort(moreValues.begin(), moreValues.end(), [](const EnumNameValue &a, const EnumNameValue &b) {
+                    return a.value < b.value;
+                });
+                values.clear();
+                int prevValue = moreValues.first().value;
+                for (auto v : moreValues) {
+                    QString a;
+                    if (v.valueStr.isNull()) {
+                        if (v.value == prevValue + 1 && !flags)
+                            a = v.name;
+                        else
+                            a = QStringLiteral("%1 = %2").arg(v.name).arg(v.value);
+                        prevValue = v.value;
+                    } else {
+                        a = v.valueStr;
+                    }
+                    values << a;
+                }
+
+                metadata = QStringLiteral("%1 {\n %2 \n} %3;").arg(enumOrFlag).arg(values.join(QStringLiteral(",\n"))).arg(name);
+                if (!m_metadata.contains(metadata))
+                    m_metadata.append(metadata);
+            }
+        } else {
+            if (!m_metadata.contains(match.captured()))
+                m_metadata.append(match.captured());
+        }
+    }
+    if (prev < preprocessed.length())
+        m_metadata.append(preprocessed.mid(prev, preprocessed.length() - prev));
+}
+
+QString Parser::resolveInclude(const QString &filename)
+{
+    QFileInfo info(filename);
+    if (info.exists())
+        return info.absoluteFilePath();
+    for (const QString &sp : std::as_const(m_includeDirs)) {
+        info = QFileInfo(sp + QLatin1Char('/') + filename);
+        if (info.exists())
+            return info.absoluteFilePath();
+    }
+    return {};
+}
+
+void Parser::addIncludesRecursive(const QString &filename, QList<QString> &includes)
+{
+    QFileInfo info(filename);
+    DEBUGPRINTF(printf("check include: %s\n", qPrintable(filename)));
+    QFile input(filename);
+    if (!input.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        DEBUGPRINTF(printf("Cannot open '%s' for reading: %s\n",
+                            qPrintable(filename), qPrintable(input.errorString())));
+        return;
+    }
+    QString data;
+    QTextStream stream(&input);
+    while (!stream.atEnd()) {
+        QString line = stream.readLine().trimmed();
+        data += line + QLatin1Char(QLatin1Char('\n'));
+    }
+
+    QRegularExpression includeMacro(QStringLiteral("#include [\"<]([A-Za-z0-9_./]*.h)[\">]"));
+    QRegularExpressionMatchIterator i = includeMacro.globalMatch(data);
+    while (i.hasNext()) {
+        QRegularExpressionMatch match = i.next();
+        QString filename = match.captured(1);
+
+        QString rinc = filename;
+        if (filename.startsWith(QStringLiteral("../"))) {
+            QFileInfo info2(info.absolutePath() + QLatin1Char('/') + filename);
+            if (!info2.exists()) {
+                DEBUGPRINTF(printf("unable to find %s\n", qPrintable(filename)));
+                continue;
+            }
+            rinc = info2.absoluteFilePath();
+            filename = info2.fileName();
+        }
+
+        // only search possible qt headers
+        if (filename.startsWith(QLatin1Char('q'), Qt::CaseInsensitive)) {
+            QString resolved = resolveInclude(rinc);
+            if (!resolved.isEmpty() && !includes.contains(resolved)) {
+                includes.push_back(resolved);
+                addIncludesRecursive(resolved, includes);
+            }
+        }
+    }
 }
 
 void Parser::parse(QIODevice &input, const QString &name)
@@ -243,8 +539,25 @@ void Parser::parse(QIODevice &input, const QString &name)
 
     simplifyData(data, m_offsets);
 
+    QStringList includes;
+
+    QRegularExpression includeMacro(QStringLiteral("#include [\"<]([A-Za-z0-9_./]*.h)[\">]"));
+    QRegularExpressionMatchIterator i = includeMacro.globalMatch(data);
+    while (i.hasNext()) {
+        QRegularExpressionMatch match = i.next();
+        const QString filename = match.captured(1);
+        // only search possible qt headers
+        if (filename.startsWith(QLatin1Char('q'), Qt::CaseInsensitive)) {
+            const QString resolved = resolveInclude(filename);
+            if (!resolved.isEmpty() && !includes.contains(resolved)) {
+                includes.push_back(resolved);
+                addIncludesRecursive(resolved, includes);
+            }
+        }
+    }
+
     QRegularExpression traceMacro(QStringLiteral("Q_TRACE_([A-Z_]*)"));
-    QRegularExpressionMatchIterator i = traceMacro.globalMatch(data);
+    i = traceMacro.globalMatch(data);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
 
@@ -258,7 +571,7 @@ void Parser::parse(QIODevice &input, const QString &name)
         else if (macroType == QStringLiteral("PREFIX"))
             parsePrefix(data, match.capturedEnd());
         else if (macroType == QStringLiteral("METADATA"))
-            parseMetadata(data, match.capturedEnd());
+            parseMetadata(data, match.capturedEnd(), includes);
     }
 
     for (auto &func : m_functions) {

@@ -42,11 +42,19 @@ struct Parser
 
     }
 
+    void addIncludeDirs(const QStringList &list)
+    {
+        m_includeDirs.append(list);
+    }
+    QString resolveInclude(const QString &filename);
+    void addIncludesRecursive(const QString &filename, QStringList &includes);
+    QStringList findEnumValues(const QString &name, const QStringList &includes);
+
     void parseParamReplace(const QString &data, qsizetype offset, const QString &name);
     void parseInstrument(const QString &data, qsizetype offset);
     void parsePoint(const QString &data, qsizetype offset);
     void parsePrefix(const QString &data, qsizetype offset);
-    void parseMetadata(const QString &data, qsizetype offset);
+    void parseMetadata(const QString &data, qsizetype offset, const QStringList &includes);
     int lineNumber(qsizetype offset) const;
 
     void parse(QIODevice &input, const QString &name);
@@ -62,6 +70,7 @@ struct Parser
     QList<QString> m_prefixes;
     QList<QString> m_metadata;
     QList<LineNumber> m_offsets;
+    QList<QString> m_includeDirs;
     QString m_provider;
 };
 
