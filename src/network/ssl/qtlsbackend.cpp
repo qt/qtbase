@@ -27,7 +27,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_APPLICATION_STATIC(QFactoryLoader, loader, QTlsBackend_iid,
+Q_APPLICATION_STATIC(QFactoryLoader, qtlsbLoader, QTlsBackend_iid,
                      QStringLiteral("/tls"))
 
 namespace {
@@ -54,7 +54,7 @@ public:
 
     bool tryPopulateCollection()
     {
-        if (!loader())
+        if (!qtlsbLoader())
             return false;
 
         Q_CONSTINIT static QBasicMutex mutex;
@@ -63,10 +63,10 @@ public:
             return true;
 
 #if QT_CONFIG(library)
-        loader->update();
+        qtlsbLoader->update();
 #endif
         int index = 0;
-        while (loader->instance(index))
+        while (qtlsbLoader->instance(index))
             ++index;
 
         return true;
