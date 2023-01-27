@@ -428,7 +428,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
         return false;
 
     if (msg.message == WM_POINTERCAPTURECHANGED) {
-        QWindowSystemInterface::handleTouchCancelEvent(window, msg.time, m_touchDevice.data(),
+        QWindowSystemInterface::handleTouchCancelEvent(window, m_touchDevice.data(),
                                                        QWindowsKeyMapper::queryKeyboardModifiers());
         m_lastTouchPoints.clear();
         return true;
@@ -537,7 +537,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     if (allStates == QEventPoint::State::Released)
         m_touchInputIDToTouchPointID.clear();
 
-    QWindowSystemInterface::handleTouchEvent(window, msg.time, m_touchDevice.data(), touchPoints,
+    QWindowSystemInterface::handleTouchEvent(window, m_touchDevice.data(), touchPoints,
                                              QWindowsKeyMapper::queryKeyboardModifiers());
     return false; // Allow mouse messages to be generated.
 }
@@ -635,7 +635,7 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
 
     switch (msg.message) {
     case WM_POINTERENTER: {
-        QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(window, msg.time, device.data(), true);
+        QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(window, device.data(), true);
         m_windowUnderPointer = window;
         // The local coordinates may fall outside the window.
         // Wait until the next update to send the enter event.
@@ -648,7 +648,7 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
             m_windowUnderPointer = nullptr;
             m_currentWindow = nullptr;
         }
-        QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(window, msg.time, device.data(), false);
+        QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(window, device.data(), false);
         break;
     case WM_POINTERDOWN:
     case WM_POINTERUP:
@@ -673,7 +673,7 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
         }
         const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
 
-        QWindowSystemInterface::handleTabletEvent(target, msg.time, device.data(),
+        QWindowSystemInterface::handleTabletEvent(target, device.data(),
                                                   localPos, hiResGlobalPos, mouseButtons,
                                                   pressure, xTilt, yTilt, tangentialPressure,
                                                   rotation, z, keyModifiers);
@@ -724,7 +724,7 @@ bool QWindowsPointerHandler::translateMouseWheelEvent(QWindow *window,
 
     QPoint localPos = QWindowsGeometryHint::mapFromGlobal(receiver, globalPos);
 
-    QWindowSystemInterface::handleWheelEvent(receiver, msg.time, localPos, globalPos, QPoint(), angleDelta, keyModifiers);
+    QWindowSystemInterface::handleWheelEvent(receiver, localPos, globalPos, QPoint(), angleDelta, keyModifiers);
     return true;
 }
 
@@ -821,10 +821,10 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
             && (mouseEvent.type == QEvent::NonClientAreaMouseMove || mouseEvent.type == QEvent::MouseMove)
             && (m_lastEventButton & mouseButtons) == 0) {
             if (mouseEvent.type == QEvent::NonClientAreaMouseMove) {
-                QWindowSystemInterface::handleFrameStrutMouseEvent(window, msg.time, device, localPos, globalPos, mouseButtons, m_lastEventButton,
+                QWindowSystemInterface::handleFrameStrutMouseEvent(window, device, localPos, globalPos, mouseButtons, m_lastEventButton,
                                                                    QEvent::NonClientAreaMouseButtonRelease, keyModifiers, source);
             } else {
-                QWindowSystemInterface::handleMouseEvent(window, msg.time, device, localPos, globalPos, mouseButtons, m_lastEventButton,
+                QWindowSystemInterface::handleMouseEvent(window, device, localPos, globalPos, mouseButtons, m_lastEventButton,
                                                          QEvent::MouseButtonRelease, keyModifiers, source);
             }
     }
@@ -832,7 +832,7 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
     m_lastEventButton = mouseEvent.button;
 
     if (mouseEvent.type >= QEvent::NonClientAreaMouseMove && mouseEvent.type <= QEvent::NonClientAreaMouseButtonDblClick) {
-        QWindowSystemInterface::handleFrameStrutMouseEvent(window, msg.time, device, localPos, globalPos, mouseButtons,
+        QWindowSystemInterface::handleFrameStrutMouseEvent(window, device, localPos, globalPos, mouseButtons,
                                                            mouseEvent.button, mouseEvent.type, keyModifiers, source);
         return false; // Allow further event processing
     }
@@ -852,7 +852,7 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
     handleEnterLeave(window, currentWindowUnderPointer, globalPos);
 
     if (!discardEvent && mouseEvent.type != QEvent::None) {
-        QWindowSystemInterface::handleMouseEvent(window, msg.time, device, localPos, globalPos, mouseButtons,
+        QWindowSystemInterface::handleMouseEvent(window, device, localPos, globalPos, mouseButtons,
                                                  mouseEvent.button, mouseEvent.type, keyModifiers, source);
     }
 

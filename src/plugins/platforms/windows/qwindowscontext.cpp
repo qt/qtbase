@@ -1000,10 +1000,9 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 
     MSG msg;
     msg.hwnd = hwnd;         // re-create MSG structure
-    msg.message = message;
+    msg.message = message;   // time and pt fields ignored
     msg.wParam = wParam;
     msg.lParam = lParam;
-    msg.time = GetMessageTime();
     msg.pt.x = msg.pt.y = 0;
     if (et != QtWindows::CursorEvent && (et & (QtWindows::MouseEventFlag | QtWindows::NonClientEventFlag))) {
         msg.pt.x = GET_X_LPARAM(lParam);
