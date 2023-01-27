@@ -337,6 +337,12 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
                                        QStringLiteral("path"));
     parser->addOption(pluginDirOption);
 
+    const QCommandLineOption translationDirOption(
+        u"translationdir"_s,
+        u"Copy translations to path."_s,
+        u"path"_s);
+    parser->addOption(translationDirOption);
+
     QCommandLineOption qmlDeployDirOption(QStringLiteral("qml-deploy-dir"),
                                           QStringLiteral("Copy qml files to path."),
                                           QStringLiteral("path"));
@@ -478,6 +484,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
 
     options->libraryDirectory = parser->value(libDirOption);
     options->pluginDirectory = parser->value(pluginDirOption);
+    options->translationsDirectory = parser->value(translationDirOption);
     options->qmlDirectory = parser->value(qmlDeployDirOption);
     options->plugins = !parser->isSet(noPluginsOption);
     options->libraries = !parser->isSet(noLibraryOption);
@@ -633,7 +640,8 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     }
     if (multipleDirs)
         std::wcerr << "Warning: using binaries from different directories\n";
-    options->translationsDirectory = options->directory + "/translations"_L1;
+    if (options->translationsDirectory.isEmpty())
+        options->translationsDirectory = options->directory + "/translations"_L1;
     return 0;
 }
 
