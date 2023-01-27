@@ -19,6 +19,8 @@ class QDebug;
    QTypeInfo     - type trait functionality
 */
 
+namespace QtPrivate {
+
 template <typename T>
 inline constexpr bool qIsRelocatable =  std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>;
 
@@ -32,6 +34,8 @@ template <typename T>
 inline constexpr bool qIsValueInitializationBitwiseZero =
         std::is_scalar_v<T> && !std::is_member_object_pointer_v<T>;
 
+}
+
 /*
   The catch-all template.
 */
@@ -44,8 +48,8 @@ public:
         isPointer = std::is_pointer_v<T>,
         isIntegral = std::is_integral_v<T>,
         isComplex = !std::is_trivial_v<T>,
-        isRelocatable = qIsRelocatable<T>,
-        isValueInitializationBitwiseZero = qIsValueInitializationBitwiseZero<T>,
+        isRelocatable = QtPrivate::qIsRelocatable<T>,
+        isValueInitializationBitwiseZero = QtPrivate::qIsValueInitializationBitwiseZero<T>,
     };
 };
 
@@ -148,10 +152,10 @@ class QTypeInfo<TYPE > \
 public: \
     enum { \
         isComplex = (((FLAGS) & Q_PRIMITIVE_TYPE) == 0) && !std::is_trivial_v<TYPE>, \
-        isRelocatable = !isComplex || ((FLAGS) & Q_RELOCATABLE_TYPE) || qIsRelocatable<TYPE>, \
+        isRelocatable = !isComplex || ((FLAGS) & Q_RELOCATABLE_TYPE) || QtPrivate::qIsRelocatable<TYPE>, \
         isPointer = std::is_pointer_v< TYPE >, \
         isIntegral = std::is_integral< TYPE >::value, \
-        isValueInitializationBitwiseZero = qIsValueInitializationBitwiseZero<TYPE>, \
+        isValueInitializationBitwiseZero = QtPrivate::qIsValueInitializationBitwiseZero<TYPE>, \
     }; \
 }
 
