@@ -1655,8 +1655,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                     alignment |= Qt::TextHideMnemonic;
                 rect.translate(shiftX, shiftY);
                 p->setFont(toolbutton->font);
+                const QString text = d->toolButtonElideText(toolbutton, rect, alignment);
                 proxy()->drawItemText(p, rect, alignment, toolbutton->palette,
-                             opt->state & State_Enabled, toolbutton->text,
+                             opt->state & State_Enabled, text,
                              QPalette::ButtonText);
             } else {
                 QPixmap pm;
