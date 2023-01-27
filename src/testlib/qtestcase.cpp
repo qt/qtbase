@@ -2906,9 +2906,13 @@ void QTest::addColumnInternal(int id, const char *name)
 }
 
 /*!
-    Appends a new row to the current test data. \a dataTag is the name of
-    the testdata that will appear in the test output. Returns a QTestData reference
-    that can be used to stream in data.
+    Appends a new row to the current test data.
+
+    The test output will identify the test run with this test data using the
+    name \a dataTag.
+
+    Returns a QTestData reference that can be used to stream in data, one value
+    for each column in the table.
 
     Example:
     \snippet code/src_qtestlib_qtestcase.cpp 20
@@ -2919,14 +2923,15 @@ void QTest::addColumnInternal(int id, const char *name)
     See \l {Chapter 2: Data Driven Testing}{Data Driven Testing} for
     a more extensive example.
 
-    \sa addColumn(), QFETCH()
+    \sa addRow(), addColumn(), QFETCH()
 */
 QTestData &QTest::newRow(const char *dataTag)
 {
     QTEST_ASSERT_X(dataTag, "QTest::newRow()", "Data tag cannot be null");
     QTestTable *tbl = QTestTable::currentTestTable();
     QTEST_ASSERT_X(tbl, "QTest::newRow()", "Cannot add testdata outside of a _data slot.");
-    QTEST_ASSERT_X(tbl->elementCount(), "QTest::newRow()", "Must add columns before attempting to add rows.");
+    QTEST_ASSERT_X(tbl->elementCount(), "QTest::newRow()",
+                   "Must add columns before attempting to add rows.");
 
     return *tbl->newData(dataTag);
 }
@@ -2934,13 +2939,17 @@ QTestData &QTest::newRow(const char *dataTag)
 /*!
     \since 5.9
 
-    Appends a new row to the current test data. The function's arguments are passed
-    to qsnprintf() for formatting according to \a format. See the qvsnprintf()
-    documentation for caveats and limitations.
+    Appends a new row to the current test data.
 
-    The formatted string will appear as the name of this test data in the test output.
+    The function's arguments are passed to qsnprintf() for formatting according
+    to \a format. See the qvsnprintf() documentation for caveats and
+    limitations.
 
-    Returns a QTestData reference that can be used to stream in data.
+    The test output will identify the test run with this test data using the
+    name that results from this formatting.
+
+    Returns a QTestData reference that can be used to stream in data, one value
+    for each column in the table.
 
     Example:
     \snippet code/src_qtestlib_qtestcase.cpp addRow
@@ -2951,14 +2960,15 @@ QTestData &QTest::newRow(const char *dataTag)
     See \l {Chapter 2: Data Driven Testing}{Data Driven Testing} for
     a more extensive example.
 
-    \sa addColumn(), QFETCH()
+    \sa newRow(), addColumn(), QFETCH()
 */
 QTestData &QTest::addRow(const char *format, ...)
 {
     QTEST_ASSERT_X(format, "QTest::addRow()", "Format string cannot be null");
     QTestTable *tbl = QTestTable::currentTestTable();
     QTEST_ASSERT_X(tbl, "QTest::addRow()", "Cannot add testdata outside of a _data slot.");
-    QTEST_ASSERT_X(tbl->elementCount(), "QTest::addRow()", "Must add columns before attempting to add rows.");
+    QTEST_ASSERT_X(tbl->elementCount(), "QTest::addRow()",
+                   "Must add columns before attempting to add rows.");
 
     char buf[1024];
 
