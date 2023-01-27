@@ -8,6 +8,7 @@
 
 #include <private/qcoreapplication_p.h>
 #include <private/qcore_unix_p.h>
+#include <private/qtools_p.h>
 
 #if defined(Q_OS_DARWIN)
 #  include <private/qeventdispatcher_cf_p.h>
@@ -69,6 +70,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+using namespace QtMiscUtils;
 
 #if QT_CONFIG(thread)
 
@@ -488,31 +491,19 @@ void QThread::yieldCurrentThread()
 
 #endif // QT_CONFIG(thread)
 
-static timespec makeTimespec(std::chrono::nanoseconds nsecs)
-{
-    using namespace std::chrono;
-    const seconds secs = duration_cast<seconds>(nsecs);
-    const nanoseconds frac = nsecs - secs;
-    struct timespec ts;
-    ts.tv_sec = secs.count();
-    ts.tv_nsec = frac.count();
-    return ts;
-}
-
-
 void QThread::sleep(unsigned long secs)
 {
-    qt_nanosleep(makeTimespec(std::chrono::seconds{secs}));
+    qt_nanosleep(durationToTimespec(std::chrono::seconds{secs}));
 }
 
 void QThread::msleep(unsigned long msecs)
 {
-    qt_nanosleep(makeTimespec(std::chrono::milliseconds{msecs}));
+    qt_nanosleep(durationToTimespec(std::chrono::milliseconds{msecs}));
 }
 
 void QThread::usleep(unsigned long usecs)
 {
-    qt_nanosleep(makeTimespec(std::chrono::microseconds{usecs}));
+    qt_nanosleep(durationToTimespec(std::chrono::microseconds{usecs}));
 }
 
 #if QT_CONFIG(thread)

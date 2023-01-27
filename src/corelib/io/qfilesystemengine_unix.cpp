@@ -12,6 +12,7 @@
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/private/qcore_unix_p.h>
 #include <QtCore/private/qfiledevice_p.h>
+#include <QtCore/private/qtools_p.h>
 #include <QtCore/qvarlengtharray.h>
 #ifndef QT_BOOTSTRAPPED
 # include <QtCore/qstandardpaths.h>
@@ -1556,13 +1557,9 @@ bool QFileSystemEngine::setFileTime(int fd, const QDateTime &newDate, QAbstractF
     struct timespec ts[2] = {{0, UTIME_OMIT}, {0, UTIME_OMIT}};
 
     if (time == QAbstractFileEngine::AccessTime || time == QAbstractFileEngine::ModificationTime) {
-        using namespace std::chrono;
-        const milliseconds msecs{newDate.toMSecsSinceEpoch()};
-        const seconds secs = duration_cast<seconds>(msecs);
-        const nanoseconds frac = msecs - secs;
         const int idx = time == QAbstractFileEngine::AccessTime ? 0 : 1;
-        ts[idx].tv_sec = secs.count();
-        ts[idx].tv_nsec = frac.count();
+        const std::chrono::milliseconds msecs{newDate.toMSecsSinceEpoch()};
+        ts[idx] = QtMiscUtils::durationToTimespec(msecs);
     }
 
     if (futimens(fd, ts) == -1) {

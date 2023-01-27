@@ -9,6 +9,7 @@
 #include "private/qtimerinfo_unix_p.h"
 #include "private/qobject_p.h"
 #include "private/qabstracteventdispatcher_p.h"
+#include <QtCore/private/qtools_p.h>
 
 #ifdef QTIMERINFO_DEBUG
 #  include <QDebug>
@@ -396,8 +397,7 @@ qint64 QTimerInfoList::timerRemainingTime(int timerId)
             if (currentTime < t->timeout) {
                 // time to wait
                 tm = roundToMillisecond(t->timeout - currentTime);
-                using namespace std::chrono;
-                const auto dur = duration_cast<milliseconds>(seconds{tm.tv_sec} + nanoseconds{tm.tv_nsec});
+                const std::chrono::milliseconds dur = QtMiscUtils::timespecToChronoMs(&tm);
                 return dur.count();
             } else {
                 return 0;
