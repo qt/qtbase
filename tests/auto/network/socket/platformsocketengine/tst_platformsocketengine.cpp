@@ -23,7 +23,7 @@
 
 #define PLATFORMSOCKETENGINE QNativeSocketEngine
 #define PLATFORMSOCKETENGINESTRING "QNativeSocketEngine"
-#include <private/qnativesocketengine_p.h>
+#include <private/qnativesocketengine_p_p.h>
 
 #include <qstringlist.h>
 

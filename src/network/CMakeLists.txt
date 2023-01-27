@@ -40,7 +40,7 @@ qt_internal_add_module(Network
         kernel/qtnetworkglobal.h kernel/qtnetworkglobal_p.h
         socket/qabstractsocket.cpp socket/qabstractsocket.h socket/qabstractsocket_p.h
         socket/qabstractsocketengine.cpp socket/qabstractsocketengine_p.h
-        socket/qnativesocketengine.cpp socket/qnativesocketengine_p.h
+        socket/qnativesocketengine.cpp socket/qnativesocketengine_p.h socket/qnativesocketengine_p_p.h
         socket/qtcpserver.cpp socket/qtcpserver.h socket/qtcpserver_p.h
         socket/qtcpsocket.cpp socket/qtcpsocket.h socket/qtcpsocket_p.h
         socket/qudpsocket.cpp socket/qudpsocket.h

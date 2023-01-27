@@ -5,7 +5,7 @@
 #define NOMINMAX
 #endif // NOMINMAX
 
-#include <QtNetwork/private/qnativesocketengine_p.h>
+#include <QtNetwork/private/qnativesocketengine_p_p.h>
 
 #include "qsslsocket_openssl_symbols_p.h"
 #include "qdtls_openssl_p.h"

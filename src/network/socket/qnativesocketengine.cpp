@@ -78,7 +78,7 @@
     \sa readDatagram(), QNetworkDatagram
 */
 
-#include "qnativesocketengine_p.h"
+#include "qnativesocketengine_p_p.h"
 
 #include <qabstracteventdispatcher.h>
 #include <qsocketnotifier.h>
