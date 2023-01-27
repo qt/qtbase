@@ -73,6 +73,8 @@ qt_internal_add_3rdparty_library(BundledFreetype
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
+set_target_properties(BundledFreetype PROPERTIES UNITY_BUILD OFF)
+
 qt_internal_add_3rdparty_header_module(FreetypePrivate
     EXTERNAL_HEADERS_DIR include
 )

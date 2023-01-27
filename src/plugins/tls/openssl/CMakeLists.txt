@@ -24,6 +24,10 @@ qt_internal_add_plugin(QTlsBackendOpenSSLPlugin
         OPENSSL_API_COMPAT=0x10100000L
 )
 
+if (WIN32) # Windows header issues
+    set_target_properties(QTlsBackendOpenSSLPlugin PROPERTIES UNITY_BUILD OFF)
+endif()
+
 qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION QT_FEATURE_dtls
     SOURCES
         qdtls_openssl.cpp qdtls_openssl_p.h

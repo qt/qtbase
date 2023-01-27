@@ -293,6 +293,13 @@ set(qpdf_resource_files
     "painting/qpdfa_metadata.xml"
 )
 
+set_source_files_properties(painting/qdrawhelper.cpp # NO_PCH_SOURCES
+                            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
+
+if(WIN32 OR (UNIX AND NOT APPLE))
+    set_target_properties(Gui PROPERTIES UNITY_BUILD OFF) # X11 define clashes/Windows oddities.
+endif()
+
 qt_internal_add_resource(Gui "qpdf"
     PREFIX
         "/qpdf/"

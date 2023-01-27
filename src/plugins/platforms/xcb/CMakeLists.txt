@@ -62,6 +62,8 @@ qt_internal_add_module(XcbQpaPrivate
         XKB::XKB
 )
 
+set_target_properties(XcbQpaPrivate PROPERTIES UNITY_BUILD OFF) # X11 define clashes
+
 qt_disable_apple_app_extension_api_only(XcbQpaPrivate)
 
 ## Scopes:

@@ -29,3 +29,5 @@ qt_internal_add_plugin(QXcbEglIntegrationPlugin
         Qt::XcbQpaPrivate
         EGL::EGL
 )
+
+set_target_properties(QXcbEglIntegrationPlugin PROPERTIES UNITY_BUILD OFF) # X11 define clashes

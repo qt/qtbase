@@ -16,3 +16,5 @@ qt_internal_add_plugin(QICOPlugin
         Qt::CorePrivate
         Qt::Gui
 )
+
+set_target_properties(QICOPlugin PROPERTIES UNITY_BUILD OFF)

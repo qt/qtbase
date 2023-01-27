@@ -21,3 +21,7 @@ qt_internal_add_tool(${target_name}
         tracegen.cpp
 )
 qt_internal_return_unless_building_tools()
+
+set_target_properties(${target_name} PROPERTIES
+    UNITY_BUILD OFF
+)
