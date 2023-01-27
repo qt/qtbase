@@ -5,25 +5,16 @@
 #include "qsystemsemaphore_p.h"
 
 #if QT_CONFIG(systemsemaphore)
-#include <memory>
+#include <QtCore/q20memory.h>
 
 QT_BEGIN_NAMESPACE
 
 using namespace QtIpcCommon;
 using namespace Qt::StringLiterals;
 
-#if __cplusplus >= 202002L
-using std::construct_at;
-#else
-template <typename T> static void construct_at(T *ptr)
-{
-    new (ptr) T;
-}
-#endif
-
 inline void QSystemSemaphorePrivate::constructBackend()
 {
-    visit([](auto p) { construct_at(p); });
+    visit([](auto p) { q20::construct_at(p); });
 }
 
 inline void QSystemSemaphorePrivate::destructBackend()
