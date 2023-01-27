@@ -55,6 +55,8 @@ public:
         // Qt/XCB specific
         _QT_CLOSE_CONNECTION,
 
+        _QT_GET_TIMESTAMP,
+
         _MOTIF_WM_HINTS,
 
         DTWM_IS_RUNNING,
