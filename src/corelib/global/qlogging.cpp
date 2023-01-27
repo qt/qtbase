@@ -129,6 +129,10 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+#ifndef QT_BOOTSTRAPPED
+Q_TRACE_POINT(qtcore, qt_message_print, int type, const char *category, const char *function, const char *file, int line, const QString &message);
+#endif
+
 /*!
     \headerfile <QtLogging>
     \inmodule QtCore

@@ -42,6 +42,17 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_TRACE_POINT(qtcore, QObject_ctor, QObject *object);
+Q_TRACE_POINT(qtcore, QObject_dtor, QObject *object);
+Q_TRACE_POINT(qtcore, QMetaObject_activate_entry, QObject *sender, int signalIndex);
+Q_TRACE_POINT(qtcore, QMetaObject_activate_exit);
+Q_TRACE_POINT(qtcore, QMetaObject_activate_slot_entry, QObject *receiver, int slotIndex);
+Q_TRACE_POINT(qtcore, QMetaObject_activate_slot_exit);
+Q_TRACE_POINT(qtcore, QMetaObject_activate_slot_functor_entry, void *slotObject);
+Q_TRACE_POINT(qtcore, QMetaObject_activate_slot_functor_exit);
+Q_TRACE_POINT(qtcore, QMetaObject_activate_declarative_signal_entry, QObject *sender, int signalIndex);
+Q_TRACE_POINT(qtcore, QMetaObject_activate_declarative_signal_exit);
+
 static int DIRECT_CONNECTION_ONLY = 0;
 
 Q_LOGGING_CATEGORY(lcConnectSlotsByName, "qt.core.qmetaobject.connectslotsbyname")

@@ -108,6 +108,21 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+Q_TRACE_PREFIX(qtcore,
+   "QT_BEGIN_NAMESPACE" \
+   "class QEvent;"  \
+   "QT_END_NAMESPACE"
+);
+Q_TRACE_METADATA(qtcore, "ENUM { AUTO, RANGE User ... MaxUser } QEvent::Type;");
+Q_TRACE_POINT(qtcore, QCoreApplication_postEvent_entry, QObject *receiver, QEvent *event, QEvent::Type type);
+Q_TRACE_POINT(qtcore, QCoreApplication_postEvent_exit);
+Q_TRACE_POINT(qtcore, QCoreApplication_postEvent_event_compressed, QObject *receiver, QEvent *event);
+Q_TRACE_POINT(qtcore, QCoreApplication_postEvent_event_posted, QObject *receiver, QEvent *event, QEvent::Type type);
+Q_TRACE_POINT(qtcore, QCoreApplication_sendEvent, QObject *receiver, QEvent *event, QEvent::Type type);
+Q_TRACE_POINT(qtcore, QCoreApplication_sendSpontaneousEvent, QObject *receiver, QEvent *event, QEvent::Type type);
+Q_TRACE_POINT(qtcore, QCoreApplication_notify_entry, QObject *receiver, QEvent *event, QEvent::Type type);
+Q_TRACE_POINT(qtcore, QCoreApplication_notify_exit, bool consumed, bool filtered);
+
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
 extern QString qAppFileName();
 #endif
@@ -769,7 +784,7 @@ QCoreApplication::QCoreApplication(int &argc, char **argv
   \value ApplicationFlags QT_VERSION
 */
 
-void QCoreApplicationPrivate::init()
+void Q_TRACE_INSTRUMENT(qtcore) QCoreApplicationPrivate::init()
 {
     Q_TRACE_SCOPE(QCoreApplicationPrivate_init);
 
