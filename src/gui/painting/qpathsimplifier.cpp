@@ -1635,3 +1635,5 @@ void qSimplifyPath(const QPainterPath &path, QDataBuffer<QPoint> &vertices,
 
 
 QT_END_NAMESPACE
+
+#undef Q_FIXED_POINT_SCALE
