@@ -21,7 +21,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_CORE_EXPORT QString qAppFileName()                // get application file name
+QString qAppFileName()                // get application file name
 {
     /*
       GetModuleFileName() returns the length of the module name, when it has
