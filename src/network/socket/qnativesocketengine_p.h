@@ -22,11 +22,6 @@
 #include "private/qabstractsocketengine_p.h"
 #ifndef Q_OS_WIN
 #  include "qplatformdefs.h"
-#  include <netinet/in.h>
-#else
-#  include <winsock2.h>
-#  include <ws2tcpip.h>
-#  include <mswsock.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -34,41 +29,7 @@ QT_BEGIN_NAMESPACE
 #ifdef Q_OS_WIN
 #  define QT_SOCKLEN_T int
 #  define QT_SOCKOPTLEN_T int
-
-// The following definitions are copied from the MinGW header mswsock.h which
-// was placed in the public domain. The WSASendMsg and WSARecvMsg functions
-// were introduced with Windows Vista, so some Win32 headers are lacking them.
-// There are no known versions of Windows CE or Embedded that contain them.
-#  ifndef WSAID_WSARECVMSG
-typedef INT (WINAPI *LPFN_WSARECVMSG)(SOCKET s, LPWSAMSG lpMsg,
-                                      LPDWORD lpdwNumberOfBytesRecvd,
-                                      LPWSAOVERLAPPED lpOverlapped,
-                                      LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
-#    define WSAID_WSARECVMSG {0xf689d7c8,0x6f1f,0x436b,{0x8a,0x53,0xe5,0x4f,0xe3,0x51,0xc3,0x22}}
-#  endif // !WSAID_WSARECVMSG
-#  ifndef WSAID_WSASENDMSG
-typedef struct {
-  LPWSAMSG lpMsg;
-  DWORD dwFlags;
-  LPDWORD lpNumberOfBytesSent;
-  LPWSAOVERLAPPED lpOverlapped;
-  LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine;
-} WSASENDMSG, *LPWSASENDMSG;
-
-typedef INT (WSAAPI *LPFN_WSASENDMSG)(SOCKET s, LPWSAMSG lpMsg, DWORD dwFlags,
-                                      LPDWORD lpNumberOfBytesSent,
-                                      LPWSAOVERLAPPED lpOverlapped,
-                                      LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine);
-
-#    define WSAID_WSASENDMSG {0xa441e712,0x754f,0x43ca,{0x84,0xa7,0x0d,0xee,0x44,0xcf,0x60,0x6d}}
-#  endif // !WSAID_WSASENDMSG
-#endif // Q_OS_WIN
-
-union qt_sockaddr {
-    sockaddr a;
-    sockaddr_in a4;
-    sockaddr_in6 a6;
-};
+#endif
 
 namespace {
 namespace SetSALen {
@@ -161,132 +122,6 @@ public Q_SLOTS:
 private:
     Q_DECLARE_PRIVATE(QNativeSocketEngine)
     Q_DISABLE_COPY_MOVE(QNativeSocketEngine)
-};
-
-class QSocketNotifier;
-
-class QNativeSocketEnginePrivate : public QAbstractSocketEnginePrivate
-{
-    Q_DECLARE_PUBLIC(QNativeSocketEngine)
-public:
-    QNativeSocketEnginePrivate();
-    ~QNativeSocketEnginePrivate();
-
-    qintptr socketDescriptor;
-
-    QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
-
-#if defined(Q_OS_WIN)
-    LPFN_WSASENDMSG sendmsg;
-    LPFN_WSARECVMSG recvmsg;
-#  endif
-    enum ErrorString {
-        NonBlockingInitFailedErrorString,
-        BroadcastingInitFailedErrorString,
-        NoIpV6ErrorString,
-        RemoteHostClosedErrorString,
-        TimeOutErrorString,
-        ResourceErrorString,
-        OperationUnsupportedErrorString,
-        ProtocolUnsupportedErrorString,
-        InvalidSocketErrorString,
-        HostUnreachableErrorString,
-        NetworkUnreachableErrorString,
-        AccessErrorString,
-        ConnectionTimeOutErrorString,
-        ConnectionRefusedErrorString,
-        AddressInuseErrorString,
-        AddressNotAvailableErrorString,
-        AddressProtectedErrorString,
-        DatagramTooLargeErrorString,
-        SendDatagramErrorString,
-        ReceiveDatagramErrorString,
-        WriteErrorString,
-        ReadErrorString,
-        PortInuseErrorString,
-        NotSocketErrorString,
-        InvalidProxyTypeString,
-        TemporaryErrorString,
-        NetworkDroppedConnectionErrorString,
-        ConnectionResetErrorString,
-
-        UnknownSocketErrorString = -1
-    };
-
-    void setError(QAbstractSocket::SocketError error, ErrorString errorString) const;
-    QHostAddress adjustAddressProtocol(const QHostAddress &address) const;
-
-    // native functions
-    int option(QNativeSocketEngine::SocketOption option) const;
-    bool setOption(QNativeSocketEngine::SocketOption option, int value);
-
-    bool createNewSocket(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol &protocol);
-
-    bool nativeConnect(const QHostAddress &address, quint16 port);
-    bool nativeBind(const QHostAddress &address, quint16 port);
-    bool nativeListen(int backlog);
-    qintptr nativeAccept();
-#ifndef QT_NO_NETWORKINTERFACE
-    bool nativeJoinMulticastGroup(const QHostAddress &groupAddress,
-                                  const QNetworkInterface &iface);
-    bool nativeLeaveMulticastGroup(const QHostAddress &groupAddress,
-                                   const QNetworkInterface &iface);
-    QNetworkInterface nativeMulticastInterface() const;
-    bool nativeSetMulticastInterface(const QNetworkInterface &iface);
-#endif
-    qint64 nativeBytesAvailable() const;
-
-    bool nativeHasPendingDatagrams() const;
-    qint64 nativePendingDatagramSize() const;
-    qint64 nativeReceiveDatagram(char *data, qint64 maxLength, QIpPacketHeader *header,
-                                 QAbstractSocketEngine::PacketHeaderOptions options);
-    qint64 nativeSendDatagram(const char *data, qint64 length, const QIpPacketHeader &header);
-    qint64 nativeRead(char *data, qint64 maxLength);
-    qint64 nativeWrite(const char *data, qint64 length);
-    int nativeSelect(int timeout, bool selectForRead) const;
-    int nativeSelect(int timeout, bool checkRead, bool checkWrite,
-                     bool *selectForRead, bool *selectForWrite) const;
-
-    void nativeClose();
-
-    bool checkProxy(const QHostAddress &address);
-    bool fetchConnectionParameters();
-
-#if QT_CONFIG(networkinterface)
-    static uint scopeIdFromString(const QString &scopeid)
-    { return QNetworkInterface::interfaceIndexFromName(scopeid); }
-#endif
-
-    /*! \internal
-        Sets \a address and \a port in the \a aa sockaddr structure and the size in \a sockAddrSize.
-        The address \a is converted to IPv6 if the current socket protocol is also IPv6.
-     */
-    void setPortAndAddress(quint16 port, const QHostAddress &address, qt_sockaddr *aa, QT_SOCKLEN_T *sockAddrSize)
-    {
-        if (address.protocol() == QAbstractSocket::IPv6Protocol
-            || address.protocol() == QAbstractSocket::AnyIPProtocol
-            || socketProtocol == QAbstractSocket::IPv6Protocol
-            || socketProtocol == QAbstractSocket::AnyIPProtocol) {
-            memset(&aa->a6, 0, sizeof(sockaddr_in6));
-            aa->a6.sin6_family = AF_INET6;
-#if QT_CONFIG(networkinterface)
-            aa->a6.sin6_scope_id = scopeIdFromString(address.scopeId());
-#endif
-            aa->a6.sin6_port = htons(port);
-            Q_IPV6ADDR tmp = address.toIPv6Address();
-            memcpy(&aa->a6.sin6_addr, &tmp, sizeof(tmp));
-            *sockAddrSize = sizeof(sockaddr_in6);
-            SetSALen::set(&aa->a, sizeof(sockaddr_in6));
-        } else {
-            memset(&aa->a, 0, sizeof(sockaddr_in));
-            aa->a4.sin_family = AF_INET;
-            aa->a4.sin_port = htons(port);
-            aa->a4.sin_addr.s_addr = htonl(address.toIPv4Address());
-            *sockAddrSize = sizeof(sockaddr_in);
-            SetSALen::set(&aa->a, sizeof(sockaddr_in));
-        }
-    }
-
 };
 
 QT_END_NAMESPACE
