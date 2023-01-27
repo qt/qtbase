@@ -28,11 +28,13 @@ enum class EventType {
     PointerUp,
     PointerEnter,
     PointerLeave,
+    PointerCancel,
     Wheel,
 };
 
 enum class PointerType {
     Mouse,
+    Touch,
     Other,
 };
 
@@ -211,6 +213,10 @@ struct PointerEvent : public MouseEvent
 
     PointerType pointerType;
     int pointerId;
+    qreal pressure;
+    qreal width;
+    qreal height;
+    bool isPrimary;
 };
 
 struct DragEvent : public MouseEvent

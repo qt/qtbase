@@ -89,14 +89,11 @@ void QWasmInputContext::focusWindowChanged(QWindow *focusWindow)
     m_focusWindow = focusWindow;
 }
 
-emscripten::val QWasmInputContext::focusScreenElement()
+emscripten::val QWasmInputContext::inputHandlerElementForFocusedWindow()
 {
     if (!m_focusWindow)
         return emscripten::val::undefined();
-    QScreen *screen = m_focusWindow->screen();
-    if (!screen)
-        return emscripten::val::undefined();
-    return QWasmScreen::get(screen)->element();
+    return static_cast<QWasmWindow *>(m_focusWindow->handle())->inputHandlerElement();
 }
 
 void QWasmInputContext::update(Qt::InputMethodQueries queries)
@@ -123,10 +120,10 @@ void QWasmInputContext::showInputPanel()
     if (platform() == Platform::MacOS // keep for compatibility
      || platform() == Platform::iPhone
      || platform() == Platform::Windows) {
-        emscripten::val screenElement = focusScreenElement();
-        if (screenElement.isUndefined())
+        emscripten::val inputWrapper = inputHandlerElementForFocusedWindow();
+        if (inputWrapper.isUndefined())
             return;
-        screenElement.call<void>("appendChild", m_inputElement);
+        inputWrapper.call<void>("appendChild", m_inputElement);
     }
 
     m_inputElement.call<void>("focus");

@@ -55,7 +55,7 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
     m_nonClientArea = std::make_unique<NonClientArea>(this, m_qtWindow);
     m_nonClientArea->titleBar()->setTitle(window()->title());
 
-    m_clientArea = std::make_unique<ClientArea>(this, compositor->screen(), m_canvas);
+    m_clientArea = std::make_unique<ClientArea>(this, compositor->screen(), m_windowContents);
 
     m_qtWindow.call<void>("appendChild", m_windowContents);
 
@@ -238,7 +238,7 @@ void QWasmWindow::setZOrder(int z)
 
 void QWasmWindow::setWindowCursor(QByteArray cssCursorName)
 {
-    m_canvas["style"].set("cursor", emscripten::val(cssCursorName.constData()));
+    m_windowContents["style"].set("cursor", emscripten::val(cssCursorName.constData()));
 }
 
 void QWasmWindow::setGeometry(const QRect &rect)
@@ -577,7 +577,8 @@ void QWasmWindow::requestActivateWindow()
     if (window()->isTopLevel())
         raise();
 
-    m_canvas.call<void>("focus");
+    if (!QWasmIntegration::get()->inputContext())
+        m_canvas.call<void>("focus");
 
     QPlatformWindow::requestActivateWindow();
 }

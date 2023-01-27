@@ -9,7 +9,7 @@
 #include "qwasmwindow.h"
 
 #include <QtGui/private/qguiapplication_p.h>
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qpointingdevice.h>
 
 #include <QtCore/qassert.h>
 
@@ -28,13 +28,12 @@ ClientArea::ClientArea(QWasmWindow *window, QWasmScreen *screen, emscripten::val
     m_pointerMoveCallback =
             std::make_unique<qstdweb::EventCallback>(element, "pointermove", callback);
     m_pointerUpCallback = std::make_unique<qstdweb::EventCallback>(element, "pointerup", callback);
+    m_pointerCancelCallback =
+            std::make_unique<qstdweb::EventCallback>(element, "pointercancel", callback);
 }
 
 bool ClientArea::processPointer(const PointerEvent &event)
 {
-    if (event.pointerType != PointerType::Mouse)
-        return false;
-
     const auto localScreenPoint =
             dom::mapPoint(event.target, m_screen->element(), event.localPoint);
     const auto pointInScreen = m_screen->mapFromLocal(localScreenPoint);
@@ -42,21 +41,22 @@ bool ClientArea::processPointer(const PointerEvent &event)
     const QPointF pointInTargetWindowCoords = m_window->window()->mapFromGlobal(pointInScreen);
 
     switch (event.type) {
-    case EventType::PointerDown: {
+    case EventType::PointerDown:
         m_element.call<void>("setPointerCapture", event.pointerId);
         m_window->window()->requestActivate();
         break;
-    }
-    case EventType::PointerUp: {
+    case EventType::PointerUp:
         m_element.call<void>("releasePointerCapture", event.pointerId);
         break;
-    }
-    case EventType::PointerEnter:;
-        QWindowSystemInterface::handleEnterEvent(
-                m_window->window(), pointInTargetWindowCoords, pointInScreen);
+    case EventType::PointerEnter:
+        if (event.isPrimary) {
+            QWindowSystemInterface::handleEnterEvent(m_window->window(), pointInTargetWindowCoords,
+                                                     pointInScreen);
+        }
         break;
     case EventType::PointerLeave:
-        QWindowSystemInterface::handleLeaveEvent(m_window->window());
+        if (event.isPrimary)
+            QWindowSystemInterface::handleLeaveEvent(m_window->window());
         break;
     default:
         break;
@@ -78,15 +78,72 @@ bool ClientArea::deliverEvent(const PointerEvent &event)
             qBound(geometryF.left(), pointInScreen.x(), geometryF.right()),
             qBound(geometryF.top(), pointInScreen.y(), geometryF.bottom()));
 
-    const QEvent::Type eventType =
-            MouseEvent::mouseEventTypeFromEventType(event.type, WindowArea::Client);
+    if (event.pointerType == PointerType::Mouse) {
+        const QEvent::Type eventType =
+                MouseEvent::mouseEventTypeFromEventType(event.type, WindowArea::Client);
 
-    return eventType != QEvent::None
-            && QWindowSystemInterface::handleMouseEvent(
-                    m_window->window(), QWasmIntegration::getTimestamp(),
-                    m_window->window()->mapFromGlobal(targetPointClippedToScreen),
-                    targetPointClippedToScreen, event.mouseButtons, event.mouseButton, eventType,
-                    event.modifiers);
+        return eventType != QEvent::None
+                && QWindowSystemInterface::handleMouseEvent(
+                        m_window->window(), QWasmIntegration::getTimestamp(),
+                        m_window->window()->mapFromGlobal(targetPointClippedToScreen),
+                        targetPointClippedToScreen, event.mouseButtons, event.mouseButton,
+                        eventType, event.modifiers);
+    }
+
+    QWindowSystemInterface::TouchPoint *touchPoint;
+
+    QPointF pointInTargetWindowCoords =
+            QPointF(m_window->window()->mapFromGlobal(targetPointClippedToScreen));
+    QPointF normalPosition(pointInTargetWindowCoords.x() / m_window->window()->width(),
+                           pointInTargetWindowCoords.y() / m_window->window()->height());
+
+    const auto tp = m_pointerIdToTouchPoints.find(event.pointerId);
+    if (tp != m_pointerIdToTouchPoints.end()) {
+        touchPoint = &tp.value();
+    } else {
+        touchPoint = &m_pointerIdToTouchPoints
+                              .insert(event.pointerId, QWindowSystemInterface::TouchPoint())
+                              .value();
+
+        touchPoint->id = event.pointerId;
+
+        touchPoint->state = QEventPoint::State::Pressed;
+    }
+
+    const bool stationaryTouchPoint = (normalPosition == touchPoint->normalPosition);
+    touchPoint->normalPosition = normalPosition;
+    touchPoint->area = QRectF(targetPointClippedToScreen, QSizeF(event.width, event.height))
+                                   .translated(-event.width / 2, -event.height / 2);
+    touchPoint->pressure = event.pressure;
+
+    switch (event.type) {
+    case EventType::PointerUp:
+        touchPoint->state = QEventPoint::State::Released;
+        break;
+    case EventType::PointerMove:
+        touchPoint->state = (stationaryTouchPoint ? QEventPoint::State::Stationary
+                                                  : QEventPoint::State::Updated);
+        break;
+    default:
+        break;
+    }
+
+    QList<QWindowSystemInterface::TouchPoint> touchPointList;
+    touchPointList.reserve(m_pointerIdToTouchPoints.size());
+    std::transform(m_pointerIdToTouchPoints.begin(), m_pointerIdToTouchPoints.end(),
+                   std::back_inserter(touchPointList),
+                   [](const QWindowSystemInterface::TouchPoint &val) { return val; });
+
+    if (event.type == EventType::PointerUp)
+        m_pointerIdToTouchPoints.remove(event.pointerId);
+
+    return event.type == EventType::PointerCancel
+            ? QWindowSystemInterface::handleTouchCancelEvent(
+                    m_window->window(), QWasmIntegration::getTimestamp(), m_screen->touchDevice(),
+                    event.modifiers)
+            : QWindowSystemInterface::handleTouchEvent(
+                    m_window->window(), QWasmIntegration::getTimestamp(), m_screen->touchDevice(),
+                    touchPointList, event.modifiers);
 }
 
 QT_END_NAMESPACE

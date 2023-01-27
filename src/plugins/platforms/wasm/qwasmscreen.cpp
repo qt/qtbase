@@ -72,12 +72,17 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
     emscripten::val::module_property("specialHTMLTargets")
             .set(outerScreenId().toStdString(), m_container);
 
-    // Install event handlers on the container/canvas. This must be
-    // done after the canvas has been created above.
-    m_compositor->initEventHandlers();
-
     updateQScreenAndCanvasRenderSize();
     m_shadowContainer.call<void>("focus");
+
+    m_touchDevice = std::make_unique<QPointingDevice>(
+            "touchscreen", 1, QInputDevice::DeviceType::TouchScreen,
+            QPointingDevice::PointerType::Finger,
+            QPointingDevice::Capability::Position | QPointingDevice::Capability::Area
+                    | QPointingDevice::Capability::NormalizedPosition,
+            10, 0);
+
+    QWindowSystemInterface::registerInputDevice(m_touchDevice.get());
 }
 
 QWasmScreen::~QWasmScreen()

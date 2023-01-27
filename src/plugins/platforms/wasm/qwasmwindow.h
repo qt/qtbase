@@ -86,9 +86,9 @@ public:
     QWindow *window() const { return m_window; }
 
     std::string canvasSelector() const;
-    emscripten::val context2d() { return m_context2d; }
-    emscripten::val a11yContainer() { return m_a11yContainer; }
-
+    emscripten::val context2d() const { return m_context2d; }
+    emscripten::val a11yContainer() const { return m_a11yContainer; }
+    emscripten::val inputHandlerElement() const { return m_windowContents; }
 
 private:
     friend class QWasmScreen;
