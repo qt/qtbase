@@ -345,31 +345,38 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     return path;
 }
 
-static QStringList xdgDataDirs()
+static QStringList dirsList(const QString &xdgEnvVar)
 {
     QStringList dirs;
     // http://standards.freedesktop.org/basedir-spec/latest/
+    // Normalize paths, skip relative paths (the spec says relative paths
+    // should be ignored)
+    for (const auto dir : qTokenize(xdgEnvVar, u':'))
+        if (dir.startsWith(u'/'))
+            dirs.push_back(QDir::cleanPath(dir.toString()));
+
+    // Remove duplicates from the list, there's no use for duplicated
+    // paths in XDG_DATA_DIRS - if it's not found in the given
+    // directory the first time, it won't be there the second time.
+    // Plus duplicate paths causes problems for example for mimetypes,
+    // where duplicate paths here lead to duplicated mime types returned
+    // for a file, eg "text/plain,text/plain" instead of "text/plain"
+    dirs.removeDuplicates();
+
+    return dirs;
+}
+
+static QStringList xdgDataDirs()
+{
+    // http://standards.freedesktop.org/basedir-spec/latest/
     QString xdgDataDirsEnv = QFile::decodeName(qgetenv("XDG_DATA_DIRS"));
-    if (xdgDataDirsEnv.isEmpty()) {
-        dirs.append(QString::fromLatin1("/usr/local/share"));
-        dirs.append(QString::fromLatin1("/usr/share"));
-    } else {
-        const auto parts = QStringView{xdgDataDirsEnv}.split(QLatin1Char(':'), Qt::SkipEmptyParts);
 
-        // Normalize paths, skip relative paths
-        for (const auto &dir : parts) {
-            if (dir.startsWith(QLatin1Char('/')))
-                dirs.push_back(QDir::cleanPath(dir.toString()));
-        }
-
-        // Remove duplicates from the list, there's no use for duplicated
-        // paths in XDG_DATA_DIRS - if it's not found in the given
-        // directory the first time, it won't be there the second time.
-        // Plus duplicate paths causes problems for example for mimetypes,
-        // where duplicate paths here lead to duplicated mime types returned
-        // for a file, eg "text/plain,text/plain" instead of "text/plain"
-        dirs.removeDuplicates();
+    QStringList dirs = dirsList(xdgDataDirsEnv);
+    if (dirs.isEmpty()) {
+        dirs = QStringList{ QString::fromLatin1("/usr/local/share"),
+                            QString::fromLatin1("/usr/share") };
     }
+
     return dirs;
 }
 
