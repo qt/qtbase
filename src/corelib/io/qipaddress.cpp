@@ -22,9 +22,9 @@ static QString number(quint8 val)
 typedef QVarLengthArray<char, 64> Buffer;
 static const QChar *checkedToAscii(Buffer &buffer, const QChar *begin, const QChar *end)
 {
-    const ushort *const ubegin = reinterpret_cast<const ushort *>(begin);
-    const ushort *const uend = reinterpret_cast<const ushort *>(end);
-    const ushort *src = ubegin;
+    const auto *const ubegin = reinterpret_cast<const char16_t *>(begin);
+    const auto *const uend = reinterpret_cast<const char16_t *>(end);
+    auto *src = ubegin;
 
     buffer.resize(uend - ubegin + 1);
     char *dst = buffer.data();

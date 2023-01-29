@@ -320,8 +320,8 @@ Q_CONSTINIT static QStringList *user_idn_whitelist = nullptr;
 
 static bool lessThan(const QChar *a, int l, const char *c)
 {
-    const ushort *uc = (const ushort *)a;
-    const ushort *e = uc + l;
+    const auto *uc = reinterpret_cast<const char16_t *>(a);
+    const char16_t *e = uc + l;
 
     if (!c || *c == 0)
         return false;

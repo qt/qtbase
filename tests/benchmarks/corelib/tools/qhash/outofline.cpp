@@ -42,7 +42,7 @@ size_t qHash(const Qt50String &key, size_t seed)
 // (for instance, gcc 4.4 does that even at -O0).
 size_t qHash(const JavaString &str)
 {
-    const unsigned short *p = (unsigned short *)str.constData();
+    const auto *p = reinterpret_cast<const char16_t *>(str.constData());
     const qsizetype len = str.size();
 
     uint h = 0;

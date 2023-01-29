@@ -753,7 +753,7 @@ inline QString QResourceRoot::name(int node) const
 
     ret.resize(name_length);
     QChar *strData = ret.data();
-    qFromBigEndian<ushort>(names + name_offset, name_length, strData);
+    qFromBigEndian<char16_t>(names + name_offset, name_length, strData);
     return ret;
 }
 

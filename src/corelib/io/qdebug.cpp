@@ -195,10 +195,8 @@ void QDebug::putUcs4(uint ucs4)
 // These two functions return true if the character should be printed by QDebug.
 // For QByteArray, this is technically identical to US-ASCII isprint();
 // for QString, we use QChar::isPrint, which requires a full UCS-4 decode.
-static inline bool isPrintable(uint ucs4)
-{ return QChar::isPrint(ucs4); }
-static inline bool isPrintable(ushort uc)
-{ return QChar::isPrint(uc); }
+static inline bool isPrintable(char32_t ucs4) { return QChar::isPrint(ucs4); }
+static inline bool isPrintable(char16_t uc) { return QChar::isPrint(uc); }
 static inline bool isPrintable(uchar c)
 { return c >= ' ' && c < 0x7f; }
 
@@ -240,7 +238,7 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, si
 
         // print as an escape sequence (maybe, see below for surrogate pairs)
         qsizetype buflen = 2;
-        ushort buf[sizeof "\\U12345678" - 1];
+        char16_t buf[std::char_traits<char>::length("\\U12345678")];
         buf[0] = '\\';
 
         switch (*p) {
@@ -276,7 +274,7 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, si
             if (QChar::isHighSurrogate(*p)) {
                 if ((p + 1) != end && QChar::isLowSurrogate(p[1])) {
                     // properly-paired surrogates
-                    uint ucs4 = QChar::surrogateToUcs4(*p, p[1]);
+                    char32_t ucs4 = QChar::surrogateToUcs4(*p, p[1]);
                     if (isPrintable(ucs4)) {
                         buf[0] = *p;
                         buf[1] = p[1];
@@ -299,8 +297,8 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, si
                 // improperly-paired surrogates, fall through
             }
             buf[1] = 'u';
-            buf[2] = toHexUpper(ushort(*p) >> 12);
-            buf[3] = toHexUpper(ushort(*p) >> 8);
+            buf[2] = toHexUpper(char16_t(*p) >> 12);
+            buf[3] = toHexUpper(char16_t(*p) >> 8);
             buf[4] = toHexUpper(*p >> 4);
             buf[5] = toHexUpper(*p);
             buflen = 6;
@@ -325,7 +323,7 @@ void QDebug::putString(const QChar *begin, size_t length)
         // we'll reset the QTextStream formatting mechanisms, so save the state
         QDebugStateSaver saver(*this);
         stream->ts.d_ptr->params.reset();
-        putEscapedString(stream->ts.d_ptr.data(), reinterpret_cast<const ushort *>(begin), length);
+        putEscapedString(stream->ts.d_ptr.data(), reinterpret_cast<const char16_t *>(begin), length);
     }
 }
 

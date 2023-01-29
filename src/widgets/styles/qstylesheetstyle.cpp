@@ -1603,8 +1603,8 @@ public:
             return nodeName == "QToolTip"_L1;
 #endif
         do {
-            const ushort *uc = (const ushort *)nodeName.constData();
-            const ushort *e = uc + nodeName.size();
+            const auto *uc = reinterpret_cast<const char16_t *>(nodeName.constData());
+            const auto *e = uc + nodeName.size();
             const uchar *c = (const uchar *)metaObject->className();
             while (*c && uc != e && (*uc == *c || (*c == ':' && *uc == '-'))) {
                 ++uc;

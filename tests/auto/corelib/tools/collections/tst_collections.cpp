@@ -2018,7 +2018,7 @@ void tst_Collections::qstring()
     s = "ascii";
     s += QChar((uchar) 0xb0);
     QVERIFY(s.toUtf8() != s.toLatin1());
-    QCOMPARE(s[s.size()-1].unicode(), (ushort)0xb0);
+    QCOMPARE(s[s.size()-1].unicode(), char16_t(0xb0));
     QCOMPARE(s.left(s.size()-1), QLatin1String("ascii"));
 
     QVERIFY(s == QString::fromUtf8(s.toUtf8().constData()));
