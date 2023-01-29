@@ -326,29 +326,36 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     return path;
 }
 
-static QStringList xdgDataDirs()
+static QStringList dirsList(const QString &xdgEnvVar)
 {
     QStringList dirs;
     // http://standards.freedesktop.org/basedir-spec/latest/
-    QString xdgDataDirsEnv = QFile::decodeName(qgetenv("XDG_DATA_DIRS"));
-    if (xdgDataDirsEnv.isEmpty()) {
-        dirs.append(QString::fromLatin1("/usr/local/share"));
-        dirs.append(QString::fromLatin1("/usr/share"));
-    } else {
-        // Normalize paths, skip relative paths
-        for (const auto dir : qTokenize(xdgDataDirsEnv, u':')) {
-            if (dir.startsWith(u'/'))
-                dirs.push_back(QDir::cleanPath(dir.toString()));
-        }
+    // Normalize paths, skip relative paths (the spec says relative paths
+    // should be ignored)
+    for (const auto dir : qTokenize(xdgEnvVar, u':'))
+        if (dir.startsWith(u'/'))
+            dirs.push_back(QDir::cleanPath(dir.toString()));
 
-        // Remove duplicates from the list, there's no use for duplicated
-        // paths in XDG_DATA_DIRS - if it's not found in the given
-        // directory the first time, it won't be there the second time.
-        // Plus duplicate paths causes problems for example for mimetypes,
-        // where duplicate paths here lead to duplicated mime types returned
-        // for a file, eg "text/plain,text/plain" instead of "text/plain"
-        dirs.removeDuplicates();
-    }
+    // Remove duplicates from the list, there's no use for duplicated
+    // paths in XDG_DATA_DIRS - if it's not found in the given
+    // directory the first time, it won't be there the second time.
+    // Plus duplicate paths causes problems for example for mimetypes,
+    // where duplicate paths here lead to duplicated mime types returned
+    // for a file, eg "text/plain,text/plain" instead of "text/plain"
+    dirs.removeDuplicates();
+
+    return dirs;
+}
+
+static QStringList xdgDataDirs()
+{
+    // http://standards.freedesktop.org/basedir-spec/latest/
+    QString xdgDataDirsEnv = QFile::decodeName(qgetenv("XDG_DATA_DIRS"));
+
+    QStringList dirs = dirsList(xdgDataDirsEnv);
+    if (dirs.isEmpty())
+        dirs = QStringList{u"/usr/local/share"_s, u"/usr/share"_s};
+
     return dirs;
 }
 
