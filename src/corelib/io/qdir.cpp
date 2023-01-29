@@ -2165,8 +2165,8 @@ QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormaliza
     QVarLengthArray<char16_t> outVector(len);
     qsizetype used = len;
     char16_t *out = outVector.data();
-    const ushort *p = reinterpret_cast<const ushort *>(name.data());
-    const ushort *prefix = p;
+    const char16_t *p = reinterpret_cast<const char16_t *>(name.data());
+    const char16_t *prefix = p;
     qsizetype up = 0;
 
     const qsizetype prefixLength = rootLength(name, allowUncPaths);
@@ -2180,10 +2180,10 @@ QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormaliza
         --i;
     }
 
-    auto isDot = [](const ushort *p, qsizetype i) {
+    auto isDot = [](const char16_t *p, qsizetype i) {
         return i > 1 && p[i - 1] == '.' && p[i - 2] == '/';
     };
-    auto isDotDot = [](const ushort *p, qsizetype i) {
+    auto isDotDot = [](const char16_t *p, qsizetype i) {
         return i > 2 && p[i - 1] == '.' && p[i - 2] == '.' && p[i - 3] == '/';
     };
 

@@ -2060,7 +2060,7 @@ static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationFo
 
     enum { NFQC_YES = 0, NFQC_NO = 1, NFQC_MAYBE = 3 };
 
-    const ushort *string = reinterpret_cast<const ushort *>(str->constData());
+    const auto *string = reinterpret_cast<const char16_t *>(str->constData());
     qsizetype length = str->size();
 
     // this avoids one out of bounds check in the loop

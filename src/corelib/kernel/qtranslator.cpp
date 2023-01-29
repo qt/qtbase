@@ -914,7 +914,7 @@ end:
     if (!tn)
         return QString();
     QString str(tn_length / 2, Qt::Uninitialized);
-    qFromBigEndian<ushort>(tn, str.size(), str.data());
+    qFromBigEndian<char16_t>(tn, str.size(), str.data());
     return str;
 }
 

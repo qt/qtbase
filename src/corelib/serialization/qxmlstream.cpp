@@ -1721,7 +1721,7 @@ void QXmlStreamReaderPrivate::checkPublicLiteral(QStringView publicId)
 {
 //#x20 | #xD | #xA | [a-zA-Z0-9] | [-'()+,./:=?;!*#@$_%]
 
-    const ushort *data = reinterpret_cast<const ushort *>(publicId.constData());
+    const char16_t *data = publicId.utf16();
     uchar c = 0;
     qsizetype i;
     for (i = publicId.size() - 1; i >= 0; --i) {
