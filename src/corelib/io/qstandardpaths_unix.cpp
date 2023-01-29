@@ -180,10 +180,11 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case CacheLocation:
     case GenericCacheLocation:
     {
+        if (isTestModeEnabled())
+            return QDir::homePath() + "/.qttest/cache"_L1;
+
         // http://standards.freedesktop.org/basedir-spec/basedir-spec-0.6.html
         QString xdgCacheHome = QFile::decodeName(qgetenv("XDG_CACHE_HOME"));
-        if (isTestModeEnabled())
-            xdgCacheHome = QDir::homePath() + "/.qttest/cache"_L1;
         if (xdgCacheHome.isEmpty())
             xdgCacheHome = QDir::homePath() + "/.cache"_L1;
         if (type == QStandardPaths::CacheLocation)
@@ -194,9 +195,10 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case AppLocalDataLocation:
     case GenericDataLocation:
     {
-        QString xdgDataHome = QFile::decodeName(qgetenv("XDG_DATA_HOME"));
         if (isTestModeEnabled())
-            xdgDataHome = QDir::homePath() + "/.qttest/share"_L1;
+            return QDir::homePath() + "/.qttest/share"_L1;
+
+        QString xdgDataHome = QFile::decodeName(qgetenv("XDG_DATA_HOME"));
         if (xdgDataHome.isEmpty())
             xdgDataHome = QDir::homePath() + "/.local/share"_L1;
         if (type == AppDataLocation || type == AppLocalDataLocation)
@@ -207,10 +209,11 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case GenericConfigLocation:
     case AppConfigLocation:
     {
+        if (isTestModeEnabled())
+            return QDir::homePath() + "/.qttest/config"_L1;
+
         // http://standards.freedesktop.org/basedir-spec/latest/
         QString xdgConfigHome = QFile::decodeName(qgetenv("XDG_CONFIG_HOME"));
-        if (isTestModeEnabled())
-            xdgConfigHome = QDir::homePath() + "/.qttest/config"_L1;
         if (xdgConfigHome.isEmpty())
             xdgConfigHome = QDir::homePath() + "/.config"_L1;
         if (type == AppConfigLocation)
@@ -253,7 +256,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     if (!key.isEmpty() && !isTestModeEnabled() && file.open(QIODevice::ReadOnly)) {
         QTextStream stream(&file);
         // Only look for lines like: XDG_DESKTOP_DIR="$HOME/Desktop"
-        QRegularExpression exp("^XDG_(.*)_DIR=(.*)$"_L1);
+        static const QRegularExpression exp(u"^XDG_(.*)_DIR=(.*)$"_s);
         QString result;
         while (!stream.atEnd()) {
             const QString &line = stream.readLine();
