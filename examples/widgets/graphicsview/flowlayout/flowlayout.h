@@ -1,6 +1,9 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+#ifndef FLOWLAYOUT_H
+#define FLOWLAYOUT_H
+
 #include <QGraphicsLayout>
 
 class FlowLayout : public QGraphicsLayout
@@ -37,3 +40,5 @@ inline void FlowLayout::addItem(QGraphicsLayoutItem *item)
 {
     insertItem(-1, item);
 }
+
+#endif // FLOWLAYOUT_H

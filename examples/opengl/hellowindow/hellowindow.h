@@ -1,6 +1,9 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+#ifndef HELLOWINDOW_H
+#define HELLOWINDOW_H
+
 #include <QWindow>
 
 #include <QColor>
@@ -70,3 +73,5 @@ private:
     QColor m_color;
     const QSharedPointer<Renderer> m_renderer;
 };
+
+#endif // HELLOWINDOW_H

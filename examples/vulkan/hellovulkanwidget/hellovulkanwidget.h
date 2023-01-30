@@ -1,6 +1,9 @@
 // Copyright (C) 2017 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+#ifndef HELLOVULKANWIDGET_H
+#define HELLOVULKANWIDGET_H
+
 #include "../shared/trianglerenderer.h"
 #include <QWidget>
 
@@ -51,3 +54,5 @@ signals:
     void vulkanInfoReceived(const QString &text);
     void frameQueued(int colorValue);
 };
+
+#endif // HELLOVULKANWIDGET_H

@@ -1,6 +1,9 @@
 // Copyright (C) 2017 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+#ifndef HELLOVULKANTEXTURE_H
+#define HELLOVULKANTEXTURE_H
+
 #include <QVulkanWindow>
 #include <QImage>
 
@@ -59,3 +62,5 @@ class VulkanWindow : public QVulkanWindow
 public:
     QVulkanWindowRenderer *createRenderer() override;
 };
+
+#endif // HELLOVULKANTEXTURE_H

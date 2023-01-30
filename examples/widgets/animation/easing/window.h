@@ -1,6 +1,9 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+#ifndef WINDOW_H
+#define WINDOW_H
+
 #include <QtWidgets>
 
 #include "ui_form.h"
@@ -37,3 +40,5 @@ private:
     Animation *m_anim;
     QSize m_iconSize;
 };
+
+#endif // WINDOW_H
