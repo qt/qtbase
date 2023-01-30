@@ -1618,7 +1618,6 @@ void QPainter::restore()
         // replay the list of clip states,
         for (const QPainterClipInfo &info : std::as_const(d->state->clipInfo)) {
             tmp->matrix = info.matrix;
-            tmp->matrix *= d->state->redirectionMatrix;
             tmp->clipOperation = info.operation;
             if (info.clipType == QPainterClipInfo::RectClip) {
                 tmp->dirtyFlags = QPaintEngine::DirtyClipRegion | QPaintEngine::DirtyTransform;
