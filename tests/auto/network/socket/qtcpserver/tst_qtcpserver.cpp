@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <qglobal.h>
+
 // To prevent windows system header files from re-defining min/max
 #define NOMINMAX 1
 #if defined(_WIN32)
@@ -36,9 +37,11 @@
 
 #include <QNetworkProxy>
 #include <QSet>
+#include <QSysInfo>
 #include <QList>
 
 #include "../../../network-settings.h"
+#include <QtTest/private/qemulationdetector_p.h>
 
 #if defined(Q_OS_LINUX)
 #define SHOULD_CHECK_SYSCALL_SUPPORT
@@ -137,6 +140,11 @@ void tst_QTcpServer::initTestCase_data()
 
 void tst_QTcpServer::initTestCase()
 {
+    QSysInfo sysInfo;
+    if (QTestPrivate::isRunningArmOnX86()
+        || (sysInfo.productType() == QStringLiteral("ubuntu")
+            && sysInfo.productVersion() == QStringLiteral("22.04")))
+        QSKIP("Skipping test on Ubuntu 22.04 and QEMU, see QTBUG-107696.");
 #ifdef QT_TEST_SERVER
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::socksProxyServerName(), 1080));
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpProxyServerName(), 3128));
