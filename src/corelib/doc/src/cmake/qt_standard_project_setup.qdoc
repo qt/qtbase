@@ -45,7 +45,7 @@ have been defined. It does the following things:
     \c{${CMAKE_CURRENT_BINARY_DIR}}.
 \li When target platforms other than Apple or Windows, \c{CMAKE_INSTALL_RPATH}
     will be augmented as described below.
-\li CMake's \l USE_FOLDERS property is set to \c{ON}, and \l QT_TARGET_FOLDER is
+\li CMake's \l USE_FOLDERS property is set to \c{ON}, and \l QT_TARGETS_FOLDER is
     set to \c{QtInternalTargets}. IDEs that support folders will display
     Qt-internal targets in this folder.
 \endlist
