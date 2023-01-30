@@ -317,11 +317,20 @@ static void writeEnums(QTextStream &stream, const Provider &provider)
         name.replace(QStringLiteral("::"), QStringLiteral("_"));
         stream << "TRACEPOINT_METADATA(" << provider.name << ", " << name << ", \n";
         stream << "QStringLiteral(\"typealias enum : integer { size = " << e.valueSize << "; } {\\n\\\n";
-        for (const auto &v : e.values) {
-            if (v.range)
+
+        const auto values = e.values;
+        QList<int> handledValues;
+
+        for (const auto &v : values) {
+            if (handledValues.contains(v.value))
+                continue;
+            if (v.range) {
                 stream << v.name << " = " << v.value << " ... "  << v.range << ", \\n\\\n";
-            else
-                stream << v.name << " = " << v.value << ", \\n\\\n";
+            } else {
+                const QString names = aggregateListValues(v.value, values);
+                stream << names << " = " << v.value << ", \\n\\\n";
+                handledValues.append(v.value);
+            }
         }
         stream << "} := " << name << ";\\n\\n\"));\n\n";
     }
@@ -335,8 +344,16 @@ static void writeFlags(QTextStream &stream, const Provider &provider)
         name.replace(QStringLiteral("::"), QStringLiteral("_"));
         stream << "TRACEPOINT_METADATA(" << provider.name << ", " << name << ", \n";
         stream << "QStringLiteral(\"typealias enum : integer { size = 8; } {\\n\\\n";
-        for (const auto &v : e.values) {
-            stream << v.name << " = " << v.value << ", \\n\\\n";
+
+        const auto values = e.values;
+        QList<int> handledValues;
+
+        for (const auto &v : values) {
+            if (handledValues.contains(v.value))
+                continue;
+            const QString names = aggregateListValues(v.value, values);
+            stream << names << " = " << v.value << ", \\n\\\n";
+            handledValues.append(v.value);
         }
         stream << "} := " << name << ";\\n\\n\"));\n\n";
     }

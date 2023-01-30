@@ -217,9 +217,14 @@ static void writeEnumConverter(QTextStream &stream, const TraceEnum &enumeration
         }
     }
     stream << "\n    QString ret;\n    switch (val) {\n";
+
+    QList<int> handledValues;
     for (const auto &v : enumeration.values) {
-        if (v.range == 0)
-            stream << "    case " << v.value << ": ret = QStringLiteral(\"" << v.name << "\"); break;\n";
+        if (v.range == 0 && !handledValues.contains(v.value)) {
+            stream << "    case " << v.value << ": ret = QStringLiteral(\""
+                   << aggregateListValues(v.value, enumeration.values) << "\"); break;\n";
+            handledValues.append(v.value);
+        }
     }
 
     stream << "    }\n    return ret;\n}\n";
@@ -231,13 +236,18 @@ static void writeFlagConverter(QTextStream &stream, const TraceFlags &flag)
     stream << "{\n    QString ret;\n";
     for (const auto &v : flag.values) {
         if (v.value == 0) {
-            stream << "    if (val == 0)\n        return QStringLiteral(\"" << v.name << "\");\n";
+            stream << "    if (val == 0)\n        return QStringLiteral(\""
+                   << aggregateListValues(v.value, flag.values) << "\");\n";
             break;
         }
     }
+    QList<int> handledValues;
     for (const auto &v : flag.values) {
-        if (v.value != 0)
-            stream << "    if (val & " << (1 << (v.value - 1)) << ") { if (ret.length()) ret += QLatin1Char(\'|\'); ret += QStringLiteral(\"" << v.name << "\"); }\n";
+        if (v.value != 0 && !handledValues.contains(v.value)) {
+            stream << "    if (val & " << (1 << (v.value - 1))
+                   << ") { if (ret.length()) ret += QLatin1Char(\'|\'); ret += QStringLiteral(\"" << v.name << "\"); }\n";
+            handledValues.append(v.value);
+        }
     }
     stream << "    return ret;\n}\n";
 }
