@@ -7,7 +7,7 @@
 #include <QDebug>
 #include <QTextStream>
 
-static const char optionHelp[] =
+static const char dataStreamOptionHelp[] =
         "byteorder=host|big|little      Byte order to use.\n"
         "version=<n>                    QDataStream version (default: Qt 5.0).\n"
         ;
@@ -143,7 +143,7 @@ Converter::Options DataStreamConverter::outputOptions()
 
 const char *DataStreamConverter::optionsHelp()
 {
-    return optionHelp;
+    return dataStreamOptionHelp;
 }
 
 bool DataStreamConverter::probeFile(QIODevice *f)
@@ -209,7 +209,7 @@ void DataStreamConverter::saveFile(QIODevice *f, const QVariant &contents, const
         }
 
         fprintf(stderr, "Unknown QDataStream formatting option '%s'. Available options are:\n%s",
-                qPrintable(option), optionHelp);
+                qPrintable(option), dataStreamOptionHelp);
         exit(EXIT_FAILURE);
     }
 

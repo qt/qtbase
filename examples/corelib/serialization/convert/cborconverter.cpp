@@ -19,7 +19,7 @@
 static CborConverter cborConverter;
 static CborDiagnosticDumper cborDiagnosticDumper;
 
-static const char optionHelp[] =
+static const char cborOptionHelp[] =
         "convert-float-to-int=yes|no    Write integers instead of floating point, if no\n"
         "                               loss of precision occurs on conversion.\n"
         "float16=yes|always|no          Write using half-precision floating point.\n"
@@ -207,7 +207,7 @@ Converter::Options CborConverter::outputOptions()
 
 const char *CborConverter::optionsHelp()
 {
-    return optionHelp;
+    return cborOptionHelp;
 }
 
 bool CborConverter::probeFile(QIODevice *f)
@@ -314,7 +314,7 @@ void CborConverter::saveFile(QIODevice *f, const QVariant &contents, const QStri
         }
 
         fprintf(stderr, "Unknown CBOR format option '%s'. Valid options are:\n%s",
-                qPrintable(s), optionHelp);
+                qPrintable(s), cborOptionHelp);
         exit(EXIT_FAILURE);
     }
     //! [4]

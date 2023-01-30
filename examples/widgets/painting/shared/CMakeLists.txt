@@ -11,6 +11,8 @@ target_sources(painting_shared PRIVATE
     ${moc_files}
 )
 
+set_target_properties(painting_shared PROPERTIES UNITY_BUILD OFF)
+
 target_link_libraries(painting_shared PUBLIC Qt6::Widgets)
 target_include_directories(painting_shared PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 

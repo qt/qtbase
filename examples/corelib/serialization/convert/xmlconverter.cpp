@@ -13,7 +13,7 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
-static const char optionHelp[] =
+static const char xmlOptionHelp[] =
         "compact=no|yes              Use compact XML form.\n";
 
 static XmlConverter xmlConverter;
@@ -416,7 +416,7 @@ Converter::Options XmlConverter::outputOptions()
 
 const char *XmlConverter::optionsHelp()
 {
-    return optionHelp;
+    return xmlOptionHelp;
 }
 
 bool XmlConverter::probeFile(QIODevice *f)
@@ -454,7 +454,8 @@ void XmlConverter::saveFile(QIODevice *f, const QVariant &contents, const QStrin
         } else if (s == QLatin1String("compact=yes")) {
             compact = true;
         } else {
-            fprintf(stderr, "Unknown option '%s' to XML output. Valid options are:\n%s", qPrintable(s), optionHelp);
+            fprintf(stderr, "Unknown option '%s' to XML output. Valid options are:\n%s",
+                    qPrintable(s), xmlOptionHelp);
             exit(EXIT_FAILURE);
         }
     }
