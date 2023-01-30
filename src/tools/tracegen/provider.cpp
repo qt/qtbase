@@ -298,7 +298,7 @@ Provider parseProvider(const QString &filename)
 
     static const QRegularExpression tracedef(QStringLiteral("^([A-Za-z][A-Za-z0-9_]*)\\((.*)\\)$"));
     static const QRegularExpression enumenddef(QStringLiteral("^} ?([A-Za-z][A-Za-z0-9_:]*);"));
-    static const QRegularExpression enumdef(QStringLiteral("^([A-Za-z][A-Za-z0-9_]*)( ?= ?([0-9]*))?"));
+    static const QRegularExpression enumdef(QStringLiteral("^([A-Za-z][A-Za-z0-9_]*)( *= *([xabcdef0-9]*))?"));
     static const QRegularExpression rangedef(QStringLiteral("^RANGE\\(([A-Za-z][A-Za-z0-9_]*) ?, ?([0-9]*) ?... ?([0-9]*) ?\\)"));
 
     Provider provider;
@@ -370,7 +370,7 @@ Provider parseProvider(const QString &filename)
                     value.name = m.captured(1);
                     value.value = m.captured(2).toInt();
                     value.range = m.captured(3).toInt();
-                    currentEnumValue = value.range;
+                    currentEnumValue = value.range + 1;
                     currentEnum.values.push_back(value);
                     maxEnumValue = qMax(maxEnumValue, value.range);
                     minEnumValue = qMin(minEnumValue, value.value);
@@ -382,22 +382,26 @@ Provider parseProvider(const QString &filename)
                         value.name = m.captured(1);
                         value.value = m.captured(3).toInt();
                         value.range = 0;
-                        currentEnumValue = value.value;
+                        currentEnumValue = value.value + 1;
                         currentEnum.values.push_back(value);
                         maxEnumValue = qMax(maxEnumValue, value.value);
                         minEnumValue = qMin(minEnumValue, value.value);
                     } else {
                         TraceFlags::FlagValue value;
                         value.name = m.captured(1);
-                        value.value = m.captured(3).toInt();
+                        if (m.captured(3).startsWith(QStringLiteral("0x")))
+                            value.value = m.captured(3).toInt(nullptr, 16);
+                        else
+                            value.value = m.captured(3).toInt();
                         if (!isPow2OrZero(value.value)) {
                             printf("Warning: '%s' line %d:\n"
                                   "    '%s' flag value is not power of two.\n",
                                   qPrintable(filename), lineNumber,
                                   qPrintable(line));
+                        } else {
+                            value.value = pow2Log2(value.value);
+                            currentFlags.values.push_back(value);
                         }
-                        value.value = pow2Log2(value.value);
-                        currentFlags.values.push_back(value);
                     }
                 } else {
                     maxEnumValue = qMax(maxEnumValue, currentEnumValue);

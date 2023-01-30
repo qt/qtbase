@@ -198,11 +198,14 @@ static void writeEnums(QTextStream &stream, const Provider &provider)
                << "    " << provider.name << ",\n"
                << "    " << typeToTypeName(e.name) << ",\n"
                << "    TP_ENUM_VALUES(\n";
+        QList<int> handledValues;
         for (const auto &v : e.values) {
-            if (v.range > 0)
+            if (v.range > 0) {
                 stream << "        ctf_enum_range(\"" << v.name << "\", " << v.value << ", " << v.range << ")\n";
-            else
-                stream << "        ctf_enum_value(\"" << v.name << "\", " << v.value << ")\n";
+            } else if (!handledValues.contains(v.value)) {
+                stream << "        ctf_enum_value(\"" << aggregateListValues(v.value, e.values) << "\", " << v.value << ")\n";
+                handledValues.append(v.value);
+            }
         }
         stream << "    )\n)\n\n";
     }
@@ -215,8 +218,13 @@ static void writeFlags(QTextStream &stream, const Provider &provider)
                << "    " << provider.name << ",\n"
                << "    " << typeToTypeName(f.name) << ",\n"
                << "    TP_ENUM_VALUES(\n";
-        for (const auto &v : f.values)
-            stream << "        ctf_enum_value(\"" << v.name << "\", " << v.value << ")\n";
+        QList<int> handledValues;
+        for (const auto &v : f.values) {
+            if (!handledValues.contains(v.value)) {
+                stream << "        ctf_enum_value(\"" << aggregateListValues(v.value, f.values) << "\", " << v.value << ")\n";
+                handledValues.append(v.value);
+            }
+        }
         stream << "    )\n)\n\n";
     }
 
