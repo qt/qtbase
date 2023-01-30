@@ -394,8 +394,8 @@ Provider parseProvider(const QString &filename)
                         value.name = m.captured(1);
                         value.value = m.captured(3).toInt();
                         if (!isPow2OrZero(value.value)) {
-                            panic("Syntax error while processing '%s' line %d:\n"
-                                  "    '%s' flag value is now power of two",
+                            printf("Warning: '%s' line %d:\n"
+                                  "    '%s' flag value is not power of two.\n",
                                   qPrintable(filename), lineNumber,
                                   qPrintable(line));
                         }
