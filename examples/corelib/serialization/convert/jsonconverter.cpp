@@ -11,7 +11,7 @@
 
 static JsonConverter jsonConverter;
 
-static const char optionHelp[] =
+static const char jsonOptionHelp[] =
         "compact=no|yes              Use compact JSON form.\n";
 
 static QJsonDocument convertFromVariant(const QVariant &v)
@@ -45,7 +45,7 @@ Converter::Options JsonConverter::outputOptions()
 
 const char *JsonConverter::optionsHelp()
 {
-    return optionHelp;
+    return jsonOptionHelp;
 }
 
 bool JsonConverter::probeFile(QIODevice *f)
@@ -96,7 +96,8 @@ void JsonConverter::saveFile(QIODevice *f, const QVariant &contents, const QStri
         } else if (s == QLatin1String("compact=yes")) {
             format = QJsonDocument::Compact;
         } else {
-            fprintf(stderr, "Unknown option '%s' to JSON output. Valid options are:\n%s", qPrintable(s), optionHelp);
+            fprintf(stderr, "Unknown option '%s' to JSON output. Valid options are:\n%s",
+                    qPrintable(s), jsonOptionHelp);
             exit(EXIT_FAILURE);
         }
     }

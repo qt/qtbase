@@ -10,7 +10,7 @@ static const int PendingRequestTimeout = 60 * 1000;
 static const int ClientTimeout = 120 * 1000;
 static const int ConnectTimeout = 60 * 1000;
 static const int KeepAliveInterval = 30 * 1000;
-static const int RateControlTimerDelay = 2000;
+static const int PeerRateControlTimerDelay = 2000;
 static const int MinimalHeaderSize = 48;
 static const char ProtocolId[] = "BitTorrent protocol";
 static const char ProtocolIdSize = 19;
@@ -45,7 +45,7 @@ PeerWireClient::PeerWireClient(const QByteArray &peerId, QObject *parent)
     memset(uploadSpeedData, 0, sizeof(uploadSpeedData));
     memset(downloadSpeedData, 0, sizeof(downloadSpeedData));
 
-    transferSpeedTimer = startTimer(RateControlTimerDelay);
+    transferSpeedTimer = startTimer(PeerRateControlTimerDelay);
     timeoutTimer = startTimer(ConnectTimeout);
     peerIdString = peerId;
 
