@@ -48,6 +48,9 @@
 **
 ****************************************************************************/
 
+#ifndef HELLOWINDOW_H
+#define HELLOWINDOW_H
+
 #include <QWindow>
 
 #include <QColor>
@@ -117,3 +120,5 @@ private:
     QColor m_color;
     const QSharedPointer<Renderer> m_renderer;
 };
+
+#endif // HELLOWINDOW_H

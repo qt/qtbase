@@ -48,6 +48,9 @@
 **
 ****************************************************************************/
 
+#ifndef WINDOW_H
+#define WINDOW_H
+
 #include <QtWidgets>
 
 #include "ui_form.h"
@@ -84,3 +87,5 @@ private:
     Animation *m_anim;
     QSize m_iconSize;
 };
+
+#endif // WINDOW_H

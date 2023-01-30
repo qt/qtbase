@@ -48,6 +48,9 @@
 **
 ****************************************************************************/
 
+#ifndef WINDOW_H
+#define WINDOW_H
+
 #include <QWindow>
 #include <QImage>
 
@@ -81,3 +84,5 @@ private:
     QBackingStore *m_backingStore;
     int m_renderTimer;
 };
+
+#endif // WINDOW_H

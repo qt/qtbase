@@ -48,6 +48,9 @@
 **
 ****************************************************************************/
 
+#ifndef FLOWLAYOUT_H
+#define FLOWLAYOUT_H
+
 #include <QGraphicsLayout>
 
 class FlowLayout : public QGraphicsLayout
@@ -84,3 +87,5 @@ inline void FlowLayout::addItem(QGraphicsLayoutItem *item)
 {
     insertItem(-1, item);
 }
+
+#endif // FLOWLAYOUT_H
