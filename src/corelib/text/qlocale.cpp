@@ -2748,6 +2748,15 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language, QLocale::Scr
         ++index;
     }
 
+    // Add current system locale, if it matches
+    const auto syslocaledata = systemData();
+
+    if (filter.acceptLanguage(syslocaledata->m_language_id)) {
+        const QLocaleId id = syslocaledata->id();
+        if (filter.acceptScriptTerritory(id))
+            result.append(QLocale::system());
+    }
+
     return result;
 }
 
