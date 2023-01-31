@@ -344,6 +344,11 @@ public abstract class QtLoader {
 
                 ENVIRONMENT_VARIABLES += "\tANDROID_STYLE_PATH=" + stylePath;
 
+                if (m_contextInfo.metaData.containsKey("android.app.trace_location")) {
+                    String loc = m_contextInfo.metaData.getString("android.app.trace_location");
+                    ENVIRONMENT_VARIABLES += "\tQTRACE_LOCATION="+loc;
+                }
+
                 loaderParams.putString(ENVIRONMENT_VARIABLES_KEY, ENVIRONMENT_VARIABLES);
 
                 String appParams = null;
