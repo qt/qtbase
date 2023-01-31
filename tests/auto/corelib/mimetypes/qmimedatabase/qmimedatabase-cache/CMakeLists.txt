@@ -45,6 +45,14 @@ qt_internal_add_resource(tst_qmimedatabase-cache "testdata"
         ${testdata_resource_files}
 )
 
+qt_internal_add_resource(tst_qmimedatabase-cache "testfiles"
+    PREFIX
+        "/files"
+    FILES
+        "../test.txt"
+        "../test.qml"
+)
+
 # special case begin
 set(corelib_source_dir ../../../../../../src/corelib)
 include(${corelib_source_dir}/mimetypes/mimetypes_resources.cmake)

@@ -25,6 +25,8 @@
 #include <QProcess>
 #endif
 
+using namespace Qt::StringLiterals;
+
 static const char *const additionalMimeFiles[] = {
     "yast2-metapackage-handler-mimetypes.xml",
     "qml-again.xml",
@@ -245,6 +247,7 @@ void tst_QMimeDatabase::mimeTypeForFileName_data()
     // fdo bug 15436, needs shared-mime-info >= 0.40 (and this tests the globs2-parsing code).
     QTest::newRow("glob that ends with *, also matches *.pdf. *.pdf has higher weight") << "README.pdf" << "application/pdf";
     QTest::newRow("directory") << "/" << "inode/directory";
+    QTest::newRow("resource-directory") << ":/files/" << "inode/directory";
     QTest::newRow("doesn't exist, no extension") << "IDontExist" << "application/octet-stream";
     QTest::newRow("doesn't exist but has known extension") << "IDontExist.txt" << "text/plain";
     QTest::newRow("empty") << "" << "application/octet-stream";
@@ -495,6 +498,42 @@ void tst_QMimeDatabase::mimeTypeForFileWithContent()
         QCOMPARE(mime.name(), QString::fromLatin1("text/plain"));
         mime = db.mimeTypeForFile(txtTempFileName, QMimeDatabase::MatchContent);
         QCOMPARE(mime.name(), QString::fromLatin1("application/smil+xml"));
+    }
+
+    // Test what happens with Qt resources (file engines in general)
+    {
+        QFile rccFile(":/files/test.txt");
+
+        mime = db.mimeTypeForFile(rccFile.fileName());
+        QCOMPARE(mime.name(), "text/plain"_L1);
+
+        QVERIFY(rccFile.open(QIODevice::ReadOnly));
+        mime = db.mimeTypeForData(&rccFile);
+        QCOMPARE(mime.name(), "text/x-qml"_L1);
+        QVERIFY(rccFile.isOpen());
+
+        mime = db.mimeTypeForFile(rccFile.fileName(), QMimeDatabase::MatchContent);
+        QCOMPARE(mime.name(), "text/x-qml"_L1);
+    }
+
+    // Directories
+    {
+        mime = db.mimeTypeForFile("/");
+        QCOMPARE(mime.name(), "inode/directory"_L1);
+
+        QString dirName = QDir::tempPath();
+        if (!dirName.endsWith(u'/'))
+            dirName += u'/';
+        mime = db.mimeTypeForFile(dirName);
+        QCOMPARE(mime.name(), "inode/directory"_L1);
+
+        while (dirName.endsWith(u'/'))
+            dirName.chop(1);
+        mime = db.mimeTypeForFile(dirName);
+        QCOMPARE(mime.name(), "inode/directory"_L1);
+
+        mime = db.mimeTypeForFile(":/files");
+        QCOMPARE(mime.name(), "inode/directory"_L1);
     }
 
     // Test what happens with an incorrect path
