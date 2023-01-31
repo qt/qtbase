@@ -1774,10 +1774,11 @@ bool QODBCResult::exec()
             case QMetaType::QString:
                 if (d->unicode) {
                     if (bindValueType(i) & QSql::Out) {
-                        const QByteArray &first = tmpStorage.at(i);
-                        QVarLengthArray<SQLTCHAR> array;
-                        array.append((const SQLTCHAR *)first.constData(), first.size());
-                        values[i] = fromSQLTCHAR(array, first.size()/sizeof(SQLTCHAR));
+                        const QByteArray &bytes = tmpStorage.at(i);
+                        const auto strSize = bytes.size() / sizeof(SQLTCHAR);
+                        QVarLengthArray<SQLTCHAR> string(strSize);
+                        memcpy(string.data(), bytes.data(), strSize * sizeof(SQLTCHAR));
+                        values[i] = fromSQLTCHAR(string);
                     }
                     break;
                 }
