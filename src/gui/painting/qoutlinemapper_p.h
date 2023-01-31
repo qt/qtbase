@@ -115,6 +115,8 @@ public:
         m_curve_threshold = scale == 0 ? qreal(0.25) : (qreal(0.25) / scale);
     }
 
+    void setClipRect(QRect clipRect);
+
     void beginOutline(Qt::FillRule fillRule)
     {
 #ifdef QT_DEBUG_CONVERT
@@ -199,6 +201,7 @@ public:
     QDataBuffer<int> m_contours;
 
     QRect m_clip_rect;
+    QRectF m_clip_trigger_rect;
     QRectF controlPointRect; // only valid after endOutline()
 
     QT_FT_Outline m_outline;
