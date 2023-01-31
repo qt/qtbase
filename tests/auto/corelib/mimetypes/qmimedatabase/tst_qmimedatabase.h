@@ -35,8 +35,8 @@ private slots:
     void mimeTypeForUrl();
     void mimeTypeForData_data();
     void mimeTypeForData();
-    void mimeTypeForFileAndContent_data();
-    void mimeTypeForFileAndContent();
+    void mimeTypeForFileNameAndData_data();
+    void mimeTypeForFileNameAndData();
     void allMimeTypes();
     void suffixes_data();
     void suffixes();

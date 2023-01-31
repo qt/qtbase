@@ -1,6 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#include "tst_qmimedatabase.h"
 #include <qmimedatabase.h>
 
 #include "qstandardpaths.h"
@@ -546,7 +547,7 @@ void tst_QMimeDatabase::mimeTypeForData()
     QCOMPARE(buffer.pos(), qint64(0));
 }
 
-void tst_QMimeDatabase::mimeTypeForFileAndContent_data()
+void tst_QMimeDatabase::mimeTypeForFileNameAndData_data()
 {
     QTest::addColumn<QString>("name");
     QTest::addColumn<QByteArray>("data");
@@ -565,7 +566,7 @@ void tst_QMimeDatabase::mimeTypeForFileAndContent_data()
     QTest::newRow("text.xls, found by extension, user is in control") << QString::fromLatin1("text.xls") << oleData << "application/vnd.ms-excel";
 }
 
-void tst_QMimeDatabase::mimeTypeForFileAndContent()
+void tst_QMimeDatabase::mimeTypeForFileNameAndData()
 {
     QFETCH(QString, name);
     QFETCH(QByteArray, data);
