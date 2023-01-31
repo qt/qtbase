@@ -64,9 +64,7 @@ QT_WARNING_DISABLE_MSVC(4723)
     }
 
 Q_TRACE_PREFIX(qtgui,
-   "QT_BEGIN_NAMESPACE" \
-   "class QEvent;"  \
-   "QT_END_NAMESPACE"
+   "#include <qimagereader.h>"
 );
 
 Q_TRACE_METADATA(qtgui,
