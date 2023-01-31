@@ -37,6 +37,24 @@ static const QRectF boundingRect(const QPointF *points, int pointCount)
     return QRectF(QPointF(minx, miny), QPointF(maxx, maxy));
 }
 
+void QOutlineMapper::setClipRect(QRect clipRect)
+{
+    auto limitCoords = [](QRect r) {
+        const QRect limitRect(QPoint(-QT_RASTER_COORD_LIMIT, -QT_RASTER_COORD_LIMIT),
+                              QPoint(QT_RASTER_COORD_LIMIT, QT_RASTER_COORD_LIMIT));
+        r &= limitRect;
+        r.setWidth(qMin(r.width(), QT_RASTER_COORD_LIMIT));
+        r.setHeight(qMin(r.height(), QT_RASTER_COORD_LIMIT));
+        return r;
+    };
+
+    if (clipRect != m_clip_rect) {
+        m_clip_rect = limitCoords(clipRect);
+        const int mw = 64; // margin width. No need to trigger clipping for slight overshooting
+        m_clip_trigger_rect = QRectF(limitCoords(m_clip_rect.adjusted(-mw, -mw, mw, mw)));
+    }
+}
+
 void QOutlineMapper::curveTo(const QPointF &cp1, const QPointF &cp2, const QPointF &ep) {
 #ifdef QT_DEBUG_CONVERT
     printf("QOutlineMapper::curveTo() (%f, %f)\n", ep.x(), ep.y());
@@ -200,16 +218,8 @@ void QOutlineMapper::endOutline()
            m_clip_rect.x(), m_clip_rect.y(), m_clip_rect.width(), m_clip_rect.height());
 #endif
 
-
-    // Check for out of dev bounds...
-    const bool do_clip = !m_in_clip_elements && ((controlPointRect.left() < -QT_RASTER_COORD_LIMIT
-                          || controlPointRect.right() > QT_RASTER_COORD_LIMIT
-                          || controlPointRect.top() < -QT_RASTER_COORD_LIMIT
-                          || controlPointRect.bottom() > QT_RASTER_COORD_LIMIT
-                          || controlPointRect.width() > QT_RASTER_COORD_LIMIT
-                          || controlPointRect.height() > QT_RASTER_COORD_LIMIT));
-
-    if (do_clip) {
+    // Avoid rasterizing outside cliprect: faster, and ensures coords < QT_RASTER_COORD_LIMIT
+    if (!m_in_clip_elements && !m_clip_trigger_rect.contains(controlPointRect)) {
         clipElements(elements, elementTypes(), m_elements.size());
     } else {
         convertElements(elements, elementTypes(), m_elements.size());
