@@ -123,7 +123,7 @@ int QStyleHints::touchDoubleTapDistance() const
 
 /*!
     \property QStyleHints::appearance
-    \brief the appearance of the platform theme
+    \brief the appearance of the platform theme.
     \sa Qt::Appearance
     \since 6.5
 */
@@ -294,6 +294,7 @@ int QStyleHints::keyboardAutoRepeatRate() const
 
 /*!
     \property QStyleHints::keyboardAutoRepeatRateF
+    \since 6.5
     \brief the rate, in events per second, in which additional repeated key
     presses will automatically be generated if a key is being held down.
 */
