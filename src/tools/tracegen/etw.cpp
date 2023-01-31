@@ -45,12 +45,14 @@ static void writeEtwMacro(QTextStream &stream, const Tracepoint::Field &field)
         stream << "TraceLoggingValue(" << name << ".toEncoded().constData(), \"" << name << "\")";
         return;
     case Tracepoint::Field::QtRect:
+    case Tracepoint::Field::QtRectF:
         stream << "TraceLoggingValue(" << name << ".x(), \"x\"), "
                << "TraceLoggingValue(" << name << ".y(), \"y\"), "
                << "TraceLoggingValue(" << name << ".width(), \"width\"), "
                << "TraceLoggingValue(" << name << ".height(), \"height\")";
         return;
     case Tracepoint::Field::QtSize:
+    case Tracepoint::Field::QtSizeF:
         stream << "TraceLoggingValue(" << name << ".width(), \"width\"), "
                << "TraceLoggingValue(" << name << ".height(), \"height\")";
         return;

@@ -257,6 +257,18 @@ static void writeTracepoint(QTextStream &stream,
                 stream << " + QStringLiteral(\"int32_t QSize_" << arg.name << "_height;\\n\\\n        \")";
                 eventSize += QStringLiteral("8");
             } break;
+            case Tracepoint::Field::QtRectF: {
+                stream << "QStringLiteral(\"float QRectF_" << arg.name << "_x;\\n\\\n        \")";
+                stream << " + QStringLiteral(\"float QRectF_" << arg.name << "_y;\\n\\\n        \")";
+                stream << " + QStringLiteral(\"float QRectF_" << arg.name << "_width;\\n\\\n        \")";
+                stream << " + QStringLiteral(\"float QRectF_" << arg.name << "_height;\\n\\\n        \")";
+                eventSize += QStringLiteral("16");
+            } break;
+            case Tracepoint::Field::QtSizeF: {
+                stream << "QStringLiteral(\"float QSizeF_" << arg.name << "_width;\\n\\\n        \")";
+                stream << " + QStringLiteral(\"float QSizeF_" << arg.name << "_height;\\n\\\n        \")";
+                eventSize += QStringLiteral("8");
+            } break;
             case Tracepoint::Field::Unknown:
                 break;
             case Tracepoint::Field::EnumeratedType: {

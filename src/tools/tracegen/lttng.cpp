@@ -61,6 +61,16 @@ static void writeCtfMacro(QTextStream &stream, const Provider &provider, const T
                << "ctf_integer(int, width, " << name << ".width()) "
                << "ctf_integer(int, height, " << name << ".height()) ";
         return;
+    case Tracepoint::Field::QtSizeF:
+        stream << "ctf_float(int, width, " << name << ".width()) "
+               << "ctf_float(int, height, " << name << ".height()) ";
+        return;
+    case Tracepoint::Field::QtRectF:
+        stream << "ctf_float(int, x, " << name << ".x()) "
+               << "ctf_float(int, y, " << name << ".y()) "
+               << "ctf_float(int, width, " << name << ".width()) "
+               << "ctf_float(int, height, " << name << ".height()) ";
+        return;
     case Tracepoint::Field::QtSize:
         stream << "ctf_integer(int, width, " << name << ".width()) "
                << "ctf_integer(int, height, " << name << ".height()) ";
