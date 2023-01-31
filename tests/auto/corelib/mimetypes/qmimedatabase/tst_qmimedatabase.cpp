@@ -41,7 +41,8 @@ static const char *const additionalMimeFiles[] = {
     0
 };
 
-#define RESOURCE_PREFIX ":/qt-project.org/qmime/"
+static const auto s_resourcePrefix = ":/qt-project.org/qmime/"_L1;
+static const auto s_inodeMimetype = "inode/directory"_L1;
 
 void initializeLang()
 {
@@ -134,7 +135,7 @@ void tst_QMimeDatabase::initTestCase()
     qDebug() << "\nGlobal XDG_DATA_DIRS: " << m_globalXdgDir;
 
     const QString freeDesktopXml = QStringLiteral("freedesktop.org.xml");
-    const QString xmlFileName = QLatin1String(RESOURCE_PREFIX "packages/") + freeDesktopXml;
+    const QString xmlFileName = s_resourcePrefix + "packages/"_L1 + freeDesktopXml;
     const QString xmlTargetFileName = globalPackageDir + QLatin1Char('/') + freeDesktopXml;
     QVERIFY2(copyResourceFile(xmlFileName, xmlTargetFileName, &errorMessage), qPrintable(errorMessage));
 #endif
@@ -145,7 +146,7 @@ void tst_QMimeDatabase::initTestCase()
 
     errorMessage = QString::fromLatin1("Cannot find '%1'");
     for (uint i = 0; i < sizeof additionalMimeFiles / sizeof additionalMimeFiles[0] - 1; i++) {
-        const QString resourceFilePath = QString::fromLatin1(RESOURCE_PREFIX) + QLatin1String(additionalMimeFiles[i]);
+        const QString resourceFilePath = s_resourcePrefix + QLatin1String(additionalMimeFiles[i]);
         QVERIFY2(QFile::exists(resourceFilePath), qPrintable(errorMessage.arg(resourceFilePath)));
         m_additionalMimeFileNames.append(QLatin1String(additionalMimeFiles[i]));
         m_additionalMimeFilePaths.append(resourceFilePath);
@@ -332,7 +333,7 @@ void tst_QMimeDatabase::inheritance()
     QVERIFY(msword.inherits(olestorage.name()));
     QVERIFY(msword.inherits(QLatin1String("application/octet-stream")));
 
-    const QMimeType directory = db.mimeTypeForName(QString::fromLatin1("inode/directory"));
+    const QMimeType directory = db.mimeTypeForName(s_inodeMimetype);
     QVERIFY(directory.isValid());
     QCOMPARE(directory.parentMimeTypes().size(), 0);
     QVERIFY(!directory.inherits(QLatin1String("application/octet-stream")));
@@ -426,7 +427,7 @@ void tst_QMimeDatabase::icons()
 {
     QMimeDatabase db;
     QMimeType directory = db.mimeTypeForFile(QString::fromLatin1("/"));
-    QCOMPARE(directory.name(), QString::fromLatin1("inode/directory"));
+    QCOMPARE(directory.name(), s_inodeMimetype);
     QCOMPARE(directory.iconName(), QString::fromLatin1("inode-directory"));
     QCOMPARE(directory.genericIconName(), QString::fromLatin1("folder"));
 
@@ -445,7 +446,7 @@ void tst_QMimeDatabase::comment()
 
     QLocale::setDefault(QLocale("de"));
     QMimeDatabase db;
-    QMimeType directory = db.mimeTypeForName(QStringLiteral("inode/directory"));
+    QMimeType directory = db.mimeTypeForName(s_inodeMimetype);
     QCOMPARE(directory.comment(), QStringLiteral("Ordner"));
     QLocale::setDefault(QLocale("fr"));
     QCOMPARE(directory.comment(), QStringLiteral("dossier"));
@@ -1076,7 +1077,7 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     checkHasMimeType("text/x-suse-ymp");
 
     // Test that a double-definition of a mimetype doesn't lead to sniffing ("conflicting globs").
-    const QString qmlTestFile = QLatin1String(RESOURCE_PREFIX "test.qml");
+    const QString qmlTestFile = s_resourcePrefix + "test.qml"_L1;
     QVERIFY2(!qmlTestFile.isEmpty(),
              qPrintable(QString::fromLatin1("Cannot find '%1' starting from '%2'").
                         arg("test.qml", QDir::currentPath())));
@@ -1089,10 +1090,10 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
         QCOMPARE(objcsrc.globPatterns(), QStringList());
     }
 
-    const QString fooTestFile = QLatin1String(RESOURCE_PREFIX "magic-and-hierarchy.foo");
+    const QString fooTestFile = s_resourcePrefix + "magic-and-hierarchy.foo"_L1;
     QCOMPARE(db.mimeTypeForFile(fooTestFile).name(), QString::fromLatin1("application/foo"));
 
-    const QString fooTestFile2 = QLatin1String(RESOURCE_PREFIX "magic-and-hierarchy2.foo");
+    const QString fooTestFile2 = s_resourcePrefix + "magic-and-hierarchy2.foo"_L1;
     QCOMPARE(db.mimeTypeForFile(fooTestFile2).name(), QString::fromLatin1("application/vnd.qnx.bar-descriptor"));
 
     // Test if we can use the default comment
@@ -1170,7 +1171,7 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     }
 
     // Test that a double-definition of a mimetype doesn't lead to sniffing ("conflicting globs").
-    const QString qmlTestFile = QLatin1String(RESOURCE_PREFIX "test.qml");
+    const QString qmlTestFile = s_resourcePrefix + "test.qml"_L1;
     QVERIFY2(!qmlTestFile.isEmpty(),
              qPrintable(QString::fromLatin1("Cannot find '%1' starting from '%2'").
                         arg("test.qml", QDir::currentPath())));
