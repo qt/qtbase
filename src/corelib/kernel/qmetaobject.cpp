@@ -107,6 +107,7 @@ using namespace Qt::StringLiterals;
     \value RegisterMethodArgumentMetaType
     \value BindableProperty
     \value CustomCall
+    \value ConstructInPlace
 */
 
 /*!

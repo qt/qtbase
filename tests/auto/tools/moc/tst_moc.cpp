@@ -758,6 +758,7 @@ private slots:
     void setQPRopertyBinding();
     void privateQPropertyShim();
     void readWriteThroughBindable();
+    void invokableCtors();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -4422,6 +4423,42 @@ void tst_Moc::readWriteThroughBindable()
         QVERIFY(p.write(&o, 7));
         QCOMPARE(p.read(&o), 7);
     }
+}
+
+struct WithInvokableCtor
+{
+    Q_GADGET
+    Q_PROPERTY(int thing MEMBER m_thing CONSTANT FINAL)
+public:
+    WithInvokableCtor() = default;
+    Q_INVOKABLE WithInvokableCtor(int theThing) : m_thing(theThing) {}
+
+    int m_thing = 10;
+};
+
+void tst_Moc::invokableCtors()
+{
+    const QMetaType metaType = QMetaType::fromType<WithInvokableCtor>();
+    Q_ASSERT(metaType.sizeOf() > 0);
+    const QMetaObject *metaObject = metaType.metaObject();
+    QVERIFY(metaObject);
+
+    QCOMPARE(metaObject->constructorCount(), 1);
+    WithInvokableCtor *result = nullptr;
+    const auto guard = qScopeGuard([&]() { delete result; });
+    int argument = 17;
+    void *a[] = { &result, &argument };
+    metaObject->static_metacall(QMetaObject::CreateInstance, 0, a);
+    QVERIFY(result);
+    QCOMPARE(result->m_thing, 17);
+
+    // Call dtor so that we're left with "uninitialized" memory.
+    WithInvokableCtor result2;
+    result2.~WithInvokableCtor();
+
+    void *b[] = { &result2, &argument };
+    metaObject->static_metacall(QMetaObject::ConstructInPlace, 0, b);
+    QCOMPARE(result2.m_thing, 17);
 }
 
 QTEST_MAIN(tst_Moc)

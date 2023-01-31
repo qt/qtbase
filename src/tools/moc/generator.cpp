@@ -1073,30 +1073,42 @@ void Generator::generateStaticMetacall()
     bool needElse = false;
     bool isUsed_a = false;
 
+    const auto generateCtorArguments = [&](int ctorindex) {
+        const FunctionDef &f = cdef->constructorList.at(ctorindex);
+        Q_ASSERT(!f.isPrivateSignal); // That would be a strange ctor indeed
+        int offset = 1;
+
+        int argsCount = f.arguments.size();
+        for (int j = 0; j < argsCount; ++j) {
+            const ArgumentDef &a = f.arguments.at(j);
+            if (j)
+                fprintf(out, ",");
+            fprintf(out, "(*reinterpret_cast<%s>(_a[%d]))",
+                    a.typeNameForCast.constData(), offset++);
+        }
+    };
+
     if (!cdef->constructorList.isEmpty()) {
         fprintf(out, "    if (_c == QMetaObject::CreateInstance) {\n");
         fprintf(out, "        switch (_id) {\n");
-        for (int ctorindex = 0; ctorindex < cdef->constructorList.size(); ++ctorindex) {
+        const int ctorend = cdef->constructorList.size();
+        for (int ctorindex = 0; ctorindex < ctorend; ++ctorindex) {
             fprintf(out, "        case %d: { %s *_r = new %s(", ctorindex,
                     cdef->classname.constData(), cdef->classname.constData());
-            const FunctionDef &f = cdef->constructorList.at(ctorindex);
-            int offset = 1;
-
-            int argsCount = f.arguments.size();
-            for (int j = 0; j < argsCount; ++j) {
-                const ArgumentDef &a = f.arguments.at(j);
-                if (j)
-                    fprintf(out, ",");
-                fprintf(out, "(*reinterpret_cast< %s>(_a[%d]))", a.typeNameForCast.constData(), offset++);
-            }
-            if (f.isPrivateSignal) {
-                if (argsCount > 0)
-                    fprintf(out, ", ");
-                fprintf(out, "%s", QByteArray("QPrivateSignal()").constData());
-            }
+            generateCtorArguments(ctorindex);
             fprintf(out, ");\n");
             fprintf(out, "            if (_a[0]) *reinterpret_cast<%s**>(_a[0]) = _r; } break;\n",
                     (cdef->hasQGadget || cdef->hasQNamespace) ? "void" : "QObject");
+        }
+        fprintf(out, "        default: break;\n");
+        fprintf(out, "        }\n");
+        fprintf(out, "    } else if (_c == QMetaObject::ConstructInPlace) {\n");
+        fprintf(out, "        switch (_id) {\n");
+        for (int ctorindex = 0; ctorindex < ctorend; ++ctorindex) {
+            fprintf(out, "        case %d: { new (_a[0]) %s(",
+                    ctorindex, cdef->classname.constData());
+            generateCtorArguments(ctorindex);
+            fprintf(out, "); } break;\n");
         }
         fprintf(out, "        default: break;\n");
         fprintf(out, "        }\n");
