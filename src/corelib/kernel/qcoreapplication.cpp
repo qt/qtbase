@@ -109,9 +109,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 Q_TRACE_PREFIX(qtcore,
-   "QT_BEGIN_NAMESPACE" \
-   "class QEvent;"  \
-   "QT_END_NAMESPACE"
+   "#include <qcoreevent.h>"
 );
 Q_TRACE_METADATA(qtcore, "ENUM { AUTO, RANGE User ... MaxUser } QEvent::Type;");
 Q_TRACE_POINT(qtcore, QCoreApplication_postEvent_entry, QObject *receiver, QEvent *event, QEvent::Type type);
