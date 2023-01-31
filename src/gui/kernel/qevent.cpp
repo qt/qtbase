@@ -3716,6 +3716,7 @@ QShortcutEvent::QShortcutEvent(const QKeySequence &key, int id, bool ambiguous)
 /*!
     Constructs a shortcut event for the given \a key press,
     associated with the QShortcut \a shortcut.
+    \since 6.5
 
     \a ambiguous specifies whether there is more than one QShortcut
     for the same key sequence.
