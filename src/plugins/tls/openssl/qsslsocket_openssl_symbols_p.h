@@ -662,6 +662,7 @@ void *q_CRYPTO_malloc(size_t num, const char *file, int line);
 #define q_OPENSSL_malloc(num) q_CRYPTO_malloc(num, "", 0)
 void q_CRYPTO_free(void *str, const char *file, int line);
 # define q_OPENSSL_free(addr) q_CRYPTO_free(addr, "", 0)
+int q_CRYPTO_memcmp(const void * in_a, const void * in_b, size_t len);
 
 void q_SSL_set_info_callback(SSL *ssl, void (*cb) (const SSL *ssl, int type, int val));
 const char *q_SSL_alert_type_string(int value);

@@ -205,7 +205,7 @@ extern "C" int q_verify_cookie_callback(SSL *ssl, const unsigned char *cookie,
         return 0;
 
     return newCookieLength == cookieLength
-           && !std::memcmp(cookie, newCookie, cookieLength);
+           && !q_CRYPTO_memcmp(cookie, newCookie, size_t(cookieLength));
 }
 
 extern "C" int q_X509DtlsCallback(int ok, X509_STORE_CTX *ctx)

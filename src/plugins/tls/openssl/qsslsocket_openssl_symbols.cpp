@@ -1,4 +1,4 @@
-// Copyright (C) 2017 The Qt Company Ltd.
+﻿// Copyright (C) 2017 The Qt Company Ltd.
 // Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 // Copyright (C) 2016 Richard J. Moore <rich@kde.org>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
@@ -155,6 +155,7 @@ DEFINEFUNC3(int, X509_STORE_set_ex_data, X509_STORE *a, a, int idx, idx, void *d
 DEFINEFUNC2(void *, X509_STORE_get_ex_data, X509_STORE *r, r, int idx, idx, return nullptr, return)
 DEFINEFUNC(STACK_OF(X509) *, X509_STORE_CTX_get0_chain, X509_STORE_CTX *a, a, return nullptr, return)
 DEFINEFUNC3(void, CRYPTO_free, void *str, str, const char *file, file, int line, line, return, DUMMYARG)
+DEFINEFUNC3(int, CRYPTO_memcmp, const void * in_a, in_a, const void * in_b, in_b, size_t len, len, return 1, return);
 DEFINEFUNC(long, OpenSSL_version_num, void, DUMMYARG, return 0, return)
 DEFINEFUNC(const char *, OpenSSL_version, int a, a, return nullptr, return)
 DEFINEFUNC(unsigned long, SSL_SESSION_get_ticket_lifetime_hint, const SSL_SESSION *session, session, return 0, return)
@@ -890,6 +891,7 @@ bool q_resolveOpenSslSymbols()
         RESOLVEFUNC(X509_STORE_set_ex_data)
         RESOLVEFUNC(X509_STORE_get_ex_data)
         RESOLVEFUNC(CRYPTO_free)
+        RESOLVEFUNC(CRYPTO_memcmp)
         RESOLVEFUNC(OpenSSL_version_num)
         RESOLVEFUNC(OpenSSL_version)
 
