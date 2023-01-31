@@ -6,6 +6,8 @@
 #include "qstandardpaths.h"
 
 #ifdef Q_OS_UNIX
+#include <dirent.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #endif
@@ -622,6 +624,82 @@ void tst_QMimeDatabase::mimeTypeForFileAndContent()
     QVERIFY(buffer.isOpen());
     QCOMPARE(buffer.pos(), qint64(0));
 }
+
+#ifdef Q_OS_UNIX
+void tst_QMimeDatabase::mimeTypeForUnixSpecials_data()
+{
+    QTest::addColumn<QString>("name");
+    QTest::addColumn<QString>("expected");
+
+    static const char * const mimeTypes[] = {
+        "inode/blockdevice",
+        "inode/chardevice",
+        "inode/fifo",
+        "inode/socket",
+    };
+    enum SpecialType {
+        FoundBlock  = 0,
+        FoundChar   = 1,
+        FoundFifo   = 2,
+        FoundSocket = 3,
+    };
+    uint found = 0;
+    auto nothingfound = []() {
+        QSKIP("No special Unix inode types found!");
+    };
+
+    // on a standard Linux system (systemd), /dev/log is a symlink to a socket
+    // and /dev/initctl is a symlink to a FIFO
+    int devfd = open("/dev", O_RDONLY);
+    DIR *devdir = fdopendir(devfd); // takes ownership
+    if (!devdir)
+        return nothingfound();
+
+    while (struct dirent *ent = readdir(devdir)) {
+        struct stat statbuf;
+        if (fstatat(devfd, ent->d_name, &statbuf, 0) < 0)
+            continue;
+
+        SpecialType type;
+        if (S_ISBLK(statbuf.st_mode)) {
+            type = FoundBlock;
+        } else if (S_ISCHR(statbuf.st_mode)) {
+            type = FoundChar;
+        } else if (S_ISFIFO(statbuf.st_mode)) {
+            type = FoundFifo;
+        } else if (S_ISSOCK(statbuf.st_mode)) {
+            type = FoundSocket;
+        } else {
+            if (!S_ISREG(statbuf.st_mode) && !S_ISDIR(statbuf.st_mode))
+                qWarning("Could not tell what file type '%s' is: %#o'",
+                         ent->d_name, statbuf.st_mode);
+            continue;
+        }
+
+        if (found & (1U << type))
+            continue;       // we've already seen such a type
+
+        const char *mimeType = mimeTypes[type];
+        QTest::addRow("%s", mimeType)
+                << u"/dev/"_s + QFile::decodeName(ent->d_name) << mimeType;
+        found |= (1U << type);
+    }
+    closedir(devdir);
+
+    if (!found)
+        nothingfound();
+}
+
+void tst_QMimeDatabase::mimeTypeForUnixSpecials()
+{
+    QFETCH(QString, name);
+    QFETCH(QString, expected);
+
+    qInfo() << "Testing that" << name << "is" << expected;
+    QMimeDatabase db;
+    QCOMPARE(db.mimeTypeForFile(name).name(), expected);
+}
+#endif
 
 void tst_QMimeDatabase::allMimeTypes()
 {
