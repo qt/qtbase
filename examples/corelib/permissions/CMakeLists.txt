@@ -17,6 +17,7 @@ qt_standard_project_setup()
 qt_add_executable(permissions
     MANUAL_FINALIZATION
     main.cpp
+    android/AndroidManifest.xml
 )
 
 set_target_properties(permissions PROPERTIES
