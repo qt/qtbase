@@ -98,7 +98,9 @@ function(qt_internal_add_simd_part target)
                 ${arg_COMPILE_FLAGS}
             )
         endforeach()
-        set_source_files_properties(${arg_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS TRUE)
+        set_source_files_properties(${arg_SOURCES} PROPERTIES
+                                                   SKIP_PRECOMPILE_HEADERS TRUE
+                                                   SKIP_UNITY_BUILD_INCLUSION TRUE)
         target_sources(${target} PRIVATE ${arg_SOURCES})
     else()
         if(QT_CMAKE_DEBUG_EXTEND_TARGET)

@@ -459,6 +459,7 @@ set(__default_private_args
     DISABLE_AUTOGEN_TOOLS
     ENABLE_AUTOGEN_TOOLS
     PLUGIN_TYPES
+    NO_UNITY_BUILD_SOURCES
 )
 set(__default_public_args
     PUBLIC_LIBRARIES
@@ -487,6 +488,7 @@ set(__qt_internal_add_executable_optional_args
     DELAY_RC
     DELAY_TARGET_INFO
     QT_APP
+    NO_UNITY_BUILD
 )
 set(__qt_internal_add_executable_single_args
     CORE_LIBRARY
@@ -520,6 +522,7 @@ include(QtModuleHelpers)
 include(QtNoLinkTargetHelpers)
 include(QtPluginHelpers)
 include(QtPrecompiledHeadersHelpers)
+include(QtUnityBuildHelpers)
 include(QtPkgConfigHelpers)
 include(QtPriHelpers)
 include(QtPrlHelpers)

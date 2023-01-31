@@ -37,6 +37,7 @@ function(qt_internal_add_benchmark target)
 
     qt_internal_add_executable(${target}
         NO_INSTALL # we don't install benchmarks
+        NO_UNITY_BUILD # excluded by default
         OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" # avoid polluting bin directory
         ${exec_args}
     )
@@ -121,6 +122,7 @@ function(qt_internal_add_manual_test target)
 
     qt_internal_add_executable(${target}
         NO_INSTALL # we don't install benchmarks
+        NO_UNITY_BUILD
         OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" # avoid polluting bin directory
         ${exec_args}
     )
@@ -362,7 +364,9 @@ function(qt_internal_add_test_to_batch batch_name name)
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
-        DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS})
+        DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
+        NO_UNITY_BUILD # Tests should not be built using UNITY_BUILD
+        )
 
     foreach(source ${arg_SOURCES})
         # We define the test name which is later used to launch this test using
@@ -527,6 +531,7 @@ function(qt_internal_add_test name)
             MOC_OPTIONS ${arg_MOC_OPTIONS}
             ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
             DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
+            NO_UNITY_BUILD  # Tests should not be built using UNITY_BUILD
         )
 
         qt_internal_add_repo_local_defines(${name})
@@ -908,7 +913,9 @@ function(qt_internal_add_test_helper name)
         endif()
     endif()
 
-    qt_internal_add_executable("${name}" NO_INSTALL ${extra_args_to_pass} ${forward_args})
+    qt_internal_add_executable("${name}" NO_INSTALL
+                                         NO_UNITY_BUILD # excluded by default
+                                         ${extra_args_to_pass} ${forward_args})
 
     # Disable the QT_NO_NARROWING_CONVERSIONS_IN_CONNECT define for test helpers
     qt_internal_undefine_global_definition(${name} QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)

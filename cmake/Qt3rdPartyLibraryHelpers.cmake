@@ -4,6 +4,7 @@ macro(qt_internal_get_add_library_option_args option_args)
         STATIC
         MODULE
         INTERFACE
+        NO_UNITY_BUILD
         )
 endmacro()
 
@@ -49,7 +50,18 @@ function(qt_internal_add_common_qt_library_helper target)
         set(arg_MODULE STATIC)
     endif()
 
+    if(arg_NO_UNITY_BUILD)
+        set(arg_NO_UNITY_BUILD NO_UNITY_BUILD)
+    else()
+        set(arg_NO_UNITY_BUILD "")
+    endif()
+
     _qt_internal_add_library(${target} ${arg_STATIC} ${arg_SHARED} ${arg_MODULE} ${arg_INTERFACE})
+
+    if(arg_NO_UNITY_BUILD)
+        set_property(TARGET "${target}" PROPERTY UNITY_BUILD OFF)
+    endif()
+
     qt_internal_mark_as_internal_library(${target})
 endfunction()
 
@@ -98,6 +110,12 @@ function(qt_internal_add_cmake_library target)
         )
     endif()
 
+    if(arg_NO_UNITY_BUILD)
+        set(arg_NO_UNITY_BUILD NO_UNITY_BUILD)
+    else()
+        set(arg_NO_UNITY_BUILD "")
+    endif()
+
     qt_internal_extend_target("${target}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
@@ -119,6 +137,8 @@ function(qt_internal_add_cmake_library target)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
+        NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}
+        ${arg_NO_UNITY_BUILD}
     )
 endfunction()
 
@@ -240,6 +260,7 @@ function(qt_internal_add_3rdparty_library target)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
+        NO_UNITY_BUILD
     )
 
     if(NOT BUILD_SHARED_LIBS OR arg_INSTALL)

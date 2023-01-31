@@ -263,6 +263,7 @@ qt_copy_or_install(FILES
                    cmake/QtPostProcess.cmake
                    cmake/QtPostProcessHelpers.cmake
                    cmake/QtPrecompiledHeadersHelpers.cmake
+                   cmake/QtUnityBuildHelpers.cmake
                    cmake/QtPriHelpers.cmake
                    cmake/QtPrlHelpers.cmake
                    cmake/QtPlatformTargetHelpers.cmake
