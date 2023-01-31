@@ -144,7 +144,7 @@ void QCtfLibImpl::writeCtfPacket(QCtfLibImpl::Channel &ch)
         packet << (char)0;
 
         Q_ASSERT(ch.data.size() + packetHeaderSize + ch.threadNameLength <= packetSize);
-        Q_ASSERT(packet.size() == packetHeaderSize + ch.threadNameLength);
+        Q_ASSERT(packet.size() == qsizetype(packetHeaderSize + ch.threadNameLength));
         fwrite(packet.data(), packet.size(), 1, file);
         ch.data.resize(packetSize - packet.size(), 0);
         fwrite(ch.data.data(), ch.data.size(), 1, file);
