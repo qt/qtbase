@@ -19,7 +19,9 @@ endfunction()
 
 function(qt_update_ignore_pch_source target sources)
     if (sources)
-        set_source_files_properties(${sources} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+        set_source_files_properties(${sources} PROPERTIES
+                                               SKIP_PRECOMPILE_HEADERS ON
+                                               SKIP_UNITY_BUILD_INCLUSION ON)
     endif()
 endfunction()
 

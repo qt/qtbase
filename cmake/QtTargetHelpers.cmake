@@ -31,7 +31,9 @@ function(qt_internal_extend_target target)
         return()
     endif()
 
-    set(option_args "")
+    set(option_args
+        NO_UNITY_BUILD
+    )
     set(single_args
         PRECOMPILED_HEADER
     )
@@ -207,6 +209,7 @@ function(qt_internal_extend_target target)
 
         qt_update_precompiled_header("${target}" "${arg_PRECOMPILED_HEADER}")
         qt_update_ignore_pch_source("${target}" "${arg_NO_PCH_SOURCES}")
+        qt_update_ignore_unity_build_sources("${target}" "${arg_NO_UNITY_BUILD_SOURCES}")
         ## Ignore objective-c files for PCH (not supported atm)
         qt_ignore_pch_obj_c_sources("${target}" "${arg_SOURCES}")
 
@@ -225,6 +228,10 @@ function(qt_internal_extend_target target)
         qt_internal_get_target_sources_property(sources_property)
         set_property(TARGET ${target} APPEND PROPERTY
             ${sources_property} "${arg_CONDITION_INDEPENDENT_SOURCES}")
+    endif()
+
+    if(arg_NO_UNITY_BUILD)
+        set_target_properties(${target} PROPERTIES UNITY_BUILD OFF)
     endif()
 endfunction()
 

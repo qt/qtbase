@@ -37,7 +37,12 @@
 #         linked to the executable target by default.
 function(qt_internal_add_tool target_name)
     qt_tool_target_to_name(name ${target_name})
-    set(option_keywords NO_INSTALL USER_FACING INSTALL_VERSIONED_LINK EXCEPTIONS)
+    set(option_keywords
+        NO_INSTALL
+        USER_FACING
+        INSTALL_VERSIONED_LINK
+        EXCEPTIONS
+        NO_UNITY_BUILD)
     set(one_value_keywords
         TOOLS_TARGET
         INSTALL_DIR
@@ -85,6 +90,12 @@ function(qt_internal_add_tool target_name)
 
     qt_internal_library_deprecation_level(deprecation_define)
 
+    if(arg_NO_UNITY_BUILD)
+        set(arg_NO_UNITY_BUILD NO_UNITY_BUILD)
+    else()
+        set(arg_NO_UNITY_BUILD "")
+    endif()
+
     qt_internal_add_executable("${target_name}"
         OUTPUT_DIRECTORY "${output_dir}"
         ${exceptions}
@@ -110,6 +121,8 @@ function(qt_internal_add_tool target_name)
         TARGET_DESCRIPTION "${arg_TARGET_DESCRIPTION}"
         TARGET_COMPANY "${arg_TARGET_COMPANY}"
         TARGET_COPYRIGHT "${arg_TARGET_COPYRIGHT}"
+        NO_UNITY_BUILD_SOURCES "${arg_NO_UNITY_BUILD_SOURCES}"
+        ${arg_NO_UNITY_BUILD}
     )
     qt_internal_add_target_aliases("${target_name}")
     _qt_internal_apply_strict_cpp("${target_name}")

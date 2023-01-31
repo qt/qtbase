@@ -8,6 +8,7 @@ macro(qt_internal_get_internal_add_plugin_keywords option_args single_args multi
         EXCEPTIONS
         ALLOW_UNDEFINED_SYMBOLS
         SKIP_INSTALL
+        NO_UNITY_BUILD
     )
     set(${single_args}
         OUTPUT_DIRECTORY
@@ -305,6 +306,12 @@ function(qt_internal_add_plugin target)
         endif()
     endif()
 
+    if(arg_NO_UNITY_BUILD)
+        set(arg_NO_UNITY_BUILD NO_UNITY_BUILD)
+    else()
+        set(arg_NO_UNITY_BUILD "")
+    endif()
+
     set_property(TARGET "${target}" PROPERTY QT_DEFAULT_PLUGIN "${_default_plugin}")
     set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES "QT_PLUGIN_CLASS_NAME;QT_PLUGIN_TYPE;QT_MODULE;QT_DEFAULT_PLUGIN")
 
@@ -347,6 +354,8 @@ function(qt_internal_add_plugin target)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
+        NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}
+        ${arg_NO_UNITY_BUILD}
     )
 
     qt_internal_add_repo_local_defines("${target}")

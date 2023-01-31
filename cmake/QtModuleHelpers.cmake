@@ -18,6 +18,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         NO_HEADERSCLEAN_CHECK
         GENERATE_CPP_EXPORTS
         GENERATE_PRIVATE_CPP_EXPORTS
+        NO_UNITY_BUILD
     )
     set(${single_args}
         MODULE_INCLUDE_NAME
@@ -562,6 +563,12 @@ function(qt_internal_add_module target)
 
     qt_internal_add_repo_local_defines("${target}")
 
+    if(arg_NO_UNITY_BUILD)
+        set(arg_NO_UNITY_BUILD NO_UNITY_BUILD)
+    else()
+        set(arg_NO_UNITY_BUILD "")
+    endif()
+
     if(NOT arg_EXTERNAL_HEADERS)
         set(arg_EXTERNAL_HEADERS "")
     endif()
@@ -597,6 +604,8 @@ function(qt_internal_add_module target)
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
         PRECOMPILED_HEADER ${arg_PRECOMPILED_HEADER}
         NO_PCH_SOURCES ${arg_NO_PCH_SOURCES}
+        NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}
+        ${arg_NO_UNITY_BUILD}
     )
 
     # The public module define is not meant to be used when building the module itself,
