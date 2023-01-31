@@ -836,7 +836,8 @@ static bool inDateTimeRange(qint64 jd, bool start)
     jd -= JULIAN_DAY_FOR_EPOCH;
     const qint64 maxDay = Bounds::max() / MSECS_PER_DAY;
     const qint64 minDay = Bounds::min() / MSECS_PER_DAY - 1;
-    // (Divisions rounded towards zero, as MSECS_PER_DAY has factors other than two.)
+    // (Divisions rounded towards zero, as MSECS_PER_DAY is even - so doesn't
+    // divide max() - and has factors other than two, so doesn't divide min().)
     // Range includes start of last day and end of first:
     if (start)
         return jd > minDay && jd <= maxDay;
