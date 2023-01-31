@@ -140,7 +140,9 @@ static Tracepoint::Field::Type backendType(QString rawType)
         TYPEDATA_ENTRY(QByteArray, Tracepoint::Field::QtByteArray),
         TYPEDATA_ENTRY(QUrl, Tracepoint::Field::QtUrl),
         TYPEDATA_ENTRY(QRect, Tracepoint::Field::QtRect),
-        TYPEDATA_ENTRY(QSize, Tracepoint::Field::QtSize)
+        TYPEDATA_ENTRY(QSize, Tracepoint::Field::QtSize),
+        TYPEDATA_ENTRY(QRectF, Tracepoint::Field::QtRectF),
+        TYPEDATA_ENTRY(QSizeF, Tracepoint::Field::QtSizeF)
     };
 
     auto backendType = [](const QString &rawType) {

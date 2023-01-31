@@ -33,6 +33,8 @@ struct Tracepoint
             QtUrl,
             QtRect,
             QtSize,
+            QtRectF,
+            QtSizeF,
             EnumeratedType,
             FlagType,
             Unknown
