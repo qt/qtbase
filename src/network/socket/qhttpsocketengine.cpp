@@ -556,15 +556,6 @@ void QHttpSocketEngine::slotSocketReadNotification()
             d->authenticator.detach();
         priv = QAuthenticatorPrivate::getPrivate(d->authenticator);
 
-        if (d->credentialsSent && priv->phase != QAuthenticatorPrivate::Phase2) {
-            // Remember that (e.g.) NTLM is two-phase, so only reset when the authentication is not currently in progress.
-            //407 response again means the provided username/password were invalid.
-            d->authenticator = QAuthenticator(); //this is needed otherwise parseHttpResponse won't set the state, and then signal isn't emitted.
-            d->authenticator.detach();
-            priv = QAuthenticatorPrivate::getPrivate(d->authenticator);
-            priv->hasFailed = true;
-        }
-
         priv->parseHttpResponse(d->reply->header(), true, d->proxy.hostName());
 
         if (priv->phase == QAuthenticatorPrivate::Invalid) {
@@ -574,6 +565,29 @@ void QHttpSocketEngine::slotSocketReadNotification()
             setError(QAbstractSocket::ProxyProtocolError, tr("Error parsing authentication request from proxy"));
             emitConnectionNotification();
             return;
+        }
+
+        if (priv->phase == QAuthenticatorPrivate::Done
+            || (priv->phase == QAuthenticatorPrivate::Start
+                && (priv->method == QAuthenticatorPrivate::Ntlm
+                    || priv->method == QAuthenticatorPrivate::Negotiate))) {
+            if (priv->phase == QAuthenticatorPrivate::Start)
+                priv->phase = QAuthenticatorPrivate::Phase1;
+            bool credentialsWasSent = d->credentialsSent;
+            if (d->credentialsSent) {
+                // Remember that (e.g.) NTLM is two-phase, so only reset when the authentication is
+                // not currently in progress. 407 response again means the provided
+                // username/password were invalid.
+                d->authenticator.detach();
+                priv = QAuthenticatorPrivate::getPrivate(d->authenticator);
+                priv->hasFailed = true;
+                d->credentialsSent = false;
+                priv->phase = QAuthenticatorPrivate::Done;
+            }
+            if ((priv->method != QAuthenticatorPrivate::Ntlm
+                 && priv->method != QAuthenticatorPrivate::Negotiate)
+                || credentialsWasSent)
+                proxyAuthenticationRequired(d->proxy, &d->authenticator);
         }
 
         bool willClose;
@@ -603,10 +617,8 @@ void QHttpSocketEngine::slotSocketReadNotification()
             d->reply = new QHttpNetworkReply(QUrl(), this);
         }
 
-        if (priv->phase == QAuthenticatorPrivate::Done)
-            proxyAuthenticationRequired(d->proxy, &d->authenticator);
-        // priv->phase will get reset to QAuthenticatorPrivate::Start if the authenticator got modified in the signal above.
         if (priv->phase == QAuthenticatorPrivate::Done) {
+            d->authenticator = QAuthenticator();
             setError(QAbstractSocket::ProxyAuthenticationRequiredError, tr("Authentication required"));
             d->socket->disconnectFromHost();
         } else {
