@@ -97,12 +97,16 @@ using namespace Qt::StringLiterals;
 
     \internal
 
-    \value InvokeSlot
-    \value EmitSignal
+    \value InvokeMetaMethod
     \value ReadProperty
     \value WriteProperty
     \value ResetProperty
     \value CreateInstance
+    \value IndexOfMethod
+    \value RegisterPropertyMetaType
+    \value RegisterMethodArgumentMetaType
+    \value BindableProperty
+    \value CustomCall
 */
 
 /*!

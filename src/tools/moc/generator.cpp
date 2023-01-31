@@ -1282,7 +1282,7 @@ void Generator::generateStaticMetacall()
             hasBindableProperties |= !p.bind.isEmpty();
         }
         if (needElse)
-            fprintf(out, "else ");
+            fprintf(out, " else ");
         fprintf(out, "if (_c == QMetaObject::ReadProperty) {\n");
 
         auto setupMemberAccess = [this]() {
