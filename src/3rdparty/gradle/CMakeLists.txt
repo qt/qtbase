@@ -20,7 +20,7 @@ add_custom_target(Qt${QtBase_VERSION_MAJOR}GradleScripts
         ${gradle_wrapper_files}
 )
 
-qt_path_join(destination ${QT_INSTALL_DIR} "src/3rdparty/gradle")
+qt_path_join(destination ${QT_INSTALL_DIR} ${INSTALL_DATADIR} "src/3rdparty/gradle")
 
 qt_copy_or_install(
     PROGRAMS
