@@ -82,7 +82,10 @@ inline ulong getTimeStamp(UIEvent *event)
 
 + (Class)layerClass
 {
+#if QT_CONFIG(opengl)
     return [CAEAGLLayer class];
+#endif
+    return [super layerClass];
 }
 
 - (instancetype)initWithQIOSWindow:(QT_PREPEND_NAMESPACE(QIOSWindow) *)window
@@ -113,6 +116,7 @@ inline ulong getTimeStamp(UIEvent *event)
 - (instancetype)initWithFrame:(CGRect)frame
 {
     if ((self = [super initWithFrame:frame])) {
+#if QT_CONFIG(opengl)
         if ([self.layer isKindOfClass:[CAEAGLLayer class]]) {
             // Set up EAGL layer
             CAEAGLLayer *eaglLayer = static_cast<CAEAGLLayer *>(self.layer);
@@ -122,6 +126,7 @@ inline ulong getTimeStamp(UIEvent *event)
                 kEAGLDrawablePropertyColorFormat: kEAGLColorFormatRGBA8
             };
         }
+#endif
 
         if (isQtApplication())
             self.hidden = YES;

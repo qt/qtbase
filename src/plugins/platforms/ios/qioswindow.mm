@@ -4,7 +4,6 @@
 #include "qioswindow.h"
 
 #include "qiosapplicationdelegate.h"
-#include "qioscontext.h"
 #include "qiosglobal.h"
 #include "qiosintegration.h"
 #include "qiosscreen.h"
@@ -15,7 +14,10 @@
 #include <QtGui/private/qwindow_p.h>
 #include <qpa/qplatformintegration.h>
 
+#if QT_CONFIG(opengl)
 #import <QuartzCore/CAEAGLLayer.h>
+#endif
+
 #ifdef Q_OS_IOS
 #import <QuartzCore/CAMetalLayer.h>
 #endif
@@ -352,11 +354,13 @@ void QIOSWindow::requestUpdate()
     static_cast<QIOSScreen *>(screen())->setUpdatesPaused(false);
 }
 
+#if QT_CONFIG(opengl)
 CAEAGLLayer *QIOSWindow::eaglLayer() const
 {
     Q_ASSERT([m_view.layer isKindOfClass:[CAEAGLLayer class]]);
     return static_cast<CAEAGLLayer *>(m_view.layer);
 }
+#endif
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QIOSWindow *window)

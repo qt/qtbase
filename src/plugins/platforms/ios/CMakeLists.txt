@@ -16,7 +16,6 @@ qt_internal_add_plugin(QIOSIntegrationPlugin
         plugin.mm
         qiosapplicationdelegate.h qiosapplicationdelegate.mm
         qiosapplicationstate.h qiosapplicationstate.mm
-        qioscontext.h qioscontext.mm
         qioseventdispatcher.h qioseventdispatcher.mm
         qiosglobal.h qiosglobal.mm
         qiosinputcontext.h qiosinputcontext.mm
@@ -53,6 +52,8 @@ qt_disable_apple_app_extension_api_only(QIOSIntegrationPlugin)
 qt_internal_find_apple_system_framework(FWUniformTypeIdentifiers UniformTypeIdentifiers)
 
 qt_internal_extend_target(QIOSIntegrationPlugin CONDITION QT_FEATURE_opengl
+    SOURCES
+        qioscontext.h qioscontext.mm
     LIBRARIES
         Qt::OpenGLPrivate
 )
