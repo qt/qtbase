@@ -825,27 +825,23 @@ QString QPlatformTheme::removeMnemonics(const QString &original)
     };
     QString returnText(original.size(), u'\0');
     int finalDest = 0;
-    int currPos = 0;
-    int l = original.size();
-    while (l) {
-        if (original.at(currPos) == u'&') {
-            ++currPos;
-            --l;
-            if (l == 0)
+    QStringView text(original);
+    while (!text.isEmpty()) {
+        if (text.startsWith(u'&')) {
+            text = text.sliced(1);
+            if (text.isEmpty())
                 break;
-        } else if (l >= 4 && mnemonicInParentheses(QStringView{original}.sliced(currPos, 4))) {
+        } else if (text.size() >= 4 && mnemonicInParentheses(text.first(4))) {
             // Advance over the matched mnemonic:
-            currPos += 4;
-            l -= 4;
+            text = text.sliced(4);
             // Also strip any leading space before it:
             while (finalDest > 0 && returnText.at(finalDest - 1).isSpace())
                 --finalDest;
             continue;
         }
-        returnText[finalDest] = original.at(currPos);
-        ++currPos;
+        returnText[finalDest] = text.front();
+        text = text.sliced(1);
         ++finalDest;
-        --l;
     }
     returnText.truncate(finalDest);
     return returnText;
