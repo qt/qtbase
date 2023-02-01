@@ -262,8 +262,6 @@ private slots:
     void moveInOutOverlapped();
 
 protected:
-    bool m_xcb = false;
-
     /*
         This helper compares the widget as rendered into the backingstore with the widget
         as rendered via QWidget::grab. The latter always produces a fully rendered image,
@@ -281,44 +279,14 @@ protected:
         }
 
         QImage backingstoreContent = platformBackingStore->toImage();
-
-        // QXcbBackingStore::toImage() is not reliable. Take a screenshot instead.
-        // X11 draws the screen in a thread, which is not a QThread.
-        // The first screenshot is therefore unlikely to contain the correct image.
-        // It is taken just to obtain size and format.
-        QWidget *window = nullptr;
-        if (m_xcb) {
-
-            // Widget must be shown to be caught on a screen shot
-            if (!w->isWindow()) {
-                qWarning() << "Hidden widget" << w << "cannot be compared on XCB";
-                return false;
-            }
-
-            window = w->window();
-            Q_ASSERT(window);
-
-            backingstoreContent = window->screen()->grabWindow(window->winId()).toImage();
-        }
-
         if (!w->isWindow()) {
             const qreal dpr = w->devicePixelRatioF();
             const QPointF offset = w->mapTo(w->window(), QPointF(0, 0)) * dpr;
             backingstoreContent = backingstoreContent.copy(offset.x(), offset.y(), w->width() * dpr, w->height() * dpr);
         }
-
         const QImage widgetRender = w->grab().toImage().convertToFormat(backingstoreContent.format());
 
-        // XCB: Process events, until screenshot equals widgetRender or timeout kicks in.
-        if (m_xcb) {
-            // Unuse result to hit MANUAL_DEBUG code path
-            Q_UNUSED(QTest::qWaitFor([&](){
-                backingstoreContent = window->screen()->grabWindow(window->winId()).toImage();
-                return widgetRender == backingstoreContent;
-            }));
-        }
-
-        const bool result = widgetRender == backingstoreContent;
+        const bool result = backingstoreContent == widgetRender;
 
 #ifdef MANUAL_DEBUG
         if (!result) {
@@ -366,10 +334,6 @@ void tst_QWidgetRepaintManager::initTestCase()
 
     m_implementsScroll = widget.backingStore()->handle()->scroll(QRegion(widget.rect()), 1, 1);
     qInfo() << QGuiApplication::platformName() << "QPA backend implements scroll:" << m_implementsScroll;
-
-#if defined(QT_BUILD_INTERNAL)
-    m_xcb = QGuiApplication::platformName().contains("xcb", Qt::CaseInsensitive);
-#endif
 }
 
 void tst_QWidgetRepaintManager::cleanup()
