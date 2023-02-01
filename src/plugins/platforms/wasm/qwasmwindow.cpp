@@ -22,9 +22,9 @@
 #include "qwasmclipboard.h"
 
 #include <iostream>
-#include <emscripten/val.h>
+#include <sstream>
 
-#include <GL/gl.h>
+#include <emscripten/val.h>
 
 #include <QtCore/private/qstdweb_p.h>
 
@@ -562,6 +562,26 @@ bool QWasmWindow::windowEvent(QEvent *event)
     default:
         return QPlatformWindow::windowEvent(event);
     }
+}
+
+void QWasmWindow::setMask(const QRegion &region)
+{
+    if (region.isEmpty()) {
+        m_qtWindow["style"].set("clipPath", emscripten::val(""));
+        return;
+    }
+
+    std::ostringstream cssClipPath;
+    cssClipPath << "path('";
+    for (const auto &rect : region) {
+        const auto cssRect = rect.adjusted(0, 0, 1, 1);
+        cssClipPath << "M " << cssRect.left() << " " << cssRect.top() << " ";
+        cssClipPath << "L " << cssRect.right() << " " << cssRect.top() << " ";
+        cssClipPath << "L " << cssRect.right() << " " << cssRect.bottom() << " ";
+        cssClipPath << "L " << cssRect.left() << " " << cssRect.bottom() << " z ";
+    }
+    cssClipPath << "')";
+    m_qtWindow["style"].set("clipPath", emscripten::val(cssClipPath.str()));
 }
 
 std::string QWasmWindow::canvasSelector() const
