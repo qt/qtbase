@@ -16,7 +16,7 @@ add_custom_target(Qt${QtBase_VERSION_MAJOR}AndroidTemplates
         "${CMAKE_CURRENT_SOURCE_DIR}/res/values/libs.xml"
 )
 
-qt_path_join(destination ${QT_INSTALL_DIR} "src/android/templates")
+qt_path_join(destination ${QT_INSTALL_DIR} ${INSTALL_DATADIR} "src/android/templates")
 
 qt_copy_or_install(FILES ${template_files}
                    DESTINATION "${destination}")

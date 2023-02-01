@@ -130,6 +130,19 @@ Prefix=${prefix}
     string(APPEND content
         "[Paths]
 Prefix=${ext_prefix_relative_to_conf_file}
+Documentation=${INSTALL_DOCDIR}
+Headers=${INSTALL_INCLUDEDIR}
+Libraries=${INSTALL_LIBDIR}
+LibraryExecutables=${INSTALL_LIBEXECDIR}
+Binaries=${INSTALL_BINDIR}
+Plugins=${INSTALL_PLUGINSDIR}
+QmlImports=${INSTALL_QMLDIR}
+ArchData=${INSTALL_ARCHDATADIR}
+Data=${INSTALL_DATADIR}
+Translations=${INSTALL_TRANSLATIONSDIR}
+Examples=${INSTALL_EXAMPLESDIR}
+Tests=${INSTALL_TESTSDIR}
+Settings=${INSTALL_SYSCONFDIR}
 HostPrefix=${host_prefix_relative_to_conf_file}
 HostBinaries=${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}
 HostLibraries=${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_LIBDIR}
