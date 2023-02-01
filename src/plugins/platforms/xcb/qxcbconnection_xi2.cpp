@@ -270,9 +270,9 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
                 tabletData.valuatorInfo[valuatorAtom] = info;
             }
 #endif // QT_CONFIG(tabletevent)
-            if (valuatorAtom == QXcbAtom::RelHorizScroll || valuatorAtom == QXcbAtom::RelHorizWheel)
+            if (valuatorAtom == QXcbAtom::AtomRelHorizScroll || valuatorAtom == QXcbAtom::AtomRelHorizWheel)
                 scrollingDevice()->lastScrollPosition.setX(fixed3232ToReal(vci->value));
-            else if (valuatorAtom == QXcbAtom::RelVertScroll || valuatorAtom == QXcbAtom::RelVertWheel)
+            else if (valuatorAtom == QXcbAtom::AtomRelVertScroll || valuatorAtom == QXcbAtom::AtomRelVertWheel)
                 scrollingDevice()->lastScrollPosition.setY(fixed3232ToReal(vci->value));
             break;
         }
@@ -300,14 +300,14 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
                 xcb_atom_t label5 = labels[4];
                 // Some drivers have no labels on the wheel buttons, some have no label on just one and some have no label on
                 // button 4 and the wrong one on button 5. So we just check that they are not labelled with unrelated buttons.
-                if ((!label4 || qatom(label4) == QXcbAtom::ButtonWheelUp || qatom(label4) == QXcbAtom::ButtonWheelDown) &&
-                    (!label5 || qatom(label5) == QXcbAtom::ButtonWheelUp || qatom(label5) == QXcbAtom::ButtonWheelDown))
+                if ((!label4 || qatom(label4) == QXcbAtom::AtomButtonWheelUp || qatom(label4) == QXcbAtom::AtomButtonWheelDown) &&
+                    (!label5 || qatom(label5) == QXcbAtom::AtomButtonWheelUp || qatom(label5) == QXcbAtom::AtomButtonWheelDown))
                     scrollingDevice()->legacyOrientations |= Qt::Vertical;
             }
             if (bci->num_buttons >= 7) {
                 xcb_atom_t label6 = labels[5];
                 xcb_atom_t label7 = labels[6];
-                if ((!label6 || qatom(label6) == QXcbAtom::ButtonHorizWheelLeft) && (!label7 || qatom(label7) == QXcbAtom::ButtonHorizWheelRight))
+                if ((!label6 || qatom(label6) == QXcbAtom::AtomButtonHorizWheelLeft) && (!label7 || qatom(label7) == QXcbAtom::AtomButtonHorizWheelRight))
                     scrollingDevice()->legacyOrientations |= Qt::Horizontal;
             }
             buttonCount = bci->num_buttons;
@@ -331,9 +331,9 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
     bool isTablet = false;
 #if QT_CONFIG(tabletevent)
     // If we have found the valuators which we expect a tablet to have, it might be a tablet.
-    if (tabletData.valuatorInfo.contains(QXcbAtom::AbsX) &&
-            tabletData.valuatorInfo.contains(QXcbAtom::AbsY) &&
-            tabletData.valuatorInfo.contains(QXcbAtom::AbsPressure))
+    if (tabletData.valuatorInfo.contains(QXcbAtom::AtomAbsX) &&
+            tabletData.valuatorInfo.contains(QXcbAtom::AtomAbsY) &&
+            tabletData.valuatorInfo.contains(QXcbAtom::AtomAbsPressure))
         isTablet = true;
 
     // But we need to be careful not to take the touch and tablet-button devices as tablets.
@@ -356,7 +356,7 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
         // combined device (evdev) rather than separate pen/eraser (wacom driver)
         tabletData.pointerType = QPointingDevice::PointerType::Pen;
         dbgType = "pen"_L1;
-    } else if (nameLower.contains("aiptek") /* && device == QXcbAtom::KEYBOARD */) {
+    } else if (nameLower.contains("aiptek") /* && device == QXcbAtom::AtomKEYBOARD */) {
         // some "Genius" tablets
         isTablet = true;
         tabletData.pointerType = QPointingDevice::PointerType::Pen;
@@ -384,9 +384,9 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
         m_tabletData.append(tabletData);
         qCDebug(lcQpaXInputDevices) << "   it's a tablet with pointer type" << dbgType;
         QPointingDevice::Capabilities capsOverride = QInputDevice::Capability::None;
-        if (tabletData.valuatorInfo.contains(QXcbAtom::AbsTiltX))
+        if (tabletData.valuatorInfo.contains(QXcbAtom::AtomAbsTiltX))
             capsOverride.setFlag(QInputDevice::Capability::XTilt);
-        if (tabletData.valuatorInfo.contains(QXcbAtom::AbsTiltY))
+        if (tabletData.valuatorInfo.contains(QXcbAtom::AtomAbsTiltY))
             capsOverride.setFlag(QInputDevice::Capability::YTilt);
         // TODO can we get USB ID?
         Q_ASSERT(deviceInfo->deviceid == tabletData.deviceId);
@@ -573,27 +573,27 @@ QXcbConnection::TouchDeviceData *QXcbConnection::populateTouchDevices(void *info
             // Some devices (mice) report a resolution of 0; they will be excluded later,
             // for now just prevent a division by zero
             const int vciResolution = vci->resolution ? vci->resolution : 1;
-            if (valuatorAtom == QXcbAtom::AbsMTPositionX)
+            if (valuatorAtom == QXcbAtom::AtomAbsMTPositionX)
                 caps |= QInputDevice::Capability::Position | QInputDevice::Capability::NormalizedPosition;
-            else if (valuatorAtom == QXcbAtom::AbsMTTouchMajor)
+            else if (valuatorAtom == QXcbAtom::AtomAbsMTTouchMajor)
                 caps |= QInputDevice::Capability::Area;
-            else if (valuatorAtom == QXcbAtom::AbsMTOrientation)
+            else if (valuatorAtom == QXcbAtom::AtomAbsMTOrientation)
                 dev.providesTouchOrientation = true;
-            else if (valuatorAtom == QXcbAtom::AbsMTPressure || valuatorAtom == QXcbAtom::AbsPressure)
+            else if (valuatorAtom == QXcbAtom::AtomAbsMTPressure || valuatorAtom == QXcbAtom::AtomAbsPressure)
                 caps |= QInputDevice::Capability::Pressure;
-            else if (valuatorAtom == QXcbAtom::RelX) {
+            else if (valuatorAtom == QXcbAtom::AtomRelX) {
                 hasRelativeCoords = true;
                 dev.size.setWidth((fixed3232ToReal(vci->max) - fixed3232ToReal(vci->min)) * 1000.0 / vciResolution);
-            } else if (valuatorAtom == QXcbAtom::RelY) {
+            } else if (valuatorAtom == QXcbAtom::AtomRelY) {
                 hasRelativeCoords = true;
                 dev.size.setHeight((fixed3232ToReal(vci->max) - fixed3232ToReal(vci->min)) * 1000.0 / vciResolution);
-            } else if (valuatorAtom == QXcbAtom::AbsX) {
+            } else if (valuatorAtom == QXcbAtom::AtomAbsX) {
                 caps |= QInputDevice::Capability::Position;
                 dev.size.setWidth((fixed3232ToReal(vci->max) - fixed3232ToReal(vci->min)) * 1000.0 / vciResolution);
-            } else if (valuatorAtom == QXcbAtom::AbsY) {
+            } else if (valuatorAtom == QXcbAtom::AtomAbsY) {
                 caps |= QInputDevice::Capability::Position;
                 dev.size.setHeight((fixed3232ToReal(vci->max) - fixed3232ToReal(vci->min)) * 1000.0 / vciResolution);
-            } else if (valuatorAtom == QXcbAtom::RelVertWheel || valuatorAtom == QXcbAtom::RelHorizWheel) {
+            } else if (valuatorAtom == QXcbAtom::AtomRelVertWheel || valuatorAtom == QXcbAtom::AtomRelHorizWheel) {
                 caps |= QInputDevice::Capability::Scroll;
             }
             break;
@@ -804,27 +804,27 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
         if (value < vci.min)
             value = vci.min;
         qreal valuatorNormalized = (value - vci.min) / (vci.max - vci.min);
-        if (vci.label == QXcbAtom::RelX) {
+        if (vci.label == QXcbAtom::AtomRelX) {
             nx = valuatorNormalized;
-        } else if (vci.label == QXcbAtom::RelY) {
+        } else if (vci.label == QXcbAtom::AtomRelY) {
             ny = valuatorNormalized;
-        } else if (vci.label == QXcbAtom::AbsX) {
+        } else if (vci.label == QXcbAtom::AtomAbsX) {
             nx = valuatorNormalized;
-        } else if (vci.label == QXcbAtom::AbsY) {
+        } else if (vci.label == QXcbAtom::AtomAbsY) {
             ny = valuatorNormalized;
-        } else if (vci.label == QXcbAtom::AbsMTPositionX) {
+        } else if (vci.label == QXcbAtom::AtomAbsMTPositionX) {
             nx = valuatorNormalized;
-        } else if (vci.label == QXcbAtom::AbsMTPositionY) {
+        } else if (vci.label == QXcbAtom::AtomAbsMTPositionY) {
             ny = valuatorNormalized;
-        } else if (vci.label == QXcbAtom::AbsMTTouchMajor) {
+        } else if (vci.label == QXcbAtom::AtomAbsMTTouchMajor) {
             const qreal sw = screen->geometry().width();
             const qreal sh = screen->geometry().height();
             w = valuatorNormalized * qHypot(sw, sh);
-        } else if (vci.label == QXcbAtom::AbsMTTouchMinor) {
+        } else if (vci.label == QXcbAtom::AtomAbsMTTouchMinor) {
             const qreal sw = screen->geometry().width();
             const qreal sh = screen->geometry().height();
             h = valuatorNormalized * qHypot(sw, sh);
-        } else if (vci.label == QXcbAtom::AbsMTOrientation) {
+        } else if (vci.label == QXcbAtom::AtomAbsMTOrientation) {
             // Find the closest axis.
             // 0 corresponds to the Y axis, vci.max to the X axis.
             // Flipping over the Y axis and rotating by 180 degrees
@@ -835,7 +835,7 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
                 value -= 2 * vci.max;
             value = qAbs(value);
             majorAxisIsY = value < vci.max - value;
-        } else if (vci.label == QXcbAtom::AbsMTPressure || vci.label == QXcbAtom::AbsPressure) {
+        } else if (vci.label == QXcbAtom::AtomAbsMTPressure || vci.label == QXcbAtom::AtomAbsPressure) {
             touchPoint.pressure = valuatorNormalized;
         }
 
@@ -967,7 +967,7 @@ void QXcbConnection::abortSystemMoveResize(xcb_window_t window)
     qCDebug(lcQpaXInputDevices) << "sending client message NET_WM_MOVERESIZE_CANCEL to window: " << window;
     m_startSystemMoveResizeInfo.window = XCB_NONE;
 
-    const xcb_atom_t moveResize = connection()->atom(QXcbAtom::_NET_WM_MOVERESIZE);
+    const xcb_atom_t moveResize = connection()->atom(QXcbAtom::Atom_NET_WM_MOVERESIZE);
     xcb_client_message_event_t xev;
     xev.response_type = XCB_CLIENT_MESSAGE;
     xev.type = moveResize;
@@ -1275,9 +1275,9 @@ void QXcbConnection::xi2UpdateScrollingDevice(QInputDevice *dev)
         if (classInfo->type == XCB_INPUT_DEVICE_CLASS_TYPE_VALUATOR) {
             auto *vci = reinterpret_cast<xcb_input_valuator_class_t *>(classInfo);
             const int valuatorAtom = qatom(vci->label);
-            if (valuatorAtom == QXcbAtom::RelHorizScroll || valuatorAtom == QXcbAtom::RelHorizWheel)
+            if (valuatorAtom == QXcbAtom::AtomRelHorizScroll || valuatorAtom == QXcbAtom::AtomRelHorizWheel)
                 scrollingDevice->lastScrollPosition.setX(fixed3232ToReal(vci->value));
-            else if (valuatorAtom == QXcbAtom::RelVertScroll || valuatorAtom == QXcbAtom::RelVertWheel)
+            else if (valuatorAtom == QXcbAtom::AtomRelVertScroll || valuatorAtom == QXcbAtom::AtomRelVertWheel)
                 scrollingDevice->lastScrollPosition.setY(fixed3232ToReal(vci->value));
         }
     }
@@ -1464,7 +1464,7 @@ bool QXcbConnection::xi2HandleTabletEvent(const void *event, TabletData *tabletD
         // The evdev driver doesn't do it this way.
         const auto *ev = reinterpret_cast<const xcb_input_property_event_t *>(event);
         if (ev->what == XCB_INPUT_PROPERTY_FLAG_MODIFIED) {
-            if (ev->property == atom(QXcbAtom::WacomSerialIDs)) {
+            if (ev->property == atom(QXcbAtom::AtomWacomSerialIDs)) {
                 enum WacomSerialIndex {
                     _WACSER_USB_ID = 0,
                     _WACSER_LAST_TOOL_SERIAL,
@@ -1477,7 +1477,7 @@ bool QXcbConnection::xi2HandleTabletEvent(const void *event, TabletData *tabletD
                 auto reply = Q_XCB_REPLY(xcb_input_xi_get_property, xcb_connection(), tabletData->deviceId, 0,
                                          ev->property, XCB_GET_PROPERTY_TYPE_ANY, 0, 100);
                 if (reply) {
-                    if (reply->type == atom(QXcbAtom::INTEGER) && reply->format == 32 && reply->num_items == _WACSER_COUNT) {
+                    if (reply->type == atom(QXcbAtom::AtomINTEGER) && reply->format == 32 && reply->num_items == _WACSER_COUNT) {
                         quint32 *ptr = reinterpret_cast<quint32 *>(xcb_input_xi_get_property_items(reply.get()));
                         quint32 tool = ptr[_WACSER_TOOL_ID];
                         // Workaround for http://sourceforge.net/p/linuxwacom/bugs/246/
@@ -1570,30 +1570,30 @@ void QXcbConnection::xi2ReportTabletEvent(const void *event, TabletData *tabletD
         xi2GetValuatorValueIfSet(event, classInfo.number, &classInfo.curVal);
         double normalizedValue = (classInfo.curVal - classInfo.minVal) / (classInfo.maxVal - classInfo.minVal);
         switch (valuator) {
-        case QXcbAtom::AbsX:
+        case QXcbAtom::AtomAbsX:
             if (Q_LIKELY(useValuators)) {
                 const qreal value = scaleOneValuator(normalizedValue, physicalScreenArea.x(), physicalScreenArea.width());
                 global.setX(value);
                 local.setX(xcbWindow->mapFromGlobalF(global).x());
             }
             break;
-        case QXcbAtom::AbsY:
+        case QXcbAtom::AtomAbsY:
             if (Q_LIKELY(useValuators)) {
                 qreal value = scaleOneValuator(normalizedValue, physicalScreenArea.y(), physicalScreenArea.height());
                 global.setY(value);
                 local.setY(xcbWindow->mapFromGlobalF(global).y());
             }
             break;
-        case QXcbAtom::AbsPressure:
+        case QXcbAtom::AtomAbsPressure:
             pressure = normalizedValue;
             break;
-        case QXcbAtom::AbsTiltX:
+        case QXcbAtom::AtomAbsTiltX:
             xTilt = classInfo.curVal;
             break;
-        case QXcbAtom::AbsTiltY:
+        case QXcbAtom::AtomAbsTiltY:
             yTilt = classInfo.curVal;
             break;
-        case QXcbAtom::AbsWheel:
+        case QXcbAtom::AtomAbsWheel:
             switch (tabletData->tool) {
             case QInputDevice::DeviceType::Airbrush:
                 tangentialPressure = normalizedValue * 2.0 - 1.0; // Convert 0..1 range to -1..+1 range

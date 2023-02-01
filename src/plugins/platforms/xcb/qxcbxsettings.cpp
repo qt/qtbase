@@ -68,7 +68,7 @@ public:
 
         int offset = 0;
         QByteArray settings;
-        xcb_atom_t _xsettings_atom = screen->connection()->atom(QXcbAtom::_XSETTINGS_SETTINGS);
+        xcb_atom_t _xsettings_atom = screen->connection()->atom(QXcbAtom::Atom_XSETTINGS_SETTINGS);
         while (1) {
             auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property,
                                                screen->xcb_connection(),
