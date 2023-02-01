@@ -45,8 +45,9 @@ struct alignas(uint32_t) AlphaCode {
     char code[4];
 
     bool isValid() const noexcept { return asU32() != 0; }
-    bool operator==(AlphaCode other) const noexcept { return asU32() == other.asU32(); }
 private:
+    friend bool operator==(AlphaCode lhs, AlphaCode rhs) noexcept
+    { return lhs.asU32() == rhs.asU32(); }
     uint32_t asU32() const noexcept { return qFromUnaligned<uint32_t>(code); }
 };
 
