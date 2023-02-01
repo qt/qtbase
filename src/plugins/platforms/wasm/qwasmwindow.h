@@ -75,6 +75,7 @@ public:
     bool setKeyboardGrabEnabled(bool) override { return false; }
     bool setMouseGrabEnabled(bool grab) final;
     bool windowEvent(QEvent *event) final;
+    void setMask(const QRegion &region) final;
 
     QWasmScreen *platformScreen() const;
     void setBackingStore(QWasmBackingStore *store) { m_backingStore = store; }
