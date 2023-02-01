@@ -744,6 +744,19 @@ QString QPlatformTheme::defaultStandardButtonText(int button)
 
 QString QPlatformTheme::removeMnemonics(const QString &original)
 {
+    const auto mnemonicInParentheses = [](QStringView text) {
+        /* Format of mnemonics to remove is /\(&[^&]\)/ but accept full-width
+           forms of ( and ) as equivalent, for cross-platform compatibility with
+           MS (and consequent behavior of translators, see QTBUG-110829).
+        */
+        Q_ASSERT(text.size() == 4); // Caller's responsibility.
+        constexpr QChar wideOpen = u'\uff08', wideClose = u'\uff09';
+        if (!text.startsWith(u'(') && !text.startsWith(wideOpen))
+            return false;
+        if (text[1] != u'&' || text[2] == u'&')
+            return false;
+        return text.endsWith(u')') || text.endsWith(wideClose);
+    };
     QString returnText(original.size(), u'\0');
     int finalDest = 0;
     int currPos = 0;
@@ -754,11 +767,8 @@ QString QPlatformTheme::removeMnemonics(const QString &original)
             --l;
             if (l == 0)
                 break;
-        } else if (original.at(currPos) == QLatin1Char('(') && l >= 4 &&
-                   original.at(currPos + 1) == QLatin1Char('&') &&
-                   original.at(currPos + 2) != QLatin1Char('&') &&
-                   original.at(currPos + 3) == QLatin1Char(')')) {
-            /* remove mnemonics its format is "\s*(&X)" */
+        } else if (l >= 4 && mnemonicInParentheses(QStringView{original}.sliced(currPos, 4))) {
+            // Also strip any leading space before the mnemonic:
             int n = 0;
             while (finalDest > n && returnText.at(finalDest - n - 1).isSpace())
                 ++n;
