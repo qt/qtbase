@@ -834,13 +834,12 @@ QString QPlatformTheme::removeMnemonics(const QString &original)
             if (l == 0)
                 break;
         } else if (l >= 4 && mnemonicInParentheses(QStringView{original}.sliced(currPos, 4))) {
-            // Also strip any leading space before the mnemonic:
-            int n = 0;
-            while (finalDest > n && returnText.at(finalDest - n - 1).isSpace())
-                ++n;
-            finalDest -= n;
+            // Advance over the matched mnemonic:
             currPos += 4;
             l -= 4;
+            // Also strip any leading space before it:
+            while (finalDest > 0 && returnText.at(finalDest - 1).isSpace())
+                --finalDest;
             continue;
         }
         returnText[finalDest] = original.at(currPos);
