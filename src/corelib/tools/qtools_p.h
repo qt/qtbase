@@ -21,17 +21,17 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtMiscUtils {
-constexpr inline char toHexUpper(uint value) noexcept
+constexpr inline char toHexUpper(char32_t value) noexcept
 {
     return "0123456789ABCDEF"[value & 0xF];
 }
 
-constexpr inline char toHexLower(uint value) noexcept
+constexpr inline char toHexLower(char32_t value) noexcept
 {
     return "0123456789abcdef"[value & 0xF];
 }
 
-constexpr inline int fromHex(uint c) noexcept
+constexpr inline int fromHex(char32_t c) noexcept
 {
     return ((c >= '0') && (c <= '9')) ? int(c - '0') :
            ((c >= 'A') && (c <= 'F')) ? int(c - 'A' + 10) :
@@ -39,17 +39,17 @@ constexpr inline int fromHex(uint c) noexcept
            /* otherwise */              -1;
 }
 
-constexpr inline char toOct(uint value) noexcept
+constexpr inline char toOct(char32_t value) noexcept
 {
     return char('0' + (value & 0x7));
 }
 
-constexpr inline int fromOct(uint c) noexcept
+constexpr inline int fromOct(char32_t c) noexcept
 {
     return ((c >= '0') && (c <= '7')) ? int(c - '0') : -1;
 }
 
-[[nodiscard]] constexpr inline bool isAsciiDigit(uchar c) noexcept
+[[nodiscard]] constexpr inline bool isAsciiDigit(char32_t c) noexcept
 {
     return c >= '0' && c <= '9';
 }
