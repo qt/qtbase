@@ -61,7 +61,7 @@ do
     echo "Starting emulator, try ${counter}/${EMULATOR_MAX_RETRIES}"
     $EMULATOR_EXEC $EMULATOR_NAME  \
         -gpu swiftshader_indirect -no-audio -partition-size 4096  \
-        -cores 4 -memory 3500 -no-snapshot-load -no-snapshot-save \
+        -cores 4 -memory 16000 -no-snapshot-load -no-snapshot-save \
         </dev/null  >$HOME/emulator.log 2>&1  &
     emulator_pid=$!
     disown $emulator_pid
