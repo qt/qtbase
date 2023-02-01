@@ -44,7 +44,7 @@ static xcb_window_t xdndProxy(QXcbConnection *c, xcb_window_t w)
     xcb_window_t proxy = XCB_NONE;
 
     auto reply = Q_XCB_REPLY(xcb_get_property, c->xcb_connection(),
-                             false, w, c->atom(QXcbAtom::XdndProxy), XCB_ATOM_WINDOW, 0, 1);
+                             false, w, c->atom(QXcbAtom::AtomXdndProxy), XCB_ATOM_WINDOW, 0, 1);
 
     if (reply && reply->type == XCB_ATOM_WINDOW)
         proxy = *((xcb_window_t *)xcb_get_property_value(reply.get()));
@@ -54,7 +54,7 @@ static xcb_window_t xdndProxy(QXcbConnection *c, xcb_window_t w)
 
     // exists and is real?
     reply = Q_XCB_REPLY(xcb_get_property, c->xcb_connection(),
-                        false, proxy, c->atom(QXcbAtom::XdndProxy), XCB_ATOM_WINDOW, 0, 1);
+                        false, proxy, c->atom(QXcbAtom::AtomXdndProxy), XCB_ATOM_WINDOW, 0, 1);
 
     if (reply && reply->type == XCB_ATOM_WINDOW) {
         xcb_window_t p = *((xcb_window_t *)xcb_get_property_value(reply.get()));
@@ -140,7 +140,7 @@ void QXcbDrag::startDrag()
 
     qCDebug(lcQpaXDnd) << "starting drag where source:" << connection()->qtSelectionOwner();
     xcb_set_selection_owner(xcb_connection(), connection()->qtSelectionOwner(),
-                            atom(QXcbAtom::XdndSelection), connection()->time());
+                            atom(QXcbAtom::AtomXdndSelection), connection()->time());
 
     QStringList fmts = QXcbMime::formatsHelper(drag()->mimeData());
     for (int i = 0; i < fmts.size(); ++i) {
@@ -153,7 +153,7 @@ void QXcbDrag::startDrag()
 
     if (drag_types.size() > 3)
         xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, connection()->qtSelectionOwner(),
-                            atom(QXcbAtom::XdndTypelist),
+                            atom(QXcbAtom::AtomXdndTypelist),
                             XCB_ATOM_ATOM, 32, drag_types.size(), (const void *)drag_types.constData());
 
     setUseCompositing(current_virtual_desktop->compositingActive());
@@ -187,7 +187,7 @@ Qt::DropAction QXcbDrag::defaultAction(Qt::DropActions possibleActions, Qt::Keyb
 
 void QXcbDrag::handlePropertyNotifyEvent(const xcb_property_notify_event_t *event)
 {
-    if (event->window != xdnd_dragsource || event->atom != atom(QXcbAtom::XdndActionList))
+    if (event->window != xdnd_dragsource || event->atom != atom(QXcbAtom::AtomXdndActionList))
         return;
 
     readActionList();
@@ -233,7 +233,7 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
             bool windowContainsMouse = !ignoreNonXdndAwareWindows;
             {
                 auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(),
-                                         false, w, connection()->atom(QXcbAtom::XdndAware),
+                                         false, w, connection()->atom(QXcbAtom::AtomXdndAware),
                                          XCB_GET_PROPERTY_TYPE_ANY, 0, 0);
                 bool isAware = reply && reply->type != XCB_NONE;
                 if (isAware) {
@@ -306,7 +306,7 @@ bool QXcbDrag::findXdndAwareTarget(const QPoint &globalPos, xcb_window_t *target
             xcb_window_t child = translate->child;
 
             auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(), false, target,
-                                     atom(QXcbAtom::XdndAware), XCB_GET_PROPERTY_TYPE_ANY, 0, 0);
+                                     atom(QXcbAtom::AtomXdndAware), XCB_GET_PROPERTY_TYPE_ANY, 0, 0);
             bool aware = reply && reply->type != XCB_NONE;
             if (aware) {
                 qCDebug(lcQpaXDnd) << "found XdndAware on" << target;
@@ -379,7 +379,7 @@ void QXcbDrag::move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardMod
     if (proxy_target) {
         auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(),
                                  false, proxy_target,
-                                 atom(QXcbAtom::XdndAware), XCB_GET_PROPERTY_TYPE_ANY, 0, 1);
+                                 atom(QXcbAtom::AtomXdndAware), XCB_GET_PROPERTY_TYPE_ANY, 0, 1);
         if (!reply || reply->type == XCB_NONE) {
             target = 0;
         } else {
@@ -404,7 +404,7 @@ void QXcbDrag::move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardMod
             enter.sequence = 0;
             enter.window = target;
             enter.format = 32;
-            enter.type = atom(QXcbAtom::XdndEnter);
+            enter.type = atom(QXcbAtom::AtomXdndEnter);
             enter.data.data32[0] = connection()->qtSelectionOwner();
             enter.data.data32[1] = flags;
             enter.data.data32[2] = drag_types.size() > 0 ? drag_types.at(0) : 0;
@@ -435,7 +435,7 @@ void QXcbDrag::move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardMod
         move.sequence = 0;
         move.window = target;
         move.format = 32;
-        move.type = atom(QXcbAtom::XdndPosition);
+        move.type = atom(QXcbAtom::AtomXdndPosition);
         move.data.data32[0] = connection()->qtSelectionOwner();
         move.data.data32[1] = 0; // flags
         move.data.data32[2] = (globalPos.x() << 16) + globalPos.y();
@@ -481,7 +481,7 @@ void QXcbDrag::drop(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardMod
     drop.sequence = 0;
     drop.window = current_target;
     drop.format = 32;
-    drop.type = atom(QXcbAtom::XdndDrop);
+    drop.type = atom(QXcbAtom::AtomXdndDrop);
     drop.data.data32[0] = connection()->qtSelectionOwner();
     drop.data.data32[1] = 0; // flags
     drop.data.data32[2] = connection()->time();
@@ -521,11 +521,11 @@ void QXcbDrag::drop(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardMod
 
 Qt::DropAction QXcbDrag::toDropAction(xcb_atom_t a) const
 {
-    if (a == atom(QXcbAtom::XdndActionCopy) || a == 0)
+    if (a == atom(QXcbAtom::AtomXdndActionCopy) || a == 0)
         return Qt::CopyAction;
-    if (a == atom(QXcbAtom::XdndActionLink))
+    if (a == atom(QXcbAtom::AtomXdndActionLink))
         return Qt::LinkAction;
-    if (a == atom(QXcbAtom::XdndActionMove))
+    if (a == atom(QXcbAtom::AtomXdndActionMove))
         return Qt::MoveAction;
     return Qt::CopyAction;
 }
@@ -534,7 +534,7 @@ Qt::DropActions QXcbDrag::toDropActions(const QList<xcb_atom_t> &atoms) const
 {
     Qt::DropActions actions;
     for (const auto actionAtom : atoms) {
-        if (actionAtom != atom(QXcbAtom::XdndActionAsk))
+        if (actionAtom != atom(QXcbAtom::AtomXdndActionAsk))
             actions |= toDropAction(actionAtom);
     }
     return actions;
@@ -544,16 +544,16 @@ xcb_atom_t QXcbDrag::toXdndAction(Qt::DropAction a) const
 {
     switch (a) {
     case Qt::CopyAction:
-        return atom(QXcbAtom::XdndActionCopy);
+        return atom(QXcbAtom::AtomXdndActionCopy);
     case Qt::LinkAction:
-        return atom(QXcbAtom::XdndActionLink);
+        return atom(QXcbAtom::AtomXdndActionLink);
     case Qt::MoveAction:
     case Qt::TargetMoveAction:
-        return atom(QXcbAtom::XdndActionMove);
+        return atom(QXcbAtom::AtomXdndActionMove);
     case Qt::IgnoreAction:
         return XCB_NONE;
     default:
-        return atom(QXcbAtom::XdndActionCopy);
+        return atom(QXcbAtom::AtomXdndActionCopy);
     }
 }
 
@@ -561,7 +561,7 @@ void QXcbDrag::readActionList()
 {
     drop_actions.clear();
     auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(), false, xdnd_dragsource,
-                             atom(QXcbAtom::XdndActionList), XCB_ATOM_ATOM,
+                             atom(QXcbAtom::AtomXdndActionList), XCB_ATOM_ATOM,
                              0, 1024);
     if (reply && reply->type != XCB_NONE && reply->format == 32) {
         int length = xcb_get_property_value_length(reply.get()) / 4;
@@ -590,7 +590,7 @@ void QXcbDrag::setActionList(Qt::DropAction requestedAction, Qt::DropActions sup
 
     if (current_actions != actions) {
         xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, connection()->qtSelectionOwner(),
-                            atom(QXcbAtom::XdndActionList),
+                            atom(QXcbAtom::AtomXdndActionList),
                             XCB_ATOM_ATOM, 32, actions.size(), actions.constData());
         current_actions = actions;
     }
@@ -701,7 +701,7 @@ void QXcbDrag::handleEnter(QPlatformWindow *, const xcb_client_message_event_t *
     if (event->data.data32[1] & 1) {
         // get the types from XdndTypeList
         auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(), false, xdnd_dragsource,
-                                 atom(QXcbAtom::XdndTypelist), XCB_ATOM_ATOM,
+                                 atom(QXcbAtom::AtomXdndTypelist), XCB_ATOM_ATOM,
                                  0, xdnd_max_type);
         if (reply && reply->type != XCB_NONE && reply->format == 32) {
             int length = xcb_get_property_value_length(reply.get()) / 4;
@@ -761,7 +761,7 @@ void QXcbDrag::handle_xdnd_position(QPlatformWindow *w, const xcb_client_message
     } else {
         dropData = m_dropData;
         supported_actions = toDropActions(drop_actions);
-        if (e->data.data32[4] != atom(QXcbAtom::XdndActionAsk))
+        if (e->data.data32[4] != atom(QXcbAtom::AtomXdndActionAsk))
             supported_actions |= Qt::DropActions(toDropAction(e->data.data32[4]));
     }
 
@@ -783,7 +783,7 @@ void QXcbDrag::handle_xdnd_position(QPlatformWindow *w, const xcb_client_message
     response.sequence = 0;
     response.window = xdnd_dragsource;
     response.format = 32;
-    response.type = atom(QXcbAtom::XdndStatus);
+    response.type = atom(QXcbAtom::AtomXdndStatus);
     response.data.data32[0] = xcb_window(w);
     response.data.data32[1] = qt_response.isAccepted(); // flags
     response.data.data32[2] = 0; // x, y
@@ -835,7 +835,7 @@ namespace
 void QXcbDrag::handlePosition(QPlatformWindow * w, const xcb_client_message_event_t *event)
 {
     xcb_client_message_event_t *lastEvent = const_cast<xcb_client_message_event_t *>(event);
-    ClientMessageScanner scanner(atom(QXcbAtom::XdndPosition));
+    ClientMessageScanner scanner(atom(QXcbAtom::AtomXdndPosition));
     while (auto nextEvent = connection()->eventQueue()->peek(scanner)) {
         if (lastEvent != event)
             free(lastEvent);
@@ -883,7 +883,7 @@ void QXcbDrag::handleStatus(const xcb_client_message_event_t *event)
 
     xcb_client_message_event_t *lastEvent = const_cast<xcb_client_message_event_t *>(event);
     xcb_generic_event_t *nextEvent;
-    ClientMessageScanner scanner(atom(QXcbAtom::XdndStatus));
+    ClientMessageScanner scanner(atom(QXcbAtom::AtomXdndStatus));
     while ((nextEvent = connection()->eventQueue()->peek(scanner))) {
         if (lastEvent != event)
             free(lastEvent);
@@ -934,7 +934,7 @@ void QXcbDrag::send_leave()
     leave.sequence = 0;
     leave.window = current_target;
     leave.format = 32;
-    leave.type = atom(QXcbAtom::XdndLeave);
+    leave.type = atom(QXcbAtom::AtomXdndLeave);
     leave.data.data32[0] = connection()->qtSelectionOwner();
     leave.data.data32[1] = 0; // flags
     leave.data.data32[2] = 0; // x, y
@@ -1024,7 +1024,7 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
     finished.sequence = 0;
     finished.window = xdnd_dragsource;
     finished.format = 32;
-    finished.type = atom(QXcbAtom::XdndFinished);
+    finished.type = atom(QXcbAtom::AtomXdndFinished);
     finished.data.data32[0] = currentWindow ? xcb_window(currentWindow.data()) : XCB_NONE;
     finished.data.data32[1] = response.isAccepted(); // flags
     finished.data.data32[2] = toXdndAction(acceptedAaction);
@@ -1141,7 +1141,7 @@ static xcb_window_t findXdndAwareParent(QXcbConnection *c, xcb_window_t window)
     forever {
         // check if window has XdndAware
         auto gpReply = Q_XCB_REPLY(xcb_get_property, c->xcb_connection(), false, window,
-                                   c->atom(QXcbAtom::XdndAware), XCB_GET_PROPERTY_TYPE_ANY, 0, 0);
+                                   c->atom(QXcbAtom::AtomXdndAware), XCB_GET_PROPERTY_TYPE_ANY, 0, 0);
         bool aware = gpReply && gpReply->type != XCB_NONE;
         if (aware) {
             target = window;
@@ -1248,7 +1248,7 @@ bool QXcbDrag::dndEnable(QXcbWindow *w, bool on)
                 desktop_proxy = new QWindow;
                 window = static_cast<QXcbWindow *>(desktop_proxy->handle());
                 proxy_id = window->xcb_window();
-                xcb_atom_t xdnd_proxy = atom(QXcbAtom::XdndProxy);
+                xcb_atom_t xdnd_proxy = atom(QXcbAtom::AtomXdndProxy);
                 xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, w->xcb_window(), xdnd_proxy,
                                     XCB_ATOM_WINDOW, 32, 1, &proxy_id);
                 xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, proxy_id, xdnd_proxy,
@@ -1262,14 +1262,14 @@ bool QXcbDrag::dndEnable(QXcbWindow *w, bool on)
             qCDebug(lcQpaXDnd) << "setting XdndAware for" << window->xcb_window();
             xcb_atom_t atm = xdnd_version;
             xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, window->xcb_window(),
-                                atom(QXcbAtom::XdndAware), XCB_ATOM_ATOM, 32, 1, &atm);
+                                atom(QXcbAtom::AtomXdndAware), XCB_ATOM_ATOM, 32, 1, &atm);
             return true;
         } else {
             return false;
         }
     } else {
         if (w->window()->type() == Qt::Desktop) {
-            xcb_delete_property(xcb_connection(), w->xcb_window(), atom(QXcbAtom::XdndProxy));
+            xcb_delete_property(xcb_connection(), w->xcb_window(), atom(QXcbAtom::AtomXdndProxy));
             delete desktop_proxy;
             desktop_proxy = nullptr;
         } else {
@@ -1321,10 +1321,10 @@ QVariant QXcbDropData::xdndObtainData(const QByteArray &format, QMetaType reques
         return result;
 
 #ifndef QT_NO_CLIPBOARD
-    if (c->selectionOwner(c->atom(QXcbAtom::XdndSelection)) == XCB_NONE)
+    if (c->selectionOwner(c->atom(QXcbAtom::AtomXdndSelection)) == XCB_NONE)
         return result; // should never happen?
 
-    xcb_atom_t xdnd_selection = c->atom(QXcbAtom::XdndSelection);
+    xcb_atom_t xdnd_selection = c->atom(QXcbAtom::AtomXdndSelection);
     result = c->clipboard()->getSelection(xdnd_selection, a, xdnd_selection, drag->targetTime());
 #endif
 

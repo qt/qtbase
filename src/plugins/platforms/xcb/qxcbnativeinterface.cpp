@@ -350,7 +350,7 @@ void *QXcbNativeInterface::atspiBus()
     QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
     QXcbConnection *connection = integration->connection();
     if (connection) {
-        auto atspiBusAtom = connection->atom(QXcbAtom::AT_SPI_BUS);
+        auto atspiBusAtom = connection->atom(QXcbAtom::AtomAT_SPI_BUS);
         auto reply = Q_XCB_REPLY(xcb_get_property, connection->xcb_connection(),
                                      false, connection->rootWindow(),
                                      atspiBusAtom, XCB_ATOM_STRING, 0, 128);

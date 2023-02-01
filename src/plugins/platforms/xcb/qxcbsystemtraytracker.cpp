@@ -26,7 +26,7 @@ enum {
 QXcbSystemTrayTracker *QXcbSystemTrayTracker::create(QXcbConnection *connection)
 {
     // Selection, tray atoms for GNOME, NET WM Specification
-    const xcb_atom_t trayAtom = connection->atom(QXcbAtom::_NET_SYSTEM_TRAY_OPCODE);
+    const xcb_atom_t trayAtom = connection->atom(QXcbAtom::Atom_NET_SYSTEM_TRAY_OPCODE);
     if (!trayAtom)
         return nullptr;
     const QByteArray netSysTray = QByteArrayLiteral("_NET_SYSTEM_TRAY_S") + QByteArray::number(connection->primaryScreenNumber());
@@ -113,7 +113,7 @@ xcb_visualid_t QXcbSystemTrayTracker::netSystemTrayVisual()
     if (m_trayWindow == XCB_WINDOW_NONE)
         return XCB_NONE;
 
-    xcb_atom_t tray_atom = m_connection->atom(QXcbAtom::_NET_SYSTEM_TRAY_VISUAL);
+    xcb_atom_t tray_atom = m_connection->atom(QXcbAtom::Atom_NET_SYSTEM_TRAY_VISUAL);
 
     // Get the xcb property for the _NET_SYSTEM_TRAY_VISUAL atom
     auto systray_atom_reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, m_connection->xcb_connection(),

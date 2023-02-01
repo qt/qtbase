@@ -30,7 +30,7 @@ void QXcbWMSupport::updateNetWMAtoms()
     int offset = 0;
     int remaining = 0;
     do {
-        auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(), false, root, atom(QXcbAtom::_NET_SUPPORTED), XCB_ATOM_ATOM, offset, 1024);
+        auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(), false, root, atom(QXcbAtom::Atom_NET_SUPPORTED), XCB_ATOM_ATOM, offset, 1024);
         if (!reply)
             break;
 
@@ -54,7 +54,7 @@ void QXcbWMSupport::updateVirtualRoots()
 {
     net_virtual_roots.clear();
 
-    if (!isSupportedByWM(atom(QXcbAtom::_NET_VIRTUAL_ROOTS)))
+    if (!isSupportedByWM(atom(QXcbAtom::Atom_NET_VIRTUAL_ROOTS)))
         return;
 
     xcb_window_t root = connection()->primaryScreen()->root();
@@ -62,7 +62,7 @@ void QXcbWMSupport::updateVirtualRoots()
     int remaining = 0;
     do {
         auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(),
-                                 false, root, atom(QXcbAtom::_NET_VIRTUAL_ROOTS), XCB_ATOM_WINDOW, offset, 1024);
+                                 false, root, atom(QXcbAtom::Atom_NET_VIRTUAL_ROOTS), XCB_ATOM_WINDOW, offset, 1024);
         if (!reply)
             break;
 
