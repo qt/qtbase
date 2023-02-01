@@ -25,8 +25,6 @@ set_target_properties(permissions PROPERTIES
     QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android"
 )
 
-qt_finalize_executable(permissions)
-
 target_link_libraries(permissions PRIVATE
     Qt6::Core
     Qt6::Gui
@@ -43,3 +41,5 @@ if(APPLE AND NOT CMAKE_GENERATOR STREQUAL "Xcode")
     add_custom_command(TARGET permissions
         POST_BUILD COMMAND codesign -s - permissions.app)
 endif()
+
+qt_finalize_executable(permissions)
