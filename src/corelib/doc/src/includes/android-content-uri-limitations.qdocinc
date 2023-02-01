@@ -3,7 +3,7 @@ On Android, some limitations apply when dealing with
 \list
     \li Access permissions might be needed by prompting the user through the
         \l QFileDialog which implements
-        \l {Access documents and other files from shared storage}{Android's native file picker}.
+        \l {Android: Access documents and other files from shared storage}{Android's native file picker}.
         \li Aim to follow the \l {Android: Scoped storage}{Scoped storage} guidelines,
             such as using app specific directories instead of other public external directories.
             For more information, also see

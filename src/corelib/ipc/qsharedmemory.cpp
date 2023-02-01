@@ -94,11 +94,11 @@ inline QNativeIpcKey QSharedMemoryPrivate::semaphoreNativeKey() const
 
   For details on the key types, platform-specific limitations, and
   interoperability with older or non-Qt applications, see the \l{Native IPC
-  Key} documentation. That includes important information for sandboxed
+  Keys} documentation. That includes important information for sandboxed
   applications on Apple platforms, including all apps obtained via the Apple
   App Store.
 
-  \sa Inter-Process Communication, QSystemSemaphore
+  \sa {Inter-Process Communication}, QSystemSemaphore
  */
 
 /*!
@@ -212,7 +212,7 @@ void QSharedMemory::setKey(const QString &key)
 
   You can call nativeKey() to retrieve the native key.
 
-  \sa nativeKey(), nativeKeyType(), isAttached()
+  \sa nativeKey(), nativeIpcKey(), isAttached()
 */
 
 /*!
@@ -231,7 +231,7 @@ void QSharedMemory::setKey(const QString &key)
 
   You can call nativeKey() to retrieve the native key.
 
-  \sa nativeKey(), nativeKeyType(), isAttached()
+  \sa nativeKey(), nativeIpcKey(), isAttached()
 */
 void QSharedMemory::setNativeKey(const QNativeIpcKey &key)
 {
@@ -329,7 +329,7 @@ QString QSharedMemory::key() const
   been created by Qt, or to grant shared memory access to non-Qt applications.
   See \l{Native IPC Keys} for more information.
 
-  \sa setNativeKey(), nativeKeyType()
+  \sa setNativeKey(), nativeIpcKey()
 */
 QString QSharedMemory::nativeKey() const
 {

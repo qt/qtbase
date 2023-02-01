@@ -61,11 +61,11 @@ inline void QSystemSemaphorePrivate::destructBackend()
 
   For details on the key types, platform-specific limitations, and
   interoperability with older or non-Qt applications, see the \l{Native IPC
-  Key} documentation. That includes important information for sandboxed
+  Keys} documentation. That includes important information for sandboxed
   applications on Apple platforms, including all apps obtained via the Apple
   App Store.
 
-  \sa Inter-Process Communication, QSharedMemory, QSemaphore
+  \sa {Inter-Process Communication}, QSharedMemory, QSemaphore
  */
 
 /*!
@@ -183,7 +183,7 @@ QSystemSemaphore::~QSystemSemaphore()
   This function is useful if the native key was shared from another process.
   See \l{Native IPC Keys} for more information.
 
-  \sa QSystemSemaphore(), nativeKey()
+  \sa QSystemSemaphore(), nativeIpcKey()
  */
 void QSystemSemaphore::setNativeKey(const QNativeIpcKey &key, int initialValue, AccessMode mode)
 {

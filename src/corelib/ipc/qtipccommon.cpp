@@ -236,7 +236,7 @@ QString QtIpcCommon::platformSafeKey(const QString &key, QtIpcCommon::IpcType ip
 
     For details on the key types, platform-specific limitations, and
     interoperability with older or non-Qt applications, see the \l{Native IPC
-    Key} documentation. That includes important information for sandboxed
+    Keys} documentation. That includes important information for sandboxed
     applications on Apple platforms, including all apps obtained via the Apple
     App Store.
 
@@ -302,7 +302,7 @@ QString QtIpcCommon::platformSafeKey(const QString &key, QtIpcCommon::IpcType ip
     \enum QNativeIpcKey::Type
 
     This enum describes the backend type for the IPC object. For details on the
-    key types, see the \l{Native IPC Key} documentation.
+    key types, see the \l{Native IPC Keys} documentation.
 
     \value SystemV          X/Open System Initiative (XSI) or System V (SVr4) API
     \value PosixRealtime    IEEE 1003.1b (POSIX.1b) API
