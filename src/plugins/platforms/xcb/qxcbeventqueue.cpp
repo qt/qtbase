@@ -345,7 +345,7 @@ void QXcbEventQueue::sendCloseConnectionEvent() const
     event.format = 32;
     event.sequence = 0;
     event.window = window;
-    event.type = m_connection->atom(QXcbAtom::_QT_CLOSE_CONNECTION);
+    event.type = m_connection->atom(QXcbAtom::Atom_QT_CLOSE_CONNECTION);
     event.data.data32[0] = 0;
 
     xcb_send_event(c, false, window, XCB_EVENT_MASK_NO_EVENT, reinterpret_cast<const char *>(&event));
@@ -357,7 +357,7 @@ bool QXcbEventQueue::isCloseConnectionEvent(const xcb_generic_event_t *event)
 {
     if (event && (event->response_type & ~0x80) == XCB_CLIENT_MESSAGE) {
         auto clientMessage = reinterpret_cast<const xcb_client_message_event_t *>(event);
-        if (clientMessage->type == m_connection->atom(QXcbAtom::_QT_CLOSE_CONNECTION))
+        if (clientMessage->type == m_connection->atom(QXcbAtom::Atom_QT_CLOSE_CONNECTION))
             m_closeConnectionDetected = true;
     }
     return m_closeConnectionDetected;

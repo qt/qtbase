@@ -50,7 +50,7 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
 
     auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
                                        false, screen->root,
-                                       atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK),
+                                       atom(QXcbAtom::Atom_NET_SUPPORTING_WM_CHECK),
                                        XCB_ATOM_WINDOW, 0, 1024);
     if (reply && reply->format == 32 && reply->type == XCB_ATOM_WINDOW) {
         xcb_window_t windowManager = *((xcb_window_t *)xcb_get_property_value(reply.get()));
@@ -249,7 +249,7 @@ QRect QXcbVirtualDesktop::getWorkArea() const
 {
     QRect r;
     auto workArea = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(), false, screen()->root,
-                                          atom(QXcbAtom::_NET_WORKAREA),
+                                          atom(QXcbAtom::Atom_NET_WORKAREA),
                                           XCB_ATOM_CARDINAL, 0, 1024);
     if (workArea && workArea->type == XCB_ATOM_CARDINAL && workArea->format == 32 && workArea->value_len >= 4) {
         // If workArea->value_len > 4, the remaining ones seem to be for WM's virtual desktops
@@ -529,7 +529,7 @@ void QXcbScreen::updateColorSpaceAndEdid()
         // Read colord ICC data (from GNOME settings)
         auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
                                            false, screen()->root,
-                                           connection()->atom(QXcbAtom::_ICC_PROFILE),
+                                           connection()->atom(QXcbAtom::Atom_ICC_PROFILE),
                                            XCB_ATOM_CARDINAL, 0, 8192);
         if (reply->format == 8 && reply->type == XCB_ATOM_CARDINAL) {
             QByteArray data(reinterpret_cast<const char *>(xcb_get_property_value(reply.get())), reply->value_len);
@@ -817,7 +817,7 @@ void QXcbScreen::sendStartupMessage(const QByteArray &message) const
     xcb_client_message_event_t ev;
     ev.response_type = XCB_CLIENT_MESSAGE;
     ev.format = 8;
-    ev.type = connection()->atom(QXcbAtom::_NET_STARTUP_INFO_BEGIN);
+    ev.type = connection()->atom(QXcbAtom::Atom_NET_STARTUP_INFO_BEGIN);
     ev.sequence = 0;
     ev.window = rootWindow;
     int sent = 0;
@@ -825,7 +825,7 @@ void QXcbScreen::sendStartupMessage(const QByteArray &message) const
     const char *data = message.constData();
     do {
         if (sent == 20)
-            ev.type = connection()->atom(QXcbAtom::_NET_STARTUP_INFO);
+            ev.type = connection()->atom(QXcbAtom::Atom_NET_STARTUP_INFO);
 
         const int start = sent;
         const int numBytes = qMin(length - start, 20);
@@ -1095,11 +1095,11 @@ QByteArray QXcbScreen::getEdid() const
         return result;
 
     // Try a bunch of atoms
-    result = getOutputProperty(atom(QXcbAtom::EDID));
+    result = getOutputProperty(atom(QXcbAtom::AtomEDID));
     if (result.isEmpty())
-        result = getOutputProperty(atom(QXcbAtom::EDID_DATA));
+        result = getOutputProperty(atom(QXcbAtom::AtomEDID_DATA));
     if (result.isEmpty())
-        result = getOutputProperty(atom(QXcbAtom::XFree86_DDC_EDID1_RAWDATA));
+        result = getOutputProperty(atom(QXcbAtom::AtomXFree86_DDC_EDID1_RAWDATA));
 
     return result;
 }
