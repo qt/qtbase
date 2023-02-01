@@ -444,7 +444,7 @@ if(ANDROID)
         jar/Qt${QtBase_VERSION_MAJOR}Android.jar # special case
     )
     set_property(TARGET Core APPEND PROPERTY QT_ANDROID_LIB_DEPENDENCIES
-        ${INSTALL_PLUGINSDIR}/platforms/libplugins_platforms_qtforandroid.so
+        plugins/platforms/libplugins_platforms_qtforandroid.so
     )
     set_property(TARGET Core APPEND PROPERTY QT_ANDROID_PERMISSIONS
         android.permission.INTERNET android.permission.WRITE_EXTERNAL_STORAGE
