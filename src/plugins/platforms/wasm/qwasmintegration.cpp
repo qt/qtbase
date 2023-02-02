@@ -10,7 +10,7 @@
 #include "qwasmaccessibility.h"
 #include "qwasmservices.h"
 #include "qwasmoffscreensurface.h"
-
+#include "qwasmplatform.h"
 #include "qwasmwindow.h"
 #include "qwasmbackingstore.h"
 #include "qwasmfontdatabase.h"
@@ -31,6 +31,8 @@
 #include <private/qsimpledrag_p.h>
 
 QT_BEGIN_NAMESPACE
+
+extern void qt_set_sequence_auto_mnemonic(bool);
 
 using namespace emscripten;
 
@@ -80,6 +82,9 @@ QWasmIntegration::QWasmIntegration()
       m_accessibility(new QWasmAccessibility)
 {
     s_instance = this;
+
+    if (platform() == Platform::MacOS)
+        qt_set_sequence_auto_mnemonic(false);
 
     touchPoints = emscripten::val::global("navigator")["maxTouchPoints"].as<int>();
 
@@ -226,10 +231,14 @@ QAbstractEventDispatcher *QWasmIntegration::createEventDispatcher() const
 
 QVariant QWasmIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
-    if (hint == ShowIsFullScreen)
+    switch (hint) {
+    case ShowIsFullScreen:
         return true;
-
-    return QPlatformIntegration::styleHint(hint);
+    case UnderlineShortcut:
+        return platform() != Platform::MacOS;
+    default:
+        return QPlatformIntegration::styleHint(hint);
+    }
 }
 
 Qt::WindowState QWasmIntegration::defaultWindowState(Qt::WindowFlags flags) const
