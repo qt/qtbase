@@ -1,4 +1,9 @@
-isEmpty(QMAKE_INFO_PLIST)|!exists($$QMAKE_INFO_PLIST): \
+
+isEmpty(QMAKE_INFO_PLIST): \
+    return()
+
+plist_path = $$relative_path($$absolute_path($$QMAKE_INFO_PLIST, $$_PRO_FILE_PWD_), $$OUT_PWD))
+!exists($$plist_path): \
     return()
 
 for(plugin, QT_PLUGINS) {
