@@ -148,12 +148,8 @@ static inline QByteArray makePattern(const QByteArray &value)
                 char c = 0;
                 for (int i = 0; i < 2 && p + 1 < e; ++i) {
                     ++p;
-                    if (*p >= '0' && *p <= '9')
-                        c = (c << 4) + *p - '0';
-                    else if (*p >= 'a' && *p <= 'f')
-                        c = (c << 4) + *p - 'a' + 10;
-                    else if (*p >= 'A' && *p <= 'F')
-                        c = (c << 4) + *p - 'A' + 10;
+                    if (const int h = fromHex(*p); h != -1)
+                        c = (c << 4) + h;
                     else
                         continue;
                 }

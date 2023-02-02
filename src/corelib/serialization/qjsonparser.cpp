@@ -780,15 +780,13 @@ bool Parser::parseNumber()
 static inline bool addHexDigit(char digit, char32_t *result)
 {
     *result <<= 4;
-    if (digit >= '0' && digit <= '9')
-        *result |= (digit - '0');
-    else if (digit >= 'a' && digit <= 'f')
-        *result |= (digit - 'a') + 10;
-    else if (digit >= 'A' && digit <= 'F')
-        *result |= (digit - 'A') + 10;
-    else
-        return false;
-    return true;
+    const int h = fromHex(digit);
+    if (h != -1) {
+        *result |= h;
+        return true;
+    }
+
+    return false;
 }
 
 static inline bool scanEscapeSequence(const char *&json, const char *end, char32_t *ch)

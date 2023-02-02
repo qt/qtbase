@@ -751,8 +751,8 @@ StNormal:
                 ch = str.at(i);
                 if (isHexDigit(ch))
                     goto StHexEscape;
-            } else if (isOctalDigit(ch)) {
-                escapeVal = ch - '0';
+            } else if (const int o = fromOct(ch); o != -1) {
+                escapeVal = o;
                 goto StOctEscape;
             } else if (ch == '\n' || ch == '\r') {
                 if (i < str.size()) {
@@ -814,11 +814,9 @@ StHexEscape:
     }
 
     ch = str.at(i);
-    if (ch >= 'a')
-        ch -= 'a' - 'A';
-    if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'F')) {
+    if (const int h = fromHex(ch); h != -1) {
         escapeVal <<= 4;
-        escapeVal += QtMiscUtils::fromHex(ch);
+        escapeVal += h;
         ++i;
         goto StHexEscape;
     } else {
@@ -833,9 +831,9 @@ StOctEscape:
     }
 
     ch = str.at(i);
-    if (ch >= '0' && ch <= '7') {
+    if (const int o = fromOct(ch); o != -1) {
         escapeVal <<= 3;
-        escapeVal += ch - '0';
+        escapeVal += o;
         ++i;
         goto StOctEscape;
     } else {
