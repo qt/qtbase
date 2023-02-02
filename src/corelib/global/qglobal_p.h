@@ -18,7 +18,6 @@
 
 #include "qglobal.h"
 #include "qglobal_p.h"      // include self to avoid syncqt warning - no-op
-#include <private/qtenvironmentvariables_p.h> // until qtdeclarative's tst_qqmlqt.cpp catches up
 
 #ifndef QT_BOOTSTRAPPED
 #include <QtCore/private/qconfig_p.h>
