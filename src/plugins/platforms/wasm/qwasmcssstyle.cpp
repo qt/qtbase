@@ -27,9 +27,12 @@ const char *Style = R"css(
 }
 
 .qt-window {
-    box-shadow: rgb(0 0 0 / 20%) 0px 10px 16px 0px, rgb(0 0 0 / 19%) 0px 6px 20px 0px;
     position: absolute;
     background-color: lightgray;
+}
+
+.qt-window.has-shadow {
+    box-shadow: rgb(0 0 0 / 20%) 0px 10px 16px 0px, rgb(0 0 0 / 19%) 0px 6px 20px 0px;
 }
 
 .qt-window.has-title-bar {
