@@ -882,6 +882,16 @@ function(_qt_internal_assign_to_internal_targets_folder target)
     endif()
 endfunction()
 
+function(_qt_internal_get_target_autogen_build_dir target out_var)
+    get_property(target_autogen_build_dir TARGET ${target} PROPERTY AUTOGEN_BUILD_DIR)
+    if(target_autogen_build_dir)
+        set(${out_var} "${target_autogen_build_dir}" PARENT_SCOPE)
+    else()
+        get_property(target_binary_dir TARGET ${target} PROPERTY BINARY_DIR)
+        set(${out_var} "${target_binary_dir}/${target}_autogen" PARENT_SCOPE)
+    endif()
+endfunction()
+
 function(qt6_extract_metatypes target)
 
     get_target_property(existing_meta_types_file ${target} INTERFACE_QT_META_TYPES_BUILD_FILE)
@@ -929,6 +939,9 @@ function(qt6_extract_metatypes target)
     set(type_list_file "${target_binary_dir}/meta_types/${target}_json_file_list.txt")
     set(type_list_file_manual "${target_binary_dir}/meta_types/${target}_json_file_list_manual.txt")
 
+    set(target_autogen_build_dir "")
+    _qt_internal_get_target_autogen_build_dir(${target} target_autogen_build_dir)
+
     get_target_property(uses_automoc ${target} AUTOMOC)
     set(automoc_args)
     set(automoc_dependencies)
@@ -944,13 +957,13 @@ function(qt6_extract_metatypes target)
             set(cmake_autogen_cache_file
                 "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache.txt")
             set(multi_config_args
-                --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include"
+                --cmake-autogen-include-dir-path "${target_autogen_build_dir}/include"
             )
         else()
             set(cmake_autogen_cache_file
                 "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache_$<CONFIG>.txt")
             set(multi_config_args
-                --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include_$<CONFIG>"
+                --cmake-autogen-include-dir-path "${target_autogen_build_dir}/include_$<CONFIG>"
                 "--cmake-multi-config")
         endif()
 
@@ -1012,7 +1025,7 @@ function(qt6_extract_metatypes target)
             _qt_internal_assign_to_internal_targets_folder(${target}_automoc_json_extraction)
         else()
             set(cmake_autogen_timestamp_file
-                "${target_binary_dir}/${target}_autogen/timestamp"
+                "${target_autogen_build_dir}/timestamp"
             )
 
             add_custom_command(OUTPUT ${type_list_file}
