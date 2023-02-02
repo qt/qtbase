@@ -9,6 +9,8 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qglobalstatic.h>
 
+#include <new>
+
 QT_BEGIN_NAMESPACE
 
 namespace QtGlobalStatic {
@@ -36,7 +38,7 @@ template <typename QAS> struct ApplicationHolder
 
     static PlainType *realPointer()
     {
-        return reinterpret_cast<PlainType *>(&storage);
+        return std::launder(reinterpret_cast<PlainType *>(&storage));
     }
 
     // called from QGlobalStatic::instance()
@@ -46,7 +48,7 @@ template <typename QAS> struct ApplicationHolder
             return realPointer();
         QMutexLocker locker(&mutex);
         if (guard.loadRelaxed() == QtGlobalStatic::Uninitialized) {
-            QAS::innerFunction(realPointer());
+            QAS::innerFunction(&storage);
             QObject::connect(QCoreApplication::instance(), &QObject::destroyed, reset);
             guard.storeRelaxed(QtGlobalStatic::Initialized);
         }
