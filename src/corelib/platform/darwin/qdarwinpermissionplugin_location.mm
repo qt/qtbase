@@ -66,6 +66,13 @@ struct PermissionRequest
 
 - (Qt::PermissionStatus)authorizationStatus:(QLocationPermission)permission
 {
+    NSString *bundleIdentifier = NSBundle.mainBundle.bundleIdentifier;
+    if (!bundleIdentifier || !bundleIdentifier.length) {
+        qCWarning(lcLocationPermission) << "Missing bundle identifier"
+            << "in Info.plist. Can not use location permissions.";
+        return Qt::PermissionStatus::Denied;
+    }
+
     switch ([self authorizationStatus]) {
     case kCLAuthorizationStatusRestricted:
     case kCLAuthorizationStatusDenied:
