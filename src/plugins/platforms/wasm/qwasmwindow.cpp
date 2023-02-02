@@ -362,6 +362,8 @@ void QWasmWindow::setWindowFlags(Qt::WindowFlags flags)
     dom::syncCSSClassWith(m_qtWindow, "has-shadow", !flags.testFlag(Qt::NoDropShadowWindowHint));
     dom::syncCSSClassWith(m_qtWindow, "transparent-for-input",
                           flags.testFlag(Qt::WindowTransparentForInput));
+
+    m_nonClientArea->titleBar()->setMaximizeVisible(hasMaximizeButton());
 }
 
 void QWasmWindow::setWindowState(Qt::WindowStates newState)
@@ -422,7 +424,7 @@ void QWasmWindow::applyWindowState()
     dom::syncCSSClassWith(m_qtWindow, "maximized", isMaximized);
 
     m_nonClientArea->titleBar()->setRestoreVisible(isMaximized);
-    m_nonClientArea->titleBar()->setMaximizeVisible(!isMaximized);
+    m_nonClientArea->titleBar()->setMaximizeVisible(hasMaximizeButton());
 
     if (isVisible())
         QWindowSystemInterface::handleWindowStateChanged(window(), m_state, m_previousWindowState);
@@ -519,6 +521,11 @@ bool QWasmWindow::hasTitleBar() const
 {
     return !m_state.testFlag(Qt::WindowFullScreen) && m_flags.testFlag(Qt::WindowTitleHint)
             && !windowIsPopupType(m_flags);
+}
+
+bool QWasmWindow::hasMaximizeButton() const
+{
+    return !m_state.testFlag(Qt::WindowMaximized) && m_flags.testFlag(Qt::WindowMaximizeButtonHint);
 }
 
 bool QWasmWindow::windowIsPopupType(Qt::WindowFlags flags) const
