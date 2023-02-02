@@ -24,7 +24,7 @@
     "QDocModule": "qtcore",
     "QtUsage": "Used in Qt Core (QTimeZone, QLocale).",
     "Files": "For update, see qtbase/util/locale_database/cldr2qlocalexml.py",
-    "Files": "qlocale_data_p.h ../time/qtimezoneprivate_data_p.h",
+    "Files": "qlocale_data_p.h ../time/qtimezoneprivate_data_p.h ../time/qhijricalendar_data_p.h ../time/qjalalicalendar_data_p.h ../time/qromancalendar_data_p.h",
 
     "Description": "The Unicode CLDR provides key building blocks for software to support the
  world's languages, with the largest and most extensive standard repository of locale data
