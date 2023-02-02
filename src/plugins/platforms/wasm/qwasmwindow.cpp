@@ -360,6 +360,7 @@ void QWasmWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     m_flags = flags;
     dom::syncCSSClassWith(m_qtWindow, "has-title-bar", hasTitleBar());
+    dom::syncCSSClassWith(m_qtWindow, "has-shadow", !flags.testFlag(Qt::NoDropShadowWindowHint));
 }
 
 void QWasmWindow::setWindowState(Qt::WindowStates newState)
