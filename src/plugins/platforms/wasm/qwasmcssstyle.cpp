@@ -169,21 +169,6 @@ const char *Style = R"css(
     background-size: 10px 10px;
 }
 
-.title-bar .image-button img[qt-builtin-image-type=x] {
-    background-image: url("data:image/svg+xml;base64,$close_icon");
-}
-
-.title-bar .image-button img[qt-builtin-image-type=qt-logo] {
-    background-image: url("qtlogo.svg");
-}
-
-.title-bar .image-button img[qt-builtin-image-type=restore] {
-    background-image: url("data:image/svg+xml;base64,$restore_icon");
-}
-
-.title-bar .image-button img[qt-builtin-image-type=maximize] {
-    background-image: url("data:image/svg+xml;base64,$maximize_icon");
-}
 .title-bar .action-button {
     pointer-events: all;
 }
@@ -206,24 +191,14 @@ const char *Style = R"css(
 
 )css";
 
-void replace(std::string &str, const std::string &from, const std::string_view &to)
-{
-    str.replace(str.find(from), from.length(), to);
-}
 } // namespace
 
 emscripten::val QWasmCSSStyle::createStyleElement(emscripten::val parent)
 {
     auto document = parent["ownerDocument"];
     auto screenStyle = document.call<emscripten::val>("createElement", emscripten::val("style"));
-    auto text = std::string(Style);
 
-    using IconType = Base64IconStore::IconType;
-    replace(text, "$close_icon", Base64IconStore::get()->getIcon(IconType::X));
-    replace(text, "$restore_icon", Base64IconStore::get()->getIcon(IconType::Restore));
-    replace(text, "$maximize_icon", Base64IconStore::get()->getIcon(IconType::Maximize));
-
-    screenStyle.set("textContent", text);
+    screenStyle.set("textContent", std::string(Style));
     return screenStyle;
 }
 
