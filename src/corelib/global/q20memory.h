@@ -4,9 +4,12 @@
 #ifndef Q20MEMORY_H
 #define Q20MEMORY_H
 
-#include <QtCore/qxptype_traits.h>
+#include <QtCore/qtconfigmacros.h>
 
 #include <memory>
+#include <utility>
+
+#include <type_traits>
 
 //
 //  W A R N I N G
@@ -26,19 +29,20 @@
 
 QT_BEGIN_NAMESPACE
 
+// like std::construct_at (but not whitelisted for constexpr)
 namespace q20 {
-
-#if __cplusplus >= 202002L
+#ifdef __cpp_lib_constexpr_dynamic_alloc
 using std::construct_at;
 #else
 template <typename T,
           typename... Args,
           typename Enable = std::void_t<decltype(::new (std::declval<void *>()) T(std::declval<Args>()...))> >
-         static void construct_at(T *ptr, Args && ... args)
+T *construct_at(T *ptr, Args && ... args)
 {
-    ::new (const_cast<void*>(static_cast<const volatile void*>(ptr))) T(std::forward<Args>(args)...);
+    return ::new (const_cast<void *>(static_cast<const volatile void *>(ptr)))
+                                                                T(std::forward<Args>(args)...);
 }
-#endif
+#endif // __cpp_lib_constexpr_dynamic_alloc
 } // namespace q20
 
 QT_END_NAMESPACE
