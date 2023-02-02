@@ -349,6 +349,11 @@ void TitleBar::setMaximizeVisible(bool visible)
     m_maximize->setVisible(visible);
 }
 
+void TitleBar::setCloseVisible(bool visible)
+{
+    m_close->setVisible(visible);
+}
+
 void TitleBar::setIcon(std::string_view imageData, std::string_view format)
 {
     m_icon->setImage(imageData, format);

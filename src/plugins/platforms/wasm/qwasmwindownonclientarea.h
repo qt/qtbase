@@ -176,6 +176,7 @@ public:
     void setTitle(const QString &title);
     void setRestoreVisible(bool visible);
     void setMaximizeVisible(bool visible);
+    void setCloseVisible(bool visible);
     void setIcon(std::string_view imageData, std::string_view format);
     void setWidth(int width);
 
