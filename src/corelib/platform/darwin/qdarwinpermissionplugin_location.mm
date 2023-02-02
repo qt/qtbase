@@ -116,7 +116,7 @@ struct PermissionRequest
         if (permission.accuracy() == QLocationPermission::Approximate)
             return Qt::PermissionStatus::Granted;
         else
-            return Qt::PermissionStatus::Denied; // FIXME: Verify
+            return Qt::PermissionStatus::Denied;
     }
 
     Q_UNREACHABLE();
