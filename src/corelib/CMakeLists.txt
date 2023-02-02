@@ -1240,11 +1240,18 @@ if(QT_FEATURE_permissions AND APPLE)
     qt_internal_extend_target(QDarwinLocationPermissionPlugin
         LIBRARIES ${FWCoreLocation}
     )
-    set_property(TARGET QDarwinLocationPermissionPlugin PROPERTY
-        _qt_info_plist_usage_descriptions
-            "NSLocationWhenInUseUsageDescription"
-            "NSLocationAlwaysUsageDescription"
-    )
+    if(MACOS)
+        set_property(TARGET QDarwinLocationPermissionPlugin PROPERTY
+            _qt_info_plist_usage_descriptions
+                "NSLocationUsageDescription"
+        )
+    else()
+        set_property(TARGET QDarwinLocationPermissionPlugin PROPERTY
+            _qt_info_plist_usage_descriptions
+                "NSLocationWhenInUseUsageDescription"
+                "NSLocationAlwaysAndWhenInUseUsageDescription"
+        )
+    endif()
 endif()
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_permissions AND ANDROID
