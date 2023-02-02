@@ -713,7 +713,8 @@ QColor QTextEdit::textColor() const
 QColor QTextEdit::textBackgroundColor() const
 {
     Q_D(const QTextEdit);
-    return d->control->textCursor().charFormat().background().color();
+    const QBrush &brush = d->control->textCursor().charFormat().background();
+    return brush.style() == Qt::NoBrush ? Qt::transparent : brush.color();
 }
 
 /*!
