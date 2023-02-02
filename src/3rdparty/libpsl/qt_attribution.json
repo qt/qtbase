@@ -19,7 +19,7 @@ It allows browsers to, for example:
     "QtUsage": "Used in Qt Network to avoid setting \"supercookies\" in the cookie jar
 supported by Qt (by the QNetworkCookieJar class).",
 
-    "Homepage": "Consult https://github.com/publicsuffix/list for the sha1 but download from ...",
+    "Comment": "Consult https://github.com/publicsuffix/list for the sha1 but download from ...",
     "Homepage": "http://publicsuffix.org/",
     "Version": "f15705582ed13f390c59541300dea7288acf4137, fetched on 2023-02-02",
     "DownloadLocation": "https://publicsuffix.org/list/public_suffix_list.dat",
