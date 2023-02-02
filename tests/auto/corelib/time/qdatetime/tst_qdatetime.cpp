@@ -7,8 +7,8 @@
 
 #include <QTimeZone>
 #include <private/qdatetime_p.h>
+#include <private/qtenvironmentvariables_p.h> // for qTzSet()
 
-#include <time.h>
 #ifdef Q_OS_WIN
 #   include <qt_windows.h>
 #endif

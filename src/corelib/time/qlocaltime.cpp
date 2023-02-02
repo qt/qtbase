@@ -10,6 +10,7 @@
 #endif
 #include "private/qgregoriancalendar_p.h"
 #include "private/qnumeric_p.h"
+#include "private/qtenvironmentvariables_p.h"
 #if QT_CONFIG(timezone)
 #include "private/qtimezoneprivate_p.h"
 #endif
@@ -164,42 +165,6 @@ struct tm timeToTm(qint64 localDay, int secs, QDateTimePrivate::DaylightStatus d
     return local;
 }
 
-bool qtLocalTime(time_t utc, struct tm *local)
-{
-    // This should really be done under the environmentMutex wrapper qglobal.cpp
-    // uses in qTzSet() and friends. However, the only sane way to do that would
-    // be to move this whole function there (and replace its qTzSet() with a
-    // naked tzset(), since it'd already be mutex-protected).
-#if defined(Q_OS_WIN)
-    // The doc of localtime_s() says that localtime_s() corrects for the same
-    // things _tzset() sets the globals for, but doesn't explicitly say that it
-    // calls _tzset(), and QTBUG-109974 reveals the need for a _tzset() call.
-    qTzSet();
-    return !localtime_s(local, &utc);
-#elif QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
-    // Use the reentrant version of localtime() where available, as it is
-    // thread-safe and doesn't use a shared static data area.
-    // As localtime() is specified to work as if it called tzset(), but
-    // localtime_r() does not have this constraint, make an explicit call.
-    // The explicit call should also request a re-parse of timezone info.
-    qTzSet();
-    if (tm *res = localtime_r(&utc, local)) {
-        Q_ASSERT(res == local);
-        return true;
-    }
-    return false;
-#else
-    // POSIX mandates that localtime() behaves as if it called tzset().
-    // Returns shared static data which may be overwritten at any time
-    // So copy the result asap:
-    if (tm *res = localtime(&utc)) {
-        *local = *res;
-        return true;
-    }
-    return false;
-#endif
-}
-
 // Returns the tzname, assume tzset has been called already
 QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
 {
@@ -322,7 +287,7 @@ QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
         return {utcMillis};
 
     tm local;
-    if (!qtLocalTime(epochSeconds, &local))
+    if (!qLocalTime(epochSeconds, &local))
         return {utcMillis};
 
     qint64 jd;

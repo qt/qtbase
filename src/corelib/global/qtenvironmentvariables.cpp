@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qtenvironmentvariables.h"
+#include "qtenvironmentvariables_p.h"
 
 #include <qplatformdefs.h>
 #include <QtCore/qbytearray.h>
@@ -330,9 +331,11 @@ bool qunsetenv(const char *varName)
 #endif
 }
 
-/*
-    Wraps tzset(), which accesses the environment, so should only be called while
-    we hold the lock on the environment mutex.
+/* Various time-related APIs that need to consult system settings also need
+   protection with the same lock as the environment, since those system settings
+   include part of the environment (principally TZ).
+
+   First, tzset(), which POSIX explicitly says accesses the environment.
 */
 void qTzSet()
 {
@@ -344,14 +347,49 @@ void qTzSet()
 #endif // Q_OS_WIN
 }
 
-/*
-    Wrap mktime(), which is specified to behave as if it called tzset(), hence
-    shares its implicit environment-dependence.
+/* Wrap mktime(), which is specified to behave as if it called tzset(), hence
+   shares its implicit environment-dependence.
 */
 time_t qMkTime(struct tm *when)
 {
     const auto locker = qt_scoped_lock(environmentMutex);
     return mktime(when);
+}
+
+/* For localtime(), POSIX mandates that it behave as if it called tzset().
+   For the alternatives to it, we need (if only for compatibility) to do the
+   same explicitly, which should ensure a re-parse of timezone info.
+*/
+bool qLocalTime(time_t utc, struct tm *local)
+{
+    const auto locker = qt_scoped_lock(environmentMutex);
+#if defined(Q_OS_WIN)
+    // The doc of localtime_s() says that it corrects for the same things
+    // _tzset() sets the globals for, but QTBUG-109974 reveals a need for an
+    // explicit call, all the same.
+    _tzset();
+    return !localtime_s(local, &utc);
+#elif QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
+    // Use the reentrant version of localtime() where available, as it is
+    // thread-safe and doesn't use a shared static data area.
+    // As localtime_r() is not specified to work as if it called tzset(),
+    // make an explicit call.
+    tzset();
+    if (tm *res = localtime_r(&utc, local)) {
+        Q_ASSERT(res == local);
+        return true;
+    }
+    return false;
+#else
+    // POSIX mandates that localtime() behaves as if it called tzset().
+    // Returns shared static data which may be overwritten at any time (albeit
+    // our lock probably keeps it safe). So copy the result promptly:
+    if (tm *res = localtime(&utc)) {
+        *local = *res;
+        return true;
+    }
+    return false;
+#endif
 }
 
 QT_END_NAMESPACE

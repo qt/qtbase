@@ -18,6 +18,7 @@
 
 #include "qglobal.h"
 #include "qglobal_p.h"      // include self to avoid syncqt warning - no-op
+#include <private/qtenvironmentvariables_p.h> // until qtdeclarative's tst_qqmlqt.cpp catches up
 
 #ifndef QT_BOOTSTRAPPED
 #include <QtCore/private/qconfig_p.h>
@@ -52,16 +53,7 @@
 #endif
 
 #if defined(__cplusplus)
-#ifdef Q_CC_MINGW
-#  include <unistd.h> // Define _POSIX_THREAD_SAFE_FUNCTIONS to obtain localtime_r()
-#endif
-#include <time.h>
-
 QT_BEGIN_NAMESPACE
-
-// These behave as if they consult the environment, so need to share its locking:
-Q_CORE_EXPORT void qTzSet();
-Q_CORE_EXPORT time_t qMkTime(struct tm *when);
 
 #if !defined(Q_CC_MSVC) || defined(Q_CC_CLANG)
 Q_NORETURN
@@ -142,4 +134,3 @@ QT_END_NAMESPACE
 #endif // defined(__cplusplus)
 
 #endif // QGLOBAL_P_H
-
