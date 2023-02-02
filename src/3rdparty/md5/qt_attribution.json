@@ -4,7 +4,7 @@
     "QDocModule": "qtcore",
     "QtUsage": "Used in Qt Core (QCryptographicHash).",
 
-    "Description": "Treat as final version; no upstream known",
+    "Comment": "Treat as final version; no upstream known",
     "Description": "MD5 message-digest algorithm.",
     "License": "Public Domain",
     "LicenseId": "CC0-1.0",

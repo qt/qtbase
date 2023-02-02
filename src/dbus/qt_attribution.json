@@ -11,7 +11,7 @@
     "LicenseId": "AFL-2.1 OR GPL-2.0-or-later",
     "License": "Academic Free License v2.1, or GNU General Public License v2.0 or later",
     "LicenseFile": "LIBDBUS-1-LICENSE.txt",
-    "Files": "Fragments from various upstream files, see comments in ...",
+    "Comment": "Fragments from various upstream files, see comments in ...",
     "Files": "dbus_minimal_p.h",
     "Copyright": "Copyright (C) 2002, 2003 CodeFactory AB
 Copyright (C) 2004, 2005 Red Hat, Inc."

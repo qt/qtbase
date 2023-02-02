@@ -4,7 +4,7 @@
     "QDocModule": "qtcore",
     "QtUsage": "Used in Qt Core (QCryptographicHash and QMessageAuthenticationCode)",
 
-    "Description": "The RFC actually contains the code, embedded in RFC-boilerplate; presumably we extracted it; treat as final",
+    "Comment": "The RFC actually contains the code, embedded in RFC-boilerplate; presumably we extracted it; treat as final",
     "Description": "Implements the Secure Hash Algorithms SHA 384 and SHA-521",
     "License": "BSD 3-clause \"New\" or \"Revised\" License",
     "LicenseFile": "LICENSE",
