@@ -71,7 +71,7 @@ public:
         QMutex mutex;
         QStringList files;
         QFileInfoList fileInfos;
-        bool fileListsInitialized = false;
+        std::atomic<bool> fileListsInitialized = false;
         QFileSystemEntry absoluteDirEntry;
         QFileSystemMetaData metaData;
     };

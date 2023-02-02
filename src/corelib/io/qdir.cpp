@@ -100,7 +100,7 @@ QDirPrivate::QDirPrivate(const QDirPrivate &copy)
       dirEntry(copy.dirEntry)
 {
     QMutexLocker locker(&copy.fileCache.mutex);
-    fileCache.fileListsInitialized = copy.fileCache.fileListsInitialized;
+    fileCache.fileListsInitialized = copy.fileCache.fileListsInitialized.load();
     fileCache.files = copy.fileCache.files;
     fileCache.fileInfos = copy.fileCache.fileInfos;
     fileCache.absoluteDirEntry = copy.fileCache.absoluteDirEntry;
@@ -1378,17 +1378,29 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
     if (sort == NoSort)
         sort = d->sort;
 
+    const bool needsSorting = (sort & QDir::SortByMask) != QDir::Unsorted;
+
     if (filters == d->filters && sort == d->sort && nameFilters == d->nameFilters) {
-        d->initFileLists(*this);
-        return d->fileCache.files;
+        // Don't fill a QFileInfo cache if we just need names
+        if (needsSorting || d->fileCache.fileListsInitialized) {
+            d->initFileLists(*this);
+            return d->fileCache.files;
+        }
     }
 
-    QFileInfoList l;
     QDirIterator it(d->dirEntry.filePath(), nameFilters, filters);
-    while (it.hasNext())
-        l.append(it.nextFileInfo());
     QStringList ret;
-    d->sortFileList(sort, l, &ret, nullptr);
+    if (needsSorting) {
+        QFileInfoList l;
+        while (it.hasNext())
+            l.append(it.nextFileInfo());
+        d->sortFileList(sort, l, &ret, nullptr);
+    } else {
+        while (it.hasNext()) {
+            it.next();
+            ret.append(it.fileName());
+        }
+    }
     return ret;
 }
 
