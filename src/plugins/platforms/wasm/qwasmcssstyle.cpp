@@ -39,7 +39,7 @@ const char *Style = R"css(
     box-shadow: rgb(0 0 0 / 20%) 0px 10px 16px 0px, rgb(0 0 0 / 19%) 0px 6px 20px 0px;
 }
 
-.qt-window.has-title-bar {
+.qt-window.has-frame {
     border: var(--border-width) solid lightgray;
     caret-color: transparent;
 }
@@ -49,7 +49,7 @@ const char *Style = R"css(
     display: none;
 }
 
-.qt-window.has-title-bar:not(.maximized) .resize-outline {
+.qt-window.has-frame:not(.maximized) .resize-outline {
     display: block;
 }
 
@@ -125,15 +125,21 @@ const char *Style = R"css(
     padding-bottom: 4px;
 }
 
-.qt-window.has-title-bar .title-bar {
+.qt-window.has-frame .title-bar {
     display: flex;
 }
 
 .title-bar .window-name {
+    display: none;
     font-family: 'Lucida Grande';
     white-space: nowrap;
     user-select: none;
     overflow: hidden;
+}
+
+
+.qt-window.has-title .title-bar .window-name {
+    display: block;
 }
 
 .title-bar .spacer {

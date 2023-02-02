@@ -358,8 +358,9 @@ void QWasmWindow::onActivationChanged(bool active)
 void QWasmWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     m_flags = flags;
-    dom::syncCSSClassWith(m_qtWindow, "has-title-bar", hasTitleBar());
+    dom::syncCSSClassWith(m_qtWindow, "has-frame", hasFrame());
     dom::syncCSSClassWith(m_qtWindow, "has-shadow", !flags.testFlag(Qt::NoDropShadowWindowHint));
+    dom::syncCSSClassWith(m_qtWindow, "has-title", flags.testFlag(Qt::WindowTitleHint));
     dom::syncCSSClassWith(m_qtWindow, "transparent-for-input",
                           flags.testFlag(Qt::WindowTransparentForInput));
 
@@ -421,7 +422,7 @@ void QWasmWindow::applyWindowState()
     else
         newGeom = normalGeometry();
 
-    dom::syncCSSClassWith(m_qtWindow, "has-title-bar", hasTitleBar());
+    dom::syncCSSClassWith(m_qtWindow, "has-frame", hasFrame());
     dom::syncCSSClassWith(m_qtWindow, "maximized", isMaximized);
 
     m_nonClientArea->titleBar()->setRestoreVisible(isMaximized);
@@ -518,9 +519,9 @@ void QWasmWindow::requestUpdate()
     m_compositor->requestUpdateWindow(this, QWasmCompositor::UpdateRequestDelivery);
 }
 
-bool QWasmWindow::hasTitleBar() const
+bool QWasmWindow::hasFrame() const
 {
-    return !m_state.testFlag(Qt::WindowFullScreen) && m_flags.testFlag(Qt::WindowTitleHint)
+    return !m_state.testFlag(Qt::WindowFullScreen) && !m_flags.testFlag(Qt::FramelessWindowHint)
             && !windowIsPopupType(m_flags);
 }
 

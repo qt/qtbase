@@ -91,7 +91,7 @@ private:
     friend class QWasmScreen;
 
     void invalidate();
-    bool hasTitleBar() const;
+    bool hasFrame() const;
     bool hasMaximizeButton() const;
     void applyWindowState();
 
