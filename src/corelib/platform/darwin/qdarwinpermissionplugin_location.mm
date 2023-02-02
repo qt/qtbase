@@ -83,10 +83,9 @@ struct PermissionRequest
         return Qt::PermissionStatus::Granted;
 #ifdef Q_OS_IOS
     case kCLAuthorizationStatusAuthorizedWhenInUse:
-        if (permission.availability() == QLocationPermission::WhenInUse)
-            return Qt::PermissionStatus::Granted;
-        else
-            return Qt::PermissionStatus::Denied;  // FIXME: Verify
+        if (permission.availability() == QLocationPermission::Always)
+            return Qt::PermissionStatus::Denied;
+        return Qt::PermissionStatus::Granted;
 #endif
     }
 
@@ -176,11 +175,20 @@ struct PermissionRequest
         // or authorized when in use.
         switch ([self authorizationStatus]) {
         case kCLAuthorizationStatusNotDetermined:
-#ifdef Q_OS_IOS
-        case kCLAuthorizationStatusAuthorizedWhenInUse:
-#endif
             [self.manager requestAlwaysAuthorization];
             break;
+#ifdef Q_OS_IOS
+        case kCLAuthorizationStatusAuthorizedWhenInUse:
+            // Unfortunately when asking for AlwaysAuthorization when in
+            // the WhenInUse state, to "upgrade" the permission, the iOS
+            // location system will not give us a callback if the user
+            // denies the request, leaving us hanging without a way to
+            // respond to the permission request.
+            qCWarning(lcLocationPermission) << "QLocationPermission::WhenInUse"
+                << "can not be upgraded to QLocationPermission::Always on iOS."
+                << "Please request QLocationPermission::Always directly.";
+            Q_FALLTHROUGH();
+#endif
         default:
             [self deliverResult];
         }
