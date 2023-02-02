@@ -356,8 +356,17 @@ language_map = {
     325: ("Zarma",                       "dje"),
     326: ("Zhuang",                      "za"), # macrolanguage
     327: ("Zulu",                        "zu"),
+    # added in CLDR v40
     328: ("Kaingang",                    "kgp"),
-    329: ("Nheengatu",                   "yrl")
+    329: ("Nheengatu",                   "yrl"),
+    # added in CLDR v42
+    330: ("Haryanvi",                    "bgc"),
+    331: ("Moksha",                      "mdf"),
+    332: ("Northern Frisian",            "frr"),
+    333: ("Obolo",                       "ann"),
+    334: ("Pijin",                       "pis"),
+    335: ("Rajasthani",                  "raj"),
+    336: ("Toki Pona",                   "tok"),
 }
 
 language_aliases = {
