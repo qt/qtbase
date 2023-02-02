@@ -365,6 +365,7 @@ void QWasmWindow::setWindowFlags(Qt::WindowFlags flags)
                           flags.testFlag(Qt::WindowTransparentForInput));
 
     m_nonClientArea->titleBar()->setMaximizeVisible(hasMaximizeButton());
+    m_nonClientArea->titleBar()->setCloseVisible(m_flags.testFlag(Qt::WindowCloseButtonHint));
 }
 
 void QWasmWindow::setWindowState(Qt::WindowStates newState)
