@@ -32,24 +32,14 @@ public slots:
     }
     void cleanupTestCase()
     {
-        {
-            QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
-            testdir.setSorting(QDir::Unsorted);
-            testdir.setFilter(QDir::AllEntries | QDir::System | QDir::Hidden);
-            foreach (const QString &filename, testdir.entryList()) {
-                testdir.remove(filename);
-            }
-        }
-        const QDir temp = QDir(QDir::tempPath());
-        temp.rmdir(QLatin1String("test_speed"));
+        QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
+        QVERIFY(testdir.removeRecursively());
     }
 private slots:
-    void baseline() {}
-
     void sizeSpeed()
     {
-        QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
         QBENCHMARK {
+            QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
             QFileInfoList fileInfoList = testdir.entryInfoList(QDir::Files, QDir::Unsorted);
             foreach (const QFileInfo &fileInfo, fileInfoList) {
                 fileInfo.isDir();
@@ -59,8 +49,8 @@ private slots:
     }
     void sizeSpeedIterator()
     {
-        QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
         QBENCHMARK {
+            QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
             QDirIterator dit(testdir.path(), QDir::Files);
             while (dit.hasNext()) {
                 const auto fi = dit.nextFileInfo();
@@ -72,8 +62,8 @@ private slots:
 
     void sizeSpeedWithoutFilter()
     {
-        QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
         QBENCHMARK {
+            QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
             QFileInfoList fileInfoList = testdir.entryInfoList(QDir::NoFilter, QDir::Unsorted);
             foreach (const QFileInfo &fileInfo, fileInfoList) {
                 fileInfo.size();
@@ -82,8 +72,8 @@ private slots:
     }
     void sizeSpeedWithoutFilterIterator()
     {
-        QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
         QBENCHMARK {
+            QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
             QDirIterator dit(testdir.path());
             while (dit.hasNext()) {
                 const auto fi = dit.nextFileInfo();
@@ -95,9 +85,9 @@ private slots:
 
     void sizeSpeedWithoutFileInfoList()
     {
-        QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
-        testdir.setSorting(QDir::Unsorted);
         QBENCHMARK {
+            QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
+            testdir.setSorting(QDir::Unsorted);
             QStringList fileList = testdir.entryList(QDir::NoFilter, QDir::Unsorted);
             foreach (const QString &filename, fileList) {
                 QFileInfo fileInfo(filename);
@@ -108,10 +98,10 @@ private slots:
 
     void iDontWantAnyStat()
     {
-        QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
-        testdir.setSorting(QDir::Unsorted);
-        testdir.setFilter(QDir::AllEntries | QDir::System | QDir::Hidden);
         QBENCHMARK {
+            QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
+            testdir.setSorting(QDir::Unsorted);
+            testdir.setFilter(QDir::AllEntries | QDir::System | QDir::Hidden);
             QStringList fileList = testdir.entryList(QDir::NoFilter, QDir::Unsorted);
             foreach (const QString &filename, fileList) {
                 Q_UNUSED(filename);
@@ -130,10 +120,10 @@ private slots:
 
     void sorted_byTime()
     {
-        QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
-        testdir.setSorting(QDir::Time);
-        testdir.setFilter(QDir::AllEntries | QDir::System | QDir::Hidden);
         QBENCHMARK {
+            QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
+            testdir.setSorting(QDir::Time);
+            testdir.setFilter(QDir::AllEntries | QDir::System | QDir::Hidden);
             QStringList fileList = testdir.entryList(QDir::NoFilter, QDir::Time);
             foreach (const QString &filename, fileList) {
                 Q_UNUSED(filename);
@@ -143,9 +133,9 @@ private slots:
 
     void sorted_byName()
     {
-        QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
-        testdir.setFilter(QDir::AllEntries | QDir::System | QDir::Hidden);
         QBENCHMARK {
+            QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
+            testdir.setFilter(QDir::AllEntries | QDir::System | QDir::Hidden);
             [[maybe_unused]] auto r = testdir.entryInfoList(QDir::NoFilter, QDir::Name);
         }
     }
@@ -159,22 +149,22 @@ private slots:
         wcscpy(appendedPath, dirpath);
         wcscat(appendedPath, L"\\*");
 
-        WIN32_FIND_DATA fd;
-        HANDLE hSearch = FindFirstFileW(appendedPath, &fd);
-        QVERIFY(hSearch != INVALID_HANDLE_VALUE);
-
         QBENCHMARK {
+            WIN32_FIND_DATA fd;
+            HANDLE hSearch = FindFirstFileW(appendedPath, &fd);
+            QVERIFY(hSearch != INVALID_HANDLE_VALUE);
+
             do {
 
             } while (FindNextFile(hSearch, &fd));
+            FindClose(hSearch);
         }
-        FindClose(hSearch);
 #else
-        DIR *dir = opendir(qPrintable(testdir.absolutePath()));
-        QVERIFY(dir);
-
         QVERIFY(!chdir(qPrintable(testdir.absolutePath())));
         QBENCHMARK {
+            DIR *dir = opendir(qPrintable(testdir.absolutePath()));
+            QVERIFY(dir);
+
             struct dirent *item = readdir(dir);
             while (item) {
                 char *fileName = item->d_name;
@@ -184,8 +174,8 @@ private slots:
 
                 item = readdir(dir);
             }
+            closedir(dir);
         }
-        closedir(dir);
 #endif
     }
 };
