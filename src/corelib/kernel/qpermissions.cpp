@@ -381,10 +381,14 @@ QT_PERMISSION_IMPL_COMMON(QBluetoothPermission)
 
     \include permissions.qdocinc begin-usage-declarations
       \row
-        \li Apple
+        \li \macos
+        \li \l{apple-usage-description}{Usage description}
+        \li \c NSLocationUsageDescription
+      \row
+        \li iOS
         \li \l{apple-usage-description}{Usage description}
         \li \c NSLocationWhenInUseUsageDescription, and
-            \c NSLocationAlwaysUsageDescription if requesting
+            \c NSLocationAlwaysAndWhenInUseUsageDescription if requesting
             QLocationPermission::Always
       \row
         \li Android

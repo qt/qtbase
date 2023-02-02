@@ -123,11 +123,15 @@ struct PermissionRequest
 
 - (QStringList)usageDescriptionsFor:(QPermission)permission
 {
+#if defined(Q_OS_MACOS)
+    return { "NSLocationUsageDescription" };
+#else // iOS 11 and above
     QStringList usageDescriptions = { "NSLocationWhenInUseUsageDescription" };
     const auto locationPermission = *permission.value<QLocationPermission>();
     if (locationPermission.availability() == QLocationPermission::Always)
-        usageDescriptions << "NSLocationAlwaysUsageDescription";
+        usageDescriptions << "NSLocationAlwaysAndWhenInUseUsageDescription";
     return usageDescriptions;
+#endif
 }
 
 - (void)requestPermission:(QPermission)permission withCallback:(PermissionCallback)callback
