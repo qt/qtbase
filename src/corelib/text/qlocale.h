@@ -369,6 +369,13 @@ public:
         Zulu = 327,
         Kaingang = 328,
         Nheengatu = 329,
+        Haryanvi = 330,
+        NorthernFrisian = 331,
+        Rajasthani = 332,
+        Moksha = 333,
+        TokiPona = 334,
+        Pijin = 335,
+        Obolo = 336,
 
         Afan = Oromo,
         Bengali = Bangla,
@@ -390,7 +397,7 @@ public:
         Uigur = Uyghur,
         Walamo = Wolaytta,
 
-        LastLanguage = Nheengatu
+        LastLanguage = Obolo
     };
 
     enum Script : ushort {
