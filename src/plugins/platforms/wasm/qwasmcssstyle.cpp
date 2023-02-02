@@ -31,6 +31,10 @@ const char *Style = R"css(
     background-color: lightgray;
 }
 
+.qt-window.transparent-for-input {
+    pointer-events: none;
+}
+
 .qt-window.has-shadow {
     box-shadow: rgb(0 0 0 / 20%) 0px 10px 16px 0px, rgb(0 0 0 / 19%) 0px 6px 20px 0px;
 }
