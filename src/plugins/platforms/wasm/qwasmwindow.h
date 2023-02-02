@@ -92,6 +92,7 @@ private:
 
     void invalidate();
     bool hasTitleBar() const;
+    bool hasMaximizeButton() const;
     void applyWindowState();
 
     bool processPointer(const PointerEvent &event);
