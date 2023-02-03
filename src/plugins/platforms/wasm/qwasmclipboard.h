@@ -36,7 +36,7 @@ public:
 
     ProcessKeyboardResult processKeyboard(const QWasmEventTranslator::TranslatedEvent &event,
                                           const QFlags<Qt::KeyboardModifier> &modifiers);
-    void installEventHandlers(const emscripten::val &canvas);
+    static void installEventHandlers(const emscripten::val &target);
     bool hasClipboardApi();
 
 private:

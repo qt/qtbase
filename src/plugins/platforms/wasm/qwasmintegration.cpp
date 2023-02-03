@@ -276,7 +276,6 @@ void QWasmIntegration::addScreen(const emscripten::val &element)
 {
     QWasmScreen *screen = new QWasmScreen(element);
     m_screens.append(qMakePair(element, screen));
-    m_clipboard->installEventHandlers(element);
     QWindowSystemInterface::handleScreenAdded(screen);
 }
 

@@ -173,15 +173,15 @@ void QWasmClipboard::initClipboardPermissions()
                            })());
 }
 
-void QWasmClipboard::installEventHandlers(const emscripten::val &screenElement)
+void QWasmClipboard::installEventHandlers(const emscripten::val &target)
 {
     emscripten::val cContext = val::undefined();
     emscripten::val isChromium = val::global("window")["chrome"];
-   if (!isChromium.isUndefined()) {
+    if (!isChromium.isUndefined()) {
         cContext = val::global("document");
-   } else {
-       cContext = screenElement;
-   }
+    } else {
+        cContext = target;
+    }
     // Fallback path for browsers which do not support direct clipboard access
     cContext.call<void>("addEventListener", val("cut"),
                         val::module_property("qtClipboardCutTo"), true);
