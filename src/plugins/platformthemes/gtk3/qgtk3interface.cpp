@@ -16,7 +16,6 @@
 #include "qgtk3interface_p.h"
 #include "qgtk3storage_p.h"
 #include <QtCore/QMetaEnum>
-#include <QtCore/QSettings>
 #include <QtCore/QFileInfo>
 #include <QtGui/QFontDatabase>
 
