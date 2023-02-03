@@ -370,112 +370,67 @@ static QMetaType qDecodeODBCType(SQLSMALLINT sqltype, bool isSigned = true)
     return QMetaType(type);
 }
 
-static QVariant qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool unicode)
+template <typename CT>
+static QVariant getStringDataImpl(SQLHANDLE hStmt, SQLUSMALLINT column, qsizetype colSize, SQLSMALLINT targetType)
 {
     QString fieldVal;
     SQLRETURN r = SQL_ERROR;
     SQLLEN lengthIndicator = 0;
+    QVarLengthArray<CT> buf(colSize);
+    while (true) {
+        r = SQLGetData(hStmt,
+                       column + 1,
+                       targetType,
+                       SQLPOINTER(buf.data()), SQLINTEGER(buf.size() * sizeof(CT)),
+                       &lengthIndicator);
+        if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
+            if (lengthIndicator == SQL_NULL_DATA) {
+                return {};
+            }
+            // starting with ODBC Native Client 2012, SQL_NO_TOTAL is returned
+            // instead of the length (which sometimes was wrong in older versions)
+            // see link for more info: http://msdn.microsoft.com/en-us/library/jj219209.aspx
+            // if length indicator equals SQL_NO_TOTAL, indicating that
+            // more data can be fetched, but size not known, collect data
+            // and fetch next block
+            if (lengthIndicator == SQL_NO_TOTAL) {
+                fieldVal += fromSQLTCHAR<QVarLengthArray<CT>, sizeof(CT)>(buf, buf.size());
+                continue;
+            }
+            // if SQL_SUCCESS_WITH_INFO is returned, indicating that
+            // more data can be fetched, the length indicator does NOT
+            // contain the number of bytes returned - it contains the
+            // total number of bytes that CAN be fetched
+            const qsizetype rSize = (r == SQL_SUCCESS_WITH_INFO)
+                    ? buf.size()
+                    : qsizetype(lengthIndicator / sizeof(CT));
+            fieldVal += fromSQLTCHAR<QVarLengthArray<CT>, sizeof(CT)>(buf, rSize);
+            // lengthIndicator does not contain the termination character
+            if (lengthIndicator < SQLLEN((buf.size() - 1) * sizeof(CT))) {
+                // workaround for Drivermanagers that don't return SQL_NO_DATA
+                break;
+            }
+        } else if (r == SQL_NO_DATA) {
+            break;
+        } else {
+            qWarning() << "qGetStringData: Error while fetching data (" << qWarnODBCHandle(SQL_HANDLE_STMT, hStmt) << ')';
+            return {};
+        }
+    }
+    return fieldVal;
+}
 
-    // NB! colSize must be a multiple of 2 for unicode enabled DBs
+static QVariant qGetStringData(SQLHANDLE hStmt, SQLUSMALLINT column, int colSize, bool unicode)
+{
     if (colSize <= 0) {
-        colSize = 256;
+        colSize = 256;  // default Prealloc size of QVarLengthArray
     } else if (colSize > 65536) { // limit buffer size to 64 KB
         colSize = 65536;
     } else {
         colSize++; // make sure there is room for more than the 0 termination
     }
-    if (unicode) {
-        r = SQLGetData(hStmt,
-                        column+1,
-                        SQL_C_TCHAR,
-                        NULL,
-                        0,
-                        &lengthIndicator);
-        if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && lengthIndicator > 0)
-            colSize = int(lengthIndicator / sizeof(SQLTCHAR) + 1);
-        QVarLengthArray<SQLTCHAR> buf(colSize);
-        while (true) {
-            r = SQLGetData(hStmt,
-                            column+1,
-                            SQL_C_TCHAR,
-                            (SQLPOINTER)buf.data(),
-                            colSize*sizeof(SQLTCHAR),
-                            &lengthIndicator);
-            if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
-                if (lengthIndicator == SQL_NULL_DATA) {
-                    return {};
-                }
-                // starting with ODBC Native Client 2012, SQL_NO_TOTAL is returned
-                // instead of the length (which sometimes was wrong in older versions)
-                // see link for more info: http://msdn.microsoft.com/en-us/library/jj219209.aspx
-                // if length indicator equals SQL_NO_TOTAL, indicating that
-                // more data can be fetched, but size not known, collect data
-                // and fetch next block
-                if (lengthIndicator == SQL_NO_TOTAL) {
-                    fieldVal += fromSQLTCHAR(buf, colSize);
-                    continue;
-                }
-                // if SQL_SUCCESS_WITH_INFO is returned, indicating that
-                // more data can be fetched, the length indicator does NOT
-                // contain the number of bytes returned - it contains the
-                // total number of bytes that CAN be fetched
-                int rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : int(lengthIndicator / sizeof(SQLTCHAR));
-                    fieldVal += fromSQLTCHAR(buf, rSize);
-                if (lengthIndicator < SQLLEN(colSize*sizeof(SQLTCHAR))) {
-                    // workaround for Drivermanagers that don't return SQL_NO_DATA
-                    break;
-                }
-            } else if (r == SQL_NO_DATA) {
-                break;
-            } else {
-                qWarning() << "qGetStringData: Error while fetching data (" << qWarnODBCHandle(SQL_HANDLE_STMT, hStmt) << ')';
-                return {};
-            }
-        }
-    } else {
-        r = SQLGetData(hStmt,
-                        column+1,
-                        SQL_C_CHAR,
-                        NULL,
-                        0,
-                        &lengthIndicator);
-        if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && lengthIndicator > 0)
-            colSize = lengthIndicator + 1;
-        QVarLengthArray<SQLCHAR> buf(colSize);
-        while (true) {
-            r = SQLGetData(hStmt,
-                            column+1,
-                            SQL_C_CHAR,
-                            (SQLPOINTER)buf.data(),
-                            colSize,
-                            &lengthIndicator);
-            if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
-                if (lengthIndicator == SQL_NULL_DATA || lengthIndicator == SQL_NO_TOTAL) {
-                  return {};
-                }
-                // if SQL_SUCCESS_WITH_INFO is returned, indicating that
-                // more data can be fetched, the length indicator does NOT
-                // contain the number of bytes returned - it contains the
-                // total number of bytes that CAN be fetched
-                qsizetype rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : lengthIndicator;
-                // Remove any trailing \0 as some drivers misguidedly append one
-                int realsize = qMin(rSize, buf.size());
-                if (realsize > 0 && buf[realsize - 1] == 0)
-                    realsize--;
-                fieldVal += QString::fromUtf8(reinterpret_cast<const char *>(buf.constData()), realsize);
-                if (lengthIndicator < SQLLEN(colSize)) {
-                    // workaround for Drivermanagers that don't return SQL_NO_DATA
-                    break;
-                }
-            } else if (r == SQL_NO_DATA) {
-                break;
-            } else {
-                qWarning() << "qGetStringData: Error while fetching data (" << qWarnODBCHandle(SQL_HANDLE_STMT, hStmt) << ')';
-                return {};
-            }
-        }
-    }
-    return fieldVal;
+    return unicode ? getStringDataImpl<SQLTCHAR>(hStmt, column, colSize, SQL_C_TCHAR)
+                   : getStringDataImpl<SQLCHAR>(hStmt, column, colSize, SQL_C_CHAR);
 }
 
 static QVariant qGetBinaryData(SQLHANDLE hStmt, int column)
