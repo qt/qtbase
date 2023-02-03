@@ -328,7 +328,17 @@ void QWasmAccessibility::setHtmlElementVisibility(QAccessibleInterface *iface, b
 void QWasmAccessibility::setHtmlElementGeometry(QAccessibleInterface *iface)
 {
     emscripten::val element = ensureHtmlElement(iface);
-    setHtmlElementGeometry(element, iface->rect());
+
+    // QAccessibleInterface gives us the geometry in global (screen) coordinates. Translate that
+    // to window geometry in order to position elements relative to window origin.
+    QWindow *window = getWindow(iface);
+    if (!window)
+        qCWarning(lcQpaAccessibility) << "Unable to find window for" << iface << "setting null geometry";
+    QRect screenGeometry = iface->rect();
+    QPoint windowPos = window ? window->mapFromGlobal(screenGeometry.topLeft()) : QPoint();
+    QRect windowGeometry(windowPos, screenGeometry.size());
+
+    setHtmlElementGeometry(element, windowGeometry);
 }
 
 void QWasmAccessibility::setHtmlElementGeometry(emscripten::val element, QRect geometry)
