@@ -1947,7 +1947,6 @@ static bool convertFromEnum(QMetaType fromType, const void *from, QMetaType toTy
         if (toType.id() != QMetaType::QString && toType.id() != QMetaType::QByteArray)
             return QMetaType::convert(QMetaType::fromType<qlonglong>(), &ll, toType, to);
     }
-    Q_ASSERT(toType.id() == QMetaType::QString || toType.id() == QMetaType::QByteArray);
 #ifndef QT_NO_QOBJECT
     QMetaEnum en = metaEnumFromType(fromType);
     if (en.isValid()) {
@@ -1967,6 +1966,8 @@ static bool convertFromEnum(QMetaType fromType, const void *from, QMetaType toTy
         return true;
     }
 #endif
+    if (toType.id() == QMetaType::QString || toType.id() == QMetaType::QByteArray)
+        return QMetaType::convert(QMetaType::fromType<qlonglong>(), &ll, toType, to);
     return false;
 }
 
@@ -1978,12 +1979,12 @@ static bool convertToEnum(QMetaType fromType, const void *from, QMetaType toType
 #ifndef QT_NO_QOBJECT
     if (fromTypeId == QMetaType::QString || fromTypeId == QMetaType::QByteArray) {
         QMetaEnum en = metaEnumFromType(toType);
-        if (!en.isValid())
-            return false;
-        QByteArray keys = (fromTypeId == QMetaType::QString)
-                ? static_cast<const QString *>(from)->toUtf8()
-                : *static_cast<const QByteArray *>(from);
-        value = en.keysToValue(keys.constData(), &ok);
+        if (en.isValid()) {
+            QByteArray keys = (fromTypeId == QMetaType::QString)
+                    ? static_cast<const QString *>(from)->toUtf8()
+                    : *static_cast<const QByteArray *>(from);
+            value = en.keysToValue(keys.constData(), &ok);
+        }
     }
 #endif
     if (!ok) {

@@ -4982,6 +4982,13 @@ template <auto value> static void testVariantEnum()
     QVERIFY(var2.convert(QMetaType::fromType<int>()));
     QCOMPARE(var2.value<int>(), static_cast<int>(value));
 
+    QVariant strVar = QString::number(qToUnderlying(value));
+    QVariant baVar = QByteArray::number(qToUnderlying(value));
+    QCOMPARE(strVar.value<Enum>(), value);
+    QCOMPARE(baVar.value<Enum>(), value);
+    QCOMPARE(var.value<QString>(), strVar);
+    QCOMPARE(var.value<QByteArray>(), baVar);
+
     // unary + to silence gcc warning
     if (losslessConvertToInt) {
         int intValue = static_cast<int>(value);
