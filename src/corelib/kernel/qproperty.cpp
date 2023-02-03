@@ -446,6 +446,8 @@ QMetaType QUntypedPropertyBinding::valueMetaType() const
 QPropertyBindingData::~QPropertyBindingData()
 {
     QPropertyBindingDataPointer d{this};
+    if (isNotificationDelayed())
+        proxyData()->originalBindingData = nullptr;
     for (auto observer = d.firstObserver(); observer;) {
         auto next = observer.nextObserver();
         observer.unlink();
