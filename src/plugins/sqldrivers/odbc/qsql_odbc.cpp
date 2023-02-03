@@ -14,6 +14,7 @@
 #include <qsqlerror.h>
 #include <qsqlfield.h>
 #include <qsqlindex.h>
+#include <qstringconverter.h>
 #include <qstringlist.h>
 #include <qvariant.h>
 #include <qvarlengtharray.h>
@@ -58,39 +59,27 @@ inline static QString fromSQLTCHAR(const QVarLengthArray<SQLTCHAR>& input, qsize
     return result;
 }
 
-template <size_t SizeOfChar = sizeof(SQLTCHAR)>
-void toSQLTCHARImpl(QVarLengthArray<SQLTCHAR> &result, const QString &input); // primary template undefined
-
-template <typename Container>
-void do_append(QVarLengthArray<SQLTCHAR> &result, const Container &c)
+template<int SIZE = sizeof(SQLTCHAR)>
+QStringConverter::Encoding encodingForSqlTChar()
 {
-    result.append(reinterpret_cast<const SQLTCHAR *>(c.data()), c.size());
-}
-
-template <>
-void toSQLTCHARImpl<1>(QVarLengthArray<SQLTCHAR> &result, const QString &input)
-{
-    const auto u8 = input.toUtf8();
-    do_append(result, u8);
-}
-
-template <>
-void toSQLTCHARImpl<2>(QVarLengthArray<SQLTCHAR> &result, const QString &input)
-{
-    do_append(result, input);
-}
-
-template <>
-void toSQLTCHARImpl<4>(QVarLengthArray<SQLTCHAR> &result, const QString &input)
-{
-    const auto u32 = input.toUcs4();
-    do_append(result, u32);
+    if constexpr (SIZE == 1)
+        return QStringConverter::Utf8;
+    else if constexpr (SIZE == 2)
+        return QStringConverter::Utf16;
+    else if constexpr (SIZE == 4)
+        return QStringConverter::Utf32;
+    else
+        static_assert(QtPrivate::value_dependent_false<SIZE>(),
+                      "Don't know how to handle sizeof(SQLTCHAR) != 1/2/4");
 }
 
 inline static QVarLengthArray<SQLTCHAR> toSQLTCHAR(const QString &input)
 {
     QVarLengthArray<SQLTCHAR> result;
-    toSQLTCHARImpl(result, input);
+    QStringEncoder enc(encodingForSqlTChar());
+    result.resize(enc.requiredSpace(input.size()));
+    const auto end = enc.appendToBuffer(reinterpret_cast<char *>(result.data()), input);
+    result.resize((end - reinterpret_cast<char *>(result.data())) / sizeof(SQLTCHAR));
     result.append(0); // make sure it's null terminated, doesn't matter if it already is, it does if it isn't.
     return result;
 }
