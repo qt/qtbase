@@ -157,7 +157,9 @@ QTipLabel::QTipLabel(const QString &text, const QPoint &pos, QWidget *w, int mse
 
 void QTipLabel::restartExpireTimer(int msecDisplayTime)
 {
-    int time = 10000 + 40 * qMax(0, text().size()-100);
+    Q_D(const QLabel);
+    const qsizetype textLength = d->needTextControl() ? d->control->toPlainText().size() : text().size();
+    qsizetype time = 10000 + 40 * qMax(0, textLength - 100);
     if (msecDisplayTime > 0)
         time = msecDisplayTime;
     expireTimer.start(time, this);
