@@ -113,17 +113,18 @@ emscripten::val QWasmAccessibility::getContainer(QWindow *window)
 
 emscripten::val QWasmAccessibility::getContainer(QAccessibleInterface *iface)
 {
-    QWindow *window = iface->window();
-    if (!window) {
-        //this is needed to add tabs as the window is not available
-        if (iface->parent()->window()) {
-            window = iface->parent()->window();
-        } else {
-            return emscripten::val::undefined();
-        }
-    }
+    if (!iface)
+        return emscripten::val::undefined();
+    return getContainer(getWindow(iface));
+}
 
-    return getContainer(window);
+QWindow *QWasmAccessibility::getWindow(QAccessibleInterface *iface)
+{
+    QWindow *window = iface->window();
+    // this is needed to add tabs as the window is not available
+    if (!window && iface->parent())
+        window = iface->parent()->window();
+    return window;
 }
 
 emscripten::val QWasmAccessibility::getDocument(const emscripten::val &container)
