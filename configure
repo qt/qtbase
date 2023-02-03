@@ -148,11 +148,9 @@ if [ -z "$optfile" ]; then   # only write optfile if not currently redoing
 
     cmake -DIN_FILE="${opttmpfilepath}" -DOUT_FILE="${optfilepath}" -DIGNORE_ARGS=-top-level -P "${relpath}/cmake/QtWriteArgsFile.cmake"
 else
-    # In case config.opt.in is missing for some reason
-    if [ ! -f "$opttmpfilepath" ]; then
-        > "$opttmpfilepath"
-        for arg in `cat $optfile`; do echo \"$arg\" >> "$opttmpfilepath"; done
-    fi
+    # Rewriting config.opt into config.opt.in anyway. Allows for direct manipulation of config.opt
+    > "$opttmpfilepath"
+    for arg in `cat $optfile`; do echo \"$arg\" >> "$opttmpfilepath"; done
 
     cmake -DIN_FILE="${opttmpfilepath}" -DREDO_FILE="${redotmpfilepath}" -DOUT_FILE="${redofilepath}" -DIGNORE_ARGS=-top-level -P "${relpath}/cmake/QtWriteArgsFile.cmake"
     optfilepath=${redofilepath}

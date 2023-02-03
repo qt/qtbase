@@ -84,8 +84,12 @@ set REDO_TMP_FILE_PATH=%TOPQTDIR%\config.redo.in
 set FRESH_REQUESTED_ARG=
 if not defined redoing (
     echo.%*>"%OPT_TMP_FILE_PATH%"
+
     cmake -DIN_FILE="%OPT_TMP_FILE_PATH%" -DOUT_FILE="%OPT_FILE_PATH%" -DIGNORE_ARGS=-top-level -P "%QTSRC%\cmake\QtWriteArgsFile.cmake"
 ) else (
+    echo. 2> "%OPT_TMP_FILE_PATH%"
+    for /F "usebackq tokens=*" %%A in ("%OPT_FILE_PATH%") do echo "%%A" >> "%OPT_TMP_FILE_PATH%"
+
     cmake -DIN_FILE="%OPT_TMP_FILE_PATH%" -DREDO_FILE="%REDO_TMP_FILE_PATH%" -DOUT_FILE="%REDO_FILE_PATH%" -DIGNORE_ARGS="-top-level;-redo;--redo" -P "%QTSRC%\cmake\QtWriteArgsFile.cmake"
 
     set OPT_FILE_PATH=%REDO_FILE_PATH%
