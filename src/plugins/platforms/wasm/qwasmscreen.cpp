@@ -57,22 +57,11 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
 
     m_shadowContainer["classList"].call<void>("add", std::string("qt-screen"));
 
-    // Set contenteditable so that the canvas gets clipboard events,
-    // then hide the resulting focus frame, and reset the cursor.
-    m_shadowContainer.set("contentEditable", std::string("true"));
-    // set inputmode to none to stop mobile keyboard opening
-    // when user clicks  anywhere on the canvas.
-    m_shadowContainer.set("inputmode", std::string("none"));
-
-    // Hide the canvas from screen readers.
-    m_shadowContainer.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
-
     // Disable the default context menu; Qt applications typically
     // provide custom right-click behavior.
     m_onContextMenu = std::make_unique<qstdweb::EventCallback>(
             m_shadowContainer, "contextmenu",
             [](emscripten::val event) { event.call<void>("preventDefault"); });
-
     // Create "specialHTMLTargets" mapping for the canvas - the element  might be unreachable based
     // on its id only under some conditions, like the target being embedded in a shadow DOM or a
     // subframe.

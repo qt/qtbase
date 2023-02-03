@@ -20,6 +20,7 @@
 #include "qwasmeventdispatcher.h"
 #include "qwasmstring.h"
 #include "qwasmaccessibility.h"
+#include "qwasmclipboard.h"
 
 #include <iostream>
 #include <emscripten/val.h>
@@ -55,6 +56,20 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
     m_qtWindow.call<void>("appendChild", m_windowContents);
 
     m_canvas["classList"].call<void>("add", emscripten::val("qt-window-content"));
+
+    // Set contenteditable so that the canvas gets clipboard events,
+    // then hide the resulting focus frame.
+    m_canvas.set("contentEditable", std::string("true"));
+    m_canvas["style"].set("outline", std::string("none"));
+
+    QWasmClipboard::installEventHandlers(m_canvas);
+
+    // set inputmode to none to stop mobile keyboard opening
+    // when user clicks anywhere on the canvas.
+    m_canvas.set("inputmode", std::string("none"));
+
+    // Hide the canvas from screen readers.
+    m_canvas.call<void>("setAttribute", std::string("aria-hidden"), std::string("true"));
 
     m_windowContents.call<void>("appendChild", m_canvasContainer);
 

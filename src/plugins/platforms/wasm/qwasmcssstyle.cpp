@@ -24,7 +24,6 @@ const char *Style = R"css(
     width: 100%;
     height: 100%;
     overflow: hidden;
-    outline: none;
 }
 
 .qt-window {
