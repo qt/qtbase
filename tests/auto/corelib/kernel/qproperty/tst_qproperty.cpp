@@ -6,6 +6,7 @@
 #include <qtest.h>
 #include <qproperty.h>
 #include <private/qproperty_p.h>
+#include <private/qobject_p.h>
 
 #if __has_include(<source_location>) && __cplusplus >= 202002L && !defined(Q_CLANG_QDOC)
 #include <source_location>
@@ -85,6 +86,7 @@ private slots:
     void noDoubleNotification();
     void groupedNotifications();
     void groupedNotificationConsistency();
+    void bindingGroupMovingBindingData();
     void uninstalledBindingDoesNotEvaluate();
 
     void notify();
@@ -1940,6 +1942,38 @@ void tst_QProperty::groupedNotificationConsistency()
     j = 2;
     Qt::endPropertyUpdateGroup();
     QVERIFY(areEqual); // value changed runs after everything has been evaluated
+}
+
+void tst_QProperty::bindingGroupMovingBindingData()
+{
+    auto tester = std::make_unique<ClassWithNotifiedProperty>();
+    auto testerPriv = QObjectPrivate::get(tester.get());
+
+    auto dummyNotifier = tester->property.addNotifier([](){});
+    auto bindingData = testerPriv->bindingStorage.bindingData(&tester->property);
+    QVERIFY(bindingData); // we have a notifier, so there should be binding data
+
+    Qt::beginPropertyUpdateGroup();
+    auto cleanup = qScopeGuard([](){ Qt::endPropertyUpdateGroup(); });
+    tester->property = 42;
+    QCOMPARE(testerPriv->bindingStorage.bindingData(&tester->property), bindingData);
+    auto proxyData = QPropertyBindingDataPointer::proxyData(bindingData);
+    // as we've modified the property, we now should have a proxy for the delayed notification
+    QVERIFY(proxyData);
+    // trigger binding data reallocation
+    std::array<QUntypedPropertyData, 10> propertyDataArray;
+    for (auto&& data: propertyDataArray)
+        testerPriv->bindingStorage.bindingData(&data, true);
+    // binding data has moved
+    QVERIFY(testerPriv->bindingStorage.bindingData(&tester->property) != bindingData);
+    bindingData = testerPriv->bindingStorage.bindingData(&tester->property);
+    // the proxy data has been updated
+    QCOMPARE(proxyData->originalBindingData, bindingData);
+
+    tester.reset();
+    // the property data is gone, proxyData should have been informed
+    QCOMPARE(proxyData->originalBindingData, nullptr);
+    QVERIFY(proxyData);
 }
 
 void tst_QProperty::uninstalledBindingDoesNotEvaluate()

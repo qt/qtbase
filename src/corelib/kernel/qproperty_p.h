@@ -81,6 +81,7 @@ struct QPropertyBindingDataPointer
     void Q_ALWAYS_INLINE addObserver(QPropertyObserver *observer);
     inline void setFirstObserver(QPropertyObserver *observer);
     inline QPropertyObserverPointer firstObserver() const;
+    static QPropertyProxyBindingData *proxyData(QtPrivate::QPropertyBindingData *ptr);
 
     inline int observerCount() const;
 
@@ -423,9 +424,9 @@ inline void QPropertyBindingDataPointer::fixupAfterMove(QtPrivate::QPropertyBind
 {
     auto &d = ptr->d_ref();
     if (ptr->isNotificationDelayed()) {
-        QPropertyProxyBindingData *proxyData
-                = reinterpret_cast<QPropertyProxyBindingData*>(d & ~QtPrivate::QPropertyBindingData::BindingBit);
-        proxyData->originalBindingData = ptr;
+        QPropertyProxyBindingData *proxy = ptr->proxyData();
+        Q_ASSERT(proxy);
+        proxy->originalBindingData = ptr;
     }
     // If QPropertyBindingData has been moved, and it has an observer
     // we have to adjust the firstObserver's prev pointer to point to
@@ -441,6 +442,17 @@ inline QPropertyObserverPointer QPropertyBindingDataPointer::firstObserver() con
     if (auto *b = binding())
         return b->firstObserver;
     return { reinterpret_cast<QPropertyObserver *>(ptr->d()) };
+}
+
+/*!
+    \internal
+    Returns the proxy data of \a ptr, or \c nullptr if \a ptr has no delayed notification
+ */
+inline QPropertyProxyBindingData *QPropertyBindingDataPointer::proxyData(QtPrivate::QPropertyBindingData *ptr)
+{
+    if (!ptr->isNotificationDelayed())
+        return nullptr;
+    return ptr->proxyData();
 }
 
 inline int QPropertyBindingDataPointer::observerCount() const

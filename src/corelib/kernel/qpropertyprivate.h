@@ -304,10 +304,15 @@ private:
     {
         quintptr &d = d_ptr;
         if (isNotificationDelayed())
-            return reinterpret_cast<QPropertyProxyBindingData *>(d_ptr & ~(BindingBit|DelayedNotificationBit))->d_ptr;
+            return proxyData()->d_ptr;
         return d;
     }
     quintptr d() const { return d_ref(); }
+    QPropertyProxyBindingData *proxyData() const
+    {
+        Q_ASSERT(isNotificationDelayed());
+        return reinterpret_cast<QPropertyProxyBindingData *>(d_ptr & ~(BindingBit|DelayedNotificationBit));
+    }
     void registerWithCurrentlyEvaluatingBinding_helper(BindingEvaluationState *currentBinding) const;
     void removeBinding_helper();
 
