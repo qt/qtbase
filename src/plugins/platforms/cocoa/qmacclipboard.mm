@@ -111,7 +111,7 @@ QMacPasteboard::~QMacPasteboard()
         Commit all promises for paste when shutting down,
         unless we are the stack-allocated clipboard used by QCocoaDrag.
     */
-    if (scope == QUtiMimeConverter::HandlerScope::DnD)
+    if (scope == QUtiMimeConverter::HandlerScopeFlag::DnD)
         resolvingBeforeDestruction = true;
     PasteboardResolvePromises(paste);
     if (paste)
@@ -130,7 +130,7 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
     const long promise_id = (long)id;
 
     // Find the kept promise
-    const QList<QUtiMimeConverter*> availableConverters = QMacMimeRegistry::all(QUtiMimeConverter::HandlerScope::All);
+    const QList<QUtiMimeConverter*> availableConverters = QMacMimeRegistry::all(QUtiMimeConverter::HandlerScopeFlag::All);
     const QString utiAsQString = QString::fromCFString(uti);
     QMacPasteboard::Promise promise;
     for (int i = 0; i < qpaste->promises.size(); i++){

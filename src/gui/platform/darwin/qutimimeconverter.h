@@ -19,7 +19,7 @@ class Q_GUI_EXPORT QUtiMimeConverter
 {
     Q_DISABLE_COPY(QUtiMimeConverter)
 public:
-    enum class HandlerScope : uchar
+    enum class HandlerScopeFlag : uint8_t
     {
         DnD            = 0x01,
         Clipboard      = 0x02,
@@ -28,9 +28,9 @@ public:
         All            = DnD|Clipboard,
         AllCompatible  = All|Qt_compatible
     };
+    Q_DECLARE_FLAGS(HandlerScope, HandlerScopeFlag)
 
     QUtiMimeConverter();
-    explicit QUtiMimeConverter(HandlerScope scope); // internal
     virtual ~QUtiMimeConverter();
 
     HandlerScope scope() const { return m_scope; }
@@ -46,8 +46,15 @@ public:
     virtual int count(const QMimeData *mimeData) const;
 
 private:
+    friend class QMacMimeTypeName;
+    friend class QMacMimeAny;
+
+    explicit QUtiMimeConverter(HandlerScope scope);
+
     const HandlerScope m_scope;
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(QUtiMimeConverter::HandlerScope)
+
 
 QT_END_NAMESPACE
 

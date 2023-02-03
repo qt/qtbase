@@ -48,9 +48,9 @@ private:
     static OSStatus promiseKeeper(PasteboardRef, PasteboardItemID, CFStringRef, void *);
     void clear_helper();
 public:
-    QMacPasteboard(PasteboardRef p, QUtiMimeConverter::HandlerScope scope = QUtiMimeConverter::HandlerScope::All);
+    QMacPasteboard(PasteboardRef p, QUtiMimeConverter::HandlerScope scope = QUtiMimeConverter::HandlerScopeFlag::All);
     QMacPasteboard(QUtiMimeConverter::HandlerScope scope);
-    QMacPasteboard(CFStringRef name=nullptr, QUtiMimeConverter::HandlerScope scope = QUtiMimeConverter::HandlerScope::All);
+    QMacPasteboard(CFStringRef name=nullptr, QUtiMimeConverter::HandlerScope scope = QUtiMimeConverter::HandlerScopeFlag::All);
     ~QMacPasteboard();
 
     bool hasUti(const QString &uti) const;
