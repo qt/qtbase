@@ -165,6 +165,19 @@ void QDBusContext::sendErrorReply(QDBusError::ErrorType type, const QString &msg
     connection().send(message().createErrorReply(type, msg));
 }
 
+/*!
+    \overload
+    Sends an error \a err as a reply to the caller.
+
+    If an error is sent, the return value and any output parameters
+    from the called slot will be ignored by Qt D-Bus.
+*/
+void QDBusContext::sendErrorReply(const QDBusError &err) const
+{
+    setDelayedReply(true);
+    connection().send(message().createError(err));
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS
