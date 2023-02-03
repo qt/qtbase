@@ -10,8 +10,8 @@
 QT_BEGIN_NAMESPACE
 
 QCocoaClipboard::QCocoaClipboard()
-    :m_clipboard(new QMacPasteboard(kPasteboardClipboard, QUtiMimeConverter::HandlerScope::Clipboard))
-    ,m_find(new QMacPasteboard(kPasteboardFind, QUtiMimeConverter::HandlerScope::Clipboard))
+    :m_clipboard(new QMacPasteboard(kPasteboardClipboard, QUtiMimeConverter::HandlerScopeFlag::Clipboard))
+    ,m_find(new QMacPasteboard(kPasteboardFind, QUtiMimeConverter::HandlerScopeFlag::Clipboard))
 {
     connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QCocoaClipboard::handleApplicationStateChanged);
 }

@@ -82,15 +82,15 @@ void destroyMimeTypes()
 */
 QString flavorToMime(QUtiMimeConverter::HandlerScope scope, const QString &uti)
 {
-    MimeList *mimes = globalMimeList();
-    for (MimeList::const_iterator it = mimes->constBegin(); it != mimes->constEnd(); ++it) {
-        const bool relevantScope = uchar((*it)->scope()) & uchar(scope);
+    const MimeList &mimes = *globalMimeList();
+    for (const auto &mime : mimes) {
+        const bool relevantScope = mime->scope() & scope;
 #ifdef DEBUG_MIME_MAPS
         qDebug("QMacMimeRegistry::flavorToMime: attempting (%d) for uti %s [%s]",
                relevantScope, qPrintable(uti), qPrintable((*it)->mimeForUti(uti)));
 #endif
         if (relevantScope) {
-            QString mimeType = (*it)->mimeForUti(uti);
+            const QString mimeType = mime->mimeForUti(uti);
             if (!mimeType.isNull())
                 return mimeType;
         }
@@ -119,11 +119,10 @@ void unregisterMimeConverter(QUtiMimeConverter *macMime)
 QList<QUtiMimeConverter *> all(QUtiMimeConverter::HandlerScope scope)
 {
     MimeList ret;
-    MimeList *mimes = globalMimeList();
-    for (MimeList::const_iterator it = mimes->constBegin(); it != mimes->constEnd(); ++it) {
-        const bool relevantScope = uchar((*it)->scope()) & uchar(scope);
-        if (relevantScope)
-            ret.append((*it));
+    const MimeList &mimes = *globalMimeList();
+    for (const auto &mime : mimes) {
+        if (mime->scope() & scope)
+            ret.append(mime);
     }
     return ret;
 }

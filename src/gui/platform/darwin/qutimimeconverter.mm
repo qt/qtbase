@@ -96,7 +96,7 @@ QUtiMimeConverter::QUtiMimeConverter(HandlerScope scope)
     globally accessed list of available converters.
 */
 QUtiMimeConverter::QUtiMimeConverter()
-    : QUtiMimeConverter(HandlerScope::All)
+    : QUtiMimeConverter(HandlerScopeFlag::All)
 {
 }
 
@@ -170,7 +170,7 @@ int QUtiMimeConverter::count(const QMimeData *mimeData) const
 
 class QMacMimeAny : public QUtiMimeConverter {
 public:
-    QMacMimeAny() : QUtiMimeConverter(HandlerScope::AllCompatible) {}
+    QMacMimeAny() : QUtiMimeConverter(HandlerScopeFlag::AllCompatible) {}
 
     QString utiForMime(const QString &mime) const override;
     QString mimeForUti(const QString &uti) const override;
@@ -225,7 +225,7 @@ class QMacMimeTypeName : public QUtiMimeConverter {
 private:
 
 public:
-    QMacMimeTypeName(): QUtiMimeConverter(HandlerScope::AllCompatible) {}
+    QMacMimeTypeName(): QUtiMimeConverter(HandlerScopeFlag::AllCompatible) {}
 
     QString utiForMime(const QString &mime) const override;
     QString mimeForUti(const QString &uti) const override;
