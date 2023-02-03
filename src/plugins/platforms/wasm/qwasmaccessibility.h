@@ -36,6 +36,7 @@ private:
     static emscripten::val getContainer(QAccessibleInterface *iface);
     static emscripten::val getDocument(const emscripten::val &container);
     static emscripten::val getDocument(QAccessibleInterface *iface);
+    static QWindow *getWindow(QAccessibleInterface *iface);
 
     emscripten::val createHtmlElement(QAccessibleInterface *iface);
     void destroyHtmlElement(QAccessibleInterface *iface);
