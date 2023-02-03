@@ -114,9 +114,9 @@ MouseEvent::MouseEvent(EventType type, emscripten::val event) : Event(type, even
     // it up here.
     if (type == EventType::PointerDown)
         mouseButtons |= mouseButton;
-    localPoint = QPoint(event["offsetX"].as<int>(), event["offsetY"].as<int>());
-    pointInPage = QPoint(event["pageX"].as<int>(), event["pageY"].as<int>());
-    pointInViewport = QPoint(event["clientX"].as<int>(), event["clientY"].as<int>());
+    localPoint = QPointF(event["offsetX"].as<qreal>(), event["offsetY"].as<qreal>());
+    pointInPage = QPointF(event["pageX"].as<qreal>(), event["pageY"].as<qreal>());
+    pointInViewport = QPointF(event["clientX"].as<qreal>(), event["clientY"].as<qreal>());
     modifiers = KeyboardModifier::getForEvent(event);
 }
 
@@ -222,7 +222,7 @@ WheelEvent::WheelEvent(EventType type, emscripten::val event) : MouseEvent(type,
         return DeltaMode::Page;
     })();
 
-    delta = QPoint(event["deltaX"].as<int>(), event["deltaY"].as<int>());
+    delta = QPointF(event["deltaX"].as<qreal>(), event["deltaY"].as<qreal>());
 
     webkitDirectionInvertedFromDevice = event["webkitDirectionInvertedFromDevice"].as<bool>();
 }

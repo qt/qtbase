@@ -24,7 +24,7 @@ inline emscripten::val document()
 
 void syncCSSClassWith(emscripten::val element, std::string cssClassName, bool flag);
 
-QPoint mapPoint(emscripten::val source, emscripten::val target, const QPoint &point);
+QPointF mapPoint(emscripten::val source, emscripten::val target, const QPointF &point);
 } // namespace dom
 
 QT_END_NAMESPACE
