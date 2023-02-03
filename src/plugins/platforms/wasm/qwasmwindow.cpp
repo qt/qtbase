@@ -166,7 +166,7 @@ void QWasmWindow::onNonClientAreaInteraction()
 
 bool QWasmWindow::onNonClientEvent(const PointerEvent &event)
 {
-    QPoint pointInScreen = platformScreen()->mapFromLocal(
+    QPointF pointInScreen = platformScreen()->mapFromLocal(
             dom::mapPoint(event.target, platformScreen()->element(), event.localPoint));
     return QWindowSystemInterface::handleMouseEvent(
             window(), QWasmIntegration::getTimestamp(), window()->mapFromGlobal(pointInScreen),
@@ -505,13 +505,13 @@ bool QWasmWindow::processDrop(const DragEvent &event)
                 return image;
             },
             [this, event](std::unique_ptr<QMimeData> data) {
-                QWindowSystemInterface::handleDrag(window(), data.get(), event.pointInPage,
-                                                   event.dropAction, event.mouseButton,
-                                                   event.modifiers);
+                QWindowSystemInterface::handleDrag(window(), data.get(),
+                                                   event.pointInPage.toPoint(), event.dropAction,
+                                                   event.mouseButton, event.modifiers);
 
-                QWindowSystemInterface::handleDrop(window(), data.get(), event.pointInPage,
-                                                   event.dropAction, event.mouseButton,
-                                                   event.modifiers);
+                QWindowSystemInterface::handleDrop(window(), data.get(),
+                                                   event.pointInPage.toPoint(), event.dropAction,
+                                                   event.mouseButton, event.modifiers);
 
                 QWindowSystemInterface::handleDrag(window(), nullptr, QPoint(), Qt::IgnoreAction,
                                                    {}, {});
@@ -537,10 +537,10 @@ bool QWasmWindow::processWheel(const WheelEvent &event)
             dom::mapPoint(event.target, platformScreen()->element(), event.localPoint));
 
     return QWindowSystemInterface::handleWheelEvent(
-            window(), QWasmIntegration::getTimestamp(), mapFromGlobal(pointInScreen), pointInScreen,
-            event.delta * scrollFactor, event.delta * scrollFactor, event.modifiers,
-            Qt::NoScrollPhase, Qt::MouseEventNotSynthesized,
-            event.webkitDirectionInvertedFromDevice);
+            window(), QWasmIntegration::getTimestamp(), window()->mapFromGlobal(pointInScreen),
+            pointInScreen, (event.delta * scrollFactor).toPoint(),
+            (event.delta * scrollFactor).toPoint(), event.modifiers, Qt::NoScrollPhase,
+            Qt::MouseEventNotSynthesized, event.webkitDirectionInvertedFromDevice);
 }
 
 QRect QWasmWindow::normalGeometry() const

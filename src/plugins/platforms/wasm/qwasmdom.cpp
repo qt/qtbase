@@ -25,15 +25,15 @@ void syncCSSClassWith(emscripten::val element, std::string cssClassName, bool fl
     element["classList"].call<void>("remove", emscripten::val(std::move(cssClassName)));
 }
 
-QPoint mapPoint(emscripten::val source, emscripten::val target, const QPoint &point)
+QPointF mapPoint(emscripten::val source, emscripten::val target, const QPointF &point)
 {
-    auto sourceBoundingRect =
+    const auto sourceBoundingRect =
             QRectF::fromDOMRect(source.call<emscripten::val>("getBoundingClientRect"));
-    auto targetBoundingRect =
+    const auto targetBoundingRect =
             QRectF::fromDOMRect(target.call<emscripten::val>("getBoundingClientRect"));
 
-    auto offset = sourceBoundingRect.topLeft() - targetBoundingRect.topLeft();
-    return (point + offset).toPoint();
+    const auto offset = sourceBoundingRect.topLeft() - targetBoundingRect.topLeft();
+    return point + offset;
 }
 
 } // namespace dom

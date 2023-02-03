@@ -292,11 +292,10 @@ bool QWasmCompositor::processTouch(int eventType, const EmscriptenTouchEvent *to
 
         const EmscriptenTouchPoint *emTouchPoint = &touchEvent->touches[i];
 
-
-        QPoint targetPointInScreenCoords =
+        QPointF targetPointInScreenCoords =
                 screen()->mapFromLocal(QPoint(emTouchPoint->targetX, emTouchPoint->targetY));
 
-        targetWindow = screen()->compositor()->windowAt(targetPointInScreenCoords, 5);
+        targetWindow = screen()->compositor()->windowAt(targetPointInScreenCoords.toPoint(), 5);
         if (targetWindow == nullptr)
             continue;
 
@@ -312,7 +311,7 @@ bool QWasmCompositor::processTouch(int eventType, const EmscriptenTouchEvent *to
         if (tp != m_pressedTouchIds.constEnd())
             touchPoint.normalPosition = tp.value();
 
-        QPointF pointInTargetWindowCoords = QPointF(targetWindow->mapFromGlobal(targetPointInScreenCoords));
+        QPointF pointInTargetWindowCoords = targetWindow->mapFromGlobal(targetPointInScreenCoords);
         QPointF normalPosition(pointInTargetWindowCoords.x() / targetWindow->width(),
                                pointInTargetWindowCoords.y() / targetWindow->height());
 

@@ -219,7 +219,7 @@ void Resizer::continueResize(const PointerEvent &event)
 {
     const auto pointInScreen =
             dom::mapPoint(event.target, m_window->platformScreen()->element(), event.localPoint);
-    const auto amount = pointInScreen - m_currentResizeData->originInScreenCoords;
+    const auto amount = (pointInScreen - m_currentResizeData->originInScreenCoords).toPoint();
     const QPoint cappedGrowVector(
             std::min(m_currentResizeData->maxGrow.x(),
                      std::max(m_currentResizeData->minShrink.x(),
@@ -377,8 +377,8 @@ bool TitleBar::onPointerDown(const PointerEvent &event)
     m_element.call<void>("setPointerCapture", event.pointerId);
     m_capturedPointerId = event.pointerId;
 
-    const QPoint targetPointClippedToScreen = clipPointWithScreen(event.localPoint);
-    m_lastMovePoint = targetPointClippedToScreen;
+    m_moveStartWindowPosition = m_window->window()->position();
+    m_moveStartPoint = clipPointWithScreen(event.localPoint);
     m_window->onNonClientEvent(event);
     return true;
 }
@@ -388,11 +388,9 @@ bool TitleBar::onPointerMove(const PointerEvent &event)
     if (m_capturedPointerId != event.pointerId)
         return false;
 
-    const QPoint targetPointClippedToScreen = clipPointWithScreen(event.localPoint);
-    const QPoint delta = targetPointClippedToScreen - m_lastMovePoint;
-    m_lastMovePoint = targetPointClippedToScreen;
+    const QPoint delta = (clipPointWithScreen(event.localPoint) - m_moveStartPoint).toPoint();
 
-    m_window->window()->setPosition(m_window->window()->position() + delta);
+    m_window->window()->setPosition(m_moveStartWindowPosition + delta);
     m_window->onNonClientEvent(event);
     return true;
 }
@@ -414,7 +412,7 @@ bool TitleBar::onDoubleClick()
     return true;
 }
 
-QPoint TitleBar::clipPointWithScreen(const QPoint &pointInTitleBarCoords) const
+QPointF TitleBar::clipPointWithScreen(const QPointF &pointInTitleBarCoords) const
 {
     auto *screen = m_window->platformScreen();
     return screen->clipPoint(screen->mapFromLocal(

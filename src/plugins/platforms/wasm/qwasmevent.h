@@ -190,9 +190,9 @@ struct MouseEvent : public Event
         }
     }
 
-    QPoint localPoint;
-    QPoint pointInPage;
-    QPoint pointInViewport;
+    QPointF localPoint;
+    QPointF pointInPage;
+    QPointF pointInViewport;
     Qt::MouseButton mouseButton;
     Qt::MouseButtons mouseButtons;
     QFlags<Qt::KeyboardModifier> modifiers;
@@ -241,7 +241,7 @@ struct WheelEvent : public MouseEvent
 
     DeltaMode deltaMode;
     bool webkitDirectionInvertedFromDevice;
-    QPoint delta;
+    QPointF delta;
 };
 
 QT_END_NAMESPACE

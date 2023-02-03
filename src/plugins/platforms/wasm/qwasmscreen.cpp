@@ -204,15 +204,16 @@ QWindow *QWasmScreen::topLevelAt(const QPoint &p) const
     return m_compositor->windowAt(p);
 }
 
-QPoint QWasmScreen::mapFromLocal(const QPoint &p) const
+QPointF QWasmScreen::mapFromLocal(const QPointF &p) const
 {
     return geometry().topLeft() + p;
 }
 
-QPoint QWasmScreen::clipPoint(const QPoint &p) const
+QPointF QWasmScreen::clipPoint(const QPointF &p) const
 {
-    return QPoint(qBound(screen()->geometry().left(), p.x(), screen()->geometry().right()),
-                  qBound(screen()->geometry().top(), p.y(), screen()->geometry().bottom()));
+    const auto geometryF = screen()->geometry().toRectF();
+    return QPointF(qBound(geometryF.left(), p.x(), geometryF.right()),
+                   qBound(geometryF.top(), p.y(), geometryF.bottom()));
 }
 
 void QWasmScreen::invalidateSize()

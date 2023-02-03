@@ -39,7 +39,7 @@ bool ClientArea::processPointer(const PointerEvent &event)
             dom::mapPoint(event.target, m_screen->element(), event.localPoint);
     const auto pointInScreen = m_screen->mapFromLocal(localScreenPoint);
 
-    const QPoint pointInTargetWindowCoords = m_window->mapFromGlobal(pointInScreen);
+    const QPointF pointInTargetWindowCoords = m_window->window()->mapFromGlobal(pointInScreen);
 
     switch (event.type) {
     case EventType::PointerDown: {
@@ -73,11 +73,10 @@ bool ClientArea::deliverEvent(const PointerEvent &event)
     const auto pointInScreen = m_screen->mapFromLocal(
             dom::mapPoint(event.target, m_screen->element(), event.localPoint));
 
-    const QPoint targetPointClippedToScreen(
-            std::max(m_screen->geometry().left(),
-                     std::min(m_screen->geometry().right(), pointInScreen.x())),
-            std::max(m_screen->geometry().top(),
-                     std::min(m_screen->geometry().bottom(), pointInScreen.y())));
+    const auto geometryF = m_screen->geometry().toRectF();
+    const QPointF targetPointClippedToScreen(
+            qBound(geometryF.left(), pointInScreen.x(), geometryF.right()),
+            qBound(geometryF.top(), pointInScreen.y(), geometryF.bottom()));
 
     const QEvent::Type eventType =
             MouseEvent::mouseEventTypeFromEventType(event.type, WindowArea::Client);
