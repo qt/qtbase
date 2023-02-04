@@ -114,6 +114,7 @@ void QDBusMetaTypeId::init()
         qDBusRegisterMetaType<QVariantList>();
         qDBusRegisterMetaType<QVariantMap>();
         qDBusRegisterMetaType<QVariantHash>();
+        qDBusRegisterMetaType<QDBusObjectPath>();
 
         qDBusRegisterMetaType<QList<bool> >();
         qDBusRegisterMetaType<QList<short> >();
