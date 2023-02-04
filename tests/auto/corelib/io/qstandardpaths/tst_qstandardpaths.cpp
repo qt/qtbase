@@ -24,6 +24,8 @@
 #define Q_XDG_PLATFORM
 #endif
 
+using namespace Qt::StringLiterals;
+
 // Update this when adding new enum values; update enumNames too
 static const int MaxStandardLocation = QStandardPaths::AppConfigLocation;
 
@@ -724,6 +726,31 @@ void tst_qstandardpaths::testXdgPathCleanup()
     QVERIFY(!appsDirs.contains("/applications"));
     QVERIFY(!appsDirs.contains(uncleanGlobalAppDir + "/applications"));
     QVERIFY(!appsDirs.contains("relative/path/applications"));
+
+    const QString uncleanGlobalConfigDir = "/./" + QFile::encodeName(m_globalConfigDir);
+    qputenv("XDG_CONFIG_DIRS", QFile::encodeName(uncleanGlobalConfigDir) + "::relative/path");
+    const QStringList configDirs = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
+    QVERIFY(!configDirs.contains("relative/path"_L1));
+    QVERIFY(!configDirs.contains(""_L1));
+
+    // Relative paths in XDG_* env vars are ignored
+    const QString relative("./someRelativeDir");
+
+    qputenv("XDG_CACHE_HOME", relative.toLatin1());
+    const QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    QCOMPARE_NE(cacheDir, relative);
+
+    qputenv("XDG_DATA_HOME", relative.toLatin1());
+    const QString localDataDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    QCOMPARE_NE(localDataDir, relative);
+
+    qputenv("XDG_CONFIG_HOME", relative.toLatin1());
+    const QString localConfig = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    QCOMPARE_NE(localConfig, relative);
+
+    qputenv("XDG_RUNTIME_DIR", relative.toLatin1());
+    const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    QCOMPARE_NE(runtimeDir, relative);
 #endif
 }
 
