@@ -2582,7 +2582,7 @@ QBindable<QRegularExpression> QSortFilterProxyModel::bindableFilterRegularExpres
 void QSortFilterProxyModel::setFilterRegularExpression(const QRegularExpression &regularExpression)
 {
     Q_D(QSortFilterProxyModel);
-    Qt::beginPropertyUpdateGroup();
+    const QScopedPropertyUpdateGroup guard;
     const bool regExpChanged = regularExpression != d->filter_regularexpression.value();
     d->filter_regularexpression.removeBindingUnlessInWrapper();
     d->filter_casesensitive.removeBindingUnlessInWrapper();
@@ -2601,7 +2601,6 @@ void QSortFilterProxyModel::setFilterRegularExpression(const QRegularExpression 
         d->filter_regularexpression.notify();
     if (cs != updatedCs)
         d->filter_casesensitive.notify();
-    Qt::endPropertyUpdateGroup();
 }
 
 /*!
@@ -2677,7 +2676,7 @@ void QSortFilterProxyModel::setFilterCaseSensitivity(Qt::CaseSensitivity cs)
     if (cs == d->filter_casesensitive)
         return;
 
-    Qt::beginPropertyUpdateGroup();
+    const QScopedPropertyUpdateGroup guard;
     QRegularExpression::PatternOptions options =
             d->filter_regularexpression.value().patternOptions();
     options.setFlag(QRegularExpression::CaseInsensitiveOption, cs == Qt::CaseInsensitive);
@@ -2690,7 +2689,6 @@ void QSortFilterProxyModel::setFilterCaseSensitivity(Qt::CaseSensitivity cs)
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
     d->filter_regularexpression.notify();
     d->filter_casesensitive.notify();
-    Qt::endPropertyUpdateGroup();
 }
 
 QBindable<Qt::CaseSensitivity> QSortFilterProxyModel::bindableFilterCaseSensitivity()

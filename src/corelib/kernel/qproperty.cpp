@@ -185,7 +185,7 @@ Q_CONSTINIT static thread_local QBindingStatus bindingStatus;
     properties need to be updated, preventing any external observer from noticing an inconsistent
     state.
 
-    \sa Qt::endPropertyUpdateGroup
+    \sa Qt::endPropertyUpdateGroup, QScopedPropertyUpdateGroup
 */
 void Qt::beginPropertyUpdateGroup()
 {
@@ -205,7 +205,7 @@ void Qt::beginPropertyUpdateGroup()
     \warning Calling endPropertyUpdateGroup without a preceding call to beginPropertyUpdateGroup
     results in undefined behavior.
 
-    \sa Qt::beginPropertyUpdateGroup
+    \sa Qt::beginPropertyUpdateGroup, QScopedPropertyUpdateGroup
 */
 void Qt::endPropertyUpdateGroup()
 {
@@ -238,6 +238,41 @@ void Qt::endPropertyUpdateGroup()
         delete std::exchange(data, data->next);
     }
 }
+
+/*!
+    \since 6.6
+    \class QScopedPropertyUpdateGroup
+    \inmodule QtCore
+    \ingroup tools
+    \brief RAII class around Qt::beginPropertyUpdateGroup()/Qt::endPropertyUpdateGroup()
+
+    This class calls Qt::beginPropertyUpdateGroup() in its constructor and
+    Qt::endPropertyUpdateGroup() in its destructor, making sure the latter
+    function is reliably called even in the presence of early returns or thrown
+    exceptions.
+
+    \note Qt::endPropertyUpdateGroup() may re-throw exceptions thrown by
+    binding evaluations. This means your application may crash
+    (\c{std::terminate()} called) if another exception is causing
+    QScopedPropertyUpdateGroup's destructor to be called during stack
+    unwinding. If you expect exceptions from binding evaluations, use manual
+    Qt::endPropertyUpdateGroup() calls and \c{try}/\c{catch} blocks.
+
+    \sa QProperty
+*/
+
+/*!
+    \fn QScopedPropertyUpdateGroup::QScopedPropertyUpdateGroup()
+
+    Calls Qt::beginPropertyUpdateGroup().
+*/
+
+/*!
+    \fn QScopedPropertyUpdateGroup::~QScopedPropertyUpdateGroup()
+
+    Calls Qt::endPropertyUpdateGroup().
+*/
+
 
 // check everything stored in QPropertyBindingPrivate's union is trivially destructible
 // (though the compiler would also complain if that weren't the case)

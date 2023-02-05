@@ -53,6 +53,16 @@ Q_CORE_EXPORT void beginPropertyUpdateGroup();
 Q_CORE_EXPORT void endPropertyUpdateGroup();
 }
 
+class [[nodiscard]] QScopedPropertyUpdateGroup
+{
+    Q_DISABLE_COPY_MOVE(QScopedPropertyUpdateGroup)
+public:
+    QScopedPropertyUpdateGroup()
+    { Qt::beginPropertyUpdateGroup(); }
+    ~QScopedPropertyUpdateGroup() noexcept(false)
+    { Qt::endPropertyUpdateGroup(); }
+};
+
 template <typename T>
 class QPropertyData : public QUntypedPropertyData
 {
