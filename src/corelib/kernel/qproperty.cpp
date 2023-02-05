@@ -233,9 +233,7 @@ void Qt::endPropertyUpdateGroup()
     while (data) {
         for (qsizetype i = 0; i < data->used; ++i)
             data->notify(i);
-        auto *next = data->next;
-        delete data;
-        data = next;
+        delete std::exchange(data, data->next);
     }
 }
 
