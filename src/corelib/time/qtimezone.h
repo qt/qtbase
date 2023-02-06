@@ -121,13 +121,14 @@ public:
 
     static QTimeZone fromDurationAheadOfUtc(std::chrono::seconds offset)
     {
-        return fromSecondsAheadOfUtc(int(offset.count()));
+        return QTimeZone((offset.count() >= MinUtcOffsetSecs && offset.count() <= MaxUtcOffsetSecs)
+                         ? ShortData(offset.count() ? Qt::OffsetFromUTC : Qt::UTC,
+                                     int(offset.count()))
+                         : ShortData(Qt::TimeZone));
     }
     static QTimeZone fromSecondsAheadOfUtc(int offset)
     {
-        return QTimeZone((offset >= MinUtcOffsetSecs && offset <= MaxUtcOffsetSecs)
-                         ? ShortData(offset ? Qt::OffsetFromUTC : Qt::UTC, offset)
-                         : ShortData(Qt::TimeZone));
+        return fromDurationAheadOfUtc(std::chrono::seconds{offset});;
     }
     constexpr Qt::TimeSpec timeSpec() const noexcept { return d.s.spec(); }
     constexpr int fixedSecondsAheadOfUtc() const noexcept
