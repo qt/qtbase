@@ -437,6 +437,31 @@ macro(qt_build_repo_begin)
 
     string(TOLOWER ${PROJECT_NAME} project_name_lower)
 
+    # Target to build all plugins that are part of the current repo.
+    set(qt_repo_plugins "qt_plugins_${project_name_lower}")
+    if(NOT TARGET ${qt_repo_plugins})
+        add_custom_target(${qt_repo_plugins})
+    endif()
+
+    # Target to build all plugins that are part of the current repo and the current repo's
+    # dependencies plugins. Used for external project example dependencies.
+    set(qt_repo_plugins_recursive "${qt_repo_plugins}_recursive")
+    if(NOT TARGET ${qt_repo_plugins_recursive})
+        add_custom_target(${qt_repo_plugins_recursive})
+        add_dependencies(${qt_repo_plugins_recursive} "${qt_repo_plugins}")
+    endif()
+
+    qt_internal_read_repo_dependencies(qt_repo_deps "${PROJECT_SOURCE_DIR}")
+    if(qt_repo_deps)
+        foreach(qt_repo_dep IN LISTS qt_repo_deps)
+            if(TARGET qt_plugins_${qt_repo_dep})
+                message(DEBUG
+                    "${qt_repo_plugins_recursive} depends on qt_plugins_${qt_repo_dep}")
+                add_dependencies(${qt_repo_plugins_recursive} "qt_plugins_${qt_repo_dep}")
+            endif()
+        endforeach()
+    endif()
+
     set(qt_repo_targets_name ${project_name_lower})
     set(qt_docs_target_name docs_${project_name_lower})
     set(qt_docs_prepare_target_name prepare_docs_${project_name_lower})
@@ -804,14 +829,15 @@ macro(qt_examples_build_begin)
 
     if(arg_EXTERNAL_BUILD AND QT_BUILD_EXAMPLES_AS_EXTERNAL)
         # Examples will be built using ExternalProject.
-        # We always depend on all plugins so as to prevent opportunities for
+        # We depend on all plugins built as part of the current repo as well as current repo's
+        # dependencies plugins, to prevent opportunities for
         # weird errors associated with loading out-of-date plugins from
         # unrelated Qt modules.
         # We also depend on all targets from this repo's src and tools subdirectories
         # to ensure that we've built anything that a find_package() call within
         # an example might use. Projects can add further dependencies if needed,
         # but that should rarely be necessary.
-        set(QT_EXAMPLE_DEPENDENCIES qt_plugins ${arg_DEPENDS})
+        set(QT_EXAMPLE_DEPENDENCIES ${qt_repo_plugins_recursive} ${arg_DEPENDS})
 
         if(TARGET ${qt_repo_targets_name}_src)
             list(APPEND QT_EXAMPLE_DEPENDENCIES ${qt_repo_targets_name}_src)
