@@ -2605,6 +2605,10 @@ ConnectionSyntax WriteInitialization::connectionSyntax(const language::SignalSlo
         return ConnectionSyntax::StringBased;
     }
 
+    // QTBUG-110952, ambiguous overloads of display()
+    if (receiver.className == u"QLCDNumber" && receiver.signature.startsWith(u"display("))
+        return ConnectionSyntax::StringBased;
+
     if ((sender.name == m_mainFormVarName && m_customSignals.contains(sender.signature))
          || (receiver.name == m_mainFormVarName && m_customSlots.contains(receiver.signature))) {
         return ConnectionSyntax::StringBased;
