@@ -118,12 +118,11 @@ struct QPropertyDelayedNotifications
         Change notifications are sent later with notify (following the logic of separating
         binding updates and notifications used in non-deferred updates).
      */
-     [[nodiscard]] PendingBindingObserverList evaluateBindings(qsizetype index, QBindingStatus *status) {
-        PendingBindingObserverList bindingObservers;
+     void evaluateBindings(PendingBindingObserverList &bindingObservers, qsizetype index, QBindingStatus *status) {
         auto *delayed = delayedProperties + index;
         auto *bindingData = delayed->originalBindingData;
         if (!bindingData)
-            return bindingObservers;
+            return;
 
         bindingData->d_ptr = delayed->d_ptr;
         Q_ASSERT(!(bindingData->d_ptr & QPropertyBindingData::DelayedNotificationBit));
@@ -136,7 +135,6 @@ struct QPropertyDelayedNotifications
         QPropertyObserverPointer observer = bindingDataPointer.firstObserver();
         if (observer)
             observer.evaluateBindings(bindingObservers, status);
-        return bindingObservers;
     }
 
     /*!
@@ -150,17 +148,17 @@ struct QPropertyDelayedNotifications
      */
     void notify(qsizetype index) {
         auto *delayed = delayedProperties + index;
-        auto *bindingData = delayed->originalBindingData;
-        if (!bindingData)
+        if (delayed->d_ptr  & QPropertyBindingData::BindingBit)
+            return; // already handled
+        if (!delayed->originalBindingData)
             return;
-
         delayed->originalBindingData = nullptr;
+
+        QPropertyObserverPointer observer  { reinterpret_cast<QPropertyObserver *>(delayed->d_ptr & ~QPropertyBindingData::DelayedNotificationBit) };
         delayed->d_ptr = 0;
 
-        QPropertyBindingDataPointer bindingDataPointer{bindingData};
-        QPropertyObserverPointer observer = bindingDataPointer.firstObserver();
         if (observer)
-            observer.notify(delayed->propertyData);
+            observer.notify<QPropertyObserverPointer::Notify::OnlyChangeHandlers>(delayed->propertyData);
     }
 };
 
@@ -215,17 +213,21 @@ void Qt::endPropertyUpdateGroup()
     if (--data->ref)
         return;
     groupUpdateData = nullptr;
+    // ensures that bindings are kept alive until endPropertyUpdateGroup concludes
+    PendingBindingObserverList bindingObservers;
     // update all delayed properties
     auto start = data;
     while (data) {
-        for (qsizetype i = 0; i < data->used; ++i) {
-            PendingBindingObserverList bindingObserves = data->evaluateBindings(i, status);
-            Q_UNUSED(bindingObserves);
-            // ### TODO: Use bindingObservers for notify
-        }
+        for (qsizetype i = 0; i < data->used; ++i)
+            data->evaluateBindings(bindingObservers, i, status);
         data = data->next;
     }
-    // notify all delayed properties
+    // notify all delayed notifications from binding evaluation
+    for (const QBindingObserverPtr &observer: bindingObservers) {
+        QPropertyBindingPrivate *binding = observer.binding();
+        binding->notifyNonRecursive();
+    }
+    // do the same for properties which only have observers
     data = start;
     while (data) {
         for (qsizetype i = 0; i < data->used; ++i)

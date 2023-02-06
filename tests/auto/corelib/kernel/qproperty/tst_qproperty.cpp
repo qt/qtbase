@@ -87,6 +87,7 @@ private slots:
     void groupedNotifications();
     void groupedNotificationConsistency();
     void bindingGroupMovingBindingData();
+    void bindingGroupBindingDeleted();
     void uninstalledBindingDoesNotEvaluate();
 
     void notify();
@@ -1974,6 +1975,31 @@ void tst_QProperty::bindingGroupMovingBindingData()
     // the property data is gone, proxyData should have been informed
     QCOMPARE(proxyData->originalBindingData, nullptr);
     QVERIFY(proxyData);
+}
+
+void tst_QProperty::bindingGroupBindingDeleted()
+{
+    auto deleter = std::make_unique<ClassWithNotifiedProperty>();
+    auto toBeDeleted = std::make_unique<ClassWithNotifiedProperty>();
+
+    bool calledHandler = false;
+    deleter->property.setBinding([&](){
+        int newValue = toBeDeleted->property;
+        if (newValue == 42)
+            toBeDeleted.reset();
+        return newValue;
+    });
+    auto handler = toBeDeleted->property.onValueChanged([&]() { calledHandler = true; } );
+    {
+        Qt::beginPropertyUpdateGroup();
+        auto cleanup = qScopeGuard([](){ Qt::endPropertyUpdateGroup(); });
+        QVERIFY(toBeDeleted);
+        toBeDeleted->property = 42;
+        // ASAN should not complain here
+    }
+    QVERIFY(!toBeDeleted);
+    // the change notification is sent, even if the binding is deleted during evaluation
+    QVERIFY(calledHandler);
 }
 
 void tst_QProperty::uninstalledBindingDoesNotEvaluate()
