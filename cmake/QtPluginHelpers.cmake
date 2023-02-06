@@ -296,6 +296,12 @@ function(qt_internal_add_plugin target)
     if(TARGET qt_plugins)
         add_dependencies(qt_plugins "${target}")
     endif()
+
+    # Record plugin for current repo.
+    if(qt_repo_plugins AND TARGET ${qt_repo_plugins})
+        add_dependencies(${qt_repo_plugins} "${target}")
+    endif()
+
     if(plugin_type STREQUAL "platforms")
         if(TARGET qpa_plugins)
             add_dependencies(qpa_plugins "${target}")
