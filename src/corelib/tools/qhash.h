@@ -5,11 +5,11 @@
 #ifndef QHASH_H
 #define QHASH_H
 
+#include <QtCore/qalgorithms.h>
 #include <QtCore/qcontainertools_impl.h>
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qiterator.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qmath.h>
 #include <QtCore/qrefcount.h>
 
 #include <initializer_list>
@@ -414,28 +414,25 @@ struct Span {
 
 // QHash uses a power of two growth policy.
 namespace GrowthPolicy {
-inline constexpr size_t maxNumBuckets() noexcept
-{
-    // ensure the size of a Span does not depend on the template parameters
-    using Node1 = Node<int, int>;
-    using Node2 = Node<char, void *>;
-    using Node3 = Node<qsizetype, QHashDummyValue>;
-    static_assert(sizeof(Span<Node1>) == sizeof(Span<Node2>));
-    static_assert(sizeof(Span<Node1>) == sizeof(Span<Node3>));
-
-    // Maximum is 2^31-1 or 2^63-1 bytes (limited by qsizetype and ptrdiff_t)
-    size_t max = (std::numeric_limits<ptrdiff_t>::max)();
-    return max / sizeof(Span<Node1>) * SpanConstants::NEntries;
-}
 inline constexpr size_t bucketsForCapacity(size_t requestedCapacity) noexcept
 {
+    constexpr int SizeDigits = std::numeric_limits<size_t>::digits;
+
     // We want to use at minimum a full span (128 entries), so we hardcode it for any requested
     // capacity <= 64. Any capacity above that gets rounded to a later power of two.
     if (requestedCapacity <= 64)
         return SpanConstants::NEntries;
-    if (requestedCapacity >= maxNumBuckets())
-        return maxNumBuckets();
-    return qNextPowerOfTwo(2 * requestedCapacity - 1);
+
+    // Same as
+    //    qNextPowerOfTwo(2 * requestedCapacity);
+    //
+    // but ensuring neither our multiplication nor the function overflow.
+    // Additionally, the maximum memory allocation is 2^31-1 or 2^63-1 bytes
+    // (limited by qsizetype and ptrdiff_t).
+    int count = qCountLeadingZeroBits(requestedCapacity);
+    if (count < 2)
+        return (std::numeric_limits<size_t>::max)();    // will cause std::bad_alloc
+    return size_t(1) << (SizeDigits - count + 1);
 }
 inline constexpr size_t bucketForHash(size_t nBuckets, size_t hash) noexcept
 {
@@ -459,6 +456,11 @@ struct Data
     size_t numBuckets = 0;
     size_t seed = 0;
     Span *spans = nullptr;
+
+    static constexpr size_t maxNumBuckets() noexcept
+    {
+        return (std::numeric_limits<ptrdiff_t>::max)() / sizeof(Span);
+    }
 
     struct Bucket {
         Span *span;
@@ -1318,7 +1320,7 @@ public:
     float load_factor() const noexcept { return d ? d->loadFactor() : 0; }
     static float max_load_factor() noexcept { return 0.5; }
     size_t bucket_count() const noexcept { return d ? d->numBuckets : 0; }
-    static size_t max_bucket_count() noexcept { return QHashPrivate::GrowthPolicy::maxNumBuckets(); }
+    static size_t max_bucket_count() noexcept { return Data::maxNumBuckets(); }
 
     inline bool empty() const noexcept { return isEmpty(); }
 
@@ -1948,7 +1950,7 @@ public:
     float load_factor() const noexcept { return d ? d->loadFactor() : 0; }
     static float max_load_factor() noexcept { return 0.5; }
     size_t bucket_count() const noexcept { return d ? d->numBuckets : 0; }
-    static size_t max_bucket_count() noexcept { return QHashPrivate::GrowthPolicy::maxNumBuckets(); }
+    static size_t max_bucket_count() noexcept { return Data::maxNumBuckets(); }
 
     inline bool empty() const noexcept { return isEmpty(); }
 

@@ -3918,4 +3918,36 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns the number of elements removed, if any.
 */
 
+#ifdef QT_HAS_CONSTEXPR_BITOPS
+namespace QHashPrivate {
+static_assert(qPopulationCount(SpanConstants::NEntries) == 1,
+        "NEntries must be a power of 2 for bucketForHash() to work.");
+
+// ensure the size of a Span does not depend on the template parameters
+using Node1 = Node<int, int>;
+static_assert(sizeof(Span<Node1>) == sizeof(Span<Node<char, void *>>));
+static_assert(sizeof(Span<Node1>) == sizeof(Span<Node<qsizetype, QHashDummyValue>>));
+static_assert(sizeof(Span<Node1>) == sizeof(Span<Node<QString, QVariant>>));
+static_assert(sizeof(Span<Node1>) > SpanConstants::NEntries);
+static_assert(qNextPowerOfTwo(sizeof(Span<Node1>)) == SpanConstants::NEntries * 2);
+
+// ensure allocations are always a power of two, at a minimum NEntries,
+// obeying the fomula
+//   qNextPowerOfTwo(2 * N);
+// without overflowing
+static constexpr size_t NEntries = SpanConstants::NEntries;
+static_assert(GrowthPolicy::bucketsForCapacity(1) == NEntries);
+static_assert(GrowthPolicy::bucketsForCapacity(NEntries / 2 + 0) == NEntries);
+static_assert(GrowthPolicy::bucketsForCapacity(NEntries / 2 + 1) == 2 * NEntries);
+static_assert(GrowthPolicy::bucketsForCapacity(NEntries * 1 - 1) == 2 * NEntries);
+static_assert(GrowthPolicy::bucketsForCapacity(NEntries * 1 + 0) == 4 * NEntries);
+static_assert(GrowthPolicy::bucketsForCapacity(NEntries * 1 + 1) == 4 * NEntries);
+static_assert(GrowthPolicy::bucketsForCapacity(NEntries * 2 - 1) == 4 * NEntries);
+static_assert(GrowthPolicy::bucketsForCapacity(NEntries * 2 + 0) == 8 * NEntries);
+static_assert(GrowthPolicy::bucketsForCapacity(SIZE_MAX / 4) == SIZE_MAX / 2 + 1);
+static_assert(GrowthPolicy::bucketsForCapacity(SIZE_MAX / 2) == SIZE_MAX);
+static_assert(GrowthPolicy::bucketsForCapacity(SIZE_MAX) == SIZE_MAX);
+}
+#endif
+
 QT_END_NAMESPACE
