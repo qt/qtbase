@@ -604,6 +604,7 @@ macro(qt_build_repo_impl_examples)
     if(QT_BUILD_EXAMPLES
             AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt"
             AND NOT QT_BUILD_STANDALONE_TESTS)
+        message(STATUS "Configuring examples.")
         add_subdirectory(examples)
     endif()
 endmacro()
