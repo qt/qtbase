@@ -370,6 +370,16 @@ constexpr inline quint64 qNextPowerOfTwo(qint64 v)
     return qNextPowerOfTwo(quint64(v));
 }
 
+constexpr inline unsigned long qNextPowerOfTwo(unsigned long v)
+{
+    return qNextPowerOfTwo(QIntegerForSizeof<long>::Unsigned(v));
+}
+
+constexpr inline unsigned long qNextPowerOfTwo(long v)
+{
+    return qNextPowerOfTwo(QIntegerForSizeof<long>::Unsigned(v));
+}
+
 QT_END_NAMESPACE
 
 #endif // QMATH_H
