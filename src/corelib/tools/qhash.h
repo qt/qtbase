@@ -435,7 +435,7 @@ inline constexpr size_t bucketsForCapacity(size_t requestedCapacity) noexcept
         return SpanConstants::NEntries;
     if (requestedCapacity >= maxNumBuckets())
         return maxNumBuckets();
-    return qNextPowerOfTwo(QIntegerForSize<sizeof(size_t)>::Unsigned(2 * requestedCapacity - 1));
+    return qNextPowerOfTwo(2 * requestedCapacity - 1);
 }
 inline constexpr size_t bucketForHash(size_t nBuckets, size_t hash) noexcept
 {
