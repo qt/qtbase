@@ -232,27 +232,39 @@ void tst_QSet::squeeze()
     set.squeeze();
     QVERIFY(set.capacity() < 100);
 
-    for (int i = 0; i < 512; ++i)
+    for (int i = 0; i < 500; ++i)
         set.insert(i);
-    QVERIFY(set.capacity() == 512);
+    QCOMPARE(set.size(), 500);
+
+    // squeezed capacity for 500 elements
+    qsizetype capacity = set.capacity();    // current implementation: 512
+    QCOMPARE_GE(capacity, set.size());
 
     set.reserve(50000);
-    QVERIFY(set.capacity() >= 50000);
+    QVERIFY(set.capacity() >= 50000);       // current implementation: 65536
 
     set.squeeze();
-    QVERIFY(set.capacity() == 512);
+    QCOMPARE(set.capacity(), capacity);
 
+    // removing elements does not shed capacity
     set.remove(499);
-    QVERIFY(set.capacity() == 512);
+    QCOMPARE(set.capacity(), capacity);
 
     set.insert(499);
-    QVERIFY(set.capacity() == 512);
+    QCOMPARE(set.capacity(), capacity);
 
-    set.insert(1000);
-    QVERIFY(set.capacity() == 1024);
+    // grow it beyond the current capacity
+    for (int i = set.size(); i <= capacity; ++i)
+        set.insert(i);
+    QCOMPARE(set.size(), capacity + 1);
+    QCOMPARE_GT(set.capacity(), capacity + 1);// current implementation: 2 * capacity (1024)
 
     for (int i = 0; i < 500; ++i)
         set.remove(i);
+
+    // removing elements does not shed capacity
+    QCOMPARE_GT(set.capacity(), capacity + 1);
+
     set.squeeze();
     QVERIFY(set.capacity() < 100);
 }
