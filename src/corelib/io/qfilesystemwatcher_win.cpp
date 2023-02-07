@@ -332,12 +332,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
     QStringList unhandled;
     for (const QString &path : paths) {
         auto sg = qScopeGuard([&] { unhandled.push_back(path); });
-        QString normalPath = path;
-        if ((normalPath.endsWith(u'/') && !normalPath.endsWith(":/"_L1))
-            || (normalPath.endsWith(u'\\') && !normalPath.endsWith(":\\"_L1))) {
-            normalPath.chop(1);
-        }
-        QFileInfo fileInfo(normalPath);
+        QFileInfo fileInfo(path);
         fileInfo.stat();
         if (!fileInfo.exists())
             continue;
@@ -351,7 +346,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                 continue;
         }
 
-        DEBUG() << "Looking for a thread/handle for" << normalPath;
+        DEBUG() << "Looking for a thread/handle for" << fileInfo.path();
 
         const QString absolutePath = isDir ? fileInfo.absoluteFilePath() : fileInfo.absolutePath();
         const uint flags = isDir
@@ -495,11 +490,8 @@ QStringList QWindowsFileSystemWatcherEngine::removePaths(const QStringList &path
     QStringList unhandled;
     for (const QString &path : paths) {
         auto sg = qScopeGuard([&] { unhandled.push_back(path); });
-        QString normalPath = path;
-        if (normalPath.endsWith(u'/') || normalPath.endsWith(u'\\'))
-            normalPath.chop(1);
-        QFileInfo fileInfo(normalPath);
-        DEBUG() << "removing" << normalPath;
+        QFileInfo fileInfo(path);
+        DEBUG() << "removing" << fileInfo.path();
         QString absolutePath = fileInfo.absoluteFilePath();
         QList<QWindowsFileSystemWatcherEngineThread *>::iterator jt, end;
         end = threads.end();
