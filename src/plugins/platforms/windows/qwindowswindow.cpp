@@ -2009,6 +2009,11 @@ void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
         SetWindowPos(hwnd, nullptr, prcNewWindow->left, prcNewWindow->top,
                      prcNewWindow->right - prcNewWindow->left,
                      prcNewWindow->bottom - prcNewWindow->top, SWP_NOZORDER | SWP_NOACTIVATE);
+        // If the window does not have a frame, WM_MOVE and WM_SIZE won't be
+        // called which prevents the content from being scaled appropriately
+        // after a DPI change.
+        if (m_data.flags & Qt::FramelessWindowHint)
+            handleGeometryChange();
     }
 
     // Re-apply mask now that we have a new DPI, which have resulted in
