@@ -8,7 +8,7 @@ HTML.footer = \
     "</div>\n" \
     "<div class=\"footer\">\n" \
     "   <p>\n" \
-    "   <acronym title=\"Copyright\">&copy;</acronym> 2022 The Qt Company Ltd.\n" \
+    "   <acronym title=\"Copyright\">&copy;</acronym> 2023 The Qt Company Ltd.\n" \
     "   Documentation contributions included herein are the copyrights of\n" \
     "   their respective owners.<br/>" \
     "   The documentation provided herein is licensed under the terms of the" \
