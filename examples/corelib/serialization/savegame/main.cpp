@@ -48,10 +48,11 @@
 **
 ****************************************************************************/
 
+#include "game.h"
+
 #include <QCoreApplication>
 #include <QTextStream>
 
-#include "game.h"
 //! [0]
 int main(int argc, char *argv[])
 {
