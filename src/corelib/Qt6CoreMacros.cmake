@@ -2705,8 +2705,8 @@ macro(qt6_standard_project_setup)
 
         set(__qt_sps_args_option)
         set(__qt_sps_args_single
-            MIN_VERSION
-            MAX_VERSION
+            REQUIRES
+            SUPPORTS_UP_TO
         )
         set(__qt_sps_args_multi)
         cmake_parse_arguments(__qt_sps_arg
@@ -2731,22 +2731,22 @@ macro(qt6_standard_project_setup)
         else()
             message(FATAL_ERROR "Can not determine Qt version.")
         endif()
-        if(__qt_sps_arg_MIN_VERSION)
-            if("${__qt_current_version}" VERSION_LESS "${__qt_sps_arg_MIN_VERSION}")
+        if(__qt_sps_arg_REQUIRES)
+            if("${__qt_current_version}" VERSION_LESS "${__qt_sps_arg_REQUIRES}")
                 message(FATAL_ERROR
-                    "Project required a Qt minimum version of ${__qt_sps_arg_MIN_VERSION}, "
+                    "Project required a Qt minimum version of ${__qt_sps_arg_REQUIRES}, "
                     "but current version is only ${__qt_current_version}.")
             endif()
-            set(__qt_policy_check_version "${__qt_sps_arg_MIN_VERSION}")
+            set(__qt_policy_check_version "${__qt_sps_arg_REQUIRES}")
         endif()
-        if(__qt_sps_arg_MAX_VERSION)
-            if(__qt_sps_arg_MIN_VERSION)
-                if(${__qt_sps_arg_MAX_VERSION} VERSION_LESS ${__qt_sps_arg_MIN_VERSION})
-                    message(FATAL_ERROR "MAX_VERSION must be larger than or equal to MIN_VERSION.")
+        if(__qt_sps_arg_SUPPORTS_UP_TO)
+            if(__qt_sps_arg_REQUIRES)
+                if(${__qt_sps_arg_SUPPORTS_UP_TO} VERSION_LESS ${__qt_sps_arg_REQUIRES})
+                    message(FATAL_ERROR "SUPPORTS_UP_TO must be larger than or equal to REQUIRES.")
                 endif()
-                set(__qt_policy_check_version "${__qt_sps_arg_MAX_VERSION}")
+                set(__qt_policy_check_version "${__qt_sps_arg_SUPPORTS_UP_TO}")
             else()
-                message(FATAL_ERROR "Please specify the MIN_VERSION as well.")
+                message(FATAL_ERROR "Please specify the REQUIRES as well.")
             endif()
         endif()
 
