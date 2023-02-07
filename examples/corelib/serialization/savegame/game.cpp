@@ -168,8 +168,8 @@ void Game::read(const QJsonObject &json)
         QJsonArray levelArray = json["levels"].toArray();
         mLevels.clear();
         mLevels.reserve(levelArray.size());
-        for (int levelIndex = 0; levelIndex < levelArray.size(); ++levelIndex) {
-            QJsonObject levelObject = levelArray[levelIndex].toObject();
+        for (const QJsonValue &v : levelArray) {
+            QJsonObject levelObject = v.toObject();
             Level level;
             level.read(levelObject);
             mLevels.append(level);
