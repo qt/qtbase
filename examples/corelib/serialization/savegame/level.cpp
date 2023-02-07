@@ -35,8 +35,8 @@ void Level::read(const QJsonObject &json)
         QJsonArray npcArray = json["npcs"].toArray();
         mNpcs.clear();
         mNpcs.reserve(npcArray.size());
-        for (int npcIndex = 0; npcIndex < npcArray.size(); ++npcIndex) {
-            QJsonObject npcObject = npcArray[npcIndex].toObject();
+        for (const QJsonValue &v : npcArray) {
+            QJsonObject npcObject = v.toObject();
             Character npc;
             npc.read(npcObject);
             mNpcs.append(npc);
