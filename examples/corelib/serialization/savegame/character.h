@@ -37,8 +37,8 @@ public:
     void print(int indentation = 0) const;
 private:
     QString mName;
-    int mLevel;
-    ClassType mClassType;
+    int mLevel = 0;
+    ClassType mClassType = Warrior;
 };
 //! [0]
 
