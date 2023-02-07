@@ -68,8 +68,8 @@ public:
     QList<Character> npcs() const;
     void setNpcs(const QList<Character> &npcs);
 
-    void read(const QJsonObject &json);
-    void write(QJsonObject &json) const;
+    static Level fromJson(const QJsonObject &json);
+    QJsonObject toJson() const;
 
     void print(int indentation = 0) const;
 private:
