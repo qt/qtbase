@@ -162,7 +162,8 @@ void tst_qdbusxml2cpp::process_data()
                "<arg type=\"s\" direction=\"out\"/>"
                "<arg type=\"s\" direction=\"out\"/>"
                "</method>"
-            << QRegularExpression("Q_SLOTS:.*QDBusPendingReply<QString, QString> Method\\(const QString &\\w*, const QString &",
+            << QRegularExpression("Q_SLOTS:.*QDBusPendingReply<QString, QString> Method\\(const QString &\\w*, const QString &\\w*\\)"
+                                  ".*inline QDBusReply<QString> Method\\(const QString &\\w*, const QString &\\w*, QString &\\w*\\)",
                                   QRegularExpression::DotMatchesEverythingOption)
             << QRegularExpression("Q_SLOTS:.*QString Method\\(const QString &\\w*, const QString &\\w*, QString &",
                                   QRegularExpression::DotMatchesEverythingOption);
