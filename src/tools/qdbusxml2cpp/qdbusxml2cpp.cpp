@@ -947,9 +947,6 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
             }
 
             hs << "    ";
-            if (method.annotations.value("org.freedesktop.DBus.Deprecated"_L1) == "true"_L1)
-                hs << "Q_DECL_DEPRECATED ";
-
             QByteArray returnType;
             if (isNoReply) {
                 hs << "Q_NOREPLY void ";
@@ -1043,11 +1040,7 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
 
         hs << "Q_SIGNALS: // SIGNALS" << Qt::endl;
         for (const QDBusIntrospection::Signal &signal : interface->signals_) {
-            hs << "    ";
-            if (signal.annotations.value("org.freedesktop.DBus.Deprecated"_L1) == "true"_L1)
-                hs << "Q_DECL_DEPRECATED ";
-
-            hs << "void " << signal.name << "(";
+            hs << "    void " << signal.name << "(";
 
             QStringList argNames = makeArgNames(signal.outputArgs);
             writeSignalArgList(hs, argNames, signal.annotations, signal.outputArgs);

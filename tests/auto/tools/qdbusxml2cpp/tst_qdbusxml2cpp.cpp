@@ -246,7 +246,7 @@ void tst_qdbusxml2cpp::process_data()
                "</method>"
             << QRegularExpression("Q_SLOTS:.*Q_DECL_DEPRECATED inline QDBusPendingReply<> Method\\(\\)",
                                   QRegularExpression::DotMatchesEverythingOption)
-            << QRegularExpression("Q_SLOTS:.*void Method\\(\\)",
+            << QRegularExpression("Q_SLOTS:.*\n\\s*void Method\\(\\)",  // no Q_DECL_DEPRECATED
                                   QRegularExpression::DotMatchesEverythingOption);
 
     QTest::newRow("method-deprecated-2out")
@@ -258,7 +258,7 @@ void tst_qdbusxml2cpp::process_data()
             << QRegularExpression("Q_SLOTS:.*Q_DECL_DEPRECATED inline QDBusPendingReply<QString, QString> Method\\(\\)"
                                   ".*Q_DECL_DEPRECATED inline QDBusReply<QString> Method\\(QString &\\w*\\)",
                                   QRegularExpression::DotMatchesEverythingOption)
-            << QRegularExpression("Q_SLOTS:.*QString Method\\(QString &",
+            << QRegularExpression("Q_SLOTS:.*\n\\s*QString Method\\(QString &", // no Q_DECL_DEPRECATED
                                   QRegularExpression::DotMatchesEverythingOption);
 
     QTest::newRow("method-noreply")
@@ -308,7 +308,7 @@ void tst_qdbusxml2cpp::process_data()
                   </signal>)"
             << QRegularExpression(R"(Q_SIGNALS:.*\bQ_DECL_DEPRECATED void Signal\(\))",
                                   QRegularExpression::DotMatchesEverythingOption)
-            << QRegularExpression(R"(Q_SIGNALS:.*\bvoid Signal\(\))",
+            << QRegularExpression(R"(Q_SIGNALS:.*\n\s*void Signal\(\))",    // no Q_DECL_DEPRECATED
                                   QRegularExpression::DotMatchesEverythingOption);
 }
 
