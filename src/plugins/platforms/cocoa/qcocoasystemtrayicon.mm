@@ -56,6 +56,12 @@
 #include "qcocoascreen.h"
 #include <QtGui/private/qcoregraphics_p.h>
 
+#warning NSUserNotification was deprecated in macOS 11. \
+We should be using UserNotifications.framework instead. \
+See QTBUG-110998 for more information.
+#define NSUserNotificationCenter QT_IGNORE_DEPRECATIONS(NSUserNotificationCenter)
+#define NSUserNotification QT_IGNORE_DEPRECATIONS(NSUserNotification)
+
 QT_BEGIN_NAMESPACE
 
 void QCocoaSystemTrayIcon::init()
