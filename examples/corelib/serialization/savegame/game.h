@@ -51,11 +51,11 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <QJsonObject>
-#include <QVector>
-
 #include "character.h"
 #include "level.h"
+
+#include <QJsonObject>
+#include <QVector>
 
 //! [0]
 class Game
