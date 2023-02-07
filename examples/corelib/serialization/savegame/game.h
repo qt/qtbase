@@ -26,7 +26,7 @@ public:
     bool saveGame(SaveFormat saveFormat) const;
 
     void read(const QJsonObject &json);
-    void write(QJsonObject &json) const;
+    QJsonObject toJson() const;
 
     void print(int indentation = 0) const;
 private:

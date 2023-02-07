@@ -31,8 +31,8 @@ public:
     ClassType classType() const;
     void setClassType(ClassType classType);
 
-    void read(const QJsonObject &json);
-    void write(QJsonObject &json) const;
+    static Character fromJson(const QJsonObject &json);
+    QJsonObject toJson() const;
 
     void print(int indentation = 0) const;
 private:
