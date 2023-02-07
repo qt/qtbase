@@ -4,10 +4,10 @@
 #ifndef LEVEL_H
 #define LEVEL_H
 
+#include "character.h"
+
 #include <QJsonObject>
 #include <QList>
-
-#include "character.h"
 
 //! [0]
 class Level
