@@ -77,7 +77,7 @@ private:
     QRect mPrevRect;         // last place the cursor was drawn
     bool mDirty;
     bool mOnScreen;
-    QPlatformCursorImage *mCursorImage;
+    QScopedPointer<QPlatformCursorImage> mCursorImage;
     QFbCursorDeviceListener *mDeviceListener;
     QPoint m_pos;
 };

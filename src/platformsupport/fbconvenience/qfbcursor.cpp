@@ -33,7 +33,7 @@ QFbCursor::QFbCursor(QFbScreen *screen)
     if (!mVisible)
         return;
 
-    mCursorImage = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
+    mCursorImage.reset(new QPlatformCursorImage(0, 0, 0, 0, 0, 0));
     setCursor(Qt::ArrowCursor);
 
     mDeviceListener = new QFbCursorDeviceListener(this);
