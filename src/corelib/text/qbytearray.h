@@ -394,8 +394,8 @@ public:
 #endif
 
 #if defined(Q_OS_WASM) || defined(Q_QDOC)
-    static QByteArray fromUint8Array(emscripten::val uint8array);
-    emscripten::val toUint8Array();
+    static QByteArray fromEcmaUint8Array(emscripten::val uint8array);
+    emscripten::val toEcmaUint8Array();
 #endif
 
     typedef char *iterator;

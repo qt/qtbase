@@ -12,21 +12,6 @@
 #include <emscripten/val.h>
 #include <emscripten/bind.h>
 
-// FIXME: replace with shared implementation from qstdweb
-QByteArray fromUint8Array(emscripten::val uint8array)
-{
-    qstdweb::ArrayBuffer arrayBuffer(uint8array);
-
-    using qstdweb::Uint8Array;
-    Uint8Array sourceArray(arrayBuffer);
-    if (sourceArray.length() > std::numeric_limits<qsizetype>::max())
-        return QByteArray();
-    QByteArray destinationArray;
-    destinationArray.resize(sourceArray.length());
-    sourceArray.copyTo(destinationArray.data());
-    return destinationArray;
-}
-
 QT_BEGIN_NAMESPACE
 
 using namespace emscripten;
@@ -121,7 +106,7 @@ void QWasmFontDatabase::populateFamily(const QString &familyName)
                         .thenFunc = [](val status) {
                             qCDebug(lcQpaFonts) << "onArrayBuffer" ;
 
-                            QByteArray fontByteArray = fromUint8Array(status);
+                            QByteArray fontByteArray = QByteArray::fromEcmaUint8Array(status);
 
                             QFreeTypeFontDatabase::addTTFile(fontByteArray, QByteArray());
 

@@ -4867,10 +4867,10 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
     \since 6.5
     \ingroup platform-type-conversions
 
-    \sa toUint8Array()
+    \sa toEcmaUint8Array()
 */
 
-QByteArray QByteArray::fromUint8Array(emscripten::val uint8array)
+QByteArray QByteArray::fromEcmaUint8Array(emscripten::val uint8array)
 {
     return qstdweb::Uint8Array(uint8array).copyToQByteArray();
 }
@@ -4890,9 +4890,9 @@ QByteArray QByteArray::fromUint8Array(emscripten::val uint8array)
     \since 6.5
     \ingroup platform-type-conversions
 
-    \sa toUint8Array()
+    \sa toEcmaUint8Array()
 */
-emscripten::val QByteArray::toUint8Array()
+emscripten::val QByteArray::toEcmaUint8Array()
 {
     return qstdweb::Uint8Array::copyFrom(*this).val();
 }
