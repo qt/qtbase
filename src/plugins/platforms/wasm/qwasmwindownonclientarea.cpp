@@ -198,8 +198,8 @@ void Resizer::startResize(Qt::Edges resizeEdges, const PointerEvent &event)
                                             window->minimumHeight() - window->geometry().height());
 
     const auto frameRect =
-            QRectF::fromDOMRect(m_windowElement.call<emscripten::val>("getBoundingClientRect"));
-    const auto screenRect = QRectF::fromDOMRect(
+            QRectF::fromDomRect(m_windowElement.call<emscripten::val>("getBoundingClientRect"));
+    const auto screenRect = QRectF::fromDomRect(
             m_window->platformScreen()->element().call<emscripten::val>("getBoundingClientRect"));
 
     const int maxGrowTop = frameRect.top() - screenRect.top();
@@ -363,7 +363,7 @@ void TitleBar::setWidth(int width)
 
 QRectF TitleBar::geometry() const
 {
-    return QRectF::fromDOMRect(m_element.call<emscripten::val>("getBoundingClientRect"));
+    return QRectF::fromDomRect(m_element.call<emscripten::val>("getBoundingClientRect"));
 }
 
 bool TitleBar::onPointerDown(const PointerEvent &event)

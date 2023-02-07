@@ -28,9 +28,9 @@ void syncCSSClassWith(emscripten::val element, std::string cssClassName, bool fl
 QPointF mapPoint(emscripten::val source, emscripten::val target, const QPointF &point)
 {
     const auto sourceBoundingRect =
-            QRectF::fromDOMRect(source.call<emscripten::val>("getBoundingClientRect"));
+            QRectF::fromDomRect(source.call<emscripten::val>("getBoundingClientRect"));
     const auto targetBoundingRect =
-            QRectF::fromDOMRect(target.call<emscripten::val>("getBoundingClientRect"));
+            QRectF::fromDomRect(target.call<emscripten::val>("getBoundingClientRect"));
 
     const auto offset = sourceBoundingRect.topLeft() - targetBoundingRect.topLeft();
     return point + offset;

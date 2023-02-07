@@ -312,9 +312,9 @@ bool QWasmWindow::isVisible() const
 QMargins QWasmWindow::frameMargins() const
 {
     const auto frameRect =
-            QRectF::fromDOMRect(m_qtWindow.call<emscripten::val>("getBoundingClientRect"));
+            QRectF::fromDomRect(m_qtWindow.call<emscripten::val>("getBoundingClientRect"));
     const auto canvasRect =
-            QRectF::fromDOMRect(m_windowContents.call<emscripten::val>("getBoundingClientRect"));
+            QRectF::fromDomRect(m_windowContents.call<emscripten::val>("getBoundingClientRect"));
     return QMarginsF(canvasRect.left() - frameRect.left(), canvasRect.top() - frameRect.top(),
                      frameRect.right() - canvasRect.right(),
                      frameRect.bottom() - canvasRect.bottom())
