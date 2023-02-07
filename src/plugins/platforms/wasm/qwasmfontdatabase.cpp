@@ -106,7 +106,7 @@ void QWasmFontDatabase::populateFamily(const QString &familyName)
                         .thenFunc = [](val status) {
                             qCDebug(lcQpaFonts) << "onArrayBuffer" ;
 
-                            QByteArray fontByteArray = QByteArray::fromUint8Array(status);
+                            QByteArray fontByteArray = QByteArray::fromEcmaUint8Array(status);
 
                             QFreeTypeFontDatabase::addTTFile(fontByteArray, QByteArray());
 
