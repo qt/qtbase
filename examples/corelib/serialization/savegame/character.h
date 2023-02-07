@@ -58,7 +58,7 @@
 //! [0]
 class Character
 {
-    Q_GADGET;
+    Q_GADGET
 
 public:
     enum ClassType {
