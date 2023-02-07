@@ -47,9 +47,9 @@ namespace Qt {
     };
 
     enum class Appearance {
-        Unknown = 0x0000,
-        Light   = 0x0001,
-        Dark    = 0x0002
+        Unknown,
+        Light,
+        Dark,
     };
 
     enum MouseButton {
