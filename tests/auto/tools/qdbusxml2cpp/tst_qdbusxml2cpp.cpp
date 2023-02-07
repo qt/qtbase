@@ -240,6 +240,46 @@ void tst_qdbusxml2cpp::process_data()
             << QRegularExpression("Q_SLOTS:.*QString Method\\(const QString &\\w*, const QString &\\w*, QString &",
                                   QRegularExpression::DotMatchesEverythingOption);
 
+    QTest::newRow("method-deprecated-0out")
+            << "<method name=\"Method\">"
+               "<annotation name=\"org.freedesktop.DBus.Deprecated\" value=\"true\"/>"
+               "</method>"
+            << QRegularExpression("Q_SLOTS:.*Q_DECL_DEPRECATED inline QDBusPendingReply<> Method\\(\\)",
+                                  QRegularExpression::DotMatchesEverythingOption)
+            << QRegularExpression("Q_SLOTS:.*void Method\\(\\)",
+                                  QRegularExpression::DotMatchesEverythingOption);
+
+    QTest::newRow("method-deprecated-2out")
+            << "<method name=\"Method\">"
+               "<annotation name=\"org.freedesktop.DBus.Deprecated\" value=\"true\"/>"
+               "<arg type=\"s\" direction=\"out\"/>"
+               "<arg type=\"s\" direction=\"out\"/>"
+               "</method>"
+            << QRegularExpression("Q_SLOTS:.*Q_DECL_DEPRECATED inline QDBusPendingReply<QString, QString> Method\\(\\)"
+                                  ".*Q_DECL_DEPRECATED inline QDBusReply<QString> Method\\(QString &\\w*\\)",
+                                  QRegularExpression::DotMatchesEverythingOption)
+            << QRegularExpression("Q_SLOTS:.*QString Method\\(QString &",
+                                  QRegularExpression::DotMatchesEverythingOption);
+
+    QTest::newRow("method-noreply")
+            << "<method name=\"Method\">"
+               "<annotation name=\"org.freedesktop.DBus.Method.NoReply\" value=\"true\"/>"
+               "</method>"
+            << QRegularExpression("Q_SLOTS:.*Q_NOREPLY inline void Method\\(\\).*\\bQDBus::NoBlock\\b",
+                                  QRegularExpression::DotMatchesEverythingOption)
+            << QRegularExpression("Q_SLOTS:.*Q_NOREPLY void Method\\(",
+                                  QRegularExpression::DotMatchesEverythingOption);
+
+    QTest::newRow("method-deprecated-noreply")
+            << "<method name=\"Method\">"
+               "<annotation name=\"org.freedesktop.DBus.Method.NoReply\" value=\"true\"/>"
+               "<annotation name=\"org.freedesktop.DBus.Deprecated\" value=\"true\"/>"
+               "</method>"
+            << QRegularExpression("Q_SLOTS:.*Q_DECL_DEPRECATED Q_NOREPLY inline void Method\\(\\).*\\bQDBus::NoBlock\\b",
+                                  QRegularExpression::DotMatchesEverythingOption)
+            << QRegularExpression("Q_SLOTS:.*Q_NOREPLY void Method\\(",
+                                  QRegularExpression::DotMatchesEverythingOption);
+
     // -- signals --
     for (int i = 0; i < basicTypeCount; ++i) {
         QRegularExpression rx(QString("Q_SIGNALS:.*\\bvoid Signal\\((const )?%1\\b")
@@ -261,6 +301,15 @@ void tst_qdbusxml2cpp::process_data()
                     <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantMap"/>"
                   </signal>)"
             << rx << rx;
+
+    QTest::newRow("signal-deprecated")
+            << R"(<signal name="Signal">
+                    <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+                  </signal>)"
+            << QRegularExpression(R"(Q_SIGNALS:.*\bQ_DECL_DEPRECATED void Signal\(\))",
+                                  QRegularExpression::DotMatchesEverythingOption)
+            << QRegularExpression(R"(Q_SIGNALS:.*\bvoid Signal\(\))",
+                                  QRegularExpression::DotMatchesEverythingOption);
 }
 
 void tst_qdbusxml2cpp::process()
