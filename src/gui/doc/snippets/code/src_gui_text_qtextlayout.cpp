@@ -10,6 +10,7 @@ namespace src_gui_text_qtextlayout {
 struct Wrapper : public QPaintDevice
 {
     void wrapper1();
+    void elided();
 };
 QTextLayout textLayout;
 
@@ -24,7 +25,7 @@ int leading = fontMetrics.leading();
 qreal height = 0;
 textLayout.setCacheEnabled(true);
 textLayout.beginLayout();
-while (1) {
+while (true) {
     QTextLine line = textLayout.createLine();
     if (!line.isValid())
         break;
@@ -48,5 +49,42 @@ textLayout.draw(&painter, QPoint(0, 0));
 //! [1]
 
 } // Wrapper::wrapper1
+
+void Wrapper::elided() {
+
+QString content;
+
+//! [elided]
+QPainter painter(this);
+QFontMetrics fontMetrics = painter.fontMetrics();
+
+int lineSpacing = fontMetrics.lineSpacing();
+int y = 0;
+
+QTextLayout textLayout(content, painter.font());
+textLayout.beginLayout();
+while (true) {
+    QTextLine line = textLayout.createLine();
+
+    if (!line.isValid())
+        break;
+
+    line.setLineWidth(width());
+    const int nextLineY = y + lineSpacing;
+
+    if (height() >= nextLineY + lineSpacing) {
+        line.draw(&painter, QPoint(0, y));
+        y = nextLineY;
+    } else {
+        const QString lastLine = content.mid(line.textStart());
+        const QString elidedLastLine = fontMetrics.elidedText(lastLine, Qt::ElideRight, width());
+        painter.drawText(QPoint(0, y + fontMetrics.ascent()), elidedLastLine);
+        line = textLayout.createLine();
+        break;
+    }
+}
+textLayout.endLayout();
+//! [elided]
+}
 
 } // src_gui_text_qtextlayout

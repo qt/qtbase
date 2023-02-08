@@ -5,7 +5,6 @@ SUBDIRS       = analogclock \
                 charactermap \
                 codeeditor \
                 digitalclock \
-                elidedlabel \
                 groupbox \
                 icons \
                 imageviewer \
