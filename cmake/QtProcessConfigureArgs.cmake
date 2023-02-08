@@ -135,6 +135,13 @@ while(NOT "${configure_args}" STREQUAL "")
         list(POP_FRONT configure_args version)
         is_valid_qt_hex_version("${arg}" "${version}")
         push("-DQT_DISABLE_DEPRECATED_UP_TO=${version}")
+    elseif(arg STREQUAL "-unity-build")
+        push("-DQT_UNITY_BUILD=ON")
+        # QT_UNITY_BUILD_BATCH_SIZE will be set to 8, CMake's default.
+    elseif(arg STREQUAL "-unity-build-batch-size")
+        list(POP_FRONT configure_args unity_build_batch_size)
+        is_non_empty_valid_arg("${arg}" "${unity_build_batch_size}")
+        push("-DQT_UNITY_BUILD_BATCH_SIZE=${unity_build_batch_size}")
     elseif(arg STREQUAL "--")
         # Everything after this argument will be passed to CMake verbatim.
         list(APPEND cmake_args "${configure_args}")

@@ -140,6 +140,10 @@ Build options:
                          Force use of the GNU ld, GNU gold, LLVM/LLD or mold
                          linker instead of default one (GCC and clang only)
   -ccache .............. Use the ccache compiler cache [no] (Unix only)
+  -unity-build ......... Enable Unity (Jumbo) build
+  -unity-build-batch-size <int>
+                         Maximum number of source files used by the unity build
+                         to create unity source files [8]
 
   -warnings-are-errors . Treat warnings as errors [no; yes if -developer-build]
 

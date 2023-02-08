@@ -103,6 +103,10 @@ set(QT_BUILD_EXAMPLES_AS_EXTERNAL "@QT_BUILD_EXAMPLES_AS_EXTERNAL@" CACHE BOOL
 # Propagate usage of ccache.
 set(QT_USE_CCACHE @QT_USE_CCACHE@ CACHE BOOL "Enable the use of ccache")
 
+# Propagate usage of unity build.
+set(QT_UNITY_BUILD @QT_UNITY_BUILD@ CACHE BOOL "Enable unity (jumbo) build")
+set(QT_UNITY_BUILD_BATCH_SIZE "@QT_UNITY_BUILD_BATCH_SIZE@" CACHE STRING "Unity build batch size")
+
 # Propragate the value of WARNINGS_ARE_ERRORS.
 set(WARNINGS_ARE_ERRORS "@WARNINGS_ARE_ERRORS@" CACHE BOOL "Build Qt with warnings as errors")
 
