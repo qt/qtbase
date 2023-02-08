@@ -1187,8 +1187,7 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
 
 
     \sa QTextDocument, QTextCursor, {Qt Widgets - Application Example},
-        {Code Editor Example}, {Syntax Highlighter Example},
-        {Rich Text Processing}
+        {Syntax Highlighter Example}, {Rich Text Processing}
 
 */
 
