@@ -265,6 +265,10 @@ Qt::LayoutDirection QTextInlineObject::textDirection() const
     The text can then be rendered by calling the layout's draw() function:
     \snippet code/src_gui_text_qtextlayout.cpp 1
 
+    It is also possible to draw each line individually, for instance to draw
+    the last line that fits into a widget elided:
+    \snippet code/src_gui_text_qtextlayout.cpp elided
+
     For a given position in the text you can find a valid cursor position with
     isValidCursorPosition(), nextCursorPosition(), and previousCursorPosition().
 
