@@ -3,6 +3,7 @@
 
 #include "qbitmap.h"
 #include "qpixmap.h"
+#include <private/qpixmap_win_p.h>
 #include <qpa/qplatformpixmap.h>
 #include "qpixmap_raster_p.h"
 
@@ -206,7 +207,7 @@ static HBITMAP qt_createIconMask(QImage bm)
     return hbm;
 }
 
-Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap)
+HBITMAP qt_createIconMask(const QBitmap &bitmap)
 {
     return qt_createIconMask(bitmap.toImage().convertToFormat(QImage::Format_Mono));
 }
@@ -224,7 +225,7 @@ static inline QImage::Format format32(int hbitmapFormat)
     return QImage::Format_ARGB32_Premultiplied;
 }
 
-Q_GUI_EXPORT HBITMAP qt_imageToWinHBITMAP(const QImage &imageIn, int hbitmapFormat = 0)
+HBITMAP qt_imageToWinHBITMAP(const QImage &imageIn, int hbitmapFormat)
 {
     if (imageIn.isNull())
         return nullptr;
@@ -350,7 +351,7 @@ HBITMAP QImage::toHBITMAP() const
     return qt_imageToWinHBITMAP(*this);
 }
 
-Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0)
+HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat)
 {
     if (p.isNull())
         return nullptr;
@@ -449,7 +450,7 @@ static QImage imageFromWinHBITMAP_GetDiBits(HBITMAP bitmap, bool forceQuads, int
     return copyImageData(info.bmiHeader, bmiColorTable256.bmiColors, data.data(), imageFormat);
 }
 
-Q_GUI_EXPORT QImage qt_imageFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0)
+QImage qt_imageFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat)
 {
     QImage result = imageFromWinHBITMAP_DibSection(bitmap, hbitmapFormat);
     if (result.isNull())
@@ -481,7 +482,7 @@ QImage QImage::fromHBITMAP(HBITMAP hbitmap)
     return qt_imageFromWinHBITMAP(hbitmap);
 }
 
-Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0)
+QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat)
 {
     return QPixmap::fromImage(imageFromWinHBITMAP_GetDiBits(bitmap, /* forceQuads */ true, hbitmapFormat));
 }
@@ -532,7 +533,7 @@ HICON QImage::toHICON(const QImage &mask) const
     return hIcon;
 }
 
-Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &p)
+HICON qt_pixmapToWinHICON(const QPixmap &p)
 {
     QImage mask;
     QBitmap maskBitmap = p.mask();
@@ -541,7 +542,7 @@ Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &p)
     return p.toImage().toHICON(mask);
 }
 
-Q_GUI_EXPORT QImage qt_imageFromWinHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h)
+QImage qt_imageFromWinHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h)
 {
     QImage image(w, h, QImage::Format_ARGB32_Premultiplied);
     if (image.isNull())
@@ -641,7 +642,7 @@ QImage QImage::fromHICON(HICON icon)
     return image;
 }
 
-Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon)
+QPixmap qt_pixmapFromWinHICON(HICON icon)
 {
     return QPixmap::fromImage(QImage::fromHICON(icon));
 }

@@ -392,7 +392,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_animation
 
 qt_internal_extend_target(Gui CONDITION WIN32
     SOURCES
-        image/qpixmap_win.cpp
+        image/qpixmap_win.cpp image/qpixmap_win_p.h
         kernel/qwindowdefs_win.h
         platform/windows/qwindowsguieventdispatcher.cpp platform/windows/qwindowsguieventdispatcher_p.h
         platform/windows/qwindowsmimeconverter.h platform/windows/qwindowsmimeconverter.cpp

@@ -14,6 +14,7 @@
 #include <QtGui/qscreen.h>
 #include <QtGui/private/qguiapplication_p.h> // getPixmapCursor()
 #include <QtGui/private/qhighdpiscaling_p.h>
+#include <QtGui/private/qpixmap_win_p.h>
 #include <QtCore/private/qwinregistry_p.h>
 
 #include <QtCore/qdebug.h>
@@ -28,9 +29,6 @@ static bool initResources()
 }
 
 QT_BEGIN_NAMESPACE
-
-Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0);
-Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap);
 
 /*!
     \class QWindowsCursorCacheKey
