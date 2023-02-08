@@ -169,19 +169,8 @@ bool QWasmWindow::onNonClientEvent(const PointerEvent &event)
             dom::mapPoint(event.target, platformScreen()->element(), event.localPoint));
     return QWindowSystemInterface::handleMouseEvent(
             window(), QWasmIntegration::getTimestamp(), window()->mapFromGlobal(pointInScreen),
-            pointInScreen, event.mouseButtons, event.mouseButton, ([event]() {
-                switch (event.type) {
-                case EventType::PointerDown:
-                    return QEvent::NonClientAreaMouseButtonPress;
-                case EventType::PointerUp:
-                    return QEvent::NonClientAreaMouseButtonRelease;
-                case EventType::PointerMove:
-                    return QEvent::NonClientAreaMouseMove;
-                default:
-                    Q_ASSERT(false); // notreached
-                    return QEvent::None;
-                }
-            })(),
+            pointInScreen, event.mouseButtons, event.mouseButton,
+            MouseEvent::mouseEventTypeFromEventType(event.type, WindowArea::NonClient),
             event.modifiers);
 }
 
