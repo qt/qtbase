@@ -161,7 +161,7 @@ struct QPropertyDelayedNotifications
         delayed->d_ptr = 0;
 
         if (observer)
-            observer.notify<QPropertyObserverPointer::Notify::OnlyChangeHandlers>(delayed->propertyData);
+            observer.notify(delayed->propertyData);
     }
 };
 
@@ -286,22 +286,6 @@ bool QPropertyBindingPrivate::evaluateRecursive(PendingBindingObserverList &bind
     return evaluateRecursive_inline(bindingObservers, status);
 }
 
-void QPropertyBindingPrivate::notifyRecursive()
-{
-    if (!pendingNotify)
-        return;
-    pendingNotify = false;
-    Q_ASSERT(!updating);
-    updating = true;
-    if (firstObserver) {
-        firstObserver.noSelfDependencies(this);
-        firstObserver.notify(propertyDataPtr);
-    }
-    if (hasStaticObserver)
-        staticObserverCallback(propertyDataPtr);
-    updating = false;
-}
-
 void QPropertyBindingPrivate::notifyNonRecursive(const PendingBindingObserverList &bindingObservers)
 {
     notifyNonRecursive();
@@ -319,7 +303,7 @@ QPropertyBindingPrivate::NotificationState QPropertyBindingPrivate::notifyNonRec
     updating = true;
     if (firstObserver) {
         firstObserver.noSelfDependencies(this);
-        firstObserver.notifyOnlyChangeHandler(propertyDataPtr);
+        firstObserver.notify(propertyDataPtr);
     }
     if (hasStaticObserver)
         staticObserverCallback(propertyDataPtr);
@@ -606,7 +590,7 @@ void QPropertyBindingData::notifyObservers(QUntypedPropertyData *propertyDataPtr
         if (notifyObserver_helper(propertyDataPtr, storage, observer, bindingObservers) == Evaluated) {
             // evaluateBindings() can trash the observers. We need to re-fetch here.
             if (QPropertyObserverPointer observer = d.firstObserver())
-                observer.notifyOnlyChangeHandler(propertyDataPtr);
+                observer.notify(propertyDataPtr);
             for (auto &&bindingObserver: bindingObservers)
                 bindingObserver.binding()->notifyNonRecursive();
         }

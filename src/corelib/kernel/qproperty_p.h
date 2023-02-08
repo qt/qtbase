@@ -144,9 +144,7 @@ struct QPropertyObserverPointer
 
     enum class Notify {Everything, OnlyChangeHandlers};
 
-    template<Notify notifyPolicy = Notify::Everything>
     void notify(QUntypedPropertyData *propertyDataPtr);
-    void notifyOnlyChangeHandler(QUntypedPropertyData *propertyDataPtr);
 #ifndef QT_NO_DEBUG
     void noSelfDependencies(QPropertyBindingPrivate *binding);
 #else
@@ -371,7 +369,6 @@ public:
 
     bool Q_ALWAYS_INLINE evaluateRecursive_inline(PendingBindingObserverList &bindingObservers, QBindingStatus *status);
 
-    void notifyRecursive();
     void notifyNonRecursive(const PendingBindingObserverList &bindingObservers);
     enum NotificationState : bool { Delayed, Sent };
     NotificationState notifyNonRecursive();
@@ -632,7 +629,7 @@ public:
                                 == QtPrivate::QPropertyBindingData::Evaluated) {
                             // evaluateBindings() can trash the observers. We need to re-fetch here.
                             if (QPropertyObserverPointer observer = d.firstObserver())
-                                observer.notifyOnlyChangeHandler(this);
+                                observer.notify(this);
                             for (auto&& bindingObserver: bindingObservers)
                                 bindingObserver.binding()->notifyNonRecursive();
                         }
@@ -834,7 +831,14 @@ inline bool QPropertyBindingPrivate::evaluateRecursive_inline(PendingBindingObse
     return true;
 }
 
-template<QPropertyObserverPointer::Notify notifyPolicy>
+/*!
+    \internal
+
+    Walks through the list of property observers, and calls any ChangeHandler
+    found there.
+    It doesn't do anything with bindings, which are only handled in
+    QPropertyBindingPrivate::evaluateRecursive.
+ */
 inline void QPropertyObserverPointer::notify(QUntypedPropertyData *propertyDataPtr)
 {
     auto observer = const_cast<QPropertyObserver*>(ptr);
@@ -873,15 +877,7 @@ inline void QPropertyObserverPointer::notify(QUntypedPropertyData *propertyDataP
             break;
         }
         case QPropertyObserver::ObserverNotifiesBinding:
-        {
-            if constexpr (notifyPolicy == Notify::Everything) {
-                auto bindingToNotify =  observer->binding;
-                QPropertyObserverNodeProtector protector(observer);
-                bindingToNotify->notifyRecursive();
-                next = protector.next();
-            }
             break;
-        }
         case QPropertyObserver::ObserverIsPlaceholder:
             // recursion is already properly handled somewhere else
             break;
@@ -893,11 +889,6 @@ inline void QPropertyObserverPointer::notify(QUntypedPropertyData *propertyDataP
         }
         observer = next;
     }
-}
-
-inline void QPropertyObserverPointer::notifyOnlyChangeHandler(QUntypedPropertyData *propertyDataPtr)
-{
-    notify<Notify::OnlyChangeHandlers>(propertyDataPtr);
 }
 
 inline QPropertyObserverNodeProtector::~QPropertyObserverNodeProtector()
