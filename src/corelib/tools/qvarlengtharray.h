@@ -18,7 +18,7 @@
 #include <algorithm>
 #include <initializer_list>
 #include <iterator>
-#include <memory>
+#include <QtCore/q20memory.h>
 #include <new>
 
 #include <string.h>
@@ -194,7 +194,7 @@ protected:
     {
         if (size() == capacity()) // ie. size() != 0
             growBy(prealloc, array, 1);
-        reference r = *new (end()) T(std::forward<Args>(args)...);
+        reference r = *q20::construct_at(end(), std::forward<Args>(args)...);
         ++s;
         return r;
     }
@@ -220,7 +220,7 @@ protected:
     {
         reallocate_impl(prealloc, array, sz, qMax(sz, capacity()));
         while (size() < sz) {
-            new (data() + size()) T(v);
+            q20::construct_at(data() + size(), v);
             ++s;
         }
     }
@@ -230,7 +230,7 @@ protected:
         if constexpr (QTypeInfo<T>::isComplex) {
             // call default constructor for new objects (which can throw)
             while (size() < sz) {
-                new (data() + size()) T;
+                q20::construct_at(data() + size());
                 ++s;
             }
         } else {
@@ -664,7 +664,7 @@ Q_INLINE_TEMPLATE QVarLengthArray<T, Prealloc>::QVarLengthArray(qsizetype asize)
     if constexpr (QTypeInfo<T>::isComplex) {
         T *i = end();
         while (i != begin())
-            new (--i) T;
+            q20::construct_at(--i);
     }
 }
 
@@ -854,17 +854,17 @@ Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::emplace_impl(qsizetype prealloc, void *ar
         T *j = i + 1;
         // The new end-element needs to be constructed, the rest must be move assigned
         if (i != b) {
-            new (--j) T(std::move(*--i));
+            q20::construct_at(--j, std::move(*--i));
             while (i != b)
                 *--j = std::move(*--i);
             *b = T(std::forward<Args>(args)...);
         } else {
-            new (b) T(std::forward<Args>(args)...);
+            q20::construct_at(b, std::forward<Args>(args)...);
         }
     } else {
         T *b = begin() + offset;
         memmove(static_cast<void *>(b + 1), static_cast<const void *>(b), (size() - offset) * sizeof(T));
-        new (b) T(std::forward<Args>(args)...);
+        q20::construct_at(b, std::forward<Args>(args)...);
     }
     this->s += 1;
     return data() + offset;
@@ -893,7 +893,7 @@ Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::insert_impl(qsizetype prealloc, void *arr
             T *i = b + n;
             memmove(static_cast<void *>(i), static_cast<const void *>(b), (size() - offset - n) * sizeof(T));
             while (i != b)
-                new (--i) T(copy);
+                q20::construct_at(--i, copy);
         }
     }
     return data() + offset;
