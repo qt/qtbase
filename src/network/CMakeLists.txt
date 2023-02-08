@@ -271,7 +271,7 @@ qt_internal_extend_target(Network CONDITION ANDROID # special case
         kernel/qnetworkproxy_android.cpp
 )
 
-qt_internal_extend_target(Network CONDITION UNIX AND NOT ANDROID AND NOT APPLE AND NOT QT_FEATURE_libproxy AND (UNIX OR WINRT) # special case
+qt_internal_extend_target(Network CONDITION UNIX AND NOT ANDROID AND NOT MACOS AND NOT QT_FEATURE_libproxy AND (UNIX OR WINRT) # special case
     SOURCES
         kernel/qnetworkproxy_generic.cpp
 )
