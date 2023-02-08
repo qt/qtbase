@@ -2362,14 +2362,14 @@ void QD3D12SamplerManager::destroy()
 
 QD3D12Descriptor QD3D12SamplerManager::getShaderVisibleDescriptor(const D3D12_SAMPLER_DESC &desc)
 {
-    auto it = gpuMap.constFind(desc);
+    auto it = gpuMap.constFind({desc});
     if (it != gpuMap.cend())
         return *it;
 
     QD3D12Descriptor descriptor = shaderVisibleSamplerHeap.heap.get(1);
     if (descriptor.isValid()) {
         device->CreateSampler(&desc, descriptor.cpuHandle);
-        gpuMap.insert(desc, descriptor);
+        gpuMap.insert({desc}, descriptor);
     } else {
         qWarning("Out of shader-visible SAMPLER descriptor heap space,"
                  " this should not happen, maximum number of unique samplers is %u",

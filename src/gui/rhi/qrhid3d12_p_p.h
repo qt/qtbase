@@ -20,6 +20,7 @@
 #include "qshaderdescription_p.h"
 #include <QWindow>
 #include <QBitArray>
+
 #include <optional>
 #include <array>
 
@@ -29,11 +30,6 @@
 #include <dcomp.h>
 
 #include "D3D12MemAlloc.h"
-
-inline size_t qHash(const D3D12_SAMPLER_DESC &s, size_t seed = 0) noexcept
-{
-    return QT_PREPEND_NAMESPACE(qHashBits)(&s, sizeof(s), seed);
-}
 
 QT_BEGIN_NAMESPACE
 
@@ -457,15 +453,46 @@ struct QD3D12ShaderVisibleDescriptorHeap
     QD3D12DescriptorHeap perFrameHeapSlice[QD3D12_FRAMES_IN_FLIGHT];
 };
 
-inline bool operator==(const D3D12_SAMPLER_DESC &a, const D3D12_SAMPLER_DESC &b) noexcept
+// wrap foreign struct so we can legally supply equality operators and qHash:
+struct Q_D3D12_SAMPLER_DESC
 {
-    return !memcmp(&a, &b, sizeof(D3D12_SAMPLER_DESC));
-}
+    D3D12_SAMPLER_DESC desc;
 
-inline bool operator!=(const D3D12_SAMPLER_DESC &a, const D3D12_SAMPLER_DESC &b) noexcept
-{
-    return !(a == b);
-}
+    friend bool operator==(const Q_D3D12_SAMPLER_DESC &lhs, const Q_D3D12_SAMPLER_DESC &rhs) noexcept
+    {
+        return lhs.desc.Filter == rhs.desc.Filter
+                && lhs.desc.AddressU == rhs.desc.AddressU
+                && lhs.desc.AddressV == rhs.desc.AddressV
+                && lhs.desc.AddressW == rhs.desc.AddressW
+                && lhs.desc.MipLODBias == rhs.desc.MipLODBias
+                && lhs.desc.MaxAnisotropy == rhs.desc.MaxAnisotropy
+                && lhs.desc.ComparisonFunc == rhs.desc.ComparisonFunc
+                // BorderColor is never used, skip it
+                && lhs.desc.MinLOD == rhs.desc.MinLOD
+                && lhs.desc.MaxLOD == rhs.desc.MaxLOD;
+    }
+
+    friend bool operator!=(const Q_D3D12_SAMPLER_DESC &lhs, const Q_D3D12_SAMPLER_DESC &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
+
+    friend size_t qHash(const Q_D3D12_SAMPLER_DESC &key, size_t seed = 0) noexcept
+    {
+        QtPrivate::QHashCombine hash;
+        seed = hash(seed, key.desc.Filter);
+        seed = hash(seed, key.desc.AddressU);
+        seed = hash(seed, key.desc.AddressV);
+        seed = hash(seed, key.desc.AddressW);
+        seed = hash(seed, key.desc.MipLODBias);
+        seed = hash(seed, key.desc.MaxAnisotropy);
+        seed = hash(seed, key.desc.ComparisonFunc);
+        // BorderColor is never used, skip it
+        seed = hash(seed, key.desc.MinLOD);
+        seed = hash(seed, key.desc.MaxLOD);
+        return seed;
+    }
+};
 
 struct QD3D12SamplerManager
 {
@@ -478,7 +505,7 @@ struct QD3D12SamplerManager
 
     ID3D12Device *device = nullptr;
     QD3D12ShaderVisibleDescriptorHeap shaderVisibleSamplerHeap;
-    QHash<D3D12_SAMPLER_DESC, QD3D12Descriptor> gpuMap;
+    QHash<Q_D3D12_SAMPLER_DESC, QD3D12Descriptor> gpuMap;
 };
 
 enum QD3D12Stage { VS = 0, HS, DS, GS, PS, CS };
