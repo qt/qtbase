@@ -331,6 +331,13 @@ if(QT_USE_CCACHE)
     endif()
 endif()
 
+option(QT_UNITY_BUILD "Enable unity (jumbo) build")
+set(QT_UNITY_BUILD_BATCH_SIZE "8" CACHE STRING "Unity build batch size")
+if(QT_UNITY_BUILD)
+    set(CMAKE_UNITY_BUILD ON)
+    set(CMAKE_UNITY_BUILD_BATCH_SIZE "${QT_UNITY_BUILD_BATCH_SIZE}")
+endif()
+
 # We need to clean up QT_FEATURE_*, but only once per configuration cycle
 get_property(qt_feature_clean GLOBAL PROPERTY _qt_feature_clean)
 if(NOT qt_feature_clean)

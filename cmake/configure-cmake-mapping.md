@@ -73,6 +73,8 @@ The following table describes the mapping of configure options to CMake argument
 |                                       |                                                   | custom build steps for moc, uic, and rcc.                       |
 |                                       |                                                   | This lacks support in CMake.                                    |
 | -ccache                               | -DQT_USE_CCACHE=ON                                |                                                                 |
+| -unity-build                          | -DQT_UNITY_BUILD=ON                               |                                                                 |
+| -unity-build-batch-size <int>         | -DQT_UNITY_BUILD_BATCH_SIZE=<int>                 |                                                                 |
 | -make-tool <tool>                     | n/a                                               |                                                                 |
 | -mp                                   | n/a                                               |                                                                 |
 | -warnings-are-errors                  | -DWARNINGS_ARE_ERRORS=ON                          |                                                                 |
