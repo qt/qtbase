@@ -766,12 +766,20 @@ bool QRhiGles2::create(QRhi::Flags flags)
 
     f->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &caps.maxTextureSize);
 
-    if (caps.ctxMajor >= 3 || actualFormat.renderableType() == QSurfaceFormat::OpenGL) {
+    caps.gles = actualFormat.renderableType() == QSurfaceFormat::OpenGLES;
+
+    if (!caps.gles || caps.ctxMajor >= 3) {
+        // non-ES or ES 3.0+
         f->glGetIntegerv(GL_MAX_DRAW_BUFFERS, &caps.maxDrawBuffers);
+        caps.hasDrawBuffersFunc = true;
         f->glGetIntegerv(GL_MAX_SAMPLES, &caps.maxSamples);
         caps.maxSamples = qMax(1, caps.maxSamples);
     } else {
+        // ES 2.0 / WebGL 1
         caps.maxDrawBuffers = 1;
+        caps.hasDrawBuffersFunc = false;
+        // This does not mean MSAA is not supported, just that we cannot query
+        // the supported sample counts.
         caps.maxSamples = 1;
     }
 
@@ -781,7 +789,6 @@ bool QRhiGles2::create(QRhi::Flags flags)
     caps.npotTextureFull = f->hasOpenGLFeature(QOpenGLFunctions::NPOTTextures)
             && f->hasOpenGLFeature(QOpenGLFunctions::NPOTTextureRepeat);
 
-    caps.gles = actualFormat.renderableType() == QSurfaceFormat::OpenGLES;
     if (caps.gles)
         caps.fixedIndexPrimitiveRestart = caps.ctxMajor >= 3; // ES 3.0
     else
@@ -3073,7 +3080,8 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 else
                     bufs.append(caps.gles ? GL_BACK : GL_BACK_LEFT);
             }
-            f->glDrawBuffers(bufs.count(), bufs.constData());
+            if (caps.hasDrawBuffersFunc)
+                f->glDrawBuffers(bufs.count(), bufs.constData());
             if (caps.srgbCapableDefaultFramebuffer) {
                 if (cmd.args.bindFramebuffer.srgb)
                     f->glEnable(GL_FRAMEBUFFER_SRGB);
