@@ -14,7 +14,7 @@ class Level
 {
 public:
     Level() = default;
-    Level(const QString &name);
+    explicit Level(const QString &name);
 
     QString name() const;
 
