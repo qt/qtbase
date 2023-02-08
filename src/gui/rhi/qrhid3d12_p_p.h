@@ -30,6 +30,11 @@
 
 #include "D3D12MemAlloc.h"
 
+inline size_t qHash(const D3D12_SAMPLER_DESC &s, size_t seed = 0) noexcept
+{
+    return QT_PREPEND_NAMESPACE(qHashBits)(&s, sizeof(s), seed);
+}
+
 QT_BEGIN_NAMESPACE
 
 static const int QD3D12_FRAMES_IN_FLIGHT = 2;
@@ -460,11 +465,6 @@ inline bool operator==(const D3D12_SAMPLER_DESC &a, const D3D12_SAMPLER_DESC &b)
 inline bool operator!=(const D3D12_SAMPLER_DESC &a, const D3D12_SAMPLER_DESC &b) noexcept
 {
     return !(a == b);
-}
-
-inline size_t qHash(const D3D12_SAMPLER_DESC &s, size_t seed = 0) noexcept
-{
-    return qHashBits(&s, sizeof(s), seed);
 }
 
 struct QD3D12SamplerManager
