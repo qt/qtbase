@@ -41,19 +41,11 @@ inline void qDeleteAll(const Container &c)
 */
 namespace QAlgorithmsPrivate {
 
-#ifdef Q_CC_CLANG
-// Clang had a bug where __builtin_ctz/clz/popcount were not marked as constexpr.
-#  if (defined __apple_build_version__ &&  __clang_major__ >= 7) || (Q_CC_CLANG >= 307)
-#    define QT_HAS_CONSTEXPR_BUILTINS
-#  endif
-#elif defined(Q_CC_MSVC) && !defined(Q_PROCESSOR_ARM)
-#  define QT_HAS_CONSTEXPR_BUILTINS
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+// We use C++20 <bit> operations instead which ensures constexpr bit ops
+#  define QT_HAS_CONSTEXPR_BITOPS
 #elif defined(Q_CC_GNU)
-#  define QT_HAS_CONSTEXPR_BUILTINS
-#endif
-
-#if defined QT_HAS_CONSTEXPR_BUILTINS
-#if defined(Q_CC_GNU) || defined(Q_CC_CLANG)
+#  define QT_HAS_CONSTEXPR_BITOPS
 #  define QT_HAS_BUILTIN_CTZS
 constexpr Q_ALWAYS_INLINE uint qt_builtin_ctzs(quint16 v) noexcept
 {
@@ -169,9 +161,7 @@ Q_ALWAYS_INLINE uint qt_builtin_clzs(quint16 v) noexcept
 //    architecture), but unlike the other compilers, MSVC has no option
 //    to generate code for those processors.
 // So it's an acceptable compromise.
-#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
-// We use C++20 <bit> operations instead which ensures constexpr popcount
-#elif defined(__AVX__) || defined(__SSE4_2__) || defined(__POPCNT__)
+#if defined(__AVX__) || defined(__SSE4_2__) || defined(__POPCNT__)
 #define QT_POPCOUNT_CONSTEXPR
 #define QT_POPCOUNT_RELAXED_CONSTEXPR
 #define QALGORITHMS_USE_BUILTIN_POPCOUNT
@@ -200,7 +190,6 @@ Q_ALWAYS_INLINE uint qt_builtin_popcountll(quint64 v) noexcept
 #endif // __AVX__ || __SSE4_2__ || __POPCNT__
 
 #endif // MSVC
-#endif // QT_HAS_CONSTEXPR_BUILTINS
 
 #ifndef QT_POPCOUNT_CONSTEXPR
 #define QT_POPCOUNT_CONSTEXPR constexpr
