@@ -33,6 +33,17 @@ Q_DECLARE_METATYPE(MYSQL_STMT*)
 // by redefining it we can regain source compatibility.
 using my_bool = decltype(mysql_stmt_bind_result(nullptr, nullptr));
 
+// this is a copy of the old MYSQL_TIME before an additional integer was added in
+// 8.0.27.0. This kills the sanity check during retrieving this struct from mysql
+// when another libmysql version is used during runtime than during compile time
+struct QT_MYSQL_TIME
+{
+    unsigned int year, month, day, hour, minute, second;
+    unsigned long second_part; /**< microseconds */
+    my_bool neg;
+    enum enum_mysql_timestamp_type time_type;
+};
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -330,7 +341,7 @@ bool QMYSQLResultPrivate::bindInValues()
             bind->buffer_length = f.bufLength = 0;
             hasBlobs = true;
         } else if (qIsTimeOrDate(fieldInfo->type)) {
-            bind->buffer_length = f.bufLength = sizeof(MYSQL_TIME);
+            bind->buffer_length = f.bufLength = sizeof(QT_MYSQL_TIME);
         } else if (qIsInteger(f.type.id())) {
             bind->buffer_length = f.bufLength = 8;
         } else {
@@ -534,8 +545,8 @@ QVariant QMYSQLResult::data(int field)
             else if (f.type.id() == QMetaType::Char)
                 return variant.toInt();
             return variant;
-        } else if (qIsTimeOrDate(f.myField->type) && f.bufLength == sizeof(MYSQL_TIME)) {
-            auto t = reinterpret_cast<const MYSQL_TIME *>(f.outField);
+        } else if (qIsTimeOrDate(f.myField->type) && f.bufLength >= sizeof(QT_MYSQL_TIME)) {
+            auto t = reinterpret_cast<const QT_MYSQL_TIME *>(f.outField);
             QDate date;
             QTime time;
             if (f.type.id() != QMetaType::QTime)
@@ -795,13 +806,12 @@ void QMYSQLResult::virtual_hook(int id, void *data)
     QSqlResult::virtual_hook(id, data);
 }
 
-static MYSQL_TIME *toMySqlDate(QDate date, QTime time, int type)
+static QT_MYSQL_TIME *toMySqlDate(QDate date, QTime time, int type)
 {
     Q_ASSERT(type == QMetaType::QTime || type == QMetaType::QDate
              || type == QMetaType::QDateTime);
 
-    MYSQL_TIME *myTime = new MYSQL_TIME;
-    memset(myTime, 0, sizeof(MYSQL_TIME));
+    auto myTime = new QT_MYSQL_TIME{};
 
     if (type == QMetaType::QTime || type == QMetaType::QDateTime) {
         myTime->hour = time.hour();
@@ -870,7 +880,7 @@ bool QMYSQLResult::exec()
         return false;
 
     int r = 0;
-    QList<MYSQL_TIME *> timeVector;
+    QList<QT_MYSQL_TIME *> timeVector;
     QList<QByteArray> stringVector;
     QList<my_bool> nullVector;
 
@@ -908,7 +918,7 @@ bool QMYSQLResult::exec()
                 case QMetaType::QTime:
                 case QMetaType::QDate:
                 case QMetaType::QDateTime: {
-                    MYSQL_TIME *myTime = toMySqlDate(val.toDate(), val.toTime(), val.userType());
+                    QT_MYSQL_TIME *myTime = toMySqlDate(val.toDate(), val.toTime(), val.userType());
                     timeVector.append(myTime);
 
                     currBind->buffer = myTime;
@@ -928,7 +938,7 @@ bool QMYSQLResult::exec()
                     default:
                         break;
                     }
-                    currBind->buffer_length = sizeof(MYSQL_TIME);
+                    currBind->buffer_length = sizeof(QT_MYSQL_TIME);
                     currBind->length = 0;
                     break; }
                 case QMetaType::UInt:
