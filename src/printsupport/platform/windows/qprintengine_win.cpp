@@ -30,10 +30,10 @@
 #include <QtCore/QMetaType>
 #include <QtCore/qt_windows.h>
 #include <QtGui/qpagelayout.h>
+#include <QtGui/private/qpixmap_win_p.h>
 
 QT_BEGIN_NAMESPACE
 
-Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0);
 extern QPainterPath qt_regionToPath(const QRegion &region);
 extern QMarginsF qt_convertMargins(const QMarginsF &margins, QPageLayout::Unit fromUnits, QPageLayout::Unit toUnits);
 

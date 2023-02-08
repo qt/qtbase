@@ -6,6 +6,7 @@
 #include "qwindowswindow.h"
 
 #include <QtGui/qwindow.h>
+#include <QtGui/private/qpixmap_win_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qmetaobject.h>
@@ -228,8 +229,6 @@ void QWindowsMenuItem::setIcon(const QIcon &icon)
     if (m_parentMenu != nullptr)
         updateBitmap();
 }
-
-Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0);
 
 void QWindowsMenuItem::updateBitmap()
 {
