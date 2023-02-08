@@ -2240,6 +2240,8 @@ void tst_QProperty::selfBindingShouldNotCrash()
 
 void tst_QProperty::qpropertyAlias()
 {
+#if QT_DEPRECATED_SINCE(6, 6)
+    QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     std::unique_ptr<QProperty<int>> i {new QProperty<int>};
     QPropertyAlias<int> alias(i.get());
     QVERIFY(alias.isValid());
@@ -2251,6 +2253,8 @@ void tst_QProperty::qpropertyAlias()
     QCOMPARE(alias.value(), 42);
     i.reset();
     QVERIFY(!alias.isValid());
+    QT_WARNING_POP
+#endif
 }
 
 void tst_QProperty::scheduleNotify()

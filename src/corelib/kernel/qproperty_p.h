@@ -124,13 +124,17 @@ struct QPropertyObserverPointer
     void unlink()
     {
         unlink_common();
+#if QT_DEPRECATED_SINCE(6, 6)
         if (ptr->next.tag() == QPropertyObserver::ObserverIsAlias)
             ptr->aliasData = nullptr;
+#endif
     }
 
     void unlink_fast()
     {
+#if QT_DEPRECATED_SINCE(6, 6)
         Q_ASSERT(ptr->next.tag() != QPropertyObserver::ObserverIsAlias);
+#endif
         unlink_common();
     }
 
@@ -881,8 +885,10 @@ inline void QPropertyObserverPointer::notify(QUntypedPropertyData *propertyDataP
         case QPropertyObserver::ObserverIsPlaceholder:
             // recursion is already properly handled somewhere else
             break;
+#if QT_DEPRECATED_SINCE(6, 6)
         case QPropertyObserver::ObserverIsAlias:
             break;
+#endif
         default: Q_UNREACHABLE();
         }
         observer = next;

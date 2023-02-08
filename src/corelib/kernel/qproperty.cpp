@@ -641,11 +641,13 @@ QPropertyObserver::QPropertyObserver(ChangeHandler changeHandler)
     d.setChangeHandler(changeHandler);
 }
 
+#if QT_DEPRECATED_SINCE(6, 6)
 QPropertyObserver::QPropertyObserver(QUntypedPropertyData *data)
 {
     aliasData = data;
     next.setTag(ObserverIsAlias);
 }
+#endif
 
 /*! \internal
 */
