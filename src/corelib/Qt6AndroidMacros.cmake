@@ -1297,7 +1297,33 @@ endfunction()
 function(_qt_internal_android_executable_finalizer target)
     set_property(TARGET ${target} PROPERTY _qt_android_executable_finalizer_called TRUE)
 
+    _qt_internal_expose_android_package_source_dir_to_ide(${target})
+
     _qt_internal_configure_android_multiabi_target("${target}")
     qt6_android_generate_deployment_settings("${target}")
     qt6_android_add_apk_target("${target}")
+endfunction()
+
+function(_qt_internal_expose_android_package_source_dir_to_ide target)
+    get_target_property(android_package_source_dir ${target} QT_ANDROID_PACKAGE_SOURCE_DIR)
+    if(android_package_source_dir)
+        get_target_property(target_source_dir ${target} SOURCE_DIR)
+        if(NOT IS_ABSOLUTE "${android_package_source_dir}")
+            string(JOIN "/" android_package_source_dir
+                "${target_source_dir}"
+                "${android_package_source_dir}"
+            )
+        endif()
+
+        if(EXISTS "${android_package_source_dir}")
+            file(GLOB_RECURSE android_package_sources
+                RELATIVE "${target_source_dir}"
+                "${android_package_source_dir}/*"
+            )
+        endif()
+
+        foreach(f IN LISTS android_package_sources)
+            _qt_internal_expose_source_file_to_ide(${target} "${f}")
+        endforeach()
+    endif()
 endfunction()
