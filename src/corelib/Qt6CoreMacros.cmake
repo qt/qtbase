@@ -687,6 +687,7 @@ function(_qt_internal_delay_finalization_until_after defer_id)
 endfunction()
 
 function(qt6_finalize_target target)
+    set_property(TARGET ${target} PROPERTY _qt_expects_finalization FALSE)
     if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
         cmake_language(DEFER GET_CALL_IDS ids_queued)
         get_directory_property(wait_for_ids qt_internal_finalizers_wait_for_ids)
