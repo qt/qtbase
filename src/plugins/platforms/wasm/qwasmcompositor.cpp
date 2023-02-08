@@ -413,12 +413,15 @@ bool QWasmCompositor::processTouch(int eventType, const EmscriptenTouchEvent *to
     touchPointList.reserve(touchEvent->numTouches);
     QWindow *targetWindow = nullptr;
 
+    qWarning() << Q_FUNC_INFO << "number emTouchPoint:" << touchEvent->numTouches;
+
     for (int i = 0; i < touchEvent->numTouches; i++) {
 
-        const EmscriptenTouchPoint *touches = &touchEvent->touches[i];
+        const EmscriptenTouchPoint *emTouchPoint = &touchEvent->touches[i];
+
 
         QPoint targetPointInScreenCoords =
-                screen()->mapFromLocal(QPoint(touches->targetX, touches->targetY));
+                screen()->mapFromLocal(QPoint(emTouchPoint->targetX, emTouchPoint->targetY));
 
         targetWindow = screen()->compositor()->windowAt(targetPointInScreenCoords, 5);
         if (targetWindow == nullptr)
@@ -427,7 +430,7 @@ bool QWasmCompositor::processTouch(int eventType, const EmscriptenTouchEvent *to
         QWindowSystemInterface::TouchPoint touchPoint;
 
         touchPoint.area = QRect(0, 0, 8, 8);
-        touchPoint.id = touches->identifier;
+        touchPoint.id = emTouchPoint->identifier;
         touchPoint.pressure = 1.0;
 
         touchPoint.area.moveCenter(targetPointInScreenCoords);
@@ -445,26 +448,31 @@ bool QWasmCompositor::processTouch(int eventType, const EmscriptenTouchEvent *to
 
         switch (eventType) {
             case EMSCRIPTEN_EVENT_TOUCHSTART:
-                if (tp != m_pressedTouchIds.constEnd()) {
-                    touchPoint.state = (stationaryTouchPoint
-                                        ? QEventPoint::State::Stationary
-                                        : QEventPoint::State::Updated);
-                } else {
-                    touchPoint.state = QEventPoint::State::Pressed;
+                if (emTouchPoint->isChanged) {
+                    if (tp != m_pressedTouchIds.constEnd()) {
+                        touchPoint.state = (stationaryTouchPoint
+                                            ? QEventPoint::State::Stationary
+                                            : QEventPoint::State::Updated);
+                    } else {
+                        touchPoint.state = QEventPoint::State::Pressed;
+                    }
+                    m_pressedTouchIds.insert(touchPoint.id, touchPoint.normalPosition);
                 }
-                m_pressedTouchIds.insert(touchPoint.id, touchPoint.normalPosition);
-
-                break;
+            break;
             case EMSCRIPTEN_EVENT_TOUCHEND:
-                touchPoint.state = QEventPoint::State::Released;
-                m_pressedTouchIds.remove(touchPoint.id);
+                if (emTouchPoint->isChanged) {
+                    touchPoint.state = QEventPoint::State::Released;
+                    m_pressedTouchIds.remove(touchPoint.id);
+                }
                 break;
             case EMSCRIPTEN_EVENT_TOUCHMOVE:
-                touchPoint.state = (stationaryTouchPoint
-                                    ? QEventPoint::State::Stationary
-                                    : QEventPoint::State::Updated);
+                if (emTouchPoint->isChanged) {
+                        touchPoint.state = (stationaryTouchPoint
+                                            ? QEventPoint::State::Stationary
+                                            : QEventPoint::State::Updated);
 
-                m_pressedTouchIds.insert(touchPoint.id, touchPoint.normalPosition);
+                        m_pressedTouchIds.insert(touchPoint.id, touchPoint.normalPosition);
+                }
                 break;
             default:
                 break;
