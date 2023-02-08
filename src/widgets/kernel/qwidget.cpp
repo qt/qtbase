@@ -7385,7 +7385,9 @@ QByteArray QWidget::saveGeometry() const
 }
 
 /*!
-   \internal Check a if \a restoredGeometry fits into \a availableGeometry
+   \internal
+
+   Check a if \a restoredGeometry fits into \a availableGeometry
    This method is used to verify that a widget is restored to a geometry, which
    fits into the target screen.
 
