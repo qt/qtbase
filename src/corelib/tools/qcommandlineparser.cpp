@@ -251,7 +251,7 @@ QCommandLineParser::~QCommandLineParser()
     \enum QCommandLineParser::SingleDashWordOptionMode
 
     This enum describes the way the parser interprets command-line
-    options that use a single dash followed by multiple letters, as as \c{-abc}.
+    options that use a single dash followed by multiple letters, as \c{-abc}.
 
     \value ParseAsCompactedShortOptions \c{-abc} is interpreted as \c{-a -b -c},
     i.e. as three short options that have been compacted on the command-line,

@@ -143,7 +143,7 @@ QFileInfo QFileSystemModel::fileInfo(const QModelIndex &index) const
     \fn void QFileSystemModel::fileRenamed(const QString &path, const QString &oldName, const QString &newName)
 
     This signal is emitted whenever a file with the \a oldName is successfully
-    renamed to \a newName.  The file is located in in the directory \a path.
+    renamed to \a newName.  The file is located in the directory \a path.
 */
 
 /*!

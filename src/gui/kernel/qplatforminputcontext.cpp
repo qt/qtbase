@@ -95,7 +95,7 @@ void QPlatformInputContext::update(Qt::InputMethodQueries)
 }
 
 /*!
-    Called when when the word currently being composed in input item is tapped by
+    Called when the word currently being composed in the input item is tapped by
     the user. Input methods often use this information to offer more word
     suggestions to the user.
  */

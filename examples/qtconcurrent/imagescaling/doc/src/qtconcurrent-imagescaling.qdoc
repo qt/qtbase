@@ -11,7 +11,7 @@
     This example shows how to use the QFuture and QPromise classes to download a
     collection of images from the network and scale them, without blocking the UI.
 
-    The application consists of the the following steps:
+    The application consists of the following steps:
 
     \list 1
     \li Download images form the list of URLs specified by the user.

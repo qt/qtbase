@@ -673,7 +673,7 @@ QHostAddress::NetworkLayerProtocol QHostAddress::protocol() const
     \l{QAbstractSocket::}{IPv6Protocol}.
     If the protocol is
     \l{QAbstractSocket::}{IPv4Protocol},
-    then the address is returned an an IPv4 mapped IPv6 address. (RFC4291)
+    then the address is returned as an IPv4 mapped IPv6 address. (RFC4291)
 
     \sa toString()
 */

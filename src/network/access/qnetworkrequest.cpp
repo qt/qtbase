@@ -221,7 +221,7 @@ QT_IMPL_METATYPE_EXTERN_TAGGED(QNetworkRequest::RedirectPolicy, QNetworkRequest_
         Requests only, type: QMetaType::Int (default: QNetworkRequest::Automatic)
         Indicates whether to use cached authorization credentials in the request,
         if available. If this is set to QNetworkRequest::Manual and the authentication
-        mechanism is 'Basic' or 'Digest', Qt will not send an an 'Authorization' HTTP
+        mechanism is 'Basic' or 'Digest', Qt will not send an 'Authorization' HTTP
         header with any cached credentials it may have for the request's URL.
         This attribute is set to QNetworkRequest::Manual by Qt WebKit when creating a cross-origin
         XMLHttpRequest where withCredentials has not been set explicitly to true by the

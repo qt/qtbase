@@ -1191,7 +1191,7 @@ QString QSqlQuery::executedQuery() const
 
   For MySQL databases the row's auto-increment field will be returned.
 
-  \note For this function to work in PSQL, the table table must
+  \note For this function to work in PSQL, the table must
   contain OIDs, which may not have been created by default.  Check the
   \c default_with_oids configuration variable to be sure.
 

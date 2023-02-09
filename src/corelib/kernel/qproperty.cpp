@@ -755,7 +755,7 @@ void QPropertyObserverPointer::setBindingToNotify(QPropertyBindingPrivate *bindi
 
 /*!
     \internal
-    The same as as setBindingToNotify, but assumes that the tag is already correct.
+    The same as setBindingToNotify, but assumes that the tag is already correct.
  */
 void QPropertyObserverPointer::setBindingToNotify_unsafe(QPropertyBindingPrivate *binding)
 {

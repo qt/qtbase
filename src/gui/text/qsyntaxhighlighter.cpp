@@ -219,7 +219,7 @@ void QSyntaxHighlighterPrivate::reformatBlock(const QTextBlock &block)
     an int value. If no state is set, the returned value is -1. You
     can designate any other value to identify any given state using
     the setCurrentBlockState() function. Once the state is set the
-    QTextBlock keeps that value until it is set set again or until the
+    QTextBlock keeps that value until it is set again or until the
     corresponding paragraph of text is deleted.
 
     For example, if you're writing a simple C++ syntax highlighter,

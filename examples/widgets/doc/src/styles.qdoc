@@ -224,7 +224,7 @@
     \snippet widgets/styles/norwegianwoodstyle.cpp 13
     \snippet widgets/styles/norwegianwoodstyle.cpp 14
 
-    The \c roundRect variable is a QPainterPath. A QPainterPath is is
+    The \c roundRect variable is a QPainterPath. A QPainterPath is
     a vectorial specification of a shape. Any shape (rectangle,
     ellipse, spline, etc.) or combination of shapes can be expressed
     as a path. We will use \c roundRect both for filling the button

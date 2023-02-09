@@ -174,7 +174,7 @@ void QTextBlockGroupPrivate::markBlocksDirty()
 /*!
     \fn QTextBlockGroup::QTextBlockGroup(QTextDocument *document)
 
-    Creates a new new block group for the given \a document.
+    Creates a new block group for the given \a document.
 
     \warning This function should only be called from
     QTextDocument::createObject().

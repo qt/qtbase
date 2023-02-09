@@ -325,7 +325,7 @@ Set \c QT_NO_COLLECT_BUILD_TREE_APK_DEPS to \c TRUE to disable this behavior.
 
 When using CMake version 3.21 or later, the build system collects the locations of
 imported shared library targets that might be relevant for deployment.
-The collected targets are those that are reachable from the the directory scope
+The collected targets are those that are reachable from the directory scope
 of the currently processed executable target. That includes the target's source directory
 scope and its parents.
 The collected locations are passed to \l androiddeployqt for deployment consideration when

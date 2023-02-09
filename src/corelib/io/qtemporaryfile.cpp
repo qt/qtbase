@@ -163,7 +163,7 @@ QFileSystemEntry::NativePath QTemporaryFileName::generateNext()
     \internal
 
     Generates a unique file path from the template \a templ and creates a new
-    file based based on those parameters: the \c templ.length characters in \c
+    file based on those parameters: the \c templ.length characters in \c
     templ.path starting at \c templ.pos will be replaced by a random sequence of
     characters. \a mode specifies the file mode bits (not used on Windows).
 

@@ -47,7 +47,7 @@
 
     The call to the Java meethod use \l QJniObject which relies on the Java Native
     Interface (JNI) APIs to communicate with Java. Also, in the previous snippet,
-    we are passing the app's context object which the the static Java code can use
+    we are passing the app's context object, which the static Java code can use
     to tap into the app's specific properties and APIs.
 
     To make sure our smiley buttons do what they are supposed to, we add the

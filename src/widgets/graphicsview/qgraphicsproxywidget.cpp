@@ -522,7 +522,7 @@ QGraphicsProxyWidget::~QGraphicsProxyWidget()
 /*!
     Embeds \a widget into this proxy widget. The embedded widget must reside
     exclusively either inside or outside of Graphics View. You cannot embed a
-    widget as long as it is is visible elsewhere in the UI, at the same time.
+    widget as long as it is visible elsewhere in the UI, at the same time.
 
     \a widget must be a top-level widget whose parent is \nullptr.
 

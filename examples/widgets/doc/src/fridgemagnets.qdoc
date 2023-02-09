@@ -225,7 +225,7 @@
 
     \section2 Dropping
 
-    When a a drag and drop action enters our widget, we will receive a
+    When a drag and drop action enters our widget, we will receive a
     drag enter \e event. QDragEnterEvent inherits most of its
     functionality from QDragMoveEvent, which in turn inherits most of
     its functionality from QDropEvent. Note that we must accept this

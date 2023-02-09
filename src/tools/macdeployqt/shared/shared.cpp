@@ -942,7 +942,7 @@ bool DeploymentInfo::containsModule(const QString &module, const QString &libInF
 }
 
 /*
-    Deploys the the listed frameworks listed into an app bundle.
+    Deploys the listed frameworks into an app bundle.
     The frameworks are searched for dependencies, which are also deployed.
     (deploying Qt3Support will also deploy QtNetwork and QtSql for example.)
     Returns a DeploymentInfo structure containing the Qt path used and a

@@ -116,7 +116,7 @@
     QPlainTextEdit gives the possibility to have more than one
     selection at the same time. we can set the character format
     (QTextCharFormat) of these selections. We clear the cursors
-    selection before setting the new new
+    selection before setting the new
     QPlainTextEdit::ExtraSelection, else several lines would get
     highlighted when the user selects multiple lines with the mouse.
     \omit ask someone how this works \endomit

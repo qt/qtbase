@@ -290,7 +290,7 @@ QTimeLine::State QTimeLine::state() const
     \property QTimeLine::loopCount
     \brief the number of times the timeline should loop before it's finished.
 
-    A loop count of of 0 means that the timeline will loop forever.
+    A loop count of 0 means that the timeline will loop forever.
 
     By default, this property contains a value of 1.
 */

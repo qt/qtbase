@@ -324,7 +324,7 @@ HBITMAP qt_imageToWinHBITMAP(const QImage &imageIn, int hbitmapFormat)
     It is the caller's responsibility to free the \c HBITMAP data
     after use.
 
-    For usage with with standard GDI calls, such as \c BitBlt(), the image
+    For usage with standard GDI calls, such as \c BitBlt(), the image
     should have the format QImage::Format_RGB32.
 
     When using the resulting HBITMAP for the \c AlphaBlend() GDI function,

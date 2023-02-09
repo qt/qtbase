@@ -140,7 +140,7 @@ WRAP(indexOf, QLatin1StringView)
     \value DTD The reader reports a DTD in text(), notation
     declarations in notationDeclarations(), and entity declarations in
     entityDeclarations(). Details of the DTD declaration are reported
-    in in dtdName(), dtdPublicId(), and dtdSystemId().
+    in dtdName(), dtdPublicId(), and dtdSystemId().
 
     \value EntityReference The reader reports an entity reference that
     could not be resolved.  The name of the reference is reported in

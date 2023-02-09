@@ -30,13 +30,12 @@ QT_IMPL_METATYPE_EXTERN_TAGGED(QSurface*, QSurface_ptr)
     \value Offscreen The surface is an instance of QOffscreenSurface.
  */
 
-
 /*!
     \enum QSurface::SurfaceType
 
     The SurfaceType enum describes what type of surface this is.
 
-    \value RasterSurface The surface is is composed of pixels and can be rendered to using
+    \value RasterSurface The surface is composed of pixels and can be rendered to using
     a software rasterizer like Qt's raster paint engine.
     \value OpenGLSurface The surface is an OpenGL compatible surface and can be used
     in conjunction with QOpenGLContext.
@@ -54,7 +53,6 @@ QT_IMPL_METATYPE_EXTERN_TAGGED(QSurface*, QSurface_ptr)
     surface and can be used in conjunction with the DXGI and Direct3D APIs. This
     surface type is only supported on Windows.
  */
-
 
 /*!
     \fn QSurfaceFormat QSurface::format() const

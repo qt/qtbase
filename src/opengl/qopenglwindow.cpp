@@ -376,7 +376,7 @@ bool QOpenGLWindow::isValid() const
 /*!
   Prepares for rendering OpenGL content for this window by making the
   corresponding context current and binding the framebuffer object, if there is
-  one, in that context context.
+  one, in that context.
 
   It is not necessary to call this function in most cases, because it is called
   automatically before invoking paintGL(). It is provided nonetheless to support

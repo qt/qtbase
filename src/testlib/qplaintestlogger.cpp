@@ -243,7 +243,7 @@ namespace QTest {
 
     QPlainTestLogger implements basic logging of test results.
 
-    The format is Qt-specific and aims to be be easy to read.
+    The format is Qt-specific and aims to be easy to read.
 */
 
 void QPlainTestLogger::outputMessage(const char *str)

@@ -235,7 +235,7 @@
     This ensures that the edge items are not considered for mouse input at all
     (i.e., you cannot click the edges). Then, the source and destination
     pointers are updated, this edge is registered with each node, and we call
-    \c adjust() to update this edge's start end end position.
+    \c adjust() to update this edge's start and end position.
 
     \snippet graphicsview/elasticnodes/edge.cpp 1
 

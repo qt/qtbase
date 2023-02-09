@@ -130,7 +130,7 @@ void QAccessibleCache::objectDestroyed(QObject* obj)
     /*
     In some cases we might add a not fully-constructed object to the cache. This might happen with
     for instance QWidget subclasses that are in the construction phase. If updateAccessibility() is
-    called in the constructor of QWidget (directly or indirectly), it it will end up asking for the
+    called in the constructor of QWidget (directly or indirectly), it will end up asking for the
     classname of that widget in order to know which accessibility interface subclass the
     accessibility factory should instantiate and return. However, since that requires a virtual
     call to metaObject(), it will return the metaObject() of QWidget (not for the subclass), and so

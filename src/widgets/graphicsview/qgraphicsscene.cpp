@@ -2884,7 +2884,7 @@ void QGraphicsScene::setFocusItem(QGraphicsItem *item, Qt::FocusReason focusReas
 
 /*!
     Returns \c true if the scene has focus; otherwise returns \c false. If the scene
-    has focus, it will will forward key events from QKeyEvent to any item that
+    has focus, it will forward key events from QKeyEvent to any item that
     has focus.
 
     \sa setFocus(), setFocusItem()

@@ -278,7 +278,7 @@
     The container's data must remain valid for the lifetime of this byte array view object.
 
     This constructor participates in overload resolution if \a c is any contiguous
-    container container with elements of a compatible byte type.
+    container with elements of a compatible byte type.
 
     \sa {Compatible Byte Types}
 */

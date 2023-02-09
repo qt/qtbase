@@ -464,7 +464,7 @@ retained.
 This is useful if you want to strip QML source code from the binary.
 
 \note If you omit the QML source code from the binary, the QML engine has to
-rely on the the compilation units created by \l{qmlcachegen} or \l{qmlsc}.
+rely on the compilation units created by \l{qmlcachegen} or \l{qmlsc}.
 Those are tied to the specific version of Qt they were built with. If you change
 the version of Qt your application uses, they can't be loaded anymore.
 

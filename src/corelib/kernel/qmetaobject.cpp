@@ -3021,7 +3021,7 @@ const char *QMetaEnum::name() const
     Returns the enum name of the flag (without the scope).
 
     For example, the Qt::AlignmentFlag flag has \c
-    AlignmentFlag as the enum name, but \c Alignment as as the type name.
+    AlignmentFlag as the enum name, but \c Alignment as the type name.
     Non flag enums has the same type and enum names.
 
     Enum names have the same scope as the type name.
@@ -3624,7 +3624,7 @@ QVariant QMetaProperty::read(const QObject *object) const
     Writes \a value as the property's value to the given \a object. Returns
     true if the write succeeded; otherwise returns \c false.
 
-    If \a value is not of the same type type as the property, a conversion
+    If \a value is not of the same type as the property, a conversion
     is attempted. An empty QVariant() is equivalent to a call to reset()
     if this property is resettable, or setting a default-constructed object
     otherwise.

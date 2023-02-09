@@ -1826,9 +1826,10 @@ void QTextDocument::setBaselineOffset(qreal baseline)
     \fn qreal QTextDocument::baselineOffset() const
     \since 6.0
 
-    Returns the the baseline offset in % used in the document layout.
+    Returns the baseline offset in % used in the document layout.
 
-    \sa setBaselineOffset(), setSubScriptBaseline(), subScriptBaseline(), setSuperScriptBaseline(), superScriptBaseline()
+    \sa setBaselineOffset(), setSubScriptBaseline(), subScriptBaseline(), setSuperScriptBaseline(),
+   superScriptBaseline()
 */
 qreal QTextDocument::baselineOffset() const
 {
