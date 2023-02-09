@@ -314,6 +314,7 @@ private:
     friend class QDragManager;
 
     static Qt::Appearance appearance();
+    static Qt::ColorScheme colorScheme();
 
     static QGuiApplicationPrivate *self;
     static int m_fakeMouseSourcePointId;

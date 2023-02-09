@@ -294,6 +294,7 @@ public:
 #endif
 
     virtual Qt::Appearance appearance() const;
+    virtual Qt::ColorScheme colorScheme() const;
 
     virtual const QPalette *palette(Palette type = SystemPalette) const;
 

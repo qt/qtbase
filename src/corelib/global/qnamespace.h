@@ -52,6 +52,12 @@ namespace Qt {
         Dark,
     };
 
+    enum class ColorScheme {
+        Unknown,
+        Light,
+        Dark,
+    };
+
     enum MouseButton {
         NoButton         = 0x00000000,
         LeftButton       = 0x00000001,
@@ -1758,6 +1764,7 @@ namespace Qt {
     Q_ENUM_NS(CursorShape)
     Q_ENUM_NS(GlobalColor)
     Q_ENUM_NS(Appearance)
+    Q_ENUM_NS(ColorScheme)
     Q_ENUM_NS(AspectRatioMode)
     Q_ENUM_NS(TransformationMode)
     Q_FLAG_NS(ImageConversionFlags)

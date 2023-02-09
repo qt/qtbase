@@ -441,6 +441,11 @@ Qt::Appearance QPlatformTheme::appearance() const
     return Qt::Appearance::Unknown;
 }
 
+Qt::ColorScheme QPlatformTheme::colorScheme() const
+{
+    return Qt::ColorScheme(appearance());
+}
+
 const QPalette *QPlatformTheme::palette(Palette type) const
 {
     Q_D(const QPlatformTheme);
