@@ -331,7 +331,7 @@ int main(void)
 ")
 
 if (LINUX)
-    set(ipc_posix_TEST_LIBRARIES pthread rt)
+    set(ipc_posix_TEST_LIBRARIES pthread WrapRt::WrapRt)
 endif()
 qt_config_compile_test(posix_shm
     LABEL "POSIX shared memory"
@@ -692,7 +692,7 @@ qt_feature("posix_sem" PRIVATE
 )
 qt_feature("posix_shm" PRIVATE
     LABEL "POSIX shared memory"
-    CONDITION TEST_posix_shm
+    CONDITION TEST_posix_shm AND UNIX
 )
 qt_feature("qqnx_pps" PRIVATE
     LABEL "PPS"

@@ -1140,14 +1140,16 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_glib AND UNIX
         GLIB2::GLIB2
 )
 
-qt_internal_extend_target(Core CONDITION QT_FEATURE_clock_gettime AND UNIX
+qt_internal_extend_target(Core CONDITION QT_FEATURE_clock_gettime
     LIBRARIES
         WrapRt::WrapRt
 )
 
-qt_internal_extend_target(Core CONDITION QT_FEATURE_posix_shm
+qt_internal_extend_target(Core CONDITION QT_FEATURE_posix_shm AND UNIX
     SOURCES
         ipc/qsharedmemory_posix.cpp
+    LIBRARIES
+        WrapRt::WrapRt
 )
 qt_internal_extend_target(Core CONDITION QT_FEATURE_sysv_shm
     SOURCES
@@ -1156,6 +1158,8 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_sysv_shm
 qt_internal_extend_target(Core CONDITION QT_FEATURE_posix_sem
     SOURCES
         ipc/qsystemsemaphore_posix.cpp
+    LIBRARIES
+        WrapRt::WrapRt
 )
 qt_internal_extend_target(Core CONDITION QT_FEATURE_sysv_sem
     SOURCES
