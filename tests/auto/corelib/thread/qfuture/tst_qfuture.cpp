@@ -221,6 +221,7 @@ private slots:
     void whenAnyDifferentTypesWithFailed();
 
     void continuationsDontLeak();
+    void cancelAfterFinishWithContinuations();
 
     void unwrap();
 
@@ -4719,6 +4720,31 @@ void tst_QFuture::continuationsDontLeak()
         QVERIFY(continuationIsRun);
     }
     QCOMPARE(InstanceCounter::count, 0);
+}
+
+// This test checks that we do not get use-after-free
+void tst_QFuture::cancelAfterFinishWithContinuations()
+{
+    QFuture<void> future;
+    bool continuationIsRun = false;
+    bool cancelCalled = false;
+    {
+        QPromise<void> promise;
+        future = promise.future();
+
+        future.then([&continuationIsRun]() {
+            continuationIsRun = true;
+        }).onCanceled([&cancelCalled]() {
+            cancelCalled = true;
+        });
+
+        promise.start();
+        promise.finish();
+    }
+
+    QVERIFY(continuationIsRun);
+    future.cancel();
+    QVERIFY(!cancelCalled);
 }
 
 void tst_QFuture::unwrap()
