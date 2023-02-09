@@ -140,6 +140,7 @@ private slots:
     void selectionCommand();
     void mouseSelection_data();
     void mouseSelection();
+    void keepSingleSelectionOnEmptyAreaClick();
     void scrollerSmoothScroll();
     void inputMethodOpensEditor_data();
     void inputMethodOpensEditor();
@@ -3074,6 +3075,37 @@ void tst_QAbstractItemView::mouseSelection()
         actualSelected << index.row();
 
     QCOMPARE(actualSelected, selectedRows);
+}
+
+/*!
+    Make sure that when clicking on empty space in the view, we don't
+    unselect the current row.
+    QTBUG-105870
+*/
+void tst_QAbstractItemView::keepSingleSelectionOnEmptyAreaClick()
+{
+    QListWidget view;
+    view.setSelectionMode(QAbstractItemView::SingleSelection);
+    QListWidgetItem *lastItem;
+    for (int i = 0; i < 5; i++)
+        lastItem = new QListWidgetItem("item " + QString::number(i), &view);
+
+    // Make widget large enough so that there is empty area below the last item
+    view.setFixedSize(300, 500);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+
+    // Select third row
+    view.setCurrentRow(2);
+
+    // Click below the last row
+    QPoint targetPoint = view.visualItemRect(lastItem).bottomLeft();
+    targetPoint += QPoint(10, 10);
+
+    QTest::mouseClick(view.viewport(), Qt::MouseButton::LeftButton, Qt::NoModifier, targetPoint);
+
+    QCOMPARE(view.currentRow(), 2);
+    QVERIFY(view.currentItem()->isSelected());
 }
 
 /*!

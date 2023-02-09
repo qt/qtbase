@@ -4091,8 +4091,12 @@ QItemSelectionModel::SelectionFlags QAbstractItemView::selectionCommand(const QM
                     if (d->pressedAlreadySelected)
                         return QItemSelectionModel::NoUpdate;
                     break;
-                case QEvent::KeyPress:
                 case QEvent::MouseButtonRelease:
+                    // clicking into area with no items does nothing
+                    if (!index.isValid())
+                        return QItemSelectionModel::NoUpdate;
+                    Q_FALLTHROUGH();
+                case QEvent::KeyPress:
                     // ctrl-release on selected item deselects
                     if ((keyModifiers & Qt::ControlModifier) && d->selectionModel->isSelected(index))
                         return QItemSelectionModel::Deselect | d->selectionBehaviorFlags();
