@@ -847,6 +847,7 @@ void QFutureInterfaceBase::cleanContinuation()
     QMutexLocker lock(&d->continuationMutex);
     d->continuation = nullptr;
     d->continuationState = QFutureInterfaceBasePrivate::Cleaned;
+    d->continuationData = nullptr;
 }
 
 void QFutureInterfaceBase::runContinuation() const
