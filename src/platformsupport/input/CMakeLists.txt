@@ -1,12 +1,10 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from input.pro.
-
-qt_find_package(Libinput) # special case
-qt_find_package(XKB) # special case
-qt_find_package(Tslib) # special case
-qt_find_package(Mtdev) # special case
+qt_find_package(Libinput)
+qt_find_package(XKB)
+qt_find_package(Tslib)
+qt_find_package(Mtdev)
 
 #####################################################################
 ## InputSupportPrivate Module:
@@ -25,9 +23,6 @@ qt_internal_add_module(InputSupportPrivate
     PRECOMPILED_HEADER
         "../../corelib/global/qt_pch.h"
 )
-
-#### Keys ignored in scope 2:.:.:input-support.pro:<TRUE>:
-# MODULE = "input_support"
 
 ## Scopes:
 #####################################################################

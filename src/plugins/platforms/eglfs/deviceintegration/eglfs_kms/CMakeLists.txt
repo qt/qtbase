@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from eglfs_kms.pro.
-
 #####################################################################
 ## EglFsKmsGbmSupportPrivate Module:
 #####################################################################
@@ -48,6 +46,3 @@ qt_internal_add_plugin(QEglFSKmsGbmIntegrationPlugin
         Qt::KmsSupportPrivate
         gbm::gbm
 )
-
-#### Keys ignored in scope 3:.:.:eglfs_kms-plugin.pro:<TRUE>:
-# OTHER_FILES = "$$PWD/eglfs_kms.json"

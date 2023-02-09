@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from eglfs_mali.pro.
-
 #####################################################################
 ## QEglFSMaliIntegrationPlugin Plugin:
 #####################################################################
@@ -24,6 +22,3 @@ qt_internal_add_plugin(QEglFSMaliIntegrationPlugin
         Qt::Gui
         Qt::GuiPrivate
 )
-
-#### Keys ignored in scope 1:.:.:eglfs_mali.pro:<TRUE>:
-# OTHER_FILES = "$$PWD/eglfs_mali.json"

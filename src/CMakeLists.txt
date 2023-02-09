@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# special case skip regeneration
-
 # We need to include the features of a few modules before they are actually declared.
 # The feature values are used as conditions for deciding whether bundled 3rd party libraries
 # should be built.

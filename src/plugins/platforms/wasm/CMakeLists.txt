@@ -1,15 +1,13 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from wasm.pro.
-
 #####################################################################
 ## QWasmIntegrationPlugin Plugin:
 #####################################################################
 
 qt_internal_add_plugin(QWasmIntegrationPlugin
     OUTPUT_NAME qwasm
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES wasm # special case
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES wasm
     PLUGIN_TYPE platforms
     STATIC
     SOURCES
@@ -71,7 +69,6 @@ qt_internal_extend_target(QWasmIntegrationPlugin CONDITION QT_FEATURE_opengl
         Qt::OpenGLPrivate
 )
 
-#### Keys ignored in scope 4:.:.:wasm.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 
 set(wasm_support_files

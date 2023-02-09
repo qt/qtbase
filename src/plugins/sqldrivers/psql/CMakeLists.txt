@@ -1,9 +1,7 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from psql.pro.
-
-qt_find_package(PostgreSQL) # special case
+qt_find_package(PostgreSQL)
 
 #####################################################################
 ## QPSQLDriverPlugin Plugin:
@@ -24,9 +22,6 @@ qt_internal_add_plugin(QPSQLDriverPlugin
         Qt::CorePrivate
         Qt::SqlPrivate
 )
-
-#### Keys ignored in scope 1:.:.:psql.pro:<TRUE>:
-# OTHER_FILES = "psql.json"
 
 # PostgreSQL delivers header files that are not a part of PostgreSQL itself. When precompiled
 # headers are processed, MinGW uses 'pthread.h' from the PostgreSQL installation directory.

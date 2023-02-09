@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from printsupport.pro.
-
 #####################################################################
 ## PrintSupport Module:
 #####################################################################
@@ -43,9 +41,6 @@ qt_internal_add_module(PrintSupport
     QPA_HEADER_FILTERS
         "(^|/)qplatform.+\\.h$"
 )
-
-#### Keys ignored in scope 1:.:.:printsupport.pro:<TRUE>:
-# QMAKE_LIBS = "$$QMAKE_LIBS_PRINTSUPPORT"
 
 ## Scopes:
 #####################################################################

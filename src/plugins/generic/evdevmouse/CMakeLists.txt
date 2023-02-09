@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from evdevmouse.pro.
-
 #####################################################################
 ## QEvdevMousePlugin Plugin:
 #####################################################################
@@ -20,7 +18,3 @@ qt_internal_add_plugin(QEvdevMousePlugin
         Qt::GuiPrivate
         Qt::InputSupportPrivate
 )
-
-#### Keys ignored in scope 1:.:.:evdevmouse.pro:<TRUE>:
-# OTHER_FILES = "evdevmouse.json"
-# PLUGIN_EXTENDS = "-"

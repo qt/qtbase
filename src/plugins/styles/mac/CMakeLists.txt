@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from mac.pro.
-
 #####################################################################
 ## QMacStylePlugin Plugin:
 #####################################################################
@@ -21,12 +19,7 @@ qt_internal_add_plugin(QMacStylePlugin
         Qt::WidgetsPrivate
 )
 
-#### Keys ignored in scope 1:.:.:mac.pro:<TRUE>:
-# DISTFILES = "macstyle.json"
-
-# special case begin
 set_target_properties(QMacStylePlugin
     PROPERTIES
         DISABLE_PRECOMPILE_HEADERS ON
 )
-# special case end

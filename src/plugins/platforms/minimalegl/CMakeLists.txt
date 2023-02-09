@@ -1,8 +1,7 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from minimalegl.pro.
-qt_find_package(EGL) # special case
+qt_find_package(EGL)
 
 #####################################################################
 ## QMinimalEglIntegrationPlugin Plugin:
@@ -11,7 +10,7 @@ qt_find_package(EGL) # special case
 qt_internal_add_plugin(QMinimalEglIntegrationPlugin
     OUTPUT_NAME qminimalegl
     PLUGIN_TYPE platforms
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES minimalegl # special case
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES minimalegl
     SOURCES
         main.cpp
         qminimaleglintegration.cpp qminimaleglintegration.h
@@ -24,11 +23,8 @@ qt_internal_add_plugin(QMinimalEglIntegrationPlugin
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
-        EGL::EGL # special case
+        EGL::EGL
 )
-
-#### Keys ignored in scope 1:.:.:minimalegl.pro:<TRUE>:
-# OTHER_FILES = "minimalegl.json"
 
 ## Scopes:
 #####################################################################
@@ -39,6 +35,3 @@ qt_internal_extend_target(QMinimalEglIntegrationPlugin CONDITION QT_FEATURE_open
     LIBRARIES
         Qt::OpenGL
 )
-
-#### Keys ignored in scope 3:.:.:minimalegl.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
-# PLUGIN_EXTENDS = "-"

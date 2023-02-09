@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from widgets.pro.
-
 #####################################################################
 ## Widgets Module:
 #####################################################################
@@ -305,10 +303,6 @@ if(QT_FEATURE_reduce_relocations AND UNIX AND GCC)
     target_link_options(Widgets PRIVATE
                         "LINKER:--dynamic-list=${CMAKE_CURRENT_LIST_DIR}/QtWidgets.dynlist")
 endif()
-
-#### Keys ignored in scope 1:.:.:widgets.pro:<TRUE>:
-# MODULE_CONFIG = "uic"
-# QMAKE_LIBS = "$$QMAKE_LIBS_GUI"
 
 ## Scopes:
 #####################################################################

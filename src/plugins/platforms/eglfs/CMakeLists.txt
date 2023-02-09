@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from eglfs.pro.
-# special case begin
 qt_find_package(EGL)
 
 if(QT_FEATURE_eglfs_gbm)
@@ -18,7 +16,6 @@ elseif(QT_FEATURE_eglfs_openwfd)
 endif()
 
 set(QT_QPA_DEFAULT_EGLFS_INTEGRATION "${_device_integration}" CACHE STRING "Default EGLFS device integration plugin")
-# special case end
 
 #####################################################################
 ## EglFSDeviceIntegrationPrivate Module:
@@ -37,7 +34,7 @@ qt_internal_add_module(EglFSDeviceIntegrationPrivate
     DEFINES
         QT_BUILD_EGL_DEVICE_LIB
         QT_EGL_NO_X11
-        EGLFS_PREFERRED_PLUGIN=${QT_QPA_DEFAULT_EGLFS_INTEGRATION} # special case
+        EGLFS_PREFERRED_PLUGIN=${QT_QPA_DEFAULT_EGLFS_INTEGRATION}
     INCLUDE_DIRECTORIES
         api
     PUBLIC_LIBRARIES
@@ -45,13 +42,10 @@ qt_internal_add_module(EglFSDeviceIntegrationPrivate
         Qt::DeviceDiscoverySupportPrivate
         Qt::FbSupportPrivate
         Qt::GuiPrivate
-        EGL::EGL # special case
+        EGL::EGL
     HEADER_SYNC_SOURCE_DIRECTORY
         "${CMAKE_CURRENT_SOURCE_DIR}/api"
 )
-
-#### Keys ignored in scope 2:.:.:eglfsdeviceintegration.pro:<TRUE>:
-# MODULE = "eglfsdeviceintegration"
 
 ## Scopes:
 #####################################################################
@@ -73,19 +67,6 @@ qt_internal_extend_target(EglFSDeviceIntegrationPrivate CONDITION QT_FEATURE_ope
     PUBLIC_LIBRARIES
         Qt::OpenGLPrivate
 )
-
-# special case begin
-# comment out
-#qt_internal_extend_target(EglFSDeviceIntegrationPrivate CONDITION NOT EGLFS_PLATFORM_HOOKS_SOURCES_ISEMPTY
-    #DEFINES
-        #EGLFS_PLATFORM_HOOKS
-#)
-
-#qt_internal_extend_target(EglFSDeviceIntegrationPrivate CONDITION NOT EGLFS_DEVICE_INTEGRATION_ISEMPTY
-    #DEFINES
-        #EGLFS_PREFERRED_PLUGIN=
-#)
-# special case end
 
 if(QT_FEATURE_cursor)
     # Resources:
@@ -109,23 +90,15 @@ endif()
 qt_internal_add_plugin(QEglFSIntegrationPlugin
     OUTPUT_NAME qeglfs
     PLUGIN_TYPE platforms
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES eglfs # special case
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES eglfs
     SOURCES
         qeglfsmain.cpp
     DEFINES
         QT_EGL_NO_X11
     LIBRARIES
-        Qt::CorePrivate # special case
+        Qt::CorePrivate
         Qt::EglFSDeviceIntegrationPrivate
-        EGL::EGL # special case
+        EGL::EGL
 )
 
-#### Keys ignored in scope 12:.:.:eglfs-plugin.pro:<TRUE>:
-# OTHER_FILES = "$$PWD/eglfs.json"
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 13:.:.:eglfs-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
-# PLUGIN_EXTENDS = "-"
 add_subdirectory(deviceintegration)

@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from deviceintegration.pro.
-
 if(QT_FEATURE_eglfs_x11)
     add_subdirectory(eglfs_x11)
 endif()

@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from network.pro.
-
 #####################################################################
 ## Network Module:
 #####################################################################
@@ -70,9 +68,6 @@ qt_internal_add_module(Network
     GENERATE_CPP_EXPORTS
     GENERATE_PRIVATE_CPP_EXPORTS
 )
-
-#### Keys ignored in scope 1:.:.:network.pro:<TRUE>:
-# QMAKE_LIBS = "$$QMAKE_LIBS_NETWORK"
 
 ## Scopes:
 #####################################################################
@@ -278,19 +273,19 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_libproxy AND UNIX AND NOT
         PkgConfig::Libproxy
 )
 
-qt_internal_extend_target(Network CONDITION ANDROID # special case
+qt_internal_extend_target(Network CONDITION ANDROID
     SOURCES
         kernel/qnetworkproxy_android.cpp
 )
 
-qt_internal_extend_target(Network CONDITION UNIX AND NOT ANDROID AND NOT APPLE AND NOT QT_FEATURE_libproxy AND (UNIX OR WINRT) # special case
+qt_internal_extend_target(Network CONDITION UNIX AND NOT ANDROID AND NOT APPLE AND NOT QT_FEATURE_libproxy AND (UNIX OR WINRT)
     SOURCES
         kernel/qnetworkproxy_generic.cpp
 )
 
 if(ANDROID AND (ANDROID))
     set_property(TARGET Network APPEND PROPERTY QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
-        jar/Qt${QtBase_VERSION_MAJOR}AndroidNetwork.jar # special case
+        jar/Qt${QtBase_VERSION_MAJOR}AndroidNetwork.jar
     )
 endif()
 
@@ -382,7 +377,7 @@ qt_internal_extend_target(Network CONDITION WIN32 PUBLIC_LIBRARIES ws2_32) # spe
 
 qt_internal_extend_target(Network CONDITION QNX PUBLIC_LIBRARIES socket) # special case: mkspecs/common/qcc-base-qnx.conf
 
-qt_internal_extend_target(Network CONDITION SOLARIS PUBLIC_LIBRARIES socket nsl) # special case
+qt_internal_extend_target(Network CONDITION SOLARIS PUBLIC_LIBRARIES socket nsl)
 
 if (WIN32)
     set_source_files_properties(Network # include windows.h (causing clashes with "interface" define)

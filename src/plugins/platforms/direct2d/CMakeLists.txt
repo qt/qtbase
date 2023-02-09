@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from direct2d.pro.
-
 #####################################################################
 ## QWindowsDirect2DIntegrationPlugin Plugin:
 #####################################################################
@@ -58,10 +56,10 @@ qt_internal_add_plugin(QWindowsDirect2DIntegrationPlugin
         Qt::Gui
         Qt::GuiPrivate
         advapi32
-        d2d1 # special case
+        d2d1
         d3d11
         dwmapi
-        dwrite # special case
+        dwrite
         dxgi
         dxguid
         gdi32
@@ -96,14 +94,8 @@ qt_internal_add_resource(QWindowsDirect2DIntegrationPlugin "openglblacklists"
         ${openglblacklists_resource_files}
 )
 
-#### Keys ignored in scope 1:.:.:direct2d.pro:<TRUE>:
-# OTHER_FILES = "direct2d.json"
-
 ## Scopes:
 #####################################################################
-
-#### Keys ignored in scope 2:.:.:direct2d.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
-# PLUGIN_EXTENDS = "-"
 
 qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_dynamicgl
     LIBRARIES
@@ -217,8 +209,6 @@ qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION MINGW AND 
         uuid
 )
 
-# begin special case
 if (MINGW)
     set_source_files_properties(../windows/qwindowspointerhandler.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 endif()
-# end special case

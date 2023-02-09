@@ -1,17 +1,15 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from android.pro.
-
 #####################################################################
 ## QAndroidIntegrationPlugin Plugin:
 #####################################################################
-qt_find_package(EGL) # special case
+qt_find_package(EGL)
 
 qt_internal_add_plugin(QAndroidIntegrationPlugin
     OUTPUT_NAME qtforandroid
     PLUGIN_TYPE platforms
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES android # special case
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES android
     SOURCES
         androidcontentfileengine.cpp androidcontentfileengine.h
         androiddeadlockprotector.h
@@ -57,11 +55,8 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
         Qt::GuiPrivate
         android
         jnigraphics
-        EGL::EGL # special case
+        EGL::EGL
 )
-
-#### Keys ignored in scope 1:.:.:android.pro:<TRUE>:
-# OTHER_FILES = "$$PWD/android.json"
 
 ## Scopes:
 #####################################################################

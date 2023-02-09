@@ -1,9 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from corelib.pro.
-
-# special case begin
 qt_find_package(Threads PROVIDED_TARGETS Threads::Threads)
 qt_find_package(WrapPCRE2 PROVIDED_TARGETS WrapPCRE2::WrapPCRE2)
 qt_find_package(WrapZLIB PROVIDED_TARGETS WrapZLIB::WrapZLIB)
@@ -32,7 +29,6 @@ endif()
 qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} "${INSTALL_CMAKE_NAMESPACE}Core")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/QtInstallPaths.cmake.in"
     "${config_build_dir}/QtInstallPaths.cmake" @ONLY)
-# special case end
 
 #####################################################################
 ## Core Module:
@@ -317,29 +313,23 @@ qt_internal_add_module(Core
         QT_NO_USING_NAMESPACE
         QT_TYPESAFE_FLAGS
     INCLUDE_DIRECTORIES
-        "${CMAKE_CURRENT_BINARY_DIR}/global" # special case
+        "${CMAKE_CURRENT_BINARY_DIR}/global"
         "${CMAKE_CURRENT_BINARY_DIR}/kernel" # for moc_qobject.cpp to be found by qobject.cpp
-        # ../3rdparty/md4 # special case remove
-        # ../3rdparty/md5 # special case remove
-        # ../3rdparty/sha3 # special case remove
         ../3rdparty/tinycbor/src
     LIBRARIES
-        Qt::GlobalConfigPrivate # special case
+        Qt::GlobalConfigPrivate
         WrapZLIB::WrapZLIB
     PRECOMPILED_HEADER
         "global/qt_pch.h"
     GENERATE_CPP_EXPORTS
-    PUBLIC_LIBRARIES  # special case:
-        Qt::Platform # special case:
-    # special case begin
-    # Generated in QtBaseGlobalTargets
+    PUBLIC_LIBRARIES
+        Qt::Platform
     EXTRA_CMAKE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CTestMacros.cmake"
     "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreConfigureFileTemplate.in"
     "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreDeploySupport.cmake"
     "${config_build_dir}/QtInstallPaths.cmake"
     ${corelib_extra_cmake_files}
-    # special case end
 )
 _qt_internal_setup_deploy_support()
 
@@ -352,7 +342,6 @@ foreach(src ${corelib_no_pch_sources})
     qt_update_ignore_pch_source(Core ${src})
 endforeach()
 
-# special case begin
 add_dependencies(Core qmodule_pri)
 
 if (NOT QT_NAMESPACE STREQUAL "")
@@ -427,7 +416,6 @@ if ((LINUX OR HURD) AND NOT CMAKE_CROSSCOMPILING AND BUILD_SHARED_LIBS)
         target_compile_definitions(Core PRIVATE ELF_INTERPRETER="${ELF_INTERPRETER}")
     endif()
 endif()
-# special case end
 
 qt_internal_add_simd_part(Core SIMD mips_dsp
     SOURCES
@@ -442,7 +430,7 @@ endif()
 
 if(ANDROID)
     set_property(TARGET Core APPEND PROPERTY QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
-        jar/Qt${QtBase_VERSION_MAJOR}Android.jar # special case
+        jar/Qt${QtBase_VERSION_MAJOR}Android.jar
     )
     set_property(TARGET Core APPEND PROPERTY QT_ANDROID_LIB_DEPENDENCIES
         ${INSTALL_PLUGINSDIR}/platforms/libplugins_platforms_qtforandroid.so
@@ -452,53 +440,8 @@ if(ANDROID)
     )
 endif()
 
-#### Keys ignored in scope 1:.:.:corelib.pro:<TRUE>:
-# CMAKE_DISABLED_FEATURES = "$$join(QT_DISABLED_FEATURES, "$$escape_expand(\\n)    ")"
-# CMAKE_HOST_DATA_DIR = "$$cmakeRelativePath($$[QT_HOST_DATA/src], $$[QT_INSTALL_PREFIX])"
-# CMAKE_INSTALL_DATA_DIR = "$$cmakeRelativePath($$[QT_HOST_DATA], $$[QT_INSTALL_PREFIX])"
-# HOST_BINS = "$$[QT_HOST_BINS]"
-# INSTALLS = "ctest_qt5_module_files" "cmake_qt5_umbrella_module_files"
-# MODULE = "core"
-# MODULE_CONFIG = "moc" "resources"
-# QMAKE_PKGCONFIG_VARIABLES = "host_bins" "qt_conf"
-# QMAKE_SUBSTITUTES = "ctest_macros_file" "cmake_umbrella_config_file" "cmake_umbrella_config_module_location" "cmake_umbrella_config_module_location_for_install" "cmake_umbrella_config_version_file" "cmake_extras_mkspec_dir" "cmake_extras_mkspec_dir_for_install"
-# cmake_extras_mkspec_dir.input = "$$PWD/Qt5CoreConfigExtrasMkspecDir.cmake.in"
-# cmake_extras_mkspec_dir.output = "$$DESTDIR/cmake/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake"
-# cmake_extras_mkspec_dir_for_install.input = "$$PWD/Qt5CoreConfigExtrasMkspecDirForInstall.cmake.in"
-# cmake_extras_mkspec_dir_for_install.output = "$$DESTDIR/cmake/install/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake"
-# cmake_qt5_umbrella_module_files.files = "$$cmake_umbrella_config_file.output" "$$cmake_umbrella_config_version_file.output" "$$cmake_umbrella_config_module_location_for_install.output"
-# cmake_qt5_umbrella_module_files.path = "$$[QT_INSTALL_LIBS]/cmake/Qt5"
-# cmake_umbrella_config_file.input = "$$PWD/Qt5Config.cmake.in"
-# cmake_umbrella_config_file.output = "$$DESTDIR/cmake/Qt5/Qt5Config.cmake"
-# cmake_umbrella_config_module_location.input = "$$PWD/Qt5ModuleLocation.cmake.in"
-# cmake_umbrella_config_module_location.output = "$$DESTDIR/cmake/Qt5/Qt5ModuleLocation.cmake"
-# cmake_umbrella_config_module_location_for_install.input = "$$PWD/Qt5ModuleLocationForInstall.cmake.in"
-# cmake_umbrella_config_module_location_for_install.output = "$$DESTDIR/cmake/install/Qt5/Qt5ModuleLocation.cmake"
-# cmake_umbrella_config_version_file.input = "$$PWD/../../mkspecs/features/data/cmake/Qt5ConfigVersion.cmake.in"
-# cmake_umbrella_config_version_file.output = "$$DESTDIR/cmake/Qt5/Qt5ConfigVersion.cmake"
-# ctest_macros_file.CONFIG = "verbatim"
-# ctest_macros_file.input = "$$PWD/Qt5CTestMacros.cmake"
-# ctest_macros_file.output = "$$DESTDIR/cmake/Qt5Core/Qt5CTestMacros.cmake"
-# ctest_qt5_module_files.files = "$$ctest_macros_file.output" "$$cmake_extras_mkspec_dir_for_install.output"
-# ctest_qt5_module_files.path = "$$[QT_INSTALL_LIBS]/cmake/Qt5Core"
-# host_bins.name = "host_bins"
-# host_bins.variable = "HOST_BINS"
-# qt_conf.name = "qt_config"
-# qt_conf.variable = "QT_CONFIG"
-
 ## Scopes:
 #####################################################################
-
-#### Keys ignored in scope 2:.:.:corelib.pro:QT_FEATURE_gc_binaries:
-# MODULE_CONFIG = "gc_binaries"
-
-# special case begin
-# remove because it's handled manually
-#qt_internal_extend_target(Core CONDITION NOT QT_NAMESPACE_ISEMPTY
-#    PUBLIC_DEFINES
-#        QT_NAMESPACE=
-#)
-# special case end
 
 qt_internal_extend_target(Core
     CONDITION ( TEST_architecture_arch STREQUAL i386 ) OR
@@ -511,7 +454,7 @@ qt_internal_extend_target(Core
 
 qt_internal_extend_target(Core CONDITION ANDROID
     DEFINES
-        LIBS_SUFFIX="_${ANDROID_ABI}.so" # special case
+        LIBS_SUFFIX="_${ANDROID_ABI}.so"
 )
 
 qt_internal_extend_target(Core CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
@@ -646,24 +589,6 @@ qt_internal_extend_target(Core CONDITION INTEGRITY
 qt_internal_extend_target(Core CONDITION QCC AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "8.3.0")
     PUBLIC_COMPILE_OPTIONS $<$<COMPILE_LANGUAGE:CXX>:-Wno-invalid-offsetof>
 )
-
-#### Keys ignored in scope 14:.:.:corelib.pro:pathIsAbsolute(_ss_CMAKE_HOST_DATA_DIR):
-# CMAKE_HOST_DATA_DIR = "$$[QT_HOST_DATA/src]/"
-# CMAKE_HOST_DATA_DIR_IS_ABSOLUTE = "True"
-
-#### Keys ignored in scope 15:.:.:corelib.pro:pathIsAbsolute(_ss_CMAKE_INSTALL_DATA_DIR):
-# CMAKE_INSTALL_DATA_DIR = "$$[QT_HOST_DATA]/"
-# CMAKE_INSTALL_DATA_DIR_IS_ABSOLUTE = "True"
-
-# special case begin
-# Remove this because it's handled manually
-#qt_internal_extend_target(Core CONDITION NOT _x_-armcc_x_ AND NOT cross_compile AND NOT static AND (hurd_x_ OR linux_x_)
-#    DEFINES
-#        ELF_INTERPRETER=\\\"=Creadelf-l/bin/ls|perl-n-e\'['quote', ['if', ['/program', 'interpreter:', ['.*'], ']/'], '{', 'print', '$1;', '}']]\'\\\"
-#    LINK_OPTIONS
-#        "-Wl,-e,qt_core_boilerplate"
-#)
-# special case end
 
 qt_internal_extend_target(Core CONDITION LINUX AND QT_BUILD_SHARED_LIBS
     SOURCES
@@ -1416,7 +1341,6 @@ if(APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
     set_property(TARGET Core APPEND PROPERTY
                  EXPORT_PROPERTIES "QT_DARWIN_MIN_DEPLOYMENT_TARGET")
 endif()
-# special case end
 
 qt_internal_generate_tracepoints(Core core
     SOURCES

@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from uic.pro.
-
 #####################################################################
 ## uic Tool:
 #####################################################################
@@ -11,7 +9,7 @@ qt_get_tool_target_name(target_name uic)
 qt_internal_add_tool(${target_name}
     TARGET_DESCRIPTION "Qt User Interface Compiler"
     INSTALL_DIR "${INSTALL_LIBEXECDIR}"
-    TOOLS_TARGET Widgets # special case
+    TOOLS_TARGET Widgets
     SOURCES
         cpp/cppwritedeclaration.cpp cpp/cppwritedeclaration.h
         cpp/cppwriteincludes.cpp cpp/cppwriteincludes.h
@@ -40,14 +38,5 @@ qt_internal_add_tool(${target_name}
         cpp
         python
         shared
-    #PUBLIC_LIBRARIES # special case remove
-        #Qt::Gui # special case remove
 )
 qt_internal_return_unless_building_tools()
-
-#### Keys ignored in scope 1:.:.:uic.pro:<TRUE>:
-# QMAKE_TARGET_DESCRIPTION = "Qt User Interface Compiler"
-# _OPTION = "host_build"
-
-## Scopes:
-#####################################################################
