@@ -133,6 +133,11 @@ Qt::Appearance QStyleHints::appearance() const
     return d->appearance();
 }
 
+Qt::ColorScheme QStyleHints::colorScheme() const
+{
+    return Qt::ColorScheme(appearance());
+}
+
 /*!
     Sets the \a mousePressAndHoldInterval.
     \internal

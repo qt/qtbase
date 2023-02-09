@@ -2611,6 +2611,12 @@ Qt::Appearance QGuiApplicationPrivate::appearance()
                            : Qt::Appearance::Unknown;
 }
 
+Qt::ColorScheme QGuiApplicationPrivate::colorScheme()
+{
+    return platformTheme() ? platformTheme()->colorScheme()
+                           : Qt::ColorScheme::Unknown;
+}
+
 void QGuiApplicationPrivate::handleThemeChanged()
 {
     updatePalette();
