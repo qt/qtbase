@@ -775,8 +775,8 @@ static void handleScreenRemoved(JNIEnv */*env*/, jclass /*cls*/, jint displayId)
 
 static void handleUiDarkModeChanged(JNIEnv */*env*/, jobject /*thiz*/, jint newUiMode)
 {
-    QAndroidPlatformIntegration::setAppearance(
-        (newUiMode == 1 ) ? Qt::Appearance::Dark : Qt::Appearance::Light);
+    QAndroidPlatformIntegration::setColorScheme(
+        (newUiMode == 1 ) ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light);
 }
 
 static void onActivityResult(JNIEnv */*env*/, jclass /*cls*/,

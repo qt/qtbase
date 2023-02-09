@@ -18,7 +18,7 @@ public:
     virtual QVariant themeHint(ThemeHint hint) const override;
     virtual QString gtkFontName() const override;
 
-    Qt::Appearance appearance() const override;
+    Qt::ColorScheme colorScheme() const override;
 
     bool usePlatformNativeDialog(DialogType type) const override;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;

@@ -499,9 +499,9 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
     return QPlatformTheme::themeHint(hint);
 }
 
-Qt::Appearance QWindowsTheme::appearance() const
+Qt::ColorScheme QWindowsTheme::colorScheme() const
 {
-    return QWindowsContext::isDarkMode() ? Qt::Appearance::Dark : Qt::Appearance::Light;
+    return QWindowsContext::isDarkMode() ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light;
 }
 
 void QWindowsTheme::clearPalettes()

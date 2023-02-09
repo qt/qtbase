@@ -142,7 +142,7 @@ QVariant QIOSTheme::themeHint(ThemeHint hint) const
     }
 }
 
-Qt::Appearance QIOSTheme::appearance() const
+Qt::ColorScheme QIOSTheme::colorScheme() const
 {
     UIUserInterfaceStyle appearance = UIUserInterfaceStyleUnspecified;
     // Set the appearance based on the UIWindow
@@ -153,8 +153,8 @@ Qt::Appearance QIOSTheme::appearance() const
         appearance = UIScreen.mainScreen.traitCollection.userInterfaceStyle;
     }
     return appearance == UIUserInterfaceStyleDark
-                       ? Qt::Appearance::Dark
-                       : Qt::Appearance::Light;
+                       ? Qt::ColorScheme::Dark
+                       : Qt::ColorScheme::Light;
 }
 
 const QFont *QIOSTheme::font(Font type) const

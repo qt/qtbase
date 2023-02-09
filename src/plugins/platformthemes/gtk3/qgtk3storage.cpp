@@ -55,7 +55,7 @@ QBrush QGtk3Storage::brush(const Source &source, const BrushMap &map) const
     case SourceType::Modified: {
         // don't loop through modified sources, break if modified source not found
         Source recSource = brush(TargetBrush(source.rec.colorGroup, source.rec.colorRole,
-                                              source.rec.appearance), map);
+                                              source.rec.colorScheme), map);
 
         if (!recSource.isValid() || (recSource.sourceType == SourceType::Modified))
             return QBrush();
@@ -99,15 +99,15 @@ QGtk3Storage::Source QGtk3Storage::brush(const TargetBrush &b, const BrushMap &m
     // Return exact match
     FIND(b);
 
-    // unknown appearance can find anything
-    if (b.appearance == Qt::Appearance::Unknown) {
-        FIND(TargetBrush(b, Qt::Appearance::Dark));
-        FIND(TargetBrush(b, Qt::Appearance::Light));
+    // unknown color scheme can find anything
+    if (b.colorScheme == Qt::ColorScheme::Unknown) {
+        FIND(TargetBrush(b, Qt::ColorScheme::Dark));
+        FIND(TargetBrush(b, Qt::ColorScheme::Light));
     }
 
     // Color group All can always be found
     if (b.colorGroup != QPalette::All)
-        return brush(TargetBrush(QPalette::All, b.colorRole, b.appearance), map);
+        return brush(TargetBrush(QPalette::All, b.colorRole, b.colorScheme), map);
 
     // Brush not found
     return Source();
@@ -181,13 +181,13 @@ const QPalette *QGtk3Storage::palette(QPlatformTheme::Palette type) const
         Source source = i.value();
 
         // Brush is set if
-        // - theme and source appearance match
+        // - theme and source color scheme match
         // - or either of them is unknown
-        const auto appSource = i.key().appearance;
-        const auto appTheme = appearance();
+        const auto appSource = i.key().colorScheme;
+        const auto appTheme = colorScheme();
         const bool setBrush = (appSource == appTheme) ||
-                              (appSource == Qt::Appearance::Unknown) ||
-                              (appTheme == Qt::Appearance::Unknown);
+                              (appSource == Qt::ColorScheme::Unknown) ||
+                              (appTheme == Qt::ColorScheme::Unknown);
 
         if (setBrush) {
             p.setBrush(i.key().colorGroup, i.key().colorRole, brush(source, brushes));
@@ -196,7 +196,7 @@ const QPalette *QGtk3Storage::palette(QPlatformTheme::Palette type) const
 
     m_paletteCache[type].emplace(p);
     if (type == QPlatformTheme::SystemPalette)
-        qCDebug(lcQGtk3Interface) << "System Palette defined" << themeName() << appearance() << p;
+        qCDebug(lcQGtk3Interface) << "System Palette defined" << themeName() << colorScheme() << p;
 
     return &m_paletteCache[type].value();
 }
@@ -255,7 +255,7 @@ QIcon QGtk3Storage::fileIcon(const QFileInfo &fileInfo) const
  */
 void QGtk3Storage::clear()
 {
-    m_appearance = Qt::Appearance::Unknown;
+    m_colorScheme = Qt::ColorScheme::Unknown;
     m_palettes.clear();
     for (auto &cache : m_paletteCache)
         cache.reset();
@@ -307,7 +307,7 @@ void QGtk3Storage::handleThemeChange()
     - "QGtk3Palettes" (top level value)
         - QPlatformTheme::Palette
             - QPalette::ColorRole
-                - Qt::Appearance
+                - Qt::ColorScheme
                 - Qt::ColorGroup
                 - Source data
                     - Source Type
@@ -337,14 +337,14 @@ void QGtk3Storage::populateMap()
 
     clear();
 
-    // Derive appearance from theme name
-    m_appearance = newThemeName.contains("dark"_L1, Qt::CaseInsensitive)
-                   ? Qt::Appearance::Dark : m_interface->appearanceByColors();
+    // Derive color scheme from theme name
+    m_colorScheme = newThemeName.contains("dark"_L1, Qt::CaseInsensitive)
+                   ? Qt::ColorScheme::Dark : m_interface->colorSchemeByColors();
 
     if (m_themeName.isEmpty()) {
-        qCDebug(lcQGtk3Interface) << "GTK theme initialized:" << newThemeName << m_appearance;
+        qCDebug(lcQGtk3Interface) << "GTK theme initialized:" << newThemeName << m_colorScheme;
     } else {
-        qCDebug(lcQGtk3Interface) << "GTK theme changed to:" << newThemeName << m_appearance;
+        qCDebug(lcQGtk3Interface) << "GTK theme changed to:" << newThemeName << m_colorScheme;
     }
     m_themeName = newThemeName;
 
@@ -466,19 +466,19 @@ void QGtk3Storage::createMapping()
     // Define a modified source
 #define LIGHTER(group, role, lighter)\
     source = Source(QPalette::group, QPalette::role,\
-                    Qt::Appearance::Unknown, lighter)
+                    Qt::ColorScheme::Unknown, lighter)
 #define MODIFY(group, role, red, green, blue)\
     source = Source(QPalette::group, QPalette::role,\
-                    Qt::Appearance::Unknown, red, green, blue)
+                    Qt::ColorScheme::Unknown, red, green, blue)
 
     // Define fixed source
 #define FIX(color) source = FixedSource(color);
 
     // Add the source to a target brush
-    // Use default Qt::Appearance::Unknown, if no appearance was specified
+    // Use default Qt::ColorScheme::Unknown, if no color scheme was specified
 #define ADD_2(group, role) map.insert(TargetBrush(QPalette::group, QPalette::role), source);
 #define ADD_3(group, role, app) map.insert(TargetBrush(QPalette::group, QPalette::role,\
-    Qt::Appearance::app), source);
+    Qt::ColorScheme::app), source);
 #define ADD_X(x, group, role, app, FUNC, ...) FUNC
 #define ADD(...) ADD_X(,##__VA_ARGS__, ADD_3(__VA_ARGS__), ADD_2(__VA_ARGS__))
     // Save target brushes to a palette type
@@ -508,8 +508,8 @@ void QGtk3Storage::createMapping()
        Use ADD(ColorGroup, ColorRole) to use the defined source for the
        color group / role in the current palette.
 
-       Use ADD(ColorGroup, ColorRole, Appearance) to use the defined source
-       only for a specific appearance
+       Use ADD(ColorGroup, ColorRole, ColorScheme) to use the defined source
+       only for a specific color scheme
 
        3. Save mapping
        Save the defined mappings for a specific palette.

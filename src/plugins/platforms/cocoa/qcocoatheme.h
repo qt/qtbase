@@ -37,7 +37,7 @@ public:
     QIcon fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions options = {}) const override;
 
     QVariant themeHint(ThemeHint hint) const override;
-    Qt::Appearance appearance() const override;
+    Qt::ColorScheme colorScheme() const override;
     QString standardButtonText(int button) const override;
     QKeySequence standardButtonShortcut(int button) const override;
 

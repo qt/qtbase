@@ -50,7 +50,7 @@ public:
     static QLatin1String fromGdkSource(QGtk3Interface::QGtkColorSource source);
     static QLatin1String fromSourceType(QGtk3Storage::SourceType sourceType);
     static QLatin1String fromWidgetType(QGtk3Interface::QGtkWidget widgetType);
-    static QLatin1String fromAppearance(Qt::Appearance app);
+    static QLatin1String fromColorScheme(Qt::ColorScheme colorScheme);
 
     // Convert strings to enums
     static QPlatformTheme::Palette toPalette(const QString &palette);
@@ -61,7 +61,7 @@ public:
     static QGtk3Interface::QGtkColorSource toGdkSource(const QString &source);
     static QGtk3Storage::SourceType toSourceType(const QString &sourceType);
     static QGtk3Interface::QGtkWidget toWidgetType(const QString &widgetType);
-    static Qt::Appearance toAppearance(const QString &appearance);
+    static Qt::ColorScheme toColorScheme(const QString &colorScheme);
 
     // Json keys
     static constexpr QLatin1StringView cePalettes = "QtGtk3Palettes"_L1;
@@ -82,7 +82,7 @@ public:
     static constexpr QLatin1StringView ceBrush = "FixedBrush"_L1;
     static constexpr QLatin1StringView ceData = "SourceData"_L1;
     static constexpr QLatin1StringView ceBrushes = "Brushes"_L1;
-    static constexpr QLatin1StringView ceAppearance = "Appearance"_L1;
+    static constexpr QLatin1StringView ceColorScheme = "ColorScheme"_L1;
 
     // Save to a file
     static bool save(const QGtk3Storage::PaletteMap &map, const QString &fileName,

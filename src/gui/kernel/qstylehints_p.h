@@ -40,13 +40,13 @@ public:
     int m_mouseDoubleClickDistance = -1;
     int m_touchDoubleTapDistance = -1;
 
-    Qt::Appearance appearance() const { return m_appearance; }
-    void setAppearance(Qt::Appearance appearance);
+    Qt::ColorScheme colorScheme() const { return m_colorScheme; }
+    void setColorScheme(Qt::ColorScheme colorScheme);
 
     static QStyleHintsPrivate *get(QStyleHints *q);
 
 private:
-    Qt::Appearance m_appearance = Qt::Appearance::Unknown;
+    Qt::ColorScheme m_colorScheme = Qt::ColorScheme::Unknown;
 };
 
 QT_END_NAMESPACE

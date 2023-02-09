@@ -488,14 +488,14 @@ const QString QGtk3Interface::themeName() const
 
 /*!
     \internal
-    \brief Determine appearance by colors.
+    \brief Determine color scheme by colors.
 
-    Returns the appearance of the current GTK theme, heuristically determined by the
+    Returns the color scheme of the current GTK theme, heuristically determined by the
     lightness difference between default background and foreground colors.
 
     \note Returns Unknown in the unlikely case that both colors have the same lightness.
  */
-Qt::Appearance QGtk3Interface::appearanceByColors() const
+Qt::ColorScheme QGtk3Interface::colorSchemeByColors() const
 {
     const QColor background = color(widget(QGtkWidget::gtk_Default),
                                     QGtkColorSource::Background,
@@ -505,10 +505,10 @@ Qt::Appearance QGtk3Interface::appearanceByColors() const
                                     GTK_STATE_FLAG_ACTIVE);
 
     if (foreground.lightness() > background.lightness())
-        return Qt::Appearance::Dark;
+        return Qt::ColorScheme::Dark;
     if (foreground.lightness() < background.lightness())
-        return Qt::Appearance::Light;
-    return Qt::Appearance::Unknown;
+        return Qt::ColorScheme::Light;
+    return Qt::ColorScheme::Unknown;
 }
 
 /*!

@@ -1496,7 +1496,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
 
     init_platform(QLatin1StringView(platformName), platformPluginPath, platformThemeName, argc, argv);
     if (const QPlatformTheme *theme = platformTheme())
-        QStyleHintsPrivate::get(QGuiApplication::styleHints())->setAppearance(theme->appearance());
+        QStyleHintsPrivate::get(QGuiApplication::styleHints())->setColorScheme(theme->colorScheme());
 
     if (!icon.isEmpty())
         forcedWindowIcon = QDir::isAbsolutePath(icon) ? QIcon(icon) : QIcon::fromTheme(icon);
@@ -2616,22 +2616,15 @@ void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::
     for (auto *window : windows)
         QGuiApplication::sendSpontaneousEvent(window, &themeChangeEvent);
 
-    QStyleHintsPrivate::get(QGuiApplication::styleHints())->setAppearance(appearance());
+    QStyleHintsPrivate::get(QGuiApplication::styleHints())->setColorScheme(colorScheme());
 }
 
 /*!
    \internal
-   \brief QGuiApplicationPrivate::appearance
-   \return the platform theme's appearance
-   or Qt::Appearance::Unknown if a platform theme cannot be established
-   Qt::Appearance.
+   \brief QGuiApplicationPrivate::colorScheme
+   \return the platform theme's color scheme
+   or Qt::ColorScheme::Unknown if a platform theme cannot be established
  */
-Qt::Appearance QGuiApplicationPrivate::appearance()
-{
-    return platformTheme() ? platformTheme()->appearance()
-                           : Qt::Appearance::Unknown;
-}
-
 Qt::ColorScheme QGuiApplicationPrivate::colorScheme()
 {
     return platformTheme() ? platformTheme()->colorScheme()

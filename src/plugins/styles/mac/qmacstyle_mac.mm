@@ -160,7 +160,7 @@ const int pushButtonBevelRectOffsets[3] = {
 
 QVector<QPointer<QObject> > QMacStylePrivate::scrollBars;
 
-bool isDarkMode() { return QGuiApplicationPrivate::platformTheme()->appearance() == Qt::Appearance::Dark; }
+bool isDarkMode() { return QGuiApplicationPrivate::platformTheme()->colorScheme() == Qt::ColorScheme::Dark; }
 
 // Title bar gradient colors for Lion were determined by inspecting PSDs exported
 // using CoreUI's CoreThemeDocument; there is no public API to retrieve them

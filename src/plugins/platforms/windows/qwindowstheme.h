@@ -31,7 +31,7 @@ public:
 #endif
     QVariant themeHint(ThemeHint) const override;
 
-    Qt::Appearance appearance() const override;
+    Qt::ColorScheme colorScheme() const override;
 
     const QPalette *palette(Palette type = SystemPalette) const override
         { return m_palettes[type]; }

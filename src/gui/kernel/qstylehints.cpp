@@ -122,20 +122,15 @@ int QStyleHints::touchDoubleTapDistance() const
 }
 
 /*!
-    \property QStyleHints::appearance
-    \brief the appearance of the platform theme.
-    \sa Qt::Appearance
+    \property QStyleHints::colorScheme
+    \brief the color scheme of the platform theme.
+    \sa Qt::ColorScheme
     \since 6.5
 */
-Qt::Appearance QStyleHints::appearance() const
-{
-    Q_D(const QStyleHints);
-    return d->appearance();
-}
-
 Qt::ColorScheme QStyleHints::colorScheme() const
 {
-    return Qt::ColorScheme(appearance());
+    Q_D(const QStyleHints);
+    return d->colorScheme();
 }
 
 /*!
@@ -600,17 +595,17 @@ int QStyleHints::mouseQuickSelectionThreshold() const
 
 /*!
    \internal
-   QStyleHintsPrivate::setAppearance - set a new appearance.
-   Set \a appearance as the new appearance of the QStyleHints.
-   The appearanceChanged signal will be emitted if present and new appearance differ.
+   QStyleHintsPrivate::setColorScheme - set a new color scheme.
+   Set \a colorScheme as the new color scheme of the QStyleHints.
+   The colorSchemeChanged signal will be emitted if present and new color scheme differ.
  */
-void QStyleHintsPrivate::setAppearance(Qt::Appearance appearance)
+void QStyleHintsPrivate::setColorScheme(Qt::ColorScheme colorScheme)
 {
-    if (m_appearance == appearance)
+    if (m_colorScheme == colorScheme)
         return;
-    m_appearance = appearance;
+    m_colorScheme = colorScheme;
     Q_Q(QStyleHints);
-    emit q->appearanceChanged(appearance);
+    emit q->colorSchemeChanged(colorScheme);
 }
 
 QStyleHintsPrivate *QStyleHintsPrivate::get(QStyleHints *q)

@@ -110,8 +110,8 @@ public:
 
     void flushPendingUpdates();
 
-    static void setAppearance(Qt::Appearance newAppearance);
-    static Qt::Appearance appearance() { return m_appearance; }
+    static void setColorScheme(Qt::ColorScheme colorScheme);
+    static Qt::ColorScheme colorScheme() { return m_colorScheme; }
 #if QT_CONFIG(vulkan)
     QPlatformVulkanInstance *createPlatformVulkanInstance(QVulkanInstance *instance) const override;
 #endif
@@ -124,7 +124,7 @@ private:
 
     QThread *m_mainThread;
 
-    static Qt::Appearance m_appearance;
+    static Qt::ColorScheme m_colorScheme;
 
     static QRect m_defaultAvailableGeometry;
     static QSize m_defaultPhysicalSize;

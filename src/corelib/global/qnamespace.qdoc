@@ -801,7 +801,7 @@
 */
 
 /*!
-    \enum Qt::Appearance
+    \enum Qt::ColorScheme
 
     Represents the appearance of an application's theme,
     defined by QGuiApplication::palette().

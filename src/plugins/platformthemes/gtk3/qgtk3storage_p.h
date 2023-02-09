@@ -61,7 +61,7 @@ public:
     struct RecursiveSource  {
         QPalette::ColorGroup colorGroup;
         QPalette::ColorRole colorRole;
-        Qt::Appearance appearance;
+        Qt::ColorScheme colorScheme;
         int lighter = 100;
         int deltaRed = 0;
         int deltaGreen = 0;
@@ -71,7 +71,7 @@ public:
         QDebug operator<<(QDebug dbg)
         {
             return dbg << "QGtkStorage::RecursiceSource(colorGroup=" << colorGroup << ", colorRole="
-                       << colorRole << ", appearance=" << appearance << ", lighter=" << lighter
+                       << colorRole << ", colorScheme=" << colorScheme << ", lighter=" << lighter
                        << ", deltaRed="<< deltaRed << "deltaBlue =" << deltaBlue << "deltaGreen="
                        << deltaGreen << ", width=" << width << ", height=" << height << ")";
         }
@@ -106,23 +106,23 @@ public:
 
         // Recursive constructor for darker/lighter colors
         Source(QPalette::ColorGroup group, QPalette::ColorRole role,
-               Qt::Appearance app, int p_lighter = 100)
+               Qt::ColorScheme scheme, int p_lighter = 100)
                : sourceType(SourceType::Modified)
         {
             rec.colorGroup = group;
             rec.colorRole = role;
-            rec.appearance = app;
+            rec.colorScheme = scheme;
             rec.lighter = p_lighter;
         }
 
         // Recursive ocnstructor for color modification
         Source(QPalette::ColorGroup group, QPalette::ColorRole role,
-               Qt::Appearance app, int p_red, int p_green, int p_blue)
+               Qt::ColorScheme scheme, int p_red, int p_green, int p_blue)
                : sourceType(SourceType::Modified)
         {
             rec.colorGroup = group;
             rec.colorRole = role;
-            rec.appearance = app;
+            rec.colorScheme = scheme;
             rec.deltaRed = p_red;
             rec.deltaGreen = p_green;
             rec.deltaBlue = p_blue;
@@ -130,12 +130,12 @@ public:
 
         // Recursive constructor for all: color modification and darker/lighter
         Source(QPalette::ColorGroup group, QPalette::ColorRole role,
-               Qt::Appearance app, int p_lighter,
+               Qt::ColorScheme scheme, int p_lighter,
                int p_red, int p_green, int p_blue) : sourceType(SourceType::Modified)
         {
             rec.colorGroup = group;
             rec.colorRole = role;
-            rec.appearance = app;
+            rec.colorScheme = scheme;
             rec.lighter = p_lighter;
             rec.deltaRed = p_red;
             rec.deltaGreen = p_green;
@@ -159,25 +159,25 @@ public:
         }
     };
 
-    // Struct with key attributes to identify a brush: color group, color role and appearance
+    // Struct with key attributes to identify a brush: color group, color role and color scheme
     struct TargetBrush {
         QPalette::ColorGroup colorGroup;
         QPalette::ColorRole colorRole;
-        Qt::Appearance appearance;
+        Qt::ColorScheme colorScheme;
 
         // Generic constructor
         TargetBrush(QPalette::ColorGroup group, QPalette::ColorRole role,
-                    Qt::Appearance app = Qt::Appearance::Unknown) :
-                    colorGroup(group), colorRole(role), appearance(app) {};
+                    Qt::ColorScheme scheme = Qt::ColorScheme::Unknown) :
+                    colorGroup(group), colorRole(role), colorScheme(scheme) {};
 
-        // Copy constructor with appearance modifier for dark/light aware search
-        TargetBrush(const TargetBrush &other, Qt::Appearance app) :
-            colorGroup(other.colorGroup), colorRole(other.colorRole), appearance(app) {};
+        // Copy constructor with color scheme modifier for dark/light aware search
+        TargetBrush(const TargetBrush &other, Qt::ColorScheme scheme) :
+            colorGroup(other.colorGroup), colorRole(other.colorRole), colorScheme(scheme) {};
 
         // struct becomes key of a map, so operator< is needed
         bool operator<(const TargetBrush& other) const {
-           return std::tie(colorGroup, colorRole, appearance) <
-                  std::tie(other.colorGroup, other.colorRole, other.appearance);
+           return std::tie(colorGroup, colorRole, colorScheme) <
+                  std::tie(other.colorGroup, other.colorRole, other.colorScheme);
         }
     };
 
@@ -190,7 +190,7 @@ public:
     // Public getters
     const QPalette *palette(QPlatformTheme::Palette = QPlatformTheme::SystemPalette) const;
     QPixmap standardPixmap(QPlatformTheme::StandardPixmap standardPixmap, const QSizeF &size) const;
-    Qt::Appearance appearance() const { return m_appearance; };
+    Qt::ColorScheme colorScheme() const { return m_colorScheme; };
     static QPalette standardPalette();
     const QString themeName() const { return m_interface ? m_interface->themeName() : QString(); };
     const QFont *font(QPlatformTheme::Font type) const;
@@ -207,7 +207,7 @@ private:
     std::unique_ptr<QGtk3Interface> m_interface;
 
 
-    Qt::Appearance m_appearance = Qt::Appearance::Unknown;
+    Qt::ColorScheme m_colorScheme = Qt::ColorScheme::Unknown;
 
     // Caches for Pixmaps, fonts and palettes
     mutable QCache<QPlatformTheme::StandardPixmap, QImage> m_pixmapCache;
@@ -220,7 +220,7 @@ private:
     // Get GTK3 source for a target brush
     Source brush (const TargetBrush &brush, const BrushMap &map) const;
 
-    // clear cache, palettes and appearance
+    // clear cache, palettes and color scheme
     void clear();
 
     // Data creation, import & export

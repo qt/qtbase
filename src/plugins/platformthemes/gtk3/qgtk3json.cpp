@@ -53,9 +53,9 @@ QLatin1String QGtk3Json::fromWidgetType(QGtk3Interface::QGtkWidget widgetType)
     return QLatin1String(QMetaEnum::fromType<QGtk3Interface::QGtkWidget>().valueToKey(static_cast<int>(widgetType)));
 }
 
-QLatin1String QGtk3Json::fromAppearance(Qt::Appearance app)
+QLatin1String QGtk3Json::fromColorScheme(Qt::ColorScheme app)
 {
-    return QLatin1String(QMetaEnum::fromType<Qt::Appearance>().valueToKey(static_cast<int>(app)));
+    return QLatin1String(QMetaEnum::fromType<Qt::ColorScheme>().valueToKey(static_cast<int>(app)));
 }
 
 #define CONVERT(type, key, def)\
@@ -63,9 +63,9 @@ QLatin1String QGtk3Json::fromAppearance(Qt::Appearance app)
     const int intVal = QMetaEnum::fromType<type>().keyToValue(key.toLatin1().constData(), &ok);\
     return ok ? static_cast<type>(intVal) : type::def
 
-Qt::Appearance QGtk3Json::toAppearance(const QString &appearance)
+Qt::ColorScheme QGtk3Json::toColorScheme(const QString &colorScheme)
 {
-    CONVERT(Qt::Appearance, appearance, Unknown);
+    CONVERT(Qt::ColorScheme, colorScheme, Unknown);
 }
 
 QPlatformTheme::Palette QGtk3Json::toPalette(const QString &palette)
@@ -175,7 +175,7 @@ const QJsonDocument QGtk3Json::save(const QGtk3Storage::PaletteMap &map)
                 const QGtk3Storage::TargetBrush tb = brushIterator.key();
                 QGtk3Storage::Source s = brushIterator.value();
                 brushObject.insert(ceColorGroup, fromColorGroup(tb.colorGroup));
-                brushObject.insert(ceAppearance, fromAppearance(tb.appearance));
+                brushObject.insert(ceColorScheme, fromColorScheme(tb.colorScheme));
                 brushObject.insert(ceSourceType, fromSourceType(s.sourceType));
 
                 QJsonObject sourceObject;
@@ -201,7 +201,7 @@ const QJsonDocument QGtk3Json::save(const QGtk3Storage::PaletteMap &map)
                 case QGtk3Storage::SourceType::Modified:{
                         sourceObject.insert(ceColorGroup, fromColorGroup(s.rec.colorGroup));
                         sourceObject.insert(ceColorRole, fromColorRole(s.rec.colorRole));
-                        sourceObject.insert(ceAppearance, fromAppearance(s.rec.appearance));
+                        sourceObject.insert(ceColorScheme, fromColorScheme(s.rec.colorScheme));
                         sourceObject.insert(ceRed, s.rec.deltaRed);
                         sourceObject.insert(ceGreen, s.rec.deltaGreen);
                         sourceObject.insert(ceBlue, s.rec.deltaBlue);
@@ -322,9 +322,9 @@ bool QGtk3Json::load(QGtk3Storage::PaletteMap &map, const QJsonDocument &doc)
                 const QGtk3Storage::SourceType sourceType = toSourceType(value);
                 GETSTR(brushObject, ceColorGroup);
                 const QPalette::ColorGroup colorGroup = toColorGroup(value);
-                GETSTR(brushObject, ceAppearance);
-                const Qt::Appearance appearance = toAppearance(value);
-                QGtk3Storage::TargetBrush tb(colorGroup, colorRole, appearance);
+                GETSTR(brushObject, ceColorScheme);
+                const Qt::ColorScheme colorScheme = toColorScheme(value);
+                QGtk3Storage::TargetBrush tb(colorGroup, colorRole, colorScheme);
                 QGtk3Storage::Source s;
 
                 if (!brushObject.contains(ceData) || !brushObject[ceData].isObject()) {
@@ -376,13 +376,13 @@ bool QGtk3Json::load(QGtk3Storage::PaletteMap &map, const QJsonDocument &doc)
                         const QPalette::ColorGroup colorGroup = toColorGroup(value);
                         GETSTR(sourceObject, ceColorRole);
                         const QPalette::ColorRole colorRole = toColorRole(value);
-                        GETSTR(sourceObject, ceAppearance);
-                        const Qt::Appearance appearance = toAppearance(value);
+                        GETSTR(sourceObject, ceColorScheme);
+                        const Qt::ColorScheme colorScheme = toColorScheme(value);
                         GETINT(sourceObject, ceLighter, lighter);
                         GETINT(sourceObject, ceRed, red);
                         GETINT(sourceObject, ceBlue, blue);
                         GETINT(sourceObject, ceGreen, green);
-                        s = QGtk3Storage::Source(colorGroup, colorRole, appearance,
+                        s = QGtk3Storage::Source(colorGroup, colorRole, colorScheme,
                                                  lighter, red, green, blue);
                     }
                     break;

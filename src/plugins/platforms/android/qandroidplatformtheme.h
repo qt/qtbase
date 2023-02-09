@@ -31,13 +31,13 @@ class QAndroidPlatformTheme: public QPlatformTheme
 {
 public:
     ~QAndroidPlatformTheme();
-    void updateAppearance();
+    void updateColorScheme();
     void updateStyle();
     QPlatformMenuBar *createPlatformMenuBar() const override;
     QPlatformMenu *createPlatformMenu() const override;
     QPlatformMenuItem *createPlatformMenuItem() const override;
     void showPlatformMenuBar() override;
-    Qt::Appearance appearance() const override;
+    Qt::ColorScheme colorScheme() const override;
     const QPalette *palette(Palette type = SystemPalette) const override;
     const QFont *font(Font type = SystemFont) const override;
     QVariant themeHint(ThemeHint hint) const override;

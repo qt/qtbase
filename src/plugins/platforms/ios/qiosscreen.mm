@@ -178,16 +178,16 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 {
     [super traitCollectionDidChange:previousTraitCollection];
 
-    Qt::Appearance appearance = self.traitCollection.userInterfaceStyle
+    Qt::ColorScheme colorScheme = self.traitCollection.userInterfaceStyle
                               == UIUserInterfaceStyleDark
-                              ? Qt::Appearance::Dark
-                              : Qt::Appearance::Light;
+                              ? Qt::ColorScheme::Dark
+                              : Qt::ColorScheme::Light;
 
     if (self.screen == UIScreen.mainScreen) {
         // Check if the current userInterfaceStyle reports a different appearance than
         // the platformTheme's appearance. We might have set that one based on the UIScreen
         if (previousTraitCollection.userInterfaceStyle != self.traitCollection.userInterfaceStyle
-            || QGuiApplicationPrivate::platformTheme()->appearance() != appearance) {
+            || QGuiApplicationPrivate::platformTheme()->colorScheme() != colorScheme) {
             QIOSTheme::initializeSystemPalette();
             QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>();
         }
