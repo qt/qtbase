@@ -12,6 +12,11 @@
 
 #include <stdio.h>
 
+#if 0
+// the macros around the class name throw off syncqt:
+#pragma qt_class(QTextStream)
+#endif
+
 #ifdef Status
 #error qtextstream.h must be included before any header file that defines Status
 #endif
@@ -22,8 +27,18 @@ class QIODevice;
 class QLocale;
 class QString;
 
+#if !QT_DEPRECATED_SINCE(6, 9)
+# define QT_NO_INHERITABLE_TEXT_STREAM
+#endif
+
+#ifdef QT_NO_INHERITABLE_TEXT_STREAM
+#  define QT_TEXT_STREAM_FINAL final
+#else
+#  define QT_TEXT_STREAM_FINAL
+#endif
+
 class QTextStreamPrivate;
-class Q_CORE_EXPORT QTextStream : public QIODeviceBase
+class Q_CORE_EXPORT QTextStream QT_TEXT_STREAM_FINAL : public QIODeviceBase
 {
     Q_DECLARE_PRIVATE(QTextStream)
 
@@ -60,7 +75,8 @@ public:
     explicit QTextStream(QString *string, OpenMode openMode = ReadWrite);
     explicit QTextStream(QByteArray *array, OpenMode openMode = ReadWrite);
     explicit QTextStream(const QByteArray &array, OpenMode openMode = ReadOnly);
-    virtual ~QTextStream();
+    QT6_ONLY(virtual)
+    ~QTextStream();
 
     void setEncoding(QStringConverter::Encoding encoding);
     QStringConverter::Encoding encoding() const;
