@@ -374,8 +374,8 @@ public:
     int startDragDist = 10;
     int startDragTime = 500;
     int cursorBlinkRate = 1000;
-    Qt::Appearance m_appearance = Qt::Appearance::Unknown;
-    void updateAppearance(const QString &themeName);
+    Qt::ColorScheme m_colorScheme = Qt::ColorScheme::Unknown;
+    void updateColorScheme(const QString &themeName);
 
 #ifndef QT_NO_DBUS
 private:
@@ -464,9 +464,9 @@ void QKdeThemePrivate::refresh()
                                                    kdeVersion, kdeSettings);
 
     if (colorScheme.isValid())
-        updateAppearance(colorScheme.toString());
+        updateColorScheme(colorScheme.toString());
     else
-        m_appearance = Qt::Appearance::Unknown;
+        m_colorScheme = Qt::ColorScheme::Unknown;
 
     const QVariant singleClickValue = readKdeSetting(QStringLiteral("KDE/SingleClick"), kdeDirs, kdeVersion, kdeSettings);
     if (singleClickValue.isValid())
@@ -749,14 +749,14 @@ QIcon QKdeTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions
 #endif
 }
 
-Qt::Appearance QKdeTheme::appearance() const
+Qt::ColorScheme QKdeTheme::colorScheme() const
 {
-    return d_func()->m_appearance;
+    return d_func()->m_colorScheme;
 }
 
 /*!
    \internal
-   \brief QKdeTheme::setAppearance - guess and set appearance for unix themes.
+   \brief QKdeTheme::setColorScheme - guess and set appearance for unix themes.
    KDE themes do not have an appearance property.
    The key words "dark" or "light" should be part of the theme name.
    This is, however, not a mandatory convention.
@@ -765,29 +765,29 @@ Qt::Appearance QKdeTheme::appearance() const
    If it doesn't, the appearance is heuristically determined by comparing text and base color
    of the system palette.
  */
-void QKdeThemePrivate::updateAppearance(const QString &themeName)
+void QKdeThemePrivate::updateColorScheme(const QString &themeName)
 {
     if (themeName.contains(QLatin1StringView("light"), Qt::CaseInsensitive)) {
-        m_appearance = Qt::Appearance::Light;
+        m_colorScheme = Qt::ColorScheme::Light;
         return;
     }
     if (themeName.contains(QLatin1StringView("dark"), Qt::CaseInsensitive)) {
-        m_appearance = Qt::Appearance::Dark;
+        m_colorScheme = Qt::ColorScheme::Dark;
         return;
     }
 
     if (systemPalette) {
         if (systemPalette->text().color().lightness() < systemPalette->base().color().lightness()) {
-            m_appearance = Qt::Appearance::Light;
+            m_colorScheme = Qt::ColorScheme::Light;
             return;
         }
         if (systemPalette->text().color().lightness() > systemPalette->base().color().lightness()) {
-            m_appearance = Qt::Appearance::Dark;
+            m_colorScheme = Qt::ColorScheme::Dark;
             return;
         }
     }
 
-    m_appearance = Qt::Appearance::Unknown;
+    m_colorScheme = Qt::ColorScheme::Unknown;
 }
 
 
@@ -911,11 +911,11 @@ public:
     mutable QFont *fixedFont = nullptr;
 
 #ifndef QT_NO_DBUS
-    Qt::Appearance m_appearance = Qt::Appearance::Unknown;
+    Qt::ColorScheme m_colorScheme = Qt::ColorScheme::Unknown;
 private:
     std::unique_ptr<QGenericUnixThemeDBusListener> dbus;
     bool initDbus();
-    void updateAppearance(const QString &themeName);
+    void updateColorScheme(const QString &themeName);
 #endif // QT_NO_DBUS
 };
 
@@ -946,25 +946,25 @@ bool QGnomeThemePrivate::initDbus()
     // Wrap slot in a lambda to avoid inheriting QGnomeThemePrivate from QObject
     auto wrapper = [this](QGenericUnixThemeDBusListener::SettingType type, const QString &value) {
         if (type == QGenericUnixThemeDBusListener::SettingType::GtkTheme)
-            updateAppearance(value);
+            updateColorScheme(value);
     };
 
     return QObject::connect(dbus.get(), &QGenericUnixThemeDBusListener::settingChanged, wrapper);
 
 }
 
-void QGnomeThemePrivate::updateAppearance(const QString &themeName)
+void QGnomeThemePrivate::updateColorScheme(const QString &themeName)
 {
-    const auto oldAppearance = m_appearance;
+    const auto oldColorScheme = m_colorScheme;
     if (themeName.contains(QLatin1StringView("light"), Qt::CaseInsensitive)) {
-        m_appearance = Qt::Appearance::Light;
+        m_colorScheme = Qt::ColorScheme::Light;
     } else if (themeName.contains(QLatin1StringView("dark"), Qt::CaseInsensitive)) {
-        m_appearance = Qt::Appearance::Dark;
+        m_colorScheme = Qt::ColorScheme::Dark;
     } else {
-        m_appearance = Qt::Appearance::Unknown;
+        m_colorScheme = Qt::ColorScheme::Unknown;
     }
 
-    if (oldAppearance != m_appearance)
+    if (oldColorScheme != m_colorScheme)
         QWindowSystemInterface::handleThemeChange();
 }
 #endif // QT_NO_DBUS
@@ -1053,9 +1053,9 @@ QPlatformMenuBar *QGnomeTheme::createPlatformMenuBar() const
     return nullptr;
 }
 
-Qt::Appearance QGnomeTheme::appearance() const
+Qt::ColorScheme QGnomeTheme::colorScheme() const
 {
-    return d_func()->m_appearance;
+    return d_func()->m_colorScheme;
 }
 
 #endif

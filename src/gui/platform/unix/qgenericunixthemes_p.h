@@ -77,7 +77,7 @@ public:
                    QPlatformTheme::IconOptions iconOptions = { }) const override;
 
     const QPalette *palette(Palette type = SystemPalette) const override;
-    Qt::Appearance appearance() const override;
+    Qt::ColorScheme colorScheme() const override;
 
     const QFont *font(Font type) const override;
 #ifndef QT_NO_DBUS
@@ -107,7 +107,7 @@ public:
     virtual QString gtkFontName() const;
 #ifndef QT_NO_DBUS
     QPlatformMenuBar *createPlatformMenuBar() const override;
-    Qt::Appearance appearance() const override;
+    Qt::ColorScheme colorScheme() const override;
 #endif
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
     QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override;

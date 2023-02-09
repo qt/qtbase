@@ -4789,7 +4789,7 @@ void QWindowsVistaStyle::polish(QPalette &pal)
 {
     Q_D(QWindowsVistaStyle);
 
-    if (qApp->styleHints()->appearance() == Qt::Appearance::Dark) {
+    if (qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark) {
         // System runs in dark mode, but the Vista style cannot use a dark palette.
         // Overwrite with the light system palette.
         using QWindowsApplication = QNativeInterface::Private::QWindowsApplication;
@@ -4825,7 +4825,7 @@ void QWindowsVistaStyle::polish(QPalette &pal)
 void QWindowsVistaStyle::polish(QApplication *app)
 {
     // Override windows theme palettes to light
-    if (qApp->styleHints()->appearance() == Qt::Appearance::Dark) {
+    if (qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark) {
         static const char* themedWidgets[] = {
             "QToolButton",
             "QAbstractButton",

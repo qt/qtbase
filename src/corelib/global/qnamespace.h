@@ -46,12 +46,6 @@ namespace Qt {
         transparent
     };
 
-    enum class Appearance {
-        Unknown,
-        Light,
-        Dark,
-    };
-
     enum class ColorScheme {
         Unknown,
         Light,
@@ -1763,7 +1757,6 @@ namespace Qt {
     Q_ENUM_NS(DayOfWeek)
     Q_ENUM_NS(CursorShape)
     Q_ENUM_NS(GlobalColor)
-    Q_ENUM_NS(Appearance)
     Q_ENUM_NS(ColorScheme)
     Q_ENUM_NS(AspectRatioMode)
     Q_ENUM_NS(TransformationMode)

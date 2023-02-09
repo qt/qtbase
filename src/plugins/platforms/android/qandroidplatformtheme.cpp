@@ -158,7 +158,7 @@ QJsonObject AndroidStyle::loadStyleData()
     if (!stylePath.isEmpty() && !stylePath.endsWith(slashChar))
         stylePath += slashChar;
 
-    if (QAndroidPlatformIntegration::appearance() == Qt::Appearance::Dark)
+    if (QAndroidPlatformIntegration::colorScheme() == Qt::ColorScheme::Dark)
         stylePath += "darkUiMode/"_L1;
 
     Q_ASSERT(!stylePath.isEmpty());
@@ -333,7 +333,7 @@ QAndroidPlatformTheme::~QAndroidPlatformTheme()
     m_instance = nullptr;
 }
 
-void QAndroidPlatformTheme::updateAppearance()
+void QAndroidPlatformTheme::updateColorScheme()
 {
     updateStyle();
     QWindowSystemInterface::handleThemeChange();
@@ -358,7 +358,7 @@ void QAndroidPlatformTheme::updateStyle()
     QColor highlight(148, 210, 231);
     QColor disabledShadow = shadow.lighter(150);
 
-    if (appearance() == Qt::Appearance::Dark) {
+    if (colorScheme() == Qt::ColorScheme::Dark) {
         // Colors were prepared based on Theme.DeviceDefault.DayNight
         windowText = QColor(250, 250, 250);
         background = QColor(48, 48, 48);
@@ -418,9 +418,9 @@ void QAndroidPlatformTheme::showPlatformMenuBar()
     QtAndroidMenu::openOptionsMenu();
 }
 
-Qt::Appearance QAndroidPlatformTheme::appearance() const
+Qt::ColorScheme QAndroidPlatformTheme::colorScheme() const
 {
-    return QAndroidPlatformIntegration::appearance();
+    return QAndroidPlatformIntegration::colorScheme();
 }
 
 static inline int paletteType(QPlatformTheme::Palette type)

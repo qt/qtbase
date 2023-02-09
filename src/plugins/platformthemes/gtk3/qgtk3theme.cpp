@@ -174,10 +174,10 @@ QString QGtk3Theme::gtkFontName() const
     return QGnomeTheme::gtkFontName();
 }
 
-Qt::Appearance QGtk3Theme::appearance() const
+Qt::ColorScheme QGtk3Theme::colorScheme() const
 {
     Q_ASSERT(m_storage);
-    return m_storage->appearance();
+    return m_storage->colorScheme();
 }
 
 bool QGtk3Theme::usePlatformNativeDialog(DialogType type) const

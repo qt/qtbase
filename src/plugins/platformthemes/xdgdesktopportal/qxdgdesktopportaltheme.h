@@ -34,7 +34,7 @@ public:
 
     QVariant themeHint(ThemeHint hint) const override;
 
-    Qt::Appearance appearance() const override;
+    Qt::ColorScheme colorScheme() const override;
 
     QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const override;
     QIcon fileIcon(const QFileInfo &fileInfo,

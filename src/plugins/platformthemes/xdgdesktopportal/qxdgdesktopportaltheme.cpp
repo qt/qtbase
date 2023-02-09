@@ -40,7 +40,7 @@ public:
 
     /*! \internal
 
-        Converts the given Freedesktop color scheme setting \a colorschemePref to a Qt::Appearance value.
+        Converts the given Freedesktop color scheme setting \a colorschemePref to a Qt::ColorScheme value.
         Specification: https://github.com/flatpak/xdg-desktop-portal/blob/d7a304a00697d7d608821253cd013f3b97ac0fb6/data/org.freedesktop.impl.portal.Settings.xml#L33-L45
 
         Unfortunately the enum numerical values are not defined identically, so we have to convert them.
@@ -53,18 +53,18 @@ public:
         1: Prefer dark appearance           | 2: Dark
         2: Prefer light appearance          | 1: Light
     */
-    static Qt::Appearance appearanceFromXdgPref(const XdgColorschemePref colorschemePref)
+    static Qt::ColorScheme colorSchemeFromXdgPref(const XdgColorschemePref colorschemePref)
     {
         switch (colorschemePref) {
-            case PreferDark: return Qt::Appearance::Dark;
-            case PreferLight: return Qt::Appearance::Light;
-            default: return Qt::Appearance::Unknown;
+            case PreferDark: return Qt::ColorScheme::Dark;
+            case PreferLight: return Qt::ColorScheme::Light;
+            default: return Qt::ColorScheme::Unknown;
         }
     }
 
     QPlatformTheme *baseTheme = nullptr;
     uint fileChooserPortalVersion = 0;
-    Qt::Appearance appearance = Qt::Appearance::Unknown;
+    Qt::ColorScheme colorScheme = Qt::ColorScheme::Unknown;
 };
 
 QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
@@ -124,7 +124,7 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
     if (reply.isValid()) {
         const QDBusVariant dbusVariant = qvariant_cast<QDBusVariant>(reply.value());
         const QXdgDesktopPortalThemePrivate::XdgColorschemePref xdgPref = static_cast<QXdgDesktopPortalThemePrivate::XdgColorschemePref>(dbusVariant.variant().toUInt());
-        d->appearance = QXdgDesktopPortalThemePrivate::appearanceFromXdgPref(xdgPref);
+        d->colorScheme = QXdgDesktopPortalThemePrivate::colorSchemeFromXdgPref(xdgPref);
     }
 }
 
@@ -205,10 +205,10 @@ QVariant QXdgDesktopPortalTheme::themeHint(ThemeHint hint) const
     return d->baseTheme->themeHint(hint);
 }
 
-Qt::Appearance QXdgDesktopPortalTheme::appearance() const
+Qt::ColorScheme QXdgDesktopPortalTheme::colorScheme() const
 {
     Q_D(const QXdgDesktopPortalTheme);
-    return d->appearance;
+    return d->colorScheme;
 }
 
 QPixmap QXdgDesktopPortalTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
