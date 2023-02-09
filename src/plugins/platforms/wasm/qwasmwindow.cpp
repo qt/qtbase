@@ -384,6 +384,10 @@ void QWasmWindow::setWindowFlags(Qt::WindowFlags flags)
 
 void QWasmWindow::setWindowState(Qt::WindowStates newState)
 {
+    // Child windows can not have window states other than Qt::WindowActive
+    if (parent())
+        newState &= Qt::WindowActive;
+
     const Qt::WindowStates oldState = m_state;
 
     if (newState.testFlag(Qt::WindowMinimized)) {
