@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from opengl.pro.
-
 #####################################################################
 ## OpenGL Module:
 #####################################################################
@@ -114,4 +112,3 @@ qt_internal_generate_tracepoints(OpenGL opengl
 qt_internal_add_docs(OpenGL
     doc/qtopengl.qdocconf
 )
-

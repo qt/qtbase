@@ -3,8 +3,6 @@
 
 # Android Java Resource files
 
-# special case skip regeneration
-# special case begin
 set(resource_directories
     "${CMAKE_CURRENT_SOURCE_DIR}/res"
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
@@ -59,5 +57,3 @@ if(NOT QT_WILL_INSTALL)
         DIRECTORIES ${resource_directories}
         DESTINATION ${destination})
 endif()
-
-# special case end

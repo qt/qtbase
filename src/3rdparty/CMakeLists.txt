@@ -1,6 +1,3 @@
-# special case skip regeneration
-# The file is maintained manually
-
 if(QT_FEATURE_gui AND QT_FEATURE_png AND NOT QT_FEATURE_system_png)
     add_subdirectory(libpng)
 endif()

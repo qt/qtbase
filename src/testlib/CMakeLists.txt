@@ -1,11 +1,7 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from testlib.pro.
-
-# special case begin
 include(selfcover.cmake)
-# special case end
 
 #####################################################################
 ## Test Module:
@@ -77,14 +73,8 @@ qt_internal_add_module(Test
     GENERATE_PRIVATE_CPP_EXPORTS
 )
 
-#### Keys ignored in scope 1:.:.:testlib.pro:<TRUE>:
-# MODULE_CONFIG = "console" "testlib_defines"
-
 ## Scopes:
 #####################################################################
-
-#### Keys ignored in scope 2:.:.:testlib.pro:UNIX AND NOT embedded:
-# QMAKE_PKGCONFIG_DESCRIPTION = "Qt" "Unit" "Testing" "Library"
 
 qt_internal_extend_target(Test CONDITION QT_FEATURE_itemmodeltester
     SOURCES
@@ -135,30 +125,11 @@ set_property(TARGET Test APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS
     QT_TESTCASE_SOURCEDIR="$<TARGET_PROPERTY:SOURCE_DIR>"
 )
 
-# special case begin
-# Do not bother with disabled stuff:
-# qt_internal_extend_target(Test CONDITION (MACOS) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0")) ...
-# qt_internal_extend_target(Test CONDITION ((MACOS) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0"))) AND (NOT QMAKE_MAC_SDK_PLATFORM_PATH_ISEMPTY) ...
-# special case end
-
-#### Keys ignored in scope 9:.:.:testlib.pro:NOT QMAKE_MAC_SDK_PLATFORM_PATH_ISEMPTY:
-# MODULE_CONFIG = "xctest"
-
-#### Keys ignored in scope 10:.:.:testlib.pro:NOT TARGET Qt::Gui:
-# HEADERSCLEAN_EXCLUDE = "qtest_gui.h" "qtestaccessible.h" "qtestkeyboard.h" "qtestmouse.h" "qtesttouch.h"
-
-#### Keys ignored in scope 11:.:.:testlib.pro:NOT TARGET Qt::Widgets:
-# HEADERSCLEAN_EXCLUDE = "qtest_widgets.h"
-
-#### Keys ignored in scope 12:.:.:testlib.pro:NOT TARGET Qt::Network:
-# HEADERSCLEAN_EXCLUDE = "qtest_network.h"
 qt_internal_add_docs(Test
     doc/qttestlib.qdocconf
 )
 
-# special case begin
 qt_internal_apply_testlib_coverage_options(Test)
-# special case end
 
 # include the snippet projects for developer-builds
 if(QT_FEATURE_private_tests)

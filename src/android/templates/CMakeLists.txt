@@ -3,8 +3,6 @@
 
 # Android template files
 
-# special case skip regeneration
-# special case begin
 set(template_files
     "${CMAKE_CURRENT_SOURCE_DIR}/AndroidManifest.xml"
     "${CMAKE_CURRENT_SOURCE_DIR}/build.gradle")
@@ -33,5 +31,3 @@ if(NOT QT_WILL_INSTALL)
         DESTINATION ${destination}
     )
 endif()
-
-# special case end

@@ -1,12 +1,8 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from directfb.pro.
-
-# begin special case:
 qt_find_package(DirectFB)
 qt_find_package(EGL)
-# end special case:
 
 #####################################################################
 ## QDirectFbIntegrationPlugin Plugin:
@@ -28,15 +24,12 @@ qt_internal_add_plugin(QDirectFbIntegrationPlugin
         qdirectfbwindow.cpp qdirectfbwindow.h
     LIBRARIES
         PkgConfig::DirectFB
-        EGL::EGL # special case
+        EGL::EGL
         Qt::Core
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
 )
-
-#### Keys ignored in scope 1:.:.:directfb.pro:<TRUE>:
-# OTHER_FILES = "directfb.json"
 
 ## Scopes:
 #####################################################################
@@ -53,13 +46,7 @@ qt_internal_extend_target(QDirectFbIntegrationPlugin CONDITION NOT DIRECTFB_PLAT
         DIRECTFB_PLATFORM_HOOKS
 )
 
-#### Keys ignored in scope 3:.:.:directfb.pro:NOT DIRECTFB_PLATFORM_HOOKS_SOURCES_ISEMPTY:
-# QMAKE_LIBDIR = "$$DIRECTFB_PLATFORM_HOOKS_LIBDIR"
-
 qt_internal_extend_target(QDirectFbIntegrationPlugin CONDITION DIRECTFB_PLATFORM_HOOKS_SOURCES_ISEMPTY
     SOURCES
         qdirectfbeglhooks_stub.cpp
 )
-
-#### Keys ignored in scope 5:.:.:directfb.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
-# PLUGIN_EXTENDS = "-"

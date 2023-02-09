@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from db2.pro.
-
 #####################################################################
 ## QDB2DriverPlugin Plugin:
 #####################################################################
@@ -22,9 +20,6 @@ qt_internal_add_plugin(QDB2DriverPlugin
         Qt::CorePrivate
         Qt::SqlPrivate
 )
-
-#### Keys ignored in scope 1:.:.:db2.pro:<TRUE>:
-# OTHER_FILES = "db2.json"
 
 ## Scopes:
 #####################################################################

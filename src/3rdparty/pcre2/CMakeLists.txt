@@ -1,5 +1,3 @@
-# Generated from pcre2.pro.
-
 #####################################################################
 ## BundledPcre2 Generic Library:
 #####################################################################
@@ -77,9 +75,4 @@ qt_internal_extend_target(BundledPcre2 CONDITION WIN32
         PCRE2_STATIC
 )
 
-#### Keys ignored in scope 8:.:.:pcre2.pri:QT_FEATURE_intelcet:
-# QMAKE_CFLAGS = "$$QMAKE_CFLAGS_SHSTK"
-
-# special case begin
 qt_internal_apply_intel_cet(BundledPcre2 PRIVATE)
-# special case end

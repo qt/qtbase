@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qdbuscpp2xml.pro.
-
 #####################################################################
 ## qdbuscpp2xml Tool:
 #####################################################################
@@ -10,7 +8,7 @@
 qt_get_tool_target_name(target_name qdbuscpp2xml)
 qt_internal_add_tool(${target_name}
     TARGET_DESCRIPTION "Qt D-Bus C++ to XML Compiler"
-    TOOLS_TARGET DBus # special case
+    TOOLS_TARGET DBus
     SOURCES
         ../moc/cbordevice.h
         ../moc/collectjson.cpp ../moc/collectjson.h
@@ -32,22 +30,5 @@ qt_internal_add_tool(${target_name}
     LIBRARIES
         Qt::CorePrivate
         Qt::DBusPrivate
-    # COMPILE_OPTIONS  # special case
-    #     "$$QT_HOST_CFLAGS_DBUS"
-    # QMAKE_TARGET_DESCRIPTION = "Qt D-Bus C++ to XML Compiler"
-    # _LOADED = "qt_tool"
-    # _OPTION = "host_build"
 )
 qt_internal_return_unless_building_tools()
-
-#### Keys ignored in scope 1:.:.:qdbuscpp2xml.pro:<TRUE>:
-# QMAKE_TARGET_DESCRIPTION = "Qt D-Bus C++ to XML Compiler"
-# _OPTION = "host_build"
-
-## Scopes:
-#####################################################################
-
-# special case begin
-# qt_internal_extend_target(qdbuscpp2xml CONDITION force_bootstrap [...])
-# qt_internal_extend_target(qdbuscpp2xml CONDITION NOT force_bootstrap [...])
-# special case end

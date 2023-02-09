@@ -1,17 +1,13 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from cocoa.pro.
-
-# special case:
-
 #####################################################################
 ## QCocoaIntegrationPlugin Plugin:
 #####################################################################
 
 qt_internal_add_plugin(QCocoaIntegrationPlugin
     OUTPUT_NAME qcocoa
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES cocoa # special case
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES cocoa
     PLUGIN_TYPE platforms
     SOURCES
         main.mm
@@ -66,9 +62,7 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         Qt::GuiPrivate
 )
 
-# special case begin
 qt_disable_apple_app_extension_api_only(QCocoaIntegrationPlugin)
-# special case end
 
 # Resources:
 set(qcocoaresources_resource_files
@@ -83,10 +77,6 @@ qt_internal_add_resource(QCocoaIntegrationPlugin "qcocoaresources"
     FILES
         ${qcocoaresources_resource_files}
 )
-
-
-#### Keys ignored in scope 1:.:.:cocoa.pro:<TRUE>:
-# OTHER_FILES = "cocoa.json"
 
 ## Scopes:
 #####################################################################
@@ -111,8 +101,3 @@ qt_internal_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_sessionma
     SOURCES
         qcocoasessionmanager.cpp qcocoasessionmanager.h
 )
-
-#### Keys ignored in scope 7:.:.:cocoa.pro:TARGET Qt::Widgets:
-# QT_FOR_CONFIG = "widgets"
-#### Keys ignored in scope 12:.:.:cocoa.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
-# PLUGIN_EXTENDS = "-"

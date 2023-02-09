@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from fbconvenience.pro.
-
 #####################################################################
 ## FbSupportPrivate Module:
 #####################################################################
@@ -25,6 +23,3 @@ qt_internal_add_module(FbSupportPrivate
     PRECOMPILED_HEADER
         "../../corelib/global/qt_pch.h"
 )
-
-#### Keys ignored in scope 1:.:.:fbconvenience.pro:<TRUE>:
-# MODULE = "fb_support"

@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from offscreen.pro.
-
 #####################################################################
 ## QOffscreenIntegrationPlugin Plugin:
 #####################################################################
@@ -10,7 +8,7 @@
 qt_internal_add_plugin(QOffscreenIntegrationPlugin
     OUTPUT_NAME qoffscreen
     PLUGIN_TYPE platforms
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES offscreen # special case
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES offscreen
     SOURCES
         main.cpp
         qoffscreencommon.cpp qoffscreencommon.h
@@ -25,9 +23,6 @@ qt_internal_add_plugin(QOffscreenIntegrationPlugin
         Qt::GuiPrivate
 )
 
-#### Keys ignored in scope 1:.:.:offscreen.pro:<TRUE>:
-# OTHER_FILES = "offscreen.json"
-
 ## Scopes:
 #####################################################################
 
@@ -37,6 +32,3 @@ qt_internal_extend_target(QOffscreenIntegrationPlugin CONDITION QT_FEATURE_openg
     LIBRARIES
         X11::X11
 )
-
-#### Keys ignored in scope 3:.:.:offscreen.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
-# PLUGIN_EXTENDS = "-"

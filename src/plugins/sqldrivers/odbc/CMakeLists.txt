@@ -1,13 +1,11 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from odbc.pro.
-
 #####################################################################
 ## QODBCDriverPlugin Plugin:
 #####################################################################
 
-qt_find_package(ODBC) # special case
+qt_find_package(ODBC)
 
 qt_internal_add_plugin(QODBCDriverPlugin
     OUTPUT_NAME qsqlodbc
@@ -24,9 +22,6 @@ qt_internal_add_plugin(QODBCDriverPlugin
         Qt::CorePrivate
         Qt::SqlPrivate
 )
-
-#### Keys ignored in scope 1:.:.:odbc.pro:<TRUE>:
-# OTHER_FILES = "odbc.json"
 
 ## Scopes:
 #####################################################################

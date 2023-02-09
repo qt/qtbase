@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from jar.pro.
-
 set(java_sources
     src/org/qtproject/qt/android/accessibility/QtAccessibilityDelegate.java
     src/org/qtproject/qt/android/accessibility/QtNativeAccessibility.java
@@ -19,17 +17,16 @@ set(java_sources
     src/org/qtproject/qt/android/QtNativeLibrariesDir.java
     src/org/qtproject/qt/android/QtSurface.java
     src/org/qtproject/qt/android/QtThread.java
-    src/org/qtproject/qt/android/QtServiceDelegate.java # special case
+    src/org/qtproject/qt/android/QtServiceDelegate.java
 )
 
-qt_internal_add_jar(Qt${QtBase_VERSION_MAJOR}Android # special case
+qt_internal_add_jar(Qt${QtBase_VERSION_MAJOR}Android
     INCLUDE_JARS ${QT_ANDROID_JAR}
     SOURCES ${java_sources}
     OUTPUT_DIR "${QT_BUILD_DIR}/jar"
 )
 
-install_jar(Qt${QtBase_VERSION_MAJOR}Android # special case
+install_jar(Qt${QtBase_VERSION_MAJOR}Android
     DESTINATION jar
     COMPONENT Devel
 )
-

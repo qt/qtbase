@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from androiddeployqt.pro.
-
 #####################################################################
 ## androiddeployqt App:
 #####################################################################
@@ -20,7 +18,7 @@ qt_internal_add_tool(${target_name}
         QT_NO_CAST_TO_ASCII
         QT_NO_FOREACH
     LIBRARIES
-        Qt::Core # special case
+        Qt::Core
     INCLUDE_DIRECTORIES
         ../shared
 )
@@ -28,9 +26,6 @@ qt_internal_return_unless_building_tools()
 set_target_properties(${target_name} PROPERTIES
     WIN32_EXECUTABLE FALSE
 )
-
-#### Keys ignored in scope 1:.:.:androiddeployqt.pro:<TRUE>:
-# _OPTION = "host_build"
 
 ## Scopes:
 #####################################################################

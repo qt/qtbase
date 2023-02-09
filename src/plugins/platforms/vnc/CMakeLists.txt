@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from vnc.pro.
-
 #####################################################################
 ## QVncIntegrationPlugin Plugin:
 #####################################################################
@@ -10,7 +8,7 @@
 qt_internal_add_plugin(QVncIntegrationPlugin
     OUTPUT_NAME qvnc
     PLUGIN_TYPE platforms
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES vnc # special case
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES vnc
     SOURCES
         main.cpp
         qvnc.cpp qvnc_p.h
@@ -28,9 +26,6 @@ qt_internal_add_plugin(QVncIntegrationPlugin
         Qt::Network
 )
 
-#### Keys ignored in scope 1:.:.:vnc.pro:<TRUE>:
-# OTHER_FILES = "vnc.json"
-
 ## Scopes:
 #####################################################################
 
@@ -38,6 +33,3 @@ qt_internal_extend_target(QVncIntegrationPlugin CONDITION TARGET Qt::InputSuppor
     LIBRARIES
         Qt::InputSupportPrivate
 )
-
-#### Keys ignored in scope 3:.:.:vnc.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
-# PLUGIN_EXTENDS = "-"

@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from windowsvista.pro.
-
 #####################################################################
 ## QWindowsVistaStylePlugin Plugin:
 #####################################################################
@@ -25,6 +23,3 @@ qt_internal_add_plugin(QWindowsVistaStylePlugin
         Qt::Gui
         Qt::WidgetsPrivate
 )
-
-#### Keys ignored in scope 1:.:.:windowsvista.pro:<TRUE>:
-# DISTFILES = "windowsvistastyle.json"

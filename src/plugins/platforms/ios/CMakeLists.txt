@@ -1,15 +1,13 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from ios.pro.
-
 #####################################################################
 ## QIOSIntegrationPlugin Plugin:
 #####################################################################
 
 qt_internal_add_plugin(QIOSIntegrationPlugin
     OUTPUT_NAME qios
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES ios # special case
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES ios
     PLUGIN_TYPE platforms
     SOURCES
         plugin.mm
@@ -39,11 +37,7 @@ qt_internal_add_plugin(QIOSIntegrationPlugin
         Qt::GuiPrivate
 )
 
-# special case begin
 qt_disable_apple_app_extension_api_only(QIOSIntegrationPlugin)
-# special case end
-#### Keys ignored in scope 2:.:.:kernel.pro:<TRUE>:
-# OTHER_FILES = "quiview_textinput.mm" "quiview_accessibility.mm"
 
 ## Scopes:
 #####################################################################
@@ -71,6 +65,4 @@ qt_internal_extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
         ${FWUniformTypeIdentifiers}
 )
 
-#### Keys ignored in scope 6:.:.:kernel.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
-# PLUGIN_EXTENDS = "-"
 add_subdirectory(optional)

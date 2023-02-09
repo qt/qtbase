@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from androidtestrunner.pro.
-
 #####################################################################
 ## androidtestrunner App:
 #####################################################################
@@ -26,9 +24,6 @@ qt_internal_return_unless_building_tools()
 set_target_properties(${target_name} PROPERTIES
     WIN32_EXECUTABLE FALSE
 )
-
-#### Keys ignored in scope 1:.:.:androidtestrunner.pro:<TRUE>:
-# _OPTION = "host_build"
 
 ## Scopes:
 #####################################################################

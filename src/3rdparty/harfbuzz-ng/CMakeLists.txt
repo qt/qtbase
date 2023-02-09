@@ -1,5 +1,3 @@
-# Generated from harfbuzz-ng.pro.
-
 #####################################################################
 ## BundledHarfbuzz Generic Library:
 #####################################################################
@@ -7,7 +5,7 @@
 qt_internal_add_3rdparty_library(BundledHarfbuzz
     QMAKE_LIB_NAME harfbuzz
     STATIC
-    SKIP_AUTOMOC # special case
+    SKIP_AUTOMOC
     SOURCES
         hb-dummy.cc
         src/hb.h
@@ -64,8 +62,8 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         HB_NO_UNICODE_FUNCS
         QT_NO_VERSION_TAGGING
     INCLUDE_DIRECTORIES
-        $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES> # special case
-        "${CMAKE_CURRENT_SOURCE_DIR}" # special case
+        $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES>
+        "${CMAKE_CURRENT_SOURCE_DIR}"
     PUBLIC_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/harfbuzz>
 )
@@ -80,15 +78,8 @@ endif()
 qt_disable_warnings(BundledHarfbuzz)
 qt_set_symbol_visibility_hidden(BundledHarfbuzz)
 
-#### Keys ignored in scope 1:.:.:harfbuzz-ng.pro:<TRUE>:
-# OTHER_FILES = "$$PWD/src/harfbuzz.cc"
-# SHAPERS = "opentype"
-
 ## Scopes:
 #####################################################################
-
-#### Keys ignored in scope 2:.:.:harfbuzz-ng.pro:APPLE:
-# SHAPERS = "coretext"
 
 qt_internal_extend_target(BundledHarfbuzz CONDITION UNIX
     DEFINES
@@ -102,7 +93,7 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION WIN32
         HB_NO_WIN1256
 )
 
-qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE # special case
+qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE
     SOURCES
         src/hb-ot.h
         src/hb-ot-cff1-std-str.hh

@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from linuxfb.pro.
-
 #####################################################################
 ## QLinuxFbIntegrationPlugin Plugin:
 #####################################################################
@@ -10,7 +8,7 @@
 qt_internal_add_plugin(QLinuxFbIntegrationPlugin
     OUTPUT_NAME qlinuxfb
     PLUGIN_TYPE platforms
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES linuxfb # special case
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES linuxfb
     SOURCES
         main.cpp
         qlinuxfbintegration.cpp qlinuxfbintegration.h
@@ -24,9 +22,6 @@ qt_internal_add_plugin(QLinuxFbIntegrationPlugin
         Qt::Gui
         Qt::GuiPrivate
 )
-
-#### Keys ignored in scope 1:.:.:linuxfb.pro:<TRUE>:
-# OTHER_FILES = "linuxfb.json"
 
 ## Scopes:
 #####################################################################
@@ -42,6 +37,3 @@ qt_internal_extend_target(QLinuxFbIntegrationPlugin CONDITION TARGET Qt::KmsSupp
     LIBRARIES
         Qt::KmsSupportPrivate
 )
-
-#### Keys ignored in scope 4:.:.:linuxfb.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
-# PLUGIN_EXTENDS = "-"

@@ -1,12 +1,10 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from gtk3.pro.
-
-qt_find_package(GTK3) # special case
+qt_find_package(GTK3)
 
 if(QT_FEATURE_xlib)
-    qt_find_package(X11) # special case
+    qt_find_package(X11)
 endif()
 
 #####################################################################
@@ -27,7 +25,7 @@ qt_internal_add_plugin(QGtk3ThemePlugin
         qgtk3json.cpp qgtk3json_p.h
     DEFINES
         GDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_6
-    LIBRARIES # special case
+    LIBRARIES
         PkgConfig::GTK3
         Qt::Core
         Qt::CorePrivate
@@ -37,8 +35,5 @@ qt_internal_add_plugin(QGtk3ThemePlugin
 
 qt_internal_extend_target(QGtk3ThemePlugin CONDITION QT_FEATURE_xlib
     LIBRARIES
-        X11::X11 # special case
+        X11::X11
 )
-
-#### Keys ignored in scope 1:.:.:gtk3.pro:<TRUE>:
-# PLUGIN_EXTENDS = "-"

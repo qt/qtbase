@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from oci.pro.
-
 #####################################################################
 ## QOCIDriverPlugin Plugin:
 #####################################################################
@@ -22,9 +20,6 @@ qt_internal_add_plugin(QOCIDriverPlugin
         Qt::CorePrivate
         Qt::SqlPrivate
 )
-
-#### Keys ignored in scope 1:.:.:oci.pro:<TRUE>:
-# OTHER_FILES = "oci.json"
 
 ## Scopes:
 #####################################################################

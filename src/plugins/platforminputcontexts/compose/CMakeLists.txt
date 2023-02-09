@@ -1,14 +1,12 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from compose.pro.
-
 #####################################################################
 ## QComposePlatformInputContextPlugin Plugin:
 #####################################################################
 
-qt_find_package(XKB) # special case
-pkg_get_variable(PKG_X11_PREFIX x11 prefix) # special case
+qt_find_package(XKB)
+pkg_get_variable(PKG_X11_PREFIX x11 prefix)
 
 qt_internal_add_plugin(QComposePlatformInputContextPlugin
     OUTPUT_NAME composeplatforminputcontextplugin
@@ -24,7 +22,3 @@ qt_internal_add_plugin(QComposePlatformInputContextPlugin
         Qt::GuiPrivate
         XKB::XKB
 )
-
-#### Keys ignored in scope 1:.:.:compose.pro:<TRUE>:
-# OTHER_FILES = "$$PWD/compose.json"
-# PLUGIN_EXTENDS = "-"
