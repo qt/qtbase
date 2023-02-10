@@ -932,7 +932,7 @@ qt_feature("xcb-glx" PRIVATE
 )
 qt_feature("xcb-egl-plugin" PRIVATE
     LABEL "EGL-X11 Plugin"
-    CONDITION QT_FEATURE_opengl
+    CONDITION QT_FEATURE_egl AND QT_FEATURE_opengl
     EMIT_IF QT_FEATURE_xcb
 )
 qt_feature("xcb-native-painting" PRIVATE
