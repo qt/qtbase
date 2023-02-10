@@ -15,7 +15,9 @@
 
 #include <xcb/xinput.h>
 
+#if QT_CONFIG(gestures)
 #define QT_XCB_HAS_TOUCHPAD_GESTURES (XCB_INPUT_MINOR_VERSION >= 4)
+#endif
 
 using namespace Qt::StringLiterals;
 
