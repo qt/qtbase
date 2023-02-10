@@ -7,6 +7,7 @@
 
 #include <QtCore/private/qmakearray_p.h>
 #include <QtCore/private/qstringiterator_p.h>
+#include <QtCore/qregularexpression.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -18,19 +19,57 @@ bool isDeadKeyEvent(const char *key)
     return qstrncmp(key, WebDeadKeyValue.data(), WebDeadKeyValue.size()) == 0;
 }
 
-Qt::Key webKeyToQtKey(const std::string &code, const std::string &key, bool isDeadKey)
+Qt::Key getKeyFromCode(const std::string &code)
+{
+    if (auto mapping = QWasmKeyTranslator::mapWebKeyTextToQtKey(code.c_str()))
+        return *mapping;
+
+    static QRegularExpression regex(QString(QStringLiteral(R"re((?:Key|Digit)(\w))re")));
+    const auto codeQString = QString::fromStdString(code);
+    const auto match = regex.match(codeQString);
+
+    if (!match.hasMatch())
+        return Qt::Key_unknown;
+
+    constexpr size_t CharacterIndex = 1;
+    return static_cast<Qt::Key>(match.capturedView(CharacterIndex).at(0).toLatin1());
+}
+
+Qt::Key webKeyToQtKey(const std::string &code, const std::string &key, bool isDeadKey,
+                      QFlags<Qt::KeyboardModifier> modifiers)
 {
     if (isDeadKey) {
-        if (auto mapping = QWasmKeyTranslator::mapWebKeyTextToQtKey(code.c_str()))
-            return *mapping;
-    }
-    if (auto mapping = QWasmKeyTranslator::mapWebKeyTextToQtKey(key.c_str()))
+        auto mapped = getKeyFromCode(code);
+        switch (mapped) {
+        case Qt::Key_U:
+            return Qt::Key_Dead_Diaeresis;
+        case Qt::Key_E:
+            return Qt::Key_Dead_Acute;
+        case Qt::Key_I:
+            return Qt::Key_Dead_Circumflex;
+        case Qt::Key_N:
+            return Qt::Key_Dead_Tilde;
+        case Qt::Key_QuoteLeft:
+            return modifiers.testFlag(Qt::ShiftModifier) ? Qt::Key_Dead_Tilde : Qt::Key_Dead_Grave;
+        case Qt::Key_6:
+            return Qt::Key_Dead_Circumflex;
+        case Qt::Key_Apostrophe:
+            return modifiers.testFlag(Qt::ShiftModifier) ? Qt::Key_Dead_Diaeresis
+                                                         : Qt::Key_Dead_Acute;
+        case Qt::Key_AsciiTilde:
+            return Qt::Key_Dead_Tilde;
+        default:
+            return Qt::Key_unknown;
+        }
+    } else if (auto mapping = QWasmKeyTranslator::mapWebKeyTextToQtKey(key.c_str())) {
         return *mapping;
-    if (isDeadKey)
-        return Qt::Key_unknown;
+    }
 
     // cast to unicode key
     QString str = QString::fromUtf8(key.c_str()).toUpper();
+    if (str.length() > 1)
+        return Qt::Key_unknown;
+
     QStringIterator i(str);
     return static_cast<Qt::Key>(i.next(0));
 }
@@ -65,9 +104,9 @@ KeyEvent::KeyEvent(EventType type, emscripten::val event) : Event(type, event["t
     const auto webKey = event["key"].as<std::string>();
     deadKey = isDeadKeyEvent(webKey.c_str());
 
-    key = webKeyToQtKey(code, webKey, deadKey);
-
     modifiers = KeyboardModifier::getForEvent(event);
+    key = webKeyToQtKey(code, webKey, deadKey, modifiers);
+
     text = QString::fromUtf8(webKey);
     if (text.size() > 1)
         text.clear();
