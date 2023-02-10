@@ -49,7 +49,7 @@ qt_feature("printdialog" PUBLIC
     SECTION "Dialogs"
     LABEL "QPrintDialog"
     PURPOSE "Provides a dialog widget for specifying printer configuration."
-    CONDITION ( QT_FEATURE_buttongroup ) AND ( QT_FEATURE_checkbox ) AND ( QT_FEATURE_combobox ) AND ( QT_FEATURE_dialog ) AND ( QT_FEATURE_datetimeedit ) AND ( QT_FEATURE_dialogbuttonbox ) AND ( QT_FEATURE_printer ) AND ( QT_FEATURE_radiobutton ) AND ( QT_FEATURE_spinbox ) AND ( QT_FEATURE_tabwidget ) AND ( QT_FEATURE_treeview )
+    CONDITION ( QT_FEATURE_buttongroup ) AND ( QT_FEATURE_checkbox ) AND ( QT_FEATURE_combobox ) AND ( QT_FEATURE_dialog ) AND ( QT_FEATURE_datetimeedit ) AND ( QT_FEATURE_dialogbuttonbox ) AND ( QT_FEATURE_formlayout ) AND ( QT_FEATURE_printer ) AND ( QT_FEATURE_radiobutton ) AND ( QT_FEATURE_spinbox ) AND ( QT_FEATURE_tabwidget ) AND ( QT_FEATURE_treeview )
 )
 qt_feature_definition("printdialog" "QT_NO_PRINTDIALOG" NEGATE VALUE "1")
 qt_feature("printpreviewdialog" PUBLIC
