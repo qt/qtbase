@@ -56,6 +56,9 @@ private slots:
 
     void shapingDisabledDevanagari();
     void shapingDisabledLatin();
+
+    void privateUseArea();
+
 private:
     bool haveTestFonts;
 };
@@ -1310,6 +1313,42 @@ void tst_QTextScriptEngine::shapingDisabledDevanagari()
     QCOMPARE(normalRuns.size(), 1);
     QCOMPARE(noShapingRuns.size(), 1);
     QCOMPARE(noShapingRuns.first().glyphIndexes().size(), normalRuns.first().glyphIndexes().size());
+}
+
+void tst_QTextScriptEngine::privateUseArea()
+{
+    QString privateUseAreaString = QString::fromUtf8("");
+
+    QFont font;
+    QList<QGlyphRun> withFontMerging;
+    {
+        QTextLayout layout;
+        layout.setText(privateUseAreaString);
+        layout.setFont(font);
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
+
+        withFontMerging = layout.glyphRuns();
+    }
+
+    font.setStyleStrategy(QFont::NoFontMerging);
+    QList<QGlyphRun> withoutFontMerging;
+    {
+        QTextLayout layout;
+        layout.setText(privateUseAreaString);
+        layout.setFont(font);
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
+
+        withoutFontMerging = layout.glyphRuns();
+    }
+
+    QCOMPARE(withFontMerging.size(), withoutFontMerging.size());
+
+    for (int i = 0; i < withFontMerging.size(); ++i)
+        QCOMPARE(withFontMerging.at(i).glyphIndexes(), withoutFontMerging.at(i).glyphIndexes());
 }
 
 QTEST_MAIN(tst_QTextScriptEngine)
