@@ -2571,8 +2571,9 @@ static quint64 extendedPseudoClass(const QWidget *w)
     } else
     if (const QPlainTextEdit *edit = qobject_cast<const QPlainTextEdit *>(w)) {
         pc |= (edit->isReadOnly() ? PseudoClass_ReadOnly : PseudoClass_Editable);
-    }
+    } else
 #endif
+    {}
     return pc;
 }
 
