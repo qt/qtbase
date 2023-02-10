@@ -8,7 +8,9 @@
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qmargins.h>
+#if QT_CONFIG(action)
 #include <QtGui/qaction.h>
+#endif
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpalette.h>
 #include <QtGui/qfont.h>
@@ -175,6 +177,7 @@ class Q_WIDGETS_EXPORT QWidget : public QObject, public QPaintDevice
     Q_PROPERTY(QString windowFilePath READ windowFilePath WRITE setWindowFilePath)
     Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints)
 
+#if QT_CONFIG(action)
 #if 0
     // ### TODO: make this work (requires SFINAE-friendly connect())
     template <typename...Args>
@@ -197,6 +200,8 @@ class Q_WIDGETS_EXPORT QWidget : public QObject, public QPaintDevice
             std::negation<std::is_convertible<Args, QString>>...
         >>;
 #endif
+#endif // QT_CONFIG(action)
+
 public:
     enum RenderFlag {
         DrawWindowBackground = 0x1,

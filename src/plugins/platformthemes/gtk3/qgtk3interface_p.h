@@ -20,6 +20,7 @@
 #include <QtCore/QCache>
 #include <private/qflatmap_p.h>
 #include <QtCore/QObject>
+#include <QtGui/QIcon>
 #include <QtGui/QPalette>
 #include <QtWidgets/QWidget>
 #include <QtCore/QLoggingCategory>
