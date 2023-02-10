@@ -360,7 +360,7 @@ QChar QAppleKeyMapper::toCocoaKey(Qt::Key key)
 {
     // Prioritize overloaded keys
     if (key == Qt::Key_Return)
-        return QChar(NSNewlineCharacter);
+        return QChar(NSCarriageReturnCharacter);
     if (key == Qt::Key_Backspace)
         return QChar(NSBackspaceCharacter);
 
