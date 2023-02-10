@@ -29,3 +29,14 @@ qt_internal_add_test(tst_qwasmwindowstack
         Qt::Gui
         Qt::Widgets
 )
+
+qt_internal_add_test(tst_qwasmkeytranslator
+    SOURCES
+        tst_qwasmkeytranslator.cpp
+    DEFINES
+        QT_NO_FOREACH
+    LIBRARIES
+        Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+)
