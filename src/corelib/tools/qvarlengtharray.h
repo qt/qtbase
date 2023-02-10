@@ -630,29 +630,17 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     Q_ASSERT(s <= a);
     Q_ASSERT(a > 0);
 
-    qsizetype offset = qsizetype(before - ptr);
-    if (s == a)
-        reserve(s * 2);
-    if (!QTypeInfo<T>::isRelocatable) {
-        T *b = ptr + offset;
-        T *i = ptr + s;
-        T *j = i + 1;
-        // The new end-element needs to be constructed, the rest must be move assigned
-        if (i != b) {
-            new (--j) T(std::move(*--i));
-            while (i != b)
-                *--j = std::move(*--i);
-            *b = std::move(t);
-        } else {
-            new (b) T(std::move(t));
-        }
+    const qsizetype offset = qsizetype(before - ptr);
+    append(std::move(t));
+    const auto b = begin() + offset;
+    const auto e = end();
+    if constexpr (QTypeInfo<T>::isRelocatable) {
+        auto cast = [](T *p) { return reinterpret_cast<uchar*>(p); };
+        std::rotate(cast(b), cast(e - 1), cast(e));
     } else {
-        T *b = ptr + offset;
-        memmove(static_cast<void *>(b + 1), static_cast<const void *>(b), (s - offset) * sizeof(T));
-        new (b) T(std::move(t));
+        std::rotate(b, e - 1, e);
     }
-    s += 1;
-    return ptr + offset;
+    return b;
 }
 
 template <class T, qsizetype Prealloc>
