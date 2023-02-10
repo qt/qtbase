@@ -5,6 +5,7 @@
 #define QCOMMONSTYLE_P_H
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include "qhash.h"
 #include "qcommonstyle.h"
 #include "qstyle_p.h"
 #if QT_CONFIG(animation)
