@@ -118,8 +118,15 @@ function(qt_configure_print_summary_helper summary_reports force_show)
     # current log level.
     if(force_show)
         set(CMAKE_MESSAGE_LOG_LEVEL "STATUS")
+
+        # Need 2 flushes to ensure no interleaved input is printed due to a mix of message(STATUS)
+        # and message(NOTICE) calls.
+        execute_process(COMMAND ${CMAKE_COMMAND} -E echo " ")
+
+        message(STATUS "Configure summary:\n${summary_reports}")
+
+        execute_process(COMMAND ${CMAKE_COMMAND} -E echo " ")
     endif()
-    message(STATUS "Configure summary:\n${__qt_configure_reports}")
 endfunction()
 
 function(qt_configure_print_build_instructions_helper msg)
@@ -140,38 +147,31 @@ function(qt_configure_print_summary)
 
     # Show Qt-specific configuration summary.
     if(__qt_configure_reports)
-        # We want to show the the summary file and log level messages only on first configuration
-        # or when we detect a feature change, to keep most reconfiguration output as quiet as
-        # possible. Currently feature change detection is not entirely reliable.
+        # We want to show the configuration summary file and log level message only on
+        # first configuration or when we detect a feature change, to keep most
+        # reconfiguration output as quiet as possible.
+        # Currently feature change detection is not entirely reliable.
         if(NOT QT_INTERNAL_SUMMARY_INSTRUCTIONS_SHOWN OR features_possibly_changed)
-            message("")
+            set(force_show_summary TRUE)
             message(
+                "\n"
                 "-- Configuration summary shown below. It has also been written to"
                 " ${CMAKE_BINARY_DIR}/config.summary")
             message(
                 "-- Configure with --log-level=STATUS or higher to increase "
                 "CMake's message verbosity. "
                 "The log level does not persist across reconfigurations.")
-        endif()
-
-        # Need 2 flushes to ensure no interleaved input is printed due to a mix of message(STATUS)
-        # and message(NOTICE) calls.
-        execute_process(COMMAND ${CMAKE_COMMAND} -E echo " ")
-
-        # We want to show the configuration summary only on first configuration or when we detect
-        # a feature change, to keep most reconfiguration output as quiet as possible.
-        # Currently feature change detection is not entirely reliable.
-        if(NOT QT_INTERNAL_SUMMARY_INSTRUCTIONS_SHOWN OR features_possibly_changed)
-            set(force_show_summary TRUE)
         else()
             set(force_show_summary FALSE)
+            message(
+                "\n"
+                "-- Configuration summary has been written to"
+                " ${CMAKE_BINARY_DIR}/config.summary")
         endif()
 
         qt_configure_print_summary_helper(
-            "Configuration summary:\n${__qt_configure_reports}"
+            "${__qt_configure_reports}"
             ${force_show_summary})
-
-        execute_process(COMMAND ${CMAKE_COMMAND} -E echo " ")
 
         file(APPEND "${summary_file}" "${__qt_configure_reports}")
     endif()
