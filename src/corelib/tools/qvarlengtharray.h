@@ -910,29 +910,17 @@ Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::emplace_impl(qsizetype prealloc, void *ar
     Q_ASSERT(size() <= capacity());
     Q_ASSERT(capacity() > 0);
 
-    qsizetype offset = qsizetype(before - cbegin());
-    if (size() == capacity())
-        growBy(prealloc, array, 1);
-    if constexpr (!QTypeInfo<T>::isRelocatable) {
-        T *b = begin() + offset;
-        T *i = end();
-        T *j = i + 1;
-        // The new end-element needs to be constructed, the rest must be move assigned
-        if (i != b) {
-            q20::construct_at(--j, std::move(*--i));
-            while (i != b)
-                *--j = std::move(*--i);
-            *b = T(std::forward<Args>(args)...);
-        } else {
-            q20::construct_at(b, std::forward<Args>(args)...);
-        }
+    const qsizetype offset = qsizetype(before - cbegin());
+    emplace_back_impl(prealloc, array, std::forward<Args>(args)...);
+    const auto b = begin() + offset;
+    const auto e = end();
+    if constexpr (QTypeInfo<T>::isRelocatable) {
+        auto cast = [](T *p) { return reinterpret_cast<uchar*>(p); };
+        std::rotate(cast(b), cast(e - 1), cast(e));
     } else {
-        T *b = begin() + offset;
-        memmove(static_cast<void *>(b + 1), static_cast<const void *>(b), (size() - offset) * sizeof(T));
-        q20::construct_at(b, std::forward<Args>(args)...);
+        std::rotate(b, e - 1, e);
     }
-    this->s += 1;
-    return data() + offset;
+    return b;
 }
 
 template <class T>
