@@ -183,7 +183,12 @@ public:
     }
     inline bool isEmpty() const { return (s == 0); }
     inline void resize(qsizetype size);
-    inline void clear() { resize(0); }
+    void clear()
+    {
+        if constexpr (QTypeInfo<T>::isComplex)
+            std::destroy_n(data(), size());
+        s = 0;
+    }
     inline void squeeze();
 
     inline qsizetype capacity() const { return a; }
