@@ -4387,15 +4387,39 @@ static inline MTLTessellationPartitionMode toMetalTessellationPartitionMode(QSha
     }
 }
 
+static inline MTLLanguageVersion toMetalLanguageVersion(const QShaderVersion &version)
+{
+    int v = version.version();
+    return MTLLanguageVersion(((v / 10) << 16) + (v % 10));
+}
+
 id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Variant shaderVariant,
                                              QString *error, QByteArray *entryPoint, QShaderKey *activeKey)
 {
-    QShaderKey key = { QShader::MetalLibShader, 20, shaderVariant };
-    QShaderCode mtllib = shader.shader(key);
-    if (mtllib.shader().isEmpty()) {
-        key.setSourceVersion(12);
-        mtllib = shader.shader(key);
+    QVarLengthArray<int, 8> versions;
+    if (@available(macOS 13, iOS 16, *))
+        versions << 30;
+    if (@available(macOS 12, iOS 15, *))
+        versions << 24;
+    if (@available(macOS 11, iOS 14, *))
+        versions << 23;
+    if (@available(macOS 10.15, iOS 13, *))
+        versions << 22;
+    if (@available(macOS 10.14, iOS 12, *))
+        versions << 21;
+    versions << 20 << 12;
+
+    const QList<QShaderKey> shaders = shader.availableShaders();
+
+    QShaderKey key;
+
+    for (const int &version : versions) {
+        key = { QShader::Source::MetalLibShader, version, shaderVariant };
+        if (shaders.contains(key))
+            break;
     }
+
+    QShaderCode mtllib = shader.shader(key);
     if (!mtllib.shader().isEmpty()) {
         dispatch_data_t data = dispatch_data_create(mtllib.shader().constData(),
                                                     size_t(mtllib.shader().size()),
@@ -4414,12 +4438,13 @@ id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Var
         }
     }
 
-    key = { QShader::MslShader, 20, shaderVariant };
-    QShaderCode mslSource = shader.shader(key);
-    if (mslSource.shader().isEmpty()) {
-        key.setSourceVersion(12);
-        mslSource = shader.shader(key);
+    for (const int &version : versions) {
+        key = { QShader::Source::MslShader, version, shaderVariant };
+        if (shaders.contains(key))
+            break;
     }
+
+    QShaderCode mslSource = shader.shader(key);
     if (mslSource.shader().isEmpty()) {
         qWarning() << "No MSL 2.0 or 1.2 code found in baked shader" << shader;
         return nil;
@@ -4427,7 +4452,7 @@ id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Var
 
     NSString *src = [NSString stringWithUTF8String: mslSource.shader().constData()];
     MTLCompileOptions *opts = [[MTLCompileOptions alloc] init];
-    opts.languageVersion = key.sourceVersion() == 20 ? MTLLanguageVersion2_0 : MTLLanguageVersion1_2;
+    opts.languageVersion = toMetalLanguageVersion(key.sourceVersion());
     NSError *err = nil;
     id<MTLLibrary> lib = [dev newLibraryWithSource: src options: opts error: &err];
     [opts release];
