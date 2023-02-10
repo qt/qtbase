@@ -31,7 +31,7 @@ constexpr inline char toHexLower(char32_t value) noexcept
     return "0123456789abcdef"[value & 0xF];
 }
 
-[[nodiscard]] constexpr inline int isHexDigit(char32_t c) noexcept
+[[nodiscard]] constexpr inline bool isHexDigit(char32_t c) noexcept
 {
     return (c >= '0' && c <= '9')
         || (c >= 'A' && c <= 'F')
@@ -51,7 +51,7 @@ constexpr inline char toOct(char32_t value) noexcept
     return char('0' + (value & 0x7));
 }
 
-[[nodiscard]] constexpr inline int isOctalDigit(char32_t c) noexcept
+[[nodiscard]] constexpr inline bool isOctalDigit(char32_t c) noexcept
 {
     return c >= '0' && c <= '7';
 }
