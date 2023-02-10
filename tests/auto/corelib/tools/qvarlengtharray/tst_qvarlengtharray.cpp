@@ -558,6 +558,12 @@ struct MyBase
     bool hasMoved() const { return !wasConstructedAt(this); }
 
 protected:
+    void swap(MyBase &other) {
+        using std::swap;
+        swap(data, other.data);
+        swap(isCopy, other.isCopy);
+    }
+
     MyBase(const MyBase *data, bool isCopy)
             : data(data), isCopy(isCopy) {}
 
@@ -632,6 +638,14 @@ struct MyMovable
         return *this;
     }
 
+    void swap(MyMovable &other) noexcept
+    {
+        MyBase::swap(other);
+        std::swap(i, other.i);
+    }
+
+    friend void swap(MyMovable &lhs, MyMovable &rhs) noexcept { lhs.swap(rhs); }
+
     bool operator==(const MyMovable &other) const
     {
         return i == other.i;
@@ -647,6 +661,15 @@ struct MyComplex
     {
         return i == other.i;
     }
+
+    void swap(MyComplex &other) noexcept
+    {
+        MyBase::swap(other);
+        std::swap(i, other.i);
+    }
+
+    friend void swap(MyComplex &lhs, MyComplex &rhs) noexcept { lhs.swap(rhs); }
+
     char i;
 };
 
@@ -1282,6 +1305,17 @@ void tst_QVarLengthArray::insertMove()
     MyBase::errorCount = 0;
     QCOMPARE(MyBase::liveCount, 0);
     QCOMPARE(MyBase::copyCount, 0);
+
+    {
+        MyMovable m1, m2;
+        QCOMPARE(MyBase::liveCount, 2);
+        QCOMPARE(MyBase::copyCount, 0);
+        using std::swap;
+        swap(m1, m2);
+        QCOMPARE(MyBase::liveCount, 2);
+        QCOMPARE(MyBase::movedCount, 0);
+        QCOMPARE(MyBase::copyCount, 0);
+    }
 
     {
         QVarLengthArray<MyMovable, 6> vec;
