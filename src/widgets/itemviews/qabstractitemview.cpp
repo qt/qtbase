@@ -2347,11 +2347,12 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
 
 #if !defined(QT_NO_CLIPBOARD) && !defined(QT_NO_SHORTCUT)
     if (event == QKeySequence::Copy) {
-        QVariant variant;
-        if (d->model)
-            variant = d->model->data(currentIndex(), Qt::DisplayRole);
-        if (variant.canConvert<QString>())
-            QGuiApplication::clipboard()->setText(variant.toString());
+        const QModelIndex index = currentIndex();
+        if (index.isValid() && d->model) {
+            const QVariant variant = d->model->data(index, Qt::DisplayRole);
+            if (variant.canConvert<QString>())
+                QGuiApplication::clipboard()->setText(variant.toString());
+        }
         event->accept();
     }
 #endif
