@@ -203,22 +203,16 @@ QT_BEGIN_NAMESPACE
     integer index.
 */
 
-namespace {
-struct CaseInsensitiveLessThan {
-    typedef bool result_type;
-    result_type operator()(const QString &s1, const QString &s2) const
-    {
-        return s1.compare(s2, Qt::CaseInsensitive) < 0;
-    }
-};
-}
-
 void QtPrivate::QStringList_sort(QStringList *that, Qt::CaseSensitivity cs)
 {
-    if (cs == Qt::CaseSensitive)
+    if (cs == Qt::CaseSensitive) {
         std::sort(that->begin(), that->end());
-    else
-        std::sort(that->begin(), that->end(), CaseInsensitiveLessThan());
+    } else {
+        auto CISCompare = [](const auto &s1, const auto &s2) {
+            return s1.compare(s2, Qt::CaseInsensitive) < 0;
+        };
+        std::sort(that->begin(), that->end(), CISCompare);
+    }
 }
 
 
@@ -252,9 +246,10 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, QStringView s
 {
     QStringMatcher matcher(str, cs);
     QStringList res;
-    for (qsizetype i = 0; i < that->size(); ++i)
-        if (matcher.indexIn(that->at(i)) != -1)
-            res << that->at(i);
+    for (const auto &s : *that) {
+        if (matcher.indexIn(s) != -1)
+            res.append(s);
+    }
     return res;
 }
 
@@ -324,9 +319,9 @@ bool QtPrivate::QStringList_contains(const QStringList *that, QLatin1StringView 
 QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegularExpression &re)
 {
     QStringList res;
-    for (qsizetype i = 0; i < that->size(); ++i) {
-        if (that->at(i).contains(re))
-            res << that->at(i);
+    for (const auto &str : *that) {
+        if (str.contains(re))
+            res.append(str);
     }
     return res;
 }
