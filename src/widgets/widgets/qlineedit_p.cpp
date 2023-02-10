@@ -646,7 +646,7 @@ static int effectiveTextMargin(int defaultMargin, const QLineEditPrivate::SideWi
 
     const auto visibleSideWidgetCount = std::count_if(widgets.begin(), widgets.end(),
                              [](const QLineEditPrivate::SideWidgetEntry &e) {
-#if QT_CONFIG(animation)
+#if QT_CONFIG(toolbutton)
         // a button that's fading out doesn't get any space
         if (auto* iconButton = qobject_cast<QLineEditIconButton*>(e.widget))
             return iconButton->needsSpace();
