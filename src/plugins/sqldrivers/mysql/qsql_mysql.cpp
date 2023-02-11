@@ -1172,6 +1172,24 @@ static bool setOptionBool(MYSQL *mysql, mysql_option option, QStringView v)
     return mysql_options(mysql, option, &val) == 0;
 }
 
+static bool setOptionProtocol(MYSQL *mysql, mysql_option option, QStringView v)
+{
+    mysql_protocol_type proto = MYSQL_PROTOCOL_DEFAULT;
+    if (v == "TCP"_L1 || v == "MYSQL_PROTOCOL_TCP"_L1)
+        proto = MYSQL_PROTOCOL_TCP;
+    else if (v == "SOCKET"_L1 || v == "MYSQL_PROTOCOL_SOCKET"_L1)
+        proto = MYSQL_PROTOCOL_SOCKET;
+    else if (v == "PIPE"_L1 || v == "MYSQL_PROTOCOL_PIPE"_L1)
+        proto = MYSQL_PROTOCOL_PIPE;
+    else if (v == "MEMORY"_L1 || v == "MYSQL_PROTOCOL_MEMORY"_L1)
+        proto = MYSQL_PROTOCOL_MEMORY;
+    else if (v == "DEFAULT"_L1 || v == "MYSQL_PROTOCOL_DEFAULT"_L1)
+        proto = MYSQL_PROTOCOL_DEFAULT;
+    else
+        qWarning() << "Unknown protocol '" << v << "' - using MYSQL_PROTOCOL_DEFAULT";
+    return mysql_options(mysql, option, &proto) == 0;
+}
+
 bool QMYSQLDriver::open(const QString &db,
                         const QString &user,
                         const QString &password,
@@ -1214,6 +1232,8 @@ bool QMYSQLDriver::open(const QString &db,
         {"MYSQL_OPT_WRITE_TIMEOUT"_L1,   MYSQL_OPT_WRITE_TIMEOUT,   setOptionInt},
         {"MYSQL_OPT_RECONNECT"_L1,       MYSQL_OPT_RECONNECT,       setOptionBool},
         {"MYSQL_OPT_LOCAL_INFILE"_L1,    MYSQL_OPT_LOCAL_INFILE,    setOptionInt},
+        {"MYSQL_OPT_PROTOCOL"_L1,        MYSQL_OPT_PROTOCOL,        setOptionProtocol},
+        {"MYSQL_SHARED_MEMORY_BASE_NAME"_L1, MYSQL_SHARED_MEMORY_BASE_NAME, setOptionString},
     };
     auto trySetOption = [&](const QStringView &key, const QStringView &value) -> bool {
       for (const mysqloptions &opt : options) {

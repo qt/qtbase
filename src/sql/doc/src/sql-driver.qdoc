@@ -174,8 +174,19 @@
       \li CLIENT_INTERACTIVE
       \li If set, client is treated as interactive
     \row
+      \li MYSQL_OPT_PROTOCOL
+      \li explicitly specify the protocol to use:\br
+          MYSQL_PROTOCOL_TCP: use tcp connection (ip/hostname specified through setHostname())
+          MYSQL_PROTOCOL_SOCKET: connect through a socket specified in UNIX_SOCKET
+          MYSQL_PROTOCOL_PIPE: connect through a named pipe specified in UNIX_SOCKET
+          MYSQL_PROTOCOL_MEMORY: connect through shared memory specified in MYSQL_SHARED_MEMORY_BASE_NAME
+    \row
       \li UNIX_SOCKET
-      \li Specifies the socket or named pipe to use
+      \li Specifies the socket or named pipe to use, even it's called UNIX_SOCKET it
+          can also be used on windows
+    \row
+      \li MYSQL_SHARED_MEMORY_BASE_NAME
+      \li Specified the shared memory segment name to use
     \row
       \li MYSQL_OPT_RECONNECT
       \li TRUE or 1: Automatically reconnect after connection loss\br
