@@ -2943,7 +2943,7 @@ QString &QString::operator=(QChar ch)
     T is a view or a container on/of QChar, char16_t, or char
 */
 template <typename T>
-static void insert_helper(QString &str, qsizetype i, T toInsert)
+static void insert_helper(QString &str, qsizetype i, const T &toInsert)
 {
     auto &str_d = str.data_ptr();
     qsizetype difference = 0;
