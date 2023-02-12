@@ -6,6 +6,8 @@
 
 #include <QtCore/qcompilerdetection.h>
 #include <QtCore/qfunctionaltools_impl.h>
+#include <QtCore/qtclasshelpermacros.h>
+#include <QtCore/qtcoreexports.h>
 
 #include <functional>
 #include <type_traits>

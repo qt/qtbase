@@ -6,6 +6,7 @@
 
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qcompilerdetection.h>
+#include <QtCore/qtcoreexports.h>
 
 #if 0
 #pragma qt_class(QtExceptionHandling)

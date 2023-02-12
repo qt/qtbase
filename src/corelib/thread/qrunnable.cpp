@@ -3,6 +3,8 @@
 
 #include "qrunnable.h"
 
+#include <QtCore/qlogging.h>
+
 QT_BEGIN_NAMESPACE
 
 QRunnable::~QRunnable()
