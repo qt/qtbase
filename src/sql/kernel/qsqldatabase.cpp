@@ -46,9 +46,8 @@ Q_GLOBAL_STATIC(QConnectionDict, dbDict)
 class QSqlDatabasePrivate
 {
 public:
-    QSqlDatabasePrivate(QSqlDatabase *d, QSqlDriver *dr = nullptr):
+    QSqlDatabasePrivate(QSqlDriver *dr):
         ref(1),
-        q(d),
         driver(dr),
         port(-1)
     {
@@ -61,7 +60,6 @@ public:
     void disable();
 
     QAtomicInt ref;
-    QSqlDatabase *q;
     QSqlDriver* driver;
     QString dbname;
     QString uname;
@@ -84,7 +82,6 @@ public:
 
 QSqlDatabasePrivate::QSqlDatabasePrivate(const QSqlDatabasePrivate &other) : ref(1)
 {
-    q = other.q;
     dbname = other.dbname;
     uname = other.uname;
     pword = other.pword;
@@ -140,7 +137,7 @@ DriverDict &QSqlDatabasePrivate::driverDict()
 QSqlDatabasePrivate *QSqlDatabasePrivate::shared_null()
 {
     static QSqlNullDriver dr;
-    static QSqlDatabasePrivate n(nullptr, &dr);
+    static QSqlDatabasePrivate n(&dr);
     return &n;
 }
 
@@ -212,7 +209,6 @@ QSqlDatabase QSqlDatabasePrivate::database(const QString& name, bool open)
 */
 void QSqlDatabasePrivate::copy(const QSqlDatabasePrivate *other)
 {
-    q = other->q;
     dbname = other->dbname;
     uname = other->uname;
     pword = other->pword;
@@ -587,8 +583,8 @@ QStringList QSqlDatabase::connectionNames()
 */
 
 QSqlDatabase::QSqlDatabase(const QString &type)
+   : d(new QSqlDatabasePrivate(nullptr))
 {
-    d = new QSqlDatabasePrivate(this);
     d->init(type);
 }
 
@@ -599,8 +595,8 @@ QSqlDatabase::QSqlDatabase(const QString &type)
 */
 
 QSqlDatabase::QSqlDatabase(QSqlDriver *driver)
+    : d(new QSqlDatabasePrivate(driver))
 {
-    d = new QSqlDatabasePrivate(this, driver);
 }
 
 /*!
@@ -609,8 +605,8 @@ QSqlDatabase::QSqlDatabase(QSqlDriver *driver)
     objects.
 */
 QSqlDatabase::QSqlDatabase()
+    : d(QSqlDatabasePrivate::shared_null())
 {
-    d = QSqlDatabasePrivate::shared_null();
     d->ref.ref();
 }
 
