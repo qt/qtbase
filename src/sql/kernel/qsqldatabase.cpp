@@ -28,12 +28,17 @@ typedef QHash<QString, QSqlDriverCreatorBase*> DriverDict;
 class QConnectionDict: public QHash<QString, QSqlDatabase>
 {
 public:
-    inline bool contains_ts(const QString &key)
+    QSqlDatabase value_ts(const QString &key) const
+    {
+      QReadLocker locker(&lock);
+      return value(key);
+    }
+    bool contains_ts(const QString &key) const
     {
         QReadLocker locker(&lock);
         return contains(key);
     }
-    inline QStringList keys_ts() const
+    QStringList keys_ts() const
     {
         QReadLocker locker(&lock);
         return keys();
@@ -185,9 +190,7 @@ QSqlDatabase QSqlDatabasePrivate::database(const QString& name, bool open)
     const QConnectionDict *dict = dbDict();
     Q_ASSERT(dict);
 
-    dict->lock.lockForRead();
-    QSqlDatabase db = dict->value(name);
-    dict->lock.unlock();
+    QSqlDatabase db = dict->value_ts(name);
     if (!db.isValid())
         return db;
     if (db.driver()->thread() != QThread::currentThread()) {
@@ -1249,6 +1252,8 @@ bool QSqlDatabase::isValid() const
 
     \note The new connection has not been opened. Before using the new
     connection, you must call open().
+
+    \reentrant
 */
 QSqlDatabase QSqlDatabase::cloneDatabase(const QSqlDatabase &other, const QString &connectionName)
 {
@@ -1283,16 +1288,7 @@ QSqlDatabase QSqlDatabase::cloneDatabase(const QString &other, const QString &co
     const QConnectionDict *dict = dbDict();
     Q_ASSERT(dict);
 
-    dict->lock.lockForRead();
-    QSqlDatabase otherDb = dict->value(other);
-    dict->lock.unlock();
-    if (!otherDb.isValid())
-        return QSqlDatabase();
-
-    QSqlDatabase db(otherDb.driverName());
-    db.d->copy(otherDb.d);
-    QSqlDatabasePrivate::addDatabase(db, connectionName);
-    return db;
+    return cloneDatabase(dict->value_ts(other), connectionName);
 }
 
 /*!
