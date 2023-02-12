@@ -8,7 +8,9 @@
 #pragma qt_class(QtNumeric)
 #endif
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qtconfigmacros.h>
+#include <QtCore/qtcoreexports.h>
+#include <QtCore/qtypes.h>
 
 #include <cmath>
 #include <limits>

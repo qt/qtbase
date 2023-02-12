@@ -1,10 +1,13 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QtCore/qglobal.h>
-
 #ifndef QLOGGING_H
 #define QLOGGING_H
+
+#include <QtCore/qtclasshelpermacros.h>
+#include <QtCore/qtconfigmacros.h>
+#include <QtCore/qtcoreexports.h>
+#include <QtCore/qcontainerfwd.h>
 
 #if 0
 // header is automatically included in qglobal.h
@@ -21,6 +24,7 @@ QT_BEGIN_NAMESPACE
 */
 class QDebug;
 class QNoDebug;
+
 
 enum QtMsgType {
     QtDebugMsg,

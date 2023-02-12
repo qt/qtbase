@@ -1,12 +1,11 @@
 // Copyright (C) 2021 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QtCore/qglobal.h>
-
 #ifndef QGLOBALSTATIC_H
 #define QGLOBALSTATIC_H
 
 #include <QtCore/qatomic.h>
+#include <QtCore/qtclasshelpermacros.h>
 
 #include <atomic>           // for bootstrapped (no thread) builds
 #include <type_traits>

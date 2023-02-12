@@ -2,14 +2,15 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QtCore/qglobal.h>
+#ifndef QTYPEINFO_H
+#define QTYPEINFO_H
+
+#include <QtCore/qcompilerdetection.h>
 #include <QtCore/qcontainerfwd.h>
+
 #include <variant>
 #include <optional>
 #include <tuple>
-
-#ifndef QTYPEINFO_H
-#define QTYPEINFO_H
 
 QT_BEGIN_NAMESPACE
 

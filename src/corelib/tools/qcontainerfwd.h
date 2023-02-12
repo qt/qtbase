@@ -1,10 +1,11 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QtCore/qglobal.h>
-
 #ifndef QCONTAINERFWD_H
 #define QCONTAINERFWD_H
+
+#include <QtCore/qtconfigmacros.h>
+#include <QtCore/qtypes.h>
 
 #if 0
 #pragma qt_class(QtContainerFwd)

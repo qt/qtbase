@@ -1,11 +1,11 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QtCore/qglobal.h>
-#include <QtCore/qcompare_impl.h>
-
 #ifndef QFLAGS_H
 #define QFLAGS_H
+
+#include <QtCore/qcompare_impl.h>
+#include <QtCore/qtypeinfo.h>
 
 #include <initializer_list>
 
