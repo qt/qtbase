@@ -6,6 +6,8 @@
 #include <QDebug>
 #endif
 
+#include <QtCore/qmalloc.h>
+
 QT_BEGIN_NAMESPACE
 
 #ifdef QT_QCONTIGUOUSCACHE_DEBUG
