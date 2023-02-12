@@ -3086,7 +3086,8 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
 
     // In case when data points into "this"
     if (!d->needsDetach() && QtPrivate::q_points_into_range(unicode, *this)) {
-        insert_helper(*this, i, QVarLengthArray<QChar>(unicode, unicode + size));
+        QVarLengthArray copy(unicode, unicode + size);
+        insert(i, copy.data(), size);
     } else {
         insert_helper(*this, i, QStringView(unicode, size));
     }
