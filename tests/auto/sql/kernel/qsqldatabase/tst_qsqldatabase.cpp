@@ -104,6 +104,8 @@ private slots:
     void infinityAndNan();
     void multipleThreads_data() { generic_data(); }
     void multipleThreads();
+    void moveToThread_data() { generic_data(); }
+    void moveToThread();
 
     void db2_valueCacheUpdate_data() { generic_data("QDB2"); }
     void db2_valueCacheUpdate();
@@ -2334,6 +2336,33 @@ void tst_QSqlDatabase::multipleThreads()
     QTRY_VERIFY(t.isRunning());
     QTRY_VERIFY(t.isFinished());
 }
+
+void tst_QSqlDatabase::moveToThread()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    auto clonedDb = QSqlDatabase::cloneDatabase(db, "clonedDb");
+    auto mainThread = QThread::currentThread();
+    CHECK_DATABASE(db);
+    QCOMPARE(db.currentThread(), mainThread);
+    QCOMPARE(clonedDb.currentThread(), mainThread);
+    std::unique_ptr<QThread> t(QThread::create([&] {
+        db.moveToThread(mainThread);
+        QThread::currentThread()->exit();
+    }));
+    db.moveToThread(t.get());
+    QCOMPARE(db.currentThread(), t.get());
+    QCOMPARE(clonedDb.currentThread(), mainThread);
+    t->start();
+    QTRY_VERIFY(t->isRunning());
+    QTRY_VERIFY(t->wait(30000));
+    QCOMPARE(db.currentThread(), mainThread);
+    QCOMPARE(clonedDb.currentThread(), mainThread);
+    db = QSqlDatabase();
+    clonedDb = QSqlDatabase();
+    QSqlDatabase::removeDatabase("clonedDb");
+}
+
 
 QTEST_MAIN(tst_QSqlDatabase)
 #include "tst_qsqldatabase.moc"

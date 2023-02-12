@@ -7,6 +7,7 @@
 #include "qcoreapplication.h"
 #include "qreadwritelock.h"
 #include "qsqldriver.h"
+#include "qsqldriver_p.h"
 #include "qsqldriverplugin.h"
 #include "qsqlindex.h"
 #include "QtCore/qapplicationstatic.h"
@@ -282,6 +283,10 @@ void QSqlDatabasePrivate::disable()
     QSqlDriver.  Alternatively, you can subclass your own database
     driver from QSqlDriver. See \l{How to Write Your Own Database
     Driver} for more information.
+    A QSqlDatabase instance must only be accessed by the thread it
+    was created in. Therefore you have to make sure to create them
+    in the correct context. Alternatively you can change the context
+    with QSqlDatabase::moveToThread().
 
     Create a connection (i.e., an instance of QSqlDatabase) by calling
     one of the static addDatabase() functions, where you specify
@@ -1331,6 +1336,50 @@ QSql::NumericalPrecisionPolicy QSqlDatabase::numericalPrecisionPolicy() const
         return driver()->numericalPrecisionPolicy();
     else
         return d->precisionPolicy;
+}
+
+/*!
+    \since 6.8
+
+    Changes the thread affinity for QSqlDatabase and its associated driver.
+    This function returns \c true when the function succeeds. Event processing
+    will continue in the \a targetThread.
+
+    During this operation you have to make sure that there is no QSqlQuery
+    bound to this instance otherwise the QSqlDatabase will not be moved to
+    the given thread and the function returns \c false.
+
+    Since the associated driver is derived from QObject, all constraints for
+    moving a QObject to another thread also apply to this function.
+
+    \sa QObject::moveToThread(), {Threads and the SQL Module}
+*/
+bool QSqlDatabase::moveToThread(QThread *targetThread)
+{
+    if (auto drv = driver()) {
+        if (drv != QSqlDatabasePrivate::shared_null()->driver) {
+            // two instances are alive - the one here and the one in dbDict()
+            if (d->ref.loadRelaxed() > 2) {
+                qWarning("QSqlDatabasePrivate::moveToThread: connection '%ls' is still in use "
+                         "in the current thread.", qUtf16Printable(d->connName));
+                return false;
+            }
+            return drv->moveToThread(targetThread);
+        }
+    }
+    return false;
+}
+
+/*!
+    \since 6.8
+
+    Returns a pointer to the associated QThread instance.
+*/
+QThread *QSqlDatabase::currentThread() const
+{
+    if (auto drv = driver())
+        return drv->thread();
+    return nullptr;
 }
 
 

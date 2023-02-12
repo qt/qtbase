@@ -18,6 +18,7 @@ class QSqlIndex;
 class QSqlRecord;
 class QSqlQuery;
 class QSqlDatabasePrivate;
+class QThread;
 
 class Q_SQL_EXPORT QSqlDriverCreatorBase
 {
@@ -80,6 +81,8 @@ public:
     QString connectionName() const;
     void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy);
     QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
+    bool moveToThread(QThread *targetThread);
+    QThread *currentThread() const;
 
     QSqlDriver* driver() const;
 
