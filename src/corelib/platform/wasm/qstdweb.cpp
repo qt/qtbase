@@ -760,6 +760,8 @@ EventCallback::EventCallback(emscripten::val element, const std::string &name, c
     ,m_eventName(name)
     ,m_fn(fn)
 {
+    Q_ASSERT_X(m_element[contextPropertyName(m_eventName)].isUndefined(), Q_FUNC_INFO,
+               "Only one event callback of type currently supported with EventCallback");
     m_element.set(contextPropertyName(m_eventName).c_str(), emscripten::val(intptr_t(this)));
     m_element.set((std::string("on") + m_eventName).c_str(), emscripten::val::module_property("qtStdWebEventCallbackActivate"));
 }
