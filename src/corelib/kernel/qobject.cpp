@@ -84,6 +84,8 @@ static int *queuedConnectionTypes(const QMetaMethod &method)
             typeIds[i] = QMetaType::VoidStar;
         else
             typeIds[i] = metaType.id();
+        if (!typeIds[i] && method.parameterTypeName(i).endsWith('*'))
+            typeIds[i] = QMetaType::VoidStar;
         if (!typeIds[i]) {
             const QByteArray typeName = method.parameterTypeName(i);
             qCWarning(lcConnect,
