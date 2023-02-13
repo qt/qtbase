@@ -2,7 +2,8 @@
 isEmpty(QMAKE_INFO_PLIST): \
     return()
 
-plist_path = $$relative_path($$absolute_path($$QMAKE_INFO_PLIST, $$_PRO_FILE_PWD_), $$OUT_PWD))
+plist_path = $$absolute_path($$QMAKE_INFO_PLIST, $$_PRO_FILE_PWD_)
+
 !exists($$plist_path): \
     return()
 
@@ -15,7 +16,7 @@ for(plugin, QT_PLUGINS) {
     found_usage_description = false
     for(usage_description_key, usage_descriptions) {
         usage_description = $$system("/usr/libexec/PlistBuddy" \
-            "-c 'print $$usage_description_key' $$QMAKE_INFO_PLIST 2>/dev/null", \
+            "-c 'print $$usage_description_key' $$plist_path 2>/dev/null", \
             singleLine, exit_code)
 
         !equals(exit_code, 0): \
