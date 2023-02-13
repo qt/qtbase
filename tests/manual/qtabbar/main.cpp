@@ -4,6 +4,7 @@
 #include <QApplication>
 #include <QWidget>
 #include <QStackedWidget>
+#include <QMap>
 #include <QTabBar>
 #include <QLabel>
 #include <QLayout>
