@@ -375,11 +375,15 @@ void tst_QSqlQuery::dropTestTables(QSqlDatabase db)
     if (dbType == QSqlDriver::MSSqlServer || dbType == QSqlDriver::Oracle)
         tablenames << qTableName("qtest_longstr", __FILE__, db);
 
-    if (dbType == QSqlDriver::MSSqlServer)
-        db.exec("DROP PROCEDURE " + qTableName("test141895_proc", __FILE__, db));
+    if (dbType == QSqlDriver::MSSqlServer) {
+        QSqlQuery q(db);
+        q.exec("DROP PROCEDURE " + qTableName("test141895_proc", __FILE__, db));
+    }
 
-    if (dbType == QSqlDriver::MySqlServer)
-        db.exec("DROP PROCEDURE IF EXISTS " + qTableName("bug6852_proc", __FILE__, db));
+    if (dbType == QSqlDriver::MySqlServer) {
+        QSqlQuery q(db);
+        q.exec("DROP PROCEDURE IF EXISTS " + qTableName("bug6852_proc", __FILE__, db));
+    }
 
     tst_Databases::safeDropTables(db, tablenames);
 

@@ -48,7 +48,10 @@ public:
     QStringList tables(QSql::TableType type = QSql::Tables) const;
     QSqlIndex primaryIndex(const QString& tablename) const;
     QSqlRecord record(const QString& tablename) const;
+#if QT_DEPRECATED_SINCE(6, 6)
+    QT_DEPRECATED_VERSION_X_6_6("QSqlQuery::exec() instead.")
     QSqlQuery exec(const QString& query = QString()) const;
+#endif
     QSqlError lastError() const;
     bool isValid() const;
 

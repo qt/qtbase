@@ -134,15 +134,16 @@ void tst_QSqlRelationalTableModel::recreateTestTables(QSqlDatabase db)
 void tst_QSqlRelationalTableModel::initTestCase()
 {
     foreach (const QString &dbname, dbs.dbNames) {
-        QSqlDatabase db=QSqlDatabase::database(dbname);
+        QSqlDatabase db = QSqlDatabase::database(dbname);
+        QSqlQuery q(db);
         QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         if (dbType == QSqlDriver::Interbase) {
-            db.exec("SET DIALECT 3");
+            q.exec("SET DIALECT 3");
         } else if (dbType == QSqlDriver::MSSqlServer) {
-            db.exec("SET ANSI_DEFAULTS ON");
-            db.exec("SET IMPLICIT_TRANSACTIONS OFF");
+            q.exec("SET ANSI_DEFAULTS ON");
+            q.exec("SET IMPLICIT_TRANSACTIONS OFF");
         } else if (dbType == QSqlDriver::PostgreSQL) {
-            db.exec("set client_min_messages='warning'");
+            q.exec("set client_min_messages='warning'");
         }
         recreateTestTables(db);
     }
@@ -167,8 +168,9 @@ void tst_QSqlRelationalTableModel::dropTestTables( QSqlDatabase db )
                            qTableName("casetest1", __FILE__, db)};
     tst_Databases::safeDropTables( db, tableNames );
 
-    db.exec("DROP SCHEMA " + qTableName("QTBUG_5373", __FILE__, db) + " CASCADE");
-    db.exec("DROP SCHEMA " + qTableName("QTBUG_5373_s2", __FILE__, db) + " CASCADE");
+    QSqlQuery q(db);
+    q.exec("DROP SCHEMA " + qTableName("QTBUG_5373", __FILE__, db) + " CASCADE");
+    q.exec("DROP SCHEMA " + qTableName("QTBUG_5373_s2", __FILE__, db) + " CASCADE");
 }
 
 void tst_QSqlRelationalTableModel::init()

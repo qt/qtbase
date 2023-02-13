@@ -389,9 +389,6 @@ void QSqlDatabasePrivate::disable()
         \li registers a custom-made driver
     \endtable
 
-    \note QSqlDatabase::exec() is deprecated. Use QSqlQuery::exec()
-    instead.
-
     \note When using transactions, you must start the
     transaction before you create your query.
 
@@ -692,8 +689,9 @@ QSqlDatabase::~QSqlDatabase()
     lastError() is not affected.
 
     \sa QSqlQuery, lastError()
+    \deprecated [6.6] Use QSqlQuery::exec() instead.
 */
-
+#if QT_DEPRECATED_SINCE(6, 6)
 QSqlQuery QSqlDatabase::exec(const QString & query) const
 {
     QSqlQuery r(d->driver->createResult());
@@ -703,6 +701,7 @@ QSqlQuery QSqlDatabase::exec(const QString & query) const
     }
     return r;
 }
+#endif
 
 /*!
     Opens the database connection using the current connection
