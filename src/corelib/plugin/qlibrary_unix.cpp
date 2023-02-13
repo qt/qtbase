@@ -90,6 +90,11 @@ QStringList QLibraryPrivate::prefixes_sys()
 
 bool QLibraryPrivate::load_sys()
 {
+#if defined(Q_OS_WASM) && defined(QT_STATIC)
+    // emscripten does not support dlopen when using static linking
+    return false;
+#endif
+
     QMutexLocker locker(&mutex);
     QString attempt;
     QFileSystemEntry fsEntry(fileName);
