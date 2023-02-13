@@ -521,24 +521,11 @@ const QOperatingSystemVersion QOperatingSystemVersion::MacOSCatalina =
 
 /*!
     \variable QOperatingSystemVersion::MacOSBigSur
-    \brief a version corresponding to macOS Big Sur
-
-    The actual version number depends on whether the application was built
-    using the Xcode 12 SDK. If it was, the version number corresponds
-    to macOS 11.0. If not it will correspond to macOS 10.16.
-
-    By comparing QOperatingSystemVersion::current() to this constant
-    you will always end up comparing to the right version number.
+    \brief a version corresponding to macOS Big Sur (version 11).
     \since 6.0
  */
-const QOperatingSystemVersion QOperatingSystemVersion::MacOSBigSur = [] {
-#if defined(Q_OS_DARWIN)
-    if (QMacVersion::buildSDK(QMacVersion::ApplicationBinary) >= QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 10, 16))
-        return QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 11, 0);
-    else
-#endif
-        return QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 10, 16);
-}();
+const QOperatingSystemVersion QOperatingSystemVersion::MacOSBigSur =
+    QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 11, 0);
 
 /*!
     \variable QOperatingSystemVersion::MacOSMonterey

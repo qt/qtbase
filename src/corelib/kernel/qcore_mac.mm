@@ -549,18 +549,18 @@ void qt_apple_check_os_version()
     const char *os = "macOS";
     const int version = __MAC_OS_X_VERSION_MIN_REQUIRED;
 #endif
-    const NSOperatingSystemVersion required = (NSOperatingSystemVersion){
-        version / 10000, version / 100 % 100, version % 100};
-    const NSOperatingSystemVersion current = NSProcessInfo.processInfo.operatingSystemVersion;
+
+    const auto required = QVersionNumber(version / 10000, version / 100 % 100, version % 100);
+    const auto current = QOperatingSystemVersion::current().version();
 
 #if defined(Q_OS_MACOS)
     // Check for compatibility version, in which case we can't do a
     // comparison to the deployment target, which might be e.g. 11.0
-    if (current.majorVersion == 10 && current.minorVersion >= 16)
-        return; // FIXME: Find a way to detect the real OS version
+    if (current.majorVersion() == 10 && current.minorVersion() >= 16)
+        return;
 #endif
 
-    if (![NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:required]) {
+    if (current < required) {
         NSDictionary *plist = NSBundle.mainBundle.infoDictionary;
         NSString *applicationName = plist[@"CFBundleDisplayName"];
         if (!applicationName)
@@ -571,8 +571,8 @@ void qt_apple_check_os_version()
         fprintf(stderr, "Sorry, \"%s\" cannot be run on this version of %s. "
             "Qt requires %s %ld.%ld.%ld or later, you have %s %ld.%ld.%ld.\n",
             applicationName.UTF8String, os,
-            os, long(required.majorVersion), long(required.minorVersion), long(required.patchVersion),
-            os, long(current.majorVersion), long(current.minorVersion), long(current.patchVersion));
+            os, long(required.majorVersion()), long(required.minorVersion()), long(required.microVersion()),
+            os, long(current.majorVersion()), long(current.minorVersion()), long(current.microVersion()));
 
         exit(1);
     }
