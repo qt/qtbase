@@ -21,16 +21,16 @@ EMSCRIPTEN_BINDINGS(qwasmopenglcontext)
 QT_BEGIN_NAMESPACE
 
 QWasmOpenGLContext::QWasmOpenGLContext(QOpenGLContext *context)
-    : m_requestedFormat(context->format()), m_qGlContext(context)
+    : m_actualFormat(context->format()), m_qGlContext(context)
 {
-    m_requestedFormat.setRenderableType(QSurfaceFormat::OpenGLES);
+    m_actualFormat.setRenderableType(QSurfaceFormat::OpenGLES);
 
     // if we set one, we need to set the other as well since in webgl, these are tied together
-    if (m_requestedFormat.depthBufferSize() < 0 && m_requestedFormat.stencilBufferSize() > 0)
-        m_requestedFormat.setDepthBufferSize(16);
+    if (m_actualFormat.depthBufferSize() < 0 && m_actualFormat.stencilBufferSize() > 0)
+        m_actualFormat.setDepthBufferSize(16);
 
-    if (m_requestedFormat.stencilBufferSize() < 0 && m_requestedFormat.depthBufferSize() > 0)
-        m_requestedFormat.setStencilBufferSize(8);
+    if (m_actualFormat.stencilBufferSize() < 0 && m_actualFormat.depthBufferSize() > 0)
+        m_actualFormat.setStencilBufferSize(8);
 }
 
 QWasmOpenGLContext::~QWasmOpenGLContext()
@@ -77,8 +77,7 @@ QWasmOpenGLContext::obtainEmscriptenContext(QPlatformSurface *surface)
                     QOpenGLContextData{ .surface = surface,
                                         .handle = createEmscriptenContext(
                                                 static_cast<QWasmOffscreenSurface *>(surface)->id(),
-                                                m_requestedFormat) };
-            return m_ownedWebGLContext.handle;
+                                                m_actualFormat) };
         }
     } else {
         destroyWebGLContext(m_ownedWebGLContext.handle);
@@ -87,11 +86,23 @@ QWasmOpenGLContext::obtainEmscriptenContext(QPlatformSurface *surface)
         m_ownedWebGLContext = QOpenGLContextData{
             .surface = surface,
             .handle = createEmscriptenContext(static_cast<QWasmWindow *>(surface)->canvasSelector(),
-                                              m_requestedFormat)
+                                              m_actualFormat)
         };
-
-        return m_ownedWebGLContext.handle;
     }
+
+    EmscriptenWebGLContextAttributes actualAttributes;
+
+    EMSCRIPTEN_RESULT attributesResult = emscripten_webgl_get_context_attributes(m_ownedWebGLContext.handle, &actualAttributes);
+    if (attributesResult == EMSCRIPTEN_RESULT_SUCCESS) {
+        if (actualAttributes.majorVersion == 1) {
+            m_actualFormat.setMajorVersion(2);
+        } else if (actualAttributes.majorVersion == 2) {
+            m_actualFormat.setMajorVersion(3);
+        }
+        m_actualFormat.setMinorVersion(0);
+    }
+
+    return m_ownedWebGLContext.handle;
 }
 
 void QWasmOpenGLContext::destroyWebGLContext(EMSCRIPTEN_WEBGL_CONTEXT_HANDLE contextHandle)
@@ -116,9 +127,8 @@ QWasmOpenGLContext::createEmscriptenContext(const std::string &canvasSelector,
     attributes.failIfMajorPerformanceCaveat = false;
     attributes.antialias = true;
     attributes.enableExtensionsByDefault = true;
-    attributes.majorVersion = format.majorVersion() - 1;
-    attributes.minorVersion = format.minorVersion();
-
+    attributes.majorVersion = 2; // try highest supported version ES3.0 / WebGL 2.0
+    attributes.minorVersion = 0; // emscripten only supports minor version 0
     // WebGL doesn't allow separate attach buffers to STENCIL_ATTACHMENT and DEPTH_ATTACHMENT
     // we need both or none
     const bool useDepthStencil = (format.depthBufferSize() > 0 || format.stencilBufferSize() > 0);
@@ -127,13 +137,20 @@ QWasmOpenGLContext::createEmscriptenContext(const std::string &canvasSelector,
     attributes.alpha = format.alphaBufferSize() > 0;
     attributes.depth = useDepthStencil;
     attributes.stencil = useDepthStencil;
+    EMSCRIPTEN_RESULT contextResult = emscripten_webgl_create_context(canvasSelector.c_str(), &attributes);
 
-    return emscripten_webgl_create_context(canvasSelector.c_str(), &attributes);
+    if (contextResult <= 0) {
+        // fallback to opengles2/webgl1
+        // for devices that do not support opengles3/webgl2
+        attributes.majorVersion = 1;
+        contextResult = emscripten_webgl_create_context(canvasSelector.c_str(), &attributes);
+    }
+    return contextResult;
 }
 
 QSurfaceFormat QWasmOpenGLContext::format() const
 {
-    return m_requestedFormat;
+    return m_actualFormat;
 }
 
 GLuint QWasmOpenGLContext::defaultFramebufferObject(QPlatformSurface *surface) const
@@ -170,7 +187,7 @@ bool QWasmOpenGLContext::isSharing() const
 
 bool QWasmOpenGLContext::isValid() const
 {
-    if (!isOpenGLVersionSupported(m_requestedFormat))
+    if (!isOpenGLVersionSupported(m_actualFormat))
         return false;
 
     // Note: we get isValid() calls before we see the surface and can
