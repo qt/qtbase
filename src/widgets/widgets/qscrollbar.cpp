@@ -189,7 +189,9 @@ void QScrollBarPrivate::setTransient(bool value)
     if (transient != value) {
         transient = value;
         if (q->isVisible()) {
-            if (q->style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, q))
+            QStyleOptionSlider opt;
+            q->initStyleOption(&opt);
+            if (q->style()->styleHint(QStyle::SH_ScrollBar_Transient, &opt, q))
                 q->update();
         } else if (!transient) {
             q->show();
@@ -200,7 +202,9 @@ void QScrollBarPrivate::setTransient(bool value)
 void QScrollBarPrivate::flash()
 {
     Q_Q(QScrollBar);
-    if (!flashed && q->style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, q)) {
+    QStyleOptionSlider opt;
+    q->initStyleOption(&opt);
+    if (!flashed && q->style()->styleHint(QStyle::SH_ScrollBar_Transient, &opt, q)) {
         flashed = true;
         if (!q->isVisible())
             q->show();
@@ -284,7 +288,7 @@ void QScrollBar::initStyleOption(QStyleOptionSlider *option) const
     option->upsideDown = d->invertedAppearance;
     if (d->orientation == Qt::Horizontal)
         option->state |= QStyle::State_Horizontal;
-    if ((d->flashed || !d->transient) && style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, this))
+    if ((d->flashed || !d->transient) && style()->styleHint(QStyle::SH_ScrollBar_Transient, option, this))
         option->state |= QStyle::State_On;
 }
 
@@ -341,7 +345,9 @@ void QScrollBarPrivate::init()
     invertedControls = true;
     pressedControl = hoverControl = QStyle::SC_None;
     pointerOutsidePressedControl = false;
-    transient = q->style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, q);
+    QStyleOption opt;
+    opt.initFrom(q);
+    transient = q->style()->styleHint(QStyle::SH_ScrollBar_Transient, &opt, q);
     flashed = false;
     flashTimer = 0;
     q->setFocusPolicy(Qt::NoFocus);
@@ -435,12 +441,17 @@ bool QScrollBar::event(QEvent *event)
         if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
             d_func()->updateHoverControl(he->position().toPoint());
         break;
-    case QEvent::StyleChange:
-        d_func()->setTransient(style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, this));
+    case QEvent::StyleChange: {
+        QStyleOptionSlider opt;
+        initStyleOption(&opt);
+        d_func()->setTransient(style()->styleHint(QStyle::SH_ScrollBar_Transient, &opt, this));
         break;
+    }
     case QEvent::Timer:
         if (static_cast<QTimerEvent *>(event)->timerId() == d->flashTimer) {
-            if (d->flashed && style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, this)) {
+            QStyleOptionSlider opt;
+            initStyleOption(&opt);
+            if (d->flashed && style()->styleHint(QStyle::SH_ScrollBar_Transient, &opt, this)) {
                 d->flashed = false;
                 update();
             }
