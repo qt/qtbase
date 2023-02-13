@@ -329,21 +329,24 @@ void QAbstractScrollAreaPrivate::layoutChildren()
 void QAbstractScrollAreaPrivate::layoutChildren_helper(bool *needHorizontalScrollbar, bool *needVerticalScrollbar)
 {
     Q_Q(QAbstractScrollArea);
-    bool htransient = hbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, hbar);
+    QStyleOptionSlider barOpt;
+
+    hbar->initStyleOption(&barOpt);
+    bool htransient = hbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, &barOpt, hbar);
     bool needh = *needHorizontalScrollbar || ((hbarpolicy != Qt::ScrollBarAlwaysOff) && ((hbarpolicy == Qt::ScrollBarAlwaysOn && !htransient)
                             || ((hbarpolicy == Qt::ScrollBarAsNeeded || htransient)
                             && hbar->minimum() < hbar->maximum() && !hbar->sizeHint().isEmpty())));
+    const int hscrollOverlap = hbar->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarOverlap, &barOpt, hbar);
 
-    bool vtransient = vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, vbar);
+    vbar->initStyleOption(&barOpt);
+    bool vtransient = vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, &barOpt, vbar);
     bool needv = *needVerticalScrollbar || ((vbarpolicy != Qt::ScrollBarAlwaysOff) && ((vbarpolicy == Qt::ScrollBarAlwaysOn && !vtransient)
                             || ((vbarpolicy == Qt::ScrollBarAsNeeded || vtransient)
                             && vbar->minimum() < vbar->maximum() && !vbar->sizeHint().isEmpty())));
+    const int vscrollOverlap = vbar->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarOverlap, &barOpt, vbar);
 
     QStyleOption opt(0);
     opt.initFrom(q);
-
-    const int hscrollOverlap = hbar->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarOverlap, &opt, hbar);
-    const int vscrollOverlap = vbar->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarOverlap, &opt, vbar);
 
     const int hsbExt = hbar->sizeHint().height();
     const int vsbExt = vbar->sizeHint().width();
@@ -1376,10 +1379,14 @@ bool QAbstractScrollAreaPrivate::canStartScrollingAt(const QPoint &startPos) con
 
 void QAbstractScrollAreaPrivate::flashScrollBars()
 {
-    bool htransient = hbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, hbar);
+    QStyleOptionSlider opt;
+    hbar->initStyleOption(&opt);
+
+    bool htransient = hbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, &opt, hbar);
     if ((hbarpolicy != Qt::ScrollBarAlwaysOff) && (hbarpolicy == Qt::ScrollBarAsNeeded || htransient))
         hbar->d_func()->flash();
-    bool vtransient = vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, vbar);
+    vbar->initStyleOption(&opt);
+    bool vtransient = vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, &opt, vbar);
     if ((vbarpolicy != Qt::ScrollBarAlwaysOff) && (vbarpolicy == Qt::ScrollBarAsNeeded || vtransient))
         vbar->d_func()->flash();
 }
