@@ -504,29 +504,29 @@ QRegion QWindowsVistaStylePrivate::region(QWindowsThemeData &themeData)
     QRegion region;
 
     if (success) {
-        const auto numBytes = GetRegionData(dest, 0, nullptr);
-        if (numBytes == 0)
-            return QRegion();
-
-        char *buf = new (std::nothrow) char[numBytes];
-        if (!buf)
-            return QRegion();
-
-        RGNDATA *rd = reinterpret_cast<RGNDATA*>(buf);
-        if (GetRegionData(dest, numBytes, rd) == 0) {
-            delete [] buf;
-            return QRegion();
+        QVarLengthArray<char> buf(256);
+        RGNDATA *rd = reinterpret_cast<RGNDATA *>(buf.data());
+        if (GetRegionData(dest, buf.size(), rd) == 0) {
+            const auto numBytes = GetRegionData(dest, 0, nullptr);
+            if (numBytes > 0) {
+                buf.resize(numBytes);
+                rd = reinterpret_cast<RGNDATA *>(buf.data());
+                if (GetRegionData(dest, numBytes, rd) == 0)
+                    rd = nullptr;
+            } else {
+                rd = nullptr;
+            }
         }
-
-        RECT *r = reinterpret_cast<RECT*>(rd->Buffer);
-        for (uint i = 0; i < rd->rdh.nCount; ++i) {
-            QRect rect;
-            rect.setCoords(int(r->left * factor), int(r->top * factor), int((r->right - 1) * factor), int((r->bottom - 1) * factor));
-            ++r;
-            region |= rect;
+        if (rd) {
+            RECT *r = reinterpret_cast<RECT *>(rd->Buffer);
+            for (uint i = 0; i < rd->rdh.nCount; ++i) {
+                QRect rect;
+                rect.setCoords(int(r->left * factor), int(r->top * factor),
+                               int((r->right - 1) * factor), int((r->bottom - 1) * factor));
+                ++r;
+                region |= rect;
+            }
         }
-
-        delete [] buf;
     }
 
     DeleteObject(hRgn);
