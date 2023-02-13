@@ -10,6 +10,8 @@
 
 #include <QtCore/qtconfiginclude.h>
 
+#include <assert.h>
+
 /*
    The Qt modules' export macros.
    The options are:
@@ -58,7 +60,7 @@
         1: The feature is available
 */
 #define QT_CONFIG(feature) (1/QT_FEATURE_##feature == 1)
-#define QT_REQUIRE_CONFIG(feature) Q_STATIC_ASSERT_X(QT_FEATURE_##feature == 1, "Required feature " #feature " for file " __FILE__ " not available.")
+#define QT_REQUIRE_CONFIG(feature) static_assert(QT_FEATURE_##feature == 1, "Required feature " #feature " for file " __FILE__ " not available.")
 
 /* moc compats (signals/slots) */
 #ifndef QT_MOC_COMPAT

@@ -11,6 +11,8 @@
 #ifdef __cplusplus
 #  include <cstddef>
 #  include <cstdint>
+#else
+#  include <assert.h>
 #endif
 
 #if 0
@@ -58,7 +60,7 @@ typedef quint64 qulonglong;
 
 #ifndef __cplusplus
 // In C++ mode, we define below using QIntegerForSize template
-Q_STATIC_ASSERT_X(sizeof(ptrdiff_t) == sizeof(size_t), "Weird ptrdiff_t and size_t definitions");
+static_assert(sizeof(ptrdiff_t) == sizeof(size_t), "Weird ptrdiff_t and size_t definitions");
 typedef ptrdiff_t qptrdiff;
 typedef ptrdiff_t qsizetype;
 typedef ptrdiff_t qintptr;
