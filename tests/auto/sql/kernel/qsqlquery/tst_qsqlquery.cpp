@@ -2920,6 +2920,7 @@ void tst_QSqlQuery::psql_specialFloatValues()
     CHECK_DATABASE(db);
     QSqlQuery query(db);
     const QString tableName = qTableName("floattest", __FILE__, db);
+    const auto wrapup = qScopeGuard([&]() { tst_Databases::safeDropTable(db, tableName); });
     QVERIFY_SQL(query, exec(QLatin1String("create table %1 (value float)").arg(tableName)));
     QVERIFY_SQL(query, prepare(QLatin1String("insert into %1 values(:value)").arg(tableName)));
 

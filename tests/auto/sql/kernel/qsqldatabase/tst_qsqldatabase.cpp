@@ -1080,8 +1080,8 @@ void tst_QSqlDatabase::bigIntField()
         QVERIFY_SQL(q, exec("create table " + qtest_bigint + "(id int, t_s64bit bigint, t_u64bit bigint)"));
     } else if (dbType == QSqlDriver::Oracle) {
         QVERIFY_SQL(q, exec("create table " + qtest_bigint + " (id int, t_s64bit int, t_u64bit int)"));
-    //} else if (dbType == QSqlDriver::Interbase) {
-    //    QVERIFY_SQL(q, exec("create table " + qtest_bigint + " (id int, t_s64bit int64, t_u64bit int64)"));
+    } else if (dbType == QSqlDriver::SQLite) {
+        QVERIFY_SQL(q, exec("create table " + qtest_bigint + " (id int, t_s64bit int, t_u64bit int)"));
     } else {
         QSKIP("no 64 bit integer support");
     }
@@ -2312,6 +2312,10 @@ void tst_QSqlDatabase::cloneDatabase()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const auto wrapup = qScopeGuard([&]() {
+        QSqlDatabase::removeDatabase("clonedDatabase");
+        QSqlDatabase::removeDatabase("clonedDatabaseCopy");
+    });
     {
         QSqlDatabase clonedDatabase = QSqlDatabase::cloneDatabase(db, "clonedDatabase");
         QCOMPARE(clonedDatabase.databaseName(), db.databaseName());
@@ -2353,6 +2357,7 @@ public slots:
         QSqlDatabase invalidDb = QSqlDatabase::database("invalid");
         QVERIFY(!invalidDb.isValid());
 
+        const auto wrapup = qScopeGuard([&]() { QSqlDatabase::removeDatabase("CloneDB"); });
         {
             QSqlDatabase clonedDatabase = QSqlDatabase::cloneDatabase(dbName, "CloneDB");
             QVERIFY(!clonedDatabase.isOpen());
