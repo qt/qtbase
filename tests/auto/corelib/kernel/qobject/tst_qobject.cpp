@@ -58,6 +58,7 @@ private slots:
     void connectNotify_connectSlotsByName();
     void connectDisconnectNotify_shadowing();
     void connectReferenceToIncompleteTypes();
+    void connectAutoQueuedIncomplete();
     void emitInDefinedOrder();
     void customTypes();
     void streamCustomTypes();
@@ -891,6 +892,42 @@ void tst_QObject::connectReferenceToIncompleteTypes() {
     auto connection = QObject::connect(&withIncomplete, &QObjectWithIncomplete::signalWithIncomplete,
                                        &withIncomplete, &QObjectWithIncomplete::slotWithIncomplete);
     QVERIFY(connection);
+}
+
+struct Incomplete2;
+class QObjectWithIncomplete2 : public QObject {
+    Q_OBJECT
+
+public:
+    QObjectWithIncomplete2(QObject *parent=nullptr) : QObject(parent) {}
+signals:
+    void signalWithIncomplete(Incomplete2 *ptr);
+public slots:
+    void slotWithIncomplete(Incomplete2 *) { calledSlot = true; }
+    void run() { Q_EMIT signalWithIncomplete(nullptr); }
+public:
+    bool calledSlot = false;
+};
+
+void tst_QObject::connectAutoQueuedIncomplete()
+{
+    auto objectWithIncomplete1 = new QObjectWithIncomplete2();
+    auto objectWithIncomplete2 = new QObjectWithIncomplete2();
+    auto t = new QThread(this);
+    auto cleanup = qScopeGuard([&](){
+        t->quit();
+        QVERIFY(t->wait());
+        delete objectWithIncomplete1;
+        delete objectWithIncomplete2;
+    });
+
+    t->start();
+    objectWithIncomplete2->moveToThread(t);
+
+    connect(objectWithIncomplete2, &QObjectWithIncomplete2::signalWithIncomplete,
+            objectWithIncomplete1, &QObjectWithIncomplete2::slotWithIncomplete);
+    QMetaObject::invokeMethod(objectWithIncomplete2, "run", Qt::QueuedConnection);
+    QTRY_VERIFY(objectWithIncomplete1->calledSlot);
 }
 
 static void connectDisconnectNotifyTestSlot() {}
