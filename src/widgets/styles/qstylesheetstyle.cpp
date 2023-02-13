@@ -5103,7 +5103,7 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
         break;
 
     case PM_ScrollView_ScrollBarOverlap:
-        if (!rule.hasNativeBorder() || rule.hasBox())
+        if (!proxy()->styleHint(SH_ScrollBar_Transient, opt, w))
             return 0;
         break;
 #endif // QT_CONFIG(scrollbar)
@@ -5713,7 +5713,7 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
         case SH_TitleBar_ShowToolTipsOnButtons: s = "titlebar-show-tooltips-on-buttons"_L1; break;
         case SH_Widget_Animation_Duration: s = "widget-animation-duration"_L1; break;
         case SH_ScrollBar_Transient:
-            if (!rule.hasNativeBorder() || rule.hasBox())
+            if (!rule.hasNativeBorder() || rule.hasBox() || rule.hasDrawable())
                 return 0;
             break;
         default: break;
