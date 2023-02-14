@@ -75,6 +75,9 @@
  *      - QByteArray
  *      - QUrl
  *      - QRect
+ *      - QRectF
+ *      - QSize
+ *      - QSizeF
  *
  * Dynamic arrays are supported using the syntax illustrated by
  * qcoreapplication_baz above.
@@ -218,6 +221,11 @@ QT_BEGIN_NAMESPACE
  *                        ...
  *                       "} QImage::Format;" \
  *                       );
+ *
+ *       If the content of enum is empty or contains keyword AUTO, then the tracepointgen tool
+ *       tries to find the enumeration from header files.
+ *
+ *       Q_TRACE_METADATA(qtcore, "ENUM { AUTO, RANGE User ... MaxUser } QEvent::Type;");
  */
 #define Q_TRACE_INSTRUMENT(provider)
 #define Q_TRACE_PARAM_REPLACE(in, out)
