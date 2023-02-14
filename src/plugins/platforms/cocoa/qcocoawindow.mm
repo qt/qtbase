@@ -1535,11 +1535,6 @@ void QCocoaWindow::recreateWindowIfNeeded()
         setOpacity(opacity);
 
     setMask(QHighDpi::toNativeLocalRegion(window()->mask(), window()));
-
-    // top-level QWindows may have an attached NSToolBar, call
-    // update function which will attach to the NSWindow.
-    if (!parentWindow && !isEmbeddedView)
-        updateNSToolbar();
 }
 
 void QCocoaWindow::requestUpdate()
@@ -1900,21 +1895,6 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
     [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMinYEdge];
 
     [[[window contentView] superview] setNeedsDisplay:YES];
-}
-
-void QCocoaWindow::updateNSToolbar()
-{
-    if (!isContentView())
-        return;
-
-    NSToolbar *toolbar = QCocoaIntegration::instance()->toolbar(window());
-    const NSWindow *window = m_view.window;
-
-    if (window.toolbar == toolbar)
-       return;
-
-    window.toolbar = toolbar;
-    window.showsToolbarButton = YES;
 }
 
 bool QCocoaWindow::testContentBorderAreaPosition(int position) const

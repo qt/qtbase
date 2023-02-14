@@ -164,7 +164,6 @@ public:
     void setContentBorderEnabled(bool enable) override;
     bool testContentBorderAreaPosition(int position) const;
     void applyContentBorderThickness(NSWindow *window = nullptr);
-    void updateNSToolbar();
 
     qreal devicePixelRatio() const override;
     QWindow *childWindowAt(QPoint windowPoint);
