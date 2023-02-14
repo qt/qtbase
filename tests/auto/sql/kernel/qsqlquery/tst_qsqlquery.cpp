@@ -2132,6 +2132,12 @@ void tst_QSqlQuery::prepare_bind_exec()
             QCOMPARE(m.size(), qsizetype(2));
             QCOMPARE(m.at(0).toInt(), i);
             QCOMPARE(m.at(1).toString(), values[i]);
+            const QStringList n = q.boundValueNames();
+            QCOMPARE(n.size(), 2);
+            QCOMPARE(n.at(0), ":id");
+            QCOMPARE(n.at(1), ":name");
+            QCOMPARE(q.boundValueName(0), ":id");
+            QCOMPARE(q.boundValueName(1), ":name");
         }
 
         q.bindValue(":id", 8);

@@ -838,10 +838,24 @@ void QSqlResult::resetBindCount()
 }
 
 /*!
+    Returns the names of all bound values.
+
+    \sa boundValue(), boundValueName()
+ */
+QStringList QSqlResult::boundValueNames() const
+{
+    Q_D(const QSqlResult);
+    QList<QString> ret;
+    for (const QHolder &holder : std::as_const(d->holders))
+        ret.push_back(holder.holderName);
+    return ret;
+}
+
+/*!
     Returns the name of the bound value at position \a index in the
     current record (row).
 
-    \sa boundValue()
+    \sa boundValue(), boundValueNames()
 */
 QString QSqlResult::boundValueName(int index) const
 {

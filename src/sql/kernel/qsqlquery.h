@@ -89,6 +89,8 @@ public:
     QVariant boundValue(const QString& placeholder) const;
     QVariant boundValue(int pos) const;
     QVariantList boundValues() const;
+    QStringList boundValueNames() const;
+    QString boundValueName(int pos) const;
     QString executedQuery() const;
     QVariant lastInsertId() const;
     void finish();

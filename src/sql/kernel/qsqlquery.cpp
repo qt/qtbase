@@ -1138,6 +1138,7 @@ QVariant QSqlQuery::boundValue(const QString& placeholder) const
 
 /*!
   Returns the value for the placeholder at position \a pos.
+  \sa boundValues()
 */
 QVariant QSqlQuery::boundValue(int pos) const
 {
@@ -1156,13 +1157,43 @@ QVariant QSqlQuery::boundValue(int pos) const
 
   \snippet sqldatabase/sqldatabase.cpp 14
 
-  \sa boundValue(), bindValue(), addBindValue()
+  \sa boundValue(), bindValue(), addBindValue(), boundValueNames()
 */
 
 QVariantList QSqlQuery::boundValues() const
 {
     const QVariantList values(d->sqlResult->boundValues());
     return values;
+}
+
+/*!
+  \since 6.6
+
+  Returns the names of all bound values.
+
+  The order of the list is in binding order, irrespective of whether
+  named or positional binding is used.
+
+  \sa boundValues(), boundValueName()
+*/
+QStringList QSqlQuery::boundValueNames() const
+{
+    return d->sqlResult->boundValueNames();
+}
+
+/*!
+  \since 6.6
+
+  Returns the bound value name at position \a pos.
+
+  The order of the list is in binding order, irrespective of whether
+  named or positional binding is used.
+
+  \sa boundValueNames()
+*/
+QString QSqlQuery::boundValueName(int pos) const
+{
+    return d->sqlResult->boundValueName(pos);
 }
 
 /*!
