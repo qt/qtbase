@@ -576,10 +576,10 @@ void tst_QSqlTableModel::setRecord()
     CHECK_DATABASE(db);
     const auto test3 = qTableName("test3", __FILE__, db);
 
-    QList<QSqlTableModel::EditStrategy> policies = QList<QSqlTableModel::EditStrategy>() << QSqlTableModel::OnFieldChange << QSqlTableModel::OnRowChange << QSqlTableModel::OnManualSubmit;
+    const auto policies = { QSqlTableModel::OnFieldChange, QSqlTableModel::OnRowChange, QSqlTableModel::OnManualSubmit };
 
     QString Xsuffix;
-    foreach( QSqlTableModel::EditStrategy submitpolicy, policies) {
+    for (QSqlTableModel::EditStrategy submitpolicy : policies) {
 
         QSqlTableModel model(0, db);
         model.setEditStrategy((QSqlTableModel::EditStrategy)submitpolicy);

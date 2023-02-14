@@ -81,13 +81,13 @@ void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
 
 void tst_QSqlDriver::initTestCase()
 {
-    foreach (const QString &dbname, dbs.dbNames)
+    for (const QString &dbname : std::as_const(dbs.dbNames))
         recreateTestTables(QSqlDatabase::database(dbname));
 }
 
 void tst_QSqlDriver::cleanupTestCase()
 {
-    foreach (const QString &dbName, dbs.dbNames) {
+    for (const QString &dbName : std::as_const(dbs.dbNames)) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
         QStringList tables = {qTableName("relTEST1", __FILE__, db)};
         const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);

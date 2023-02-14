@@ -133,8 +133,8 @@ void tst_QSqlRelationalTableModel::recreateTestTables(QSqlDatabase db)
 
 void tst_QSqlRelationalTableModel::initTestCase()
 {
-    foreach (const QString &dbname, dbs.dbNames) {
-        QSqlDatabase db = QSqlDatabase::database(dbname);
+    for (const QString &dbName : std::as_const(dbs.dbNames)) {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
         QSqlQuery q(db);
         QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         if (dbType == QSqlDriver::Interbase) {
@@ -151,7 +151,7 @@ void tst_QSqlRelationalTableModel::initTestCase()
 
 void tst_QSqlRelationalTableModel::cleanupTestCase()
 {
-    foreach (const QString &dbName, dbs.dbNames) {
+    for (const QString &dbName : std::as_const(dbs.dbNames)) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
         CHECK_DATABASE( db );
         dropTestTables( QSqlDatabase::database(dbName) );

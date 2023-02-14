@@ -289,23 +289,22 @@ public:
     }
 
     // drop a table only if it exists to prevent warnings
-    static void safeDropTables( QSqlDatabase db, const QStringList& tableNames )
+    static void safeDropTables(QSqlDatabase db, const QStringList &tableNames)
     {
-        bool wasDropped;
-        QSqlQuery q( db );
-        QStringList dbtables=db.tables();
+        QSqlQuery q(db);
+        QStringList dbtables = db.tables();
         QSqlDriver::DbmsType dbType = getDatabaseType(db);
-        foreach(const QString &tableName, tableNames)
+        for (const QString &tableName : tableNames)
         {
-            wasDropped = true;
-            QString table=tableName;
-            if ( db.driver()->isIdentifierEscaped(table, QSqlDriver::TableName))
+            bool wasDropped = true;
+            QString table = tableName;
+            if (db.driver()->isIdentifierEscaped(table, QSqlDriver::TableName))
                 table = db.driver()->stripDelimiters(table, QSqlDriver::TableName);
 
-            if ( dbtables.contains( table, Qt::CaseInsensitive ) ) {
-                foreach(const QString &table2, dbtables.filter(table, Qt::CaseInsensitive)) {
-                    if(table2.compare(table.section('.', -1, -1), Qt::CaseInsensitive) == 0) {
-                        table=db.driver()->escapeIdentifier(table2, QSqlDriver::TableName);
+            if (dbtables.contains(table, Qt::CaseInsensitive)) {
+                for (const QString &table2 : dbtables.filter(table, Qt::CaseInsensitive)) {
+                    if (table2.compare(table.section('.', -1, -1), Qt::CaseInsensitive) == 0) {
+                        table = db.driver()->escapeIdentifier(table2, QSqlDriver::TableName);
                         if (dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::MimerSQL)
                             wasDropped = q.exec( "drop table " + table + " cascade");
                         else
@@ -314,7 +313,7 @@ public:
                     }
                 }
             }
-            if ( !wasDropped ) {
+            if (!wasDropped) {
                 qWarning() << dbToString(db) << "unable to drop table" << tableName << ':' << q.lastError();
 //              qWarning() << "last query:" << q.lastQuery();
 //              qWarning() << "dbtables:" << dbtables;
@@ -323,38 +322,36 @@ public:
         }
     }
 
-    static void safeDropTable( QSqlDatabase db, const QString& tableName )
+    static void safeDropTable(QSqlDatabase db, const QString &tableName)
     {
-        safeDropTables(db, QStringList() << tableName);
+        safeDropTables(db, {tableName});
     }
 
-    static void safeDropViews( QSqlDatabase db, const QStringList &viewNames )
+    static void safeDropViews(QSqlDatabase db, const QStringList &viewNames)
     {
-        if ( isMSAccess( db ) ) // Access is sooo stupid.
-            safeDropTables( db, viewNames );
+        if (isMSAccess(db)) // Access is sooo stupid.
+            safeDropTables(db, viewNames);
 
-        bool wasDropped;
-        QSqlQuery q( db );
-        QStringList dbtables=db.tables(QSql::Views);
-
-        foreach(QString viewName, viewNames)
+        QSqlQuery q(db);
+        QStringList dbtables = db.tables(QSql::Views);
+        for (const QString &viewName : viewNames)
         {
-            wasDropped = true;
-            QString view=viewName;
-            if ( db.driver()->isIdentifierEscaped(view, QSqlDriver::TableName))
+            bool wasDropped = true;
+            QString view = viewName;
+            if (db.driver()->isIdentifierEscaped(view, QSqlDriver::TableName))
                 view = db.driver()->stripDelimiters(view, QSqlDriver::TableName);
 
-            if ( dbtables.contains( view, Qt::CaseInsensitive ) ) {
-                foreach(const QString &view2, dbtables.filter(view, Qt::CaseInsensitive)) {
-                    if(view2.compare(view.section('.', -1, -1), Qt::CaseInsensitive) == 0) {
-                        view=db.driver()->escapeIdentifier(view2, QSqlDriver::TableName);
-                        wasDropped = q.exec( "drop view " + view);
+            if (dbtables.contains(view, Qt::CaseInsensitive))  {
+                for (const QString &view2 : dbtables.filter(view, Qt::CaseInsensitive)) {
+                    if (view2.compare(view.section('.', -1, -1), Qt::CaseInsensitive) == 0) {
+                        view = db.driver()->escapeIdentifier(view2, QSqlDriver::TableName);
+                        wasDropped = q.exec("drop view " + view);
                         dbtables.removeAll(view);
                     }
                 }
             }
 
-            if ( !wasDropped )
+            if (!wasDropped)
                 qWarning() << dbToString(db) << "unable to drop view" << viewName << ':' << q.lastError();
 //                  << "\nlast query:" << q.lastQuery()
 //                  << "\ndbtables:" << dbtables
