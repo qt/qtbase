@@ -355,19 +355,10 @@ void QStatusBar::removeWidget(QWidget *widget)
         return;
 
     Q_D(QStatusBar);
-    bool found = false;
-    for (int i = 0; i < d->items.size(); ++i) {
-        const auto &item = d->items.at(i);
-        if (item.widget == widget) {
-            d->items.removeAt(i);
-            item.widget->hide();
-            found = true;
-            break;
-        }
-    }
-
-    if (found)
+    if (d->items.removeIf([widget](const auto &item) { return item.widget == widget; })) {
+        widget->hide();
         reformat();
+    }
 #if defined(QT_DEBUG)
     else
         qDebug("QStatusBar::removeWidget(): Widget not found.");
