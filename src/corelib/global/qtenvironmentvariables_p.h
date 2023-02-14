@@ -31,6 +31,7 @@ QT_BEGIN_NAMESPACE
 Q_CORE_EXPORT void qTzSet();
 Q_CORE_EXPORT time_t qMkTime(struct tm *when);
 Q_CORE_EXPORT bool qLocalTime(time_t utc, struct tm *local);
+Q_CORE_EXPORT QString qTzName(int dstIndex);
 
 QT_END_NAMESPACE
 

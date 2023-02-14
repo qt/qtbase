@@ -392,4 +392,33 @@ bool qLocalTime(time_t utc, struct tm *local)
 #endif
 }
 
+/* Access to the tzname[] global in one thread is UB if any other is calling
+   tzset() or anything that behaves as if it called tzset(). So also lock this
+   access to prevent such collisions.
+
+   Parameter dstIndex must be 1 for DST or 0 for standard time.
+   Returns the relevant form of the name of local-time's zone.
+*/
+QString qTzName(int dstIndex)
+{
+    char name[512];
+    bool ok;
+#if defined(Q_CC_MSVC)
+    size_t s = 0;
+    {
+        const auto locker = qt_scoped_lock(environmentMutex);
+        ok = _get_tzname(&s, name, 512, dstIndex) != 0;
+    }
+#else
+    {
+        const auto locker = qt_scoped_lock(environmentMutex);
+        const char *const src = tzname[dstIndex];
+        ok = src != nullptr;
+        if (ok)
+            memcpy(name, src, std::min(sizeof(name), strlen(src) + 1));
+    }
+#endif // Q_OS_WIN
+    return ok ? QString::fromLocal8Bit(name) : QString();
+}
+
 QT_END_NAMESPACE

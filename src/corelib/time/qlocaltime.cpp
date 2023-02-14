@@ -165,42 +165,7 @@ struct tm timeToTm(qint64 localDay, int secs, QDateTimePrivate::DaylightStatus d
     return local;
 }
 
-// Returns the tzname, assume tzset has been called already
-QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
-{
-    int isDst = (daylightStatus == QDateTimePrivate::DaylightTime) ? 1 : 0;
-#if defined(Q_CC_MSVC)
-    size_t s = 0;
-    char name[512];
-    if (_get_tzname(&s, name, 512, isDst))
-        return QString();
-    return QString::fromLocal8Bit(name);
-#else
-    return QString::fromLocal8Bit(tzname[isDst]);
-#endif // Q_OS_WIN
-}
-
 } // namespace
-
-#if QT_CONFIG(datetimeparser)
-/*
-  \internal
-  Implemented here to share qt_tzname()
-*/
-int QDateTimeParser::startsWithLocalTimeZone(QStringView name)
-{
-    QDateTimePrivate::DaylightStatus zones[2] = {
-        QDateTimePrivate::StandardTime,
-        QDateTimePrivate::DaylightTime
-    };
-    for (const auto z : zones) {
-        QString zone(qt_tzname(z));
-        if (name.startsWith(zone))
-            return zone.size();
-    }
-    return 0;
-}
-#endif // datetimeparser
 
 namespace QLocalTime {
 
@@ -319,8 +284,7 @@ QString localTimeAbbbreviationAt(qint64 local, QDateTimePrivate::DaylightStatus 
     time_t utcSecs;
     if (!callMkTime(&tmLocal, &utcSecs))
         return {};
-    return qt_tzname(tmLocal.tm_isdst > 0 ? QDateTimePrivate::DaylightTime
-                                          : QDateTimePrivate::StandardTime);
+    return qTzName(tmLocal.tm_isdst > 0 ? 1 : 0);
 }
 
 QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::DaylightStatus dst)

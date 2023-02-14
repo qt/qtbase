@@ -3,7 +3,6 @@
 
 #include "qplatformdefs.h"
 #include "private/qdatetimeparser_p.h"
-#include "private/qstringiterator_p.h"
 
 #include "qdatastream.h"
 #include "qdatetime.h"
@@ -12,6 +11,9 @@
 #include "qset.h"
 #include "qtimezone.h"
 #include "qvarlengtharray.h"
+
+#include "private/qstringiterator_p.h"
+#include "private/qtenvironmentvariables_p.h"
 
 //#define QDATETIMEPARSER_DEBUG
 #if defined (QDATETIMEPARSER_DEBUG) && !defined(QT_NO_DEBUG_STREAM)
@@ -1138,6 +1140,19 @@ static QTime actualTime(QDateTimeParser::Sections known,
     }
     actual = QTime(hour, minute, second, msec);
     return actual;
+}
+
+/*
+  \internal
+*/
+static int startsWithLocalTimeZone(QStringView name)
+{
+    for (int i = 0; i < 2; ++i) {
+        const QString zone(qTzName(i));
+        if (name.startsWith(zone))
+            return zone.size();
+    }
+    return 0;
 }
 
 /*!

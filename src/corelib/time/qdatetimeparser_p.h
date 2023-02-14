@@ -177,8 +177,6 @@ private:
     ParsedSection findTimeZoneName(QStringView str, const QDateTime &when) const;
     ParsedSection findTimeZone(QStringView str, const QDateTime &when,
                                int maxVal, int minVal, int mode) const;
-    // Implemented in qlocaltime.cpp:
-    static int startsWithLocalTimeZone(const QStringView name);
 
     enum AmPmFinder {
         Neither = -1,
