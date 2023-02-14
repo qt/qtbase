@@ -268,6 +268,7 @@ class QVarLengthArray
     friend class QVarLengthArray;
     using Base = QVLABase<T>;
     using Storage = QVLAStorage<sizeof(T), alignof(T), Prealloc>;
+    static_assert(Prealloc > 0, "QVarLengthArray Prealloc must be greater than 0.");
     static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
     using Base::verify;
 
@@ -673,7 +674,6 @@ template <class T, qsizetype Prealloc>
 Q_INLINE_TEMPLATE QVarLengthArray<T, Prealloc>::QVarLengthArray(qsizetype asize)
 {
     this->s = asize;
-    static_assert(Prealloc > 0, "QVarLengthArray Prealloc must be greater than 0.");
     Q_ASSERT_X(size() >= 0, "QVarLengthArray::QVarLengthArray()", "Size must be greater than or equal to 0.");
     if (size() > Prealloc) {
         this->ptr = malloc(size() * sizeof(T));
