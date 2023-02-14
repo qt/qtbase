@@ -172,59 +172,47 @@ QString QStandardPaths::writableLocation(StandardLocation type)
 
 QStringList QStandardPaths::standardLocations(StandardLocation type)
 {
+    QStringList locations;
+
     if (type == MusicLocation) {
-        return QStringList() << writableLocation(type)
-                             << getExternalFilesDir("DIRECTORY_MUSIC")
-                             << getExternalFilesDir("DIRECTORY_PODCASTS")
-                             << getExternalFilesDir("DIRECTORY_NOTIFICATIONS")
-                             << getExternalFilesDir("DIRECTORY_ALARMS");
-    }
-
-    if (type == MoviesLocation) {
-        return QStringList() << writableLocation(type)
-                             << getExternalFilesDir("DIRECTORY_MOVIES");
-    }
-
-    if (type == PicturesLocation) {
-        return QStringList()  << writableLocation(type)
-                              << getExternalFilesDir("DIRECTORY_PICTURES");
-    }
-
-    if (type == DocumentsLocation) {
-        return QStringList() << writableLocation(type)
-                             << getExternalFilesDir("DIRECTORY_DOCUMENTS");
-    }
-
-    if (type == DownloadLocation) {
-        return QStringList() << writableLocation(type)
-                             << getExternalFilesDir("DIRECTORY_DOWNLOADS");
-    }
-
-    if (type == AppDataLocation || type == AppLocalDataLocation) {
-        return QStringList() << writableLocation(type)
-                             << getExternalFilesDir();
-    }
-
-    if (type == CacheLocation) {
-        return QStringList() << writableLocation(type)
-                             << getExternalCacheDir();
-    }
-
-    if (type == FontsLocation) {
+        locations << getExternalFilesDir("DIRECTORY_MUSIC")
+                  << getExternalFilesDir("DIRECTORY_PODCASTS")
+                  << getExternalFilesDir("DIRECTORY_NOTIFICATIONS")
+                  << getExternalFilesDir("DIRECTORY_ALARMS");
+    } else if (type == MoviesLocation) {
+        locations << getExternalFilesDir("DIRECTORY_MOVIES");
+    } else if (type == PicturesLocation) {
+        locations << getExternalFilesDir("DIRECTORY_PICTURES");
+    } else if (type == DocumentsLocation) {
+        locations << getExternalFilesDir("DIRECTORY_DOCUMENTS");
+    } else if (type == DownloadLocation) {
+        locations << getExternalFilesDir("DIRECTORY_DOWNLOADS");
+    } else if (type == AppDataLocation || type == AppLocalDataLocation) {
+        locations << getExternalFilesDir();
+    } else if (type == CacheLocation) {
+        locations << getExternalCacheDir();
+    } else if (type == FontsLocation) {
         QString &fontLocation = (*androidDirCache)[QStringLiteral("FONT_LOCATION")];
-        if (!fontLocation.isEmpty())
-            return QStringList(fontLocation);
-
-        const QByteArray ba = qgetenv("QT_ANDROID_FONT_LOCATION");
-        if (!ba.isEmpty())
-            return QStringList((fontLocation = QDir::cleanPath(QString::fromLocal8Bit(ba))));
-
-        // Don't cache the fallback, as we might just have been called before
-        // QT_ANDROID_FONT_LOCATION has been set.
-        return QStringList("/system/fonts"_L1);
+        if (!fontLocation.isEmpty()) {
+            locations << fontLocation;
+        } else {
+            const QByteArray ba = qgetenv("QT_ANDROID_FONT_LOCATION");
+            if (!ba.isEmpty()) {
+                locations << (fontLocation = QDir::cleanPath(QString::fromLocal8Bit(ba)));
+            } else {
+                // Don't cache the fallback, as we might just have been called before
+                // QT_ANDROID_FONT_LOCATION has been set.
+                locations << "/system/fonts"_L1;
+            }
+        }
     }
 
-    return QStringList(writableLocation(type));
+    const QString writable = writableLocation(type);
+    if (!writable.isEmpty())
+        locations.prepend(writable);
+
+    locations.removeDuplicates();
+    return locations;
 }
 
 QT_END_NAMESPACE
