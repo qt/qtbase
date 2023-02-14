@@ -23,6 +23,7 @@ private slots:
     void tempMessage();
     void insertWidget();
     void insertPermanentWidget();
+    void removeWidget();
     void setSizeGripEnabled();
     void task194017_hiddenWidget();
     void QTBUG4334_hiddenOnMaximizedWindow();
@@ -102,6 +103,49 @@ void tst_QStatusBar::insertPermanentWidget()
     QCOMPARE(sb.insertWidget(1, new QLabel("foo")), 1);
     QTest::ignoreMessage(QtWarningMsg, "QStatusBar::insertPermanentWidget: Index out of range (1), appending widget");
     QCOMPARE(sb.insertPermanentWidget(1, new QLabel("foo")), 6);
+}
+
+void tst_QStatusBar::removeWidget()
+{
+    QStatusBar sb;
+    std::vector<std::unique_ptr<QLabel>> widgets;
+    std::vector<bool> states;
+    for (int i = 0; i < 10; ++i) {
+        const QString text = i > 5 ? QString("p_%1").arg(i) : QString::number(i);
+        widgets.push_back(std::make_unique<QLabel>(text));
+        states.push_back(true);
+    }
+
+    for (auto &&widget : widgets) {
+        if (widget->text().startsWith("p_"))
+            sb.addPermanentWidget(widget.get());
+        else
+            sb.addWidget(widget.get());
+    }
+    sb.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&sb));
+
+    auto checkStates = [&]{
+        for (size_t index = 0; index < std::size(widgets); ++index) {
+            if (widgets.at(index)->isVisible() != states.at(index)) {
+                qCritical("Mismatch for widget at index %zu\n"
+                          "\tActual  : %s\n"
+                          "\tExpected: %s",
+                          index, widgets.at(index)->isVisible() ? "true" : "false",
+                          states.at(index) ? "true" : "false");
+                return false;
+            }
+        }
+        return true;
+    };
+
+    QVERIFY(checkStates());
+    // remove every widget except the first to trigger unstable reference
+    for (size_t i = 2; i < std::size(widgets); ++i) {
+        sb.removeWidget(widgets[i].get());
+        states[i] = false;
+        QVERIFY2(checkStates(), qPrintable(QString("Failure at index %1").arg(i)));
+    }
 }
 
 void tst_QStatusBar::setSizeGripEnabled()
