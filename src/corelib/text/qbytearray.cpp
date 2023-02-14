@@ -4846,7 +4846,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 #if defined(Q_OS_WASM) || defined(Q_QDOC)
 
 /*!
-    \brief Constructs a new QByteArray containing a copy of the Uint8Array \a uint8array.
+    Constructs a new QByteArray containing a copy of the Uint8Array \a uint8array.
 
     This function transfers data from a JavaScript data buffer - which
     is not addressable from C++ code - to heap memory owned by a QByteArray.
@@ -4862,7 +4862,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
     exceeds the maximum capacity of QByteArray, or if the \a uint8array
     argument is not of the Uint8Array type.
 
-    \since 6.4
+    \since 6.5
     \ingroup platform-type-conversions
 
     \sa toUint8Array()
@@ -4874,7 +4874,7 @@ QByteArray QByteArray::fromUint8Array(emscripten::val uint8array)
 }
 
 /*!
-    \brief Creates a Uint8Array from a QByteArray
+    Creates a Uint8Array from a QByteArray.
 
     This function transfers data from heap memory owned by a QByteArray
     to a JavaScript data buffer. The function allocates and copies into an
@@ -4885,7 +4885,7 @@ QByteArray QByteArray::fromUint8Array(emscripten::val uint8array)
 
     \snippet code/src_corelib_text_qbytearray.cpp 56
 
-    \since 6.4
+    \since 6.5
     \ingroup platform-type-conversions
 
     \sa toUint8Array()
