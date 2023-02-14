@@ -330,13 +330,17 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, const QFileInfoList 
 
         // put them back in the list(s)
         for (qsizetype i = 0; i < n; ++i) {
+            auto &fileInfo = si[i].item;
             if (infos)
-                infos->append(si[i].item);
-            if (names)
-                names->append(si[i].item.fileName());
+                infos->append(fileInfo);
+            if (names) {
+                const bool cached = !si[i].filename_cache.isNull();
+                names->append(cached ? si[i].filename_cache : fileInfo.fileName());
+            }
         }
     }
 }
+
 inline void QDirPrivate::initFileLists(const QDir &dir) const
 {
     QMutexLocker locker(&fileCache.mutex);
