@@ -486,7 +486,8 @@ static constexpr QLatin1Char s_variableLengthStringSeparator('\x9c');
 /*!
     Returns the horizontal advance in pixels of the first \a len characters of \a
     text. If \a len is negative (the default), the entire string is
-    used.
+    used. The entire length of \a text is analysed even if \a len is substantially
+    shorter.
 
     This is the distance appropriate for drawing a subsequent character
     after \a text.
@@ -1399,7 +1400,8 @@ qreal QFontMetricsF::rightBearing(QChar ch) const
 /*!
     Returns the horizontal advance in pixels of the first \a length characters of \a
     text. If \a length is negative (the default), the entire string is
-    used.
+    used. The entire length of \a text is analysed even if \a length is substantially
+    shorter.
 
     The advance is the distance appropriate for drawing a subsequent
     character after \a text.
