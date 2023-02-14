@@ -58,8 +58,6 @@ private slots:
     void last();
     void seek_data() { generic_data(); }
     void seek();
-    void transaction_data() { generic_data(); }
-    void transaction();
     void record_data() { generic_data(); }
     void record();
     void record_sqlite_data() { generic_data("QSQLITE"); }
@@ -80,8 +78,6 @@ private slots:
     void psql_forwardOnlyQueryResultsLost();
 
     // Bug-specific tests:
-    void tds_bitField_data() { generic_data("QTDS"); }
-    void tds_bitField();
     void oci_nullBlob_data() { generic_data("QOCI"); }
     void oci_nullBlob();
     void blob_data() { generic_data(); }
@@ -1869,27 +1865,6 @@ void tst_QSqlQuery::writeNull()
     }
 }
 
-// TDS-specific BIT field test:
-void tst_QSqlQuery::tds_bitField()
-{
-    QFETCH(QString, dbName);
-    QSqlDatabase db = QSqlDatabase::database(dbName);
-    CHECK_DATABASE(db);
-    const QString tableName = qTableName("qtest_bittest", __FILE__, db);
-    QSqlQuery q(db);
-
-    QVERIFY_SQL(q, exec(QLatin1String("create table %1 (bitty bit)").arg(tableName)));
-    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values (0)").arg(tableName)));
-    QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values (1)").arg(tableName)));
-    QVERIFY_SQL(q, exec("select bitty from " + tableName));
-
-    QVERIFY(q.next());
-    QCOMPARE(q.value(0).toInt(), 0);
-
-    QVERIFY(q.next());
-    QCOMPARE(q.value(0).toInt(), 1);
-}
-
 // Oracle-specific NULL BLOB test:
 void tst_QSqlQuery::oci_nullBlob()
 {
@@ -2016,84 +1991,6 @@ void tst_QSqlQuery::nullResult()
     QVERIFY(!q.previous());
     QVERIFY(!q.seek(10));
     QVERIFY(!q.seek(0));
-}
-
-// This test is just an experiment to see whether we can do query-based transactions.
-// The real transaction test is in tst_QSqlDatabase.
-void tst_QSqlQuery::transaction()
-{
-    // Query-based transaction is not really possible with Qt:
-    QSKIP("only tested manually by trained staff");
-
-    QFETCH(QString, dbName);
-    QSqlDatabase db = QSqlDatabase::database(dbName);
-    CHECK_DATABASE(db);
-    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (!db.driver()->hasFeature(QSqlDriver::Transactions))
-        QSKIP("DBMS not transaction-capable");
-
-    // This is the standard SQL:
-    QString startTransactionStr("start transaction");
-
-    if (dbType == QSqlDriver::MySqlServer)
-        startTransactionStr = "begin work";
-
-    QSqlQuery q(db);
-    QSqlQuery q2(db);
-
-    // Test a working transaction:
-    q.exec(startTransactionStr);
-    QVERIFY_SQL(q, exec(QLatin1String("insert into%1 values (40, 'VarChar40', 'Char40')")
-                        .arg(qtest)));
-    QVERIFY_SQL(q, exec(QLatin1String("select * from%1 where id = 40").arg(qtest)));
-
-    QVERIFY(q.next());
-    QCOMPARE(q.value(0).toInt(), 40);
-
-    QVERIFY_SQL(q, exec("commit"));
-    QVERIFY_SQL(q, exec(QLatin1String("select * from%1 where id = 40").arg(qtest)));
-
-    QVERIFY(q.next());
-    QCOMPARE(q.value(0).toInt(), 40);
-
-    // Test a rollback:
-    q.exec(startTransactionStr);
-    QVERIFY_SQL(q, exec(QLatin1String("insert into%1 values (41, 'VarChar41', 'Char41')")
-                        .arg(qtest)));
-    QVERIFY_SQL(q, exec(QLatin1String("select * from%1 where id = 41").arg(qtest)));
-
-    QVERIFY(q.next());
-    QCOMPARE(q.value(0).toInt(), 41);
-
-    if (!q.exec("rollback")) {
-        if (dbType == QSqlDriver::MySqlServer) {
-            qDebug("MySQL: %s", qPrintable(tst_Databases::printError(q.lastError())));
-            QSKIP("MySQL transaction failed "); // non-fatal
-        } else {
-            QFAIL("Could not rollback transaction: " + tst_Databases::printError(q.lastError()));
-        }
-    }
-    QVERIFY_SQL(q, exec(QLatin1String("select * from%1 where id = 41").arg(qtest)));
-    QVERIFY(!q.next());
-
-    // Test concurrent access:
-    q.exec(startTransactionStr);
-    QVERIFY_SQL(q, exec(QLatin1String("insert into%1 values (42, 'VarChar42', 'Char42')")
-                        .arg(qtest)));
-    QVERIFY_SQL(q, exec(QLatin1String("select * from%1 where id = 42").arg(qtest)));
-    QVERIFY(q.next());
-    QCOMPARE(q.value(0).toInt(), 42);
-
-    QVERIFY_SQL(q2, exec(QLatin1String("select * from%1 where id = 42").arg(qtest)));
-    if (q2.next())
-        qDebug("DBMS '%s' doesn't support query based transactions with concurrent access",
-               qPrintable(tst_Databases::dbToString(db)));
-
-    QVERIFY_SQL(q, exec("commit"));
-    QVERIFY_SQL(q2, exec(QLatin1String("select * from%1 where id = 42").arg(qtest)));
-
-    QVERIFY(q2.next());
-    QCOMPARE(q2.value(0).toInt(), 42);
 }
 
 void tst_QSqlQuery::joins()

@@ -50,8 +50,6 @@ private slots:
     void eventNotification_data() { generic_data(); }
     void eventNotification();
     void addDatabase();
-    void errorReporting_data();
-    void errorReporting();
     void cloneDatabase_data() { generic_data(); }
     void cloneDatabase();
 
@@ -62,8 +60,6 @@ private slots:
     void recordPSQL();
     void recordOCI_data() { generic_data("QOCI"); }
     void recordOCI();
-    void recordTDS_data() { generic_data("QTDS"); }
-    void recordTDS();
     void recordDB2_data() { generic_data("QDB2"); }
     void recordDB2();
     void recordSQLite_data() { generic_data("QSQLITE"); }
@@ -433,36 +429,6 @@ void tst_QSqlDatabase::addDatabase()
     QVERIFY(!QSqlDatabase::contains("INVALID_CONNECTION"));
 }
 
-void tst_QSqlDatabase::errorReporting_data()
-{
-    QTest::addColumn<QString>("driver");
-
-    QTest::newRow("QTDS") << QString::fromLatin1("QTDS");
-    QTest::newRow("QTDS7") << QString::fromLatin1("QTDS7");
-}
-
-void tst_QSqlDatabase::errorReporting()
-{
-    QFETCH(QString, driver);
-
-    if (!QSqlDatabase::drivers().contains(driver))
-        QSKIP(QString::fromLatin1("Database driver %1 not available").arg(driver).toLocal8Bit().constData());
-
-    const QString dbName = QLatin1String("errorReportingDb-") + driver;
-    QSqlDatabase db = QSqlDatabase::addDatabase(driver, dbName);
-
-    db.setHostName(QLatin1String("127.0.0.1"));
-    db.setDatabaseName(QLatin1String("NonExistantDatabase"));
-    db.setUserName(QLatin1String("InvalidUser"));
-    db.setPassword(QLatin1String("IncorrectPassword"));
-
-    QVERIFY(!db.open());
-
-    db = QSqlDatabase();
-
-    QSqlDatabase::removeDatabase(dbName);
-}
-
 void tst_QSqlDatabase::open()
 {
     QFETCH(QString, dbName);
@@ -670,43 +636,6 @@ void tst_QSqlDatabase::commonFieldTest(const FieldDef fieldDefs[], QSqlDatabase 
     QSqlQuery q(db);
     // Only check the escaped entry
     QVERIFY_SQL(q, exec("select * from " + tableNames.at(0)));
-}
-
-void tst_QSqlDatabase::recordTDS()
-{
-    QFETCH(QString, dbName);
-    QSqlDatabase db = QSqlDatabase::database(dbName);
-    CHECK_DATABASE(db);
-
-    static const FieldDef fieldDefs[] = {
-        FieldDef("tinyint", QMetaType::Int,              255),
-        FieldDef("smallint", QMetaType::Int,             32767),
-        FieldDef("int", QMetaType::Int,                  2147483647),
-        FieldDef("numeric(10,9)", QMetaType::Double,     1.23456789),
-        FieldDef("decimal(10,9)", QMetaType::Double,     1.23456789),
-        FieldDef("float(4)", QMetaType::Double,          1.23456789),
-        FieldDef("double precision", QMetaType::Double,  1.23456789),
-        FieldDef("real", QMetaType::Double,              1.23456789),
-        FieldDef("smallmoney", QMetaType::Double,        100.42),
-        FieldDef("money", QMetaType::Double,             200.42),
-        // accuracy is that of a minute
-        FieldDef("smalldatetime", QMetaType::QDateTime,   QDateTime(QDate::currentDate(), QTime(1, 2, 0, 0))),
-        // accuracy is that of a second
-        FieldDef("datetime", QMetaType::QDateTime,        QDateTime(QDate::currentDate(), QTime(1, 2, 3, 0))),
-        FieldDef("char(20)", QMetaType::QString,          "blah1"),
-        FieldDef("varchar(20)", QMetaType::QString,       "blah2"),
-        FieldDef("nchar(20)", QMetaType::QString,         "blah3"),
-        FieldDef("nvarchar(20)", QMetaType::QString,      "blah4"),
-        FieldDef("text", QMetaType::QString,              "blah5"),
-        FieldDef("bit", QMetaType::Int,                  1, false),
-
-        FieldDef()
-    };
-
-    const int fieldCount = createFieldTable(fieldDefs, db);
-    QVERIFY(fieldCount > 0);
-
-    commonFieldTest(fieldDefs, db, fieldCount);
 }
 
 void tst_QSqlDatabase::recordOCI()
