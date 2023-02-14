@@ -13,6 +13,7 @@
 #include <qmetaobject.h>
 #include <qendian.h>
 #include "qctflib_p.h"
+#include <filesystem>
 
 QT_BEGIN_NAMESPACE
 
@@ -96,6 +97,7 @@ QCtfLibImpl::QCtfLibImpl()
             m_session.tracepoints.append(var.toString());
 
         m_location = location + QStringLiteral("/ust");
+        std::filesystem::create_directory(qPrintable(m_location), qPrintable(location));
     }
     m_session.all = m_session.tracepoints.contains(QStringLiteral("all"));
 
