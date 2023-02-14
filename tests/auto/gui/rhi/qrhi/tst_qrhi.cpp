@@ -6039,7 +6039,7 @@ void tst_QRhi::storageBufferRuntimeSizeGraphics()
         QSKIP("Tessellation is not supported with this graphics API, skipping test");
     }
 
-    if (rhi->backend() == QRhi::D3D11)
+    if (rhi->backend() == QRhi::D3D11 || rhi->backend() == QRhi::D3D12)
         QSKIP("Skipping tessellation test on D3D for now, test assets not prepared for HLSL yet");
 
     QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, QSize(64, 64), 1,
