@@ -79,7 +79,7 @@ void tst_ContentUris::readWriteFile()
         QVERIFY(file.exists());
         QVERIFY(file.size() == 0);
         QVERIFY(file.fileName() == url);
-        QVERIFY(QFileInfo(url).completeBaseName() == fileName);
+        QVERIFY(QFileInfo(url).fileName() == fileName);
 
         QVERIFY(file.open(QFile::WriteOnly));
         QVERIFY(file.isOpen());
