@@ -67,12 +67,6 @@ private:
     // Returns true if the given coordinate is inside the current
     // content border.
     static bool testContentBorderPosition(QWindow *window, int position);
-
-    // Sets a NSToolbar instance for the given QWindow. The
-    // toolbar will be attached to the native NSWindow when
-    // that is created;
-   static void setNSToolbar(QWindow *window, void *nsToolbar);
-
 };
 
 QT_END_NAMESPACE
