@@ -65,9 +65,8 @@
 #include "qstyleoption.h"
 #include "qvarlengtharray.h"
 #if defined(Q_OS_MACOS)
-#include <QtCore/QMetaMethod>
-#include <QtGui/QGuiApplication>
-#include <qpa/qplatformnativeinterface.h>
+#include <AppKit/AppKit.h>
+#include <QtGui/private/qcoregraphics_p.h>
 #elif QT_CONFIG(style_windowsvista)
 #include "qwizard_win_p.h"
 #include "qtimer.h"
@@ -1759,23 +1758,19 @@ void QWizardPrivate::setStyle(QStyle *style)
 }
 
 #ifdef Q_OS_MACOS
-
 QPixmap QWizardPrivate::findDefaultBackgroundPixmap()
 {
-    QGuiApplication *app = qobject_cast<QGuiApplication *>(QCoreApplication::instance());
-    if (!app)
-        return QPixmap();
-    QPlatformNativeInterface *platformNativeInterface = app->platformNativeInterface();
-    int at = platformNativeInterface->metaObject()->indexOfMethod("defaultBackgroundPixmapForQWizard()");
-    if (at == -1)
-        return QPixmap();
-    QMetaMethod defaultBackgroundPixmapForQWizard = platformNativeInterface->metaObject()->method(at);
-    QPixmap result;
-    if (!defaultBackgroundPixmapForQWizard.invoke(platformNativeInterface, Q_RETURN_ARG(QPixmap, result)))
-        return QPixmap();
-    return result;
-}
+    auto *keyboardAssistantURL = [NSWorkspace.sharedWorkspace
+        URLForApplicationWithBundleIdentifier:@"com.apple.KeyboardSetupAssistant"];
+    auto *keyboardAssistantBundle = [NSBundle bundleWithURL:keyboardAssistantURL];
+    auto *assistantBackground = [keyboardAssistantBundle imageForResource:@"Background"];
+    auto size = QSizeF::fromCGSize(assistantBackground.size);
+    static const QSizeF expectedSize(242, 414);
+    if (size == expectedSize)
+        return qt_mac_toQPixmap(assistantBackground, size);
 
+    return QPixmap();
+}
 #endif
 
 #if QT_CONFIG(style_windowsvista)
@@ -2881,7 +2876,7 @@ void QWizard::setPixmap(WizardPixmap which, const QPixmap &pixmap)
     Returns the pixmap set for role \a which.
 
     By default, the only pixmap that is set is the BackgroundPixmap on
-    \macos version 10.13 and earlier.
+    \macos.
 
     \sa QWizardPage::pixmap(), {Elements of a Wizard Page}
 */

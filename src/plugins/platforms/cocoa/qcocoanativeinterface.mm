@@ -114,35 +114,6 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
     return nullptr;
 }
 
-QPixmap QCocoaNativeInterface::defaultBackgroundPixmapForQWizard()
-{
-    // Note: starting with macOS 10.14, the KeyboardSetupAssistant app bundle no
-    // longer contains the "Background.png" image. This function then returns a
-    // null pixmap.
-    const int ExpectedImageWidth = 242;
-    const int ExpectedImageHeight = 414;
-    QCFType<CFArrayRef> urls = LSCopyApplicationURLsForBundleIdentifier(
-        CFSTR("com.apple.KeyboardSetupAssistant"), nullptr);
-    if (urls && CFArrayGetCount(urls) > 0) {
-        CFURLRef url = (CFURLRef)CFArrayGetValueAtIndex(urls, 0);
-        QCFType<CFBundleRef> bundle = CFBundleCreate(kCFAllocatorDefault, url);
-        if (bundle) {
-            url = CFBundleCopyResourceURL(bundle, CFSTR("Background"), CFSTR("png"), nullptr);
-            if (url) {
-                QCFType<CGImageSourceRef> imageSource = CGImageSourceCreateWithURL(url, nullptr);
-                QCFType<CGImageRef> image = CGImageSourceCreateImageAtIndex(imageSource, 0, nullptr);
-                if (image) {
-                    int width = CGImageGetWidth(image);
-                    int height = CGImageGetHeight(image);
-                    if (width == ExpectedImageWidth && height == ExpectedImageHeight)
-                        return QPixmap::fromImage(qt_mac_toQImage(image));
-                }
-            }
-        }
-    }
-    return QPixmap();
-}
-
 void QCocoaNativeInterface::clearCurrentThreadCocoaEventDispatcherInterruptFlag()
 {
     QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
