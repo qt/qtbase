@@ -247,7 +247,21 @@ static constexpr const char * methodToName(QCryptographicHash::Algorithm method)
     default: return nullptr;
     }
 }
-#endif
+
+/*
+    Checks whether given method is not provided by OpenSSL and whether we will
+    have a fallback to non-OpenSSL implementation.
+*/
+static constexpr bool useNonOpenSSLFallback(QCryptographicHash::Algorithm method) noexcept
+{
+    if (method == QCryptographicHash::Blake2b_160 || method == QCryptographicHash::Blake2b_256 ||
+        method == QCryptographicHash::Blake2b_384 || method == QCryptographicHash::Blake2s_128 ||
+        method == QCryptographicHash::Blake2s_160 || method == QCryptographicHash::Blake2s_224)
+        return true;
+
+    return false;
+}
+#endif // USING_OPENSSL30
 
 class QCryptographicHashPrivate
 {
@@ -951,6 +965,12 @@ bool QCryptographicHash::supportsAlgorithm(QCryptographicHash::Algorithm method)
 bool QCryptographicHashPrivate::supportsAlgorithm(QCryptographicHash::Algorithm method)
 {
 #ifdef USING_OPENSSL30
+    // OpenSSL doesn't support Blake2b{60,236,384} and Blake2s{128,160,224}
+    // and these would automatically return FALSE in that case, while they are
+    // actually supported by our non-OpenSSL implementation.
+    if (useNonOpenSSLFallback(method))
+        return true;
+
     OSSL_PROVIDER_load(nullptr, "legacy");
     OSSL_PROVIDER_load(nullptr, "default");
 
