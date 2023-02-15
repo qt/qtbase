@@ -14,6 +14,8 @@
 #include <QtNetwork/qlocalsocket.h>
 #include <QtNetwork/qlocalserver.h>
 
+using namespace std::chrono_literals;
+
 class tst_QLocalSocket : public QObject
 {
     Q_OBJECT
@@ -175,7 +177,7 @@ void tst_QLocalSocket::dataExchange()
     QFETCH(int, chunkSize);
 
     Q_ASSERT(chunkSize > 0 && connections > 0);
-    const qint64 timeToTest = 5000;
+    const auto timeToTest = 5000ms;
 
     ServerThread serverThread(chunkSize);
     serverThread.start();
@@ -191,7 +193,7 @@ void tst_QLocalSocket::dataExchange()
         Q_UNUSED(channel);
 
         totalReceived += bytes;
-        if (timer.elapsed() >= timeToTest) {
+        if (timer.elapsed() >= timeToTest.count()) {
             factory.stopped = true;
             eventLoop.exitLoop();
         }
@@ -199,7 +201,7 @@ void tst_QLocalSocket::dataExchange()
 
     timer.start();
     emit factory.start();
-    eventLoop.enterLoopMSecs(timeToTest * 2);
+    eventLoop.enterLoop(timeToTest * 2);
 
     if (!QTest::currentTestFailed())
         qDebug("Transfer rate: %.1f MB/s", totalReceived / 1048.576 / timer.elapsed());

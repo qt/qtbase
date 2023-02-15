@@ -44,6 +44,8 @@
 #include "private/qsslsocket_p.h"
 #include "private/qsslconfiguration_p.h"
 
+using namespace std::chrono_literals;
+
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 // make these enum values available without causing deprecation warnings:
@@ -2824,7 +2826,7 @@ void tst_QSslSocket::closeWhileEmittingSocketError()
     // Make sure we have some data buffered so that close will try to flush:
     clientSocket.write(QByteArray(1000000, Qt::Uninitialized));
 
-    QTestEventLoop::instance().enterLoopMSecs(1000);
+    QTestEventLoop::instance().enterLoop(1s);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(socketErrorSpy.size(), 1);
@@ -4555,7 +4557,7 @@ void tst_QSslSocket::unsupportedProtocols()
         return;
 
     QFETCH(const QSsl::SslProtocol, unsupportedProtocol);
-    const int timeoutMS = 500;
+    constexpr auto timeout = 500ms;
     // Test a client socket.
     {
         // 0. connectToHostEncrypted: client-side, non-blocking API, error is discovered
@@ -4577,7 +4579,7 @@ void tst_QSslSocket::unsupportedProtocols()
         QCOMPARE(socket.error(), QAbstractSocket::UnknownSocketError);
 
         socket.connectToHost(QHostAddress::LocalHost, server.serverPort());
-        QVERIFY(socket.waitForConnected(timeoutMS));
+        QVERIFY(socket.waitForConnected(int(timeout.count())));
 
         socket.setProtocol(unsupportedProtocol);
         socket.startClientEncryption();
@@ -4602,7 +4604,7 @@ void tst_QSslSocket::unsupportedProtocols()
 
         QTcpSocket client;
         client.connectToHost(QHostAddress::LocalHost, server.serverPort());
-        loop.enterLoopMSecs(timeoutMS);
+        loop.enterLoop(timeout);
         QVERIFY(!loop.timeout());
         QVERIFY(server.socket);
         QCOMPARE(server.socket->error(), QAbstractSocket::SslInvalidUserDataError);
@@ -4709,7 +4711,7 @@ void tst_QSslSocket::alertMissingCertificate()
     connect(&clientSocket, &QAbstractSocket::errorOccurred, earlyQuitter);
     connect(&server, &SslServer::socketError, earlyQuitter);
 
-    runner.enterLoopMSecs(1000);
+    runner.enterLoop(1s);
 
     if (clientSocket.isEncrypted()) {
         // When using TLS 1.3 the client side thinks it is connected very
@@ -4717,7 +4719,7 @@ void tst_QSslSocket::alertMissingCertificate()
         // inevitable disconnect.
         QCOMPARE(clientSocket.sessionProtocol(), QSsl::TlsV1_3);
         connect(&clientSocket, &QSslSocket::disconnected, &runner, &QTestEventLoop::exitLoop);
-        runner.enterLoopMSecs(10000);
+        runner.enterLoop(10s);
     }
 
     QVERIFY(serverSpy.size() > 0);
@@ -4772,7 +4774,7 @@ void tst_QSslSocket::alertInvalidCertificate()
     connect(&clientSocket, &QAbstractSocket::errorOccurred, earlyQuitter);
     connect(&server, &SslServer::socketError, earlyQuitter);
 
-    runner.enterLoopMSecs(1000);
+    runner.enterLoop(1s);
 
     QVERIFY(serverSpy.size() > 0);
     QVERIFY(clientSpy.size() > 0);
@@ -4900,7 +4902,7 @@ void tst_QSslSocket::selfSignedCertificates()
     connect(&clientSocket, &QAbstractSocket::errorOccurred, earlyQuitter);
     connect(&server, &SslServer::socketError, earlyQuitter);
 
-    runner.enterLoopMSecs(1000);
+    runner.enterLoop(1s);
 
     if (clientKnown) {
         QCOMPARE(serverSpy.size(), 0);
@@ -5038,7 +5040,7 @@ void tst_QSslSocket::pskHandshake()
     connect(&clientSocket, &QAbstractSocket::errorOccurred, earlyQuitter);
     connect(&server, &SslServer::socketError, earlyQuitter);
 
-    runner.enterLoopMSecs(1000);
+    runner.enterLoop(1s);
 
     if (pskRight) {
         QCOMPARE(serverSpy.size(), 0);

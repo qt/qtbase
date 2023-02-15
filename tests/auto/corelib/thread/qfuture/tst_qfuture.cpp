@@ -30,6 +30,9 @@
 #  undef interface
 #endif
 
+using namespace std::chrono_literals;
+static constexpr auto DefaultWaitTime = 2s;
+
 using namespace Qt::StringLiterals;
 
 class SenderObject : public QObject
@@ -3487,7 +3490,7 @@ void tst_QFuture::runAndTake()
     auto gotcha = QtConcurrent::run(rabbit);
     watcha.setFuture(gotcha);
 
-    loop.enterLoopMSecs(500);
+    loop.enterLoop(500ms);
     if (loop.timeout())
         QSKIP("Failed to run the task, nothing to test");
 
@@ -3558,7 +3561,7 @@ void tst_QFuture::resultsReadyAt()
 
     // Run event loop, QCoreApplication::postEvent is in use
     // in QFutureInterface:
-    eventProcessor.enterLoopMSecs(2000);
+    eventProcessor.enterLoop(DefaultWaitTime);
     QVERIFY(!eventProcessor.timeout());
     if (QTest::currentTestFailed()) // Failed in our lambda observing 'ready at'
         return;
@@ -3933,7 +3936,7 @@ void tst_QFuture::rejectResultOverwrite()
     });
     // Run event loop, QCoreApplication::postEvent is in use
     // in QFutureInterface:
-    eventProcessor.enterLoopMSecs(2000);
+    eventProcessor.enterLoop(DefaultWaitTime);
     QVERIFY(!eventProcessor.timeout());
     QCOMPARE(resultCounter.size(), 1);
     f.resume();
@@ -3972,7 +3975,7 @@ void tst_QFuture::rejectResultOverwrite()
     QTimer::singleShot(50, [&f]() {
         f.suspend(); // should exit the loop
     });
-    eventProcessor.enterLoopMSecs(2000);
+    eventProcessor.enterLoop(DefaultWaitTime);
     QVERIFY(!eventProcessor.timeout());
     QCOMPARE(resultCounter.size(), 1);
     f.resume();
@@ -4011,7 +4014,7 @@ void tst_QFuture::rejectPendingResultOverwrite()
         });
         // Run event loop, QCoreApplication::postEvent is in use
         // in QFutureInterface:
-        eventProcessor.enterLoopMSecs(2000);
+        eventProcessor.enterLoop(DefaultWaitTime);
         QVERIFY(!eventProcessor.timeout());
         QCOMPARE(resultCounter.size(), 1);
         f.resume();
@@ -4055,7 +4058,7 @@ void tst_QFuture::rejectPendingResultOverwrite()
         QTimer::singleShot(50, [&f]() {
             f.suspend(); // should exit the loop
         });
-        eventProcessor.enterLoopMSecs(2000);
+        eventProcessor.enterLoop(DefaultWaitTime);
         QVERIFY(!eventProcessor.timeout());
         QCOMPARE(resultCounter.size(), 1);
         f.resume();

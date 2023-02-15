@@ -99,7 +99,7 @@ public:
         Q_ASSERT(!m_waiting);
         const qsizetype origCount = size();
         m_waiting = true;
-        m_loop.enterLoopMSecs(timeout);
+        m_loop.enterLoop(std::chrono::milliseconds{timeout});
         m_waiting = false;
         return size() > origCount;
     }

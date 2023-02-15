@@ -28,6 +28,8 @@
 #include <algorithm>
 #include <utility>
 
+using namespace std::chrono_literals;
+
 // NOTE: the word 'subject' in the code below means the subject of a status request,
 // so in general it's our peer's certificate we are asking about.
 
@@ -386,7 +388,7 @@ private:
     void (QSslSocket::*tlsErrorsSignal)(const QList<QSslError> &) = &QSslSocket::sslErrors;
     void (QTestEventLoop::*exitLoopSlot)() = &QTestEventLoop::exitLoop;
 
-    const int handshakeTimeoutMS = 500;
+    static constexpr auto HandshakeTimeout = 500ms;
     QTestEventLoop loop;
 
     std::vector<QSslError::SslError> ocspErrorCodes = {QSslError::OcspNoResponseFound,
@@ -462,7 +464,7 @@ void tst_QOcsp::connectSelfSigned()
         auto roots = clientConfig.caCertificates();
         setupOcspClient(clientSocket, issuerToChain(subjectChain), server.peerVerifyName());
         clientSocket.connectToHostEncrypted(server.hostName(), server.serverPort());
-        loop.enterLoopMSecs(handshakeTimeoutMS);
+        loop.enterLoop(HandshakeTimeout);
 
         QVERIFY(!clientSocket.isEncrypted());
         QCOMPARE_SINGLE_ERROR(clientSocket, expectedError);
@@ -478,7 +480,7 @@ void tst_QOcsp::connectSelfSigned()
         QSslSocket clientSocket;
         setupOcspClient(clientSocket, issuerToChain(subjectChain), server.peerVerifyName());
         clientSocket.connectToHostEncrypted(server.hostName(), server.serverPort());
-        loop.enterLoopMSecs(handshakeTimeoutMS);
+        loop.enterLoop(HandshakeTimeout);
 
         QVERIFY_HANDSHAKE_WITHOUT_ERRORS(clientSocket);
 
@@ -543,7 +545,7 @@ void tst_QOcsp::badStatus()
     QSslSocket clientSocket;
     setupOcspClient(clientSocket, issuerToChain(subjectChain), server.peerVerifyName());
     clientSocket.connectToHostEncrypted(server.hostName(), server.serverPort());
-    loop.enterLoopMSecs(handshakeTimeoutMS);
+    loop.enterLoop(HandshakeTimeout);
 
     QVERIFY(!clientSocket.isEncrypted());
     QCOMPARE_SINGLE_ERROR(clientSocket, expectedError.error());
@@ -574,7 +576,7 @@ void tst_QOcsp::multipleSingleResponses()
     QSslSocket clientSocket;
     setupOcspClient(clientSocket, issuerToChain(responderChain), server.peerVerifyName());
     clientSocket.connectToHostEncrypted(server.hostName(), server.serverPort());
-    loop.enterLoopMSecs(handshakeTimeoutMS);
+    loop.enterLoop(HandshakeTimeout);
 
     QVERIFY(!clientSocket.isEncrypted());
     QCOMPARE_SINGLE_ERROR(clientSocket, expectedError);
@@ -594,7 +596,7 @@ void tst_QOcsp::malformedResponse()
     QSslSocket clientSocket;
     setupOcspClient(clientSocket, issuerToChain(serverChain), server.peerVerifyName());
     clientSocket.connectToHostEncrypted(server.hostName(), server.serverPort());
-    loop.enterLoopMSecs(handshakeTimeoutMS);
+    loop.enterLoop(HandshakeTimeout);
 
     QVERIFY(!clientSocket.isEncrypted());
     QCOMPARE(clientSocket.error(), QAbstractSocket::SslHandshakeFailedError);
@@ -633,7 +635,7 @@ void tst_QOcsp::expiredResponse()
     QSslSocket clientSocket;
     setupOcspClient(clientSocket, issuerToChain(subjectChain), server.peerVerifyName());
     clientSocket.connectToHostEncrypted(server.hostName(), server.serverPort());
-    loop.enterLoopMSecs(handshakeTimeoutMS);
+    loop.enterLoop(HandshakeTimeout);
 
     QVERIFY(!clientSocket.isEncrypted());
     QCOMPARE_SINGLE_ERROR(clientSocket, expectedError);
@@ -664,7 +666,7 @@ void tst_QOcsp::noNextUpdate()
     QSslSocket clientSocket;
     setupOcspClient(clientSocket, issuerToChain(subjectChain), server.peerVerifyName());
     clientSocket.connectToHostEncrypted(server.hostName(), server.serverPort());
-    loop.enterLoopMSecs(handshakeTimeoutMS);
+    loop.enterLoop(HandshakeTimeout);
 
     QVERIFY_HANDSHAKE_WITHOUT_ERRORS(clientSocket);
 }
@@ -710,7 +712,7 @@ void tst_QOcsp::wrongCertificateInResponse()
     QSslSocket clientSocket;
     setupOcspClient(clientSocket, issuerToChain(subjectChain), server.peerVerifyName());
     clientSocket.connectToHostEncrypted(server.hostName(), server.serverPort());
-    loop.enterLoopMSecs(handshakeTimeoutMS);
+    loop.enterLoop(HandshakeTimeout);
 
     QVERIFY(!clientSocket.isEncrypted());
     QVERIFY(containsError(clientSocket.sslHandshakeErrors(), expectedError));
@@ -735,7 +737,7 @@ void tst_QOcsp::untrustedResponder()
     QSslSocket clientSocket;
     setupOcspClient(clientSocket, {}, server.peerVerifyName());
     clientSocket.connectToHostEncrypted(server.hostName(), server.serverPort());
-    loop.enterLoopMSecs(handshakeTimeoutMS);
+    loop.enterLoop(HandshakeTimeout);
 
     QVERIFY(!clientSocket.isEncrypted());
     QVERIFY(containsError(clientSocket.sslHandshakeErrors(), expectedError));
