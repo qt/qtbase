@@ -2,6 +2,10 @@
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 from selenium.webdriver import Chrome
+from selenium.webdriver.common.actions.action_builder import ActionBuilder
+from selenium.webdriver.common.actions.pointer_actions import PointerActions
+from selenium.webdriver.common.actions.interaction import POINTER_TOUCH
+from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
 from selenium.webdriver.support.ui import WebDriverWait
@@ -199,6 +203,119 @@ class WidgetTestCase(unittest.TestCase):
             self._window_information()[0]["frameGeometry"],
             self._make_geometry(200, 200, 300, 300))
 
+    def test_multitouch_window_move(self):
+        screen = self._create_screen_with_fixed_position(0, 0, 800, 800)
+        screen_information = self._screen_information()[-1]
+
+        windows = [
+            self._create_window(50, 50, 100, 100, screen,
+                                screen_information['name'], 'First'),
+            self._create_window(
+                400, 400, 100, 100, screen, screen_information['name'], 'Second'),
+            self._create_window(50, 400, 100, 100, screen,
+                                screen_information['name'], 'Third')
+        ]
+
+        window_information = [
+            self._window_information(title) for title in ['First', 'Second', 'Third']]
+
+        self.assertEqual(
+            window_information[0]["geometry"], self._make_geometry(50, 50, 100, 100))
+        self.assertEqual(
+            window_information[1]["geometry"], self._make_geometry(400, 400, 100, 100))
+        self.assertEqual(
+            window_information[2]["geometry"], self._make_geometry(50, 400, 100, 100))
+
+        touch_action_builder = ActionBuilder(self._driver)
+
+        touch_pointer_actions = [PointerActions(source=touch_action_builder.add_pointer_input(
+            POINTER_TOUCH, f'touch_input_{i}')) for i in range(3)]
+
+        # Move the touch pointers to the middle of the title bar
+        for window, info, action in zip(windows, window_information, touch_pointer_actions):
+            action.move_to(window, x=0, y=-
+                           info['frameGeometry']['height'] / 2 + 6)
+            action.pointer_down(width=10, height=10, pressure=1)
+
+        offsets = [[2, 2], [-2, 2], [2, -2]]
+        for _ in range(10):
+            for action, offset in zip(touch_pointer_actions, offsets):
+                action.move_by(x=offset[0], y=offset[1], width=10, height=10)
+
+        for action in touch_pointer_actions:
+            action.pointer_up()
+
+        touch_action_builder.perform()
+
+        self.assertEqual(self._window_information('First')["geometry"],
+                         self._make_geometry(70, 70, 100, 100))
+        self.assertEqual(self._window_information('Second')["geometry"],
+                         self._make_geometry(380, 420, 100, 100))
+        self.assertEqual(self._window_information('Third')["geometry"],
+                         self._make_geometry(70, 380, 100, 100))
+
+    def test_multitouch_window_resize(self):
+        screen = self._create_screen_with_fixed_position(0, 0, 800, 800)
+        screen_information = self._screen_information()[-1]
+
+        windows = [
+            self._create_window(50, 50, 100, 100, screen,
+                                screen_information['name'], 'First'),
+            self._create_window(
+                400, 400, 100, 100, screen, screen_information['name'], 'Second'),
+            self._create_window(50, 400, 100, 100, screen,
+                                screen_information['name'], 'Third')
+        ]
+
+        window_information = [
+            self._window_information(title) for title in ['First', 'Second', 'Third']]
+
+        self.assertEqual(
+            window_information[0]["geometry"], self._make_geometry(50, 50, 100, 100))
+        self.assertEqual(
+            window_information[1]["geometry"], self._make_geometry(400, 400, 100, 100))
+        self.assertEqual(
+            window_information[2]["geometry"], self._make_geometry(50, 400, 100, 100))
+
+        touch_action_builder = ActionBuilder(self._driver)
+
+        touch_pointer_actions = [PointerActions(source=touch_action_builder.add_pointer_input(
+            POINTER_TOUCH, f'touch_input_{i}')) for i in range(3)]
+
+        initial_offsets = [
+            # top left
+            [-window_information[0]['frameGeometry']['width'] / 2,
+             -window_information[0]['frameGeometry']['height'] / 2],
+            # top
+            [0,
+             -window_information[1]['frameGeometry']['height'] / 2],
+            # bottom right
+            [window_information[2]['frameGeometry']['width'] / 2,
+             window_information[2]['frameGeometry']['height'] / 2],
+        ]
+
+        for window, initial_offset, action in zip(windows, initial_offsets, touch_pointer_actions):
+            action.move_to(window, x=initial_offset[0], y=initial_offset[1])
+            action.pointer_down(width=10, height=10, pressure=1)
+
+        # First resizes NE, Second NW, Third SE
+        offsets = [[2, 2], [-2, 2], [2, -2]]
+        for _ in range(10):
+            for action, offset in zip(touch_pointer_actions, offsets):
+                action.move_by(x=offset[0], y=offset[1], width=10, height=10)
+
+        for action in touch_pointer_actions:
+            action.pointer_up()
+
+        touch_action_builder.perform()
+
+        self.assertEqual(self._window_information('First')["geometry"],
+                         self._make_geometry(70, 70, 80, 80))
+        self.assertEqual(self._window_information('Second')["geometry"],
+                         self._make_geometry(400, 420, 100, 80))
+        self.assertEqual(self._window_information('Third')["geometry"],
+                         self._make_geometry(50, 400, 120, 80))
+
     def tearDown(self):
         self._driver.quit()
 
@@ -216,8 +333,11 @@ class WidgetTestCase(unittest.TestCase):
                 instance.{name}();
                 return eval(result);''')
 
-    def _window_information(self):
-        return self._call_instance_function('windowInformation')
+    def _window_information(self, title=None):
+        information = self._call_instance_function('windowInformation')
+        if not title:
+            return information
+        return next(filter(lambda e: e['title'] == title, information))
 
     def _screen_information(self):
         return self._call_instance_function('screenInformation')
@@ -261,7 +381,8 @@ class WidgetTestCase(unittest.TestCase):
                 instance.createWindow({x}, {y}, {w}, {h}, '{screen_id}', '{title}');
             '''
         )
-        window_id = self._window_information()[-1]["id"]
+        window_id = self._window_information(title)["id"]
         return screen.shadow_root.find_element(By.CSS_SELECTOR, f'#qt-window-{window_id}')
+
 
 unittest.main()

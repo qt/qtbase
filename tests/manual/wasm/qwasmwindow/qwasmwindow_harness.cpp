@@ -80,7 +80,8 @@ std::string windowToJSObject(const QWindow &window)
     out << "{"
         << "  id: " << std::to_string(window.winId()) << ","
         << "  geometry: " << rectToJSObject(window.geometry()) << ","
-        << "  frameGeometry: " << rectToJSObject(window.frameGeometry()) << "}";
+        << "  frameGeometry: " << rectToJSObject(window.frameGeometry()) << ","
+        << "  title: '" << window.title().toStdString() << "' }";
     return out.str();
 }
 
