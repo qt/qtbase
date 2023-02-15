@@ -36,6 +36,7 @@ private slots:
     void screenDpiAndDpr_data();
     void screenDpiAndDpr();
     void screenDpiChange();
+    void screenDpiChangeWithWindow();
     void environment_QT_SCALE_FACTOR();
     void environment_QT_SCREEN_SCALE_FACTORS_data();
     void environment_QT_SCREEN_SCALE_FACTORS();
@@ -238,6 +239,9 @@ void tst_QHighDpi::screenDpiAndDpr()
 
         QWindow window(screen);
         QCOMPARE(window.devicePixelRatio(), screen->devicePixelRatio());
+        window.setGeometry(QRect(screen->geometry().center(), QSize(10, 10)));
+        window.create();
+        QCOMPARE(window.devicePixelRatio(), screen->devicePixelRatio());
     }
 }
 
@@ -264,10 +268,46 @@ void tst_QHighDpi::screenDpiChange()
     for (QScreen *screen : app->screens()) {
         QCOMPARE(screen->devicePixelRatio(), newDpi / standardBaseDpi);
         QCOMPARE(screen->logicalDotsPerInch(), newDpi / screen->devicePixelRatio());
+
         QWindow window(screen);
+        QCOMPARE(window.devicePixelRatio(), screen->devicePixelRatio());
+        window.create();
         QCOMPARE(window.devicePixelRatio(), screen->devicePixelRatio());
     }
     QCOMPARE(app->devicePixelRatio(), newDpi / standardBaseDpi);
+}
+
+void tst_QHighDpi::screenDpiChangeWithWindow()
+{
+    QList<qreal> dpiValues = { 96, 192, 288 };
+    std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
+
+    // Create windows for screens
+    QList<QScreen *> screens = app->screens();
+    QList<QWindow *> windows;
+    for (int i = 0; i < screens.count(); ++i) {
+        QScreen *screen = screens[i];
+        QWindow *window = new QWindow();
+        windows.append(window);
+        window->setGeometry(QRect(screen->geometry().center(), QSize(10, 10)));
+        window->create();
+        QCOMPARE(window->devicePixelRatio(), dpiValues[i] / standardBaseDpi);
+    }
+
+    // Change screen DPI
+    QList<qreal> newDpiValues = { 288, 192, 96 };
+    QJsonValue config = offscreenConfiguration();
+    QCborMap map = QCborMap::fromJsonObject(config.toObject());
+    for (int i = 0; i < screens.count(); ++i) {
+        map[QLatin1String("screens")][i][QLatin1String("logicalDpi")] = newDpiValues[i];
+    }
+    setOffscreenConfiguration(map.toJsonObject());
+
+    // Verify that window DPR changes on Screen DPI change.
+    for (int i = 0; i < screens.count(); ++i) {
+        QWindow *window = windows[i];
+        QCOMPARE(window->devicePixelRatio(), newDpiValues[i] / standardBaseDpi);
+    }
 }
 
 void tst_QHighDpi::environment_QT_SCALE_FACTOR()
