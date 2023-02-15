@@ -1941,7 +1941,9 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
     }
 
     bool click = (index == d->pressedIndex && index.isValid() && !releaseFromDoubleClick);
-    bool selectedClicked = click && (event->button() == Qt::LeftButton) && d->pressedAlreadySelected;
+    bool selectedClicked = click && d->pressedAlreadySelected
+                        && (event->button() == Qt::LeftButton)
+                        && (event->modifiers() == Qt::NoModifier);
     EditTrigger trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
     const bool edited = click && !d->pressClosedEditor ? edit(index, trigger, event) : false;
 
