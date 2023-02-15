@@ -158,7 +158,7 @@ public:
     void setWindowCursor(NSCursor *cursor);
 
     void registerTouch(bool enable);
-    void setContentBorderThickness(int topThickness, int bottomThickness);
+
     void registerContentBorderArea(quintptr identifier, int upper, int lower);
     void setContentBorderAreaEnabled(quintptr identifier, bool enable);
     void setContentBorderEnabled(bool enable) override;

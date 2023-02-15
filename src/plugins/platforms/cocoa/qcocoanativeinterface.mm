@@ -65,8 +65,6 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerTouchWindow);
     if (resource.toLower() == "setembeddedinforeignview")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setEmbeddedInForeignView);
-    if (resource.toLower() == "setcontentborderthickness")
-        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setContentBorderThickness);
     if (resource.toLower() == "registercontentborderarea")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerContentBorderArea);
     if (resource.toLower() == "setcontentborderareaenabled")
@@ -137,16 +135,6 @@ void QCocoaNativeInterface::registerTouchWindow(QWindow *window,  bool enable)
     QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
     if (cocoaWindow)
         cocoaWindow->registerTouch(enable);
-}
-
-void QCocoaNativeInterface::setContentBorderThickness(QWindow *window, int topThickness, int bottomThickness)
-{
-    if (!window)
-        return;
-
-    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
-    if (cocoaWindow)
-        cocoaWindow->setContentBorderThickness(topThickness, bottomThickness);
 }
 
 void QCocoaNativeInterface::registerContentBorderArea(QWindow *window, quintptr identifier, int upper, int lower)

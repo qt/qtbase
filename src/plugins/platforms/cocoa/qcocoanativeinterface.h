@@ -53,9 +53,6 @@ private:
     // deregisters.
     static void registerTouchWindow(QWindow *window,  bool enable);
 
-    // Set the size of the unified title and toolbar area.
-    static void setContentBorderThickness(QWindow *window, int topThickness, int bottomThickness);
-
     // Set the size for a unified toolbar content border area.
     // Multiple callers can register areas and the platform plugin
     // will extend the "unified" area to cover them.
