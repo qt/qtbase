@@ -8,6 +8,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 
 import unittest
+
+
 class WidgetTestCase(unittest.TestCase):
     def setUp(self):
         self._driver = Chrome()
@@ -18,39 +20,45 @@ class WidgetTestCase(unittest.TestCase):
         )
 
     def _make_geometry(self, x, y, width, height):
-        return { 'x': x, 'y': y, 'width': width, 'height': height }
+        return {'x': x, 'y': y, 'width': width, 'height': height}
 
     def test_window_resizing(self):
         screen = self._create_screen_with_fixed_position(0, 0, 600, 600)
         screen_information = self._screen_information()
         self.assertEqual(len(screen_information), 1)
         screen_information = screen_information[-1]
-        window = self._create_window(100, 100, 200, 200, screen, screen_information["name"], 'title')
+        window = self._create_window(
+            100, 100, 200, 200, screen, screen_information["name"], 'title')
 
         window_information = self._window_information()[0]
-        self.assertEqual(window_information["geometry"], self._make_geometry(100, 100, 200, 200))
+        self.assertEqual(
+            window_information["geometry"], self._make_geometry(100, 100, 200, 200))
 
         self._drag_window(window, window_information, [0, 0], [-10, -10])
         window_information = self._window_information()[0]
-        self.assertEqual(window_information["geometry"], self._make_geometry(90, 90, 210, 210))
+        self.assertEqual(
+            window_information["geometry"], self._make_geometry(90, 90, 210, 210))
 
         self._drag_window(window, window_information,
                           [window_information['frameGeometry']['width'] / 2, 0], [-100, 10])
         window_information = self._window_information()[0]
-        self.assertEqual(window_information["geometry"], self._make_geometry(90, 100, 210, 200))
+        self.assertEqual(
+            window_information["geometry"], self._make_geometry(90, 100, 210, 200))
 
         self._drag_window(window, window_information,
                           [window_information['frameGeometry']['width'], 0], [-5, -5])
         window_information = self._window_information()[0]
 
-        self.assertEqual(window_information["geometry"], self._make_geometry(90, 95, 205, 205))
+        self.assertEqual(
+            window_information["geometry"], self._make_geometry(90, 95, 205, 205))
 
         self._drag_window(window, window_information,
                           [window_information['frameGeometry']['width'],
                            window_information['frameGeometry']['height'] / 2], [5, 100])
         window_information = self._window_information()[0]
 
-        self.assertEqual(window_information["geometry"], self._make_geometry(90, 95, 210, 205))
+        self.assertEqual(
+            window_information["geometry"], self._make_geometry(90, 95, 210, 205))
 
         self._drag_window(window, window_information,
                           [window_information['frameGeometry']['width'],
@@ -91,7 +99,8 @@ class WidgetTestCase(unittest.TestCase):
 
         window_information = self._window_information()[0]
         frame_geometry_before_resize = window_information["frameGeometry"]
-        self.assertEqual(window_information["geometry"], self._make_geometry(300, 300, 100, 100))
+        self.assertEqual(
+            window_information["geometry"], self._make_geometry(300, 300, 100, 100))
 
         self._drag_window(window, window_information,
                           [window_information['frameGeometry']['width'] / 2, 0], [0, -200])
@@ -99,7 +108,8 @@ class WidgetTestCase(unittest.TestCase):
         geometry = self._window_information()[0]["geometry"]
         frame_geometry = self._window_information()[0]["frameGeometry"]
         self.assertEqual(geometry['x'], 300)
-        self.assertEqual(frame_geometry['y'], screen_information['geometry']['y'])
+        self.assertEqual(frame_geometry['y'],
+                         screen_information['geometry']['y'])
         self.assertEqual(geometry['width'], 100)
         self.assertEqual(frame_geometry['y'] + frame_geometry['height'],
                          frame_geometry_before_resize['y'] + frame_geometry_before_resize['height'])
@@ -152,7 +162,8 @@ class WidgetTestCase(unittest.TestCase):
             screen_information['geometry']['x'] - window_information['frameGeometry']['width'] / 2)
 
     def test_screen_in_scroll_container_limits_window_moves(self):
-        _, screen = self._create_screen_in_scroll_container(500, 7000, 200, 2000, 300, 300)
+        _, screen = self._create_screen_in_scroll_container(
+            500, 7000, 200, 2000, 300, 300)
         screen_information = self._screen_information()[-1]
 
         ActionChains(self._driver).scroll_to_element(screen).perform()
@@ -196,7 +207,7 @@ class WidgetTestCase(unittest.TestCase):
             window_element).move_by_offset(
                 -window_information['frameGeometry']['width'] / 2 + origin[0],
                 -window_information['frameGeometry']['height'] / 2 + origin[1]).click_and_hold(
-            ).move_by_offset(*offset).release().perform()
+        ).move_by_offset(*offset).release().perform()
 
     def _call_instance_function(self, name):
         return self._driver.execute_script(
