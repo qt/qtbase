@@ -193,6 +193,8 @@ else()
     set(QT_INTERNAL_CONFIGURE_FROM_IDE FALSE CACHE INTERNAL "Configuring Qt Project from IDE")
 endif()
 
+set(_qt_sync_headers_at_configure_time_default ${QT_INTERNAL_CONFIGURE_FROM_IDE})
+
 if(FEATURE_developer_build)
     if(DEFINED QT_CMAKE_EXPORT_COMPILE_COMMANDS)
         set(CMAKE_EXPORT_COMPILE_COMMANDS ${QT_CMAKE_EXPORT_COMPILE_COMMANDS})
@@ -213,9 +215,24 @@ if(FEATURE_developer_build)
     if (CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE STREQUAL Debug)
         set(__build_benchmarks OFF)
     endif()
+
+    # Sync headers during the initial configuration of a -developer-build to facilitate code
+    # navigation for code editors that use an LSP-based code model.
+    set(_qt_sync_headers_at_configure_time_default TRUE)
 else()
     set(_qt_build_tests_default OFF)
     set(__build_benchmarks OFF)
+endif()
+
+# Sync Qt header files at configure time
+option(QT_SYNC_HEADERS_AT_CONFIGURE_TIME "Run syncqt at configure time already"
+    ${_qt_sync_headers_at_configure_time_default})
+unset(_qt_sync_headers_at_configure_time_default)
+
+# In static Ninja Multi-Config builds the sync_headers dependencies(and other autogen dependencies
+# are not added to '_autogen/timestamp' targets. See QTBUG-113974.
+if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config" AND NOT QT_BUILD_SHARED_LIBS)
+    set(QT_SYNC_HEADERS_AT_CONFIGURE_TIME TRUE CACHE BOOL "" FORCE)
 endif()
 
 # Build Benchmarks
