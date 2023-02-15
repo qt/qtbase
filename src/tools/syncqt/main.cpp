@@ -532,9 +532,9 @@ public:
     SyncScanner(CommandLineOptions *commandLineArgs)
         : m_commandLineArgs(commandLineArgs),
           m_masterHeaderContents(MasterHeaderIncludeComparator),
-          m_warningMessagePreamble(WarningMessagePreamble),
           m_outputRootName(
-                  std::filesystem::weakly_canonical(m_commandLineArgs->includeDir()).root_name())
+                  std::filesystem::weakly_canonical(m_commandLineArgs->includeDir()).root_name()),
+          m_warningMessagePreamble(WarningMessagePreamble)
     {
     }
 
@@ -829,7 +829,7 @@ public:
             ParsingResult parsingResult;
             parsingResult.masterInclude = m_currentFileInSourceDir && !isExport && !is3rdParty
                     && !isQpa && !isPrivate && !isGenerated;
-            if (!parseHeader(headerFile, originalStamp, parsingResult, skipChecks))
+            if (!parseHeader(headerFile, parsingResult, skipChecks))
                 return false;
 
             // Record the private header file inside the version script content.
@@ -936,7 +936,7 @@ public:
     //     'result' the function output value that stores the result of parsing.
     //     'skipChecks' checks that are not applicable for the header file.
     [[nodiscard]] bool parseHeader(const std::filesystem::path &headerFile,
-                                   const FileStamp &timeStamp, ParsingResult &result,
+                                   ParsingResult &result,
                                    unsigned int skipChecks)
     {
         if (m_commandLineArgs->showOnly())
@@ -1551,7 +1551,7 @@ bool SyncScanner::writeIfDifferent(const std::string &outputFile, const std::str
     if (!std::filesystem::exists(outputDirectory))
         std::filesystem::create_directories(outputDirectory);
 
-    int expectedSize = buffer.size();
+    auto expectedSize = buffer.size();
 #ifdef _WINDOWS
     // File on disk has \r\n instead of just \n
     expectedSize += std::count(buffer.begin(), buffer.end(), '\n');
