@@ -1829,16 +1829,6 @@ void QCocoaWindow::registerTouch(bool enable)
         m_view.allowedTouchTypes &= ~NSTouchTypeMaskIndirect;
 }
 
-void QCocoaWindow::setContentBorderThickness(int topThickness, int bottomThickness)
-{
-    m_topContentBorderThickness = topThickness;
-    m_bottomContentBorderThickness = bottomThickness;
-    bool enable = (topThickness > 0 || bottomThickness > 0);
-    m_drawContentBorderGradient = enable;
-
-    applyContentBorderThickness();
-}
-
 void QCocoaWindow::registerContentBorderArea(quintptr identifier, int upper, int lower)
 {
     m_contentBorderAreas.insert(identifier, BorderRange(identifier, upper, lower));
