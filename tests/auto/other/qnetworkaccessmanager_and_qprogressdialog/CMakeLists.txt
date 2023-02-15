@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qnetworkaccessmanager_and_qprogressdialog.pro.
-
 #####################################################################
 ## tst_qnetworkaccessmanager_and_qprogressdialog Test:
 #####################################################################

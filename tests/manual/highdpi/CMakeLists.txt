@@ -1,4 +1,3 @@
-# Generated from highdpi.pro.
 
 add_subdirectory(dprgadget)
 add_subdirectory(kitchensink)

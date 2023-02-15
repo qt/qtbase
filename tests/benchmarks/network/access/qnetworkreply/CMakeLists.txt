@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qnetworkreply.pro.
-
 #####################################################################
 ## tst_bench_qnetworkreply Binary:
 #####################################################################
@@ -16,6 +14,3 @@ qt_internal_add_benchmark(tst_bench_qnetworkreply
         Qt::NetworkPrivate
         Qt::Test
 )
-
-#### Keys ignored in scope 1:.:.:qnetworkreply.pro:<TRUE>:
-# TEMPLATE = "app"

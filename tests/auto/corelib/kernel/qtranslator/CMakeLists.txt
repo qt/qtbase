@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qtranslator.pro.
-
 #####################################################################
 ## tst_qtranslator Test:
 #####################################################################
@@ -31,7 +29,6 @@ qt_internal_add_resource(tst_qtranslator "qtranslator"
         ${qtranslator_resource_files}
 )
 
-
 ## Scopes:
 #####################################################################
 
@@ -51,6 +48,3 @@ if(ANDROID)
             ${android_testdata_resource_files}
     )
 endif()
-
-#### Keys ignored in scope 3:.:.:qtranslator.pro:else:
-# TESTDATA = "dependencies_la.qm" "hellotr_empty.qm" "hellotr_la.qm" "msgfmt_from_po.qm"

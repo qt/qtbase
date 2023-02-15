@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from painting.pro.
-
 add_subdirectory(qpainterpath)
 add_subdirectory(qpainterpathstroker)
 add_subdirectory(qcolor)
@@ -17,7 +15,8 @@ add_subdirectory(qpen)
 add_subdirectory(qpaintengine)
 add_subdirectory(qtransform)
 add_subdirectory(qpolygon)
-# QTBUG-87669 # special case
+
+# QTBUG-87669
 if(NOT ANDROID)
     add_subdirectory(qcolorspace)
     add_subdirectory(qcolortransform)

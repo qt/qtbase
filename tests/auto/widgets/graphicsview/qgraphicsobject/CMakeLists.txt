@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qgraphicsobject.pro.
-
 #####################################################################
 ## tst_qgraphicsobject Test:
 #####################################################################

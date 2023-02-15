@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qwidget.pro.
-
 #####################################################################
 ## tst_qwidget Test:
 #####################################################################
@@ -28,9 +26,6 @@ qt_internal_add_test(tst_qwidget
     TESTDATA ${qwidget_resource_files}
     BUILTIN_TESTDATA
 )
-
-#### Keys ignored in scope 1:.:.:qwidget.pro:<TRUE>:
-# testcase.timeout = "600"
 
 ## Scopes:
 #####################################################################

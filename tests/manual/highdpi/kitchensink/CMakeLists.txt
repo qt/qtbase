@@ -1,4 +1,3 @@
-# Generated from kitchensink.pro.
 
 #####################################################################
 ## kitchensink Binary:
@@ -34,7 +33,3 @@ qt_internal_add_resource(kitchensink "kitchensink"
     FILES
         ${kitchensink_resource_files}
 )
-
-
-#### Keys ignored in scope 1:.:.:kitchensink.pro:<TRUE>:
-# TEMPLATE = "app"

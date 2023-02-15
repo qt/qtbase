@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from text.pro.
-
 add_subdirectory(qanystringview)
 add_subdirectory(qbytearray)
 add_subdirectory(qbytearray_large)

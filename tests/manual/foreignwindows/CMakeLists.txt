@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from foreignwindows.pro.
-
 #####################################################################
 ## foreignwindows Binary:
 #####################################################################
@@ -25,9 +23,6 @@ qt_internal_add_manual_test(foreignwindows
         Qt::OpenGL
         Qt::Widgets
 )
-
-#### Keys ignored in scope 1:.:.:foreignwindows.pro:<TRUE>:
-# TEMPLATE = "app"
 
 ## Scopes:
 #####################################################################

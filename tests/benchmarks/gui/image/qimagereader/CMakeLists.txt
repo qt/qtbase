@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qimagereader.pro.
-
 #####################################################################
 ## tst_bench_qimagereader Binary:
 #####################################################################
@@ -14,11 +12,6 @@ qt_internal_add_benchmark(tst_bench_qimagereader
         Qt::Gui
         Qt::Test
 )
-
-#### Keys ignored in scope 1:.:.:qimagereader.pro:<TRUE>:
-# QT_FOR_CONFIG = "gui-private"
-# TEMPLATE = "app"
-# TESTDATA = "images/*"
 
 ## Scopes:
 #####################################################################

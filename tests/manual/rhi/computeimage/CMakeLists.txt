@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from computeimage.pro.
-
 #####################################################################
 ## computeimage Binary:
 #####################################################################
@@ -39,7 +37,3 @@ qt_internal_add_resource(computeimage "computeimage"
     FILES
         ${computeimage_resource_files}
 )
-
-
-#### Keys ignored in scope 1:.:.:computeimage.pro:<TRUE>:
-# TEMPLATE = "app"

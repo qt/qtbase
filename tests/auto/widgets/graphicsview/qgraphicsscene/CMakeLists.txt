@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qgraphicsscene.pro.
-
 #####################################################################
 ## tst_qgraphicsscene Test:
 #####################################################################
@@ -42,7 +40,7 @@ set(testdata_resource_files
 )
 
 qt_internal_add_test(tst_qgraphicsscene
-    LOWDPI # special case
+    LOWDPI
     SOURCES
         tst_qgraphicsscene.cpp
     DEFINES

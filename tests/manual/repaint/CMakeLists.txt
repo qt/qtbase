@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from repaint.pro.
-
 add_subdirectory(mainwindow)
 add_subdirectory(scrollarea)
 add_subdirectory(splitter)

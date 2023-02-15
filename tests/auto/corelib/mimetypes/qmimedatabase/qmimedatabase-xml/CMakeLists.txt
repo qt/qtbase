@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qmimedatabase-xml.pro.
-
 if(NOT QT_FEATURE_private_tests)
     return()
 endif()
@@ -20,12 +18,10 @@ qt_internal_add_test(tst_qmimedatabase-xml
 )
 
 # Resources:
-# special case begin
 # the freedesktop resources are handled manually below via mimetypes_resources.cmake
 #set(mimetypes_resource_files
     #"mime/packages/freedesktop.org.xml"
 #)
-# special case end
 set(testdata_resource_files
     "../invalid-magic1.xml"
     "../invalid-magic2.xml"
@@ -56,14 +52,9 @@ qt_internal_add_resource(tst_qmimedatabase-xml "testfiles"
         "../test.qml"
 )
 
-# special case begin
 set(corelib_source_dir ../../../../../../src/corelib)
 include(${corelib_source_dir}/mimetypes/mimetypes_resources.cmake)
 corelib_add_mimetypes_resources(tst_qmimedatabase-xml)
-# special case end
-
-#### Keys ignored in scope 1:.:.:qmimedatabase-xml.pro:<TRUE>:
-# _REQUIREMENTS = "qtConfig(private_tests)"
 
 ## Scopes:
 #####################################################################

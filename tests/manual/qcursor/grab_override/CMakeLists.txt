@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from grab_override.pro.
-
 #####################################################################
 ## t_cursors Binary:
 #####################################################################
@@ -30,7 +28,3 @@ qt_internal_add_resource(t_cursors "images"
     FILES
         ${images_resource_files}
 )
-
-
-#### Keys ignored in scope 1:.:.:grab_override.pro:<TRUE>:
-# TEMPLATE = "app"

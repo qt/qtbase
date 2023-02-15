@@ -1,11 +1,8 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qdbusabstractinterface.pro.
-
 add_subdirectory(qpinger)
 
-# special case begin
 qt_internal_add_test(tst_qdbusabstractinterface
     SOURCES
         interface.cpp
@@ -24,4 +21,3 @@ qt_internal_extend_target(tst_qdbusabstractinterface
         -i interface.h
 )
 
-# special case end

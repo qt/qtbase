@@ -1,4 +1,3 @@
-# Generated from screengadget.pro.
 
 #####################################################################
 ## screengadget Binary:

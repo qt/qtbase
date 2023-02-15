@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from android.pro.
-
 #####################################################################
 ## tst_android Test:
 #####################################################################
@@ -21,6 +19,3 @@ if(ANDROID)
         ${CMAKE_CURRENT_SOURCE_DIR}/testdata
     )
 endif()
-
-#### Keys ignored in scope 1:.:.:android.pro:<TRUE>:
-# DISTFILES = "testdata/assets/test.txt"

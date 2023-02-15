@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from platformsocketengine.pro.
-
 if(NOT QT_FEATURE_private_tests)
     return()
 endif()
@@ -17,12 +15,8 @@ qt_internal_add_test(tst_platformsocketengine
     LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
-    QT_TEST_SERVER_LIST "cyrus" # special case
+    QT_TEST_SERVER_LIST "cyrus"
 )
-
-#### Keys ignored in scope 1:.:.:platformsocketengine.pro:<TRUE>:
-# MOC_DIR = "tmp"
-# _REQUIREMENTS = "qtConfig(private_tests)"
 
 ## Scopes:
 #####################################################################

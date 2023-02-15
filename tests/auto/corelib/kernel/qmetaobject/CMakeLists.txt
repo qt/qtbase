@@ -7,7 +7,6 @@ set(tst_qmetaobject_SOURCES
     forwarddeclared.cpp
 )
 
-# Generated from qmetaobject.pro.
 
 #####################################################################
 ## tst_qmetaobject Test:

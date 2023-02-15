@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from noninstanced.pro.
-
 #####################################################################
 ## noninstanced Binary:
 #####################################################################
@@ -28,7 +26,3 @@ qt_internal_add_resource(noninstanced "noninstanced"
     FILES
         ${noninstanced_resource_files}
 )
-
-
-#### Keys ignored in scope 1:.:.:noninstanced.pro:<TRUE>:
-# TEMPLATE = "app"

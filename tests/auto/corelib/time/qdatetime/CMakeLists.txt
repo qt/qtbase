@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qdatetime.pro.
-
 #####################################################################
 ## tst_qdatetime Test:
 #####################################################################
@@ -19,10 +17,6 @@ qt_internal_add_test(tst_qdatetime
 
 ## Scopes:
 #####################################################################
-
-#### Keys ignored in scope 2:.:.:qdatetime.pro:MSVC:
-# QMAKE_CFLAGS_RELEASE = "--O1"
-# QMAKE_CXXFLAGS_RELEASE = "--O1"
 
 qt_internal_extend_target(tst_qdatetime CONDITION APPLE
     SOURCES

@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from thread.pro.
-
 if(QT_FEATURE_thread)
     add_subdirectory(qatomicint)
     add_subdirectory(qatomicinteger)
@@ -32,9 +30,8 @@ if(QT_FEATURE_thread)
         add_subdirectory(qpromise)
     endif()
 endif()
-# special case begin
+
 # QTBUG-87431
 if(TARGET Qt::Concurrent AND NOT INTEGRITY)
     add_subdirectory(qfuturewatcher)
 endif()
-# special case end

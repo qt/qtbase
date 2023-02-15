@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from offscreen.pro.
-
 #####################################################################
 ## offscreen Binary:
 #####################################################################
@@ -33,7 +31,3 @@ qt_internal_add_resource(offscreen "offscreen"
     FILES
         ${offscreen_resource_files}
 )
-
-
-#### Keys ignored in scope 1:.:.:offscreen.pro:<TRUE>:
-# TEMPLATE = "app"

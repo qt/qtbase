@@ -1,2 +1,1 @@
-# Generated from opengl.pro.
 

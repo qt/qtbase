@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from lance.pro.
-
 #####################################################################
 ## lance Binary:
 #####################################################################
@@ -76,10 +74,6 @@ qt_internal_add_resource(lance "images"
     FILES
         ${images_resource_files}
 )
-
-
-#### Keys ignored in scope 1:.:.:lance.pro:<TRUE>:
-# TEMPLATE = "app"
 
 ## Scopes:
 #####################################################################

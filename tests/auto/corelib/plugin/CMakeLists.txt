@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from plugin.pro.
-
 if(QT_BUILD_SHARED_LIBS)
     add_subdirectory(qfactoryloader)
 endif()

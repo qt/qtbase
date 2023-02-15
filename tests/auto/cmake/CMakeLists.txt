@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# special case skip regeneration
-
 # This is an automatic test for the CMake configuration files.
 # To run it manually,
 # 1) mkdir build   # Create a build directory

@@ -1,14 +1,12 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qopenglwidget.pro.
-
 #####################################################################
 ## tst_qopenglwidget Test:
 #####################################################################
 
 qt_internal_add_test(tst_qopenglwidget
-    LOWDPI # special case
+    LOWDPI
     SOURCES
         tst_qopenglwidget.cpp
     LIBRARIES

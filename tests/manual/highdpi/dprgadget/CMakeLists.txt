@@ -1,4 +1,3 @@
-# Generated from dprgadget.pro.
 
 #####################################################################
 ## dprgadget Binary:

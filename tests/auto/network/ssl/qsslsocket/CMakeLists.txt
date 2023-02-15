@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qsslsocket.pro.
-
 if(NOT QT_FEATURE_private_tests)
     return()
 endif()
@@ -22,25 +20,10 @@ qt_internal_add_test(tst_qsslsocket
         Qt::NetworkPrivate
         Qt::TestPrivate
     TESTDATA ${test_data}
-    QT_TEST_SERVER_LIST "squid" "danted" "cyrus" "apache2" "echo" # special case
+    QT_TEST_SERVER_LIST "squid" "danted" "cyrus" "apache2" "echo"
 )
 
 qt_internal_extend_target(tst_qsslsocket CONDITION QT_FEATURE_private_tests AND QT_FEATURE_openssl_linked
     LIBRARIES
         WrapOpenSSL::WrapOpenSSL
 )
-
-#### Keys ignored in scope 1:.:.:qsslsocket.pro:<TRUE>:
-# _REQUIREMENTS = "qtConfig(private_tests)"
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 3:.:.:qsslsocket.pro:(CMAKE_BUILD_TYPE STREQUAL Debug):
-# DESTDIR = "debug"
-
-#### Keys ignored in scope 4:.:.:qsslsocket.pro:else:
-# DESTDIR = "release"
-
-#### Keys ignored in scope 5:.:.:qsslsocket.pro:LINUX:
-# QT_TEST_SERVER_LIST = "squid" "danted" "cyrus" "apache2" "echo"

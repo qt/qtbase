@@ -1,7 +1,6 @@
-# Generated from gtk-container.pro.
 
-qt_find_package(GTK3) # special case
-qt_find_package(X11) # special case
+qt_find_package(GTK3)
+qt_find_package(X11)
 
 #####################################################################
 ## gtk-container Binary:
@@ -13,15 +12,11 @@ qt_internal_add_manual_test(gtk-container
         gtk-container.cpp
         DEFINES
         GDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_6
-    LIBRARIES # special case
+    LIBRARIES
         PkgConfig::GTK3
         Qt::Core
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
-        X11::X11 # special case
+        X11::X11
 )
-
-#### Keys ignored in scope 1:.:.:qt-client-widget.pro:<TRUE>:
-# TEMPLATE = "app"
-

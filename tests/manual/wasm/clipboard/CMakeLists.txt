@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from clipboard.pro.
-
 #####################################################################
 ## clipboard Binary:
 #####################################################################
@@ -38,12 +36,3 @@ qt_internal_extend_target(clipboard CONDITION (QT_MAJOR_VERSION GREATER 4)
     LIBRARIES
         Qt::Widgets
 )
-
-#### Keys ignored in scope 3:.:.:clipboard.pro:QNX:
-# target.path = "/tmp/$${TARGET}/bin"
-
-#### Keys ignored in scope 5:.:.:clipboard.pro:UNIX AND NOT ANDROID:
-# target.path = "/opt/$${TARGET}/bin"
-
-#### Keys ignored in scope 6:.:.:clipboard.pro:NOT target.path_ISEMPTY:
-# INSTALLS = "target"

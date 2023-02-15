@@ -1,4 +1,3 @@
-# Generated from xembed.pro.
 
 if(QT_FEATURE_gtk3)
     add_subdirectory(gtk-container)

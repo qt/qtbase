@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qhostinfo.pro.
-
 if(NOT QT_FEATURE_private_tests)
     return()
 endif()
@@ -18,9 +16,6 @@ qt_internal_add_test(tst_qhostinfo
         Qt::CorePrivate
         Qt::NetworkPrivate
 )
-
-#### Keys ignored in scope 1:.:.:qhostinfo.pro:<TRUE>:
-# _REQUIREMENTS = "qtConfig(private_tests)"
 
 ## Scopes:
 #####################################################################
