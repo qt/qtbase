@@ -15,6 +15,8 @@
 // We mean it.
 //
 
+#include "qplatformdefs.h" // _POSIX_MONOTONIC_CLOCK-0
+
 #include <QtCore/private/qglobal_p.h>
 
 // #define QTIMERINFO_DEBUG
