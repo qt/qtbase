@@ -21,6 +21,3 @@ python3 qwasmwindow.py $@
 
 echo 'Press any key to continue...' >&2
 read -n 1
-
-
-

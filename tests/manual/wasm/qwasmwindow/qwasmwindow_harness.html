@@ -42,20 +42,21 @@
 
                     return screenDiv;
                 },
-                initializeScreenInScrollContainer: (scrollWidth, scrollHeight, left, top, width, height) => {
-                    const scrollContainer = document.createElement('div');
-                    scrollContainer.style.height = `${scrollHeight}px`;
-                    scrollContainer.style.width = `${scrollWidth}px`;
-                    testSandbox.appendChild(scrollContainer);
+                initializeScreenInScrollContainer:
+                    (scrollWidth, scrollHeight, left, top, width, height) => {
+                        const scrollContainer = document.createElement('div');
+                        scrollContainer.style.height = `${scrollHeight}px`;
+                        scrollContainer.style.width = `${scrollWidth}px`;
+                        testSandbox.appendChild(scrollContainer);
 
-                    const screenDiv = makeSizedDiv(left, top, width, height);
-                    scrollContainer.appendChild(screenDiv);
-                    screenDiv.style.position = 'relative';
+                        const screenDiv = makeSizedDiv(left, top, width, height);
+                        scrollContainer.appendChild(screenDiv);
+                        screenDiv.style.position = 'relative';
 
-                    instance.qtAddContainerElement(screenDiv);
+                        instance.qtAddContainerElement(screenDiv);
 
-                    return [scrollContainer, screenDiv];
-                }
+                        return [scrollContainer, screenDiv];
+                    }
             };
         })();
     </script>

@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QtCore/QEvent>
-#include <QtCore/QObject>
+#include <QtCore/qobject.h>
+#include <QtCore/qregularexpression.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qguiapplication.h>
@@ -15,14 +16,9 @@
 #include <sstream>
 #include <vector>
 
-namespace qwasmwindow_harness {
-namespace {
-class Window : public QWindow
+class DeleteOnCloseWindow : public QWindow
 {
     Q_OBJECT
-public:
-    Window() = default;
-    ~Window() = default;
 
 private:
     void closeEvent(QCloseEvent *ev) override
@@ -31,8 +27,6 @@ private:
         delete this;
     }
 };
-} // namespace
-} // namespace qwasmwindow_harness
 
 using namespace emscripten;
 
@@ -52,6 +46,11 @@ std::string toJSArray(const std::vector<std::string> &elements)
 
 std::string toJSString(const QString &qstring)
 {
+    Q_ASSERT_X(([qstring]() {
+                   static QRegularExpression unescapedQuoteRegex(R"re((?:^|[^\\])')re");
+                   return qstring.indexOf(unescapedQuoteRegex) == -1;
+               })(),
+               Q_FUNC_INFO, "Unescaped single quotes found");
     return "'" + qstring.toStdString() + "'";
 }
 
@@ -121,7 +120,7 @@ void createWindow(int x, int y, int w, int h, std::string screenId, std::string 
         return;
     }
 
-    auto *window = new qwasmwindow_harness::Window;
+    auto *window = new DeleteOnCloseWindow;
 
     window->setFlag(Qt::WindowTitleHint);
     window->setFlag(Qt::WindowMaximizeButtonHint);
@@ -142,9 +141,7 @@ int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
 
-    qDebug() << "exec";
     app.exec();
-    qDebug() << "returning";
     return 0;
 }
 
