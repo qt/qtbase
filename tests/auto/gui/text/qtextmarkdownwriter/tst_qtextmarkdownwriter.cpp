@@ -34,6 +34,7 @@ private slots:
     void testWriteNestedBulletLists_data();
     void testWriteNestedBulletLists();
     void testWriteNestedNumericLists();
+    void testWriteNumericListWithStart();
     void testWriteTable();
     void rewriteDocument_data();
     void rewriteDocument();
@@ -284,6 +285,7 @@ void tst_QTextMarkdownWriter::testWriteNestedNumericLists()
     list1->add(cursor.block());
 
     QTextListFormat fmt2;
+    // Alpha "numbering" is not supported in markdown, so we'll actually get decimal.
     fmt2.setStyle(QTextListFormat::ListLowerAlpha);
     fmt2.setNumberSuffix(QLatin1String(")"));
     fmt2.setIndent(2);
@@ -305,9 +307,112 @@ void tst_QTextMarkdownWriter::testWriteNestedNumericLists()
     list2->add(cursor.block());
 
     const QString output = documentToUnixMarkdown();
-    // There's no QTextList API to set the starting number so we hard-coded all lists to start at 1 (QTBUG-65384)
+
+ #ifdef DEBUG_WRITE_OUTPUT
+    {
+        QFile out(QDir::temp().filePath(QLatin1String(QTest::currentTestFunction()) + ".md"));
+        out.open(QFile::WriteOnly);
+        out.write(output.toUtf8());
+        out.close();
+    }
+    {
+        QFile out(QDir::temp().filePath(QLatin1String(QTest::currentTestFunction()) + ".html"));
+        out.open(QFile::WriteOnly);
+        out.write(document->toHtml().toUtf8());
+        out.close();
+    }
+#endif
+
+    // While we can set the start index for a block, if list items intersect each other, they will
+    // still use the list numbering.
     const QString expected = QString::fromLatin1(
                 "1.  ListItem 1\n    1)  ListItem 2\n        1.  ListItem 3\n2.  ListItem 4\n    2)  ListItem 5\n");
+    if (output != expected && isMainFontFixed())
+        QEXPECT_FAIL("", "fixed-pitch main font (QTBUG-103484)", Continue);
+    QCOMPARE(output, expected);
+}
+
+void tst_QTextMarkdownWriter::testWriteNumericListWithStart()
+{
+    QTextCursor cursor(document);
+
+    // The first list will start at 2.
+    QTextListFormat fmt1;
+    fmt1.setStyle(QTextListFormat::ListDecimal);
+    fmt1.setStart(2);
+    QTextList *list1 = cursor.createList(fmt1);
+    cursor.insertText("ListItem 1");
+    list1->add(cursor.block());
+
+    // This list uses the default start (1) again.
+    QTextListFormat fmt2;
+    // Alpha "numbering" is not supported in markdown, so we'll actually get decimal.
+    fmt2.setStyle(QTextListFormat::ListLowerAlpha);
+    fmt2.setNumberSuffix(QLatin1String(")"));
+    fmt2.setIndent(2);
+    QTextList *list2 = cursor.insertList(fmt2);
+    cursor.insertText("ListItem 2");
+
+    // Negative list numbers are disallowed by most Markdown implementations. This list will start
+    // at 1 for that reason.
+    QTextListFormat fmt3;
+    fmt3.setStyle(QTextListFormat::ListDecimal);
+    fmt3.setIndent(3);
+    fmt3.setStart(-1);
+    cursor.insertList(fmt3);
+    cursor.insertText("ListItem 3");
+
+    // Continuing list1, so the second item will have the number 3.
+    cursor.insertBlock();
+    cursor.insertText("ListItem 4");
+    list1->add(cursor.block());
+
+    // This will look out of place: it's in a different position than its list would suggest.
+    // Generates invalid markdown numbering (OK for humans, but md4c will parse it differently than we "meant").
+    // TODO QTBUG-111707: the writer needs to add newlines, otherwise ListItem 5 becomes part of the text for ListItem 4.
+    cursor.insertBlock();
+    cursor.insertText("ListItem 5");
+    list2->add(cursor.block());
+
+    // 0 indexed lists are fine.
+    QTextListFormat fmt4;
+    fmt4.setStyle(QTextListFormat::ListDecimal);
+    fmt4.setStart(0);
+    QTextList *list4 = cursor.insertList(fmt4);
+    cursor.insertText("SecondList Item 0");
+    list4->add(cursor.block());
+
+    // Ensure list numbers are incremented properly.
+    cursor.insertBlock();
+    cursor.insertText("SecondList Item 1");
+    list4->add(cursor.block());
+
+    const QString output = documentToUnixMarkdown();
+    const QString expected = QString::fromLatin1(
+            R"(2.  ListItem 1
+    1)  ListItem 2
+        1.  ListItem 3
+3.  ListItem 4
+    2)  ListItem 5
+0.  SecondList Item 0
+1.  SecondList Item 1
+)");
+
+#ifdef DEBUG_WRITE_OUTPUT
+   {
+       QFile out(QDir::temp().filePath(QLatin1String(QTest::currentTestFunction()) + ".md"));
+       out.open(QFile::WriteOnly);
+       out.write(output.toUtf8());
+       out.close();
+   }
+   {
+       QFile out(QDir::temp().filePath(QLatin1String(QTest::currentTestFunction()) + ".html"));
+       out.open(QFile::WriteOnly);
+       out.write(document->toHtml().toUtf8());
+       out.close();
+   }
+#endif
+
     if (output != expected && isMainFontFixed())
         QEXPECT_FAIL("", "fixed-pitch main font (QTBUG-103484)", Continue);
     QCOMPARE(output, expected);

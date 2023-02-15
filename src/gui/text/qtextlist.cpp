@@ -147,6 +147,9 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
     QString numberPrefix;
     QString numberSuffix = u"."_s;
 
+    // the number of the item might be offset by start, which defaults to 1
+    const int itemNumber = item + format().start() - 1;
+
     if (format().hasProperty(QTextFormat::ListNumberPrefix))
         numberPrefix = format().numberPrefix();
     if (format().hasProperty(QTextFormat::ListNumberSuffix))
@@ -154,15 +157,21 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
 
     switch (style) {
         case QTextListFormat::ListDecimal:
-            result = QString::number(item);
+            result = QString::number(itemNumber);
             break;
             // from the old richtext
         case QTextListFormat::ListLowerAlpha:
         case QTextListFormat::ListUpperAlpha:
             {
+                // match the html default behavior of falling back to decimal numbers
+                if (itemNumber < 1) {
+                    result = QString::number(itemNumber);
+                    break;
+                }
+
                 const char baseChar = style == QTextListFormat::ListUpperAlpha ? 'A' : 'a';
 
-                int c = item;
+                int c = itemNumber;
                 while (c > 0) {
                     c--;
                     result.prepend(QChar::fromUcs2(baseChar + (c % 26)));
@@ -173,7 +182,10 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
         case QTextListFormat::ListLowerRoman:
         case QTextListFormat::ListUpperRoman:
             {
-                if (item < 5000) {
+                // match the html default behavior of falling back to decimal numbers
+                if (itemNumber < 1) {
+                    result = QString::number(itemNumber);
+                } else if (itemNumber < 5000) {
                     QByteArray romanNumeral;
 
                     // works for up to 4999 items
@@ -186,7 +198,7 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
                         romanSymbols = QByteArray::fromRawData(romanSymbolsUpper, sizeof(romanSymbolsUpper));
 
                     int c[] = { 1, 4, 5, 9, 10, 40, 50, 90, 100, 400, 500, 900, 1000 };
-                    int n = item;
+                    int n = itemNumber;
                     for (int i = 12; i >= 0; n %= c[i], i--) {
                         int q = n / c[i];
                         if (q > 0) {
@@ -212,8 +224,7 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
                         }
                     }
                     result = QString::fromLatin1(romanNumeral);
-                }
-                else {
+                } else {
                     result = u"?"_s;
                 }
 

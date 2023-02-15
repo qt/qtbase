@@ -1545,15 +1545,20 @@ void tst_QTextCursor::insertMarkdown_data()
             << 6 << QString("0) eggs\n1) maple syrup\n")
             << QString("bread\u2029eggs\u2029maple syrup\u2029milk")
             << QString("bread\neggs\nmaple syrup\nmilk")
-            << QString("1)  bread\n2)  eggs\n1)  maple syrup\n2)  milk\n");
-            // renumbering would happen if we re-read the whole document
+            << QString("1)  bread\n2)  eggs\n0)  maple syrup\n1)  milk\n");
+    // Renumbering would happen if we re-read the whole document.
+    // Currently insertion only uses the new list format after a paragraph separator.
+    // For that reason "bread" and "eggs" use the original list format, while "maple syrup" and
+    // "milk" use the format from the just inserted list.
 
     QTest::newRow("list after a list")
             << "1) bread\n2) milk\n\n" << 2
             << 13 << QString("\n0) eggs\n1) maple syrup\n")
             << QString("bread\u2029milk\u2029eggs\u2029maple syrup")
             << QString("bread\nmilk\neggs\nmaple syrup")
-            << QString("1)  bread\n2)  milk\n3)  eggs\n1)  maple syrup\n");
+            << QString("1)  bread\n2)  milk\n3)  eggs\n0)  maple syrup\n");
+    // Same behavior as above. "eggs" uses the original list format, but "maple syrup" uses the
+    // format of the inserted list, which means "maple syrup" now has a start of 0.
 
     const QString markdownHeadingString("# Hello\nWorld\n");
 

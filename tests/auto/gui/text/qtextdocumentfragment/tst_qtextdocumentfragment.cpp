@@ -96,6 +96,7 @@ private slots:
     void html_thCentered();
     void orderedListNumbering();
     void html_blockAfterList();
+    void html_listStartAttribute();
     void html_subAndSuperScript();
     void html_cssColors();
     void obeyFragmentMarkersInImport();
@@ -1469,6 +1470,22 @@ void tst_QTextDocumentFragment::html_blockAfterList()
     QVERIFY(cursor.movePosition(QTextCursor::NextBlock));
     QVERIFY(!cursor.currentList());
     QCOMPARE(cursor.blockFormat().indent(), 0);
+}
+
+void tst_QTextDocumentFragment::html_listStartAttribute()
+{
+    const char html[] = "<ol start=-1><li>Foo</ol><ol><li>Bar</ol>";
+    cursor.insertFragment(QTextDocumentFragment::fromHtml(html));
+
+    cursor.movePosition(QTextCursor::Start);
+
+    QVERIFY(cursor.currentList());
+    QCOMPARE(cursor.currentList()->format().start(), -1);
+
+    QVERIFY(cursor.movePosition(QTextCursor::NextBlock));
+
+    QVERIFY(cursor.currentList());
+    QCOMPARE(cursor.currentList()->format().start(), 1);
 }
 
 void tst_QTextDocumentFragment::html_subAndSuperScript()

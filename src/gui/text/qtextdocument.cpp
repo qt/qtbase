@@ -2996,16 +2996,23 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
         if (list->itemNumber(block) == 0) { // first item? emit <ul> or appropriate
             const QTextListFormat format = list->format();
             const int style = format.style();
+            bool ordered = false;
             switch (style) {
-                case QTextListFormat::ListDecimal: html += "<ol"_L1; break;
                 case QTextListFormat::ListDisc: html += "<ul"_L1; break;
                 case QTextListFormat::ListCircle: html += "<ul type=\"circle\""_L1; break;
                 case QTextListFormat::ListSquare: html += "<ul type=\"square\""_L1; break;
-                case QTextListFormat::ListLowerAlpha: html += "<ol type=\"a\""_L1; break;
-                case QTextListFormat::ListUpperAlpha: html += "<ol type=\"A\""_L1; break;
-                case QTextListFormat::ListLowerRoman: html += "<ol type=\"i\""_L1; break;
-                case QTextListFormat::ListUpperRoman: html += "<ol type=\"I\""_L1; break;
+                case QTextListFormat::ListDecimal: html += "<ol"_L1; ordered = true; break;
+                case QTextListFormat::ListLowerAlpha: html += "<ol type=\"a\""_L1; ordered = true; break;
+                case QTextListFormat::ListUpperAlpha: html += "<ol type=\"A\""_L1; ordered = true; break;
+                case QTextListFormat::ListLowerRoman: html += "<ol type=\"i\""_L1; ordered = true; break;
+                case QTextListFormat::ListUpperRoman: html += "<ol type=\"I\""_L1; ordered = true; break;
                 default: html += "<ul"_L1; // ### should not happen
+            }
+
+            if (ordered && format.start() != 1) {
+                html += " start=\""_L1;
+                html += QString::number(format.start());
+                html += u'"';
             }
 
             QString styleString = QString::fromLatin1("margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px;");

@@ -188,6 +188,7 @@ public:
         ListIndent = 0x3001,
         ListNumberPrefix = 0x3002,
         ListNumberSuffix = 0x3003,
+        ListStart = 0x3004,
 
         // table and frame properties
         FrameBorder = 0x4000,
@@ -753,6 +754,9 @@ public:
     inline QString numberSuffix() const
     { return stringProperty(ListNumberSuffix); }
 
+    inline void setStart(int indent);
+    inline int start() const { return intProperty(ListStart); }
+
 protected:
     explicit QTextListFormat(const QTextFormat &fmt);
     friend class QTextFormat;
@@ -771,6 +775,11 @@ inline void QTextListFormat::setNumberPrefix(const QString &np)
 
 inline void QTextListFormat::setNumberSuffix(const QString &ns)
 { setProperty(ListNumberSuffix, ns); }
+
+inline void QTextListFormat::setStart(int astart)
+{
+    setProperty(ListStart, astart);
+}
 
 class Q_GUI_EXPORT QTextImageFormat : public QTextCharFormat
 {

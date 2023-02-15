@@ -1780,6 +1780,22 @@ void tst_QTextDocument::toHtml_data()
                        "<li class=\"unchecked\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">unchecked item</li>\n"
                        "<li class=\"checked\" style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">checked item</li></ul>");
     }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
+        QTextListFormat fmt;
+        fmt.setStyle(QTextListFormat::ListDecimal);
+        fmt.setStart(4);
+        cursor.insertList(fmt);
+        cursor.insertText("Blah");
+        cursor.insertBlock();
+        cursor.insertText("Bleh");
+
+        QTest::newRow("ordered list with start") << QTextDocumentFragment(&doc)
+            << QString("EMPTYBLOCK") +
+               QString("<ol start=\"4\" style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\">\n<li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Blah</li>\n<li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Bleh</li></ol>");
+    }
 }
 
 void tst_QTextDocument::toHtml()

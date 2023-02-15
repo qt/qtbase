@@ -1634,6 +1634,8 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                         else if (value == "none"_L1)
                             node->listStyle = QTextListFormat::ListStyleUndefined;
                     }
+                } else if (key == "start"_L1) {
+                    setIntAttribute(&node->listStart, value);
                 }
                 break;
             case Html_li:

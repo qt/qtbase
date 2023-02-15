@@ -182,36 +182,58 @@ void tst_QTextMarkdownImporter::thematicBreaks()
 void tst_QTextMarkdownImporter::lists_data()
 {
     QTest::addColumn<QString>("input");
+    QTest::addColumn<int>("skipToCheckStart");
+    QTest::addColumn<int>("expectedListStart");
     QTest::addColumn<int>("expectedItemCount");
     QTest::addColumn<bool>("expectedEmptyItems");
     QTest::addColumn<QString>("rewrite");
 
     // Some of these cases show odd behavior, which is subject to change
     // as the importer and the writer are tweaked to fix bugs over time.
-    QTest::newRow("dot newline") << ".\n" << 0 << true << ".\n\n";
-    QTest::newRow("number dot newline") << "1.\n" << 1 << true << "1.  \n";
-    QTest::newRow("star newline") << "*\n" << 1 << true << "* \n";
-    QTest::newRow("hyphen newline") << "-\n" << 1 << true << "- \n";
-    QTest::newRow("hyphen space newline") << "- \n" << 1 << true << "- \n";
-    QTest::newRow("hyphen space letter newline") << "- a\n" << 1 << false << "- a\n";
+    QTest::newRow("dot newline") << ".\n" << 0 << 1 << 0 << true << ".\n\n";
+    QTest::newRow("number dot newline") << "1.\n" << 0 << 1 << 1 << true << "1.  \n";
+    QTest::newRow("number offset start") << "2. text\n" << 0 << 2 << 1 << false << "2.  text\n";
+    QTest::newRow("second list offset start")
+            << "1. text\n\nintervening paragraph\n\n4. second list item"
+            << 2 << 4 << 2 << false
+            << "1.  text\n\nintervening paragraph\n\n4.  second list item\n";
+    QTest::newRow("list continuation offset start")
+            << "3. text\n\n   next paragraph in item 1\n10. second list item"
+            << 2 << 3 << 2 << false
+            << "3.  text\n\n    next paragraph in item 1\n\n4.  second list item\n";
+    QTest::newRow("nested list offset start")
+            << "1. text\n\n    0. indented list item\n\n4. second item in first list"
+            << 1 << 0 << 3 << false
+            << "1.  text\n    0.  indented list item\n2.  second item in first list\n";
+    QTest::newRow("offset start after nested list")
+            << "1. text\n\n    0. indented list item\n\n4. second item in first list"
+            << 2 << 1 << 3 << false
+            << "1.  text\n    0.  indented list item\n2.  second item in first list\n";
+    QTest::newRow("star newline") << "*\n" << 0 << 1 << 1 << true << "* \n";
+    QTest::newRow("hyphen newline") << "-\n" << 0 << 1 << 1 << true << "- \n";
+    QTest::newRow("hyphen space newline") << "- \n" << 0 << 1 << 1 << true << "- \n";
+    QTest::newRow("hyphen space letter newline") << "- a\n" << 0 << 1 << 1 << false << "- a\n";
     QTest::newRow("hyphen nbsp newline") <<
-        QString::fromUtf8("-\u00A0\n") << 0 << true << "-\u00A0\n\n";
-    QTest::newRow("nested empty lists") << "*\n  *\n  *\n" << 1 << true << "  * \n";
-    QTest::newRow("list nested in empty list") << "-\n  * a\n" << 2 << false << "- \n  * a\n";
+        QString::fromUtf8("-\u00A0\n") << 0 << 1 << 0 << true << "-\u00A0\n\n";
+    QTest::newRow("nested empty lists") << "*\n  *\n  *\n" << 0 << 1 << 1 << true << "  * \n";
+    QTest::newRow("list nested in empty list") << "-\n  * a\n" << 0 << 1 << 2 << false << "- \n  * a\n";
     QTest::newRow("lists nested in empty lists")
-            << "-\n  * a\n  * b\n- c\n  *\n    + d\n" << 5 << false
+            << "-\n  * a\n  * b\n- c\n  *\n    + d\n" << 0 << 1 << 5 << false
             << "- \n  * a\n  * b\n- c *\n  + d\n";
     QTest::newRow("numeric lists nested in empty lists")
-            << "- \n    1.  a\n    2.  b\n- c\n  1.\n       + d\n" << 4 << false
+            << "- \n    1.  a\n    2.  b\n- c\n  1.\n       + d\n" << 0 << 1 << 4 << false
             << "- \n    1.  a\n    2.  b\n- c 1. + d\n";
     QTest::newRow("styled spans in list items")
-            << "1.  normal text\n2.  **bold** text\n3.  `code` in the item\n4.  *italic* text\n5.  _underlined_ text\n" << 5 << false
+            << "1.  normal text\n2.  **bold** text\n3.  `code` in the item\n4.  *italic* text\n5.  _underlined_ text\n"
+            << 0 << 1 << 5 << false
             << "1.  normal text\n2.  **bold** text\n3.  `code` in the item\n4.  *italic* text\n5.  _underlined_ text\n";
 }
 
 void tst_QTextMarkdownImporter::lists()
 {
     QFETCH(QString, input);
+    QFETCH(int, skipToCheckStart);
+    QFETCH(int, expectedListStart);
     QFETCH(int, expectedItemCount);
     QFETCH(bool, expectedEmptyItems);
     QFETCH(QString, rewrite);
@@ -227,6 +249,8 @@ void tst_QTextMarkdownImporter::lists()
         out.close();
     }
 #endif
+    qCDebug(lcTests) << " original:" << input;
+    qCDebug(lcTests) << "rewritten:" << doc.toMarkdown();
 
     QTextFrame::iterator iterator = doc.rootFrame()->begin();
     QTextFrame *currentFrame = iterator.currentFrame();
@@ -239,10 +263,12 @@ void tst_QTextMarkdownImporter::lists()
         QCOMPARE(iterator.currentFrame(), currentFrame);
         // Check whether the block is text or a horizontal rule
         QTextBlock block = iterator.currentBlock();
+        QTextListFormat listFmt;
         if (block.textList()) {
             ++itemCount;
             if (!block.text().isEmpty())
                 emptyItems = false;
+            listFmt = block.textList()->format();
         }
         qCDebug(lcTests, "%d %s%s", i,
                 (block.textList() ? "<li>" : "<p>"), qPrintable(block.text()));
@@ -261,6 +287,11 @@ void tst_QTextMarkdownImporter::lists()
         QCOMPARE(listItemFmt.fontItalic(), false);
         QCOMPARE(listItemFmt.fontUnderline(), false);
         QCOMPARE(listItemFmt.fontFixedPitch(), false);
+        if (i == skipToCheckStart) {
+            qCDebug(lcTests) << "skipped to list item" << i << block.text()
+                             << "start" << listFmt.start() << "expected" << expectedListStart;
+            QCOMPARE(listFmt.start(), expectedListStart);
+        }
         ++iterator;
         ++i;
     }

@@ -36,6 +36,8 @@ private slots:
     void blockUpdate();
     void numbering_data();
     void numbering();
+    void start_data();
+    void start();
 
 private:
     QTextDocument *doc;
@@ -398,6 +400,62 @@ void tst_QTextList::numbering()
     QVERIFY(cursor.currentList());
     QCOMPARE(cursor.currentList()->itemNumber(cursor.block()), number - 1);
     QCOMPARE(cursor.currentList()->itemText(cursor.block()), result);
+}
+
+void tst_QTextList::start_data()
+{
+    QTest::addColumn<int>("format");
+    QTest::addColumn<int>("start");
+    QTest::addColumn<QStringList>("expectedItemTexts");
+
+    QTest::newRow("-1.") << int(QTextListFormat::ListDecimal) << -1
+                         << QStringList{ "-1.", "0.", "1." };
+    QTest::newRow("0.") << int(QTextListFormat::ListDecimal) << 0
+                        << QStringList{ "0.", "1.", "2." };
+    QTest::newRow("1.") << int(QTextListFormat::ListDecimal) << 1
+                        << QStringList{ "1.", "2.", "3." };
+
+    QTest::newRow("A. -1") << int(QTextListFormat::ListUpperAlpha) << -1
+                           << QStringList{ "-1.", "0.", "A." };
+    QTest::newRow("A. 0.") << int(QTextListFormat::ListUpperAlpha) << 0
+                           << QStringList{ "0.", "A.", "B." };
+    QTest::newRow("a. -1") << int(QTextListFormat::ListLowerAlpha) << -1
+                           << QStringList{ "-1.", "0.", "a." };
+    QTest::newRow("a. 0.") << int(QTextListFormat::ListLowerAlpha) << 0
+                           << QStringList{ "0.", "a.", "b." };
+    QTest::newRow("d. 4.") << int(QTextListFormat::ListLowerAlpha) << 4
+                           << QStringList{ "d.", "e.", "f." };
+
+    QTest::newRow("I. -1") << int(QTextListFormat::ListUpperRoman) << -1
+                           << QStringList{ "-1.", "0.", "I." };
+    QTest::newRow("I. 0.") << int(QTextListFormat::ListUpperRoman) << 0
+                           << QStringList{ "0.", "I.", "II." };
+    QTest::newRow("i. -1") << int(QTextListFormat::ListLowerRoman) << -1
+                           << QStringList{ "-1.", "0.", "i." };
+    QTest::newRow("i. 0.") << int(QTextListFormat::ListLowerRoman) << 0
+                           << QStringList{ "0.", "i.", "ii." };
+}
+
+void tst_QTextList::start()
+{
+    QFETCH(int, format);
+    QFETCH(int, start);
+    QFETCH(QStringList, expectedItemTexts);
+
+    QTextListFormat fmt;
+    fmt.setStyle(QTextListFormat::Style(format));
+    fmt.setStart(start);
+    QTextList *list = cursor.createList(fmt);
+    QVERIFY(list);
+
+    while (list->count() < int(expectedItemTexts.size()))
+        cursor.insertBlock();
+
+    QCOMPARE(list->count(), expectedItemTexts.size());
+
+    for (int i = 0; i < list->count(); ++i)
+        QCOMPARE(cursor.currentList()->itemText(cursor.currentList()->item(i)),
+                 expectedItemTexts[i]);
 }
 
 QTEST_MAIN(tst_QTextList)
