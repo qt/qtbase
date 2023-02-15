@@ -420,7 +420,7 @@ function(qt_internal_add_configure_time_executable target)
     )
 
     set(should_build_at_configure_time TRUE)
-    if(EXISTS "${target_binary_path}")
+    if(EXISTS "${target_binary_path}" AND EXISTS "${timestamp_file}")
         set(last_ts 0)
         foreach(source IN LISTS sources)
             file(TIMESTAMP "${source}" ts "%s")

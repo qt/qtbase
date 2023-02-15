@@ -251,7 +251,7 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
     # Run sync Qt first time at configure step to make all header files available for the code model
     # of IDEs.
     get_property(synced_modules GLOBAL PROPERTY _qt_synced_modules)
-    if(NOT "${module}" IN_LIST synced_modules)
+    if(NOT "${module}" IN_LIST synced_modules AND QT_SYNC_HEADERS_AT_CONFIGURE_TIME)
         message(STATUS "Running syncqt.cpp for module: ${module}")
         get_target_property(syncqt_location ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt LOCATION)
         execute_process(
