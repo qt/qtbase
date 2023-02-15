@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from compressedtexture_bc1.pro.
-
 #####################################################################
 ## compressedtexture_bc1 Binary:
 #####################################################################
@@ -38,7 +36,3 @@ qt_internal_add_resource(compressedtexture_bc1 "compressedtexture_bc1"
     FILES
         ${compressedtexture_bc1_resource_files}
 )
-
-
-#### Keys ignored in scope 1:.:.:compressedtexture_bc1.pro:<TRUE>:
-# TEMPLATE = "app"

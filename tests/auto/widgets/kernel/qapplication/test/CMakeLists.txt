@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from test.pro.
-
 #####################################################################
 ## test Test:
 #####################################################################
@@ -11,7 +9,7 @@
 list(APPEND test_data "../tmp/README")
 list(APPEND test_data "../modal")
 
-qt_internal_add_test(tst_qapplication # special case
+qt_internal_add_test(tst_qapplication
     SOURCES
         ../tst_qapplication.cpp
     LIBRARIES
@@ -21,25 +19,13 @@ qt_internal_add_test(tst_qapplication # special case
         Qt::Widgets
         Qt::WidgetsPrivate
     TESTDATA ${test_data}
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/.." # special case
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/.."
 )
 
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(tst_qapplication CONDITION builtin_testdata # special case
+qt_internal_extend_target(tst_qapplication CONDITION builtin_testdata
     DEFINES
         BUILTIN_TESTDATA
 )
-
-#### Keys ignored in scope 3:.:.:test.pro:NOT ANDROID:
-# SUBPROGRAMS = "desktopsettingsaware" "modal"
-
-#### Keys ignored in scope 6:.:.:test.pro:NOT ANDROID:
-# TEST_HELPER_INSTALLS = "../debug/helper"
-
-#### Keys ignored in scope 8:.:.:test.pro:NOT ANDROID:
-# TEST_HELPER_INSTALLS = "../release/helper"
-
-#### Keys ignored in scope 10:.:.:test.pro:NOT ANDROID:
-# TEST_HELPER_INSTALLS = "../helper"

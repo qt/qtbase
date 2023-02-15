@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qmouseevent_modal.pro.
-
 #####################################################################
 ## tst_qmouseevent_modal Test:
 #####################################################################

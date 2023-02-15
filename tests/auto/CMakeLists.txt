@@ -1,7 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# special case begin
 # Order by dependency [*], then alphabetic. [*] If bugs in part A of
 # our source would break tests of part B, then test A before B.
 
@@ -46,11 +45,9 @@ if(NOT CMAKE_CROSSCOMPILING AND QT_FEATURE_process)
      add_subdirectory(tools)
 endif()
 add_subdirectory(corelib)
-# special case begin
 if (TARGET Qt::Xml AND TARGET Qt::Sql AND TARGET Qt::Network)
     add_subdirectory(cmake)
 endif()
-# special case end
 
 # Limit set of tests to run for static Qt builds.
 if(QT_BUILD_MINIMAL_STATIC_TESTS)
@@ -109,5 +106,3 @@ if (TARGET Qt::Xml)
 endif()
 # add_subdirectory(installed_cmake) ## FIXME: Does this still make sense in this form?
 add_subdirectory(other)
-
-# special case end

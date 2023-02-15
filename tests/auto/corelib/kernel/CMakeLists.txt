@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from kernel.pro.
-
 add_subdirectory(qapplicationstatic)
 add_subdirectory(qcoreapplication)
 add_subdirectory(qdeadlinetimer)
@@ -18,7 +16,7 @@ add_subdirectory(qsignalblocker)
 add_subdirectory(qsignalmapper)
 add_subdirectory(qtimer)
 add_subdirectory(qtranslator)
-# QTBUG-88135 # special case
+# QTBUG-88135
 if(NOT ANDROID)
     add_subdirectory(qeventdispatcher)
 endif()

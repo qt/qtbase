@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qdatastream_core_pixmap.pro.
-
 #####################################################################
 ## tst_qdatastream_core_pixmap Test:
 #####################################################################

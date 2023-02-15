@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from cubemap_render.pro.
-
 #####################################################################
 ## cubemap_render Binary:
 #####################################################################
@@ -32,7 +30,3 @@ qt_internal_add_resource(cubemap_render "cubemap_render"
     FILES
         ${cubemap_render_resource_files}
 )
-
-
-#### Keys ignored in scope 1:.:.:cubemap_render.pro:<TRUE>:
-# TEMPLATE = "app"

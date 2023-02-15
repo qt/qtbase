@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from languagechange.pro.
-
 #####################################################################
 ## tst_languagechange Test:
 #####################################################################
@@ -16,9 +14,3 @@ qt_internal_add_test(tst_languagechange
         Qt::GuiPrivate
         Qt::Widgets
 )
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 2:.:.:languagechange.pro:WIN32:
-# testcase.timeout = "1800"

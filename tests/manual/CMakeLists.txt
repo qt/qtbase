@@ -1,22 +1,16 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from manual.pro.
-
-# special case begin
 # Don't build manual tests when targeting iOS.
 if(UIKIT)
     return()
 endif()
-# special case end
 
 add_subdirectory(filetest)
-# special case begin
 # diaglib is broken in dev due to missing
 # QtOpenGL/QGLFunctions headers
 # add_subdirectory(embeddedintoforeignwindow)
 # add_subdirectory(foreignwindows)
-# special case end
 add_subdirectory(gestures)
 add_subdirectory(highdpi)
 add_subdirectory(inputmethodhints)

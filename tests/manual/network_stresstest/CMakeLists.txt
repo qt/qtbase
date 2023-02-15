@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from network_stresstest.pro.
-
 #####################################################################
 ## tst_network_stresstest Binary:
 #####################################################################
@@ -28,7 +26,3 @@ qt_internal_add_resource(tst_network_stresstest "wwwfiles"
     FILES
         ${wwwfiles_resource_files}
 )
-
-
-#### Keys ignored in scope 1:.:.:network_stresstest.pro:<TRUE>:
-# QMAKE_RESOURCE_FLAGS = "-no-compress"

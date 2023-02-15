@@ -1,18 +1,14 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qsslcertificate.pro.
-
 #####################################################################
 ## tst_qsslcertificate Test:
 #####################################################################
 
-# special case begin
 # This test requires private tests to properly build
 if (NOT QT_FEATURE_private_tests)
     return()
 endif()
-# special case end
 
 # Collect test data
 file(GLOB_RECURSE test_data_glob

@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from lancebench.pro.
-
 #####################################################################
 ## tst_bench_lancebench Binary:
 #####################################################################
@@ -62,11 +60,6 @@ qt_internal_add_resource(tst_bench_lancebench "images"
     FILES
         ${images_resource_files}
 )
-
-
-#### Keys ignored in scope 1:.:.:lancebench.pro:<TRUE>:
-# TEMPLATE = "app"
-# TESTDATA = "../../../../baseline/painting/scripts/*"
 
 ## Scopes:
 #####################################################################

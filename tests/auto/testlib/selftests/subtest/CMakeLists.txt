@@ -1,15 +1,13 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from subtest.pro.
-
 #####################################################################
 ## subtest Binary:
 #####################################################################
 
 qt_internal_add_executable(subtest
-    NO_INSTALL # special case
-    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
+    NO_INSTALL
+    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES
         tst_subtest.cpp
     LIBRARIES
@@ -19,6 +17,4 @@ qt_internal_add_executable(subtest
 ## Scopes:
 #####################################################################
 
-# special case begin
 qt_internal_apply_testlib_coverage_options(subtest)
-# special case end

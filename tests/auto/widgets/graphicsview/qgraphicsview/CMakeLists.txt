@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qgraphicsview.pro.
-
 #####################################################################
 ## tst_qgraphicsview Test:
 #####################################################################
@@ -21,9 +19,6 @@ qt_internal_add_test(tst_qgraphicsview
         Qt::Widgets
         Qt::WidgetsPrivate
 )
-
-#### Keys ignored in scope 1:.:.:qgraphicsview.pro:<TRUE>:
-# testcase.timeout = "500"
 
 ## Scopes:
 #####################################################################

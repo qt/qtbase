@@ -1,15 +1,13 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from printdatatagswithglobaltags.pro.
-
 #####################################################################
 ## printdatatagswithglobaltags Binary:
 #####################################################################
 
 qt_internal_add_executable(printdatatagswithglobaltags
-    NO_INSTALL # special case
-    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
+    NO_INSTALL
+    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES
         tst_printdatatagswithglobaltags.cpp
     LIBRARIES
@@ -19,6 +17,4 @@ qt_internal_add_executable(printdatatagswithglobaltags
 ## Scopes:
 #####################################################################
 
-# special case begin
 qt_internal_apply_testlib_coverage_options(printdatatagswithglobaltags)
-# special case end

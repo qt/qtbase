@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qdir.pro.
-
 #####################################################################
 ## tst_qdir Test:
 #####################################################################
@@ -36,12 +34,8 @@ qt_internal_add_resource(tst_qdir "qdir"
         ${qdir_resource_files}
 )
 
-
 ## Scopes:
 #####################################################################
-
-#### Keys ignored in scope 2:.:.:qdir.pro:IOS:
-# QMAKE_INFO_PLIST = "Info.plist"
 
 qt_internal_extend_target(tst_qdir CONDITION CONFIG___contains___builtin_testdata
     DEFINES

@@ -1,15 +1,13 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from warnings.pro.
-
 #####################################################################
 ## warnings Binary:
 #####################################################################
 
 qt_internal_add_executable(warnings
-    NO_INSTALL # special case
-    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
+    NO_INSTALL
+    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES
         tst_warnings.cpp
     LIBRARIES
@@ -19,6 +17,4 @@ qt_internal_add_executable(warnings
 ## Scopes:
 #####################################################################
 
-# special case begin
 qt_internal_apply_testlib_coverage_options(warnings)
-# special case end

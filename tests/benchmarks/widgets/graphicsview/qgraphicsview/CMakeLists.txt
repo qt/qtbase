@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qgraphicsview.pro.
-
 #####################################################################
 ## tst_bench_qgraphicsview Binary:
 #####################################################################
@@ -44,10 +42,6 @@ qt_internal_add_resource(tst_bench_qgraphicsview "images"
     FILES
         ${images_resource_files}
 )
-
-
-#### Keys ignored in scope 1:.:.:qgraphicsview.pro:<TRUE>:
-# TEMPLATE = "app"
 
 ## Scopes:
 #####################################################################

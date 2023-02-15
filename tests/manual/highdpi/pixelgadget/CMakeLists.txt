@@ -1,4 +1,3 @@
-# Generated from pixelgadget.pro.
 
 #####################################################################
 ## pixelgadget Binary:

@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from instancing.pro.
-
 #####################################################################
 ## instancing Binary:
 #####################################################################
@@ -28,7 +26,3 @@ qt_internal_add_resource(tst_manual_instancing "instancing"
     FILES
         ${instancing_resource_files}
 )
-
-
-#### Keys ignored in scope 1:.:.:instancing.pro:<TRUE>:
-# TEMPLATE = "app"

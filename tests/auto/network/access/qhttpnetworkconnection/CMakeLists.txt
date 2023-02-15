@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qhttpnetworkconnection.pro.
-
 if(NOT QT_FEATURE_private_tests)
     return()
 endif()
@@ -17,9 +15,5 @@ qt_internal_add_test(tst_qhttpnetworkconnection
     LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
-    QT_TEST_SERVER_LIST "apache2" # special case
+    QT_TEST_SERVER_LIST "apache2"
 )
-
-#### Keys ignored in scope 1:.:.:qhttpnetworkconnection.pro:<TRUE>:
-# QT_TEST_SERVER_LIST = "apache2"
-# _REQUIREMENTS = "qtConfig(private_tests)"

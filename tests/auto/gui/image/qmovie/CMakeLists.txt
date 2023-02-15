@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qmovie.pro.
-
 #####################################################################
 ## tst_qmovie Test:
 #####################################################################
@@ -34,11 +32,6 @@ qt_internal_add_resource(tst_qmovie "resources"
     FILES
         ${resources_resource_files}
 )
-
-
-#### Keys ignored in scope 1:.:.:qmovie.pro:<TRUE>:
-# MOC_DIR = "tmp"
-# QT_FOR_CONFIG = "gui-private"
 
 ## Scopes:
 #####################################################################

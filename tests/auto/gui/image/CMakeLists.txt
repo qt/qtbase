@@ -1,9 +1,7 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from image.pro.
-
-# QTBUG-87669 # special case
+# QTBUG-87669
 if(TARGET Qt::Network AND NOT ANDROID)
     add_subdirectory(qimagereader)
 endif()
@@ -20,7 +18,8 @@ add_subdirectory(qiconhighdpi)
 if(QT_FEATURE_private_tests)
     add_subdirectory(qpixmapcache)
 endif()
-# QTBUG-87669 # special case
+
+# QTBUG-87669
 if(NOT ANDROID)
     add_subdirectory(qicon)
 endif()

@@ -1,10 +1,7 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qdbusinterface.pro.
-
 add_subdirectory(qmyserver)
-# special case begin
 
 #####################################################################
 ## ../tst_qdbusinterface Test:
@@ -21,10 +18,6 @@ qt_internal_add_test(tst_qdbusinterface
         Qt::Core
         Qt::DBus
 )
-
-#### Keys ignored in scope 1:.:.:qdbusinterface.pro:<TRUE>:
-# CONFIG = "testcase"
-# DESTDIR = "./"
 
 ## Scopes:
 #####################################################################
@@ -43,4 +36,3 @@ qt_internal_extend_target(tst_qdbusinterface CONDITION NOT QT_FEATURE_dbus_linke
 
 add_dependencies(tst_qdbusinterface qmyserver_qdbusinterface)
 
-# special case end

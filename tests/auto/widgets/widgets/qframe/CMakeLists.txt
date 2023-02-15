@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qframe.pro.
-
 #####################################################################
 ## tst_qframe Test:
 #####################################################################
@@ -14,7 +12,7 @@ file(GLOB_RECURSE test_data_glob
 list(APPEND test_data ${test_data_glob})
 
 qt_internal_add_test(tst_qframe
-    LOWDPI # special case
+    LOWDPI
     SOURCES
         tst_qframe.cpp
     LIBRARIES

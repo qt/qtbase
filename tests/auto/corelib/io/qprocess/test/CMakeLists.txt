@@ -42,6 +42,3 @@ endif()
 if(WIN32)
     add_dependencies(tst_qprocess testProcessEchoGui testSetNamedPipeHandleState)
 endif()
-
-#### Keys ignored in scope 2:.:.:test.pro:WIN32:
-# TESTDATA = "../testBatFiles/*"

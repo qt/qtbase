@@ -1,7 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from io.pro.
 # There is no mounted filesystem for IO testing on INTEGRITY yet.
 if(INTEGRITY)
     return()
@@ -46,7 +45,7 @@ endif()
 if(QT_FEATURE_private_tests OR UNIX)
     add_subdirectory(qfilesystementry)
 endif()
-# QTBUG-88508 # special case
+# QTBUG-88508
 if(QT_FEATURE_filesystemwatcher AND NOT ANDROID)
     add_subdirectory(qfilesystemwatcher)
 endif()

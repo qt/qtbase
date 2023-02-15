@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qpluginloader.pro.
-
 add_subdirectory(lib)
 add_subdirectory(staticplugin)
 add_subdirectory(theplugin)

@@ -1,13 +1,11 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from testapp.pro.
-
 #####################################################################
 ## testapp Binary:
 #####################################################################
 
-qt_internal_add_executable(windeploy_testapp # special case
+qt_internal_add_executable(windeploy_testapp
     GUI
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
@@ -16,9 +14,7 @@ qt_internal_add_executable(windeploy_testapp # special case
         Qt::Gui
 )
 
-# special case begin
 set_target_properties(windeploy_testapp
     PROPERTIES
         OUTPUT_NAME testapp
 )
-# special case end

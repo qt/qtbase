@@ -1,9 +1,7 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from tools.pro.
-
-# QTBUG-88538 # special case
+# QTBUG-88538
 if(NOT ANDROID AND NOT IOS)
     add_subdirectory(qmakelib)
     if(QT_FEATURE_qmake)
@@ -12,7 +10,7 @@ if(NOT ANDROID AND NOT IOS)
     add_subdirectory(moc)
     add_subdirectory(rcc)
 endif()
-# QTBUG-88538 # special case
+# QTBUG-88538
 if(TARGET Qt::Widgets AND NOT ANDROID AND NOT IOS)
     add_subdirectory(uic)
 endif()

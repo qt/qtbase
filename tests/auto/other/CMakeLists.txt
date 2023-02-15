@@ -1,17 +1,15 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from other.pro.
-
 if(NOT CMAKE_CROSSCOMPILING)
-    # add_subdirectory(atwrapper) <- does not exist # special case
+    # add_subdirectory(atwrapper) <- does not exist
 endif()
 if(TARGET Qt::Widgets)
     add_subdirectory(gestures)
     add_subdirectory(languagechange)
     add_subdirectory(qfocusevent)
     add_subdirectory(qsharedpointer_and_qwidget)
-    # add_subdirectory(windowsmobile) <- does not exist # special case
+    # add_subdirectory(windowsmobile) <- does not exist
 endif()
 if(TARGET Qt::Network AND TARGET Qt::Widgets)
     add_subdirectory(qnetworkaccessmanager_and_qprogressdialog)
@@ -32,7 +30,7 @@ if(TARGET Qt::Gui)
 endif()
 add_subdirectory(qobjectrace)
 add_subdirectory(toolsupport)
-# QTBUG-87670 # special case
+# QTBUG-87670
 if(QT_FEATURE_process AND TARGET Qt::Gui AND NOT ANDROID)
     add_subdirectory(qprocess_and_guieventloop)
 endif()

@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from GraphicsViewBenchmark.pro.
-
 #####################################################################
 ## tst_GraphicsViewBenchmark Binary:
 #####################################################################
@@ -356,10 +354,6 @@ qt_internal_add_resource(tst_GraphicsViewBenchmark "GraphicsViewBenchmark3"
     FILES
         ${GraphicsViewBenchmark3_resource_files}
 )
-
-
-#### Keys ignored in scope 1:.:.:GraphicsViewBenchmark.pro:<TRUE>:
-# TEMPLATE = "app"
 
 ## Scopes:
 #####################################################################

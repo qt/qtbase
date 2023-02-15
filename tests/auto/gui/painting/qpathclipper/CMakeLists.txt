@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qpathclipper.pro.
-
 if(NOT QT_FEATURE_private_tests)
     return()
 endif()
@@ -21,9 +19,6 @@ qt_internal_add_test(tst_qpathclipper
         Qt::Gui
         Qt::GuiPrivate
 )
-
-#### Keys ignored in scope 1:.:.:qpathclipper.pro:<TRUE>:
-# _REQUIREMENTS = "qtConfig(private_tests)"
 
 ## Scopes:
 #####################################################################

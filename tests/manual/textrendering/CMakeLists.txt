@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from textrendering.pro.
-
 add_subdirectory(glyphshaping)
 add_subdirectory(textperformance)
 add_subdirectory(nativetext)
