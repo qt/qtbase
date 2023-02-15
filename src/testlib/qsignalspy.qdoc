@@ -110,15 +110,35 @@
     \internal
 */
 
-/*! \fn QSignalSpy::wait(int timeout)
-
+/*! \fn bool QSignalSpy::wait(int timeout)
     \since 5.0
 
-    Starts an event loop that runs until the given signal is received.
-    Optionally the event loop can return earlier on a \a timeout (in milliseconds).
+    This is an overloaded function, equivalent passing \a timeout to the
+    chrono overload:
+    \code
+    wait(std::chrono::milliseconds{timeout});
+    \endcode
 
-    Returns \c true if the signal was emitted at least once in \a timeout milliseconds, otherwise returns \c false.
+    Returns \c true if the signal was emitted at least once in \a timeout,
+    otherwise returns \c false.
+*/
+
+/*! \fn bool QSignalSpy::wait(std::chrono::milliseconds timeout)
+    \since 6.6
+
+    Starts an event loop that runs until the given signal is received
+    or \a timeout has passed, whichever happens first.
+
+    \a timeout is any valid std::chrono::duration (std::chrono::seconds,
+    std::chrono::milliseconds ...etc).
+
+    Returns \c true if the signal was emitted at least once in \a timeout,
+    otherwise returns \c false.
 
     Example:
-    \snippet code/doc_src_qsignalspy.cpp 5
+    \code
+        using namespace std::chrono_literals;
+        QSignalSpy spy(object, signal);
+        spy.wait(2s);
+    \endcode
 */

@@ -94,12 +94,15 @@ public:
     inline bool isValid() const { return !sig.isEmpty(); }
     inline QByteArray signal() const { return sig; }
 
-    bool wait(int timeout = 5000)
+    bool wait(int timeout)
+    { return wait(std::chrono::milliseconds{timeout}); }
+
+    bool wait(std::chrono::milliseconds timeout = std::chrono::seconds{5})
     {
         Q_ASSERT(!m_waiting);
         const qsizetype origCount = size();
         m_waiting = true;
-        m_loop.enterLoop(std::chrono::milliseconds{timeout});
+        m_loop.enterLoop(timeout);
         m_waiting = false;
         return size() > origCount;
     }
