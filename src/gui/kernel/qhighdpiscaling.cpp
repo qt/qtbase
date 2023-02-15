@@ -494,7 +494,8 @@ void QHighDpiScaling::updateHighDpiScaling()
         qCDebug(lcHighDpi) << "Applying screen factors" << m_screenFactors;
         int i = -1;
         const auto screens = QGuiApplication::screens();
-        for (const auto &[name, factor] : m_screenFactors) {
+        for (const auto &[name, rawFactor]: m_screenFactors) {
+            const qreal factor = roundScaleFactor(rawFactor);
             ++i;
             if (name.isNull()) {
                 if (i < screens.size())
