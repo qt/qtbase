@@ -218,6 +218,10 @@ protected:
     void reallocate_impl(qsizetype prealloc, void *array, qsizetype size, qsizetype alloc);
     void resize_impl(qsizetype prealloc, void *array, qsizetype sz, const T &v)
     {
+        if (QtPrivate::q_points_into_range(&v, begin(), end())) {
+            resize_impl(prealloc, array, sz, T(v));
+            return;
+        }
         reallocate_impl(prealloc, array, sz, qMax(sz, capacity()));
         while (size() < sz) {
             new (data() + size()) T(v);
