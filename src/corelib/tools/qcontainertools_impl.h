@@ -89,6 +89,26 @@ void q_uninitialized_relocate_n(T* first, N n, T* out)
     }
 }
 
+/*!
+    \internal
+
+    A wrapper around std::rotate(), with an optimization for
+    Q_RELOCATABLE_TYPEs. We omit the return value, as it would be more work to
+    compute in the Q_RELOCATABLE_TYPE case and, unlike std::rotate on
+    ForwardIterators, callers can compute the result in constant time
+    themselves.
+*/
+template <typename T>
+void q_rotate(T *first, T *mid, T *last)
+{
+    if constexpr (QTypeInfo<T>::isRelocatable) {
+        const auto cast = [](T *p) { return reinterpret_cast<uchar*>(p); };
+        std::rotate(cast(first), cast(mid), cast(last));
+    } else {
+        std::rotate(first, mid, last);
+    }
+}
+
 template<typename iterator, typename N>
 void q_relocate_overlap_n_left_move(iterator first, N n, iterator d_first)
 {
