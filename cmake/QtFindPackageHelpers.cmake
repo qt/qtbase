@@ -18,7 +18,7 @@ endfunction()
 
 macro(qt_find_package)
     # Get the target names we expect to be provided by the package.
-    set(find_package_options CONFIG NO_MODULE MODULE REQUIRED NO_CMAKE_PACKAGE_REGISTRY)
+    set(find_package_options CONFIG NO_MODULE MODULE REQUIRED)
     set(options ${find_package_options} MARK_OPTIONAL)
     set(oneValueArgs MODULE_NAME QMAKE_LIB)
     set(multiValueArgs PROVIDED_TARGETS COMPONENTS OPTIONAL_COMPONENTS)
