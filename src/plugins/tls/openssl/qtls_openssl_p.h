@@ -120,7 +120,7 @@ private:
     bool handshakeInterrupted = false;
 
     bool fetchAuthorityInformation = false;
-    QSslCertificate caToFetch;
+    std::optional<QSslCertificate> caToFetch;
 
     bool inSetAndEmitError = false;
     bool pendingFatalAlert = false;
