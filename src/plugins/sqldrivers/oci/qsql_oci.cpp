@@ -2753,8 +2753,8 @@ QString QOCIDriver::escapeIdentifier(const QString &identifier, IdentifierType t
     QString res = identifier;
     if (!identifier.isEmpty() && !isIdentifierEscaped(identifier, type)) {
         res.replace(u'"', "\"\""_L1);
-        res.prepend(u'"').append(u'"');
         res.replace(u'.', "\".\""_L1);
+        res = u'"' + res + u'"';
     }
     return res;
 }

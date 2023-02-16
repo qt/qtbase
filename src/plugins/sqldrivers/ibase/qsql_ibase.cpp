@@ -1860,8 +1860,8 @@ QString QIBaseDriver::escapeIdentifier(const QString &identifier, IdentifierType
     QString res = identifier;
     if (!identifier.isEmpty() && !identifier.startsWith(u'"') && !identifier.endsWith(u'"') ) {
         res.replace(u'"', "\"\""_L1);
-        res.prepend(u'"').append(u'"');
         res.replace(u'.', "\".\""_L1);
+        res = u'"' + res + u'"';
     }
     return res;
 }

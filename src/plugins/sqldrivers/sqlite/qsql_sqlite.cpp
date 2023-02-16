@@ -49,9 +49,9 @@ static QString _q_escapeIdentifier(const QString &identifier, QSqlDriver::Identi
         return res;
     if (!identifier.isEmpty() && !identifier.startsWith(u'"') && !identifier.endsWith(u'"')) {
         res.replace(u'"', "\"\""_L1);
-        res.prepend(u'"').append(u'"');
         if (type == QSqlDriver::TableName)
             res.replace(u'.', "\".\""_L1);
+        res = u'"' + res + u'"';
     }
     return res;
 }

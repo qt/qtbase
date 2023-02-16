@@ -2598,9 +2598,10 @@ QString QODBCDriver::escapeIdentifier(const QString &identifier, IdentifierType)
     QChar quote = const_cast<QODBCDriverPrivate*>(d)->quoteChar();
     QString res = identifier;
     if (!identifier.isEmpty() && !identifier.startsWith(quote) && !identifier.endsWith(quote) ) {
-        res.replace(quote, QString(quote)+QString(quote));
-        res.prepend(quote).append(quote);
-        res.replace(u'.', QString(quote) + u'.' +QString(quote));
+        const QString quoteStr(quote);
+        res.replace(quote, quoteStr + quoteStr);
+        res.replace(u'.', quoteStr + u'.' + quoteStr);
+        res = quote + res + quote;
     }
     return res;
 }
