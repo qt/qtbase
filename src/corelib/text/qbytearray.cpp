@@ -200,6 +200,10 @@ char *qstrcpy(char *dst, const char *src)
 
     \note If \a dst and \a src overlap, the behavior is undefined.
 
+    \note Unlike strncpy(), this function does \e not write '\\0' to all \a
+    len bytes of \a dst, but stops after the terminating '\\0'. In this sense,
+    it's similar to C11's strncpy_s().
+    
     \note When compiling with Visual C++ compiler version 14.00
     (Visual C++ 2005) or later, internally the function strncpy_s
     will be used.
