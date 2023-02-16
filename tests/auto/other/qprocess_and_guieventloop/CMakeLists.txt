@@ -12,3 +12,4 @@ qt_internal_add_test(tst_qprocess_and_guieventloop
         Qt::Gui
 )
 add_subdirectory(write-read-write)
+add_dependencies(tst_qprocess_and_guieventloop write-read-write)
