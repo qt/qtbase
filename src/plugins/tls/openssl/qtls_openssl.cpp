@@ -524,7 +524,7 @@ void TlsCryptographOpenSSL::init(QSslSocket *qObj, QSslSocketPrivate *dObj)
     handshakeInterrupted = false;
 
     fetchAuthorityInformation = false;
-    caToFetch = QSslCertificate{};
+    caToFetch.reset();
 }
 
 void TlsCryptographOpenSSL::checkSettingSslContext(QSharedPointer<QSslContext> tlsContext)
@@ -783,7 +783,7 @@ void TlsCryptographOpenSSL::enableHandshakeContinuation()
 void TlsCryptographOpenSSL::cancelCAFetch()
 {
     fetchAuthorityInformation = false;
-    caToFetch = QSslCertificate{};
+    caToFetch.reset();
 }
 
 void TlsCryptographOpenSSL::continueHandshake()
@@ -1834,7 +1834,7 @@ void TlsCryptographOpenSSL::caRootLoaded(QSslCertificate cert, QSslCertificate t
     Q_ASSERT(q);
 
     //Done, fetched already:
-    caToFetch = QSslCertificate{};
+    caToFetch.reset();
 
     if (fetchAuthorityInformation) {
         if (!q->sslConfiguration().caCertificates().contains(trustedRoot))
