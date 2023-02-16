@@ -5417,6 +5417,10 @@ void tst_QRhi::tessellation_data()
 
 void tst_QRhi::tessellation()
 {
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
+        QSKIP("Fails on Android 12 (QTBUG-108844)");
+#endif
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
 
