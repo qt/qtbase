@@ -862,28 +862,12 @@ Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::insert_impl(qsizetype prealloc, void *arr
 {
     Q_ASSERT_X(isValidIterator(before), "QVarLengthArray::insert", "The specified const_iterator argument 'before' is invalid");
 
-    qsizetype offset = qsizetype(before - cbegin());
-    if (n != 0) {
-        const T copy(t); // `t` could alias an element in [begin(), end()[
-        resize_impl(prealloc, array, size() + n);
-        if constexpr (!QTypeInfo<T>::isRelocatable) {
-            T *b = begin() + offset;
-            T *j = end();
-            T *i = j - n;
-            while (i != b)
-                *--j = *--i;
-            i = b + n;
-            while (i != b)
-                *--i = copy;
-        } else {
-            T *b = begin() + offset;
-            T *i = b + n;
-            memmove(static_cast<void *>(i), static_cast<const void *>(b), (size() - offset - n) * sizeof(T));
-            while (i != b)
-                q20::construct_at(--i, copy);
-        }
-    }
-    return data() + offset;
+    const qsizetype offset = qsizetype(before - cbegin());
+    resize_impl(prealloc, array, size() + n, t);
+    const auto b = begin() + offset;
+    const auto e = end();
+    QtPrivate::q_rotate(b, e - n, e);
+    return b;
 }
 
 template <class T>
