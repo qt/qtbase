@@ -1,0 +1,88 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \example primecounter
+    \meta tags {widgets, threads}
+    \title Prime Counter
+    \ingroup qtconcurrentexamples
+    \brief Demonstrates how to monitor the progress of concurrent operations.
+
+    The following example demonstrates how to create an interactive and
+    non-blocking QtWidgets application using the QFutureWatcher class and the
+    \l {Concurrent Filter-Reduce} {filteredReduced} functions from
+    \l {Qt Concurrent}. With this example, the user can create a QList of
+    integers that can be resized. The list will be automatically filled with
+    natural numbers starting from 1 up to n. The program will then check for
+    prime numbers within the list and display the total count of prime numbers
+    found.
+
+    \image primecounter.png
+
+    \include examples-run.qdocinc
+
+    \section1 Setting up the connections
+
+    The \l {Qt Concurrent} library provides the
+    \l {Concurrent Filter-Reduce} {filteredReduced} functions, which can operate
+    in two modes:
+    \l {QtConcurrent::ReduceOption} {OrderedReduce and UnorderedReduce}. In
+    \c OrderedReduce mode, the reducing function is called in the order of the
+    original sequence, whereas in \c UnorderedReduce mode, the elements are
+    accessed randomly.
+
+    After configuring the UI with the desired elements, it is necessary to
+    connect them to the signals of the concurrent operations using the Qt
+    \l {Signals & Slots} mechanism. In this example, we use the QFutureWatcher
+    class to monitor the progress of the concurrent operations and provide the
+    signals required to implement the interactive GUI.
+
+    \dots
+    \snippet primecounter/primecounter.cpp 1
+    \dots
+
+    The QFutureWatcher class plays a vital role in this example as it provides
+    the signals required to update the UI in response to changes in the
+    concurrent operations.
+
+    \section1 Starting the concurrent operation
+
+    After connecting all the \l {Signals & Slots}, and when the user presses
+    the QPushButton, the \c {start()} function is called.
+
+    In the \c {start()} function, we call the
+    \l {Concurrent Filter-Reduce} {filteredReduced} function from Qt Concurrent
+    and set the future on the QFutureWatcher member. To ensure that this
+    operation runs truly concurrently, we specify a separate QThreadPool as the
+    first parameter. This approach also avoids any possible blocking in the
+    global thread pool. We pass the QList of integers as the container, a
+    static filter and reduce function, and finally the
+    \l {QtConcurrent::} {ReduceOption} flag.
+
+    \dots
+    \snippet primecounter/primecounter.cpp 2
+    \dots
+
+    Let's examine the filter and reduce functions. These functions are declared
+    static in this example since they do not depend on any member variable.
+    However, they could easily be specified as lambdas or member functions.
+
+    The filter function marks elements for subsequent reduction with the reduce
+    function. This implementation is a simple prime filter. As this function
+    takes a const reference as an argument, it allows thread-safe operation on
+    the container it operates on.
+
+    \dots
+    \snippet primecounter/primecounter.cpp 3
+    \dots
+
+    The reduce function takes a modifiable reference of the same type as the
+    container it operates on as its first parameter. The second parameter is the
+    previously filtered element from the filter function. In this example, we
+    count the number of primes.
+
+    \dots
+    \snippet primecounter/primecounter.cpp 4
+    \dots
+
+*/
