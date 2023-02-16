@@ -88,6 +88,26 @@ QT_WARNING_POP
 
 /*!
     \internal
+
+    A wrapper around std::rotate(), with an optimization for
+    Q_RELOCATABLE_TYPEs. We omit the return value, as it would be more work to
+    compute in the Q_RELOCATABLE_TYPE case and, unlike std::rotate on
+    ForwardIterators, callers can compute the result in constant time
+    themselves.
+*/
+template <typename T>
+void q_rotate(T *first, T *mid, T *last)
+{
+    if constexpr (QTypeInfo<T>::isRelocatable) {
+        const auto cast = [](T *p) { return reinterpret_cast<uchar*>(p); };
+        std::rotate(cast(first), cast(mid), cast(last));
+    } else {
+        std::rotate(first, mid, last);
+    }
+}
+
+/*!
+    \internal
     Copies all elements, except the ones for which \a pred returns \c true, from
     range [first, last), to the uninitialized memory buffer starting at \a out.
 
