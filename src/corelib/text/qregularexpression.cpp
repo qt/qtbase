@@ -1856,22 +1856,31 @@ QString QRegularExpression::escape(QStringView str)
     \value UnanchoredWildcardConversion
         The conversion will not anchor the pattern. This allows for partial string matches of
         wildcard expressions.
+
+    \value NonPathWildcardConversion
+        The conversion will \e{not} interpret the pattern as filepath globbing.
+        This enum value has been introduced in Qt 6.6.
+
+    \sa QRegularExpression::wildcardToRegularExpression
 */
 
 /*!
     \since 5.15
 
     Returns a regular expression representation of the given glob \a pattern.
-    The transformation is targeting file path globbing, which means in particular
-    that path separators receive special treatment. This implies that it is not
-    just a basic translation from "*" to ".*".
+
+    There are two transformations possible, one that targets file path
+    globbing, and another one which is more generic.
+
+    By default, the transformation is targeting file path globbing,
+    which means in particular that path separators receive special
+    treatment. This implies that it is not just a basic translation
+    from "*" to ".*" and similar.
 
     \snippet code/src_corelib_text_qregularexpression.cpp 31
 
-    By default, the returned regular expression is fully anchored. In other
-    words, there is no need of calling anchoredPattern() again on the
-    result. To get a regular expression that is not anchored, pass
-    UnanchoredWildcardConversion as the conversion \a options.
+    The more generic globbing transformation is available by passing
+    \c NonPathWildcardConversion in the conversion \a options.
 
     This implementation follows closely the definition
     of wildcard for glob patterns:
@@ -1880,10 +1889,12 @@ QString QRegularExpression::escape(QStringView str)
          \li Any character represents itself apart from those mentioned
          below. Thus \b{c} matches the character \e c.
     \row \li \b{?}
-         \li Matches any single character. It is the same as
-         \b{.} in full regexps.
+         \li Matches any single character, except for a path separator
+         (in case file path globbing has been selected). It is the
+         same as b{.} in full regexps.
     \row \li \b{*}
-         \li Matches zero or more of any characters. It is the
+         \li Matches zero or more of any characters, except for path
+         separators (in case file path globbing has been selected). It is the
          same as \b{.*} in full regexps.
     \row \li \b{[abc]}
          \li Matches one character given in the bracket.
@@ -1897,15 +1908,21 @@ QString QRegularExpression::escape(QStringView str)
          bracket. It is the same as \b{[^a-c]} in full regexp.
     \endtable
 
-    \note The backslash (\\) character is \e not an escape char in this context.
-    In order to match one of the special characters, place it in square brackets
-    (for example, \c{[?]}).
+    \note For historical reasons, a backslash (\\) character is \e not
+    an escape char in this context. In order to match one of the
+    special characters, place it in square brackets (for example,
+    \c{[?]}).
 
     More information about the implementation can be found in:
     \list
     \li \l {https://en.wikipedia.org/wiki/Glob_(programming)} {The Wikipedia Glob article}
     \li \c {man 7 glob}
     \endlist
+
+    By default, the returned regular expression is fully anchored. In other
+    words, there is no need of calling anchoredPattern() again on the
+    result. To get a regular expression that is not anchored, pass
+    UnanchoredWildcardConversion in the conversion \a options.
 
     \sa escape()
 */
@@ -1917,29 +1934,49 @@ QString QRegularExpression::wildcardToRegularExpression(QStringView pattern, Wil
     qsizetype i = 0;
     const QChar *wc = pattern.data();
 
+    struct GlobSettings {
+        char16_t nativePathSeparator;
+        QStringView starEscape;
+        QStringView questionMarkEscape;
+    };
+
+    const GlobSettings settings = [options]() {
+        if (options.testFlag(NonPathWildcardConversion)) {
+            return GlobSettings{ u'\0', u".*", u"." };
+        } else {
 #ifdef Q_OS_WIN
-    const char16_t nativePathSeparator = u'\\';
-    const auto starEscape = "[^/\\\\]*"_L1;
-    const auto questionMarkEscape = "[^/\\\\]"_L1;
+            return GlobSettings{ u'\\', u"[^/\\\\]*", u"[^/\\\\]" };
 #else
-    const char16_t nativePathSeparator = u'/';
-    const auto starEscape = "[^/]*"_L1;
-    const auto questionMarkEscape = "[^/]"_L1;
+            return GlobSettings{ u'/', u"[^/]*", u"[^/]" };
 #endif
+        }
+    }();
 
     while (i < wclen) {
         const QChar c = wc[i++];
         switch (c.unicode()) {
         case '*':
-            rx += starEscape;
+            rx += settings.starEscape;
             break;
         case '?':
-            rx += questionMarkEscape;
+            rx += settings.questionMarkEscape;
             break;
+        // When not using filepath globbing: \ is escaped, / is itself
+        // When using filepath globbing:
+        // * Unix: \ gets escaped. / is itself
+        // * Windows: \ and / can match each other -- they become [/\\] in regexp
         case '\\':
 #ifdef Q_OS_WIN
+            if (options.testFlag(NonPathWildcardConversion))
+                rx += u"\\\\";
+            else
+                rx += u"[/\\\\]";
+            break;
         case '/':
-            rx += "[/\\\\]"_L1;
+            if (options.testFlag(NonPathWildcardConversion))
+                rx += u'/';
+            else
+                rx += u"[/\\\\]";
             break;
 #endif
         case '$':
@@ -1967,11 +2004,13 @@ QString QRegularExpression::wildcardToRegularExpression(QStringView pattern, Wil
                     rx += wc[i++];
 
                 while (i < wclen && wc[i] != u']') {
-                    // The '/' appearing in a character class invalidates the
-                    // regular expression parsing. It also concerns '\\' on
-                    // Windows OS types.
-                    if (wc[i] == u'/' || wc[i] == nativePathSeparator)
-                        return rx;
+                    if (!options.testFlag(NonPathWildcardConversion)) {
+                        // The '/' appearing in a character class invalidates the
+                        // regular expression parsing. It also concerns '\\' on
+                        // Windows OS types.
+                        if (wc[i] == u'/' || wc[i] == settings.nativePathSeparator)
+                            return rx;
+                    }
                     if (wc[i] == u'\\')
                         rx += u'\\';
                     rx += wc[i++];
