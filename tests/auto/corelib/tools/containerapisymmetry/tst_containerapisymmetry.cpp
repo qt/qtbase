@@ -329,6 +329,26 @@ private Q_SLOTS:
 
 private:
     template <typename Container>
+    void copesWithValueTypesWithConstMembers_impl();
+
+    struct ConstMember {
+    #ifndef __cpp_aggregate_paren_init // also check that we can emplace aggregates (C++20 only)
+        explicit ConstMember(int n) : n(n) {}
+    #endif
+        const int n;
+
+        friend bool operator==(const ConstMember &lhs, const ConstMember &rhs) noexcept
+        { return lhs.n == rhs.n; }
+        friend bool operator!=(const ConstMember &lhs, const ConstMember &rhs) noexcept
+        { return !(lhs == rhs); }
+    };
+
+private Q_SLOTS:
+    void copesWithValueTypesWithConstMembers_std_vector() { copesWithValueTypesWithConstMembers_impl<std::vector<ConstMember>>(); }
+    void copesWithValueTypesWithConstMembers_QVarLengthArray() { copesWithValueTypesWithConstMembers_impl<QVarLengthArray<ConstMember, 2>>(); }
+
+private:
+    template <typename Container>
     void assign_impl() const;
 
 private Q_SLOTS:
@@ -758,6 +778,76 @@ void tst_ContainerApiSymmetry::resize_impl() const
 
         QCOMPARE(c1, c2);
     }
+}
+
+template <typename T>
+constexpr bool is_vector_v = false;
+template <typename...Args>
+constexpr bool is_vector_v<std::vector<Args...>> = true;
+
+template <typename Container>
+void tst_ContainerApiSymmetry::copesWithValueTypesWithConstMembers_impl()
+{
+    // The problem:
+    //
+    //   using V = ConstMember;
+    //   V v{42};
+    //   assert(v.n == 42); // OK
+    //   new (&v) V{24};
+    //   assert(v.n == 24); // UB in C++17: v.n could still be 42 (C++17 [basic.life]/8)
+    //                      // OK in C++20 (C++20 [basic.life]/8)
+    //   assert(std::launder(&v)->n == 24); // OK
+    //   assert(v.n == 24); // _still_ UB!
+    //
+    // Containers:
+    // - must not expose this problem
+    // - must compile in the first place, even though V
+    //   - is not assignable
+    //   - is not default-constructible
+
+    using S = typename Container::size_type;
+    using V = typename Container::value_type;
+
+    Container c;
+    // the following are all functions that by rights should not require the type to be
+    // - default-constructible
+    // - assignable
+    // make sure they work
+    c.reserve(S(5));
+    c.shrink_to_fit();
+#ifdef __GLIBCXX__ // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83981
+    if constexpr (is_vector_v<Container>) {
+        c.push_back(V(42));
+    } else
+#endif
+    {
+        c.resize(1, V(42));
+    }
+    QCOMPARE(c[0], V(42));
+#ifdef __GLIBCXX__ // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83981
+    if constexpr (is_vector_v<Container>) {
+        c.push_back(V(48));
+        c.push_back(V(48));
+    } else
+#endif
+    {
+        c.resize(2, V(48));
+    }
+    QCOMPARE(c[0], V(42));
+    QCOMPARE(c[1], V(48));
+    c.clear();
+    c.emplace_back(24);
+    QCOMPARE(c.front(), V(24));
+    c.push_back(V(41));
+    QCOMPARE(c.back(), V(41));
+    {
+        const auto v142 = V(142);
+        c.push_back(v142);
+    }
+    QCOMPARE(c.size(), S(3));
+    QCOMPARE(c[0],  V(24));
+    QCOMPARE(c[1],  V(41));
+    QCOMPARE(c[2], V(142));
 }
 
 template <typename Container>
