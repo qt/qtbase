@@ -821,7 +821,7 @@ void tst_ContainerApiSymmetry::assign_impl() const
         ss << "9 9 9 9 9 9 9 ";
         c.assign(std::istream_iterator<V>{ss}, std::istream_iterator<V>{});
         // We cannot check the capacity here because growth rates differ between implementations.
-        CHECK(c, tData, c.size(), S(7), 8, S(8));
+        CHECK(c, tData, c.size(), S(7), S(8), S(8));
     }
     {
         // initializer-list version
