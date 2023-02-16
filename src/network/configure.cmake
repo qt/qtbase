@@ -333,7 +333,7 @@ qt_feature("topleveldomain" PUBLIC
     SECTION "Networking"
     LABEL "qIsEffectiveTLD()"
     PURPOSE "Provides support for checking if a domain is a top level domain. If enabled, a binary dump of the Public Suffix List (http://www.publicsuffix.org, Mozilla License) is included. The data is used in QNetworkCookieJar."
-
+    AUTODETECT NOT WASM
     DISABLE INPUT_publicsuffix STREQUAL "no"
 )
 qt_feature("publicsuffix-qt" PRIVATE
