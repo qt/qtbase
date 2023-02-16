@@ -281,6 +281,10 @@ void tst_QOpenGLWidget::reparentToNotYetCreated()
 
 void tst_QOpenGLWidget::reparentHidden()
 {
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
+        QSKIP("Fails on Android 12 (QTBUG-111235)");
+#endif
     // Tests QTBUG-60896
     QWidget topLevel1;
 
