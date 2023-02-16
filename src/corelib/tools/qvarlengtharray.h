@@ -779,7 +779,10 @@ template <typename Iterator>
 Q_OUTOFLINE_TEMPLATE void QVLABase<T>::assign_impl(qsizetype prealloc, void *array, Iterator first, Iterator last)
 {
     // This function only provides the basic exception guarantee.
-    if constexpr (std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category, std::forward_iterator_tag>) {
+    constexpr bool IsFwdIt =
+            std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category,
+                                  std::forward_iterator_tag>;
+    if constexpr (IsFwdIt) {
         const qsizetype n = std::distance(first, last);
         if (n > capacity())
             reallocate_impl(prealloc, array, 0, n); // clear & reserve n
@@ -792,11 +795,19 @@ Q_OUTOFLINE_TEMPLATE void QVLABase<T>::assign_impl(qsizetype prealloc, void *arr
         ++first;
     }
 
-    qsizetype n = dst - begin();
-    while (first != last) {
-        emplace_back_impl(prealloc, array, *first);
-        ++first;
-        ++n;
+    qsizetype n = 0;
+    if constexpr (IsFwdIt && noexcept(T(*first))) {
+        dst = std::uninitialized_copy(first, last, dst);
+        n = dst - begin();
+        if (n > s) // otherwise: readjust 's' in erase() later
+            s = n;
+    } else {
+        n = dst - begin();
+        while (first != last) {
+            emplace_back_impl(prealloc, array, *first);
+            ++first;
+            ++n;
+        }
     }
     erase(data() + n, data() + size());
 }
