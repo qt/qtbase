@@ -781,10 +781,8 @@ Q_OUTOFLINE_TEMPLATE void QVLABase<T>::assign_impl(qsizetype prealloc, void *arr
     // This function only provides the basic exception guarantee.
     if constexpr (std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category, std::forward_iterator_tag>) {
         const qsizetype n = std::distance(first, last);
-        if (n > capacity()) {
-            reallocate_impl(prealloc, array, 0, capacity()); // clear
-            reallocate_impl(prealloc, array, 0, n); // reserve n
-        }
+        if (n > capacity())
+            reallocate_impl(prealloc, array, 0, n); // clear & reserve n
     }
 
     auto dst = begin();
