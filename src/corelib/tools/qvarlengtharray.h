@@ -853,12 +853,7 @@ Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::emplace_impl(qsizetype prealloc, void *ar
     emplace_back_impl(prealloc, array, std::forward<Args>(args)...);
     const auto b = begin() + offset;
     const auto e = end();
-    if constexpr (QTypeInfo<T>::isRelocatable) {
-        auto cast = [](T *p) { return reinterpret_cast<uchar*>(p); };
-        std::rotate(cast(b), cast(e - 1), cast(e));
-    } else {
-        std::rotate(b, e - 1, e);
-    }
+    QtPrivate::q_rotate(b, e - 1, e);
     return b;
 }
 
