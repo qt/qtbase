@@ -114,9 +114,9 @@ char *qstrcpy(char *dst, const char *src)
     A safe \c strncpy() function.
 
     Copies at most \a len bytes from \a src (stopping at \a len or the
-    terminating '\\0' whichever comes first) into \a dst and returns a
-    pointer to \a dst. Guarantees that \a dst is '\\0'-terminated. If
-    \a src or \a dst is \nullptr, returns \nullptr immediately.
+    terminating '\\0' whichever comes first) into \a dst. Guarantees that \a
+    dst is '\\0'-terminated, except when \a dst is \nullptr or \a len is 0. If
+    \a src is \nullptr, returns \nullptr, otherwise returns \a dst.
 
     This function assumes that \a dst is at least \a len characters
     long.
@@ -128,9 +128,11 @@ char *qstrcpy(char *dst, const char *src)
 
 char *qstrncpy(char *dst, const char *src, size_t len)
 {
-    if (!src || !dst)
-        return nullptr;
-    if (len > 0) {
+    if (dst && len > 0) {
+        if (!src) {
+            *dst = '\0';
+            return nullptr;
+        }
 #ifdef Q_CC_MSVC
         strncpy_s(dst, len, src, len - 1);
 #else
@@ -138,7 +140,7 @@ char *qstrncpy(char *dst, const char *src, size_t len)
 #endif
         dst[len-1] = '\0';
     }
-    return dst;
+    return src ? dst : nullptr;
 }
 
 /*! \fn size_t qstrlen(const char *str)
