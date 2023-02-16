@@ -479,12 +479,7 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     append(std::move(t));
     const auto b = begin() + offset;
     const auto e = end();
-    if (QTypeInfo<T>::isRelocatable) {
-        auto cast = [](T *p) { return reinterpret_cast<uchar*>(p); };
-        std::rotate(cast(b), cast(e - 1), cast(e));
-    } else {
-        std::rotate(b, e - 1, e);
-    }
+    QtPrivate::q_rotate(b, e - 1, e);
     return b;
 }
 
