@@ -6946,7 +6946,7 @@ int QRhi::ubufAligned(int v) const
 /*!
     \return the number of mip levels for a given \a size.
  */
-int QRhi::mipLevelsForSize(const QSize &size) const
+int QRhi::mipLevelsForSize(const QSize &size)
 {
     return qFloor(std::log2(qMax(size.width(), size.height()))) + 1;
 }
@@ -6955,7 +6955,7 @@ int QRhi::mipLevelsForSize(const QSize &size) const
     \return the texture image size for a given \a mipLevel, calculated based on
     the level 0 size given in \a baseLevelSize.
  */
-QSize QRhi::sizeForMipLevel(int mipLevel, const QSize &baseLevelSize) const
+QSize QRhi::sizeForMipLevel(int mipLevel, const QSize &baseLevelSize)
 {
     const int w = qMax(1, baseLevelSize.width() >> mipLevel);
     const int h = qMax(1, baseLevelSize.height() >> mipLevel);

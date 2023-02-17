@@ -1804,8 +1804,8 @@ public:
     int ubufAlignment() const;
     int ubufAligned(int v) const;
 
-    int mipLevelsForSize(const QSize &size) const;
-    QSize sizeForMipLevel(int mipLevel, const QSize &baseLevelSize) const;
+    static int mipLevelsForSize(const QSize &size);
+    static QSize sizeForMipLevel(int mipLevel, const QSize &baseLevelSize);
 
     bool isYUpInFramebuffer() const;
     bool isYUpInNDC() const;
