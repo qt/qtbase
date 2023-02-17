@@ -228,7 +228,8 @@ public:
     }
     const QRhiVertexInputBinding *cbeginBindings() const { return m_bindings.cbegin(); }
     const QRhiVertexInputBinding *cendBindings() const { return m_bindings.cend(); }
-    const QRhiVertexInputBinding *bindingAt(int index) const { return &m_bindings.at(index); }
+    const QRhiVertexInputBinding *bindingAt(qsizetype index) const { return &m_bindings.at(index); }
+    qsizetype bindingCount() const { return m_bindings.count(); }
 
     void setAttributes(std::initializer_list<QRhiVertexInputAttribute> list) { m_attributes = list; }
     template<typename InputIterator>
@@ -239,6 +240,8 @@ public:
     }
     const QRhiVertexInputAttribute *cbeginAttributes() const { return m_attributes.cbegin(); }
     const QRhiVertexInputAttribute *cendAttributes() const { return m_attributes.cend(); }
+    const QRhiVertexInputAttribute *attributeAt(qsizetype index) const { return &m_attributes.at(index); }
+    qsizetype attributeCount() const { return m_attributes.count(); }
 
 private:
     QVarLengthArray<QRhiVertexInputBinding, 8> m_bindings;
@@ -494,7 +497,8 @@ public:
     }
     const QRhiColorAttachment *cbeginColorAttachments() const { return m_colorAttachments.cbegin(); }
     const QRhiColorAttachment *cendColorAttachments() const { return m_colorAttachments.cend(); }
-    const QRhiColorAttachment *colorAttachmentAt(int index) const { return &m_colorAttachments.at(index); }
+    const QRhiColorAttachment *colorAttachmentAt(qsizetype index) const { return &m_colorAttachments.at(index); }
+    qsizetype colorAttachmentCount() const { return m_colorAttachments.count(); }
 
     QRhiRenderBuffer *depthStencilBuffer() const { return m_depthStencilBuffer; }
     void setDepthStencilBuffer(QRhiRenderBuffer *renderBuffer) { m_depthStencilBuffer = renderBuffer; }
@@ -584,6 +588,8 @@ public:
     }
     const QRhiTextureUploadEntry *cbeginEntries() const { return m_entries.cbegin(); }
     const QRhiTextureUploadEntry *cendEntries() const { return m_entries.cend(); }
+    const QRhiTextureUploadEntry *entryAt(qsizetype index) const { return &m_entries.at(index); }
+    qsizetype entryCount() const { return m_entries.count(); }
 
 private:
     QVarLengthArray<QRhiTextureUploadEntry, 16> m_entries;
@@ -1058,16 +1064,16 @@ public:
     QRhiResource::Type resourceType() const override;
 
     void setBindings(std::initializer_list<QRhiShaderResourceBinding> list) { m_bindings = list; }
-
     template<typename InputIterator>
     void setBindings(InputIterator first, InputIterator last)
     {
         m_bindings.clear();
         std::copy(first, last, std::back_inserter(m_bindings));
     }
-
     const QRhiShaderResourceBinding *cbeginBindings() const { return m_bindings.cbegin(); }
     const QRhiShaderResourceBinding *cendBindings() const { return m_bindings.cend(); }
+    const QRhiShaderResourceBinding *bindingAt(qsizetype index) const { return &m_bindings.at(index); }
+    qsizetype bindingCount() const { return m_bindings.count(); }
 
     bool isLayoutCompatible(const QRhiShaderResourceBindings *other) const;
 
@@ -1241,6 +1247,8 @@ public:
     }
     const TargetBlend *cbeginTargetBlends() const { return m_targetBlends.cbegin(); }
     const TargetBlend *cendTargetBlends() const { return m_targetBlends.cend(); }
+    const TargetBlend *targetBlendAt(qsizetype index) const { return &m_targetBlends.at(index); }
+    qsizetype targetBlendCount() const { return m_targetBlends.count(); }
 
     bool hasDepthTest() const { return m_depthTest; }
     void setDepthTest(bool enable) { m_depthTest = enable; }
@@ -1287,6 +1295,8 @@ public:
     }
     const QRhiShaderStage *cbeginShaderStages() const { return m_shaderStages.cbegin(); }
     const QRhiShaderStage *cendShaderStages() const { return m_shaderStages.cend(); }
+    const QRhiShaderStage *shaderStageAt(qsizetype index) const { return &m_shaderStages.at(index); }
+    qsizetype shaderStageCount() const { return m_shaderStages.count(); }
 
     QRhiVertexInputLayout vertexInputLayout() const { return m_vertexInputLayout; }
     void setVertexInputLayout(const QRhiVertexInputLayout &layout) { m_vertexInputLayout = layout; }

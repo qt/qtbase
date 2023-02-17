@@ -739,9 +739,8 @@ inline bool operator!=(const QRhiRenderTargetAttachmentTracker::ResId &a, const 
 template<typename TexType, typename RenderBufferType>
 void QRhiRenderTargetAttachmentTracker::updateResIdList(const QRhiTextureRenderTargetDescription &desc, ResIdList *dst)
 {
-    const quintptr colorAttCount = desc.cendColorAttachments() - desc.cbeginColorAttachments();
     const bool hasDepthStencil = desc.depthStencilBuffer() || desc.depthTexture();
-    dst->resize(colorAttCount * 2 + (hasDepthStencil ? 1 : 0));
+    dst->resize(desc.colorAttachmentCount() * 2 + (hasDepthStencil ? 1 : 0));
     int n = 0;
     for (auto it = desc.cbeginColorAttachments(), itEnd = desc.cendColorAttachments(); it != itEnd; ++it, ++n) {
         const QRhiColorAttachment &colorAtt(*it);

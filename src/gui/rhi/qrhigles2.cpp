@@ -5428,13 +5428,13 @@ bool QGles2TextureRenderTarget::create()
     if (framebuffer)
         destroy();
 
-    const bool hasColorAttachments = m_desc.cbeginColorAttachments() != m_desc.cendColorAttachments();
+    const bool hasColorAttachments = m_desc.colorAttachmentCount() > 0;
     Q_ASSERT(hasColorAttachments || m_desc.depthTexture());
     Q_ASSERT(!m_desc.depthStencilBuffer() || !m_desc.depthTexture());
     const bool hasDepthStencil = m_desc.depthStencilBuffer() || m_desc.depthTexture();
 
     if (hasColorAttachments) {
-        const int count = m_desc.cendColorAttachments() - m_desc.cbeginColorAttachments();
+        const int count = int(m_desc.colorAttachmentCount());
         if (count > rhiD->caps.maxDrawBuffers) {
             qWarning("QGles2TextureRenderTarget: Too many color attachments (%d, max is %d)",
                      count, rhiD->caps.maxDrawBuffers);

@@ -4036,7 +4036,7 @@ void QMetalTextureRenderTarget::destroy()
 
 QRhiRenderPassDescriptor *QMetalTextureRenderTarget::newCompatibleRenderPassDescriptor()
 {
-    const int colorAttachmentCount = m_desc.cendColorAttachments() - m_desc.cbeginColorAttachments();
+    const int colorAttachmentCount = int(m_desc.colorAttachmentCount());
     QMetalRenderPassDescriptor *rpD = new QMetalRenderPassDescriptor(m_rhi);
     rpD->colorAttachmentCount = colorAttachmentCount;
     rpD->hasDepthStencil = m_desc.depthStencilBuffer() || m_desc.depthTexture();
@@ -4060,8 +4060,7 @@ QRhiRenderPassDescriptor *QMetalTextureRenderTarget::newCompatibleRenderPassDesc
 bool QMetalTextureRenderTarget::create()
 {
     QRHI_RES_RHI(QRhiMetal);
-    const bool hasColorAttachments = m_desc.cbeginColorAttachments() != m_desc.cendColorAttachments();
-    Q_ASSERT(hasColorAttachments || m_desc.depthTexture());
+    Q_ASSERT(m_desc.colorAttachmentCount() > 0 || m_desc.depthTexture());
     Q_ASSERT(!m_desc.depthStencilBuffer() || !m_desc.depthTexture());
     const bool hasDepthStencil = m_desc.depthStencilBuffer() || m_desc.depthTexture();
 
