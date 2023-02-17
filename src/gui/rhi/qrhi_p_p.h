@@ -220,6 +220,21 @@ public:
     QRhiVertexInputAttribute::Format shaderDescVariableFormatToVertexInputFormat(QShaderDescription::VariableType type) const;
     quint32 byteSizePerVertexForVertexInputFormat(QRhiVertexInputAttribute::Format format) const;
 
+    static const QRhiShaderResourceBinding::Data *shaderResourceBindingData(const QRhiShaderResourceBinding &binding)
+    {
+        return &binding.d;
+    }
+
+    static QRhiShaderResourceBinding::Data *shaderResourceBindingData(QRhiShaderResourceBinding &binding)
+    {
+        return &binding.d;
+    }
+
+    static bool sortedBindingLessThan(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)
+    {
+        return a.d.binding < b.d.binding;
+    }
+
     QRhi *q;
 
     static const int MAX_SHADER_CACHE_ENTRIES = 128;

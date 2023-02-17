@@ -3367,7 +3367,7 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
     srb->m_layoutDesc.clear();
     auto layoutDescAppender = std::back_inserter(srb->m_layoutDesc);
     for (const QRhiShaderResourceBinding &b : std::as_const(srb->m_bindings)) {
-        const QRhiShaderResourceBinding::Data *d = b.data();
+        const QRhiShaderResourceBinding::Data *d = &b.d;
         srb->m_layoutDescHash ^= uint(d->binding) ^ uint(d->stage) ^ uint(d->type)
             ^ uint(d->arraySize());
         layoutDescAppender = d->serialize(layoutDescAppender);
@@ -4083,8 +4083,8 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
  */
 bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b) noexcept
 {
-    const QRhiShaderResourceBinding::Data *da = a.data();
-    const QRhiShaderResourceBinding::Data *db = b.data();
+    const QRhiShaderResourceBinding::Data *da = QRhiImplementation::shaderResourceBindingData(a);
+    const QRhiShaderResourceBinding::Data *db = QRhiImplementation::shaderResourceBindingData(b);
 
     if (da == db)
         return true;
@@ -4173,7 +4173,7 @@ bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
  */
 size_t qHash(const QRhiShaderResourceBinding &b, size_t seed) noexcept
 {
-    const QRhiShaderResourceBinding::Data *d = b.data();
+    const QRhiShaderResourceBinding::Data *d = QRhiImplementation::shaderResourceBindingData(b);
     size_t h = uint(d->binding) ^ uint(d->stage) ^ uint(d->type) ^ seed;
     switch (d->type) {
     case QRhiShaderResourceBinding::UniformBuffer:
@@ -4207,7 +4207,7 @@ size_t qHash(const QRhiShaderResourceBinding &b, size_t seed) noexcept
 QDebug operator<<(QDebug dbg, const QRhiShaderResourceBinding &b)
 {
     QDebugStateSaver saver(dbg);
-    const QRhiShaderResourceBinding::Data *d = b.data();
+    const QRhiShaderResourceBinding::Data *d = QRhiImplementation::shaderResourceBindingData(b);
     dbg.nospace() << "QRhiShaderResourceBinding("
                   << "binding=" << d->binding
                   << " stage=" << d->stage
@@ -5431,7 +5431,7 @@ bool QRhiImplementation::sanityCheckShaderResourceBindings(QRhiShaderResourceBin
     const int CHECKED_BINDINGS_COUNT = 64;
     bool bindingSeen[CHECKED_BINDINGS_COUNT] = {};
     for (auto it = srb->cbeginBindings(), end = srb->cendBindings(); it != end; ++it) {
-        const int binding = it->data()->binding;
+        const int binding = shaderResourceBindingData(*it)->binding;
         if (binding >= CHECKED_BINDINGS_COUNT)
             continue;
         if (binding < 0) {
@@ -5439,7 +5439,7 @@ bool QRhiImplementation::sanityCheckShaderResourceBindings(QRhiShaderResourceBin
             bindingsOk = false;
             continue;
         }
-        switch (it->data()->type) {
+        switch (shaderResourceBindingData(*it)->type) {
         case QRhiShaderResourceBinding::UniformBuffer:
             if (!bindingSeen[binding]) {
                 bindingSeen[binding] = true;
@@ -5493,7 +5493,7 @@ bool QRhiImplementation::sanityCheckShaderResourceBindings(QRhiShaderResourceBin
             }
             break;
         default:
-            qWarning("Unknown binding type %d", int(it->data()->type));
+            qWarning("Unknown binding type %d", int(shaderResourceBindingData(*it)->type));
             bindingsOk = false;
             break;
         }

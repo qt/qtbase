@@ -409,6 +409,7 @@ public:
         }
     };
 
+    // ### remove these two once Qt Quick 3D is updated
     Data *data() { return &d; }
     const Data *data() const { return &d; }
 
@@ -420,13 +421,14 @@ public:
                                            Output dst)
     {
         while (first != last) {
-            dst = first->data()->serialize(dst);
+            dst = first->d.serialize(dst);
             ++first;
         }
     }
 
 private:
     Data d;
+    friend class QRhiImplementation;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiShaderResourceBinding::StageFlags)

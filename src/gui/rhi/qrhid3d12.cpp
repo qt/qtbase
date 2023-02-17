@@ -786,7 +786,7 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
     QD3D12ShaderResourceBindings *srbD = QRHI_RES(QD3D12ShaderResourceBindings, srb);
 
     for (int i = 0, ie = srbD->sortedBindings.size(); i != ie; ++i) {
-        const QRhiShaderResourceBinding::Data *b = srbD->sortedBindings[i].data();
+        const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->sortedBindings[i]);
         switch (b->type) {
         case QRhiShaderResourceBinding::UniformBuffer:
         {
@@ -2239,7 +2239,7 @@ void QD3D12ShaderResourceVisitor::visit()
 {
     for (int bindingIdx = 0, bindingCount = srb->sortedBindings.count(); bindingIdx != bindingCount; ++bindingIdx) {
         const QRhiShaderResourceBinding &b(srb->sortedBindings[bindingIdx]);
-        const QRhiShaderResourceBinding::Data *bd = b.data();
+        const QRhiShaderResourceBinding::Data *bd = QRhiImplementation::shaderResourceBindingData(b);
 
         for (int stageIdx = 0; stageIdx < stageCount; ++stageIdx) {
             const QD3D12ShaderStageData *sd = &stageData[stageIdx];
@@ -4408,15 +4408,11 @@ bool QD3D12ShaderResourceBindings::create()
     rhiD->updateLayoutDesc(this);
 
     std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
-    std::sort(sortedBindings.begin(), sortedBindings.end(),
-              [](const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)
-    {
-        return a.data()->binding < b.data()->binding;
-    });
+    std::sort(sortedBindings.begin(), sortedBindings.end(), QRhiImplementation::sortedBindingLessThan);
 
     hasDynamicOffset = false;
     for (const QRhiShaderResourceBinding &b : sortedBindings) {
-        const QRhiShaderResourceBinding::Data *bd = b.data();
+        const QRhiShaderResourceBinding::Data *bd = QRhiImplementation::shaderResourceBindingData(b);
         if (bd->type == QRhiShaderResourceBinding::UniformBuffer && bd->u.ubuf.hasDynamicOffset) {
             hasDynamicOffset = true;
             break;
@@ -4439,13 +4435,8 @@ void QD3D12ShaderResourceBindings::updateResources(UpdateFlags flags)
 {
     sortedBindings.clear();
     std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
-    if (!flags.testFlag(BindingsAreSorted)) {
-        std::sort(sortedBindings.begin(), sortedBindings.end(),
-                  [](const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)
-        {
-            return a.data()->binding < b.data()->binding;
-        });
-    }
+    if (!flags.testFlag(BindingsAreSorted))
+        std::sort(sortedBindings.begin(), sortedBindings.end(), QRhiImplementation::sortedBindingLessThan);
 
     generation += 1;
 }

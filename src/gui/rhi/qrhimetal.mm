@@ -1208,7 +1208,7 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
     QMetalShaderResourceBindingsData bindingData;
 
     for (const QRhiShaderResourceBinding &binding : std::as_const(srbD->sortedBindings)) {
-        const QRhiShaderResourceBinding::Data *b = binding.data();
+        const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(binding);
         switch (b->type) {
         case QRhiShaderResourceBinding::UniformBuffer:
         {
@@ -1471,7 +1471,7 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
 
     // do buffer writes, figure out if we need to rebind, and mark as in-use
     for (int i = 0, ie = srbD->sortedBindings.count(); i != ie; ++i) {
-        const QRhiShaderResourceBinding::Data *b = srbD->sortedBindings.at(i).data();
+        const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->sortedBindings.at(i));
         QMetalShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[i]);
         switch (b->type) {
         case QRhiShaderResourceBinding::UniformBuffer:
@@ -4176,13 +4176,9 @@ bool QMetalShaderResourceBindings::create()
     rhiD->updateLayoutDesc(this);
 
     std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
-    std::sort(sortedBindings.begin(), sortedBindings.end(),
-              [](const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)
-    {
-        return a.data()->binding < b.data()->binding;
-    });
+    std::sort(sortedBindings.begin(), sortedBindings.end(), QRhiImplementation::sortedBindingLessThan);
     if (!sortedBindings.isEmpty())
-        maxBinding = sortedBindings.last().data()->binding;
+        maxBinding = QRhiImplementation::shaderResourceBindingData(sortedBindings.last())->binding;
     else
         maxBinding = -1;
 
@@ -4199,13 +4195,8 @@ void QMetalShaderResourceBindings::updateResources(UpdateFlags flags)
 {
     sortedBindings.clear();
     std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
-    if (!flags.testFlag(BindingsAreSorted)) {
-        std::sort(sortedBindings.begin(), sortedBindings.end(),
-                  [](const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)
-        {
-            return a.data()->binding < b.data()->binding;
-        });
-    }
+    if (!flags.testFlag(BindingsAreSorted))
+        std::sort(sortedBindings.begin(), sortedBindings.end(), QRhiImplementation::sortedBindingLessThan);
 
     for (BoundResourceData &bd : boundResourceData)
         memset(&bd, 0, sizeof(BoundResourceData));
