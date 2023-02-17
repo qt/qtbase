@@ -38,43 +38,19 @@ static QMouseEvent *copyMouseEvent(QEvent *e)
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
     case QEvent::MouseMove: {
-        QMouseEvent *me = static_cast<QMouseEvent *>(e);
-        QMouseEvent *cme = new QMouseEvent(me->type(), QPoint(0, 0), me->scenePosition(), me->globalPosition(),
-                                           me->button(), me->buttons(), me->modifiers(), me->source());
-        return cme;
+        return static_cast<QMouseEvent *>(e->clone());
     }
 #if QT_CONFIG(graphicsview)
     case QEvent::GraphicsSceneMousePress:
     case QEvent::GraphicsSceneMouseRelease:
     case QEvent::GraphicsSceneMouseMove: {
         QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(e);
-#if 1
         QEvent::Type met = me->type() == QEvent::GraphicsSceneMousePress ? QEvent::MouseButtonPress :
                            (me->type() == QEvent::GraphicsSceneMouseRelease ? QEvent::MouseButtonRelease : QEvent::MouseMove);
         QMouseEvent *cme = new QMouseEvent(met, QPoint(0, 0), QPoint(0, 0), me->screenPos(),
                                            me->button(), me->buttons(), me->modifiers(), me->source());
+        cme->setTimestamp(me->timestamp());
         return cme;
-#else
-        QGraphicsSceneMouseEvent *copy = new QGraphicsSceneMouseEvent(me->type());
-        copy->setPos(me->pos());
-        copy->setScenePos(me->scenePos());
-        copy->setScreenPos(me->screenPos());
-        for (int i = 0x1; i <= 0x10; i <<= 1) {
-            Qt::MouseButton button = Qt::MouseButton(i);
-            copy->setButtonDownPos(button, me->buttonDownPos(button));
-            copy->setButtonDownScenePos(button, me->buttonDownScenePos(button));
-            copy->setButtonDownScreenPos(button, me->buttonDownScreenPos(button));
-        }
-        copy->setLastPos(me->lastPos());
-        copy->setLastScenePos(me->lastScenePos());
-        copy->setLastScreenPos(me->lastScreenPos());
-        copy->setButtons(me->buttons());
-        copy->setButton(me->button());
-        copy->setModifiers(me->modifiers());
-        copy->setSource(me->source());
-        copy->setFlags(me->flags());
-        return copy;
-#endif
     }
 #endif // QT_CONFIG(graphicsview)
     default:
@@ -190,22 +166,6 @@ public:
             mouseTarget = nullptr;
         } else if (mouseTarget) {
             // we did send a press, so we need to fake a release now
-
-            // release all pressed mouse buttons
-            /* Qt::MouseButtons mouseButtons = QGuiApplication::mouseButtons();
-            for (int i = 0; i < 32; ++i) {
-                if (mouseButtons & (1 << i)) {
-                    Qt::MouseButton b = static_cast<Qt::MouseButton>(1 << i);
-                    mouseButtons &= ~b;
-                    QPoint farFarAway(-QWIDGETSIZE_MAX, -QWIDGETSIZE_MAX);
-
-                    qFGDebug() << "QFG: sending a fake mouse release at far-far-away to " << mouseTarget;
-                    QMouseEvent re(QEvent::MouseButtonRelease, QPoint(), farFarAway,
-                                   b, mouseButtons, QGuiApplication::keyboardModifiers());
-                    sendMouseEvent(&re);
-                }
-            }*/
-
             QPoint farFarAway(-QWIDGETSIZE_MAX, -QWIDGETSIZE_MAX);
 
             qFGDebug() << "QFG: sending a fake mouse release at far-far-away to " << mouseTarget;
@@ -265,6 +225,7 @@ protected:
                                  mouseTarget->topLevelWidget()->mapFromGlobal(me->globalPosition()), me->globalPosition(),
                                  me->button(), me->buttons(), me->modifiers(),
                                  me->source(), me->pointingDevice());
+                copy.setTimestamp(me->timestamp());
                 qt_sendSpontaneousEvent(mouseTarget, &copy);
             }
 
