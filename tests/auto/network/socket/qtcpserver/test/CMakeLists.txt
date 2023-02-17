@@ -11,7 +11,6 @@ qt_internal_add_test(tst_qtcpserver
         ../tst_qtcpserver.cpp
     LIBRARIES
         Qt::Network
-        Qt::TestPrivate
     QT_TEST_SERVER_LIST "danted" "cyrus" "squid" "ftp-proxy"
 )
 

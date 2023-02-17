@@ -27,7 +27,6 @@
 #include <QTestEventLoop>
 #include <QSignalSpy>
 #include <QSemaphore>
-#include <QSysInfo>
 
 #include "private/qhostinfo_p.h"
 #include "private/qiodevice_p.h" // for QIODEVICE_BUFFERSIZE
@@ -397,11 +396,6 @@ void tst_QSslSocket::initTestCase_data()
 
 void tst_QSslSocket::initTestCase()
 {
-    QSysInfo sysInfo;
-    if (QTestPrivate::isRunningArmOnX86()
-        || (sysInfo.productType() == QStringLiteral("ubuntu")
-            && sysInfo.productVersion() == QStringLiteral("22.04")))
-        QSKIP("Skipping test on Ubuntu 22.04 and QEMU, see QTBUG-107696.");
     testDataDir = QFileInfo(QFINDTESTDATA("certs")).absolutePath();
     if (testDataDir.isEmpty())
         testDataDir = QCoreApplication::applicationDirPath();

@@ -40,7 +40,6 @@
 #ifndef QT_NO_SSL
 #include <QSslSocket>
 #endif
-#include <QSysInfo>
 #include <QTextStream>
 #include <QThread>
 #include <QElapsedTimer>
@@ -62,7 +61,6 @@
 #include "private/qhostinfo_p.h"
 
 #include "../../../network-settings.h"
-#include <QtTest/private/qemulationdetector_p.h>
 
 QT_FORWARD_DECLARE_CLASS(QTcpSocket)
 class SocketPair;
@@ -327,11 +325,6 @@ void tst_QTcpSocket::initTestCase_data()
 
 void tst_QTcpSocket::initTestCase()
 {
-    QSysInfo sysInfo;
-    if (QTestPrivate::isRunningArmOnX86()
-        || (sysInfo.productType() == QStringLiteral("ubuntu")
-            && sysInfo.productVersion() == QStringLiteral("22.04")))
-        QSKIP("Skipping test on Ubuntu 22.04 and QEMU, see QTBUG-107696.");
 #ifdef QT_TEST_SERVER
      QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpServerName(), 80));
      QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpProxyServerName(), 3128));
