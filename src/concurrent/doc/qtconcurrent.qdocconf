@@ -26,7 +26,7 @@ qhp.QtConcurrent.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtconcurrent/qtconcurrent.tags
 
-depends                 += qtcore qtdoc qmake qtcmake
+depends                 += qtcore qtnetwork qtdoc qmake qtcmake
 
 headerdirs  += ..
 
