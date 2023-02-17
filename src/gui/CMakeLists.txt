@@ -404,7 +404,6 @@ qt_internal_extend_target(Gui CONDITION WIN32
         platform/windows/qwindowsguieventdispatcher.cpp platform/windows/qwindowsguieventdispatcher_p.h
         platform/windows/qwindowsmimeconverter.h platform/windows/qwindowsmimeconverter.cpp
         platform/windows/qwindowsnativeinterface.cpp
-        rhi/cs_tdr_p.h
         rhi/qrhid3d11.cpp rhi/qrhid3d11_p.h
         rhi/qrhid3d11_p_p.h
         rhi/vs_test_p.h

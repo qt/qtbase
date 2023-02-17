@@ -4,7 +4,6 @@
 #include "qrhid3d11_p_p.h"
 #include "qshader_p.h"
 #include "vs_test_p.h"
-#include "cs_tdr_p.h"
 #include <QWindow>
 #include <qmath.h>
 #include <private/qsystemlibrary_p.h>
@@ -97,13 +96,9 @@ using namespace Qt::StringLiterals;
 #endif
 
 QRhiD3D11::QRhiD3D11(QRhiD3D11InitParams *params, QRhiD3D11NativeHandles *importParams)
-    : ofr(this),
-      deviceCurse(this)
+    : ofr(this)
 {
     debugLayer = params->enableDebugLayer;
-
-    deviceCurse.framesToActivate = params->framesUntilKillingDeviceViaTdr;
-    deviceCurse.permanent = params->repeatDeviceKill;
 
     if (importParams) {
         if (importParams->dev && importParams->context) {
@@ -316,9 +311,6 @@ bool QRhiD3D11::create(QRhi::Flags flags)
     nativeHandlesStruct.adapterLuidLow = adapterLuid.LowPart;
     nativeHandlesStruct.adapterLuidHigh = adapterLuid.HighPart;
 
-    if (deviceCurse.framesToActivate > 0)
-        deviceCurse.initResources();
-
     return true;
 }
 
@@ -335,8 +327,6 @@ void QRhiD3D11::destroy()
     finishActiveReadbacks();
 
     clearShaderCache();
-
-    deviceCurse.releaseResources();
 
     if (annotations) {
         annotations->Release();
@@ -1327,19 +1317,6 @@ QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
 
     swapChainD->frameCount += 1;
     contextState.currentSwapChain = nullptr;
-
-    if (deviceCurse.framesToActivate > 0) {
-        deviceCurse.framesLeft -= 1;
-        if (deviceCurse.framesLeft == 0) {
-            deviceCurse.framesLeft = deviceCurse.framesToActivate;
-            if (!deviceCurse.permanent)
-                deviceCurse.framesToActivate = -1;
-
-            deviceCurse.activate();
-        } else if (deviceCurse.framesLeft % 100 == 0) {
-            qDebug("Impending doom: %d frames left", deviceCurse.framesLeft);
-        }
-    }
 
     return QRhi::FrameOpSuccess;
 }
@@ -5151,37 +5128,6 @@ bool QD3D11SwapChain::createOrResize()
         rhiD->registerResource(this);
 
     return true;
-}
-
-void QRhiD3D11::DeviceCurse::initResources()
-{
-    framesLeft = framesToActivate;
-
-    HRESULT hr = q->dev->CreateComputeShader(g_killDeviceByTimingOut, sizeof(g_killDeviceByTimingOut), nullptr, &cs);
-    if (FAILED(hr)) {
-        qWarning("Failed to create compute shader: %s",
-            qPrintable(QSystemError::windowsComString(hr)));
-        return;
-    }
-}
-
-void QRhiD3D11::DeviceCurse::releaseResources()
-{
-    if (cs) {
-        cs->Release();
-        cs = nullptr;
-    }
-}
-
-void QRhiD3D11::DeviceCurse::activate()
-{
-    if (!cs)
-        return;
-
-    qDebug("Activating Curse. Goodbye Cruel World.");
-
-    q->context->CSSetShader(cs, nullptr, 0);
-    q->context->Dispatch(256, 1, 1);
 }
 
 QT_END_NAMESPACE

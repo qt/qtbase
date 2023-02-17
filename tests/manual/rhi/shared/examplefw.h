@@ -83,7 +83,6 @@ int sampleCount = 1;
 QRhiSwapChain::Flags scFlags;
 QRhi::BeginFrameFlags beginFrameFlags;
 QRhi::EndFrameFlags endFrameFlags;
-int framesUntilTdr = -1;
 bool transparentBackground = false;
 bool debugLayer = true;
 
@@ -243,10 +242,6 @@ void Window::init()
         if (debugLayer)
             qDebug("Enabling D3D11 debug layer");
         params.enableDebugLayer = debugLayer;
-        if (framesUntilTdr > 0) {
-            params.framesUntilKillingDeviceViaTdr = framesUntilTdr;
-            params.repeatDeviceKill = true;
-        }
         m_r = QRhi::create(QRhi::D3D11, &params, rhiFlags);
     } else if (graphicsApi == D3D12) {
         QRhiD3D12InitParams params;
@@ -414,12 +409,7 @@ int main(int argc, char **argv)
     cmdLineParser.addOption(sdOption);
     QCommandLineOption coreProfOption({ "c", "core" }, QLatin1String("Request a core profile context for OpenGL"));
     cmdLineParser.addOption(coreProfOption);
-    // Attempt testing device lost situations on D3D at least.
-    QCommandLineOption tdrOption(QLatin1String("curse"), QLatin1String("Curse the graphics device. "
-                                                        "(generate a device reset every <count> frames when on D3D11)"),
-                                 QLatin1String("count"));
-    cmdLineParser.addOption(tdrOption);
-    // Allow testing preferring the software adapter (D3D).
+    // Allow testing preferring the software adapter (D3D, Vulkan).
     QCommandLineOption swOption(QLatin1String("software"), QLatin1String("Prefer a software renderer when choosing the adapter. "
                                                                          "Only applicable with some APIs and platforms."));
     cmdLineParser.addOption(swOption);
@@ -498,9 +488,6 @@ int main(int argc, char **argv)
         }
     }
 #endif
-
-    if (cmdLineParser.isSet(tdrOption))
-        framesUntilTdr = cmdLineParser.value(tdrOption).toInt();
 
     if (cmdLineParser.isSet(swOption))
         rhiFlags |= QRhi::PreferSoftwareRenderer;

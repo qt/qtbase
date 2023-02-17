@@ -790,19 +790,6 @@ public:
     };
     QHash<QRhiShaderStage, Shader> m_shaderCache;
 
-    struct DeviceCurse {
-        DeviceCurse(QRhiD3D11 *impl) : q(impl) { }
-        QRhiD3D11 *q;
-        int framesToActivate = -1;
-        bool permanent = false;
-        int framesLeft = 0;
-        ID3D11ComputeShader *cs = nullptr;
-
-        void initResources();
-        void releaseResources();
-        void activate();
-    } deviceCurse;
-
     // This is what gets exposed as the "pipeline cache", not that that concept
     // applies anyway. Here we are just storing the DX bytecode for a shader so
     // we can skip the HLSL->DXBC compilation when the QShader has HLSL source
