@@ -105,7 +105,7 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code,
     if (uc1 > 0x7F || uc2 > 0x7F || uc3 > 0x7F)
         return QLocale::AnyLanguage;
 
-    const AlphaCode codeBuf = { { char(uc1), char(uc2), char(uc3) } };
+    const AlphaCode codeBuf = { char(uc1), char(uc2), char(uc3) };
 
     auto searchCode = [codeBuf](auto f) {
         return std::find_if(languageCodeList.begin(), languageCodeList.end(),
@@ -201,27 +201,27 @@ QLocale::Territory QLocalePrivate::codeToTerritory(QStringView code) noexcept
     return QLocale::AnyTerritory;
 }
 
-QLatin1StringView QLocalePrivate::languageToCode(QLocale::Language language,
-                                                 QLocale::LanguageCodeTypes codeTypes)
+std::array<char, 4> QLocalePrivate::languageToCode(QLocale::Language language,
+                                                   QLocale::LanguageCodeTypes codeTypes)
 {
     if (language == QLocale::AnyLanguage || language > QLocale::LastLanguage)
         return {};
     if (language == QLocale::C)
-        return "C"_L1;
+        return {'C'};
 
     const LanguageCodeEntry &i = languageCodeList[language];
 
     if (codeTypes.testFlag(QLocale::ISO639Part1) && i.part1.isValid())
-        return {i.part1.code, 2};
+        return i.part1.decode();
 
     if (codeTypes.testFlag(QLocale::ISO639Part2B) && i.part2B.isValid())
-        return {i.part2B.code, 3};
+        return i.part2B.decode();
 
     if (codeTypes.testFlag(QLocale::ISO639Part2T) && i.part2T.isValid())
-        return {i.part2T.code, 3};
+        return i.part2T.decode();
 
     if (codeTypes.testFlag(QLocale::ISO639Part3))
-        return {i.part3.code, 3};
+        return i.part3.decode();
 
     return {};
 }
@@ -409,14 +409,14 @@ QByteArray QLocaleId::name(char separator) const
         return QByteArrayLiteral("C");
 
     const LanguageCodeEntry &language = languageCodeList[language_id];
-    const char *lang;
+    AlphaCode lang;
     qsizetype langLen;
 
     if (language.part1.isValid()) {
-        lang = language.part1.code;
+        lang = language.part1;
         langLen = 2;
     } else {
-        lang = language.part2B.isValid() ? language.part2B.code : language.part3.code;
+        lang = language.part2B.isValid() ? language.part2B : language.part3;
         langLen = 3;
     }
 
@@ -429,10 +429,12 @@ QByteArray QLocaleId::name(char separator) const
     QByteArray name(len, Qt::Uninitialized);
     char *uc = name.data();
 
-    *uc++ = lang[0];
-    *uc++ = lang[1];
+    auto langArray = lang.decode();
+
+    *uc++ = langArray[0];
+    *uc++ = langArray[1];
     if (langLen > 2)
-        *uc++ = lang[2];
+        *uc++ = langArray[2];
 
     if (script) {
         *uc++ = separator;
@@ -1337,15 +1339,18 @@ QLocale::Country QLocale::country() const
 
 QString QLocale::name() const
 {
+    const auto code = d->languageCode();
+    QLatin1StringView view{code.data()};
+
     Language l = language();
     if (l == C)
-        return d->languageCode();
+        return view;
 
     Territory c = territory();
     if (c == AnyTerritory)
-        return d->languageCode();
+        return view;
 
-    return d->languageCode() + u'_' + d->territoryCode();
+    return view + u'_' + d->territoryCode();
 }
 
 static qlonglong toIntegral_helper(const QLocaleData *d, QStringView str, bool *ok,
@@ -1422,7 +1427,8 @@ QString QLocale::bcp47Name() const
 */
 QString QLocale::languageToCode(Language language, LanguageCodeTypes codeTypes)
 {
-    return QLocalePrivate::languageToCode(language, codeTypes);
+    const auto code = QLocalePrivate::languageToCode(language, codeTypes);
+    return QLatin1StringView{code.data()};
 }
 
 /*!

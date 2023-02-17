@@ -379,18 +379,8 @@ class LocaleDataWriter (LocaleSourceEditor):
 
         def q(val: Optional[str], size: int) -> str:
             """Quote the value and adjust the result for tabular view."""
-            chars = []
-            if val is not None:
-                for c in val:
-                    chars.append(f"'{c}'")
-                s = ', '.join(chars)
-                s = f'{{{s}}}'
-            else:
-                s = ''
-            if size == 0:
-                return f'{{{s}}}'
-            else:
-                return f'{{{s}}},'.ljust(size * 5 + 4)
+            s = '' if val is None else ', '.join(f"'{c}'" for c in val)
+            return f'{{{s}}}' if size == 0 else f'{{{s}}},'.ljust(size * 5 + 2)
 
         for key, value in languages.items():
             code = value[1]

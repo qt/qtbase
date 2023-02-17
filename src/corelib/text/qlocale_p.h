@@ -483,7 +483,7 @@ public:
 
     [[nodiscard]] QByteArray bcp47Name(char separator = '-') const;
 
-    [[nodiscard]] inline QLatin1StringView
+    [[nodiscard]] inline std::array<char, 4>
     languageCode(QLocale::LanguageCodeTypes codeTypes = QLocale::AnyLanguageCode) const
     {
         return languageToCode(QLocale::Language(m_data->m_language_id), codeTypes);
@@ -494,7 +494,7 @@ public:
     { return territoryToCode(QLocale::Territory(m_data->m_territory_id)); }
 
     [[nodiscard]] static const QLocalePrivate *get(const QLocale &l) { return l.d; }
-    [[nodiscard]] static QLatin1StringView
+    [[nodiscard]] static std::array<char, 4>
     languageToCode(QLocale::Language language,
                    QLocale::LanguageCodeTypes codeTypes = QLocale::AnyLanguageCode);
     [[nodiscard]] static QLatin1StringView scriptToCode(QLocale::Script script);
