@@ -910,7 +910,10 @@ bool operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClear
  */
 size_t qHash(const QRhiDepthStencilClearValue &v, size_t seed) noexcept
 {
-    return seed * (uint(qFloor(qreal(v.depthClearValue()) * 100)) + v.stencilClearValue());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, v.depthClearValue());
+    seed = hash(seed, v.stencilClearValue());
+    return seed;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -1007,8 +1010,14 @@ bool operator!=(const QRhiViewport &a, const QRhiViewport &b) noexcept
 size_t qHash(const QRhiViewport &v, size_t seed) noexcept
 {
     const std::array<float, 4> r = v.viewport();
-    return seed + uint(r[0]) + uint(r[1]) + uint(r[2]) + uint(r[3])
-            + uint(qFloor(qreal(v.minDepth()) * 100)) + uint(qFloor(qreal(v.maxDepth()) * 100));
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, r[0]);
+    seed = hash(seed, r[1]);
+    seed = hash(seed, r[2]);
+    seed = hash(seed, r[3]);
+    seed = hash(seed, v.minDepth());
+    seed = hash(seed, v.maxDepth());
+    return seed;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -1098,7 +1107,12 @@ bool operator!=(const QRhiScissor &a, const QRhiScissor &b) noexcept
 size_t qHash(const QRhiScissor &v, size_t seed) noexcept
 {
     const std::array<int, 4> r = v.scissor();
-    return seed + uint(r[0]) + uint(r[1]) + uint(r[2]) + uint(r[3]);
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, r[0]);
+    seed = hash(seed, r[1]);
+    seed = hash(seed, r[2]);
+    seed = hash(seed, r[3]);
+    return seed;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -1231,7 +1245,10 @@ bool operator!=(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b
  */
 size_t qHash(const QRhiVertexInputBinding &v, size_t seed) noexcept
 {
-    return seed + v.stride() + v.classification();
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, v.stride());
+    seed = hash(seed, v.classification());
+    return seed;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -1379,6 +1396,7 @@ bool operator==(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribut
             && a.location() == b.location()
             && a.format() == b.format()
             && a.offset() == b.offset();
+    // matrixSlice excluded intentionally
 }
 
 /*!
@@ -1399,7 +1417,12 @@ bool operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribut
  */
 size_t qHash(const QRhiVertexInputAttribute &v, size_t seed) noexcept
 {
-    return seed + uint(v.binding()) + uint(v.location()) + uint(v.format()) + v.offset();
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, v.binding());
+    seed = hash(seed, v.location());
+    seed = hash(seed, v.format());
+    seed = hash(seed, v.offset());
+    return seed;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -1537,7 +1560,10 @@ bool operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) 
  */
 size_t qHash(const QRhiVertexInputLayout &v, size_t seed) noexcept
 {
-    return qHash(v.m_bindings, seed) + qHash(v.m_attributes, seed);
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, v.m_bindings);
+    seed = hash(seed, v.m_attributes);
+    return seed;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -1633,7 +1659,11 @@ bool operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
  */
 size_t qHash(const QRhiShaderStage &v, size_t seed) noexcept
 {
-    return v.type() + qHash(v.shader(), seed) + v.shaderVariant();
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, v.type());
+    seed = hash(seed, v.shader());
+    seed = hash(seed, v.shaderVariant());
+    return seed;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -4174,33 +4204,36 @@ bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
 size_t qHash(const QRhiShaderResourceBinding &b, size_t seed) noexcept
 {
     const QRhiShaderResourceBinding::Data *d = QRhiImplementation::shaderResourceBindingData(b);
-    size_t h = uint(d->binding) ^ uint(d->stage) ^ uint(d->type) ^ seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, d->binding);
+    seed = hash(seed, d->stage);
+    seed = hash(seed, d->type);
     switch (d->type) {
     case QRhiShaderResourceBinding::UniformBuffer:
-        h ^= qHash(reinterpret_cast<quintptr>(d->u.ubuf.buf));
+        seed = hash(seed, reinterpret_cast<quintptr>(d->u.ubuf.buf));
         break;
     case QRhiShaderResourceBinding::SampledTexture:
-        h ^= qHash(reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].tex));
-        h ^= qHash(reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].sampler));
+        seed = hash(seed, reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].tex));
+        seed = hash(seed, reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].sampler));
         break;
     case QRhiShaderResourceBinding::Texture:
-        h ^= qHash(reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].tex));
+        seed = hash(seed, reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].tex));
         break;
     case QRhiShaderResourceBinding::Sampler:
-        h ^= qHash(reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].sampler));
+        seed = hash(seed, reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].sampler));
         break;
     case QRhiShaderResourceBinding::ImageLoad:
     case QRhiShaderResourceBinding::ImageStore:
     case QRhiShaderResourceBinding::ImageLoadStore:
-        h ^= qHash(reinterpret_cast<quintptr>(d->u.simage.tex));
+        seed = hash(seed, reinterpret_cast<quintptr>(d->u.simage.tex));
         break;
     case QRhiShaderResourceBinding::BufferLoad:
     case QRhiShaderResourceBinding::BufferStore:
     case QRhiShaderResourceBinding::BufferLoadStore:
-        h ^= qHash(reinterpret_cast<quintptr>(d->u.sbuf.buf));
+        seed = hash(seed, reinterpret_cast<quintptr>(d->u.sbuf.buf));
         break;
     }
-    return h;
+    return seed;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
