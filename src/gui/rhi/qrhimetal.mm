@@ -5013,19 +5013,176 @@ id<MTLComputePipelineState> QMetalGraphicsPipelineData::Tessellation::tescCompPi
     return ps;
 }
 
-static inline bool hasBuiltin(const QVector<QShaderDescription::BuiltinVariable> &builtinList, QShaderDescription::BuiltinType builtin)
+static inline bool indexTaken(quint32 index, quint64 indices)
 {
-    return std::find_if(builtinList.cbegin(), builtinList.cend(),
-                        [builtin](const QShaderDescription::BuiltinVariable &b) { return b.type == builtin; }) != builtinList.cend();
+    return (indices >> index) & 0x1;
+}
+
+static inline void takeIndex(quint32 index, quint64 &indices)
+{
+    indices |= 1 << index;
+}
+
+static inline int nextAttributeIndex(quint64 indices)
+{
+    // Maximum number of vertex attributes per vertex descriptor. There does
+    // not appear to be a way to query this from the implementation.
+    // https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf indicates
+    // that all GPU families have a value of 31.
+    static const int maxVertexAttributes = 31;
+
+    for (int index = 0; index < maxVertexAttributes; ++index) {
+        if (!indexTaken(index, indices))
+            return index;
+    }
+
+    Q_UNREACHABLE_RETURN(-1);
+}
+
+static inline int aligned(quint32 offset, quint32 alignment)
+{
+    return ((offset + alignment - 1) / alignment) * alignment;
+}
+
+template<typename T>
+static void addUnusedVertexAttribute(const T &variable, QRhiMetal *rhiD, quint32 &offset, quint32 &vertexAlignment)
+{
+
+    int elements = 1;
+    for (const int dim : variable.arrayDims)
+        elements *= dim;
+
+    if (variable.type == QShaderDescription::VariableType::Struct) {
+        for (int element = 0; element < elements; ++element) {
+            for (const auto &member : variable.structMembers) {
+                addUnusedVertexAttribute(member, rhiD, offset, vertexAlignment);
+            }
+        }
+    } else {
+        const QRhiVertexInputAttribute::Format format = rhiD->shaderDescVariableFormatToVertexInputFormat(variable.type);
+        const quint32 size = rhiD->byteSizePerVertexForVertexInputFormat(format);
+
+        // MSL specification 3.0 says alignment = size for non packed scalars and vectors
+        const quint32 alignment = size;
+        vertexAlignment = std::max(vertexAlignment, alignment);
+
+        for (int element = 0; element < elements; ++element) {
+            // adjust alignment
+            offset = aligned(offset, alignment);
+            offset += size;
+        }
+    }
+}
+
+template<typename T>
+static void addVertexAttribute(const T &variable, int binding, QRhiMetal *rhiD, int &index, quint32 &offset, MTLVertexAttributeDescriptorArray *attributes, quint64 &indices, quint32 &vertexAlignment)
+{
+
+    int elements = 1;
+    for (const int dim : variable.arrayDims)
+        elements *= dim;
+
+    if (variable.type == QShaderDescription::VariableType::Struct) {
+        for (int element = 0; element < elements; ++element) {
+            for (const auto &member : variable.structMembers) {
+                addVertexAttribute(member, binding, rhiD, index, offset, attributes, indices, vertexAlignment);
+            }
+        }
+    } else {
+        const QRhiVertexInputAttribute::Format format = rhiD->shaderDescVariableFormatToVertexInputFormat(variable.type);
+        const quint32 size = rhiD->byteSizePerVertexForVertexInputFormat(format);
+
+        // MSL specification 3.0 says alignment = size for non packed scalars and vectors
+        const quint32 alignment = size;
+        vertexAlignment = std::max(vertexAlignment, alignment);
+
+        for (int element = 0; element < elements; ++element) {
+            Q_ASSERT(!indexTaken(index, indices));
+
+            // adjust alignment
+            offset = aligned(offset, alignment);
+
+            attributes[index].bufferIndex = binding;
+            attributes[index].format = toMetalAttributeFormat(format);
+            attributes[index].offset = offset;
+
+            takeIndex(index, indices);
+            index++;
+            if (indexTaken(index, indices))
+                index = nextAttributeIndex(indices);
+
+            offset += size;
+        }
+    }
+}
+
+static inline bool matches(const QList<QShaderDescription::BlockVariable> &a, const QList<QShaderDescription::BlockVariable> &b)
+{
+    if (a.size() == b.size()) {
+        bool match = true;
+        for (int i = 0; i < a.size() && match; ++i) {
+            match &= a[i].type == b[i].type
+                    && a[i].arrayDims == b[i].arrayDims
+                    && matches(a[i].structMembers, b[i].structMembers);
+        }
+        return match;
+    }
+
+    return false;
 }
 
 static inline bool matches(const QShaderDescription::InOutVariable &a, const QShaderDescription::InOutVariable &b)
 {
     return a.location == b.location
             && a.type == b.type
-            && a.perPatch == b.perPatch;
+            && a.perPatch == b.perPatch
+            && matches(a.structMembers, b.structMembers);
 }
 
+//
+// Create the tessellation evaluation render pipeline state
+//
+// The tesc runs as a compute shader in a compute pipeline and writes per patch and per patch
+// control point data into separate storage buffers. The tese runs as a vertex shader in a render
+// pipeline. Our task is to generate a render pipeline descriptor for the tese that pulls vertices
+// from these buffers.
+//
+// As the buffers we are pulling vertices from are written by a compute pipeline, they follow the
+// MSL alignment conventions which we must take into account when generating our
+// MTLVertexDescriptor. We must include the user defined tese input attributes, and any builtins
+// that were used.
+//
+// SPIRV-Cross generates the MSL tese shader code with input attribute indices that reflect the
+// specified GLSL locations. Interface blocks are flattened with each member having an incremented
+// attribute index. SPIRV-Cross reports an error on compilation if there are clashes in the index
+// address space.
+//
+// After the user specified attributes are processed, SPIRV-Cross places the in-use builtins at the
+// next available (lowest value) attribute index. Tese builtins are processed in the following
+// order:
+//
+// in gl_PerVertex
+// {
+//   vec4 gl_Position;
+//   float gl_PointSize;
+//   float gl_ClipDistance[];
+// };
+//
+// patch in float gl_TessLevelOuter[4];
+// patch in float gl_TessLevelInner[2];
+//
+// Enumerations in QShaderDescription::BuiltinType are defined in this order.
+//
+// For quads, SPIRV-Cross places MTLQuadTessellationFactorsHalf per patch in the tessellation
+// factor buffer. For triangles it uses MTLTriangleTessellationFactorsHalf.
+//
+// It should be noted that SPIRV-Cross handles the following builtin inputs internally, with no
+// host side support required.
+//
+// in vec3 gl_TessCoord;
+// in int gl_PatchVerticesIn;
+// in int gl_PrimitiveID;
+//
 id<MTLRenderPipelineState> QMetalGraphicsPipelineData::Tessellation::teseFragRenderPipeline(QRhiMetal *rhiD, QMetalGraphicsPipeline *pipeline)
 {
     if (pipeline->d->ps)
@@ -5034,154 +5191,191 @@ id<MTLRenderPipelineState> QMetalGraphicsPipelineData::Tessellation::teseFragRen
     MTLRenderPipelineDescriptor *rpDesc = [[MTLRenderPipelineDescriptor alloc] init];
     MTLVertexDescriptor *vertexDesc = [MTLVertexDescriptor vertexDescriptor];
 
-    // Going to use the same buffer indices for the extra buffers as the tess.control compute shader did.
+    // tesc output buffers
     const QMap<int, int> &ebb(compTesc.nativeShaderInfo.extraBufferBindings);
     const int tescOutputBufferBinding = ebb.value(QShaderPrivate::MslTessVertTescOutputBufferBinding, -1);
     const int tescPatchOutputBufferBinding = ebb.value(QShaderPrivate::MslTessTescPatchOutputBufferBinding, -1);
     const int tessFactorBufferBinding = ebb.value(QShaderPrivate::MslTessTescTessLevelBufferBinding, -1);
-
-    QMap<int, QShaderDescription::InOutVariable> teseInVars;
-    for (const QShaderDescription::InOutVariable &teseInVar : vertTese.desc.inputVariables())
-        teseInVars[teseInVar.location] = teseInVar;
-
     quint32 offsetInTescOutput = 0;
     quint32 offsetInTescPatchOutput = 0;
-    int lastLocation = -1;
+    quint32 offsetInTessFactorBuffer = 0;
+    quint32 tescOutputAlignment = 0;
+    quint32 tescPatchOutputAlignment = 0;
+    quint32 tessFactorAlignment = 0;
+    QSet<int> usedBuffers;
 
-    // these need to be sorted in location order so that lastLocation is calculated correctly - use QMap.
+    // tesc output variables in ascending location order
     QMap<int, QShaderDescription::InOutVariable> tescOutVars;
-    for (const QShaderDescription::InOutVariable &tescOutVar : compTesc.desc.outputVariables())
+    for (const auto &tescOutVar : compTesc.desc.outputVariables())
         tescOutVars[tescOutVar.location] = tescOutVar;
 
-    for (const QShaderDescription::InOutVariable &tescOutVar : tescOutVars) {
-        const int location = tescOutVar.location;
-        lastLocation = location;
-        const QRhiVertexInputAttribute::Format format = rhiD->shaderDescVariableFormatToVertexInputFormat(tescOutVar.type);
-        if (teseInVars.contains(location)) {
-            if (!matches(teseInVars[location], tescOutVar)) {
-                qWarning() << "mismatched tessellation control output -> tesssellation evaluation input at location" << location;
-                qWarning() << "tesc out:" << tescOutVar << "tese in:" << teseInVars[location];
+    // tese input variables in ascending location order
+    QMap<int, QShaderDescription::InOutVariable> teseInVars;
+    for (const auto &teseInVar : vertTese.desc.inputVariables())
+        teseInVars[teseInVar.location] = teseInVar;
+
+    // bit mask tracking usage of vertex attribute indices
+    quint64 indices = 0;
+
+    for (QShaderDescription::InOutVariable &tescOutVar : tescOutVars) {
+
+        int index = tescOutVar.location;
+        int binding = -1;
+        quint32 *offset = nullptr;
+        quint32 *alignment = nullptr;
+
+        if (tescOutVar.perPatch) {
+            binding = tescPatchOutputBufferBinding;
+            offset = &offsetInTescPatchOutput;
+            alignment = &tescPatchOutputAlignment;
+        } else {
+            tescOutVar.arrayDims.removeLast();
+            binding = tescOutputBufferBinding;
+            offset = &offsetInTescOutput;
+            alignment = &tescOutputAlignment;
+        }
+
+        if (teseInVars.contains(index)) {
+
+            if (!matches(teseInVars[index], tescOutVar)) {
+                qWarning() << "mismatched tessellation control output -> tesssellation evaluation input at location" << index;
+                qWarning() << "    tesc out:" << tescOutVar;
+                qWarning() << "    tese in:" << teseInVars[index];
             }
-            if (tescOutVar.perPatch) {
-                if (tescPatchOutputBufferBinding >= 0) {
-                    vertexDesc.attributes[location].bufferIndex = tescPatchOutputBufferBinding;
-                    vertexDesc.attributes[location].format = toMetalAttributeFormat(format);
-                    vertexDesc.attributes[location].offset = offsetInTescPatchOutput;
-                }
+
+            if (binding != -1) {
+                addVertexAttribute(tescOutVar, binding, rhiD, index, *offset, vertexDesc.attributes, indices, *alignment);
+                usedBuffers << binding;
             } else {
-                if (tescOutputBufferBinding >= 0) {
-                    vertexDesc.attributes[location].bufferIndex = tescOutputBufferBinding;
-                    vertexDesc.attributes[location].format = toMetalAttributeFormat(format);
-                    vertexDesc.attributes[location].offset = offsetInTescOutput;
-                }
+                qWarning() << "baked tessellation control shader missing output buffer binding information";
+                addUnusedVertexAttribute(tescOutVar, rhiD, *offset, *alignment);
             }
+
         } else {
             qWarning() << "missing tessellation evaluation input for tessellation control output:" << tescOutVar;
+            addUnusedVertexAttribute(tescOutVar, rhiD, *offset, *alignment);
         }
-        if (tescOutVar.perPatch)
-            offsetInTescPatchOutput += rhiD->byteSizePerVertexForVertexInputFormat(format);
-        else
-            offsetInTescOutput += rhiD->byteSizePerVertexForVertexInputFormat(format);
+
+        teseInVars.remove(tescOutVar.location);
     }
 
-    const QVector<QShaderDescription::BuiltinVariable> tescOutBuiltins = compTesc.desc.outputBuiltinVariables();
-    const QVector<QShaderDescription::BuiltinVariable> teseInBuiltins = vertTese.desc.inputBuiltinVariables();
+    for (const QShaderDescription::InOutVariable &teseInVar : teseInVars)
+        qWarning() << "missing tessellation control output for tessellation evaluation input:" << teseInVar;
 
-    // Take a tess.control shader with an output variable layout(location = 0) out vec3 outColor[].
-    // Assume it also writes to glPosition, e.g. gl_out[gl_InvocationID].gl_Position = ...
-    // The tess.eval. shader translated to a Metal vertex function will then contain:
-    //
-    //    struct main0_in {
-    //      float3 inColor [[attribute(0)]];
-    //      float4 gl_Position [[attribute(1)]]; }
-    //
-    // The vertex description has to be set up accordingly. The color is
-    // simple because that will be in the input/output variable list with
-    // location 0. The position is a builtin however. So for now just
-    // assume that builtins such as that come after the other variables,
-    // with increasing location values.
+    // tesc output builtins in ascending location order
+    QMap<QShaderDescription::BuiltinType, QShaderDescription::BuiltinVariable> tescOutBuiltins;
+    for (const auto &tescOutBuiltin : compTesc.desc.outputBuiltinVariables())
+        tescOutBuiltins[tescOutBuiltin.type] = tescOutBuiltin;
 
-    if (hasBuiltin(tescOutBuiltins, QShaderDescription::PositionBuiltin)
-            && hasBuiltin(teseInBuiltins, QShaderDescription::PositionBuiltin)
-            && tescOutputBufferBinding >= 0)
-    {
-        const int location = ++lastLocation;
-        vertexDesc.attributes[location].bufferIndex = tescOutputBufferBinding;
-        vertexDesc.attributes[location].format = toMetalAttributeFormat(QRhiVertexInputAttribute::Float4);
-        vertexDesc.attributes[location].offset = offsetInTescOutput;
-        offsetInTescOutput += 4 * sizeof(float);
-    }
+    // tese input builtins in ascending location order
+    QMap<QShaderDescription::BuiltinType, QShaderDescription::BuiltinVariable> teseInBuiltins;
+    for (const auto &teseInBuiltin : vertTese.desc.inputBuiltinVariables())
+        teseInBuiltins[teseInBuiltin.type] = teseInBuiltin;
 
-    // Per-patch outputs from the tess.control stage. are mostly handled above.
-    // Consider:
-    //   layout(location = 1) patch in vec3 stuff;
-    //   layout(location = 2) patch in float more_stuff;
-    //
-    // This maps to:
-    //
-    //    struct main0_patchIn {
-    //      float3 stuff [[attribute(1)]];
-    //      float more_stuff [[attribute(2)]];
-    //      patch_control_point<main0_in> gl_in; };
-    //
-    // These are already in place (location 1 and 2, referencing the per-patch
-    // output buffer of tesc) at this point. But now if the tess.eval.shader
-    // reads gl_TessLevelInner and gl_TessLevelOuter, which are also per-patch,
-    // that adds, if the mode is triangles:
-    // (assuming gl_Position got location 3, sorted based on the builtin type
-    // (Position < Outer < Inner))
-    //
-    //     float4 gl_TessLevel [[attribute(4)]];
-    //
-    // or  if the mode is quads:
-    //
-    //    float4 gl_TessLevelOuter [[attribute(4)]];
-    //    float2 gl_TessLevelInner [[attribute(5)]];
-    //
-    // Like gl_Position, these built-ins needs to be handled specially.
-    // Note that the data is in a dedicated buffer, not in the patch buffer.
-
-    const bool hasTessLevelOuter = hasBuiltin(tescOutBuiltins, QShaderDescription::TessLevelOuterBuiltin)
-            && hasBuiltin(teseInBuiltins, QShaderDescription::TessLevelOuterBuiltin);
-    const bool hasTessLevelInner = hasBuiltin(tescOutBuiltins, QShaderDescription::TessLevelInnerBuiltin)
-            && hasBuiltin(teseInBuiltins, QShaderDescription::TessLevelInnerBuiltin);
-    if (vertTese.desc.tessellationMode() != QShaderDescription::TrianglesTessellationMode
-            && vertTese.desc.tessellationMode() != QShaderDescription::QuadTessellationMode)
-    {
-        qWarning("Tessellation evaluation stage mode is neither 'triangles' nor 'quads', this should not happen");
-    }
     const bool trianglesMode = vertTese.desc.tessellationMode() == QShaderDescription::TrianglesTessellationMode;
-    if ((hasTessLevelOuter || hasTessLevelInner) && tessFactorBufferBinding >= 0) {
-        int loc0 = -1;
-        int loc1 = -1;
-        if (trianglesMode) {
-            loc0 = ++lastLocation; // float4 gl_TessLevel
+    bool tessLevelAdded = false;
+
+    for (const QShaderDescription::BuiltinVariable &builtin : tescOutBuiltins) {
+
+        QShaderDescription::InOutVariable variable;
+        int binding = -1;
+        quint32 *offset = nullptr;
+        quint32 *alignment = nullptr;
+
+        switch (builtin.type) {
+        case QShaderDescription::BuiltinType::PositionBuiltin:
+            variable.type = QShaderDescription::VariableType::Vec4;
+            binding = tescOutputBufferBinding;
+            offset = &offsetInTescOutput;
+            alignment = &tescOutputAlignment;
+            break;
+        case QShaderDescription::BuiltinType::PointSizeBuiltin:
+            variable.type = QShaderDescription::VariableType::Float;
+            binding = tescOutputBufferBinding;
+            offset = &offsetInTescOutput;
+            alignment = &tescOutputAlignment;
+            break;
+        case QShaderDescription::BuiltinType::ClipDistanceBuiltin:
+            variable.type = QShaderDescription::VariableType::Float;
+            variable.arrayDims = builtin.arrayDims;
+            binding = tescOutputBufferBinding;
+            offset = &offsetInTescOutput;
+            alignment = &tescOutputAlignment;
+            break;
+        case QShaderDescription::BuiltinType::TessLevelOuterBuiltin:
+            variable.type = QShaderDescription::VariableType::Half4;
+            binding = tessFactorBufferBinding;
+            offset = &offsetInTessFactorBuffer;
+            tessLevelAdded = trianglesMode;
+            alignment = &tessFactorAlignment;
+            break;
+        case QShaderDescription::BuiltinType::TessLevelInnerBuiltin:
+            if (trianglesMode) {
+                if (!tessLevelAdded) {
+                    variable.type = QShaderDescription::VariableType::Half4;
+                    binding = tessFactorBufferBinding;
+                    offsetInTessFactorBuffer = 0;
+                    offset = &offsetInTessFactorBuffer;
+                    alignment = &tessFactorAlignment;
+                    tessLevelAdded = true;
+                } else {
+                    teseInBuiltins.remove(builtin.type);
+                    continue;
+                }
+            } else {
+                variable.type = QShaderDescription::VariableType::Half2;
+                binding = tessFactorBufferBinding;
+                offsetInTessFactorBuffer = 8;
+                offset = &offsetInTessFactorBuffer;
+                alignment = &tessFactorAlignment;
+            }
+            break;
+        default:
+            Q_UNREACHABLE();
+            break;
+        }
+
+        if (teseInBuiltins.contains(builtin.type)) {
+            if (binding != -1) {
+                int index = nextAttributeIndex(indices);
+                addVertexAttribute(variable, binding, rhiD, index, *offset, vertexDesc.attributes, indices, *alignment);
+                usedBuffers << binding;
+            } else {
+                qWarning() << "baked tessellation control shader missing output buffer binding information";
+                addUnusedVertexAttribute(variable, rhiD, *offset, *alignment);
+            }
         } else {
-            loc0 = ++lastLocation; // float4 gl_TessLevelOuter
-            loc1 = ++lastLocation; // float2 gl_TessLevelInner
+            addUnusedVertexAttribute(variable, rhiD, *offset, *alignment);
         }
-        if (loc0 >= 0) {
-            vertexDesc.attributes[loc0].bufferIndex = tessFactorBufferBinding;
-            vertexDesc.attributes[loc0].format = MTLVertexFormatHalf4;
-            vertexDesc.attributes[loc0].offset = 0;
-        }
-        if (loc1 >= 0) {
-            vertexDesc.attributes[loc1].bufferIndex = tessFactorBufferBinding;
-            vertexDesc.attributes[loc1].format = MTLVertexFormatHalf2;
-            vertexDesc.attributes[loc1].offset = 8;
-        }
-        vertexDesc.layouts[tessFactorBufferBinding].stepFunction = MTLVertexStepFunctionPerPatch;
-        vertexDesc.layouts[tessFactorBufferBinding].stride = trianglesMode ? 8 : 12;
+
+        teseInBuiltins.remove(builtin.type);
     }
 
-    if (offsetInTescOutput > 0) {
+    for (const QShaderDescription::BuiltinVariable &builtin : teseInBuiltins) {
+        switch (builtin.type) {
+        case QShaderDescription::BuiltinType::PositionBuiltin:
+        case QShaderDescription::BuiltinType::PointSizeBuiltin:
+        case QShaderDescription::BuiltinType::ClipDistanceBuiltin:
+            qWarning() << "missing tessellation control output for tessellation evaluation builtin input:" << builtin;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (usedBuffers.contains(tescOutputBufferBinding)) {
         vertexDesc.layouts[tescOutputBufferBinding].stepFunction = MTLVertexStepFunctionPerPatchControlPoint;
-        vertexDesc.layouts[tescOutputBufferBinding].stride = offsetInTescOutput;
+        vertexDesc.layouts[tescOutputBufferBinding].stride = aligned(offsetInTescOutput, tescOutputAlignment);
     }
 
-    if (offsetInTescPatchOutput > 0) {
+    if (usedBuffers.contains(tescPatchOutputBufferBinding)) {
         vertexDesc.layouts[tescPatchOutputBufferBinding].stepFunction = MTLVertexStepFunctionPerPatch;
-        vertexDesc.layouts[tescPatchOutputBufferBinding].stride = offsetInTescPatchOutput;
+        vertexDesc.layouts[tescPatchOutputBufferBinding].stride = aligned(offsetInTescPatchOutput, tescPatchOutputAlignment);
+    }
+
+    if (usedBuffers.contains(tessFactorBufferBinding)) {
+        vertexDesc.layouts[tessFactorBufferBinding].stepFunction = MTLVertexStepFunctionPerPatch;
+        vertexDesc.layouts[tessFactorBufferBinding].stride = trianglesMode ? sizeof(MTLTriangleTessellationFactorsHalf) : sizeof(MTLQuadTessellationFactorsHalf);
     }
 
     rpDesc.vertexDescriptor = vertexDesc;

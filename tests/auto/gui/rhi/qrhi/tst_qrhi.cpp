@@ -145,6 +145,9 @@ private slots:
     void tessellation_data();
     void tessellation();
 
+    void tessellationInterfaceBlocks_data();
+    void tessellationInterfaceBlocks();
+
     void storageBuffer_data();
     void storageBuffer();
     void storageBufferRuntimeSizeCompute_data();
@@ -5794,6 +5797,321 @@ void tst_QRhi::tessellation()
     QVERIFY(redCount > 50);
     QVERIFY(blueCount > 50);
     QVERIFY(greenCount > 50);
+}
+
+void tst_QRhi::tessellationInterfaceBlocks_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::tessellationInterfaceBlocks()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    // This test is intended for Metal, but will run on other tessellation render pipelines
+    //
+    // Metal tessellation uses a combination of compute pipelines for the vert and tesc, and a
+    // render pipeline for the tese and frag. This test uses input output interface blocks between
+    // the tesc and tese, and all tese stage builtin inputs to check that the Metal tese-frag
+    // pipeline vertex inputs are correctly configured. The tese writes the values to a storage
+    // buffer whose values are checked by the unit test. MSL 2.1 is required for this test.
+    // (requires support for writing to a storage buffer in the vertex shader within a render
+    // pipeline)
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (!rhi->isFeatureSupported(QRhi::Tessellation)) {
+        // From a Vulkan or Metal implementation we expect tessellation to work,
+        // even though it is optional (as per spec) for Vulkan.
+        QVERIFY(rhi->backend() != QRhi::Vulkan);
+        QVERIFY(rhi->backend() != QRhi::Metal);
+        QSKIP("Tessellation is not supported with this graphics API, skipping test");
+    }
+
+    if (rhi->backend() == QRhi::D3D11 || rhi->backend() == QRhi::D3D12)
+        QSKIP("Skipping tessellation test on D3D for now, test assets not prepared for HLSL yet");
+
+    if (rhi->backend() == QRhi::OpenGLES2)
+        QSKIP("Skipping test on OpenGL as gl_ClipDistance[] support inconsistent");
+
+    QScopedPointer<QRhiTexture> texture(
+            rhi->newTexture(QRhiTexture::RGBA8, QSize(1280, 720), 1,
+                            QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    static const float triangleVertices[] = {
+        0.0f, 0.5f, 0.0f, 0.0f, 0.0f,  1.0f, -0.5f, -0.5f, 0.0f,
+        1.0f, 0.0f, 0.0f, 0.5f, -0.5f, 0.0f, 0.0f,  1.0f,  0.0f,
+    };
+
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer,
+                                                   sizeof(triangleVertices)));
+    QVERIFY(vbuf->create());
+    u->uploadStaticBuffer(vbuf.data(), triangleVertices);
+
+    QScopedPointer<QRhiBuffer> ubuf(
+            rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64));
+    QVERIFY(ubuf->create());
+
+    // Use the 3D API specific correction matrix that flips Y, so we can use
+    // the OpenGL-targeted vertex data and the tessellation winding order of
+    // counter-clockwise to get uniform results.
+    QMatrix4x4 mvp = rhi->clipSpaceCorrMatrix();
+    u->updateDynamicBuffer(ubuf.data(), 0, 64, mvp.constData());
+
+    QScopedPointer<QRhiBuffer> buffer(
+            rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::UsageFlag::StorageBuffer, 1024));
+    QVERIFY(buffer->create());
+
+    u->uploadStaticBuffer(buffer.data(), 0, 1024, QByteArray(1024, 0).constData());
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings(
+            { QRhiShaderResourceBinding::uniformBuffer(
+                      0, QRhiShaderResourceBinding::TessellationEvaluationStage, ubuf.data()),
+              QRhiShaderResourceBinding::bufferLoadStore(
+                      1, QRhiShaderResourceBinding::TessellationEvaluationStage, buffer.data()) });
+    QVERIFY(srb->create());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+
+    pipeline->setTopology(QRhiGraphicsPipeline::Patches);
+    pipeline->setPatchControlPointCount(3);
+
+    pipeline->setShaderStages(
+            { { QRhiShaderStage::Vertex, loadShader(":/data/tessinterfaceblocks.vert.qsb") },
+              { QRhiShaderStage::TessellationControl,
+                loadShader(":/data/tessinterfaceblocks.tesc.qsb") },
+              { QRhiShaderStage::TessellationEvaluation,
+                loadShader(":/data/tessinterfaceblocks.tese.qsb") },
+              { QRhiShaderStage::Fragment, loadShader(":/data/tessinterfaceblocks.frag.qsb") } });
+
+    pipeline->setCullMode(QRhiGraphicsPipeline::Back); // to ensure the winding order is correct
+
+    // won't get the wireframe with OpenGL ES
+    if (rhi->isFeatureSupported(QRhi::NonFillPolygonMode))
+        pipeline->setPolygonMode(QRhiGraphicsPipeline::Line);
+
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 6 * sizeof(float) } });
+    inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float3, 0 },
+                                { 0, 1, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) } });
+
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+
+    QVERIFY(pipeline->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QCOMPARE(rhi->beginOffscreenFrame(&cb), QRhi::FrameOpSuccess);
+
+    cb->beginPass(rt.data(), Qt::black, { 1.0f, 0 }, u);
+    cb->setGraphicsPipeline(pipeline.data());
+    cb->setViewport({ 0, 0, float(rt->pixelSize().width()), float(rt->pixelSize().height()) });
+    cb->setShaderResources();
+    QRhiCommandBuffer::VertexInput vbufBinding(vbuf.data(), 0);
+    cb->setVertexInput(0, 1, &vbufBinding);
+    cb->draw(3);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888);
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.data() }, &readResult);
+
+    QRhiBufferReadbackResult bufferReadResult;
+    bufferReadResult.completed = []() {};
+    readbackBatch->readBackBuffer(buffer.data(), 0, 1024, &bufferReadResult);
+
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+
+    if (rhi->isYUpInFramebuffer()) // we used clipSpaceCorrMatrix so this is different from many
+                                   // other tests
+        result = std::move(result).mirrored();
+
+    QCOMPARE(result.size(), rt->pixelSize());
+
+    // cannot check rendering results with Null, because there is no rendering there
+    if (impl == QRhi::Null)
+        return;
+
+    int redCount = 0, greenCount = 0, blueCount = 0;
+    for (int y = 0; y < result.height(); ++y) {
+        const quint32 *p = reinterpret_cast<const quint32 *>(result.constScanLine(y));
+        int x = result.width() - 1;
+        while (x-- >= 0) {
+            const QRgb c(*p++);
+            const int red = qRed(c);
+            const int green = qGreen(c);
+            const int blue = qBlue(c);
+            // just count the color components that are above a certain threshold
+            if (red > 240)
+                ++redCount;
+            if (green > 240)
+                ++greenCount;
+            if (blue > 240)
+                ++blueCount;
+        }
+    }
+
+    // make sure we drew something
+    QVERIFY(redCount > 50);
+    QVERIFY(blueCount > 50);
+    QVERIFY(greenCount > 50);
+
+    //    StorageBlock("result" "" knownSize=16 binding=1 set=0 runtimeArrayStride=336 QList(
+    //        BlockVariable("int" "count" offset=0 size=4),
+    //        BlockVariable("struct" "elements" offset=16 size=0 array=QList(0) structMembers=QList(
+    //            BlockVariable("struct" "a" offset=0 size=48 array=QList(3) structMembers=QList(
+    //                BlockVariable("vec3" "color" offset=0 size=12),
+    //                BlockVariable("int" "id" offset=12 size=4))),
+    //            BlockVariable("struct" "b" offset=48 size=144 array=QList(3) structMembers=QList(
+    //                BlockVariable("vec2" "some" offset=0 size=8),
+    //                BlockVariable("int" "other" offset=8 size=12 array=QList(3)),
+    //                BlockVariable("vec3" "variables" offset=32 size=12))),
+    //            BlockVariable("struct" "c" offset=192 size=16 structMembers=QList(
+    //                BlockVariable("vec3" "stuff" offset=0 size=12),
+    //                BlockVariable("float" "more_stuff" offset=12 size=4))),
+    //            BlockVariable("vec4" "tesslevelOuter" offset=208 size=16),
+    //            BlockVariable("vec2" "tessLevelInner" offset=224 size=8),
+    //            BlockVariable("float" "pointSize" offset=232 size=12 array=QList(3)),
+    //            BlockVariable("float" "clipDistance" offset=244 size=60 array=QList(5, 3)),
+    //            BlockVariable("vec3" "tessCoord" offset=304 size=12),
+    //            BlockVariable("int" "patchVerticesIn" offset=316 size=4),
+    //            BlockVariable("int" "primitiveID" offset=320 size=4)))))
+
+    // int count
+    QCOMPARE(reinterpret_cast<const int *>(&bufferReadResult.data.constData()[0])[0], 1);
+
+    // a[0].color
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 0 + 0])[0], 0.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 0 + 0])[1], 0.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 0 + 0])[2], 1.0f);
+
+    // a[0].id
+    QCOMPARE(reinterpret_cast<const int *>(&bufferReadResult.data.constData()[16 + 0 + 12])[0], 91);
+
+    // a[1].color
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 16 + 0])[0], 1.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 16 + 0])[1], 0.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 16 + 0])[2], 0.0f);
+
+    // a[1].id
+    QCOMPARE(reinterpret_cast<const int *>(&bufferReadResult.data.constData()[16 + 16 + 12])[0], 92);
+
+    // a[2].color
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 32 + 0])[0], 0.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 32 + 0])[1], 1.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 32 + 0])[2], 0.0f);
+
+    // a[2].id
+    QCOMPARE(reinterpret_cast<const int *>(&bufferReadResult.data.constData()[16 + 32 + 12])[0], 93);
+
+    // b[0].some
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 48 + 0])[0], 0.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 48 + 0])[1], 0.0f);
+
+    // b[0].other[0]
+    QCOMPARE(reinterpret_cast<const int *>(&bufferReadResult.data.constData()[16 + 48 + 8])[0], 10.0f);
+    QCOMPARE(reinterpret_cast<const int *>(&bufferReadResult.data.constData()[16 + 48 + 8])[1], 20.0f);
+    QCOMPARE(reinterpret_cast<const int *>(&bufferReadResult.data.constData()[16 + 48 + 8])[2], 30.0f);
+
+    // b[0].variables
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 48 + 32])[0], 3.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 48 + 32])[1], 13.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 48 + 32])[2], 17.0f);
+
+    // b[1].some
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 96 + 0])[0], 1.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 96 + 0])[1], 1.0f);
+
+    // b[1].other[0]
+    QCOMPARE(reinterpret_cast<const int *>(&bufferReadResult.data.constData()[16 + 96 + 8])[0], 10.0f);
+    QCOMPARE(reinterpret_cast<const int *>(&bufferReadResult.data.constData()[16 + 96 + 8])[1], 20.0f);
+    QCOMPARE(reinterpret_cast<const int *>(&bufferReadResult.data.constData()[16 + 96 + 8])[2], 30.0f);
+
+    // b[1].variables
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 96 + 32])[0], 3.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 96 + 32])[1], 14.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 96 + 32])[2], 17.0f);
+
+    // b[2].some
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 144 + 0])[0], 2.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 144 + 0])[1], 2.0f);
+
+    // b[2].other[0]
+    QCOMPARE(reinterpret_cast<const int *>(&bufferReadResult.data.constData()[16 + 144 + 8])[0], 10.0f);
+    QCOMPARE(reinterpret_cast<const int *>(&bufferReadResult.data.constData()[16 + 144 + 8])[1], 20.0f);
+    QCOMPARE(reinterpret_cast<const int *>(&bufferReadResult.data.constData()[16 + 144 + 8])[2], 30.0f);
+
+    // b[2].variables
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 144 + 32])[0], 3.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 144 + 32])[1], 15.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 144 + 32])[2], 17.0f);
+
+    // c.stuff
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 192 + 0])[0], 1.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 192 + 0])[1], 2.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 192 + 0])[2], 3.0f);
+
+    // c.more_stuff
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 192 + 12])[0], 4.0f);
+
+    // tessLevelOuter
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 208 + 0])[0], 1.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 208 + 0])[1], 2.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 208 + 0])[2], 3.0f);
+
+    // tessLevelInner
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 224 + 0])[0], 5.0f);
+
+    // pointSize[0]
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 232 + 0])[0], 10.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 232 + 0])[1], 11.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 232 + 0])[2], 12.0f);
+
+    // clipDistance[0][0]
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 244 + 0])[0], 20.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 244 + 0])[1], 40.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 244 + 0])[2], 60.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 244 + 0])[3], 80.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 244 + 0])[4], 100.0f);
+
+    // clipDistance[1][0]
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 244 + 20])[0], 21.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 244 + 20])[1], 41.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 244 + 20])[2], 61.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 244 + 20])[3], 81.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 244 + 20])[4], 101.0f);
+
+    // clipDistance[2][0]
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 244 + 40])[0], 22.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 244 + 40])[1], 42.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 244 + 40])[2], 62.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 244 + 40])[3], 82.0f);
+    QCOMPARE(reinterpret_cast<const float *>(&bufferReadResult.data.constData()[16 + 244 + 40])[4], 102.0f);
+
+    // patchVerticesIn
+    QCOMPARE(reinterpret_cast<const int *>(&bufferReadResult.data.constData()[16 + 316 + 0])[0], 3);
+
+    // primitiveID
+    QCOMPARE(reinterpret_cast<const int *>(&bufferReadResult.data.constData()[16 + 320 + 0])[0], 0);
 }
 
 void tst_QRhi::storageBuffer_data()

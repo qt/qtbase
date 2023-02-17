@@ -117,7 +117,12 @@ public:
         ImageRect,
         ImageBuffer,
 
-        Struct
+        Struct,
+
+        Half,
+        Half2,
+        Half3,
+        Half4
     };
 
     enum ImageFormat {
@@ -181,6 +186,19 @@ public:
 
     // Optional data (like decorations) usually default to an otherwise invalid value (-1 or 0). This is intentional.
 
+    struct BlockVariable
+    {
+        QByteArray name;
+        VariableType type = Unknown;
+        int offset = 0;
+        int size = 0;
+        QList<int> arrayDims;
+        int arrayStride = 0;
+        int matrixStride = 0;
+        bool matrixIsRowMajor = false;
+        QList<BlockVariable> structMembers;
+    };
+
     struct InOutVariable {
         QByteArray name;
         VariableType type = Unknown;
@@ -191,17 +209,6 @@ public:
         ImageFlags imageFlags;
         QList<int> arrayDims;
         bool perPatch = false;
-    };
-
-    struct BlockVariable {
-        QByteArray name;
-        VariableType type = Unknown;
-        int offset = 0;
-        int size = 0;
-        QList<int> arrayDims;
-        int arrayStride = 0;
-        int matrixStride = 0;
-        bool matrixIsRowMajor = false;
         QList<BlockVariable> structMembers;
     };
 
@@ -276,6 +283,8 @@ public:
 
     struct BuiltinVariable {
         BuiltinType type;
+        VariableType varType;
+        QList<int> arrayDims;
     };
 
     QList<BuiltinVariable> inputBuiltinVariables() const;

@@ -22,3 +22,7 @@ qsb --glsl 320es,430 --msl 12 --tess-vertex-count 3 storagebuffer_runtime.tese -
 qsb --glsl 320es,430 --msl 12 storagebuffer_runtime.frag -o storagebuffer_runtime.frag.qsb
 qsb --glsl 320es,430 --hlsl 50 -c --msl 12 storagebuffer_runtime.comp -o storagebuffer_runtime.comp.qsb
 qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12 -o half.vert.qsb half.vert
+qsb --glsl 320es,430 --msl 21 --msltess tessinterfaceblocks.vert -o tessinterfaceblocks.vert.qsb
+qsb --glsl 320es,430 --msl 21 --tess-mode triangles tessinterfaceblocks.tesc -o tessinterfaceblocks.tesc.qsb
+qsb --glsl 320es,430 --msl 21  --tess-vertex-count 3 tessinterfaceblocks.tese -o tessinterfaceblocks.tese.qsb
+qsb --glsl 320es,430 --msl 21 simpletess.frag -o tessinterfaceblocks.frag.qsb

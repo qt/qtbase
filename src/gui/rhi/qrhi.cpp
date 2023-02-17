@@ -1405,6 +1405,15 @@ QRhiVertexInputAttribute::Format QRhiImplementation::shaderDescVariableFormatToV
     case QShaderDescription::Uint:
         return QRhiVertexInputAttribute::UInt;
 
+    case QShaderDescription::Half4:
+        return QRhiVertexInputAttribute::Half4;
+    case QShaderDescription::Half3:
+        return QRhiVertexInputAttribute::Half3;
+    case QShaderDescription::Half2:
+        return QRhiVertexInputAttribute::Half2;
+    case QShaderDescription::Half:
+        return QRhiVertexInputAttribute::Half;
+
     default:
         Q_UNREACHABLE_RETURN(QRhiVertexInputAttribute::Float);
     }
