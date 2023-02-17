@@ -1038,6 +1038,8 @@ static const char *winLangCodeToIsoName(int code)
 
 LCID qt_inIsoNametoLCID(const char *name)
 {
+    if (!name)
+        return LOCALE_USER_DEFAULT;
     // handle norwegian manually, the list above will fail
     if (!strncmp(name, "nb", 2))
         return 0x0414;
