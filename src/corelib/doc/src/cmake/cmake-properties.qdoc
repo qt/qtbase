@@ -62,6 +62,29 @@ A list of external libraries that will be copied into your application's
 to enable OpenSSL in your application. For more information, see
 \l{Adding OpenSSL Support for Android}.
 
+When adding extra libraries from the build tree of your project, it's also
+necessary to add dependency relations between library and the application
+target. Using the following project structure may cause an issue, when deploying
+an apk:
+\badcode
+qt_add_executable(MyApp main.cpp)
+
+set_target_properties(MyApp PROPERTIES
+    QT_ANDROID_EXTRA_LIBS
+        ${CMAKE_CURRENT_BINARY_DIR}/libMyService_${ANDROID_ABI}.so
+)
+
+# MyService library doesn't have any relations with MyApp
+qt_add_library(MyService service.cpp)
+\endcode
+
+This leads to uncertainty whether MyService library will be available before
+the deployment of MyApp or not. The easiest solution is adding MyService
+library to the MyApp dependencies:
+\badcode
+add_dependencies(MyApp MyService)
+\endcode
+
 \sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
 */
 
