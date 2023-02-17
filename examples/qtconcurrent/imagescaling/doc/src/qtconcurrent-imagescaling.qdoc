@@ -1,4 +1,4 @@
-// Copyright (C) 2020 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
@@ -8,8 +8,9 @@
     \ingroup qtconcurrentexamples
     \brief Demonstrates how to asynchronously download and scale images.
 
-    This example shows how to use the QFuture and QPromise classes to download a
-    collection of images from the network and scale them, without blocking the UI.
+    This example shows how to use the QFuture, QPromise, and QFutureWatcher
+    classes to download a collection of images from the network and scale them,
+    without blocking the UI.
 
     \image imagescaling.webp
 
@@ -46,7 +47,6 @@
 
     And here starts the interesting part:
 
-    \dots
     \snippet imagescaling/imagescaling.cpp 11
     \dots
 
@@ -56,12 +56,14 @@
     QNetworkReply::finished() signal is emitted. This allows us to attach continuations
     and failure handlers, as it is done in the example.
 
-    In the continuation attached via \b{.then()}, we check if the user has requested to
-    cancel the download. If that's the case, we stop processing the request. By calling
-    the \c QPromise::finish() method, we notify the user that processing has been finished.
+    In the continuation attached via \l{QFuture::then}{.then()}, we check if the
+    user has requested to cancel the download. If that's the case, we stop
+    processing the request. By calling the \l QPromise::finish() method, we notify
+    the user that processing has been finished.
     In case the network request has ended with an error, we throw an exception. The
-    exception will be handled in the failure handler attached using the \b{.onFailed()}
-    method. Note that we have two failure handlers: the first one captures the network
+    exception will be handled in the failure handler attached using the
+    \l{QFuture::onFailed}{.onFailed()} method.
+    Note that we have two failure handlers: the first one captures the network
     errors, the second one all other exceptions thrown during the execution. Both handlers
     save the exception inside the promise object (to be handled by the caller of the
     \c download() method) and report that the computation has finished. Also note that,
@@ -83,7 +85,7 @@
     we need to copy and use the promise object in multiple places simultaneously. Hence,
     a QSharedPointer is used.
 
-    \c download() method is called from the \c QImage::process method. It is invoked
+    The \c download() method is called from the \c Images::process method. It is invoked
     when the user presses the \e {"Add URLs"} button:
 
     \dots
@@ -99,38 +101,20 @@
     \snippet imagescaling/imagescaling.cpp 3
     \dots
 
-    Next, we attach a continuation to handle the scaling step:
+    Next, we attach a continuation to handle the scaling step.
+    More on that later:
 
     \snippet imagescaling/imagescaling.cpp 4
     \dots
 
-    Since the scaling may be computationally heavy, and we don't want to block the main
-    thread, we pass the \c QtFuture::Launch::Async option, to launch the scaling step in
-    a new thread. The \c scaled() method returns a list of the scaled images to the next
-    step, which takes care of showing images in the layout.
+    After that we attach \l {QFuture::}{onCanceled()} and \l {QFuture::}{onFailed()}
+    handlers:
 
-    Note that \c updateStatus() is called through QMetaObject::invokeMethod(),
-    because it updates the UI and needs to be invoked from the main thread.
-
-    \dots
     \snippet imagescaling/imagescaling.cpp 5
     \dots
 
-    For the same reason \c showImages() also needs to be invoked from the main thread, so
-    we pass \c this as a context to \c .then(). By default, \c .then() is launched in the
-    parent's thread, but if a context object is specified, it is launched in the context
-    object's thread.
-
-    Then we add cancellation and failure handlers:
-
-    \dots
-    \snippet imagescaling/imagescaling.cpp 6
-
-    We don't need to specify the context anymore, because \c .onCanceled() and the next
-    handlers will be launched in their parent's context.
-
-    The handler attached via the \c .onCanceled() method will be called if the user has
-    pressed the \e "Cancel" button:
+    The handler attached via the \l {QFuture::onCanceled}{.onCanceled()} method
+    will be called if the user has pressed the \e "Cancel" button:
 
     \dots
     \snippet imagescaling/imagescaling.cpp 2
@@ -140,13 +124,54 @@
 
     \snippet imagescaling/imagescaling.cpp 7
 
-    The handlers attached via \c .onFailed() method will be called in case an
-    error occurred during one of the previous steps. For example, if a network error
-    has been saved inside the promise during the download step, it will be propagated to
-    the handler that takes \c QNetworkReply::NetworkError as argument. A failure can
-    happen also during the scaling step:
+    The handlers attached via \l {QFuture::onFailed}{.onFailed()} method will be
+    called in case an error occurred during one of the previous steps.
+    For example, if a network error has been saved inside the promise during the
+    download step, it will be propagated to the handler that takes
+    \l QNetworkReply::NetworkError as argument.
+
+    If the \c downloadFuture is not canceled, and didn't report any error, the
+    scaling continuation is executed.
+
+    Since the scaling may be computationally heavy, and we don't want to block
+    the main thread, we use \l QtConcurrent::run(), to launch the scaling step
+    in a new thread.
+
+    \snippet imagescaling/imagescaling.cpp 16
+
+    Since the scaling is launched in a separate thread, the user can potentially
+    decide to close the application while the scaling operation is in progress.
+    To handle such situations gracefully, we pass the \l QFuture returned by
+    \l QtConcurrent::run() to the \l QFutureWatcher instance.
+
+    The watcher's \l QFutureWatcher::finished signal is connected to the
+    \c Images::scaleFinished slot:
+
+    \snippet imagescaling/imagescaling.cpp 6
+
+    This slot is responsible for showing the scaled images in the UI, and also
+    for handling the errors that could potentially happen during scaling:
+
+    \snippet imagescaling/imagescaling.cpp 15
+
+    The error reporting is implemented by returning an optional from the
+    \c Images::scaled() method:
 
     \snippet imagescaling/imagescaling.cpp 14
+
+    The \c Images::OptionalImages type here is simply a typedef for \c std::optional:
+
+    \snippet imagescaling/imagescaling.h 1
+
+    \note We cannot handle the errors from the async scaling operation using
+    the \l {QFuture::onFailed}{.onFailed()} handler, because the handler needs
+    to be executed in the context of \c Images object in the UI thread.
+    If the user closes the application while the async computation is done,
+    the \c Images object will be destroyed, and accessing its members from the
+    continuation will lead to a crash. Using \l QFutureWatcher and its signals
+    allows us to avoid the problem, because the signals are disconnected when
+    the \l QFutureWatcher is destroyed, so the related slots will never be
+    executed in a destroyed context.
 
     The rest of the code is straightforward, you can check the example project for
     more details.

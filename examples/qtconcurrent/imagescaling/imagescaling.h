@@ -1,4 +1,4 @@
-// Copyright (C) 2020 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 #ifndef IMAGESCALING_H
 #define IMAGESCALING_H
@@ -6,6 +6,7 @@
 #include <QtWidgets>
 #include <QtConcurrent>
 #include <QNetworkAccessManager>
+#include <optional>
 
 class DownloadDialog;
 class Images : public QWidget
@@ -18,7 +19,6 @@ public:
     void initLayout(qsizetype count);
 
     QFuture<QByteArray> download(const QList<QUrl> &urls);
-    QList<QImage> scaled() const;
     void updateStatus(const QString &msg);
     void showImages(const QList<QImage> &images);
     void abortDownload();
@@ -27,7 +27,15 @@ public slots:
     void process();
     void cancel();
 
+private slots:
+    void scaleFinished();
+
 private:
+    //! [1]
+    using OptionalImages = std::optional<QList<QImage>>;
+    //! [1]
+    static OptionalImages scaled(const QList<QByteArray> &data);
+
     QPushButton *addUrlsButton;
     QPushButton *cancelButton;
     QVBoxLayout *mainLayout;
@@ -39,6 +47,7 @@ private:
     QNetworkAccessManager qnam;
     QList<QSharedPointer<QNetworkReply>> replies;
     QFuture<QByteArray> downloadFuture;
+    QFutureWatcher<OptionalImages> scalingWatcher;
 };
 
 #endif // IMAGESCALING_H
