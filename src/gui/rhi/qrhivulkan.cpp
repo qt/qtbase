@@ -183,7 +183,7 @@ QT_BEGIN_NAMESPACE
     in recording state, while recording a frame. That is, between a
     \l{QRhi::beginFrame()}{beginFrame()} - \l{QRhi::endFrame()}{endFrame()} or
     \l{QRhi::beginOffscreenFrame()}{beginOffscreenFrame()} -
-    \l{QRhi::endOffsrceenFrame()}{endOffscreenFrame()} pair.
+    \l{QRhi::endOffscreenFrame()}{endOffscreenFrame()} pair.
  */
 
 /*!

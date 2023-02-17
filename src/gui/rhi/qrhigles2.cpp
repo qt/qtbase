@@ -51,18 +51,18 @@ QT_BEGIN_NAMESPACE
     thread) are satisfied. The implicitly created context is destroyed
     automatically together with the QRhi.
 
-    The QSurfaceFormat for the context is specified in \l format. The
+    The QSurfaceFormat for the context is specified in \c format. The
     constructor sets this to QSurfaceFormat::defaultFormat() so applications
     that call QSurfaceFormat::setDefaultFormat() with the appropriate settings
-    before the constructor runs will not need to change value of \l format.
+    before the constructor runs will not need to change value of \c format.
 
     \note Remember to set the depth and stencil buffer sizes to 24 and 8 when
     the renderer relies on depth or stencil testing, either in the global
     default QSurfaceFormat, or, alternatively, separately in all the involved
-    QSurfaceFormat instances: in \l format, the format argument passed to
+    QSurfaceFormat instances: in \c format, the format argument passed to
     newFallbackSurface(), and on any QWindow that is used with the QRhi.
 
-    A QSurface has to be specified in \l fallbackSurface. In order to prevent
+    A QSurface has to be specified in \c fallbackSurface. In order to prevent
     mistakes in threaded situations, this is never created automatically by the
     QRhi because, like QWindow, instances of QSurface subclasses can often be
     created on the gui/main thread only.
@@ -77,14 +77,14 @@ QT_BEGIN_NAMESPACE
     instances that have their surface type set to QSurface::OpenGLSurface or
     QSurface::RasterGLSurface.
 
-    \note \l window is optional. It is recommended to specify it whenever
+    \note \c window is optional. It is recommended to specify it whenever
     possible, in order to avoid problems on multi-adapter and multi-screen
-    systems. When \l window is not set, the very first
-    QOpenGLContext::makeCurrent() happens with \l fallbackSurface which may be
+    systems. When \c window is not set, the very first
+    QOpenGLContext::makeCurrent() happens with \c fallbackSurface which may be
     an invisible window on some platforms (for example, Windows) and that may
     trigger unexpected problems in some cases.
 
-    In case resource sharing with an existing QOpenGLContext is desired, \l
+    In case resource sharing with an existing QOpenGLContext is desired, \c
     shareContext can be set to an existing QOpenGLContext. Alternatively,
     Qt::AA_ShareOpenGLContexts is honored as well, when enabled.
 
@@ -93,8 +93,7 @@ QT_BEGIN_NAMESPACE
     When interoperating with another graphics engine, it may be necessary to
     get a QRhi instance that uses the same OpenGL context. This can be achieved
     by passing a pointer to a QRhiGles2NativeHandles to QRhi::create(). The
-    \l{QRhiGles2NativeHandles::context}{context} must be set to a non-null
-    value.
+    \c{QRhiGles2NativeHandles::context} must be set to a non-null value then.
 
     An alternative approach is to create a QOpenGLContext that
     \l{QOpenGLContext::setShareContext()}{shares resources} with the other

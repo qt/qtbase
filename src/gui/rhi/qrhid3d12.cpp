@@ -20,6 +20,65 @@ QT_BEGIN_NAMESPACE
   Direct 3D 12 backend.
 */
 
+/*!
+    \class QRhiD3D12InitParams
+    \inmodule QtGui
+    \brief Direct3D 12 specific initialization parameters.
+
+    A D3D12-based QRhi needs no special parameters for initialization. If
+    desired, enableDebugLayer can be set to \c true to enable the Direct3D
+    debug layer. This can be useful during development, but should be avoided
+    in production builds.
+
+    \badcode
+        QRhiD3D12InitParams params;
+        params.enableDebugLayer = true;
+        rhi = QRhi::create(QRhi::D3D12, &params);
+    \endcode
+
+    \note QRhiSwapChain should only be used in combination with QWindow
+    instances that have their surface type set to QSurface::Direct3DSurface.
+
+    \section2 Working with existing Direct3D 12 devices
+
+    When interoperating with another graphics engine, it may be necessary to
+    get a QRhi instance that uses the same Direct3D device. This can be
+    achieved by passing a pointer to a QRhiD3D12NativeHandles to
+    QRhi::create(). QRhi does not take ownership of any of the external
+    objects.
+
+    Sometimes, for example when using QRhi in combination with OpenXR, one will
+    want to specify which adapter to use, and optionally, which feature level
+    to request on the device, while leaving the device creation to QRhi. This
+    is achieved by leaving the device pointer set to null, while specifying the
+    adapter LUID and feature level.
+
+    Optionally the ID3D12CommandQueue can be specified as well, by setting \c
+    commandQueue to a non-null value.
+ */
+
+/*!
+    \class QRhiD3D12NativeHandles
+    \inmodule QtGui
+    \brief Holds the D3D12 device used by the QRhi.
+
+    \note The class uses \c{void *} as the type since including the COM-based
+    \c{d3d12.h} headers is not acceptable here. The actual type is
+    \c{ID3D12Device *}.
+ */
+
+/*!
+    \class QRhiD3D12CommandBufferNativeHandles
+    \inmodule QtGui
+    \brief Holds the ID3D12GraphicsCommandList object that is backing a QRhiCommandBuffer.
+
+    \note The command list object is only guaranteed to be valid, and
+    in recording state, while recording a frame. That is, between a
+    \l{QRhi::beginFrame()}{beginFrame()} - \l{QRhi::endFrame()}{endFrame()} or
+    \l{QRhi::beginOffscreenFrame()}{beginOffscreenFrame()} -
+    \l{QRhi::endOffscreenFrame()}{endOffscreenFrame()} pair.
+ */
+
 // https://learn.microsoft.com/en-us/windows/win32/direct3d12/hardware-feature-levels
 static const D3D_FEATURE_LEVEL MIN_FEATURE_LEVEL = D3D_FEATURE_LEVEL_11_0;
 

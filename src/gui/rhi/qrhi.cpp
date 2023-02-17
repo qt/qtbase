@@ -79,6 +79,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
     \li Direct3D 11.1
 
+    \li Direct3D 12
+
     \li Metal
 
     \li Vulkan 1.0, optionally with some extensions that are part of Vulkan 1.1
@@ -1590,10 +1592,10 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputLayout &v)
 
     \value Vertex Vertex stage
 
-    \value TessellationControlStage Tessellation control (hull shader) stage.
-    Must be used only when the QRhi::Tessellation feature is supported.
+    \value TessellationControl Tessellation control (hull shader) stage. Must
+    be used only when the QRhi::Tessellation feature is supported.
 
-    \value TessellationEvaluationStage Tessellation evaluation (domain shader)
+    \value TessellationEvaluation Tessellation evaluation (domain shader)
     stage. Must be used only when the QRhi::Tessellation feature is supported.
 
     \value Fragment Fragment (pixel shader) stage
@@ -2310,9 +2312,9 @@ QRhi *QRhiResource::rhi() const
     not supported, this usage can only be combined with the type Dynamic.
 
     \value StorageBuffer Storage buffer. This allows the QRhiBuffer to be used
-    in combination with \l{BufferLoad}{QRhiShaderResourceBinding::BufferLoad},
-    \l{BufferStore}{QRhiShaderResourceBinding::BufferStore}, or
-    \l{BufferLoadStore}{QRhiShaderResourceBinding::BufferLoadStore}. This usage
+    in combination with \l{QRhiShaderResourceBinding::BufferLoad}{BufferLoad},
+    \l{QRhiShaderResourceBinding::BufferStore}{BufferStore}, or
+    \l{QRhiShaderResourceBinding::BufferLoadStore}{BufferLoadStore}. This usage
     can only be combined with the types Immutable or Static, and is only
     available when the \l{QRhi::Compute}{Compute feature} is reported as
     supported.
@@ -2679,6 +2681,14 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
      QRhi::TextureArrays feature. When rendering into, or uploading data to a
      texture array, the \c layer specified in the render target's color
      attachment or the upload description selects a single element in the array.
+
+     \value OneDimensional The texture is a 1D texture. Such textures can be
+     created by passing a 0 height and depth to QRhi::newTexture(). Note that
+     there can be limitations on one dimensional textures depending on the
+     underlying graphics API. For example, rendering to them or using them with
+     mipmap-based filtering may be unsupported. This is indicated by the
+     QRhi::OneDimensionalTextures and QRhi::OneDimensionalTextureMipmaps
+     feature flags.
  */
 
 /*!
@@ -2712,7 +2722,7 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
 
     \value R32F One component, 32-bit float.
 
-    \value RGBA10A2 Four components, unsigned normalized 10 bit R, G, and B,
+    \value RGB10A2 Four components, unsigned normalized 10 bit R, G, and B,
     2-bit alpha. This is a packed format so native endianness applies. Note
     that there is no BGR10A2. This is because RGB10A2 maps to
     DXGI_FORMAT_R10G10B10A2_UNORM with D3D, MTLPixelFormatRGB10A2Unorm with
@@ -2855,7 +2865,7 @@ bool QRhiTexture::createFrom(QRhiTexture::NativeTexture src)
 /*!
     With some graphics APIs, such as Vulkan, integrating custom rendering code
     that uses the graphics API directly needs special care when it comes to
-    image layouts. This function allows communicating the expected layout the
+    image layouts. This function allows communicating the expected \a layout the
     image backing the QRhiTexture is in after the native rendering commands.
 
     For example, consider rendering into a QRhiTexture's VkImage directly with
@@ -2871,6 +2881,9 @@ bool QRhiTexture::createFrom(QRhiTexture::NativeTexture src)
 
     This function has no effect with QRhi backends where the underlying
     graphics API does not expose a concept of image layouts.
+
+    \note With Vulkan \a layout is a \c VkImageLayout. With Direct 3D 12 \a
+    layout is a value composed of the bits from \c D3D12_RESOURCE_STATES.
  */
 void QRhiTexture::setNativeLayout(int layout)
 {
@@ -3421,7 +3434,15 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
 
     \value UniformBuffer Uniform buffer
 
-    \value SampledTexture Combined image sampler
+    \value SampledTexture Combined image sampler (a texture and sampler pair).
+    Even when the shading language associated with the underlying 3D API has no
+    support for this concept (e.g. D3D and HLSL), this is still supported
+    because the shader translation layer takes care of the appropriate
+    translation and remapping of binding points or shader registers.
+
+    \value Texture Texture (separate)
+
+    \value Sampler Sampler (separate)
 
     \value ImageLoad Image load (with GLSL this maps to doing imageLoad() on a
     single level - and either one or all layers - of a texture exposed to the
@@ -5572,8 +5593,8 @@ QRhi::~QRhi()
 
     \a params must point to an instance of one of the backend-specific
     subclasses of QRhiInitParams, such as, QRhiVulkanInitParams,
-    QRhiMetalInitParams, QRhiD3D11InitParams, QRhiGles2InitParams. See these
-    classes for examples on creating a QRhi.
+    QRhiMetalInitParams, QRhiD3D11InitParams, QRhiD3D12InitParams,
+    QRhiGles2InitParams. See these classes for examples on creating a QRhi.
 
     QRhi by design does not implement any fallback logic: if the specified API
     cannot be initialized, create() will fail, with warnings printed on the
@@ -5586,6 +5607,13 @@ QRhi::~QRhi()
     lightweight manner as opposed to create(), which performs full
     initialization of the infrastructure and is wasteful if that QRhi instance
     is then thrown immediately away.
+
+    \a importDevice allows using an already existing graphics device, without
+    QRhi creating its own. When not null, this parameter must point to an
+    instance of one of the subclasses of QRhiNativeHandles:
+    QRhiVulkanNativeHandles, QRhiD3D11NativeHandles, QRhiD3D12NativeHandles,
+    QRhiMetalNativeHandles, QRhiGles2NativeHandles. The exact details and
+    semantics depend on the backand and the underlying graphics API.
 
     \sa probe()
  */
@@ -5801,7 +5829,6 @@ const char *QRhi::backendName() const
     \struct QRhiDriverInfo
     \internal
     \inmodule QtGui
-    \since 6.1
 
     \brief Describes the physical device, adapter, or graphics API
     implementation that is used by an initialized QRhi.
@@ -6388,9 +6415,10 @@ void QRhiResourceUpdateBatchPrivate::trimOpLists()
 }
 
 /*!
-    Sometimes committing resource updates is necessary without starting a
-    render pass. Not often needed, updates should typically be passed to
-    beginPass (or endPass, in case of readbacks) instead.
+    Sometimes committing resource updates is necessary or just more convenient
+    without starting a render pass. Calling this function with \a
+    resourceUpdates is an alternative to passing \a resourceUpdates to a
+    beginPass() call (or endPass(), which would be typical in case of readbacks).
 
     \note Cannot be called inside a pass.
  */
@@ -6447,7 +6475,11 @@ void QRhiCommandBuffer::resourceUpdate(QRhiResourceUpdateBatch *resourceUpdates)
       cb->beginPass(rt, ...); // this is ok, no explicit rt->create() is required before
     \endcode
 
-    \sa endPass()
+    \a flags allow controlling certain advanced functionality. One commonly used
+    flag is \c ExternalContents. This should be specified whenever
+    beginExternal() will be called within the pass started by this function.
+
+    \sa endPass(), BeginPassFlags
  */
 void QRhiCommandBuffer::beginPass(QRhiRenderTarget *rt,
                                   const QColor &colorClearValue,
@@ -6742,8 +6774,9 @@ void QRhiCommandBuffer::drawIndexed(quint32 indexCount,
 }
 
 /*!
-    Records a named debug group on the command buffer. This is shown in
-    graphics debugging tools such as \l{https://renderdoc.org/}{RenderDoc} and
+    Records a named debug group on the command buffer with the specified \a
+    name. This is shown in graphics debugging tools such as
+    \l{https://renderdoc.org/}{RenderDoc} and
     \l{https://developer.apple.com/xcode/}{XCode}. The end of the grouping is
     indicated by debugMarkEnd().
 
@@ -6801,6 +6834,8 @@ void QRhiCommandBuffer::debugMarkMsg(const QByteArray &msg)
 
     \note Compute is only available when the \l{QRhi::Compute}{Compute} feature
     is reported as supported.
+
+    \a flags is not currently used.
  */
 void QRhiCommandBuffer::beginComputePass(QRhiResourceUpdateBatch *resourceUpdates, BeginPassFlags flags)
 {
@@ -7170,7 +7205,7 @@ bool QRhi::isDeviceLost() const
 }
 
 /*!
-    \return a binary \a data blob with data collected from the
+    \return a binary data blob with data collected from the
     QRhiGraphicsPipeline and QRhiComputePipeline successfully created during
     the lifetime of this QRhi.
 
@@ -7774,7 +7809,9 @@ QRhi::FrameOpResult QRhi::beginOffscreenFrame(QRhiCommandBuffer **cb, BeginFrame
 }
 
 /*!
-    Ends and waits for the offscreen frame.
+    Ends, submits, and waits for the offscreen frame.
+
+    \a flags is not currently used.
 
     \sa beginOffscreenFrame()
  */

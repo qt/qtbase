@@ -44,9 +44,7 @@ using namespace Qt::StringLiterals;
     \endcode
 
     \note QRhiSwapChain should only be used in combination with QWindow
-    instances that have their surface type set to QSurface::OpenGLSurface.
-    There are currently no Direct3D specifics in the Windows platform support
-    of Qt and therefore there is no separate QSurface type available.
+    instances that have their surface type set to QSurface::Direct3DSurface.
 
     \section2 Working with existing Direct3D 11 devices
 
