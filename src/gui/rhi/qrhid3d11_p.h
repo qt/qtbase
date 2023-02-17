@@ -24,9 +24,6 @@ QT_BEGIN_NAMESPACE
 struct Q_GUI_EXPORT QRhiD3D11InitParams : public QRhiInitParams
 {
     bool enableDebugLayer = false;
-
-    int framesUntilKillingDeviceViaTdr = -1;
-    bool repeatDeviceKill = false;
 };
 
 struct Q_GUI_EXPORT QRhiD3D11NativeHandles : public QRhiNativeHandles
