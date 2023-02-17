@@ -430,10 +430,17 @@ void QPlainTextEditPrivate::_q_cursorPositionChanged()
 }
 
 void QPlainTextEditPrivate::_q_verticalScrollbarActionTriggered(int action) {
-    if (action == QAbstractSlider::SliderPageStepAdd) {
+
+    const auto a = static_cast<QAbstractSlider::SliderAction>(action);
+    switch (a) {
+    case QAbstractSlider::SliderPageStepAdd:
         pageUpDown(QTextCursor::Down, QTextCursor::MoveAnchor, false);
-    } else if (action == QAbstractSlider::SliderPageStepSub) {
+        break;
+    case QAbstractSlider::SliderPageStepSub:
         pageUpDown(QTextCursor::Up, QTextCursor::MoveAnchor, false);
+        break;
+    default:
+        break;
     }
 }
 
@@ -742,23 +749,28 @@ void QPlainTextEditPrivate::init(const QString &txt)
 
     control->setPalette(q->palette());
 
-    QObject::connect(vbar, SIGNAL(actionTriggered(int)), q, SLOT(_q_verticalScrollbarActionTriggered(int)));
-
-    QObject::connect(control, SIGNAL(microFocusChanged()), q, SLOT(updateMicroFocus()));
-    QObject::connect(control, SIGNAL(documentSizeChanged(QSizeF)), q, SLOT(_q_adjustScrollbars()));
-    QObject::connect(control, SIGNAL(blockCountChanged(int)), q, SIGNAL(blockCountChanged(int)));
-    QObject::connect(control, SIGNAL(updateRequest(QRectF)), q, SLOT(_q_repaintContents(QRectF)));
-    QObject::connect(control, SIGNAL(modificationChanged(bool)), q, SIGNAL(modificationChanged(bool)));
-
-    QObject::connect(control, SIGNAL(textChanged()), q, SIGNAL(textChanged()));
-    QObject::connect(control, SIGNAL(undoAvailable(bool)), q, SIGNAL(undoAvailable(bool)));
-    QObject::connect(control, SIGNAL(redoAvailable(bool)), q, SIGNAL(redoAvailable(bool)));
-    QObject::connect(control, SIGNAL(copyAvailable(bool)), q, SIGNAL(copyAvailable(bool)));
-    QObject::connect(control, SIGNAL(selectionChanged()), q, SIGNAL(selectionChanged()));
-    QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(_q_cursorPositionChanged()));
-
-    QObject::connect(control, SIGNAL(textChanged()), q, SLOT(_q_updatePlaceholderVisibility()));
-    QObject::connect(control, SIGNAL(textChanged()), q, SLOT(updateMicroFocus()));
+    QObjectPrivate::connect(vbar, &QAbstractSlider::actionTriggered,
+                            this, &QPlainTextEditPrivate::_q_verticalScrollbarActionTriggered);
+    QObject::connect(control, &QWidgetTextControl::microFocusChanged, q,
+                     [q](){q->updateMicroFocus(); });
+    QObjectPrivate::connect(control, &QWidgetTextControl::documentSizeChanged,
+                            this, &QPlainTextEditPrivate::_q_adjustScrollbars);
+    QObject::connect(control, &QWidgetTextControl::blockCountChanged,
+                     q, &QPlainTextEdit::blockCountChanged);
+    QObjectPrivate::connect(control, &QWidgetTextControl::updateRequest,
+                            this, &QPlainTextEditPrivate::_q_repaintContents);
+    QObject::connect(control, &QWidgetTextControl::modificationChanged,
+                     q, &QPlainTextEdit::modificationChanged);
+    QObject::connect(control, &QWidgetTextControl::textChanged, q, &QPlainTextEdit::textChanged);
+    QObject::connect(control, &QWidgetTextControl::undoAvailable, q, &QPlainTextEdit::undoAvailable);
+    QObject::connect(control, &QWidgetTextControl::redoAvailable, q, &QPlainTextEdit::redoAvailable);
+    QObject::connect(control, &QWidgetTextControl::copyAvailable, q, &QPlainTextEdit::copyAvailable);
+    QObject::connect(control, &QWidgetTextControl::selectionChanged, q, &QPlainTextEdit::selectionChanged);
+    QObjectPrivate::connect(control, &QWidgetTextControl::cursorPositionChanged,
+                            this, &QPlainTextEditPrivate::_q_cursorPositionChanged);
+    QObjectPrivate::connect(control, &QWidgetTextControl::textChanged,
+                            this, &QPlainTextEditPrivate::_q_updatePlaceholderVisibility);
+    QObject::connect(control, &QWidgetTextControl::textChanged, q, [q](){q->updateMicroFocus(); });
 
     // set a null page size initially to avoid any relayouting until the textedit
     // is shown. relayoutDocument() will take care of setting the page size to the
@@ -991,8 +1003,6 @@ void QPlainTextEditPrivate::_q_adjustScrollbars()
         int lineSpacing = q->fontMetrics().lineSpacing();
         vSliderLength = lineSpacing != 0 ? viewport->height() / lineSpacing : 0;
     }
-
-
 
     QSizeF documentSize = documentLayout->documentSize();
     vbar->setRange(0, qMax(0, vmax));
@@ -1511,53 +1521,57 @@ bool QPlainTextEdit::event(QEvent *e)
 {
     Q_D(QPlainTextEdit);
 
+    switch (e->type()) {
 #ifndef QT_NO_CONTEXTMENU
-    if (e->type() == QEvent::ContextMenu
-        && static_cast<QContextMenuEvent *>(e)->reason() == QContextMenuEvent::Keyboard) {
-        ensureCursorVisible();
-        const QPoint cursorPos = cursorRect().center();
-        QContextMenuEvent ce(QContextMenuEvent::Keyboard, cursorPos, d->viewport->mapToGlobal(cursorPos));
-        ce.setAccepted(e->isAccepted());
-        const bool result = QAbstractScrollArea::event(&ce);
-        e->setAccepted(ce.isAccepted());
-        return result;
-    }
+    case QEvent::ContextMenu:
+        if (static_cast<QContextMenuEvent *>(e)->reason() == QContextMenuEvent::Keyboard) {
+            ensureCursorVisible();
+            const QPoint cursorPos = cursorRect().center();
+            QContextMenuEvent ce(QContextMenuEvent::Keyboard, cursorPos, d->viewport->mapToGlobal(cursorPos));
+            ce.setAccepted(e->isAccepted());
+            const bool result = QAbstractScrollArea::event(&ce);
+            e->setAccepted(ce.isAccepted());
+            return result;
+        }
+        break;
 #endif // QT_NO_CONTEXTMENU
-    if (e->type() == QEvent::ShortcutOverride
-               || e->type() == QEvent::ToolTip) {
+    case QEvent::ShortcutOverride:
+    case QEvent::ToolTip:
         d->sendControlEvent(e);
-    }
+        break;
 #ifdef QT_KEYPAD_NAVIGATION
-    else if (e->type() == QEvent::EnterEditFocus || e->type() == QEvent::LeaveEditFocus) {
+    case QEvent::EnterEditFocus:
+    case QEvent::LeaveEditFocus:
         if (QApplicationPrivate::keypadNavigationEnabled())
             d->sendControlEvent(e);
-    }
+        break;
 #endif
 #ifndef QT_NO_GESTURES
-    else if (e->type() == QEvent::Gesture) {
-        QGestureEvent *ge = static_cast<QGestureEvent *>(e);
-        QPanGesture *g = static_cast<QPanGesture *>(ge->gesture(Qt::PanGesture));
-        if (g) {
+    case QEvent::Gesture:
+        if (auto *g = static_cast<QGestureEvent *>(e)->gesture(Qt::PanGesture)) {
+            QPanGesture *panGesture = static_cast<QPanGesture *>(g);
             QScrollBar *hBar = horizontalScrollBar();
             QScrollBar *vBar = verticalScrollBar();
-            if (g->state() == Qt::GestureStarted)
+            if (panGesture->state() == Qt::GestureStarted)
                 d->originalOffsetY = vBar->value();
-            QPointF offset = g->offset();
+            QPointF offset = panGesture->offset();
             if (!offset.isNull()) {
                 if (QGuiApplication::isRightToLeft())
                     offset.rx() *= -1;
                 // QPlainTextEdit scrolls by lines only in vertical direction
                 QFontMetrics fm(document()->defaultFont());
                 int lineHeight = fm.height();
-                int newX = hBar->value() - g->delta().x();
+                int newX = hBar->value() - panGesture->delta().x();
                 int newY = d->originalOffsetY - offset.y()/lineHeight;
                 hBar->setValue(newX);
                 vBar->setValue(newY);
             }
         }
         return true;
-    }
 #endif // QT_NO_GESTURES
+    default:
+        break;
+    }
     return QAbstractScrollArea::event(e);
 }
 
@@ -2289,20 +2303,29 @@ void QPlainTextEdit::changeEvent(QEvent *e)
 {
     Q_D(QPlainTextEdit);
     QAbstractScrollArea::changeEvent(e);
-    if (e->type() == QEvent::ApplicationFontChange
-        || e->type() == QEvent::FontChange) {
+
+    switch (e->type()) {
+    case QEvent::ApplicationFontChange:
+    case QEvent::FontChange:
         d->control->document()->setDefaultFont(font());
-    }  else if (e->type() == QEvent::ActivationChange) {
+        break;
+    case QEvent::ActivationChange:
         if (!isActiveWindow())
             d->autoScrollTimer.stop();
-    } else if (e->type() == QEvent::EnabledChange) {
+        break;
+    case QEvent::EnabledChange:
         e->setAccepted(isEnabled());
         d->control->setPalette(palette());
         d->sendControlEvent(e);
-    } else if (e->type() == QEvent::PaletteChange) {
+        break;
+    case QEvent::PaletteChange:
         d->control->setPalette(palette());
-    } else if (e->type() == QEvent::LayoutDirectionChange) {
+        break;
+    case QEvent::LayoutDirectionChange:
         d->sendControlEvent(e);
+        break;
+    default:
+        break;
     }
 }
 
@@ -2987,12 +3010,17 @@ void QPlainTextEditPrivate::append(const QString &text, Qt::TextFormat format)
     bool documentSizeChangedBlocked = documentLayout->priv()->blockDocumentSizeChanged;
     documentLayout->priv()->blockDocumentSizeChanged = true;
 
-    if (format == Qt::RichText)
+    switch (format) {
+    case Qt::RichText:
         control->appendHtml(text);
-    else if (format == Qt::PlainText)
+        break;
+    case Qt::PlainText:
         control->appendPlainText(text);
-    else
+        break;
+    default:
         control->append(text);
+        break;
+    }
 
     if (maximumBlockCount > 0) {
         if (document->blockCount() > maximumBlockCount) {
