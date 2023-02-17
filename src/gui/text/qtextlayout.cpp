@@ -2360,14 +2360,18 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
         // when we're breaking a RTL script item, since the expected position passed into
         // getGlyphPositions() is the left-most edge of the left-most glyph in an RTL run.
         if (relativeFrom != (iterator.itemStart - si.position) && !rtl) {
-            for (int i=itemGlyphsStart; i<glyphsStart; ++i) {
-                QFixed justification = QFixed::fromFixed(glyphLayout.justifications[i].space_18d6);
-                pos.rx() += (glyphLayout.advances[i] + justification).toReal();
+            for (int i = itemGlyphsStart; i < glyphsStart; ++i) {
+                if (!glyphLayout.attributes[i].dontPrint) {
+                    QFixed justification = QFixed::fromFixed(glyphLayout.justifications[i].space_18d6);
+                    pos.rx() += (glyphLayout.advances[i] + justification).toReal();
+                }
             }
         } else if (relativeTo != (iterator.itemEnd - si.position - 1) && rtl) {
-            for (int i=itemGlyphsEnd; i>glyphsEnd; --i) {
-                QFixed justification = QFixed::fromFixed(glyphLayout.justifications[i].space_18d6);
-                pos.rx() += (glyphLayout.advances[i] + justification).toReal();
+            for (int i = itemGlyphsEnd; i > glyphsEnd; --i) {
+                if (!glyphLayout.attributes[i].dontPrint) {
+                    QFixed justification = QFixed::fromFixed(glyphLayout.justifications[i].space_18d6);
+                    pos.rx() += (glyphLayout.advances[i] + justification).toReal();
+                }
             }
         }
 
@@ -2416,8 +2420,10 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                                                       relativeFrom + si.position,
                                                       relativeTo - relativeFrom + 1));
                     for (int i = 0; i < subLayout.numGlyphs; ++i) {
-                        QFixed justification = QFixed::fromFixed(subLayout.justifications[i].space_18d6);
-                        pos.rx() += (subLayout.advances[i] + justification).toReal();
+                        if (!subLayout.attributes[i].dontPrint) {
+                            QFixed justification = QFixed::fromFixed(subLayout.justifications[i].space_18d6);
+                            pos.rx() += (subLayout.advances[i] + justification).toReal();
+                        }
                     }
 
                     if (rtl)
