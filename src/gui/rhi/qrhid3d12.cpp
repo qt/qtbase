@@ -4049,6 +4049,13 @@ QRhiTexture::NativeTexture QD3D12Texture::nativeTexture()
     return {};
 }
 
+void QD3D12Texture::setNativeLayout(int layout)
+{
+    QRHI_RES_RHI(QRhiD3D12);
+    if (QD3D12Resource *res = rhiD->resourcePool.lookupRef(handle))
+        res->state = D3D12_RESOURCE_STATES(layout);
+}
+
 QD3D12Sampler::QD3D12Sampler(QRhiImplementation *rhi, Filter magFilter, Filter minFilter, Filter mipmapMode,
                              AddressMode u, AddressMode v, AddressMode w)
     : QRhiSampler(rhi, magFilter, minFilter, mipmapMode, u, v, w)

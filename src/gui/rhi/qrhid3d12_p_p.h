@@ -703,6 +703,7 @@ struct QD3D12Texture : public QRhiTexture
     bool create() override;
     bool createFrom(NativeTexture src) override;
     NativeTexture nativeTexture() override;
+    void setNativeLayout(int layout) override;
 
     bool prepareCreate(QSize *adjustedSize = nullptr);
     bool finishCreate();
