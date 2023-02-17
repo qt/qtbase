@@ -536,10 +536,6 @@ public:
         }
     };
 
-    // ### remove these two once Qt Quick 3D is updated
-    Data *data() { return &d; }
-    const Data *data() const { return &d; }
-
     static const int LAYOUT_DESC_ENTRIES_PER_BINDING = 4;
 
     template<typename Output>
