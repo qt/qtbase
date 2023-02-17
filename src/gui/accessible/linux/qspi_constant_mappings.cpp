@@ -97,6 +97,7 @@ QSpiUIntList spiStateSetFromSpiStates(quint64 states)
 
 AtspiRelationType qAccessibleRelationToAtSpiRelation(QAccessible::Relation relation)
 {
+    // direction of the relation is "inversed" in Qt and AT-SPI
     switch (relation) {
     case QAccessible::Label:
         return ATSPI_RELATION_LABELLED_BY;
@@ -106,6 +107,14 @@ AtspiRelationType qAccessibleRelationToAtSpiRelation(QAccessible::Relation relat
         return ATSPI_RELATION_CONTROLLED_BY;
     case QAccessible::Controlled:
         return ATSPI_RELATION_CONTROLLER_FOR;
+    case QAccessible::DescriptionFor:
+        return ATSPI_RELATION_DESCRIBED_BY;
+    case QAccessible::Described:
+        return ATSPI_RELATION_DESCRIPTION_FOR;
+    case QAccessible::FlowsFrom:
+        return ATSPI_RELATION_FLOWS_TO;
+    case QAccessible::FlowsTo:
+        return ATSPI_RELATION_FLOWS_FROM;
     default:
         qWarning() << "Cannot return AT-SPI relation for:" << relation;
     }

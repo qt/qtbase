@@ -367,12 +367,16 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     the returned list, and the \c origin object is the one represented
     by the calling interface.
 
-    \value Label            The \c returned object is the label for the \c origin object.
-    \value Labelled         The \c returned object is labelled by the \c origin object.
-    \value Controller       The \c returned object controls the \c origin object.
-    \value Controlled       The \c returned object is controlled by the \c origin object.
-    \value AllRelations     Used as a mask to specify that we are interesting in information
-                            about all relations
+    \value Label                        The \c returned object is the label for the \c origin object.
+    \value Labelled                     The \c returned object is labelled by the \c origin object.
+    \value Controller                   The \c returned object controls the \c origin object.
+    \value Controlled                   The \c returned object is controlled by the \c origin object.
+    \value [since 6.6] DescriptionFor   The \c returned object provides a description for the \c origin object.
+    \value [since 6.6] Described        The \c returned object is described by the \c origin object.
+    \value [since 6.6] FlowsFrom        Content logically flows from the \c returned object to the \c origin object.
+    \value [since 6.6] FlowsTo          Content logically flows to the \c returned object from the \c origin object.
+    \value AllRelations                 Used as a mask to specify that we are interesting in information
+                                        about all relations
 
     Implementations of relations() return a combination of these flags.
     Some values are mutually exclusive.

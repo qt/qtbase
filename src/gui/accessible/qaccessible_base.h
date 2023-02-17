@@ -331,6 +331,10 @@ public:
         Labelled      = 0x00000002,
         Controller    = 0x00000004,
         Controlled    = 0x00000008,
+        DescriptionFor = 0x00000010,
+        Described     = 0x00000020,
+        FlowsFrom     = 0x00000040,
+        FlowsTo       = 0x00000080,
         AllRelations  = 0xffffffff
     };
     Q_DECLARE_FLAGS(Relation, RelationFlag)
