@@ -56,13 +56,28 @@ public:
 private:
     float m_d = 1.0f;
     quint32 m_s = 0;
+
+    friend bool operator==(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept
+    {
+        return a.m_d == b.m_d && a.m_s == b.m_s;
+    }
+
+    friend bool operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept
+    {
+        return !(a == b);
+    }
+
+    friend size_t qHash(const QRhiDepthStencilClearValue &v, size_t seed = 0) noexcept
+    {
+        QtPrivate::QHashCombine hash;
+        seed = hash(seed, v.m_d);
+        seed = hash(seed, v.m_s);
+        return seed;
+    }
 };
 
 Q_DECLARE_TYPEINFO(QRhiDepthStencilClearValue, Q_RELOCATABLE_TYPE);
 
-Q_GUI_EXPORT bool operator==(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept;
-Q_GUI_EXPORT bool operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept;
-Q_GUI_EXPORT size_t qHash(const QRhiDepthStencilClearValue &v, size_t seed = 0) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiDepthStencilClearValue &);
 #endif
@@ -88,13 +103,34 @@ private:
     std::array<float, 4> m_rect { { 0.0f, 0.0f, 0.0f, 0.0f } };
     float m_minDepth = 0.0f;
     float m_maxDepth = 1.0f;
+
+    friend bool operator==(const QRhiViewport &a, const QRhiViewport &b) noexcept
+    {
+        return a.m_rect == b.m_rect
+                && a.m_minDepth == b.m_minDepth
+                && a.m_maxDepth == b.m_maxDepth;
+    }
+
+    friend bool operator!=(const QRhiViewport &a, const QRhiViewport &b) noexcept
+    {
+        return !(a == b);
+    }
+
+    friend size_t qHash(const QRhiViewport &v, size_t seed = 0) noexcept
+    {
+        QtPrivate::QHashCombine hash;
+        seed = hash(seed, v.m_rect[0]);
+        seed = hash(seed, v.m_rect[1]);
+        seed = hash(seed, v.m_rect[2]);
+        seed = hash(seed, v.m_rect[3]);
+        seed = hash(seed, v.m_minDepth);
+        seed = hash(seed, v.m_maxDepth);
+        return seed;
+    }
 };
 
 Q_DECLARE_TYPEINFO(QRhiViewport, Q_RELOCATABLE_TYPE);
 
-Q_GUI_EXPORT bool operator==(const QRhiViewport &a, const QRhiViewport &b) noexcept;
-Q_GUI_EXPORT bool operator!=(const QRhiViewport &a, const QRhiViewport &b) noexcept;
-Q_GUI_EXPORT size_t qHash(const QRhiViewport &v, size_t seed = 0) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiViewport &);
 #endif
@@ -112,13 +148,30 @@ public:
 
 private:
     std::array<int, 4> m_rect { { 0, 0, 0, 0 } };
+
+    friend bool operator==(const QRhiScissor &a, const QRhiScissor &b) noexcept
+    {
+        return a.m_rect == b.m_rect;
+    }
+
+    friend bool operator!=(const QRhiScissor &a, const QRhiScissor &b) noexcept
+    {
+        return !(a == b);
+    }
+
+    friend size_t qHash(const QRhiScissor &v, size_t seed = 0) noexcept
+    {
+        QtPrivate::QHashCombine hash;
+        seed = hash(seed, v.m_rect[0]);
+        seed = hash(seed, v.m_rect[1]);
+        seed = hash(seed, v.m_rect[2]);
+        seed = hash(seed, v.m_rect[3]);
+        return seed;
+    }
 };
 
 Q_DECLARE_TYPEINFO(QRhiScissor, Q_RELOCATABLE_TYPE);
 
-Q_GUI_EXPORT bool operator==(const QRhiScissor &a, const QRhiScissor &b) noexcept;
-Q_GUI_EXPORT bool operator!=(const QRhiScissor &a, const QRhiScissor &b) noexcept;
-Q_GUI_EXPORT size_t qHash(const QRhiScissor &v, size_t seed = 0) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiScissor &);
 #endif
@@ -147,13 +200,31 @@ private:
     quint32 m_stride = 0;
     Classification m_classification = PerVertex;
     quint32 m_instanceStepRate = 1;
+
+    friend bool operator==(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept
+    {
+        return a.m_stride == b.m_stride
+                && a.m_classification == b.m_classification
+                && a.m_instanceStepRate == b.m_instanceStepRate;
+    }
+
+    friend bool operator!=(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept
+    {
+        return !(a == b);
+    }
+
+    friend size_t qHash(const QRhiVertexInputBinding &v, size_t seed = 0) noexcept
+    {
+        QtPrivate::QHashCombine hash;
+        seed = hash(seed, v.m_stride);
+        seed = hash(seed, v.m_classification);
+        seed = hash(seed, v.m_instanceStepRate);
+        return seed;
+    }
 };
 
 Q_DECLARE_TYPEINFO(QRhiVertexInputBinding, Q_RELOCATABLE_TYPE);
 
-Q_GUI_EXPORT bool operator==(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept;
-Q_GUI_EXPORT bool operator!=(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept;
-Q_GUI_EXPORT size_t qHash(const QRhiVertexInputBinding &v, size_t seed = 0) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiVertexInputBinding &);
 #endif
@@ -203,13 +274,34 @@ private:
     Format m_format = Float4;
     quint32 m_offset = 0;
     int m_matrixSlice = -1;
+
+    friend bool operator==(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept
+    {
+        return a.m_binding == b.m_binding
+                && a.m_location == b.m_location
+                && a.m_format == b.m_format
+                && a.m_offset == b.m_offset;
+        // matrixSlice excluded intentionally
+    }
+
+    friend bool operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept
+    {
+        return !(a == b);
+    }
+
+    friend size_t qHash(const QRhiVertexInputAttribute &v, size_t seed = 0) noexcept
+    {
+        QtPrivate::QHashCombine hash;
+        seed = hash(seed, v.m_binding);
+        seed = hash(seed, v.m_location);
+        seed = hash(seed, v.m_format);
+        seed = hash(seed, v.m_offset);
+        return seed;
+    }
 };
 
 Q_DECLARE_TYPEINFO(QRhiVertexInputAttribute, Q_RELOCATABLE_TYPE);
 
-Q_GUI_EXPORT bool operator==(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept;
-Q_GUI_EXPORT bool operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept;
-Q_GUI_EXPORT size_t qHash(const QRhiVertexInputAttribute &v, size_t seed = 0) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiVertexInputAttribute &);
 #endif
@@ -247,14 +339,27 @@ private:
     QVarLengthArray<QRhiVertexInputBinding, 8> m_bindings;
     QVarLengthArray<QRhiVertexInputAttribute, 8> m_attributes;
 
-    friend Q_GUI_EXPORT bool operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept;
-    friend Q_GUI_EXPORT size_t qHash(const QRhiVertexInputLayout &v, size_t seed) noexcept;
+    friend bool operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept
+    {
+        return a.m_bindings == b.m_bindings && a.m_attributes == b.m_attributes;
+    }
+
+    friend bool operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept
+    {
+        return !(a == b);
+    }
+
+    friend size_t qHash(const QRhiVertexInputLayout &v, size_t seed = 0) noexcept
+    {
+        QtPrivate::QHashCombine hash;
+        seed = hash(seed, v.m_bindings);
+        seed = hash(seed, v.m_attributes);
+        return seed;
+    }
+
     friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiVertexInputLayout &);
 };
 
-Q_GUI_EXPORT bool operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept;
-Q_GUI_EXPORT bool operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept;
-Q_GUI_EXPORT size_t qHash(const QRhiVertexInputLayout &v, size_t seed = 0) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiVertexInputLayout &);
 #endif
@@ -288,13 +393,31 @@ private:
     Type m_type = Vertex;
     QShader m_shader;
     QShader::Variant m_shaderVariant = QShader::StandardShader;
+
+    friend bool operator==(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
+    {
+        return a.m_type == b.m_type
+                && a.m_shader == b.m_shader
+                && a.m_shaderVariant == b.m_shaderVariant;
+    }
+
+    friend bool operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
+    {
+        return !(a == b);
+    }
+
+    friend size_t qHash(const QRhiShaderStage &v, size_t seed = 0) noexcept
+    {
+        QtPrivate::QHashCombine hash;
+        seed = hash(seed, v.m_type);
+        seed = hash(seed, v.m_shader);
+        seed = hash(seed, v.m_shaderVariant);
+        return seed;
+    }
 };
 
 Q_DECLARE_TYPEINFO(QRhiShaderStage, Q_RELOCATABLE_TYPE);
 
-Q_GUI_EXPORT bool operator==(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept;
-Q_GUI_EXPORT bool operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept;
-Q_GUI_EXPORT size_t qHash(const QRhiShaderStage &s, size_t seed = 0) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiShaderStage &);
 #endif

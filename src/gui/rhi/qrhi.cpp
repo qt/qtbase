@@ -883,40 +883,25 @@ QRhiDepthStencilClearValue::QRhiDepthStencilClearValue(float d, quint32 s)
 }
 
 /*!
+    \fn bool QRhiDepthStencilClearValue::operator==(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept
+
     \return \c true if the values in the two QRhiDepthStencilClearValue objects
     \a a and \a b are equal.
-
-    \relates QRhiDepthStencilClearValue
  */
-bool operator==(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept
-{
-    return a.depthClearValue() == b.depthClearValue()
-            && a.stencilClearValue() == b.stencilClearValue();
-}
 
 /*!
+    \fn bool QRhiDepthStencilClearValue::operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept
+
     \return \c false if the values in the two QRhiDepthStencilClearValue
     objects \a a and \a b are equal; otherwise returns \c true.
 
-    \relates QRhiDepthStencilClearValue
 */
-bool operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept
-{
-    return !(a == b);
-}
 
 /*!
-    \return the hash value for \a v, using \a seed to seed the calculation.
+    \fn size_t QRhiDepthStencilClearValue::qHash(const QRhiDepthStencilClearValue &v, size_t seed = 0) noexcept
 
-    \relates QRhiDepthStencilClearValue
+    \return the hash value for \a v, using \a seed to seed the calculation.
  */
-size_t qHash(const QRhiDepthStencilClearValue &v, size_t seed) noexcept
-{
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, v.depthClearValue());
-    seed = hash(seed, v.stencilClearValue());
-    return seed;
-}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiDepthStencilClearValue &v)
@@ -981,46 +966,24 @@ QRhiViewport::QRhiViewport(float x, float y, float w, float h, float minDepth, f
 }
 
 /*!
+    \fn bool QRhiViewport::operator==(const QRhiViewport &a, const QRhiViewport &b) noexcept
+
     \return \c true if the values in the two QRhiViewport objects
     \a a and \a b are equal.
-
-    \relates QRhiViewport
  */
-bool operator==(const QRhiViewport &a, const QRhiViewport &b) noexcept
-{
-    return a.viewport() == b.viewport()
-            && a.minDepth() == b.minDepth()
-            && a.maxDepth() == b.maxDepth();
-}
 
 /*!
+    \fn bool QRhiViewport::operator!=(const QRhiViewport &a, const QRhiViewport &b) noexcept
+
     \return \c false if the values in the two QRhiViewport
     objects \a a and \a b are equal; otherwise returns \c true.
-
-    \relates QRhiViewport
 */
-bool operator!=(const QRhiViewport &a, const QRhiViewport &b) noexcept
-{
-    return !(a == b);
-}
 
 /*!
-    \return the hash value for \a v, using \a seed to seed the calculation.
+    \fn size_t QRhiViewport::qHash(const QRhiViewport &v, size_t seed = 0) noexcept
 
-    \relates QRhiViewport
+    \return the hash value for \a v, using \a seed to seed the calculation.
  */
-size_t qHash(const QRhiViewport &v, size_t seed) noexcept
-{
-    const std::array<float, 4> r = v.viewport();
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, r[0]);
-    seed = hash(seed, r[1]);
-    seed = hash(seed, r[2]);
-    seed = hash(seed, r[3]);
-    seed = hash(seed, v.minDepth());
-    seed = hash(seed, v.maxDepth());
-    return seed;
-}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiViewport &v)
@@ -1080,42 +1043,24 @@ QRhiScissor::QRhiScissor(int x, int y, int w, int h)
 }
 
 /*!
+    \fn bool QRhiScissor::operator==(const QRhiScissor &a, const QRhiScissor &b) noexcept
+
     \return \c true if the values in the two QRhiScissor objects
     \a a and \a b are equal.
-
-    \relates QRhiScissor
  */
-bool operator==(const QRhiScissor &a, const QRhiScissor &b) noexcept
-{
-    return a.scissor() == b.scissor();
-}
 
 /*!
+    \fn bool QRhiScissor::operator!=(const QRhiScissor &a, const QRhiScissor &b) noexcept
+
     \return \c false if the values in the two QRhiScissor
     objects \a a and \a b are equal; otherwise returns \c true.
-
-    \relates QRhiScissor
 */
-bool operator!=(const QRhiScissor &a, const QRhiScissor &b) noexcept
-{
-    return !(a == b);
-}
 
 /*!
-    \return the hash value for \a v, using \a seed to seed the calculation.
+    \fn size_t QRhiScissor::qHash(const QRhiScissor &v, size_t seed = 0) noexcept
 
-    \relates QRhiScissor
+    \return the hash value for \a v, using \a seed to seed the calculation.
  */
-size_t qHash(const QRhiScissor &v, size_t seed) noexcept
-{
-    const std::array<int, 4> r = v.scissor();
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, r[0]);
-    seed = hash(seed, r[1]);
-    seed = hash(seed, r[2]);
-    seed = hash(seed, r[3]);
-    return seed;
-}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiScissor &s)
@@ -1217,41 +1162,24 @@ QRhiVertexInputBinding::QRhiVertexInputBinding(quint32 stride, Classification cl
 }
 
 /*!
+    \fn bool QRhiVertexInputBinding::operator==(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept
+
     \return \c true if the values in the two QRhiVertexInputBinding objects
     \a a and \a b are equal.
-
-    \relates QRhiVertexInputBinding
  */
-bool operator==(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept
-{
-    return a.stride() == b.stride()
-            && a.classification() == b.classification()
-            && a.instanceStepRate() == b.instanceStepRate();
-}
 
 /*!
+    \fn bool QRhiVertexInputBinding::operator!=(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept
+
     \return \c false if the values in the two QRhiVertexInputBinding
     objects \a a and \a b are equal; otherwise returns \c true.
-
-    \relates QRhiVertexInputBinding
 */
-bool operator!=(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept
-{
-    return !(a == b);
-}
 
 /*!
-    \return the hash value for \a v, using \a seed to seed the calculation.
+    \fn size_t QRhiVertexInputBinding::qHash(const QRhiVertexInputBinding &v, size_t seed = 0) noexcept
 
-    \relates QRhiVertexInputBinding
+    \return the hash value for \a v, using \a seed to seed the calculation.
  */
-size_t qHash(const QRhiVertexInputBinding &v, size_t seed) noexcept
-{
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, v.stride());
-    seed = hash(seed, v.classification());
-    return seed;
-}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiVertexInputBinding &b)
@@ -1387,45 +1315,24 @@ QRhiVertexInputAttribute::QRhiVertexInputAttribute(int binding, int location, Fo
 }
 
 /*!
+    \fn bool QRhiVertexInputAttribute::operator==(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept
+
     \return \c true if the values in the two QRhiVertexInputAttribute objects
     \a a and \a b are equal.
-
-    \relates QRhiVertexInputAttribute
  */
-bool operator==(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept
-{
-    return a.binding() == b.binding()
-            && a.location() == b.location()
-            && a.format() == b.format()
-            && a.offset() == b.offset();
-    // matrixSlice excluded intentionally
-}
 
 /*!
+    \fn bool QRhiVertexInputAttribute::operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept
+
     \return \c false if the values in the two QRhiVertexInputAttribute
     objects \a a and \a b are equal; otherwise returns \c true.
-
-    \relates QRhiVertexInputAttribute
 */
-bool operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept
-{
-    return !(a == b);
-}
 
 /*!
-    \return the hash value for \a v, using \a seed to seed the calculation.
+    \fn size_t QRhiVertexInputAttribute::qHash(const QRhiVertexInputAttribute &v, size_t seed = 0) noexcept
 
-    \relates QRhiVertexInputAttribute
+    \return the hash value for \a v, using \a seed to seed the calculation.
  */
-size_t qHash(const QRhiVertexInputAttribute &v, size_t seed) noexcept
-{
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, v.binding());
-    seed = hash(seed, v.location());
-    seed = hash(seed, v.format());
-    seed = hash(seed, v.offset());
-    return seed;
-}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiVertexInputAttribute &a)
@@ -1534,39 +1441,24 @@ quint32 QRhiImplementation::byteSizePerVertexForVertexInputFormat(QRhiVertexInpu
  */
 
 /*!
+    \fn bool QRhiVertexInputLayout::operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept
+
     \return \c true if the values in the two QRhiVertexInputLayout objects
     \a a and \a b are equal.
-
-    \relates QRhiVertexInputLayout
  */
-bool operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept
-{
-    return a.m_bindings == b.m_bindings && a.m_attributes == b.m_attributes;
-}
 
 /*!
+    \fn bool QRhiVertexInputLayout::operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept
+
     \return \c false if the values in the two QRhiVertexInputLayout
     objects \a a and \a b are equal; otherwise returns \c true.
-
-    \relates QRhiVertexInputLayout
 */
-bool operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept
-{
-    return !(a == b);
-}
 
 /*!
-    \return the hash value for \a v, using \a seed to seed the calculation.
+    \fn size_t QRhiVertexInputLayout::qHash(const QRhiVertexInputLayout &v, size_t seed = 0) noexcept
 
-    \relates QRhiVertexInputLayout
+    \return the hash value for \a v, using \a seed to seed the calculation.
  */
-size_t qHash(const QRhiVertexInputLayout &v, size_t seed) noexcept
-{
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, v.m_bindings);
-    seed = hash(seed, v.m_attributes);
-    return seed;
-}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiVertexInputLayout &v)
@@ -1631,42 +1523,24 @@ QRhiShaderStage::QRhiShaderStage(Type type, const QShader &shader, QShader::Vari
 }
 
 /*!
+    \fn bool QRhiShaderStage::operator==(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
+
     \return \c true if the values in the two QRhiShaderStage objects
     \a a and \a b are equal.
-
-    \relates QRhiShaderStage
  */
-bool operator==(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
-{
-    return a.type() == b.type()
-            && a.shader() == b.shader()
-            && a.shaderVariant() == b.shaderVariant();
-}
 
 /*!
+    \fn bool QRhiShaderStage::operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
+
     \return \c false if the values in the two QRhiShaderStage
     objects \a a and \a b are equal; otherwise returns \c true.
-
-    \relates QRhiShaderStage
 */
-bool operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
-{
-    return !(a == b);
-}
 
 /*!
-    \return the hash value for \a v, using \a seed to seed the calculation.
+    \fn size_t QRhiShaderStage::qHash(const QRhiShaderStage &v, size_t seed = 0) noexcept
 
-    \relates QRhiShaderStage
+    \return the hash value for \a v, using \a seed to seed the calculation.
  */
-size_t qHash(const QRhiShaderStage &v, size_t seed) noexcept
-{
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, v.type());
-    seed = hash(seed, v.shader());
-    seed = hash(seed, v.shaderVariant());
-    return seed;
-}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiShaderStage &s)
