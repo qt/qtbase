@@ -78,7 +78,11 @@ public:
     [[nodiscard]] inline QString arg(Args &&...args) const;
 
     [[nodiscard]] constexpr QLatin1Char at(qsizetype i) const
-    { return Q_ASSERT(i >= 0), Q_ASSERT(i < size()), QLatin1Char(m_data[i]); }
+    {
+        Q_ASSERT(i >= 0);
+        Q_ASSERT(i < size());
+        return QLatin1Char(m_data[i]);
+    }
     [[nodiscard]] constexpr QLatin1Char operator[](qsizetype i) const { return at(i); }
 
     [[nodiscard]] constexpr QLatin1Char front() const { return at(0); }
