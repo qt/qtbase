@@ -426,7 +426,7 @@ set(QT_TOP_LEVEL_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 # Prevent warnings about object files without any symbols. This is a common
 # thing in Qt as we tend to build files unconditionally, and then use ifdefs
 # to compile out parts that are not relevant.
-if(CMAKE_HOST_APPLE AND APPLE)
+if(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
     foreach(lang ASM C CXX)
         # We have to tell 'ar' to not run ranlib by itself, by passing the 'S' option
         set(CMAKE_${lang}_ARCHIVE_CREATE "<CMAKE_AR> qcS <TARGET> <LINK_FLAGS> <OBJECTS>")
