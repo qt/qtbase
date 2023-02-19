@@ -170,10 +170,11 @@ void MyTestClass::cleanup()
 }
 //! [22]
 
-void mySleep()
+void quarterSecondSleep()
 {
 //! [23]
-QTest::qSleep(250);
+using namespace std::chrono_literals;
+QTest::qSleep(250ms);
 //! [23]
 }
 

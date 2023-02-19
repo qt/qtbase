@@ -5,15 +5,35 @@
 
 #include <thread>
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
 /*!
-    Sleeps for \a ms milliseconds, blocking execution of the
-    test. qSleep() will not do any event processing and leave your test
-    unresponsive. Network communication might time out while
-    sleeping. Use \l {QTest::qWait()} to do non-blocking sleeping.
+    \overload
 
-    \a ms must be greater than 0.
+    Sleeps for \a ms milliseconds, blocking execution of the test.
+
+    Equivalent to calling:
+    \code
+    QTest::qSleep(std::chrono::milliseconds{ms});
+    \endcode
+*/
+void QTest::qSleep(int ms)
+{
+    QTest::qSleep(std::chrono::milliseconds{ms});
+}
+
+/*!
+    \since 6.7
+
+    Sleeps for \a msecs, blocking execution of the test.
+
+    This method will not do any event processing and will leave your test
+    unresponsive. Network communication might time out while sleeping.
+    Use \l {QTest::qWait()} to do non-blocking sleeping.
+
+    \a msecs must be greater than 0ms.
 
     \note Starting from Qt 6.7, this function is implemented using
     \c {std::this_thread::sleep_for}, so the accuracy of time spent depends
@@ -26,10 +46,10 @@ QT_BEGIN_NAMESPACE
 
     \sa {QTest::qWait()}
 */
-Q_CORE_EXPORT void QTest::qSleep(int ms)
+void QTest::qSleep(std::chrono::milliseconds msecs)
 {
-    Q_ASSERT(ms > 0);
-    std::this_thread::sleep_for(std::chrono::milliseconds{ms});
+    Q_ASSERT(msecs > 0ms);
+    std::this_thread::sleep_for(msecs);
 }
 
 /*! \fn template <typename Functor> bool QTest::qWaitFor(Functor predicate, int timeout)

@@ -26,17 +26,21 @@ private slots:
 
 void tst_Sleep::sleep()
 {
+    // Subtracting 10ms as a margin for error
+    static constexpr auto MarginForError = 10ms;
+
     QElapsedTimer t;
     t.start();
 
+    // Test qSleep(int) overload, too
     QTest::qSleep(100);
-    QCOMPARE_GE(t.durationElapsed(), 90ms);
+    QCOMPARE_GT(t.durationElapsed(), 100ms - MarginForError);
 
-    QTest::qSleep(1000);
-    QCOMPARE_GE(t.durationElapsed(), 1s);
+    QTest::qSleep(1s);
+    QCOMPARE_GT(t.durationElapsed(), 1s - MarginForError);
 
-    QTest::qSleep(1000 * 10); // 10 seconds
-    QCOMPARE_GE(t.durationElapsed(), 10s);
+    QTest::qSleep(10s);
+    QCOMPARE_GT(t.durationElapsed(), 10s - MarginForError);
 }
 
 void tst_Sleep::wait()

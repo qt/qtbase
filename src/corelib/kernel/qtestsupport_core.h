@@ -13,6 +13,7 @@ QT_BEGIN_NAMESPACE
 namespace QTest {
 
 Q_CORE_EXPORT void qSleep(int ms);
+Q_CORE_EXPORT void qSleep(std::chrono::milliseconds msecs);
 
 template <typename Functor>
 [[nodiscard]] static bool qWaitFor(Functor predicate, int timeout = 5000)
