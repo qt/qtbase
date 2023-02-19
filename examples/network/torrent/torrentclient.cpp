@@ -1024,13 +1024,7 @@ void TorrentClient::peerWireBytesReceived(qint64 size)
 
 int TorrentClient::blocksLeftForPiece(const TorrentPiece *piece) const
 {
-    int blocksLeft = 0;
-    int completedBlocksSize = piece->completedBlocks.size();
-    for (int i = 0; i < completedBlocksSize; ++i) {
-        if (!piece->completedBlocks.testBit(i))
-            ++blocksLeft;
-    }
-    return blocksLeft;
+    return piece->completedBlocks.count(false);
 }
 
 void TorrentClient::scheduleUploads()
