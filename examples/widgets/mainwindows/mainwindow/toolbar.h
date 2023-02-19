@@ -16,7 +16,7 @@ class ToolBar : public QToolBar
     Q_OBJECT
 
 public:
-    explicit ToolBar(const QString &title, QWidget *parent);
+    explicit ToolBar(const QString &title, QMainWindow *mainWindow);
 
     QMenu *toolbarMenu() const { return menu; }
 
@@ -44,6 +44,8 @@ private slots:
 private:
     void allow(Qt::ToolBarArea area, bool allow);
     void place(Qt::ToolBarArea area, bool place);
+
+    QMainWindow *mainWindow;
 
     QSpinBox *spinbox;
     QAction *spinboxAction;
