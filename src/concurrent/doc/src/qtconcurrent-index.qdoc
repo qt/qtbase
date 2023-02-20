@@ -130,6 +130,12 @@
     \include module-use.qdocinc building with qmake
     \snippet snippets/snippets.pro qmake_use
 
+    \section1 Examples
+
+    \list
+        \li \l {Qt Concurrent Examples}
+    \endlist
+
     \section1 Module Evolution
     \l{Changes to Qt Concurrent} lists important changes in the module API
     and functionality that were done for the Qt 6 series of Qt.

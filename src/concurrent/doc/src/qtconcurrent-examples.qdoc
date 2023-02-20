@@ -1,0 +1,14 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \group qtconcurrentexamples
+    \title Qt Concurrent Examples
+    \brief Examples for the Qt Concurrent module
+    \ingroup all-examples
+    \ingroup qtconcurrent
+
+    The list of \l {Qt Concurrent} examples demonstrating how to use
+    Qt Concurrent API from C++.
+
+*/
