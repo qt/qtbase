@@ -16,6 +16,8 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qhighdpiscaling_p.h>
 #include <private/qwindowsfontdatabasebase_p.h>
+#include <private/qpixmap_win_p.h>
+
 #include <QtGui/qscreen.h>
 
 #include <QtCore/qdebug.h>
@@ -269,8 +271,6 @@ QString QWindowsScreen::name() const
                ? (u"%1 (%2)"_s).arg(m_data.name, QString::number(m_data.deviceIndex.value()))
                : m_data.name;
 }
-
-Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
 
 QPixmap QWindowsScreen::grabWindow(WId window, int xIn, int yIn, int width, int height) const
 {
