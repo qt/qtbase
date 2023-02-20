@@ -68,6 +68,7 @@ inline void QSystemSemaphorePrivate::destructBackend()
   \sa {Inter-Process Communication}, QSharedMemory, QSemaphore
  */
 
+#if QT_DEPRECATED_SINCE(6, 10)
 /*!
   \deprecated
 
@@ -85,6 +86,7 @@ QSystemSemaphore::QSystemSemaphore(const QString &key, int initialValue, AccessM
 {
     d->legacyKey = key;
 }
+#endif
 
 /*!
   Requests a system semaphore for the specified \a key. The parameters
@@ -227,6 +229,7 @@ QNativeIpcKey QSystemSemaphore::nativeIpcKey() const
     return d->nativeKey;
 }
 
+#if QT_DEPRECATED_SINCE(6, 10)
 /*!
   \deprecated
   This function works the same as the constructor. It reconstructs
@@ -255,6 +258,7 @@ QString QSystemSemaphore::key() const
 {
     return d->legacyKey;
 }
+#endif
 
 /*!
   Acquires one of the resources guarded by this semaphore, if there is

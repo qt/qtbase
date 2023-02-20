@@ -132,6 +132,7 @@ QSharedMemory::QSharedMemory(const QNativeIpcKey &key, QObject *parent)
     setNativeKey(key);
 }
 
+#if QT_DEPRECATED_SINCE(6, 10)
 /*!
   \deprecated
 
@@ -148,6 +149,7 @@ QSharedMemory::QSharedMemory(const QString &key, QObject *parent)
 {
     d_func()->legacyKey = key;
 }
+#endif
 
 /*!
   The destructor clears the key, which forces the shared memory object
@@ -166,7 +168,9 @@ QSharedMemory::~QSharedMemory()
     d->cleanHandle();
 }
 
+#if QT_DEPRECATED_SINCE(6, 10)
 /*!
+  \deprecated
   \overload
 
   Sets the legacy \a key for this shared memory object. If \a key is the same
@@ -192,6 +196,7 @@ void QSharedMemory::setKey(const QString &key)
     setNativeKey(legacyNativeKey(key));
     d->legacyKey = key;
 }
+#endif
 
 /*!
   \since 4.8
@@ -300,6 +305,7 @@ bool QSharedMemoryPrivate::initKey(SemaphoreAccessMode mode)
     return true;
 }
 
+#if QT_DEPRECATED_SINCE(6, 10)
 /*!
   \deprecated
   Returns the legacy key assigned with setKey() to this shared memory, or a null key
@@ -317,6 +323,7 @@ QString QSharedMemory::key() const
     Q_D(const QSharedMemory);
     return d->legacyKey;
 }
+#endif
 
 /*!
   \since 4.8

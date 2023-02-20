@@ -50,12 +50,12 @@ public:
     QSharedMemory(const QNativeIpcKey &key, QObject *parent = nullptr);
     ~QSharedMemory();
 
-#if QT_DEPRECATED_SINCE(6, 9)
-    QT_DEPRECATED_VERSION_X_6_9("Please refer to 'Native IPC Key' documentation")
+#if QT_DEPRECATED_SINCE(6, 10)
+    QT_DEPRECATED_VERSION_X_6_10("Please refer to 'Native IPC Key' documentation")
     QSharedMemory(const QString &key, QObject *parent = nullptr);
-    QT_DEPRECATED_VERSION_X_6_9("Please refer to 'Native IPC Key' documentation")
+    QT_DEPRECATED_VERSION_X_6_10("Please refer to 'Native IPC Key' documentation")
     void setKey(const QString &key);
-    QT_DEPRECATED_VERSION_X_6_9("Please refer to 'Native IPC Key' documentation")
+    QT_DEPRECATED_VERSION_X_6_10("Please refer to 'Native IPC Key' documentation")
     QString key() const;
 #endif
 
@@ -102,4 +102,3 @@ private:
 QT_END_NAMESPACE
 
 #endif // QSHAREDMEMORY_H
-

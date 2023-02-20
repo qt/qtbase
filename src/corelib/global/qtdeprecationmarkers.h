@@ -201,6 +201,14 @@ QT_BEGIN_NAMESPACE
 # define QT_DEPRECATED_VERSION_6_9
 #endif
 
+#if QT_WARN_DEPRECATED_UP_TO >= QT_VERSION_CHECK(6, 10, 0)
+# define QT_DEPRECATED_VERSION_X_6_10(text) QT_DEPRECATED_X(text)
+# define QT_DEPRECATED_VERSION_6_10         QT_DEPRECATED
+#else
+# define QT_DEPRECATED_VERSION_X_6_10(text)
+# define QT_DEPRECATED_VERSION_6_10
+#endif
+
 #define QT_DEPRECATED_VERSION_X_5(minor, text)      QT_DEPRECATED_VERSION_X_5_##minor(text)
 #define QT_DEPRECATED_VERSION_X(major, minor, text) QT_DEPRECATED_VERSION_X_##major##_##minor(text)
 
@@ -295,6 +303,12 @@ QT_BEGIN_NAMESPACE
 # define QT_IF_DEPRECATED_SINCE_6_9(whenTrue, whenFalse) whenFalse
 #else
 # define QT_IF_DEPRECATED_SINCE_6_9(whenTrue, whenFalse) whenTrue
+#endif
+
+#if QT_DEPRECATED_SINCE(6, 10)
+# define QT_IF_DEPRECATED_SINCE_6_10(whenTrue, whenFalse) whenFalse
+#else
+# define QT_IF_DEPRECATED_SINCE_6_10(whenTrue, whenFalse) whenTrue
 #endif
 
 #ifdef __cplusplus
