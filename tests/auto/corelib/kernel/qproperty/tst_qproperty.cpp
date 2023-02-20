@@ -67,6 +67,7 @@ private slots:
     void quntypedBindableApi();
     void readonlyConstQBindable();
     void qobjectBindableManualNotify();
+    void qobjectBindableReallocatedBindingStorage();
     void qobjectBindableSignalTakingNewValue();
 
     void testNewStuff();
@@ -1182,6 +1183,23 @@ void tst_QProperty::qobjectBindableManualNotify()
     QCOMPARE(fooChangedSpy.size(), 3);
     // but doesn't actually cause a binding reevaluation.
     QCOMPARE(object.foo(), 1);
+}
+
+
+struct ReallocObject : QObject {
+    ReallocObject()
+    { v.setBinding([this] { return x.value() + y.value() + z.value(); }); }
+    Q_OBJECT_BINDABLE_PROPERTY(ReallocObject, int, v)
+    Q_OBJECT_BINDABLE_PROPERTY(ReallocObject, int, x)
+    Q_OBJECT_BINDABLE_PROPERTY(ReallocObject, int, y)
+    Q_OBJECT_BINDABLE_PROPERTY(ReallocObject, int, z)
+};
+
+void tst_QProperty::qobjectBindableReallocatedBindingStorage()
+{
+    ReallocObject object;
+    object.x = 1;
+    QCOMPARE(object.v.value(), 1);
 }
 
 void tst_QProperty::qobjectBindableSignalTakingNewValue()

@@ -603,7 +603,15 @@ void QPropertyBindingData::notifyObservers(QUntypedPropertyData *propertyDataPtr
     PendingBindingObserverList bindingObservers;
     if (QPropertyObserverPointer observer = d.firstObserver()) {
         if (notifyObserver_helper(propertyDataPtr, storage, observer, bindingObservers) == Evaluated) {
-            // evaluateBindings() can trash the observers. We need to re-fetch here.
+            /* evaluateBindings() can trash the observers. We need to re-fetch here.
+             "this" might also no longer be valid in case we have a QObjectBindableProperty
+             and consequently d isn't either (this happens when binding evaluation has
+             caused the binding storage to resize.
+             If storage is nullptr, then there is no dynamically resizable storage,
+             and we cannot run into the issue.
+            */
+            if (storage)
+                d = QPropertyBindingDataPointer {storage->bindingData(propertyDataPtr)};
             if (QPropertyObserverPointer observer = d.firstObserver())
                 observer.notifyOnlyChangeHandler(propertyDataPtr);
             for (auto &&bindingObserver: bindingObservers)
