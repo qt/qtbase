@@ -233,6 +233,7 @@ if(QT_BUILD_STANDALONE_TESTS)
     set(QT_BUILD_TESTS_BY_DEFAULT ON CACHE BOOL
         "Should tests be built as part of the default 'all' target." FORCE)
 endif()
+set(BUILD_TESTING ${QT_BUILD_TESTS} CACHE INTERNAL "")
 
 if (WASM)
     set(_qt_batch_tests ON)
