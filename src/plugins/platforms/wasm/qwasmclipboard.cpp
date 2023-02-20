@@ -50,7 +50,7 @@ static void qClipboardCutTo(val event)
     if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi()) {
         // Send synthetic Ctrl+X to make the app cut data to Qt's clipboard
          QWindowSystemInterface::handleKeyEvent(
-                     0, QEvent::KeyPress, Qt::Key_C, Qt::ControlModifier, "X");
+                     0, QEvent::KeyPress, Qt::Key_X, Qt::ControlModifier, "X");
    }
 
     commonCopyEvent(event);
