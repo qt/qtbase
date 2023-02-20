@@ -25,7 +25,7 @@ Dialog::Dialog(QWidget *parent)
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
 
     connect(startButton, &QAbstractButton::clicked, this, &Dialog::start);
-    connect(quitButton, &QAbstractButton::clicked, this, &QWidget::close);
+    connect(quitButton, &QAbstractButton::clicked, qApp, &QCoreApplication::quit);
     connect(&tcpServer, &QTcpServer::newConnection,
             this, &Dialog::acceptConnection);
     connect(&tcpClient, &QAbstractSocket::connected, this, &Dialog::startTransfer);

@@ -341,7 +341,7 @@ void MainWindow::createMenuBar()
     connect(deleteAction, &QAction::triggered,
             this, &MainWindow::deleteAlbum);
     connect(quitAction, &QAction::triggered,
-            this, &MainWindow::close);
+            qApp, &QCoreApplication::quit);
     connect(aboutAction, &QAction::triggered,
             this, &MainWindow::about);
     connect(aboutQtAction, &QAction::triggered,

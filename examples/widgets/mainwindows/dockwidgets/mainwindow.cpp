@@ -215,7 +215,7 @@ void MainWindow::createActions()
 
     fileMenu->addSeparator();
 
-    QAction *quitAct = fileMenu->addAction(tr("&Quit"), this, &QWidget::close);
+    QAction *quitAct = fileMenu->addAction(tr("&Quit"), qApp, &QCoreApplication::quit);
     quitAct->setShortcuts(QKeySequence::Quit);
     quitAct->setStatusTip(tr("Quit the application"));
 

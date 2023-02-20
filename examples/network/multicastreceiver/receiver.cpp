@@ -38,7 +38,7 @@ Receiver::Receiver(QWidget *parent)
     connect(&udpSocket6, &QUdpSocket::readyRead,
             this, &Receiver::processPendingDatagrams);
     connect(quitButton, &QPushButton::clicked,
-            this, &Receiver::close);
+            qApp, &QCoreApplication::quit);
 }
 
 void Receiver::processPendingDatagrams()
