@@ -225,11 +225,48 @@ static QColor placeHolderColor(QColor textColor)
     This is used when the theme is light mode, and when the theme is dark but the
     application doesn't support dark mode. In the latter case, we need to check.
 */
-static void populateLightSystemBasePalette(QPalette &result)
+void QWindowsTheme::populateLightSystemBasePalette(QPalette &result)
 {
-    using QWindowsApplication = QNativeInterface::Private::QWindowsApplication;
-    if (auto nativeWindowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration()))
-        nativeWindowsApp->lightSystemPalette(result);
+    QColor background = getSysColor(COLOR_BTNFACE);
+    QColor textColor = getSysColor(COLOR_WINDOWTEXT);
+    QColor accent = getSysColor(COLOR_HIGHLIGHT);
+
+#if QT_CONFIG(cpp_winrt)
+    // respect the Windows 11 accent color
+    using namespace winrt::Windows::UI::ViewManagement;
+    const auto settings = UISettings();
+
+    accent = getSysColor(settings.GetColorValue(UIColorType::Accent));
+#endif
+
+    const QColor btnFace = background;
+    const QColor btnHighlight = getSysColor(COLOR_BTNHIGHLIGHT);
+
+    result.setColor(QPalette::Highlight, accent);
+    result.setColor(QPalette::WindowText, getSysColor(COLOR_WINDOWTEXT));
+    result.setColor(QPalette::Button, btnFace);
+    result.setColor(QPalette::Light, btnHighlight);
+    result.setColor(QPalette::Dark, getSysColor(COLOR_BTNSHADOW));
+    result.setColor(QPalette::Mid, result.button().color().darker(150));
+    result.setColor(QPalette::Text, textColor);
+    result.setColor(QPalette::PlaceholderText, placeHolderColor(textColor));
+    result.setColor(QPalette::BrightText, btnHighlight);
+    result.setColor(QPalette::Base, getSysColor(COLOR_WINDOW));
+    result.setColor(QPalette::Window, btnFace);
+    result.setColor(QPalette::ButtonText, getSysColor(COLOR_BTNTEXT));
+    result.setColor(QPalette::Midlight, getSysColor(COLOR_3DLIGHT));
+    result.setColor(QPalette::Shadow, getSysColor(COLOR_3DDKSHADOW));
+    result.setColor(QPalette::HighlightedText, getSysColor(COLOR_HIGHLIGHTTEXT));
+
+    result.setColor(QPalette::Link, Qt::blue);
+    result.setColor(QPalette::LinkVisited, Qt::magenta);
+    result.setColor(QPalette::Inactive, QPalette::Button, result.button().color());
+    result.setColor(QPalette::Inactive, QPalette::Window, result.window().color());
+    result.setColor(QPalette::Inactive, QPalette::Light, result.light().color());
+    result.setColor(QPalette::Inactive, QPalette::Dark, result.dark().color());
+
+    if (result.midlight() == result.button())
+        result.setColor(QPalette::Midlight, result.button().color().lighter(110));
 }
 
 static void populateDarkSystemBasePalette(QPalette &result)
@@ -300,7 +337,7 @@ static QPalette systemPalette(bool light)
 {
     QPalette result = standardPalette();
     if (light)
-        populateLightSystemBasePalette(result);
+        QWindowsTheme::populateLightSystemBasePalette(result);
     else
         populateDarkSystemBasePalette(result);
 
