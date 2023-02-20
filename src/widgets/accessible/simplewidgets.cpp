@@ -403,10 +403,10 @@ QAccessible::Role QAccessibleDisplay::role() const
 #if QT_CONFIG(label)
     QLabel *l = qobject_cast<QLabel*>(object());
     if (l) {
-        if (!l->pixmap(Qt::ReturnByValue).isNull())
+        if (!l->pixmap().isNull())
             return QAccessible::Graphic;
 #ifndef QT_NO_PICTURE
-        if (!l->picture(Qt::ReturnByValue).isNull())
+        if (!l->picture().isNull())
             return QAccessible::Graphic;
 #endif
 #if QT_CONFIG(movie)
@@ -531,7 +531,7 @@ QSize QAccessibleDisplay::imageSize() const
 #endif
         return QSize();
 #if QT_CONFIG(label)
-    return label->pixmap(Qt::ReturnByValue).size();
+    return label->pixmap().size();
 #endif
 }
 
@@ -544,7 +544,7 @@ QPoint QAccessibleDisplay::imagePosition() const
 #endif
         return QPoint();
 #if QT_CONFIG(label)
-    if (label->pixmap(Qt::ReturnByValue).isNull())
+    if (label->pixmap().isNull())
         return QPoint();
 
     return QPoint(label->mapToGlobal(label->pos()));

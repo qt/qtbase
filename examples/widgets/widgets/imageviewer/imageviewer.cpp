@@ -158,14 +158,14 @@ void ImageViewer::saveAs()
 void ImageViewer::print()
 //! [5] //! [6]
 {
-    Q_ASSERT(!imageLabel->pixmap(Qt::ReturnByValue).isNull());
+    Q_ASSERT(!imageLabel->pixmap().isNull());
 #if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printdialog)
 //! [6] //! [7]
     QPrintDialog dialog(&printer, this);
 //! [7] //! [8]
     if (dialog.exec()) {
         QPainter painter(&printer);
-        QPixmap pixmap = imageLabel->pixmap(Qt::ReturnByValue);
+        QPixmap pixmap = imageLabel->pixmap();
         QRect rect = painter.viewport();
         QSize size = pixmap.size();
         size.scale(rect.size(), Qt::KeepAspectRatio);
@@ -343,7 +343,7 @@ void ImageViewer::scaleImage(double factor)
 //! [23] //! [24]
 {
     scaleFactor *= factor;
-    imageLabel->resize(scaleFactor * imageLabel->pixmap(Qt::ReturnByValue).size());
+    imageLabel->resize(scaleFactor * imageLabel->pixmap().size());
 
     adjustScrollBar(scrollArea->horizontalScrollBar(), factor);
     adjustScrollBar(scrollArea->verticalScrollBar(), factor);

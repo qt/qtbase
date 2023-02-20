@@ -414,8 +414,8 @@ public:
     }
 
     QSize minimumSizeHint() const override {
-        if (!pixmap(Qt::ReturnByValue).isNull())
-            return pixmap(Qt::ReturnByValue).deviceIndependentSize().toSize();
+        if (!pixmap().isNull())
+            return pixmap().deviceIndependentSize().toSize();
         return QFrame::minimumSizeHint();
     }
 
