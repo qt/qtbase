@@ -15,11 +15,14 @@ qhp.QtConcurrent.virtualFolder       = qtconcurrent
 qhp.QtConcurrent.indexTitle          = Qt Concurrent
 qhp.QtConcurrent.indexRoot           =
 
-qhp.QtConcurrent.subprojects         = classes
+qhp.QtConcurrent.subprojects         = classes examples
 qhp.QtConcurrent.subprojects.classes.title = C++ Classes
 qhp.QtConcurrent.subprojects.classes.indexTitle = Qt Concurrent C++ Classes
 qhp.QtConcurrent.subprojects.classes.selectors = class fake:headerfile
 qhp.QtConcurrent.subprojects.classes.sortPages = true
+qhp.QtConcurrent.subprojects.examples.title = Qt Concurrent Examples
+qhp.QtConcurrent.subprojects.examples.indexTitle = Qt Concurrent Examples
+qhp.QtConcurrent.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtconcurrent/qtconcurrent.tags
 
