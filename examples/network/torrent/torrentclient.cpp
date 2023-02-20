@@ -208,6 +208,10 @@ TorrentClient::TorrentClient(QObject *parent)
 
 TorrentClient::~TorrentClient()
 {
+    auto rateController = RateController::instance();
+    const auto childSockets = findChildren<PeerWireClient *>(Qt::FindDirectChildrenOnly);
+    for (PeerWireClient *socket : childSockets)
+        rateController->removeSocket(socket);
     qDeleteAll(d->peers);
     qDeleteAll(d->pendingPieces);
     delete d;
