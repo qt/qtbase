@@ -30,8 +30,8 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 // defined in qdbusxmlgenerator.cpp
-extern QString qDBusGenerateMetaObjectXml(QString interface, const QMetaObject *mo,
-                                          const QMetaObject *base, int flags);
+extern Q_DBUS_EXPORT QString qDBusGenerateMetaObjectXml(QString interface, const QMetaObject *mo,
+                                                        const QMetaObject *base, int flags);
 
 static const char introspectableInterfaceXml[] =
     "  <interface name=\"org.freedesktop.DBus.Introspectable\">\n"
