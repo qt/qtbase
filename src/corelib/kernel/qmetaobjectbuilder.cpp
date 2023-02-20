@@ -1026,6 +1026,9 @@ int QMetaObjectBuilder::indexOfClassInfo(const QByteArray &name)
 }
 
 // Align on a specific type boundary.
+#ifdef ALIGN
+#  undef ALIGN
+#endif
 #define ALIGN(size,type)    \
     (size) = ((size) + sizeof(type) - 1) & ~(sizeof(type) - 1)
 
