@@ -521,14 +521,16 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
 
     const qreal dpr = window->devicePixelRatio();
     const QRect deviceWindowRect = scaledRect(QRect(QPoint(), window->size()), dpr);
-    const QPoint deviceWindowOffset = scaledOffset(offset, dpr);
 
     const bool invertTargetY = rhi->clipSpaceCorrMatrix().data()[5] < 0.0f;
     const bool invertSource = rhi->isYUpInFramebuffer() != rhi->isYUpInNDC();
     if (m_texture) {
-        // The backingstore is for the entire tlw.
-        // In case of native children offset tells the position relative to the tlw.
-        const QRect srcRect = toBottomLeftRect(deviceWindowRect.translated(deviceWindowOffset), m_texture->pixelSize().height());
+        // The backingstore is for the entire tlw. In case of native children, offset tells the position
+        // relative to the tlw. The window rect is scaled by the source device pixel ratio to get
+        // the source rect.
+        const QRect sourceWindowRect = scaledRect(QRect(QPoint(), window->size()), sourceDevicePixelRatio);
+        const QPoint sourceWindowOffset = scaledOffset(offset, sourceDevicePixelRatio);
+        const QRect srcRect = toBottomLeftRect(sourceWindowRect.translated(sourceWindowOffset), m_texture->pixelSize().height());
         const QMatrix3x3 source = sourceTransform(srcRect, m_texture->pixelSize(), origin);
         QMatrix4x4 target; // identity
         if (invertTargetY)
