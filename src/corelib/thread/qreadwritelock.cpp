@@ -580,25 +580,24 @@ void QReadWriteLockPrivate::recursiveUnlock()
 
 // The freelist management
 namespace {
-struct FreeListConstants : QFreeListDefaultConstants {
+struct QReadWriteLockFreeListConstants : QFreeListDefaultConstants
+{
     enum { BlockCount = 4, MaxIndex=0xffff };
     static const int Sizes[BlockCount];
 };
-Q_CONSTINIT const int FreeListConstants::Sizes[FreeListConstants::BlockCount] = {
-    16,
-    128,
-    1024,
-    FreeListConstants::MaxIndex - (16 + 128 + 1024)
-};
+Q_CONSTINIT const int
+        QReadWriteLockFreeListConstants::Sizes[QReadWriteLockFreeListConstants::BlockCount] = {
+            16, 128, 1024, QReadWriteLockFreeListConstants::MaxIndex - (16 + 128 + 1024)
+        };
 
-typedef QFreeList<QReadWriteLockPrivate, FreeListConstants> FreeList;
-Q_GLOBAL_STATIC(FreeList, freelist);
+typedef QFreeList<QReadWriteLockPrivate, QReadWriteLockFreeListConstants> QReadWriteLockFreeList;
+Q_GLOBAL_STATIC(QReadWriteLockFreeList, qrwl_freelist);
 }
 
 QReadWriteLockPrivate *QReadWriteLockPrivate::allocate()
 {
-    int i = freelist->next();
-    QReadWriteLockPrivate *d = &(*freelist)[i];
+    int i = qrwl_freelist->next();
+    QReadWriteLockPrivate *d = &(*qrwl_freelist)[i];
     d->id = i;
     Q_ASSERT(!d->recursive);
     Q_ASSERT(!d->waitingReaders && !d->waitingWriters && !d->readerCount && !d->writerCount);
@@ -609,7 +608,7 @@ void QReadWriteLockPrivate::release()
 {
     Q_ASSERT(!recursive);
     Q_ASSERT(!waitingReaders && !waitingWriters && !readerCount && !writerCount);
-    freelist->release(id);
+    qrwl_freelist->release(id);
 }
 
 /*!
