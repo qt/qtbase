@@ -5,6 +5,7 @@
 #define QEVENTLOOP_H
 
 #include <QtCore/qobject.h>
+#include <QtCore/qdeadlinetimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -34,6 +35,7 @@ public:
 
     bool processEvents(ProcessEventsFlags flags = AllEvents);
     void processEvents(ProcessEventsFlags flags, int maximumTime);
+    void processEvents(ProcessEventsFlags flags, QDeadlineTimer deadline);
 
     int exec(ProcessEventsFlags flags = AllEvents);
     bool isRunning() const;
