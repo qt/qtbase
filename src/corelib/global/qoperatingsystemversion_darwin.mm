@@ -33,7 +33,7 @@ QOperatingSystemVersionBase QOperatingSystemVersionBase::current_impl()
 #if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(process)
         QProcess sysctl;
         QProcessEnvironment nonCompatEnvironment;
-        nonCompatEnvironment.insert("SYSTEM_VERSION_COMPAT", "0");
+        nonCompatEnvironment.insert("SYSTEM_VERSION_COMPAT"_L1, "0"_L1);
         sysctl.setProcessEnvironment(nonCompatEnvironment);
         sysctl.start("/usr/sbin/sysctl"_L1, QStringList() << "-b"_L1 << "kern.osproductversion"_L1);
         if (sysctl.waitForFinished()) {
