@@ -45,6 +45,9 @@ qt_internal_add_plugin(QWindowsDirect2DIntegrationPlugin
         qwindowsdirect2dplatformpixmap.cpp qwindowsdirect2dplatformpixmap.h
         qwindowsdirect2dplatformplugin.cpp
         qwindowsdirect2dwindow.cpp qwindowsdirect2dwindow.h
+    NO_UNITY_BUILD_SOURCES
+        ../windows/qwindowspointerhandler.cpp
+        ../windows/qwindowsmousehandler.cpp
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_FOREACH
