@@ -624,11 +624,10 @@ qt_internal_extend_target(Core CONDITION UNIX
         thread/qthread_unix.cpp
 )
 
-# Necessary for defining DT_* macros, otherwise they cause
-# error during UNITY_BUILD.
 qt_internal_extend_target(Core CONDITION APPLE
-    DEFINES
-        _DEFAULT_SOURCE
+    NO_UNITY_BUILD_SOURCES
+        io/qfilesystemengine_unix.cpp # avoid undefined DT_* macros
+        io/qlockfile_unix.cpp         # avoid undefined SOCK_MAXADDRLEN (in proc_info.h)
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_thread
@@ -1276,6 +1275,8 @@ set_source_files_properties(serialization/qcborstreamwriter.cpp # CBOR macro cla
                             io/forkfd_qt.cpp # EINTR_LOOP macro clashes
                             global/qglobal.cpp  # undef qFatal
                             global/qlogging.cpp # undef qFatal
+                            text/qstringconverter.cpp # enum Data
+                            tools/qcryptographichash.cpp # KeccakNISTInterface/Final
                             ${corelib_no_pch_sources} # NO_PCH_SOURCES
                             PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 
