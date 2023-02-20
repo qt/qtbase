@@ -703,6 +703,7 @@ void tst_QHostAddress::classification()
     bool isUniqueLocalAddress = (result == UniqueLocalAddress);
     bool isMulticast = (result == MulticastAddress);
     bool isBroadcast = (result == BroadcastAddress);
+    bool isPrivateUse = (result == PrivateNetworkAddress || result == UniqueLocalAddress);
 
     QCOMPARE(address.isLoopback(), isLoopback);
     QCOMPARE(address.isGlobal(), isGlobal);
@@ -711,6 +712,7 @@ void tst_QHostAddress::classification()
     QCOMPARE(address.isUniqueLocalUnicast(), isUniqueLocalAddress);
     QCOMPARE(address.isMulticast(), isMulticast);
     QCOMPARE(address.isBroadcast(), isBroadcast);
+    QCOMPARE(address.isPrivateUse(), isPrivateUse);
 }
 
 void tst_QHostAddress::convertv4v6_data()

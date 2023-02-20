@@ -127,6 +127,7 @@ public:
     bool isUniqueLocalUnicast() const;
     bool isMulticast() const;
     bool isBroadcast() const;
+    bool isPrivateUse() const;
 
     static QPair<QHostAddress, int> parseSubnet(const QString &subnet);
 
