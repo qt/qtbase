@@ -331,7 +331,7 @@ if(QT_USE_CCACHE)
 endif()
 
 option(QT_UNITY_BUILD "Enable unity (jumbo) build")
-set(QT_UNITY_BUILD_BATCH_SIZE "8" CACHE STRING "Unity build batch size")
+set(QT_UNITY_BUILD_BATCH_SIZE "32" CACHE STRING "Unity build batch size")
 if(QT_UNITY_BUILD)
     set(CMAKE_UNITY_BUILD ON)
     set(CMAKE_UNITY_BUILD_BATCH_SIZE "${QT_UNITY_BUILD_BATCH_SIZE}")
