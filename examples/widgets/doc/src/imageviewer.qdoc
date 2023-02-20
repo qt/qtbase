@@ -151,8 +151,8 @@
     will expand to
 
     \code
-    if (imageLabel->pixmap(Qt::ReturnByValue).isNull())
-        qFatal("ASSERT: "imageLabel->pixmap(Qt::ReturnByValue).isNull()" in file ...");
+    if (imageLabel->pixmap().isNull())
+        qFatal("ASSERT: "imageLabel->pixmap().isNull()" in file ...");
     \endcode
 
     In release mode, the macro simply disappear. The mode can be set
