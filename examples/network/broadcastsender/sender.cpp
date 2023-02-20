@@ -25,7 +25,7 @@ Sender::Sender(QWidget *parent)
 //! [0]
 
     connect(startButton, &QPushButton::clicked, this, &Sender::startBroadcasting);
-    connect(quitButton, &QPushButton::clicked, this, &Sender::close);
+    connect(quitButton, &QPushButton::clicked, qApp, &QCoreApplication::quit);
     connect(&timer, &QTimer::timeout, this, &Sender::broadcastDatagram);
 
     auto mainLayout = new QVBoxLayout;

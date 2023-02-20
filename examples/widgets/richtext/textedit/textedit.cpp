@@ -171,7 +171,7 @@ void TextEdit::setupFileActions()
     menu->addSeparator();
 #endif
 
-    a = menu->addAction(tr("&Quit"), this, &QWidget::close);
+    a = menu->addAction(tr("&Quit"), qApp, &QCoreApplication::quit);
     a->setShortcut(Qt::CTRL | Qt::Key_Q);
 }
 

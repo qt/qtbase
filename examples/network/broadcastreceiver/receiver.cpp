@@ -5,6 +5,7 @@
 #include <QPushButton>
 #include <QUdpSocket>
 #include <QVBoxLayout>
+#include <QCoreApplication>
 
 #include "receiver.h"
 
@@ -26,7 +27,7 @@ Receiver::Receiver(QWidget *parent)
             this, &Receiver::processPendingDatagrams);
 //! [1]
     connect(quitButton, &QPushButton::clicked,
-            this, &Receiver::close);
+            qApp, &QCoreApplication::quit);
 
     auto buttonLayout = new QHBoxLayout;
     buttonLayout->addStretch(1);

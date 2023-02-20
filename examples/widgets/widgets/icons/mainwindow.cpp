@@ -417,7 +417,7 @@ void MainWindow::createActions()
 
     fileMenu->addSeparator();
 
-    QAction *exitAct = fileMenu->addAction(tr("&Quit"), this, &QWidget::close);
+    QAction *exitAct = fileMenu->addAction(tr("&Quit"), qApp, &QCoreApplication::quit);
     exitAct->setShortcuts(QKeySequence::Quit);
 
     QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
