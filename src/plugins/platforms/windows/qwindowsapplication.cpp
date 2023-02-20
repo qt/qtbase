@@ -9,16 +9,12 @@
 #include "qwindowsopengltester.h"
 #include "qwindowswindow.h"
 #include "qwindowsintegration.h"
+#include "qwindowstheme.h"
 
 #include <QtCore/qvariant.h>
 #include <QtCore/private/qfunctions_win_p.h>
 
 #include <QtGui/qpalette.h>
-
-#if QT_CONFIG(cpp_winrt)
-#   include <QtCore/private/qt_winrtbase_p.h>
-#   include <winrt/Windows.UI.ViewManagement.h>
-#endif // QT_CONFIG(cpp_winrt)
 
 QT_BEGIN_NAMESPACE
 
@@ -147,67 +143,9 @@ QVariant QWindowsApplication::gpuList() const
     return result;
 }
 
-static inline QColor getSysColor(int index)
-{
-    COLORREF cr = GetSysColor(index);
-    return QColor(GetRValue(cr), GetGValue(cr), GetBValue(cr));
-}
-
-#if QT_CONFIG(cpp_winrt)
-static constexpr QColor getSysColor(winrt::Windows::UI::Color &&color)
-{
-    return QColor(color.R, color.G, color.B, color.A);
-}
-#endif
-
-static inline QColor placeHolderColor(QColor textColor)
-{
-    textColor.setAlpha(128);
-    return textColor;
-}
-
 void QWindowsApplication::lightSystemPalette(QPalette &result) const
 {
-    QColor background = getSysColor(COLOR_BTNFACE);
-    QColor textColor = getSysColor(COLOR_WINDOWTEXT);
-    QColor accent = getSysColor(COLOR_HIGHLIGHT);
-
-#if QT_CONFIG(cpp_winrt)
-    // respect the Windows 11 accent color
-    using namespace winrt::Windows::UI::ViewManagement;
-    const auto settings = UISettings();
-
-    accent = getSysColor(settings.GetColorValue(UIColorType::Accent));
-#endif
-
-    const QColor btnFace = background;
-    const QColor btnHighlight = getSysColor(COLOR_BTNHIGHLIGHT);
-
-    result.setColor(QPalette::Highlight, accent);
-    result.setColor(QPalette::WindowText, getSysColor(COLOR_WINDOWTEXT));
-    result.setColor(QPalette::Button, btnFace);
-    result.setColor(QPalette::Light, btnHighlight);
-    result.setColor(QPalette::Dark, getSysColor(COLOR_BTNSHADOW));
-    result.setColor(QPalette::Mid, result.button().color().darker(150));
-    result.setColor(QPalette::Text, textColor);
-    result.setColor(QPalette::PlaceholderText, placeHolderColor(textColor));
-    result.setColor(QPalette::BrightText, btnHighlight);
-    result.setColor(QPalette::Base, getSysColor(COLOR_WINDOW));
-    result.setColor(QPalette::Window, btnFace);
-    result.setColor(QPalette::ButtonText, getSysColor(COLOR_BTNTEXT));
-    result.setColor(QPalette::Midlight, getSysColor(COLOR_3DLIGHT));
-    result.setColor(QPalette::Shadow, getSysColor(COLOR_3DDKSHADOW));
-    result.setColor(QPalette::HighlightedText, getSysColor(COLOR_HIGHLIGHTTEXT));
-
-    result.setColor(QPalette::Link, Qt::blue);
-    result.setColor(QPalette::LinkVisited, Qt::magenta);
-    result.setColor(QPalette::Inactive, QPalette::Button, result.button().color());
-    result.setColor(QPalette::Inactive, QPalette::Window, result.window().color());
-    result.setColor(QPalette::Inactive, QPalette::Light, result.light().color());
-    result.setColor(QPalette::Inactive, QPalette::Dark, result.dark().color());
-
-    if (result.midlight() == result.button())
-        result.setColor(QPalette::Midlight, result.button().color().lighter(110));
+    QWindowsTheme::populateLightSystemBasePalette(result);
 }
 
 QT_END_NAMESPACE

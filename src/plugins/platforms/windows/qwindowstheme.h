@@ -61,6 +61,8 @@ public:
 
     static const char *name;
 
+    static void populateLightSystemBasePalette(QPalette &result);
+
 private:
     void clearPalettes();
     void refreshPalettes();
