@@ -8,6 +8,7 @@
 #include <QtCore/qstring.h>
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qcoreevent.h>
+#include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qeventloop.h>
 #include <QtCore/qobject.h>
 #else
@@ -93,6 +94,7 @@ public:
     static int exec();
     static void processEvents(QEventLoop::ProcessEventsFlags flags = QEventLoop::AllEvents);
     static void processEvents(QEventLoop::ProcessEventsFlags flags, int maxtime);
+    static void processEvents(QEventLoop::ProcessEventsFlags flags, QDeadlineTimer deadline);
 
     static bool sendEvent(QObject *receiver, QEvent *event);
     static void postEvent(QObject *receiver, QEvent *event, int priority = Qt::NormalEventPriority);

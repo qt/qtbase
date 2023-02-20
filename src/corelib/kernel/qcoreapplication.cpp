@@ -35,7 +35,6 @@
 #include <private/qthreadpool_p.h>
 #endif
 #endif
-#include <qelapsedtimer.h>
 #include <qlibraryinfo.h>
 #include <qvarlengtharray.h>
 #include <private/qfactoryloader_p.h>
@@ -1349,11 +1348,28 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
 }
 
 /*!
-    \overload processEvents()
+    \overload
 
     Processes pending events for the calling thread for \a ms
     milliseconds or until there are no more events to process,
     whichever is shorter.
+
+    This is equivalent to calling:
+    \code
+    QCoreApplication::processEvents(flags, QDeadlineTimer(ms));
+    \endcode
+*/
+void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int ms)
+{
+    QCoreApplication::processEvents(flags, QDeadlineTimer(ms));
+}
+
+/*!
+    \since 6.7
+    \overload
+
+    Processes pending events for the calling thread untile \a deadline has expired,
+    or until there are no more events to process, whichever happens first.
 
     Use of this function is discouraged. Instead, prefer to move long
     operations out of the GUI thread into an auxiliary one and to completely
@@ -1372,7 +1388,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     \sa exec(), QTimer, QEventLoop::processEvents()
 */
-void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int ms)
+void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, QDeadlineTimer deadline)
 {
     // ### TODO: consider splitting this method into a public and a private
     //           one, so that a user-invoked processEvents can be detected
@@ -1380,10 +1396,9 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
     QThreadData *data = QThreadData::current();
     if (!data->hasEventDispatcher())
         return;
-    QElapsedTimer start;
-    start.start();
+
     while (data->eventDispatcher.loadRelaxed()->processEvents(flags & ~QEventLoop::WaitForMoreEvents)) {
-        if (start.elapsed() > ms)
+        if (deadline.hasExpired())
             break;
     }
 }
