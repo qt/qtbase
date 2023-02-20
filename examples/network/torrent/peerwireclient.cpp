@@ -177,7 +177,7 @@ void PeerWireClient::sendPieceList(const QBitArray &bitField)
     }
 
     char message[] = {0, 0, 0, 1, 5};
-    qToBigEndian(bits.size() + 1, &message[0]);
+    qToBigEndian<qint32>(bits.size() + 1, &message[0]);
     write(message, sizeof(message));
     write(bits);
 }
@@ -227,7 +227,7 @@ void PeerWireClient::sendBlock(int piece, int offset, const QByteArray &data)
     QByteArray block;
 
     char message[] = {0, 0, 0, 1, 7};
-    qToBigEndian(9 + data.size(), &message[0]);
+    qToBigEndian<qint32>(9 + data.size(), &message[0]);
     block += QByteArray(message, sizeof(message));
 
     char numbers[4 * 2];
