@@ -60,14 +60,6 @@ static inline QString guidToString(const GUID &g)
         << "}};";
     return rc;
 }
-
-inline QDebug operator<<(QDebug d, const GUID &g)
-{
-    QDebugStateSaver saver(d);
-    d.nospace();
-    d << guidToString(g);
-    return d;
-}
 #endif // !QT_NO_DEBUG_STREAM
 
 // Return an allocated wchar_t array from a QString, reserve more memory if desired.
