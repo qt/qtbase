@@ -189,7 +189,7 @@ QDebug operator<<(QDebug s, Qt::TimerType t)
 }
 #endif
 
-static void calculateCoarseTimerTimeout(QTimerInfo *t, timespec currentTime)
+static void calculateCoarseTimerTimeout(QTimerInfo *t, timespec now)
 {
     // The coarse timer works like this:
     //  - interval under 40 ms: round to even
@@ -295,18 +295,18 @@ recalculate:
         t->timeout.tv_nsec = nanoseconds{fracMsec}.count();
     }
 
-    if (t->timeout < currentTime)
+    if (t->timeout < now)
         t->timeout += t->interval;
 }
 
-static void calculateNextTimeout(QTimerInfo *t, timespec currentTime)
+static void calculateNextTimeout(QTimerInfo *t, timespec now)
 {
     switch (t->timerType) {
     case Qt::PreciseTimer:
     case Qt::CoarseTimer:
         t->timeout += t->interval;
-        if (t->timeout < currentTime) {
-            t->timeout = currentTime;
+        if (t->timeout < now) {
+            t->timeout = now;
             t->timeout += t->interval;
         }
 #ifdef QTIMERINFO_DEBUG
@@ -317,15 +317,15 @@ static void calculateNextTimeout(QTimerInfo *t, timespec currentTime)
         }
 #endif
         if (t->timerType == Qt::CoarseTimer)
-            calculateCoarseTimerTimeout(t, currentTime);
+            calculateCoarseTimerTimeout(t, now);
         return;
 
     case Qt::VeryCoarseTimer:
         // t->interval already rounded to full seconds in registerTimer()
         const auto secs = duration_cast<seconds>(t->interval).count();
         t->timeout.tv_sec += secs;
-        if (t->timeout.tv_sec <= currentTime.tv_sec)
-            t->timeout.tv_sec = currentTime.tv_sec + secs;
+        if (t->timeout.tv_sec <= now.tv_sec)
+            t->timeout.tv_sec = now.tv_sec + secs;
 #ifdef QTIMERINFO_DEBUG
         t->expected.tv_sec += t->interval;
         if (t->expected.tv_sec <= currentTime.tv_sec)
@@ -348,7 +348,7 @@ static void calculateNextTimeout(QTimerInfo *t, timespec currentTime)
 */
 bool QTimerInfoList::timerWait(timespec &tm)
 {
-    timespec currentTime = updateCurrentTime();
+    timespec now = updateCurrentTime();
     repairTimersIfNeeded();
 
     // Find first waiting timer not already active
@@ -363,9 +363,9 @@ bool QTimerInfoList::timerWait(timespec &tm)
     if (!t)
       return false;
 
-    if (currentTime < t->timeout) {
+    if (now < t->timeout) {
         // time to wait
-        tm = roundToMillisecond(t->timeout - currentTime);
+        tm = roundToMillisecond(t->timeout - now);
     } else {
         // no time to wait
         tm.tv_sec  = 0;
@@ -387,15 +387,15 @@ qint64 QTimerInfoList::timerRemainingTime(int timerId)
 
 milliseconds QTimerInfoList::remainingDuration(int timerId)
 {
-    timespec currentTime = updateCurrentTime();
+    timespec now = updateCurrentTime();
     repairTimersIfNeeded();
     timespec tm = {0, 0};
 
     for (const auto *t : std::as_const(*this)) {
         if (t->id == timerId) {
-            if (currentTime < t->timeout) {
+            if (now < t->timeout) {
                 // time to wait
-                tm = roundToMillisecond(t->timeout - currentTime);
+                tm = roundToMillisecond(t->timeout - now);
                 return QtMiscUtils::timespecToChronoMs(&tm);
             } else {
                 return milliseconds{0};
@@ -537,14 +537,14 @@ int QTimerInfoList::activateTimers()
     int n_act = 0, maxCount = 0;
     firstTimerInfo = nullptr;
 
-    timespec currentTime = updateCurrentTime();
-    // qDebug() << "Thread" << QThread::currentThreadId() << "woken up at" << currentTime;
+    timespec now = updateCurrentTime();
+    // qDebug() << "Thread" << QThread::currentThreadId() << "woken up at" << now;
     repairTimersIfNeeded();
 
 
     // Find out how many timer have expired
     for (QTimerInfoList::const_iterator it = constBegin(); it != constEnd(); ++it) {
-        if (currentTime < (*it)->timeout)
+        if (now < (*it)->timeout)
             break;
         maxCount++;
     }
@@ -555,7 +555,7 @@ int QTimerInfoList::activateTimers()
             break;
 
         QTimerInfo *currentTimerInfo = constFirst();
-        if (currentTime < currentTimerInfo->timeout)
+        if (now < currentTimerInfo->timeout)
             break; // no timer has expired
 
         if (!firstTimerInfo) {
@@ -592,7 +592,7 @@ int QTimerInfoList::activateTimers()
 #endif
 
         // determine next timeout time
-        calculateNextTimeout(currentTimerInfo, currentTime);
+        calculateNextTimeout(currentTimerInfo, now);
 
         // reinsert timer
         timerInsert(currentTimerInfo);
