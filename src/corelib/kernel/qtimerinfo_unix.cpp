@@ -100,10 +100,8 @@ bool QTimerInfoList::timeChanged(timespec *delta)
 void QTimerInfoList::timerRepair(const timespec &diff)
 {
     // repair all timers
-    for (int i = 0; i < size(); ++i) {
-        QTimerInfo *t = at(i);
-        t->timeout = t->timeout + diff;
-    }
+    for (QTimerInfo *t : std::as_const(*this))
+        t->timeout += diff;
 }
 
 void QTimerInfoList::repairTimersIfNeeded()
@@ -351,26 +349,17 @@ bool QTimerInfoList::timerWait(timespec &tm)
     timespec now = updateCurrentTime();
     repairTimersIfNeeded();
 
+    auto isWaiting = [](QTimerInfo *tinfo) { return !tinfo->activateRef; };
     // Find first waiting timer not already active
-    QTimerInfo *t = nullptr;
-    for (QTimerInfoList::const_iterator it = constBegin(); it != constEnd(); ++it) {
-        if (!(*it)->activateRef) {
-            t = *it;
-            break;
-        }
-    }
+    auto it = std::find_if(cbegin(), cend(), isWaiting);
+    if (it == cend())
+        return false;
 
-    if (!t)
-      return false;
-
-    if (now < t->timeout) {
-        // time to wait
+    QTimerInfo *t = *it;
+    if (now < t->timeout) // Time to wait
         tm = roundToMillisecond(t->timeout - now);
-    } else {
-        // no time to wait
-        tm.tv_sec  = 0;
-        tm.tv_nsec = 0;
-    }
+    else // No time to wait
+        tm = {0, 0};
 
     return true;
 }
@@ -391,23 +380,22 @@ milliseconds QTimerInfoList::remainingDuration(int timerId)
     repairTimersIfNeeded();
     timespec tm = {0, 0};
 
-    for (const auto *t : std::as_const(*this)) {
-        if (t->id == timerId) {
-            if (now < t->timeout) {
-                // time to wait
-                tm = roundToMillisecond(t->timeout - now);
-                return QtMiscUtils::timespecToChronoMs(&tm);
-            } else {
-                return milliseconds{0};
-            }
-        }
+    auto it = findTimerById(timerId);
+    if (it == cend()) {
+#ifndef QT_NO_DEBUG
+        qWarning("QTimerInfoList::timerRemainingTime: timer id %i not found", timerId);
+#endif
+        return milliseconds{-1};
     }
 
-#ifndef QT_NO_DEBUG
-    qWarning("QTimerInfoList::timerRemainingTime: timer id %i not found", timerId);
-#endif
-
-    return milliseconds{-1};
+    const QTimerInfo *t = *it;
+    if (now < t->timeout) {
+        // time to wait
+        tm = roundToMillisecond(t->timeout - now);
+        return QtMiscUtils::timespecToChronoMs(&tm);
+    } else {
+        return milliseconds{0};
+    }
 }
 
 void QTimerInfoList::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object)
@@ -477,22 +465,19 @@ void QTimerInfoList::registerTimer(int timerId, milliseconds interval,
 
 bool QTimerInfoList::unregisterTimer(int timerId)
 {
+    auto it = findTimerById(timerId);
+    if (it == cend())
+        return false; // id not found
+
     // set timer inactive
-    for (int i = 0; i < size(); ++i) {
-        QTimerInfo *t = at(i);
-        if (t->id == timerId) {
-            // found it
-            removeAt(i);
-            if (t == firstTimerInfo)
-                firstTimerInfo = nullptr;
-            if (t->activateRef)
-                *(t->activateRef) = nullptr;
-            delete t;
-            return true;
-        }
-    }
-    // id not found
-    return false;
+    QTimerInfo *t = *it;
+    if (t == firstTimerInfo)
+        firstTimerInfo = nullptr;
+    if (t->activateRef)
+        *(t->activateRef) = nullptr;
+    delete t;
+    erase(it);
+    return true;
 }
 
 bool QTimerInfoList::unregisterTimers(QObject *object)
@@ -534,21 +519,18 @@ int QTimerInfoList::activateTimers()
     if (qt_disable_lowpriority_timers || isEmpty())
         return 0; // nothing to do
 
-    int n_act = 0, maxCount = 0;
     firstTimerInfo = nullptr;
 
     timespec now = updateCurrentTime();
     // qDebug() << "Thread" << QThread::currentThreadId() << "woken up at" << now;
     repairTimersIfNeeded();
 
-
     // Find out how many timer have expired
-    for (QTimerInfoList::const_iterator it = constBegin(); it != constEnd(); ++it) {
-        if (now < (*it)->timeout)
-            break;
-        maxCount++;
-    }
+    auto isExpired = [&now](const QTimerInfo *t) { return now < t->timeout; };
+    auto it = std::find_if(cbegin(), cend(), isExpired);
+    int maxCount = it - cbegin();
 
+    int n_act = 0;
     //fire the timers.
     while (maxCount--) {
         if (isEmpty())

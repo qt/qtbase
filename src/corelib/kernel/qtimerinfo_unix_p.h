@@ -81,6 +81,12 @@ public:
     QList<QAbstractEventDispatcher::TimerInfo> registeredTimers(QObject *object) const;
 
     int activateTimers();
+
+    QList::const_iterator findTimerById(int timerId) const
+    {
+        auto matchesId = [timerId](const QTimerInfo *t) { return t->id == timerId; };
+        return std::find_if(cbegin(), cend(), matchesId);
+    }
 };
 
 QT_END_NAMESPACE
