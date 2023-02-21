@@ -152,6 +152,9 @@ private slots:
     void storageBufferRuntimeSizeGraphics_data();
     void storageBufferRuntimeSizeGraphics();
 
+    void halfPrecisionAttributes_data();
+    void halfPrecisionAttributes();
+
 private:
     void setWindowType(QWindow *window, QRhi::Implementation impl);
 
@@ -6188,6 +6191,152 @@ void tst_QRhi::storageBufferRuntimeSizeGraphics()
         return;
 
     QCOMPARE(result.pixel(32, 32), qRgb(red, green, blue));
+}
+
+void tst_QRhi::halfPrecisionAttributes_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::halfPrecisionAttributes()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (!rhi->isFeatureSupported(QRhi::HalfAttributes)) {
+        QVERIFY(rhi->backend() != QRhi::Vulkan);
+        QVERIFY(rhi->backend() != QRhi::Metal);
+        QVERIFY(rhi->backend() != QRhi::D3D11);
+        QVERIFY(rhi->backend() != QRhi::D3D12);
+        QSKIP("Half precision vertex attributes are not supported with this graphics API, skipping test");
+    }
+
+    const QSize outputSize(1920, 1080);
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                                        QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+    //
+    // This test uses half3 vertices
+    //
+    // Note: D3D does not support half3 - rhi passes it through as half4.  Because of this, D3D will
+    // report the following warning and error if we don't take precautions:
+    //
+    // D3D11 WARNING: ID3D11DeviceContext::Draw: Input vertex slot 0 has stride 6 which is less than
+    // the minimum stride logically expected from the current Input Layout (8 bytes). This is OK, as
+    // hardware is perfectly capable of reading overlapping data. However the developer probably did
+    // not intend to make use of this behavior. [ EXECUTION WARNING #355:
+    // DEVICE_DRAW_VERTEX_BUFFER_STRIDE_TOO_SMALL]
+    //
+    // D3D11 ERROR: ID3D11DeviceContext::Draw: Vertex Buffer Stride (6) at the input vertex slot 0
+    // is not aligned properly. The current Input Layout imposes an alignment of (4) because of the
+    // Formats used with this slot. [ EXECUTION ERROR #367: DEVICE_DRAW_VERTEX_STRIDE_UNALIGNED]
+    //
+    // The same warning and error are produced for D3D12.  The rendered output is correct despite
+    // the warning and error.
+    //
+    // To avoid these errors, we pad the vertices to 8 byte stride.
+    //
+    static const qfloat16 vertices[] = {
+        -1.0, -1.0, 0.0, 0.0,
+        1.0, -1.0, 0.0, 0.0,
+        0.0, 1.0, 0.0, 0.0,
+    };
+
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertices)));
+    QVERIFY(vbuf->create());
+    updates->uploadStaticBuffer(vbuf.data(), vertices);
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    QVERIFY(srb->create());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    QShader vs = loadShader(":/data/half.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/simple.frag.qsb");
+    QVERIFY(fs.isValid());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 4 * sizeof(qfloat16) } }); // 8 byte vertex stride for D3D
+    inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Half3, 0 } });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(pipeline->create());
+
+    cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 }, updates);
+    cb->setGraphicsPipeline(pipeline.data());
+    cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+    QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
+    cb->setVertexInput(0, 1, &vbindings);
+    cb->draw(3);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied); // non-owning, no copy needed because readResult outlives result
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.data() }, &readResult);
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+    // Offscreen frames are synchronous, so the readback is guaranteed to
+    // complete at this point. This would not be the case with swapchain-based
+    // frames.
+    QCOMPARE(result.size(), texture->pixelSize());
+
+    if (impl == QRhi::Null)
+        return;
+
+    // Now we have a red rectangle on blue background.
+    const int y = 100;
+    const quint32 *p = reinterpret_cast<const quint32 *>(result.constScanLine(y));
+    int x = result.width() - 1;
+    int redCount = 0;
+    int blueCount = 0;
+    const int maxFuzz = 1;
+    while (x-- >= 0) {
+        const QRgb c(*p++);
+        if (qRed(c) >= (255 - maxFuzz) && qGreen(c) == 0 && qBlue(c) == 0)
+            ++redCount;
+        else if (qRed(c) == 0 && qGreen(c) == 0 && qBlue(c) >= (255 - maxFuzz))
+            ++blueCount;
+        else
+            QFAIL("Encountered a pixel that is neither red or blue");
+    }
+
+    QCOMPARE(redCount + blueCount, texture->pixelSize().width());
+    QVERIFY(redCount != 0);
+    QVERIFY(blueCount != 0);
+
+    // The triangle is "pointing up" in the resulting image with OpenGL
+    // (because Y is up both in normalized device coordinates and in images)
+    // and Vulkan (because Y is down in both and the vertex data was specified
+    // with Y up in mind), but "pointing down" with D3D (because Y is up in NDC
+    // but down in images).
+    if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())
+        QVERIFY(redCount < blueCount);
+    else
+        QVERIFY(redCount > blueCount);
+
 }
 
 #include <tst_qrhi.moc>

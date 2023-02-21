@@ -4265,6 +4265,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::OneDimensionalTextureMipmaps:
         return true;
+    case QRhi::HalfAttributes:
+        return true;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -5279,6 +5281,14 @@ static inline VkFormat toVkAttributeFormat(QRhiVertexInputAttribute::Format form
         return VK_FORMAT_R32G32_SINT;
     case QRhiVertexInputAttribute::SInt:
         return VK_FORMAT_R32_SINT;
+    case QRhiVertexInputAttribute::Half4:
+        return VK_FORMAT_R16G16B16A16_SFLOAT;
+    case QRhiVertexInputAttribute::Half3:
+        return VK_FORMAT_R16G16B16_SFLOAT;
+    case QRhiVertexInputAttribute::Half2:
+        return VK_FORMAT_R16G16_SFLOAT;
+    case QRhiVertexInputAttribute::Half:
+        return VK_FORMAT_R16_SFLOAT;
     default:
         Q_UNREACHABLE_RETURN(VK_FORMAT_R32G32B32A32_SFLOAT);
     }

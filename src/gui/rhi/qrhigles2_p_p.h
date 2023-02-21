@@ -961,7 +961,8 @@ public:
               tessellation(false),
               geometryShader(false),
               texture1D(false),
-              hasDrawBuffersFunc(false)
+              hasDrawBuffersFunc(false),
+              halfAttributes(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -1014,6 +1015,7 @@ public:
         uint geometryShader : 1;
         uint texture1D : 1;
         uint hasDrawBuffersFunc : 1;
+        uint halfAttributes : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;

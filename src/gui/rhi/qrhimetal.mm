@@ -794,6 +794,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::OneDimensionalTextureMipmaps:
         return false;
+    case QRhi::HalfAttributes:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -4297,6 +4299,14 @@ static inline MTLVertexFormat toMetalAttributeFormat(QRhiVertexInputAttribute::F
         return MTLVertexFormatInt2;
     case QRhiVertexInputAttribute::SInt:
         return MTLVertexFormatInt;
+    case QRhiVertexInputAttribute::Half4:
+        return MTLVertexFormatHalf4;
+    case QRhiVertexInputAttribute::Half3:
+        return MTLVertexFormatHalf3;
+    case QRhiVertexInputAttribute::Half2:
+        return MTLVertexFormatHalf2;
+    case QRhiVertexInputAttribute::Half:
+        return MTLVertexFormatHalf;
     default:
         Q_UNREACHABLE();
         return MTLVertexFormatFloat4;

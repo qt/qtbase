@@ -740,6 +740,16 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     unsupported on backends that do not report support for
     \l{OneDimensionalTextures}, and Metal.
 
+    \value HalfAttributes Indicates that specifying input attributes with half
+    precision (16bit) floating point types for a shader pipeline is supported.
+    When not supported, build() will succeed but just show a warning message
+    and the values of the target attributes will be broken. In practice this
+    feature will be unsupported in some OpenGL ES 2.0 and OpenGL 2.x
+    implementations. Note that while D3D does support half precision input
+    attributes, it does not support the half3 type. The D3D backends pass
+    half3 attributes as half4. To ensure cross platform compatibility, half3
+    inputs should be padded to 8 bytes.
+
  */
 
 /*!
@@ -1287,6 +1297,16 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputBinding &b)
     \value SInt3 Three component signed integer vector
     \value SInt2 Two component signed integer vector
     \value SInt Signed integer
+    \value Half4 Four component half precision (16bit) float vector
+    \value Half3 Three component half precision (16bit) float vector
+    \value Half2 Two component half precision (16bit) float vector
+    \value Half half precision (16bit) float
+
+    \note Support for half precision floating point attributes is indicated at
+    run time by the QRhi::Feature::HalfAttributes feature flag. Note that D3D
+    supports half input attributes, but does not support the Half3 type. The
+    D3D backends pass through Half3 as Half4. To ensure cross platform
+    compatibility, Half3 inputs should be padded to 8 bytes.
  */
 
 /*!
@@ -1418,6 +1438,15 @@ quint32 QRhiImplementation::byteSizePerVertexForVertexInputFormat(QRhiVertexInpu
         return 2 * sizeof(qint32);
     case QRhiVertexInputAttribute::SInt:
         return sizeof(qint32);
+
+    case QRhiVertexInputAttribute::Half4:
+        return 4 * sizeof(qfloat16);
+    case QRhiVertexInputAttribute::Half3:
+        return 4 * sizeof(qfloat16); // half3 still takes 8 bytes
+    case QRhiVertexInputAttribute::Half2:
+        return 2 * sizeof(qfloat16);
+    case QRhiVertexInputAttribute::Half:
+        return sizeof(qfloat16);
 
     default:
         Q_UNREACHABLE_RETURN(1);

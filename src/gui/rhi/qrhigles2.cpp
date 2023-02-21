@@ -450,6 +450,10 @@ QT_BEGIN_NAMESPACE
 #  define GL_TEXTURE_1D_ARRAY 0x8C18
 #endif
 
+#ifndef GL_HALF_FLOAT
+#define GL_HALF_FLOAT 0x140B
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -959,6 +963,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
     if (!caps.gles && (caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 2)))
         f->glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
+    caps.halfAttributes = f->hasOpenGLExtension(QOpenGLExtensions::HalfFloatVertex);
+
     nativeHandlesStruct.context = ctx;
 
     contextLost = false;
@@ -1315,6 +1321,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.texture1D;
     case QRhi::OneDimensionalTextureMipmaps:
         return caps.texture1D;
+    case QRhi::HalfAttributes:
+        return caps.halfAttributes;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -2937,6 +2945,22 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                         break;
                     case QRhiVertexInputAttribute::SInt:
                         type = GL_INT;
+                        size = 1;
+                        break;
+                    case QRhiVertexInputAttribute::Half4:
+                        type = GL_HALF_FLOAT;
+                        size = 4;
+                        break;
+                    case QRhiVertexInputAttribute::Half3:
+                        type = GL_HALF_FLOAT;
+                        size = 3;
+                        break;
+                    case QRhiVertexInputAttribute::Half2:
+                        type = GL_HALF_FLOAT;
+                        size = 2;
+                        break;
+                    case QRhiVertexInputAttribute::Half:
+                        type = GL_HALF_FLOAT;
                         size = 1;
                         break;
                     default:

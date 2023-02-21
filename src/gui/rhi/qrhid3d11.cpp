@@ -528,6 +528,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::OneDimensionalTextureMipmaps:
         return true;
+    case QRhi::HalfAttributes:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -4038,6 +4040,14 @@ static inline DXGI_FORMAT toD3DAttributeFormat(QRhiVertexInputAttribute::Format 
         return DXGI_FORMAT_R32G32_SINT;
     case QRhiVertexInputAttribute::SInt:
         return DXGI_FORMAT_R32_SINT;
+    case QRhiVertexInputAttribute::Half4:
+    // Note: D3D does not support half3.  Pass through half3 as half4.
+    case QRhiVertexInputAttribute::Half3:
+        return DXGI_FORMAT_R16G16B16A16_FLOAT;
+    case QRhiVertexInputAttribute::Half2:
+        return DXGI_FORMAT_R16G16_FLOAT;
+    case QRhiVertexInputAttribute::Half:
+         return DXGI_FORMAT_R16_FLOAT;
     default:
         Q_UNREACHABLE();
         return DXGI_FORMAT_R32G32B32A32_FLOAT;

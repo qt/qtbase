@@ -247,7 +247,11 @@ public:
         SInt4,
         SInt3,
         SInt2,
-        SInt
+        SInt,
+        Half4,
+        Half3,
+        Half2,
+        Half
     };
 
     QRhiVertexInputAttribute() = default;
@@ -1819,7 +1823,8 @@ public:
         TextureArrayRange,
         NonFillPolygonMode,
         OneDimensionalTextures,
-        OneDimensionalTextureMipmaps
+        OneDimensionalTextureMipmaps,
+        HalfAttributes
     };
 
     enum BeginFrameFlag {

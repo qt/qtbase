@@ -58,7 +58,8 @@ public:
         TextureSwizzle          = 0x01000000,
         StandardDerivatives     = 0x02000000,
         ASTCTextureCompression  = 0x04000000,
-        ETC2TextureCompression  = 0x08000000
+        ETC2TextureCompression  = 0x08000000,
+        HalfFloatVertex         = 0x10000000
     };
     Q_DECLARE_FLAGS(OpenGLExtensions, OpenGLExtension)
 
