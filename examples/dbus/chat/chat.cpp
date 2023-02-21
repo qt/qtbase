@@ -39,10 +39,6 @@ ChatMainWindow::ChatMainWindow()
         QMetaObject::invokeMethod(qApp, &QApplication::quit, Qt::QueuedConnection);
 }
 
-ChatMainWindow::~ChatMainWindow()
-{
-}
-
 void ChatMainWindow::rebuildHistory()
 {
     QString history = m_messages.join( QLatin1String("\n" ) );
