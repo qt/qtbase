@@ -15,7 +15,6 @@ class ChatMainWindow: public QMainWindow, Ui::ChatMainWindow
     QStringList m_messages;
 public:
     ChatMainWindow();
-    ~ChatMainWindow();
 
     void rebuildHistory();
 
