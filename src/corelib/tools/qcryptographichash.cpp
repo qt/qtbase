@@ -697,10 +697,10 @@ bool QCryptographicHash::addData(QIODevice *device)
         return false;
 
     char buffer[1024];
-    int length;
+    qint64 length;
 
     while ((length = device->read(buffer, sizeof(buffer))) > 0)
-        d->addData({buffer, length});
+        d->addData({buffer, qsizetype(length)}); // length always <= 1024
 
     return device->atEnd();
 }
