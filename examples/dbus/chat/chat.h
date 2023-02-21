@@ -7,7 +7,6 @@
 #include <QStringList>
 
 #include "ui_chatmainwindow.h"
-#include "ui_chatsetnickname.h"
 
 class ChatMainWindow: public QMainWindow, Ui::ChatMainWindow
 {
@@ -29,16 +28,9 @@ private slots:
     void actionSlot(const QString &nickname, const QString &text);
     void textChangedSlot(const QString &newText);
     void sendClickedSlot();
-    void changeNickname();
+    bool changeNickname(bool initial = false);
     void aboutQt();
     void exiting();
-};
-
-class NicknameDialog: public QDialog, public Ui::NicknameDialog
-{
-    Q_OBJECT
-public:
-    NicknameDialog(QWidget *parent = nullptr);
 };
 
 #endif // CHAT_H

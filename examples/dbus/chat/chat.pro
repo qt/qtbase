@@ -2,7 +2,7 @@ QT += dbus widgets
 
 HEADERS += chat.h
 SOURCES += chat.cpp
-FORMS += chatmainwindow.ui chatsetnickname.ui
+FORMS += chatmainwindow.ui
 
 DBUS_ADAPTORS += org.example.chat.xml
 DBUS_INTERFACES += org.example.chat.xml
