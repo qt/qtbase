@@ -131,15 +131,6 @@ public:
     ~QOCIDateTime();
     OCIDateTime *dateTime;
     static QDateTime fromOCIDateTime(OCIEnv *env, OCIError *err, OCIDateTime *dt);
-    static QString toOffsetString(const QDateTime &dt)
-    {
-        const auto offset = dt.offsetFromUtc();
-        const auto offsetAbs = qAbs(offset) / 60;
-        return QString::asprintf("%c%02d:%02d",
-                                 offset >= 0 ? '+' : '-',
-                                 offsetAbs / 60,
-                                 offsetAbs % 60);
-    }
 };
 
 QOCIDateTime::QOCIDateTime(OCIEnv *env, OCIError *err, const QDateTime &dt)
@@ -150,7 +141,7 @@ QOCIDateTime::QOCIDateTime(OCIEnv *env, OCIError *err, const QDateTime &dt)
         const QDate date = dt.date();
         const QTime time = dt.time();
         // Zone in +hh:mm format
-        const QString timeZone = toOffsetString(dt);
+        const QString timeZone = dt.toString("ttt");
         const OraText *tz = reinterpret_cast<const OraText *>(timeZone.utf16());
         OCIDateTimeConstruct(env, err, dateTime, date.year(), date.month(), date.day(), time.hour(),
                              time.minute(), time.second(), time.msec() * 1000000,
