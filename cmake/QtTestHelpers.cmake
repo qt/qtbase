@@ -466,15 +466,22 @@ function(qt_internal_add_test name)
     )
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    if(QT_BUILD_TESTS_BATCHED AND QT_SUPERBUILD AND NOT arg_NO_BATCH AND NOT arg_QMLTEST)
-        qt_internal_is_qtbase_test(is_qtbase_test)
-        if(NOT is_qtbase_test)
-            file(GENERATE OUTPUT "dummy${name}.cpp" CONTENT "int main() { return 0; }")
-            # Add a dummy target to tackle some potential problems
-            qt_internal_add_executable(${name} SOURCES "dummy${name}.cpp")
-            # Batched tests outside of qtbase are unsupported and skipped
-            qt_internal_set_skipped_test(${name})
-            return()
+    if(QT_BUILD_TESTS_BATCHED AND NOT arg_NO_BATCH AND NOT arg_QMLTEST)
+        if (QT_SUPERBUILD OR DEFINED ENV{TESTED_MODULE_COIN})
+            set(is_qtbase_test FALSE)
+            if(QT_SUPERBUILD)
+                qt_internal_is_qtbase_test(is_qtbase_test)
+            elseif($ENV{TESTED_MODULE_COIN} STREQUAL "qtbase")
+                set(is_qtbase_test TRUE)
+            endif()
+            if(NOT is_qtbase_test)
+                file(GENERATE OUTPUT "dummy${name}.cpp" CONTENT "int main() { return 0; }")
+                # Add a dummy target to tackle some potential problems
+                qt_internal_add_executable(${name} SOURCES "dummy${name}.cpp")
+                # Batched tests outside of qtbase are unsupported and skipped
+                qt_internal_set_skipped_test(${name})
+                return()
+            endif()
         endif()
     endif()
 
