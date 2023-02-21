@@ -179,6 +179,16 @@ if(PROJECT_NAME STREQUAL "QtBase")
         "A path to the source tree of the previously configured QtBase project." FORCE)
 endif()
 
+# QT_INTERNAL_CONFIGURE_FROM_IDE is set to TRUE for the following known IDE applications:
+# - Qt Creator, detected by QTC_RUN environment variable
+# - CLion, detected by CLION_IDE environment variable
+# - Visual Studio Code, detected by VSCODE_CLI environment variable
+if("$ENV{QTC_RUN}" OR "$ENV{CLION_IDE}" OR "$ENV{VSCODE_CLI}")
+    set(QT_INTERNAL_CONFIGURE_FROM_IDE TRUE CACHE INTERNAL "Configuring Qt Project from IDE")
+else()
+    set(QT_INTERNAL_CONFIGURE_FROM_IDE FALSE CACHE INTERNAL "Configuring Qt Project from IDE")
+endif()
+
 if(FEATURE_developer_build)
     if(DEFINED QT_CMAKE_EXPORT_COMPILE_COMMANDS)
         set(CMAKE_EXPORT_COMPILE_COMMANDS ${QT_CMAKE_EXPORT_COMPILE_COMMANDS})
