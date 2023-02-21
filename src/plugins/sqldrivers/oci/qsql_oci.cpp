@@ -2554,8 +2554,7 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
     // eg. a sub-query on the sys.synonyms table
     QString stmt("select column_name, data_type, data_length, "
                   "data_precision, data_scale, nullable, data_default%1"
-                  "from all_tab_columns a "
-                  "where a.table_name=%2"_L1);
+                  "from all_tab_columns a "_L1);
     if (d->serverVersion >= 9)
         stmt = stmt.arg(", char_length "_L1);
     else
@@ -2569,7 +2568,7 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
     else
         table = table.toUpper();
 
-    tmpStmt = stmt.arg(u'\'' + table + u'\'');
+    tmpStmt = stmt + "where a.table_name='"_L1 + table + u'\'';
     if (owner.isEmpty()) {
         owner = d->user;
     }
