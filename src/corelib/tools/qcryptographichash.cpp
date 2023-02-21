@@ -217,8 +217,9 @@ public:
 
     void reset() noexcept;
     void addData(QByteArrayView bytes) noexcept;
+    void finalize() noexcept;
     // when not called from the static hash() function, this function needs to be
-    // called with finalizeMutex held:
+    // called with finalizeMutex held (finalize() will do that):
     void finalizeUnchecked() noexcept;
     // END functions that need to be called with finalizeMutex held
     QByteArrayView resultView() const noexcept { return result.toByteArrayView(); }
@@ -728,14 +729,23 @@ QByteArray QCryptographicHash::result() const
 QByteArrayView QCryptographicHash::resultView() const noexcept
 {
     // resultView() is a const function, so concurrent calls are allowed; protect:
-    {
-        const auto lock = qt_scoped_lock(d->finalizeMutex);
-        // check that no other thread already finalizeUnchecked()'ed before us:
-        if (d->result.isEmpty())
-            d->finalizeUnchecked();
-    }
-    // resultView() remains(!) valid even after we dropped the mutex
+    d->finalize();
+    // resultView() remains(!) valid even after we dropped the mutex in finalize()
     return d->resultView();
+}
+
+/*!
+    \internal
+
+    Calls finalizeUnchecked(), if needed, under finalizeMutex protection.
+*/
+void QCryptographicHashPrivate::finalize() noexcept
+{
+    const auto lock = qt_scoped_lock(finalizeMutex);
+    // check that no other thread already finalizeUnchecked()'ed before us:
+    if (!result.isEmpty())
+        return;
+    finalizeUnchecked();
 }
 
 /*!
