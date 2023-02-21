@@ -130,6 +130,9 @@ public:
     bool messageHashInited;
 
     void initMessageHash();
+    void finalize();
+
+    void finalizeUnchecked();
 };
 
 void QMessageAuthenticationCodePrivate::initMessageHash()
@@ -266,27 +269,35 @@ bool QMessageAuthenticationCode::addData(QIODevice *device)
 */
 QByteArray QMessageAuthenticationCode::result() const
 {
-    if (!d->result.isEmpty())
-        return d->result;
+    d->finalize();
+    return d->result;
+}
 
-    d->initMessageHash();
+void QMessageAuthenticationCodePrivate::finalize()
+{
+    if (!result.isEmpty())
+        return;
+    initMessageHash();
+    finalizeUnchecked();
+}
 
-    const int blockSize = qt_hash_block_size(d->method);
+void QMessageAuthenticationCodePrivate::finalizeUnchecked()
+{
+    const int blockSize = qt_hash_block_size(method);
 
-    QByteArray hashedMessage = d->messageHash.result();
+    QByteArray hashedMessage = messageHash.result();
 
     QVarLengthArray<char> oKeyPad(blockSize);
-    const char * const keyData = d->key.constData();
+    const char * const keyData = key.constData();
 
     for (int i = 0; i < blockSize; ++i)
         oKeyPad[i] = keyData[i] ^ 0x5c;
 
-    QCryptographicHash hash(d->method);
+    QCryptographicHash hash(method);
     hash.addData(oKeyPad.data(), oKeyPad.size());
     hash.addData(hashedMessage);
 
-    d->result = hash.result();
-    return d->result;
+    result = hash.result();
 }
 
 /*!
