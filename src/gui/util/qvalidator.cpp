@@ -331,12 +331,12 @@ QIntValidator::~QIntValidator()
     or is a prefix of an integer in the valid range, returns \l Intermediate.
     Otherwise, returns \l Invalid.
 
-    If the valid range consists of just positive integers (e.g., 32 to 100)
-    and \a input is a negative integer, then Invalid is returned. (On the other
-    hand, if the range consists of negative integers (e.g., -100 to -32) and
-    \a input is a positive integer, then Intermediate is returned, because
-    the user might be just about to type the minus (especially for right-to-left
-    languages).
+    If the valid range consists of just positive integers (e.g., 32 to 100) and
+    \a input is a negative integer, then Invalid is returned. (On the other
+    hand, if the range consists of negative integers (e.g., -100 to -32) and \a
+    input is a positive integer without leading plus sign, then Intermediate is
+    returned, because the user might be just about to type the minus (especially
+    for right-to-left languages).
 
     Similarly, if the valid range is between 46 and 53, then 41 and 59 will be
     evaluated as \l Intermediate, as otherwise the user wouldn't be able to
