@@ -31,7 +31,6 @@ ChatMainWindow::ChatMainWindow()
 
     org::example::chat *iface;
     iface = new org::example::chat(QString(), QString(), QDBusConnection::sessionBus(), this);
-    //connect(iface, SIGNAL(message(QString,QString)), this, SLOT(messageSlot(QString,QString)));
     QDBusConnection::sessionBus().connect(QString(), QString(), "org.example.chat", "message", this, SLOT(messageSlot(QString,QString)));
     connect(iface, &org::example::chat::action,
             this, &ChatMainWindow::actionSlot);
@@ -79,7 +78,6 @@ void ChatMainWindow::textChangedSlot(const QString &newText)
 
 void ChatMainWindow::sendClickedSlot()
 {
-    //emit message(m_nickname, messageLineEdit->text());
     QDBusMessage msg = QDBusMessage::createSignal("/", "org.example.chat", "message");
     msg << m_nickname << messageLineEdit->text();
     QDBusConnection::sessionBus().send(msg);
