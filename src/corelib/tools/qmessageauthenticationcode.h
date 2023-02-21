@@ -12,6 +12,7 @@ QT_BEGIN_NAMESPACE
 class QMessageAuthenticationCodePrivate;
 class QIODevice;
 
+// implemented in qcryptographichash.cpp
 class Q_CORE_EXPORT QMessageAuthenticationCode
 {
 public:

@@ -281,7 +281,7 @@ qt_internal_add_module(Core
         tools/qmakearray_p.h
         tools/qmap.h
         tools/qmargins.cpp tools/qmargins.h
-        tools/qmessageauthenticationcode.cpp tools/qmessageauthenticationcode.h
+        tools/qmessageauthenticationcode.h
         tools/qoffsetstringarray_p.h
         tools/qpair.h
         tools/qpoint.cpp tools/qpoint.h
