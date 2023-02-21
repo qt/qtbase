@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include <QApplication>
+#include <QInputDialog>
 #include <QMessageBox>
 
 #include "chat.h"
@@ -9,7 +10,6 @@
 #include "chat_interface.h"
 
 ChatMainWindow::ChatMainWindow()
-    : m_nickname(QLatin1String("nickname"))
 {
     setupUi(this);
     sendButton->setEnabled(false);
@@ -36,11 +36,8 @@ ChatMainWindow::ChatMainWindow()
     connect(iface, &org::example::chat::action,
             this, &ChatMainWindow::actionSlot);
 
-    NicknameDialog dialog;
-    dialog.cancelButton->setVisible(false);
-    dialog.exec();
-    m_nickname = dialog.nickname->text().trimmed();
-    emit action(m_nickname, QLatin1String("joins the chat"));
+    if (!changeNickname(true))
+        QMetaObject::invokeMethod(qApp, &QApplication::quit, Qt::QueuedConnection);
 }
 
 ChatMainWindow::~ChatMainWindow()
@@ -89,14 +86,23 @@ void ChatMainWindow::sendClickedSlot()
     messageLineEdit->setText(QString());
 }
 
-void ChatMainWindow::changeNickname()
+bool ChatMainWindow::changeNickname(bool initial)
 {
-    NicknameDialog dialog(this);
-    if (dialog.exec() == QDialog::Accepted) {
-        QString old = m_nickname;
-        m_nickname = dialog.nickname->text().trimmed();
-        emit action(old, QString("is now known as %1").arg(m_nickname));
+    auto newNickname = QInputDialog::getText(this, tr("Set nickname"), tr("New nickname:"));
+    newNickname = newNickname.trimmed();
+
+    if (!newNickname.isEmpty()) {
+        auto old = m_nickname;
+        m_nickname = newNickname;
+
+        if (initial)
+            emit action(m_nickname, tr("joins the chat"));
+        else
+            emit action(old, tr("is now known as %1").arg(m_nickname));
+        return true;
     }
+
+    return false;
 }
 
 void ChatMainWindow::aboutQt()
@@ -107,12 +113,6 @@ void ChatMainWindow::aboutQt()
 void ChatMainWindow::exiting()
 {
     emit action(m_nickname, QLatin1String("leaves the chat"));
-}
-
-NicknameDialog::NicknameDialog(QWidget *parent)
-    : QDialog(parent)
-{
-    setupUi(this);
 }
 
 int main(int argc, char **argv)

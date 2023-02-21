@@ -32,7 +32,6 @@ qt_add_dbus_adaptor(chat_SRCS
 qt_add_executable(chat
     chat.cpp chat.h
     chatmainwindow.ui
-    chatsetnickname.ui
     ${chat_SRCS}
 )
 
