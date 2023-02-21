@@ -3,7 +3,7 @@
 // Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qvariant.h"
+#include "qvariant_p.h"
 #include "qbitarray.h"
 #include "qbytearray.h"
 #include "qdatastream.h"
@@ -231,21 +231,6 @@ static bool isValidMetaTypeForVariant(const QtPrivate::QMetaTypeInterface *iface
     return true;
 }
 
-template <typename F> static QVariant::PrivateShared *
-customConstructShared(size_t size, size_t align, F &&construct)
-{
-    struct Deleter {
-        void operator()(QVariant::PrivateShared *p) const
-        { QVariant::PrivateShared::free(p); }
-    };
-
-    // this is exception-safe
-    std::unique_ptr<QVariant::PrivateShared, Deleter> ptr;
-    ptr.reset(QVariant::PrivateShared::create(size, align));
-    construct(ptr->data());
-    return ptr.release();
-}
-
 // the type of d has already been set, but other field are not set
 static void customConstruct(const QtPrivate::QMetaTypeInterface *iface, QVariant::Private *d,
                             const void *copy)
@@ -305,59 +290,6 @@ static QVariant::Private clonePrivate(const QVariant::Private &other)
 }
 
 } // anonymous used to hide QVariant handlers
-
-inline QVariant::PrivateShared *QVariant::PrivateShared::create(size_t size, size_t align)
-{
-    size += sizeof(PrivateShared);
-    if (align > sizeof(PrivateShared)) {
-        // The alignment is larger than the alignment we can guarantee for the pointer
-        // directly following PrivateShared, so we need to allocate some additional
-        // memory to be able to fit the object into the available memory with suitable
-        // alignment.
-        size += align - sizeof(PrivateShared);
-    }
-    void *data = operator new(size);
-    auto *ps = new (data) QVariant::PrivateShared();
-    ps->offset = int(((quintptr(ps) + sizeof(PrivateShared) + align - 1) & ~(align - 1)) - quintptr(ps));
-    return ps;
-}
-
-inline void QVariant::PrivateShared::free(PrivateShared *p)
-{
-    p->~PrivateShared();
-    operator delete(p);
-}
-
-inline QVariant::Private::Private(const QtPrivate::QMetaTypeInterface *iface) noexcept
-    : is_shared(false), is_null(false), packedType(quintptr(iface) >> 2)
-{
-    Q_ASSERT((quintptr(iface) & 0x3) == 0);
-}
-
-template <typename T> inline
-QVariant::Private::Private(std::piecewise_construct_t, const T &t)
-    : is_shared(!CanUseInternalSpace<T>), is_null(std::is_same_v<T, std::nullptr_t>)
-{
-    // confirm noexceptness
-    static constexpr bool isNothrowQVariantConstructible = noexcept(QVariant(t));
-    static constexpr bool isNothrowCopyConstructible = std::is_nothrow_copy_constructible_v<T>;
-    static constexpr bool isNothrowCopyAssignable = std::is_nothrow_copy_assignable_v<T>;
-
-    const QtPrivate::QMetaTypeInterface *iface = QtPrivate::qMetaTypeInterfaceForType<T>();
-    Q_ASSERT((quintptr(iface) & 0x3) == 0);
-    packedType = quintptr(iface) >> 2;
-
-    if constexpr (CanUseInternalSpace<T>) {
-        static_assert(isNothrowQVariantConstructible == isNothrowCopyConstructible);
-        static_assert(isNothrowQVariantConstructible == isNothrowCopyAssignable);
-        new (data.data) T(t);
-    } else {
-        static_assert(!isNothrowQVariantConstructible); // we allocate memory, even if T doesn't
-        data.shared = customConstructShared(sizeof(T), alignof(T), [=](void *where) {
-            new (where) T(t);
-        });
-    }
-}
 
 /*!
     \class QVariant
