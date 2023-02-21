@@ -1,8 +1,11 @@
+// Copyright (C) 2023 The Qt Company Ltd.
 // Copyright (C) 2013 Ruslan Nigmatullin <euroelessar@yandex.ru>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qmessageauthenticationcode.h"
 #include "qvarlengtharray.h"
+#include "qmutex.h"
+#include "private/qlocking_p.h"
 
 #include "qtcore-config_p.h"
 
@@ -70,6 +73,7 @@ public:
 
     QByteArray key;
     QByteArray result;
+    QBasicMutex finalizeMutex;
     QCryptographicHash messageHash;
     QCryptographicHash::Algorithm method;
     bool messageHashInited;
@@ -77,7 +81,10 @@ public:
     void initMessageHash();
     void finalize();
 
+    // when not called from the static hash() function, this function needs to be
+    // called with finalizeMutex held:
     void finalizeUnchecked();
+    // END functions that need to be called with finalizeMutex held
 };
 
 void QMessageAuthenticationCodePrivate::initMessageHash()
@@ -217,6 +224,7 @@ QByteArray QMessageAuthenticationCode::result() const
 
 void QMessageAuthenticationCodePrivate::finalize()
 {
+    const auto lock = qt_scoped_lock(finalizeMutex);
     if (!result.isEmpty())
         return;
     initMessageHash();
