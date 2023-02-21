@@ -16,20 +16,15 @@ class ChatMainWindow: public QMainWindow, Ui::ChatMainWindow
 public:
     ChatMainWindow();
 
-    void rebuildHistory();
+private:
+    void displayMessage(const QString &message);
 
 signals:
     void message(const QString &nickname, const QString &text);
     void action(const QString &nickname, const QString &text);
 
 private slots:
-    void messageSlot(const QString &nickname, const QString &text);
-    void actionSlot(const QString &nickname, const QString &text);
-    void textChangedSlot(const QString &newText);
-    void sendClickedSlot();
     bool changeNickname(bool initial = false);
-    void aboutQt();
-    void exiting();
 };
 
 #endif // CHAT_H
