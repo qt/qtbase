@@ -58,19 +58,6 @@ timespec QTimerInfoList::updateCurrentTime()
 
 #if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC) && !defined(Q_OS_INTEGRITY)) || defined(QT_BOOTSTRAPPED)
 
-timespec qAbsTimespec(const timespec &t)
-{
-    timespec tmp = t;
-    if (tmp.tv_sec < 0) {
-        tmp.tv_sec = -tmp.tv_sec - 1;
-        tmp.tv_nsec -= 1000000000;
-    }
-    if (tmp.tv_sec == 0 && tmp.tv_nsec < 0) {
-        tmp.tv_nsec = -tmp.tv_nsec;
-    }
-    return normalizedTimespec(tmp);
-}
-
 /*
   Returns \c true if the real time clock has changed by more than 10%
   relative to the processor time since the last time this function was
@@ -147,19 +134,6 @@ void QTimerInfoList::timerInsert(QTimerInfo *ti)
             break;
     }
     insert(index+1, ti);
-}
-
-inline timespec &operator+=(timespec &t1, int ms)
-{
-    t1.tv_sec += ms / 1000;
-    t1.tv_nsec += ms % 1000 * 1000 * 1000;
-    return normalizedTimespec(t1);
-}
-
-inline timespec operator+(const timespec &t1, int ms)
-{
-    timespec t2 = t1;
-    return t2 += ms;
 }
 
 static constexpr timespec roundToMillisecond(timespec val)

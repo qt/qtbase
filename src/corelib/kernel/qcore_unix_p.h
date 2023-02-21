@@ -20,6 +20,7 @@
 #include <QtCore/private/qglobal_p.h>
 #include "qatomic.h"
 #include "qbytearray.h"
+#include <QtCore/private/qtools_p.h>
 
 #ifndef Q_OS_UNIX
 # error "qcore_unix_p.h included on a non-Unix system"
@@ -68,16 +69,18 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_TYPEINFO(pollfd, Q_PRIMITIVE_TYPE);
 
+static constexpr auto OneSecAsNsecs = std::chrono::nanoseconds(std::chrono::seconds{ 1 }).count();
+
 // Internal operator functions for timespecs
 constexpr inline timespec &normalizedTimespec(timespec &t)
 {
-    while (t.tv_nsec >= 1000000000) {
+    while (t.tv_nsec >= OneSecAsNsecs) {
         ++t.tv_sec;
-        t.tv_nsec -= 1000000000;
+        t.tv_nsec -= OneSecAsNsecs;
     }
     while (t.tv_nsec < 0) {
         --t.tv_sec;
-        t.tv_nsec += 1000000000;
+        t.tv_nsec += OneSecAsNsecs;
     }
     return t;
 }
@@ -104,7 +107,7 @@ constexpr inline timespec operator-(const timespec &t1, const timespec &t2)
 {
     timespec tmp = {};
     tmp.tv_sec = t1.tv_sec - (t2.tv_sec - 1);
-    tmp.tv_nsec = t1.tv_nsec - (t2.tv_nsec + 1000000000);
+    tmp.tv_nsec = t1.tv_nsec - (t2.tv_nsec + OneSecAsNsecs);
     return normalizedTimespec(tmp);
 }
 constexpr inline timespec operator*(const timespec &t1, int mul)
@@ -122,6 +125,42 @@ inline timeval timespecToTimeval(const timespec &ts)
     return tv;
 }
 
+inline timespec &operator+=(timespec &t1, std::chrono::milliseconds msecs)
+{
+    t1 += QtMiscUtils::durationToTimespec(msecs);
+    return t1;
+}
+
+inline timespec &operator+=(timespec &t1, int ms)
+{
+    t1 += std::chrono::milliseconds{ms};
+    return t1;
+}
+
+inline timespec operator+(const timespec &t1, std::chrono::milliseconds msecs)
+{
+    timespec tmp = t1;
+    tmp += msecs;
+    return tmp;
+}
+
+inline timespec operator+(const timespec &t1, int ms)
+{
+    return t1 + std::chrono::milliseconds{ms};
+}
+
+inline timespec qAbsTimespec(const timespec &t)
+{
+    timespec tmp = t;
+    if (tmp.tv_sec < 0) {
+        tmp.tv_sec = -tmp.tv_sec - 1;
+        tmp.tv_nsec -= OneSecAsNsecs;
+    }
+    if (tmp.tv_sec == 0 && tmp.tv_nsec < 0) {
+        tmp.tv_nsec = -tmp.tv_nsec;
+    }
+    return normalizedTimespec(tmp);
+}
 
 inline void qt_ignore_sigpipe()
 {
