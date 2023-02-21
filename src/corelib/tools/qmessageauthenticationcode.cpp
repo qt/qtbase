@@ -257,10 +257,12 @@ void QMessageAuthenticationCodePrivate::finalizeUnchecked()
 QByteArray QMessageAuthenticationCode::hash(const QByteArray &message, const QByteArray &key,
                                             QCryptographicHash::Algorithm method)
 {
-    QMessageAuthenticationCode mac(method);
-    mac.setKey(key);
-    mac.addData(message);
-    return mac.result();
+    QMessageAuthenticationCodePrivate mac(method);
+    mac.key = key;
+    mac.initMessageHash();
+    mac.messageHash.addData(message);
+    mac.finalizeUnchecked();
+    return mac.result;
 }
 
 QT_END_NAMESPACE
