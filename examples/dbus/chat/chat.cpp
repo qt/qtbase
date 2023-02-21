@@ -12,72 +12,48 @@
 ChatMainWindow::ChatMainWindow()
 {
     setupUi(this);
-    sendButton->setEnabled(false);
 
-    connect(messageLineEdit, &QLineEdit::textChanged,
-            this, &ChatMainWindow::textChangedSlot);
-    connect(sendButton, &QPushButton::clicked,
-            this, &ChatMainWindow::sendClickedSlot);
+    connect(messageLineEdit, &QLineEdit::textChanged, this,
+            [this](const QString &newText) { sendButton->setEnabled(!newText.isEmpty()); });
+    connect(sendButton, &QPushButton::clicked, this, [this]() {
+        emit message(m_nickname, messageLineEdit->text());
+        messageLineEdit->clear();
+    });
     connect(actionChangeNickname, &QAction::triggered,
             this, &ChatMainWindow::changeNickname);
-    connect(actionAboutQt, &QAction::triggered,
-            this, &ChatMainWindow::aboutQt);
-    connect(qApp, &QApplication::lastWindowClosed,
-            this, &ChatMainWindow::exiting);
+    connect(actionAboutQt, &QAction::triggered, this, [this]() { QMessageBox::aboutQt(this); });
+    connect(qApp, &QApplication::lastWindowClosed, this,
+            [this]() { emit action(m_nickname, tr("leaves the chat")); });
 
     // add our D-Bus interface and connect to D-Bus
     new ChatAdaptor(this);
-    QDBusConnection::sessionBus().registerObject("/", this);
 
-    org::example::chat *iface;
-    iface = new org::example::chat(QString(), QString(), QDBusConnection::sessionBus(), this);
-    QDBusConnection::sessionBus().connect(QString(), QString(), "org.example.chat", "message", this, SLOT(messageSlot(QString,QString)));
-    connect(iface, &org::example::chat::action,
-            this, &ChatMainWindow::actionSlot);
+    auto connection = QDBusConnection::sessionBus();
+    connection.registerObject("/", this);
+
+    using org::example::chat;
+
+    auto *iface = new chat({}, {}, connection, this);
+    connect(iface, &chat::message, this, [this](const QString &nickname, const QString &text) {
+        displayMessage(tr("<%1> %2").arg(nickname, text));
+    });
+    connect(iface, &chat::action, this, [this](const QString &nickname, const QString &text) {
+        displayMessage(tr("* %1 %2").arg(nickname, text));
+    });
 
     if (!changeNickname(true))
         QMetaObject::invokeMethod(qApp, &QApplication::quit, Qt::QueuedConnection);
 }
 
-void ChatMainWindow::rebuildHistory()
+void ChatMainWindow::displayMessage(const QString &message)
 {
-    QString history = m_messages.join( QLatin1String("\n" ) );
+    m_messages.append(message);
+
+    if (m_messages.count() > 100)
+        m_messages.removeFirst();
+
+    auto history = m_messages.join(QLatin1String("\n"));
     chatHistory->setPlainText(history);
-}
-
-void ChatMainWindow::messageSlot(const QString &nickname, const QString &text)
-{
-    QString msg( QLatin1String("<%1> %2") );
-    msg = msg.arg(nickname, text);
-    m_messages.append(msg);
-
-    if (m_messages.count() > 100)
-        m_messages.removeFirst();
-    rebuildHistory();
-}
-
-void ChatMainWindow::actionSlot(const QString &nickname, const QString &text)
-{
-    QString msg( QLatin1String("* %1 %2") );
-    msg = msg.arg(nickname, text);
-    m_messages.append(msg);
-
-    if (m_messages.count() > 100)
-        m_messages.removeFirst();
-    rebuildHistory();
-}
-
-void ChatMainWindow::textChangedSlot(const QString &newText)
-{
-    sendButton->setEnabled(!newText.isEmpty());
-}
-
-void ChatMainWindow::sendClickedSlot()
-{
-    QDBusMessage msg = QDBusMessage::createSignal("/", "org.example.chat", "message");
-    msg << m_nickname << messageLineEdit->text();
-    QDBusConnection::sessionBus().send(msg);
-    messageLineEdit->setText(QString());
 }
 
 bool ChatMainWindow::changeNickname(bool initial)
@@ -97,16 +73,6 @@ bool ChatMainWindow::changeNickname(bool initial)
     }
 
     return false;
-}
-
-void ChatMainWindow::aboutQt()
-{
-    QMessageBox::aboutQt(this);
-}
-
-void ChatMainWindow::exiting()
-{
-    emit action(m_nickname, QLatin1String("leaves the chat"));
 }
 
 int main(int argc, char **argv)
