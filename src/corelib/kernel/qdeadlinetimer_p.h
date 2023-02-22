@@ -20,7 +20,7 @@
 QT_BEGIN_NAMESPACE
 
 enum {
-#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
+#if defined(Q_OS_UNIX)
     // t1 contains seconds and t2 contains nanoseconds
     QDeadlineTimerNanosecondsInT2 = 1
 #else

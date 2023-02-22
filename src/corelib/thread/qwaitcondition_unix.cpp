@@ -60,9 +60,8 @@ void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where)
 void qt_abstime_for_timeout(timespec *ts, QDeadlineTimer deadline)
 {
 #ifdef Q_OS_DARWIN
-    // on Mac, qt_gettime() (on qelapsedtimer_mac.cpp) returns ticks related to the Mach absolute time
-    // that doesn't work with pthread
-    // Mac also doesn't have clock_gettime
+    // on Mac, we don't have pthread_condattr_setclock(), so we need to
+    // calculate the CLOCK_REALTIME deadline
     struct timeval tv;
     qint64 nsec = deadline.remainingTimeNSecs();
     gettimeofday(&tv, 0);

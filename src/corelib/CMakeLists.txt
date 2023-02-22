@@ -573,7 +573,6 @@ qt_internal_extend_target(Core CONDITION APPLE
         kernel/qcore_foundation.mm
         kernel/qcore_mac.mm kernel/qcore_mac_p.h
         kernel/qcoreapplication_mac.cpp
-        kernel/qelapsedtimer_mac.cpp
         kernel/qeventdispatcher_cf.mm kernel/qeventdispatcher_cf_p.h
     LIBRARIES
         ${FWCoreFoundation}
@@ -973,7 +972,7 @@ qt_internal_extend_target(Core CONDITION APPLE AND NOT MACOS
         ${FWMobileCoreServices}
 )
 
-qt_internal_extend_target(Core CONDITION UNIX AND NOT APPLE
+qt_internal_extend_target(Core CONDITION UNIX
     SOURCES
         kernel/qelapsedtimer_unix.cpp
 )
