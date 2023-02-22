@@ -60,6 +60,7 @@ public:
         Blake2s_224,
         Blake2s_256,
 #endif
+        NumAlgorithms
     };
     Q_ENUM(Algorithm)
 

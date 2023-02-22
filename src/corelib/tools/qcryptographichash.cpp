@@ -142,15 +142,11 @@ public:
     { return QByteArrayView{m_data.data(), size()}; }
 };
 
-static constexpr qsizetype MaxHashLength = 64;
-
 static constexpr int hashLengthInternal(QCryptographicHash::Algorithm method) noexcept
 {
     switch (method) {
 #define CASE(Enum, Size) \
     case QCryptographicHash:: Enum : \
-        /* if this triggers, then increase MaxHashLength accordingly */ \
-        static_assert(MaxHashLength >= qsizetype(Size) ); \
         return Size \
     /*end*/
     CASE(Sha1, 20);
@@ -164,33 +160,40 @@ static constexpr int hashLengthInternal(QCryptographicHash::Algorithm method) no
     CASE(Blake2s_128, 128 / 8);
     case QCryptographicHash::Blake2b_160:
     case QCryptographicHash::Blake2s_160:
-        static_assert(160 / 8 <= MaxHashLength);
         return 160 / 8;
     case QCryptographicHash::RealSha3_224:
     case QCryptographicHash::Keccak_224:
     case QCryptographicHash::Blake2s_224:
-        static_assert(224 / 8 <= MaxHashLength);
         return 224 / 8;
     case QCryptographicHash::RealSha3_256:
     case QCryptographicHash::Keccak_256:
     case QCryptographicHash::Blake2b_256:
     case QCryptographicHash::Blake2s_256:
-        static_assert(256 / 8 <= MaxHashLength);
         return 256 / 8;
     case QCryptographicHash::RealSha3_384:
     case QCryptographicHash::Keccak_384:
     case QCryptographicHash::Blake2b_384:
-        static_assert(384 / 8 <= MaxHashLength);
         return 384 / 8;
     case QCryptographicHash::RealSha3_512:
     case QCryptographicHash::Keccak_512:
     case QCryptographicHash::Blake2b_512:
-        static_assert(512 / 8 <= MaxHashLength);
         return 512 / 8;
 #endif
 #undef CASE
+    case QCryptographicHash::NumAlgorithms: ;
+        // fall through
+        // Q_UNREACHABLE() would be BiC here, as hashLength(~~invalid~~) worked in 6.4
     }
     return 0;
+}
+
+static constexpr int maxHashLength()
+{
+    int result = 0;
+    using A = QCryptographicHash::Algorithm;
+    for (int i = 0; i < A::NumAlgorithms; ++i)
+        result = std::max(result, hashLengthInternal(A(i)));
+    return result;
 }
 
 #ifdef USING_OPENSSL30
@@ -304,7 +307,7 @@ public:
 #endif
     // protects result in finalize()
     QBasicMutex finalizeMutex;
-    QSmallByteArray<MaxHashLength> result;
+    QSmallByteArray<maxHashLength()> result;
 
     const QCryptographicHash::Algorithm method;
 };
@@ -405,6 +408,7 @@ void QCryptographicHashPrivate::sha3Finish(int bitCount, Sha3Variant sha3Variant
   \omitvalue RealSha3_256
   \omitvalue RealSha3_384
   \omitvalue RealSha3_512
+  \omitvalue NumAlgorithms
 */
 
 /*!
@@ -590,6 +594,8 @@ void QCryptographicHashPrivate::reset() noexcept
         blake2s_init(&blake2sContext, hashLengthInternal(method));
         break;
 #endif
+    case QCryptographicHash::NumAlgorithms:
+        Q_UNREACHABLE();
     }
 #endif // !QT_CONFIG(opensslv30)
 }
@@ -699,6 +705,8 @@ void QCryptographicHashPrivate::addData(QByteArrayView bytes) noexcept
             blake2s_update(&blake2sContext, reinterpret_cast<const uint8_t *>(data), length);
             break;
 #endif
+        case QCryptographicHash::NumAlgorithms:
+            Q_UNREACHABLE();
         }
 #endif // !QT_CONFIG(opensslv30)
     }
@@ -890,6 +898,8 @@ void QCryptographicHashPrivate::finalizeUnchecked() noexcept
         break;
     }
 #endif
+    case QCryptographicHash::NumAlgorithms:
+        Q_UNREACHABLE();
     }
 #endif // !QT_CONFIG(opensslv30)
 }
@@ -999,6 +1009,12 @@ static int qt_hash_block_size(QCryptographicHash::Algorithm method)
     case QCryptographicHash::Blake2s_256:
         return BLAKE2S_BLOCKBYTES;
 #endif // QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+    case QCryptographicHash::NumAlgorithms:
+#if !defined(Q_GCC_ONLY) || Q_CC_GCC >= 900
+        // GCC 8 has trouble with Q_UNREACHABLE() in constexpr functions
+        Q_UNREACHABLE();
+#endif
+        break;
     }
     return 0;
 }
