@@ -1151,11 +1151,12 @@ void QMessageAuthenticationCodePrivate::finalizeUnchecked()
     for (int i = 0; i < blockSize; ++i)
         oKeyPad[i] = keyData[i] ^ 0x5c;
 
-    QCryptographicHash hash(method);
+    QCryptographicHashPrivate hash(method);
     hash.addData(oKeyPad);
     hash.addData(hashedMessage);
+    hash.finalizeUnchecked();
 
-    result = hash.result();
+    result = hash.resultView().toByteArray();
 }
 
 /*!
