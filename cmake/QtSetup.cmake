@@ -116,6 +116,10 @@ endif()
 ## Position independent code:
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+# Does the linker support position independent code?
+include(CheckPIESupported)
+check_pie_supported()
+
 # Do not relink dependent libraries when no header has changed:
 set(CMAKE_LINK_DEPENDS_NO_SHARED ON)
 
