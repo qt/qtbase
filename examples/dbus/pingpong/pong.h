@@ -10,7 +10,7 @@ class Pong: public QObject
 {
     Q_OBJECT
 public slots:
-    Q_SCRIPTABLE QString ping(const QString &arg);
+    QString ping(const QString &arg);
 };
 
 #endif
