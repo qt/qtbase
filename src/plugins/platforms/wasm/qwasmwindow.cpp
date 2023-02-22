@@ -188,8 +188,8 @@ void QWasmWindow::initialize()
     QRect rect = windowGeometry();
 
     constexpr int minSizeBoundForDialogsAndRegularWindows = 100;
-    const int windowType = window()->flags() & Qt::WindowType_Mask;
-    const int systemMinSizeLowerBound = windowType == Qt::Window || windowType == Qt::Dialog
+    const auto windowFlags = window()->flags();
+    const int systemMinSizeLowerBound = windowFlags.testAnyFlags(Qt::Window | Qt::Dialog)
             ? minSizeBoundForDialogsAndRegularWindows
             : 0;
 
