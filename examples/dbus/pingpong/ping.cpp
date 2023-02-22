@@ -8,32 +8,33 @@
 #include <QDBusInterface>
 #include <QDBusReply>
 
-#include <stdio.h>
+#include <iostream>
 
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
 
-    if (!QDBusConnection::sessionBus().isConnected()) {
-        fprintf(stderr, "Cannot connect to the D-Bus session bus.\n"
-                "To start it, run:\n"
-                "\teval `dbus-launch --auto-syntax`\n");
+    auto connection = QDBusConnection::sessionBus();
+
+    if (!connection.isConnected()) {
+        qWarning("Cannot connect to the D-Bus session bus.\n"
+                 "To start it, run:\n"
+                 "\teval `dbus-launch --auto-syntax`\n");
         return 1;
     }
 
-    QDBusInterface iface(SERVICE_NAME, "/", "", QDBusConnection::sessionBus());
+    QDBusInterface iface(SERVICE_NAME, "/");
     if (iface.isValid()) {
         QDBusReply<QString> reply = iface.call("ping", argc > 1 ? argv[1] : "");
         if (reply.isValid()) {
-            printf("Reply was: %s\n", qPrintable(reply.value()));
+            std::cout << "Reply was: " << qPrintable(reply.value()) << std::endl;
             return 0;
         }
 
-        fprintf(stderr, "Call failed: %s\n", qPrintable(reply.error().message()));
+        qWarning("Call failed: %s\n", qPrintable(reply.error().message()));
         return 1;
     }
 
-    fprintf(stderr, "%s\n",
-            qPrintable(QDBusConnection::sessionBus().lastError().message()));
+    qWarning("%s\n", qPrintable(connection.lastError().message()));
     return 1;
 }
