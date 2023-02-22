@@ -1009,7 +1009,7 @@ public:
     QByteArray result;
     QBasicMutex finalizeMutex;
     QCryptographicHash messageHash;
-    QCryptographicHash::Algorithm method;
+    const QCryptographicHash::Algorithm method;
     bool messageHashInited;
 
     void initMessageHash();
