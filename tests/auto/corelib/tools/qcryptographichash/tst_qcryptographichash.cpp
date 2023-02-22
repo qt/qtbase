@@ -401,8 +401,15 @@ void tst_QCryptographicHash::hashLength()
 {
     QFETCH(const QCryptographicHash::Algorithm, algorithm);
 
-    QByteArray output = QCryptographicHash::hash("test", algorithm);
-    QCOMPARE(QCryptographicHash::hashLength(algorithm), output.size());
+    qsizetype expectedSize;
+    if (algorithm == QCryptographicHash::NumAlgorithms) {
+        // It's UB to call ::hash() with NumAlgorithms, but hashLength() is
+        // fine and returns 0 for invalid values:
+        expectedSize = 0;
+    } else {
+        expectedSize = QCryptographicHash::hash("test", algorithm).size();
+    }
+    QCOMPARE(QCryptographicHash::hashLength(algorithm), expectedSize);
 }
 
 void tst_QCryptographicHash::move()
