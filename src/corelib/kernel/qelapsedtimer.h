@@ -6,8 +6,9 @@
 
 #include <QtCore/qglobal.h>
 
-QT_BEGIN_NAMESPACE
+#include <chrono>
 
+QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QElapsedTimer
 {
@@ -21,6 +22,10 @@ public:
         PerformanceCounter
     };
 
+    // similar to std::chrono::*_clock
+    using Duration = std::chrono::nanoseconds;
+    using TimePoint = std::chrono::time_point<std::chrono::steady_clock, Duration>;
+
     constexpr QElapsedTimer() = default;
 
     static ClockType clockType() noexcept;
@@ -31,11 +36,13 @@ public:
     void invalidate() noexcept;
     bool isValid() const noexcept;
 
+    Duration durationElapsed() const noexcept;
     qint64 nsecsElapsed() const noexcept;
     qint64 elapsed() const noexcept;
     bool hasExpired(qint64 timeout) const noexcept;
 
     qint64 msecsSinceReference() const noexcept;
+    Duration durationTo(const QElapsedTimer &other) const noexcept;
     qint64 msecsTo(const QElapsedTimer &other) const noexcept;
     qint64 secsTo(const QElapsedTimer &other) const noexcept;
 

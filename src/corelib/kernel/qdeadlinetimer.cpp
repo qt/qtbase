@@ -5,6 +5,10 @@
 #include "qdeadlinetimer_p.h"
 #include "private/qnumeric_p.h"
 
+#ifdef Q_OS_UNIX
+#  include "qcore_unix_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QT_IMPL_METATYPE_EXTERN(QDeadlineTimer)
@@ -836,6 +840,23 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) noexcep
 
     The QDeadlineTimer object will be constructed with the specified \a timerType.
 */
+QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) noexcept
+{
+    QDeadlineTimer result;
+#ifdef Q_OS_UNIX
+    static_assert(QDeadlineTimerNanosecondsInT2);
+    timespec ts = qt_gettime();
+    result.t1 = ts.tv_sec;
+    result.t2 = ts.tv_nsec;
+#else
+    // ensure we get nanoseconds; this will work so long as steady_clock's
+    // time_point isn't of finer resolution (picoseconds)
+    std::chrono::nanoseconds ns = std::chrono::steady_clock::now().time_since_epoch();
+    result.t1 = ns.count();
+#endif
+    result.type = timerType;
+    return result;
+}
 
 /*!
     \fn bool QDeadlineTimer::operator==(QDeadlineTimer d1, QDeadlineTimer d2)

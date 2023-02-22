@@ -65,6 +65,34 @@ int qt_open64(const char *pathname, int flags, mode_t mode)
 
 #ifndef QT_BOOTSTRAPPED
 
+static inline void do_gettime(qint64 *sec, qint64 *frac)
+{
+    timespec ts;
+    clockid_t clk = CLOCK_REALTIME;
+#if defined(CLOCK_MONOTONIC_RAW)
+    clk = CLOCK_MONOTONIC_RAW;
+#elif defined(CLOCK_MONOTONIC)
+    clk = CLOCK_MONOTONIC;
+#endif
+
+    clock_gettime(clk, &ts);
+    *sec = ts.tv_sec;
+    *frac = ts.tv_nsec;
+}
+
+// also used in qeventdispatcher_unix.cpp
+struct timespec qt_gettime() noexcept
+{
+    qint64 sec, frac;
+    do_gettime(&sec, &frac);
+
+    timespec tv;
+    tv.tv_sec = sec;
+    tv.tv_nsec = frac;
+
+    return tv;
+}
+
 #if QT_CONFIG(poll_pollts)
 #  define ppoll pollts
 #endif

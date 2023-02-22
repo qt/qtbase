@@ -28,7 +28,6 @@ class QEventDispatcherWin32Private;
 
 // forward declaration
 LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp);
-quint64 qt_msectime();
 
 class Q_CORE_EXPORT QEventDispatcherWin32 : public QAbstractEventDispatcher
 {

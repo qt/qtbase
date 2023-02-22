@@ -512,7 +512,6 @@ qt_internal_extend_target(Core CONDITION WIN32
         io/qwindowspipewriter.cpp io/qwindowspipewriter_p.h
         io/qntdll_p.h
         kernel/qcoreapplication_win.cpp
-        kernel/qelapsedtimer_win.cpp
         kernel/qeventdispatcher_win.cpp kernel/qeventdispatcher_win_p.h
         kernel/qfunctions_win.cpp kernel/qfunctions_win_p.h kernel/qfunctions_winrt_p.h
         ipc/qsharedmemory_win.cpp
@@ -970,11 +969,6 @@ qt_internal_extend_target(Core CONDITION APPLE AND QT_FEATURE_processenvironment
 qt_internal_extend_target(Core CONDITION APPLE AND NOT MACOS
     PUBLIC_LIBRARIES
         ${FWMobileCoreServices}
-)
-
-qt_internal_extend_target(Core CONDITION UNIX
-    SOURCES
-        kernel/qelapsedtimer_unix.cpp
 )
 
 qt_internal_extend_target(Core CONDITION ANDROID

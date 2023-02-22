@@ -1,8 +1,8 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#include <QtCore/QDateTime>
 #include <QtCore/QString>
-#include <QtCore/QTime>
 #include <QtCore/QElapsedTimer>
 #include <QTest>
 #include <QTimer>
@@ -31,11 +31,25 @@ private Q_SLOTS:
 
 void tst_QElapsedTimer::statics()
 {
-    qDebug() << "Clock type is" << QElapsedTimer::clockType();
-    qDebug() << "Said clock is" << (QElapsedTimer::isMonotonic() ? "monotonic" : "not monotonic");
+    // these have been required since Qt 6.6
+    QCOMPARE(QElapsedTimer::clockType(), QElapsedTimer::MonotonicClock);
+    QVERIFY(QElapsedTimer::isMonotonic());
+
     QElapsedTimer t;
     t.start();
-    qDebug() << "Current time is" << t.msecsSinceReference();
+    qint64 system_now = QDateTime::currentMSecsSinceEpoch();
+
+    auto setprecision = +[](QTextStream &s) -> QTextStream & {
+        s.setRealNumberNotation(QTextStream::FixedNotation);
+        s.setRealNumberPrecision(3);
+        return s;
+    };
+    qDebug() << setprecision
+             << "Current monotonic time is" << (t.msecsSinceReference() / 1000.)
+             << "s and current system time is" << (system_now / 1000.) << 's';
+    if (qAbs(system_now - t.msecsSinceReference()) < 5 * minResolution)
+        qWarning() << "The monotonic clock is awfully close to the system clock"
+                      " (it may not be monotonic at all!)";
 }
 
 void tst_QElapsedTimer::validity()

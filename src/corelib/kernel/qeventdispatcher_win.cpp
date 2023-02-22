@@ -56,6 +56,13 @@ class QEventDispatcherWin32Private;
 
 LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp);
 
+static quint64 qt_msectime()
+{
+    using namespace std::chrono;
+    auto t = duration_cast<milliseconds>(steady_clock::now().time_since_epoch());
+    return t.count();
+}
+
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
     : interrupt(false), internalHwnd(0),
       sendPostedEventsTimerId(0), wakeUps(0),

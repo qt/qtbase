@@ -165,9 +165,219 @@ QT_BEGIN_NAMESPACE
     function will return false.
 */
 
+/*!
+    \fn QElapsedTimer::clockType() noexcept
+
+    Returns the clock type that this QElapsedTimer implementation uses.
+
+    Since Qt 6.6, QElapsedTimer uses \c{std::chrono::steady_clock}, so the
+    clock type is always \l MonotonicClock.
+
+    \sa isMonotonic()
+*/
+
+QElapsedTimer::ClockType QElapsedTimer::clockType() noexcept
+{
+    // we use std::chrono::steady_clock
+    return MonotonicClock;
+}
+
+/*!
+    \fn QElapsedTimer::isMonotonic() noexcept
+
+    Returns \c true if this is a monotonic clock, false otherwise. See the
+    information on the different clock types to understand which ones are
+    monotonic.
+
+    Since Qt 6.6, QElapsedTimer uses \c{std::chrono::steady_clock}, so this
+    function now always returns true.
+
+    \sa clockType(), QElapsedTimer::ClockType
+*/
+bool QElapsedTimer::isMonotonic() noexcept
+{
+    // We trust std::chrono::steady_clock to be steady (monotonic); if the
+    // Standard Library is lying to us, users must complain to their vendor.
+    return true;
+}
+
+/*!
+    Starts this timer. Once started, a timer value can be checked with elapsed() or msecsSinceReference().
+
+    Normally, a timer is started just before a lengthy operation, such as:
+    \snippet qelapsedtimer/main.cpp 0
+
+    Also, starting a timer makes it valid again.
+
+    \sa restart(), invalidate(), elapsed()
+*/
+void QElapsedTimer::start() noexcept
+{
+    static_assert(sizeof(t1) == sizeof(Duration::rep));
+
+    // This assignment will work so long as TimePoint uses the same time
+    // duration or one of finer granularity than steady_clock::time_point. That
+    // means it will work until the first steady_clock using picoseconds.
+    TimePoint now = std::chrono::steady_clock::now();
+    t1 = now.time_since_epoch().count();
+    QT6_ONLY(t2 = 0);
+}
+
+/*!
+    Restarts the timer and returns the number of milliseconds elapsed since
+    the previous start.
+    This function is equivalent to obtaining the elapsed time with elapsed()
+    and then starting the timer again with start(), but it does so in one
+    single operation, avoiding the need to obtain the clock value twice.
+
+    Calling this function on a QElapsedTimer that is invalid
+    results in undefined behavior.
+
+    The following example illustrates how to use this function to calibrate a
+    parameter to a slow operation (for example, an iteration count) so that
+    this operation takes at least 250 milliseconds:
+
+    \snippet qelapsedtimer/main.cpp 3
+
+    \sa start(), invalidate(), elapsed(), isValid()
+*/
+qint64 QElapsedTimer::restart() noexcept
+{
+    QElapsedTimer old = *this;
+    start();
+    return old.msecsTo(*this);
+}
+
+/*!
+    \since 6.6
+
+    Returns a \c{std::chrono::nanoseconds} with the time since this QElapsedTimer was last
+    started.
+
+    Calling this function on a QElapsedTimer that is invalid
+    results in undefined behavior.
+
+    On platforms that do not provide nanosecond resolution, the value returned
+    will be the best estimate available.
+
+    \sa start(), restart(), hasExpired(), invalidate()
+*/
+auto QElapsedTimer::durationElapsed() const noexcept -> Duration
+{
+    TimePoint then{Duration(t1)};
+    return std::chrono::steady_clock::now() - then;
+}
+
+/*!
+    \since 4.8
+
+    Returns the number of nanoseconds since this QElapsedTimer was last
+    started.
+
+    Calling this function on a QElapsedTimer that is invalid
+    results in undefined behavior.
+
+    On platforms that do not provide nanosecond resolution, the value returned
+    will be the best estimate available.
+
+    \sa start(), restart(), hasExpired(), invalidate()
+*/
+qint64 QElapsedTimer::nsecsElapsed() const noexcept
+{
+    return durationElapsed().count();
+}
+
+/*!
+    Returns the number of milliseconds since this QElapsedTimer was last
+    started.
+
+    Calling this function on a QElapsedTimer that is invalid
+    results in undefined behavior.
+
+    \sa start(), restart(), hasExpired(), isValid(), invalidate()
+*/
+qint64 QElapsedTimer::elapsed() const noexcept
+{
+    using namespace std::chrono;
+    return duration_cast<milliseconds>(durationElapsed()).count();
+}
+
+/*!
+    Returns the number of milliseconds between last time this QElapsedTimer
+    object was started and its reference clock's start.
+
+    This number is usually arbitrary for all clocks except the
+    QElapsedTimer::SystemTime clock. For that clock type, this number is the
+    number of milliseconds since January 1st, 1970 at 0:00 UTC (that is, it
+    is the Unix time expressed in milliseconds).
+
+    On Linux, Windows and Apple platforms, this value is usually the time
+    since the system boot, though it usually does not include the time the
+    system has spent in sleep states.
+
+    \sa clockType(), elapsed()
+*/
+qint64 QElapsedTimer::msecsSinceReference() const noexcept
+{
+    using namespace std::chrono;
+    return duration_cast<milliseconds>(Duration(t1)).count();
+}
+
+/*!
+    \since 6.6
+
+    Returns the time difference between this QElapsedTimer and \a other as a
+    \c{std::chrono::nanoseconds}. If \a other was started before this object,
+    the returned value will be negative. If it was started later, the returned
+    value will be positive.
+
+    The return value is undefined if this object or \a other were invalidated.
+
+    \sa secsTo(), elapsed()
+*/
+auto QElapsedTimer::durationTo(const QElapsedTimer &other) const noexcept -> Duration
+{
+    Duration d1(t1);
+    Duration d2(other.t1);
+    return d2 - d1;
+}
+
+/*!
+    Returns the number of milliseconds between this QElapsedTimer and \a
+    other. If \a other was started before this object, the returned value
+    will be negative. If it was started later, the returned value will be
+    positive.
+
+    The return value is undefined if this object or \a other were invalidated.
+
+    \sa secsTo(), elapsed()
+*/
+qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const noexcept
+{
+    using namespace std::chrono;
+    return duration_cast<milliseconds>(durationTo(other)).count();
+}
+
+/*!
+    Returns the number of seconds between this QElapsedTimer and \a other. If
+    \a other was started before this object, the returned value will be
+    negative. If it was started later, the returned value will be positive.
+
+    Calling this function on or with a QElapsedTimer that is invalid
+    results in undefined behavior.
+
+    \sa msecsTo(), elapsed()
+*/
+qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const noexcept
+{
+    using namespace std::chrono;
+    return duration_cast<seconds>(durationTo(other)).count();
+}
+
 static const qint64 invalidData = Q_INT64_C(0x8000000000000000);
 
 /*!
+    \fn QElapsedTimer::invalidate() noexcept
     Marks this QElapsedTimer object as invalid.
 
     An invalid object can be checked with isValid(). Calculations of timer
@@ -205,6 +415,11 @@ bool QElapsedTimer::hasExpired(qint64 timeout) const noexcept
     // if timeout is -1, quint64(timeout) is LLINT_MAX, so this will be
     // considered as never expired
     return quint64(elapsed()) > quint64(timeout);
+}
+
+bool operator<(const QElapsedTimer &lhs, const QElapsedTimer &rhs) noexcept
+{
+    return lhs.t1 < rhs.t1;
 }
 
 QT_END_NAMESPACE
