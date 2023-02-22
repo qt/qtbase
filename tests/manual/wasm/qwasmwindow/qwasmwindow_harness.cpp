@@ -6,6 +6,8 @@
 #include <QtGui/qevent.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qregularexpression.h>
+#include <QtGui/qpainter.h>
+#include <QtGui/qrasterwindow.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qguiapplication.h>
@@ -18,9 +20,16 @@
 #include <sstream>
 #include <vector>
 
-class DeleteOnCloseWindow : public QWindow
+class TestWindow : public QRasterWindow
 {
     Q_OBJECT
+
+public:
+    void setBackgroundColor(int r, int g, int b)
+    {
+        m_backgroundColor = QColor::fromRgb(r, g, b);
+        update();
+    }
 
 private:
     void closeEvent(QCloseEvent *ev) override
@@ -48,16 +57,24 @@ private:
         data.set("key", emscripten::val(event->text().toStdString()));
         emscripten::val::global("window")["testSupport"].call<void>("reportEvent", std::move(data));
     }
+
+    void paintEvent(QPaintEvent *e) final
+    {
+        QPainter painter(this);
+        painter.fillRect(e->rect(), m_backgroundColor);
+    }
+
+    QColor m_backgroundColor = Qt::white;
 };
 
 namespace {
-DeleteOnCloseWindow *findWindowByTitle(const std::string &title)
+TestWindow *findWindowByTitle(const std::string &title)
 {
     auto windows = qGuiApp->allWindows();
     auto window_it = std::find_if(windows.begin(), windows.end(), [&title](QWindow *window) {
         return window->title() == QString::fromLatin1(title);
     });
-    return window_it == windows.end() ? nullptr : static_cast<DeleteOnCloseWindow *>(*window_it);
+    return window_it == windows.end() ? nullptr : static_cast<TestWindow *>(*window_it);
 }
 } // namespace
 
@@ -175,7 +192,7 @@ void createWindow(int x, int y, int w, int h, std::string parentType, std::strin
         return;
     }
 
-    auto *window = new DeleteOnCloseWindow;
+    auto *window = new TestWindow;
 
     window->setFlag(Qt::WindowTitleHint);
     window->setFlag(Qt::WindowMaximizeButtonHint);
@@ -183,6 +200,16 @@ void createWindow(int x, int y, int w, int h, std::string parentType, std::strin
     window->setGeometry(x, y, w, h);
     window->setScreen(parentScreen);
     window->setParent(parentWindow);
+}
+
+void setWindowBackgroundColor(std::string title, int r, int g, int b)
+{
+    auto *window = findWindowByTitle(title);
+    if (!window) {
+        qWarning() << "No such window: " << title;
+        return;
+    }
+    window->setBackgroundColor(r, g, b);
 }
 
 void setWindowVisible(int windowId, bool visible) {
@@ -229,6 +256,7 @@ EMSCRIPTEN_BINDINGS(qwasmwindow)
     emscripten::function("setWindowVisible", &setWindowVisible);
     emscripten::function("setWindowParent", &setWindowParent);
     emscripten::function("closeWindow", &closeWindow);
+    emscripten::function("setWindowBackgroundColor", &setWindowBackgroundColor);
 }
 
 int main(int argc, char **argv)

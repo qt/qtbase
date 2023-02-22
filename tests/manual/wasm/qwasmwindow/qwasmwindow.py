@@ -24,6 +24,7 @@ class WidgetTestCase(unittest.TestCase):
         self._test_sandbox_element = WebDriverWait(self._driver, 30).until(
             presence_of_element_located((By.ID, 'test-sandbox'))
         )
+        self.addTypeEqualityFunc(Color, assert_colors_equal)
         self.addTypeEqualityFunc(Rect, assert_rects_equal)
 
     def test_window_resizing(self):
@@ -401,6 +402,33 @@ class WidgetTestCase(unittest.TestCase):
 
         self.assertFalse(w4 in screen.query_windows())
 
+    def test_window_painting(self):
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                        x=0, y=0, width=800, height=800)
+        bottom = Window(parent=screen, rect=Rect(x=0, y=0, width=400, height=400), title='root')
+        bottom.set_background_color(Color(r=255, g=0, b=0))
+        wait_for_animation_frame(self._driver)
+
+        self.assertEqual(bottom.color_at(0, 0), Color(r=255, g=0, b=0))
+
+        w1 = Window(parent=screen, rect=Rect(x=100, y=100, width=600, height=600), title='w1')
+        w1.set_background_color(Color(r=0, g=255, b=0))
+        wait_for_animation_frame(self._driver)
+
+        self.assertEqual(w1.color_at(0, 0), Color(r=0, g=255, b=0))
+
+        w1_w1 = Window(parent=w1, rect=Rect(x=100, y=100, width=400, height=400), title='w1_w1')
+        w1_w1.set_background_color(Color(r=0, g=0, b=255))
+        wait_for_animation_frame(self._driver)
+
+        self.assertEqual(w1_w1.color_at(0, 0), Color(r=0, g=0, b=255))
+
+        w1_w1_w1 = Window(parent=w1_w1, rect=Rect(x=100, y=100, width=200, height=200), title='w1_w1_w1')
+        w1_w1_w1.set_background_color(Color(r=255, g=255, b=0))
+        wait_for_animation_frame(self._driver)
+
+        self.assertEqual(w1_w1_w1.color_at(0, 0), Color(r=255, g=255, b=0))
+
     def tearDown(self):
         self._driver.quit()
 
@@ -634,6 +662,22 @@ class Window:
             '''
         )
 
+    def color_at(self, x, y):
+        raw = self.driver.execute_script(
+            f'''
+                return arguments[0].querySelector('canvas')
+                    .getContext('2d').getImageData({x}, {y}, 1, 1).data;
+            ''', self.element)
+        return Color(r=raw[0], g=raw[1], b=raw[2])
+
+    def set_background_color(self, color):
+        return self.driver.execute_script(
+            f'''
+                return instance.setWindowBackgroundColor('{self.title}', {color.r}, {color.g}, {color.b});
+            '''
+        )
+
+
 class TouchDragAction:
     def __init__(self, origin, direction):
         self.origin = origin
@@ -745,6 +789,24 @@ def call_instance_function(driver, name):
             instance.{name}();
             return eval(result);''')
 
+def wait_for_animation_frame(driver):
+    driver.execute_script(
+        '''
+            window.requestAnimationFrame(() => {
+                const sync = document.createElement('div');
+                sync.id = 'test-sync';
+                document.body.appendChild(sync);
+            });
+        '''
+    )
+    WebDriverWait(driver, 1).until(
+        presence_of_element_located((By.ID, 'test-sync'))
+    )
+    driver.execute_script(
+        '''
+            document.body.removeChild(document.body.querySelector('#test-sync'));
+        '''
+    )
 
 class Direction:
     def __init__(self):
@@ -791,6 +853,11 @@ class Handle(Enum):
     BOTTOM_RIGHT = auto()
     TOP_WINDOW_BAR = auto()
 
+class Color:
+    def __init__(self, r, g, b):
+        self.r = r
+        self.g = g
+        self.b = b
 
 class Rect:
     def __init__(self, x, y, width, height) -> None:
@@ -806,6 +873,9 @@ class Rect:
     def midpoint(self):
         return self.x + self.width / 2, self.y + self.height / 2,
 
+def assert_colors_equal(color1, color2, msg=None):
+    if color1.r != color2.r or color1.g != color2.g or color1.b != color2.b:
+        raise AssertionError(f'Colors not equal: \n{color1} \nvs \n{color2}')
 
 def assert_rects_equal(geo1, geo2, msg=None):
     if geo1.x != geo2.x or geo1.y != geo2.y or geo1.width != geo2.width or geo1.height != geo2.height:
