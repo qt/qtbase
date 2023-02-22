@@ -983,7 +983,7 @@ class QMessageAuthenticationCodePrivate
 {
 public:
     QMessageAuthenticationCodePrivate(QCryptographicHash::Algorithm m)
-        : messageHash(m), method(m), messageHashInited(false)
+        : messageHash(m), method(m)
     {
     }
 
@@ -992,7 +992,6 @@ public:
     QBasicMutex finalizeMutex;
     QCryptographicHash messageHash;
     const QCryptographicHash::Algorithm method;
-    bool messageHashInited;
 
     void initMessageHash();
     void finalize();
@@ -1005,10 +1004,6 @@ public:
 
 void QMessageAuthenticationCodePrivate::initMessageHash()
 {
-    if (messageHashInited)
-        return;
-    messageHashInited = true;
-
     const int blockSize = qt_hash_block_size(method);
 
     if (key.size() > blockSize) {
@@ -1068,6 +1063,7 @@ QMessageAuthenticationCode::QMessageAuthenticationCode(QCryptographicHash::Algor
     : d(new QMessageAuthenticationCodePrivate(method))
 {
     d->key = key;
+    d->initMessageHash();
 }
 
 /*!
@@ -1085,16 +1081,43 @@ void QMessageAuthenticationCode::reset()
 {
     d->result.clear();
     d->messageHash.reset();
-    d->messageHashInited = false;
+    d->initMessageHash();
 }
 
 /*!
     Sets secret \a key. Calling this method automatically resets the object state.
+
+    For optimal performance, call this method only to \e change the active key,
+    not to set an \e initial key, as in
+
+    \code
+    QMessageAuthenticationCode mac(method);
+    mac.setKey(key); // does extra work
+    use(mac);
+    \endcode
+
+    Perfer to pass initial keys as the constructor argument:
+
+    \code
+    QMessageAuthenticationCode mac(method, key); // OK, optimal
+    use(mac);
+    \endcode
+
+    You can use std::optional to delay construction of a
+    QMessageAuthenticationCode until you know the key:
+
+    \code
+    std::optional<QMessageAuthenticationCode> mac;
+    ~~~
+    key = ~~~;
+    mac.emplace(method, key);
+    use(*mac);
+    \endcode
 */
 void QMessageAuthenticationCode::setKey(const QByteArray &key)
 {
-    reset();
     d->key = key;
+    reset();
 }
 
 /*!
@@ -1102,7 +1125,6 @@ void QMessageAuthenticationCode::setKey(const QByteArray &key)
 */
 void QMessageAuthenticationCode::addData(const char *data, qsizetype length)
 {
-    d->initMessageHash();
     d->messageHash.addData({data, length});
 }
 
@@ -1111,7 +1133,6 @@ void QMessageAuthenticationCode::addData(const char *data, qsizetype length)
 */
 void QMessageAuthenticationCode::addData(const QByteArray &data)
 {
-    d->initMessageHash();
     d->messageHash.addData(data);
 }
 
@@ -1123,7 +1144,6 @@ void QMessageAuthenticationCode::addData(const QByteArray &data)
  */
 bool QMessageAuthenticationCode::addData(QIODevice *device)
 {
-    d->initMessageHash();
     return d->messageHash.addData(device);
 }
 
@@ -1143,7 +1163,6 @@ void QMessageAuthenticationCodePrivate::finalize()
     const auto lock = qt_scoped_lock(finalizeMutex);
     if (!result.isEmpty())
         return;
-    initMessageHash();
     finalizeUnchecked();
 }
 
