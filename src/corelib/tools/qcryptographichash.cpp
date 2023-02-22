@@ -117,6 +117,28 @@ static inline int SHA384_512AddLength(SHA512Context *context, unsigned int lengt
 
 QT_BEGIN_NAMESPACE
 
+template <size_t N>
+class QSmallByteArray
+{
+    std::array<quint8, N> m_data;
+    static_assert(N <= std::numeric_limits<std::uint8_t>::max());
+    quint8 m_size = 0;
+public:
+    // all SMFs are ok!
+    quint8 *data() noexcept { return m_data.data(); }
+    qsizetype size() const noexcept { return qsizetype{m_size}; }
+    bool isEmpty() const noexcept { return size() == 0; }
+    void clear() noexcept { m_size = 0; }
+    void resizeForOverwrite(qsizetype s)
+    {
+        Q_ASSERT(s >= 0);
+        Q_ASSERT(size_t(s) <= N);
+        m_size = std::uint8_t(s);
+    }
+    QByteArrayView toByteArrayView() const noexcept
+    { return QByteArrayView{m_data.data(), size()}; }
+};
+
 static constexpr qsizetype MaxHashLength = 64;
 
 static constexpr int hashLengthInternal(QCryptographicHash::Algorithm method) noexcept
@@ -269,26 +291,9 @@ public:
     void sha3Finish(int bitCount, Sha3Variant sha3Variant);
 #endif
 #endif
-    class SmallByteArray {
-        std::array<quint8, MaxHashLength> m_data;
-        static_assert(MaxHashLength <= std::numeric_limits<std::uint8_t>::max());
-        quint8 m_size;
-    public:
-        quint8 *data() noexcept { return m_data.data(); }
-        qsizetype size() const noexcept { return qsizetype{m_size}; }
-        bool isEmpty() const noexcept { return size() == 0; }
-        void clear() noexcept { m_size = 0; }
-        void resizeForOverwrite(qsizetype s) {
-            Q_ASSERT(s >= 0);
-            Q_ASSERT(s <= MaxHashLength);
-            m_size = std::uint8_t(s);
-        }
-        QByteArrayView toByteArrayView() const noexcept
-        { return QByteArrayView{m_data.data(), size()}; }
-    };
     // protects result in finalize()
     QBasicMutex finalizeMutex;
-    SmallByteArray result;
+    QSmallByteArray<MaxHashLength> result;
 
     const QCryptographicHash::Algorithm method;
 };
