@@ -11,6 +11,8 @@
             testSandbox.id = 'test-sandbox';
             document.body.appendChild(testSandbox);
 
+            const eventList = [];
+
             const makeSizedDiv = (left, top, width, height) => {
                 const screenDiv = document.createElement('div');
 
@@ -56,7 +58,11 @@
                         instance.qtAddContainerElement(screenDiv);
 
                         return [scrollContainer, screenDiv];
-                    }
+                    },
+                reportEvent: event => {
+                    eventList.push(event);
+                },
+                events: () => eventList
             };
         })();
     </script>

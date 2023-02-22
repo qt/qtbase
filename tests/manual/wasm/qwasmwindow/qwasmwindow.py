@@ -29,6 +29,7 @@ class WidgetTestCase(unittest.TestCase):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                        x=0, y=0, width=600, height=600)
         window = Window(screen, x=100, y=100, width=200, height=200)
+        window.set_visible(True)
         self.assertEqual(window.rect, Rect(x=100, y=100, width=200, height=200))
 
         window.drag(Handle.TOP_LEFT, direction=UP(10) + LEFT(10))
@@ -62,6 +63,7 @@ class WidgetTestCase(unittest.TestCase):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                        x=200, y=200, width=300, height=300)
         window = Window(screen, x=300, y=300, width=100, height=100)
+        window.set_visible(True)
         self.assertEqual(window.rect, Rect(x=300, y=300, width=100, height=100))
         frame_rect_before_resize = window.frame_rect
 
@@ -76,6 +78,7 @@ class WidgetTestCase(unittest.TestCase):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                        x=200, y=200, width=300, height=300)
         window = Window(screen, x=300, y=300, width=100, height=100)
+        window.set_visible(True)
         self.assertEqual(window.rect, Rect(x=300, y=300, width=100, height=100))
 
         window.drag(Handle.TOP_WINDOW_BAR, direction=UP(30))
@@ -91,6 +94,7 @@ class WidgetTestCase(unittest.TestCase):
         screen = Screen(self._driver, ScreenPosition.RELATIVE,
                        x=200, y=200, width=300, height=300)
         window = Window(screen, x=300, y=300, width=100, height=100)
+        window.set_visible(True)
         self.assertEqual(window.rect, Rect(x=300, y=300, width=100, height=100))
 
         window.drag(Handle.TOP_WINDOW_BAR, direction=LEFT(300))
@@ -102,6 +106,7 @@ class WidgetTestCase(unittest.TestCase):
                         container_width=500, container_height=7000)
         screen.scroll_to()
         window = Window(screen, x=300, y=2100, width=100, height=100)
+        window.set_visible(True)
         self.assertEqual(window.rect, Rect(x=300, y=2100, width=100, height=100))
 
         window.drag(Handle.TOP_WINDOW_BAR, direction=LEFT(300))
@@ -111,6 +116,7 @@ class WidgetTestCase(unittest.TestCase):
         screen = Screen(self._driver, ScreenPosition.RELATIVE,
                         x=200, y=200, width=300, height=300)
         window = Window(screen, x=300, y=300, width=100, height=100, title='Maximize')
+        window.set_visible(True)
         self.assertEqual(window.rect, Rect(x=300, y=300, width=100, height=100))
 
         window.maximize()
@@ -122,6 +128,9 @@ class WidgetTestCase(unittest.TestCase):
         windows = [Window(screen, x=50, y=50, width=100, height=100, title='First'),
                    Window(screen, x=400, y=400, width=100, height=100, title='Second'),
                    Window(screen, x=50, y=400, width=100, height=100, title='Third')]
+        for window in windows:
+            window.set_visible(True)
+
         self.assertEqual(windows[0].rect, Rect(x=50, y=50, width=100, height=100))
         self.assertEqual(windows[1].rect, Rect(x=400, y=400, width=100, height=100))
         self.assertEqual(windows[2].rect, Rect(x=50, y=400, width=100, height=100))
@@ -140,6 +149,9 @@ class WidgetTestCase(unittest.TestCase):
         windows = [Window(screen, x=50, y=50, width=150, height=150, title='First'),
                    Window(screen, x=400, y=400, width=150, height=150, title='Second'),
                    Window(screen, x=50, y=400, width=150, height=150, title='Third')]
+        for window in windows:
+            window.set_visible(True)
+
         self.assertEqual(windows[0].rect, Rect(x=50, y=50, width=150, height=150))
         self.assertEqual(windows[1].rect, Rect(x=400, y=400, width=150, height=150))
         self.assertEqual(windows[2].rect, Rect(x=50, y=400, width=150, height=150))
@@ -151,6 +163,21 @@ class WidgetTestCase(unittest.TestCase):
         self.assertEqual(windows[0].rect, Rect(x=70, y=70, width=130, height=130))
         self.assertEqual(windows[1].rect, Rect(x=400, y=420, width=150, height=130))
         self.assertEqual(windows[2].rect, Rect(x=50, y=400, width=170, height=130))
+
+    def test_newly_created_window_gets_keyboard_focus(self):
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                        x=0, y=0, width=800, height=800)
+        window = Window(screen, x=0, y=0, width=800, height=800, title='root')
+        window.set_visible(True)
+
+        ActionChains(self._driver).key_down('c').key_up('c').perform()
+
+        events = window.events
+        self.assertEqual(len(events), 2)
+        self.assertEqual(events[-2]['type'], 'keyPress')
+        self.assertEqual(events[-2]['key'], 'c')
+        self.assertEqual(events[-1]['type'], 'keyRelease')
+        self.assertEqual(events[-1]['key'], 'c')
 
     def tearDown(self):
         self._driver.quit()
@@ -226,6 +253,20 @@ class Window:
     def frame_rect(self):
         geo = self.__window_information()["frameGeometry"]
         return Rect(geo['x'], geo['y'], geo['width'], geo['height'])
+
+    @property
+    def events(self):
+        events = self.driver.execute_script(
+            f'''
+                return testSupport.events();
+            '''
+        )
+        return [*filter(lambda e: e['windowTitle'] == self.title, events)]
+
+    def set_visible(self, visible):
+        info = self.__window_information()
+        self.driver.execute_script(
+            f'''instance.setWindowVisible({info['id']}, {'true' if visible else 'false'});''')
 
     def drag(self, handle, direction):
         ActionChains(self.driver)                                                        \

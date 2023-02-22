@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QtCore/QEvent>
+
+#include <QtGui/qevent.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qregularexpression.h>
 #include <QtGui/qscreen.h>
@@ -25,6 +27,26 @@ private:
     {
         Q_UNUSED(ev);
         delete this;
+    }
+
+    void keyPressEvent(QKeyEvent *event) final
+    {
+        auto data = emscripten::val::object();
+        data.set("type", emscripten::val("keyPress"));
+        data.set("windowId", emscripten::val(winId()));
+        data.set("windowTitle", emscripten::val(title().toStdString()));
+        data.set("key", emscripten::val(event->text().toStdString()));
+        emscripten::val::global("window")["testSupport"].call<void>("reportEvent", std::move(data));
+    }
+
+    void keyReleaseEvent(QKeyEvent *event) final
+    {
+        auto data = emscripten::val::object();
+        data.set("type", emscripten::val("keyRelease"));
+        data.set("windowId", emscripten::val(winId()));
+        data.set("windowTitle", emscripten::val(title().toStdString()));
+        data.set("key", emscripten::val(event->text().toStdString()));
+        emscripten::val::global("window")["testSupport"].call<void>("reportEvent", std::move(data));
     }
 };
 
@@ -128,7 +150,19 @@ void createWindow(int x, int y, int w, int h, std::string screenId, std::string 
     window->setTitle(QString::fromLatin1(title));
     window->setGeometry(x, y, w, h);
     window->setScreen(*screen_it);
-    window->showNormal();
+}
+
+void setWindowVisible(int windowId, bool visible) {
+    auto windows = qGuiApp->allWindows();
+    auto window_it = std::find_if(windows.begin(), windows.end(), [windowId](QWindow *window) {
+        return window->winId() == WId(windowId);
+    });
+    if (window_it == windows.end()) {
+        qWarning() << "No such window: " << windowId;
+        return;
+    }
+
+    (*window_it)->setVisible(visible);
 }
 
 EMSCRIPTEN_BINDINGS(qwasmwindow)
@@ -136,6 +170,7 @@ EMSCRIPTEN_BINDINGS(qwasmwindow)
     emscripten::function("screenInformation", &screenInformation);
     emscripten::function("windowInformation", &windowInformation);
     emscripten::function("createWindow", &createWindow);
+    emscripten::function("setWindowVisible", &setWindowVisible);
 }
 
 int main(int argc, char **argv)
