@@ -4,7 +4,6 @@
 if(NOT TARGET Qt6::DBus)
     return()
 endif()
-qt_internal_add_example(listnames)
 qt_internal_add_example(pingpong)
 if(QT_FEATURE_process)
     qt_internal_add_example(complexpingpong)

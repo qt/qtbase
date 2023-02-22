@@ -1,8 +1,7 @@
 requires(qtHaveModule(dbus))
 
 TEMPLATE = subdirs
-SUBDIRS = listnames \
-    pingpong
+SUBDIRS = pingpong
 
 qtConfig(process): SUBDIRS += complexpingpong
 
