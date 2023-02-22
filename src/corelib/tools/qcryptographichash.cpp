@@ -968,7 +968,7 @@ bool QCryptographicHashPrivate::supportsAlgorithm(QCryptographicHash::Algorithm 
 #endif
 }
 
-static int qt_hash_block_size(QCryptographicHash::Algorithm method)
+static constexpr int qt_hash_block_size(QCryptographicHash::Algorithm method)
 {
     switch (method) {
     case QCryptographicHash::Sha1:
