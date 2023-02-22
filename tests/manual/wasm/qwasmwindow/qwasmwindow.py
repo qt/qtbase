@@ -429,6 +429,55 @@ class WidgetTestCase(unittest.TestCase):
 
         self.assertEqual(w1_w1_w1.color_at(0, 0), Color(r=255, g=255, b=0))
 
+    def test_keyboard_input(self):
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                        x=0, y=0, width=800, height=800)
+
+        bottom = Window(parent=screen, rect=Rect(x=0, y=0, width=800, height=800), title='root')
+        w1 = Window(parent=screen, rect=Rect(x=100, y=100, width=600, height=600), title='w1')
+        w1_w1 = Window(parent=w1, rect=Rect(x=100, y=100, width=400, height=400), title='w1_w1')
+        w1_w1_w1 = Window(parent=w1_w1, rect=Rect(x=100, y=100, width=100, height=100), title='w1_w1_w1')
+        Window(parent=w1_w1, rect=Rect(x=150, y=150, width=100, height=100), title='w1_w1_w2')
+
+        w1_w1_w1.click(0, 0)
+
+        ActionChains(self._driver).key_down('c').key_up('c').perform()
+
+        events = w1_w1_w1.events
+        self.assertEqual(len(events), 2)
+        self.assertEqual(events[-2]['type'], 'keyPress')
+        self.assertEqual(events[-2]['key'], 'c')
+        self.assertEqual(events[-1]['type'], 'keyRelease')
+        self.assertEqual(events[-1]['key'], 'c')
+        self.assertEqual(len(w1_w1.events), 0)
+        self.assertEqual(len(w1.events), 0)
+
+        w1_w1.click(0, 0)
+
+        ActionChains(self._driver).key_down('b').key_up('b').perform()
+
+        events = w1_w1.events
+        self.assertEqual(len(events), 2)
+        self.assertEqual(events[-2]['type'], 'keyPress')
+        self.assertEqual(events[-2]['key'], 'b')
+        self.assertEqual(events[-1]['type'], 'keyRelease')
+        self.assertEqual(events[-1]['key'], 'b')
+        self.assertEqual(len(w1_w1_w1.events), 2)
+        self.assertEqual(len(w1.events), 0)
+
+        w1.click(0, 0)
+
+        ActionChains(self._driver).key_down('a').key_up('a').perform()
+
+        events = w1.events
+        self.assertEqual(len(events), 2)
+        self.assertEqual(events[-2]['type'], 'keyPress')
+        self.assertEqual(events[-2]['key'], 'a')
+        self.assertEqual(events[-1]['type'], 'keyRelease')
+        self.assertEqual(events[-1]['key'], 'a')
+        self.assertEqual(len(w1_w1_w1.events), 2)
+        self.assertEqual(len(w1_w1.events), 2)
+
     def tearDown(self):
         self._driver.quit()
 

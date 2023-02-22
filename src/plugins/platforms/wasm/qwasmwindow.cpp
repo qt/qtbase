@@ -129,6 +129,7 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
     const auto keyCallback = std::function([this](emscripten::val event) {
         if (processKey(*KeyEvent::fromWebWithDeadKeyTranslation(event, m_deadKeySupport)))
             event.call<void>("preventDefault");
+        event.call<void>("stopPropagation");
     });
 
     m_keyDownCallback =
