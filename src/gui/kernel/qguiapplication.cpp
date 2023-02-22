@@ -2381,8 +2381,8 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         mouse_buttons = e->buttons;
         if (mousePress) {
             ulong doubleClickInterval = static_cast<ulong>(QGuiApplication::styleHints()->mouseDoubleClickInterval());
-            doubleClick = e->timestamp - lastPressTimestamp
-                        < doubleClickInterval && button == mousePressButton;
+            const auto timestampDelta = e->timestamp - lastPressTimestamp;
+            doubleClick = timestampDelta > 0 && timestampDelta < doubleClickInterval && button == mousePressButton;
             mousePressButton = button;
             lastPressTimestamp = e ->timestamp;
         }

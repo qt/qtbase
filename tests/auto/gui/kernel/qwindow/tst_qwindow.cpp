@@ -70,6 +70,7 @@ private slots:
     void mouseEventSequence();
     void windowModality();
     void inputReentrancy();
+    void tabletEvents_data();
     void tabletEvents();
     void windowModality_QTBUG27039();
     void visibility();
@@ -1060,6 +1061,7 @@ public:
     void mouseMoveEvent(QMouseEvent *event) override
     {
         qCDebug(lcTests) << event;
+        mouseMoveDevice = event->pointingDevice();
         buttonStateInGeneratedMove = event->buttons();
         if (ignoreMouse) {
             event->ignore();
@@ -1164,6 +1166,7 @@ public:
     bool spinLoopWhenPressed = false;
     Qt::MouseButtons buttonStateInGeneratedMove;
 
+    const QPointingDevice *mouseMoveDevice = nullptr;
     const QPointingDevice *mouseDevice = nullptr;
     const QPointingDevice *touchDevice = nullptr;
 
@@ -1314,10 +1317,11 @@ void tst_QWindow::touchToMouseTranslation()
 
     QCoreApplication::setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, true);
 
-    // mouse event synthesizing disabled
+    // mouse event synthesis was disabled when the events were sent above
     QTRY_COMPARE(window.mousePressButton, 0);
     QTRY_COMPARE(window.mouseReleaseButton, 0);
 
+    // but now, mouse event synthesis is enabled
     points.clear();
     points.append(tp2);
     points[0].state = QEventPoint::State::Pressed;
@@ -1326,9 +1330,15 @@ void tst_QWindow::touchToMouseTranslation()
     points.clear();
     points.append(tp1);
     points[0].state = QEventPoint::State::Pressed;
+    const int mouseMoveCountWas = window.mouseMovedCount;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.mousePressButton, 1);
+    QCOMPARE(window.mouseDevice, touchDevice);
+    // tp1's position is different than tp2's, so
+    // QGuiApplicationPrivate::processMouseEvent() sent a synth-mouse move
+    QCOMPARE(window.mouseMoveDevice, touchDevice);
+    QCOMPARE(window.mouseMovedCount, mouseMoveCountWas + 1);
 
     points.clear();
     points.append(tp2);
@@ -1986,47 +1996,95 @@ void tst_QWindow::inputReentrancy()
 }
 
 #if QT_CONFIG(tabletevent)
+struct PointerEvent {
+    QEvent::Type type;
+    Qt::MouseButton button;
+    const QPointingDevice *device;
+    QPointF local;
+    QPointF global;
+
+    bool operator==(const PointerEvent &other) const
+    {
+        return type == other.type && button == other.button && device == other.device &&
+                global == other.global && local == other.local;
+    }
+};
+
+QDebug operator<< (QDebug d, const PointerEvent& pe)
+{
+    QDebugStateSaver saver(d);
+    d.space() << "PtrEvt {" << pe.type << pe.button << pe.local << pe.global << pe.device << '}';
+    return d;
+}
+
 class TabletTestWindow : public QWindow
 {
 public:
     void tabletEvent(QTabletEvent *ev) override
     {
-        eventType = ev->type();
-        eventGlobal = ev->globalPosition();
-        eventLocal = ev->position();
-        eventDevice = ev->deviceType();
+        ev->setAccepted(acceptTabletEvent);
     }
 
-    QEvent::Type eventType = QEvent::None;
-    QPointF eventGlobal, eventLocal;
-    QInputDevice::DeviceType eventDevice = QInputDevice::DeviceType::Unknown;
-    QPointingDevice::PointerType eventPointerType = QPointingDevice::PointerType::Unknown;
+    bool event(QEvent *ev) override
+    {
+        if (ev->type() == QEvent::MouseButtonDblClick) {
+            ++doubleClickCount;
+        } else if (ev->isSinglePointEvent()) {
+            auto *spe = static_cast<QSinglePointEvent *>(ev);
+            singlePointEvents << PointerEvent {
+                                 spe->type(), spe->button(), spe->pointingDevice(),
+                                 spe->position(), spe->globalPosition() };
+        }
+        return QWindow::event(ev);
+    }
+
+    QList<PointerEvent> singlePointEvents;
+    int  doubleClickCount = 0;
+    bool acceptTabletEvent = false;
 
     bool eventFilter(QObject *obj, QEvent *ev) override
     {
         if (ev->type() == QEvent::TabletEnterProximity
                 || ev->type() == QEvent::TabletLeaveProximity) {
-            eventType = ev->type();
             QTabletEvent *te = static_cast<QTabletEvent *>(ev);
-            eventDevice = te->deviceType();
-            eventPointerType = te->pointerType();
+            singlePointEvents << PointerEvent {
+                                 te->type(), te->button(), te->pointingDevice(),
+                                 te->position(), te->globalPosition() };
         }
         return QWindow::eventFilter(obj, ev);
     }
 };
 #endif
 
+void tst_QWindow::tabletEvents_data()
+{
+    QTest::addColumn<bool>("guiSynthMouse");
+    QTest::addColumn<bool>("acceptTabletEvent");
+
+    QTest::newRow("nosynth-accept") << false << true;
+    QTest::newRow("synth-accept") << true << true;
+    QTest::newRow("nosynth-ignore") << false << false;
+    QTest::newRow("synth-ignore") << true << false;;
+}
+
 void tst_QWindow::tabletEvents()
 {
 #if QT_CONFIG(tabletevent)
+    QFETCH(bool, guiSynthMouse);
+    QFETCH(bool, acceptTabletEvent);
+    qApp->setAttribute(Qt::AA_SynthesizeMouseForUnhandledTabletEvents, guiSynthMouse);
+
     // the fake USB tablet device is "plugged in"
     QPointingDevice tabletDevice("macow", 0xbeef, QInputDevice::DeviceType::Unknown, QPointingDevice::PointerType::Generic,
                                  QInputDevice::Capability::Position, 1, 0);
     QWindowSystemInterface::registerInputDevice(&tabletDevice);
 
     TabletTestWindow window;
+    window.acceptTabletEvent = acceptTabletEvent;
     window.setGeometry(QRect(m_availableTopLeft + QPoint(10, 10), m_testWindowSize));
     qGuiApp->installEventFilter(&window);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     const QPoint local(10, 10);
     const QPoint global = window.mapToGlobal(local);
@@ -2034,38 +2092,79 @@ void tst_QWindow::tabletEvents()
     const QPoint deviceGlobal = QHighDpi::toNativePixels(global, window.screen());
     ulong timestamp = 1234;
 
-    // the stylus is just now seen for the first time, as it comes into proximity
-    // its QObject-parent will be the tablet device
+    // The stylus is just now seen for the first time, as it comes into proximity.
+    // Its QObject-parent will be the tablet device.
     QPointingDevice tabletStylus("macow stylus eraser", 0xe6a5e6, QInputDevice::DeviceType::Stylus, QPointingDevice::PointerType::Eraser,
                                  QInputDevice::Capability::Position | QInputDevice::Capability::Pressure, 1, 3, QString(),
                                  QPointingDeviceUniqueId::fromNumericId(42), &tabletDevice);
     QWindowSystemInterface::registerInputDevice(&tabletStylus);
-    QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(&window, timestamp++, &tabletStylus, true);
+    QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(&window, timestamp++, &tabletStylus, true, local, global);
     QCoreApplication::processEvents();
-    QTRY_COMPARE(window.eventType, QEvent::TabletEnterProximity);
-    QCOMPARE(window.eventDevice, QInputDevice::DeviceType::Stylus);
-    QCOMPARE(window.eventPointerType, QPointingDevice::PointerType::Eraser);
+    qCDebug(lcTests) << "expect TabletEnterProximity:" << window.singlePointEvents;
+    QTRY_COMPARE_GE(window.singlePointEvents.size(), 1);
+    // the positions given to handleTabletEnterLeaveProximityEvent are not currently delivered (QTBUG-111400)
+    QCOMPARE(window.singlePointEvents.last(), PointerEvent({ QEvent::TabletEnterProximity, Qt::NoButton, &tabletStylus, {}, {} }));
+    window.singlePointEvents.clear();
 
     // the eraser is pressed into contact with the tablet surface
     QWindowSystemInterface::handleTabletEvent(&window, timestamp++, &tabletStylus, deviceLocal, deviceGlobal,
                                               Qt::LeftButton, 0.5, 1, 2, 0.1, 0, 0, {});
     QCoreApplication::processEvents();
-    QTRY_VERIFY(window.eventType == QEvent::TabletPress);
-    QTRY_COMPARE(window.eventGlobal.toPoint(), global);
-    QTRY_COMPARE(window.eventLocal.toPoint(), local);
+    qCDebug(lcTests) << "eraser pressed:" << window.singlePointEvents;
+    if (guiSynthMouse && !acceptTabletEvent) {
+        // expect synth-mouse events after the ignored tablet event,
+        // all from the same stylus device at the same position
+        // TODO why does this not work on QNX and some ARM Linux platforms?
+        if (!QTest::qWaitFor([&window]{ return window.singlePointEvents.size() == 3; }))
+            QSKIP("Failed to receive synth-mouse after tablet event on this platform (QTBUG-129998)");
+        QCOMPARE(window.singlePointEvents.size(), 3);
+        QCOMPARE(window.singlePointEvents.at(0).type, QEvent::TabletPress);
+        QCOMPARE(window.singlePointEvents.at(1).type, QEvent::MouseMove);
+        QCOMPARE(window.singlePointEvents.at(2).type, QEvent::MouseButtonPress);
+        for (int i = 0; i < window.singlePointEvents.size(); ++i) {
+            QCOMPARE(window.singlePointEvents.at(i).device, &tabletStylus);
+            QCOMPARE(window.singlePointEvents.at(i).local.toPoint(), local);
+            QCOMPARE(window.singlePointEvents.at(i).global.toPoint(), global);
+        }
+    } else {
+        QTRY_COMPARE(window.singlePointEvents.size(), 1);
+        QCOMPARE(window.singlePointEvents.first().type, QEvent::TabletPress);
+        QCOMPARE(window.singlePointEvents.first().local.toPoint(), local);
+        QCOMPARE(window.singlePointEvents.first().global.toPoint(), global);
+    }
 
     // now it's lifted
     QWindowSystemInterface::handleTabletEvent(&window, timestamp++, &tabletStylus, deviceLocal, deviceGlobal,
                                               Qt::NoButton, 0, 3, 4, 0.11, 2, 1, {});
     QCoreApplication::processEvents();
-    QTRY_COMPARE(window.eventType, QEvent::TabletRelease);
+    qCDebug(lcTests) << "eraser lifted:" << window.singlePointEvents;
+    if (guiSynthMouse && !acceptTabletEvent) {
+        // expect synth-mouse events after the ignored tablet event,
+        // all from the same stylus device at the same position
+#ifndef Q_OS_QNX
+        QTRY_COMPARE(window.singlePointEvents.size(), 5);
+        for (int i = 2; i < window.singlePointEvents.size(); ++i) {
+            QCOMPARE(window.singlePointEvents.at(i).device, &tabletStylus);
+            QCOMPARE(window.singlePointEvents.at(i).local.toPoint(), local);
+            QCOMPARE(window.singlePointEvents.at(i).global.toPoint(), global);
+        }
+        QCOMPARE(window.singlePointEvents.at(window.singlePointEvents.size() - 2).type, QEvent::TabletRelease);
+        QCOMPARE(window.singlePointEvents.at(window.singlePointEvents.size() - 1).type, QEvent::MouseButtonRelease);
+#endif
+    } else {
+        QTRY_COMPARE(window.singlePointEvents.size(), 2);
+        QCOMPARE(window.singlePointEvents.at(1).type, QEvent::TabletRelease);
+        QCOMPARE(window.singlePointEvents.at(1).local.toPoint(), local);
+        QCOMPARE(window.singlePointEvents.at(1).global.toPoint(), global);
+    }
+    QCOMPARE(window.doubleClickCount, 0);
 
     // and is taken away (goes out of proxmity)
-    QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(&window, timestamp, &tabletStylus, false);
+    QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(&window, timestamp, &tabletStylus, false, local, global);
     QCoreApplication::processEvents();
-    QTRY_COMPARE(window.eventType, QEvent::TabletLeaveProximity);
-    QCOMPARE(window.eventDevice, QInputDevice::DeviceType::Stylus);
-    QCOMPARE(window.eventPointerType, QPointingDevice::PointerType::Eraser);
+    // the positions given to handleTabletEnterLeaveProximityEvent are not currently delivered (QTBUG-111400)
+    QTRY_COMPARE(window.singlePointEvents.last(), PointerEvent({ QEvent::TabletLeaveProximity, Qt::NoButton, &tabletStylus, {}, {} }));
+    QCOMPARE(window.doubleClickCount, 0);
 #endif
 }
 
