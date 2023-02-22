@@ -39,13 +39,9 @@ QT_BEGIN_NAMESPACE
  *   0          monotonic clock might be supported, runtime check is needed
  *  >1          (such as 200809L) monotonic clock is always supported
  *
- * The unixCheckClockType() function will return the clock to use: either
- * CLOCK_MONOTONIC or CLOCK_REALTIME. In the case the POSIX option has a value
- * of zero, then this function stores a static that contains the clock to be
- * used.
- *
- * There's one extra case, which is when CLOCK_REALTIME isn't defined. When
- * that's the case, we'll emulate the clock_gettime function with gettimeofday.
+ * Since Qt 6.6, we no longer perform any runtime checks and instead enforce
+ * the use of the monotonic clock in all OSes that have the CLOCK_MONOTONIC
+ * macro and use of the POSIX realtime clock functions.
  *
  * Conforming to:
  *  POSIX.1b-1993 section "Clocks and Timers"
@@ -54,59 +50,14 @@ QT_BEGIN_NAMESPACE
  *  see http://pubs.opengroup.org/onlinepubs/9699919799/functions/clock_getres.html
  */
 
-#if !defined(CLOCK_REALTIME)
-#  define CLOCK_REALTIME 0
-static inline void qt_clock_gettime(int, struct timespec *ts)
+static constexpr clockid_t regularClock()
 {
-    // support clock_gettime with gettimeofday
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-    ts->tv_sec = tv.tv_sec;
-    ts->tv_nsec = tv.tv_usec * 1000;
-}
-
-static inline int regularClock()
-{
-    return 0;
-}
-#else
-static inline void qt_clock_gettime(clockid_t clock, struct timespec *ts)
-{
-    clock_gettime(clock, ts);
-}
-
-static inline clock_t regularClockCheck()
-{
-    struct timespec regular_clock_resolution;
-    int r = -1;
-
-#  ifdef CLOCK_MONOTONIC
-    // try the monotonic clock
-    r = clock_getres(CLOCK_MONOTONIC, &regular_clock_resolution);
-
-#    ifdef Q_OS_LINUX
-    // Despite glibc claiming that we should check at runtime, the Linux kernel
-    // always supports the monotonic clock
-    Q_ASSERT(r == 0);
+#ifdef CLOCK_MONOTONIC
     return CLOCK_MONOTONIC;
-#    endif
-
-    if (r == 0)
-        return CLOCK_MONOTONIC;
-#  endif
-
-    // no monotonic, try the realtime clock
-    r = clock_getres(CLOCK_REALTIME, &regular_clock_resolution);
-    Q_ASSERT(r == 0);
+#else
     return CLOCK_REALTIME;
-}
-
-static inline clock_t regularClock()
-{
-    static const clock_t clock = regularClockCheck();
-    return clock;
-}
 #endif
+}
 
 bool QElapsedTimer::isMonotonic() noexcept
 {
@@ -121,7 +72,7 @@ QElapsedTimer::ClockType QElapsedTimer::clockType() noexcept
 static inline void do_gettime(qint64 *sec, qint64 *frac)
 {
     timespec ts;
-    qt_clock_gettime(regularClock(), &ts);
+    clock_gettime(regularClock(), &ts);
     *sec = ts.tv_sec;
     *frac = ts.tv_nsec;
 }
