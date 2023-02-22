@@ -26,7 +26,7 @@ target_link_libraries(ping PRIVATE
 
 qt_add_executable(pong
     ping-common.h
-    pong.cpp pong.h
+    pong.cpp
 )
 
 target_link_libraries(pong PRIVATE

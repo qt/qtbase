@@ -2,11 +2,18 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include "ping-common.h"
-#include "pong.h"
 
+#include <QObject>
 #include <QCoreApplication>
 #include <QDBusConnection>
 #include <QDBusError>
+
+class Pong : public QObject
+{
+    Q_OBJECT
+public slots:
+    QString ping(const QString &arg);
+};
 
 QString Pong::ping(const QString &arg)
 {
@@ -38,3 +45,5 @@ int main(int argc, char **argv)
     app.exec();
     return 0;
 }
+
+#include "pong.moc"
