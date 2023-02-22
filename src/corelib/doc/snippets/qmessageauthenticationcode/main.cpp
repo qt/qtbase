@@ -1,3 +1,4 @@
+// Copyright (C) 2023 The Qt Company Ltd.
 // Copyright (C) 2016 Ruslan Nigmatullin <euroelessar@yandex.ru>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
@@ -13,8 +14,7 @@ int main(int argc, char *argv[])
 //! [0]
 
 //! [1]
-    QMessageAuthenticationCode code(QCryptographicHash::Sha1);
-    code.setKey(key);
+    QMessageAuthenticationCode code(QCryptographicHash::Sha1, key);
     code.addData(message);
     code.result().toHex();      // returns "de7c9b85b8b78aa6bc8a7a36f70a90701c9db4d9"
 //! [1]
