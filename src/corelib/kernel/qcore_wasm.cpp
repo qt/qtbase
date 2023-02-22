@@ -18,9 +18,9 @@ QT_BEGIN_NAMESPACE
     \since 6.5
     \ingroup platform-type-conversions
 
-    \sa toDomRect()
+    \sa toDOMRect()
 */
-QRectF QRectF::fromDomRect(emscripten::val domRect)
+QRectF QRectF::fromDOMRect(emscripten::val domRect)
 {
     Q_ASSERT_X(domRect["constructor"]["name"].as<std::string>() == "DOMRect", Q_FUNC_INFO,
                "Passed object is not a DOMRect");
@@ -35,9 +35,9 @@ QRectF QRectF::fromDomRect(emscripten::val domRect)
     \since 6.5
     \ingroup platform-type-conversions
 
-    \sa fromDomRect()
+    \sa fromDOMRect()
 */
-emscripten::val QRectF::toDomRect() const
+emscripten::val QRectF::toDOMRect() const
 {
     return emscripten::val::global("DOMRect").new_(left(), top(), width(), height());
 }

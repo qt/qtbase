@@ -592,8 +592,8 @@ public:
 #endif
 
 #if defined(Q_OS_WASM) || defined(Q_QDOC)
-    [[nodiscard]] static QRectF fromDomRect(emscripten::val domRect);
-    [[nodiscard]] emscripten::val toDomRect() const;
+    [[nodiscard]] static QRectF fromDOMRect(emscripten::val domRect);
+    [[nodiscard]] emscripten::val toDOMRect() const;
 #endif
 
 private:
