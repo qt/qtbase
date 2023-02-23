@@ -3,6 +3,8 @@
 
 #include "qtconcurrentthreadengine.h"
 
+#include <QtCore/private/qsimd_p.h>
+
 #if !defined(QT_NO_CONCURRENT) || defined(Q_QDOC)
 
 QT_BEGIN_NAMESPACE
@@ -63,6 +65,7 @@ void ThreadEngineBarrier::acquire()
             if (count.testAndSetOrdered(localCount, localCount + 1))
                 return;
         }
+        qYieldCpu();
     }
 }
 
@@ -82,6 +85,7 @@ int ThreadEngineBarrier::release()
             if (count.testAndSetOrdered(localCount, localCount - 1))
                 return localCount - 1;
         }
+        qYieldCpu();
     }
 }
 
@@ -98,6 +102,7 @@ void ThreadEngineBarrier::wait()
             semaphore.acquire();
             return;
         }
+        qYieldCpu();
     }
 }
 
@@ -121,6 +126,7 @@ bool ThreadEngineBarrier::releaseUnlessLast()
             if (count.testAndSetOrdered(localCount, localCount - 1))
                 return true;
         }
+        qYieldCpu();
     }
 }
 
