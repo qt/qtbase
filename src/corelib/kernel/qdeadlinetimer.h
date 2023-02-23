@@ -148,10 +148,6 @@ private:
     qint64 rawRemainingTimeNSecs() const noexcept;
 };
 
-#if defined(Q_OS_DARWIN) || defined(Q_OS_LINUX) || (defined(Q_CC_MSVC) && Q_CC_MSVC >= 1900)
-// We know for these OS/compilers that the std::chrono::steady_clock uses the same
-// reference time as QDeadlineTimer
-
 template <> inline std::chrono::steady_clock::time_point
 QDeadlineTimer::deadline<std::chrono::steady_clock, std::chrono::steady_clock::duration>() const
 {
@@ -174,7 +170,6 @@ QDeadlineTimer::setDeadline<std::chrono::steady_clock, std::chrono::steady_clock
                            type_);
     }
 }
-#endif
 
 Q_DECLARE_SHARED(QDeadlineTimer)
 

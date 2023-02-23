@@ -520,14 +520,15 @@ void tst_QDeadlineTimer::overflow()
 
     // Make sure setRemainingTime underflows gracefully
     deadline.setPreciseRemainingTime(std::numeric_limits<qint64>::min() / 10, 0, timerType);
-    QVERIFY(!deadline.isForever());     // On Win/macOS the above underflows, make sure we don't saturate to Forever
+    QVERIFY(!deadline.isForever());     // The above underflows, so make sure we don't saturate to Forever
+    QCOMPARE(deadline.remainingTimeNSecs(), 0);
     QVERIFY(deadline.remainingTime() == 0);
     // If the timer is saturated we don't want to get a valid number of milliseconds
     QVERIFY(deadline.deadline() == std::numeric_limits<qint64>::min());
 
     // Check that the conversion to milliseconds and nanoseconds underflows gracefully
     deadline.setPreciseDeadline(std::numeric_limits<qint64>::min() / 10, 0, timerType);
-    QVERIFY(!deadline.isForever());     // On Win/macOS the above underflows, make sure we don't saturate to Forever
+    QVERIFY(!deadline.isForever());     // The above underflows, make sure we don't saturate to Forever
     QVERIFY(deadline.deadline() == std::numeric_limits<qint64>::min());
     QVERIFY(deadline.deadlineNSecs() == std::numeric_limits<qint64>::min());
 }
@@ -630,16 +631,13 @@ void tst_QDeadlineTimer::stdchrono()
     QTRY_VERIFY2_WITH_TIMEOUT(timersExecuted,
         "Looks like timers didn't fire on time.", 4 * minResolution);
 
-#if defined(Q_OS_DARWIN) || defined(Q_OS_LINUX) || (defined(Q_CC_MSVC) && Q_CC_MSVC >= 1900)
     {
-        // We know for these OS/compilers that the std::chrono::steady_clock uses the same
-        // reference time as QDeadlineTimer
         qint64 before = duration_cast<nanoseconds>(steady_before.time_since_epoch()).count();
         qint64 after = duration_cast<nanoseconds>(steady_after.time_since_epoch()).count();
         QCOMPARE_GT(now.deadlineNSecs(), before);
         QCOMPARE_LT(now.deadlineNSecs(), after);
     }
-#endif
+
     {
         auto diff = duration_cast<milliseconds>(steady_after - steady_deadline);
         QCOMPARE_GT(diff.count(), minResolution / 2);
