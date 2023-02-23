@@ -207,6 +207,18 @@ static void calculateCoarseTimerTimeout(QTimerInfo *t, timespec now)
 
     Q_ASSERT(t->interval >= 20ms);
 
+    auto recalculate = [&](const milliseconds fracMsec) {
+        if (fracMsec == 1000ms) {
+            ++t->timeout.tv_sec;
+            t->timeout.tv_nsec = 0;
+        } else {
+            t->timeout.tv_nsec = nanoseconds{fracMsec}.count();
+        }
+
+        if (t->timeout < now)
+            t->timeout += t->interval;
+    };
+
     // Calculate how much we can round and still keep within 5% error
     const milliseconds absMaxRounding = t->interval / 20;
 
@@ -231,70 +243,66 @@ static void calculateCoarseTimerTimeout(QTimerInfo *t, timespec now)
             fracCount <<= 2;
         }
         fracMsec = milliseconds{fracCount};
-    } else {
-        milliseconds min = std::max(0ms, fracMsec - absMaxRounding);
-        milliseconds max = std::min(1000ms, fracMsec + absMaxRounding);
-
-        // find the boundary that we want, according to the rules above
-        // extra rules:
-        // 1) whatever the interval, we'll take any round-to-the-second timeout
-        if (min == 0ms) {
-            fracMsec = 0ms;
-            goto recalculate;
-        } else if (max == 1000ms) {
-            fracMsec = 1000ms;
-            goto recalculate;
-        }
-
-        milliseconds wantedBoundaryMultiple{25};
-
-        // 2) if the interval is a multiple of 500 ms and > 5000 ms, we'll always round
-        //    towards a round-to-the-second
-        // 3) if the interval is a multiple of 500 ms, we'll round towards the nearest
-        //    multiple of 500 ms
-        if ((t->interval % 500) == 0ms) {
-            if (t->interval >= 5s) {
-                fracMsec = fracMsec >= 500ms ? max : min;
-                goto recalculate;
-            } else {
-                wantedBoundaryMultiple = 500ms;
-            }
-        } else if ((t->interval % 50) == 0ms) {
-            // 4) same for multiples of 250, 200, 100, 50
-            milliseconds mult50 = t->interval / 50;
-            if ((mult50 % 4) == 0ms) {
-                // multiple of 200
-                wantedBoundaryMultiple = 200ms;
-            } else if ((mult50 % 2) == 0ms) {
-                // multiple of 100
-                wantedBoundaryMultiple = 100ms;
-            } else if ((mult50 % 5) == 0ms) {
-                // multiple of 250
-                wantedBoundaryMultiple = 250ms;
-            } else {
-                // multiple of 50
-                wantedBoundaryMultiple = 50ms;
-            }
-        }
-
-        milliseconds base = (fracMsec / wantedBoundaryMultiple) * wantedBoundaryMultiple;
-        milliseconds middlepoint = base + wantedBoundaryMultiple / 2;
-        if (fracMsec < middlepoint)
-            fracMsec = qMax(base, min);
-        else
-            fracMsec = qMin(base + wantedBoundaryMultiple, max);
+        recalculate(fracMsec);
+        return;
     }
 
-recalculate:
-    if (fracMsec == 1000ms) {
-        ++t->timeout.tv_sec;
-        t->timeout.tv_nsec = 0;
-    } else {
-        t->timeout.tv_nsec = nanoseconds{fracMsec}.count();
+    milliseconds min = std::max(0ms, fracMsec - absMaxRounding);
+    milliseconds max = std::min(1000ms, fracMsec + absMaxRounding);
+
+    // find the boundary that we want, according to the rules above
+    // extra rules:
+    // 1) whatever the interval, we'll take any round-to-the-second timeout
+    if (min == 0ms) {
+        fracMsec = 0ms;
+        recalculate(fracMsec);
+        return;
+    } else if (max == 1000ms) {
+        fracMsec = 1000ms;
+        recalculate(fracMsec);
+        return;
     }
 
-    if (t->timeout < now)
-        t->timeout += t->interval;
+    milliseconds wantedBoundaryMultiple{25};
+
+    // 2) if the interval is a multiple of 500 ms and > 5000 ms, we'll always round
+    //    towards a round-to-the-second
+    // 3) if the interval is a multiple of 500 ms, we'll round towards the nearest
+    //    multiple of 500 ms
+    if ((t->interval % 500) == 0ms) {
+        if (t->interval >= 5s) {
+            fracMsec = fracMsec >= 500ms ? max : min;
+            recalculate(fracMsec);
+            return;
+        } else {
+            wantedBoundaryMultiple = 500ms;
+        }
+    } else if ((t->interval % 50) == 0ms) {
+        // 4) same for multiples of 250, 200, 100, 50
+        milliseconds mult50 = t->interval / 50;
+        if ((mult50 % 4) == 0ms) {
+            // multiple of 200
+            wantedBoundaryMultiple = 200ms;
+        } else if ((mult50 % 2) == 0ms) {
+            // multiple of 100
+            wantedBoundaryMultiple = 100ms;
+        } else if ((mult50 % 5) == 0ms) {
+            // multiple of 250
+            wantedBoundaryMultiple = 250ms;
+        } else {
+            // multiple of 50
+            wantedBoundaryMultiple = 50ms;
+        }
+    }
+
+    milliseconds base = (fracMsec / wantedBoundaryMultiple) * wantedBoundaryMultiple;
+    milliseconds middlepoint = base + wantedBoundaryMultiple / 2;
+    if (fracMsec < middlepoint)
+        fracMsec = qMax(base, min);
+    else
+        fracMsec = qMin(base + wantedBoundaryMultiple, max);
+
+    recalculate(fracMsec);
 }
 
 static void calculateNextTimeout(QTimerInfo *t, timespec now)
