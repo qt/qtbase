@@ -89,12 +89,18 @@ manifestmeta.android.names          =   "Qt3D/Qt 3D: Basic Shapes C++ Example" \
                                         "QtQuick/Threaded ListModel Example" \
                                         "QtQuick/TabWidget Example" \
                                         "QtQuick/UI Components*" \
-                                        "QtQuickControls/*" \
-                                        "QtQuickControls1/Qt Quick Controls 1 - Calendar Example" \
-                                        "QtQuickControls1/Qt Quick Controls 1 - Gallery" \
-                                        "QtQuickControls1/Qt Quick Controls 1 - Styles Example" \
-                                        "QtQuickControls1/Qt Quick Controls 1 - Table View Example" \
-                                        "QtQuickControls1/Qt Quick Controls 1 - Touch Gallery" \
+                                        "QtQuickControls/Qt Quick Controls - Attached Style Properties Example" \
+                                        "QtQuickControls/Qt Quick Controls - Chat Tutorial" \
+                                        "QtQuickControls/Qt Quick Controls - Contact List" \
+                                        "QtQuickControls/Qt Quick Controls - Event Calendar" \
+                                        "QtQuickControls/Qt Quick Controls - Flat Style" \
+                                        "QtQuickControls/Qt Quick Controls - Gallery" \
+                                        "QtQuickControls/Qt Quick Controls - Imagine Style Example: Automotive" \
+                                        "QtQuickControls/Qt Quick Controls - Imagine Style Example: Music Player" \
+                                        "QtQuickControls/Qt Quick Controls - Side Panel" \
+                                        "QtQuickControls/Qt Quick Controls - Swipe to Remove" \
+                                        "QtQuickControls/Qt Quick Controls - Text Editor" \
+                                        "QtQuickControls/Qt Quick Controls - Wearable Demo" \
                                         "QtQuickDialogs/*" \
                                         "QtQuickExtras/*" \
                                         "QtSCXML/Qt SCXML Calculator QML Example" \
@@ -240,7 +246,8 @@ manifestmeta.ios.names              =  "QtCore/Contiguous Cache Example" \
                                        "QtQuick/Qt Quick Examples - Text" \
                                        "QtQuick/Qt Quick Examples - Touch Interaction" \
                                        "QtQuick/Qt Quick Examples - Views" \
-                                       "QtQuick/Qt Quick Examples - Window and Screen"
+                                       "QtQuick/Qt Quick Examples - Window and Screen" \
+                                       "QtQuickControls/Qt Quick Controls - To Do List"
 
 manifestmeta.ios.tags                  = ios
 
