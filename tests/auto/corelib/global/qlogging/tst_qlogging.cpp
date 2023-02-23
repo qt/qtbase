@@ -52,6 +52,8 @@ private slots:
 #ifdef QT_BUILD_INTERNAL
     void cleanupFuncinfo_data();
     void cleanupFuncinfo();
+    void cleanupFuncinfoBad_data();
+    void cleanupFuncinfoBad();
 #endif
 
     void qMessagePattern_data();
@@ -623,6 +625,26 @@ void tst_qmessagehandler::cleanupFuncinfo_data()
         << "int TestClass1::operator>(int)"
         << "TestClass1::operator>";
 
+    QTest::newRow("gcc_40")
+        << "Polymorphic<void (*)(int)>::~Polymorphic()"
+        << "Polymorphic::~Polymorphic";
+
+    QTest::newRow("gcc_41")
+        << "function<void (int*)>()::S::f()"
+        << "function()::S::f";
+
+    QTest::newRow("msvc_41")
+        << "void `void function<void __cdecl(int *)>(void)'::`2'::S::f(void)"
+        << "function(void)'::`2'::S::f";
+
+    QTest::newRow("gcc_42")
+        << "function<Polymorphic<void (int*)> >()::S::f(Polymorphic<void (int*)>*)"
+        << "function()::S::f";
+
+    QTest::newRow("msvc_42")
+        << "void `void function<Polymorphic<void __cdecl(int *)> >(void)'::`2'::S::f(Polymorphic<void __cdecl(int *)> *)"
+        << "function(void)'::`2'::S::f";
+
     QTest::newRow("objc_1")
         << "-[SomeClass someMethod:withArguments:]"
         << "-[SomeClass someMethod:withArguments:]";
@@ -638,6 +660,14 @@ void tst_qmessagehandler::cleanupFuncinfo_data()
     QTest::newRow("objc_4")
         << "__31-[SomeClass someMethodSchedulingBlock]_block_invoke"
         << "__31-[SomeClass someMethodSchedulingBlock]_block_invoke";
+
+    QTest::newRow("thunk-1")
+        << "non-virtual thunk to QFutureWatcherBasePrivate::postCallOutEvent(QFutureCallOutEvent const&)"
+        << "QFutureWatcherBasePrivate::postCallOutEvent";
+
+    QTest::newRow("thunk-2")
+        << "virtual thunk to std::basic_iostream<char, std::char_traits<char> >::~basic_iostream()"
+        << "std::basic_iostream::~basic_iostream";
 }
 #endif
 
@@ -657,6 +687,41 @@ void tst_qmessagehandler::cleanupFuncinfo()
     QEXPECT_FAIL("TestClass1::nested_struct", "Nested function processing is broken", Continue);
     QEXPECT_FAIL("TestClass1::nested_struct_const", "Nested function processing is broken", Continue);
     QTEST(QString::fromLatin1(result), "expected");
+}
+
+void tst_qmessagehandler::cleanupFuncinfoBad_data()
+{
+    QTest::addColumn<QByteArray>("funcinfo");
+
+    auto addBadFrame = [i = 0](const char *symbol) mutable {
+        QTest::addRow("%d", ++i) << QByteArray(symbol);
+    };
+    addBadFrame("typeinfo for QEventLoop");
+    addBadFrame("typeinfo name for QtPrivate::ResultStoreBase");
+    addBadFrame("typeinfo name for ._anon_476");
+    addBadFrame("typeinfo name for std::__1::__function::__base<bool (void*, void*)>");
+    addBadFrame("vtable for BezierEase");
+    addBadFrame("vtable for Polymorphic<void ()>");
+    addBadFrame("vtable for Polymorphic<void (*)(int)>");
+    addBadFrame("TLS wrapper function for (anonymous namespace)::jitStacks");
+    addBadFrame("lcCheckIndex()::category");
+    addBadFrame("guard variable for lcEPDetach()::category");
+    addBadFrame("guard variable for QImageReader::read(QImage*)::disableNxImageLoading");
+    addBadFrame("VTT for std::__1::ostrstream");
+    addBadFrame("qIsRelocatable<(anonymous namespace)::Data>");
+    addBadFrame("qt_incomplete_metaTypeArray<(anonymous namespace)::qt_meta_stringdata_CLASSQNonContiguousByteDeviceIoDeviceImplENDCLASS_t, QtPrivate::TypeAndForceComplete<void, std::integral_constant<bool, true> > >");
+    addBadFrame("f()::i");
+}
+
+void tst_qmessagehandler::cleanupFuncinfoBad()
+{
+    QFETCH(QByteArray, funcinfo);
+
+    // A corrupted stack trace may find non-sensical symbols that aren't
+    // functions. The result doesn't matter, so long as we don't crash or hang.
+
+    QByteArray result = qCleanupFuncinfo(funcinfo);
+    qDebug() << "Decode of" << funcinfo << "produced" << result;
 }
 #endif
 
