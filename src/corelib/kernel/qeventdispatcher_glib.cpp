@@ -489,7 +489,8 @@ void QEventDispatcherGlib::registerTimer(int timerId, qint64 interval, Qt::Timer
 #endif
 
     Q_D(QEventDispatcherGlib);
-    d->timerSource->timerList.registerTimer(timerId, interval, timerType, object);
+    d->timerSource->timerList.registerTimer(timerId, std::chrono::milliseconds{ interval },
+                                            timerType, object);
 }
 
 bool QEventDispatcherGlib::unregisterTimer(int timerId)

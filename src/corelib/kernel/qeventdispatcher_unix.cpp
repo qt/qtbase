@@ -299,7 +299,7 @@ void QEventDispatcherUNIX::registerTimer(int timerId, qint64 interval, Qt::Timer
 #endif
 
     Q_D(QEventDispatcherUNIX);
-    d->timerList.registerTimer(timerId, interval, timerType, obj);
+    d->timerList.registerTimer(timerId, std::chrono::milliseconds{ interval }, timerType, obj);
 }
 
 /*!

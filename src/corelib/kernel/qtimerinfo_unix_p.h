@@ -31,7 +31,7 @@ QT_BEGIN_NAMESPACE
 struct QTimerInfo {
     int id;           // - timer identifier
     Qt::TimerType timerType; // - timer type
-    qint64 interval;     // - timer interval in milliseconds
+    std::chrono::milliseconds interval; // - timer interval
     timespec timeout;  // - when to actually fire
     QObject *obj;     // - object to receive event
     QTimerInfo **activateRef; // - ref from activateTimers
@@ -71,8 +71,11 @@ public:
     void timerInsert(QTimerInfo *);
 
     qint64 timerRemainingTime(int timerId);
+    std::chrono::milliseconds remainingDuration(int timerId);
 
     void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object);
+    void registerTimer(int timerId, std::chrono::milliseconds interval, Qt::TimerType timerType,
+                       QObject *object);
     bool unregisterTimer(int timerId);
     bool unregisterTimers(QObject *object);
     QList<QAbstractEventDispatcher::TimerInfo> registeredTimers(QObject *object) const;
