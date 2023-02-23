@@ -22,17 +22,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_OS_ANDROID
-// pthread_condattr_setclock is available only since Android 5.0. On older versions, there's
-// a private function for relative waits (hidden in 5.0).
-// Use weakref so we can determine at runtime whether each of them is present.
-static int local_condattr_setclock(pthread_condattr_t*, clockid_t)
-__attribute__((weakref("pthread_condattr_setclock")));
-
-static int local_cond_timedwait_relative(pthread_cond_t*, pthread_mutex_t *, const timespec *)
-__attribute__((weakref("__pthread_cond_timedwait_relative")));
-#endif
-
 static void report_error(int code, const char *where, const char *what)
 {
     if (code != 0)
@@ -44,14 +33,9 @@ void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where)
     pthread_condattr_t condattr;
 
     pthread_condattr_init(&condattr);
-#if (_POSIX_MONOTONIC_CLOCK-0 >= 0)
-#if defined(Q_OS_ANDROID)
-    if (local_condattr_setclock && QElapsedTimer::clockType() == QElapsedTimer::MonotonicClock)
-        local_condattr_setclock(&condattr, CLOCK_MONOTONIC);
-#elif !defined(Q_OS_MAC)
+#if defined(CLOCK_MONOTONIC) && !defined(Q_OS_DARWIN)
     if (QElapsedTimer::clockType() == QElapsedTimer::MonotonicClock)
         pthread_condattr_setclock(&condattr, CLOCK_MONOTONIC);
-#endif
 #endif
     report_error(pthread_cond_init(cond, &condattr), where, "cv init");
     pthread_condattr_destroy(&condattr);
@@ -89,14 +73,6 @@ public:
     int wait_relative(QDeadlineTimer deadline)
     {
         timespec ti;
-#ifdef Q_OS_ANDROID
-        if (!local_condattr_setclock && local_cond_timedwait_relative) {
-            qint64 nsec = deadline.remainingTimeNSecs();
-            ti.tv_sec = nsec / (1000 * 1000 * 1000);
-            ti.tv_nsec = nsec - ti.tv_sec * 1000 * 1000 * 1000;
-            return local_cond_timedwait_relative(&cond, &mutex, &ti);
-        }
-#endif
         qt_abstime_for_timeout(&ti, deadline);
         return pthread_cond_timedwait(&cond, &mutex, &ti);
     }
