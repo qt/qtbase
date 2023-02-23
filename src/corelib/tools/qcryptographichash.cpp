@@ -196,6 +196,8 @@ static constexpr int maxHashLength()
     return result;
 }
 
+using HashResult = QSmallByteArray<maxHashLength()>;
+
 #ifdef USING_OPENSSL30
 static constexpr const char * methodToName(QCryptographicHash::Algorithm method) noexcept
 {
@@ -307,7 +309,7 @@ public:
 #endif
     // protects result in finalize()
     QBasicMutex finalizeMutex;
-    QSmallByteArray<maxHashLength()> result;
+    HashResult result;
 
     const QCryptographicHash::Algorithm method;
 };
