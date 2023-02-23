@@ -24,6 +24,7 @@
 #include "qabstracteventdispatcher.h"
 
 #include <sys/time.h> // struct timeval
+#include <chrono>
 
 QT_BEGIN_NAMESPACE
 
@@ -32,7 +33,7 @@ struct QTimerInfo {
     int id;           // - timer identifier
     Qt::TimerType timerType; // - timer type
     std::chrono::milliseconds interval; // - timer interval
-    timespec timeout;  // - when to actually fire
+    std::chrono::steady_clock::time_point timeout; // - when to actually fire
     QObject *obj;     // - object to receive event
     QTimerInfo **activateRef; // - ref from activateTimers
 
@@ -51,8 +52,8 @@ class Q_CORE_EXPORT QTimerInfoList : public QList<QTimerInfo*>
 public:
     QTimerInfoList();
 
-    timespec currentTime;
-    timespec updateCurrentTime();
+    std::chrono::steady_clock::time_point currentTime;
+    std::chrono::steady_clock::time_point updateCurrentTime();
 
     bool timerWait(timespec &);
     void timerInsert(QTimerInfo *);

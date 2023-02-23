@@ -20,6 +20,7 @@
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qwaitcondition.h>
 
+#include <chrono>
 #include <mutex>
 #include <optional>
 #include <tuple>
@@ -99,7 +100,7 @@ private:
 
     QTimerInfoList *m_timerInfo = new QTimerInfoList();
     long m_timerId = 0;
-    uint64_t m_timerTargetTime = 0;
+    std::chrono::milliseconds m_timerTargetTime{};
 
 #if QT_CONFIG(thread)
     std::mutex m_mutex;

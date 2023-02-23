@@ -14,6 +14,8 @@
 #include <emscripten/threading.h>
 #include <emscripten/val.h>
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
 // using namespace emscripten;
@@ -507,15 +509,15 @@ void QEventDispatcherWasm::updateNativeTimer()
     // access to m_timerInfo), and then call native API to set the new
     // wakeup time on the main thread.
 
-    auto timespecToMsec = [](timespec ts) -> uint64_t {
-        return ts.tv_sec * 1000 + ts.tv_nsec / (1000 * 1000);
+    using namespace std::chrono;
+    auto timespecToMsec = [](timespec ts) -> milliseconds {
+        return duration_cast<milliseconds>(seconds{ts.tv_sec} + nanoseconds{ts.tv_nsec});
     };
     timespec toWait;
     bool hasTimer = m_timerInfo->timerWait(toWait);
-    uint64_t currentTime = timespecToMsec(m_timerInfo->currentTime);
-    uint64_t toWaitDuration = timespecToMsec(toWait);
-    uint64_t newTargetTime = currentTime + toWaitDuration;
-
+    const milliseconds toWaitDuration = timespecToMsec(toWait);
+    const time_point newTargetTimePoint = m_timerInfo->currentTime + toWaitDuration;
+    auto newTargetTime = duration_cast<milliseconds>(newTargetTimePoint.time_since_epoch());
     auto maintainNativeTimer = [this, hasTimer, toWaitDuration, newTargetTime]() {
         Q_ASSERT(emscripten_is_main_runtime_thread());
 
@@ -523,18 +525,20 @@ void QEventDispatcherWasm::updateNativeTimer()
             if (m_timerId > 0) {
                 emscripten_clear_timeout(m_timerId);
                 m_timerId = 0;
-                m_timerTargetTime = 0;
+                m_timerTargetTime = 0ms;
             }
             return;
         }
 
-        if (m_timerTargetTime != 0 && newTargetTime >= m_timerTargetTime)
+        if (m_timerTargetTime != 0ms && newTargetTime >= m_timerTargetTime)
             return; // existing timer is good
 
         qCDebug(lcEventDispatcherTimers)
-                << "Created new native timer with wait" << toWaitDuration << "timeout" << newTargetTime;
+                << "Created new native timer with wait" << toWaitDuration.count() << "ms"
+                << "timeout" << newTargetTime.count() << "ms";
         emscripten_clear_timeout(m_timerId);
-        m_timerId = emscripten_set_timeout(&QEventDispatcherWasm::callProcessTimers, toWaitDuration, this);
+        m_timerId = emscripten_set_timeout(&QEventDispatcherWasm::callProcessTimers,
+                                           toWaitDuration.count(), this);
         m_timerTargetTime = newTargetTime;
     };
 
@@ -565,7 +569,7 @@ void QEventDispatcherWasm::callProcessTimers(void *context)
 
     // Process timers on this thread if this is the main event dispatcher
     if (reinterpret_cast<QEventDispatcherWasm *>(context) == g_mainThreadEventDispatcher) {
-        g_mainThreadEventDispatcher->m_timerTargetTime = 0;
+        g_mainThreadEventDispatcher->m_timerTargetTime = 0ms;
         g_mainThreadEventDispatcher->processTimers();
         return;
     }
@@ -575,7 +579,7 @@ void QEventDispatcherWasm::callProcessTimers(void *context)
     std::lock_guard<std::mutex> lock(g_staticDataMutex);
     if (g_secondaryThreadEventDispatchers.contains(context)) {
         QEventDispatcherWasm *eventDispatcher = reinterpret_cast<QEventDispatcherWasm *>(context);
-        eventDispatcher->m_timerTargetTime = 0;
+        eventDispatcher->m_timerTargetTime = 0ms;
         eventDispatcher->m_processTimers = true;
         eventDispatcher->wakeUp();
     }
