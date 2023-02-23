@@ -73,8 +73,9 @@ int main(int argc, char *argv[])
     // Game is played; changes are made...
 //! [0]
 //! [1]
-    QTextStream(stdout) << "Game ended in the following state:\n";
-    game.print();
+    QTextStream s(stdout);
+    s << "Game ended in the following state:\n";
+    game.print(s);
     if (!game.saveGame(json ? Game::Json : Game::Binary))
         return 1;
 

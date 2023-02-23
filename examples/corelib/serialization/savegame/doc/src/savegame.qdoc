@@ -59,7 +59,9 @@
     subclasses, for example), other patterns may be more suitable. See the
     \l{xml/dombookmarks} and \l{xml/streambookmarks} examples for XML, and the
     implementation of \l QListWidgetItem::read() and \l QListWidgetItem::write()
-    for idiomatic QDataStream serialization.
+    for idiomatic QDataStream serialization. The \c{print()} functions in this example
+    are good examples of QTextStream serialization, even though they, of course, lack
+    the deserialization side.
 
     \snippet serialization/savegame/character.h 0
 

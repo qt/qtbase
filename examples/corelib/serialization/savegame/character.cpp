@@ -124,12 +124,12 @@ QJsonObject Character::toJson() const
 }
 //! [toJson]
 
-void Character::print(int indentation) const
+void Character::print(QTextStream &s, int indentation) const
 {
     const QString indent(indentation * 2, ' ');
-    QTextStream(stdout) << indent << "Name:\t" << mName << "\n";
-    QTextStream(stdout) << indent << "Level:\t" << mLevel << "\n";
+    const QString className = QMetaEnum::fromType<ClassType>().valueToKey(mClassType);
 
-    QString className = QMetaEnum::fromType<ClassType>().valueToKey(mClassType);
-    QTextStream(stdout) << indent << "Class:\t" << className << "\n";
+    s << indent << "Name:\t" << mName << "\n"
+      << indent << "Level:\t" << mLevel << "\n"
+      << indent << "Class:\t" << className << "\n";
 }
