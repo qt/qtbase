@@ -1020,12 +1020,22 @@ public:
     // END functions that need to be called with finalizeMutex held
 };
 
+/*!
+    \internal
+
+    Transforms key into a block-sized format and then seeds messageHash from it.
+
+    This function assumes that messageHash is in its initial state (reset() has
+    been called).
+*/
 void QMessageAuthenticationCodePrivate::initMessageHash()
 {
     const int blockSize = qt_hash_block_size(method);
 
     if (key.size() > blockSize) {
-        key = QCryptographicHash::hash(key, method);
+        messageHash.addData(key);
+        key = messageHash.result();
+        messageHash.reset();
     }
 
     if (key.size() < blockSize) {
