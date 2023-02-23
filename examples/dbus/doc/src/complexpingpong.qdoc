@@ -3,11 +3,11 @@
 
 /*!
     \example complexpingpong
-    \title D-Bus Complex Ping Pong Example
+    \title D-Bus Complex Ping Pong
     \ingroup examples-dbus
     \brief Demonstrates usage of the Qt D-Bus typesystem.
 
-    \e{Complex Ping Pong Example} demonstrates the use of \l{Qt D-Bus}
+    \e{Complex Ping Pong} example demonstrates the use of \l{Qt D-Bus}
     typesystem with QDBusVariant and QDBusReply. The example consists of the
     main application \c complexping which starts the other application, \c
     complexpong. Entering keywords such as \c hello and \c ping is handled by

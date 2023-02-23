@@ -63,8 +63,8 @@ qhp.QtDBus.subprojects.examples.selectors = fake:example
 navigation.landingpage = "Qt D-Bus"
 navigation.cppclassespage = "Qt D-Bus C++ Classes"
 
-manifestmeta.thumbnail.names    =   "QtDBus/D-Bus Ping Pong Example" \
-                                    "QtDBus/D-Bus Complex Ping Pong Example"
+manifestmeta.thumbnail.names    =   "QtDBus/D-Bus Ping Pong" \
+                                    "QtDBus/D-Bus Complex Ping Pong"
 
 # Fail the documentation build if there are more warnings than the limit
 warninglimit = 0
