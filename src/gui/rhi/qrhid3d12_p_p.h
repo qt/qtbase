@@ -203,7 +203,7 @@ struct QD3D12ObjectPool
     bool isValid(const QD3D12ObjectHandle &handle) const
     {
         return handle.index > 0
-                && handle.index < data.count()
+                && handle.index < quint32(data.count())
                 && handle.generation > 0
                 && handle.generation == data[handle.index].generation
                 && data[handle.index].object.has_value();
