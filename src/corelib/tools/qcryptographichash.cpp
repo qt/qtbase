@@ -460,6 +460,7 @@ QCryptographicHash::Algorithm QCryptographicHash::algorithm() const noexcept
 
 void QCryptographicHashPrivate::reset() noexcept
 {
+    result.clear();
 #ifdef USING_OPENSSL30
     if (method == QCryptographicHash::Blake2b_160 ||
         method == QCryptographicHash::Blake2b_256 ||
@@ -569,7 +570,6 @@ void QCryptographicHashPrivate::reset() noexcept
 #endif
     }
 #endif // !QT_CONFIG(opensslv30)
-    result.clear();
 }
 
 #if QT_DEPRECATED_SINCE(6, 4)
