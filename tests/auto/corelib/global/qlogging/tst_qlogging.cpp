@@ -168,9 +168,13 @@ public:
     int operator%(int) { ADD("TestClass1::operator%"); return 0; }
     int x;
     int &operator++() { ADD("TestClass1::operator++"); return x; }
-    int operator++(int) { ADD("TestClass1::operator++"); return 0; }
     int &operator--() { ADD("TestClass1::operator--"); return x; }
-    int operator--(int) { ADD("TestClass1::operator--"); return 0; }
+
+    // slightly different to avoid duplicate test rows
+#define ADD2(x)     QTest::newRow(x ".postfix") << Q_FUNC_INFO << x;
+    int operator++(int) { ADD2("TestClass1::operator++"); return 0; }
+    int operator--(int) { ADD2("TestClass1::operator--"); return 0; }
+#undef ADD2
 
     int nested_struct()
     {
@@ -532,7 +536,7 @@ void tst_qmessagehandler::cleanupFuncinfo_data()
     QTest::newRow("msvc_28")
         << "class std::map<long,void const *,struct std::less<long>,class std::allocator<struct std::pair<long const ,void const *> > > *__thiscall TestClass2<class std::map<long,void const *,struct std::less<long>,class std::allocator<struct std::pair<long const ,void const *> > > >::func_template1<class TestClass2<class std::map<long,void const *,struct std::less<long>,class std::allocator<struct std::pair<long const ,void const *> > > >>(void)"
         << "TestClass2::func_template1";
-    QTest::newRow("gcc_21")
+    QTest::newRow("gcc_28")
         << "T* TestClass2<T>::func_template1() [with S = TestClass2<std::map<long int, const void*, std::less<long int>, std::allocator<std::pair<const long int, const void*> > > >, T = std::map<long int, const void*, std::less<long int>, std::allocator<std::pair<const long int, const void*> > >]"
         << "TestClass2::func_template1";
 
