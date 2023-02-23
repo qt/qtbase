@@ -249,6 +249,7 @@ public:
 
     void reset() noexcept;
     void addData(QByteArrayView bytes) noexcept;
+    bool addData(QIODevice *dev);
     void finalize() noexcept;
     // when not called from the static hash() function, this function needs to be
     // called with finalizeMutex held (finalize() will do that):
@@ -711,6 +712,11 @@ void QCryptographicHashPrivate::addData(QByteArrayView bytes) noexcept
  */
 bool QCryptographicHash::addData(QIODevice *device)
 {
+    return d->addData(device);
+}
+
+bool QCryptographicHashPrivate::addData(QIODevice *device)
+{
     if (!device->isReadable())
         return false;
 
@@ -721,7 +727,7 @@ bool QCryptographicHash::addData(QIODevice *device)
     qint64 length;
 
     while ((length = device->read(buffer, sizeof(buffer))) > 0)
-        d->addData({buffer, qsizetype(length)}); // length always <= 1024
+        addData({buffer, qsizetype(length)}); // length always <= 1024
 
     return device->atEnd();
 }
