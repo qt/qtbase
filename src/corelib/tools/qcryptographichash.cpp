@@ -127,11 +127,38 @@ class QSmallByteArray
     static_assert(N <= std::numeric_limits<std::uint8_t>::max());
     quint8 m_size = 0;
 public:
-    // all SMFs are ok!
+    QSmallByteArray() = default;
+    // all compiler-generated SMFs are ok!
+    template <std::size_t M, std::enable_if_t<M < N, bool> = true> // M == N is for copy ctor!
+    QSmallByteArray(const QSmallByteArray<M> &other) noexcept
+    {
+        assign(other);
+    }
+    template <std::size_t M, std::enable_if_t<M < N, bool> = true> // M == N is for copy-assignment op!
+    QSmallByteArray &operator=(const QSmallByteArray<M> &other) noexcept
+    {
+        assign(other);
+        return *this;
+    }
+
+    template <typename Container> // ### underconstrained
+    void assign(const Container &c)
+    {
+        const size_t otherSize = size_t(std::size(c));
+        Q_ASSERT(otherSize < N);
+        memcpy(data(), std::data(c), otherSize);
+        m_size = quint8(otherSize);
+    }
+
     quint8 *data() noexcept { return m_data.data(); }
     const quint8 *data() const noexcept { return m_data.data(); }
     qsizetype size() const noexcept { return qsizetype{m_size}; }
     quint8 &operator[](qsizetype n)
+    {
+        Q_ASSERT(n < size());
+        return data()[n];
+    }
+    const quint8 &operator[](qsizetype n) const
     {
         Q_ASSERT(n < size());
         return data()[n];
@@ -1080,6 +1107,15 @@ constexpr int maxHashBlockSize()
 
 using HashBlock = QSmallByteArray<maxHashBlockSize()>;
 
+static HashBlock xored(const HashBlock &block, quint8 val) noexcept
+{
+    HashBlock result;
+    result.resizeForOverwrite(block.size());
+    for (qsizetype i = 0; i < block.size(); ++i)
+        result[i] = block[i] ^ val;
+    return result;
+}
+
 class QMessageAuthenticationCodePrivate
 {
 public:
@@ -1088,7 +1124,7 @@ public:
     {
     }
 
-    QByteArray key;
+    HashBlock key;
     HashResult result;
     QBasicMutex finalizeMutex;
     QCryptographicHashPrivate messageHash;
@@ -1121,10 +1157,10 @@ void QMessageAuthenticationCodePrivate::setKey(const QByteArray &newKey)
         messageHash.addData(newKey);
         messageHash.finalizeUnchecked();
         static_assert(maxHashLength() <= maxHashBlockSize());
-        key = messageHash.resultView().toByteArray();
+        key = messageHash.result;
         messageHash.reset();
     } else {
-        key = newKey;
+        key.assign(newKey);
     }
 
     if (key.size() < blockSize)
@@ -1141,15 +1177,7 @@ void QMessageAuthenticationCodePrivate::setKey(const QByteArray &newKey)
 */
 void QMessageAuthenticationCodePrivate::initMessageHash()
 {
-    const int blockSize = qt_hash_block_size(method);
-
-    QVarLengthArray<char> iKeyPad(blockSize);
-    const char * const keyData = key.constData();
-
-    for (int i = 0; i < blockSize; ++i)
-        iKeyPad[i] = keyData[i] ^ 0x36;
-
-    messageHash.addData(iKeyPad);
+    messageHash.addData(xored(key, 0x36));
 }
 
 /*!
@@ -1297,20 +1325,11 @@ void QMessageAuthenticationCodePrivate::finalize()
 
 void QMessageAuthenticationCodePrivate::finalizeUnchecked() noexcept
 {
-    const int blockSize = qt_hash_block_size(method);
-
     messageHash.finalizeUnchecked();
     const HashResult hashedMessage = messageHash.result;
 
-    HashBlock oKeyPad;
-    oKeyPad.resizeForOverwrite(blockSize);
-    const char * const keyData = key.constData();
-
-    for (int i = 0; i < blockSize; ++i)
-        oKeyPad[i] = keyData[i] ^ 0x5c;
-
     messageHash.reset();
-    messageHash.addData(oKeyPad);
+    messageHash.addData(xored(key, 0x5c));
     messageHash.addData(hashedMessage);
     messageHash.finalizeUnchecked();
 
