@@ -1224,7 +1224,7 @@ void QMessageAuthenticationCodePrivate::finalizeUnchecked()
     const int blockSize = qt_hash_block_size(method);
 
     messageHash.finalizeUnchecked();
-    QByteArrayView hashedMessage = messageHash.resultView();
+    const HashResult hashedMessage = messageHash.result;
 
     QVarLengthArray<char> oKeyPad(blockSize);
     const char * const keyData = key.constData();
@@ -1232,10 +1232,10 @@ void QMessageAuthenticationCodePrivate::finalizeUnchecked()
     for (int i = 0; i < blockSize; ++i)
         oKeyPad[i] = keyData[i] ^ 0x5c;
 
-    QCryptographicHashPrivate hash(method);
-    hash.addData(oKeyPad);
-    hash.addData(hashedMessage);
-    hash.finalizeUnchecked();
+    messageHash.reset();
+    messageHash.addData(oKeyPad);
+    messageHash.addData(hashedMessage.toByteArrayView());
+    messageHash.finalizeUnchecked();
 
     result = hash.resultView().toByteArray();
 }
