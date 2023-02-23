@@ -94,10 +94,8 @@ public:
     QWasmCompositorTest() : m_window(val::global("window")), m_testSupport(val::object())
     {
         m_window.set("testSupport", m_testSupport);
-        m_testSupport.set("qtAddContainerElement",
-                          emscripten::val::module_property("qtAddContainerElement"));
-        m_testSupport.set("qtRemoveContainerElement",
-                          emscripten::val::module_property("qtRemoveContainerElement"));
+        m_testSupport.set("qtSetContainerElements",
+                          emscripten::val::module_property("qtSetContainerElements"));
     }
 
     ~QWasmCompositorTest() noexcept
@@ -118,12 +116,12 @@ private:
         });
         m_cleanup.emplace_back([]() mutable {
             EM_ASM({
-                testSupport.qtRemoveContainerElement(testSupport.screenElement);
+                testSupport.qtSetContainerElements([]);
                 testSupport.screenElement.parentElement.removeChild(testSupport.screenElement);
             });
         });
 
-        EM_ASM({ testSupport.qtAddContainerElement(testSupport.screenElement); });
+        EM_ASM({ testSupport.qtSetContainerElements([testSupport.screenElement]); });
     }
 
     template<class T>

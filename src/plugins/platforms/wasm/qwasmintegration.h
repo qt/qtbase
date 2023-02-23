@@ -70,8 +70,9 @@ public:
     QWasmInputContext *getWasmInputContext() { return m_platformInputContext; }
     static QWasmIntegration *get() { return s_instance; }
 
-    void addScreen(const emscripten::val &canvas);
-    void removeScreen(const emscripten::val &canvas);
+    void setContainerElements(emscripten::val elementArray);
+    void addContainerElement(emscripten::val elementArray);
+    void removeContainerElement(emscripten::val elementArray);
     void resizeScreen(const emscripten::val &canvas);
     void resizeAllScreens();
     void updateDpi();
@@ -81,10 +82,15 @@ public:
     int touchPoints;
 
 private:
+    struct ScreenMapping {
+        emscripten::val emscriptenVal;
+        QWasmScreen *wasmScreen;
+    };
+
     mutable QWasmFontDatabase *m_fontDb;
     mutable QWasmServices *m_desktopServices;
     mutable QHash<QWindow *, QWasmBackingStore *> m_backingStores;
-    QList<QPair<emscripten::val, QWasmScreen *>> m_screens;
+    QList<ScreenMapping> m_screens;
     mutable QWasmClipboard *m_clipboard;
     mutable QWasmAccessibility *m_accessibility;
 
