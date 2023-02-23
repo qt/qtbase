@@ -44,7 +44,7 @@ public:
     static int keysymToQtKey(xkb_keysym_t keysym, Qt::KeyboardModifiers modifiers);
     static int keysymToQtKey(xkb_keysym_t keysym, Qt::KeyboardModifiers modifiers,
                              xkb_state *state, xkb_keycode_t code,
-                             bool superAsMeta = true, bool hyperAsMeta = true);
+                             bool superAsMeta = false, bool hyperAsMeta = false);
 
     // xkbcommon_* API is part of libxkbcommon internals, with modifications as
     // described in the header of the implementation file.
