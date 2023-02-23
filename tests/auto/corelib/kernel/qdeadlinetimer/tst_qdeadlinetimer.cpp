@@ -524,7 +524,7 @@ void tst_QDeadlineTimer::overflow()
     QCOMPARE(deadline.remainingTimeNSecs(), 0);
     QVERIFY(deadline.remainingTime() == 0);
     // If the timer is saturated we don't want to get a valid number of milliseconds
-    QVERIFY(deadline.deadline() == std::numeric_limits<qint64>::min());
+    QCOMPARE(deadline.deadline(), std::numeric_limits<qint64>::min());
 
     // Check that the conversion to milliseconds and nanoseconds underflows gracefully
     deadline.setPreciseDeadline(std::numeric_limits<qint64>::min() / 10, 0, timerType);
