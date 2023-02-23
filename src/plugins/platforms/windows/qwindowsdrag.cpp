@@ -648,7 +648,8 @@ IDropTargetHelper* QWindowsDrag::dropHelper() {
 // We process pointer messages for touch/pen and generate mouse input through SendInput() to trigger DoDragDrop()
 static HRESULT startDoDragDrop(LPDATAOBJECT pDataObj, LPDROPSOURCE pDropSource, DWORD dwOKEffects, LPDWORD pdwEffect)
 {
-    HWND hwnd = ::GetFocus();
+    QWindow *underMouse = QWindowsContext::instance()->windowUnderMouse();
+    const HWND hwnd = underMouse ? reinterpret_cast<HWND>(underMouse->winId()) : ::GetFocus();
     bool starting = false;
 
     for (;;) {
