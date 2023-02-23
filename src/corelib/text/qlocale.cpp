@@ -2645,17 +2645,17 @@ QString QLocale::toString(double f, char format, int precision) const
     uint flags = isAsciiUpper(format) ? QLocaleData::CapitalEorX : 0;
 
     switch (QtMiscUtils::toAsciiLower(format)) {
-        case 'f':
-            form = QLocaleData::DFDecimal;
-            break;
-        case 'e':
-            form = QLocaleData::DFExponent;
-            break;
-        case 'g':
-            form = QLocaleData::DFSignificantDigits;
-            break;
-        default:
-            break;
+    case 'f':
+        form = QLocaleData::DFDecimal;
+        break;
+    case 'e':
+        form = QLocaleData::DFExponent;
+        break;
+    case 'g':
+        form = QLocaleData::DFSignificantDigits;
+        break;
+    default:
+        break;
     }
 
     if (!(d->m_numberOptions & OmitGroupSeparator))
@@ -3568,76 +3568,76 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
         const bool groupDigits = flags & GroupDigits;
         const int minExponentDigits = flags & ZeroPadExponent ? 2 : 1;
         switch (form) {
-            case DFExponent:
-                numStr = exponentForm(std::move(digits), decpt, precision, PMDecimalDigits,
-                                      mustMarkDecimal, minExponentDigits);
-                break;
-            case DFDecimal:
-                numStr = decimalForm(std::move(digits), decpt, precision, PMDecimalDigits,
-                                     mustMarkDecimal, groupDigits);
-                break;
-            case DFSignificantDigits: {
-                PrecisionMode mode = (flags & AddTrailingZeroes) ?
-                            PMSignificantDigits : PMChopTrailingZeros;
+        case DFExponent:
+            numStr = exponentForm(std::move(digits), decpt, precision, PMDecimalDigits,
+                                  mustMarkDecimal, minExponentDigits);
+            break;
+        case DFDecimal:
+            numStr = decimalForm(std::move(digits), decpt, precision, PMDecimalDigits,
+                                 mustMarkDecimal, groupDigits);
+            break;
+        case DFSignificantDigits: {
+            PrecisionMode mode = (flags & AddTrailingZeroes) ?
+                PMSignificantDigits : PMChopTrailingZeros;
 
-                /* POSIX specifies sprintf() to follow fprintf(), whose 'g/G'
-                   format says; with P = 6 if precision unspecified else 1 if
-                   precision is 0 else precision; when 'e/E' would have exponent
-                   X, use:
-                     * 'f/F' if P > X >= -4, with precision P-1-X
-                     * 'e/E' otherwise, with precision P-1
-                   Helpfully, we already have mapped precision < 0 to 6 - except
-                   for F.P.Shortest mode, which is its own story - and those of
-                   our callers with unspecified precision either used 6 or -1
-                   for it.
-                */
-                bool useDecimal;
-                if (precision == QLocale::FloatingPointShortest) {
-                    // Find out which representation is shorter.
-                    // Set bias to everything added to exponent form but not
-                    // decimal, minus the converse.
+            /* POSIX specifies sprintf() to follow fprintf(), whose 'g/G'
+               format says; with P = 6 if precision unspecified else 1 if
+               precision is 0 else precision; when 'e/E' would have exponent
+               X, use:
+                 * 'f/F' if P > X >= -4, with precision P-1-X
+                 * 'e/E' otherwise, with precision P-1
+               Helpfully, we already have mapped precision < 0 to 6 - except
+               for F.P.Shortest mode, which is its own story - and those of
+               our callers with unspecified precision either used 6 or -1
+               for it.
+            */
+            bool useDecimal;
+            if (precision == QLocale::FloatingPointShortest) {
+                // Find out which representation is shorter.
+                // Set bias to everything added to exponent form but not
+                // decimal, minus the converse.
 
-                    // Exponent adds separator, sign and digits:
-                    int bias = 2 + minExponentDigits;
-                    // Decimal form may get grouping separators inserted:
-                    if (groupDigits && decpt >= m_grouping_top + m_grouping_least)
-                        bias -= (decpt - m_grouping_top - m_grouping_least) / m_grouping_higher + 1;
-                    // X = decpt - 1 needs two digits if decpt > 10:
-                    if (decpt > 10 && minExponentDigits == 1)
-                        ++bias;
-                    // Assume digitCount < 95, so we can ignore the 3-digit
-                    // exponent case (we'll set useDecimal false anyway).
+                // Exponent adds separator, sign and digits:
+                int bias = 2 + minExponentDigits;
+                // Decimal form may get grouping separators inserted:
+                if (groupDigits && decpt >= m_grouping_top + m_grouping_least)
+                    bias -= (decpt - m_grouping_top - m_grouping_least) / m_grouping_higher + 1;
+                // X = decpt - 1 needs two digits if decpt > 10:
+                if (decpt > 10 && minExponentDigits == 1)
+                    ++bias;
+                // Assume digitCount < 95, so we can ignore the 3-digit
+                // exponent case (we'll set useDecimal false anyway).
 
-                    const qsizetype digitCount = digits.size() / zero.size();
-                    if (!mustMarkDecimal) {
-                        // Decimal separator is skipped if at end; adjust if
-                        // that happens for only one form:
-                        if (digitCount <= decpt && digitCount > 1)
-                            ++bias; // decimal but not exponent
-                        else if (digitCount == 1 && decpt <= 0)
-                            --bias; // exponent but not decimal
-                    }
-                    // When 0 < decpt <= digitCount, the forms have equal digit
-                    // counts, plus things bias has taken into account;
-                    // otherwise decimal form's digit count is right-padded with
-                    // zeros to decpt, when decpt is positive, otherwise it's
-                    // left-padded with 1 - decpt zeros.
-                    useDecimal = (decpt <= 0 ? 1 - decpt <= bias
-                                  : decpt <= digitCount ? 0 <= bias
-                                  : decpt <= digitCount + bias);
-                } else {
-                    // X == decpt - 1, POSIX's P; -4 <= X < P iff -4 < decpt <= P
-                    Q_ASSERT(precision >= 0);
-                    useDecimal = decpt > -4 && decpt <= (precision ? precision : 1);
+                const qsizetype digitCount = digits.size() / zero.size();
+                if (!mustMarkDecimal) {
+                    // Decimal separator is skipped if at end; adjust if
+                    // that happens for only one form:
+                    if (digitCount <= decpt && digitCount > 1)
+                        ++bias; // decimal but not exponent
+                    else if (digitCount == 1 && decpt <= 0)
+                        --bias; // exponent but not decimal
                 }
-
-                numStr = useDecimal
-                    ? decimalForm(std::move(digits), decpt, precision, mode,
-                                  mustMarkDecimal, groupDigits)
-                    : exponentForm(std::move(digits), decpt, precision, mode,
-                                   mustMarkDecimal, minExponentDigits);
-                break;
+                // When 0 < decpt <= digitCount, the forms have equal digit
+                // counts, plus things bias has taken into account;
+                // otherwise decimal form's digit count is right-padded with
+                // zeros to decpt, when decpt is positive, otherwise it's
+                // left-padded with 1 - decpt zeros.
+                useDecimal = (decpt <= 0 ? 1 - decpt <= bias
+                              : decpt <= digitCount ? 0 <= bias
+                              : decpt <= digitCount + bias);
+            } else {
+                // X == decpt - 1, POSIX's P; -4 <= X < P iff -4 < decpt <= P
+                Q_ASSERT(precision >= 0);
+                useDecimal = decpt > -4 && decpt <= (precision ? precision : 1);
             }
+
+            numStr = useDecimal
+                ? decimalForm(std::move(digits), decpt, precision, mode,
+                              mustMarkDecimal, groupDigits)
+                : exponentForm(std::move(digits), decpt, precision, mode,
+                               mustMarkDecimal, minExponentDigits);
+            break;
+        }
         }
 
         // Pad with zeros. LeftAdjusted overrides ZeroPadded.
@@ -4002,47 +4002,47 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
 
         } else {
             switch (c) {
-                case '.':
-                    // If an integer has a decimal point, it is Invalid.
-                    // A double can only have one, at the end of its whole-number part.
-                    if (numMode == IntegerMode || state != Whole)
-                        return false;
-                    // Even when decDigits is 0, we do allow the decimal point to be
-                    // present - just as long as no digits follow it.
-
-                    state = Fractional;
-                    break;
-
-                case '+':
-                case '-':
-                    // A sign can only appear at the start or after the e of scientific:
-                    if (last != '\0' && !(scientific && last == 'e'))
-                        return false;
-                    break;
-
-                case ',':
-                    // Grouping is only allowed after a digit in the whole-number portion:
-                    if ((number_options & QLocale::RejectGroupSeparator) || state != Whole
-                        || last < '0' || last > '9') {
-                        return false;
-                    }
-                    // We could check grouping sizes are correct, but fixup()s are
-                    // probably better off correcting any misplacement instead.
-                    break;
-
-                case 'e':
-                    // Only one e is allowed and only in scientific:
-                    if (!scientific || state == Exponent)
-                        return false;
-                    state = Exponent;
-                    break;
-
-                default:
-                    // Nothing else can validly appear in a number.
-                    // In fact, numericToCLocale() must have returned 0. If anyone changes
-                    // it to return something else, we probably need to handle it here !
-                    Q_ASSERT(!c);
+            case '.':
+                // If an integer has a decimal point, it is Invalid.
+                // A double can only have one, at the end of its whole-number part.
+                if (numMode == IntegerMode || state != Whole)
                     return false;
+                // Even when decDigits is 0, we do allow the decimal point to be
+                // present - just as long as no digits follow it.
+
+                state = Fractional;
+                break;
+
+            case '+':
+            case '-':
+                // A sign can only appear at the start or after the e of scientific:
+                if (last != '\0' && !(scientific && last == 'e'))
+                    return false;
+                break;
+
+            case ',':
+                // Grouping is only allowed after a digit in the whole-number portion:
+                if ((number_options & QLocale::RejectGroupSeparator) || state != Whole
+                        || last < '0' || last > '9') {
+                    return false;
+                }
+                // We could check grouping sizes are correct, but fixup()s are
+                // probably better off correcting any misplacement instead.
+                break;
+
+            case 'e':
+                // Only one e is allowed and only in scientific:
+                if (!scientific || state == Exponent)
+                    return false;
+                state = Exponent;
+                break;
+
+            default:
+                // Nothing else can validly appear in a number.
+                // In fact, numericToCLocale() must have returned 0. If anyone changes
+                // it to return something else, we probably need to handle it here !
+                Q_ASSERT(!c);
+                return false;
             }
         }
 
