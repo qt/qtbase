@@ -130,6 +130,7 @@ class QSmallByteArray
 public:
     // all SMFs are ok!
     quint8 *data() noexcept { return m_data.data(); }
+    const quint8 *data() const noexcept { return m_data.data(); }
     qsizetype size() const noexcept { return qsizetype{m_size}; }
     quint8 &operator[](qsizetype n)
     {
@@ -144,8 +145,22 @@ public:
         Q_ASSERT(size_t(s) <= N);
         m_size = std::uint8_t(s);
     }
+    void resize(qsizetype s, quint8 v)
+    {
+        const auto oldSize = size();
+        resizeForOverwrite(s);
+        if (s > oldSize)
+            memset(data() + oldSize, v, size() - oldSize);
+    }
     QByteArrayView toByteArrayView() const noexcept
-    { return QByteArrayView{m_data.data(), size()}; }
+    { return *this; }
+
+    auto begin() noexcept { return data(); }
+    auto begin() const noexcept { return data(); }
+    auto cbegin() const noexcept { return begin(); }
+    auto end() noexcept { return data() + size(); }
+    auto end() const noexcept { return data() + size(); }
+    auto cend() const noexcept { return end(); }
 };
 
 static constexpr int hashLengthInternal(QCryptographicHash::Algorithm method) noexcept
@@ -1260,8 +1275,8 @@ void QMessageAuthenticationCodePrivate::finalizeUnchecked() noexcept
         oKeyPad[i] = keyData[i] ^ 0x5c;
 
     messageHash.reset();
-    messageHash.addData(oKeyPad.toByteArrayView());
-    messageHash.addData(hashedMessage.toByteArrayView());
+    messageHash.addData(oKeyPad);
+    messageHash.addData(hashedMessage);
     messageHash.finalizeUnchecked();
 
     result = messageHash.result;
