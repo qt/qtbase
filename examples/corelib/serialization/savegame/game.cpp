@@ -140,13 +140,13 @@ QJsonObject Game::toJson() const
 }
 //! [toJson]
 
-void Game::print(int indentation) const
+void Game::print(QTextStream &s, int indentation) const
 {
     const QString indent(indentation * 2, ' ');
-    QTextStream(stdout) << indent << "Player\n";
-    mPlayer.print(indentation + 1);
+    s << indent << "Player\n";
+    mPlayer.print(s, indentation + 1);
 
-    QTextStream(stdout) << indent << "Levels\n";
+    s << indent << "Levels\n";
     for (const Level &level : mLevels)
-        level.print(indentation + 1);
+        level.print(s, indentation + 1);
 }

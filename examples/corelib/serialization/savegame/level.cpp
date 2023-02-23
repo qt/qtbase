@@ -57,12 +57,12 @@ QJsonObject Level::toJson() const
 }
 //! [toJson]
 
-void Level::print(int indentation) const
+void Level::print(QTextStream &s, int indentation) const
 {
     const QString indent(indentation * 2, ' ');
-    QTextStream(stdout) << indent << "Name:\t" << mName << "\n";
 
-    QTextStream(stdout) << indent << "NPCs:\n";
+    s << indent << "Name:\t" << mName << "\n"
+      << indent << "NPCs:\n";
     for (const Character &character : mNpcs)
-        character.print(2);
+        character.print(s, indentation + 1);
 }
