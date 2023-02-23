@@ -3541,8 +3541,7 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
 
         if (zero == u"0") {
             // No need to convert digits.
-            Q_ASSERT(std::all_of(buf.cbegin(), buf.cbegin() + length, [](char ch)
-                                 { return '0' <= ch && ch <= '9'; }));
+            Q_ASSERT(std::all_of(buf.cbegin(), buf.cbegin() + length, isAsciiDigit));
             // That check is taken care of in unicodeForDigits, below.
         } else if (zero.size() == 2 && zero.at(0).isHighSurrogate()) {
             const char32_t zeroUcs4 = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
@@ -3893,7 +3892,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
             // After the exponent there can only be '+', '-' or digits.
             // If we find a '0' directly after some non-digit, then that is a
             // leading zero, acceptable only if it is the whole exponent.
-            if (idx < length - 1 && (last < '0' || last > '9'))
+            if (idx < length - 1 && !isAsciiDigit(last))
                 return false;
         }
 
@@ -3904,7 +3903,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
         }
 
         if (!number_options.testFlag(QLocale::RejectGroupSeparator)) {
-            if (out >= '0' && out <= '9') {
+            if (isAsciiDigit(out)) {
                 if (start_of_digits_idx == -1)
                     start_of_digits_idx = idx;
                 ++digitsInGroup;
@@ -3988,7 +3987,7 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
                     return false;
                 break;
             case Exponent:
-                if (last < '0' || last > '9') {
+                if (!isAsciiDigit(last)) {
                     // This is the first digit in the exponent (there may have beena '+'
                     // or '-' in before). If it's a zero, the exponent is zero-padded.
                     if (c == '0' && (number_options & QLocale::RejectLeadingZeroInExponent))
@@ -4020,7 +4019,7 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
             case ',':
                 // Grouping is only allowed after a digit in the whole-number portion:
                 if ((number_options & QLocale::RejectGroupSeparator) || state != Whole
-                        || last < '0' || last > '9') {
+                        || !isAsciiDigit(last)) {
                     return false;
                 }
                 // We could check grouping sizes are correct, but fixup()s are
