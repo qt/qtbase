@@ -3,7 +3,7 @@
 
 /*!
     \example chat
-    \title D-Bus Chat Example
+    \title D-Bus Chat
     \ingroup examples-dbus
     \brief Demonstrates communication among instances of an application.
 
