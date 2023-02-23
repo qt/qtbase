@@ -156,13 +156,18 @@ import_plugins {
         # the plugin path. Unknown plugins must rely on the default link path.
         plug_type = $$eval(QT_PLUGIN.$${plug}.TYPE)
         !isEmpty(plug_type) {
-            plug_name = $$QMAKE_PREFIX_STATICLIB$${plug}$$qtPlatformTargetSuffix().$$QMAKE_EXTENSION_STATICLIB
+            # Respect target config if Qt provides both debug and release versions
+            # of each plugin. Otherwise, respect what Qt was configured with.
+            qtConfig(debug_and_release): config_variable = CONFIG
+            else: config_variable = QT_CONFIG
+
+            plug_name = $$QMAKE_PREFIX_STATICLIB$${plug}$$qtPlatformTargetSuffix($$config_variable).$$QMAKE_EXTENSION_STATICLIB
             plug_path = $$eval(QT_PLUGIN.$${plug}.PATH)
             isEmpty(plug_path): \
                 plug_path = $$[QT_INSTALL_PLUGINS/get]
             LIBS += $$plug_path/$$plug_type/$$plug_name
         } else {
-            LIBS += -l$${plug}$$qtPlatformTargetSuffix()
+            LIBS += -l$${plug}$$qtPlatformTargetSuffix(CONFIG)
         }
     }
 
