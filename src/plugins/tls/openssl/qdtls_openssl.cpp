@@ -182,7 +182,7 @@ extern "C" int q_generate_cookie_callback(SSL *ssl, unsigned char *dst,
 
     QMessageAuthenticationCode hmac(dtls->hashAlgorithm, dtls->secret);
     hmac.addData(peerData);
-    const QByteArray cookie = hmac.result();
+    const QByteArrayView cookie = hmac.resultView();
     Q_ASSERT(cookie.size() >= 0);
     // DTLS1_COOKIE_LENGTH is erroneously 256 bytes long, must be 255 - RFC 6347, 4.2.1.
     *cookieLength = qMin(DTLS1_COOKIE_LENGTH - 1, cookie.size());

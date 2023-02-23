@@ -1332,14 +1332,29 @@ bool QMessageAuthenticationCode::addData(QIODevice *device)
 }
 
 /*!
+    \since 6.6
+
+    Returns the final hash value.
+
+    Note that the returned view remains valid only as long as the
+    QMessageAuthenticationCode object is not modified by other means.
+
+    \sa result()
+*/
+QByteArrayView QMessageAuthenticationCode::resultView() const noexcept
+{
+    d->finalize();
+    return d->result.toByteArrayView();
+}
+
+/*!
     Returns the final authentication code.
 
-    \sa QByteArray::toHex()
+    \sa resultView(), QByteArray::toHex()
 */
 QByteArray QMessageAuthenticationCode::result() const
 {
-    d->finalize();
-    return d->result.toByteArrayView().toByteArray();
+    return resultView().toByteArray();
 }
 
 void QMessageAuthenticationCodePrivate::finalize()

@@ -148,11 +148,11 @@ void tst_QMessageAuthenticationCode::result()
     QMessageAuthenticationCode mac(algo);
     mac.setKey(key);
     mac.addData(message);
-    QByteArray result = mac.result();
+    QByteArrayView resultView = mac.resultView();
 
-    QCOMPARE(result, code);
+    QCOMPARE(resultView, code);
 
-    result = QMessageAuthenticationCode::hash(message, key, algo);
+    const auto result = QMessageAuthenticationCode::hash(message, key, algo);
     QCOMPARE(result, code);
 }
 
@@ -178,7 +178,7 @@ void tst_QMessageAuthenticationCode::result_incremental()
     mac.setKey(key);
     mac.addData(leftPart);
     mac.addData(rightPart);
-    QByteArray result = mac.result();
+    QByteArrayView result = mac.resultView();
 
     QCOMPARE(result, code);
 }
@@ -200,7 +200,7 @@ void tst_QMessageAuthenticationCode::addData_overloads()
         QMessageAuthenticationCode mac(algo);
         mac.setKey(key);
         mac.addData(message.constData(), message.size());
-        QByteArray result = mac.result();
+        QByteArrayView result = mac.resultView();
 
         QCOMPARE(result, code);
     }
@@ -212,7 +212,7 @@ void tst_QMessageAuthenticationCode::addData_overloads()
         QMessageAuthenticationCode mac(algo);
         mac.setKey(key);
         QVERIFY(mac.addData(&buffer));
-        QByteArray result = mac.result();
+        QByteArrayView result = mac.resultView();
         buffer.close();
 
         QCOMPARE(result, code);

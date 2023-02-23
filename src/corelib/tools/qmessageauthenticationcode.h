@@ -28,6 +28,7 @@ public:
     void addData(const QByteArray &data);
     bool addData(QIODevice *device);
 
+    QByteArrayView resultView() const noexcept;
     QByteArray result() const;
 
     static QByteArray hash(const QByteArray &message, const QByteArray &key,
