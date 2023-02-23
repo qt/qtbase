@@ -1012,7 +1012,7 @@ public:
     }
 
     QByteArray key;
-    QByteArray result;
+    HashResult result;
     QBasicMutex finalizeMutex;
     QCryptographicHashPrivate messageHash;
     const QCryptographicHash::Algorithm method;
@@ -1190,7 +1190,7 @@ bool QMessageAuthenticationCode::addData(QIODevice *device)
 QByteArray QMessageAuthenticationCode::result() const
 {
     d->finalize();
-    return d->result;
+    return d->result.toByteArrayView().toByteArray();
 }
 
 void QMessageAuthenticationCodePrivate::finalize()
@@ -1219,7 +1219,7 @@ void QMessageAuthenticationCodePrivate::finalizeUnchecked()
     messageHash.addData(hashedMessage.toByteArrayView());
     messageHash.finalizeUnchecked();
 
-    result = hash.resultView().toByteArray();
+    result = messageHash.result;
 }
 
 /*!
@@ -1234,7 +1234,7 @@ QByteArray QMessageAuthenticationCode::hash(const QByteArray &message, const QBy
     mac.initMessageHash();
     mac.messageHash.addData(message);
     mac.finalizeUnchecked();
-    return mac.result;
+    return mac.result.toByteArrayView().toByteArray();
 }
 
 QT_END_NAMESPACE
