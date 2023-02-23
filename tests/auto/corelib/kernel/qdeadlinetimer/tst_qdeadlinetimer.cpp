@@ -679,6 +679,14 @@ void tst_QDeadlineTimer::stdchrono()
     QCOMPARE_LT(deadline.deadline<steady_clock>(), (steady_clock::now() + 5ms * minResolution));
     QCOMPARE_GT(deadline.deadline<system_clock>(), (system_clock::now() + 3ms * minResolution));
     QCOMPARE_LT(deadline.deadline<system_clock>(), (system_clock::now() + 5ms * minResolution));
+    QCOMPARE_GT((deadline.deadline<steady_clock, milliseconds>()),
+                steady_clock::now() + 3ms * minResolution);
+    QCOMPARE_LT((deadline.deadline<steady_clock, milliseconds>()),
+                steady_clock::now() + 5ms * minResolution);
+    QCOMPARE_GT((deadline.deadline<system_clock, milliseconds>()),
+                system_clock::now() + 3ms * minResolution);
+    QCOMPARE_LT((deadline.deadline<system_clock, milliseconds>()),
+                system_clock::now() + 5ms * minResolution);
     if (timerType == Qt::CoarseTimer) {
         QCOMPARE_GT(deadline, now + 3ms * minResolution);
         QCOMPARE_LT(deadline, now + 5ms * minResolution);

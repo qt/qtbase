@@ -91,16 +91,11 @@ public:
     { setDeadline(deadline_); return *this; }
 
     template <class Clock, class Duration = typename Clock::duration>
-    void setDeadline(std::chrono::time_point<Clock, Duration> deadline_,
-                     Qt::TimerType type_ = Qt::CoarseTimer)
-    { setRemainingTime(deadline_ == deadline_.max() ? Duration::max() : deadline_ - Clock::now(), type_); }
+    void setDeadline(std::chrono::time_point<Clock, Duration> tp,
+                     Qt::TimerType type_ = Qt::CoarseTimer);
 
     template <class Clock, class Duration = typename Clock::duration>
-    std::chrono::time_point<Clock, Duration> deadline() const
-    {
-        auto val = std::chrono::nanoseconds(rawRemainingTimeNSecs()) + Clock::now();
-        return std::chrono::time_point_cast<Duration>(val);
-    }
+    std::chrono::time_point<Clock, Duration> deadline() const;
 
     template <class Rep, class Period>
     QDeadlineTimer(std::chrono::duration<Rep, Period> remaining, Qt::TimerType type_ = Qt::CoarseTimer)
@@ -148,26 +143,32 @@ private:
     qint64 rawRemainingTimeNSecs() const noexcept;
 };
 
-template <> inline std::chrono::steady_clock::time_point
-QDeadlineTimer::deadline<std::chrono::steady_clock, std::chrono::steady_clock::duration>() const
+template<class Clock, class Duration>
+std::chrono::time_point<Clock, Duration> QDeadlineTimer::deadline() const
 {
-    return std::chrono::steady_clock::time_point(std::chrono::nanoseconds(deadlineNSecs()));
+    using namespace std::chrono;
+    if constexpr (std::is_same_v<Clock, steady_clock>) {
+        auto val = duration_cast<Duration>(nanoseconds(deadlineNSecs()));
+        return time_point<Clock, Duration>(val);
+    } else {
+        auto val = nanoseconds(rawRemainingTimeNSecs()) + Clock::now();
+        return time_point_cast<Duration>(val);
+    }
 }
 
-template <> inline void
-QDeadlineTimer::setDeadline<std::chrono::steady_clock, std::chrono::steady_clock::duration>(std::chrono::steady_clock::time_point tp, Qt::TimerType type_)
+template<class Clock, class Duration>
+void QDeadlineTimer::setDeadline(std::chrono::time_point<Clock, Duration> tp, Qt::TimerType type_)
 {
     using namespace std::chrono;
     if (tp == tp.max()) {
         *this = Forever;
         type = type_;
-    } else if (type_ != Qt::PreciseTimer) {
-        // if we aren't using PreciseTimer, then we need to convert
-        setPreciseRemainingTime(0, duration_cast<nanoseconds>(tp - steady_clock::now()).count(), type_);
-    } else {
+    } else if constexpr (std::is_same_v<Clock, steady_clock>) {
         setPreciseDeadline(0,
                            duration_cast<nanoseconds>(tp.time_since_epoch()).count(),
                            type_);
+    } else {
+        setPreciseRemainingTime(0, duration_cast<nanoseconds>(tp - Clock::now()).count(), type_);
     }
 }
 
