@@ -431,7 +431,6 @@ inline bool TimeReference::toNanoseconds(qint64 *result) const
     \sa hasExpired(), isForever(), remainingTime(), setRemainingTime()
 */
 QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) noexcept
-    : t2(0)
 {
     setRemainingTime(msecs, type);
 }
