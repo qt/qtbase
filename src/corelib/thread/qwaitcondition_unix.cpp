@@ -41,20 +41,23 @@ static void report_error(int code, const char *where, const char *what)
 
 void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where)
 {
+    pthread_condattr_t *attrp = nullptr;
+
+#if defined(CLOCK_MONOTONIC) && !defined(Q_OS_DARWIN)
     pthread_condattr_t condattr;
+    attrp = &condattr;
 
     pthread_condattr_init(&condattr);
-#ifdef CLOCK_MONOTONIC
+    auto destroy = qScopeGuard([&] { pthread_condattr_destroy(&condattr); });
 #if defined(Q_OS_ANDROID)
     if (local_condattr_setclock)
         local_condattr_setclock(&condattr, CLOCK_MONOTONIC);
-#elif !defined(Q_OS_DARWIN)
-    // Darwin doesn't have this function
+#else
     pthread_condattr_setclock(&condattr, CLOCK_MONOTONIC);
 #endif
 #endif
-    report_error(pthread_cond_init(cond, &condattr), where, "cv init");
-    pthread_condattr_destroy(&condattr);
+
+    report_error(pthread_cond_init(cond, attrp), where, "cv init");
 }
 
 void qt_abstime_for_timeout(timespec *ts, QDeadlineTimer deadline)
