@@ -491,6 +491,20 @@ void QThread::yieldCurrentThread()
 
 #endif // QT_CONFIG(thread)
 
+static void qt_nanosleep(timespec amount)
+{
+    // We'd like to use clock_nanosleep.
+    //
+    // But clock_nanosleep is from POSIX.1-2001 and both are *not*
+    // affected by clock changes when using relative sleeps, even for
+    // CLOCK_REALTIME.
+    //
+    // nanosleep is POSIX.1-1993
+
+    int r;
+    EINTR_LOOP(r, nanosleep(&amount, &amount));
+}
+
 void QThread::sleep(unsigned long secs)
 {
     qt_nanosleep(durationToTimespec(std::chrono::seconds{secs}));
