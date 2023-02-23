@@ -26,9 +26,9 @@ public:
     enum ForeverConstant { Forever };
 
     constexpr QDeadlineTimer(Qt::TimerType type_ = Qt::CoarseTimer) noexcept
-        : t1(0), t2(0), type(type_) {}
+        : type(type_) {}
     constexpr QDeadlineTimer(ForeverConstant, Qt::TimerType type_ = Qt::CoarseTimer) noexcept
-        : t1((std::numeric_limits<qint64>::max)()), t2(0), type(type_) {}
+        : t1((std::numeric_limits<qint64>::max)()), type(type_) {}
     explicit QDeadlineTimer(qint64 msecs, Qt::TimerType type = Qt::CoarseTimer) noexcept;
 
     void swap(QDeadlineTimer &other) noexcept
@@ -141,8 +141,8 @@ public:
     { return dt = dt + value; }
 
 private:
-    qint64 t1;
-    unsigned t2;
+    qint64 t1 = 0;
+    unsigned t2 = 0;
     unsigned type;
 
     qint64 rawRemainingTimeNSecs() const noexcept;

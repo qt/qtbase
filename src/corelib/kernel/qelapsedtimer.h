@@ -21,11 +21,7 @@ public:
         PerformanceCounter
     };
 
-    constexpr QElapsedTimer()
-        : t1(Q_INT64_C(0x8000000000000000)),
-          t2(Q_INT64_C(0x8000000000000000))
-    {
-    }
+    constexpr QElapsedTimer() = default;
 
     static ClockType clockType() noexcept;
     static bool isMonotonic() noexcept;
@@ -51,8 +47,8 @@ public:
     friend bool Q_CORE_EXPORT operator<(const QElapsedTimer &lhs, const QElapsedTimer &rhs) noexcept;
 
 private:
-    qint64 t1;
-    qint64 t2;
+    qint64 t1 = Q_INT64_C(0x8000000000000000);
+    qint64 t2 = Q_INT64_C(0x8000000000000000);
 };
 
 QT_END_NAMESPACE
