@@ -130,6 +130,11 @@ public:
     // all SMFs are ok!
     quint8 *data() noexcept { return m_data.data(); }
     qsizetype size() const noexcept { return qsizetype{m_size}; }
+    quint8 &operator[](qsizetype n)
+    {
+        Q_ASSERT(n < size());
+        return data()[n];
+    }
     bool isEmpty() const noexcept { return size() == 0; }
     void clear() noexcept { m_size = 0; }
     void resizeForOverwrite(qsizetype s)
@@ -1021,6 +1026,17 @@ static constexpr int qt_hash_block_size(QCryptographicHash::Algorithm method)
     return 0;
 }
 
+constexpr int maxHashBlockSize()
+{
+    int result = 0;
+    using A = QCryptographicHash::Algorithm;
+    for (int i = 0; i < A::NumAlgorithms ; ++i)
+        result = std::max(result, qt_hash_block_size(A(i)));
+    return result;
+}
+
+using HashBlock = QSmallByteArray<maxHashBlockSize()>;
+
 class QMessageAuthenticationCodePrivate
 {
 public:
@@ -1040,7 +1056,7 @@ public:
 
     // when not called from the static hash() function, this function needs to be
     // called with finalizeMutex held:
-    void finalizeUnchecked();
+    void finalizeUnchecked() noexcept;
     // END functions that need to be called with finalizeMutex held
 };
 
@@ -1219,21 +1235,22 @@ void QMessageAuthenticationCodePrivate::finalize()
     finalizeUnchecked();
 }
 
-void QMessageAuthenticationCodePrivate::finalizeUnchecked()
+void QMessageAuthenticationCodePrivate::finalizeUnchecked() noexcept
 {
     const int blockSize = qt_hash_block_size(method);
 
     messageHash.finalizeUnchecked();
     const HashResult hashedMessage = messageHash.result;
 
-    QVarLengthArray<char> oKeyPad(blockSize);
+    HashBlock oKeyPad;
+    oKeyPad.resizeForOverwrite(blockSize);
     const char * const keyData = key.constData();
 
     for (int i = 0; i < blockSize; ++i)
         oKeyPad[i] = keyData[i] ^ 0x5c;
 
     messageHash.reset();
-    messageHash.addData(oKeyPad);
+    messageHash.addData(oKeyPad.toByteArrayView());
     messageHash.addData(hashedMessage.toByteArrayView());
     messageHash.finalizeUnchecked();
 
