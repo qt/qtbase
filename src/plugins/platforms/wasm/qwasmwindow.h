@@ -92,6 +92,7 @@ public:
 
 private:
     friend class QWasmScreen;
+    static constexpr auto minSizeForRegularWindows = 100;
 
     void invalidate();
     bool hasFrame() const;

@@ -187,14 +187,16 @@ void QWasmWindow::initialize()
 {
     QRect rect = windowGeometry();
 
-    constexpr int minSizeBoundForDialogsAndRegularWindows = 100;
     const auto windowFlags = window()->flags();
-    const int systemMinSizeLowerBound = windowFlags.testAnyFlags(Qt::Window | Qt::Dialog)
-            ? minSizeBoundForDialogsAndRegularWindows
-            : 0;
+    const bool shouldRestrictMinSize =
+            !windowFlags.testFlag(Qt::FramelessWindowHint) && !windowIsPopupType(windowFlags);
+    const bool isMinSizeUninitialized = window()->minimumSize() == QSize(0, 0);
 
-    const QSize minimumSize(std::max(windowMinimumSize().width(), systemMinSizeLowerBound),
-                            std::max(windowMinimumSize().height(), systemMinSizeLowerBound));
+    if (shouldRestrictMinSize && isMinSizeUninitialized)
+        window()->setMinimumSize(QSize(minSizeForRegularWindows, minSizeForRegularWindows));
+
+
+    const QSize minimumSize = windowMinimumSize();
     const QSize maximumSize = windowMaximumSize();
     const QSize targetSize = !rect.isEmpty() ? rect.size() : minimumSize;
 
@@ -256,6 +258,8 @@ void QWasmWindow::setGeometry(const QRect &rect)
         QRect result(rect);
         result.moveTop(std::max(std::min(rect.y(), screenGeometry.bottom()),
                                 screenGeometry.y() + margins.top()));
+        result.setSize(
+                result.size().expandedTo(windowMinimumSize()).boundedTo(windowMaximumSize()));
         return result;
     })();
     m_nonClientArea->onClientAreaWidthChange(clientAreaRect.width());
