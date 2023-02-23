@@ -269,7 +269,8 @@ class LocaleScanner (object):
         assert len(digits) == 10
         zero = digits[0]
         # Qt's number-formatting code assumes digits are consecutive
-        # (except Suzhou, CLDR's hanidec - see QTBUG-85409):
+        # (except Suzhou - see QTBUG-85409 - which shares its zero
+        # with CLDR's very-non-contiguous hanidec):
         assert all(ord(c) == i + (0x3020 if ord(zero) == 0x3007 else ord(zero))
                    for i, c in enumerate(digits[1:], 1))
         yield 'zero', zero
