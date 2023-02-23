@@ -82,15 +82,15 @@ public:
     QDeadlineTimer &operator-=(qint64 msecs)
     { *this = *this + (-msecs); return *this; }
 
-    template <class Clock, class Duration>
+    template <class Clock, class Duration = typename Clock::duration>
     QDeadlineTimer(std::chrono::time_point<Clock, Duration> deadline_,
                    Qt::TimerType type_ = Qt::CoarseTimer) : t2(0)
     { setDeadline(deadline_, type_); }
-    template <class Clock, class Duration>
+    template <class Clock, class Duration = typename Clock::duration>
     QDeadlineTimer &operator=(std::chrono::time_point<Clock, Duration> deadline_)
     { setDeadline(deadline_); return *this; }
 
-    template <class Clock, class Duration>
+    template <class Clock, class Duration = typename Clock::duration>
     void setDeadline(std::chrono::time_point<Clock, Duration> deadline_,
                      Qt::TimerType type_ = Qt::CoarseTimer)
     { setRemainingTime(deadline_ == deadline_.max() ? Duration::max() : deadline_ - Clock::now(), type_); }
