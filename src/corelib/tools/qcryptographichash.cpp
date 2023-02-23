@@ -1014,7 +1014,7 @@ public:
     QByteArray key;
     QByteArray result;
     QBasicMutex finalizeMutex;
-    QCryptographicHash messageHash;
+    QCryptographicHashPrivate messageHash;
     const QCryptographicHash::Algorithm method;
 
     void initMessageHash();
@@ -1040,7 +1040,8 @@ void QMessageAuthenticationCodePrivate::initMessageHash()
 
     if (key.size() > blockSize) {
         messageHash.addData(key);
-        key = messageHash.result();
+        messageHash.finalizeUnchecked();
+        key = messageHash.resultView().toByteArray();
         messageHash.reset();
     }
 
@@ -1204,6 +1205,7 @@ void QMessageAuthenticationCodePrivate::finalizeUnchecked()
 {
     const int blockSize = qt_hash_block_size(method);
 
+    messageHash.finalizeUnchecked();
     QByteArrayView hashedMessage = messageHash.resultView();
 
     QVarLengthArray<char> oKeyPad(blockSize);
