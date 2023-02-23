@@ -1,9 +1,13 @@
 
 defineReplace(qtPlatformTargetSuffix) {
+    config_variable = $$1
+    isEmpty(config_variable): \
+        config_variable = CONFIG
+
     suffix =
     android: return($${suffix}_$${QT_ARCH})
     win32 {
-        CONFIG(debug, debug|release) {
+        contains($$config_variable, debug, debug|release) {
             mingw {
                 qtConfig(debug_and_release):build_pass: \
                     return($${suffix}d)
@@ -14,7 +18,7 @@ defineReplace(qtPlatformTargetSuffix) {
         }
     }
     darwin {
-        CONFIG(debug, debug|release) {
+        contains($$config_variable, debug, debug|release) {
             !debug_and_release|build_pass: \
                 return($${suffix}_debug)
         }
