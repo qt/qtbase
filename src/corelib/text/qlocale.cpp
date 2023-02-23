@@ -3577,19 +3577,17 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
                                  mustMarkDecimal, groupDigits);
             break;
         case DFSignificantDigits: {
-            PrecisionMode mode = (flags & AddTrailingZeroes) ?
-                PMSignificantDigits : PMChopTrailingZeros;
+            PrecisionMode mode
+                = (flags & AddTrailingZeroes) ? PMSignificantDigits : PMChopTrailingZeros;
 
-            /* POSIX specifies sprintf() to follow fprintf(), whose 'g/G'
-               format says; with P = 6 if precision unspecified else 1 if
-               precision is 0 else precision; when 'e/E' would have exponent
-               X, use:
+            /* POSIX specifies sprintf() to follow fprintf(), whose 'g/G' format
+               says; with P = 6 if precision unspecified else 1 if precision is
+               0 else precision; when 'e/E' would have exponent X, use:
                  * 'f/F' if P > X >= -4, with precision P-1-X
                  * 'e/E' otherwise, with precision P-1
-               Helpfully, we already have mapped precision < 0 to 6 - except
-               for F.P.Shortest mode, which is its own story - and those of
-               our callers with unspecified precision either used 6 or -1
-               for it.
+               Helpfully, we already have mapped precision < 0 to 6 - except for
+               F.P.Shortest mode, which is its own story - and those of our
+               callers with unspecified precision either used 6 or -1 for it.
             */
             bool useDecimal;
             if (precision == QLocale::FloatingPointShortest) {
@@ -3618,13 +3616,12 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
                         --bias; // exponent but not decimal
                 }
                 // When 0 < decpt <= digitCount, the forms have equal digit
-                // counts, plus things bias has taken into account;
-                // otherwise decimal form's digit count is right-padded with
-                // zeros to decpt, when decpt is positive, otherwise it's
-                // left-padded with 1 - decpt zeros.
+                // counts, plus things bias has taken into account; otherwise
+                // decimal form's digit count is right-padded with zeros to
+                // decpt, when decpt is positive, otherwise it's left-padded
+                // with 1 - decpt zeros.
                 useDecimal = (decpt <= 0 ? 1 - decpt <= bias
-                              : decpt <= digitCount ? 0 <= bias
-                              : decpt <= digitCount + bias);
+                              : decpt <= digitCount ? 0 <= bias : decpt <= digitCount + bias);
             } else {
                 // X == decpt - 1, POSIX's P; -4 <= X < P iff -4 < decpt <= P
                 Q_ASSERT(precision >= 0);
