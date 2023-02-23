@@ -30,25 +30,6 @@ Q_CORE_EXPORT bool qt_disable_lowpriority_timers=false;
 
 QTimerInfoList::QTimerInfoList()
 {
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_DARWIN)
-    if (!QElapsedTimer::isMonotonic()) {
-        // not using monotonic timers, initialize the timeChanged() machinery
-        previousTime = qt_gettime();
-
-        tms unused;
-        previousTicks = times(&unused);
-
-        ticksPerSecond = sysconf(_SC_CLK_TCK);
-        msPerTick = 1000/ticksPerSecond;
-    } else {
-        // detected monotonic timers
-        previousTime.tv_sec = previousTime.tv_nsec = 0;
-        previousTicks = 0;
-        ticksPerSecond = 0;
-        msPerTick = 0;
-    }
-#endif
-
     firstTimerInfo = nullptr;
 }
 
@@ -56,70 +37,6 @@ timespec QTimerInfoList::updateCurrentTime()
 {
     return (currentTime = qt_gettime());
 }
-
-#if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_DARWIN) && !defined(Q_OS_INTEGRITY)) || defined(QT_BOOTSTRAPPED)
-
-/*
-  Returns \c true if the real time clock has changed by more than 10%
-  relative to the processor time since the last time this function was
-  called. This presumably means that the system time has been changed.
-
-  If /a delta is nonzero, delta is set to our best guess at how much the system clock was changed.
-*/
-bool QTimerInfoList::timeChanged(timespec *delta)
-{
-    struct tms unused;
-    clock_t currentTicks = times(&unused);
-
-    clock_t elapsedTicks = currentTicks - previousTicks;
-    timespec elapsedTime = currentTime - previousTime;
-
-    timespec elapsedTimeTicks;
-    elapsedTimeTicks.tv_sec = elapsedTicks / ticksPerSecond;
-    elapsedTimeTicks.tv_nsec = (((elapsedTicks * 1000) / ticksPerSecond) % 1000) * 1000 * 1000;
-
-    timespec dummy;
-    if (!delta)
-        delta = &dummy;
-    *delta = elapsedTime - elapsedTimeTicks;
-
-    previousTicks = currentTicks;
-    previousTime = currentTime;
-
-    // If tick drift is more than 10% off compared to realtime, we assume that the clock has
-    // been set. Of course, we have to allow for the tick granularity as well.
-    timespec tickGranularity;
-    tickGranularity.tv_sec = 0;
-    tickGranularity.tv_nsec = msPerTick * 1000 * 1000;
-    return elapsedTimeTicks < ((qAbsTimespec(*delta) - tickGranularity) * 10);
-}
-
-/*
-  repair broken timer
-*/
-void QTimerInfoList::timerRepair(const timespec &diff)
-{
-    // repair all timers
-    for (QTimerInfo *t : std::as_const(*this))
-        t->timeout += diff;
-}
-
-void QTimerInfoList::repairTimersIfNeeded()
-{
-    if (QElapsedTimer::isMonotonic())
-        return;
-    timespec delta;
-    if (timeChanged(&delta))
-        timerRepair(delta);
-}
-
-#else // !(_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(QT_BOOTSTRAPPED)
-
-void QTimerInfoList::repairTimersIfNeeded()
-{
-}
-
-#endif
 
 /*
   insert timer info into list
@@ -355,7 +272,6 @@ static void calculateNextTimeout(QTimerInfo *t, timespec now)
 bool QTimerInfoList::timerWait(timespec &tm)
 {
     timespec now = updateCurrentTime();
-    repairTimersIfNeeded();
 
     auto isWaiting = [](QTimerInfo *tinfo) { return !tinfo->activateRef; };
     // Find first waiting timer not already active
@@ -385,7 +301,6 @@ qint64 QTimerInfoList::timerRemainingTime(int timerId)
 milliseconds QTimerInfoList::remainingDuration(int timerId)
 {
     timespec now = updateCurrentTime();
-    repairTimersIfNeeded();
 
     auto it = findTimerById(timerId);
     if (it == cend()) {
@@ -527,8 +442,6 @@ int QTimerInfoList::activateTimers()
 
     timespec now = updateCurrentTime();
     // qDebug() << "Thread" << QThread::currentThreadId() << "woken up at" << now;
-    repairTimersIfNeeded();
-
     // Find out how many timer have expired
     auto stillActive = [&now](const QTimerInfo *t) { return now < t->timeout; };
     // Find first one still active (list is sorted by timeout)
