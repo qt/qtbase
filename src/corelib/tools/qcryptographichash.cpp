@@ -1076,6 +1076,7 @@ public:
     QCryptographicHashPrivate messageHash;
     const QCryptographicHash::Algorithm method;
 
+    void setKey(const QByteArray &k);
     void initMessageHash();
     void finalize();
 
@@ -1088,7 +1089,34 @@ public:
 /*!
     \internal
 
-    Transforms key into a block-sized format and then seeds messageHash from it.
+    Transforms key \a newKey into a block-sized format and stores it in member
+    \c key.
+
+    This function assumes it can use messageHash (i.e. it's in its initial
+    state (reset() has been called)).
+*/
+void QMessageAuthenticationCodePrivate::setKey(const QByteArray &newKey)
+{
+    const int blockSize = qt_hash_block_size(method);
+
+    if (newKey.size() > blockSize) {
+        messageHash.addData(newKey);
+        messageHash.finalizeUnchecked();
+        static_assert(maxHashLength() <= maxHashBlockSize());
+        key = messageHash.resultView().toByteArray();
+        messageHash.reset();
+    } else {
+        key = newKey;
+    }
+
+    if (key.size() < blockSize)
+        key.resize(blockSize, '\0');
+}
+
+/*!
+    \internal
+
+    Seeds messageHash from \c key.
 
     This function assumes that messageHash is in its initial state (reset() has
     been called).
@@ -1096,19 +1124,6 @@ public:
 void QMessageAuthenticationCodePrivate::initMessageHash()
 {
     const int blockSize = qt_hash_block_size(method);
-
-    if (key.size() > blockSize) {
-        messageHash.addData(key);
-        messageHash.finalizeUnchecked();
-        key = messageHash.resultView().toByteArray();
-        messageHash.reset();
-    }
-
-    if (key.size() < blockSize) {
-        const int size = key.size();
-        key.resize(blockSize);
-        memset(key.data() + size, 0, blockSize - size);
-    }
 
     QVarLengthArray<char> iKeyPad(blockSize);
     const char * const keyData = key.constData();
@@ -1156,7 +1171,7 @@ QMessageAuthenticationCode::QMessageAuthenticationCode(QCryptographicHash::Algor
                                                        const QByteArray &key)
     : d(new QMessageAuthenticationCodePrivate(method))
 {
-    d->key = key;
+    d->setKey(key);
     d->initMessageHash();
 }
 
@@ -1210,8 +1225,10 @@ void QMessageAuthenticationCode::reset()
 */
 void QMessageAuthenticationCode::setKey(const QByteArray &key)
 {
-    d->key = key;
-    reset();
+    d->result.clear();
+    d->messageHash.reset();
+    d->setKey(key);
+    d->initMessageHash();
 }
 
 /*!
@@ -1290,7 +1307,7 @@ QByteArray QMessageAuthenticationCode::hash(const QByteArray &message, const QBy
                                             QCryptographicHash::Algorithm method)
 {
     QMessageAuthenticationCodePrivate mac(method);
-    mac.key = key;
+    mac.setKey(key);
     mac.initMessageHash();
     mac.messageHash.addData(message);
     mac.finalizeUnchecked();
