@@ -10,6 +10,8 @@
 #include <QJsonObject>
 #include <QList>
 
+QT_FORWARD_DECLARE_CLASS(QTextStream)
+
 //! [0]
 class Game
 {
@@ -28,7 +30,7 @@ public:
     void read(const QJsonObject &json);
     QJsonObject toJson() const;
 
-    void print(int indentation = 0) const;
+    void print(QTextStream &s, int indentation = 0) const;
 private:
     Character mPlayer;
     QList<Level> mLevels;
