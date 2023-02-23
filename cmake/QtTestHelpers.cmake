@@ -93,53 +93,7 @@ endfunction()
 # the binary is built under ${CMAKE_CURRENT_BINARY_DIR} and never installed.
 # See qt_internal_add_executable() for more details.
 function(qt_internal_add_manual_test target)
-
-    cmake_parse_arguments(PARSE_ARGV 1 arg
-        "${__qt_internal_add_executable_optional_args}"
-        "${__qt_internal_add_executable_single_args}"
-        "${__qt_internal_add_executable_multi_args}"
-    )
-    _qt_internal_validate_all_args_are_parsed(arg)
-
-    qt_remove_args(exec_args
-        ARGS_TO_REMOVE
-            ${target}
-            OUTPUT_DIRECTORY
-            INSTALL_DIRECTORY
-        ALL_ARGS
-            "${__qt_internal_add_executable_optional_args}"
-            "${__qt_internal_add_executable_single_args}"
-            "${__qt_internal_add_executable_multi_args}"
-        ARGS
-            ${ARGV}
-    )
-
-    if(NOT arg_OUTPUT_DIRECTORY)
-        set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-    endif()
-
-    qt_internal_library_deprecation_level(deprecation_define)
-
-    qt_internal_add_executable(${target}
-        NO_INSTALL # we don't install benchmarks
-        NO_UNITY_BUILD
-        OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" # avoid polluting bin directory
-        ${exec_args}
-    )
-    qt_internal_extend_target(${target}
-        DEFINES
-            ${deprecation_define}
-    )
-
-    # Tests on iOS must be app bundles.
-    if(IOS)
-        set_target_properties(${target} PROPERTIES MACOSX_BUNDLE TRUE)
-    endif()
-
-    # Disable the QT_NO_NARROWING_CONVERSIONS_IN_CONNECT define for manual tests
-    qt_internal_undefine_global_definition(${target} QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)
-
-    qt_internal_add_test_finalizers("${target}")
+    qt_internal_add_test(${ARGV} MANUAL)
 endfunction()
 
 # This function will configure the fixture for the network tests that require docker network services
@@ -256,6 +210,9 @@ function(qt_internal_get_test_arg_definitions optional_args single_value_args mu
         LOWDPI
         NO_WRAPPER
         BUILTIN_TESTDATA
+        MANUAL
+        NO_BATCH
+        NO_INSTALL
         PARENT_SCOPE
     )
     set(${single_value_args}
@@ -426,12 +383,15 @@ endfunction()
 # to ON. This is helpful if you want to use internal CMake tools within tests, like memory or
 # sanitizer checks. See https://cmake.org/cmake/help/v3.19/manual/ctest.1.html#ctest-memcheck-step
 # Arguments:
-#    BUILTIN_TESTDATA the option forces adding the provided TESTDATA to resources.
+#    BUILTIN_TESTDATA
+#       The option forces adding the provided TESTDATA to resources.
+#    MANUAL
+#       The option indicates that the test is a manual test.
 function(qt_internal_add_test name)
     qt_internal_get_test_arg_definitions(optional_args single_value_args multi_value_args)
 
     cmake_parse_arguments(PARSE_ARGV 1 arg
-        "${optional_args};NO_BATCH"
+        "${optional_args}"
         "${single_value_args}"
         "${multi_value_args}"
     )
@@ -455,7 +415,7 @@ function(qt_internal_add_test name)
             "removed in a future Qt version. Use the LIBRARIES option instead.")
     endif()
 
-    if(NOT arg_NO_BATCH AND QT_BUILD_TESTS_BATCHED AND NOT arg_QMLTEST)
+    if(NOT arg_NO_BATCH AND QT_BUILD_TESTS_BATCHED AND NOT arg_QMLTEST AND NOT arg_MANUAL)
         qt_internal_add_test_to_batch(name ${name} ${ARGN})
         set(setting_up_batched_test TRUE)
     elseif(arg_SOURCES)
@@ -498,13 +458,16 @@ function(qt_internal_add_test name)
         # Disable the QT_NO_NARROWING_CONVERSIONS_IN_CONNECT define for tests
         qt_internal_undefine_global_definition(${name} QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)
 
-        # Tests should not be bundles on macOS even if arg_GUI is true, because some tests make
-        # assumptions about the location of helper processes, and those paths would be different
-        # if a test is built as a bundle.
-        set_property(TARGET "${name}" PROPERTY MACOSX_BUNDLE FALSE)
-        # The same goes for WIN32_EXECUTABLE, but because it will detach from the console window
-        # and not print anything.
-        set_property(TARGET "${name}" PROPERTY WIN32_EXECUTABLE FALSE)
+        # Manual tests can be bundle apps
+        if(NOT arg_MANUAL)
+            # Tests should not be bundles on macOS even if arg_GUI is true, because some tests make
+            # assumptions about the location of helper processes, and those paths would be different
+            # if a test is built as a bundle.
+            set_property(TARGET "${name}" PROPERTY MACOSX_BUNDLE FALSE)
+            # The same goes for WIN32_EXECUTABLE, but because it will detach from the console window
+            # and not print anything.
+            set_property(TARGET "${name}" PROPERTY WIN32_EXECUTABLE FALSE)
+        endif()
 
         # Tests on iOS must be app bundles.
         if(IOS)
@@ -602,63 +565,65 @@ function(qt_internal_add_test name)
         endif()
     endif()
 
-    if(setting_up_batched_test)
-        qt_internal_get_batched_test_arguments(batched_test_args ${testname})
-        list(PREPEND extra_test_args ${batched_test_args})
-    endif()
-
-    qt_internal_collect_command_environment(test_env_path test_env_plugin_path)
-
-    if(arg_NO_WRAPPER OR QT_NO_TEST_WRAPPERS)
-        if(QT_BUILD_TESTS_BATCHED)
-            message(FATAL_ERROR "Wrapperless tests are unspupported with test batching")
+    if(NOT arg_MANUAL)
+        if(setting_up_batched_test)
+            qt_internal_get_batched_test_arguments(batched_test_args ${testname})
+            list(PREPEND extra_test_args ${batched_test_args})
         endif()
 
-        add_test(NAME "${testname}" COMMAND ${test_executable} ${extra_test_args}
-                WORKING_DIRECTORY "${test_working_dir}")
-        set_property(TEST "${testname}" APPEND PROPERTY
-                     ENVIRONMENT "PATH=${test_env_path}"
-                                 "QT_TEST_RUNNING_IN_CTEST=1"
-                                 "QT_PLUGIN_PATH=${test_env_plugin_path}"
+        qt_internal_collect_command_environment(test_env_path test_env_plugin_path)
+
+        if(arg_NO_WRAPPER OR QT_NO_TEST_WRAPPERS)
+            if(QT_BUILD_TESTS_BATCHED)
+                message(FATAL_ERROR "Wrapperless tests are unspupported with test batching")
+            endif()
+
+            add_test(NAME "${testname}" COMMAND ${test_executable} ${extra_test_args}
+                    WORKING_DIRECTORY "${test_working_dir}")
+            set_property(TEST "${testname}" APPEND PROPERTY
+                         ENVIRONMENT "PATH=${test_env_path}"
+                                     "QT_TEST_RUNNING_IN_CTEST=1"
+                                     "QT_PLUGIN_PATH=${test_env_plugin_path}"
+            )
+        else()
+            set(test_wrapper_file "${CMAKE_CURRENT_BINARY_DIR}/${testname}Wrapper$<CONFIG>.cmake")
+            qt_internal_create_test_script(NAME "${testname}"
+                                   COMMAND "${test_executable}"
+                                   ARGS "${extra_test_args}"
+                                   WORKING_DIRECTORY "${test_working_dir}"
+                                   OUTPUT_FILE "${test_wrapper_file}"
+                                   ENVIRONMENT "QT_TEST_RUNNING_IN_CTEST" 1
+                                               "PATH" "${test_env_path}"
+                                               "QT_PLUGIN_PATH" "${test_env_plugin_path}"
+            )
+        endif()
+
+        if(arg_QT_TEST_SERVER_LIST AND NOT ANDROID)
+            qt_internal_setup_docker_test_fixture(${testname} ${arg_QT_TEST_SERVER_LIST})
+        endif()
+
+        set_tests_properties("${testname}" PROPERTIES RUN_SERIAL "${arg_RUN_SERIAL}" LABELS "${label}")
+        if(arg_TIMEOUT)
+            set_tests_properties(${testname} PROPERTIES TIMEOUT ${arg_TIMEOUT})
+        endif()
+
+        # Add a ${target}/check makefile target, to more easily test one test.
+
+        set(test_config_options "")
+        get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
+        if(is_multi_config)
+            set(test_config_options -C $<CONFIG>)
+        endif()
+        add_custom_target("${testname}_check"
+            VERBATIM
+            COMMENT "Running ${CMAKE_CTEST_COMMAND} -V -R \"^${name}$\" ${test_config_options}"
+            COMMAND "${CMAKE_CTEST_COMMAND}" -V -R "^${name}$" ${test_config_options}
         )
-    else()
-        set(test_wrapper_file "${CMAKE_CURRENT_BINARY_DIR}/${testname}Wrapper$<CONFIG>.cmake")
-        qt_internal_create_test_script(NAME "${testname}"
-                               COMMAND "${test_executable}"
-                               ARGS "${extra_test_args}"
-                               WORKING_DIRECTORY "${test_working_dir}"
-                               OUTPUT_FILE "${test_wrapper_file}"
-                               ENVIRONMENT "QT_TEST_RUNNING_IN_CTEST" 1
-                                           "PATH" "${test_env_path}"
-                                           "QT_PLUGIN_PATH" "${test_env_plugin_path}"
-        )
-    endif()
-
-    if(arg_QT_TEST_SERVER_LIST AND NOT ANDROID)
-        qt_internal_setup_docker_test_fixture(${testname} ${arg_QT_TEST_SERVER_LIST})
-    endif()
-
-    set_tests_properties("${testname}" PROPERTIES RUN_SERIAL "${arg_RUN_SERIAL}" LABELS "${label}")
-    if(arg_TIMEOUT)
-        set_tests_properties(${testname} PROPERTIES TIMEOUT ${arg_TIMEOUT})
-    endif()
-
-    # Add a ${target}/check makefile target, to more easily test one test.
-
-    set(test_config_options "")
-    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
-    if(is_multi_config)
-        set(test_config_options -C $<CONFIG>)
-    endif()
-    add_custom_target("${testname}_check"
-        VERBATIM
-        COMMENT "Running ${CMAKE_CTEST_COMMAND} -V -R \"^${name}$\" ${test_config_options}"
-        COMMAND "${CMAKE_CTEST_COMMAND}" -V -R "^${name}$" ${test_config_options}
-    )
-    if(TARGET "${name}")
-        add_dependencies("${testname}_check" "${name}")
-        if(ANDROID)
-            add_dependencies("${testname}_check" "${name}_make_apk")
+        if(TARGET "${name}")
+            add_dependencies("${testname}_check" "${name}")
+            if(ANDROID)
+                add_dependencies("${testname}_check" "${name}_make_apk")
+            endif()
         endif()
     endif()
 
