@@ -146,10 +146,6 @@ private:
     unsigned type;
 
     qint64 rawRemainingTimeNSecs() const noexcept;
-
-public:
-    // This is not a public function, it's here only for Qt's internal convenience...
-    QPair<qint64, unsigned> _q_data() const { return qMakePair(t1, t2); }
 };
 
 #if defined(Q_OS_DARWIN) || defined(Q_OS_LINUX) || (defined(Q_CC_MSVC) && Q_CC_MSVC >= 1900)

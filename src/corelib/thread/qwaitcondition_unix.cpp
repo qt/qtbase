@@ -22,6 +22,31 @@
 
 QT_BEGIN_NAMESPACE
 
+static constexpr clockid_t SteadyClockClockId =
+#if !defined(CLOCK_MONOTONIC)
+        // we don't know how to set the monotonic clock
+        CLOCK_REALTIME
+#elif defined(_LIBCPP_VERSION) && defined(_LIBCPP_HAS_NO_MONOTONIC_CLOCK)
+        // libc++ falling back to system_clock
+        CLOCK_REALTIME
+#elif defined(__GLIBCXX__) && !defined(_GLIBCXX_USE_CLOCK_MONOTONIC)
+        // libstdc++ falling back to system_clock
+        CLOCK_REALTIME
+#elif defined(Q_OS_DARWIN)
+        // Darwin lacks pthread_condattr_setclock()
+        CLOCK_REALTIME
+#elif defined(Q_OS_QNX)
+        // unknown why
+        CLOCK_REALTIME
+#elif defined(__GLIBCXX__) || defined(_LIBCPP_VERSION)
+        // both libstdc++ and libc++ do use CLOCK_MONOTONIC
+        CLOCK_MONOTONIC
+#else
+#  warning "Unknown C++ Standard Library implementation - code may be sub-optimal"
+        CLOCK_REALTIME
+#endif
+        ;
+
 static void report_error(int code, const char *where, const char *what)
 {
     if (code != 0)
@@ -38,7 +63,8 @@ void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where)
 
     pthread_condattr_init(&condattr);
     auto destroy = qScopeGuard([&] { pthread_condattr_destroy(&condattr); });
-    pthread_condattr_setclock(&condattr, CLOCK_MONOTONIC);
+    if (SteadyClockClockId != CLOCK_REALTIME)
+        pthread_condattr_setclock(&condattr, SteadyClockClockId);
 #endif
 
     report_error(pthread_cond_init(cond, attrp), where, "cv init");
@@ -46,22 +72,11 @@ void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where)
 
 void qt_abstime_for_timeout(timespec *ts, QDeadlineTimer deadline)
 {
-#ifdef Q_OS_DARWIN
-    // on Mac, we don't have pthread_condattr_setclock(), so we need to
-    // calculate the CLOCK_REALTIME deadline
-    struct timeval tv;
-    qint64 nsec = deadline.remainingTimeNSecs();
-    gettimeofday(&tv, 0);
-    ts->tv_sec = tv.tv_sec + nsec / (1000 * 1000 * 1000);
-    ts->tv_nsec = tv.tv_usec * 1000 + nsec % (1000 * 1000 * 1000);
-
-    normalizedTimespec(*ts);
-#else
-    // depends on QDeadlineTimer's internals!!
-    static_assert(QDeadlineTimerNanosecondsInT2);
-    ts->tv_sec = deadline._q_data().first;
-    ts->tv_nsec = deadline._q_data().second;
-#endif
+    using namespace std::chrono;
+    using Clock =
+        std::conditional_t<SteadyClockClockId == CLOCK_REALTIME, system_clock, steady_clock>;
+    auto timePoint = deadline.deadline<Clock>();
+    *ts = durationToTimespec(timePoint.time_since_epoch());
 }
 
 class QWaitConditionPrivate
