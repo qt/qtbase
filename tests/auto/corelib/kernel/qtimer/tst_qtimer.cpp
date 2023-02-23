@@ -512,6 +512,7 @@ void tst_QTimer::moveToThread()
 #endif
     QTimer ti1;
     QTimer ti2;
+    ti1.setSingleShot(true);
     ti1.start(MOVETOTHREAD_TIMEOUT);
     ti2.start(MOVETOTHREAD_TIMEOUT);
     QVERIFY((ti1.timerId() & 0xffffff) != (ti2.timerId() & 0xffffff));
