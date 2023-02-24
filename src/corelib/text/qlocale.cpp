@@ -2523,7 +2523,14 @@ QDateTime QLocale::toDateTime(const QString &string, const QString &format, QCal
 /*!
     \since 4.1
 
-    Returns the decimal point character of this locale.
+    Returns the fractional part separator for this locale.
+
+    This is the token that separates the whole number part from the fracional
+    part in the representation of a number which has a fractional part. This is
+    commonly called the "decimal point character" - even though, in many
+    locales, it is not a "point" (or similar dot). It is (since Qt 6.0) returned
+    as a string in case some locale needs more than one UTF-16 code-point to
+    represent its separator.
 
     \sa groupSeparator(), toString()
 */
@@ -2535,7 +2542,14 @@ QString QLocale::decimalPoint() const
 /*!
     \since 4.1
 
-    Returns the group separator character of this locale.
+    Returns the digit-grouping separator for this locale.
+
+    This is a token used to break up long sequences of digits, in the
+    representation of a number, to make it easier to read. In some locales it
+    may be empty, indicating that digits should not be broken up into groups in
+    this way. In others it may be a spacing character. It is (since Qt 6.0)
+    returned as a string in case some locale needs more than one UTF-16
+    code-point to represent its separator.
 
     \sa decimalPoint(), toString()
 */
@@ -2547,7 +2561,12 @@ QString QLocale::groupSeparator() const
 /*!
     \since 4.1
 
-    Returns the percent character of this locale.
+    Returns the percent marker of this locale.
+
+    This is a token presumed to be appended to a number to indicate a
+    percentage. It is (since Qt 6.0) returned as a string because, in some
+    locales, it is not a single character - for example, because it includes a
+    text-direction-control character.
 
     \sa toString()
 */
@@ -2561,6 +2580,13 @@ QString QLocale::percent() const
 
     Returns the zero digit character of this locale.
 
+    This is a single Unicode character but may be encoded as a surrogate pair,
+    so is (since Qt 6.0) returned as a string. In most locales, other digits
+    follow it in Unicode ordering - however, some number systems, notably those
+    using U+3007 as zero, do not have contiguous digits. Use toString() to
+    obtain suitable representations of numbers, rather than trying to construct
+    them from this zero digit.
+
     \sa toString()
 */
 QString QLocale::zeroDigit() const
@@ -2571,7 +2597,12 @@ QString QLocale::zeroDigit() const
 /*!
     \since 4.1
 
-    Returns the negative sign character of this locale.
+    Returns the negative sign indicator of this locale.
+
+    This is a token presumed to be used as a prefix to a number to indicate that
+    it is negative. It is (since Qt 6.0) returned as a string because, in some
+    locales, it is not a single character - for example, because it includes a
+    text-direction-control character.
 
     \sa positiveSign(), toString()
 */
@@ -2583,7 +2614,12 @@ QString QLocale::negativeSign() const
 /*!
     \since 4.5
 
-    Returns the positive sign character of this locale.
+    Returns the positive sign indicator of this locale.
+
+    This is a token presumed to be used as a prefix to a number to indicate that
+    it is positive. It is (since Qt 6.0) returned as a string because, in some
+    locales, it is not a single character - for example, because it includes a
+    text-direction-control character.
 
     \sa negativeSign(), toString()
 */
@@ -2595,8 +2631,13 @@ QString QLocale::positiveSign() const
 /*!
     \since 4.1
 
-    Returns the exponential character of this locale, used to separate exponent
-    from mantissa in some floating-point numeric representations.
+    Returns the exponent separator for this locale.
+
+    This is a token used to separate mantissa from exponent in some
+    floating-point numeric representations. It is (since Qt 6.0) returned as a
+    string because, in some locales, it is not a single character - for example,
+    it may consist of a multiplication sign and a representation of the "ten to
+    the power" operator.
 
     \sa toString(double, char, int)
 */
