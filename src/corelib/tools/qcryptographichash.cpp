@@ -1156,7 +1156,14 @@ void QMessageAuthenticationCodePrivate::setKey(const QByteArray &newKey)
     if (newKey.size() > blockSize) {
         messageHash.addData(newKey);
         messageHash.finalizeUnchecked();
-        static_assert(maxHashLength() <= maxHashBlockSize());
+        static_assert([] {
+                using A = QCryptographicHash::Algorithm;
+                for (int i = 0; i < A::NumAlgorithms; ++i) {
+                    if (hashLengthInternal(A(i)) > qt_hash_block_size(A(i)))
+                        return false;
+                }
+                return true;
+            }(), "this code assumes that a hash's result always fits into that hash's block size");
         key = messageHash.result;
         messageHash.reset();
     } else {
