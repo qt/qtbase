@@ -327,13 +327,15 @@ public:
     };
     using EVP_MD_CTX_ptr = std::unique_ptr<EVP_MD_CTX, EVP_MD_CTX_deleter>;
     using EVP_MD_ptr = std::unique_ptr<EVP_MD, EVP_MD_deleter>;
-    EVP_MD_ptr algorithm;
-    EVP_MD_CTX_ptr context;
-    bool initializationFailed = false;
+    struct EVP {
+        EVP_MD_ptr algorithm;
+        EVP_MD_CTX_ptr context;
+        bool initializationFailed = false;
 
-    void evp_init();
-    void evp_reset() noexcept;
-    void evp_finalizeUnchecked() noexcept;
+        void init(QCryptographicHash::Algorithm method);
+        void reset() noexcept;
+        void finalizeUnchecked(HashResult &result) noexcept;
+    } evp;
 #endif
 
     union {
@@ -548,11 +550,11 @@ void QCryptographicHashPrivate::init()
                method == QCryptographicHash::Blake2s_224) {
         new (&blake2sContext) blake2s_state;
     } else {
-        evp_init();
+        evp.init(method);
     }
 }
 
-void QCryptographicHashPrivate::evp_init()
+void QCryptographicHashPrivate::EVP::init(QCryptographicHash::Algorithm method)
 {
     Q_ASSERT(!context);
 
@@ -664,11 +666,11 @@ void QCryptographicHashPrivate::reset() noexcept
                method == QCryptographicHash::Blake2s_224) {
         blake2s_init(&blake2sContext, hashLengthInternal(method));
     } else {
-        evp_reset();
+        evp.reset();
     }
 }
 
-void QCryptographicHashPrivate::evp_reset() noexcept
+void QCryptographicHashPrivate::EVP::reset() noexcept
 {
     if (!initializationFailed) {
         Q_ASSERT(context);
@@ -785,8 +787,8 @@ void QCryptographicHashPrivate::addData(QByteArrayView bytes) noexcept
                 method == QCryptographicHash::Blake2s_160 ||
                 method == QCryptographicHash::Blake2s_224) {
             blake2s_update(&blake2sContext, reinterpret_cast<const uint8_t *>(data), length);
-        } else if (!initializationFailed) {
-            EVP_DigestUpdate(context.get(), (const unsigned char *)data, length);
+        } else if (!evp.initializationFailed) {
+            EVP_DigestUpdate(evp.context.get(), (const unsigned char *)data, length);
         }
     }
     result.clear();
@@ -961,11 +963,11 @@ void QCryptographicHashPrivate::finalizeUnchecked() noexcept
         result.resizeForOverwrite(length);
         blake2s_final(&copy, result.data(), length);
     } else {
-        evp_finalizeUnchecked();
+        evp.finalizeUnchecked(result);
     }
 }
 
-void QCryptographicHashPrivate::evp_finalizeUnchecked() noexcept
+void QCryptographicHashPrivate::EVP::finalizeUnchecked(HashResult &result) noexcept
 {
     if (!initializationFailed) {
         EVP_MD_CTX_ptr copy = EVP_MD_CTX_ptr(EVP_MD_CTX_new());
