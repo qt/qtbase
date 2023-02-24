@@ -400,7 +400,7 @@ milliseconds QTimerInfoList::remainingDuration(int timerId)
     if (now < t->timeout) {
         // time to wait
         tm = roundToMillisecond(t->timeout - now);
-        return QtMiscUtils::timespecToChronoMs(&tm);
+        return timespecToChronoMs(&tm);
     } else {
         return milliseconds{0};
     }

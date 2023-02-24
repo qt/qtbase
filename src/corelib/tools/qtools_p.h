@@ -108,29 +108,6 @@ constexpr inline int qt_lencmp(qsizetype lhs, qsizetype rhs) noexcept
            /* else */  -1 ;
 }
 
-inline timespec durationToTimespec(std::chrono::nanoseconds timeout) noexcept
-{
-    using namespace std::chrono;
-    const seconds secs = duration_cast<seconds>(timeout);
-    const nanoseconds frac = timeout - secs;
-    struct timespec ts;
-    ts.tv_sec = secs.count();
-    ts.tv_nsec = frac.count();
-    return ts;
-}
-
-template <typename Duration>
-inline Duration timespecToChrono(struct timespec *ts) noexcept
-{
-    using namespace std::chrono;
-    return duration_cast<Duration>(seconds{ts->tv_sec} + nanoseconds{ts->tv_nsec});
-}
-
-inline std::chrono::milliseconds timespecToChronoMs(struct timespec *ts) noexcept
-{
-    return timespecToChrono<std::chrono::milliseconds>(ts);
-}
-
 } // namespace QtMiscUtils
 
 // We typically need an extra bit for qNextPowerOfTwo when determining the next allocation size.

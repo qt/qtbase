@@ -20,7 +20,6 @@
 #include <QtCore/private/qglobal_p.h>
 #include "qatomic.h"
 #include "qbytearray.h"
-#include <QtCore/private/qtools_p.h>
 
 #ifndef Q_OS_UNIX
 # error "qcore_unix_p.h included on a non-Unix system"
@@ -40,6 +39,7 @@
 #  include <selectLib.h>
 #endif
 
+#include <chrono>
 #include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -70,6 +70,29 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_TYPEINFO(pollfd, Q_PRIMITIVE_TYPE);
 
 static constexpr auto OneSecAsNsecs = std::chrono::nanoseconds(std::chrono::seconds{ 1 }).count();
+
+inline timespec durationToTimespec(std::chrono::nanoseconds timeout) noexcept
+{
+    using namespace std::chrono;
+    const seconds secs = duration_cast<seconds>(timeout);
+    const nanoseconds frac = timeout - secs;
+    struct timespec ts;
+    ts.tv_sec = secs.count();
+    ts.tv_nsec = frac.count();
+    return ts;
+}
+
+template <typename Duration>
+inline Duration timespecToChrono(struct timespec *ts) noexcept
+{
+    using namespace std::chrono;
+    return duration_cast<Duration>(seconds{ts->tv_sec} + nanoseconds{ts->tv_nsec});
+}
+
+inline std::chrono::milliseconds timespecToChronoMs(struct timespec *ts) noexcept
+{
+    return timespecToChrono<std::chrono::milliseconds>(ts);
+}
 
 // Internal operator functions for timespecs
 constexpr inline timespec &normalizedTimespec(timespec &t)
@@ -127,7 +150,7 @@ inline timeval timespecToTimeval(const timespec &ts)
 
 inline timespec &operator+=(timespec &t1, std::chrono::milliseconds msecs)
 {
-    t1 += QtMiscUtils::durationToTimespec(msecs);
+    t1 += durationToTimespec(msecs);
     return t1;
 }
 
