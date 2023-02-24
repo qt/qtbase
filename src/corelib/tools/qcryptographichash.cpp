@@ -298,9 +298,11 @@ public:
     explicit QCryptographicHashPrivate(QCryptographicHash::Algorithm method) noexcept
         : method(method)
     {
+        init();
         reset();
     }
 
+    void init();
     void reset() noexcept;
     void addData(QByteArrayView bytes) noexcept;
     bool addData(QIODevice *dev);
@@ -529,30 +531,22 @@ QCryptographicHash::Algorithm QCryptographicHash::algorithm() const noexcept
     return d->method;
 }
 
-void QCryptographicHashPrivate::reset() noexcept
+void QCryptographicHashPrivate::init()
 {
-    result.clear();
 #ifdef USING_OPENSSL30
     if (method == QCryptographicHash::Blake2b_160 ||
         method == QCryptographicHash::Blake2b_256 ||
         method == QCryptographicHash::Blake2b_384) {
         new (&blake2bContext) blake2b_state;
-        blake2b_init(&blake2bContext, hashLengthInternal(method));
         return;
     } else if (method == QCryptographicHash::Blake2s_128 ||
                method == QCryptographicHash::Blake2s_160 ||
                method == QCryptographicHash::Blake2s_224) {
         new (&blake2sContext) blake2s_state;
-        blake2s_init(&blake2sContext, hashLengthInternal(method));
         return;
     }
 
-    if (context && !initializationFailed) {
-        // everything already set up - just reset the context
-        EVP_MD_CTX_reset(context.get());
-        initializationFailed = !EVP_DigestInit_ex(context.get(), algorithm.get(), nullptr);
-        return;
-    }
+    Q_ASSERT(!context);
 
     initializationFailed = true;
 
@@ -588,7 +582,6 @@ void QCryptographicHashPrivate::reset() noexcept
     switch (method) {
     case QCryptographicHash::Sha1:
         new (&sha1Context) Sha1State;
-        sha1InitState(&sha1Context);
         break;
 #ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
     default:
@@ -598,27 +591,21 @@ void QCryptographicHashPrivate::reset() noexcept
 #else
     case QCryptographicHash::Md4:
         new (&md4Context) md4_context;
-        md4_init(&md4Context);
         break;
     case QCryptographicHash::Md5:
         new (&md5Context) MD5Context;
-        MD5Init(&md5Context);
         break;
     case QCryptographicHash::Sha224:
         new (&sha224Context) SHA224Context;
-        SHA224Reset(&sha224Context);
         break;
     case QCryptographicHash::Sha256:
         new (&sha256Context) SHA256Context;
-        SHA256Reset(&sha256Context);
         break;
     case QCryptographicHash::Sha384:
         new (&sha384Context) SHA384Context;
-        SHA384Reset(&sha384Context);
         break;
     case QCryptographicHash::Sha512:
         new (&sha512Context) SHA512Context;
-        SHA512Reset(&sha512Context);
         break;
     case QCryptographicHash::RealSha3_224:
     case QCryptographicHash::Keccak_224:
@@ -629,20 +616,100 @@ void QCryptographicHashPrivate::reset() noexcept
     case QCryptographicHash::RealSha3_512:
     case QCryptographicHash::Keccak_512:
         new (&sha3Context) SHA3Context;
-        sha3Init(&sha3Context, hashLengthInternal(method) * 8);
         break;
     case QCryptographicHash::Blake2b_160:
     case QCryptographicHash::Blake2b_256:
     case QCryptographicHash::Blake2b_384:
     case QCryptographicHash::Blake2b_512:
         new (&blake2bContext) blake2b_state;
-        blake2b_init(&blake2bContext, hashLengthInternal(method));
         break;
     case QCryptographicHash::Blake2s_128:
     case QCryptographicHash::Blake2s_160:
     case QCryptographicHash::Blake2s_224:
     case QCryptographicHash::Blake2s_256:
         new (&blake2sContext) blake2s_state;
+        break;
+#endif
+    case QCryptographicHash::NumAlgorithms:
+        Q_UNREACHABLE();
+    }
+#endif
+}
+
+void QCryptographicHashPrivate::reset() noexcept
+{
+    result.clear();
+#ifdef USING_OPENSSL30
+    if (method == QCryptographicHash::Blake2b_160 ||
+        method == QCryptographicHash::Blake2b_256 ||
+        method == QCryptographicHash::Blake2b_384) {
+        blake2b_init(&blake2bContext, hashLengthInternal(method));
+        return;
+    } else if (method == QCryptographicHash::Blake2s_128 ||
+               method == QCryptographicHash::Blake2s_160 ||
+               method == QCryptographicHash::Blake2s_224) {
+        blake2s_init(&blake2sContext, hashLengthInternal(method));
+        return;
+    }
+
+    if (!initializationFailed) {
+        Q_ASSERT(context);
+        Q_ASSERT(algorithm);
+        // everything already set up - just reset the context
+        EVP_MD_CTX_reset(context.get());
+        initializationFailed = !EVP_DigestInit_ex(context.get(), algorithm.get(), nullptr);
+    }
+    // if initializationFailed first time around, it will not succeed this time, either
+
+#else
+    switch (method) {
+    case QCryptographicHash::Sha1:
+        sha1InitState(&sha1Context);
+        break;
+#ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+    default:
+        Q_ASSERT_X(false, "QCryptographicHash", "Method not compiled in");
+        Q_UNREACHABLE();
+        break;
+#else
+    case QCryptographicHash::Md4:
+        md4_init(&md4Context);
+        break;
+    case QCryptographicHash::Md5:
+        MD5Init(&md5Context);
+        break;
+    case QCryptographicHash::Sha224:
+        SHA224Reset(&sha224Context);
+        break;
+    case QCryptographicHash::Sha256:
+        SHA256Reset(&sha256Context);
+        break;
+    case QCryptographicHash::Sha384:
+        SHA384Reset(&sha384Context);
+        break;
+    case QCryptographicHash::Sha512:
+        SHA512Reset(&sha512Context);
+        break;
+    case QCryptographicHash::RealSha3_224:
+    case QCryptographicHash::Keccak_224:
+    case QCryptographicHash::RealSha3_256:
+    case QCryptographicHash::Keccak_256:
+    case QCryptographicHash::RealSha3_384:
+    case QCryptographicHash::Keccak_384:
+    case QCryptographicHash::RealSha3_512:
+    case QCryptographicHash::Keccak_512:
+        sha3Init(&sha3Context, hashLengthInternal(method) * 8);
+        break;
+    case QCryptographicHash::Blake2b_160:
+    case QCryptographicHash::Blake2b_256:
+    case QCryptographicHash::Blake2b_384:
+    case QCryptographicHash::Blake2b_512:
+        blake2b_init(&blake2bContext, hashLengthInternal(method));
+        break;
+    case QCryptographicHash::Blake2s_128:
+    case QCryptographicHash::Blake2s_160:
+    case QCryptographicHash::Blake2s_224:
+    case QCryptographicHash::Blake2s_256:
         blake2s_init(&blake2sContext, hashLengthInternal(method));
         break;
 #endif
