@@ -386,7 +386,6 @@ milliseconds QTimerInfoList::remainingDuration(int timerId)
 {
     timespec now = updateCurrentTime();
     repairTimersIfNeeded();
-    timespec tm = {0, 0};
 
     auto it = findTimerById(timerId);
     if (it == cend()) {
@@ -397,13 +396,10 @@ milliseconds QTimerInfoList::remainingDuration(int timerId)
     }
 
     const QTimerInfo *t = *it;
-    if (now < t->timeout) {
-        // time to wait
-        tm = roundToMillisecond(t->timeout - now);
-        return timespecToChronoMs(&tm);
-    } else {
+    if (now < t->timeout) // time to wait
+        return timespecToChronoMs(roundToMillisecond(t->timeout - now));
+    else
         return milliseconds{0};
-    }
 }
 
 void QTimerInfoList::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object)

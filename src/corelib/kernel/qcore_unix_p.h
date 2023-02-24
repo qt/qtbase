@@ -83,13 +83,13 @@ inline timespec durationToTimespec(std::chrono::nanoseconds timeout) noexcept
 }
 
 template <typename Duration>
-inline Duration timespecToChrono(struct timespec *ts) noexcept
+inline Duration timespecToChrono(timespec ts) noexcept
 {
     using namespace std::chrono;
-    return duration_cast<Duration>(seconds{ts->tv_sec} + nanoseconds{ts->tv_nsec});
+    return duration_cast<Duration>(seconds{ts.tv_sec} + nanoseconds{ts.tv_nsec});
 }
 
-inline std::chrono::milliseconds timespecToChronoMs(struct timespec *ts) noexcept
+inline std::chrono::milliseconds timespecToChronoMs(timespec ts) noexcept
 {
     return timespecToChrono<std::chrono::milliseconds>(ts);
 }
@@ -140,7 +140,7 @@ constexpr inline timespec operator*(const timespec &t1, int mul)
     tmp.tv_nsec = t1.tv_nsec * mul;
     return normalizedTimespec(tmp);
 }
-inline timeval timespecToTimeval(const timespec &ts)
+inline timeval timespecToTimeval(timespec ts)
 {
     timeval tv;
     tv.tv_sec = ts.tv_sec;
@@ -172,17 +172,16 @@ inline timespec operator+(const timespec &t1, int ms)
     return t1 + std::chrono::milliseconds{ms};
 }
 
-inline timespec qAbsTimespec(const timespec &t)
+inline timespec qAbsTimespec(timespec ts)
 {
-    timespec tmp = t;
-    if (tmp.tv_sec < 0) {
-        tmp.tv_sec = -tmp.tv_sec - 1;
-        tmp.tv_nsec -= OneSecAsNsecs;
+    if (ts.tv_sec < 0) {
+        ts.tv_sec = -ts.tv_sec - 1;
+        ts.tv_nsec -= OneSecAsNsecs;
     }
-    if (tmp.tv_sec == 0 && tmp.tv_nsec < 0) {
-        tmp.tv_nsec = -tmp.tv_nsec;
+    if (ts.tv_sec == 0 && ts.tv_nsec < 0) {
+        ts.tv_nsec = -ts.tv_nsec;
     }
-    return normalizedTimespec(tmp);
+    return normalizedTimespec(ts);
 }
 
 inline void qt_ignore_sigpipe()
