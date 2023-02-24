@@ -42,9 +42,6 @@
             <meta-data
                 android:name="android.app.extract_android_style"
                 android:value="minimal" />
-            <meta-data
-                android:name="android.app.trace_location"
-                android:value="/sdcard/Android/data/trace" />
         </activity>
     </application>
 </manifest>
