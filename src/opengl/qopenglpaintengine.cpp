@@ -2153,6 +2153,10 @@ void QOpenGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::PixmapFra
 
     transferMode(ImageOpacityArrayDrawingMode);
 
+    uploadData(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinateArray.data(), vertexCoordinateArray.vertexCount() * 2);
+    uploadData(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinateArray.data(), textureCoordinateArray.vertexCount() * 2);
+    uploadData(QT_OPACITY_ATTR, (GLfloat*)opacityArray.data(), opacityArray.size());
+
     GLenum filterMode = q->state()->renderHints & QPainter::SmoothPixmapTransform ? GL_LINEAR : GL_NEAREST;
     updateTexture(QT_IMAGE_TEXTURE_UNIT, pixmap, GL_CLAMP_TO_EDGE, filterMode);
 
