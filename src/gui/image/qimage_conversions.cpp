@@ -15,6 +15,7 @@
 #if QT_CONFIG(thread)
 #include <qsemaphore.h>
 #include <qthreadpool.h>
+#include <private/qthreadpool_p.h>
 #ifdef Q_OS_WASM
 // WebAssembly has threads; however we can't block the main thread.
 #else
@@ -203,7 +204,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
     int segments = (qsizetype(src->width) * src->height) >> 16;
     segments = std::min(segments, src->height);
 
-    QThreadPool *threadPool = QThreadPool::globalInstance();
+    QThreadPool *threadPool = QThreadPoolPrivate::qtGuiInstance();
     if (segments <= 1 || !threadPool || threadPool->contains(QThread::currentThread()))
         return convertSegment(0, src->height);
 
@@ -258,7 +259,7 @@ void convert_generic_over_rgb64(QImageData *dest, const QImageData *src, Qt::Ima
     int segments = (qsizetype(src->width) * src->height) >> 16;
     segments = std::min(segments, src->height);
 
-    QThreadPool *threadPool = QThreadPool::globalInstance();
+    QThreadPool *threadPool = QThreadPoolPrivate::qtGuiInstance();
     if (segments <= 1 || !threadPool || threadPool->contains(QThread::currentThread()))
         return convertSegment(0, src->height);
 
@@ -312,7 +313,7 @@ void convert_generic_over_rgba32f(QImageData *dest, const QImageData *src, Qt::I
     int segments = (qsizetype(src->width) * src->height) >> 16;
     segments = std::min(segments, src->height);
 
-    QThreadPool *threadPool = QThreadPool::globalInstance();
+    QThreadPool *threadPool = QThreadPoolPrivate::qtGuiInstance();
     if (segments <= 1 || !threadPool || threadPool->contains(QThread::currentThread()))
         return convertSegment(0, src->height);
 
@@ -419,7 +420,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
 #ifdef QT_USE_THREAD_PARALLEL_IMAGE_CONVERSIONS
     int segments = (qsizetype(data->width) * data->height) >> 16;
     segments = std::min(segments, data->height);
-    QThreadPool *threadPool = QThreadPool::globalInstance();
+    QThreadPool *threadPool = QThreadPoolPrivate::qtGuiInstance();
     if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
         QSemaphore semaphore;
         int y = 0;
@@ -513,7 +514,7 @@ bool convert_generic_inplace_over_rgb64(QImageData *data, QImage::Format dst_for
 #ifdef QT_USE_THREAD_PARALLEL_IMAGE_CONVERSIONS
     int segments = (qsizetype(data->width) * data->height) >> 16;
     segments = std::min(segments, data->height);
-    QThreadPool *threadPool = QThreadPool::globalInstance();
+    QThreadPool *threadPool = QThreadPoolPrivate::qtGuiInstance();
     if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
         QSemaphore semaphore;
         int y = 0;
@@ -608,7 +609,7 @@ bool convert_generic_inplace_over_rgba32f(QImageData *data, QImage::Format dst_f
 #ifdef QT_USE_THREAD_PARALLEL_IMAGE_CONVERSIONS
     int segments = (qsizetype(data->width) * data->height) >> 16;
     segments = std::min(segments, data->height);
-    QThreadPool *threadPool = QThreadPool::globalInstance();
+    QThreadPool *threadPool = QThreadPoolPrivate::qtGuiInstance();
     if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
         QSemaphore semaphore;
         int y = 0;
