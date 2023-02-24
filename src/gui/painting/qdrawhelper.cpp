@@ -32,6 +32,7 @@
 #if defined(QT_USE_THREAD_PARALLEL_FILLS)
 #include <qsemaphore.h>
 #include <qthreadpool.h>
+#include <private/qthreadpool_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -3778,7 +3779,7 @@ static void spanfill_from_first(QRasterBuffer *rasterBuffer, QPixelLayout::BPP b
 #if defined(QT_USE_THREAD_PARALLEL_FILLS)
 #define QT_THREAD_PARALLEL_FILLS(function) \
     const int segments = (count + 32) / 64; \
-    QThreadPool *threadPool = QThreadPool::globalInstance(); \
+    QThreadPool *threadPool = QThreadPoolPrivate::qtGuiInstance(); \
     if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) { \
         QSemaphore semaphore; \
         int c = 0; \
@@ -3787,7 +3788,7 @@ static void spanfill_from_first(QRasterBuffer *rasterBuffer, QPixelLayout::BPP b
             threadPool->start([&, c, cn]() { \
                 function(c, c + cn); \
                 semaphore.release(1); \
-            }); \
+            }, 1); \
             c += cn; \
         } \
         semaphore.acquire(segments); \

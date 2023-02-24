@@ -35,8 +35,9 @@
 #include <private/qfont_p.h>
 
 #if QT_CONFIG(thread)
-#include "qsemaphore.h"
-#include "qthreadpool.h"
+#include <qsemaphore.h>
+#include <qthreadpool.h>
+#include <private/qthreadpool_p.h>
 #endif
 
 #include <qtgui_tracepoints_p.h>
@@ -5105,7 +5106,7 @@ void QImage::applyColorTransform(const QColorTransform &transform)
 #if QT_CONFIG(thread) && !defined(Q_OS_WASM)
     int segments = (qsizetype(width()) * height()) >> 16;
     segments = std::min(segments, height());
-    QThreadPool *threadPool = QThreadPool::globalInstance();
+    QThreadPool *threadPool = QThreadPoolPrivate::qtGuiInstance();
     if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
         QSemaphore semaphore;
         int y = 0;
