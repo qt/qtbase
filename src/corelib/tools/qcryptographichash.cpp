@@ -531,9 +531,10 @@ QCryptographicHash::Algorithm QCryptographicHash::algorithm() const noexcept
     return d->method;
 }
 
+#ifdef USING_OPENSSL30
+
 void QCryptographicHashPrivate::init()
 {
-#ifdef USING_OPENSSL30
     if (method == QCryptographicHash::Blake2b_160 ||
         method == QCryptographicHash::Blake2b_256 ||
         method == QCryptographicHash::Blake2b_384) {
@@ -578,7 +579,12 @@ void QCryptographicHashPrivate::init()
     }
 
     initializationFailed = !EVP_DigestInit_ex(context.get(), algorithm.get(), nullptr);
-#else
+}
+
+#else // USING_OPENSSL30
+
+void QCryptographicHashPrivate::init()
+{
     switch (method) {
     case QCryptographicHash::Sha1:
         new (&sha1Context) Sha1State;
@@ -633,13 +639,15 @@ void QCryptographicHashPrivate::init()
     case QCryptographicHash::NumAlgorithms:
         Q_UNREACHABLE();
     }
-#endif
 }
+
+#endif // !USING_OPENSSL30
+
+#ifdef USING_OPENSSL30
 
 void QCryptographicHashPrivate::reset() noexcept
 {
     result.clear();
-#ifdef USING_OPENSSL30
     if (method == QCryptographicHash::Blake2b_160 ||
         method == QCryptographicHash::Blake2b_256 ||
         method == QCryptographicHash::Blake2b_384) {
@@ -660,8 +668,13 @@ void QCryptographicHashPrivate::reset() noexcept
         initializationFailed = !EVP_DigestInit_ex(context.get(), algorithm.get(), nullptr);
     }
     // if initializationFailed first time around, it will not succeed this time, either
+}
 
-#else
+#else // USING_OPENSSL30
+
+void QCryptographicHashPrivate::reset() noexcept
+{
+    result.clear();
     switch (method) {
     case QCryptographicHash::Sha1:
         sha1InitState(&sha1Context);
@@ -716,8 +729,9 @@ void QCryptographicHashPrivate::reset() noexcept
     case QCryptographicHash::NumAlgorithms:
         Q_UNREACHABLE();
     }
-#endif // !QT_CONFIG(opensslv30)
 }
+
+#endif // USING_OPENSSL30
 
 #if QT_DEPRECATED_SINCE(6, 4)
 /*!
@@ -745,6 +759,31 @@ void QCryptographicHash::addData(QByteArrayView bytes) noexcept
     d->addData(bytes);
 }
 
+#ifdef USING_OPENSSL30
+
+void QCryptographicHashPrivate::addData(QByteArrayView bytes) noexcept
+{
+    const char *data = bytes.data();
+    auto length = bytes.size();
+    // all functions take size_t length, so we don't need to loop around them:
+    {
+        if (method == QCryptographicHash::Blake2b_160 ||
+            method == QCryptographicHash::Blake2b_256 ||
+            method == QCryptographicHash::Blake2b_384) {
+            blake2b_update(&blake2bContext, reinterpret_cast<const uint8_t *>(data), length);
+        } else if (method == QCryptographicHash::Blake2s_128 ||
+                method == QCryptographicHash::Blake2s_160 ||
+                method == QCryptographicHash::Blake2s_224) {
+            blake2s_update(&blake2sContext, reinterpret_cast<const uint8_t *>(data), length);
+        } else if (!initializationFailed) {
+            EVP_DigestUpdate(context.get(), (const unsigned char *)data, length);
+        }
+    }
+    result.clear();
+}
+
+#else // USING_OPENSSL30
+
 void QCryptographicHashPrivate::addData(QByteArrayView bytes) noexcept
 {
     const char *data = bytes.data();
@@ -759,20 +798,6 @@ void QCryptographicHashPrivate::addData(QByteArrayView bytes) noexcept
 #else
     {
 #endif
-
-#ifdef USING_OPENSSL30
-        if (method == QCryptographicHash::Blake2b_160 ||
-            method == QCryptographicHash::Blake2b_256 ||
-            method == QCryptographicHash::Blake2b_384) {
-            blake2b_update(&blake2bContext, reinterpret_cast<const uint8_t *>(data), length);
-        } else if (method == QCryptographicHash::Blake2s_128 ||
-                method == QCryptographicHash::Blake2s_160 ||
-                method == QCryptographicHash::Blake2s_224) {
-            blake2s_update(&blake2sContext, reinterpret_cast<const uint8_t *>(data), length);
-        } else if (!initializationFailed) {
-            EVP_DigestUpdate(context.get(), (const unsigned char *)data, length);
-        }
-#else
         switch (method) {
         case QCryptographicHash::Sha1:
             sha1Update(&sha1Context, (const unsigned char *)data, length);
@@ -827,10 +852,10 @@ void QCryptographicHashPrivate::addData(QByteArrayView bytes) noexcept
         case QCryptographicHash::NumAlgorithms:
             Q_UNREACHABLE();
         }
-#endif // !QT_CONFIG(opensslv30)
     }
     result.clear();
 }
+#endif // !USING_OPENSSL30
 
 /*!
   Reads the data from the open QIODevice \a device until it ends
@@ -908,9 +933,9 @@ void QCryptographicHashPrivate::finalize() noexcept
     Must be called with finalizeMutex held (except from static hash() function,
     where no sharing can take place).
 */
+#ifdef USING_OPENSSL30
 void QCryptographicHashPrivate::finalizeUnchecked() noexcept
 {
-#ifdef USING_OPENSSL30
     if (method == QCryptographicHash::Blake2b_160 ||
         method == QCryptographicHash::Blake2b_256 ||
         method == QCryptographicHash::Blake2b_384) {
@@ -931,7 +956,12 @@ void QCryptographicHashPrivate::finalizeUnchecked() noexcept
         result.resizeForOverwrite(EVP_MD_get_size(algorithm.get()));
         EVP_DigestFinal_ex(copy.get(), result.data(), nullptr);
     }
-#else
+}
+
+#else // USING_OPENSSL30
+
+void QCryptographicHashPrivate::finalizeUnchecked() noexcept
+{
     switch (method) {
     case QCryptographicHash::Sha1: {
         Sha1State copy = sha1Context;
@@ -1020,8 +1050,8 @@ void QCryptographicHashPrivate::finalizeUnchecked() noexcept
     case QCryptographicHash::NumAlgorithms:
         Q_UNREACHABLE();
     }
-#endif // !QT_CONFIG(opensslv30)
 }
+#endif // !USING_OPENSSL30
 
 /*!
   Returns the hash of \a data using \a method.
