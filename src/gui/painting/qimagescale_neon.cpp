@@ -6,8 +6,9 @@
 #include <private/qsimd_p.h>
 
 #if QT_CONFIG(thread) && !defined(Q_OS_WASM)
-#include "qsemaphore.h"
-#include "qthreadpool.h"
+#include <qsemaphore.h>
+#include <qthreadpool.h>
+#include <private/qthreadpool_p.h>
 #endif
 
 #if defined(__ARM_NEON__)
@@ -22,7 +23,7 @@ static inline void multithread_pixels_function(QImageScaleInfo *isi, int dh, con
 #if QT_CONFIG(thread) && !defined(Q_OS_WASM)
     int segments = (qsizetype(isi->sh) * isi->sw) / (1<<16);
     segments = std::min(segments, dh);
-    QThreadPool *threadPool = QThreadPool::globalInstance();
+    QThreadPool *threadPool = QThreadPoolPrivate::qtGuiInstance();
     if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
         QSemaphore semaphore;
         int y = 0;
