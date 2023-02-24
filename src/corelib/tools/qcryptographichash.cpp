@@ -330,6 +330,10 @@ public:
     EVP_MD_ptr algorithm;
     EVP_MD_CTX_ptr context;
     bool initializationFailed = false;
+
+    void evp_init();
+    void evp_reset() noexcept;
+    void evp_finalizeUnchecked() noexcept;
 #endif
 
     union {
@@ -539,14 +543,17 @@ void QCryptographicHashPrivate::init()
         method == QCryptographicHash::Blake2b_256 ||
         method == QCryptographicHash::Blake2b_384) {
         new (&blake2bContext) blake2b_state;
-        return;
     } else if (method == QCryptographicHash::Blake2s_128 ||
                method == QCryptographicHash::Blake2s_160 ||
                method == QCryptographicHash::Blake2s_224) {
         new (&blake2sContext) blake2s_state;
-        return;
+    } else {
+        evp_init();
     }
+}
 
+void QCryptographicHashPrivate::evp_init()
+{
     Q_ASSERT(!context);
 
     initializationFailed = true;
@@ -652,14 +659,17 @@ void QCryptographicHashPrivate::reset() noexcept
         method == QCryptographicHash::Blake2b_256 ||
         method == QCryptographicHash::Blake2b_384) {
         blake2b_init(&blake2bContext, hashLengthInternal(method));
-        return;
     } else if (method == QCryptographicHash::Blake2s_128 ||
                method == QCryptographicHash::Blake2s_160 ||
                method == QCryptographicHash::Blake2s_224) {
         blake2s_init(&blake2sContext, hashLengthInternal(method));
-        return;
+    } else {
+        evp_reset();
     }
+}
 
+void QCryptographicHashPrivate::evp_reset() noexcept
+{
     if (!initializationFailed) {
         Q_ASSERT(context);
         Q_ASSERT(algorithm);
@@ -950,7 +960,14 @@ void QCryptographicHashPrivate::finalizeUnchecked() noexcept
         blake2s_state copy = blake2sContext;
         result.resizeForOverwrite(length);
         blake2s_final(&copy, result.data(), length);
-    } else if (!initializationFailed) {
+    } else {
+        evp_finalizeUnchecked();
+    }
+}
+
+void QCryptographicHashPrivate::evp_finalizeUnchecked() noexcept
+{
+    if (!initializationFailed) {
         EVP_MD_CTX_ptr copy = EVP_MD_CTX_ptr(EVP_MD_CTX_new());
         EVP_MD_CTX_copy_ex(copy.get(), context.get());
         result.resizeForOverwrite(EVP_MD_get_size(algorithm.get()));
