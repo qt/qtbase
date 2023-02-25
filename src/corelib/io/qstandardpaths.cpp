@@ -250,7 +250,7 @@ using namespace Qt::StringLiterals;
          \li "<APPROOT>/files"
          \li "<APPROOT>/Documents/Desktop"
     \row \li DocumentsLocation
-         \li "<USER>/Documents", "<USER>/<APPNAME>/Documents"
+         \li "<USER>/Documents" [*], "<USER>/<APPNAME>/Documents"
          \li "<APPROOT>/Documents"
     \row \li FontsLocation
          \li "/system/fonts" (not writable)
@@ -259,13 +259,13 @@ using namespace Qt::StringLiterals;
          \li not supported (directory not readable)
          \li not supported
     \row \li MusicLocation
-         \li "<USER>/Music", "<USER>/<APPNAME>/Music"
+         \li "<USER>/Music" [*], "<USER>/<APPNAME>/Music"
          \li "<APPROOT>/Documents/Music"
     \row \li MoviesLocation
-         \li "<USER>/Movies", "<USER>/<APPNAME>/Movies"
+         \li "<USER>/Movies" [*], "<USER>/<APPNAME>/Movies"
          \li "<APPROOT>/Documents/Movies"
     \row \li PicturesLocation
-         \li "<USER>/Pictures", "<USER>/<APPNAME>/Pictures"
+         \li "<USER>/Pictures" [*], "<USER>/<APPNAME>/Pictures"
          \li "<APPROOT>/Documents/Pictures", "assets-library://"
     \row \li TempLocation
          \li "<APPROOT>/cache"
@@ -280,7 +280,7 @@ using namespace Qt::StringLiterals;
          \li "<APPROOT>/cache", "<USER>/<APPNAME>/cache"
          \li "<APPROOT>/Library/Caches"
     \row \li GenericDataLocation
-         \li "<USER>"
+         \li "<USER>" [*] or "<USER>/<APPNAME>/files"
          \li "<APPROOT>/Library/Application Support"
     \row \li RuntimeLocation
          \li "<APPROOT>/cache"
@@ -292,7 +292,7 @@ using namespace Qt::StringLiterals;
          \li "<APPROOT>/files/settings" (there is no shared settings)
          \li "<APPROOT>/Library/Preferences"
     \row \li DownloadLocation
-         \li "<USER>/Downloads", "<USER>/<APPNAME>/Downloads"
+         \li "<USER>/Downloads" [*], "<USER>/<APPNAME>/Downloads"
          \li "<APPROOT>/Documents/Downloads"
     \row \li GenericCacheLocation
          \li "<APPROOT>/cache" (there is no shared cache)
@@ -327,6 +327,11 @@ using namespace Qt::StringLiterals;
         requested at runtime when using QStandardPaths::writableLocation or QStandardPaths::standardLocations.
 
     \note On Android, reading/writing to GenericDataLocation needs the READ_EXTERNAL_STORAGE/WRITE_EXTERNAL_STORAGE permission granted.
+
+    \note [*] On Android 11 and above, public directories are no longer directly accessible
+    in scoped storage mode. Thus, paths of the form \c "<USER>/DirName" are not returned.
+    Instead, you can use \l QFileDialog which uses the Storage Access Framework (SAF)
+    to access such directories.
 
     \note On iOS, if you do pass \c {QStandardPaths::standardLocations(QStandardPaths::PicturesLocation).last()}
         as argument to \l{QFileDialog::setDirectory()},
