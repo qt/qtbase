@@ -952,9 +952,37 @@ bool QCryptographicHashPrivate::supportsAlgorithm(QCryptographicHash::Algorithm 
 
     return algorithm != nullptr;
 #else
-    Q_UNUSED(method);
-    return true;
+    switch (method) {
+    case QCryptographicHash::Sha1:
+#ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+    case QCryptographicHash::Md4:
+    case QCryptographicHash::Md5:
+    case QCryptographicHash::Sha224:
+    case QCryptographicHash::Sha256:
+    case QCryptographicHash::Sha384:
+    case QCryptographicHash::Sha512:
+    case QCryptographicHash::RealSha3_224:
+    case QCryptographicHash::Keccak_224:
+    case QCryptographicHash::RealSha3_256:
+    case QCryptographicHash::Keccak_256:
+    case QCryptographicHash::RealSha3_384:
+    case QCryptographicHash::Keccak_384:
+    case QCryptographicHash::RealSha3_512:
+    case QCryptographicHash::Keccak_512:
+    case QCryptographicHash::Blake2b_160:
+    case QCryptographicHash::Blake2b_256:
+    case QCryptographicHash::Blake2b_384:
+    case QCryptographicHash::Blake2b_512:
+    case QCryptographicHash::Blake2s_128:
+    case QCryptographicHash::Blake2s_160:
+    case QCryptographicHash::Blake2s_224:
+    case QCryptographicHash::Blake2s_256:
 #endif
+        return true;
+    case QCryptographicHash::NumAlgorithms: ;
+    };
+    return false;
+#endif // !USING_OPENSSL3
 }
 
 static constexpr int qt_hash_block_size(QCryptographicHash::Algorithm method)
