@@ -116,7 +116,6 @@ static inline int SHA384_512AddLength(SHA512Context *context, unsigned int lengt
 #define USING_OPENSSL30
 #include <openssl/evp.h>
 #include <openssl/provider.h>
-#include <openssl/sha.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -174,17 +173,10 @@ static constexpr int hashLengthInternal(QCryptographicHash::Algorithm method) no
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
     CASE(Md4, 16);
     CASE(Md5, 16);
-#ifdef USING_OPENSSL30
-    CASE(Sha224, SHA224_DIGEST_LENGTH);
-    CASE(Sha256, SHA256_DIGEST_LENGTH);
-    CASE(Sha384, SHA384_DIGEST_LENGTH);
-    CASE(Sha512, SHA512_DIGEST_LENGTH);
-#else
     CASE(Sha224, SHA224HashSize);
     CASE(Sha256, SHA256HashSize);
     CASE(Sha384, SHA384HashSize);
     CASE(Sha512, SHA512HashSize);
-#endif
     CASE(Blake2s_128, 128 / 8);
     case QCryptographicHash::Blake2b_160:
     case QCryptographicHash::Blake2s_160:
