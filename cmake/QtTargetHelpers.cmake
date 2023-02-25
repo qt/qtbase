@@ -14,6 +14,8 @@
 #     module, these files will raise a warning at configure time if the condition is not met.
 #   COMPILE_FLAGS
 #     Custom compilation flags.
+#   EXTRA_LINKER_SCRIPT_CONTENT
+#     Extra content that should be appended to a target linker script. Applicable for ld only.
 #   NO_PCH_SOURCES
 #     Skip the specified source files by PRECOMPILE_HEADERS feature.
 function(qt_internal_extend_target target)
@@ -40,6 +42,7 @@ function(qt_internal_extend_target target)
     )
     set(single_args
         PRECOMPILED_HEADER
+        EXTRA_LINKER_SCRIPT_CONTENT
     )
     set(multi_args
         ${__default_public_args}
@@ -241,6 +244,10 @@ function(qt_internal_extend_target target)
             ${sources_property} "${arg_CONDITION_INDEPENDENT_SOURCES}")
     endif()
 
+    if(arg_EXTRA_LINKER_SCRIPT_CONTENT)
+        set_target_properties(${target} PROPERTIES
+            _qt_extra_linker_script_content "${arg_EXTRA_LINKER_SCRIPT_CONTENT}")
+    endif()
 endfunction()
 
 function(qt_is_imported_target target out_var)
