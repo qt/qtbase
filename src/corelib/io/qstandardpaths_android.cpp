@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2022 The Qt Company Ltd.
+** Copyright (C) 2023 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -67,6 +67,51 @@ static inline QString getAbsolutePath(const QJniObject &file)
         return QString();
 
     return path.toString();
+}
+
+/*
+ * The root of the external storage
+ *
+ */
+static QString getExternalStorageDirectory()
+{
+    QString &path = (*androidDirCache)[QStringLiteral("EXT_ROOT")];
+    if (!path.isEmpty())
+        return path;
+
+    QJniObject file = QJniObject::callStaticObjectMethod("android/os/Environment",
+                                                         "getExternalStorageDirectory",
+                                                         "()Ljava/io/File;");
+    if (!file.isValid())
+        return QString();
+
+    return (path = getAbsolutePath(file));
+}
+
+/*
+ * Locations where applications can place user files shared by all apps (public).
+ * E.g., /storage/Music
+ */
+static QString getExternalStoragePublicDirectory(const char *directoryField)
+{
+    QString &path = (*androidDirCache)[QLatin1String(directoryField)];
+    if (!path.isEmpty())
+        return path;
+
+    QJniObject dirField = QJniObject::getStaticObjectField("android/os/Environment",
+                                                           directoryField,
+                                                           "Ljava/lang/String;");
+    if (!dirField.isValid())
+        return QString();
+
+    QJniObject file = QJniObject::callStaticObjectMethod("android/os/Environment",
+                                                         "getExternalStoragePublicDirectory",
+                                                         "(Ljava/lang/String;)Ljava/io/File;",
+                                                         dirField.object());
+    if (!file.isValid())
+        return QString();
+
+    return (path = getAbsolutePath(file));
 }
 
 /*
@@ -168,25 +213,35 @@ static QString getFilesDir()
     return (path = getAbsolutePath(file));
 }
 
+static QString getSdkBasedExternalDir(const char *directoryField = nullptr)
+{
+    return (QNativeInterface::QAndroidApplication::sdkVersion() >= 30)
+            ? getExternalFilesDir(directoryField)
+            : getExternalStoragePublicDirectory(directoryField);
+}
+
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
     switch (type) {
     case QStandardPaths::MusicLocation:
-        return getExternalFilesDir("DIRECTORY_MUSIC");
+        return getSdkBasedExternalDir("DIRECTORY_MUSIC");
     case QStandardPaths::MoviesLocation:
-        return getExternalFilesDir("DIRECTORY_MOVIES");
+        return getSdkBasedExternalDir("DIRECTORY_MOVIES");
     case QStandardPaths::PicturesLocation:
-        return getExternalFilesDir("DIRECTORY_PICTURES");
+        return getSdkBasedExternalDir("DIRECTORY_PICTURES");
     case QStandardPaths::DocumentsLocation:
-        return getExternalFilesDir("DIRECTORY_DOCUMENTS");
+        return getSdkBasedExternalDir("DIRECTORY_DOCUMENTS");
     case QStandardPaths::DownloadLocation:
-        return getExternalFilesDir("DIRECTORY_DOWNLOADS");
+        return getSdkBasedExternalDir("DIRECTORY_DOWNLOADS");
     case QStandardPaths::GenericConfigLocation:
     case QStandardPaths::ConfigLocation:
     case QStandardPaths::AppConfigLocation:
         return getFilesDir() + testDir() + QLatin1String("/settings");
     case QStandardPaths::GenericDataLocation:
-        return getExternalFilesDir() + testDir();
+    {
+        return QAndroidApplication::sdkVersion() >= 30 ?
+                getExternalFilesDir() + testDir() : getExternalStorageDirectory() + testDir();
+    }
     case QStandardPaths::AppDataLocation:
     case QStandardPaths::AppLocalDataLocation:
         return getFilesDir() + testDir();
@@ -212,8 +267,14 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
     QStringList locations;
 
     if (type == MusicLocation) {
-        locations << getExternalFilesDir("DIRECTORY_MUSIC")
-                  << getExternalFilesDir("DIRECTORY_PODCASTS")
+        locations << getExternalFilesDir("DIRECTORY_MUSIC");
+        // Place the public dirs before the app own dirs
+        if (QNativeInterface::QAndroidApplication::sdkVersion() < 30) {
+            locations << getExternalStoragePublicDirectory("DIRECTORY_PODCASTS")
+                      << getExternalStoragePublicDirectory("DIRECTORY_NOTIFICATIONS")
+                      << getExternalStoragePublicDirectory("DIRECTORY_ALARMS");
+        }
+        locations << getExternalFilesDir("DIRECTORY_PODCASTS")
                   << getExternalFilesDir("DIRECTORY_NOTIFICATIONS")
                   << getExternalFilesDir("DIRECTORY_ALARMS");
     } else if (type == MoviesLocation) {
