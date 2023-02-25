@@ -377,6 +377,7 @@ bool qLocalTime(time_t utc, struct tm *local)
     tzset();
     if (tm *res = localtime_r(&utc, local)) {
         Q_ASSERT(res == local);
+        Q_UNUSED(res);
         return true;
     }
     return false;
