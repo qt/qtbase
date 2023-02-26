@@ -23,7 +23,8 @@
 #include <QtCore/private/qobject_p.h>
 #include <QtCore/qelapsedtimer.h>
 #include <QtCore/qxpfunctional.h>
-#include <QtGui/QIcon>
+#include <QtGui/qicon.h>
+#include <QtGui/qpalette.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -53,6 +54,7 @@ public:
     QWindow *topLevelWindow(QWindow::AncestorMode mode = QWindow::IncludeTransients) const;
 
     virtual QWindow *eventReceiver() { Q_Q(QWindow); return q; }
+    virtual QPalette windowPalette() const { return QPalette(); }
 
     virtual void setVisible(bool visible);
     void updateVisibility();
