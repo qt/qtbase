@@ -1687,7 +1687,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
         the line edit receives focus, as done on Windows.
 
     \value SH_Menu_KeyboardSearch Typing causes a menu to be search
-        for relevant items, otherwise only mnemnonic is considered.
+        for relevant items, otherwise only mnemonic is considered.
 
     \value SH_Menu_AllowActiveAndDisabled  Allows disabled menu
         items to be active.
