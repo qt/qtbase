@@ -1973,7 +1973,7 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
 
     if (d->selectionModel && d->noSelectionOnMousePress) {
         d->noSelectionOnMousePress = false;
-        if (!edited && !d->pressClosedEditor)
+        if (!d->pressClosedEditor)
             d->selectionModel->select(index, selectionCommand(index, event));
     }
 
