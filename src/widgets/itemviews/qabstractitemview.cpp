@@ -1709,6 +1709,12 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
 {
     Q_D(QAbstractItemView);
     switch (event->type()) {
+    case QEvent::Paint:
+        // Similar to pre-painting in QAbstractItemView::event to update scrollbar
+        // visibility, make sure that all pending layout requests have been executed
+        // so that the view's data structures are up-to-date before rendering.
+        d->executePostedLayout();
+        break;
     case QEvent::HoverMove:
     case QEvent::HoverEnter:
         d->setHoverIndex(indexAt(static_cast<QHoverEvent*>(event)->position().toPoint()));
