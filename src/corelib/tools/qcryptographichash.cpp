@@ -12,6 +12,8 @@
 #include <private/qlocking_p.h>
 
 #include <array>
+#include <climits>
+#include <numeric>
 
 #include "../../3rdparty/sha1/sha1.cpp"
 
@@ -1099,10 +1101,34 @@ constexpr int maxHashBlockSize()
     return result;
 }
 
+[[maybe_unused]]
+constexpr int minHashBlockSize()
+{
+    int result = INT_MAX;
+    using A = QCryptographicHash::Algorithm;
+    for (int i = 0; i < A::NumAlgorithms ; ++i)
+        result = std::min(result, qt_hash_block_size(A(i)));
+    return result;
+}
+
+[[maybe_unused]]
+constexpr int gcdHashBlockSize()
+{
+    int result = 0;
+    using A = QCryptographicHash::Algorithm;
+    for (int i = 0; i < A::NumAlgorithms ; ++i)
+        result = std::gcd(result, qt_hash_block_size(A(i)));
+    return result;
+}
+
 using HashBlock = QSmallByteArray<maxHashBlockSize()>;
 
 static HashBlock xored(const HashBlock &block, quint8 val) noexcept
 {
+    // some hints for the optimizer:
+    Q_ASSUME(block.size() >= minHashBlockSize());
+    Q_ASSUME(block.size() <= maxHashBlockSize());
+    Q_ASSUME(block.size() % gcdHashBlockSize() == 0);
     HashBlock result;
     result.resizeForOverwrite(block.size());
     for (qsizetype i = 0; i < block.size(); ++i)
