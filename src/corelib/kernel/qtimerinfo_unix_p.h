@@ -15,15 +15,11 @@
 // We mean it.
 //
 
-#include "qplatformdefs.h" // _POSIX_MONOTONIC_CLOCK-0
-
 #include <QtCore/private/qglobal_p.h>
-
-// #define QTIMERINFO_DEBUG
 
 #include "qabstracteventdispatcher.h"
 
-#include <sys/time.h> // struct timeval
+#include <sys/time.h> // struct timespec
 #include <chrono>
 
 QT_BEGIN_NAMESPACE
@@ -36,18 +32,12 @@ struct QTimerInfo {
     std::chrono::steady_clock::time_point timeout; // - when to actually fire
     QObject *obj;     // - object to receive event
     QTimerInfo **activateRef; // - ref from activateTimers
-
-#ifdef QTIMERINFO_DEBUG
-    timeval expected; // when timer is expected to fire
-    float cumulativeError;
-    uint count;
-#endif
 };
 
 class Q_CORE_EXPORT QTimerInfoList : public QList<QTimerInfo*>
 {
     // state variables used by activateTimers()
-    QTimerInfo *firstTimerInfo;
+    QTimerInfo *firstTimerInfo = nullptr;
 
 public:
     QTimerInfoList();

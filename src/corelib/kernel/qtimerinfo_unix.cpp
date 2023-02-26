@@ -10,11 +10,6 @@
 #include "private/qobject_p.h"
 #include "private/qabstracteventdispatcher_p.h"
 
-#ifdef QTIMERINFO_DEBUG
-#  include <QDebug>
-#  include <QThread>
-#endif
-
 #include <sys/times.h>
 
 using namespace std::chrono;
@@ -30,10 +25,7 @@ Q_CORE_EXPORT bool qt_disable_lowpriority_timers=false;
  * timerBitVec array is used for keeping track of timer identifiers.
  */
 
-QTimerInfoList::QTimerInfoList()
-{
-    firstTimerInfo = nullptr;
-}
+QTimerInfoList::QTimerInfoList() = default;
 
 steady_clock::time_point QTimerInfoList::updateCurrentTime()
 {
@@ -89,22 +81,6 @@ static constexpr seconds roundToSecs(milliseconds msecs)
         ++secs;
     return secs;
 }
-
-#ifdef QTIMERINFO_DEBUG
-QDebug operator<<(QDebug s, timeval tv)
-{
-    QDebugStateSaver saver(s);
-    s.nospace() << tv.tv_sec << "." << qSetFieldWidth(6) << qSetPadChar(QChar(48)) << tv.tv_usec << Qt::reset;
-    return s;
-}
-QDebug operator<<(QDebug s, Qt::TimerType t)
-{
-    QDebugStateSaver saver(s);
-    s << (t == Qt::PreciseTimer ? "P" :
-          t == Qt::CoarseTimer ? "C" : "VC");
-    return s;
-}
-#endif
 
 static void calculateCoarseTimerTimeout(QTimerInfo *t, steady_clock::time_point now)
 {
@@ -230,13 +206,6 @@ static void calculateNextTimeout(QTimerInfo *t, steady_clock::time_point now)
             t->timeout = now;
             t->timeout += t->interval;
         }
-#ifdef QTIMERINFO_DEBUG
-        t->expected += t->interval;
-        if (t->expected < currentTime) {
-            t->expected = currentTime;
-            t->expected += t->interval;
-        }
-#endif
         if (t->timerType == Qt::CoarseTimer)
             calculateCoarseTimerTimeout(t, now);
         return;
@@ -246,20 +215,8 @@ static void calculateNextTimeout(QTimerInfo *t, steady_clock::time_point now)
         t->timeout += t->interval;
         if (t->timeout <= now)
             t->timeout = time_point_cast<seconds>(now + t->interval);
-#ifdef QTIMERINFO_DEBUG
-        t->expected.tv_sec += t->interval;
-        if (t->expected.tv_sec <= currentTime.tv_sec)
-            t->expected.tv_sec = currentTime.tv_sec + t->interval;
-#endif
-        return;
+        break;
     }
-
-#ifdef QTIMERINFO_DEBUG
-    if (t->timerType != Qt::PreciseTimer)
-    qDebug() << "timer" << t->timerType << Qt::hex << t->id << Qt::dec << "interval" << t->interval
-            << "originally expected at" << t->expected << "will fire at" << t->timeout
-            << "or" << (t->timeout - t->expected) << "s late";
-#endif
 }
 
 bool QTimerInfoList::timerWait(timespec &tm)
@@ -362,15 +319,6 @@ void QTimerInfoList::registerTimer(int timerId, milliseconds interval,
     }
 
     timerInsert(t);
-
-#ifdef QTIMERINFO_DEBUG
-    t->expected = expected;
-    t->cumulativeError = 0;
-    t->count = 0;
-    if (t->timerType != Qt::PreciseTimer)
-    qDebug() << "timer" << t->timerType << Qt::hex <<t->id << Qt::dec << "interval" << t->interval << "expected at"
-            << t->expected << "will fire first at" << t->timeout;
-#endif
 }
 
 bool QTimerInfoList::unregisterTimer(int timerId)
@@ -461,26 +409,6 @@ int QTimerInfoList::activateTimers()
 
         // remove from list
         removeFirst();
-
-#ifdef QTIMERINFO_DEBUG
-        float diff;
-        if (currentTime < currentTimerInfo->expected) {
-            // early
-            timeval early = currentTimerInfo->expected - currentTime;
-            diff = -(early.tv_sec + early.tv_usec / 1000000.0);
-        } else {
-            timeval late = currentTime - currentTimerInfo->expected;
-            diff = late.tv_sec + late.tv_usec / 1000000.0;
-        }
-        currentTimerInfo->cumulativeError += diff;
-        ++currentTimerInfo->count;
-        if (currentTimerInfo->timerType != Qt::PreciseTimer)
-        qDebug() << "timer" << currentTimerInfo->timerType << Qt::hex << currentTimerInfo->id << Qt::dec << "interval"
-                << currentTimerInfo->interval << "firing at" << currentTime
-                << "(orig" << currentTimerInfo->expected << "scheduled at" << currentTimerInfo->timeout
-                << ") off by" << diff << "activation" << currentTimerInfo->count
-                << "avg error" << (currentTimerInfo->cumulativeError / currentTimerInfo->count);
-#endif
 
         // determine next timeout time
         calculateNextTimeout(currentTimerInfo, now);
