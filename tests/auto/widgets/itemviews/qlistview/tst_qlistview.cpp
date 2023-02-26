@@ -3058,6 +3058,11 @@ void tst_QListView::spacingWithWordWrap()
         }
     };
 
+    QStyle *oldStyle = QApplication::style();
+    oldStyle->setParent(nullptr);
+    const auto resetStyle = qScopeGuard([oldStyle]{
+        QApplication::setStyle(oldStyle);
+    });
     QApplication::setStyle(new MyStyle(scrollBarOverlap));
 
     const int listViewResizeCount = 200;
