@@ -845,11 +845,13 @@ static inline bool shouldApplyDarkFrame(const QWindow *w)
     // the application has explicitly opted out of dark frames
     if (!QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeWindowFrames))
         return false;
+
     // if the application supports a dark border, and the palette is dark (window background color
     // is darker than the text), then turn dark-border support on, otherwise use a light border.
-    const QPalette defaultPalette;
-    return defaultPalette.color(QPalette::WindowText).lightness()
-         > defaultPalette.color(QPalette::Window).lightness();
+    auto *dWindow = QWindowPrivate::get(const_cast<QWindow*>(w));
+    const QPalette windowPal = dWindow->windowPalette();
+    return windowPal.color(QPalette::WindowText).lightness()
+         > windowPal.color(QPalette::Window).lightness();
 }
 
 QWindowsWindowData
