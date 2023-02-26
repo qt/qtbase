@@ -754,22 +754,6 @@ void tst_QAbstractItemView::pressClosesReleaseDoesntOpenEditor()
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, inChildOutsideEditor); // should not reopen editor
     QTest::qWait(QApplication::doubleClickInterval() * 2);
     QCOMPARE(view.state(), QAbstractItemView::NoState);
-
-    // with multiple items selected, clicking from the currently edited item into another
-    // selected item closes the current and reopens a new editor
-    view.setSelectionMode(QAbstractItemView::ExtendedSelection);
-    const QRect child2Rect = view.visualRect(model.indexFromItem(parent->child(1)));
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, child2Rect.center()); // select
-    QVERIFY(view.selectionModel()->selectedIndexes().contains(model.indexFromItem(parent->child(0))));
-    QVERIFY(view.selectionModel()->selectedIndexes().contains(model.indexFromItem(parent->child(1))));
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, child2Rect.center()); // edit
-    QTRY_COMPARE(view.state(), QAbstractItemView::EditingState);
-    QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::NoModifier, inChildOutsideEditor); // editor closes
-    QCOMPARE(view.state(), QAbstractItemView::NoState);
-    QTest::qWait(10); // process some events, let the internal timer time out
-    QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, inChildOutsideEditor); // should open editor
-    QTest::qWait(QApplication::doubleClickInterval() * 2);
-    QCOMPARE(view.state(), QAbstractItemView::EditingState);
 }
 
 
@@ -3043,6 +3027,19 @@ void tst_QAbstractItemView::mouseSelection_data()
         << QList{SelectionEvent(SelectionEvent::Click, 3),
                  SelectionEvent(SelectionEvent::Click, Qt::ControlModifier, 3)}
         << QList<int>{};
+    // Extended: when drag is enabled, click on selected without Ctrl clears before editing
+    QTest::addRow("Extended:Range,Click,editable") << QAbstractItemView::ExtendedSelection << false
+        << QAbstractItemView::SelectedClicked
+        << QList{SelectionEvent(SelectionEvent::Click, 1),
+                 SelectionEvent(SelectionEvent::Click, Qt::ShiftModifier, 3),
+                 SelectionEvent(SelectionEvent::Click, 2)}
+        << QList<int>{2};
+    QTest::addRow("Extended:Range,Click,dragable,editable") << QAbstractItemView::ExtendedSelection << true
+        << QAbstractItemView::SelectedClicked
+        << QList{SelectionEvent(SelectionEvent::Click, 1),
+                 SelectionEvent(SelectionEvent::Click, Qt::ShiftModifier, 3),
+                 SelectionEvent(SelectionEvent::Click, 2)}
+        << QList<int>{2};
 }
 
 void tst_QAbstractItemView::mouseSelection()
