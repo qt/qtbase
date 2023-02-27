@@ -53,8 +53,8 @@ public:
 #else
     int fileHandle = -1;
 #endif
-    // "int milliseconds" is big enough for 24 days
-    int staleLockTime = 30 * 1000; // 30 seconds
+
+    std::chrono::milliseconds staleLockTime = std::chrono::seconds{30};
     QLockFile::LockError lockError = QLockFile::NoError;
     bool isLocked = false;
 

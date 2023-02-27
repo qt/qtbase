@@ -37,12 +37,8 @@ public:
     }
 #endif
 
-    void setStaleLockTime(std::chrono::milliseconds value) { setStaleLockTime(int(value.count())); }
-
-    std::chrono::milliseconds staleLockTimeAsDuration() const
-    {
-        return std::chrono::milliseconds(staleLockTime());
-    }
+    void setStaleLockTime(std::chrono::milliseconds value);
+    std::chrono::milliseconds staleLockTimeAsDuration() const;
 
     bool isLocked() const;
     bool getLockInfo(qint64 *pid, QString *hostname, QString *appname) const;
