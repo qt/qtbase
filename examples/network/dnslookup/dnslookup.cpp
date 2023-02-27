@@ -13,25 +13,25 @@
 
 #include <stdio.h>
 
-static int typeFromParameter(const QString &type)
+static int typeFromParameter(QStringView type)
 {
-    if (type == "a")
+    if (type.compare(u"a", Qt::CaseInsensitive) == 0)
         return QDnsLookup::A;
-    if (type == "aaaa")
+    if (type.compare(u"aaaa", Qt::CaseInsensitive) == 0)
         return QDnsLookup::AAAA;
-    if (type == "any")
+    if (type.compare(u"any", Qt::CaseInsensitive) == 0)
         return QDnsLookup::ANY;
-    if (type == "cname")
+    if (type.compare(u"cname", Qt::CaseInsensitive) == 0)
         return QDnsLookup::CNAME;
-    if (type == "mx")
+    if (type.compare(u"mx", Qt::CaseInsensitive) == 0)
         return QDnsLookup::MX;
-    if (type == "ns")
+    if (type.compare(u"ns", Qt::CaseInsensitive) == 0)
         return QDnsLookup::NS;
-    if (type == "ptr")
+    if (type.compare(u"ptr", Qt::CaseInsensitive) == 0)
         return QDnsLookup::PTR;
-    if (type == "srv")
+    if (type.compare(u"srv", Qt::CaseInsensitive) == 0)
         return QDnsLookup::SRV;
-    if (type == "txt")
+    if (type.compare(u"txt", Qt::CaseInsensitive) == 0)
         return QDnsLookup::TXT;
     return -1;
 }
@@ -79,7 +79,7 @@ CommandLineParseResult parseCommandLine(QCommandLineParser &parser, DnsQuery *qu
 
     if (parser.isSet(typeOption)) {
         const QString typeParameter = parser.value(typeOption);
-        const int type = typeFromParameter(typeParameter.toLower());
+        const int type = typeFromParameter(typeParameter);
         if (type < 0) {
             *errorMessage = "Bad record type: " + typeParameter;
             return CommandLineError;
