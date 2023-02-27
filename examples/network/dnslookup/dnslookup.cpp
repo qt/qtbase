@@ -189,12 +189,11 @@ int main(int argc, char *argv[])
         fputs(qPrintable(parser.helpText()), stderr);
         return 1;
     case CommandLineVersionRequested:
-        printf("%s %s\n", qPrintable(QCoreApplication::applicationName()),
-               qPrintable(QCoreApplication::applicationVersion()));
-        return 0;
+        parser.showVersion();
+        Q_UNREACHABLE_RETURN(0);
     case CommandLineHelpRequested:
         parser.showHelp();
-        Q_UNREACHABLE();
+        Q_UNREACHABLE_RETURN(0);
     }
 //! [1]
 
