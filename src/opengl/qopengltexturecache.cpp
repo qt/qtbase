@@ -61,9 +61,19 @@ void QOpenGLTextureCacheWrapper::cleanupTexturesForPixmapData(QPlatformPixmap *p
     cleanupTexturesForCacheKey(pmd->cacheKey());
 }
 
+static quint64 cacheSize()
+{
+    bool ok = false;
+    const int envCacheSize = qEnvironmentVariableIntValue("QT_OPENGL_TEXTURE_CACHE_SIZE", &ok);
+    if (ok)
+        return envCacheSize;
+
+    return 1024 * 1024; // 1024 MB cache default
+}
+
 QOpenGLTextureCache::QOpenGLTextureCache(QOpenGLContext *ctx)
     : QOpenGLSharedResource(ctx->shareGroup())
-    , m_cache(256 * 1024) // 256 MB cache
+    , m_cache(cacheSize())
 {
 }
 
