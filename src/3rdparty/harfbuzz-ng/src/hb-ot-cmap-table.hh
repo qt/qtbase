@@ -27,8 +27,11 @@
 #ifndef HB_OT_CMAP_TABLE_HH
 #define HB_OT_CMAP_TABLE_HH
 
+#include "hb-ot-os2-table.hh"
+#include "hb-ot-shaper-arabic-pua.hh"
 #include "hb-open-type.hh"
 #include "hb-set.hh"
+#include "hb-cache.hh"
 
 /*
  * cmap -- Character to Glyph Index Mapping
@@ -44,7 +47,7 @@ struct CmapSubtableFormat0
   bool get_glyph (hb_codepoint_t codepoint, hb_codepoint_t *glyph) const
   {
     hb_codepoint_t gid = codepoint < 256 ? glyphIdArray[codepoint] : 0;
-    if (!gid)
+    if (unlikely (!gid))
       return false;
     *glyph = gid;
     return true;
@@ -109,22 +112,26 @@ struct CmapSubtableFormat4
 
     while (it) {
       // Start a new range
-      start_cp = (*it).first;
-      prev_run_start_cp = (*it).first;
-      run_start_cp = (*it).first;
-      end_cp = (*it).first;
-      last_gid = (*it).second;
-      run_length = 1;
-      prev_delta = 0;
+      {
+        const auto& pair = *it;
+        start_cp = pair.first;
+        prev_run_start_cp = start_cp;
+        run_start_cp = start_cp;
+        end_cp = start_cp;
+        last_gid = pair.second;
+        run_length = 1;
+        prev_delta = 0;
+      }
 
-      delta = (*it).second - (*it).first;
+      delta = last_gid - start_cp;
       mode = FIRST_SUB_RANGE;
       it++;
 
       while (it) {
         // Process range
-        hb_codepoint_t next_cp = (*it).first;
-        hb_codepoint_t next_gid = (*it).second;
+        const auto& pair = *it;
+        hb_codepoint_t next_cp = pair.first;
+        hb_codepoint_t next_gid = pair.second;
         if (next_cp != end_cp + 1) {
           // Current range is over, stop processing.
           break;
@@ -282,23 +289,22 @@ struct CmapSubtableFormat4
   }
 
   template<typename Iterator,
-	   hb_requires (hb_is_iterator (Iterator))>
+          hb_requires (hb_is_iterator (Iterator))>
   HBUINT16* serialize_rangeoffset_glyid (hb_serialize_context_t *c,
-					 Iterator it,
+                                         Iterator it,
 					 HBUINT16 *endCode,
 					 HBUINT16 *startCode,
 					 HBINT16 *idDelta,
 					 unsigned segcount)
   {
-    hb_hashmap_t<hb_codepoint_t, hb_codepoint_t> cp_to_gid;
-    + it | hb_sink (cp_to_gid);
+    hb_map_t cp_to_gid { it };
 
     HBUINT16 *idRangeOffset = c->allocate_size<HBUINT16> (HBUINT16::static_size * segcount);
     if (unlikely (!c->check_success (idRangeOffset))) return nullptr;
     if (unlikely ((char *)idRangeOffset - (char *)idDelta != (int) segcount * (int) HBINT16::static_size)) return nullptr;
 
     for (unsigned i : + hb_range (segcount)
-             | hb_filter ([&] (const unsigned _) { return idDelta[_] == 0; }))
+		      | hb_filter ([&] (const unsigned _) { return idDelta[_] == 0; }))
     {
       idRangeOffset[i] = 2 * (c->start_embed<HBUINT16> () - idRangeOffset - i);
       for (hb_codepoint_t cp = startCode[i]; cp <= endCode[i]; cp++)
@@ -323,22 +329,31 @@ struct CmapSubtableFormat4
 		 { return _.first <= 0xFFFF; })
     ;
 
-    if (format4_iter.len () == 0) return;
+    if (!format4_iter) return;
 
     unsigned table_initpos = c->length ();
     if (unlikely (!c->extend_min (this))) return;
     this->format = 4;
 
+    hb_vector_t<hb_pair_t<hb_codepoint_t, hb_codepoint_t>> cp_to_gid {
+      format4_iter
+    };
+
     //serialize endCode[], startCode[], idDelta[]
     HBUINT16* endCode = c->start_embed<HBUINT16> ();
-    unsigned segcount = serialize_find_segcount (format4_iter);
-    if (unlikely (!serialize_start_end_delta_arrays (c, format4_iter, segcount)))
+    unsigned segcount = serialize_find_segcount (cp_to_gid.iter());
+    if (unlikely (!serialize_start_end_delta_arrays (c, cp_to_gid.iter(), segcount)))
       return;
 
     HBUINT16 *startCode = endCode + segcount + 1;
     HBINT16 *idDelta = ((HBINT16*)startCode) + segcount;
 
-    HBUINT16 *idRangeOffset = serialize_rangeoffset_glyid (c, format4_iter, endCode, startCode, idDelta, segcount);
+    HBUINT16 *idRangeOffset = serialize_rangeoffset_glyid (c,
+                                                           cp_to_gid.iter (),
+                                                           endCode,
+                                                           startCode,
+                                                           idDelta,
+                                                           segcount);
     if (unlikely (!c->check_success (idRangeOffset))) return;
 
     this->length = c->length () - table_initpos;
@@ -401,7 +416,7 @@ struct CmapSubtableFormat4
 					  2,
 					  _hb_cmp_method<hb_codepoint_t, CustomRange, unsigned>,
 					  this->segCount + 1);
-      if (!found)
+      if (unlikely (!found))
 	return false;
       unsigned int i = found - endCount;
 
@@ -421,7 +436,7 @@ struct CmapSubtableFormat4
 	gid += this->idDelta[i];
       }
       gid &= 0xFFFFu;
-      if (!gid)
+      if (unlikely (!gid))
 	return false;
       *glyph = gid;
       return true;
@@ -440,14 +455,14 @@ struct CmapSubtableFormat4
 	hb_codepoint_t start = this->startCount[i];
 	hb_codepoint_t end = this->endCount[i];
 	unsigned int rangeOffset = this->idRangeOffset[i];
+        out->add_range(start, end);
 	if (rangeOffset == 0)
 	{
 	  for (hb_codepoint_t codepoint = start; codepoint <= end; codepoint++)
 	  {
 	    hb_codepoint_t gid = (codepoint + this->idDelta[i]) & 0xFFFFu;
 	    if (unlikely (!gid))
-	      continue;
-	    out->add (codepoint);
+              out->del(codepoint);
 	  }
 	}
 	else
@@ -456,11 +471,13 @@ struct CmapSubtableFormat4
 	  {
 	    unsigned int index = rangeOffset / 2 + (codepoint - this->startCount[i]) + i - this->segCount;
 	    if (unlikely (index >= this->glyphIdArrayLength))
+            {
+              out->del_range (codepoint, end);
 	      break;
+            }
 	    hb_codepoint_t gid = this->glyphIdArray[index];
 	    if (unlikely (!gid))
-	      continue;
-	    out->add (codepoint);
+              out->del(codepoint);
 	  }
 	}
       }
@@ -469,6 +486,8 @@ struct CmapSubtableFormat4
     void collect_mapping (hb_set_t *unicodes, /* OUT */
 			  hb_map_t *mapping /* OUT */) const
     {
+      // TODO(grieger): optimize similar to collect_unicodes
+      // (ie. use add_range())
       unsigned count = this->segCount;
       if (count && this->startCount[count - 1] == 0xFFFFu)
 	count--; /* Skip sentinel segment. */
@@ -620,7 +639,7 @@ struct CmapSubtableTrimmed
   {
     /* Rely on our implicit array bound-checking. */
     hb_codepoint_t gid = glyphIdArray[codepoint - startCharCode];
-    if (!gid)
+    if (unlikely (!gid))
       return false;
     *glyph = gid;
     return true;
@@ -674,7 +693,7 @@ struct CmapSubtableTrimmed
 };
 
 struct CmapSubtableFormat6  : CmapSubtableTrimmed<HBUINT16> {};
-struct CmapSubtableFormat10 : CmapSubtableTrimmed<HBUINT32 > {};
+struct CmapSubtableFormat10 : CmapSubtableTrimmed<HBUINT32> {};
 
 template <typename T>
 struct CmapSubtableLongSegmented
@@ -684,7 +703,7 @@ struct CmapSubtableLongSegmented
   bool get_glyph (hb_codepoint_t codepoint, hb_codepoint_t *glyph) const
   {
     hb_codepoint_t gid = T::group_get_glyph (groups.bsearch (codepoint), codepoint);
-    if (!gid)
+    if (unlikely (!gid))
       return false;
     *glyph = gid;
     return true;
@@ -722,11 +741,19 @@ struct CmapSubtableLongSegmented
 			hb_map_t *mapping, /* OUT */
 			unsigned num_glyphs) const
   {
+    hb_codepoint_t last_end = 0;
     for (unsigned i = 0; i < this->groups.len; i++)
     {
       hb_codepoint_t start = this->groups[i].startCharCode;
       hb_codepoint_t end = hb_min ((hb_codepoint_t) this->groups[i].endCharCode,
 				   (hb_codepoint_t) HB_UNICODE_MAX);
+      if (unlikely (start > end || start < last_end)) {
+        // Range is not in order and is invalid, skip it.
+        continue;
+      }
+      last_end = end;
+
+
       hb_codepoint_t gid = this->groups[i].glyphID;
       if (!gid)
       {
@@ -778,16 +805,16 @@ struct CmapSubtableFormat12 : CmapSubtableLongSegmented<CmapSubtableFormat12>
   void serialize (hb_serialize_context_t *c,
 		  Iterator it)
   {
-    if (it.len () == 0) return;
+    if (!it) return;
     unsigned table_initpos = c->length ();
     if (unlikely (!c->extend_min (this))) return;
 
-    hb_codepoint_t startCharCode = 0xFFFF, endCharCode = 0xFFFF;
+    hb_codepoint_t startCharCode = (hb_codepoint_t) -1, endCharCode = (hb_codepoint_t) -1;
     hb_codepoint_t glyphID = 0;
 
     for (const auto& _ : +it)
     {
-      if (startCharCode == 0xFFFF)
+      if (startCharCode == (hb_codepoint_t) -1)
       {
 	startCharCode = _.first;
 	endCharCode = _.first;
@@ -818,7 +845,7 @@ struct CmapSubtableFormat12 : CmapSubtableLongSegmented<CmapSubtableFormat12>
     this->format = 12;
     this->reserved = 0;
     this->length = c->length () - table_initpos;
-    this->groups.len = (this->length - min_size)/CmapSubtableLongGroup::static_size;
+    this->groups.len = (this->length - min_size) / CmapSubtableLongGroup::static_size;
   }
 
   static size_t get_sub_table_size (const hb_sorted_vector_t<CmapSubtableLongGroup> &groups_data)
@@ -883,7 +910,7 @@ struct DefaultUVS : SortedArray32Of<UnicodeValueRange>
       hb_codepoint_t first = arrayZ[i].startUnicodeValue;
       hb_codepoint_t last = hb_min ((hb_codepoint_t) (first + arrayZ[i].additionalCount),
 				    (hb_codepoint_t) HB_UNICODE_MAX);
-      out->add_range (first, hb_min (last, 0x10FFFFu));
+      out->add_range (first, last);
     }
   }
 
@@ -899,37 +926,75 @@ struct DefaultUVS : SortedArray32Of<UnicodeValueRange>
     if (unlikely (!c->copy<HBUINT32> (len))) return nullptr;
     unsigned init_len = c->length ();
 
-    hb_codepoint_t lastCode = HB_MAP_VALUE_INVALID;
-    int count = -1;
-
-    for (const UnicodeValueRange& _ : as_array ())
+    if (this->len > unicodes->get_population () * hb_bit_storage ((unsigned) this->len))
     {
-      for (const unsigned addcnt : hb_range ((unsigned) _.additionalCount + 1))
-      {
-	unsigned curEntry = (unsigned) _.startUnicodeValue + addcnt;
-	if (!unicodes->has (curEntry)) continue;
-	count += 1;
-	if (lastCode == HB_MAP_VALUE_INVALID)
-	  lastCode = curEntry;
-	else if (lastCode + count != curEntry)
-	{
-	  UnicodeValueRange rec;
-	  rec.startUnicodeValue = lastCode;
-	  rec.additionalCount = count - 1;
-	  c->copy<UnicodeValueRange> (rec);
+      hb_codepoint_t start = HB_SET_VALUE_INVALID;
+      hb_codepoint_t end = HB_SET_VALUE_INVALID;
 
-	  lastCode = curEntry;
-	  count = 0;
+      for (hb_codepoint_t u = HB_SET_VALUE_INVALID;
+	   unicodes->next (&u);)
+      {
+        if (!as_array ().bsearch (u))
+	  continue;
+	if (start == HB_SET_VALUE_INVALID)
+	{
+	  start = u;
+	  end = start - 1;
+	}
+	if (end + 1 != u || end - start == 255)
+        {
+	  UnicodeValueRange rec;
+	  rec.startUnicodeValue = start;
+	  rec.additionalCount = end - start;
+	  c->copy<UnicodeValueRange> (rec);
+	  start = u;
+	}
+	end = u;
+      }
+      if (start != HB_SET_VALUE_INVALID)
+      {
+	UnicodeValueRange rec;
+	rec.startUnicodeValue = start;
+	rec.additionalCount = end - start;
+	c->copy<UnicodeValueRange> (rec);
+      }
+
+    }
+    else
+    {
+      hb_codepoint_t lastCode = HB_SET_VALUE_INVALID;
+      int count = -1;
+
+      for (const UnicodeValueRange& _ : *this)
+      {
+	hb_codepoint_t curEntry = (hb_codepoint_t) (_.startUnicodeValue - 1);
+	hb_codepoint_t end = curEntry + _.additionalCount + 2;
+
+	for (; unicodes->next (&curEntry) && curEntry < end;)
+	{
+	  count += 1;
+	  if (lastCode == HB_SET_VALUE_INVALID)
+	    lastCode = curEntry;
+	  else if (lastCode + count != curEntry)
+	  {
+	    UnicodeValueRange rec;
+	    rec.startUnicodeValue = lastCode;
+	    rec.additionalCount = count - 1;
+	    c->copy<UnicodeValueRange> (rec);
+
+	    lastCode = curEntry;
+	    count = 0;
+	  }
 	}
       }
-    }
 
-    if (lastCode != HB_MAP_VALUE_INVALID)
-    {
-      UnicodeValueRange rec;
-      rec.startUnicodeValue = lastCode;
-      rec.additionalCount = count;
-      c->copy<UnicodeValueRange> (rec);
+      if (lastCode != HB_MAP_VALUE_INVALID)
+      {
+	UnicodeValueRange rec;
+	rec.startUnicodeValue = lastCode;
+	rec.additionalCount = count;
+	c->copy<UnicodeValueRange> (rec);
+      }
     }
 
     if (c->length () - init_len == 0)
@@ -1350,7 +1415,7 @@ struct CmapSubtable
     switch (format) {
     case  4: return u.format4.serialize (c, it);
     case 12: return u.format12.serialize (c, it);
-    case 14: return u.format14.serialize (c, plan->unicodes, plan->glyphs_requested, plan->glyph_map, base);
+    case 14: return u.format14.serialize (c, &plan->unicodes, &plan->glyphs_requested, plan->glyph_map, base);
     default: return;
     }
   }
@@ -1448,9 +1513,119 @@ struct EncodingRecord
   DEFINE_SIZE_STATIC (8);
 };
 
+struct cmap;
+
+struct SubtableUnicodesCache {
+
+ private:
+  hb_blob_ptr_t<cmap> base_blob;
+  const char* base;
+  hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> cached_unicodes;
+
+ public:
+
+  static SubtableUnicodesCache* create (hb_blob_ptr_t<cmap> source_table)
+  {
+    SubtableUnicodesCache* cache =
+        (SubtableUnicodesCache*) hb_malloc (sizeof(SubtableUnicodesCache));
+    new (cache) SubtableUnicodesCache (source_table);
+    return cache;
+  }
+
+  static void destroy (void* value) {
+    if (!value) return;
+
+    SubtableUnicodesCache* cache = (SubtableUnicodesCache*) value;
+    cache->~SubtableUnicodesCache ();
+    hb_free (cache);
+  }
+
+  SubtableUnicodesCache(const void* cmap_base)
+      : base_blob(),
+        base ((const char*) cmap_base),
+        cached_unicodes ()
+  {}
+
+  SubtableUnicodesCache(hb_blob_ptr_t<cmap> base_blob_)
+      : base_blob(base_blob_),
+        base ((const char *) base_blob.get()),
+        cached_unicodes ()
+  {}
+
+  ~SubtableUnicodesCache()
+  {
+    base_blob.destroy ();
+  }
+
+  bool same_base(const void* other) const
+  {
+    return other == (const void*) base;
+  }
+
+  const hb_set_t* set_for (const EncodingRecord* record,
+                           SubtableUnicodesCache& mutable_cache) const
+  {
+    if (cached_unicodes.has ((unsigned) ((const char *) record - base)))
+      return cached_unicodes.get ((unsigned) ((const char *) record - base));
+
+    return mutable_cache.set_for (record);
+  }
+
+  const hb_set_t* set_for (const EncodingRecord* record)
+  {
+    if (!cached_unicodes.has ((unsigned) ((const char *) record - base)))
+    {
+      hb_set_t *s = hb_set_create ();
+      if (unlikely (s->in_error ()))
+	return hb_set_get_empty ();
+
+      (base+record->subtable).collect_unicodes (s);
+
+      if (unlikely (!cached_unicodes.set ((unsigned) ((const char *) record - base), hb::unique_ptr<hb_set_t> {s})))
+        return hb_set_get_empty ();
+
+      return s;
+    }
+    return cached_unicodes.get ((unsigned) ((const char *) record - base));
+  }
+
+};
+
+static inline uint_fast16_t
+_hb_symbol_pua_map (unsigned codepoint)
+{
+  if (codepoint <= 0x00FFu)
+  {
+    /* For symbol-encoded OpenType fonts, we duplicate the
+     * U+F000..F0FF range at U+0000..U+00FF.  That's what
+     * Windows seems to do, and that's hinted about at:
+     * https://docs.microsoft.com/en-us/typography/opentype/spec/recom
+     * under "Non-Standard (Symbol) Fonts". */
+    return 0xF000u + codepoint;
+  }
+  return 0;
+}
+
 struct cmap
 {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_cmap;
+
+
+  static SubtableUnicodesCache* create_filled_cache(hb_blob_ptr_t<cmap> source_table) {
+    const cmap* cmap = source_table.get();
+    auto it =
+    + hb_iter (cmap->encodingRecord)
+    | hb_filter ([&](const EncodingRecord& _) {
+      return cmap::filter_encoding_records_for_subset (cmap, _);
+    })
+    ;
+
+    SubtableUnicodesCache* cache = SubtableUnicodesCache::create(source_table);
+    for (const EncodingRecord& _ : it)
+      cache->set_for(&_); // populate the cache for this encoding record.
+
+    return cache;
+  }
 
   template<typename Iterator, typename EncodingRecIter,
 	   hb_requires (hb_is_iterator (EncodingRecIter))>
@@ -1458,7 +1633,7 @@ struct cmap
 		  Iterator it,
 		  EncodingRecIter encodingrec_iter,
 		  const void *base,
-		  const hb_subset_plan_t *plan,
+		  hb_subset_plan_t *plan,
                   bool drop_format_4 = false)
   {
     if (unlikely (!c->extend_min ((*this))))  return false;
@@ -1466,6 +1641,14 @@ struct cmap
 
     unsigned format4objidx = 0, format12objidx = 0, format14objidx = 0;
     auto snap = c->snapshot ();
+
+    SubtableUnicodesCache local_unicodes_cache (base);
+    const SubtableUnicodesCache* unicodes_cache = &local_unicodes_cache;
+
+    if (plan->accelerator &&
+        plan->accelerator->cmap_cache &&
+        plan->accelerator->cmap_cache->same_base (base))
+      unicodes_cache = plan->accelerator->cmap_cache;
 
     for (const EncodingRecord& _ : encodingrec_iter)
     {
@@ -1475,12 +1658,11 @@ struct cmap
       unsigned format = (base+_.subtable).u.format;
       if (format != 4 && format != 12 && format != 14) continue;
 
-      hb_set_t unicodes_set;
-      (base+_.subtable).collect_unicodes (&unicodes_set);
+      const hb_set_t* unicodes_set = unicodes_cache->set_for (&_, local_unicodes_cache);
 
       if (!drop_format_4 && format == 4)
       {
-        c->copy (_, + it | hb_filter (unicodes_set, hb_first), 4u, base, plan, &format4objidx);
+        c->copy (_, + it | hb_filter (*unicodes_set, hb_first), 4u, base, plan, &format4objidx);
         if (c->in_error () && c->only_overflow ())
         {
           // cmap4 overflowed, reset and retry serialization without format 4 subtables.
@@ -1495,8 +1677,14 @@ struct cmap
 
       else if (format == 12)
       {
-        if (_can_drop (_, unicodes_set, base, + it | hb_map (hb_first), encodingrec_iter)) continue;
-        c->copy (_, + it | hb_filter (unicodes_set, hb_first), 12u, base, plan, &format12objidx);
+        if (_can_drop (_,
+                       *unicodes_set,
+                       base,
+                       *unicodes_cache,
+                       local_unicodes_cache,
+                       + it | hb_map (hb_first), encodingrec_iter))
+          continue;
+        c->copy (_, + it | hb_filter (*unicodes_set, hb_first), 12u, base, plan, &format12objidx);
       }
       else if (format == 14) c->copy (_, it, 14u, base, plan, &format14objidx);
     }
@@ -1514,6 +1702,8 @@ struct cmap
   bool _can_drop (const EncodingRecord& cmap12,
                   const hb_set_t& cmap12_unicodes,
                   const void* base,
+                  const SubtableUnicodesCache& unicodes_cache,
+                  SubtableUnicodesCache& local_unicodes_cache,
                   Iterator subset_unicodes,
                   EncodingRecordIterator encoding_records)
   {
@@ -1544,11 +1734,10 @@ struct cmap
           || (base+_.subtable).get_language() != target_language)
         continue;
 
-      hb_set_t sibling_unicodes;
-      (base+_.subtable).collect_unicodes (&sibling_unicodes);
+      const hb_set_t* sibling_unicodes = unicodes_cache.set_for (&_, local_unicodes_cache);
 
       auto cmap12 = + subset_unicodes | hb_filter (cmap12_unicodes);
-      auto sibling = + subset_unicodes | hb_filter (sibling_unicodes);
+      auto sibling = + subset_unicodes | hb_filter (*sibling_unicodes);
       for (; cmap12 && sibling; cmap12++, sibling++)
       {
         unsigned a = *cmap12;
@@ -1582,17 +1771,9 @@ struct cmap
 
     auto encodingrec_iter =
     + hb_iter (encodingRecord)
-    | hb_filter ([&] (const EncodingRecord& _)
-		{
-		  if ((_.platformID == 0 && _.encodingID == 3) ||
-		      (_.platformID == 0 && _.encodingID == 4) ||
-		      (_.platformID == 3 && _.encodingID == 1) ||
-		      (_.platformID == 3 && _.encodingID == 10) ||
-		      (this + _.subtable).u.format == 14)
-		    return true;
-
-		  return false;
-		})
+    | hb_filter ([&](const EncodingRecord& _) {
+      return cmap::filter_encoding_records_for_subset (this, _);
+    })
     ;
 
     if (unlikely (!encodingrec_iter.len ())) return_trace (false);
@@ -1616,18 +1797,16 @@ struct cmap
     if (unlikely (has_format12 && (!unicode_ucs4 && !ms_ucs4))) return_trace (false);
 
     auto it =
-    + hb_iter (c->plan->unicodes)
-    | hb_map ([&] (hb_codepoint_t _)
-	      {
-		hb_codepoint_t new_gid = HB_MAP_VALUE_INVALID;
-		c->plan->new_gid_for_codepoint (_, &new_gid);
-		return hb_pair_t<hb_codepoint_t, hb_codepoint_t> (_, new_gid);
-	      })
+    + c->plan->unicode_to_new_gid_list.iter ()
     | hb_filter ([&] (const hb_pair_t<hb_codepoint_t, hb_codepoint_t> _)
 		 { return (_.second != HB_MAP_VALUE_INVALID); })
     ;
 
-    return_trace (cmap_prime->serialize (c->serializer, it, encodingrec_iter, this, c->plan));
+    return_trace (cmap_prime->serialize (c->serializer,
+                                         it,
+                                         encodingrec_iter,
+                                         this,
+                                         c->plan));
   }
 
   const CmapSubtable *find_best_subtable (bool *symbol = nullptr) const
@@ -1663,6 +1842,8 @@ struct cmap
 
   struct accelerator_t
   {
+    using cache_t = hb_cache_t<21, 16, 8, true>;
+
     accelerator_t (hb_face_t *face)
     {
       this->table = hb_sanitize_context_t ().reference_table<cmap> (face);
@@ -1677,7 +1858,24 @@ struct cmap
 
       this->get_glyph_data = subtable;
       if (unlikely (symbol))
-	this->get_glyph_funcZ = get_glyph_from_symbol<CmapSubtable>;
+      {
+	switch ((unsigned) face->table.OS2->get_font_page ()) {
+	case OS2::font_page_t::FONT_PAGE_NONE:
+	  this->get_glyph_funcZ = get_glyph_from_symbol<CmapSubtable, _hb_symbol_pua_map>;
+	  break;
+#ifndef HB_NO_OT_SHAPER_ARABIC_FALLBACK
+	case OS2::font_page_t::FONT_PAGE_SIMP_ARABIC:
+	  this->get_glyph_funcZ = get_glyph_from_symbol<CmapSubtable, _hb_arabic_pua_simp_map>;
+	  break;
+	case OS2::font_page_t::FONT_PAGE_TRAD_ARABIC:
+	  this->get_glyph_funcZ = get_glyph_from_symbol<CmapSubtable, _hb_arabic_pua_trad_map>;
+	  break;
+#endif
+	default:
+	  this->get_glyph_funcZ = get_glyph_from<CmapSubtable>;
+	  break;
+	}
+      }
       else
       {
 	switch (subtable->u.format) {
@@ -1700,26 +1898,43 @@ struct cmap
     }
     ~accelerator_t () { this->table.destroy (); }
 
-    bool get_nominal_glyph (hb_codepoint_t  unicode,
-			    hb_codepoint_t *glyph) const
+    inline bool _cached_get (hb_codepoint_t unicode,
+			     hb_codepoint_t *glyph,
+			     cache_t *cache) const
     {
-      if (unlikely (!this->get_glyph_funcZ)) return false;
-      return this->get_glyph_funcZ (this->get_glyph_data, unicode, glyph);
+      unsigned v;
+      if (cache && cache->get (unicode, &v))
+      {
+        *glyph = v;
+	return true;
+      }
+      bool ret  = this->get_glyph_funcZ (this->get_glyph_data, unicode, glyph);
+
+      if (cache && ret)
+        cache->set (unicode, *glyph);
+      return ret;
     }
+
+    bool get_nominal_glyph (hb_codepoint_t  unicode,
+			    hb_codepoint_t *glyph,
+			    cache_t *cache = nullptr) const
+    {
+      if (unlikely (!this->get_glyph_funcZ)) return 0;
+      return _cached_get (unicode, glyph, cache);
+    }
+
     unsigned int get_nominal_glyphs (unsigned int count,
 				     const hb_codepoint_t *first_unicode,
 				     unsigned int unicode_stride,
 				     hb_codepoint_t *first_glyph,
-				     unsigned int glyph_stride) const
+				     unsigned int glyph_stride,
+				     cache_t *cache = nullptr) const
     {
       if (unlikely (!this->get_glyph_funcZ)) return 0;
 
-      hb_cmap_get_glyph_func_t get_glyph_funcZ = this->get_glyph_funcZ;
-      const void *get_glyph_data = this->get_glyph_data;
-
       unsigned int done;
       for (done = 0;
-	   done < count && get_glyph_funcZ (get_glyph_data, *first_unicode, first_glyph);
+	   done < count && _cached_get (*first_unicode, first_glyph, cache);
 	   done++)
       {
 	first_unicode = &StructAtOffsetUnaligned<hb_codepoint_t> (first_unicode, unicode_stride);
@@ -1730,7 +1945,8 @@ struct cmap
 
     bool get_variation_glyph (hb_codepoint_t  unicode,
 			      hb_codepoint_t  variation_selector,
-			      hb_codepoint_t *glyph) const
+			      hb_codepoint_t *glyph,
+			      cache_t *cache = nullptr) const
     {
       switch (this->subtable_uvs->get_glyph_variant (unicode,
 						     variation_selector,
@@ -1741,7 +1957,7 @@ struct cmap
 	case GLYPH_VARIANT_USE_DEFAULT:	break;
       }
 
-      return get_nominal_glyph (unicode, glyph);
+      return get_nominal_glyph (unicode, glyph, cache);
     }
 
     void collect_unicodes (hb_set_t *out, unsigned int num_glyphs) const
@@ -1759,6 +1975,7 @@ struct cmap
     typedef bool (*hb_cmap_get_glyph_func_t) (const void *obj,
 					      hb_codepoint_t codepoint,
 					      hb_codepoint_t *glyph);
+    typedef uint_fast16_t (*hb_pua_remap_func_t) (unsigned);
 
     template <typename Type>
     HB_INTERNAL static bool get_glyph_from (const void *obj,
@@ -1769,7 +1986,7 @@ struct cmap
       return typed_obj->get_glyph (codepoint, glyph);
     }
 
-    template <typename Type>
+    template <typename Type, hb_pua_remap_func_t remap>
     HB_INTERNAL static bool get_glyph_from_symbol (const void *obj,
 						   hb_codepoint_t codepoint,
 						   hb_codepoint_t *glyph)
@@ -1778,15 +1995,8 @@ struct cmap
       if (likely (typed_obj->get_glyph (codepoint, glyph)))
 	return true;
 
-      if (codepoint <= 0x00FFu)
-      {
-	/* For symbol-encoded OpenType fonts, we duplicate the
-	 * U+F000..F0FF range at U+0000..U+00FF.  That's what
-	 * Windows seems to do, and that's hinted about at:
-	 * https://docs.microsoft.com/en-us/typography/opentype/spec/recom
-	 * under "Non-Standard (Symbol) Fonts". */
-	return typed_obj->get_glyph (0xF000u + codepoint, glyph);
-      }
+      if (hb_codepoint_t c = remap (codepoint))
+	return typed_obj->get_glyph (c, glyph);
 
       return false;
     }
@@ -1850,6 +2060,19 @@ struct cmap
     return_trace (c->check_struct (this) &&
 		  likely (version == 0) &&
 		  encodingRecord.sanitize (c, this));
+  }
+
+ private:
+
+  static bool filter_encoding_records_for_subset(const cmap* cmap,
+                                                 const EncodingRecord& _)
+  {
+    return
+        (_.platformID == 0 && _.encodingID == 3) ||
+        (_.platformID == 0 && _.encodingID == 4) ||
+        (_.platformID == 3 && _.encodingID == 1) ||
+        (_.platformID == 3 && _.encodingID == 10) ||
+        (cmap + _.subtable).u.format == 14;
   }
 
   protected:

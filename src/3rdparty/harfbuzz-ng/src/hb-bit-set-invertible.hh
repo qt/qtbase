@@ -38,10 +38,10 @@ struct hb_bit_set_invertible_t
   bool inverted = false;
 
   hb_bit_set_invertible_t () = default;
-  hb_bit_set_invertible_t (hb_bit_set_invertible_t& o) = default;
-  hb_bit_set_invertible_t (hb_bit_set_invertible_t&& o) = default;
+  hb_bit_set_invertible_t (const hb_bit_set_invertible_t& o) = default;
+  hb_bit_set_invertible_t (hb_bit_set_invertible_t&& other) : hb_bit_set_invertible_t () { hb_swap (*this, other); }
   hb_bit_set_invertible_t& operator= (const hb_bit_set_invertible_t& o) = default;
-  hb_bit_set_invertible_t& operator= (hb_bit_set_invertible_t&& o) = default;
+  hb_bit_set_invertible_t& operator= (hb_bit_set_invertible_t&& other) { hb_swap (*this, other); return *this; }
   friend void swap (hb_bit_set_invertible_t &a, hb_bit_set_invertible_t &b)
   {
     if (likely (!a.s.successful || !b.s.successful))
@@ -56,6 +56,7 @@ struct hb_bit_set_invertible_t
   bool in_error () const { return s.in_error (); }
   explicit operator bool () const { return !is_empty (); }
 
+  void alloc (unsigned sz) { s.alloc (sz); }
   void reset ()
   {
     s.reset ();
@@ -73,12 +74,19 @@ struct hb_bit_set_invertible_t
       inverted = !inverted;
   }
 
+  bool is_inverted () const
+  {
+    return inverted;
+  }
+
   bool is_empty () const
   {
     hb_codepoint_t v = INVALID;
     next (&v);
     return v == INVALID;
   }
+  uint32_t hash () const { return s.hash () ^ (uint32_t) inverted; }
+
   hb_codepoint_t get_min () const
   {
     hb_codepoint_t v = INVALID;
@@ -97,7 +105,7 @@ struct hb_bit_set_invertible_t
 
   void add (hb_codepoint_t g) { unlikely (inverted) ? s.del (g) : s.add (g); }
   bool add_range (hb_codepoint_t a, hb_codepoint_t b)
-  { return unlikely (inverted) ? (s.del_range (a, b), true) : s.add_range (a, b); }
+  { return unlikely (inverted) ? ((void) s.del_range (a, b), true) : s.add_range (a, b); }
 
   template <typename T>
   void add_array (const T *array, unsigned int count, unsigned int stride=sizeof(T))
@@ -120,10 +128,8 @@ struct hb_bit_set_invertible_t
   bool get (hb_codepoint_t g) const { return s.get (g) ^ inverted; }
 
   /* Has interface. */
-  static constexpr bool SENTINEL = false;
-  typedef bool value_t;
-  value_t operator [] (hb_codepoint_t k) const { return get (k); }
-  bool has (hb_codepoint_t k) const { return (*this)[k] != SENTINEL; }
+  bool operator [] (hb_codepoint_t k) const { return get (k); }
+  bool has (hb_codepoint_t k) const { return (*this)[k]; }
   /* Predicate. */
   bool operator () (hb_codepoint_t k) const { return has (k); }
 

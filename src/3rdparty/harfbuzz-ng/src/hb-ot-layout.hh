@@ -102,15 +102,11 @@ HB_INTERNAL void
 hb_ot_layout_substitute_start (hb_font_t    *font,
 			       hb_buffer_t  *buffer);
 
-HB_INTERNAL void
-hb_ot_layout_delete_glyphs_inplace (hb_buffer_t *buffer,
-				    bool (*filter) (const hb_glyph_info_t *info));
-
 namespace OT {
   struct hb_ot_apply_context_t;
   struct hb_ot_layout_lookup_accelerator_t;
 namespace Layout {
-namespace GSUB {
+namespace GSUB_impl {
   struct SubstLookup;
 }
 }
@@ -118,7 +114,7 @@ namespace GSUB {
 
 HB_INTERNAL void
 hb_ot_layout_substitute_lookup (OT::hb_ot_apply_context_t *c,
-				const OT::Layout::GSUB::SubstLookup &lookup,
+				const OT::Layout::GSUB_impl::SubstLookup &lookup,
 				const OT::hb_ot_layout_lookup_accelerator_t &accel);
 
 
@@ -552,7 +548,7 @@ _hb_glyph_info_clear_substituted (hb_glyph_info_t *info)
   info->glyph_props() &= ~(HB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED);
 }
 
-static inline void
+static inline bool
 _hb_clear_substitution_flags (const hb_ot_shape_plan_t *plan HB_UNUSED,
 			      hb_font_t *font HB_UNUSED,
 			      hb_buffer_t *buffer)
@@ -561,6 +557,7 @@ _hb_clear_substitution_flags (const hb_ot_shape_plan_t *plan HB_UNUSED,
   unsigned int count = buffer->len;
   for (unsigned int i = 0; i < count; i++)
     _hb_glyph_info_clear_substituted (&info[i]);
+  return false;
 }
 
 
@@ -589,13 +586,11 @@ _hb_buffer_allocate_gsubgpos_vars (hb_buffer_t *buffer)
 {
   HB_BUFFER_ALLOCATE_VAR (buffer, glyph_props);
   HB_BUFFER_ALLOCATE_VAR (buffer, lig_props);
-  HB_BUFFER_ALLOCATE_VAR (buffer, syllable);
 }
 
 static inline void
 _hb_buffer_deallocate_gsubgpos_vars (hb_buffer_t *buffer)
 {
-  HB_BUFFER_DEALLOCATE_VAR (buffer, syllable);
   HB_BUFFER_DEALLOCATE_VAR (buffer, lig_props);
   HB_BUFFER_DEALLOCATE_VAR (buffer, glyph_props);
 }
@@ -605,7 +600,6 @@ _hb_buffer_assert_gsubgpos_vars (hb_buffer_t *buffer)
 {
   HB_BUFFER_ASSERT_VAR (buffer, glyph_props);
   HB_BUFFER_ASSERT_VAR (buffer, lig_props);
-  HB_BUFFER_ASSERT_VAR (buffer, syllable);
 }
 
 /* Make sure no one directly touches our props... */
