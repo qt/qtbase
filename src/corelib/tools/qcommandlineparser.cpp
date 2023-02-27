@@ -176,7 +176,7 @@ QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
 
     It is then advisable to introduce a function to do the command line parsing
     which takes a struct or class receiving the option values returning an
-    enumeration representing the result. The dnslookup example of the QtNetwork
+    object representing the result. The dnslookup example of the QtNetwork
     module illustrates this:
 
     \snippet dnslookup.h 0
@@ -204,20 +204,22 @@ QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
 
     \code
 
-    switch (parseCommandLine(parser, &query, &errorMessage)) {
-    case CommandLineOk:
+    switch (parseResult.statusCode) {
+    case Status::Ok:
         break;
-    case CommandLineError:
+    case Status::Error: {
+        QString errorMessage = parseResult.errorString.value_or(u"Unknown error occurred"_qs);
         QMessageBox::warning(0, QGuiApplication::applicationDisplayName(),
                              "<html><head/><body><h2>" + errorMessage + "</h2><pre>"
                              + parser.helpText() + "</pre></body></html>");
         return 1;
-    case CommandLineVersionRequested:
+    }
+    case Status::VersionRequested:
         QMessageBox::information(0, QGuiApplication::applicationDisplayName(),
                                  QGuiApplication::applicationDisplayName() + ' '
                                  + QCoreApplication::applicationVersion());
         return 0;
-    case CommandLineHelpRequested:
+    case Status::HelpRequested:
         QMessageBox::warning(0, QGuiApplication::applicationDisplayName(),
                              "<html><head/><body><pre>"
                              + parser.helpText() + "</pre></body></html>");

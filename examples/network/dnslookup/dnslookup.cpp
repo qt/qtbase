@@ -13,6 +13,8 @@
 
 #include <stdio.h>
 
+using namespace Qt::StringLiterals;
+
 static std::optional<QDnsLookup::Type> typeFromParameter(QStringView type)
 {
     if (type.compare(u"a", Qt::CaseInsensitive) == 0)
@@ -38,16 +40,22 @@ static std::optional<QDnsLookup::Type> typeFromParameter(QStringView type)
 
 //! [0]
 
-enum CommandLineParseResult
+struct CommandLineParseResult
 {
-    CommandLineOk,
-    CommandLineError,
-    CommandLineVersionRequested,
-    CommandLineHelpRequested
+    enum class Status {
+        Ok,
+        Error,
+        VersionRequested,
+        HelpRequested
+    };
+    Status statusCode = Status::Ok;
+    std::optional<QString> errorString = std::nullopt;
 };
 
-CommandLineParseResult parseCommandLine(QCommandLineParser &parser, DnsQuery *query, QString *errorMessage)
+CommandLineParseResult parseCommandLine(QCommandLineParser &parser, DnsQuery *query)
 {
+    using Status = CommandLineParseResult::Status;
+
     parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
     const QCommandLineOption nameServerOption("n", "The name server to use.", "nameserver");
     parser.addOption(nameServerOption);
@@ -57,48 +65,41 @@ CommandLineParseResult parseCommandLine(QCommandLineParser &parser, DnsQuery *qu
     const QCommandLineOption helpOption = parser.addHelpOption();
     const QCommandLineOption versionOption = parser.addVersionOption();
 
-    if (!parser.parse(QCoreApplication::arguments())) {
-        *errorMessage = parser.errorText();
-        return CommandLineError;
-    }
+    if (!parser.parse(QCoreApplication::arguments()))
+        return { Status::Error, parser.errorText() };
 
     if (parser.isSet(versionOption))
-        return CommandLineVersionRequested;
+        return { Status::VersionRequested };
 
     if (parser.isSet(helpOption))
-        return CommandLineHelpRequested;
+        return { Status::HelpRequested };
 
     if (parser.isSet(nameServerOption)) {
         const QString nameserver = parser.value(nameServerOption);
         query->nameServer = QHostAddress(nameserver);
-        if (query->nameServer.isNull() || query->nameServer.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol) {
-            *errorMessage = "Bad nameserver address: " + nameserver;
-            return CommandLineError;
+        if (query->nameServer.isNull()
+            || query->nameServer.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol) {
+            return { Status::Error,
+                     u"Bad nameserver address: %1"_qs.arg(nameserver) };
         }
     }
 
     if (parser.isSet(typeOption)) {
         const QString typeParameter = parser.value(typeOption);
-        if (std::optional<QDnsLookup::Type> type = typeFromParameter(typeParameter)) {
+        if (std::optional<QDnsLookup::Type> type = typeFromParameter(typeParameter))
             query->type = *type;
-        } else {
-            *errorMessage = "Bad record type: " + typeParameter;
-            return CommandLineError;
-        }
+        else
+            return { Status::Error, u"Bad record type: %1"_qs.arg(typeParameter) };
     }
 
     const QStringList positionalArguments = parser.positionalArguments();
-    if (positionalArguments.isEmpty()) {
-        *errorMessage = "Argument 'name' missing.";
-        return CommandLineError;
-    }
-    if (positionalArguments.size() > 1) {
-        *errorMessage = "Several 'name' arguments specified.";
-        return CommandLineError;
-    }
+    if (positionalArguments.isEmpty())
+        return { Status::Error, u"Argument 'name' missing."_qs };
+    if (positionalArguments.size() > 1)
+        return { Status::Error, u"Several 'name' arguments specified."_qs };
     query->name = positionalArguments.first();
 
-    return CommandLineOk;
+    return { Status::Ok };
 }
 
 //! [0]
@@ -195,19 +196,20 @@ int main(int argc, char *argv[])
                                                                  "An example demonstrating the "
                                                                  "class QDnsLookup."));
     DnsQuery query;
-    QString errorMessage;
-    switch (parseCommandLine(parser, &query, &errorMessage)) {
-    case CommandLineOk:
+    using Status = CommandLineParseResult::Status;
+    CommandLineParseResult parseResult = parseCommandLine(parser, &query);
+    switch (parseResult.statusCode) {
+    case Status::Ok:
         break;
-    case CommandLineError:
-        fputs(qPrintable(errorMessage), stderr);
+    case Status::Error:
+        fputs(qPrintable(parseResult.errorString.value_or(u"Unknown error occurred"_qs)), stderr);
         fputs("\n\n", stderr);
         fputs(qPrintable(parser.helpText()), stderr);
         return 1;
-    case CommandLineVersionRequested:
+    case Status::VersionRequested:
         parser.showVersion();
         Q_UNREACHABLE_RETURN(0);
-    case CommandLineHelpRequested:
+    case Status::HelpRequested:
         parser.showHelp();
         Q_UNREACHABLE_RETURN(0);
     }
