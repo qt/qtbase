@@ -1,0 +1,27 @@
+From c7b3583cb3d9652ab2dc56cc4526777f1bd58caa Mon Sep 17 00:00:00 2001
+From: Eskil Abrahamsen Blomfeldt <eskil.abrahamsen-blomfeldt@qt.io>
+Date: Tue, 28 Feb 2023 09:56:22 +0100
+Subject: [PATCH] Fix compilation with Qt
+
+Qt-specific modification to make it compile.
+---
+ src/3rdparty/freetype/builds/unix/ftsystem.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/3rdparty/freetype/builds/unix/ftsystem.c b/src/3rdparty/freetype/builds/unix/ftsystem.c
+index 5927215df9..460adb6f7d 100644
+--- a/src/3rdparty/freetype/builds/unix/ftsystem.c
++++ b/src/3rdparty/freetype/builds/unix/ftsystem.c
+@@ -18,7 +18,8 @@
+ 
+ #include <ft2build.h>
+   /* we use our special ftconfig.h file, not the standard one */
+-#include FT_CONFIG_CONFIG_H
++#include <ftconfig.h>
++//#include FT_CONFIG_CONFIG_H
+ #include <freetype/internal/ftdebug.h>
+ #include <freetype/ftsystem.h>
+ #include <freetype/fterrors.h>
+-- 
+2.30.1 (Apple Git-130)
+
