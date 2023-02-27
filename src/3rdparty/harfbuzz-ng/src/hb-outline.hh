@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018  Google, Inc.
+ * Copyright © 2023  Behdad Esfahbod
  *
  *  This is part of HarfBuzz, a text shaping library.
  *
@@ -20,47 +20,64 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
  * ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
- *
- * Google Author(s): Garret Rieger
  */
 
+#ifndef HB_OUTLINE_HH
+#define HB_OUTLINE_HH
+
 #include "hb.hh"
-#include "hb-ot-os2-unicode-ranges.hh"
 
-static void
-test (hb_codepoint_t cp, unsigned int bit)
+#include "hb-draw.hh"
+
+
+struct hb_outline_point_t
 {
-  if (OT::_hb_ot_os2_get_unicode_range_bit (cp) != bit)
+  enum class type_t
   {
-    fprintf (stderr, "got incorrect bit (%d) for cp 0x%X. Should have been %d.",
-	     OT::_hb_ot_os2_get_unicode_range_bit (cp),
-	     cp,
-	     bit);
-    abort();
+    MOVE_TO,
+    LINE_TO,
+    QUADRATIC_TO,
+    CUBIC_TO,
+  };
+
+  hb_outline_point_t (float x, float y, type_t type) :
+    x (x), y (y), type (type) {}
+
+  float x, y;
+  type_t type;
+};
+
+struct hb_outline_vector_t
+{
+  float normalize_len ()
+  {
+    float len = hypotf (x, y);
+    if (len)
+    {
+      x /= len;
+      y /= len;
+    }
+    return len;
   }
-}
 
-static void
-test_get_unicode_range_bit ()
+  float x, y;
+};
+
+struct hb_outline_t
 {
-  test (0x0000, 0);
-  test (0x0042, 0);
-  test (0x007F, 0);
-  test (0x0080, 1);
+  void reset () { points.shrink (0, false); contours.resize (0); }
 
-  test (0x30A0, 50);
-  test (0x30B1, 50);
-  test (0x30FF, 50);
+  HB_INTERNAL void replay (hb_draw_funcs_t *pen, void *pen_data) const;
+  HB_INTERNAL float area () const;
+  HB_INTERNAL void embolden (float x_strength, float y_strength,
+			     float x_shift, float y_shift);
 
-  test (0x10FFFD, 90);
+  hb_vector_t<hb_outline_point_t> points;
+  hb_vector_t<unsigned> contours;
+};
 
-  test (0x30000, -1);
-  test (0x110000, -1);
-}
+HB_INTERNAL hb_draw_funcs_t *
+hb_outline_recording_pen_get_funcs ();
 
-int
-main ()
-{
-  test_get_unicode_range_bit ();
-  return 0;
-}
+
+#endif /* HB_OUTLINE_HH */

@@ -16,7 +16,8 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-blob.cc src/hb-blob.h
         src/hb-buffer.cc src/hb-buffer.h src/hb-buffer.hh
         src/hb-buffer-deserialize-json.hh
-        src/hb-buffer-deserialize-text.hh
+        src/hb-buffer-deserialize-text-glyphs.hh
+        src/hb-buffer-deserialize-text-unicode.hh
         src/hb-buffer-serialize.cc
         src/hb-buffer-verify.cc
         src/hb-cache.hh
@@ -25,14 +26,20 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-deprecated.h
         src/hb-draw.cc src/hb-draw.h src/hb-draw.hh
         src/hb-face.cc src/hb-face.h src/hb-face.hh
+        src/hb-face-builder.cc
         src/hb-fallback-shape.cc
         src/hb-font.cc src/hb-font.h src/hb-font.hh
+        src/hb-ft-colr.hh
+        src/hb-limits.hh
         src/hb-map.cc
         src/hb-mutex.hh
         src/hb-number.cc
         src/hb-object.hh
         src/hb-open-file.hh
         src/hb-open-type.hh
+        src/hb-outline.cc src/hb-outline.hh
+        src/hb-paint.cc src/hb-paint.h src/hb-paint.hh
+        src/hb-paint-extents.cc src/hb-paint-extents.hh
         src/hb-priority-queue.hh
         src/hb-repacker.hh
         src/hb-set.cc src/hb-set.h src/hb-set.hh
@@ -49,6 +56,7 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-subset-cff1.cc
         src/hb-subset-cff2.cc
         src/hb-subset-input.cc
+        src/hb-subset-instancer-solver.cc
         src/hb-subset-plan.cc
         src/hb-subset-repacker.cc src/hb-subset-repacker.h
         src/hb-unicode.cc src/hb-unicode.h src/hb-unicode.hh
@@ -103,8 +111,6 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE
         src/hb-ot-cff2-table.cc
         src/hb-ot-cmap-table.hh
         src/hb-ot-color.cc
-        src/hb-ot-color-cbdt-table.hh
-        src/hb-ot-color-colrv1-closure.hh
         src/hb-ot-face.cc
         src/hb-ot-font.cc src/hb-ot-font.h
         src/hb-ot-glyf-table.hh
@@ -163,6 +169,14 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE
         src/hb-ot-var-fvar-table.hh
         src/hb-ot-var-hvar-table.hh
         src/hb-ot-var-mvar-table.hh
+        src/OT/Color/CBDT/CBDT.hh
+        src/OT/Color/COLR/COLR.hh
+        src/OT/Color/COLR/colrv1-closure.hh
+        src/OT/Color/CPAL/CPAL.hh
+        src/OT/Color/sbix/sbix.hh
+        src/OT/Color/svg/svg.hh
+        src/OT/Layout/GDEF/GDEF.hh
+        src/OT/name/name.hh
     DEFINES
         HAVE_OT
 )
