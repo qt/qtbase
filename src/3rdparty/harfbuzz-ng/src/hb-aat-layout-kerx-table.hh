@@ -287,7 +287,7 @@ struct KerxSubTableFormat1
 	       * in the 'kern' table example. */
 	      if (v == -0x8000)
 	      {
-		o.attach_type() = ATTACH_TYPE_NONE;
+		o.attach_type() = OT::Layout::GPOS_impl::ATTACH_TYPE_NONE;
 		o.attach_chain() = 0;
 		o.y_offset = 0;
 	      }
@@ -310,7 +310,7 @@ struct KerxSubTableFormat1
 	      /* CoreText doesn't do crossStream kerning in vertical.  We do. */
 	      if (v == -0x8000)
 	      {
-		o.attach_type() = ATTACH_TYPE_NONE;
+		o.attach_type() = OT::Layout::GPOS_impl::ATTACH_TYPE_NONE;
 		o.attach_chain() = 0;
 		o.x_offset = 0;
 	      }
@@ -350,7 +350,7 @@ struct KerxSubTableFormat1
     driver_context_t dc (this, c);
 
     StateTableDriver<Types, EntryData> driver (machine, c->buffer, c->font->face);
-    driver.drive (&dc);
+    driver.drive (&dc, c);
 
     return_trace (true);
   }
@@ -567,7 +567,7 @@ struct KerxSubTableFormat4
 	  }
 	  break;
 	}
-	o.attach_type() = ATTACH_TYPE_MARK;
+	o.attach_type() = OT::Layout::GPOS_impl::ATTACH_TYPE_MARK;
 	o.attach_chain() = (int) mark - (int) buffer->idx;
 	buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
       }
@@ -594,7 +594,7 @@ struct KerxSubTableFormat4
     driver_context_t dc (this, c);
 
     StateTableDriver<Types, EntryData> driver (machine, c->buffer, c->font->face);
-    driver.drive (&dc);
+    driver.drive (&dc, c);
 
     return_trace (true);
   }
@@ -751,7 +751,7 @@ struct KerxSubTableHeader
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
 
   public:
@@ -869,6 +869,8 @@ struct KerxTable
 
   bool apply (AAT::hb_aat_apply_context_t *c) const
   {
+    c->buffer->unsafe_to_concat ();
+
     typedef typename T::SubTable SubTable;
 
     bool ret = false;
@@ -889,7 +891,7 @@ struct KerxTable
       reverse = bool (st->u.header.coverage & st->u.header.Backwards) !=
 		HB_DIRECTION_IS_BACKWARD (c->buffer->props.direction);
 
-      if (!c->buffer->message (c->font, "start subtable %d", c->lookup_index))
+      if (!c->buffer->message (c->font, "start subtable %u", c->lookup_index))
 	goto skip;
 
       if (!seenCrossStream &&
@@ -901,7 +903,7 @@ struct KerxTable
 	unsigned int count = c->buffer->len;
 	for (unsigned int i = 0; i < count; i++)
 	{
-	  pos[i].attach_type() = ATTACH_TYPE_CURSIVE;
+	  pos[i].attach_type() = OT::Layout::GPOS_impl::ATTACH_TYPE_CURSIVE;
 	  pos[i].attach_chain() = HB_DIRECTION_IS_FORWARD (c->buffer->props.direction) ? -1 : +1;
 	  /* We intentionally don't set HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT,
 	   * since there needs to be a non-zero attachment for post-positioning to
@@ -921,7 +923,7 @@ struct KerxTable
       if (reverse)
 	c->buffer->reverse ();
 
-      (void) c->buffer->message (c->font, "end subtable %d", c->lookup_index);
+      (void) c->buffer->message (c->font, "end subtable %u", c->lookup_index);
 
     skip:
       st = &StructAfter<SubTable> (*st);

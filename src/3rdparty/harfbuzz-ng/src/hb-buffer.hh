@@ -32,31 +32,13 @@
 
 #include "hb.hh"
 #include "hb-unicode.hh"
+#include "hb-set-digest.hh"
 
-
-#ifndef HB_BUFFER_MAX_LEN_FACTOR
-#define HB_BUFFER_MAX_LEN_FACTOR 64
-#endif
-#ifndef HB_BUFFER_MAX_LEN_MIN
-#define HB_BUFFER_MAX_LEN_MIN 16384
-#endif
-#ifndef HB_BUFFER_MAX_LEN_DEFAULT
-#define HB_BUFFER_MAX_LEN_DEFAULT 0x3FFFFFFF /* Shaping more than a billion chars? Let us know! */
-#endif
-
-#ifndef HB_BUFFER_MAX_OPS_FACTOR
-#define HB_BUFFER_MAX_OPS_FACTOR 1024
-#endif
-#ifndef HB_BUFFER_MAX_OPS_MIN
-#define HB_BUFFER_MAX_OPS_MIN 16384
-#endif
-#ifndef HB_BUFFER_MAX_OPS_DEFAULT
-#define HB_BUFFER_MAX_OPS_DEFAULT 0x1FFFFFFF /* Shaping more than a billion operations? Let us know! */
-#endif
 
 static_assert ((sizeof (hb_glyph_info_t) == 20), "");
 static_assert ((sizeof (hb_glyph_info_t) == sizeof (hb_glyph_position_t)), "");
 
+HB_MARK_AS_FLAG_T (hb_glyph_flags_t);
 HB_MARK_AS_FLAG_T (hb_buffer_flags_t);
 HB_MARK_AS_FLAG_T (hb_buffer_serialize_flags_t);
 HB_MARK_AS_FLAG_T (hb_buffer_diff_flags_t);
@@ -69,12 +51,13 @@ enum hb_buffer_scratch_flags_t {
   HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT		= 0x00000008u,
   HB_BUFFER_SCRATCH_FLAG_HAS_CGJ			= 0x00000010u,
   HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS		= 0x00000020u,
+  HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE		= 0x00000040u,
 
-  /* Reserved for complex shapers' internal use. */
-  HB_BUFFER_SCRATCH_FLAG_COMPLEX0			= 0x01000000u,
-  HB_BUFFER_SCRATCH_FLAG_COMPLEX1			= 0x02000000u,
-  HB_BUFFER_SCRATCH_FLAG_COMPLEX2			= 0x04000000u,
-  HB_BUFFER_SCRATCH_FLAG_COMPLEX3			= 0x08000000u,
+  /* Reserved for shapers' internal use. */
+  HB_BUFFER_SCRATCH_FLAG_SHAPER0			= 0x01000000u,
+  HB_BUFFER_SCRATCH_FLAG_SHAPER1			= 0x02000000u,
+  HB_BUFFER_SCRATCH_FLAG_SHAPER2			= 0x04000000u,
+  HB_BUFFER_SCRATCH_FLAG_SHAPER3			= 0x08000000u,
 };
 HB_MARK_AS_FLAG_T (hb_buffer_scratch_flags_t);
 
@@ -106,6 +89,7 @@ struct hb_buffer_t
   hb_segment_properties_t props; /* Script, language, direction */
 
   bool successful; /* Allocations successful */
+  bool shaping_failed; /* Shaping failure */
   bool have_output; /* Whether we have an output buffer going on */
   bool have_positions; /* Whether we have positions */
 
@@ -130,9 +114,7 @@ struct hb_buffer_t
    * Managed by enter / leave
    */
 
-#ifndef HB_NDEBUG
   uint8_t allocated_var_bits;
-#endif
   uint8_t serial;
   hb_buffer_scratch_flags_t scratch_flags; /* Have space-fallback, etc. */
   unsigned int max_len; /* Maximum allowed len. */
@@ -161,38 +143,40 @@ struct hb_buffer_t
 
   void allocate_var (unsigned int start, unsigned int count)
   {
-#ifndef HB_NDEBUG
     unsigned int end = start + count;
     assert (end <= 8);
     unsigned int bits = (1u<<end) - (1u<<start);
     assert (0 == (allocated_var_bits & bits));
     allocated_var_bits |= bits;
-#endif
+  }
+  bool try_allocate_var (unsigned int start, unsigned int count)
+  {
+    unsigned int end = start + count;
+    assert (end <= 8);
+    unsigned int bits = (1u<<end) - (1u<<start);
+    if (allocated_var_bits & bits)
+      return false;
+    allocated_var_bits |= bits;
+    return true;
   }
   void deallocate_var (unsigned int start, unsigned int count)
   {
-#ifndef HB_NDEBUG
     unsigned int end = start + count;
     assert (end <= 8);
     unsigned int bits = (1u<<end) - (1u<<start);
     assert (bits == (allocated_var_bits & bits));
     allocated_var_bits &= ~bits;
-#endif
   }
   void assert_var (unsigned int start, unsigned int count)
   {
-#ifndef HB_NDEBUG
     unsigned int end = start + count;
     assert (end <= 8);
-    unsigned int bits = (1u<<end) - (1u<<start);
+    HB_UNUSED unsigned int bits = (1u<<end) - (1u<<start);
     assert (bits == (allocated_var_bits & bits));
-#endif
   }
   void deallocate_var_all ()
   {
-#ifndef HB_NDEBUG
     allocated_var_bits = 0;
-#endif
   }
 
   hb_glyph_info_t &cur (unsigned int i = 0) { return info[idx + i]; }
@@ -203,6 +187,14 @@ struct hb_buffer_t
 
   hb_glyph_info_t &prev ()      { return out_info[out_len ? out_len - 1 : 0]; }
   hb_glyph_info_t prev () const { return out_info[out_len ? out_len - 1 : 0]; }
+
+  hb_set_digest_t digest () const
+  {
+    hb_set_digest_t d;
+    d.init ();
+    d.add_array (&info[0].codepoint, len, sizeof (info[0]));
+    return d;
+  }
 
   HB_INTERNAL void similar (const hb_buffer_t &src);
   HB_INTERNAL void reset ();
@@ -285,7 +277,8 @@ struct hb_buffer_t
 
   HB_INTERNAL void guess_segment_properties ();
 
-  HB_INTERNAL void sync ();
+  HB_INTERNAL bool sync ();
+  HB_INTERNAL int sync_so_far ();
   HB_INTERNAL void clear_output ();
   HB_INTERNAL void clear_positions ();
 
@@ -398,6 +391,8 @@ struct hb_buffer_t
   HB_INTERNAL void merge_out_clusters (unsigned int start, unsigned int end);
   /* Merge clusters for deleting current glyph, and skip it. */
   HB_INTERNAL void delete_glyph ();
+  HB_INTERNAL void delete_glyphs_inplace (bool (*filter) (const hb_glyph_info_t *info));
+
 
 
   /* Adds glyph flags in mask to infos with clusters between start and end.
@@ -455,6 +450,17 @@ struct hb_buffer_t
   void unsafe_to_break (unsigned int start = 0, unsigned int end = -1)
   {
     _set_glyph_flags (HB_GLYPH_FLAG_UNSAFE_TO_BREAK | HB_GLYPH_FLAG_UNSAFE_TO_CONCAT,
+		      start, end,
+		      true);
+  }
+  void safe_to_insert_tatweel (unsigned int start = 0, unsigned int end = -1)
+  {
+    if ((flags & HB_BUFFER_FLAG_PRODUCE_SAFE_TO_INSERT_TATWEEL) == 0)
+    {
+      unsafe_to_break (start, end);
+      return;
+    }
+    _set_glyph_flags (HB_GLYPH_FLAG_SAFE_TO_INSERT_TATWEEL,
 		      start, end,
 		      true);
   }
@@ -549,17 +555,13 @@ struct hb_buffer_t
 #ifdef HB_NO_BUFFER_MESSAGE
    return true;
 #else
-    if (!messaging ())
+    if (likely (!messaging ()))
       return true;
-
-    message_depth++;
 
     va_list ap;
     va_start (ap, fmt);
     bool ret = message_impl (font, fmt, ap);
     va_end (ap);
-
-    message_depth--;
 
     return ret;
 #endif
@@ -579,21 +581,59 @@ struct hb_buffer_t
 			  unsigned int cluster,
 			  hb_mask_t mask)
   {
-    for (unsigned int i = start; i < end; i++)
-      if (cluster != infos[i].cluster)
+    if (unlikely (start == end))
+      return;
+
+    unsigned cluster_first = infos[start].cluster;
+    unsigned cluster_last = infos[end - 1].cluster;
+
+    if (cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS ||
+	(cluster != cluster_first && cluster != cluster_last))
+    {
+      for (unsigned int i = start; i < end; i++)
+	if (cluster != infos[i].cluster)
+	{
+	  scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
+	  infos[i].mask |= mask;
+	}
+      return;
+    }
+
+    /* Monotone clusters */
+
+    if (cluster == cluster_first)
+    {
+      for (unsigned int i = end; start < i && infos[i - 1].cluster != cluster_first; i--)
+      {
+	scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
+	infos[i - 1].mask |= mask;
+      }
+    }
+    else /* cluster == cluster_last */
+    {
+      for (unsigned int i = start; i < end && infos[i].cluster != cluster_last; i++)
       {
 	scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
 	infos[i].mask |= mask;
       }
+    }
   }
-  static unsigned
+  unsigned
   _infos_find_min_cluster (const hb_glyph_info_t *infos,
 			   unsigned start, unsigned end,
 			   unsigned cluster = UINT_MAX)
   {
-    for (unsigned int i = start; i < end; i++)
-      cluster = hb_min (cluster, infos[i].cluster);
-    return cluster;
+    if (unlikely (start == end))
+      return cluster;
+
+    if (cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS)
+    {
+      for (unsigned int i = start; i < end; i++)
+	cluster = hb_min (cluster, infos[i].cluster);
+      return cluster;
+    }
+
+    return hb_min (cluster, hb_min (infos[start].cluster, infos[end - 1].cluster));
   }
 
   void clear_glyph_flags (hb_mask_t mask = 0)
@@ -619,9 +659,10 @@ DECLARE_NULL_INSTANCE (hb_buffer_t);
 #define HB_BUFFER_XALLOCATE_VAR(b, func, var) \
   b->func (offsetof (hb_glyph_info_t, var) - offsetof(hb_glyph_info_t, var1), \
 	   sizeof (b->info[0].var))
-#define HB_BUFFER_ALLOCATE_VAR(b, var)		HB_BUFFER_XALLOCATE_VAR (b, allocate_var,   var ())
-#define HB_BUFFER_DEALLOCATE_VAR(b, var)	HB_BUFFER_XALLOCATE_VAR (b, deallocate_var, var ())
-#define HB_BUFFER_ASSERT_VAR(b, var)		HB_BUFFER_XALLOCATE_VAR (b, assert_var,     var ())
+#define HB_BUFFER_ALLOCATE_VAR(b, var)		HB_BUFFER_XALLOCATE_VAR (b, allocate_var,     var ())
+#define HB_BUFFER_TRY_ALLOCATE_VAR(b, var)	HB_BUFFER_XALLOCATE_VAR (b, try_allocate_var, var ())
+#define HB_BUFFER_DEALLOCATE_VAR(b, var)	HB_BUFFER_XALLOCATE_VAR (b, deallocate_var,   var ())
+#define HB_BUFFER_ASSERT_VAR(b, var)		HB_BUFFER_XALLOCATE_VAR (b, assert_var,       var ())
 
 
 #endif /* HB_BUFFER_HH */
