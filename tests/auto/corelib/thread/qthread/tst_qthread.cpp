@@ -38,6 +38,8 @@
 
 #include <QtTest/private/qemulationdetector_p.h>
 
+using namespace std::chrono_literals;
+
 class tst_QThread : public QObject
 {
     Q_OBJECT
@@ -245,17 +247,19 @@ public:
         elapsed = 0;
         QElapsedTimer timer;
         timer.start();
+        std::chrono::nanoseconds dur{0};
         switch (sleepType) {
         case Second:
-            sleep(interval);
+            dur = std::chrono::seconds{interval};
             break;
         case Millisecond:
-            msleep(interval);
+            dur = std::chrono::milliseconds{interval};
             break;
         case Microsecond:
-            usleep(interval);
+            dur = std::chrono::microseconds{interval};
             break;
         }
+        sleep(dur);
         elapsed = timer.elapsed();
 
         cond.wakeOne();
@@ -1603,7 +1607,7 @@ void tst_QThread::createDestruction()
             for (;;) {
                 if (QThread::currentThread()->isInterruptionRequested())
                     return;
-                QThread::msleep(1);
+                QThread::sleep(1ms);
             }
         };
 
@@ -1722,7 +1726,7 @@ void tst_QThread::threadIdReuse()
     bool threadIdReused = false;
 
     for (int i = 0; i < 42; i++) {
-        QThread::msleep(1);
+        QThread::sleep(1ms);
 
         Qt::HANDLE threadId2;
         bool waitOk = false;

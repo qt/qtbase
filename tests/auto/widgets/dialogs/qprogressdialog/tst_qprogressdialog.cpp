@@ -84,7 +84,7 @@ void tst_QProgressDialog::autoShow()
                  // in order to test for the setValue() behavior instead
                  // See autoShowCtor() for the ctor timer check
     dlg.setValue(value);
-    QThread::msleep(delay);
+    QThread::sleep(std::chrono::milliseconds{delay});
     dlg.setValue(min+1);
     QCOMPARE(dlg.isVisible(), expectedAutoShow);
 }
@@ -93,7 +93,7 @@ void tst_QProgressDialog::autoShowCtor()
 {
     QProgressDialog dlg;
     QVERIFY(!dlg.isVisible());
-    QThread::msleep(dlg.minimumDuration());
+    QThread::sleep(std::chrono::milliseconds{dlg.minimumDuration()});
     QTRY_VERIFY(dlg.isVisible());
 }
 
@@ -181,7 +181,7 @@ void tst_QProgressDialog::QTBUG_31046()
 {
     QProgressDialog dlg("", "", 50, 60);
     dlg.setValue(0);
-    QThread::msleep(200);
+    QThread::sleep(std::chrono::milliseconds{200});
     dlg.setValue(50);
     QCOMPARE(50, dlg.value());
 }

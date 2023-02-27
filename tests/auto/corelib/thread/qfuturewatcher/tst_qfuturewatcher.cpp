@@ -9,6 +9,7 @@
 #include <private/qfutureinterface_p.h>
 
 using namespace QtConcurrent;
+using namespace std::chrono_literals;
 
 #include <QTest>
 
@@ -900,13 +901,13 @@ QT_WARNING_POP
     QFuture<int> future = QtConcurrent::mapped(&pool, values, [&](int value) {
         ++count;
         // Sleep, to make sure not all threads will start at once.
-        QThread::msleep(50);
+        QThread::sleep(50ms);
         return value;
     });
     watcher.setFuture(future);
 
     // Allow some threads to start before suspending.
-    QThread::msleep(200);
+    QThread::sleep(200ms);
 
     watcher.suspend();
     watcher.suspend();
@@ -921,7 +922,7 @@ QT_WARNING_POP
     QCOMPARE(resultReadyAfterPaused, count);
 
     // Make sure no more results are reported before resuming.
-    QThread::msleep(200);
+    QThread::sleep(200ms);
     QCOMPARE(resultReadyAfterPaused, resultReadySpy.size());
     resultReadySpy.clear();
 

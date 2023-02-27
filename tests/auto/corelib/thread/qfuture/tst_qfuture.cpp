@@ -1959,7 +1959,7 @@ void tst_QFuture::nonGlobalThreadPool()
         void run() override
         {
             const int ms = 100 + (QRandomGenerator::global()->bounded(100) - 100/2);
-            QThread::msleep(ulong(ms));
+            QThread::sleep(std::chrono::milliseconds{ms});
             reportResult(Answer);
             reportFinished();
         }
@@ -3477,7 +3477,7 @@ void tst_QFuture::runAndTake()
     auto rabbit = [](){
         // Let's wait a bit to give the test below some time
         // to sync up with us with its watcher.
-        QThread::currentThread()->msleep(100);
+        QThread::currentThread()->sleep(std::chrono::milliseconds{100});
         return UniquePtr(new int(10));
     };
 

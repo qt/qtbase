@@ -55,7 +55,7 @@ namespace QTest {
     {
         if (process.state() == QProcess::Running) {
             process.terminate();
-            QThread::msleep(20);
+            QThread::sleep(std::chrono::milliseconds{20});
             if (process.state() == QProcess::Running)
                 process.kill();
         }

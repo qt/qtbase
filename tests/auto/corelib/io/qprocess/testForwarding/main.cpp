@@ -13,7 +13,7 @@ static bool waitForDoneFileWritten(const QString &filePath, int msecs = 30000)
 {
     QDeadlineTimer t(msecs);
     do {
-        QThread::msleep(250);
+        QThread::sleep(std::chrono::milliseconds{250});
         QFile file(filePath);
         if (!file.open(QIODevice::ReadOnly))
             continue;

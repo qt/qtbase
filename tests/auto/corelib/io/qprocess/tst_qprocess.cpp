@@ -2363,7 +2363,7 @@ public:
 public slots:
     void block()
     {
-        QThread::sleep(1);
+        QThread::sleep(std::chrono::seconds{1});
     }
 };
 

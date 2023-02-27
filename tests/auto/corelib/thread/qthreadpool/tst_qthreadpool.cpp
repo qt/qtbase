@@ -14,6 +14,8 @@
 #include <unistd.h>
 #endif
 
+using namespace std::chrono_literals;
+
 typedef void (*FunctionPointer)();
 
 class FunctionPointerTask : public QRunnable
@@ -391,7 +393,7 @@ void tst_QThreadPool::expiryTimeoutRace() // QTBUG-3786
     const int numTasks = 20;
     for (int i = 0; i < numTasks; ++i) {
         threadPool.start(&task);
-        QThread::msleep(50); // exactly the same as the expiry timeout
+        QThread::sleep(50ms); // exactly the same as the expiry timeout
     }
     QVERIFY(task.semaphore.tryAcquire(numTasks, 10000));
     QCOMPARE(task.runCount.loadRelaxed(), numTasks);
@@ -1086,7 +1088,7 @@ void tst_QThreadPool::clearWithAutoDelete()
     {
     public:
         MyRunnable() {}
-        void run() override { QThread::usleep(30); }
+        void run() override { QThread::sleep(30us); }
     };
 
     QThreadPool threadPool;

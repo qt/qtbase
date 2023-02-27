@@ -368,6 +368,12 @@ void QThread::yieldCurrentThread()
 
 #endif // QT_CONFIG(thread)
 
+void QThread::sleep(std::chrono::nanoseconds nsecs)
+{
+    using namespace std::chrono;
+    ::Sleep(DWORD(duration_cast<milliseconds>(nsecs).count()));
+}
+
 void QThread::sleep(unsigned long secs)
 {
     ::Sleep(secs * 1000);

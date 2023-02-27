@@ -123,7 +123,7 @@ bool QTouchEventWidgetSequence::commit(bool processEvents)
     bool ret = false;
     if (points.isEmpty())
         return ret;
-    QThread::msleep(1);
+    QThread::sleep(std::chrono::milliseconds{1});
     if (targetWindow) {
         ret = qt_handleTouchEventv2(targetWindow, device, points.values());
     } else if (targetWidget) {

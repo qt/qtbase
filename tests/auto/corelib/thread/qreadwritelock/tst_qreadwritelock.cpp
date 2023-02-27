@@ -15,10 +15,6 @@
 #ifdef Q_OS_UNIX
 #include <unistd.h>
 #endif
-#if defined(Q_OS_WIN)
-#  include <qt_windows.h>
-#  define sleep(X) Sleep(X)
-#endif
 
 //on solaris, threads that loop on the release bool variable
 //needs to sleep more than 1 usec.
@@ -29,6 +25,8 @@
 #endif
 
 #include <stdio.h>
+
+using namespace std::chrono_literals;
 
 class tst_QReadWriteLock : public QObject
 {
@@ -472,8 +470,8 @@ class ReadLockLoopThread : public QThread
 public:
     QReadWriteLock &testRwlock;
     int runTime;
-    int holdTime;
-    int waitTime;
+    std::chrono::milliseconds holdTime;
+    std::chrono::milliseconds waitTime;
     bool print;
     QElapsedTimer t;
     inline ReadLockLoopThread(QReadWriteLock &l, int runTime, int holdTime=0, int waitTime=0, bool print=false)
@@ -489,9 +487,9 @@ public:
         while (t.elapsed()<runTime)  {
             testRwlock.lockForRead();
             if(print) printf("reading\n");
-            if (holdTime) msleep(ulong(holdTime));
+            if (holdTime > 0ms) sleep(holdTime);
             testRwlock.unlock();
-            if (waitTime) msleep(ulong(waitTime));
+            if (waitTime > 0ms) sleep(waitTime);
         }
     }
 };
@@ -508,8 +506,8 @@ class WriteLockLoopThread : public QThread
 public:
     QReadWriteLock &testRwlock;
     int runTime;
-    int holdTime;
-    int waitTime;
+    std::chrono::milliseconds holdTime;
+    std::chrono::milliseconds waitTime;
     bool print;
     QElapsedTimer t;
     inline WriteLockLoopThread(QReadWriteLock &l, int runTime, int holdTime=0, int waitTime=0, bool print=false)
@@ -525,9 +523,9 @@ public:
         while (t.elapsed() < runTime)  {
             testRwlock.lockForWrite();
             if (print) printf(".");
-            if (holdTime) msleep(ulong(holdTime));
+            if (holdTime > 0ms) sleep(holdTime);
             testRwlock.unlock();
-            if (waitTime) msleep(ulong(waitTime));
+            if (waitTime > 0ms) sleep(waitTime);
         }
     }
 };
@@ -547,7 +545,7 @@ class WriteLockCountThread : public QThread
 public:
     QReadWriteLock &testRwlock;
     int runTime;
-    int waitTime;
+    std::chrono::milliseconds waitTime;
     int maxval;
     QElapsedTimer t;
     inline WriteLockCountThread(QReadWriteLock &l, int runTime, int waitTime, int maxval)
@@ -568,7 +566,7 @@ public:
                 QtPrivate::volatilePreIncrement(count);
             count=0;
             testRwlock.unlock();
-            msleep(ulong(waitTime));
+            sleep(waitTime);
         }
     }
 };
@@ -585,7 +583,7 @@ class ReadLockCountThread : public QThread
 public:
     QReadWriteLock &testRwlock;
     int runTime;
-    int waitTime;
+    std::chrono::milliseconds waitTime;
     QElapsedTimer t;
     inline ReadLockCountThread(QReadWriteLock &l, int runTime, int waitTime)
     :testRwlock(l)
@@ -600,7 +598,7 @@ public:
             if(count)
                 qFatal("Non-zero count at Read! (%d)",count );
             testRwlock.unlock();
-            msleep(ulong(waitTime));
+            sleep(waitTime);
         }
     }
 };
@@ -617,7 +615,7 @@ void tst_QReadWriteLock::readLockBlockRelease()
     threadDone=false;
     ReadLockThread rlt(testLock);
     rlt.start();
-    sleep(1);
+    QThread::sleep(1s);
     testLock.unlock();
     rlt.wait();
     QVERIFY(threadDone);
@@ -634,7 +632,7 @@ void tst_QReadWriteLock::writeLockBlockRelease()
     threadDone=false;
     WriteLockThread wlt(testLock);
     wlt.start();
-    sleep(1);
+    QThread::sleep(1s);
     testLock.unlock();
     wlt.wait();
     QVERIFY(threadDone);
@@ -653,10 +651,10 @@ void tst_QReadWriteLock::multipleReadersBlockRelease()
     ReadLockReleasableThread rlt2(testLock);
     rlt1.start();
     rlt2.start();
-    sleep(1);
+    QThread::sleep(1s);
     WriteLockThread wlt(testLock);
     wlt.start();
-    sleep(1);
+    QThread::sleep(1s);
     release.storeRelaxed(true);
     wlt.wait();
     rlt1.wait();

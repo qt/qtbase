@@ -372,7 +372,7 @@ public:
     { }
 
     static inline void sleep(ulong s)
-    { QThread::sleep(s); }
+    { QThread::sleep(std::chrono::seconds{s}); }
 
     void run() override
     {
@@ -404,7 +404,7 @@ public:
     { }
 
     static inline void sleep(ulong s)
-    { QThread::sleep(s); }
+    { QThread::sleep(std::chrono::seconds{s}); }
 
     void run() override
     {

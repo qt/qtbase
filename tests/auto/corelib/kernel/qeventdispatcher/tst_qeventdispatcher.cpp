@@ -355,7 +355,7 @@ void tst_QEventDispatcher::postEventFromThread()
     threadPool->start([&]{
         int loop = 1000 / 10; // give it a second
         while (!done && --loop)
-            QThread::msleep(10);
+            QThread::sleep(std::chrono::milliseconds{10});
         if (done)
             return;
         hadToQuit = true;
@@ -393,7 +393,7 @@ void tst_QEventDispatcher::postEventFromEventHandler()
     threadPool->start([&]{
         int loop = 250 / 10; // give it 250ms
         while (!done && --loop)
-            QThread::msleep(10);
+            QThread::sleep(std::chrono::milliseconds{10});
         if (done)
             return;
         hadToQuit = true;

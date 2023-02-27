@@ -751,16 +751,28 @@ QThread::Priority QThread::priority() const
 }
 
 /*!
-    \fn void QThread::sleep(unsigned long secs)
+    \fn void QThread::sleep(std::chrono::nanoseconds nsecs)
+    \since 6.6
 
-    Forces the current thread to sleep for \a secs seconds.
+    Forces the current thread to sleep for \a nsecs.
 
     Avoid using this function if you need to wait for a given condition to
     change. Instead, connect a slot to the signal that indicates the change or
     use an event handler (see \l QObject::event()).
 
     \note This function does not guarantee accuracy. The application may sleep
-    longer than \a secs under heavy load conditions.
+    longer than \a nsecs under heavy load conditions.
+*/
+
+/*!
+    \fn void QThread::sleep(unsigned long secs)
+
+    Forces the current thread to sleep for \a secs seconds.
+
+    This is an overloaded function, equivalent to calling:
+    \code
+    QThread::sleep(std::chrono::seconds{secs});
+    \endcode
 
     \sa msleep(), usleep()
 */
@@ -768,11 +780,10 @@ QThread::Priority QThread::priority() const
 /*!
     \fn void QThread::msleep(unsigned long msecs)
 
-    Forces the current thread to sleep for \a msecs milliseconds.
-
-    Avoid using this function if you need to wait for a given condition to
-    change. Instead, connect a slot to the signal that indicates the change or
-    use an event handler (see \l QObject::event()).
+    This is an overloaded function, equivalent to calling:
+    \code
+    QThread::sleep(std::chrono::milliseconds{msecs});
+    \endcode
 
     \note This function does not guarantee accuracy. The application may sleep
     longer than \a msecs under heavy load conditions. Some OSes might round \a
@@ -784,11 +795,10 @@ QThread::Priority QThread::priority() const
 /*!
     \fn void QThread::usleep(unsigned long usecs)
 
-    Forces the current thread to sleep for \a usecs microseconds.
-
-    Avoid using this function if you need to wait for a given condition to
-    change. Instead, connect a slot to the signal that indicates the change or
-    use an event handler (see \l QObject::event()).
+    This is an overloaded function, equivalent to calling:
+    \code
+    QThread::sleep(std::chrono::microseconds{secs});
+    \endcode
 
     \note This function does not guarantee accuracy. The application may sleep
     longer than \a usecs under heavy load conditions. Some OSes might round \a

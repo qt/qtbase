@@ -270,7 +270,7 @@ bool BaselineProtocol::connect(const QString &testCase, bool *dryrun, const Plat
 
     socket.connectToHost(serverName, ServerPort);
     if (!socket.waitForConnected(Timeout)) {
-        QThread::msleep(3000);  // Wait a bit and try again, the server might just be restarting
+        QThread::sleep(std::chrono::seconds{3});  // Wait a bit and try again, the server might just be restarting
         if (!socket.waitForConnected(Timeout)) {
             errMsg += QLS("TCP connectToHost failed. Host:") + QLS(serverName) + QLS(" port:") + QString::number(ServerPort);
             return false;

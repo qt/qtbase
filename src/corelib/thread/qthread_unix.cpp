@@ -507,17 +507,22 @@ static void qt_nanosleep(timespec amount)
 
 void QThread::sleep(unsigned long secs)
 {
-    qt_nanosleep(durationToTimespec(std::chrono::seconds{secs}));
+    sleep(std::chrono::seconds{secs});
 }
 
 void QThread::msleep(unsigned long msecs)
 {
-    qt_nanosleep(durationToTimespec(std::chrono::milliseconds{msecs}));
+    sleep(std::chrono::milliseconds{msecs});
 }
 
 void QThread::usleep(unsigned long usecs)
 {
-    qt_nanosleep(durationToTimespec(std::chrono::microseconds{usecs}));
+    sleep(std::chrono::microseconds{usecs});
+}
+
+void QThread::sleep(std::chrono::nanoseconds nsec)
+{
+    qt_nanosleep(durationToTimespec(nsec));
 }
 
 #if QT_CONFIG(thread)

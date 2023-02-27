@@ -14,6 +14,8 @@
 #include <memory>
 #include <chrono>
 
+using namespace std::chrono_literals;
+
 class tst_QPromise : public QObject
 {
     Q_OBJECT
@@ -480,7 +482,7 @@ void tst_QPromise::cancelWhenReassigned()
     promise.start();
 
     ThreadWrapper thr([p = std::move(promise)] () mutable {
-        QThread::msleep(100);
+        QThread::sleep(100ms);
         p = QPromise<int>();  // assign new promise, old must be correctly destroyed
     });
 
@@ -537,7 +539,7 @@ void tst_QPromise::finishWhenSwapped()
     promise2.start();
 
     ThreadWrapper thr([&promise1, &promise2] () mutable {
-        QThread::msleep(100);
+        QThread::sleep(100ms);
         promise1.addResult(0);
         promise2.addResult(1);
         swap(promise1, promise2);  // ADL must resolve this
@@ -580,7 +582,7 @@ void tst_QPromise::cancelWhenMoved()
 
     // Move promises to local scope to test cancellation behavior
     ThreadWrapper thr([p1 = std::move(promise1), p2 = std::move(promise2)] () mutable {
-        QThread::msleep(100);
+        QThread::sleep(100ms);
         p1 = std::move(p2);
         p1.finish();  // this finish is for future #2
     });
@@ -616,7 +618,7 @@ void tst_QPromise::waitUntilResumed()
 
     while (!f.isSuspended()) {  // busy wait until worker thread suspends
         QCOMPARE(f.isFinished(), false);  // exit condition in case of failure
-        QThread::msleep(50);  // allow another thread to actually carry on
+        QThread::sleep(50ms);  // allow another thread to actually carry on
     }
 
     f.resume();
@@ -645,7 +647,7 @@ void tst_QPromise::waitUntilCanceled()
 
     while (!f.isSuspended()) {  // busy wait until worker thread suspends
         QCOMPARE(f.isFinished(), false);  // exit condition in case of failure
-        QThread::msleep(50);  // allow another thread to actually carry on
+        QThread::sleep(50ms);  // allow another thread to actually carry on
     }
 
     f.cancel();
