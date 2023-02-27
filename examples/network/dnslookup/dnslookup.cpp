@@ -13,7 +13,7 @@
 
 #include <stdio.h>
 
-static int typeFromParameter(QStringView type)
+static std::optional<QDnsLookup::Type> typeFromParameter(QStringView type)
 {
     if (type.compare(u"a", Qt::CaseInsensitive) == 0)
         return QDnsLookup::A;
@@ -33,7 +33,7 @@ static int typeFromParameter(QStringView type)
         return QDnsLookup::SRV;
     if (type.compare(u"txt", Qt::CaseInsensitive) == 0)
         return QDnsLookup::TXT;
-    return -1;
+    return std::nullopt;
 }
 
 //! [0]
@@ -79,12 +79,12 @@ CommandLineParseResult parseCommandLine(QCommandLineParser &parser, DnsQuery *qu
 
     if (parser.isSet(typeOption)) {
         const QString typeParameter = parser.value(typeOption);
-        const int type = typeFromParameter(typeParameter);
-        if (type < 0) {
+        if (std::optional<QDnsLookup::Type> type = typeFromParameter(typeParameter)) {
+            query->type = *type;
+        } else {
             *errorMessage = "Bad record type: " + typeParameter;
             return CommandLineError;
         }
-        query->type = static_cast<QDnsLookup::Type>(type);
     }
 
     const QStringList positionalArguments = parser.positionalArguments();
