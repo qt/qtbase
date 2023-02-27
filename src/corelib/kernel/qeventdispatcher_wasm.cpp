@@ -116,6 +116,8 @@ Q_CONSTINIT QEventDispatcherWasm *QEventDispatcherWasm::g_mainThreadEventDispatc
 #if QT_CONFIG(thread)
 Q_CONSTINIT QVector<QEventDispatcherWasm *> QEventDispatcherWasm::g_secondaryThreadEventDispatchers;
 Q_CONSTINIT std::mutex QEventDispatcherWasm::g_staticDataMutex;
+emscripten::ProxyingQueue QEventDispatcherWasm::g_proxyingQueue;
+pthread_t QEventDispatcherWasm::g_mainThread;
 #endif
 // ### dynamic initialization:
 std::multimap<int, QSocketNotifier *> QEventDispatcherWasm::g_socketNotifiers;
@@ -144,6 +146,9 @@ QEventDispatcherWasm::QEventDispatcherWasm()
         // dispatchers so we set a global pointer to it.
         Q_ASSERT(g_mainThreadEventDispatcher == nullptr);
         g_mainThreadEventDispatcher = this;
+#if QT_CONFIG(thread)
+        g_mainThread = pthread_self();
+#endif
     } else {
 #if QT_CONFIG(thread)
         std::lock_guard<std::mutex> lock(g_staticDataMutex);
@@ -818,7 +823,9 @@ void QEventDispatcherWasm::runOnMainThread(std::function<void(void)> fn)
 #if QT_CONFIG(thread)
     if (!emscripten_is_main_runtime_thread()) {
         void *context = new std::function<void(void)>(fn);
-        emscripten_async_run_in_main_runtime_thread_(EM_FUNC_SIG_VI, reinterpret_cast<void *>(trampoline), context);
+        g_proxyingQueue.proxyAsync(g_mainThread, [context]{
+            trampoline(context);
+        });
         return;
     }
 #endif
@@ -832,7 +839,9 @@ void QEventDispatcherWasm::runOnMainThreadAsync(std::function<void(void)> fn)
     void *context = new std::function<void(void)>(fn);
 #if QT_CONFIG(thread)
     if (!emscripten_is_main_runtime_thread()) {
-        emscripten_async_run_in_main_runtime_thread_(EM_FUNC_SIG_VI, reinterpret_cast<void *>(trampoline), context);
+        g_proxyingQueue.proxyAsync(g_mainThread, [context]{
+            trampoline(context);
+        });
         return;
     }
 #endif
