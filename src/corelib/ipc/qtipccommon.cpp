@@ -117,7 +117,7 @@ QString QtIpcCommon::legacyPlatformSafeKey(const QString &key, QtIpcCommon::IpcT
         // so we can't use the logic below of combining the prefix, key, and a hash,
         // to ensure a unique and valid name. Instead we use the first part of the
         // hash, which should still long enough to avoid collisions in practice.
-        return u'/' + hex.left(SHM_NAME_MAX - 1);
+        return u'/' + QLatin1StringView(hex).left(SHM_NAME_MAX - 1);
 #endif
     }
 
