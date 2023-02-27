@@ -126,35 +126,47 @@ void DnsManager::showResults()
 
     // CNAME records
     const QList<QDnsDomainNameRecord> cnameRecords = dns->canonicalNameRecords();
-    for (const QDnsDomainNameRecord &record : cnameRecords)
-        printf("%s\t%i\tIN\tCNAME\t%s\n", qPrintable(record.name()), record.timeToLive(), qPrintable(record.value()));
+    for (const QDnsDomainNameRecord &record : cnameRecords) {
+        printf("%s\t%i\tIN\tCNAME\t%s\n", qPrintable(record.name()), record.timeToLive(),
+               qPrintable(record.value()));
+    }
 
     // A and AAAA records
     const QList<QDnsHostAddressRecord> aRecords = dns->hostAddressRecords();
     for (const QDnsHostAddressRecord &record : aRecords) {
-        const char *type = (record.value().protocol() == QAbstractSocket::IPv6Protocol) ? "AAAA" : "A";
-        printf("%s\t%i\tIN\t%s\t%s\n", qPrintable(record.name()), record.timeToLive(), type, qPrintable(record.value().toString()));
+        const char *type =
+                (record.value().protocol() == QAbstractSocket::IPv6Protocol) ? "AAAA" : "A";
+        printf("%s\t%i\tIN\t%s\t%s\n", qPrintable(record.name()), record.timeToLive(), type,
+               qPrintable(record.value().toString()));
     }
 
     // MX records
     const QList<QDnsMailExchangeRecord> mxRecords = dns->mailExchangeRecords();
-    for (const QDnsMailExchangeRecord &record : mxRecords)
-        printf("%s\t%i\tIN\tMX\t%u %s\n", qPrintable(record.name()), record.timeToLive(), record.preference(), qPrintable(record.exchange()));
+    for (const QDnsMailExchangeRecord &record : mxRecords) {
+        printf("%s\t%i\tIN\tMX\t%u %s\n", qPrintable(record.name()), record.timeToLive(),
+               record.preference(), qPrintable(record.exchange()));
+    }
 
     // NS records
     const QList<QDnsDomainNameRecord> nsRecords = dns->nameServerRecords();
-    for (const QDnsDomainNameRecord &record : nsRecords)
-        printf("%s\t%i\tIN\tNS\t%s\n", qPrintable(record.name()), record.timeToLive(), qPrintable(record.value()));
+    for (const QDnsDomainNameRecord &record : nsRecords) {
+        printf("%s\t%i\tIN\tNS\t%s\n", qPrintable(record.name()), record.timeToLive(),
+               qPrintable(record.value()));
+    }
 
     // PTR records
     const QList<QDnsDomainNameRecord> ptrRecords = dns->pointerRecords();
-    for (const QDnsDomainNameRecord &record : ptrRecords)
-        printf("%s\t%i\tIN\tPTR\t%s\n", qPrintable(record.name()), record.timeToLive(), qPrintable(record.value()));
+    for (const QDnsDomainNameRecord &record : ptrRecords) {
+        printf("%s\t%i\tIN\tPTR\t%s\n", qPrintable(record.name()), record.timeToLive(),
+               qPrintable(record.value()));
+    }
 
     // SRV records
     const QList<QDnsServiceRecord> srvRecords = dns->serviceRecords();
-    for (const QDnsServiceRecord &record : srvRecords)
-        printf("%s\t%i\tIN\tSRV\t%u %u %u %s\n", qPrintable(record.name()), record.timeToLive(), record.priority(), record.weight(), record.port(), qPrintable(record.target()));
+    for (const QDnsServiceRecord &record : srvRecords) {
+        printf("%s\t%i\tIN\tSRV\t%u %u %u %s\n", qPrintable(record.name()), record.timeToLive(),
+               record.priority(), record.weight(), record.port(), qPrintable(record.target()));
+    }
 
     // TXT records
     const QList<QDnsTextRecord> txtRecords = dns->textRecords();
@@ -163,7 +175,8 @@ void DnsManager::showResults()
         const QList<QByteArray> dnsRecords = record.values();
         for (const QByteArray &ba : dnsRecords)
             values << "\"" + QString::fromLatin1(ba) + "\"";
-        printf("%s\t%i\tIN\tTXT\t%s\n", qPrintable(record.name()), record.timeToLive(), qPrintable(values.join(' ')));
+        printf("%s\t%i\tIN\tTXT\t%s\n", qPrintable(record.name()), record.timeToLive(),
+               qPrintable(values.join(' ')));
     }
 
     QCoreApplication::instance()->quit();
@@ -175,9 +188,12 @@ int main(int argc, char *argv[])
 
 //! [1]
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
-    QCoreApplication::setApplicationName(QCoreApplication::translate("QDnsLookupExample", "DNS Lookup Example"));
+    QCoreApplication::setApplicationName(QCoreApplication::translate("QDnsLookupExample",
+                                                                     "DNS Lookup Example"));
     QCommandLineParser parser;
-    parser.setApplicationDescription(QCoreApplication::translate("QDnsLookupExample", "An example demonstrating the class QDnsLookup."));
+    parser.setApplicationDescription(QCoreApplication::translate("QDnsLookupExample",
+                                                                 "An example demonstrating the "
+                                                                 "class QDnsLookup."));
     DnsQuery query;
     QString errorMessage;
     switch (parseCommandLine(parser, &query, &errorMessage)) {
