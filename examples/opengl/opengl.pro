@@ -7,7 +7,6 @@ SUBDIRS = hellowindow \
 
 qtHaveModule(widgets) {
     SUBDIRS += contextinfo \
-               threadedqopenglwidget \
                2dpainting \
                hellogl2 \
                qopenglwidget \
