@@ -4,8 +4,6 @@
 if(NOT TARGET Qt6::Network)
     return()
 endif()
-qt_internal_add_example(download)
-qt_internal_add_example(downloadmanager)
 if(NOT INTEGRITY)
     qt_internal_add_example(dnslookup)
 endif()
