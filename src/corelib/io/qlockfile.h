@@ -22,13 +22,20 @@ public:
     QString fileName() const;
 
     bool lock();
-    bool tryLock(int timeout = 0);
+    bool tryLock(int timeout);
     void unlock();
 
     void setStaleLockTime(int);
     int staleLockTime() const;
 
-    bool tryLock(std::chrono::milliseconds timeout) { return tryLock(int(timeout.count())); }
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+    bool tryLock(std::chrono::milliseconds timeout = std::chrono::milliseconds::zero());
+#else
+    bool tryLock(std::chrono::milliseconds timeout = std::chrono::milliseconds::zero())
+    {
+        return tryLock_impl(timeout);
+    }
+#endif
 
     void setStaleLockTime(std::chrono::milliseconds value) { setStaleLockTime(int(value.count())); }
 
@@ -55,6 +62,10 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QLockFile)
     Q_DISABLE_COPY(QLockFile)
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    bool tryLock_impl(std::chrono::milliseconds timeout);
+#endif
 };
 
 QT_END_NAMESPACE

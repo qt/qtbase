@@ -26,6 +26,8 @@
 
 #include <private/qlockfile_p.h>  // for getLockFileHandle()
 
+using namespace std::chrono_literals;
+
 class tst_QLockFile : public QObject
 {
     Q_OBJECT
@@ -96,7 +98,7 @@ void tst_QLockFile::lockUnlock()
     QVERIFY(lockFile.getLockInfo(&pid, &hostname, &appname));
     QCOMPARE(pid, QCoreApplication::applicationPid());
     QCOMPARE(appname, qAppName());
-    QVERIFY(!lockFile.tryLock(200));
+    QVERIFY(!lockFile.tryLock(200ms));
     QCOMPARE(int(lockFile.error()), int(QLockFile::LockFailedError));
 
     // Unlock deletes the lock file
@@ -341,8 +343,8 @@ void tst_QLockFile::staleLongLockFromBusyProcess()
     QTRY_VERIFY(QFile::exists(fileName));
 
     QLockFile secondLock(fileName);
-    secondLock.setStaleLockTime(0);
-    QVERIFY(!secondLock.tryLock(100)); // never stale
+    secondLock.setStaleLockTime(0ms);
+    QVERIFY(!secondLock.tryLock(100ms)); // never stale
     QCOMPARE(int(secondLock.error()), int(QLockFile::LockFailedError));
     qint64 pid;
     QTRY_VERIFY(secondLock.getLockInfo(&pid, NULL, NULL));
@@ -510,8 +512,8 @@ void tst_QLockFile::corruptedLockFile()
     }
 
     QLockFile secondLock(fileName);
-    secondLock.setStaleLockTime(100);
-    QVERIFY(secondLock.tryLock(10000));
+    secondLock.setStaleLockTime(100ms);
+    QVERIFY(secondLock.tryLock(10s));
     QCOMPARE(int(secondLock.error()), int(QLockFile::NoError));
 }
 
@@ -564,7 +566,7 @@ void tst_QLockFile::hostnameChange()
     {
         // we should fail to lock
         QLockFile lock2(lockFile);
-        QVERIFY(!lock2.tryLock(1000));
+        QVERIFY(!lock2.tryLock(1s));
     }
 }
 
@@ -591,7 +593,7 @@ void tst_QLockFile::differentMachines()
     {
         // we should fail to lock
         QLockFile lock2(lockFile);
-        QVERIFY(!lock2.tryLock(1000));
+        QVERIFY(!lock2.tryLock(1s));
     }
 }
 
@@ -620,7 +622,7 @@ void tst_QLockFile::reboot()
     f.close();
 
     // we should succeed in locking
-    QVERIFY(lock1.tryLock(0));
+    QVERIFY(lock1.tryLock(0ms));
 }
 
 bool tst_QLockFile::overwritePidInLockFile(const QString &filePath, qint64 pid)

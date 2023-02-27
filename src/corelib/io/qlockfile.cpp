@@ -216,7 +216,7 @@ bool QLockFile::isLocked() const
 */
 bool QLockFile::lock()
 {
-    return tryLock(-1);
+    return tryLock(std::chrono::milliseconds::max());
 }
 
 /*!
@@ -241,10 +241,42 @@ bool QLockFile::lock()
 */
 bool QLockFile::tryLock(int timeout)
 {
+    return tryLock(std::chrono::milliseconds{ timeout });
+}
+
+/*! \fn bool QLockFile::tryLock(std::chrono::milliseconds timeout)
+    \overload
+    \since 6.2
+
+    Attempts to create the lock file. This function returns \c true if the
+    lock was obtained; otherwise it returns \c false. If another process (or
+    another thread) has created the lock file already, this function will
+    wait for at most \a timeout for the lock file to become available.
+
+    If the lock was obtained, it must be released with unlock()
+    before another process (or thread) can successfully lock it.
+
+    Calling this function multiple times on the same lock from the same
+    thread without unlocking first is not allowed, this function will
+    \e always return false when attempting to lock the file recursively.
+
+    \sa lock(), unlock()
+*/
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+bool QLockFile::tryLock(std::chrono::milliseconds timeout)
+#else
+bool QLockFile::tryLock_impl(std::chrono::milliseconds timeout)
+#endif
+{
+    using namespace std::chrono_literals;
+    using Msec = std::chrono::milliseconds;
+
     Q_D(QLockFile);
-    QDeadlineTimer timer(qMax(timeout, -1));    // QDT only takes -1 as "forever"
-    int sleepTime = 100;
-    forever {
+
+    QDeadlineTimer timer(timeout < 0ms ? Msec::max() : timeout);
+
+    Msec sleepTime = 100ms;
+    while (true) {
         d->lockError = d->tryLock_sys();
         switch (d->lockError) {
         case NoError:
@@ -268,38 +300,20 @@ bool QLockFile::tryLock(int timeout)
             break;
         }
 
-        int remainingTime = timer.remainingTime();
-        if (remainingTime == 0)
+        auto remainingTime = std::chrono::duration_cast<Msec>(timer.remainingTimeAsDuration());
+        if (remainingTime == 0ms)
             return false;
-        else if (uint(sleepTime) > uint(remainingTime))
+
+        if (sleepTime > remainingTime)
             sleepTime = remainingTime;
 
-        QThread::msleep(sleepTime);
-        if (sleepTime < 5 * 1000)
+        QThread::sleep(sleepTime);
+        if (sleepTime < 5s)
             sleepTime *= 2;
     }
     // not reached
     return false;
 }
-
-/*! \fn bool QLockFile::tryLock(std::chrono::milliseconds timeout)
-    \overload
-    \since 6.2
-
-    Attempts to create the lock file. This function returns \c true if the
-    lock was obtained; otherwise it returns \c false. If another process (or
-    another thread) has created the lock file already, this function will
-    wait for at most \a timeout for the lock file to become available.
-
-    If the lock was obtained, it must be released with unlock()
-    before another process (or thread) can successfully lock it.
-
-    Calling this function multiple times on the same lock from the same
-    thread without unlocking first is not allowed, this function will
-    \e always return false when attempting to lock the file recursively.
-
-    \sa lock(), unlock()
-*/
 
 /*!
     \fn void QLockFile::unlock()
