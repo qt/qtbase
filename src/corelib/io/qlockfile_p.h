@@ -32,15 +32,7 @@ class QLockFilePrivate
 {
 public:
     QLockFilePrivate(const QString &fn)
-        : fileName(fn),
-#ifdef Q_OS_WIN
-          fileHandle(INVALID_HANDLE_VALUE),
-#else
-          fileHandle(-1),
-#endif
-          staleLockTime(30 * 1000), // 30 seconds
-          lockError(QLockFile::NoError),
-          isLocked(false)
+        : fileName(fn)
     {
     }
     QLockFile::LockError tryLock_sys();
@@ -55,14 +47,16 @@ public:
     static bool isProcessRunning(qint64 pid, const QString &appname);
 
     QString fileName;
+
 #ifdef Q_OS_WIN
-    Qt::HANDLE fileHandle;
+    Qt::HANDLE fileHandle = INVALID_HANDLE_VALUE;
 #else
-    int fileHandle;
+    int fileHandle = -1;
 #endif
-    int staleLockTime; // "int milliseconds" is big enough for 24 days
-    QLockFile::LockError lockError;
-    bool isLocked;
+    // "int milliseconds" is big enough for 24 days
+    int staleLockTime = 30 * 1000; // 30 seconds
+    QLockFile::LockError lockError = QLockFile::NoError;
+    bool isLocked = false;
 
     static int getLockFileHandle(QLockFile *f)
     {
