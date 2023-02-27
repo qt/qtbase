@@ -615,7 +615,20 @@ void QCoreApplicationPrivate::initLocale()
     const char *charEncoding = nl_langinfo(CODESET);
     if (Q_UNLIKELY(qstricmp(charEncoding, "UTF-8") != 0 && qstricmp(charEncoding, "utf8") != 0)) {
         const QByteArray oldLocale = setlocale(LC_ALL, nullptr);
-        QByteArray newLocale = setlocale(LC_CTYPE, nullptr);
+        QByteArray newLocale;
+        bool warnOnOverride = true;
+#    if defined(Q_OS_DARWIN)
+        // Don't warn unless the char encoding has been changed from the
+        // default "C" encoding, or the user touched any of the locale
+        // environment variables to force the "C" char encoding.
+        warnOnOverride = qstrcmp(setlocale(LC_CTYPE, nullptr), "C") != 0
+            || getenv("LC_ALL") || getenv("LC_CTYPE") || getenv("LANG");
+
+        // No need to try language or region specific CTYPEs, as they
+        // all point back to the same generic UTF-8 CTYPE.
+        newLocale = setlocale(LC_CTYPE, "UTF-8");
+#    else
+        newLocale = setlocale(LC_CTYPE, nullptr);
         if (qsizetype dot = newLocale.indexOf('.'); dot != -1)
             newLocale.truncate(dot);    // remove encoding, if any
         if (qsizetype at = newLocale.indexOf('@'); at != -1)
@@ -624,14 +637,11 @@ void QCoreApplicationPrivate::initLocale()
         newLocale = setlocale(LC_CTYPE, newLocale);
 
         // If that locale doesn't exist, try some fallbacks:
-#    if defined(Q_OS_DARWIN)
-        if (newLocale.isEmpty())
-            newLocale = setlocale(LC_CTYPE, "UTF-8");
-#    endif
         if (newLocale.isEmpty())
             newLocale = setlocale(LC_CTYPE, "C.UTF-8");
         if (newLocale.isEmpty())
             newLocale = setlocale(LC_CTYPE, "C.utf8");
+#    endif
 
         if (newLocale.isEmpty()) {
             // Failed to set a UTF-8 locale.
@@ -639,7 +649,7 @@ void QCoreApplicationPrivate::initLocale()
                      "Qt depends on a UTF-8 locale, but has failed to switch to one.\n"
                      "If this causes problems, reconfigure your locale. See the locale(1) manual\n"
                      "for more information.", oldLocale.constData(), charEncoding);
-        } else {
+        } else if (warnOnOverride) {
             // Let the user know we over-rode their configuration.
             qWarning("Detected locale \"%s\" with character encoding \"%s\", which is not UTF-8.\n"
                      "Qt depends on a UTF-8 locale, and has switched to \"%s\" instead.\n"
