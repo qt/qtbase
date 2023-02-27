@@ -195,7 +195,7 @@ void QEventDispatcherCoreFoundation::startingUp()
 QEventDispatcherCoreFoundation::~QEventDispatcherCoreFoundation()
 {
     invalidateTimer();
-    qDeleteAll(m_timerInfoList);
+    m_timerInfoList.clearTimers();
 
     m_cfSocketNotifier.removeSocketNotifiers();
 }

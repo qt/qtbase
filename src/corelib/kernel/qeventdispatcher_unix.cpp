@@ -195,7 +195,7 @@ QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
 QEventDispatcherUNIXPrivate::~QEventDispatcherUNIXPrivate()
 {
     // cleanup timers
-    qDeleteAll(timerList);
+    timerList.clearTimers();
 }
 
 void QEventDispatcherUNIXPrivate::setSocketNotifierPending(QSocketNotifier *notifier)

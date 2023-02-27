@@ -335,7 +335,7 @@ QEventDispatcherGlib::~QEventDispatcherGlib()
     Q_D(QEventDispatcherGlib);
 
     // destroy all timer sources
-    qDeleteAll(d->timerSource->timerList);
+    d->timerSource->timerList.clearTimers();
     d->timerSource->timerList.~QTimerInfoList();
     g_source_destroy(&d->timerSource->source);
     g_source_unref(&d->timerSource->source);
