@@ -210,6 +210,16 @@
           \l {https://dev.mysql.com/doc/refman/8.0/en/load-data.html} {LOAD_DATA},
           disabled if not set or 0
     \row
+      \li MYSQL_OPT_SSL_MODE
+      \li The security state to use for the connection to the server: SSL_MODE_DISABLED,
+          SSL_MODE_PREFERRED, SSL_MODE_REQUIRED, SSL_MODE_VERIFY_CA, SSL_MODE_VERIFY_IDENTITY.
+    \row
+      \li MYSQL_OPT_TLS_VERSION
+      \li A list of protocols the client permits for encrypted connections. The value can be
+          a combination of 'TLSv1' ,' TLSv1.1', 'TLSv1.2' or 'TLSv1.3' depending on the used \l
+          {https://dev.mysql.com/doc/refman/8.0/en/encrypted-connection-protocols-ciphers.html#encrypted-connection-protocol-configuration}
+          {MySQL server} version.
+    \row
       \li MYSQL_OPT_SSL_KEY / SSL_KEY (deprecated)
       \li The path name of the client private key file
     \row

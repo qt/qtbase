@@ -1204,6 +1204,27 @@ static bool setOptionBool(MYSQL *mysql, mysql_option option, QStringView v)
     return mysql_options(mysql, option, &val) == 0;
 }
 
+// MYSQL_OPT_SSL_MODE was introduced with MySQL 5.7.11
+#if defined(MYSQL_VERSION_ID) && MYSQL_VERSION_ID >= 50711 && !defined(MARIADB_VERSION_ID)
+static bool setOptionSslMode(MYSQL *mysql, mysql_option option, QStringView v)
+{
+    mysql_ssl_mode sslMode = SSL_MODE_DISABLED;
+    if (v == "DISABLED"_L1 || v == "SSL_MODE_DISABLED"_L1)
+        sslMode = SSL_MODE_DISABLED;
+    else if (v == "PREFERRED"_L1 || v == "SSL_MODE_PREFERRED"_L1)
+        sslMode = SSL_MODE_PREFERRED;
+    else if (v == "REQUIRED"_L1 || v == "SSL_MODE_REQUIRED"_L1)
+        sslMode = SSL_MODE_REQUIRED;
+    else if (v == "VERIFY_CA"_L1 || v == "SSL_MODE_VERIFY_CA"_L1)
+        sslMode = SSL_MODE_VERIFY_CA;
+    else if (v == "VERIFY_IDENTITY"_L1 || v == "SSL_MODE_VERIFY_IDENTITY"_L1)
+        sslMode = SSL_MODE_VERIFY_IDENTITY;
+    else
+        qWarning() << "Unknown ssl mode '" << v << "' - using SSL_MODE_DISABLED";
+    return mysql_options(mysql, option, &sslMode) == 0;
+}
+#endif
+
 static bool setOptionProtocol(MYSQL *mysql, mysql_option option, QStringView v)
 {
     mysql_protocol_type proto = MYSQL_PROTOCOL_DEFAULT;
@@ -1259,6 +1280,12 @@ bool QMYSQLDriver::open(const QString &db,
         {"MYSQL_OPT_SSL_CIPHER"_L1,      MYSQL_OPT_SSL_CIPHER,      setOptionString},
         {"MYSQL_OPT_SSL_CRL"_L1,         MYSQL_OPT_SSL_CRL,         setOptionString},
         {"MYSQL_OPT_SSL_CRLPATH"_L1,     MYSQL_OPT_SSL_CRLPATH,     setOptionString},
+#if defined(MYSQL_VERSION_ID) && MYSQL_VERSION_ID >= 50710
+        {"MYSQL_OPT_TLS_VERSION"_L1,     MYSQL_OPT_TLS_VERSION,     setOptionString},
+#endif
+#if defined(MYSQL_VERSION_ID) && MYSQL_VERSION_ID >= 50711 && !defined(MARIADB_VERSION_ID)
+        {"MYSQL_OPT_SSL_MODE"_L1,        MYSQL_OPT_SSL_MODE,        setOptionSslMode},
+#endif
         {"MYSQL_OPT_CONNECT_TIMEOUT"_L1, MYSQL_OPT_CONNECT_TIMEOUT, setOptionInt},
         {"MYSQL_OPT_READ_TIMEOUT"_L1,    MYSQL_OPT_READ_TIMEOUT,    setOptionInt},
         {"MYSQL_OPT_WRITE_TIMEOUT"_L1,   MYSQL_OPT_WRITE_TIMEOUT,   setOptionInt},
