@@ -598,22 +598,30 @@ void QCoreApplicationPrivate::initConsole()
 
 void QCoreApplicationPrivate::initLocale()
 {
-#if defined(Q_OS_UNIX) && !defined(QT_BOOTSTRAPPED)
+#if defined(QT_BOOTSTRAPPED)
+    // Don't try to control bootstrap library locale or encoding.
+#elif defined(Q_OS_UNIX)
     Q_CONSTINIT static bool qt_locale_initialized = false;
     if (qt_locale_initialized)
         return;
     qt_locale_initialized = true;
 
-#  ifdef Q_OS_INTEGRITY
-    setlocale(LC_CTYPE, "UTF-8");
-#  else
-#    if defined(Q_OS_QNX) || (defined(Q_OS_ANDROID) && __ANDROID_API__ < __ANDROID_API_O__)
-    // Android 6 still lacks nl_langinfo(), as does QNX, so we just assume it's
-    // always UTF-8 on these platforms.
-    auto nl_langinfo = [](int) { return "UTF-8"; };
-#   endif // QNX or Android NDK < 26, "O".
-
+    // By default the portable "C"/POSIX locale is selected and active.
+    // Apply the locale from the environment, via setlocale(), which will
+    // read LC_ALL, LC_<category>, and LANG, in order (for each category).
     const char *locale = setlocale(LC_ALL, "");
+
+    // Next, let's ensure that LC_CTYPE is UTF-8, since QStringConverter's
+    // QLocal8Bit hard-codes this, and we need to be consistent.
+#  if defined(Q_OS_INTEGRITY)
+    setlocale(LC_CTYPE, "UTF-8");
+#  elif defined(Q_OS_QNX)
+    // QNX has no nl_langinfo, so we can't check.
+    // FIXME: Shouldn't we still setlocale("UTF-8")?
+#  elif defined(Q_OS_ANDROID) && __ANDROID_API__ < __ANDROID_API_O__
+    // Android 6 still lacks nl_langinfo(), so we can't check.
+    // FIXME: Shouldn't we still setlocale("UTF-8")?
+#  else
     const char *codec = nl_langinfo(CODESET);
     if (Q_UNLIKELY(qstricmp(codec, "UTF-8") != 0 && qstricmp(codec, "utf8") != 0)) {
         QByteArray oldLocale = locale;
@@ -625,8 +633,8 @@ void QCoreApplicationPrivate::initLocale()
         newLocale += ".UTF-8";
         newLocale = setlocale(LC_CTYPE, newLocale);
 
-        // if locale doesn't exist, try some fallbacks
-#    ifdef Q_OS_DARWIN
+        // If that locale doesn't exist, try some fallbacks:
+#    if defined(Q_OS_DARWIN)
         if (newLocale.isEmpty())
             newLocale = setlocale(LC_CTYPE, "UTF-8");
 #    endif
@@ -640,7 +648,7 @@ void QCoreApplicationPrivate::initLocale()
                  "reconfigure your locale. See the locale(1) manual for more information.",
                  codec, oldLocale.constData(), newLocale.constData());
     }
-#  endif // Integrity
+#  endif // Platform choice
 #endif // Unix
 }
 
