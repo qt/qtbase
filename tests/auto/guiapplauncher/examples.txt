@@ -20,7 +20,6 @@
 "graphicsview/flowlayout Example", "examples/widgets/graphicsview/flowlayout", "flowlayout", 10, -1
 "graphicsview/portedasteroids Example", "examples/widgets/graphicsview/portedasteroids", "portedasteroids", 10, -1
 "graphicsview/portedcanvas Example", "examples/widgets/graphicsview/portedcanvas", "portedcanvas", 10, -1
-"graphicsview/weatheranchorlayout Example", "examples/widgets/graphicsview/weatheranchorlayout", "weatheranchorlayout", 10, -1
 "itemviews/addressbook Example", "examples/widgets/itemviews/addressbook", "addressbook", 0, -1
 "itemviews/basicsortfiltermodel Example", "examples/widgets/itemviews/basicsortfiltermodel", "basicsortfiltermodel", 10, -1
 "itemviews/chart Example", "examples/widgets/itemviews/chart", "chart", 0, -1
