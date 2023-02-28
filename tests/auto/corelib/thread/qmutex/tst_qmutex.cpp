@@ -1038,8 +1038,8 @@ void tst_QMutex::lock_unlock_locked_tryLock()
     }
 }
 
-enum { one_minute = 6 * 1000, //not really one minute, but else it is too long.
-       threadCount = 10 };
+constexpr int one_minute = 6 * 1000; // not really one minute, but else it is too long.
+constexpr int threadCount = 10;
 
 class StressTestThread : public QThread
 {
