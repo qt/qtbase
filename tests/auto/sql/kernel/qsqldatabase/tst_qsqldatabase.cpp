@@ -2128,9 +2128,6 @@ void tst_QSqlDatabase::sqlite_bindAndFetchUInt()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    if (db.driverName().startsWith("QSQLITE2"))
-        QSKIP("SQLite3 specific test");
-
     QSqlQuery q(db);
     const QString tableName(qTableName("uint_test", __FILE__, db));
     QVERIFY_SQL(q, exec(QString("CREATE TABLE %1(uint_field UNSIGNED INTEGER)").arg(tableName)));
@@ -2244,9 +2241,6 @@ void tst_QSqlDatabase::sqlite_enableRegexp()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    if (db.driverName().startsWith("QSQLITE2"))
-        QSKIP("SQLite3 specific test");
-
     db.close();
     db.setConnectOptions("QSQLITE_ENABLE_REGEXP");
     QVERIFY_SQL(db, open());

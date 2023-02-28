@@ -70,32 +70,6 @@ inline static QString qTableName(const QString &prefix, const char *sourceFileNa
     return escape ? db.driver()->escapeIdentifier(tableStr, QSqlDriver::TableName) : tableStr;
 }
 
-inline static QString qTableName(const QString& prefix, QSqlDatabase db)
-{
-    QString tableStr;
-    if (db.driverName().toLower().contains("ODBC"))
-        tableStr += QLatin1String("_odbc");
-    return fixupTableName(QString(db.driver()->escapeIdentifier(prefix + tableStr + QLatin1Char('_') +
-                          qGetHostName(), QSqlDriver::TableName)),db);
-}
-
-inline static QString toHex( const QString& binary )
-{
-    QString str;
-    static char const hexchars[] = "0123456789ABCDEF";
-
-    for ( int i = 0; i < binary.size(); i++ ) {
-        ushort code = binary.at(i).unicode();
-        str += (QChar)(hexchars[ (code >> 12) & 0x0F ]);
-        str += (QChar)(hexchars[ (code >> 8) & 0x0F ]);
-        str += (QChar)(hexchars[ (code >> 4) & 0x0F ]);
-        str += (QChar)(hexchars[ code & 0x0F ]);
-    }
-
-    return str;
-}
-
-
 class tst_Databases
 {
 

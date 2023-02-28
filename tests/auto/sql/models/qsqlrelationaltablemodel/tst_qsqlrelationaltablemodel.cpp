@@ -160,16 +160,11 @@ void tst_QSqlRelationalTableModel::cleanupTestCase()
 
 void tst_QSqlRelationalTableModel::dropTestTables( QSqlDatabase db )
 {
-    QStringList tableNames;
-    tableNames << reltest1
-            << reltest2
-            << reltest3
-            << reltest4
-            << reltest5
-            << qTableName("rel test6", __FILE__, db)
-            << qTableName("rel test7", __FILE__, db)
-            << qTableName("CASETEST1", db)
-            << qTableName("casetest1", db);
+    QStringList tableNames{reltest1, reltest2, reltest3, reltest4, reltest5,
+                           qTableName("rel test6", __FILE__, db),
+                           qTableName("rel test7", __FILE__, db),
+                           qTableName("CASETEST1", __FILE__, db),
+                           qTableName("casetest1", __FILE__, db)};
     tst_Databases::safeDropTables( db, tableNames );
 
     db.exec("DROP SCHEMA " + qTableName("QTBUG_5373", __FILE__, db) + " CASCADE");
@@ -1095,54 +1090,57 @@ void tst_QSqlRelationalTableModel::casing()
         QSKIP("The casing test for this database is irrelevant since this database does not treat different cases as separate entities");
 
     QSqlQuery q(db);
-    QVERIFY_SQL( q, exec("create table " + qTableName("CASETEST1", db).toUpper() +
+    const QString caseTestUpper = qTableName("CASETEST1", __FILE__, db).toUpper();
+    const QString caseTestLower = qTableName("casetest1", __FILE__, db);
+    tst_Databases::safeDropTables(db, {caseTestUpper, caseTestLower});
+    QVERIFY_SQL( q, exec("create table " + caseTestUpper +
                 " (id int not null primary key, name varchar(20), title_key int, another_title_key int)"));
 
-    if (!q.exec("create table " + qTableName("casetest1", db) +
+    if (!q.exec("create table " + caseTestLower +
                 " (ident int not null primary key, name varchar(20), title_key int)"))
         QSKIP("The casing test for this database is irrelevant since this database does not treat different cases as separate entities");
 
-    QVERIFY_SQL( q, exec("insert into " + qTableName("CASETEST1", db).toUpper() + " values(1, 'harry', 1, 2)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("CASETEST1", db).toUpper() + " values(2, 'trond', 2, 1)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("CASETEST1", db).toUpper() + " values(3, 'vohi', 1, 2)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("CASETEST1", db).toUpper() + " values(4, 'boris', 2, 2)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("casetest1", db) + " values(1, 'jerry', 1)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("casetest1", db) + " values(2, 'george', 2)"));
-    QVERIFY_SQL( q, exec("insert into " + qTableName("casetest1", db) + " values(4, 'kramer', 2)"));
+    QVERIFY_SQL( q, exec("insert into " + caseTestUpper + " values(1, 'harry', 1, 2)"));
+    QVERIFY_SQL( q, exec("insert into " + caseTestUpper + " values(2, 'trond', 2, 1)"));
+    QVERIFY_SQL( q, exec("insert into " + caseTestUpper + " values(3, 'vohi', 1, 2)"));
+    QVERIFY_SQL( q, exec("insert into " + caseTestUpper + " values(4, 'boris', 2, 2)"));
+    QVERIFY_SQL( q, exec("insert into " + caseTestLower + " values(1, 'jerry', 1)"));
+    QVERIFY_SQL( q, exec("insert into " + caseTestLower + " values(2, 'george', 2)"));
+    QVERIFY_SQL( q, exec("insert into " + caseTestLower + " values(4, 'kramer', 2)"));
 
     if (dbType == QSqlDriver::Oracle) {
         //try an owner that doesn't exist
-        QSqlRecord rec = db.driver()->record("doug." + qTableName("CASETEST1", db).toUpper());
+        QSqlRecord rec = db.driver()->record("doug." + caseTestUpper);
         QCOMPARE( rec.count(), 0);
 
         //try an owner that does exist
-        rec = db.driver()->record(db.userName() + QLatin1Char('.') + qTableName("CASETEST1", db).toUpper());
+        rec = db.driver()->record(db.userName() + QLatin1Char('.') + caseTestUpper);
         QCOMPARE( rec.count(), 4);
     }
-    QSqlRecord rec = db.driver()->record(qTableName("CASETEST1", db).toUpper());
+    QSqlRecord rec = db.driver()->record(caseTestUpper);
     QCOMPARE( rec.count(), 4);
 
-    rec = db.driver()->record(qTableName("casetest1", db));
+    rec = db.driver()->record(caseTestLower);
     QCOMPARE( rec.count(), 3);
 
     QSqlTableModel upperCaseModel(0, db);
-    upperCaseModel.setTable(qTableName("CASETEST1", db).toUpper());
+    upperCaseModel.setTable(caseTestUpper);
 
-    QCOMPARE(upperCaseModel.tableName(), qTableName("CASETEST1", db).toUpper());
+    QCOMPARE(upperCaseModel.tableName(), caseTestUpper);
 
     QVERIFY_SQL(upperCaseModel, select());
 
     QCOMPARE(upperCaseModel.rowCount(), 4);
 
     QSqlTableModel lowerCaseModel(0, db);
-    lowerCaseModel.setTable(qTableName("casetest1", db));
-    QCOMPARE(lowerCaseModel.tableName(), qTableName("casetest1", db));
+    lowerCaseModel.setTable(caseTestLower);
+    QCOMPARE(lowerCaseModel.tableName(), caseTestLower);
     QVERIFY_SQL(lowerCaseModel, select());
 
     QCOMPARE(lowerCaseModel.rowCount(), 3);
 
     QSqlRelationalTableModel model(0, db);
-    model.setTable(qTableName("CASETEST1", db).toUpper());
+    model.setTable(caseTestUpper);
     model.setRelation(2, QSqlRelation(reltest2, "id", "title"));
     QVERIFY_SQL(model, select());
 

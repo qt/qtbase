@@ -89,10 +89,11 @@ void tst_QSqlDriver::cleanupTestCase()
 {
     foreach (const QString &dbName, dbs.dbNames) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
-        tst_Databases::safeDropTable(db, qTableName("relTEST1", __FILE__, db));
+        QStringList tables = {qTableName("relTEST1", __FILE__, db)};
         const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         if (dbType == QSqlDriver::Oracle)
-            tst_Databases::safeDropTable(db, qTableName("clobTable", __FILE__, db));
+            tables.push_back(qTableName("clobTable", __FILE__, db));
+        tst_Databases::safeDropTables(db, tables);
     }
     dbs.close();
 }

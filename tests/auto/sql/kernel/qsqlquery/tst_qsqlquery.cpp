@@ -1228,12 +1228,8 @@ void tst_QSqlQuery::numRowsAffected()
     QSqlQuery q2(db);
     QVERIFY_SQL(q2, exec(QLatin1String("insert into %1 values (42001, 'homer', 'marge')")
                          .arg(qtest)));
-
-    if (!db.driverName().startsWith("QSQLITE2")) {
-        // SQLite 2.x accumulates changed rows in nested queries. See task 33794
-        QCOMPARE(q2.numRowsAffected(), 1);
-        QCOMPARE(q2.numRowsAffected(), 1); // yes, we check twice
-    }
+    QCOMPARE(q2.numRowsAffected(), 1);
+    QCOMPARE(q2.numRowsAffected(), 1); // yes, we check twice
 }
 
 void tst_QSqlQuery::size()

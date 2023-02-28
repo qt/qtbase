@@ -155,17 +155,15 @@ void tst_QSqlTableModel::dropTestTables()
         if (dbType == QSqlDriver::PostgreSQL)
             QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
-        QStringList tableNames;
-        tableNames << qTableName("test1", __FILE__, db)
-                   << qTableName("test2", __FILE__, db)
-                   << qTableName("test3", __FILE__, db)
-                   << qTableName("test4", __FILE__, db)
-                   << qTableName("emptytable", __FILE__, db)
-                   << qTableName("bigtable", __FILE__, db)
-                   << qTableName("foo", __FILE__, db)
-                   << qTableName("pktest", __FILE__, db)
-                   << qTableName("qtestw hitespace", db);
-
+        QStringList tableNames{qTableName("test1", __FILE__, db),
+                               qTableName("test2", __FILE__, db),
+                               qTableName("test3", __FILE__, db),
+                               qTableName("test4", __FILE__, db),
+                               qTableName("emptytable", __FILE__, db),
+                               qTableName("bigtable", __FILE__, db),
+                               qTableName("foo", __FILE__, db),
+                               qTableName("pktest", __FILE__, db),
+                               qTableName("qtestw hitespace", __FILE__, db)};
         tst_Databases::safeDropTables(db, tableNames);
 
         if (db.driverName().startsWith("QPSQL")) {
@@ -196,7 +194,7 @@ void tst_QSqlTableModel::createTestTables()
         QVERIFY_SQL(q, exec("create table " + qTableName("emptytable", __FILE__, db) + "(id int)"));
 
         const auto fieldStr = db.driver()->escapeIdentifier("a field", QSqlDriver::FieldName);
-        QVERIFY_SQL(q, exec("create table " + qTableName("qtestw hitespace", db) + " ("+ fieldStr + " int)"));
+        QVERIFY_SQL(q, exec("create table " + qTableName("qtestw hitespace", __FILE__, db) + " ("+ fieldStr + " int)"));
 
         QVERIFY_SQL(q, exec("create table " + qTableName("pktest", __FILE__, db) + "(id int not null primary key, a varchar(20))"));
     }
@@ -1697,7 +1695,7 @@ void tst_QSqlTableModel::whitespaceInIdentifiers()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QString tableName = qTableName("qtestw hitespace", db);
+    QString tableName = qTableName("qtestw hitespace", __FILE__, db);
 
     QSqlTableModel model(0, db);
     model.setTable(tableName);
