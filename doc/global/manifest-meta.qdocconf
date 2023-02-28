@@ -179,7 +179,6 @@ manifestmeta.ios.names              =  "QtCore/Contiguous Cache Example" \
                                        "QtWidgets/Blur Picker Effect Example" \
                                        "QtWidgets/Fade Message Effect Example" \
                                        "QtWidgets/Lighting Effect Example" \
-                                       "QtWidgets/Anchor Layout Example" \
                                        "QtWidgets/Basic Graphics Layouts Example" \
                                        "QtWidgets/40000 Chips" \
                                        "QtWidgets/Colliding Mice Example" \
