@@ -108,6 +108,17 @@ inline ulong getTimeStamp(UIEvent *event)
         m_lastScrollDelta = CGPointZero;
         m_lastScrollCursorPos = CGPointZero;
         [self addGestureRecognizer:m_scrollGestureRecognizer];
+
+        if ([self.layer isKindOfClass:CAMetalLayer.class]) {
+            QWindow *window = self.platformWindow->window();
+            if (QColorSpace colorSpace = window->format().colorSpace(); colorSpace.isValid()) {
+                QCFType<CFDataRef> iccData = colorSpace.iccProfile().toCFData();
+                QCFType<CGColorSpaceRef> cgColorSpace = CGColorSpaceCreateWithICCData(iccData);
+                CAMetalLayer *metalLayer = static_cast<CAMetalLayer *>(self.layer);
+                metalLayer.colorspace = cgColorSpace;
+                qCDebug(lcQpaWindow) << "Set" << self << "color space to" << metalLayer.colorspace;
+            }
+        }
     }
 
     return self;
