@@ -852,7 +852,10 @@ public:
 
     inline QString file() const { return m_file; }
     QUrl url() const { return m_url; }
+#if QT_DEPRECATED_SINCE(6, 6)
+    QT_DEPRECATED_VERSION_X_6_6("Interpret the string returned by file()")
     bool openFile(QFile &file, QIODevice::OpenMode flags) const;
+#endif
 private:
     QString m_file;
     QUrl m_url;

@@ -3625,19 +3625,23 @@ Q_IMPL_EVENT_COMMON(QFileOpenEvent)
 /*!
     \fn QString QFileOpenEvent::file() const
 
-    Returns the file that is being opened.
+    Returns the name of the file that the application should open.
+
+    This is not guaranteed to be the path to a local file.
 */
 
 /*!
     \fn QUrl QFileOpenEvent::url() const
 
-    Returns the url that is being opened.
+    Returns the url that the application should open.
 
     \since 4.6
 */
 
+#if QT_DEPRECATED_SINCE(6, 6)
 /*!
     \fn bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
+    \deprecated [6.6] interpret the string returned by file()
 
     Opens a QFile on the \a file referenced by this event in the mode specified
     by \a flags. Returns \c true if successful; otherwise returns \c false.
@@ -3652,6 +3656,7 @@ bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
     file.setFileName(m_file);
     return file.open(flags);
 }
+#endif
 
 #ifndef QT_NO_TOOLBAR
 /*!
