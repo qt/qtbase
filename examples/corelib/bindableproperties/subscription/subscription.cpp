@@ -104,10 +104,10 @@ double Subscription::calculateDiscount() const
 
 int Subscription::basePrice() const
 {
-    if (m_user->country() == User::None)
+    if (m_user->country() == User::Country::AnyTerritory)
         return 0;
 
-    return (m_user->country() == User::Norway) ? 100 : 80;
+    return (m_user->country() == User::Country::Norway) ? 100 : 80;
 }
 
 //! [calculate-base-price]
@@ -117,7 +117,7 @@ int Subscription::basePrice() const
 void Subscription::updateValidity()
 {
     bool isValid = m_isValid;
-    m_isValid = m_user->country() != User::None && m_user->age() > 12;
+    m_isValid = m_user->country() != User::Country::AnyTerritory && m_user->age() > 12;
 
     if (m_isValid != isValid)
         emit isValidChanged();

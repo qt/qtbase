@@ -39,7 +39,7 @@
 
     \image bindable_properties_example.png
 
-    \section1 Modelling Subscription System with Signal/Slot Approach
+    \section1 Modeling Subscription System with Signal/Slot Approach
 
     Let's first consider the usual pre-Qt 6 implementation.
     To model the subscription service the \c Subscription class is used:
@@ -72,7 +72,7 @@
 
     \note Both methods need to check if the data is actually changed and
     only then emit the signals. \c setDuration() also needs to recalculate
-    the price, when the duration has changed.
+    the price when the duration has changed.
 
     The \c Subscription is not valid unless the user has a valid country and
     age, so the validity is updated in the following way:
@@ -87,25 +87,25 @@
     \snippet bindableproperties/subscription/user.cpp user-setters
 
     In the \c main() function we initialize instances of \c User and
-    \c Subsrcription:
+    \c Subscription:
 
     \snippet bindableproperties/subscription/main.cpp init
 
-    And do the proper signal-slot connections, to update the \c user and
-    \c subsrcription data when UI elements change. That is straightforward,
+    And do the proper signal-slot connections to update the \c user and
+    \c subscription data when UI elements change. That is straightforward,
     so we will skip this part.
 
-    Next, we connect to \c Subscription::priceChanged(), to update the price
+    Next, we connect to \c Subscription::priceChanged() to update the price
     in the UI when the price changes.
 
     \snippet bindableproperties/subscription/main.cpp connect-price-changed
 
-    We also connect to \c Subscription::isValidChanged(), to disable the price
+    We also connect to \c Subscription::isValidChanged() to disable the price
     display if the subscription isn't valid.
 
     \snippet bindableproperties/subscription/main.cpp connect-validity-changed
 
-    Because the subsrcription price and validity also depend on the user's
+    Because the subscription price and validity also depend on the user's
     country and age, we also need to connect to the \c User::countryChanged()
     and \c User::ageChanged() signals and update \c subscription accordingly.
 
@@ -114,12 +114,12 @@
     This works, but there are some problems:
 
     \list
-    \li There's a lot of boilerplate code for the signal-slot connections,
-    to be able to react to changes to \c user or \c subscription. If any of
-    the dependencies of the price changes, we need to remember to emit the
-    corresponding notifier signals, to recalculate the price and update it in
+    \li There's a lot of boilerplate code for the signal-slot connections
+    in order to properly track changes to both \c user and \c subscription.
+    If any of the dependencies of the price changes, we need to remember to emit the
+    corresponding notifier signals, recalculate the price, and update it in
     the UI.
-    \li If more dependencies for price calculation are added in future, we'll
+    \li If more dependencies for price calculation are added in the future, we'll
     need to add more signal-slot connections and make sure all the dependencies
     are properly updated whenever any of them changes. The overall complexity
     will grow, and the code will become harder to maintain.
@@ -133,7 +133,7 @@
 
     Now let's see how the \l {Qt Bindable Properties} can help to solve the
     same problem. First, let's have a look at the \c BindableSubscription class,
-    which is similar to the \c Subscription class, but is implemented using the
+    which is similar to the \c Subscription class, but is implemented using
     bindable properties:
 
     \snippet bindableproperties/bindablesubscription/bindablesubscription.h bindable-subscription-class
@@ -180,7 +180,7 @@
     changes the value. The subscriptions will stay alive as long as the
     corresponding handlers are alive.
 
-    Also note that the copy constructors of both \c BindableSubsrciption and
+    Also note that the copy constructors of both \c BindableSubscription and
     \c BindableUser are disabled, since it's not defined what should happen
     with their bindings when copying.
 
@@ -190,7 +190,7 @@
     \list
     \li The boilerplate code for the signal-slot connections is removed, the
     dependencies are now tracked automatically.
-    \li The code is easier to maintain. Adding more dependencies in future
+    \li The code is easier to maintain. Adding more dependencies in the future
     will only require adding the corresponding bindable properties and setting
     the binding expressions that reflect the relationships between each other.
     \li The \c Subscription and \c User classes don't depend on the metaobject
