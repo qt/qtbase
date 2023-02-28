@@ -5457,8 +5457,7 @@ static QByteArray qt_convert_to_local_8bit(QStringView string);
     QByteArray. The returned byte array is undefined if the string
     contains characters not supported by the local 8-bit encoding.
 
-    On Unix systems this is equivalent to toUtf8(), on Windows the systems
-    current code page is being used.
+    \include qstring.qdocinc {qstring-local-8-bit-equivalent} {toUtf8}
 
     If this string contains any characters that cannot be encoded in the
     locale, the returned byte array is undefined. Those characters may be
@@ -5655,8 +5654,7 @@ QString QString::fromLatin1(QByteArrayView ba)
 
     If \a size is \c{-1}, \c{strlen(str)} is used instead.
 
-    On Unix systems this is equivalent to fromUtf8(), on Windows the systems
-    current code page is being used.
+    \include qstring.qdocinc {qstring-local-8-bit-equivalent} {fromUtf8}
 
     \sa toLocal8Bit(), fromLatin1(), fromUtf8()
 */
@@ -5667,6 +5665,8 @@ QString QString::fromLatin1(QByteArrayView ba)
     \since 5.0
 
     Returns a QString initialized with the 8-bit string \a str.
+
+    \include qstring.qdocinc {qstring-local-8-bit-equivalent} {fromUtf8}
 
     \note: any null ('\\0') bytes in the byte array will be included in this
     string, converted to Unicode null characters (U+0000). This behavior is
@@ -5679,6 +5679,8 @@ QString QString::fromLatin1(QByteArrayView ba)
     \since 6.0
 
     Returns a QString initialized with the 8-bit string \a str.
+
+    \include qstring.qdocinc {qstring-local-8-bit-equivalent} {fromUtf8}
 
     \note: any null ('\\0') bytes in the byte array will be included in this
     string, converted to Unicode null characters (U+0000).

@@ -22,3 +22,15 @@ Returns -1 if \a \2 is not found.
 Returns the index position of the last occurrence of the \1 \a \2
 in this string, searching backward from index position \a from.
 //! [qstring-last-index-of]
+
+//! [qstring-local-8-bit-equivalent]
+On Unix systems this is equivalent to \1().
+Note that on Apple systems this function does not take
+\c\l{https://developer.apple.com/documentation/foundation/nsstring/1410091-defaultcstringencoding?language=objc}
+{NSString.defaultCStringEncoding} or
+\c\l{https://developer.apple.com/documentation/corefoundation/1541720-cfstringgetsystemencoding?language=objc}
+{CFStringGetSystemEncoding()} into account, as these functions
+typically return the legacy "Western (Mac OS Roman)" encoding,
+which should not be used on modern Apple operating systems.
+On Windows the system's current code page is used.
+//! [qstring-local-8-bit-equivalent]
