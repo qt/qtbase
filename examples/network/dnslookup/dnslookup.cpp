@@ -11,7 +11,7 @@
 #include <QCommandLineParser>
 #include <QCommandLineOption>
 
-#include <stdio.h>
+#include <cstdio>
 
 using namespace Qt::StringLiterals;
 
@@ -123,13 +123,13 @@ void DnsManager::execute()
 void DnsManager::showResults()
 {
     if (dns->error() != QDnsLookup::NoError)
-        printf("Error: %i (%s)\n", dns->error(), qPrintable(dns->errorString()));
+        std::printf("Error: %i (%s)\n", dns->error(), qPrintable(dns->errorString()));
 
     // CNAME records
     const QList<QDnsDomainNameRecord> cnameRecords = dns->canonicalNameRecords();
     for (const QDnsDomainNameRecord &record : cnameRecords) {
-        printf("%s\t%i\tIN\tCNAME\t%s\n", qPrintable(record.name()), record.timeToLive(),
-               qPrintable(record.value()));
+        std::printf("%s\t%i\tIN\tCNAME\t%s\n", qPrintable(record.name()), record.timeToLive(),
+                    qPrintable(record.value()));
     }
 
     // A and AAAA records
@@ -137,36 +137,37 @@ void DnsManager::showResults()
     for (const QDnsHostAddressRecord &record : aRecords) {
         const char *type =
                 (record.value().protocol() == QAbstractSocket::IPv6Protocol) ? "AAAA" : "A";
-        printf("%s\t%i\tIN\t%s\t%s\n", qPrintable(record.name()), record.timeToLive(), type,
-               qPrintable(record.value().toString()));
+        std::printf("%s\t%i\tIN\t%s\t%s\n", qPrintable(record.name()), record.timeToLive(), type,
+                    qPrintable(record.value().toString()));
     }
 
     // MX records
     const QList<QDnsMailExchangeRecord> mxRecords = dns->mailExchangeRecords();
     for (const QDnsMailExchangeRecord &record : mxRecords) {
-        printf("%s\t%i\tIN\tMX\t%u %s\n", qPrintable(record.name()), record.timeToLive(),
-               record.preference(), qPrintable(record.exchange()));
+        std::printf("%s\t%i\tIN\tMX\t%u %s\n", qPrintable(record.name()), record.timeToLive(),
+                    record.preference(), qPrintable(record.exchange()));
     }
 
     // NS records
     const QList<QDnsDomainNameRecord> nsRecords = dns->nameServerRecords();
     for (const QDnsDomainNameRecord &record : nsRecords) {
-        printf("%s\t%i\tIN\tNS\t%s\n", qPrintable(record.name()), record.timeToLive(),
-               qPrintable(record.value()));
+        std::printf("%s\t%i\tIN\tNS\t%s\n", qPrintable(record.name()), record.timeToLive(),
+                    qPrintable(record.value()));
     }
 
     // PTR records
     const QList<QDnsDomainNameRecord> ptrRecords = dns->pointerRecords();
     for (const QDnsDomainNameRecord &record : ptrRecords) {
-        printf("%s\t%i\tIN\tPTR\t%s\n", qPrintable(record.name()), record.timeToLive(),
-               qPrintable(record.value()));
+        std::printf("%s\t%i\tIN\tPTR\t%s\n", qPrintable(record.name()), record.timeToLive(),
+                    qPrintable(record.value()));
     }
 
     // SRV records
     const QList<QDnsServiceRecord> srvRecords = dns->serviceRecords();
     for (const QDnsServiceRecord &record : srvRecords) {
-        printf("%s\t%i\tIN\tSRV\t%u %u %u %s\n", qPrintable(record.name()), record.timeToLive(),
-               record.priority(), record.weight(), record.port(), qPrintable(record.target()));
+        std::printf("%s\t%i\tIN\tSRV\t%u %u %u %s\n", qPrintable(record.name()),
+                    record.timeToLive(), record.priority(), record.weight(), record.port(),
+                    qPrintable(record.target()));
     }
 
     // TXT records
@@ -176,8 +177,8 @@ void DnsManager::showResults()
         const QList<QByteArray> dnsRecords = record.values();
         for (const QByteArray &ba : dnsRecords)
             values << "\"" + QString::fromLatin1(ba) + "\"";
-        printf("%s\t%i\tIN\tTXT\t%s\n", qPrintable(record.name()), record.timeToLive(),
-               qPrintable(values.join(' ')));
+        std::printf("%s\t%i\tIN\tTXT\t%s\n", qPrintable(record.name()), record.timeToLive(),
+                    qPrintable(values.join(' ')));
     }
 
     QCoreApplication::instance()->quit();
@@ -202,9 +203,10 @@ int main(int argc, char *argv[])
     case Status::Ok:
         break;
     case Status::Error:
-        fputs(qPrintable(parseResult.errorString.value_or(u"Unknown error occurred"_qs)), stderr);
-        fputs("\n\n", stderr);
-        fputs(qPrintable(parser.helpText()), stderr);
+        std::fputs(qPrintable(parseResult.errorString.value_or(u"Unknown error occurred"_qs)),
+                   stderr);
+        std::fputs("\n\n", stderr);
+        std::fputs(qPrintable(parser.helpText()), stderr);
         return 1;
     case Status::VersionRequested:
         parser.showVersion();
