@@ -5457,7 +5457,7 @@ static QByteArray qt_convert_to_local_8bit(QStringView string);
     QByteArray. The returned byte array is undefined if the string
     contains characters not supported by the local 8-bit encoding.
 
-    On Unix systems this is equivalen to toUtf8(), on Windows the systems
+    On Unix systems this is equivalent to toUtf8(), on Windows the systems
     current code page is being used.
 
     If this string contains any characters that cannot be encoded in the
@@ -5487,7 +5487,7 @@ static QByteArray qt_convert_to_local_8bit(QStringView string)
 
     Returns a local 8-bit representation of \a string as a QByteArray.
 
-    On Unix systems this is equivalen to toUtf8(), on Windows the systems
+    On Unix systems this is equivalent to toUtf8(), on Windows the systems
     current code page is being used.
 
     The behavior is undefined if \a string contains characters not
@@ -5655,7 +5655,7 @@ QString QString::fromLatin1(QByteArrayView ba)
 
     If \a size is \c{-1}, \c{strlen(str)} is used instead.
 
-    On Unix systems this is equivalen to fromUtf8(), on Windows the systems
+    On Unix systems this is equivalent to fromUtf8(), on Windows the systems
     current code page is being used.
 
     \sa toLocal8Bit(), fromLatin1(), fromUtf8()
