@@ -5454,14 +5454,13 @@ static QByteArray qt_convert_to_local_8bit(QStringView string);
     \fn QByteArray QString::toLocal8Bit() const
 
     Returns the local 8-bit representation of the string as a
-    QByteArray. The returned byte array is undefined if the string
-    contains characters not supported by the local 8-bit encoding.
+    QByteArray.
 
     \include qstring.qdocinc {qstring-local-8-bit-equivalent} {toUtf8}
 
     If this string contains any characters that cannot be encoded in the
-    locale, the returned byte array is undefined. Those characters may be
-    suppressed or replaced by another.
+    local 8-bit encoding, the returned byte array is undefined. Those
+    characters may be suppressed or replaced by another.
 
     \sa fromLocal8Bit(), toLatin1(), toUtf8(), QStringEncoder
 */
