@@ -72,12 +72,7 @@ inline static QString qTableName(const QString &prefix, const char *sourceFileNa
 
 class tst_Databases
 {
-
 public:
-    tst_Databases(): counter( 0 )
-    {
-    }
-
     ~tst_Databases()
     {
         close();
@@ -322,11 +317,6 @@ public:
         }
     }
 
-    static void safeDropTable(QSqlDatabase db, const QString &tableName)
-    {
-        safeDropTables(db, {tableName});
-    }
-
     static void safeDropViews(QSqlDatabase db, const QStringList &viewNames)
     {
         if (isMSAccess(db)) // Access is sooo stupid.
@@ -481,7 +471,7 @@ public:
     }
 
     QStringList     dbNames;
-    int      counter;
+    int      counter = 0;
 
 private:
     QTemporaryDir *dbDir()
@@ -497,6 +487,34 @@ private:
     }
 
     QScopedPointer<QTemporaryDir> m_dbDir;
+};
+
+class TableScope
+{
+public:
+    TableScope(const QSqlDatabase &db, const QString &fullTableName)
+        : m_db(db)
+        , m_tableName(fullTableName)
+    {
+        tst_Databases::safeDropTables(m_db, {m_tableName});
+    }
+    TableScope(const QSqlDatabase &db, const char *tableName, const char *file, bool escape = true)
+        : TableScope(db, qTableName(tableName, file, db, escape))
+    {
+    }
+
+    ~TableScope()
+    {
+        tst_Databases::safeDropTables(m_db, {m_tableName});
+    }
+
+    QString tableName() const
+    {
+        return m_tableName;
+    }
+private:
+    QSqlDatabase m_db;
+    QString m_tableName;
 };
 
 #endif

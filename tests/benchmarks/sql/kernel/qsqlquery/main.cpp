@@ -13,8 +13,7 @@ class tst_QSqlQuery : public QObject
     Q_OBJECT
 
 public:
-    tst_QSqlQuery();
-    virtual ~tst_QSqlQuery();
+    using QObject::QObject;
 
 public slots:
     void initTestCase();
@@ -40,20 +39,12 @@ private:
 
 QTEST_MAIN(tst_QSqlQuery)
 
-tst_QSqlQuery::tst_QSqlQuery()
-{
-}
-
-tst_QSqlQuery::~tst_QSqlQuery()
-{
-}
-
 void tst_QSqlQuery::initTestCase()
 {
     dbs.open();
 
-    for ( QStringList::ConstIterator it = dbs.dbNames.begin(); it != dbs.dbNames.end(); ++it ) {
-        QSqlDatabase db = QSqlDatabase::database(( *it ) );
+    for (const auto &dbName : std::as_const(dbs.dbNames)) {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
         CHECK_DATABASE( db );
         dropTestTables( db ); //in case of leftovers
         createTestTables( db );
@@ -63,8 +54,8 @@ void tst_QSqlQuery::initTestCase()
 
 void tst_QSqlQuery::cleanupTestCase()
 {
-    for ( QStringList::ConstIterator it = dbs.dbNames.begin(); it != dbs.dbNames.end(); ++it ) {
-        QSqlDatabase db = QSqlDatabase::database(( *it ) );
+    for (const auto &dbName : std::as_const(dbs.dbNames)) {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
         CHECK_DATABASE( db );
         dropTestTables( db );
     }
@@ -153,18 +144,17 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
     if (dbType == QSqlDriver::MSSqlServer || dbType == QSqlDriver::Oracle)
         tablenames << qTableName("qtest_longstr", __FILE__, db);
 
+    QSqlQuery q(db);
     if (dbType == QSqlDriver::MSSqlServer)
-        db.exec("DROP PROCEDURE " + qTableName("test141895_proc", __FILE__, db));
+        q.exec("DROP PROCEDURE " + qTableName("test141895_proc", __FILE__, db));
 
     if (dbType == QSqlDriver::MySqlServer)
-        db.exec("DROP PROCEDURE IF EXISTS "+qTableName("bug6852_proc", __FILE__, db));
+        q.exec("DROP PROCEDURE IF EXISTS "+qTableName("bug6852_proc", __FILE__, db));
 
     tst_Databases::safeDropTables( db, tablenames );
 
-    if (dbType == QSqlDriver::Oracle) {
-        QSqlQuery q( db );
+    if (dbType == QSqlDriver::Oracle)
         q.exec("DROP PACKAGE " + qTableName("pkg", __FILE__, db));
-    }
 }
 
 void tst_QSqlQuery::createTestTables( QSqlDatabase db )
@@ -214,11 +204,9 @@ void tst_QSqlQuery::benchmark()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     QSqlQuery q(db);
-    const QString tableName(qTableName("benchmark", __FILE__, db));
+    TableScope ts(db, "benchmark", __FILE__);
 
-    tst_Databases::safeDropTable( db, tableName );
-
-    QVERIFY_SQL(q, exec("CREATE TABLE "+tableName+"(\n"
+    QVERIFY_SQL(q, exec("CREATE TABLE " + ts.tableName() + "(\n"
                         "MainKey INT NOT NULL,\n"
                         "OtherTextCol VARCHAR(45) NOT NULL,\n"
                         "PRIMARY KEY(`MainKey`))"));
@@ -226,11 +214,10 @@ void tst_QSqlQuery::benchmark()
     int i=1;
 
     QBENCHMARK {
-        QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" VALUES("+QString::number(i)+", \"Value"+QString::number(i)+"\")"));
+        const QString num = QString::number(i);
+        QVERIFY_SQL(q, exec("INSERT INTO " + ts.tableName() + " VALUES(" + num + ", \"Value" + num + "\")"));
         i++;
     }
-
-    tst_Databases::safeDropTable( db, tableName );
 }
 
 void tst_QSqlQuery::benchmarkSelectPrepared()
@@ -239,22 +226,20 @@ void tst_QSqlQuery::benchmarkSelectPrepared()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     QSqlQuery q(db);
-    const QString tableName(qTableName("benchmark", __FILE__, db));
+    TableScope ts(db, "benchmark", __FILE__);
 
-    tst_Databases::safeDropTable(db, tableName);
-
-    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + "(id INT NOT NULL)"));
+    QVERIFY_SQL(q, exec("CREATE TABLE " + ts.tableName() + "(id INT NOT NULL)"));
 
     const int NUM_ROWS = 1000;
     int expectedSum = 0;
-    QString fillQuery = "INSERT INTO " + tableName + " VALUES (0)";
+    QString fillQuery = "INSERT INTO " + ts.tableName() + " VALUES (0)";
     for (int i = 1; i < NUM_ROWS; ++i) {
         fillQuery += ", (" + QString::number(i) + QLatin1Char(')');
         expectedSum += i;
     }
     QVERIFY_SQL(q, exec(fillQuery));
 
-    QVERIFY_SQL(q, prepare("SELECT id FROM "+tableName));
+    QVERIFY_SQL(q, prepare("SELECT id FROM " + ts.tableName()));
     QBENCHMARK {
         QVERIFY_SQL(q, exec());
         int sum = 0;
@@ -264,8 +249,6 @@ void tst_QSqlQuery::benchmarkSelectPrepared()
 
         QCOMPARE(sum, expectedSum);
     }
-
-    tst_Databases::safeDropTable(db, tableName);
 }
 
 #include "main.moc"

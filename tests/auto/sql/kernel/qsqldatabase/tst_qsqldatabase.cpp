@@ -221,7 +221,7 @@ static int createFieldTable(const FieldDef fieldDefs[], QSqlDatabase db)
 {
     QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     const QString tableName = qTableName("qtestfields", __FILE__, db);
-    tst_Databases::safeDropTable(db, tableName);
+    tst_Databases::safeDropTables(db, {tableName});
     QSqlQuery q(db);
     // construct a create table statement consisting of all fieldtypes
     QString qs = "create table " + tableName;
@@ -1157,12 +1157,11 @@ void tst_QSqlDatabase::caseSensivity()
     }
 
     // Explicit test for case sensitive table creation without quoting
+    TableScope ts(db, "NoQuotes", __FILE__, false);
     QSqlQuery qry(db);
-    const auto noQuotesTable = qTableName("NoQuotes", __FILE__, db, false);
-    tst_Databases::safeDropTable(db, noQuotesTable);
-    QVERIFY_SQL(qry, exec("CREATE TABLE " + noQuotesTable + " (id INTEGER)"));
-    QVERIFY_SQL(qry, exec("INSERT INTO " + noQuotesTable + " VALUES(1)"));
-    QVERIFY_SQL(qry, exec("SELECT * FROM " + noQuotesTable));
+    QVERIFY_SQL(qry, exec("CREATE TABLE " + ts.tableName() + " (id INTEGER)"));
+    QVERIFY_SQL(qry, exec("INSERT INTO " + ts.tableName() + " VALUES(1)"));
+    QVERIFY_SQL(qry, exec("SELECT * FROM " + ts.tableName()));
     QVERIFY_SQL(qry, next());
     QCOMPARE(qry.value(0).toInt(), 1);
     // QMYSQLDriver::record() is using a mysql function instead of a query, so quoting
@@ -1172,7 +1171,7 @@ void tst_QSqlDatabase::caseSensivity()
         QVERIFY_SQL(qry, next());
         cs = qry.value(1).toInt() != 0;
     }
-    rec = db.record(cs ? noQuotesTable.toLower() : noQuotesTable);
+    rec = db.record(cs ? ts.tableName().toLower() : ts.tableName());
     QVERIFY(rec.count() > 0);
 }
 
@@ -1439,11 +1438,10 @@ void tst_QSqlDatabase::infinityAndNan()
        QSKIP("checking for infinity/nan currently only works for PostgreSQL");
 
     QSqlQuery q(db);
-    const QString tableName(qTableName("infititytest", __FILE__, db));
-    tst_Databases::safeDropTables(db, {tableName});
-    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id smallint, val double precision)").arg(tableName)));
+    TableScope ts(db, "infititytest", __FILE__);
+    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id smallint, val double precision)").arg(ts.tableName())));
 
-    QVERIFY_SQL(q, prepare(QString("INSERT INTO %1 VALUES (?, ?)").arg(tableName)));
+    QVERIFY_SQL(q, prepare(QString("INSERT INTO %1 VALUES (?, ?)").arg(ts.tableName())));
 
     q.bindValue(0, 1);
     q.bindValue(1, qQNaN());
@@ -1455,7 +1453,7 @@ void tst_QSqlDatabase::infinityAndNan()
     q.bindValue(1, -qInf());
     QVERIFY_SQL(q, exec());
 
-    QVERIFY_SQL(q, exec(QString("SELECT val FROM %1 ORDER BY id").arg(tableName)));
+    QVERIFY_SQL(q, exec(QString("SELECT val FROM %1 ORDER BY id").arg(ts.tableName())));
 
     QVERIFY_SQL(q, next());
     QVERIFY(qIsNaN(q.value(0).toDouble()));
@@ -2105,21 +2103,20 @@ void tst_QSqlDatabase::eventNotificationSQLite()
         QSKIP("QSQLITE specific test");
     CHECK_DATABASE(db);
 
-    const QString tableName(qTableName("sqlitnotifytest", __FILE__, db));
-    const auto noEscapeTableName(qTableName("sqlitnotifytest", __FILE__, db, false));
-    tst_Databases::safeDropTable(db, tableName);
+    TableScope ts(db, "sqlitnotifytest", __FILE__);
+    TableScope tsEscape(db, "sqlitnotifytest", __FILE__, false);
 
     QSqlDriver *driver = db.driver();
     QSignalSpy spy(driver, QOverload<const QString &, QSqlDriver::NotificationSource, const QVariant &>::of(&QSqlDriver::notification));
     QSqlQuery q(db);
-    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INTEGER, realVal REAL)"));
-    driver->subscribeToNotification(noEscapeTableName);
-    QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id, realVal) VALUES (1, 2.3)"));
+    QVERIFY_SQL(q, exec("CREATE TABLE " + ts.tableName() + " (id INTEGER, realVal REAL)"));
+    driver->subscribeToNotification(tsEscape.tableName());
+    QVERIFY_SQL(q, exec("INSERT INTO " + ts.tableName() + " (id, realVal) VALUES (1, 2.3)"));
     QTRY_COMPARE(spy.size(), 1);
     QList<QVariant> arguments = spy.takeFirst();
-    QCOMPARE(arguments.at(0).toString(), noEscapeTableName);
-    driver->unsubscribeFromNotification(noEscapeTableName);
-    QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id, realVal) VALUES (1, 2.3)"));
+    QCOMPARE(arguments.at(0).toString(), tsEscape.tableName());
+    driver->unsubscribeFromNotification(tsEscape.tableName());
+    QVERIFY_SQL(q, exec("INSERT INTO " + ts.tableName() + " (id, realVal) VALUES (1, 2.3)"));
     QTRY_COMPARE(spy.size(), 0);
 }
 
@@ -2288,13 +2285,12 @@ void tst_QSqlDatabase::sqlite_check_json1()
 
     QSqlQuery q(db);
     const QString json1("{\"id\":1}");
-    const QString tableName(qTableName("sqlite_check_json1", __FILE__, db));
-    tst_Databases::safeDropTable(db, tableName);
-    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1(text TEXT)").arg(tableName)));
-    QVERIFY_SQL(q, exec(QString("INSERT INTO %1 VALUES(json('%2'))").arg(tableName, json1)));
-    QVERIFY_SQL(q, prepare(QString("INSERT INTO %1 VALUES(?)").arg(tableName)));
+    TableScope ts(db, "sqlite_check_json1", __FILE__);
+    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1(text TEXT)").arg(ts.tableName())));
+    QVERIFY_SQL(q, exec(QString("INSERT INTO %1 VALUES(json('%2'))").arg(ts.tableName(), json1)));
+    QVERIFY_SQL(q, prepare(QString("INSERT INTO %1 VALUES(?)").arg(ts.tableName())));
     q.addBindValue("json('{\"id\":2}')");
-    QVERIFY_SQL(q, prepare(QString("SELECT * from %1 WHERE text = json('%2')").arg(tableName, json1)));
+    QVERIFY_SQL(q, prepare(QString("SELECT * from %1 WHERE text = json('%2')").arg(ts.tableName(), json1)));
     QVERIFY_SQL(q, exec());
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toString(), json1);

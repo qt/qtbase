@@ -1939,14 +1939,16 @@ void tst_QSqlTableModel::sqlite_attachedDatabase()
     attachedDb.setDatabaseName(db.databaseName()+QLatin1String("attached.dat"));
     QVERIFY_SQL(attachedDb, open());
     QSqlQuery q(attachedDb);
-    tst_Databases::safeDropTables(attachedDb, QStringList() << "atest" << "atest2");
+    TableScope ts(db, "atest", __FILE__);
+    TableScope tsAttached(attachedDb, "atest", __FILE__);
+    TableScope tsAttached2(attachedDb, "atest2", __FILE__);
+
     QVERIFY_SQL( q, exec("CREATE TABLE atest(id int, text varchar(20))"));
     QVERIFY_SQL( q, exec("CREATE TABLE atest2(id int, text varchar(20))"));
     QVERIFY_SQL( q, exec("INSERT INTO atest VALUES(1, 'attached-atest')"));
     QVERIFY_SQL( q, exec("INSERT INTO atest2 VALUES(2, 'attached-atest2')"));
 
     QSqlQuery q2(db);
-    tst_Databases::safeDropTable(db, "atest");
     QVERIFY_SQL(q2, exec("CREATE TABLE atest(id int, text varchar(20))"));
     QVERIFY_SQL(q2, exec("INSERT INTO atest VALUES(3, 'main')"));
     QVERIFY_SQL(q2, exec("ATTACH DATABASE \""+attachedDb.databaseName()+"\" as adb"));
@@ -2137,29 +2139,27 @@ void tst_QSqlTableModel::sqlite_selectFromIdentifierWithDot()
 {
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
+    TableScope fieldDot(db, "fieldDot", __FILE__);
+    TableScope tableDot(db, u'[' + qTableName("table.dot", __FILE__, db) + u']');
     CHECK_DATABASE(db);
     {
-        const auto fieldDot = qTableName("fieldDot", __FILE__, db);
-        tst_Databases::safeDropTable(db, fieldDot);
         QSqlQuery qry(db);
-        QVERIFY_SQL(qry, exec("create table " + fieldDot + " (id int primary key, "
+        QVERIFY_SQL(qry, exec("create table " + fieldDot.tableName() + " (id int primary key, "
                               "\"person.firstname\" varchar(20))"));
-        QVERIFY_SQL(qry, exec("insert into " + fieldDot + " values(1, 'Andy')"));
+        QVERIFY_SQL(qry, exec("insert into " + fieldDot.tableName() + " values(1, 'Andy')"));
         QSqlTableModel model(0, db);
-        model.setTable(fieldDot);
+        model.setTable(fieldDot.tableName());
         QVERIFY_SQL(model, select());
         QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
         QCOMPARE(model.data(model.index(0, 1)).toString(), QString("Andy"));
     }
-    const auto tableDot = QLatin1Char('[') + qTableName("table.dot", __FILE__, db) + QLatin1Char(']');
     {
-        tst_Databases::safeDropTable(db, tableDot);
         QSqlQuery qry(db);
-        QVERIFY_SQL(qry, exec("create table " + tableDot + " (id int primary key, "
+        QVERIFY_SQL(qry, exec("create table " + tableDot.tableName() + " (id int primary key, "
                               "\"person.firstname\" varchar(20))"));
-        QVERIFY_SQL(qry, exec("insert into " + tableDot + " values(1, 'Andy')"));
+        QVERIFY_SQL(qry, exec("insert into " + tableDot.tableName() + " values(1, 'Andy')"));
         QSqlTableModel model(0, db);
-        model.setTable(tableDot);
+        model.setTable(tableDot.tableName());
         QVERIFY_SQL(model, select());
         QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
         QCOMPARE(model.data(model.index(0, 1)).toString(), QString("Andy"));
@@ -2171,7 +2171,7 @@ void tst_QSqlTableModel::sqlite_selectFromIdentifierWithDot()
         QSqlQuery qry(attachedDb);
         QVERIFY_SQL(qry, exec(QString("attach '%1' AS 'attached'").arg(db.databaseName())));
         QSqlTableModel model(0, attachedDb);
-        model.setTable(QString("attached.%1").arg(tableDot));
+        model.setTable(QString("attached.%1").arg(tableDot.tableName()));
         QVERIFY_SQL(model, select());
         QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
         QCOMPARE(model.data(model.index(0, 1)).toString(), QString("Andy"));
