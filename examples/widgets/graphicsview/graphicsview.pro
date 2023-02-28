@@ -9,7 +9,6 @@ SUBDIRS       = \
               dragdroprobot \
               flowlayout \
               anchorlayout \
-              simpleanchorlayout \
-              weatheranchorlayout
+              simpleanchorlayout
 
 contains(DEFINES, QT_NO_CURSOR)|!qtConfig(draganddrop): SUBDIRS -= dragdroprobot
