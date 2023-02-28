@@ -37,15 +37,15 @@ int main(int argc, char *argv[])
     // Initialize user data
     QPushButton *germany = w.findChild<QPushButton *>("btnGermany");
     QObject::connect(germany, &QPushButton::clicked, [&] {
-        user.setCountry(BindableUser::Germany);
+        user.setCountry(BindableUser::Country::Germany);
     });
     QPushButton *finland = w.findChild<QPushButton *>("btnFinland");
     QObject::connect(finland, &QPushButton::clicked, [&] {
-        user.setCountry(BindableUser::Finland);
+        user.setCountry(BindableUser::Country::Finland);
     });
     QPushButton *norway = w.findChild<QPushButton *>("btnNorway");
     QObject::connect(norway, &QPushButton::clicked, [&] {
-        user.setCountry(BindableUser::Norway);
+        user.setCountry(BindableUser::Country::Norway);
     });
 
     QSpinBox *ageSpinBox = w.findChild<QSpinBox *>("ageSpinBox");
@@ -58,7 +58,8 @@ int main(int argc, char *argv[])
     // Track price changes
 //! [update-ui]
     auto priceChangeHandler = subscription.bindablePrice().subscribe([&] {
-        priceDisplay->setText(QString::number(subscription.price()));
+        QLocale lc{QLocale::AnyLanguage, user.country()};
+        priceDisplay->setText(lc.toCurrencyString(subscription.price() / subscription.duration()));
     });
 
     auto priceValidHandler = subscription.bindableIsValid().subscribe([&] {

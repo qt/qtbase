@@ -4,6 +4,7 @@
 #ifndef USER_H
 #define USER_H
 
+#include <QLocale>
 #include <QObject>
 
 //! [user-class]
@@ -13,13 +14,9 @@ class User : public QObject
     Q_OBJECT
 
 public:
-    enum Country {
-        None,
-        Finland,
-        Germany,
-        Norway,
-    };
+    using Country = QLocale::Territory;
 
+public:
     Country country() const { return m_country; }
     void setCountry(Country country);
 
@@ -31,8 +28,8 @@ signals:
     void ageChanged();
 
 private:
-    Country m_country = Country::None;
-    int m_age = 0;
+    Country m_country { QLocale::AnyTerritory };
+    int m_age { 0 };
 };
 
 //! [user-class]
