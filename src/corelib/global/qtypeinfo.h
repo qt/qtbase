@@ -97,6 +97,11 @@ public:
     [[deprecated("Use std::is_pointer instead")]] static constexpr bool isPointer = false;
     [[deprecated("Use std::is_integral instead")]] static constexpr bool isIntegral = false;
     static constexpr bool isValueInitializationBitwiseZero = false;
+    static_assert(!isRelocatable ||
+                  std::is_copy_constructible_v<T> ||
+                  std::is_move_constructible_v<T>,
+                  "All Ts... are Q_RELOCATABLE_TYPE, but T is neither copy- nor move-constructible, "
+                  "so cannot be Q_RELOCATABLE_TYPE. Please mark T as Q_COMPLEX_TYPE manually.");
 };
 
 // QTypeInfo for std::pair:
@@ -158,6 +163,10 @@ public: \
         isIntegral [[deprecated("Use std::is_integral instead")]] = std::is_integral< TYPE >::value, \
         isValueInitializationBitwiseZero = QtPrivate::qIsValueInitializationBitwiseZero<TYPE>, \
     }; \
+    static_assert(!isRelocatable || \
+                  std::is_copy_constructible_v<TYPE > || \
+                  std::is_move_constructible_v<TYPE >, \
+                  #TYPE " is neither copy- nor move-constructible, so cannot be Q_RELOCATABLE_TYPE"); \
 }
 
 #define Q_DECLARE_TYPEINFO(TYPE, FLAGS) \

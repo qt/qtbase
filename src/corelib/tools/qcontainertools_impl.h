@@ -72,6 +72,8 @@ template <typename T, typename N>
 void q_uninitialized_relocate_n(T* first, N n, T* out)
 {
     if constexpr (QTypeInfo<T>::isRelocatable) {
+        static_assert(std::is_copy_constructible_v<T> || std::is_move_constructible_v<T>,
+                      "Refusing to relocate this non-copy/non-move-constructible type.");
         if (n != N(0)) { // even if N == 0, out == nullptr or first == nullptr are UB for memcpy()
             std::memcpy(static_cast<void *>(out),
                         static_cast<const void *>(first),
