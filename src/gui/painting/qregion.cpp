@@ -3191,8 +3191,7 @@ static void CreateETandAET(int count, const QPoint *pts,
     int iSLLBlock = 0;
     int dy;
 
-    if (count < 2)
-        return;
+    Q_ASSERT(count > 1);
 
     /*
      *  initialize the Active Edge Table
@@ -3538,7 +3537,7 @@ static QRegionPrivate *PolygonRegion(const QPoint *Pts, int Count, int rule)
     POINTBLOCK *tmpPtBlock;
     int numFullPtBlocks = 0;
 
-    Q_ASSUME(Count > 1);
+    Q_ASSERT(Count > 1);
 
     region = new QRegionPrivate;
 
