@@ -1,15 +1,44 @@
-// Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
     \example wordcount
-    \title QtConcurrent Word Count Example
-    \brief Demonstrates how to use the map-reduce algorithm.
+    \meta tags {threads, console}
+    \title Word Count
     \ingroup qtconcurrentexamples
+    \brief Demonstrates how to use the map-reduce algorithm.
 
-    The QtConcurrent Word Count example demonstrates the use of the map-reduce
-    algorithm when applied to the problem of counting words in a collection
-    of files.
+    The Qt Concurrent \e {Word Count} example demonstrates the use of the
+    map-reduce algorithm when applied to the problem of counting words in a
+    collection of files.
 
-    This is a command-line application.
+    First, the Application starts a QFileDialog to select a starting
+    path, and then prints the output to the console.
+
+    \include examples-run.qdocinc
+
+    \section1 Comparing the operations
+
+    Compare a single-threaded, sequential approach to counting the words in
+    the text files to a multithreaded approach with mappedReduced():
+
+    \dots
+    \snippet wordcount/main.cpp 1
+    \dots
+    \snippet wordcount/main.cpp 2
+    \dots
+
+    The first argument to the \l {QtConcurrent::}{mappedReduced} function is the
+    container to operate on. The second argument is the mapping function
+    \c {countWords()}. It is called in parallel by multiple threads. The
+    third argument is the reducing function \c {reduce()}. It is called
+    once for each result returned by the mapping function, and generates the
+    final computation result.
+
+    The function returns a QFuture object of type \c WordCount. Call the
+    \l {QFuture::}{result} function immediately on this QFuture to block further
+    execution until the result becomes available.
+
+    \note The mapping function must be thread-safe since it is called from
+    multiple threads.
 */
