@@ -1574,7 +1574,7 @@ std::function<void(void)> QProcess::childProcessModifier() const
     Sets the \a modifier function for the child process, for Unix systems
     (including \macos; for Windows, see setCreateProcessArgumentsModifier()).
     The function contained by the \a modifier argument will be invoked in the
-    child process after \c{fork()} is completed and QProcess has set up the
+    child process after \c{fork()} or \c{vfork()} is completed and QProcess has set up the
     standard file descriptors for the child process, but before \c{execve()},
     inside start(). The modifier is useful to change certain properties of the
     child process, such as setting up additional file descriptors or closing
@@ -1594,6 +1594,15 @@ std::function<void(void)> QProcess::childProcessModifier() const
     other threads (in general, using only functions defined by POSIX as
     "async-signal-safe" is advised). Most of the Qt API is unsafe inside this
     callback, including qDebug(), and may lead to deadlocks.
+
+    \note On some systems (notably, Linux), QProcess will use \c{vfork()}
+    semantics to start the child process, so this function must obey even
+    stricter constraints. First, because it is still sharing memory with the
+    parent process, it must not write to any non-local variable and must obey
+    proper ordering semantics when reading from them, to avoid data races.
+    Second, even more library functions may misbehave; therefore, this function
+    should only make use of low-level system calls, such as \c{read()},
+    \c{write()}, \c{setsid()}, \c{nice()}, and similar.
 
     \sa childProcessModifier()
 */
