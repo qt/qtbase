@@ -3,15 +3,17 @@
 
 /*!
     \example imagescaling
-    \title Image Scaling Example
-    \brief Demonstrates how to asynchronously download and scale images.
+    \meta tags {widgets, threads, network}
+    \title Image Scaling
     \ingroup qtconcurrentexamples
-    \image imagescaling_example.png
+    \brief Demonstrates how to asynchronously download and scale images.
 
     This example shows how to use the QFuture and QPromise classes to download a
     collection of images from the network and scale them, without blocking the UI.
 
-    The application consists of the the following steps:
+    \image imagescaling.webp
+
+    The application consists of the following steps:
 
     \list 1
     \li Download images form the list of URLs specified by the user.
@@ -148,4 +150,6 @@
 
     The rest of the code is straightforward, you can check the example project for
     more details.
+
+    \include examples-run.qdocinc
 */
