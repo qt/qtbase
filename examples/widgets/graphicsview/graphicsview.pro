@@ -8,7 +8,6 @@ SUBDIRS       = \
               diagramscene \
               dragdroprobot \
               flowlayout \
-              anchorlayout \
               simpleanchorlayout
 
 contains(DEFINES, QT_NO_CURSOR)|!qtConfig(draganddrop): SUBDIRS -= dragdroprobot
