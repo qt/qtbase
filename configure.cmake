@@ -204,51 +204,6 @@ endif()
 # machineTuple
 qt_config_compile_test_machine_tuple("machine tuple")
 
-# cxx14
-qt_config_compile_test(cxx14
-    LABEL "C++14 support"
-    CODE
-"#if __cplusplus > 201103L
-// Compiler claims to support C++14, trust it
-#else
-#  error __cplusplus must be > 201103L (the value of C++11)
-#endif
-
-int main(void)
-{
-    /* BEGIN TEST: */
-    /* END TEST: */
-    return 0;
-}
-"
-    CXX_STANDARD 14
-)
-
-# cxx17
-qt_config_compile_test(cxx17
-    LABEL "C++17 support"
-    CODE
-"#if __cplusplus > 201402L
-// Compiler claims to support C++17, trust it
-#else
-#  error __cplusplus must be > 201402L (the value for C++14)
-#endif
-#include <map>  // https://bugs.llvm.org//show_bug.cgi?id=33117
-#include <variant>
-
-int main(void)
-{
-    /* BEGIN TEST: */
-std::variant<int> v(42);
-int i = std::get<int>(v);
-std::visit([](const auto &) { return 1; }, v);
-    /* END TEST: */
-    return 0;
-}
-"
-    CXX_STANDARD 17
-)
-
 # cxx20
 qt_config_compile_test(cxx20
     LABEL "C++20 support"
@@ -660,29 +615,10 @@ qt_feature_config("plugin-manifests" QMAKE_PUBLIC_CONFIG
     NEGATE
     NAME "no_plugin_manifest"
 )
-qt_feature("c++11" PUBLIC
-    LABEL "C++11"
-)
-qt_feature_config("c++11" QMAKE_PUBLIC_QT_CONFIG)
-qt_feature("c++14" PUBLIC
-    LABEL "C++14"
-    CONDITION QT_FEATURE_cxx11 AND TEST_cxx14
-)
-qt_feature_config("c++14" QMAKE_PUBLIC_QT_CONFIG)
-qt_feature("c++17" PUBLIC
-    LABEL "C++17"
-    CONDITION QT_FEATURE_cxx14 AND TEST_cxx17
-)
-qt_feature_config("c++17" QMAKE_PUBLIC_QT_CONFIG)
-qt_feature("c++1z" PUBLIC
-    LABEL "C++17"
-    CONDITION QT_FEATURE_cxx17
-)
-qt_feature_config("c++1z" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("c++20" PUBLIC
     LABEL "C++20"
     AUTODETECT OFF
-    CONDITION QT_FEATURE_cxx17 AND TEST_cxx20
+    CONDITION TEST_cxx20
 )
 qt_feature_config("c++20" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("c++2a" PUBLIC
@@ -699,17 +635,6 @@ qt_feature("c++2b" PUBLIC
     LABEL "C++2b"
     AUTODETECT FALSE
     CONDITION QT_FEATURE_cxx20 AND (CMAKE_VERSION VERSION_GREATER_EQUAL "3.20") AND TEST_cxx2b
-)
-qt_feature("c89"
-    LABEL "C89"
-)
-qt_feature("c99" PUBLIC
-    LABEL "C99"
-    CONDITION c_std_99 IN_LIST CMAKE_C_COMPILE_FEATURES
-)
-qt_feature("c11" PUBLIC
-    LABEL "C11"
-    CONDITION QT_FEATURE_c99 AND c_std_11 IN_LIST CMAKE_C_COMPILE_FEATURES
 )
 qt_feature("precompile_header"
     LABEL "Using precompiled headers"
@@ -1142,16 +1067,6 @@ qt_configure_add_summary_entry(
 )
 # special case end
 qt_configure_add_summary_entry(ARGS "shared")
-qt_configure_add_summary_entry(
-    TYPE "firstAvailableFeature"
-    ARGS "c11 c99 c89"
-    MESSAGE "Using C standard"
-)
-qt_configure_add_summary_entry(
-    TYPE "firstAvailableFeature"
-    ARGS "c++2b c++20 c++17 c++14 c++11"
-    MESSAGE "Using C++ standard"
-)
 qt_configure_add_summary_entry(
     ARGS "ccache"
     CONDITION UNIX

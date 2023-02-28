@@ -2,6 +2,9 @@
 # due to required Qt modules being missing.
 !isEmpty(QMAKE_FAILED_REQUIREMENTS): return()
 
+# hardcoded defaults
+QT_CONFIG *= c99 c11 c++11 c++14 c++1z c++17
+
 qtConfig(thread): CONFIG *= thread
 
 #handle defines
