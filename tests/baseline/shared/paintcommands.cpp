@@ -469,6 +469,20 @@ void PaintCommands::staticInit()
                       "^fillRectF\\s+(-?[.\\w]*)\\s+(-?[.\\w]*)\\s+(-?[.\\w]*)\\s+(-?[.\\w]*)\\s*(\\w*)?$",
                       "fillRectF <x> <y> <w> <h> [color]\n - Uses current brush if no color given",
                       "fillRectF 10.5 10.5 20.2 20.2 blue");
+    DECL_PAINTCOMMAND("drawPixmapFragments", command_drawPixmapFragments,
+                      "^drawPixmapFragments\\s+([\\w.:\\/]*)"
+                      "\\s+(-?\\w*)"
+                      "\\s+(-?[.\\w]*)\\s*(-?[.\\w]*)"
+                      "\\s+(-?[.\\w]*)\\s*(-?[.\\w]*)\\s*(-?[.\\w]*)\\s*(-?[.\\w]*)"
+                      "\\s+(-?[.\\w]*)\\s*(-?[.\\w]*)\\s*(-?[.\\w]*)\\s*(-?[.\\w]*)"
+                      "\\s*(-?[.\\w]*)?\\s*(-?[.\\w]*)?"
+                      "\\s*(-?[.\\w]*)?\\s*(-?[.\\w]*)?\\s*(-?[.\\w]*)?\\s*(-?[.\\w]*)?"
+                      "\\s*(-?[.\\w]*)?\\s*(-?[.\\w]*)\\s*(-?[.\\w]*)?\\s*(-?[.\\w]*)?$",
+                      "drawPixmapFragments <image filename> <count>"
+                      " <centerx0> <centery0> <x0> <y0> <w0> <h0> <sx0> <sy0> <r0> <o0>"
+                      " <centerx1> <centery1> <x1> <y1> <w1> ..."
+                      "\n  - where count is 1 or 2, and followed by centerPos, sourceRect, scaleX, scaleY, rotation, opacity <count> times",
+                      "drawPixmapFragments :/images/sign.png 1 50 50 10 10 60 60 10 10 30 1");
 
     DECL_PAINTCOMMANDSECTION("painterPaths");
     DECL_PAINTCOMMAND("path_moveTo", command_path_moveTo,
@@ -1450,6 +1464,93 @@ void PaintCommands::command_fillRectF(QRegularExpressionMatch re)
             printf(" -(lance) fillRectF(%.2f, %.2f, %.2f, %.2f)\n", x, y, w, h);
         m_painter->fillRect(QRectF(x, y, w, h), m_painter->brush());
     }
+}
+
+void PaintCommands::command_drawPixmapFragments(QRegularExpressionMatch re)
+{
+    QPixmap pm;
+    pm = m_pixmapMap[re.captured(1)]; // try cache first
+    if (pm.isNull())
+        pm = image_load<QPixmap>(re.captured(1));
+    if (pm.isNull()) {
+        QFileInfo fi(m_filepath);
+        QDir dir = fi.absoluteDir();
+        dir.cdUp();
+        dir.cd("images");
+        QString fileName = dir.absolutePath() + QLatin1Char('/') + re.captured(1);
+        pm = QPixmap(fileName);
+        if (pm.isNull() && !fileName.endsWith(".png")) {
+            fileName.append(".png");
+            pm = QPixmap(fileName);
+        }
+    }
+    if (pm.isNull()) {
+        fprintf(stderr, "ERROR(drawPixmapFragments): failed to load pixmap: '%s'\n",
+                qPrintable(re.captured(1)));
+        return;
+    }
+
+    int count = convertToInt(re.captured(2));
+
+    struct Fragment {
+        double posx;
+        double posy;
+        double srcx;
+        double srcy;
+        double srcw;
+        double srch;
+        double sx;
+        double sy;
+        double rotation;
+        double opacity;
+    };
+
+    QList<Fragment> fragments;
+    for (int i = 0; i < count; ++i) {
+        int captureIndexStart = 3 + i * 10;
+        if (re.hasCaptured(captureIndexStart)) {
+            Fragment f;
+            f.posx = convertToDouble(re.captured(captureIndexStart));
+            f.posy = convertToDouble(re.captured(captureIndexStart + 1));
+            f.srcx = convertToDouble(re.captured(captureIndexStart + 2));
+            f.srcx = convertToDouble(re.captured(captureIndexStart + 3));
+            f.srcw = convertToDouble(re.captured(captureIndexStart + 4));
+            f.srch = convertToDouble(re.captured(captureIndexStart + 5));
+            f.sx = convertToDouble(re.captured(captureIndexStart + 6));
+            f.sy = convertToDouble(re.captured(captureIndexStart + 7));
+            f.rotation = convertToDouble(re.captured(captureIndexStart + 8));
+            f.opacity = convertToDouble(re.captured(captureIndexStart + 9));
+            fragments.append(f);
+        } else {
+            break;
+        }
+    }
+
+    if (m_verboseMode) {
+        printf(" -(lance) drawPixmapFragments('%s' count=%d ",
+               qPrintable(re.captured(1)), int(fragments.count()));
+        for (int i = 0; i < fragments.count(); ++i) {
+            printf("pos=(%.2f, %.2f) srcrect=(%.2f %.2f %.2f %.2f) scale=(%.2f %.2f) rotation=%.2f opacity=%.2f ",
+                   fragments[i].posx, fragments[i].posy,
+                   fragments[i].srcx, fragments[i].srcy, fragments[i].srcw, fragments[i].srch,
+                   fragments[i].sx, fragments[i].sy,
+                   fragments[i].rotation,
+                   fragments[i].opacity);
+        }
+        printf("\n");
+    }
+
+    QList<QPainter::PixmapFragment> pixmapFragments;
+    for (int i = 0; i < fragments.count(); ++i) {
+        pixmapFragments.append(
+                    QPainter::PixmapFragment::create(QPointF(fragments[i].posx, fragments[i].posy),
+                                                     QRectF(fragments[i].srcx, fragments[i].srcy, fragments[i].srcw, fragments[i].srch),
+                                                     fragments[i].sx, fragments[i].sy,
+                                                     fragments[i].rotation,
+                                                     fragments[i].opacity));
+    }
+
+    m_painter->drawPixmapFragments(pixmapFragments.constData(), pixmapFragments.count(), pm);
 }
 
 /***************************************************************************************************/

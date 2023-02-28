@@ -183,6 +183,7 @@ private:
     void command_drawTiledPixmap(QRegularExpressionMatch re);
     void command_fillRect(QRegularExpressionMatch re);
     void command_fillRectF(QRegularExpressionMatch re);
+    void command_drawPixmapFragments(QRegularExpressionMatch re);
 
     // paths
     void command_path_addEllipse(QRegularExpressionMatch re);
