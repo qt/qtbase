@@ -4,14 +4,12 @@
 #include "downloaddialog.h"
 
 #include <QNetworkReply>
-
-#include <qmath.h>
+#include <QtMath>
 
 #include <functional>
 
 Images::Images(QWidget *parent) : QWidget(parent), downloadDialog(new DownloadDialog())
 {
-    setWindowTitle(tr("Image downloading and scaling example"));
     resize(800, 600);
 
     addUrlsButton = new QPushButton(tr("Add URLs"));
@@ -90,7 +88,7 @@ void Images::process()
                     // Abort all pending requests
                     abortDownload();
                 })
-                .onFailed([this](const std::exception& ex) {
+                .onFailed([this](const std::exception &ex) {
                     updateStatus(tr(ex.what()));
                 });
 //! [6]
@@ -117,7 +115,7 @@ QFuture<QByteArray> Images::download(const QList<QUrl> &urls)
 //! [9]
 
 //! [10]
-    for (auto url : urls) {
+    for (const auto &url : urls) {
         QSharedPointer<QNetworkReply> reply(qnam.get(QNetworkRequest(url)));
         replies.push_back(reply);
 //! [10]
@@ -142,10 +140,10 @@ QFuture<QByteArray> Images::download(const QList<QUrl> &urls)
                 promise->finish();
             }
 //! [12]
-        }).onFailed([=] (QNetworkReply::NetworkError error) {
+        }).onFailed([promise] (QNetworkReply::NetworkError error) {
             promise->setException(std::make_exception_ptr(error));
             promise->finish();
-        }).onFailed([=] {
+        }).onFailed([promise] {
             const auto ex = std::make_exception_ptr(
                         std::runtime_error("Unknown error occurred while downloading."));
             promise->setException(ex);
@@ -164,7 +162,7 @@ QList<QImage> Images::scaled() const
 {
     QList<QImage> scaled;
     const auto data = downloadFuture.results();
-    for (auto imgData : data) {
+    for (const auto &imgData : data) {
         QImage image;
         image.loadFromData(imgData);
         if (image.isNull())
