@@ -94,6 +94,6 @@
     optimization, you can use QBasicTimer instead of QTimer. With
     QBasicTimer, you must reimplement
     \l{QObject::timerEvent()}{timerEvent()} in your QObject subclass
-    and handle the timeout there. The \l{widgets/wiggly}{Wiggly}
+    and handle the timeout there. The \l{widgets/tetrix}{Tetrix}
     example shows how to use QBasicTimer.
 */
