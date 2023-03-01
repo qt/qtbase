@@ -10602,7 +10602,7 @@ void QWidget::setParent(QWidget *parent)
     setParent((QWidget*)parent, windowFlags() & ~Qt::WindowType_Mask);
 }
 
-static void sendWindowChangeToTextureChildrenRecursively(QWidget *widget, QEvent::Type eventType)
+void qSendWindowChangeToTextureChildrenRecursively(QWidget *widget, QEvent::Type eventType)
 {
     QWidgetPrivate *d = QWidgetPrivate::get(widget);
     if (d->renderToTexture) {
@@ -10613,7 +10613,7 @@ static void sendWindowChangeToTextureChildrenRecursively(QWidget *widget, QEvent
     for (int i = 0; i < d->children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(d->children.at(i));
         if (w && !w->isWindow() && QWidgetPrivate::get(w)->textureChildSeen)
-            sendWindowChangeToTextureChildrenRecursively(w, eventType);
+            qSendWindowChangeToTextureChildrenRecursively(w, eventType);
     }
 }
 
@@ -10675,7 +10675,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     // texture-based widgets need a pre-notification when their associated top-level window changes
     // This is not under the wasCreated/newParent conditions above in order to also play nice with QDockWidget.
     if (d->textureChildSeen && ((!parent && parentWidget()) || (parent && parent->window() != oldtlw)))
-        sendWindowChangeToTextureChildrenRecursively(this, QEvent::WindowAboutToChangeInternal);
+        qSendWindowChangeToTextureChildrenRecursively(this, QEvent::WindowAboutToChangeInternal);
 
     // If we get parented into another window, children will be folded
     // into the new parent's focus chain, so clear focus now.
@@ -10756,7 +10756,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     // texture-based widgets need another event when their top-level window
     // changes (more precisely, has already changed at this point)
     if (d->textureChildSeen && oldtlw != window())
-        sendWindowChangeToTextureChildrenRecursively(this, QEvent::WindowChangeInternal);
+        qSendWindowChangeToTextureChildrenRecursively(this, QEvent::WindowChangeInternal);
 
     if (!wasCreated) {
         if (isWindow() || parentWidget()->isVisible())

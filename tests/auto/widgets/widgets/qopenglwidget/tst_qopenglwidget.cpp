@@ -4,6 +4,7 @@
 #include <QtOpenGLWidgets/QOpenGLWidget>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QPainter>
+#include <QtGui/QBackingStore>
 #include <QtGui/QScreen>
 #include <QtGui/QStaticText>
 #include <QtWidgets/QGraphicsView>
@@ -21,7 +22,10 @@
 #include <private/qopengltextureglyphcache_p.h>
 #include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
+#include <qpa/qplatformbackingstore.h>
 #include <qpa/qplatformintegration.h>
+#include <private/qrhi_p.h>
+#include <private/qrhigles2_p.h>
 
 class tst_QOpenGLWidget : public QObject
 {
@@ -33,6 +37,9 @@ private slots:
     void clearAndGrab();
     void clearAndResizeAndGrab();
     void createNonTopLevel();
+#if QT_CONFIG(egl)
+    void deviceLoss();
+#endif
     void painter();
     void reparentToAlreadyCreated();
     void reparentToNotYetCreated();
@@ -188,6 +195,45 @@ void tst_QOpenGLWidget::createNonTopLevel()
     glw->makeCurrent();
     QVERIFY(QOpenGLContext::currentContext() == glw->context() && glw->context());
 }
+
+#if QT_CONFIG(egl)
+void tst_QOpenGLWidget::deviceLoss()
+{
+    QScopedPointer<QOpenGLWidget> w(new ClearWidget(0, 640, 480));
+
+    w->resize(640, 480);
+    w->show();
+
+    auto rhi = w->backingStore()->handle()->rhi();
+    QNativeInterface::QEGLContext *rhiContext = nullptr;
+    if (rhi->backend() == QRhi::OpenGLES2) {
+        auto rhiHandles = static_cast<const QRhiGles2NativeHandles *>(rhi->nativeHandles());
+        rhiContext = rhiHandles->context->nativeInterface<QNativeInterface::QEGLContext>();
+    }
+    if (!rhiContext)
+        QSKIP("deviceLoss needs EGL");
+
+    QVERIFY(QTest::qWaitForWindowExposed(w.data()));
+
+    QImage image = w->grabFramebuffer();
+    QVERIFY(!image.isNull());
+    QCOMPARE(image.width(), w->width());
+    QCOMPARE(image.height(), w->height());
+    QVERIFY(image.pixel(30, 40) == qRgb(255, 0, 0));
+
+    rhiContext->invalidateContext();
+
+    w->resize(600, 600);
+    QSignalSpy frameSwappedSpy(w.get(), &QOpenGLWidget::resized);
+    QTRY_VERIFY(frameSwappedSpy.size() > 0);
+
+    image = w->grabFramebuffer();
+    QVERIFY(!image.isNull());
+    QCOMPARE(image.width(), w->width());
+    QCOMPARE(image.height(), w->height());
+    QVERIFY(image.pixel(30, 40) == qRgb(255, 0, 0));
+}
+#endif
 
 class PainterWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
