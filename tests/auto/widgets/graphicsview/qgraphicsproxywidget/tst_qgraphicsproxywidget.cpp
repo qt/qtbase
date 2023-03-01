@@ -3556,8 +3556,9 @@ void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
     QCOMPARE(embeddedWidget->mapFromGlobal(embeddedCenterGlobal), embeddedCenter);
     // This should be equivalent to the view center give or take rounding
     // errors due to odd window margins
+    const int Tolerance = qCeil(4 * view.devicePixelRatio());
     const QPoint viewCenter = view.geometry().center();
-    QVERIFY2((viewCenter - embeddedCenterGlobal).manhattanLength() <= 3,
+    QVERIFY2((viewCenter - embeddedCenterGlobal).manhattanLength() <= Tolerance,
              msgPointMismatch(embeddedCenterGlobal, viewCenter).constData());
 
     // Same test with child centered on embeddedWidget. Also make sure
@@ -3567,7 +3568,7 @@ void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
     const QPoint childCenter = childWidget->rect().center();
     const QPoint childCenterGlobal = childWidget->mapToGlobal(childCenter);
     QCOMPARE(childWidget->mapFromGlobal(childCenterGlobal), childCenter);
-    QVERIFY2((viewCenter - childCenterGlobal).manhattanLength() <= 4,
+    QVERIFY2((viewCenter - childCenterGlobal).manhattanLength() <= Tolerance,
              msgPointMismatch(childCenterGlobal, viewCenter).constData());
 }
 

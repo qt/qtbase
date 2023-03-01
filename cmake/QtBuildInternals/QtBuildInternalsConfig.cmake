@@ -281,15 +281,17 @@ function(qt_build_internals_add_toplevel_targets)
             set(qt_repo_target_name "${qt_repo_targets_name}_${qt_repo_target_basename}")
             message(DEBUG "${qt_repo_target_name} depends on ${qt_repo_targets}")
             add_custom_target("${qt_repo_target_name}"
-                                DEPENDS ${qt_repo_targets}
-                                COMMENT "Building everything in ${qt_repo_targets_name}/${qt_repo_target_basename}")
+                COMMENT "Building everything in ${qt_repo_targets_name}/${qt_repo_target_basename}")
+            add_dependencies("${qt_repo_target_name}" ${qt_repo_targets})
             list(APPEND qt_repo_target_all "${qt_repo_target_name}")
         endif()
     endforeach()
     if (qt_repo_target_all)
+        # Note qt_repo_targets_name is different from qt_repo_target_name that is used above.
         add_custom_target("${qt_repo_targets_name}"
-                            DEPENDS ${qt_repo_target_all}
                             COMMENT "Building everything in ${qt_repo_targets_name}")
+        add_dependencies("${qt_repo_targets_name}" ${qt_repo_target_all})
+        message(DEBUG "${qt_repo_targets_name} depends on ${qt_repo_target_all}")
     endif()
 endfunction()
 
@@ -709,7 +711,7 @@ endfunction()
 # Mean to be called when configuring examples as part of the main build tree, as well as for CMake
 # tests (tests that call CMake to try and build CMake applications).
 macro(qt_internal_set_up_build_dir_package_paths)
-    list(APPEND CMAKE_PREFIX_PATH "${QT_BUILD_DIR}")
+    list(PREPEND CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
     # Make sure the CMake config files do not recreate the already-existing targets
     set(QT_NO_CREATE_TARGETS TRUE)
 endmacro()
@@ -791,15 +793,15 @@ macro(qt_examples_build_begin)
 
     # Examples that are built as part of the Qt build need to use the CMake config files from the
     # build dir, because they are not installed yet in a prefix build.
-    # Appending to CMAKE_PREFIX_PATH helps find the initial Qt6Config.cmake.
-    # Appending to QT_EXAMPLES_CMAKE_PREFIX_PATH helps find components of Qt6, because those
+    # Prepending to CMAKE_PREFIX_PATH helps find the initial Qt6Config.cmake.
+    # Prepending to QT_EXAMPLES_CMAKE_PREFIX_PATH helps find components of Qt6, because those
     # find_package calls use NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH is ignored.
-    # Appending to CMAKE_FIND_ROOT_PATH ensures the components are found while cross-compiling
+    # Prepending to CMAKE_FIND_ROOT_PATH ensures the components are found while cross-compiling
     # without setting CMAKE_FIND_ROOT_PATH_MODE_PACKAGE to BOTH.
     if(NOT QT_IS_EXTERNAL_EXAMPLES_BUILD OR NOT __qt_all_examples_ported_to_external_projects)
         qt_internal_set_up_build_dir_package_paths()
-        list(APPEND CMAKE_FIND_ROOT_PATH "${QT_BUILD_DIR}")
-        list(APPEND QT_EXAMPLES_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
+        list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_BUILD_DIR}")
+        list(PREPEND QT_EXAMPLES_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
     endif()
 
     # Because CMAKE_INSTALL_RPATH is empty by default in the repo project, examples need to have
@@ -1015,6 +1017,41 @@ function(qt_internal_add_example_external_project subdir)
             endforeach()
         endforeach()
     endif()
+
+    # When cross-compiling for a qemu target in our CI, we source an environment script
+    # that sets environment variables like CC and CXX. These are parsed by CMake on initial
+    # configuration to populate the cache vars CMAKE_${lang}_COMPILER.
+    # If the environment variable specified not only the compiler path, but also a list of flags
+    # to pass to the compiler, CMake parses those out into a separate CMAKE_${lang}_COMPILER_ARG1
+    # cache variable. In such a case, we want to ensure that the external project also sees those
+    # flags.
+    # Unfortunately we can't do that by simply forwarding CMAKE_${lang}_COMPILER_ARG1 to the EP
+    # because it breaks the compiler identification try_compile call, it simply doesn't consider
+    # the cache var. From what I could gather, it's a limitation of try_compile and the list
+    # of variables it considers for forwarding.
+    # To fix this case, we ensure not to pass either cache variable, and let the external project
+    # and its compiler identification try_compile project pick up the compiler and the flags
+    # from the environment variables instead.
+    foreach(lang_as_env_var CC CXX OBJC OBJCXX)
+        if(lang_as_env_var STREQUAL "CC")
+            set(lang_as_cache_var "C")
+        else()
+            set(lang_as_cache_var "${lang_as_env_var}")
+        endif()
+        set(lang_env_value "$ENV{${lang_as_env_var}}")
+        if(lang_env_value
+                AND CMAKE_${lang_as_cache_var}_COMPILER
+                AND CMAKE_${lang_as_cache_var}_COMPILER_ARG1)
+            # The compiler environment variable is set and specifies a list of extra flags, don't
+            # forward the compiler cache vars and rely on the environment variable to be picked up
+            # instead.
+        else()
+            list(APPEND vars_to_pass_if_defined "CMAKE_${lang_as_cache_var}_COMPILER:STRING")
+        endif()
+    endforeach()
+    unset(lang_as_env_var)
+    unset(lang_as_cache_var)
+    unset(lang_env_value)
 
     list(APPEND vars_to_pass_if_defined
         CMAKE_BUILD_TYPE:STRING

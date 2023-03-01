@@ -223,11 +223,13 @@ public:
 
     inline bool shouldThrottle()
     {
+        std::lock_guard<QMutex> locker(mutex);
         return (resultsMapSize > (ReduceQueueThrottleLimit * threadCount));
     }
 
     inline bool shouldStartThread()
     {
+        std::lock_guard<QMutex> locker(mutex);
         return (resultsMapSize <= (ReduceQueueStartLimit * threadCount));
     }
 };

@@ -92,7 +92,8 @@ QComboBoxPrivate::QComboBoxPrivate()
       shownOnce(false),
       duplicatesEnabled(false),
       frame(true),
-      inserting(false)
+      inserting(false),
+      hidingPopup(false)
 {
 }
 
@@ -2841,6 +2842,13 @@ void QComboBox::showPopup()
 void QComboBox::hidePopup()
 {
     Q_D(QComboBox);
+    if (d->hidingPopup)
+        return;
+    d->hidingPopup = true;
+    // can't use QBoolBlocker on a bitfield
+    auto resetHidingPopup = qScopeGuard([d]{
+        d->hidingPopup = false;
+    });
     if (d->container && d->container->isVisible()) {
 #if QT_CONFIG(effects)
         QSignalBlocker modelBlocker(d->model);

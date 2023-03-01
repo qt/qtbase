@@ -77,8 +77,7 @@
         if (m_fileDialog->options()->fileMode() == QFileDialogOptions::ExistingFiles)
             self.allowsMultipleSelection = YES;
 
-        if (@available(ios 13.0, *))
-            self.directoryURL = m_fileDialog->options()->initialDirectory().toNSURL();
+        self.directoryURL = m_fileDialog->options()->initialDirectory().toNSURL();
     }
     return self;
 }

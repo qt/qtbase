@@ -1219,6 +1219,58 @@ SCENARIO("Test output of the loggers is as expected")
     }
 }
 
+struct TestCase {
+    int expectedExitCode;
+    const char *cmdline;
+};
+
+SCENARIO("Exit code is as expected")
+{
+    // Listing of test command lines and expected exit codes
+    // NOTE: Use at least 2 spaces to separate arguments because some contain a space themselves.
+    const struct TestCase testCases[] = {
+    // 'pass' is a test with no data tags at all
+        { 0, "pass  testNumber1" },
+        { 1, "pass  unknownFunction" },
+        { 1, "pass  testNumber1:blah" },
+        { 1, "pass  testNumber1:blah:blue" },
+    // 'counting' is a test that has only local data tags
+        { 0, "counting  testPassPass" },
+        { 0, "counting  testPassPass:row 1" },
+        { 1, "counting  testPassPass:blah" },
+        { 1, "counting  testPassPass:blah:row 1" },
+        { 1, "counting  testPassPass:blah:blue" },
+    // 'globaldata' is a test with global and local data tags
+        { 0, "globaldata  testGlobal" },
+        { 0, "globaldata  testGlobal:global=true" },
+        { 0, "globaldata  testGlobal:local=true" },
+        { 0, "globaldata  testGlobal:global=true:local=true" },
+        { 1, "globaldata  testGlobal:local=true:global=true" },
+        { 1, "globaldata  testGlobal:global=true:blah" },
+        { 1, "globaldata  testGlobal:blah:local=true" },
+        { 1, "globaldata  testGlobal:blah:global=true" },
+        { 1, "globaldata  testGlobal:blah" },
+        { 1, "globaldata  testGlobal:blah:blue" },
+    // Passing multiple testcase:data on the command line
+        { 0, "globaldata  testGlobal:global=true  skipSingle:global=true:local=true" },
+        { 1, "globaldata  testGlobal:blah         skipSingle:global=true:local=true" },
+        { 1, "globaldata  testGlobal:global=true  skipSingle:blah" },
+        { 2, "globaldata  testGlobal:blah         skipSingle:blue" },
+    };
+
+    size_t n_testCases = sizeof(testCases) / sizeof(*testCases);
+    for (size_t i = 0; i < n_testCases; i++) {
+        GIVEN("The command line: " << testCases[i].cmdline) {
+            const QStringList cmdSplit = QString(testCases[i].cmdline)
+                    .split(QRegularExpression("  +"));    // at least 2 spaces
+            const QString test     = cmdSplit[0];
+            const QStringList args = cmdSplit.sliced(1);
+            auto runResult = runTestProcess(test, args);
+            REQUIRE(runResult.exitCode == testCases[i].expectedExitCode);
+        }
+    }
+}
+
 // ----------------------- Entrypoint -----------------------
 
 int main(int argc, char **argv)

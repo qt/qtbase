@@ -1849,8 +1849,32 @@
     \target QML_IMPORT_PATH
     \section1 QML_IMPORT_PATH
 
-    This variable is only used by \l{Qt Creator Manual}{Qt Creator}.
+    This variable is only used by \l{Qt Creator Manual}{Qt Creator}. If you have
+    an extra module that is kept outside of your Qt installation, you can
+    specify its path here.
+
     See \l{Qt Creator: Using QML Modules with Plugins} for details.
+
+    \target QMLPATHS
+    \section1 QMLPATHS
+
+    Expects a list of import paths that point to root directories of trees of
+    QML modules. For example, if you have a custom location for your QML
+    modules, you can specify it here.
+
+    \note The path entries for QMLPATHS point to root directories of trees of
+    QML modules. This is the concept of import paths the QML engine understands.
+    You can pass the same paths via the \c QML_IMPORT_PATH \e environment variable
+    to your QML application, but they are \e different from the expected contents
+    of the \l QML_IMPORT_PATH \e qmake variable. The latter expects paths to
+    \e individual modules to be processed by Qt Creator only.
+
+    \note The contents of QMLPATHS are \e not automatically passed to your
+    application. Rather, they are only used at build time. In particular,
+    qmlimportscanner uses them to find any QML modules it may need to mark as
+    imported by your application.
+    
+    \sa QQmlEngine::addImportPath()
 
     \target QMAKE_systemvariable
     \section1 QMAKE

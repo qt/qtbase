@@ -240,10 +240,12 @@ void tst_QApplication::staticSetup()
         EventWatcher()
         {
             qApp->installEventFilter(this);
+#if QT_DEPRECATED_SINCE(6, 0)
 QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
             QObject::connect(qApp, &QApplication::paletteChanged, [&]{ ++palette_changed; });
             QObject::connect(qApp, &QApplication::fontChanged, [&]{ ++font_changed; });
 QT_WARNING_POP
+#endif
         }
 
     protected:
@@ -273,8 +275,13 @@ QT_WARNING_POP
     font.setBold(!font.bold());
     qApp->setFont(font);
     QApplication::processEvents();
+#if QT_DEPRECATED_SINCE(6, 0)
     QCOMPARE(watcher.palette_changed, 2);
     QCOMPARE(watcher.font_changed, 2);
+#else
+    QCOMPARE(watcher.palette_changed, 1);
+    QCOMPARE(watcher.font_changed, 1);
+#endif
 }
 
 

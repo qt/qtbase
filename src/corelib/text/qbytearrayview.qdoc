@@ -500,7 +500,7 @@
 */
 
 /*!
-    \fn int QByteArrayView::length() const
+    \fn QByteArrayView::length() const
 
     Same as size().
 

@@ -103,6 +103,8 @@ private slots:
     void compatPropertySignals();
 
     void noFakeDependencies();
+    void threadSafety();
+    void threadSafety2();
 
     void bindablePropertyWithInitialization();
     void noDoubleNotification();
@@ -1625,6 +1627,126 @@ void tst_QProperty::noFakeDependencies()
     int old = bindingFunctionCalled;
     fdc.setProp3(100);
     QCOMPARE(old, bindingFunctionCalled);
+}
+
+struct ThreadSafetyTester : public QObject
+{
+    Q_OBJECT
+
+public:
+    ThreadSafetyTester(QObject *parent = nullptr) : QObject(parent) {}
+
+    Q_INVOKABLE bool hasCorrectStatus() const
+    {
+        return qGetBindingStorage(this)->status({}) == QtPrivate::getBindingStatus({});
+    }
+
+    Q_INVOKABLE bool bindingTest()
+    {
+        QProperty<QString> name(u"inThread"_qs);
+        bindableObjectName().setBinding([&]() -> QString { return name; });
+        name = u"inThreadChanged"_qs;
+        const bool nameChangedCorrectly = objectName() == name;
+        bindableObjectName().takeBinding();
+        return nameChangedCorrectly;
+    }
+};
+
+
+void tst_QProperty::threadSafety()
+{
+    QThread workerThread;
+    auto cleanup = qScopeGuard([&](){
+        QMetaObject::invokeMethod(&workerThread, "quit");
+        workerThread.wait();
+    });
+    QScopedPointer<ThreadSafetyTester> scopedObj1(new ThreadSafetyTester);
+    auto obj1 = scopedObj1.data();
+    auto child1 = new ThreadSafetyTester(obj1);
+    obj1->moveToThread(&workerThread);
+    const auto mainThreadBindingStatus = QtPrivate::getBindingStatus({});
+    QCOMPARE(qGetBindingStorage(child1)->status({}), nullptr);
+    workerThread.start();
+
+    bool correctStatus = false;
+    bool ok = QMetaObject::invokeMethod(obj1, "hasCorrectStatus", Qt::BlockingQueuedConnection,
+            Q_RETURN_ARG(bool, correctStatus));
+    QVERIFY(ok);
+    QVERIFY(correctStatus);
+
+    bool bindingWorks = false;
+    ok = QMetaObject::invokeMethod(obj1, "bindingTest", Qt::BlockingQueuedConnection,
+            Q_RETURN_ARG(bool, bindingWorks));
+    QVERIFY(ok);
+    QVERIFY(bindingWorks);
+
+    correctStatus = false;
+    ok = QMetaObject::invokeMethod(child1, "hasCorrectStatus", Qt::BlockingQueuedConnection,
+            Q_RETURN_ARG(bool, correctStatus));
+    QVERIFY(ok);
+    QVERIFY(correctStatus);
+
+    QScopedPointer scopedObj2(new ThreadSafetyTester);
+    auto obj2 = scopedObj2.data();
+    QCOMPARE(qGetBindingStorage(obj2)->status({}), mainThreadBindingStatus);
+
+    obj2->setObjectName("moved");
+    QCOMPARE(obj2->objectName(), "moved");
+
+    obj2->moveToThread(&workerThread);
+    correctStatus = false;
+    ok = QMetaObject::invokeMethod(obj2, "hasCorrectStatus", Qt::BlockingQueuedConnection,
+            Q_RETURN_ARG(bool, correctStatus));
+
+    QVERIFY(ok);
+    QVERIFY(correctStatus);
+    // potentially unsafe, but should still work (no writes in owning thread)
+    QCOMPARE(obj2->objectName(), "moved");
+
+
+    QScopedPointer scopedObj3(new ThreadSafetyTester);
+    auto obj3 = scopedObj3.data();
+    obj3->setObjectName("moved");
+    QCOMPARE(obj3->objectName(), "moved");
+    obj3->moveToThread(nullptr);
+    QCOMPARE(obj2->objectName(), "moved");
+    obj3->setObjectName("moved again");
+    QCOMPARE(obj3->objectName(), "moved again");
+}
+
+class QPropertyUsingThread : public QThread
+{
+public:
+    QPropertyUsingThread(QObject **dest, QThread *destThread) : dest(dest), destThread(destThread) {}
+    void run() override
+    {
+        scopedObj1.reset(new ThreadSafetyTester());
+        scopedObj1->setObjectName("test");
+        QObject *child = new ThreadSafetyTester(scopedObj1.get());
+        child->setObjectName("child");
+        exec();
+        scopedObj1->moveToThread(destThread);
+        *dest = scopedObj1.release();
+    }
+    std::unique_ptr<ThreadSafetyTester> scopedObj1;
+    QObject **dest;
+    QThread *destThread;
+};
+
+void tst_QProperty::threadSafety2()
+{
+    std::unique_ptr<QObject> movedObj;
+    {
+        QObject *tmp = nullptr;
+        QPropertyUsingThread workerThread(&tmp, QThread::currentThread());
+        workerThread.start();
+        workerThread.quit();
+        workerThread.wait();
+        movedObj.reset(tmp);
+    }
+
+    QCOMPARE(movedObj->objectName(), "test");
+    QCOMPARE(movedObj->children().first()->objectName(), "child");
 }
 
 struct CustomType

@@ -275,7 +275,7 @@ static inline const uchar *simdFindNonAscii(const uchar *src, const uchar *end, 
 
 // Compare only the US-ASCII beginning of [src8, end8) and [src16, end16)
 // and advance src8 and src16 to the first character that could not be compared
-static void simdCompareAscii(const char8_t *&src8, const char8_t *end8, const char16_t *&src16, const char16_t *end16)
+static void simdCompareAscii(const qchar8_t *&src8, const qchar8_t *end8, const char16_t *&src16, const char16_t *end16)
 {
     int bitSpacing = 1;
     qptrdiff len = qMin(end8 - src8, end16 - src16);
@@ -461,7 +461,7 @@ static inline const uchar *simdFindNonAscii(const uchar *src, const uchar *end, 
     return src;
 }
 
-static void simdCompareAscii(const char8_t *&, const char8_t *, const char16_t *&, const char16_t *)
+static void simdCompareAscii(const qchar8_t *&, const qchar8_t *, const char16_t *&, const char16_t *)
 {
 }
 #else
@@ -481,7 +481,7 @@ static inline const uchar *simdFindNonAscii(const uchar *src, const uchar *end, 
     return src;
 }
 
-static void simdCompareAscii(const char8_t *&, const char8_t *, const char16_t *&, const char16_t *)
+static void simdCompareAscii(const qchar8_t *&, const qchar8_t *, const char16_t *&, const char16_t *)
 {
 }
 #endif
@@ -832,7 +832,7 @@ QUtf8::ValidUtf8Result QUtf8::isValidUtf8(QByteArrayView in)
 
 int QUtf8::compareUtf8(QByteArrayView utf8, QStringView utf16) noexcept
 {
-    auto src1 = reinterpret_cast<const char8_t *>(utf8.data());
+    auto src1 = reinterpret_cast<const qchar8_t *>(utf8.data());
     auto end1 = src1 + utf8.size();
     auto src2 = reinterpret_cast<const char16_t *>(utf16.data());
     auto end2 = src2 + utf16.size();
@@ -1238,7 +1238,7 @@ static QString convertToUnicodeCharByChar(QByteArrayView in, QStringConverter::S
     QString s;
     while ((next = CharNextExA(CP_ACP, mb, 0)) != mb) {
         wchar_t wc[2] ={0};
-        int charlength = next - mb;
+        int charlength = int(next - mb); // always just a few bytes
         int len = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS, mb, charlength, wc, 2);
         if (len>0) {
             s.append(QChar(wc[0]));

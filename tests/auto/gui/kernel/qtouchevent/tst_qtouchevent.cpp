@@ -1167,7 +1167,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
     rightWidget.setGeometry(300, 100, 100, 100);
 
     touchWidget.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&touchWidget));
+    QVERIFY(QTest::qWaitForWindowActive(&touchWidget));
 
     const QPointF leftPos = leftWidget.rect().center();
     const QPointF rightPos = rightWidget.rect().center();

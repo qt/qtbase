@@ -60,15 +60,16 @@ using QtMiscUtils::fromHex;
 
 /*
     Returns a human readable representation of the first \a maxSize
-    characters in \a data.
+    characters in \a data. The size, \a len, is a 64-bit quantity to
+    avoid truncation due to implicit conversions in callers.
 */
-QByteArray QtDebugUtils::toPrintable(const char *data, int len, int maxSize)
+QByteArray QtDebugUtils::toPrintable(const char *data, qint64 len, qsizetype maxSize)
 {
     if (!data)
         return "(null)";
 
     QByteArray out;
-    for (int i = 0; i < qMin(len, maxSize); ++i) {
+    for (qsizetype i = 0; i < qMin(len, maxSize); ++i) {
         char c = data[i];
         if (isprint(c)) {
             out += c;
@@ -238,7 +239,7 @@ static inline bool isPrintable(uchar c)
 { return c >= ' ' && c < 0x7f; }
 
 template <typename Char>
-static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, int length, bool isUnicode = true)
+static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, size_t length, bool isUnicode = true)
 {
     QChar quote(QLatin1Char('"'));
     d->write(&quote, 1);
@@ -258,7 +259,7 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, in
 
         if (sizeof(Char) == sizeof(QChar)) {
             // Surrogate characters are category Cs (Other_Surrogate), so isPrintable = false for them
-            int runLength = 0;
+            qsizetype runLength = 0;
             while (p + runLength != end &&
                    isPrintable(p[runLength]) && p[runLength] != '\\' && p[runLength] != '"')
                 ++runLength;
@@ -274,7 +275,7 @@ static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, in
         }
 
         // print as an escape sequence (maybe, see below for surrogate pairs)
-        int buflen = 2;
+        qsizetype buflen = 2;
         ushort buf[sizeof "\\U12345678" - 1];
         buf[0] = '\\';
 
@@ -355,12 +356,12 @@ void QDebug::putString(const QChar *begin, size_t length)
     if (stream->noQuotes) {
         // no quotes, write the string directly too (no pretty-printing)
         // this respects the QTextStream state, though
-        stream->ts.d_ptr->putString(begin, int(length));
+        stream->ts.d_ptr->putString(begin, qsizetype(length));
     } else {
         // we'll reset the QTextStream formatting mechanisms, so save the state
         QDebugStateSaver saver(*this);
         stream->ts.d_ptr->params.reset();
-        putEscapedString(stream->ts.d_ptr.data(), reinterpret_cast<const ushort *>(begin), int(length));
+        putEscapedString(stream->ts.d_ptr.data(), reinterpret_cast<const ushort *>(begin), length);
     }
 }
 
@@ -373,14 +374,15 @@ void QDebug::putByteArray(const char *begin, size_t length, Latin1Content conten
     if (stream->noQuotes) {
         // no quotes, write the string directly too (no pretty-printing)
         // this respects the QTextStream state, though
-        QString string = content == ContainsLatin1 ? QString::fromLatin1(begin, int(length)) : QString::fromUtf8(begin, int(length));
+        QString string = content == ContainsLatin1 ? QString::fromLatin1(begin, qsizetype(length))
+                                                   : QString::fromUtf8(begin, qsizetype(length));
         stream->ts.d_ptr->putString(string);
     } else {
         // we'll reset the QTextStream formatting mechanisms, so save the state
         QDebugStateSaver saver(*this);
         stream->ts.d_ptr->params.reset();
         putEscapedString(stream->ts.d_ptr.data(), reinterpret_cast<const uchar *>(begin),
-                         int(length), content == ContainsLatin1);
+                         length, content == ContainsLatin1);
     }
 }
 

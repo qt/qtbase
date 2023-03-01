@@ -43,6 +43,7 @@ package org.qtproject.qt.android.accessibility;
 import android.accessibilityservice.AccessibilityService;
 import android.app.Activity;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -51,6 +52,7 @@ import android.view.ViewParent;
 import android.text.TextUtils;
 
 import android.view.accessibility.*;
+import android.view.accessibility.AccessibilityNodeInfo.CollectionInfo;
 import android.view.MotionEvent;
 import android.view.View.OnHoverListener;
 
@@ -193,6 +195,11 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         return true;
     }
 
+    public void notifyScrolledEvent(int viewId)
+    {
+        sendEventForVirtualViewId(viewId, AccessibilityEvent.TYPE_VIEW_SCROLLED);
+    }
+
     public void notifyLocationChange(int viewId)
     {
         if (m_focusedVirtualViewId == viewId)
@@ -263,10 +270,14 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
     public boolean sendEventForVirtualViewId(int virtualViewId, int eventType)
     {
-        if ((virtualViewId == INVALID_ID) || !m_manager.isEnabled()) {
-            Log.w(TAG, "sendEventForVirtualViewId for invalid view");
+        final AccessibilityEvent event = getEventForVirtualViewId(virtualViewId, eventType);
+        return sendAccessibilityEvent(event);
+    }
+
+    public boolean sendAccessibilityEvent(AccessibilityEvent event)
+    {
+        if (event == null)
             return false;
-        }
 
         final ViewGroup group = (ViewGroup) m_view.getParent();
         if (group == null) {
@@ -274,15 +285,18 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
             return false;
         }
 
-        final AccessibilityEvent event;
-        event = getEventForVirtualViewId(virtualViewId, eventType);
         return group.requestSendAccessibilityEvent(m_view, event);
     }
 
     public void invalidateVirtualViewId(int virtualViewId)
     {
-        if (virtualViewId != INVALID_ID)
-            sendEventForVirtualViewId(virtualViewId, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        final AccessibilityEvent event = getEventForVirtualViewId(virtualViewId, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+
+        if (event == null)
+            return;
+
+        event.setContentChangeTypes(AccessibilityEvent.CONTENT_CHANGE_TYPE_SUBTREE);
+        sendAccessibilityEvent(event);
     }
 
     private void setHoveredVirtualViewId(int virtualViewId)
@@ -299,6 +313,14 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
     private AccessibilityEvent getEventForVirtualViewId(int virtualViewId, int eventType)
     {
+        if ((virtualViewId == INVALID_ID) || !m_manager.isEnabled()) {
+            Log.w(TAG, "getEventForVirtualViewId for invalid view");
+            return null;
+        }
+
+        if (m_activityDelegate.getSurfaceCount() == 0)
+            return null;
+
         final AccessibilityEvent event = AccessibilityEvent.obtain(eventType);
 
         event.setEnabled(true);
@@ -361,9 +383,11 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 // Spit out the entire hierarchy for debugging purposes
 //        dumpNodes(-1);
 
-        int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(-1);
-        for (int i = 0; i < ids.length; ++i)
-            result.addChild(m_view, ids[i]);
+        if (m_activityDelegate.getSurfaceCount() != 0) {
+            int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(-1);
+            for (int i = 0; i < ids.length; ++i)
+                result.addChild(m_view, ids[i]);
+        }
 
         // The offset values have changed, so we need to re-focus the
         // currently focused item, otherwise it will have an incorrect
@@ -391,8 +415,9 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         node.setClassName(m_view.getClass().getName() + DEFAULT_CLASS_NAME);
         node.setPackageName(m_view.getContext().getPackageName());
 
-        if (!QtNativeAccessibility.populateNode(virtualViewId, node))
+        if (m_activityDelegate.getSurfaceCount() == 0 || !QtNativeAccessibility.populateNode(virtualViewId, node)) {
             return node;
+        }
 
         // set only if valid, otherwise we return a node that is invalid and will crash when accessed
         node.setSource(m_view, virtualViewId);
@@ -426,6 +451,13 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(virtualViewId);
         for (int i = 0; i < ids.length; ++i)
             node.addChild(m_view, ids[i]);
+        if (node.isScrollable()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                node.setCollectionInfo(new CollectionInfo(ids.length, 1, false));
+            } else {
+                node.setCollectionInfo(CollectionInfo.obtain(ids.length, 1, false));
+            }
+        }
 
         return node;
     }
@@ -435,7 +467,7 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         @Override
         public AccessibilityNodeInfo createAccessibilityNodeInfo(int virtualViewId)
         {
-            if (virtualViewId == View.NO_ID) {
+            if (virtualViewId == View.NO_ID || m_activityDelegate.getSurfaceCount() == 0) {
                 return getNodeForView();
             }
             return getNodeForVirtualViewId(virtualViewId);

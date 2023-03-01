@@ -830,7 +830,7 @@ QTextDocumentLayoutPrivate::hitTest(const QTextBlock &bl, const QFixedPoint &poi
     textrect.translate(tl->position());
     qCDebug(lcHit) << "    checking block" << bl.position() << "point=" << point.toPointF() << "    tlrect" << textrect;
     *position = bl.position();
-    if (point.y.toReal() < textrect.top()) {
+    if (point.y.toReal() < textrect.top() - bl.blockFormat().topMargin()) {
         qCDebug(lcHit) << "    before pos=" << *position;
         return PointBefore;
     } else if (point.y.toReal() > textrect.bottom()) {

@@ -1100,28 +1100,26 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
                 while (x <= leftMax) {
                     QScFixed excluded = 0;
 
-                    if (yFP <= iLeftFP)
+                    if (yFP <= iLeftFP && rowBottomLeft > rowTop)
                         excluded += intersectPixelFP(x, rowTop, rowBottomLeft,
                                                      bottomLeftIntersectAf, topLeftIntersectAf,
                                                      topLeftSlopeFP, invTopLeftSlopeFP);
-                    if (yFP >= iLeftFP)
+                    if (yFP >= iLeftFP && rowBottom > rowTopLeft)
                         excluded += intersectPixelFP(x, rowTopLeft, rowBottom,
                                                      topLeftIntersectBf, bottomLeftIntersectBf,
                                                      bottomLeftSlopeFP, invBottomLeftSlopeFP);
-
                     if (x >= rightMin) {
-                        if (yFP <= iRightFP)
+                        if (yFP <= iRightFP && rowBottomRight > rowTop)
                             excluded += (rowBottomRight - rowTop) - intersectPixelFP(x, rowTop, rowBottomRight,
                                                                                      topRightIntersectAf, bottomRightIntersectAf,
                                                                                      topRightSlopeFP, invTopRightSlopeFP);
-                        if (yFP >= iRightFP)
+                        if (yFP >= iRightFP && rowBottom > rowTopRight)
                             excluded += (rowBottom - rowTopRight) - intersectPixelFP(x, rowTopRight, rowBottom,
                                                                                      bottomRightIntersectBf, topRightIntersectBf,
                                                                                      bottomRightSlopeFP, invBottomRightSlopeFP);
                     }
-                    if (excluded > QScFixedFactor)
-                        excluded = excluded % QScFixedFactor;
 
+                    Q_ASSERT(excluded >= 0 && excluded <= rowHeight);
                     QScFixed coverage = rowHeight - excluded;
                     buffer.addSpan(x, 1, QScFixedToInt(yFP),
                                    QScFixedToInt(255 * coverage));
@@ -1134,17 +1132,16 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
                 }
                 while (x <= rightMax) {
                     QScFixed excluded = 0;
-                    if (yFP <= iRightFP)
+                    if (yFP <= iRightFP && rowBottomRight > rowTop)
                         excluded += (rowBottomRight - rowTop) - intersectPixelFP(x, rowTop, rowBottomRight,
                                                                                  topRightIntersectAf, bottomRightIntersectAf,
                                                                                  topRightSlopeFP, invTopRightSlopeFP);
-                    if (yFP >= iRightFP)
+                    if (yFP >= iRightFP && rowBottom > rowTopRight)
                         excluded += (rowBottom - rowTopRight) - intersectPixelFP(x, rowTopRight, rowBottom,
                                                                                  bottomRightIntersectBf, topRightIntersectBf,
                                                                                  bottomRightSlopeFP, invBottomRightSlopeFP);
-                    if (excluded > QScFixedFactor)
-                        excluded = excluded % QScFixedFactor;
 
+                    Q_ASSERT(excluded >= 0 && excluded <= rowHeight);
                     QScFixed coverage = rowHeight - excluded;
                     buffer.addSpan(x, 1, QScFixedToInt(yFP),
                                    QScFixedToInt(255 * coverage));

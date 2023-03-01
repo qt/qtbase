@@ -83,9 +83,24 @@ Dialog::Dialog()
     mainLayout->addWidget(formGroupBox);
     mainLayout->addWidget(bigEditor);
     mainLayout->addWidget(buttonBox);
-//! [4] //! [5]
-    setLayout(mainLayout);
+//! [4]
+    QWidget *scrollAreaContent = new QWidget;
+    scrollAreaContent->setLayout(mainLayout);
 
+    QScrollArea *scrollArea = new QScrollArea;
+    scrollArea->setFrameShape(QFrame::NoFrame);
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->verticalScrollBar()->setStyleSheet("QScrollBar:vertical {width: 20px;}");
+
+    scrollArea->setWidget(scrollAreaContent);
+
+    QVBoxLayout *scrollLayout = new QVBoxLayout;
+    scrollLayout->setContentsMargins(0,0,0,0);
+    scrollLayout->addWidget(scrollArea);
+
+//! [5]
+    setLayout(scrollLayout);
     setWindowTitle(tr("Basic Layouts"));
 }
 //! [5]

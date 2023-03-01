@@ -69,6 +69,7 @@ public:
     QPlatformMenu *createPlatformMenu() const override;
     QPlatformMenuItem *createPlatformMenuItem() const override;
     void showPlatformMenuBar() override;
+    Appearance appearance() const override;
     const QPalette *palette(Palette type = SystemPalette) const override;
     const QFont *font(Font type = SystemFont) const override;
     QVariant themeHint(ThemeHint hint) const override;

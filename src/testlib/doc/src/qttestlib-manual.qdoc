@@ -228,9 +228,9 @@
     \snippet code/doc_src_qtestlib.qdoc 4
 
     Runs the \c toUpper test function with all available test data,
-    and the \c toInt test function with the test data called \c
+    and the \c toInt test function with the test data row called \c
     zero (if the specified test data doesn't exist, the associated test
-    will fail).
+    will fail and the available data tags are reported).
 
     \snippet code/doc_src_qtestlib.qdoc 5
 
@@ -483,7 +483,7 @@
 
     You can define \c{initTestCase_data()} to set up a global test data table.
     Each test is run once for each row in the global test data table. When the
-    test function itself \l{Chapter 2: Data-driven Testing}{is data-driven},
+    test function itself \l{Chapter 2: Data Driven Testing}{is data-driven},
     it is run for each local data row, for each global data row. So, if there
     are \c g rows in the global data table and \c d rows in the test's own
     data-table, the number of runs of this test is \c g times \c d.
@@ -506,6 +506,32 @@
     each locale provided by \c {initTestCase_data()}:
 
     \snippet code/src_qtestlib_qtestcase_snippet.cpp 31
+
+    On the command-line of a test you can pass the name of a function (with no
+    test-class-name prefix) to run only that one function's tests. If the test
+    class has global data, or the function is data-driven, you can append a data
+    tag, after a colon, to run only that tag's data-set for the function. To
+    specify both a global tag and a tag specific to the test function, combine
+    them with a colon between, putting the global data tag first. For example
+
+    \snippet code/doc_src_qtestlib.qdoc 6
+
+    will run the \c zero test-case of the \c roundTripInt() test above (assuming
+    its \c TestQLocale class has been compiled to an executable \c testqlocale)
+    in each of the locales specified by \c initTestCase_data(), while
+
+    \snippet code/doc_src_qtestlib.qdoc 7
+
+    will run all three test-cases of \c roundTripInt() only in the C locale and
+
+    \snippet code/doc_src_qtestlib.qdoc 8
+
+    will only run the \c zero test-case in the C locale.
+
+    Providing such fine-grained control over which tests are to be run can make
+    it considerably easier to debug a problem, as you only need to step through
+    the one test-case that has been seen to fail.
+
 */
 
 /*!
@@ -589,8 +615,8 @@
 
     Now that we finished writing our test, we want to execute
     it. Assuming that our test was saved as \c testqstring.cpp in an
-    empty directory, we build the test using qmake to create a project
-    and generate a makefile.
+    empty directory, we build the test using \c qmake to create a
+    project and generate a makefile.
 
     \snippet code/doc_src_qtestlib.qdoc 9
 

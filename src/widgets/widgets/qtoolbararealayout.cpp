@@ -1371,7 +1371,7 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
                 item.widgetItem = new QWidgetItemV2(toolBar);
                 toolBar->setOrientation(floating ? ((shown & 2) ? Qt::Vertical : Qt::Horizontal) : dock.o);
                 toolBar->setVisible(shown & 1);
-                toolBar->d_func()->setWindowState(floating, true, rect);
+                toolBar->d_func()->setWindowState(floating, false, rect);
 
                 item.preferredSize = item.size;
                 line.toolBarItems.append(item);

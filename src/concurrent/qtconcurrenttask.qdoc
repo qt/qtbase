@@ -28,6 +28,7 @@
 /*!
     \page qtconcurrenttask.html
     \title Concurrent Task
+    \brief A configurable way to run a task in a separate thread.
     \ingroup thread
 
     QtConcurrent::task provides an alternative interface for running a

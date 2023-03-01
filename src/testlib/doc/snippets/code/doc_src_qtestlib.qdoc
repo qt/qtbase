@@ -69,9 +69,16 @@ testname [options] [testfunctions[:testdata]]...
 
 
 //! [6]
-cetest [options] ...
+./testqlocale roundTripInt:zero
 //! [6]
 
+//! [7]
+./testqlocale roundTripInt:C
+//! [7]
+
+//! [8]
+./testqlocale roundTripInt:C:zero
+//! [8]
 
 //! [9]
 /myTestDirectory$ qmake -project "QT += testlib"

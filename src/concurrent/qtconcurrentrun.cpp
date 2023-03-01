@@ -40,6 +40,7 @@
 /*!
     \page qtconcurrentrun.html
     \title Concurrent Run
+    \brief A simple way to run a task in a separate thread.
     \ingroup thread
 
     The QtConcurrent::run() function runs a function in a separate thread.

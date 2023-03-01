@@ -4,8 +4,12 @@ if(TARGET WrapSystemPCRE2::WrapSystemPCRE2)
 endif()
 set(WrapSystemPCRE2_REQUIRED_VARS __pcre2_found)
 
-find_package(PCRE2 COMPONENTS 16BIT ${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION} CONFIG QUIET)
+find_package(PCRE2 ${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION} COMPONENTS 16BIT QUIET)
 
+# TODO: pcre2-16 is not the target name provided by the upstream Config file. It is PCRE2::16BIT.
+# https://github.com/PCRE2Project/pcre2/blob/2410fbe3869cab403f02b94caa9ab37ee9f5854b/cmake/pcre2-config.cmake.in#L122
+# We don't strictly need to handle that though, because the pkg-config code path below still
+# finds the correct libraries.
 set(__pcre2_target_name "PCRE2::pcre2-16")
 if(PCRE2_FOUND AND TARGET "${__pcre2_target_name}")
   # Hunter case.

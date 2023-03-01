@@ -50,6 +50,7 @@
 
 #include "window.h"
 #include <QPlatformSurfaceEvent>
+#include <QTimer>
 
 Window::Window(QRhi::Implementation graphicsApi)
     : m_graphicsApi(graphicsApi)
@@ -243,7 +244,20 @@ void Window::render()
 
     m_rhi->endFrame(m_sc.get());
 
+    // Always request the next frame via requestUpdate(). On some platforms this is backed
+    // by a platform-specific solution, e.g. CVDisplayLink on macOS, which is potentially
+    // more efficient than a timer, queued metacalls, etc.
+    //
+    // However, the rendering behavior is identical no matter how the next round of
+    // rendering is triggered: the rendering thread is throttled to the presentation rate
+    // (either in beginFrame() or endFrame()) so the triangle should rotate at the exact
+    // same speed no matter which approach is taken here.
+
+#if 1
     requestUpdate();
+#else
+    QTimer::singleShot(0, this, [this] { render(); });
+#endif
 }
 
 void Window::customInit()

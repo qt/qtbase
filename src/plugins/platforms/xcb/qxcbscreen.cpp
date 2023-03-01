@@ -684,7 +684,7 @@ void QXcbScreen::windowShown(QXcbWindow *window)
     // Freedesktop.org Startup Notification
     if (!connection()->startupId().isEmpty() && window->window()->isTopLevel()) {
         sendStartupMessage(QByteArrayLiteral("remove: ID=") + connection()->startupId());
-        connection()->clearStartupId();
+        connection()->setStartupId({});
     }
 }
 

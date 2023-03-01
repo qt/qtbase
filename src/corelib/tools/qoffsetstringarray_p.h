@@ -177,7 +177,7 @@ private:
 QT_WARNING_POP
 
 template<typename T, int N, int ... Ox>
-constexpr QOffsetStringArray<T, N, sizeof ... (Ox)> qOffsetStringArray(
+constexpr QOffsetStringArray<T, N, sizeof ... (Ox)> makeOffsetStringArray(
     const QtPrivate::StaticString<N> &string,
     QtPrivate::IndexesList<N, Ox...> offsets) noexcept
 {
@@ -197,7 +197,7 @@ template<int ... Nx>
 constexpr auto qOffsetStringArray(const char (&...strings)[Nx]) noexcept -> typename QOffsetStringArrayRet<Nx...>::Type
 {
     using Offsets = QtPrivate::OffsetSequence<Nx...>;
-    return qOffsetStringArray<typename Offsets::Type>(
+    return makeOffsetStringArray<typename Offsets::Type>(
             QtPrivate::staticString<Offsets::Length>(strings...), Offsets{});
 }
 

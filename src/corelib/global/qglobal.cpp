@@ -1093,7 +1093,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 */
 
 /*! \typedef QFunctionPointer
-    \relates <QtGlobal>
+    \relates <QFunctionPointer>
 
     This is a typedef for \c{void (*)()}, a pointer to a function that takes
     no arguments and returns void.
@@ -2107,6 +2107,11 @@ QT_END_INCLUDE_NAMESPACE
 static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSystemVersion::current())
 {
 #ifdef Q_OS_MACOS
+    if (version.majorVersion() == 12)
+        return "Monterey";
+    // Compare against predefined constant to handle 10.16/11.0
+    if (QOperatingSystemVersion::MacOSBigSur.version().isPrefixOf(version.version()))
+        return "Big Sur";
     if (version.majorVersion() == 10) {
         switch (version.minorVersion()) {
         case 9:
@@ -2121,13 +2126,15 @@ static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSyst
             return "High Sierra";
         case 14:
             return "Mojave";
+        case 15:
+            return "Catalina";
         }
     }
     // unknown, future version
 #else
     Q_UNUSED(version);
 #endif
-    return 0;
+    return nullptr;
 }
 #endif
 
@@ -2216,7 +2223,7 @@ static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSyst
     }
 #undef Q_WINVER
     // unknown, future version
-    return 0;
+    return nullptr;
 }
 
 #endif
@@ -2818,16 +2825,14 @@ QString QSysInfo::productType()
 
     Typical returned values are (note: list not exhaustive):
     \list
-        \li "2016.09" (Amazon Linux AMI 2016.09)
-        \li "7.1" (Android Nougat)
-        \li "25" (Fedora 25)
-        \li "10.1" (iOS 10.1)
-        \li "10.12" (macOS Sierra)
-        \li "10.0" (tvOS 10)
-        \li "16.10" (Ubuntu 16.10)
-        \li "3.1" (watchOS 3.1)
-        \li "10" (Windows 10)
-        \li "Server 2016" (Windows Server 2016)
+        \li "12" (Android 12)
+        \li "36" (Fedora 36)
+        \li "15.5" (iOS 15.5)
+        \li "12.4" (macOS Monterey)
+        \li "22.04" (Ubuntu 22.04)
+        \li "8.6" (watchOS 8.6)
+        \li "11" (Windows 11)
+        \li "Server 2022" (Windows Server 2022)
     \endlist
 
     On Linux systems, it will try to determine the distribution version and will
@@ -2989,7 +2994,8 @@ QByteArray QSysInfo::machineUniqueId()
 {
 #if defined(Q_OS_DARWIN) && __has_include(<IOKit/IOKitLib.h>)
     char uuid[UuidStringLen + 1];
-    io_service_t service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
+    static const mach_port_t defaultPort = 0; // Effectively kIOMasterPortDefault/kIOMainPortDefault
+    io_service_t service = IOServiceGetMatchingService(defaultPort, IOServiceMatching("IOPlatformExpertDevice"));
     QCFString stringRef = (CFStringRef)IORegistryEntryCreateCFProperty(service, CFSTR(kIOPlatformUUIDKey), kCFAllocatorDefault, 0);
     CFStringGetCString(stringRef, uuid, sizeof(uuid), kCFStringEncodingMacRoman);
     return QByteArray(uuid);
@@ -3390,7 +3396,7 @@ QByteArray qgetenv(const char *varName)
     getenv_s(&requiredSize, 0, 0, varName);
     if (requiredSize == 0)
         return buffer;
-    buffer.resize(int(requiredSize));
+    buffer.resize(qsizetype(requiredSize));
     getenv_s(&requiredSize, buffer.data(), requiredSize, varName);
     // requiredSize includes the terminating null, which we don't want.
     Q_ASSERT(buffer.endsWith('\0'));
@@ -3451,15 +3457,14 @@ QString qEnvironmentVariable(const char *varName, const QString &defaultValue)
 {
 #if defined(Q_OS_WIN)
     const auto locker = qt_scoped_lock(environmentMutex);
-    QVarLengthArray<wchar_t, 32> wname(int(strlen(varName)) + 1);
-    for (int i = 0; i < wname.size(); ++i) // wname.size() is correct: will copy terminating null
+    QVarLengthArray<wchar_t, 32> wname(qsizetype(strlen(varName)) + 1);
+    for (qsizetype i = 0; i < wname.size(); ++i) // wname.size() is correct: will copy terminating null
         wname[i] = uchar(varName[i]);
     size_t requiredSize = 0;
-    QString buffer;
     _wgetenv_s(&requiredSize, 0, 0, wname.data());
     if (requiredSize == 0)
         return defaultValue;
-    buffer.resize(int(requiredSize));
+    QString buffer(qsizetype(requiredSize), Qt::Uninitialized);
     _wgetenv_s(&requiredSize, reinterpret_cast<wchar_t *>(buffer.data()), requiredSize,
                wname.data());
     // requiredSize includes the terminating null, which we don't want.
@@ -3632,6 +3637,14 @@ bool qEnvironmentVariableIsSet(const char *varName) noexcept
 */
 bool qputenv(const char *varName, const QByteArray &value)
 {
+    // protect against non-NUL-terminated QByteArrays:
+    if (!const_cast<QByteArray&>(value).data_ptr()->isMutable()) {
+        QByteArray copy(value);
+        copy.reserve(copy.size() + 1); // ensures NUL termination (and isMutable() even for size==0
+                                       // (unlike detach()) to avoid infinite recursion)
+        return qputenv(varName, copy);
+    }
+
     const auto locker = qt_scoped_lock(environmentMutex);
 #if defined(Q_CC_MSVC)
     return _putenv_s(varName, value.constData()) == 0;

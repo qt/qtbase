@@ -2292,10 +2292,17 @@ QBindingStorage::~QBindingStorage()
     QBindingStoragePrivate(d).destroy();
 }
 
+void QBindingStorage::reinitAfterThreadMove()
+{
+    bindingStatus = &QT_PREPEND_NAMESPACE(bindingStatus);
+    Q_ASSERT(bindingStatus);
+}
+
 void QBindingStorage::clear()
 {
     QBindingStoragePrivate(d).destroy();
     d = nullptr;
+    bindingStatus = nullptr;
 }
 
 // ### Unused, retained for BC with 6.0
@@ -2332,6 +2339,11 @@ void QBindingStorage::registerDependency_helper(const QUntypedPropertyData *data
 QPropertyBindingData *QBindingStorage::bindingData_helper(const QUntypedPropertyData *data) const
 {
     return QBindingStoragePrivate(d).get(data);
+}
+
+const QBindingStatus *QBindingStorage::status(QtPrivate::QBindingStatusAccessToken) const
+{
+    return bindingStatus;
 }
 
 QPropertyBindingData *QBindingStorage::bindingData_helper(QUntypedPropertyData *data, bool create)
@@ -2408,6 +2420,12 @@ void printMetaTypeMismatch(QMetaType actual, QMetaType expected)
 }
 
 } // namespace BindableWarnings end
+
+/*!
+    \internal
+    Returns the binding statusof the current thread.
+ */
+QBindingStatus* getBindingStatus(QtPrivate::QBindingStatusAccessToken) { return &QT_PREPEND_NAMESPACE(bindingStatus); }
 
 } // namespace QtPrivate end
 

@@ -326,7 +326,7 @@ QDataStream &operator<<(QDataStream &s, const QCursor &c)
         if (isPixmap)
             s << c.pixmap();
         else
-            s << c.bitmap(Qt::ReturnByValue) << c.mask(Qt::ReturnByValue);
+            s << c.bitmap() << c.mask();
         s << c.hotSpot();
     }
     return s;

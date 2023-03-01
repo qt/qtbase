@@ -136,10 +136,6 @@ function(qt_internal_add_headers_clean_target
                 endif()
                 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 4.9)
                     list(APPEND hcleanFLAGS -Wfloat-conversion)
-
-                    # GCC 9 has a lot of false positives relating to these
-                    list(APPEND hcleanFlags -Wno-deprecated-copy -Wno-redundant-move
-                        -Wno-format-overflow -Wno-init-list-lifetime)
                 endif()
             endif()
         endif()

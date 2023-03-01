@@ -1310,11 +1310,15 @@ void QIcon::setFallbackThemeName(const QString &name)
 */
 QIcon QIcon::fromTheme(const QString &name)
 {
-    QIcon icon;
 
-    if (qtIconCache()->contains(name)) {
-        icon = *qtIconCache()->object(name);
-    } else if (QDir::isAbsolutePath(name)) {
+    if (QIcon *cachedIcon = qtIconCache()->object(name)) {
+        if (!cachedIcon->isNull())
+            return *cachedIcon;
+        qtIconCache()->remove(name);
+    }
+
+    QIcon icon;
+    if (QDir::isAbsolutePath(name)) {
         return QIcon(name);
     } else {
         QPlatformTheme * const platformTheme = QGuiApplicationPrivate::platformTheme();

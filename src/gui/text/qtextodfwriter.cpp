@@ -678,7 +678,7 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, QTextCharFor
             value = QString::number(format.fontWeight());
         writer.writeAttribute(foNS, QString::fromLatin1("font-weight"), value);
     }
-    if (format.hasProperty(QTextFormat::FontFamily))
+    if (format.hasProperty(QTextFormat::OldFontFamily))
         writer.writeAttribute(foNS, QString::fromLatin1("font-family"), format.fontFamilies().toStringList().value(0, QString()));
     else
         writer.writeAttribute(foNS, QString::fromLatin1("font-family"), QString::fromLatin1("Sans")); // Qt default

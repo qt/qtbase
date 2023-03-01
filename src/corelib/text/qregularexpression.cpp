@@ -1879,7 +1879,7 @@ QString QRegularExpression::escape(QStringView str)
 
     By default, the returned regular expression is fully anchored. In other
     words, there is no need of calling anchoredPattern() again on the
-    result. To get an a regular expression that is not anchored, pass
+    result. To get a regular expression that is not anchored, pass
     UnanchoredWildcardConversion as the conversion \a options.
 
     This implementation follows closely the definition

@@ -63,6 +63,9 @@ bool Moc::parseClassHead(ClassDef *def)
             return false;
     } while (token);
 
+    // support attributes like "class [[deprecated]]] name"
+    skipCxxAttributes();
+
     if (!test(IDENTIFIER)) // typedef struct { ... }
         return false;
     QByteArray name = lexem();

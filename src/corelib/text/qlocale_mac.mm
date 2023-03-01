@@ -180,7 +180,7 @@ static QVariant macTimeToString(QTime time, bool short_format)
 static QVariant macToQtFormat(QStringView sys_fmt)
 {
     QString result;
-    int i = 0;
+    qsizetype i = 0;
 
     while (i < sys_fmt.size()) {
         if (sys_fmt.at(i).unicode() == '\'') {
@@ -193,7 +193,7 @@ static QVariant macToQtFormat(QStringView sys_fmt)
         }
 
         QChar c = sys_fmt.at(i);
-        int repeat = qt_repeatCount(sys_fmt.mid(i));
+        qsizetype repeat = qt_repeatCount(sys_fmt.mid(i));
 
         switch (c.unicode()) {
             // Qt does not support the following options

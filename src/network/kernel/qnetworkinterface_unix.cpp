@@ -418,10 +418,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #  include <net/if_dl.h>
 #if defined(QT_PLATFORM_UIKIT)
 #  include "qnetworkinterface_uikit_p.h"
-#if !defined(QT_WATCHOS_OUTDATED_SDK_WORKAROUND)
-// TODO: remove it as soon as SDK is updated on CI!!!
 #  include <net/if_types.h>
-#endif
 #else
 #  include <net/if_media.h>
 #  include <net/if_types.h>

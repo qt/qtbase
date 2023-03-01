@@ -945,6 +945,12 @@ void tst_QTcpServer::linkLocal()
             // (we don't know why)
             if (iface.name().startsWith("utun"))
                 continue;
+            // Do not use the iBridge interfae
+            if (iface.hardwareAddress() == "AC:DE:48:00:11:22")
+                continue;
+            // Do no use the Apple Wireless Direct Link interfaces
+            if (iface.name().startsWith("awdl"))
+                continue;
 #endif
             foreach (QNetworkAddressEntry addressEntry, iface.addressEntries()) {
                 QHostAddress addr = addressEntry.ip();

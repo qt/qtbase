@@ -4,7 +4,7 @@
 ## qobjectrace Test:
 #####################################################################
 
-qt_internal_add_test(qobjectrace
+qt_internal_add_test(tst_qobjectrace
     SOURCES
         tst_qobjectrace.cpp
     PUBLIC_LIBRARIES

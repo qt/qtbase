@@ -922,8 +922,9 @@ void QWidgetWindow::handleDragMoveEvent(QDragMoveEvent *event)
         event->ignore();
         if (m_dragTarget) { // Send DragLeave to previous
             QDragLeaveEvent leaveEvent;
-            QGuiApplication::forwardEvent(m_dragTarget, &leaveEvent, event);
+            QWidget *dragTarget = m_dragTarget;
             m_dragTarget = nullptr;
+            QGuiApplication::forwardEvent(dragTarget, &leaveEvent, event);
         }
     } else {
         const QPoint mapped = widget->mapFromGlobal(m_widget->mapToGlobal(event->position().toPoint()));
@@ -937,8 +938,9 @@ void QWidgetWindow::handleDragMoveEvent(QDragMoveEvent *event)
         } else {
             if (m_dragTarget) { // Send DragLeave to previous
                 QDragLeaveEvent leaveEvent;
-                QGuiApplication::forwardEvent(m_dragTarget, &leaveEvent, event);
+                QWidget *dragTarget = m_dragTarget;
                 m_dragTarget = nullptr;
+                QGuiApplication::forwardEvent(dragTarget, &leaveEvent, event);
             }
             // widget might have been deleted when handling the leaveEvent
             if (widget) {
@@ -960,9 +962,11 @@ void QWidgetWindow::handleDragMoveEvent(QDragMoveEvent *event)
 
 void QWidgetWindow::handleDragLeaveEvent(QDragLeaveEvent *event)
 {
-    if (m_dragTarget)
-        QGuiApplication::forwardEvent(m_dragTarget, event);
-    m_dragTarget = nullptr;
+    if (m_dragTarget) {
+        QWidget *dragTarget = m_dragTarget;
+        m_dragTarget = nullptr;
+        QGuiApplication::forwardEvent(dragTarget, event);
+    }
 }
 
 void QWidgetWindow::handleDropEvent(QDropEvent *event)
@@ -974,10 +978,11 @@ void QWidgetWindow::handleDropEvent(QDropEvent *event)
     }
     const QPoint mapped = m_dragTarget->mapFromGlobal(m_widget->mapToGlobal(event->position().toPoint()));
     QDropEvent translated(mapped, event->possibleActions(), event->mimeData(), event->buttons(), event->modifiers());
-    QGuiApplication::forwardEvent(m_dragTarget, &translated, event);
+    QWidget *dragTarget = m_dragTarget;
+    m_dragTarget = nullptr;
+    QGuiApplication::forwardEvent(dragTarget, &translated, event);
     event->setAccepted(translated.isAccepted());
     event->setDropAction(translated.dropAction());
-    m_dragTarget = nullptr;
 }
 
 #endif // QT_CONFIG(draganddrop)
@@ -1019,11 +1024,8 @@ void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
         m_widget->setAttribute(Qt::WA_Mapped);
         for (QWidget *p = m_widget->parentWidget(); p && !p->testAttribute(Qt::WA_Mapped); p = p->parentWidget())
             p->setAttribute(Qt::WA_Mapped);
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        if (!event->region().isNull())
-            wPriv->syncBackingStore(event->region());
-QT_WARNING_POP
+        if (!event->m_region.isNull())
+            wPriv->syncBackingStore(event->m_region);
     } else {
         m_widget->setAttribute(Qt::WA_Mapped, false);
     }

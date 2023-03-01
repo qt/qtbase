@@ -1248,7 +1248,11 @@
  * "Weak overloads" - makes an otherwise confliciting overload weaker
  * (by making it a template)
  */
-#define Q_WEAK_OVERLOAD template <typename = void>
+#ifndef Q_CLANG_QDOC
+#  define Q_WEAK_OVERLOAD template <typename = void>
+#else
+#  define Q_WEAK_OVERLOAD
+#endif
 
 /*
  * Warning/diagnostic handling

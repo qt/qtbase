@@ -132,6 +132,7 @@ void TabletWidget::paintEvent(QPaintEvent *)
             eventInfo << QString("Device info missing");
         } else {
             eventInfo << QString("Seat: %1").arg(mDev->seatName());
+            eventInfo << QString("Name: %1").arg(mDev->name());
             eventInfo << QString("Device type: %1").arg(deviceTypeToString(mDev->type()));
             eventInfo << QString("Pointer type: %1").arg(pointerTypeToString(mDev->pointerType()));
             eventInfo << QString("Capabilities: %1").arg(pointerCapabilitiesToString(mDev->capabilities()));

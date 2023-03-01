@@ -309,12 +309,13 @@ QEventPoint *QPointerEvent::pointById(int id)
 }
 
 /*!
-    Returns \c true if every point in points() has an exclusiveGrabber().
+    Returns \c true if every point in points() has either an exclusiveGrabber()
+    or one or more passiveGrabbers().
 */
 bool QPointerEvent::allPointsGrabbed() const
 {
     for (const auto &p : points()) {
-        if (exclusiveGrabber(p) && passiveGrabbers(p).isEmpty())
+        if (!exclusiveGrabber(p) && passiveGrabbers(p).isEmpty())
             return false;
     }
     return true;
@@ -786,6 +787,7 @@ QMouseEvent::~QMouseEvent()
 }
 
 /*!
+    \fn Qt::MouseEventSource QMouseEvent::source() const
     \since 5.3
     \deprecated [6.0] Use pointingDevice() instead.
 
@@ -814,12 +816,13 @@ QMouseEvent::~QMouseEvent()
     decide how to react to this event. But it's even better to react to the
     original event rather than handling only mouse events.
 */
-#if QT_DEPRECATED_SINCE(6, 0)
+// Note: the docs mention 6.0 as a deprecation version. That is correct and
+// intended, because we want our users to stop using it! Internally we will
+// deprecate it when we port our code away from using it.
 Qt::MouseEventSource QMouseEvent::source() const
 {
     return Qt::MouseEventSource(m_source);
 }
-#endif
 
 /*!
     \since 5.3
@@ -3164,15 +3167,36 @@ void QDropEvent::setDropAction(Qt::DropAction action)
 */
 
 /*!
+    \fn QPointF QDropEvent::position() const
+    \since 6.0
+
+    Returns the position where the drop was made.
+*/
+
+/*!
     \fn Qt::MouseButtons QDropEvent::mouseButtons() const
     \deprecated [6.0] Use buttons() instead.
 
-    Returns the mouse buttons that are pressed..
+    Returns the mouse buttons that are pressed.
+*/
+
+/*!
+    \fn Qt::MouseButtons QDropEvent::buttons() const
+    \since 6.0
+
+    Returns the mouse buttons that are pressed.
 */
 
 /*!
     \fn Qt::KeyboardModifiers QDropEvent::keyboardModifiers() const
     \deprecated [6.0] Use modifiers() instead.
+
+    Returns the modifier keys that are pressed.
+*/
+
+/*!
+    \fn Qt::KeyboardModifiers QDropEvent::modifiers() const
+    \since 6.0
 
     Returns the modifier keys that are pressed.
 */
@@ -4106,10 +4130,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
     bool isMouse = false;
     switch (type) {
     case QEvent::Expose:
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        dbg << "QExposeEvent(" << static_cast<const QExposeEvent *>(e)->region() << ')';
-QT_WARNING_POP
+        dbg << "QExposeEvent()";
         break;
     case QEvent::Paint:
         dbg << "QPaintEvent(" << static_cast<const QPaintEvent *>(e)->region() << ')';
@@ -4551,6 +4572,7 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
     }
 }
 
+#if QT_DEPRECATED_SINCE(6, 0)
 /*!
     \deprecated [6.0] Use another constructor.
 
@@ -4570,6 +4592,7 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
     for (QEventPoint &point : m_points)
         QMutableEventPoint::from(point).setDevice(device);
 }
+#endif // QT_DEPRECATED_SINCE(6, 0)
 
 /*!
     Destroys the QTouchEvent.

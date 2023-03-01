@@ -139,6 +139,7 @@ public:
     // preferably use this function to read data.
     inline QByteArray read()
     {
+        Q_ASSERT(!isEmpty());
         squeezeFirst();
         bufferCompleteSize -= buffers.first().size();
         return buffers.takeFirst();

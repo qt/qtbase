@@ -331,6 +331,13 @@ void tst_QDBusInterface::notValid()
 
     QVERIFY(!interface.isValid());
     QVERIFY(!QMetaObject::invokeMethod(&interface, "ListNames", Qt::DirectConnection));
+
+    // With a connection, but empty/null service and path specified
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+    QDBusInterface iface({}, {}, {}, con);
+    QVERIFY(!iface.isValid());
+    QVERIFY(!QMetaObject::invokeMethod(&interface, "ListNames", Qt::DirectConnection));
 }
 
 void tst_QDBusInterface::notValidDerived()

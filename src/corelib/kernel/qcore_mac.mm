@@ -263,16 +263,9 @@ QMacAutoReleasePool::QMacAutoReleasePool()
 
 #ifdef QT_DEBUG
     void *poolFrame = nullptr;
-    if (__builtin_available(macOS 10.14, iOS 12.0, tvOS 12.0, watchOS 5.0, *)) {
-        void *frame;
-        if (backtrace_from_fp(__builtin_frame_address(0), &frame, 1))
-            poolFrame = frame;
-    } else {
-        static const int maxFrames = 3;
-        void *callstack[maxFrames];
-        if (backtrace(callstack, maxFrames) == maxFrames)
-            poolFrame = callstack[maxFrames - 1];
-    }
+    void *frame;
+    if (backtrace_from_fp(__builtin_frame_address(0), &frame, 1))
+        poolFrame = frame;
 
     if (poolFrame) {
         Dl_info info;
@@ -343,14 +336,9 @@ QDebug operator<<(QDebug debug, const QCFString &string)
 #ifdef Q_OS_MACOS
 bool qt_mac_applicationIsInDarkMode()
 {
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
-    if (__builtin_available(macOS 10.14, *)) {
-        auto appearance = [NSApp.effectiveAppearance bestMatchFromAppearancesWithNames:
-                @[ NSAppearanceNameAqua, NSAppearanceNameDarkAqua ]];
-        return [appearance isEqualToString:NSAppearanceNameDarkAqua];
-    }
-#endif
-    return false;
+    auto appearance = [NSApp.effectiveAppearance bestMatchFromAppearancesWithNames:
+            @[ NSAppearanceNameAqua, NSAppearanceNameDarkAqua ]];
+    return [appearance isEqualToString:NSAppearanceNameDarkAqua];
 }
 
 bool qt_mac_runningUnderRosetta()
@@ -673,11 +661,9 @@ QMacVersion::VersionTuple QMacVersion::versionsForImage(const mach_header *machH
             || loadCommand->cmd == LC_VERSION_MIN_TVOS || loadCommand->cmd == LC_VERSION_MIN_WATCHOS) {
             auto versionCommand = reinterpret_cast<version_min_command *>(loadCommand);
             return makeVersionTuple(versionCommand->version, versionCommand->sdk, osForLoadCommand(loadCommand->cmd));
-#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_13, __IPHONE_11_0, __TVOS_11_0, __WATCHOS_4_0)
         } else if (loadCommand->cmd == LC_BUILD_VERSION) {
             auto versionCommand = reinterpret_cast<build_version_command *>(loadCommand);
             return makeVersionTuple(versionCommand->minos, versionCommand->sdk, osForPlatform(versionCommand->platform));
-#endif
         }
         commandCursor += loadCommand->cmdsize;
     }

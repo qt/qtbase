@@ -77,6 +77,8 @@ class QDockWidgetPrivate : public QWidgetPrivate
 
     struct DragState {
         QPoint pressPos;
+        QPoint globalPressPos;
+        QPoint widgetInitialPos;
         bool dragging;
         QLayoutItem *widgetItem;
         bool ownWidgetItem;
@@ -90,6 +92,7 @@ public:
     void _q_toggleTopLevel(); // private slot
 
     void updateButtons();
+    static Qt::DockWidgetArea toDockWidgetArea(QInternal::DockPosition pos);
 
 #if QT_CONFIG(tabwidget)
     QTabWidget::TabPosition tabPosition = QTabWidget::North;

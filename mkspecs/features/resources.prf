@@ -4,6 +4,7 @@ isEmpty(QMAKE_MOD_RCC):QMAKE_MOD_RCC = qrc
 
 !contains(QMAKE_RESOURCE_FLAGS, -root):!isEmpty(QMAKE_RESOURCE_ROOT):QMAKE_RESOURCE_FLAGS += -root $$QMAKE_RESOURCE_ROOT
 !contains(QMAKE_RESOURCE_FLAGS, -name): QMAKE_RESOURCE_FLAGS += -name ${QMAKE_FILE_BASE}
+!qtConfig(zstd): QMAKE_RESOURCE_FLAGS += --no-zstd
 
 load(resources_functions)
 qtFlattenResources()

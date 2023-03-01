@@ -85,7 +85,11 @@ void tst_QGetPutEnv::getSetCheck()
     QCOMPARE(sresult, QString());
 #endif
 
-    QVERIFY(qputenv(varName, QByteArray("supervalue")));
+    constexpr char varValueFullString[] = "supervalue123";
+    const auto varValueQBA = QByteArray::fromRawData(varValueFullString, sizeof varValueFullString - 4);
+    QCOMPARE(varValueQBA, "supervalue");
+
+    QVERIFY(qputenv(varName, varValueQBA));
 
     QVERIFY(qEnvironmentVariableIsSet(varName));
     QVERIFY(!qEnvironmentVariableIsEmpty(varName));

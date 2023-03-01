@@ -183,12 +183,10 @@ QGroupBox *Window::createPushButtonGroup()
     popupButton->setMenu(menu);
 //! [12]
 
-    QAction *newAction = menu->addAction(tr("Submenu"));
-    QMenu *subMenu = new QMenu(tr("Popup Submenu"));
+    QMenu *subMenu = menu->addMenu(tr("Submenu"));
     subMenu->addAction(tr("Item 1"));
     subMenu->addAction(tr("Item 2"));
     subMenu->addAction(tr("Item 3"));
-    newAction->setMenu(subMenu);
 
 //! [13]
     QVBoxLayout *vbox = new QVBoxLayout;

@@ -253,7 +253,7 @@ bool QHttp2Configuration::setStreamReceiveWindowSize(unsigned size)
 /*!
     Returns the window size for stream-level flow control.
     The default value QNetworkAccessManager will be using is
-    65535 octets (see \l {https://httpwg.org/specs/rfc7540.html#SettingValues}{RFC 7540}).
+    214748364 octets (see \l {https://httpwg.org/specs/rfc7540.html#SettingValues}{RFC 7540}).
 */
 unsigned QHttp2Configuration::streamReceiveWindowSize() const
 {

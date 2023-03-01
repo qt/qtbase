@@ -77,7 +77,26 @@ QScreen::QScreen(QPlatformScreen *screen)
     : QObject(*new QScreenPrivate(), nullptr)
 {
     Q_D(QScreen);
-    d->setPlatformScreen(screen);
+    d->platformScreen = screen;
+    d->platformScreen->d_func()->screen = this;
+    d->orientation = d->platformScreen->orientation();
+
+    d->logicalDpi = QPlatformScreen::overrideDpi(d->platformScreen->logicalDpi());
+
+    d->refreshRate = d->platformScreen->refreshRate();
+    // safeguard ourselves against buggy platform behavior...
+    if (d->refreshRate < 1.0)
+        d->refreshRate = 60.0;
+
+    d->updateHighDpi();
+    d->updatePrimaryOrientation(); // derived from the geometry
+}
+
+void QScreenPrivate::updateLogicalDpi()
+{
+    Q_Q(QScreen);
+    logicalDpi = QPlatformScreen::overrideDpi(q->handle()->logicalDpi());
+    updateGeometriesWithSignals(); // updates geometries based on scale factor
 }
 
 void QScreenPrivate::updateGeometriesWithSignals()
@@ -106,25 +125,6 @@ void QScreenPrivate::emitGeometryChangeSignals(bool geometryChanged, bool availa
     if (geometryChanged)
         emit q->physicalDotsPerInchChanged(q->physicalDotsPerInch());
 }
-
-void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
-{
-    Q_Q(QScreen);
-    platformScreen = screen;
-    platformScreen->d_func()->screen = q;
-    orientation = platformScreen->orientation();
-
-    logicalDpi = QPlatformScreen::overrideDpi(platformScreen->logicalDpi());
-
-    refreshRate = platformScreen->refreshRate();
-    // safeguard ourselves against buggy platform behavior...
-    if (refreshRate < 1.0)
-        refreshRate = 60.0;
-
-    updateHighDpi();
-    updatePrimaryOrientation(); // derived from the geometry
-}
-
 
 /*!
     Destroys the screen.

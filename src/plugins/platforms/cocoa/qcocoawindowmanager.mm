@@ -49,19 +49,13 @@
 
 QT_BEGIN_NAMESPACE
 
-QCocoaWindowManager *QCocoaWindowManager::instance()
-{
-    static auto *instance = new QCocoaWindowManager;
-    return instance;
-}
-
 QCocoaWindowManager::QCocoaWindowManager()
 {
     if (NSApp) {
         initialize();
     } else {
-        static auto applicationDidFinishLaunching(QMacNotificationObserver(nil,
-            NSApplicationDidFinishLaunchingNotification, [this] { initialize(); }));
+        m_applicationDidFinishLaunchingObserver = QMacNotificationObserver(nil,
+            NSApplicationDidFinishLaunchingNotification, [this] { initialize(); });
     }
 }
 
@@ -74,9 +68,9 @@ void QCocoaWindowManager::initialize()
     // event dispatcher sessions allows us to track session started by native
     // APIs as well. We need to check the initial state as well, in case there
     // is already a modal session running.
-    static auto modalSessionObserver(QMacKeyValueObserver(
+    m_modalSessionObserver = QMacKeyValueObserver(
         NSApp, @"modalWindow", [this] { modalSessionChanged(); },
-        NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew));
+        NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew);
 }
 
 void QCocoaWindowManager::modalSessionChanged()

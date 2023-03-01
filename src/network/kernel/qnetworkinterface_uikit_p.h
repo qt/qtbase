@@ -237,26 +237,5 @@ struct in6_ifreq {
 #define SIOCGIFAFLAG_IN6 _IOWR('i', 73, struct in6_ifreq)
 #define SIOCGIFALIFETIME_IN6 _IOWR('i', 81, struct in6_ifreq)
 
-// The definition below is ONLY a temporary workaround to unblock
-// integrations on CI. MUST be removed ASAP, as soon as SDK is
-// updated. Currently, we have WatchOS SDK 3.2 and it's missing
-// net/if_types.h (unlike SDK 4.0, which has it). Alas, we have to
-// work this around. We only define constants that we use in code.
-
-#if !QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_NA, __IPHONE_NA, __TVOS_NA, __WATCHOS_4_0)
-
-#define QT_WATCHOS_OUTDATED_SDK_WORKAROUND
-
-#define IFT_PPP 0x17 /* RFC 1331 */
-#define IFT_LOOP 0x18 /* loopback */
-#define IFT_SLIP 0x1c /* IP over generic TTY */
-
-#define IFT_GIF 0x37 /*0xf0*/
-#define IFT_STF 0x39 /*0xf3*/
-
-#define IFT_IEEE1394 0x90 /* IEEE1394 High Performance SerialBus*/
-
-#endif // WatchOS SDK below 4.0
-
 #endif // QNETWORKINTERFACE_UIKIT_P_H
 

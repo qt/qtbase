@@ -41,18 +41,21 @@
 #define QCOCOAWINDOWMANAGER_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/private/qcore_mac_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QCocoaWindowManager
 {
 public:
-    static QCocoaWindowManager *instance();
+    QCocoaWindowManager();
 
 private:
-    QCocoaWindowManager();
+
+    QMacNotificationObserver m_applicationDidFinishLaunchingObserver;
     void initialize();
 
+    QMacKeyValueObserver m_modalSessionObserver;
     void modalSessionChanged();
 };
 

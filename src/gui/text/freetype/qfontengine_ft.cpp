@@ -833,7 +833,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     } else {
         // ad hoc algorithm
         int score = fontDef.weight * fontDef.pixelSize;
-        line_thickness = score / 700;
+        line_thickness = score / 7000;
         // looks better with thicker line for small pointsizes
         if (line_thickness < 2 && score >= 1050)
             line_thickness = 2;

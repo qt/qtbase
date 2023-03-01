@@ -118,6 +118,19 @@ static inline int lengthOfEscapeSequence(const QByteArray &s, int i)
     return i - startPos;
 }
 
+static inline uint lengthOfEscapedString(const QByteArray &str)
+{
+    int extra = 0;
+    for (int j = 0; j < str.length(); ++j) {
+        if (str.at(j) == '\\') {
+            int cnt = lengthOfEscapeSequence(str, j) - 1;
+            extra += cnt;
+            j += cnt;
+        }
+    }
+    return str.length() - extra;
+}
+
 void Generator::strreg(const QByteArray &s)
 {
     if (!strings.contains(s))
@@ -250,7 +263,7 @@ void Generator::generateCode()
         int stringDataLength = 0;
         int stringDataCounter = 0;
         for (int i = 0; i < strings.size(); ++i) {
-            int thisLength = strings.at(i).length() + 1;
+            int thisLength = lengthOfEscapedString(strings.at(i)) + 1;
             stringDataLength += thisLength;
             if (stringDataLength / constCharArraySizeLimit) {
                 // save previous stringdata and start computing the next one.
@@ -263,35 +276,26 @@ void Generator::generateCode()
     }
     fprintf(out, "};\n");
 
-    // Macro that expands into a QByteArrayData. The offset member is
-    // calculated from 1) the offset of the actual characters in the
-    // stringdata.stringdata member, and 2) the stringdata.data index of the
-    // QByteArrayData being defined. This calculation relies on the
-    // QByteArrayData::data() implementation returning simply "this + offset".
+    // Macro that simplifies the string data listing. The offset is calculated
+    // from the top of the stringdata object (i.e., past the uints).
     fprintf(out, "#define QT_MOC_LITERAL(ofs, len) \\\n"
-            "    uint(offsetof(qt_meta_stringdata_%s_t, stringdata0) + ofs), len \n",
+            "    uint(sizeof(qt_meta_stringdata_%s_t::offsetsAndSizes) + ofs), len \n",
             qualifiedClassNameIdentifier.constData());
 
     fprintf(out, "static const qt_meta_stringdata_%s_t qt_meta_stringdata_%s = {\n",
             qualifiedClassNameIdentifier.constData(), qualifiedClassNameIdentifier.constData());
-    fprintf(out, "    {\n");
+    fprintf(out, "    {");
     {
         int idx = 0;
         for (int i = 0; i < strings.size(); ++i) {
             const QByteArray &str = strings.at(i);
-            fprintf(out, "QT_MOC_LITERAL(%d, %d)", idx, int(str.length()));
-            if (i != strings.size() - 1)
-                fputc(',', out);
             const QByteArray comment = str.length() > 32 ? str.left(29) + "..." : str;
-            fprintf(out, " // \"%s\"\n", comment.size() ? comment.constData() : "");
-            idx += str.length() + 1;
-            for (int j = 0; j < str.length(); ++j) {
-                if (str.at(j) == '\\') {
-                    int cnt = lengthOfEscapeSequence(str, j) - 1;
-                    idx -= cnt;
-                    j += cnt;
-                }
-            }
+            const char *comma = (i != strings.size() - 1 ? "," : " ");
+            int len = lengthOfEscapedString(str);
+            fprintf(out, "\n        QT_MOC_LITERAL(%d, %d)%s  // \"%s\"", idx, len, comma,
+                    comment.constData());
+
+            idx += len + 1;
         }
         fprintf(out, "\n    },\n");
     }
@@ -1228,7 +1232,7 @@ void Generator::generateStaticMetacall()
                 fprintf(out, ") const;\n");
             else
                 fprintf(out, ");\n");
-            fprintf(out, "            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&%s::%s)) {\n",
+            fprintf(out, "            if (_t _q_method = &%s::%s; *reinterpret_cast<_t *>(_a[1]) == _q_method) {\n",
                     cdef->classname.constData(), f.name.constData());
             fprintf(out, "                *result = %d;\n", methodindex);
             fprintf(out, "                return;\n");

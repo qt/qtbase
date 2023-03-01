@@ -548,14 +548,14 @@ QList<QObject*> QAction::associatedObjects() const
 
 /*!
     \fn QWidget *QAction::parentWidget() const
-    \deprecated Use parent() with qobject_cast() instead.
+    \deprecated [6.0] Use parent() with qobject_cast() instead.
 
     Returns the parent widget.
 */
 
 /*!
     \fn QList<QWidget*> QAction::associatedWidgets() const
-    \deprecated Use associatedObjects() with qobject_cast() instead.
+    \deprecated [6.0] Use associatedObjects() with qobject_cast() instead.
 
     Returns a list of widgets this action has been added to.
 
@@ -564,7 +564,7 @@ QList<QObject*> QAction::associatedObjects() const
 
 /*!
     \fn QList<QWidget*> QAction::associatedGraphicsWidgets() const
-    \deprecated Use associatedObjects() with qobject_cast() instead.
+    \deprecated [6.0] Use associatedObjects() with qobject_cast() instead.
 
     Returns a list of graphics widgets this action has been added to.
 
@@ -1225,14 +1225,13 @@ QAction::MenuRole QAction::menuRole() const
 
 /*!
     \fn QMenu *QAction::menu() const
-    \deprecated
 
     Returns the menu contained by this action.
 
     In widget applications, actions that contain menus can be used to create menu
     items with submenus, or inserted into toolbars to create buttons with popup menus.
 
-    \sa QMenu::addAction()
+    \sa QMenu::addAction(), QMenu::menuInAction()
 */
 QObject* QAction::menuObject() const
 {
@@ -1242,7 +1241,6 @@ QObject* QAction::menuObject() const
 
 /*!
     \fn void QAction::setMenu(QMenu *menu)
-    \deprecated
 
     Sets the menu contained by this action to the specified \a menu.
 */

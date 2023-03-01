@@ -12,3 +12,4 @@ qt_internal_add_test(tst_qdbusabstractadaptor
         Qt::DBus
 )
 # special case end
+add_dependencies(tst_qdbusabstractadaptor qmyserver)

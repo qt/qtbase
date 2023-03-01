@@ -52,17 +52,18 @@
 #undef signals
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
-#include <gdk/gdkx.h>
 #include <pango/pango.h>
+
+#if QT_CONFIG(xlib) && defined(GDK_WINDOWING_X11)
+#include <gdk/gdkx.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
-class QGtk3Dialog : public QWindow
+class QGtk3Dialog
 {
-    Q_OBJECT
-
 public:
-    QGtk3Dialog(GtkWidget *gtkWidget);
+    QGtk3Dialog(GtkWidget *gtkWidget, QPlatformDialogHelper *helper);
     ~QGtk3Dialog();
 
     GtkDialog *gtkDialog() const;
@@ -71,23 +72,20 @@ public:
     bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent);
     void hide();
 
-Q_SIGNALS:
-    void accept();
-    void reject();
-
 protected:
-    static void onResponse(QGtk3Dialog *dialog, int response);
-
-private slots:
-    void onParentWindowDestroyed();
+    static void onResponse(QPlatformDialogHelper *helper, int response);
 
 private:
     GtkWidget *gtkWidget;
+    QPlatformDialogHelper *helper;
+    Qt::WindowModality modality;
 };
 
-QGtk3Dialog::QGtk3Dialog(GtkWidget *gtkWidget) : gtkWidget(gtkWidget)
+QGtk3Dialog::QGtk3Dialog(GtkWidget *gtkWidget, QPlatformDialogHelper *helper)
+    : gtkWidget(gtkWidget)
+    , helper(helper)
 {
-    g_signal_connect_swapped(G_OBJECT(gtkWidget), "response", G_CALLBACK(onResponse), this);
+    g_signal_connect_swapped(G_OBJECT(gtkWidget), "response", G_CALLBACK(onResponse), helper);
     g_signal_connect(G_OBJECT(gtkWidget), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 }
 
@@ -104,43 +102,39 @@ GtkDialog *QGtk3Dialog::gtkDialog() const
 
 void QGtk3Dialog::exec()
 {
-    if (modality() == Qt::ApplicationModal) {
+    if (modality == Qt::ApplicationModal) {
         // block input to the whole app, including other GTK dialogs
         gtk_dialog_run(gtkDialog());
     } else {
         // block input to the window, allow input to other GTK dialogs
         QEventLoop loop;
-        connect(this, SIGNAL(accept()), &loop, SLOT(quit()));
-        connect(this, SIGNAL(reject()), &loop, SLOT(quit()));
+        loop.connect(helper, SIGNAL(accept()), SLOT(quit()));
+        loop.connect(helper, SIGNAL(reject()), SLOT(quit()));
         loop.exec();
     }
 }
 
 bool QGtk3Dialog::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
 {
-    if (parent) {
-        connect(parent, &QWindow::destroyed, this, &QGtk3Dialog::onParentWindowDestroyed,
-                Qt::UniqueConnection);
-    }
-    setParent(parent);
-    setFlags(flags);
-    setModality(modality);
+    Q_UNUSED(flags);
+    this->modality = modality;
 
     gtk_widget_realize(gtkWidget); // creates X window
 
     GdkWindow *gdkWindow = gtk_widget_get_window(gtkWidget);
     if (parent) {
+#if QT_CONFIG(xlib) && defined(GDK_WINDOWING_X11)
         if (GDK_IS_X11_WINDOW(gdkWindow)) {
             GdkDisplay *gdkDisplay = gdk_window_get_display(gdkWindow);
             XSetTransientForHint(gdk_x11_display_get_xdisplay(gdkDisplay),
                                  gdk_x11_window_get_xid(gdkWindow),
                                  parent->winId());
         }
+#endif
     }
 
     if (modality != Qt::NonModal) {
         gdk_window_set_modal_hint(gdkWindow, true);
-        QGuiApplicationPrivate::showModalWindow(this);
     }
 
     gtk_widget_show(gtkWidget);
@@ -150,30 +144,20 @@ bool QGtk3Dialog::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWind
 
 void QGtk3Dialog::hide()
 {
-    QGuiApplicationPrivate::hideModalWindow(this);
     gtk_widget_hide(gtkWidget);
 }
 
-void QGtk3Dialog::onResponse(QGtk3Dialog *dialog, int response)
+void QGtk3Dialog::onResponse(QPlatformDialogHelper *helper, int response)
 {
     if (response == GTK_RESPONSE_OK)
-        emit dialog->accept();
+        emit helper->accept();
     else
-        emit dialog->reject();
-}
-
-void QGtk3Dialog::onParentWindowDestroyed()
-{
-    // The QGtk3*DialogHelper classes own this object. Make sure the parent doesn't delete it.
-    setParent(nullptr);
+        emit helper->reject();
 }
 
 QGtk3ColorDialogHelper::QGtk3ColorDialogHelper()
 {
-    d.reset(new QGtk3Dialog(gtk_color_chooser_dialog_new("", nullptr)));
-    connect(d.data(), SIGNAL(accept()), this, SLOT(onAccepted()));
-    connect(d.data(), SIGNAL(reject()), this, SIGNAL(reject()));
-
+    d.reset(new QGtk3Dialog(gtk_color_chooser_dialog_new("", nullptr), this));
     g_signal_connect_swapped(d->gtkDialog(), "notify::rgba", G_CALLBACK(onColorChanged), this);
 }
 
@@ -218,11 +202,6 @@ QColor QGtk3ColorDialogHelper::currentColor() const
     return QColor::fromRgbF(gdkColor.red, gdkColor.green, gdkColor.blue, gdkColor.alpha);
 }
 
-void QGtk3ColorDialogHelper::onAccepted()
-{
-    emit accept();
-}
-
 void QGtk3ColorDialogHelper::onColorChanged(QGtk3ColorDialogHelper *dialog)
 {
     emit dialog->currentColorChanged(dialog->currentColor());
@@ -242,10 +221,7 @@ QGtk3FileDialogHelper::QGtk3FileDialogHelper()
                                                         GTK_FILE_CHOOSER_ACTION_OPEN,
                                                         qUtf8Printable(QGtk3Theme::defaultStandardButtonText(QPlatformDialogHelper::Cancel)), GTK_RESPONSE_CANCEL,
                                                         qUtf8Printable(QGtk3Theme::defaultStandardButtonText(QPlatformDialogHelper::Ok)), GTK_RESPONSE_OK,
-                                                        NULL)));
-
-    connect(d.data(), SIGNAL(accept()), this, SLOT(onAccepted()));
-    connect(d.data(), SIGNAL(reject()), this, SIGNAL(reject()));
+                                                        NULL), this));
 
     g_signal_connect(GTK_FILE_CHOOSER(d->gtkDialog()), "selection-changed", G_CALLBACK(onSelectionChanged), this);
     g_signal_connect_swapped(GTK_FILE_CHOOSER(d->gtkDialog()), "current-folder-changed", G_CALLBACK(onCurrentFolderChanged), this);
@@ -362,11 +338,6 @@ QString QGtk3FileDialogHelper::selectedNameFilter() const
     GtkDialog *gtkDialog = d->gtkDialog();
     GtkFileFilter *gtkFilter = gtk_file_chooser_get_filter(GTK_FILE_CHOOSER(gtkDialog));
     return _filterNames.value(gtkFilter);
-}
-
-void QGtk3FileDialogHelper::onAccepted()
-{
-    emit accept();
 }
 
 void QGtk3FileDialogHelper::onSelectionChanged(GtkDialog *gtkDialog, QGtk3FileDialogHelper *helper)
@@ -497,10 +468,7 @@ void QGtk3FileDialogHelper::setNameFilters(const QStringList &filters)
 
 QGtk3FontDialogHelper::QGtk3FontDialogHelper()
 {
-    d.reset(new QGtk3Dialog(gtk_font_chooser_dialog_new("", nullptr)));
-    connect(d.data(), SIGNAL(accept()), this, SLOT(onAccepted()));
-    connect(d.data(), SIGNAL(reject()), this, SIGNAL(reject()));
-
+    d.reset(new QGtk3Dialog(gtk_font_chooser_dialog_new("", nullptr), this));
     g_signal_connect_swapped(d->gtkDialog(), "notify::font", G_CALLBACK(onFontChanged), this);
 }
 
@@ -604,11 +572,6 @@ QFont QGtk3FontDialogHelper::currentFont() const
     return font;
 }
 
-void QGtk3FontDialogHelper::onAccepted()
-{
-    emit accept();
-}
-
 void QGtk3FontDialogHelper::onFontChanged(QGtk3FontDialogHelper *dialog)
 {
     emit dialog->currentFontChanged(dialog->currentFont());
@@ -625,5 +588,3 @@ void QGtk3FontDialogHelper::applyOptions()
 QT_END_NAMESPACE
 
 #include "moc_qgtk3dialoghelpers.cpp"
-
-#include "qgtk3dialoghelpers.moc"

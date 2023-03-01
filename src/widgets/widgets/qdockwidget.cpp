@@ -56,6 +56,7 @@
 #include <private/qstylesheetstyle_p.h>
 #include <qpa/qplatformtheme.h>
 
+#include <private/qhighdpiscaling_p.h>
 #include "qdockwidget_p.h"
 #include "qmainwindowlayout_p.h"
 
@@ -786,6 +787,8 @@ void QDockWidgetPrivate::initDrag(const QPoint &pos, bool nca)
 
     state = new QDockWidgetPrivate::DragState;
     state->pressPos = pos;
+    state->globalPressPos = q->mapToGlobal(pos);
+    state->widgetInitialPos = q->pos();
     state->dragging = false;
     state->widgetItem = nullptr;
     state->ownWidgetItem = false;
@@ -811,10 +814,10 @@ void QDockWidgetPrivate::startDrag(bool group)
 
     state->widgetItem = layout->unplug(q, group);
     if (state->widgetItem == nullptr) {
-        /* I have a QMainWindow parent, but I was never inserted with
+        /*  Dock widget has a QMainWindow parent, but was never inserted with
             QMainWindow::addDockWidget, so the QMainWindowLayout has no
-            widget item for me. :( I have to create it myself, and then
-            delete it if I don't get dropped into a dock area. */
+            widget item for it. It will be newly created and deleted if it doesn't
+            get dropped into a dock area. */
         QDockWidgetGroupWindow *floatingTab = qobject_cast<QDockWidgetGroupWindow*>(parent);
         if (floatingTab && !q->isFloating())
             state->widgetItem = new QDockWidgetGroupWindowItem(floatingTab);
@@ -868,7 +871,15 @@ void QDockWidgetPrivate::endDrag(bool abort)
                 if (q->isFloating()) { // Might not be floating when dragging a QDockWidgetGroupWindow
                     undockedGeometry = q->geometry();
 #if QT_CONFIG(tabwidget)
-                    tabPosition = mwLayout->tabPosition(mainWindow->dockWidgetArea(q));
+                    // is the widget located within the mainwindow?
+                    const Qt::DockWidgetArea area = mainWindow->dockWidgetArea(q);
+                    if (area != Qt::NoDockWidgetArea) {
+                        tabPosition = mwLayout->tabPosition(area);
+                    } else if (auto dwgw = qobject_cast<QDockWidgetGroupWindow *>(q->parent())) {
+                        // DockWidget wasn't found in one of the docks within mainwindow
+                        // => derive tabPosition from parent
+                        tabPosition = mwLayout->tabPosition(toDockWidgetArea(dwgw->layoutInfo()->dockPos));
+                    }
 #endif
                 }
                 q->activateWindow();
@@ -881,6 +892,18 @@ void QDockWidgetPrivate::endDrag(bool abort)
     }
     delete state;
     state = nullptr;
+}
+
+Qt::DockWidgetArea QDockWidgetPrivate::toDockWidgetArea(QInternal::DockPosition pos)
+{
+    switch (pos) {
+    case QInternal::LeftDock:   return Qt::LeftDockWidgetArea;
+    case QInternal::RightDock:  return Qt::RightDockWidgetArea;
+    case QInternal::TopDock:    return Qt::TopDockWidgetArea;
+    case QInternal::BottomDock: return Qt::BottomDockWidgetArea;
+    default: break;
+    }
+    return Qt::NoDockWidgetArea;
 }
 
 void QDockWidgetPrivate::setResizerActive(bool active)
@@ -995,7 +1018,31 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
     if (state && state->dragging && !state->nca) {
         QMargins windowMargins = q->window()->windowHandle()->frameMargins();
         QPoint windowMarginOffset = QPoint(windowMargins.left(), windowMargins.top());
-        QPoint pos = event->globalPosition().toPoint() - state->pressPos - windowMarginOffset;
+
+        // TODO maybe use QScreen API (if/when available) to simplify the below code.
+        const QScreen *orgWdgScreen = QGuiApplication::screenAt(state->widgetInitialPos);
+        const QScreen *screenFrom = QGuiApplication::screenAt(state->globalPressPos);
+        const QScreen *screenTo = QGuiApplication::screenAt(event->globalPosition().toPoint());
+        const QScreen *wdgScreen = q->screen();
+
+        QPoint pos;
+        if (Q_LIKELY(screenFrom && screenTo && wdgScreen && orgWdgScreen)) {
+            const QPoint nativeWdgOrgPos = QHighDpiScaling::mapPositionToNative(
+                    state->widgetInitialPos, orgWdgScreen->handle());
+            const QPoint nativeTo = QHighDpiScaling::mapPositionToNative(
+                    event->globalPosition().toPoint(), screenTo->handle());
+            const QPoint nativeFrom = QHighDpiScaling::mapPositionToNative(state->globalPressPos,
+                                                                           screenFrom->handle());
+
+            // Calculate new nativePos based on startPos + mouse delta move.
+            const QPoint nativeNewPos = nativeWdgOrgPos + (nativeTo - nativeFrom);
+
+            pos = QHighDpiScaling::mapPositionFromNative(nativeNewPos, wdgScreen->handle())
+                    - windowMarginOffset;
+        } else {
+            // Fallback in the unlikely case that source and target screens could not be established
+            pos = event->globalPosition().toPoint() - state->pressPos - windowMarginOffset;
+        }
 
         QDockWidgetGroupWindow *floatingTab = qobject_cast<QDockWidgetGroupWindow*>(parent);
         if (floatingTab && !q->isFloating())

@@ -116,8 +116,8 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     m_drag = new QXcbDrag(this);
 #endif
 
-    m_startupId = qgetenv("DESKTOP_STARTUP_ID");
-    if (!m_startupId.isNull())
+    setStartupId(qgetenv("DESKTOP_STARTUP_ID"));
+    if (!startupId().isNull())
         qunsetenv("DESKTOP_STARTUP_ID");
 
     const int focusInDelay = 100;
@@ -484,12 +484,12 @@ void QXcbConnection::printXcbError(const char *message, xcb_generic_error_t *err
     uint clamped_error_code = qMin<uint>(error->error_code, (sizeof(xcb_errors) / sizeof(xcb_errors[0])) - 1);
     uint clamped_major_code = qMin<uint>(error->major_code, (sizeof(xcb_protocol_request_codes) / sizeof(xcb_protocol_request_codes[0])) - 1);
 
-    qCWarning(lcQpaXcb, "%s: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d",
-             message,
-             int(error->error_code), xcb_errors[clamped_error_code],
-             int(error->sequence), int(error->resource_id),
-             int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
-             int(error->minor_code));
+    qCDebug(lcQpaXcb, "%s: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d",
+            message,
+            int(error->error_code), xcb_errors[clamped_error_code],
+            int(error->sequence), int(error->resource_id),
+            int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
+            int(error->minor_code));
 }
 
 static Qt::MouseButtons translateMouseButtons(int s)
@@ -795,6 +795,28 @@ void QXcbConnection::setMousePressWindow(QXcbWindow *w)
     m_mousePressWindow = w;
 }
 
+QByteArray QXcbConnection::startupId() const
+{
+    return m_startupId;
+}
+void QXcbConnection::setStartupId(const QByteArray &nextId)
+{
+    m_startupId = nextId;
+    if (m_clientLeader) {
+        if (!nextId.isEmpty())
+            xcb_change_property(xcb_connection(),
+                                XCB_PROP_MODE_REPLACE,
+                                clientLeader(),
+                                atom(QXcbAtom::_NET_STARTUP_ID),
+                                atom(QXcbAtom::UTF8_STRING),
+                                8,
+                                nextId.length(),
+                                nextId.constData());
+        else
+            xcb_delete_property(xcb_connection(), clientLeader(), atom(QXcbAtom::_NET_STARTUP_ID));
+    }
+}
+
 void QXcbConnection::grabServer()
 {
     if (m_canGrabServer)
@@ -932,6 +954,8 @@ xcb_window_t QXcbConnection::clientLeader()
                                 session.constData());
         }
 #endif
+
+        setStartupId(startupId());
     }
     return m_clientLeader;
 }

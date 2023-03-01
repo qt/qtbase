@@ -76,8 +76,8 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionItemProvider::Select()
     if (!actionInterface)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    if (accessible->role() == QAccessible::RadioButton) {
-        // For radio buttons we just invoke the selection action; others are automatically deselected.
+    if (accessible->role() == QAccessible::RadioButton || accessible->role() == QAccessible::PageTab) {
+        // For radio buttons/tabs we just invoke the selection action; others are automatically deselected.
         actionInterface->doAction(QAccessibleActionInterface::pressAction());
     } else {
         // Toggle list item if not already selected. It must be done first to support all selection modes.
@@ -113,8 +113,8 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionItemProvider::AddToSelection()
     if (!actionInterface)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    if (accessible->role() == QAccessible::RadioButton) {
-        // For radio buttons we invoke the selection action.
+    if (accessible->role() == QAccessible::RadioButton || accessible->role() == QAccessible::PageTab) {
+        // For radio buttons and tabs we invoke the selection action.
         actionInterface->doAction(QAccessibleActionInterface::pressAction());
     } else {
         // Toggle list item if not already selected.
@@ -138,7 +138,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionItemProvider::RemoveFromSelection(
     if (!actionInterface)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    if (accessible->role() != QAccessible::RadioButton) {
+    if (accessible->role() != QAccessible::RadioButton && accessible->role() != QAccessible::PageTab) {
         if (accessible->state().selected) {
             actionInterface->doAction(QAccessibleActionInterface::toggleAction());
         }
@@ -162,6 +162,8 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionItemProvider::get_IsSelected(BOOL 
 
     if (accessible->role() == QAccessible::RadioButton)
         *pRetVal = accessible->state().checked;
+    else if (accessible->role() == QAccessible::PageTab)
+        *pRetVal = accessible->state().focused;
     else
         *pRetVal = accessible->state().selected;
     return S_OK;
@@ -185,11 +187,10 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionItemProvider::get_SelectionContain
         return UIA_E_ELEMENTNOTAVAILABLE;
 
     // Radio buttons do not require a container.
-    if (accessible->role() == QAccessible::ListItem) {
-        if (QAccessibleInterface *parent = accessible->parent()) {
-            if (parent->role() == QAccessible::List) {
-                *pRetVal = QWindowsUiaMainProvider::providerForAccessible(parent);
-            }
+    if (QAccessibleInterface *parent = accessible->parent()) {
+        if ((accessible->role() == QAccessible::ListItem && parent->role() == QAccessible::List)
+                || (accessible->role() == QAccessible::PageTab && parent->role() == QAccessible::PageTabList)) {
+            *pRetVal = QWindowsUiaMainProvider::providerForAccessible(parent);
         }
     }
     return S_OK;

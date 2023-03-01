@@ -74,7 +74,7 @@
             }
         }
 
-        QObject *focusObject = m_platformWindow->window()->focusObject();
+        QObject *focusObject = m_platformWindow ? m_platformWindow->window()->focusObject() : nullptr;
         if (m_sendKeyEvent && focusObject) {
             if (auto queryResult = queryInputMethod(focusObject, Qt::ImHints)) {
                 auto hints = static_cast<Qt::InputMethodHints>(queryResult.value(Qt::ImHints).toUInt());

@@ -137,7 +137,7 @@ template <typename StringType> struct QStringAlgorithms
         if (ptr != dst && ptr[-1] == QChar::Space)
             --ptr;
 
-        int newlen = ptr - dst;
+        qsizetype newlen = ptr - dst;
         if (isConst && newlen == str.size() && unmodified) {
             // nothing happened, return the original
             return str;

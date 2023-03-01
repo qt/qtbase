@@ -532,6 +532,15 @@ quint16 qChecksum(QByteArrayView data, Qt::ChecksumType standard)
     The default value is -1, which specifies zlib's default
     compression.
 
+//![compress-limit-note]
+    \note The maximum size of data that this function can consume is limited by
+    what the platform's \c{unsigned long} can represent (a Zlib limitation).
+    That means that data > 4GiB can be compressed and decompressed on a 64-bit
+    Unix system, but not on a 64-bit Windows system. Portable code should
+    therefore avoid using qCompress()/qUncompress() to compress more than 4GiB
+    of input.
+//![compress-limit-note]
+
     \sa qUncompress(const QByteArray &data)
 */
 
@@ -541,6 +550,8 @@ quint16 qChecksum(QByteArrayView data, Qt::ChecksumType standard)
 
     Compresses the first \a nbytes of \a data at compression level
     \a compressionLevel and returns the compressed data in a new byte array.
+
+    \include qbytearray.cpp compress-limit-note
 */
 
 #ifndef QT_NO_COMPRESS
@@ -605,6 +616,15 @@ QByteArray qCompress(const uchar* data, qsizetype nbytes, int compressionLevel)
     contain the expected length (in bytes) of the uncompressed data,
     expressed as an unsigned, big-endian, 32-bit integer.
 
+//![uncompress-limit-note]
+    \note The maximum size of data that this function can produce is limited by
+    what the platform's \c{unsigned long} can represent (a Zlib limitation).
+    That means that data > 4GiB can be compressed and decompressed on a 64-bit
+    Unix system, but not on a 64-bit Windows system. Portable code should
+    therefore avoid using qCompress()/qUncompress() to compress more than 4GiB
+    of input.
+//![uncompress-limit-note]
+
     \sa qCompress()
 */
 
@@ -621,6 +641,8 @@ static QByteArray invalidCompressedData()
 
     Uncompresses the first \a nbytes of \a data and returns a new byte
     array with the uncompressed data.
+
+    \include qbytearray.cpp uncompress-limit-note
 */
 QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 {
@@ -636,7 +658,7 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     size_t expectedSize = size_t((data[0] << 24) | (data[1] << 16) |
                                  (data[2] <<  8) | (data[3]      ));
     size_t len = qMax(expectedSize, 1ul);
-    const size_t maxPossibleSize = MaxAllocSize - sizeof(QByteArray::Data);
+    constexpr size_t maxPossibleSize = MaxAllocSize - sizeof(QByteArray::Data);
     if (Q_UNLIKELY(len >= maxPossibleSize)) {
         // QByteArray does not support that huge size anyway.
         return invalidCompressedData();
@@ -665,6 +687,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
             return QByteArray();
 
         case Z_BUF_ERROR:
+            static_assert(maxPossibleSize <= (std::numeric_limits<decltype(len)>::max)() / 2,
+                          "oops, next line may overflow");
             len *= 2;
             if (Q_UNLIKELY(len >= maxPossibleSize)) {
                 // QByteArray does not support that huge size anyway.
@@ -2647,7 +2671,7 @@ qsizetype QtPrivate::count(QByteArrayView haystack, QByteArrayView needle) noexc
 
 qsizetype QByteArray::count(char ch) const
 {
-    return static_cast<int>(countCharHelper(*this, ch));
+    return countCharHelper(*this, ch);
 }
 
 /*! \fn qsizetype QByteArray::count() const
@@ -4327,7 +4351,7 @@ QByteArray::FromBase64Result QByteArray::fromBase64Encoding(QByteArray &&base64,
                                                     base64.size(),
                                                     base64.data(), // in-place
                                                     options);
-        base64.truncate(int(base64result.decodedLength));
+        base64.truncate(base64result.decodedLength);
         return { std::move(base64), base64result.status };
     }
 
@@ -4343,7 +4367,7 @@ QByteArray::FromBase64Result QByteArray::fromBase64Encoding(const QByteArray &ba
                                                 base64Size,
                                                 const_cast<char *>(result.constData()),
                                                 options);
-    result.truncate(int(base64result.decodedLength));
+    result.truncate(base64result.decodedLength);
     return { std::move(result), base64result.status };
 }
 

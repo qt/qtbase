@@ -133,6 +133,80 @@ private:
     using QList<QPostEvent>::insert;
 };
 
+namespace QtPrivate {
+
+/* BindingStatusOrList is basically a QBiPointer (as found in declarative)
+   with some helper methods to manipulate the list. BindingStatusOrList starts
+   its life in a null state and supports the following transitions
+
+                        0 state (initial)
+                       /                \
+                      /                  \
+                     v                    v
+             pending object list----------->binding status
+    Note that binding status is the final state, and we never transition away
+    from it
+*/
+class BindingStatusOrList
+{
+    Q_DISABLE_COPY_MOVE(BindingStatusOrList)
+public:
+    using List = std::vector<QObject *>;
+
+    constexpr BindingStatusOrList() noexcept : data(0) {}
+    explicit BindingStatusOrList(QBindingStatus *status) noexcept :
+        data(encodeBindingStatus(status)) {}
+    explicit BindingStatusOrList(List *list) noexcept : data(encodeList(list)) {}
+
+    QBindingStatus *addObjectUnlessAlreadyStatus(QObject *object);
+    void removeObject(QObject *object);
+    void setStatusAndClearList(QBindingStatus *status) noexcept;
+
+
+    static bool isBindingStatus(quintptr data) noexcept
+    {
+        return !isNull(data) && !isList(data);
+    }
+    static bool isList(quintptr data) noexcept { return data & 1; }
+    static bool isNull(quintptr data) noexcept { return data == 0; }
+
+    QBindingStatus *bindingStatus() const noexcept
+    {
+        if (isBindingStatus(data))
+            return reinterpret_cast<QBindingStatus *>(data);
+        else
+            return nullptr;
+    }
+
+    List *list() const noexcept
+    {
+        return decodeList(data);
+    }
+
+private:
+    static List *decodeList(quintptr ptr) noexcept
+    {
+        if (isList(ptr))
+            return reinterpret_cast<List *>(ptr & ~1);
+        else
+            return nullptr;
+    }
+
+    static quintptr encodeBindingStatus(QBindingStatus *status) noexcept
+    {
+        return quintptr(status);
+    }
+
+    static quintptr encodeList(List *list) noexcept
+    {
+        return quintptr(list) | 1;
+    }
+
+    quintptr data;
+};
+
+} // namespace QtPrivate
+
 #if QT_CONFIG(thread)
 
 class Q_CORE_EXPORT QDaemonThread : public QThread
@@ -204,6 +278,21 @@ public:
         }
     }
 
+    QBindingStatus *bindingStatus()
+    {
+
+        QMutexLocker lock(&mutex);
+        return m_statusOrPendingObjects.bindingStatus();
+    }
+
+    /* Returns nullptr if the object has been added, or the binding status
+       if that one has been set in the meantime
+    */
+    QBindingStatus *addObjectWithPendingBindingStatusChange(QObject *obj);
+    void removeObjectWithPendingBindingStatusChange(QObject *obj);
+
+    // manipulating m_statusOrPendingObjects requires mutex to be locked
+    QtPrivate::BindingStatusOrList m_statusOrPendingObjects = {};
 #ifndef Q_OS_INTEGRITY
 private:
     // Used in QThread(Private)::start to avoid racy access to QObject::objectName,
@@ -222,7 +311,12 @@ public:
 
     mutable QMutex mutex;
     QThreadData *data;
+    QBindingStatus* m_bindingStatus;
     bool running = false;
+
+    QBindingStatus* bindingStatus() { return m_bindingStatus; }
+    QBindingStatus *addObjectWithPendingBindingStatusChange(QObject *) { return nullptr; }
+    void removeObjectWithPendingBindingStatusChange(QObject *) {}
 
     static void setCurrentThread(QThread *) { }
     static QThread *threadForId(int) { return QThread::currentThread(); }

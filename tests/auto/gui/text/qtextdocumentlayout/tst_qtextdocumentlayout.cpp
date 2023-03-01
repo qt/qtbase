@@ -58,6 +58,7 @@ private slots:
     void floatingTablePageBreak();
     void imageAtRightAlignedTab();
     void blockVisibility();
+    void testHitTest();
 
     void largeImage();
 
@@ -403,6 +404,42 @@ void tst_QTextDocumentLayout::largeImage()
 
          QCOMPARE(document.pageCount(), 2);
      }
+}
+
+void tst_QTextDocumentLayout::testHitTest()
+{
+    QTextDocument document;
+    QTextCursor cur(&document);
+    int topMargin = 20;
+
+    //insert 500 blocks into textedit
+    for (int i = 0; i < 500; i++) {
+      cur.insertBlock();
+      cur.insertHtml(QString("block %1").arg(i));
+    }
+
+    //randomly set half the blocks invisible
+    QTextBlock blk=document.begin();
+    for (int i = 0; i < 500; i++) {
+      if (i % 7)
+        blk.setVisible(0);
+      blk = blk.next();
+    }
+
+    //set margin for all blocks (not strictly necessary, but makes easier to click in between blocks)
+    QTextBlockFormat blkfmt;
+    blkfmt.setTopMargin(topMargin);
+    cur.movePosition(QTextCursor::Start);
+    cur.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
+    cur.mergeBlockFormat(blkfmt);
+
+    for (int y = cur.selectionStart(); y < cur.selectionEnd(); y += 10) {
+         QPoint mousePoint(1, y);
+         int cursorPos = document.documentLayout()->hitTest(mousePoint, Qt::FuzzyHit);
+         int positionY = document.findBlock(cursorPos).layout()->position().toPoint().y();
+         //mousePoint is in the rect of the current Block
+         QVERIFY(positionY - topMargin <= y);
+    }
 }
 
 QTEST_MAIN(tst_QTextDocumentLayout)

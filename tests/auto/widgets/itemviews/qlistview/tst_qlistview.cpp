@@ -113,6 +113,7 @@ private slots:
     void moveCursor2();
     void moveCursor3();
     void moveCursor4();
+    void moveCursor5();
     void indexAt();
     void clicked();
     void singleSelectionRemoveRow();
@@ -631,6 +632,26 @@ void tst_QListView::moveCursor4()
     }
     idx = listView.moveCursor(PublicListView::MovePageDown, Qt::NoModifier);
     QTRY_COMPARE(idx, model.index(actualIndex - 2, 0));
+}
+
+void tst_QListView::moveCursor5()
+{
+    PublicListView listView;;
+    QStandardItemModel model;
+    QIcon icon(QPixmap(300,300));
+    model.appendRow(new QStandardItem(icon,"11"));
+    model.appendRow(new QStandardItem(icon,"22"));
+    model.appendRow(new QStandardItem(icon,"33"));
+    listView.setModel(&model);
+    listView.setGeometry(10,10,200,200);
+    listView.setIconSize(QSize(300,300));
+    listView.setViewMode(QListView::IconMode);
+    listView.setCurrentIndex(model.index(0, 0));
+
+    QModelIndex idx = listView.moveCursor(PublicListView::MovePageDown, Qt::NoModifier);
+    QTRY_COMPARE(idx, model.index(1, 0));
+    idx = listView.moveCursor(PublicListView::MovePageUp, Qt::NoModifier);
+    QTRY_COMPARE(idx, model.index(0, 0));
 }
 
 class QListViewShowEventListener : public QListView

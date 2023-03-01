@@ -106,7 +106,7 @@ public:
     uint isWindow : 1; // for QWindow
     uint deleteLaterCalled : 1;
     uint unused : 24;
-    int postedEvents;
+    QAtomicInt postedEvents;
     QDynamicMetaObjectData *metaObject;
     QBindingStorage bindingStorage;
     QMetaObject *dynamicMetaObject() const;

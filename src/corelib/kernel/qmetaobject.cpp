@@ -391,6 +391,7 @@ QString QMetaObject::tr(const char *s, const char *c, int n) const
 {
     return QCoreApplication::translate(objectClassName(this), s, c, n);
 }
+#endif // QT_NO_TRANSLATION
 
 /*!
     \since 6.2
@@ -418,7 +419,6 @@ QMetaType QMetaObject::metaType() const
             return QMetaType::fromName(className()); // try lookup by name in that case
     }
 }
-#endif // QT_NO_TRANSLATION
 
 /*!
     Returns the method offset for this class; i.e. the index position

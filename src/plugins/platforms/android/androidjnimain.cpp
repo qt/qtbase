@@ -63,6 +63,7 @@
 #include <QtCore/qbasicatomic.h>
 #include <QtCore/qjnienvironment.h>
 #include <QtCore/qjniobject.h>
+#include <QtCore/qprocess.h>
 #include <QtCore/qresource.h>
 #include <QtCore/qthread.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -231,6 +232,12 @@ namespace QtAndroid
     {
         QJniObject::callStaticMethod<void>(m_applicationClass, "notifyValueChanged",
                                            "(ILjava/lang/String;)V", accessibilityObjectId, value);
+    }
+
+    void notifyScrolledEvent(uint accessibilityObjectId)
+    {
+        QJniObject::callStaticMethod<void>(m_applicationClass, "notifyScrolledEvent", "(I)V",
+                                           accessibilityObjectId);
     }
 
     void notifyQtAndroidPluginRunning(bool running)
@@ -491,11 +498,11 @@ static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring pa
     }
 
     const char *nativeString = env->GetStringUTFChars(paramsString, 0);
-    QByteArray string = nativeString;
+    const QStringList argsList = QProcess::splitCommand(QString::fromUtf8(nativeString));
     env->ReleaseStringUTFChars(paramsString, nativeString);
 
-    for (auto str : string.split('\t'))
-        m_applicationParams.append(str.split(' '));
+    for (const QString &arg : argsList)
+        m_applicationParams.append(arg.toUtf8());
 
     // Go home
     QDir::setCurrent(QDir::homePath());
@@ -791,6 +798,12 @@ static void handleRefreshRateChanged(JNIEnv */*env*/, jclass /*cls*/, jfloat ref
         m_androidPlatformIntegration->setRefreshRate(refreshRate);
 }
 
+static void handleUiDarkModeChanged(JNIEnv */*env*/, jobject /*thiz*/, jint newUiMode)
+{
+    QAndroidPlatformIntegration::setAppearance(
+        (newUiMode == 1 ) ? QPlatformTheme::Appearance::Dark : QPlatformTheme::Appearance::Light);
+}
+
 static void onActivityResult(JNIEnv */*env*/, jclass /*cls*/,
                              jint requestCode,
                              jint resultCode,
@@ -821,6 +834,7 @@ static JNINativeMethod methods[] = {
     { "setSurface", "(ILjava/lang/Object;II)V", (void *)setSurface },
     { "updateWindow", "()V", (void *)updateWindow },
     { "updateApplicationState", "(I)V", (void *)updateApplicationState },
+    { "handleUiDarkModeChanged", "(I)V", (void *)handleUiDarkModeChanged },
     { "handleOrientationChanged", "(II)V", (void *)handleOrientationChanged },
     { "onActivityResult", "(IILandroid/content/Intent;)V", (void *)onActivityResult },
     { "onNewIntent", "(Landroid/content/Intent;)V", (void *)onNewIntent },

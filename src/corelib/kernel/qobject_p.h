@@ -356,7 +356,7 @@ public:
 
     void setParent_helper(QObject *);
     void moveToThread_helper();
-    void setThreadData_helper(QThreadData *currentData, QThreadData *targetData);
+    void setThreadData_helper(QThreadData *currentData, QThreadData *targetData, QBindingStatus *status);
     void _q_reregisterTimers(void *pointer);
 
     bool isSender(const QObject *receiver, const char *signal) const;
@@ -377,6 +377,8 @@ public:
     // the API public in QObject. This is used by QQmlNotifierEndpoint.
     inline void connectNotify(const QMetaMethod &signal);
     inline void disconnectNotify(const QMetaMethod &signal);
+
+    void reinitBindingStorageAfterThreadMove();
 
     template <typename Func1, typename Func2>
     static inline QMetaObject::Connection connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
@@ -458,7 +460,7 @@ inline void QObjectPrivate::checkForIncompatibleLibraryVersion(int version) cons
 
 inline bool QObjectPrivate::isDeclarativeSignalConnected(uint signal_index) const
 {
-    return declarativeData && QAbstractDeclarativeData::isSignalConnected
+    return !isDeletingChildren && declarativeData && QAbstractDeclarativeData::isSignalConnected
             && QAbstractDeclarativeData::isSignalConnected(declarativeData, q_func(), signal_index);
 }
 

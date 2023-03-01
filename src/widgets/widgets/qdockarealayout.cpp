@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaDockWidgets, "qt.widgets.dockwidgets");
+
 // qmainwindow.cpp
 extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
 
@@ -1223,8 +1225,10 @@ bool QDockAreaLayoutInfo::insertGap(const QList<int> &path, QLayoutItem *dockWid
                 const QDockAreaLayoutItem &item = item_list.at(i);
                 if (item.skip())
                     continue;
-                Q_ASSERT(!(item.flags & QDockAreaLayoutItem::GapItem));
+                Q_ASSERT_X(!(item.flags & QDockAreaLayoutItem::GapItem),
+                             "QDockAreaLayoutInfo::insertGap", "inserting two gaps after each other");
                 space += item.size - pick(o, item.minimumSize());
+                qCDebug(lcQpaDockWidgets) << "Item space:" << item.flags << this;
             }
         }
 
@@ -1249,8 +1253,7 @@ bool QDockAreaLayoutInfo::insertGap(const QList<int> &path, QLayoutItem *dockWid
 
     // finally, insert the gap
     item_list.insert(index, gap_item);
-
-//    dump(qDebug() << "insertGap() after:" << index << tabIndex, *this, QString());
+    qCDebug(lcQpaDockWidgets) << "Insert gap after:" << index << this;
 
     return true;
 }
@@ -2429,23 +2432,7 @@ QList<int> QDockAreaLayout::gapIndex(const QPoint &pos, bool disallowTabs) const
         const QDockAreaLayoutInfo &info = docks[i];
 
         if (info.isEmpty()) {
-            QRect r;
-            switch (i) {
-                case QInternal::LeftDock:
-                    r = QRect(rect.left(), rect.top(), EmptyDropAreaSize, rect.height());
-                    break;
-                case QInternal::RightDock:
-                    r = QRect(rect.right() - EmptyDropAreaSize, rect.top(),
-                                EmptyDropAreaSize, rect.height());
-                    break;
-                case QInternal::TopDock:
-                    r = QRect(rect.left(), rect.top(), rect.width(), EmptyDropAreaSize);
-                    break;
-                case QInternal::BottomDock:
-                    r = QRect(rect.left(), rect.bottom() - EmptyDropAreaSize,
-                                rect.width(), EmptyDropAreaSize);
-                    break;
-            }
+            const QRect r = gapRect(static_cast<QInternal::DockPosition>(i));
             if (r.contains(pos)) {
                 if (opts & QMainWindow::ForceTabbedDocks && !info.item_list.isEmpty()) {
                     //in case of ForceTabbedDocks, we pass -1 in order to force the gap to be tabbed
@@ -2459,6 +2446,38 @@ QList<int> QDockAreaLayout::gapIndex(const QPoint &pos, bool disallowTabs) const
     }
 
     return QList<int>();
+}
+
+QRect QDockAreaLayout::gapRect(QInternal::DockPosition dockPos) const
+{
+    Q_ASSERT_X(mainWindow, "QDockAreaLayout::gapRect", "Called without valid mainWindow pointer.");
+
+    // Warn if main window is too small to create proper docks.
+    // Do not fail because this can be triggered by the user.
+    if (mainWindow->height() < (2 * EmptyDropAreaSize)) {
+        qCWarning(lcQpaDockWidgets, "QDockAreaLayout::gapRect: Main window height %i is too small. Docking will not be possible.",
+                  mainWindow->height());
+
+    }
+    if (mainWindow->width() < (2 * EmptyDropAreaSize)) {
+        qCWarning(lcQpaDockWidgets, "QDockAreaLayout::gapRect: Main window width %i is too small. Docking will not be possible.",
+                   mainWindow->width());
+    }
+
+    // Calculate rectangle of requested dock
+    switch (dockPos) {
+    case QInternal::LeftDock:
+        return QRect(rect.left(), rect.top(), EmptyDropAreaSize, rect.height());
+    case QInternal::RightDock:
+        return QRect(rect.right() - EmptyDropAreaSize, rect.top(), EmptyDropAreaSize, rect.height());
+    case QInternal::TopDock:
+        return QRect(rect.left(), rect.top(), rect.width(), EmptyDropAreaSize);
+    case QInternal::BottomDock:
+        return QRect(rect.left(), rect.bottom() - EmptyDropAreaSize, rect.width(), EmptyDropAreaSize);
+    case QInternal::DockCount:
+        break;
+    }
+    return QRect();
 }
 
 QList<int> QDockAreaLayout::findSeparator(const QPoint &pos) const

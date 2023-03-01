@@ -69,18 +69,6 @@
 
 #include <CoreServices/CoreServices.h>
 
-#if !QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
-@interface NSColor (MojaveForwardDeclarations)
-@property (class, strong, readonly) NSColor *selectedContentBackgroundColor NS_AVAILABLE_MAC(10_14);
-@property (class, strong, readonly) NSColor *unemphasizedSelectedTextBackgroundColor NS_AVAILABLE_MAC(10_14);
-@property (class, strong, readonly) NSColor *unemphasizedSelectedTextColor NS_AVAILABLE_MAC(10_14);
-@property (class, strong, readonly) NSColor *unemphasizedSelectedContentBackgroundColor NS_AVAILABLE_MAC(10_14);
-@property (class, strong, readonly) NSArray<NSColor *> *alternatingContentBackgroundColors NS_AVAILABLE_MAC(10_14);
-// Missing from non-Mojave SDKs, even if introduced in 10.10
-@property (class, strong, readonly) NSColor *linkColor NS_AVAILABLE_MAC(10_10);
-@end
-#endif
-
 QT_BEGIN_NAMESPACE
 
 static QPalette *qt_mac_createSystemPalette()
@@ -110,14 +98,9 @@ static QPalette *qt_mac_createSystemPalette()
     // System palette initialization:
     QBrush br = qt_mac_toQBrush([NSColor selectedControlColor]);
     palette->setBrush(QPalette::Active, QPalette::Highlight, br);
-    if (__builtin_available(macOS 10.14, *)) {
-        const auto inactiveHighlight = qt_mac_toQBrush([NSColor unemphasizedSelectedContentBackgroundColor]);
-        palette->setBrush(QPalette::Inactive, QPalette::Highlight, inactiveHighlight);
-        palette->setBrush(QPalette::Disabled, QPalette::Highlight, inactiveHighlight);
-    } else {
-        palette->setBrush(QPalette::Inactive, QPalette::Highlight, br);
-        palette->setBrush(QPalette::Disabled, QPalette::Highlight, br);
-    }
+    const auto inactiveHighlight = qt_mac_toQBrush([NSColor unemphasizedSelectedContentBackgroundColor]);
+    palette->setBrush(QPalette::Inactive, QPalette::Highlight, inactiveHighlight);
+    palette->setBrush(QPalette::Disabled, QPalette::Highlight, inactiveHighlight);
 
     palette->setBrush(QPalette::Shadow, qt_mac_toQColor([NSColor shadowColor]));
 
@@ -202,17 +185,8 @@ static QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
         }
         if (mac_widget_colors[i].paletteRole == QPlatformTheme::MenuPalette
                 || mac_widget_colors[i].paletteRole == QPlatformTheme::MenuBarPalette) {
-            NSColor *selectedMenuItemColor = nil;
-            if (__builtin_available(macOS 10.14, *)) {
-                // Cheap approximation for NSVisualEffectView (see deprecation note for selectedMenuItemTextColor)
-                selectedMenuItemColor = [[NSColor selectedContentBackgroundColor] highlightWithLevel:0.4];
-            } else {
-                // selectedMenuItemColor would presumably be the correct color to use as the background
-                // for selected menu items. But that color is always blue, and doesn't follow the
-                // appearance color in system preferences. So we therefore deliberately choose to use
-                // keyboardFocusIndicatorColor instead, which appears to have the same color value.
-                selectedMenuItemColor = [NSColor keyboardFocusIndicatorColor];
-            }
+            // Cheap approximation for NSVisualEffectView (see deprecation note for selectedMenuItemTextColor)
+            auto selectedMenuItemColor = [[NSColor selectedContentBackgroundColor] highlightWithLevel:0.4];
             pal.setBrush(QPalette::Highlight, qt_mac_toQColor(selectedMenuItemColor));
             qc = qt_mac_toQColor([NSColor labelColor]);
             pal.setBrush(QPalette::ButtonText, qc);
@@ -233,17 +207,10 @@ static QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
         } else if (mac_widget_colors[i].paletteRole == QPlatformTheme::ItemViewPalette) {
             NSArray<NSColor *> *baseColors = nil;
             NSColor *activeHighlightColor = nil;
-            if (__builtin_available(macOS 10.14, *)) {
-                baseColors = [NSColor alternatingContentBackgroundColors];
-                activeHighlightColor = [NSColor selectedContentBackgroundColor];
-                pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
-                             qt_mac_toQBrush([NSColor unemphasizedSelectedTextColor]));
-            } else {
-                baseColors = [NSColor controlAlternatingRowBackgroundColors];
-                activeHighlightColor = [NSColor alternateSelectedControlColor];
-                pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
-                             pal.brush(QPalette::Active, QPalette::Text));
-            }
+            baseColors = [NSColor alternatingContentBackgroundColors];
+            activeHighlightColor = [NSColor selectedContentBackgroundColor];
+            pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
+                         qt_mac_toQBrush([NSColor unemphasizedSelectedTextColor]));
             pal.setBrush(QPalette::Base, qt_mac_toQBrush(baseColors[0]));
             pal.setBrush(QPalette::AlternateBase, qt_mac_toQBrush(baseColors[1]));
             pal.setBrush(QPalette::Active, QPalette::Highlight,
@@ -277,16 +244,12 @@ const char *QCocoaTheme::name = "cocoa";
 QCocoaTheme::QCocoaTheme()
     : m_systemPalette(nullptr)
 {
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
     if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
         m_appearanceObserver = QMacKeyValueObserver(NSApp, @"effectiveAppearance", [this] {
-            if (__builtin_available(macOS 10.14, *))
-                NSAppearance.currentAppearance = NSApp.effectiveAppearance;
-
+            NSAppearance.currentAppearance = NSApp.effectiveAppearance;
             handleSystemThemeChange();
         });
     }
-#endif
 
     m_systemColorObserver = QMacNotificationObserver(nil,
         NSSystemColorsDidChangeNotification, [this] {
@@ -448,11 +411,11 @@ QPixmap QCocoaTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
     if (iconType != 0) {
         QPixmap pixmap;
         IconRef icon = nullptr;
-        GetIconRef(kOnSystemDisk, kSystemIconsCreator, iconType, &icon);
+        QT_IGNORE_DEPRECATIONS(GetIconRef(kOnSystemDisk, kSystemIconsCreator, iconType, &icon));
 
         if (icon) {
             pixmap = qt_mac_convert_iconref(icon, size.width(), size.height());
-            ReleaseIconRef(icon);
+            QT_IGNORE_DEPRECATIONS(ReleaseIconRef(icon));
         }
 
         return pixmap;

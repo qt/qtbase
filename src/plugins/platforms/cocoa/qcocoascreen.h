@@ -70,8 +70,7 @@ public:
     QColorSpace colorSpace() const override { return m_colorSpace; }
     qreal devicePixelRatio() const override { return m_devicePixelRatio; }
     QSizeF physicalSize() const override { return m_physicalSize; }
-    QDpi logicalDpi() const override { return m_logicalDpi; }
-    QDpi logicalBaseDpi() const override { return m_logicalDpi; }
+    QDpi logicalBaseDpi() const override { return QDpi(72, 72); }
     qreal refreshRate() const override { return m_refreshRate; }
     QString name() const override { return m_name; }
     QPlatformCursor *cursor() const override { return m_cursor; }
@@ -119,7 +118,6 @@ private:
 
     QRect m_geometry;
     QRect m_availableGeometry;
-    QDpi m_logicalDpi;
     qreal m_refreshRate = 0;
     int m_depth = 0;
     QString m_name;

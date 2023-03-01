@@ -108,7 +108,7 @@ public:
     void clearPassiveGrabbers(const QPointerEvent *event, const QEventPoint &point);
     void removeGrabber(QObject *grabber, bool cancel = false);
 
-    using EventPointMap = QFlatMap<int, EventPointData>;
+    using EventPointMap = QVarLengthFlatMap<int, EventPointData, 20>;
     mutable EventPointMap activePoints;
 
     QPointingDeviceUniqueId uniqueId;

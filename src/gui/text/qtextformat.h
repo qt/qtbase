@@ -225,6 +225,7 @@ public:
         OldFontLetterSpacingType = 0x2033,
         OldFontStretch = 0x2034,
         OldTextUnderlineColor = 0x2010,
+        OldFontFamily = 0x2000, // same as FontFamily
 
         ObjectType = 0x2f00,
 

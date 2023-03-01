@@ -67,7 +67,17 @@ diff -ruN orig/zconf.h src/zconf.h
  /*
   * If you *really* need a unique prefix for all types and library functions,
   * compile with -DZ_PREFIX. The "standard" zlib should be compiled without it.
-@@ -136,6 +139,7 @@
+@@ -38,6 +41,9 @@
+ #  define crc32                 z_crc32
+ #  define crc32_combine         z_crc32_combine
+ #  define crc32_combine64       z_crc32_combine64
++#  define crc32_combine_gen     z_crc32_combine_gen
++#  define crc32_combine_gen64   z_crc32_combine_gen64
++#  define crc32_combine_op      z_crc32_combine_op
+ #  define crc32_z               z_crc32_z
+ #  define deflate               z_deflate
+ #  define deflateBound          z_deflateBound
+@@ -136,6 +142,7 @@
  #  endif
  #  define zlibCompileFlags      z_zlibCompileFlags
  #  define zlibVersion           z_zlibVersion
@@ -75,7 +85,7 @@ diff -ruN orig/zconf.h src/zconf.h
  
  /* all zlib typedefs in zlib.h and zconf.h */
  #  define Byte                  z_Byte
-@@ -431,7 +435,7 @@
+@@ -431,7 +438,7 @@
     typedef unsigned long z_crc_t;
  #endif
  

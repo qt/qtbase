@@ -1865,7 +1865,7 @@ enum WhichSize {
     MinimumSizeHint,
     PreferredSizeHint,
     MaximumSizeHint,
-    Size,
+    WidgetSize,
     None,
 };
 
@@ -1880,48 +1880,48 @@ void tst_QGraphicsWidget::setSizes_data()
     QTest::addColumn<QList<Inst>>("compareInstructions");
 
     QTest::newRow("minSize1") << (QList<Inst>()
-                                  << Inst(Size, QSize(25, 25)) << Inst(MinimumSize, QSize(10, 10)))
-                              << (QList<Inst>() << Inst(Size, QSize(25, 25)));
-    QTest::newRow("minSize2") << (QList<Inst>() << Inst(Size, QSizeF(20, 20))
+                                  << Inst(WidgetSize, QSize(25, 25)) << Inst(MinimumSize, QSize(10, 10)))
+                              << (QList<Inst>() << Inst(WidgetSize, QSize(25, 25)));
+    QTest::newRow("minSize2") << (QList<Inst>() << Inst(WidgetSize, QSizeF(20, 20))
                                                 << Inst(MinimumSize, QSizeF(25, 25)))
-                              << (QList<Inst>() << Inst(Size, QSizeF(25, 25)));
+                              << (QList<Inst>() << Inst(WidgetSize, QSizeF(25, 25)));
     QTest::newRow("minWidth1") << (QList<Inst>()
-                                   << Inst(Size, QSizeF(20, 20)) << Inst(MinimumWidth, 5.0))
-                               << (QList<Inst>() << Inst(Size, QSizeF(20, 20)));
+                                   << Inst(WidgetSize, QSizeF(20, 20)) << Inst(MinimumWidth, 5.0))
+                               << (QList<Inst>() << Inst(WidgetSize, QSizeF(20, 20)));
     QTest::newRow("minWidth2") << (QList<Inst>()
-                                   << Inst(Size, QSizeF(20, 20)) << Inst(MinimumWidth, 25.0))
-                               << (QList<Inst>() << Inst(Size, QSizeF(25, 20)));
+                                   << Inst(WidgetSize, QSizeF(20, 20)) << Inst(MinimumWidth, 25.0))
+                               << (QList<Inst>() << Inst(WidgetSize, QSizeF(25, 20)));
     QTest::newRow("minHeight1") << (QList<Inst>()
-                                    << Inst(Size, QSizeF(20, 20)) << Inst(MinimumHeight, 5.0))
-                                << (QList<Inst>() << Inst(Size, QSizeF(20, 20)));
+                                    << Inst(WidgetSize, QSizeF(20, 20)) << Inst(MinimumHeight, 5.0))
+                                << (QList<Inst>() << Inst(WidgetSize, QSizeF(20, 20)));
     QTest::newRow("minHeight2") << (QList<Inst>()
-                                    << Inst(Size, QSizeF(20, 20)) << Inst(MinimumHeight, 25.0))
-                                << (QList<Inst>() << Inst(Size, QSizeF(20, 25)));
-    QTest::newRow("maxSize1") << (QList<Inst>() << Inst(Size, QSizeF(40, 40))
+                                    << Inst(WidgetSize, QSizeF(20, 20)) << Inst(MinimumHeight, 25.0))
+                                << (QList<Inst>() << Inst(WidgetSize, QSizeF(20, 25)));
+    QTest::newRow("maxSize1") << (QList<Inst>() << Inst(WidgetSize, QSizeF(40, 40))
                                                 << Inst(MaximumSize, QSizeF(30, 30)))
-                              << (QList<Inst>() << Inst(Size, QSizeF(30, 30)));
-    QTest::newRow("maxSize2") << (QList<Inst>() << Inst(Size, QSizeF(40, 40))
+                              << (QList<Inst>() << Inst(WidgetSize, QSizeF(30, 30)));
+    QTest::newRow("maxSize2") << (QList<Inst>() << Inst(WidgetSize, QSizeF(40, 40))
                                                 << Inst(MaximumSize, QSizeF(30, -1)))
-                              << (QList<Inst>() << Inst(Size, QSizeF(30, 40)));
-    QTest::newRow("maxSize3") << (QList<Inst>() << Inst(Size, QSizeF(40, 40))
+                              << (QList<Inst>() << Inst(WidgetSize, QSizeF(30, 40)));
+    QTest::newRow("maxSize3") << (QList<Inst>() << Inst(WidgetSize, QSizeF(40, 40))
                                                 << Inst(MaximumSize, QSizeF(-1, 30)))
-                              << (QList<Inst>() << Inst(Size, QSizeF(40, 30)));
+                              << (QList<Inst>() << Inst(WidgetSize, QSizeF(40, 30)));
     QTest::newRow("maxWidth1") << (QList<Inst>()
-                                   << Inst(Size, QSizeF(40, 40)) << Inst(MaximumWidth, 30))
-                               << (QList<Inst>() << Inst(Size, QSizeF(30, 40)));
+                                   << Inst(WidgetSize, QSizeF(40, 40)) << Inst(MaximumWidth, 30))
+                               << (QList<Inst>() << Inst(WidgetSize, QSizeF(30, 40)));
     QTest::newRow("maxHeight") << (QList<Inst>()
-                                   << Inst(Size, QSizeF(40, 40)) << Inst(MaximumHeight, 20))
-                               << (QList<Inst>() << Inst(Size, QSizeF(40, 20)));
-    QTest::newRow("unsetMinSize") << (QList<Inst>() << Inst(Size, QSizeF(40, 40))
+                                   << Inst(WidgetSize, QSizeF(40, 40)) << Inst(MaximumHeight, 20))
+                               << (QList<Inst>() << Inst(WidgetSize, QSizeF(40, 20)));
+    QTest::newRow("unsetMinSize") << (QList<Inst>() << Inst(WidgetSize, QSizeF(40, 40))
                                                     << Inst(MinimumSize, QSizeF(-1, -1)))
                                   << (QList<Inst>() << Inst(MinimumSize, QSizeF(5, 5)));
-    QTest::newRow("unsetMaxSize") << (QList<Inst>() << Inst(Size, QSizeF(40, 40))
+    QTest::newRow("unsetMaxSize") << (QList<Inst>() << Inst(WidgetSize, QSizeF(40, 40))
                                                     << Inst(MaximumSize, QSizeF(-1, -1)))
                                   << (QList<Inst>() << Inst(MaximumSize, QSizeF(500, 500)));
     QTest::newRow("unsetMinSize, expand size to minimumSizeHint")
-            << (QList<Inst>() << Inst(MinimumSize, QSize(0, 0)) << Inst(Size, QSize(1, 1))
+            << (QList<Inst>() << Inst(MinimumSize, QSize(0, 0)) << Inst(WidgetSize, QSize(1, 1))
                               << Inst(MinimumSize, QSize(-1.0, -1.0)))
-            << (QList<Inst>() << Inst(Size, QSize(5, 5)) << Inst(MinimumSize, QSize(5, 5)));
+            << (QList<Inst>() << Inst(WidgetSize, QSize(5, 5)) << Inst(MinimumSize, QSize(5, 5)));
 }
 
 void tst_QGraphicsWidget::setSizes()
@@ -1951,7 +1951,7 @@ void tst_QGraphicsWidget::setSizes()
             case MaximumSize:
                 max = input.second.toSizeF();
                 break;
-            case Size:
+            case WidgetSize :
                 widget->resize(input.second.toSizeF());
                 break;
             case MinimumWidth:
@@ -2003,7 +2003,7 @@ void tst_QGraphicsWidget::setSizes()
             case MaximumSize:
                 QTRY_COMPARE(widget->maximumSize(), input.second.toSizeF());
                 break;
-            case Size:
+            case WidgetSize:
                 QTRY_COMPARE(widget->size(), input.second.toSizeF());
                 break;
             case MinimumWidth:
@@ -3126,7 +3126,8 @@ void tst_QGraphicsWidget::initialShow()
     EventSpy paintSpy(dummyView->viewport(), QEvent::Paint);
     dummyView->show();
     qApp->setActiveWindow(dummyView.data());
-    QVERIFY(QTest::qWaitForWindowActive(dummyView.data()));
+    if (!QTest::qWaitForWindowActive(dummyView.data()))
+        QSKIP("Graphics view failed to show (possibly due to Qt::X11BypassWindowManagerHint");
     const int expectedRepaintCount = paintSpy.count();
     dummyView.reset();
 

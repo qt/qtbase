@@ -384,6 +384,16 @@ QString QAccessibleComboBox::text(QAccessible::Text t) const
     return str;
 }
 
+QAccessible::State QAccessibleComboBox::state() const
+{
+    QAccessible::State s = QAccessibleWidget::state();
+
+    s.expandable = true;
+    s.expanded = isValid() && comboBox()->view()->isVisible();
+
+    return s;
+}
+
 QStringList QAccessibleComboBox::actionNames() const
 {
     return QStringList() << showMenuAction() << pressAction();

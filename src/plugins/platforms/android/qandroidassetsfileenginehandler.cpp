@@ -88,6 +88,7 @@ struct AssetItem {
     }
     Type type = Type::File;
     QString name;
+    qint64 size = -1;
 };
 
 using AssetItemList = QList<AssetItem>;
@@ -263,7 +264,7 @@ public:
 
     bool open(QIODevice::OpenMode openMode) override
     {
-        if (m_isFolder || (openMode & QIODevice::WriteOnly))
+        if (!m_assetInfo || m_assetInfo->type != AssetItem::Type::File || (openMode & QIODevice::WriteOnly))
             return false;
         close();
         m_assetFile = AAssetManager_open(m_assetManager, m_fileName.toUtf8(), AASSET_MODE_BUFFER);
@@ -277,14 +278,13 @@ public:
             m_assetFile = 0;
             return true;
         }
-        m_isFolder = false;
         return false;
     }
 
     qint64 size() const override
     {
-        if (m_assetFile)
-            return AAsset_getLength(m_assetFile);
+        if (m_assetInfo)
+            return m_assetInfo->size;
         return -1;
     }
 
@@ -328,10 +328,12 @@ public:
     {
         FileFlags commonFlags(ReadOwnerPerm|ReadUserPerm|ReadGroupPerm|ReadOtherPerm|ExistsFlag);
         FileFlags flags;
-        if (m_assetFile)
-            flags = FileType | commonFlags;
-        else if (m_isFolder)
-            flags = DirectoryType | commonFlags;
+        if (m_assetInfo) {
+            if (m_assetInfo->type == AssetItem::Type::File)
+                flags = FileType | commonFlags;
+            else if (m_assetInfo->type == AssetItem::Type::Folder)
+                flags = DirectoryType | commonFlags;
+        }
         return type & flags;
     }
 
@@ -366,21 +368,43 @@ public:
             return;
         close();
         m_fileName = cleanedAssetPath(file);
-        switch (FolderIterator::fileType(m_fileName)) {
-        case AssetItem::Type::File:
-            open(QIODevice::ReadOnly);
-            break;
-        case AssetItem::Type::Folder:
-            m_isFolder = true;
-            break;
-        case AssetItem::Type::Invalid:
-            break;
+
+        {
+            QMutexLocker lock(&m_assetsInfoCacheMutex);
+            QSharedPointer<AssetItem> *assetInfoPtr = m_assetsInfoCache.object(m_fileName);
+            if (assetInfoPtr) {
+                m_assetInfo = *assetInfoPtr;
+                return;
+            }
         }
+
+        QSharedPointer<AssetItem> *newAssetInfoPtr = new QSharedPointer<AssetItem>(new AssetItem);
+
+        m_assetInfo = *newAssetInfoPtr;
+        m_assetInfo->name = m_fileName;
+        m_assetInfo->type = AssetItem::Type::Invalid;
+
+        m_assetFile = AAssetManager_open(m_assetManager, m_fileName.toUtf8(), AASSET_MODE_BUFFER);
+
+        if (m_assetFile) {
+            m_assetInfo->type = AssetItem::Type::File;
+            m_assetInfo->size = AAsset_getLength(m_assetFile);
+        } else {
+            auto *assetDir = AAssetManager_openDir(m_assetManager, m_fileName.toUtf8());
+            if (assetDir) {
+                if (AAssetDir_getNextFileName(assetDir))
+                    m_assetInfo->type = AssetItem::Type::Folder;
+                AAssetDir_close(assetDir);
+            }
+        }
+
+        QMutexLocker lock(&m_assetsInfoCacheMutex);
+        m_assetsInfoCache.insert(m_fileName, newAssetInfoPtr);
     }
 
     Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override
     {
-        if (m_isFolder)
+        if (m_assetInfo && m_assetInfo->type == AssetItem::Type::Folder)
             return new AndroidAbstractFileEngineIterator(filters, filterNames, m_fileName);
         return nullptr;
     }
@@ -390,9 +414,14 @@ private:
     AAssetManager *m_assetManager = nullptr;
     // initialize with a name that can't be used as a file name
     QString m_fileName = QLatin1String(".");
-    bool m_isFolder = false;
+    QSharedPointer<AssetItem> m_assetInfo;
+
+    static QCache<QString, QSharedPointer<AssetItem>> m_assetsInfoCache;
+    static QMutex m_assetsInfoCacheMutex;
 };
 
+QCache<QString, QSharedPointer<AssetItem>> AndroidAbstractFileEngine::m_assetsInfoCache(std::max(200, qEnvironmentVariableIntValue("QT_ANDROID_MAX_FILEINFO_ASSETS_CACHE_SIZE")));
+QMutex AndroidAbstractFileEngine::m_assetsInfoCacheMutex;
 
 AndroidAssetsFileEngineHandler::AndroidAssetsFileEngineHandler()
 {

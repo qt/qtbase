@@ -52,6 +52,14 @@ QT_BEGIN_NAMESPACE
 
 using namespace QWindowsUiAutomation;
 
+static bool isExpanded(QAccessibleInterface *accessible)
+{
+    Q_ASSERT(accessible);
+    if (accessible->role() == QAccessible::MenuItem)
+        return accessible->childCount() > 0 && !accessible->child(0)->state().invisible;
+    else
+        return accessible->state().expandable && accessible->state().expanded;
+}
 
 QWindowsUiaExpandCollapseProvider::QWindowsUiaExpandCollapseProvider(QAccessible::Id id) :
     QWindowsUiaBaseProvider(id)
@@ -72,7 +80,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaExpandCollapseProvider::Expand()
     if (!actionInterface)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    if (accessible->childCount() > 0 && accessible->child(0)->state().invisible)
+    if (!isExpanded(accessible))
         actionInterface->doAction(QAccessibleActionInterface::showMenuAction());
 
     return S_OK;
@@ -90,7 +98,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaExpandCollapseProvider::Collapse()
     if (!actionInterface)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    if (accessible->childCount() > 0 && !accessible->child(0)->state().invisible)
+    if (isExpanded(accessible))
         actionInterface->doAction(QAccessibleActionInterface::showMenuAction());
 
     return S_OK;
@@ -108,9 +116,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaExpandCollapseProvider::get_ExpandCollapseS
     if (!accessible)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    if (accessible->childCount() > 0)
-        *pRetVal = accessible->child(0)->state().invisible ?
-                ExpandCollapseState_Collapsed : ExpandCollapseState_Expanded;
+    *pRetVal = isExpanded(accessible) ? ExpandCollapseState_Expanded : ExpandCollapseState_Collapsed;
 
     return S_OK;
 }

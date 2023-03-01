@@ -492,10 +492,10 @@ inline char QLocaleData::numericToCLocale(QStringView in) const
     return 0;
 }
 
-QString qt_readEscapedFormatString(QStringView format, int *idx);
+QString qt_readEscapedFormatString(QStringView format, qsizetype *idx);
 bool qt_splitLocaleName(QStringView name, QStringView *lang = nullptr,
                         QStringView *script = nullptr, QStringView *cntry = nullptr);
-int qt_repeatCount(QStringView s);
+qsizetype qt_repeatCount(QStringView s);
 
 enum { AsciiSpaceMask = (1u << (' ' - 1)) |
                         (1u << ('\t' - 1)) |   // 9: HT - horizontal tab

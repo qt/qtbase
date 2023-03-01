@@ -7,52 +7,82 @@
 
         "Description": "FreeType is a freely available software library to render fonts.",
         "Homepage": "http://www.freetype.org",
-        "Version": "2.10.4",
+        "Version": "2.12.1",
 
         "License": "Freetype Project License or GNU General Public License v2.0 only",
         "LicenseId": "FTL OR GPL-2.0",
         "LicenseFile": "LICENSE.txt",
-        "Copyright": "Copyright 2006-2020 by David Turner, Robert Wilhelm, and Werner Lemberg."
+        "Copyright": "Copyright (c) 2007-2014 Adobe Systems Incorporated
+Copyright (c) 2004-2022 Albert Chin-A-Young
+Copyright (c) 2018-2022 Armin Hasitzka, David Turner, Robert Wilhelm, and Werner Lemberg
+Copyright (c) 2000 Computing Research Labs, New Mexico State University
+Copyright (c) 2018-2022 David Turner, Robert Wilhelm, Dominik Rottsches, and Werner Lemberg
+Copyright (c) 2004-2022 David Turner, Robert Wilhelm, Werner Lemberg and George Williams
+Copyright (c) 2022 David Turner, Robert Wilhelm, Werner Lemberg, and Moazin Khatti
+Copyright (c) 2008-2022 David Turner, Robert Wilhelm, Werner Lemberg, and suzuki toshiya
+Copyright (c) 2003-2022 David Turner, Robert Wilhelm, and Werner Lemberg
+Copyright (c) 2005-2022 David Turner
+Copyright (c) 2007-2022 Derek Clegg and Michael Toftdal
+Copyright (c) 2007 Dmitry Timoshkov
+Copyright (c) 2001-2015 Francesco Zappa Nardelli
+Copyright (c) 2005, 2007, 2008, 2013 George Williams
+Copyright (c) 2013 Google, Inc. Google Author(s) Behdad Esfahbod
+Copyright (c) 2013-2022 Google, Inc.
+Copyright (c) 2003 Huw D M Davies for Codeweavers
+Copyright (c) 2010-2022 Joel Klinghed
+Copyright (c) 1996-2022 Just van Rossum, David Turner, Robert Wilhelm, and Werner Lemberg
+Copyright (c) 2003-2022 Masatake YAMATO and Redhat K.K.
+Copyright (c) 2004-2022 Masatake YAMATO, Redhat K.K, David Turner, Robert Wilhelm, and Werner Lemberg
+Copyright (c) 2019-2022 Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg
+Copyright (c) 2009-2022 Oran Agra and Mickey Gabel
+Copyright (c) 2007-2022 Rahul Bhalerao <rahul.bhalerao@redhat.com>
+Copyright (c) 2002-2022 Roberto Alameda
+Copyright (c) 2015-2022 Werner Lemberg
+Copyright (c) 2004-2022 suzuki toshiya, Masatake YAMATO, Red Hat K.K., David Turner, Robert Wilhelm, and Werner Lemberg"
     },
     {
         "Id": "freetype-zlib",
         "Name": "Freetype 2 - zlib",
         "QDocModule": "qtgui",
         "QtUsage": "Optionally used in Qt GUI and platform plugins. Configure with -no-freetype, or -system-freetype to avoid.",
+        "Path": "src/gzip",
 
         "Description": "FreeType is a freely available software library to render fonts.",
         "Homepage": "http://www.freetype.org",
         "License": "zlib License",
         "LicenseId": "Zlib",
         "LicenseFile": "ZLIB-LICENSE.txt",
-        "Copyright": "Copyright (C) 1995-2002 Jean-loup Gailly and Mark Adler"
+        "Copyright": "Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler"
     },
     {
         "Id": "freetype-bdf",
         "Name": "Freetype 2 - Bitmap Distribution Format (BDF) support",
         "QDocModule": "qtgui",
         "QtUsage": "Optionally used in Qt GUI and platform plugins. Configure with -no-freetype, or -system-freetype to avoid.",
+        "Path": "src/bdf",
 
         "Description": "FreeType is a freely available software library to render fonts.",
         "Homepage": "http://www.freetype.org",
         "License": "MIT License",
         "LicenseId": "MIT",
         "LicenseFile": "BDF-LICENSE.txt",
-        "Copyright": "Copyright (C) 2001-2002 by Francesco Zappa Nardelli
-Copyright 2000 Computing Research Labs, New Mexico State University
-Copyright 2001-2002, 2011 Francesco Zappa Nardelli"
+        "Copyright": "Copyright (c) 2000 Computing Research Labs, New Mexico State University
+Copyright (c) 2001-2014 Francesco Zappa Nardelli"
     },
     {
         "Id": "freetype-pcf",
         "Name": "Freetype 2 - Portable Compiled Format (PCF) support",
         "QDocModule": "qtgui",
         "QtUsage": "Optionally used in Qt GUI and platform plugins. Configure with -no-freetype, or -system-freetype to avoid.",
+        "Path": "src/pcf",
 
         "Description": "FreeType is a freely available software library to render fonts.",
         "Homepage": "http://www.freetype.org",
-        "License": "MIT License",
-        "LicenseId": "MIT",
+        "License": "MIT License and MIT Open Group variant",
+        "LicenseId": "MIT AND MIT-open-group",
         "LicenseFile": "PCF-LICENSE.txt",
-        "Copyright": "Copyright (C) 2000 by Francesco Zappa Nardelli"
+        "Copyright": "Copyright (c) 2001, 2012 David Turner, Robert Wilhelm, and Werner Lemberg
+Copyright (c) 2000-2014 Francesco Zappa Nardelli
+Copyright (c) 1990, 1994, 1998 The Open Group"
     }
 ]

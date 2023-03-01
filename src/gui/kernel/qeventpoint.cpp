@@ -375,7 +375,7 @@ ulong QEventPoint::pressTimestamp() const
 
 /*!
     \property QEventPoint::timeHeld
-    \brief the duration, in milliseconds, since this point was pressed and not released.
+    \brief the duration, in seconds, since this point was pressed and not released.
 
     \sa pressTimestamp, timestamp
 */
@@ -466,6 +466,7 @@ QPointF QEventPoint::normalizedPosition() const
     return (globalPosition() - geom.topLeft()) / geom.width();
 }
 
+#if QT_DEPRECATED_SINCE(6, 0)
 /*!
     \deprecated [6.0] Use globalPressPosition() instead.
 
@@ -503,7 +504,7 @@ QPointF QEventPoint::lastNormalizedPos() const
         return QPointF();
     return (globalLastPosition() - geom.topLeft()) / geom.width();
 }
-
+#endif // QT_DEPRECATED_SINCE(6, 0)
 
 /*! \internal
     This class is explicitly shared, which means if you construct an event and

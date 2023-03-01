@@ -41,7 +41,7 @@
 
 #include "qapplication.h"
 #include "qevent.h"
-#include "qpainter.h"
+#include "qstylepainter.h"
 #include "qwindow.h"
 #include <qpa/qplatformwindow.h>
 #include "qstyle.h"
@@ -248,11 +248,11 @@ void QSizeGrip::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
     Q_D(QSizeGrip);
-    QPainter painter(this);
+    QStylePainter painter(this);
     QStyleOptionSizeGrip opt;
     opt.initFrom(this);
     opt.corner = d->m_corner;
-    style()->drawControl(QStyle::CE_SizeGrip, &opt, &painter, this);
+    painter.drawControl(QStyle::CE_SizeGrip, opt);
 }
 
 /*!

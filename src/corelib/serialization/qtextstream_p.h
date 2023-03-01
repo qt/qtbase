@@ -169,13 +169,16 @@ public:
     NumberParsingStatus getNumber(qulonglong *l);
     bool getReal(double *f);
 
-    inline void write(const QString &data) { write(data.begin(), data.length()); }
+    inline void write(QStringView data) { write(data.begin(), data.length()); }
     inline void write(QChar ch);
-    void write(const QChar *data, int len);
+    void write(const QChar *data, qsizetype len);
     void write(QLatin1String data);
-    void writePadding(int len);
-    inline void putString(const QString &ch, bool number = false) { putString(ch.constData(), ch.length(), number); }
-    void putString(const QChar *data, int len, bool number = false);
+    void writePadding(qsizetype len);
+    inline void putString(QStringView string, bool number = false)
+    {
+        putString(string.constData(), string.length(), number);
+    }
+    void putString(const QChar *data, qsizetype len, bool number = false);
     void putString(QLatin1String data, bool number = false);
     void putString(QUtf8StringView data, bool number = false);
     inline void putChar(QChar ch);
@@ -184,7 +187,7 @@ public:
     struct PaddingResult {
         int left, right;
     };
-    PaddingResult padding(int len) const;
+    PaddingResult padding(qsizetype len) const;
 
     // buffers
     bool fillReadBuffer(qint64 maxBytes = -1);

@@ -398,7 +398,7 @@ function(qt_internal_create_plugins_files)
     endif()
     qt_internal_get_qt_repo_known_modules(repo_known_modules)
 
-    message("Generating Plugins files for ${repo_known_modules}...")
+    set(modules_with_plugins "")
     foreach (QT_MODULE ${repo_known_modules})
         get_target_property(target_type "${QT_MODULE}" TYPE)
         if(target_type STREQUAL "INTERFACE_LIBRARY")
@@ -450,6 +450,7 @@ endif()")
 
         get_target_property(qt_plugins "${QT_MODULE}" QT_PLUGINS)
         if(qt_plugins OR QT_MODULE_PLUGIN_INCLUDES)
+            list(APPEND modules_with_plugins "${QT_MODULE}")
             configure_file(
                 "${QT_CMAKE_DIR}/QtPlugins.cmake.in"
                 "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${QT_MODULE}Plugins.cmake"
@@ -462,6 +463,10 @@ endif()")
             )
         endif()
     endforeach()
+    if(modules_with_plugins)
+        message(STATUS "Generated QtModulePlugins.cmake files for the following modules:"
+            " ${modules_with_plugins}")
+    endif()
 endfunction()
 
 function(qt_generate_install_prefixes out_var)

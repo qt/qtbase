@@ -55,10 +55,10 @@ QT_BEGIN_NAMESPACE
 class QActionEvent;
 class QActionGroup;
 class QActionPrivate;
+class QMenu;
 #if QT_DEPRECATED_SINCE(6,0)
 class QWidget;
 class QGraphicsWidget;
-class QMenu;
 #endif
 
 class Q_GUI_EXPORT QAction : public QObject
@@ -119,6 +119,7 @@ public:
         QWidget, QMenu, and QGraphicsWidget can be expected to be fully defined.
     */
     template<typename T = QWidget*>
+    QT_DEPRECATED_VERSION_X_6_0("Use parent() with qobject_cast() instead")
     T parentWidget() const
     {
         auto result = parent();
@@ -128,6 +129,7 @@ public:
     }
 
     template<typename T = QWidget*>
+    QT_DEPRECATED_VERSION_X_6_0("Use associatedObjects() with qobject_cast() instead")
     QList<T> associatedWidgets() const
     {
         QList<T> result;
@@ -137,6 +139,7 @@ public:
         return result;
     }
     template<typename T = QGraphicsWidget*>
+    QT_DEPRECATED_VERSION_X_6_0("Use associatedObjects() with qobject_cast() instead")
     QList<T> associatedGraphicsWidgets() const
     {
         QList<T> result;
@@ -210,7 +213,6 @@ public:
     void setMenuRole(MenuRole menuRole);
     MenuRole menuRole() const;
 
-#if QT_DEPRECATED_SINCE(6,0)
 #ifdef Q_CLANG_QDOC
     QMenu *menu() const;
     void setMenu(QMenu *menu);
@@ -225,7 +227,6 @@ public:
     {
         setMenuObject(m);
     }
-#endif
 #endif
 
     void setIconVisibleInMenu(bool visible);

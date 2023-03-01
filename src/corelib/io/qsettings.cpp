@@ -2459,7 +2459,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     \section2 Compatibility with older Qt versions
 
     Please note that this behavior is different to how QSettings behaved
-    in versions of Qt prior to Qt 6. INI files written with Qt 5 or earlier aree
+    in versions of Qt prior to Qt 6. INI files written with Qt 5 or earlier are
     however fully readable by a Qt 6 based application (unless a ini codec
     different from utf8 had been set). But INI files written with Qt 6
     will only be readable by older Qt versions if you set the "iniCodec" to

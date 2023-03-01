@@ -10,7 +10,7 @@
         "Homepage": "http://www.freetype.org",
         "License": "Freetype Project License or GNU General Public License v2.0 only",
         "LicenseId": "FTL or GPL-2.0",
-        "LicenseFile": "../../3rdparty/freetype/docs/LICENSE.TXT",
+        "LicenseFile": "../../3rdparty/freetype/LICENSE.txt",
         "Copyright": "Copyright 2000-2016 by David Turner, Robert Wilhelm, and Werner Lemberg."
     },
     {

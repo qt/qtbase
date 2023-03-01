@@ -1020,6 +1020,18 @@ public class QtNative
         });
     }
 
+    private static void notifyScrolledEvent(final int viewId)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                if (m_activityDelegate != null) {
+                    m_activityDelegate.notifyScrolledEvent(viewId);
+                }
+            }
+        });
+    }
+
     public static void notifyQtAndroidPluginRunning(final boolean running)
     {
         m_activityDelegate.notifyQtAndroidPluginRunning(running);
@@ -1393,6 +1405,7 @@ public class QtNative
     public static native void handleOrientationChanged(int newRotation, int nativeOrientation);
     public static native void handleRefreshRateChanged(float refreshRate);
     // screen methods
+    public static native void handleUiDarkModeChanged(int newUiMode);
 
     // pointer methods
     public static native void mouseDown(int winId, int x, int y);

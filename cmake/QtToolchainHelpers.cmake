@@ -158,8 +158,8 @@ set(__qt_chainload_toolchain_file \"\${__qt_initially_configured_toolchain_file}
         # xcodebuild from the command line would try to build with the wrong architecture. Also
         # provide an opt-out option just in case.
         #
-        # For a multi-architecture build (so simulator_and_device) we don't set an explicit
-        # architecture and let Xcode and the developer handle it.
+        # For a multi-architecture build (so simulator_and_device) we set an explicit
+        # architecture for simulator only, via _qt_internal_set_ios_simulator_arch.
         #
         # When using the Ninja generator, specify the first architecture from QT_OSX_ARCHITECTURES
         # (even with a simulator_and_device Qt build). This ensures that the default configuration

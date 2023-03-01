@@ -159,20 +159,17 @@ QAbstractFileEngineHandler::~QAbstractFileEngineHandler()
 */
 QAbstractFileEngine *qt_custom_file_engine_handler_create(const QString &path)
 {
-    QAbstractFileEngine *engine = nullptr;
-
     if (qt_file_engine_handlers_in_use.loadRelaxed()) {
         QReadLocker locker(fileEngineHandlerMutex());
 
         // check for registered handlers that can load the file
-        QAbstractFileEngineHandlerList *handlers = fileEngineHandlers();
-        for (int i = 0; i < handlers->size(); i++) {
-            if ((engine = handlers->at(i)->create(path)))
-                break;
+        for (QAbstractFileEngineHandler *handler : std::as_const(*fileEngineHandlers())) {
+            if (QAbstractFileEngine *engine = handler->create(path))
+                return engine;
         }
     }
 
-    return engine;
+    return nullptr;
 }
 
 /*!

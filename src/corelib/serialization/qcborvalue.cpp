@@ -61,6 +61,21 @@
 
 QT_BEGIN_NAMESPACE
 
+// Worst case memory allocation for a corrupt stream: 256 MB for 32-bit, 1 GB for 64-bit
+static constexpr quint64 MaxAcceptableMemoryUse = (sizeof(void*) == 4 ? 256 : 1024) * 1024 * 1024;
+
+// Internal limits to ensure we don't blow up the memory when parsing a corrupt
+// (possibly crafted to exploit) CBOR stream. The recursion impacts both the
+// maps/arrays we'll open when parsing and the thread's stack, as the parser is
+// itself recursive. If someone really needs more than 1024 layers of nesting,
+// they probably have a weird use-case for which custom parsing and
+// serialisation code would make sense. The limit on element count is the
+// preallocated limit: if the stream does actually have more elements, we will
+// grow the container.
+Q_DECL_UNUSED static constexpr int MaximumRecursionDepth = 1024;
+Q_DECL_UNUSED static constexpr quint64 MaximumPreallocatedElementCount =
+        MaxAcceptableMemoryUse / MaximumRecursionDepth / sizeof(QtCbor::Element) - 1;
+
 /*!
     \class QCborValue
     \inmodule QtCore
@@ -1483,6 +1498,17 @@ static Element decodeBasicValueFromCbor(QCborStreamReader &reader)
     return e;
 }
 
+// Clamp allocation to avoid crashing due to corrupt stream. This also
+// ensures we never overflow qsizetype. The returned length is doubled for Map
+// entries to account for key-value pairs.
+static qsizetype clampedContainerLength(const QCborStreamReader &reader)
+{
+    int mapShift = reader.isMap() ? 1 : 0;
+    quint64 shiftedMaxElements = MaximumPreallocatedElementCount >> mapShift;
+    qsizetype len = qsizetype(qMin(reader.length(), shiftedMaxElements));
+    return len << mapShift;
+}
+
 static inline QCborContainerPrivate *createContainerFromCbor(QCborStreamReader &reader, int remainingRecursionDepth)
 {
     if (Q_UNLIKELY(remainingRecursionDepth == 0)) {
@@ -1491,18 +1517,11 @@ static inline QCborContainerPrivate *createContainerFromCbor(QCborStreamReader &
     }
 
     QCborContainerPrivate *d = nullptr;
-    int mapShift = reader.isMap() ? 1 : 0;
     if (reader.isLengthKnown()) {
-        quint64 len = reader.length();
-
-        // Clamp allocation to 1M elements (avoids crashing due to corrupt
-        // stream or loss of precision when converting from quint64 to
-        // QList::size_type).
-        len = qMin(len, quint64(1024 * 1024 - 1));
-        if (len) {
+        if (qsizetype len = clampedContainerLength(reader)) {
             d = new QCborContainerPrivate;
             d->ref.storeRelaxed(1);
-            d->elements.reserve(qsizetype(len) << mapShift);
+            d->elements.reserve(len);
         }
     } else {
         d = new QCborContainerPrivate;
@@ -1510,14 +1529,18 @@ static inline QCborContainerPrivate *createContainerFromCbor(QCborStreamReader &
     }
 
     reader.enterContainer();
-    if (reader.lastError() != QCborError::NoError)
+    if (reader.lastError() != QCborError::NoError) {
+        d->elements.clear();
         return d;
+    }
 
     while (reader.hasNext() && reader.lastError() == QCborError::NoError)
         d->decodeValueFromCbor(reader, remainingRecursionDepth - 1);
 
     if (reader.lastError() == QCborError::NoError)
         reader.leaveContainer();
+    else
+        d->elements.squeeze();
 
     return d;
 }
@@ -1713,7 +1736,6 @@ QCborValue::QCborValue(const QByteArray &ba)
     container->ref.storeRelaxed(1);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Creates a QCborValue with string value \a s. The value can later be
     retrieved using toString().
@@ -1721,7 +1743,6 @@ QCborValue::QCborValue(const QByteArray &ba)
     \sa toString(), isString(), isByteArray()
  */
 QCborValue::QCborValue(const QString &s) : QCborValue(qToStringViewIgnoringNull(s)) {}
-#endif
 
 /*!
     Creates a QCborValue with string value \a s. The value can later be
@@ -2401,8 +2422,6 @@ QCborValueRef QCborValue::operator[](qint64 key)
 }
 
 #if QT_CONFIG(cborstreamreader)
-enum { MaximumRecursionDepth = 1024 };
-
 /*!
     Decodes one item from the CBOR stream found in \a reader and returns the
     equivalent representation. This function is recursive: if the item is a map

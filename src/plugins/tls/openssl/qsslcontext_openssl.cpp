@@ -99,9 +99,9 @@ static inline QString msgErrorSettingEllipticCurves(const QString &why)
     return QSslSocket::tr("Error when setting the elliptic curves (%1)").arg(why);
 }
 
-long QSslContext::setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions)
+qssloptions QSslContext::setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions)
 {
-    long options;
+    qssloptions options;
     switch (protocol) {
     case QSsl::SecureProtocols:
     case QSsl::TlsV1_0OrLater:
@@ -503,7 +503,7 @@ init_context:
     }
 
     // Enable bug workarounds.
-    const long options = setupOpenSslOptions(configuration.protocol(), configuration.d->sslOptions);
+    const qssloptions options = setupOpenSslOptions(configuration.protocol(), configuration.d->sslOptions);
     q_SSL_CTX_set_options(sslContext->ctx, options);
 
     // Tell OpenSSL to release memory early

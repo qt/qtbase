@@ -23,6 +23,7 @@ ignorewords += \
 ignoresince = 5.0
 
 sourcedirs += includes $$BUILDDIR
+exampledirs += snippets
 
 url = https://doc.qt.io/qt
 

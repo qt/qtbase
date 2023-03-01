@@ -122,6 +122,22 @@ void tst_QPalette::resolve()
 
     QVERIFY(p2ResolvedTo1 != p1);
     QVERIFY(p2ResolvedTo1 != p2);
+
+    QPalette p3;
+    // ensure the resolve mask is full
+    for (int r = 0; r < QPalette::NColorRoles; ++r)
+        p3.setBrush(QPalette::All, QPalette::ColorRole(r), Qt::red);
+    const QPalette::ResolveMask fullMask = p3.resolveMask();
+
+    // in Qt 6.2, this detaches
+    QPalette p3ResolvedToP1 = p3.resolve(p1);
+    QVERIFY(!p3ResolvedToP1.isCopyOf(p3));
+
+    QPalette p4;
+    QCOMPARE(p4.resolveMask(), QPalette::ResolveMask{});
+    // resolve must detach even if p4 has no mask
+    p4 = p4.resolve(p3);
+    QCOMPARE(p3.resolveMask(), fullMask);
 }
 
 
@@ -207,9 +223,6 @@ void tst_QPalette::setBrush()
 
     const QPalette pp = p;
     QVERIFY(pp.isCopyOf(p));
-    // Setting the same brush won't detach
-    p.setBrush(QPalette::Disabled, QPalette::Button, Qt::green);
-    QVERIFY(pp.isCopyOf(p));
 }
 
 void tst_QPalette::isBrushSet()
@@ -234,7 +247,7 @@ void tst_QPalette::isBrushSet()
     QVERIFY(!p2.isBrushSet(QPalette::Active, QPalette::Dark));
     p2.setBrush(QPalette::Active, QPalette::Dark, p2.brush(QPalette::Active, QPalette::Dark));
     QVERIFY(!p3.isBrushSet(QPalette::Active, QPalette::Dark));
-    QVERIFY(!p2.isBrushSet(QPalette::Active, QPalette::Dark));
+    QVERIFY(p2.isBrushSet(QPalette::Active, QPalette::Dark));
 }
 
 void tst_QPalette::setAllPossibleBrushes()

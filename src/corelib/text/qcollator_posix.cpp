@@ -71,7 +71,7 @@ void QCollatorPrivate::cleanup()
 static void stringToWCharArray(QVarLengthArray<wchar_t> &ret, QStringView string)
 {
     ret.resize(string.length());
-    int len = string.toWCharArray(ret.data());
+    qsizetype len = string.toWCharArray(ret.data());
     ret.resize(len+1);
     ret[len] = 0;
 }
@@ -106,7 +106,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
         std::copy(original.cbegin(), original.cend(), result.begin());
     } else {
         size_t size = std::wcsxfrm(result.data(), original.constData(), string.size());
-        if (size > uint(result.size())) {
+        if (size > size_t(result.size())) {
             result.resize(size+1);
             size = std::wcsxfrm(result.data(), original.constData(), string.size());
         }

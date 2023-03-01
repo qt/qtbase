@@ -175,6 +175,16 @@ tst_QCompleter::~tst_QCompleter()
     delete completer;
 }
 
+#ifdef Q_OS_ANDROID
+static QString androidHomePath()
+{
+    const auto homePaths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
+    QDir dir = homePaths.isEmpty() ? QDir() : homePaths.first();
+    dir.cdUp();
+    return dir.path();
+}
+#endif
+
 void tst_QCompleter::setSourceModel(ModelType type)
 {
     QTreeWidgetItem *parent, *child;
@@ -227,7 +237,13 @@ void tst_QCompleter::setSourceModel(ModelType type)
         completer->setCsvCompletion(false);
         {
             auto m = new QFileSystemModel(completer);
+#ifdef Q_OS_ANDROID
+            // Android 11 and above doesn't allow accessing root filesystem as before,
+            // so let's opt int for the app's home.
+            m->setRootPath(androidHomePath());
+#else
             m->setRootPath("/");
+#endif
             completer->setModel(m);
         }
         completer->setCompletionColumn(0);
@@ -614,7 +630,9 @@ void tst_QCompleter::fileSystemModel_data()
 //        QTest::newRow("(/d)") << "/d" << "" << "Developer" << "/Developer";
 #elif defined(Q_OS_ANDROID)
         QTest::newRow("()") << "" << "" << "/" << "/";
-        QTest::newRow("(/et)") << "/et" << "" << "etc" << "/etc";
+        const QString androidDir = androidHomePath();
+        const QString tag = QStringLiteral("%1/fil").arg(androidDir);
+        QTest::newRow(tag.toUtf8().data()) << tag << "" << "files" << androidDir + "/files";
 #else
         QTest::newRow("()") << "" << "" << "/" << "/";
 #if !defined(Q_OS_AIX) && !defined(Q_OS_HPUX) && !defined(Q_OS_QNX)
@@ -1660,6 +1678,7 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     // to pop up the completion list due to file changed signals.
     FileSystem fs;
     QFileSystemModel model;
+    QSignalSpy filesAddedSpy(&model, &QAbstractItemModel::rowsInserted);
     model.setRootPath(fs.path());
 
     QVERIFY(fs.createDirectory(QLatin1String(testDir1)));
@@ -1696,13 +1715,16 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     QTest::keyClick(&edit, 'r');
     QTRY_VERIFY(!comp.popup()->isVisible());
     QVERIFY(fs.createDirectory(QStringLiteral("hero")));
+    if (!filesAddedSpy.wait())
+        QSKIP("File system model didn't notify about new directory, skipping tests");
     QTRY_VERIFY(comp.popup()->isVisible());
     QCOMPARE(comp.popup()->model()->rowCount(), 1);
     QTest::keyClick(comp.popup(), Qt::Key_Escape);
     QTRY_VERIFY(!comp.popup()->isVisible());
     QVERIFY(fs.createDirectory(QStringLiteral("nothingThere")));
     //there is no reason creating a file should open a popup, it did in Qt 4.7.0
-    QTest::qWait(60);
+    if (!filesAddedSpy.wait())
+        QSKIP("File system model didn't notify about new file, skipping tests");
     QVERIFY(!comp.popup()->isVisible());
 
     QTest::keyClick(&edit, Qt::Key_Backspace);
@@ -1720,7 +1742,8 @@ void tst_QCompleter::QTBUG_14292_filesystem()
 
     QVERIFY(fs.createDirectory(QStringLiteral("hemo")));
     //there is no reason creating a file should open a popup, it did in Qt 4.7.0
-    QTest::qWait(60);
+    if (!filesAddedSpy.wait())
+        QSKIP("File system model didn't notify about new file, skipping tests");
     QVERIFY(!comp.popup()->isVisible());
 }
 

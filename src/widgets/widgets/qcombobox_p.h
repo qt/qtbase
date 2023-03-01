@@ -430,6 +430,7 @@ public:
     bool duplicatesEnabled : 1;
     bool frame : 1;
     bool inserting : 1;
+    bool hidingPopup : 1;
 };
 
 QT_END_NAMESPACE

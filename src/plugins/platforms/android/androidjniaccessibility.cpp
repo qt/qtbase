@@ -94,7 +94,13 @@ namespace QtAndroidAccessibility
     template <typename Func, typename Ret>
     void runInObjectContext(QObject *context, Func &&func, Ret *retVal)
     {
-        QMetaObject::invokeMethod(context, func, Qt::BlockingQueuedConnection, retVal);
+        if (!QtAndroid::blockEventLoopsWhenSuspended()
+            || QGuiApplication::applicationState() != Qt::ApplicationSuspended) {
+            QMetaObject::invokeMethod(context, func, Qt::BlockingQueuedConnection, retVal);
+        } else {
+            __android_log_print(ANDROID_LOG_WARN, m_qtTag,
+                                "Could not run accessibility call in object context, event loop suspended.");
+        }
     }
 
     void initialize()
@@ -158,6 +164,11 @@ namespace QtAndroidAccessibility
         QtAndroid::notifyValueChanged(accessibilityObjectId, value);
     }
 
+    void notifyScrolledEvent(uint accessiblityObjectId)
+    {
+        QtAndroid::notifyScrolledEvent(accessiblityObjectId);
+    }
+
     static QVarLengthArray<int, 8> childIdListForAccessibleObject_helper(int objectId)
     {
         QAccessibleInterface *iface = interfaceFromId(objectId);
@@ -215,7 +226,7 @@ namespace QtAndroidAccessibility
         return result;
     }
 
-    static QRect screenRect_helper(int objectId)
+    static QRect screenRect_helper(int objectId, bool clip = true)
     {
         QRect rect;
         QAccessibleInterface *iface = interfaceFromId(objectId);
@@ -223,7 +234,7 @@ namespace QtAndroidAccessibility
             rect = QHighDpi::toNativePixels(iface->rect(), iface->window());
         }
         // If the widget is not fully in-bound in its parent then we have to clip the rectangle to draw
-        if (iface && iface->parent() && iface->parent()->isValid()) {
+        if (clip && iface && iface->parent() && iface->parent()->isValid()) {
             const auto parentRect = QHighDpi::toNativePixels(iface->parent()->rect(), iface->parent()->window());
             rect = rect.intersected(parentRect);
         }
@@ -325,23 +336,43 @@ namespace QtAndroidAccessibility
     static jboolean scrollForward(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
     {
         bool result = false;
+
+        const auto& ids = childIdListForAccessibleObject_helper(objectId);
+        if (ids.isEmpty())
+            return false;
+
+        const int firstChildId = ids.first();
+        const QRect oldPosition = screenRect_helper(firstChildId, false);
+
         if (m_accessibilityContext) {
             runInObjectContext(m_accessibilityContext, [objectId]() {
                 return scroll_helper(objectId, QAccessibleActionInterface::increaseAction());
             }, &result);
         }
-        return result;
+
+        // Don't check for position change if the call was not successful
+        return result && oldPosition != screenRect_helper(firstChildId, false);
     }
 
     static jboolean scrollBackward(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
     {
         bool result = false;
+
+        const auto& ids = childIdListForAccessibleObject_helper(objectId);
+        if (ids.isEmpty())
+            return false;
+
+        const int firstChildId = ids.first();
+        const QRect oldPosition = screenRect_helper(firstChildId, false);
+
         if (m_accessibilityContext) {
             runInObjectContext(m_accessibilityContext, [objectId]() {
                 return scroll_helper(objectId, QAccessibleActionInterface::decreaseAction());
             }, &result);
         }
-        return result;
+
+        // Don't check for position change if the call was not successful
+        return result && oldPosition != screenRect_helper(firstChildId, false);
     }
 
 

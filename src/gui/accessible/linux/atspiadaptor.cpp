@@ -1561,11 +1561,12 @@ bool AtSpiAdaptor::inheritsQAction(QObject *object)
 // Component
 static QAccessibleInterface * getWindow(QAccessibleInterface * interface)
 {
-    if (interface->role() == QAccessible::Window)
+    if (interface->role() == QAccessible::Dialog || interface->role() == QAccessible::Window)
         return interface;
 
     QAccessibleInterface * parent = interface->parent();
-    while (parent && parent->role() != QAccessible::Window)
+    while (parent && parent->role() != QAccessible::Dialog
+            && parent->role() != QAccessible::Window)
         parent = parent->parent();
 
     return parent;
@@ -1583,7 +1584,7 @@ static QRect getRelativeRect(QAccessibleInterface *interface)
         wr = window->rect();
 
         cr.setX(cr.x() - wr.x());
-        cr.setY(cr.x() - wr.y());
+        cr.setY(cr.y() - wr.y());
     }
     return cr;
 }
@@ -1841,7 +1842,7 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
         uint coordType = message.arguments().at(2).toUInt();
         if (coordType == ATSPI_COORD_TYPE_WINDOW) {
             QWindow *win = interface->window();
-            point -= QPoint(win->x(), win->y());
+            point += QPoint(win->x(), win->y());
         }
         int offset = interface->textInterface()->offsetAtPoint(point);
         sendReply(connection, message, offset);
@@ -2288,10 +2289,10 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
         QAccessibleInterface * captionInterface= interface->tableInterface()->caption();
         if (captionInterface) {
             QSpiObjectReference ref = QSpiObjectReference(connection, QDBusObjectPath(pathForInterface(captionInterface)));
-            sendReply(connection, message, QVariant::fromValue(ref));
+            sendReply(connection, message, QVariant::fromValue(QDBusVariant(QVariant::fromValue(ref))));
         } else {
-            sendReply(connection, message, QVariant::fromValue(
-                          QSpiObjectReference(connection, QDBusObjectPath(ATSPI_DBUS_PATH_NULL))));
+            sendReply(connection, message, QVariant::fromValue(QDBusVariant(QVariant::fromValue(
+                          QSpiObjectReference(connection, QDBusObjectPath(ATSPI_DBUS_PATH_NULL))))));
         }
     } else if (function == QLatin1String("GetNColumns")) {
         connection.send(message.createReply(QVariant::fromValue(QDBusVariant(

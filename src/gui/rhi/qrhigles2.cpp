@@ -1766,8 +1766,14 @@ void QRhiGles2::beginExternal(QRhiCommandBuffer *cb)
 
     cbD->resetCommands();
 
-    if (vao)
+    if (vao) {
         f->glBindVertexArray(0);
+    } else {
+        f->glBindBuffer(GL_ARRAY_BUFFER, 0);
+        f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        if (caps.compute)
+            f->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    }
 }
 
 void QRhiGles2::endExternal(QRhiCommandBuffer *cb)

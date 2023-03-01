@@ -598,19 +598,21 @@ int QMetaType::idHelper() const
     \fn constexpr const QMetaObject *QMetaType::metaObject() const
     \since 5.5
 
-    return a QMetaObject relative to this type.
+    Returns a QMetaObject relative to this type.
 
     If the type is a pointer type to a subclass of QObject, flags() contains
-    QMetaType::PointerToQObject and this function returns the corresponding QMetaObject. This can
-    be used to in combinaison with QMetaObject::construct to create QObject of this type.
+    QMetaType::PointerToQObject and this function returns the corresponding QMetaObject.
+    This can be used in combination with QMetaObject::newInstance() to create QObjects of this type.
 
-    If the type is a Q_GADGET, flags() contains QMetaType::IsGadget, and this function returns its
-    QMetaObject.  This can be used to retrieve QMetaMethod and QMetaProperty and use them on a
-    pointer of this type. (given by QVariant::data for example)
+    If the type is a Q_GADGET, flags() contains QMetaType::IsGadget.
+    If the type is a pointer to a Q_GADGET, flags() contains QMetaType::PointerToGadget.
+    In both cases, this function returns its QMetaObject.
+    This can be used to retrieve QMetaMethod and QMetaProperty and use them on a
+    pointer of this type for example, as given by QVariant::data().
 
-    If the type is an enumeration, flags() contains QMetaType::IsEnumeration, and this function
-    returns the QMetaObject of the enclosing object if the enum was registered as a Q_ENUM or
-    \nullptr otherwise
+    If the type is an enumeration, flags() contains QMetaType::IsEnumeration.
+    In this case, this function returns the QMetaObject of the enclosing
+    object if the enum was registered as a Q_ENUM or \nullptr otherwise.
 
     \sa QMetaType::flags()
 */
@@ -1811,10 +1813,16 @@ static QMetaEnum metaEnumFromType(QMetaType t)
 {
     if (t.flags() & QMetaType::IsEnumeration) {
         if (const QMetaObject *metaObject = t.metaObject()) {
-            const QByteArray enumName = t.name();
-            const char *lastColon = std::strrchr(enumName, ':');
-            return metaObject->enumerator(metaObject->indexOfEnumerator(
-                    lastColon ? lastColon + 1 : enumName.constData()));
+            QByteArrayView qflagsNamePrefix = "QFlags<";
+            QByteArray enumName = t.name();
+            if (enumName.endsWith('>') && enumName.startsWith(qflagsNamePrefix)) {
+                // extract the template argument
+                enumName.chop(1);
+                enumName = enumName.sliced(qflagsNamePrefix.size());
+            }
+            if (qsizetype lastColon = enumName.lastIndexOf(':'); lastColon != -1)
+                enumName = enumName.sliced(lastColon + 1);
+            return metaObject->enumerator(metaObject->indexOfEnumerator(enumName));
         }
     }
     return QMetaEnum();
@@ -2458,7 +2466,7 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
             return true;
     }
     const ConverterFunction * const f =
-        customTypesConversionRegistry()->function(qMakePair(fromTypeId, toTypeId));
+        customTypesConversionRegistry()->function(std::make_pair(fromTypeId, toTypeId));
     if (f)
         return true;
 

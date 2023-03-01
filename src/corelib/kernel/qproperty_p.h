@@ -62,6 +62,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
     Q_CORE_EXPORT bool isAnyBindingEvaluating();
+    struct QBindingStatusAccessToken {};
 }
 
 // Keep all classes related to QProperty in one compilation unit. Performance of this code is crucial and
@@ -439,7 +440,7 @@ class QObjectCompatProperty : public QPropertyData<T>
     }
     bool inBindingWrapper(const QBindingStorage *storage) const
     {
-        return storage->bindingStatus->currentCompatProperty
+        return storage->bindingStatus && storage->bindingStatus->currentCompatProperty
             && QtPrivate::isPropertyInBindingWrapper(this);
     }
 
@@ -456,7 +457,7 @@ public:
     {
         const QBindingStorage *storage = qGetBindingStorage(owner());
         // make sure we don't register this binding as a dependency to itself
-        if (storage->bindingStatus->currentlyEvaluatingBinding && !inBindingWrapper(storage))
+        if (storage->bindingStatus && storage->bindingStatus->currentlyEvaluatingBinding && !inBindingWrapper(storage))
             storage->registerDependency_helper(this);
         return this->val;
     }
@@ -551,7 +552,7 @@ public:
             if (!inBindingWrapper(storage))
                 notify(bd);
         }
-        if constexpr (Signal != nullptr) {
+        if constexpr (!std::is_null_pointer_v<decltype(Signal)>) {
             if constexpr (SignalTakesValue::value)
                 (owner()->*Signal)(value());
             else

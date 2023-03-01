@@ -139,6 +139,10 @@ void QWindowsUiaMainProvider::notifyStateChange(QAccessibleStateChangeEvent *eve
                 if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
                     if (accessible->state().active) {
                         QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_Window_WindowOpenedEventId);
+                        if (QAccessibleInterface *focused = accessible->focusChild()) {
+                            if (QWindowsUiaMainProvider *focusedProvider = providerForAccessible(focused))
+                                QWindowsUiaWrapper::instance()->raiseAutomationEvent(focusedProvider, UIA_AutomationFocusChangedEventId);
+                        }
                     } else {
                         QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_Window_WindowClosedEventId);
                     }
@@ -331,14 +335,16 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
         break;
     case UIA_SelectionPatternId:
         // Lists of items.
-        if (accessible->role() == QAccessible::List) {
+        if (accessible->role() == QAccessible::List
+                || accessible->role() == QAccessible::PageTabList) {
             *pRetVal = new QWindowsUiaSelectionProvider(id());
         }
         break;
     case UIA_SelectionItemPatternId:
         // Items within a list and radio buttons.
         if ((accessible->role() == QAccessible::RadioButton)
-                || (accessible->role() == QAccessible::ListItem)) {
+                || (accessible->role() == QAccessible::ListItem)
+                || (accessible->role() == QAccessible::PageTab)) {
             *pRetVal = new QWindowsUiaSelectionItemProvider(id());
         }
         break;
@@ -378,9 +384,11 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
         break;
     case UIA_ExpandCollapsePatternId:
         // Menu items with submenus.
-        if (accessible->role() == QAccessible::MenuItem
+        if ((accessible->role() == QAccessible::MenuItem
                 && accessible->childCount() > 0
-                && accessible->child(0)->role() == QAccessible::PopupMenu) {
+                && accessible->child(0)->role() == QAccessible::PopupMenu)
+            || accessible->role() == QAccessible::ComboBox
+            || (accessible->role() == QAccessible::TreeItem && accessible->state().expandable)) {
             *pRetVal = new QWindowsUiaExpandCollapseProvider(id());
         }
         break;
@@ -731,26 +739,18 @@ HRESULT QWindowsUiaMainProvider::ElementProviderFromPoint(double x, double y, IR
     QPoint point;
     nativeUiaPointToPoint(uiaPoint, window, &point);
 
-    if (auto targetacc = accessible->childAt(point.x(), point.y())) {
-        auto acc = accessible->childAt(point.x(), point.y());
-        // Reject the cases where childAt() returns a different instance in each call for the same
-        // element (e.g., QAccessibleTree), as it causes an endless loop with Youdao Dictionary installed.
-        if (targetacc == acc) {
-            // Controls can be embedded within grouping elements. By default returns the innermost control.
-            while (acc) {
-                targetacc = acc;
-                // For accessibility tools it may be better to return the text element instead of its subcomponents.
-                if (targetacc->textInterface()) break;
-                acc = targetacc->childAt(point.x(), point.y());
-                if (acc != targetacc->childAt(point.x(), point.y())) {
-                    qCDebug(lcQpaUiAutomation) << "Non-unique childAt() for" << targetacc;
-                    break;
-                }
-            }
-            *pRetVal = providerForAccessible(targetacc);
-        } else {
-            qCDebug(lcQpaUiAutomation) << "Non-unique childAt() for" << accessible;
+    QAccessibleInterface *targetacc = accessible->childAt(point.x(), point.y());
+
+    if (targetacc) {
+        QAccessibleInterface *acc = targetacc;
+        // Controls can be embedded within grouping elements. By default returns the innermost control.
+        while (acc) {
+            targetacc = acc;
+            // For accessibility tools it may be better to return the text element instead of its subcomponents.
+            if (targetacc->textInterface()) break;
+            acc = acc->childAt(point.x(), point.y());
         }
+        *pRetVal = providerForAccessible(targetacc);
     }
     return S_OK;
 }

@@ -41,14 +41,7 @@
 #define QSTRINGVIEW_H
 
 /*
-    This macro enables three "levels" of QStringView support:
-
-    1. offer QStringView, overload some functions taking QString with
-    QStringView
-
-    2. Obsolete: QStringRef and its overloads have been removed.
-
-    3. like 2, but replace functions taking QString, too.
+    Obsolete.
 */
 #ifndef QT_STRINGVIEW_LEVEL
 #  define QT_STRINGVIEW_LEVEL 1

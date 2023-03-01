@@ -1836,9 +1836,8 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
             writeResourceIcon(m_output, iconName, m_dindent, i);
         else
             writePixmapFunctionIcon(m_output, iconName, m_dindent, i);
-        m_output << m_indent;
         if (isCpp)
-            m_output << '}';
+            m_output << m_indent << '}';
         m_output  << '\n';
         return iconName;
     }

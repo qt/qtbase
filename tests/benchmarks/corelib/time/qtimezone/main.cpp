@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2019 Crimson AS <info@crimson.no>
 ** Copyright (C) 2018 Klaralvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author David Faure <david.faure@kdab.com>
 ** Contact: https://www.qt.io/licensing/
@@ -60,15 +61,22 @@ static QList<QByteArray> enoughZones()
     for (conat auto &name : available)
         result << name;
 #else
-    QList<QByteArray> result { QByteArray("UTC"),
-                               // Those named overtly in tst_QDateTime:
-                               QByteArray("Europe/Oslo"), QByteArray("America/Vancouver"),
-                               QByteArray("Europe/Berlin"), QByteArray("America/Sao_Paulo"),
-                               QByteArray("Pacific/Auckland"), QByteArray("Australia/Eucla"),
-                               QByteArray("Asia/Kathmandu"), QByteArray("Pacific/Kiritimati"),
-                               QByteArray("Pacific/Apia"), QByteArray("UTC+12:00"),
-                               QByteArray("Australia/Sydney"), QByteArray("Asia/Singapore"),
-                               QByteArray("Australia/Brisbane") };
+    QList<QByteArray> result {
+        QByteArray("UTC"),
+        // Those named overtly in tst_QDateTime - special cases first:
+        QByteArray("UTC-02:00"), QByteArray("UTC+02:00"), QByteArray("UTC+12:00"),
+        QByteArray("Etc/GMT+3"), QByteArray("GMT-2"), QByteArray("GMT"),
+        // ... then ordinary names in alphabetic order:
+        QByteArray("America/New_York"), QByteArray("America/Sao_Paulo"),
+        QByteArray("America/Vancouver"),
+        QByteArray("Asia/Kathmandu"), QByteArray("Asia/Singapore"),
+        QByteArray("Australia/Brisbane"), QByteArray("Australia/Eucla"),
+        QByteArray("Australia/Sydney"),
+        QByteArray("Europe/Berlin"), QByteArray("Europe/Helsinki"),
+        QByteArray("Europe/Rome"), QByteArray("Europe/Oslo"),
+        QByteArray("Pacific/Apia"), QByteArray("Pacific/Auckland"),
+        QByteArray("Pacific/Kiritimati")
+    };
 #endif
     result << QByteArray("Vulcan/ShiKahr"); // invalid: also worth testing
     return result;

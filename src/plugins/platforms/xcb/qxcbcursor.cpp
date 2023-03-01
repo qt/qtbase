@@ -289,10 +289,10 @@ QXcbCursorCacheKey::QXcbCursorCacheKey(const QCursor &c)
         if (pixmapCacheKey) {
             bitmapCacheKey = pixmapCacheKey;
         } else {
-            Q_ASSERT(!c.bitmap(Qt::ReturnByValue).isNull());
-            Q_ASSERT(!c.mask(Qt::ReturnByValue).isNull());
-            bitmapCacheKey = c.bitmap(Qt::ReturnByValue).cacheKey();
-            maskCacheKey = c.mask(Qt::ReturnByValue).cacheKey();
+            Q_ASSERT(!c.bitmap().isNull());
+            Q_ASSERT(!c.mask().isNull());
+            bitmapCacheKey = c.bitmap().cacheKey();
+            maskCacheKey = c.mask().cacheKey();
         }
     }
 }
@@ -617,8 +617,8 @@ xcb_cursor_t QXcbCursor::createBitmapCursor(QCursor *cursor)
             qCWarning(lcQpaXcb, "xrender >= 0.5 required to create pixmap cursors");
     } else {
         xcb_connection_t *conn = xcb_connection();
-        xcb_pixmap_t cp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->bitmap(Qt::ReturnByValue).toImage());
-        xcb_pixmap_t mp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->mask(Qt::ReturnByValue).toImage());
+        xcb_pixmap_t cp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->bitmap().toImage());
+        xcb_pixmap_t mp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->mask().toImage());
         c = xcb_generate_id(conn);
         xcb_create_cursor(conn, c, cp, mp, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF,
                           spot.x(), spot.y());

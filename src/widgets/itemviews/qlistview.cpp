@@ -45,7 +45,7 @@
 #include <qaccessible.h>
 #endif
 #include <qapplication.h>
-#include <qpainter.h>
+#include <qstylepainter.h>
 #include <qbitmap.h>
 #include <qdebug.h>
 #if QT_CONFIG(draganddrop)
@@ -1024,7 +1024,7 @@ void QListView::paintEvent(QPaintEvent *e)
         return;
     QStyleOptionViewItem option;
     initViewItemOption(&option);
-    QPainter painter(d->viewport);
+    QStylePainter painter(d->viewport);
 
     const QList<QModelIndex> toBeRendered =
             d->intersectingSet(e->rect().translated(horizontalOffset(), verticalOffset()), false);
@@ -1095,7 +1095,7 @@ void QListView::paintEvent(QPaintEvent *e)
             // is provided by the delegate
             QStyle::State oldState = option.state;
             option.state &= ~QStyle::State_Selected;
-            style()->drawPrimitive(QStyle::PE_PanelItemViewRow, &option, &painter, this);
+            painter.drawPrimitive(QStyle::PE_PanelItemViewRow, option);
             option.state = oldState;
 
             alternateBase = !alternateBase;
@@ -1119,7 +1119,7 @@ void QListView::paintEvent(QPaintEvent *e)
         opt.rect = d->mapToViewport(d->elasticBand, false).intersected(
             d->viewport->rect().adjusted(-16, -16, 16, 16));
         painter.save();
-        style()->drawControl(QStyle::CE_RubberBand, &opt, &painter);
+        painter.drawControl(QStyle::CE_RubberBand, opt);
         painter.restore();
     }
 #endif
@@ -1237,7 +1237,10 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
         }
         return d->closestIndex(initialRect, intersectVector);
     case MovePageUp: {
-        rect.moveTop(rect.top() - d->viewport->height() + 1 );
+        if (rect.height() >= d->viewport->height())
+           return moveCursor(QAbstractItemView::MoveUp, modifiers);
+
+        rect.moveTop(rect.top() - d->viewport->height() + 1);
         if (rect.top() < rect.height()) {
             rect.setTop(0);
             rect.setBottom(1);
@@ -1278,8 +1281,11 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
         }
         return d->closestIndex(initialRect, intersectVector);
     case MovePageDown: {
-        rect.moveTop(rect.top() + d->viewport->height() - 1 );
-        if (rect.bottom() > contents.height() - rect.height()){
+        if (rect.height() >= d->viewport->height())
+           return moveCursor(QAbstractItemView::MoveDown, modifiers);
+
+        rect.moveTop(rect.top() + d->viewport->height() - 1);
+        if (rect.bottom() > contents.height() - rect.height()) {
             rect.setTop(contents.height() - 1);
             rect.setBottom(contents.height());
         }

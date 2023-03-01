@@ -253,11 +253,15 @@ static void customConstruct(QVariant::Private *d, const void *copy)
         *d = QVariant::Private();
         return;
     }
+    if (!iface->copyCtr || (!copy && !iface->defaultCtr)) {
+        // QVariant requires type to be copy and default constructible
+        *d = QVariant::Private();
+        qWarning("QVariant: Provided metatype does not support "
+                 "destruction, copy and default construction");
+        return;
+    }
 
     if (QVariant::Private::canUseInternalSpace(iface)) {
-        // QVariant requires type to be copy and default constructible
-        Q_ASSERT(iface->copyCtr);
-        Q_ASSERT(iface->defaultCtr);
         if (copy)
             iface->copyCtr(iface, &d->data, copy);
         else
@@ -813,6 +817,9 @@ QVariant::QVariant(const QVariant &p)
     Usually, you never have to use this constructor, use QVariant::fromValue()
     instead to construct variants from the pointer types represented by
     \c QMetaType::VoidStar, and \c QMetaType::QObjectStar.
+
+    If \a type does not support copy and default construction, the variant will
+    be invalid.
 
     \sa QVariant::fromValue(), QMetaType::Type
 */

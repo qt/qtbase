@@ -602,9 +602,15 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
     QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(*authenticator);
     // Send "Authorization" header, but not if it's NTLM and the socket is already authenticated.
     if (priv && priv->method != QAuthenticatorPrivate::None) {
-        if ((priv->method != QAuthenticatorPrivate::Ntlm
-             && request.headerField("Authorization").isEmpty())
-            || channel.lastStatus == 401) {
+        const bool ntlmNego = priv->method == QAuthenticatorPrivate::Ntlm
+                || priv->method == QAuthenticatorPrivate::Negotiate;
+        const bool authNeeded = channel.lastStatus == 401;
+        const bool ntlmNegoOk = ntlmNego && authNeeded
+                && (priv->phase != QAuthenticatorPrivate::Done
+                    || !channel.authenticationCredentialsSent);
+        const bool otherOk =
+                !ntlmNego && (authNeeded || request.headerField("Authorization").isEmpty());
+        if (ntlmNegoOk || otherOk) {
             QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false),
                                                           request.url().host());
             request.setHeaderField("Authorization", response);
@@ -617,7 +623,13 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
     priv = QAuthenticatorPrivate::getPrivate(*authenticator);
     // Send "Proxy-Authorization" header, but not if it's NTLM and the socket is already authenticated.
     if (priv && priv->method != QAuthenticatorPrivate::None) {
-        if (priv->method != QAuthenticatorPrivate::Ntlm || channel.lastStatus == 407) {
+        const bool ntlmNego = priv->method == QAuthenticatorPrivate::Ntlm
+                || priv->method == QAuthenticatorPrivate::Negotiate;
+        const bool proxyAuthNeeded = channel.lastStatus == 407;
+        const bool ntlmNegoOk = ntlmNego && proxyAuthNeeded
+                && (priv->phase != QAuthenticatorPrivate::Done || !channel.proxyCredentialsSent);
+        const bool otherOk = !ntlmNego;
+        if (ntlmNegoOk || otherOk) {
             QByteArray response = priv->calculateResponse(request.methodName(), request.uri(false),
                                                           networkProxy.hostName());
             request.setHeaderField("Proxy-Authorization", response);
@@ -916,6 +928,8 @@ QString QHttpNetworkConnectionPrivate::errorDetail(QNetworkReply::NetworkError e
         break;
     case QNetworkReply::SslHandshakeFailedError:
         errorString = QCoreApplication::translate("QHttp", "SSL handshake failed");
+        if (socket)
+            errorString += QStringLiteral(": ") + socket->errorString();
         break;
     case QNetworkReply::TooManyRedirectsError:
         errorString = QCoreApplication::translate("QHttp", "Too many redirects");
@@ -1277,11 +1291,10 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(const QHostInfo &info)
                 emitReplyError(channels[0].socket, currentReply, QNetworkReply::HostNotFoundError);
             }
         } else {
-            // Should not happen: we start a host lookup before sending a request,
-            // so it's natural to have requests either in HTTP/2 queue, or in low/high
-            // priority queues.
-            qWarning("QHttpNetworkConnectionPrivate::_q_hostLookupFinished"
-                     " could not de-queue request, failed to report HostNotFoundError");
+            // We can end up here if a request has been aborted or otherwise failed (e.g. timeout)
+            // before the host lookup was finished.
+            qDebug("QHttpNetworkConnectionPrivate::_q_hostLookupFinished"
+                   " could not de-queue request, failed to report HostNotFoundError");
             networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
         }
     }

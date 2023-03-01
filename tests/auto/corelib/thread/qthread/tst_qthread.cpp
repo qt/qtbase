@@ -41,6 +41,8 @@
 #include <qdebug.h>
 #include <qmetaobject.h>
 #include <qscopeguard.h>
+#include <private/qobject_p.h>
+#include <private/qthread_p.h>
 
 #ifdef Q_OS_UNIX
 #include <pthread.h>
@@ -90,6 +92,7 @@ private slots:
     void adoptedThreadExecFinished();
     void adoptMultipleThreads();
     void adoptMultipleThreadsOverlap();
+    void adoptedThreadBindingStatus();
 
     void exitAndStart();
     void exitAndExec();
@@ -112,6 +115,8 @@ private slots:
 
     void create();
     void threadIdReuse();
+
+    void bindingListCleanupAfterDelete();
 };
 
 enum { one_minute = 60 * 1000, five_minutes = 5 * one_minute };
@@ -951,6 +956,20 @@ void tst_QThread::adoptMultipleThreadsOverlap()
     QCOMPARE(recorder.activationCount.loadRelaxed(), numThreads);
 }
 
+void tst_QThread::adoptedThreadBindingStatus()
+{
+    NativeThreadWrapper nativeThread;
+    nativeThread.setWaitForStop();
+
+    nativeThread.startAndWait();
+    QVERIFY(nativeThread.qthread);
+    auto privThread = static_cast<QThreadPrivate *>(QObjectPrivate::get(nativeThread.qthread));
+    QVERIFY(privThread->m_statusOrPendingObjects.bindingStatus());
+
+    nativeThread.stop();
+    nativeThread.join();
+}
+
 // Disconnects on WinCE
 void tst_QThread::stressTest()
 {
@@ -1682,6 +1701,18 @@ void tst_QThread::threadIdReuse()
     if (!threadIdReused) {
         QSKIP("Thread ID was not reused");
     }
+}
+
+void tst_QThread::bindingListCleanupAfterDelete()
+{
+    QThread t;
+    auto optr = std::make_unique<QObject>();
+    optr->moveToThread(&t);
+    auto threadPriv =  static_cast<QThreadPrivate *>(QObjectPrivate::get(&t));
+    auto list = threadPriv->m_statusOrPendingObjects.list();
+    QVERIFY(list);
+    optr.reset();
+    QVERIFY(list->empty());
 }
 
 QTEST_MAIN(tst_QThread)

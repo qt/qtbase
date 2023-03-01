@@ -41,9 +41,11 @@
 
     Unlike QStringView and QUtf8StringView, QAnyStringView can hold
     strings of any of the following encodings: UTF-8, UTF-16, and
-    Latin-1. The latter is supported to keep old source working
-    efficiently. It is expected that by Qt 7, the Latin-1 support will
-    be removed.
+    Latin-1. The latter is supported because Latin-1, unlike UTF-8,
+    can be efficiently compared to UTF-16 data: a length mismatch
+    already means the strings cannot be equal. This is not true for
+    UTF-8/UTF-16 comparisons, because UTF-8 is a variable-length
+    encoding.
 
     The string may be represented as an array (or an array-compatible
     data-structure such as QString, std::basic_string, etc.) of \c
@@ -60,7 +62,7 @@
     When used as an interface type, QAnyStringView allows a single
     function to accept a wide variety of string data sources. One
     function accepting QAnyStringView thus replaces five function
-    overloads (taking QString, \c{(const QChar*, int)},
+    overloads (taking QString, \c{(const QChar*, qsizetype)},
     QUtf8StringView, QLatin1String (but see above), and QChar), while
     at the same time enabling even more string data sources to be
     passed to the function, such as \c{u8"Hello World"}, a \c char8_t
@@ -321,7 +323,7 @@
 */
 
 /*!
-    \fn int QAnyStringView::length() const
+    \fn QAnyStringView::length() const
 
     Same as size().
 

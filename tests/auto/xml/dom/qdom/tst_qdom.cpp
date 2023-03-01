@@ -1965,7 +1965,7 @@ void tst_QDom::setContentUnopenedQIODevice() const
 
     QTest::ignoreMessage(QtWarningMsg,
                          "QDomDocument called with unopened QIODevice. "
-                         "This will not be supported in future Qt versions");
+                         "This will not be supported in future Qt versions.");
 
     // Note: the check below is expected to fail in Qt 7.
     // Fix the test and remove the obsolete code from setContent().

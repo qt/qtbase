@@ -59,7 +59,9 @@ public:
         Q_ASSERT_X(w, "QStylePainter::QStylePainter", "Widget must be non-zero");
         widget = w;
         wstyle = w->style();
-        return QPainter::begin(pd);
+        const bool res = QPainter::begin(pd);
+        setRenderHint(QPainter::SmoothPixmapTransform);
+        return res;
     };
     inline void drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOption &opt);
     inline void drawControl(QStyle::ControlElement ce, const QStyleOption &opt);

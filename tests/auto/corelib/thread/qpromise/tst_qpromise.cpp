@@ -65,6 +65,7 @@ private slots:
 #endif
     void cancelWhenReassigned();
     void cancelWhenDestroyedWithoutStarting();
+    void cancelWhenDestroyedRunsContinuations();
     void finishWhenSwapped();
     void cancelWhenMoved();
     void waitUntilResumed();
@@ -517,6 +518,25 @@ void tst_QPromise::cancelWhenDestroyedWithoutStarting()
     QVERIFY(!future.isStarted());
     QVERIFY(future.isCanceled());
     QVERIFY(future.isFinished());
+}
+
+void tst_QPromise::cancelWhenDestroyedRunsContinuations()
+{
+    QFuture<void> future;
+    bool onCanceledCalled = false;
+    bool thenCalled = false;
+    {
+        QPromise<void> promise;
+        future = promise.future();
+        future.then([&] {
+            thenCalled = true;
+        }).onCanceled([&] {
+            onCanceledCalled = true;
+        });
+    }
+    QVERIFY(future.isFinished());
+    QVERIFY(!thenCalled);
+    QVERIFY(onCanceledCalled);
 }
 
 void tst_QPromise::finishWhenSwapped()

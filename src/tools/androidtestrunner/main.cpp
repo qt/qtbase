@@ -394,7 +394,7 @@ static bool parseTestArgs()
 
     QString file;
     QString logType;
-    QString unhandledArgs;
+    QStringList unhandledArgs;
     for (int i = 0; i < g_options.testArgsList.size(); ++i) {
         const QString &arg = g_options.testArgsList[i].trimmed();
         if (arg == QStringLiteral("--"))
@@ -416,7 +416,7 @@ static bool parseTestArgs()
             if (match.hasMatch()) {
                 logType = match.capturedTexts().at(1);
             } else {
-                unhandledArgs += QStringLiteral(" %1").arg(arg);
+                unhandledArgs << QStringLiteral(" \\\"%1\\\"").arg(arg);
             }
         }
     }
@@ -426,10 +426,13 @@ static bool parseTestArgs()
     for (const auto &format : g_options.outFiles.keys())
         g_options.testArgs += QStringLiteral(" -o output.%1,%1").arg(format);
 
-    g_options.testArgs += unhandledArgs;
-    g_options.testArgs = QStringLiteral("shell am start -e applicationArguments \\\"%1\\\" -n %2/%3").arg(shellQuote(g_options.testArgs.trimmed()),
-                                                                                                      g_options.package,
-                                                                                                      g_options.activity);
+    g_options.testArgs += unhandledArgs.join(u' ');
+
+    g_options.testArgs = QStringLiteral("shell am start -e applicationArguments \"%1\" -n %2/%3")
+            .arg(shellQuote(g_options.testArgs.trimmed()))
+            .arg(g_options.package)
+            .arg(g_options.activity);
+
     return true;
 }
 

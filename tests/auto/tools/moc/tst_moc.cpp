@@ -308,6 +308,7 @@ class TestClassinfoWithEscapes: public QObject
     Q_CLASSINFO("cpp c*/omment", "f/*oo")
     Q_CLASSINFO("endswith\\", "Or?\?/")
     Q_CLASSINFO("newline\n inside\n", "Or \r")
+    Q_CLASSINFO("\xffz", "\0012")
 public slots:
     void slotWithAReallyLongName(int)
     { }
@@ -969,13 +970,15 @@ void tst_Moc::classinfoWithEscapes()
     const QMetaObject *mobj = &TestClassinfoWithEscapes::staticMetaObject;
     QCOMPARE(mobj->methodCount() - mobj->methodOffset(), 1);
 
-    QCOMPARE(mobj->classInfoCount(), 5);
+    QCOMPARE(mobj->classInfoCount(), 6);
     QCOMPARE(mobj->classInfo(2).name(), "cpp c*/omment");
     QCOMPARE(mobj->classInfo(2).value(), "f/*oo");
     QCOMPARE(mobj->classInfo(3).name(), "endswith\\");
     QCOMPARE(mobj->classInfo(3).value(), "Or?\?/");
     QCOMPARE(mobj->classInfo(4).name(), "newline\n inside\n");
     QCOMPARE(mobj->classInfo(4).value(), "Or \r");
+    QCOMPARE(mobj->classInfo(5).name(), "\xff" "z");
+    QCOMPARE(mobj->classInfo(5).value(), "\001" "2");
 
     QMetaMethod mm = mobj->method(mobj->methodOffset());
     QCOMPARE(mm.methodSignature(), QByteArray("slotWithAReallyLongName(int)"));
@@ -3811,6 +3814,7 @@ class VeryLongStringData : public QObject
     #define repeat32768(V) repeat16384(V) repeat16384(V)
     #define repeat65534(V) repeat32768(V) repeat16384(V) repeat8192(V) repeat4096(V) repeat2048(V) repeat1024(V) repeat512(V) repeat256(V) repeat128(V) repeat64(V) repeat32(V) repeat16(V) repeat8(V) repeat4(V) repeat2(V)
 
+    Q_CLASSINFO("\1" "23\xff", "String with CRLF.\r\n")
     Q_CLASSINFO(repeat65534("n"), repeat65534("i"))
     Q_CLASSINFO(repeat65534("e"), repeat65534("r"))
     Q_CLASSINFO(repeat32768("o"), repeat32768("b"))
@@ -3859,25 +3863,26 @@ void tst_Moc::unnamedNamespaceObjectsAndGadgets()
 void tst_Moc::veryLongStringData()
 {
     const QMetaObject *mobj = &VeryLongStringData::staticMetaObject;
-    QCOMPARE(mobj->classInfoCount(), 4);
+    int startAt = 1;        // some other classinfo added to the beginning
+    QCOMPARE(mobj->classInfoCount(), startAt + 4);
 
-    QCOMPARE(mobj->classInfo(0).name()[0], 'n');
-    QCOMPARE(mobj->classInfo(0).value()[0], 'i');
-    QCOMPARE(mobj->classInfo(1).name()[0], 'e');
-    QCOMPARE(mobj->classInfo(1).value()[0], 'r');
-    QCOMPARE(mobj->classInfo(2).name()[0], 'o');
-    QCOMPARE(mobj->classInfo(2).value()[0], 'b');
-    QCOMPARE(mobj->classInfo(3).name()[0], ':');
-    QCOMPARE(mobj->classInfo(3).value()[0], ')');
+    QCOMPARE(mobj->classInfo(startAt + 0).name()[0], 'n');
+    QCOMPARE(mobj->classInfo(startAt + 0).value()[0], 'i');
+    QCOMPARE(mobj->classInfo(startAt + 1).name()[0], 'e');
+    QCOMPARE(mobj->classInfo(startAt + 1).value()[0], 'r');
+    QCOMPARE(mobj->classInfo(startAt + 2).name()[0], 'o');
+    QCOMPARE(mobj->classInfo(startAt + 2).value()[0], 'b');
+    QCOMPARE(mobj->classInfo(startAt + 3).name()[0], ':');
+    QCOMPARE(mobj->classInfo(startAt + 3).value()[0], ')');
 
-    QCOMPARE(strlen(mobj->classInfo(0).name()), static_cast<size_t>(65534));
-    QCOMPARE(strlen(mobj->classInfo(0).value()), static_cast<size_t>(65534));
-    QCOMPARE(strlen(mobj->classInfo(1).name()), static_cast<size_t>(65534));
-    QCOMPARE(strlen(mobj->classInfo(1).value()), static_cast<size_t>(65534));
-    QCOMPARE(strlen(mobj->classInfo(2).name()), static_cast<size_t>(32768));
-    QCOMPARE(strlen(mobj->classInfo(2).value()), static_cast<size_t>(32768));
-    QCOMPARE(strlen(mobj->classInfo(3).name()), static_cast<size_t>(1));
-    QCOMPARE(strlen(mobj->classInfo(3).value()), static_cast<size_t>(1));
+    QCOMPARE(strlen(mobj->classInfo(startAt + 0).name()), static_cast<size_t>(65534));
+    QCOMPARE(strlen(mobj->classInfo(startAt + 0).value()), static_cast<size_t>(65534));
+    QCOMPARE(strlen(mobj->classInfo(startAt + 1).name()), static_cast<size_t>(65534));
+    QCOMPARE(strlen(mobj->classInfo(startAt + 1).value()), static_cast<size_t>(65534));
+    QCOMPARE(strlen(mobj->classInfo(startAt + 2).name()), static_cast<size_t>(32768));
+    QCOMPARE(strlen(mobj->classInfo(startAt + 2).value()), static_cast<size_t>(32768));
+    QCOMPARE(strlen(mobj->classInfo(startAt + 3).name()), static_cast<size_t>(1));
+    QCOMPARE(strlen(mobj->classInfo(startAt + 3).value()), static_cast<size_t>(1));
 }
 
 void tst_Moc::gadgetHierarchy()

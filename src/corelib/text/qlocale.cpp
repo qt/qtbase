@@ -568,9 +568,9 @@ QLocaleId QLocaleId::fromName(const QString &name)
     return { langId, QLocalePrivate::codeToScript(script), QLocalePrivate::codeToTerritory(land) };
 }
 
-QString qt_readEscapedFormatString(QStringView format, int *idx)
+QString qt_readEscapedFormatString(QStringView format, qsizetype *idx)
 {
-    int &i = *idx;
+    qsizetype &i = *idx;
 
     Q_ASSERT(format.at(i) == QLatin1Char('\''));
     ++i;
@@ -618,7 +618,7 @@ QString qt_readEscapedFormatString(QStringView format, int *idx)
     qt_repeatCount(u"aab"); // == 2
     \endcode
 */
-int qt_repeatCount(QStringView s)
+qsizetype qt_repeatCount(QStringView s)
 {
     if (s.isEmpty())
         return 0;
@@ -626,7 +626,7 @@ int qt_repeatCount(QStringView s)
     qsizetype j = 1;
     while (j < s.size() && s.at(j) == c)
         ++j;
-    return int(j);
+    return j;
 }
 
 static const QLocaleData *default_data = nullptr;
@@ -757,8 +757,8 @@ static uint defaultIndex()
     }
 #endif
 
-    Q_ASSERT(data >= locale_data);
-    Q_ASSERT(data < locale_data + std::size(locale_data));
+    using QtPrivate::q_points_into_range;
+    Q_ASSERT(q_points_into_range(data, locale_data, std::end(locale_data)));
     return data - locale_data;
 }
 
@@ -1160,7 +1160,7 @@ QString QLocale::createSeparatedList(const QStringList &list) const
     }
 #endif
 
-    const int size = list.size();
+    const qsizetype size = list.size();
     if (size < 1)
         return QString();
 
@@ -1175,7 +1175,7 @@ QString QLocale::createSeparatedList(const QStringList &list) const
     QStringView formatMid = d->m_data->midListPattern().viewData(list_pattern_part_data);
     QStringView formatEnd = d->m_data->endListPattern().viewData(list_pattern_part_data);
     QString result = formatStart.arg(list.at(0), list.at(1));
-    for (int i = 2; i < size - 1; ++i)
+    for (qsizetype i = 2; i < size - 1; ++i)
         result = formatMid.arg(result, list.at(i));
     result = formatEnd.arg(result, list.at(size - 1));
     return result;
@@ -1509,7 +1509,6 @@ QString QLocale::scriptToString(QLocale::Script script)
     return QLatin1String(script_name_list + script_name_index[script]);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn short QLocale::toShort(const QString &s, bool *ok) const
 
@@ -1672,7 +1671,6 @@ QString QLocale::scriptToString(QLocale::Script script)
 
     \sa toFloat(), toInt(), toString()
 */
-#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
     Returns the short int represented by the localized string \a s.
@@ -1914,7 +1912,6 @@ QString QLocale::toString(qulonglong i) const
     return d->m_data->unsLongLongToString(i, -1, 10, -1, flags);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns a localized string representation of the given \a date in the
     specified \a format.
@@ -1951,7 +1948,6 @@ QString QLocale::toString(QTime time, const QString &format) const
 
     \sa QDateTime::toString(), QDate::toString(), QTime::toString()
 */
-#endif
 
 /*!
     \since 5.14
@@ -2032,7 +2028,7 @@ QString QLocale::toString(QDate date, FormatType format) const
 
 static bool timeFormatContainsAP(QStringView format)
 {
-    int i = 0;
+    qsizetype i = 0;
     while (i < format.size()) {
         if (format.at(i).unicode() == '\'') {
             qt_readEscapedFormatString(format, &i);
@@ -3243,7 +3239,7 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
         day = parts.day;
     }
 
-    int i = 0;
+    qsizetype i = 0;
     while (i < format.size()) {
         if (format.at(i).unicode() == '\'') {
             result.append(qt_readEscapedFormatString(format, &i));
@@ -3251,7 +3247,7 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
         }
 
         const QChar c = format.at(i);
-        int repeat = qt_repeatCount(format.mid(i));
+        qsizetype repeat = qt_repeatCount(format.mid(i));
         bool used = false;
         if (formatDate) {
             switch (c.unicode()) {
@@ -4338,6 +4334,24 @@ QStringList QLocale::uiLanguages() const
             locales.append(QLocale(entry));
         if (locales.isEmpty())
             locales.append(systemLocale()->fallbackLocale());
+        // If the system locale (isn't C and) didn't include itself in the list,
+        // or as fallback, presume to know better than it and put its name
+        // first. (Known issue, QTBUG-104930, on some macOS versions when in
+        // locale en_DE.) Our translation system might have a translation for a
+        // locale the platform doesn't believe in.
+        const QString name = bcp47Name();
+        if (!name.isEmpty() && language() != C && !uiLanguages.contains(name)) {
+            // That uses contains(name) as a cheap pre-test, but there may be an
+            // entry that matches this on purging likely subtags.
+            const QLocaleId mine = d->m_data->id().withLikelySubtagsRemoved();
+            const auto isMine = [mine](const QString &entry) {
+                return QLocaleId::fromName(entry).withLikelySubtagsRemoved() == mine;
+            };
+            if (std::none_of(uiLanguages.constBegin(), uiLanguages.constEnd(), isMine)) {
+                locales.prepend(*this);
+                uiLanguages.prepend(name);
+            }
+        }
     } else
 #endif
     {
