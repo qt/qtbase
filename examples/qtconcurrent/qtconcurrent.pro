@@ -4,7 +4,6 @@ TEMPLATE      = subdirs
 SUBDIRS       = imagescaling \
                 map \
                 progressdialog \
-                runfunction \
                 wordcount
 
 
@@ -17,6 +16,5 @@ SUBDIRS       = imagescaling \
     SUBDIRS -= \
         imagescaling \
         progressdialog \
-        runfunction \
         wordcount
 }
