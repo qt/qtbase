@@ -106,9 +106,11 @@ void SpreadSheet::createActions()
     secondSeparator->setSeparator(true);
 }
 
+//! [implicit tr context]
 void SpreadSheet::setupMenuBar()
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+//! [implicit tr context]
     fileMenu->addAction(printAction);
     fileMenu->addAction(exitAction);
 

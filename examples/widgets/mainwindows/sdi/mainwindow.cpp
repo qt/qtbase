@@ -124,11 +124,9 @@ void MainWindow::tile(const QMainWindow *previous)
         move(pos);
 }
 
-//! [implicit tr context]
 void MainWindow::createActions()
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-//! [implicit tr context]
     QToolBar *fileToolBar = addToolBar(tr("File"));
 
     const QIcon newIcon = QIcon::fromTheme("document-new", QIcon(":/images/new.png"));
