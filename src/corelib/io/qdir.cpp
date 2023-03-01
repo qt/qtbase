@@ -502,7 +502,8 @@ inline void QDirPrivate::initFileEngine()
 
     \include android-content-uri-limitations.qdocinc
 
-    \sa QFileInfo, QFile, QFileDialog, QCoreApplication::applicationDirPath(), {Find Files Example}
+    \sa QFileInfo, QFile, QFileDialog, QCoreApplication::applicationDirPath(),
+        {Fetch More Example}
 */
 
 /*!
