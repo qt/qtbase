@@ -2371,6 +2371,25 @@ void *QVariant::data()
 */
 
 /*!
+    \since 6.6
+    \fn template <typename T> T &QVariant::get(QVariant &v)
+    \fn template <typename T> const T &QVariant::get(const QVariant &v)
+    \fn template <typename T> T &&QVariant::get(QVariant &&v)
+    \fn template <typename T> const T &&QVariant::get(const QVariant &&v)
+
+    If \a v contains an object of type \c T, returns a reference to the contained
+    object, otherwise the call has undefined behavior.
+
+    The overloads taking a mutable \a v detach \a v: When called on a
+    \l{isNull()}{null} \a v with matching type \c T, \a v will not be null
+    after the call.
+
+    These functions are provided for compatibility with \c{std::variant}.
+
+    \sa get_if(), data()
+*/
+
+/*!
     Returns \c true if this is a null variant, false otherwise.
 
     A variant is considered null if it contains no initialized value or a null pointer.

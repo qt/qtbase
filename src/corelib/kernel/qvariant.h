@@ -10,9 +10,12 @@
 #ifndef QT_NO_DEBUG_STREAM
 #include <QtCore/qdebug.h>
 #endif
+
 #include <memory>
-#include <type_traits>
+#include <QtCore/q20type_traits.h>
+#include <QtCore/q23utility.h>
 #include <variant>
+
 #if !defined(QT_LEAN_HEADERS) || QT_LEAN_HEADERS < 1
 #  include <QtCore/qlist.h>
 #  include <QtCore/qstringlist.h>
@@ -25,6 +28,7 @@
 QT_BEGIN_NAMESPACE
 
 QT_ENABLE_P0846_SEMANTICS_FOR(get_if)
+QT_ENABLE_P0846_SEMANTICS_FOR(get)
 
 class QBitArray;
 class QDataStream;
@@ -493,6 +497,22 @@ private:
             return nullptr;
         return static_cast<const T*>(v->data());
     }
+
+#define Q_MK_GET(cvref) \
+    template <typename T> \
+    friend T cvref get(QVariant cvref v) \
+    { \
+        if constexpr (std::is_const_v<T cvref>) \
+            Q_ASSERT(!v.d.is_null); \
+        Q_ASSERT(v.d.type() == QMetaType::fromType<q20::remove_cvref_t<T>>()); \
+        return static_cast<T cvref>(*get_if<T>(&v)); \
+    } \
+    /* end */
+    Q_MK_GET(&)
+    Q_MK_GET(const &)
+    Q_MK_GET(&&)
+    Q_MK_GET(const &&)
+#undef Q_MK_GET
 
     template<typename T>
     friend inline T qvariant_cast(const QVariant &);
