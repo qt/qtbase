@@ -2134,7 +2134,8 @@ void QCoreApplicationPrivate::quit()
 
     \note QCoreApplication does \e not take ownership of \a translationFile.
 
-    \sa removeTranslator(), translate(), QTranslator::load(), {Dynamic Translation}
+    \sa removeTranslator(), translate(), QTranslator::load(),
+        {Writing Source Code for Translation#Prepare for Dynamic Language Changes}{Prepare for Dynamic Language Changes}
 */
 
 bool QCoreApplication::installTranslator(QTranslator *translationFile)
