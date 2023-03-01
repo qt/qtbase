@@ -102,42 +102,50 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QBasicTimer::start(qint64 msec, QObject *object)
+    \fn void QBasicTimer::start(int msec, QObject *object)
 
-    Starts (or restarts) the timer with a \a msec milliseconds timeout. The
+    \obsolete Use chrono overload instead.
+*/
+
+/*!
+    \since 6.5
+
+    Starts (or restarts) the timer with a \a duration timeout. The
     timer will be a Qt::CoarseTimer. See Qt::TimerType for information on the
     different timer types.
 
     The given \a object will receive timer events.
 
-    \note In Qt versions prior to 6.5, \a msec was \c{int}, not
-    \c{qint64}.
-
     \sa stop(), isActive(), QObject::timerEvent(), Qt::CoarseTimer
  */
-void QBasicTimer::start(qint64 msec, QObject *obj)
+void QBasicTimer::start(std::chrono::milliseconds duration, QObject *object)
 {
-    start(msec, Qt::CoarseTimer, obj);
+    start(duration, Qt::CoarseTimer, object);
 }
 
 /*!
+    \fn QBasicTimer::start(int msec, Qt::TimerType timerType, QObject *obj)
     \overload
+    \obsolete
 
-    Starts (or restarts) the timer with a \a msec milliseconds timeout and the
+    Use chrono overload instead.
+*/
+
+/*!
+    \since 6.5
+
+    Starts (or restarts) the timer with a \a duration timeout and the
     given \a timerType. See Qt::TimerType for information on the different
     timer types.
 
     \a obj will receive timer events.
 
-    \note In Qt versions prior to 6.5, \a msec was \c{int}, not
-    \c{qint64}.
-
     \sa stop(), isActive(), QObject::timerEvent(), Qt::TimerType
  */
-void QBasicTimer::start(qint64 msec, Qt::TimerType timerType, QObject *obj)
+void QBasicTimer::start(std::chrono::milliseconds duration, Qt::TimerType timerType, QObject *obj)
 {
     QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
-    if (Q_UNLIKELY(msec < 0)) {
+    if (Q_UNLIKELY(duration.count() < 0)) {
         qWarning("QBasicTimer::start: Timers cannot have negative timeouts");
         return;
     }
@@ -151,7 +159,7 @@ void QBasicTimer::start(qint64 msec, Qt::TimerType timerType, QObject *obj)
     }
     stop();
     if (obj)
-        id = eventDispatcher->registerTimer(msec, timerType, obj);
+        id = eventDispatcher->registerTimer(duration.count(), timerType, obj);
 }
 
 /*!
