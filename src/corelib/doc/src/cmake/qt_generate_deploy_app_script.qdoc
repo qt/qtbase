@@ -67,7 +67,7 @@ in a fatal error, unless the \c{NO_UNSUPPORTED_PLATFORM_ERROR} option is given.
 
 On platforms other than macOS, Qt translations are automatically deployed. To
 inhibit this behavior, specify \c{NO_TRANSLATIONS}. Use
-\l{qt6_deploy_translations}{qt_deploy_translations} to deploy translations in a
+\l{qt6_deploy_translations}{qt_deploy_translations()} to deploy translations in a
 customized way.
 
 For deploying a QML application, use
