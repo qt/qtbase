@@ -216,7 +216,7 @@ template <typename... Args> inline auto invokeMethodHelper(QMetaMethodReturnArgu
 }
 } // namespace QtPrivate
 
-template <typename T> inline QMetaMethodReturnArgument qReturnArg(T &&) = delete;
+template <typename T> void qReturnArg(const T &&) = delete;
 template <typename T> inline QMetaMethodReturnArgument qReturnArg(T &data)
 {
     return QtPrivate::Invoke::returnArgument(nullptr, data);
