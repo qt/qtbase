@@ -765,75 +765,20 @@ QDebug &QDebug::resetFormat()
 
 /*!
     \since 6.5
-    \fn QDebug &QDebug::operator<<(const std::string &s)
+    \fn template <typename Char, typename...Args> QDebug &QDebug::operator<<(const std::basic_string<Char, Args...> &s)
+    \fn template <typename Char, typename...Args> QDebug &QDebug::operator<<(std::basic_string_view<Char, Args...> s)
 
-    Converts \a s to a QUtf8StringView,
-    writes the result to the stream and returns
-    a reference to the stream.
-*/
+    Writes the string or string-view \a s to the stream and returns a reference
+    to the stream.
 
-/*!
-    \since 6.5
-    \fn QDebug &QDebug::operator<<(std::string_view s)
-
-    Converts \a s to a QUtf8StringView,
-    writes the result to the stream and returns
-    a reference to the stream.
-*/
-
-
-/*!
-    \since 6.5
-    \fn QDebug &QDebug::operator<<(const std::wstring &s)
-
-    Converts \a s to a QString via QString::fromStdWString(),
-    writes the result to the stream and returns
-    a reference to the stream.
-*/
-
-/*!
-    \since 6.5
-    \fn QDebug &QDebug::operator<<(std::wstring_view s)
-
-    Converts \a s to a QString via QString::fromWCharArray(),
-    writes the result to the stream and returns
-    a reference to the stream.
-*/
-
-/*!
-    \since 6.5
-    \fn QDebug &QDebug::operator<<(const std::u16string &s)
-
-    Converts \a s to a QStringView,
-    writes the result to the stream and returns
-    a reference to the stream.
-*/
-
-/*!
-    \since 6.5
-    \fn QDebug &QDebug::operator<<(std::u16string_view s)
-
-    Converts \a s to a QStringView,
-    writes the result to the stream and returns
-    a reference to the stream.
-*/
-
-/*!
-    \since 6.5
-    \fn QDebug &QDebug::operator<<(const std::u32string &s)
-
-    Converts \a s to a QString via QString::fromUcs4(),
-    writes the result to the stream and returns
-    a reference to the stream.
-*/
-
-/*!
-    \since 6.5
-    \fn QDebug &QDebug::operator<<(std::u32string_view s)
-
-    Converts \a s to a QString via QString::fromUcs4(),
-    writes the result to the stream and returns
-    a reference to the stream.
+    These operators only participate in overload resolution if \c Char is one of
+    \list
+    \li char
+    \li char8_t (C++20 only)
+    \li char16_t
+    \li char32_t
+    \li wchar_t
+    \endlist
 */
 
 /*!

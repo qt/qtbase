@@ -129,29 +129,65 @@ public:
     inline QDebug &operator<<(QTextStreamManipulator m)
     { stream->ts << m; return *this; }
 
-    inline QDebug &operator<<(const std::string &s)
+#ifdef Q_QDOC
+    template <typename Char, typename...Args>
+    QDebug &operator<<(const std::basic_string<Char, Args...> &s);
+
+    template <typename Char, typename...Args>
+    QDebug &operator<<(std::basic_string_view<Char, Args...> s);
+#else
+    template <typename...Args>
+    QDebug &operator<<(const std::basic_string<char, Args...> &s)
     { return *this << QUtf8StringView(s); }
 
-    inline QDebug &operator<<(std::string_view s)
+    template <typename...Args>
+    QDebug &operator<<(std::basic_string_view<char, Args...> s)
     { return *this << QUtf8StringView(s); }
 
-    inline QDebug &operator<<(const std::wstring &s)
-    { return *this << QString::fromStdWString(s); }
+#ifdef __cpp_char8_t
+    template <typename...Args>
+    QDebug &operator<<(const std::basic_string<char8_t, Args...> &s)
+    { return *this << QUtf8StringView(s); }
 
-    inline QDebug &operator<<(std::wstring_view s)
-    { return *this << QString::fromWCharArray(s.data(), s.size()); }
+    template <typename...Args>
+    QDebug &operator<<(std::basic_string_view<char8_t, Args...> s)
+    { return *this << QUtf8StringView(s); }
+#endif // __cpp_char8_t
 
-    inline QDebug &operator<<(const std::u16string &s)
+    template <typename...Args>
+    QDebug &operator<<(const std::basic_string<char16_t, Args...> &s)
     { return *this << QStringView(s); }
 
-    inline QDebug &operator<<(std::u16string_view s)
+    template <typename...Args>
+    QDebug &operator<<(std::basic_string_view<char16_t, Args...> s)
     { return *this << QStringView(s); }
 
-    inline QDebug &operator<<(const std::u32string &s)
+    template <typename...Args>
+    QDebug &operator<<(const std::basic_string<wchar_t, Args...> &s)
+    {
+        if constexpr (sizeof(wchar_t) == 2)
+            return *this << QStringView(s);
+        else
+            return *this << QString::fromWCharArray(s.data(), s.size()); // ### optimize
+    }
+
+    template <typename...Args>
+    QDebug &operator<<(std::basic_string_view<wchar_t, Args...> s)
+    {
+        if constexpr (sizeof(wchar_t) == 2)
+            return *this << QStringView(s);
+        else
+            return *this << QString::fromWCharArray(s.data(), s.size()); // ### optimize
+    }
+
+    template <typename...Args>
+    QDebug &operator<<(const std::basic_string<char32_t, Args...> &s)
     { return *this << QString::fromUcs4(s.data(), s.size()); }
 
-    inline QDebug &operator<<(std::u32string_view s)
+    template <typename...Args>
+    QDebug &operator<<(std::basic_string_view<char32_t, Args...> s)
     { return *this << QString::fromUcs4(s.data(), s.size()); }
+#endif // !Q_QDOC
 
     template <typename T>
     static QString toString(T &&object)
