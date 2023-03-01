@@ -81,10 +81,12 @@ QOpenGLTextureCache::~QOpenGLTextureCache()
 {
 }
 
-GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QPixmap &pixmap, QOpenGLTextureUploader::BindOptions options)
+QOpenGLTextureCache::BindResult QOpenGLTextureCache::bindTexture(QOpenGLContext *context,
+                                                                 const QPixmap &pixmap,
+                                                                 QOpenGLTextureUploader::BindOptions options)
 {
     if (pixmap.isNull())
-        return 0;
+        return { 0, {} };
     QMutexLocker locker(&m_mutex);
     qint64 key = pixmap.cacheKey();
 
@@ -93,21 +95,23 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QPixmap &
         QOpenGLCachedTexture *entry = m_cache.object(key);
         if (entry && entry->options() == options) {
             context->functions()->glBindTexture(GL_TEXTURE_2D, entry->id());
-            return entry->id();
+            return { entry->id(), {} };
         }
     }
 
-    GLuint id = bindTexture(context, key, pixmap.toImage(), options);
-    if (id > 0)
+    BindResult result = bindTexture(context, key, pixmap.toImage(), options);
+    if (result.id > 0)
         QImagePixmapCleanupHooks::enableCleanupHooks(pixmap);
 
-    return id;
+    return result;
 }
 
-GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QImage &image, QOpenGLTextureUploader::BindOptions options)
+QOpenGLTextureCache::BindResult QOpenGLTextureCache::bindTexture(QOpenGLContext *context,
+                                                                 const QImage &image,
+                                                                 QOpenGLTextureUploader::BindOptions options)
 {
     if (image.isNull())
-        return 0;
+        return { 0, {} };
     QMutexLocker locker(&m_mutex);
     qint64 key = image.cacheKey();
 
@@ -116,7 +120,7 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QImage &i
         QOpenGLCachedTexture *entry = m_cache.object(key);
         if (entry && entry->options() == options) {
             context->functions()->glBindTexture(GL_TEXTURE_2D, entry->id());
-            return entry->id();
+            return { entry->id(), {} };
         }
     }
 
@@ -124,17 +128,20 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QImage &i
     if (!context->functions()->hasOpenGLFeature(QOpenGLFunctions::NPOTTextures))
         options |= QOpenGLTextureUploader::PowerOfTwoBindOption;
 
-    GLuint id = bindTexture(context, key, img, options);
-    if (id > 0)
+    BindResult result = bindTexture(context, key, img, options);
+    if (result.id > 0)
         QImagePixmapCleanupHooks::enableCleanupHooks(image);
 
-    return id;
+    return result;
 }
 
 Q_TRACE_POINT(qtopengl, QOpenGLTextureCache_bindTexture_entry, QOpenGLContext *context, qint64 key, const unsigned char *image, int options);
 Q_TRACE_POINT(qtopengl, QOpenGLTextureCache_bindTexture_exit);
 
-GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, qint64 key, const QImage &image, QOpenGLTextureUploader::BindOptions options)
+QOpenGLTextureCache::BindResult QOpenGLTextureCache::bindTexture(QOpenGLContext *context,
+                                                                 qint64 key,
+                                                                 const QImage &image,
+                                                                 QOpenGLTextureUploader::BindOptions options)
 {
     Q_TRACE_SCOPE(QOpenGLTextureCache_bindTexture, context, key, image.bits(), options);
 
@@ -147,7 +154,7 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, qint64 key, con
 
     m_cache.insert(key, new QOpenGLCachedTexture(id, options, context), cost / 1024);
 
-    return id;
+    return { id, BindResultFlag::NewTexture };
 }
 
 void QOpenGLTextureCache::invalidate(qint64 key)

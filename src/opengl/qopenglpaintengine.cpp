@@ -160,10 +160,14 @@ template<typename T>
 void QOpenGL2PaintEngineExPrivate::updateTexture(GLenum textureUnit, const T &texture, GLenum wrapMode, GLenum filterMode, TextureUpdateMode updateMode)
 {
     static const GLenum target = GL_TEXTURE_2D;
+    bool newTextureCreated = false;
 
     activateTextureUnit(textureUnit);
 
-    GLuint textureId = bindTexture(texture);
+    GLuint textureId = bindTexture(texture, &newTextureCreated);
+
+    if (newTextureCreated)
+        lastTextureUsed = GLuint(-1);
 
     if (updateMode == UpdateIfNeeded && textureId == lastTextureUsed)
         return;
@@ -192,8 +196,11 @@ void QOpenGL2PaintEngineExPrivate::activateTextureUnit(GLenum textureUnit)
 }
 
 template<>
-GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const GLuint &textureId)
+GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const GLuint &textureId, bool *newTextureCreated)
 {
+    if (newTextureCreated)
+        *newTextureCreated = false;
+
     if (textureId != lastTextureUsed)
         funcs.glBindTexture(GL_TEXTURE_2D, textureId);
 
@@ -201,19 +208,25 @@ GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const GLuint &textureId)
 }
 
 template<>
-GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const QImage &image)
+GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const QImage &image, bool *newTextureCreated)
 {
-    return QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, image);
+    QOpenGLTextureCache::BindResult result = QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, image);
+    if (newTextureCreated)
+        *newTextureCreated = result.flags.testFlag(QOpenGLTextureCache::BindResultFlag::NewTexture);
+    return result.id;
 }
 
 template<>
-GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const QPixmap &pixmap)
+GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const QPixmap &pixmap, bool *newTextureCreated)
 {
-    return QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, pixmap);
+    QOpenGLTextureCache::BindResult result = QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, pixmap);
+    if (newTextureCreated)
+        *newTextureCreated = result.flags.testFlag(QOpenGLTextureCache::BindResultFlag::NewTexture);
+    return result.id;
 }
 
 template<>
-GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const QGradient &gradient)
+GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const QGradient &gradient, bool *newTextureCreated)
 {
     // We apply global opacity in the fragment shaders, so we always pass 1.0
     // for opacity to the cache.
@@ -223,7 +236,7 @@ GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const QGradient &gradient)
     // hasn't been cached yet, but will otherwise return an unbound texture id. To
     // be sure that the texture is bound, we unfortunately have to bind again,
     // which results in the initial generation of the texture doing two binds.
-    return bindTexture(textureId);
+    return bindTexture(textureId, newTextureCreated);
 }
 
 struct ImageWithBindOptions
@@ -233,9 +246,14 @@ struct ImageWithBindOptions
 };
 
 template<>
-GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const ImageWithBindOptions &imageWithOptions)
+GLuint QOpenGL2PaintEngineExPrivate::bindTexture(const ImageWithBindOptions &imageWithOptions, bool *newTextureCreated)
 {
-    return QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, imageWithOptions.image, imageWithOptions.options);
+    QOpenGLTextureCache::BindResult result = QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx,
+                                                                                                    imageWithOptions.image,
+                                                                                                    imageWithOptions.options);
+    if (newTextureCreated)
+        *newTextureCreated = result.flags.testFlag(QOpenGLTextureCache::BindResultFlag::NewTexture);
+    return result.id;
 }
 
 inline static bool isPowerOfTwo(int x)
