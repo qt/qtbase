@@ -47,6 +47,7 @@ windowflags \
 windowgeometry \
 windowmodality \
 widgetgrab \
+xmlstreamlint \
 shortcuts \
 dialogs \
 windowtransparency \
