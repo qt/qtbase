@@ -51,7 +51,7 @@ public:
     static void xkbcommon_XConvertCase(xkb_keysym_t sym, xkb_keysym_t *lower, xkb_keysym_t *upper);
     static xkb_keysym_t qxkbcommon_xkb_keysym_to_upper(xkb_keysym_t ks);
 
-    static Qt::KeyboardModifiers modifiers(struct xkb_state *state);
+    static Qt::KeyboardModifiers modifiers(struct xkb_state *state, xkb_keysym_t keysym = XKB_KEY_VoidSymbol);
 
     static QList<int> possibleKeys(xkb_state *state, const QKeyEvent *event,
                                    bool superAsMeta = false, bool hyperAsMeta = false);
