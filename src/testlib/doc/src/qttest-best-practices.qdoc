@@ -383,12 +383,12 @@
     only tell you whether \e{the test} was built in debug mode, and that does
     not guarantee that the \e{Qt libraries} were also built in debug mode.
 
-    Your tests can (since Qt 6.3) verify that they do not trigger calls to \l
-    qWarning() by calling \l QTest::failOnWarnings(). This takes the warning
+    Your tests can (since Qt 6.3) verify that they do not trigger calls to
+    \l qWarning() by calling \l QTest::failOnWarning(). This takes the warning
     message to test for or a \l QRegularExpression to match against warnings; if
     a matching warning is produced, it will be reported and cause the test to
     fail. For example, a test that should produce no warnings at all can
-    \c{QTest::failOnWarnings(QRegularExpression(u".*"_s))}, which will match any
+    \c{QTest::failOnWarning(QRegularExpression(u".*"_s))}, which will match any
     warning at all.
 
     You can also set the environment variable \c QT_FATAL_WARNINGS to cause

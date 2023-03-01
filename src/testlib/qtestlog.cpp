@@ -179,7 +179,7 @@ namespace QTest {
 
     static bool handleFailOnWarning(const QMessageLogContext &context, const QString &message)
     {
-        // failOnWarnings can be called multiple times per test function, so let
+        // failOnWarning can be called multiple times per test function, so let
         // each call cause a failure if required.
         for (const auto &pattern : failOnWarningList) {
             if (pattern.metaType() == QMetaType::fromType<QString>()) {

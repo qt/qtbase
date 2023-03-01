@@ -115,7 +115,7 @@ void tst_Warnings::testMissingWarningsWithData()
 
 void tst_Warnings::testFailOnWarnings()
 {
-    // failOnWarnings() wasn't called yet; shouldn't fail;
+    // failOnWarning() wasn't called yet; shouldn't fail;
     qWarning("Ran out of space!");
 
 #if QT_CONFIG(regularexpression)
