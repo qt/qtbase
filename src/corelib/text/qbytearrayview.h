@@ -8,6 +8,7 @@
 #include <QtCore/qarraydata.h>
 
 #include <string>
+#include <QtCore/q20type_traits.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -23,8 +24,7 @@ struct IsCompatibleByteTypeHelper
 
 template <typename Byte>
 struct IsCompatibleByteType
-    : IsCompatibleByteTypeHelper<
-              typename std::remove_cv_t<typename std::remove_reference_t<Byte>>> {};
+    : IsCompatibleByteTypeHelper<q20::remove_cvref_t<Byte>> {};
 
 template <typename Pointer>
 struct IsCompatibleByteArrayPointerHelper : std::false_type {};
@@ -33,8 +33,7 @@ struct IsCompatibleByteArrayPointerHelper<Byte *>
     : IsCompatibleByteType<Byte> {};
 template<typename Pointer>
 struct IsCompatibleByteArrayPointer
-    : IsCompatibleByteArrayPointerHelper<
-              typename std::remove_cv_t<typename std::remove_reference_t<Pointer>>> {};
+    : IsCompatibleByteArrayPointerHelper<q20::remove_cvref_t<Pointer>> {};
 
 template <typename T, typename Enable = void>
 struct IsContainerCompatibleWithQByteArrayView : std::false_type {};

@@ -26,7 +26,7 @@
 #include <map>
 #include <functional>
 #include <optional>
-#include <type_traits>
+#include <QtCore/q20type_traits.h>
 
 #ifdef Bool
 #error qmetatype.h must be included before any header file that defines Bool
@@ -606,8 +606,7 @@ public:
             const From *f = static_cast<const From *>(from);
             To *t = static_cast<To *>(to);
             auto &&r = function(*f);
-            if constexpr (std::is_same_v<std::remove_cv_t<std::remove_reference_t<decltype(r)>>,
-                                         std::optional<To>>) {
+            if constexpr (std::is_same_v<q20::remove_cvref_t<decltype(r)>, std::optional<To>>) {
                 if (!r)
                     return false;
                 *t = *std::forward<decltype(r)>(r);

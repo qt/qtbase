@@ -13,6 +13,7 @@
 #include <QtCore/qbytearrayview.h>
 
 #include <string>
+#include <QtCore/q20type_traits.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -28,7 +29,7 @@ using IsCompatibleChar8TypeHelper = std::disjunction<
     >;
 template <typename Char>
 using IsCompatibleChar8Type
-    = IsCompatibleChar8TypeHelper<std::remove_cv_t<std::remove_reference_t<Char>>>;
+    = IsCompatibleChar8TypeHelper<q20::remove_cvref_t<Char>>;
 
 template <typename Pointer>
 struct IsCompatiblePointer8Helper : std::false_type {};
@@ -37,7 +38,7 @@ struct IsCompatiblePointer8Helper<Char*>
     : IsCompatibleChar8Type<Char> {};
 template <typename Pointer>
 using IsCompatiblePointer8
-    = IsCompatiblePointer8Helper<std::remove_cv_t<std::remove_reference_t<Pointer>>>;
+    = IsCompatiblePointer8Helper<q20::remove_cvref_t<Pointer>>;
 
 template <typename T, typename Enable = void>
 struct IsContainerCompatibleWithQUtf8StringView : std::false_type {};
