@@ -1087,7 +1087,11 @@ void QWidgetRepaintManager::flush(QWidget *widget, const QRegion &region, QPlatf
                                                 translucentBackground);
         widgetWindowPrivate->sendComposeStatus(widget->window(), true);
         if (flushResult == QPlatformBackingStore::FlushFailedDueToLostDevice) {
+            qSendWindowChangeToTextureChildrenRecursively(widget->window(),
+                                                          QEvent::WindowAboutToChangeInternal);
             store->handle()->graphicsDeviceReportedLost();
+            qSendWindowChangeToTextureChildrenRecursively(widget->window(),
+                                                          QEvent::WindowChangeInternal);
             widget->update();
         }
     } else {
