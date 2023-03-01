@@ -470,15 +470,19 @@ void tst_QPathClipper::clipTest(int subjectIndex, int clipIndex, QPathClipper::O
             break;
         }
 
-        if (expected != inResult) {
-            char str[256];
-            const char *opStr =
-                 op == QPathClipper::BoolAnd ? "and" :
-                 op == QPathClipper::BoolOr ? "or" : "sub";
-            sprintf(str, "Expected: %d, actual: %d, subject: %d, clip: %d, op: %s\n",
-                     int(expected), int(inResult), subjectIndex, clipIndex, opStr);
-            QFAIL(str);
-        }
+        auto failLogger = qScopeGuard([&]{
+            qCritical().noquote().nospace()
+                << "\n\tExpected: " << expected
+                << "\n\tActual:   " << inResult
+                << "\n\tSubject:  " << subjectIndex
+                << "\n\tClip:     " << clipIndex
+                << "\n\tOp:       " << (op == QPathClipper::BoolAnd
+                                            ? "and"
+                                            : op == QPathClipper::BoolOr
+                                                  ? "or" : "sub");
+        });
+        QCOMPARE(inResult, expected);
+        failLogger.dismiss();
     }
 }
 
