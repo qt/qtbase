@@ -16,6 +16,8 @@
 #include <qsysinfo.h>
 #if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
 #include <unistd.h>
+
+#include <sys/stat.h> // utimensat
 #include <sys/time.h>
 #elif defined(Q_OS_WIN)
 #  include <qt_windows.h>
@@ -516,7 +518,7 @@ void tst_QLockFile::corruptedLockFile()
 void tst_QLockFile::corruptedLockFileInTheFuture()
 {
 #if !defined(Q_OS_UNIX)
-    QSKIP("This tests needs utimes");
+    QSKIP("This test needs utimensat");
 #else
     // This test is the same as the previous one, but the corruption was so there is a corrupted
     // .rmlock whose timestamp is in the future
@@ -528,11 +530,12 @@ void tst_QLockFile::corruptedLockFileInTheFuture()
         QVERIFY(file.open(QFile::WriteOnly));
     }
 
-    struct timeval times[2];
-    gettimeofday(times, 0);
-    times[1].tv_sec = (times[0].tv_sec += 600);
-    times[1].tv_usec = times[0].tv_usec;
-    utimes(fileName.toLocal8Bit(), times);
+    struct timespec times[2];
+    clock_gettime(CLOCK_REALTIME, times);
+    times[0].tv_sec += 600;
+    times[1].tv_sec = times[0].tv_sec;
+    times[1].tv_nsec = times[0].tv_nsec;
+    utimensat(0 /* ignored */, fileName.toLocal8Bit(), times, 0);
 
     QTest::ignoreMessage(QtInfoMsg, "QLockFile: Lock file '" + fileName.toUtf8() + "' has a modification time in the future");
     corruptedLockFile();
