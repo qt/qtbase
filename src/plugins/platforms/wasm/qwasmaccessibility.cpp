@@ -5,9 +5,12 @@
 #include "qwasmscreen.h"
 #include "qwasmwindow.h"
 #include "qwasmintegration.h"
-#include <QtGui/private/qaccessiblebridgeutils_p.h>
 
 #include <QtGui/qwindow.h>
+
+#if QT_CONFIG(accessibility)
+
+#include <QtGui/private/qaccessiblebridgeutils_p.h>
 
 Q_LOGGING_CATEGORY(lcQpaAccessibility, "qt.qpa.accessibility")
 
@@ -732,3 +735,5 @@ void QWasmAccessibility::onHtmlEventReceived(emscripten::val event)
 EMSCRIPTEN_BINDINGS(qtButtonEvent) {
     function("qtEventReceived", &QWasmAccessibility::onHtmlEventReceived);
 }
+
+#endif // QT_CONFIG(accessibility)

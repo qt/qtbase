@@ -134,7 +134,9 @@ QWasmWindow::~QWasmWindow()
     m_compositor->removeWindow(this);
     if (m_requestAnimationFrameId > -1)
         emscripten_cancel_animation_frame(m_requestAnimationFrameId);
+#if QT_CONFIG(accessibility)
     QWasmAccessibility::removeAccessibilityEnableButton(window());
+#endif
 }
 
 void QWasmWindow::onRestoreClicked()
@@ -209,10 +211,12 @@ void QWasmWindow::initialize()
     m_normalGeometry = rect;
     QPlatformWindow::setGeometry(m_normalGeometry);
 
+#if QT_CONFIG(accessibility)
     // Add accessibility-enable button. The user can activate this
     // button to opt-in to accessibility.
      if (window()->isTopLevel())
         QWasmAccessibility::addAccessibilityEnableButton(window());
+#endif
 }
 
 QWasmScreen *QWasmWindow::platformScreen() const

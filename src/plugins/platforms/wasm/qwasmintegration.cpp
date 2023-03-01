@@ -75,10 +75,12 @@ EMSCRIPTEN_BINDINGS(qtQWasmIntegraton)
 QWasmIntegration *QWasmIntegration::s_instance;
 
 QWasmIntegration::QWasmIntegration()
-    : m_fontDb(nullptr),
-      m_desktopServices(nullptr),
-      m_clipboard(new QWasmClipboard),
-      m_accessibility(new QWasmAccessibility)
+    : m_fontDb(nullptr)
+    , m_desktopServices(nullptr)
+    , m_clipboard(new QWasmClipboard)
+#if QT_CONFIG(accessibility)
+    , m_accessibility(new QWasmAccessibility)
+#endif
 {
     s_instance = this;
 
@@ -138,7 +140,9 @@ QWasmIntegration::~QWasmIntegration()
     delete m_desktopServices;
     if (m_platformInputContext)
         delete m_platformInputContext;
+#if QT_CONFIG(accessibility)
     delete m_accessibility;
+#endif
 
     for (const auto &elementAndScreen : m_screens)
         elementAndScreen.second->deleteScreen();
