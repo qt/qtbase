@@ -931,11 +931,6 @@ bool QKeySequence::isEmpty() const
     For example, mnemonic("E&xit") returns \c{Qt::ALT+Qt::Key_X},
     mnemonic("&Quit") returns \c{ALT+Key_Q}, and mnemonic("Quit")
     returns an empty QKeySequence.
-
-    We provide a \l{accelerators.html}{list of common mnemonics}
-    in English. At the time of writing, Microsoft and Open Group do
-    not appear to have issued equivalent recommendations for other
-    languages.
 */
 QKeySequence QKeySequence::mnemonic(const QString &text)
 {
