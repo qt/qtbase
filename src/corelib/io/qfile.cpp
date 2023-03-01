@@ -761,6 +761,9 @@ QFile::link(const QString &fileName, const QString &linkName)
 
     \include qfile-copy.qdocinc
 
+    \note On Android, this operation is not yet supported for \c content
+    scheme URIs.
+
     \sa setFileName()
 */
 
@@ -868,6 +871,9 @@ QFile::copy(const QString &newName)
     Copies the file named \a fileName to \a newName.
 
     \include qfile-copy.qdocinc
+
+    \note On Android, this operation is not yet supported for \c content
+    scheme URIs.
 
     \sa rename()
 */
