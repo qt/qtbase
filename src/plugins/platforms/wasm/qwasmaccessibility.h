@@ -4,6 +4,8 @@
 #ifndef QWASMACCESIBILITY_H
 #define QWASMACCESIBILITY_H
 
+#if QT_CONFIG(accessibility)
+
 #include <QtCore/qhash.h>
 #include <private/qstdweb_p.h>
 #include <qpa/qplatformaccessibility.h>
@@ -80,5 +82,7 @@ private:
     QHash<QAccessibleInterface *, emscripten::val> m_elements;
 
 };
+
+#endif // QT_CONFIG(accessibility)
 
 #endif
