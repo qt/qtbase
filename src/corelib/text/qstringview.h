@@ -11,6 +11,7 @@
 #include <QtCore/qutf8stringview.h>
 
 #include <string>
+#include <QtCore/q20type_traits.h>
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_CF_TYPE(CFString);
@@ -34,7 +35,7 @@ struct IsCompatibleCharTypeHelper
                              (std::is_same<Char, wchar_t>::value && sizeof(wchar_t) == sizeof(QChar))> {};
 template <typename Char>
 struct IsCompatibleCharType
-    : IsCompatibleCharTypeHelper<typename std::remove_cv<typename std::remove_reference<Char>::type>::type> {};
+    : IsCompatibleCharTypeHelper<q20::remove_cvref_t<Char>> {};
 
 template <typename Pointer>
 struct IsCompatiblePointerHelper : std::false_type {};
@@ -43,7 +44,7 @@ struct IsCompatiblePointerHelper<Char*>
     : IsCompatibleCharType<Char> {};
 template <typename Pointer>
 struct IsCompatiblePointer
-    : IsCompatiblePointerHelper<typename std::remove_cv<typename std::remove_reference<Pointer>::type>::type> {};
+    : IsCompatiblePointerHelper<q20::remove_cvref_t<Pointer>> {};
 
 template <typename T, typename Enable = void>
 struct IsContainerCompatibleWithQStringView : std::false_type {};
