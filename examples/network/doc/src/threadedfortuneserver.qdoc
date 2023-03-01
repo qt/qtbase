@@ -81,6 +81,5 @@
     the socket has disconnected. Because we are running in a separate thread,
     the GUI will remain responsive.
 
-    \sa {Fortune Server Example}, {Fortune Client Example}, {Blocking Fortune
-    Client Example}
+    \sa {Fortune Server}, {Fortune Client}, {Blocking Fortune Client}
 */

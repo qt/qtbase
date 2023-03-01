@@ -23,7 +23,7 @@
     large set of problems, including synchronous network I/O and
     database access, where the user interface must remain responsive
     while some heavy operation is taking place. The \l
-    {Blocking Fortune Client Example} shows the same principle at
+    {Blocking Fortune Client} example shows the same principle at
     work in a TCP client.
 
     The Mandelbrot application supports zooming and scrolling using
