@@ -145,9 +145,9 @@ struct QMetaMethodReturnArgument
 namespace QtPrivate {
 namespace Invoke {
 #if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
-template <typename... Args> struct AreOldStyleArgs :
-        std::disjunction<std::is_base_of<QGenericArgument, Args>...>
-{};
+template <typename... Args>
+using AreOldStyleArgs = std::disjunction<std::is_base_of<QGenericArgument, Args>...>;
+
 template <typename T, typename... Args> using IfNotOldStyleArgs =
     std::enable_if_t<!AreOldStyleArgs<Args...>::value, T>;
 #else
