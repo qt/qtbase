@@ -244,7 +244,7 @@ void Qt::endPropertyUpdateGroup()
     \class QScopedPropertyUpdateGroup
     \inmodule QtCore
     \ingroup tools
-    \brief RAII class around Qt::beginPropertyUpdateGroup()/Qt::endPropertyUpdateGroup()
+    \brief RAII class around Qt::beginPropertyUpdateGroup()/Qt::endPropertyUpdateGroup().
 
     This class calls Qt::beginPropertyUpdateGroup() in its constructor and
     Qt::endPropertyUpdateGroup() in its destructor, making sure the latter
