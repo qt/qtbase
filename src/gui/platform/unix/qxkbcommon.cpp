@@ -562,7 +562,7 @@ static int keysymToQtKey_internal(xkb_keysym_t keysym, Qt::KeyboardModifiers mod
     return qtKey;
 }
 
-Qt::KeyboardModifiers QXkbCommon::modifiers(struct xkb_state *state)
+Qt::KeyboardModifiers QXkbCommon::modifiers(struct xkb_state *state, xkb_keysym_t keysym)
 {
     Qt::KeyboardModifiers modifiers = Qt::NoModifier;
 
@@ -574,6 +574,9 @@ Qt::KeyboardModifiers QXkbCommon::modifiers(struct xkb_state *state)
         modifiers |= Qt::ShiftModifier;
     if (xkb_state_mod_name_is_active(state, XKB_MOD_NAME_LOGO, XKB_STATE_MODS_EFFECTIVE) > 0)
         modifiers |= Qt::MetaModifier;
+
+    if (keysym >= XKB_KEY_KP_Space && keysym <= XKB_KEY_KP_9)
+        modifiers |= Qt::KeypadModifier;
 
     return modifiers;
 }

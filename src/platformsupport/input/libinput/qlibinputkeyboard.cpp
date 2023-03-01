@@ -79,7 +79,7 @@ void QLibInputKeyboard::processKey(libinput_event_keyboard *e)
 
     xkb_state_update_key(m_state, keycode, pressed ? XKB_KEY_DOWN : XKB_KEY_UP);
 
-    Qt::KeyboardModifiers modifiersAfterStateChange = QXkbCommon::modifiers(m_state);
+    Qt::KeyboardModifiers modifiersAfterStateChange = QXkbCommon::modifiers(m_state, sym);
     QGuiApplicationPrivate::inputDeviceManager()->setKeyboardModifiers(modifiersAfterStateChange);
 
     QWindowSystemInterface::handleExtendedKeyEvent(nullptr,
