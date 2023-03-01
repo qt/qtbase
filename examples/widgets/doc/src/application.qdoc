@@ -27,9 +27,8 @@
     To keep the example simple, recently opened files aren't shown in
     the \uicontrol{File} menu, even though this feature is desired in 90%
     of applications. Furthermore, this example can only load one file at a
-    time. The \l{mainwindows/sdi}{SDI} and \l{mainwindows/mdi}{MDI} examples
-    show how to lift these restrictions and how to implement recently opened files
-    handling.
+    time. The \l{mainwindows/mdi}{MDI} example shows how to lift these
+    restrictions and how to implement recently opened files handling.
 
     \section1 MainWindow Class Definition
 
