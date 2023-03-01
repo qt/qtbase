@@ -2397,8 +2397,8 @@ void QObject::deleteLater()
 
     See \l{Writing Source Code for Translation} for a detailed description of
     Qt's translation mechanisms in general, and the
-    \l{Writing Source Code for Translation#Disambiguation}{Disambiguation}
-    section for information on disambiguation.
+    \l{Writing Source Code for Translation#Disambiguate Identical Text}
+    {Disambiguate Identical Text} section for information on disambiguation.
 
     \warning This method is reentrant only if all translators are
     installed \e before calling this method. Installing or removing
