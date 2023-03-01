@@ -278,7 +278,7 @@ void QMainWindowPrivate::init()
 
     \sa QMenuBar, QToolBar, QStatusBar, QDockWidget,
     {Qt Widgets - Application Example}, {Dock Widgets Example},
-    {MDI Example}, {SDI Example}, {Menus Example}
+    {MDI Example}, {Menus Example}
 */
 
 /*!
