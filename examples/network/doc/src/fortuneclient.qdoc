@@ -40,7 +40,7 @@
     \endlist
 
     In this example, we will demonstrate the asynchronous approach. The
-    \l{blockingfortuneclient}{Blocking Fortune Client Example}
+    \l{blockingfortuneclient}{Blocking Fortune Client} example
     illustrates the synchronous approach.
 
     Our class contains some data and a few private slots:
@@ -134,5 +134,5 @@
     After a successful read transaction, we call QLabel::setText() to display
     the fortune.
 
-    \sa {Fortune Server Example}, {Blocking Fortune Client Example}
+    \sa {Fortune Server}, {Blocking Fortune Client}
 */

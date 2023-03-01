@@ -171,5 +171,5 @@
 
     Here, we simply display the fortune we received as the argument.
 
-    \sa {Fortune Client Example}, {Fortune Server Example}
+    \sa {Fortune Client}, {Fortune Server}
 */
