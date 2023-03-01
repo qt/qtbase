@@ -16,6 +16,13 @@
 #include <QMimeDatabase>
 #include <QMetaType>
 
+#ifdef __cpp_lib_memory_resource
+# include <memory_resource>
+namespace pmr = std::pmr;
+#else
+namespace pmr = std;
+#endif
+
 using namespace Qt::StringLiterals;
 
 static_assert(QTypeTraits::has_ostream_operator_v<QDebug, int>);
@@ -67,6 +74,8 @@ private slots:
     void qDebugStdStringView() const;
     void qDebugStdWString() const;
     void qDebugStdWStringView() const;
+    void qDebugStdU8String() const;
+    void qDebugStdU8StringView() const;
     void qDebugStdU16String() const;
     void qDebugStdU16StringView() const;
     void qDebugStdU32String() const;
@@ -663,7 +672,7 @@ void tst_QDebug::qDebugStdString() const
     MessageHandlerSetter mhs(myMessageHandler);
     {
         QDebug d = qDebug();
-        d << std::string("foo") << std::string("") << std::string("barbaz", 3);
+        d << pmr::string("foo") << std::string("") << std::string("barbaz", 3);
         d.nospace().noquote() << std::string("baz");
     }
 #ifndef QT_NO_MESSAGELOGCONTEXT
@@ -725,7 +734,7 @@ void tst_QDebug::qDebugStdWString() const
     MessageHandlerSetter mhs(myMessageHandler);
     {
         QDebug d = qDebug();
-        d << std::wstring(L"foo") << std::wstring(L"") << std::wstring(L"barbaz", 3);
+        d << pmr::wstring(L"foo") << std::wstring(L"") << std::wstring(L"barbaz", 3);
         d.nospace().noquote() << std::wstring(L"baz");
     }
 #ifndef QT_NO_MESSAGELOGCONTEXT
@@ -780,6 +789,76 @@ void tst_QDebug::qDebugStdWStringView() const
     QCOMPARE(s_msg, " " + QString::fromStdWString(std::wstring(string)));
 }
 
+void tst_QDebug::qDebugStdU8String() const
+{
+#ifndef __cpp_lib_char8_t
+    QSKIP("This test requires C++20 char8_t support enabled in the compiler.");
+#else
+    QString file, function;
+    int line = 0;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << pmr::u8string(u8"foo") << std::u8string(u8"") << std::u8string(u8"barbaz", 3);
+        d.nospace().noquote() << std::u8string(u8"baz");
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("\"foo\" \"\" \"bar\" baz"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+
+    /* simpler tests from now on */
+    std::u8string string(u8"\"Hello\"");
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\\"Hello\\\"\""));
+
+    qDebug().noquote().nospace() << string;
+    QCOMPARE(s_msg, QUtf8StringView(string).toString());
+
+    qDebug().noquote().nospace() << qSetFieldWidth(8) << string;
+    QCOMPARE(s_msg, " " + QUtf8StringView(string).toString());
+#endif // __cpp_lib_char8_t
+}
+
+void tst_QDebug::qDebugStdU8StringView() const
+{
+#ifndef __cpp_lib_char8_t
+    QSKIP("This test requires C++20 char8_t support enabled in the compiler.");
+#else
+    QString file, function;
+    int line = 0;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << std::u16string_view(u"foo") << std::u16string_view(u"") << std::u16string_view(u"barbaz", 3);
+        d.nospace().noquote() << std::u16string_view(u"baz");
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("\"foo\" \"\" \"bar\" baz"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+
+    /* simpler tests from now on */
+    std::u16string_view string(u"\"Hello\"");
+    qDebug() << string;
+    QCOMPARE(s_msg, QString("\"\\\"Hello\\\"\""));
+
+    qDebug().noquote().nospace() << string;
+    QCOMPARE(s_msg, QString::fromStdU16String(std::u16string(string)));
+
+    qDebug().noquote().nospace() << qSetFieldWidth(8) << string;
+    QCOMPARE(s_msg, " " + QString::fromStdU16String(std::u16string(string)));
+#endif // __cpp_lib_char8_t
+}
+
 void tst_QDebug::qDebugStdU16String() const
 {
     QString file, function;
@@ -787,7 +866,7 @@ void tst_QDebug::qDebugStdU16String() const
     MessageHandlerSetter mhs(myMessageHandler);
     {
         QDebug d = qDebug();
-        d << std::u16string(u"foo") << std::u16string(u"") << std::u16string(u"barbaz", 3);
+        d << pmr::u16string(u"foo") << std::u16string(u"") << std::u16string(u"barbaz", 3);
         d.nospace().noquote() << std::u16string(u"baz");
     }
 #ifndef QT_NO_MESSAGELOGCONTEXT
@@ -849,7 +928,7 @@ void tst_QDebug::qDebugStdU32String() const
     MessageHandlerSetter mhs(myMessageHandler);
     {
         QDebug d = qDebug();
-        d << std::u32string(U"foo") << std::u32string(U"") << std::u32string(U"barbaz", 3);
+        d << pmr::u32string(U"foo") << std::u32string(U"") << std::u32string(U"barbaz", 3);
         d.nospace().noquote() << std::u32string(U"baz");
     }
 #ifndef QT_NO_MESSAGELOGCONTEXT
