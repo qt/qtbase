@@ -547,7 +547,7 @@ QTimeZone::QTimeZone(QTimeZonePrivate &dd)
 
     This method is only available when feature \c timezone is enabled.
 
-    \sa QTimeZone(Initialization), fromSecondsAheadOfUtc()
+    \sa QTimeZone(QTimeZone::Initialization), fromSecondsAheadOfUtc()
 */
 
 QTimeZone QTimeZone::asBackendZone() const
