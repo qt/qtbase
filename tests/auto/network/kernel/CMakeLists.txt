@@ -1,7 +1,7 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-if(NOT INTEGRITY)
+if(WIN32 OR TEST_res_ninit)
     add_subdirectory(qdnslookup)
     add_subdirectory(qdnslookup_appless)
 endif()

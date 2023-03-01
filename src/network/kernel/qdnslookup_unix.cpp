@@ -3,130 +3,36 @@
 
 #include "qdnslookup_p.h"
 
-#if QT_CONFIG(library)
-#include <qlibrary.h>
-#endif
-#include <qvarlengtharray.h>
 #include <qscopedpointer.h>
 #include <qurl.h>
-#include <private/qnativesocketengine_p.h>
+#include <qvarlengtharray.h>
+#include <private/qnativesocketengine_p.h>      // for SetSALen
+#include <private/qtnetwork-config_p.h>
+
+QT_REQUIRE_CONFIG(res_ninit);
 
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/nameser.h>
-#if !defined(Q_OS_OPENBSD)
+#if __has_include(<arpa/nameser_compat.h>)
 #  include <arpa/nameser_compat.h>
 #endif
 #include <resolv.h>
-
-#if defined(__GNU_LIBRARY__) && !defined(__UCLIBC__)
-#  include <gnu/lib-names.h>
-#endif
-
-#if defined(Q_OS_FREEBSD) || QT_CONFIG(dlopen)
-#  include <dlfcn.h>
-#endif
-
-#include <cstring>
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-#if QT_CONFIG(library)
-
-#if defined(Q_OS_OPENBSD)
-typedef struct __res_state* res_state;
-#endif
-typedef int (*dn_expand_proto)(const unsigned char *, const unsigned char *, const unsigned char *, char *, int);
-static dn_expand_proto local_dn_expand = nullptr;
-typedef void (*res_nclose_proto)(res_state);
-static res_nclose_proto local_res_nclose = nullptr;
-typedef int (*res_ninit_proto)(res_state);
-static res_ninit_proto local_res_ninit = nullptr;
-typedef int (*res_nquery_proto)(res_state, const char *, int, int, unsigned char *, int);
-static res_nquery_proto local_res_nquery = nullptr;
-
-// Custom deleter to close resolver state.
-
-struct QDnsLookupStateDeleter
-{
-    static inline void cleanup(struct __res_state *pointer)
-    {
-        local_res_nclose(pointer);
-    }
-};
-
-static QFunctionPointer resolveSymbol(QLibrary &lib, const char *sym)
-{
-    if (lib.isLoaded())
-        return lib.resolve(sym);
-
-#if defined(RTLD_DEFAULT) && (defined(Q_OS_FREEBSD) || QT_CONFIG(dlopen))
-    return reinterpret_cast<QFunctionPointer>(dlsym(RTLD_DEFAULT, sym));
-#else
-    return nullptr;
-#endif
-}
-
-static bool resolveLibraryInternal()
-{
-    QLibrary lib;
-#ifdef LIBRESOLV_SO
-    lib.setFileName(QStringLiteral(LIBRESOLV_SO));
-    if (!lib.load())
-#endif
-    {
-        lib.setFileName("resolv"_L1);
-        lib.load();
-    }
-
-    local_dn_expand = dn_expand_proto(resolveSymbol(lib, "__dn_expand"));
-    if (!local_dn_expand)
-        local_dn_expand = dn_expand_proto(resolveSymbol(lib, "dn_expand"));
-
-    local_res_nclose = res_nclose_proto(resolveSymbol(lib, "__res_nclose"));
-    if (!local_res_nclose)
-        local_res_nclose = res_nclose_proto(resolveSymbol(lib, "res_9_nclose"));
-    if (!local_res_nclose)
-        local_res_nclose = res_nclose_proto(resolveSymbol(lib, "res_nclose"));
-
-    local_res_ninit = res_ninit_proto(resolveSymbol(lib, "__res_ninit"));
-    if (!local_res_ninit)
-        local_res_ninit = res_ninit_proto(resolveSymbol(lib, "res_9_ninit"));
-    if (!local_res_ninit)
-        local_res_ninit = res_ninit_proto(resolveSymbol(lib, "res_ninit"));
-
-    local_res_nquery = res_nquery_proto(resolveSymbol(lib, "__res_nquery"));
-    if (!local_res_nquery)
-        local_res_nquery = res_nquery_proto(resolveSymbol(lib, "res_9_nquery"));
-    if (!local_res_nquery)
-        local_res_nquery = res_nquery_proto(resolveSymbol(lib, "res_nquery"));
-
-    return true;
-}
-Q_GLOBAL_STATIC_WITH_ARGS(bool, resolveLibrary, (resolveLibraryInternal()))
-
 void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, const QHostAddress &nameserver, QDnsLookupReply *reply)
 {
-    // Load dn_expand, res_ninit and res_nquery on demand.
-    resolveLibrary();
-
-    // If dn_expand, res_ninit or res_nquery is missing, fail.
-    if (!local_dn_expand || !local_res_nclose || !local_res_ninit || !local_res_nquery) {
-        reply->error = QDnsLookup::ResolverError;
-        reply->errorString = tr("Resolver functions not found");
-        return;
-    }
-
     // Initialize state.
-    struct __res_state state;
-    std::memset(&state, 0, sizeof(state));
-    if (local_res_ninit(&state) < 0) {
+    std::remove_pointer_t<res_state> state = {};
+    if (res_ninit(&state) < 0) {
         reply->error = QDnsLookup::ResolverError;
         reply->errorString = tr("Resolver initialization failed");
         return;
     }
+    auto guard = qScopeGuard([&] { res_nclose(&state); });
 
     //Check if a nameserver was set. If so, use it
     if (!nameserver.isNull()) {
@@ -170,16 +76,15 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
 #ifdef QDNSLOOKUP_DEBUG
     state.options |= RES_DEBUG;
 #endif
-    QScopedPointer<struct __res_state, QDnsLookupStateDeleter> state_ptr(&state);
 
     // Perform DNS query.
     QVarLengthArray<unsigned char, PACKETSZ> buffer(PACKETSZ);
     std::memset(buffer.data(), 0, buffer.size());
-    int responseLength = local_res_nquery(&state, requestName, C_IN, requestType, buffer.data(), buffer.size());
+    int responseLength = res_nquery(&state, requestName, C_IN, requestType, buffer.data(), buffer.size());
     if (Q_UNLIKELY(responseLength > PACKETSZ)) {
         buffer.resize(responseLength);
         std::memset(buffer.data(), 0, buffer.size());
-        responseLength = local_res_nquery(&state, requestName, C_IN, requestType, buffer.data(), buffer.size());
+        responseLength = res_nquery(&state, requestName, C_IN, requestType, buffer.data(), buffer.size());
         if (Q_UNLIKELY(responseLength > buffer.size())) {
             // Ok, we give up.
             reply->error = QDnsLookup::ResolverError;
@@ -229,7 +134,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
     // Skip the query host, type (2 bytes) and class (2 bytes).
     char host[PACKETSZ], answer[PACKETSZ];
     unsigned char *p = response + sizeof(HEADER);
-    int status = local_dn_expand(response, response + responseLength, p, host, sizeof(host));
+    int status = dn_expand(response, response + responseLength, p, host, sizeof(host));
     if (status < 0) {
         reply->error = QDnsLookup::InvalidReplyError;
         reply->errorString = tr("Could not expand domain name");
@@ -240,7 +145,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
     // Extract results.
     int answerIndex = 0;
     while ((p < response + responseLength) && (answerIndex < answerCount)) {
-        status = local_dn_expand(response, response + responseLength, p, host, sizeof(host));
+        status = dn_expand(response, response + responseLength, p, host, sizeof(host));
         if (status < 0) {
             reply->error = QDnsLookup::InvalidReplyError;
             reply->errorString = tr("Could not expand domain name");
@@ -281,7 +186,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
             record.d->value = QHostAddress(p);
             reply->hostAddressRecords.append(record);
         } else if (type == QDnsLookup::CNAME) {
-            status = local_dn_expand(response, response + responseLength, p, answer, sizeof(answer));
+            status = dn_expand(response, response + responseLength, p, answer, sizeof(answer));
             if (status < 0) {
                 reply->error = QDnsLookup::InvalidReplyError;
                 reply->errorString = tr("Invalid canonical name record");
@@ -293,7 +198,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
             record.d->value = QUrl::fromAce(answer);
             reply->canonicalNameRecords.append(record);
         } else if (type == QDnsLookup::NS) {
-            status = local_dn_expand(response, response + responseLength, p, answer, sizeof(answer));
+            status = dn_expand(response, response + responseLength, p, answer, sizeof(answer));
             if (status < 0) {
                 reply->error = QDnsLookup::InvalidReplyError;
                 reply->errorString = tr("Invalid name server record");
@@ -305,7 +210,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
             record.d->value = QUrl::fromAce(answer);
             reply->nameServerRecords.append(record);
         } else if (type == QDnsLookup::PTR) {
-            status = local_dn_expand(response, response + responseLength, p, answer, sizeof(answer));
+            status = dn_expand(response, response + responseLength, p, answer, sizeof(answer));
             if (status < 0) {
                 reply->error = QDnsLookup::InvalidReplyError;
                 reply->errorString = tr("Invalid pointer record");
@@ -318,7 +223,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
             reply->pointerRecords.append(record);
         } else if (type == QDnsLookup::MX) {
             const quint16 preference = (p[0] << 8) | p[1];
-            status = local_dn_expand(response, response + responseLength, p + 2, answer, sizeof(answer));
+            status = dn_expand(response, response + responseLength, p + 2, answer, sizeof(answer));
             if (status < 0) {
                 reply->error = QDnsLookup::InvalidReplyError;
                 reply->errorString = tr("Invalid mail exchange record");
@@ -334,7 +239,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
             const quint16 priority = (p[0] << 8) | p[1];
             const quint16 weight = (p[2] << 8) | p[3];
             const quint16 port = (p[4] << 8) | p[5];
-            status = local_dn_expand(response, response + responseLength, p + 6, answer, sizeof(answer));
+            status = dn_expand(response, response + responseLength, p + 6, answer, sizeof(answer));
             if (status < 0) {
                 reply->error = QDnsLookup::InvalidReplyError;
                 reply->errorString = tr("Invalid service record");
@@ -370,18 +275,5 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
         answerIndex++;
     }
 }
-
-#else
-void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, const QHostAddress &nameserver, QDnsLookupReply *reply)
-{
-    Q_UNUSED(requestType);
-    Q_UNUSED(requestName);
-    Q_UNUSED(nameserver);
-    reply->error = QDnsLookup::ResolverError;
-    reply->errorString = tr("Resolver library can't be loaded: No runtime library loading support");
-    return;
-}
-
-#endif /* QT_CONFIG(library) */
 
 QT_END_NAMESPACE

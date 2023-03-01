@@ -13,7 +13,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
     Q_UNUSED(reply);
     qWarning("Not yet supported on Android");
     reply->error = QDnsLookup::ResolverError;
-    reply->errorString = tr("Not yet supported on Android");
+    reply->errorString = tr("Not yet supported on this OS");
     return;
 }
 

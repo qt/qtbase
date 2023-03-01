@@ -506,6 +506,7 @@ protected:
     inline void run() override
     {
          QHostInfo info = QHostInfo::fromName("a-single" TEST_DOMAIN);
+         QCOMPARE(info.errorString(), "Unknown error"); // no error
          QCOMPARE(info.error(), QHostInfo::NoError);
          QVERIFY(info.addresses().size() > 0);
          QCOMPARE(info.addresses().at(0).toString(), QString("192.0.2.1"));

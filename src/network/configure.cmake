@@ -12,7 +12,7 @@ qt_find_package(Libproxy PROVIDED_TARGETS PkgConfig::Libproxy MODULE_NAME networ
 qt_find_package(GSSAPI PROVIDED_TARGETS GSSAPI::GSSAPI MODULE_NAME network QMAKE_LIB gssapi)
 qt_find_package(GLIB2 OPTIONAL_COMPONENTS GOBJECT PROVIDED_TARGETS GLIB2::GOBJECT MODULE_NAME core QMAKE_LIB gobject)
 qt_find_package(GLIB2 OPTIONAL_COMPONENTS GIO PROVIDED_TARGETS GLIB2::GIO MODULE_NAME core QMAKE_LIB gio)
-
+qt_find_package(WrapResolv PROVIDED_TARGETS WrapResolv::WrapResolv MODULE_NAME network QMAKE_LIB libresolv)
 
 #### Tests
 
@@ -99,6 +99,25 @@ ci.ifa_prefered = ci.ifa_valid = 0;
     return 0;
 }
 ")
+
+# res_ninit
+qt_config_compile_test(res_ninit
+    LABEL "res_ninit()"
+    LIBRARIES
+        WrapResolv::WrapResolv
+    CODE
+"#include <sys/types.h>
+#include <netinet/in.h>
+#include <resolv.h>
+int main()
+{
+    res_state state;
+    res_ninit(state);
+    res_nclose(state);
+    return 0;
+}
+"
+)
 
 # sctp
 qt_config_compile_test(sctp
@@ -210,6 +229,11 @@ qt_feature("libproxy" PRIVATE
 qt_feature("linux-netlink" PRIVATE
     LABEL "Linux AF_NETLINK"
     CONDITION LINUX AND NOT ANDROID AND TEST_linux_netlink
+)
+qt_feature("res_ninit" PRIVATE
+    LABEL "res_ninit()"
+    CONDITION TEST_res_ninit
+    AUTODETECT UNIX
 )
 qt_feature("securetransport" PUBLIC
     LABEL "SecureTransport"
