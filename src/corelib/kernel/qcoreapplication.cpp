@@ -599,7 +599,7 @@ void QCoreApplicationPrivate::initLocale()
     // By default the portable "C"/POSIX locale is selected and active.
     // Apply the locale from the environment, via setlocale(), which will
     // read LC_ALL, LC_<category>, and LANG, in order (for each category).
-    const char *locale = setlocale(LC_ALL, "");
+    setlocale(LC_ALL, "");
 
     // Next, let's ensure that LC_CTYPE is UTF-8, since QStringConverter's
     // QLocal8Bit hard-codes this, and we need to be consistent.
@@ -612,9 +612,9 @@ void QCoreApplicationPrivate::initLocale()
     // Android 6 still lacks nl_langinfo(), so we can't check.
     // FIXME: Shouldn't we still setlocale("UTF-8")?
 #  else
-    const char *codec = nl_langinfo(CODESET);
-    if (Q_UNLIKELY(qstricmp(codec, "UTF-8") != 0 && qstricmp(codec, "utf8") != 0)) {
-        QByteArray oldLocale = locale;
+    const char *charEncoding = nl_langinfo(CODESET);
+    if (Q_UNLIKELY(qstricmp(charEncoding, "UTF-8") != 0 && qstricmp(charEncoding, "utf8") != 0)) {
+        const QByteArray oldLocale = setlocale(LC_ALL, nullptr);
         QByteArray newLocale = setlocale(LC_CTYPE, nullptr);
         if (qsizetype dot = newLocale.indexOf('.'); dot != -1)
             newLocale.truncate(dot);    // remove encoding, if any
@@ -633,10 +633,20 @@ void QCoreApplicationPrivate::initLocale()
         if (newLocale.isEmpty())
             newLocale = setlocale(LC_CTYPE, "C.utf8");
 
-        qWarning("Detected system locale encoding (%s, locale \"%s\") is not UTF-8.\n"
-                 "Qt shall use a UTF-8 locale (\"%s\") instead. If this causes problems,\n"
-                 "reconfigure your locale. See the locale(1) manual for more information.",
-                 codec, oldLocale.constData(), newLocale.constData());
+        if (newLocale.isEmpty()) {
+            // Failed to set a UTF-8 locale.
+            qWarning("Detected locale \"%s\" with character encoding \"%s\", which is not UTF-8.\n"
+                     "Qt depends on a UTF-8 locale, but has failed to switch to one.\n"
+                     "If this causes problems, reconfigure your locale. See the locale(1) manual\n"
+                     "for more information.", oldLocale.constData(), charEncoding);
+        } else {
+            // Let the user know we over-rode their configuration.
+            qWarning("Detected locale \"%s\" with character encoding \"%s\", which is not UTF-8.\n"
+                     "Qt depends on a UTF-8 locale, and has switched to \"%s\" instead.\n"
+                     "If this causes problems, reconfigure your locale. See the locale(1) manual\n"
+                     "for more information.",
+                     oldLocale.constData(), charEncoding, newLocale.constData());
+        }
     }
 #  endif // Platform choice
 #endif // Unix
