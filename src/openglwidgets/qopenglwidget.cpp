@@ -1358,15 +1358,13 @@ GLuint QOpenGLWidget::defaultFramebufferObject() const
   \return The framebuffer object handle of the specified target buffer or
   \c 0 if not yet initialized.
 
-  \note Calling this overload only makes sense if \l QSurfaceFormat::StereoBuffer is enabled
-   and supported by the hardware. Will return the default buffer if it's not.
+  Calling this overload only makes sense if \l QSurfaceFormat::StereoBuffers is enabled
+  and supported by the hardware. If not, this method will return the default buffer.
 
   \note The framebuffer object belongs to the context returned by context()
-  and may not be accessible from other contexts.
-
-  \note The context and the framebuffer object used by the widget changes when
-  reparenting the widget via setParent(). In addition, the framebuffer object
-  changes on each resize.
+  and may not be accessible from other contexts. The context and the framebuffer
+  object used by the widget changes when reparenting the widget via setParent().
+  In addition, the framebuffer object changes on each resize.
 
   \since 6.5
 
