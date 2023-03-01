@@ -177,7 +177,7 @@ public:
     template<typename T>
     void updateTexture(GLenum textureUnit, const T &texture, GLenum wrapMode, GLenum filterMode, TextureUpdateMode updateMode = UpdateIfNeeded);
     template<typename T>
-    GLuint bindTexture(const T &texture);
+    GLuint bindTexture(const T &texture, bool *newTextureCreated);
     void activateTextureUnit(GLenum textureUnit);
 
     void resetGLState();
