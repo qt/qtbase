@@ -22,7 +22,7 @@
            and save JSON data. \l {CBOR} {CBOR Support in Qt} is a compact form
            of binary data encoding that is a superset of JSON.
     \li \l QDataStream provides serialization of binary data to a QIODevice
-    \li \l {Qt XML C++ Classes} provide C++ implementations of the \l XML Streaming
+    \li \l {Qt XML C++ Classes} provide C++ implementations of the \l {XML Streaming}
            and DOM standards for XML
     \li \l CBOR is Qt's implementation for the CBOR serialization format.
     \li \l QSettings provides a way of serializing and storing platform independent
