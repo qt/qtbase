@@ -55,8 +55,8 @@ template <typename MaskType, uchar Lowest> struct QCharacterSetMatch
     }
 };
 
-namespace {
-static constexpr char ascii_space_chars[] =
+namespace QtPrivate {
+inline constexpr char ascii_space_chars[] =
         "\t"    // 9: HT - horizontal tab
         "\n"    // 10: LF - line feed
         "\v"    // 11: VT - vertical tab
@@ -64,7 +64,8 @@ static constexpr char ascii_space_chars[] =
         "\r"    // 13: CR - carriage return
         " ";    // 32: space
 
-template <const char *Set, int ForcedLowest = -1> static constexpr auto makeCharacterSetMatch()
+template <const char *Set, int ForcedLowest = -1>
+inline constexpr auto makeCharacterSetMatch()
 {
     constexpr auto view = std::string_view(Set);
     constexpr uchar MinElement = *std::min_element(view.begin(), view.end());
@@ -87,7 +88,7 @@ template <const char *Set, int ForcedLowest = -1> static constexpr auto makeChar
         return QCharacterSetMatch<MaskType, MinElement>(view);
     }
 }
-} // unnamed namespace
+} // QtPrivate
 
 struct QLocaleData;
 // Subclassed by Android platform plugin:
@@ -536,7 +537,7 @@ QString qt_readEscapedFormatString(QStringView format, qsizetype *idx);
 
 [[nodiscard]] constexpr inline bool ascii_isspace(uchar c)
 {
-    constexpr auto matcher = makeCharacterSetMatch<ascii_space_chars>();
+    constexpr auto matcher = QtPrivate::makeCharacterSetMatch<QtPrivate::ascii_space_chars>();
     return matcher.matches(c);
 }
 

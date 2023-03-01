@@ -3920,7 +3920,7 @@ class NumericTokenizer
     // TODO: use deterministic finite-state-automata.
     // TODO QTBUG-95460: CLDR has Inf/NaN representations per locale.
     static constexpr char lettersInfNaN[] = "afin"; // Letters of Inf, NaN
-    static constexpr auto matchInfNaN = makeCharacterSetMatch<lettersInfNaN>();
+    static constexpr auto matchInfNaN = QtPrivate::makeCharacterSetMatch<lettersInfNaN>();
     const QStringView m_text;
     const QLocaleData::NumericData m_guide;
     qsizetype m_index = 0;
