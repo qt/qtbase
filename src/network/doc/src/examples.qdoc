@@ -22,8 +22,6 @@
     \li  \l{network/blockingfortuneclient}{Blocking Fortune Client}\raisedaster
     \li  \l{network/broadcastreceiver}{Broadcast Receiver}
     \li  \l{network/broadcastsender}{Broadcast Sender}
-    \li  \l{network/download}{Download}
-    \li  \l{network/downloadmanager}{Download Manager}
     \li  \l{network/network-chat}{Network Chat}
     \li  \l{network/fortuneclient}{Fortune Client}\raisedaster
     \li  \l{network/fortuneserver}{Fortune Server}\raisedaster
