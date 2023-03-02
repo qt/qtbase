@@ -31,7 +31,7 @@ public:
     void swap(QMessageAuthenticationCode &other) noexcept
     { qt_ptr_swap(d, other.d); }
 
-    void reset();
+    void reset() noexcept;
 
 #if QT_CORE_REMOVED_SINCE(6, 6)
     void setKey(const QByteArray &key);

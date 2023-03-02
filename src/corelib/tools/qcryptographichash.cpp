@@ -1307,7 +1307,7 @@ QMessageAuthenticationCode::~QMessageAuthenticationCode()
 /*!
     Resets message data. Calling this method doesn't affect the key.
 */
-void QMessageAuthenticationCode::reset()
+void QMessageAuthenticationCode::reset() noexcept
 {
     d->result.clear();
     d->messageHash.reset();
