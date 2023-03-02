@@ -17,7 +17,8 @@ qt_internal_add_plugin(QCtfTracePlugin
     PLUGIN_TYPE tracing
     SOURCES
         qctflib_p.h qctflib.cpp metadata_template.txt qctfplugin.cpp qctfplugin_p.h
+        qctfserver_p.h qctfserver.cpp
     LIBRARIES
-        Qt6::Core Qt6::CorePrivate
+        Qt6::Core Qt6::CorePrivate Qt6::Network
 )
 

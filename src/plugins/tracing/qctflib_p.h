@@ -26,6 +26,7 @@
 #include <qthreadstorage.h>
 #include <qthread.h>
 #include <qloggingcategory.h>
+#include "qctfserver_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -39,7 +40,7 @@ struct QCtfTracePointPrivate
     bool metadataWritten = false;
 };
 
-class QCtfLibImpl : public QCtfLib
+class QCtfLibImpl : public QCtfLib, public QCtfServer::ServerCallback
 {
     struct Session
     {
@@ -59,6 +60,7 @@ class QCtfLibImpl : public QCtfLib
         QByteArray threadName;
         quint32 threadNameLength = 0;
         bool locked = false;
+        QCtfLibImpl *impl = nullptr;
         Channel()
         {
             memset(channelName, 0, sizeof(channelName));
@@ -90,7 +92,10 @@ private:
     void updateMetadata(const QCtfTracePointEvent &point);
     void writeMetadata(const QString &metadata, bool overwrite = false);
     void clearLocation();
-    static void writeCtfPacket(Channel &ch);
+    void handleSessionChange() override;
+    void handleStatusChange(QCtfServer::ServerStatus status) override;
+    void writeCtfPacket(Channel &ch);
+    void buildMetadata();
 
     static constexpr QUuid s_TraceUuid = QUuid(0x3e589c95, 0xed11, 0xc159, 0x42, 0x02, 0x6a, 0x9b, 0x02, 0x00, 0x12, 0xac);
     static constexpr quint32 s_CtfHeaderMagic = 0xC1FC1FC1;
@@ -102,9 +107,16 @@ private:
     Session m_session;
     QHash<QThread*, quint32> m_threadIndices;
     QThreadStorage<Channel> m_threadData;
+    QList<Channel *> m_channels;
     QHash<QString, const QCtfTraceMetadata *> m_additionalMetadata;
     QSet<QString> m_newAdditionalMetadata;
+    QDateTime m_datetime;
     int m_eventId = 0;
+    bool m_streaming = false;
+    std::atomic_bool m_sessionChanged = false;
+    std::atomic_bool m_serverClosed = false;
+    QScopedPointer<QCtfServer> m_server;
+    friend struct Channel;
 };
 
 QT_END_NAMESPACE

@@ -62,6 +62,39 @@ void QCtfLibImpl::cleanup()
     s_instance = nullptr;
 }
 
+void QCtfLibImpl::handleSessionChange()
+{
+    m_sessionChanged = true;
+}
+
+void QCtfLibImpl::handleStatusChange(QCtfServer::ServerStatus status)
+{
+    switch (status) {
+    case QCtfServer::Error: {
+        m_serverClosed = true;
+    } break;
+    default:
+        break;
+    }
+}
+
+void QCtfLibImpl::buildMetadata()
+{
+    const QString mhn = QSysInfo::machineHostName();
+    QString metadata = QString::fromUtf8(traceMetadataTemplate, traceMetadataSize);
+    metadata.replace(QStringLiteral("$TRACE_UUID"), s_TraceUuid.toString(QUuid::WithoutBraces));
+    metadata.replace(QStringLiteral("$ARC_BIT_WIDTH"), QString::number(Q_PROCESSOR_WORDSIZE * 8));
+    metadata.replace(QStringLiteral("$SESSION_NAME"), m_session.name);
+    metadata.replace(QStringLiteral("$CREATION_TIME"), m_datetime.toString(Qt::ISODate));
+    metadata.replace(QStringLiteral("$HOST_NAME"), mhn);
+    metadata.replace(QStringLiteral("$CLOCK_FREQUENCY"), QStringLiteral("1000000000"));
+    metadata.replace(QStringLiteral("$CLOCK_NAME"), QStringLiteral("monotonic"));
+    metadata.replace(QStringLiteral("$CLOCK_TYPE"), QStringLiteral("Monotonic clock"));
+    metadata.replace(QStringLiteral("$CLOCK_OFFSET"), QString::number(m_datetime.toMSecsSinceEpoch() * 1000000));
+    metadata.replace(QStringLiteral("$ENDIANNESS"), QSysInfo::ByteOrder == QSysInfo::BigEndian ? u"be"_s : u"le"_s);
+    writeMetadata(metadata, true);
+}
+
 QCtfLibImpl::QCtfLibImpl()
 {
     QString location = qEnvironmentVariable("QTRACE_LOCATION");
@@ -70,71 +103,71 @@ QCtfLibImpl::QCtfLibImpl()
         return;
     }
 
-    // Check if the location is writable
-    if (QT_ACCESS(qPrintable(location), W_OK) != 0) {
-        qCWarning(lcDebugTrace) << "Unable to write to location";
-        return;
-    }
-
-    const QString filename = location + QStringLiteral("/session.json");
-    FILE *file = openFile(qPrintable(filename), "rb"_L1);
-    if (!file) {
-        qCWarning(lcDebugTrace) << "unable to open session file: "
-                                << filename << ", " << qt_error_string();
-        m_location = location;
+    if (location.startsWith(QStringLiteral("tcp"))) {
+        QUrl url(location);
+        m_server.reset(new QCtfServer());
+        m_server->setCallback(this);
+        m_server->setHost(url.host());
+        m_server->setPort(url.port());
+        m_server->startServer();
+        m_streaming = true;
         m_session.tracepoints.append(QStringLiteral("all"));
         m_session.name = QStringLiteral("default");
     } else {
-        QT_STATBUF stat;
-        if (QT_FSTAT(QT_FILENO(file), &stat) != 0) {
-            qCWarning(lcDebugTrace) << "Unable to stat session file, " << qt_error_string();
+        // Check if the location is writable
+        if (QT_ACCESS(qPrintable(location), W_OK) != 0) {
+            qCWarning(lcDebugTrace) << "Unable to write to location";
             return;
         }
-        qsizetype filesize = qMin(stat.st_size, std::numeric_limits<qsizetype>::max());
-        QByteArray data(filesize, Qt::Uninitialized);
-        qsizetype size = static_cast<qsizetype>(fread(data.data(), 1, filesize, file));
-        fclose(file);
-        if (size != filesize)
-            return;
-
-        QJsonDocument json(QJsonDocument::fromJson(data));
-        QJsonObject obj = json.object();
-        bool valid = false;
-        if (!obj.isEmpty()) {
-            const auto it = obj.begin();
-            if (it.value().isArray()) {
-                m_session.name = it.key();
-                for (auto var : it.value().toArray())
-                    m_session.tracepoints.append(var.toString());
-                valid = true;
-            }
-        }
-        if (!valid) {
-            qCWarning(lcDebugTrace) << "Session file is not valid";
+        const QString filename = location + QStringLiteral("/session.json");
+        FILE *file = openFile(qPrintable(filename), "rb"_L1);
+        if (!file) {
+            qCWarning(lcDebugTrace) << "unable to open session file: "
+                                    << filename << ", " << qt_error_string();
+            m_location = location;
             m_session.tracepoints.append(QStringLiteral("all"));
             m_session.name = QStringLiteral("default");
+        } else {
+            QT_STATBUF stat;
+            if (QT_FSTAT(QT_FILENO(file), &stat) != 0) {
+                qCWarning(lcDebugTrace) << "Unable to stat session file, " << qt_error_string();
+                return;
+            }
+            qsizetype filesize = qMin(stat.st_size, std::numeric_limits<qsizetype>::max());
+            QByteArray data(filesize, Qt::Uninitialized);
+            qsizetype size = static_cast<qsizetype>(fread(data.data(), 1, filesize, file));
+            fclose(file);
+            if (size != filesize)
+                return;
+            QJsonDocument json(QJsonDocument::fromJson(data));
+            QJsonObject obj = json.object();
+            bool valid = false;
+            if (!obj.isEmpty()) {
+                const auto it = obj.begin();
+                if (it.value().isArray()) {
+                    m_session.name = it.key();
+                    for (auto var : it.value().toArray())
+                        m_session.tracepoints.append(var.toString());
+                    valid = true;
+                }
+            }
+            if (!valid) {
+                qCWarning(lcDebugTrace) << "Session file is not valid";
+                m_session.tracepoints.append(QStringLiteral("all"));
+                m_session.name = QStringLiteral("default");
+            }
+            m_location = location + QStringLiteral("/ust");
+            std::filesystem::create_directory(qPrintable(m_location), qPrintable(location));
         }
-        m_location = location + QStringLiteral("/ust");
-        std::filesystem::create_directory(qPrintable(m_location), qPrintable(location));
         clearLocation();
     }
-    m_session.all = m_session.tracepoints.contains(QStringLiteral("all"));
 
-    auto datetime = QDateTime::currentDateTime().toUTC();
-    const QString mhn = QSysInfo::machineHostName();
-    QString metadata = QString::fromUtf8(traceMetadataTemplate, traceMetadataSize);
-    metadata.replace(QStringLiteral("$TRACE_UUID"), s_TraceUuid.toString(QUuid::WithoutBraces));
-    metadata.replace(QStringLiteral("$ARC_BIT_WIDTH"), QString::number(Q_PROCESSOR_WORDSIZE * 8));
-    metadata.replace(QStringLiteral("$SESSION_NAME"), m_session.name);
-    metadata.replace(QStringLiteral("$CREATION_TIME"), datetime.toString(Qt::ISODate));
-    metadata.replace(QStringLiteral("$HOST_NAME"), mhn);
-    metadata.replace(QStringLiteral("$CLOCK_FREQUENCY"), QStringLiteral("1000000000"));
-    metadata.replace(QStringLiteral("$CLOCK_NAME"), QStringLiteral("monotonic"));
-    metadata.replace(QStringLiteral("$CLOCK_TYPE"), QStringLiteral("Monotonic clock"));
-    metadata.replace(QStringLiteral("$CLOCK_OFFSET"), QString::number(datetime.toMSecsSinceEpoch() * 1000000));
-    metadata.replace(QStringLiteral("$ENDIANNESS"), QSysInfo::ByteOrder == QSysInfo::BigEndian ? u"be"_s : u"le"_s);
-    writeMetadata(metadata, true);
+    m_session.all = m_session.tracepoints.contains(QStringLiteral("all"));
+    // Get datetime to when the timer was started to store the offset to epoch time for the traces
+    m_datetime = QDateTime::currentDateTime().toUTC();
     m_timer.start();
+    if (!m_streaming)
+        buildMetadata();
 }
 
 void QCtfLibImpl::clearLocation()
@@ -163,25 +196,32 @@ void QCtfLibImpl::clearLocation()
 
 void QCtfLibImpl::writeMetadata(const QString &metadata, bool overwrite)
 {
-    FILE *file = nullptr;
-    file = openFile(qPrintable(m_location + "/metadata"_L1), overwrite ? "w+b"_L1: "ab"_L1);
-    if (!file)
-        return;
+    if (m_streaming) {
+        auto mt = metadata.toUtf8();
+        mt.resize(mt.size() - 1);
+        m_server->bufferData(QStringLiteral("metadata"), mt, overwrite);
+    } else {
+        FILE *file = nullptr;
+        file = openFile(qPrintable(m_location + "/metadata"_L1), overwrite ? "w+b"_L1: "ab"_L1);
+        if (!file)
+            return;
 
-    if (!overwrite)
-        fputs("\n", file);
+        if (!overwrite)
+            fputs("\n", file);
 
-    // data contains zero at the end, hence size - 1.
-    const QByteArray data = metadata.toUtf8();
-    fwrite(data.data(), data.size() - 1, 1, file);
-    fclose(file);
+        // data contains zero at the end, hence size - 1.
+        const QByteArray data = metadata.toUtf8();
+        fwrite(data.data(), data.size() - 1, 1, file);
+        fclose(file);
+    }
 }
 
 void QCtfLibImpl::writeCtfPacket(QCtfLibImpl::Channel &ch)
 {
     FILE *file = nullptr;
-    file = openFile(ch.channelName, "ab"_L1);
-    if (file) {
+    if (!m_streaming)
+        file = openFile(ch.channelName, "ab"_L1);
+    if (file || m_streaming) {
         /*  Each packet contains header and context, which are defined in the metadata.txt */
         QByteArray packet;
         packet << s_CtfHeaderMagic;
@@ -201,27 +241,54 @@ void QCtfLibImpl::writeCtfPacket(QCtfLibImpl::Channel &ch)
 
         Q_ASSERT(ch.data.size() + packetHeaderSize + ch.threadNameLength <= packetSize);
         Q_ASSERT(packet.size() == qsizetype(packetHeaderSize + ch.threadNameLength));
-        fwrite(packet.data(), packet.size(), 1, file);
-        ch.data.resize(packetSize - packet.size(), 0);
-        fwrite(ch.data.data(), ch.data.size(), 1, file);
-        fclose(file);
+        if (m_streaming) {
+            ch.data.resize(packetSize - packet.size(), 0);
+            packet += ch.data;
+            m_server->bufferData(QString::fromLatin1(ch.channelName), packet, false);
+        } else {
+            fwrite(packet.data(), packet.size(), 1, file);
+            ch.data.resize(packetSize - packet.size(), 0);
+            fwrite(ch.data.data(), ch.data.size(), 1, file);
+            fclose(file);
+        }
     }
+}
+
+QCtfLibImpl::Channel::~Channel()
+{
+    impl->writeCtfPacket(*this);
 }
 
 QCtfLibImpl::~QCtfLibImpl()
 {
+    if (!m_server.isNull())
+        m_server->stopServer();
     qDeleteAll(m_eventPrivs);
 }
 
 bool QCtfLibImpl::tracepointEnabled(const QCtfTracePointEvent &point)
 {
+    if (m_sessionChanged) {
+        const QMutexLocker lock(&m_mutex);
+        buildMetadata();
+        m_session.name = m_server->sessionName();
+        m_session.tracepoints = m_server->sessionTracepoints().split(';');
+        m_session.all = m_session.tracepoints.contains(QStringLiteral("all"));
+        m_sessionChanged = false;
+        for (const auto &meta : m_additionalMetadata)
+            writeMetadata(meta->metadata);
+        for (auto *priv : m_eventPrivs)
+            writeMetadata(priv->metadata);
+        quint64 timestamp = m_timer.nsecsElapsed();
+        for (auto *ch : m_channels) {
+            writeCtfPacket(*ch);
+            ch->data.clear();
+            ch->minTimestamp = ch->maxTimestamp = timestamp;
+        }
+    }
+    if (m_streaming && (m_serverClosed || (!m_server->bufferOnIdle() && m_server->status() == QCtfServer::Idle)))
+        return false;
     return m_session.all || m_session.tracepoints.contains(point.provider.provider);
-}
-
-QCtfLibImpl::Channel::~Channel()
-{
-    if (data.size())
-        QCtfLibImpl::writeCtfPacket(*this);
 }
 
 static QString toMetadata(const QString &provider, const QString &name, const QString &metadata, quint32 eventId)
@@ -268,6 +335,8 @@ void QCtfLibImpl::doTracepoint(const QCtfTracePointEvent &point, const QByteArra
     QCtfTracePointPrivate *priv = point.d;
     quint64 timestamp = 0;
     QThread *thread = nullptr;
+    if (m_streaming && m_serverClosed)
+        return;
     {
         QMutexLocker lock(&m_mutex);
         if (!priv->metadataWritten) {
@@ -300,6 +369,8 @@ void QCtfLibImpl::doTracepoint(const QCtfTracePointEvent &point, const QByteArra
     Channel &ch = m_threadData.localData();
 
     if (ch.channelName[0] == 0) {
+        ch.impl = this;
+        m_channels.append(&ch);
         m_threadIndices.insert(thread, m_threadIndices.size());
         ch.minTimestamp = ch.maxTimestamp = timestamp;
         ch.thread = thread;
