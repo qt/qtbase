@@ -1157,7 +1157,7 @@ public:
     const QCryptographicHash::Algorithm method;
 
     void setKey(QByteArrayView k) noexcept;
-    void initMessageHash();
+    void initMessageHash() noexcept;
     void finalize();
 
     // when not called from the static hash() function, this function needs to be
@@ -1208,7 +1208,7 @@ void QMessageAuthenticationCodePrivate::setKey(QByteArrayView newKey) noexcept
     This function assumes that messageHash is in its initial state (reset() has
     been called).
 */
-void QMessageAuthenticationCodePrivate::initMessageHash()
+void QMessageAuthenticationCodePrivate::initMessageHash() noexcept
 {
     messageHash.addData(xored(key, 0x36));
 }
