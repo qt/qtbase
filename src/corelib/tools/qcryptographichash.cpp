@@ -1245,9 +1245,18 @@ void QMessageAuthenticationCodePrivate::initMessageHash() noexcept
 /*!
     Constructs an object that can be used to create a cryptographic hash from data
     using method \a method and key \a key.
+
+//! [qba-to-qbav-6.6]
+    \note In Qt versions prior to 6.6, this function took its arguments as
+    QByteArray, not QByteArrayView. If you experience compile errors, it's
+    because your code is passing objects that are implicitly convertible to
+    QByteArray, but not QByteArrayView. Wrap the corresponding argument in
+    \c{QByteArray{~~~}} to make the cast explicit. This is backwards-compatible
+    with old Qt versions.
+//! [qba-to-qbav-6.6]
 */
 QMessageAuthenticationCode::QMessageAuthenticationCode(QCryptographicHash::Algorithm method,
-                                                       const QByteArray &key)
+                                                       QByteArrayView key)
     : d(new QMessageAuthenticationCodePrivate(method))
 {
     d->setKey(key);
@@ -1334,8 +1343,10 @@ void QMessageAuthenticationCode::reset()
     mac.emplace(method, key);
     use(*mac);
     \endcode
+
+    \include qcryptographichash.cpp {qba-to-qbav-6.6}
 */
-void QMessageAuthenticationCode::setKey(const QByteArray &key)
+void QMessageAuthenticationCode::setKey(QByteArrayView key) noexcept
 {
     d->result.clear();
     d->messageHash.reset();

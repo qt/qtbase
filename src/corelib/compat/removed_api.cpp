@@ -486,6 +486,17 @@ void QXmlStreamWriter::writeStartElement(const QString &namespaceUri, const QStr
 
 #if QT_CORE_REMOVED_SINCE(6, 6)
 
+#include "qmessageauthenticationcode.h"
+
+QMessageAuthenticationCode::QMessageAuthenticationCode(QCryptographicHash::Algorithm method,
+                                                       const QByteArray &key)
+    : QMessageAuthenticationCode(method, qToByteArrayViewIgnoringNull(key)) {}
+
+void QMessageAuthenticationCode::setKey(const QByteArray &key)
+{
+    setKey(qToByteArrayViewIgnoringNull(key));
+}
+
 #include "qstring.h"
 
 qsizetype QString::toUcs4_helper(const ushort *uc, qsizetype length, uint *out)

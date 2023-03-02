@@ -16,8 +16,13 @@ class QIODevice;
 class Q_CORE_EXPORT QMessageAuthenticationCode
 {
 public:
+#if QT_CORE_REMOVED_SINCE(6, 6)
     explicit QMessageAuthenticationCode(QCryptographicHash::Algorithm method,
-                                        const QByteArray &key = QByteArray());
+                                        const QByteArray &key);
+#endif
+    explicit QMessageAuthenticationCode(QCryptographicHash::Algorithm method,
+                                        QByteArrayView key = {});
+
     QMessageAuthenticationCode(QMessageAuthenticationCode &&other) noexcept
         : d{std::exchange(other.d, nullptr)} {}
     ~QMessageAuthenticationCode();
@@ -28,7 +33,10 @@ public:
 
     void reset();
 
+#if QT_CORE_REMOVED_SINCE(6, 6)
     void setKey(const QByteArray &key);
+#endif
+    void setKey(QByteArrayView key) noexcept;
 
     void addData(const char *data, qsizetype length);
     void addData(const QByteArray &data);
