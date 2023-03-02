@@ -48,7 +48,11 @@ public:
     QByteArrayView resultView() const noexcept;
     QByteArray result() const;
 
+#if QT_CORE_REMOVED_SINCE(6, 6)
     static QByteArray hash(const QByteArray &message, const QByteArray &key,
+                           QCryptographicHash::Algorithm method);
+#endif
+    static QByteArray hash(QByteArrayView message, QByteArrayView key,
                            QCryptographicHash::Algorithm method);
 
 private:

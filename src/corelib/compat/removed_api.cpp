@@ -502,6 +502,13 @@ void QMessageAuthenticationCode::addData(const QByteArray &data)
     addData(qToByteArrayViewIgnoringNull(data));
 }
 
+QByteArray QMessageAuthenticationCode::hash(const QByteArray &msg, const QByteArray &key,
+                                            QCryptographicHash::Algorithm method)
+{
+    return hash(qToByteArrayViewIgnoringNull(msg),
+                qToByteArrayViewIgnoringNull(key), method);
+}
+
 #include "qstring.h"
 
 qsizetype QString::toUcs4_helper(const ushort *uc, qsizetype length, uint *out)

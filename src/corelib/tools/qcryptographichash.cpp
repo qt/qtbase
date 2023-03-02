@@ -1436,8 +1436,10 @@ void QMessageAuthenticationCodePrivate::finalizeUnchecked() noexcept
 /*!
     Returns the authentication code for the message \a message using
     the key \a key and the method \a method.
+
+    \include qcryptographichash.cpp {qba-to-qbav-6.6}
 */
-QByteArray QMessageAuthenticationCode::hash(const QByteArray &message, const QByteArray &key,
+QByteArray QMessageAuthenticationCode::hash(QByteArrayView message, QByteArrayView key,
                                             QCryptographicHash::Algorithm method)
 {
     QMessageAuthenticationCodePrivate mac(method);
