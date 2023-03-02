@@ -459,7 +459,8 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 
     // ensure both structs start with the name field, of size IFNAMESIZ
     static_assert(sizeof(mediareq.ifm_name) == sizeof(req.ifr_name));
-    Q_ASSERT(&mediareq.ifm_name == &req.ifr_name);
+    static_assert(offsetof(struct ifmediareq, ifm_name) == 0);
+    static_assert(offsetof(struct ifreq, ifr_name) == 0);
 
     // on NetBSD we use AF_LINK and sockaddr_dl
     // scan the list for that family
