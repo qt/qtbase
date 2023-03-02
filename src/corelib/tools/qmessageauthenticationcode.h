@@ -39,7 +39,10 @@ public:
     void setKey(QByteArrayView key) noexcept;
 
     void addData(const char *data, qsizetype length);
+#if QT_CORE_REMOVED_SINCE(6, 6)
     void addData(const QByteArray &data);
+#endif
+    void addData(QByteArrayView data) noexcept;
     bool addData(QIODevice *device);
 
     QByteArrayView resultView() const noexcept;

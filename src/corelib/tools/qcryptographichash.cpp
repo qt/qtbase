@@ -1355,6 +1355,7 @@ void QMessageAuthenticationCode::setKey(QByteArrayView key) noexcept
 }
 
 /*!
+    \overload
     Adds the first \a length chars of \a data to the message.
 */
 void QMessageAuthenticationCode::addData(const char *data, qsizetype length)
@@ -1363,9 +1364,13 @@ void QMessageAuthenticationCode::addData(const char *data, qsizetype length)
 }
 
 /*!
-    \overload addData()
+    Adds \a data to the message.
+
+    \include qcryptographichash.cpp {qba-to-qbav-6.6}
+
+    \sa resultView(), result()
 */
-void QMessageAuthenticationCode::addData(const QByteArray &data)
+void QMessageAuthenticationCode::addData(QByteArrayView data) noexcept
 {
     d->messageHash.addData(data);
 }

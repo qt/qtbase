@@ -497,6 +497,11 @@ void QMessageAuthenticationCode::setKey(const QByteArray &key)
     setKey(qToByteArrayViewIgnoringNull(key));
 }
 
+void QMessageAuthenticationCode::addData(const QByteArray &data)
+{
+    addData(qToByteArrayViewIgnoringNull(data));
+}
+
 #include "qstring.h"
 
 qsizetype QString::toUcs4_helper(const ushort *uc, qsizetype length, uint *out)
