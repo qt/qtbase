@@ -1609,15 +1609,9 @@ int QOpenGLWidget::metric(QPaintDevice::PaintDeviceMetric metric) const
         else
             return qRound(dpmy * 0.0254);
     case PdmDevicePixelRatio:
-        if (window)
-            return int(window->devicePixelRatio());
-        else
-            return 1.0;
+        return QWidget::metric(metric);
     case PdmDevicePixelRatioScaled:
-        if (window)
-            return int(window->devicePixelRatio() * devicePixelRatioFScale());
-        else
-            return int(devicePixelRatioFScale());
+        return QWidget::metric(metric);
     default:
         qWarning("QOpenGLWidget::metric(): unknown metric %d", metric);
         return 0;
