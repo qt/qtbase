@@ -1156,7 +1156,7 @@ public:
     QCryptographicHashPrivate messageHash;
     const QCryptographicHash::Algorithm method;
 
-    void setKey(const QByteArray &k);
+    void setKey(QByteArrayView k) noexcept;
     void initMessageHash();
     void finalize();
 
@@ -1175,7 +1175,7 @@ public:
     This function assumes it can use messageHash (i.e. it's in its initial
     state (reset() has been called)).
 */
-void QMessageAuthenticationCodePrivate::setKey(const QByteArray &newKey)
+void QMessageAuthenticationCodePrivate::setKey(QByteArrayView newKey) noexcept
 {
     const int blockSize = qt_hash_block_size(method);
 
