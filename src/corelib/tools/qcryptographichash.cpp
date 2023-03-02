@@ -1284,7 +1284,7 @@ void QMessageAuthenticationCode::reset()
     use(mac);
     \endcode
 
-    Perfer to pass initial keys as the constructor argument:
+    Prefer to pass initial keys as the constructor argument:
 
     \code
     QMessageAuthenticationCode mac(method, key); // OK, optimal
