@@ -18,7 +18,13 @@ class Q_CORE_EXPORT QMessageAuthenticationCode
 public:
     explicit QMessageAuthenticationCode(QCryptographicHash::Algorithm method,
                                         const QByteArray &key = QByteArray());
+    QMessageAuthenticationCode(QMessageAuthenticationCode &&other) noexcept
+        : d{std::exchange(other.d, nullptr)} {}
     ~QMessageAuthenticationCode();
+
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QMessageAuthenticationCode)
+    void swap(QMessageAuthenticationCode &other) noexcept
+    { qt_ptr_swap(d, other.d); }
 
     void reset();
 

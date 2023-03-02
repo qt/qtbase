@@ -1263,6 +1263,39 @@ QMessageAuthenticationCode::~QMessageAuthenticationCode()
 }
 
 /*!
+    \fn QMessageAuthenticationCode::QMessageAuthenticationCode(QMessageAuthenticationCode &&other)
+
+    Move-constructs a new QMessageAuthenticationCode from \a other.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new object.
+
+    \since 6.6
+*/
+
+/*!
+    \fn QMessageAuthenticationCode &QMessageAuthenticationCode::operator=(QMessageAuthenticationCode &&other)
+
+    Move-assigns \a other to this QMessageAuthenticationCode instance.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new object.
+
+    \since 6.6
+*/
+
+/*!
+    \fn void QMessageAuthenticationCode::swap(QMessageAuthenticationCode &other)
+
+    Swaps message authentication code \a other with this message authentication
+    code. This operation is very fast and never fails.
+
+    \since 6.6
+*/
+
+/*!
     Resets message data. Calling this method doesn't affect the key.
 */
 void QMessageAuthenticationCode::reset()
