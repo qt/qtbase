@@ -8,7 +8,7 @@ if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
-set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/xml/rsslisting")
+set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/corelib/serialization/rsslisting")
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Network Widgets)
 
