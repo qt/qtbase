@@ -705,7 +705,7 @@ bool QCacheItem::read(QFileDevice *device, bool readData)
     if (!device->fileName().endsWith(expectedFilename))
         return false;
 
-    return metaData.isValid();
+    return metaData.isValid() && !metaData.rawHeaders().isEmpty();
 }
 
 QT_END_NAMESPACE

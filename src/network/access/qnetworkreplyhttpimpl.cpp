@@ -500,6 +500,12 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
     QNetworkHeadersPrivate::RawHeadersList::ConstIterator it;
     cacheHeaders.setAllRawHeaders(metaData.rawHeaders());
 
+    it = cacheHeaders.findRawHeader("content-length");
+    if (it != cacheHeaders.rawHeaders.constEnd()) {
+        if (nc->data(httpRequest.url())->size() < it->second.toLongLong())
+            return false; // The data is smaller than the content-length specified
+    }
+
     it = cacheHeaders.findRawHeader("etag");
     if (it != cacheHeaders.rawHeaders.constEnd())
         httpRequest.setHeaderField("If-None-Match", it->second);
