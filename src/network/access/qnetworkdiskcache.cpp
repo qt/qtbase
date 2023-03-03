@@ -20,7 +20,6 @@
 #include <memory>
 
 #define CACHE_POSTFIX ".d"_L1
-#define PREPARED_SLASH "prepared/"_L1
 #define CACHE_VERSION 8
 #define DATA_DIR "data"_L1
 
@@ -172,13 +171,13 @@ QIODevice *QNetworkDiskCache::prepare(const QNetworkCacheMetaData &metaData)
         cacheItem->data.open(QBuffer::ReadWrite);
         device = &(cacheItem->data);
     } else {
-        QString templateName = d->tmpCacheFileName();
+        QString fileName = d->cacheFileName(cacheItem->metaData.url());
         QT_TRY {
-            cacheItem->file = new QTemporaryFile(templateName, &cacheItem->data);
+            cacheItem->file = new QSaveFile(fileName, &cacheItem->data);
         } QT_CATCH(...) {
             cacheItem->file = nullptr;
         }
-        if (!cacheItem->file || !cacheItem->file->open()) {
+        if (!cacheItem->file || !cacheItem->file->open(QFileDevice::WriteOnly)) {
             qWarning("QNetworkDiskCache::prepare() unable to open temporary file");
             cacheItem.reset();
             return nullptr;
@@ -218,7 +217,6 @@ void QNetworkDiskCache::insert(QIODevice *device)
 void QNetworkDiskCachePrivate::prepareLayout()
 {
     QDir helper;
-    helper.mkpath(cacheDirectory + PREPARED_SLASH);
 
     //Create directory and subdirectories 0-F
     helper.mkpath(dataDirectory);
@@ -247,9 +245,8 @@ void QNetworkDiskCachePrivate::storeItem(QCacheItem *cacheItem)
 
     currentCacheSize = q->expire();
     if (!cacheItem->file) {
-        QString templateName = tmpCacheFileName();
-        cacheItem->file = new QTemporaryFile(templateName, &cacheItem->data);
-        if (cacheItem->file->open()) {
+        cacheItem->file = new QSaveFile(fileName, &cacheItem->data);
+        if (cacheItem->file->open(QFileDevice::WriteOnly)) {
             cacheItem->writeHeader(cacheItem->file);
             cacheItem->writeCompressedData(cacheItem->file);
         }
@@ -257,13 +254,15 @@ void QNetworkDiskCachePrivate::storeItem(QCacheItem *cacheItem)
 
     if (cacheItem->file
         && cacheItem->file->isOpen()
-        && cacheItem->file->error() == QFile::NoError) {
-        cacheItem->file->setAutoRemove(false);
-        // ### use atomic rename rather then remove & rename
-        if (cacheItem->file->rename(fileName))
-            currentCacheSize += cacheItem->file->size();
-        else
-            cacheItem->file->setAutoRemove(true);
+        && cacheItem->file->error() == QFileDevice::NoError) {
+        // We have to call size() here instead of inside the if-body because
+        // commit() invalidates the file-engine, and size() will create a new
+        // one, pointing at an empty filename.
+        qint64 size = cacheItem->file->size();
+        if (cacheItem->file->commit())
+            currentCacheSize += size;
+        // Delete and unset the QSaveFile, it's invalid now.
+        delete std::exchange(cacheItem->file, nullptr);
     }
     if (cacheItem->metaData.url() == lastItem.metaData.url())
         lastItem.reset();
@@ -516,18 +515,6 @@ qint64 QNetworkDiskCache::expire()
 
     [[maybe_unused]] int removedFiles = 0; // used under QNETWORKDISKCACHE_DEBUG
     for (const CacheItem &cached : cacheItems) {
-        if (cached.path.contains(PREPARED_SLASH)) {
-            auto matchesCacheItem = [&cached](QCacheItem *item) {
-                return item && item->file && item->file->fileName() == cached.path;
-            };
-            auto itemIt = std::find_if(d->inserting.cbegin(), d->inserting.cend(), matchesCacheItem);
-            if (itemIt != d->inserting.cend()) {
-                auto &tempfile = (*itemIt)->file;
-                delete tempfile;
-                tempfile = nullptr;
-            }
-        }
-
         QFile::remove(cached.path);
         ++removedFiles;
         totalSize -= cached.size;
@@ -576,12 +563,6 @@ QString QNetworkDiskCachePrivate::uniqueFileName(const QUrl &url)
     QString pathFragment = QString::number(code, 16) + u'/' + QLatin1StringView(id) + CACHE_POSTFIX;
 
     return pathFragment;
-}
-
-QString QNetworkDiskCachePrivate::tmpCacheFileName() const
-{
-    //The subdirectory is presumed to be already read for use.
-    return cacheDirectory + PREPARED_SLASH + "XXXXXX"_L1 + CACHE_POSTFIX;
 }
 
 /*!
@@ -634,7 +615,7 @@ enum
     CurrentCacheVersion = CACHE_VERSION
 };
 
-void QCacheItem::writeHeader(QFile *device) const
+void QCacheItem::writeHeader(QFileDevice *device) const
 {
     QDataStream out(device);
 
@@ -646,7 +627,7 @@ void QCacheItem::writeHeader(QFile *device) const
     out << compressed;
 }
 
-void QCacheItem::writeCompressedData(QFile *device) const
+void QCacheItem::writeCompressedData(QFileDevice *device) const
 {
     QDataStream out(device);
 
@@ -657,7 +638,7 @@ void QCacheItem::writeCompressedData(QFile *device) const
     Returns \c false if the file is a cache file,
     but is an older version and should be removed otherwise true.
  */
-bool QCacheItem::read(QFile *device, bool readData)
+bool QCacheItem::read(QFileDevice *device, bool readData)
 {
     reset();
 
