@@ -1047,7 +1047,7 @@ int QMetaObject::indexOfEnumerator(const char *name) const
         for (int i = 0; i < d->enumeratorCount; ++i) {
             const QMetaEnum e(m, i);
             const char *prop = rawStringData(m, e.data.name());
-            if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
+            if (strcmp(name, prop) == 0) {
                 i += m->enumeratorOffset();
                 return i;
             }
@@ -1061,7 +1061,7 @@ int QMetaObject::indexOfEnumerator(const char *name) const
         for (int i = 0; i < d->enumeratorCount; ++i) {
             const QMetaEnum e(m, i);
             const char *prop = rawStringData(m, e.data.alias());
-            if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
+            if (strcmp(name, prop) == 0) {
                 i += m->enumeratorOffset();
                 return i;
             }
@@ -1085,7 +1085,7 @@ int QMetaObject::indexOfProperty(const char *name) const
         for (int i = 0; i < d->propertyCount; ++i) {
             const QMetaProperty::Data data = QMetaProperty::getMetaPropertyData(m, i);
             const char *prop = rawStringData(m, data.name());
-            if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
+            if (strcmp(name, prop) == 0) {
                 i += m->propertyOffset();
                 return i;
             }
