@@ -631,6 +631,12 @@ QTemporaryFile::QTemporaryFile()
 }
 
 /*!
+    \fn QTemporaryFile::QTemporaryFile(const std::filesystem::path &templateName, QObject *parent)
+    \overload
+    \since 6.7
+*/
+
+/*!
     Constructs a QTemporaryFile with a template filename of \a
     templateName. Upon opening the temporary file this will be used to create
     a unique filename.
@@ -792,6 +798,12 @@ QString QTemporaryFile::fileTemplate() const
 }
 
 /*!
+    \fn void QTemporaryFile::setFileTemplate(const std::filesystem::path &name)
+    \overload
+    \since 6.7
+*/
+
+/*!
    Sets the static portion of the file name to \a name. If the file
    template contains XXXXXX that will automatically be replaced with
    the unique part of the filename, otherwise a filename will be
@@ -811,6 +823,12 @@ void QTemporaryFile::setFileTemplate(const QString &name)
     Q_D(QTemporaryFile);
     d->templateName = name;
 }
+
+/*!
+    \fn bool QTemporaryFile::rename(const std::filesystem::path &newName)
+    \overload
+    \since 6.7
+*/
 
 /*!
     Renames the current temporary file to \a newName and returns true if it
@@ -860,7 +878,11 @@ bool QTemporaryFile::rename(const QString &newName)
   Works on the given \a fileName rather than an existing QFile
   object.
 */
-
+/*!
+  \fn QTemporaryFile *QTemporaryFile::createNativeFile(const std::filesystem::path &fileName)
+  \overload
+  \since 6.7
+*/
 
 /*!
   If \a file is not already a native file, then a QTemporaryFile is created

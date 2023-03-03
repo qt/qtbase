@@ -75,6 +75,7 @@ private slots:
     void QTBUG_4796_data();
     void QTBUG_4796();
     void guaranteeUnique();
+    void stdfilesystem();
 private:
     QTemporaryDir m_temporaryDir;
     QString m_previousCurrent;
@@ -1034,6 +1035,50 @@ void tst_QTemporaryFile::guaranteeUnique()
     }
 
     QVERIFY(dir.rmdir(takenFileName));
+}
+
+void tst_QTemporaryFile::stdfilesystem()
+{
+#if !QT_CONFIG(cxx17_filesystem)
+    QSKIP("std::filesystem not available");
+#else
+    // ctor
+    {
+        std::filesystem::path testFile("testFile1.XXXXXX");
+        QTemporaryFile file(testFile);
+        QCOMPARE(file.fileTemplate(), QtPrivate::fromFilesystemPath(testFile));
+    }
+    // rename
+    {
+        QTemporaryFile file("testFile1.XXXXXX");
+        QVERIFY(file.open());
+        QByteArray payload = "abc123 I am a string";
+        file.write(payload);
+        QVERIFY(file.rename(std::filesystem::path("./test")));
+        file.close();
+
+        QFile f(u"./test"_s);
+        QVERIFY(f.exists());
+        QVERIFY(f.open(QFile::ReadOnly));
+        QCOMPARE(f.readAll(), payload);
+    }
+    // createNativeFile
+    {
+        std::filesystem::path resource(":/resources/test.txt");
+        std::unique_ptr<QTemporaryFile> tmp(QTemporaryFile::createNativeFile(resource));
+        QVERIFY(tmp);
+        QFile file(resource);
+        QVERIFY(file.open(QFile::ReadOnly));
+        QCOMPARE(tmp->readAll(), file.readAll());
+    }
+    // setFileTemplate
+    {
+        QTemporaryFile file;
+        std::filesystem::path testFile("testFile1.XXXXXX");
+        file.setFileTemplate(testFile);
+        QCOMPARE(file.fileTemplate(), QtPrivate::fromFilesystemPath(testFile));
+    }
+#endif
 }
 
 QTEST_MAIN(tst_QTemporaryFile)
