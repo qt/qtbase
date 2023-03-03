@@ -213,8 +213,10 @@ void QWindowPrivate::init(QScreen *targetScreen)
     isWindow = true;
     parentWindow = static_cast<QWindow *>(q->QObject::parent());
 
+    QScreen *connectScreen = targetScreen ? targetScreen : QGuiApplication::primaryScreen();
+
     if (!parentWindow)
-        connectToScreen(targetScreen ? targetScreen : QGuiApplication::primaryScreen());
+        connectToScreen(connectScreen);
 
     // If your application aborts here, you are probably creating a QWindow
     // before the screen list is populated.
@@ -224,6 +226,7 @@ void QWindowPrivate::init(QScreen *targetScreen)
     QGuiApplicationPrivate::window_list.prepend(q);
 
     requestedFormat = QSurfaceFormat::defaultFormat();
+    devicePixelRatio = connectScreen->devicePixelRatio();
 }
 
 /*!
@@ -505,8 +508,6 @@ void QWindowPrivate::create(bool recursive, WId nativeHandle)
     // the platformWindow, if there was one, is now gone, so make this flag reflect reality now
     updateRequestPending = false;
 
-    const qreal currentDevicePixelRatio = q->devicePixelRatio();
-
     if (q->parent())
         q->parent()->create();
 
@@ -552,10 +553,7 @@ void QWindowPrivate::create(bool recursive, WId nativeHandle)
     QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceCreated);
     QGuiApplication::sendEvent(q, &e);
 
-    if (!qFuzzyCompare(currentDevicePixelRatio, q->devicePixelRatio())) {
-        QEvent dprChangeEvent(QEvent::DevicePixelRatioChange);
-        QGuiApplication::sendEvent(q, &dprChangeEvent);
-    }
+    updateDevicePixelRatio();
 
     if (needsUpdate)
         q->requestUpdate();
@@ -1333,14 +1331,29 @@ Qt::ScreenOrientation QWindow::contentOrientation() const
 qreal QWindow::devicePixelRatio() const
 {
     Q_D(const QWindow);
+    return d->devicePixelRatio;
+}
+
+/*
+    Updates the cached devicePixelRatio value by polling for a new value.
+    Sends QEvent::DevicePixelRatioChange to the window if the DPR has changed.
+*/
+void QWindowPrivate::updateDevicePixelRatio()
+{
+    Q_Q(QWindow);
 
     // If there is no platform window use the associated screen's devicePixelRatio,
     // which typically is the primary screen and will be correct for single-display
     // systems (a very common case).
-    if (!d->platformWindow)
-        return screen()->devicePixelRatio();
+    const qreal newDevicePixelRatio = platformWindow ?
+        platformWindow->devicePixelRatio() * QHighDpiScaling::factor(q) : q->screen()->devicePixelRatio();
 
-    return d->platformWindow->devicePixelRatio() * QHighDpiScaling::factor(this);
+    if (newDevicePixelRatio == devicePixelRatio)
+        return;
+
+    devicePixelRatio = newDevicePixelRatio;
+    QEvent dprChangeEvent(QEvent::DevicePixelRatioChange);
+    QGuiApplication::sendEvent(q, &dprChangeEvent);
 }
 
 Qt::WindowState QWindowPrivate::effectiveState(Qt::WindowStates state)

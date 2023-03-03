@@ -89,6 +89,8 @@ public:
     void setAutomaticPositionAndResizeEnabled(bool a)
     { positionAutomatic = resizeAutomatic = a; }
 
+    void updateDevicePixelRatio();
+
     static QWindowPrivate *get(QWindow *window) { return window->d_func(); }
 
     static Qt::WindowState effectiveState(Qt::WindowStates);
@@ -106,6 +108,7 @@ public:
     QString windowFilePath;
     QIcon windowIcon;
     QRect geometry;
+    qreal devicePixelRatio = 1.0;
     Qt::WindowStates windowState = Qt::WindowNoState;
     QWindow::Visibility visibility = QWindow::Hidden;
     bool resizeEventPending = true;
