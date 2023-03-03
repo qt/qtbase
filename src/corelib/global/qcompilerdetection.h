@@ -543,7 +543,8 @@
 #  endif
 
 /* C++11 features, see http://clang.llvm.org/cxx_status.html */
-#  if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
+#  if (defined(__cplusplus) && __cplusplus >= 201103L) \
+      || defined(__GXX_EXPERIMENTAL_CXX0X__)
     /* Detect C++ features using __has_feature(), see http://clang.llvm.org/docs/LanguageExtensions.html#cxx11 */
 #    if __has_feature(cxx_alignas)
 #      define Q_COMPILER_ALIGNAS
@@ -641,10 +642,10 @@
 #    if Q_CC_CLANG >= 209 /* since clang 2.9 */
 #      define Q_COMPILER_EXTERN_TEMPLATES
 #    endif
-#  endif
+#  endif // (defined(__cplusplus) && __cplusplus >= 201103L) || defined(__GXX_EXPERIMENTAL_CXX0X__)
 
 /* C++1y features, deprecated macros. Do not update this list. */
-#  if __cplusplus > 201103L
+#  if defined(__cplusplus) && __cplusplus > 201103L
 //#    if __has_feature(cxx_binary_literals)
 //#      define Q_COMPILER_BINARY_LITERALS  // see above
 //#    endif
@@ -666,7 +667,7 @@
 #    if __has_feature(cxx_runtime_array)
 #      define Q_COMPILER_VLA
 #    endif
-#  endif
+#  endif // if defined(__cplusplus) && __cplusplus > 201103L
 
 #  if defined(__STDC_VERSION__)
 #    if __has_feature(c_static_assert)
