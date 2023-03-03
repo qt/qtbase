@@ -11,14 +11,14 @@
 
 #include <QtPrintSupport/QPrinterInfo>
 
-#if QT_CONFIG(dialogbuttonbox) && QT_CONFIG(formlayout)
+#if QT_CONFIG(cupspassworddialog)
 #include <QGuiApplication>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QLabel>
 #include <QLineEdit>
-#endif // QT_CONFIG(dialogbuttonbox)
+#endif // QT_CONFIG(cupspassworddialog)
 
 #include <cups/ppd.h>
 #ifndef QT_LINUXBASE // LSB merges everything into cups.h
@@ -27,7 +27,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if QT_CONFIG(dialogbuttonbox) && QT_CONFIG(formlayout)
+#if QT_CONFIG(cupspassworddialog)
 static const char *getPasswordCB(const char */*prompt*/, http_t *http, const char */*method*/, const char *resource, void */*user_data*/)
 {
     // cups doesn't free the const char * we return so keep around
@@ -89,16 +89,16 @@ static const char *getPasswordCB(const char */*prompt*/, http_t *http, const cha
 
     return password.constData();
 }
-#endif // QT_CONFIG(dialogbuttonbox) && QT_CONFIG(formlayout)
+#endif // QT_CONFIG(cupspassworddialog)
 
 QCupsPrinterSupport::QCupsPrinterSupport()
     : QPlatformPrinterSupport()
 {
-#if QT_CONFIG(dialogbuttonbox) && QT_CONFIG(formlayout)
+#if QT_CONFIG(cupspassworddialog)
     // Only show password dialog if GUI application
     if (qobject_cast<QGuiApplication*>(QCoreApplication::instance()))
         cupsSetPasswordCB2(getPasswordCB, nullptr /* user_data */ );
-#endif // QT_CONFIG(dialogbuttonbox) && QT_CONFIG(formlayout)
+#endif // QT_CONFIG(cupspassworddialog)
 }
 
 QCupsPrinterSupport::~QCupsPrinterSupport()

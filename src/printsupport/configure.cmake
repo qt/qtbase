@@ -31,6 +31,11 @@ qt_feature("cupsjobwidget" PUBLIC PRIVATE
     CONDITION ( QT_FEATURE_buttongroup ) AND ( QT_FEATURE_calendarwidget ) AND ( QT_FEATURE_checkbox ) AND ( QT_FEATURE_combobox ) AND ( QT_FEATURE_cups ) AND ( QT_FEATURE_datetimeedit ) AND ( QT_FEATURE_groupbox ) AND ( QT_FEATURE_tablewidget )
 )
 qt_feature_definition("cupsjobwidget" "QT_NO_CUPSJOBWIDGET" NEGATE VALUE "1")
+qt_feature("cupspassworddialog" PRIVATE
+    SECTION "Widgets"
+    LABEL "CUPS password dialog"
+    CONDITION ( QT_FEATURE_dialogbuttonbox ) AND ( QT_FEATURE_formlayout ) AND ( QT_FEATURE_lineedit )
+)
 qt_feature("printer" PUBLIC
     SECTION "Painting"
     LABEL "QPrinter"
