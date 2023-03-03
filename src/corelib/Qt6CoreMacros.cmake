@@ -93,24 +93,32 @@ function(_qt_internal_create_moc_command infile outfile moc_flags moc_options
         set(extra_output_files "${outfile}.json")
         set(${out_json_file} "${extra_output_files}" PARENT_SCOPE)
     endif()
-    string (REPLACE ";" "\n" _moc_parameters "${_moc_parameters}")
 
     if(moc_target)
         set(_moc_parameters_file ${_moc_parameters_file}$<$<BOOL:$<CONFIG>>:_$<CONFIG>>)
         set(targetincludes "$<TARGET_PROPERTY:${moc_target},INCLUDE_DIRECTORIES>")
         set(targetdefines "$<TARGET_PROPERTY:${moc_target},COMPILE_DEFINITIONS>")
 
-        set(targetincludes "$<$<BOOL:${targetincludes}>:-I$<JOIN:$<REMOVE_DUPLICATES:${targetincludes}>,\n-I>\n>")
-        set(targetdefines "$<$<BOOL:${targetdefines}>:-D$<JOIN:$<REMOVE_DUPLICATES:${targetdefines}>,\n-D>\n>")
+        set(targetincludes "$<$<BOOL:${targetincludes}>:-I$<JOIN:${targetincludes},;-I>>")
+        set(targetdefines "$<$<BOOL:${targetdefines}>:-D$<JOIN:${targetdefines},;-D>>")
+        string(REPLACE ">" "$<ANGLE-R>" _moc_escaped_parameters "${_moc_parameters}")
+        string(REPLACE "," "$<COMMA>"   _moc_escaped_parameters "${_moc_escaped_parameters}")
+
+        set(concatenated "$<$<BOOL:${targetincludes}>:${targetincludes};>$<$<BOOL:${targetdefines}>:${targetdefines};>$<$<BOOL:${_moc_escaped_parameters}>:${_moc_escaped_parameters};>")
+
+        set(concatenated "$<FILTER:$<REMOVE_DUPLICATES:${concatenated}>,EXCLUDE,^-[DI]$>")
+        set(concatenated "$<JOIN:${concatenated},\n>")
 
         file (GENERATE
             OUTPUT ${_moc_parameters_file}
-            CONTENT "${targetdefines}${targetincludes}${_moc_parameters}\n"
+            CONTENT "${concatenated}"
         )
 
+        set(concatenated)
         set(targetincludes)
         set(targetdefines)
     else()
+        string (REPLACE ";" "\n" _moc_parameters "${_moc_parameters}")
         file(WRITE ${_moc_parameters_file} "${_moc_parameters}\n")
     endif()
 
