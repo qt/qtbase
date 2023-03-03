@@ -40,7 +40,7 @@ void tst_BenchlibTickCounter::threeBillionTicks()
 QTEST_MAIN_WRAPPER(tst_BenchlibTickCounter,
     std::vector<const char*> args(argv, argv + argc);
     args.push_back("-tickcounter");
-    argc = args.size();
+    argc = int(args.size());
     argv = const_cast<char**>(&args[0]);
     QTEST_MAIN_SETUP())
 

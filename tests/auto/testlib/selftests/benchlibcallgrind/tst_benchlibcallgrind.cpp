@@ -63,7 +63,7 @@ QTEST_MAIN_WRAPPER(tst_BenchlibCallgrind,
                              || qstrcmp(arg, "-callgrind") == 0;
                      }) == args.end()) {
         args.push_back("-callgrind");
-        argc = args.size();
+        argc = int(args.size());
         argv = const_cast<char**>(&args[0]);
     }
     QTEST_MAIN_SETUP())

@@ -37,7 +37,7 @@ void tst_BenchlibCounting::failingBenchmark()
 QTEST_MAIN_WRAPPER(tst_BenchlibCounting,
     std::vector<const char*> args(argv, argv + argc);
     args.push_back("-eventcounter");
-    argc = args.size();
+    argc = int(args.size());
     argv = const_cast<char**>(&args[0]);
     QTEST_MAIN_SETUP())
 
