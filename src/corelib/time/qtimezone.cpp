@@ -1278,7 +1278,9 @@ QTimeZone::OffsetData QTimeZone::previousTransition(const QDateTime &beforeDateT
 /*!
     Returns a list of all time zone transitions between the given datetimes.
 
-    The given \a fromDateTime and \a toDateTime are inclusive.
+    The given \a fromDateTime and \a toDateTime are inclusive. The \c atUtc
+    member of each entry describes the moment of the transition, at which the
+    offsets and abbreviation given by other members take effect.
 
     This method is only available when feature \c timezone is enabled.
 
