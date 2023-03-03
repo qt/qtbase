@@ -22,7 +22,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 \sa{CMake Variable Reference}
 */
 
-*/*!
+/*!
 \page cmake-variable-android-ndk-host-system-name.html
 \ingroup cmake-variables-qtcore
 
