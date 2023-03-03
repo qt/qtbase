@@ -2333,7 +2333,7 @@ QPartialOrdering QVariant::compare(const QVariant &lhs, const QVariant &rhs)
     Returns a pointer to the contained object as a generic void* that cannot be
     written to.
 
-    \sa QMetaType
+    \sa get_if(), QMetaType
  */
 
 /*!
@@ -2343,7 +2343,7 @@ QPartialOrdering QVariant::compare(const QVariant &lhs, const QVariant &rhs)
     This function detaches the QVariant. When called on a \l{isNull}{null-QVariant},
     the QVariant will not be null after the call.
 
-    \sa QMetaType
+    \sa get_if(), QMetaType
 */
 void *QVariant::data()
 {
@@ -2352,6 +2352,23 @@ void *QVariant::data()
     d.is_null = false;
     return const_cast<void *>(constData());
 }
+
+/*!
+    \since 6.6
+    \fn template <typename T> const T* QVariant::get_if(const QVariant *v)
+    \fn template <typename T> T* QVariant::get_if(QVariant *v)
+
+    If \a v contains an object of type \c T, returns a pointer to the contained
+    object, otherwise returns \nullptr.
+
+    The overload taking a mutable \a v detaches \a v: When called on a
+    \l{isNull()}{null} \a v with matching type \c T, \a v will not be null
+    after the call.
+
+    These functions are provided for compatibility with \c{std::variant}.
+
+    \sa data()
+*/
 
 /*!
     Returns \c true if this is a null variant, false otherwise.

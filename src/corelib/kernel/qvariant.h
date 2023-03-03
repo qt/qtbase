@@ -24,6 +24,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_ENABLE_P0846_SEMANTICS_FOR(get_if)
+
 class QBitArray;
 class QDataStream;
 class QDate;
@@ -474,6 +476,24 @@ private:
     }
     QDebug qdebugHelper(QDebug) const;
 #endif
+
+    template <typename T>
+    friend T *get_if(QVariant *v) noexcept
+    {
+        // data() will detach from is_null, returning non-nullptr
+        if (!v || v->d.type() != QMetaType::fromType<T>())
+            return nullptr;
+        return static_cast<T*>(v->data());
+    }
+    template <typename T>
+    friend const T *get_if(const QVariant *v) noexcept
+    {
+        // (const) data() will not detach from is_null, return nullptr
+        if (!v || v->d.is_null || v->d.type() != QMetaType::fromType<T>())
+            return nullptr;
+        return static_cast<const T*>(v->data());
+    }
+
     template<typename T>
     friend inline T qvariant_cast(const QVariant &);
 protected:

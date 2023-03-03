@@ -5,6 +5,34 @@
 
 #include <qvariant.h>
 
+// don't assume <type_traits>
+template <typename T, typename U>
+constexpr inline bool my_is_same_v = false;
+template <typename T>
+constexpr inline bool my_is_same_v<T, T> = true;
+
+#define CHECK_IMPL(func, arg, Variant, cvref, R) \
+    static_assert(my_is_same_v<decltype( func < arg >(std::declval< Variant cvref >())), R cvref >)
+
+#define CHECK_GET_IF(Variant, cvref) \
+    CHECK_IMPL(get_if, int, Variant, cvref *, int)
+
+CHECK_GET_IF(QVariant, /* unadorned */);
+CHECK_GET_IF(QVariant, const);
+
+// check for a type derived from QVariant:
+
+struct MyVariant : QVariant
+{
+    using QVariant::QVariant;
+};
+
+CHECK_GET_IF(MyVariant, /* unadorned */);
+CHECK_GET_IF(MyVariant, const);
+
+#undef CHECK_GET_IF
+#undef CHECK_IMPL
+
 #include <QTest>
 
 // Please stick to alphabetic order.
@@ -44,7 +72,10 @@
 #include <variant>
 #include <unordered_map>
 
+using namespace Qt::StringLiterals;
+
 class CustomNonQObject;
+struct NonDefaultConstructible;
 
 template<typename T, typename  = void>
 struct QVariantFromValueCompiles
@@ -333,7 +364,19 @@ private slots:
     void constructFromIncompatibleMetaType();
     void copyNonDefaultConstructible();
 
+    void getIf_int() { getIf_impl(42); }
+    void getIf_QString() { getIf_impl(u"string"_s); };
+    void getIf_NonDefaultConstructible();
+
 private:
+    using StdVariant = std::variant<std::monostate,
+            // list here all the types with which we instantiate getIf_impl:
+            int,
+            QString,
+            NonDefaultConstructible
+        >;
+    template <typename T>
+    void getIf_impl(T t) const;
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
     void saveQVariantFromDataStream(QDataStream::Version version);
@@ -5652,6 +5695,122 @@ void tst_QVariant::copyNonDefaultConstructible()
     QVERIFY(var2.isDetached());
     QVERIFY(var2.constData() != var.constData());
     QCOMPARE(var2, var);
+}
+
+void tst_QVariant::getIf_NonDefaultConstructible()
+{
+    getIf_impl(NonDefaultConstructible{42});
+}
+
+template <typename T>
+T mutate(const T &t) { return t + t; }
+template <>
+NonDefaultConstructible mutate(const NonDefaultConstructible &t)
+{
+    return NonDefaultConstructible{t.i + t.i};
+}
+
+template <typename T>
+QVariant make_null_QVariant_of_type()
+{
+    return QVariant(QMetaType::fromType<T>());
+}
+
+template <typename T>
+void tst_QVariant::getIf_impl(T t) const
+{
+    QVariant v = QVariant::fromValue(t);
+
+    QVariant null;
+    QVERIFY(null.isNull());
+
+    [[maybe_unused]]
+    QVariant nulT;
+    if constexpr (std::is_default_constructible_v<T>) {
+        // typed null QVariants don't work with non-default-constuctable types
+        nulT = make_null_QVariant_of_type<T>();
+        QVERIFY(nulT.isNull());
+    }
+
+    QVariant date = QDate(2023, 3, 3);
+    static_assert(!std::is_same_v<T, QDate>);
+
+    // for behavioral comparison:
+    StdVariant stdn = {}, stdv = t;
+
+    // returns nullptr on type mismatch:
+    {
+        // const
+        QCOMPARE_EQ(get_if<T>(&std::as_const(stdn)), nullptr);
+        QCOMPARE_EQ(get_if<T>(&std::as_const(date)), nullptr);
+        // mutable
+        QCOMPARE_EQ(get_if<T>(&stdn), nullptr);
+        QCOMPARE_EQ(get_if<T>(&date), nullptr);
+    }
+
+    // returns nullptr on null variant (QVariant only):
+    {
+        QCOMPARE_EQ(get_if<T>(&std::as_const(null)), nullptr);
+        QCOMPARE_EQ(get_if<T>(&null), nullptr);
+        if constexpr (std::is_default_constructible_v<T>) {
+            // const access return nullptr
+            QCOMPARE_EQ(get_if<T>(&std::as_const(nulT)), nullptr);
+            // but mutable access makes typed null QVariants non-null (like data())
+            QCOMPARE_NE(get_if<T>(&nulT), nullptr);
+            QVERIFY(!nulT.isNull());
+            nulT = make_null_QVariant_of_type<T>(); // reset to null state
+        }
+    }
+
+    // const access:
+    {
+        auto ps = get_if<T>(&std::as_const(stdv));
+        static_assert(std::is_same_v<decltype(ps), const T*>);
+        QCOMPARE_NE(ps, nullptr);
+        QCOMPARE_EQ(*ps, t);
+
+        auto pv = get_if<T>(&std::as_const(v));
+        static_assert(std::is_same_v<decltype(ps), const T*>);
+        QCOMPARE_NE(pv, nullptr);
+        QCOMPARE_EQ(*pv, t);
+    }
+
+    // mutable access:
+    {
+        T t2 = mutate(t);
+
+        auto ps = get_if<T>(&stdv);
+        static_assert(std::is_same_v<decltype(ps), T*>);
+        QCOMPARE_NE(ps, nullptr);
+        QCOMPARE_EQ(*ps, t);
+        *ps = t2;
+        auto ps2 = get_if<T>(&stdv);
+        QCOMPARE_NE(ps2, nullptr);
+        QCOMPARE_EQ(*ps2, t2);
+
+        auto pv = get_if<T>(&v);
+        static_assert(std::is_same_v<decltype(pv), T*>);
+        QCOMPARE_NE(pv, nullptr);
+        QCOMPARE_EQ(*pv, t);
+        *pv = t2;
+        auto pv2 = get_if<T>(&v);
+        QCOMPARE_NE(pv2, nullptr);
+        QCOMPARE_EQ(*pv2, t2);
+
+        // typed null QVariants become non-null (data() behavior):
+        if constexpr (std::is_default_constructible_v<T>) {
+            QVERIFY(nulT.isNull());
+            auto pn = get_if<T>(&nulT);
+            QVERIFY(!nulT.isNull());
+            static_assert(std::is_same_v<decltype(pn), T*>);
+            QCOMPARE_NE(pn, nullptr);
+            QCOMPARE_EQ(*pn, T{});
+            *pn = t2;
+            auto pn2 = get_if<T>(&nulT);
+            QCOMPARE_NE(pn2, nullptr);
+            QCOMPARE_EQ(*pn2, t2);
+        }
+    }
 }
 
 QTEST_MAIN(tst_QVariant)
