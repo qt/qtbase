@@ -210,7 +210,7 @@ QDBusError::QDBusError(const DBusError *error)
     if (!error || !q_dbus_error_is_set(error))
         return;
 
-    code = ::get(error->name);
+    code = get(error->name);
     msg = QString::fromUtf8(error->message);
     nm = QString::fromUtf8(error->name);
 }
@@ -225,7 +225,7 @@ QDBusError::QDBusError(const QDBusMessage &qdmsg)
     if (qdmsg.type() != QDBusMessage::ErrorMessage)
         return;
 
-    code = ::get(qdmsg.errorName().toUtf8().constData());
+    code = get(qdmsg.errorName().toUtf8().constData());
     nm = qdmsg.errorName();
     msg = qdmsg.errorMessage();
 }
@@ -272,7 +272,7 @@ QDBusError &QDBusError::operator=(const QDBusError &other)
 QDBusError &QDBusError::operator=(const QDBusMessage &qdmsg)
 {
     if (qdmsg.type() == QDBusMessage::ErrorMessage) {
-        code = ::get(qdmsg.errorName().toUtf8().constData());
+        code = get(qdmsg.errorName().toUtf8().constData());
         nm = qdmsg.errorName();
         msg = qdmsg.errorMessage();
     } else {
