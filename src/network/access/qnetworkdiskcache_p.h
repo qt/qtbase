@@ -56,20 +56,16 @@
 
 #include <qbuffer.h>
 #include <qhash.h>
-#include <qtemporaryfile.h>
+#include <qsavefile.h>
 
 QT_REQUIRE_CONFIG(networkdiskcache);
 
 QT_BEGIN_NAMESPACE
 
-class QFile;
-
 class QCacheItem
 {
 public:
-    QCacheItem() : file(nullptr)
-    {
-    }
+    QCacheItem() = default;
     ~QCacheItem()
     {
         reset();
@@ -77,7 +73,7 @@ public:
 
     QNetworkCacheMetaData metaData;
     QBuffer data;
-    QTemporaryFile *file;
+    QSaveFile *file = nullptr;
     inline qint64 size() const
         { return file ? file->size() : data.size(); }
 
@@ -87,9 +83,9 @@ public:
         delete file;
         file = nullptr;
     }
-    void writeHeader(QFile *device) const;
-    void writeCompressedData(QFile *device) const;
-    bool read(QFile *device, bool readData);
+    void writeHeader(QFileDevice *device) const;
+    void writeCompressedData(QFileDevice *device) const;
+    bool read(QFileDevice *device, bool readData);
 
     bool canCompress() const;
 };
@@ -105,7 +101,6 @@ public:
 
     static QString uniqueFileName(const QUrl &url);
     QString cacheFileName(const QUrl &url) const;
-    QString tmpCacheFileName() const;
     bool removeFile(const QString &file);
     void storeItem(QCacheItem *item);
     void prepareLayout();
