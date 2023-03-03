@@ -50,7 +50,7 @@ public slots:
 
 using namespace QtConcurrent;
 
-void multiplyBy2Immutable(int x)
+void multiplyBy2Immutable([[maybe_unused]] int x)
 {
     x *= 2;
 }
@@ -58,7 +58,7 @@ void multiplyBy2Immutable(int x)
 class MultiplyBy2Immutable
 {
 public:
-    void operator()(int x)
+    void operator()([[maybe_unused]] int x)
     {
         x *= 2;
     }
@@ -163,9 +163,9 @@ void tst_QtConcurrentMap::map()
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
 
         // lambda
-        QtConcurrent::map(list, [](int x){x *= 2;}).waitForFinished();
+        QtConcurrent::map(list, []([[maybe_unused]] int x){x *= 2;}).waitForFinished();
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QtConcurrent::map(list.begin(), list.end(), [](int x){x *= 2;}).waitForFinished();
+        QtConcurrent::map(list.begin(), list.end(), []([[maybe_unused]] int x){x *= 2;}).waitForFinished();
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
     }
 
@@ -309,9 +309,9 @@ void tst_QtConcurrentMap::blockingMap()
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
 
         // lambda
-        QtConcurrent::blockingMap(list, [](int x) { x *= 2; });
+        QtConcurrent::blockingMap(list, []([[maybe_unused]] int x) { x *= 2; });
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QtConcurrent::blockingMap(list.begin(), list.end(), [](int x) { x *= 2; });
+        QtConcurrent::blockingMap(list.begin(), list.end(), []([[maybe_unused]] int x) { x *= 2; });
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
     }
 
@@ -2047,7 +2047,7 @@ void tst_QtConcurrentMap::stlContainersLambda()
 
     QtConcurrent::mapped(list, [](const int &i) { return mapper(i); }).waitForFinished();
 
-    QtConcurrent::blockingMap(list, [](int x) { x *= 2; });
+    QtConcurrent::blockingMap(list, []([[maybe_unused]] int x) { x *= 2; });
 }
 
 InstanceCounter ic_fn(const InstanceCounter & ic)
