@@ -8,7 +8,8 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     target_link_options("${wasmTarget}" INTERFACE
     "SHELL:-s MAX_WEBGL_VERSION=2"
     "SHELL:-s FETCH=1"
-    "SHELL:-s WASM_BIGINT=1")
+    "SHELL:-s WASM_BIGINT=1"
+    "SHELL:-s STACK_SIZE=5MB")
 
     target_link_libraries("${wasmTarget}" INTERFACE embind)
 
