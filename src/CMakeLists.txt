@@ -71,6 +71,7 @@ add_subdirectory(tools)
 
 if(QT_FEATURE_gui)
     add_subdirectory(gui)
+    add_subdirectory(assets)
 
     if(QT_FEATURE_opengl)
         add_subdirectory(opengl)
