@@ -16,7 +16,8 @@ Q_CORE_EXPORT void qSleep(int ms);
 Q_CORE_EXPORT void qSleep(std::chrono::milliseconds msecs);
 
 template <typename Functor>
-[[nodiscard]] static bool qWaitFor(Functor predicate, int timeout = 5000)
+[[nodiscard]] static bool
+qWaitFor(Functor predicate, QDeadlineTimer deadline = QDeadlineTimer(std::chrono::seconds{5}))
 {
     // We should not spin the event loop in case the predicate is already true,
     // otherwise we might send new events that invalidate the predicate.
@@ -27,9 +28,9 @@ template <typename Functor>
     // timeout like 1ms, so we we can't use a simple while-loop here based on
     // the deadline timer not having timed out. Use do-while instead.
 
-    int remaining = timeout;
-    QDeadlineTimer deadline(remaining, Qt::PreciseTimer);
+    using namespace std::chrono;
 
+    auto remaining = 0ms;
     do {
         // We explicitly do not pass the remaining time to processEvents, as
         // that would keep spinning processEvents for the whole duration if
@@ -43,13 +44,25 @@ template <typename Functor>
         if (predicate())
             return true;
 
-        remaining = int(deadline.remainingTime());
-        if (remaining > 0)
-            qSleep(qMin(10, remaining));
-        remaining = int(deadline.remainingTime());
-    } while (remaining > 0);
+        if (deadline.isForever()) { // No point checking remaining time
+            qSleep(10ms);
+            continue;
+        }
+
+        remaining = ceil<milliseconds>(deadline.remainingTimeAsDuration());
+        if (remaining == 0ms)
+            break;
+
+        qSleep(std::min(10ms, remaining));
+    } while (!deadline.hasExpired());
 
     return predicate(); // Last chance
+}
+
+template <typename Functor>
+[[nodiscard]] static bool qWaitFor(Functor predicate, int timeout)
+{
+    return qWaitFor(predicate, QDeadlineTimer(timeout));
 }
 
 Q_CORE_EXPORT void qWait(int ms);

@@ -7,6 +7,7 @@ class MyObject
 {
     public:
         int isReady();
+        bool startup();
 };
 
 // dummy function
@@ -24,4 +25,16 @@ int MyObject::isReady()
         QTest::qWait(250ms);
 //! [1]
 return 1;
+}
+
+static bool startup()
+{
+//! [2]
+    MyObject obj;
+    obj.startup();
+    using namespace std::chrono_literals;
+    const bool result = QTest::qWaitFor([&obj]() { return obj.isReady(); },
+                                        QDeadlineTimer(3s));
+//! [2]
+    return result;
 }

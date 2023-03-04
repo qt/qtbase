@@ -54,18 +54,31 @@ void QTest::qSleep(std::chrono::milliseconds msecs)
 
 /*! \fn template <typename Functor> bool QTest::qWaitFor(Functor predicate, int timeout)
 
+    \since 5.10
+    \overload
+
     Waits for \a timeout milliseconds or until the \a predicate returns true.
 
-    Returns \c true if the \a predicate returned true at any point, otherwise returns \c false.
+    This is equivalent to calling:
+    \code
+    qWaitFor(predicate, QDeadlineTimer(timeout));
+    \endcode
+*/
+
+/*! \fn template <typename Functor> bool QTest::qWaitFor(Functor predicate, QDeadlineTimer deadline)
+    \since 6.7
+
+    Waits until \a deadline has expired, or until \a predicate returns true, whichever
+    happens first.
+
+    Returns \c true if \a predicate returned true at any point, otherwise returns \c false.
 
     Example:
 
-    \snippet code/src_corelib_kernel_qtestsupport_core_snippet.cpp 0
+    \snippet code/src_corelib_kernel_qtestsupport_core.cpp 2
 
     The code above will wait for the object to become ready, for a
     maximum of three seconds.
-
-    \since 5.10
 */
 
 /*!
