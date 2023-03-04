@@ -64,6 +64,7 @@ void tst_QThreadStorage::get()
         int *i = ts.localData();
         count += *i;
     }
+    QVERIFY(count > 0);
     ts.setLocalData(0);
 }
 

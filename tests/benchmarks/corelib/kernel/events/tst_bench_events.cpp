@@ -88,6 +88,7 @@ void EventsBench::noEvent()
     QBENCHMARK {
         val += tst.foo(1);
     }
+    QVERIFY(val > 0);
 }
 
 void EventsBench::sendEvent_data()
