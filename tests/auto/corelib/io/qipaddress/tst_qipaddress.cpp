@@ -70,7 +70,7 @@ namespace QTest {
     char *toString(const Ip6 &ip6)
     {
         char buf[sizeof "1111:2222:3333:4444:5555:6666:7777:8888" + 2];
-        sprintf(buf, "%x:%x:%x:%x:%x:%x:%x:%x",
+        snprintf(buf, sizeof(buf), "%x:%x:%x:%x:%x:%x:%x:%x",
                 ip6.u8[0] << 8 | ip6.u8[1],
                 ip6.u8[2] << 8 | ip6.u8[3],
                 ip6.u8[4] << 8 | ip6.u8[5],
