@@ -4025,7 +4025,9 @@ void tst_Moc::cxx17Namespaces()
 
 void tst_Moc::cxxAttributes()
 {
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     auto so = CppAttribute::staticMetaObject;
+QT_WARNING_POP
     QCOMPARE(so.className(), "CppAttribute");
     QCOMPARE(so.enumeratorCount(), 0);
     QVERIFY(so.indexOfSignal("deprecatedSignal") != 1);
