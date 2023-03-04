@@ -65,7 +65,7 @@ class UseCases_stdvector : public UseCases<T>
     void insert(int size) override
     {
         std::vector<T> v;
-        T t;
+        T t = {};
         QBENCHMARK {
             for (int i = 0; i < size; ++i)
                 v.push_back(t);
@@ -76,7 +76,7 @@ class UseCases_stdvector : public UseCases<T>
     {
         std::vector<T> v;
 
-        T t;
+        T t = {};
         for (int i = 0; i < size; ++i)
             v.push_back(t);
 
