@@ -68,10 +68,23 @@ void QTest::qSleep(std::chrono::milliseconds msecs)
     \since 5.10
 */
 
+/*!
+    \overload
 
-/*! \fn void QTest::qWait(int ms)
+    Waits for \a msecs. Equivalent to calling:
+    \code
+    QTest::qWait(std::chrono::milliseconds{msecs});
+    \endcode
+*/
+Q_CORE_EXPORT void QTest::qWait(int msecs)
+{
+    qWait(std::chrono::milliseconds{msecs});
+}
 
-    Waits for \a ms milliseconds. While waiting, events will be processed and
+/*!
+    \since 6.7
+
+    Waits for \a msecs. While waiting, events will be processed and
     your test will stay responsive to user interface events or network communication.
 
     Example:
@@ -83,7 +96,7 @@ void QTest::qSleep(std::chrono::milliseconds msecs)
 
     \sa QTest::qSleep(), QSignalSpy::wait()
 */
-Q_CORE_EXPORT void QTest::qWait(int ms)
+Q_CORE_EXPORT void QTest::qWait(std::chrono::milliseconds msecs)
 {
     // Ideally this method would be implemented in terms of qWaitFor(), with a
     // predicate that always returns false, but qWaitFor() uses the 1-arg overload
@@ -93,17 +106,24 @@ Q_CORE_EXPORT void QTest::qWait(int ms)
 
     Q_ASSERT(QCoreApplication::instance());
 
-    QDeadlineTimer timer(ms, Qt::PreciseTimer);
-    int remaining = ms;
+    using namespace std::chrono;
+
+    QDeadlineTimer deadline(msecs, Qt::PreciseTimer);
+
     do {
-        QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
+        QCoreApplication::processEvents(QEventLoop::AllEvents, deadline);
         QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
-        remaining = timer.remainingTime();
-        if (remaining <= 0)
+
+        // If dealine is Forever, processEvents() has already looped forever
+        if (deadline.isForever())
             break;
-        QTest::qSleep(qMin(10, remaining));
-        remaining = timer.remainingTime();
-    } while (remaining > 0);
+
+        msecs = ceil<milliseconds>(deadline.remainingTimeAsDuration());
+        if (msecs == 0ms)
+            break;
+
+        QTest::qSleep(std::min(10ms, msecs));
+    } while (!deadline.hasExpired());
 }
 
 QT_END_NAMESPACE

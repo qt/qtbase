@@ -18,9 +18,10 @@ int myNetworkServerNotResponding()
 int MyObject::isReady()
 {
 //! [1]
+    using namespace std::chrono_literals;
     int i = 0;
     while (myNetworkServerNotResponding() && i++ < 50)
-        QTest::qWait(250);
+        QTest::qWait(250ms);
 //! [1]
 return 1;
 }

@@ -54,6 +54,8 @@ template <typename Functor>
 
 Q_CORE_EXPORT void qWait(int ms);
 
+Q_CORE_EXPORT void qWait(std::chrono::milliseconds msecs);
+
 } // namespace QTest
 
 QT_END_NAMESPACE
