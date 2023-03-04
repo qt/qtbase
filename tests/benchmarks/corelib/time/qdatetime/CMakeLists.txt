@@ -10,4 +10,5 @@ qt_internal_add_benchmark(tst_bench_qdatetime
         tst_bench_qdatetime.cpp
     LIBRARIES
         Qt::Test
+        Qt::CorePrivate
 )

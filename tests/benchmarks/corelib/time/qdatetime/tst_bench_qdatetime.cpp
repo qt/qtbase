@@ -6,6 +6,7 @@
 #include <QTest>
 #include <QList>
 #include <qdebug.h>
+#include <QtCore/private/qdatetime_p.h>
 
 class tst_QDateTime : public QObject
 {
@@ -67,8 +68,7 @@ private Q_SLOTS:
     void fromMSecsSinceEpochTz();
 };
 
-constexpr qint64 SECS_PER_DAY = 86400;
-constexpr qint64 MSECS_PER_DAY = 86400000;
+using namespace QtPrivate::DateTimeConstants;
 constexpr qint64 JULIAN_DAY_1 = 1721426;
 constexpr qint64 JULIAN_DAY_11 = 1725078;
 constexpr qint64 JULIAN_DAY_1890 = 2411369;
