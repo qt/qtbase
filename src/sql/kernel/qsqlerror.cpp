@@ -88,9 +88,6 @@ public:
     Constructs an error containing the driver error text \a
     driverText, the database-specific error text \a databaseText, the
     type \a type and the error code \a code.
-
-    \note DB2: It is possible for DB2 to report more than one error code.
-    When this happens, \c ; is used as separator between the error codes.
 */
 QSqlError::QSqlError(const QString &driverText, const QString &databaseText,
                      ErrorType type, const QString &code)
@@ -192,6 +189,9 @@ QSqlError::ErrorType QSqlError::type() const
 /*!
     Returns the database-specific error code, or an empty string if
     it cannot be determined.
+    \note Some drivers (like DB2 or ODBC) may return more than one
+    error code. When this happens, \c ; is used as separator between
+    the error codes.
 */
 
 QString QSqlError::nativeErrorCode() const

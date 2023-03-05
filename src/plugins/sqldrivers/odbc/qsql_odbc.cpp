@@ -198,118 +198,115 @@ void QODBCResultPrivate::updateStmtHandleState()
     disconnectCount = drv_d_func() ? drv_d_func()->disconnectCount : 0;
 }
 
-static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode = nullptr)
+struct DiagRecord
 {
-    SQLINTEGER nativeCode_ = 0;
+    QString description;
+    QString sqlState;
+    QString errorCode;
+};
+static QList<DiagRecord> qWarnODBCHandle(int handleType, SQLHANDLE handle)
+{
+    SQLINTEGER nativeCode = 0;
     SQLSMALLINT msgLen = 0;
+    SQLSMALLINT i = 1;
     SQLRETURN r = SQL_NO_DATA;
-    SQLTCHAR state_[SQL_SQLSTATE_SIZE+1];
-    QVarLengthArray<SQLTCHAR, SQL_MAX_MESSAGE_LENGTH> description_(SQL_MAX_MESSAGE_LENGTH);
-    QString result;
-    int i = 1;
+    QVarLengthArray<SQLTCHAR, SQL_SQLSTATE_SIZE + 1> state(SQL_SQLSTATE_SIZE + 1);
+    QVarLengthArray<SQLTCHAR, SQL_MAX_MESSAGE_LENGTH + 1> description(SQL_MAX_MESSAGE_LENGTH + 1);
+    QList<DiagRecord> result;
 
-    description_[0] = 0;
+    if (!handle)
+        return result;
     do {
         r = SQLGetDiagRec(handleType,
                           handle,
                           i,
-                          state_,
-                          &nativeCode_,
-                          0,
-                          0,
+                          state.data(),
+                          &nativeCode,
+                          description.data(),
+                          description.size(),
                           &msgLen);
-        if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && msgLen > 0)
-            description_.resize(msgLen+1);
-        r = SQLGetDiagRec(handleType,
-                            handle,
-                            i,
-                            state_,
-                            &nativeCode_,
-                            description_.data(),
-                            description_.size(),
-                            &msgLen);
+        if (msgLen >= description.size()) {
+            description.resize(msgLen + 1); // incl. \0 termination
+            continue;
+        }
         if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
-            if (nativeCode)
-                *nativeCode = nativeCode_;
-            const QString tmpstore = fromSQLTCHAR(description_, msgLen);
-            if (result != tmpstore) {
-                if (!result.isEmpty())
-                    result += u' ';
-                result += tmpstore;
-            }
+            result.push_back({fromSQLTCHAR(description, msgLen),
+                              fromSQLTCHAR(state),
+                              QString::number(nativeCode)});
         } else if (r == SQL_ERROR || r == SQL_INVALID_HANDLE) {
-            return result;
+            break;
         }
         ++i;
     } while (r != SQL_NO_DATA);
     return result;
 }
 
-static QString qODBCWarn(const SQLHANDLE hStmt, const SQLHANDLE envHandle = 0,
-                         const SQLHANDLE pDbC = 0, int *nativeCode = nullptr)
+static QList<DiagRecord> qODBCWarn(const SQLHANDLE hStmt,
+                                   const SQLHANDLE envHandle = nullptr,
+                                   const SQLHANDLE pDbC = nullptr)
 {
-    QString result;
-    if (envHandle)
-        result += qWarnODBCHandle(SQL_HANDLE_ENV, envHandle, nativeCode);
-    if (pDbC) {
-        const QString dMessage = qWarnODBCHandle(SQL_HANDLE_DBC, pDbC, nativeCode);
-        if (!dMessage.isEmpty()) {
-            if (!result.isEmpty())
-                result += u' ';
-            result += dMessage;
-        }
-    }
-    if (hStmt) {
-        const QString hMessage = qWarnODBCHandle(SQL_HANDLE_STMT, hStmt, nativeCode);
-        if (!hMessage.isEmpty()) {
-            if (!result.isEmpty())
-                result += u' ';
-            result += hMessage;
-        }
-    }
+    QList<DiagRecord> result;
+    result.append(qWarnODBCHandle(SQL_HANDLE_ENV, envHandle));
+    result.append(qWarnODBCHandle(SQL_HANDLE_DBC, pDbC));
+    result.append(qWarnODBCHandle(SQL_HANDLE_STMT, hStmt));
     return result;
 }
 
-static QString qODBCWarn(const QODBCResultPrivate* odbc, int *nativeCode = nullptr)
+static QList<DiagRecord> qODBCWarn(const QODBCResultPrivate *odbc)
 {
-    return qODBCWarn(odbc->hStmt, odbc->dpEnv(), odbc->dpDbc(), nativeCode);
+    return qODBCWarn(odbc->hStmt, odbc->dpEnv(), odbc->dpDbc());
 }
 
-static QString qODBCWarn(const QODBCDriverPrivate* odbc, int *nativeCode = nullptr)
+static QList<DiagRecord> qODBCWarn(const QODBCDriverPrivate *odbc)
 {
-    return qODBCWarn(0, odbc->hEnv, odbc->hDbc, nativeCode);
+    return qODBCWarn(nullptr, odbc->hEnv, odbc->hDbc);
 }
 
-static void qSqlWarning(const QString& message, const QODBCResultPrivate* odbc)
+static DiagRecord combineRecords(const QList<DiagRecord> &records)
 {
-    qWarning() << message << "\tError:" << qODBCWarn(odbc);
+    const auto add = [](const DiagRecord &a, const DiagRecord &b) {
+        return DiagRecord{a.description + u' ' + b.description,
+                          a.sqlState + u';' + b.sqlState,
+                          a.errorCode + u';' + b.errorCode};
+    };
+    return std::accumulate(std::next(records.begin()), records.end(), records.front(), add);
 }
 
-static void qSqlWarning(const QString &message, const QODBCDriverPrivate *odbc)
+static QSqlError errorFromDiagRecords(const QString &err,
+                                      QSqlError::ErrorType type,
+                                      const QList<DiagRecord> &records)
 {
-    qWarning() << message << "\tError:" << qODBCWarn(odbc);
+    if (records.empty())
+        return QSqlError("QODBC: unknown error"_L1, {}, type, {});
+    const auto combined = combineRecords(records);
+    return QSqlError("QODBC: "_L1 + err, combined.description + ", "_L1 + combined.sqlState, type,
+                     combined.errorCode);
 }
 
-static void qSqlWarning(const QString &message, const SQLHANDLE hStmt)
+static QString errorStringFromDiagRecords(const QList<DiagRecord>& records)
 {
-    qWarning() << message << "\tError:" << qODBCWarn(hStmt);
+    const auto combined = combineRecords(records);
+    return combined.description;
 }
 
-static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type, const QODBCResultPrivate* p)
+template<class T>
+static void qSqlWarning(const QString &message, T &&val)
 {
-    int nativeCode = -1;
-    QString message = qODBCWarn(p, &nativeCode);
-    return QSqlError("QODBC: "_L1 + err, message, type,
-                     nativeCode != -1 ? QString::number(nativeCode) : QString());
+    qWarning() << message << "\tError:" << errorStringFromDiagRecords(qODBCWarn(val));
 }
 
-static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
-                            const QODBCDriverPrivate* p)
+static QSqlError qMakeError(const QString &err,
+                            QSqlError::ErrorType type,
+                            const QODBCResultPrivate *p)
 {
-    int nativeCode = -1;
-    QString message = qODBCWarn(p, &nativeCode);
-    return QSqlError("QODBC: "_L1 + err, message, type,
-                     nativeCode != -1 ? QString::number(nativeCode) : QString());
+    return errorFromDiagRecords(err, type, qODBCWarn(p));
+}
+
+static QSqlError qMakeError(const QString &err,
+                            QSqlError::ErrorType type,
+                            const QODBCDriverPrivate *p)
+{
+    return errorFromDiagRecords(err, type, qODBCWarn(p));
 }
 
 static QMetaType qDecodeODBCType(SQLSMALLINT sqltype, bool isSigned = true)
@@ -419,7 +416,7 @@ static QVariant getStringDataImpl(SQLHANDLE hStmt, SQLUSMALLINT column, qsizetyp
         } else if (r == SQL_NO_DATA) {
             break;
         } else {
-            qWarning() << "qGetStringData: Error while fetching data (" << qWarnODBCHandle(SQL_HANDLE_STMT, hStmt) << ')';
+            qSqlWarning("qGetStringData: Error while fetching data:"_L1, hStmt);
             return {};
         }
     }
@@ -1618,7 +1615,7 @@ bool QODBCResult::exec()
                 break; }
         }
         if (r != SQL_SUCCESS) {
-            qWarning() << "QODBCResult::exec: unable to bind variable:" << qODBCWarn(d);
+            qSqlWarning("QODBCResult::exec: unable to bind variable:"_L1, d);
             setLastError(qMakeError(QCoreApplication::translate("QODBCResult",
                          "Unable to bind variable"), QSqlError::StatementError, d));
             return false;
@@ -1626,7 +1623,7 @@ bool QODBCResult::exec()
     }
     r = SQLExecute(d->hStmt);
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO && r != SQL_NO_DATA) {
-        qWarning() << "QODBCResult::exec: Unable to execute statement:" << qODBCWarn(d);
+        qSqlWarning("QODBCResult::exec: Unable to execute statement:"_L1, d);
         setLastError(qMakeError(QCoreApplication::translate("QODBCResult",
                      "Unable to execute statement"), QSqlError::StatementError, d));
         return false;
@@ -1766,8 +1763,7 @@ bool QODBCResult::nextResult()
     SQLRETURN r = SQLMoreResults(d->hStmt);
     if (r != SQL_SUCCESS) {
         if (r == SQL_SUCCESS_WITH_INFO) {
-            int nativeCode = -1;
-            QString message = qODBCWarn(d, &nativeCode);
+            QString message = errorStringFromDiagRecords(qODBCWarn(d));
             qWarning() << "QODBCResult::nextResult():" << message;
         } else {
             if (r != SQL_NO_DATA)
@@ -2344,7 +2340,9 @@ QStringList QODBCDriver::tables(QSql::TableType type) const
         r = SQLFetch(hStmt);
 
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO && r != SQL_NO_DATA) {
-        qWarning() << "QODBCDriver::tables failed to retrieve table/view list: (" << r << "," << qWarnODBCHandle(SQL_HANDLE_STMT, hStmt) << ")";
+        qSqlWarning("QODBCDriver::tables failed to retrieve table/view list: ("_L1
+                            + QString::number(r) + u':',
+                    hStmt);
         return QStringList();
     }
 
