@@ -78,6 +78,13 @@ template <typename T> inline T *qGetPtrHelper(T *ptr) noexcept { return ptr; }
 template <typename Ptr> inline auto qGetPtrHelper(Ptr &ptr) noexcept -> decltype(ptr.get())
 { static_assert(noexcept(ptr.get()), "Smart d pointers for Q_DECLARE_PRIVATE must have noexcept get()"); return ptr.get(); }
 
+class QObject;
+class QObjectPrivate;
+namespace QtPrivate {
+    template <typename ObjPrivate> void assertObjectType(QObjectPrivate *d);
+    inline const QObject *getQObject(const QObjectPrivate *d);
+}
+
 #define Q_DECLARE_PRIVATE(Class) \
     inline Class##Private* d_func() noexcept \
     { Q_CAST_IGNORE_ALIGN(return reinterpret_cast<Class##Private *>(qGetPtrHelper(d_ptr));) } \
@@ -95,7 +102,9 @@ template <typename Ptr> inline auto qGetPtrHelper(Ptr &ptr) noexcept -> decltype
 #define Q_DECLARE_PUBLIC(Class)                                    \
     inline Class* q_func() noexcept { return static_cast<Class *>(q_ptr); } \
     inline const Class* q_func() const noexcept { return static_cast<const Class *>(q_ptr); } \
-    friend class Class;
+    friend class Class; \
+    friend const QObject *QtPrivate::getQObject(const QObjectPrivate *d); \
+    template <typename ObjPrivate> friend void QtPrivate::assertObjectType(QObjectPrivate *d);
 
 #define Q_D(Class) Class##Private * const d = d_func()
 #define Q_Q(Class) Class * const q = q_func()

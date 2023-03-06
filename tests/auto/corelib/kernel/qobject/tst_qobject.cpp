@@ -5982,15 +5982,15 @@ class ConnectToPrivateSlotPrivate;
 
 class ConnectToPrivateSlot :public QObject {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(ConnectToPrivateSlot)
 public:
     ConnectToPrivateSlot();
     void test(SenderObject *obj1) ;
-    Q_DECLARE_PRIVATE(ConnectToPrivateSlot)
 };
 
 class ConnectToPrivateSlotPrivate : public QObjectPrivate {
-public:
     Q_DECLARE_PUBLIC(ConnectToPrivateSlot)
+public:
     int receivedCount;
     QVariant receivedValue;
 
@@ -6002,6 +6002,8 @@ public:
         receivedCount++;
         receivedValue = v;
     };
+
+    void testFromPrivate(SenderObject *obj);
 };
 
 ConnectToPrivateSlot::ConnectToPrivateSlot(): QObject(*new ConnectToPrivateSlotPrivate) {}
@@ -6026,6 +6028,14 @@ void ConnectToPrivateSlot::test(SenderObject* obj1) {
     obj1->signal2();
     QCOMPARE(d->receivedCount, 3);
     QVERIFY(!QObjectPrivate::disconnect(obj1, &SenderObject::signal2, d, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlot));
+}
+
+// Compile test to verify that we can use QObjectPrivate::connect in
+// the code of the private class, even if Q_DECLARE_PUBLIC is used in the
+// private section of the private class.
+void ConnectToPrivateSlotPrivate::testFromPrivate(SenderObject *obj)
+{
+    QVERIFY(QObjectPrivate::connect(obj, &SenderObject::signal1, this, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlot));
 }
 
 void tst_QObject::connectPrivateSlots()
