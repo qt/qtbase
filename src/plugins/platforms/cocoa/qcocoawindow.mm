@@ -1435,6 +1435,14 @@ void QCocoaWindow::recreateWindowIfNeeded()
 {
     QMacAutoReleasePool pool;
 
+    if (isForeignWindow()) {
+        // A foreign window is created as such, and can never move between being
+        // foreign and not, so we don't need to get rid of any existing NSWindows,
+        // nor create new ones, as a foreign window is a single simple NSView.
+        qCDebug(lcQpaWindow) << "Skipping NSWindow management for foreign window" << this;
+        return;
+    }
+
     QPlatformWindow *parentWindow = QPlatformWindow::parent();
 
     const bool isEmbeddedView = isEmbedded();
