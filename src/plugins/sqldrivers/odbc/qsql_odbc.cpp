@@ -2129,7 +2129,18 @@ void QODBCDriverPrivate::checkUnicode()
                                   hDbc,
                                   &hStmt);
 
-    r = SQLExecDirect(hStmt, toSQLTCHAR("select 'test'"_L1).data(), SQL_NTS);
+    // for databases which do not return something useful in SQLGetInfo and are picky about a
+    // 'SELECT' statement without 'FROM' but support VALUE(foo) statement like e.g. DB2 or Oracle
+    const auto statements = {
+        "select 'test'"_L1,
+        "values('test')"_L1,
+        "select 'test' from dual"_L1,
+    };
+    for (const auto &statement : statements) {
+        r = SQLExecDirect(hStmt, toSQLTCHAR(statement).data(), SQL_NTS);
+        if (r == SQL_SUCCESS)
+            break;
+    }
     if (r == SQL_SUCCESS) {
         r = SQLFetch(hStmt);
         if (r == SQL_SUCCESS) {
