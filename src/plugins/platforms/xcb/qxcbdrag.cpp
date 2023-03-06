@@ -1097,7 +1097,7 @@ void QXcbDrag::timerEvent(QTimerEvent* e)
                 continue;
             }
             QTime currentTime = QTime::currentTime();
-            int delta = t.time.msecsTo(currentTime);
+            std::chrono::milliseconds delta{t.time.msecsTo(currentTime)};
             if (delta > XdndDropTransactionTimeout) {
                 /* delete transactions which are older than XdndDropTransactionTimeout. It could mean
                  one of these:

@@ -187,7 +187,7 @@ void QTimer::start()
     Q_D(QTimer);
     if (d->id != QTimerPrivate::INV_TIMER) // stop running timer
         stop();
-    d->id = QObject::startTimer(d->inter, d->type);
+    d->id = QObject::startTimer(std::chrono::milliseconds{d->inter}, d->type);
     d->isActiveData.notify();
 }
 
@@ -266,14 +266,14 @@ protected:
 QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r, const char *member)
     : QObject(QAbstractEventDispatcher::instance()), hasValidReceiver(true), slotObj(nullptr)
 {
-    timerId = startTimer(msec, timerType);
+    timerId = startTimer(std::chrono::milliseconds{msec}, timerType);
     connect(this, SIGNAL(timeout()), r, member);
 }
 
 QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r, QtPrivate::QSlotObjectBase *slotObj)
     : QObject(QAbstractEventDispatcher::instance()), hasValidReceiver(r), receiver(r), slotObj(slotObj)
 {
-    timerId = startTimer(msec, timerType);
+    timerId = startTimer(std::chrono::milliseconds{msec}, timerType);
     if (r && thread() != r->thread()) {
         // Avoid leaking the QSingleShotTimer instance in case the application exits before the timer fires
         connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, &QObject::deleteLater);
@@ -708,7 +708,7 @@ void QTimer::setInterval(int msec)
     d->inter.setValue(msec);
     if (d->id != QTimerPrivate::INV_TIMER) { // create new timer
         QObject::killTimer(d->id);                        // restart timer
-        d->id = QObject::startTimer(msec, d->type);
+        d->id = QObject::startTimer(std::chrono::milliseconds{msec}, d->type);
         // No need to call markDirty() for d->isActiveData here,
         // as timer state actually does not change
     }

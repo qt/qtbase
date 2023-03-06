@@ -127,7 +127,7 @@ private:
     QXcbVirtualDesktop *current_virtual_desktop;
 
     // 10 minute timer used to discard old XdndDrop transactions
-    enum { XdndDropTransactionTimeout = 600000 };
+    static constexpr std::chrono::minutes XdndDropTransactionTimeout{10};
     int cleanup_timer;
 
     QList<xcb_atom_t> drag_types;

@@ -317,9 +317,11 @@ void QSocks5BindStore::add(qintptr socketDescriptor, QSocks5BindData *bindData)
     }
     bindData->timeStamp.start();
     store.insert(socketDescriptor, bindData);
+
+    using namespace std::chrono_literals;
     // start sweep timer if not started
     if (sweepTimerId == -1)
-        sweepTimerId = startTimer(60000);
+        sweepTimerId = startTimer(1min);
 }
 
 bool QSocks5BindStore::contains(qintptr socketDescriptor)

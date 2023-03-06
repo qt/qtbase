@@ -8,6 +8,8 @@
 #include "qthread.h"
 #include "qcoreapplication.h"
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -202,7 +204,8 @@ public:
     bool flushDetachedPixmaps(bool nt);
 
 private:
-    enum { soon_time = 10000, flush_time = 30000 };
+    static constexpr auto soon_time = 10s;
+    static constexpr auto flush_time = 30s;
     int *keyArray;
     int theid;
     int ps;

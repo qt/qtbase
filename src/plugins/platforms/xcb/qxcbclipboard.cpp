@@ -126,7 +126,7 @@ QXcbClipboardTransaction::QXcbClipboardTransaction(QXcbClipboard *clipboard, xcb
     xcb_change_window_attributes(m_clipboard->xcb_connection(), m_window,
                                  XCB_CW_EVENT_MASK, values);
 
-    m_abortTimerId = startTimer(m_clipboard->clipboardTimeout());
+    m_abortTimerId = startTimer(std::chrono::milliseconds{m_clipboard->clipboardTimeout()});
 }
 
 QXcbClipboardTransaction::~QXcbClipboardTransaction()
@@ -145,7 +145,7 @@ bool QXcbClipboardTransaction::updateIncrementalProperty(const xcb_property_noti
     // restart the timer
     if (m_abortTimerId)
         killTimer(m_abortTimerId);
-    m_abortTimerId = startTimer(m_clipboard->clipboardTimeout());
+    m_abortTimerId = startTimer(std::chrono::milliseconds{m_clipboard->clipboardTimeout()});
 
     uint bytes_left = uint(m_data.size()) - m_offset;
     if (bytes_left > 0) {

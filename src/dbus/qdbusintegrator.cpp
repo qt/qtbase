@@ -124,7 +124,7 @@ static dbus_bool_t qDBusAddTimeout(DBusTimeout *timeout, void *data)
 
     Q_ASSERT(d->timeouts.key(timeout, 0) == 0);
 
-    int timerId = d->startTimer(q_dbus_timeout_get_interval(timeout));
+    int timerId = d->startTimer(std::chrono::milliseconds{q_dbus_timeout_get_interval(timeout)});
     Q_ASSERT_X(timerId, "QDBusConnection", "Failed to start a timer");
     if (!timerId)
         return false;
