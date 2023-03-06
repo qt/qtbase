@@ -80,6 +80,11 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
     if (!options())
         return false;
 
+    if (windowModality == Qt::ApplicationModal && QThread::currentThread()->loopLevel() > 1) {
+        qCWarning(lcQpaDialogs, "Cannot use native application modal dialog from nested event loop");
+        return false;
+    }
+
     Q_ASSERT(!m_alert);
     m_alert = [NSAlert new];
     m_alert.window.title = options()->windowTitle().toNSString();
