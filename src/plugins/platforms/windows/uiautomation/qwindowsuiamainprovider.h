@@ -62,6 +62,7 @@ public:
 
 private:
     QString automationIdForAccessible(const QAccessibleInterface *accessible);
+    static void fillVariantArrayForRelation(QAccessibleInterface *accessible, QAccessible::Relation relation, VARIANT *pRetVal);
     ULONG m_ref;
     static QMutex m_mutex;
 };
