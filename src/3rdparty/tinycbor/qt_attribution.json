@@ -3,6 +3,7 @@
     "Name": "TinyCBOR",
     "QDocModule": "qtcore",
     "QtUsage": "Used for QCborStreamReader and QCborStreamWriter.",
+    "SecurityCritical": true,
 
     "Description": "Concise Binary Object Representation (CBOR) Library",
     "Homepage": "https://github.com/intel/tinycbor",

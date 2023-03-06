@@ -3,6 +3,7 @@
     "Name": "MD4C",
     "QDocModule": "qtgui",
     "QtUsage": "Optionally used in QTextDocument if configured with textmarkdownreader.",
+    "SecurityCritical": true,
 
     "Description": "A CommonMark-compliant Markdown parser.",
     "Homepage": "https://github.com/mity/md4c",

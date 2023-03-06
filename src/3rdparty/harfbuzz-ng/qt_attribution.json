@@ -3,10 +3,12 @@
     "Name": "HarfBuzz-NG",
     "QDocModule": "qtgui",
     "QtUsage": "Optionally used in Qt GUI. Configure with -system-harfbuzz to force the use of the system library, or -qt-harfbuzz to link statically to the library that is bundled with your Qt version.",
+    "SecurityCritical": true,
 
     "Description": "HarfBuzz is an OpenType text shaping engine.",
     "Homepage": "http://harfbuzz.org",
     "Version": "7.0.1",
+    "DownloadLocation": "https://github.com/harfbuzz/harfbuzz/releases/tag/7.1.0",
 
     "License": "MIT License",
     "LicenseId": "MIT",
