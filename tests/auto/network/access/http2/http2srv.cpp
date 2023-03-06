@@ -111,6 +111,11 @@ void Http2Server::setRedirect(const QByteArray &url, int count)
     redirectCount = count;
 }
 
+void Http2Server::setSendTrailingHEADERS(bool enable)
+{
+    sendTrailingHEADERS = enable;
+}
+
 void Http2Server::emulateGOAWAY(int timeout)
 {
     Q_ASSERT(timeout >= 0);
@@ -248,9 +253,20 @@ void Http2Server::sendDATA(quint32 streamID, quint32 windowSize)
         return;
 
     if (last) {
-        writer.start(FrameType::DATA, FrameFlag::END_STREAM, streamID);
-        writer.setPayloadSize(0);
-        writer.write(*socket);
+        if (sendTrailingHEADERS) {
+            writer.start(FrameType::HEADERS,
+                    FrameFlag::PRIORITY | FrameFlag::END_HEADERS | FrameFlag::END_STREAM, streamID);
+            const quint32 maxFrameSize(clientSetting(Settings::MAX_FRAME_SIZE_ID,
+                    Http2::maxPayloadSize));
+            // 5 bytes for PRIORITY data:
+            writer.append(quint32(0)); // streamID 0 (32-bit)
+            writer.append(quint8(0)); // + weight 0 (8-bit)
+            writer.writeHEADERS(*socket, maxFrameSize);
+        } else {
+            writer.start(FrameType::DATA, FrameFlag::END_STREAM, streamID);
+            writer.setPayloadSize(0);
+            writer.write(*socket);
+        }
         suspendedStreams.erase(it);
         activeRequests.erase(streamID);
 
