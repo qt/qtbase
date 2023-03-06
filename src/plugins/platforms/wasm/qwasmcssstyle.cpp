@@ -53,7 +53,9 @@ const char *Style = R"css(
     display: none;
 }
 
-.qt-window.has-frame:not(.maximized) .resize-outline {
+.qt-window.no-resize > .resize-outline { display: none; }
+
+.qt-window.has-frame:not(.maximized):not(.no-resize) .resize-outline {
     display: block;
 }
 

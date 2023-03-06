@@ -178,6 +178,22 @@ Resizer::Resizer(QWasmWindow *window, emscripten::val parentElement)
 
 Resizer::~Resizer() = default;
 
+ResizeConstraints Resizer::getResizeConstraints() {
+    const auto *window = m_window->window();
+    const auto minShrink = QPoint(window->minimumWidth() - window->geometry().width(),
+                              window->minimumHeight() - window->geometry().height());
+    const auto maxGrow = QPoint(window->maximumWidth() - window->geometry().width(),
+                          window->maximumHeight() - window->geometry().height());
+
+    const auto frameRect =
+            QRectF::fromDOMRect(m_windowElement.call<emscripten::val>("getBoundingClientRect"));
+    const auto screenRect = QRectF::fromDOMRect(
+            m_window->platformScreen()->element().call<emscripten::val>("getBoundingClientRect"));
+    const int maxGrowTop = frameRect.top() - screenRect.top();
+
+    return ResizeConstraints{minShrink, maxGrow, maxGrowTop};
+}
+
 void Resizer::onInteraction()
 {
     m_window->onNonClientAreaInteraction();
@@ -193,23 +209,14 @@ void Resizer::startResize(Qt::Edges resizeEdges, const PointerEvent &event)
                     event.target, m_window->platformScreen()->element(), event.localPoint),
     });
 
-    const auto *window = m_window->window();
-    m_currentResizeData->minShrink = QPoint(window->minimumWidth() - window->geometry().width(),
-                                            window->minimumHeight() - window->geometry().height());
-
-    const auto frameRect =
-            QRectF::fromDOMRect(m_windowElement.call<emscripten::val>("getBoundingClientRect"));
-    const auto screenRect = QRectF::fromDOMRect(
-            m_window->platformScreen()->element().call<emscripten::val>("getBoundingClientRect"));
-
-    const int maxGrowTop = frameRect.top() - screenRect.top();
-
+    const auto resizeConstraints = getResizeConstraints();
+    m_currentResizeData->minShrink = resizeConstraints.minShrink;
     m_currentResizeData->maxGrow =
-            QPoint(window->maximumWidth() - window->geometry().width(),
-                   std::min(resizeEdges & Qt::Edge::TopEdge ? maxGrowTop : INT_MAX,
-                            window->maximumHeight() - window->geometry().height()));
+            QPoint(resizeConstraints.maxGrow.x(),
+                   std::min(resizeEdges & Qt::Edge::TopEdge ? resizeConstraints.maxGrowTop : INT_MAX,
+                            resizeConstraints.maxGrow.y()));
 
-    m_currentResizeData->initialBounds = window->geometry();
+    m_currentResizeData->initialBounds = m_window->window()->geometry();
 }
 
 void Resizer::continueResize(const PointerEvent &event)
@@ -414,9 +421,11 @@ QPointF TitleBar::clipPointWithScreen(const QPointF &pointInTitleBarCoords) cons
 }
 
 NonClientArea::NonClientArea(QWasmWindow *window, emscripten::val qtWindowElement)
+    : m_qtWindowElement(qtWindowElement),
+      m_resizer(std::make_unique<Resizer>(window, m_qtWindowElement)),
+      m_titleBar(std::make_unique<TitleBar>(window, m_qtWindowElement))
 {
-    m_titleBar = std::make_unique<TitleBar>(window, qtWindowElement);
-    m_resizer = std::make_unique<Resizer>(window, qtWindowElement);
+    updateResizability();
 }
 
 NonClientArea::~NonClientArea() = default;
@@ -424,6 +433,19 @@ NonClientArea::~NonClientArea() = default;
 void NonClientArea::onClientAreaWidthChange(int width)
 {
     m_titleBar->setWidth(width);
+}
+
+void NonClientArea::propagateSizeHints()
+{
+    updateResizability();
+}
+
+void NonClientArea::updateResizability()
+{
+    const auto resizeConstraints = m_resizer->getResizeConstraints();
+    const bool nonResizable = resizeConstraints.minShrink.isNull()
+            && resizeConstraints.maxGrow.isNull() && resizeConstraints.maxGrowTop == 0;
+    dom::syncCSSClassWith(m_qtWindowElement, "no-resize", nonResizable);
 }
 
 QT_END_NAMESPACE

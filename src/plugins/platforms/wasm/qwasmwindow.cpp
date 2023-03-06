@@ -351,6 +351,7 @@ void QWasmWindow::propagateSizeHints()
         rect.setSize(windowMinimumSize());
         setGeometry(rect);
     }
+    m_nonClientArea->propagateSizeHints();
 }
 
 void QWasmWindow::invalidate()

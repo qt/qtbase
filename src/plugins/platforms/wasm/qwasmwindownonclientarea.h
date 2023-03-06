@@ -34,9 +34,13 @@ public:
     ~NonClientArea();
 
     void onClientAreaWidthChange(int width);
+    void propagateSizeHints();
     TitleBar *titleBar() const { return m_titleBar.get(); }
 
 private:
+    void updateResizability();
+
+    emscripten::val m_qtWindowElement;
     std::unique_ptr<Resizer> m_resizer;
     std::unique_ptr<TitleBar> m_titleBar;
 };
@@ -85,6 +89,12 @@ private:
     std::unique_ptr<qstdweb::EventCallback> m_webClickEventCallback;
 
     Callbacks m_callbacks;
+};
+
+struct ResizeConstraints {
+    QPoint minShrink;
+    QPoint maxGrow;
+    int maxGrowTop;
 };
 
 class Resizer
@@ -146,6 +156,8 @@ public:
 
     Resizer(QWasmWindow *window, emscripten::val parentElement);
     ~Resizer();
+
+    ResizeConstraints getResizeConstraints();
 
 private:
     void onInteraction();
