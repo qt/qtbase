@@ -99,6 +99,8 @@ private slots:
     void redirect_data();
     void redirect();
 
+    void trailingHEADERS();
+
 protected slots:
     // Slots to listen to our in-process server:
     void serverStarted(quint16 port);
@@ -1277,6 +1279,41 @@ void tst_Http2::redirect()
     } else if (maxRedirects < redirectCount) {
         QCOMPARE(reply->error(), QNetworkReply::TooManyRedirectsError);
     }
+    QTRY_VERIFY(serverGotSettingsACK);
+}
+
+void tst_Http2::trailingHEADERS()
+{
+    clearHTTP2State();
+    serverPort = 0;
+
+    ServerPtr targetServer(newServer(defaultServerSettings, defaultConnectionType()));
+    targetServer->setSendTrailingHEADERS(true);
+
+    QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    nRequests = 1;
+
+    const auto url = requestUrl(defaultConnectionType());
+    QNetworkRequest request(url);
+    // H2C might be used on macOS where SecureTransport doesn't support server-side ALPN
+    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
+
+    std::unique_ptr<QNetworkReply> reply{ manager->get(request) };
+    connect(reply.get(), &QNetworkReply::finished, this, &tst_Http2::replyFinished);
+
+    // Since we're using self-signed certificates, ignore SSL errors:
+    reply->ignoreSslErrors();
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    QCOMPARE(nRequests, 0);
+
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QTRY_VERIFY(serverGotSettingsACK);
 }
 
