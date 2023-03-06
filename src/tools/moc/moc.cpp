@@ -862,7 +862,10 @@ void Moc::parse()
                         error("Template classes not supported by Q_GADGET");
                     break;
                 case Q_PROPERTY_TOKEN:
-                    parseProperty(&def);
+                    parseProperty(&def, Named);
+                    break;
+                case QT_ANONYMOUS_PROPERTY_TOKEN:
+                    parseProperty(&def, Anonymous);
                     break;
                 case Q_PLUGIN_METADATA_TOKEN:
                     parsePluginData(&def);
@@ -897,7 +900,10 @@ void Moc::parse()
                     parseSlotInPrivate(&def, access);
                     break;
                 case Q_PRIVATE_PROPERTY_TOKEN:
-                    parsePrivateProperty(&def);
+                    parsePrivateProperty(&def, Named);
+                    break;
+                case QT_ANONYMOUS_PRIVATE_PROPERTY_TOKEN:
+                    parsePrivateProperty(&def, Anonymous);
                     break;
                 case ENUM: {
                     EnumDef enumDef;
@@ -1244,7 +1250,7 @@ void Moc::parseSignals(ClassDef *def)
     }
 }
 
-void Moc::createPropertyDef(PropertyDef &propDef, int propertyIndex)
+void Moc::createPropertyDef(PropertyDef &propDef, int propertyIndex, Moc::PropertyMode mode)
 {
     propDef.location = index;
     propDef.relativeIndex = propertyIndex;
@@ -1274,8 +1280,10 @@ void Moc::createPropertyDef(PropertyDef &propDef, int propertyIndex)
 
     propDef.type = type;
 
-    next();
-    propDef.name = lexem();
+    if (mode == Moc::Named) {
+        next();
+        propDef.name = lexem();
+    }
 
     parsePropertyAttributes(propDef);
 }
@@ -1416,11 +1424,11 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
     }
 }
 
-void Moc::parseProperty(ClassDef *def)
+void Moc::parseProperty(ClassDef *def, Moc::PropertyMode mode)
 {
     next(LPAREN);
     PropertyDef propDef;
-    createPropertyDef(propDef, int(def->propertyList.size()));
+    createPropertyDef(propDef, int(def->propertyList.size()), mode);
     next(RPAREN);
 
     def->propertyList += propDef;
@@ -1506,7 +1514,7 @@ QByteArray Moc::parsePropertyAccessor()
     return accessor;
 }
 
-void Moc::parsePrivateProperty(ClassDef *def)
+void Moc::parsePrivateProperty(ClassDef *def, Moc::PropertyMode mode)
 {
     next(LPAREN);
     PropertyDef propDef;
@@ -1514,7 +1522,7 @@ void Moc::parsePrivateProperty(ClassDef *def)
 
     next(COMMA);
 
-    createPropertyDef(propDef, int(def->propertyList.size()));
+    createPropertyDef(propDef, int(def->propertyList.size()), mode);
 
     def->propertyList += propDef;
 }

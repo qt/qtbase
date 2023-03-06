@@ -30,6 +30,14 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef Q_MOC_RUN
+#define QT_ANONYMOUS_PROPERTY(text) QT_ANONYMOUS_PROPERTY(text)
+#define QT_ANONYMOUS_PRIVATE_PROPERTY(d, text) QT_ANONYMOUS_PRIVATE_PROPERTY(d, text)
+#elif !defined QT_NO_META_MACROS
+#define QT_ANONYMOUS_PROPERTY(...) QT_ANNOTATE_CLASS(qt_anonymous_property, __VA_ARGS__)
+#define QT_ANONYMOUS_PRIVATE_PROPERTY(d, text) QT_ANNOTATE_CLASS2(qt_anonymous_private_property, d, text)
+#endif
+
 class QVariant;
 class QThreadData;
 class QObjectConnectionListVector;

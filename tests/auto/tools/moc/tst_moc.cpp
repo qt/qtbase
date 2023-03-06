@@ -11,6 +11,8 @@
 #include <qversionnumber.h>
 #include <qregularexpression.h>
 
+#include <private/qobject_p.h>
+
 #include "using-namespaces.h"
 #include "assign-namespace.h"
 #include "no-keywords.h"
@@ -704,6 +706,7 @@ private slots:
     void templateGtGt();
     void qprivateslots();
     void qprivateproperties();
+    void anonymousProperties();
     void warnOnPropertyWithoutREAD();
     void constructors();
     void typenameWithUnsigned();
@@ -1640,6 +1643,54 @@ void tst_Moc::qprivateproperties()
     QVERIFY(zap.isBindable());
     auto zapBindable = zap.bindable(&test);
     QVERIFY(zapBindable.isBindable());
+}
+
+
+class AnonymousPropertyTest1 : public QObject
+{
+    Q_OBJECT
+    QT_ANONYMOUS_PROPERTY(int READ foo WRITE setFoo)
+public:
+    int foo() { return mFoo ; }
+    void setFoo(int value) { mFoo = value; }
+
+private:
+    int mFoo = 0;
+};
+
+class AnonymousPropertyTest2 : public QObject
+{
+    Q_OBJECT
+    QT_ANONYMOUS_PRIVATE_PROPERTY(d, int READ bar WRITE setBar)
+
+    class MyDPointer {
+    public:
+        int bar() { return mBar ; }
+        void setBar(int value) { mBar = value; }
+    private:
+        int mBar = 0;
+    };
+
+public:
+    AnonymousPropertyTest2(QObject *parent = nullptr) : QObject(parent), d (new MyDPointer) {}
+    MyDPointer *d_func() {return d.data();}
+    const MyDPointer *d_func() const {return d.data();}
+
+private:
+    QScopedPointer<MyDPointer> d;
+};
+
+void tst_Moc::anonymousProperties()
+{
+    AnonymousPropertyTest1 test1;
+
+    test1.setProperty("", 17);
+    QCOMPARE(test1.property(""), QVariant::fromValue(17));
+
+    AnonymousPropertyTest2 test2;
+
+    test2.setProperty("", 27);
+    QCOMPARE(test2.property(""), QVariant::fromValue(27));
 }
 
 void tst_Moc::warnOnPropertyWithoutREAD()

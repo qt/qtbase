@@ -102,6 +102,8 @@ Q_DECLARE_TYPEINFO(FunctionDef, Q_RELOCATABLE_TYPE);
 struct PropertyDef
 {
     bool stdCppSet() const {
+        if (name.isEmpty())
+            return false;
         QByteArray s("set");
         s += QtMiscUtils::toAsciiUpper(name[0]);
         s += name.mid(1);
@@ -197,6 +199,8 @@ Q_DECLARE_TYPEINFO(NamespaceDef, Q_RELOCATABLE_TYPE);
 class Moc : public Parser
 {
 public:
+    enum PropertyMode { Named, Anonymous };
+
     Moc()
         : noInclude(false), mustIncludeQPluginH(false), requireCompleteTypes(false)
         {}
@@ -238,9 +242,11 @@ public:
 
     void parseSlots(ClassDef *def, FunctionDef::Access access);
     void parseSignals(ClassDef *def);
-    void parseProperty(ClassDef *def);
+    void parseProperty(ClassDef *def, PropertyMode mode);
     void parsePluginData(ClassDef *def);
-    void createPropertyDef(PropertyDef &def, int propertyIndex);
+
+    void createPropertyDef(PropertyDef &def, int propertyIndex, PropertyMode mode);
+
     void parsePropertyAttributes(PropertyDef &propDef);
     void parseEnumOrFlag(BaseDef *def, bool isFlag);
     void parseFlag(BaseDef *def);
@@ -253,7 +259,7 @@ public:
     void parseMocInclude();
     void parseSlotInPrivate(ClassDef *def, FunctionDef::Access access);
     QByteArray parsePropertyAccessor();
-    void parsePrivateProperty(ClassDef *def);
+    void parsePrivateProperty(ClassDef *def, PropertyMode mode);
 
     void parseFunctionArguments(FunctionDef *def);
 
