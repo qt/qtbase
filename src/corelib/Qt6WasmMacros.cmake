@@ -26,7 +26,8 @@ function(_qt_internal_wasm_add_target_helpers target)
         get_target_property(target_output_directory ${target} RUNTIME_OUTPUT_DIRECTORY)
 
         get_target_property(is_test ${target} _qt_is_test_executable)
-        if(is_test)
+        get_target_property(is_manual_test ${target} _qt_is_manual_test)
+        if(is_test AND NOT is_manual_test)
             # Keep in sync with testrunner_files in testlib/CMakeLists.txt
             configure_file("${WASM_BUILD_DIR}/libexec/batchedtestrunner.html"
                            "${target_output_directory}/${_target_output_name}.html" COPYONLY)
