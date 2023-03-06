@@ -796,6 +796,10 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::HalfAttributes:
         return true;
+    case QRhi::RenderToOneDimensionalTexture:
+        return false;
+    case QRhi::ThreeDimensionalTextureMipmaps:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;

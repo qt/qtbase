@@ -735,10 +735,10 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \value OneDimensionalTextures Indicates that 1D textures are supported.
     In practice this feature will be unsupported on OpenGL ES.
 
-    \value OneDimensionalTextureMipmaps Indicates that 1D texture mipmaps and
-    1D texture render targets are supported. In practice this feature will be
-    unsupported on backends that do not report support for
-    \l{OneDimensionalTextures}, and Metal.
+    \value OneDimensionalTextureMipmaps Indicates that generating 1D texture
+    mipmaps are supported. In practice this feature will be unsupported on
+    backends that do not report support for
+    \l{OneDimensionalTextures}, Metal, and Direct 3D 12.
 
     \value HalfAttributes Indicates that specifying input attributes with half
     precision (16bit) floating point types for a shader pipeline is supported.
@@ -750,6 +750,14 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     half3 attributes as half4. To ensure cross platform compatibility, half3
     inputs should be padded to 8 bytes.
 
+    \value RenderToOneDimensionalTexture Indicates that 1D texture render
+    targets are supported. In practice this feature will be unsupported on
+    backends that do not report support for
+    \l{OneDimensionalTextures}, and Metal.
+
+    \value ThreeDimensionalTextureMipmaps Indicates that generating 3D texture
+    mipmaps are supported. In practice this feature will be unsupported with
+    Direct 3D 12.
  */
 
 /*!

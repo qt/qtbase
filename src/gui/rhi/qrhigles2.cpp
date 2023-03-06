@@ -1323,6 +1323,10 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.texture1D;
     case QRhi::HalfAttributes:
         return caps.halfAttributes;
+    case QRhi::RenderToOneDimensionalTexture:
+        return caps.texture1D;
+    case QRhi::ThreeDimensionalTextureMipmaps:
+        return caps.texture3D;
     default:
         Q_UNREACHABLE_RETURN(false);
     }

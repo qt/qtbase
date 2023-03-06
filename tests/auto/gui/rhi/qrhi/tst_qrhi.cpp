@@ -410,7 +410,12 @@ void tst_QRhi::create()
             QRhi::Tessellation,
             QRhi::GeometryShader,
             QRhi::TextureArrayRange,
-            QRhi::NonFillPolygonMode
+            QRhi::NonFillPolygonMode,
+            QRhi::OneDimensionalTextures,
+            QRhi::OneDimensionalTextureMipmaps,
+            QRhi::HalfAttributes,
+            QRhi::RenderToOneDimensionalTexture,
+            QRhi::ThreeDimensionalTextureMipmaps
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);
@@ -4758,7 +4763,7 @@ void tst_QRhi::threeDimTexture()
     }
 
     // mipmaps
-    {
+    if (rhi->isFeatureSupported(QRhi::ThreeDimensionalTextureMipmaps)) {
         QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, WIDTH, HEIGHT, DEPTH,
                                                             1, QRhiTexture::MipMapped | QRhiTexture::UsedWithGenerateMips));
         QVERIFY(texture->create());
@@ -4801,11 +4806,10 @@ void tst_QRhi::threeDimTexture()
         // Some software-based OpenGL implementations, such as Mesa llvmpipe builds that are
         // used both in Qt CI and are shipped with the official Qt binaries also seem to have
         // problems with this.
-        if (impl != QRhi::Null && impl != QRhi::OpenGLES2) {
-            // temporarily skip for D3D12 as well since 3D texture mipmap generation is not implemented there
-            if (impl != QRhi::D3D12)
-                QVERIFY(imageRGBAEquals(result, referenceImage, 2));
-        }
+        if (impl != QRhi::Null && impl != QRhi::OpenGLES2)
+            QVERIFY(imageRGBAEquals(result, referenceImage, 2));
+    } else {
+        qDebug("Skipping 3D texture mipmap generation test because it is reported as unsupported");
     }
 
     // render target (one slice)
@@ -5175,9 +5179,11 @@ void tst_QRhi::oneDimTexture()
     }
 
     // mipmaps and 1D render target
-    if (!rhi->isFeatureSupported(QRhi::OneDimensionalTextureMipmaps))
-        QSKIP("Skipping testing 1D texture mipmaps and 1D render target because they are reported "
-              "as unsupported");
+    if (!rhi->isFeatureSupported(QRhi::OneDimensionalTextureMipmaps)
+            || !rhi->isFeatureSupported(QRhi::RenderToOneDimensionalTexture))
+    {
+        QSKIP("Skipping testing 1D texture mipmaps and 1D render target because they are reported as unsupported");
+    }
 
     {
         QScopedPointer<QRhiTexture> texture(

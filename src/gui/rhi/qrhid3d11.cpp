@@ -530,6 +530,10 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::HalfAttributes:
         return true;
+    case QRhi::RenderToOneDimensionalTexture:
+        return true;
+    case QRhi::ThreeDimensionalTextureMipmaps:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;

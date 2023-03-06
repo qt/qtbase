@@ -582,9 +582,13 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::OneDimensionalTextures:
         return true;
     case QRhi::OneDimensionalTextureMipmaps:
-        return false;
+        return false; // we generate mipmaps ourselves with compute and this is not implemented
     case QRhi::HalfAttributes:
         return true;
+    case QRhi::RenderToOneDimensionalTexture:
+        return true;
+    case QRhi::ThreeDimensionalTextureMipmaps:
+        return false; // we generate mipmaps ourselves with compute and this is not implemented
     }
     return false;
 }

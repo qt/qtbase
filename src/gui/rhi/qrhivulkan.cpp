@@ -4267,6 +4267,10 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::HalfAttributes:
         return true;
+    case QRhi::RenderToOneDimensionalTexture:
+        return true;
+    case QRhi::ThreeDimensionalTextureMipmaps:
+        return true;
     default:
         Q_UNREACHABLE_RETURN(false);
     }

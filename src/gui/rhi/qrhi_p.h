@@ -1820,7 +1820,9 @@ public:
         NonFillPolygonMode,
         OneDimensionalTextures,
         OneDimensionalTextureMipmaps,
-        HalfAttributes
+        HalfAttributes,
+        RenderToOneDimensionalTexture,
+        ThreeDimensionalTextureMipmaps
     };
 
     enum BeginFrameFlag {
