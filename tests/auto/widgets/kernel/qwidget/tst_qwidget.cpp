@@ -191,6 +191,8 @@ private slots:
     void tabOrderWithProxyDisabled();
     void tabOrderWithProxyOutOfOrder();
     void tabOrderWithCompoundWidgets();
+    void tabOrderWithCompoundWidgetsInflection_data();
+    void tabOrderWithCompoundWidgetsInflection();
     void tabOrderWithCompoundWidgetsNoFocusPolicy();
     void tabOrderNoChange();
     void tabOrderNoChange2();
@@ -2211,11 +2213,19 @@ static QList<QWidget *> getFocusChain(QWidget *start, bool bForward)
 {
     QList<QWidget *> ret;
     QWidget *cur = start;
+    // detect infinite loop
+    int count = 100;
+    auto loopGuard = qScopeGuard([]{
+        QFAIL("Inifinite loop detected in focus chain");
+    });
     do {
         ret += cur;
         auto widgetPrivate = static_cast<QWidgetPrivate *>(qt_widget_private(cur));
         cur = bForward ? widgetPrivate->focus_next : widgetPrivate->focus_prev;
+        if (!--count)
+            return ret;
     } while (cur != start);
+    loopGuard.dismiss();
     return ret;
 }
 
@@ -2278,6 +2288,121 @@ void tst_QWidget::tabOrderWithProxyOutOfOrder()
     QCOMPARE(QApplication::focusWidget(), &outsideButton);
     container.backTab();
     QCOMPARE(QApplication::focusWidget(), &cancelButton);
+}
+
+static bool isFocusChainConsistent(QWidget *widget)
+{
+    auto forward = getFocusChain(widget, true);
+    auto backward = getFocusChain(widget, false);
+    auto logger = qScopeGuard([=]{
+        qCritical("Focus chain is not consistent!");
+        qWarning() << forward.size() << "forwards: " << forward;
+        qWarning() << backward.size() << "backwards:" << backward;
+    });
+    // both lists start with the same, the widget
+    if (forward.takeFirst() != backward.takeFirst())
+        return false;
+    const qsizetype chainLength = forward.size();
+    if (backward.size() != chainLength)
+        return false;
+    for (qsizetype i = 0; i < chainLength; ++i) {
+        if (forward.at(i) != backward.at(chainLength - i - 1))
+            return false;
+    }
+    logger.dismiss();
+    return true;
+}
+
+/*
+    This tests that we end up with consistent and complete chains when we set
+    the tab order from a widget (the lineEdit) inside a compound (the tabWidget)
+    to the compound, or visa versa. In that case, QWidget::setTabOrder will walk
+    the focus chain to the focus child inside the compound to replace the compound
+    itself when manipulating the tab order. If that last focus child is then
+    however also the lineEdit, then we must not create an inconsistent or
+    incomplete loop.
+
+    The tabWidget is seen as a compound because QTabWidget sets the tab bar as
+    the focus proxy, and it has more widgets inside, like pages, toolbuttons etc.
+*/
+void tst_QWidget::tabOrderWithCompoundWidgetsInflection_data()
+{
+    QTest::addColumn<QByteArrayList>("tabOrder");
+
+    QTest::addRow("forward")
+        << QByteArrayList{"dialog", "tabWidget", "lineEdit", "compound", "okButton", "cancelButton"};
+    QTest::addRow("backward")
+        << QByteArrayList{"dialog", "cancelButton", "okButton", "compound", "lineEdit", "tabWidget"};
+}
+
+void tst_QWidget::tabOrderWithCompoundWidgetsInflection()
+{
+    QFETCH(const QByteArrayList, tabOrder);
+
+    QDialog dialog;
+    dialog.setObjectName("dialog");
+    QTabWidget *tabWidget = new QTabWidget;
+    tabWidget->setObjectName("tabWidget");
+    tabWidget->setFocusPolicy(Qt::TabFocus);
+    QWidget *page = new QWidget;
+    page->setObjectName("page");
+    QLineEdit *lineEdit = new QLineEdit;
+    lineEdit->setObjectName("lineEdit");
+    QWidget *compound = new QWidget;
+    compound->setObjectName("compound");
+    compound->setFocusPolicy(Qt::TabFocus);
+    QPushButton *okButton = new QPushButton("Ok");
+    okButton->setObjectName("okButton");
+    okButton->setFocusPolicy(Qt::TabFocus);
+    QPushButton *cancelButton = new QPushButton("Cancel");
+    cancelButton->setObjectName("cancelButton");
+    cancelButton->setFocusPolicy(Qt::TabFocus);
+
+    QVBoxLayout *pageLayout = new QVBoxLayout;
+    pageLayout->addWidget(lineEdit);
+    page->setLayout(pageLayout);
+    tabWidget->addTab(page, "Tab");
+
+    QHBoxLayout *compoundLayout = new QHBoxLayout;
+    compoundLayout->addStretch();
+    compoundLayout->addWidget(cancelButton);
+    compoundLayout->addWidget(okButton);
+    compound->setFocusProxy(okButton);
+    compound->setLayout(compoundLayout);
+
+    QVBoxLayout *dialogLayout = new QVBoxLayout;
+    dialogLayout->addWidget(tabWidget);
+    dialogLayout->addWidget(compound);
+    dialog.setLayout(dialogLayout);
+
+    QVERIFY(isFocusChainConsistent(&dialog));
+
+    QList<QWidget *> expectedFocusChain;
+    for (qsizetype i = 0; i < tabOrder.size() - 1; ++i) {
+        QWidget *first = dialog.findChild<QWidget *>(tabOrder.at(i));
+        if (!first && tabOrder.at(i) == dialog.objectName())
+            first = &dialog;
+        QVERIFY(first);
+        if (i == 0)
+            expectedFocusChain.append(first);
+        QWidget *second = dialog.findChild<QWidget *>(tabOrder.at(i + 1));
+        QVERIFY(second);
+        expectedFocusChain.append(second);
+        QWidget::setTabOrder(first, second);
+        QVERIFY(isFocusChainConsistent(&dialog));
+    }
+
+    const auto forwardChain = getFocusChain(&dialog, true);
+    auto logger = qScopeGuard([=]{
+        qCritical("Order of widgets in focus chain not matching:");
+        qCritical() << " Actual  :" << forwardChain;
+        qCritical() << " Expected:" << expectedFocusChain;
+    });
+    for (qsizetype i = 0; i < expectedFocusChain.size() - 2; ++i) {
+        QVERIFY(forwardChain.indexOf(expectedFocusChain.at(i))
+              < forwardChain.indexOf(expectedFocusChain.at(i + 1)));
+    }
+    logger.dismiss();
 }
 
 void tst_QWidget::tabOrderWithCompoundWidgetsNoFocusPolicy()
