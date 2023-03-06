@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_deploy_qt_conf
-\target qt_deploy_qt_conf
+\keyword qt6_deploy_qt_conf
 
 \summary {Write a qt.conf file at deployment time.}
 
