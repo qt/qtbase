@@ -31,6 +31,7 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/quuid.h>
 #include <QtCore/qtemporaryfile.h>
+#include <QtCore/private/qfunctions_win_p.h>
 #include <QtCore/private/qsystemerror_p.h>
 
 #include <algorithm>
@@ -257,6 +258,7 @@ private:
 void QWindowsDialogThread::run()
 {
     qCDebug(lcQpaDialogs) << '>' << __FUNCTION__;
+    QComHelper comInit(COINIT_APARTMENTTHREADED);
     m_dialog->exec(m_owner);
     qCDebug(lcQpaDialogs) << '<' << __FUNCTION__;
 }
