@@ -731,6 +731,8 @@ xkb_keysym_t QXkbCommon::lookupLatinKeysym(xkb_state *state, xkb_keycode_t keyco
 {
     xkb_layout_index_t layout;
     xkb_keysym_t sym = XKB_KEY_NoSymbol;
+    if (!state)
+        return sym;
     xkb_keymap *keymap = xkb_state_get_keymap(state);
     const xkb_layout_index_t layoutCount = xkb_keymap_num_layouts_for_key(keymap, keycode);
     // Look at user layouts in the order in which they are defined in system
