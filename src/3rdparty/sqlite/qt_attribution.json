@@ -3,6 +3,7 @@
     "Name": "SQLite",
     "QDocModule": "qtsql",
     "QtUsage": "Used in Qt SQL Lite plugin. Configure Qt with -system-sqlite or -no-sqlite to avoid.",
+    "SecurityCritical": true,
 
     "Description": "SQLite is a small C library that implements a self-contained, embeddable, zero-configuration SQL database engine.",
     "Homepage": "https://www.sqlite.org/",

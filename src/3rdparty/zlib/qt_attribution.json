@@ -3,10 +3,12 @@
     "Name": "Data Compression Library (zlib)",
     "QDocModule": "qtcore",
     "QtUsage": "Optionally used in Qt Core and development tools. Configure with -system-zlib to avoid.",
+    "SecurityCritical": true,
 
     "Description": "zlib is a general purpose data compression library.",
     "Homepage": "https://zlib.net/",
     "Version": "1.2.13",
+    "DownloadLocation": "https://zlib.net/zlib-1.2.13.tar.gz",
 
     "License": "zlib License",
     "LicenseId": "Zlib",
