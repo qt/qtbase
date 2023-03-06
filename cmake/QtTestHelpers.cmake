@@ -268,6 +268,7 @@ function(qt_internal_add_test_to_batch batch_name name)
         set_property(TARGET ${target} PROPERTY _qt_has_lowdpi ${arg_LOWDPI})
         set_property(TARGET ${target} PROPERTY _qt_version ${version_arg})
         set_property(TARGET ${target} PROPERTY _qt_is_test_executable TRUE)
+        set_property(TARGET ${target} PROPERTY _qt_is_manual_test ${arg_MANUAL})
     else()
         # Check whether the args match with the batch. Some differences between
         # flags cannot be reconciled - one should not combine these tests into
@@ -543,6 +544,7 @@ function(qt_internal_add_test name)
         )
         set(setting_up_batched_test FALSE)
         set_target_properties(${name} PROPERTIES _qt_is_test_executable TRUE)
+        set_target_properties(${name} PROPERTIES _qt_is_manual_test ${arg_MANUAL})
     endif()
 
     foreach(path IN LISTS arg_QML_IMPORTPATH)
