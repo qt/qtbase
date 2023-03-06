@@ -1513,7 +1513,7 @@ void PaintCommands::command_drawPixmapFragments(QRegularExpressionMatch re)
             f.posx = convertToDouble(re.captured(captureIndexStart));
             f.posy = convertToDouble(re.captured(captureIndexStart + 1));
             f.srcx = convertToDouble(re.captured(captureIndexStart + 2));
-            f.srcx = convertToDouble(re.captured(captureIndexStart + 3));
+            f.srcy = convertToDouble(re.captured(captureIndexStart + 3));
             f.srcw = convertToDouble(re.captured(captureIndexStart + 4));
             f.srch = convertToDouble(re.captured(captureIndexStart + 5));
             f.sx = convertToDouble(re.captured(captureIndexStart + 6));
