@@ -4828,26 +4828,36 @@ void tst_QRhi::threeDimTexture()
         rt->setRenderPassDescriptor(rp.data());
         QVERIFY(rt->create());
 
-        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
-        QVERIFY(batch);
-
-        for (int i = 0; i < DEPTH; ++i) {
-            QImage img(WIDTH, HEIGHT, QImage::Format_RGBA8888);
-            img.fill(QColor::fromRgb(i * 2, 0, 0));
-            QRhiTextureUploadEntry sliceUpload(i, 0, QRhiTextureSubresourceUploadDescription(img));
-            batch->uploadTexture(texture.data(), sliceUpload);
-        }
-
+        // render to slice 23
         QRhiCommandBuffer *cb = nullptr;
         QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
         QVERIFY(cb);
-        cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 }, batch);
+        cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 });
         // slice 23 is now blue
         cb->endPass();
         rhi->endOffscreenFrame();
 
+        // Fill all other slices with some color. We should be free to do this
+        // step *before* the "render to slice 23" block above as well. However,
+        // as QTBUG-111772 shows, some Vulkan implementations have problems
+        // then. (or it could be QRhi is doing something wrong, but there is no
+        // evidence of that yet) For now, keep the order of first rendering to
+        // a slice and then uploading data for the rest.
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        QVERIFY(batch);
+        for (int i = 0; i < DEPTH; ++i) {
+            if (i != SLICE) {
+                QImage img(WIDTH, HEIGHT, QImage::Format_RGBA8888);
+                img.fill(QColor::fromRgb(i * 2, 0, 0));
+                QRhiTextureUploadEntry sliceUpload(i, 0, QRhiTextureSubresourceUploadDescription(img));
+                batch->uploadTexture(texture.data(), sliceUpload);
+            }
+        }
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+
         // read back slice 23 (blue)
         batch = rhi->nextResourceUpdateBatch();
+        QVERIFY(batch);
         QRhiReadbackResult readResult;
         QImage result;
         readResult.completed = [&readResult, &result] {
