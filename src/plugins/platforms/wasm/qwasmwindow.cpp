@@ -162,6 +162,7 @@ void QWasmWindow::onNonClientAreaInteraction()
 {
     if (!isActive())
         requestActivateWindow();
+    QGuiApplicationPrivate::instance()->closeAllPopups();
 }
 
 bool QWasmWindow::onNonClientEvent(const PointerEvent &event)
