@@ -98,24 +98,7 @@ Q_CONSTRUCTOR_FUNCTION(qRegisterNotificationCallbacks)
 const int QCocoaWindow::NoAlertRequest = -1;
 QPointer<QCocoaWindow> QCocoaWindow::s_windowUnderMouse;
 
-QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
-    : QPlatformWindow(win)
-    , m_view(nil)
-    , m_nsWindow(nil)
-    , m_lastReportedWindowState(Qt::WindowNoState)
-    , m_windowModality(Qt::NonModal)
-    , m_initialized(false)
-    , m_inSetVisible(false)
-    , m_inSetGeometry(false)
-    , m_inSetStyleMask(false)
-    , m_menubar(nullptr)
-    , m_frameStrutEventsEnabled(false)
-    , m_registerTouchCount(0)
-    , m_resizableTransientParent(false)
-    , m_alertRequest(NoAlertRequest)
-    , m_drawContentBorderGradient(false)
-    , m_topContentBorderThickness(0)
-    , m_bottomContentBorderThickness(0)
+QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle) : QPlatformWindow(win)
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::QCocoaWindow" << window();
 
