@@ -414,7 +414,7 @@ void tst_QAbstractItemModel::itemFlags()
 
 void tst_QAbstractItemModel::match()
 {
-    QtTestModel model(4, 1);
+    QtTestModel model(5, 1);
     QModelIndex start = model.index(0, 0, QModelIndex());
     QVERIFY(start.isValid());
     QModelIndexList res = model.match(start, Qt::DisplayRole, QVariant("1"), 3);
@@ -427,19 +427,20 @@ void tst_QAbstractItemModel::match()
     model.setData(model.index(1, 0, QModelIndex()), "cat", Qt::DisplayRole);
     model.setData(model.index(2, 0, QModelIndex()), "dog", Qt::DisplayRole);
     model.setData(model.index(3, 0, QModelIndex()), "boar", Qt::DisplayRole);
+    model.setData(model.index(4, 0, QModelIndex()), "bo/a/r", Qt::DisplayRole); // QTBUG-104585
 
     res = model.match(start, Qt::DisplayRole, QVariant("dog"), -1, Qt::MatchExactly);
     QCOMPARE(res.size(), 1);
     res = model.match(start, Qt::DisplayRole, QVariant("a"), -1, Qt::MatchContains);
-    QCOMPARE(res.size(), 3);
+    QCOMPARE(res.size(), 4);
     res = model.match(start, Qt::DisplayRole, QVariant("b"), -1, Qt::MatchStartsWith);
-    QCOMPARE(res.size(), 2);
+    QCOMPARE(res.size(), 3);
     res = model.match(start, Qt::DisplayRole, QVariant("t"), -1, Qt::MatchEndsWith);
     QCOMPARE(res.size(), 2);
     res = model.match(start, Qt::DisplayRole, QVariant("*a*"), -1, Qt::MatchWildcard);
-    QCOMPARE(res.size(), 3);
+    QCOMPARE(res.size(), 4);
     res = model.match(start, Qt::DisplayRole, QVariant(".*O.*"), -1, Qt::MatchRegularExpression);
-    QCOMPARE(res.size(), 2);
+    QCOMPARE(res.size(), 3);
     res = model.match(start, Qt::DisplayRole, QVariant(".*O.*"), -1, Qt::MatchRegularExpression | Qt::MatchCaseSensitive);
     QCOMPARE(res.size(), 0);
     res = model.match(start, Qt::DisplayRole, QVariant("BOAR"), -1, Qt::MatchFixedString);
@@ -450,7 +451,7 @@ void tst_QAbstractItemModel::match()
 
     res = model.match(start, Qt::DisplayRole, QVariant(".*O.*"), -1,
                       Qt::MatchRegularExpression);
-    QCOMPARE(res.size(), 2);
+    QCOMPARE(res.size(), 3);
     res = model.match(start, Qt::DisplayRole, QVariant(".*O.*"), -1,
                       Qt::MatchRegularExpression | Qt::MatchCaseSensitive);
     QCOMPARE(res.size(), 0);
@@ -464,7 +465,7 @@ void tst_QAbstractItemModel::match()
                                                   QRegularExpression::CaseInsensitiveOption)),
                       -1,
                       Qt::MatchRegularExpression);
-    QCOMPARE(res.size(), 2);
+    QCOMPARE(res.size(), 3);
 
     // Ensure that the case sensitivity is properly ignored when passing a
     // QRegularExpression object.
@@ -474,7 +475,7 @@ void tst_QAbstractItemModel::match()
                                                   QRegularExpression::CaseInsensitiveOption)),
                       -1,
                       Qt::MatchRegularExpression | Qt::MatchCaseSensitive);
-    QCOMPARE(res.size(), 2);
+    QCOMPARE(res.size(), 3);
 }
 
 typedef QPair<int, int> Position;

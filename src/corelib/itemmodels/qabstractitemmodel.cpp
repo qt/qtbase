@@ -2538,8 +2538,10 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
                         }
                     }
                 } else if (matchType == Qt::MatchWildcard) {
-                    if (rx.pattern().isEmpty())
-                        rx.setPattern(QRegularExpression::wildcardToRegularExpression(value.toString()));
+                    if (rx.pattern().isEmpty()) {
+                        const QString pattern = QRegularExpression::wildcardToRegularExpression(value.toString(), QRegularExpression::NonPathWildcardConversion);
+                        rx.setPattern(pattern);
+                    }
                     if (cs == Qt::CaseInsensitive)
                         rx.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
                 } else
