@@ -10,6 +10,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpenGLContext;
 class QPlatformScreen;
+class QPlatformSurface;
 class QWasmOpenGLContext : public QPlatformOpenGLContext
 {
 public:
@@ -26,15 +27,23 @@ public:
     QFunctionPointer getProcAddress(const char *procName) override;
 
 private:
+    struct QOpenGLContextData
+    {
+        QPlatformSurface *surface = nullptr;
+        EMSCRIPTEN_WEBGL_CONTEXT_HANDLE handle = 0;
+    };
+
     static bool isOpenGLVersionSupported(QSurfaceFormat format);
-    bool maybeCreateEmscriptenContext(QPlatformSurface *surface);
+    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE obtainEmscriptenContext(QPlatformSurface *surface);
     static EMSCRIPTEN_WEBGL_CONTEXT_HANDLE
     createEmscriptenContext(const std::string &canvasSelector, QSurfaceFormat format);
 
+    static void destroyWebGLContext(EMSCRIPTEN_WEBGL_CONTEXT_HANDLE contextHandle);
+
     QSurfaceFormat m_requestedFormat;
-    QPlatformSurface *m_surface = nullptr;
     QOpenGLContext *m_qGlContext;
-    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE m_webGLContext = 0;
+    QOpenGLContextData m_ownedWebGLContext;
+    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE m_usedWebGLContextHandle = 0;
 };
 
 QT_END_NAMESPACE

@@ -35,19 +35,10 @@ QWasmOpenGLContext::QWasmOpenGLContext(QOpenGLContext *context)
 
 QWasmOpenGLContext::~QWasmOpenGLContext()
 {
-    if (!m_webGLContext)
-        return;
-
     // Destroy GL context. Work around bug in emscripten_webgl_destroy_context
     // which removes all event handlers on the canvas by temporarily replacing the function
     // that does the removal with a function that does nothing.
-    emscripten::val jsEvents = emscripten::val::module_property("JSEvents");
-    emscripten::val savedRemoveAllHandlersOnTargetFunction =
-            jsEvents["removeAllHandlersOnTarget"];
-    jsEvents.set("removeAllHandlersOnTarget", emscripten::val::module_property("qtDoNothing"));
-    emscripten_webgl_destroy_context(m_webGLContext);
-    jsEvents.set("removeAllHandlersOnTarget", savedRemoveAllHandlersOnTargetFunction);
-    m_webGLContext = 0;
+    destroyWebGLContext(m_ownedWebGLContext.handle);
 }
 
 bool QWasmOpenGLContext::isOpenGLVersionSupported(QSurfaceFormat format)
@@ -60,30 +51,58 @@ bool QWasmOpenGLContext::isOpenGLVersionSupported(QSurfaceFormat format)
            (format.majorVersion() == 3 && format.minorVersion() == 0));
 }
 
-bool QWasmOpenGLContext::maybeCreateEmscriptenContext(QPlatformSurface *surface)
+EMSCRIPTEN_WEBGL_CONTEXT_HANDLE
+QWasmOpenGLContext::obtainEmscriptenContext(QPlatformSurface *surface)
 {
-    if (m_webGLContext && m_surface == surface)
-        return true;
+    if (m_ownedWebGLContext.surface == surface)
+        return m_ownedWebGLContext.handle;
 
-    m_surface = surface;
     if (surface->surface()->surfaceClass() == QSurface::Offscreen) {
         if (const auto *shareContext = m_qGlContext->shareContext()) {
             // Since there are no resource sharing capabilities with WebGL whatsoever, we use the
             // same actual underlaying WebGL context. This is not perfect, but it works in most
             // cases.
-            m_webGLContext =
-                    static_cast<QWasmOpenGLContext *>(shareContext->handle())->m_webGLContext;
+            return static_cast<QWasmOpenGLContext *>(shareContext->handle())
+                    ->m_ownedWebGLContext.handle;
         } else {
-            // The non-shared offscreen context is heavily limited on WASM, but we provide it anyway
-            // for potential pixel readbacks.
-            m_webGLContext = createEmscriptenContext(
-                    static_cast<QWasmOffscreenSurface *>(surface)->id(), m_requestedFormat);
+            // Reuse the existing context for offscreen drawing, even if it happens to be a canvas
+            // context. This is because it is impossible to re-home an existing context to the
+            // new surface and works as an emulation measure.
+            if (m_ownedWebGLContext.handle)
+                return m_ownedWebGLContext.handle;
+
+            //  The non-shared offscreen context is heavily limited on WASM, but we provide it
+            //  anyway for potential pixel readbacks.
+            m_ownedWebGLContext =
+                    QOpenGLContextData{ .surface = surface,
+                                        .handle = createEmscriptenContext(
+                                                static_cast<QWasmOffscreenSurface *>(surface)->id(),
+                                                m_requestedFormat) };
+            return m_ownedWebGLContext.handle;
         }
     } else {
-        m_webGLContext = createEmscriptenContext(
-                static_cast<QWasmWindow *>(surface)->canvasSelector(), m_requestedFormat);
+        destroyWebGLContext(m_ownedWebGLContext.handle);
+
+        // Create a full on-screen context for the window canvas.
+        m_ownedWebGLContext = QOpenGLContextData{
+            .surface = surface,
+            .handle = createEmscriptenContext(static_cast<QWasmWindow *>(surface)->canvasSelector(),
+                                              m_requestedFormat)
+        };
+
+        return m_ownedWebGLContext.handle;
     }
-    return m_webGLContext > 0;
+}
+
+void QWasmOpenGLContext::destroyWebGLContext(EMSCRIPTEN_WEBGL_CONTEXT_HANDLE contextHandle)
+{
+    if (!contextHandle)
+        return;
+    emscripten::val jsEvents = emscripten::val::module_property("JSEvents");
+    emscripten::val savedRemoveAllHandlersOnTargetFunction = jsEvents["removeAllHandlersOnTarget"];
+    jsEvents.set("removeAllHandlersOnTarget", emscripten::val::module_property("qtDoNothing"));
+    emscripten_webgl_destroy_context(contextHandle);
+    jsEvents.set("removeAllHandlersOnTarget", savedRemoveAllHandlersOnTargetFunction);
 }
 
 EMSCRIPTEN_WEBGL_CONTEXT_HANDLE
@@ -124,10 +143,13 @@ GLuint QWasmOpenGLContext::defaultFramebufferObject(QPlatformSurface *surface) c
 
 bool QWasmOpenGLContext::makeCurrent(QPlatformSurface *surface)
 {
-    if (!maybeCreateEmscriptenContext(surface))
+    const auto context = obtainEmscriptenContext(surface);
+    if (!context)
         return false;
 
-    return emscripten_webgl_make_context_current(m_webGLContext) == EMSCRIPTEN_RESULT_SUCCESS;
+    m_usedWebGLContextHandle = context;
+
+    return emscripten_webgl_make_context_current(context) == EMSCRIPTEN_RESULT_SUCCESS;
 }
 
 void QWasmOpenGLContext::swapBuffers(QPlatformSurface *surface)
@@ -153,7 +175,7 @@ bool QWasmOpenGLContext::isValid() const
 
     // Note: we get isValid() calls before we see the surface and can
     // create a native context, so no context is also a valid state.
-    return !m_webGLContext || !emscripten_is_webgl_context_lost(m_webGLContext);
+    return !m_usedWebGLContextHandle || !emscripten_is_webgl_context_lost(m_usedWebGLContextHandle);
 }
 
 QFunctionPointer QWasmOpenGLContext::getProcAddress(const char *procName)
