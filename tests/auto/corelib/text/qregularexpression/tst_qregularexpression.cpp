@@ -2448,9 +2448,10 @@ void tst_QRegularExpression::wildcard_data()
     QTest::addColumn<QString>("string");
     QTest::addColumn<bool>("matchesPathGlob");
     QTest::addColumn<bool>("matchesNonPathGlob");
+    QTest::addColumn<bool>("anchored");
 
-    auto addRow = [](const char *pattern, const char *string, bool matchesPathGlob, bool matchesNonPathGlob) {
-        QTest::addRow("%s@%s", pattern, string) << pattern << string << matchesPathGlob << matchesNonPathGlob;
+    auto addRow = [](const char *pattern, const char *string, bool matchesPathGlob, bool matchesNonPathGlob, bool anchored = true) {
+        QTest::addRow("%s@%s", pattern, string) << pattern << string << matchesPathGlob << matchesNonPathGlob << anchored;
     };
 
     addRow("*.html", "test.html", true, true);
@@ -2490,7 +2491,13 @@ void tst_QRegularExpression::wildcard_data()
     addRow("foo/(?)/bar", "foo/(Q)/bar", true, true);
 
     addRow("foo*bar", "foo/fie/baz/bar", false, true);
-    addRow("fie*bar", "foo/fie/baz/bar", false, false); // regexp is anchored
+
+    // different anchor modes
+    addRow("foo", "afoob", false, false, true);
+    addRow("foo", "afoob", true, true, false);
+
+    addRow("fie*bar", "foo/fie/baz/bar", false, false, true);
+    addRow("fie*bar", "foo/fie/baz/bar", false, true, false);
 
 #ifdef Q_OS_WIN
     addRow("foo\\*\\bar", "foo\\baz\\bar", true, true);
@@ -2517,13 +2524,18 @@ void tst_QRegularExpression::wildcard()
     QFETCH(QString, string);
     QFETCH(bool, matchesPathGlob);
     QFETCH(bool, matchesNonPathGlob);
+    QFETCH(bool, anchored);
+
+    QRegularExpression::WildcardConversionOptions options = {};
+    if (!anchored)
+        options |= QRegularExpression::UnanchoredWildcardConversion;
 
     {
-        QRegularExpression re(QRegularExpression::wildcardToRegularExpression(pattern));
+        QRegularExpression re(QRegularExpression::wildcardToRegularExpression(pattern, options));
         QCOMPARE(string.contains(re), matchesPathGlob);
     }
     {
-        QRegularExpression re(QRegularExpression::wildcardToRegularExpression(pattern, QRegularExpression::NonPathWildcardConversion));
+        QRegularExpression re(QRegularExpression::wildcardToRegularExpression(pattern, options | QRegularExpression::NonPathWildcardConversion));
         QCOMPARE(string.contains(re), matchesNonPathGlob);
     }
 }
