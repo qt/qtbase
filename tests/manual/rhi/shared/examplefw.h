@@ -36,6 +36,11 @@
 #include <QtGui/private/qrhimetal_p.h>
 #endif
 
+#ifdef EXAMPLEFW_IMGUI
+#include "qrhiimgui_p.h"
+#include "imgui.h"
+#endif
+
 QShader getShader(const QString &name)
 {
     QFile f(name);
@@ -43,6 +48,15 @@ QShader getShader(const QString &name)
         return QShader::fromSerialized(f.readAll());
 
     return QShader();
+}
+
+QByteArray getResource(const QString &name)
+{
+    QFile f(name);
+    if (f.open(QIODevice::ReadOnly))
+        return f.readAll();
+
+    return QByteArray();
 }
 
 enum GraphicsApi
@@ -102,6 +116,9 @@ protected:
     void customInit();
     void customRelease();
     void customRender();
+#ifdef EXAMPLEFW_IMGUI
+    void customGui();
+#endif
 
     void exposeEvent(QExposeEvent *) override;
     bool event(QEvent *) override;
@@ -129,6 +146,11 @@ protected:
 #endif
 
     QColor m_clearColor;
+
+#ifdef EXAMPLEFW_IMGUI
+    QRhiImguiRenderer *m_imguiRenderer;
+    QRhiImgui m_imgui;
+#endif
 
     friend int main(int, char**);
 };
@@ -204,6 +226,10 @@ bool Window::event(QEvent *e)
         break;
 
     default:
+#ifdef EXAMPLEFW_IMGUI
+        if (m_imgui.processEvent(e))
+            return true;
+#endif
         break;
     }
 
@@ -276,6 +302,21 @@ void Window::init()
     m_rp = m_sc->newCompatibleRenderPassDescriptor();
     m_sc->setRenderPassDescriptor(m_rp);
 
+#ifdef EXAMPLEFW_IMGUI
+    ImGuiIO &io(ImGui::GetIO());
+    io.FontAllowUserScaling = true; // enable ctrl+wheel on windows
+    io.IniFilename = nullptr; // no imgui.ini
+
+    QByteArray font = getResource(QLatin1String(":/fonts/RobotoMono-Medium.ttf"));
+    ImFontConfig fontCfg;
+    fontCfg.FontDataOwnedByAtlas = false;
+    io.Fonts->Clear();
+    io.Fonts->AddFontFromMemoryTTF(font.data(), font.size(), 20.0f, &fontCfg);
+    m_imgui.rebuildFontAtlas();
+
+    m_imguiRenderer = new QRhiImguiRenderer;
+#endif
+
     customInit();
 }
 
@@ -291,6 +332,11 @@ void Window::releaseResources()
 
     delete m_sc;
     m_sc = nullptr;
+
+#ifdef EXAMPLEFW_IMGUI
+    delete m_imguiRenderer;
+    m_imguiRenderer = nullptr;
+#endif
 
     delete m_r;
     m_r = nullptr;
@@ -359,6 +405,20 @@ void Window::render()
         m_timer.restart();
         m_frameCount = 0;
     }
+
+#ifdef EXAMPLEFW_IMGUI
+    m_imgui.nextFrame(size(), devicePixelRatio(), QPointF(0, 0), std::bind(&Window::customGui, this));
+    m_imgui.syncRenderer(m_imguiRenderer);
+
+    QRhiCommandBuffer *cb = m_sc->currentFrameCommandBuffer();
+    QRhiRenderTarget *rt = m_sc->currentFrameRenderTarget();
+    const QSize outputSizeInPixels = m_sc->currentPixelSize();
+    const float dpr = devicePixelRatio();
+
+    QMatrix4x4 guiMvp = m_r->clipSpaceCorrMatrix();
+    guiMvp.ortho(0, outputSizeInPixels.width() / dpr, outputSizeInPixels.height() / dpr, 0, 1, -1);
+    m_imguiRenderer->prepare(m_r, rt, cb, guiMvp, 1.0f);
+#endif
 
     customRender();
 

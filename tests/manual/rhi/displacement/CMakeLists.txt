@@ -20,3 +20,7 @@ qt_internal_add_resource(displacement "displacement"
         "material.frag.qsb"
         "heightmap.png"
 )
+
+set(imgui_base ../shared/imgui)
+set(imgui_target displacement)
+include(${imgui_base}/imgui.cmakeinc)

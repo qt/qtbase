@@ -1,18 +1,17 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#define EXAMPLEFW_KEYPRESS_EVENTS
+#define EXAMPLEFW_IMGUI
 #include "../shared/examplefw.h"
 #include "../shared/cube.h"
 
-// Another tessellation test. Use the keys (info printed on debug output) to
-// change the tessellation and displacement factors. Compatible with Direct 3D
-// via hand-written hull and domain shaders, but this already pushes the limits
-// of what is sensible when it comes to injecting hand-written HLSL code to get
-// tessellation functional (cbuffer layout, resource registers all need to be
-// figured out manually and works only as long as the GLSL source is not
-// changing, etc.). Note that the domain shader must use SampleLevel
-// (textureLod), it won't compile for ds_5_0 otherwise.
+// Another tessellation test. Compatible with Direct 3D via hand-written hull
+// and domain shaders, but this already pushes the limits of what is sensible
+// when it comes to injecting hand-written HLSL code to get tessellation
+// functional (cbuffer layout, resource registers all need to be figured out
+// manually and works only as long as the GLSL source is not changing, etc.).
+// Note that the domain shader must use SampleLevel (textureLod), it won't
+// compile for ds_5_0 otherwise.
 
 static const quint32 UBUF_SIZE = 80;
 
@@ -30,8 +29,8 @@ struct {
     float rotation = 0.0f;
     float viewZ = 0.0f;
     float displacementAmount = 0.0f;
-    float tessInner = 4;
-    float tessOuter = 4;
+    int tessInner = 4;
+    int tessOuter = 4;
     bool useTex = false;
     bool wireframe = true;
 
@@ -42,18 +41,6 @@ void Window::customInit()
 {
     if (!m_r->isFeatureSupported(QRhi::Tessellation))
         qFatal("Tessellation is not supported");
-
-    qDebug("Left: decrease inner tessellation factor (default is 4)\n"
-           "Right: increase inner tessellation factor\n"
-           "Up: decrease outer tessellation factor (default is 4)\n"
-           "Down: increase outer tessellation factor\n"
-           "W: move camera forward\n"
-           "S: move camera backwards\n"
-           "[: decrease displacement amount (default is 0)\n"
-           "]: increase displacement amount\n"
-           "Tab: toggle displacement texture usage (off by default)\n"
-           "Backspace: toggle wireframe (on by default)\n"
-           );
 
     d.initialUpdates = m_r->nextResourceUpdateBatch();
 
@@ -165,8 +152,10 @@ void Window::customRender()
 
     memcpy(p, mvp.constData(), 64);
     memcpy(p + 64, &d.displacementAmount, sizeof(float));
-    memcpy(p + 68, &d.tessInner, sizeof(float));
-    memcpy(p + 72, &d.tessOuter, sizeof(float));
+    float tessInnerFloat = d.tessInner;
+    memcpy(p + 68, &tessInnerFloat, sizeof(float));
+    float tessOuterFloat = d.tessOuter;
+    memcpy(p + 72, &tessOuterFloat, sizeof(float));
     qint32 useTex = d.useTex ? 1 : 0;
     memcpy(p + 76, &useTex, sizeof(qint32));
 
@@ -186,37 +175,25 @@ void Window::customRender()
     cb->setVertexInput(0, 3, vbufBinding);
     cb->draw(36);
 
+    m_imguiRenderer->render();
+
     cb->endPass();
 
     if (d.rotate)
         d.rotation += 1;
 }
 
-void Window::keyPressEvent(QKeyEvent *e)
+void Window::customGui()
 {
-    if (e->key() == Qt::Key_Right)
-        d.tessInner += 1.0f;
-    else if (e->key() == Qt::Key_Left)
-        d.tessInner -= 1.0f;
-    else if (e->key() == Qt::Key_Down)
-        d.tessOuter += 1.0f;
-    else if (e->key() == Qt::Key_Up)
-        d.tessOuter -= 1.0f;
-    else if (e->key() == Qt::Key_W)
-        d.viewZ += 0.1f;
-    else if (e->key() == Qt::Key_S)
-        d.viewZ -= 0.1f;
-    else if (e->key() == Qt::Key_Space)
-        d.rotate = !d.rotate;
-    else if (e->key() == Qt::Key_BracketLeft)
-        d.displacementAmount -= 0.1f;
-    else if (e->key() == Qt::Key_BracketRight)
-        d.displacementAmount += 0.1f;
-    else if (e->key() == Qt::Key_Tab)
-        d.useTex = !d.useTex;
-    else if (e->key() == Qt::Key_Backspace)
-        d.wireframe = !d.wireframe;
-
-    qDebug("Inner: %f Outer: %f Displacement amount: %f Use displacement map: %d",
-           d.tessInner, d.tessOuter, d.displacementAmount, d.useTex);
+    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(500, 250), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Test");
+    ImGui::SliderInt("Inner", &d.tessInner, 0, 20);
+    ImGui::SliderInt("Outer", &d.tessOuter, 0, 20);
+    ImGui::SliderFloat("Displacement", &d.displacementAmount, 0.0f, 4.0f);
+    ImGui::Checkbox("Use displacement texture", &d.useTex);
+    ImGui::SliderFloat("Z", &d.viewZ, -16.0f, 4.0f);
+    ImGui::Checkbox("Rotate", &d.rotate);
+    ImGui::Checkbox("Wireframe", &d.wireframe);
+    ImGui::End();
 }

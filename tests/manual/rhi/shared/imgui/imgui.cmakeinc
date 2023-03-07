@@ -1,0 +1,29 @@
+set(imgui_sources
+    ${imgui_base}/imgui/imgui.cpp
+    ${imgui_base}/imgui/imgui_draw.cpp
+    ${imgui_base}/imgui/imgui_tables.cpp
+    ${imgui_base}/imgui/imgui_widgets.cpp
+    ${imgui_base}/imgui/imgui_demo.cpp
+    ${imgui_base}/qrhiimgui.cpp
+    ${imgui_base}/qrhiimgui_p.h
+)
+
+target_sources(${imgui_target} PRIVATE
+    ${imgui_sources}
+)
+
+target_include_directories(${imgui_target} PRIVATE
+    ${imgui_base}
+    ${imgui_base}/imgui
+)
+
+qt6_add_resources(${imgui_target} "imgui_resources"
+    PREFIX
+        "/"
+    BASE
+        ${imgui_base}
+    FILES
+        ${imgui_base}/imgui.vert.qsb
+        ${imgui_base}/imgui.frag.qsb
+        ${imgui_base}/fonts/RobotoMono-Medium.ttf
+)
