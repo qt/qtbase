@@ -4,12 +4,18 @@ cmake_minimum_required(VERSION @min_new_policy_version@...@max_new_policy_versio
 
 include(CMakeFindDependencyMacro)
 
-if (NOT QT_NO_CREATE_TARGETS)
-    # Find required dependencies, if any.
-    if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Dependencies.cmake")
-        include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Dependencies.cmake")
-    endif()
+# Find required dependencies, if any.
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Dependencies.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Dependencies.cmake")
+endif()
 
+# If *Dependencies.cmake exists, the variable value will be defined there.
+# Don't override it in that case.
+if(NOT DEFINED "@INSTALL_CMAKE_NAMESPACE@@target@_FOUND")
+    set("@INSTALL_CMAKE_NAMESPACE@@target@_FOUND" TRUE)
+endif()
+
+if (NOT QT_NO_CREATE_TARGETS AND @INSTALL_CMAKE_NAMESPACE@@target@_FOUND)
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Targets.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@AdditionalTargetInfo.cmake")
     if(NOT QT_NO_CREATE_VERSIONLESS_TARGETS)
