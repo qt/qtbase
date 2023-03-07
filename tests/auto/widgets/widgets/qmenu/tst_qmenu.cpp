@@ -1143,14 +1143,18 @@ void tst_QMenu::pushButtonPopulateOnAboutToShow()
         QSKIP("Your window manager won't allow a window against the bottom of the screen");
     }
 
-    QTimer::singleShot(300, buttonMenu, SLOT(hide()));
     QTest::mouseClick(&b, Qt::LeftButton, Qt::NoModifier, b.rect().center());
+    QVERIFY(QTest::qWaitForWindowExposed(buttonMenu));
+    QTest::qWait(300);
+    buttonMenu->hide();
     QVERIFY2(!buttonMenu->geometry().intersects(b.geometry()), msgGeometryIntersects(buttonMenu->geometry(), b.geometry()));
 
     // note: we're assuming that, if we previously got the desired geometry, we'll get it here too
     b.move(10, screen.bottom()-buttonMenu->height()-5);
-    QTimer::singleShot(300, buttonMenu, SLOT(hide()));
     QTest::mouseClick(&b, Qt::LeftButton, Qt::NoModifier, b.rect().center());
+    QVERIFY(QTest::qWaitForWindowExposed(buttonMenu));
+    QTest::qWait(300);
+    buttonMenu->hide();
     QVERIFY2(!buttonMenu->geometry().intersects(b.geometry()), msgGeometryIntersects(buttonMenu->geometry(), b.geometry()));
 }
 
