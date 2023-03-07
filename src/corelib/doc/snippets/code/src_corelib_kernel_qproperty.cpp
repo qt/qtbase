@@ -144,7 +144,7 @@ public:
         Q_D(MyClass);
         d->clients.push_back(c);
         // notify that the value could have changed
-        d->hasClientsData.markDirty();
+        d->hasClientsData.notify();
     }
 private:
     Q_DECLARE_PRIVATE(MyClass)
