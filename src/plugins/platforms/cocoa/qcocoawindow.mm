@@ -338,6 +338,9 @@ void QCocoaWindow::setVisible(bool visible)
 
         }
 
+        // Make the NSView visible first, before showing the NSWindow (in case of top level windows)
+        m_view.hidden = NO;
+
         if (isContentView()) {
             QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
@@ -375,13 +378,6 @@ void QCocoaWindow::setVisible(bool visible)
                 }
             }
         }
-
-        // In some cases, e.g. QDockWidget, the content view is hidden before moving to its own
-        // Cocoa window, and then shown again. Therefore, we test for the view being hidden even
-        // if it's attached to an NSWindow.
-        if ([m_view isHidden])
-            [m_view setHidden:NO];
-
     } else {
         // Window not visible, hide it
         if (isContentView()) {
@@ -410,9 +406,9 @@ void QCocoaWindow::setVisible(bool visible)
                 if (mainWindow && [mainWindow canBecomeKeyWindow])
                     [mainWindow makeKeyWindow];
             }
-        } else {
-            [m_view setHidden:YES];
         }
+
+        m_view.hidden = YES;
 
         if (parentCocoaWindow && window()->type() == Qt::Popup) {
             NSWindow *nativeParentWindow = parentCocoaWindow->nativeWindow();
@@ -1514,7 +1510,6 @@ void QCocoaWindow::recreateWindowIfNeeded()
     } else if (parentWindow) {
         // Child windows have no NSWindow, re-parent to superview instead
         [parentCocoaWindow->m_view addSubview:m_view];
-        [m_view setHidden:!window()->isVisible()];
     }
 }
 

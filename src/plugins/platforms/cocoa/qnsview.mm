@@ -118,6 +118,13 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
     if ((self = [super initWithFrame:NSZeroRect])) {
         m_platformWindow = platformWindow;
 
+        // NSViews are by default visible, but QWindows are not.
+        // We should ideally pick up the actual QWindow state here,
+        // but QWindowPrivate::setVisible() expects to control the
+        // order of events tightly, so we need to wait for a call
+        // to QCocoaWindow::setVisible().
+        self.hidden = YES;
+
         self.focusRingType = NSFocusRingTypeNone;
 
         self.previousSuperview = nil;
