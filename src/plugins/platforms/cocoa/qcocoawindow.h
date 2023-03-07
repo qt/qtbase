@@ -243,8 +243,6 @@ public: // for QNSView
     NSInteger m_alertRequest = NoAlertRequest;
 
     bool m_drawContentBorderGradient = false;
-    int m_topContentBorderThickness = 0;
-    int m_bottomContentBorderThickness = 0;
 
     struct BorderRange {
         BorderRange(quintptr i, int u, int l) : identifier(i), upper(u), lower(l) { }

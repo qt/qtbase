@@ -1848,7 +1848,7 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
     // Find consecutive registered border areas, starting from the top.
     std::vector<BorderRange> ranges(m_contentBorderAreas.cbegin(), m_contentBorderAreas.cend());
     std::sort(ranges.begin(), ranges.end());
-    int effectiveTopContentBorderThickness = m_topContentBorderThickness;
+    int effectiveTopContentBorderThickness = 0;
     for (BorderRange range : ranges) {
         // Skip disiabled ranges (typically hidden tool bars)
         if (!m_enabledContentBorderAreas.value(range.identifier, false))
@@ -1863,7 +1863,7 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
             break;
     }
 
-    int effectiveBottomContentBorderThickness = m_bottomContentBorderThickness;
+    int effectiveBottomContentBorderThickness = 0;
 
     [window setStyleMask:[window styleMask] | NSWindowStyleMaskTexturedBackground];
     window.titlebarAppearsTransparent = YES;
