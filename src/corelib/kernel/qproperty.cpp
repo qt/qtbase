@@ -1669,13 +1669,13 @@ QString QPropertyBindingError::description() const
   have changed. Whenever a bindable property used in the callback changes,
   this happens automatically. If the result of the callback might change
   because of a change in a value which is not a bindable property,
-  it is the developer's responsibility to call markDirty
+  it is the developer's responsibility to call \c notify
   on the QObjectComputedProperty object.
   This will inform dependent properties about the potential change.
 
-  Note that calling markDirty might trigger change handlers in dependent
+  Note that calling \c notify might trigger change handlers in dependent
   properties, which might in turn use the object the QObjectComputedProperty
-  is a member of. So markDirty must not be called when in a transitional
+  is a member of. So \c notify must not be called when in a transitional
   or invalid state.
 
   QObjectComputedProperty is not suitable for use with a computation that depends
