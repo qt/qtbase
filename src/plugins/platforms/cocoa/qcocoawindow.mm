@@ -1505,9 +1505,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
         }
     }
 
-    if (isEmbeddedView) {
-        // An embedded window doesn't have its own NSWindow.
-    } else if (parentWindow) {
+    if (parentCocoaWindow) {
         // Child windows have no NSWindow, re-parent to superview instead
         [parentCocoaWindow->m_view addSubview:m_view];
     }
