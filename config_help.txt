@@ -112,8 +112,6 @@ Build options:
                          for example, -sanitize address cannot be combined with
                          -sanitize thread.
 
-  -c++std <edition> .... Select C++ standard <edition> [c++2b/c++20/c++17/c++14/c++11]
-
   -mips_dsp/-mips_dspr2  Use MIPS DSP/rev2 instructions [auto]
 
   -qreal <type> ........ typedef qreal to the specified type. [double]
