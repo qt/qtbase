@@ -1524,15 +1524,12 @@ void QCocoaWindow::recreateWindowIfNeeded()
         setWindowTitle(window()->title());
         setWindowFilePath(window()->filePath()); // Also sets window icon
         setWindowState(window()->windowState());
+        setOpacity(window()->opacity());
     } else {
         // Child windows have no NSWindow, re-parent to superview instead
         [parentCocoaWindow->m_view addSubview:m_view];
         [m_view setHidden:!window()->isVisible()];
     }
-
-    const qreal opacity = qt_window_private(window())->opacity;
-    if (!qFuzzyCompare(opacity, qreal(1.0)))
-        setOpacity(opacity);
 
     setMask(QHighDpi::toNativeLocalRegion(window()->mask(), window()));
 }
