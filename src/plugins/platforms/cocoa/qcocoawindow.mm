@@ -147,6 +147,8 @@ void QCocoaWindow::initialize()
 
     recreateWindowIfNeeded();
 
+    setMask(QHighDpi::toNativeLocalRegion(window()->mask(), window()));
+
     m_initialized = true;
 }
 
@@ -1530,8 +1532,6 @@ void QCocoaWindow::recreateWindowIfNeeded()
         [parentCocoaWindow->m_view addSubview:m_view];
         [m_view setHidden:!window()->isVisible()];
     }
-
-    setMask(QHighDpi::toNativeLocalRegion(window()->mask(), window()));
 }
 
 void QCocoaWindow::requestUpdate()
