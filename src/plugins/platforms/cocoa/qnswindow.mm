@@ -196,6 +196,28 @@ static bool isMouseEvent(NSEvent *ev)
     return m_platformWindow;
 }
 
+- (void)setContentView:(NSView*)view
+{
+    [super setContentView:view];
+
+    if (!qnsview_cast(self.contentView))
+        return;
+
+    // Now that we're the content view, we can apply the properties of
+    // the QWindow. We do this here, instead of in init, so that we can
+    // use the same code paths for setting these properties during
+    // NSWindow initialization as we do when setting them later on.
+    const QWindow *window = m_platformWindow->window();
+    qCDebug(lcQpaWindow) << "Reflecting" << window << "state to" << self;
+
+    m_platformWindow->propagateSizeHints();
+    m_platformWindow->setWindowFlags(window->flags());
+    m_platformWindow->setWindowTitle(window->title());
+    m_platformWindow->setWindowFilePath(window->filePath()); // Also sets window icon
+    m_platformWindow->setWindowState(window->windowState());
+    m_platformWindow->setOpacity(window->opacity());
+}
+
 - (NSString *)description
 {
     NSMutableString *description = [NSMutableString stringWithString:[super description]];
