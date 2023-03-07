@@ -24,6 +24,9 @@ public:
 
     operator WId() const { return reinterpret_cast<WId>(m_handle); }
 
+    void setGeometry(const QRect &rect);
+    QRect geometry() const;
+
 private:
 #if defined(Q_OS_MACOS)
     NSView *m_handle = nullptr;
@@ -63,6 +66,16 @@ NativeWindow::~NativeWindow()
     [m_handle release];
 }
 
+void NativeWindow::setGeometry(const QRect &rect)
+{
+    m_handle.frame = QRectF(rect).toCGRect();
+}
+
+QRect NativeWindow::geometry() const
+{
+    return QRectF::fromCGRect(m_handle.frame).toRect();
+}
+
 #elif defined(Q_OS_WIN)
 
 NativeWindow::NativeWindow()
@@ -85,6 +98,22 @@ NativeWindow::~NativeWindow()
     DestroyWindow(m_handle);
 }
 
+void NativeWindow::setGeometry(const QRect &rect)
+{
+    MoveWindow(m_handle, rect.x(), rect.y(), rect.width(), rect.height(), false);
+}
+
+QRect NativeWindow::geometry() const
+{
+    WINDOWPLACEMENT wp;
+    wp.length = sizeof(WINDOWPLACEMENT);
+    if (GetWindowPlacement(m_handle, &wp)) {
+        RECT r = wp.rcNormalPosition;
+        return QRect(r.left, r.top, r.right - r.left, r.bottom - r.top);
+    }
+    return {};
+}
+
 #endif
 
 class tst_ForeignWindow: public QObject
@@ -100,6 +129,7 @@ private slots:
     }
 
     void fromWinId();
+    void initialState();
 };
 
 void tst_ForeignWindow::fromWinId()
@@ -115,6 +145,33 @@ void tst_ForeignWindow::fromWinId()
     // fromWinId does not take (exclusive) ownership of the native window,
     // so deleting the foreign window should not be a problem/cause crashes.
     foreignWindow.reset();
+}
+
+void tst_ForeignWindow::initialState()
+{
+    NativeWindow nativeWindow;
+    QVERIFY(nativeWindow);
+
+    // A foreign window can be used to embed a Qt UI in a foreign window hierarchy,
+    // in which case the foreign window merely acts as a parent and should not be
+    // modified, or to embed a foreign window in a Qt UI, in which case the foreign
+    // window must to be able to re-parent, move, resize, show, etc, so that the
+    // containing Qt UI can treat it as any other window.
+
+    // At the point of creation though, we don't know what the foreign window
+    // will be used for, so the platform should not assume it can modify the
+    // window. Any properties set on the native window should persist past
+    // creation of the foreign window.
+
+    const QRect initialGeometry(123, 456, 321, 654);
+    nativeWindow.setGeometry(initialGeometry);
+
+    std::unique_ptr<QWindow> foreignWindow(QWindow::fromWinId(nativeWindow));
+    QCOMPARE(nativeWindow.geometry(), initialGeometry);
+
+    // For extra bonus points, the foreign window should actually
+    // reflect the state of the native window.
+    QCOMPARE(foreignWindow->geometry(), initialGeometry);
 }
 
 #include <tst_foreignwindow.moc>
