@@ -1511,15 +1511,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
 
     if (isEmbeddedView) {
         // An embedded window doesn't have its own NSWindow.
-    } else if (!parentWindow) {
-        // QPlatformWindow subclasses must sync up with QWindow on creation:
-        propagateSizeHints();
-        setWindowFlags(window()->flags());
-        setWindowTitle(window()->title());
-        setWindowFilePath(window()->filePath()); // Also sets window icon
-        setWindowState(window()->windowState());
-        setOpacity(window()->opacity());
-    } else {
+    } else if (parentWindow) {
         // Child windows have no NSWindow, re-parent to superview instead
         [parentCocoaWindow->m_view addSubview:m_view];
         [m_view setHidden:!window()->isVisible()];
