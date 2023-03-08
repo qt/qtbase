@@ -2682,6 +2682,15 @@ void QMessageBoxPrivate::initHelper(QPlatformDialogHelper *h)
     Q_Q(QMessageBox);
     QObject::connect(h, SIGNAL(clicked(QPlatformDialogHelper::StandardButton,QPlatformDialogHelper::ButtonRole)),
                      q, SLOT(_q_clicked(QPlatformDialogHelper::StandardButton,QPlatformDialogHelper::ButtonRole)));
+
+    auto *messageDialogHelper = static_cast<QPlatformMessageDialogHelper *>(h);
+    QObject::connect(messageDialogHelper, &QPlatformMessageDialogHelper::checkBoxStateChanged, q,
+        [this](Qt::CheckState state) {
+            if (checkbox)
+                checkbox->setCheckState(state);
+        }
+    );
+
     static_cast<QPlatformMessageDialogHelper *>(h)->setOptions(options);
 }
 
@@ -2720,6 +2729,8 @@ void QMessageBoxPrivate::helperPrepareShow(QPlatformDialogHelper *)
     options->setStandardIcon(helperIcon(q->icon()));
     options->setIconPixmap(q->iconPixmap());
     options->setStandardButtons(helperStandardButtons(q));
+    if (checkbox)
+        options->setCheckBox(checkbox->text(), checkbox->checkState());
 }
 
 void QMessageBoxPrivate::helperDone(QDialog::DialogCode code, QPlatformDialogHelper *)

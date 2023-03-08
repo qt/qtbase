@@ -63,9 +63,9 @@ void QErrorMessagePrivate::initHelper(QPlatformDialogHelper *helper)
 {
     Q_Q(QErrorMessage);
     auto *messageDialogHelper = static_cast<QPlatformMessageDialogHelper *>(helper);
-    QObject::connect(messageDialogHelper, &QPlatformMessageDialogHelper::supressionCheckBoxChanged, q,
-        [this](bool supressionChecked) {
-            again->setChecked(!supressionChecked);
+    QObject::connect(messageDialogHelper, &QPlatformMessageDialogHelper::checkBoxStateChanged, q,
+        [this](Qt::CheckState state) {
+            again->setCheckState(state);
         }
     );
     QObject::connect(messageDialogHelper, &QPlatformMessageDialogHelper::clicked, q,
@@ -86,7 +86,7 @@ void QErrorMessagePrivate::helperPrepareShow(QPlatformDialogHelper *helper)
     options->setText(QErrorMessage::tr("An error occurred"));
     options->setInformativeText(currentMessage);
     options->setStandardIcon(QMessageDialogOptions::Critical);
-    options->setSupressionCheckBoxEnabled(true);
+    options->setCheckBox(again->text(), again->checkState());
     messageDialogHelper->setOptions(options);
 }
 

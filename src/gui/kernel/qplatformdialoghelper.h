@@ -451,8 +451,9 @@ public:
     const QList<CustomButton> &customButtons();
     const CustomButton *customButton(int id);
 
-    void setSupressionCheckBoxEnabled(bool enabled);
-    bool supressionCheckBoxEnabled() const;
+    void setCheckBox(const QString &label, Qt::CheckState state);
+    QString checkBoxLabel() const;
+    Qt::CheckState checkBoxState() const;
 
 private:
     QMessageDialogOptionsPrivate *d;
@@ -467,7 +468,7 @@ public:
 
 Q_SIGNALS:
     void clicked(QPlatformDialogHelper::StandardButton button, QPlatformDialogHelper::ButtonRole role);
-    void supressionCheckBoxChanged(bool checked);
+    void checkBoxStateChanged(Qt::CheckState state);
 
 private:
     QSharedPointer<QMessageDialogOptions> m_options;

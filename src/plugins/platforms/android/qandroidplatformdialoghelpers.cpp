@@ -54,7 +54,7 @@ bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags,
     if (!opt.data())
         return false;
 
-    if (opt->supressionCheckBoxEnabled())
+    if (!opt->checkBoxLabel().isNull())
         return false; // Can't support
 
     m_javaMessageDialog.callMethod<void>("setStandardIcon", "(I)V", opt->standardIcon());
