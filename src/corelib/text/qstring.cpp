@@ -981,7 +981,7 @@ Q_CORE_EXPORT void qt_from_latin1(char16_t *dst, const char *str, size_t size) n
         return;
     } else {
         size = size % 4;
-        return UnrollTailLoop<3>::exec(qsizetype(size), [=](int i) { dst[i] = (uchar)str[i]; });
+        return UnrollTailLoop<3>::exec(qsizetype(size), [=](qsizetype i) { dst[i] = uchar(str[i]); });
     }
 #  endif
 #endif

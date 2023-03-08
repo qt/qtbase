@@ -13,7 +13,7 @@ static void bm_init_skiptable(QStringView needle, uchar *skiptable, Qt::CaseSens
     const char16_t *uc = needle.utf16();
     const qsizetype len =
             cs == Qt::CaseSensitive ? needle.size() : qMin(needle.size(), FoldBufferCapacity);
-    qsizetype l = qMin(len, qsizetype(255));
+    int l = qMin(int(len), 255);
     memset(skiptable, l, 256 * sizeof(uchar));
     uc += len - l;
     if (cs == Qt::CaseSensitive) {

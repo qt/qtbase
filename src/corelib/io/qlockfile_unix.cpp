@@ -170,7 +170,7 @@ bool QLockFilePrivate::removeStaleLock()
 
 bool QLockFilePrivate::isProcessRunning(qint64 pid, const QString &appname)
 {
-    if (::kill(pid, 0) == -1 && errno == ESRCH)
+    if (::kill(pid_t(pid), 0) == -1 && errno == ESRCH)
         return false; // PID doesn't exist anymore
 
     const QString processName = processNameByPid(pid);

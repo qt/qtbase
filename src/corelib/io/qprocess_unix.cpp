@@ -95,8 +95,8 @@ struct AutoPipe
 
 struct ChildError
 {
-    qint64 code;
-    char function[8];
+    int code;
+    char function[12];
 };
 
 // Used for argv and envp arguments to execve()
@@ -568,7 +568,7 @@ bool QProcessPrivate::processStarted(QString *errorMessage)
     Q_Q(QProcess);
 
     ChildError buf;
-    int ret = qt_safe_read(childStartedPipe[0], &buf, sizeof(buf));
+    ssize_t ret = qt_safe_read(childStartedPipe[0], &buf, sizeof(buf));
 
     if (stateNotifier) {
         stateNotifier->setEnabled(false);

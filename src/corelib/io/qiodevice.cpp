@@ -1500,7 +1500,7 @@ qint64 QIODevice::readLineData(char *data, qint64 maxSize)
     Q_D(QIODevice);
     qint64 readSoFar = 0;
     char c;
-    int lastReadReturn = 0;
+    qint64 lastReadReturn = 0;
     d->baseReadLineDataCalled = true;
 
     while (readSoFar < maxSize && (lastReadReturn = read(&c, 1)) == 1) {

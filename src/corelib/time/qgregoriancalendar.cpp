@@ -93,7 +93,7 @@ bool QGregorianCalendar::validParts(int year, int month, int day)
 
 int QGregorianCalendar::weekDayOfJulian(qint64 jd)
 {
-    return qMod<7>(jd) + 1;
+    return int(qMod<7>(jd) + 1);
 }
 
 bool QGregorianCalendar::dateToJulianDay(int year, int month, int day, qint64 *jd) const

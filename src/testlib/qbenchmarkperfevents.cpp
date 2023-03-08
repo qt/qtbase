@@ -108,7 +108,8 @@ static QList<PerfEvent> defaultCounters()
 static int perf_event_open(perf_event_attr *attr, pid_t pid, int cpu, int group_fd, unsigned long flags)
 {
 #ifdef SYS_perf_event_open
-    return syscall(SYS_perf_event_open, attr, pid, cpu, group_fd, flags);
+    // syscall() returns long, but perf_event_open() is used to get a file descriptor
+    return int(syscall(SYS_perf_event_open, attr, pid, cpu, group_fd, flags));
 #else
     Q_UNUSED(attr);
     Q_UNUSED(pid);
