@@ -542,8 +542,8 @@ QString QLibraryInfoPrivate::path(QLibraryInfo::LibraryPath p, UsageMode usageMo
                 ret = v.toString();
             }
 
-            int startIndex = 0;
-            forever {
+            qsizetype startIndex = 0;
+            while (true) {
                 startIndex = ret.indexOf(u'$', startIndex);
                 if (startIndex < 0)
                     break;
@@ -553,7 +553,7 @@ QString QLibraryInfoPrivate::path(QLibraryInfo::LibraryPath p, UsageMode usageMo
                     startIndex++;
                     continue;
                 }
-                int endIndex = ret.indexOf(u')', startIndex + 2);
+                qsizetype endIndex = ret.indexOf(u')', startIndex + 2);
                 if (endIndex < 0)
                     break;
                 auto envVarName = QStringView{ret}.mid(startIndex + 2, endIndex - startIndex - 2);

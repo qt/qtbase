@@ -651,7 +651,7 @@ char16_t *QUtf8::convertToUnicode(char16_t *dst, QByteArrayView in) noexcept
 
             do {
                 uchar b = *src++;
-                int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, dst, src, end);
+                const qsizetype res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, dst, src, end);
                 if (res < 0) {
                     // decoding error
                     *dst++ = QChar::ReplacementCharacter;
@@ -694,7 +694,7 @@ char16_t *QUtf8::convertToUnicode(char16_t *dst, QByteArrayView in, QStringConve
     if (state->flags & QStringConverter::Flag::ConvertInvalidToNull)
         replacement = QChar::Null;
 
-    int res;
+    qsizetype res;
     uchar ch = 0;
 
     const uchar *src = reinterpret_cast<const uchar *>(in.data());
@@ -810,7 +810,7 @@ QUtf8::ValidUtf8Result QUtf8::isValidUtf8(QByteArrayView in)
 
             isValidAscii = false;
             QUtf8NoOutputTraits::NoOutput output;
-            int res = QUtf8Functions::fromUtf8<QUtf8NoOutputTraits>(b, output, src, end);
+            const qsizetype res = QUtf8Functions::fromUtf8<QUtf8NoOutputTraits>(b, output, src, end);
             if (res < 0) {
                 // decoding error
                 return { false, false };
@@ -837,7 +837,7 @@ int QUtf8::compareUtf8(QByteArrayView utf8, QStringView utf16, Qt::CaseSensitivi
 
             if (uc1 >= 0x80) {
                 char32_t *output = &uc1;
-                int res = QUtf8Functions::fromUtf8<QUtf8BaseTraitsNoAscii>(uc1, output, src1, end1);
+                qsizetype res = QUtf8Functions::fromUtf8<QUtf8BaseTraitsNoAscii>(uc1, output, src1, end1);
                 if (res < 0) {
                     // decoding error
                     uc1 = QChar::ReplacementCharacter;
@@ -872,7 +872,7 @@ int QUtf8::compareUtf8(QByteArrayView utf8, QLatin1StringView s, Qt::CaseSensiti
     while (src1 < end1 && src2 < end2) {
         uchar b = *src1++;
         char32_t *output = &uc1;
-        int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, output, src1, end1);
+        const qsizetype res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, output, src1, end1);
         if (res < 0) {
             // decoding error
             uc1 = QChar::ReplacementCharacter;
@@ -912,7 +912,7 @@ int QUtf8::compareUtf8(QByteArrayView lhs, QByteArrayView rhs, Qt::CaseSensitivi
     while (src1 < end1 && src2 < end2) {
         uchar b = *src1++;
         char32_t *output = &uc1;
-        int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, output, src1, end1);
+        qsizetype res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, output, src1, end1);
         if (res < 0) {
             // decoding error
             uc1 = QChar::ReplacementCharacter;

@@ -352,8 +352,7 @@ static QByteArray getEtcFileFirstLine(const char *fileName)
         return QByteArray();
 
     const char *ptr = buffer.constData();
-    int eol = buffer.indexOf("\n");
-    return QByteArray(ptr, eol).trimmed();
+    return QByteArray(ptr, buffer.indexOf("\n")).trimmed();
 }
 
 static bool readEtcRedHatRelease(QUnixOSVersion &v)
@@ -368,9 +367,9 @@ static bool readEtcRedHatRelease(QUnixOSVersion &v)
     v.prettyName = QString::fromLatin1(line);
 
     const char keyword[] = "release ";
-    int releaseIndex = line.indexOf(keyword);
+    const qsizetype releaseIndex = line.indexOf(keyword);
     v.productType = QString::fromLatin1(line.mid(0, releaseIndex)).remove(u' ');
-    int spaceIndex = line.indexOf(' ', releaseIndex + strlen(keyword));
+    const qsizetype spaceIndex = line.indexOf(' ', releaseIndex + strlen(keyword));
     v.productVersion = QString::fromLatin1(line.mid(releaseIndex + strlen(keyword),
                                                     spaceIndex > -1 ? spaceIndex - releaseIndex - int(strlen(keyword)) : -1));
     return true;

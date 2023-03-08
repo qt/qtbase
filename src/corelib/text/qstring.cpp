@@ -1252,7 +1252,7 @@ Q_NEVER_INLINE static int ucstricmp8(const char *utf8, const char *utf8end, cons
         char32_t uc1 = 0;
         char32_t *output = &uc1;
         uchar b = *src1++;
-        int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, output, src1, end1);
+        const qsizetype res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, output, src1, end1);
         if (res < 0) {
             // decoding error
             uc1 = QChar::ReplacementCharacter;

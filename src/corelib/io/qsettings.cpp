@@ -558,7 +558,7 @@ bool QSettingsPrivate::iniUnescapedKey(QByteArrayView key, QString &result)
         }
 
         int numDigits = 2;
-        int firstDigitPos = i + 1;
+        qsizetype firstDigitPos = i + 1;
 
         ch = decoded.at(i + 1).unicode();
         if (ch == 'U') {

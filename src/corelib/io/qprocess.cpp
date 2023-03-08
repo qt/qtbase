@@ -72,7 +72,7 @@ QProcessEnvironment QProcessEnvironmentPrivate::fromList(const QStringList &list
     QStringList::ConstIterator it = list.constBegin(),
                               end = list.constEnd();
     for ( ; it != end; ++it) {
-        int pos = it->indexOf(u'=', 1);
+        const qsizetype pos = it->indexOf(u'=', 1);
         if (pos < 1)
             continue;
 

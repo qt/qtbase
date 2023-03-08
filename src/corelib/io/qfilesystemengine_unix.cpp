@@ -1104,7 +1104,7 @@ static bool createDirectoryWithParents(const QByteArray &nativeName, mode_t mode
         return false;
 
     // mkdir failed because the parent dir doesn't exist, so try to create it
-    int slash = nativeName.lastIndexOf('/');
+    qsizetype slash = nativeName.lastIndexOf('/');
     if (slash < 1)
         return false;
 
@@ -1147,7 +1147,7 @@ bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool remo
 
     if (removeEmptyParents) {
         QString dirName = QDir::cleanPath(entry.filePath());
-        for (int oldslash = 0, slash=dirName.size(); slash > 0; oldslash = slash) {
+        for (qsizetype oldslash = 0, slash=dirName.size(); slash > 0; oldslash = slash) {
             const QByteArray chunk = QFile::encodeName(dirName.left(slash));
             QT_STATBUF st;
             if (QT_STAT(chunk.constData(), &st) != -1) {
