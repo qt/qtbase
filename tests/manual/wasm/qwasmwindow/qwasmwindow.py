@@ -12,7 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 
 import unittest
-
+from enum import Enum, auto
 
 class WidgetTestCase(unittest.TestCase):
     def setUp(self):
@@ -22,367 +22,424 @@ class WidgetTestCase(unittest.TestCase):
         self._test_sandbox_element = WebDriverWait(self._driver, 30).until(
             presence_of_element_located((By.ID, 'test-sandbox'))
         )
-
-    def _make_geometry(self, x, y, width, height):
-        return {'x': x, 'y': y, 'width': width, 'height': height}
+        self.addTypeEqualityFunc(Rect, assert_rects_equal)
 
     def test_window_resizing(self):
-        screen = self._create_screen_with_fixed_position(0, 0, 600, 600)
-        screen_information = self._screen_information()
-        self.assertEqual(len(screen_information), 1)
-        screen_information = screen_information[-1]
-        window = self._create_window(
-            100, 100, 200, 200, screen, screen_information["name"], 'title')
+        defaultWindowMinSize = 100
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                       x=0, y=0, width=600, height=600)
+        window = Window(screen, x=100, y=100, width=200, height=200)
+        self.assertEqual(window.rect, Rect(x=100, y=100, width=200, height=200))
 
-        window_information = self._window_information()[0]
-        self.assertEqual(
-            window_information["geometry"], self._make_geometry(100, 100, 200, 200))
+        window.drag(Handle.TOP_LEFT, direction=UP(10) + LEFT(10))
+        self.assertEqual(window.rect, Rect(x=90, y=90, width=210, height=210))
 
-        self._drag_window(window, window_information, [0, 0], [-10, -10])
-        window_information = self._window_information()[0]
-        self.assertEqual(
-            window_information["geometry"], self._make_geometry(90, 90, 210, 210))
+        window.drag(Handle.TOP, direction=DOWN(10) + LEFT(100))
+        self.assertEqual(window.rect, Rect(x=90, y=100, width=210, height=200))
 
-        self._drag_window(window, window_information,
-                          [window_information['frameGeometry']['width'] / 2, 0], [-100, 10])
-        window_information = self._window_information()[0]
-        self.assertEqual(
-            window_information["geometry"], self._make_geometry(90, 100, 210, 200))
+        window.drag(Handle.TOP_RIGHT, direction=UP(5) + LEFT(5))
+        self.assertEqual(window.rect, Rect(x=90, y=95, width=205, height=205))
 
-        self._drag_window(window, window_information,
-                          [window_information['frameGeometry']['width'], 0], [-5, -5])
-        window_information = self._window_information()[0]
+        window.drag(Handle.RIGHT, direction=DOWN(100) + RIGHT(5))
+        self.assertEqual(window.rect, Rect(x=90, y=95, width=210, height=205))
 
-        self.assertEqual(
-            window_information["geometry"], self._make_geometry(90, 95, 205, 205))
+        window.drag(Handle.BOTTOM_RIGHT, direction=UP(5) + LEFT(10))
+        self.assertEqual(window.rect, Rect(x=90, y=95, width=200, height=200))
 
-        self._drag_window(window, window_information,
-                          [window_information['frameGeometry']['width'],
-                           window_information['frameGeometry']['height'] / 2], [5, 100])
-        window_information = self._window_information()[0]
+        window.drag(Handle.BOTTOM, direction=DOWN(20) + LEFT(100))
+        self.assertEqual(window.rect, Rect(x=90, y=95, width=200, height=220))
 
-        self.assertEqual(
-            window_information["geometry"], self._make_geometry(90, 95, 210, 205))
+        window.drag(Handle.BOTTOM_LEFT, direction=DOWN(10) + LEFT(10))
+        self.assertEqual(window.rect, Rect(x=80, y=95, width=210, height=230))
 
-        self._drag_window(window, window_information,
-                          [window_information['frameGeometry']['width'],
-                           window_information['frameGeometry']['height']], [-10, -5])
-        window_information = self._window_information()[0]
+        window.drag(Handle.LEFT, direction=DOWN(343) + LEFT(5))
+        self.assertEqual(window.rect, Rect(x=75, y=95, width=215, height=230))
 
-        self.assertEqual(self._window_information()[0]["geometry"],
-                         self._make_geometry(90, 95, 200, 200))
-
-        self._drag_window(window, window_information, [
-            window_information['frameGeometry']['width'] / 2,
-            window_information['frameGeometry']['height']], [-100, 20])
-        window_information = self._window_information()[0]
-
-        self.assertEqual(self._window_information()[0]["geometry"],
-                         self._make_geometry(90, 95, 200, 220))
-
-        self._drag_window(window, window_information, [
-            0, window_information['frameGeometry']['height']], [-10, 10])
-        window_information = self._window_information()[0]
-
-        self.assertEqual(self._window_information()[0]["geometry"],
-                         self._make_geometry(80, 95, 210, 230))
-
-        self._drag_window(window, window_information, [
-            0, window_information['frameGeometry']['height'] / 2], [-5, 343])
-        window_information = self._window_information()[0]
-
-        self.assertEqual(self._window_information()[0]["geometry"],
-                         self._make_geometry(75, 95, 215, 230))
+        window.drag(Handle.BOTTOM_RIGHT, direction=UP(150) + LEFT(150))
+        self.assertEqual(window.rect, Rect(x=75, y=95, width=defaultWindowMinSize, height=defaultWindowMinSize))
 
     def test_cannot_resize_over_screen_top_edge(self):
-        screen = self._create_screen_with_fixed_position(200, 200, 300, 300)
-        screen_information = self._screen_information()[-1]
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                       x=200, y=200, width=300, height=300)
+        window = Window(screen, x=300, y=300, width=100, height=100)
+        self.assertEqual(window.rect, Rect(x=300, y=300, width=100, height=100))
+        frame_rect_before_resize = window.frame_rect
 
-        window = self._create_window(
-            300, 300, 100, 100, screen, screen_information['name'], 'title')
-
-        window_information = self._window_information()[0]
-        frame_geometry_before_resize = window_information["frameGeometry"]
-        self.assertEqual(
-            window_information["geometry"], self._make_geometry(300, 300, 100, 100))
-
-        self._drag_window(window, window_information,
-                          [window_information['frameGeometry']['width'] / 2, 0], [0, -200])
-
-        geometry = self._window_information()[0]["geometry"]
-        frame_geometry = self._window_information()[0]["frameGeometry"]
-        self.assertEqual(geometry['x'], 300)
-        self.assertEqual(frame_geometry['y'],
-                         screen_information['geometry']['y'])
-        self.assertEqual(geometry['width'], 100)
-        self.assertEqual(frame_geometry['y'] + frame_geometry['height'],
-                         frame_geometry_before_resize['y'] + frame_geometry_before_resize['height'])
+        window.drag(Handle.TOP, direction=UP(200))
+        self.assertEqual(window.rect.x, 300)
+        self.assertEqual(window.frame_rect.y, screen.rect.y)
+        self.assertEqual(window.rect.width, 100)
+        self.assertEqual(window.frame_rect.y + window.frame_rect.height,
+                         frame_rect_before_resize.y + frame_rect_before_resize.height)
 
     def test_window_move(self):
-        screen = self._create_screen_with_fixed_position(200, 200, 300, 300)
-        screen_information = self._screen_information()[-1]
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                       x=200, y=200, width=300, height=300)
+        window = Window(screen, x=300, y=300, width=100, height=100)
+        self.assertEqual(window.rect, Rect(x=300, y=300, width=100, height=100))
 
-        window = self._create_window(
-            300, 300, 100, 100, screen, screen_information['name'], 'title')
+        window.drag(Handle.TOP_WINDOW_BAR, direction=UP(30))
+        self.assertEqual(window.rect, Rect(x=300, y=270, width=100, height=100))
 
-        self.assertEqual(
-            self._window_information()[0]["geometry"], self._make_geometry(300, 300, 100, 100))
+        window.drag(Handle.TOP_WINDOW_BAR, direction=RIGHT(50))
+        self.assertEqual(window.rect, Rect(x=350, y=270, width=100, height=100))
 
-        window_information = self._window_information()[0]
-        self._drag_window(window, window_information,
-                          [window_information['frameGeometry']['width'] / 2, 6], [0, -30])
-
-        self.assertEqual(self._window_information()[0]["geometry"],
-                         self._make_geometry(300, 270, 100, 100))
-
-        window_information = self._window_information()[0]
-        window_frame_top = window_information['frameGeometry']['y']
-        window_client_area_top = window_information['geometry']['y']
-
-        top_frame_height = window_client_area_top - window_frame_top + 1
-
-        self._drag_window(window, window_information,
-                          [window_information['frameGeometry']['width'] / 2,
-                           top_frame_height], [0, -30])
-
-        self.assertEqual(self._window_information()[0]["geometry"],
-                         self._make_geometry(300, 270, 100, 100))
+        window.drag(Handle.TOP_WINDOW_BAR, direction=DOWN(30) + LEFT(70))
+        self.assertEqual(window.rect, Rect(x=280, y=300, width=100, height=100))
 
     def test_screen_limits_window_moves(self):
-        screen = self._create_screen_with_relative_position(200, 200, 300, 300)
-        screen_information = self._screen_information()[-1]
+        screen = Screen(self._driver, ScreenPosition.RELATIVE,
+                       x=200, y=200, width=300, height=300)
+        window = Window(screen, x=300, y=300, width=100, height=100)
+        self.assertEqual(window.rect, Rect(x=300, y=300, width=100, height=100))
 
-        window = self._create_window(
-            300, 300, 100, 100, screen, screen_information['name'], 'title')
-
-        self.assertEqual(self._window_information()[0]["geometry"],
-                         self._make_geometry(300, 300, 100, 100))
-
-        window_information = self._window_information()[0]
-        self._drag_window(window, window_information,
-                          [window_information['frameGeometry']['width'] / 2, 6], [-300, 0])
-        self.assertEqual(
-            self._window_information()[0]["frameGeometry"]['x'],
-            screen_information['geometry']['x'] - window_information['frameGeometry']['width'] / 2)
+        window.drag(Handle.TOP_WINDOW_BAR, direction=LEFT(300))
+        self.assertEqual(window.frame_rect.x, screen.rect.x - window.frame_rect.width / 2)
 
     def test_screen_in_scroll_container_limits_window_moves(self):
-        _, screen = self._create_screen_in_scroll_container(
-            500, 7000, 200, 2000, 300, 300)
-        screen_information = self._screen_information()[-1]
+        screen = Screen(self._driver, ScreenPosition.IN_SCROLL_CONTAINER,
+                        x=200, y=2000, width=300, height=300,
+                        container_width=500, container_height=7000)
+        screen.scroll_to()
+        window = Window(screen, x=300, y=2100, width=100, height=100)
+        self.assertEqual(window.rect, Rect(x=300, y=2100, width=100, height=100))
 
-        ActionChains(self._driver).scroll_to_element(screen).perform()
-
-        window = self._create_window(
-            300, 2100, 100, 100, screen, screen_information['name'], 'title')
-
-        self.assertEqual(self._window_information()[0]["geometry"],
-                         self._make_geometry(300, 2100, 100, 100))
-
-        window_information = self._window_information()[0]
-        self._drag_window(window, window_information,
-                          [window_information['frameGeometry']['width'] / 2, 6], [-300, 0])
-        self.assertEqual(
-            self._window_information()[0]["frameGeometry"]['x'],
-            screen_information['geometry']['x'] - window_information['frameGeometry']['width'] / 2)
+        window.drag(Handle.TOP_WINDOW_BAR, direction=LEFT(300))
+        self.assertEqual(window.frame_rect.x, screen.rect.x - window.frame_rect.width / 2)
 
     def test_maximize(self):
-        screen = self._create_screen_with_relative_position(200, 200, 300, 300)
-        screen_information = self._screen_information()[-1]
+        screen = Screen(self._driver, ScreenPosition.RELATIVE,
+                        x=200, y=200, width=300, height=300)
+        window = Window(screen, x=300, y=300, width=100, height=100, title='Maximize')
+        self.assertEqual(window.rect, Rect(x=300, y=300, width=100, height=100))
 
-        window = self._create_window(
-            300, 300, 100, 100, screen, screen_information['name'], 'Maximize')
-
-        self.assertEqual(self._window_information()[0]["geometry"],
-                         self._make_geometry(300, 300, 100, 100))
-
-        maximize_button = window.find_element(
-            By.CSS_SELECTOR, f'.title-bar :nth-child(6)')
-        maximize_button.click()
-
-        self.assertEqual(
-            self._window_information()[0]["frameGeometry"],
-            self._make_geometry(200, 200, 300, 300))
+        window.maximize()
+        self.assertEqual(window.frame_rect, Rect(x=200, y=200, width=300, height=300))
 
     def test_multitouch_window_move(self):
-        screen = self._create_screen_with_fixed_position(0, 0, 800, 800)
-        screen_information = self._screen_information()[-1]
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                        x=0, y=0, width=800, height=800)
+        windows = [Window(screen, x=50, y=50, width=100, height=100, title='First'),
+                   Window(screen, x=400, y=400, width=100, height=100, title='Second'),
+                   Window(screen, x=50, y=400, width=100, height=100, title='Third')]
+        self.assertEqual(windows[0].rect, Rect(x=50, y=50, width=100, height=100))
+        self.assertEqual(windows[1].rect, Rect(x=400, y=400, width=100, height=100))
+        self.assertEqual(windows[2].rect, Rect(x=50, y=400, width=100, height=100))
 
-        windows = [
-            self._create_window(50, 50, 100, 100, screen,
-                                screen_information['name'], 'First'),
-            self._create_window(
-                400, 400, 100, 100, screen, screen_information['name'], 'Second'),
-            self._create_window(50, 400, 100, 100, screen,
-                                screen_information['name'], 'Third')
-        ]
-
-        window_information = [
-            self._window_information(title) for title in ['First', 'Second', 'Third']]
-
-        self.assertEqual(
-            window_information[0]["geometry"], self._make_geometry(50, 50, 100, 100))
-        self.assertEqual(
-            window_information[1]["geometry"], self._make_geometry(400, 400, 100, 100))
-        self.assertEqual(
-            window_information[2]["geometry"], self._make_geometry(50, 400, 100, 100))
-
-        touch_action_builder = ActionBuilder(self._driver)
-
-        touch_pointer_actions = [PointerActions(source=touch_action_builder.add_pointer_input(
-            POINTER_TOUCH, f'touch_input_{i}')) for i in range(3)]
-
-        # Move the touch pointers to the middle of the title bar
-        for window, info, action in zip(windows, window_information, touch_pointer_actions):
-            action.move_to(window, x=0, y=-
-                           info['frameGeometry']['height'] / 2 + 6)
-            action.pointer_down(width=10, height=10, pressure=1)
-
-        offsets = [[2, 2], [-2, 2], [2, -2]]
-        for _ in range(10):
-            for action, offset in zip(touch_pointer_actions, offsets):
-                action.move_by(x=offset[0], y=offset[1], width=10, height=10)
-
-        for action in touch_pointer_actions:
-            action.pointer_up()
-
-        touch_action_builder.perform()
-
-        self.assertEqual(self._window_information('First')["geometry"],
-                         self._make_geometry(70, 70, 100, 100))
-        self.assertEqual(self._window_information('Second')["geometry"],
-                         self._make_geometry(380, 420, 100, 100))
-        self.assertEqual(self._window_information('Third')["geometry"],
-                         self._make_geometry(70, 380, 100, 100))
+        actions = [TouchDragAction(origin=windows[0].at(Handle.TOP_WINDOW_BAR), direction=DOWN(20) + RIGHT(20)),
+                   TouchDragAction(origin=windows[1].at(Handle.TOP_WINDOW_BAR), direction=DOWN(20) + LEFT(20)),
+                   TouchDragAction(origin=windows[2].at(Handle.TOP_WINDOW_BAR), direction=UP(20) + RIGHT(20))]
+        perform_touch_drag_actions(actions)
+        self.assertEqual(windows[0].rect, Rect(x=70, y=70, width=100, height=100))
+        self.assertEqual(windows[1].rect, Rect(x=380, y=420, width=100, height=100))
+        self.assertEqual(windows[2].rect, Rect(x=70, y=380, width=100, height=100))
 
     def test_multitouch_window_resize(self):
-        screen = self._create_screen_with_fixed_position(0, 0, 800, 800)
-        screen_information = self._screen_information()[-1]
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                        x=0, y=0, width=800, height=800)
+        windows = [Window(screen, x=50, y=50, width=150, height=150, title='First'),
+                   Window(screen, x=400, y=400, width=150, height=150, title='Second'),
+                   Window(screen, x=50, y=400, width=150, height=150, title='Third')]
+        self.assertEqual(windows[0].rect, Rect(x=50, y=50, width=150, height=150))
+        self.assertEqual(windows[1].rect, Rect(x=400, y=400, width=150, height=150))
+        self.assertEqual(windows[2].rect, Rect(x=50, y=400, width=150, height=150))
 
-        windows = [
-            self._create_window(50, 50, 100, 100, screen,
-                                screen_information['name'], 'First'),
-            self._create_window(
-                400, 400, 100, 100, screen, screen_information['name'], 'Second'),
-            self._create_window(50, 400, 100, 100, screen,
-                                screen_information['name'], 'Third')
-        ]
-
-        window_information = [
-            self._window_information(title) for title in ['First', 'Second', 'Third']]
-
-        self.assertEqual(
-            window_information[0]["geometry"], self._make_geometry(50, 50, 100, 100))
-        self.assertEqual(
-            window_information[1]["geometry"], self._make_geometry(400, 400, 100, 100))
-        self.assertEqual(
-            window_information[2]["geometry"], self._make_geometry(50, 400, 100, 100))
-
-        touch_action_builder = ActionBuilder(self._driver)
-
-        touch_pointer_actions = [PointerActions(source=touch_action_builder.add_pointer_input(
-            POINTER_TOUCH, f'touch_input_{i}')) for i in range(3)]
-
-        initial_offsets = [
-            # top left
-            [-window_information[0]['frameGeometry']['width'] / 2,
-             -window_information[0]['frameGeometry']['height'] / 2],
-            # top
-            [0,
-             -window_information[1]['frameGeometry']['height'] / 2],
-            # bottom right
-            [window_information[2]['frameGeometry']['width'] / 2,
-             window_information[2]['frameGeometry']['height'] / 2],
-        ]
-
-        for window, initial_offset, action in zip(windows, initial_offsets, touch_pointer_actions):
-            action.move_to(window, x=initial_offset[0], y=initial_offset[1])
-            action.pointer_down(width=10, height=10, pressure=1)
-
-        # First resizes NE, Second NW, Third SE
-        offsets = [[2, 2], [-2, 2], [2, -2]]
-        for _ in range(10):
-            for action, offset in zip(touch_pointer_actions, offsets):
-                action.move_by(x=offset[0], y=offset[1], width=10, height=10)
-
-        for action in touch_pointer_actions:
-            action.pointer_up()
-
-        touch_action_builder.perform()
-
-        self.assertEqual(self._window_information('First')["geometry"],
-                         self._make_geometry(70, 70, 80, 80))
-        self.assertEqual(self._window_information('Second')["geometry"],
-                         self._make_geometry(400, 420, 100, 80))
-        self.assertEqual(self._window_information('Third')["geometry"],
-                         self._make_geometry(50, 400, 120, 80))
+        actions = [TouchDragAction(origin=windows[0].at(Handle.TOP_LEFT), direction=DOWN(20) + RIGHT(20)),
+                   TouchDragAction(origin=windows[1].at(Handle.TOP), direction=DOWN(20) + LEFT(20)),
+                   TouchDragAction(origin=windows[2].at(Handle.BOTTOM_RIGHT), direction=UP(20) + RIGHT(20))]
+        perform_touch_drag_actions(actions)
+        self.assertEqual(windows[0].rect, Rect(x=70, y=70, width=130, height=130))
+        self.assertEqual(windows[1].rect, Rect(x=400, y=420, width=150, height=130))
+        self.assertEqual(windows[2].rect, Rect(x=50, y=400, width=170, height=130))
 
     def tearDown(self):
         self._driver.quit()
 
-    def _drag_window(self, window_element, window_information, origin, offset):
-        ActionChains(self._driver).move_to_element(
-            window_element).move_by_offset(
-                -window_information['frameGeometry']['width'] / 2 + origin[0],
-                -window_information['frameGeometry']['height'] / 2 + origin[1]).click_and_hold(
-        ).move_by_offset(*offset).release().perform()
 
-    def _call_instance_function(self, name):
-        return self._driver.execute_script(
-            f'''let result;
-                window.{name}Callback = data => result = data;
-                instance.{name}();
-                return eval(result);''')
+class ScreenPosition(Enum):
+    FIXED = auto()
+    RELATIVE = auto()
+    IN_SCROLL_CONTAINER = auto()
 
-    def _window_information(self, title=None):
-        information = self._call_instance_function('windowInformation')
-        if not title:
-            return information
-        return next(filter(lambda e: e['title'] == title, information))
 
-    def _screen_information(self):
-        return self._call_instance_function('screenInformation')
-
-    def _get_resize_location(self, screen, window_info, which):
-        frame_geometry = window_info['frameGeometry']
-        frame_x_in_screen = frame_geometry['x'] - screen['geometry']['x']
-        frame_y_in_screen = frame_geometry['y'] - screen['geometry']['y']
-
-        return [frame_x_in_screen, frame_y_in_screen]
-
-    def _get_title_bar(self, window):
-        return window.find_element(
-            By.CSS_SELECTOR, f'.window-name')
-
-    def _create_screen_with_fixed_position(self, x, y, w, h):
-        return self._driver.execute_script(
+class Screen:
+    def __init__(self, driver, positioning, x, y, width, height, container_width=0, container_height=0):
+        self.driver = driver
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        if positioning == ScreenPosition.FIXED:
+            command = f'initializeScreenWithFixedPosition({self.x}, {self.y}, {self.width}, {self.height})'
+        elif positioning == ScreenPosition.RELATIVE:
+            command = f'initializeScreenWithRelativePosition({self.x}, {self.y}, {self.width}, {self.height})'
+        elif positioning == ScreenPosition.IN_SCROLL_CONTAINER:
+            command = f'initializeScreenInScrollContainer({container_width}, {container_height}, {self.x}, {self.y}, {self.width}, {self.height})'
+        self.element = self.driver.execute_script(
             f'''
-                return testSupport.initializeScreenWithFixedPosition({x}, {y}, {w}, {h});
+                return testSupport.{command};
             '''
         )
+        if positioning == ScreenPosition.IN_SCROLL_CONTAINER:
+            self.element = self.element[1]
 
-    def _create_screen_with_relative_position(self, x, y, w, h):
-        return self._driver.execute_script(
+        screen_information = call_instance_function(
+            self.driver, 'screenInformation')
+        if len(screen_information) != 1:
+            raise AssertionError('Expecting exactly one screen_information!')
+        self.screen_info = screen_information[0]
+
+    @property
+    def rect(self):
+        self.screen_info = call_instance_function(
+            self.driver, 'screenInformation')[0]
+        geo = self.screen_info['geometry']
+        return Rect(geo['x'], geo['y'], geo['width'], geo['height'])
+
+    def scroll_to(self):
+        ActionChains(self.driver).scroll_to_element(self.element).perform()
+
+
+class Window:
+    def __init__(self, screen, x, y, width, height, title='title'):
+        self.driver = screen.driver
+        self.title = title
+        self.driver.execute_script(
             f'''
-                return testSupport.initializeScreenWithRelativePosition({x}, {y}, {w}, {h});
+                instance.createWindow({x}, {y}, {width}, {height}, '{screen.screen_info["name"]}', '{title}');
             '''
         )
+        self._window_id = self.__window_information()['id']
+        self.element = screen.element.shadow_root.find_element(
+            By.CSS_SELECTOR, f'#qt-window-{self._window_id}')
 
-    def _create_screen_in_scroll_container(self, containerW, containerH, x, y, w, h):
-        return self._driver.execute_script(
-            f'''
-                return testSupport.initializeScreenInScrollContainer(
-                    {containerW}, {containerH}, {x}, {y}, {w}, {h});
-            '''
-        )
+    def __window_information(self):
+        information = call_instance_function(self.driver, 'windowInformation')
+        return next(filter(lambda e: e['title'] == self.title, information))
 
-    def _create_window(self, x, y, w, h, screen, screen_id, title):
-        self._driver.execute_script(
-            f'''
-                instance.createWindow({x}, {y}, {w}, {h}, '{screen_id}', '{title}');
-            '''
-        )
-        window_id = self._window_information(title)["id"]
-        return screen.shadow_root.find_element(By.CSS_SELECTOR, f'#qt-window-{window_id}')
+    @property
+    def rect(self):
+        geo = self.__window_information()["geometry"]
+        return Rect(geo['x'], geo['y'], geo['width'], geo['height'])
+
+    @property
+    def frame_rect(self):
+        geo = self.__window_information()["frameGeometry"]
+        return Rect(geo['x'], geo['y'], geo['width'], geo['height'])
+
+    def drag(self, handle, direction):
+        ActionChains(self.driver)                                                        \
+            .move_to_element_with_offset(self.element, *self.at(handle)['offset'])       \
+            .click_and_hold()                                                            \
+            .move_by_offset(*translate_direction_to_offset(direction))                   \
+            .release().perform()
+
+    def maximize(self):
+        maximize_button = self.element.find_element(
+            By.CSS_SELECTOR, f'.title-bar :nth-child(6)')
+        maximize_button.click()
+
+    def at(self, handle):
+        """ Returns (window, offset) for given handle on window"""
+        width = self.frame_rect.width
+        height = self.frame_rect.height
+
+        if handle == Handle.TOP_LEFT:
+            offset = (-width/2, -height/2)
+        elif handle == Handle.TOP:
+            offset = (0, -height/2)
+        elif handle == Handle.TOP_RIGHT:
+            offset = (width/2, -height/2)
+        elif handle == Handle.LEFT:
+            offset = (-width/2, 0)
+        elif handle == Handle.RIGHT:
+            offset = (width/2, 0)
+        elif handle == Handle.BOTTOM_LEFT:
+            offset = (-width/2, height/2)
+        elif handle == Handle.BOTTOM:
+            offset = (0, height/2)
+        elif handle == Handle.BOTTOM_RIGHT:
+            offset = (width/2, height/2)
+        elif handle == Handle.TOP_WINDOW_BAR:
+            frame_top = self.frame_rect.y
+            client_area_top = self.rect.y
+            top_frame_bar_width = client_area_top - frame_top
+            offset = (0, -height/2 + top_frame_bar_width/2)
+        return {'window': self, 'offset': offset}
+
+
+class TouchDragAction:
+    def __init__(self, origin, direction):
+        self.origin = origin
+        self.direction = direction
+        self.step = 2
+
+
+def perform_touch_drag_actions(actions):
+    driver = actions[0].origin['window'].driver
+    touch_action_builder = ActionBuilder(driver)
+    pointers = [PointerActions(source=touch_action_builder.add_pointer_input(
+        POINTER_TOUCH, f'touch_input_{i}')) for i in range(len(actions))]
+
+    for action, pointer in zip(actions, pointers):
+        pointer.move_to(
+            action.origin['window'].element, *action.origin['offset'])
+        pointer.pointer_down(width=10, height=10, pressure=1)
+    moves = [translate_direction_to_offset(a.direction) for a in actions]
+
+    def movement_finished():
+        for move in moves:
+            if move != (0, 0):
+                return False
+        return True
+
+    def sign(num):
+        if num > 0:
+            return 1
+        elif num < 0:
+            return -1
+        return 0
+
+    while not movement_finished():
+        for i in range(len(actions)):
+            pointer = pointers[i]
+            move = moves[i]
+            step = actions[i].step
+
+            current_move = (
+                min(abs(move[0]), step) * sign(move[0]), min(abs(move[1]), step) * sign(move[1]))
+            moves[i] = (move[0] - current_move[0], move[1] - current_move[1])
+            pointer.move_by(current_move[0],
+                            current_move[1], width=10, height=10)
+    for pointer in pointers:
+        pointer.pointer_up()
+
+    touch_action_builder.perform()
+
+
+class TouchDragAction:
+    def __init__(self, origin, direction):
+        self.origin = origin
+        self.direction = direction
+        self.step = 2
+
+
+def perform_touch_drag_actions(actions):
+    driver = actions[0].origin['window'].driver
+    touch_action_builder = ActionBuilder(driver)
+    pointers = [PointerActions(source=touch_action_builder.add_pointer_input(
+        POINTER_TOUCH, f'touch_input_{i}')) for i in range(len(actions))]
+
+    for action, pointer in zip(actions, pointers):
+        pointer.move_to(
+            action.origin['window'].element, *action.origin['offset'])
+        pointer.pointer_down(width=10, height=10, pressure=1)
+
+    moves = [translate_direction_to_offset(a.direction) for a in actions]
+
+    def movement_finished():
+        for move in moves:
+            if move != (0, 0):
+                return False
+        return True
+
+    def sign(num):
+        if num > 0:
+            return 1
+        elif num < 0:
+            return -1
+        return 0
+
+    while not movement_finished():
+        for i in range(len(actions)):
+            pointer = pointers[i]
+            move = moves[i]
+            step = actions[i].step
+
+            current_move = (
+                min(abs(move[0]), step) * sign(move[0]), min(abs(move[1]), step) * sign(move[1]))
+            moves[i] = (move[0] - current_move[0], move[1] - current_move[1])
+            pointer.move_by(current_move[0],
+                            current_move[1], width=10, height=10)
+
+    for pointer in pointers:
+        pointer.pointer_up()
+
+    touch_action_builder.perform()
+
+
+def translate_direction_to_offset(direction):
+    return (direction.val[1] - direction.val[3], direction.val[2] - direction.val[0])
+
+
+def call_instance_function(driver, name):
+    return driver.execute_script(
+        f'''let result;
+            window.{name}Callback = data => result = data;
+            instance.{name}();
+            return eval(result);''')
+
+
+class Direction:
+    def __init__(self):
+        self.val = (0, 0, 0, 0)
+
+    def __init__(self, north, east, south, west):
+        self.val = (north, east, south, west)
+
+    def __add__(self, other):
+        return Direction(self.val[0] + other.val[0],
+                         self.val[1] + other.val[1],
+                         self.val[2] + other.val[2],
+                         self.val[3] + other.val[3])
+
+
+class UP(Direction):
+    def __init__(self, step=1):
+        self.val = (step, 0, 0, 0)
+
+
+class RIGHT(Direction):
+    def __init__(self, step=1):
+        self.val = (0, step, 0, 0)
+
+
+class DOWN(Direction):
+    def __init__(self, step=1):
+        self.val = (0, 0, step, 0)
+
+
+class LEFT(Direction):
+    def __init__(self, step=1):
+        self.val = (0, 0, 0, step)
+
+
+class Handle(Enum):
+    TOP_LEFT = auto()
+    TOP = auto()
+    TOP_RIGHT = auto()
+    LEFT = auto()
+    RIGHT = auto()
+    BOTTOM_LEFT = auto()
+    BOTTOM = auto()
+    BOTTOM_RIGHT = auto()
+    TOP_WINDOW_BAR = auto()
+
+
+class Rect:
+    def __init__(self, x, y, width, height) -> None:
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+    def __str__(self):
+        return f'(x: {self.x}, y: {self.y}, width: {self.width}, height: {self.height})'
+
+
+def assert_rects_equal(geo1, geo2, msg=None):
+    if geo1.x != geo2.x or geo1.y != geo2.y or geo1.width != geo2.width or geo1.height != geo2.height:
+        raise AssertionError(f'Rectangles not equal: \n{geo1} \nvs \n{geo2}')
 
 
 unittest.main()
