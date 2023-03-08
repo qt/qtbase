@@ -764,7 +764,7 @@ QByteArray QFileSystemEngine::id(int fd)
 QString QFileSystemEngine::resolveUserName(uint userId)
 {
 #if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
-    int size_max = sysconf(_SC_GETPW_R_SIZE_MAX);
+    long size_max = sysconf(_SC_GETPW_R_SIZE_MAX);
     if (size_max == -1)
         size_max = 1024;
     QVarLengthArray<char, 1024> buf(size_max);
@@ -790,7 +790,7 @@ QString QFileSystemEngine::resolveUserName(uint userId)
 QString QFileSystemEngine::resolveGroupName(uint groupId)
 {
 #if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
-    int size_max = sysconf(_SC_GETPW_R_SIZE_MAX);
+    long size_max = sysconf(_SC_GETPW_R_SIZE_MAX);
     if (size_max == -1)
         size_max = 1024;
     QVarLengthArray<char, 1024> buf(size_max);
@@ -806,7 +806,7 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
     struct group entry;
     // Some large systems have more members than the POSIX max size
     // Loop over by doubling the buffer size (upper limit 250k)
-    for (unsigned size = size_max; size < 256000; size += size)
+    for (long size = size_max; size < 256000; size += size)
     {
         buf.resize(size);
         // ERANGE indicates that the buffer was too small
