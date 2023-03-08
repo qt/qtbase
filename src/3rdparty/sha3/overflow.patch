@@ -1,0 +1,31 @@
+From a60180d3f8ffac268f02d2d4b0b4fbf1bff50f11 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?M=C3=A5rten=20Nordheim?= <marten.nordheim@qt.io>
+Date: Wed, 8 Mar 2023 11:10:49 +0100
+Subject: [PATCH] Fix overflow in SHA-3/Keccak
+
+Pick-to: 6.5.0 6.5 6.4.3 6.4 6.2 5.15
+Change-Id: I56d268a19fb3cd542cc027edc962253f09d97a14
+---
+ src/3rdparty/sha3/KeccakSponge.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/3rdparty/sha3/KeccakSponge.c b/src/3rdparty/sha3/KeccakSponge.c
+index 6f3da95dbb..337c10ccaf 100644
+--- a/src/3rdparty/sha3/KeccakSponge.c
++++ b/src/3rdparty/sha3/KeccakSponge.c
+@@ -170,9 +170,10 @@ static int Absorb(spongeState *state, const unsigned char *data, unsigned long l
+             i += wholeBlocks*state->rate;
+         }
+         else {
+-            partialBlock = (unsigned int)(databitlen - i);
+-            if (partialBlock+state->bitsInQueue > state->rate)
++            if (databitlen-i > state->rate - state->bitsInQueue)
+                 partialBlock = state->rate-state->bitsInQueue;
++            else
++                partialBlock = (unsigned int)(databitlen - i);
+             partialByte = partialBlock % 8;
+             partialBlock -= partialByte;
+             memcpy(state->dataQueue+state->bitsInQueue/8, data+i/8, partialBlock/8);
+-- 
+2.39.2.vfs.0.0
+

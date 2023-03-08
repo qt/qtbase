@@ -48,6 +48,8 @@ private slots:
     void files();
     void hashLength();
 
+    // keep last
+    void keccakBufferOverflow();
 private:
     void ensureLargeData();
     std::vector<char> large;
@@ -323,6 +325,34 @@ void tst_QCryptographicHash::ensureLargeData()
     QCOMPARE(large.size(), 4 * GiB + 1);
     large.back() = '\1';
     qDebug("created dataset in %lld ms", timer.elapsed());
+#endif
+}
+
+void tst_QCryptographicHash::keccakBufferOverflow()
+{
+#if QT_POINTER_SIZE == 4
+    QSKIP("This is a 64-bit-only test");
+#else
+
+    ensureLargeData();
+    if (large.empty())
+        return;
+
+    QElapsedTimer timer;
+    timer.start();
+    const auto sg = qScopeGuard([&] {
+        qDebug() << "test finished in" << timer.restart() << "ms";
+    });
+
+    constexpr qsizetype magic = INT_MAX/4;
+    QVERIFY(large.size() >= size_t(magic + 1));
+
+    QCryptographicHash hash(QCryptographicHash::Algorithm::Keccak_224);
+
+    hash.addData(large.data(), 1);
+    hash.addData(large.data() + 1, magic);
+    (void)hash.result();
+    QVERIFY(true); // didn't crash
 #endif
 }
 
