@@ -46,6 +46,16 @@ static QString toPlainText(const QString &text)
     return textDocument.toPlainText();
 }
 
+static NSControlStateValue controlStateFor(Qt::CheckState state)
+{
+    switch (state) {
+    case Qt::Checked: return NSControlStateValueOn;
+    case Qt::Unchecked: return NSControlStateValueOff;
+    case Qt::PartiallyChecked: return NSControlStateValueMixed;
+    }
+    Q_UNREACHABLE();
+}
+
 /*
     Called from QDialogPrivate::setNativeDialogVisible() when the message box
     is ready to be shown.
@@ -185,7 +195,14 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
             StandardButton::Ok, ButtonRole::AcceptRole);
     }
 
-    m_alert.showsSuppressionButton = options()->supressionCheckBoxEnabled();
+    if (auto checkBoxLabel = options()->checkBoxLabel(); !checkBoxLabel.isNull()) {
+        checkBoxLabel = QPlatformTheme::removeMnemonics(checkBoxLabel);
+        m_alert.suppressionButton.title = checkBoxLabel.toNSString();
+        auto state = options()->checkBoxState();
+        m_alert.suppressionButton.allowsMixedState = state == Qt::PartiallyChecked;
+        m_alert.suppressionButton.state = controlStateFor(state);
+        m_alert.showsSuppressionButton = YES;
+    }
 
     qCDebug(lcQpaDialogs) << "Showing" << m_alert;
 
@@ -233,6 +250,16 @@ void QCocoaMessageDialog::exec()
 // Custom modal response code to record that the dialog was hidden by us
 static const NSInteger kModalResponseDialogHidden = NSAlertThirdButtonReturn + 1;
 
+static Qt::CheckState checkStateFor(NSControlStateValue state)
+{
+    switch (state) {
+    case NSControlStateValueOn: return Qt::Checked;
+    case NSControlStateValueOff: return Qt::Unchecked;
+    case NSControlStateValueMixed: return Qt::PartiallyChecked;
+    }
+    Q_UNREACHABLE();
+}
+
 void QCocoaMessageDialog::processResponse(NSModalResponse response)
 {
     qCDebug(lcQpaDialogs) << "Processing response" << response << "for" << m_alert;
@@ -244,7 +271,7 @@ void QCocoaMessageDialog::processResponse(NSModalResponse response)
     [alert autorelease];
 
     if (alert.showsSuppressionButton)
-        emit supressionCheckBoxChanged(alert.suppressionButton.state == NSControlStateValueOn);
+        emit checkBoxStateChanged(checkStateFor(alert.suppressionButton.state));
 
      if (response >= NSAlertFirstButtonReturn) {
         // Safe range for user-defined modal responses
