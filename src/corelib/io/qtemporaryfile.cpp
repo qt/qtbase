@@ -45,8 +45,8 @@ QTemporaryFileName::QTemporaryFileName(const QString &templateName)
 {
     // Ensure there is a placeholder mask
     QString qfilename = QDir::fromNativeSeparators(templateName);
-    uint phPos = qfilename.size();
-    uint phLength = 0;
+    qsizetype phPos = qfilename.size();
+    qsizetype phLength = 0;
 
     while (phPos != 0) {
         --phPos;
