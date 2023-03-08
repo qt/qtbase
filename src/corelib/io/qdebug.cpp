@@ -1028,7 +1028,6 @@ void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, int value)
 
 #ifndef QT_NO_QOBJECT
 /*!
-    \fn QDebug qt_QMetaEnum_debugOperator(QDebug &, int value, const QMetaObject *, const char *name)
     \internal
 
     Formats the given enum \a value for debug output.
@@ -1075,7 +1074,7 @@ QDebug qt_QMetaEnum_debugOperator(QDebug &dbg, qint64 value, const QMetaObject *
             dbg << scope << u"::";
     }
 
-    const char *key = me.valueToKey(value);
+    const char *key = me.valueToKey(static_cast<int>(value));
     const bool scoped = me.isScoped() || verbosity & 1;
     if (scoped || !key)
         dbg << me.enumName() << (!key ? u"(" : u"::");
@@ -1144,7 +1143,7 @@ QDebug qt_QMetaEnum_flagDebugOperator(QDebug &debug, quint64 value, const QMetaO
         debug << '(';
     }
 
-    debug << me.valueToKeys(value);
+    debug << me.valueToKeys(static_cast<int>(value));
 
     if (enumScope)
         debug << ')';

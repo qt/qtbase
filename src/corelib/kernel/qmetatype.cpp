@@ -1951,13 +1951,13 @@ static bool convertFromEnum(QMetaType fromType, const void *from, QMetaType toTy
     QMetaEnum en = metaEnumFromType(fromType);
     if (en.isValid()) {
         if (en.isFlag()) {
-            const QByteArray keys = en.valueToKeys(ll);
+            const QByteArray keys = en.valueToKeys(static_cast<int>(ll));
             if (toType.id() == QMetaType::QString)
                 *static_cast<QString *>(to) = QString::fromUtf8(keys);
             else
                 *static_cast<QByteArray *>(to) = keys;
         } else {
-            const char *key = en.valueToKey(ll);
+            const char *key = en.valueToKey(static_cast<int>(ll));
             if (toType.id() == QMetaType::QString)
                 *static_cast<QString *>(to) = QString::fromUtf8(key);
             else
