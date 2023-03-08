@@ -70,8 +70,7 @@ void tst_QErrorMessage::dontShowAgain()
     QVERIFY(errorMessageDialog.isVisible());
     checkBox = errorMessageDialog.findChild<QCheckBox*>();
     QVERIFY(checkBox);
-    QVERIFY(!checkBox->isChecked());
-    checkBox->setChecked(true);
+    QVERIFY(checkBox->isChecked());
     errorMessageDialog.close();
 
     errorMessageDialog.showMessage(htmlString);
