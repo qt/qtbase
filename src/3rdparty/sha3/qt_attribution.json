@@ -21,6 +21,7 @@
         "QtUsage": "Used in Qt Core (QCryptographicHash).",
         "Files": "https://keccak.team/obsolete/KeccakReferenceAndOptimized-3.2.zip - but it's obsolete",
         "Files": "KeccakF-1600-32-rvk.macros KeccakF-1600-32.macros KeccakF-1600-64.macros KeccakF-1600-interface.h KeccakF-1600-opt32.c KeccakF-1600-opt64.c KeccakF-1600-unrolling.macros KeccakNISTInterface.c KeccakNISTInterface.h KeccakSponge.c KeccakSponge.h",
+        "Files": "With overflow.patch applied",
 
         "Description": "SHA-3, originally known as Keccak, is a cryptographic hash function.",
         "Version": "3.2",
