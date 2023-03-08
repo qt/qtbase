@@ -57,7 +57,7 @@ variables can be used to dynamically specify a path relative to the deployment b
 as shown in the example below. This helps avoid hard-coding an absolute path.
 
 \sa {qt6_generate_deploy_app_script}{qt_generate_deploy_app_script()},
-    qt_deploy_runtime_dependencies()
+    {qt6_deploy_runtime_dependencies}{qt_deploy_runtime_dependencies()}
 
 \section1 Example
 

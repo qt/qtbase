@@ -52,9 +52,9 @@ generation time. It is intended to be used with the \l{install(SCRIPT)} command,
 which should come after the application's target has been installed using
 \l{install(TARGETS)}.
 
-The deployment script will call \l{qt_deploy_runtime_dependencies()} with a
-suitable set of options for the standard install layout.
-Currently, this is only implemented for
+The deployment script will call \l{qt6_deploy_runtime_dependencies}
+{qt_deploy_runtime_dependencies()} with a suitable set of options for the standard
+install layout. Currently, this is only implemented for
 \list
     \li macOS app bundles built on a macOS host,
     \li Linux executables built on a Linux host,
@@ -81,7 +81,7 @@ The options \c{PRE_INCLUDE_REGEXES}, \c{PRE_EXCLUDE_REGEXES},
 \c{POST_INCLUDE_REGEXES}, \c{POST_EXCLUDE_REGEXES}, \c{POST_INCLUDE_FILES}, and
 \c{POST_EXCLUDE_FILES} can be specified to control the deployment of runtime
 dependencies. These options do not apply to all platforms and are forwarded
-unmodified to \l{qt_deploy_runtime_dependencies()}.
+unmodified to \l{qt6_deploy_runtime_dependencies}{qt_deploy_runtime_dependencies()}.
 
 \sa {qt6_standard_project_setup}{qt_standard_project_setup()},
     {qt6_generate_deploy_script}{qt_generate_deploy_script()},
