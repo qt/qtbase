@@ -672,6 +672,13 @@ QByteArray QByteArray::chopped(qsizetype n) const
 { return sliced(0, size() - n); }
 #endif
 
+#include "qcborstreamreader.h"
+
+QCborError QCborStreamReader::lastError()
+{
+    return std::as_const(*this).lastError();
+}
+
 #include "qdatetime.h"
 
 QDateTime::QDateTime(QDate date, QTime time, const QTimeZone &timeZone)

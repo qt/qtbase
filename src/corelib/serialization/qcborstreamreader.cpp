@@ -929,7 +929,7 @@ void QCborStreamReader::reset()
 
    \sa isValid()
  */
-QCborError QCborStreamReader::lastError()
+QCborError QCborStreamReader::lastError() const
 {
     return d->lastError;
 }

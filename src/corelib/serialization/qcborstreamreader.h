@@ -77,7 +77,10 @@ public:
     void clear();
     void reset();
 
+#if QT_CORE_REMOVED_SINCE(6, 6)
     QCborError lastError();
+#endif
+    QCborError lastError() const;
 
     qint64 currentOffset() const;
 
