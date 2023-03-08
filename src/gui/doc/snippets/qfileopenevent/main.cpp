@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Samuel Gaist <samuel.gaist@edeltech.ch>
+// Copyright (C) 2023 Samuel Gaist <samuel.gaist@edeltech.ch>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 //! [QApplication subclass]
@@ -19,7 +19,15 @@ public:
     {
         if (event->type() == QEvent::FileOpen) {
             QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
-            qDebug() << "Open file" << openEvent->file();
+            const QUrl url = openEvent->url();
+            if (url.isLocalFile()) {
+                QFile localFile(url.toLocalFile());
+                // read from local file
+            } else if (url.isValid()) {
+                // process according to the URL's schema
+            } else {
+                // parse openEvent->file()
+            }
         }
 
         return QApplication::event(event);

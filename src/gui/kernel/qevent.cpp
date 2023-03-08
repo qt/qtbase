@@ -3594,10 +3594,15 @@ Q_IMPL_EVENT_COMMON(QShowEvent)
 
     \snippet qfileopenevent/Info.plist Custom Info.plist
 
-    The following implementation of a QApplication subclass prints the path to
-    the file that was, for example, dropped on the Dock icon of the application.
+    The following implementation of a QApplication subclass shows how to handle
+    QFileOpenEvent to open the file that was, for example, dropped on the Dock
+    icon of the application.
 
     \snippet qfileopenevent/main.cpp QApplication subclass
+
+    Note how \c{QFileOpenEvent::file()} is not guaranteed to be the name of a
+    local file that can be opened using QFile. The contents of the string depend
+    on the source application.
 */
 
 /*!

@@ -78,8 +78,8 @@ void tst_qfileopenevent::constructor()
 
 QByteArray tst_qfileopenevent::readFileContent(QFileOpenEvent& event)
 {
-    QFile file;
-    event.openFile(file, QFile::ReadOnly);
+    QFile file(event.file());
+    file.open(QFile::ReadOnly);
     file.seek(0);
     QByteArray data = file.readAll();
     return data;
@@ -87,8 +87,8 @@ QByteArray tst_qfileopenevent::readFileContent(QFileOpenEvent& event)
 
 bool tst_qfileopenevent::appendFileContent(QFileOpenEvent& event, const QByteArray& writeContent)
 {
-    QFile file;
-    bool ok = event.openFile(file, QFile::Append | QFile::Unbuffered);
+    QFile file(event.file());
+    bool ok = file.open(QFile::Append | QFile::Unbuffered);
     if (ok)
         ok = file.write(writeContent) == writeContent.size();
     return ok;
@@ -127,8 +127,8 @@ void tst_qfileopenevent::handleLifetime()
     QScopedPointer<QFileOpenEvent> event(createFileAndEvent(QLatin1String("testHandleLifetime"), QByteArray("test content")));
 
     // open a QFile after the original RFile is closed
-    QFile qFile;
-    QCOMPARE(event->openFile(qFile, QFile::Append | QFile::Unbuffered), true);
+    QFile qFile(event->file());
+    QVERIFY(qFile.open(QFile::Append | QFile::Unbuffered));
     event.reset(0);
 
     // write to the QFile after the event is closed
@@ -152,7 +152,8 @@ void tst_qfileopenevent::multiOpen()
 
     QFile files[5];
     for (int i=0; i<5; i++) {
-        QCOMPARE(event->openFile(files[i], QFile::ReadOnly), true);
+        files[i].setFileName(event->file());
+        QVERIFY(files[i].open(QFile::ReadOnly));
     }
     for (int i=0; i<5; i++)
         files[i].seek(i);

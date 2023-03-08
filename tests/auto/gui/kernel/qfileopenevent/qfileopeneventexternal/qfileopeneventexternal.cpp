@@ -14,8 +14,8 @@ struct MyApplication : public QGuiApplication
     {
         if (event->type() == QEvent::FileOpen) {
             QFileOpenEvent* ev = static_cast<QFileOpenEvent *>(event);
-            QFile file;
-            bool ok = ev->openFile(file, QFile::Append | QFile::Unbuffered);
+            QFile file(ev->file());
+            bool ok = file.open(QFile::Append | QFile::Unbuffered);
             if (ok)
                 file.write(QByteArray("+external"));
             return true;
