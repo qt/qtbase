@@ -104,6 +104,7 @@ static QString createGuid(const QUuid &uuid)
 
 static void writePrologue(QTextStream &stream, const QString &fileName, const Provider &provider)
 {
+    writeCommonPrologue(stream);
     QUuid uuid = QUuid::createUuidV5(QUuid(), provider.name.toLocal8Bit());
 
     const QString providerV = providerVar(provider.name);

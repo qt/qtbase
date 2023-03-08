@@ -101,6 +101,7 @@ static void writeCtfMacro(QTextStream &stream, const Provider &provider, const T
 
 static void writePrologue(QTextStream &stream, const QString &fileName, const Provider &provider)
 {
+    writeCommonPrologue(stream);
     const QString guard = includeGuard(fileName);
 
     stream << "#undef TRACEPOINT_PROVIDER\n";

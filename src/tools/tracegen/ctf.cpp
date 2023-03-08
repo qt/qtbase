@@ -15,6 +15,7 @@
 
 static void writePrologue(QTextStream &stream, const QString &fileName, const Provider &provider)
 {
+    writeCommonPrologue(stream);
     const QString guard = includeGuard(fileName);
 
     // include prefix text or qt headers only once

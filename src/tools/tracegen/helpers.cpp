@@ -6,6 +6,15 @@
 
 using namespace Qt::StringLiterals;
 
+void writeCommonPrologue(QTextStream &stream)
+{
+    stream << R"CPP(
+#ifndef Q_TRACEPOINT
+#error "Q_TRACEPOINT not set for the module, Q_TRACE not enabled."
+#endif
+)CPP";
+}
+
 QString typeToTypeName(const QString &name)
 {
     QString ret = name;
