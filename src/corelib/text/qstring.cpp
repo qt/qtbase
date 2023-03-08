@@ -1200,7 +1200,7 @@ void qt_to_latin1_unchecked(uchar *dst, const char16_t *src, qsizetype length)
 Q_NEVER_INLINE static int ucstricmp(qsizetype alen, const char16_t *a, qsizetype blen, const char16_t *b)
 {
     if (a == b)
-        return (alen - blen);
+        return qt_lencmp(alen, blen);
 
     char32_t alast = 0;
     char32_t blast = 0;
@@ -6434,7 +6434,7 @@ int QString::compare_helper(const QChar *data1, qsizetype length1, const char *d
     Q_ASSERT(length1 >= 0);
     Q_ASSERT(data1 || length1 == 0);
     if (!data2)
-        return length1;
+        return qt_lencmp(length1, 0);
     if (Q_UNLIKELY(length2 < 0))
         length2 = qsizetype(strlen(data2));
     return QtPrivate::compareStrings(QStringView(data1, length1),
@@ -7212,7 +7212,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
                     }
                     default: {
                         int *n = va_arg(ap, int*);
-                        *n = result.size();
+                        *n = int(result.size());
                         break;
                     }
                 }
