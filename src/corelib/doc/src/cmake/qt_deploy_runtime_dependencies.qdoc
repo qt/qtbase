@@ -58,7 +58,7 @@ appropriate set of Qt plugins.
 
 This command only considers runtime dependencies for which linking
 relationships exist in the underlying binaries. It does not deploy QML modules,
-see \l{qt_deploy_qml_imports()} for that.
+see \l{qt6_deploy_qml_imports}{qt_deploy_qml_imports()} for that.
 
 \section1 Arguments
 
@@ -139,7 +139,8 @@ The default value of \c{POST_EXCLUDE_REGEXES} is constructed from the value of
 \l{QT_DEPLOY_IGNORED_LIB_DIRS}.
 
 \sa {qt6_generate_deploy_app_script}{qt_generate_deploy_app_script()},
-    qt_deploy_qt_conf(), qt_deploy_qml_imports()
+    {qt6_deploy_qt_conf}{qt_deploy_qt_conf()},
+    {qt6_deploy_qml_imports}{qt_deploy_qml_imports()}
 
 \section1 Example
 

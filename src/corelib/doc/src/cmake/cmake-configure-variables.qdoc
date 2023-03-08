@@ -403,7 +403,7 @@ Enables verbose mode of the \l androiddeployqt deployment tool when it is called
 internally at build time, usually during target finalization.
 
 This variable also changes the default verbosity of install-time deployment
-scripts for other platforms (see \l{qt_deploy_runtime_dependencies()}), but it
+scripts for other platforms (see \l{qt6_deploy_runtime_dependencies()}), but it
 must be set before the first \c{find_package(Qt6)} call to have that effect.
 */
 
@@ -431,7 +431,8 @@ an application, along with its runtime dependencies:
 
 \include cmake-deploy-runtime-dependencies.qdocinc
 
-\sa qt_deploy_runtime_dependencies(), qt_deploy_qml_imports()
+\sa {qt6_deploy_runtime_dependencies}{qt_deploy_runtime_dependencies()},
+    {qt6_deploy_qml_imports}{qt_deploy_qml_imports()}
 */
 
 /*!
