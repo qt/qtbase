@@ -2977,6 +2977,7 @@ function(qt6_generate_deploy_app_script)
     # mutually exclusive with the TARGET keyword.
     set(no_value_options
         NO_TRANSLATIONS
+        NO_COMPILER_RUNTIME
         NO_UNSUPPORTED_PLATFORM_ERROR
     )
     set(single_value_options
@@ -3042,6 +3043,9 @@ function(qt6_generate_deploy_app_script)
     set(common_deploy_args "")
     if(arg_NO_TRANSLATIONS)
         string(APPEND common_deploy_args "    NO_TRANSLATIONS\n")
+    endif()
+    if(arg_NO_COMPILER_RUNTIME)
+        string(APPEND common_deploy_args "    NO_COMPILER_RUNTIME\n")
     endif()
 
     # Forward the arguments that are exactly the same for qt_deploy_runtime_dependencies.

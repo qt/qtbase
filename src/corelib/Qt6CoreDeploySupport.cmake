@@ -287,6 +287,7 @@ function(qt6_deploy_runtime_dependencies)
         NO_OVERWRITE
         NO_APP_STORE_COMPLIANCE   # TODO: Might want a better name
         NO_TRANSLATIONS
+        NO_COMPILER_RUNTIME
     )
     set(single_value_options
         EXECUTABLE
@@ -398,6 +399,9 @@ function(qt6_deploy_runtime_dependencies)
         endif()
         if(arg_NO_TRANSLATIONS)
             list(APPEND tool_options --no-translations)
+        endif()
+        if(arg_NO_COMPILER_RUNTIME)
+            list(APPEND tool_options --no-compiler-runtime)
         endif()
     elseif(__QT_DEPLOY_SYSTEM_NAME STREQUAL Darwin)
         set(extra_binaries_option "-executable=")

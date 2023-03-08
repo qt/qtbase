@@ -22,6 +22,7 @@ qt_generate_deploy_app_script(
     TARGET target
     OUTPUT_SCRIPT <var>
     [NO_TRANSLATIONS]
+    [NO_COMPILER_RUNTIME]
     [NO_UNSUPPORTED_PLATFORM_ERROR]
     [PRE_INCLUDE_REGEXES regexes...]
     [PRE_EXCLUDE_REGEXES regexes...]
@@ -69,6 +70,9 @@ On platforms other than macOS, Qt translations are automatically deployed. To
 inhibit this behavior, specify \c{NO_TRANSLATIONS}. Use
 \l{qt6_deploy_translations}{qt_deploy_translations()} to deploy translations in a
 customized way.
+
+For Windows desktop applications, the required runtime files for the compiler
+are also installed by default. To prevent this, specify \c{NO_COMPILER_RUNTIME}.
 
 For deploying a QML application, use
 \l{qt6_generate_deploy_qml_app_script}{qt_generate_deploy_qml_app_script()}
