@@ -358,6 +358,7 @@ bool QErrorMessagePrivate::nextPending()
 #endif
             currentMessage = std::move(message);
             currentType = std::move(type);
+            again->setChecked(true);
             return true;
         }
     }
