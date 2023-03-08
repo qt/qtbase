@@ -582,6 +582,8 @@ private:
     QT7_ONLY(Q_CORE_EXPORT) static void assign(QCborValueRef that, QCborValue &&other);
     QT7_ONLY(Q_CORE_EXPORT) static void assign(QCborValueRef that, const QCborValueRef other);
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(QCborValue::EncodingOptions)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QCborValue::DiagnosticNotationOptions)
 
 Q_CORE_EXPORT size_t qHash(const QCborValue &value, size_t seed = 0);
 
