@@ -36,6 +36,7 @@ private slots:
     // keep last
     void moreThan4GiBOfData_data();
     void moreThan4GiBOfData();
+    void keccakBufferOverflow();
 private:
     void ensureLargeData();
     std::vector<char> large;
@@ -532,6 +533,34 @@ void tst_QCryptographicHash::moreThan4GiBOfData()
     t.join();
 
     QCOMPARE(single, chunked);
+}
+
+void tst_QCryptographicHash::keccakBufferOverflow()
+{
+#if QT_POINTER_SIZE == 4
+    QSKIP("This is a 64-bit-only test");
+#else
+
+    if (ensureLargeData(); large.empty())
+        return;
+
+    QElapsedTimer timer;
+    timer.start();
+    const auto sg = qScopeGuard([&] {
+        qDebug() << "test finished in" << timer.restart() << "ms";
+    });
+
+    constexpr qsizetype magic = INT_MAX/4;
+    QCOMPARE_GE(large.size(), size_t(magic + 1));
+
+    QCryptographicHash hash(QCryptographicHash::Algorithm::Keccak_224);
+    const auto first = QByteArrayView{large}.first(1);
+    const auto second = QByteArrayView{large}.sliced(1, magic);
+    hash.addData(first);
+    hash.addData(second);
+    (void)hash.resultView();
+    QVERIFY(true); // didn't crash
+#endif
 }
 
 QTEST_MAIN(tst_QCryptographicHash)
