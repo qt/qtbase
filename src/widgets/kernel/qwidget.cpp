@@ -6919,6 +6919,30 @@ bool QWidget::isActiveWindow() const
 }
 
 /*!
+    \fn void QWidget::setTabOrder(std::initializer_list<QWidget *> widgets)
+    \overload
+    \since 6.6
+
+    Sets the tab order for the widgets in the \a widgets list by calling
+    \l{QWidget::setTabOrder(QWidget *, QWidget *)} for each consecutive
+    pair of widgets.
+
+    Instead of setting up each pair manually like this:
+
+    \snippet code/src_gui_kernel_qwidget.cpp 9
+
+    you can call:
+
+    \snippet code/src_gui_kernel_qwidget.cpp 9.list
+
+    The call does not create a closed tab focus loop. If there are more widgets
+    with \l{Qt::TabFocus} focus policy, tabbing on \c{d} will move focus to one
+    of those widgets, not back to \c{a}.
+
+    \sa setFocusPolicy(), setFocusProxy(), {Keyboard Focus in Widgets}
+*/
+
+/*!
     Puts the \a second widget after the \a first widget in the focus order.
 
     It effectively removes the \a second widget from its focus chain and

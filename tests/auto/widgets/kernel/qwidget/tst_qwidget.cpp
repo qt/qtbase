@@ -173,6 +173,7 @@ private slots:
     void appFocusWidgetWhenLosingFocusProxy();
     void explicitTabOrderWithComplexWidget();
     void explicitTabOrderWithSpinBox_QTBUG81097();
+    void tabOrderList();
 #if defined(Q_OS_WIN)
     void activation();
 #endif
@@ -1929,6 +1930,26 @@ public:
     QLineEdit *lineEdit3;
 };
 
+static QList<QWidget *> getFocusChain(QWidget *start, bool bForward)
+{
+    QList<QWidget *> ret;
+    QWidget *cur = start;
+    // detect infinite loop
+    int count = 100;
+    auto loopGuard = qScopeGuard([]{
+        QFAIL("Inifinite loop detected in focus chain");
+    });
+    do {
+        ret += cur;
+        auto widgetPrivate = static_cast<QWidgetPrivate *>(qt_widget_private(cur));
+        cur = bForward ? widgetPrivate->focus_next : widgetPrivate->focus_prev;
+        if (!--count)
+            return ret;
+    } while (cur != start);
+    loopGuard.dismiss();
+    return ret;
+}
+
 void tst_QWidget::defaultTabOrder()
 {
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
@@ -2046,6 +2067,17 @@ void tst_QWidget::reverseTabOrder()
 
     container.backTab();
     QVERIFY(firstEdit->hasFocus());
+}
+
+void tst_QWidget::tabOrderList()
+{
+    Composite c;
+    QCOMPARE(getFocusChain(&c, true),
+             QList<QWidget *>({&c, c.lineEdit1, c.lineEdit2, c.lineEdit3}));
+    QWidget::setTabOrder({c.lineEdit3, c.lineEdit2, c.lineEdit1});
+    // not starting with 3 like one would maybe expect, but still 3, 2, 1
+    QCOMPARE(getFocusChain(&c, true),
+             QList<QWidget *>({&c, c.lineEdit1, c.lineEdit3, c.lineEdit2}));
 }
 
 void tst_QWidget::tabOrderWithProxy()
@@ -2267,26 +2299,6 @@ void tst_QWidget::tabOrderWithCompoundWidgets()
 
     container.backTab();
     QVERIFY(lastEdit->hasFocus());
-}
-
-static QList<QWidget *> getFocusChain(QWidget *start, bool bForward)
-{
-    QList<QWidget *> ret;
-    QWidget *cur = start;
-    // detect infinite loop
-    int count = 100;
-    auto loopGuard = qScopeGuard([]{
-        QFAIL("Inifinite loop detected in focus chain");
-    });
-    do {
-        ret += cur;
-        auto widgetPrivate = static_cast<QWidgetPrivate *>(qt_widget_private(cur));
-        cur = bForward ? widgetPrivate->focus_next : widgetPrivate->focus_prev;
-        if (!--count)
-            return ret;
-    } while (cur != start);
-    loopGuard.dismiss();
-    return ret;
 }
 
 void tst_QWidget::tabOrderWithProxyOutOfOrder()
