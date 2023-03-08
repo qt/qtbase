@@ -307,7 +307,7 @@ QSimpleParsedNumber<double> qt_asciiToDouble(const char *num, qsizetype numLen,
         // a number over 2 GB in length is silly, just assume it isn't valid
         return {};
     } else {
-        d = conv.StringToDouble(num, numLen, &processed);
+        d = conv.StringToDouble(num, int(numLen), &processed);
     }
 
     if (!qIsFinite(d)) {
