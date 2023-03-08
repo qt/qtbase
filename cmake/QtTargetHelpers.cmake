@@ -742,7 +742,7 @@ function(qt_internal_create_tracepoints name tracepoints_file)
 #define TRACEPOINT_DEFINE
 #include \"${header_filename}\"")
         target_sources(${name} PRIVATE "${source_path}")
-        target_compile_definitions(${name} PRIVATE Q_TRACEPOINT)
+        target_compile_definitions(${name} PUBLIC Q_TRACEPOINT)
 
         if(QT_FEATURE_lttng)
             set(tracegen_arg "lttng")
@@ -812,7 +812,7 @@ function(qt_internal_generate_tracepoints name provider)
     #define TRACEPOINT_DEFINE
     #include \"${header_filename}\"")
         target_sources(${name} PRIVATE "${source_path}")
-        target_compile_definitions(${name} PRIVATE Q_TRACEPOINT)
+        target_compile_definitions(${name} PUBLIC Q_TRACEPOINT)
 
         if(QT_FEATURE_lttng)
             set(tracegen_arg "lttng")
