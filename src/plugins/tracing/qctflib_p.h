@@ -16,7 +16,7 @@
 //
 //
 
-#include "qctf_p.h"
+#include <private/qctf_p.h>
 #include "qctfplugin_p.h"
 #include <qstring.h>
 #include <qmutex.h>

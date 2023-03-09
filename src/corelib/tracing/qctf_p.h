@@ -17,6 +17,7 @@
 //
 
 #include <qtcoreexports.h>
+#include <qobject.h>
 
 QT_REQUIRE_CONFIG(library);
 
@@ -219,6 +220,17 @@ inline QByteArray toByteArrayFromFlags(QFlags<T> value)
     } while (0)
 
 #endif
+
+class Q_CORE_EXPORT QCtfLib : public QObject
+{
+    Q_OBJECT
+public:
+    virtual ~QCtfLib() = default;
+    virtual bool tracepointEnabled(const QCtfTracePointEvent &point) = 0;
+    virtual void doTracepoint(const QCtfTracePointEvent &point, const QByteArray &arr) = 0;
+    virtual bool sessionEnabled() = 0;
+    virtual QCtfTracePointPrivate *initializeTracepoint(const QCtfTracePointEvent &point) = 0;
+};
 
 QT_END_NAMESPACE
 

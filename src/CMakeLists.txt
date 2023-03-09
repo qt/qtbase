@@ -43,9 +43,6 @@ endif()
 qt_install_3rdparty_library_wrap_config_extra_file(BundledZLIB)
 
 add_subdirectory(corelib)
-if (QT_FEATURE_ctf AND QT_FEATURE_library)
-    add_subdirectory(corelib/tracing)
-endif()
 
 # Needs to be after corelib, because some of them reference Core.
 add_subdirectory(3rdparty)
