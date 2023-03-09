@@ -34,8 +34,6 @@ qt_internal_add_3rdparty_library(BundledZLIB
         $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES>
 )
 
-set_target_properties(BundledZLIB PROPERTIES UNITY_BUILD OFF)
-
 qt_internal_add_sync_header_dependencies(BundledZLIB Core)
 
 qt_disable_warnings(BundledZLIB)

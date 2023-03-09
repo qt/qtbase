@@ -25,9 +25,8 @@ qt_internal_add_plugin(QXcbGlxIntegrationPlugin
         Qt::Gui
         Qt::GuiPrivate
         Qt::XcbQpaPrivate
+    NO_UNITY_BUILD # X11 define clashes
 )
-
-set_target_properties(QXcbGlxIntegrationPlugin PROPERTIES UNITY_BUILD OFF) # X11 define clashes
 
 ## Scopes:
 #####################################################################

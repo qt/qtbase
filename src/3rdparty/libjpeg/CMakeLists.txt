@@ -60,8 +60,6 @@ qt_internal_add_3rdparty_library(BundledLibjpeg
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
-set_target_properties(BundledLibjpeg PROPERTIES UNITY_BUILD OFF)
-
 qt_internal_add_3rdparty_header_module(JpegPrivate
     EXTERNAL_HEADERS
         src/jpeglib.h

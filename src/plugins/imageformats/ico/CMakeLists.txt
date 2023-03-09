@@ -15,6 +15,5 @@ qt_internal_add_plugin(QICOPlugin
         Qt::Core
         Qt::CorePrivate
         Qt::Gui
+    NO_UNITY_BUILD
 )
-
-set_target_properties(QICOPlugin PROPERTIES UNITY_BUILD OFF)
