@@ -52,7 +52,8 @@ protected:
     qsizetype s;      // size
     void *ptr;     // data
 
-    Q_ALWAYS_INLINE constexpr void verify(qsizetype pos = 0, qsizetype n = 1) const
+    Q_ALWAYS_INLINE constexpr void verify([[maybe_unused]] qsizetype pos = 0,
+                                          [[maybe_unused]] qsizetype n = 1) const
     {
         Q_ASSERT(pos >= 0);
         Q_ASSERT(pos <= size());
