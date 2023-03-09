@@ -5,4 +5,8 @@
 ## testProcessHang Binary:
 #####################################################################
 
-add_executable(testProcessHang main.cpp)
+qt_internal_add_executable(testProcessHang
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
+    SOURCES
+        main.cpp
+)

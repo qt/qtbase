@@ -5,4 +5,8 @@
 ## testProcessEOF Binary:
 #####################################################################
 
-add_executable(testProcessEOF main.cpp)
+qt_internal_add_executable(testProcessEOF
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
+    SOURCES
+        main.cpp
+)

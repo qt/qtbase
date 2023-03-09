@@ -5,7 +5,9 @@
 ## testSoftExit Binary:
 #####################################################################
 
-add_executable(testSoftExit)
+qt_internal_add_executable(testSoftExit
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
+)
 
 qt_internal_extend_target(testSoftExit CONDITION WIN32
     SOURCES
