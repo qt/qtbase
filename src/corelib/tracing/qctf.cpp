@@ -8,7 +8,7 @@
 #include <qfileinfo.h>
 #include <qdir.h>
 
-#include "qctflib_p.h"
+#include "qctf_p.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -18,6 +18,6 @@ qt_internal_add_plugin(QCtfTracePlugin
     SOURCES
         qctflib_p.h qctflib.cpp metadata_template.txt qctfplugin.cpp qctfplugin_p.h
     LIBRARIES
-        Qt6::Core
+        Qt6::Core Qt6::CorePrivate
 )
 

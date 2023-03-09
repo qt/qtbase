@@ -8,7 +8,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QCtfTracePlugin : public QObject, public QCtfLib
+class QCtfTracePlugin : public QCtfLib
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QCtfLib" FILE "trace.json")

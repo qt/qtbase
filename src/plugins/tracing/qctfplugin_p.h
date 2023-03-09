@@ -16,22 +16,12 @@
 //
 //
 
-#include "qctf_p.h"
+#include <private/qctf_p.h>
 #include <qplugin.h>
 
 QT_BEGIN_NAMESPACE
 
-class QCtfLib
-{
-public:
-    virtual ~QCtfLib() = default;
-    virtual bool tracepointEnabled(const QCtfTracePointEvent &point) = 0;
-    virtual void doTracepoint(const QCtfTracePointEvent &point, const QByteArray &arr) = 0;
-    virtual bool sessionEnabled() = 0;
-    virtual QCtfTracePointPrivate *initializeTracepoint(const QCtfTracePointEvent &point) = 0;
-};
-
-Q_DECLARE_INTERFACE(QCtfLib, "org.qt-project.Qt.QCtfLib");
+Q_DECLARE_INTERFACE(QCtfLib, "org.qt-project.Qt.QCtfLib")
 
 QT_END_NAMESPACE
 
