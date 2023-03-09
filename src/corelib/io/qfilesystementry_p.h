@@ -33,36 +33,34 @@ public:
     struct FromNativePath{};
     struct FromInternalPath{};
 
-    QFileSystemEntry();
-    explicit QFileSystemEntry(const QString &filePath);
+    Q_AUTOTEST_EXPORT QFileSystemEntry();
+    Q_AUTOTEST_EXPORT explicit QFileSystemEntry(const QString &filePath);
 
-    QFileSystemEntry(const QString &filePath, FromInternalPath dummy);
-    QFileSystemEntry(const NativePath &nativeFilePath, FromNativePath dummy);
-    QFileSystemEntry(const QString &filePath, const NativePath &nativeFilePath);
+    Q_AUTOTEST_EXPORT QFileSystemEntry(const QString &filePath, FromInternalPath dummy);
+    Q_AUTOTEST_EXPORT QFileSystemEntry(const NativePath &nativeFilePath, FromNativePath dummy);
+    Q_AUTOTEST_EXPORT QFileSystemEntry(const QString &filePath, const NativePath &nativeFilePath);
 
-    QString filePath() const;
-    QString fileName() const;
-    QString path() const;
-    NativePath nativeFilePath() const;
-    QString baseName() const;
-    QString completeBaseName() const;
-    QString suffix() const;
-    QString completeSuffix() const;
-    bool isAbsolute() const;
-    bool isRelative() const;
-    bool isClean() const;
+    Q_AUTOTEST_EXPORT QString filePath() const;
+    Q_AUTOTEST_EXPORT QString fileName() const;
+    Q_AUTOTEST_EXPORT QString path() const;
+    Q_AUTOTEST_EXPORT NativePath nativeFilePath() const;
+    Q_AUTOTEST_EXPORT QString baseName() const;
+    Q_AUTOTEST_EXPORT QString completeBaseName() const;
+    Q_AUTOTEST_EXPORT QString suffix() const;
+    Q_AUTOTEST_EXPORT QString completeSuffix() const;
+    Q_AUTOTEST_EXPORT bool isAbsolute() const;
+    Q_AUTOTEST_EXPORT bool isRelative() const;
+    Q_AUTOTEST_EXPORT bool isClean() const;
 
 #if defined(Q_OS_WIN)
-    bool isDriveRoot() const;
+    Q_AUTOTEST_EXPORT bool isDriveRoot() const;
     static bool isDriveRootPath(const QString &path);
     static QString removeUncOrLongPathPrefix(QString path);
 #endif
-    bool isRoot() const;
+    Q_AUTOTEST_EXPORT bool isRoot() const;
 
-    bool isEmpty() const
-    {
-        return m_filePath.isEmpty() && m_nativeFilePath.isEmpty();
-    }
+    Q_AUTOTEST_EXPORT bool isEmpty() const;
+
     void clear()
     {
         *this = QFileSystemEntry();
