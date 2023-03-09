@@ -337,6 +337,8 @@ qt_internal_add_module(Core
     "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreDeploySupport.cmake"
     "${config_build_dir}/QtInstallPaths.cmake"
     ${corelib_extra_cmake_files}
+    POLICIES
+        QTP0002
 )
 _qt_internal_setup_deploy_support()
 

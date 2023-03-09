@@ -881,7 +881,14 @@ endfunction()
 # It doesn't overwrite public properties, but instead writes formatted values to internal
 # properties.
 function(_qt_internal_android_format_deployment_paths target)
-    if(QT_BUILD_STANDALONE_TESTS OR QT_BUILDING_QT)
+    __qt_internal_setup_policy(QTP0002 "6.6.0"
+        "Target properties that specify android-specific paths may contain generator\
+        expressions but they must evaluate to valid JSON strings.\
+        Check https://doc.qt.io/qt-6/qt-cmake-policy-qtp0002.html for policy details."
+    )
+    qt6_policy(GET QTP0002 android_deployment_paths_policy)
+    if(QT_BUILD_STANDALONE_TESTS OR QT_BUILDING_QT OR
+        android_deployment_paths_policy STREQUAL "NEW")
         # When building standalone tests or Qt itself we obligate developers to not use
         # windows paths when setting QT_* properties below, so their values are used as is when
         # generating deployment settings.
