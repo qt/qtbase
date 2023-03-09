@@ -4,8 +4,8 @@
 #ifndef QMOCKAUXPLUGIN_H
 #define QMOCKAUXPLUGIN_H
 
-#include <QString>
-#include <QtPlugin>
+#include <QtCore/QString>
+#include <QtCore/QtPlugin>
 
 QT_BEGIN_NAMESPACE
 
