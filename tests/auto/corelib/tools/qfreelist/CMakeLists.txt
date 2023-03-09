@@ -11,11 +11,3 @@ qt_internal_add_test(tst_qfreelist
     LIBRARIES
         Qt::CorePrivate
 )
-
-## Scopes:
-#####################################################################
-
-qt_internal_extend_target(tst_qfreelist CONDITION NOT QT_FEATURE_private_tests
-    SOURCES
-        ../../../../../src/corelib/tools/qfreelist.cpp
-)
