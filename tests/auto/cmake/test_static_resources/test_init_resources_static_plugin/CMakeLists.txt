@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 qt_internal_add_plugin(TestInitResourcesStaticPlugin STATIC
+    NO_UNITY_BUILD
     OUTPUT_NAME
         testinitresourcesstaticplugin
     PLUGIN_TYPE mockstaticresources

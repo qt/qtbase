@@ -11,6 +11,7 @@
 # Add a dummy library that links the static "Qt" module containing resources
 file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp" CONTENT "void dummy() { }")
 add_library(dummy STATIC "${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp")
+set_target_properties(dummy PROPERTIES UNITY_BUILD OFF)
 target_link_libraries(dummy PRIVATE MockStaticResources1)
 
 # Add the executable using qt_add_executable that needs to initialize the propagated resources.
@@ -19,6 +20,7 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
     qt_add_executable(test_static_resources_propagation main.cpp)
     set_target_properties(test_static_resources_propagation PROPERTIES
         AUTOMOC TRUE
+        UNITY_BUILD OFF
     )
     target_link_libraries(test_static_resources_propagation
         PRIVATE
@@ -37,6 +39,7 @@ endif()
 qt_add_executable(test_static_resources_propagation_manual_finalize main.cpp MANUAL_FINALIZATION)
 set_target_properties(test_static_resources_propagation_manual_finalize PROPERTIES
     AUTOMOC TRUE
+    UNITY_BUILD OFF
 )
 target_link_libraries(test_static_resources_propagation_manual_finalize
     PRIVATE
@@ -54,6 +57,7 @@ add_test(NAME test_static_resources_propagation_manual_finalize
 add_executable(test_static_resources_propagation_non_qt main.cpp)
 set_target_properties(test_static_resources_propagation_non_qt PROPERTIES
     AUTOMOC TRUE
+    UNITY_BUILD OFF
 )
 target_link_libraries(test_static_resources_propagation_non_qt
     PRIVATE
@@ -76,6 +80,7 @@ if(NOT link_order_matters)
     add_executable(test_static_resources_propagation_non_ld main.cpp)
     set_target_properties(test_static_resources_propagation_non_ld PROPERTIES
         AUTOMOC TRUE
+        UNITY_BUILD OFF
     )
     target_link_libraries(test_static_resources_propagation_non_ld
         PRIVATE
@@ -123,6 +128,7 @@ if(POLICY CMP0099)
     add_executable(test_static_resources_propagation_cmp0099_old_finalize main.cpp)
     set_target_properties(test_static_resources_propagation_cmp0099_old_finalize PROPERTIES
         AUTOMOC TRUE
+        UNITY_BUILD OFF
     )
     target_link_libraries(test_static_resources_propagation_cmp0099_old_finalize
         PRIVATE
@@ -142,6 +148,7 @@ if(POLICY CMP0099)
     add_executable(test_static_resources_propagation_cmp0099_new main.cpp)
     set_target_properties(test_static_resources_propagation_cmp0099_new PROPERTIES
         AUTOMOC TRUE
+        UNITY_BUILD OFF
     )
     target_link_libraries(test_static_resources_propagation_cmp0099_new
         PRIVATE
@@ -157,6 +164,7 @@ if(POLICY CMP0099)
     add_executable(test_static_resources_propagation_cmp0099_new_genex main.cpp)
     set_target_properties(test_static_resources_propagation_cmp0099_new_genex PROPERTIES
         AUTOMOC TRUE
+        UNITY_BUILD OFF
     )
     target_link_libraries(test_static_resources_propagation_cmp0099_new_genex
         PRIVATE

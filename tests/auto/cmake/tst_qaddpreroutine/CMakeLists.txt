@@ -25,6 +25,7 @@ qt_prepare_standalone_project()
 find_package(Qt6 COMPONENTS Gui Test CONFIG REQUIRED)
 
 qt_internal_add_plugin(QTBUG_90341ThemePlugin
+    NO_UNITY_BUILD
     OUTPUT_NAME QTBUG_90341
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
     CLASS_NAME ThemePlugin

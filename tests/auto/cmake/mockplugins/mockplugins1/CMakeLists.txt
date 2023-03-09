@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 qt_internal_add_module(MockPlugins1
+    NO_UNITY_BUILD
     PLUGIN_TYPES mockplugin
     SOURCES
         qmockplugin.h
