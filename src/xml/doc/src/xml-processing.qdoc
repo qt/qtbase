@@ -191,7 +191,8 @@
     \nextpage Working with the DOM Tree
 
     Qt provides two classes for reading and writing XML through a simple streaming
-    API:  QXmlStreamReader and QXmlStreamWriter.
+    API: QXmlStreamReader and QXmlStreamWriter. These classes are located in
+    \l{Qt Serialization}{Qt Serialization (part of QtCore)}.
 
     A stream reader reports an XML document as a stream
     of tokens. This differs from SAX as SAX applications provide handlers to
@@ -207,27 +208,14 @@
     \l{QXmlStreamReader::error()}{error()} and \l{QXmlStreamReader::hasError()}
     {hasError()} can be used to check and view the errors.
 
-    An example of QXmlStreamReader implementation would be the \c XbelReader in
-    \l{QXmlStream Bookmarks Example}, which wraps a QXmlStreamReader.
-    The constructor takes \a treeWidget as a parameter and the class has Xbel
-    specific functions:
+    An example of an implementation tha uses QXmlStreamReader would be the
+    \l{QXmlStream Bookmarks Example#xbelreader-class-definition}{XbelReader} in
+    \l{QXmlStream Bookmarks Example}, which wraps a QXmlStreamReader. Read the
+    \l{QXmlStream Bookmarks Example#xbelreader-class-implementation}{implementation}
+    to learn more about how to use the QXmlStreamReader class.
 
-    \snippet streambookmarks/xbelreader.h 1
-
-    \dots
-    \snippet streambookmarks/xbelreader.h 2
-    \dots
-
-    The \c read() function accepts a QIODevice and sets it with
-    \l{QXmlStreamReader::setDevice()}{setDevice()}. The
-    \l{QXmlStreamReader::raiseError()}{raiseError()} function is used to
-    display a custom error message, inidicating that the file's version
-    is incorrect.
-
-    \snippet streambookmarks/xbelreader.cpp 1
-
-    The pendent to QXmlStreamReader is QXmlStreamWriter, which provides an XML
-    writer with a simple streaming API. QXmlStreamWriter operates on a
+    Paired with QXmlStreamReader is the QXmlStreamWriter class, which provides
+    an XML writer with a simple streaming API. QXmlStreamWriter operates on a
     QIODevice and has specialized functions for all XML tokens or events you
     want to write, such as \l{QXmlStreamWriter::writeDTD()}{writeDTD()},
     \l{QXmlStreamWriter::writeCharacters()}{writeCharacters()},
@@ -253,11 +241,10 @@
     or subsequent calls to \l{QXmlStreamWriter::writeStartElement()}
     {writeStartElement()}.
 
-    The \c XbelWriter class from \l{QXmlStream Bookmarks Example} wraps a
-    QXmlStreamWriter. Its \c writeFile() function illustrates the core
-    functions of QXmlStreamWriter mentioned above:
-
-    \snippet streambookmarks/xbelwriter.cpp 1
+    The \l{QXmlStream Bookmarks Example#xbelwriter-class-definition}{XbelWriter}
+    class from \l{QXmlStream Bookmarks Example} wraps a QXmlStreamWriter. View
+    the \l{QXmlStream Bookmarks Example#xbelwriter-class-implementation}{implementation}
+    to see how to use the QXmlStreamWriter class.
 */
 
 /*!

@@ -109,12 +109,19 @@
 
     \section1 Advantages of Qt XML C++ Classes
 
+    Qt provides both DOM classes and stream-based classes to read and write
+    XML content.
+
     Qt provides the QDomDocument class that represents the XML document and
     two classes for reading and writing the XML through a simple streaming API:
     QXmlStreamReader and QXmlStreamWriter.
 
+    \section2 The DOM XML Classes
+
     QDomDocument class represents the entire XML document. It is the root of the
     document tree and provides primary access to the document's data.
+
+    \section2 The Stream-Based XML Classes
 
     A stream reader reports an XML document as a stream of tokens. This differs
     from SAX as SAX applications provide handlers to receive XML events from the
@@ -132,7 +139,7 @@
     The QXmlStreamWriter is a streaming API that takes care of prefixing namespaces,
     when the namespaceUri is specified when writing elements or attributes.
 
-    \section1 Classes that provide serialization
+    \section1 Classes that Provide Serialization
 
     \annotatedlist qtserialization
 */
