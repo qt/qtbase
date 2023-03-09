@@ -75,6 +75,15 @@
     If \c testFuture gets canceled, its state is propagated to the next then(),
     which will be also canceled. So in this case \c {Block 6} will be called.
 
+    The future can have only one continuation. Consider the following example:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 31
+
+    In this case \c f1 and \c f2 are effectively the same QFuture object, as
+    they share the same internal state. As a result, calling
+    \l {QFuture::}{then} on \c f2 will overwrite the continuation specified for
+    \c {f1}. So, only \c {"second"} will be printed when this code is executed.
+
     QFuture also offers ways to interact with a running computation. For
     instance, the computation can be canceled with the cancel() function. To
     suspend or resume the computation, use the setSuspended() function or one of
