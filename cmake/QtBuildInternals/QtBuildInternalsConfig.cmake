@@ -669,6 +669,8 @@ function(qt_internal_get_standalone_tests_config_file_name out_var)
 endfunction()
 
 macro(qt_build_tests)
+    set(CMAKE_UNITY_BUILD OFF)
+
     if(QT_BUILD_STANDALONE_TESTS)
         # Find location of TestsConfig.cmake. These contain the modules that need to be
         # find_package'd when testing.
@@ -739,6 +741,8 @@ macro(qt_build_tests)
             add_subdirectory(manual)
         endif()
     endif()
+
+    set(CMAKE_UNITY_BUILD ${QT_UNITY_BUILD})
 endmacro()
 
 function(qt_compute_relative_path_from_cmake_config_dir_to_prefix)
@@ -953,6 +957,7 @@ macro(qt_examples_build_end)
         if(TARGET Qt::Widgets)
             qt_autogen_tools(${target} ENABLE_AUTOGEN_TOOLS "uic")
         endif()
+        set_target_properties(${target} PROPERTIES UNITY_BUILD OFF)
     endforeach()
 
     install(CODE "
