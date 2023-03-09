@@ -5,5 +5,9 @@
 ## testSetNamedPipeHandleState Binary:
 #####################################################################
 
-add_executable(testSetNamedPipeHandleState main.cpp)
+qt_internal_add_executable(testSetNamedPipeHandleState
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
+    SOURCES
+        main.cpp
+)
 target_link_libraries(testSetNamedPipeHandleState PRIVATE kernel32.lib)

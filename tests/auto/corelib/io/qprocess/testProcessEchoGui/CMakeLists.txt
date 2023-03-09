@@ -5,5 +5,10 @@
 ## testProcessEchoGui Binary:
 #####################################################################
 
-add_executable(testProcessEchoGui WIN32 main_win.cpp)
+qt_internal_add_executable(testProcessEchoGui
+    GUI
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
+    SOURCES
+        main_win.cpp
+)
 target_link_libraries(testProcessEchoGui PRIVATE user32)
