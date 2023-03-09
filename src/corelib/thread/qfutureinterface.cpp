@@ -788,6 +788,10 @@ void QFutureInterfaceBase::setContinuation(std::function<void(const QFutureInter
     // store the move-only continuation, to guarantee that the associated
     // future's data stays alive.
     if (d->continuationState != QFutureInterfaceBasePrivate::Cleaned) {
+        if (d->continuation) {
+            qWarning() << "Adding a continuation to a future which already has a continuation. "
+                          "The existing continuation is overwritten.";
+        }
         d->continuation = std::move(func);
         d->continuationData = continuationFutureData;
     }

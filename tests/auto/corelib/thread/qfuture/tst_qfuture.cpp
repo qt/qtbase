@@ -227,6 +227,7 @@ private slots:
     void rejectPendingResultOverwrite();
 
     void createReadyFutures();
+    void continuationOverride();
     void continuationsDontLeak();
     void cancelAfterFinishWithContinuations();
 
@@ -4051,6 +4052,35 @@ void tst_QFuture::createReadyFutures()
         QVERIFY(caught);
     }
 #endif
+}
+
+void tst_QFuture::continuationOverride()
+{
+    QPromise<int> p;
+    bool firstExecuted = false;
+    bool secondExecuted = false;
+
+    QTest::ignoreMessage(QtWarningMsg,
+                         "Adding a continuation to a future which already has a continuation. "
+                         "The existing continuation is overwritten.");
+
+    QFuture<int> f1 = p.future();
+    f1.then([&firstExecuted](int) {
+        firstExecuted = true;
+    });
+
+    QFuture<int> f2 = p.future();
+    f2.then([&secondExecuted](int) {
+        secondExecuted = true;
+    });
+
+    p.start();
+    p.addResult(42);
+    p.finish();
+
+    QVERIFY(p.future().isFinished());
+    QVERIFY(!firstExecuted);
+    QVERIFY(secondExecuted);
 }
 
 struct InstanceCounter
