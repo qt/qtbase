@@ -3,12 +3,14 @@
 
 /*!
     \example multicastsender
-    \title Multicast Sender Example
+    \title Multicast Sender
+    \meta category {Networking}
+    \meta tags {network,multicast,ipv6,ipv4,udp}
     \ingroup examples-network
     \brief Demonstrates how to send messages to a multicast group.
 
     This example demonstrates how to send messages to the clients of a
     multicast group.
 
-    \image multicastsender-example.png
+    \image multicastsender-example.webp
 */
