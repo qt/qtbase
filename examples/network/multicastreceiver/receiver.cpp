@@ -47,7 +47,7 @@ void Receiver::processPendingDatagrams()
 
     // using QUdpSocket::readDatagram (API since Qt 4)
     while (udpSocket4.hasPendingDatagrams()) {
-        datagram.resize(int(udpSocket4.pendingDatagramSize()));
+        datagram.resize(qsizetype(udpSocket4.pendingDatagramSize()));
         udpSocket4.readDatagram(datagram.data(), datagram.size());
         statusLabel->setText(tr("Received IPv4 datagram: \"%1\"")
                              .arg(datagram.constData()));

@@ -3,10 +3,12 @@
 
 /*!
     \example multicastreceiver
-    \title Multicast Receiver Example
+    \title Multicast Receiver
+    \meta category {Networking}
+    \meta tags {network,multicast,ipv6,ipv4,udp}
     \ingroup examples-network
     \brief Demonstrates how to receive information sent to a multicast group.
 
-    This example demonstrates how to receive messages sent to a multicast group
-    \image multicastreceiver-example.png
+    This example demonstrates how to receive messages sent to a multicast group.
+    \image multicastreceiver-example.webp
 */
