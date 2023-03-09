@@ -982,7 +982,7 @@ public:
     template<typename Functor>
     QPropertyNotifier addNotifier(Functor f)
     {
-        return QBindable<T>(aliasedProperty(), iface).notify(f);
+        return QBindable<T>(aliasedProperty(), iface).addNotifier(f);
     }
 
     bool isValid() const

@@ -2290,7 +2290,10 @@ void tst_QProperty::qpropertyAlias()
     alias.setValue(42);
     QCOMPARE(i->value(), 42);
     QProperty<int> j;
+    bool notifierCalled = false;
+    auto myNotifier = alias.addNotifier([&](){notifierCalled = true;});
     i->setBinding([&]() -> int { return j; });
+    QVERIFY(notifierCalled);
     j.setValue(42);
     QCOMPARE(alias.value(), 42);
     i.reset();
