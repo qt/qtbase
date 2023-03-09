@@ -1180,8 +1180,8 @@ QColorShower::QColorShower(QColorDialog *parent)
 #else
     gl->addWidget(lab, 0, 0, 1, -1);
 #endif
-    connect(lab, SIGNAL(colorDropped(QRgb)), this, SIGNAL(newCol(QRgb)));
-    connect(lab, SIGNAL(colorDropped(QRgb)), this, SLOT(setRgb(QRgb)));
+    connect(lab, &QColorShowLabel::colorDropped, this, &QColorShower::newCol);
+    connect(lab, &QColorShowLabel::colorDropped, this, &QColorShower::setRgb);
 
     hEd = new QColSpinBox(this);
     hEd->setRange(0, 359);
@@ -1285,12 +1285,13 @@ QColorShower::QColorShower(QColorDialog *parent)
     alphaLab->hide();
     lblHtml = new QLabel(this);
     htEd = new QLineEdit(this);
+    htEd->setObjectName("qt_colorname_lineedit");
 #ifndef QT_NO_SHORTCUT
     lblHtml->setBuddy(htEd);
 #endif
 
 #if QT_CONFIG(regularexpression)
-    QRegularExpression regExp(QStringLiteral("#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})"));
+    QRegularExpression regExp(QStringLiteral("#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})"));
     QRegularExpressionValidator *validator = new QRegularExpressionValidator(regExp, this);
     htEd->setValidator(validator);
 #else
@@ -1307,15 +1308,15 @@ QColorShower::QColorShower(QColorDialog *parent)
     gl->addWidget(htEd, 5, 2, 1, /*colspan=*/ 3);
 #endif
 
-    connect(hEd, SIGNAL(valueChanged(int)), this, SLOT(hsvEd()));
-    connect(sEd, SIGNAL(valueChanged(int)), this, SLOT(hsvEd()));
-    connect(vEd, SIGNAL(valueChanged(int)), this, SLOT(hsvEd()));
+    connect(hEd, &QSpinBox::valueChanged, this, &QColorShower::hsvEd);
+    connect(sEd, &QSpinBox::valueChanged, this, &QColorShower::hsvEd);
+    connect(vEd, &QSpinBox::valueChanged, this, &QColorShower::hsvEd);
 
-    connect(rEd, SIGNAL(valueChanged(int)), this, SLOT(rgbEd()));
-    connect(gEd, SIGNAL(valueChanged(int)), this, SLOT(rgbEd()));
-    connect(bEd, SIGNAL(valueChanged(int)), this, SLOT(rgbEd()));
-    connect(alphaEd, SIGNAL(valueChanged(int)), this, SLOT(rgbEd()));
-    connect(htEd, SIGNAL(textEdited(QString)), this, SLOT(htmlEd()));
+    connect(rEd, &QSpinBox::valueChanged, this, &QColorShower::rgbEd);
+    connect(gEd, &QSpinBox::valueChanged, this, &QColorShower::rgbEd);
+    connect(bEd, &QSpinBox::valueChanged, this, &QColorShower::rgbEd);
+    connect(alphaEd, &QSpinBox::valueChanged, this, &QColorShower::rgbEd);
+    connect(htEd, &QLineEdit::textChanged, this, &QColorShower::htmlEd);
 
     retranslateStrings();
 }
@@ -1384,9 +1385,19 @@ void QColorShower::hsvEd()
 void QColorShower::htmlEd()
 {
     QString t = htEd->text();
+    if (t.isEmpty())
+        return;
+
+    if (!t.startsWith(QStringLiteral("#"))) {
+        t = QStringLiteral("#") + t;
+        QSignalBlocker blocker(htEd);
+        htEd->setText(t);
+    }
+
     QColor c = QColor::fromString(t);
     if (!c.isValid())
         return;
+
     curCol = qRgba(c.red(), c.green(), c.blue(), currentAlpha());
     rgb2hsv(curCol, hue, sat, val);
 
