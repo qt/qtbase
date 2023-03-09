@@ -50,12 +50,6 @@ function(qt_internal_add_common_qt_library_helper target)
         set(arg_MODULE STATIC)
     endif()
 
-    if(arg_NO_UNITY_BUILD)
-        set(arg_NO_UNITY_BUILD NO_UNITY_BUILD)
-    else()
-        set(arg_NO_UNITY_BUILD "")
-    endif()
-
     _qt_internal_add_library(${target} ${arg_STATIC} ${arg_SHARED} ${arg_MODULE} ${arg_INTERFACE})
 
     if(arg_NO_UNITY_BUILD)
@@ -85,6 +79,7 @@ function(qt_internal_add_cmake_library target)
         "${multi_args}"
     )
     _qt_internal_validate_all_args_are_parsed(arg)
+    _qt_internal_validate_no_unity_build(arg)
 
     qt_remove_args(library_helper_args
         ARGS_TO_REMOVE
@@ -110,12 +105,6 @@ function(qt_internal_add_cmake_library target)
         )
     endif()
 
-    if(arg_NO_UNITY_BUILD)
-        set(arg_NO_UNITY_BUILD NO_UNITY_BUILD)
-    else()
-        set(arg_NO_UNITY_BUILD "")
-    endif()
-
     qt_internal_extend_target("${target}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
@@ -137,8 +126,7 @@ function(qt_internal_add_cmake_library target)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
-        NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}
-        ${arg_NO_UNITY_BUILD}
+        NO_UNITY_BUILD # Disabled by default
     )
 endfunction()
 
@@ -167,6 +155,7 @@ function(qt_internal_add_3rdparty_library target)
         "${multi_args}"
     )
     _qt_internal_validate_all_args_are_parsed(arg)
+    _qt_internal_validate_no_unity_build(arg)
 
     qt_remove_args(library_helper_args
         ARGS_TO_REMOVE

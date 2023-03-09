@@ -212,11 +212,16 @@ function(qt_internal_extend_target target)
                          DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS})
 
         qt_update_precompiled_header("${target}" "${arg_PRECOMPILED_HEADER}")
+        ## Also exclude them from unity build
         qt_update_ignore_pch_source("${target}" "${arg_NO_PCH_SOURCES}")
-        qt_update_ignore_unity_build_sources("${target}" "${arg_NO_UNITY_BUILD_SOURCES}")
         ## Ignore objective-c files for PCH (not supported atm)
         qt_ignore_pch_obj_c_sources("${target}" "${arg_SOURCES}")
 
+        qt_update_ignore_unity_build_sources("${target}" "${arg_NO_UNITY_BUILD_SOURCES}")
+        if(arg_NO_UNITY_BUILD)
+            set_target_properties("${target}" PROPERTIES UNITY_BUILD OFF)
+            qt_update_ignore_unity_build_sources("${target}" "${arg_SOURCES}")
+        endif()
     else()
         if(QT_CMAKE_DEBUG_EXTEND_TARGET)
             message("qt_extend_target(${target} CONDITION ${arg_CONDITION} ...): Skipped")
@@ -234,9 +239,6 @@ function(qt_internal_extend_target target)
             ${sources_property} "${arg_CONDITION_INDEPENDENT_SOURCES}")
     endif()
 
-    if(arg_NO_UNITY_BUILD)
-        set_target_properties(${target} PROPERTIES UNITY_BUILD OFF)
-    endif()
 endfunction()
 
 function(qt_is_imported_target target out_var)

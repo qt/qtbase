@@ -15,6 +15,7 @@ function(qt_internal_add_benchmark target)
         "${__qt_internal_add_executable_multi_args}"
     )
     _qt_internal_validate_all_args_are_parsed(arg)
+    _qt_internal_validate_no_unity_build(arg)
 
     qt_remove_args(exec_args
         ARGS_TO_REMOVE
@@ -239,6 +240,8 @@ function(qt_internal_add_test_to_batch batch_name name)
         arg "${optional_args}" "${single_value_args}" "${multi_value_args}" ${ARGN})
     qt_internal_prepare_test_target_flags(version_arg exceptions_text gui_text ${ARGN})
 
+    _qt_internal_validate_no_unity_build(arg)
+
     _qt_internal_test_batch_target_name(target)
 
     # Lazy-init the test batch
@@ -324,6 +327,7 @@ function(qt_internal_add_test_to_batch batch_name name)
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
         NO_UNITY_BUILD # Tests should not be built using UNITY_BUILD
+        NO_UNITY_BUILD_SOURCES ${arg_SOURCES}
         )
 
     foreach(source ${arg_SOURCES})
@@ -426,6 +430,7 @@ function(qt_internal_add_test name)
         "${multi_value_args}"
     )
     _qt_internal_validate_all_args_are_parsed(arg)
+    _qt_internal_validate_no_unity_build(arg)
 
     set(batch_current_test FALSE)
     if(QT_BUILD_TESTS_BATCHED AND NOT arg_NO_BATCH AND NOT arg_QMLTEST AND NOT arg_MANUAL
