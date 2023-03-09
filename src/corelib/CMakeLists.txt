@@ -304,6 +304,11 @@ qt_internal_add_module(Core
         tools/qvarlengtharray.h
         tools/qvector.h
         tools/qversionnumber.cpp tools/qversionnumber.h
+    NO_UNITY_BUILD_SOURCES
+        # MinGW complains about `free-nonheap-object` in ~QSharedDataPointer()
+        # despite the fact that appropriate checks are in place to avoid that!
+        tools/qshareddata.cpp tools/qshareddata.h
+        text/qlocale.cpp text/qlocale.h
     DEFINES
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
@@ -560,6 +565,15 @@ qt_internal_extend_target(Core CONDITION APPLE
         ${FWFoundation}
     PUBLIC_LIBRARIES
         ${FWIOKit}
+    DEFINES
+        _DARWIN_C_SOURCE    # This resolves two issues,
+                            #   - Provide DT_* macros to qfilesystemengine_unix.cpp
+                            #   - Enables SOCK_MAXADDRLEN in case its missing during the unity build
+    NO_UNITY_BUILD_SOURCES
+        kernel/qsystemerror.cpp
+        # This makes sure that the tst_qmakelib passes. For some reason,
+        # QtCore ends up returning a corrupted error message in
+        # write_file(): fail
 )
 
 qt_internal_extend_target(Core CONDITION MACOS
@@ -622,12 +636,6 @@ qt_internal_extend_target(Core CONDITION UNIX
         kernel/qpoll_p.h
         kernel/qtimerinfo_unix.cpp kernel/qtimerinfo_unix_p.h
         thread/qthread_unix.cpp
-)
-
-qt_internal_extend_target(Core CONDITION APPLE
-    NO_UNITY_BUILD_SOURCES
-        io/qfilesystemengine_unix.cpp # avoid undefined DT_* macros
-        io/qlockfile_unix.cpp         # avoid undefined SOCK_MAXADDRLEN (in proc_info.h)
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_thread
