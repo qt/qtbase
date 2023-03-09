@@ -5,6 +5,8 @@
 #include <QTest>
 #include <QtGui/QtGui>
 #include <QtWidgets/QColorDialog>
+#include <QtWidgets/QLineEdit>
+#include <QSignalSpy>
 
 QT_FORWARD_DECLARE_CLASS(QtTestEventThread)
 
@@ -25,6 +27,8 @@ private slots:
     void native_activeModalWidget();
     void task247349_alpha();
     void QTBUG_43548_initialColor();
+    void hexColor_data();
+    void hexColor();
 };
 
 class TestNativeDialog : public QColorDialog
@@ -124,6 +128,55 @@ void tst_QColorDialog::QTBUG_43548_initialColor()
     dialog.setCurrentColor(QColor(Qt::red));
     QColor a(Qt::red);
     QCOMPARE(a, dialog.currentColor());
+}
+
+void tst_QColorDialog::hexColor_data()
+{
+    QTest::addColumn<const QString>("colorString");
+    QTest::addColumn<const QString>("expectedHexColor");
+    QTest::addColumn<const int>("expectedSignalCount");
+
+    QTest::newRow("White-#") << "#FFFFFE" << "#FFFFFE" << 1;
+    QTest::newRow("White") << "FFFFFD" << "#FFFFFD" << 1;
+    QTest::newRow("Blue-#") << "#77fffb" << "#77fffb" << 2;
+    QTest::newRow("Blue") << "77fffa" << "#77fffa" << 2;
+}
+
+void tst_QColorDialog::hexColor()
+{
+    QColorDialog dialog;
+    dialog.setOption(QColorDialog::DontUseNativeDialog);
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+
+    QLineEdit *lineEdit = dialog.findChild<QLineEdit *>("qt_colorname_lineedit",
+                                                        Qt::FindChildrenRecursively);
+    QVERIFY2(lineEdit, "QLineEdit for color not found. Adapt this test.");
+    QVERIFY(lineEdit); // eliminate compiler warning
+
+    QFETCH(const QString, colorString);
+    QFETCH(const QString, expectedHexColor);
+    QFETCH(const int, expectedSignalCount);
+
+    QSignalSpy spy(&dialog, &QColorDialog::currentColorChanged);
+
+    // Delete existing color
+    lineEdit->activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(lineEdit));
+    for (int i = 0; i < 8; ++i)
+        QTest::keyEvent(QTest::KeyAction::Click, lineEdit, Qt::Key_Backspace);
+    QVERIFY(lineEdit->text().isEmpty());
+
+    // Enter new color
+    for (const QChar &key : colorString)
+        QTest::keyEvent(QTest::KeyAction::Click, lineEdit, key.toLatin1());
+    QCOMPARE(lineEdit->text().toLower(), expectedHexColor.toLower());
+
+    // Consume all color change signals
+    QTRY_COMPARE(spy.count(), expectedSignalCount);
+
+    const QColor color = qvariant_cast<QColor>(spy.last().at(0));
+    QCOMPARE(color.name(QColor::HexRgb), expectedHexColor.toLower());
 }
 
 QTEST_MAIN(tst_QColorDialog)
