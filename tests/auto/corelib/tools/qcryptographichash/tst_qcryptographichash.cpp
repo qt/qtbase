@@ -35,6 +35,7 @@ private slots:
     void moreThan4GiBOfData_data();
     void moreThan4GiBOfData();
 private:
+    void ensureLargeData();
     std::vector<char> large;
 };
 
@@ -401,12 +402,14 @@ void tst_QCryptographicHash::hashLength()
     QCOMPARE(QCryptographicHash::hashLength(algorithm), output.length());
 }
 
-void tst_QCryptographicHash::moreThan4GiBOfData_data()
+void tst_QCryptographicHash::ensureLargeData()
 {
 #if QT_POINTER_SIZE > 4
     QElapsedTimer timer;
     timer.start();
     const size_t GiB = 1024 * 1024 * 1024;
+    if (large.size() == 4 * GiB + 1)
+        return;
     try {
         large.resize(4 * GiB + 1, '\0');
     } catch (const std::bad_alloc &) {
@@ -415,7 +418,14 @@ void tst_QCryptographicHash::moreThan4GiBOfData_data()
     QCOMPARE(large.size(), 4 * GiB + 1);
     large.back() = '\1';
     qDebug("created dataset in %lld ms", timer.elapsed());
+#endif
+}
 
+void tst_QCryptographicHash::moreThan4GiBOfData_data()
+{
+#if QT_POINTER_SIZE > 4
+    if (ensureLargeData(); large.empty())
+        return;
     QTest::addColumn<QCryptographicHash::Algorithm>("algorithm");
     auto me = QMetaEnum::fromType<QCryptographicHash::Algorithm>();
     auto row = [me] (QCryptographicHash::Algorithm algo) {
