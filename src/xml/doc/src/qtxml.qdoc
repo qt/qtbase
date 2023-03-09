@@ -8,7 +8,7 @@
     \qtcmakepackage Xml
     \qtvariable xml
 
-    \brief The Qt XML module provides C++ implementations of the SAX and DOM standards for XML.
+    \brief The Qt XML module provides a C++ implementation of the DOM standard for XML.
 
     The \l{Qt XML} page contains information about how to use the module.
 

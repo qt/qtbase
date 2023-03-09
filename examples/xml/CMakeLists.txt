@@ -3,5 +3,4 @@
 
 if(TARGET Qt6::Widgets)
     qt_internal_add_example(dombookmarks)
-    qt_internal_add_example(streambookmarks)
 endif()
