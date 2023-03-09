@@ -303,6 +303,11 @@ bool QFileSystemEntry::isRoot() const
     return isRootPath(m_filePath);
 }
 
+bool QFileSystemEntry::isEmpty() const
+{
+    return m_filePath.isEmpty() && m_nativeFilePath.isEmpty();
+}
+
 // private methods
 
 void QFileSystemEntry::findLastSeparator() const
