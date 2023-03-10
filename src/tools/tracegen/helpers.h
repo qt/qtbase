@@ -24,7 +24,7 @@ template <typename T>
 static QString aggregateListValues(int value, const QList<T> &list)
 {
     QStringList values;
-    for (auto l : list) {
+    for (const T &l : list) {
         if (l.value == value)
             values << l.name;
     }
