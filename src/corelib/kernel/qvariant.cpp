@@ -125,7 +125,7 @@ static std::optional<qlonglong> qConvertToNumber(const QVariant::Private *d, boo
             if (s == "true"_L1 || s == "1"_L1)
                 return 1;
         }
-        return 0;
+        return std::nullopt;
     }
     case QMetaType::QChar:
         return d->get<QChar>().unicode();
