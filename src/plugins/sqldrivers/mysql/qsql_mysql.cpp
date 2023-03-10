@@ -61,6 +61,7 @@ public:
     QMYSQLDriverPrivate() : QSqlDriverPrivate(QSqlDriver::MySqlServer)
     {}
     MYSQL *mysql = nullptr;
+    QString dbName;
     bool preparedQuerysEnabled = false;
 };
 
@@ -1322,6 +1323,7 @@ bool QMYSQLDriver::open(const QString &db,
     }
 
     d->preparedQuerysEnabled = checkPreparedQueries(d->mysql);
+    d->dbName = db;
 
 #if QT_CONFIG(thread)
     mysql_thread_init();
@@ -1341,6 +1343,7 @@ void QMYSQLDriver::close()
 #endif
         mysql_close(d->mysql);
         d->mysql = nullptr;
+        d->dbName.clear();
         setOpen(false);
         setOpenError(false);
     }
@@ -1357,14 +1360,14 @@ QStringList QMYSQLDriver::tables(QSql::TableType type) const
     QStringList tl;
     QSqlQuery q(createResult());
     if (type & QSql::Tables) {
-        QString sql = "select table_name from information_schema.tables where table_schema = '"_L1 + QLatin1StringView(d->mysql->db) + "' and table_type = 'BASE TABLE'"_L1;
+        QString sql = "select table_name from information_schema.tables where table_schema = '"_L1 + d->dbName + "' and table_type = 'BASE TABLE'"_L1;
         q.exec(sql);
 
         while (q.next())
             tl.append(q.value(0).toString());
     }
     if (type & QSql::Views) {
-        QString sql = "select table_name from information_schema.tables where table_schema = '"_L1 + QLatin1StringView(d->mysql->db) + "' and table_type = 'VIEW'"_L1;
+        QString sql = "select table_name from information_schema.tables where table_schema = '"_L1 + d->dbName + "' and table_type = 'VIEW'"_L1;
         q.exec(sql);
 
         while (q.next())
