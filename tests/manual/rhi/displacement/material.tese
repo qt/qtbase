@@ -2,7 +2,7 @@
 
 layout(triangles, fractional_odd_spacing, ccw) in;
 
-layout(location = 0) in vec3 in_uv[];
+layout(location = 0) in vec2 in_uv[];
 layout(location = 1) in vec3 in_normal[];
 
 //layout(location = 0) out vec2 out_uv;
