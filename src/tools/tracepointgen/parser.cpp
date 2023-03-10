@@ -131,7 +131,7 @@ static QString preprocessMetadata(const QString &in)
 int Parser::lineNumber(qsizetype offset) const
 {
     DEBUGPRINTF(printf("tracepointgen: lineNumber: offset %u, line count: %u\n", offset , m_offsets.size()));
-    for (auto line : m_offsets) {
+    for (const auto line : m_offsets) {
         DEBUGPRINTF(printf("tracepointgen: lineNumber: %d %d %d\n", line.begin, line.end, line.line));
         if (offset >= line.begin && offset <= line.end)
             return line.line;
@@ -585,16 +585,16 @@ void Parser::write(QIODevice &input) const
     QTextStream out(&input);
     if (m_prefixes.size() > 0) {
         out << QStringLiteral("{\n");
-        for (auto prefix : m_prefixes)
+        for (const auto &prefix : m_prefixes)
             out << prefix << "\n";
         out << QStringLiteral("}\n");
     }
-    for (auto m : m_metadata)
+    for (const auto &m : m_metadata)
         out << m << "\n";
-    for (auto func : m_functions) {
+    for (const auto &func : m_functions) {
         out << func.className << "_" << func.functionName << "_entry(" << func.functionParameters << ")\n";
         out << func.className << "_" << func.functionName << "_exit()\n";
     }
-    for (auto point : m_points)
+    for (const auto &point : m_points)
         out << point.name << "(" << point.parameters << ")\n";
 }
