@@ -207,7 +207,7 @@ namespace qstdweb {
     {
     };
 
-    std::shared_ptr<CancellationFlag>
+    Q_CORE_EXPORT std::shared_ptr<CancellationFlag>
     readDataTransfer(emscripten::val webObject, std::function<QVariant(QByteArray)> imageReader,
                      std::function<void(std::unique_ptr<QMimeData>)> onDone);
 }
