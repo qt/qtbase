@@ -550,6 +550,7 @@ void QCryptographicHashPrivate::reset() noexcept
     if (context && !initializationFailed) {
         // everything already set up - just reset the context
         EVP_MD_CTX_reset(context.get());
+        initializationFailed = !EVP_DigestInit_ex(context.get(), algorithm.get(), nullptr);
         return;
     }
 
