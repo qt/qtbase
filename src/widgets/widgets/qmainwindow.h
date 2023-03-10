@@ -178,6 +178,7 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QMainWindow)
     Q_DISABLE_COPY(QMainWindow)
+    friend class QDockWidgetGroupWindow;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMainWindow::DockOptions)

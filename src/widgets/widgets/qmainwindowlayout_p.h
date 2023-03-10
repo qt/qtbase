@@ -306,8 +306,10 @@ class Q_AUTOTEST_EXPORT QDockWidgetGroupWindow : public QWidget
 {
     Q_OBJECT
 public:
-    explicit QDockWidgetGroupWindow(QWidget* parent = nullptr, Qt::WindowFlags f = { })
-        : QWidget(parent, f) {}
+    explicit QDockWidgetGroupWindow(QWidget *parent = nullptr, Qt::WindowFlags f = {})
+        : QWidget(parent, f)
+    {
+    }
     QDockAreaLayoutInfo *layoutInfo() const;
 #if QT_CONFIG(tabbar)
     const QDockAreaLayoutInfo *tabLayoutInfo() const;
@@ -570,6 +572,12 @@ public:
     void applyState(QMainWindowLayoutState &newState, bool animate = true);
     void restore(bool keepSavedState = false);
     void animationFinished(QWidget *widget);
+
+#if QT_CONFIG(draganddrop)
+    static bool needsPlatformDrag();
+    Qt::DropAction performPlatformWidgetDrag(QLayoutItem *widgetItem, const QPoint &pressPosition);
+    QLayoutItem *draggingWidget = nullptr;
+#endif
 
 protected:
     void timerEvent(QTimerEvent *e) override;

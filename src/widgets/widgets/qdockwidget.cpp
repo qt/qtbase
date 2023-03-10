@@ -253,7 +253,9 @@ bool QDockWidgetLayout::wmSupportsNativeWindowDeco()
     return false;
 #else
     static const bool xcb = !QGuiApplication::platformName().compare("xcb"_L1, Qt::CaseInsensitive);
-    return !xcb;
+    static const bool wayland =
+            QGuiApplication::platformName().startsWith("wayland"_L1, Qt::CaseInsensitive);
+    return !(xcb || wayland);
 #endif
 }
 
@@ -778,6 +780,8 @@ void QDockWidgetPrivate::startDrag(bool group)
     QMainWindowLayout *layout = qt_mainwindow_layout_from_dock(q);
     Q_ASSERT(layout != nullptr);
 
+    bool wasFloating = q->isFloating();
+
     state->widgetItem = layout->unplug(q, group);
     if (state->widgetItem == nullptr) {
         /*  Dock widget has a QMainWindow parent, but was never inserted with
@@ -796,6 +800,20 @@ void QDockWidgetPrivate::startDrag(bool group)
         layout->restore();
 
     state->dragging = true;
+
+#if QT_CONFIG(draganddrop)
+    if (QMainWindowLayout::needsPlatformDrag()) {
+        Qt::DropAction result =
+                layout->performPlatformWidgetDrag(state->widgetItem, state->pressPos);
+        if (result == Qt::IgnoreAction && !wasFloating) {
+            layout->revert(state->widgetItem);
+            delete state;
+            state = nullptr;
+        } else {
+            endDrag();
+        }
+    }
+#endif
 }
 
 /*! \internal
@@ -1038,6 +1056,10 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
 bool QDockWidgetPrivate::mouseReleaseEvent(QMouseEvent *event)
 {
 #if QT_CONFIG(mainwindow)
+    // if we are peforming a platform drag ignore the release here and end the drag when the actual
+    // drag ends.
+    if (QMainWindowLayout::needsPlatformDrag())
+        return false;
 
     if (event->button() == Qt::LeftButton && state && !state->nca) {
         endDrag();
@@ -1185,7 +1207,9 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
         flags |= Qt::FramelessWindowHint;
     }
 
-    if (unplug)
+    // If we are performing a platform drag the flag is not needed and we want to avoid recreating
+    // the platform window when it would be removed later
+    if (unplug && !QMainWindowLayout::needsPlatformDrag())
         flags |= Qt::X11BypassWindowManagerHint;
 
     q->setWindowFlags(flags);

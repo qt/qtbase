@@ -24,6 +24,10 @@
 #endif
 
 #include <qapplication.h>
+#if QT_CONFIG(draganddrop)
+#include <qdrag.h>
+#endif
+#include <qmimedata.h>
 #if QT_CONFIG(statusbar)
 #include <qstatusbar.h>
 #endif
@@ -3007,6 +3011,41 @@ bool QMainWindowLayout::restoreState(QDataStream &stream)
 
     return true;
 }
+
+#if QT_CONFIG(draganddrop)
+bool QMainWindowLayout::needsPlatformDrag()
+{
+    static const bool wayland =
+            QGuiApplication::platformName().startsWith("wayland"_L1, Qt::CaseInsensitive);
+    return wayland;
+}
+
+Qt::DropAction QMainWindowLayout::performPlatformWidgetDrag(QLayoutItem *widgetItem,
+                                                            const QPoint &pressPosition)
+{
+    draggingWidget = widgetItem;
+    QWidget *widget = widgetItem->widget();
+    auto drag = QDrag(widget);
+    auto mimeData = new QMimeData();
+    auto window = widgetItem->widget()->windowHandle();
+
+    auto serialize = [](const auto &object) {
+        QByteArray data;
+        QDataStream dataStream(&data, QIODevice::WriteOnly);
+        dataStream << object;
+        return data;
+    };
+    mimeData->setData("application/x-qt-mainwindowdrag-window"_L1,
+                      serialize(reinterpret_cast<qintptr>(window)));
+    mimeData->setData("application/x-qt-mainwindowdrag-position"_L1, serialize(pressPosition));
+    drag.setMimeData(mimeData);
+
+    auto result = drag.exec();
+
+    draggingWidget = nullptr;
+    return result;
+}
+#endif
 
 QT_END_NAMESPACE
 
