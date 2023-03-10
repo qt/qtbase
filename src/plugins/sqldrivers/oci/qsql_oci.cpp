@@ -141,7 +141,7 @@ QOCIDateTime::QOCIDateTime(OCIEnv *env, OCIError *err, const QDateTime &dt)
         const QDate date = dt.date();
         const QTime time = dt.time();
         // Zone in +hh:mm format
-        const QString timeZone = dt.toString("ttt");
+        const QString timeZone = dt.toString("ttt"_L1);
         const OraText *tz = reinterpret_cast<const OraText *>(timeZone.utf16());
         OCIDateTimeConstruct(env, err, dateTime, date.year(), date.month(), date.day(), time.hour(),
                              time.minute(), time.second(), time.msec() * 1000000,
