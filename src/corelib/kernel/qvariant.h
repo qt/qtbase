@@ -51,7 +51,9 @@ class QVariant;
 template<typename T>
 inline T qvariant_cast(const QVariant &);
 
-template<> constexpr inline bool QtPrivate::qIsRelocatable<QVariant> = true;
+namespace QtPrivate {
+template<> constexpr inline bool qIsRelocatable<QVariant> = true;
+}
 class Q_CORE_EXPORT QVariant
 {
     struct CborValueStandIn { qint64 n; void *c; int t; };
