@@ -41,6 +41,7 @@
 #include <qcryptographichash.h>
 #include <qiodevice.h>
 #include <qmutex.h>
+#include <private/qlocking_p.h>
 
 #include "../../3rdparty/sha1/sha1.cpp"
 
@@ -191,15 +192,15 @@ public:
         Sha3,
         Keccak
     };
-    void sha3Finish(QByteArray *tmpresult, int bitCount, Sha3Variant sha3Variant);
+    void sha3Finish(int bitCount, Sha3Variant sha3Variant);
 #endif
+    // protects result in result()
     QMutex finalizeMutex;
     QByteArray result;
 };
 
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-void QCryptographicHashPrivate::sha3Finish(QByteArray *tmpresult, int bitCount,
-                                           Sha3Variant sha3Variant)
+void QCryptographicHashPrivate::sha3Finish(int bitCount, Sha3Variant sha3Variant)
 {
     /*
         FIPS 202 §6.1 defines SHA-3 in terms of calculating the Keccak function
@@ -223,7 +224,7 @@ void QCryptographicHashPrivate::sha3Finish(QByteArray *tmpresult, int bitCount,
     */
     static const unsigned char sha3FinalSuffix = 0x80;
 
-    tmpresult->resize(bitCount / 8);
+    result.resize(bitCount / 8);
 
     SHA3Context copy = sha3Context;
 
@@ -235,7 +236,7 @@ void QCryptographicHashPrivate::sha3Finish(QByteArray *tmpresult, int bitCount,
         break;
     }
 
-    sha3Final(&copy, reinterpret_cast<BitSequence *>(tmpresult->data()));
+    sha3Final(&copy, reinterpret_cast<BitSequence *>(result.data()));
 }
 #endif
 
@@ -451,16 +452,18 @@ bool QCryptographicHash::addData(QIODevice* device)
 */
 QByteArray QCryptographicHash::result() const
 {
+    // result() is a const function, so concurrent calls are allowed; protect:
+    const auto lock = qt_scoped_lock(d->finalizeMutex);
+    // check that no other thread already finalized before us:
     if (!d->result.isEmpty())
         return d->result;
 
-    QByteArray tmpresult;
     switch (d->method) {
     case Sha1: {
         Sha1State copy = d->sha1Context;
-        tmpresult.resize(20);
+        d->result.resize(20);
         sha1FinalizeState(&copy);
-        sha1ToHash(&copy, (unsigned char *)tmpresult.data());
+        sha1ToHash(&copy, (unsigned char *)d->result.data());
         break;
     }
 #ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
@@ -471,79 +474,75 @@ QByteArray QCryptographicHash::result() const
 #else
     case Md4: {
         md4_context copy = d->md4Context;
-        tmpresult.resize(MD4_RESULTLEN);
-        md4_final(&copy, (unsigned char *)tmpresult.data());
+        d->result.resize(MD4_RESULTLEN);
+        md4_final(&copy, (unsigned char *)d->result.data());
         break;
     }
     case Md5: {
         MD5Context copy = d->md5Context;
-        tmpresult.resize(16);
-        MD5Final(&copy, (unsigned char *)tmpresult.data());
+        d->result.resize(16);
+        MD5Final(&copy, (unsigned char *)d->result.data());
         break;
     }
     case Sha224: {
         SHA224Context copy = d->sha224Context;
-        tmpresult.resize(SHA224HashSize);
-        SHA224Result(&copy, reinterpret_cast<unsigned char *>(tmpresult.data()));
+        d->result.resize(SHA224HashSize);
+        SHA224Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
         break;
     }
     case Sha256:{
         SHA256Context copy = d->sha256Context;
-        tmpresult.resize(SHA256HashSize);
-        SHA256Result(&copy, reinterpret_cast<unsigned char *>(tmpresult.data()));
+        d->result.resize(SHA256HashSize);
+        SHA256Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
         break;
     }
     case Sha384:{
         SHA384Context copy = d->sha384Context;
-        tmpresult.resize(SHA384HashSize);
-        SHA384Result(&copy, reinterpret_cast<unsigned char *>(tmpresult.data()));
+        d->result.resize(SHA384HashSize);
+        SHA384Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
         break;
     }
     case Sha512:{
         SHA512Context copy = d->sha512Context;
-        tmpresult.resize(SHA512HashSize);
-        SHA512Result(&copy, reinterpret_cast<unsigned char *>(tmpresult.data()));
+        d->result.resize(SHA512HashSize);
+        SHA512Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
         break;
     }
     case RealSha3_224: {
-        d->sha3Finish(&tmpresult, 224, QCryptographicHashPrivate::Sha3Variant::Sha3);
+        d->sha3Finish(224, QCryptographicHashPrivate::Sha3Variant::Sha3);
         break;
     }
     case RealSha3_256: {
-        d->sha3Finish(&tmpresult, 256, QCryptographicHashPrivate::Sha3Variant::Sha3);
+        d->sha3Finish(256, QCryptographicHashPrivate::Sha3Variant::Sha3);
         break;
     }
     case RealSha3_384: {
-        d->sha3Finish(&tmpresult, 384, QCryptographicHashPrivate::Sha3Variant::Sha3);
+        d->sha3Finish(384, QCryptographicHashPrivate::Sha3Variant::Sha3);
         break;
     }
     case RealSha3_512: {
-        d->sha3Finish(&tmpresult, 512, QCryptographicHashPrivate::Sha3Variant::Sha3);
+        d->sha3Finish(512, QCryptographicHashPrivate::Sha3Variant::Sha3);
         break;
     }
     case Keccak_224: {
-        d->sha3Finish(&tmpresult, 224, QCryptographicHashPrivate::Sha3Variant::Keccak);
+        d->sha3Finish(224, QCryptographicHashPrivate::Sha3Variant::Keccak);
         break;
     }
     case Keccak_256: {
-        d->sha3Finish(&tmpresult, 256, QCryptographicHashPrivate::Sha3Variant::Keccak);
+        d->sha3Finish(256, QCryptographicHashPrivate::Sha3Variant::Keccak);
         break;
     }
     case Keccak_384: {
-        d->sha3Finish(&tmpresult, 384, QCryptographicHashPrivate::Sha3Variant::Keccak);
+        d->sha3Finish(384, QCryptographicHashPrivate::Sha3Variant::Keccak);
         break;
     }
     case Keccak_512: {
-        d->sha3Finish(&tmpresult, 512, QCryptographicHashPrivate::Sha3Variant::Keccak);
+        d->sha3Finish(512, QCryptographicHashPrivate::Sha3Variant::Keccak);
         break;
     }
 #endif
     }
 
-    // we're called from a const function, so only write to this->result under
-    // a mutex
-    QMutexLocker locker(&d->finalizeMutex);
-    d->result = std::move(tmpresult);
     return d->result;
 }
 
