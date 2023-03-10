@@ -63,7 +63,7 @@
 - (void)unmarkText
 {
     if (!m_composingText.isEmpty()) {
-        if (QObject *fo = m_platformWindow->window()->focusObject()) {
+        if (QObject *fo = self.focusObject) {
             QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
             if (QCoreApplication::sendEvent(fo, &queryEvent)) {
                 if (queryEvent.value(Qt::ImEnabled).toBool()) {
@@ -81,6 +81,17 @@
 @end
 
 @implementation QNSView (ComplexText)
+
+- (QObject*)focusObject
+{
+    // The text input system may still hold a reference to our QNSView,
+    // even after QCocoaWindow has been destructed, delivering text input
+    // events to us, so we need to guard for this situation explicitly.
+    if (!m_platformWindow)
+        return nullptr;
+
+    return m_platformWindow->window()->focusObject();
+}
 
 - (void)insertNewline:(id)sender
 {
@@ -110,7 +121,7 @@
             commitString = QString::fromCFString(reinterpret_cast<CFStringRef>(aString));
         };
     }
-    if (QObject *fo = m_platformWindow->window()->focusObject()) {
+    if (QObject *fo = self.focusObject) {
         QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
         if (QCoreApplication::sendEvent(fo, &queryEvent)) {
             if (queryEvent.value(Qt::ImEnabled).toBool()) {
@@ -178,7 +189,7 @@
 
     m_composingText = preeditString;
 
-    if (QObject *fo = m_platformWindow->window()->focusObject()) {
+    if (QObject *fo = self.focusObject) {
         m_composingFocusObject = fo;
         QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
         if (QCoreApplication::sendEvent(fo, &queryEvent)) {
@@ -200,7 +211,7 @@
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
 {
     Q_UNUSED(actualRange)
-    QObject *fo = m_platformWindow->window()->focusObject();
+    QObject *fo = self.focusObject;
     if (!fo)
         return nil;
     QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImCurrentSelection);
@@ -235,7 +246,7 @@
 {
     NSRange selectedRange = {0, 0};
 
-    QObject *fo = m_platformWindow->window()->focusObject();
+    QObject *fo = self.focusObject;
     if (!fo)
         return selectedRange;
     QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImCurrentSelection);
@@ -258,7 +269,7 @@
     Q_UNUSED(aRange)
     Q_UNUSED(actualRange)
 
-    QObject *fo = m_platformWindow->window()->focusObject();
+    QObject *fo = self.focusObject;
     if (!fo)
         return NSZeroRect;
 
