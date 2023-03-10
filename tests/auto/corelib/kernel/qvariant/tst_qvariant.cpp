@@ -1568,6 +1568,10 @@ void tst_QVariant::operator_eq_eq_data()
     QVariant mIntString(QByteArray("-42"));
     QVariant mIntQString(QString("-42"));
 
+    QVariant mIntZero(0);
+    QVariant mIntStringZero(QByteArray("0"));
+    QVariant mIntQStringZero(QString("0"));
+
     QVariant mUInt(42u);
     QVariant mUIntString(QByteArray("42"));
     QVariant mUIntQString(QString("42"));
@@ -1608,12 +1612,30 @@ void tst_QVariant::operator_eq_eq_data()
     QVariant mBoolString(QByteArray("false"));
     QVariant mBoolQString(QString("false"));
 
+    QVariant mTextString(QByteArray("foobar"));
+    QVariant mTextQString(QString("foobar"));
+
     QTest::newRow( "double_int" ) << QVariant(42.0) << QVariant(42) << true;
     QTest::newRow( "float_int" ) << QVariant(42.f) << QVariant(42) << true;
     QTest::newRow( "mInt_mIntString" ) << mInt << mIntString << false;
     QTest::newRow( "mIntString_mInt" ) << mIntString << mInt << false;
     QTest::newRow( "mInt_mIntQString" ) << mInt << mIntQString << true;
     QTest::newRow( "mIntQString_mInt" ) << mIntQString << mInt << true;
+
+    QTest::newRow( "mIntZero_mIntStringZero" ) << mIntZero << mIntStringZero << false;
+    QTest::newRow( "mIntStringZero_mIntZero" ) << mIntStringZero << mIntZero << false;
+    QTest::newRow( "mIntZero_mIntQStringZero" ) << mIntZero << mIntQStringZero << true;
+    QTest::newRow( "mIntQStringZero_mIntZero" ) << mIntQStringZero << mIntZero << true;
+
+    QTest::newRow( "mInt_mTextString" ) << mInt << mTextString << false;
+    QTest::newRow( "mTextString_mInt" ) << mTextString << mInt << false;
+    QTest::newRow( "mInt_mTextQString" ) << mInt << mTextQString << false;
+    QTest::newRow( "mTextQString_mInt" ) << mTextQString << mInt << false;
+
+    QTest::newRow( "mIntZero_mTextString" ) << mIntZero << mTextString << false;
+    QTest::newRow( "mTextString_mIntZero" ) << mTextString << mIntZero << false;
+    QTest::newRow( "mIntZero_mTextQString" ) << mIntZero << mTextQString << false;
+    QTest::newRow( "mTextQString_mIntZero" ) << mTextQString << mIntZero << false;
 
     QTest::newRow( "mUInt_mUIntString" ) << mUInt << mUIntString << false;
     QTest::newRow( "mUIntString_mUInt" ) << mUIntString << mUInt << false;
@@ -1624,6 +1646,11 @@ void tst_QVariant::operator_eq_eq_data()
     QTest::newRow( "mDoubleString_mDouble" ) << mDoubleString << mDouble << false;
     QTest::newRow( "mDouble_mDoubleQString" ) << mDouble << mDoubleQString << true;
     QTest::newRow( "mDoubleQString_mDouble" ) << mDoubleQString << mDouble << true;
+
+    QTest::newRow( "mDouble_mTextString" ) << mDouble << mTextString << false;
+    QTest::newRow( "mTextString_mDouble" ) << mTextString << mDouble << false;
+    QTest::newRow( "mDouble_mTextQString" ) << mDouble << mTextQString << false;
+    QTest::newRow( "mTextQString_mDouble" ) << mTextQString << mDouble << false;
 
     QTest::newRow( "mFloat_mFloatString" ) << mFloat << mFloatString << false;
     QTest::newRow( "mFloatString_mFloat" ) << mFloatString << mFloat << false;
