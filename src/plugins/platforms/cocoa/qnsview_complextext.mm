@@ -7,6 +7,17 @@
 
 // ------------- Text insertion -------------
 
+- (QObject*)focusObject
+{
+    // The text input system may still hold a reference to our QNSView,
+    // even after QCocoaWindow has been destructed, delivering text input
+    // events to us, so we need to guard for this situation explicitly.
+    if (!m_platformWindow)
+        return nullptr;
+
+    return m_platformWindow->window()->focusObject();
+}
+
 /*
     Inserts the given text, potentially replacing existing text.
 
@@ -52,8 +63,7 @@
         }
     }
 
-    QObject *focusObject = m_platformWindow->window()->focusObject();
-    if (queryInputMethod(focusObject)) {
+    if (queryInputMethod(self.focusObject)) {
         QInputMethodEvent inputMethodEvent;
 
         const bool isAttributedString = [text isKindOfClass:NSAttributedString.class];
@@ -75,7 +85,7 @@
             inputMethodEvent.setCommitString(commitString, replaceFrom, replaceLength);
         }
 
-        QCoreApplication::sendEvent(focusObject, &inputMethodEvent);
+        QCoreApplication::sendEvent(self.focusObject, &inputMethodEvent);
     }
 
     m_composingText.clear();
@@ -85,6 +95,9 @@
 - (void)insertNewline:(id)sender
 {
     Q_UNUSED(sender);
+
+    if (!m_platformWindow)
+        return;
 
     // Depending on the input method, pressing enter may
     // result in simply dismissing the input method editor,
@@ -242,7 +255,7 @@
     // Update the composition, now that we've computed the replacement range
     m_composingText = preeditString;
 
-    if (QObject *focusObject = m_platformWindow->window()->focusObject()) {
+    if (QObject *focusObject = self.focusObject) {
         m_composingFocusObject = focusObject;
         if (queryInputMethod(focusObject)) {
             QInputMethodEvent event(preeditString, preeditAttributes);
@@ -284,8 +297,7 @@
 */
 - (NSRange)markedRange
 {
-    QObject *focusObject = m_platformWindow->window()->focusObject();
-    if (auto queryResult = queryInputMethod(focusObject, Qt::ImAbsolutePosition)) {
+    if (auto queryResult = queryInputMethod(self.focusObject, Qt::ImAbsolutePosition)) {
         int absoluteCursorPosition = queryResult.value(Qt::ImAbsolutePosition).toInt();
 
         // The cursor position as reflected by Qt::ImAbsolutePosition is not
@@ -320,7 +332,7 @@
         << "for focus object" << m_composingFocusObject;
 
     if (!m_composingText.isEmpty()) {
-        QObject *focusObject = m_platformWindow->window()->focusObject();
+        QObject *focusObject = self.focusObject;
         if (queryInputMethod(focusObject)) {
             QInputMethodEvent e;
             e.setCommitString(m_composingText);
@@ -393,8 +405,7 @@
 */
 - (NSRange)selectedRange
 {
-    QObject *focusObject = m_platformWindow->window()->focusObject();
-    if (auto queryResult = queryInputMethod(focusObject,
+    if (auto queryResult = queryInputMethod(self.focusObject,
             Qt::ImCursorPosition | Qt::ImAbsolutePosition | Qt::ImAnchorPosition)) {
 
         // Unfortunately the Qt::InputMethodQuery values are all relative
@@ -441,8 +452,7 @@
 */
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
-    QObject *focusObject = m_platformWindow->window()->focusObject();
-    if (auto queryResult = queryInputMethod(focusObject,
+    if (auto queryResult = queryInputMethod(self.focusObject,
             Qt::ImAbsolutePosition | Qt::ImTextBeforeCursor | Qt::ImTextAfterCursor)) {
         const int absoluteCursorPosition = queryResult.value(Qt::ImAbsolutePosition).toInt();
         const QString textBeforeCursor = queryResult.value(Qt::ImTextBeforeCursor).toString();
@@ -478,8 +488,8 @@
     Q_UNUSED(range);
     Q_UNUSED(actualRange);
 
-    QWindow *window = m_platformWindow->window();
-    if (queryInputMethod(window->focusObject())) {
+    QWindow *window = m_platformWindow ? m_platformWindow->window() : nullptr;
+    if (window && queryInputMethod(window->focusObject())) {
         QRect cursorRect = qApp->inputMethod()->cursorRectangle().toRect();
         cursorRect.moveBottomLeft(window->mapToGlobal(cursorRect.bottomLeft()));
         return QCocoaScreen::mapToNative(cursorRect);
