@@ -1207,50 +1207,55 @@ Qt::MatchFlags QCompleter::filterMode() const
 */
 void QCompleter::setPopup(QAbstractItemView *popup)
 {
+    Q_ASSERT(popup);
     Q_D(QCompleter);
-    Q_ASSERT(popup != nullptr);
+    if (popup == d->popup)
+        return;
+
+    // Remember existing widget's focus policy, default to NoFocus
+    const Qt::FocusPolicy origPolicy = d->widget ? d->widget->focusPolicy()
+                                                 : Qt::NoFocus;
+
+    // If popup existed already, disconnect signals and delete object
     if (d->popup) {
         QObject::disconnect(d->popup->selectionModel(), nullptr, this, nullptr);
         QObject::disconnect(d->popup, nullptr, this, nullptr);
-    }
-    if (d->popup != popup)
         delete d->popup;
-    if (popup->model() != d->proxy)
-        popup->setModel(d->proxy);
-     popup->hide();
+    }
 
-    Qt::FocusPolicy origPolicy = Qt::NoFocus;
-    if (d->widget)
-        origPolicy = d->widget->focusPolicy();
+    // Assign new object, set model and hide
+    d->popup = popup;
+    if (d->popup->model() != d->proxy)
+        d->popup->setModel(d->proxy);
+    d->popup->hide();
 
     // Mark the widget window as a popup, so that if the last non-popup window is closed by the
     // user, the application should not be prevented from exiting. It needs to be set explicitly via
     // setWindowFlag(), because passing the flag via setParent(parent, windowFlags) does not call
     // QWidgetPrivate::adjustQuitOnCloseAttribute(), and causes an application not to exit if the
     // popup ends up being the last window.
-    popup->setParent(nullptr);
-    popup->setWindowFlag(Qt::Popup);
-    popup->setFocusPolicy(Qt::NoFocus);
+    d->popup->setParent(nullptr);
+    d->popup->setWindowFlag(Qt::Popup);
+    d->popup->setFocusPolicy(Qt::NoFocus);
     if (d->widget)
         d->widget->setFocusPolicy(origPolicy);
 
-    popup->setFocusProxy(d->widget);
-    popup->installEventFilter(this);
-    popup->setItemDelegate(new QCompleterItemDelegate(popup));
+    d->popup->setFocusProxy(d->widget);
+    d->popup->installEventFilter(this);
+    d->popup->setItemDelegate(new QCompleterItemDelegate(d->popup));
 #if QT_CONFIG(listview)
-    if (QListView *listView = qobject_cast<QListView *>(popup)) {
+    if (QListView *listView = qobject_cast<QListView *>(d->popup)) {
         listView->setModelColumn(d->column);
     }
 #endif
 
-    QObject::connect(popup, SIGNAL(clicked(QModelIndex)),
+    QObject::connect(d->popup, SIGNAL(clicked(QModelIndex)),
                      this, SLOT(_q_complete(QModelIndex)));
     QObject::connect(this, SIGNAL(activated(QModelIndex)),
-                     popup, SLOT(hide()));
+                     d->popup, SLOT(hide()));
 
-    QObject::connect(popup->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+    QObject::connect(d->popup->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
                      this, SLOT(_q_completionSelected(QItemSelection)));
-    d->popup = popup;
 }
 
 /*!
