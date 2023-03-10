@@ -55,6 +55,4 @@
 
     \skipto QGraphicsWidget
     \printuntil app.exec()
-
-    \sa {Anchor Layout Example}
 */
