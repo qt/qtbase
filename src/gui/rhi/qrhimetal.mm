@@ -417,6 +417,11 @@ struct QMetalSwapChainData
     id<MTLTexture> msaaTex[QMTL_FRAMES_IN_FLIGHT];
     QRhiTexture::Format rhiColorFormat;
     MTLPixelFormat colorFormat;
+#ifdef Q_OS_MACOS
+    bool liveResizeObserverSet = false;
+    QMacNotificationObserver liveResizeStartObserver;
+    QMacNotificationObserver liveResizeEndObserver;
+#endif
 };
 
 QRhiMetal::QRhiMetal(QRhiMetalInitParams *params, QRhiMetalNativeHandles *importDevice)
@@ -2291,39 +2296,35 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     QMetalSwapChain *swapChainD = QRHI_RES(QMetalSwapChain, swapChain);
     Q_ASSERT(currentSwapChain == swapChainD);
 
+    __block int thisFrameSlot = currentFrameSlot;
+    [swapChainD->cbWrapper.d->cb addCompletedHandler: ^(id<MTLCommandBuffer>) {
+        dispatch_semaphore_signal(swapChainD->d->sem[thisFrameSlot]);
+    }];
+
     const bool needsPresent = !flags.testFlag(QRhi::SkipPresent);
-    if (needsPresent) {
-        // beginFrame-endFrame without a render pass inbetween means there is no
-        // drawable, handle this gracefully because presentDrawable does not like
-        // null arguments.
-        if (id<CAMetalDrawable> drawable = swapChainD->d->curDrawable) {
-            // QTBUG-103415: while the docs suggest the following two approaches are
-            // equivalent, there is a difference in case a frame is recorded earlier than
-            // (i.e. not in response to) the next CVDisplayLink callback. Therefore, stick
-            // with presentDrawable, which gives results identical to OpenGL, and all other
-            // platforms, i.e. throttles to vsync as expected, meaning constant 15-17 ms with
-            // a 60 Hz screen, no jumps with smaller intervals, regardless of when the frame
-            // is submitted by the app)
-#if 1
+    const bool presentsWithTransaction = swapChainD->d->layer.presentsWithTransaction;
+    if (!presentsWithTransaction && needsPresent) {
+        // beginFrame-endFrame without a render pass inbetween means there is no drawable.
+        if (id<CAMetalDrawable> drawable = swapChainD->d->curDrawable)
             [swapChainD->cbWrapper.d->cb presentDrawable: drawable];
-#else
-            [swapChainD->cbWrapper.d->cb addScheduledHandler:^(id<MTLCommandBuffer>) {
-                [drawable present];
-            }];
-#endif
+    }
+
+    [swapChainD->cbWrapper.d->cb commit];
+
+    if (presentsWithTransaction && needsPresent) {
+        // beginFrame-endFrame without a render pass inbetween means there is no drawable.
+        if (id<CAMetalDrawable> drawable = swapChainD->d->curDrawable) {
+            // The layer has presentsWithTransaction set to true to avoid flicker on resizing,
+            // so here it is important to follow what the Metal docs say when it comes to the
+            // issuing the present.
+            [swapChainD->cbWrapper.d->cb waitUntilScheduled];
+            [drawable present];
         }
     }
 
     // Must not hold on to the drawable, regardless of needsPresent
     [swapChainD->d->curDrawable release];
     swapChainD->d->curDrawable = nil;
-
-    __block int thisFrameSlot = currentFrameSlot;
-    [swapChainD->cbWrapper.d->cb addCompletedHandler: ^(id<MTLCommandBuffer>) {
-        dispatch_semaphore_signal(swapChainD->d->sem[thisFrameSlot]);
-    }];
-
-    [swapChainD->cbWrapper.d->cb commit];
 
     [d->captureScope endScope];
 
@@ -5974,6 +5975,12 @@ void QMetalSwapChain::destroy()
         d->msaaTex[i] = nil;
     }
 
+#ifdef Q_OS_MACOS
+    d->liveResizeStartObserver.remove();
+    d->liveResizeEndObserver.remove();
+    d->liveResizeObserverSet = false;
+#endif
+
     d->layer = nullptr;
 
     [d->curDrawable release];
@@ -6162,6 +6169,34 @@ bool QMetalSwapChain::createOrResize()
     pixelSize = m_currentPixelSize;
 
     [d->layer setDevice: rhiD->d->dev];
+
+#ifdef Q_OS_MACOS
+    // Can only use presentsWithTransaction (to get smooth resizing) when
+    // presenting from the main (gui) thread. We predict that based on the
+    // thread this function is called on since if the QRhiSwapChain is
+    // initialied on a given thread then that's almost certainly the thread on
+    // which the QRhi renders and presents.
+    const bool canUsePresentsWithTransaction = NSThread.isMainThread;
+
+    // Have an env.var. just in case it turns out presentsWithTransaction is
+    // not desired in some specific case.
+    static bool allowPresentsWithTransaction = !qEnvironmentVariableIntValue("QT_MTL_NO_TRANSACTION");
+
+    if (allowPresentsWithTransaction && canUsePresentsWithTransaction && !d->liveResizeObserverSet) {
+        d->liveResizeObserverSet = true;
+        NSView *view = reinterpret_cast<NSView *>(window->winId());
+        NSWindow *window = view.window;
+        if (window) {
+            qCDebug(QRHI_LOG_INFO, "will set presentsWithTransaction during live resize");
+            d->liveResizeStartObserver = QMacNotificationObserver(window, NSWindowWillStartLiveResizeNotification, [this] {
+                d->layer.presentsWithTransaction = true;
+            });
+            d->liveResizeEndObserver = QMacNotificationObserver(window, NSWindowDidEndLiveResizeNotification, [this] {
+                d->layer.presentsWithTransaction = false;
+            });
+        }
+    }
+#endif
 
     [d->curDrawable release];
     d->curDrawable = nil;
