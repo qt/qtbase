@@ -240,7 +240,7 @@ QStringList Parser::findEnumValues(const QString &name, const QStringList &inclu
     QString enumName = split.last();
     DEBUGPRINTF(printf("searching for %s\n", qPrintable(name)));
     QStringList ret;
-    for (auto filename : includes) {
+    for (const QString &filename : includes) {
         QFile input(filename);
         if (!input.open(QIODevice::ReadOnly | QIODevice::Text)) {
             DEBUGPRINTF(printf("Cannot open '%s' for reading: %s\n",
@@ -300,8 +300,8 @@ QStringList Parser::findEnumValues(const QString &name, const QStringList &inclu
                     int begin = data.indexOf(QLatin1Char('{'), match.capturedEnd());
                     int end = data.indexOf(QLatin1Char('}'), begin);
                     QString block = data.mid(begin + 1, end - begin - 1);
-                    QStringList enums = block.split(QLatin1Char('\n'));
-                    for (auto e : enums) {
+                    const QStringList enums = block.split(QLatin1Char('\n'));
+                    for (const auto &e : enums) {
                         const auto trimmed = e.trimmed();
                         if (!trimmed.isEmpty() && !trimmed.startsWith(QLatin1Char('#')))
                             ret << trimmed;
@@ -327,7 +327,7 @@ static QList<EnumNameValue> enumsToValues(const QStringList &values)
 {
     int cur = 0;
     QList<EnumNameValue> ret;
-    for (auto value : values) {
+    for (const QString &value : values) {
         EnumNameValue r;
         if (value.contains(QLatin1Char('='))) {
             size_t offset = value.indexOf(QLatin1Char('='));
@@ -438,8 +438,8 @@ void Parser::parseMetadata(const QString &data, qsizetype offset, const QStringL
                     return a.value < b.value;
                 });
                 values.clear();
-                int prevValue = moreValues.first().value;
-                for (auto v : moreValues) {
+                int prevValue = std::as_const(moreValues).front().value;
+                for (const auto &v : std::as_const(moreValues)) {
                     QString a;
                     if (v.valueStr.isNull()) {
                         if (v.value == prevValue + 1 && !flags)
