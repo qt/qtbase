@@ -4629,6 +4629,13 @@ void tst_QSqlQuery::integralTypesMysql()
         runIntegralTypesMysqlTest<qint64>(db, "bigIntTest", "BIGINT", withPreparedStatement);
         runIntegralTypesMysqlTest<quint64>(db, "unsignedBigIntTest", "BIGINT UNSIGNED",
                                            withPreparedStatement);
+        runIntegralTypesMysqlTest<quint64>(db, "bitmask_7", "BIT(7)", withPreparedStatement, 0,
+                                           (1LL << 7) - 1);
+        runIntegralTypesMysqlTest<quint64>(db, "bitmask_31", "BIT(31)", withPreparedStatement, 0,
+                                           (1LL << 31) - 1);
+        runIntegralTypesMysqlTest<quint64>(db, "bitmask_33", "BIT(33)", withPreparedStatement, 0,
+                                           (1LL << 33) - 1);
+        runIntegralTypesMysqlTest<quint64>(db, "bitmask_64", "BIT(64)", withPreparedStatement);
     }
 }
 

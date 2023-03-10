@@ -215,6 +215,7 @@ static QMetaType qDecodeMYSQLType(enum_field_types mysqltype, uint flags)
     case MYSQL_TYPE_YEAR:
         type = QMetaType::Int;
         break;
+    case MYSQL_TYPE_BIT:
     case MYSQL_TYPE_LONGLONG:
         type = (flags & UNSIGNED_FLAG) ? QMetaType::ULongLong : QMetaType::LongLong;
         break;
@@ -301,6 +302,11 @@ static bool qIsInteger(int t)
         || t == QMetaType::Short || t == QMetaType::UShort
         || t == QMetaType::Int || t == QMetaType::UInt
         || t == QMetaType::LongLong || t == QMetaType::ULongLong;
+}
+
+static inline bool qIsBitfield(enum_field_types type)
+{
+    return type == MYSQL_TYPE_BIT;
 }
 
 void QMYSQLResultPrivate::bindBlobs()
@@ -519,6 +525,20 @@ bool QMYSQLResult::fetchFirst()
     return fetch(0);
 }
 
+static inline uint64_t
+qDecodeBitfield(const QMYSQLResultPrivate::QMyField &f, const char *outField)
+{
+    // byte-aligned length
+    const auto numBytes = (f.myField->length + 7) / 8;
+    uint64_t val = 0;
+    for (unsigned long i = 0; i < numBytes && outField; ++i) {
+        uint64_t tmp = static_cast<uint8_t>(outField[i]);
+        val <<= 8;
+        val |= tmp;
+    }
+    return val;
+}
+
 QVariant QMYSQLResult::data(int field)
 {
     Q_D(QMYSQLResult);
@@ -536,8 +556,9 @@ QVariant QMYSQLResult::data(int field)
     if (d->preparedQuery) {
         if (f.nullIndicator)
             return QVariant(f.type);
-
-        if (qIsInteger(f.type.id())) {
+        if (qIsBitfield(f.myField->type)) {
+            return QVariant::fromValue(qDecodeBitfield(f, f.outField));
+        } else if (qIsInteger(f.type.id())) {
             QVariant variant(f.type, f.outField);
             // we never want to return char variants here, see QTBUG-53397
             if (f.type.id() == QMetaType::UChar)
@@ -568,6 +589,9 @@ QVariant QMYSQLResult::data(int field)
             // NULL value
             return QVariant(f.type);
         }
+
+        if (qIsBitfield(f.myField->type))
+            return QVariant::fromValue(qDecodeBitfield(f, d->row[field]));
 
         fieldLength = mysql_fetch_lengths(d->result)[field];
 
@@ -677,6 +701,7 @@ bool QMYSQLResult::reset (const QString& query)
         for(int i = 0; i < numFields; i++) {
             MYSQL_FIELD* field = mysql_fetch_field_direct(d->result, i);
             d->fields[i].type = qDecodeMYSQLType(field->type, field->flags);
+            d->fields[i].myField = field;
         }
         setAt(QSql::BeforeFirstRow);
     }
@@ -794,6 +819,7 @@ bool QMYSQLResult::nextResult()
         for (unsigned int i = 0; i < numFields; i++) {
             MYSQL_FIELD *field = mysql_fetch_field_direct(d->result, i);
             d->fields[i].type = qDecodeMYSQLType(field->type, field->flags);
+            d->fields[i].myField = field;
         }
     }
 
