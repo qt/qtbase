@@ -9,7 +9,7 @@
 
 #include <functional>
 
-Images::Images(QWidget *parent) : QWidget(parent), downloadDialog(new DownloadDialog())
+Images::Images(QWidget *parent) : QWidget(parent), downloadDialog(new DownloadDialog(this))
 {
     setWindowTitle(tr("Image downloading and scaling example"));
     resize(800, 600);
@@ -191,6 +191,7 @@ void Images::initLayout(qsizetype count)
     QLayoutItem *child;
     while ((child = imagesLayout->takeAt(0)) != nullptr) {
         child->widget()->setParent(nullptr);
+        delete child->widget();
         delete child;
     }
     labels.clear();
