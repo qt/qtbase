@@ -117,6 +117,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
 @end
 
 @interface QNSView (ComplexText) <NSTextInputClient>
+@property (readonly) QObject* focusObject;
 @end
 
 @implementation QNSView {
