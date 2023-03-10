@@ -1772,6 +1772,7 @@ void QMenuBar::setNativeMenuBar(bool nativeMenuBar)
         if (!nativeMenuBar) {
             delete d->platformMenuBar;
             d->platformMenuBar = nullptr;
+            d->itemsDirty = true;
         } else {
             if (!d->platformMenuBar)
                 d->platformMenuBar = QGuiApplicationPrivate::platformTheme()->createPlatformMenuBar();
