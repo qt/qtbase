@@ -338,7 +338,7 @@ void *QThreadPrivate::start(void *arg)
             if (Q_LIKELY(thr->d_func()->objectName.isEmpty()))
                 setCurrentThreadName(thr->metaObject()->className());
             else
-                setCurrentThreadName(std::exchange(thr->d_func()->objectName, {}).toLocal8Bit());
+                setCurrentThreadName(qExchange(thr->d_func()->objectName, {}).toLocal8Bit());
         }
 #endif
 
