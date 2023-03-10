@@ -434,7 +434,7 @@ function(qt_internal_add_test name)
         set(batch_current_test TRUE)
     endif()
 
-    if(batch_current_test)
+    if(batch_current_test OR (QT_BUILD_TESTS_BATCHED AND arg_QMLTEST))
         if (QT_SUPERBUILD OR DEFINED ENV{TESTED_MODULE_COIN})
             set(is_qtbase_test FALSE)
             if(QT_SUPERBUILD)
