@@ -167,45 +167,6 @@ static bool isMouseEvent(NSEvent *ev)
 }
 @end
 
-#if !defined(QT_APPLE_NO_PRIVATE_APIS)
-// When creating an NSWindow the worksWhenModal function is queried,
-// and the resulting state is used to set the corresponding window tag,
-// which the window server uses to determine whether or not the window
-// should be allowed to activate via mouse clicks in the title-bar.
-// Unfortunately, prior to macOS 10.15, this window tag was never
-// updated after the initial assignment in [NSWindow _commonAwake],
-// which meant that windows that dynamically change their worksWhenModal
-// state will behave as if they were never allowed to work when modal.
-// We work around this by manually updating the window tag when needed.
-
-typedef uint32_t CGSConnectionID;
-typedef uint32_t CGSWindowID;
-
-extern "C" {
-CGSConnectionID CGSMainConnectionID() __attribute__((weak_import));
-OSStatus CGSSetWindowTags(const CGSConnectionID, const CGSWindowID, int *, int) __attribute__((weak_import));
-OSStatus CGSClearWindowTags(const CGSConnectionID, const CGSWindowID, int *, int) __attribute__((weak_import));
-}
-
-@interface QNSPanel (WorksWhenModalWindowTagWorkaround) @end
-@implementation QNSPanel (WorksWhenModalWindowTagWorkaround)
-- (void)setWorksWhenModal:(BOOL)worksWhenModal
-{
-    [super setWorksWhenModal:worksWhenModal];
-
-    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSCatalina) {
-        if (CGSMainConnectionID && CGSSetWindowTags && CGSClearWindowTags) {
-            static int kWorksWhenModalWindowTag = 0x40;
-            auto *function = worksWhenModal ? CGSSetWindowTags : CGSClearWindowTags;
-            function(CGSMainConnectionID(), self.windowNumber, &kWorksWhenModalWindowTag, 64);
-        } else {
-            qWarning() << "Missing APIs for window tag handling, can not update worksWhenModal state";
-        }
-    }
-}
-@end
-#endif // QT_APPLE_NO_PRIVATE_APIS
-
 #else // QNSWINDOW_PROTOCOL_IMPLMENTATION
 
 // The following content is mixed in to the QNSWindow and QNSPanel classes via includes
