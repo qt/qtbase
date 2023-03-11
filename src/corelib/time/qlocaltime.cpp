@@ -202,12 +202,19 @@ int getCurrentStandardUtcOffset()
         */
 #  if defined(_POSIX_THREAD_SAFE_FUNCTIONS)
         struct tm t;
-        if (gmtime_r(&curr, &t))
-            return curr - qMkTime(&t);
+        if (gmtime_r(&curr, &t)) {
+            time_t mkt = qMkTime(&t);
+            int offset = int(curr - mkt);
+            Q_ASSERT(std::abs(offset) <= SECS_PER_DAY);
+            return offset;
+        }
 #  else
         if (struct tm *tp = gmtime(&curr)) {
             struct tm t = *tp; // Copy it quick, hopefully before it can get stomped
-            return curr - qMkTime(&t);
+            time_t mkt = qMkTime(&t);
+            int offset = int(curr - mkt);
+            Q_ASSERT(std::abs(offset) <= SECS_PER_DAY);
+            return offset;
         }
 #  endif
     } // else, presumably: errno == EOVERFLOW
