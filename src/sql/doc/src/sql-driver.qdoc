@@ -23,6 +23,7 @@
     \table
     \header \li Driver name \li DBMS
     \row \li \l{#QDB2}{QDB2} \li IBM DB2 (version 7.1 and above)
+    \row \li \l{#QIBASE} \li Borland InterBase / Firebird
     \row \li \l{#QMYSQL}{QMYSQL / MARIADB} \li MySQL or MariaDB (version 5.6 and above)
     \row \li \l{#QOCI}{QOCI} \li Oracle Call Interface Driver (version 12.1 and above)
     \row \li \l{#QODBC}{QODBC}
