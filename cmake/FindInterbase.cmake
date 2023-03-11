@@ -24,6 +24,7 @@
 find_path(Interbase_INCLUDE_DIR
           NAMES ibase.h
           HINTS ${Interbase_INCLUDEDIR}
+          PATH_SUFFIXES firebird
 )
 
 find_library(Interbase_LIBRARY
