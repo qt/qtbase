@@ -58,6 +58,7 @@ public:
                         bool trimStrings) const override;
     QVariant handle() const override;
     QString escapeIdentifier(const QString &identifier, IdentifierType) const override;
+    int maximumIdentifierLength(IdentifierType type) const override;
 
 protected:
     bool                beginTransaction() override;

@@ -45,16 +45,13 @@ static QString qGetHostName()
     return hostname;
 }
 
-inline QString fixupTableName(const QString &tableName, QSqlDatabase db)
+inline QString fixupTableName(const QString &tableName, const QSqlDatabase &db)
 {
     QString tbName = tableName;
-    // On Oracle we are limited to 30 character tablenames
-    QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
-    if (d && d->dbmsType == QSqlDriver::Oracle)
-        tbName.truncate(30);
-    // On Interbase we are limited to 31 character tablenames
-    if (d && d->dbmsType == QSqlDriver::Interbase)
-        tbName.truncate(31);
+    // Oracle & Interbase/Firebird have a limit on the tablename length
+    QSqlDriver *drv = db.driver();
+    if (drv)
+        tbName.truncate(drv->maximumIdentifierLength(QSqlDriver::TableName));
     return tbName;
 }
 

@@ -2759,4 +2759,11 @@ QString QOCIDriver::escapeIdentifier(const QString &identifier, IdentifierType t
     return res;
 }
 
+int QOCIDriver::maximumIdentifierLength(IdentifierType type) const
+{
+    Q_D(const QOCIDriver);
+    Q_UNUSED(type);
+    return d->serverVersion > 12 ? 128 : 30;
+}
+
 QT_END_NAMESPACE
