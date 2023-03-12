@@ -1700,13 +1700,9 @@ QSqlRecord QIBaseDriver::record(const QString& tablename) const
     if (!isOpen())
         return rec;
 
+    const QString table = stripDelimiters(tablename, QSqlDriver::TableName);
     QSqlQuery q(createResult());
     q.setForwardOnly(true);
-    QString table = tablename;
-    if (isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
-    else
-        table = table.toUpper();
     q.exec("SELECT a.RDB$FIELD_NAME, b.RDB$FIELD_TYPE, b.RDB$FIELD_LENGTH, "
            "b.RDB$FIELD_SCALE, b.RDB$FIELD_PRECISION, a.RDB$NULL_FLAG "
            "FROM RDB$RELATION_FIELDS a, RDB$FIELDS b "
@@ -1739,12 +1735,7 @@ QSqlIndex QIBaseDriver::primaryIndex(const QString &table) const
     if (!isOpen())
         return index;
 
-    QString tablename = table;
-    if (isIdentifierEscaped(tablename, QSqlDriver::TableName))
-        tablename = stripDelimiters(tablename, QSqlDriver::TableName);
-    else
-        tablename = tablename.toUpper();
-
+    const QString tablename = stripDelimiters(table, QSqlDriver::TableName);
     QSqlQuery q(createResult());
     q.setForwardOnly(true);
     q.exec("SELECT a.RDB$INDEX_NAME, b.RDB$FIELD_NAME, d.RDB$FIELD_TYPE, d.RDB$FIELD_SCALE "

@@ -112,7 +112,7 @@ void tst_QSqlDriver::record()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QString tablename(qTableName("relTEST1", __FILE__, db));
+    QString tablename(qTableName("relTEST1", __FILE__, db, false));
     QStringList fields;
     fields << "id" << "name" << "title_key" << "another_title_key" << "more_data";
 
@@ -171,7 +171,7 @@ void tst_QSqlDriver::primaryIndex()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QString tablename(qTableName("relTEST1", __FILE__, db));
+    QString tablename(qTableName("relTEST1", __FILE__, db, false));
     //check that we can get primary index using unquoted mixed case table name
     QSqlIndex index = db.driver()->primaryIndex(tablename);
     QCOMPARE(index.count(), 1);
