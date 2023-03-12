@@ -425,8 +425,7 @@ void tst_QSqlTableModel::insertColumns()
 {
     // Just like the select test, with extra stuff
     QFETCH(QString, dbName);
-    QFETCH(int, submitpolicy_i);
-    QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
+    QFETCH(QSqlTableModel::EditStrategy, submitpolicy);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     const auto test = qTableName("test1", __FILE__, db);
@@ -582,7 +581,7 @@ void tst_QSqlTableModel::setRecord()
     for (QSqlTableModel::EditStrategy submitpolicy : policies) {
 
         QSqlTableModel model(0, db);
-        model.setEditStrategy((QSqlTableModel::EditStrategy)submitpolicy);
+        model.setEditStrategy(submitpolicy);
         model.setTable(test3);
         model.setSort(0, Qt::AscendingOrder);
         QVERIFY_SQL(model, select());
@@ -596,7 +595,7 @@ void tst_QSqlTableModel::setRecord()
             QVERIFY(model.setRecord(i, rec));
 
             // dataChanged() emitted by setData() for each *changed* column
-            if ((QSqlTableModel::EditStrategy)submitpolicy == QSqlTableModel::OnManualSubmit) {
+            if (submitpolicy == QSqlTableModel::OnManualSubmit) {
                 QCOMPARE(spy.size(), 2);
                 QCOMPARE(spy.at(0).size(), 2);
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(0)), model.index(i, 1));
@@ -604,10 +603,10 @@ void tst_QSqlTableModel::setRecord()
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(1).at(0)), model.index(i, 2));
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(1).at(1)), model.index(i, 2));
                 QVERIFY(model.submitAll());
-            } else if ((QSqlTableModel::EditStrategy)submitpolicy == QSqlTableModel::OnRowChange && i == model.rowCount() -1)
+            } else if (submitpolicy == QSqlTableModel::OnRowChange && i == model.rowCount() -1)
                 model.submit();
             else {
-                if ((QSqlTableModel::EditStrategy)submitpolicy != QSqlTableModel::OnManualSubmit)
+                if (submitpolicy != QSqlTableModel::OnManualSubmit)
                     // dataChanged() also emitted by selectRow()
                     QCOMPARE(spy.size(), 3);
                 else
@@ -709,8 +708,7 @@ void tst_QSqlTableModel::recordReimpl()
 void tst_QSqlTableModel::insertRow()
 {
     QFETCH(QString, dbName);
-    QFETCH(int, submitpolicy_i);
-    QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
+    QFETCH(QSqlTableModel::EditStrategy, submitpolicy);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     const auto test = qTableName("test1", __FILE__, db);
@@ -819,8 +817,7 @@ void tst_QSqlTableModel::insertRowFailure()
 {
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
-    QFETCH(int, submitpolicy_i);
-    QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
+    QFETCH(QSqlTableModel::EditStrategy, submitpolicy);
     CHECK_DATABASE(db);
 
     QSqlTableModel model(0, db);
@@ -969,8 +966,7 @@ void tst_QSqlTableModel::insertMultiRecords()
 void tst_QSqlTableModel::insertWithAutoColumn()
 {
     QFETCH(QString, dbName);
-    QFETCH(int, submitpolicy_i);
-    QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
+    QFETCH(QSqlTableModel::EditStrategy, submitpolicy);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
@@ -1192,8 +1188,7 @@ void tst_QSqlTableModel::removeRows()
 void tst_QSqlTableModel::removeInsertedRow()
 {
     QFETCH(QString, dbName);
-    QFETCH(int, submitpolicy_i);
-    QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
+    QFETCH(QSqlTableModel::EditStrategy, submitpolicy);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     const auto test = qTableName("test1", __FILE__, db);
@@ -1377,8 +1372,7 @@ void tst_QSqlTableModel::removeInsertedRows()
 void tst_QSqlTableModel::revert()
 {
     QFETCH(QString, dbName);
-    QFETCH(int, submitpolicy_i);
-    QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
+    QFETCH(QSqlTableModel::EditStrategy, submitpolicy);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
@@ -1454,8 +1448,7 @@ void tst_QSqlTableModel::revert()
 void tst_QSqlTableModel::isDirty()
 {
     QFETCH(QString, dbName);
-    QFETCH(int, submitpolicy_i);
-    QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
+    QFETCH(QSqlTableModel::EditStrategy, submitpolicy);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     const auto test = qTableName("test1", __FILE__, db);
