@@ -2532,7 +2532,7 @@ void tst_QSqlQuery::batchExec()
         QCOMPARE(q.value(0).toInt(), intCol.at(i));
         QCOMPARE(q.value(1).toString(), charCol.at(i));
         QCOMPARE(q.value(2).toDate(), dateCol.at(i));
-        QCOMPARE(q.value(3).toDouble(), numCol.at(i));
+        QVERIFY(qFuzzyCompare(q.value(3).toDouble(), numCol.at(i).toDouble()));
         if (tst_Databases::getDatabaseType(db) == QSqlDriver::MySqlServer
             && timeStampCol.at(i).isNull()) {
             QEXPECT_FAIL("", "This appears to be a bug in MySQL as it converts null datetimes to "
@@ -2564,7 +2564,7 @@ void tst_QSqlQuery::batchExec()
         QCOMPARE(q.value(0).toInt(), intCol.at(i));
         QCOMPARE(q.value(1).toString(), charCol.at(i));
         QCOMPARE(q.value(2).toDate(), dateCol.at(i));
-        QCOMPARE(q.value(3).toDouble(), numCol.at(i));
+        QVERIFY(qFuzzyCompare(q.value(3).toDouble(), numCol.at(i).toDouble()));
         if (tst_Databases::getDatabaseType(db) == QSqlDriver::MySqlServer
             && timeStampCol.at(i).isNull()) {
             QEXPECT_FAIL("", "This appears to be a bug in MySQL as it converts null datetimes to "

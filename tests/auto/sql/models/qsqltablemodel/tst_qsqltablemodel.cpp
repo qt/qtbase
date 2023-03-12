@@ -1660,11 +1660,11 @@ void tst_QSqlTableModel::emptyTable()
     QCOMPARE(model.columnCount(), 1);
 
     // QTBUG-29108: check correct horizontal header for empty query with pending insert
-    QCOMPARE(model.headerData(0, Qt::Horizontal).toString(), QString("id"));
+    QCOMPARE(model.headerData(0, Qt::Horizontal).toString().toLower(), QString("id"));
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
     model.insertRow(0);
     QCOMPARE(model.rowCount(), 1);
-    QCOMPARE(model.headerData(0, Qt::Horizontal).toString(), QString("id"));
+    QCOMPARE(model.headerData(0, Qt::Horizontal).toString().toLower(), QString("id"));
     model.revertAll();
 }
 

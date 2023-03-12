@@ -305,7 +305,6 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
             << qTableName("qtestfields", __FILE__, db)
             << qTableName("qtestalter", __FILE__, db)
             << qTableName("qtest_temp", __FILE__, db)
-            << qTableName("qtest_bigint", __FILE__, db)
             << qTableName("qtest_xmltype", __FILE__, db)
             << qTableName("latin1table", __FILE__, db)
             << qTableName("qtest_sqlguid", __FILE__, db)
@@ -1042,27 +1041,37 @@ void tst_QSqlDatabase::bigIntField()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    const QString qtest_bigint(qTableName("qtest_bigint", __FILE__, db));
 
+    QString queryString;
+    switch (dbType) {
+    case QSqlDriver::MySqlServer:
+        queryString = "create table %1 (id int, t_s64bit bigint, t_u64bit bigint unsigned)";
+        break;
+    case QSqlDriver::DB2:
+    case QSqlDriver::Interbase:
+    case QSqlDriver::MimerSQL:
+    case QSqlDriver::MSSqlServer:
+    case QSqlDriver::PostgreSQL:
+        queryString = "create table %1 (id int, t_s64bit bigint, t_u64bit bigint)";
+        break;
+    case QSqlDriver::Oracle:
+    case QSqlDriver::SQLite:
+        queryString = "create table %1 (id int, t_s64bit int, t_u64bit int)";
+        break;
+    case QSqlDriver::Sybase:
+    case QSqlDriver::UnknownDbms:
+        break;
+    }
+    if (queryString.isEmpty())
+        QSKIP("no 64 bit integer support");
+
+    TableScope ts(db, "qtest_bigint", __FILE__);
     QSqlQuery q(db);
     q.setForwardOnly(true);
-
     if (dbType == QSqlDriver::Oracle)
         q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
-
-    if (dbType == QSqlDriver::MySqlServer) {
-        QVERIFY_SQL(q, exec("create table " + qtest_bigint + " (id int, t_s64bit bigint, t_u64bit bigint unsigned)"));
-    } else if (dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::DB2
-               || dbType == QSqlDriver::MSSqlServer || dbType == QSqlDriver::MimerSQL) {
-        QVERIFY_SQL(q, exec("create table " + qtest_bigint + "(id int, t_s64bit bigint, t_u64bit bigint)"));
-    } else if (dbType == QSqlDriver::Oracle) {
-        QVERIFY_SQL(q, exec("create table " + qtest_bigint + " (id int, t_s64bit int, t_u64bit int)"));
-    } else if (dbType == QSqlDriver::SQLite) {
-        QVERIFY_SQL(q, exec("create table " + qtest_bigint + " (id int, t_s64bit int, t_u64bit int)"));
-    } else {
-        QSKIP("no 64 bit integer support");
-    }
-    QVERIFY(q.prepare("insert into " + qtest_bigint + " values (?, ?, ?)"));
+    QVERIFY_SQL(q, exec(queryString.arg(ts.tableName())));
+    QVERIFY(q.prepare("insert into " + ts.tableName() + " values (?, ?, ?)"));
     qlonglong ll = Q_INT64_C(9223372036854775807);
     qulonglong ull = Q_UINT64_C(18446744073709551615);
 
@@ -1086,7 +1095,7 @@ void tst_QSqlDatabase::bigIntField()
         q.bindValue(2,  (qlonglong) ull);
         QVERIFY_SQL(q, exec());
     }
-    QVERIFY(q.exec("select * from " + qtest_bigint + " order by id"));
+    QVERIFY(q.exec("select * from " + ts.tableName() + " order by id"));
     QVERIFY(q.next());
     QCOMPARE(q.value(1).toDouble(), (double)ll);
     QCOMPARE(q.value(1).toLongLong(), ll);
@@ -2027,8 +2036,6 @@ void tst_QSqlDatabase::eventNotificationIBase()
 {
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
-    if (db.driverName().compare(QLatin1String("QIBASE"), Qt::CaseInsensitive))
-        QSKIP("QIBASE specific test");
     CHECK_DATABASE(db);
 
     const QString procedureName(qTableName("posteventProc", __FILE__, db));

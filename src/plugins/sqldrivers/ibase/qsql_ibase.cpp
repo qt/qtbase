@@ -1487,13 +1487,6 @@ void QIBaseDriver::close()
                 qFreeEventBuffer(eBuffer);
             }
             d->eventBuffers.clear();
-
-#if defined(FB_API_VER)
-            // TODO check whether this workaround for Firebird crash is still needed
-            QDeadlineTimer timer(500);
-            while (!timer.hasExpired())
-                QCoreApplication::processEvents();
-#endif
         }
 
         isc_detach_database(d->status, &d->ibase);
