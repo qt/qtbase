@@ -7,21 +7,12 @@
 
 #include "../../kernel/qsqldatabase/tst_databases.h"
 
-QString reltest1;
-QString reltest2;
-QString reltest3;
-QString reltest4;
-QString reltest5;
-
 class tst_QSqlRelationalTableModel : public QObject
 {
     Q_OBJECT
 
 public:
-    void recreateTestTables(QSqlDatabase);
-    tst_QSqlRelationalTableModel();
-
-    tst_Databases dbs;
+    using QObject::QObject;
 
 public slots:
     void initTestCase_data();
@@ -56,25 +47,43 @@ private slots:
     void setRelation();
 
 private:
-    void dropTestTables( QSqlDatabase db );
+    void fixupTableNamesForDb(const QSqlDatabase &db);
+    void recreateTestTables(const QSqlDatabase &db);
+    void dropTestTables(const QSqlDatabase &db);
+    static QString escapeTableName(const QSqlDatabase &db, const QString &name)
+    {
+        QString _name = name;
+        const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+        if (dbType == QSqlDriver::Oracle ||
+            dbType == QSqlDriver::DB2)
+            _name = name.toUpper();
+        return db.driver()->escapeIdentifier(_name, QSqlDriver::TableName);
+    }
+    static QString escapeFieldName(const QSqlDatabase &db, const QString &name)
+    {
+        QString _name = name;
+        const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+        if (dbType == QSqlDriver::Interbase ||
+            dbType == QSqlDriver::Oracle ||
+            dbType == QSqlDriver::DB2)
+            _name = name.toUpper();
+        return db.driver()->escapeIdentifier(_name, QSqlDriver::FieldName);
+    }
+    QString reltest1;
+    QString reltest2;
+    QString reltest3;
+    QString reltest4;
+    QString reltest5;
+    tst_Databases dbs;
 };
 
-tst_QSqlRelationalTableModel::tst_QSqlRelationalTableModel()
+void tst_QSqlRelationalTableModel::fixupTableNamesForDb(const QSqlDatabase &db)
 {
-    static QSqlDatabase static_qtest_db_1 = QSqlDatabase();
-    reltest1 = qTableName("reltest1", __FILE__, static_qtest_db_1);
-
-    static QSqlDatabase static_qtest_db_2 = QSqlDatabase();
-    reltest2 = qTableName("reltest2", __FILE__, static_qtest_db_2);
-
-    static QSqlDatabase static_qtest_db_3 = QSqlDatabase();
-    reltest3 = qTableName("reltest3", __FILE__, static_qtest_db_3);
-
-    static QSqlDatabase static_qtest_db_4 = QSqlDatabase();
-    reltest4 = qTableName("reltest4", __FILE__, static_qtest_db_4);
-
-    static QSqlDatabase static_qtest_db_5 = QSqlDatabase();
-    reltest5 = qTableName("reltest5", __FILE__, static_qtest_db_5);
+    reltest1 = qTableName("reltest1", __FILE__, db);
+    reltest2 = qTableName("reltest2", __FILE__, db);
+    reltest3 = qTableName("reltest3", __FILE__, db);
+    reltest4 = qTableName("reltest4", __FILE__, db);
+    reltest5 = qTableName("reltest5", __FILE__, db);
 }
 
 void tst_QSqlRelationalTableModel::initTestCase_data()
@@ -84,7 +93,7 @@ void tst_QSqlRelationalTableModel::initTestCase_data()
         QSKIP("No database drivers are available in this Qt configuration");
 }
 
-void tst_QSqlRelationalTableModel::recreateTestTables(QSqlDatabase db)
+void tst_QSqlRelationalTableModel::recreateTestTables(const QSqlDatabase &db)
 {
     dropTestTables(db);
 
@@ -153,14 +162,15 @@ void tst_QSqlRelationalTableModel::cleanupTestCase()
 {
     for (const QString &dbName : std::as_const(dbs.dbNames)) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
-        CHECK_DATABASE( db );
-        dropTestTables( QSqlDatabase::database(dbName) );
+        CHECK_DATABASE(db);
+        dropTestTables(db);
     }
     dbs.close();
 }
 
-void tst_QSqlRelationalTableModel::dropTestTables( QSqlDatabase db )
+void tst_QSqlRelationalTableModel::dropTestTables(const QSqlDatabase &db)
 {
+    fixupTableNamesForDb(db);
     QStringList tableNames{reltest1, reltest2, reltest3, reltest4, reltest5,
                            qTableName("rel test6", __FILE__, db),
                            qTableName("rel test7", __FILE__, db),
@@ -186,6 +196,7 @@ void tst_QSqlRelationalTableModel::data()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    fixupTableNamesForDb(db);
 
     QSqlRelationalTableModel model(0, db);
 
@@ -227,6 +238,7 @@ void tst_QSqlRelationalTableModel::setData()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    fixupTableNamesForDb(db);
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     // set the values using OnRowChange Strategy
@@ -434,6 +446,7 @@ void tst_QSqlRelationalTableModel::insertRecord()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    fixupTableNamesForDb(db);
 
     QSqlRelationalTableModel model(0, db);
 
@@ -544,6 +557,7 @@ void tst_QSqlRelationalTableModel::insertWithStrategies()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    fixupTableNamesForDb(db);
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlRelationalTableModel model(0, db);
@@ -652,56 +666,33 @@ void tst_QSqlRelationalTableModel::removeColumn()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    recreateTestTables(db);
 
-    QSqlRelationalTableModel model(0, db);
+    for (const auto mode : {QSqlRelationalTableModel::InnerJoin, QSqlRelationalTableModel::LeftJoin}) {
+        recreateTestTables(db);
 
-    model.setTable(reltest1);
-    model.setRelation(2, QSqlRelation(reltest2, "id", "title"));
-    QVERIFY_SQL(model, select());
+        QSqlRelationalTableModel model(0, db);
 
-    QVERIFY_SQL(model, removeColumn(3));
-    QVERIFY_SQL(model, select());
+        model.setTable(reltest1);
+        model.setRelation(2, QSqlRelation(reltest2, "id", "title"));
+        model.setJoinMode(mode);
+        QVERIFY_SQL(model, select());
 
-    QCOMPARE(model.columnCount(), 3);
+        QVERIFY_SQL(model, removeColumn(3));
+        QVERIFY_SQL(model, select());
 
-    QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
-    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
-    QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
-    QCOMPARE(model.data(model.index(0, 3)), QVariant());
+        QCOMPARE(model.columnCount(), 3);
 
-    // try removing more than one column
-    QVERIFY_SQL(model, removeColumns(1, 2));
-    QCOMPARE(model.columnCount(), 1);
-    QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
-    QCOMPARE(model.data(model.index(0, 1)), QVariant());
+        QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
+        QCOMPARE(model.data(model.index(0, 3)), QVariant());
 
-    // try in LeftJoin mode the same tests
-    CHECK_DATABASE(db);
-    recreateTestTables(db);
-
-    QSqlRelationalTableModel lmodel(0, db);
-
-    lmodel.setTable(reltest1);
-    lmodel.setRelation(2, QSqlRelation(reltest2, "id", "title"));
-    lmodel.setJoinMode(QSqlRelationalTableModel::LeftJoin);
-    QVERIFY_SQL(lmodel, select());
-
-    QVERIFY_SQL(lmodel, removeColumn(3));
-    QVERIFY_SQL(lmodel, select());
-
-    QCOMPARE(lmodel.columnCount(), 3);
-
-    QCOMPARE(lmodel.data(lmodel.index(0, 0)).toInt(), 1);
-    QCOMPARE(lmodel.data(lmodel.index(0, 1)).toString(), QString("harry"));
-    QCOMPARE(lmodel.data(lmodel.index(0, 2)).toString(), QString("herr"));
-    QCOMPARE(lmodel.data(lmodel.index(0, 3)), QVariant());
-
-    // try removing more than one column
-    QVERIFY_SQL(lmodel, removeColumns(1, 2));
-    QCOMPARE(lmodel.columnCount(), 1);
-    QCOMPARE(lmodel.data(lmodel.index(0, 0)).toInt(), 1);
-    QCOMPARE(lmodel.data(lmodel.index(0, 1)), QVariant());
+        // try removing more than one column
+        QVERIFY_SQL(model, removeColumns(1, 2));
+        QCOMPARE(model.columnCount(), 1);
+        QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+        QCOMPARE(model.data(model.index(0, 1)), QVariant());
+    }
 }
 
 void tst_QSqlRelationalTableModel::filter()
@@ -736,6 +727,7 @@ void tst_QSqlRelationalTableModel::sort()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    fixupTableNamesForDb(db);
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlRelationalTableModel model(0, db);
@@ -873,6 +865,7 @@ void tst_QSqlRelationalTableModel::revert()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    fixupTableNamesForDb(db);
 
     QSqlRelationalTableModel model(0, db);
 
@@ -910,6 +903,7 @@ void tst_QSqlRelationalTableModel::clearDisplayValuesCache()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    fixupTableNamesForDb(db);
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlRelationalTableModel model(0, db);
@@ -964,6 +958,7 @@ void tst_QSqlRelationalTableModel::insertRecordDuplicateFieldNames()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    fixupTableNamesForDb(db);
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlRelationalTableModel model(0, db);
@@ -975,13 +970,12 @@ void tst_QSqlRelationalTableModel::insertRecordDuplicateFieldNames()
     model.setRelation(2, QSqlRelation(reltest4, "id", "name"));
     QVERIFY_SQL(model, select());
 
-    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
-        QCOMPARE(model.record(1).value((reltest4+QLatin1String("_name_2")).toUpper()).toString(),
-            QString("Trondheim"));
-    } else {
-        QCOMPARE(model.record(1).value((reltest4+QLatin1String("_name_2"))).toString(),
-            QString("Trondheim"));
-    }
+    QString reltest4Unescaped = qTableName("reltest4", __FILE__, db, false);
+    QString fieldName = reltest4Unescaped + QLatin1String("_name_2");
+    if (dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
+        fieldName = fieldName.toUpper();
+    fieldName.truncate(db.driver()->maximumIdentifierLength(QSqlDriver::TableName));
+    QCOMPARE(model.record(1).value(fieldName).toString(), QLatin1String("Trondheim"));
 
     QSqlRecord rec = model.record();
     rec.setValue(0, 3);
@@ -997,10 +991,7 @@ void tst_QSqlRelationalTableModel::insertRecordDuplicateFieldNames()
     }
 
     // The duplicate field names is aliased because it's comes from the relation's display column.
-    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
-        QCOMPARE(rec.fieldName(2), (reltest4+QLatin1String("_name_2")).toUpper());
-    else
-        QCOMPARE(rec.fieldName(2), reltest4+QLatin1String("_name_2"));
+    QCOMPARE(rec.fieldName(2), fieldName);
 
     QVERIFY(model.insertRecord(-1, rec));
     QCOMPARE(model.data(model.index(2, 2)).toString(), QString("Oslo"));
@@ -1013,6 +1004,7 @@ void tst_QSqlRelationalTableModel::invalidData()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    fixupTableNamesForDb(db);
 
     QSqlRelationalTableModel model(0, db);
     model.setTable(reltest1);
@@ -1043,6 +1035,7 @@ void tst_QSqlRelationalTableModel::relationModel()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    fixupTableNamesForDb(db);
 
     QSqlRelationalTableModel model(0, db);
     model.setTable(reltest1);
@@ -1086,9 +1079,10 @@ void tst_QSqlRelationalTableModel::casing()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    fixupTableNamesForDb(db);
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
-    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::SQLite || dbType == QSqlDriver::MSSqlServer)
+    if (dbType == QSqlDriver::SQLite || dbType == QSqlDriver::MSSqlServer)
         QSKIP("The casing test for this database is irrelevant since this database does not treat different cases as separate entities");
 
     QSqlQuery q(db);
@@ -1156,7 +1150,7 @@ void tst_QSqlRelationalTableModel::escapedRelations()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+    fixupTableNamesForDb(db);
 
     recreateTestTables(db);
 
@@ -1164,16 +1158,7 @@ void tst_QSqlRelationalTableModel::escapedRelations()
     model.setTable(reltest1);
 
     //try with relation table name quoted
-    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
-        model.setRelation(2, QSqlRelation(db.driver()->escapeIdentifier(reltest2.toUpper(),QSqlDriver::TableName),
-                            "id",
-                            "title"));
-    } else {
-        model.setRelation(2, QSqlRelation(db.driver()->escapeIdentifier(reltest2,QSqlDriver::TableName),
-                            "id",
-                            "title"));
-
-    }
+    model.setRelation(2, QSqlRelation(escapeTableName(db, reltest2), "id", "title"));
     QVERIFY_SQL(model, select());
 
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
@@ -1188,16 +1173,8 @@ void tst_QSqlRelationalTableModel::escapedRelations()
     QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
 
     //try with index column quoted
+    model.setRelation(2, QSqlRelation(reltest2, escapeFieldName(db, "id"), "title"));
     model.setJoinMode(QSqlRelationalTableModel::InnerJoin);
-    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
-        model.setRelation(2, QSqlRelation(reltest2,
-                            db.driver()->escapeIdentifier("id", QSqlDriver::FieldName).toUpper(),
-                            "title"));
-    } else {
-        model.setRelation(2, QSqlRelation(reltest2,
-                            db.driver()->escapeIdentifier("id", QSqlDriver::FieldName),
-                            "title"));
-    }
     QVERIFY_SQL(model, select());
 
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
@@ -1212,18 +1189,8 @@ void tst_QSqlRelationalTableModel::escapedRelations()
     QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
 
     //try with display column quoted
+    model.setRelation(2, QSqlRelation(reltest2, "id", escapeFieldName(db, "title")));
     model.setJoinMode(QSqlRelationalTableModel::InnerJoin);
-    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
-
-        model.setRelation(2, QSqlRelation(reltest2,
-                            "id",
-                            db.driver()->escapeIdentifier("title", QSqlDriver::FieldName).toUpper()));
-    } else {
-        model.setRelation(2, QSqlRelation(reltest2,
-                            "id",
-                            db.driver()->escapeIdentifier("title", QSqlDriver::FieldName)));
-    }
-
     QVERIFY_SQL(model, select());
 
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
@@ -1238,16 +1205,10 @@ void tst_QSqlRelationalTableModel::escapedRelations()
     QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
 
     //try with tablename and index and display columns quoted in the relation
+    model.setRelation(2, QSqlRelation(escapeTableName(db, reltest2),
+                                      escapeFieldName(db, "id"),
+                                      escapeFieldName(db, "title")));
     model.setJoinMode(QSqlRelationalTableModel::InnerJoin);
-    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
-        model.setRelation(2, QSqlRelation(reltest2,
-                            "id",
-                            db.driver()->escapeIdentifier("title", QSqlDriver::FieldName).toUpper()));
-    } else {
-        model.setRelation(2, QSqlRelation(reltest2,
-                            "id",
-                            db.driver()->escapeIdentifier("title", QSqlDriver::FieldName)));
-    }
     QVERIFY_SQL(model, select());
 
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
@@ -1267,17 +1228,13 @@ void tst_QSqlRelationalTableModel::escapedTableName()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+    fixupTableNamesForDb(db);
 
     // set the values using OnRowChange Strategy with an escaped tablename
     {
         QSqlRelationalTableModel model(0, db);
 
-        if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
-            model.setTable(db.driver()->escapeIdentifier(reltest1.toUpper(), QSqlDriver::TableName));
-        } else {
-            model.setTable(db.driver()->escapeIdentifier(reltest1, QSqlDriver::TableName));
-        }
+        model.setTable(escapeTableName(db, reltest1));
         model.setSort(0, Qt::AscendingOrder);
         model.setRelation(2, QSqlRelation(reltest2, "id", "title"));
         QVERIFY_SQL(model, select());
@@ -1320,11 +1277,7 @@ void tst_QSqlRelationalTableModel::escapedTableName()
     {
         QSqlRelationalTableModel model(0, db);
 
-        if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
-            model.setTable(db.driver()->escapeIdentifier(reltest1.toUpper(), QSqlDriver::TableName));
-        } else {
-            model.setTable(db.driver()->escapeIdentifier(reltest1, QSqlDriver::TableName));
-        }
+        model.setTable(escapeTableName(db, reltest1));
         model.setSort(0, Qt::AscendingOrder);
         model.setRelation(2, QSqlRelation(reltest2, "id", "title"));
         model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
@@ -1371,6 +1324,7 @@ void tst_QSqlRelationalTableModel::whiteSpaceInIdentifiers()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    fixupTableNamesForDb(db);
 
     QSqlRelationalTableModel model(0, db);
     model.setTable(qTableName("rel test6", __FILE__, db));
@@ -1454,6 +1408,7 @@ void tst_QSqlRelationalTableModel::psqlSchemaTest()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    fixupTableNamesForDb(db);
     QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     if (dbType != QSqlDriver::PostgreSQL)
@@ -1481,6 +1436,7 @@ void tst_QSqlRelationalTableModel::selectAfterUpdate()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    fixupTableNamesForDb(db);
 
     QSqlRelationalTableModel model(0, db);
     model.setTable(reltest1);
@@ -1506,6 +1462,7 @@ void tst_QSqlRelationalTableModel::relationOnFirstColumn()
     QFETCH_GLOBAL(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    fixupTableNamesForDb(db);
 
     QString testTable1 = qTableName("QTBUG_20038_test1", __FILE__, db);
     QString testTable2 = qTableName("QTBUG_20038_test2", __FILE__, db);
@@ -1526,7 +1483,7 @@ void tst_QSqlRelationalTableModel::relationOnFirstColumn()
                          + " (id INTEGER PRIMARY KEY, name NVARCHAR(100));"));
     } else {
         QVERIFY_SQL(q,
-                    exec("CREATE TABLE " + testTable2 + " (id INTEGER PRIMARY KEY, name TEXT);"));
+                    exec("CREATE TABLE " + testTable2 + " (id INTEGER PRIMARY KEY, name VARCHAR(100));"));
     }
     QVERIFY_SQL(q, exec("DELETE FROM " + testTable2 + QLatin1Char(';')));
     QVERIFY_SQL(q, exec("INSERT INTO " + testTable2 + " (id, name) VALUES (10, 'Hervanta');"));

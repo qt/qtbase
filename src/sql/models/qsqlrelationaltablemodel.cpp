@@ -559,6 +559,7 @@ QString QSqlRelationalTableModel::selectStatement() const
                 QString alias = QString::fromLatin1("%1_%2_%3")
                                       .arg(relTableName, displayColumn, QString::number(fieldNames.value(fieldList[i])));
                 alias.truncate(d->db.driver()->maximumIdentifierLength(QSqlDriver::FieldName));
+                alias = d->db.driver()->escapeIdentifier(alias, QSqlDriver::FieldName);
                 displayTableField = SqlrTm::as(displayTableField, alias);
                 --fieldNames[fieldList[i]];
             }
