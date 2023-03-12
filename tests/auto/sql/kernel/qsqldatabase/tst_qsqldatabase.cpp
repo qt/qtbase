@@ -28,8 +28,7 @@ class tst_QSqlDatabase : public QObject
     Q_OBJECT
 
 public:
-    tst_QSqlDatabase();
-    virtual ~tst_QSqlDatabase();
+    using QObject::QObject;
 
 public slots:
     void initTestCase();
@@ -252,21 +251,6 @@ static int createFieldTable(const FieldDef fieldDefs[], QSqlDatabase db)
     return i;
 }
 
-bool driverQuotedCaseSensitive(QSqlDatabase db)
-{
-    // On Interbase it will be case sensitive if it was created with quotes
-    QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
-    return (d && d->dbmsType == QSqlDriver::Interbase);
-}
-
-tst_QSqlDatabase::tst_QSqlDatabase()
-{
-}
-
-tst_QSqlDatabase::~tst_QSqlDatabase()
-{
-}
-
 void tst_QSqlDatabase::createTestTables(QSqlDatabase db)
 {
     if (!db.isValid())
@@ -468,7 +452,7 @@ void tst_QSqlDatabase::tables()
     bool tempTables = false;
 
     QSqlQuery q(db);
-    if (!q.exec("CREATE VIEW " + qtest_view + " as select * from " + qtest)) {
+    if (!q.exec("CREATE VIEW " + qtest_view + " as select * from " + db.driver()->escapeIdentifier(qtest, QSqlDriver::TableName))) {
         qDebug("DBMS '%s' cannot handle VIEWs: %s",
                qPrintable(tst_Databases::dbToString(db)),
                qPrintable(tst_Databases::printError(q.lastError())));
@@ -524,12 +508,8 @@ void tst_QSqlDatabase::whitespaceInIdentifiers()
     const auto metaTypeToCheck = dbType == QSqlDriver::Oracle
         ? QMetaType(QMetaType::Double) : QMetaType(QMetaType::Int);
 
-    const bool isCaseSensitive = driverQuotedCaseSensitive(db);
-    const auto tableName(qTableName("qtest test", __FILE__, db, isCaseSensitive));
-    if (isCaseSensitive)
-        QVERIFY(db.tables().contains(db.driver()->stripDelimiters(tableName, QSqlDriver::TableName)));
-    else
-        QVERIFY(db.tables().contains(tableName, Qt::CaseInsensitive));
+    const auto tableName(qTableName("qtest test", __FILE__, db, true));
+    QVERIFY(db.tables().contains(db.driver()->stripDelimiters(tableName, QSqlDriver::TableName)));
 
     QSqlRecord rec = db.record(tableName);
     QCOMPARE(rec.count(), 1);
@@ -548,12 +528,10 @@ void tst_QSqlDatabase::alterTable()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     const QString qtestalter(qTableName("qtestalter", __FILE__, db));
-    const auto noEscapeAlterTable = qTableName("qtestalter", __FILE__, db, false);
-    const bool isCaseSensitive = driverQuotedCaseSensitive(db);
     QSqlQuery q(db);
 
     QVERIFY_SQL(q, exec("create table " + qtestalter + " (F1 char(20), F2 char(20), F3 char(20))"));
-    QSqlRecord rec = db.record(isCaseSensitive ? qtestalter : noEscapeAlterTable);
+    QSqlRecord rec = db.record(qtestalter);
     QCOMPARE((int)rec.count(), 3);
 
     int i;
@@ -565,9 +543,9 @@ void tst_QSqlDatabase::alterTable()
         QSKIP("DBMS doesn't support dropping columns in ALTER TABLE statement");
     }
 
-    rec = db.record(isCaseSensitive ? qtestalter : noEscapeAlterTable);
+    rec = db.record(qtestalter);
 
-    QCOMPARE((int)rec.count(), 2);
+    QCOMPARE(rec.count(), 2);
 
     QCOMPARE(rec.field(0).name().toUpper(), QString("F1"));
     QCOMPARE(rec.field(1).name().toUpper(), QString("F3"));
@@ -624,9 +602,8 @@ void tst_QSqlDatabase::commonFieldTest(const FieldDef fieldDefs[], QSqlDatabase 
 {
     CHECK_DATABASE(db);
 
-    QStringList tableNames = { qTableName("qtestfields", __FILE__, db) };
-    if (!driverQuotedCaseSensitive(db))
-        tableNames << qTableName("qtestfields", __FILE__, db, false);
+    const QStringList tableNames = { qTableName("qtestfields", __FILE__, db),
+                                     qTableName("qtestfields", __FILE__, db, false) };
 
     for (const QString &table : tableNames) {
         QSqlRecord rec = db.record(table);
@@ -1138,7 +1115,7 @@ void tst_QSqlDatabase::caseSensivity()
         cs = true;
     }
 
-    QSqlRecord rec = db.record(qTableName("qtest", __FILE__, db, driverQuotedCaseSensitive(db)));
+    QSqlRecord rec = db.record(qTableName("qtest", __FILE__, db));
     QVERIFY(rec.count() > 0);
     if (!cs) {
         rec = db.record(qTableName("QTEST", __FILE__, db, false).toUpper());
@@ -1147,7 +1124,7 @@ void tst_QSqlDatabase::caseSensivity()
         QVERIFY(rec.count() > 0);
     }
 
-    rec = db.primaryIndex(qTableName("qtest", __FILE__, db, driverQuotedCaseSensitive(db)));
+    rec = db.primaryIndex(qTableName("qtest", __FILE__, db));
     QVERIFY(rec.count() > 0);
     if (!cs) {
         rec = db.primaryIndex(qTableName("QTEST", __FILE__, db, false).toUpper());
@@ -1171,7 +1148,11 @@ void tst_QSqlDatabase::caseSensivity()
         QVERIFY_SQL(qry, next());
         cs = qry.value(1).toInt() != 0;
     }
-    rec = db.record(cs ? ts.tableName().toLower() : ts.tableName());
+    if (dbType == QSqlDriver::Interbase) {
+        rec = db.record(ts.tableName().toUpper());
+    } else {
+        rec = db.record(cs ? ts.tableName().toLower() : ts.tableName());
+    }
     QVERIFY(rec.count() > 0);
 }
 
