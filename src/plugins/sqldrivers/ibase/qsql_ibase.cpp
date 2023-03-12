@@ -36,7 +36,7 @@ using namespace Qt::StringLiterals;
 #define blr_boolean_dtype blr_bool
 #endif
 
-enum { QIBaseChunkSize = SHRT_MAX / 2 };
+constexpr qsizetype QIBaseChunkSize = SHRT_MAX / 2;
 
 static bool getIBaseError(QString& msg, const ISC_STATUS* status, ISC_LONG &sqlcode)
 {
@@ -122,7 +122,7 @@ static void delDA(XSQLDA *&sqlda)
         delete [] sqlda->sqlvar[i].sqldata;
     }
     free(sqlda);
-    sqlda = 0;
+    sqlda = nullptr;
 }
 
 static QMetaType::Type qIBaseTypeName(int iType, bool hasScale)
@@ -352,9 +352,9 @@ public:
 
     bool isSelect();
     QVariant fetchBlob(ISC_QUAD *bId);
-    bool writeBlob(int i, const QByteArray &ba);
+    bool writeBlob(qsizetype iPos, const QByteArray &ba);
     QVariant fetchArray(int pos, ISC_QUAD *arr);
-    bool writeArray(int i, const QList<QVariant> &list);
+    bool writeArray(qsizetype i, const QList<QVariant> &list);
 public:
     ISC_STATUS status[20];
     isc_tr_handle trans;
@@ -374,8 +374,8 @@ QIBaseResultPrivate::QIBaseResultPrivate(QIBaseResult *q, const QIBaseDriver *dr
       localTransaction(!drv_d_func()->ibase),
       stmt(0),
       ibase(drv_d_func()->ibase),
-      sqlda(0),
-      inda(0),
+      sqlda(nullptr),
+      inda(nullptr),
       queryType(-1)
 {
 }
@@ -399,20 +399,20 @@ void QIBaseResultPrivate::cleanup()
     q->cleanup();
 }
 
-bool QIBaseResultPrivate::writeBlob(int i, const QByteArray &ba)
+bool QIBaseResultPrivate::writeBlob(qsizetype iPos, const QByteArray &ba)
 {
     isc_blob_handle handle = 0;
-    ISC_QUAD *bId = (ISC_QUAD*)inda->sqlvar[i].sqldata;
+    ISC_QUAD *bId = (ISC_QUAD*)inda->sqlvar[iPos].sqldata;
     isc_create_blob2(status, &ibase, &trans, &handle, bId, 0, 0);
     if (!isError(QT_TRANSLATE_NOOP("QIBaseResult", "Unable to create BLOB"),
                  QSqlError::StatementError)) {
-        int i = 0;
+        qsizetype i = 0;
         while (i < ba.size()) {
-            isc_put_segment(status, &handle, qMin(ba.size() - i, int(QIBaseChunkSize)),
-                            const_cast<char*>(ba.data()) + i);
+            isc_put_segment(status, &handle, qMin(ba.size() - i, QIBaseChunkSize),
+                            ba.data() + i);
             if (isError(QT_TRANSLATE_NOOP("QIBaseResult", "Unable to write BLOB")))
                 return false;
-            i += qMin(ba.size() - i, int(QIBaseChunkSize));
+            i += qMin(ba.size() - i, QIBaseChunkSize);
         }
     }
     isc_close_blob(status, &handle);
@@ -432,7 +432,7 @@ QVariant QIBaseResultPrivate::fetchBlob(ISC_QUAD *bId)
     QByteArray ba;
     int chunkSize = QIBaseChunkSize;
     ba.resize(chunkSize);
-    int read = 0;
+    qsizetype read = 0;
     while (isc_get_segment(status, &handle, &len, chunkSize, ba.data() + read) == 0 || status[1] == isc_segment) {
         read += len;
         ba.resize(read + chunkSize);
@@ -454,7 +454,7 @@ QVariant QIBaseResultPrivate::fetchBlob(ISC_QUAD *bId)
 }
 
 template<typename T>
-static QList<QVariant> toList(char** buf, int count, T* = nullptr)
+static QList<QVariant> toList(char** buf, int count)
 {
     QList<QVariant> res;
     for (int i = 0; i < count; ++i) {
@@ -493,7 +493,7 @@ static char* readArrayBuffer(QList<QVariant>& list, char *buffer, short curDim,
                 }
                 break; }
             case blr_long:
-                valList = toList<int>(&buffer, numElements[dim], static_cast<int *>(0));
+                valList = toList<int>(&buffer, numElements[dim]);
                 break;
             case blr_short:
                 valList = toList<short>(&buffer, numElements[dim]);
@@ -593,9 +593,8 @@ QVariant QIBaseResultPrivate::fetchArray(int pos, ISC_QUAD *arr)
 template<typename T>
 static char* fillList(char *buffer, const QList<QVariant> &list, T* = nullptr)
 {
-    for (int i = 0; i < list.size(); ++i) {
-        T val;
-        val = qvariant_cast<T>(list.at(i));
+    for (const auto &elem : list) {
+        T val = qvariant_cast<T>(elem);
         memcpy(buffer, &val, sizeof(T));
         buffer += sizeof(T);
     }
@@ -605,11 +604,9 @@ static char* fillList(char *buffer, const QList<QVariant> &list, T* = nullptr)
 template<>
 char* fillList<float>(char *buffer, const QList<QVariant> &list, float*)
 {
-    for (int i = 0; i < list.size(); ++i) {
-        double val;
-        float val2 = 0;
-        val = qvariant_cast<double>(list.at(i));
-        val2 = (float)val;
+    for (const auto &elem : list) {
+        double val = qvariant_cast<double>(elem);
+        float val2 = (float)val;
         memcpy(buffer, &val2, sizeof(float));
         buffer += sizeof(float);
     }
@@ -644,7 +641,6 @@ static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
                                QMetaType::Type type, short curDim, ISC_ARRAY_DESC *arrayDesc,
                                QString& error)
 {
-    int i;
     ISC_ARRAY_BOUND *bounds = arrayDesc->array_desc_bounds;
     short dim = arrayDesc->array_desc_dimensions - 1;
 
@@ -659,14 +655,14 @@ static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
     }
 
     if (curDim != dim) {
-        for(i = 0; i < list.size(); ++i) {
+        for (const auto &elem : list) {
 
-          if (list.at(i).typeId() != QMetaType::QVariantList) { // dimensions mismatch
+          if (elem.typeId() != QMetaType::QVariantList) { // dimensions mismatch
               error = "Array dimensons mismatch. Fieldname: %1"_L1;
               return 0;
           }
 
-          buffer = createArrayBuffer(buffer, list.at(i).toList(), type, curDim + 1,
+          buffer = createArrayBuffer(buffer, elem.toList(), type, curDim + 1,
                                      arrayDesc, error);
           if (!buffer)
               return 0;
@@ -693,28 +689,27 @@ static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
             buffer = fillList<quint64>(buffer, list);
             break;
         case QMetaType::QString:
-            for (i = 0; i < list.size(); ++i)
-                buffer = qFillBufferWithString(buffer, list.at(i).toString(),
+            for (const auto &elem : list)
+                buffer = qFillBufferWithString(buffer, elem.toString(),
                                                arrayDesc->array_desc_length,
                                                arrayDesc->array_desc_dtype == blr_varying,
                                                true);
             break;
         case QMetaType::QDate:
-            for (i = 0; i < list.size(); ++i) {
-                *((ISC_DATE*)buffer) = toDate(list.at(i).toDate());
+            for (const auto &elem : list) {
+                *((ISC_DATE*)buffer) = toDate(elem.toDate());
                 buffer += sizeof(ISC_DATE);
             }
             break;
         case QMetaType::QTime:
-            for (i = 0; i < list.size(); ++i) {
-                *((ISC_TIME*)buffer) = toTime(list.at(i).toTime());
+            for (const auto &elem : list) {
+                *((ISC_TIME*)buffer) = toTime(elem.toTime());
                 buffer += sizeof(ISC_TIME);
             }
             break;
-
         case QMetaType::QDateTime:
-            for (i = 0; i < list.size(); ++i) {
-                *((ISC_TIMESTAMP*)buffer) = toTimeStamp(list.at(i).toDateTime());
+            for (const auto &elem : list) {
+                *((ISC_TIMESTAMP*)buffer) = toTimeStamp(elem.toDateTime());
                 buffer += sizeof(ISC_TIMESTAMP);
             }
             break;
@@ -728,7 +723,7 @@ static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
     return buffer;
 }
 
-bool QIBaseResultPrivate::writeArray(int column, const QList<QVariant> &list)
+bool QIBaseResultPrivate::writeArray(qsizetype column, const QList<QVariant> &list)
 {
     Q_Q(QIBaseResult);
     QString error;
@@ -745,7 +740,6 @@ bool QIBaseResultPrivate::writeArray(int column, const QList<QVariant> &list)
 
     short arraySize = 1;
     ISC_LONG bufLen;
-    QList<QVariant> subList = list;
 
     short dimensions = desc.array_desc_dimensions;
     for(int i = 0; i < dimensions; ++i) {
@@ -936,20 +930,17 @@ bool QIBaseResult::exec()
 
     if (d->inda) {
         const QList<QVariant> &values = boundValues();
-        int i;
         if (values.count() > d->inda->sqld) {
             qWarning() << "QIBaseResult::exec: Parameter mismatch, expected"_L1 <<
                           d->inda->sqld << ", got"_L1 << values.count() <<
                           "parameters"_L1;
             return false;
         }
-        int para = 0;
-        for (i = 0; i < values.count(); ++i) {
-            para = i;
+        for (qsizetype para = 0; para < values.count(); ++para) {
             if (!d->inda->sqlvar[para].sqldata)
                 // skip unknown datatypes
                 continue;
-            const QVariant val(values[i]);
+            const QVariant &val = values[para];
             if (d->inda->sqlvar[para].sqltype & 1) {
                 if (QSqlResultPrivate::isVariantNull(val)) {
                     // set null indicator
@@ -1408,26 +1399,26 @@ bool QIBaseDriver::hasFeature(DriverFeature f) const
     return false;
 }
 
-bool QIBaseDriver::open(const QString & db,
-          const QString & user,
-          const QString & password,
-          const QString & host,
-          int port,
-          const QString & connOpts)
+bool QIBaseDriver::open(const QString &db,
+                        const QString &user,
+                        const QString &password,
+                        const QString &host,
+                        int port,
+                        const QString &connOpts)
 {
     Q_D(QIBaseDriver);
     if (isOpen())
         close();
 
-    const QStringList opts(connOpts.split(u';', Qt::SkipEmptyParts));
+    const auto opts(QStringView(connOpts).split(u';', Qt::SkipEmptyParts));
 
     QByteArray role;
-    for (int i = 0; i < opts.count(); ++i) {
-        QString tmp(opts.at(i).simplified());
+    for (const auto &opt : opts) {
+        const auto tmp(opt.trimmed());
         qsizetype idx;
         if ((idx = tmp.indexOf(u'=')) != -1) {
-            QString val = tmp.mid(idx + 1).simplified();
-            QString opt = tmp.left(idx).simplified();
+            const auto val = tmp.mid(idx + 1).trimmed();
+            const auto opt = tmp.left(idx).trimmed().toString();
             if (opt.toUpper() == "ISC_DPB_SQL_ROLE_NAME"_L1) {
                 role = val.toLocal8Bit();
                 role.truncate(255);
