@@ -11,7 +11,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/remotecontrolledcar/car")
 
 set(car_SRCS)
 qt_add_dbus_adaptor(car_SRCS
-    car.xml
+    ../common/car.xml
     qobject.h
     "" # empty parent_class value on purpose to not pass -l flag
     car_adaptor

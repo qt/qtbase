@@ -1,6 +1,6 @@
 QT += dbus widgets
 
-DBUS_ADAPTORS += car.xml
+DBUS_ADAPTORS += ../common/car.xml
 HEADERS += car.h
 SOURCES += car.cpp main.cpp
 

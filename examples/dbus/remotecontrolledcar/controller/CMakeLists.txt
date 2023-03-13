@@ -11,7 +11,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/remotecontrolledcar/controll
 
 set(controller_SRCS)
 qt_add_dbus_interface(controller_SRCS
-    car.xml
+    ../common/car.xml
     car_interface
 )
 

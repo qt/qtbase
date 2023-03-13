@@ -1,6 +1,6 @@
 QT += dbus widgets
 
-DBUS_INTERFACES += car.xml
+DBUS_INTERFACES += ../common/car.xml
 FORMS += controller.ui
 HEADERS += controller.h
 SOURCES += main.cpp controller.cpp
