@@ -5806,6 +5806,10 @@ void tst_QRhi::tessellationInterfaceBlocks_data()
 
 void tst_QRhi::tessellationInterfaceBlocks()
 {
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
+        QSKIP("Fails on Android 12 (QTBUG-108844)");
+#endif
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
 
@@ -6361,6 +6365,10 @@ void tst_QRhi::storageBufferRuntimeSizeGraphics_data()
 
 void tst_QRhi::storageBufferRuntimeSizeGraphics()
 {
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
+        QSKIP("Fails on Android 12 (QTBUG-108844)");
+#endif
     // Draws a tessellated triangle with color determined by the length of
     // buffers bound to shader stages. This is primarily to test Metal
     // SPIRV-Cross buffer size buffers.
@@ -6534,6 +6542,10 @@ void tst_QRhi::halfPrecisionAttributes_data()
 
 void tst_QRhi::halfPrecisionAttributes()
 {
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
+        QSKIP("Fails on Android 12 (QTBUG-108844)");
+#endif
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
 
