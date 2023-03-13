@@ -169,6 +169,8 @@ public:
     QWindow *childWindowAt(QPoint windowPoint);
     bool shouldRefuseKeyWindowAndFirstResponder();
 
+    bool windowEvent(QEvent *event) override;
+
     QPoint bottomLeftClippedByNSWindowOffset() const override;
 
     void updateNormalGeometry();
