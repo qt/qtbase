@@ -543,8 +543,6 @@ void QCocoaWindow::updateTitleBarButtons(Qt::WindowFlags windowFlags)
     if (!isContentView())
         return;
 
-    NSWindow *window = m_view.window;
-
     static constexpr std::pair<NSWindowButton, Qt::WindowFlags> buttons[] = {
         { NSWindowCloseButton, Qt::WindowCloseButtonHint },
         { NSWindowMiniaturizeButton, Qt::WindowMinimizeButtonHint},
@@ -560,13 +558,24 @@ void QCocoaWindow::updateTitleBarButtons(Qt::WindowFlags windowFlags)
         if (button == NSWindowZoomButton && isFixedSize())
             enabled = false;
 
-        [window standardWindowButton:button].enabled = enabled;
+        // Mimic what macOS natively does for parent windows of modal
+        // sheets, which is to disable the close button, but leave the
+        // other buttons as they were.
+        if (button == NSWindowCloseButton && enabled
+            && QWindowPrivate::get(window())->blockedByModalWindow) {
+            enabled = false;
+            // If we end up having no enabled buttons, our workaround
+            // should not be a reason for hiding all of them.
+            hideButtons = false;
+        }
+
+        [m_view.window standardWindowButton:button].enabled = enabled;
         hideButtons &= !enabled;
     }
 
     // Hide buttons in case we disabled all of them
     for (const auto &[button, buttonHint] : buttons)
-        [window standardWindowButton:button].hidden = hideButtons;
+        [m_view.window standardWindowButton:button].hidden = hideButtons;
 }
 
 void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
@@ -1923,6 +1932,9 @@ bool QCocoaWindow::shouldRefuseKeyWindowAndFirstResponder()
     if (window()->flags() & (Qt::WindowDoesNotAcceptFocus | Qt::WindowTransparentForInput))
         return true;
 
+    if (QWindowPrivate::get(window())->blockedByModalWindow)
+        return true;
+
     if (m_inSetVisible) {
         QVariant showWithoutActivating = window()->property("_q_showWithoutActivating");
         if (showWithoutActivating.isValid() && showWithoutActivating.toBool())
@@ -1930,6 +1942,20 @@ bool QCocoaWindow::shouldRefuseKeyWindowAndFirstResponder()
     }
 
     return false;
+}
+
+bool QCocoaWindow::windowEvent(QEvent *event)
+{
+    switch (event->type()) {
+    case QEvent::WindowBlocked:
+    case QEvent::WindowUnblocked:
+        updateTitleBarButtons(window()->flags());
+        break;
+    default:
+        break;
+    }
+
+    return QPlatformWindow::windowEvent(event);
 }
 
 QPoint QCocoaWindow::bottomLeftClippedByNSWindowOffset() const
