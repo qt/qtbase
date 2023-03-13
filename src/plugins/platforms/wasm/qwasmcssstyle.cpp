@@ -208,6 +208,21 @@ const char *Style = R"css(
     filter: invert(0.6);
 }
 
+/* This will clip the content within 50% frame in 1x1 pixel area, preventing it
+    from being rendered on the page, but it should still be read by modern
+    screen readers */
+.hidden-visually-read-by-screen-reader {
+    visibility: visible;
+    clip: rect(1px, 1px, 1px, 1px);
+    clip-path: inset(50%);
+    height: 1px;
+    width: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+}
+
 )css";
 
 } // namespace
