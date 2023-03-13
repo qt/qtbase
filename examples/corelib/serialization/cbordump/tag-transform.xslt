@@ -18,8 +18,10 @@ static const CborTagDescription tagDescriptions[] = {
     </xsl:for-each>    { QCborTag(-1), nullptr }
 };
 </xsl:template>
-<xsl:template name="row">    { QCborTag(<xsl:value-of select="a:value"/>), " (<xsl:value-of select="a:semantics"/> <xsl:call-template name="xref"/>)" },
-</xsl:template>
-<xsl:template name="xref"><xsl:if test="a:xref/@type = 'rfc'"> [<xsl:value-of select="translate(a:xref/@data,'rfc','RFC')"/>]</xsl:if>
+<xsl:template name="row">    { QCborTag(<xsl:value-of select="a:value"/>),
+      R"r( (<xsl:value-of select="a:semantics"/> <xsl:call-template name="xref"/>))r" },
+</xsl:template><!-- fn:replace(a:semantics, '\s+', ' ') -->
+<xsl:template name="xref"><xsl:if test="a:xref/@type = 'rfc'"> [<xsl:value-of
+select="translate(a:xref/@data,'rfc','RFC')"/>]</xsl:if>
 </xsl:template>
 </xsl:stylesheet>
