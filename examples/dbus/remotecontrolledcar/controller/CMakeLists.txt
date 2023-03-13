@@ -18,7 +18,7 @@ qt_standard_project_setup()
 
 set(controller_SRCS)
 qt_add_dbus_interface(controller_SRCS
-    car.xml
+    ../common/car.xml
     car_interface
 )
 
