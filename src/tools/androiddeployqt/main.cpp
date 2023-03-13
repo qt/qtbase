@@ -326,7 +326,7 @@ void deleteMissingFiles(const Options &options, const QDir &srcDir, const QDir &
         for (const QFileInfo &src : srcEntries)
             if (dst.fileName() == src.fileName()) {
                 if (dst.isDir())
-                    deleteMissingFiles(options, src.absoluteDir(), dst.absoluteDir());
+                    deleteMissingFiles(options, src.absoluteFilePath(), dst.absoluteFilePath());
                 found = true;
                 break;
             }
@@ -1212,7 +1212,7 @@ void cleanTopFolders(const Options &options, const QDir &srcDir, const QString &
     const auto dirs = srcDir.entryInfoList(QDir::NoDotAndDotDot | QDir::Dirs);
     for (const QFileInfo &dir : dirs) {
         if (dir.fileName() != "libs"_L1)
-            deleteMissingFiles(options, dir.absoluteDir(), QDir(dstDir + dir.fileName()));
+            deleteMissingFiles(options, dir.absoluteFilePath(), QDir(dstDir + dir.fileName()));
     }
 }
 
