@@ -354,6 +354,11 @@ void QWasmWindow::propagateSizeHints()
     m_nonClientArea->propagateSizeHints();
 }
 
+void QWasmWindow::setOpacity(qreal level)
+{
+    m_qtWindow["style"].set("opacity", qBound(0.0, level, 1.0));
+}
+
 void QWasmWindow::invalidate()
 {
     m_compositor->requestUpdateWindow(this);
