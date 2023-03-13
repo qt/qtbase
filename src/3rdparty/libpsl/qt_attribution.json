@@ -35,7 +35,7 @@ It is now maintained on github (https://github.com/publicsuffix/list)."
     "Name": "libpsl - C library to handle the Public Suffix List",
     "QDocModule": "qtnetwork",
     "Description": "Libpsl allows checking domains against the Public Suffix List.",
-    "Files": "src/lookup_string_in_fixed_set.c src/psl-make-dafsa",
+    "Files": [ "src/lookup_string_in_fixed_set.c", "src/psl-make-dafsa" ],
     "QtUsage": "Used to compress the embedded copy of publicsuffix list and
 to lookup entries in it.",
     "Homepage": "https://github.com/rockdaboot/libpsl",

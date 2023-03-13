@@ -5,7 +5,7 @@
         "QDocModule": "qttestlib",
         "QtUsage": "Used on Linux ond MacOS in the Qt Test module.",
         "Comment": { "UpstreamFiles": [ "include/valgrind.h.in", "callgrind/callgrind.h" ] },
-        "Files": "valgrind_p.h callgrind_p.h",
+        "Files": [ "valgrind_p.h", "callgrind_p.h" ],
 
         "Description": "An instrumentation framework for building dynamic analysis tools.",
         "Homepage": "http://valgrind.org/",
