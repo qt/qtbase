@@ -2046,9 +2046,9 @@ void tst_QAbstractSlider::setValue()
     slider->setRange(minimum, maximum);
     slider->setSliderDown(down);
     slider->setValue(49); // to force a valueChanged() below
-    QSignalSpy spy1(slider, SIGNAL(sliderMoved(int)));
-    QSignalSpy spy2(slider, SIGNAL(valueChanged(int)));
-    QSignalSpy spy3(slider, SIGNAL(actionTriggered(int)));
+    QSignalSpy spy1(slider, &QAbstractSlider::sliderMoved);
+    QSignalSpy spy2(slider, &QAbstractSlider::valueChanged);
+    QSignalSpy spy3(slider, &QAbstractSlider::actionTriggered);
     slider->setValue(50);
     QCOMPARE(spy1.count(), down ? 1 : 0);
     QCOMPARE(spy2.count(), 1);
@@ -2057,6 +2057,10 @@ void tst_QAbstractSlider::setValue()
     QCOMPARE(slider->sliderPosition(), reportedSliderPosition);
     if (down)
         QVERIFY(sliderMovedTimeStamp < valueChangedTimeStamp);
+
+    slider->setValue(50);
+    QApplication::processEvents();
+    QCOMPARE(spy2.size(), 1);
 }
 
 void tst_QAbstractSlider::waitUntilTimeElapsed(const QElapsedTimer &t, int ms)
