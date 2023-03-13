@@ -84,6 +84,20 @@ struct QMetaTypeDeleter
 
 struct QMetaTypeCustomRegistry
 {
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
+    QMetaTypeCustomRegistry()
+    {
+        /* qfloat16 was neither a builtin, nor unconditionally registered
+          in QtCore in Qt <= 6.2.
+          Inserting it as an alias ensures that a QMetaType::id call
+          will get the correct built-in type-id (the interface pointers
+          might still not match, but we already deal with that case.
+        */
+        aliases.insert("qfloat16", QtPrivate::qMetaTypeInterfaceForType<qfloat16>());
+    }
+#endif
+
     QReadWriteLock lock;
     QList<const QtPrivate::QMetaTypeInterface *> registry;
     QHash<QByteArray, const QtPrivate::QMetaTypeInterface *> aliases;
