@@ -61,11 +61,8 @@ void QWasmAccessibility::addAccessibilityEnableButtonImpl(QWindow *window)
     emscripten::val document = getDocument(container);
     emscripten::val button = document.call<emscripten::val>("createElement", std::string("button"));
     button.set("innerText", std::string("Enable Screen Reader"));
+    button["classList"].call<void>("add", emscripten::val("hidden-visually-read-by-screen-reader"));
     container.call<void>("appendChild", button);
-
-    emscripten::val style = button["style"];
-    style.set("width", "100%");
-    style.set("height", "100%");
 
     auto enableContext = std::make_tuple(button, std::make_unique<qstdweb::EventCallback>
         (button, std::string("click"), [this](emscripten::val) { enableAccessibility(); }));
