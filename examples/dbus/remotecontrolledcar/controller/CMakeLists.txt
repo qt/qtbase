@@ -1,9 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.16)
-project(controller LANGUAGES CXX)
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
@@ -11,10 +8,6 @@ if(NOT DEFINED INSTALL_EXAMPLESDIR)
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/remotecontrolledcar/controller")
-
-find_package(Qt6 REQUIRED COMPONENTS Core DBus Gui Widgets)
-
-qt_standard_project_setup()
 
 set(controller_SRCS)
 qt_add_dbus_interface(controller_SRCS
