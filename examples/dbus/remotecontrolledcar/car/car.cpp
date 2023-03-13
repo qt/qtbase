@@ -3,18 +3,17 @@
 
 #include "car.h"
 #include <QtWidgets/QtWidgets>
-#include <qmath.h>
+#include <cmath>
 
 QRectF Car::boundingRect() const
 {
     return QRectF(-35, -81, 70, 115);
 }
 
-Car::Car() : color(Qt::green), wheelsAngle(0), speed(0)
+Car::Car()
 {
     startTimer(1000 / 33);
-    setFlag(QGraphicsItem::ItemIsMovable, true);
-    setFlag(QGraphicsItem::ItemIsFocusable, true);
+    setFlags(ItemIsMovable | ItemIsFocusable);
 }
 
 void Car::accelerate()
@@ -87,7 +86,7 @@ void Car::timerEvent(QTimerEvent *event)
 
     const qreal axelDistance = 54;
     qreal wheelsAngleRads = qDegreesToRadians(wheelsAngle);
-    qreal turnDistance = ::cos(wheelsAngleRads) * axelDistance * 2;
+    qreal turnDistance = std::cos(wheelsAngleRads) * axelDistance * 2;
     qreal turnRateRads = wheelsAngleRads / turnDistance;  // rough estimate
     qreal turnRate = qRadiansToDegrees(turnRateRads);
     qreal rotation = speed * turnRate;

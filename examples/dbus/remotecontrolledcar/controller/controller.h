@@ -12,16 +12,10 @@ class Controller : public QWidget
     Q_OBJECT
 
 public:
-    Controller(QWidget *parent = nullptr);
+    explicit Controller(QWidget *parent = nullptr);
 
 protected:
-    void timerEvent(QTimerEvent *event);
-
-private slots:
-    void on_accelerate_clicked();
-    void on_decelerate_clicked();
-    void on_left_clicked();
-    void on_right_clicked();
+    void timerEvent(QTimerEvent *event) override;
 
 private:
     Ui::Controller ui;

@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     scene.setSceneRect(-500, -500, 1000, 1000);
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
 
-    Car *car = new Car();
+    auto car = new Car();
     scene.addItem(car);
 
     QGraphicsView view(&scene);
@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     view.show();
 
     new CarInterfaceAdaptor(car);
-    QDBusConnection connection = QDBusConnection::sessionBus();
+    auto connection = QDBusConnection::sessionBus();
     connection.registerObject("/Car", car);
     connection.registerService("org.example.CarExample");
 
