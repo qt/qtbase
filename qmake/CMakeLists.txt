@@ -35,6 +35,8 @@ if("${hostdatadir}" STREQUAL "")
     set(hostdatadir ".")
 endif()
 
+qt_internal_library_deprecation_level(deprecation_define)
+
 target_compile_definitions(QtLibraryInfo PUBLIC
     PROEVALUATOR_FULL
     QT_BUILD_QMAKE
@@ -44,6 +46,7 @@ target_compile_definitions(QtLibraryInfo PUBLIC
     QT_HOST_MKSPEC="${QT_QMAKE_HOST_MKSPEC}"
     QT_TARGET_MKSPEC="${QT_QMAKE_TARGET_MKSPEC}"
     QT_HOST_DATADIR="${hostdatadir}"
+    ${deprecation_define}
 )
 
 if(NOT QT_FEATURE_qmake)
