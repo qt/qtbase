@@ -498,18 +498,25 @@ void QAbstractSlider::setValue(int value)
     value = d->bound(value);
     if (d->value == value && d->position == value)
         return;
+
+    // delay signal emission until sliderChanged() has been called
+    const bool emitValueChanged = (value != d->value);
     d->value = value;
+
     if (d->position != value) {
         d->position = value;
         if (d->pressed)
-            emit sliderMoved((d->position = value));
+            emit sliderMoved(d->position);
     }
 #if QT_CONFIG(accessibility)
     QAccessibleValueChangeEvent event(this, d->value);
     QAccessible::updateAccessibility(&event);
 #endif
     sliderChange(SliderValueChange);
-    emit valueChanged(value);
+
+    if (emitValueChanged)
+        emit valueChanged(value);
+
 }
 
 /*!
