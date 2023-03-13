@@ -6,6 +6,5 @@
 		<method name="decelerate"/>
 		<method name="turnLeft"/>
 		<method name="turnRight"/>
-		<signal name="crashed"/>
 	</interface>
 </node>

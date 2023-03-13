@@ -12,7 +12,7 @@ class Car : public QGraphicsObject
     Q_OBJECT
 public:
     Car();
-    QRectF boundingRect() const;
+    QRectF boundingRect() const override;
 
 public slots:
     void accelerate();
@@ -20,17 +20,15 @@ public slots:
     void turnLeft();
     void turnRight();
 
-signals:
-    void crashed();
-
 protected:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr);
-    void timerEvent(QTimerEvent *event);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget = nullptr) override;
+    void timerEvent(QTimerEvent *event) override;
 
 private:
-    QBrush color;
-    qreal wheelsAngle; // used when applying rotation
-    qreal speed; // delta movement along the body axis
+    QBrush color = Qt::green;
+    qreal wheelsAngle = 0; // used when applying rotation
+    qreal speed = 0; // delta movement along the body axis
 };
 
 #endif // CAR_H
