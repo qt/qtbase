@@ -2145,8 +2145,41 @@ void QWindowsWindow::handleMoved()
         handleGeometryChange();
 }
 
-void QWindowsWindow::handleResized(int wParam)
+void QWindowsWindow::handleResized(int wParam, LPARAM lParam)
 {
+    /* Prevents borderless windows from covering the taskbar when maximized. */
+    if ((m_data.flags.testFlag(Qt::FramelessWindowHint)
+         || (m_data.flags.testFlag(Qt::CustomizeWindowHint) && !m_data.flags.testFlag(Qt::WindowTitleHint)))
+        && IsZoomed(m_data.hwnd)) {
+        const int resizedWidth = LOWORD(lParam);
+        const int resizedHeight = HIWORD(lParam);
+
+        const HMONITOR monitor = MonitorFromWindow(m_data.hwnd, MONITOR_DEFAULTTOPRIMARY);
+        MONITORINFO monitorInfo = {};
+        monitorInfo.cbSize = sizeof(MONITORINFO);
+        GetMonitorInfoW(monitor, &monitorInfo);
+
+        int correctLeft = monitorInfo.rcMonitor.left;
+        int correctTop = monitorInfo.rcMonitor.top;
+        int correctWidth = monitorInfo.rcWork.right - monitorInfo.rcWork.left;
+        int correctHeight = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top;
+
+        if (!m_data.flags.testFlag(Qt::FramelessWindowHint)) {
+            const int borderWidth = invisibleMargins(m_data.hwnd).left();
+            correctLeft -= borderWidth;
+            correctTop -= borderWidth;
+            correctWidth += borderWidth * 2;
+            correctHeight += borderWidth * 2;
+        }
+
+        if (resizedWidth != correctWidth || resizedHeight != correctHeight) {
+            qCDebug(lcQpaWindow) << __FUNCTION__ << "correcting: " << resizedWidth << "x"
+                                 << resizedHeight << " -> " << correctWidth << "x" << correctHeight;
+            SetWindowPos(m_data.hwnd, nullptr, correctLeft, correctTop, correctWidth, correctHeight,
+                         SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+    }
+
     switch (wParam) {
     case SIZE_MAXHIDE: // Some other window affected.
     case SIZE_MAXSHOW:
@@ -2929,36 +2962,6 @@ void QWindowsWindow::setFrameStrutEventsEnabled(bool enabled)
 void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 {
     QWindowsGeometryHint::applyToMinMaxInfo(window(), fullFrameMargins(), mmi);
-
-    // This block fixes QTBUG-8361, QTBUG-4362: Frameless/title-less windows shouldn't cover the
-    // taskbar when maximized
-    if (m_data.flags.testFlag(Qt::FramelessWindowHint)
-        || (m_data.flags.testFlag(Qt::CustomizeWindowHint) && !m_data.flags.testFlag(Qt::WindowTitleHint))) {
-        if (QPlatformScreen *currentScreen = screen()) {
-            const QRect geometry = currentScreen->geometry();
-            const QRect availableGeometry = currentScreen->availableGeometry();
-            mmi->ptMaxSize.y = availableGeometry.height();
-
-            // Width, because you can have the taskbar on the sides too.
-            mmi->ptMaxSize.x = availableGeometry.width();
-
-            // If you have the taskbar on top, or on the left you don't want it at (0,0):
-            QPoint availablePositionDiff = availableGeometry.topLeft() - geometry.topLeft();
-            mmi->ptMaxPosition.x = availablePositionDiff.x();
-            mmi->ptMaxPosition.y = availablePositionDiff.y();
-            if (!m_data.flags.testFlag(Qt::FramelessWindowHint)) {
-                const int borderWidth = invisibleMargins(m_data.hwnd).left();
-                mmi->ptMaxSize.x += borderWidth * 2;
-                mmi->ptMaxSize.y += borderWidth * 2;
-                mmi->ptMaxTrackSize = mmi->ptMaxSize;
-                mmi->ptMaxPosition.x -= borderWidth;
-                mmi->ptMaxPosition.y -= borderWidth;
-            }
-        } else {
-            qWarning("screen() returned a null screen");
-        }
-    }
-
     qCDebug(lcQpaWindow) << __FUNCTION__ << window() << *mmi;
 }
 

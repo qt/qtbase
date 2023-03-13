@@ -281,7 +281,7 @@ public:
     bool handleWmPaint(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, LRESULT *result);
 
     void handleMoved();
-    void handleResized(int wParam);
+    void handleResized(int wParam, LPARAM lParam);
     void handleHidden();
     void handleCompositionSettingsChanged();
     void handleDpiScaledSize(WPARAM wParam, LPARAM lParam, LRESULT *result);
