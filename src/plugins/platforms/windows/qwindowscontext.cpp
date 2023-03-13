@@ -1191,7 +1191,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         platformWindow->handleMoved();
         return true;
     case QtWindows::ResizeEvent:
-        platformWindow->handleResized(static_cast<int>(wParam));
+        platformWindow->handleResized(static_cast<int>(wParam), lParam);
         return true;
     case QtWindows::QuerySizeHints:
         platformWindow->getSizeHints(reinterpret_cast<MINMAXINFO *>(lParam));
