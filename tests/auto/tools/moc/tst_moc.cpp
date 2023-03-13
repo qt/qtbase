@@ -83,6 +83,19 @@ Q_DECLARE_METATYPE(const QMetaObject*);
 
 #define TESTEXPORTMACRO Q_DECL_EXPORT
 
+#if !defined(Q_MOC_RUN) && !defined(Q_NOREPLY)
+# define Q_NOREPLY
+#endif
+
+struct TagTest : QObject {
+    Q_OBJECT
+
+    Q_INVOKABLE Q_NOREPLY inline int test() {return 0;}
+public slots:
+    Q_NOREPLY virtual inline void pamOpen(int){}
+};
+
+
 namespace TestNonQNamespace {
 
 struct TestGadget {
@@ -787,6 +800,7 @@ private slots:
     void privateQPropertyShim();
     void readWriteThroughBindable();
     void invokableCtors();
+    void virtualInlineTaggedSlot();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -4573,6 +4587,20 @@ void tst_Moc::invokableCtors()
     void *b[] = { &result2, &argument };
     metaObject->static_metacall(QMetaObject::ConstructInPlace, 0, b);
     QCOMPARE(result2.m_thing, 17);
+}
+
+void tst_Moc::virtualInlineTaggedSlot()
+{
+    auto mo = TagTest::staticMetaObject;
+    auto idx = mo.indexOfMethod("pamOpen(int)");
+    auto method = mo.method(idx);
+    QVERIFY(method.isValid()); // fails!
+    QCOMPARE(method.tag(), "Q_NOREPLY");
+    idx = mo.indexOfMethod("test()");
+    method = mo.method(idx);
+    QVERIFY(method.isValid());
+    QCOMPARE(method.tag(), "Q_NOREPLY");
+    QCOMPARE(method.returnMetaType(), QMetaType::fromType<int>());
 }
 
 QTEST_MAIN(tst_Moc)

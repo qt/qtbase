@@ -280,6 +280,7 @@ public:
 
     void checkSuperClasses(ClassDef *def);
     void checkProperties(ClassDef* cdef);
+    bool testForFunctionModifiers(FunctionDef *def);
 
     void checkListSizes(const ClassDef &def);
 };

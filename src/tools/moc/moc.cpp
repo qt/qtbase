@@ -412,8 +412,7 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
     def->isVirtual = false;
     def->isStatic = false;
     //skip modifiers and attributes
-    while (test(INLINE) || (test(STATIC) && (def->isStatic = true) == true) ||
-        (test(VIRTUAL) && (def->isVirtual = true) == true) //mark as virtual
+    while (testForFunctionModifiers(def)
         || skipCxxAttributes() || testFunctionAttribute(def) || testFunctionRevision(def)) {}
     bool templateFunction = (lookup() == TEMPLATE);
     def->type = parseType();
@@ -429,6 +428,10 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
         scopedFunctionName = def->type.isScoped;
         def->type = Type("int");
     } else {
+        // we might have modifiers and attributes after a tag
+        // note that testFunctionAttribute is handled further below,
+        // and revisions and attributes must come first
+        while (testForFunctionModifiers(def)) {}
         Type tempType = parseType();;
         while (!tempType.name.isEmpty() && lookup() != LPAREN) {
             if (testFunctionAttribute(def->type.firstToken, def))
@@ -512,14 +515,20 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
     return true;
 }
 
+bool Moc::testForFunctionModifiers(FunctionDef *def)
+{
+    return test(EXPLICIT) || test(INLINE) ||
+            (test(STATIC) && (def->isStatic = true)) ||
+            (test(VIRTUAL) && (def->isVirtual = true));
+}
+
 // like parseFunction, but never aborts with an error
 bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
 {
     def->isVirtual = false;
     def->isStatic = false;
     //skip modifiers and attributes
-    while (test(EXPLICIT) || test(INLINE) || (test(STATIC) && (def->isStatic = true) == true) ||
-        (test(VIRTUAL) && (def->isVirtual = true) == true) //mark as virtual
+    while (testForFunctionModifiers(def)
         || skipCxxAttributes() || testFunctionAttribute(def) || testFunctionRevision(def)) {}
     bool tilde = test(TILDE);
     def->type = parseType();
@@ -537,6 +546,10 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
             def->type = Type("int");
         }
     } else {
+        // ### TODO: The condition before testForFunctionModifiers shoulnd't be necessary,
+        // but otherwise we end up with misparses
+        if (def->isSlot || def->isSignal || def->isInvokable)
+            while (testForFunctionModifiers(def)) {}
         Type tempType = parseType();;
         while (!tempType.name.isEmpty() && lookup() != LPAREN) {
             if (testFunctionAttribute(def->type.firstToken, def))
