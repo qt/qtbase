@@ -1,6 +1,39 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#include <QVector2D>
+#include <QVector3D>
+#include <QVector4D>
+#ifdef QVARIANT_H
+# error "This test requires qvector{2,3,4}d.h to not include qvariant.h"
+#endif
+
+// don't assume <type_traits>
+template <typename T, typename U>
+constexpr inline bool my_is_same_v = false;
+template <typename T>
+constexpr inline bool my_is_same_v<T, T> = true;
+
+#define CHECK(cvref) \
+    static_assert(my_is_same_v<decltype(get<0>(std::declval<QVector2D cvref >())), float cvref >); \
+    static_assert(my_is_same_v<decltype(get<1>(std::declval<QVector2D cvref >())), float cvref >); \
+    \
+    static_assert(my_is_same_v<decltype(get<0>(std::declval<QVector3D cvref >())), float cvref >); \
+    static_assert(my_is_same_v<decltype(get<1>(std::declval<QVector3D cvref >())), float cvref >); \
+    static_assert(my_is_same_v<decltype(get<2>(std::declval<QVector3D cvref >())), float cvref >); \
+    \
+    static_assert(my_is_same_v<decltype(get<0>(std::declval<QVector4D cvref >())), float cvref >); \
+    static_assert(my_is_same_v<decltype(get<1>(std::declval<QVector4D cvref >())), float cvref >); \
+    static_assert(my_is_same_v<decltype(get<2>(std::declval<QVector4D cvref >())), float cvref >); \
+    static_assert(my_is_same_v<decltype(get<3>(std::declval<QVector4D cvref >())), float cvref >)
+
+CHECK(&);
+CHECK(const &);
+CHECK(&&);
+CHECK(const &&);
+
+#undef CHECK
+
 #include <QTest>
 #include <QtCore/qmath.h>
 #include <QtGui/qvector2d.h>

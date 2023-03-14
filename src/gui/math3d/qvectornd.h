@@ -15,6 +15,8 @@
 
 QT_BEGIN_NAMESPACE
 
+// QT_ENABLE_P0846_SEMANTICS_FOR(get) // from qpoint.h
+
 class QVector2D;
 class QVector3D;
 class QVector4D;
