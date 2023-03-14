@@ -114,6 +114,7 @@ void tst_QCborStreamReader::basics()
     }
 
     QCOMPARE(reader.currentOffset(), 0);
+    QCOMPARE(reader.bytesAvailable(), 0);
     QCOMPARE(reader.lastError(), QCborError::EndOfFile);
 
     QCOMPARE(reader.type(), QCborStreamReader::Invalid);
@@ -154,6 +155,7 @@ void tst_QCborStreamReader::basics()
 
     // nothing changes, we added nothing
     QCOMPARE(reader.currentOffset(), 0);
+    QCOMPARE(reader.bytesAvailable(), 0);
     QCOMPARE(reader.lastError(), QCborError::EndOfFile);
 
     QCOMPARE(reader.type(), QCborStreamReader::Invalid);
@@ -214,6 +216,7 @@ void tst_QCborStreamReader::clear()
     }
     QCOMPARE(reader.isValid(), !firstError);
     QCOMPARE(reader.currentOffset(), 0);
+    QCOMPARE(reader.bytesAvailable(), data.size());
     QCOMPARE(reader.lastError(), firstError);
 
     if (offsetAfterSkip) {
@@ -226,6 +229,7 @@ void tst_QCborStreamReader::clear()
     reader.clear();
     QCOMPARE(reader.device(), nullptr);
     QCOMPARE(reader.currentOffset(), 0);
+    QCOMPARE(reader.bytesAvailable(), 0);
     QCOMPARE(reader.lastError(), QCborError::EndOfFile);
 }
 
@@ -251,6 +255,7 @@ void tst_QCborStreamReader::integers()
         reader.setDevice(&buffer);
     }
     QVERIFY(reader.isValid());
+    QCOMPARE(reader.bytesAvailable(), data.size());
     QCOMPARE(reader.lastError(), QCborError::NoError);
     QVERIFY(reader.isInteger());
 
@@ -287,16 +292,25 @@ template <typename S, QCborStreamReader::StringResult<S> (QCborStreamReader:: *D
 static QString parseOneString_helper(QCborStreamReader &reader)
 {
     QString result;
+    auto checksizes = [&]() {
+        qint64 available = reader.bytesAvailable();
+        qsizetype chunksize = reader.currentStringChunkSize();
+        if (chunksize > available)
+            result += QStringLiteral("<string requires %1 bytes but only %2 available>")
+                    .arg(chunksize).arg(available);
+    };
     bool parens = !reader.isLengthKnown();
     if (parens)
         result += '(';
 
+    checksizes();
     auto r = (reader.*Decoder)();
     const char *comma = "";
     while (r.status == QCborStreamReader::Ok) {
         result += comma;
         escapedAppendTo(result, r.data);
 
+        checksizes();
         r = (reader.*Decoder)();
         comma = ", ";
     }
@@ -461,6 +475,7 @@ static QString parseOne(QCborStreamReader &reader)
 
 static QString parse(QCborStreamReader &reader, const QByteArray &data)
 {
+    qint64 oldAvailable = reader.bytesAvailable();
     qint64 oldPos = 0;
     if (QIODevice *dev = reader.device())
         oldPos = dev->pos();
@@ -472,6 +487,9 @@ static QString parse(QCborStreamReader &reader, const QByteArray &data)
     if (reader.currentOffset() - oldPos != data.size())
         r = QString("Number of parsed bytes (%1) not expected (%2)")
                 .arg(reader.currentOffset()).arg(data.size());
+    if (reader.bytesAvailable() != oldAvailable - data.size())
+        r = QString("Number of bytes available (%1) did not decrease as expected")
+                .arg(data.size());
     if (QIODevice *dev = reader.device()) {
         if (dev->pos() - oldPos != data.size())
             r = QString("QIODevice not advanced (%1) as expected (%2)")
@@ -612,12 +630,14 @@ void tst_QCborStreamReader::fixed()
         reader.setDevice(&buffer);
     }
     QVERIFY(reader.isValid());
+    QCOMPARE(reader.bytesAvailable(), data.size());
     QCOMPARE(reader.lastError(), QCborError::NoError);
     QCOMPARE(parse(reader, data), expected);
 
     // verify that we can re-read
     reader.reset();
     QVERIFY(reader.isValid());
+    QCOMPARE(reader.bytesAvailable(), data.size());
     QCOMPARE(reader.lastError(), QCborError::NoError);
     QCOMPARE(parse(reader, data), expected);
 }
@@ -650,11 +670,9 @@ void tst_QCborStreamReader::strings()
         reader.setDevice(&buffer);
         controlReader.setDevice(&controlBuffer);
     }
+    QCOMPARE(reader.bytesAvailable(), data.size());
     QVERIFY(reader.isString() || reader.isByteArray());
     QCOMPARE(reader.isLengthKnown(), !isChunked);
-
-    if (!isChunked)
-        QCOMPARE(reader.currentStringChunkSize(), qsizetype(reader.length()));
 
     int chunks = 0;
     QByteArray fullString;
@@ -670,6 +688,11 @@ void tst_QCborStreamReader::strings()
         QVERIFY(controlData.status != QCborStreamReader::Error);
         fullString += controlData.data;
 
+        qsizetype chunksize = reader.currentStringChunkSize();
+        QCOMPARE_GE(chunksize, 0);
+        QCOMPARE_LE(chunksize, reader.bytesAvailable());
+        if (!isChunked && chunks == 0)
+            QCOMPARE(chunksize, reader.length());
         for (int i = 0; i < 10; ++i) {
             // this call must work several times with the same result
             QCOMPARE(reader.currentStringChunkSize(), controlData.data.size());
@@ -756,6 +779,7 @@ void tst_QCborStreamReader::emptyContainers()
         reader.setDevice(&buffer);
     }
     QVERIFY(reader.isValid());
+    QCOMPARE(reader.bytesAvailable(), data.size());
     QCOMPARE(reader.lastError(), QCborError::NoError);
     if (reader.isLengthKnown())
         QCOMPARE(reader.length(), 0U);
@@ -764,6 +788,7 @@ void tst_QCborStreamReader::emptyContainers()
     // verify that we can re-read
     reader.reset();
     QVERIFY(reader.isValid());
+    QCOMPARE(reader.bytesAvailable(), data.size());
     QCOMPARE(reader.lastError(), QCborError::NoError);
     if (reader.isLengthKnown())
         QCOMPARE(reader.length(), 0U);
@@ -791,6 +816,7 @@ static void checkContainer(int len, const QByteArray &data, const QString &expec
         reader.setDevice(&buffer);
     }
     QVERIFY(reader.isValid());
+    QCOMPARE(reader.bytesAvailable(), data.size());
     QCOMPARE(reader.lastError(), QCborError::NoError);
     if (len >= 0) {
         QVERIFY(reader.isLengthKnown());
@@ -801,6 +827,7 @@ static void checkContainer(int len, const QByteArray &data, const QString &expec
     // verify that we can re-read
     reader.reset();
     QVERIFY(reader.isValid());
+    QCOMPARE(reader.bytesAvailable(), data.size());
     QCOMPARE(reader.lastError(), QCborError::NoError);
     if (len >= 0) {
         QVERIFY(reader.isLengthKnown());
@@ -918,6 +945,7 @@ void tst_QCborStreamReader::validation()
         buffer.open(QIODevice::ReadOnly);
         reader.setDevice(&buffer);
     }
+    QCOMPARE(reader.bytesAvailable(), data.size());
     parse(reader, data);
     QCOMPARE(reader.lastError(), error);
 
@@ -1104,6 +1132,7 @@ void tst_QCborStreamReader::addData_singleElement()
         buffer.open(QIODevice::ReadOnly);
         reader.setDevice(&buffer);
     }
+    QCOMPARE(reader.bytesAvailable(), 0);
     for (int i = 0; i < data.size() - 1; ++i) {
         // add one byte from the data
         if (useDevice) {
@@ -1112,6 +1141,10 @@ void tst_QCborStreamReader::addData_singleElement()
         } else {
             reader.addData(data.constData() + i, 1);
         }
+
+        // unlike the complex case below, since we have a single element, we
+        // can't have parsed any of it
+        QCOMPARE(reader.bytesAvailable(), i + 1);
 
         parse(reader, data);
         QCOMPARE(reader.lastError(), QCborError::EndOfFile);
@@ -1124,6 +1157,7 @@ void tst_QCborStreamReader::addData_singleElement()
     } else {
         reader.addData(data.right(1));
     }
+    QCOMPARE(reader.bytesAvailable(), data.size());
     QCOMPARE(reader.lastError(), QCborError::NoError);
     QCOMPARE(parse(reader, data), expected);
 }
@@ -1170,6 +1204,9 @@ void tst_QCborStreamReader::addData_complex()
                     reader.addData(data.constData() + added, 1);
                 }
                 ++added;
+
+                // can't check bytesAvailable() here because some bytes may
+                // have been parsed
             }
         }
     };
@@ -1218,13 +1255,16 @@ void tst_QCborStreamReader::duplicatedData()
         reader.setDevice(&buffer);
     }
     QVERIFY(reader.isValid());
+    QCOMPARE(reader.bytesAvailable(), doubledata.size());
     QCOMPARE(reader.lastError(), QCborError::NoError);
     QCOMPARE(parse(reader, data), expected);     // yes, data
 
-    QVERIFY(reader.currentOffset() < doubledata.size());
+    QCOMPARE(reader.bytesAvailable(), data.size());
+    QCOMPARE(reader.currentOffset(), data.size());
     if (useDevice) {
         reader.setDevice(&buffer);
         QVERIFY(reader.isValid());
+        QCOMPARE(reader.bytesAvailable(), data.size());
         QCOMPARE(reader.lastError(), QCborError::NoError);
         QCOMPARE(parse(reader, data), expected);
         QCOMPARE(buffer.pos(), doubledata.size());
@@ -1255,8 +1295,10 @@ void tst_QCborStreamReader::extraData()
             reader.setDevice(&buffer);
         }
         QVERIFY(reader.isValid());
+        QCOMPARE(reader.bytesAvailable(), extendeddata.size());
         QCOMPARE(reader.lastError(), QCborError::NoError);
         QCOMPARE(parse(reader, data), expected);     // yes, data
+        QCOMPARE(reader.bytesAvailable(), extension.size());
 
         // if we were a parser, we could parse the next payload
         if (useDevice)

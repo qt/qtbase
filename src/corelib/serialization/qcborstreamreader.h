@@ -88,6 +88,7 @@ public:
 #endif
     QCborError lastError() const;
 
+    qint64 bytesAvailable() const;
     qint64 currentOffset() const;
 
     bool isValid() const        { return !isInvalid(); }

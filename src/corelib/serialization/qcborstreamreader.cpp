@@ -935,6 +935,18 @@ QCborError QCborStreamReader::lastError() const
 }
 
 /*!
+   \since 6.9
+
+   Returns the number of bytes still available for reading in this
+   QCborStreamReader.
+*/
+qint64 QCborStreamReader::bytesAvailable() const
+{
+    qint64 remaining = d->device ? d->device->bytesAvailable() : d->buffer.size();
+    return remaining - d->bufferStart;
+}
+
+/*!
    Returns the offset in the input stream of the item currently being decoded.
    The current offset is the number of decoded bytes so far only if the source
    data is a QByteArray or it is a QIODevice that was positioned at its
