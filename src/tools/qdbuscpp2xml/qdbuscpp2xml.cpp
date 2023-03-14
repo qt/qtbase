@@ -60,7 +60,7 @@ static const char docTypeHeader[] =
 
 #define PROGRAMNAME     "qdbuscpp2xml"
 #define PROGRAMVERSION  "0.2"
-#define PROGRAMCOPYRIGHT "Copyright (C) 2022 The Qt Company Ltd."
+#define PROGRAMCOPYRIGHT "Copyright (C) 2023 The Qt Company Ltd."
 
 static QString outputFile;
 static int flags;
