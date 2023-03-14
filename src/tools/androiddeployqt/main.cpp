@@ -1496,15 +1496,9 @@ bool updateLibsXml(Options *options)
         if (localLibs.isEmpty()) {
             QString plugin;
             for (const QtDependency &qtDependency : options->qtDependencies[it.key()]) {
-                if (qtDependency.relativePath.endsWith("libqtforandroid.so"_L1)
-                        || qtDependency.relativePath.endsWith("libqtforandroidGL.so"_L1)) {
-                    if (!plugin.isEmpty() && plugin != qtDependency.relativePath) {
-                        fprintf(stderr, "Both platform plugins libqtforandroid.so and libqtforandroidGL.so included in package. Please include only one.\n");
-                        return false;
-                    }
-
+                if (qtDependency.relativePath.endsWith("libqtforandroid.so"_L1))
                     plugin = qtDependency.relativePath;
-                }
+
                 if (qtDependency.relativePath.contains(
                             QString::asprintf("libQt%dOpenGL", QT_VERSION_MAJOR))
                     || qtDependency.relativePath.contains(
@@ -1516,7 +1510,8 @@ bool updateLibsXml(Options *options)
 
             if (plugin.isEmpty()) {
                 fflush(stdout);
-                fprintf(stderr, "No platform plugin, neither libqtforandroid.so or libqtforandroidGL.so, included in package. Please include one.\n");
+                fprintf(stderr, "No platform plugin (libqtforandroid.so) included in "
+                                "the deployment. Make sure the app links to Qt Gui library.\n");
                 fflush(stderr);
                 return false;
             }
