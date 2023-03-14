@@ -137,9 +137,9 @@ function(qt_auto_detect_android)
             # ANDROID_NATIVE_API_LEVEL is an just an alias to ANDROID_PLATFORM, check for both
             if(NOT DEFINED ANDROID_PLATFORM AND NOT DEFINED ANDROID_NATIVE_API_LEVEL)
                 message(STATUS "Neither ANDROID_PLATFORM nor ANDROID_NATIVE_API_LEVEL"
-                    " were specified, using API level 23 as default")
-                set(ANDROID_PLATFORM "android-23" CACHE STRING "")
-                set(ANDROID_NATIVE_API_LEVEL 23 CACHE STRING "")
+                    " were specified, using API level 28 as default")
+                set(ANDROID_PLATFORM "android-28" CACHE STRING "")
+                set(ANDROID_NATIVE_API_LEVEL 28 CACHE STRING "")
             endif()
             if(NOT DEFINED ANDROID_STL)
                 set(ANDROID_STL "c++_shared" CACHE STRING "")

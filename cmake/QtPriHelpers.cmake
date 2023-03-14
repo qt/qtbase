@@ -841,7 +841,7 @@ function(qt_generate_global_device_pri_file)
         file(TO_CMAKE_PATH ${ANDROID_NDK} ANDROID_NDK)
         string(APPEND content "DEFAULT_ANDROID_NDK_ROOT = ${ANDROID_NDK}\n")
 
-        set(android_platform "android-23")
+        set(android_platform "android-28")
         if(ANDROID_PLATFORM)
             set(android_platform "${ANDROID_PLATFORM}")
         elseif(ANDROID_NATIVE_API_LEVEL)

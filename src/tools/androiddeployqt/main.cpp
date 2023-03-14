@@ -165,7 +165,7 @@ struct Options
     // Versioning
     QString versionName;
     QString versionCode;
-    QByteArray minSdkVersion{"23"};
+    QByteArray minSdkVersion{"28"};
     QByteArray targetSdkVersion{"34"};
 
     // lib c++ path
@@ -1849,8 +1849,8 @@ bool updateAndroidManifest(Options &options)
             if (reader.isStartElement()) {
                 if (reader.name() == "uses-sdk"_L1) {
                     if (reader.attributes().hasAttribute("android:minSdkVersion"_L1))
-                        if (reader.attributes().value("android:minSdkVersion"_L1).toInt() < 23) {
-                            fprintf(stderr, "Invalid minSdkVersion version, minSdkVersion must be >= 23\n");
+                        if (reader.attributes().value("android:minSdkVersion"_L1).toInt() < 28) {
+                            fprintf(stderr, "Invalid minSdkVersion version, minSdkVersion must be >= 28\n");
                             return false;
                         }
                 } else if ((reader.name() == "application"_L1 ||
