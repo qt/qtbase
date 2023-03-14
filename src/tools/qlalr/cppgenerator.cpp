@@ -10,6 +10,7 @@
 #include <QtCore/qtextstream.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qmap.h>
+#include <QtCore/private/qconfig_p.h>
 
 #include <iterator>
 
@@ -42,7 +43,7 @@ void generateList(const QList<int> &list, QTextStream &out)
 QString CppGenerator::copyrightHeader() const
 {
   return
-    "// Copyright (C) 2016 The Qt Company Ltd.\n"
+    "// " QT_COPYRIGHT "\n"
     "// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0\n"
     "\n"_L1;
 }
