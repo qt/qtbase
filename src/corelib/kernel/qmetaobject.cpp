@@ -419,10 +419,30 @@ QMetaType QMetaObject::metaType() const
         return QMetaType::fromName(className());
     } else {
         /* in the metatype array, we store
-         idx: 0                      propertyCount - 1           propertyCount
-         data:QMetaType(prop0), ..., QMetaType(propPropCount-1), QMetaType(class),...
-         */
-        auto iface = this->d.metaTypes[d->propertyCount];
+
+         | index                               | data                           |
+         |----------------------------------------------------------------------|
+         | 0                                   | QMetaType(property0)           |
+         | ...                                 | ...                            |
+         | propertyCount - 1                   | QMetaType(propertyCount - 1)   |
+         | propertyCount                       | QMetaType(enumerator0)         |
+         | ...                                 | ...                            |
+         | propertyCount + enumeratorCount - 1 | QMetaType(enumeratorCount - 1) |
+         | propertyCount + enumeratorCount     | QMetaType(class)               |
+
+        */
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+        // Before revision 12 we only stored metatypes for enums if they showed
+        // up as types of properties or method arguments or return values.
+        // From revision 12 on, we always store them in a predictable place.
+        const qsizetype offset = d->revision < 12
+                ? d->propertyCount
+                : d->propertyCount + d->enumeratorCount;
+#else
+        const qsizetype offset = d->propertyCount + d->enumeratorCount;
+#endif
+
+        auto iface = this->d.metaTypes[offset];
         if (iface && QtMetaTypePrivate::isInterfaceFor<void>(iface))
             return QMetaType(); // return invalid meta-type for namespaces
         if (iface)
@@ -3037,6 +3057,33 @@ const char *QMetaEnum::enumName() const
 }
 
 /*!
+    Returns the meta type of the enum.
+
+    If the QMetaObject this enum is part of was generated with Qt 6.5 or
+    earlier this will be the invalid metatype.
+
+    \note This is the meta type of the enum itself, not of its underlying
+    numeric type. You can retrieve the meta type of the underlying type of the
+    enum using \l{QMetaType::underlyingType()}.
+
+    \since 6.6
+    \sa QMetaType::underlyingType()
+*/
+QMetaType QMetaEnum::metaType() const
+{
+    if (!mobj)
+        return {};
+
+    const QMetaObjectPrivate *p = priv(mobj->d.data);
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    if (p->revision < 12)
+        QMetaType();
+#endif
+
+    return QMetaType(mobj->d.metaTypes[data.index(mobj) + p->propertyCount]);
+}
+
+/*!
     Returns the number of keys.
 
     \sa key()
@@ -3283,6 +3330,11 @@ QMetaEnum::QMetaEnum(const QMetaObject *mobj, int index)
     : mobj(mobj), data({ mobj->d.data + priv(mobj->d.data)->enumeratorData + index * Data::Size })
 {
     Q_ASSERT(index >= 0 && index < priv(mobj->d.data)->enumeratorCount);
+}
+
+int QMetaEnum::Data::index(const QMetaObject *mobj) const
+{
+    return (d - mobj->d.data - priv(mobj->d.data)->enumeratorData) / Size;
 }
 
 /*!

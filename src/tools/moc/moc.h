@@ -43,6 +43,7 @@ struct EnumDef
 {
     QByteArray name;
     QByteArray enumName;
+    QByteArray type;
     QList<QByteArray> values;
     bool isEnumClass; // c++11 enum class
     EnumDef() : isEnumClass(false) {}

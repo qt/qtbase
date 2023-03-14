@@ -175,7 +175,8 @@ struct QMetaObjectPrivate
     // revision 10 is Qt 6.2: The metatype of the metaobject is stored in the metatypes array
     //                        and metamethods store a flag stating whether they are const
     // revision 11 is Qt 6.5: The metatype for void is stored in the metatypes array
-    enum { OutputRevision = 11 }; // Used by moc, qmetaobjectbuilder and qdbus
+    // revision 12 is Qt 6.6: It adds the metatype for enums
+    enum { OutputRevision = 12 }; // Used by moc, qmetaobjectbuilder and qdbus
     enum { IntsPerMethod = QMetaMethod::Data::Size };
     enum { IntsPerEnum = QMetaEnum::Data::Size };
     enum { IntsPerProperty = QMetaProperty::Data::Size };

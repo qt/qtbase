@@ -98,6 +98,12 @@ public:
         Key2
     };
     Q_ENUM(TestGEnum2)
+
+    enum TestGEnum3: quint8 {
+        Key1 = 23,
+        Key2
+    };
+    Q_ENUM(TestGEnum3)
 };
 
 }
@@ -116,6 +122,12 @@ namespace TestQNamespace {
     };
     Q_ENUM_NS(TestEnum2)
 
+    enum TestEnum3: qint8 {
+        Key1 = 23,
+        Key2
+    };
+    Q_ENUM_NS(TestEnum3)
+
     // try to dizzy moc by adding a struct in between
     struct TestGadget {
         Q_GADGET
@@ -128,8 +140,13 @@ namespace TestQNamespace {
             Key1 = 23,
             Key2
         };
+        enum TestGEnum3: qint16 {
+            Key1 = 33,
+            Key2
+        };
         Q_ENUM(TestGEnum1)
         Q_ENUM(TestGEnum2)
+        Q_ENUM(TestGEnum3)
     };
 
     struct TestGadgetExport {
@@ -146,6 +163,12 @@ namespace TestQNamespace {
             Key2
         };
         Q_ENUM(TestGeEnum2)
+        enum TestGeEnum3: quint16 {
+            Key1 = 26,
+            Key2
+        };
+        Q_ENUM(TestGeEnum3)
+
     };
 
     enum class TestFlag1 {
@@ -2428,23 +2451,29 @@ void tst_Moc::cxx11Enums_data()
     QTest::addColumn<QByteArray>("enumName");
     QTest::addColumn<char>("prefix");
     QTest::addColumn<bool>("isScoped");
+    QTest::addColumn<bool>("isTyped");
 
     const QMetaObject *meta1 = &CXX11Enums::staticMetaObject;
     const QMetaObject *meta2 = &CXX11Enums2::staticMetaObject;
+    const QMetaObject *meta3 = &CXX11Enums3::staticMetaObject;
 
-    QTest::newRow("EnumClass") << meta1 << QByteArray("EnumClass") << QByteArray("EnumClass") << 'A' << true;
-    QTest::newRow("EnumClass 2") << meta2 << QByteArray("EnumClass") << QByteArray("EnumClass") << 'A' << true;
-    QTest::newRow("TypedEnum") << meta1 << QByteArray("TypedEnum") << QByteArray("TypedEnum") << 'B' << false;
-    QTest::newRow("TypedEnum 2") << meta2 << QByteArray("TypedEnum") << QByteArray("TypedEnum") << 'B' << false;
-    QTest::newRow("TypedEnumClass") << meta1 << QByteArray("TypedEnumClass") << QByteArray("TypedEnumClass") << 'C' << true;
-    QTest::newRow("TypedEnumClass 2") << meta2 << QByteArray("TypedEnumClass") << QByteArray("TypedEnumClass") << 'C' << true;
-    QTest::newRow("NormalEnum") << meta1 << QByteArray("NormalEnum") << QByteArray("NormalEnum") << 'D' << false;
-    QTest::newRow("NormalEnum 2") << meta2 << QByteArray("NormalEnum") << QByteArray("NormalEnum") << 'D' << false;
-    QTest::newRow("ClassFlags") << meta1 << QByteArray("ClassFlags") << QByteArray("ClassFlag") << 'F' << true;
-    QTest::newRow("ClassFlags 2") << meta2 << QByteArray("ClassFlags") << QByteArray("ClassFlag") << 'F' << true;
-    QTest::newRow("EnumStruct") << meta1 << QByteArray("EnumStruct") << QByteArray("EnumStruct") << 'G' << true;
-    QTest::newRow("TypedEnumStruct") << meta1 << QByteArray("TypedEnumStruct") << QByteArray("TypedEnumStruct") << 'H' << true;
-    QTest::newRow("StructFlags") << meta1 << QByteArray("StructFlags") << QByteArray("StructFlag") << 'I' << true;
+    QTest::newRow("EnumClass") << meta1 << QByteArray("EnumClass") << QByteArray("EnumClass") << 'A' << true << false;
+    QTest::newRow("EnumClass 2") << meta2 << QByteArray("EnumClass") << QByteArray("EnumClass") << 'A' << true << false;
+    QTest::newRow("EnumClass 3") << meta3 << QByteArray("EnumClass") << QByteArray("EnumClass") << 'A' << true << false;
+    QTest::newRow("TypedEnum") << meta1 << QByteArray("TypedEnum") << QByteArray("TypedEnum") << 'B' << false << true;
+    QTest::newRow("TypedEnum 2") << meta2 << QByteArray("TypedEnum") << QByteArray("TypedEnum") << 'B' << false << true;
+    QTest::newRow("TypedEnum 3") << meta3 << QByteArray("TypedEnum") << QByteArray("TypedEnum") << 'B' << false << true;
+    QTest::newRow("TypedEnumClass") << meta1 << QByteArray("TypedEnumClass") << QByteArray("TypedEnumClass") << 'C' << true << true;
+    QTest::newRow("TypedEnumClass 2") << meta2 << QByteArray("TypedEnumClass") << QByteArray("TypedEnumClass") << 'C' << true << true;
+    QTest::newRow("TypedEnumClass 3") << meta3 << QByteArray("TypedEnumClass") << QByteArray("TypedEnumClass") << 'C' << true << true;
+    QTest::newRow("NormalEnum") << meta1 << QByteArray("NormalEnum") << QByteArray("NormalEnum") << 'D' << false << false;
+    QTest::newRow("NormalEnum 2") << meta2 << QByteArray("NormalEnum") << QByteArray("NormalEnum") << 'D' << false << false;
+    QTest::newRow("NormalEnum 3") << meta3 << QByteArray("NormalEnum") << QByteArray("NormalEnum") << 'D' << false << false;
+    QTest::newRow("ClassFlags") << meta1 << QByteArray("ClassFlags") << QByteArray("ClassFlag") << 'F' << true << false;
+    QTest::newRow("ClassFlags 2") << meta2 << QByteArray("ClassFlags") << QByteArray("ClassFlag") << 'F' << true << false;
+    QTest::newRow("EnumStruct") << meta1 << QByteArray("EnumStruct") << QByteArray("EnumStruct") << 'G' << true << false;
+    QTest::newRow("TypedEnumStruct") << meta1 << QByteArray("TypedEnumStruct") << QByteArray("TypedEnumStruct") << 'H' << true << true;
+    QTest::newRow("StructFlags") << meta1 << QByteArray("StructFlags") << QByteArray("StructFlag") << 'I' << true << false;
 }
 
 void tst_Moc::cxx11Enums()
@@ -2456,24 +2485,39 @@ void tst_Moc::cxx11Enums()
     QFETCH(QByteArray, enumName);
     QFETCH(char, prefix);
     QFETCH(bool, isScoped);
+    QFETCH(bool, isTyped);
 
     int idx = meta->indexOfEnumerator(typeName);
     QVERIFY(idx != -1);
     QCOMPARE(meta->indexOfEnumerator(enumName), idx);
 
-    QCOMPARE(meta->enumerator(idx).enclosingMetaObject(), meta);
-    QCOMPARE(meta->enumerator(idx).isValid(), true);
-    QCOMPARE(meta->enumerator(idx).keyCount(), 4);
-    QCOMPARE(meta->enumerator(idx).name(), typeName.constData());
-    QCOMPARE(meta->enumerator(idx).enumName(), enumName.constData());
-    bool isFlag = meta->enumerator(idx).isFlag();
+    const QMetaEnum metaEnum = meta->enumerator(idx);
+    QCOMPARE(metaEnum.enclosingMetaObject(), meta);
+    QCOMPARE(metaEnum.isValid(), true);
+    QCOMPARE(metaEnum.keyCount(), 4);
+    QCOMPARE(metaEnum.name(), typeName.constData());
+    QCOMPARE(metaEnum.enumName(), enumName.constData());
+
+    const QMetaType metaType = metaEnum.metaType();
+    const bool isUnsigned = metaType.flags() & QMetaType::IsUnsignedEnumeration;
+    if (isTyped) {
+        QCOMPARE(metaType.sizeOf(), sizeof(char));
+        QCOMPARE(isUnsigned, !std::is_signed_v<char>);
+    } else if (isScoped) {
+        QCOMPARE(metaType.sizeOf(), sizeof(int));
+        QCOMPARE(isUnsigned, !std::is_signed_v<int>);
+    } else {
+        // underlying type is implementation defined
+    }
+
+    bool isFlag = metaEnum.isFlag();
     for (int i = 0; i < 4; i++) {
         QByteArray v = prefix + QByteArray::number(i);
         const int value = isFlag ? (1 << i) : i;
-        QCOMPARE(meta->enumerator(idx).keyToValue(v), value);
-        QCOMPARE(meta->enumerator(idx).valueToKey(value), v.constData());
+        QCOMPARE(metaEnum.keyToValue(v), value);
+        QCOMPARE(metaEnum.valueToKey(value), v.constData());
     }
-    QCOMPARE(meta->enumerator(idx).isScoped(), isScoped);
+    QCOMPARE(metaEnum.isScoped(), isScoped);
 }
 
 void tst_Moc::cxx11TrailingReturn()
@@ -3994,10 +4038,12 @@ void tst_Moc::optionsFileError()
 }
 
 static void checkEnum(const QMetaEnum &enumerator, const QByteArray &name,
-                      const QList<QPair<QByteArray, int>> &keys)
+                      const QList<QPair<QByteArray, int>> &keys,
+                      const QMetaType underlyingType = QMetaType::fromType<int>())
 {
     QCOMPARE(name, QByteArray{enumerator.name()});
     QCOMPARE(keys.size(), enumerator.keyCount());
+    QCOMPARE(underlyingType, enumerator.metaType().underlyingType());
     for (int i = 0; i < enumerator.keyCount(); ++i) {
         QCOMPARE(keys[i].first, QByteArray{enumerator.key(i)});
         QCOMPARE(keys[i].second, enumerator.value(i));
@@ -4014,27 +4060,33 @@ public:
 
 void tst_Moc::testQNamespace()
 {
-    QCOMPARE(TestQNamespace::staticMetaObject.enumeratorCount(), 4);
+    QCOMPARE(TestQNamespace::staticMetaObject.enumeratorCount(), 5);
     checkEnum(TestQNamespace::staticMetaObject.enumerator(0), "TestEnum1",
                 {{"Key1", 11}, {"Key2", 12}});
     checkEnum(TestQNamespace::staticMetaObject.enumerator(1), "TestEnum2",
                 {{"Key1", 17}, {"Key2", 18}});
-    checkEnum(TestQNamespace::staticMetaObject.enumerator(2), "TestFlag1",
+    checkEnum(TestQNamespace::staticMetaObject.enumerator(2), "TestEnum3",
+                {{"Key1", 23}, {"Key2", 24}}, QMetaType::fromType<qint8>());
+    checkEnum(TestQNamespace::staticMetaObject.enumerator(3), "TestFlag1",
                 {{"None", 0}, {"Flag1", 1}, {"Flag2", 2}, {"Any", 1 | 2}});
-    checkEnum(TestQNamespace::staticMetaObject.enumerator(3), "TestFlag2",
+    checkEnum(TestQNamespace::staticMetaObject.enumerator(4), "TestFlag2",
                 {{"None", 0}, {"Flag1", 4}, {"Flag2", 8}, {"Any", 4 | 8}});
 
-    QCOMPARE(TestQNamespace::TestGadget::staticMetaObject.enumeratorCount(), 2);
+    QCOMPARE(TestQNamespace::TestGadget::staticMetaObject.enumeratorCount(), 3);
     checkEnum(TestQNamespace::TestGadget::staticMetaObject.enumerator(0), "TestGEnum1",
                 {{"Key1", 13}, {"Key2", 14}});
     checkEnum(TestQNamespace::TestGadget::staticMetaObject.enumerator(1), "TestGEnum2",
                 {{"Key1", 23}, {"Key2", 24}});
+    checkEnum(TestQNamespace::TestGadget::staticMetaObject.enumerator(2), "TestGEnum3",
+                {{"Key1", 33}, {"Key2", 34}}, QMetaType::fromType<qint16>());
 
-    QCOMPARE(TestQNamespace::TestGadgetExport::staticMetaObject.enumeratorCount(), 2);
+    QCOMPARE(TestQNamespace::TestGadgetExport::staticMetaObject.enumeratorCount(), 3);
     checkEnum(TestQNamespace::TestGadgetExport::staticMetaObject.enumerator(0), "TestGeEnum1",
                 {{"Key1", 20}, {"Key2", 21}});
     checkEnum(TestQNamespace::TestGadgetExport::staticMetaObject.enumerator(1), "TestGeEnum2",
                 {{"Key1", 23}, {"Key2", 24}});
+    checkEnum(TestQNamespace::TestGadgetExport::staticMetaObject.enumerator(2), "TestGeEnum3",
+                {{"Key1", 26}, {"Key2", 27}}, QMetaType::fromType<quint16>());
 
     QMetaEnum meta = QMetaEnum::fromType<TestQNamespace::TestEnum1>();
     QVERIFY(meta.isValid());

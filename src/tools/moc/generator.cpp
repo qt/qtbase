@@ -378,7 +378,7 @@ void Generator::generateCode()
 
     int enumsIndex = index;
     for (int i = 0; i < cdef->enumList.size(); ++i)
-        index += 5 + (cdef->enumList.at(i).values.size() * 2);
+        index += QMetaObjectPrivate::IntsPerEnum + (cdef->enumList.at(i).values.size() * 2);
     fprintf(out, "    %4d, %4d, // constructors\n", isConstructible ? int(cdef->constructorList.size()) : 0,
             isConstructible ? index : 0);
 
@@ -397,8 +397,8 @@ void Generator::generateCode()
 //
     generateClassInfos();
 
-    // all property metatypes, + 1 for the type of the current class itself
-    int initialMetaTypeOffset = cdef->propertyList.size() + 1;
+    // all property metatypes + all enum metatypes + 1 for the type of the current class itself
+    int initialMetaTypeOffset = cdef->propertyList.size() + cdef->enumList.size() + 1;
 
 //
 // Build signals array first, otherwise the signal indices would be wrong
@@ -573,6 +573,15 @@ void Generator::generateCode()
         const PropertyDef &p = cdef->propertyList.at(i);
         fprintf(out, "%s\n        // property '%s'\n        %s",
                 comma, p.name.constData(), stringForType(p.type, true).constData());
+        comma = ",";
+    }
+
+    // metatypes for enums
+    for (int i = 0; i < cdef->enumList.size(); ++i) {
+        const EnumDef &e = cdef->enumList.at(i);
+        fprintf(out, "%s\n        // enum '%s'\n        %s",
+                comma, e.name.constData(),
+                stringForType(cdef->classname % "::" % e.name, true).constData());
         comma = ",";
     }
 
@@ -943,7 +952,7 @@ void Generator::generateEnums(int index)
         return;
 
     fprintf(out, "\n // enums: name, alias, flags, count, data\n");
-    index += 5 * cdef->enumList.size();
+    index += QMetaObjectPrivate::IntsPerEnum * cdef->enumList.size();
     int i;
     for (i = 0; i < cdef->enumList.size(); ++i) {
         const EnumDef &e = cdef->enumList.at(i);

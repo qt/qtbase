@@ -779,6 +779,26 @@ void tst_QMetaObjectBuilder::notifySignal()
 
 void tst_QMetaObjectBuilder::enumerator()
 {
+    static const QtPrivate::QMetaTypeInterface fooFlagMetaType = {
+        0,
+        8,
+        8,
+        QMetaType::IsEnumeration | QMetaType::IsUnsignedEnumeration | QMetaType::RelocatableType,
+        {},
+        nullptr,
+        "fooFlag",
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+    };
+
     QMetaObjectBuilder builder;
 
     // Add an enumerator and check its attributes.
@@ -810,6 +830,7 @@ void tst_QMetaObjectBuilder::enumerator()
     enum1.setIsFlag(true);
     enum1.setIsScoped(true);
     enum1.setEnumName(QByteArrayLiteral("fooFlag"));
+    enum1.setMetaType(QMetaType(&fooFlagMetaType));
     QCOMPARE(enum1.addKey("ABC", 0), 0);
     QCOMPARE(enum1.addKey("DEF", 1), 1);
     QCOMPARE(enum1.addKey("GHI", -1), 2);
@@ -819,6 +840,7 @@ void tst_QMetaObjectBuilder::enumerator()
     QVERIFY(enum1.isFlag());
     QVERIFY(enum1.isScoped());
     QCOMPARE(enum1.enumName(), QByteArray("fooFlag"));
+    QCOMPARE(enum1.metaType(), QMetaType(&fooFlagMetaType));
     QCOMPARE(enum1.keyCount(), 3);
     QCOMPARE(enum1.index(), 0);
     QCOMPARE(enum1.key(0), QByteArray("ABC"));

@@ -265,6 +265,8 @@ public:
 
     const char *name() const;
     const char *enumName() const;
+    QMetaType metaType() const;
+
     bool isFlag() const;
     bool isScoped() const;
 
@@ -302,6 +304,7 @@ private:
         quint32 flags() const { return d[2]; }
         qint32 keyCount() const { return static_cast<qint32>(d[3]); }
         quint32 data() const { return d[4]; }
+        int index(const QMetaObject *mobj) const;
 
         const uint *d;
     };
