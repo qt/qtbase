@@ -95,7 +95,7 @@ static ParseCommandLineArgumentsResult
     parseCustomSizeHints(const QStringList &arguments, MainWindow::CustomSizeHintMap *result)
 {
     result->clear();
-    const int argumentCount = arguments.size();
+    const auto argumentCount = arguments.size();
     for (int i = 1; i < argumentCount; ++i) {
         const QString &arg = arguments.at(i);
         if (arg.startsWith(QLatin1String("-SizeHint"))) {
@@ -105,7 +105,7 @@ static ParseCommandLineArgumentsResult
             if (++i == argumentCount)
                 return CommandLineArgumentsError;
             const QStringView sizeStr{ arguments.at(i) };
-            const int idx = sizeStr.indexOf(QLatin1Char('x'));
+            const auto idx = sizeStr.indexOf(QLatin1Char('x'));
             if (idx == -1)
                 return CommandLineArgumentsError;
             bool ok;

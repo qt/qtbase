@@ -429,7 +429,7 @@ void MainWindow::createDockWidget()
 
 void MainWindow::destroyDockWidget(QAction *action)
 {
-    int index = destroyDockWidgetMenu->actions().indexOf(action);
+    auto index = destroyDockWidgetMenu->actions().indexOf(action);
     delete extraDockWidgets.takeAt(index);
     destroyDockWidgetMenu->removeAction(action);
     action->deleteLater();
