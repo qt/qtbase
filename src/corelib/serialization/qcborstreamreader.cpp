@@ -1587,24 +1587,25 @@ QCborStreamReaderPrivate::readStringChunk_byte(ReadStringChunk params, qsizetype
 inline qsizetype
 QCborStreamReaderPrivate::readStringChunk_unicode(ReadStringChunk params, qsizetype utf8len)
 {
+    Q_ASSERT(params.isString());
+
     // See QUtf8::convertToUnicode() a detailed explanation of why this
     // conversion uses the same number of words or less.
-    QChar *begin = nullptr;
-    if (params.isString()) {
-        QT_TRY {
-            params.string->resize(utf8len);
-        } QT_CATCH (const std::bad_alloc &) {
-            if (utf8len > MaxStringSize)
-                handleError(CborErrorDataTooLarge);
-            else
-                handleError(CborErrorOutOfMemory);
-            return -1;
-        }
-
-        begin = const_cast<QChar *>(params.string->constData());
+    qsizetype currentSize = params.string->size();
+    size_t newSize = size_t(utf8len) + size_t(currentSize); // can't overflow
+    if (utf8len > MaxStringSize || qsizetype(newSize) < 0) {
+        handleError(CborErrorDataTooLarge);
+        return -1;
+    }
+    QT_TRY {
+        params.string->resize(qsizetype(newSize));
+    } QT_CATCH (const std::bad_alloc &) {
+        handleError(CborErrorOutOfMemory);
+        return -1;
     }
 
-    QChar *ptr = begin;
+    QChar *begin = const_cast<QChar *>(params.string->constData());
+    QChar *ptr = begin + currentSize;
     QStringConverter::State cs(QStringConverter::Flag::Stateless);
     if (device == nullptr) {
         // Easy case: we can decode straight from the buffer we already have
@@ -1636,9 +1637,8 @@ QCborStreamReaderPrivate::readStringChunk_unicode(ReadStringChunk params, qsizet
     }
 
     qsizetype size = ptr - begin;
-    if (params.isString())
-        params.string->truncate(size);
-    return size;
+    params.string->truncate(ptr - begin);
+    return size - currentSize;  // how many bytes we added
 }
 
 QT_END_NAMESPACE
