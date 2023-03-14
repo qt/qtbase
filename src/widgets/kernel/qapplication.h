@@ -79,8 +79,8 @@ public:
 
     static QWidget *activeWindow();
 
-#if QT_DEPRECATED_SINCE(6,4)
-    QT_DEPRECATED_VERSION_X_6_4("Use QWidget::activateWindow() instead.")
+#if QT_DEPRECATED_SINCE(6, 5)
+    QT_DEPRECATED_VERSION_X_6_5("Use QWidget::activateWindow() instead.")
     static void setActiveWindow(QWidget* act);
 #endif
 
