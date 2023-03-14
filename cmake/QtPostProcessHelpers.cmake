@@ -732,6 +732,12 @@ set(OpenGL_GL_PREFERENCE \"${OpenGL_GL_PREFERENCE}\" CACHE STRING \"\")
 ")
         endif()
 
+        string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+            "
+set(QT_COPYRIGHT_YEAR \"${QT_COPYRIGHT_YEAR}\" CACHE STRING \"\")
+set(QT_COPYRIGHT \"${QT_COPYRIGHT}\" CACHE STRING \"\")
+")
+
         qt_compute_relative_path_from_cmake_config_dir_to_prefix()
         configure_file(
             "${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsExtra.cmake.in"
