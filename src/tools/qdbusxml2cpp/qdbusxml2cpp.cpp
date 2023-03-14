@@ -606,15 +606,13 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
                 continue;
             }
 
-            if (isDeprecated)
-                hs << "    Q_DECL_DEPRECATED ";
-            else
-                hs << "    ";
+            hs << "    inline "
+               << (isDeprecated ? "Q_DECL_DEPRECATED " : "");
 
             if (isNoReply) {
-                hs << "Q_NOREPLY inline void ";
+                hs << "Q_NOREPLY void ";
             } else {
-                hs << "inline QDBusPendingReply<";
+                hs << "QDBusPendingReply<";
                 for (qsizetype i = 0; i < method.outputArgs.size(); ++i)
                     hs << (i > 0 ? ", " : "")
                        << templateArg(qtTypeName(method.outputArgs.at(i).name, method.outputArgs.at(i).type,
@@ -650,7 +648,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
 
             if (method.outputArgs.size() > 1) {
                 // generate the old-form QDBusReply methods with multiple incoming parameters
-                hs << (isDeprecated ? "    Q_DECL_DEPRECATED " : "    ") << "inline QDBusReply<"
+                hs << "    inline " << (isDeprecated ? "Q_DECL_DEPRECATED " : "") << "QDBusReply<"
                    << templateArg(qtTypeName(method.outputArgs.first().name, method.outputArgs.first().type,
                                              method.annotations, 0, "Out"))
                    << "> ";
