@@ -120,6 +120,8 @@ public:
     bool enterContainer()               { Q_ASSERT(isContainer()); return _enterContainer_helper(); }
     bool leaveContainer();
 
+    bool toString(QString &dst)             { Q_ASSERT(isString()); return _toString_helper(dst); }
+    bool toByteArray(QByteArray &dst)       { Q_ASSERT(isByteArray()); return _toByteArray_helper(dst); }
     StringResult<QString> readString()      { Q_ASSERT(isString()); return _readString_helper(); }
     StringResult<QByteArray> readByteArray(){ Q_ASSERT(isByteArray()); return _readByteArray_helper(); }
     qsizetype currentStringChunkSize() const{ Q_ASSERT(isString() || isByteArray()); return _currentStringChunkSize(); }
@@ -142,6 +144,20 @@ public:
             return -v - 1;
         return v;
     }
+    QString toString()
+    {
+        QString dst;
+        if (!toString(dst))
+            dst.clear();
+        return dst;
+    }
+    QByteArray toByteArray()
+    {
+        QByteArray dst;
+        if (!toByteArray(dst))
+            dst.clear();
+        return dst;
+    }
 
 private:
     void preparse();
@@ -149,6 +165,8 @@ private:
     StringResult<QString> _readString_helper();
     StringResult<QByteArray> _readByteArray_helper();
     qsizetype _currentStringChunkSize() const;
+    bool _toString_helper(QString &);
+    bool _toByteArray_helper(QByteArray &);
 
     template <typename FP> FP _toFloatingPoint() const noexcept
     {

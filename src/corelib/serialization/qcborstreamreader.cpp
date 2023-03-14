@@ -630,6 +630,7 @@ public:
     };
 
     static QCborStreamReader::StringResultCode appendStringChunk(QCborStreamReader &reader, QByteArray *data);
+    bool readFullString(ReadStringChunk params);
     QCborStreamReader::StringResult<qsizetype> readStringChunk(ReadStringChunk params);
     qsizetype readStringChunk_byte(ReadStringChunk params, qsizetype len);
     qsizetype readStringChunk_unicode(ReadStringChunk params, qsizetype utf8len);
@@ -1295,11 +1296,15 @@ bool QCborStreamReader::leaveContainer()
 
    \snippet code/src_corelib_serialization_qcborstream.cpp 27
 
+   The toString() function implements the above loop and some extra checks.
+
+//! [string-no-type-conversions]
    This function does not perform any type conversions, including from integers
    or from byte arrays. Therefore, it may only be called if isString() returned
    true; calling it in any other condition is an error.
+//! [string-no-type-conversions]
 
-   \sa readByteArray(), isString(), readStringChunk()
+   \sa toString(), readByteArray(), isString(), readStringChunk()
  */
 QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
 {
@@ -1327,11 +1332,15 @@ QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
 
    \snippet code/src_corelib_serialization_qcborstream.cpp 28
 
+   The toByteArray() function implements the above loop and some extra checks.
+
+//! [bytearray-no-type-conversions]
    This function does not perform any type conversions, including from integers
    or from strings. Therefore, it may only be called if isByteArray() is true;
    calling it in any other condition is an error.
+//! [bytearray-no-type-conversions]
 
-   \sa readString(), isByteArray(), readStringChunk()
+   \sa toByteArray(), readString(), isByteArray(), readStringChunk()
  */
 QCborStreamReader::StringResult<QByteArray> QCborStreamReader::_readByteArray_helper()
 {
@@ -1378,6 +1387,108 @@ qsizetype QCborStreamReader::_currentStringChunkSize() const
     else
         return qsizetype(len);
     return -1;
+}
+
+bool QCborStreamReaderPrivate::readFullString(ReadStringChunk params)
+{
+    auto r = readStringChunk(params);
+    while (r.status == QCborStreamReader::Ok) {
+        // keep appending
+        r = readStringChunk(params);
+    }
+
+    bool ok = r.status == QCborStreamReader::EndOfString;
+    Q_ASSERT(ok == !lastError);
+    return ok;
+}
+
+/*!
+    \fn QCborStreamReader::toString()
+    \since 6.7
+
+    Decodes the current text string and returns it. If the string is chunked,
+    this function will iterate over all chunks and concatenate them. If an
+    error happens, this function returns a default-constructed QString(), but
+    that may not be distinguishable from certain empty text strings. Instead,
+    check lastError() to determine if an error has happened.
+
+    \include qcborstreamreader.cpp string-no-type-conversions
+
+//! [note-not-restartable]
+    \note This function cannot be resumed. That is, this function should not
+    be used in contexts where the CBOR data may still be received, for example
+    from a socket or pipe. It should only be used when the full data has
+    already been received and is available in the input QByteArray or
+    QIODevice.
+//! [note-not-restartable]
+
+    \sa readString(), readStringChunk(), isString(), toByteArray()
+ */
+/*!
+    \fn QCborStreamReader::toString(QString &dst)
+    \overload
+    \since 6.7
+
+    Decodes the current text string and appends to \a dst. If the string is
+    chunked, this function will iterate over all chunks and concatenate them.
+    If an error happens during decoding, other chunks that could be decoded
+    successfully may have been written to \a dst nonetheless. Returns \c true
+    if the decoding happened without errors, \c false otherwise.
+
+    \include qcborstreamreader.cpp string-no-type-conversions
+
+    \include qcborstreamreader.cpp note-not-restartable
+
+    \sa readString(), readStringChunk(), isString(), toByteArray()
+ */
+bool QCborStreamReader::_toString_helper(QString &dst)
+{
+    bool ok = d->readFullString(&dst);
+    if (ok)
+        preparse();
+    return ok;
+}
+
+/*!
+    \fn QCborStreamReader::toByteArray()
+    \since 6.7
+
+    Decodes the current byte string and returns it. If the string is chunked,
+    this function will iterate over all chunks and concatenate them. If an
+    error happens, this function returns a default-constructed QByteArray(),
+    but that may not be distinguishable from certain empty byte strings.
+    Instead, check lastError() to determine if an error has happened.
+
+    \include qcborstreamreader.cpp bytearray-no-type-conversions
+
+    \include qcborstreamreader.cpp note-not-restartable
+
+    \sa readByteArray(), readStringChunk(), isByteArray(), toString()
+ */
+
+/*!
+    \fn QCborStreamReader::toByteArray(QByteArray &dst)
+    \overload
+    \since 6.7
+
+    Decodes the current byte string and appends to \a dst. If the string is
+    chunked, this function will iterate over all chunks and concatenate them.
+    If an error happens during decoding, other chunks that could be decoded
+    successfully may have been written to \a dst nonetheless. Returns \c true
+    if the decoding happened without errors, \c false otherwise.
+
+    \include qcborstreamreader.cpp bytearray-no-type-conversions
+
+    \include qcborstreamreader.cpp note-not-restartable
+
+    \sa readByteArray(), readStringChunk(), isByteArray(), toString()
+ */
+bool QCborStreamReader::_toByteArray_helper(QByteArray &dst)
+{
+    bool ok = d->readFullString(&dst);
+    if (ok)
+        preparse();
+    return ok;
 }
 
 /*!
@@ -1452,6 +1563,12 @@ QCborStreamReaderPrivate::readStringChunk(ReadStringChunk params)
     // qt_cbor_decoder_transfer_string() enforces that
     // QIODevice::bytesAvailable() be bigger than the amount we're about to
     // read.
+    //
+    // This is an important security gate: if the CBOR stream is corrupt or
+    // malicious, and has an impossibly large string size, we only go past it
+    // if the transfer to the destination buffer will succeed (modulo QIODevice
+    // I/O failures).
+
 #if 1
     // Using internal TinyCBOR API!
     err = _cbor_value_get_string_chunk(&currentElement, &content, &len, &currentElement);

@@ -657,6 +657,7 @@ void tst_QCborStreamReader::strings()
         QCOMPARE(reader.currentStringChunkSize(), qsizetype(reader.length()));
 
     int chunks = 0;
+    QByteArray fullString;
     forever {
         QCborStreamReader::StringResult<QByteArray> controlData;
         if (reader.isString()) {
@@ -667,6 +668,7 @@ void tst_QCborStreamReader::strings()
             controlData = controlReader.readByteArray();
         }
         QVERIFY(controlData.status != QCborStreamReader::Error);
+        fullString += controlData.data;
 
         for (int i = 0; i < 10; ++i) {
             // this call must work several times with the same result
@@ -689,6 +691,22 @@ void tst_QCborStreamReader::strings()
 
     if (!isChunked)
         QCOMPARE(chunks, 1);
+
+    // Now re-do and compare with toString() and toByteArray(), against
+    // the control data we calculated above
+    reader.reset();
+    QVERIFY(reader.isString() || reader.isByteArray());
+    if (reader.isByteArray()) {
+        QByteArray prefix("some prefix");
+        QByteArray ba = prefix;
+        QVERIFY(reader.toByteArray(ba));
+        QCOMPARE(ba, prefix + fullString);
+    } else {
+        QString prefix("some prefix");
+        QString str = prefix;
+        QVERIFY(reader.toString(str));
+        QCOMPARE(str, prefix + QString::fromUtf8(fullString));
+    }
 }
 
 void tst_QCborStreamReader::tags_data()
@@ -908,6 +926,29 @@ void tst_QCborStreamReader::validation()
     reader.reset();
     QVERIFY(!reader.next());
     QCOMPARE(reader.lastError(), error);
+
+    // check toString() and toByteArray() too
+    if (reader.isString() || reader.isByteArray()) {
+        reader.reset();
+        if (reader.isString()) {
+            QString prefix = "some prefix";
+            QString str = prefix;
+            QVERIFY(!reader.toString(str));
+            QVERIFY(str.startsWith(prefix));    // but may have decoded some
+        } else if (reader.isByteArray()) {
+            QByteArray prefix = "some prefix";
+            QByteArray ba = prefix;
+            QVERIFY(!reader.toByteArray(ba));
+            QVERIFY(ba.startsWith(prefix));     // but may have decoded some
+        }
+        QCOMPARE(reader.lastError(), error);
+
+        reader.reset();
+        if (reader.isString())
+            QVERIFY(reader.toString().isNull());
+        else
+            QVERIFY(reader.toByteArray().isNull());
+    }
 }
 
 void tst_QCborStreamReader::hugeDeviceValidation_data()
