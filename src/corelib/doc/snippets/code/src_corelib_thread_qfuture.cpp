@@ -399,3 +399,17 @@ p.start();
 p.addResult(42);
 p.finish();
 //! [31]
+
+//! [32]
+const std::vector<int> values{1, 2, 3};
+auto f = QtFuture::makeReadyRangeFuture(values);
+//! [32]
+
+//! [33]
+auto f = QtFuture::makeReadyRangeFuture({1, 2, 3});
+//! [33]
+
+//! [34]
+const int count = f.resultCount(); // count == 3
+const auto results = f.results(); // results == { 1, 2, 3 }
+//! [34]

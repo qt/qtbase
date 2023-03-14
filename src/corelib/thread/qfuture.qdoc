@@ -118,14 +118,15 @@
     combine several futures and track when the last or first of them completes.
 
     A ready QFuture object with a value or a QFuture object holding exception can
-    be created using convenience functions QtFuture::makeReadyFuture() and
-    QtFuture::makeExceptionalFuture().
+    be created using convenience functions QtFuture::makeReadyFuture(),
+    QtFuture::makeReadyRangeFuture(), and QtFuture::makeExceptionalFuture().
 
     \note To start a computation and store results in a QFuture, use QPromise or
     one of the APIs in the \l {Qt Concurrent} framework.
 
     \sa QPromise, QtFuture::connect(), QtFuture::makeReadyFuture(),
-    QtFuture::makeExceptionalFuture(), QFutureWatcher, {Qt Concurrent}
+    QtFuture::makeReadyRangeFuture(), QtFuture::makeExceptionalFuture(),
+    QFutureWatcher, {Qt Concurrent}
 */
 
 /*! \fn template <typename T> QFuture<T>::QFuture()
@@ -1066,6 +1067,40 @@
     \endcode
 
     \sa QFuture, QException, QtFuture::makeReadyFuture()
+*/
+
+/*! \fn template<typename Container, QtFuture::if_container_with_input_iterators<Container>> static QFuture<QtFuture::ContainedType<Container>> QtFuture::makeReadyRangeFuture(Container &&container)
+
+    \since 6.6
+    \overload
+
+    Takes an input container \a container and returns a QFuture with multiple
+    results of type \c ContainedType initialized from the values of the
+    \a container.
+
+    \note This overload only participates in overload resolution if the
+    \c Container has input iterators.
+
+    \snippet code/src_corelib_thread_qfuture.cpp 32
+    \dots
+    \snippet code/src_corelib_thread_qfuture.cpp 34
+
+    \sa QFuture, QtFuture::makeReadyFuture(), QtFuture::makeExceptionalFuture()
+*/
+
+/*! \fn template<typename ValueType> static QFuture<ValueType> QtFuture::makeReadyRangeFuture(std::initializer_list<ValueType> values)
+
+    \since 6.6
+    \overload
+
+    Returns a QFuture with multiple results of type \c ValueType initialized
+    from the input initializer list \a values.
+
+    \snippet code/src_corelib_thread_qfuture.cpp 33
+    \dots
+    \snippet code/src_corelib_thread_qfuture.cpp 34
+
+    \sa QFuture, QtFuture::makeReadyFuture(), QtFuture::makeExceptionalFuture()
 */
 
 /*! \fn template<class T> template<class Function> QFuture<typename QFuture<T>::ResultType<Function>> QFuture<T>::then(Function &&function)

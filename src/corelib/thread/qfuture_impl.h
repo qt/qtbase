@@ -274,6 +274,12 @@ using IsRandomAccessible =
                                     std::begin(std::declval<Sequence>()))>>::iterator_category,
                             std::random_access_iterator_tag>;
 
+template<class Sequence>
+using HasInputIterator =
+        std::is_convertible<typename std::iterator_traits<std::decay_t<decltype(
+                                    std::begin(std::declval<Sequence>()))>>::iterator_category,
+                            std::input_iterator_tag>;
+
 template<class Iterator>
 using IsForwardIterable =
         std::is_convertible<typename std::iterator_traits<Iterator>::iterator_category,
@@ -886,6 +892,16 @@ struct UnwrapHandler
     }
 };
 
+template<typename ValueType>
+QFuture<ValueType> makeReadyRangeFutureImpl(const QList<ValueType> &values)
+{
+    QFutureInterface<ValueType> promise;
+    promise.reportStarted();
+    promise.reportResults(values);
+    promise.reportFinished();
+    return promise.future();
+}
+
 } // namespace QtPrivate
 
 namespace QtFuture {
@@ -951,6 +967,35 @@ static QFuture<ArgsType<Signal>> connect(Sender *sender, Signal signal)
     return promise.future();
 }
 
+template<typename Container>
+using if_container_with_input_iterators =
+        std::enable_if_t<QtPrivate::HasInputIterator<Container>::value, bool>;
+
+template<typename Container>
+using ContainedType =
+        typename std::iterator_traits<decltype(
+                    std::cbegin(std::declval<Container&>()))>::value_type;
+
+template<typename Container, if_container_with_input_iterators<Container> = true>
+static QFuture<ContainedType<Container>> makeReadyRangeFuture(Container &&container)
+{
+    // handle QList<T> separately, because reportResults() takes a QList
+    // as an input
+    using ValueType = ContainedType<Container>;
+    if constexpr (std::is_convertible_v<q20::remove_cvref_t<Container>, QList<ValueType>>) {
+        return QtPrivate::makeReadyRangeFutureImpl(container);
+    } else {
+        return QtPrivate::makeReadyRangeFutureImpl(QList<ValueType>{std::cbegin(container),
+                                                                    std::cend(container)});
+    }
+}
+
+template<typename ValueType>
+static QFuture<ValueType> makeReadyRangeFuture(std::initializer_list<ValueType> values)
+{
+    return QtPrivate::makeReadyRangeFutureImpl(QList<ValueType>{values});
+}
+
 template<typename T, typename = QtPrivate::EnableForNonVoid<T>>
 static QFuture<std::decay_t<T>> makeReadyFuture(T &&value)
 {
@@ -979,12 +1024,7 @@ static QFuture<T> makeReadyFuture()
 template<typename T>
 static QFuture<T> makeReadyFuture(const QList<T> &values)
 {
-    QFutureInterface<T> promise;
-    promise.reportStarted();
-    promise.reportResults(values);
-    promise.reportFinished();
-
-    return promise.future();
+    return makeReadyRangeFuture(values);
 }
 
 #ifndef QT_NO_EXCEPTIONS

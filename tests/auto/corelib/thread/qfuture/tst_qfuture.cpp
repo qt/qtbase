@@ -22,8 +22,11 @@
 #include <QtConcurrent/qtconcurrentrun.h>
 #include <private/qfutureinterface_p.h>
 
+#include <forward_list>
+#include <list>
 #include <vector>
 #include <memory>
+#include <set>
 
 // COM interface macro.
 #if defined(Q_OS_WIN) && defined(interface)
@@ -4137,6 +4140,97 @@ void tst_QFuture::createReadyFutures()
         QVERIFY(caught);
     }
 #endif
+
+    // testing makeReadyRangeFuture with various containers
+    {
+        const QList<int> expectedResult{1, 2, 3};
+
+        const QList<int> list{1, 2, 3};
+        auto f = QtFuture::makeReadyRangeFuture(list);
+        QCOMPARE_EQ(f.resultCount(), 3);
+        QCOMPARE_EQ(f.results(), expectedResult);
+
+        QVarLengthArray<int> varArray{1, 2, 3};
+        f = QtFuture::makeReadyRangeFuture(varArray);
+        QCOMPARE_EQ(f.resultCount(), 3);
+        QCOMPARE_EQ(f.results(), expectedResult);
+
+        std::vector<int> vec{1, 2, 3};
+        f = QtFuture::makeReadyRangeFuture(std::move(vec));
+        QCOMPARE_EQ(f.resultCount(), 3);
+        QCOMPARE_EQ(f.results(), expectedResult);
+
+        f = QtFuture::makeReadyRangeFuture(std::array<int, 3>{1, 2, 3});
+        QCOMPARE_EQ(f.resultCount(), 3);
+        QCOMPARE_EQ(f.results(), expectedResult);
+
+        f = QtFuture::makeReadyRangeFuture(std::list<int>{1, 2, 3});
+        QCOMPARE_EQ(f.resultCount(), 3);
+        QCOMPARE_EQ(f.results(), expectedResult);
+
+        std::forward_list<int> fwdlist{1, 2, 3};
+        f = QtFuture::makeReadyRangeFuture(fwdlist);
+        QCOMPARE_EQ(f.resultCount(), 3);
+        QCOMPARE_EQ(f.results(), expectedResult);
+
+        const QSet<int> qset{1, 2, 3};
+        f = QtFuture::makeReadyRangeFuture(qset);
+        QCOMPARE_EQ(f.resultCount(), 3);
+        auto result = f.results();
+        std::sort(result.begin(), result.end());
+        QCOMPARE_EQ(result, expectedResult);
+
+        const QMap<QString, int> qmap{
+            {"one", 1},
+            {"two", 2},
+            {"three", 3}
+        };
+        f = QtFuture::makeReadyRangeFuture(qmap);
+        QCOMPARE_EQ(f.resultCount(), 3);
+        result = f.results();
+        std::sort(result.begin(), result.end());
+        QCOMPARE_EQ(result, expectedResult);
+
+        std::set<int> stdset{1, 2, 3};
+        f = QtFuture::makeReadyRangeFuture(stdset);
+        QCOMPARE_EQ(f.resultCount(), 3);
+        result = f.results();
+        std::sort(result.begin(), result.end());
+        QCOMPARE_EQ(result, expectedResult);
+
+        // testing ValueType[N] overload
+        const int c_array[] = {1, 2, 3};
+        f = QtFuture::makeReadyRangeFuture(c_array);
+        QCOMPARE_EQ(f.resultCount(), 3);
+        QCOMPARE_EQ(f.results(), expectedResult);
+
+        f = QtFuture::makeReadyRangeFuture({1, 2, 3});
+        QCOMPARE_EQ(f.resultCount(), 3);
+        QCOMPARE_EQ(f.results(), expectedResult);
+    }
+    // testing makeReadyRangeFuture with a more complex underlying type
+    {
+        QObject obj1;
+        QObject obj2;
+        QObject obj3;
+
+        const QList<QObject*> expectedResult{&obj1, &obj2, &obj3};
+
+        const QList<QObject*> list{&obj1, &obj2, &obj3};
+        auto f = QtFuture::makeReadyRangeFuture(list);
+        QCOMPARE_EQ(f.resultCount(), 3);
+        QCOMPARE_EQ(f.results(), expectedResult);
+
+        std::list<QObject*> stdlist{&obj1, &obj2, &obj3};
+        f = QtFuture::makeReadyRangeFuture(std::move(stdlist));
+        QCOMPARE_EQ(f.resultCount(), 3);
+        QCOMPARE_EQ(f.results(), expectedResult);
+
+        QObject* const c_array[] = {&obj1, &obj2, &obj3};
+        f = QtFuture::makeReadyRangeFuture(c_array);
+        QCOMPARE_EQ(f.resultCount(), 3);
+        QCOMPARE_EQ(f.results(), expectedResult);
+    }
 }
 
 void tst_QFuture::getFutureInterface()

@@ -1091,7 +1091,7 @@ requestPermissionsInternal(const QStringList &permissions)
         // ### can we kick off all checkPermission()s, and whenAll() collect results?
         for (const QString &permission : permissions)
             result.push_back(QtAndroidPrivate::checkPermission(permission).result());
-        return QtFuture::makeReadyFuture(std::as_const(result)); // as_const d/t QTBUG-109677
+        return QtFuture::makeReadyRangeFuture(result);
     }
 
     if (!QtAndroidPrivate::acquireAndroidDeadlockProtector())
