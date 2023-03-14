@@ -485,6 +485,8 @@ public:
 #endif
 #endif
 
+    QMetaType underlyingType() const;
+
     template<typename T>
     constexpr static QMetaType fromType();
     static QMetaType fromName(QByteArrayView name);

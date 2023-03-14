@@ -91,6 +91,8 @@ private slots:
     void isRegisteredStaticLess();
     void isNotRegistered();
     void isEnum();
+    void underlyingType_data();
+    void underlyingType();
     void automaticTemplateRegistration_1();
     void automaticTemplateRegistration_2(); // defined in tst_qmetatype3.cpp
     void saveAndLoadBuiltin_data();
