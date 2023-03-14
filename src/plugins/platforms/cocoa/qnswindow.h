@@ -36,6 +36,8 @@ QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
 
 typedef NSWindow<QNSWindowProtocol> QCocoaNSWindow;
 
+QCocoaNSWindow *qnswindow_cast(NSWindow *window);
+
 #else
 class QCocoaNSWindow;
 #endif // __OBJC__

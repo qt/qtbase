@@ -23,9 +23,7 @@ static inline bool isWhiteSpace(const QString &s)
 
 static QCocoaWindow *toPlatformWindow(NSWindow *window)
 {
-    if ([window conformsToProtocol:@protocol(QNSWindowProtocol)])
-        return static_cast<QCocoaNSWindow *>(window).platformWindow;
-    return nullptr;
+    return qnswindow_cast(window).platformWindow;
 }
 
 @implementation QNSWindowDelegate
