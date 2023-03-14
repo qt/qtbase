@@ -1358,6 +1358,20 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 #  endif
 #endif
 
+#if __cplusplus >= 202002L // P0846 doesn't have a feature macro :/
+#  define QT_COMPILER_HAS_P0846
+#endif
+
+#ifdef QT_COMPILER_HAS_P0846
+#   define QT_ENABLE_P0846_SEMANTICS_FOR(func)
+#else
+    class QT_CLASS_JUST_FOR_P0846_SIMULATION;
+#   define QT_ENABLE_P0846_SEMANTICS_FOR(func) \
+        template <typename T> \
+        void func (QT_CLASS_JUST_FOR_P0846_SIMULATION *); \
+        /* end */
+#endif // !P0846
+
 #endif // __cplusplus
 
 #endif // QCOMPILERDETECTION_H

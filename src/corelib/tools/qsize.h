@@ -17,6 +17,8 @@ struct CGSize;
 
 QT_BEGIN_NAMESPACE
 
+// QT_ENABLE_P0846_SEMANTICS_FOR(get) // from qmargins.h
+
 class QSizeF;
 
 class Q_CORE_EXPORT QSize

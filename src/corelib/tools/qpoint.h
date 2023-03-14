@@ -15,6 +15,8 @@ struct CGPoint;
 
 QT_BEGIN_NAMESPACE
 
+QT_ENABLE_P0846_SEMANTICS_FOR(get)
+
 class QPointF;
 
 class QPoint

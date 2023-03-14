@@ -1,6 +1,35 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#include <QMargins>
+#ifdef QVARIANT_H
+# error "This test requires qmargins.h to not include qvariant.h"
+#endif
+
+// don't assume <type_traits>
+template <typename T, typename U>
+constexpr inline bool my_is_same_v = false;
+template <typename T>
+constexpr inline bool my_is_same_v<T, T> = true;
+
+#define CHECK(cvref) \
+    static_assert(my_is_same_v<decltype(get<0>(std::declval<QMargins cvref >())), int cvref >); \
+    static_assert(my_is_same_v<decltype(get<1>(std::declval<QMargins cvref >())), int cvref >); \
+    static_assert(my_is_same_v<decltype(get<2>(std::declval<QMargins cvref >())), int cvref >); \
+    static_assert(my_is_same_v<decltype(get<3>(std::declval<QMargins cvref >())), int cvref >); \
+    \
+    static_assert(my_is_same_v<decltype(get<0>(std::declval<QMarginsF cvref >())), qreal cvref >); \
+    static_assert(my_is_same_v<decltype(get<1>(std::declval<QMarginsF cvref >())), qreal cvref >); \
+    static_assert(my_is_same_v<decltype(get<2>(std::declval<QMarginsF cvref >())), qreal cvref >); \
+    static_assert(my_is_same_v<decltype(get<3>(std::declval<QMarginsF cvref >())), qreal cvref >)
+
+CHECK(&);
+CHECK(const &);
+CHECK(&&);
+CHECK(const &&);
+
+#undef CHECK
+
 #include <QTest>
 #include <qmargins.h>
 
