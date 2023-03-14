@@ -246,6 +246,11 @@ private slots:
     void ibaseArray_data() { generic_data("QIBASE"); }
     void ibaseArray();
 
+    void ibaseDateTimeWithTZ_data();
+    void ibaseDateTimeWithTZ();
+    void ibaseTimeStampTzArray_data() { generic_data("QIBASE"); }
+    void ibaseTimeStampTzArray();
+
     // Double addDatabase() with same name leaves system in a state that breaks
     // invalidQuery() if run later; so put this one last !
     void prematureExec_data() { generic_data(); }
@@ -4818,6 +4823,79 @@ void tst_QSqlQuery::dateTime()
     }
 }
 
+void tst_QSqlQuery::ibaseDateTimeWithTZ_data()
+{
+    if (dbs.dbNames.isEmpty())
+        QSKIP("No database drivers are available in this Qt configuration");
+
+    QTest::addColumn<QString>("dbName");
+    QTest::addColumn<QString>("tableName");
+    QTest::addColumn<QList<QDateTime> >("initialDateTimes");
+    QTest::addColumn<QList<QDateTime> >("expectedDateTimes");
+
+    const QTimeZone afterUTCTimeZone("Asia/Hong_Kong");
+    const QTimeZone beforeUTCTimeZone("America/Los_Angeles");
+    const QTimeZone utcTimeZone("UTC");
+
+    const QDateTime dtWithAfterTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), afterUTCTimeZone);
+    const QDateTime dtWithBeforeTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), beforeUTCTimeZone);
+    const QDateTime dtWithUTCTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), utcTimeZone);
+    const QDateTime dtLocalTZ(QDateTime::currentDateTime());
+
+    const QList<QDateTime> dateTimes = {
+        dtWithAfterTZ,
+        dtWithBeforeTZ,
+        dtWithUTCTZ,
+        dtLocalTZ
+    };
+
+    for (const QString &dbName : std::as_const(dbs.dbNames)) {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        if (!db.isValid())
+            continue;
+
+        const QString tableNameTSWithTimeZone(qTableName("dateTimeTSWithTZ", __FILE__, db));
+
+        QTest::newRow(QString(dbName + " timestamp with time zone").toLatin1())
+                        << dbName
+                        << tableNameTSWithTimeZone
+                        << dateTimes
+                        << dateTimes;
+    }
+}
+
+void tst_QSqlQuery::ibaseDateTimeWithTZ()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    if (tst_Databases::getDatabaseType(db) != QSqlDriver::Interbase)
+        QSKIP("Implemented only for Interbase");
+
+    if (tst_Databases::getIbaseEngineVersion(db).majorVersion() < 4)
+        QSKIP("Time zone support only implemented for firebird engine version 4 and greater");
+
+    QFETCH(QString, tableName);
+    TableScope ts(db, tableName);
+
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec(QString("CREATE TABLE " + tableName + "(dt timestamp with time zone)")));
+
+    QFETCH(QList<QDateTime>, initialDateTimes);
+    QFETCH(QList<QDateTime>, expectedDateTimes);
+
+    for (const QDateTime &dt : std::as_const(initialDateTimes)) {
+        QVERIFY_SQL(q, prepare(QLatin1String("INSERT INTO %1 values(:dt)").arg(tableName)));
+        q.bindValue(":dt", dt);
+        QVERIFY_SQL(q, exec());
+    }
+    QVERIFY_SQL(q, exec("SELECT * FROM " + tableName));
+    for (const QDateTime &dt : std::as_const(expectedDateTimes)) {
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDateTime(), dt);
+    }
+}
+
 void tst_QSqlQuery::sqliteVirtualTable()
 {
     // Virtual tables can behave differently when it comes to prepared
@@ -4951,6 +5029,41 @@ void tst_QSqlQuery::ibaseArray()
     QCOMPARE(qry.value(1).toList(), intArray.toList());
     QCOMPARE(qry.value(2).toList(), charArray.toList());
     QCOMPARE(qry.value(3).toList(), boolArray.toList());
+}
+
+void tst_QSqlQuery::ibaseTimeStampTzArray()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    if (tst_Databases::getIbaseEngineVersion(db).majorVersion() < 4)
+        QSKIP("Time zone support only implemented for firebird engine version 4 and greater");
+
+    TableScope ts(db, "ibasetstzarray", __FILE__);
+    QSqlQuery qry(db);
+    QVERIFY_SQL(qry, exec(QLatin1String(
+                              "create table %1 (timeStampData timestamp with time zone[0:4])").arg(ts.tableName())));
+    QVERIFY_SQL(qry, prepare(QLatin1String("insert into %1 (timeStampData)"
+                                           " values(?)").arg(ts.tableName())));
+
+    const QDateTime dtWithAfterTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), QTimeZone("Asia/Hong_Kong"));
+    const QDateTime dtWithBeforeTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), QTimeZone("America/Los_Angeles"));
+    const QDateTime dtWithUTCTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), QTimeZone("UTC"));
+    const QDateTime dtLocalTZ(QDateTime::currentDateTime());
+    const QDateTime dtWithMETTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), QTimeZone("MET"));
+
+
+    const auto timeStampData = QVariant{QVariantList{dtWithAfterTZ,
+                                                     dtWithBeforeTZ,
+                                                     dtWithUTCTZ,
+                                                     dtLocalTZ,
+                                                     dtWithMETTZ}};
+    qry.bindValue(0, timeStampData);
+    QVERIFY_SQL(qry, exec());
+    QVERIFY_SQL(qry, exec("select * from " + ts.tableName()));
+    QVERIFY(qry.next());
+    QCOMPARE(qry.value(0).toList(), timeStampData.toList());
 }
 
 void tst_QSqlQuery::ibase_executeBlock()

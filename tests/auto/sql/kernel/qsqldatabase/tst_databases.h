@@ -9,6 +9,7 @@
 #include <QSqlDriver>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QSqlRecord>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QDir>
@@ -20,8 +21,11 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QSysInfo>
+#include <QVersionNumber>
 #include <QtSql/private/qsqldriver_p.h>
 #include <QTest>
+
+using namespace Qt::StringLiterals;
 
 #define CHECK_DATABASE( db ) \
     if ( !db.isValid() ) { qFatal( "db is Invalid" ); }
@@ -432,6 +436,15 @@ public:
         }
 
         return ver;
+    }
+
+    static QVersionNumber getIbaseEngineVersion(const QSqlDatabase &db)
+    {
+        auto q = db.exec("SELECT rdb$get_context('SYSTEM', 'ENGINE_VERSION') as version from rdb$database;"_L1);
+        q.next();
+        auto record = q.record();
+        auto version = QVersionNumber::fromString(record.value(0).toString());
+        return version;
     }
 
     QStringList     dbNames;

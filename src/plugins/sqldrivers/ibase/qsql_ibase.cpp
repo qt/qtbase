@@ -4,6 +4,7 @@
 #include "qsql_ibase_p.h"
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdatetime.h>
+#include <QtCore/qtimezone.h>
 #include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qlist.h>
@@ -20,6 +21,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
+#include <mutex>
 
 QT_BEGIN_NAMESPACE
 
@@ -37,6 +39,14 @@ using namespace Qt::StringLiterals;
 #endif
 
 constexpr qsizetype QIBaseChunkSize = SHRT_MAX / 2;
+
+#if (FB_API_VER >= 40)
+typedef QMap<quint16, QByteArray> QFbTzIdToIanaIdMap;
+typedef QMap<QByteArray, quint16> QIanaIdToFbTzIdMap;
+Q_GLOBAL_STATIC(QFbTzIdToIanaIdMap, qFbTzIdToIanaIdMap)
+Q_GLOBAL_STATIC(QIanaIdToFbTzIdMap, qIanaIdToFbTzIdMap)
+std::once_flag initTZMappingFlag;
+#endif
 
 static bool getIBaseError(QString& msg, const ISC_STATUS* status, ISC_LONG &sqlcode)
 {
@@ -85,6 +95,9 @@ static void initDA(XSQLDA *sqlda)
         case SQL_FLOAT:
         case SQL_DOUBLE:
         case SQL_TIMESTAMP:
+#if (FB_API_VER >= 40)
+        case SQL_TIMESTAMP_TZ:
+#endif
         case SQL_TYPE_TIME:
         case SQL_TYPE_DATE:
         case SQL_TEXT:
@@ -139,6 +152,9 @@ static QMetaType::Type qIBaseTypeName(int iType, bool hasScale)
     case blr_sql_date:
         return QMetaType::QDate;
     case blr_timestamp:
+#if (FB_API_VER >= 40)
+    case blr_timestamp_tz:
+#endif
         return QMetaType::QDateTime;
     case blr_blob:
         return QMetaType::QByteArray;
@@ -174,6 +190,9 @@ static QMetaType::Type qIBaseTypeName2(int iType, bool hasScale)
     case SQL_DOUBLE:
         return QMetaType::Double;
     case SQL_TIMESTAMP:
+#if (FB_API_VER >= 40)
+    case SQL_TIMESTAMP_TZ:
+#endif
         return QMetaType::QDateTime;
     case SQL_TYPE_TIME:
         return QMetaType::QTime;
@@ -208,11 +227,44 @@ static QDateTime fromTimeStamp(char *buffer)
 
     // have to demangle the structure ourselves because isc_decode_time
     // strips the msecs
-    t = t.addMSecs(int(((ISC_TIMESTAMP*)buffer)->timestamp_time / 10));
-    d = bd.addDays(int(((ISC_TIMESTAMP*)buffer)->timestamp_date));
-
+    auto timebuf = reinterpret_cast<ISC_TIMESTAMP*>(buffer);
+    t = t.addMSecs(static_cast<int>(timebuf->timestamp_time / 10));
+    d = bd.addDays(timebuf->timestamp_date);
     return QDateTime(d, t);
 }
+
+#if (FB_API_VER >= 40)
+QDateTime fromTimeStampTz(char *buffer)
+{
+    static const QDate bd(1858, 11, 17);
+    QTime t(0, 0);
+    QDate d;
+
+    // have to demangle the structure ourselves because isc_decode_time
+    // strips the msecs
+    auto timebuf = reinterpret_cast<ISC_TIMESTAMP_TZ*>(buffer);
+    t = t.addMSecs(static_cast<int>(timebuf->utc_timestamp.timestamp_time / 10));
+    d = bd.addDays(timebuf->utc_timestamp.timestamp_date);
+    quint16 fpTzID = timebuf->time_zone;
+
+    QByteArray timeZoneName = qFbTzIdToIanaIdMap()->value(fpTzID);
+    if (!timeZoneName.isEmpty())
+        return QDateTime(d, t, QTimeZone(timeZoneName));
+    else
+        return {};
+}
+
+ISC_TIMESTAMP_TZ toTimeStampTz(const QDateTime &dt)
+{
+    static const QTime midnight(0, 0, 0, 0);
+    static const QDate basedate(1858, 11, 17);
+    ISC_TIMESTAMP_TZ ts;
+    ts.utc_timestamp.timestamp_time = midnight.msecsTo(dt.time()) * 10;
+    ts.utc_timestamp.timestamp_date = basedate.daysTo(dt.date());
+    ts.time_zone = qIanaIdToFbTzIdMap()->value(dt.timeZone().id().simplified(), 0);
+    return ts;
+}
+#endif
 
 static ISC_TIME toTime(QTime t)
 {
@@ -281,6 +333,34 @@ public:
                                   sqlcode != -1 ? QString::number(sqlcode) : QString()));
         return true;
     }
+
+#if (FB_API_VER >= 40)
+    void initTZMappingCache()
+    {
+        Q_Q(QIBaseDriver);
+        QSqlQuery qry(q->createResult());
+        qry.setForwardOnly(true);
+        qry.exec(QString("select * from RDB$TIME_ZONES"_L1));
+        if (qry.lastError().type()) {
+            q->setLastError(QSqlError(
+                                QCoreApplication::translate("QIBaseDriver",
+                                    "failed to query time zone mapping from system table"),
+                                qry.lastError().databaseText(),
+                                QSqlError::StatementError,
+                                qry.lastError().nativeErrorCode()));
+
+            return;
+        }
+
+        while (qry.next()) {
+            auto record = qry.record();
+            quint16 fbTzId = record.value(0).value<quint16>();
+            QByteArray ianaId = record.value(1).toByteArray().simplified();
+            qFbTzIdToIanaIdMap()->insert(fbTzId, ianaId);
+            qIanaIdToFbTzIdMap()->insert(ianaId, fbTzId);
+        }
+    }
+#endif
 
 public:
     isc_db_handle ibase;
@@ -513,8 +593,16 @@ static char* readArrayBuffer(QList<QVariant>& list, char *buffer, short curDim,
                     buffer += sizeof(ISC_TIMESTAMP);
                 }
                 break;
+#if (FB_API_VER >= 40)
+            case blr_timestamp_tz:
+                for (int i = 0; i < numElements[dim]; ++i) {
+                    valList.append(fromTimeStampTz(buffer));
+                    buffer += sizeof(ISC_TIMESTAMP_TZ);
+                }
+                break;
+#endif
             case blr_sql_time:
-                for(int i = 0; i < numElements[dim]; ++i) {
+                for (int i = 0; i < numElements[dim]; ++i) {
                     valList.append(fromTime(buffer));
                     buffer += sizeof(ISC_TIME);
                 }
@@ -709,8 +797,20 @@ static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
             break;
         case QMetaType::QDateTime:
             for (const auto &elem : list) {
-                *((ISC_TIMESTAMP*)buffer) = toTimeStamp(elem.toDateTime());
-                buffer += sizeof(ISC_TIMESTAMP);
+                switch (arrayDesc->array_desc_dtype) {
+                case blr_timestamp:
+                    *((ISC_TIMESTAMP*)buffer) = toTimeStamp(elem.toDateTime());
+                    buffer += sizeof(ISC_TIMESTAMP);
+                    break;
+#if (FB_API_VER >= 40)
+                case blr_timestamp_tz:
+                    *((ISC_TIMESTAMP_TZ*)buffer) = toTimeStampTz(elem.toDateTime());
+                    buffer += sizeof(ISC_TIMESTAMP_TZ);
+                    break;
+#endif
+                default:
+                    break;
+                }
             }
             break;
         case QMetaType::Bool:
@@ -914,7 +1014,6 @@ bool QIBaseResult::prepare(const QString& query)
     return true;
 }
 
-
 bool QIBaseResult::exec()
 {
     Q_D(QIBaseResult);
@@ -988,6 +1087,11 @@ bool QIBaseResult::exec()
             case SQL_TIMESTAMP:
                 *((ISC_TIMESTAMP*)d->inda->sqlvar[para].sqldata) = toTimeStamp(val.toDateTime());
                 break;
+#if (FB_API_VER >= 40)
+            case SQL_TIMESTAMP_TZ:
+               *((ISC_TIMESTAMP_TZ*)d->inda->sqlvar[para].sqldata) = toTimeStampTz(val.toDateTime());
+               break;
+#endif
             case SQL_TYPE_TIME:
                 *((ISC_TIME*)d->inda->sqlvar[para].sqldata) = toTime(val.toTime());
                 break;
@@ -1171,6 +1275,11 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
         case SQL_BOOLEAN:
             row[idx] = QVariant(bool((*(bool*)buf)));
             break;
+#if (FB_API_VER >= 40)
+        case SQL_TIMESTAMP_TZ:
+            row[idx] = fromTimeStampTz(buf);
+            break;
+#endif
         default:
             // unknown type - don't even try to fetch
             row[idx] = QVariant();
@@ -1469,6 +1578,14 @@ bool QIBaseDriver::open(const QString &db,
 
     setOpen(true);
     setOpenError(false);
+#if (FB_API_VER >= 40)
+    std::call_once(initTZMappingFlag, [d](){ d->initTZMappingCache(); });
+    if (lastError().isValid())
+    {
+        setOpen(true);
+        return false;
+    }
+#endif
     return true;
 }
 
@@ -1571,8 +1688,8 @@ QStringList QIBaseDriver::tables(QSql::TableType type) const
     q.setForwardOnly(true);
     if (!q.exec("select rdb$relation_name from rdb$relations "_L1 + typeFilter))
         return res;
-    while(q.next())
-            res << q.value(0).toString().simplified();
+    while (q.next())
+        res << q.value(0).toString().simplified();
 
     return res;
 }
