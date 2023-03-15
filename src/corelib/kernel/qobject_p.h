@@ -111,6 +111,7 @@ public:
     struct ConnectionOrSignalVector;
     struct SignalVector;
     struct Sender;
+    struct TaggedSignalVector;
 
     /*
         This contains the all connections from and to an object.

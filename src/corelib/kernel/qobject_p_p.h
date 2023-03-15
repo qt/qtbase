@@ -34,25 +34,35 @@ struct QObjectPrivate::ConnectionList
 static_assert(std::is_trivially_destructible_v<QObjectPrivate::ConnectionList>);
 Q_DECLARE_TYPEINFO(QObjectPrivate::ConnectionList, Q_RELOCATABLE_TYPE);
 
+struct QObjectPrivate::TaggedSignalVector
+{
+    quintptr c;
+
+    TaggedSignalVector() = default;
+    TaggedSignalVector(std::nullptr_t) noexcept : c(0) {}
+    TaggedSignalVector(Connection *v) noexcept : c(reinterpret_cast<quintptr>(v)) { Q_ASSERT(v && (reinterpret_cast<quintptr>(v) & 0x1) == 0);   }
+    TaggedSignalVector(SignalVector *v) noexcept : c(reinterpret_cast<quintptr>(v) | quintptr(1u)) { Q_ASSERT(v); }
+    explicit operator SignalVector *() const noexcept
+    {
+        if (c & 0x1)
+            return reinterpret_cast<SignalVector *>(c & ~quintptr(1u));
+        return nullptr;
+    }
+    explicit operator Connection *() const noexcept
+    {
+        return reinterpret_cast<Connection *>(c);
+    }
+    operator uintptr_t() const noexcept { return c; }
+};
+
 struct QObjectPrivate::ConnectionOrSignalVector
 {
     union {
         // linked list of orphaned connections that need cleaning up
-        ConnectionOrSignalVector *nextInOrphanList;
+        TaggedSignalVector nextInOrphanList;
         // linked list of connections connected to slots in this object
         Connection *next;
     };
-
-    static SignalVector *asSignalVector(ConnectionOrSignalVector *c)
-    {
-        if (reinterpret_cast<quintptr>(c) & 1)
-            return reinterpret_cast<SignalVector *>(reinterpret_cast<quintptr>(c) & ~quintptr(1u));
-        return nullptr;
-    }
-    static Connection *fromSignalVector(SignalVector *v)
-    {
-        return reinterpret_cast<Connection *>(reinterpret_cast<quintptr>(v) | quintptr(1u));
-    }
 };
 static_assert(std::is_trivial_v<QObjectPrivate::ConnectionOrSignalVector>);
 
@@ -132,12 +142,12 @@ struct QObjectPrivate::ConnectionData
     QAtomicPointer<SignalVector> signalVector;
     Connection *senders = nullptr;
     Sender *currentSender = nullptr; // object currently activating the object
-    QAtomicPointer<Connection> orphaned;
+    std::atomic<TaggedSignalVector> orphaned = {};
 
     ~ConnectionData()
     {
         Q_ASSERT(ref.loadRelaxed() == 0);
-        auto *c = orphaned.fetchAndStoreRelaxed(nullptr);
+        TaggedSignalVector c = orphaned.exchange(nullptr, std::memory_order_relaxed);
         if (c)
             deleteOrphaned(c);
         SignalVector *v = signalVector.loadRelaxed();
@@ -159,7 +169,7 @@ struct QObjectPrivate::ConnectionData
     };
     void cleanOrphanedConnections(QObject *sender, LockPolicy lockPolicy = NeedToLock)
     {
-        if (orphaned.loadRelaxed() && ref.loadAcquire() == 1)
+        if (orphaned.load(std::memory_order_relaxed) && ref.loadAcquire() == 1)
             cleanOrphanedConnectionsImpl(sender, lockPolicy);
     }
     void cleanOrphanedConnectionsImpl(QObject *sender, LockPolicy lockPolicy);
@@ -194,15 +204,14 @@ struct QObjectPrivate::ConnectionData
 
         signalVector.storeRelaxed(newVector);
         if (vector) {
-            Connection *o = nullptr;
+            TaggedSignalVector o = nullptr;
             /* No ABA issue here: When adding a node, we only care about the list head, it doesn't
              * matter if the tail changes.
              */
+            o = orphaned.load(std::memory_order_acquire);
             do {
-                o = orphaned.loadRelaxed();
                 vector->nextInOrphanList = o;
-            } while (!orphaned.testAndSetRelease(
-                    o, ConnectionOrSignalVector::fromSignalVector(vector)));
+            } while (!orphaned.compare_exchange_strong(o, TaggedSignalVector(vector), std::memory_order_release));
         }
     }
     int signalVectorCount() const
@@ -210,7 +219,7 @@ struct QObjectPrivate::ConnectionData
         return signalVector.loadAcquire() ? signalVector.loadRelaxed()->count() : -1;
     }
 
-    static void deleteOrphaned(ConnectionOrSignalVector *c);
+    static void deleteOrphaned(TaggedSignalVector o);
 };
 
 struct QObjectPrivate::Sender

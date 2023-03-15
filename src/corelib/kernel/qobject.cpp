@@ -369,16 +369,16 @@ void QObjectPrivate::ConnectionData::removeConnection(QObjectPrivate::Connection
         c->prevConnectionList->nextConnectionList.storeRelaxed(n);
     c->prevConnectionList = nullptr;
 
-    Q_ASSERT(c != orphaned.loadRelaxed());
+    Q_ASSERT(c != static_cast<Connection *>(orphaned.load(std::memory_order_relaxed)));
     // add c to orphanedConnections
-    Connection *o = nullptr;
+    TaggedSignalVector o = nullptr;
     /* No ABA issue here: When adding a node, we only care about the list head, it doesn't
      * matter if the tail changes.
      */
+    o = orphaned.load(std::memory_order_acquire);
     do {
-        o = orphaned.loadRelaxed();
         c->nextInOrphanList = o;
-    } while (!orphaned.testAndSetRelease(o, c));
+    } while (!orphaned.compare_exchange_strong(o, TaggedSignalVector(c), std::memory_order_release));
 
 #ifndef QT_NO_DEBUG
     found = false;
@@ -396,7 +396,7 @@ void QObjectPrivate::ConnectionData::removeConnection(QObjectPrivate::Connection
 void QObjectPrivate::ConnectionData::cleanOrphanedConnectionsImpl(QObject *sender, LockPolicy lockPolicy)
 {
     QBasicMutex *senderMutex = signalSlotLock(sender);
-    ConnectionOrSignalVector *c = nullptr;
+    TaggedSignalVector c = nullptr;
     {
         std::unique_lock<QBasicMutex> lock(*senderMutex, std::defer_lock_t{});
         if (lockPolicy == NeedToLock)
@@ -407,7 +407,7 @@ void QObjectPrivate::ConnectionData::cleanOrphanedConnectionsImpl(QObject *sende
         // Since ref == 1, no activate() is in process since we locked the mutex. That implies,
         // that nothing can reference the orphaned connection objects anymore and they can
         // be safely deleted
-        c = orphaned.fetchAndStoreRelaxed(nullptr);
+        c = orphaned.exchange(nullptr, std::memory_order_relaxed);
     }
     if (c) {
         // Deleting c might run arbitrary user code, so we must not hold the lock
@@ -421,11 +421,11 @@ void QObjectPrivate::ConnectionData::cleanOrphanedConnectionsImpl(QObject *sende
     }
 }
 
-inline void QObjectPrivate::ConnectionData::deleteOrphaned(QObjectPrivate::ConnectionOrSignalVector *o)
+inline void QObjectPrivate::ConnectionData::deleteOrphaned(TaggedSignalVector o)
 {
     while (o) {
-        QObjectPrivate::ConnectionOrSignalVector *next = nullptr;
-        if (SignalVector *v = ConnectionOrSignalVector::asSignalVector(o)) {
+        TaggedSignalVector next = nullptr;
+        if (SignalVector *v = static_cast<SignalVector *>(o)) {
             next = v->nextInOrphanList;
             free(v);
         } else {
