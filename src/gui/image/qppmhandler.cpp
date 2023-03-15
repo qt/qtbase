@@ -11,8 +11,8 @@
 #include <qloggingcategory.h>
 #include <qrgba64.h>
 #include <qvariant.h>
-
-#include <ctype.h>
+#include <private/qlocale_p.h>
+#include <private/qtools_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -41,7 +41,7 @@ static int read_pbm_int(QIODevice *d, bool *ok)
     for (;;) {
         if (!d->getChar(&c))                // end of file
             break;
-        digit = isdigit((uchar) c);
+        digit = QtMiscUtils::isAsciiDigit(c);
         if (val != -1) {
             if (digit) {
                 const int cValue = c - '0';
@@ -59,7 +59,7 @@ static int read_pbm_int(QIODevice *d, bool *ok)
         }
         if (digit)                                // first digit
             val = c - '0';
-        else if (isspace((uchar) c))
+        else if (ascii_isspace(c))
             continue;
         else if (c == '#')
             discard_pbm_line(d);
@@ -77,7 +77,7 @@ static bool read_pbm_header(QIODevice *device, char& type, int& w, int& h, int& 
     if (device->read(buf, 3) != 3)                        // read P[1-6]<white-space>
         return false;
 
-    if (!(buf[0] == 'P' && isdigit((uchar) buf[1]) && isspace((uchar) buf[2])))
+    if (!(buf[0] == 'P' && QtMiscUtils::isAsciiDigit(buf[1]) && ascii_isspace(buf[2])))
         return false;
 
     type = buf[1];

@@ -7,8 +7,8 @@
 #include <QtTest/private/qtestlog_p.h>
 #include <QtTest/private/qteamcitylogger_p.h>
 #include <QtCore/qbytearray.h>
+#include <private/qlocale_p.h>
 
-#include <cctype>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -235,7 +235,7 @@ void QTeamCityLogger::tcEscapedString(QTestCharBuffer *buf, const char *str) con
             swallowSpace = false;
             break;
         default:
-            if (std::isspace(ch)) {
+            if (ascii_isspace(ch)) {
                 if (swallowSpace)
                     continue;
                 swallowSpace = true;
@@ -252,7 +252,7 @@ void QTeamCityLogger::tcEscapedString(QTestCharBuffer *buf, const char *str) con
         Q_ASSERT(p[-1] == ' ');
         --p;
     }
-    Q_ASSERT(p == buf->data() || !std::isspace(p[-1]));
+    Q_ASSERT(p == buf->data() || !ascii_isspace(p[-1]));
     *p = '\0';
 }
 
