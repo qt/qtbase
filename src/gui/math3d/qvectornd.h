@@ -148,10 +148,7 @@ private:
               std::enable_if_t<std::is_same_v<std::decay_t<V>, QVector2D>, bool> = true>
     friend constexpr decltype(auto) get(V &&vec) noexcept
     {
-        if constexpr (I == 0)
-            return (std::forward<V>(vec).v[0]);
-        else if constexpr (I == 1)
-            return (std::forward<V>(vec).v[1]);
+        return (std::forward<V>(vec).v[I]);
     }
 };
 
@@ -310,12 +307,7 @@ private:
               std::enable_if_t<std::is_same_v<std::decay_t<V>, QVector3D>, bool> = true>
     friend constexpr decltype(auto) get(V &&vec) noexcept
     {
-        if constexpr (I == 0)
-            return (std::forward<V>(vec).v[0]);
-        else if constexpr (I == 1)
-            return (std::forward<V>(vec).v[1]);
-        else if constexpr (I == 2)
-            return (std::forward<V>(vec).v[2]);
+        return (std::forward<V>(vec).v[I]);
     }
 };
 
@@ -467,14 +459,7 @@ private:
               std::enable_if_t<std::is_same_v<std::decay_t<V>, QVector4D>, bool> = true>
     friend constexpr decltype(auto) get(V &&vec) noexcept
     {
-        if constexpr (I == 0)
-            return (std::forward<V>(vec).v[0]);
-        else if constexpr (I == 1)
-            return (std::forward<V>(vec).v[1]);
-        else if constexpr (I == 2)
-            return (std::forward<V>(vec).v[2]);
-        else if constexpr (I == 3)
-            return (std::forward<V>(vec).v[3]);
+        return (std::forward<V>(vec).v[I]);
     }
 };
 
