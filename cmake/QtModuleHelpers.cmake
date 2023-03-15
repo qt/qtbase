@@ -574,9 +574,15 @@ function(qt_internal_add_module target)
     qt_internal_add_repo_local_defines("${target}")
 
     if(arg_NO_UNITY_BUILD)
-        set(arg_NO_UNITY_BUILD NO_UNITY_BUILD)
+        set(arg_NO_UNITY_BUILD "NO_UNITY_BUILD")
     else()
         set(arg_NO_UNITY_BUILD "")
+    endif()
+
+    if(arg_NO_UNITY_BUILD_SOURCES)
+        set(arg_NO_UNITY_BUILD_SOURCES "NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}")
+    else()
+        set(arg_NO_UNITY_BUILD_SOURCES "")
     endif()
 
     if(NOT arg_EXTERNAL_HEADERS)
@@ -614,7 +620,7 @@ function(qt_internal_add_module target)
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
         PRECOMPILED_HEADER ${arg_PRECOMPILED_HEADER}
         NO_PCH_SOURCES ${arg_NO_PCH_SOURCES}
-        NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}
+        ${arg_NO_UNITY_BUILD_SOURCES}
         ${arg_NO_UNITY_BUILD}
     )
 

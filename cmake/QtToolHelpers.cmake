@@ -94,9 +94,15 @@ function(qt_internal_add_tool target_name)
     qt_internal_library_deprecation_level(deprecation_define)
 
     if(arg_NO_UNITY_BUILD)
-        set(arg_NO_UNITY_BUILD NO_UNITY_BUILD)
+        set(arg_NO_UNITY_BUILD "NO_UNITY_BUILD")
     else()
         set(arg_NO_UNITY_BUILD "")
+    endif()
+
+    if(arg_NO_UNITY_BUILD_SOURCES)
+        set(arg_NO_UNITY_BUILD_SOURCES "NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}")
+    else()
+        set(arg_NO_UNITY_BUILD_SOURCES "")
     endif()
 
     qt_internal_add_executable("${target_name}"
@@ -124,7 +130,7 @@ function(qt_internal_add_tool target_name)
         TARGET_DESCRIPTION "${arg_TARGET_DESCRIPTION}"
         TARGET_COMPANY "${arg_TARGET_COMPANY}"
         TARGET_COPYRIGHT "${arg_TARGET_COPYRIGHT}"
-        NO_UNITY_BUILD_SOURCES "${arg_NO_UNITY_BUILD_SOURCES}"
+        ${arg_NO_UNITY_BUILD_SOURCES}
         ${arg_NO_UNITY_BUILD}
     )
     qt_internal_add_target_aliases("${target_name}")
