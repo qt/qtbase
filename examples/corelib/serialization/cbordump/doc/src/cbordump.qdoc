@@ -3,37 +3,37 @@
 
 /*!
     \example serialization/cbordump
-    \title Cbordump Example
+    \title Parsing and displaying CBOR data
 
-    \brief The Cbordump example demonstrates how to parse files in CBOR-format.
+    \brief A demonstration of how to parse files in CBOR format.
 
-    The Cbordump example reads from files or stdin content in CBOR-format and
-    dumps the decoded content to stdout. The cbordump utility can output in
-    CBOR diagnostic notation (which is similar to JSON), or it can have a
-    verbose output where each byte input is displayed with the encoding beside
-    it. This example shows how to use the QCborStreamReader class directly to
-    parse CBOR content.
+    This example shows how to use the QCborStreamReader class directly to parse
+    CBOR content. The \c cbordump program reads content in CBOR format from
+    files or standard input and dumps the decoded content to stdout in a
+    human-readable format. It can output in CBOR diagnostic notation (which is
+    similar to JSON), or it can produce a verbose output where each byte input
+    is displayed with its encoding beside it.
 
     \sa QCborStreamReader
 
     \image cbordump.png
 
-    \section1 The Cbordumper Class
+    \section1 The CborDumper Class
 
-    The Cbordumper class contains a QCborStreamReader object that is
-    initialized using the QFile object argument passed to the CborDumper
-    constructor. Based on the arguments the dump function calls either
-    dumpOne() or dumpOneDetailed() to dump the contents to stdout,
+    The CborDumper class contains a QCborStreamReader object that is initialized
+    using the QFile object argument passed to the CborDumper constructor. Based
+    on the arguments the dump function calls either dumpOne() or
+    dumpOneDetailed() to dump the contents to standard output,
 
     \snippet serialization/cbordump/main.cpp 0
 
     \section2 The dumpOne() Function
 
-    The type() function of the QCborStreamReader is used in a switch statement
-    to print out for each type. If the type is an array or map, the content is
-    iterated upon, and for each entry the dumpOne() function is called
-    recursively with a higher indentation argument. If the type is a tag, it
-    is printed out and dumpOne() is called once without increasing the
+    Switching on QCborStreamReader::type() enables printing appropriate to the
+    type of the current value in the stream. If the type is an array or map, the
+    value's content is iterated over, and for each entry the dumpOne() function
+    is called recursively with a higher indentation argument. If the type is a
+    tag, it is printed out and dumpOne() is called once without increasing the
     indentation argument.
 
     \section2 The dumpOneDetailed() Function
@@ -42,11 +42,12 @@
     on the same line. It uses lambda functions to print out the bytes and
     decoded content, but otherwise has a similar structure as dumpOne().
 
-    \section1 CborDescription
+    \section1 CborTagDescription
 
-    The tagDescriptions table, describing the CBOR-tags available, is
-    automatically generated from an XML-file available from the iana.org
-    website.
+    The \c tagDescriptions table, describing the CBOR tags available, is
+    automatically generated from an XML file available from the iana.org
+    website. When \c dumpOneDetailed() reports a tag, it uses its description
+    from this table.
 
     \sa {CBOR Support in Qt}
-    */
+*/
