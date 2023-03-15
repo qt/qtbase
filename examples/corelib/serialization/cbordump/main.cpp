@@ -181,18 +181,19 @@ QCborError CborDumper::dump()
 
 template <typename T> static inline bool canConvertTo(double v)
 {
+    using TypeInfo = std::numeric_limits<T>;
     // The [conv.fpint] (7.10 Floating-integral conversions) section of the
     // standard says only exact conversions are guaranteed. Converting
     // integrals to floating-point with loss of precision has implementation-
     // defined behavior whether the next higher or next lower is returned;
     // converting FP to integral is UB if it can't be represented.;
-    static_assert(std::numeric_limits<T>::is_integer);
+    static_assert(TypeInfo::is_integer);
 
-    double supremum = ldexp(1, std::numeric_limits<T>::digits);
+    double supremum = ldexp(1, TypeInfo::digits);
     if (v >= supremum)
         return false;
 
-    if (v < std::numeric_limits<T>::min()) // either zero or a power of two, so it's exact
+    if (v < TypeInfo::min()) // either zero or a power of two, so it's exact
         return false;
 
     // we're in range
@@ -428,6 +429,7 @@ void CborDumper::dumpOneDetailed(int nestingLevel)
     };
 
     auto printString = [=](const char *descr) {
+        constexpr qsizetype ChunkSizeLimit = std::numeric_limits<int>::max();
         QByteArray indent(nestingLevel * 2, ' ');
         const char *chunkStr = (reader.isLengthKnown() ? "" : "chunk ");
         int width = 48 - indent.size();
@@ -436,7 +438,7 @@ void CborDumper::dumpOneDetailed(int nestingLevel)
         qsizetype size = reader.currentStringChunkSize();
         if (size < 0)
             return;         // error
-        if (size >= std::numeric_limits<int>::max()) {
+        if (size >= ChunkSizeLimit) {
             fprintf(stderr, "String length too big, %lli\n", qint64(size));
             exit(EXIT_FAILURE);
         }
@@ -493,7 +495,7 @@ void CborDumper::dumpOneDetailed(int nestingLevel)
             size = reader.currentStringChunkSize();
             if (size < 0)
                 return;         // error
-            if (size >= std::numeric_limits<int>::max()) {
+            if (size >= ChunkSizeLimit) {
                 fprintf(stderr, "String length too big, %lli\n", qint64(size));
                 exit(EXIT_FAILURE);
             }
