@@ -10,6 +10,7 @@
 #include <QTimeZone>
 
 #include <private/qglobal_p.h> // for the icu feature test
+#include <private/qdatetime_p.h>
 
 class tst_QDate : public QObject
 {
@@ -80,6 +81,13 @@ private Q_SLOTS:
     void qdebug() const;
 private:
     QDate defDate() const { return QDate(1900, 1, 1); }
+
+    QDate epochDate() const {
+        using namespace QtPrivate::DateTimeConstants;
+        Q_ASSERT(JULIAN_DAY_FOR_EPOCH == QDate(1970, 1, 1).toJulianDay());
+        return QDate::fromJulianDay(JULIAN_DAY_FOR_EPOCH);
+    }
+
     QDate invalidDate() const { return QDate(); }
 };
 
@@ -494,7 +502,7 @@ void tst_QDate::startOfDay_endOfDay_data()
 
     // UTC is always a valid zone.
     QTest::newRow("epoch")
-        << QDate(1970, 1, 1) << QByteArray("UTC")
+        << epochDate() << QByteArray("UTC")
         << initial << final;
     if (QTimeZone("America/Sao_Paulo").isValid()) {
         QTest::newRow("Brazil")
@@ -584,7 +592,7 @@ void tst_QDate::startOfDay_endOfDay_fixed_data()
         const char *name;
         QDate date;
     } data[] = {
-        { "epoch", QDate(1970, 1, 1) },
+        { "epoch", epochDate() },
         { "y2k-leap-day", QDate(2000, 2, 29) },
         { "start-1900", QDate(1900, 1, 1) }, // QTBUG-99747
         // Just outside the start and end of 32-bit time_t:
@@ -1199,13 +1207,13 @@ void tst_QDate::fromStringDateFormat_data()
         << QString::fromLatin1(" 13 Feb 1987 13:24:51 +0100")
         << Qt::RFC2822Date << QDate(1987, 2, 13);
     QTest::newRow("RFC 2822 with day") << QString::fromLatin1("Thu, 01 Jan 1970 00:12:34 +0000")
-        << Qt::RFC2822Date << QDate(1970, 1, 1);
+        << Qt::RFC2822Date << epochDate();
     QTest::newRow("RFC 2822 with day after space")
         << QString::fromLatin1(" Thu, 01 Jan 1970 00:12:34 +0000")
-        << Qt::RFC2822Date << QDate(1970, 1, 1);
+        << Qt::RFC2822Date << epochDate();
     // No timezone
     QTest::newRow("RFC 2822 no timezone") << QString::fromLatin1("01 Jan 1970 00:12:34")
-        << Qt::RFC2822Date << QDate(1970, 1, 1);
+        << Qt::RFC2822Date << epochDate();
     // No time specified
     QTest::newRow("RFC 2822 date only") << QString::fromLatin1("01 Nov 2002")
         << Qt::RFC2822Date << QDate(2002, 11, 1);
@@ -1244,7 +1252,7 @@ void tst_QDate::fromStringDateFormat_data()
         << Qt::RFC2822Date << QDate(1987, 2, 13);
     // No timezone
     QTest::newRow("RFC 850 and 1036 no timezone") << QString::fromLatin1("Thu Jan 01 00:12:34 1970")
-        << Qt::RFC2822Date << QDate(1970, 1, 1);
+        << Qt::RFC2822Date << epochDate();
     // No time specified
     QTest::newRow("RFC 850 and 1036 date only") << QString::fromLatin1("Fri Nov 01 2002")
         << Qt::RFC2822Date << QDate(2002, 11, 1);
