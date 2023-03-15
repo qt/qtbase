@@ -6,6 +6,9 @@
 
 #include <QtCore/qnamespace.h>
 
+#include <QtCore/q20type_traits.h>
+#include <QtCore/q23utility.h>
+
 QT_BEGIN_NAMESPACE
 
 class QMarginsF;
@@ -66,17 +69,17 @@ private:
     template <std::size_t I,
               typename M,
               std::enable_if_t<(I < 4), bool> = true,
-              std::enable_if_t<std::is_same_v<std::decay_t<M>, QMargins>, bool> = true>
+              std::enable_if_t<std::is_same_v<q20::remove_cvref_t<M>, QMargins>, bool> = true>
     friend constexpr decltype(auto) get(M &&m) noexcept
     {
         if constexpr (I == 0)
-            return (std::forward<M>(m).m_left);
+            return q23::forward_like<M>(m.m_left);
         else if constexpr (I == 1)
-            return (std::forward<M>(m).m_top);
+            return q23::forward_like<M>(m.m_top);
         else if constexpr (I == 2)
-            return (std::forward<M>(m).m_right);
+            return q23::forward_like<M>(m.m_right);
         else if constexpr (I == 3)
-            return (std::forward<M>(m).m_bottom);
+            return q23::forward_like<M>(m.m_bottom);
     }
 };
 
@@ -315,17 +318,17 @@ private:
     template <std::size_t I,
               typename M,
               std::enable_if_t<(I < 4), bool> = true,
-              std::enable_if_t<std::is_same_v<std::decay_t<M>, QMarginsF>, bool> = true>
+              std::enable_if_t<std::is_same_v<q20::remove_cvref_t<M>, QMarginsF>, bool> = true>
     friend constexpr decltype(auto) get(M &&m) noexcept
     {
         if constexpr (I == 0)
-            return (std::forward<M>(m).m_left);
+            return q23::forward_like<M>(m.m_left);
         else if constexpr (I == 1)
-            return (std::forward<M>(m).m_top);
+            return q23::forward_like<M>(m.m_top);
         else if constexpr (I == 2)
-            return (std::forward<M>(m).m_right);
+            return q23::forward_like<M>(m.m_right);
         else if constexpr (I == 3)
-            return (std::forward<M>(m).m_bottom);
+            return q23::forward_like<M>(m.m_bottom);
     }
 };
 

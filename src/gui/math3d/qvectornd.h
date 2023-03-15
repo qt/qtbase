@@ -10,6 +10,9 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qmath.h>
 
+#include <QtCore/q20type_traits.h>
+#include <QtCore/q23utility.h>
+
 QT_BEGIN_NAMESPACE
 
 class QVector2D;
@@ -145,10 +148,10 @@ private:
     template <std::size_t I,
               typename V,
               std::enable_if_t<(I < 2), bool> = true,
-              std::enable_if_t<std::is_same_v<std::decay_t<V>, QVector2D>, bool> = true>
+              std::enable_if_t<std::is_same_v<q20::remove_cvref_t<V>, QVector2D>, bool> = true>
     friend constexpr decltype(auto) get(V &&vec) noexcept
     {
-        return (std::forward<V>(vec).v[I]);
+        return q23::forward_like<V>(vec.v[I]);
     }
 };
 
@@ -304,10 +307,10 @@ private:
     template <std::size_t I,
               typename V,
               std::enable_if_t<(I < 3), bool> = true,
-              std::enable_if_t<std::is_same_v<std::decay_t<V>, QVector3D>, bool> = true>
+              std::enable_if_t<std::is_same_v<q20::remove_cvref_t<V>, QVector3D>, bool> = true>
     friend constexpr decltype(auto) get(V &&vec) noexcept
     {
-        return (std::forward<V>(vec).v[I]);
+        return q23::forward_like<V>(vec.v[I]);
     }
 };
 
@@ -456,10 +459,10 @@ private:
     template <std::size_t I,
               typename V,
               std::enable_if_t<(I < 4), bool> = true,
-              std::enable_if_t<std::is_same_v<std::decay_t<V>, QVector4D>, bool> = true>
+              std::enable_if_t<std::is_same_v<q20::remove_cvref_t<V>, QVector4D>, bool> = true>
     friend constexpr decltype(auto) get(V &&vec) noexcept
     {
-        return (std::forward<V>(vec).v[I]);
+        return q23::forward_like<V>(vec.v[I]);
     }
 };
 

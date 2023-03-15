@@ -8,6 +8,9 @@
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qmargins.h>
 
+#include <QtCore/q20type_traits.h>
+#include <QtCore/q23utility.h>
+
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
 struct CGSize;
 #endif
@@ -83,13 +86,13 @@ private:
     template <std::size_t I,
               typename S,
               std::enable_if_t<(I < 2), bool> = true,
-              std::enable_if_t<std::is_same_v<std::decay_t<S>, QSize>, bool> = true>
+              std::enable_if_t<std::is_same_v<q20::remove_cvref_t<S>, QSize>, bool> = true>
     friend constexpr decltype(auto) get(S &&s) noexcept
     {
         if constexpr (I == 0)
-            return (std::forward<S>(s).wd);
+            return q23::forward_like<S>(s.wd);
         else if constexpr (I == 1)
-            return (std::forward<S>(s).ht);
+            return q23::forward_like<S>(s.ht);
     }
 };
 Q_DECLARE_TYPEINFO(QSize, Q_RELOCATABLE_TYPE);
@@ -272,13 +275,13 @@ private:
     template <std::size_t I,
               typename S,
               std::enable_if_t<(I < 2), bool> = true,
-              std::enable_if_t<std::is_same_v<std::decay_t<S>, QSizeF>, bool> = true>
+              std::enable_if_t<std::is_same_v<q20::remove_cvref_t<S>, QSizeF>, bool> = true>
     friend constexpr decltype(auto) get(S &&s) noexcept
     {
         if constexpr (I == 0)
-            return (std::forward<S>(s).wd);
+            return q23::forward_like<S>(s.wd);
         else if constexpr (I == 1)
-            return (std::forward<S>(s).ht);
+            return q23::forward_like<S>(s.ht);
     }
 };
 Q_DECLARE_TYPEINFO(QSizeF, Q_RELOCATABLE_TYPE);
