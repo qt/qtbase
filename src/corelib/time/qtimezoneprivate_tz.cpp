@@ -521,7 +521,12 @@ PosixZone PosixZone::parse(const char *&pos, const char *end)
     return {std::move(name), offset};
 }
 
-static auto validatePosixRule(const QByteArray &posixRule)
+/* Parse and check a POSIX rule.
+
+   By default a simple zone abbreviation with no offset information is accepted.
+   Set \a requireOffset to \c true to require that there be offset data present.
+*/
+static auto validatePosixRule(const QByteArray &posixRule, bool requireOffset = false)
 {
     // Format is described here:
     // http://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
@@ -533,15 +538,19 @@ static auto validatePosixRule(const QByteArray &posixRule)
         return fail;
 
     const char *begin = zoneinfo.begin();
-
-    // Updates begin to point after the name and offset it parses:
-    if (PosixZone::parse(begin, zoneinfo.end()).name.isEmpty())
-        return fail;
+    {
+        // Updates begin to point after the name and offset it parses:
+        const auto posix = PosixZone::parse(begin, zoneinfo.end());
+        if (posix.name.isEmpty())
+            return fail;
+        if (requireOffset && !posix.hasValidOffset())
+            return fail;
+    }
 
     if (good.hasDst) {
         if (begin >= zoneinfo.end())
             return fail;
-        // Expect a second name and offset after the first:
+        // Expect a second name (and optional offset) after the first:
         if (PosixZone::parse(begin, zoneinfo.end()).name.isEmpty())
             return fail;
     }
@@ -1189,7 +1198,11 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecs
 
 bool QTzTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
 {
-    return tzZones->contains(ianaId);
+    // Allow a POSIX rule as long as it has offset data. (This needs to reject a
+    // plain abbreviation, without offset, since claiming to support such zones
+    // would prevent the custom QTimeZone constructor from accepting such a
+    // name, as it doesn't want a custom zone to over-ride a "real" one.)
+    return tzZones->contains(ianaId) || validatePosixRule(ianaId, true).isValid;
 }
 
 QList<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds() const
