@@ -14,13 +14,10 @@
 #include "qmetaobject.h"
 #include <private/qtextstream_p.h>
 #include <private/qtools_p.h>
-#include <ctype.h>
 
 QT_BEGIN_NAMESPACE
 
-using QtMiscUtils::toHexUpper;
-using QtMiscUtils::toHexLower;
-using QtMiscUtils::fromHex;
+using namespace QtMiscUtils;
 
 /*
     Returns a human readable representation of the first \a maxSize
@@ -35,7 +32,7 @@ QByteArray QtDebugUtils::toPrintable(const char *data, qint64 len, qsizetype max
     QByteArray out;
     for (qsizetype i = 0; i < qMin(len, maxSize); ++i) {
         char c = data[i];
-        if (isprint(c)) {
+        if (isAsciiPrintable(c)) {
             out += c;
         } else {
             switch (c) {
@@ -198,7 +195,7 @@ void QDebug::putUcs4(uint ucs4)
 static inline bool isPrintable(char32_t ucs4) { return QChar::isPrint(ucs4); }
 static inline bool isPrintable(char16_t uc) { return QChar::isPrint(uc); }
 static inline bool isPrintable(uchar c)
-{ return c >= ' ' && c < 0x7f; }
+{ return isAsciiPrintable(c); }
 
 template <typename Char>
 static inline void putEscapedString(QTextStreamPrivate *d, const Char *begin, size_t length, bool isUnicode = true)

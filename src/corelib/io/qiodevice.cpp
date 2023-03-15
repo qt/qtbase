@@ -10,16 +10,14 @@
 #include "qstringlist.h"
 #include "qdir.h"
 #include "private/qbytearray_p.h"
+#include "private/qtools_p.h"
 
 #include <algorithm>
-
-#ifdef QIODEVICE_DEBUG
-#  include <ctype.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace QtMiscUtils;
 
 [[maybe_unused]]
 static void debugBinaryString(const char *input, qint64 maxlen)
@@ -38,7 +36,7 @@ static void debugBinaryString(const char *input, qint64 maxlen)
             for (qsizetype j = tmp.size(); j < 16 + 1; ++j)
                 printf("   ");
             for (qsizetype j = 0; j < tmp.size(); ++j)
-                printf("%c", isprint(int(uchar(tmp[j]))) ? tmp[j] : '.');
+                printf("%c", isAsciiPrintable(tmp[j]) ? tmp[j] : '.');
             tmp.clear();
         }
     }
@@ -1011,7 +1009,7 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
             *data = c;
 #if defined QIODEVICE_DEBUG
             printf("%p \tread 0x%hhx (%c) returning 1 (shortcut)\n", this,
-                   int(c), isprint(c) ? c : '?');
+                   int(c), isAsciiPrintable(c) ? c : '?');
 #endif
             if (d->buffer.isEmpty())
                 readData(data, 0);
@@ -1792,7 +1790,7 @@ void QIODevice::ungetChar(char c)
     }
 
 #if defined QIODEVICE_DEBUG
-    printf("%p QIODevice::ungetChar(0x%hhx '%c')\n", this, c, isprint(c) ? c : '?');
+    printf("%p QIODevice::ungetChar(0x%hhx '%c')\n", this, c, isAsciiPrintable(c) ? c : '?');
 #endif
 
     d->buffer.ungetChar(c);

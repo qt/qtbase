@@ -98,6 +98,11 @@ constexpr inline int caseCompareAscii(char lhs, char rhs) noexcept
     return int(uchar(lhsLower)) - int(uchar(rhsLower));
 }
 
+constexpr inline int isAsciiPrintable(char32_t ch) noexcept
+{
+    return ch >= ' ' && ch < 0x7f;
+}
+
 constexpr inline int qt_lencmp(qsizetype lhs, qsizetype rhs) noexcept
 {
     return lhs == rhs ? 0 :

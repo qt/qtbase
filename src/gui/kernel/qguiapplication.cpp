@@ -96,12 +96,14 @@
 
 #include <qtgui_tracepoints_p.h>
 
-#include <ctype.h>
+#include <private/qtools_p.h>
+
 #include <limits>
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace QtMiscUtils;
 
 // Helper macro for static functions to check on the existence of the application class.
 #define CHECK_QAPP_INSTANCE(...) \
@@ -263,13 +265,13 @@ static inline int nextGeometryToken(const QByteArray &a, int &pos, char *op)
     *op = a.at(pos);
     if (*op == '+' || *op == '-' || *op == 'x')
         pos++;
-    else if (isdigit(*op))
+    else if (isAsciiDigit(*op))
         *op = 'x'; // If it starts with a digit, it is supposed to be a width specification.
     else
         return -1;
 
     const int numberPos = pos;
-    for ( ; pos < size && isdigit(a.at(pos)); ++pos) ;
+    for ( ; pos < size && isAsciiDigit(a.at(pos)); ++pos) ;
 
     bool ok;
     const int result = a.mid(numberPos, pos - numberPos).toInt(&ok);
