@@ -111,9 +111,15 @@ function(qt_internal_add_executable name)
     endif()
 
     if(arg_NO_UNITY_BUILD)
-        set(arg_NO_UNITY_BUILD NO_UNITY_BUILD)
+        set(arg_NO_UNITY_BUILD "NO_UNITY_BUILD")
     else()
         set(arg_NO_UNITY_BUILD "")
+    endif()
+
+    if(arg_NO_UNITY_BUILD_SOURCES)
+        set(arg_NO_UNITY_BUILD_SOURCES "NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}")
+    else()
+        set(arg_NO_UNITY_BUILD_SOURCES "")
     endif()
 
     qt_internal_extend_target("${name}"
@@ -134,7 +140,7 @@ function(qt_internal_add_executable name)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
-        NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}
+        ${arg_NO_UNITY_BUILD_SOURCES}
         ${arg_NO_UNITY_BUILD}
     )
     set_target_properties("${name}" PROPERTIES

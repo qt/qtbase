@@ -325,7 +325,6 @@ function(qt_internal_add_test_to_batch batch_name name)
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
         NO_UNITY_BUILD # Tests should not be built using UNITY_BUILD
-        NO_UNITY_BUILD_SOURCES ${arg_SOURCES}
         )
 
     foreach(source ${arg_SOURCES})

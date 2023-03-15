@@ -312,12 +312,6 @@ function(qt_internal_add_plugin target)
         endif()
     endif()
 
-    if(arg_NO_UNITY_BUILD)
-        set(arg_NO_UNITY_BUILD NO_UNITY_BUILD)
-    else()
-        set(arg_NO_UNITY_BUILD "")
-    endif()
-
     set_property(TARGET "${target}" PROPERTY QT_DEFAULT_PLUGIN "${_default_plugin}")
     set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES "QT_PLUGIN_CLASS_NAME;QT_PLUGIN_TYPE;QT_MODULE;QT_DEFAULT_PLUGIN")
 
@@ -332,6 +326,18 @@ function(qt_internal_add_plugin target)
     set(public_includes
         ${arg_PUBLIC_INCLUDE_DIRECTORIES}
     )
+
+    if(arg_NO_UNITY_BUILD)
+        set(arg_NO_UNITY_BUILD "NO_UNITY_BUILD")
+    else()
+        set(arg_NO_UNITY_BUILD "")
+    endif()
+
+    if(arg_NO_UNITY_BUILD_SOURCES)
+        set(arg_NO_UNITY_BUILD_SOURCES "NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}")
+    else()
+        set(arg_NO_UNITY_BUILD_SOURCES "")
+    endif()
 
     qt_internal_extend_target("${target}"
         SOURCES ${arg_SOURCES}
@@ -360,7 +366,7 @@ function(qt_internal_add_plugin target)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
-        NO_UNITY_BUILD_SOURCES ${arg_NO_UNITY_BUILD_SOURCES}
+        ${arg_NO_UNITY_BUILD_SOURCES}
         ${arg_NO_UNITY_BUILD}
     )
 
