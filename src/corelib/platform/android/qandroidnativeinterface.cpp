@@ -10,6 +10,7 @@
 #include <QtCore/qfuture.h>
 #include <QtCore/qfuturewatcher.h>
 #include <QtCore/qpromise.h>
+#include <QtCore/qtimer.h>
 #include <QtCore/qthreadpool.h>
 #include <deque>
 #include <memory>
