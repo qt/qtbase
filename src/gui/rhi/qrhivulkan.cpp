@@ -4377,7 +4377,7 @@ QByteArray QRhiVulkan::pipelineCacheData()
     size_t dataSize = 0;
     VkResult err = df->vkGetPipelineCacheData(dev, pipelineCache, &dataSize, nullptr);
     if (err != VK_SUCCESS) {
-        qWarning("Failed to get pipeline cache data size: %d", err);
+        qCDebug(QRHI_LOG_INFO, "Failed to get pipeline cache data size: %d", err);
         return QByteArray();
     }
     const size_t headerSize = sizeof(QVkPipelineCacheDataHeader);
@@ -4385,7 +4385,7 @@ QByteArray QRhiVulkan::pipelineCacheData()
     data.resize(dataOffset + dataSize);
     err = df->vkGetPipelineCacheData(dev, pipelineCache, &dataSize, data.data() + dataOffset);
     if (err != VK_SUCCESS) {
-        qWarning("Failed to get pipeline cache data of %d bytes: %d", int(dataSize), err);
+        qCDebug(QRHI_LOG_INFO, "Failed to get pipeline cache data of %d bytes: %d", int(dataSize), err);
         return QByteArray();
     }
 
@@ -4410,7 +4410,7 @@ void QRhiVulkan::setPipelineCacheData(const QByteArray &data)
 
     const size_t headerSize = sizeof(QVkPipelineCacheDataHeader);
     if (data.size() < qsizetype(headerSize)) {
-        qWarning("setPipelineCacheData: Invalid blob size");
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: Invalid blob size");
         return;
     }
     QVkPipelineCacheDataHeader header;
@@ -4418,49 +4418,49 @@ void QRhiVulkan::setPipelineCacheData(const QByteArray &data)
 
     const quint32 rhiId = pipelineCacheRhiId();
     if (header.rhiId != rhiId) {
-        qWarning("setPipelineCacheData: The data is for a different QRhi version or backend (%u, %u)",
-                 rhiId, header.rhiId);
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: The data is for a different QRhi version or backend (%u, %u)",
+                rhiId, header.rhiId);
         return;
     }
     const quint32 arch = quint32(sizeof(void*));
     if (header.arch != arch) {
-        qWarning("setPipelineCacheData: Architecture does not match (%u, %u)",
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: Architecture does not match (%u, %u)",
                  arch, header.arch);
         return;
     }
     if (header.driverVersion != physDevProperties.driverVersion) {
-        qWarning("setPipelineCacheData: driverVersion does not match (%u, %u)",
-                 physDevProperties.driverVersion, header.driverVersion);
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: driverVersion does not match (%u, %u)",
+                physDevProperties.driverVersion, header.driverVersion);
         return;
     }
     if (header.vendorId != physDevProperties.vendorID) {
-        qWarning("setPipelineCacheData: vendorID does not match (%u, %u)",
-                 physDevProperties.vendorID, header.vendorId);
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: vendorID does not match (%u, %u)",
+                physDevProperties.vendorID, header.vendorId);
         return;
     }
     if (header.deviceId != physDevProperties.deviceID) {
-        qWarning("setPipelineCacheData: deviceID does not match (%u, %u)",
-                 physDevProperties.deviceID, header.deviceId);
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: deviceID does not match (%u, %u)",
+                physDevProperties.deviceID, header.deviceId);
         return;
     }
     if (header.uuidSize != VK_UUID_SIZE) {
-        qWarning("setPipelineCacheData: VK_UUID_SIZE does not match (%u, %u)",
-                 quint32(VK_UUID_SIZE), header.uuidSize);
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: VK_UUID_SIZE does not match (%u, %u)",
+                quint32(VK_UUID_SIZE), header.uuidSize);
         return;
     }
 
     if (data.size() < qsizetype(headerSize + VK_UUID_SIZE)) {
-        qWarning("setPipelineCacheData: Invalid blob, no uuid");
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: Invalid blob, no uuid");
         return;
     }
     if (memcmp(data.constData() + headerSize, physDevProperties.pipelineCacheUUID, VK_UUID_SIZE)) {
-        qWarning("setPipelineCacheData: pipelineCacheUUID does not match");
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: pipelineCacheUUID does not match");
         return;
     }
 
     const size_t dataOffset = headerSize + VK_UUID_SIZE;
     if (data.size() < qsizetype(dataOffset + header.dataSize)) {
-        qWarning("setPipelineCacheData: Invalid blob, data missing");
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: Invalid blob, data missing");
         return;
     }
 
@@ -4473,7 +4473,7 @@ void QRhiVulkan::setPipelineCacheData(const QByteArray &data)
         qCDebug(QRHI_LOG_INFO, "Created pipeline cache with initial data of %d bytes",
                 int(header.dataSize));
     } else {
-        qWarning("Failed to create pipeline cache with initial data specified");
+        qCDebug(QRHI_LOG_INFO, "Failed to create pipeline cache with initial data specified");
     }
 }
 
