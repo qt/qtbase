@@ -1484,7 +1484,7 @@ void QRhiGles2::setPipelineCacheData(const QByteArray &data)
 
     const size_t headerSize = sizeof(QGles2PipelineCacheDataHeader);
     if (data.size() < qsizetype(headerSize)) {
-        qWarning("setPipelineCacheData: Invalid blob size (header incomplete)");
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: Invalid blob size (header incomplete)");
         return;
     }
     const size_t dataOffset = headerSize;
@@ -1493,14 +1493,14 @@ void QRhiGles2::setPipelineCacheData(const QByteArray &data)
 
     const quint32 rhiId = pipelineCacheRhiId();
     if (header.rhiId != rhiId) {
-        qWarning("setPipelineCacheData: The data is for a different QRhi version or backend (%u, %u)",
-                 rhiId, header.rhiId);
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: The data is for a different QRhi version or backend (%u, %u)",
+                rhiId, header.rhiId);
         return;
     }
     const quint32 arch = quint32(sizeof(void*));
     if (header.arch != arch) {
-        qWarning("setPipelineCacheData: Architecture does not match (%u, %u)",
-                 arch, header.arch);
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: Architecture does not match (%u, %u)",
+                arch, header.arch);
         return;
     }
     if (header.programBinaryCount == 0)
@@ -1508,12 +1508,12 @@ void QRhiGles2::setPipelineCacheData(const QByteArray &data)
 
     const size_t driverStrLen = qMin(sizeof(header.driver) - 1, size_t(driverInfoStruct.deviceName.size()));
     if (strncmp(header.driver, driverInfoStruct.deviceName.constData(), driverStrLen)) {
-        qWarning("setPipelineCacheData: OpenGL vendor/renderer/version does not match");
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: OpenGL vendor/renderer/version does not match");
         return;
     }
 
     if (data.size() < qsizetype(dataOffset + header.dataSize)) {
-        qWarning("setPipelineCacheData: Invalid blob size (data incomplete)");
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: Invalid blob size (data incomplete)");
         return;
     }
 
