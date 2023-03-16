@@ -335,6 +335,8 @@ QT_USE_NAMESPACE
 
 - (BOOL)validateMenuItem:(NSMenuItem*)item
 {
+    qCDebug(lcQpaMenus) << "Validating" << item << "for" << self;
+
     auto *nativeItem = qt_objc_cast<QCocoaNSMenuItem *>(item);
     if (!nativeItem)
         return item.enabled; // FIXME Test with with Qt as plugin or embedded QWindow.
@@ -356,6 +358,8 @@ QT_USE_NAMESPACE
 
 - (void)qt_itemFired:(QCocoaNSMenuItem *)item
 {
+    qCDebug(lcQpaMenus) << "Activating" << item;
+
     if (item.hasSubmenu)
         return;
 

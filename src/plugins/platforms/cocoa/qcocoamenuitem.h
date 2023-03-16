@@ -8,8 +8,6 @@
 #include <qpa/qplatformmenu.h>
 #include <QtGui/QImage>
 
-//#define QT_COCOA_ENABLE_MENU_DEBUG
-
 Q_FORWARD_DECLARE_OBJC_CLASS(NSMenuItem);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSMenu);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSObject);

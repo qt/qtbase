@@ -383,7 +383,7 @@ QKeySequence QCocoaMenuItem::mergeAccel()
 void QCocoaMenuItem::syncMerged()
 {
     if (!m_merged) {
-        qWarning("Trying to sync a non-merged item");
+        qCWarning(lcQpaMenus) << "Trying to sync non-merged" << this;
         return;
     }
 
