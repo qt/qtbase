@@ -9,6 +9,8 @@
 #include <QtCore/qjniobject.h>
 #include <QtCore/qlist.h>
 
+QT_BEGIN_NAMESPACE
+
 using DocumentFilePtr = std::shared_ptr<class DocumentFile>;
 
 class AndroidContentFileEngine : public QFSFileEngine
@@ -101,5 +103,7 @@ protected:
     QJniObject m_uri;
     DocumentFilePtr m_parent;
 };
+
+QT_END_NAMESPACE
 
 #endif // ANDROIDCONTENTFILEENGINE_H

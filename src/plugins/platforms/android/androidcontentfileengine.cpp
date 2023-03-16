@@ -11,6 +11,8 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qmimedatabase.h>
 
+QT_BEGIN_NAMESPACE
+
 using namespace QNativeInterface;
 using namespace Qt::StringLiterals;
 
@@ -822,5 +824,7 @@ bool DocumentFile::rename(const QString &newName)
 
     return false;
 }
+
+QT_END_NAMESPACE
 
 // End of DocumentFile
