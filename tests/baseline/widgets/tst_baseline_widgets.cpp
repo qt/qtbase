@@ -1217,7 +1217,7 @@ void tst_Widgets::tst_QCombobox()
     takeStandardSnapshots();
 
     QTest::keyClick(combobox.get(), Qt::Key_Down, Qt::AltModifier);
-    QBASELINE_CHECK_DEFERRED(takeScreenSnapshot(testWindow()->rect()), "combobox");
+    QBASELINE_CHECK_DEFERRED(takeScreenSnapshot(testWindow()->geometry()), "combobox");
 }
 
 void tst_Widgets::tst_QCommandLinkButton_data()
