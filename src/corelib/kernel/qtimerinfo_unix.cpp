@@ -530,9 +530,10 @@ int QTimerInfoList::activateTimers()
     repairTimersIfNeeded();
 
     // Find out how many timer have expired
-    auto isExpired = [&now](const QTimerInfo *t) { return now < t->timeout; };
-    auto it = std::find_if(cbegin(), cend(), isExpired);
-    int maxCount = it - cbegin();
+    auto stillActive = [&now](const QTimerInfo *t) { return now < t->timeout; };
+    // Find first one still active (list is sorted by timeout)
+    auto it = std::find_if(cbegin(), cend(), stillActive);
+    auto maxCount = it - cbegin();
 
     int n_act = 0;
     //fire the timers.
