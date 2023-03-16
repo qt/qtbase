@@ -31,10 +31,14 @@ struct QWindowsScreenData
     QImage::Format format = QImage::Format_ARGB32_Premultiplied;
     unsigned flags = VirtualDesktop;
     QString name;
+    QString manufacturer;
+    QString model;
+    QString serialNumber;
     Qt::ScreenOrientation orientation = Qt::LandscapeOrientation;
     qreal refreshRateHz = 60;
     HMONITOR hMonitor = nullptr;
-    QString deviceName = {};
+    QString deviceName;
+    QString devicePath;
     std::optional<int> deviceIndex = std::nullopt;
 };
 
@@ -58,6 +62,9 @@ public:
     qreal devicePixelRatio() const override { return 1.0; }
     qreal refreshRate() const override { return m_data.refreshRateHz; }
     QString name() const override;
+    QString manufacturer() const override { return m_data.manufacturer; }
+    QString model() const override { return m_data.model; }
+    QString serialNumber() const override { return m_data.serialNumber; }
     Qt::ScreenOrientation orientation() const override { return m_data.orientation; }
     QList<QPlatformScreen *> virtualSiblings() const override;
     QWindow *topLevelAt(const QPoint &point) const override;

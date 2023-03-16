@@ -56,6 +56,7 @@ qt_internal_add_plugin(QWindowsIntegrationPlugin
         imm32
         ole32
         oleaut32
+        setupapi
         shell32
         shlwapi
         user32
