@@ -981,7 +981,7 @@ qt_internal_extend_target(Gui
         "painting/qdrawhelper.cpp"
 )
 
-qt_internal_extend_target(Gui CONDITION (QT_FEATURE_eglfs OR QT_FEATURE_xcb)
+qt_internal_extend_target(Gui CONDITION (QT_FEATURE_eglfs OR QT_FEATURE_xcb OR QT_FEATURE_direct2d OR WIN32)
     SOURCES
         util/qedidparser.cpp util/qedidparser_p.h
         util/qedidvendortable_p.h
