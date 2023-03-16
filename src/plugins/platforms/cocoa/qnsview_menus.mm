@@ -25,6 +25,8 @@ static bool selectorIsCutCopyPaste(SEL selector)
 
 - (BOOL)validateMenuItem:(NSMenuItem*)item
 {
+    qCDebug(lcQpaMenus) << "Validating" << item << "for" << self;
+
     auto *nativeItem = qt_objc_cast<QCocoaNSMenuItem *>(item);
     if (!nativeItem)
         return item.enabled; // FIXME Test with with Qt as plugin or embedded QWindow.
@@ -88,6 +90,7 @@ static bool selectorIsCutCopyPaste(SEL selector)
     if (selectorIsCutCopyPaste(invocation.selector)) {
         NSObject *sender;
         [invocation getArgument:&sender atIndex:2];
+        qCDebug(lcQpaMenus) << "Forwarding" << invocation.selector << "from" << sender;
         if (auto *nativeItem = qt_objc_cast<QCocoaNSMenuItem *>(sender)) {
             [self qt_itemFired:nativeItem];
             return;

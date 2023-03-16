@@ -9,6 +9,7 @@
 #include "qcocoamenuloader.h"
 #include "qcocoaapplication.h" // for custom application category
 #include "qcocoaapplicationdelegate.h"
+#include "qcocoahelpers.h"
 
 #include <QtGui/QGuiApplication>
 #include <QtCore/QDebug>
@@ -30,16 +31,12 @@ QCocoaMenuBar::QCocoaMenuBar()
     });
 
     m_nativeMenu = [[NSMenu alloc] init];
-#ifdef QT_COCOA_ENABLE_MENU_DEBUG
-    qDebug() << "Construct QCocoaMenuBar" << this << m_nativeMenu;
-#endif
+    qCDebug(lcQpaMenus) << "Constructed" << this << "with" << m_nativeMenu;
 }
 
 QCocoaMenuBar::~QCocoaMenuBar()
 {
-#ifdef QT_COCOA_ENABLE_MENU_DEBUG
-    qDebug() << "~QCocoaMenuBar" << this;
-#endif
+    qCDebug(lcQpaMenus) << "Destructing" << this << "with" << m_nativeMenu;;
     for (auto menu : std::as_const(m_menus)) {
         if (!menu)
             continue;
@@ -93,17 +90,16 @@ void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *befor
 {
     QCocoaMenu *menu = static_cast<QCocoaMenu *>(platformMenu);
     QCocoaMenu *beforeMenu = static_cast<QCocoaMenu *>(before);
-#ifdef QT_COCOA_ENABLE_MENU_DEBUG
-    qDebug() << "QCocoaMenuBar" << this << "insertMenu" << menu << "before" << before;
-#endif
+
+    qCDebug(lcQpaMenus) << "Inserting" << menu << "before" << before << "into" << this;
 
     if (m_menus.contains(QPointer<QCocoaMenu>(menu))) {
-        qWarning("This menu already belongs to the menubar, remove it first");
+        qCWarning(lcQpaMenus, "This menu already belongs to the menubar, remove it first");
         return;
     }
 
     if (beforeMenu && !m_menus.contains(QPointer<QCocoaMenu>(beforeMenu))) {
-        qWarning("The before menu does not belong to the menubar");
+        qCWarning(lcQpaMenus, "The before menu does not belong to the menubar");
         return;
     }
 
@@ -137,7 +133,7 @@ void QCocoaMenuBar::removeMenu(QPlatformMenu *platformMenu)
 {
     QCocoaMenu *menu = static_cast<QCocoaMenu *>(platformMenu);
     if (!m_menus.contains(menu)) {
-        qWarning("Trying to remove a menu that does not belong to the menubar");
+        qCWarning(lcQpaMenus) << "Trying to remove" << menu << "that does not belong to" << this;
         return;
     }
 
@@ -207,9 +203,7 @@ NSMenuItem *QCocoaMenuBar::nativeItemForMenu(QCocoaMenu *menu) const
 
 void QCocoaMenuBar::handleReparent(QWindow *newParentWindow)
 {
-#ifdef QT_COCOA_ENABLE_MENU_DEBUG
-    qDebug() << "QCocoaMenuBar" << this << "handleReparent" << newParentWindow;
-#endif
+    qCDebug(lcQpaMenus) << "Reparenting" << this << "to" << newParentWindow;
 
     if (!m_window.isNull())
         m_window->setMenubar(nullptr);
@@ -277,9 +271,8 @@ void QCocoaMenuBar::updateMenuBarImmediately()
     if (!mb)
         return;
 
-#ifdef QT_COCOA_ENABLE_MENU_DEBUG
-    qDebug() << "QCocoaMenuBar" << "updateMenuBarImmediately" << cw;
-#endif
+    qCDebug(lcQpaMenus) << "Updating" << mb << "immediately for" << cw;
+
     bool disableForModal = mb->shouldDisable(cw);
 
     for (auto menu : std::as_const(mb->m_menus)) {
