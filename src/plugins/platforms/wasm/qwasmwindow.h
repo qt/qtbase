@@ -96,7 +96,8 @@ private:
     static constexpr auto minSizeForRegularWindows = 100;
 
     void invalidate();
-    bool hasFrame() const;
+    bool hasBorder() const;
+    bool hasShadow() const;
     bool hasMaximizeButton() const;
     void applyWindowState();
 

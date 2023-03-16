@@ -374,9 +374,10 @@ void QWasmWindow::setWindowFlags(Qt::WindowFlags flags)
     if (flags.testFlag(Qt::WindowStaysOnTopHint) != m_flags.testFlag(Qt::WindowStaysOnTopHint))
         m_compositor->windowPositionPreferenceChanged(this, flags);
     m_flags = flags;
-    dom::syncCSSClassWith(m_qtWindow, "has-frame", hasFrame());
-    dom::syncCSSClassWith(m_qtWindow, "has-shadow", !flags.testFlag(Qt::NoDropShadowWindowHint));
+    dom::syncCSSClassWith(m_qtWindow, "has-border", hasBorder());
+    dom::syncCSSClassWith(m_qtWindow, "has-shadow", hasShadow());
     dom::syncCSSClassWith(m_qtWindow, "has-title", flags.testFlag(Qt::WindowTitleHint));
+    dom::syncCSSClassWith(m_qtWindow, "frameless", flags.testFlag(Qt::FramelessWindowHint));
     dom::syncCSSClassWith(m_qtWindow, "transparent-for-input",
                           flags.testFlag(Qt::WindowTransparentForInput));
 
@@ -442,7 +443,7 @@ void QWasmWindow::applyWindowState()
     else
         newGeom = normalGeometry();
 
-    dom::syncCSSClassWith(m_qtWindow, "has-frame", hasFrame());
+    dom::syncCSSClassWith(m_qtWindow, "has-border", hasBorder());
     dom::syncCSSClassWith(m_qtWindow, "maximized", isMaximized);
 
     m_nonClientArea->titleBar()->setRestoreVisible(isMaximized);
@@ -559,10 +560,16 @@ void QWasmWindow::requestUpdate()
     m_compositor->requestUpdateWindow(this, QWasmCompositor::UpdateRequestDelivery);
 }
 
-bool QWasmWindow::hasFrame() const
+bool QWasmWindow::hasBorder() const
 {
     return !m_state.testFlag(Qt::WindowFullScreen) && !m_flags.testFlag(Qt::FramelessWindowHint)
             && !windowIsPopupType(m_flags);
+}
+
+bool QWasmWindow::hasShadow() const
+{
+    return !m_flags.testFlag(Qt::NoDropShadowWindowHint)
+            && !m_flags.testFlag(Qt::FramelessWindowHint);
 }
 
 bool QWasmWindow::hasMaximizeButton() const
