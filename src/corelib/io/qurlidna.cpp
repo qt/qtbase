@@ -327,12 +327,12 @@ static bool lessThan(const QChar *a, int l, const char *c)
         return false;
 
     while (*c) {
-        if (uc == e || *uc != *c)
+        if (uc == e || *uc != static_cast<unsigned char>(*c))
             break;
         ++uc;
         ++c;
     }
-    return (uc == e ? *c : *uc < *c);
+    return uc == e ? *c : (*uc < static_cast<unsigned char>(*c));
 }
 
 static bool equal(const QChar *a, int l, const char *b)
