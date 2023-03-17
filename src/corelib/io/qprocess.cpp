@@ -1145,10 +1145,8 @@ void QProcessPrivate::processFinished()
 
     cleanup();
 
-    if (crashed) {
-        exitStatus = QProcess::CrashExit;
+    if (exitStatus == QProcess::CrashExit)
         setErrorAndEmit(QProcess::Crashed);
-    }
 
     // we received EOF now:
     emit q->readChannelFinished();
