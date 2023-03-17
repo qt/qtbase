@@ -1,4 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2023 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef QPROCESS_H
@@ -173,6 +174,23 @@ public:
 #if defined(Q_OS_UNIX) || defined(Q_QDOC)
     std::function<void(void)> childProcessModifier() const;
     void setChildProcessModifier(const std::function<void(void)> &modifier);
+
+    enum UnixProcessFlag : quint32 {
+        ResetSignalHandlers                 = 0x0001, // like POSIX_SPAWN_SETSIGDEF
+        IgnoreSigPipe                       = 0x0002,
+        // some room if we want to add IgnoreSigHup or so
+        CloseNonStandardFileDescriptors     = 0x0010,
+    };
+    Q_DECLARE_FLAGS(UnixProcessFlags, UnixProcessFlag)
+    struct UnixProcessParameters
+    {
+        UnixProcessFlags flags = {};
+
+        quint32 _reserved[7] {};
+    };
+    UnixProcessParameters unixProcessParameters() const noexcept;
+    void setUnixProcessParameters(const UnixProcessParameters &params);
+    void setUnixProcessParameters(UnixProcessFlags flagsOnly);
 #endif
 
     QString workingDirectory() const;
@@ -255,6 +273,10 @@ private:
     Q_PRIVATE_SLOT(d_func(), bool _q_startupNotification())
     Q_PRIVATE_SLOT(d_func(), void _q_processDied())
 };
+
+#ifdef Q_OS_UNIX
+Q_DECLARE_OPERATORS_FOR_FLAGS(QProcess::UnixProcessFlags)
+#endif
 
 #endif // QT_CONFIG(process)
 

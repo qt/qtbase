@@ -36,6 +36,13 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/resource.h>
+#include <unistd.h>
+
+#if __has_include(<linux/close_range.h>)
+// FreeBSD's is in <unistd.h>
+#  include <linux/close_range.h>
+#endif
 
 #if QT_CONFIG(process)
 #include <forkfd.h>
@@ -576,6 +583,46 @@ static constexpr int FakeErrnoForThrow =
 #endif
         ;
 
+// See IMPORTANT notice below
+static void applyProcessParameters(const QProcess::UnixProcessParameters &params)
+{
+    // Apply Unix signal handler parameters.
+    // We don't expect signal() to fail, so we ignore its return value
+    bool ignore_sigpipe = params.flags.testFlag(QProcess::UnixProcessFlag::IgnoreSigPipe);
+    if (ignore_sigpipe)
+        signal(SIGPIPE, SIG_IGN);                   // don't use qt_ignore_sigpipe!
+    if (params.flags.testFlag(QProcess::UnixProcessFlag::ResetSignalHandlers)) {
+        for (int sig = 1; sig < NSIG; ++sig) {
+            if (!ignore_sigpipe || sig != SIGPIPE)
+                signal(sig, SIG_DFL);
+        }
+    }
+
+    // Close all file descriptors above stderr.
+    // This isn't expected to fail, so we ignore close()'s return value.
+    if (params.flags.testFlag(QProcess::UnixProcessFlag::CloseNonStandardFileDescriptors)) {
+        int r = -1;
+        int fd = STDERR_FILENO + 1;
+#if QT_CONFIG(close_range)
+        // On FreeBSD, this probably won't fail.
+        // On Linux, this will fail with ENOSYS before kernel 5.9.
+        r = close_range(fd, INT_MAX, 0);
+#endif
+        if (r == -1) {
+            // We *could* read /dev/fd to find out what file descriptors are
+            // open, but we won't. We CANNOT use opendir() here because it
+            // allocates memory. Using getdents(2) plus either strtoul() or
+            // std::from_chars() would be acceptable.
+            int max_fd = INT_MAX;
+            if (struct rlimit limit; getrlimit(RLIMIT_NOFILE, &limit) == 0)
+                max_fd = limit.rlim_cur;
+            for ( ; fd < max_fd; ++fd)
+                close(fd);
+        }
+    }
+}
+
+// the noexcept here adds an extra layer of protection
 static const char *callChildProcessModifier(const QProcessPrivate::UnixExtras *unixExtras) noexcept
 {
     QT_TRY {
@@ -597,8 +644,13 @@ static const char *doExecChild(char **argv, char **envp, int workingDirFd,
         return "fchdir";
 
     if (unixExtras) {
+        // FIRST we call the user modifier function, before we dropping
+        // privileges or closing non-standard file descriptors
         if (const char *what = callChildProcessModifier(unixExtras))
             return what;
+
+        // then we apply our other user-provided parameters
+        applyProcessParameters(unixExtras->processParameters);
     }
 
     // execute the process

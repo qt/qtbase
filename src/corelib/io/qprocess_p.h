@@ -282,6 +282,7 @@ public:
 #else
     struct UnixExtras {
         std::function<void(void)> childProcessModifier;
+        QProcess::UnixProcessParameters processParameters;
     };
     std::unique_ptr<UnixExtras> unixExtras;
     QSocketNotifier *stateNotifier = nullptr;

@@ -114,6 +114,9 @@ private slots:
     void setChildProcessModifier_data();
     void setChildProcessModifier();
     void throwInChildProcessModifier();
+    void unixProcessParameters_data();
+    void unixProcessParameters();
+    void unixProcessParametersAndChildModifier();
 #endif
     void exitCodeTest();
     void systemEnvironment();
@@ -1437,6 +1440,110 @@ void tst_QProcess::createProcessArgumentsModifier()
     QCOMPARE(calls, 1);
 }
 #endif // Q_OS_WIN
+
+#ifdef Q_OS_UNIX
+void tst_QProcess::unixProcessParameters_data()
+{
+    QTest::addColumn<QProcess::UnixProcessParameters>("params");
+    QTest::addColumn<QString>("cmd");
+    QTest::newRow("defaults") << QProcess::UnixProcessParameters{} << QString();
+
+    auto addRow = [](const char *cmd, QProcess::UnixProcessFlags flags) {
+        QProcess::UnixProcessParameters params = {};
+        params.flags = flags;
+        QTest::addRow("%s", cmd) << params << cmd;
+    };
+    using P = QProcess::UnixProcessFlag;
+    addRow("reset-sighand", P::ResetSignalHandlers);
+    addRow("ignore-sigpipe", P::IgnoreSigPipe);
+    addRow("std-file-descriptors", P::CloseNonStandardFileDescriptors);
+}
+
+void tst_QProcess::unixProcessParameters()
+{
+    QFETCH(QProcess::UnixProcessParameters, params);
+    QFETCH(QString, cmd);
+
+    // set up a few things
+    struct Scope {
+        int devnull;
+        struct sigaction old_sigusr1, old_sigpipe;
+        Scope()
+        {
+            int fd = open("/dev/null", O_RDONLY);
+            devnull = fcntl(fd, F_DUPFD, 100);
+            close(fd);
+
+            // we ignore SIGUSR1 and reset SIGPIPE to Terminate
+            struct sigaction act = {};
+            sigemptyset(&act.sa_mask);
+            act.sa_handler = SIG_IGN;
+            sigaction(SIGUSR1, &act, &old_sigusr1);
+            act.sa_handler = SIG_DFL;
+            sigaction(SIGPIPE, &act, &old_sigpipe);
+        }
+        ~Scope()
+        {
+            if (devnull != -1)
+                dismiss();
+        }
+        void dismiss()
+        {
+            close(devnull);
+            sigaction(SIGUSR1, &old_sigusr1, nullptr);
+            sigaction(SIGPIPE, &old_sigpipe, nullptr);
+            devnull = -1;
+        }
+    } scope;
+
+    QProcess process;
+    process.setUnixProcessParameters(params);
+    process.setStandardInputFile(QProcess::nullDevice());   // so we can't mess with SIGPIPE
+    process.setProgram("testUnixProcessParameters/testUnixProcessParameters");
+    process.setArguments({ cmd, QString::number(scope.devnull) });
+    process.start();
+    QVERIFY2(process.waitForStarted(5000), qPrintable(process.errorString()));
+    QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.readAllStandardError(), QString());
+    QCOMPARE(process.readAll(), QString());
+    QCOMPARE(process.exitCode(), 0);
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+}
+
+void tst_QProcess::unixProcessParametersAndChildModifier()
+{
+    static constexpr char message[] = "Message from the handler function\n";
+    static_assert(std::char_traits<char>::length(message) <= PIPE_BUF);
+    QProcess process;
+    int pipes[2];
+
+    QVERIFY2(pipe(pipes) == 0, qPrintable(qt_error_string()));
+    auto pipeGuard0 = qScopeGuard([=] { close(pipes[0]); });
+    {
+        auto pipeGuard1 = qScopeGuard([=] { close(pipes[1]); });
+
+        // verify that our modifier runs before the parameters are applied
+        process.setChildProcessModifier([=] {
+            write(pipes[1], message, strlen(message));
+        });
+        auto flags = QProcess::UnixProcessFlag::CloseNonStandardFileDescriptors;
+        process.setUnixProcessParameters({ flags });
+        process.setProgram("testUnixProcessParameters/testUnixProcessParameters");
+        process.setArguments({ "std-file-descriptors", QString::number(pipes[1]) });
+        process.start();
+        QVERIFY2(process.waitForStarted(5000), qPrintable(process.errorString()));
+    } // closes the writing end of the pipe
+
+    QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.readAllStandardError(), QString());
+    QCOMPARE(process.readAll(), QString());
+
+    char buf[2 * sizeof(message)];
+    int r = read(pipes[0], buf, sizeof(buf));
+    QVERIFY2(r >= 0, qPrintable(qt_error_string()));
+    QCOMPARE(QByteArrayView(buf, r), message);
+}
+#endif
 
 #ifdef Q_OS_UNIX
 static constexpr char messageFromChildProcess[] = "Message from the child process";

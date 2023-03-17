@@ -98,6 +98,18 @@ clock_gettime(CLOCK_MONOTONIC, &ts);
 }
 ")
 
+# close_range
+qt_config_compile_test(close_range
+    LABEL "close_range()"
+    CODE
+"#include <unistd.h>
+
+int main()
+{
+    return close_range(3, 1024, 0) != 0;
+}
+")
+
 # cloexec
 qt_config_compile_test(cloexec
     LABEL "O_CLOEXEC"
@@ -551,6 +563,11 @@ qt_feature("clock-monotonic" PUBLIC
     CONDITION QT_FEATURE_clock_gettime AND TEST_clock_monotonic
 )
 qt_feature_definition("clock-monotonic" "QT_NO_CLOCK_MONOTONIC" NEGATE VALUE "1")
+qt_feature("close_range" PRIVATE
+    LABEL "close_range()"
+    CONDITION QT_FEATURE_process AND TEST_close_range
+    AUTODETECT UNIX
+)
 qt_feature("doubleconversion" PRIVATE
     LABEL "DoubleConversion"
 )
