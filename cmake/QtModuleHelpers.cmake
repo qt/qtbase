@@ -1093,6 +1093,10 @@ function(qt_describe_module target)
     endif()
 
     set(extra_build_information "")
+    if(NOT QT_NAMESPACE STREQUAL "")
+        string(APPEND extra_build_information "
+        \"namespace\": \"${QT_NAMESPACE}\",")
+    endif()
     if(ANDROID)
         string(APPEND extra_build_information "
         \"android\": {
