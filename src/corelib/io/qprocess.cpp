@@ -922,7 +922,7 @@ void QProcessPrivate::setErrorAndEmit(QProcess::ProcessError error, const QStrin
     Q_Q(QProcess);
     Q_ASSERT(error != QProcess::UnknownError);
     setError(error, description);
-    emit q->errorOccurred(processError);
+    emit q->errorOccurred(QProcess::ProcessError(processError));
 }
 
 /*!
@@ -1154,7 +1154,7 @@ void QProcessPrivate::processFinished()
     //emit q->standardOutputClosed();
     //emit q->standardErrorClosed();
 
-    emit q->finished(exitCode, exitStatus);
+    emit q->finished(exitCode, QProcess::ExitStatus(exitStatus));
 
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::processFinished(): process is dead");
@@ -1239,7 +1239,7 @@ QProcess::~QProcess()
 QProcess::ProcessChannelMode QProcess::processChannelMode() const
 {
     Q_D(const QProcess);
-    return d->processChannelMode;
+    return ProcessChannelMode(d->processChannelMode);
 }
 
 /*!
@@ -1269,7 +1269,7 @@ void QProcess::setProcessChannelMode(ProcessChannelMode mode)
 QProcess::InputChannelMode QProcess::inputChannelMode() const
 {
     Q_D(const QProcess);
-    return d->inputChannelMode;
+    return InputChannelMode(d->inputChannelMode);
 }
 
 /*!
@@ -1558,7 +1558,7 @@ void QProcess::setCreateProcessArgumentsModifier(CreateProcessArgumentModifier m
 std::function<void(void)> QProcess::childProcessModifier() const
 {
     Q_D(const QProcess);
-    return d->childProcessModifier;
+    return d->unixExtras ? d->unixExtras->childProcessModifier : std::function<void(void)>();
 }
 
 /*!
@@ -1602,7 +1602,9 @@ std::function<void(void)> QProcess::childProcessModifier() const
 void QProcess::setChildProcessModifier(const std::function<void(void)> &modifier)
 {
     Q_D(QProcess);
-    d->childProcessModifier = modifier;
+    if (!d->unixExtras)
+        d->unixExtras.reset(new QProcessPrivate::UnixExtras);
+    d->unixExtras->childProcessModifier = modifier;
 }
 #endif
 
@@ -1693,7 +1695,7 @@ qint64 QProcess::bytesToWrite() const
 QProcess::ProcessError QProcess::error() const
 {
     Q_D(const QProcess);
-    return d->processError;
+    return ProcessError(d->processError);
 }
 
 /*!
@@ -1704,7 +1706,7 @@ QProcess::ProcessError QProcess::error() const
 QProcess::ProcessState QProcess::state() const
 {
     Q_D(const QProcess);
-    return d->processState;
+    return ProcessState(d->processState);
 }
 
 /*!
@@ -2373,7 +2375,7 @@ int QProcess::exitCode() const
 QProcess::ExitStatus QProcess::exitStatus() const
 {
     Q_D(const QProcess);
-    return d->exitStatus;
+    return ExitStatus(d->exitStatus);
 }
 
 /*!

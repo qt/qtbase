@@ -544,8 +544,10 @@ void QProcessPrivate::execChild(const char *workingDir, char **argv, char **envp
         goto report_errno;
     }
 
-    if (childProcessModifier)
-        childProcessModifier();
+    if (unixExtras) {
+        if (unixExtras->childProcessModifier)
+            unixExtras->childProcessModifier();
+    }
 
     // execute the process
     if (!envp) {
