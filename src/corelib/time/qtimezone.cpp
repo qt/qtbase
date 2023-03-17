@@ -1347,12 +1347,18 @@ QTimeZone QTimeZone::utc()
 
 bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &ianaId)
 {
+#if defined(Q_OS_UNIX) && !(defined(Q_OS_ANDROID) || defined(Q_OS_DARWIN))
+    // Keep #if-ery consistent with selection of QTzTimeZonePrivate in
+    // newBackendTimeZone(). Skip the pre-check, as the TZ backend accepts POSIX
+    // zone IDs, which need not be valid IANA IDs.
+#else
     // isValidId is not strictly required, but faster to weed out invalid
     // IDs as availableTimeZoneIds() may be slow
     if (!QTimeZonePrivate::isValidId(ianaId))
         return false;
-    return QUtcTimeZonePrivate().isTimeZoneIdAvailable(ianaId) ||
-           global_tz->backend->isTimeZoneIdAvailable(ianaId);
+#endif
+    return QUtcTimeZonePrivate().isTimeZoneIdAvailable(ianaId)
+        || global_tz->backend->isTimeZoneIdAvailable(ianaId);
 }
 
 static QList<QByteArray> set_union(const QList<QByteArray> &l1, const QList<QByteArray> &l2)
