@@ -62,9 +62,9 @@ private slots:
     void task_QTBUG_4963_setHeaderDataWithProxyModel();
 
 private:
-    void generic_data(const QString &engine=QString());
-    void dropTestTables(QSqlDatabase db);
-    void createTestTables(QSqlDatabase db);
+    void generic_data(const QString &engine = QString());
+    void dropTestTables(const QSqlDatabase &db);
+    void createTestTables(const QSqlDatabase &db);
     void populateTestTables(QSqlDatabase db);
     tst_Databases dbs;
 };
@@ -73,8 +73,8 @@ private:
 class DBTestModel: public QSqlQueryModel
 {
 public:
-    DBTestModel(QObject *parent = nullptr): QSqlQueryModel(parent) {}
-    QModelIndex indexInQuery(const QModelIndex &item) const override { return QSqlQueryModel::indexInQuery(item); }
+    using QSqlQueryModel::QSqlQueryModel;
+    using QSqlQueryModel::indexInQuery;
 };
 
 tst_QSqlQueryModel::tst_QSqlQueryModel()
@@ -88,8 +88,8 @@ tst_QSqlQueryModel::~tst_QSqlQueryModel()
 void tst_QSqlQueryModel::initTestCase()
 {
     QVERIFY(dbs.open());
-    for (QStringList::ConstIterator it = dbs.dbNames.begin(); it != dbs.dbNames.end(); ++it) {
-        QSqlDatabase db = QSqlDatabase::database((*it));
+    for (const auto &dbName : std::as_const(dbs.dbNames)) {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
         CHECK_DATABASE(db);
         dropTestTables(db); //in case of leftovers
         createTestTables(db);
@@ -99,15 +99,15 @@ void tst_QSqlQueryModel::initTestCase()
 
 void tst_QSqlQueryModel::cleanupTestCase()
 {
-    for (QStringList::ConstIterator it = dbs.dbNames.begin(); it != dbs.dbNames.end(); ++it) {
-        QSqlDatabase db = QSqlDatabase::database((*it));
+    for (const auto &dbName : std::as_const(dbs.dbNames)) {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
         CHECK_DATABASE(db);
         dropTestTables(db);
     }
     dbs.close();
 }
 
-void tst_QSqlQueryModel::dropTestTables(QSqlDatabase db)
+void tst_QSqlQueryModel::dropTestTables(const QSqlDatabase &db)
 {
     QStringList tableNames;
     tableNames << qTableName("test", __FILE__, db)
@@ -117,7 +117,7 @@ void tst_QSqlQueryModel::dropTestTables(QSqlDatabase db)
     tst_Databases::safeDropTables(db, tableNames);
 }
 
-void tst_QSqlQueryModel::createTestTables(QSqlDatabase db)
+void tst_QSqlQueryModel::createTestTables(const QSqlDatabase &db)
 {
     dropTestTables(db);
     QSqlQuery q(db);
