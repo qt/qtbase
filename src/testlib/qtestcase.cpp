@@ -707,7 +707,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
     QTest::testFunctions.clear();
     QTest::testTags.clear();
 
-#if defined(Q_OS_MAC) && defined(HAVE_XCTEST)
+#if defined(Q_OS_DARWIN) && defined(HAVE_XCTEST)
     if (QXcodeTestLogger::canLogTestProgress())
         logFormat = QTestLog::XCTest;
 #endif

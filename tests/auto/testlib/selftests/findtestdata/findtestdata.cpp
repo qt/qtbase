@@ -26,7 +26,7 @@ void FindTestData::initTestCase()
     // verify that our qt.conf is working as expected.
     QString app_path = QCoreApplication::applicationDirPath();
     QString install_path = app_path
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
         + "/Contents"
 #endif
         + "/tests";
@@ -75,7 +75,7 @@ void FindTestData::paths()
 
     // 2. at the test install path (faked via qt.conf)
     QString testfile_path2 = app_path
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
         + "/Contents"
 #endif
         + "/tests/findtestdata/" TESTFILE;
