@@ -3672,6 +3672,12 @@ void QOpenGLTexture::setData(const QImage& image, MipMapGeneration genMipMaps)
         return;
     }
 
+    QImage glImage = image.convertToFormat(QImage::Format_RGBA8888);
+    if (glImage.isNull()) {
+        qWarning("QOpenGLTexture::setData() failed to convert image");
+        return;
+    }
+
     if (context->isOpenGLES() && context->format().majorVersion() < 3)
         setFormat(QOpenGLTexture::RGBAFormat);
     else
@@ -3682,7 +3688,6 @@ void QOpenGLTexture::setData(const QImage& image, MipMapGeneration genMipMaps)
     allocateStorage(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8);
 
     // Upload pixel data and generate mipmaps
-    QImage glImage = image.convertToFormat(QImage::Format_RGBA8888);
     QOpenGLPixelTransferOptions uploadOptions;
     uploadOptions.setAlignment(1);
     setData(0, QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, glImage.constBits(), &uploadOptions);
