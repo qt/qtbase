@@ -45,7 +45,7 @@
     contain any plugin specific functionality and their implementations
     are trivial; we will therefore leap past them and head on to the \c
     SimpleStylePlugin and the \c main() function. After we have looked
-    at that, we examine the plugin's profile.
+    at that, we examine the plugin's \c{.pro} file.
 
 
     \section1 SimpleStylePlugin Class Definition
@@ -89,14 +89,14 @@
     produces them with \l{QStyleFactory::}{create()} (it is a
     wrapper around all the style plugins).
 
-    \section1 The Simple Style Plugin Profile
+    \section1 The Simple Style Plugin's QMake Project File
 
-    The \c SimpleStylePlugin lives in its own directory and have
-    its own profile:
+    The \c SimpleStylePlugin lives in its own directory and has
+    its own \c{.pro} file:
 
     \snippet tools/styleplugin/plugin/plugin.pro 0
 
-    In the plugin profile we need to set the lib template as we are
+    In the plugin \c{.pro} file we need to set the lib template as we are
     building a shared library instead of an executable. We must also
     set the config to plugin. We set the library to be stored in the
     \c{styles} folder next to the main executable because this is a path
