@@ -166,6 +166,18 @@ void QCocoaMenuBar::syncMenu_helper(QPlatformMenu *menu, bool menubarUpdate)
     for (QCocoaMenuItem *item : cocoaMenu->items())
         cocoaMenu->syncMenuItem_helper(item, menubarUpdate);
 
+    const QString captionNoAmpersand = QString::fromNSString(cocoaMenu->nsMenu().title)
+                                       .remove(u'&');
+    if (captionNoAmpersand == QCoreApplication::translate("QCocoaMenu", "Edit")) {
+        // prevent recursion from QCocoaMenu::insertMenuItem - when the menu is visible
+        // it calls syncMenu again. QCocoaMenu::setVisible just sets the bool, which then
+        // gets evaluated in the code after this block.
+        const bool wasVisible = cocoaMenu->isVisible();
+        cocoaMenu->setVisible(false);
+        insertDefaultEditItems(cocoaMenu);
+        cocoaMenu->setVisible(wasVisible);
+    }
+
     BOOL shouldHide = YES;
     if (cocoaMenu->isVisible()) {
         // If the NSMenu has no visible items, or only separators, we should hide it
@@ -302,22 +314,6 @@ void QCocoaMenuBar::updateMenuBarImmediately()
     [NSApp setMainMenu:mb->nsMenu()];
     insertWindowMenu();
     [loader qtTranslateApplicationMenu];
-
-    for (auto menu : std::as_const(mb->m_menus)) {
-        if (!menu)
-            continue;
-
-        const QString captionNoAmpersand = QString::fromNSString(menu->nsMenu().title).remove(u'&');
-        if (captionNoAmpersand != QCoreApplication::translate("QCocoaMenu", "Edit"))
-            continue;
-
-        NSMenuItem *item = mb->nativeItemForMenu(menu);
-        auto *nsMenu = item.submenu;
-        if ([nsMenu indexOfItemWithTarget:NSApp andAction:@selector(startDictation:)] == -1) {
-            // AppKit was not able to recognize the special role of this menu item.
-            mb->insertDefaultEditItems(menu);
-        }
-    }
 }
 
 void QCocoaMenuBar::insertWindowMenu()
