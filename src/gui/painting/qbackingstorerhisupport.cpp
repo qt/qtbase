@@ -83,6 +83,12 @@ bool QBackingStoreRhiSupport::create()
         QRhiD3D11InitParams params;
         params.enableDebugLayer = m_config.isDebugLayerEnabled();
         rhi = QRhi::create(QRhi::D3D11, &params, flags);
+        if (!rhi && !flags.testFlag(QRhi::PreferSoftwareRenderer)) {
+            qCDebug(lcQpaBackingStore, "Failed to create a D3D device with default settings; "
+                                       "attempting to get a software rasterizer backed device instead");
+            flags |= QRhi::PreferSoftwareRenderer;
+            rhi = QRhi::create(QRhi::D3D11, &params, flags);
+        }
     }
 #endif
 
