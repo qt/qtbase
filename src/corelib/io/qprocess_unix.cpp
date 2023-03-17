@@ -441,6 +441,16 @@ void QProcessPrivate::startProcess()
                          q, SLOT(_q_startupNotification()));
     }
 
+    int workingDirFd = -1;
+    if (!workingDirectory.isEmpty()) {
+        workingDirFd = qt_safe_open(QFile::encodeName(workingDirectory), QT_OPEN_RDONLY | O_DIRECTORY);
+        if (workingDirFd == -1) {
+            setErrorAndEmit(QProcess::FailedToStart, "chdir: "_L1 + qt_error_string());
+            cleanup();
+            return;
+        }
+    }
+
     // Start the process (platform dependent)
     q->setProcessState(QProcess::Starting);
 
@@ -448,17 +458,9 @@ void QProcessPrivate::startProcess()
     const CharPointerList argv(resolveExecutable(program), arguments);
     const CharPointerList envp(environment.d.constData());
 
-    // Encode the working directory if it's non-empty, otherwise just pass 0.
-    const char *workingDirPtr = nullptr;
-    QByteArray encodedWorkingDirectory;
-    if (!workingDirectory.isEmpty()) {
-        encodedWorkingDirectory = QFile::encodeName(workingDirectory);
-        workingDirPtr = encodedWorkingDirectory.constData();
-    }
-
     // Start the child.
-    auto execChild1 = [this, workingDirPtr, &argv, &envp]() {
-        execChild(workingDirPtr, argv.pointers.get(), envp.pointers.get());
+    auto execChild1 = [this, workingDirFd, &argv, &envp]() {
+        execChild(workingDirFd, argv.pointers.get(), envp.pointers.get());
     };
     auto execChild2 = [](void *lambda) {
         static_cast<decltype(execChild1) *>(lambda)->operator()();
@@ -476,6 +478,9 @@ void QProcessPrivate::startProcess()
 
     forkfd = ::vforkfd(ffdflags, &pid, execChild2, &execChild1);
     int lastForkErrno = errno;
+
+    if (workingDirFd != -1)
+        close(workingDirFd);
 
     if (forkfd == -1) {
         // Cleanup, report error and return
@@ -525,7 +530,7 @@ void QProcessPrivate::startProcess()
 // This function is called in a vfork() context on some OSes (notably, Linux
 // with forkfd), so it MUST NOT modify any non-local variable because it's
 // still sharing memory with the parent process.
-void QProcessPrivate::execChild(const char *workingDir, char **argv, char **envp) const
+void QProcessPrivate::execChild(int workingDir, char **argv, char **envp) const
 {
     ::signal(SIGPIPE, SIG_DFL);         // reset the signal that we ignored
 
@@ -538,9 +543,9 @@ void QProcessPrivate::execChild(const char *workingDir, char **argv, char **envp
     qt_safe_close(childStartedPipe[0]);
 
     // enter the working directory
-    if (workingDir && QT_CHDIR(workingDir) == -1) {
+    if (workingDir != -1 && fchdir(workingDir) == -1) {
         // failed, stop the process
-        strcpy(error.function, "chdir");
+        strcpy(error.function, "fchdir");
         goto report_errno;
     }
 
@@ -914,7 +919,6 @@ void QProcessPrivate::waitForDeadChild()
 
 bool QProcessPrivate::startDetached(qint64 *pid)
 {
-    QByteArray encodedWorkingDirectory = QFile::encodeName(workingDirectory);
 
 #ifdef PIPE_BUF
     static_assert(PIPE_BUF >= sizeof(ChildError));
@@ -935,6 +939,15 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         return false;
     }
 
+    int workingDirFd = -1;
+    if (!workingDirectory.isEmpty()) {
+        workingDirFd = qt_safe_open(QFile::encodeName(workingDirectory), QT_OPEN_RDONLY | O_DIRECTORY);
+        if (workingDirFd == -1) {
+            setErrorAndEmit(QProcess::FailedToStart, "chdir: "_L1 + qt_error_string(errno));
+            return false;
+        }
+    }
+
     const CharPointerList argv(resolveExecutable(program), arguments);
     const CharPointerList envp(environment.d.constData());
 
@@ -953,10 +966,8 @@ bool QProcessPrivate::startDetached(qint64 *pid)
             ::_exit(1);
         };
 
-        if (!encodedWorkingDirectory.isEmpty()) {
-            if (QT_CHDIR(encodedWorkingDirectory.constData()) < 0)
-                reportFailed("chdir: ");
-        }
+        if (workingDirFd != -1 && fchdir(workingDirFd) == -1)
+            reportFailed("fchdir: ");
 
         pid_t doubleForkPid = fork();
         if (doubleForkPid == 0) {
@@ -980,6 +991,8 @@ bool QProcessPrivate::startDetached(qint64 *pid)
 
     int savedErrno = errno;
     closeChannels();
+    if (workingDirFd != -1)
+        close(workingDirFd);
 
     if (childPid == -1) {
         setErrorAndEmit(QProcess::FailedToStart, "fork: "_L1 + qt_error_string(savedErrno));
