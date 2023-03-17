@@ -29,7 +29,7 @@ static QTimeZonePrivate *newBackendTimeZone()
     return new QUtcTimeZonePrivate();
 #endif
 #else
-#if defined Q_OS_MAC
+#if defined(Q_OS_DARWIN)
     return new QMacTimeZonePrivate();
 #elif defined(Q_OS_ANDROID)
     return new QAndroidTimeZonePrivate();
@@ -37,7 +37,7 @@ static QTimeZonePrivate *newBackendTimeZone()
     return new QTzTimeZonePrivate();
 #elif QT_CONFIG(icu)
     return new QIcuTimeZonePrivate();
-#elif defined Q_OS_WIN
+#elif defined(Q_OS_WIN)
     return new QWinTimeZonePrivate();
 #else
     return new QUtcTimeZonePrivate();
@@ -56,7 +56,7 @@ static QTimeZonePrivate *newBackendTimeZone(const QByteArray &ianaId)
     return new QUtcTimeZonePrivate(ianaId);
 #endif
 #else
-#if defined Q_OS_MAC
+#if defined(Q_OS_DARWIN)
     return new QMacTimeZonePrivate(ianaId);
 #elif defined(Q_OS_ANDROID)
     return new QAndroidTimeZonePrivate(ianaId);
@@ -64,7 +64,7 @@ static QTimeZonePrivate *newBackendTimeZone(const QByteArray &ianaId)
     return new QTzTimeZonePrivate(ianaId);
 #elif QT_CONFIG(icu)
     return new QIcuTimeZonePrivate(ianaId);
-#elif defined Q_OS_WIN
+#elif defined(Q_OS_WIN)
     return new QWinTimeZonePrivate(ianaId);
 #else
     return new QUtcTimeZonePrivate(ianaId);
