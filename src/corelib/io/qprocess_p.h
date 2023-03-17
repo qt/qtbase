@@ -284,9 +284,9 @@ public:
         std::function<void(void)> childProcessModifier;
     };
     std::unique_ptr<UnixExtras> unixExtras;
-    qint64 pid = 0;
     QSocketNotifier *stateNotifier = nullptr;
     Q_PIPE childStartedPipe[2] = {INVALID_Q_PIPE, INVALID_Q_PIPE};
+    pid_t pid = 0;
     int forkfd = -1;
 #endif
 

@@ -474,8 +474,7 @@ void QProcessPrivate::startProcess()
     if (unixExtras && unixExtras->childProcessModifier)
         ffdflags |= FFD_USE_FORK;
 
-    pid_t childPid;
-    forkfd = ::vforkfd(ffdflags , &childPid, execChild2, &execChild1);
+    forkfd = ::vforkfd(ffdflags, &pid, execChild2, &execChild1);
     int lastForkErrno = errno;
 
     if (forkfd == -1) {
@@ -490,7 +489,6 @@ void QProcessPrivate::startProcess()
         return;
     }
 
-    pid = qint64(childPid);
     Q_ASSERT(pid > 0);
 
     // parent
@@ -724,7 +722,7 @@ void QProcessPrivate::terminateProcess()
     qDebug("QProcessPrivate::terminateProcess() pid=%jd", intmax_t(pid));
 #endif
     if (pid > 0)
-        ::kill(pid_t(pid), SIGTERM);
+        ::kill(pid, SIGTERM);
 }
 
 void QProcessPrivate::killProcess()
@@ -733,7 +731,7 @@ void QProcessPrivate::killProcess()
     qDebug("QProcessPrivate::killProcess() pid=%jd", intmax_t(pid));
 #endif
     if (pid > 0)
-        ::kill(pid_t(pid), SIGKILL);
+        ::kill(pid, SIGKILL);
 }
 
 bool QProcessPrivate::waitForStarted(const QDeadlineTimer &deadline)
