@@ -115,6 +115,15 @@
     depends on the result of QWidget::frameGeometry() and the
     capability of the window manager to do proper window placement,
     neither of which can be guaranteed.
+
+    \section2 Wayland Peculiarities
+
+    On Wayland, programmatically setting or getting the position of a top-level window from the
+    client-side is typically not supported. Technically speaking, it depends on the shell
+    interface. For typical desktop compositors, however, the default shell interface will be
+    \c{XDG Shell}, which does not support manual positioning of windows. In such cases, Qt will
+    ignore calls to set the top-level position of a window, and, when queried, the window position
+    will always be returned as QPoint(0, 0).
 */
 
 /*!

@@ -3547,6 +3547,10 @@ int QWidget::y() const
     See the \l{Window Geometry} documentation for an overview of geometry
     issues with windows.
 
+    \note Not all windowing systems support setting or querying top level window positions.
+    On such a system, programmatically moving windows may not have any effect, and artificial
+    values may be returned for the current positions, such as \c QPoint(0, 0).
+
     \sa frameGeometry, size, x(), y()
 */
 QPoint QWidget::pos() const
