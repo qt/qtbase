@@ -1588,15 +1588,6 @@ std::function<void(void)> QProcess::childProcessModifier() const
     "async-signal-safe" is advised). Most of the Qt API is unsafe inside this
     callback, including qDebug(), and may lead to deadlocks.
 
-    \note On some systems (notably, Linux), QProcess will use \c{vfork()}
-    semantics to start the child process, so this function must obey even
-    stricter constraints. First, because it is still sharing memory with the
-    parent process, it must not write to any non-local variable and must obey
-    proper ordering semantics when reading from them, to avoid data races.
-    Second, even more library functions may misbehave; therefore, this function
-    should only make use of low-level system calls, such as \c{read()},
-    \c{write()}, \c{setsid()}, \c{nice()}, and similar.
-
     \sa childProcessModifier()
 */
 void QProcess::setChildProcessModifier(const std::function<void(void)> &modifier)
