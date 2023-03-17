@@ -1156,8 +1156,11 @@ void tst_Widgets::tst_QMenu()
 
     testWindow()->show();
     QVERIFY(QTest::qWaitForWindowExposed(testWindow()));
-
     QRect testWindowRect(testWindow()->geometry());
+    // There can be rounded corners in the window and this leads to test
+    // case to be fuzzy. Adjust window rectangle that need to be captured
+    int adjustPixel = menu1.geometry().left();
+    testWindowRect.adjust(adjustPixel, adjustPixel, -adjustPixel, -adjustPixel);
     QBASELINE_CHECK_DEFERRED(takeScreenSnapshot(testWindowRect), "showitems");
 
     // Normal menu item with text
