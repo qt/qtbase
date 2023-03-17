@@ -1890,6 +1890,10 @@ void QWindow::setFramePosition(const QPoint &point)
     For interactively moving windows, see startSystemMove(). For interactively
     resizing windows, see startSystemResize().
 
+    \note Not all windowing systems support setting or querying top level window positions.
+    On such a system, programmatically moving windows may not have any effect, and artificial
+    values may be returned for the current positions, such as \c QPoint(0, 0).
+
     \sa position(), startSystemMove()
 */
 void QWindow::setPosition(const QPoint &pt)
@@ -1912,6 +1916,10 @@ void QWindow::setPosition(int posx, int posy)
 /*!
     \fn QPoint QWindow::position() const
     \brief Returns the position of the window on the desktop excluding any window frame
+
+    \note Not all windowing systems support setting or querying top level window positions.
+    On such a system, programmatically moving windows may not have any effect, and artificial
+    values may be returned for the current positions, such as \c QPoint(0, 0).
 
     \sa setPosition()
 */
