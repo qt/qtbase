@@ -368,6 +368,8 @@ struct StateSaver
         f->glGetIntegerv(GL_BLEND_SRC_ALPHA, blendFunc + 1);
         f->glGetIntegerv(GL_BLEND_DST_RGB, blendFunc + 2);
         f->glGetIntegerv(GL_BLEND_DST_ALPHA, blendFunc + 3);
+        scissor = f->glIsEnabled(GL_SCISSOR_TEST);
+        stencil = f->glIsEnabled(GL_STENCIL_TEST);
         f->glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &arrayBuf);
         if (vaoHelper->isValid())
             f->glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &vao);
@@ -391,17 +393,15 @@ struct StateSaver
             f->glFrontFace(frontFace);
             if (cull)
                 f->glEnable(GL_CULL_FACE);
-            else
-                f->glDisable(GL_CULL_FACE);
             if (depthTest)
                 f->glEnable(GL_DEPTH_TEST);
-            else
-                f->glDisable(GL_DEPTH_TEST);
-            if (blend)
-                f->glEnable(GL_BLEND);
-            else
+            if (!blend)
                 f->glDisable(GL_BLEND);
             f->glBlendFuncSeparate(blendFunc[0], blendFunc[1], blendFunc[2], blendFunc[3]);
+            if (scissor)
+                f->glEnable(GL_SCISSOR_TEST);
+            if (stencil)
+                f->glEnable(GL_STENCIL_TEST);
             f->glBindBuffer(GL_ARRAY_BUFFER, arrayBuf);
             if (vaoHelper->isValid())
                 vaoHelper->glBindVertexArray(vao);
@@ -426,6 +426,8 @@ struct StateSaver
     bool depthTest;
     bool blend;
     GLint blendFunc[4];
+    bool scissor;
+    bool stencil;
     GLint vao;
     GLint arrayBuf;
     struct { GLint enabled, type, size, normalized, stride, buffer; GLvoid *pointer; } va[2];
@@ -505,6 +507,8 @@ void QEglFSCursor::draw(const QRectF &r)
     f->glEnable(GL_BLEND);
     f->glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     f->glDisable(GL_DEPTH_TEST); // disable depth testing to make sure cursor is always on top
+    f->glDisable(GL_SCISSOR_TEST);
+    f->glDisable(GL_STENCIL_TEST);
 
     f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
