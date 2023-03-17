@@ -471,6 +471,8 @@ void QProcessPrivate::startProcess()
 #if defined(Q_OS_LINUX) && !QT_CONFIG(forkfd_pidfd)
     ffdflags |= FFD_USE_FORK;
 #endif
+    if (unixExtras && unixExtras->childProcessModifier)
+        ffdflags |= FFD_USE_FORK;
 
     pid_t childPid;
     forkfd = ::vforkfd(ffdflags , &childPid, execChild2, &execChild1);
