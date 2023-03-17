@@ -57,7 +57,7 @@ void tst_QPlugin::loadDebugPlugin()
         if (!QLibrary::isLibrary(fileName))
             continue;
         QPluginLoader loader(dir.filePath(fileName));
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
         // we can always load a plugin on unix
         QVERIFY(loader.load());
         QObject *object = loader.instance();
@@ -90,7 +90,7 @@ void tst_QPlugin::loadReleasePlugin()
         if (!QLibrary::isLibrary(fileName))
             continue;
         QPluginLoader loader(dir.filePath(fileName));
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
         // we can always load a plugin on unix
         QVERIFY(loader.load());
         QObject *object = loader.instance();

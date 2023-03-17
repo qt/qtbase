@@ -273,7 +273,7 @@ void tst_QLibrary::load_data()
     QTest::newRow( "notexist" ) << appDir + "/nolib" << false;
     QTest::newRow( "badlibrary" ) << appDir + "/qlibrary.pro" << false;
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
     QTest::newRow("ok (libmylib ver. 1)") << appDir + "/libmylib" <<true;
 #endif
 
@@ -462,7 +462,7 @@ void tst_QLibrary::isLibrary_data()
     QTest::newRow("version+.so+version") << QString("liboil-0.3.so.0.1.0") << so_VALID;
 
     // special tests:
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
     QTest::newRow("good (libmylib.1.0.0.dylib)") << QString("libmylib.1.0.0.dylib") << true;
     QTest::newRow("good (libmylib.dylib)") << QString("libmylib.dylib") << true;
     QTest::newRow("good (libmylib.so)") << QString("libmylib.so") << true;
@@ -499,7 +499,7 @@ void tst_QLibrary::errorString_data()
 #ifdef Q_OS_WIN
     QTest::newRow("bad load() with .dll suffix") << (int)Load << QString("nosuchlib.dll") << false << QString("Cannot load library nosuchlib.dll: The specified module could not be found.");
 //    QTest::newRow("bad unload") << (int)Unload << QString("nosuchlib.dll") << false << QString("QLibrary::unload_sys: Cannot unload nosuchlib.dll (The specified module could not be found.)");
-#elif defined Q_OS_MAC
+#elif defined Q_OS_DARWIN
 #else
     QTest::newRow("load invalid file") << (int)Load << QFINDTESTDATA("library_path/invalid.so") << false << QString("Cannot load library.*");
 #endif

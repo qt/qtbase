@@ -161,7 +161,7 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
 
     while (plugins.hasNext()) {
         QString fileName = plugins.next();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
         const bool isDebugPlugin = fileName.endsWith("_debug.dylib"_L1);
         const bool isDebugLibrary =
             #ifdef QT_DEBUG
@@ -266,7 +266,7 @@ QFactoryLoader::~QFactoryLoader()
     }
 }
 
-#if defined(Q_OS_UNIX) && !defined (Q_OS_MAC)
+#if defined(Q_OS_UNIX) && !defined (Q_OS_DARWIN)
 QLibraryPrivate *QFactoryLoader::library(const QString &key) const
 {
     Q_D(const QFactoryLoader);

@@ -23,7 +23,7 @@
 #include <math.h>
 #include <fenv.h>
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
 #    include <stdlib.h>
 #endif
 
@@ -43,7 +43,7 @@ private slots:
 #if defined(Q_OS_WIN)
     void windowsDefaultLocale();
 #endif
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
     void macDefaultLocale();
 #endif
 
@@ -2241,7 +2241,7 @@ void tst_QLocale::integerRoundTrip()
     QCOMPARE(locale.toString(number), numberText);
 }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
 
 // Format number string according to system locale settings.
 // Expected in format is US "1,234.56".
@@ -2343,7 +2343,7 @@ void tst_QLocale::macDefaultLocale()
     QCOMPARE(locale.weekdays(), days);
 
 }
-#endif // Q_OS_MAC
+#endif // Q_OS_DARWIN
 
 #if defined(Q_OS_WIN)
 #include <qt_windows.h>

@@ -867,7 +867,7 @@ QT_END_NAMESPACE
 
 #if defined(QT_ALWAYS_USE_FUTEX)
 // nothing
-#elif defined(Q_OS_MAC)
+#elif defined(Q_OS_DARWIN)
 #  include "qmutex_mac.cpp"
 #else
 #  include "qmutex_unix.cpp"

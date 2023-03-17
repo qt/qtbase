@@ -201,7 +201,7 @@ private slots:
 
     void isHidden_data();
     void isHidden();
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN)
     void isHiddenFromFinder();
 #endif
 
@@ -762,7 +762,7 @@ void tst_QFileInfo::bundleName_data()
 
     QTest::newRow("root") << "/" << "";
     QTest::newRow("etc") << "/etc" << "";
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
     QTest::newRow("safari") << "/Applications/Safari.app" << "Safari";
 #endif
 }
@@ -1019,7 +1019,7 @@ void tst_QFileInfo::compare_data()
         << m_sourceFile
 #if defined(Q_OS_WIN)
         << true;
-#elif defined(Q_OS_MAC)
+#elif defined(Q_OS_DARWIN)
         << !pathconf(QDir::currentPath().toLatin1().constData(), _PC_CASE_SENSITIVE);
 #else
         << false;
@@ -1028,7 +1028,7 @@ void tst_QFileInfo::compare_data()
 
 void tst_QFileInfo::compare()
 {
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN)
     if (qstrcmp(QTest::currentDataTag(), "casesense1") == 0)
         QSKIP("Qt thinks all UNIX filesystems are case sensitive, see QTBUG-28246");
 #endif
@@ -1535,14 +1535,14 @@ void tst_QFileInfo::isHidden_data()
     QTest::newRow("/path/to/.hidden-directory/..") << QDir::currentPath() + QString("/.hidden-directory/..") << true;
 #endif
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN)
     // /bin has the hidden attribute on OS X
     QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << true;
 #elif !defined(Q_OS_WIN)
     QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << false;
 #endif
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
     QTest::newRow("mac_etc") << QString::fromLatin1("/etc") << true;
     QTest::newRow("mac_private_etc") << QString::fromLatin1("/private/etc") << false;
     QTest::newRow("mac_Applications") << QString::fromLatin1("/Applications") << false;
@@ -1558,7 +1558,7 @@ void tst_QFileInfo::isHidden()
     QCOMPARE(fi.isHidden(), isHidden);
 }
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN)
 void tst_QFileInfo::isHiddenFromFinder()
 {
     const char *filename = "test_foobar.txt";
@@ -1584,7 +1584,7 @@ void tst_QFileInfo::isBundle_data()
     QTest::addColumn<QString>("path");
     QTest::addColumn<bool>("isBundle");
     QTest::newRow("root") << QString::fromLatin1("/") << false;
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
     QTest::newRow("mac_Applications") << QString::fromLatin1("/Applications") << false;
     QTest::newRow("mac_Applications") << QString::fromLatin1("/Applications/Safari.app") << true;
 #endif
@@ -2007,7 +2007,7 @@ private:
 
 void tst_QFileInfo::testDecomposedUnicodeNames()
 {
-#ifndef Q_OS_MAC
+#ifndef Q_OS_DARWIN
     QSKIP("This is a OS X only test (unless you know more about filesystems, then maybe you should try it ;)");
 #else
     QFETCH(QString, filePath);

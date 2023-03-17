@@ -14,7 +14,7 @@
 #include "private/qcore_unix_p.h"
 #include "private/qlocking_p.h"
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
 #include <private/qcore_mac_p.h>
 #endif
 

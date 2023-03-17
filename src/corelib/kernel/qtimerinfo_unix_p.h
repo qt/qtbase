@@ -45,7 +45,7 @@ struct QTimerInfo {
 
 class Q_CORE_EXPORT QTimerInfoList : public QList<QTimerInfo*>
 {
-#if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)) || defined(QT_BOOTSTRAPPED)
+#if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_DARWIN)) || defined(QT_BOOTSTRAPPED)
     timespec previousTime;
     clock_t previousTicks;
     int ticksPerSecond;

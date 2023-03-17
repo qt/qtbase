@@ -12,7 +12,7 @@
 
 #include <dlfcn.h>
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
 #  include <private/qcore_mac_p.h>
 #endif
 
@@ -72,7 +72,7 @@ QStringList QLibraryPrivate::suffixes_sys(const QString &fullVersion)
 # endif
     }
 #endif
-# ifdef Q_OS_MAC
+# ifdef Q_OS_DARWIN
     if (!fullVersion.isEmpty()) {
         suffixes << ".%1.bundle"_L1.arg(fullVersion);
         suffixes << ".%1.dylib"_L1.arg(fullVersion);
@@ -233,7 +233,7 @@ bool QLibraryPrivate::load_sys()
         }
     }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
     if (!hnd) {
         QByteArray utf8Bundle = fileName.toUtf8();
         QCFType<CFURLRef> bundleUrl = CFURLCreateFromFileSystemRepresentation(NULL, reinterpret_cast<const UInt8*>(utf8Bundle.data()), utf8Bundle.length(), true);
@@ -285,7 +285,7 @@ Q_CORE_EXPORT QFunctionPointer qt_linux_find_symbol_sys(const char *symbol)
 }
 #endif
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
 Q_CORE_EXPORT QFunctionPointer qt_mac_resolve_sys(void *handle, const char *symbol)
 {
     return QFunctionPointer(dlsym(handle, symbol));

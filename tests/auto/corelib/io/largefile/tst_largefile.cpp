@@ -37,9 +37,7 @@ public:
         , fd_(-1)
         , stream_(0)
     {
-    #if defined(QT_LARGEFILE_SUPPORT) && !defined(Q_OS_MAC) && !defined(Q_OS_QNX)
-        maxSizeBits = 36; // 64 GiB
-    #elif defined(Q_OS_MAC)
+    #if defined(Q_OS_DARWIN)
         // HFS+ does not support sparse files, so we limit file size for the test
         // on Mac OS.
         maxSizeBits = 24; // 16 MiB
@@ -48,6 +46,8 @@ public:
         // This means that files are limited to 2 GB − 1 bytes.
         // Limit max size to 256MB
         maxSizeBits = 28; // 256 MiB
+    #elif defined(QT_LARGEFILE_SUPPORT)
+        maxSizeBits = 36; // 64 GiB
     #else
         maxSizeBits = 24; // 16 MiB
     #endif

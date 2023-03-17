@@ -44,7 +44,7 @@
 #  include <shlobj.h>
 #endif
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_ANDROID)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN) && !defined(Q_OS_ANDROID)
 #define Q_XDG_PLATFORM
 #endif
 
@@ -270,7 +270,7 @@ QString QSettingsPrivate::normalizedKey(QAnyStringView key)
 
 // see also qsettings_win.cpp and qsettings_mac.cpp
 
-#if !defined(Q_OS_WIN) && !defined(Q_OS_MAC) && !defined(Q_OS_WASM)
+#if !defined(Q_OS_WIN) && !defined(Q_OS_DARWIN) && !defined(Q_OS_WASM)
 QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::Scope scope,
                                            const QString &organization, const QString &application)
 {
@@ -881,7 +881,7 @@ void QConfFileSettingsPrivate::initFormat()
     extension = (format == QSettings::NativeFormat) ? ".conf"_L1 : ".ini"_L1;
     readFunc = nullptr;
     writeFunc = nullptr;
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN)
     caseSensitivity = (format == QSettings::NativeFormat) ? Qt::CaseSensitive : IniCaseSensitivity;
 #else
     caseSensitivity = IniCaseSensitivity;
@@ -998,7 +998,7 @@ static std::unique_lock<QBasicMutex> initDefaultPaths(std::unique_lock<QBasicMut
         const QString userPath = make_user_path();
         pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::UserScope), Path(userPath, false));
         pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::SystemScope), Path(systemPath, false));
-#ifndef Q_OS_MAC
+#ifndef Q_OS_DARWIN
         pathHash->insert(pathHashKey(QSettings::NativeFormat, QSettings::UserScope), Path(userPath, false));
         pathHash->insert(pathHashKey(QSettings::NativeFormat, QSettings::SystemScope), Path(systemPath, false));
 #endif
@@ -1372,7 +1372,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
         */
         if (file.isReadable() && file.size() != 0) {
             bool ok = false;
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
             if (format == QSettings::NativeFormat) {
                 QByteArray data = file.readAll();
                 ok = readPlistFile(data, &confFile->originalKeys);
@@ -1428,7 +1428,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
             return;
         }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
         if (format == QSettings::NativeFormat) {
             ok = writePlistFile(sf, mergedKeys);
         } else

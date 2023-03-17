@@ -25,7 +25,7 @@
 #include "qcollator.h"
 #include "qttypetraits.h"
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
 #include <private/qcore_mac_p.h>
 #endif
 

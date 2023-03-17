@@ -237,12 +237,12 @@ QAbstractEventDispatcher *QThreadPrivate::createEventDispatcher(QThreadData *dat
 
 #if QT_CONFIG(thread)
 
-#if (defined(Q_OS_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_QNX))
+#if (defined(Q_OS_LINUX) || defined(Q_OS_DARWIN) || defined(Q_OS_QNX))
 static void setCurrentThreadName(const char *name)
 {
 #  if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
     prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0);
-#  elif defined(Q_OS_MAC)
+#  elif defined(Q_OS_DARWIN)
     pthread_setname_np(name);
 #  elif defined(Q_OS_QNX)
     pthread_setname_np(pthread_self(), name);
@@ -304,7 +304,7 @@ void *QThreadPrivate::start(void *arg)
         data->ensureEventDispatcher();
         data->eventDispatcher.loadRelaxed()->startingUp();
 
-#if (defined(Q_OS_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_QNX))
+#if (defined(Q_OS_LINUX) || defined(Q_OS_DARWIN) || defined(Q_OS_QNX))
         {
             // Sets the name of the current thread. We can only do this
             // when the thread is starting, as we don't have a cross

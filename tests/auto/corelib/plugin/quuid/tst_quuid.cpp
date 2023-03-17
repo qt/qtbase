@@ -424,7 +424,7 @@ void tst_QUuid::processUniqueness()
     QString processTwoOutput;
 
     // Start it once
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
     process.start("testProcessUniqueness/testProcessUniqueness.app");
 #elif defined(Q_OS_ANDROID)
     process.start("libtestProcessUniqueness.so");
@@ -435,7 +435,7 @@ void tst_QUuid::processUniqueness()
     processOneOutput = process.readAllStandardOutput();
 
     // Start it twice
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
     process.start("testProcessUniqueness/testProcessUniqueness.app");
 #elif defined(Q_OS_ANDROID)
     process.start("libtestProcessUniqueness.so");

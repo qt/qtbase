@@ -523,7 +523,7 @@ QString QStandardPaths::findExecutable(const QString &executableName, const QStr
     \include standardpath/functiondocs.qdocinc displayName
 */
 
-#if !defined(Q_OS_MAC) && !defined(QT_BOOTSTRAPPED)
+#if !defined(Q_OS_DARWIN) && !defined(QT_BOOTSTRAPPED)
 QString QStandardPaths::displayName(StandardLocation type)
 {
     switch (type) {

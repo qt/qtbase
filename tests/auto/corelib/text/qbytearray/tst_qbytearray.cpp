@@ -2349,7 +2349,7 @@ void tst_QByteArray::isLower()
 
 void tst_QByteArray::macTypes()
 {
-#ifndef Q_OS_MAC
+#ifndef Q_OS_DARWIN
     QSKIP("This is a Apple-only test");
 #else
     extern void tst_QByteArray_macTypes(); // in qbytearray_mac.mm

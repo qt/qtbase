@@ -131,7 +131,7 @@ private slots:
     void testRegistryShortRootNames();
     void testRegistry32And64Bit();
     void trailingWhitespace();
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
     void fileName();
 #endif
     void isWritable_data() { populateWithFormats(); }
@@ -497,7 +497,7 @@ void tst_QSettings::ctor()
         QSettings settings5(format, QSettings::UserScope, "SoftWare.ORG", "killerApp");
 
         bool caseSensitive = true;
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN)
         if (format == QSettings::NativeFormat) {
             // more details in QMacSettingsPrivate::QMacSettingsPrivate(), organization was comify()-ed
             caseSensitive = settings5.fileName().contains("SoftWare.ORG");;
@@ -578,7 +578,7 @@ void tst_QSettings::ctor()
             QCoreApplication::instance()->setOrganizationName("");
             QCoreApplication::instance()->setApplicationName("");
             QSettings settings;
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN)
             QEXPECT_FAIL("native", "Default settings on Mac are valid, despite organization domain, name, and app name being null", Continue);
 #endif
             QCOMPARE(settings.status(), QSettings::AccessError);
@@ -593,7 +593,7 @@ void tst_QSettings::ctor()
         }
 
         QSettings settings(format, QSettings::UserScope, "", "");
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN)
         QEXPECT_FAIL("native", "Default settings on Mac are valid, despite organization domain, name, and app name being null", Continue);
 #endif
         QCOMPARE(settings.status(), QSettings::AccessError);
@@ -2902,7 +2902,7 @@ void tst_QSettings::testCaseSensitivity()
     }
 }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
 // Please write a fileName() test for the other platforms
 void tst_QSettings::fileName()
 {
@@ -3310,7 +3310,7 @@ void tst_QSettings::setPath()
         path checks that it has no bad side effects.
     */
     for (int i = 0; i < 2; ++i) {
-#if !defined(Q_OS_WIN) && !defined(Q_OS_MAC)
+#if !defined(Q_OS_WIN) && !defined(Q_OS_DARWIN)
         TEST_PATH(i == 0, "conf", NativeFormat, UserScope, "alpha")
         TEST_PATH(i == 0, "conf", NativeFormat, SystemScope, "beta")
 #endif

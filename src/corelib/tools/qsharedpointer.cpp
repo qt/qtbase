@@ -1463,7 +1463,7 @@ QT_END_NAMESPACE
 #  ifdef QT_SHARED_POINTER_BACKTRACE_SUPPORT
 #    if defined(__GLIBC__) && (__GLIBC__ >= 2) && !defined(__UCLIBC__) && !defined(QT_LINUXBASE)
 #      define BACKTRACE_SUPPORTED
-#    elif defined(Q_OS_MAC)
+#    elif defined(Q_OS_DARWIN)
 #      define BACKTRACE_SUPPORTED
 #    endif
 #  endif

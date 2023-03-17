@@ -40,7 +40,7 @@ protected:
     void retrieveDiskFreeSpace();
     bool queryStorageProperty();
     void queryFileFsSectorSizeInformation();
-#elif defined(Q_OS_MAC)
+#elif defined(Q_OS_DARWIN)
     void retrievePosixInfo();
     void retrieveUrlProperties(bool initRootPath = false);
     void retrieveLabel();

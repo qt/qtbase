@@ -1621,7 +1621,7 @@ void tst_QDir::rename()
     QDir dir;
     QVERIFY(dir.rename("rename-test", "rename-test-renamed"));
     QVERIFY(dir.rename("rename-test-renamed", "rename-test"));
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN)
     QVERIFY(!dir.rename("rename-test", "/etc/rename-test-renamed"));
 #elif !defined(Q_OS_WIN)
     // on windows this is possible - maybe make the test a bit better

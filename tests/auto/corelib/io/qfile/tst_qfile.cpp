@@ -48,7 +48,7 @@ QT_END_NAMESPACE
 # include <unistd.h>
 # include <private/qcore_unix_p.h>
 #endif
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
 # include <sys/mount.h>
 #elif defined(Q_OS_LINUX)
 # include <sys/vfs.h>
@@ -3605,7 +3605,7 @@ void tst_QFile::caseSensitivity()
 {
 #if defined(Q_OS_WIN)
     const bool caseSensitive = false;
-#elif defined(Q_OS_MAC)
+#elif defined(Q_OS_DARWIN)
      const bool caseSensitive = pathconf(QDir::currentPath().toLatin1().constData(), _PC_CASE_SENSITIVE);
 #else
     const bool caseSensitive = true;

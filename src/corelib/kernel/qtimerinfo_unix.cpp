@@ -30,7 +30,7 @@ Q_CORE_EXPORT bool qt_disable_lowpriority_timers=false;
 
 QTimerInfoList::QTimerInfoList()
 {
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)
+#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_DARWIN)
     if (!QElapsedTimer::isMonotonic()) {
         // not using monotonic timers, initialize the timeChanged() machinery
         previousTime = qt_gettime();
@@ -57,7 +57,7 @@ timespec QTimerInfoList::updateCurrentTime()
     return (currentTime = qt_gettime());
 }
 
-#if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC) && !defined(Q_OS_INTEGRITY)) || defined(QT_BOOTSTRAPPED)
+#if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_DARWIN) && !defined(Q_OS_INTEGRITY)) || defined(QT_BOOTSTRAPPED)
 
 /*
   Returns \c true if the real time clock has changed by more than 10%

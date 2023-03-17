@@ -563,7 +563,7 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     QVERIFY2(testFile.write(QByteArrayLiteral("hello again")), msgFileOperationFailed("write", testFile));
     testFile.close();
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
     // wait again for the file's atime to be updated
     QTest::qWait(2000);
 #endif

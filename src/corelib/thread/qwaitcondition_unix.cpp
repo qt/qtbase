@@ -48,7 +48,7 @@ void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where)
 #if defined(Q_OS_ANDROID)
     if (local_condattr_setclock && QElapsedTimer::clockType() == QElapsedTimer::MonotonicClock)
         local_condattr_setclock(&condattr, CLOCK_MONOTONIC);
-#elif !defined(Q_OS_MAC)
+#elif !defined(Q_OS_DARWIN)
     if (QElapsedTimer::clockType() == QElapsedTimer::MonotonicClock)
         pthread_condattr_setclock(&condattr, CLOCK_MONOTONIC);
 #endif
@@ -59,7 +59,7 @@ void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where)
 
 void qt_abstime_for_timeout(timespec *ts, QDeadlineTimer deadline)
 {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
     // on Mac, qt_gettime() (on qelapsedtimer_mac.cpp) returns ticks related to the Mach absolute time
     // that doesn't work with pthread
     // Mac also doesn't have clock_gettime

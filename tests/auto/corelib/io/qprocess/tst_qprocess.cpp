@@ -1501,7 +1501,7 @@ void tst_QProcess::failToStart()
 // to many processes here will cause test failures later on.
 #if defined Q_OS_HPUX
    const int attempts = 15;
-#elif defined Q_OS_MAC
+#elif defined Q_OS_DARWIN
    const int attempts = 15;
 #else
    const int attempts = 50;

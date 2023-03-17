@@ -1393,7 +1393,7 @@ void tst_QString::STL()
 
 void tst_QString::macTypes()
 {
-#ifndef Q_OS_MAC
+#ifndef Q_OS_DARWIN
     QSKIP("This is a Mac-only test");
 #else
     extern void tst_QString_macTypes(); // in qcore_foundation.mm

@@ -4307,7 +4307,7 @@ void tst_QDateTime::range() const
 
 void tst_QDateTime::macTypes()
 {
-#ifndef Q_OS_MAC
+#ifndef Q_OS_DARWIN
     QSKIP("This is a Apple-only test");
 #else
     extern void tst_QDateTime_macTypes(); // in qdatetime_mac.mm
