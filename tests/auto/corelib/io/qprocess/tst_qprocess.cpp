@@ -21,6 +21,7 @@
 #include <qplatformdefs.h>
 #ifdef Q_OS_UNIX
 #  include <private/qcore_unix_p.h>
+#  include <sys/wait.h>
 #endif
 
 #include <QtTest/private/qemulationdetector_p.h>
@@ -157,6 +158,7 @@ protected slots:
 private:
     qint64 bytesAvailable;
     QTemporaryDir m_temporaryDir;
+    bool haveWorkingVFork = false;
 };
 
 void tst_QProcess::initTestCase()
@@ -168,6 +170,12 @@ void tst_QProcess::initTestCase()
     // chdir to our testdata path and execute helper apps relative to that.
     QString testdata_dir = QFileInfo(QFINDTESTDATA("testProcessNormal")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
+
+#if defined(Q_OS_LINUX) && QT_CONFIG(forkfd_pidfd)
+    // see detect_clone_pidfd_support() in forkfd_linux.c for explanation
+    waitid(/*P_PIDFD*/ idtype_t(3), INT_MAX, NULL, WEXITED|WNOHANG);
+    haveWorkingVFork = (errno == EBADF);
+#endif
 }
 
 void tst_QProcess::cleanupTestCase()
@@ -1515,6 +1523,7 @@ void tst_QProcess::unixProcessParametersAndChildModifier()
     static constexpr char message[] = "Message from the handler function\n";
     static_assert(std::char_traits<char>::length(message) <= PIPE_BUF);
     QProcess process;
+    QAtomicInt vforkControl;
     int pipes[2];
 
     QVERIFY2(pipe(pipes) == 0, qPrintable(qt_error_string()));
@@ -1523,10 +1532,12 @@ void tst_QProcess::unixProcessParametersAndChildModifier()
         auto pipeGuard1 = qScopeGuard([=] { close(pipes[1]); });
 
         // verify that our modifier runs before the parameters are applied
-        process.setChildProcessModifier([=] {
+        process.setChildProcessModifier([=, &vforkControl] {
             write(pipes[1], message, strlen(message));
+            vforkControl.storeRelaxed(1);
         });
-        auto flags = QProcess::UnixProcessFlag::CloseNonStandardFileDescriptors;
+        auto flags = QProcess::UnixProcessFlag::CloseNonStandardFileDescriptors |
+                QProcess::UnixProcessFlag::UseVFork;
         process.setUnixProcessParameters({ flags });
         process.setProgram("testUnixProcessParameters/testUnixProcessParameters");
         process.setArguments({ "std-file-descriptors", QString::number(pipes[1]) });
@@ -1542,6 +1553,9 @@ void tst_QProcess::unixProcessParametersAndChildModifier()
     int r = read(pipes[0], buf, sizeof(buf));
     QVERIFY2(r >= 0, qPrintable(qt_error_string()));
     QCOMPARE(QByteArrayView(buf, r), message);
+
+    if (haveWorkingVFork)
+        QVERIFY2(vforkControl.loadRelaxed(), "QProcess doesn't appear to have used vfork()");
 }
 #endif
 

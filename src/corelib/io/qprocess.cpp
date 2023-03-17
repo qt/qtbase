@@ -853,6 +853,15 @@ void QProcessPrivate::Channel::clear()
            is useful to ensure any ignored (\c SIG_IGN) signal does not affect
            the child's behavior.
 
+    \value UseVFork  Requests that QProcess use \c{vfork(2)} to start the child
+           process. Use this flag to indicate that the callback function set
+           with setChildProcessModifier() is safe to execute in the child side of
+           a \c{vfork(2)}; that is, the callback does not modify any non-local
+           variables (directly or through any function it calls), nor attempts
+           to communicate with the parent process. It is implementation-defined
+           if QProcess will actually use \c{vfork(2)} and if \c{vfork(2)} is
+           different from standard \c{fork(2)}.
+
     \sa setUnixProcessParameters(), unixProcessParameters()
 */
 
@@ -1645,6 +1654,16 @@ std::function<void(void)> QProcess::childProcessModifier() const
     other threads (in general, using only functions defined by POSIX as
     "async-signal-safe" is advised). Most of the Qt API is unsafe inside this
     callback, including qDebug(), and may lead to deadlocks.
+
+    \note If the UnixProcessParameters::UseVFork flag is set via
+    setUnixProcessParameters(), QProcess may use \c{vfork()} semantics to
+    start the child process, so this function must obey even stricter
+    constraints. First, because it is still sharing memory with the parent
+    process, it must not write to any non-local variable and must obey proper
+    ordering semantics when reading from them, to avoid data races. Second,
+    even more library functions may misbehave; therefore, this function should
+    only make use of low-level system calls, such as \c{read()},
+    \c{write()}, \c{setsid()}, \c{nice()}, and similar.
 
     \sa childProcessModifier(), setUnixProcessParameters()
 */

@@ -455,6 +455,26 @@ static QString resolveExecutable(const QString &program)
     return program;
 }
 
+static int useForkFlags(const QProcessPrivate::UnixExtras *unixExtras)
+{
+#if defined(Q_OS_LINUX) && !QT_CONFIG(forkfd_pidfd)
+    // some broken environments are known to have problems with the new Linux
+    // API, so we have a way for users to opt-out during configure time (see
+    // QTBUG-86285)
+    return FFD_USE_FORK;
+#endif
+
+    if (!unixExtras || !unixExtras->childProcessModifier)
+        return 0;           // no modifier was supplied
+
+    // if a modifier was supplied, use fork() unless the user opts in to
+    // vfork()
+    auto flags = unixExtras->processParameters.flags;
+    if (flags.testFlag(QProcess::UnixProcessFlag::UseVFork))
+        return 0;
+    return FFD_USE_FORK;
+}
+
 void QProcessPrivate::startProcess()
 {
     Q_Q(QProcess);
@@ -515,15 +535,7 @@ void QProcessPrivate::startProcess()
         return -1;
     };
 
-    int ffdflags = FFD_CLOEXEC;
-
-    // QTBUG-86285
-#if defined(Q_OS_LINUX) && !QT_CONFIG(forkfd_pidfd)
-    ffdflags |= FFD_USE_FORK;
-#endif
-    if (unixExtras && unixExtras->childProcessModifier)
-        ffdflags |= FFD_USE_FORK;
-
+    int ffdflags = FFD_CLOEXEC | useForkFlags(unixExtras.get());
     forkfd = ::vforkfd(ffdflags, &pid, execChild2, &execChild1);
     int lastForkErrno = errno;
 
