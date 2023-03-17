@@ -421,8 +421,12 @@ void QProcessPrivate::startProcess()
 #endif
 
     // Initialize pipes
-    if (!openChannels() || qt_create_pipe(childStartedPipe) != 0) {
-        setErrorAndEmit(QProcess::FailedToStart, qt_error_string(errno));
+    if (!openChannels()) {
+        // openChannel sets the error string
+        return;
+    }
+    if (qt_create_pipe(childStartedPipe) != 0) {
+        setErrorAndEmit(QProcess::FailedToStart, "pipe: "_L1 + qt_error_string(errno));
         cleanup();
         return;
     }
