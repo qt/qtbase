@@ -2237,22 +2237,24 @@ QRhi::FrameOpResult QRhiMetal::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     Q_UNUSED(flags);
 
     QMetalSwapChain *swapChainD = QRHI_RES(QMetalSwapChain, swapChain);
-
-    // This is a bit messed up since for this swapchain we want to wait for the
-    // commands+present to complete, while for others just for the commands
-    // (for this same frame slot) but not sure how to do that in a sane way so
-    // wait for full cb completion for now.
-    for (QMetalSwapChain *sc : std::as_const(swapchains)) {
-        dispatch_semaphore_t sem = sc->d->sem[swapChainD->currentFrameSlot];
-        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-        if (sc != swapChainD)
-            dispatch_semaphore_signal(sem);
-    }
-
     currentSwapChain = swapChainD;
     currentFrameSlot = swapChainD->currentFrameSlot;
-    if (swapChainD->ds)
-        swapChainD->ds->lastActiveFrameSlot = currentFrameSlot;
+
+    // If we are too far ahead, block. This is also what ensures that any
+    // resource used in the previous frame for this slot is now not in use
+    // anymore by the GPU.
+    dispatch_semaphore_wait(swapChainD->d->sem[currentFrameSlot], DISPATCH_TIME_FOREVER);
+
+    // Do this also for any other swapchain's commands with the same frame slot
+    // While this reduces concurrency, it keeps resource usage safe: swapchain
+    // A starting its frame 0, followed by swapchain B starting its own frame 0
+    // will make B wait for A's frame 0 commands, so if a resource is written
+    // in B's frame or when B checks for pending resource releases, that won't
+    // mess up A's in-flight commands (as they are not in flight anymore).
+    for (QMetalSwapChain *sc : std::as_const(swapchains)) {
+        if (sc != swapChainD)
+            sc->waitUntilCompleted(currentFrameSlot); // wait+signal
+    }
 
     [d->captureScope beginScope];
 
@@ -2273,6 +2275,9 @@ QRhi::FrameOpResult QRhiMetal::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     swapChainD->rtWrapper.d->fb.dsTex = swapChainD->ds ? swapChainD->ds->d->tex : nil;
     swapChainD->rtWrapper.d->fb.hasStencil = swapChainD->ds ? true : false;
     swapChainD->rtWrapper.d->fb.depthNeedsStore = false;
+
+    if (swapChainD->ds)
+        swapChainD->ds->lastActiveFrameSlot = currentFrameSlot;
 
     executeDeferredReleases();
     swapChainD->cbWrapper.resetState();
@@ -2335,14 +2340,9 @@ QRhi::FrameOpResult QRhiMetal::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi:
     Q_UNUSED(flags);
 
     currentFrameSlot = (currentFrameSlot + 1) % QMTL_FRAMES_IN_FLIGHT;
-    for (QMetalSwapChain *sc : std::as_const(swapchains)) {
-        // wait+signal is the general pattern to ensure the commands for a
-        // given frame slot have completed (if sem is 1, we go 0 then 1; if
-        // sem is 0 we go -1, block, completion increments to 0, then us to 1)
-        dispatch_semaphore_t sem = sc->d->sem[currentFrameSlot];
-        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-        dispatch_semaphore_signal(sem);
-    }
+
+    for (QMetalSwapChain *sc : std::as_const(swapchains))
+        sc->waitUntilCompleted(currentFrameSlot);
 
     d->ofr.active = true;
     *cb = &d->ofr.cbWrapper;
@@ -2395,9 +2395,7 @@ QRhi::FrameOpResult QRhiMetal::finish()
                 // beginFrame decremented sem already and going to be signaled by endFrame
                 continue;
             }
-            dispatch_semaphore_t sem = sc->d->sem[i];
-            dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-            dispatch_semaphore_signal(sem);
+            sc->waitUntilCompleted(i);
         }
     }
 
@@ -5964,8 +5962,7 @@ void QMetalSwapChain::destroy()
     for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
         if (d->sem[i]) {
             // the semaphores cannot be released if they do not have the initial value
-            dispatch_semaphore_wait(d->sem[i], DISPATCH_TIME_FOREVER);
-            dispatch_semaphore_signal(d->sem[i]);
+            waitUntilCompleted(i);
 
             dispatch_release(d->sem[i]);
             d->sem[i] = nullptr;
@@ -6082,6 +6079,17 @@ void QMetalSwapChain::chooseFormats()
     }
     d->colorFormat = m_flags.testFlag(sRGB) ? MTLPixelFormatBGRA8Unorm_sRGB : MTLPixelFormatBGRA8Unorm;
     d->rhiColorFormat = QRhiTexture::BGRA8;
+}
+
+void QMetalSwapChain::waitUntilCompleted(int slot)
+{
+    // wait+signal is the general pattern to ensure the commands for a
+    // given frame slot have completed (if sem is 1, we go 0 then 1; if
+    // sem is 0 we go -1, block, completion increments to 0, then us to 1)
+
+    dispatch_semaphore_t sem = d->sem[slot];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_signal(sem);
 }
 
 bool QMetalSwapChain::createOrResize()

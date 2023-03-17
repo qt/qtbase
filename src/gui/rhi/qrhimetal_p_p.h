@@ -308,6 +308,7 @@ struct QMetalSwapChain : public QRhiSwapChain
     virtual QRhiSwapChainHdrInfo hdrInfo() override;
 
     void chooseFormats();
+    void waitUntilCompleted(int slot);
 
     QWindow *window = nullptr;
     QSize pixelSize;
