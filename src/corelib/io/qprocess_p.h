@@ -329,7 +329,6 @@ public:
 
     int exitCode = 0;
     QProcess::ExitStatus exitStatus = QProcess::NormalExit;
-    bool crashed = false;
 
     bool waitForStarted(const QDeadlineTimer &deadline);
     bool waitForReadyRead(const QDeadlineTimer &deadline);

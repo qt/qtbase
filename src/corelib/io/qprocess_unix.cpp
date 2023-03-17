@@ -892,7 +892,7 @@ void QProcessPrivate::waitForDeadChild()
     EINTR_LOOP(ret, forkfd_wait(forkfd, &info, nullptr));
 
     exitCode = info.status;
-    crashed = info.code != CLD_EXITED;
+    exitStatus = info.code == CLD_EXITED ? QProcess::NormalExit : QProcess::CrashExit;
 
     delete stateNotifier;
     stateNotifier = nullptr;
@@ -902,7 +902,7 @@ void QProcessPrivate::waitForDeadChild()
 
 #if defined QPROCESS_DEBUG
     qDebug() << "QProcessPrivate::waitForDeadChild() dead with exitCode"
-             << exitCode << ", crashed?" << crashed;
+             << exitCode << ", crashed?" << (info.code != CLD_EXITED);
 #endif
 }
 

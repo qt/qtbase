@@ -28,6 +28,8 @@
 
 QT_BEGIN_NAMESPACE
 
+constexpr UINT KillProcessExitCode = 0xf291;
+
 using namespace Qt::StringLiterals;
 
 QProcessEnvironment QProcessEnvironment::systemEnvironment()
@@ -632,7 +634,7 @@ void QProcessPrivate::terminateProcess()
 void QProcessPrivate::killProcess()
 {
     if (pid)
-        TerminateProcess(pid->hProcess, 0xf291);
+        TerminateProcess(pid->hProcess, KillProcessExitCode);
 }
 
 bool QProcessPrivate::waitForStarted(const QDeadlineTimer &)
@@ -782,8 +784,11 @@ void QProcessPrivate::findExitCode()
     Q_ASSERT(pid);
     if (GetExitCodeProcess(pid->hProcess, &theExitCode)) {
         exitCode = theExitCode;
-        crashed = (exitCode == 0xf291   // our magic number, see killProcess
-                   || (theExitCode >= 0x80000000 && theExitCode < 0xD0000000));
+        if (exitCode == KillProcessExitCode
+                || (theExitCode >= 0x80000000 && theExitCode < 0xD0000000))
+            exitStatus = QProcess::CrashExit;
+        else
+            exitStatus = QProcess::NormalExit;
     }
 }
 
