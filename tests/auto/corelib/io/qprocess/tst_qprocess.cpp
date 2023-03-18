@@ -112,6 +112,7 @@ private slots:
 #endif // Q_OS_WIN
 #if defined(Q_OS_UNIX)
     void setChildProcessModifier();
+    void throwInChildProcessModifier();
 #endif
     void exitCodeTest();
     void systemEnvironment();
@@ -1468,6 +1469,34 @@ void tst_QProcess::setChildProcessModifier()
     QVERIFY2(process.waitForFinished(5000), qPrintable(process.errorString()));
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
+}
+
+void tst_QProcess::throwInChildProcessModifier()
+{
+#ifndef __cpp_exceptions
+    Q_SKIP("Exceptions disabled.");
+#else
+    QProcess process;
+    process.setChildProcessModifier([]() {
+        throw 42;
+    });
+    process.setProgram("testProcessNormal/testProcessNormal");
+
+    process.start();
+    QVERIFY(!process.waitForStarted(5000));
+    QCOMPARE(process.state(), QProcess::NotRunning);
+    QCOMPARE(process.error(), QProcess::FailedToStart);
+    QVERIFY2(process.errorString().contains("throw"),
+             qPrintable(process.errorString()));
+
+    // try again, to ensure QProcess internal state wasn't corrupted
+    process.start();
+    QVERIFY(!process.waitForStarted(5000));
+    QCOMPARE(process.state(), QProcess::NotRunning);
+    QCOMPARE(process.error(), QProcess::FailedToStart);
+    QVERIFY2(process.errorString().contains("throw"),
+             qPrintable(process.errorString()));
+#endif
 }
 #endif
 

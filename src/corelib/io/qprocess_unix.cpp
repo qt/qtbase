@@ -47,7 +47,39 @@
 
 QT_BEGIN_NAMESPACE
 
+// we need an errno number to use to indicate the child process modifier threw,
+// something the regular operations shouldn't set.
+static constexpr int FakeErrnoForThrow =
+#ifdef ECANCELED
+        ECANCELED
+#else
+        ESHUTDOWN
+#endif
+        ;
+
 using namespace Qt::StringLiterals;
+
+namespace {
+struct PThreadCancelGuard
+{
+#if defined(PTHREAD_CANCEL_DISABLE)
+    int oldstate;
+    PThreadCancelGuard() noexcept(false)
+    {
+        pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
+    }
+    ~PThreadCancelGuard() noexcept(false)
+    {
+        reenable();
+    }
+    void reenable() noexcept(false)
+    {
+        // this doesn't touch errno
+        pthread_setcancelstate(oldstate, nullptr);
+    }
+#endif
+};
+}
 
 #if !defined(Q_OS_DARWIN)
 
@@ -472,6 +504,11 @@ void QProcessPrivate::startProcess()
     const CharPointerList argv(resolveExecutable(program), arguments);
     const CharPointerList envp(environment.d.constData());
 
+    // Disable PThread cancellation from this point on: we mustn't have it
+    // enabled when the child starts running nor while our state could get
+    // corrupted if we abruptly exited this function.
+    PThreadCancelGuard cancelGuard;
+
     // Start the child.
     auto execChild1 = [this, workingDirFd, &argv, &envp]() {
         execChild(workingDirFd, argv.pointers.get(), envp.pointers.get());
@@ -539,12 +576,24 @@ void QProcessPrivate::startProcess()
         ::fcntl(stderrChannel.pipe[0], F_SETFL, ::fcntl(stderrChannel.pipe[0], F_GETFL) | O_NONBLOCK);
 }
 
+static bool callChildProcessModifier(const QProcessPrivate::UnixExtras *unixExtras) noexcept
+{
+    QT_TRY {
+        if (unixExtras->childProcessModifier)
+            unixExtras->childProcessModifier();
+    } QT_CATCH (...) {
+        errno = FakeErrnoForThrow;
+        return false;
+    }
+    return true;
+}
+
 // IMPORTANT:
 //
 // This function is called in a vfork() context on some OSes (notably, Linux
 // with forkfd), so it MUST NOT modify any non-local variable because it's
 // still sharing memory with the parent process.
-void QProcessPrivate::execChild(int workingDir, char **argv, char **envp) const
+void QProcessPrivate::execChild(int workingDir, char **argv, char **envp) const noexcept
 {
     ::signal(SIGPIPE, SIG_DFL);         // reset the signal that we ignored
 
@@ -564,8 +613,10 @@ void QProcessPrivate::execChild(int workingDir, char **argv, char **envp) const
     }
 
     if (unixExtras) {
-        if (unixExtras->childProcessModifier)
-            unixExtras->childProcessModifier();
+        if (!callChildProcessModifier(unixExtras.get())) {
+            std::strcpy(error.function, "throw");
+            goto report_errno;
+        }
     }
 
     // execute the process
@@ -964,6 +1015,9 @@ bool QProcessPrivate::startDetached(qint64 *pid)
 
     const CharPointerList argv(resolveExecutable(program), arguments);
     const CharPointerList envp(environment.d.constData());
+
+    // see startProcess() for more information
+    PThreadCancelGuard cancelGuard;
 
     pid_t childPid = fork();
     if (childPid == 0) {
