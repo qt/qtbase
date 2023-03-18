@@ -673,8 +673,12 @@ bool QProcessPrivate::processStarted(QString *errorMessage)
     }
 
     // did we read an error message?
-    if (errorMessage)
-        *errorMessage = QLatin1StringView(buf.function) + ": "_L1 + qt_error_string(buf.code);
+    if (errorMessage) {
+        if (buf.code == FakeErrnoForThrow)
+            *errorMessage = QProcess::tr("childProcessModifier() function threw an exception");
+        else
+            *errorMessage = QLatin1StringView(buf.function) + ": "_L1 + qt_error_string(buf.code);
+    }
 
     return false;
 }

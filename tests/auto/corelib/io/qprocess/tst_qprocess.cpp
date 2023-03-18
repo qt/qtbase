@@ -1486,7 +1486,7 @@ void tst_QProcess::throwInChildProcessModifier()
     QVERIFY(!process.waitForStarted(5000));
     QCOMPARE(process.state(), QProcess::NotRunning);
     QCOMPARE(process.error(), QProcess::FailedToStart);
-    QVERIFY2(process.errorString().contains("throw"),
+    QVERIFY2(process.errorString().contains("childProcessModifier"),
              qPrintable(process.errorString()));
 
     // try again, to ensure QProcess internal state wasn't corrupted
@@ -1494,7 +1494,7 @@ void tst_QProcess::throwInChildProcessModifier()
     QVERIFY(!process.waitForStarted(5000));
     QCOMPARE(process.state(), QProcess::NotRunning);
     QCOMPARE(process.error(), QProcess::FailedToStart);
-    QVERIFY2(process.errorString().contains("throw"),
+    QVERIFY2(process.errorString().contains("childProcessModifier"),
              qPrintable(process.errorString()));
 #endif
 }
