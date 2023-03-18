@@ -1353,26 +1353,18 @@ QString QLocale::name() const
     return view + u'_' + d->territoryCode();
 }
 
-static qlonglong toIntegral_helper(const QLocaleData *d, QStringView str, bool *ok,
-                                   QLocale::NumberOptions mode, qlonglong)
-{
-    return d->stringToLongLong(str, 10, ok, mode);
-}
-
-static qulonglong toIntegral_helper(const QLocaleData *d, QStringView str, bool *ok,
-                                    QLocale::NumberOptions mode, qulonglong)
-{
-    return d->stringToUnsLongLong(str, 10, ok, mode);
-}
-
 template <typename T> static inline
 T toIntegral_helper(const QLocalePrivate *d, QStringView str, bool *ok)
 {
-    using Int64 =
-        typename std::conditional<std::is_unsigned<T>::value, qulonglong, qlonglong>::type;
+    constexpr bool isUnsigned = std::is_unsigned_v<T>;
+    using Int64 = typename std::conditional_t<isUnsigned, quint64, qint64>;
 
-    // we select the right overload by the last, unused parameter
-    Int64 val = toIntegral_helper(d->m_data, str, ok, d->m_numberOptions, Int64());
+    Int64 val = 0;
+    if constexpr (isUnsigned)
+        val = d->m_data->stringToUnsLongLong(str, 10, ok, d->m_numberOptions);
+    else
+        val = d->m_data->stringToLongLong(str, 10, ok, d->m_numberOptions);
+
     if (T(val) != val) {
         if (ok != nullptr)
             *ok = false;
