@@ -28,6 +28,10 @@
 
 #include <stdlib.h>
 
+#include "crasher.h"
+
+using namespace Qt::StringLiterals;
+
 typedef void (QProcess::*QProcessErrorSignal)(QProcess::ProcessError);
 
 class tst_QProcess : public QObject
@@ -114,7 +118,11 @@ private slots:
 #if defined(Q_OS_UNIX)
     void setChildProcessModifier_data();
     void setChildProcessModifier();
+    void failChildProcessModifier_data() { setChildProcessModifier_data(); }
+    void failChildProcessModifier();
     void throwInChildProcessModifier();
+    void terminateInChildProcessModifier_data();
+    void terminateInChildProcessModifier();
     void unixProcessParameters_data();
     void unixProcessParameters();
     void unixProcessParametersAndChildModifier();
@@ -1451,6 +1459,27 @@ void tst_QProcess::createProcessArgumentsModifier()
 #endif // Q_OS_WIN
 
 #ifdef Q_OS_UNIX
+static constexpr int sigs[] = { SIGABRT, SIGILL, SIGSEGV };
+struct DisableCrashLogger
+{
+    // disable core dumps too
+    tst_QProcessCrash::NoCoreDumps disableCoreDumps {};
+    std::array<struct sigaction, std::size(sigs)> oldhandlers;
+    DisableCrashLogger()
+    {
+        struct sigaction def = {};
+        def.sa_handler = SIG_DFL;
+        for (uint i = 0; i < std::size(sigs); ++i)
+            sigaction(sigs[i], &def, &oldhandlers[i]);
+    }
+    ~DisableCrashLogger()
+    {
+        // restore them
+        for (uint i = 0; i < std::size(sigs); ++i)
+            sigaction(sigs[i], &oldhandlers[i], nullptr);
+    }
+};
+
 static constexpr char messageFromChildProcess[] = "Message from the child process";
 static_assert(std::char_traits<char>::length(messageFromChildProcess) <= PIPE_BUF);
 static void childProcessModifier(int fd)
@@ -1496,6 +1525,36 @@ void tst_QProcess::setChildProcessModifier()
     qt_safe_close(pipes[0]);
 }
 
+void tst_QProcess::failChildProcessModifier()
+{
+    static const char failureMsg[] =
+            "Some error message from the child process would go here if this were a "
+            "real application";
+    static_assert(sizeof(failureMsg) < _POSIX_PIPE_BUF / 2,
+            "Implementation detail: the length of the message is limited");
+
+    QFETCH(bool, detached);
+    QProcess process;
+    process.setChildProcessModifier([&process]() {
+        process.failChildProcessModifier(failureMsg, EPERM);
+    });
+    process.setProgram("testProcessNormal/testProcessNormal");
+
+    if (detached) {
+        qint64 pid;
+        QVERIFY(!process.startDetached(&pid));
+        QCOMPARE(pid, -1);
+    } else {
+        process.start("testProcessNormal/testProcessNormal");
+        QVERIFY(!process.waitForStarted(5000));
+    }
+
+    QString errMsg = process.errorString();
+    QVERIFY2(errMsg.startsWith("Child process modifier reported error: "_L1 + failureMsg),
+             qPrintable(errMsg));
+    QVERIFY2(errMsg.endsWith(strerror(EPERM)), qPrintable(errMsg));
+}
+
 void tst_QProcess::throwInChildProcessModifier()
 {
 #ifndef __cpp_exceptions
@@ -1511,7 +1570,7 @@ void tst_QProcess::throwInChildProcessModifier()
     QVERIFY(!process.waitForStarted(5000));
     QCOMPARE(process.state(), QProcess::NotRunning);
     QCOMPARE(process.error(), QProcess::FailedToStart);
-    QVERIFY2(process.errorString().contains("childProcessModifier"),
+    QVERIFY2(process.errorString().contains("Child process modifier threw an exception"),
              qPrintable(process.errorString()));
 
     // try again, to ensure QProcess internal state wasn't corrupted
@@ -1519,8 +1578,56 @@ void tst_QProcess::throwInChildProcessModifier()
     QVERIFY(!process.waitForStarted(5000));
     QCOMPARE(process.state(), QProcess::NotRunning);
     QCOMPARE(process.error(), QProcess::FailedToStart);
-    QVERIFY2(process.errorString().contains("childProcessModifier"),
+    QVERIFY2(process.errorString().contains("Child process modifier threw an exception"),
              qPrintable(process.errorString()));
+#endif
+}
+
+void tst_QProcess::terminateInChildProcessModifier_data()
+{
+    using F = std::function<void(void)>;
+    QTest::addColumn<F>("function");
+    QTest::addColumn<QProcess::ExitStatus>("exitStatus");
+    QTest::addColumn<bool>("stderrIsEmpty");
+
+    QTest::newRow("_exit") << F([]() { _exit(0); }) << QProcess::NormalExit << true;
+    QTest::newRow("abort") << F(std::abort) << QProcess::CrashExit << true;
+    QTest::newRow("sigkill") << F([]() { raise(SIGKILL); }) << QProcess::CrashExit << true;
+    QTest::newRow("terminate") << F(std::terminate) << QProcess::CrashExit
+                               << (std::get_terminate() == std::abort);
+    QTest::newRow("crash") << F([]() { tst_QProcessCrash::crash(); }) << QProcess::CrashExit << true;
+}
+
+void tst_QProcess::terminateInChildProcessModifier()
+{
+    QFETCH(std::function<void(void)>, function);
+    QFETCH(QProcess::ExitStatus, exitStatus);
+    QFETCH(bool, stderrIsEmpty);
+
+    // temporarily disable QTest's crash logger
+    DisableCrashLogger disableCrashLogging;
+
+    QProcess process;
+    process.setChildProcessModifier(function);
+    process.setProgram("testProcessNormal/testProcessNormal");
+
+    // temporarily disable QTest's crash logger while starting the child process
+    {
+        DisableCrashLogger d;
+        process.start();
+    }
+
+    QVERIFY2(process.waitForStarted(5000), qPrintable(process.errorString()));
+    QVERIFY2(process.waitForFinished(5000), qPrintable(process.errorString()));
+    QCOMPARE(process.exitStatus(), exitStatus);
+
+    // some environments print extra stuff to stderr when we crash
+#ifndef Q_OS_QNX
+    if (!QTestPrivate::isRunningArmOnX86()) {
+        QByteArray standardError = process.readAllStandardError();
+        QVERIFY2(standardError.isEmpty() == stderrIsEmpty,
+                 "stderr was: " + standardError);
+    }
 #endif
 }
 
@@ -1644,16 +1751,12 @@ void tst_QProcess::unixProcessParametersAndChildModifier()
 void tst_QProcess::unixProcessParametersOtherFileDescriptors()
 {
     constexpr int TargetFileDescriptor = 3;
-    int pipes[2];
     int fd1 = open("/dev/null", O_RDONLY);
     int devnull = fcntl(fd1, F_DUPFD, 100); // instead of F_DUPFD_CLOEXEC
-    pipe2(pipes, O_CLOEXEC);
     close(fd1);
 
     auto closeFds = qScopeGuard([&] {
         close(devnull);
-        close(pipes[0]);
-        // we'll close pipe[1] before any QCOMPARE
     });
 
     QProcess process;
@@ -1662,20 +1765,14 @@ void tst_QProcess::unixProcessParametersOtherFileDescriptors()
             | QProcess::UnixProcessFlag::UseVFork;
     params.lowestFileDescriptorToClose = 4;
     process.setUnixProcessParameters(params);
-    process.setChildProcessModifier([devnull, pipes]() {
-        if (dup2(devnull, TargetFileDescriptor) == TargetFileDescriptor)
-            return;
-        write(pipes[1], &errno, sizeof(errno));
-        _exit(255);
+    process.setChildProcessModifier([devnull, &process]() {
+        if (dup2(devnull, TargetFileDescriptor) != TargetFileDescriptor)
+            process.failChildProcessModifier("dup2", errno);
     });
     process.setProgram("testUnixProcessParameters/testUnixProcessParameters");
     process.setArguments({ "file-descriptors2", QString::number(TargetFileDescriptor),
                            QString::number(devnull) });
     process.start();
-    close(pipes[1]);
-
-    if (int duperror; read(pipes[0], &duperror, sizeof(duperror)) == sizeof(duperror))
-        QFAIL(QByteArray("dup2 failed: ") + strerror(duperror));
 
     QVERIFY2(process.waitForStarted(5000), qPrintable(process.errorString()));
     QVERIFY(process.waitForFinished(5000));

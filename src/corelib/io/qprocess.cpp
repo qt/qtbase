@@ -1646,8 +1646,10 @@ std::function<void(void)> QProcess::childProcessModifier() const
 
     \snippet code/src_corelib_io_qprocess.cpp 4
 
-    If the modifier function needs to exit the process, remember to use
-    \c{_exit()}, not \c{exit()}.
+    If the modifier function experiences a failure condition, it can use
+    failChildProcessModifier() to report the situation to the QProcess caller.
+    Alternatively, it may use other methods of stopping the process, like
+    \c{_exit()}, or \c{abort()}.
 
     Certain properties of the child process, such as closing all extraneous
     file descriptors or disconnecting from the controlling TTY, can be more
@@ -1674,7 +1676,7 @@ std::function<void(void)> QProcess::childProcessModifier() const
     only make use of low-level system calls, such as \c{read()},
     \c{write()}, \c{setsid()}, \c{nice()}, and similar.
 
-    \sa childProcessModifier(), setUnixProcessParameters()
+    \sa childProcessModifier(), failChildProcessModifier(), setUnixProcessParameters()
 */
 void QProcess::setChildProcessModifier(const std::function<void(void)> &modifier)
 {
@@ -1683,6 +1685,46 @@ void QProcess::setChildProcessModifier(const std::function<void(void)> &modifier
         d->unixExtras.reset(new QProcessPrivate::UnixExtras);
     d->unixExtras->childProcessModifier = modifier;
 }
+
+/*!
+    \fn void QProcess::failChildProcessModifier(const char *description, int error) noexcept
+    \since 6.7
+
+    This functions can be used inside the modifier set with
+    setChildProcessModifier() to indicate an error condition was encountered.
+    When the modifier calls these functions, QProcess will emit errorOccurred()
+    with code QProcess::FailedToStart in the parent process. The \a description
+    can be used to include some information in errorString() to help diagnose
+    the problem, usually the name of the call that failed, similar to the C
+    Library function \c{perror()}. Additionally, the \a error parameter can be
+    an \c{<errno.h>} error code whose text form will also be included.
+
+    For example, a child modifier could prepare an extra file descriptor for
+    the child process this way:
+
+    \code
+        process.setChildProcessModifier([fd, &process]() {
+            if (dup2(fd, TargetFileDescriptor) < 0)
+                process.failChildProcessModifier(errno, "aux comm channel");
+        });
+        process.start();
+    \endcode
+
+    Where \c{fd} is a file descriptor currently open in the parent process. If
+    the \c{dup2()} system call resulted in an \c EBADF condition, the process
+    errorString() could be "Child process modifier reported error: aux comm
+    channel: Bad file descriptor".
+
+    This function does not return to the caller. Using it anywhere except in
+    the child modifier and with the correct QProcess object is undefined
+    behavior.
+
+    \note The implementation imposes a length limit to the \a description
+    parameter to about 500 characters. This does not include the text from the
+    \a error code.
+
+    \sa setChildProcessModifier(), setUnixProcessParameters()
+*/
 
 /*!
     \since 6.6

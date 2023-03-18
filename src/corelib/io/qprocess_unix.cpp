@@ -184,8 +184,12 @@ struct AutoPipe
 struct ChildError
 {
     int code;
-    char function[12];
+    char function[_POSIX_PIPE_BUF - sizeof(code)];
 };
+static_assert(std::is_trivial_v<ChildError>);
+#ifdef PIPE_BUF
+static_assert(PIPE_BUF >= sizeof(ChildError)); // PIPE_BUF may be bigger
+#endif
 
 // Used for argv and envp arguments to execve()
 struct CharPointerList
@@ -645,6 +649,42 @@ static constexpr int FakeErrnoForThrow =
 #endif
         ;
 
+static QString startFailureErrorMessage(ChildError &err, [[maybe_unused]] ssize_t bytesRead)
+{
+    // ChildError is less than the POSIX pipe buffer atomic size, so the read
+    // must not have been truncated
+    Q_ASSERT(bytesRead == sizeof(err));
+
+    qsizetype len = qstrnlen(err.function, sizeof(err.function));
+    QString complement = QString::fromUtf8(err.function, len);
+    if (err.code == FakeErrnoForThrow)
+        return QProcess::tr("Child process modifier threw an exception");
+    if (err.code == 0)
+        return QProcess::tr("Child process modifier reported error: %1")
+                .arg(std::move(complement));
+    if (err.code < 0)
+        return QProcess::tr("Child process modifier reported error: %1: %2")
+                .arg(std::move(complement), qt_error_string(-err.code));
+    return QProcess::tr("Child process set up failed: %1: %2")
+            .arg(std::move(complement), qt_error_string(err.code));
+}
+
+Q_NORETURN void
+failChildProcess(const QProcessPrivate *d, const char *description, int code) noexcept
+{
+    ChildError error = {};
+    error.code = code;
+    strncpy(error.function, description, sizeof(error.function));
+    qt_safe_write(d->childStartedPipe[1], &error, sizeof(error));
+    _exit(-1);
+}
+
+void QProcess::failChildProcessModifier(const char *description, int error) noexcept
+{
+    // We signal user errors with negative errnos
+    failChildProcess(d_func(), description, -error);
+}
+
 // See IMPORTANT notice below
 static void applyProcessParameters(const QProcess::UnixProcessParameters &params)
 {
@@ -704,22 +744,21 @@ static const char *callChildProcessModifier(const QProcessPrivate::UnixExtras *u
     return nullptr;
 }
 
-// this function doesn't return if the execution succeeds
-static const char *doExecChild(char **argv, char **envp, int workingDirFd,
-                               const QProcessPrivate::UnixExtras *unixExtras) noexcept
+Q_NORETURN static void
+doExecChild(char **argv, char **envp, int workingDirFd, const QProcessPrivate *d) noexcept
 {
     // enter the working directory
     if (workingDirFd != -1 && fchdir(workingDirFd) == -1)
-        return "fchdir";
+        failChildProcess(d, "fchdir", errno);
 
-    if (unixExtras) {
+    if (d->unixExtras) {
         // FIRST we call the user modifier function, before we dropping
         // privileges or closing non-standard file descriptors
-        if (const char *what = callChildProcessModifier(unixExtras))
-            return what;
+        if (const char *what = callChildProcessModifier(d->unixExtras.get()))
+            failChildProcess(d, what, FakeErrnoForThrow);
 
         // then we apply our other user-provided parameters
-        applyProcessParameters(unixExtras->processParameters);
+        applyProcessParameters(d->unixExtras->processParameters);
     }
 
     // execute the process
@@ -727,9 +766,8 @@ static const char *doExecChild(char **argv, char **envp, int workingDirFd,
         qt_safe_execv(argv[0], argv);
     else
         qt_safe_execve(argv[0], argv, envp);
-    return "execve";
+    failChildProcess(d, "execve", errno);
 }
-
 
 // IMPORTANT:
 //
@@ -740,22 +778,13 @@ void QProcessPrivate::execChild(int workingDir, char **argv, char **envp) const 
 {
     QtVforkSafe::ignore_sigpipe();      // reset the signal that we ignored
 
-    ChildError error = { 0, {} };       // force zeroing of function[8]
-
     // Render channels configuration.
     commitChannels();
 
     // make sure this fd is closed if execv() succeeds
     qt_safe_close(childStartedPipe[0]);
 
-    const char *what = doExecChild(argv, envp, workingDir, unixExtras.get());
-    strcpy(error.function, what);
-
-    // notify failure
-    // don't use strerror or any other routines that may allocate memory, since
-    // some buggy libc versions can deadlock on locked mutexes.
-    error.code = errno;
-    qt_safe_write(childStartedPipe[1], &error, sizeof(error));
+    doExecChild(argv, envp, workingDir, this);
 }
 
 bool QProcessPrivate::processStarted(QString *errorMessage)
@@ -792,12 +821,8 @@ bool QProcessPrivate::processStarted(QString *errorMessage)
     }
 
     // did we read an error message?
-    if (errorMessage) {
-        if (buf.code == FakeErrnoForThrow)
-            *errorMessage = QProcess::tr("childProcessModifier() function threw an exception");
-        else
-            *errorMessage = QLatin1StringView(buf.function) + ": "_L1 + qt_error_string(buf.code);
-    }
+    if (errorMessage)
+        *errorMessage = startFailureErrorMessage(buf, ret);
 
     return false;
 }
@@ -1107,15 +1132,8 @@ void QProcessPrivate::waitForDeadChild()
 
 bool QProcessPrivate::startDetached(qint64 *pid)
 {
-
-#ifdef PIPE_BUF
-    static_assert(PIPE_BUF >= sizeof(ChildError));
-#else
-    static_assert(_POSIX_PIPE_BUF >= sizeof(ChildError));
-#endif
-    ChildError childStatus = { 0, {} };
-
     AutoPipe startedPipe, pidPipe;
+    childStartedPipe[1] = startedPipe[1];
     if (!startedPipe || !pidPipe) {
         setErrorAndEmit(QProcess::FailedToStart, "pipe: "_L1 + qt_error_string(errno));
         return false;
@@ -1155,22 +1173,14 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         qt_safe_close(startedPipe[0]);
         qt_safe_close(pidPipe[0]);
 
-        auto reportFailed = [&](const char *function) {
-            childStatus.code = errno;
-            strcpy(childStatus.function, function);
-            qt_safe_write(startedPipe[1], &childStatus, sizeof(childStatus));
-            ::_exit(1);
-        };
-
         pid_t doubleForkPid = doFork();
         if (doubleForkPid == 0) {
             // Render channels configuration.
             commitChannels();
 
-            reportFailed(doExecChild(argv.pointers.get(), envp.pointers.get(), workingDirFd,
-                                     unixExtras.get()));
+            doExecChild(argv.pointers.get(), envp.pointers.get(), workingDirFd, this);
         } else if (doubleForkPid == -1) {
-            reportFailed("fork: ");
+            failChildProcess(this, "fork", errno);
         }
 
         // success
@@ -1198,6 +1208,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     // successfully execve()'d the target process. If it returns any positive
     // result, it means one of the two children wrote an error result. Negative
     // values should not happen.
+    ChildError childStatus;
     ssize_t startResult = qt_safe_read(startedPipe[0], &childStatus, sizeof(childStatus));
 
     // reap the intermediate child
@@ -1213,10 +1224,8 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     } else if (!success) {
         if (pid)
             *pid = -1;
-        QString msg;
-        if (startResult == sizeof(childStatus))
-            msg = QLatin1StringView(childStatus.function) + qt_error_string(childStatus.code);
-        setErrorAndEmit(QProcess::FailedToStart, msg);
+        setErrorAndEmit(QProcess::FailedToStart,
+                        startFailureErrorMessage(childStatus, startResult));
     }
     return success;
 }

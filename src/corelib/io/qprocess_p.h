@@ -304,7 +304,7 @@ public:
     void startProcess();
 #if defined(Q_OS_UNIX)
     void commitChannels() const;
-    void execChild(int workingDirectory, char **argv, char **envp) const noexcept;
+    Q_NORETURN void execChild(int workingDirectory, char **argv, char **envp) const noexcept;
 #endif
     bool processStarted(QString *errorMessage = nullptr);
     void processFinished();
