@@ -111,6 +111,7 @@ private slots:
     void createProcessArgumentsModifier();
 #endif // Q_OS_WIN
 #if defined(Q_OS_UNIX)
+    void setChildProcessModifier_data();
     void setChildProcessModifier();
     void throwInChildProcessModifier();
 #endif
@@ -1446,8 +1447,16 @@ static void childProcessModifier(int fd)
     QT_CLOSE(fd);
 }
 
+void tst_QProcess::setChildProcessModifier_data()
+{
+    QTest::addColumn<bool>("detached");
+    QTest::newRow("normal") << false;
+    QTest::newRow("detached") << true;
+}
+
 void tst_QProcess::setChildProcessModifier()
 {
+    QFETCH(bool, detached);
     int pipes[2] = { -1 , -1 };
     QVERIFY(qt_safe_pipe(pipes) == 0);
 
@@ -1455,20 +1464,24 @@ void tst_QProcess::setChildProcessModifier()
     process.setChildProcessModifier([pipes]() {
         ::childProcessModifier(pipes[1]);
     });
-    process.start("testProcessNormal/testProcessNormal");
-    if (process.state() != QProcess::Starting)
-        QCOMPARE(process.state(), QProcess::Running);
-    QVERIFY2(process.waitForStarted(5000), qPrintable(process.errorString()));
+    process.setProgram("testProcessNormal/testProcessNormal");
+    if (detached) {
+        process.startDetached();
+    } else {
+        process.start("testProcessNormal/testProcessNormal");
+        if (process.state() != QProcess::Starting)
+            QCOMPARE(process.state(), QProcess::Running);
+        QVERIFY2(process.waitForStarted(5000), qPrintable(process.errorString()));
+        QVERIFY2(process.waitForFinished(5000), qPrintable(process.errorString()));
+        QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+        QCOMPARE(process.exitCode(), 0);
+    }
 
     char buf[sizeof messageFromChildProcess] = {};
     qt_safe_close(pipes[1]);
     QCOMPARE(qt_safe_read(pipes[0], buf, sizeof(buf)), qint64(sizeof(messageFromChildProcess)) - 1);
     QCOMPARE(buf, messageFromChildProcess);
     qt_safe_close(pipes[0]);
-
-    QVERIFY2(process.waitForFinished(5000), qPrintable(process.errorString()));
-    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
-    QCOMPARE(process.exitCode(), 0);
 }
 
 void tst_QProcess::throwInChildProcessModifier()

@@ -576,17 +576,39 @@ void QProcessPrivate::startProcess()
         ::fcntl(stderrChannel.pipe[0], F_SETFL, ::fcntl(stderrChannel.pipe[0], F_GETFL) | O_NONBLOCK);
 }
 
-static bool callChildProcessModifier(const QProcessPrivate::UnixExtras *unixExtras) noexcept
+static const char *callChildProcessModifier(const QProcessPrivate::UnixExtras *unixExtras) noexcept
 {
     QT_TRY {
         if (unixExtras->childProcessModifier)
             unixExtras->childProcessModifier();
     } QT_CATCH (...) {
         errno = FakeErrnoForThrow;
-        return false;
+        return "throw";
     }
-    return true;
+    return nullptr;
 }
+
+// this function doesn't return if the execution succeeds
+static const char *doExecChild(char **argv, char **envp, int workingDirFd,
+                               const QProcessPrivate::UnixExtras *unixExtras) noexcept
+{
+    // enter the working directory
+    if (workingDirFd != -1 && fchdir(workingDirFd) == -1)
+        return "fchdir";
+
+    if (unixExtras) {
+        if (const char *what = callChildProcessModifier(unixExtras))
+            return what;
+    }
+
+    // execute the process
+    if (!envp)
+        qt_safe_execv(argv[0], argv);
+    else
+        qt_safe_execve(argv[0], argv, envp);
+    return "execve";
+}
+
 
 // IMPORTANT:
 //
@@ -605,36 +627,12 @@ void QProcessPrivate::execChild(int workingDir, char **argv, char **envp) const 
     // make sure this fd is closed if execv() succeeds
     qt_safe_close(childStartedPipe[0]);
 
-    // enter the working directory
-    if (workingDir != -1 && fchdir(workingDir) == -1) {
-        // failed, stop the process
-        strcpy(error.function, "fchdir");
-        goto report_errno;
-    }
-
-    if (unixExtras) {
-        if (!callChildProcessModifier(unixExtras.get())) {
-            std::strcpy(error.function, "throw");
-            goto report_errno;
-        }
-    }
-
-    // execute the process
-    if (!envp) {
-        qt_safe_execv(argv[0], argv);
-        strcpy(error.function, "execvp");
-    } else {
-#if defined (QPROCESS_DEBUG)
-        fprintf(stderr, "QProcessPrivate::execChild() starting %s\n", argv[0]);
-#endif
-        qt_safe_execve(argv[0], argv, envp);
-        strcpy(error.function, "execve");
-    }
+    const char *what = doExecChild(argv, envp, workingDir, unixExtras.get());
+    strcpy(error.function, what);
 
     // notify failure
     // don't use strerror or any other routines that may allocate memory, since
     // some buggy libc versions can deadlock on locked mutexes.
-report_errno:
     error.code = errno;
     qt_safe_write(childStartedPipe[1], &error, sizeof(error));
 }
@@ -1038,20 +1036,13 @@ bool QProcessPrivate::startDetached(qint64 *pid)
             ::_exit(1);
         };
 
-        if (workingDirFd != -1 && fchdir(workingDirFd) == -1)
-            reportFailed("fchdir: ");
-
         pid_t doubleForkPid = fork();
         if (doubleForkPid == 0) {
             // Render channels configuration.
             commitChannels();
 
-            if (envp.pointers)
-                qt_safe_execve(argv.pointers[0], argv.pointers.get(), envp.pointers.get());
-            else
-                qt_safe_execv(argv.pointers[0], argv.pointers.get());
-
-            reportFailed("execv: ");
+            reportFailed(doExecChild(argv.pointers.get(), envp.pointers.get(), workingDirFd,
+                                     unixExtras.get()));
         } else if (doubleForkPid == -1) {
             reportFailed("fork: ");
         }
