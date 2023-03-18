@@ -214,6 +214,18 @@ Q_DECLARE_TYPEINFO(QLocaleId, Q_PRIMITIVE_TYPE);
 
 using CharBuff = QVarLengthArray<char, 256>;
 
+struct ParsingResult
+{
+    enum State { // A duplicate of QValidator::State
+        Invalid,
+        Intermediate,
+        Acceptable
+    };
+
+    State state = Invalid;
+    CharBuff buff;
+};
+
 struct QLocaleData
 {
 public:
@@ -361,9 +373,9 @@ public:
     [[nodiscard]] inline NumericData numericData(NumberMode mode) const;
 
     // this function is used in QIntValidator (QtGui)
-    [[nodiscard]] Q_CORE_EXPORT bool validateChars(
-            QStringView str, NumberMode numMode, QByteArray *buff, int decDigits = -1,
-            QLocale::NumberOptions number_options = QLocale::DefaultNumberOptions) const;
+    [[nodiscard]] Q_CORE_EXPORT ParsingResult
+    validateChars(QStringView str, NumberMode numMode, int decDigits = -1,
+                  QLocale::NumberOptions number_options = QLocale::DefaultNumberOptions) const;
 
     // Access to assorted data members:
     [[nodiscard]] QLocaleId id() const

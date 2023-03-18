@@ -4205,11 +4205,12 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
     return true;
 }
 
-bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray *buff,
-                                int decDigits, QLocale::NumberOptions number_options) const
+ParsingResult
+QLocaleData::validateChars(QStringView str, NumberMode numMode, int decDigits,
+                           QLocale::NumberOptions number_options) const
 {
-    buff->clear();
-    buff->reserve(str.size());
+    ParsingResult result;
+    result.buff.reserve(str.size());
 
     enum { Whole, Fractional, Exponent } state = Whole;
     const bool scientific = numMode == DoubleScientificMode;
@@ -4227,14 +4228,14 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
             case Fractional:
                 // If a double has too many digits in its fractional part it is Invalid.
                 if (decDigits-- == 0)
-                    return false;
+                    return {};
                 break;
             case Exponent:
                 if (!isAsciiDigit(last)) {
                     // This is the first digit in the exponent (there may have beena '+'
                     // or '-' in before). If it's a zero, the exponent is zero-padded.
                     if (c == '0' && (number_options & QLocale::RejectLeadingZeroInExponent))
-                        return false;
+                        return {};
                 }
                 break;
             }
@@ -4245,7 +4246,7 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
                 // If an integer has a decimal point, it is Invalid.
                 // A double can only have one, at the end of its whole-number part.
                 if (numMode == IntegerMode || state != Whole)
-                    return false;
+                    return {};
                 // Even when decDigits is 0, we do allow the decimal point to be
                 // present - just as long as no digits follow it.
 
@@ -4256,14 +4257,14 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
             case '-':
                 // A sign can only appear at the start or after the e of scientific:
                 if (last != '\0' && !(scientific && last == 'e'))
-                    return false;
+                    return {};
                 break;
 
             case ',':
                 // Grouping is only allowed after a digit in the whole-number portion:
                 if ((number_options & QLocale::RejectGroupSeparator) || state != Whole
                         || !isAsciiDigit(last)) {
-                    return false;
+                    return {};
                 }
                 // We could check grouping sizes are correct, but fixup()s are
                 // probably better off correcting any misplacement instead.
@@ -4272,7 +4273,7 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
             case 'e':
                 // Only one e is allowed and only in scientific:
                 if (!scientific || state == Exponent)
-                    return false;
+                    return {};
                 state = Exponent;
                 break;
 
@@ -4282,16 +4283,17 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
                 // validators don't accept those values.
                 // For anything else, tokens.nextToken() must have returned 0.
                 Q_ASSERT(!c || c == 'a' || c == 'f' || c == 'i' || c == 'n');
-                return false;
+                return {};
             }
         }
 
         last = c;
         if (c != ',') // Skip grouping
-            buff->append(c);
+            result.buff.append(c);
     }
 
-    return true;
+    result.state = ParsingResult::Acceptable;
+    return result;
 }
 
 double QLocaleData::stringToDouble(QStringView str, bool *ok,

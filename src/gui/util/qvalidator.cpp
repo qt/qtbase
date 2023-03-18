@@ -363,8 +363,12 @@ static qlonglong pow10(int exp)
 }
 
 template <typename T> static inline
-std::optional<QValidator::State> initialResultCheck(T min, T max, const QByteArray &buff)
+std::optional<QValidator::State> initialResultCheck(T min, T max, const ParsingResult &result)
 {
+    if (result.state == ParsingResult::Invalid)
+        return QValidator::Invalid;
+
+    const CharBuff &buff = result.buff;
     if (buff.isEmpty())
         return QValidator::Intermediate;
 
@@ -376,21 +380,23 @@ std::optional<QValidator::State> initialResultCheck(T min, T max, const QByteArr
     if (buff.size() == 1 && (ch == '-' || ch == '+'))
         return QValidator::Intermediate;
 
+    if (result.state == ParsingResult::Intermediate)
+        return QValidator::Intermediate;
+
     return std::nullopt;
 }
 
 QValidator::State QIntValidator::validate(QString & input, int&) const
 {
-    QByteArray buff;
-    if (!locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, &buff, -1,
-                                           locale().numberOptions())) {
-        return Invalid;
-    }
+    ParsingResult result =
+        locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, -1,
+                                          locale().numberOptions());
 
-    std::optional<QValidator::State> opt = initialResultCheck(b, t, buff);
+    std::optional<State> opt = initialResultCheck(b, t, result);
     if (opt)
         return *opt;
 
+    const CharBuff &buff = result.buff;
     bool ok;
     qlonglong entered = QLocaleData::bytearrayToLongLong(buff, 10, &ok);
     if (!ok)
@@ -421,11 +427,12 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
 /*! \reimp */
 void QIntValidator::fixup(QString &input) const
 {
-    QByteArray buff;
-    if (!locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, &buff, -1,
-                                           locale().numberOptions())) {
+    auto [parseState, buff] =
+        locale().d->m_data->validateChars(input, QLocaleData::IntegerMode, -1,
+                                          locale().numberOptions());
+    if (parseState == ParsingResult::Invalid)
         return;
-    }
+
     bool ok;
     qlonglong entered = QLocaleData::bytearrayToLongLong(buff, 10, &ok);
     if (ok)
@@ -653,12 +660,10 @@ QValidator::State QDoubleValidator::validate(QString & input, int &) const
 QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QLocaleData::NumberMode numMode, const QLocale &locale) const
 {
     Q_Q(const QDoubleValidator);
-    QByteArray buff;
-    if (!locale.d->m_data->validateChars(input, numMode, &buff, q->dec, locale.numberOptions())) {
-        return QValidator::Invalid;
-    }
+    ParsingResult result =
+            locale.d->m_data->validateChars(input, numMode, q->dec, locale.numberOptions());
 
-    std::optional<QValidator::State> opt = initialResultCheck(q->b, q->t, buff);
+    std::optional<QValidator::State> opt = initialResultCheck(q->b, q->t, result);
     if (opt)
         return *opt;
 
@@ -739,15 +744,16 @@ void QDoubleValidatorPrivate::fixupWithLocale(QString &input, QLocaleData::Numbe
                                               const QLocale &locale) const
 {
     Q_Q(const QDoubleValidator);
-    QByteArray buff;
     // Passing -1 as the number of decimals, because fixup() exists to improve
     // an Intermediate value, if it can.
-    if (!locale.d->m_data->validateChars(input, numMode, &buff, -1, locale.numberOptions()))
+    auto [parseState, buff] =
+            locale.d->m_data->validateChars(input, numMode, -1, locale.numberOptions());
+    if (parseState == ParsingResult::Invalid)
         return;
 
-    // buff now contains data in C locale.
+    // buff contains data in C locale.
     bool ok = false;
-    const double entered = buff.toDouble(&ok);
+    const double entered = QByteArrayView(buff).toDouble(&ok);
     if (ok) {
         // Here we need to adjust the output format accordingly
         char mode;
@@ -771,7 +777,7 @@ void QDoubleValidatorPrivate::fixupWithLocale(QString &input, QLocaleData::Numbe
                 if (eIndex < 0)
                     eIndex = buff.size();
                 precision = eIndex - (buff.contains('.') ? 1 : 0)
-                        - (buff.startsWith('-') || buff.startsWith('+') ? 1 : 0);
+                        - (buff[0] == '-' || buff[0] == '+' ? 1 : 0);
             }
             // Use q->dec to limit the number of decimals, because we want the
             // fixup() result to pass validate().
