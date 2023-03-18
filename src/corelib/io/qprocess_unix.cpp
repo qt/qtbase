@@ -1090,7 +1090,12 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     // see startProcess() for more information
     PThreadCancelGuard cancelGuard;
 
-    pid_t childPid = fork();
+    auto doFork = [this]() {
+        if (useForkFlags(unixExtras.get()))
+            return fork;
+        QT_IGNORE_DEPRECATIONS(return vfork;)
+    }();
+    pid_t childPid = doFork();
     if (childPid == 0) {
         ::signal(SIGPIPE, SIG_DFL);     // reset the signal that we ignored
         ::setsid();
@@ -1105,7 +1110,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
             ::_exit(1);
         };
 
-        pid_t doubleForkPid = fork();
+        pid_t doubleForkPid = doFork();
         if (doubleForkPid == 0) {
             // Render channels configuration.
             commitChannels();
