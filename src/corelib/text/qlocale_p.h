@@ -211,6 +211,9 @@ struct QLocaleId
 };
 Q_DECLARE_TYPEINFO(QLocaleId, Q_PRIMITIVE_TYPE);
 
+
+using CharBuff = QVarLengthArray<char, 256>;
+
 struct QLocaleData
 {
 public:
@@ -243,8 +246,6 @@ public:
     };
 
     enum NumberMode { IntegerMode, DoubleStandardMode, DoubleScientificMode };
-
-    typedef QVarLengthArray<char, 256> CharBuff;
 
 private:
     enum PrecisionMode {
