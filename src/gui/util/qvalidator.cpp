@@ -377,9 +377,6 @@ std::optional<QValidator::State> initialResultCheck(T min, T max, const ParsingR
     if (signConflicts)
         return QValidator::Invalid;
 
-    if (buff.size() == 1 && (ch == '-' || ch == '+'))
-        return QValidator::Intermediate;
-
     if (result.state == ParsingResult::Intermediate)
         return QValidator::Intermediate;
 

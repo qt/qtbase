@@ -4297,6 +4297,12 @@ QLocaleData::validateChars(QStringView str, NumberMode numMode, int decDigits,
     }
 
     result.state = ParsingResult::Acceptable;
+
+    // Intermediate if it ends with any character that requires a digit after
+    // it to be valid e.g. group separator, sign, or exponent
+    if (last == ',' || last == '-' || last == '+' || last == 'e')
+        result.state = ParsingResult::Intermediate;
+
     return result;
 }
 
