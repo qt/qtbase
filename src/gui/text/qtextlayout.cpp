@@ -1364,7 +1364,7 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
         pen.setCosmetic(true);
         const qreal center = x + qreal(width) / 2;
         p->setPen(pen);
-        p->drawLine(QPointF(center, y), QPointF(center, y + (base + descent).toReal()));
+        p->drawLine(QPointF(center, y), QPointF(center, qCeil(y + (base + descent).toReal())));
         p->setPen(origPen);
     }
     p->setCompositionMode(origCompositionMode);
