@@ -1170,6 +1170,10 @@ void tst_QStringApiSymmetry::overload()
     // check the common overload sets defined above to be free of ambiguities
     // for arguments of type T
 
+    QT_WARNING_PUSH
+    // GCC complains about "t" and "ct"
+    QT_WARNING_DISABLE_GCC("-Wmaybe-uninitialized")
+
     using CT = const T;
 
     T t = {};
@@ -1218,6 +1222,7 @@ void tst_QStringApiSymmetry::overload()
             overload_sr_v(CT());
         }
     }
+    QT_WARNING_POP
 }
 
 void tst_QStringApiSymmetry::overload_special()
