@@ -1244,14 +1244,13 @@ class QMessageAuthenticationCodePrivate
 {
 public:
     QMessageAuthenticationCodePrivate(QCryptographicHash::Algorithm m)
-        : messageHash(m), method(m)
+        : messageHash(m)
     {
     }
 
     HashBlock key;
     HashResult result;
     QCryptographicHashPrivate messageHash;
-    const QCryptographicHash::Algorithm method;
 
     void setKey(QByteArrayView k) noexcept;
     void initMessageHash() noexcept;
@@ -1274,7 +1273,7 @@ public:
 */
 void QMessageAuthenticationCodePrivate::setKey(QByteArrayView newKey) noexcept
 {
-    const int blockSize = qt_hash_block_size(method);
+    const int blockSize = qt_hash_block_size(messageHash.method);
 
     if (newKey.size() > blockSize) {
         messageHash.addData(newKey);
