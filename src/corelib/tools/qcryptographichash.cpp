@@ -1250,7 +1250,6 @@ public:
 
     HashBlock key;
     HashResult result;
-    QBasicMutex finalizeMutex;
     QCryptographicHashPrivate messageHash;
     const QCryptographicHash::Algorithm method;
 
@@ -1259,7 +1258,7 @@ public:
     void finalize();
 
     // when not called from the static hash() function, this function needs to be
-    // called with finalizeMutex held:
+    // called with messageHash.finalizeMutex held:
     void finalizeUnchecked() noexcept;
     // END functions that need to be called with finalizeMutex held
 };
@@ -1448,7 +1447,7 @@ QByteArray QMessageAuthenticationCode::result() const
 
 void QMessageAuthenticationCodePrivate::finalize()
 {
-    const auto lock = qt_scoped_lock(finalizeMutex);
+    const auto lock = qt_scoped_lock(messageHash.finalizeMutex);
     if (!result.isEmpty())
         return;
     finalizeUnchecked();
