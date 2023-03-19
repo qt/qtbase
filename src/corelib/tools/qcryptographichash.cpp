@@ -1308,7 +1308,6 @@ public:
     }
 
     HashBlock key;
-    HashResult result;
     QCryptographicHashPrivate messageHash;
 
     void setKey(QByteArrayView k) noexcept;
@@ -1464,7 +1463,6 @@ QMessageAuthenticationCode::~QMessageAuthenticationCode()
 */
 void QMessageAuthenticationCode::reset() noexcept
 {
-    d->result.clear();
     d->messageHash.reset();
     d->initMessageHash();
 }
@@ -1503,7 +1501,6 @@ void QMessageAuthenticationCode::reset() noexcept
 */
 void QMessageAuthenticationCode::setKey(QByteArrayView key) noexcept
 {
-    d->result.clear();
     d->messageHash.reset();
     d->setKey(key);
     d->initMessageHash();
@@ -1554,7 +1551,7 @@ bool QMessageAuthenticationCode::addData(QIODevice *device)
 QByteArrayView QMessageAuthenticationCode::resultView() const noexcept
 {
     d->finalize();
-    return d->result.toByteArrayView();
+    return d->messageHash.resultView();
 }
 
 /*!
@@ -1570,7 +1567,7 @@ QByteArray QMessageAuthenticationCode::result() const
 void QMessageAuthenticationCodePrivate::finalize()
 {
     const auto lock = qt_scoped_lock(messageHash.finalizeMutex);
-    if (!result.isEmpty())
+    if (!messageHash.result.isEmpty())
         return;
     finalizeUnchecked();
 }
@@ -1584,8 +1581,6 @@ void QMessageAuthenticationCodePrivate::finalizeUnchecked() noexcept
     messageHash.addData(xored(key, 0x5c));
     messageHash.addData(hashedMessage);
     messageHash.finalizeUnchecked();
-
-    result = messageHash.result;
 }
 
 /*!
@@ -1602,7 +1597,7 @@ QByteArray QMessageAuthenticationCode::hash(QByteArrayView message, QByteArrayVi
     mac.initMessageHash();
     mac.messageHash.addData(message);
     mac.finalizeUnchecked();
-    return mac.result.toByteArrayView().toByteArray();
+    return mac.messageHash.resultView().toByteArray();
 }
 
 QT_END_NAMESPACE
