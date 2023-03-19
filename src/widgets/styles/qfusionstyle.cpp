@@ -2044,9 +2044,9 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     // and a tiny rect painted in the corner.
                     cachePainter.setPen(outline);
                     if (spinBox->direction == Qt::RightToLeft)
-                        cachePainter.drawLine(upRect.right(), upRect.top() - 1, upRect.right(), downRect.bottom() + 1);
+                        cachePainter.drawLine(QLineF(upRect.right(), upRect.top() - 0.5, upRect.right(), downRect.bottom() + 1.5));
                     else
-                        cachePainter.drawLine(upRect.left(), upRect.top() - 1, upRect.left(), downRect.bottom() + 1);
+                        cachePainter.drawLine(QLineF(upRect.left(), upRect.top() - 0.5, upRect.left(), downRect.bottom() + 1.5));
                 }
 
                 if (upIsActive && sunken) {
