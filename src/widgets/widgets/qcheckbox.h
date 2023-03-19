@@ -36,7 +36,11 @@ public:
     void setCheckState(Qt::CheckState state);
 
 Q_SIGNALS:
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     void stateChanged(int);
+#else
+    void stateChanged(Qt::CheckState);
+#endif
 
 protected:
     bool event(QEvent *e) override;

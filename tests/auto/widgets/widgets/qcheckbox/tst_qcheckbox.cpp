@@ -191,24 +191,29 @@ void tst_QCheckBox::toggled()
 void tst_QCheckBox::stateChanged()
 {
     QCheckBox testWidget;
-    int cur_state = -1;
+    QCOMPARE(testWidget.checkState(), Qt::Unchecked);
+
+    Qt::CheckState cur_state = Qt::Unchecked;
     QSignalSpy stateChangedSpy(&testWidget, &QCheckBox::stateChanged);
-    connect(&testWidget, &QCheckBox::stateChanged, this, [&](int state) { ++cur_state = state; });
+    connect(&testWidget, &QCheckBox::stateChanged, this, [&](auto state) { cur_state = Qt::CheckState(state); });
     testWidget.setChecked(true);
-    QCoreApplication::processEvents();
-    QCOMPARE(cur_state, 2);
+    QVERIFY(QTest::qWaitFor([&]() { return stateChangedSpy.size() == 1; }));
+    QCOMPARE(stateChangedSpy.size(), 1);
+    QCOMPARE(cur_state, Qt::Checked);
+    QCOMPARE(testWidget.checkState(), Qt::Checked);
 
-    cur_state = -1;
     testWidget.setChecked(false);
-    QCoreApplication::processEvents();
-    QCOMPARE(cur_state, 0);
+    QVERIFY(QTest::qWaitFor([&]() { return stateChangedSpy.size() == 2; }));
+    QCOMPARE(stateChangedSpy.size(), 2);
+    QCOMPARE(cur_state, Qt::Unchecked);
+    QCOMPARE(testWidget.checkState(), Qt::Unchecked);
 
-    cur_state = -1;
     testWidget.setCheckState(Qt::PartiallyChecked);
-    QCoreApplication::processEvents();
-    QCOMPARE(cur_state, 1);
-
+    QVERIFY(QTest::qWaitFor([&]() { return stateChangedSpy.size() == 3; }));
     QCOMPARE(stateChangedSpy.size(), 3);
+    QCOMPARE(cur_state, Qt::PartiallyChecked);
+    QCOMPARE(testWidget.checkState(), Qt::PartiallyChecked);
+
     testWidget.setCheckState(Qt::PartiallyChecked);
     QCoreApplication::processEvents();
     QCOMPARE(stateChangedSpy.size(), 3);
