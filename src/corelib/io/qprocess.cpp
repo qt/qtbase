@@ -2447,18 +2447,6 @@ bool QProcess::startDetached(const QString &program,
     return process.startDetached(pid);
 }
 
-QT_BEGIN_INCLUDE_NAMESPACE
-#if defined(Q_OS_MACOS)
-# include <crt_externs.h>
-# define environ (*_NSGetEnviron())
-#elif defined(QT_PLATFORM_UIKIT)
-  Q_CONSTINIT static char *qt_empty_environ[] = { 0 };
-#define environ qt_empty_environ
-#elif !defined(Q_OS_WIN)
-  extern char **environ;
-#endif
-QT_END_INCLUDE_NAMESPACE
-
 /*!
     \since 4.1
 
@@ -2480,12 +2468,7 @@ QT_END_INCLUDE_NAMESPACE
 */
 QStringList QProcess::systemEnvironment()
 {
-    QStringList tmp;
-    char *entry = nullptr;
-    int count = 0;
-    while ((entry = environ[count++]))
-        tmp << QString::fromLocal8Bit(entry);
-    return tmp;
+    return QProcessEnvironment::systemEnvironment().toStringList();
 }
 
 /*!
