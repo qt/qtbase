@@ -783,12 +783,12 @@
 
 /*! \typedef QMap::Iterator
 
-    Qt-style synonym for QMap<Key, T>::iterator.
+    Qt-style synonym for QMap::iterator.
 */
 
 /*! \typedef QMap::ConstIterator
 
-    Qt-style synonym for QMap<Key, T>::const_iterator.
+    Qt-style synonym for QMap::const_iterator.
 */
 
 /*! \typedef QMap::difference_type
@@ -837,12 +837,6 @@
     \inmodule QtCore
     \brief The QMap::iterator class provides an STL-style non-const iterator for QMap.
 
-    QMap features both \l{STL-style iterators} and \l{Java-style
-    iterators}. The STL-style iterators are more low-level and more
-    cumbersome to use; on the other hand, they are slightly faster
-    and, for developers who already know STL, have the advantage of
-    familiarity.
-
     QMap\<Key, T\>::iterator allows you to iterate over a QMap
     and to modify the value (but not the key) stored under
     a particular key. If you want to iterate over a const QMap, you
@@ -862,30 +856,14 @@
     Unlike QHash, which stores its items in an arbitrary order, QMap
     stores its items ordered by key.
 
-    Let's see a few examples of things we can do with a
-    QMap::iterator that we cannot do with a QMap::const_iterator.
     Here's an example that increments every value stored in the QMap
     by 2:
 
     \snippet code/src_corelib_tools_qmap.cpp 19
 
-    Here's an example that removes all the items whose key is a
-    string that starts with an underscore character:
-
-    \snippet code/src_corelib_tools_qmap.cpp 20
-
-    The call to QMap::erase() removes the item pointed to by the
-    iterator from the map, and returns an iterator to the next item.
-    Here's another way of removing an item while iterating:
+    To remove elements from a QMap you can use erase_if(QMap\<Key, T\> &map, Predicate pred):
 
     \snippet code/src_corelib_tools_qmap.cpp 21
-
-    It might be tempting to write code like this:
-
-    \snippet code/src_corelib_tools_qmap.cpp 22
-
-    However, this will potentially crash in \c{++i}, because \c i is
-    a dangling iterator after the call to erase().
 
     Multiple iterators can be used on the same map. If you add items
     to the map, existing iterators will remain valid. If you remove
@@ -897,7 +875,7 @@
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
 
-    \sa QMap::const_iterator, QMap::key_iterator, QMutableMapIterator
+    \sa QMap::const_iterator, QMap::key_iterator, QMap::key_value_iterator
 */
 
 /*! \typedef QMap::iterator::difference_type
@@ -1057,12 +1035,6 @@
     \inmodule QtCore
     \brief The QMap::const_iterator class provides an STL-style const iterator for QMap.
 
-    QMap features both \l{STL-style iterators} and \l{Java-style
-    iterators}. The STL-style iterators are more low-level and more
-    cumbersome to use; on the other hand, they are slightly faster
-    and, for developers who already know STL, have the advantage of
-    familiarity.
-
     QMap\<Key, T\>::const_iterator allows you to iterate over a QMap.
     If you want to modify the QMap as you iterate
     over it, you must use QMap::iterator instead. It is generally
@@ -1073,11 +1045,19 @@
 
     The default QMap::const_iterator constructor creates an
     uninitialized iterator. You must initialize it using a QMap
-    function like QMap::constBegin(), QMap::constEnd(), or
-    QMap::find() before you can start iterating. Here's a typical
+    function like QMap::cbegin(), QMap::cend(), or
+    QMap::constFind() before you can start iterating. Here's a typical
     loop that prints all the (key, value) pairs stored in a map:
 
     \snippet code/src_corelib_tools_qmap.cpp 24
+
+    Here's an example that removes all the items whose value is greater than 10:
+
+    \snippet code/src_corelib_tools_qmap.cpp 20
+
+    And here the same behavior with erase_if()
+
+    \snippet code/src_corelib_tools_qmap.cpp 21
 
     Unlike QHash, which stores its items in an arbitrary order, QMap
     stores its items ordered by key.
@@ -1092,7 +1072,7 @@
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
 
-    \sa QMap::iterator, QMap::key_iterator, QMapIterator
+    \sa QMap::iterator, QMap::key_iterator, QMap::const_key_value_iterator
 */
 
 /*! \typedef QMap::const_iterator::difference_type

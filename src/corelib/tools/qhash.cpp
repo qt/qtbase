@@ -2467,12 +2467,6 @@ size_t qHash(long double key, size_t seed) noexcept
     \inmodule QtCore
     \brief The QHash::iterator class provides an STL-style non-const iterator for QHash.
 
-    QHash features both \l{STL-style iterators} and \l{Java-style
-    iterators}. The STL-style iterators are more low-level and more
-    cumbersome to use; on the other hand, they are slightly faster
-    and, for developers who already know STL, have the advantage of
-    familiarity.
-
     QHash\<Key, T\>::iterator allows you to iterate over a QHash
     and to modify the value (but not the key) associated
     with a particular key. If you want to iterate over a const QHash,
@@ -2493,30 +2487,14 @@ size_t qHash(long double key, size_t seed) noexcept
     Unlike QMap, which orders its items by key, QHash stores its
     items in an arbitrary order.
 
-    Let's see a few examples of things we can do with a
-    QHash::iterator that we cannot do with a QHash::const_iterator.
     Here's an example that increments every value stored in the QHash
     by 2:
 
     \snippet code/src_corelib_tools_qhash.cpp 18
 
-    Here's an example that removes all the items whose key is a
-    string that starts with an underscore character:
-
-    \snippet code/src_corelib_tools_qhash.cpp 19
-
-    The call to QHash::erase() removes the item pointed to by the
-    iterator from the hash, and returns an iterator to the next item.
-    Here's another way of removing an item while iterating:
-
-    \snippet code/src_corelib_tools_qhash.cpp 20
-
-    It might be tempting to write code like this:
+    To remove elements from a QHash you can use erase_if(QHash\<Key, T\> &map, Predicate pred):
 
     \snippet code/src_corelib_tools_qhash.cpp 21
-
-    However, this will potentially crash in \c{++i}, because \c i is
-    a dangling iterator after the call to erase().
 
     Multiple iterators can be used on the same hash. However, be aware
     that any modification performed directly on the QHash (inserting and
@@ -2528,10 +2506,6 @@ size_t qHash(long double key, size_t seed) noexcept
     to grow/shrink its internal hash table.
     Using any iterator after a rehashing operation has occurred will lead to undefined behavior.
 
-    You can however safely use iterators to remove entries from the hash
-    using the QHash::erase() method. This function can safely be called while
-    iterating, and won't affect the order of items in the hash.
-
     If you need to keep iterators over a long period of time, we recommend
     that you use QMap rather than QHash.
 
@@ -2540,7 +2514,7 @@ size_t qHash(long double key, size_t seed) noexcept
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
 
-    \sa QHash::const_iterator, QHash::key_iterator, QMutableHashIterator
+    \sa QHash::const_iterator, QHash::key_iterator, QHash::key_value_iterator
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::iterator::iterator()
@@ -2636,12 +2610,6 @@ size_t qHash(long double key, size_t seed) noexcept
     \inmodule QtCore
     \brief The QHash::const_iterator class provides an STL-style const iterator for QHash.
 
-    QHash features both \l{STL-style iterators} and \l{Java-style
-    iterators}. The STL-style iterators are more low-level and more
-    cumbersome to use; on the other hand, they are slightly faster
-    and, for developers who already know STL, have the advantage of
-    familiarity.
-
     QHash\<Key, T\>::const_iterator allows you to iterate over a
     QHash. If you want to modify the QHash as you
     iterate over it, you must use QHash::iterator instead. It is
@@ -2652,8 +2620,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     The default QHash::const_iterator constructor creates an
     uninitialized iterator. You must initialize it using a QHash
-    function like QHash::constBegin(), QHash::constEnd(), or
-    QHash::find() before you can start iterating. Here's a typical
+    function like QHash::cbegin(), QHash::cend(), or
+    QHash::constFind() before you can start iterating. Here's a typical
     loop that prints all the (key, value) pairs stored in a hash:
 
     \snippet code/src_corelib_tools_qhash.cpp 23
@@ -2674,12 +2642,16 @@ size_t qHash(long double key, size_t seed) noexcept
     to grow/shrink its internal hash table.
     Using any iterator after a rehashing operation has occurred will lead to undefined behavior.
 
+    You can however safely use iterators to remove entries from the hash
+    using the QHash::erase() method. This function can safely be called while
+    iterating, and won't affect the order of items in the hash.
+
     \warning Iterators on implicitly shared containers do not work
     exactly like STL-iterators. You should avoid copying a container
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
 
-    \sa QHash::iterator, QHashIterator
+    \sa QHash::iterator, QHash::key_iterator, QHash::const_key_value_iterator
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator::const_iterator()
@@ -3435,12 +3407,6 @@ size_t qHash(long double key, size_t seed) noexcept
     \inmodule QtCore
     \brief The QMultiHash::iterator class provides an STL-style non-const iterator for QMultiHash.
 
-    QMultiHash features both \l{STL-style iterators} and \l{Java-style
-    iterators}. The STL-style iterators are more low-level and more
-    cumbersome to use; on the other hand, they are slightly faster
-    and, for developers who already know STL, have the advantage of
-    familiarity.
-
     QMultiHash\<Key, T\>::iterator allows you to iterate over a QMultiHash
     and to modify the value (but not the key) associated
     with a particular key. If you want to iterate over a const QMultiHash,
@@ -3461,30 +3427,14 @@ size_t qHash(long double key, size_t seed) noexcept
     Unlike QMap, which orders its items by key, QMultiHash stores its
     items in an arbitrary order.
 
-    Let's see a few examples of things we can do with a
-    QMultiHash::iterator that we cannot do with a QMultiHash::const_iterator.
     Here's an example that increments every value stored in the QMultiHash
     by 2:
 
     \snippet code/src_corelib_tools_qhash.cpp 18
 
-    Here's an example that removes all the items whose key is a
-    string that starts with an underscore character:
-
-    \snippet code/src_corelib_tools_qhash.cpp 19
-
-    The call to QMultiHash::erase() removes the item pointed to by the
-    iterator from the hash, and returns an iterator to the next item.
-    Here's another way of removing an item while iterating:
-
-    \snippet code/src_corelib_tools_qhash.cpp 20
-
-    It might be tempting to write code like this:
+    To remove elements from a QMultiHash you can use erase_if(QMultiHash\<Key, T\> &map, Predicate pred):
 
     \snippet code/src_corelib_tools_qhash.cpp 21
-
-    However, this will potentially crash in \c{++i}, because \c i is
-    a dangling iterator after the call to erase().
 
     Multiple iterators can be used on the same hash. However, be aware
     that any modification performed directly on the QHash (inserting and
@@ -3496,10 +3446,6 @@ size_t qHash(long double key, size_t seed) noexcept
     to grow/shrink its internal hash table.
     Using any iterator after a rehashing operation has occurred will lead to undefined behavior.
 
-    You can however safely use iterators to remove entries from the hash
-    using the QHash::erase() method. This function can safely be called while
-    iterating, and won't affect the order of items in the hash.
-
     If you need to keep iterators over a long period of time, we recommend
     that you use QMultiMap rather than QHash.
 
@@ -3508,7 +3454,7 @@ size_t qHash(long double key, size_t seed) noexcept
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
 
-    \sa QMultiHash::const_iterator, QMultiHash::key_iterator, QMutableHashIterator
+    \sa QMultiHash::const_iterator, QMultiHash::key_iterator, QMultiHash::key_value_iterator
 */
 
 /*! \fn template <class Key, class T> QMultiHash<Key, T>::iterator::iterator()
@@ -3604,12 +3550,6 @@ size_t qHash(long double key, size_t seed) noexcept
     \inmodule QtCore
     \brief The QMultiHash::const_iterator class provides an STL-style const iterator for QMultiHash.
 
-    QMultiHash features both \l{STL-style iterators} and \l{Java-style
-    iterators}. The STL-style iterators are more low-level and more
-    cumbersome to use; on the other hand, they are slightly faster
-    and, for developers who already know STL, have the advantage of
-    familiarity.
-
     QMultiHash\<Key, T\>::const_iterator allows you to iterate over a
     QMultiHash. If you want to modify the QMultiHash as you
     iterate over it, you must use QMultiHash::iterator instead. It is
@@ -3620,8 +3560,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     The default QMultiHash::const_iterator constructor creates an
     uninitialized iterator. You must initialize it using a QMultiHash
-    function like QMultiHash::constBegin(), QMultiHash::constEnd(), or
-    QMultiHash::find() before you can start iterating. Here's a typical
+    function like QMultiHash::cbegin(), QMultiHash::cend(), or
+    QMultiHash::constFind() before you can start iterating. Here's a typical
     loop that prints all the (key, value) pairs stored in a hash:
 
     \snippet code/src_corelib_tools_qhash.cpp 23
@@ -3633,28 +3573,24 @@ size_t qHash(long double key, size_t seed) noexcept
     recently to the least recently inserted value.
 
     Multiple iterators can be used on the same hash. However, be aware
-    that any modification performed directly on the QHash (inserting and
+    that any modification performed directly on the QMultiHash (inserting and
     removing items) can cause the iterators to become invalid.
 
-    Inserting items into the hash or calling methods such as QHash::reserve()
-    or QHash::squeeze() can invalidate all iterators pointing into the hash.
-    Iterators are guaranteed to stay valid only as long as the QHash doesn't have
+    Inserting items into the hash or calling methods such as QMultiHash::reserve()
+    or QMultiHash::squeeze() can invalidate all iterators pointing into the hash.
+    Iterators are guaranteed to stay valid only as long as the QMultiHash doesn't have
     to grow/shrink it's internal hash table.
     Using any iterator after a rehashing operation ahs occurred will lead to undefined behavior.
 
-    You can however safely use iterators to remove entries from the hash
-    using the QHash::erase() method. This function can safely be called while
-    iterating, and won't affect the order of items in the hash.
-
     If you need to keep iterators over a long period of time, we recommend
-    that you use QMap rather than QHash.
+    that you use QMultiMap rather than QMultiHash.
 
     \warning Iterators on implicitly shared containers do not work
     exactly like STL-iterators. You should avoid copying a container
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
 
-    \sa QMultiHash::iterator
+    \sa QMultiHash::iterator, QMultiHash::key_iterator, QMultiHash::const_key_value_iterator
 */
 
 /*! \fn template <class Key, class T> QMultiHash<Key, T>::const_iterator::const_iterator()

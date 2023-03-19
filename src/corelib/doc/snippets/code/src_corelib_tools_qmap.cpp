@@ -57,8 +57,8 @@ while (i.hasNext()) {
 
 
 //! [8]
-QMap<QString, int>::const_iterator i = map.constBegin();
-while (i != map.constEnd()) {
+QMap<QString, int>::const_iterator i = map.cbegin();
+while (i != map.cend()) {
     cout << i.key() << ": " << i.value() << Qt::endl;
     ++i;
 }
@@ -178,37 +178,22 @@ for (i = map.begin(); i != map.end(); ++i)
 //! [19]
 
 
+void erase()
+{
+QMap<QString, int> map;
 //! [20]
-QMap<QString, int>::iterator i = map.begin();
-while (i != map.end()) {
-    if (i.key().startsWith('_'))
+QMap<QString, int>::const_iterator i = map.cbegin();
+while (i != map.cend()) {
+    if (i.value() > 10)
         i = map.erase(i);
     else
         ++i;
 }
 //! [20]
-
-
 //! [21]
-QMap<QString, int>::iterator i = map.begin();
-while (i != map.end()) {
-    QMap<QString, int>::iterator prev = i;
-    ++i;
-    if (prev.key().startsWith('_'))
-        map.erase(prev);
-}
+erase_if(map, [](const QMap<QString, int>::iterator it) { return it.value() > 10; });
 //! [21]
-
-
-//! [22]
-// WRONG
-while (i != map.end()) {
-    if (i.key().startsWith('_'))
-        map.erase(i);
-    ++i;
 }
-//! [22]
-
 
 //! [23]
 if (i.key() == "Hello")
@@ -224,7 +209,7 @@ map.insert("February", 2);
 map.insert("December", 12);
 
 QMap<QString, int>::const_iterator i;
-for (i = map.constBegin(); i != map.constEnd(); ++i)
+for (i = map.cbegin(); i != map.cend(); ++i)
     cout << i.key() << ": " << i.value() << Qt::endl;
 //! [24]
 

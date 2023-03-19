@@ -57,8 +57,8 @@ while (i.hasNext()) {
 
 
 //! [8]
-QHash<QString, int>::const_iterator i = hash.constBegin();
-while (i != hash.constEnd()) {
+QHash<QString, int>::const_iterator i = hash.cbegin();
+while (i != hash.cend()) {
     cout << i.key() << ": " << i.value() << Qt::endl;
     ++i;
 }
@@ -163,38 +163,22 @@ for (i = hash.begin(); i != hash.end(); ++i)
     i.value() += 2;
 //! [18]
 
-
-//! [19]
-QHash<QString, int>::iterator i = hash.begin();
-while (i != hash.end()) {
-    if (i.key().startsWith('_'))
+void erase()
+{
+QHash<QString, int> hash;
+//! [20]
+QHash<QString, int>::const_iterator i = hash.cbegin();
+while (i != hash.cend()) {
+    if (i.value() > 10)
         i = hash.erase(i);
     else
         ++i;
 }
-//! [19]
-
-
 //! [20]
-QHash<QString, int>::iterator i = hash.begin();
-while (i != hash.end()) {
-    QHash<QString, int>::iterator prev = i;
-    ++i;
-    if (prev.key().startsWith('_'))
-        hash.erase(prev);
-}
-//! [20]
-
-
 //! [21]
-// WRONG
-while (i != hash.end()) {
-    if (i.key().startsWith('_'))
-        hash.erase(i);
-    ++i;
-}
+erase_if(hash, [](const QHash<QString, int>::iterator it) { return it.value() > 10; });
 //! [21]
-
+}
 
 //! [22]
 if (i.key() == "Hello")
@@ -210,7 +194,7 @@ hash.insert("February", 2);
 hash.insert("December", 12);
 
 QHash<QString, int>::const_iterator i;
-for (i = hash.constBegin(); i != hash.constEnd(); ++i)
+for (i = hash.cbegin(); i != hash.cend(); ++i)
     cout << i.key() << ": " << i.value() << Qt::endl;
 //! [23]
 

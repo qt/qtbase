@@ -53,8 +53,8 @@ while (i.hasNext()) {
 
 
 //! [8]
-auto i = multimap.constBegin();
-while (i != multimap.constEnd()) {
+auto i = multimap.cbegin();
+while (i != multimap.cend()) {
     cout << i.key() << ": " << i.value() << Qt::endl;
     ++i;
 }
@@ -185,43 +185,22 @@ for (i = multimap.begin(); i != multimap.end(); ++i)
 //! [18]
 
 
-//! [19]
-QMultiMap<QString, int>::iterator i;
-for (i = multimap.begin(); i != multimap.end(); ++i)
-    i.value() += 2;
-//! [19]
-
-
+void erase()
+{
+QMultiMap<QString, int> multimap;
 //! [20]
-QMultiMap<QString, int>::iterator i = multimap.begin();
-while (i != multimap.end()) {
-    if (i.key().startsWith('_'))
+QMultiMap<QString, int>::const_iterator i = multimap.cbegin();
+while (i != multimap.cend()) {
+    if (i.value() > 10)
         i = multimap.erase(i);
     else
         ++i;
 }
 //! [20]
-
-
 //! [21]
-QMultiMap<QString, int>::iterator i = multimap.begin();
-while (i != multimap.end()) {
-    QMap<QString, int>::iterator prev = i;
-    ++i;
-    if (prev.key().startsWith('_'))
-        multimap.erase(prev);
-}
+erase_if(multimap, [](const QMultiMap<QString, int>::iterator it) { return it.value() > 10; });
 //! [21]
-
-
-//! [22]
-// WRONG
-while (i != multimap.end()) {
-    if (i.key().startsWith('_'))
-        multimap.erase(i);
-    ++i;
 }
-//! [22]
 
 
 //! [23]
@@ -238,7 +217,7 @@ multimap.insert("February", 2);
 multimap.insert("December", 12);
 
 QMultiMap<QString, int>::const_iterator i;
-for (i = multimap.constBegin(); i != multimap.constEnd(); ++i)
+for (i = multimap.cbegin(); i != multimap.cend(); ++i)
     cout << i.key() << ": " << i.value() << Qt::endl;
 //! [24]
 

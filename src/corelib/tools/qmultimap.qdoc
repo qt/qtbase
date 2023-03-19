@@ -891,12 +891,12 @@
 
 /*! \typedef QMultiMap::Iterator
 
-    Qt-style synonym for QMultiMap<Key, T>::iterator.
+    Qt-style synonym for QMultiMap::iterator.
 */
 
 /*! \typedef QMultiMap::ConstIterator
 
-    Qt-style synonym for QMultiMap<Key, T>::const_iterator.
+    Qt-style synonym for QMultiMap::const_iterator.
 */
 
 /*! \typedef QMultiMap::difference_type
@@ -981,12 +981,6 @@
     \inmodule QtCore
     \brief The QMultiMap::iterator class provides an STL-style non-const iterator for QMultiMap.
 
-    QMultiMap features both \l{STL-style iterators} and \l{Java-style
-    iterators}. The STL-style iterators are more low-level and more
-    cumbersome to use; on the other hand, they are slightly faster
-    and, for developers who already know STL, have the advantage of
-    familiarity.
-
     QMultiMap\<Key, T\>::iterator allows you to iterate over a QMultiMap
     and to modify the value (but not the key) stored under
     a particular key. If you want to iterate over a const QMultiMap, you
@@ -1001,37 +995,19 @@
     start iterating. Here's a typical loop that prints all the (key,
     value) pairs stored in a map:
 
-    \snippet code/src_corelib_tools_qmultimap.cpp 18
-
     Unlike QMultiHash, which stores its items in an arbitrary order, QMultiMap
     stores its items ordered by key. Items that share the same key
     will appear consecutively,
     from the most recently to the least recently inserted value.
 
-    Let's see a few examples of things we can do with a
-    QMultiMap::iterator that we cannot do with a QMultiMap::const_iterator.
     Here's an example that increments every value stored in the QMultiMap
     by 2:
 
     \snippet code/src_corelib_tools_qmultimap.cpp 19
 
-    Here's an example that removes all the items whose key is a
-    string that starts with an underscore character:
-
-    \snippet code/src_corelib_tools_qmultimap.cpp 20
-
-    The call to QMultiMap::erase() removes the item pointed to by the
-    iterator from the map, and returns an iterator to the next item.
-    Here's another way of removing an item while iterating:
+    To remove elements from a QMultiMap you can use erase_if(QMultiMap\<Key, T\> &map, Predicate pred):
 
     \snippet code/src_corelib_tools_qmultimap.cpp 21
-
-    It might be tempting to write code like this:
-
-    \snippet code/src_corelib_tools_qmultimap.cpp 22
-
-    However, this will potentially crash in \c{++i}, because \c i is
-    a dangling iterator after the call to erase().
 
     Multiple iterators can be used on the same map. If you add items
     to the map, existing iterators will remain valid. If you remove
@@ -1043,7 +1019,7 @@
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
 
-    \sa QMultiMap::const_iterator, QMultiMap::key_iterator, QMutableMultiMapIterator
+    \sa QMultiMap::const_iterator, QMultiMap::key_iterator, QMultiMap::key_value_iterator
 */
 
 /*! \typedef QMultiMap::iterator::difference_type
@@ -1204,12 +1180,6 @@
     \inmodule QtCore
     \brief The QMultiMap::const_iterator class provides an STL-style const iterator for QMultiMap.
 
-    QMultiMap features both \l{STL-style iterators} and \l{Java-style
-    iterators}. The STL-style iterators are more low-level and more
-    cumbersome to use; on the other hand, they are slightly faster
-    and, for developers who already know STL, have the advantage of
-    familiarity.
-
     QMultiMap\<Key, T\>::const_iterator allows you to iterate over a QMultiMap.
     If you want to modify the QMultiMap as you iterate
     over it, you must use QMultiMap::iterator instead. It is generally
@@ -1220,11 +1190,15 @@
 
     The default QMultiMap::const_iterator constructor creates an
     uninitialized iterator. You must initialize it using a QMultiMap
-    function like QMultiMap::constBegin(), QMultiMap::constEnd(), or
-    QMultiMap::find() before you can start iterating. Here's a typical
+    function like QMultiMap::cbegin(), QMultiMap::cend(), or
+    QMultiMap::constFind() before you can start iterating. Here's a typical
     loop that prints all the (key, value) pairs stored in a map:
 
     \snippet code/src_corelib_tools_qmultimap.cpp 24
+
+    Here's an example that removes all the items whose value is greater than 10:
+
+    \snippet code/src_corelib_tools_qmultimap.cpp 20
 
     Unlike QMultiHash, which stores its items in an arbitrary order, QMultiMap
     stores its items ordered by key. Items that share the same key
@@ -1241,7 +1215,7 @@
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
 
-    \sa QMultiMap::iterator, QMultiMap::key_iterator, QMultiMapIterator
+    \sa QMultiMap::iterator, QMultiMap::key_iterator, QMultiMap::const_key_value_iterator
 */
 
 /*! \typedef QMultiMap::const_iterator::difference_type
