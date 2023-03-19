@@ -72,6 +72,10 @@
 #  undef HAVE_WAITID
 #endif
 
+#if (defined(__FreeBSD__) && defined(__FreeBSD_version) && __FreeBSD_version >= 1300000)
+#  include <sys/eventfd.h>
+#  define HAVE_EVENTFD 1
+#endif
 #if (defined(__FreeBSD__) && defined(__FreeBSD_version) && __FreeBSD_version >= 1000032) || \
     (defined(__OpenBSD__) && OpenBSD >= 201505) || \
     (defined(__NetBSD__) && __NetBSD_Version__ >= 600000000)
@@ -605,9 +609,7 @@ static int forkfd_fork_fallback(int flags, pid_t *ppid)
     int death_pipe[2];
     int sync_pipe[2];
     int ret;
-#ifdef __linux__
-    int efd;
-#endif
+    int efd = -1;
 
     (void) pthread_once(&forkfd_initialization, forkfd_initialize);
 
@@ -624,9 +626,8 @@ static int forkfd_fork_fallback(int flags, pid_t *ppid)
 #ifdef HAVE_EVENTFD
     /* try using an eventfd, which consumes less resources */
     efd = eventfd(0, EFD_CLOEXEC);
-    if (efd == -1)
 #endif
-    {
+    if (efd == -1) {
         /* try a pipe */
         if (create_pipe(sync_pipe, FFD_CLOEXEC) == -1) {
             /* failed both at eventfd and pipe; fail and pass errno */
@@ -653,14 +654,13 @@ static int forkfd_fork_fallback(int flags, pid_t *ppid)
     if (pid == 0) {
         /* this is the child process */
         /* first, wait for the all clear */
-#ifdef HAVE_EVENTFD
         if (efd != -1) {
+#ifdef HAVE_EVENTFD
             eventfd_t val64;
             EINTR_LOOP(ret, eventfd_read(efd, &val64));
             EINTR_LOOP(ret, close(efd));
-        } else
 #endif
-        {
+        } else {
             char c;
             EINTR_LOOP(ret, close(sync_pipe[1]));
             EINTR_LOOP(ret, read(sync_pipe[0], &c, sizeof c));
