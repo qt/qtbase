@@ -486,24 +486,60 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         QRect r = opt->rect;
         int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, opt, widget);
         QRect br = r.adjusted(fw, fw, -fw, -fw);
+        int x = br.x();
+        int y = br.y();
+        int w = br.width();
+        int h = br.height();
+        p->save();
+        const qreal devicePixelRatio = p->device()->devicePixelRatio();
+        if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
+            const qreal inverseScale = qreal(1) / devicePixelRatio;
+            p->scale(inverseScale, inverseScale);
+            x = qRound(devicePixelRatio * x);
+            y = qRound(devicePixelRatio * y);
+            w = qRound(devicePixelRatio * w);
+            h = qRound(devicePixelRatio * h);
+            p->translate(0.5, 0.5);
+        }
+        // center and make sure horizontal and vertical line has equal length
+        if (w < h) {
+            y += (h - w) / 2;
+            h = w;
+        } else {
+            x += (w - h) / 2;
+            w = h;
+        }
 
         int offset = (opt->state & State_Sunken) ? 1 : 0;
-        int step = (br.width() + 4) / 5;
-        p->fillRect(br.x() + offset, br.y() + offset +br.height() / 2 - step / 2,
-                    br.width(), step,
+        int step = (w + 4) / 5;
+        p->fillRect(x + offset, y + offset + h / 2 - step / 2, w, step,
                     opt->palette.buttonText());
-        if (pe == PE_IndicatorSpinPlus)
-            p->fillRect(br.x() + br.width() / 2 - step / 2 + offset, br.y() + offset,
-                        step, br.height(),
+        if (pe == PE_IndicatorSpinPlus) {
+            p->fillRect(x + w / 2 - step / 2 + offset, y + offset, step, h,
                         opt->palette.buttonText());
-
+        }
+        p->restore();
         break; }
     case PE_IndicatorSpinUp:
     case PE_IndicatorSpinDown: {
         QRect r = opt->rect;
         int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, opt, widget);
         // QRect br = r.adjusted(fw, fw, -fw, -fw);
-        int x = r.x(), y = r.y(), w = r.width(), h = r.height();
+        int x = r.x();
+        int y = r.y();
+        int w = r.width();
+        int h = r.height();
+        p->save();
+        const qreal devicePixelRatio = p->device()->devicePixelRatio();
+        if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
+            const qreal inverseScale = qreal(1) / devicePixelRatio;
+            p->scale(inverseScale, inverseScale);
+            x = qRound(devicePixelRatio * x);
+            y = qRound(devicePixelRatio * y);
+            w = qRound(devicePixelRatio * w);
+            h = qRound(devicePixelRatio * h);
+            p->translate(0.5, 0.5);
+        }
         int sw = w-4;
         if (sw < 3)
             break;
@@ -524,7 +560,6 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt);
             bsy = proxy()->pixelMetric(PM_ButtonShiftVertical, opt);
         }
-        p->save();
         p->translate(sx + bsx, sy + bsy);
         p->setPen(opt->palette.buttonText().color());
         p->setBrush(opt->palette.buttonText());
