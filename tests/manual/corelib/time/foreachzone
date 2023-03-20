@@ -1,0 +1,30 @@
+#!/bin/sh
+# Usage: foreachzone command [args...]
+#
+# The command is run with eval, so can include embedded shell
+# metacharacters such as | and ||. It is run in a sub-shell, so can
+# change environment or cd to a different directory without
+# complicating later runs of the same command.
+#
+# It is run repeatedly, with the TZ environment variable set to each
+# timezone name in turn, excluding the copies of zoneinfo/ under its
+# posix/ and right/ sub-dirs. Symbolic links are included (as long as
+# they point to valid zone data).
+#
+# For example, in the top level of a build tree,
+#   foreachzone ninja tst_qdate_check
+# will run all the QDate tests in every time zone (this may take some
+# time).
+
+DIR=/usr/share/zoneinfo
+[ -d "$DIR" ] || DIR=/usr/lib/zoneinfo
+
+find $DIR -type d \( -name posix -o -name right \) -prune -o \( -type f -o -type l \) -print \
+    | while read f
+do
+    # To filter out symlinks in zoneinfo/ itself, uncomment this line:
+    # echo "$f" | grep -wq 'zoneinfo/.*/' || [ ! -h "$f" ] || continue
+    # To skip all symlinks, omit the -L here:
+    file -L "$f" | grep -wq 'timezone data .*, version' || continue
+    ( export TZ=${f#*/zoneinfo/}; eval "$@" )
+done
