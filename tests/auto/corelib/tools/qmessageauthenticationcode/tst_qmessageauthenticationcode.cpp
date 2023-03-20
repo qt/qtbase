@@ -145,8 +145,7 @@ void tst_QMessageAuthenticationCode::result()
     QFETCH(QByteArray, message);
     QFETCH(QByteArray, code);
 
-    QMessageAuthenticationCode mac(algo);
-    mac.setKey(key);
+    QMessageAuthenticationCode mac(algo, key);
     mac.addData(message);
     QByteArray result = mac.result();
 
@@ -174,8 +173,7 @@ void tst_QMessageAuthenticationCode::result_incremental()
 
     QCOMPARE(leftPart + rightPart, message);
 
-    QMessageAuthenticationCode mac(algo);
-    mac.setKey(key);
+    QMessageAuthenticationCode mac(algo, key);
     mac.addData(leftPart);
     mac.addData(rightPart);
     QByteArray result = mac.result();
