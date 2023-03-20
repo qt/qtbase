@@ -973,6 +973,12 @@
 
     \since 6.1
     \overload
+    \deprecated [6.10] Use makeReadyValueFuture() instead
+
+    The QtFuture::makeReadyFuture() method should be avoided because it has an
+    inconsistent set of overloads. It will be deprecated in future Qt releases.
+    Use QtFuture::makeReadyVoidFuture(), QtFuture::makeReadyValueFuture() or
+    QtFuture::makeReadyRangeFuture() instead.
 
     Creates and returns a QFuture which already has a result \a value.
     The returned QFuture has a type of std::decay_t<T>, where T is not void.
@@ -992,6 +998,12 @@
 
     \since 6.1
     \overload
+    \deprecated [6.10] Use makeReadyVoidFuture() instead
+
+    The QtFuture::makeReadyFuture() method should be avoided because it has an
+    inconsistent set of overloads. It will be deprecated in future Qt releases.
+    Use QtFuture::makeReadyVoidFuture(), QtFuture::makeReadyValueFuture() or
+    QtFuture::makeReadyRangeFuture() instead.
 
     Creates and returns a void QFuture. Such QFuture can't store any result.
     One can use it to query the state of the computation.
@@ -1015,6 +1027,12 @@
 
     \since 6.1
     \overload
+    \deprecated [6.10] Use makeReadyRangeFuture() instead
+
+    The QtFuture::makeReadyFuture() method should be avoided because it has an
+    inconsistent set of overloads. It will be deprecated in future Qt releases.
+    Use QtFuture::makeReadyVoidFuture(), QtFuture::makeReadyValueFuture() or
+    QtFuture::makeReadyRangeFuture() instead.
 
     Creates and returns a QFuture which already has multiple results set from \a values.
 

@@ -4078,6 +4078,9 @@ void tst_QFuture::rejectPendingResultOverwrite()
 
 void tst_QFuture::createReadyFutures()
 {
+#if QT_DEPRECATED_SINCE(6, 10)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     // using const T &
     {
         const int val = 42;
@@ -4113,6 +4116,8 @@ void tst_QFuture::createReadyFutures()
         QCOMPARE(f.resultCount(), 3);
         QCOMPARE(f.results(), values);
     }
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 10)
 
     // test makeReadyValueFuture<T>()
     {

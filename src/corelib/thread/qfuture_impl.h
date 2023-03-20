@@ -1009,7 +1009,9 @@ static QFuture<std::decay_t<T>> makeReadyValueFuture(T &&value)
 
 Q_CORE_EXPORT QFuture<void> makeReadyVoidFuture(); // implemented in qfutureinterface.cpp
 
+#if QT_DEPRECATED_SINCE(6, 10)
 template<typename T, typename = QtPrivate::EnableForNonVoid<T>>
+QT_DEPRECATED_VERSION_X(6, 10, "Use makeReadyValueFuture() instead")
 static QFuture<std::decay_t<T>> makeReadyFuture(T &&value)
 {
     return makeReadyValueFuture(std::forward<T>(value));
@@ -1019,10 +1021,12 @@ static QFuture<std::decay_t<T>> makeReadyFuture(T &&value)
 // uses makeReadyVoidFuture() and required QFuture<void> to be defined.
 
 template<typename T>
+QT_DEPRECATED_VERSION_X(6, 10, "Use makeReadyRangeFuture() instead")
 static QFuture<T> makeReadyFuture(const QList<T> &values)
 {
     return makeReadyRangeFuture(values);
 }
+#endif // QT_DEPRECATED_SINCE(6, 10)
 
 #ifndef QT_NO_EXCEPTIONS
 

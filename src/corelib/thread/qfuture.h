@@ -522,15 +522,18 @@ QFuture<std::variant<std::decay_t<Futures>...>> whenAny(Futures &&... futures);
 
 #endif // Q_QDOC
 
+#if QT_DEPRECATED_SINCE(6, 10)
 #if defined(Q_QDOC)
 static QFuture<void> makeReadyFuture()
 #else
 template<typename T = void>
+QT_DEPRECATED_VERSION_X(6, 10, "Use makeReadyVoidFuture() instead")
 static QFuture<T> makeReadyFuture()
 #endif
 {
     return makeReadyVoidFuture();
 }
+#endif // QT_DEPRECATED_SINCE(6, 10)
 
 } // namespace QtFuture
 
