@@ -5,7 +5,7 @@ SOURCES       = main.cpp \
                 mainwindow.cpp \
                 xbelreader.cpp \
                 xbelwriter.cpp
-QT           += xml widgets
+QT           += widgets
 requires(qtConfig(filedialog))
 
 EXAMPLE_FILES = frank.xbel jennifer.xbel
