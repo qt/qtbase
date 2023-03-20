@@ -10,7 +10,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/xml/rsslisting")
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Network Widgets Xml)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Network Widgets)
 
 qt_standard_project_setup()
 
@@ -29,7 +29,6 @@ target_link_libraries(rsslisting PRIVATE
     Qt6::Gui
     Qt6::Network
     Qt6::Widgets
-    Qt6::Xml
 )
 
 install(TARGETS rsslisting
