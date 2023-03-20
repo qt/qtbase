@@ -2524,8 +2524,8 @@ static QTime msecsToTime(qint64 msecs)
 // The inputs should not have opposite signs.
 static inline bool daysAndMillisOverflow(qint64 days, qint64 millisInDay, qint64 *sumMillis)
 {
-    return mul_overflow(days, std::integral_constant<qint64, MSECS_PER_DAY>(), sumMillis)
-        || add_overflow(*sumMillis, millisInDay, sumMillis);
+    return qMulOverflow(days, std::integral_constant<qint64, MSECS_PER_DAY>(), sumMillis)
+        || qAddOverflow(*sumMillis, millisInDay, sumMillis);
 }
 
 // Converts a date/time value into msecs
@@ -2621,7 +2621,7 @@ QDateTimePrivate::ZoneState QDateTimePrivate::expressUtcAsLocal(qint64 utcMSecs)
 #if QT_CONFIG(timezone) // Use the system time-zone.
     if (const auto sys = QTimeZone::systemTimeZone(); sys.isValid()) {
         result.offset = sys.d->offsetFromUtc(utcMSecs);
-        if (add_overflow(utcMSecs, result.offset * MSECS_PER_SEC, &result.when))
+        if (qAddOverflow(utcMSecs, result.offset * MSECS_PER_SEC, &result.when))
             return result;
         result.dst = sys.d->isDaylightTime(utcMSecs) ? DaylightTime : StandardTime;
         result.valid = true;
@@ -2637,15 +2637,15 @@ QDateTimePrivate::ZoneState QDateTimePrivate::expressUtcAsLocal(qint64 utcMSecs)
     qint64 fakeJd, diffMillis, fakeUtc;
     if (Q_UNLIKELY(!QGregorianCalendar::julianFromParts(systemTimeYearMatching(ymd.year),
                                                         ymd.month, ymd.day, &fakeJd)
-                   || mul_overflow(jd - fakeJd, std::integral_constant<qint64, MSECS_PER_DAY>(),
+                   || qMulOverflow(jd - fakeJd, std::integral_constant<qint64, MSECS_PER_DAY>(),
                                    &diffMillis)
-                   || sub_overflow(utcMSecs, diffMillis, &fakeUtc))) {
+                   || qSubOverflow(utcMSecs, diffMillis, &fakeUtc))) {
         return result;
     }
 
     result = QLocalTime::utcToLocal(fakeUtc);
     // Now correct result.when for the use of the fake date:
-    if (!result.valid || add_overflow(result.when, diffMillis, &result.when)) {
+    if (!result.valid || qAddOverflow(result.when, diffMillis, &result.when)) {
         // If utcToLocal() failed, its return has the fake when; restore utcMSecs.
         // Fail on overflow, but preserve offset and DST-ness.
         result.when = utcMSecs;
@@ -2724,7 +2724,7 @@ QDateTimePrivate::ZoneState QDateTimePrivate::localStateAtMillis(qint64 millis, 
         auto result = QLocalTime::mapLocalTime(fake.shifted, dst);
         if (result.valid) {
             qint64 adjusted;
-            if (Q_UNLIKELY(add_overflow(result.when, millis - fake.shifted, &adjusted))) {
+            if (Q_UNLIKELY(qAddOverflow(result.when, millis - fake.shifted, &adjusted))) {
                 using Bound = std::numeric_limits<qint64>;
                 adjusted = millis < fake.shifted ? Bound::min() : Bound::max();
             }
@@ -3948,7 +3948,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
     if (QTimeZone::isUtcOrFixedOffset(spec)) {
         if (spec == Qt::OffsetFromUTC)
             state.offset = d->m_offsetFromUtc;
-        if (!state.offset || !add_overflow(msecs, state.offset * MSECS_PER_SEC, &state.when))
+        if (!state.offset || !qAddOverflow(msecs, state.offset * MSECS_PER_SEC, &state.when))
             status |= QDateTimePrivate::ValidityMask;
     } else if (spec == Qt::LocalTime) {
         state = QDateTimePrivate::expressUtcAsLocal(msecs);
@@ -3961,7 +3961,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
             state.offset = data.offsetFromUtc;
             Q_ASSERT(state.offset >= -SECS_PER_DAY && state.offset <= SECS_PER_DAY);
             if (!state.offset
-                || !Q_UNLIKELY(add_overflow(msecs, state.offset * MSECS_PER_SEC, &state.when))) {
+                || !Q_UNLIKELY(qAddOverflow(msecs, state.offset * MSECS_PER_SEC, &state.when))) {
                 d->m_status = mergeDaylightStatus(status | QDateTimePrivate::ValidityMask,
                                                   data.daylightTimeOffset
                                                   ? QDateTimePrivate::DaylightTime
@@ -4002,7 +4002,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
 void QDateTime::setSecsSinceEpoch(qint64 secs)
 {
     qint64 msecs;
-    if (!mul_overflow(secs, std::integral_constant<qint64, MSECS_PER_SEC>(), &msecs)) {
+    if (!qMulOverflow(secs, std::integral_constant<qint64, MSECS_PER_SEC>(), &msecs)) {
         setMSecsSinceEpoch(msecs);
     } else if (d.isShort()) {
         d.data.status &= ~int(QDateTimePrivate::ValidityMask);
@@ -4284,7 +4284,7 @@ QDateTime QDateTime::addYears(int nyears) const
 QDateTime QDateTime::addSecs(qint64 s) const
 {
     qint64 msecs;
-    if (mul_overflow(s, std::integral_constant<qint64, MSECS_PER_SEC>(), &msecs))
+    if (qMulOverflow(s, std::integral_constant<qint64, MSECS_PER_SEC>(), &msecs))
         return QDateTime();
     return addMSecs(msecs);
 }
@@ -4308,7 +4308,7 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
     case Qt::LocalTime:
     case Qt::TimeZone:
         // Convert to real UTC first in case this crosses a DST transition:
-        if (!add_overflow(toMSecsSinceEpoch(), msecs, &msecs)) {
+        if (!qAddOverflow(toMSecsSinceEpoch(), msecs, &msecs)) {
             dt.setMSecsSinceEpoch(msecs);
         } else if (dt.d.isShort()) {
             dt.d.data.status &= ~int(QDateTimePrivate::ValidityMask);
@@ -4320,7 +4320,7 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
     case Qt::UTC:
     case Qt::OffsetFromUTC:
         // No need to convert, just add on
-        if (add_overflow(getMSecs(d), msecs, &msecs)) {
+        if (qAddOverflow(getMSecs(d), msecs, &msecs)) {
             if (dt.d.isShort()) {
                 dt.d.data.status &= ~int(QDateTimePrivate::ValidityMask);
             } else {

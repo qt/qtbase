@@ -92,18 +92,18 @@ QImageData::calculateImageParameters(qsizetype width, qsizetype height, qsizetyp
 
     // calculate the size, taking care of overflows
     qsizetype bytes_per_line;
-    if (mul_overflow(width, depth, &bytes_per_line))
+    if (qMulOverflow(width, depth, &bytes_per_line))
         return invalid;
-    if (add_overflow(bytes_per_line, qsizetype(31), &bytes_per_line))
+    if (qAddOverflow(bytes_per_line, qsizetype(31), &bytes_per_line))
         return invalid;
     // bytes per scanline (must be multiple of 4)
     bytes_per_line = (bytes_per_line >> 5) << 2;    // can't overflow
 
     qsizetype total_size;
-    if (mul_overflow(height, bytes_per_line, &total_size))
+    if (qMulOverflow(height, bytes_per_line, &total_size))
         return invalid;
     qsizetype dummy;
-    if (mul_overflow(height, qsizetype(sizeof(uchar *)), &dummy))
+    if (qMulOverflow(height, qsizetype(sizeof(uchar *)), &dummy))
         return invalid;                                 // why is this here?
 #if 1 || QT_VERSION < QT_VERSION_CHECK(6,0,0) // ### can only fix this if QImage dimensions are not int anymore
     // Disallow images where width * depth calculations might overflow

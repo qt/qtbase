@@ -132,7 +132,7 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(QStringView in, QString *output)
 
         // delta = delta + (m - n) * (h + 1), fail on overflow
         uint tmp;
-        if (mul_overflow<uint>(m - n, h + 1, &tmp) || add_overflow<uint>(delta, tmp, &delta)) {
+        if (qMulOverflow<uint>(m - n, h + 1, &tmp) || qAddOverflow<uint>(delta, tmp, &delta)) {
             output->truncate(outLen);
             return; // punycode_overflow
         }
@@ -144,7 +144,7 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(QStringView in, QString *output)
             // increase delta until we reach the character processed in this iteration;
             // fail if delta overflows.
             if (c < n) {
-                if (add_overflow<uint>(delta, 1, &delta)) {
+                if (qAddOverflow<uint>(delta, 1, &delta)) {
                     output->truncate(outLen);
                     return; // punycode_overflow
                 }
@@ -219,7 +219,7 @@ Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
 
             // i = i + digit * w, fail on overflow
             uint tmp;
-            if (mul_overflow<uint>(digit, w, &tmp) || add_overflow<uint>(i, tmp, &i))
+            if (qMulOverflow<uint>(digit, w, &tmp) || qAddOverflow<uint>(i, tmp, &i))
                 return QString();
 
             // detect threshold to stop reading delta digits
@@ -231,7 +231,7 @@ Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
             if (digit < t) break;
 
             // w = w * (base - t), fail on overflow
-            if (mul_overflow<uint>(w, base - t, &w))
+            if (qMulOverflow<uint>(w, base - t, &w))
                 return QString();
         }
 
@@ -241,7 +241,7 @@ Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
         bias = adapt(i - oldi, outputLength + 1, oldi == 0);
 
         // n = n + i div (length(output) + 1), fail on overflow
-        if (add_overflow<uint>(n, i / (outputLength + 1), &n))
+        if (qAddOverflow<uint>(n, i / (outputLength + 1), &n))
             return QString();
 
         // allow the deltas to wrap around

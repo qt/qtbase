@@ -196,11 +196,11 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
     // minMSecs(), because at least one backend (Windows) uses it for a
     // start-of-time fake transition, that we want previousTransition() to find.
     const qint64 recent =
-        sub_overflow(forLocalMSecs, sixteenHoursInMSecs, &millis) || millis <= minMSecs()
+        qSubOverflow(forLocalMSecs, sixteenHoursInMSecs, &millis) || millis <= minMSecs()
         ? minMSecs() + 1 : millis; // Necessarily <= forLocalMSecs + 2.
     // (Given that minMSecs() is std::numeric_limits<qint64>::min() + 1.)
     const qint64 imminent =
-        add_overflow(forLocalMSecs, sixteenHoursInMSecs, &millis)
+        qAddOverflow(forLocalMSecs, sixteenHoursInMSecs, &millis)
         ? maxMSecs() : millis; // Necessarily >= forLocalMSecs
     // At most one of those was clipped to its boundary value:
     Q_ASSERT(recent < imminent && sixteenHoursInMSecs < imminent - recent + 2);
@@ -362,7 +362,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
     if (early == late // > 99% of the time
         || late == invalidSeconds()) {
         if (early == invalidSeconds()
-            || sub_overflow(forLocalMSecs, early * qint64(1000), &utcEpochMSecs)) {
+            || qSubOverflow(forLocalMSecs, early * qint64(1000), &utcEpochMSecs)) {
             return invalidData(); // Outside representable range
         }
     } else {

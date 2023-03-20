@@ -1564,7 +1564,7 @@ uchar *QResourceFileEnginePrivate::map(qint64 offset, qint64 size, QFile::Memory
     qint64 max = resource.uncompressedSize();
     qint64 end;
     if (offset < 0 || size <= 0 || !resource.isValid() ||
-            add_overflow(offset, size, &end) || end > max) {
+            qAddOverflow(offset, size, &end) || end > max) {
         q->setError(QFile::UnspecifiedError, QString());
         return nullptr;
     }

@@ -290,15 +290,15 @@ int getUtcOffset(qint64 atMSecsSinceEpoch)
 // True if combining day and seconds overflows qint64; otherwise, sets *epochSeconds
 inline bool daysAndSecondsOverflow(qint64 julianDay, qint64 daySeconds, qint64 *epochSeconds)
 {
-    return mul_overflow(julianDay - JULIAN_DAY_FOR_EPOCH, IC(SECS_PER_DAY), epochSeconds)
-        || add_overflow(*epochSeconds, daySeconds, epochSeconds);
+    return qMulOverflow(julianDay - JULIAN_DAY_FOR_EPOCH, IC(SECS_PER_DAY), epochSeconds)
+        || qAddOverflow(*epochSeconds, daySeconds, epochSeconds);
 }
 
 // True if combining seconds and millis overflows; otherwise sets *epochMillis
 inline bool secondsAndMillisOverflow(qint64 epochSeconds, qint64 millis, qint64 *epochMillis)
 {
-    return mul_overflow(epochSeconds, IC(MSECS_PER_SEC), epochMillis)
-        || add_overflow(*epochMillis, millis, epochMillis);
+    return qMulOverflow(epochSeconds, IC(MSECS_PER_SEC), epochMillis)
+        || qAddOverflow(*epochMillis, millis, epochMillis);
 }
 
 #undef IC
