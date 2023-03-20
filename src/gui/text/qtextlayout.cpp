@@ -741,7 +741,7 @@ int QTextLayout::leftCursorPosition(int oldPos) const
     return newPos;
 }
 
-/*!/
+/*!
     Returns \c true if position \a pos is a valid cursor position.
 
     In a Unicode context some positions in the text are not valid
