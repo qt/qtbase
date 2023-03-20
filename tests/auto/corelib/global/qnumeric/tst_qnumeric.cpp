@@ -434,33 +434,33 @@ template <typename Int> static void addOverflow_template()
 
 #define ADD_COMPARE_NONOVF(v1, v2, expected)    \
     do { \
-        QCOMPARE(add_overflow(Int(v1), Int(v2), &r), false); \
+        QCOMPARE(qAddOverflow(Int(v1), Int(v2), &r), false); \
         QCOMPARE(r, Int(expected)); \
-        QCOMPARE(add_overflow(Int(v1), (std::integral_constant<Int, Int(v2)>()), &r), false); \
+        QCOMPARE(qAddOverflow(Int(v1), (std::integral_constant<Int, Int(v2)>()), &r), false); \
         QCOMPARE(r, Int(expected)); \
-        QCOMPARE(add_overflow<v2>(Int(v1), &r), false); \
+        QCOMPARE(qAddOverflow<v2>(Int(v1), &r), false); \
         QCOMPARE(r, Int(expected)); \
     } while (false)
 #define ADD_COMPARE_OVF(v1, v2)    \
     do { \
-        QCOMPARE(add_overflow(Int(v1), Int(v2), &r), true); \
-        QCOMPARE(add_overflow(Int(v1), (std::integral_constant<Int, Int(v2)>()), &r), true); \
-        QCOMPARE(add_overflow<v2>(Int(v1), &r), true); \
+        QCOMPARE(qAddOverflow(Int(v1), Int(v2), &r), true); \
+        QCOMPARE(qAddOverflow(Int(v1), (std::integral_constant<Int, Int(v2)>()), &r), true); \
+        QCOMPARE(qAddOverflow<v2>(Int(v1), &r), true); \
     } while (false)
 #define SUB_COMPARE_NONOVF(v1, v2, expected)    \
     do { \
-        QCOMPARE(sub_overflow(Int(v1), Int(v2), &r), false); \
+        QCOMPARE(qSubOverflow(Int(v1), Int(v2), &r), false); \
         QCOMPARE(r, Int(expected)); \
-        QCOMPARE(sub_overflow(Int(v1), (std::integral_constant<Int, Int(v2)>()), &r), false); \
+        QCOMPARE(qSubOverflow(Int(v1), (std::integral_constant<Int, Int(v2)>()), &r), false); \
         QCOMPARE(r, Int(expected)); \
-        QCOMPARE(sub_overflow<v2>(Int(v1), &r), false); \
+        QCOMPARE(qSubOverflow<v2>(Int(v1), &r), false); \
         QCOMPARE(r, Int(expected)); \
     } while (false)
 #define SUB_COMPARE_OVF(v1, v2)    \
     do { \
-        QCOMPARE(sub_overflow(Int(v1), Int(v2), &r), true); \
-        QCOMPARE(sub_overflow(Int(v1), (std::integral_constant<Int, Int(v2)>()), &r), true); \
-        QCOMPARE(sub_overflow<v2>(Int(v1), &r), true); \
+        QCOMPARE(qSubOverflow(Int(v1), Int(v2), &r), true); \
+        QCOMPARE(qSubOverflow(Int(v1), (std::integral_constant<Int, Int(v2)>()), &r), true); \
+        QCOMPARE(qSubOverflow<v2>(Int(v1), &r), true); \
     } while (false)
 
     // basic values
@@ -611,18 +611,18 @@ template <typename Int> static void mulOverflow_template()
 
 #define MUL_COMPARE_NONOVF(v1, v2, expected)    \
     do { \
-        QCOMPARE(mul_overflow(Int(v1), Int(v2), &r), false); \
+        QCOMPARE(qMulOverflow(Int(v1), Int(v2), &r), false); \
         QCOMPARE(r, Int(expected)); \
-        QCOMPARE(mul_overflow(Int(v1), (std::integral_constant<Int, v2>()), &r), false); \
+        QCOMPARE(qMulOverflow(Int(v1), (std::integral_constant<Int, v2>()), &r), false); \
         QCOMPARE(r, Int(expected)); \
-        QCOMPARE(mul_overflow<v2>(Int(v1), &r), false); \
+        QCOMPARE(qMulOverflow<v2>(Int(v1), &r), false); \
         QCOMPARE(r, Int(expected)); \
     } while (false);
 #define MUL_COMPARE_OVF(v1, v2)    \
     do { \
-        QCOMPARE(mul_overflow(Int(v1), Int(v2), &r), true); \
-        QCOMPARE(mul_overflow(Int(v1), (std::integral_constant<Int, v2>()), &r), true); \
-        QCOMPARE(mul_overflow<v2>(Int(v1), &r), true); \
+        QCOMPARE(qMulOverflow(Int(v1), Int(v2), &r), true); \
+        QCOMPARE(qMulOverflow(Int(v1), (std::integral_constant<Int, v2>()), &r), true); \
+        QCOMPARE(qMulOverflow<v2>(Int(v1), &r), true); \
     } while (false);
 
     // basic multiplications
@@ -723,28 +723,28 @@ void tst_QNumeric::signedOverflow()
     const int maxInt = std::numeric_limits<int>::max();
     int r;
 
-    QCOMPARE(add_overflow(minInt + 1, int(-1), &r), false);
-    QCOMPARE(add_overflow(minInt, int(-1), &r), true);
-    QCOMPARE(add_overflow(minInt, minInt, &r), true);
-    QCOMPARE(add_overflow(maxInt - 1, int(1), &r), false);
-    QCOMPARE(add_overflow(maxInt, int(1), &r), true);
-    QCOMPARE(add_overflow(maxInt, maxInt, &r), true);
+    QCOMPARE(qAddOverflow(minInt + 1, int(-1), &r), false);
+    QCOMPARE(qAddOverflow(minInt, int(-1), &r), true);
+    QCOMPARE(qAddOverflow(minInt, minInt, &r), true);
+    QCOMPARE(qAddOverflow(maxInt - 1, int(1), &r), false);
+    QCOMPARE(qAddOverflow(maxInt, int(1), &r), true);
+    QCOMPARE(qAddOverflow(maxInt, maxInt, &r), true);
 
-    QCOMPARE(sub_overflow(minInt + 1, int(1), &r), false);
-    QCOMPARE(sub_overflow(minInt, int(1), &r), true);
-    QCOMPARE(sub_overflow(minInt, maxInt, &r), true);
-    QCOMPARE(sub_overflow(maxInt - 1, int(-1), &r), false);
-    QCOMPARE(sub_overflow(maxInt, int(-1), &r), true);
-    QCOMPARE(sub_overflow(maxInt, minInt, &r), true);
+    QCOMPARE(qSubOverflow(minInt + 1, int(1), &r), false);
+    QCOMPARE(qSubOverflow(minInt, int(1), &r), true);
+    QCOMPARE(qSubOverflow(minInt, maxInt, &r), true);
+    QCOMPARE(qSubOverflow(maxInt - 1, int(-1), &r), false);
+    QCOMPARE(qSubOverflow(maxInt, int(-1), &r), true);
+    QCOMPARE(qSubOverflow(maxInt, minInt, &r), true);
 
-    QCOMPARE(mul_overflow(minInt, int(1), &r), false);
-    QCOMPARE(mul_overflow(minInt, int(-1), &r), true);
-    QCOMPARE(mul_overflow(minInt, int(2), &r), true);
-    QCOMPARE(mul_overflow(minInt, minInt, &r), true);
-    QCOMPARE(mul_overflow(maxInt, int(1), &r), false);
-    QCOMPARE(mul_overflow(maxInt, int(-1), &r), false);
-    QCOMPARE(mul_overflow(maxInt, int(2), &r), true);
-    QCOMPARE(mul_overflow(maxInt, maxInt, &r), true);
+    QCOMPARE(qMulOverflow(minInt, int(1), &r), false);
+    QCOMPARE(qMulOverflow(minInt, int(-1), &r), true);
+    QCOMPARE(qMulOverflow(minInt, int(2), &r), true);
+    QCOMPARE(qMulOverflow(minInt, minInt, &r), true);
+    QCOMPARE(qMulOverflow(maxInt, int(1), &r), false);
+    QCOMPARE(qMulOverflow(maxInt, int(-1), &r), false);
+    QCOMPARE(qMulOverflow(maxInt, int(2), &r), true);
+    QCOMPARE(qMulOverflow(maxInt, maxInt, &r), true);
 }
 
 QTEST_APPLESS_MAIN(tst_QNumeric)

@@ -109,9 +109,9 @@ QTextureFileData QAstcHandler::read()
     int zBlocks = (zSz + header->blockDimZ - 1) / header->blockDimZ;
 
     int byteCount = 0;
-    bool oob = mul_overflow(xBlocks, yBlocks, &byteCount)
-               || mul_overflow(byteCount, zBlocks, &byteCount)
-               || mul_overflow(byteCount, 16, &byteCount);
+    bool oob = qMulOverflow(xBlocks, yBlocks, &byteCount)
+               || qMulOverflow(byteCount, zBlocks, &byteCount)
+               || qMulOverflow(byteCount, 16, &byteCount);
 
 
     res.setDataOffset(sizeof(AstcHeader));

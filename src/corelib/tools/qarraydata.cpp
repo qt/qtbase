@@ -54,8 +54,8 @@ qsizetype qCalculateBlockSize(qsizetype elementCount, qsizetype elementSize, qsi
     Q_ASSERT(elementSize);
 
     size_t bytes;
-    if (Q_UNLIKELY(mul_overflow(size_t(elementSize), size_t(elementCount), &bytes)) ||
-            Q_UNLIKELY(add_overflow(bytes, size_t(headerSize), &bytes)))
+    if (Q_UNLIKELY(qMulOverflow(size_t(elementSize), size_t(elementCount), &bytes)) ||
+            Q_UNLIKELY(qAddOverflow(bytes, size_t(headerSize), &bytes)))
         return -1;
     if (Q_UNLIKELY(qsizetype(bytes) < 0))
         return -1;
@@ -118,7 +118,7 @@ static inline qsizetype reserveExtraBytes(qsizetype allocSize)
     constexpr qsizetype extra = qMax(sizeof(QByteArray::value_type), sizeof(QString::value_type));
     if (Q_UNLIKELY(allocSize < 0))
         return -1;
-    if (Q_UNLIKELY(add_overflow(allocSize, extra, &allocSize)))
+    if (Q_UNLIKELY(qAddOverflow(allocSize, extra, &allocSize)))
         return -1;
     return allocSize;
 }

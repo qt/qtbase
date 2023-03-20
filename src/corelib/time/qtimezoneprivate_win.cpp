@@ -275,8 +275,8 @@ inline bool timeToMSecs(QDate date, QTime time, qint64 *msecs)
         ++daySinceEpoch;
         msInDay -= MSECS_PER_DAY;
     }
-    return mul_overflow(daySinceEpoch, std::integral_constant<qint64, MSECS_PER_DAY>(), &dayms)
-        || add_overflow(dayms, msInDay, msecs);
+    return qMulOverflow(daySinceEpoch, std::integral_constant<qint64, MSECS_PER_DAY>(), &dayms)
+        || qAddOverflow(dayms, msInDay, msecs);
 }
 
 qint64 calculateTransitionForYear(const SYSTEMTIME &rule, int year, int bias)
@@ -291,7 +291,7 @@ qint64 calculateTransitionForYear(const SYSTEMTIME &rule, int year, int bias)
         // If bias pushes us outside the representable range, clip to range
         // (overflow went past the end bias pushed us towards; and
         // invalidMSecs() is a representable value less than minMSecs()):
-        return bias && add_overflow(msecs, qint64(bias) * 60000, &msecs)
+        return bias && qAddOverflow(msecs, qint64(bias) * 60000, &msecs)
             ? (bias < 0 ? QTimeZonePrivate::minMSecs() : QTimeZonePrivate::maxMSecs())
             : qMax(QTimeZonePrivate::minMSecs(), msecs);
     }
