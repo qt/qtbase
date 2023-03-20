@@ -251,9 +251,7 @@ manifestmeta.thumbnail.names    =      "QtCore/Contiguous Cache Example" \
                                        "QtCore/JSON Save Game Example" \
                                        "QtCore/Semaphores Example" \
                                        "QtCore/Wait Conditions Example" \
-                                       "QtConcurrent/Map Example" \
                                        "QtConcurrent/Word Count" \
-                                       "QtConcurrent/Run Function Example" \
                                        "QtGui/Raster Window Example" \
                                        "QtNetwork/Network Download*" \
                                        "QtWidgets/Dynamic Layouts Example" \
