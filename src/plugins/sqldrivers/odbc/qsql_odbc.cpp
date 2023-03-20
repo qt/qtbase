@@ -96,7 +96,6 @@ inline static QVarLengthArray<SQLTCHAR> toSQLTCHAR(const QString &input)
 {
     QVarLengthArray<SQLTCHAR> result;
     toSQLTCHARImpl(result, input);
-    result.append(0); // make sure it's null terminated, doesn't matter if it already is, it does if it isn't.
     return result;
 }
 
@@ -2137,7 +2136,8 @@ void QODBCDriverPrivate::checkUnicode()
         "select 'test' from dual"_L1,
     };
     for (const auto &statement : statements) {
-        r = SQLExecDirect(hStmt, toSQLTCHAR(statement).data(), SQL_NTS);
+        auto encoded = toSQLTCHAR(statement);
+        r = SQLExecDirect(hStmt, encoded.data(), SQLINTEGER(encoded.size()));
         if (r == SQL_SUCCESS)
             break;
     }
