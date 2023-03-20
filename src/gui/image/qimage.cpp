@@ -819,7 +819,7 @@ QImageData *QImageData::create(uchar *data, int width, int height,  qsizetype bp
 
         // recalculate the total with this value
         params.bytesPerLine = bpl;
-        if (mul_overflow<qsizetype>(bpl, height, &params.totalSize))
+        if (qMulOverflow<qsizetype>(bpl, height, &params.totalSize))
             return nullptr;
     }
 
