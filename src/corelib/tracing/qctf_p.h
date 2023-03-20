@@ -232,6 +232,7 @@ public:
     virtual void doTracepoint(const QCtfTracePointEvent &point, const QByteArray &arr) = 0;
     virtual bool sessionEnabled() = 0;
     virtual QCtfTracePointPrivate *initializeTracepoint(const QCtfTracePointEvent &point) = 0;
+    virtual void shutdown(bool *shutdown) = 0;
 };
 
 QT_END_NAMESPACE

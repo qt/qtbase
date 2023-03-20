@@ -22,9 +22,13 @@ public:
     ~QCtfTracePlugin()
     {
         m_cleanup = true;
+        *m_shutdown = true;
         QCtfLibImpl::cleanup();
     }
-
+    void shutdown(bool *shutdown) override
+    {
+        m_shutdown = shutdown;
+    }
     bool tracepointEnabled(const QCtfTracePointEvent &point) override
     {
         if (m_cleanup)
@@ -51,6 +55,7 @@ public:
     }
 private:
     bool m_cleanup = false;
+    bool *m_shutdown = nullptr;
 };
 
 #include "qctfplugin.moc"

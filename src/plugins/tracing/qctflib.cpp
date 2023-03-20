@@ -50,6 +50,7 @@ void QCtfLibImpl::cleanup()
 {
     if (s_instance)
         delete s_instance;
+    s_instance = nullptr;
 }
 
 QCtfLibImpl::QCtfLibImpl()
