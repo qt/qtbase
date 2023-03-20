@@ -163,7 +163,7 @@ struct Options
     QString versionName;
     QString versionCode;
     QByteArray minSdkVersion{"23"};
-    QByteArray targetSdkVersion{"30"};
+    QByteArray targetSdkVersion{"31"};
 
     // lib c++ path
     QString stdCppPath;
