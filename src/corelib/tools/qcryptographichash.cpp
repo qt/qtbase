@@ -1352,6 +1352,8 @@ void QMessageAuthenticationCodePrivate::setKey(QByteArrayView newKey) noexcept
 
     if (key.size() < blockSize)
         key.resize(blockSize, '\0');
+
+    initMessageHash();
 }
 
 /*!
@@ -1414,7 +1416,6 @@ QMessageAuthenticationCode::QMessageAuthenticationCode(QCryptographicHash::Algor
     : d(new QMessageAuthenticationCodePrivate(method))
 {
     d->setKey(key);
-    d->initMessageHash();
 }
 
 /*!
@@ -1503,7 +1504,6 @@ void QMessageAuthenticationCode::setKey(QByteArrayView key) noexcept
 {
     d->messageHash.reset();
     d->setKey(key);
-    d->initMessageHash();
 }
 
 /*!
@@ -1594,7 +1594,6 @@ QByteArray QMessageAuthenticationCode::hash(QByteArrayView message, QByteArrayVi
 {
     QMessageAuthenticationCodePrivate mac(method);
     mac.setKey(key);
-    mac.initMessageHash();
     mac.messageHash.addData(message);
     mac.finalizeUnchecked();
     return mac.messageHash.resultView().toByteArray();
