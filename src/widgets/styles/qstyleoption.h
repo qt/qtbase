@@ -229,6 +229,7 @@ protected:
     QStyleOptionHeader(int version);
 };
 
+// ### Qt7: merge with QStyleOptionHeader
 class Q_WIDGETS_EXPORT QStyleOptionHeaderV2 : public QStyleOptionHeader
 {
 public:
