@@ -2194,7 +2194,8 @@ void QTabBar::mouseMoveEvent(QMouseEvent *event)
                 }
             }
             // Buttons needs to follow the dragged tab
-            d->layoutTab(d->pressedIndex);
+            if (d->pressedIndex != -1)
+                d->layoutTab(d->pressedIndex);
 
             update();
         }
