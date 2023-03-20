@@ -3052,7 +3052,7 @@ void tst_QFuture::cancelContinuations()
 
     // The chain is cancelled before the execution of continuations
     {
-        auto f = QtFuture::makeReadyFuture(42);
+        auto f = QtFuture::makeReadyValueFuture(42);
         f.cancel();
 
         int checkpoint = 0;
@@ -3301,7 +3301,8 @@ void tst_QFuture::continuationsWithMoveOnlyLambda()
     // .then()
     {
         std::unique_ptr<int> uniquePtr(new int(42));
-        auto future = QtFuture::makeReadyFuture().then([p = std::move(uniquePtr)] { return *p; });
+        auto future = QtFuture::makeReadyVoidFuture()
+                .then([p = std::move(uniquePtr)] { return *p; });
         QCOMPARE(future.result(), 42);
     }
     // .then() with thread pool
@@ -3309,8 +3310,8 @@ void tst_QFuture::continuationsWithMoveOnlyLambda()
         QThreadPool pool;
 
         std::unique_ptr<int> uniquePtr(new int(42));
-        auto future =
-                QtFuture::makeReadyFuture().then(&pool, [p = std::move(uniquePtr)] { return *p; });
+        auto future = QtFuture::makeReadyVoidFuture()
+                .then(&pool, [p = std::move(uniquePtr)] { return *p; });
         QCOMPARE(future.result(), 42);
     }
     // .then() with context
@@ -3318,8 +3319,8 @@ void tst_QFuture::continuationsWithMoveOnlyLambda()
         QObject object;
 
         std::unique_ptr<int> uniquePtr(new int(42));
-        auto future = QtFuture::makeReadyFuture().then(&object,
-                                                       [p = std::move(uniquePtr)] { return *p; });
+        auto future = QtFuture::makeReadyVoidFuture()
+                .then(&object, [p = std::move(uniquePtr)] { return *p; });
         QCOMPARE(future.result(), 42);
     }
 
@@ -4113,6 +4114,28 @@ void tst_QFuture::createReadyFutures()
         QCOMPARE(f.results(), values);
     }
 
+    // test makeReadyValueFuture<T>()
+    {
+        const int val = 42;
+        auto f = QtFuture::makeReadyValueFuture(val);
+        QCOMPARE_EQ(f.result(), val);
+
+        int otherVal = 42;
+        f = QtFuture::makeReadyValueFuture(otherVal);
+        QCOMPARE_EQ(f.result(), otherVal);
+    }
+    {
+        auto f = QtFuture::makeReadyValueFuture(std::make_unique<int>(42));
+        QCOMPARE(*f.takeResult(), 42);
+    }
+    // test makeReadyVoidFuture()
+    {
+        auto f = QtFuture::makeReadyVoidFuture();
+        QVERIFY(f.isStarted());
+        QVERIFY(!f.isRunning());
+        QVERIFY(f.isFinished());
+    }
+
 #ifndef QT_NO_EXCEPTIONS
     // using QException
     {
@@ -4236,7 +4259,7 @@ void tst_QFuture::createReadyFutures()
 void tst_QFuture::getFutureInterface()
 {
     const int val = 42;
-    QFuture<int> f = QtFuture::makeReadyFuture(val);
+    QFuture<int> f = QtFuture::makeReadyValueFuture(val);
 
     auto interface = QFutureInterfaceBase::get(f);
     QCOMPARE(interface.resultCount(), 1);
@@ -4250,7 +4273,7 @@ void tst_QFuture::convertQMetaType()
     QVERIFY(QMetaType::canConvert(intType, voidType));
 
     const int val = 42;
-    QFuture<int> f = QtFuture::makeReadyFuture(val);
+    QFuture<int> f = QtFuture::makeReadyValueFuture(val);
     auto variant = QVariant::fromValue(f);
     QVERIFY(variant.convert(voidType));
 

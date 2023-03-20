@@ -996,8 +996,8 @@ static QFuture<ValueType> makeReadyRangeFuture(std::initializer_list<ValueType> 
     return QtPrivate::makeReadyRangeFutureImpl(QList<ValueType>{values});
 }
 
-template<typename T, typename = QtPrivate::EnableForNonVoid<T>>
-static QFuture<std::decay_t<T>> makeReadyFuture(T &&value)
+template<typename T>
+static QFuture<std::decay_t<T>> makeReadyValueFuture(T &&value)
 {
     QFutureInterface<std::decay_t<T>> promise;
     promise.reportStarted();
@@ -1007,19 +1007,16 @@ static QFuture<std::decay_t<T>> makeReadyFuture(T &&value)
     return promise.future();
 }
 
-#if defined(Q_QDOC)
-static QFuture<void> makeReadyFuture()
-#else
-template<typename T = void>
-static QFuture<T> makeReadyFuture()
-#endif
-{
-    QFutureInterface<T> promise;
-    promise.reportStarted();
-    promise.reportFinished();
+Q_CORE_EXPORT QFuture<void> makeReadyVoidFuture(); // implemented in qfutureinterface.cpp
 
-    return promise.future();
+template<typename T, typename = QtPrivate::EnableForNonVoid<T>>
+static QFuture<std::decay_t<T>> makeReadyFuture(T &&value)
+{
+    return makeReadyValueFuture(std::forward<T>(value));
 }
+
+// the void specialization is moved to the end of qfuture.h, because it now
+// uses makeReadyVoidFuture() and required QFuture<void> to be defined.
 
 template<typename T>
 static QFuture<T> makeReadyFuture(const QList<T> &values)
@@ -1127,7 +1124,7 @@ QFuture<OutputSequence> whenAllImpl(InputIt first, InputIt last)
 {
     const qsizetype size = std::distance(first, last);
     if (size == 0)
-        return QtFuture::makeReadyFuture(OutputSequence());
+        return QtFuture::makeReadyValueFuture(OutputSequence());
 
     const auto context = std::make_shared<QtPrivate::WhenAllContext<OutputSequence>>(size);
     context->futures.resize(size);
@@ -1166,7 +1163,7 @@ QFuture<QtFuture::WhenAnyResult<typename Future<ValueType>::type>> whenAnyImpl(I
 
     const qsizetype size = std::distance(first, last);
     if (size == 0) {
-        return QtFuture::makeReadyFuture(
+        return QtFuture::makeReadyValueFuture(
                 QtFuture::WhenAnyResult { qsizetype(-1), QFuture<PackagedType>() });
     }
 

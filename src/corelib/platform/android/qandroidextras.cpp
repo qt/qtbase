@@ -1095,7 +1095,7 @@ requestPermissionsInternal(const QStringList &permissions)
     }
 
     if (!QtAndroidPrivate::acquireAndroidDeadlockProtector())
-        return QtFuture::makeReadyFuture(QtAndroidPrivate::Denied);
+        return QtFuture::makeReadyValueFuture(QtAndroidPrivate::Denied);
 
     QSharedPointer<QPromise<QtAndroidPrivate::PermissionResult>> promise;
     promise.reset(new QPromise<QtAndroidPrivate::PermissionResult>());
@@ -1145,7 +1145,7 @@ QtAndroidPrivate::requestPermissions(const QStringList &permissions)
 {
     // avoid the uneccessary call and response to an empty permission string
     if (permissions.isEmpty())
-        return QtFuture::makeReadyFuture(QtAndroidPrivate::Denied);
+        return QtFuture::makeReadyValueFuture(QtAndroidPrivate::Denied);
     return requestPermissionsInternal(permissions);
 }
 
@@ -1168,7 +1168,7 @@ QtAndroidPrivate::checkPermission(const QString &permission)
                                                       QJniObject::fromString(permission).object());
         result = resultFromAndroid(res);
     }
-    return QtFuture::makeReadyFuture(result);
+    return QtFuture::makeReadyValueFuture(result);
 }
 
 bool QtAndroidPrivate::registerPermissionNatives()

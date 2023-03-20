@@ -522,6 +522,16 @@ QFuture<std::variant<std::decay_t<Futures>...>> whenAny(Futures &&... futures);
 
 #endif // Q_QDOC
 
+#if defined(Q_QDOC)
+static QFuture<void> makeReadyFuture()
+#else
+template<typename T = void>
+static QFuture<T> makeReadyFuture()
+#endif
+{
+    return makeReadyVoidFuture();
+}
+
 } // namespace QtFuture
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(Future)

@@ -118,15 +118,16 @@
     combine several futures and track when the last or first of them completes.
 
     A ready QFuture object with a value or a QFuture object holding exception can
-    be created using convenience functions QtFuture::makeReadyFuture(),
-    QtFuture::makeReadyRangeFuture(), and QtFuture::makeExceptionalFuture().
+    be created using convenience functions QtFuture::makeReadyVoidFuture(),
+    QtFuture::makeReadyValueFuture(), QtFuture::makeReadyRangeFuture(), and
+    QtFuture::makeExceptionalFuture().
 
     \note To start a computation and store results in a QFuture, use QPromise or
     one of the APIs in the \l {Qt Concurrent} framework.
 
-    \sa QPromise, QtFuture::connect(), QtFuture::makeReadyFuture(),
-    QtFuture::makeReadyRangeFuture(), QtFuture::makeExceptionalFuture(),
-    QFutureWatcher, {Qt Concurrent}
+    \sa QPromise, QtFuture::connect(), QtFuture::makeReadyVoidFuture(),
+    QtFuture::makeReadyValueFuture(), QtFuture::makeReadyRangeFuture(),
+    QtFuture::makeExceptionalFuture(), QFutureWatcher, {Qt Concurrent}
 */
 
 /*! \fn template <typename T> QFuture<T>::QFuture()
@@ -982,7 +983,9 @@
     const int result = *f.takeResult(); // result == 42
     \endcode
 
-    \sa QFuture, QtFuture::makeExceptionalFuture()
+    \sa QFuture, QtFuture::makeReadyVoidFuture(),
+    QtFuture::makeReadyValueFuture(), QtFuture::makeReadyRangeFuture(),
+    QtFuture::makeExceptionalFuture()
 */
 
 /*! \fn QFuture<void> QtFuture::makeReadyFuture()
@@ -1003,7 +1006,9 @@
     \endcode
 
     \sa QFuture, QFuture::isStarted(), QFuture::isRunning(),
-    QFuture::isFinished(), QtFuture::makeExceptionalFuture()
+    QFuture::isFinished(), QtFuture::makeReadyVoidFuture(),
+    QtFuture::makeReadyValueFuture(), QtFuture::makeReadyRangeFuture(),
+    QtFuture::makeExceptionalFuture()
 */
 
 /*! \fn template<typename T> static QFuture<T> QtFuture::makeReadyFuture(const QList<T> &values)
@@ -1021,7 +1026,38 @@
     const auto results = f.results(); // results == { 1, 2, 3 }
     \endcode
 
-    \sa QFuture, QtFuture::makeExceptionalFuture()
+    \sa QFuture, QtFuture::makeReadyVoidFuture(),
+    QtFuture::makeReadyValueFuture(), QtFuture::makeReadyRangeFuture(),
+    QtFuture::makeExceptionalFuture()
+*/
+
+/*! \fn template<typename T> static QFuture<std::decay_t<T>> QtFuture::makeReadyValueFuture(T &&value)
+
+    \since 6.6
+
+    Creates and returns a QFuture which already has a result \a value.
+    The returned QFuture has a type of std::decay_t<T>, where T is not void.
+    The returned QFuture will already be in the finished state.
+
+    \snippet code/src_corelib_thread_qfuture.cpp 35
+
+    \sa QFuture, QtFuture::makeReadyRangeFuture(),
+    QtFuture::makeReadyVoidFuture(), QtFuture::makeExceptionalFuture()
+*/
+
+/*! \fn QFuture<void> QtFuture::makeReadyVoidFuture()
+
+    \since 6.6
+
+    Creates and returns a void QFuture. Such QFuture can't store any result.
+    One can use it to query the state of the computation.
+    The returned QFuture will already be in the finished state.
+
+    \snippet code/src_corelib_thread_qfuture.cpp 36
+
+    \sa QFuture, QFuture::isStarted(), QFuture::isRunning(),
+    QFuture::isFinished(), QtFuture::makeReadyValueFuture(),
+    QtFuture::makeReadyRangeFuture(), QtFuture::makeExceptionalFuture()
 */
 
 /*! \fn template<typename T> static QFuture<T> QtFuture::makeExceptionalFuture(const QException &exception)
@@ -1041,7 +1077,8 @@
     }
     \endcode
 
-    \sa QFuture, QException, QtFuture::makeReadyFuture()
+    \sa QFuture, QException, QtFuture::makeReadyVoidFuture(),
+    QtFuture::makeReadyValueFuture()
 */
 
 /*! \fn template<typename T> static QFuture<T> QtFuture::makeExceptionalFuture(std::exception_ptr exception)
@@ -1066,7 +1103,8 @@
     }
     \endcode
 
-    \sa QFuture, QException, QtFuture::makeReadyFuture()
+    \sa QFuture, QException, QtFuture::makeReadyVoidFuture(),
+    QtFuture::makeReadyValueFuture()
 */
 
 /*! \fn template<typename Container, QtFuture::if_container_with_input_iterators<Container>> static QFuture<QtFuture::ContainedType<Container>> QtFuture::makeReadyRangeFuture(Container &&container)
@@ -1085,7 +1123,8 @@
     \dots
     \snippet code/src_corelib_thread_qfuture.cpp 34
 
-    \sa QFuture, QtFuture::makeReadyFuture(), QtFuture::makeExceptionalFuture()
+    \sa QFuture, QtFuture::makeReadyVoidFuture(),
+    QtFuture::makeReadyValueFuture(), QtFuture::makeExceptionalFuture()
 */
 
 /*! \fn template<typename ValueType> static QFuture<ValueType> QtFuture::makeReadyRangeFuture(std::initializer_list<ValueType> values)
@@ -1100,7 +1139,8 @@
     \dots
     \snippet code/src_corelib_thread_qfuture.cpp 34
 
-    \sa QFuture, QtFuture::makeReadyFuture(), QtFuture::makeExceptionalFuture()
+    \sa QFuture, QtFuture::makeReadyVoidFuture(),
+    QtFuture::makeReadyValueFuture(), QtFuture::makeExceptionalFuture()
 */
 
 /*! \fn template<class T> template<class Function> QFuture<typename QFuture<T>::ResultType<Function>> QFuture<T>::then(Function &&function)

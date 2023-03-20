@@ -13,7 +13,7 @@ class tst_QFuture : public QObject
     Q_OBJECT
 
 private slots:
-    void makeReadyfuture();
+    void makeReadyValueFuture();
 #ifndef QT_NO_EXCEPTIONS
     void makeExceptionalFuture();
 #endif
@@ -43,10 +43,10 @@ private slots:
     void progressText();
 };
 
-void tst_QFuture::makeReadyfuture()
+void tst_QFuture::makeReadyValueFuture()
 {
     QBENCHMARK {
-        auto future = QtFuture::makeReadyFuture(42);
+        auto future = QtFuture::makeReadyValueFuture(42);
         Q_UNUSED(future);
     }
 }
@@ -64,7 +64,7 @@ void tst_QFuture::makeExceptionalFuture()
 
 void tst_QFuture::result()
 {
-    auto future = QtFuture::makeReadyFuture(42);
+    auto future = QtFuture::makeReadyValueFuture(42);
 
     QBENCHMARK {
         auto value = future.result();
@@ -92,7 +92,7 @@ void tst_QFuture::results()
 void tst_QFuture::takeResult()
 {
     QBENCHMARK {
-        auto future = QtFuture::makeReadyFuture(42);
+        auto future = QtFuture::makeReadyValueFuture(42);
         auto value = future.takeResult();
         Q_UNUSED(value);
     }
@@ -140,7 +140,7 @@ void tst_QFuture::reportException()
 
 void tst_QFuture::then()
 {
-    auto f = QtFuture::makeReadyFuture(42);
+    auto f = QtFuture::makeReadyValueFuture(42);
     QBENCHMARK {
         auto future = f.then([](int value) { return value; });
         Q_UNUSED(future);
@@ -149,7 +149,7 @@ void tst_QFuture::then()
 
 void tst_QFuture::thenVoid()
 {
-    auto f = QtFuture::makeReadyFuture();
+    auto f = QtFuture::makeReadyVoidFuture();
     QBENCHMARK {
         auto future = f.then([] {});
         Q_UNUSED(future);
@@ -205,7 +205,7 @@ void tst_QFuture::onFailedVoid()
 
 void tst_QFuture::thenOnFailed()
 {
-    auto f = QtFuture::makeReadyFuture(42);
+    auto f = QtFuture::makeReadyValueFuture(42);
     QBENCHMARK {
         auto future =
                 f.then([](int) { throw std::runtime_error("error"); }).onFailed([] { return 0; });
@@ -215,7 +215,7 @@ void tst_QFuture::thenOnFailed()
 
 void tst_QFuture::thenOnFailedVoid()
 {
-    auto f = QtFuture::makeReadyFuture();
+    auto f = QtFuture::makeReadyVoidFuture();
     QBENCHMARK {
         auto future = f.then([] { throw std::runtime_error("error"); }).onFailed([] {});
         Q_UNUSED(future);

@@ -239,9 +239,9 @@ auto future = QtConcurrent::run([] {
 
 //! [20]
 QObject *context = ...;
-auto future = cachedResultsReady ? QtFuture::makeReadyFuture(results)
-                                 : QtConcurrent::run([] { /* compute results */});
-auto continuation = future.then(context, [] (Results results) {
+auto future = cachedResultsReady ? QtFuture::makeReadyValueFuture(result)
+                                 : QtConcurrent::run([] { /* compute result */});
+auto continuation = future.then(context, [] (Result result) {
     // Runs in the context's thread
 }).then([] {
     // May or may not run in the context's thread
@@ -413,3 +413,17 @@ auto f = QtFuture::makeReadyRangeFuture({1, 2, 3});
 const int count = f.resultCount(); // count == 3
 const auto results = f.results(); // results == { 1, 2, 3 }
 //! [34]
+
+//! [35]
+auto f = QtFuture::makeReadyValueFuture(std::make_unique<int>(42));
+...
+const int result = *f.takeResult(); // result == 42
+//! [35]
+
+//! [36]
+auto f = QtFuture::makeReadyVoidFuture();
+...
+const bool started = f.isStarted(); // started == true
+const bool running = f.isRunning(); // running == false
+const bool finished = f.isFinished(); // finished == true
+//! [36]

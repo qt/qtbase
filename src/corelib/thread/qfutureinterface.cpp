@@ -889,4 +889,17 @@ bool QFutureInterfaceBase::launchAsync() const
     return d->launchAsync;
 }
 
+namespace QtFuture {
+
+QFuture<void> makeReadyVoidFuture()
+{
+    QFutureInterface<void> promise;
+    promise.reportStarted();
+    promise.reportFinished();
+
+    return promise.future();
+}
+
+} // namespace QtFuture
+
 QT_END_NAMESPACE
