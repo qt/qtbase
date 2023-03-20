@@ -1,6 +1,6 @@
 HEADERS += rsslisting.h
 SOURCES += main.cpp rsslisting.cpp
-QT += network xml widgets
+QT += network widgets
 requires(qtConfig(treewidget))
 
 # install
