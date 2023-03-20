@@ -78,6 +78,10 @@ public:
     QCtfTracePointPrivate *initializeTracepoint(const QCtfTracePointEvent &point) override;
     void registerMetadata(const QCtfTraceMetadata &metadata);
     int eventId();
+    void shutdown(bool *) override
+    {
+
+    }
 
     static QCtfLib *instance();
     static void cleanup();

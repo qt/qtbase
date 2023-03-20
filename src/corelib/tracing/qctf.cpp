@@ -15,6 +15,7 @@ QT_BEGIN_NAMESPACE
 static bool s_initialized = false;
 static bool s_triedLoading = false;
 static bool s_prevent_recursion = false;
+static bool s_shutdown = false;
 static QCtfLib* s_plugin = nullptr;
 
 #if defined(Q_OS_ANDROID)
@@ -59,18 +60,13 @@ static bool loadPlugin(bool &retry)
     s_plugin = qobject_cast<QCtfLib *>(loader.instance());
     if (!s_plugin)
         return false;
-    QObject *obj = loader.instance();
-    if (obj) {
-        QObject::connect(obj, &QObject::destroyed, []() {
-            s_plugin = nullptr;
-        });
-    }
+    s_plugin->shutdown(&s_shutdown);
     return true;
 }
 
 static bool initialize()
 {
-    if (s_prevent_recursion)
+    if (s_shutdown || s_prevent_recursion)
         return false;
     if (s_initialized || s_triedLoading)
         return s_initialized;
