@@ -57,8 +57,8 @@ void QButtonGroupPrivate::detectCheckedButton()
     In addition, QButtonGroup can map between integers and buttons.
     You can assign an integer id to a button with setId(), and
     retrieve it with id(). The id of the currently checked button is
-    available with checkedId(), and there is an overloaded signal
-    buttonClicked() which emits the id of the button. The id \c {-1}
+    available with checkedId(), and there is a signal
+    idClicked() that emits the id of the button. The id \c {-1}
     is reserved by QButtonGroup to mean "no such button". The purpose
     of the mapping mechanism is to simplify the representation of enum
     values in a user interface.
