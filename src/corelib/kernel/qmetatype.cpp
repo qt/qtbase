@@ -1258,26 +1258,26 @@ static const struct : QMetaTypeModuleHelper
 
         QMETATYPE_CONVERTER(QByteArrayList, QVariantList,
             result.reserve(source.size());
-            for (auto v: source)
+            for (const auto &v: source)
                 result.append(v.toByteArray());
             return true;
         );
         QMETATYPE_CONVERTER(QVariantList, QByteArrayList,
             result.reserve(source.size());
-            for (auto v: source)
+            for (const auto &v: source)
                 result.append(QVariant(v));
             return true;
         );
 
         QMETATYPE_CONVERTER(QStringList, QVariantList,
             result.reserve(source.size());
-            for (auto v: source)
+            for (const auto &v: source)
                 result.append(v.toString());
             return true;
         );
         QMETATYPE_CONVERTER(QVariantList, QStringList,
             result.reserve(source.size());
-            for (auto v: source)
+            for (const auto &v: source)
                 result.append(QVariant(v));
             return true;
         );
