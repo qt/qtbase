@@ -444,6 +444,13 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
     }
 }
 
+/*!
+    Find all X11 input devices at startup, or react to a device hierarchy event,
+    and create/delete the corresponding QInputDevice instances as necessary.
+    Afterwards, we expect QInputDevice::devices() to contain only the
+    Qt-relevant devices that \c {xinput list} reports. The parent of each master
+    device is this QXcbConnection object; the parent of each slave is its master.
+*/
 void QXcbConnection::xi2SetupDevices()
 {
 #if QT_CONFIG(tabletevent)
@@ -458,6 +465,19 @@ void QXcbConnection::xi2SetupDevices()
         return;
     }
 
+    // Start with all known devices; remove the ones that still exist.
+    // Afterwards, previousDevices will be the list of those that we should delete.
+    QList<const QInputDevice *> previousDevices = QInputDevice::devices();
+    auto newOrKeep = [&previousDevices](qint64 systemId) {
+        for (auto it = previousDevices.constBegin(); it != previousDevices.constEnd(); ++it) {
+            if ((*it)->systemId() == systemId) {
+                previousDevices.erase(it); // it's a keeper
+                return false; // not new
+            }
+        }
+        return true; // it's really new
+    };
+
     // XInput doesn't provide a way to identify "seats"; but each device has an attachment to another device.
     // So we make up a seatId: master-keyboard-id << 16 | master-pointer-id.
 
@@ -466,17 +486,21 @@ void QXcbConnection::xi2SetupDevices()
         xcb_input_xi_device_info_t *deviceInfo = it.data;
         switch (deviceInfo->type) {
         case XCB_INPUT_DEVICE_TYPE_MASTER_KEYBOARD: {
-            auto dev = new QInputDevice(QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo)),
-                                        deviceInfo->deviceid, QInputDevice::DeviceType::Keyboard,
-                                        QString::number(deviceInfo->deviceid << 16 | deviceInfo->attachment, 16), this);
-            QWindowSystemInterface::registerInputDevice(dev);
+            if (newOrKeep(deviceInfo->deviceid)) {
+                auto dev = new QInputDevice(QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo)),
+                                            deviceInfo->deviceid, QInputDevice::DeviceType::Keyboard,
+                                            QString::number(deviceInfo->deviceid << 16 | deviceInfo->attachment, 16), this);
+                QWindowSystemInterface::registerInputDevice(dev);
+            }
         } break;
         case XCB_INPUT_DEVICE_TYPE_MASTER_POINTER: {
             m_xiMasterPointerIds.append(deviceInfo->deviceid);
-            auto dev = new QXcbScrollingDevice(QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo)), deviceInfo->deviceid,
-                               QInputDevice::Capability::Position | QInputDevice::Capability::Scroll | QInputDevice::Capability::Hover,
-                               32, QString::number(deviceInfo->attachment << 16 | deviceInfo->deviceid, 16), this);
-            QWindowSystemInterface::registerInputDevice(dev);
+            if (newOrKeep(deviceInfo->deviceid)) {
+                auto dev = new QXcbScrollingDevice(QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo)), deviceInfo->deviceid,
+                                   QInputDevice::Capability::Position | QInputDevice::Capability::Scroll | QInputDevice::Capability::Hover,
+                                   32, QString::number(deviceInfo->attachment << 16 | deviceInfo->deviceid, 16), this);
+                QWindowSystemInterface::registerInputDevice(dev);
+            }
             continue;
         } break;
         default:
@@ -493,22 +517,30 @@ void QXcbConnection::xi2SetupDevices()
             // already registered
             break;
         case XCB_INPUT_DEVICE_TYPE_SLAVE_POINTER: {
-            m_xiSlavePointerIds.append(deviceInfo->deviceid);
-            QInputDevice *master = const_cast<QInputDevice *>(QInputDevicePrivate::fromId(deviceInfo->attachment));
-            Q_ASSERT(master);
-            xi2SetupSlavePointerDevice(deviceInfo, false, qobject_cast<QPointingDevice *>(master));
+            if (newOrKeep(deviceInfo->deviceid)) {
+                m_xiSlavePointerIds.append(deviceInfo->deviceid);
+                QInputDevice *master = const_cast<QInputDevice *>(QInputDevicePrivate::fromId(deviceInfo->attachment));
+                Q_ASSERT(master);
+                xi2SetupSlavePointerDevice(deviceInfo, false, qobject_cast<QPointingDevice *>(master));
+            }
         } break;
         case XCB_INPUT_DEVICE_TYPE_SLAVE_KEYBOARD: {
-            QInputDevice *master = const_cast<QInputDevice *>(QInputDevicePrivate::fromId(deviceInfo->attachment));
-            Q_ASSERT(master);
-            QWindowSystemInterface::registerInputDevice(new QInputDevice(
-                QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo)), deviceInfo->deviceid,
-                QInputDevice::DeviceType::Keyboard, master->seatName(), master));
+            if (newOrKeep(deviceInfo->deviceid)) {
+                QInputDevice *master = const_cast<QInputDevice *>(QInputDevicePrivate::fromId(deviceInfo->attachment));
+                Q_ASSERT(master);
+                QWindowSystemInterface::registerInputDevice(new QInputDevice(
+                    QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo)), deviceInfo->deviceid,
+                    QInputDevice::DeviceType::Keyboard, master->seatName(), master));
+            }
         } break;
         case XCB_INPUT_DEVICE_TYPE_FLOATING_SLAVE:
             break;
         }
     }
+
+    // previousDevices is now the list of those that are no longer found
+    qCDebug(lcQpaXInputDevices) << "removed" << previousDevices;
+    qDeleteAll(previousDevices);
 
     if (m_xiMasterPointerIds.size() > 1)
         qCDebug(lcQpaXInputDevices) << "multi-pointer X detected";
@@ -732,6 +764,8 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 
     if (auto device = QPointingDevicePrivate::pointingDeviceById(sourceDeviceId))
         xi2HandleScrollEvent(event, device);
+    else
+        qCWarning(lcQpaXInputEvents) << "scroll event from unregistered device" << Qt::hex << sourceDeviceId;
 
     if (xiDeviceEvent) {
         switch (xiDeviceEvent->event_type) {
@@ -1067,11 +1101,15 @@ bool QXcbConnection::xi2SetMouseGrabEnabled(xcb_window_t w, bool grab)
 void QXcbConnection::xi2HandleHierarchyEvent(void *event)
 {
     auto *xiEvent = reinterpret_cast<xcb_input_hierarchy_event_t *>(event);
-    // We only care about hotplugged devices
-    if (!(xiEvent->flags & (XCB_INPUT_HIERARCHY_MASK_SLAVE_REMOVED | XCB_INPUT_HIERARCHY_MASK_SLAVE_ADDED)))
-        return;
-
-    xi2SetupDevices();
+    // We care about hotplugged devices (slaves) and master devices.
+    // We don't report anything for DEVICE_ENABLED or DEVICE_DISABLED
+    // (but often that goes with adding or removal anyway).
+    // We don't react to SLAVE_ATTACHED or SLAVE_DETACHED either.
+    if (xiEvent->flags & (XCB_INPUT_HIERARCHY_MASK_MASTER_ADDED |
+                            XCB_INPUT_HIERARCHY_MASK_MASTER_REMOVED |
+                            XCB_INPUT_HIERARCHY_MASK_SLAVE_REMOVED |
+                            XCB_INPUT_HIERARCHY_MASK_SLAVE_ADDED))
+        xi2SetupDevices();
 }
 
 #if QT_XCB_HAS_TOUCHPAD_GESTURES
