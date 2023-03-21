@@ -1109,12 +1109,17 @@ bool readInputFile(Options *options)
                         }
                     }
                 } else {
-                    auto arch = fileArchitecture(*options, path);
-                    if (!arch.isEmpty()) {
-                        options->qtDependencies[arch].append(QtDependency(dependency.toString(), path));
-                    } else if (options->verbose) {
-                        fprintf(stderr, "Skipping \"%s\", unknown architecture\n", qPrintable(path));
-                        fflush(stderr);
+                    if (dependency.endsWith(QLatin1String(".so"))) {
+                        auto arch = fileArchitecture(*options, path);
+                        if (!arch.isEmpty()) {
+                            options->qtDependencies[arch].append(QtDependency(dependency.toString(), path));
+                        } else if (options->verbose) {
+                            fprintf(stderr, "Skipping \"%s\", unknown architecture\n", qPrintable(path));
+                            fflush(stderr);
+                        }
+                    } else {
+                        for (auto arch : options->architectures.keys())
+                            options->qtDependencies[arch].append(QtDependency(dependency.toString(), path));
                     }
                 }
             }
@@ -1422,7 +1427,7 @@ bool updateLibsXml(Options *options)
         if (localLibs.isEmpty()) {
             QString plugin;
             for (const QtDependency &qtDependency : options->qtDependencies[it.key()]) {
-                if (qtDependency.relativePath.endsWith(QLatin1String("libqtforandroid.so")))
+                if (qtDependency.relativePath.contains(QLatin1String("libplugins_platforms_qtforandroid_")))
                     plugin = qtDependency.relativePath;
 
                 if (qtDependency.relativePath.contains(
@@ -1435,8 +1440,8 @@ bool updateLibsXml(Options *options)
 
             if (plugin.isEmpty()) {
                 fflush(stdout);
-                fprintf(stderr, "No platform plugin (libqtforandroid.so) included in "
-                                "the deployment. Make sure the app links to Qt Gui library.\n");
+                fprintf(stderr, "No platform plugin (libplugins_platforms_qtforandroid.so) included"
+                                " in the deployment. Make sure the app links to Qt Gui library.\n");
                 fflush(stderr);
                 return false;
             }
