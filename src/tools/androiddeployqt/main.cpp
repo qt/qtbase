@@ -1240,12 +1240,24 @@ bool readInputFile(Options *options)
                         }
                     }
                 } else {
-                    auto arch = fileArchitecture(*options, path);
-                    if (!arch.isEmpty()) {
-                        options->qtDependencies[arch].append(QtDependency(dependency.toString(), path));
-                    } else if (options->verbose) {
-                        fprintf(stderr, "Skipping \"%s\", unknown architecture\n", qPrintable(path));
-                        fflush(stderr);
+                    auto qtDependency = [options](const QStringView &dependency,
+                                                  const QString &arch) {
+                        const auto installDir = options->architectures[arch].qtInstallDirectory;
+                        const auto absolutePath = "%1/%2"_L1.arg(installDir, dependency.toString());
+                        return QtDependency(dependency.toString(), absolutePath);
+                    };
+
+                    if (dependency.endsWith(QLatin1String(".so"))) {
+                        auto arch = fileArchitecture(*options, path);
+                        if (!arch.isEmpty()) {
+                            options->qtDependencies[arch].append(qtDependency(dependency, arch));
+                        } else if (options->verbose) {
+                            fprintf(stderr, "Skipping \"%s\", unknown architecture\n", qPrintable(path));
+                            fflush(stderr);
+                        }
+                    } else {
+                        for (auto arch : options->architectures.keys())
+                            options->qtDependencies[arch].append(qtDependency(dependency, arch));
                     }
                 }
             }
@@ -1591,7 +1603,7 @@ bool updateLibsXml(Options *options)
         if (localLibs.isEmpty()) {
             QString plugin;
             for (const QtDependency &qtDependency : options->qtDependencies[it.key()]) {
-                if (qtDependency.relativePath.endsWith("libqtforandroid.so"_L1))
+                if (qtDependency.relativePath.contains("libplugins_platforms_qtforandroid_"_L1))
                     plugin = qtDependency.relativePath;
 
                 if (qtDependency.relativePath.contains(
@@ -1604,8 +1616,8 @@ bool updateLibsXml(Options *options)
 
             if (plugin.isEmpty()) {
                 fflush(stdout);
-                fprintf(stderr, "No platform plugin (libqtforandroid.so) included in "
-                                "the deployment. Make sure the app links to Qt Gui library.\n");
+                fprintf(stderr, "No platform plugin (libplugins_platforms_qtforandroid.so) included"
+                                " in the deployment. Make sure the app links to Qt Gui library.\n");
                 fflush(stderr);
                 return false;
             }
