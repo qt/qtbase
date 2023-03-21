@@ -4328,57 +4328,40 @@ qulonglong QLocaleData::stringToUnsLongLong(QStringView str, int base, bool *ok,
     return bytearrayToUnsLongLong(QByteArrayView(buff.constData(), buff.size()), base, ok);
 }
 
-qlonglong QLocaleData::bytearrayToLongLong(QByteArrayView num, int base, bool *ok)
+static bool checkParsed(QByteArrayView num, qsizetype used)
 {
-    const qsizetype len = num.size();
-    auto [l, used] = qstrntoll(num.data(), len, base);
-    if (used <= 0) {
-        if (ok != nullptr)
-            *ok = false;
-        return 0;
-    }
+    if (used <= 0)
+        return false;
 
+    const qsizetype len = num.size();
     if (used < len && num[used] != '\0') {
         while (used < len && ascii_isspace(num[used]))
             ++used;
     }
 
-    if (used < len && num[used] != '\0') {
+    if (used < len && num[used] != '\0')
         // we stopped at a non-digit character after converting some digits
-        if (ok != nullptr)
-            *ok = false;
-        return 0;
-    }
+        return false;
 
-    if (ok != nullptr)
-        *ok = true;
-    return l;
+    return true;
+}
+
+qlonglong QLocaleData::bytearrayToLongLong(QByteArrayView num, int base, bool *ok)
+{
+    auto r = qstrntoll(num.data(), num.size(), base);
+    const bool parsed = checkParsed(num, r.used);
+    if (ok)
+        *ok = parsed;
+    return parsed ? r.result : 0;
 }
 
 qulonglong QLocaleData::bytearrayToUnsLongLong(QByteArrayView num, int base, bool *ok)
 {
-    const qsizetype len = num.size();
-    auto [l, used] = qstrntoull(num.data(), len, base);
-    if (used <= 0) {
-        if (ok != nullptr)
-            *ok = false;
-        return 0;
-    }
-
-    if (used < len && num[used] != '\0') {
-        while (used < len && ascii_isspace(num[used]))
-            ++used;
-    }
-
-    if (used < len && num[used] != '\0') {
-        if (ok != nullptr)
-            *ok = false;
-        return 0;
-    }
-
-    if (ok != nullptr)
-        *ok = true;
-    return l;
+    auto r = qstrntoull(num.data(), num.size(), base);
+    const bool parsed = checkParsed(num, r.used);
+    if (ok)
+        *ok = parsed;
+    return parsed ? r.result : 0;
 }
 
 /*!
