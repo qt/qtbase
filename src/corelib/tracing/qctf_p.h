@@ -224,7 +224,9 @@ inline QByteArray toByteArrayFromFlags(QFlags<T> value)
 class Q_CORE_EXPORT QCtfLib : public QObject
 {
     Q_OBJECT
+    Q_DISABLE_COPY(QCtfLib)
 public:
+    explicit QCtfLib(QObject *parent = nullptr) : QObject(parent) {}
     virtual ~QCtfLib() = default;
     virtual bool tracepointEnabled(const QCtfTracePointEvent &point) = 0;
     virtual void doTracepoint(const QCtfTracePointEvent &point, const QByteArray &arr) = 0;
