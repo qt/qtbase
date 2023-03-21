@@ -360,19 +360,24 @@ bool QInputDevice::operator==(const QInputDevice &other) const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QInputDevice *device)
 {
-    const QInputDevicePrivate *d = QInputDevicePrivate::get(device);
-    if (d->pointingDeviceType)
-        return operator<<(debug, static_cast<const QPointingDevice *>(device));
     QDebugStateSaver saver(debug);
     debug.nospace();
     debug.noquote();
+
     debug << "QInputDevice(";
-    if (device) {
-        debug << '"' << device->name() << "\", type=" << device->type()
-              << Qt::hex << ", ID=" << device->systemId() << ", seat='" << device->seatName() << "'";
-    } else {
-        debug << '0';
+    if (!device) {
+        debug << "0)";
+        return debug;
     }
+
+    const QInputDevicePrivate *d = QInputDevicePrivate::get(device);
+
+    if (d->pointingDeviceType)
+        return operator<<(debug, static_cast<const QPointingDevice *>(device));
+
+    debug << "QInputDevice(";
+    debug << '"' << device->name() << "\", type=" << device->type()
+          << Qt::hex << ", ID=" << device->systemId() << ", seat='" << device->seatName() << "'";
     debug << ')';
     return debug;
 }
