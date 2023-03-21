@@ -9,7 +9,6 @@ qtHaveModule(widgets) {
                 broadcastreceiver \
                 broadcastsender \
                 http \
-                loopback \
                 threadedfortuneserver \
                 torrent \
                 multicastreceiver \

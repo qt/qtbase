@@ -44,7 +44,7 @@
     connection is available or a timeout expires.
 
     \sa QTcpSocket, {Fortune Server}, {Threaded Fortune Server},
-        {Loopback Example}, {Torrent Example}
+        {Torrent Example}
 */
 
 /*! \fn void QTcpServer::newConnection()
