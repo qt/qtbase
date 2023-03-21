@@ -14,7 +14,6 @@
 
 #include <algorithm>
 #include <functional>
-#include <vector> // for reference
 #include <iostream>
 #include <list>
 #include <set>
@@ -23,10 +22,7 @@
 #include <forward_list>
 #include <unordered_set>
 #include <unordered_map>
-
-#if defined(__cpp_lib_erase_if) && __cpp_lib_erase_if >= 202002L
-#  define STDLIB_HAS_UNIFORM_ERASURE
-#endif
+#include <q20vector.h> // For reference
 
 QT_BEGIN_NAMESPACE
 std::ostream &operator<<(std::ostream &os, const QChar &c)
@@ -380,22 +376,14 @@ private Q_SLOTS:
     void erase_QVarLengthArray() { erase_impl<QVarLengthArray<int>>(); }
     void erase_QString() { erase_impl<QString>(); }
     void erase_QByteArray() { erase_impl<QByteArray>(); }
-    void erase_std_vector() {
-#ifdef STDLIB_HAS_UNIFORM_ERASURE
-        erase_impl<std::vector<int>>();
-#endif
-    }
+    void erase_std_vector() { erase_impl<std::vector<int>>(); }
 
     void erase_if_QList() { erase_if_impl<QList<int>>(); }
     void erase_if_QVarLengthArray() { erase_if_impl<QVarLengthArray<int>>(); }
     void erase_if_QSet() { erase_if_impl<QSet<int>>(); }
     void erase_if_QString() { erase_if_impl<QString>(); }
     void erase_if_QByteArray() { erase_if_impl<QByteArray>(); }
-    void erase_if_std_vector() {
-#ifdef STDLIB_HAS_UNIFORM_ERASURE
-        erase_if_impl<std::vector<int>>();
-#endif
-    }
+    void erase_if_std_vector() { erase_if_impl<std::vector<int>>(); }
     void erase_if_QMap() { erase_if_associative_impl<QMap<int, int>>(); }
     void erase_if_QMultiMap() {erase_if_associative_impl<QMultiMap<int, int>>(); }
     void erase_if_QHash() { erase_if_associative_impl<QHash<int, int>>(); }
@@ -900,6 +888,7 @@ void tst_ContainerApiSymmetry::erase_impl() const
     auto c = make<Container>(7); // {1, 2, 3, 4, 5, 6, 7}
     QCOMPARE(c.size(), S(7));
 
+    using q20::erase; // For std::vector
     auto result = erase(c, V(1));
     QCOMPARE(result, S(1));
     QCOMPARE(c.size(), S(6));
@@ -925,7 +914,10 @@ void tst_ContainerApiSymmetry::erase_if_impl() const
 
     oldSize = c.size();
     count = 0;
-    auto result = erase_if(c, [&](V i) { ++count; return Conv::toInt(i) % 2 == 0; });
+
+    using q20::erase_if; // For std::vector
+
+    S result = erase_if(c, [&](V i) { ++count; return Conv::toInt(i) % 2 == 0; });
     QCOMPARE(result, S(3));
     QCOMPARE(c.size(), S(4));
     QCOMPARE(count, oldSize);
