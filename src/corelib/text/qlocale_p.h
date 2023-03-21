@@ -321,15 +321,16 @@ public:
 
     [[nodiscard]] double stringToDouble(QStringView str, bool *ok,
                                         QLocale::NumberOptions options) const;
-    [[nodiscard]] qint64 stringToLongLong(QStringView str, int base, bool *ok,
-                                          QLocale::NumberOptions options) const;
-    [[nodiscard]] quint64 stringToUnsLongLong(QStringView str, int base, bool *ok,
-                                              QLocale::NumberOptions options) const;
+    [[nodiscard]] QSimpleParsedNumber<qint64>
+    stringToLongLong(QStringView str, int base, QLocale::NumberOptions options) const;
+    [[nodiscard]] QSimpleParsedNumber<quint64>
+    stringToUnsLongLong(QStringView str, int base, QLocale::NumberOptions options) const;
 
     // this function is used in QIntValidator (QtGui)
-    [[nodiscard]] Q_CORE_EXPORT static qint64 bytearrayToLongLong(QByteArrayView num, int base,
-                                                                  bool *ok);
-    [[nodiscard]] static quint64 bytearrayToUnsLongLong(QByteArrayView num, int base, bool *ok);
+    [[nodiscard]] Q_CORE_EXPORT
+    static QSimpleParsedNumber<qint64> bytearrayToLongLong(QByteArrayView num, int base);
+    [[nodiscard]] static QSimpleParsedNumber<quint64>
+    bytearrayToUnsLongLong(QByteArrayView num, int base);
 
     [[nodiscard]] bool numberToCLocale(QStringView s, QLocale::NumberOptions number_options,
                                        NumberMode mode, CharBuff *result) const;

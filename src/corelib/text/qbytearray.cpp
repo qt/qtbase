@@ -3746,10 +3746,9 @@ auto QtPrivate::toSignedInteger(QByteArrayView data, int base) -> ParsedNumber<q
     if (data.isEmpty())
         return {};
 
-    bool ok = false;
-    const auto i = QLocaleData::bytearrayToLongLong(data, base, &ok);
-    if (ok)
-        return ParsedNumber(i);
+    const QSimpleParsedNumber r = QLocaleData::bytearrayToLongLong(data, base);
+    if (r.ok())
+        return ParsedNumber(r.result);
     return {};
 }
 
@@ -3764,10 +3763,9 @@ auto QtPrivate::toUnsignedInteger(QByteArrayView data, int base) -> ParsedNumber
     if (data.isEmpty())
         return {};
 
-    bool ok = false;
-    const auto u = QLocaleData::bytearrayToUnsLongLong(data, base, &ok);
-    if (ok)
-        return ParsedNumber(u);
+    const QSimpleParsedNumber r = QLocaleData::bytearrayToUnsLongLong(data, base);
+    if (r.ok())
+        return ParsedNumber(r.result);
     return {};
 }
 

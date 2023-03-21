@@ -7392,10 +7392,14 @@ static Int toIntegral(QStringView string, bool *ok, int base)
 
     QVarLengthArray<uchar> latin1(string.size());
     qt_to_latin1(latin1.data(), string.utf16(), string.size());
+    QSimpleParsedNumber<Int> r;
     if constexpr (std::is_signed_v<Int>)
-        return QLocaleData::bytearrayToLongLong(latin1, base, ok);
+        r = QLocaleData::bytearrayToLongLong(latin1, base);
     else
-        return QLocaleData::bytearrayToUnsLongLong(latin1, base, ok);
+        r = QLocaleData::bytearrayToUnsLongLong(latin1, base);
+    if (ok)
+        *ok = r.ok();
+    return r.result;
 }
 
 qlonglong QString::toIntegral_helper(QStringView string, bool *ok, int base)

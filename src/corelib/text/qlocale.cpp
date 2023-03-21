@@ -1363,12 +1363,16 @@ T toIntegral_helper(const QLocalePrivate *d, QStringView str, bool *ok)
     constexpr bool isUnsigned = std::is_unsigned_v<T>;
     using Int64 = typename std::conditional_t<isUnsigned, quint64, qint64>;
 
-    Int64 val = 0;
+    QSimpleParsedNumber<Int64> r{};
     if constexpr (isUnsigned)
-        val = d->m_data->stringToUnsLongLong(str, 10, ok, d->m_numberOptions);
+        r = d->m_data->stringToUnsLongLong(str, 10, d->m_numberOptions);
     else
-        val = d->m_data->stringToLongLong(str, 10, ok, d->m_numberOptions);
+        r = d->m_data->stringToLongLong(str, 10, d->m_numberOptions);
 
+    if (ok)
+        *ok = r.ok();
+
+    Int64 val = r.result;
     if (T(val) != val) {
         if (ok != nullptr)
             *ok = false;
@@ -4311,30 +4315,26 @@ double QLocaleData::stringToDouble(QStringView str, bool *ok,
     return r.result;
 }
 
-qlonglong QLocaleData::stringToLongLong(QStringView str, int base, bool *ok,
-                                        QLocale::NumberOptions number_options) const
+QSimpleParsedNumber<qint64>
+QLocaleData::stringToLongLong(QStringView str, int base,
+                              QLocale::NumberOptions number_options) const
 {
     CharBuff buff;
-    if (!numberToCLocale(str, number_options, IntegerMode, &buff)) {
-        if (ok != nullptr)
-            *ok = false;
-        return 0;
-    }
+    if (!numberToCLocale(str, number_options, IntegerMode, &buff))
+        return {};
 
-    return bytearrayToLongLong(QByteArrayView(buff.constData(), buff.size()), base, ok);
+    return bytearrayToLongLong(QByteArrayView(buff), base);
 }
 
-qulonglong QLocaleData::stringToUnsLongLong(QStringView str, int base, bool *ok,
-                                            QLocale::NumberOptions number_options) const
+QSimpleParsedNumber<quint64>
+QLocaleData::stringToUnsLongLong(QStringView str, int base,
+                                 QLocale::NumberOptions number_options) const
 {
     CharBuff buff;
-    if (!numberToCLocale(str, number_options, IntegerMode, &buff)) {
-        if (ok != nullptr)
-            *ok = false;
-        return 0;
-    }
+    if (!numberToCLocale(str, number_options, IntegerMode, &buff))
+        return {};
 
-    return bytearrayToUnsLongLong(QByteArrayView(buff.constData(), buff.size()), base, ok);
+    return bytearrayToUnsLongLong(QByteArrayView(buff), base);
 }
 
 static bool checkParsed(QByteArrayView num, qsizetype used)
@@ -4355,22 +4355,20 @@ static bool checkParsed(QByteArrayView num, qsizetype used)
     return true;
 }
 
-qlonglong QLocaleData::bytearrayToLongLong(QByteArrayView num, int base, bool *ok)
+QSimpleParsedNumber<qint64> QLocaleData::bytearrayToLongLong(QByteArrayView num, int base)
 {
     auto r = qstrntoll(num.data(), num.size(), base);
-    const bool parsed = checkParsed(num, r.used);
-    if (ok)
-        *ok = parsed;
-    return parsed ? r.result : 0;
+    if (!checkParsed(num, r.used))
+        return {};
+    return r;
 }
 
-qulonglong QLocaleData::bytearrayToUnsLongLong(QByteArrayView num, int base, bool *ok)
+QSimpleParsedNumber<quint64> QLocaleData::bytearrayToUnsLongLong(QByteArrayView num, int base)
 {
     auto r = qstrntoull(num.data(), num.size(), base);
-    const bool parsed = checkParsed(num, r.used);
-    if (ok)
-        *ok = parsed;
-    return parsed ? r.result : 0;
+    if (!checkParsed(num, r.used))
+        return {};
+    return r;
 }
 
 /*!

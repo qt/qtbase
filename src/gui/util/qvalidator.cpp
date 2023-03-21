@@ -397,12 +397,13 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
         return *opt;
 
     const CharBuff &buff = result.buff;
-    bool ok;
-    qlonglong entered = QLocaleData::bytearrayToLongLong(buff, 10, &ok);
-    if (!ok)
+    QSimpleParsedNumber r = QLocaleData::bytearrayToLongLong(buff, 10);
+    if (!r.ok())
         return Invalid;
 
+    qint64 entered = r.result;
     if (entered >= b && entered <= t) {
+        bool ok = false;
         locale().toInt(input, &ok);
         return ok ? Acceptable : Intermediate;
     }
@@ -433,10 +434,9 @@ void QIntValidator::fixup(QString &input) const
     if (parseState == ParsingResult::Invalid)
         return;
 
-    bool ok;
-    qlonglong entered = QLocaleData::bytearrayToLongLong(buff, 10, &ok);
-    if (ok)
-        input = locale().toString(entered);
+    QSimpleParsedNumber r = QLocaleData::bytearrayToLongLong(buff, 10);
+    if (r.ok())
+        input = locale().toString(r.result);
 }
 
 /*!
