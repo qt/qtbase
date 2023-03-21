@@ -25,7 +25,7 @@
     \sa QTcpServer, QUdpSocket, QNetworkAccessManager,
     {Fortune Server}, {Fortune Client},
     {Threaded Fortune Server}, {Blocking Fortune Client},
-    {Loopback Example}, {Torrent Example}
+    {Torrent Example}
 */
 
 #include "qtcpsocket.h"

@@ -113,7 +113,6 @@ manifestmeta.ios.names              =  "QtCore/Contiguous Cache Example" \
                                        "QtCore/Queued Custom Type Example" \
                                        "QtGui/OpenGL Window Example" \
                                        "QtGui/Raster Window Example" \
-                                       "QtNetwork/Loopback Example" \
                                        "QtNetwork/Network Chat Example" \
                                        "QtNetwork/Torrent Example" \
                                        "QtOpenGL/2D Painting Example" \
