@@ -32,6 +32,14 @@
 
 QT_BEGIN_NAMESPACE
 
+template <typename T> struct QSimpleParsedNumber
+{
+    T result;
+    // When used < 0, -used is how much was used, but it was an error.
+    qsizetype used;
+    bool ok() const { return used > 0; }
+};
+
 template <typename MaskType, uchar Lowest> struct QCharacterSetMatch
 {
     static constexpr int MaxRange = std::numeric_limits<MaskType>::digits;
