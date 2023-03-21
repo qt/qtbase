@@ -806,7 +806,7 @@ private:
     DllDirectoryFileEntryFunction m_dllFilter;
 };
 
-static quint64 qtModule(QString module, const QString &infix)
+static qint64 qtModule(QString module, const QString &infix)
 {
     // Match needle 'path/Qt6Core<infix><d>.dll' or 'path/libQt6Core<infix>.so.5.0'
     const qsizetype lastSlashPos = module.lastIndexOf(u'/');
@@ -827,7 +827,8 @@ static quint64 qtModule(QString module, const QString &infix)
             return qtModule.id;
         }
     }
-    return 0;
+    std::wcerr << "Warning: module " << qPrintable(module) << " could not be found\n";
+    return -1;
 }
 
 // Return the path if a plugin is to be deployed
@@ -855,8 +856,11 @@ static QString deployPlugin(const QString &plugin, const QDir &subDir,
     QString errorMessage;
     if (findDependentQtLibraries(libraryLocation, pluginPath, platform,
                                  &errorMessage, &dependentQtLibs)) {
-        for (int d = 0; d < dependentQtLibs.size(); ++ d)
-            neededModules[qtModule(dependentQtLibs.at(d), infix)] = 1;
+        for (int d = 0; d < dependentQtLibs.size(); ++d) {
+            const qint64 module = qtModule(dependentQtLibs.at(d), infix);
+            if (module >= 0)
+                neededModules[module] = 1;
+        }
     } else {
         std::wcerr << "Warning: Cannot determine dependencies of "
             << QDir::toNativeSeparators(pluginPath) << ": " << errorMessage << '\n';
@@ -1253,8 +1257,9 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     // Determine application type, check Quick2 is used by looking at the
     // direct dependencies (do not be fooled by QtWebKit depending on it).
     for (int m = 0; m < dependentQtLibs.size(); ++m) {
-        const quint64 module = qtModule(dependentQtLibs.at(m), infix);
-        result.directlyUsedQtLibraries[module] = 1;
+        const qint64 module = qtModule(dependentQtLibs.at(m), infix);
+        if (module >= 0)
+            result.directlyUsedQtLibraries[module] = 1;
     }
 
     const bool usesQml = result.directlyUsedQtLibraries.test(QtQmlModuleId);
@@ -1365,8 +1370,9 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     // QtModule enumeration (and thus controlled by flags) and others.
     QStringList deployedQtLibraries;
     for (int i = 0 ; i < dependentQtLibs.size(); ++i)  {
-        if (const quint64 qtm = qtModule(dependentQtLibs.at(i), infix))
-            result.usedQtLibraries[qtm] = 1;
+        const qint64 module = qtModule(dependentQtLibs.at(i), infix);
+        if (module >= 0)
+            result.usedQtLibraries[module] = 1;
         else
             deployedQtLibraries.push_back(dependentQtLibs.at(i)); // Not represented by flag.
     }
