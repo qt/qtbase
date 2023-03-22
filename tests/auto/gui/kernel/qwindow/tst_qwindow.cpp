@@ -1509,6 +1509,7 @@ void tst_QWindow::touchCancelWithTouchToMouse()
 void tst_QWindow::touchInterruptedByPopup()
 {
     InputTestWindow window;
+    window.setObjectName("main");
     window.setTitle(QLatin1String(QTest::currentTestFunction()));
     window.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));
     window.show();
@@ -1529,6 +1530,7 @@ void tst_QWindow::touchInterruptedByPopup()
 
     // Launch a popup window
     InputTestWindow popup;
+    window.setObjectName("popup");
     popup.setFlags(Qt::Popup);
     popup.setModality(Qt::WindowModal);
     popup.resize(m_testWindowSize /  2);
@@ -1551,9 +1553,6 @@ void tst_QWindow::touchInterruptedByPopup()
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.touchReleasedCount, 0);
-
-    // Due to temporary fix for QTBUG-37371: the original window should receive a TouchCancel
-    QTRY_COMPARE(window.touchEventType, QEvent::TouchCancel);
 }
 
 void tst_QWindow::orientation()

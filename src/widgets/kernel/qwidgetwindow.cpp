@@ -27,9 +27,8 @@ Q_WIDGETS_EXPORT QWidget *qt_button_down = nullptr; // widget got last button-do
 
 // popup control
 QWidget *qt_popup_down = nullptr; // popup that contains the pressed widget
-extern int openPopupCount;
 bool qt_popup_down_closed = false; // qt_popup_down has been closed
-bool qt_replay_popup_mouse_event = false;
+
 extern bool qt_try_modal(QWidget *widget, QEvent::Type type);
 
 class QWidgetWindowPrivate : public QWindowPrivate
@@ -532,11 +531,8 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             break; // nothing for mouse move
         }
 
-        int oldOpenPopupCount = openPopupCount;
-
         if (activePopupWidget->isEnabled()) {
             // deliver event
-            qt_replay_popup_mouse_event = false;
             QPointer<QWidget> receiver = activePopupWidget;
             QPointF widgetPos = mapped;
             if (qt_button_down)
@@ -588,56 +584,6 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             }
         }
 
-        if (QApplication::activePopupWidget() != activePopupWidget
-            && qt_replay_popup_mouse_event
-            && QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ReplayMousePressOutsidePopup).toBool()) {
-            if (m_widget->windowType() != Qt::Popup)
-                qt_button_down = nullptr;
-            if (event->type() == QEvent::MouseButtonPress) {
-                // the popup disappeared, replay the mouse press event
-                QWidget *w = QApplication::widgetAt(event->globalPosition().toPoint());
-                if (w && !QApplicationPrivate::isBlockedByModal(w)) {
-                    // activate window of the widget under mouse pointer
-                    if (!w->isActiveWindow()) {
-                        w->activateWindow();
-                        w->window()->raise();
-                    }
-
-                    if (auto win = qt_widget_private(w)->windowHandle(QWidgetPrivate::WindowHandleMode::Closest)) {
-                        const QRect globalGeometry = win->isTopLevel()
-                            ? win->geometry()
-                            : QRect(win->mapToGlobal(QPoint(0, 0)), win->size());
-                        if (globalGeometry.contains(event->globalPosition().toPoint())) {
-                            // Use postEvent() to ensure the local QEventLoop terminates when called from QMenu::exec()
-                            const QPoint localPos = win->mapFromGlobal(event->globalPosition().toPoint());
-                            QMouseEvent *e = new QMouseEvent(QEvent::MouseButtonPress, localPos, localPos, event->globalPosition().toPoint(),
-                                                             event->button(), event->buttons(), event->modifiers(), event->source());
-                            QCoreApplicationPrivate::setEventSpontaneous(e, true);
-                            e->setTimestamp(event->timestamp());
-                            QCoreApplication::postEvent(win, e);
-                        }
-                    }
-                }
-            }
-            qt_replay_popup_mouse_event = false;
-#ifndef QT_NO_CONTEXTMENU
-        } else if (event->type() == QGuiApplicationPrivate::contextMenuEventType()
-                   && event->button() == Qt::RightButton
-                   && (openPopupCount == oldOpenPopupCount)) {
-            QWidget *receiver = activePopupWidget;
-            if (qt_button_down)
-                receiver = qt_button_down;
-            else if (popupChild)
-                receiver = popupChild;
-            const QPoint localPos = receiver->mapFromGlobal(event->globalPosition().toPoint());
-            QContextMenuEvent e(QContextMenuEvent::Mouse, localPos, event->globalPosition().toPoint(), event->modifiers());
-            QApplication::forwardEvent(receiver, &e, event);
-        }
-#else
-            Q_UNUSED(oldOpenPopupCount);
-        }
-#endif
-
         if (releaseAfter) {
             qt_button_down = nullptr;
             qt_popup_down_closed = false;
@@ -666,6 +612,11 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                                                                qt_button_down, widget);
     if (!receiver)
         return;
+
+    if (d_func()->isPopup() && receiver->window()->windowHandle() != this) {
+        receiver = widget;
+        mapped = event->position().toPoint();
+    }
 
     if ((event->type() != QEvent::MouseButtonPress) || !QMutableSinglePointEvent::from(event)->isDoubleClick()) {
 
@@ -859,6 +810,10 @@ void QWidgetWindow::handleResizeEvent(QResizeEvent *event)
 void QWidgetWindow::closeEvent(QCloseEvent *event)
 {
     Q_D(QWidgetWindow);
+    if (qt_popup_down == m_widget) {
+        qt_popup_down = nullptr;
+        qt_popup_down_closed = true;
+    }
     bool accepted = m_widget->d_func()->handleClose(d->inClose ? QWidgetPrivate::CloseWithEvent
                                                                   : QWidgetPrivate::CloseWithSpontaneousEvent);
     event->setAccepted(accepted);

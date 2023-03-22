@@ -196,8 +196,11 @@ public:
     virtual Qt::WindowModality defaultModality() const;
     virtual bool windowNeverBlocked(QWindow *window) const;
     bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = nullptr) const;
-    virtual bool popupActive() { return false; }
-    virtual bool closeAllPopups() { return false; }
+    static qsizetype popupCount() { return QGuiApplicationPrivate::popup_list.size(); }
+    static QWindow *activePopupWindow();
+    static void activatePopup(QWindow *popup);
+    static bool closePopup(QWindow *popup);
+    static bool closeAllPopups();
 
     static Qt::MouseButton mousePressButton;
     static struct QLastCursorPosition {
@@ -258,6 +261,8 @@ public:
     static QPalette *app_pal;
 
     static QWindowList window_list;
+    static QWindowList popup_list;
+    static const QWindow *active_popup_on_press;
     static QWindow *focus_window;
 
 #ifndef QT_NO_CURSOR
@@ -270,6 +275,7 @@ public:
     static QString styleOverride;
     static QStyleHints *styleHints;
     static bool obey_desktop_settings;
+    static bool popup_closed_on_press;
     QInputMethod *inputMethod;
 
     QString firstWindowTitle;
@@ -340,6 +346,7 @@ private:
     static void clearPalette();
 
     friend class QDragManager;
+    friend class QWindowPrivate;
 
     static QGuiApplicationPrivate *self;
     static int m_fakeMouseSourcePointId;

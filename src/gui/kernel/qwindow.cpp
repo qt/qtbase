@@ -27,6 +27,8 @@
 #endif // QT_CONFIG(draganddrop)
 
 #include <private/qevent_p.h>
+#include <private/qeventpoint_p.h>
+#include <private/qguiapplication_p.h>
 
 #include <QtCore/QTimer>
 #include <QtCore/QDebug>
@@ -36,6 +38,8 @@
 #include <qpa/qplatformwindow_p.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcPopup)
 
 /*!
     \class QWindow
@@ -186,6 +190,7 @@ QWindow::~QWindow()
     // Decouple from parent before window goes under
     setParent(nullptr);
     QGuiApplicationPrivate::window_list.removeAll(this);
+    QGuiApplicationPrivate::popup_list.removeAll(this);
     if (!QGuiApplicationPrivate::is_app_closing)
         QGuiApplicationPrivate::instance()->modalWindowList.removeOne(this);
 
@@ -409,6 +414,13 @@ void QWindowPrivate::setVisible(bool visible)
 #endif // QT_CONFIG(draganddrop)
               ) {
         QGuiApplicationPrivate::updateBlockedStatus(q);
+    }
+
+    if (q->type() == Qt::Popup) {
+        if (visible)
+            QGuiApplicationPrivate::activatePopup(q);
+        else
+            QGuiApplicationPrivate::closePopup(q);
     }
 
 #ifndef QT_NO_CURSOR
@@ -2361,8 +2373,13 @@ bool QWindow::close()
     if (!isTopLevel())
         return false;
 
-    if (!d->platformWindow)
+    if (!d->platformWindow) {
+        // dock widgets can transition back and forth to being popups;
+        // avoid getting stuck
+        if (QGuiApplicationPrivate::activePopupWindow() == this)
+            QGuiApplicationPrivate::closePopup(this);
         return true;
+    }
 
     // The window might be deleted during close,
     // as a result of delivering the close event.
@@ -2400,6 +2417,49 @@ bool QWindowPrivate::treatAsVisible() const
 {
     Q_Q(const QWindow);
     return q->isVisible();
+}
+
+/*! \internal
+    Returns the popup window that has consumed \a event, if any.
+    \a activePopupOnPress is the window that we have observed previously handling the press.
+*/
+const QWindow *QWindowPrivate::forwardToPopup(QEvent *event, const QWindow */*activePopupOnPress*/)
+{
+    Q_Q(const QWindow);
+    qCDebug(lcPopup) << "checking for popup alternative to" << q << "for" << event
+                     << "active popup?" << QGuiApplicationPrivate::activePopupWindow();
+    QWindow *ret = nullptr;
+    if (QWindow *popupWindow = QGuiApplicationPrivate::activePopupWindow()) {
+        if (q == popupWindow)
+            return nullptr; // avoid infinite recursion: we're already handling it
+        if (event->isPointerEvent()) {
+            // detach eventPoints before modifying them
+            QScopedPointer<QPointerEvent> pointerEvent(static_cast<QPointerEvent *>(event)->clone());
+            for (int i = 0; i < pointerEvent->pointCount(); ++i) {
+                QEventPoint &eventPoint = pointerEvent->point(i);
+                const QPoint globalPos = eventPoint.globalPosition().toPoint();
+                const QPointF mapped = popupWindow->mapFromGlobal(globalPos);
+                QMutableEventPoint::setPosition(eventPoint, mapped);
+                QMutableEventPoint::setScenePosition(eventPoint, mapped);
+            }
+
+            /*  Popups are expected to be able to directly handle the
+                drag-release sequence after pressing to open, as well as
+                any other mouse events that occur within the popup's bounds. */
+            if (QCoreApplication::sendEvent(popupWindow, pointerEvent.get()))
+                ret = popupWindow;
+            qCDebug(lcPopup) << q << "forwarded" << event->type() <<  "to popup" << popupWindow
+                             << "handled?" << (ret != nullptr) << event->isAccepted();
+            return ret;
+        } else if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
+            if (QCoreApplication::sendEvent(popupWindow, event))
+                ret = popupWindow;
+            qCDebug(lcPopup) << q << "forwarded" << event->type() <<  "to popup" << popupWindow
+                             << "handled?" << (ret != nullptr) << event->isAccepted();
+            return ret;
+        }
+    }
+    return ret;
 }
 
 /*!

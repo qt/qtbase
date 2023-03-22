@@ -107,6 +107,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcPopup, "qt.gui.popup");
+
 using namespace Qt::StringLiterals;
 using namespace QtMiscUtils;
 
@@ -180,12 +182,15 @@ Q_CONSTINIT QClipboard *QGuiApplicationPrivate::qt_clipboard = nullptr;
 Q_CONSTINIT QList<QScreen *> QGuiApplicationPrivate::screen_list;
 
 Q_CONSTINIT QWindowList QGuiApplicationPrivate::window_list;
+Q_CONSTINIT QWindowList QGuiApplicationPrivate::popup_list;
+Q_CONSTINIT const QWindow *QGuiApplicationPrivate::active_popup_on_press = nullptr;
 Q_CONSTINIT QWindow *QGuiApplicationPrivate::focus_window = nullptr;
 
 Q_CONSTINIT static QBasicMutex applicationFontMutex;
 Q_CONSTINIT QFont *QGuiApplicationPrivate::app_font = nullptr;
 Q_CONSTINIT QStyleHints *QGuiApplicationPrivate::styleHints = nullptr;
 Q_CONSTINIT bool QGuiApplicationPrivate::obey_desktop_settings = true;
+Q_CONSTINIT bool QGuiApplicationPrivate::popup_closed_on_press = false;
 
 Q_CONSTINIT QInputDeviceManager *QGuiApplicationPrivate::m_inputDeviceManager = nullptr;
 
@@ -958,6 +963,43 @@ bool QGuiApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blocking
         }
     }
     return false;
+}
+
+QWindow *QGuiApplicationPrivate::activePopupWindow()
+{
+    // might be the same as focusWindow() if that's a popup
+    return QGuiApplicationPrivate::popup_list.isEmpty() ?
+            nullptr : QGuiApplicationPrivate::popup_list.constLast();
+}
+
+void QGuiApplicationPrivate::activatePopup(QWindow *popup)
+{
+    if (!popup->isVisible())
+        return;
+    popup_list.removeOne(popup); // ensure that there's only one entry, and it's the last
+    qCDebug(lcPopup) << "appending popup" << popup << "to existing" << popup_list;
+    popup_list.append(popup);
+}
+
+bool QGuiApplicationPrivate::closePopup(QWindow *popup)
+{
+    const auto removed = QGuiApplicationPrivate::popup_list.removeAll(popup);
+    qCDebug(lcPopup) << "removed?" << removed << "popup" << popup << "; remaining" << popup_list;
+    return removed; // >= 1 if something was removed
+}
+
+/*!
+    Returns \c true if there are no more open popups.
+*/
+bool QGuiApplicationPrivate::closeAllPopups()
+{
+    // Close all popups: In case some popup refuses to close,
+    // we give up after 1024 attempts (to avoid an infinite loop).
+    int maxiter = 1024;
+    QWindow *popup;
+    while ((popup = activePopupWindow()) && maxiter--)
+        popup->close(); // this will call QApplicationPrivate::closePopup
+    return QGuiApplicationPrivate::popup_list.isEmpty();
 }
 
 /*!
@@ -1785,6 +1827,7 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     platform_integration = nullptr;
 
     window_list.clear();
+    popup_list.clear();
     screen_list.clear();
 
     self = nullptr;
@@ -2306,6 +2349,14 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     }
 #endif
 
+    const auto *activePopup = activePopupWindow();
+    if (type == QEvent::MouseButtonPress)
+        active_popup_on_press = activePopup;
+    if (window->d_func()->blockedByModalWindow && !activePopup) {
+        // a modal window is blocking this window, don't allow mouse events through
+        return;
+    }
+
     QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, e->buttons, e->modifiers, e->source, device);
     Q_ASSERT(devPriv->pointById(0) == persistentEPD); // we don't expect reallocation in QPlatformCursor::pointerEvenmt()
     // restore globalLastPosition to avoid invalidating the velocity calculations,
@@ -2314,9 +2365,15 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     persistentEPD = nullptr; // incoming and synth events can cause reallocation during delivery, so don't use this again
     // ev now contains a detached copy of the QEventPoint from QPointingDevicePrivate::activePoints
     ev.setTimestamp(e->timestamp);
-    if (window->d_func()->blockedByModalWindow && !qApp->d_func()->popupActive()) {
-        // a modal window is blocking this window, don't allow mouse events through
-        return;
+
+    if (activePopup && activePopup != window && (!popup_closed_on_press || type == QEvent::MouseButtonRelease)) {
+        // If the popup handles the event, we're done.
+        auto *handlingPopup = window->d_func()->forwardToPopup(&ev, active_popup_on_press);
+        if (handlingPopup) {
+            if (type == QEvent::MouseButtonPress)
+                active_popup_on_press = handlingPopup;
+            return;
+        }
     }
 
     if (doubleClick && (ev.type() == QEvent::MouseButtonPress)) {
@@ -2368,6 +2425,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         }
     }
     if (type == QEvent::MouseButtonRelease && e->buttons == Qt::NoButton) {
+        popup_closed_on_press = false;
         if (auto *persistentEPD = devPriv->queryPointById(0)) {
             ev.setExclusiveGrabber(persistentEPD->eventPoint, nullptr);
             ev.clearPassiveGrabbers(persistentEPD->eventPoint);
@@ -2422,6 +2480,11 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
         window = QGuiApplication::focusWindow();
     }
 
+    if (!window) {
+        e->eventAccepted = false;
+        return;
+    }
+
 #if defined(Q_OS_ANDROID)
     static bool backKeyPressAccepted = false;
     static bool menuKeyPressAccepted = false;
@@ -2430,7 +2493,7 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
 #if !defined(Q_OS_MACOS)
     // FIXME: Include OS X in this code path by passing the key event through
     // QPlatformInputContext::filterEvent().
-    if (e->keyType == QEvent::KeyPress && window) {
+    if (e->keyType == QEvent::KeyPress) {
         if (QWindowSystemInterface::handleShortcutEvent(window, e->timestamp, e->key, e->modifiers,
             e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers, e->unicode, e->repeat, e->repeatCount)) {
 #if defined(Q_OS_ANDROID)
@@ -2447,9 +2510,16 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
                  e->unicode, e->repeat, e->repeatCount);
     ev.setTimestamp(e->timestamp);
 
+    const auto *activePopup = activePopupWindow();
+    if (activePopup && activePopup != window) {
+        // If the popup handles the event, we're done.
+        if (window->d_func()->forwardToPopup(&ev, active_popup_on_press))
+            return;
+    }
+
     // only deliver key events when we have a window, and no modal window is blocking this window
 
-    if (window && !window->d_func()->blockedByModalWindow)
+    if (!window->d_func()->blockedByModalWindow)
         QGuiApplication::sendSpontaneousEvent(window, &ev);
 #ifdef Q_OS_ANDROID
     else
@@ -2520,10 +2590,15 @@ void QGuiApplicationPrivate::processFocusWindowEvent(QWindowSystemInterfacePriva
     if (previous == newFocus)
         return;
 
-    if (newFocus)
+    bool activatedPopup = false;
+    if (newFocus) {
         if (QPlatformWindow *platformWindow = newFocus->handle())
             if (platformWindow->isAlertState())
                 platformWindow->setAlertState(false);
+        activatedPopup = (newFocus->flags() & Qt::WindowType_Mask) == Qt::Popup;
+        if (activatedPopup)
+            activatePopup(newFocus);
+    }
 
     QObject *previousFocusObject = previous ? previous->focusObject() : nullptr;
 
@@ -2538,8 +2613,7 @@ void QGuiApplicationPrivate::processFocusWindowEvent(QWindowSystemInterfacePriva
 
     if (previous) {
         Qt::FocusReason r = e->reason;
-        if ((r == Qt::OtherFocusReason || r == Qt::ActiveWindowFocusReason) &&
-                newFocus && (newFocus->flags() & Qt::Popup) == Qt::Popup)
+        if ((r == Qt::OtherFocusReason || r == Qt::ActiveWindowFocusReason) && activatedPopup)
             r = Qt::PopupFocusReason;
         QFocusEvent focusOut(QEvent::FocusOut, r);
         QCoreApplication::sendSpontaneousEvent(previous, &focusOut);
@@ -2782,6 +2856,7 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
         }
         if (!window)
             return;
+        active_popup_on_press = activePopupWindow();
         pointData.target = window;
     } else {
         if (e->nullWindow()) {
@@ -2809,12 +2884,25 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
         }
     }
 
+    const auto *activePopup = activePopupWindow();
+    if (window->d_func()->blockedByModalWindow && !activePopup) {
+        // a modal window is blocking this window, don't allow events through
+        return;
+    }
+
     QTabletEvent tabletEvent(type, device, local, e->global,
                              e->pressure, e->xTilt, e->yTilt,
                              e->tangentialPressure, e->rotation, e->z,
                              e->modifiers, button, e->buttons);
     tabletEvent.setAccepted(false);
     tabletEvent.setTimestamp(e->timestamp);
+
+    if (activePopup && activePopup != window) {
+        // If the popup handles the event, we're done.
+        if (window->d_func()->forwardToPopup(&tabletEvent, active_popup_on_press))
+            return;
+    }
+
     QGuiApplication::sendSpontaneousEvent(window, &tabletEvent);
     pointData.state = e->buttons;
     if (!tabletEvent.isAccepted()
@@ -2987,6 +3075,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             if (!window)
                 window = QGuiApplication::topLevelAt(tempPt.globalPosition().toPoint());
             QMutableEventPoint::setWindow(ep, window);
+            active_popup_on_press = activePopupWindow();
             break;
 
         case QEventPoint::State::Released:
@@ -3057,7 +3146,8 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             break;
         }
 
-        if (window->d_func()->blockedByModalWindow && !qApp->d_func()->popupActive()) {
+        const auto *activePopup = activePopupWindow();
+        if (window->d_func()->blockedByModalWindow && !activePopup) {
             // a modal window is blocking this window, don't allow touch events through
 
             // QTBUG-37371 temporary fix; TODO: revisit when we have a forwarding solution
@@ -3069,6 +3159,12 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 QGuiApplication::sendSpontaneousEvent(window, &touchEvent);
             }
             continue;
+        }
+
+        if (activePopup && activePopup != window) {
+            // If the popup handles the event, we're done.
+            if (window->d_func()->forwardToPopup(&touchEvent, active_popup_on_press))
+                return;
         }
 
         // Note: after the call to sendSpontaneousEvent, touchEvent.position() will have

@@ -1717,7 +1717,7 @@ void QCocoaWindow::setupPopupMonitor()
                                                 | NSEventMaskMouseMoved;
         s_globalMouseMonitor = [NSEvent addGlobalMonitorForEventsMatchingMask:mouseButtonMask
                                         handler:^(NSEvent *e){
-            if (!QGuiApplicationPrivate::instance()->popupActive()) {
+            if (!QGuiApplicationPrivate::instance()->activePopupWindow()) {
                 removePopupMonitor();
                 return;
             }
