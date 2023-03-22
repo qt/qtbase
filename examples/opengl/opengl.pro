@@ -1,6 +1,7 @@
 TEMPLATE      = subdirs
 
-SUBDIRS = openglwindow
+SUBDIRS = openglwindow \
+          hellogles3
 
 qtHaveModule(widgets) {
     SUBDIRS += contextinfo \
@@ -9,6 +10,5 @@ qtHaveModule(widgets) {
                qopenglwidget \
                cube \
                textures \
-               hellogles3 \
                stereoqopenglwidget
 }
