@@ -97,11 +97,13 @@ bool QXcbEglIntegration::initialize(QXcbConnection *connection)
 
     EGLint major, minor;
     bool success = eglInitialize(m_egl_display, &major, &minor);
+#if QT_CONFIG(egl_x11)
     if (!success) {
         m_egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
         qCDebug(lcQpaGl) << "Xcb EGL gl-integration retrying with display" << m_egl_display;
         success = eglInitialize(m_egl_display, &major, &minor);
     }
+#endif
 
     m_native_interface_handler.reset(new QXcbEglNativeInterfaceHandler(connection->nativeInterface()));
 
