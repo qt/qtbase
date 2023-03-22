@@ -1,9 +1,7 @@
 TEMPLATE      = subdirs
 
-SUBDIRS = hellowindow \
-          paintedwindow \
-          openglwindow \
-          qopenglwindow
+SUBDIRS = paintedwindow \
+          openglwindow
 
 qtHaveModule(widgets) {
     SUBDIRS += contextinfo \
