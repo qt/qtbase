@@ -32,7 +32,7 @@ public:
     explicit QDeadlineTimer(qint64 msecs, Qt::TimerType type = Qt::CoarseTimer) noexcept;
 
     void swap(QDeadlineTimer &other) noexcept
-    { std::swap(t1, other.t1); std::swap(t2, other.t2); std::swap(type, other.type); }
+    { std::swap(t1, other.t1); std::swap(type, other.type); }
 
     constexpr bool isForever() const noexcept
     { return t1 == (std::numeric_limits<qint64>::max)(); }
@@ -58,11 +58,11 @@ public:
     static QDeadlineTimer current(Qt::TimerType timerType = Qt::CoarseTimer) noexcept;
 
     friend bool operator==(QDeadlineTimer d1, QDeadlineTimer d2) noexcept
-    { return d1.t1 == d2.t1 && d1.t2 == d2.t2; }
+    { return d1.t1 == d2.t1; }
     friend bool operator!=(QDeadlineTimer d1, QDeadlineTimer d2) noexcept
     { return !(d1 == d2); }
     friend bool operator<(QDeadlineTimer d1, QDeadlineTimer d2) noexcept
-    { return d1.t1 < d2.t1 || (d1.t1 == d2.t1 && d1.t2 < d2.t2); }
+    { return d1.t1 < d2.t1; }
     friend bool operator<=(QDeadlineTimer d1, QDeadlineTimer d2) noexcept
     { return d1 == d2 || d1 < d2; }
     friend bool operator>(QDeadlineTimer d1, QDeadlineTimer d2) noexcept
@@ -137,7 +137,9 @@ public:
 
 private:
     qint64 t1 = 0;
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     unsigned t2 = 0;
+#endif
     unsigned type;
 
     qint64 rawRemainingTimeNSecs() const noexcept;
