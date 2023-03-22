@@ -12,6 +12,8 @@
 
     \note This is a low level example of how to use QWindow with OpenGL.
     In practice you should consider using the higher level QOpenGLWindow class.
+    See the \l{Hello GLES3 Example} for a demonstration of the QOpenGLWindow
+    convenience class.
 
     \section1 OpenGLWindow Super Class
 
