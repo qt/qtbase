@@ -2,19 +2,18 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qplatformdefs.h"
 #include "qwaitcondition.h"
-#include "qmutex.h"
-#include "qreadwritelock.h"
-#include "qatomic.h"
-#include "qstring.h"
-#include "qdeadlinetimer.h"
-#include "private/qdeadlinetimer_p.h"
-#include "qelapsedtimer.h"
-#include "private/qcore_unix_p.h"
 
+#include "qatomic.h"
+#include "qdeadlinetimer.h"
+#include "qelapsedtimer.h"
+#include "qmutex.h"
+#include "qplatformdefs.h"
+#include "qreadwritelock.h"
+#include "qstring.h"
+
+#include "private/qcore_unix_p.h"
 #include "qmutex_p.h"
-#include "qreadwritelock_p.h"
 
 #include <errno.h>
 #include <sys/time.h>
