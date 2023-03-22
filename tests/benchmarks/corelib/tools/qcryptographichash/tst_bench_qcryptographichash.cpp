@@ -82,7 +82,8 @@ void tst_QCryptographicHash::hash()
     QFETCH(QByteArray, data);
 
     QBENCHMARK {
-        QCryptographicHash::hash(data, algo);
+        [[maybe_unused]]
+        auto r = QCryptographicHash::hash(data, algo);
     }
 }
 
@@ -95,7 +96,8 @@ void tst_QCryptographicHash::addData()
     QBENCHMARK {
         hash.reset();
         hash.addData(data);
-        hash.result();
+        [[maybe_unused]]
+        auto r = hash.result();
     }
 }
 
@@ -113,7 +115,8 @@ void tst_QCryptographicHash::addDataChunked()
             hash.addData({data.constData() + 64 * i, 64});
         hash.addData({data.constData() + data.size() / 64 * 64, data.size() % 64});
 
-        hash.result();
+        [[maybe_unused]]
+        auto r = hash.result();
     }
 }
 
