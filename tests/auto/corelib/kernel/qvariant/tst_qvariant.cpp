@@ -381,6 +381,7 @@ private slots:
     void getIf_int() { getIf_impl(42); }
     void getIf_QString() { getIf_impl(u"string"_s); };
     void getIf_NonDefaultConstructible();
+    void getIfSpecial();
 
     void get_int() { get_impl(42); }
     void get_QString() { get_impl(u"string"_s); }
@@ -5722,6 +5723,12 @@ void tst_QVariant::copyNonDefaultConstructible()
 void tst_QVariant::getIf_NonDefaultConstructible()
 {
     getIf_impl(NonDefaultConstructible{42});
+}
+
+void tst_QVariant::getIfSpecial()
+{
+    QVariant v{QString{}}; // used to be a null QVariant in Qt 5
+    QCOMPARE_NE(get_if<QString>(&v), nullptr); // not anymore...
 }
 
 void tst_QVariant::get_NonDefaultConstructible()
