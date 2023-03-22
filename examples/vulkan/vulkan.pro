@@ -1,8 +1,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS = hellovulkanwindow \
-          hellovulkantriangle \
-          hellovulkantexture
+          hellovulkantriangle
 
 qtHaveModule(widgets) {
     SUBDIRS += hellovulkanwidget
