@@ -378,6 +378,8 @@ private slots:
     void constructFromIncompatibleMetaType();
     void copyNonDefaultConstructible();
 
+    void inplaceConstruct();
+
     void getIf_int() { getIf_impl(42); }
     void getIf_QString() { getIf_impl(u"string"_s); };
     void getIf_NonDefaultConstructible();
@@ -5718,6 +5720,23 @@ void tst_QVariant::copyNonDefaultConstructible()
     QCOMPARE(get<NonDefaultConstructible>(std::as_const(var2)),
              get<NonDefaultConstructible>(std::as_const(var)));
     QCOMPARE(var2, var);
+}
+
+void tst_QVariant::inplaceConstruct()
+{
+    {
+        NonDefaultConstructible ndc(42);
+        QVariant var(std::in_place_type<NonDefaultConstructible>, 42);
+        QVERIFY(get_if<NonDefaultConstructible>(&var));
+        QCOMPARE(get<NonDefaultConstructible>(var), ndc);
+    }
+
+    {
+        std::vector<int> vec {1, 2, 3, 4};
+        QVariant var(std::in_place_type<std::vector<int>>, {1, 2, 3, 4});
+        QVERIFY(get_if<std::vector<int>>(&var));
+        QCOMPARE(get<std::vector<int>>(var), vec);
+    }
 }
 
 void tst_QVariant::getIf_NonDefaultConstructible()

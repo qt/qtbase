@@ -62,6 +62,15 @@ template<> constexpr inline bool qIsRelocatable<QVariant> = true;
 }
 class Q_CORE_EXPORT QVariant
 {
+    template <typename Type, typename... Args>
+    using if_constructible = std::enable_if_t<
+        std::conjunction_v<
+            std::is_copy_constructible<q20::remove_cvref_t<Type>>,
+            std::is_destructible<q20::remove_cvref_t<Type>>,
+            std::is_constructible<q20::remove_cvref_t<Type>, Args...>
+        >,
+    bool>;
+
     struct CborValueStandIn { qint64 n; void *c; int t; };
 public:
     struct PrivateShared
@@ -203,6 +212,37 @@ public:
     ~QVariant();
     explicit QVariant(QMetaType type, const void *copy = nullptr);
     QVariant(const QVariant &other);
+
+private:
+    template<typename Type, typename ...Args>
+    using is_noexcept_constructible = std::conjunction<
+            std::bool_constant<Private::CanUseInternalSpace<Type>>,
+            std::is_nothrow_constructible<Type, Args...>
+        >;
+
+public:
+    template <typename Type, typename... Args,
+             if_constructible<Type, Args...> = true>
+    explicit QVariant(std::in_place_type_t<Type>, Args&&... args)
+            noexcept(is_noexcept_constructible<q20::remove_cvref_t<Type>, Args...>::value)
+        : QVariant(std::in_place, QMetaType::fromType<q20::remove_cvref_t<Type>>() )
+    {
+        void *data = const_cast<void *>(constData());
+        new (data) Type(std::forward<Args>(args)...);
+    }
+
+    template <typename Type, typename List, typename... Args,
+             if_constructible<Type, std::initializer_list<List> &, Args...> = true>
+    explicit QVariant(std::in_place_type_t<Type>, std::initializer_list<List> il, Args&&... args)
+            noexcept(is_noexcept_constructible<q20::remove_cvref_t<Type>,
+                                               std::initializer_list<List> &,
+                                               Args...
+                    >::value)
+        : QVariant(std::in_place, QMetaType::fromType<q20::remove_cvref_t<Type>>())
+    {
+        char *data = static_cast<char *>(const_cast<void *>(constData()));
+        new (data) Type(il, std::forward<Args>(args)...);
+    }
 
     // primitives
     QVariant(int i) noexcept;
@@ -534,6 +574,9 @@ private:
     // want QVariant(QMetaType::String) to compile and falsely be an
     // int variant, so delete this constructor:
     QVariant(QMetaType::Type) = delete;
+
+    // used to setup the QVariant internals for the "real" inplace ctor
+    QVariant(std::in_place_t, QMetaType type);
 
     // These constructors don't create QVariants of the type associated
     // with the enum, as expected, but they would create a QVariant of

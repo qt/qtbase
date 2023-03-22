@@ -524,6 +524,43 @@ QVariant::QVariant(const QVariant &p)
 }
 
 /*!
+    \fn template <typename Type, typename... Args, if_constructible<Type, Args...> = true> QVariant::QVariant(std::in_place_type_t<Type>, Args&&... args) noexcept(is_noexcept_constructible<q20::remove_cvref_t<Type>, Args...>::value)
+
+    \since 6.6
+    Constructs a new variant containing a value of type \c Type. The contained
+    value is is initialized with the arguments
+    \c{std::forward<Args>(args)...}.
+
+    This overload only participates in overload resolution if \c Type can be
+    constructed from \a args.
+
+    This constructor is provided for STL/std::any compatibility.
+
+    \overload
+ */
+
+/*!
+
+    \fn template <typename Type, typename List, typename... Args, if_constructible<Type, std::initializer_list<List> &, Args...> = true> explicit QVariant::QVariant(std::in_place_type_t<Type>, std::initializer_list<List> il, Args&&... args) noexcept(is_noexcept_constructible<q20::remove_cvref_t<Type>, std::initializer_list<List> &, Args... >::value)
+
+    \since 6.6
+    \overload
+    This overload exists to support types with constructors taking an
+    \c initializer_list. It behaves otherwise equivalent to the
+    non-initializer list \c{in_place_type_t} overload.
+*/
+
+QVariant::QVariant(std::in_place_t, QMetaType type) : d(type.iface())
+{
+    // we query the metatype instead of detecting it at compile time
+    // so that we can change relocatability of internal types
+    if (!Private::canUseInternalSpace(type.iface())) {
+        d.data.shared = PrivateShared::create(type.sizeOf(), type.alignOf());
+        d.is_shared = true;
+    }
+}
+
+/*!
   \fn QVariant::QVariant(const QString &val) noexcept
 
     Constructs a new variant with a string value, \a val.
