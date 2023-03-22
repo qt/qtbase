@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2023 The Qt Company Ltd.
 ** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -30,11 +31,13 @@
 #include <QCryptographicHash>
 #include <QFile>
 #include <QMetaEnum>
+#include <QMessageAuthenticationCode>
 #include <QRandomGenerator>
 #include <QString>
 #include <QTest>
 
 #include <functional>
+#include <numeric>
 
 #include <time.h>
 
@@ -55,6 +58,14 @@ private Q_SLOTS:
     void addData();
     void addDataChunked_data() { hash_data(); }
     void addDataChunked();
+
+    // QMessageAuthenticationCode:
+    void hmac_hash_data() { hash_data(); }
+    void hmac_hash();
+    void hmac_addData_data() { hash_data(); }
+    void hmac_addData();
+    void hmac_setKey_data();
+    void hmac_setKey();
 };
 
 const int MaxBlockSize = 65536;
@@ -142,6 +153,73 @@ void tst_bench_QCryptographicHash::addDataChunked()
         auto r = hash.result();
     }
 }
+
+static QByteArray hmacKey() {
+    static QByteArray key = [] {
+            QByteArray result(277, Qt::Uninitialized);
+            std::iota(result.begin(), result.end(), uchar(0)); // uchar so wraps after UCHAR_MAX
+            return result;
+        }();
+    return key;
+}
+
+void tst_bench_QCryptographicHash::hmac_hash()
+{
+    QFETCH(const Algorithm, algo);
+    QFETCH(const QByteArray, data);
+
+    const auto key = hmacKey();
+    QBENCHMARK {
+        [[maybe_unused]]
+        auto r = QMessageAuthenticationCode::hash(data, key, algo);
+    }
+}
+
+void tst_bench_QCryptographicHash::hmac_addData()
+{
+    QFETCH(const Algorithm, algo);
+    QFETCH(const QByteArray, data);
+
+    const auto key = hmacKey();
+    QMessageAuthenticationCode mac(algo, key);
+    QBENCHMARK {
+        mac.reset();
+        mac.addData(data);
+        [[maybe_unused]]
+        auto r = mac.result();
+    }
+}
+
+void tst_bench_QCryptographicHash::hmac_setKey_data()
+{
+    QTest::addColumn<Algorithm>("algo");
+    for_each_algorithm([] (Algorithm algo, const char *name) {
+        QTest::addRow("%s", name) << algo;
+    });
+}
+
+void tst_bench_QCryptographicHash::hmac_setKey()
+{
+    QFETCH(const Algorithm, algo);
+
+    const QByteArrayList keys = [] {
+            QByteArrayList result;
+            const auto fullKey = hmacKey();
+            result.reserve(fullKey.size());
+            for (auto i = fullKey.size(); i > 0; --i)
+                result.push_back(fullKey.sliced(i));
+            return result;
+        }();
+
+    QMessageAuthenticationCode mac(algo);
+    QBENCHMARK {
+        for (const auto &key : keys) {
+            mac.setKey(key);
+            mac.addData("abc", 3); // avoid lazy setKey()
+        }
+    }
+}
+
 
 QTEST_APPLESS_MAIN(tst_bench_QCryptographicHash)
 
