@@ -117,7 +117,7 @@ void tst_QCryptographicHash::addData()
         hash.reset();
         hash.addData(data);
         [[maybe_unused]]
-        auto r = hash.result();
+        auto r = hash.resultView();
     }
 }
 
@@ -138,7 +138,7 @@ void tst_QCryptographicHash::addDataChunked()
         hash.addData({data.constData() + data.size() / 64 * 64, data.size() % 64});
 
         [[maybe_unused]]
-        auto r = hash.result();
+        auto r = hash.resultView();
     }
 }
 
@@ -178,7 +178,7 @@ void tst_QCryptographicHash::hmac_addData()
         mac.reset();
         mac.addData(data);
         [[maybe_unused]]
-        auto r = mac.result();
+        auto r = mac.resultView();
     }
 }
 
