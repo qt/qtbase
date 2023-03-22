@@ -3,7 +3,6 @@
 
 qt_internal_add_example(hellovulkanwindow)
 qt_internal_add_example(hellovulkantriangle)
-qt_internal_add_example(hellovulkantexture)
 if(TARGET Qt6::Widgets)
     qt_internal_add_example(hellovulkanwidget)
 endif()
