@@ -59,35 +59,35 @@ const char *algoname(int i)
 {
     switch (QCryptographicHash::Algorithm(i)) {
     case QCryptographicHash::Md4:
-        return "md4-";
+        return "md4";
     case QCryptographicHash::Md5:
-        return "md5-";
+        return "md5";
     case QCryptographicHash::Sha1:
-        return "sha1-";
+        return "sha1";
     case QCryptographicHash::Sha224:
-        return "sha2_224-";
+        return "sha2_224";
     case QCryptographicHash::Sha256:
-        return "sha2_256-";
+        return "sha2_256";
     case QCryptographicHash::Sha384:
-        return "sha2_384-";
+        return "sha2_384";
     case QCryptographicHash::Sha512:
-        return "sha2_512-";
+        return "sha2_512";
     case QCryptographicHash::Sha3_224:
-        return "sha3_224-";
+        return "sha3_224";
     case QCryptographicHash::Sha3_256:
-        return "sha3_256-";
+        return "sha3_256";
     case QCryptographicHash::Sha3_384:
-        return "sha3_384-";
+        return "sha3_384";
     case QCryptographicHash::Sha3_512:
-        return "sha3_512-";
+        return "sha3_512";
     case QCryptographicHash::Keccak_224:
-        return "keccak_224-";
+        return "keccak_224";
     case QCryptographicHash::Keccak_256:
-        return "keccak_256-";
+        return "keccak_256";
     case QCryptographicHash::Keccak_384:
-        return "keccak_384-";
+        return "keccak_384";
     case QCryptographicHash::Keccak_512:
-        return "keccak_512-";
+        return "keccak_512";
     }
     Q_UNREACHABLE();
     return 0;
@@ -119,7 +119,7 @@ void tst_bench_QCryptographicHash::hash_data()
         QByteArray data = QByteArray::fromRawData(blockOfData.constData(), datasizes[i]);
 
         for (int algo = QCryptographicHash::Md4; algo <= MaxCryptoAlgorithm; ++algo)
-            QTest::newRow(algoname(algo) + QByteArray::number(datasizes[i])) << algo << data;
+            QTest::addRow("%s-%d", algoname(algo), datasizes[i]) << algo << data;
     }
 }
 
