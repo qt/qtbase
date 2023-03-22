@@ -87,10 +87,18 @@ void tst_QCryptographicHash::hash_data()
     }
 }
 
+#define SKIP_IF_NOT_SUPPORTED(algo) do { \
+        if (!QCryptographicHash::supportsAlgorithm(algo)) \
+            QSKIP("This algorithm is not supported in this configuration"); \
+    } while (false) \
+    /* end */
+
 void tst_QCryptographicHash::hash()
 {
     QFETCH(const Algorithm, algo);
     QFETCH(QByteArray, data);
+
+    SKIP_IF_NOT_SUPPORTED(algo);
 
     QBENCHMARK {
         [[maybe_unused]]
@@ -102,6 +110,8 @@ void tst_QCryptographicHash::addData()
 {
     QFETCH(const Algorithm, algo);
     QFETCH(QByteArray, data);
+
+    SKIP_IF_NOT_SUPPORTED(algo);
 
     QCryptographicHash hash(algo);
     QBENCHMARK {
@@ -116,6 +126,8 @@ void tst_QCryptographicHash::addDataChunked()
 {
     QFETCH(const Algorithm, algo);
     QFETCH(QByteArray, data);
+
+    SKIP_IF_NOT_SUPPORTED(algo);
 
     QCryptographicHash hash(algo);
     QBENCHMARK {
@@ -145,6 +157,8 @@ void tst_QCryptographicHash::hmac_hash()
     QFETCH(const Algorithm, algo);
     QFETCH(const QByteArray, data);
 
+    SKIP_IF_NOT_SUPPORTED(algo);
+
     const auto key = hmacKey();
     QBENCHMARK {
         [[maybe_unused]]
@@ -156,6 +170,8 @@ void tst_QCryptographicHash::hmac_addData()
 {
     QFETCH(const Algorithm, algo);
     QFETCH(const QByteArray, data);
+
+    SKIP_IF_NOT_SUPPORTED(algo);
 
     const auto key = hmacKey();
     QMessageAuthenticationCode mac(algo, key);
@@ -181,6 +197,8 @@ void tst_QCryptographicHash::hmac_setKey()
 {
     QFETCH(const Algorithm, algo);
 
+    SKIP_IF_NOT_SUPPORTED(algo);
+
     const QByteArrayList keys = [] {
             QByteArrayList result;
             const auto fullKey = hmacKey();
@@ -199,6 +217,7 @@ void tst_QCryptographicHash::hmac_setKey()
     }
 }
 
+#undef SKIP_IF_NOT_SUPPORTED
 
 QTEST_APPLESS_MAIN(tst_QCryptographicHash)
 
