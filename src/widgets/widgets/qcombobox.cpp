@@ -1166,6 +1166,12 @@ void QComboBoxPrivate::_q_rowsRemoved(const QModelIndex &parent, int /*start*/, 
         q->updateGeometry();
     }
 
+    // model has removed the last row
+    if (model->rowCount(root) == 0) {
+        setCurrentIndex(QModelIndex());
+        return;
+    }
+
     // model has changed the currentIndex
     if (currentIndex.row() != indexBeforeChange) {
         if (!currentIndex.isValid() && q->count()) {
@@ -2172,10 +2178,15 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
         }
         updateLineEditGeometry();
     }
-    // If the model was reset to an empty, currentIndex will be invalidated
+    // If the model was reset to an empty one, currentIndex will be invalidated
     // (because it's a QPersistentModelIndex), but the index change will never
-    // be advertised. So we need an explicit check for such condition.
+    // be advertised. So an explicit check for this condition is needed.
+    // The variable used for that check has to be reset when a previously valid
+    // index becomes invalid.
     const bool modelResetToEmpty = !normalized.isValid() && indexBeforeChange != -1;
+    if (modelResetToEmpty)
+        indexBeforeChange = -1;
+
     if (indexChanged || modelResetToEmpty) {
         q->update();
         _q_emitCurrentIndexChanged(currentIndex);

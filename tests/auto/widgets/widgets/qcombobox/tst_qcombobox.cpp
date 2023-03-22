@@ -1030,7 +1030,7 @@ void tst_QComboBox::currentIndex_data()
         expectedCurrentIndex = -1;
         expectedCurrentText = "";
         expectedSignalCount = 2;
-        QTest::newRow("check that isetting the index to -1 works")
+        QTest::newRow("check that setting the index to -1 works")
             << initialItems << setCurrentIndex << removeIndex
             << insertIndex << insertText << expectedCurrentIndex << expectedCurrentText
             << expectedSignalCount;
@@ -1173,66 +1173,71 @@ void tst_QComboBox::currentIndex()
     TestWidget topLevel;
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
-    QComboBox *testWidget = topLevel.comboBox();
+    QComboBox *comboBox = topLevel.comboBox();
     // test both editable/non-editable combobox
     for (int edit = 0; edit < 2; ++edit) {
-        testWidget->clear();
-        testWidget->setEditable(edit ? true : false);
+        comboBox->clear();
+        comboBox->setEditable(edit ? true : false);
         if (edit)
-            QVERIFY(testWidget->lineEdit());
+            QVERIFY(comboBox->lineEdit());
 
         // verify it is empty, has no current index and no current text
-        QCOMPARE(testWidget->count(), 0);
-        QCOMPARE(testWidget->currentIndex(), -1);
-        QVERIFY(testWidget->currentText().isEmpty());
+        QCOMPARE(comboBox->count(), 0);
+        QCOMPARE(comboBox->currentIndex(), -1);
+        QVERIFY(comboBox->currentText().isEmpty());
 
         // spy on currentIndexChanged
-        QSignalSpy indexChangedInt(testWidget, SIGNAL(currentIndexChanged(int)));
+        QSignalSpy indexChangedSpy(comboBox, &QComboBox::currentIndexChanged);
 
         // stuff items into it
-        foreach(QString text, initialItems) {
-            testWidget->addItem(text);
-        }
-        QCOMPARE(testWidget->count(), initialItems.count());
+        for (const QString &text : initialItems)
+            comboBox->addItem(text);
+
+        QCOMPARE(comboBox->count(), initialItems.size());
 
         // set current index, remove and/or insert
         if (setCurrentIndex >= -1) {
-            testWidget->setCurrentIndex(setCurrentIndex);
-            QCOMPARE(testWidget->currentIndex(), setCurrentIndex);
+            comboBox->setCurrentIndex(setCurrentIndex);
+            QCOMPARE(comboBox->currentIndex(), setCurrentIndex);
         }
 
         if (removeIndex >= 0)
-            testWidget->removeItem(removeIndex);
+            comboBox->removeItem(removeIndex);
         if (insertIndex >= 0)
-            testWidget->insertItem(insertIndex, insertText);
+            comboBox->insertItem(insertIndex, insertText);
 
         // compare with expected index and text
-        QCOMPARE(testWidget->currentIndex(), expectedCurrentIndex);
-        QCOMPARE(testWidget->currentText(), expectedCurrentText);
+        QCOMPARE(comboBox->currentIndex(), expectedCurrentIndex);
+        QCOMPARE(comboBox->currentText(), expectedCurrentText);
 
         // check that signal count is correct
-        QCOMPARE(indexChangedInt.count(), expectedSignalCount);
+        QCOMPARE(indexChangedSpy.size(), expectedSignalCount);
 
         // compare with last sent signal values
-        if (indexChangedInt.count())
-            QCOMPARE(indexChangedInt.at(indexChangedInt.count() - 1).at(0).toInt(),
-                    testWidget->currentIndex());
+        if (indexChangedSpy.size())
+            QCOMPARE(indexChangedSpy.at(indexChangedSpy.size() - 1).at(0).toInt(),
+                    comboBox->currentIndex());
+
+        // Test a no-op index change
+        const int index = comboBox->currentIndex();
+        comboBox->setCurrentIndex(index);
+        QCOMPARE(indexChangedSpy.size(), expectedSignalCount);
 
         if (edit) {
-            testWidget->setCurrentIndex(-1);
-            testWidget->setInsertPolicy(QComboBox::InsertAtBottom);
-            QTest::keyPress(testWidget, 'a');
-            QTest::keyPress(testWidget, 'b');
-            QCOMPARE(testWidget->currentText(), QString("ab"));
-            QCOMPARE(testWidget->currentIndex(), -1);
-            int numItems = testWidget->count();
-            QTest::keyPress(testWidget, Qt::Key_Return);
-            QCOMPARE(testWidget->count(), numItems + 1);
-            QCOMPARE(testWidget->currentIndex(), numItems);
-            testWidget->setCurrentIndex(-1);
-            QTest::keyPress(testWidget, 'a');
-            QTest::keyPress(testWidget, 'b');
-            QCOMPARE(testWidget->currentIndex(), -1);
+            comboBox->setCurrentIndex(-1);
+            comboBox->setInsertPolicy(QComboBox::InsertAtBottom);
+            QTest::keyPress(comboBox, 'a');
+            QTest::keyPress(comboBox, 'b');
+            QCOMPARE(comboBox->currentText(), QString("ab"));
+            QCOMPARE(comboBox->currentIndex(), -1);
+            int numItems = comboBox->count();
+            QTest::keyPress(comboBox, Qt::Key_Return);
+            QCOMPARE(comboBox->count(), numItems + 1);
+            QCOMPARE(comboBox->currentIndex(), numItems);
+            comboBox->setCurrentIndex(-1);
+            QTest::keyPress(comboBox, 'a');
+            QTest::keyPress(comboBox, 'b');
+            QCOMPARE(comboBox->currentIndex(), -1);
         }
     }
 }
