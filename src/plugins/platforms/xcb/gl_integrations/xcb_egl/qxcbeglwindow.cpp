@@ -7,6 +7,10 @@
 
 #include <QtGui/private/qeglconvenience_p.h>
 
+#ifndef EGL_EXT_platform_base
+typedef EGLSurface (EGLAPIENTRYP PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC) (EGLDisplay dpy, EGLConfig config, void *native_window, const EGLint *attrib_list);
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QXcbEglWindow::QXcbEglWindow(QWindow *window, QXcbEglIntegration *glIntegration)
@@ -42,7 +46,16 @@ void QXcbEglWindow::create()
 {
     QXcbWindow::create();
 
+#if QT_CONFIG(egl_x11)
     m_surface = eglCreateWindowSurface(m_glIntegration->eglDisplay(), m_config, m_window, nullptr);
+#else
+    auto createPlatformWindowSurface = reinterpret_cast<PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC>(
+        eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT"));
+    m_surface = createPlatformWindowSurface(m_glIntegration->eglDisplay(),
+                                            m_config,
+                                            reinterpret_cast<void *>(m_window),
+                                            nullptr);
+#endif
 }
 
 QT_END_NAMESPACE
