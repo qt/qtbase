@@ -18,5 +18,11 @@
       \li The shader code's version directive is different.
     \endlist
 
+    This example has no QWidget dependencies. Instead, it uses QOpenGLWindow, a
+    convenience subclass of QWindow that allows easy implementation of windows
+    that contain OpenGL-rendered content. In this sense it complements the
+    \l{OpenGL Window Example}, which shows the implementation of an OpenGL-based
+    QWindow without using the convenience subclass.
+
     \image hellogles3-example.png
 */
