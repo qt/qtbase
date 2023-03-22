@@ -193,7 +193,15 @@ void CppGenerator::operator () ()
     {
       if (shift_reduce_conflict_count != grammar.expected_shift_reduce
           || reduce_reduce_conflict_count != grammar.expected_reduce_reduce)
-        qerr() << "*** Conflicts: " << shift_reduce_conflict_count << " shift/reduce, " << reduce_reduce_conflict_count << " reduce/reduce" << Qt::endl;
+        {
+          qerr() << "*** Conflicts: " << shift_reduce_conflict_count << " shift/reduce, " << reduce_reduce_conflict_count << " reduce/reduce" << Qt::endl;
+          if (warnings_are_errors)
+            {
+              qerr() << "qlalr: error: warning occurred, treating as error due to "
+                        "--exit-on-warn." << Qt::endl;
+              exit(2);
+            }
+        }
 
       if (verbose)
         qout() << Qt::endl << "*** Conflicts: " << shift_reduce_conflict_count << " shift/reduce, " << reduce_reduce_conflict_count << " reduce/reduce" << Qt::endl
@@ -220,7 +228,15 @@ void CppGenerator::operator () ()
       if (! used_rules.testBit (i))
         {
           if (rule != grammar.goal)
-            qerr() << "*** Warning: Rule ``" << *rule << "'' is useless!" << Qt::endl;
+            {
+              qerr() << "*** Warning: Rule ``" << *rule << "'' is useless!" << Qt::endl;
+              if (warnings_are_errors)
+                {
+                  qerr() << "qlalr: error: warning occurred, treating as error due to "
+                            "--exit-on-warn." << Qt::endl;
+                  exit(2);
+                }
+            }
         }
     }
 

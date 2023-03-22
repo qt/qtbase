@@ -28,7 +28,8 @@ static void help_me ()
        << "  --no-debug\t\tno debug information" << Qt::endl
        << "  --no-lines\t\tno #line directives" << Qt::endl
        << "  --dot\t\t\tgenerate a graph" << Qt::endl
-       << "  --qt\t\tadd the Qt copyright header and Qt-specific types and macros" << Qt::endl
+       << "  --qt\t\t\tadd the Qt copyright header and Qt-specific types and macros" << Qt::endl
+       << "  --exit-on-warn\texit with status code 2 on warning" << Qt::endl
        << Qt::endl;
   exit (0);
 }
@@ -42,6 +43,7 @@ int main (int argc, char *argv[])
   bool no_lines = false;
   bool debug_info = true;
   bool qt_copyright = false;
+  bool warnings_are_errors = false;
   QString file_name;
 
   const QStringList args = app.arguments().mid(1);
@@ -63,6 +65,9 @@ int main (int argc, char *argv[])
 
       else if (arg == "--qt"_L1)
         qt_copyright = true;
+
+      else if (arg == "--exit-on-warn"_L1)
+        warnings_are_errors = true;
 
       else if (file_name.isEmpty ())
         file_name = arg;
@@ -104,6 +109,7 @@ int main (int argc, char *argv[])
   CppGenerator gen (p, grammar, aut, generate_report);
   gen.setDebugInfo (debug_info);
   gen.setCopyright (qt_copyright);
+  gen.setWarningsAreErrors (warnings_are_errors);
   gen ();
 
   if (generate_dot)

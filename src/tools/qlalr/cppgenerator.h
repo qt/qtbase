@@ -20,7 +20,8 @@ public:
     aut (aut),
     verbose (verbose),
     debug_info (false),
-    copyright (false) {}
+    copyright (false),
+    warnings_are_errors(false) {}
 
   void operator () ();
 
@@ -28,6 +29,8 @@ public:
   void setDebugInfo (bool d) { debug_info = d; }
 
   void setCopyright (bool t) { copyright = t; }
+
+  void setWarningsAreErrors (bool e) { warnings_are_errors = e; }
 
 private:
   void generateDecl (QTextStream &out);
@@ -51,6 +54,7 @@ private:
   int non_terminal_count;
   bool debug_info;
   bool copyright;
+  bool warnings_are_errors;
   Compress compressed_action;
   Compress compressed_goto;
   QList<int> count;
