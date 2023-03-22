@@ -8,11 +8,13 @@
 
 Q_LOGGING_CATEGORY(lcVk, "qt.vulkan")
 
+//! [2]
 class VulkanWindow : public QVulkanWindow
 {
 public:
     QVulkanWindowRenderer *createRenderer() override;
 };
+//! [2]
 
 QVulkanWindowRenderer *VulkanWindow::createRenderer()
 {
@@ -25,17 +27,20 @@ int main(int argc, char *argv[])
 
     QLoggingCategory::setFilterRules(QStringLiteral("qt.vulkan=true"));
 
+//! [0]
     QVulkanInstance inst;
     inst.setLayers({ "VK_LAYER_KHRONOS_validation" });
-
     if (!inst.create())
         qFatal("Failed to create Vulkan instance: %d", inst.errorCode());
+//! [0]
 
+//! [1]
     VulkanWindow w;
     w.setVulkanInstance(&inst);
 
     w.resize(1024, 768);
     w.show();
+//! [1]
 
     return app.exec();
 }

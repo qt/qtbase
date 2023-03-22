@@ -14,6 +14,49 @@
 
     \image hellovulkantriangle.png
 
+    \section1 Startup
+
+    Each Qt application using Vulkan will have to have a \c{Vulkan instance}
+    which encapsulates application-level state and initializes a Vulkan library.
+
+    A QVulkanWindow must always be associated with a QVulkanInstance and hence
+    the example performs instance creation before the window. The
+    QVulkanInstance object must also outlive the window.
+
+    \snippet hellovulkantriangle/main.cpp 0
+
+    The example enables validation layers, when supported. When the requested
+    layers are not present, the request will be ignored. Additional layers and
+    extensions can be enabled in a similar manner.
+
+    \snippet hellovulkantriangle/main.cpp 1
+
+    Once the instance is ready, it is time to create a window. Note that \c w
+    lives on the stack and is declared after \c inst.
+
+    \section1 The QVulkanWindow Subclass
+
+    To add custom functionality to a QVulkanWindow, subclassing is used. This
+    follows the existing patterns from QOpenGLWindow and QOpenGLWidget.
+    However, QVulkanWindow utilizes a separate QVulkanWindowRenderer object.
+
+    The QVulkanWindow subclass reimplements the factory function
+    QVulkanWindow::createRenderer(). This simply returns a new instance of the
+    QVulkanWindowRenderer subclass. In order to be able to access various
+    Vulkan resources via the window object, a pointer to the window is passed
+    and stored via the constructor.
+
+    \snippet hellovulkantriangle/main.cpp 2
+
+    \section1 The Actual Rendering
+
+    QVulkanWindow subclasses queue their draw calls in their reimplementation
+    of QVulkanWindowRenderer::startNextFrame(). Once done, they are required to
+    call back QVulkanWindow::frameReady(). The example has no asynchronous
+    command generation, so the frameReady() call is made directly from
+    startNextFrame(). To get continuous updates, the example simply invokes
+    QWindow::requestUpdate() in order to schedule a repaint.
+
     The example also demonstrates multisample antialiasing. Based on the
     supported sample counts reported by QVulkanWindow::supportedSampleCounts()
     the example chooses between 8x, 4x, or no multisampling. Once configured
