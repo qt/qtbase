@@ -1006,18 +1006,21 @@ void tst_QTimer::postedEventsShouldNotStarveTimers()
 }
 
 struct DummyFunctor {
-    void operator()() {}
+    static QThread *callThread;
+    void operator()() { callThread = QThread::currentThread(); }
 };
+QThread *DummyFunctor::callThread = nullptr;
 
 void tst_QTimer::crossThreadSingleShotToFunctor()
 {
-    // We're testing for crashes here, so the test simply running to
-    // completion is considered a success
+    // We're also testing for crashes here, so the test simply running to
+    // completion is part of the success
     QThread t;
     t.start();
 
     QObject* o = new QObject();
     o->moveToThread(&t);
+    DummyFunctor::callThread = nullptr;
 
     for (int i = 0; i < 10000; i++) {
         QTimer::singleShot(0, o, DummyFunctor());
@@ -1026,6 +1029,8 @@ void tst_QTimer::crossThreadSingleShotToFunctor()
     t.quit();
     t.wait();
     delete o;
+
+    QCOMPARE(DummyFunctor::callThread, &t);
 }
 
 void tst_QTimer::callOnTimeout()
