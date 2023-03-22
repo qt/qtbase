@@ -59,6 +59,13 @@ SortingBox::SortingBox(QWidget *parent)
 }
 //! [4]
 
+//! [27]
+SortingBox::~SortingBox()
+{
+    qDeleteAll(shapeItems);
+}
+//! [27]
+
 //! [5]
 bool SortingBox::event(QEvent *event)
 {
@@ -67,7 +74,7 @@ bool SortingBox::event(QEvent *event)
         QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
         int index = itemAt(helpEvent->pos());
         if (index != -1) {
-            QToolTip::showText(helpEvent->globalPos(), shapeItems[index].toolTip());
+            QToolTip::showText(helpEvent->globalPos(), shapeItems[index]->toolTip());
         } else {
             QToolTip::hideText();
             event->ignore();
@@ -97,13 +104,13 @@ void SortingBox::paintEvent(QPaintEvent * /* event */)
 {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    for (const ShapeItem &shapeItem : std::as_const(shapeItems)) {
+    for (const ShapeItem *shapeItem : std::as_const(shapeItems)) {
 //! [8] //! [9]
-        painter.translate(shapeItem.position());
+        painter.translate(shapeItem->position());
 //! [9] //! [10]
-        painter.setBrush(shapeItem.color());
-        painter.drawPath(shapeItem.path());
-        painter.translate(-shapeItem.position());
+        painter.setBrush(shapeItem->color());
+        painter.drawPath(shapeItem->path());
+        painter.translate(-shapeItem->position());
     }
 }
 //! [10]
@@ -114,7 +121,7 @@ void SortingBox::mousePressEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton) {
         int index = itemAt(event->position().toPoint());
         if (index != -1) {
-            itemInMotion = &shapeItems[index];
+            itemInMotion = shapeItems[index];
             previousPosition = event->position().toPoint();
             shapeItems.move(index, shapeItems.size() - 1);
             update();
@@ -169,11 +176,11 @@ void SortingBox::createNewTriangle()
 //! [16]
 
 //! [17]
-int SortingBox::itemAt(const QPoint &pos)
+qsizetype SortingBox::itemAt(const QPoint &pos)
 {
-    for (int i = shapeItems.size() - 1; i >= 0; --i) {
-        const ShapeItem &item = shapeItems[i];
-        if (item.path().contains(pos - item.position()))
+    for (qsizetype i = shapeItems.size() - 1; i >= 0; --i) {
+        const ShapeItem *item = shapeItems[i];
+        if (item->path().contains(pos - item->position()))
             return i;
     }
     return -1;
@@ -208,11 +215,11 @@ void SortingBox::createShapeItem(const QPainterPath &path,
                                  const QString &toolTip, const QPoint &pos,
                                  const QColor &color)
 {
-    ShapeItem shapeItem;
-    shapeItem.setPath(path);
-    shapeItem.setToolTip(toolTip);
-    shapeItem.setPosition(pos);
-    shapeItem.setColor(color);
+    ShapeItem *shapeItem = new ShapeItem;
+    shapeItem->setPath(path);
+    shapeItem->setToolTip(toolTip);
+    shapeItem->setPosition(pos);
+    shapeItem->setColor(color);
     shapeItems.append(shapeItem);
     update();
 }

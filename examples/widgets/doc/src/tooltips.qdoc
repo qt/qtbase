@@ -124,6 +124,10 @@
     private \c createShapeItem(), \c initialItemPosition() and \c
     initialItemColor() functions.
 
+    \snippet widgets/tooltips/sortingbox.cpp 27
+
+    In the destructor, we delete all shape items.
+
     \snippet widgets/tooltips/sortingbox.cpp 5
 
     QWidget::event() is the main event handler and receives all the
@@ -199,8 +203,9 @@
     If an item covers the position, we store a pointer to that item
     and the event's position. If several of the shape items cover the
     position, we store the pointer to the uppermost item. Finally, we
-    move the shape item to the end of the list, and make a call to the
-    QWidget::update() function to make the item appear on top.
+    move the shape item's pointer to the end of the list, and make
+    a call to the QWidget::update() function to make the item appear
+    on top.
 
     The QWidget::update() function does not cause an immediate
     repaint; instead it schedules a paint event for processing when Qt
@@ -290,10 +295,9 @@
 
     The \c createShapeItem() function creates a single shape item. It
     sets the path, tooltip, position and color, using the item's own
-    functions. In the end, the function appends the new item to the
-    list of shape items, and calls the QWidget::update() function to
-    make it appear with the other items within the \c SortingBox
-    widget.
+    functions. In the end, the function appends the new item's pointer
+    to the list of shape items, and calls QWidget::update() to make
+    it appear with the other items within the \c SortingBox widget.
 
     \snippet widgets/tooltips/sortingbox.cpp 22
 
